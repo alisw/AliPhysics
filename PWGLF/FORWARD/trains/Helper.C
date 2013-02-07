@@ -68,7 +68,8 @@ struct Helper
   Helper& operator=(const Helper&) { return *this; }
   /** 
    * Create a helper object. 
-   * 
+   *
+   * @param verbose Verbosity 
    * @param url Url describing the job. 
    *
    * - Local mode: 
@@ -164,8 +165,6 @@ struct Helper
   }
   /** 
    * Set-up to load the AliROOT libraries 
-   * 
-   * @param par Whether to use PAR files 
    * 
    * @return true on success
    */
@@ -274,8 +273,6 @@ struct Helper
   /** 
    * Print information to standard output 
    * 
-   * @param option 
-   * 
    * @return 
    */
   virtual void Print(Option_t* ="") const
@@ -307,8 +304,6 @@ struct Helper
    * Write auxillary ROOT (and possible shell) script for more 
    * (post-)processing e.g., terminate
    * 
-   * @param escaped        Escaped name  
-   * @param asShellScript  also save as shell script
    */
   virtual void AuxSave(const TString& /*escaped*/, 
 		       Bool_t /*asShellScript*/) {}
@@ -372,7 +367,7 @@ protected:
    * Constructor 
    * 
    * @param url Set-up URL
-   * @param opts Pre-parsed options 
+   * @param verbose Verbosity level 
    */
   Helper(const TUrl& url, Int_t verbose) 
     : fUrl(url), fOptions(), fVerbose(verbose)
@@ -420,7 +415,7 @@ protected:
    * Link an auxilary file to working directory 
    * 
    * @param name Name of the file
-   * @param bool Copy rather than link
+   * @param copy Copy rather than link
    *
    * @return true on success
    */

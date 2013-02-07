@@ -207,6 +207,7 @@ struct Option /* : public TNamed */
    * Store option and possible value 
    * 
    * @param o Output stream
+   * @param quote If true, quote output 
    */
   void Store(std::ostream& o, bool quote=true) const 
   {
@@ -434,12 +435,30 @@ struct OptionList
     return Add(name, "", desc, "");
   }
   /** 
+   * Add an option with no argument
+   * 
+   * @param name Name of option
+   * @param desc Description 
+   * @param def  Default value (true, or false)
+   * 
+   * @return Newly created option 
+   */
+  Option* Add(const TString& name, 
+	      const TString& desc,
+	      Bool_t         def)
+  {
+    Option* o = Add(name, "", desc, "");
+    if (o) o->Set(def ? "true" : "false");
+    return o;
+  }
+  /** 
    * Add an option with argument 
    * 
    * @param name Name of option
    * @param arg  Dummy argument
    * @param desc Description
    * @param val  Default value 
+   * @param asHex If true, interpret as hex number 
    * 
    * @return Newly added option 
    */
@@ -462,6 +481,7 @@ struct OptionList
    * @param arg  Dummy argument
    * @param desc Description
    * @param val  Default value 
+   * @param asHex If true, interpret as hex 
    * 
    * @return Newly added option 
    */
@@ -664,6 +684,7 @@ struct OptionList
    * 
    * @param name Name of option
    * @param val  Value 
+   * @param asHex If true, interpret as hex 
    */
   void Set(const TString& name, Int_t val, Bool_t asHex=false)
   {
@@ -675,6 +696,7 @@ struct OptionList
    * 
    * @param name Name of option
    * @param val  Value 
+   * @param asHex If true, interpret as hex value 
    */
   void Set(const TString& name, Long64_t val, Bool_t asHex=false)
   {
@@ -712,6 +734,7 @@ struct OptionList
    * Parse options given in a collection 
    * 
    * @param opts List of arguments 
+   * @param ignoreUnknown If true, ignore unknown options 
    * 
    * @return true on success
    */
@@ -815,6 +838,9 @@ struct OptionList
    * 
    * @param o Output stream
    * @param prefix Prefix for each option
+   * @param delim Delimters 
+   * @param quote Quote output 
+   * @param onlySet if true, only output set options 
    */
   void Store(std::ostream& o, const char* prefix="", 
 	     const char* delim=",", bool quote=true, 

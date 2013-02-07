@@ -152,7 +152,8 @@ struct ChainBuilder
   /** 
    * Create a chain consiting of a single file 
    * 
-   * @param fn File name. 
+   * @param chain The chain
+   * @param src File name. 
    * 
    * @return Chain or null
    */
@@ -307,6 +308,9 @@ struct ChainBuilder
    * 
    * @param dir        Directory to scan
    * @param chain      Chain to add to
+   * @param pattern    File name pattern 
+   * @param mc         Simulation input 
+   * @param recursive  Scan recursive 
    *
    * @return true if any files where added 
    */

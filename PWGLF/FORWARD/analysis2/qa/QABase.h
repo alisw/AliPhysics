@@ -40,6 +40,8 @@ struct QABase
    * Constructor
    * 
    * @param single  If true, only process one file. 
+   * @param prodYear Production year 
+   * @param prodLetter Production letter 
    */
   QABase(Bool_t single=false, Int_t prodYear=0, Char_t prodLetter='\0') 
     : fFMD1i(0),
@@ -302,6 +304,7 @@ struct QABase
    * canvas in storage file 
    * 
    * @param pngName Base name of PNG
+   * @param areas   Areas to print 
    */
   void PrintCanvas(const char* pngName, TCollection* areas=0)
   {

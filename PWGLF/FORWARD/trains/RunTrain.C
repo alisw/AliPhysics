@@ -41,7 +41,8 @@ BuildScript(const char* name, Bool_t verbose, Bool_t force, Bool_t debug)
  * @param verbose Whether to be verbose 
  * @param force   Whether to force re-builds
  * @param debug   Whether to enable debug symbols 
- * 
+ * @param all     Whether to build all helpers 
+ *
  * @return true on success 
  *
  * @ingroup pwglf_forward_trains
@@ -99,6 +100,7 @@ void PlainUsage()
  * 
  * @param name  Name of the train. 
  * @param cls   class name of train setup
+ * @param uri   Exection URI  
  * @param opts  Optons 
  * 
  * @return true on success

@@ -7,6 +7,7 @@
  * terminate jobs
  * 
  * 
+ * @ingroup pwglf_forward_trains_helper
  */
 #ifndef __CINT__
 # include <TString.h>
@@ -23,6 +24,16 @@ class TString;
 #endif
 #include <TArrayI.h>
 
+/** 
+ * Create token name 
+ * 
+ * @param name   Name
+ * @param ext    Extension
+ * @param merge  Merge state or not 
+ * 
+ * @return Formatted string
+ * @ingroup pwglf_forward_trains_helper
+ */
 TString TokenName(const TString& name, 
 		   const TString& ext, 
 		   Bool_t merge=false)
@@ -30,7 +41,16 @@ TString TokenName(const TString& name,
   return TString::Format("%s%s.%s", name.Data(), 
 			 (merge ? "_merge" : ""), ext.Data());
 }
-  
+/** 
+ * Check if we have a particular file 
+ * 
+ * @param name   Base name 
+ * @param ext    Extension 
+ * @param merge  Merging stage or not 
+ * 
+ * @return true if file exits
+ * @ingroup pwglf_forward_trains_helper
+ */
 Bool_t CheckTokens(const TString& name, 
 		   const TString& ext, 
 		   Bool_t merge=false)
@@ -38,7 +58,14 @@ Bool_t CheckTokens(const TString& name,
   // TSystem::AccessPathName return false if file is there 
   return !gSystem->AccessPathName(TokenName(name, ext, merge));
 }
-
+/** 
+ * Remove a token file 
+ * 
+ * @param name   Base name 
+ * @param ext    Extension 
+ * @param merge  Merging stage or not 
+ * @ingroup pwglf_forward_trains_helper
+ */
 void RemoveTokens(const TString& name, 
 		  const TString& ext, 
 		  Bool_t merge=false)
@@ -54,6 +81,8 @@ void RemoveTokens(const TString& name,
  * @param merge  If true append "_merge" to name
  * 
  * @return Array of tokens or null
+ *
+ * @ingroup pwglf_forward_trains_helper
  */
 TObjArray* ReadTokens(const TString& name, 
 		      const TString& ext, 
@@ -81,6 +110,8 @@ TObjArray* ReadTokens(const TString& name,
  * @param merge  If true append "_merge" to name
  * 
  * @return Array of job IDs or null
+ *
+ * @ingroup pwglf_forward_trains_helper
  */
 TObjArray* ReadJobIDs(const TString& name, bool merge=false)
 {
@@ -94,6 +125,8 @@ TObjArray* ReadJobIDs(const TString& name, bool merge=false)
  * @param merge  If true append "_merge" to name
  * 
  * @return Array of job stages or null
+ *
+ * @ingroup pwglf_forward_trains_helper
  */
 TObjArray* ReadStages(const TString& name, bool merge=false)
 {
@@ -107,6 +140,8 @@ TObjArray* ReadStages(const TString& name, bool merge=false)
  * @param ret    Return array
  * 
  * @return true on success
+ *
+ * @ingroup pwglf_forward_trains_helper
  */
 Bool_t ParseJobIDs(const TObjArray* jobIds, TArrayI& ret)
 {
@@ -131,6 +166,8 @@ Bool_t ParseJobIDs(const TObjArray* jobIds, TArrayI& ret)
  * @param out    Output
  * 
  * @return true on success
+ *
+ * @ingroup pwglf_forward_trains_helper
  */
 Bool_t ParseState(const TString& status, TString& out)
 {
@@ -188,6 +225,8 @@ Bool_t ParseState(const TString& status, TString& out)
  * @param out   Output status string 
  * 
  * @return true on success
+ *
+ * @ingroup pwglf_forward_trains_helper
  */
 Bool_t GetJobState(Int_t jobId, TString& out) 
 {
@@ -231,6 +270,16 @@ Bool_t GetJobState(Int_t jobId, TString& out)
   return true;
 }
 
+/** 
+ * Get the job states
+ * 
+ * @param jobs   List of job IDs
+ * @param states On return the states
+ * 
+ * @return true on success
+ *
+ * @ingroup pwglf_forward_trains_helper
+ */
 Bool_t GetJobStates(const TArrayI& jobs, TObjArray& states)
 {
   Int_t n = jobs.GetSize();
@@ -290,13 +339,15 @@ Bool_t GetJobStates(const TArrayI& jobs, TObjArray& states)
 
 
 /** 
+ * Wait of jobs to finish 
  * 
+ * @param jobs    List of jobs
+ * @param stages  Stages
+ * @param delay   Delay for check
  * 
- * @param jobs 
- * @param stages 
- * @param delay 
- * 
- * @return 
+ * @return true on success, false otherwise
+ *
+ * @ingroup pwglf_forward_trains_helper
  */
 Bool_t WaitForJobs(TArrayI& jobs, TObjArray* stages, Int_t delay)
 {
@@ -357,10 +408,12 @@ Bool_t WaitForJobs(TArrayI& jobs, TObjArray* stages, Int_t delay)
   return true;
 }
 /** 
+ * Watch Grid for termination of main job, and submit merging jobs as needed. 
  * 
- * 
- * @param name 
- * @param delay 
+ * @param name   Name of the job
+ * @param delay  Delay between updates in seconds
+ *
+ * @ingroup pwglf_forward_trains_helper
  */
 void GridWatch(const TString& name, UShort_t delay=5*60)
 {

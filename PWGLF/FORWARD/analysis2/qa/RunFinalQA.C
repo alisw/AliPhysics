@@ -132,7 +132,9 @@ GetListOfFiles(const char* input=".")
 /** 
  * 
  * 
- * @param dir 
+ * @param dir Input directory
+ * @param prodYear Production year 
+ * @param prodLetter Production letter
  * 
  * @ingroup pwglf_forward_qa_scripts
  */

@@ -7,6 +7,16 @@
 // Outputs:
 //  - AnalysisResults.root
 //
+/**
+ * @file   AliForwardMCFlowTaskQC.cxx
+ * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @date   Thu Feb  7 01:09:19 2013
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_flow
+ */
 #include "AliForwardMCFlowTaskQC.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"

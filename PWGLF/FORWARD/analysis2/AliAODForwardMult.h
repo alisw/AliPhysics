@@ -402,6 +402,7 @@ public:
    * each class.
    * 
    * @param name Name of the histogram 
+   * @param mask Trigger mask 
    * 
    * @return Newly allocated histogram 
    */

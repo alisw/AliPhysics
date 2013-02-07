@@ -1,3 +1,14 @@
+/** 
+ * Create a file collection in a ROOT file 
+ * 
+ * @param dir         Input directory
+ * @param tN          Tree name
+ * @param pa          File name pattern
+ * @param mc          If true, simulations
+ * @param recursive   Scan recursively 
+ *
+ * @ingroup pwglf_forward_trains_helper
+ */
 void
 CreateFileCollection(const TString& dir="/data/alice/data/ppb/LHC12g/pass1/188359/",
 		     const TString& tN="esdTree", 
@@ -47,3 +58,6 @@ CreateFileCollection(const TString& dir="/data/alice/data/ppb/LHC12g/pass1/18835
   files->Close();
   
 }
+//
+// EOF
+//

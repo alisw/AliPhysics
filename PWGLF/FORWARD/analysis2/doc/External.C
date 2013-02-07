@@ -17,10 +17,15 @@
  */
 typedef char Char_t;
 /** 
+ * A signed 16bit integer 
+ * @ingroup pwglf_external_root
+ */
+typedef short Short_t;
+/** 
  * An unsigned 16bit integer 
  * @ingroup pwglf_external_root
  */
-typedef unsigned int UShort_t;
+typedef unsigned short UShort_t;
 /** 
  * An unsigned 32bit integer 
  * @ingroup pwglf_external_root
@@ -31,6 +36,11 @@ typedef unsigned int UInt_t;
  * @ingroup pwglf_external_root
  */
 typedef unsigned long ULong_t;
+/** 
+ * A signed 64bit integer 
+ * @ingroup pwglf_external_root
+ */
+typedef long long Long64_t;
 /** 
  * An constant character for option strings 
  * @ingroup pwglf_external_root
@@ -72,6 +82,22 @@ class TObject {};
  * @ingroup pwglf_external_root
  */
 class TNamed {};
+/**
+ * ROOT URL encoder
+ * 
+ * See also
+ * - http://root.cern.ch/root/htmldoc/TUrl.html
+ * @ingroup pwglf_external_root
+ */
+class TUrl {};
+/**
+ * ROOT stop watch
+ * 
+ * See also
+ * - http://root.cern.ch/root/htmldoc/TStopwatch.html
+ * @ingroup pwglf_external_root
+ */
+class TStopwatch {};
 /**
  * A string
  * 
@@ -257,6 +283,24 @@ class AliAnalysisTask : public TTask {};
  * @ingroup pwglf_external_aliroot
  */
 class AliAnalysisTaskSE : public AliAnalysisTask {};
+/**
+ * Plug-in for AliAnalysisManager execution on Grid and AAF
+ *
+ * See also
+ * - https://aliceinfo.cern.ch/Offline/Activities/Analysis/
+ * - https://aliceinfo.cern.ch/static/aliroot-new/html/roothtml/AliAnalysisAlien.html
+ * @ingroup pwglf_external_aliroot
+ */
+class AliAnalysisAlien  {};
+/**
+ * Manager (locomotive) of an analysis train
+ *
+ * See also
+ * - https://aliceinfo.cern.ch/Offline/Activities/Analysis/
+ * - https://aliceinfo.cern.ch/static/aliroot-new/html/roothtml/AliAnalysisManager.html
+ * @ingroup pwglf_external_aliroot
+ */
+class AliAnalysisManager  {};
 /**
  * AOD event structure 
  * 

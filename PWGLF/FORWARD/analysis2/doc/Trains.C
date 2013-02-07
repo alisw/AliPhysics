@@ -6,6 +6,33 @@
  *
  * @section train_setup_overview Overview 
  *
+ * The TrainSetup framework allows users to easily set up an analysis
+ * train which can be executed in all environments supported by ALICE. 
+ * 
+ * The train definition takes the form of a class deriving from the
+ * base class TrainSetup.  
+ *
+ * Specific hooks in the base class allows users to customize the
+ * various aspects of a train.  The base class also facilities to
+ * easily define parameters of the train which can be set by parsing
+ * simple command line options or strings.  Furthermore, the basic
+ * setup ensures that the analysis becomes a self-contained,
+ * self-documenting unit by storing all relevant files together with
+ * the various kinds of output generated during the analysis job.
+ *
+ * The execution environment (local, Proof, Grid) is specified as a
+ * simple URL like string, with room for environment specific options.
+ * This scheme allows a user to run the same analysis in various
+ * environments by simply changing the execution environment URL with
+ * another URL.  Various helpers for each type of environment ensures
+ * that all needed steps are taken to help ensure successful execution
+ * of the analysis regardless of the underlying execution environment.
+ *
+ * Trains defined using this framework can either be executed in an
+ * interactive AliROOT session or using a stand-alone program.
+ *
+ * @section train_setup_usage Usage
+ *
  * Users should define a class that derives from TrainSetup.  The class
  * should implement the member function TrainSetup::CreateTasks to add
  * needed tasks to the train
@@ -26,7 +53,7 @@
  *   void CreateTasks(AliAnalysisManager* mgr)
  *   {
  *     AliAnalysisManager::SetCommonFileName("my_analysis.root");
- *     LoadLibrary("MyAnalysis", par, true);
+ *     fHelper->LoadLibrary("MyAnalysis", true);
  *     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
  *     Double_t param = fOptions.AsDouble("parameter");
  *     gROOT->Macro(Form("AddTaskMyAnalysis.C(%f)",param));
@@ -35,7 +62,7 @@
  * };
  * @endcode 
  *
- * @section train_setup_params Paramters of the setup 
+ * @section train_setup_params Parameters of the setup 
  *
  * Parameters of the user defined class deriving from TrainSetup is
  * best handled by adding options to the internal member @c fOptions
@@ -43,17 +70,22 @@
  *
  * @code 
  *   fOptions.Add("<name>", "<dummy>", "<description>", "<default>");
+ *   fOptions.Add("<name>", "<dummy>", "<description>", defaultInt_t);
+ *   fOptions.Add("<name>", "<dummy>", "<description>", defaultLong64_t);
+ *   fOptions.Add("<name>", "<dummy>", "<description>", defaultDouble_t);
  *   fOptions.Add("<name>", "<description>");
+ *   fOptions.Add("<name>", "<description>", defaultBool);
  * @endcode
  * 
- * The first form defined a parmater that has a value, while the
- * second form defines a flag (or toggle).  The values or flags can be
+ * The first 4 forms defined a parameter that has a value, while the
+ * last 2 forms defines a flag (or toggle).  The values or flags can be
  * retrieved later by doing
  * 
  * @code 
  *    Double_t value = fOptions.AsDouble("<name>",<value if not set>);
  *    Int_t    value = fOptions.AsInt("<name>",<value if not set>);
  *    Long64_t value = fOptions.AsLong("<name>",<value if not set>);
+ *    Bool_t   value = fOptions.AsBool("<name>",<value if not set>)
  *    TString  value = fOptions.Get("<name>");
  *    Bool_t   value = fOptions.Has("<name>");
  * @endcode
@@ -111,12 +143,17 @@
  * instructed.
  *
  * For Grid analysis, various JDL and steering scripts are copied to
- * this directory.
+ * this directory.  Scripts to run merge/terminate stages and to
+ * download the results are also generated for the users convinence.
+ * The special generated script <tt>Watch.C</tt> will monitor the
+ * progess of the jobs and automatically execute the needed merging
+ * and terminate stages.  Various files needed by the train are copied
+ * to the Grid working directory as a form of documentation.
  *
  * In all cases, a file named @c ReRun.C (and for @b runTrain:
  * rerun.sh) is generated in this sub-directory.  It contains the
- * setting used for the train and can easily be used to run merging
- * and terminate as needed.
+ * setting used for the train and can easily be used to run jobs again
+ * as well as serve as a form of documentation.
  *
  * @section train_setup_url_spec Execution URI 
  *
@@ -160,7 +197,8 @@
  *
  * Local and Grid jobs are in a sense very similar.  That is, the
  * individual Grid jobs are very much like Local jobs, in that they
- * always produce output files which albiet not after Terminate.
+ * always produce output files (albiet not after Terminate, though
+ * parameter container files are (re)made). 
  *
  * PROOF jobs are very different.  In a PROOF analysis, each slave
  * only produces in memory output which is then sent via net
@@ -350,8 +388,7 @@
  * given type of analysis, but some times a particular train needs a
  * bit of tweaking.  One can therefore overload the following functions 
  * 
- * - TrainSetup::CreateGridHandler()
- * - TrainSetup::CreateInputHandler(EType)
+ * - TrainSetup::CreateInputHandler(UShort_t)
  * - TrainSetup::CreateMCHandler(UShort_t,bool)
  * - TrainSetup::CreateOutputHandler(UShort_t)
  * - TrainSetup::CreatePhysicsSelection(Bool_t,AliAnalysisManager*)
@@ -394,7 +431,7 @@
  * - ProofHelper for jobs running on a PROOF farm 
  * - LiteHelper for jobs running in a PROOF-Lite session 
  * - AAFHelper Special kind of ProofHelper for jobs running on AAFs 
- * - AFFPluginHelper As AAFHelper, but uses the AliEn plugin 
+ * - AAFPluginHelper As AAFHelper, but uses the AliEn plugin 
  * - GridHelper for Grid jobs 
  */
 //

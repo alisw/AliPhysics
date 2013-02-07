@@ -1,3 +1,13 @@
+/**
+ * @file   AliDisplacedVertexSelection.h
+ * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @date   Thu Feb  7 00:53:03 2013
+ * 
+ * @brief  Selection of events from satellite interactions 
+ * 
+ * @ingroup pwglf_forward_aod
+ * 
+ */
 #ifndef ALIDISPLACEDVERTEXSELECTION_H
 #define ALIDISPLACEDVERTEXSELECTION_H
 #include <TObject.h>
@@ -5,6 +15,8 @@ class AliESDEvent;
 
 /** 
  * Selection of events from satellite interactions 
+ *
+ * @ingroup pwglf_forward_aod
  */
 class AliDisplacedVertexSelection : public TObject 
 {
@@ -48,8 +60,19 @@ public:
    * @return true on success
    */
   Bool_t Process(const AliESDEvent* esd);
-
+  /** 
+   * Get the interaction point Z-coordinate from ZDC timing. 
+   * 
+   * 
+   * @return Interaction point Z-coordinate
+   */
   Double_t GetVertexZ() const { return fVertexZ; }
+  /** 
+   * Return the centrality percentile 
+   * 
+   * 
+   * @return Centrality percentile (ZDC vs ZEM)
+   */
   Double_t GetCentralityPercentile() const { return fCent; }
   /** 
    * Check for displaced vertices (M.Guilbaud) 
@@ -69,10 +92,10 @@ public:
   Double_t CalculateDisplacedVertexCent(const AliESDEvent* esd) const;
   
 protected:
-  Double_t fVertexZ;
-  Double_t fCent;
+  Double_t fVertexZ; // Interaction point Z-coordinate
+  Double_t fCent;    // Centrality percentile
   
-  ClassDef(AliDisplacedVertexSelection,2); // Cuts on ESD Mult 
+  ClassDef(AliDisplacedVertexSelection,2); // Satelitte collisions 
 };
 
 #endif

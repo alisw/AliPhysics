@@ -30,21 +30,21 @@ class AliAnalysisAlien;
  * @code
  * proof://[<user>@]<host>[:<port>]/<dsname>[?<options>][#<treename>]
  * @endcode 
- * where &lt;host@gt; is a known AAF (e.g., <tt>alice-caf.cern.ch</tt>),
+ * where &lt;host&gt; is a known AAF (e.g., <tt>alice-caf.cern.ch</tt>),
  * and the &lt;options&gt; contains <tt>plugin</tt>
  * <dl>
- *   <dt>&lt;user@gt;</dt>
+ *   <dt>&lt;user&gt;</dt>
  *   <dd>Optional user name</dd>
- *   <dt>&lt;host@gt;</dt>
+ *   <dt>&lt;host&gt;</dt>
  *   <dd>PROOF cluster master host</dd>
- *   <dt>&lt;port@gt;</dt>
+ *   <dt>&lt;port&gt;</dt>
  *   <dd>Optional PROOF cluster port on master host</dd>
- *   <dt>&lt;dsname@gt;</dt>
+ *   <dt>&lt;dsname&gt;</dt>
  *   <dd>Data set name</dd>
- *   <dt>&lt;treename@gt;</dt>
+ *   <dt>&lt;treename&gt;</dt>
  *   <dd>Optional tree name in data set, often <tt>esdTree</tt> or
  *   <tt>aodTree</tt></dd>
- *   <dt>&lt;options@gt;</dt>
+ *   <dt>&lt;options&gt;</dt>
  *   <dd>List of options separated by an &amp;
  *     <dl>
  *       <dt><tt>dsname</tt>[=&lt;output dataset&gt;]</dt>
@@ -58,7 +58,7 @@ class AliAnalysisAlien;
  *         <tt>root://lxplus.cern.ch:10930//tmp</tt>.</dd>
  *       <dt><tt>mode=[default,rec,sim,train,custom]</tt></dt>
  *       <dd>Set the AliROOT mode.  If not specified <tt>default</tt> 
- *         is assumed</tt>.  See also CreateAliROOTPar</dd>
+ *         is assumed.  See also CreateAliROOTPar</dd>
  *       <dt><tt>par</tt></dt>
  *       <dd> Use PAR files</dd>
  *       <dt><tt>workers=</tt><i>N</i><tt>[x]</tt></dt>
@@ -76,7 +76,7 @@ struct AAFPluginHelper : public PluginHelper
    * Constructor 
    * 
    * @param url  Url 
-   * @param opts Options 
+   * @param verbose Verbosity level
    */
   AAFPluginHelper(const TUrl& url, Int_t verbose)
     : PluginHelper(url, verbose)

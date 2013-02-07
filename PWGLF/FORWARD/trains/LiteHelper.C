@@ -63,7 +63,7 @@ class TUrl;
  *         are used. </dd>
  *       <dt><tt>mode=[default,rec,sim,train,custom]</tt></dt>
  *       <dd>Set the AliROOT mode.  If not specified <tt>default</tt> 
- *         is assumed</tt>.  See also CreateAliROOTPar</dd>
+ *         is assumed.  See also CreateAliROOTPar</dd>
  *      </dl>
  *   </dd>
  * </dl>
@@ -75,8 +75,8 @@ struct LiteHelper : public ProofHelper
   /** 
    * Constructor 
    * 
-   * @param url   Url 
-   * @param opts  Options 
+   * @param url     Url 
+   * @param verbose Verbosity
    */
   LiteHelper(const TUrl& url, Int_t verbose)
     : ProofHelper(url, verbose), fChain(0)

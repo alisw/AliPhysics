@@ -2,7 +2,7 @@
 /** 
  * @page dist_doc Charged Particle Multiplicity Distributions
  *
- * Module: @ref pwglf_forward_flow
+ * Module: @ref pwglf_forward_multdist
  *
  * @tableofcontents 
  *

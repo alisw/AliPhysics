@@ -37,7 +37,6 @@ protected:
   /** 
    * Create the tasks 
    * 
-   * @param par  Whether to use par files 
    * @param mgr  Analysis manager 
    */
   void CreateTasks(AliAnalysisManager* mgr)
@@ -56,9 +55,15 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
 
     // --- Add the task ----------------------------------------------
-    if (!gROOT->Macro(Form("AddTaskForwardQA.C(%d,%d)", 
-			   mc, fOptions.Has("cent"))))
+#if 0
+    if (!gROOT->Macro(Form("AddTaskForwardQA.C(%d,%d)",
+			   mc,fOptions.Has("cent"))))
       Fatal("CreateTasks", "Failed to add ForwardQA task");
+#else
+    if (!AddTask("AddTaskForwardQA.C", 
+		 Form("%d,%d", mc, fOptions.Has("cent"))))
+      Fatal("CreateTasks", "Failed to add ForwardQA task");
+#endif
   }
   /** 
    * Create entrality selection if enabled 

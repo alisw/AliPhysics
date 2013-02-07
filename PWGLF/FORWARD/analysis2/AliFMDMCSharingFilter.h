@@ -133,6 +133,7 @@ public:
    * Scale the histograms to the total number of events 
    * 
    * @param dir     Where the output is 
+   * @param output  Output list
    * @param nEvents Number of events 
    */
   void Terminate(const TList* dir, TList* output, Int_t nEvents);

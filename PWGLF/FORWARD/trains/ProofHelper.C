@@ -40,24 +40,18 @@ class TChain;
  * @endcode 
  * where 
  * <dl>
- *   <dt>&lt;user@gt;</dt>
+ *   <dt>&lt;user&gt;</dt>
  *   <dd>Optional user name</dd>
- *   <dt>&lt;host@gt;</dt>
+ *   <dt>&lt;host&gt;</dt>
  *   <dd>PROOF cluster master host</dd>
- *   <dt>&lt;port@gt;</dt>
+ *   <dt>&lt;port&gt;</dt>
  *   <dd>Optional PROOF cluster port on master host</dd>
- *   <dt>&lt;dsname@gt;</dt>
+ *   <dt>&lt;dsname&gt;</dt>
  *   <dd>Data set name</dd>
- *   <dt><tt>&lt;datadir&gt;</tt></dt>
- *   <dd>is the base directory holding data files </dd>
- *   <dt><tt>&lt;collection&gt;</tt></dt>
- *   <dd>is an ASCII or XML list of input sources</dd>
- *   <dt><tt>&lt;file&gt;</tt></dt>
- *   <dd>is a single ROOT file</dd>
- *   <dt>&lt;treename@gt;</dt>
+ *   <dt>&lt;treename&gt;</dt>
  *   <dd>Optional tree name in data set, often <tt>esdTree</tt> or
  *   <tt>aodTree</tt></dd>
- *   <dt>&lt;options@gt;</dt>
+ *   <dt>&lt;options&gt;</dt>
  *   <dd>List of options separated by an &amp;
  *     <dl>
  *       <dt><tt>workers=N[x]</tt></dt>
@@ -73,7 +67,7 @@ class TChain;
  *         are used. </dd>
  *       <dt><tt>mode=[default,rec,sim,train,custom]</tt></dt>
  *       <dd>Set the AliROOT mode.  If not specified <tt>default</tt> 
- *         is assumed</tt>.  See also CreateAliROOTPar</dd>
+ *         is assumed.  See also CreateAliROOTPar</dd>
  *       <dt><tt>storage=&lt;url&gt;</tt></dt>
  *       <dd>Specify a non-default storage location for special output
  *         (e.g., AOD trees).  &lt;url&gt; should be a valid XRootd 
@@ -91,7 +85,7 @@ struct ProofHelper : public Helper
    * Constructor 
    * 
    * @param url  Url 
-   * @param opts Options 
+   * @param verbose Verbosity level
    */
   ProofHelper(const TUrl& url, Int_t verbose)
     : Helper(url, verbose), 
@@ -120,7 +114,6 @@ struct ProofHelper : public Helper
    * Load a library/PAR/script 
    * 
    * @param name   Name 
-   * @param par    If true, upload & enable PAR 
    * @param slaves If true, also load on slaves
    * 
    * @return true on success 
@@ -157,6 +150,7 @@ struct ProofHelper : public Helper
    * Load a source file, and compile it 
    * 
    * @param name Name of the source file 
+   * @param copy If true, copy not link 
    * 
    * @return true on success
    */
@@ -168,8 +162,6 @@ struct ProofHelper : public Helper
   }
   /** 
    * Set-up to load the AliROOT libraries 
-   * 
-   * @param par Whether to use PAR files 
    * 
    * @return true on success
    */

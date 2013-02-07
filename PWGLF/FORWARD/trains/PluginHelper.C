@@ -37,7 +37,7 @@ class AliAnalysisAlien;
  * @endcode 
  * where &lt;options&gt; contains <tt>plugin</tt>
  * <dl>
- *   <dt>&lt;options@gt;</dt>
+ *   <dt>&lt;options&gt;</dt>
  *   <dd>List of options separated by an &amp;
  *     <dl>
  *       <dt><tt>storage=&lt;url&gt;</tt></dt>
@@ -47,7 +47,7 @@ class AliAnalysisAlien;
  *         <tt>root://lxplus.cern.ch:10930//tmp</tt>.</dd>
  *       <dt><tt>mode=[default,rec,sim,train,custom]</tt></dt>
  *       <dd>Set the AliROOT mode.  If not specified <tt>default</tt> 
- *         is assumed</tt>.  See also CreateAliROOTPar</dd>
+ *         is assumed.  See also CreateAliROOTPar</dd>
  *       <dt><tt>par</tt></dt>
  *       <dd>Use par files</dd>
  *       <dt><tt>aliroot=&lt;version&gt;</tt></dt>
@@ -66,7 +66,7 @@ struct PluginHelper : public Helper
    * Constructor 
    * 
    * @param url  Url 
-   * @param opts Options 
+   * @param verbose Verbosity level 
    */
   PluginHelper(const TUrl& url, Int_t verbose)
     : Helper(url, verbose), fHandler(0), fUsePars(false), 
@@ -117,7 +117,6 @@ struct PluginHelper : public Helper
    * Load a library/PAR/script 
    * 
    * @param name   Name 
-   * @param par    If true, upload & enable PAR 
    * @param slaves If true, also load on slaves
    * 
    * @return true on success 
@@ -154,6 +153,7 @@ struct PluginHelper : public Helper
    * Load a source file, and compile it 
    * 
    * @param name Name of the source file 
+   * @param copy If true, copy here instead of link
    * 
    * @return true on success
    */
@@ -169,8 +169,6 @@ struct PluginHelper : public Helper
   
   /** 
    * Set-up to load the AliROOT libraries 
-   * 
-   * @param par Whether to use PAR files 
    * 
    * @return true on success
    */
@@ -249,8 +247,6 @@ struct PluginHelper : public Helper
   };
   /** 
    * Pure virtual overload
-   * 
-   * @param Long64_t 
    * 
    * @return 
    */

@@ -17,6 +17,7 @@
  * @param sNN      Pre-set collition energy
  * @param field    Pre-set magnetic field
  * @param config   Configuration file to use 
+ * @param corrs    Corrections to use 
  * 
  * @return Newly created task 
  *

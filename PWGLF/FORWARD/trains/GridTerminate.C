@@ -1,11 +1,12 @@
 /**
- * @file   Terminate.C
+ * @file   GridTerminate.C
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
  * @date   Wed Jan 23 21:22:28 2013
  * 
  * @brief  Worker script to run terminate part for Grid  
  * 
  * 
+ * @ingroup pwglf_forward_trains_helper
  */
 #ifndef __CINT__
 # include <TString.h>
@@ -175,7 +176,7 @@ Bool_t GridTerminate(const TString& name,
   Info("GridTerminate","Starting terminate job");
   if (mgr->StartAnalysis("grid") < 0) return false;
 
-#if 0
+#if 1
   std::ofstream outJobs(Form("%s_merge.jobid", mgr->GetName()));
   outJobs << handler->GetGridJobIDs() << std::endl;
   outJobs.close();

@@ -1,4 +1,3 @@
-
 /**
  * @file   GridDownload.C
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
@@ -7,6 +6,7 @@
  * @brief  Helper script to download results from the Grid 
  * 
  * 
+ * @ingroup pwglf_forward_trains_helper
  */
 #ifndef __CINT__
 # include <TString.h>

@@ -46,7 +46,6 @@ protected:
   /** 
    * Create the tasks 
    * 
-   * @param par  Whether to use par files 
    * @param mgr  Analysis manager 
    */
   void CreateTasks(AliAnalysisManager* mgr)

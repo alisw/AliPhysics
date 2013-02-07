@@ -92,7 +92,6 @@ enum {
  * Set graph attributes based on trigger type and experiment. 
  * 
  * @param g        Graph
- * @param trig     Trigger (INEL, INEL>0, NSD)
  * @param exp      Experiment 
  * @param mirror   True if mirrored data 
  * @param name     Name of graph 
