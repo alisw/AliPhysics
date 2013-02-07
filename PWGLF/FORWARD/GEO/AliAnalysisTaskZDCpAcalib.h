@@ -62,10 +62,10 @@ class AliAnalysisTaskZDCpAcalib : public AliAnalysisTaskSE {
   Float_t  fZPCtowerLG[5];     //  ZNC 5 tower signals
   Float_t  fZPAtowerLG[5];     //  ZPC 5 tower signals
   //
-  Int_t    fZNCtdc[4];         // TDC raw values !ONLY FOR ESDs ANALYSIS!
-  Int_t    fZNAtdc[4];         // TDC raw values !ONLY FOR ESDs ANALYSIS!
-  Int_t    fZPCtdc[4];         // TDC raw values !ONLY FOR ESDs ANALYSIS!
-  Int_t    fZPAtdc[4];         // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  Float_t    fZNCtdc[4];       // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  Float_t    fZNAtdc[4];       // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  Float_t    fZPCtdc[4];       // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  Float_t    fZPAtdc[4];       // TDC raw values !ONLY FOR ESDs ANALYSIS!
   
   AliAnalysisTaskZDCpAcalib& operator= (const AliAnalysisTaskZDCpAcalib& ana);
   AliAnalysisTaskZDCpAcalib(const AliAnalysisTaskZDCpAcalib& c);

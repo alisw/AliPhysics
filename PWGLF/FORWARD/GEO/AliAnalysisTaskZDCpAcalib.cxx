@@ -238,10 +238,10 @@ void AliAnalysisTaskZDCpAcalib::UserExec(Option_t */*option*/)
       }
 
       for(Int_t i=0; i<4; i++){
-	   fZNCtdc[i] = esdZDC->GetZDCTDCData(10, i);
-	   fZPCtdc[i] = esdZDC->GetZDCTDCData(11, i);
-	   fZNAtdc[i] = esdZDC->GetZDCTDCData(12, i);
-	   fZPAtdc[i] = esdZDC->GetZDCTDCData(13, i);
+	   fZNCtdc[i] = esdZDC->GetZDCTDCCorrected(10, i);
+	   fZPCtdc[i] = esdZDC->GetZDCTDCCorrected(11, i);
+	   fZNAtdc[i] = esdZDC->GetZDCTDCCorrected(12, i);
+	   fZPAtdc[i] = esdZDC->GetZDCTDCCorrected(13, i);
       }      
   }   
   
