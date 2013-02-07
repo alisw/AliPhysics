@@ -7,9 +7,9 @@
  
  
  /*
- * This script creates a single picture containing all OpenGL views from a running AliEve
+ * This script creates a collage containing all OpenGL views from a running AliEve
  *
- * Considering a given size (width, height) for the final picture, the size for all OpenGL 
+ * Given Collage size (width, height), the size for all OpenGL 
  * views are computed using the same aspect ratio (width/height) as the main 3D View
  */
 
@@ -32,12 +32,13 @@
 
 TString getEventInfo();
 
-/* composite picture final size
+/***********Save all OpenGL views into one picture
 	compositeImgFileName - save final image to this file	
-	width - of the final image
-	height -of the final image
+  showLiveBar - whether to show the LIVE bar, useful when not online (using offline)
+	width - of the collage image
+	height -of the collage image
 */
-void saveViews(const char* compositeImgFileName="views.png", Int_t width = 1440, Int_t height= 900)
+void saveViews(const char* compositeImgFileName="views.png", Bool_t showLiveBar=kTRUE, Int_t width = 1440, Int_t height= 900)
 {
 	Info("saveViews.C", "saving views to [%s]", compositeImgFileName);
 
@@ -86,10 +87,7 @@ void saveViews(const char* compositeImgFileName="views.png", Int_t width = 1440,
 			tempImg->CopyArea(compositeImg, 0,0, widthChildView, heightChildView, x,y);
 		    
     // draw a border around child views
-    compositeImg->DrawRectangle(x,y, widthChildView, heightChildView);
-    //compositeImg->FillRectangle("#CFEDF0", x+1,y+1, widthChildView-1, 40);
-    //compositeImg->DrawText(x+5,y+10, view->GetName(), 28, "#000000", "verdana.ttf", TImage::kOutlineBelow);
-    
+    compositeImg->DrawRectangle(x,y, widthChildView, heightChildView, "#C0C0C0");
     }
     
     /*
@@ -101,20 +99,33 @@ void saveViews(const char* compositeImgFileName="views.png", Int_t width = 1440,
     	
     index++;
    }
+   
+	// Create a glow (bloom) effect
+	tempImg = (TASImage*)compositeImg->Clone("tempImg");
+	tempImg->Blur(10.0,10.0);
+	compositeImg->Merge(tempImg, "lighten");
+	delete tempImg; tempImg = 0;
 
  
  // show LIVE bar
+ if(showLiveBar){
 	TTimeStamp ts;
 	TString tNow = ts.AsString("s"); // display date & time
  
-	compositeImg->Gradient( 90, "#EAEAEA #D2D2D2 #FFFFFF", 0, 30, 0, 234, 75);
-	compositeImg->Gradient( 90, "#D6D6D6 #242424 #000000", 0, 35, 40, 224, 30);
+	compositeImg->Gradient( 90, "#EAEAEA #D2D2D2 #FFFFFF", 0, 75, 0, 239, 95);
+	compositeImg->Gradient( 90, "#D6D6D6 #242424 #000000", 0, 155, 60, 152, 26);
 	compositeImg->BeginPaint();
-	compositeImg->DrawRectangle(30,0, 234, 75);
-	compositeImg->DrawText(35, 4, "ALICE", 40, "#000000", "FreeSans.otf");
-	compositeImg->DrawText(162, 6, "LIVE", 40, "#FF2D00", "FreeSansBold.otf");
-	compositeImg->DrawText(59, 48, tNow, 20, "#FFFFFF", "arial.ttf");
+	compositeImg->DrawRectangle(50,0, 264, 94);
+	compositeImg->DrawText(162, 6, "LIVE", 70, "#FF2D00", "FreeSansBold.otf");
+	compositeImg->DrawText(162, 65, tNow, 16, "#FFFFFF", "arial.ttf");
 	compositeImg->EndPaint();
+	//include ALICE Logo
+	tempImg = new TASImage( Form("%s/picts/2012-Jul-04-4_Color_Logo_small_CB.png", gSystem->Getenv("ALICE_ROOT")) );
+	tempImg->Scale(64,86);
+	//tempImg->CopyArea(compositeImg, 0,0, 236, 319, 59, 4);
+	compositeImg->Merge(tempImg, "alphablend", 82, 4);
+	delete tempImg; tempImg = 0;
+	}
 	
 	// show Information bar
 	TString stringInfo;
@@ -134,8 +145,11 @@ void saveViews(const char* compositeImgFileName="views.png", Int_t width = 1440,
 	return;
 }
 
+// This function retrieves a string containing some information regarding the current event
 TString getEventInfo()
 {
+	// For general public please show as less or technical information as possible
+
 	TString rawInfo, esdInfo;
 
   if (!AliEveEventManager::HasRawReader())
