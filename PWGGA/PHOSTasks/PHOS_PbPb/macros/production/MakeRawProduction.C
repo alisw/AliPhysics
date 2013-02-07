@@ -20,6 +20,8 @@
 #include <Rtypes.h>
 #include <TPRegexp.h>
 #include "TFitResult.h"
+#include <TMap.h>
+#include <TObjString.h>
 #include "TCanvas.h"
 
 namespace RawProduction {
@@ -69,24 +71,57 @@ namespace RawProduction {
   Double_t CPol2(Double_t * x, Double_t * par);
   
  
+  // Output Bin
+  class InputBin {
+  public:
+    InputBin(const TString& trigger = "kCentral" );
+    InputBin(const char* trigger);
+    const TString& Key() const {return fKey;}
+    const TString& Trigger() const {return fTrigger;}
+  private:
+    TString fTrigger;
+    TString fKey;
+  };
   // Object describing the input for the macros
   class Input {
   public:
-    Input(TString fileName, const TString& trigger="kCentral", TString listPath = "");
+    Input(const TString& fileName, const InputBin& inputBin, TString listPath = "");
     TH1 * GetHistogram(const char* name="");
-    TString& Trigger() {return fTrigger;}
+    const InputBin& Bin() const {return fBin;}
   private:
     static TFile* fFile;
     TList* fList;
-    TString fTrigger;
+    InputBin fBin;
   };
   
+  // Output Bin
+  class OutputBin : public InputBin {
+  public:
+    OutputBin(Int_t centrality, const TString& pid, const TString& trigger);
+    Int_t Centrality() const {return fCentrality;}
+    const TString& PID() const {return fPID;}
+  private:
+    Int_t fCentrality;
+    TString fPID;
+  };
+  // Object describing the output of the macros
+  class Output {
+  public:
+    Output(const TString& fileName = "Pi0_FitResult.root", const char* options = "READ");
+    TH1* GetHistogram(const TString& name, const InputBin& outputBin);
+    void AddHistogram(const InputBin& outputBin, TH1* histogram );
+    void Write();
+  private:
+    TList* GetList(const InputBin& outputBin);
+    TFile* fFile;
+    TMap* fBinListMap;
+  };
 
   void MakePi0Fit(Input& input, Int_t centrality=0, TString pid="CPV", const TString saveToFileName="Pi0_FitResult.root")
   {
     MakePtBins();
     char key[256];
-    sprintf(key, "c%03i_%s_%s", centrality, pid.Data(), input.Trigger().Data());
+    sprintf(key, "c%03i_%s_%s", centrality, pid.Data(), input.Bin().Trigger().Data());
     Printf("\nMakePi0Fit(%s)", key);
   
     
@@ -236,9 +271,9 @@ namespace RawProduction {
       funcRatioFit1->SetParLimits(2,lowerWidth,upperWidth) ;
 
     
-      TFitResultPtr ratioFitResultPtr1 = hPi0Ratio->Fit(funcRatioFit1,"IMSQ" ,"",rangeMin,rangeMax) ;
+      TFitResultPtr ratioFitResultPtr1 = hPi0Ratio->Fit(funcRatioFit1,"MSQ" ,"",rangeMin,rangeMax) ;
       if( int(ratioFitResultPtr1) % 4000 ) // "More" error is acceptable
-	ratioFitResultPtr1 = hPi0Ratio->Fit(funcRatioFit1,"IMSQ" ,"",rangeMin,rangeMax) ;
+	ratioFitResultPtr1 = hPi0Ratio->Fit(funcRatioFit1,"MSQ" ,"",rangeMin,rangeMax) ;
 
       Int_t ratioFitError1 = ratioFitResultPtr1;
       ratioFitError1 = ratioFitError1 % 4000; // "More" error is acceptable
@@ -275,9 +310,9 @@ namespace RawProduction {
 	funcRatioFit2->SetParLimits(1,lowerMass,upperMass) ;
 	funcRatioFit2->SetParLimits(2,lowerWidth,upperWidth) ;
       }
-      TFitResultPtr ratioFitResultPtr2 = hPi0Ratio->Fit(funcRatioFit2,"+IMSQ" ,"",rangeMin,rangeMax) ;
+      TFitResultPtr ratioFitResultPtr2 = hPi0Ratio->Fit(funcRatioFit2,"+MSQ" ,"",rangeMin,rangeMax) ;
       if( int(ratioFitResultPtr2) != 4000 ) // if error, "More" error is acceptable
-	ratioFitResultPtr2  = hPi0Ratio->Fit(funcRatioFit2,"IMSQ" ,"",rangeMin,rangeMax) ;
+	ratioFitResultPtr2  = hPi0Ratio->Fit(funcRatioFit2,"MSQ" ,"",rangeMin,rangeMax) ;
 
       Int_t ratioFitError2 = ratioFitResultPtr2;
       ratioFitError2 = ratioFitError2 % 4000; // "More" error is acceptable
@@ -338,9 +373,9 @@ namespace RawProduction {
 	fgs->SetParLimits(2,lowerWidth,upperWidth) ;
 
 	// Fit
-	TFitResultPtr bs1FitResultPtr = hPi0BSPol1->Fit(fgs,"IMSQ","",rangeMin,rangeMax) ;
+	TFitResultPtr bs1FitResultPtr = hPi0BSPol1->Fit(fgs,"MSQ","",rangeMin,rangeMax) ;
 	if( int(bs1FitResultPtr) != 4000 ) // if error, "More" error is acceptable
-	  bs1FitResultPtr = hPi0BSPol1->Fit(fgs,"IMSQ","",rangeMin,rangeMax) ;
+	  bs1FitResultPtr = hPi0BSPol1->Fit(fgs,"MSQ","",rangeMin,rangeMax) ;
       
 	Int_t bs1FitError = bs1FitResultPtr;
 	bs1FitError = bs1FitError % 4000; // "More" error is acceptable
@@ -407,9 +442,9 @@ namespace RawProduction {
 	fgs->SetParLimits(2,lowerWidth,upperWidth) ;
 
       	// Fit
-	TFitResultPtr bs2FitResultPtr = hPi0BSPol2->Fit(fgs,"IMSQ","",rangeMin,rangeMax) ;
+	TFitResultPtr bs2FitResultPtr = hPi0BSPol2->Fit(fgs,"MSQ","",rangeMin,rangeMax) ;
 	if( int(bs2FitResultPtr) != 4000 ) // if error, "More" error is acceptable
-	  bs2FitResultPtr = hPi0BSPol2->Fit(fgs,"IMSQ","",rangeMin,rangeMax) ;
+	  bs2FitResultPtr = hPi0BSPol2->Fit(fgs,"MSQ","",rangeMin,rangeMax) ;
       
 	Int_t bs2FitError = bs2FitResultPtr;
 	bs2FitError = bs2FitError % 4000; // "More" error is acceptable
@@ -475,13 +510,13 @@ namespace RawProduction {
 
     //Normalize by the number of events
     Int_t cMin=0, cMax=0;
-    if( input.Trigger().EqualTo("kCentral") )
+    if( input.Bin().Trigger().EqualTo("kCentral") )
       switch(centrality) { 
       case 0: cMin = 1; cMax = 5; break;
       case 1: cMin = 6; cMax = 10; break;
       default: Printf("ERROR: cent bin not defined for trigger");
       }
-    else if( input.Trigger().EqualTo("kSemiCentral") )
+    else if( input.Bin().Trigger().EqualTo("kSemiCentral") )
       switch(centrality) { 
       case 0: cMin = 11; cMax = 20; break;
       case 1: cMin = 21; cMax = 30; break;
@@ -489,7 +524,7 @@ namespace RawProduction {
       case 3: cMin = 41; cMax = 50; break;
       default: Printf("ERROR: cent bin not defined for trigger");
       }
-    else if ( input.Trigger().EqualTo("kMB") || input.Trigger().EqualTo("kPHOSPb") )
+    else if ( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") )
       switch(centrality) {
       case 0: cMin = 1; cMax = 5; break;
       case 1: cMin = 6; cMax = 10; break;
@@ -502,7 +537,7 @@ namespace RawProduction {
       default: Printf("ERROR: cent bin not defined for trigger");
       }
     else
-      Printf("ERROR: cent bins not defined for trigger, %s", input.Trigger().Data());
+      Printf("ERROR: cent bins not defined for trigger, %s", input.Bin().Trigger().Data());
 
     Double_t nevents = hCentralityX->Integral(cMin,cMax);
     if ( nevents > 0.9 ) {
@@ -618,8 +653,8 @@ namespace RawProduction {
   
   // Input Definitions
   TFile* Input::fFile = 0;
-  Input::Input(TString fileName, const TString& trigger, TString listPath) 
-  :fList(0x0), fTrigger(trigger)
+  Input::Input(const TString& fileName, const RawProduction::InputBin& inputBin, TString listPath) 
+  : fList(0x0), fBin(inputBin.Trigger())
   {
     // File
     if(fFile && !fileName.EqualTo(fFile->GetName())){
@@ -633,7 +668,7 @@ namespace RawProduction {
     
     if( listPath.EqualTo("") ) {
       char cstr[256] = "";
-      sprintf(cstr, "PHOSPi0Flow_%s/PHOSPi0Flow_%sCoutput1", fTrigger.Data(), fTrigger.Data());
+      sprintf(cstr, "PHOSPi0Flow_%s/PHOSPi0Flow_%sCoutput1", fBin.Trigger().Data(), fBin.Trigger().Data());
       listPath = cstr;
     }
     
@@ -642,6 +677,7 @@ namespace RawProduction {
     if( !fList ) 
       Printf("ERROR: list not found");
   }
+  
   TH1* Input::GetHistogram(const char* name){
     TObject* obj = fList->FindObject(name);
     TH1* hist = dynamic_cast<TH1*> (obj);
@@ -649,6 +685,87 @@ namespace RawProduction {
       Printf("MakePi0FitInput::GetHistogram: Error, could not find object of name: %s or cast to hist", name);
     return hist;
   }
+
+  //OutputBin Definitions
+  InputBin::InputBin(const TString& trigger)
+  : fTrigger(trigger), fKey(trigger)
+  { }
+
+  InputBin::InputBin(const char* trigger)
+  : fTrigger(trigger), fKey(trigger)
+  { }
+
+  OutputBin::OutputBin(Int_t centrality, const TString& pid, const TString& trigger)
+  : InputBin(trigger), fCentrality(centrality), fPID(pid)
+  {
+    fKey.Format("c%03i_%s_%s", centrality, pid.Data(), trigger.Data());
+  }
+
+  Output::Output(const TString& fileName, const char* options)
+  : fFile(0x0), fBinListMap(0x0)
+  {
+    fFile = TFile::Open(fileName.Data(), options);
+    fBinListMap = new TMap;
+  }
+  
+  TList* Output::GetList(const InputBin& outputBin)
+  {
+    TList* list = 0x0;
+    
+    // get list from map or file
+    TPair* pair = (TPair*) fBinListMap->FindObject(outputBin.Key().Data());
+    if( pair )
+      list = (TList*) pair->Value();
+    else {
+      fFile->GetObject(outputBin.Key(), list);
+      if( list )
+        fBinListMap->Add(new TObjString(outputBin.Key()), list);
+      else
+        return 0x0;
+    }
+    return list;
+  }
+
+  TH1* Output::GetHistogram(const TString& name, const InputBin& outputBin)
+  {
+    TList* list = GetList(outputBin);
+    if( ! list ) {
+      Printf("Output::GetHistogram: Error, output list does not exist!");
+      return 0x0;
+    }
+        
+    TH1* hist = dynamic_cast<TH1*> ( list->FindObject(name.Data()) );
+    if( hist )
+      return hist;
+    else {
+      Printf("Output::GetHistogram: Error, hist does not exist!");
+      return 0x0;
+    }
+  }
+  
+  void Output::AddHistogram(const InputBin& outputBin, TH1* histogram)
+  {
+    TList* list = GetList(outputBin);
+    if( ! list ) {
+      fBinListMap->Add(new TObjString(outputBin.Key()), new THashList);
+    }
+    list->Add(histogram);
+  }
+
+  void Output::Write()
+  {
+    fFile->cd();
+    
+    TIterator* iter = fBinListMap->MakeIterator();
+    while(iter->Next()) {
+      TPair* pair = (TPair*) (iter);
+      TList* list = (TList*) pair->Value();
+      TObjString* ostr = (TObjString*) pair->Key();
+      
+      list->Write(ostr->GetString().Data(), TObject::kSingleKey);
+    }
+  }
+
 
   
   
@@ -671,7 +788,7 @@ namespace RawProduction {
     }
     
     TH1* hist = 0x0;
-    if( input.Trigger().EqualTo("kMB") || input.Trigger().EqualTo("kPHOSPb") ) {
+    if( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") ) {
       switch(centrality) {
       case -10: hist = MergeHistogram_cent(input, name, centrality, 0, 7); break;
       case -1:  hist = MergeHistogram_cent(input, name, centrality, 0, 2); break;
@@ -681,11 +798,11 @@ namespace RawProduction {
       case -5:  hist = MergeHistogram_cent(input, name, centrality, 5, 6); break;
       case -6:  hist = MergeHistogram_cent(input, name, centrality, 6, 7); break;
       }
-    } else if ( input.Trigger().EqualTo("kCentral") ) {
+    } else if ( input.Bin().Trigger().EqualTo("kCentral") ) {
       switch( centrality ) {
       case -1: return MergeHistogram_cent(input, name, centrality, 0, 2); break;
       }
-    } else if ( input.Trigger().EqualTo("kSemiCentral") ) {
+    } else if ( input.Bin().Trigger().EqualTo("kSemiCentral") ) {
       switch( centrality ) {
       case -2: return MergeHistogram_cent(input, name, centrality, 0, 1); break;
       case -3: return MergeHistogram_cent(input, name, centrality, 1, 2); break;
@@ -695,7 +812,7 @@ namespace RawProduction {
     }
     // in case not defined above
     if( ! hist ) {
-      Printf("ERROR:GetHistogram_cent: %i not possible for %s trigger", centrality, input.Trigger().Data());
+      Printf("ERROR:GetHistogram_cent: %i not possible for %s trigger", centrality, input.Bin().Trigger().Data());
       return 0x0;
     }
     
@@ -813,5 +930,5 @@ void MakeRawProduction()
   //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou CPV CPVcore CPV2 Both Bothcore", " ");
   TStringToken pids("Bothcore", " ");
   while(pids.NextToken())
-    RawProduction::MakePi0Fit(input, -10, pids.Data());
+    RawProduction::MakePi0Fit(input, -1, pids.Data());
 }
