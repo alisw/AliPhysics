@@ -93,13 +93,13 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
     fInit = kTRUE;
   }
 
-  new (fTracksMap) TH1I(fTracksMapName, fTracksMapName, 1000, 0, 1);
-
   // clear container (normally a null operation as the event should clean it already)
   fTracksOut->Delete();
- 
-  // loop over tracks
+
   const Int_t Ntracks = mcevent->GetNumberOfTracks();
+  new (fTracksMap) TH1I(fTracksMapName, fTracksMapName, Ntracks-2, 0, 1);  // Ntracks - 2, we use also over- and uner-flow bins
+
+  // loop over tracks
   for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
 
     fTracksMap->SetBinContent(iTracks, -1);

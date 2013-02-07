@@ -15,7 +15,8 @@ AliJetResponseMaker* AddTaskJetRespPtHard(
   Double_t    jetBiasTrack       = 5,
   Double_t    jetBiasClus        = 5,
   UInt_t      matching           = AliJetResponseMaker::kGeometrical,
-  Double_t    maxDistance        = 0.25,
+  Double_t    maxDistance1       = 0.25,
+  Double_t    maxDistance2       = 0.25,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
   Int_t       maxPtHardBin       = -999,
   Int_t       minPtHardBin       = -999,
@@ -31,7 +32,7 @@ AliJetResponseMaker* AddTaskJetRespPtHard(
   for (Int_t i = minPtBin; i <= maxPtBin; i++) {
     AddTaskJetResponseMaker(ntracks1, nclusters1, njets1, nrho1, ntracks2, nclusters2, njets2, nrho2,
 			    jetradius, jetptcut, jetareacut, jetBiasTrack, jetBiasClus, 
-			    matching, maxDistance, type, i, taskname, biggerMatrix, jetTask + i - minPtBin);
+			    matching, maxDistance1, maxDistance2, type, i, taskname, biggerMatrix, jetTask + i - minPtBin);
   }
   
   return jetTask;

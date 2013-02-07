@@ -62,7 +62,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
 {
   // Default constructor.
   SetSuffix("AODEmbedding");
-  fMarkMC = kFALSE;
+  SetMarkMC(0);
   fAODfilterBits[0] = -1;
   fAODfilterBits[1] = -1;
 }
@@ -97,7 +97,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
 {
   // Standard constructor.
   SetSuffix("AODEmbedding");
-  fMarkMC = kFALSE;
+  SetMarkMC(0);
   fAODfilterBits[0] = -1;
   fAODfilterBits[1] = -1;
 }
@@ -379,7 +379,7 @@ void AliJetEmbeddingFromAODTask::Run()
 
     if (fAODCaloCells) {
       for (Short_t i = 0; i < fAODCaloCells->GetNumberOfCells(); i++) {
-	Short_t mclabel = -1;
+	Short_t mclabel = 0;
 	Double_t efrac = 0.;
 	Double_t time = -1;
 	Short_t cellNum = -1;
