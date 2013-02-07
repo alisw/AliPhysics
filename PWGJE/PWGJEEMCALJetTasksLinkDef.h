@@ -29,6 +29,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;
+#pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskFullppJet;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA;
