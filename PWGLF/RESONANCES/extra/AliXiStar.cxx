@@ -88,22 +88,7 @@ AliAnalysisTaskSE(),
   fMCcase(0),
   fAODcase(0),
   fEventCounter(0),
-  fSigmaCutProton(0),
-  fSigmaCutPionFirst(0),
-  fSigmaCutPionSecond(0),
-  fSigmaCutPionThird(0),
-  fDCAVtxProton(0),
-  fDCAVtxPionFirst(0),
-  fDCAVtxPionSecond(0),
-  fDCAVtxLambda(0),
-  fDCAProtonPion(0),
-  fDCALambdaPion(0),
-  fLambdaDecayLengthXY(0),
-  fXiDecayLengthXY(0),
   fMaxDecayLength(0),
-  fLamCosTheta(0),
-  fXiCosTheta(0),
-  fXiStarCosTheta(0),
   fMassWindow(0),
   fCovMatrix(),
   fTrueMassPr(0), 
@@ -113,7 +98,10 @@ AliAnalysisTaskSE(),
   fTrueMassXi(0),
   fESDTrack4(0x0), 
   fXiTrack(0x0),
-  fCutList(0)
+  fCutList(0),
+  fDecayParameters(),
+  fCutValues()
+  
 {
 }
 //________________________________________________________________________
@@ -134,22 +122,7 @@ AliXiStar::AliXiStar(const char *name, Bool_t AODdecision, Bool_t MCdecision, In
     fMCcase(MCdecision),
     fAODcase(AODdecision),
     fEventCounter(0),
-    fSigmaCutProton(0),
-    fSigmaCutPionFirst(0),
-    fSigmaCutPionSecond(0),
-    fSigmaCutPionThird(0),
-    fDCAVtxProton(0),
-    fDCAVtxPionFirst(0),
-    fDCAVtxPionSecond(0),
-    fDCAVtxLambda(0),
-    fDCAProtonPion(0),
-    fDCALambdaPion(0),
-    fLambdaDecayLengthXY(0),
-    fXiDecayLengthXY(0),
     fMaxDecayLength(0),
-    fLamCosTheta(0),
-    fXiCosTheta(0),
-    fXiStarCosTheta(0),
     fMassWindow(0),
     fTrueMassPr(0), 
     fTrueMassPi(0), 
@@ -159,12 +132,20 @@ AliXiStar::AliXiStar(const char *name, Bool_t AODdecision, Bool_t MCdecision, In
     fESDTrack4(0x0), 
     fXiTrack(0x0),
     fCutList(CutListOption)
+    
 {
   // Main Constructor
   for (Int_t i=0; i<21; i++){
     fCovMatrix[i]=-99999.;
     if (i<12) fMultLimits[i] = 0;
   }
+  for (Int_t i=0; i<kNCuts; i++){
+    fDecayParameters[i]=0;
+    for (Int_t j=0; j<kNCutVariations; j++){
+      fCutValues[j][i]=0;
+    }
+  }
+
   // Define output slots here 
   // Output slot #1
   DefineOutput(1, TList::Class());
@@ -189,22 +170,7 @@ AliXiStar::AliXiStar(const AliXiStar &obj)
     fMCcase(obj.fMCcase),
     fAODcase(obj.fAODcase),
     fEventCounter(obj.fEventCounter),
-    fSigmaCutProton(obj.fSigmaCutProton),
-    fSigmaCutPionFirst(obj.fSigmaCutPionFirst),
-    fSigmaCutPionSecond(obj.fSigmaCutPionSecond),
-    fSigmaCutPionThird(obj.fSigmaCutPionThird),
-    fDCAVtxProton(obj.fDCAVtxProton),
-    fDCAVtxPionFirst(obj.fDCAVtxPionFirst),
-    fDCAVtxPionSecond(obj.fDCAVtxPionSecond),
-    fDCAVtxLambda(obj.fDCAVtxLambda),
-    fDCAProtonPion(obj.fDCAProtonPion),
-    fDCALambdaPion(obj.fDCALambdaPion),
-    fLambdaDecayLengthXY(obj.fLambdaDecayLengthXY),
-    fXiDecayLengthXY(obj.fXiDecayLengthXY),
     fMaxDecayLength(obj.fMaxDecayLength),
-    fLamCosTheta(obj.fLamCosTheta),
-    fXiCosTheta(obj.fXiCosTheta),
-    fXiStarCosTheta(obj.fXiStarCosTheta),
     fMassWindow(obj.fMassWindow),
     fTrueMassPr(obj.fTrueMassPr), 
     fTrueMassPi(obj.fTrueMassPi), 
@@ -220,7 +186,14 @@ AliXiStar::AliXiStar(const AliXiStar &obj)
   for (Int_t i=0; i<21; i++){
     fCovMatrix[i]=obj.fCovMatrix[i];
     if (i<12) fMultLimits[i]=obj.fMultLimits[i];
-  }  
+  }
+  for (Int_t i=0; i<kNCuts; i++){
+    fDecayParameters[i]=obj.fDecayParameters[i];
+    for (Int_t j=0; j<kNCutVariations; j++){
+      fCutValues[j][i]=obj.fCutValues[j][i];
+    }
+  }
+  
 }
 //________________________________________________________________________
 AliXiStar &AliXiStar::operator=(const AliXiStar &obj) 
@@ -247,22 +220,7 @@ AliXiStar &AliXiStar::operator=(const AliXiStar &obj)
   fMCcase = obj.fMCcase;
   fAODcase = obj.fAODcase;
   fEventCounter = obj.fEventCounter;
-  fSigmaCutProton = obj.fSigmaCutProton;
-  fSigmaCutPionFirst = obj.fSigmaCutPionFirst;
-  fSigmaCutPionSecond = obj.fSigmaCutPionSecond;
-  fSigmaCutPionThird = obj.fSigmaCutPionThird;
-  fDCAVtxProton = obj.fDCAVtxProton;
-  fDCAVtxPionFirst = obj.fDCAVtxPionFirst;
-  fDCAVtxPionSecond = obj.fDCAVtxPionSecond;
-  fDCAVtxLambda = obj.fDCAVtxLambda;
-  fDCAProtonPion = obj.fDCAProtonPion;
-  fDCALambdaPion = obj.fDCALambdaPion;
-  fLambdaDecayLengthXY = obj.fLambdaDecayLengthXY;
-  fXiDecayLengthXY = obj.fXiDecayLengthXY;
   fMaxDecayLength = obj.fMaxDecayLength;
-  fLamCosTheta = obj.fLamCosTheta;
-  fXiCosTheta = obj.fXiCosTheta;
-  fXiStarCosTheta = obj.fXiStarCosTheta;
   fMassWindow = obj.fMassWindow;
   for (Int_t i=0; i<21; i++){
     fCovMatrix[i]=obj.fCovMatrix[i];
@@ -275,7 +233,15 @@ AliXiStar &AliXiStar::operator=(const AliXiStar &obj)
   fESDTrack4 = obj.fESDTrack4; 
   fXiTrack = obj.fXiTrack; 
   fCutList = obj.fCutList;
-    
+  
+  for (Int_t i=0; i<kNCuts; i++){
+    fDecayParameters[i]=obj.fDecayParameters[i];
+    for (Int_t j=0; j<kNCutVariations; j++){
+      fCutValues[j][i]=obj.fCutValues[j][i];
+    }
+  }
+  
+
   return (*this);
 }
 //________________________________________________________________________
@@ -292,6 +258,26 @@ AliXiStar::~AliXiStar()
   if(fTempStruct) delete fTempStruct;
   if(fESDTrack4) delete fESDTrack4; 
   if(fXiTrack) delete fXiTrack; 
+
+  for (Int_t cv=0; cv<kNCutVariations; cv++){
+    if(CutVar[cv].fXi) delete CutVar[cv].fXi;
+    if(CutVar[cv].fXibar) delete CutVar[cv].fXibar;
+    if(CutVar[cv].fXiMinusPiPlus) delete CutVar[cv].fXiMinusPiPlus;
+    if(CutVar[cv].fXiMinusPiMinus) delete CutVar[cv].fXiMinusPiMinus;
+    if(CutVar[cv].fXiPlusPiPlus) delete CutVar[cv].fXiPlusPiPlus;
+    if(CutVar[cv].fXiPlusPiMinus) delete CutVar[cv].fXiPlusPiMinus;
+    //    
+    if(CutVar[cv].fXiMinusPiPlusbkg) delete CutVar[cv].fXiMinusPiPlusbkg;
+    if(CutVar[cv].fXiMinusPiMinusbkg) delete CutVar[cv].fXiMinusPiMinusbkg;
+    if(CutVar[cv].fXiPlusPiPlusbkg) delete CutVar[cv].fXiPlusPiPlusbkg;
+    if(CutVar[cv].fXiPlusPiMinusbkg) delete CutVar[cv].fXiPlusPiMinusbkg;
+    //
+    if(CutVar[cv].fMCrecXi) delete CutVar[cv].fMCrecXi;
+    if(CutVar[cv].fMCrecXibar) delete CutVar[cv].fMCrecXibar;
+    if(CutVar[cv].fMCrecXiMinusPiPlus) delete CutVar[cv].fMCrecXiMinusPiPlus;
+    if(CutVar[cv].fMCrecXiPlusPiMinus) delete CutVar[cv].fMCrecXiPlusPiMinus;
+  }
+  
 }
 //________________________________________________________________________
 void AliXiStar::XiStarInit()
@@ -309,7 +295,7 @@ void AliXiStar::XiStarInit()
   fTrackCut = new AliESDtrackCuts();
   fTrackCut->SetPtRange(.15,1000);
   fTrackCut->SetAcceptKinkDaughters(kFALSE);
-  fTrackCut->SetMinNClustersTPC(70);
+  //fTrackCut->SetMinNClustersTPC(70);
   fTrackCut->SetRequireTPCRefit(kTRUE);
   ////////////////////////////////////////////////
   
@@ -339,96 +325,54 @@ void AliXiStar::XiStarInit()
 
   fESDTrack4 = new AliESDtrack();
   fXiTrack = new AliESDtrack();
-   
+  
+  
+  fMaxDecayLength = 100.;
+  fMassWindow = 0.006;
 
-  ///////////////////////////////////////////////////////
-  // Reconstruction Cuts
-  //
- 
+  /////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////
+  // DecayParameters Key (number represents array index)
+  // NclustersTPC: 0=proton, 1=pion first, 2=pion second, 3=pion third
+  // DCAVtx: 4=proton, 5=pion first, 6=pion second, 7=lambda, 8=pion third
+  // 9 = DCA proton-pion
+  // 10 = DCA Lambda-pion
+  // 11 = Rxy Lambda
+  // 12 = Rxy Xi
+  // 13 = Cos PA Lambda
+  // 14 = Cos PA Xi
   
-  // Xi cuts are from the 7 TeV Multi-strangeness paper values 
-  if(fCutList == 0){// mean value cuts
-    fSigmaCutProton = 1000;// min for protons with P > .7 GeV/c
-    fSigmaCutPionFirst = 1000;// min
-    fSigmaCutPionSecond = 1000;// min
-    fSigmaCutPionThird =1000;// min
-    fDCAVtxProton = 0.04;// min, 
-    fDCAVtxPionFirst = 0.04;// min
-    fDCAVtxPionSecond = 0.05;// min
-    fDCAVtxLambda = 0.07;// min
-    fDCAProtonPion = 1.6;// max
-    fDCALambdaPion = 1.6;// max
-    fLambdaDecayLengthXY = 1.4;// min
-    fXiDecayLengthXY = 0.8;// min
-    fMaxDecayLength = 100.;// max for Lambdas and Cascades
-    fLamCosTheta = 0.97;// min; used for Xi reconstruction
-    fXiCosTheta = 0.97;// min; used for Xi(1530) reconstruction
-    fXiStarCosTheta = -1;// min;
-    fMassWindow = .006;// window half-width
+  // Set Standard Reconstruction cut values
+  fCutValues[0][0] = 70; fCutValues[0][1] = 70; fCutValues[0][2] = 70; fCutValues[0][3] = 70;
+  fCutValues[0][4] = 0.04; fCutValues[0][5] = 0.04; fCutValues[0][6] = 0.05; fCutValues[0][7] = 0.07; fCutValues[0][8] = 2.0;
+  fCutValues[0][9] = 1.6;
+  fCutValues[0][10] = 1.6;
+  fCutValues[0][11] = 1.4;
+  fCutValues[0][12] = 0.8;
+  fCutValues[0][13] = 0.97;
+  fCutValues[0][14] = 0.97;
+  for(int cv=1; cv<kNCutVariations; cv++){
+    for(int ct=0; ct<kNCuts; ct++){
+      fCutValues[cv][ct] = fCutValues[0][ct];
+    }
   }
-  
-  // Systematics Part 1: PV dca variation (stricter)
-  if(fCutList == 1){
-    fSigmaCutProton = 1000;// min for protons with P > .7 GeV/c
-    fSigmaCutPionFirst = 1000;// min
-    fSigmaCutPionSecond = 1000;// min
-    fSigmaCutPionThird =1000;// min
-    fDCAVtxProton = 0.2;// min, 
-    fDCAVtxPionFirst = 0.5;// min
-    fDCAVtxPionSecond = 0.5;// min
-    fDCAVtxLambda = 0.2;// min
-    fDCAProtonPion = 1.6;// max
-    fDCALambdaPion = 1.6;// max
-    fLambdaDecayLengthXY = 1.4;// min
-    fXiDecayLengthXY = 0.8;// min
-    fMaxDecayLength = 100.;// max for Lambdas and Cascades
-    fLamCosTheta = 0.97;// min; used for Xi reconstruction
-    fXiCosTheta = 0.97;// min; used for Xi(1530) reconstruction
-    fXiStarCosTheta = -1;// min;
-    fMassWindow = .006;// window half-width
-  }
-  
-  // Systematics Part 2: Topological cut variation (looser)
-  if(fCutList == 2){
-    fSigmaCutProton = 1000;// min for protons with P > .7 GeV/c
-    fSigmaCutPionFirst = 1000;// min
-    fSigmaCutPionSecond = 1000;// min
-    fSigmaCutPionThird =1000;// min
-    fDCAVtxProton = 0.04;// min, 
-    fDCAVtxPionFirst = 0.04;// min
-    fDCAVtxPionSecond = 0.05;// min
-    fDCAVtxLambda = 0.07;// min
-    fDCAProtonPion = 2.4;// max
-    fDCALambdaPion = 2.4;// max
-    fLambdaDecayLengthXY = 0.7;// min
-    fXiDecayLengthXY = 0.4;// min
-    fMaxDecayLength = 100.;// max for Lambdas and Cascades
-    fLamCosTheta = 0.9;// min; used for Xi reconstruction
-    fXiCosTheta = 0.9;// min; used for Xi(1530) reconstruction
-    fXiStarCosTheta = -1;// min;
-    fMassWindow = .006;// window half-width
-  }
+  // Set Systematic Variations
+  fCutValues[1][0] = 80; fCutValues[1][1] = 80; fCutValues[1][2] = 80; fCutValues[1][3] = 80;// 80
+  fCutValues[2][4] = 0.104;// 0.104
+  fCutValues[3][5] = 0.104;// 0.104
+  fCutValues[4][6] = 0.08;// 0.08
+  fCutValues[5][7] = 0.1;// 0.1
+  fCutValues[6][8] = 1.0;// 1.0
+  fCutValues[7][9] = 0.94;// 0.94
+  fCutValues[8][10] = 1.41;// 1.41
+  fCutValues[9][11] = 4.39;// 4.39
+  fCutValues[10][12] = 0.95;// 0.95
+  fCutValues[11][13] = 0.99;// 0.99
+  fCutValues[12][14] = 0.985;// 0.085
 
-  // Systematics Part 3: Topological cut variation (stricter)
-  if(fCutList == 3){
-    fSigmaCutProton = 1000;// min for protons with P > .7 GeV/c
-    fSigmaCutPionFirst = 1000;// min
-    fSigmaCutPionSecond = 1000;// min
-    fSigmaCutPionThird =1000;// min
-    fDCAVtxProton = 0.04;// min, 
-    fDCAVtxPionFirst = 0.04;// min
-    fDCAVtxPionSecond = 0.05;// min
-    fDCAVtxLambda = 0.07;// min
-    fDCAProtonPion = 1.0;// max
-    fDCALambdaPion = 1.0;// max
-    fLambdaDecayLengthXY = 1.8;// min
-    fXiDecayLengthXY = 1.0;// min
-    fMaxDecayLength = 100.;// max for Lambdas and Cascades
-    fLamCosTheta = 0.99;// min; used for Xi reconstruction
-    fXiCosTheta = 0.99;// min; used for Xi(1530) reconstruction
-    fXiStarCosTheta = -1;// min;
-    fMassWindow = .006;// window half-width
-  }
+
+
+
 
   // PDG mass values
   fTrueMassPr=.93827, fTrueMassPi=.13957, fTrueMassK=.493677, fTrueMassLam=1.11568, fTrueMassXi=1.32171;
@@ -500,36 +444,98 @@ void AliXiStar::UserCreateOutputObjects()
   TH3F *fPhiPtDist = new TH3F("fPhiPtDist","PhiPtDist",2,-1.1,1.1, 120,0,2*PI, 300,0,3.);
   fOutputList->Add(fPhiPtDist);
   
-  TH3F *fXi = new TH3F("fXi","Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.2,1.4);
-  fOutputList->Add(fXi);
-  TH3F *fXibar = new TH3F("fXibar","Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.2,1.4);
-  fOutputList->Add(fXibar);
+  
+  for(Int_t cv=0; cv<kNCutVariations; cv++){
+    
+    if(cv==0){
+      TString *nameXi=new TString("fXi_");
+      TString *nameXibar=new TString("fXibar_");
+      *nameXi += cv;
+      *nameXibar += cv;
+      CutVar[cv].fXi = new TH3F(nameXi->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.2,1.4);
+      fOutputList->Add(CutVar[cv].fXi);
+      CutVar[cv].fXibar = new TH3F(nameXibar->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.2,1.4);
+      fOutputList->Add(CutVar[cv].fXibar);
+      //
+      TString *nameMCrecXi = new TString("fMCrecXi_");
+      TString *nameMCrecXibar = new TString("fMCrecXi_");
+      *nameMCrecXi += cv;
+      *nameMCrecXibar += cv;
+      CutVar[cv].fMCrecXi = new TH3F(nameMCrecXi->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.2,1.4);
+      CutVar[cv].fMCrecXibar = new TH3F(nameMCrecXibar->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.2,1.4);
+      fOutputList->Add(CutVar[cv].fMCrecXi);
+      fOutputList->Add(CutVar[cv].fMCrecXibar);
+    }    
+    //
+    TString *nameXiMinusPiPlus = new TString("fXiMinusPiPlus_");
+    TString *nameXiMinusPiMinus = new TString("fXiMinusPiMinus_");
+    TString *nameXiPlusPiPlus = new TString("fXiPlusPiPlus_");
+    TString *nameXiPlusPiMinus = new TString("fXiPlusPiMinus_");
+    TString *nameXiMinusPiPlusbkg = new TString("fXiMinusPiPlusbkg_");
+    TString *nameXiMinusPiMinusbkg = new TString("fXiMinusPiMinusbkg_");
+    TString *nameXiPlusPiPlusbkg = new TString("fXiPlusPiPlusbkg_");
+    TString *nameXiPlusPiMinusbkg = new TString("fXiPlusPiMinusbkg_");
+    *nameXiMinusPiPlus += cv;
+    *nameXiMinusPiMinus += cv;
+    *nameXiPlusPiPlus += cv;
+    *nameXiPlusPiMinus += cv;
+    *nameXiMinusPiPlusbkg += cv;
+    *nameXiMinusPiMinusbkg += cv;
+    *nameXiPlusPiPlusbkg += cv;
+    *nameXiPlusPiMinusbkg += cv;
+    CutVar[cv].fXiMinusPiPlus  = new TH3F(nameXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+    CutVar[cv].fXiMinusPiMinus = new TH3F(nameXiMinusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+    CutVar[cv].fXiPlusPiPlus   = new TH3F(nameXiPlusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+    CutVar[cv].fXiPlusPiMinus  = new TH3F(nameXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+    CutVar[cv].fXiMinusPiPlusbkg  = new TH3F(nameXiMinusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+    CutVar[cv].fXiMinusPiMinusbkg = new TH3F(nameXiMinusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+    CutVar[cv].fXiPlusPiPlusbkg   = new TH3F(nameXiPlusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+    CutVar[cv].fXiPlusPiMinusbkg  = new TH3F(nameXiPlusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+    
+    fOutputList->Add(CutVar[cv].fXiMinusPiPlus);
+    fOutputList->Add(CutVar[cv].fXiMinusPiMinus);
+    fOutputList->Add(CutVar[cv].fXiPlusPiPlus);
+    fOutputList->Add(CutVar[cv].fXiPlusPiMinus);    
+    fOutputList->Add(CutVar[cv].fXiMinusPiPlusbkg);
+    fOutputList->Add(CutVar[cv].fXiMinusPiMinusbkg);
+    fOutputList->Add(CutVar[cv].fXiPlusPiPlusbkg);
+    fOutputList->Add(CutVar[cv].fXiPlusPiMinusbkg);
+    //
 
- 
-  TH3F *fXiMinusPiPlus  = new TH3F("fXiMinusPiPlus","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-  TH3F *fXiMinusPiMinus = new TH3F("fXiMinusPiMinus","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-  TH3F *fXiPlusPiPlus   = new TH3F("fXiPlusPiPlus","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-  TH3F *fXiPlusPiMinus  = new TH3F("fXiPlusPiMinus","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-
-  TH3F *fXiMinusPiPlusbkg  = new TH3F("fXiMinusPiPlusbkg","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-  TH3F *fXiMinusPiMinusbkg = new TH3F("fXiMinusPiMinusbkg","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-  TH3F *fXiPlusPiPlusbkg   = new TH3F("fXiPlusPiPlusbkg","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-  TH3F *fXiPlusPiMinusbkg  = new TH3F("fXiPlusPiMinusbkg","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-
-  fOutputList->Add(fXiMinusPiPlus);
-  fOutputList->Add(fXiMinusPiMinus);
-  fOutputList->Add(fXiPlusPiPlus);
-  fOutputList->Add(fXiPlusPiMinus);
-
-  fOutputList->Add(fXiMinusPiPlusbkg);
-  fOutputList->Add(fXiMinusPiMinusbkg);
-  fOutputList->Add(fXiPlusPiPlusbkg);
-  fOutputList->Add(fXiPlusPiMinusbkg);
-
+   
+    TString *nameMCrecXiMinusPiPlus = new TString("fMCrecXiMinusPiPlus_");
+    TString *nameMCrecXiPlusPiMinus = new TString("fMCrecXiPlusPiMinus_");
+    *nameMCrecXiMinusPiPlus += cv;
+    *nameMCrecXiPlusPiMinus += cv;
+    CutVar[cv].fMCrecXiMinusPiPlus  = new TH3F(nameMCrecXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+    CutVar[cv].fMCrecXiPlusPiMinus  = new TH3F(nameMCrecXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+    fOutputList->Add(CutVar[cv].fMCrecXiMinusPiPlus);
+    fOutputList->Add(CutVar[cv].fMCrecXiPlusPiMinus);
+    //
+    
+    /*
+    CutVar[cv].fMCrecXiStarxiy = new TH2F("fMCrecXiStarxiy","y distribution",80,-2,2, 80,-2,2);
+    CutVar[cv].fMCrecXiStarpiony = new TH2F("fMCrecXiStarpiony","y distribution",80,-2,2, 80,-2,2);
+    fOutputList->Add(CutVar[cv].fMCrecXiStarxiy);
+    fOutputList->Add(CutVar[cv].fMCrecXiStarpiony);
+    CutVar[cv].fMCrecXilambday = new TH2F("fMCrecXilambday","y distribution",80,-2,2, 80,-2,2);
+    CutVar[cv].fMCrecXipiony = new TH2F("fMCrecXipiony","y distribution",80,-2,2, 80,-2,2);
+    fOutputList->Add(CutVar[cv].fMCrecXilambday);
+    fOutputList->Add(CutVar[cv].fMCrecXipiony);
+    CutVar[cv].fMCrecLamprotony = new TH2F("fMCrecLamprotony","y distribution",80,-2,2, 80,-2,2);
+    CutVar[cv].fMCrecLampiony = new TH2F("fMCrecLampiony","y distribution",80,-2,2, 80,-2,2);
+    fOutputList->Add(CutVar[cv].fMCrecLamprotony);
+    fOutputList->Add(CutVar[cv].fMCrecLampiony);
+    */
+  }
 
   
-  TH3F *fMCinputXiStar = new TH3F("fMCinputXiStar","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-  TH3F *fMCinputXiStarbar = new TH3F("fMCinputXiStarbar","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
+
+
+  //////////////////////
+  // MC input histos
+  TH3F *fMCinputXiStar = new TH3F("fMCinputXiStar","Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+  TH3F *fMCinputXiStarbar = new TH3F("fMCinputXiStarbar","Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
   fOutputList->Add(fMCinputXiStar);
   fOutputList->Add(fMCinputXiStarbar);
 
@@ -540,8 +546,8 @@ void AliXiStar::UserCreateOutputObjects()
   
   //
 
-  TH3F *fMCinputTotalXiStar1 = new TH3F("fMCinputTotalXiStar1","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-  TH3F *fMCinputTotalXiStarbar1 = new TH3F("fMCinputTotalXiStarbar1","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
+  TH3F *fMCinputTotalXiStar1 = new TH3F("fMCinputTotalXiStar1","Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+  TH3F *fMCinputTotalXiStarbar1 = new TH3F("fMCinputTotalXiStarbar1","Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
   fOutputList->Add(fMCinputTotalXiStar1);
   fOutputList->Add(fMCinputTotalXiStarbar1);
 
@@ -552,8 +558,8 @@ void AliXiStar::UserCreateOutputObjects()
 
   //
 
-  TH3F *fMCinputTotalXiStar3 = new TH3F("fMCinputTotalXiStar3","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-  TH3F *fMCinputTotalXiStarbar3 = new TH3F("fMCinputTotalXiStarbar3","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
+  TH3F *fMCinputTotalXiStar3 = new TH3F("fMCinputTotalXiStar3","Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
+  TH3F *fMCinputTotalXiStarbar3 = new TH3F("fMCinputTotalXiStarbar3","Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.4,1.6);
   fOutputList->Add(fMCinputTotalXiStar3);
   fOutputList->Add(fMCinputTotalXiStarbar3);
 
@@ -563,16 +569,6 @@ void AliXiStar::UserCreateOutputObjects()
   fOutputList->Add(fMCinputTotalXibar3);
 
   // 
-
-  TH3F *fMCrecXi = new TH3F("fMCrecXi","Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.2,1.4);
-  TH3F *fMCrecXibar = new TH3F("fMCrecXibar","Invariant Mass Distribution", 100,0,10, 40,-2,2, 200,1.2,1.4);
-  fOutputList->Add(fMCrecXi);
-  fOutputList->Add(fMCrecXibar);
-
-  TH3F *fMCrecXiMinusPiPlus  = new TH3F("fMCrecXiMinusPiPlus","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-  TH3F *fMCrecXiPlusPiMinus  = new TH3F("fMCrecXiPlusPiMinus","Invariant Mass Distribution", 100,0,10, 40,-2,2, 1100,1.4,2.5);
-  fOutputList->Add(fMCrecXiMinusPiPlus);
-  fOutputList->Add(fMCrecXiPlusPiMinus);
   
   TH2F *fMCinputXiStarxiy = new TH2F("fMCinputXiStarxiy","y distribution",80,-2,2, 80,-2,2);
   TH2F *fMCinputXiStarpiony = new TH2F("fMCinputXiStarpiony","y distribution",80,-2,2, 80,-2,2);
@@ -586,19 +582,7 @@ void AliXiStar::UserCreateOutputObjects()
   TH2F *fMCinputLampiony = new TH2F("fMCinputLampiony","y distribution",80,-2,2, 80,-2,2);
   fOutputList->Add(fMCinputLamprotony);
   fOutputList->Add(fMCinputLampiony);
-  TH2F *fMCrecXiStarxiy = new TH2F("fMCrecXiStarxiy","y distribution",80,-2,2, 80,-2,2);
-  TH2F *fMCrecXiStarpiony = new TH2F("fMCrecXiStarpiony","y distribution",80,-2,2, 80,-2,2);
-  fOutputList->Add(fMCrecXiStarxiy);
-  fOutputList->Add(fMCrecXiStarpiony);
-  TH2F *fMCrecXilambday = new TH2F("fMCrecXilambday","y distribution",80,-2,2, 80,-2,2);
-  TH2F *fMCrecXipiony = new TH2F("fMCrecXipiony","y distribution",80,-2,2, 80,-2,2);
-  fOutputList->Add(fMCrecXilambday);
-  fOutputList->Add(fMCrecXipiony);
-  TH2F *fMCrecLamprotony = new TH2F("fMCrecLamprotony","y distribution",80,-2,2, 80,-2,2);
-  TH2F *fMCrecLampiony = new TH2F("fMCrecLampiony","y distribution",80,-2,2, 80,-2,2);
-  fOutputList->Add(fMCrecLamprotony);
-  fOutputList->Add(fMCrecLampiony);
-
+  
   
   ///////////////////////////////////  
   
@@ -651,17 +635,17 @@ void AliXiStar::Exec(Option_t *)
   TParticle   *MCXiStaresd    = 0x0;
 
   Double_t px1,py1,pz1, px2,py2,pz2;
-  Double_t p1sq,p2sq,e1,e2,xiStarE,angle;
+  Double_t p1sq,p2sq,e1,e2,angle;
   Double_t dca3d;
   Float_t dca2[2];
-  Double_t xiVtx[3], xiStarVtx[3];
+  Double_t xiVtx[3];//, xiStarVtx[3];
   Double_t xiP[3], xiStarP[3];
   Double_t xiStarMom;
   Double_t xiMass, xiStarMass;
   Double_t xiPt, xiStarPt;
   Double_t xiY, xiStarY;
   Double_t xiCharge;
-  Double_t decayLength, decayLengthXY;
+  Double_t decayLengthXY;
   Double_t pDaughter1[3];
   Double_t pDaughter2[3];
   Double_t xDaughter1[3];
@@ -899,8 +883,9 @@ void AliXiStar::Exec(Option_t *)
       fTempStruct[myTracks].fNSigmaPi = fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kPion));
       fTempStruct[myTracks].fNSigmaK = fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kKaon));
       fTempStruct[myTracks].fNSigmaPr = fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kProton));
-          
-      
+      fTempStruct[myTracks].fNclusTPC = esdtrack->GetTPCNcls();
+            
+
       if(esdtrack->Charge() > 0) positiveTracks++;
       else negativeTracks++;
       
@@ -1140,6 +1125,7 @@ void AliXiStar::Exec(Option_t *)
 
   ////////////////////////////////////////////////
   // Reconstruction
+  
   for(Int_t i=0; i<fESD->GetNumberOfCascades(); i++){
     
     AliESDcascade *Xicandidate = fESD->GetCascade(i);
@@ -1156,33 +1142,51 @@ void AliXiStar::Exec(Option_t *)
     if(!fTrackCut->AcceptTrack(pTrackXi)) continue;
     if(!fTrackCut->AcceptTrack(nTrackXi)) continue;
     if(!fTrackCut->AcceptTrack(bTrackXi)) continue;
+
+    //////////////////////
+    // DecayParameters Key (number represents array index)
+    // NclustersTPC: 0=proton, 1=pion first, 2=pion second, 3=pion third
+    // DCAVtx: 4=proton, 5=pion first, 6=pion second, 7=lambda, 8=pion third
+    // 9 = DCA proton-pion
+    // 10 = DCA Lambda-pion
+    // 11 = Rxy Lambda
+    // 12 = Rxy Xi
+    // 13 = Cos PA Lambda
+    // 14 = Cos PA Xi
+
+
+    fDecayParameters[2] = bTrackXi->GetTPCNcls();
     
-  
-    if(fabs(Xicandidate->GetDcaV0Daughters()) > fDCAProtonPion) continue; 
-    if(fabs(Xicandidate->GetD(primaryVtx[0],primaryVtx[1],primaryVtx[2])) < fDCAVtxLambda) continue;
-  
+        
     if(Xicandidate->Charge() == -1){
-      if(fabs(pTrackXi->GetD(primaryVtx[0],primaryVtx[1],bField)) < fDCAVtxProton) continue;
-      if(fabs(nTrackXi->GetD(primaryVtx[0],primaryVtx[1],bField)) < fDCAVtxPionFirst) continue;
+      fDecayParameters[0] = pTrackXi->GetTPCNcls();
+      fDecayParameters[1] = nTrackXi->GetTPCNcls();
+      fDecayParameters[4] = fabs(pTrackXi->GetD(primaryVtx[0],primaryVtx[1],bField));// DCA Vtx proton
+      fDecayParameters[5] = fabs(nTrackXi->GetD(primaryVtx[0],primaryVtx[1],bField));// DCA Vtx pion first
     }else{
-      if(fabs(pTrackXi->GetD(primaryVtx[0],primaryVtx[1],bField)) < fDCAVtxPionFirst) continue;
-      if(fabs(nTrackXi->GetD(primaryVtx[0],primaryVtx[1],bField)) < fDCAVtxProton) continue;
+      fDecayParameters[0] = nTrackXi->GetTPCNcls();
+      fDecayParameters[1] = pTrackXi->GetTPCNcls();
+      fDecayParameters[4] = fabs(nTrackXi->GetD(primaryVtx[0],primaryVtx[1],bField));// DCA Vtx proton
+      fDecayParameters[5] = fabs(pTrackXi->GetD(primaryVtx[0],primaryVtx[1],bField));// DCA Vtx pion first
     }
   
   
-    if(fabs(bTrackXi->GetD(primaryVtx[0],primaryVtx[1],bField)) < fDCAVtxPionSecond) continue;
-    if(fabs(Xicandidate->GetDcaXiDaughters()) > fDCALambdaPion) continue;
+    fDecayParameters[6] = fabs(bTrackXi->GetD(primaryVtx[0],primaryVtx[1],bField));// DCA Vtx pion second
+    fDecayParameters[7] = fabs(Xicandidate->GetD(primaryVtx[0],primaryVtx[1],primaryVtx[2]));// DCA Vtx Lambda
+    fDecayParameters[9] = fabs(Xicandidate->GetDcaV0Daughters());// DCA proton-pion
+    fDecayParameters[10] = fabs(Xicandidate->GetDcaXiDaughters());// DCA Lambda-pion
+
+    
     
     Double_t tempX[3]={0};
     Xicandidate->GetXYZ(tempX[0], tempX[1], tempX[2]);
-    if(sqrt( pow(tempX[0],2) + pow(tempX[1],2) ) < fLambdaDecayLengthXY) continue;
+    fDecayParameters[11] = sqrt( pow(tempX[0],2) + pow(tempX[1],2));// Rxy Lambda
     if(sqrt( pow(tempX[0],2) + pow(tempX[1],2) ) > fMaxDecayLength) continue;
     
     
-    if(Xicandidate->GetCascadeCosineOfPointingAngle(primaryVtx[0],primaryVtx[1],primaryVtx[2]) < fXiCosTheta) continue;
-    if(Xicandidate->GetV0CosineOfPointingAngle(primaryVtx[0],primaryVtx[1],primaryVtx[2]) < fLamCosTheta) continue;
+    fDecayParameters[13] = Xicandidate->GetV0CosineOfPointingAngle(primaryVtx[0],primaryVtx[1],primaryVtx[2]);// Cos PA Lambda
+    fDecayParameters[14] = Xicandidate->GetCascadeCosineOfPointingAngle(primaryVtx[0],primaryVtx[1],primaryVtx[2]);// Cos PA Xi
     
-
     xiP[0] = Xicandidate->Px();
     xiP[1] = Xicandidate->Py();
     xiP[2] = Xicandidate->Pz();
@@ -1195,14 +1199,32 @@ void AliXiStar::Exec(Option_t *)
     xiCharge = Xicandidate->Charge();
 
     decayLengthXY = sqrt( pow(xiVtx[0]-primaryVtx[0],2) + pow(xiVtx[1]-primaryVtx[1],2) );
-    if(decayLengthXY < fXiDecayLengthXY) continue;// 2d version
+    fDecayParameters[12] = decayLengthXY;// Rxy Xi
     if(decayLengthXY > fMaxDecayLength) continue;// 2d version
     
+    Bool_t StandardXi=kTRUE;
+    if(fDecayParameters[0] < fCutValues[0][0]) StandardXi=kFALSE;// Nclus proton
+    if(fDecayParameters[1] < fCutValues[0][1]) StandardXi=kFALSE;// Nclus pion first
+    if(fDecayParameters[2] < fCutValues[0][2]) StandardXi=kFALSE;// Nclus pion second
+    //
+    if(fDecayParameters[4] < fCutValues[0][4]) StandardXi=kFALSE;// DCAVtx proton
+    if(fDecayParameters[5] < fCutValues[0][5]) StandardXi=kFALSE;// DCAVtx pion first
+    if(fDecayParameters[6] < fCutValues[0][6]) StandardXi=kFALSE;// DCAVtx pion second
+    if(fDecayParameters[7] < fCutValues[0][7]) StandardXi=kFALSE;// DCAVtx Lambda
+    //
+    if(fDecayParameters[9] > fCutValues[0][9]) StandardXi=kFALSE;// DCAV proton-pion
+    if(fDecayParameters[10] > fCutValues[0][10]) StandardXi=kFALSE;// DCAV Lambda-pion
+    //
+    if(fDecayParameters[11] < fCutValues[0][11]) StandardXi=kFALSE;// Rxy Lambda
+    if(fDecayParameters[12] < fCutValues[0][12]) StandardXi=kFALSE;// Rxy Xi
+    //
+    if(fDecayParameters[13] < fCutValues[0][13]) StandardXi=kFALSE;// Cos PA Lambda
+    if(fDecayParameters[14] < fCutValues[0][14]) StandardXi=kFALSE;// Cos PA Xi
     
-
-    if(xiCharge == -1) ((TH3F*)fOutputList->FindObject("fXi"))->Fill(xiPt, xiY, xiMass);
-    else ((TH3F*)fOutputList->FindObject("fXibar"))->Fill(xiPt, xiY, xiMass);
-    
+    if(StandardXi){
+      if(xiCharge == -1) CutVar[0].fXi->Fill(xiPt, xiY, xiMass);
+      else CutVar[0].fXibar->Fill(xiPt, xiY, xiMass);
+    }
            
     // MC associaton
     mcXiFilled = kFALSE;
@@ -1225,14 +1247,16 @@ void AliXiStar::Exec(Option_t *)
 		if(MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)){
 		  MCXiesd = (TParticle*)mcstack->Particle(abs(MCLamesd->GetMother(0)));
 		  if(abs(MCXiesd->GetPdgCode())==kXiCode) {
-		    
-		    if(Xicandidate->Charge() == -1) {
-		      ((TH3F*)fOutputList->FindObject("fMCrecXi"))->Fill(xiPt, xiY, xiMass);
-		    }else {
-		      ((TH3F*)fOutputList->FindObject("fMCrecXibar"))->Fill(xiPt, xiY, xiMass);
-		      
-		    }
 		    mcXiFilled = kTRUE;
+
+		    if(StandardXi){
+		      if(Xicandidate->Charge() == -1) {
+			CutVar[0].fMCrecXi->Fill(xiPt, xiY, xiMass);
+		      }else {
+			CutVar[0].fMCrecXibar->Fill(xiPt, xiY, xiMass);
+		      }
+		    }
+
 		  }
 		}
 	      }
@@ -1263,21 +1287,21 @@ void AliXiStar::Exec(Option_t *)
 	}
 	
 	fXiTrack->Set(xiVtx, xiP, fCovMatrix, Short_t(xiCharge));
-	//cout<<(fEvt+EN)->fNTracks<<"  "<<(fEvt+EN)->fTracks[l].fCharge<<endl;
+	
 	if(!fESDTrack4) continue;
 	fESDTrack4->Set((fEvt+EN)->fTracks[l].fX, (fEvt+EN)->fTracks[l].fP, (fEvt+EN)->fTracks[l].fCov, (fEvt+EN)->fTracks[l].fCharge);
 	if(fAODcase){
 	  if((Bool_t)(((1<<5) & (fEvt+EN)->fTracks[l].fFilterMap) == 0)) continue;// AOD filterbit cut, "Standard cuts with tight dca"
 	}else{
-	  if((fEvt+EN)->fTracks[l].fDCAXY > (0.0182 + 0.035/pow((fEvt+EN)->fTracks[l].fPt,1.01))) continue; 
+	  fDecayParameters[8] = (fEvt+EN)->fTracks[l].fDCAXY;// DCA Vtx pion third
 	  if((fEvt+EN)->fTracks[l].fDCAZ > 2) continue;
 	  if( (((fEvt+EN)->fTracks[l].fStatus)&AliESDtrack::kITSrefit)==0) continue;// Require itsrefit
 	  // no Chi^2 cut applied for ESDs.  Info not available in my track structure.
 	}
 	
-	if((fEvt+EN)->fTracks[l].fNSigmaPi > fSigmaCutPionThird) continue;
 	if(fabs((fEvt+EN)->fTracks[l].fEta) > 0.8) continue;
 	
+	fDecayParameters[3] = (fEvt+EN)->fTracks[l].fNclusTPC;
 	
 	AliVertex *XiStarVtx = new AliVertex((fEvt+EN)->fTracks[l].fX,0,0);
 	//fESDTrack4->PropagateToDCA(fXiTrack, bField);// Propagate tracks to dca, both tracks are budged
@@ -1291,10 +1315,10 @@ void AliXiStar::Exec(Option_t *)
 	
 	
 	
-	xiStarVtx[0] = (xDaughter1[0]+xDaughter2[0])/2.;
-	xiStarVtx[1] = (xDaughter1[1]+xDaughter2[1])/2.;
-	xiStarVtx[2] = (xDaughter1[2]+xDaughter2[2])/2.;
-	decayLength = sqrt(pow(xiStarVtx[0]-primaryVtx[0],2)+pow(xiStarVtx[1]-primaryVtx[1],2)+pow(xiStarVtx[2]-primaryVtx[2],2));
+	//xiStarVtx[0] = (xDaughter1[0]+xDaughter2[0])/2.;
+	//xiStarVtx[1] = (xDaughter1[1]+xDaughter2[1])/2.;
+	//xiStarVtx[2] = (xDaughter1[2]+xDaughter2[2])/2.;
+	//decayLength = sqrt(pow(xiStarVtx[0]-primaryVtx[0],2)+pow(xiStarVtx[1]-primaryVtx[1],2)+pow(xiStarVtx[2]-primaryVtx[2],2));
 	
 	px1=pDaughter1[0];
 	py1=pDaughter1[1];
@@ -1322,27 +1346,49 @@ void AliXiStar::Exec(Option_t *)
 	if(xiStarMom==0) continue; // So one of the following lines doesnt break
 	xiStarPt = sqrt(xiStarP[0]*xiStarP[0] + xiStarP[1]*xiStarP[1]);
 	xiStarY = .5*log( ((e1+e2) + xiStarP[2])/((e1+e2) - xiStarP[2]));
-	xiStarE = e1 + e2;
+	//xiStarE = e1 + e2;
 	
 	
-	if( (xiStarP[0]*(xiStarVtx[0]-primaryVtx[0]) + xiStarP[1]*(xiStarVtx[1]-primaryVtx[1]) + xiStarP[2]*(xiStarVtx[2]-primaryVtx[2]))/xiStarMom/decayLength < fXiStarCosTheta) continue;
+	//if( (xiStarP[0]*(xiStarVtx[0]-primaryVtx[0]) + xiStarP[1]*(xiStarVtx[1]-primaryVtx[1]) + xiStarP[2]*(xiStarVtx[2]-primaryVtx[2]))/xiStarMom/decayLength < fXiStarCosTheta) continue;
 
-	
-	if(EN==0){
-	  if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == -1) ((TH3F*)fOutputList->FindObject("fXiMinusPiMinus"))->Fill(xiStarPt, xiStarY, xiStarMass);
-	  else if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == +1) ((TH3F*)fOutputList->FindObject("fXiMinusPiPlus"))->Fill(xiStarPt, xiStarY, xiStarMass);
-	  else if(fXiTrack->Charge() == +1 &&  fESDTrack4->Charge() == -1) ((TH3F*)fOutputList->FindObject("fXiPlusPiMinus"))->Fill(xiStarPt, xiStarY, xiStarMass);
-	  else ((TH3F*)fOutputList->FindObject("fXiPlusPiPlus"))->Fill(xiStarPt, xiStarY, xiStarMass);
-	}else {
-	  if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == -1) ((TH3F*)fOutputList->FindObject("fXiMinusPiMinusbkg"))->Fill(xiStarPt, xiStarY, xiStarMass);
-	  else if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == +1) ((TH3F*)fOutputList->FindObject("fXiMinusPiPlusbkg"))->Fill(xiStarPt, xiStarY, xiStarMass);
-	  else if(fXiTrack->Charge() == +1 &&  fESDTrack4->Charge() == -1) ((TH3F*)fOutputList->FindObject("fXiPlusPiMinusbkg"))->Fill(xiStarPt, xiStarY, xiStarMass);
-	  else ((TH3F*)fOutputList->FindObject("fXiPlusPiPlusbkg"))->Fill(xiStarPt, xiStarY, xiStarMass);
-	}
-	
+	for(int cv=0; cv<kNCutVariations; cv++){
+	  if(fDecayParameters[0] < fCutValues[cv][0]) continue;// Nclus proton
+	  if(fDecayParameters[1] < fCutValues[cv][1]) continue;// Nclus pion first
+	  if(fDecayParameters[2] < fCutValues[cv][2]) continue;// Nclus pion second
+	  if(fDecayParameters[3] < fCutValues[cv][3]) continue;// Nclus pion third
+	  //
+	  if(fDecayParameters[4] < fCutValues[cv][4]) continue;// DCAVtx proton
+	  if(fDecayParameters[5] < fCutValues[cv][5]) continue;// DCAVtx pion first
+	  if(fDecayParameters[6] < fCutValues[cv][6]) continue;// DCAVtx pion second
+	  if(fDecayParameters[7] < fCutValues[cv][7]) continue;// DCAVtx Lambda
+	  if(cv!=8) {if(fDecayParameters[8] > (0.0182 + 0.035/pow((fEvt+EN)->fTracks[l].fPt,1.01))) continue;}// DCAVtx pion third
+	  else {if(fDecayParameters[8] > fCutValues[cv][8]) continue;}// DCAVtx pion third
+	  //
+	  if(fDecayParameters[9] > fCutValues[cv][9]) continue;// DCAV proton-pion
+	  if(fDecayParameters[10] > fCutValues[cv][10]) continue;// DCAV Lambda-pion
+	  //
+	  if(fDecayParameters[11] < fCutValues[cv][11]) continue;// Rxy Lambda
+	  if(fDecayParameters[12] < fCutValues[cv][12]) continue;// Rxy Xi
+	  //
+	  if(fDecayParameters[13] < fCutValues[cv][13]) continue;// Cos PA Lambda
+	  if(fDecayParameters[14] < fCutValues[cv][14]) continue;// Cos PA Xi
+	  
+
+	  if(EN==0){
+	    if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == -1) CutVar[cv].fXiMinusPiMinus->Fill(xiStarPt, xiStarY, xiStarMass);
+	    else if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == +1) CutVar[cv].fXiMinusPiPlus->Fill(xiStarPt, xiStarY, xiStarMass);
+	    else if(fXiTrack->Charge() == +1 &&  fESDTrack4->Charge() == -1) CutVar[cv].fXiPlusPiMinus->Fill(xiStarPt, xiStarY, xiStarMass);
+	    else CutVar[cv].fXiPlusPiPlus->Fill(xiStarPt, xiStarY, xiStarMass);
+	  }else {
+	    if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == -1) CutVar[cv].fXiMinusPiMinusbkg->Fill(xiStarPt, xiStarY, xiStarMass);
+	    else if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == +1) CutVar[cv].fXiMinusPiPlusbkg->Fill(xiStarPt, xiStarY, xiStarMass);
+	    else if(fXiTrack->Charge() == +1 &&  fESDTrack4->Charge() == -1) CutVar[cv].fXiPlusPiMinusbkg->Fill(xiStarPt, xiStarY, xiStarMass);
+	    else CutVar[cv].fXiPlusPiPlusbkg->Fill(xiStarPt, xiStarY, xiStarMass);
+	  }
+	  
 	
 	/*
-	// MC associaton
+	// MC associaton AOD
 	if(fMCcase && mcXiFilled && EN==0 && fAODcase){// AOD MC's
 	  
 	  MCXiStarD2 = (AliAODMCParticle*)mcArray->At(abs((fEvt)->fTracks[l].fLabel));
@@ -1361,25 +1407,25 @@ void AliXiStar::Exec(Option_t *)
 	}
 	*/
 	
-	// MC associaton
-	if(fMCcase && mcXiFilled && EN==0 && !fAODcase){// ESD MC's
-	  MCXiStarD2esd = (TParticle*)mcstack->Particle(abs((fEvt)->fTracks[l].fLabel));
-	  
-	  if(abs(MCXiStarD2esd->GetPdgCode())==kPionCode){ 
-	    if(MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)){
-	          
-	      MCXiStaresd = (TParticle*)mcstack->Particle(abs(MCXiesd->GetMother(0)));
-	      if(abs(MCXiStaresd->GetPdgCode())==kXiStarCode) {
-		
-		if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == +1) ((TH3F*)fOutputList->FindObject("fMCrecXiMinusPiPlus"))->Fill(xiStarPt, xiStarY, xiStarMass);
-		if(fXiTrack->Charge() == +1 &&  fESDTrack4->Charge() == -1) ((TH3F*)fOutputList->FindObject("fMCrecXiPlusPiMinus"))->Fill(xiStarPt, xiStarY, xiStarMass);
-	      
+	// MC associaton ESD
+	  if(fMCcase && mcXiFilled && EN==0 && !fAODcase){// ESD MC's
+	    MCXiStarD2esd = (TParticle*)mcstack->Particle(abs((fEvt)->fTracks[l].fLabel));
+	    
+	    if(abs(MCXiStarD2esd->GetPdgCode())==kPionCode){ 
+	      if(MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)){
+	        
+		MCXiStaresd = (TParticle*)mcstack->Particle(abs(MCXiesd->GetMother(0)));
+		if(abs(MCXiStaresd->GetPdgCode())==kXiStarCode) {
+		  
+		  if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == +1) CutVar[cv].fMCrecXiMinusPiPlus->Fill(xiStarPt, xiStarY, xiStarMass);
+		  if(fXiTrack->Charge() == +1 &&  fESDTrack4->Charge() == -1) CutVar[cv].fMCrecXiPlusPiMinus->Fill(xiStarPt, xiStarY, xiStarMass);
+		  
+		}
 	      }
 	    }
 	  }
-	}
 	
-	
+	}// Cut Variation loop
       }// 3rd pion loop
     }// Event mixing loop
     
