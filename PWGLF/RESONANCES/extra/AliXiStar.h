@@ -56,7 +56,9 @@ class AliXiStar : public AliAnalysisTaskSE {
     kXiCode              = 3312,// Xi- MC code
     kLambdaCode          = 3122,// Lambda MC code
     kProtonCode          = 2212,// Proton+ MC code
-    kPionCode            = 211// Pion+ MC code
+    kPionCode            = 211,// Pion+ MC code
+    kNCutVariations      = 13,// number of cut variations
+    kNCuts               = 15// number of cut types
   };
   
   const char* fname;// name of class
@@ -82,33 +84,52 @@ class AliXiStar : public AliAnalysisTaskSE {
   Int_t fEventCounter;// The event counter
  
   // cut list data members
-  Float_t fSigmaCutProton;// Nsigma cut proton
-  Float_t fSigmaCutPionFirst;// Nsigma cut pion from lambda
-  Float_t fSigmaCutPionSecond;// Nsigma cut pion from Xi
-  Float_t fSigmaCutPionThird;// Nsigma cut pion from Xi(1530)
-  Float_t fDCAVtxProton;// dca to Primary Vertex of proton
-  Float_t fDCAVtxPionFirst;// dca to Primary Vertex of pion from lambda
-  Float_t fDCAVtxPionSecond;// dca to Primary Vertex of pion from Xi
-  Float_t fDCAVtxLambda;// dca to Primary Vertex of Lambda
-  Float_t fDCAProtonPion;// dca of lambda daughters to each other
-  Float_t fDCALambdaPion;// dca of Xi daughters to each other
-  Float_t fLambdaDecayLengthXY;// decay length of Lambda in xy
-  Float_t fXiDecayLengthXY;// decay length of Xi in xy
   Float_t fMaxDecayLength;// max decay length
-  Float_t fLamCosTheta;// cosine of pointing angle for Lambda
-  Float_t fXiCosTheta;// cosine of pointing angle for Xi
-  Float_t fXiStarCosTheta;// cosine of pointing angle for XiStar
   Float_t fMassWindow;// Mass window of acceptance for Lambda and Xi candidates
   
   Double_t fCovMatrix[21];// Covarience matrix of track
   Double_t fTrueMassPr, fTrueMassPi, fTrueMassK, fTrueMassLam, fTrueMassXi;// The PDG mass values
+  
+  /////////////////////////////////////
+
+  struct St_CutType {
+    TH3F *fXi; //!
+    TH3F *fXibar; //!
+    //    
+    TH3F *fXiMinusPiPlus; //!
+    TH3F *fXiMinusPiMinus; //!
+    TH3F *fXiPlusPiPlus; //!
+    TH3F *fXiPlusPiMinus; //!
+    
+    TH3F *fXiMinusPiPlusbkg; //!
+    TH3F *fXiMinusPiMinusbkg; //!
+    TH3F *fXiPlusPiPlusbkg; //!
+    TH3F *fXiPlusPiMinusbkg; //!
+    //
+    TH3F *fMCrecXi; //!
+    TH3F *fMCrecXibar; //!
+        
+    TH3F *fMCrecXiMinusPiPlus; //!
+    TH3F *fMCrecXiPlusPiMinus; //!
+    //    
+    /*TH2F *fMCrecXiStarxiy; //!
+    TH2F *fMCrecXiStarpiony; //!
+    TH2F *fMCrecXilambday; //!
+    TH2F *fMCrecXipiony; //!
+    TH2F *fMCrecLamprotony; //!
+    TH2F *fMCrecLampiony; //!*/
+  };
+  struct St_CutType CutVar[kNCutVariations]; //!
   
   
   AliESDtrack* fESDTrack4; //! esdtrack for XiStar's daughter pion
   AliESDtrack* fXiTrack; //! esdtrack for XiStar's daughter Xi
   
   Int_t fCutList;// Cut List option (mean values or systematic variations)
-  
+
+  Float_t fDecayParameters[kNCuts];// array of reconstruction kinematics
+  Float_t fCutValues[kNCutVariations][kNCuts];// array of reconstruction kinematics
+
   ClassDef(AliXiStar, 1); 
 };
 

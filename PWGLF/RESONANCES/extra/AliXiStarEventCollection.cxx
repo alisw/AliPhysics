@@ -44,7 +44,8 @@ AliXiStarTrackStruct::AliXiStarTrackStruct():
   fNSigmaPi(0),
   fNSigmaK(0),
   fNSigmaPr(0),
-  fLabel(0)
+  fLabel(0),
+  fNclusTPC(0)
 {
   //Default constructor
 }
@@ -68,7 +69,8 @@ AliXiStarTrackStruct::AliXiStarTrackStruct(const AliXiStarTrackStruct &obj)
     fNSigmaPi(obj.fNSigmaPi),
     fNSigmaK(obj.fNSigmaK),
     fNSigmaPr(obj.fNSigmaPr),
-    fLabel(obj.fLabel)
+    fLabel(obj.fLabel),
+    fNclusTPC(obj.fNclusTPC)
 {
   // copy constructor
 }
@@ -109,7 +111,8 @@ AliXiStarTrackStruct &AliXiStarTrackStruct::operator=(const AliXiStarTrackStruct
   fNSigmaK = obj.fNSigmaK;
   fNSigmaPr = obj.fNSigmaPr;
   fLabel = obj.fLabel;
-  
+  fNclusTPC = obj.fNclusTPC;
+
   return (*this);
 }
 

@@ -49,6 +49,7 @@ class AliXiStarTrackStruct{
   Float_t fNSigmaK;// track Nsigma kaon
   Float_t fNSigmaPr;// track Nsigma proton
   Int_t fLabel;// track label for MC studies
+  UShort_t fNclusTPC;// TPC N clusters
 
   ClassDef(AliXiStarTrackStruct, 1);
 };
