@@ -37,33 +37,40 @@ class AliAnalysisTaskZDCpAcalib : public AliAnalysisTaskSE {
 
  private:
 
-  Int_t    fDebug;	   	//  Debug flag
-  TString  fAnalysisInput; 	// "ESD", "AOD"
-  Bool_t   fIsMCInput;          // true when input is MC
-  Bool_t   fUseSpecialOutput;   // do we use special output instead of merging?
+  Int_t    fDebug;	       //  Debug flag
+  TString  fAnalysisInput;     // "ESD", "AOD"
+  Bool_t   fIsMCInput;         // true when input is MC
+  Bool_t   fUseSpecialOutput;  // do we use special output instead of merging?
   //
-  TList   *fOutput;	   	//! list send on output slot 0
+  TList   *fOutput;	       //! list send on output slot 0
   //
-  TTree   *fCentralityTree;     //! output tree
+  TTree   *fCentralityTree;    //! output tree
   //
-  char     fTrigClass[100];	//  fired trigger classes
+  char     fTrigClass[100];    //  fired trigger classes
   //
-  Bool_t   fIsEventSelected;    //  is physics selection on
+  Bool_t   fIsEventSelected;   //  is physics selection on
   //
-  Int_t    fIsV0ATriggered;	//  VOA decision
-  Int_t    fIsV0CTriggered;	//  V0C decision
+  Int_t    fIsV0ATriggered;    //  VOA decision
+  Int_t    fIsV0CTriggered;    //  V0C decision
   //
-  Float_t  fZNCtower[5];	//  ZNC 5 tower signals
-  Float_t  fZNAtower[5];	//  ZNA 5 tower signals
-  Float_t  fZNCtowerLG[5];	//  ZNC 5 tower signals
-  Float_t  fZNAtowerLG[5];	//  ZPC 5 tower signals
+  Float_t  fZNCtower[5];       //  ZNC 5 tower signals
+  Float_t  fZNAtower[5];       //  ZNA 5 tower signals
+  Float_t  fZNCtowerLG[5];     //  ZNC 5 tower signals
+  Float_t  fZNAtowerLG[5];     //  ZPC 5 tower signals
+  Float_t  fZPCtower[5];       //  ZNC 5 tower signals
+  Float_t  fZPAtower[5];       //  ZNA 5 tower signals
+  Float_t  fZPCtowerLG[5];     //  ZNC 5 tower signals
+  Float_t  fZPAtowerLG[5];     //  ZPC 5 tower signals
   //
-  Int_t    fTDCvalues[32][4];   // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  Int_t    fZNCtdc[4];         // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  Int_t    fZNAtdc[4];         // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  Int_t    fZPCtdc[4];         // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  Int_t    fZPAtdc[4];         // TDC raw values !ONLY FOR ESDs ANALYSIS!
   
   AliAnalysisTaskZDCpAcalib& operator= (const AliAnalysisTaskZDCpAcalib& ana);
   AliAnalysisTaskZDCpAcalib(const AliAnalysisTaskZDCpAcalib& c);
   //
-  ClassDef(AliAnalysisTaskZDCpAcalib,1); 
+  ClassDef(AliAnalysisTaskZDCpAcalib,2); 
 
 };
 

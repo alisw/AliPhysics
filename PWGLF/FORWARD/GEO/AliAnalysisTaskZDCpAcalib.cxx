@@ -77,11 +77,18 @@ AliAnalysisTaskZDCpAcalib::AliAnalysisTaskZDCpAcalib():
      fZNAtower[itow]=0.;  
      fZNCtowerLG[itow]=0.;
      fZNAtowerLG[itow]=0.;
+     fZPCtower[itow]=0.;  
+     fZPAtower[itow]=0.;  
+     fZPCtowerLG[itow]=0.;
+     fZPAtowerLG[itow]=0.;
 
   }
   
-  for(Int_t itdc=0; itdc<32; itdc++){
-    for(Int_t ihit=0; ihit<4; ihit++) fTDCvalues[itdc][ihit]=9999;
+  for(Int_t ihit=0; ihit<4; ihit++){
+    fZNCtdc[ihit]=9999;
+    fZNAtdc[ihit]=9999;
+    fZPCtdc[ihit]=9999;
+    fZPAtdc[ihit]=9999;
   }
 }   
 
@@ -105,11 +112,18 @@ AliAnalysisTaskZDCpAcalib::AliAnalysisTaskZDCpAcalib(const char *name):
      fZNAtower[itow]=0.;  
      fZNCtowerLG[itow]=0.;
      fZNAtowerLG[itow]=0.;
+     fZPCtower[itow]=0.;  
+     fZPAtower[itow]=0.;  
+     fZPCtowerLG[itow]=0.;
+     fZPAtowerLG[itow]=0.;
 
   }
   
-  for(Int_t itdc=0; itdc<32; itdc++){
-    for(Int_t ihit=0; ihit<4; ihit++) fTDCvalues[itdc][ihit]=9999;
+  for(Int_t ihit=0; ihit<4; ihit++){
+     fZNCtdc[ihit]=9999;
+     fZNAtdc[ihit]=9999;
+     fZPCtdc[ihit]=9999;
+     fZPAtdc[ihit]=9999;
   }
   
   // Output slot #1 writes into a TList container
@@ -153,7 +167,14 @@ void AliAnalysisTaskZDCpAcalib::UserCreateOutputObjects()
     fCentralityTree->Branch("znatower", fZNAtower, "znatower[5]/F");
     fCentralityTree->Branch("znctowerLG", fZNCtowerLG, "znctowerLG[5]/F");
     fCentralityTree->Branch("znatowerLG", fZNAtowerLG, "znatowerLG[5]/F");
-    fCentralityTree->Branch("tdc", fTDCvalues, "tdc[32][4]/I");
+    fCentralityTree->Branch("zpctower", fZNCtower, "znctower[5]/F");
+    fCentralityTree->Branch("zpatower", fZNAtower, "znatower[5]/F");
+    fCentralityTree->Branch("zpctowerLG", fZNCtowerLG, "znctowerLG[5]/F");
+    fCentralityTree->Branch("zpatowerLG", fZNAtowerLG, "znatowerLG[5]/F");
+    fCentralityTree->Branch("tdcZNC", fZNCtdc, "tdcZNC[4]/I");
+    fCentralityTree->Branch("tdcZNA", fZNAtdc, "tdcZNA[4]/I");
+    fCentralityTree->Branch("tdcZPC", fZPCtdc, "tdcZPC[4]/I");
+    fCentralityTree->Branch("tdcZPA", fZPAtdc, "tdcZPA[4]/I");
       
     fOutput->Add(fCentralityTree);      
     PostData(1, fOutput);
@@ -197,21 +218,30 @@ void AliAnalysisTaskZDCpAcalib::UserExec(Option_t */*option*/)
        
       const Double_t * towZNC = esdZDC->GetZN1TowerEnergy();
       const Double_t * towZNA = esdZDC->GetZN2TowerEnergy();
+      const Double_t * towZPC = esdZDC->GetZP1TowerEnergy();
+      const Double_t * towZPA = esdZDC->GetZP2TowerEnergy();
       //
       const Double_t * towZNCLG = esdZDC->GetZN1TowerEnergyLR();
       const Double_t * towZNALG = esdZDC->GetZN2TowerEnergyLR();
+      const Double_t * towZPCLG = esdZDC->GetZP1TowerEnergyLR();
+      const Double_t * towZPALG = esdZDC->GetZP2TowerEnergyLR();
       //
       for(Int_t it=0; it<5; it++){
          fZNCtower[it] = (Float_t) (towZNC[it]);
          fZNAtower[it] = (Float_t) (towZNA[it]); 
          fZNCtowerLG[it] = (Float_t) (towZNCLG[it]);
          fZNAtowerLG[it] = (Float_t) (towZNALG[it]); 
+         fZPCtower[it] = (Float_t) (towZPC[it]);
+         fZPAtower[it] = (Float_t) (towZPA[it]); 
+         fZPCtowerLG[it] = (Float_t) (towZPCLG[it]);
+         fZPAtowerLG[it] = (Float_t) (towZPALG[it]); 
       }
 
-      for(Int_t itdc=0; itdc<32; itdc++){
-	 for(Int_t i=0; i<4; i++){
-	   fTDCvalues[itdc][i] = esdZDC->GetZDCTDCData(itdc, i);
-	 }
+      for(Int_t i=0; i<4; i++){
+	   fZNCtdc[i] = esdZDC->GetZDCTDCData(10, i);
+	   fZPCtdc[i] = esdZDC->GetZDCTDCData(11, i);
+	   fZNAtdc[i] = esdZDC->GetZDCTDCData(12, i);
+	   fZPAtdc[i] = esdZDC->GetZDCTDCData(13, i);
       }      
   }   
   
