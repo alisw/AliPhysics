@@ -79,6 +79,8 @@ AliPHOSEPFlattener::AliPHOSEPFlattener(const AliPHOSEPFlattener & fl):
 //____________________________________________________________________________
 AliPHOSEPFlattener & AliPHOSEPFlattener::operator = (const AliPHOSEPFlattener & fl)
 {
+  if(this== &fl)
+    return *this ;
   SetName(fl.GetName()) ;
   fNCentrBins = fl.fNCentrBins ;
   fNHarmonics = fl.fNHarmonics ;
