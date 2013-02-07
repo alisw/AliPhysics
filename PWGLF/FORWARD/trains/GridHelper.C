@@ -33,11 +33,11 @@ class AliAnalysisAlien;
  * @endcode 
  * where 
  * <dl>
- *   <dt>&lt;directory@gt;</dt>
+ *   <dt>&lt;directory&gt;</dt>
  *   <dd>Grid directory that holds the data</dd>
- *   <dt>&lt;treeName@gt;</dt>
+ *   <dt>&lt;treeName&gt;</dt>
  *   <dd>Tree to loop over</dd>
- *   <dt>&lt;options@gt;</dt>
+ *   <dt>&lt;options&gt;</dt>
  *   <dd>List of options separated by an &amp;
  *     <dl>
  *       <dt><tt>storage=&lt;url&gt;</tt></dt>
@@ -47,7 +47,7 @@ class AliAnalysisAlien;
  *         <tt>root://lxplus.cern.ch:10930//tmp</tt>.</dd>
  *       <dt><tt>mode=[default,rec,sim,train,custom]</tt></dt>
  *       <dd>Set the AliROOT mode.  If not specified <tt>default</tt> 
- *         is assumed</tt>.  See also CreateAliROOTPar</dd>
+ *         is assumed.  See also CreateAliROOTPar</dd>
  *       <dt><tt>par</tt></dt>
  *       <dd> Use PAR files</dd>
  *       <dt><tt>runs=[list or file]</tt></dt>
@@ -78,7 +78,7 @@ struct GridHelper : public PluginHelper
    * Constructor 
    * 
    * @param url  Url 
-   * @param opts Options 
+   * @param verbose Verbosity level
    */
   GridHelper(const TUrl& url, Int_t verbose)
     : PluginHelper(url, verbose), fRuns()
@@ -445,13 +445,13 @@ struct GridHelper : public PluginHelper
     if (nEvents == 0) return 0;
     Long64_t ret = mgr->StartAnalysis("grid", nEvents);
 
-#if 0
+#if 1
     std::ofstream outJobs(Form("%s.jobid", mgr->GetName()));
-    //outJobs << fHandler->GetGridJobIDs() << std::endl;
+    outJobs << fHandler->GetGridJobIDs() << std::endl;
     outJobs.close();
 
     std::ofstream outStages(Form("%s.stage", mgr->GetName()));
-   // outStages << fHandler->GetGridStages() << std::endl;
+    outStages << fHandler->GetGridStages() << std::endl;
     outStages.close();
 #endif
     return ret;
@@ -460,6 +460,7 @@ struct GridHelper : public PluginHelper
    * Link an auxilary file to working directory 
    * 
    * @param name Name of the file
+   * @param copy  Whether to copy or not 
    * 
    * @return true on success
    */
@@ -512,7 +513,6 @@ struct GridHelper : public PluginHelper
    * (post-)processing e.g., terminate
    * 
    * @param escaped        Escaped name  
-   * @param asShellScript  also save as shell script
    */
   void AuxSave(const TString& escaped, 
 	       Bool_t /*asShellScript*/) 

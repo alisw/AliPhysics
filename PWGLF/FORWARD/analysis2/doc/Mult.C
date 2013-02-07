@@ -42,9 +42,9 @@
  * @subsection mult_struct_tasks Tasks 
  * 
  * For the forward analysis, there are two tasks:
- * AliForwardMultiplictyTask and AliForwardMCMultiplicityTask - both
+ * AliForwardMultiplicityTask and AliForwardMCMultiplicityTask - both
  * of which derive from the base class AliForwardMultiplicityBase.
- * AliForwardMultiplictyTask is intented for analysis of collision
+ * AliForwardMultiplicityTask is intented for analysis of collision
  * data, while AliForwardMCMultiplicityTask is intented simulation
  * data, and the ::AddTaskForwardMult script function automatically
  * selects the appropriate one.  Both of these tasks uses worker
@@ -58,7 +58,10 @@
  *
  * The special task AliForwardMCCorrectionsTask is used to generate
  * the various simulation based corrections needed by
- * AliForwardMultiplicityBase and it's derivatives. 
+ * AliForwardMultiplicityBase and it's derivatives, and the task
+ * AliFMDEnergyFitterTask generates corrections for both real and
+ * simulated input used by AliForwardMultiplicityTask and
+ * AliForwardMCMultiplicityTask respectively.
  *
  * The module also defines the utility task AliCopyHeaderTask, which
  * copies the ESD header information into the AOD header.  This was
@@ -67,6 +70,44 @@
  * script function. 
  * 
  * @subsection mult_workers Workers 
+ *
+ * <dl>
+ *  <dt>AliFMDEventInspector</dt>
+ *  <dd>A worker that inspects the global event properties, such as
+ *  location of the interaction point, the centrality (if applicable),
+ *  and the fired triggers (both on-line and off-line).  The result of
+ *  the inspection is returned to the caller task and diagnostics
+ *  histograms are filled.</dd>
+ *  <dt>AliFMDSharingFilter</dt>
+ *  <dd>A worker that merges signals in the FMD silicon strips to
+ *  correct for the situation where a charged particles energy loss is
+ *  shared over 2 or 3 strips as a consquence of it's incident angle.
+ *  The worker returns a new AliESDFMD object with the corrected
+ *  signals and fills diagnostic histograms.</dd>
+ *  <dt>AliFMDDensityCalculator</dt>
+ *  <dd>This worker calculates the number of charged particles per
+ *  @f$(\eta,\varphi)@f$ bin using one of two methods: Energy loss
+ *  deconvolution or Poissonian statistics.  The user selects which
+ *  method to use at start-up but both methods are fired and compared
+ *  in the diagnostics histograms.  The output is 5 histograms - one
+ *  for each sub-ring - of the event charged particle multiplicity in
+ *  @f$(\eta,\varphi)@f$ bins.</dd>
+ *  <dt>AliFMDCorrector</dt>
+ *  <dd>Applies various corrections, such as @f$\phi@f$ acceptance,
+ *  correction for secondary particle production, merging efficiency,
+ *  and so on.  The exact corrections applied is selected by the
+ *  user. The output is 5 histograms of the event charged particle
+ *  multiplicity in @f$(\eta,\varphi)@f$ bins corrected for the
+ *  selected effects.</dd>
+ *  <dt>AliFMDHistCollector</dt>
+ *  <dd>Collects the 5 histograms of the event charged particle
+ *  multiplicity in @f$(\eta,\varphi)@f$ bins into one `super'
+ *  histogram of the event charged particle multiplicity, taking care
+ *  of overlaps and differences in @f$\varphi@f$ acceptance of the 5
+ *  sub-rings.</dd>
+ *  <dt>AliFMDEventPlaneFinder</dt> <dd>Calculates the reaction plane
+ *  of the event from the FMD data</dd>
+ * </dl>
  *
  * @subsection mult_mc_workers MC Workers 
  *

@@ -126,8 +126,6 @@ protected:
   void Finalize();
   /**
    * Find FMD coverage for this vtx, to make MC histogram match
-   *
-   * @param h FMD d^2N/detadphi histogram
    */
   void GetFMDLimits();
   /**

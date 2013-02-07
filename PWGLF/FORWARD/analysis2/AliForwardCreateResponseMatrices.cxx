@@ -1,3 +1,13 @@
+/**
+ * @file   AliForwardCreateResponseMatrices.cxx
+ * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @date   Thu Feb  7 01:01:24 2013
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_multdist
+ */
 
 #include <TH1D.h>
 #include "AliForwardCreateResponseMatrices.h"
@@ -9,7 +19,6 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 
-using namespace std;
 
 ClassImp(AliForwardCreateResponseMatrices)
 #if 0

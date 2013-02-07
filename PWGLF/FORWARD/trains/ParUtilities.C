@@ -194,9 +194,9 @@ struct ParUtilities
    * #endif
    * @endcode
    * 
-   * @param mode   Execution mode (Grid, PROOF, Local)
    * @param script Script to upload and compile in the PAR
    * @param deps   Dependency pars 
+   * @param isLocal Local build 
    * 
    * @return true on success. 
    */
@@ -309,6 +309,7 @@ struct ParUtilities
    * Write a build script
    * 
    * @param dir Directory to put it in
+   * @param base Base name 
    * 
    * @return true on success
    */
@@ -349,6 +350,7 @@ struct ParUtilities
    * @param dir   Directory to put macro in
    * @param deps  Dependencies
    * @param base  Base name of script to compile
+   * @param ext   `extension' - last part of file name 
    * 
    * @return true on success
    */

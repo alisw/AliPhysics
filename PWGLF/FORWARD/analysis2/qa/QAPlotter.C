@@ -496,6 +496,7 @@ struct QAPlotter : public QABase
    * @param h      Frame histogram
    * @param title  Title 
    * @param runs   List of runs, if any
+   * @param areas  Other areas 
    */
   void AddRuns(TH1* h, const char* title, TArrayI* runs=0, 
 	       TList* areas=0)

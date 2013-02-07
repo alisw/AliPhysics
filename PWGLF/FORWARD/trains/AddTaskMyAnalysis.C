@@ -5,10 +5,16 @@
  * 
  * @brief  Example script to add a task 
  */
-
+/** 
+ * @defgroup pwglf_forward_trains_example TrainSetup Examples 
+ * 
+ * @ingroup pwglf_forward_trains 
+ */
 /** 
  * Create and add an analysis task to the train 
  * 
+ * @ingroup pwglf_forward_trains_examples
+ *
  * @return Created analysis task
  */
 AliAnalysisTask* AddTaskMyAnalysis()

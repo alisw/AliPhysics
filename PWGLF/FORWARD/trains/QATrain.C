@@ -6,7 +6,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwglf_forward_trains_specific
+ * @ingroup pwglf_forward_trains_examples
  */
 
 #include "TrainSetup.C"
@@ -17,7 +17,7 @@
 /**
  * Analysis train to do full Quality Assurance train
  * 
- * @ingroup pwglf_forward_trains_specific
+ * @ingroup pwglf_forward_trains_examples
  */
 class QATrain : public TrainSetup
 {

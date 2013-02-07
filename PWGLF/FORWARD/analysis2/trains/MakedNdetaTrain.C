@@ -44,7 +44,6 @@ protected:
   /** 
    * Create the tasks 
    * 
-   * @param par  Whether to use par files 
    */
   void CreateTasks(AliAnalysisManager*)
   {

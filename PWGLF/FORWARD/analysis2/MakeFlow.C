@@ -24,8 +24,9 @@
  *
  * @param name     Name of train 
  * @param options  Options @see RunTrain 
- * @param runs     Options @see RunTrain 
- * @param nEvents  Number of events to process, negative for all 
+ * @param mode     Which execution environment 
+ * @param datadir  Data directory 
+ * @param urlOpts  URL options 
  *
  * @ingroup pwglf_forward_flow
  */

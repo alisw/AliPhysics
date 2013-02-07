@@ -1,19 +1,27 @@
+/**
+ * @file   AliForwardMultiplicityDistribution.h
+ * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @date   Thu Feb  7 01:02:42 2013
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_multdist
+ */
 #ifndef ALIFORWARDMULTIPLICITYDISTRIBUTION_H
 #define ALIFORWARDMULTIPLICITYDISTRIBUTION_H
- 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-  
 #include "AliAnalysisTaskSE.h"
 #include "AliBasedNdetaTask.h"
 #include <TList.h>
-#include <iostream>
 
 class TH2D;
 
 /**
  * Task to do the multiplicity distibution
  * 
+ * @ingroup pwglf_forward Tasks
+ * @ingroup pwglf_forward_multdist
+ * @todo Should not inherit from AliBasedNdetaTask 
  */
 class AliForwardMultiplicityDistribution : public AliBasedNdetaTask
 {

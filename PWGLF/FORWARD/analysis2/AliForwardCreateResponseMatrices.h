@@ -1,19 +1,35 @@
+/**
+ * @file   AliForwardCreateResponseMatrices.h
+ * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @date   Thu Feb  7 00:56:02 2013
+ * 
+ * @brief  
+ * 
+ * @ingroup pwglf_forward_multdist
+ */
+/** 
+ * @defgroup pwglf_forward_multdist Multiplicity Distributions
+ * 
+ * Code to do with @f$P(N_{ch})@f$ analysis
+ *
+ * @ingroup pwglf_forward_topical
+ */
 #ifndef ALIFORWARDCREATERESPONSEMATRICES_H
 #define ALIFORWARDCREATERESPONSEMATRICES_H
- 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
   
 #include "AliAnalysisTaskSE.h"
 #include "AliBasedNdetaTask.h"
 #include <TList.h>
-#include <iostream>
 
 class TH2D;
 
 /**
- * Task to do the multiplicity distibution
+ * Task to make the reponse matrices used by the multiplicity
+ * distibution analysis
  * 
+ * @ingroup pwglf_forward Tasks
+ * @ingroup pwglf_forward_multdist
+ * @todo Should not inherit from AliBasedNdetaTask 
  */
 class AliForwardCreateResponseMatrices : public AliBasedNdetaTask
 {

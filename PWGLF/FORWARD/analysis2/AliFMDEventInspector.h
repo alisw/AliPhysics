@@ -163,9 +163,7 @@ public:
    *                  event (according to the setting of fLowFluxCut) 
    * @param ivz       On return, the found vertex bin (1-based).  A zero
    *                  means outside of the defined vertex range
-   * @param vx        On return, the x position of the interaction point
-   * @param vy        On return, the y position of the interaction point
-   * @param vz        On return, the z position of the interaction point
+   * @param ip        On return, coordinates of interaction point
    * @param cent      On return, the centrality (in percent) or < 0 
    *                  if not found
    * @param nClusters On return, number of SPD clusters in @f$ |\eta|<1@f$ 

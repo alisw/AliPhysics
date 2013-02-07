@@ -68,7 +68,7 @@ struct LocalHelper : public Helper
    * Constructor 
    * 
    * @param url   Url 
-   * @param opts  Options 
+   * @param verbose Verbosity level 
    */
   LocalHelper(const TUrl& url, Int_t verbose)
     : Helper(url, verbose), fChain(0)

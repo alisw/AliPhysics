@@ -18,8 +18,11 @@
  * Add Flow task to train 
  * 
  * @param type          Which moments to do 
+ * @param useEtaGap     Whehter to use @f$\eta@f$ gaps
+ * @param etaGap        Size of @f$\eta@f$ gap
+ * @param useCent       Whether to use centrality 
  * @param mc            Monte-carlo input
- * @param dispVtx       Use satellite interactions 
+ * @param satVtx        Use satellite interactions 
  * @param outlierCutFMD Cut to remove events with outliers 
  * @param outlierCutSPD Cut to remove events with outliers 
  * @param addFlow       Afterburn what (MC only)

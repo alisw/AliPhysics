@@ -19,6 +19,9 @@
  * @param scheme    Normalisation scheme
  * @param cutEdges  Whether to cut edges when rebinning 
  * @param mcanalysisfilename Take final MC corrections from this - if present
+ * @param trigEff   Trigger efficiency 
+ * @param trigEff0  Trigger efficiency for 0-bin
+ * @param corrEmpty Correct for empty bins 
  * 
  * @return Newly created and configured task
  *

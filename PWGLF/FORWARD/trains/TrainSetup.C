@@ -3,7 +3,6 @@
  * 
  * Train specifications 
  *
- * @ingroup pwglf_forward
  */
 /**
  * @file   TrainSetup.C
@@ -68,16 +67,16 @@ struct TrainSetup
       fOptions(),
       fHelper(0)
   {
-    fOptions.Add("help", "Show help");
+    fOptions.Add("help", "Show help", false);
     fOptions.Add("date", "YYYY-MM-DD HH:MM", "Set date", "now");
-    fOptions.Add("bare-ps", "Use bare physics selection w/o task");
+    fOptions.Add("bare-ps", "Use bare physics selection w/o task", false);
     fOptions.Add("verbose", "LEVEL", "Set verbosity level", 0);
-    fOptions.Add("url", "URL", "Job location & input URL");
-    fOptions.Add("overwrite", "Allow overwrite");
+    fOptions.Add("url", "URL", "Job location & input URL", "");
+    fOptions.Add("overwrite", "Allow overwrite", false);
     fOptions.Add("events", "N", "Number of events to analyse", -1);
-    fOptions.Add("type", "ESD|AOD|USER", "Input data stype");
-    fOptions.Add("setup", "Only do the setup");
-    fOptions.Add("branches", "Load only requested branches");
+    fOptions.Add("type", "ESD|AOD|USER", "Input data stype", "");
+    fOptions.Add("setup", "Only do the setup", false);
+    fOptions.Add("branches", "Load only requested branches", false);
     fEscapedName = EscapeName(fName, "");
   }
   TrainSetup(const TrainSetup& o) 
@@ -307,7 +306,8 @@ struct TrainSetup
   /** 
    * Show the help 
    * 
-   * @param o 
+   * @param o      Output stream
+   * @param asProg If true, output as program options 
    * 
    * @return 
    */
@@ -350,9 +350,11 @@ struct TrainSetup
    * an object of that type with the given name, and then pass the 
    * options to it.  Then, it will run the setup.
    * 
-   * @param name  Train name 
-   * @param cls   Class name 
-   * @param opts  Comma seperated list of options
+   * @param name   Train name 
+   * @param cls    Class name 
+   * @param opts   Comma seperated list of options
+   * @param asProg Run as program 
+   * @param spawn  Spawn ROOT shell after execution 
    * 
    * @return true on success
    */
@@ -393,6 +395,8 @@ struct TrainSetup
       if (!train->Options().Parse(opts)) 
 	throw TString("Failed to parse options");
 
+      Info("", "URL=%s", train->Options().Get("url").Data());
+
       // Check if we got a help request
       if (train->Options().Has("help")) { 
 	train->Help(std::cout, asProg);
@@ -420,7 +424,7 @@ protected:
   //__________________________________________________________________
   /** 
    * @{ 
-   * @Name Overloadable behaviour 
+   * @name Overloadable behaviour 
    */
   //------------------------------------------------------------------
   /** 
@@ -455,7 +459,6 @@ protected:
   /** 
    * Create MC input handler 
    * 
-   * @param type  Run type (ESD or AOD)
    * @param mc    Assume monte-carlo input 
    * 
    * @return 
@@ -514,6 +517,7 @@ protected:
     }
     gROOT->Macro(Form("AddTaskPhysicsSelection.C(%d)", mc));
     mgr->RegisterExtraFile("event_stat.root");
+    mgr->AddStatisticsTask(AliVEvent::kAny);
   }
   //------------------------------------------------------------------
   /** 
@@ -539,6 +543,74 @@ protected:
    */
   virtual void CreateTasks(AliAnalysisManager* mgr)=0;
   /** 
+   * Add a task using a script and possibly some arguments 
+   * 
+   * @param macro Script to execute 
+   * @param args  Optional arguments to the script 
+   * 
+   * @return Created task or null
+   */
+  virtual AliAnalysisTask* AddTask(const TString& macro, 
+				   const TString& args)
+  {
+    TString p = gSystem->Which(gROOT->GetMacroPath(), macro.Data());
+    if (p.IsNull()) { 
+      Error("AddTask", "Macro %s not found", macro.Data());
+      return 0;
+    }
+    TString cmd(p);
+    if (!args.IsNull()) 
+      cmd.Append(TString::Format("(%s)", args.Data()));
+    
+    Int_t err;
+    Long_t ret = gROOT->Macro(cmd.Data(), &err, false);
+    if (!ret) { 
+      Error("AddTask", "Failed to execute %s", cmd.Data());
+      return 0;
+    }
+    return reinterpret_cast<AliAnalysisTask*>(ret);
+  }
+  /** 
+   * Add a task to the train with no arguments passed to the script 
+   * 
+   * @param macro The <b>AddTask</b> macro. 
+   * 
+   * @return The added task, if any
+   */
+  virtual AliAnalysisTask* AddTask(const TString& macro)
+  {
+    TString args;
+    return AddTask(macro, args);
+  }
+  /** 
+   * Add a single event analysis task to the train, passing the
+   * specified arguments to the macro.
+   * 
+   * @param macro The <b>AddTask</b> macro 
+   * @param args  Arguments to pass the macro 
+   * 
+   * @return The added task, if any 
+   */
+  virtual AliAnalysisTaskSE* AddSETask(const TString& macro, 
+				       const TString& args)
+  {
+    return dynamic_cast<AliAnalysisTaskSE*>(AddTask(macro, args));
+  }
+  /** 
+   * Add a single event task to the train with no arguments passed to
+   * the script
+   * 
+   * @param macro The <b>AddTask</b> macro. 
+   * 
+   * @return The added task, if any
+   */
+  virtual AliAnalysisTaskSE* AddSETask(const TString& macro)
+  {
+    TString args;
+    return AddSETask(macro, args);
+  }
+
+  /** 
    * Set the name of the train - should be name of the class.  Must be
    * overloaded.
    * 
@@ -554,8 +626,8 @@ protected:
   /** 
    * Escape bad elements of the name 
    * 
-   * @param name   Name to escape 
-   * @param datime Date and Time 
+   * @param name      Name to escape 
+   * @param datimeStr Date and Time string 
    * 
    * @return escaped name 
    */  
@@ -684,6 +756,7 @@ protected:
    * @param cls   Class of the train 
    * @param name  Name of the train
    * @param opts  Option list
+   * @param uopts Url options 
    */
   static void SaveSetupShell(const TString& out, const TString& cls,
 			     const TString& name, const OptionList& opts,
@@ -720,6 +793,7 @@ protected:
    * @param cls   Class of the train 
    * @param name  Name of the train
    * @param opts  Option list
+   * @param uopts Url options 
    */
   static void SaveSetupROOT(const TString& out, const TString& cls,
 			    const TString& name, const OptionList& opts,

@@ -1,3 +1,4 @@
+
 //
 // Calculate flow in the forward and central regions using the Q cumulants method.
 //
@@ -7,6 +8,16 @@
 // Outputs:
 //  - AnalysisResults.root
 //
+/**
+ * @file   AliForwardFlowTaskQC.cxx
+ * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @date   Thu Feb  7 01:09:00 2013
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_flow
+ */
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TInterpreter.h>

@@ -229,7 +229,7 @@ struct dNdetaDrawer
    * Force the plot of minimum bias, even if centrality dependent data
    * is present
    * 
-   * @param force if true, force minimum bias
+   * @param add if true, force minimum bias
    */
   void SetAddExec(Bool_t add=true) { fAddExec = add; }
   /** 

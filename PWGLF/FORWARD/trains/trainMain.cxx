@@ -122,7 +122,6 @@ void ProgramUsage(const char* progname, std::ostream& o)
  * 
  * @param progname Program name 
  * @param o        Output stream
- * @param r        Optional runner. 
  * 
  * @ingroup pwglf_forward_trains_run
  */

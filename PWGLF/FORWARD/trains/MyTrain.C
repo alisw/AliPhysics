@@ -18,7 +18,7 @@ public:
 				     "STEERBase,ESD,AOD,ANALYSIS,"
 				     "OADB,ANALYSISalice"))
       Fatal("CreateTasks", "Failed to create PAR file");
-    LoadLibrary("MyAnalysis");
+    fHelper->LoadLibrary("MyAnalysis");
     
     Long_t             r = gROOT->ProcessLine("new MyAnalysis(\"test\")");
     AliAnalysisTaskSE* t = reinterpret_cast<AliAnalysisTaskSE*>(r);

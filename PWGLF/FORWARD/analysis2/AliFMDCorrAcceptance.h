@@ -81,9 +81,9 @@ public:
   /** 
    * Get the phi acceptance 
    * 
-   * @param d 
-   * @param r 
-   * @param v 
+   * @param d Detector
+   * @param r ring 
+   * @param v vertex 
    * 
    * @return 
    */  
@@ -91,9 +91,9 @@ public:
   /** 
    * Get the phi acceptance 
    * 
-   * @param d 
-   * @param r 
-   * @param v 
+   * @param d Detector 
+   * @param r ring 
+   * @param b vertex bin number 
    * 
    * @return 
    */  
@@ -207,6 +207,7 @@ protected:
   /** 
    * Get the ring array corresponding to the specified ring
    * 
+   * @param m Array 
    * @param d Detector 
    * @param r Ring 
    * 
@@ -216,6 +217,7 @@ protected:
   /** 
    * Get the ring array corresponding to the specified ring
    * 
+   * @param m Array 
    * @param d Detector 
    * @param r Ring 
    * 

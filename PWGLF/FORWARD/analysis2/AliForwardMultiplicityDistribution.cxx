@@ -1,11 +1,19 @@
-
+/**
+ * @file   AliForwardMultiplicityDistribution.cxx
+ * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @date   Thu Feb  7 01:03:52 2013
+ * 
+ * @brief  
+ * 
+ * @ingroup pwglf_forward_multdist
+ * 
+ */
 #include <TH1D.h>
 #include "AliForwardMultiplicityDistribution.h"
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
 #include "TString.h"
-using namespace std;
 
 ClassImp(AliForwardMultiplicityDistribution)
 #if 0

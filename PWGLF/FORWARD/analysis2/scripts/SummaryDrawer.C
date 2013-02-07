@@ -72,6 +72,7 @@ protected:
    * 
    * @param parent Parent list
    * @param name   Name of object
+   * @param verb   Be verbose 
    * 
    * @return Pointer to object or null 
    */
@@ -101,6 +102,7 @@ protected:
    * 
    * @param parent Parent directory
    * @param name   Name of object
+   * @param verb   Be verbose 
    * 
    * @return Pointer to object or null 
    */
@@ -311,6 +313,7 @@ protected:
    * 
    * @param parent Parent collection 
    * @param name   Name of histogram 
+   * @param sub    Sub-component 
    * @param verb   If true and not found, complain
    * 
    * @return pointer or null
@@ -402,7 +405,8 @@ protected:
    * Create a canvas 
    * 
    * @param pname Name of PDF file to make 
-   * 
+   * @param landscape if true, print in landscape 
+   *
    * @return Created canvas 
    */
   void CreateCanvas(const TString& pname, Bool_t landscape=false)
@@ -486,7 +490,6 @@ protected:
   /** 
    * Close the PDF
    * 
-   * @param c Canvas 
    */
   void CloseCanvas()
   {
@@ -569,7 +572,7 @@ protected:
   /** 
    * Draw an object in pad 
    * 
-   * @param c       Pad
+   * @param p       Pad
    * @param h       Object to draw 
    * @param opts    Options
    * @param flags   Flags
@@ -867,7 +870,8 @@ protected:
   /** 
    * Draw an object in pad 
    * 
-   * @param c       Pad
+   * @param d       Detector 
+   * @param r       Ring 
    * @param h       Object to draw 
    * @param opts    Options
    * @param flags   Flags

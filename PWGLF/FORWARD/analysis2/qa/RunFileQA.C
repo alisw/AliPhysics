@@ -12,6 +12,8 @@
  * 
  * @param input   Input file 
  * @param output  Output tree file (optional)
+ * @param prodYear Production year 
+ * @param prodLetter Production letter
  * 
  * @ingroup pwglf_forward_qa_scripts
  */

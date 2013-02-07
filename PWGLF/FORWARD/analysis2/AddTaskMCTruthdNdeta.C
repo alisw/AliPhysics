@@ -18,6 +18,9 @@
  * @param useCent   Whether to use the centrality or not
  * @param scheme    Normalisation scheme
  * @param cutEdges  Whether to cut edges when rebinning 
+ * @param trigEff   Trigger efficiency 
+ * @param trigEff0  Trigger efficiency for 0-bin
+ * @param corrEmpty Correct for empty bins 
  * 
  * @return Newly created and configured task
  *

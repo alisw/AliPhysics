@@ -30,6 +30,7 @@
  * @param sNN     Collision energy 
  * @param field   L3 field setting. 
  * @param config  Configuration file to use 
+ * @param corrs   Corrections to use 
  *
  * @return newly allocated analysis task 
  *

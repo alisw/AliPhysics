@@ -671,6 +671,7 @@ INPUT                  = ../analysis2 \
                          ../analysis2/scripts \
                          ../analysis2/corrs \
                          ../analysis2/qa \
+                         ../analysis2/trains \
                          ../trains \
                          ../analysis2/doc
 
@@ -739,7 +740,8 @@ EXAMPLE_PATH           = ../analysis2 \
                          ../analysis2/tests \
                          ../analysis2/qa \
                          ../analysis2/corrs \
-                         ../analysis2/trains
+                         ../analysis2/trains \
+                         ../trains 
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the 
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

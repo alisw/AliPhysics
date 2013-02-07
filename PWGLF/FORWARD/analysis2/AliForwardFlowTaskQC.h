@@ -111,7 +111,8 @@ public:
    */
   void SetDetectorCuts(Double_t fmdCut, Double_t spdCut) { fFMDCut = fmdCut; fSPDCut = spdCut; }
   /**
-   * Set flow flags, eta-gap, sym. around eta = 0 or sat. vtx. interactions
+   * Set flow flags, @f$\eta@f$-gap, sym. around @f$\eta=0@f$ or
+   * sat. vtx. interactions
    *
    * @param flags EFlowFlags 
    */
@@ -125,9 +126,9 @@ public:
     kSatVtx  = 0x4
   };
   /**
-   *  Set |eta| value to make cut for eta gap at
+   *  Set @f$|\eta|@f$ value to make cut for @f$\eta@f$ gap at
    *
-   * @param eta gap value
+   * @param eg gap value
    */
   void SetEtaGapValue(Double_t eg) { fEtaGap = eg; }
 protected:
@@ -157,8 +158,9 @@ protected:
      * @param vHigh Max vertex z-coordinate
      * @param moment Flow moment
      * @param type Data type (FMD/SPD/FMDTR/SPDTR/MC)
-     * @param sym Data is symmetric in eta
+     * @param flags Flags
      * @param cut Cut value 
+     * @param etaGap @f$\eta@f$ gap 
      */
     VertexBin(Int_t vLow, Int_t vHigh, 
               UShort_t moment, TString type,
@@ -207,7 +209,8 @@ protected:
      * centrality cent
      * 
      * @param cent Event centrality
-     * 
+     * @param skipFourP Skip ?
+     *
      * @return void 
      */
     void CumulantsAccumulate(Double_t cent, Bool_t skipFourP = kFALSE);

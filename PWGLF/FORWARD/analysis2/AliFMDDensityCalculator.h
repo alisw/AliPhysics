@@ -106,7 +106,7 @@ public:
    * @param hists    Histogram cache
    * @param lowFlux  Low flux flag. 
    * @param cent     Centrality 
-   * @param vz       Vertex Z position
+   * @param ip       Coordinates of interaction point
    * 
    * @return true on successs 
    */
@@ -119,6 +119,7 @@ public:
    * Scale the histograms to the total number of events 
    * 
    * @param dir     where to put the output
+   * @param output  Output list
    * @param nEvents Number of events 
    */
   virtual void Terminate(const TList* dir, TList* output, Int_t nEvents);
@@ -306,13 +307,11 @@ protected:
    * 
    * @param d        Detector
    * @param r        Ring 
-   * @param s        Sector 
-   * @param t        Strip (not used)
-   * @param v        Vertex bin 
+   * @param t        Strip 
    * @param eta      Pseudo-rapidity 
    * @param lowFlux  Low-flux flag 
    * 
-   * @return 
+   * @return the correction factor 
    */
   virtual Float_t Correction(UShort_t d, Char_t r, UShort_t t, 
 			     Float_t eta, Bool_t lowFlux) const;
