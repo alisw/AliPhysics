@@ -35,7 +35,7 @@ ClassImp(AliDhcTask)
 AliDhcTask::AliDhcTask()
 : AliAnalysisTaskSE(), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
-  fPtTACrit(kTRUE),
+  fPtTACrit(kTRUE), fAllTAHists(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
@@ -56,7 +56,7 @@ AliDhcTask::AliDhcTask()
 AliDhcTask::AliDhcTask(const char *name) 
 : AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
-  fPtTACrit(kTRUE),
+  fPtTACrit(kTRUE), fAllTAHists(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
@@ -107,6 +107,7 @@ void AliDhcTask::UserCreateOutputObjects()
     AliInfo(Form(" efficiency correct associates? %d", fHEffA!=0));
     AliInfo(Form(" fill muons? %d", fFillMuons));
     AliInfo(Form(" use pTT > pTA criterion? %d", fPtTACrit));
+    AliInfo(Form(" create all pTT, pTA hists? %d", fAllTAHists));
     AliInfo(Form(" trigger eta range %f .. %f", fEtaTLo, fEtaTHi));
     AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
   }
@@ -220,7 +221,7 @@ void AliDhcTask::BookHistos()
           fHSs[count]  = 0;
           fHMs[count]  = 0;
           fHPts[count] = 0;
-          if (a>t) {
+          if ((a>t)&&!fAllTAHists) {
             ++count;
             continue;
           }

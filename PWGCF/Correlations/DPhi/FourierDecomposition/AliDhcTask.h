@@ -38,6 +38,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetDoWeights(Bool_t b)                 { fDoWeights = b;           }
   void         SetFillMuons(Bool_t b)                 { fFillMuons = b;           }
   void         SetPtTACrit(Bool_t b)                  { fPtTACrit = b;            }
+  void         SetAllTAHists(Bool_t b)                { fAllTAHists = b;          }
   void         SetEtaMax(Double_t eta)                { fEtaMax = eta;            }
   void         SetPoolSize(Int_t p)                   { fPoolSize = p;            }
   void         SetPtABins(TAxis *bins)                { fBPtA=bins;               }
@@ -85,6 +86,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   Bool_t             fDoWeights;       //  if true weight with 1/N per event
   Bool_t             fFillMuons;       //  fill the muon tracks into the mini event
   Bool_t             fPtTACrit;        //  use the pTT > pTA criterion?
+  Bool_t             fAllTAHists;      //  create all pTT,pTA combination hists, even t<a?
   Double_t           fEtaTLo;          //  Min eta for triggers
   Double_t           fEtaTHi;          //  Max eta for triggers
   Double_t           fEtaALo;          //  Min eta for associated
