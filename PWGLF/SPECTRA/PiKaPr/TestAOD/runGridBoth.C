@@ -2,8 +2,83 @@
 class  AliAnalysisManager;
 class  AliAnalysisAlien;
 class AliSpectraBothPID;
-void runGridBoth(TString mode="test",Int_t mc=0,Bool_t aod=kTRUE,Int_t day=15,Int_t month=6, Int_t year=2012, Bool_t sddin=kFALSE,Int_t pass=4) 
+Int_t mc=-1;
+Int_t aod=-1;
+TString griddatadir="";
+TString datapattern="";
+TString gridworkingdir="";
+TString aliroot="";
+TString root="";
+
+
+void runGridBoth(TString mode="test",TString configfile="config.txt",Int_t day=15,Int_t month=6, Int_t year=2012) 
 {
+
+
+   	ifstream infile(configfile);
+	char buffer[256];
+	while (infile.eof()==false)
+	{
+		buffer[0]='#'; 
+		while (buffer[0]=='#'&&infile.eof()==false)
+			infile.getline(buffer,256);
+		TString tmpstring(buffer);
+		cout<<buffer<<endl;
+		if(tmpstring.Contains("MC"))
+		{
+			tmpstring.Remove(0,3);
+			cout<<tmpstring<<endl;
+		        if (!tmpstring.IsDigit())
+			{
+				cout<<"Wrong format of MC flag in config file "<<endl;
+				return; 	
+			}
+			mc=tmpstring.Atoi();
+		}
+		else if(tmpstring.Contains("AOD")&&tmpstring.Length()<6)
+		{
+			tmpstring.Remove(0,4);
+		        if (!tmpstring.IsDigit())
+			{
+				cout<<"Wrong format of AOD flag in config file "<<endl;
+				return; 	
+			}
+			aod=tmpstring.Atoi();
+		}
+		else if(tmpstring.Contains("GridDataDir"))
+		{
+			griddatadir=tmpstring.Remove(0,12);		
+		}
+		else if(tmpstring.Contains("DataPattern"))
+		{	
+			datapattern=tmpstring.Remove(0,12);
+		}
+		else if (tmpstring.Contains("GridWorkingDir"))
+		{
+			gridworkingdir=tmpstring.Remove(0,15);
+		}
+		else if(tmpstring.Contains("root")&&!tmpstring.Contains("aliroot"))
+		{	
+			root=tmpstring.Remove(0,5);
+		}
+		else if (tmpstring.Contains("aliroot"))
+		{
+			aliroot=tmpstring.Remove(0,8);
+		}
+
+		else
+			continue;
+
+	}
+	 
+	if(mc<0||aod<0||griddatadir.Length()<1||root.Length()<1||datapattern.Length()<1||gridworkingdir.Length()<1||aliroot.Length()<1)
+	{
+		cout<<"lack of config info"<<endl;
+ 		return;	
+	}	
+cout<<mc<<" "<<aod<<" "<<griddatadir.Data()<<" "<<root.Data()<<" "<<datapattern.Data()<<" "<<gridworkingdir.Data()<<" "<<aliroot.Data()<<endl;
+	
+
   TString daystring=Form("%d%d%d",year,month,day);	
   //to be used with Aliroot > v5-03-32-AN
   AliLog::SetGlobalDebugLevel(100);
@@ -32,24 +107,26 @@ void runGridBoth(TString mode="test",Int_t mc=0,Bool_t aod=kTRUE,Int_t day=15,In
   gSystem->Load("libTENDER.so");
     gSystem->Load("libTENDERSupplies.so");
 gSystem->Load("libPWGLFspectra.so");
-
-  //__________________________________________________________________________
-  // Use AliRoot includes to compile our task
-  gROOT->ProcessLine(".include $ALICE_ROOT/include  ");
+  gROOT->ProcessLine(".include $ALICE_ROOT/include ");
   gSystem->SetIncludePath("-I.");
   gROOT->ProcessLine(".include $ALICE_ROOT/TOF ");
-gROOT->ProcessLine(".include $ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD");
+
   //gSystem->Load("libPWGLFspectra.so");
-//  gROOT->LoadMacro("AliSpectraBothTrackCuts.cxx+g");
+ // gROOT->LoadMacro("AliSpectraBothTrackCuts.cxx+g");
  // gROOT->LoadMacro("AliSpectraBothEventCuts.cxx+g");
   // gROOT->LoadMacro("HistogramNames.cxx");
  // gROOT->LoadMacro("AliSpectraBothHistoManager.cxx+g");
  // gROOT->LoadMacro("AliSpectraBothPID.cxx+g");
  // gROOT->LoadMacro("AliAnalysisTaskSpectraBoth.cxx+g");
+  //__________________________________________________________________________
+  // Use AliRoot includes to compile our task
+  gROOT->ProcessLine(".include $ALICE_ROOT/include  ");
+  gSystem->SetIncludePath("-I.");
+  gROOT->ProcessLine(".include $ALICE_ROOT/TOF ");
   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/AddTaskSpectraBoth.C");
 	
   // Create and configure the alien handler plugin
-  AliAnalysisGrid *alienHandler = CreateAlienHandler(mode,mc,aod,daystring,sddin,pass);  
+  AliAnalysisGrid *alienHandler = CreateAlienHandler(mode,daystring);  
   if (!alienHandler) return;
   // Create the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("testAnalysis");
@@ -79,20 +156,22 @@ gROOT->ProcessLine(".include $ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD");
   Double_t Nsigmapid=3.;
   Double_t pt=5.;
   Double_t p=5.;
-  Double_t y=.5;
+  Double_t y=.2;
   Double_t ptTofMatch=.6;
   UInt_t trkbit=1;
+  UInt_t trkbit2=16;
+
   UInt_t trkbitQVector=1;
   Bool_t UseCentPatchAOD049=kFALSE;
   Double_t DCA=100000;
-  UInt_t minNclsTPC=50;
-  Int_t rebinfactor=1;	
+  UInt_t minNclsTPC=70;
+  UInt_t minNclsTPC2=0;	
+  Int_t rebinfactor=1;		
  Bool_t mcfactor=0;
  if(mc)
 	mcfactor=1;	
 
  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-cout<<"test MC "<<mc<<endl;
   AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse(mcfactor,kTRUE,kFALSE,2,kFALSE,"",kTRUE);
 
 
@@ -108,64 +187,61 @@ cout<<"test MC "<<mc<<endl;
 	
 
     	AliAnalysisTaskSpectraBoth* task1=0x0;  
-    	AliAnalysisTaskSpectraBoth*  task2=0x0;
-    	AliAnalysisTaskSpectraBoth*  task3=0x0;
-    	AliAnalysisTaskSpectraBoth*  task4=0x0;
+	AliAnalysisTaskSpectraBoth* task2=0x0;
+	AliAnalysisTaskSpectraBoth* task3=0x0;
+	AliAnalysisTaskSpectraBoth* task4=0x0;  
+	AliAnalysisTaskSpectraBoth* task5=0x0;
+	AliAnalysisTaskSpectraBoth* task6=0x0;
 
-	task1=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor);
-  	task1->SetUseMinSigma(false);
-	task1->GetPID()->SetPIDtype(AliSpectraBothPID::kNSigmaTPCTOF);
 
-	if(!aod)
-	{	
-		task2=AddTaskSpectraBoth(mcfactor,-2,-2,-2,-2,-0.8,0.8,Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor);
-  		task2->SetUseMinSigma(false);
-  		task2->GetPID()->SetPIDtype(AliSpectraBothPID::kNSigmaTOF);	
-		task3=AddTaskSpectraBoth(mcfactor,-3,-3,-3,-3,-0.8,0.8,Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor);
-  		task3->SetUseMinSigma(false);
-		task3->GetPID()->SetPIDtype(AliSpectraBothPID::kNSigmaTOF);
-	}
-	else
-	{
-	 task2=AddTaskSpectraBoth(mcfactor,-2,-2,-2,-2,-0.8,0.8,Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor);
-                task2->SetUseMinSigma(true);
-                task2->GetPID()->SetPIDtype(AliSpectraBothPID::kNSigmaTPCTOF);
-                task3=AddTaskSpectraBoth(mcfactor,-3,-3,-3,-3,-0.8,0.8,2.0,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor);
-                task3->SetUseMinSigma(false);
-                task3->GetPID()->SetPIDtype(AliSpectraBothPID::kNSigmaTPCTOF);
-	}
-	task4=AddTaskSpectraBoth(mcfactor,-4,-4,-4,-4,-0.8,0.8,Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor);
-  	task4->SetUseMinSigma(false);
-	task4->GetPID()->SetPIDtype(AliSpectraBothPID::kNSigmaTOF);
- 
+
+	task1=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,-0.5,0.5,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor,"V0M",2);
+
+	task2=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,0.465,0.965,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor,"V0M",2);
+	
+	task3=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,0.265,0.665,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor,"V0M",2);
+
+	task4=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,-0.5,0.5,ptTofMatch,trkbit2,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC2,rebinfactor,"V0M",2);
+
+	task5=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,0.465,0.965,ptTofMatch,trkbit2,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC2,rebinfactor,"V0M",2);
+	
+	task6=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,0.265,0.665,ptTofMatch,trkbit2,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC2,rebinfactor,"V0M",2);
+
+
   if(mc)
   {
-  	task1->SetdotheMCLoopAfterEventCuts(kFALSE);
-	if(!aod)
-	{
-		task2->SetdotheMCLoopAfterEventCuts(kFALSE);
-		task3->SetdotheMCLoopAfterEventCuts(kFALSE);
-	}
-	task4->SetdotheMCLoopAfterEventCuts(kFALSE);
+  	task1->SetdotheMCLoopAfterEventCuts(kTRUE);
+	task2->SetdotheMCLoopAfterEventCuts(kTRUE);
+	task3->SetdotheMCLoopAfterEventCuts(kTRUE);
+	task4->SetdotheMCLoopAfterEventCuts(kTRUE);
+	task5->SetdotheMCLoopAfterEventCuts(kTRUE);
+	task6->SetdotheMCLoopAfterEventCuts(kTRUE);
 
 
   }
+  else
+ {
+	task1->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
+	task2->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
+	task3->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
+	task4->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
+	task5->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
+	task6->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
+
+
+}	
   if(!aod)
   {
 	AliESDtrackCuts* cuttpc1=AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
 	task1->SetAliESDtrackCuts(cuttpc1);
-	AliESDtrackCuts* cuttpc2=AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(0);
-	task2->SetAliESDtrackCuts(cuttpc2);
-	AliESDtrackCuts* cuttpc3=AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(0);
-	cuttpc3->SetMaxChi2TPCConstrainedGlobal(36);
-	task3->SetAliESDtrackCuts(cuttpc3);
-	AliESDtrackCuts* cuttpc4=AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+	AliESDtrackCuts* cuttpc2=AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
 
-	task4->SetAliESDtrackCuts(cuttpc4);
-  }	
+	task2->SetAliESDtrackCuts(cuttpc2);
+  }
+	
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
   AddTaskPIDqa(); 
-if(mode.Contains("test"))
+   if(mode.Contains("test"))
 	mgr->SetDebugLevel(1);
   //mgr->Init();
   if (!mgr->InitAnalysis())return;
@@ -175,100 +251,60 @@ if(mode.Contains("test"))
 }
 
 
-AliAnalysisGrid* CreateAlienHandler(TString mode="test",Int_t mc=0,Bool_t aod=kTRUE,TString daystring,Bool_t sddin,Int_t pass)
+AliAnalysisGrid* CreateAlienHandler(TString mode="test",TString daystring)
 {
   TString filename="*AliAOD.root";
-  TString datapattern="ESDs";
-  if(sddin)
-	datapattern+=Form("/pass%d_with_SDD",pass);
-  else
-	datapattern+=Form("/pass%d_without_SDD",pass);
+ 
 		
   if(!aod)
   {
 	filename="*AliESDs.root";
-	if(sddin&&mc)
-		filename="*AliESDs_wSDD.root";
   }
-  else
-  {
-	if(pass==4)
-		datapattern+="/AOD113";
-	if(pass==2)
-		datapattern+="/AOD052";		
-  } 
- TString datadirectory="/alice/data/2011/";		 	  
-  TString datasettmp="LHC11a";	
-
-cout<<"mc "<<mc<<" aod "<<aod<<endl;
-    		
-	if(mc==1)
-	{
-		datadirectory="/alice/sim/2011";
-		datasettmp="LHC11e3a_plus";
-		if(aod)
-			datapattern="AOD079";
-		else
-			datapattern="";
-
-		
-	}
-	else if(mc==2)
-	{
-		datadirectory="/alice/sim/2012";
-		datasettmp="LHC12f1a";
-		datapattern="";
-	}
-	else if(mc==3)	
-	{
-		datadirectory="/alice/sim/2012";
-		datasettmp="LHC12f1b";
-		datapattern="";
-
-	}
-	else if(mc==4)	
-	{
-		datadirectory="/alice/sim/";
-		datasettmp="LHC11b10a";
-		if(aod)
-			datapattern="AOD116";
-		else
-			datapattern="";
 
 
-
-	}
-	
 
  
-  TString jobsettings=Form("dataset%sAOD%dSDD%d",datasettmp.Data(),aod,sddin);	
-  if(!mc)
-  {
-	jobsettings+="pass";
-	jobsettings+=pass;
+  TString jobsettings=griddatadir;
+  jobsettings+=datapattern;
+  if(aod)
+	jobsettings+="AOD";
+  else
+	jobsettings+="ESD";
 
-   }			
+  if(mc)
+	jobsettings+="MC";
+  else
+	jobsettings+="DATA";
+		
+		
+  jobsettings.ReplaceAll("/","");	
+
+ jobsettings.ReplaceAll("*","");
+	
+	
 
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
-  plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF  -I$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD");
-  plugin->SetAdditionalLibs("libSTEERBase.so libESD.so libAOD.so libANALYSISalice.so libPWGLFspectra.so libTENDER.so libTENDERSupplies.so");
+  //plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF  -I$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD");
+  //plugin->SetAdditionalLibs("libSTEERBase.so libESD.so libAOD.so libANALYSISalice.so libPWGLFspectra.so libTENDER.so libTENDERSupplies.so");
   //plugin->SetAnalysisSource("AliSpectraBothHistoManager.cxx AliSpectraBothTrackCuts.cxx AliSpectraBothEventCuts.cxx AliSpectraBothPID.cxx AliAnalysisTaskSpectraBoth.cxx");
-  
+    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF ");
+  plugin->SetAdditionalLibs("libTENDER.so libTENDERSupplies.so libPWGLFspectra.so");
+ // plugin->SetAnalysisSource("AliSpectraBothHistoManager.cxx AliSpectraBothTrackCuts.cxx AliSpectraBothEventCuts.cxx AliSpectraBothPID.cxx AliAnalysisTaskSpectraBoth.cxx");
   plugin->SetOverwriteMode();
   plugin->SetExecutableCommand("aliroot -q -b");  
   plugin->SetRunMode(mode.Data());
   plugin->SetNtestFiles(1);
   //Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-34-02");
-  plugin->SetAliROOTVersion("v5-04-09-AN");
-  // Declare input data to be processed.
-  plugin->SetGridDataDir(Form("%s/%s/",datadirectory.Data(),datasettmp.Data()));
+  plugin->SetROOTVersion(root.Data());
+  plugin->SetAliROOTVersion(aliroot.Data());
+  // Declare input data to be processed
+  plugin->SetGridDataDir(griddatadir.Data());
   plugin->SetDataPattern(Form("%s/%s",datapattern.Data(),filename.Data()));
-  plugin->SetGridWorkingDir(Form("/pp2.76TeV%s/%s/",daystring.Data(),jobsettings.Data()));
-  plugin->SetAnalysisMacro(Form("pp276%s.C",jobsettings.Data()));
-  plugin->SetExecutable(Form("pp276%s.sh",jobsettings.Data()));
-  plugin->SetJDLName(Form("Taskpp276%s.jdl",jobsettings.Data()));
+  plugin->SetGridWorkingDir(Form("%s%s",gridworkingdir.Data(),daystring.Data()));
+  plugin->SetAnalysisMacro(Form("%s.C",jobsettings.Data()));
+  plugin->SetExecutable(Form("%s.sh",jobsettings.Data()));
+  plugin->SetJDLName(Form("Task%s.jdl",jobsettings.Data()));
 
   if(mc)
   {
@@ -290,7 +326,7 @@ cout<<"mc "<<mc<<" aod "<<aod<<endl;
   plugin->SetMergeExcludes("EventStat_temp.root"
                             "event_stat.root");
   plugin->SetMergeViaJDL(true);
-  plugin->SetTTL(10*3600);
+  plugin->SetTTL(15*3600);
   // Optionally set input format (default xml-single)
   plugin->SetInputFormat("xml-single");
   // Optionally modify job price (default 1)
