@@ -49,6 +49,8 @@
 #pragma link C++ class AliEventPoolManager+;
 #pragma link C++ class AliUnfolding+;
 
+#pragma link C++ class AliAnalysisUtils+;
+
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;
 #pragma link C++ class AliXMLCollection+;
