@@ -38,14 +38,25 @@ Int_t LHC10bcde(const TString& species    = "Deuteron",
 //
 // call Config_XXX for each period, merge the corrected pt and then get the results
 //
-	using namespace std;
-	
 	const Int_t kNper = 4;
 	const TString kPeriod[kNper]    = { "lhc10b", "lhc10c", "lhc10d", "lhc10e" };
 	const TString kOutputTag[kNper] = { "lhc10b", "lhc10c", "lhc10d", "lhc10e" };
 	
-	Double_t ymin = (species=="Proton") ? 1.1e-6 : 1.1e-8;
-	Double_t ymax = (species=="Proton") ? 4.e-1 : 4.e-4;
+	Int_t lowbin   = (species=="Proton") ? 5  : 4;
+	Int_t jointbin = (species=="Proton") ? 11 : 6;
+	Int_t hibin    = (species=="Proton") ? 36 : 15;
+	
+	Double_t ymin  = (species=="Proton") ? 1.1e-6 : 1.1e-8;
+	Double_t ymax  = (species=="Proton") ? 4.e-1  : 4.e-4;
+	
+	using namespace std;
+	
+	if( (option<0) || (option>2) || ((species != "Proton") && (species != "Deuteron")))
+	{
+		cerr << "unknown species/option: " << species << "/" << option << endl;
+		cerr << "species: Proton or Deuteron, options: 0 (TPC), 1 (TOF), 2 (TPCTOF)" << endl;
+		exit(1);
+	}
 	
 	TFileMerger m;
 	
@@ -60,36 +71,20 @@ Int_t LHC10bcde(const TString& species    = "Deuteron",
 			      + "\""  + multTag        + "\","
 			      + "\""  + multCorTag;
 			
-		if(species=="Proton" && option==0)
+		switch(option)
 		{
-			cout << "Config_Proton_TPC_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Proton_TPC_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), inel));
-		}
-		else if(species=="Proton" && option==1)
-		{
-			cout << "Config_Proton_TOF_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Proton_TOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), inel));
-		}
-		else if(species=="Deuteron" && option==0)
-		{
-			cout << "Config_Deuteron_TPC_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Deuteron_TPC_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), inel));
-		}
-		else if(species=="Deuteron" && option==1)
-		{
-			cout << "Config_Deuteron_TOF_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Deuteron_TOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), inel));
-		}
-		else if((species=="Proton" || species=="Deuteron") && option==2)
-		{
-			cout << "Config_TPCTOF_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_TPCTOF_LHC10x.C+g(\"%s\",%d,0,\"%s\")", arg.Data(), kNormToInel[i], species.Data()));
-		}
-		else
-		{
-			cerr << "unknown species/option: " << species << "/" << option << endl;
-			cerr << "usage: Proton/0, Proton/1, Proton/2 or Deuteron" << endl;
-			exit(1);
+			case 0:
+				cout << "Config_" << species << "_TPC_LHC10x.C" << endl << endl;
+				gROOT->ProcessLine(Form(".x Config_%s_TPC_LHC10x.C+g(\"%s\", %d, 0)", species.Data(), arg.Data(), inel));
+				break;
+			case 1:
+				cout << "Config_" << species << "_LHC10x.C" << endl << endl;
+				gROOT->ProcessLine(Form(".x Config_%s_TOF_LHC10x.C+g(\"%s\", %d, 0)", species.Data(), arg.Data(), inel));
+				break;
+			case 2:
+				cout << "Config_TPCTOF_LHC10x.C" << endl << endl;
+				gROOT->ProcessLine(Form(".x Config_TPCTOF_LHC10x.C+g(\"%s\", %d, 0, \"%s\", %d, %d, %d)", arg.Data(), inel, species.Data(), lowbin, jointbin, hibin));
+				break;
 		}
 		
 		TString ptfile = outputDir + "/" + species + "-" + kOutputTag[i] + "-Pt.root";

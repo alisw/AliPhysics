@@ -58,12 +58,6 @@ void DrawSpectra(const TString& inputFile="spectra.root", const TString& tag="lh
 	grDYieldPt->SetLineColor(kRed);
 	grDYieldPt->Draw("P");
 	
-	// fitting function
-	TF1* fit0 = (TF1*)FindObj(finput, tag, particle + "_Fit_DiffYield_Pt");
-	fit0->SetLineWidth(1);
-	fit0->SetLineColor(kRed);
-	fit0->Draw("same");
-	
 	// invariant differential yields
 	
 	c0->cd(2);
@@ -82,12 +76,6 @@ void DrawSpectra(const TString& inputFile="spectra.root", const TString& tag="lh
 	grInvDYieldPt->SetLineColor(kRed);
 	grInvDYieldPt->Draw("P");
 	
-	// fitting function
-	TF1* fit1 = (TF1*)FindObj(finput, tag, particle + "_Fit_InvDiffYield_Pt");
-	fit1->SetLineWidth(1);
-	fit1->SetLineColor(kRed);
-	fit1->Draw("same");
-	
 	// invariant differential cross section
 	
 	c0->cd(3);
@@ -105,10 +93,4 @@ void DrawSpectra(const TString& inputFile="spectra.root", const TString& tag="lh
 	grInvDXsectPt->SetMarkerColor(kRed);
 	grInvDXsectPt->SetLineColor(kRed);
 	grInvDXsectPt->Draw("P");
-	
-	// fitting function
-	TF1* fit2 = (TF1*)FindObj(finput, tag, particle + "_Fit_InvDiffXSection_Pt");
-	fit2->SetLineWidth(1);
-	fit2->SetLineColor(kRed);
-	fit2->Draw("same");
 }

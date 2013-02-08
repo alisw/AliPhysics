@@ -23,12 +23,13 @@
 
 #include "AliLnB2.h"
 
-Int_t B2(const TString& pSpectra   = "~/alice/output/Proton-lhc10d-Spectra.root",
-         const TString& ptag       = "lhc10d",
-         const TString& dSpectra   = "~/alice/output/Deuteron-lhc10d-Spectra.root",
-         const TString& dtag       = "lhc10d",
-         const TString& outputfile = "~/alice/output/lhc10d-B2.root",
-         const TString& otag       = "lhc10d")
+Int_t B2(  const TString& pSpectra   = "~/alice/output/Proton-lhc10d-Spectra.root"
+         , const TString& dSpectra   = "~/alice/output/Deuteron-lhc10d-Spectra.root"
+         , const TString& ptag       = "lhc10d"
+         , const TString& dtag       = "lhc10d"
+         , const TString& outputfile = "~/alice/output/lhc10d-B2.root"
+         , const TString& otag       = "lhc10d"
+         , const Bool_t   draw       = 1)
 {
 //
 // coalescence parameter
@@ -56,6 +57,8 @@ Int_t B2(const TString& pSpectra   = "~/alice/output/Proton-lhc10d-Spectra.root"
 	gSystem->Exec("rm -f B2.root AntiB2.root");
 	
 	// draw
+	
+	if(!draw) return 0;
 	
 	for(Int_t i=0; i<kNpart; ++i)
 	{

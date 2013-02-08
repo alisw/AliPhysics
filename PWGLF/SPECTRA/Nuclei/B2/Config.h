@@ -13,15 +13,28 @@
 #include <TStyle.h>
 #include <cstdlib>
 
+namespace CollSystem
+{
+//
+// pp collision systems
+//
+	const Int_t    kNener               = 3;
+	const TString  kEnergyTag[kNener]   = { "900GeV", "2.76TeV", "7TeV" };
+	const Double_t kEnergy[kNener]      = { 0.9, 2.76, 7. };
+	const Double_t kEnergyError[kNener] = { 0 };
+	const TString  kEnergyName          = "#sqrt{s} (TeV)";
+};
+
 namespace B2mult
 {
 //
 // multiplicity classes
 //
-	const Int_t kNmult = 6;
-	const TString kMultClass[kNmult]   = { "ntrk0002", "ntrk0204", "ntrk0408", "ntrk0811", "ntrk1120", "ntrk20xx" };
+	const Int_t    kNmult              = 6;
+	const TString  kMultTag[kNmult]    = { "ntrk0002", "ntrk0204", "ntrk0408", "ntrk0811", "ntrk1120", "ntrk20xx" };
 	const Double_t kKNOmult[kNmult]    = { 0.20, 0.60, 1.01, 1.60, 2.60, 4.35 };
-	const Double_t kKNOmultErr[kNmult] = { 0, 0, 0, 0, 0, 0 };
+	const Double_t kKNOmultErr[kNmult] = { 0 };
+	const TString  kKNOmultName        = "z";
 };
 
 TString GetCollSystem(const TString& period)
@@ -313,7 +326,7 @@ void DrawOutputSpectraMult(const TString& spectra, const TString& species, Doubl
 	
 	for(Int_t i=0; i<2; ++i)
 	{
-		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"%s_InvDiffYield_Pt\",\"%s\",0,4.5, %g, %g, \"p_{T} (GeV/c)\", \"#frac{1}{2#piN_{inel}} #frac{d^{2}N}{p_{T}dp_{T}dy} (GeV^{-2}c^{3})\", %d, \"c%d\",\"%s\")", spectra.Data(), kParticle[i].Data(), refdir.Data(),ymin, ymax, option, i, kParticle[i].Data()));
+		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"%s_InvDiffYield_Pt\",\"%s\",0,4.5, %g, %g, \"p_{T} (GeV/c)\", \"#frac{1}{2#piN_{ev}} #frac{d^{2}N}{p_{T}dp_{T}dy} (GeV^{-2}c^{3})\", %d, \"%s\",\"%s\")", spectra.Data(), kParticle[i].Data(), refdir.Data(),ymin, ymax, option, kParticle[i].Data(), kParticle[i].Data()));
 	}
 }
 

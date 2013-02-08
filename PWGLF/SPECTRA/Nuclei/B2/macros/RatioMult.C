@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// particle ratios as a function of multiplicity
+// d/p ratio
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
 #include <TROOT.h>
@@ -24,6 +24,9 @@
 #include <TCanvas.h>
 #include <TMath.h>
 #include <TStyle.h>
+#include <TFitResult.h>
+#include <TFitResultPtr.h>
+#include <TVirtualFitter.h>
 
 #include "B2.h"
 #include "Config.h"
@@ -31,118 +34,174 @@
 void GetRatio(Double_t x, Double_t y, Double_t errx, Double_t erry, Double_t& r, Double_t& rerr);
 void Draw(TGraph* gr, Int_t marker, Int_t color, const TString& xtitle, const TString& ytitle);
 
-void RatioMult(const TString& pSpectra = "~/alice/output/Proton-lhc10d-Mult-Spectra.root",
-               const TString& ptag     = "lhc10d",
-               const TString& dSpectra = "~/alice/output/Deuteron-lhc10d-Mult-Spectra.root",
-               const TString& dtag     = "lhc10d")
+void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-Mult-Spectra.root"
+               , const TString&  dSpectra   = "~/alice/output/Deuteron-lhc10d-Mult-Spectra.root"
+               , const TString&  ptag       = "lhc10d"
+               , const TString&  dtag       = "lhc10d"
+               , const Int_t     nx         = B2mult::kNmult
+               , const TString*  xtag       = B2mult::kMultTag
+               , const Double_t* x          = B2mult::kKNOmult
+               , const Double_t* xerr       = B2mult::kKNOmultErr
+               , const TString&  xname      = B2mult::kKNOmultName
+               , const Bool_t    tsallis    = 1
+               , const TString&  outputfile = "~/alice/output/Ratio-Mult.root"
+               , const TString&  otag       = "Tsallis")
 {
 //
-// particle ratios as a function of multiplicity (from fitting distributions)
+// d/p ratio as a function of X
 //
-	using namespace B2mult;
-	
+	const Int_t kNspec = 2;
 	const Int_t kNpart = 2;
 	
-	const TString kProton[kNpart] = { "Proton", "AntiProton" };
-	const TString kDeuteron[kNpart] = { "Deuteron", "AntiDeuteron" };
+	const TString kParticle[kNspec][kNpart] = { {"Proton", "AntiProton"}, { "Deuteron", "AntiDeuteron"} };
 	
-	// open files
+	//TVirtualFitter::SetDefaultFitter("Minuit2");
 	
-	TFile* fproton = new TFile(pSpectra.Data());
+	TFile* fproton = new TFile(pSpectra.Data(), "read");
 	if(fproton->IsZombie()) exit(1);
 	
-	TFile* fdeuteron = new TFile(dSpectra.Data());
+	TFile* fdeuteron = new TFile(dSpectra.Data(), "read");
 	if(fdeuteron->IsZombie()) exit(1);
 	
+	TFile* finput[kNspec] = { fproton, fdeuteron };
+	TString tag[kNspec] = { ptag, dtag };
+	
 	// particle ratios
-	TGraphErrors*  grRatio[kNpart]    = { new TGraphErrors(), new TGraphErrors() };
-	TGraphErrors*  grMixRatio[kNpart] = { new TGraphErrors(), new TGraphErrors() };
+	TGraphErrors* grRatio[kNspec]           = { new TGraphErrors(), new TGraphErrors() };
+	TGraphErrors* grMixRatio[kNspec]        = { new TGraphErrors(), new TGraphErrors() };
 	
 	// model parameters
-	TGraphErrors*  grProtondNdy[kNpart]    = { new TGraphErrors(), new TGraphErrors() };
-	TGraphErrors*  grProtonN[kNpart]       = { new TGraphErrors(), new TGraphErrors() };
-	TGraphErrors*  grProtonC[kNpart]       = { new TGraphErrors(), new TGraphErrors() };
-	TGraphErrors*  grProtonChi2Ndf[kNpart] = { new TGraphErrors(), new TGraphErrors() };
-	//TGraphErrors*  grProtonProb[kNpart]    = { new TGraphErrors(), new TGraphErrors() };
+	TGraphErrors* grP0[kNspec][kNpart]      = {{new TGraphErrors(), new TGraphErrors()},
+	                                           {new TGraphErrors(), new TGraphErrors()}};
+	TGraphErrors* grP1[kNspec][kNpart]      = {{new TGraphErrors(), new TGraphErrors()},
+	                                           {new TGraphErrors(), new TGraphErrors()}};
+	TGraphErrors* grP2[kNspec][kNpart]      = {{new TGraphErrors(), new TGraphErrors()},
+	                                           {new TGraphErrors(), new TGraphErrors()}};
+	TGraphErrors* grChi2Ndf[kNspec][kNpart] = {{new TGraphErrors(), new TGraphErrors()},
+	                                           {new TGraphErrors(), new TGraphErrors()}};
 	
-	TGraphErrors*  grDeuterondNdy[kNpart]    = { new TGraphErrors(), new TGraphErrors() };
-	TGraphErrors*  grDeuteronN[kNpart]       = { new TGraphErrors(), new TGraphErrors() };
-	TGraphErrors*  grDeuteronC[kNpart]       = { new TGraphErrors(), new TGraphErrors() };
-	TGraphErrors*  grDeuteronChi2Ndf[kNpart] = { new TGraphErrors(), new TGraphErrors() };
-	//TGraphErrors*  grDeuteronProb[kNpart]    = { new TGraphErrors(), new TGraphErrors() };
+	TGraphErrors* grdNdy[kNspec][kNpart]    = {{new TGraphErrors(), new TGraphErrors()},
+	                                           {new TGraphErrors(), new TGraphErrors()}};
 	
-	for(Int_t i=0; i<kNmult; ++i)
+	TGraphErrors* grDYieldPt[nx][kNspec][kNpart];
+	TF1* fncTsallis[nx][kNspec][kNpart];
+	
+	for(Int_t i=0; i<nx; ++i)
 	{
-		TF1* fncProton[kNpart];
-		TF1* fncDeuteron[kNpart];
+		Double_t dNdy[kNspec][kNpart];
+		Double_t dNdyErr[kNspec][kNpart];
 		
-		for(Int_t j=0; j<kNpart; ++j)
+		for(Int_t j=0; j<kNspec; ++j)
 		{
-			fncProton[j] = (TF1*)FindObj(fproton, ptag + "-" + kMultClass[i], kProton[j] + "_Fit_InvDiffYield_Pt");
-			fncDeuteron[j] = (TF1*)FindObj(fdeuteron, dtag + "-" + kMultClass[i], kDeuteron[j] + "_Fit_InvDiffYield_Pt");
+			for(Int_t k=0; k<kNpart; ++k)
+			{
+				grDYieldPt[i][j][k] = (TGraphErrors*)FindObj(finput[j], tag[j] + "-" + xtag[i], kParticle[j][k] + "_SysErr_DiffYield_Pt");
+				
+				if(tsallis)
+				{
+					fncTsallis[i][j][k] = TsallisDYield(GetMass(kParticle[j][k]), kParticle[j][k] + "_Tsallis_DiffYield_Pt",0,10);
+				}
+				else
+				{
+					fncTsallis[i][j][k] = TsallisParetoDYield(GetMass(kParticle[j][k]), kParticle[j][k] + "_Tsallis_DiffYield_Pt",0,10);
+				}
+				
+				TFitResultPtr r = grDYieldPt[i][j][k]->Fit(fncTsallis[i][j][k], "RENSQ");
+				
+				if(tsallis)
+				{
+					dNdy[j][k] = fncTsallis[i][j][k]->Integral(0,100);
+					dNdyErr[j][k] = fncTsallis[i][j][k]->IntegralError(0,100,r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray());
+				}
+				else
+				{
+					dNdy[j][k] = fncTsallis[i][j][k]->GetParameter(0);
+					dNdyErr[j][k] = fncTsallis[i][j][k]->GetParError(0);
+				}
+				
+				Int_t status = r;
+				printf("status: %d\tdN/dy: %g +/- %g\n",status,dNdy[j][k],dNdyErr[j][k]);
+				
+				grdNdy[j][k]->SetPoint(i, x[i], dNdy[j][k]);
+				grdNdy[j][k]->SetPointError(i, xerr[i], dNdyErr[j][k]);
+			}
 		}
 		
-		// integrated ratios
-		
-		Double_t dNdy[kNpart] = {fncProton[0]->GetParameter(0), fncDeuteron[0]->GetParameter(0)};
-		Double_t dNdyErr[kNpart] = {fncProton[0]->GetParError(0), fncDeuteron[0]->GetParError(0)};
-		
-		Double_t dNdyBar[kNpart] = {fncProton[1]->GetParameter(0), fncDeuteron[1]->GetParameter(0)};
-		Double_t dNdyBarErr[kNpart] = {fncProton[1]->GetParError(0), fncDeuteron[1]->GetParError(0)};
-		
 		// ratios
-		Double_t ratio[kNpart], ratioErr[kNpart];
-		for(Int_t j=0; j<kNpart; ++j)
+		Double_t ratio[kNspec], ratioErr[kNspec];
+		for(Int_t j=0; j<kNspec; ++j)
 		{
-			GetRatio(dNdyBar[j], dNdy[j], dNdyBarErr[j], dNdyErr[j], ratio[j], ratioErr[j]);
-			grRatio[j]->SetPoint(i, kKNOmult[i], ratio[j]);
+			GetRatio(dNdy[j][1], dNdy[j][0], dNdyErr[j][1], dNdyErr[j][0], ratio[j], ratioErr[j]);
+			
+			grRatio[j]->SetPoint(i, x[i], ratio[j]);
 			grRatio[j]->SetPointError(i, 0, ratioErr[j]);
 		}
 		
 		// mixed ratios
 		Double_t mixRatio[kNpart], mixRatioErr[kNpart];
-		
-		GetRatio(dNdy[1], dNdy[0], dNdyErr[1], dNdyErr[0], mixRatio[0], mixRatioErr[0]);
-		GetRatio(dNdyBar[1], dNdyBar[0], dNdyBarErr[1], dNdyBarErr[0], mixRatio[1], mixRatioErr[1]);
-		
 		for(Int_t j=0; j<kNpart; ++j)
 		{
-			grMixRatio[j]->SetPoint(i, kKNOmult[i], mixRatio[j]);
-			grMixRatio[j]->SetPointError(i, 0, mixRatioErr[j]);
+			GetRatio(dNdy[1][j], dNdy[0][j], dNdyErr[1][j], dNdyErr[0][j], mixRatio[j], mixRatioErr[j]);
+			
+			grMixRatio[j]->SetPoint(i, x[i], mixRatio[j]);
+			grMixRatio[j]->SetPointError(i, xerr[i], mixRatioErr[j]);
 		}
 		
 		// model parameters
-		for(Int_t j=0; j<kNpart; ++j)
+		for(Int_t j=0; j<kNspec; ++j)
 		{
-			grProtondNdy[j]->SetPoint(i, kKNOmult[i], fncProton[j]->GetParameter(0));
-			grProtondNdy[j]->SetPointError(i, 0, fncProton[j]->GetParError(0));
-			
-			grProtonN[j]->SetPoint(i, kKNOmult[i], fncProton[j]->GetParameter(1));
-			grProtonN[j]->SetPointError(i, 0, fncProton[j]->GetParError(1));
-			
-			grProtonC[j]->SetPoint(i, kKNOmult[i], fncProton[j]->GetParameter(2));
-			grProtonC[j]->SetPointError(i, 0, fncProton[j]->GetParError(2));
-			
-			grProtonChi2Ndf[j]->SetPoint(i, kKNOmult[i], fncProton[j]->GetChisquare()/fncProton[j]->GetNDF());
-			//grProtonProb[j]->SetPoint(i, kKNOmult[i], fncProton[j]->GetProb());
-			
-			// deuteron
-			grDeuterondNdy[j]->SetPoint(i, kKNOmult[i], fncDeuteron[j]->GetParameter(0));
-			grDeuterondNdy[j]->SetPointError(i, 0, fncDeuteron[j]->GetParError(0));
-			
-			grDeuteronN[j]->SetPoint(i, kKNOmult[i], fncDeuteron[j]->GetParameter(1));
-			grDeuteronN[j]->SetPointError(i, 0, fncDeuteron[j]->GetParError(1));
-			
-			grDeuteronC[j]->SetPoint(i, kKNOmult[i], fncDeuteron[j]->GetParameter(2));
-			grDeuteronC[j]->SetPointError(i, 0, fncDeuteron[j]->GetParError(2));
-			
-			grDeuteronChi2Ndf[j]->SetPoint(i, kKNOmult[i], fncDeuteron[j]->GetChisquare()/fncDeuteron[j]->GetNDF());
-			//grDeuteronProb[j]->SetPoint(i, kKNOmult[i], fncDeuteron[j]->GetProb());
+			for(Int_t k=0; k<kNpart; ++k)
+			{
+				grP0[j][k]->SetPoint(i, x[i], fncTsallis[i][j][k]->GetParameter(0));
+				grP0[j][k]->SetPointError(i, xerr[i], fncTsallis[i][j][k]->GetParError(0));
+				
+				grP1[j][k]->SetPoint(i, x[i], fncTsallis[i][j][k]->GetParameter(1));
+				grP1[j][k]->SetPointError(i, xerr[i], fncTsallis[i][j][k]->GetParError(1));
+				
+				grP2[j][k]->SetPoint(i, x[i], fncTsallis[i][j][k]->GetParameter(2));
+				grP2[j][k]->SetPointError(i, xerr[i], fncTsallis[i][j][k]->GetParError(2));
+				
+				grChi2Ndf[j][k]->SetPoint(i, x[i], fncTsallis[i][j][k]->GetChisquare()/fncTsallis[i][j][k]->GetNDF());
+			}
 		}
 	}
 	
-	delete fproton;
-	delete fdeuteron;
+	// save
+	
+	TFile* foutput = new TFile(outputfile.Data(), "recreate");
+	if (foutput->IsZombie()) exit(1);
+	
+	foutput->mkdir(otag.Data());
+	foutput->cd(otag.Data());
+	
+	for(Int_t i=0; i<kNspec; ++i)
+	{
+		grRatio[i]->SetName(Form("%s%s_Ratio", kParticle[i][1].Data(), kParticle[i][0].Data()));
+		grRatio[i]->Write();
+		
+		grMixRatio[i]->SetName(Form("%s%s_Ratio", kParticle[1][i].Data(), kParticle[0][i].Data()));
+		grMixRatio[i]->Write();
+	}
+	
+	for(Int_t i=0; i<kNspec; ++i)
+	{
+		for(Int_t j=0; j<kNpart; ++j)
+		{
+			grP0[i][j]->SetName(Form("%s_P0", kParticle[i][j].Data()));
+			grP1[i][j]->SetName(Form("%s_P1", kParticle[i][j].Data()));
+			grP2[i][j]->SetName(Form("%s_P2", kParticle[i][j].Data()));
+			
+			grP0[i][j]->Write();
+			grP1[i][j]->Write();
+			grP2[i][j]->Write();
+			
+			grdNdy[i][j]->SetName(Form("%s_dNdy", kParticle[i][j].Data()));
+			grChi2Ndf[i][j]->SetName(Form("%s_Chi2Ndf", kParticle[i][j].Data()));
+			
+			grdNdy[i][j]->Write();
+			grChi2Ndf[i][j]->Write();
+		}
+	}
 	
 	// draw
 	
@@ -163,64 +222,70 @@ void RatioMult(const TString& pSpectra = "~/alice/output/Proton-lhc10d-Mult-Spec
 	
 	const Int_t kNCol = 4;
 	
-	TCanvas* c0 = new TCanvas("c0", "proton model parameters");
-	c0->Divide(kNCol,2);
+	TCanvas* c0[kNspec];
 	
-	for(Int_t j=0; j<kNpart; ++j)
+	for(Int_t i=0; i<kNspec; ++i)
 	{
-		c0->cd(kNCol*j+1);
-		Draw(grProtondNdy[j], kFullCircle, kBlue, "z", "dN/dy");
+		c0[i] = new TCanvas(Form("c0.%s",kParticle[i][0].Data()), Form("%s model parameters",kParticle[i][0].Data()));
+		c0[i]->Divide(kNCol,2);
 		
-		c0->cd(kNCol*j+2);
-		Draw(grProtonN[j], kFullCircle, kBlue, "z", "n");
-		
-		c0->cd(kNCol*j+3);
-		Draw(grProtonC[j], kFullCircle, kBlue, "z", "C");
-		
-		c0->cd(kNCol*j+4);
-		Draw(grProtonChi2Ndf[j], kFullCircle, kBlue, "z", "#chi^{2}/ndf");
-		
-	/*	c0->cd(kNCol*j+5);
-		Draw(grProtonProb[j], kFullCircle, kBlue, "z", "Prob");
-	*/
+		for(Int_t j=0; j<kNpart; ++j)
+		{
+			c0[i]->cd(kNCol*j+1);
+			Draw(grP0[i][j], kFullCircle, kBlue, xname, fncTsallis[0][0][0]->GetParName(0));
+			
+			c0[i]->cd(kNCol*j+2);
+			Draw(grP1[i][j], kFullCircle, kBlue, xname, fncTsallis[0][0][0]->GetParName(1));
+			
+			c0[i]->cd(kNCol*j+3);
+			Draw(grP2[i][j], kFullCircle, kBlue, xname, fncTsallis[0][0][0]->GetParName(2));
+			
+			c0[i]->cd(kNCol*j+4);
+			Draw(grChi2Ndf[i][j], kFullCircle, kBlue, xname, "#chi^{2}/ndf");
+		}
 	}
 	
-	TCanvas* c1 = new TCanvas("c1", "deuteron model parameters");
-	c1->Divide(kNCol,2);
+	TCanvas* c1 = new TCanvas("c1", "Particle ratios");
+	c1->Divide(2,2);
 	
-	for(Int_t j=0; j<kNpart; ++j)
+	c1->cd(1);
+	Draw(grRatio[0], kFullCircle, kRed, xname, "#bar{p}/p");
+	
+	c1->cd(2);
+	Draw(grRatio[1], kFullCircle, kRed, xname, "#bar{d}/d");
+	
+	c1->cd(3);
+	Draw(grMixRatio[0], kFullCircle, kRed, xname, "d/p");
+	
+	c1->cd(4);
+	Draw(grMixRatio[1], kFullCircle, kRed, xname, "#bar{d}/#bar{p}");
+	
+	// spectra
+	
+	TCanvas* c2[kNspec];
+	
+	for(Int_t j=0; j<kNspec; ++j)
 	{
-		c1->cd(kNCol*j+1);
-		Draw(grDeuterondNdy[j], kFullCircle, kBlue, "z", "dN/dy");
+		c2[j] = new TCanvas(Form("c2.%s",kParticle[j][0].Data()), Form("%s data",kParticle[j][0].Data()));
+		c2[j]->Divide(nx,2);
 		
-		c1->cd(kNCol*j+2);
-		Draw(grDeuteronN[j], kFullCircle, kBlue, "z", "n");
-		
-		c1->cd(kNCol*j+3);
-		Draw(grDeuteronC[j], kFullCircle, kBlue, "z", "C");
-		
-		c1->cd(kNCol*j+4);
-		Draw(grDeuteronChi2Ndf[j], kFullCircle, kBlue, "z", "#chi^{2}/ndf");
-		
-	/*	c1->cd(kNCol*j+5);
-		Draw(grDeuteronProb[j], kFullCircle, kBlue, "z", "Prob");
-	*/
+		for(Int_t k=0; k<kNpart; ++k)
+		{
+			for(Int_t i=0; i<nx; ++i)
+			{
+				gPad->SetLogy(0);
+				c2[j]->cd(nx*k+i+1);
+				Draw(grDYieldPt[i][j][k], kFullCircle, kBlue, "p_{T} (GeV/c)", "DYield");
+				fncTsallis[i][j][k]->Draw("same");
+			}
+		}
 	}
 	
-	TCanvas* c2 = new TCanvas("c2","particle ratios");
-	c2->Divide(2,2);
+	delete foutput;
+	delete fproton;
+	delete fdeuteron;
 	
-	c2->cd(1);
-	Draw(grRatio[0], kFullCircle, kRed, "z", "#bar{p}/p");
-	
-	c2->cd(2);
-	Draw(grRatio[1], kFullCircle, kRed, "z", "#bar{d}/d");
-	
-	c2->cd(3);
-	Draw(grMixRatio[0], kFullCircle, kRed, "z", "d/p");
-	
-	c2->cd(4);
-	Draw(grMixRatio[1], kFullCircle, kRed, "z", "#bar{d}/#bar{p}");
+	// free memory
 }
 
 void GetRatio(Double_t x, Double_t y, Double_t errx, Double_t erry, Double_t& r, Double_t& rerr)

@@ -32,23 +32,24 @@ Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
                            const TString& multCorTag = "",
                            Bool_t inel               = 1,  // for mult
                            Bool_t drawOutput         = 1,  // for batch
-                           const TString& species    = "Proton")
+                           const TString& species    = "Proton",
+                           Int_t lowPtBin            = 5,
+                           Int_t jointPtBin          = 11,
+                           Int_t hiPtBin             = 36)
 {
 //
 // combine TPC and TOF for protons and deuterons
 //
-	const Int_t kProtonLowPtBin    = 5 ;
-	const Int_t kProtonJointBin    = 11;
-	const Int_t kProtonHiPtBin     = 36;
-	
-	const Int_t kDeuteronLowPtBin  = 4;
-	const Int_t kDeuteronJointBin  = 6;
-	const Int_t kDeuteronHiPtBin   = 13;
-	
 	const Double_t kProtonSysErr[2]   = {0.08, 0.08} ;
 	const Double_t kDeuteronSysErr[2] = {0.10, 0.11} ;
 	
-	// -------------
+	using namespace std;
+	
+	if((species != "Proton") && (species != "Deuteron"))
+	{
+		cerr << "Particle species " << species << " not implemented, only 'Proton' and 'Deuteron'." << endl;
+		exit(1);
+	}
 	
 	const TString kOutputTagTPC = outputTag + "-tpc";
 	const TString kOutputTagTOF = outputTag + "-tof";
@@ -67,46 +68,22 @@ Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 		              + "\"" + multTag         + "\","
 		              + "\"" + multCorTag;
 	
-	using namespace std;
-	
-	if(species == "Proton")
-	{
-		cout << "Config_Proton_TPC_LHC10x.C" << endl << endl;
-		gROOT->ProcessLine(Form(".x Config_Proton_TPC_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 0,1,1,0,0)"
-					, kArgTPC.Data()
-					, inel
-					, kProtonLowPtBin
-					, kProtonJointBin));
+	cout << "Config_" << species << "_TPC_LHC10x.C" << endl << endl;
+	gROOT->ProcessLine(Form(".x Config_%s_TPC_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 0,1,1,0,0)"
+				, species.Data()
+				, kArgTPC.Data()
+				, inel
+				, lowPtBin
+				, jointPtBin));
 		
-		cout << "Config_Proton_TOF_LHC10x.C" << endl << endl;
-		gROOT->ProcessLine(Form(".x Config_Proton_TOF_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 1,1,1,0,0)"
-					, kArgTOF.Data()
-					, inel
-					, kProtonJointBin
-					, kProtonHiPtBin));
-	}
-	else if (species == "Deuteron")
-	{
-		cout << "Config_Deuteron_TPC_LHC10x.C" << endl << endl;
-		gROOT->ProcessLine(Form(".x Config_Deuteron_TPC_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 0,1,1,0,0)"
-					, kArgTPC.Data()
-					, inel
-					, kDeuteronLowPtBin
-					, kDeuteronJointBin));
+	cout << "Config_" << species << "_TOF_LHC10x.C" << endl << endl;
+	gROOT->ProcessLine(Form(".x Config_%s_TOF_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 1,1,1,0,0)"
+				, species.Data()
+				, kArgTOF.Data()
+				, inel
+				, jointPtBin
+				, hiPtBin));
 		
-		cout << "Config_Deuteron_TOF_LHC10x.C" << endl << endl;
-		gROOT->ProcessLine(Form(".x Config_Deuteron_TOF_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 1,1,1,0,0)"
-					, kArgTOF.Data()
-					, inel
-					, kDeuteronJointBin
-					, kDeuteronHiPtBin));
-	}
-	else
-	{
-		cerr << "Particle species " << species << " not implemented." << endl;
-		exit(1);
-	}
-	
 	TString outputPtTPC = outputDir + "/" + MakeOutputName(species, kOutputTagTPC) + "-Pt.root";
 	TString outputPtTOF = outputDir + "/" + MakeOutputName(species, kOutputTagTOF) + "-Pt.root";
 	
