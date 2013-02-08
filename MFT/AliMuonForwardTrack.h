@@ -98,8 +98,11 @@ public:
   Int_t GetTrackMCId() { return fTrackMCId; }
   
   Bool_t IsFromResonance();
-  Bool_t IsFromCharm();
-  Bool_t IsFromBeauty();
+  Bool_t IsDirectCharm();
+  Bool_t IsDirectBeauty();
+  Bool_t IsChainBeauty();
+  Bool_t IsFromCharm()  { return IsDirectCharm(); }
+  Bool_t IsFromBeauty() { return IsDirectBeauty() || IsChainBeauty(); }
   Bool_t IsPDGCharm(Int_t pdg);
   Bool_t IsPDGBeauty(Int_t pdg);
   Bool_t IsFromBackground();

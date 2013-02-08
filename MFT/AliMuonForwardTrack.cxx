@@ -497,7 +497,7 @@ Bool_t AliMuonForwardTrack::IsFromResonance() {
 
 //====================================================================================================================================================
 
-Bool_t AliMuonForwardTrack::IsFromCharm() {
+Bool_t AliMuonForwardTrack::IsDirectCharm() {
 
   Bool_t result = kFALSE;
 
@@ -511,13 +511,27 @@ Bool_t AliMuonForwardTrack::IsFromCharm() {
 
 //====================================================================================================================================================
 
-Bool_t AliMuonForwardTrack::IsFromBeauty() {
+Bool_t AliMuonForwardTrack::IsDirectBeauty() {
 
   Bool_t result = kFALSE;
 
   if (IsPDGBeauty(GetParentPDGCode(0))) result = kTRUE;
   
   if (result) AliDebug(1, Form("Muon comes from a beauty hadron %d", GetParentPDGCode(0)));
+  
+  return result; 
+  
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMuonForwardTrack::IsChainBeauty() {
+
+  Bool_t result = kFALSE;
+
+  if (IsPDGCharm(GetParentPDGCode(0)) && IsPDGBeauty(GetParentPDGCode(1))) result = kTRUE;
+  
+  if (result) AliDebug(1, Form("Muon comes from a charmed hadron %d which comes from a beauty hadron %d", GetParentPDGCode(0), GetParentPDGCode(1)));
   
   return result; 
   
@@ -593,7 +607,7 @@ Bool_t AliMuonForwardTrack::IsFromBackground() {
 
   Bool_t result = kFALSE;
 
-  if (!IsFromResonance() && !IsFromCharm() && !IsFromBeauty()) result = kTRUE;
+  if (!IsFromResonance() && !IsDirectCharm() && !IsDirectBeauty() && !IsChainBeauty()) result = kTRUE;
 
   if (result) AliDebug(1, Form("Muon comes from a background source %d", GetParentPDGCode(0)));
 
