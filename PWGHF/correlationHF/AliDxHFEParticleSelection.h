@@ -18,6 +18,7 @@
 #include "TString.h"
 class AliVEvent;
 class AliVParticle;
+class AliPIDResponse;
 class TObjArray;
 class TH1;
 class THnSparse;
@@ -72,6 +73,8 @@ class AliDxHFEParticleSelection : public TNamed {
   /// array contains only pointers but does not own the objects
   /// object array needs to be deleted by caller
   virtual TObjArray* Select(TObjArray* particles, const AliVEvent* pEvent);
+
+  virtual void SetPIDResponse(const AliPIDResponse* /*const pidresp*/){}
 
   // Get the list fControlObjects. 
   const TList* GetControlObjects() const {return fControlObjects;}

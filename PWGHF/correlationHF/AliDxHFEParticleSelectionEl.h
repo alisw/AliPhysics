@@ -27,6 +27,7 @@
 //  G__PWGHFcorrelationHF.cxx:1658:15:   instantiated from here
 //  $ROOTSYS/include/TBuffer.h:373:47: error: invalid use of incomplete type ‘struct AliHFEcuts’
 //  correlationHF/AliDxHFEParticleSelectionEl.h:25:7: error: forward declaration of ‘struct AliHFEcuts’
+
 #include "AliHFEcuts.h" // need to directly include to avoid compilation error in the dictionary
 #include "AliHFEpid.h"  // need to directly include to avoid compilation error in the dictionary
 
@@ -38,7 +39,8 @@ class AliHFEtools;
 class AliVEvent;
 class AliCFManager;
 class TH1;
-
+class TH1F;
+class TH2F;
 /**
  * @class AliDxHFEParticleSelectionEl
  * Electron selection for D-HFE correlations, implements the specific
@@ -50,10 +52,11 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   AliDxHFEParticleSelectionEl(const char* opt="");
   /// destructor
   virtual ~AliDxHFEParticleSelectionEl();
-
+  
   enum {
     kCutHFE = 0,
     kCutPID = 1,
+    kCutPIDTOF = 2,
     kNCuts
   };
 
@@ -63,6 +66,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
     kHFEcutsITS,
     kHFEcutsTOF,
     kHFEcutsTPC,
+    kPIDTOF,
     kPID,
     kSelected,
     kNCutLabels
@@ -84,27 +88,44 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
 
   /// set cuts object: a type cast check is implemented in the method
   virtual void SetCuts(TObject* /*cuts*/, int /*level*/=0);
+ 
+  virtual void SetPIDResponse(const AliPIDResponse* const pidresp){fPIDResponse=(AliPIDResponse*)(pidresp);}
 
  protected:
 
  private:
+
   /// copy contructor prohibited
   AliDxHFEParticleSelectionEl(const AliDxHFEParticleSelectionEl&);
   /// assignment operator prohibited
   AliDxHFEParticleSelectionEl& operator=(const AliDxHFEParticleSelectionEl&);
-
+ 
   /// check cut of specified step, e.g.
   bool ProcessCutStep(Int_t cutStep, AliVParticle *track);
 
   AliHFEpid*    fPID;                //! the PID object
+  AliHFEpid*    fPIDTOF;             //! the PID TOF object
   THnSparse*    fElectronProperties; // the particle properties of selected particles
   TH1*          fWhichCut;           // effective cut for a rejected particle
+  TH2F*         fdEdx;               // dedx plot
+  TH2F*         fdEdxCut;            // dedx plot after track cuts
+  TH2F*         fdEdxPid;            // dedx plot after pid
+  TH2F*         fdEdxPidTOF;         // dedx plot after TOF pid
+  TH2F*         fnSigTPC;            // nSigmaTPC vs momentum before track cut
+  TH2F*         fnSigTPCCut;         // nSigmaTPC vs momentum after track cut
+  TH2F*         fnSigTPCPid;         // nSigmaTPC vs momentum after PID
+  TH2F*         fnSigTPCPidTOF;      // nSigmaTPC vs momentum after TOF PID
+  TH2F*         fnSigTOF;            // nSigmaTOF vs momentum before track cut
+  TH2F*         fnSigTOFCut;         // nSigmaTOF vs momentum after track cut
+  TH2F*         fnSigTOFPid;         // nSigmaTOF vs momentum after PID
+  TH2F*         fnSigTOFPidTOF;      // nSigmaTOF vs momentum after  TOF PID
+  AliPIDResponse* fPIDResponse;      // fPIDResponse
   AliHFEcuts*   fCuts;               //! Cuts for HF electrons
   AliCFManager* fCFM;                //! Correction Framework Manager
 
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
 
-  ClassDef(AliDxHFEParticleSelectionEl, 2);
+  ClassDef(AliDxHFEParticleSelectionEl, 3);
 };
 
 #endif

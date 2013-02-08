@@ -314,17 +314,16 @@ int AliDxHFEParticleSelectionD0::IsSelected(AliVParticle* p, const AliVEvent* pE
     if (pEvent) aod=dynamic_cast<AliAODEvent*>(const_cast<AliVEvent*>(pEvent));
   
     // Selected. Return 0 (none), 1 (D0), 2 (D0bar) or 3 (both)
+    // check daughters before calling as there is unchecked code in
+    // AliAODRecoDecayHF::HasBadDaughters called
+    TObject* o=NULL;
+    if ((o=d0->GetDaughter(0))!=NULL && dynamic_cast<AliAODTrack*>(o)!=NULL &&
+	(o=d0->GetDaughter(1))!=NULL && dynamic_cast<AliAODTrack*>(o)!=NULL) {
     selectionCode=cuts->IsSelected(d0,AliRDHFCuts::kAll,aod); 
 
     AliDebug(1,Form("Candidate is %d \n", selectionCode));
-    TObjArray daughters;
-    daughters.AddAt((AliAODTrack*)d0->GetDaughter(0),0);
-    daughters.AddAt((AliAODTrack*)d0->GetDaughter(1),1);
-
-    //check daughters
-    if(!daughters.UncheckedAt(0) || !daughters.UncheckedAt(1)) {
+    } else {
       AliDebug(1,"at least one daughter not found!");
-      daughters.Clear();
       return 0;
     }
   }

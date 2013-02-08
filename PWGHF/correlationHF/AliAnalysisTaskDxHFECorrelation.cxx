@@ -80,6 +80,7 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fCutsHFE(NULL)
   , fCuts(NULL)
   , fPID(NULL)
+  , fPIDTOF(NULL)
   , fFillOnlyD0D0bar(0)
   , fUseMC(kFALSE)
   , fUseEventMixing(kFALSE)
@@ -92,6 +93,7 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   //
   DefineSlots();
   fPID = new AliHFEpid("hfePid");
+  fPIDTOF = new AliHFEpid("hfePidTOF");
 
 }
 
@@ -131,6 +133,8 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   fCutsHFE=NULL;
   if(fPID) delete fPID;
   fPID=NULL;
+  if(fPIDTOF) delete fPIDTOF;
+  fPIDTOF=NULL;
   if(fSelectedElectrons) delete fSelectedElectrons;
   fSelectedElectrons=NULL;
   if(fSelectedD0s) delete fSelectedD0s;
@@ -145,16 +149,25 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   int iResult=0;
 
   //Initialize PID for electron selection
+  // TODO: Put the initialization of these objects in the AddTask..
+  // PID for Only TOF
+  if(!fPIDTOF->GetNumberOfPIDdetectors()) { 
+    fPIDTOF->AddDetector("TOF",0);
+  }
+  fPIDTOF->ConfigureTOF(3); // number of sigma TOF
+  
+  // PID object for TPC and TOF combined
   if(!fPID->GetNumberOfPIDdetectors()) { 
     fPID->AddDetector("TOF",0);
     fPID->AddDetector("TPC",1);
   }
-  fPID->InitializePID();
+
   const int paramSize=4;
   Double_t params[paramSize];
   memset(params, 0, sizeof(Double_t)*paramSize);
-  params[0]=1.;
+  params[0]=-1.;
   fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
+  fPID->InitializePID();
 
   fOutput = new TList;
   fOutput->SetOwner();
@@ -178,7 +191,9 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   //Electrons
   if(fUseMC) fElectrons=new AliDxHFEParticleSelectionMCEl;
   else fElectrons=new AliDxHFEParticleSelectionEl;
+  //TODO: Create a TList containing all cut-objects needed for the worker classes
   fElectrons->SetCuts(fPID, AliDxHFEParticleSelectionEl::kCutPID);
+  fElectrons->SetCuts(fPIDTOF, AliDxHFEParticleSelectionEl::kCutPIDTOF);
   fElectrons->SetCuts(fCutsHFE, AliDxHFEParticleSelectionEl::kCutHFE);
   iResult=fElectrons->Init();
   if (iResult<0) {
@@ -224,15 +239,16 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   while((obj = next()))
     fOutput->Add(obj);
 
-  if (fCutsD0) {
-    // TODO: eliminate this copy
-    AliRDHFCutsD0toKpi* cuts=dynamic_cast<AliRDHFCutsD0toKpi*>(fCutsD0);
-    if (!cuts) {
-      AliFatal(Form("cut object %s is of incorrect type %s, expecting AliRDHFCutsD0toKpi", fCutsD0->GetName(), fCutsD0->ClassName()));
-      return;
-    }
+  if (!fCutsD0) {
+    AliFatal(Form("cut object for D0 missing"));
+    return;
   }
-  // TODO: why copy? cleanup?
+ 
+  if (!dynamic_cast<AliRDHFCutsD0toKpi*>(fCutsD0)) {
+    AliFatal(Form("cut object %s is of incorrect type %s, expecting AliRDHFCutsD0toKpi", fCutsD0->GetName(), fCutsD0->ClassName()));
+    return;
+  }
+  // that's the copy for the output stream
   AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*fCutsD0));
   const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
   copyfCuts->SetName(nameoutput);
@@ -299,14 +315,22 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     AliWarning("PID not initialised, get from Run no");
     fPID->InitializePID(pEvent->GetRunNumber());
   }
+  if(!fPIDTOF->IsInitialized()){ 
+    // Initialize PID with the given run number
+    AliWarning("PIDTOF not initialised, get from Run no");
+    fPIDTOF->InitializePID(pEvent->GetRunNumber());
+  }
 
   AliPIDResponse *pidResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetPIDResponse();
   if(!pidResponse){
+    // TODO: consider issuing fatal instead of debug in case pidresponse not available
     AliDebug(1, "Using default PID Response");
     pidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
   }
  
   fPID->SetPIDResponse(pidResponse);
+  fPIDTOF->SetPIDResponse(pidResponse);
+  fElectrons->SetPIDResponse(pidResponse); 
 
   // Retrieving process from the AODMCHeader. 
   // TODO: Move it somewhere else? (keep it here for the moment since only need to read once pr event)

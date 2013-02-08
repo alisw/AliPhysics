@@ -39,6 +39,7 @@
 #include "AliCFManager.h"
 #include "THnSparse.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TAxis.h"
 #include "TObjArray.h"
 #include <iostream>
@@ -53,8 +54,22 @@ ClassImp(AliDxHFEParticleSelectionEl)
 AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   : AliDxHFEParticleSelection("electron", opt)
   , fPID(NULL)
+  , fPIDTOF(NULL)
   , fElectronProperties(NULL)
-  , fWhichCut(NULL)  
+  , fWhichCut(NULL)
+  , fdEdx(NULL)
+  , fdEdxCut(NULL)
+  , fdEdxPid(NULL)
+  , fdEdxPidTOF(NULL)
+  , fnSigTPC(NULL)
+  , fnSigTPCCut(NULL)
+  , fnSigTPCPid(NULL)
+  , fnSigTPCPidTOF(NULL)
+  , fnSigTOF(NULL)
+  , fnSigTOFCut(NULL)
+  , fnSigTOFPid(NULL)
+  , fnSigTOFPidTOF(NULL)
+  , fPIDResponse(NULL)
   , fCuts(NULL)
   , fCFM(NULL)
 {
@@ -80,9 +95,63 @@ AliDxHFEParticleSelectionEl::~AliDxHFEParticleSelectionEl()
     delete fWhichCut;
     fWhichCut=NULL;
   }
+  if(fdEdx){
+    delete fdEdx;
+    fdEdx=NULL;
+  }
+  if(fdEdxCut){
+    delete fdEdxCut;
+    fdEdxCut=NULL;
+  }
+  if(fdEdxPid){
+    delete fdEdxPid;
+    fdEdxPid=NULL;
+  }
+  if(fdEdxPidTOF){
+    delete fdEdxPidTOF;
+    fdEdxPidTOF=NULL;
+  }
+  if(fnSigTPC){
+    delete fnSigTPC;
+    fnSigTPC=NULL;
+  }
+  if(fnSigTPCCut){
+    delete fnSigTPCCut;
+    fnSigTPCCut=NULL;
+  }
+  if(fnSigTPCPid){
+    delete fnSigTPCPid;
+    fnSigTPCPid=NULL;
+  }
+  if(fnSigTPCPidTOF){
+    delete fnSigTPCPidTOF;
+    fnSigTPCPidTOF=NULL;
+  }
+  if(fnSigTOF){
+    delete fnSigTOF;
+    fnSigTOF=NULL;
+  }
+  if(fnSigTOFCut){
+    delete fnSigTOFCut;
+    fnSigTOFCut=NULL;
+  }
+  if(fnSigTOFPid){
+    delete fnSigTOFPid;
+    fnSigTOFPid=NULL;
+  }
 
+  if(fnSigTOFPidTOF){
+    delete fnSigTOFPidTOF;
+    fnSigTOFPidTOF=NULL;
+  }
+
+  if(fPIDResponse){
+    delete fPIDResponse;
+    fPIDResponse=NULL;
+  }
   // NOTE: external objects fPID and fCuts are not deleted here
   fPID=NULL;
+  fPIDTOF=NULL;
   fCuts=NULL;
 }
 
@@ -92,8 +161,10 @@ const char* AliDxHFEParticleSelectionEl::fgkCutBinNames[]={
   "kHFEcuts",
   "kHFEcutsTOFPID",
   "kHFEcutsTPCPID",
+  "kPIDTOF",
   "kPID",
   "Selected e"
+
 };
 
 int AliDxHFEParticleSelectionEl::Init()
@@ -165,11 +236,88 @@ int AliDxHFEParticleSelectionEl::InitControlObjects()
   fElectronProperties=DefineTHnSparse();
   AddControlObject(fElectronProperties);
 
-  //
+  //Look into VarManager to set up and fill histos
   fWhichCut= new TH1F("fWhichCut","effective cut for a rejected particle",kNCutLabels,-0.5,kNCutLabels-0.5);
   for (int iLabel=0; iLabel<kNCutLabels; iLabel++)
     fWhichCut->GetXaxis()->SetBinLabel(iLabel+1, fgkCutBinNames[iLabel]);
   AddControlObject(fWhichCut);
+  //
+  // dEdx plots, TPC signal vs momentum
+  // 
+  fdEdx = new TH2F("fdEdx", "dEdx before cuts", 1000,0.,10.,200,0.,200.);
+  fdEdx->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fdEdx->GetYaxis()->SetTitle("dE/dx in TPC (a.u.)");
+  AddControlObject(fdEdx);
+  //
+  fdEdxCut = new TH2F("fdEdxCut", "dEdx after cuts", 1000,0.,10.,200,0.,200.);
+  fdEdxCut->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fdEdxCut->GetYaxis()->SetTitle("dE/dx in TPC (a.u.)");
+  AddControlObject(fdEdxCut);
+  //
+  fdEdxPid = new TH2F("fdEdxPid", "dEdx after pid",  1000,0.,10.,200,0.,200.);
+  fdEdxPid->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fdEdxPid->GetYaxis()->SetTitle("dE/dx in TPC (a.u.)");
+  AddControlObject(fdEdxPid);
+  //
+  fdEdxPidTOF = new TH2F("fdEdxPidTOF", "dEdx after TOF pid",  1000,0.,10.,200,0.,200.);
+  fdEdxPidTOF->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fdEdxPidTOF->GetYaxis()->SetTitle("dE/dx in TPC (a.u.)");
+  AddControlObject(fdEdxPidTOF);
+
+  //
+  // nSigmaTPC vs momentum
+  //
+
+  fnSigTPC = new TH2F("fnSigTPC", "nSigTPC before cuts",  1000,0.,10.,200,-10.,10.);
+  fnSigTPC->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fnSigTPC->GetYaxis()->SetTitle("nSigma in TPC (a.u.)");
+  AddControlObject(fnSigTPC);
+
+
+  fnSigTPCCut = new TH2F("fnSigTPCCut", "nSigmaTPC after cuts",  1000,0.,10.,200,-10.,10.);
+  fnSigTPCCut->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fnSigTPCCut->GetYaxis()->SetTitle("nSigma in TPC (a.u.)");
+  AddControlObject(fnSigTPCCut);
+
+
+  fnSigTPCPid = new TH2F("fnSigTPCPid", "nSigmaTPC after PID",  1000,0.,10.,200,-10.,10.);
+  fnSigTPCPid->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fnSigTPCPid->GetYaxis()->SetTitle("nSigma in TPC (a.u.)");
+  AddControlObject(fnSigTPCPid);
+
+
+  fnSigTPCPidTOF = new TH2F("fnSigTPCPidTOF", "nSigmaTPC after TOF PID",  1000,0.,10.,200,-10.,10.);
+  fnSigTPCPidTOF->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fnSigTPCPidTOF->GetYaxis()->SetTitle("nSigma in TPC (a.u.)");
+  AddControlObject(fnSigTPCPidTOF);
+
+  //
+  // nSigmaTOF vs momentum
+  //
+
+  fnSigTOF = new TH2F("fnSigTOF", "nSigmaTOF before cuts",  1000,0.,10.,200,-10.,10.);
+  fnSigTOF->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fnSigTOF->GetYaxis()->SetTitle("nSigma in TOF (a.u.)");
+  AddControlObject(fnSigTOF);
+
+
+  fnSigTOFCut = new TH2F("fnSigTOFCut", "nSigmaTOF after cuts",  1000,0.,10.,200,-10.,10.);
+  fnSigTOFCut->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fnSigTOFCut->GetYaxis()->SetTitle("nSigma in TOF (a.u.)");
+  AddControlObject(fnSigTOFCut);
+
+
+  fnSigTOFPid = new TH2F("fnSigTOFPid", "nSigmaTOF after PID",  1000,0.,10.,200,-10.,10.);
+  fnSigTOFPid->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fnSigTOFPid->GetYaxis()->SetTitle("nSigma in TOF (a.u.)");
+  AddControlObject(fnSigTOFPid);
+
+
+  fnSigTOFPidTOF = new TH2F("fnSigTOFPidTOF", "nSigmaTOF after TOF PID",  1000,0.,10.,200,-10.,10.);
+  fnSigTOFPidTOF->GetXaxis()->SetTitle("momentum (GeV/c)");
+  fnSigTOFPidTOF->GetYaxis()->SetTitle("nSigma in TOF (a.u.)");
+  AddControlObject(fnSigTOFPidTOF);
+
 
   return AliDxHFEParticleSelection::InitControlObjects();
 }
@@ -214,7 +362,11 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
 
   AliAODTrack *track=(AliAODTrack*)pEl;
   fCFM->SetRecEventInfo(pEvent);
-
+  
+  fdEdx->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+  fnSigTPC->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+  fnSigTOF->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+  
   //--------track cut selection-----------------------
   //Using AliHFECuts:
   // RecKine: ITSTPC cuts  
@@ -249,6 +401,9 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
  
   // HFEcuts: Nb of tracklets TRD0
   //if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTRD, track)) continue;
+  fdEdxCut->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+  fnSigTPCCut->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+  fnSigTOFCut->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
 
 
   //--------PID selection-----------------------
@@ -260,15 +415,31 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   //if(IsPbPb()) hfetrack.SetPbPb();
   hfetrack.SetPP();
 
+  if(fPIDTOF && fPIDTOF->IsSelected(&hfetrack)) {
+    fdEdxPidTOF->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+    fnSigTPCPidTOF->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+    fnSigTOFPidTOF->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+  }
+  else{
+    fWhichCut->Fill(kPIDTOF);
+    return 0;
+  }
+
+  //Combined tof & tpc pid
   if(fPID && fPID->IsSelected(&hfetrack)) {
     AliDebug(3,"Inside FilldPhi, electron is selected");
     fWhichCut->Fill(kSelected);
+    fdEdxPid->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+    fnSigTPCPid->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+    fnSigTOFPid->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
     return 1;
   }
   else{
     fWhichCut->Fill(kPID);
     return 0;
   }
+
+
 }
 
 void AliDxHFEParticleSelectionEl::SetCuts(TObject* cuts, int level)
@@ -285,6 +456,14 @@ void AliDxHFEParticleSelectionEl::SetCuts(TObject* cuts, int level)
   if (level==kCutPID) {
     fPID=dynamic_cast<AliHFEpid*>(cuts);
     if (!fPID && cuts) {
+      AliError(Form("cuts object is not of required type AliHFEpid but %s", cuts->ClassName()));
+    }
+    return;
+  }
+
+  if (level==kCutPIDTOF) {
+    fPIDTOF=dynamic_cast<AliHFEpid*>(cuts);
+    if (!fPIDTOF && cuts) {
       AliError(Form("cuts object is not of required type AliHFEpid but %s", cuts->ClassName()));
     }
     return;
