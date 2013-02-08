@@ -324,15 +324,3 @@ void drawBalanceFunctionPsiSummary(const char* lhcPeriod = "LHC11h",
 }
 
 
-
-//____________________________________________________________//
-void setupLegend(TLegend *currentLegend=0,float currentTextSize=0.07){
-  currentLegend->SetTextFont(42);
-  currentLegend->SetBorderSize(0);
-  currentLegend->SetFillStyle(0);
-  currentLegend->SetFillColor(0);
-  currentLegend->SetMargin(0.25);
-  currentLegend->SetTextSize(currentTextSize);
-  currentLegend->SetEntrySeparation(0.5);
-  return;
-}
