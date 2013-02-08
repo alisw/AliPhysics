@@ -1014,6 +1014,8 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
 					   fTriggerOADB->GetZDCCutRefDeltaCorr(), 
 					   fTriggerOADB->GetZDCCutSigmaSumCorr(),
 					   fTriggerOADB->GetZDCCutSigmaDeltaCorr());
+      triggerAnalysis->SetZNCorrCutParams(fTriggerOADB->GetZDCCutZNATimeCorr(),
+					  fTriggerOADB->GetZDCCutZNCTimeCorr());
       fTriggerAnalysis.Add(triggerAnalysis);
     }
 

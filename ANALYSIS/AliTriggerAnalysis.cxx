@@ -63,6 +63,8 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fZDCCutRefDeltaCorr(-2.1),
   fZDCCutSigmaSumCorr(6.0),
   fZDCCutSigmaDeltaCorr(1.2),
+  fZDCCutZNATimeCorr(2.0),
+  fZDCCutZNCTimeCorr(5.0),
   fASPDCvsTCut(65),
   fBSPDCvsTCut(4),
   fDoFMD(kTRUE),
@@ -1467,8 +1469,8 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide s
     return kFALSE;
   }
 
-  Bool_t znabg = (zna && (TMath::Abs(tdcAcorr)>2.0));
-  Bool_t zncbg = (znc && (TMath::Abs(tdcCcorr)>5.0));
+  Bool_t znabg = (zna && (TMath::Abs(tdcAcorr)>fZDCCutZNATimeCorr));
+  Bool_t zncbg = (znc && (TMath::Abs(tdcCcorr)>fZDCCutZNCTimeCorr));
 
   // Printf("Checking ZN background (time) for run %d, A = %d, time=%2.2f, C = %d, time=%2.2f",runNumber,(Int_t)zna,tdcAcorr,(Int_t)znc,tdcCcorr);
   // Printf("Checking ZN background (time) for run %d, A-BG = %d, C-BG = %d",runNumber,(Int_t)znabg,(Int_t)zncbg);

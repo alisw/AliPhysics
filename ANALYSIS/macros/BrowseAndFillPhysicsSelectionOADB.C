@@ -1436,12 +1436,17 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisZDC6->SetZDCCorrParameters(-65.6, -2.1, 4*0.58, 4*0.5);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC6, 138924, 139517);  
 
+  AliOADBTriggerAnalysis * oadbTrigAnalysisZDC7 = new AliOADBTriggerAnalysis("ZDCCut7");
+  oadbTrigAnalysisZDC7->SetZNCorrParameters(2.0,5.0);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC7, 194713, 250000);
+
   oadbTrigAnalysisZDC1->Print();
   oadbTrigAnalysisZDC2->Print();
   oadbTrigAnalysisZDC3->Print();
   oadbTrigAnalysisZDC4->Print();
   oadbTrigAnalysisZDC5->Print();
   oadbTrigAnalysisZDC6->Print();
+  oadbTrigAnalysisZDC7->Print();
 
   
   // ----------------- visualize coverage

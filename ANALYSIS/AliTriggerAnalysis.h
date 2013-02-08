@@ -84,6 +84,8 @@ class AliTriggerAnalysis : public TObject
     void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
     void SetZDCCutParams(Float_t refSum, Float_t refDelta, Float_t sigmaSum, Float_t sigmaDelta) { fZDCCutRefSum = refSum; fZDCCutRefDelta = refDelta; fZDCCutSigmaSum = sigmaSum; fZDCCutSigmaDelta = sigmaDelta; }
     void SetCorrZDCCutParams(Float_t refSum, Float_t refDelta, Float_t sigmaSum, Float_t sigmaDelta) { fZDCCutRefSumCorr = refSum; fZDCCutRefDeltaCorr = refDelta; fZDCCutSigmaSumCorr = sigmaSum; fZDCCutSigmaDeltaCorr = sigmaDelta; }
+    void SetZNCorrCutParams(Float_t znaTimeCorr, Float_t zncTimeCorr)
+    { fZDCCutZNATimeCorr = znaTimeCorr; fZDCCutZNCTimeCorr = zncTimeCorr; }
 
     Int_t GetSPDGFOThreshhold() const { return fSPDGFOThreshold; }
     Float_t GetV0TimeOffset() const { return fV0TimeOffset; }
@@ -133,6 +135,9 @@ class AliTriggerAnalysis : public TObject
     Float_t fZDCCutSigmaSumCorr;    // Corrected ZDC time cut configuration
     Float_t fZDCCutSigmaDeltaCorr;  // Corrected ZDC time cut configuration
 
+    Float_t fZDCCutZNATimeCorr;     // Corrected ZNA time cut configuration
+    Float_t fZDCCutZNCTimeCorr;     // Corrected ZNA time cut configuration
+
     Float_t fASPDCvsTCut; // constant for the linear cut in SPD clusters vs tracklets
     Float_t fBSPDCvsTCut; // slope for the linear cut in SPD  clusters vs tracklets
 
@@ -163,7 +168,7 @@ class AliTriggerAnalysis : public TObject
 
     Bool_t fTPCOnly;         // flag to set whether TPC only tracks have to be used for the offline trigger 
 
-    ClassDef(AliTriggerAnalysis, 18)
+    ClassDef(AliTriggerAnalysis, 19)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
