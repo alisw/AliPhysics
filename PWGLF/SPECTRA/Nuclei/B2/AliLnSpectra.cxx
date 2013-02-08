@@ -88,14 +88,6 @@ Int_t AliLnSpectra::Exec()
 	TGraphErrors* grSysErrDYieldPt = this->AddSystError(grDYieldPt, fSysErr, fParticle + "_SysErr_DiffYield_Pt");
 	grSysErrDYieldPt->Write();
 	
-	TF1* fncTsallis0 = this->TsallisDiffYield(GetMass(fParticle), fParticle + "_Fit_DiffYield_Pt");
-	fncTsallis0->SetParLimits(0, 0, 1);
-	fncTsallis0->SetParLimits(1, 4, 50);
-	fncTsallis0->SetParLimits(2, 0.01, 10);
-	
-	grSysErrDYieldPt->Fit(fncTsallis0,"RNQ");
-	fncTsallis0->Write();
-	
 	// invariant differential yield
 	
 	TGraphErrors* grInvDYieldPt = this->GetInvDiffYieldPt(grDYieldPt, fParticle + "_InvDiffYield_Pt");
@@ -103,14 +95,6 @@ Int_t AliLnSpectra::Exec()
 	
 	TGraphErrors* grSysErrInvDYieldPt = this->AddSystError(grInvDYieldPt, fSysErr, fParticle + "_SysErr_InvDiffYield_Pt");
 	grSysErrInvDYieldPt->Write();
-	
-	TF1* fncTsallis1 = this->Tsallis(GetMass(fParticle), fParticle + "_Fit_InvDiffYield_Pt");
-	fncTsallis1->SetParLimits(0, 0, 1);
-	fncTsallis1->SetParLimits(1, 4, 50);
-	fncTsallis1->SetParLimits(2, 0.01, 10);
-	
-	grSysErrInvDYieldPt->Fit(fncTsallis1,"RNQ");
-	fncTsallis1->Write();
 	
 	// invariant differential cross section
 	
@@ -120,19 +104,7 @@ Int_t AliLnSpectra::Exec()
 	TGraphErrors* grSysErrInvXsectPt = GetInvDiffXsectionPt(grSysErrInvDYieldPt, fInelXsec, fParticle + "_SysErr_InvDiffXSection_Pt");
 	grSysErrInvXsectPt->Write();
 	
-	TF1* fncTsallis2 = this->Tsallis(GetMass(fParticle), fInelXsec[0], fParticle + "_Fit_InvDiffXSection_Pt");
-	fncTsallis2->SetParLimits(0, 0, 1);
-	fncTsallis2->SetParLimits(1, 4, 50);
-	fncTsallis2->SetParLimits(2, 0.01, 10);
-	
-	grSysErrInvXsectPt->Fit(fncTsallis2,"RNQ");
-	fncTsallis2->Write();
-	
 	// clean
-	
-	delete fncTsallis0;
-	delete fncTsallis1;
-	delete fncTsallis2;
 	
 	delete grDYieldPt;
 	delete grInvDYieldPt;
@@ -268,46 +240,4 @@ TGraphErrors* AliLnSpectra::AddSystError(const TGraphErrors* gr, Double_t percen
 	}
 	
 	return grSyst;
-}
-
-TF1* AliLnSpectra::Tsallis(Double_t m0, const TString& name, Double_t xmin, Double_t xmax) const
-{
-//
-// Tsallis distribution
-// Phys. Rev. C 83, 064903 (2011)
-// Phys. Rev. C 75, 064901 (2007)
-//
-	TF1* fnc = new TF1(name.Data(), Form("[0]*([1]-1)*([1]-2)*TMath::Power(1+(sqrt(x*x+%f*%f)-%f)/([1]*[2]),-[1])/(2*TMath::Pi()*[1]*[2]*([1]*[2]+%f*([1]-2)))", m0, m0, m0, m0), xmin, xmax);
-	fnc->SetParNames("dN/dy","n","C");
-	fnc->SetParameters(0.1, 7, 0.2);
-	
-	return fnc;
-}
-
-TF1* AliLnSpectra::Tsallis(Double_t m0, Double_t xsect, const TString& name, Double_t xmin, Double_t xmax) const
-{
-//
-// Tsallis distribution to fit to invariant cross section
-// Phys. Rev. C 83, 064903 (2011)
-// Phys. Rev. C 75, 064901 (2007)
-//
-	TF1* fnc = new TF1(name.Data(), Form("%f*[0]*([1]-1)*([1]-2)*TMath::Power(1+(sqrt(x*x+%f*%f)-%f)/([1]*[2]),-[1])/(2*TMath::Pi()*[1]*[2]*([1]*[2]+%f*([1]-2)))",xsect, m0, m0, m0, m0), xmin, xmax);
-	fnc->SetParNames("dN/dy","n","C");
-	fnc->SetParameters(0.1, 7, 0.2);
-	
-	return fnc;
-}
-
-TF1* AliLnSpectra::TsallisDiffYield(Double_t m0, const TString& name, Double_t xmin, Double_t xmax) const
-{
-//
-// Tsallis distribution to fit differential yield
-// Phys. Rev. C 83, 064903 (2011)
-// Phys. Rev. C 75, 064901 (2007)
-//
-	TF1* fnc = new TF1(name.Data(), Form("x*[0]*([1]-1)*([1]-2)*TMath::Power(1+(sqrt(x*x+%f*%f)-%f)/([1]*[2]),-[1])/([1]*[2]*([1]*[2]+%f*([1]-2)))", m0, m0, m0, m0), xmin, xmax);
-	fnc->SetParNames("dN/dy","n","C");
-	fnc->SetParameters(0.1, 7, 0.2);
-	
-	return fnc;
 }

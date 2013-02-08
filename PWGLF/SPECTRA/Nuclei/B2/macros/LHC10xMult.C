@@ -38,13 +38,24 @@ Int_t LHC10xMult(const TString& species   = "Proton",
 // if option = 1 then use Config_XXX_TOF
 // if option = 2 then use Config_TPCTOF
 //
+	const Bool_t  kINEL[kNmult] = { 1, 0 }; // only normalize first bin
+	
+	Int_t lowbin   = (species=="Proton") ? 5  : 4;
+	Int_t jointbin = (species=="Proton") ? 11 : 6;
+	Int_t hibin    = (species=="Proton") ? 31 : 12;
+	
+	Double_t ymin  = (species=="Proton") ? 1.1e-6 : 1.1e-8;
+	Double_t ymax  = (species=="Proton") ? 4.e-1  : 4.e-4;
+	
 	using namespace B2mult;
 	using namespace std;
 	
-	const Bool_t  kNormToInel[kNmult] = { 1, 0 }; // only normalize first bin
-	
-	Double_t ymin = (species=="Proton") ? 1.1e-6 : 1.1e-8;
-	Double_t ymax = (species=="Proton") ? 4.e-1 : 4.e-4;
+	if( (option<0) || (option>2) || ((species != "Proton") && (species != "Deuteron")))
+	{
+		cerr << "unknown species/option: " << species << "/" << option << endl;
+		cerr << "species: Proton or Deuteron, options: 0 (TPC), 1 (TOF), 2 (TPCTOF)" << endl;
+		exit(1);
+	}
 	
 	TFileMerger m1,m2;
 	
@@ -66,36 +77,20 @@ Int_t LHC10xMult(const TString& species   = "Proton",
 			      + "\"" + "-" + kMultClass[i] + "\"," // data
 			      + "\"" + "";                         // same simulations for all mult
 			
-		if(species=="Proton" && option==0)
+		switch(option)
 		{
-			cout << "Config_Proton_TPC_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Proton_TPC_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
-		}
-		else if(species=="Proton" && option==1)
-		{
-			cout << "Config_Proton_TOF_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Proton_TOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
-		}
-		else if(species=="Deuteron" && option==0)
-		{
-			cout << "Config_Deuteron_TPC_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Deuteron_TPC_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
-		}
-		else if(species=="Deuteron" && option==1)
-		{
-			cout << "Config_Deuteron_TOF_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Deuteron_TOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
-		}
-		else if((species=="Proton" || species=="Deuteron") && option==2)
-		{
-			cout << "Config_TPCTOF_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_TPCTOF_LHC10x.C+g(\"%s\",%d,0,\"%s\")", arg.Data(), kNormToInel[i], species.Data()));
-		}
-		else
-		{
-			cerr << "unknown species/option: " << species << "/" << option << endl;
-			cerr << "usage: Proton/0, Proton/1, Proton/2 or Deuteron" << endl;
-			exit(1);
+			case 0:
+				cout << "Config_" << species << "_TPC_LHC10x.C" << endl << endl;
+				gROOT->ProcessLine(Form(".x Config_%s_TPC_LHC10x.C+g(\"%s\", %d, 0)", species.Data(), arg.Data(), kINEL[i]));
+				break;
+			case 1:
+				cout << "Config_" << species << "_LHC10x.C" << endl << endl;
+				gROOT->ProcessLine(Form(".x Config_%s_TOF_LHC10x.C+g(\"%s\", %d, 0)", species.Data(), arg.Data(), kINEL[i]));
+				break;
+			case 2:
+				cout << "Config_TPCTOF_LHC10x.C" << endl << endl;
+				gROOT->ProcessLine(Form(".x Config_TPCTOF_LHC10x.C+g(\"%s\", %d, 0, \"%s\", %d, %d, %d)", arg.Data(), kINEL[i], species.Data(), lowbin, jointbin, hibin));
+				break;
 		}
 		
 		ratio[i]   = outputDir + "/" + species + "-" + outputTag + "-Ratio.root";

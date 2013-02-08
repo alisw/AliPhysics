@@ -12,6 +12,7 @@
 #include <TList.h>
 #include <TString.h>
 #include <TH1D.h>
+#include <TF1.h>
 #include <cstdlib>
 
 TObject* FindObj(TFile* f, const TString& name)
@@ -94,6 +95,82 @@ Double_t GetMass(const TString& name)
 	//cerr << "Warning unknown particle " << particle << endl;
 	
 	return 0;
+}
+
+TF1* Tsallis(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
+{
+//
+// Tsallis distribution
+// Journal of Statistical Physics, Vol. 52, Nos. 1/2, 1988
+// J. Phys. G: Nucl. Part. Phys. 39 (2012)
+//
+	TF1* fnc = new TF1(name.Data(), Form("[0]*sqrt(x*x+%f)*pow(1+([1]-1)*sqrt(x*x+%f)/[2],[1]/(1-[1]))/pow(2*TMath::Pi(),3)",m0*m0,m0*m0),xmin,xmax);
+	
+	fnc->SetParNames("gV","q","T");
+	fnc->SetParameters(100., 1.1, 0.07);
+	
+	fnc->SetParLimits(0, 1., 1.e+7);
+	fnc->SetParLimits(1, 1.0001, 3.);
+	fnc->SetParLimits(2, 0.001, 0.3);
+	
+	return fnc;
+}
+
+TF1* TsallisDYield(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
+{
+//
+// Tsallis distribution for differential yield
+// Journal of Statistical Physics, Vol. 52, Nos. 1/2, 1988
+// J. Phys. G: Nucl. Part. Phys. 39 (2012)
+//
+	TF1* fnc = new TF1(name.Data(), Form("[0]*x*sqrt(x*x+%f)*pow(1+([1]-1)*sqrt(x*x+%f)/[2],[1]/(1-[1]))/pow(2.*TMath::Pi(),2)",m0*m0,m0*m0),xmin,xmax);
+	
+	fnc->SetParNames("gV","q","T");
+	fnc->SetParameters(100., 1.1, 0.07);
+	
+	fnc->SetParLimits(0, 1., 1.e+7);
+	fnc->SetParLimits(1, 1.0001, 3.);
+	fnc->SetParLimits(2, 0.001, 0.3);
+	
+	return fnc;
+}
+
+TF1* TsallisPareto(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
+{
+//
+// Tsallis-Pareto distribution
+// Phys. Rev. C 83, 064903 (2011)
+// Phys. Rev. C 75, 064901 (2007)
+//
+	TF1* fnc = new TF1(name.Data(), Form("[0]*([1]-1)*([1]-2)*pow(1+(sqrt(x*x+%f)-%f)/([1]*[2]),-[1])/(2*TMath::Pi()*[1]*[2]*([1]*[2]+%f*([1]-2)))", m0*m0, m0, m0), xmin, xmax);
+	
+	fnc->SetParNames("dN/dy","n","C");
+	fnc->SetParameters(0.05, 7, 0.3);
+	
+	fnc->SetParLimits(0, 0, 1);
+	fnc->SetParLimits(1, 4, 50);
+	fnc->SetParLimits(2, 0.01, 10);
+	
+	return fnc;
+}
+
+TF1* TsallisParetoDYield(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
+{
+//
+// Tsallis-Pareto distribution for differential yield
+// Phys. Rev. C 83, 064903 (2011)
+// Phys. Rev. C 75, 064901 (2007)
+//
+	TF1* fnc = new TF1(name.Data(), Form("x*[0]*([1]-1)*([1]-2)*pow(1+(sqrt(x*x+%f)-%f)/([1]*[2]),-[1])/([1]*[2]*([1]*[2]+%f*([1]-2)))", m0*m0, m0, m0), xmin, xmax);
+	
+	fnc->SetParNames("dN/dy","n","C");
+	fnc->SetParameters(0.05, 7, 0.3);
+	
+	fnc->SetParLimits(0, 0, 1);
+	fnc->SetParLimits(1, 4, 50);
+	fnc->SetParLimits(2, 0.01, 10);
+	
+	return fnc;
 }
 
 #endif // B2_H

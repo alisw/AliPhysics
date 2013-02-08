@@ -38,10 +38,6 @@ class AliLnSpectra: public TObject
 	
 	void SetInelXSection(Double_t xsec, Double_t statErr, Double_t systErr) { fInelXsec[0] = xsec; fInelXsec[1] = statErr; fInelXsec[2] = systErr; }
 	
-	TF1* Tsallis(Double_t m0, const TString& name, Double_t xmin=0., Double_t xmax=10.) const;
-	TF1* Tsallis(Double_t m0, Double_t xsect, const TString& name, Double_t xmin=0., Double_t xmax=10.) const;
-	TF1* TsallisDiffYield(Double_t m0, const TString& name, Double_t xmin=0., Double_t xmax=10.) const;
-	
   private:
  
 	AliLnSpectra(const AliLnSpectra& other);
