@@ -92,7 +92,7 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   // delta eta
   Int_t nDeltaEtaBins = -1;
   Double_t* deltaEtaBins = GetBinning(binning, "delta_eta", nDeltaEtaBins);
-  
+
   // pT
   trackBins[1] = GetBinning(binning, "p_t_assoc", iTrackBin[1]);
   trackAxisTitle[1] = "p_{T} (GeV/c)";
@@ -273,6 +273,14 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   fTrackHistEfficiency->SetVarTitle(4, vertexTitle);
 
   fFakePt = new TH3F("fFakePt","fFakePt;p_{T,rec};p_{T};centrality", 200, 0, 20, 200, 0, 20, 20, 0, 100);
+  
+  delete[] deltaEtaBins;
+  delete[] pTBinsFine;
+  delete[] leadingpTBins;
+  delete[] leadingpTBins2;
+  delete[] leadingPhiBins;
+  delete[] vertexBins;
+  delete[] vertexBinsEff;
 }
 
 Double_t* AliUEHist::GetBinning(const char* configuration, const char* tag, Int_t& nBins)
