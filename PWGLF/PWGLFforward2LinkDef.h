@@ -31,6 +31,7 @@
 
 #pragma link C++ class AliAnalysisTaskZDCPbPb+;
 #pragma link C++ class AliAnalysisTaskZDCTreeMaker+;
+#pragma link C++ class AliAnalysisTaskZDCpAcalib+;
 
 #pragma link C++ class AliAODCentralMult+;
 #pragma link C++ class AliAODForwardEP+;
