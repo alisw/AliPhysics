@@ -47,6 +47,7 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain():
   fCurFile(0),
   fStack(0x0),
   fGenHeader(0x0),
+  fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0)
 {
   //constructor with 0 parameters , look at default settings 
@@ -62,6 +63,7 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fCurFile(0),
   fStack(0x0),
   fGenHeader(0x0),
+  fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0)
 {
   // Copy constructor
@@ -70,6 +72,7 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
   fStack = aReader.fStack;
+  fEstEventMult = aReader.fEstEventMult;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
 }
 //__________________
@@ -92,6 +95,7 @@ AliFemtoEventReaderKinematicsChain& AliFemtoEventReaderKinematicsChain::operator
   fCurFile = aReader.fCurFile;
   fStack = aReader.fStack;
   fGenHeader = aReader.fGenHeader;
+  fEstEventMult = aReader.fEstEventMult;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
   return *this;
 }
@@ -180,6 +184,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
 
   int tNormMult = 0;
+  int tV0direction = 0;
   for (int i=0;i<nofTracks;i++)
     {
       //take only primaries
@@ -200,7 +205,12 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	    if (kinetrack->Eta() < 0.8)
 	      tNormMult++;
 	  
-	  
+	//counting particles that go into direction of VZERO detector
+	if(kinetrack->Eta() > 2.8 && kinetrack->Eta() < 5.1) //VZERO-A
+	  tV0direction++;
+	if(kinetrack->Eta() > -3.7 && kinetrack->Eta() < -1.7)//VZERO-C
+	  tV0direction++;	
+ 
 	  //charge
       trackCopy->SetCharge((short)(fStack->Particle(i)->GetPDG()->Charge()/3));
 
@@ -279,7 +289,10 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
     }
   
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event
-  hbtEvent->SetNormalizedMult(tNormMult);
+  if (fEstEventMult == kGlobalCount) 
+    hbtEvent->SetNormalizedMult(tNormMult);
+  else if(fEstEventMult == kVZERO)
+    hbtEvent->SetNormalizedMult(tV0direction);
   fCurEvent++;	
 
 
@@ -340,6 +353,11 @@ void AliFemtoEventReaderKinematicsChain::SetGenEventHeader(AliGenEventHeader *aG
 void AliFemtoEventReaderKinematicsChain::SetRotateToEventPlane(short dorotate)
 {
   fRotateToEventPlane=dorotate;
+}
+
+void AliFemtoEventReaderKinematicsChain::SetUseMultiplicity(EstEventMult aType)
+{
+  fEstEventMult = aType;
 }
 
 Float_t AliFemtoEventReaderKinematicsChain::GetSigmaToVertex(double *impact, double *covar)

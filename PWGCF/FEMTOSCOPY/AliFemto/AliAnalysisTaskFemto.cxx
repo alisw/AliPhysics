@@ -257,6 +257,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
       fAODpidUtil = aodH->GetAODpidUtil(); //correct way
       //fAODpidUtil = new AliAODpidUtil(); //not correct way
       //      printf("aodH->GetAODpidUtil(): %x",aodH->GetAODpidUtil());
+      cout<<"AliAnalysisTaskFemto::AodpidUtil:"<<fAODpidUtil<<endl;
       femtoReaderAOD->SetAODpidUtil(fAODpidUtil);
 
       fAODheader = fAOD->GetHeader();
@@ -430,7 +431,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 
 
 
-    // AliInfo(Form("Tracks in AOD: %d \n",fAOD->GetNumberOfTracks()));
+     AliInfo(Form("Tracks in AOD: %d \n",fAOD->GetNumberOfTracks()));
     
     if (fAOD->GetNumberOfTracks() > 0) {
       if (!fReader) {

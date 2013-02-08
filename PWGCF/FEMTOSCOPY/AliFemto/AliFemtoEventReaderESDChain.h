@@ -34,7 +34,7 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   enum TrackType {kGlobal=0, kTPCOnly=1, kITSOnly=2, kSPDTracklet=3};
   typedef enum TrackType ReadTrackType;
 
-  enum EventMult {kTracklet=0, kITSTPC=1, kITSPure=2, kGlobalCount=3, kSPDLayer1=4, kV0Centrality=5, kReferenceITSTPC=6, kReferenceITSSA=7, kReferenceTracklets=8 };
+  enum EventMult {kGlobalCount=3, kSPDLayer1=4, kV0Centrality=5, kReferenceITSTPC=6, kReferenceITSSA=7, kReferenceTracklets=8, kVZERO=9 };
   typedef enum EventMult EstEventMult;
 
   AliFemtoEventReaderESDChain();
@@ -54,7 +54,6 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   void GetGlobalPositionAtGlobalRadiiThroughTPC(AliESDtrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
   void SetMagneticFieldSign(int s);
 
-  void SetUsePhysicsSelection(const bool usephysics);
   void SetUseMultiplicity(EstEventMult aType);
   void SetEventTrigger(UInt_t eventtrig); //trigger
 
@@ -81,8 +80,6 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   unsigned int   fCurFile;       //number of current file
   AliESDEvent*   fEvent;         //ESD event
   //  AliESDfriend*  fEventFriend;
-  bool           fUsePhysicsSel; //if true the physics selection class will be used
-  AliPhysicsSelection *fSelect;  //Class to select only physics events
   ReadTrackType  fTrackType;     // Type of track read
   EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   UInt_t         fEventTrig;     //event trigger

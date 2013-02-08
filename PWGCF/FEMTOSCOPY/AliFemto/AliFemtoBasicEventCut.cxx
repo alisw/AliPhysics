@@ -19,7 +19,6 @@ AliFemtoBasicEventCut::AliFemtoBasicEventCut() :
   fAcceptBadVertex(false), 
   fNEventsPassed(0), 
   fNEventsFailed(0),
-  fAcceptOnlyPhysics(true),
   fSelectTrigger(0)
 {
   // Default constructor
@@ -43,7 +42,6 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
   int mult = (int) event->UncorrectedNumberOfPrimaries();
   double vertexZPos = event->PrimVertPos().z();
 
-
   // Double_t qxEPVZERO = 0, qyEPVZERO = 0;
   // Double_t qVZERO = -999;
   double epvzero = event->ReactionPlaneAngle();
@@ -52,6 +50,7 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
 //   cout << "AliFemtoBasicEventCut:: mult:       " << fEventMult[0] << " < " << mult << " < " << fEventMult[1] << endl;
 //   cout << "AliFemtoBasicEventCut:: VertexZPos: " << fVertZPos[0] << " < " << vertexZPos << " < " << fVertZPos[1] << endl;
 //   cout << "AliFemtoBasicEventCut:: VertexZErr: " << event->PrimVertCov()[4] << endl;
+
   // cout << "AliFemtoBasicEventCut:: MagneticField: " << event->MagneticField() << endl;
   // cout << "AliFemtoBasicEventCut:: IsCollisionCandidate: " << event->IsCollisionCandidate() << endl;
   // cout << "AliFemtoBasicEventCut:: TriggerCluster: " << event->TriggerCluster() << endl;
@@ -65,15 +64,15 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
      (epvzero > fPsiEP[0]) &&
      (epvzero < fPsiEP[1]) &&
      ((!fAcceptBadVertex) || (event->ZDCParticipants() > 1.0)) &&
-     ((!fAcceptOnlyPhysics) || (event->IsCollisionCandidate())) &&
       ((!fSelectTrigger) || (event->TriggerCluster() == fSelectTrigger))
 );
 
   // cout << "AliFemtoBasicEventCut:: goodEvent" <<goodEvent << endl;
 
   goodEvent ? fNEventsPassed++ : fNEventsFailed++ ;
-//   cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
+  //  cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
 //     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)) &&
+
   return (goodEvent);
 }
 //------------------------------
@@ -98,11 +97,4 @@ bool AliFemtoBasicEventCut::GetAcceptBadVertex()
 {
   return fAcceptBadVertex;
 }
-void AliFemtoBasicEventCut::SetAcceptOnlyPhysics(bool b)
-{
-  fAcceptOnlyPhysics = b;
-}
-bool AliFemtoBasicEventCut::GetAcceptOnlyPhysics()
-{
-  return fAcceptOnlyPhysics;
-}
+

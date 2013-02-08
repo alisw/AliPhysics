@@ -42,10 +42,8 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fCurEvent(0),
   fCurFile(0),
   fEvent(0x0),
-  fUsePhysicsSel(kFALSE),
-  fSelect(0x0),
   fTrackType(kGlobal),
-  fEstEventMult(kITSTPC), 
+  fEstEventMult(kReferenceITSTPC), 
   fEventTrig(AliVEvent::kMB), //trigger
   fESDpid(0),
   fIsPidOwner(0),
@@ -74,10 +72,8 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fCurEvent(0),
   fCurFile(0),
   fEvent(0x0),
-  fUsePhysicsSel(kFALSE),
-  fSelect(0x0),
   fTrackType(kGlobal),
-  fEstEventMult(kITSTPC),
+  fEstEventMult(kReferenceITSTPC),
   fEventTrig(AliVEvent::kMB), //trigger
   fESDpid(0),
   fIsPidOwner(0),
@@ -93,9 +89,6 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fCurFile = aReader.fCurFile;
   //  fEvent = new AliESD(*aReader.fEvent);
   fEvent = new AliESDEvent();
-  fUsePhysicsSel = aReader.fUsePhysicsSel;
-  if (aReader.fUsePhysicsSel)
-    fSelect = new AliPhysicsSelection();
   fTrackType = aReader.fTrackType;
   fEstEventMult = aReader.fEstEventMult;
   fEventTrig = aReader.fEventTrig; //trigger
@@ -136,7 +129,7 @@ AliFemtoEventReaderESDChain::~AliFemtoEventReaderESDChain()
   //     delete fSharedList[tPad];
   //   }
   //   delete [] fSharedList;
-  if (fSelect) delete fSelect;
+
 }
 
 //__________________
@@ -157,11 +150,8 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
   fTrackType = aReader.fTrackType;
   fEstEventMult = aReader.fEstEventMult;
 
-  fUsePhysicsSel = aReader.fUsePhysicsSel;
   fReadV0 = aReader.fReadV0;
   fMagFieldSign = aReader.fMagFieldSign;
-  if (aReader.fUsePhysicsSel)
-    fSelect = new AliPhysicsSelection();
   //  fEventFriend = aReader.fEventFriend;
   
   //   if (fClusterPerPadrow) {
@@ -241,12 +231,6 @@ bool AliFemtoEventReaderESDChain::GetUseTPCOnly() const
   return fUseTPCOnly;
 }
 
-void AliFemtoEventReaderESDChain::SetUsePhysicsSelection(const bool usephysics)
-{
-  fUsePhysicsSel = usephysics;
-  if (!fSelect) fSelect = new AliPhysicsSelection();
-}
-
 void AliFemtoEventReaderESDChain::SetUseMultiplicity(EstEventMult aType)
 {
   fEstEventMult = aType;
@@ -267,15 +251,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   
   hbtEvent = new AliFemtoEvent;
 
-  if (fUsePhysicsSel) {
-    hbtEvent->SetIsCollisionCandidate(fSelect->IsCollisionCandidate(fEvent));
-    if (!(fSelect->IsCollisionCandidate(fEvent)))
-      printf("Event not a collision candidate\n");
-  }
-  else
-    hbtEvent->SetIsCollisionCandidate(kTRUE);
-
-  //setting basic things
+   //setting basic things
   //  hbtEvent->SetEventNumber(fEvent->GetEventNumber());
   hbtEvent->SetRunNumber(fEvent->GetRunNumber());
   //hbtEvent->SetNumberOfTracks(fEvent->GetNumberOfTracks());
@@ -375,7 +351,8 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 
   Int_t tTracklet=0, tITSTPC=0, tITSPure=0;
   
-  fEvent->EstimateMultiplicity(tTracklet, tITSTPC, tITSPure, 1.2);
+  //W-AliESDEvent::EstimateMultiplicity: This obsolete method will be eliminated soon. Use AliESDtrackCuts::GetReferenceMultiplicity
+  //fEvent->EstimateMultiplicity(tTracklet, tITSTPC, tITSPure, 1.2);
   
   hbtEvent->SetMultiplicityEstimateITSTPC(tITSTPC);
   hbtEvent->SetMultiplicityEstimateTracklets(tTracklet);
@@ -685,6 +662,11 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	  indexes[ik] = esdtrack->GetKinkIndex(ik);
 	}
 	trackCopy->SetKinkIndexes(indexes);
+
+	for (int ii=0; ii<6; ii++){
+	  trackCopy->SetITSHitOnLayer(ii,esdtrack->HasPointOnITSLayer(ii));
+	}
+
 	//decision if we want this track
 	//if we using diffrent labels we want that this label was use for first time 
 	//if we use hidden info we want to have match between sim data and ESD
@@ -721,14 +703,15 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTrackletsITSSA,1.0));
   else if(fEstEventMult == kReferenceTracklets)
     hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTracklets,1.0));
-  else if (fEstEventMult == kTracklet)
-    hbtEvent->SetNormalizedMult(tTracklet);
-  else if (fEstEventMult == kITSTPC)
-    hbtEvent->SetNormalizedMult(tITSTPC);
-  else if (fEstEventMult == kITSPure)
-    hbtEvent->SetNormalizedMult(tITSPure);
   else if (fEstEventMult == kSPDLayer1)
     hbtEvent->SetNormalizedMult(fEvent->GetMultiplicity()->GetNumberOfITSClusters(1));
+  else if (fEstEventMult == kVZERO)
+    {
+      Float_t multV0 = 0;
+      for (Int_t i=0; i<64; i++)
+	multV0 += fEvent->GetVZEROData()->GetMultiplicity(i);
+      hbtEvent->SetNormalizedMult(multV0);
+    }
   else if (fEstEventMult == kV0Centrality) {
     // centrality between 0 (central) and 1 (very peripheral)
 

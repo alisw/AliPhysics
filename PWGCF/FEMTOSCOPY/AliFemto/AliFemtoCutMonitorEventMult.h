@@ -23,7 +23,7 @@ class AliFemtoCutMonitorEventMult : public AliFemtoCutMonitor{
   
  public:
   AliFemtoCutMonitorEventMult();
-  AliFemtoCutMonitorEventMult(const char *aName);
+  AliFemtoCutMonitorEventMult(const char *aName, int nBins=5000);
   AliFemtoCutMonitorEventMult(const AliFemtoCutMonitorEventMult &aCut);
   virtual ~AliFemtoCutMonitorEventMult();
 

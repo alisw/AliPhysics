@@ -289,6 +289,7 @@ void AliFemtoVertexMultAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
     if ( mult > fMult[1] ) fOverFlowMult++;
     return;
   }
+  //cout<<" AliFemtoVertexMultAnalysis:: -> Simple"<<endl;
   // call ProcessEvent() from AliFemtoSimpleAnalysis-base
   AliFemtoSimpleAnalysis::ProcessEvent(hbtEvent);
 }

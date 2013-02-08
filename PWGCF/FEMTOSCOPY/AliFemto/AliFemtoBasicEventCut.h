@@ -27,7 +27,6 @@ public:
   void SetEventMult(const int& lo,const int& hi);
   void SetVertZPos(const float& lo, const float& hi);
   void SetAcceptBadVertex(bool b);
-  void SetAcceptOnlyPhysics(bool b);
   int NEventsPassed() const;
   int NEventsFailed() const;
   bool GetAcceptBadVertex();

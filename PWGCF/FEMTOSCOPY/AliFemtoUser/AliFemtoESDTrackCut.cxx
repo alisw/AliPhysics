@@ -122,6 +122,8 @@ ClassImp(AliFemtoESDTrackCut)
   fPidProbKaon[0]=-1;fPidProbKaon[1]=2;
   fPidProbProton[0]=-1;fPidProbProton[1]=2;
   fPidProbMuon[0]=-1;fPidProbMuon[1]=2;
+  for (Int_t i = 0; i < 3; i++)
+    fCutClusterRequirementITS[i] = AliESDtrackCuts::kOff;
   fLabel=false;
   fStatus=0;
   fminTPCclsF=0;
@@ -135,7 +137,7 @@ AliFemtoESDTrackCut::~AliFemtoESDTrackCut(){
 //------------------------------
 bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 {
-
+  //cout<<"AliFemtoESDTrackCut::Pass"<<endl;
 
   // test the particle and return 
   // true if it meets all the criteria
@@ -197,6 +199,10 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     if ((track->TPCchi2()/track->TPCncls()) > fMaxTPCchiNdof) {
       return false;
     }
+  //ITS cluster requirenments
+  for (Int_t i = 0; i < 3; i++)
+    if(!CheckITSClusterRequirement(fCutClusterRequirementITS[i], track->HasPointOnITSLayer(i*2), track->HasPointOnITSLayer(i*2+1)))
+      return false;
 
   if (fLabel)
     {
@@ -221,6 +227,10 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	  return false;
 	}
     }
+
+
+  
+
   Bool_t tTPCPidIn = (track->Flags()&AliFemtoTrack::kTPCpid)>0;
   Bool_t tITSPidIn = (track->Flags()&AliFemtoTrack::kITSpid)>0;
   Bool_t tTOFPidIn = (track->Flags()&AliFemtoTrack::kTOFpid)>0;
@@ -280,6 +290,10 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       //cout<<fPt[0]<<" < Pt ="<<Pt<<" <"<<fPt[1]<<endl;
       return false;
     }
+
+
+
+
   //   cout << "Track has pids: " 
   //        << track->PidProbElectron() << " " 
   //        << track->PidProbMuon() << " " 
@@ -973,4 +987,29 @@ bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsig
 void AliFemtoESDTrackCut::SetPIDMethod(ReadPIDMethodType newMethod)
 {
   fPIDMethod = newMethod;
+}
+
+
+void AliFemtoESDTrackCut::SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req) 
+{ 
+  fCutClusterRequirementITS[det] = req; 
+}
+
+Bool_t AliFemtoESDTrackCut::CheckITSClusterRequirement(AliESDtrackCuts::ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2)
+{
+  // checks if the cluster requirement is fullfilled (in this case: return kTRUE)
+  
+  switch (req)
+    {
+    case AliESDtrackCuts::kOff:        return kTRUE;
+    case AliESDtrackCuts::kNone:       return !clusterL1 && !clusterL2;
+    case AliESDtrackCuts::kAny:        return clusterL1 || clusterL2;
+    case AliESDtrackCuts::kFirst:      return clusterL1;
+    case AliESDtrackCuts::kOnlyFirst:  return clusterL1 && !clusterL2;
+    case AliESDtrackCuts::kSecond:     return clusterL2;
+    case AliESDtrackCuts::kOnlySecond: return clusterL2 && !clusterL1;
+    case AliESDtrackCuts::kBoth:       return clusterL1 && clusterL2;
+  }
+  
+  return kFALSE;
 }

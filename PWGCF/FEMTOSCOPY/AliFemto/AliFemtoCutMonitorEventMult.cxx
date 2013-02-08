@@ -34,7 +34,7 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult():
   fMultSumPt = new TH2D("EvMultSumPt","Event Multiplicity vs Total pT",5001,-0.5,5000.5,1000,0.0,100.0);
 }
 
-AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName):
+AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName, int nBins):
   AliFemtoCutMonitor(),
   fEvMult(0),
   fNormEvMult(0),
@@ -57,16 +57,16 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName):
   // Normal constructor
   char name[200];
   snprintf(name, 200, "EvMult%s", aName);
-  fEvMult = new TH1D(name, "Event Multiplicity", 5001, -0.5, 5000.5);
+  fEvMult = new TH1D(name, "Event Multiplicity", nBins+1, -0.5, 5000.5); 
 
   snprintf(name, 200, "NormEvMult%s", aName);
-  fNormEvMult = new TH1D(name, "Normalized Event Multiplicity", 5001, -0.5, 5000.5);
+  fNormEvMult = new TH1D(name, "Normalized Event Multiplicity", nBins+1, -0.5, 5000.5); 
 
 
 
   if(!freadMC) {
     snprintf(name, 200, "SPDEvMult%s", aName);
-    fSPDMult = new TH1D(name, "SPD Tracklet Multiplicity", 5001, -0.5, 5000.5);
+    fSPDMult = new TH1D(name, "SPD Tracklet Multiplicity", nBins+1, -0.5,  5000.5); 
   }
 
   snprintf(name, 200, "EvMultTotPt%s", aName);

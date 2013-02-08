@@ -78,6 +78,10 @@ AliFemtoTrack::AliFemtoTrack():
   fKinkIndexes[1] = 0;
   fKinkIndexes[2] = 0;
 
+  for(int i=0;i<6;i++) {
+    fHasPointOnITS[i]=false;
+  }
+
   for(int i=0;i<9;i++)
     {
       fNominalTpcPoints[i].SetX(0);
@@ -253,6 +257,10 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fKinkIndexes[1] = aTrack.fKinkIndexes[1];
   fKinkIndexes[2] = aTrack.fKinkIndexes[2];
 
+  for(int i=0;i<6;i++) {
+    fHasPointOnITS[i]=false;
+  }
+
   fXatDCA=aTrack.fXatDCA;
   fYatDCA=aTrack.fYatDCA;
   fZatDCA=aTrack.fZatDCA;
@@ -402,6 +410,13 @@ void AliFemtoTrack::SetKinkIndexes(int points[3])
   fKinkIndexes[2] = points[2];
 }
 
+void AliFemtoTrack::SetITSHitOnLayer(int i, bool val)
+{
+  // Transfer ITS hit
+  fHasPointOnITS[i] = val;
+}
+
+
 int  AliFemtoTrack::KinkIndex(int aIndex) const
 {
   // Return Kink index
@@ -409,6 +424,15 @@ int  AliFemtoTrack::KinkIndex(int aIndex) const
     return fKinkIndexes[aIndex];
   else
     return 0;
+}
+
+bool AliFemtoTrack::HasPointOnITSLayer(int aIndex) const
+{
+  // Return if i-th ITS layer had a hit for this track
+  if ((aIndex <6) && (aIndex>=0))
+    return fHasPointOnITS[aIndex];
+  else
+    return false;
 }
 
 // void AliFemtoTrack::SetXTPC(const AliFemtoThreeVector& aXTPC)
