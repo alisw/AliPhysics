@@ -1,17 +1,16 @@
-// $Id$
+
 
 AliAnalysisTaskEmcalJetSpectra* AddTaskEmcalJetSpectra(
    const char *outfilename    = "AnalysisOutput.root",
    const char *nJets          = "Jets",
-   const char *nTracks        = "PicoTracks",
+   UInt_t type                = AliAnalysisTaskEmcal::kTPC,
    const char *nRhosChEm      = "rhoChEm",
-   const char *nRhosCh        = "rhoCh",
-   const char *nRhosAve       = "rho3",
    const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
    const Double_t minEta      = -0.3,
    const Double_t maxEta      = 0.3,
-   const Double_t minArea     = 0.4
+   const Double_t minArea     = 0.4,
+   const char *nTracks        = "PicoTracks"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -19,7 +18,7 @@ AliAnalysisTaskEmcalJetSpectra* AddTaskEmcalJetSpectra(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
-    ::Error("AddTaskRho", "No analysis manager to connect to.");
+    ::Error("AddTasEmcalJetSpectra", "No analysis manager to connect to.");
     return NULL;
   }  
   
@@ -27,7 +26,7 @@ AliAnalysisTaskEmcalJetSpectra* AddTaskEmcalJetSpectra(
   //==============================================================================
   if (!mgr->GetInputEventHandler())
   {
-    ::Error("AddTaskRho", "This task requires an input event handler");
+    ::Error("AddTaskEmcalJetSpectra", "This task requires an input event handler");
     return NULL;
   }
   
@@ -38,14 +37,13 @@ AliAnalysisTaskEmcalJetSpectra* AddTaskEmcalJetSpectra(
   TString name(Form("Spectra_%s", nJets));
   AliAnalysisTaskEmcalJetSpectra *spectratask = new AliAnalysisTaskEmcalJetSpectra(name);
   spectratask->SetJetsName(nJets);
-  spectratask->SetRhos1Name(nRhosChEm);
-  spectratask->SetRhos2Name(nRhosCh);
-  spectratask->SetRhos3Name(nRhosAve);
+  spectratask->SetAnaType(type);
+  spectratask->SetRhoName(nRhosChEm);
+  spectratask->SetJetPhiLimits(minPhi,maxPhi);
+  spectratask->SetJetEtaLimits(minEta,maxEta);
+  spectratask->SetJetAreaCut(minArea);
   spectratask->SetTracksName(nTracks);
-  spectratask->SetJetPhi(minPhi,maxPhi);
-  spectratask->SetJetEta(minEta,maxEta);
-  spectratask->SetAreaCut(minArea);
- 
+
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
