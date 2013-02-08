@@ -783,7 +783,6 @@ TGraphErrors *AliBalance::DrawBalance(Int_t iAnalysisType) {
 //____________________________________________________________________//
 void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
   //Prints the calculated width of the BF and its error
-  Double_t x[MAXIMUM_NUMBER_OF_STEPS];
   Double_t gSumXi = 0.0, gSumBi = 0.0, gSumBiXi = 0.0;
   Double_t gSumBiXi2 = 0.0, gSumBi2Xi2 = 0.0;
   Double_t gSumDeltaBi2 = 0.0, gSumXi2DeltaBi2 = 0.0;
@@ -812,9 +811,11 @@ void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
     deltaErrorNew += gHistBalance->GetBinError(i)*(gHistBalance->GetBinCenter(i)*gSumBi - gSumBiXi)/TMath::Power(gSumBi,2);
   
   Double_t integralError = TMath::Sqrt(deltaBalP2);
-  
-  Double_t delta = gSumBiXi / gSumBi;
+  integralError *= 1.0;
+
+  Double_t delta = gSumBiXi / gSumBi; delta *= 1.0;
   Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
+  deltaError *= 1.0;
   // cout<<"Analysis type: "<<kBFAnalysisType[iAnalysisType].Data()<<endl;
   // cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
   // cout<<"New error: "<<deltaErrorNew<<endl;
