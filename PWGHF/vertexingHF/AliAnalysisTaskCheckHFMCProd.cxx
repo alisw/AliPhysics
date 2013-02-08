@@ -63,6 +63,9 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE
   fHistoTRKVtxZ(0),
   fHistoNcharmed(0),
   fHistoNbVsNc(0),
+  fHistOriginPrompt(0),
+  fHistOriginFeeddown(0),
+  fSearchUpToQuark(kFALSE),
   fSystem(0),
   fReadMC(kTRUE)
 {
@@ -231,6 +234,14 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
     fOutput->Add(fHistYPtDsbyDecChannel[ih]);
   }
     
+  fHistOriginPrompt=new TH1F("hOriginPrompt","",100,0.,0.5);
+  fHistOriginPrompt->Sumw2();
+  fHistOriginPrompt->SetMinimum(0);
+  fOutput->Add(fHistOriginPrompt);
+  fHistOriginFeeddown=new TH1F("hOriginFeeddown","",100,0.,0.5);
+  fHistOriginFeeddown->Sumw2();
+  fHistOriginFeeddown->SetMinimum(0);
+  fOutput->Add(fHistOriginFeeddown);
 
   PostData(1,fOutput);
 
@@ -302,7 +313,12 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Printf("ERROR: stack not available");
       return;
     }
-  
+    const AliVVertex* mcVert=mcEvent->GetPrimaryVertex();
+    if(!mcVert){
+      Printf("ERROR: generated vertex not available");
+      return;
+    }
+    
 
     Int_t nParticles=stack->GetNtrack();
     Double_t dNchdy = 0.;
@@ -366,26 +382,57 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 
       if(iSpecies<0) continue; // not a charm meson
 
+      Double_t distx=part->Vx()-mcVert->GetX();
+      Double_t disty=part->Vy()-mcVert->GetY();
+      Double_t distz=part->Vz()-mcVert->GetZ();
+      Double_t distToVert=TMath::Sqrt(distx*distx+disty*disty+distz*distz);
+      printf("Particle %d  dist from origin=%f\n",absPdg,distToVert);
       TParticle* runningpart=part;
       Int_t iFromB=-1;
       Int_t pdgmoth=-1;
-      while(1){
-	Int_t labmoth=runningpart->GetFirstMother();
-	if(labmoth==-1) break;
-	TParticle *mot=(TParticle*)stack->Particle(labmoth);
-	pdgmoth=TMath::Abs(mot->GetPdgCode());
-	if(pdgmoth==5){ 
-	  iFromB=1;
-	  break;
-	}else if(pdgmoth==4){
-	  iFromB=0;
-	  break;
+      if(fSearchUpToQuark){
+	while(1){
+	  Int_t labmoth=runningpart->GetFirstMother();
+	  if(labmoth==-1) break;
+	  TParticle *mot=(TParticle*)stack->Particle(labmoth);
+	  pdgmoth=TMath::Abs(mot->GetPdgCode());
+	  if(pdgmoth==5){ 
+	    iFromB=1;
+	    break;
+	  }else if(pdgmoth==4){
+	    iFromB=0;
+	    break;
+	  }
+	  runningpart=mot;
 	}
-	runningpart=mot;
+      }else{
+	iFromB=0;
+	while(1){
+	  Int_t labmoth=runningpart->GetFirstMother();
+	  if(labmoth==-1) break;
+	  TParticle *mot=(TParticle*)stack->Particle(labmoth);
+	  pdgmoth=TMath::Abs(mot->GetPdgCode());
+	  if(pdgmoth>=500 && pdgmoth<=599){ 
+	    iFromB=1;
+	    break;
+	  }
+	  if(pdgmoth>=5000 && pdgmoth<=5999){ 
+	    iFromB=1;
+	    break;
+	  }
+	  runningpart=mot;
+	}
       }
-      if(iFromB<0) continue;
-      else if(iFromB==0) fHistYPtPromptAllDecay[iSpecies]->Fill(part->Pt(),rapid);
-      else if(iFromB==1) fHistYPtFeeddownAllDecay[iSpecies]->Fill(part->Pt(),rapid);
+      printf("   From B %d\n",iFromB);
+
+      if(iFromB==0){
+	fHistYPtPromptAllDecay[iSpecies]->Fill(part->Pt(),rapid);
+	fHistOriginPrompt->Fill(distToVert);
+      }
+      else if(iFromB==1){
+	fHistYPtFeeddownAllDecay[iSpecies]->Fill(part->Pt(),rapid);
+	fHistOriginFeeddown->Fill(distToVert);
+      }
 
       if(iPart<0) continue;
       if(iType<0) continue;
@@ -399,9 +446,9 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       }
       
       if(iFromB==0 && iPart>=0 && iPart<5) fHistYPtPrompt[iPart]->Fill(part->Pt(),rapid);
-      else if(iFromB==1 && iPart>=0 && iPart<5) fHistYPtFeeddown[iPart]->Fill(part->Pt(),rapid);
-      
+      else if(iFromB==1 && iPart>=0 && iPart<5) fHistYPtFeeddown[iPart]->Fill(part->Pt(),rapid);      
     }
+
     fHistoNcharmed->Fill(dNchdy,nCharmed);
     fHistoNbVsNc->Fill(nc,nb);
     fHistoPhysPrim->Fill(nPhysPrim);

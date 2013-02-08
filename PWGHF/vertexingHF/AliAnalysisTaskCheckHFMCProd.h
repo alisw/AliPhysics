@@ -43,6 +43,8 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   Int_t CheckDsDecay(Int_t labDs, AliStack* stack) const;
   Int_t CheckDstarDecay(Int_t labDstar, AliStack* stack) const;
   Int_t CheckLcDecay(Int_t labLc, AliStack* stack) const;
+  void SetSearchUpToQuark(Bool_t opt){fSearchUpToQuark=opt;};
+
 
   void SetReadMC(Bool_t opt) {fReadMC=opt;}
   void SetpPb() {fSystem=2;}
@@ -86,11 +88,14 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH2F* fHistYPtD0byDecChannel[2]; //! histo of y vs. pt for D0->Kpi and D0->Kpipipi
   TH2F* fHistYPtDplusbyDecChannel[2]; //! histo of y vs. pt for D+->Kpipi and D+->K0*pi
   TH2F* fHistYPtDsbyDecChannel[2]; //! histo of y vs. pt for Ds->phipi and Ds->K0*K
+  TH1F* fHistOriginPrompt;    //! histo of D production point (prompt)
+  TH1F* fHistOriginFeeddown;  //! histo of D production point (feeddown)
 
-  Int_t fSystem; // 0=pp, 1=PbPb, 2=pPb
+  Bool_t fSearchUpToQuark; // c/b separation using quarks
+  Int_t fSystem;         // 0=pp, 1=PbPb, 2=pPb
   Bool_t fReadMC;
 
-  ClassDef(AliAnalysisTaskCheckHFMCProd,2);  
+  ClassDef(AliAnalysisTaskCheckHFMCProd,3);
 };
 
 
