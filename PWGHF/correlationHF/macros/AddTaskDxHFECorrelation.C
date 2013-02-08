@@ -149,11 +149,11 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
   } else {
     // load configuration from file, and abort if something goes wrong
     TFile* filePoolConfiguration=TFile::Open(poolConfigFile.Data());
-    if(!filePoolInfo){
+    if(!filePoolConfiguration){
       ::Error("AddTaskDxHFECorrelation", Form("Pool configuration object file %s not found, exiting", poolConfigFile.Data()));
       return;
     }
-    TObject* pObj=filePoolInfo->Get(poolInfoName);
+    TObject* pObj=filePoolConfiguration->Get(poolInfoName);
     if (!pObj) {
       ::Error("AddTaskDxHFECorrelation", Form("No Pool configuration object with name '%s' found in file %s, exiting", poolInfoName, poolConfigFile.Data()));
       return;
@@ -183,7 +183,7 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
     ::Error("AddTaskDxHFECorrelation", "failed to create task.");
     return;
   }
-  pTask->SetFillOnlyD0D0bar(1); //0=both, 1=D0 only, 2=D0bar only
+  pTask->SetFillOnlyD0D0bar(0); //0=both, 1=D0 only, 2=D0bar only
   pTask->SetCutsD0(RDHFD0toKpi);
   pTask->SetCutsHFE(hfecuts);
   pTask->SetCuts(poolConfiguration);
@@ -239,10 +239,12 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
 // Note: AliHFAssociatedTrackCuts keeps an instance of the external
 // pointer, the arrays thus need to be global
 // TODO: try a proper implementation of AliHFAssociatedTrackCuts later
-Double_t MBins[]={0,20,40,60,80,500};
-Double_t * MultiplicityBins = MBins;
-Double_t ZBins[]={-10,-5,-2.5,2.5,5,10};
-Double_t *ZVrtxBins = ZBins;
+const Int_t    nofMBins=5;
+const Double_t MBins[nofMBins+1]={0,20,40,60,80,500};
+const Double_t * MultiplicityBins = MBins;
+const Int_t    nofZBins=5;
+const Double_t ZBins[nofZBins+1]={-10,-5,-2.5,2.5,5,10};
+const Double_t *ZVrtxBins = ZBins;
 
 AliAnalysisCuts* createDefaultPoolConfig()
 {
@@ -254,7 +256,7 @@ AliAnalysisCuts* createDefaultPoolConfig()
   HFCorrelationCuts->SetMaxNEventsInPool(200);
   HFCorrelationCuts->SetMinNTracksInPool(100);
   HFCorrelationCuts->SetMinEventsToMix(8);
-  HFCorrelationCuts->SetNofPoolBins(5,5); // Note: the arrays have dimension x+1
+  HFCorrelationCuts->SetNofPoolBins(nofZBins,nofMBins); // Note: the arrays have dimension x+1
   HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
 
   TString description = "Info on Pool for EventMixing";   
