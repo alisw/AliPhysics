@@ -103,13 +103,15 @@ void setupDxHFE(const char* localAodDirectory, int nofDirectories, const char* l
     if (gSystem->AccessPathName(aodPathName)==0) {
       // Create a chain with one set of AliAOD.root and AliAOD.VertexingHF.root. The set needs 
       // to be located in the same folder as you run from (physically or linked)
-      ::Info("setupDxHFE.C", Form("make chain from single chunk %s", aodPathName));
+      ::Info("setupDxHFE.C", Form("make chain from single chunk %s", aodPathName.Data()));
       TChain* chain = MakeAODInputChain(localAodDirectory ,1, -1);
     } else {
       // Assume several folders containing different AODs. 
       // The AODs need to be in folders named 1, 2,...
-      ::Info("setupDxHFE.C", Form("make chain from directory %s", localAodDirectory));
-      chain=MakeAODInputChain(localAodDirectory, 1, nofDirectories);
+      aodPathName=localAodDirectory;
+      if (!aodPathName.EndsWith("/")) aodPathName+="/";
+      ::Info("setupDxHFE.C", Form("make chain from directory %s", aodPathName.Data()));
+      chain=MakeAODInputChain(aodPathName, 1, nofDirectories);
     }
     ::Info("setupDxHFE.C", Form("local AOD chain: %d entries", chain->GetEntries()));
   }
