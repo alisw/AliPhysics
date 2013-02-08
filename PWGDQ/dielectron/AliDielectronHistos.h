@@ -19,10 +19,8 @@
 // #include <TCollection.h>
 #include <THashList.h>
 #include <TVectorDfwd.h>
-#include <THn.h>
-#include <THnSparse.h>
+#include <THnBase.h>
 
-//class THn;
 class TH1;
 class TString;
 class TList;
@@ -120,20 +118,19 @@ public:
   
   void StoreVariables(TObject *obj, UInt_t valType[20]);
   void StoreVariables(TH1 *obj, UInt_t valType[20]);
-  void StoreVariables(THn *obj, UInt_t valType[20]);
-  void StoreVariables(THnSparse *obj, UInt_t valType[20]);
+  void StoreVariables(THnBase *obj, UInt_t valType[20]);
   void AdaptNameTitle(TH1 *hist, const char* histClass);
+  Int_t GetPrecision(Double_t value);
   void FillVarArray(TObject *obj, UInt_t *valType);
   void FillValues(TObject *obj, const Double_t *values);
   void FillValues(TH1 *obj, const Double_t *values);
-  void FillValues(THn *obj, const Double_t *values);
-  void FillValues(THnSparse *obj, const Double_t *values);
+  void FillValues(THnBase *obj, const Double_t *values);
 
   TObject* GetHist(const char* histClass, const char* name) const;
   TH1* GetHistogram(const char* histClass, const char* name) const;
   TObject* GetHist(const char* cutClass, const char* histClass, const char* name) const;
   TH1* GetHistogram(const char* cutClass, const char* histClass, const char* name) const;
-  
+
   void SetHistogramList(THashList &list, Bool_t setOwner=kTRUE);
   void ResetHistogramList(){fHistoList.Clear();}
   const THashList* GetHistogramList() const {return &fHistoList;}
