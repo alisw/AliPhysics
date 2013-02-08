@@ -321,7 +321,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   }
 
   AliCentrality *cent = fEvent->GetCentrality();
-
+  
   if (!fEstEventMult && cent && fUsePreCent) {
     if ((cent->GetCentralityPercentile("V0M")*10 < fCentRange[0]) ||
 	(cent->GetCentralityPercentile("V0M")*10 > fCentRange[1]))
@@ -480,12 +480,14 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	//	const AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
 	AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
 	
+
+
 	if (aodtrack->IsPrimaryCandidate()) tracksPrim++;
 	
 	if (!aodtrack->TestFilterBit(fFilterBit)) {
 	  delete trackCopy;
 	  continue;
-	}
+	}	
 	
 	//counting particles to set multiplicity
 	double impact[2];
@@ -498,7 +500,6 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 		  if (aodtrack->GetTPCNcls() > 70)
 		    if (aodtrack->Eta() < 0.8)
 		      tNormMult++;
-
 	} 
 
 	CopyAODtoFemtoTrack(aodtrack, trackCopy);
@@ -512,7 +513,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	  aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
 	else
 	  aodtrackpid = fEvent->GetTrack(i);
-	CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
+	//CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
 	
 	if (mcP) {
 	  // Fill the hidden information with the simulated data
@@ -630,7 +631,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	}
 	//    }
   
-  
+	
 	tEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
 	realnofTracks++;//real number of tracks		
     }
@@ -638,9 +639,9 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   tEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
   tEvent->SetNormalizedMult(tracksPrim);
 
-
   if (fEstEventMult==kCentrality) {
     //  AliCentrality *cent = fEvent->GetCentrality();
+    //cout<<"AliFemtoEventReaderAOD:"<<lrint(10*cent->GetCentralityPercentile("V0M"))<<endl;
     if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0M")));
     //  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
     
@@ -824,6 +825,13 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
     indexes[ik] = 0;
   }
   tFemtoTrack->SetKinkIndexes(indexes);
+
+
+  for (int ii=0; ii<6; ii++){
+    tFemtoTrack->SetITSHitOnLayer(ii,tAodTrack->HasPointOnITSLayer(ii));
+  }
+
+
 }
 
 void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFemtoV0)
@@ -1116,14 +1124,15 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
 		
   double tTOF = 0.0;
 
-  if (tAodTrack->GetStatus() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
-    tTOF = tAodTrack->GetTOFsignal();
-    tAodTrack->GetIntegratedTimes(aodpid);
+  //what is that code? for what do we need it? nsigma values are not enough?
+   if (tAodTrack->GetStatus() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
+     tTOF = tAodTrack->GetTOFsignal();
+     tAodTrack->GetIntegratedTimes(aodpid);
 
-    tTOF -= fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
-  }
+     tTOF -= fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
+   }
 
-  tFemtoTrack->SetTofExpectedTimes(tTOF-aodpid[2], tTOF-aodpid[3], tTOF-aodpid[4]);
+   tFemtoTrack->SetTofExpectedTimes(tTOF-aodpid[2], tTOF-aodpid[3], tTOF-aodpid[4]);
  
   //////  TPC ////////////////////////////////////////////
 

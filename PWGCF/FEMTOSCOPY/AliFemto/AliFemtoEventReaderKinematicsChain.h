@@ -28,6 +28,9 @@ class AliFemtoEvent;
 class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader 
 {
  public:
+  enum EventMult {kGlobalCount=0, kVZERO=1};
+  typedef enum EventMult EstEventMult;
+
   AliFemtoEventReaderKinematicsChain();
   AliFemtoEventReaderKinematicsChain(const AliFemtoEventReaderKinematicsChain& aReader);
   ~AliFemtoEventReaderKinematicsChain();
@@ -43,6 +46,7 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
   void SetStackSource(AliStack *aStack);
   void SetGenEventHeader(AliGenEventHeader *aGenHeader);
   void SetRotateToEventPlane(short dorotate);
+  void SetUseMultiplicity(EstEventMult aType);
   void CopyAODtoFemtoV0(TParticle *tv0, AliFemtoV0 *tFemtoV0 );
 
  protected:
@@ -55,7 +59,7 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
   unsigned int   fCurFile;       // number of current file
   AliStack       *fStack;         // Kinematics stack pointer
   AliGenEventHeader *fGenHeader; // Link to the generator event header
-
+  EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   short          fRotateToEventPlane; // Rotate the event so that event plane is at x=0
 
   Float_t GetSigmaToVertex(double *impact, double *covar);

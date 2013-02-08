@@ -7,6 +7,7 @@
 // Author: Marek Chojnacki (WUT), mchojnacki@knf.pw.edu.pl               //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
+#include "AliESDtrackCuts.h"
 
 #ifndef ALIFEMTOESDTRACKCUT_H
 #define ALIFEMTOESDTRACKCUT_H
@@ -15,7 +16,9 @@
 //#include "StMaker.h"
 //#endif
 
+#include "AliESDtrackCuts.h" //for enum with ITS layers
 #include "AliFemtoTrackCut.h"
+
 
 class AliFemtoESDTrackCut : public AliFemtoTrackCut 
 {
@@ -60,6 +63,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetMostProbableProton();
   void SetNoMostProbable(); 
   void SetPIDMethod(ReadPIDMethodType newMethod);
+  void SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req = AliESDtrackCuts::kOff);
 
   void SetMomRangeTOFpidIs(const float& minp, const float& maxp);
   void SetMomRangeTPCpidIs(const float& minp, const float& maxp);
@@ -76,6 +80,8 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   float             fPidProbKaon[2];     // bounds for kaon probability
   float             fPidProbProton[2];   // bounds for proton probability
   float             fPidProbMuon[2];     // bounds for muon probability 
+
+  AliESDtrackCuts::ITSClusterRequirement fCutClusterRequirementITS[3];  // detailed ITS cluster requirements for (SPD, SDD, SSD) - from AliESDtrackcuts!
   bool              fLabel;              // if true label<0 will not pass throught 
   long              fStatus;             // staus flag
   ReadPIDMethodType fPIDMethod;          // which PID mehod to use. 0 - nsgima, 1 - contour 
@@ -125,6 +131,9 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   bool IsPionNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsProtonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
 
+  Bool_t CheckITSClusterRequirement(AliESDtrackCuts::ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2); //the same as in AliESDtrackCuts
+
+
 #ifdef __ROOT__ 
   ClassDef(AliFemtoESDTrackCut, 1)
 #endif
@@ -155,6 +164,7 @@ inline void AliFemtoESDTrackCut::SetMaxSigmaToVertex(const float& maxsig) { fMax
 inline void AliFemtoESDTrackCut::SetMaxImpactXY(const float& maximpxy) { fMaxImpactXY = maximpxy; }
 inline void AliFemtoESDTrackCut::SetMaxImpactXYPtDep(const float& maxoff, const float& maxnrm, const float& maxpow) { fMaxImpactXYPtOff = maxoff; fMaxImpactXYPtNrm = maxnrm; fMaxImpactXYPtPow = maxpow; }
 inline void AliFemtoESDTrackCut::SetMaxImpactZ(const float& maximpz) { fMaxImpactZ = maximpz; }
+
 
 #endif
 

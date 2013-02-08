@@ -153,7 +153,12 @@ void AliFemtoCutMonitorParticleYPt::Fill(const AliFemtoTrack* aTrack)
   if(tEnergy==abs(aTrack->P().z())) tEnergy+=0.001;
   float tRapidity = 0.5*::log((tEnergy+aTrack->P().z())/(tEnergy-aTrack->P().z()));
   float tPt = ::sqrt((aTrack->P().x())*(aTrack->P().x())+(aTrack->P().y())*(aTrack->P().y()));
-  float tEta = -TMath::Log(TMath::Tan(aTrack->P().Theta()/2.0));
+  
+  float tEta;
+  if(aTrack->P().Theta()==0)
+    tEta=0;
+  else
+    tEta = -TMath::Log(TMath::Tan(aTrack->P().Theta()/2.0));
   float tPhi = aTrack->P().Phi();
   // float chi2w;
   float dcar = aTrack->ImpactD();

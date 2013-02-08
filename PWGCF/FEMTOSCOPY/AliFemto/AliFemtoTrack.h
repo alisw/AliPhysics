@@ -148,7 +148,9 @@ public:
   void SetTPCSharedMap(const TBits& aBits);
 
   void SetKinkIndexes(int points[3]);
-  int  KinkIndex(int aIndex) const;
+  int  KinkIndex(int aIndex) const;  
+  void SetITSHitOnLayer(int i, bool val);
+  bool HasPointOnITSLayer(int aIndex) const; // i: 0-5, for 6 layers
 
   /* Th stuff */
   void SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo);
@@ -243,6 +245,7 @@ public:
   AliFemtoThreeVector fNominalTpcExitPoint;     // Nominal track exit point from TPC
 
   int   fKinkIndexes[3]; // Kink Index list
+  bool  fHasPointOnITS[6]; // if track has hit on the ITS layer (6 layers: 2 x 3 (SPD, SSD, SDD)) 
 
   double fXatDCA;
   double fYatDCA;

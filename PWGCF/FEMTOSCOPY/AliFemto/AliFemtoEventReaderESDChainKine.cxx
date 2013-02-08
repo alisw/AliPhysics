@@ -653,6 +653,10 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       }
       trackCopy->SetKinkIndexes(indexes);
 
+	for (int ii=0; ii<6; ii++){
+	  trackCopy->SetITSHitOnLayer(ii,esdtrack->HasPointOnITSLayer(ii));
+	}
+
 
       // Fill the hidden information with the simulated data
       if (TMath::Abs(esdtrack->GetLabel()) < fStack->GetNtrack()) {

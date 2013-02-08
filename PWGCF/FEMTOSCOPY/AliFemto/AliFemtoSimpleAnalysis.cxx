@@ -326,8 +326,8 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
   if (!tmpPassEvent) 
     fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
   if (tmpPassEvent) {
-    //     cout << "AliFemtoSimpleAnalysis::ProcessEvent() - Event has passed cut - build picoEvent from " <<
-//       hbtEvent->TrackCollection()->size() << " tracks in TrackCollection" << endl;
+    //  cout << "AliFemtoSimpleAnalysis::ProcessEvent() - Event has passed cut - build picoEvent from " <<
+    //   hbtEvent->TrackCollection()->size() << " tracks in TrackCollection" << endl;
     //  cout << "Event has passed cut with " << hbtEvent->TrackCollection()->size() << " tracks" << endl;
     // OK, analysis likes the event-- build a pico event from it, using tracks the analysis likes...
     fPicoEvent = new AliFemtoPicoEvent; // this is what we will make pairs from and put in Mixing Buffer
@@ -339,9 +339,9 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 //       fPicoEvent->FirstParticleCollection()->size() << " " <<
 //       fPicoEvent->SecondParticleCollection()->size() << endl;
     
-    // cout << "#particles in Collection 1, 2: " <<
-    //   fPicoEvent->FirstParticleCollection()->size() << " " <<
-    //   fPicoEvent->SecondParticleCollection()->size() << endl;
+    cout << "#particles in Collection 1, 2: " <<
+       fPicoEvent->FirstParticleCollection()->size() << " " <<
+       fPicoEvent->SecondParticleCollection()->size() << endl;
 
     fEventCut->FillCutMonitor(fPicoEvent->FirstParticleCollection(),fPicoEvent->SecondParticleCollection()); //MJ!
     
@@ -370,7 +370,7 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
         MakePairs("real", fPicoEvent->FirstParticleCollection(),
                           fPicoEvent->SecondParticleCollection() );
       }
-      // cout << "AliFemtoSimpleAnalysis::ProcessEvent() - reals done ";
+       cout << "AliFemtoSimpleAnalysis::ProcessEvent() - reals done ";
 
       //---- Make pairs for mixed events, looping over events in mixingBuffer ----//
 
@@ -390,7 +390,7 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
                             fPicoEvent->SecondParticleCollection() );
         }
       }
-      // cout << " - mixed done   " << endl;
+       cout << " - mixed done   " << endl;
 
       //--------- If mixing buffer is full, delete oldest event ---------//
 
