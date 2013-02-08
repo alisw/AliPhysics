@@ -26,11 +26,12 @@
 #include <TH1F.h>
 #include <TH2.h>
 #include <TH3.h>
+#include <THnBase.h>
 #include <THn.h>
+#include <THnSparse.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TProfile3D.h>
-#include <THnSparse.h>
 #include <TCollection.h>
 #include <THashList.h>
 #include <TString.h>
@@ -392,10 +393,6 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, Int_t
     name+=Form("%s_",AliDielectronVarManager::GetValueName(vars[iv]));
   name.Resize(name.Length()-1);
 
-  printf(" name %s \n",name.Data());
-  //  name=Form("%s%s_%s_%s%s", (strcmp(histClass,"Pair")==0?"p":""), AliDielectronVarManager::GetValueName(valTypeX), AliDielectronVarManager::GetValueName(valTypeY), AliDielectronVarManager::GetValueName(valTypeZ),
-  //	    (valTypeP!=999? Form("-%s%s",(option.Contains("s",TString::kIgnoreCase)?"rms":"avg"),AliDielectronVarManager::GetValueName(valTypeP)) : "") );
-
   isOk&=IsHistogramOk(histClass,name);
 
   THnD *hist;
@@ -411,7 +408,6 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, Int_t
     else
       UserHistogram(histClass, hist, 999);
 
-    printf(" hist %p \n",hist);
   }
 }
 
@@ -976,8 +972,8 @@ void AliDielectronHistos::StoreVariables(TObject *obj, UInt_t valType[20])
   //
   if (!obj) return;
   if      (obj->InheritsFrom(TH1::Class()))         StoreVariables(static_cast<TH1*>(obj), valType);
-  else if (obj->InheritsFrom(THn::Class()))         StoreVariables(static_cast<THn*>(obj), valType);
-  else if (obj->InheritsFrom(THnSparse::Class()))   StoreVariables(static_cast<THnSparse*>(obj), valType);
+  else if (obj->InheritsFrom(THnBase::Class()))         StoreVariables(static_cast<THnBase*>(obj), valType);
+  //  else if (obj->InheritsFrom(THnSparse::Class()))   StoreVariables(static_cast<THnSparse*>(obj), valType);
 
   return;
 
@@ -1015,24 +1011,7 @@ void AliDielectronHistos::StoreVariables(TH1 *obj, UInt_t valType[20])
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::StoreVariables(THn *obj, UInt_t valType[20])
-{
-  //
-  // store variables in the axis
-  //
-
-  Int_t dim = obj->GetNdimensions();
-
-  for(Int_t it=0; it<dim; it++) {
-    obj->GetAxis(it)->SetUniqueID(valType[it]);
-    obj->GetAxis(it)->SetTitle(Form("%s %s", AliDielectronVarManager::GetValueLabel(valType[it]), AliDielectronVarManager::GetValueUnit(valType[it])));
-  }
-  obj->Sumw2();
-  return;
-}
-
-//_____________________________________________________________________________
-void AliDielectronHistos::StoreVariables(THnSparse *obj, UInt_t valType[20])
+void AliDielectronHistos::StoreVariables(THnBase *obj, UInt_t valType[20])
 {
   //
   // store variables in the axis
@@ -1109,7 +1088,7 @@ void AliDielectronHistos::FillValues(TH1 *obj, const Double_t *values)
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::FillValues(THn *obj, const Double_t *values)
+void AliDielectronHistos::FillValues(THnBase *obj, const Double_t *values)
 {
   //
   // fill values for THn inherted classes
@@ -1122,27 +1101,6 @@ void AliDielectronHistos::FillValues(THn *obj, const Double_t *values)
 
   Double_t fill[dim];
   for(Int_t it=0; it<dim; it++)   fill[it] = values[obj->GetAxis(it)->GetUniqueID()];
-  obj->Fill(fill);
-
-  return;
-}
-
-//_____________________________________________________________________________
-void AliDielectronHistos::FillValues(THnSparse *obj, const Double_t *values)
-{
-  //
-  // fill values for THnSparse inherted classes
-  //
-
-  const Int_t dim   = obj->GetNdimensions();
-
-  UInt_t valueTypes=obj->GetUniqueID();
-  if (valueTypes==(UInt_t)kNoAutoFill) return;
-
-  Double_t fill[dim];
-  for(Int_t it=0; it<dim; it++) {
-    fill[it] = values[obj->GetAxis(it)->GetUniqueID()];
-  }
   obj->Fill(fill);
 
   return;
@@ -1165,15 +1123,10 @@ void AliDielectronHistos::FillVarArray(TObject *obj, UInt_t *valType)
     valType[2]=((TH1*)obj)->GetZaxis()->GetUniqueID();
     valType[3]=((TH1*)obj)->GetUniqueID();  // tprofile var stored in unique ID
   }
-  else if (obj->InheritsFrom(THn::Class())) {
+  else if (obj->InheritsFrom(THnBase::Class())) {
     for(Int_t it=0; it<((THn*)obj)->GetNdimensions(); it++)
       valType[it]=((THn*)obj)->GetAxis(it)->GetUniqueID();
   }
-  else if (obj->InheritsFrom(THnSparse::Class())) {
-    for(Int_t it=0; it<((THnSparse*)obj)->GetNdimensions(); it++)
-      valType[it]=((THnSparse*)obj)->GetAxis(it)->GetUniqueID();
-  }
-
   return;
 }
 
@@ -1194,6 +1147,33 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
   Bool_t bprf   = kFALSE;
   if(hist->IsA() == TProfile::Class() || hist->IsA() == TProfile2D::Class() || hist->IsA() == TProfile3D::Class())
     bprf=kTRUE;
+
+  // tprofile options
+  Double_t pmin=0., pmax=0.;
+  TString option = "", calcrange="";
+  Bool_t bStdOpt=kTRUE;
+  if(bprf) {
+    switch( dim ) {
+    case 3:
+      option = ((TProfile3D*)hist)->GetErrorOption();
+      pmin   = ((TProfile3D*)hist)->GetTmin();
+      pmax   = ((TProfile3D*)hist)->GetTmax();
+      break;
+    case 2:
+      option = ((TProfile2D*)hist)->GetErrorOption();
+      pmin   = ((TProfile2D*)hist)->GetZmin();
+      pmax   = ((TProfile2D*)hist)->GetZmax();
+      break;
+    case 1:
+      option = ((TProfile*)hist)->GetErrorOption();
+      pmin   = ((TProfile*)hist)->GetYmin();
+      pmax   = ((TProfile*)hist)->GetYmax();
+      break;
+    }
+    if(option.Contains("s",TString::kIgnoreCase)) bStdOpt=kFALSE;
+    if(pmin!=pmax) calcrange=Form("#cbar_{%+.*f}^{%+.*f}",GetPrecision(pmin),pmin,GetPrecision(pmax),pmax);
+    printf("dimesnion    %d       erropt %s \n",dim,option.Data());
+  }
 
   UInt_t varx = hist->GetXaxis()->GetUniqueID();
   UInt_t vary = hist->GetYaxis()->GetUniqueID();
@@ -1216,6 +1196,15 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 				      AliDielectronVarManager::GetValueLabel(varz), 
 				      AliDielectronVarManager::GetValueUnit(varz))
 				 );
+      if(bprf)
+	hist->SetTitle(Form("%s  %s%s%s%s %s",
+			    hist->GetTitle(),
+			    (bStdOpt ? "#LT" : "RMS("),
+			    AliDielectronVarManager::GetValueLabel(varp), 
+			    (bStdOpt ? "#GT" : ")"),
+			    calcrange.Data(),
+			    AliDielectronVarManager::GetValueUnit(varp))
+		       );
       break;
     case 2:
       hist->GetXaxis()->SetTitle(Form("%s %s",
@@ -1228,8 +1217,11 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 				 );
       hist->GetZaxis()->SetTitle(Form("#%ss",histClass));
       if(bprf)
-	hist->GetZaxis()->SetTitle(Form("#LT%s#GT %s",
+	hist->GetZaxis()->SetTitle(Form("%s%s%s%s %s",
+					(bStdOpt ? "#LT" : "RMS("),
 					AliDielectronVarManager::GetValueLabel(varz), 
+					(bStdOpt ? "#GT" : ")"),
+					calcrange.Data(),
 					AliDielectronVarManager::GetValueUnit(varz))
 				   );
       break;
@@ -1240,8 +1232,11 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 				 );
       hist->GetYaxis()->SetTitle(Form("#%ss",histClass));
       if(bprf)
-	hist->GetYaxis()->SetTitle(Form("#LT%s#GT %s",
+	hist->GetYaxis()->SetTitle(Form("%s%s%s%s %s",
+					(bStdOpt ? "#LT" : "RMS("),
 					AliDielectronVarManager::GetValueLabel(vary), 
+					(bStdOpt ? "#GT" : ")"),
+					calcrange.Data(),
 					AliDielectronVarManager::GetValueUnit(vary))
 				   );
       break;
@@ -1254,16 +1249,16 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 	currentName+=Form("%s_",AliDielectronVarManager::GetValueName(varx));
 	currentName+=Form("%s_",AliDielectronVarManager::GetValueName(vary));
 	currentName+=Form("%s",AliDielectronVarManager::GetValueName(varz));
-	if(bprf) currentName+=Form("-%savg",AliDielectronVarManager::GetValueName(varp));
+	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(varp),(bStdOpt ? "var" : "rms"));
 	break;
       case 2:
 	currentName+=Form("%s_",AliDielectronVarManager::GetValueName(varx));
 	currentName+=Form("%s",AliDielectronVarManager::GetValueName(vary));
-	if(bprf) currentName+=Form("-%savg",AliDielectronVarManager::GetValueName(varz));
+	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(varz),(bStdOpt ? "var" : "rms"));
 	break;
       case 1:
 	currentName+=Form("%s",AliDielectronVarManager::GetValueName(varx));
-	if(bprf) currentName+=Form("-%savg",AliDielectronVarManager::GetValueName(vary));
+	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(vary),(bStdOpt ? "var" : "rms"));
 	break;
       }
     // to differentiate btw. leg and pair histos
@@ -1271,9 +1266,28 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
     hist->SetName(currentName.Data());
   }
 
-  //  if( valTypeP!=999 && option.Contains("s",TString::kIgnoreCase) )
-  //  tit += Form(";RMS(%s) %s",AliDielectronVarManager::GetValueLabel(valTypeP), AliDielectronVarManager::GetValueUnit(valTypeP));
-  //if(!strlen(title)) title=tit.Data();
+}
+
+Int_t AliDielectronHistos::GetPrecision(Double_t value) {
+
+  //
+  // computes the precision of a double
+  // usefull for axis ranges etc
+  //
+
+  Bool_t bfnd     = kFALSE;
+  Int_t precision = 0;
+
+  while(!bfnd) {
+    //    printf(" value %f precision %d bfnd %d \n",TMath::Abs(value*TMath::Power(10,precision)), precision, bfnd);
+    bfnd = (TMath::Abs(value*TMath::Power(10,precision))  -  TMath::Floor(TMath::Abs(value*TMath::Power(10,precision))) != 0.0
+	    ? kFALSE
+	    : kTRUE);
+    if(!bfnd) precision++;
+  }
+
+  //  printf("precision for %f found to be %d \n", value, precision);
+  return precision;
 
 }
 
