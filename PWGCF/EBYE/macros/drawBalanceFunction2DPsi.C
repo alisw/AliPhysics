@@ -445,7 +445,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     c4a->SetLeftMargin(0.15);
     gHistBalanceFunctionSubtracted->DrawCopy("colz");
 
-    fitbalanceFunction(gCentrality, psiMin = -0.5, psiMax,
+    fitbalanceFunction(gCentrality, psiMin , psiMax,
 		       ptTriggerMin, ptTriggerMax,
 		       ptAssociatedMin, ptAssociatedMax,
 		       gHistBalanceFunctionSubtracted,k2pMethod, eventClass);
@@ -606,6 +606,9 @@ void fitbalanceFunction(Int_t gCentrality = 1,
 
 //____________________________________________________________//
 void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
+		 const char* gCentralityEstimator = "V0M",
+		 Int_t gBit = 128,
+		 const char* gEventPlaneEstimator = "VZERO",
 		 Int_t gCentrality = 1,
 		 Bool_t kShowShuffled = kFALSE, 
 		 Bool_t kShowMixed = kFALSE, 
@@ -613,14 +616,19 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
 		 Double_t ptTriggerMin = -1.,
 		 Double_t ptTriggerMax = -1.,
 		 Double_t ptAssociatedMin = -1.,
-		 Double_t ptAssociatedMax = -1.) {
+		 Double_t ptAssociatedMax = -1.,
+		 Bool_t k2pMethod = kTRUE) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
   //Author: Panos.Christakoglou@nikhef.nl
   TGaxis::SetMaxDigits(3);
 
   //Get the input file
-  TString filename = lhcPeriod; filename +="/PttFrom";
+  TString filename = lhcPeriod; 
+  filename += "/Centrality"; filename += gCentralityEstimator;
+  filename += "_Bit"; filename += gBit;
+  filename += "_"; filename += gEventPlaneEstimator;
+  filename +="/PttFrom";
   filename += Form("%.1f",ptTriggerMin); filename += "To"; 
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
@@ -635,7 +643,9 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
   filename += Form("%.1f",ptTriggerMin); filename += "To"; 
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
-  filename += Form("%.1f",ptAssociatedMax);  filename += ".root";  
+  filename += Form("%.1f",ptAssociatedMax);  
+  if(k2pMethod) filename += "_2pMethod";
+  filename += ".root";  
 
   //Open the file
   TFile *f = TFile::Open(filename.Data());
@@ -736,7 +746,7 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
   TCanvas *c1 = new TCanvas("c1","Raw balance function 2D",0,0,600,500);
   c1->SetFillColor(10); c1->SetHighLightColor(10);
   c1->SetLeftMargin(0.17); c1->SetTopMargin(0.05);
-  gHistBalanceFunction->SetTitle("Raw balance function");
+  gHistBalanceFunction->SetTitle("");
   gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.4);
   gHistBalanceFunction->GetYaxis()->SetNdivisions(10);
   gHistBalanceFunction->GetXaxis()->SetNdivisions(10);
@@ -749,6 +759,23 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
   latexInfo1->DrawLatex(0.64,0.82,psiLatex.Data());
   latexInfo1->DrawLatex(0.64,0.76,pttLatex.Data());
   latexInfo1->DrawLatex(0.64,0.70,ptaLatex.Data());
+
+  TString pngName = "BalanceFunction2D."; 
+  pngName += "Centrality";
+  pngName += gCentrality; 
+  if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.PttFrom";
+  else pngName += "All.PttFrom";  
+  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
+  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
+  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
+  pngName += Form("%.1f",ptAssociatedMax); 
+  if(k2pMethod) pngName += "_2pMethod";
+  pngName += ".png";
+
+  c1->SaveAs(pngName.Data());
 
   if(kShowShuffled) {
     TCanvas *c2 = new TCanvas("c2","Shuffled balance function 2D",100,100,600,500);
