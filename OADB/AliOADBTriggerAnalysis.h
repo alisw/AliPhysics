@@ -28,9 +28,13 @@ class AliOADBTriggerAnalysis : public TNamed {
   Float_t GetZDCCutRefDeltaCorr()   { return fZDCCutRefDeltaCorr;   }   
   Float_t GetZDCCutSigmaSumCorr()   { return fZDCCutSigmaSumCorr;   }   
   Float_t GetZDCCutSigmaDeltaCorr() { return fZDCCutSigmaDeltaCorr; }  
+  Float_t GetZDCCutZNATimeCorr()    { return fZDCCutZNATimeCorr;    }
+  Float_t GetZDCCutZNCTimeCorr()    { return fZDCCutZNCTimeCorr;    }
   // Setters
   void SetZDCCorrParameters(Float_t sumCorr, Float_t deltaCorr, Float_t sigmaSumCorr, Float_t sigmaDeltaCorr) 
   { fZDCCutRefSumCorr = sumCorr; fZDCCutRefDeltaCorr = deltaCorr; fZDCCutSigmaSumCorr = sigmaSumCorr; fZDCCutSigmaDeltaCorr = sigmaDeltaCorr;}
+  void SetZNCorrParameters(Float_t znaTimeCorr, Float_t zncTimeCorr)
+  { fZDCCutZNATimeCorr = znaTimeCorr; fZDCCutZNCTimeCorr = zncTimeCorr; }
   // Browse
   virtual Bool_t	IsFolder() const { return kTRUE; }
   void Browse(TBrowser *b);
@@ -43,12 +47,14 @@ class AliOADBTriggerAnalysis : public TNamed {
   Float_t fZDCCutRefDeltaCorr;    // Corrected ZDC time cut configuration
   Float_t fZDCCutSigmaSumCorr;    // Corrected ZDC time cut configuration
   Float_t fZDCCutSigmaDeltaCorr;  // Corrected ZDC time cut configuration  
+  Float_t fZDCCutZNATimeCorr;     // Corrected ZNA time cut configuration
+  Float_t fZDCCutZNCTimeCorr;     // Corrected ZNC time cut configuration
 
   AliOADBTriggerAnalysis(const AliOADBTriggerAnalysis& cont);  // not implemented
   AliOADBTriggerAnalysis& operator=(const AliOADBTriggerAnalysis& cont); // not implemented
 
 
-  ClassDef(AliOADBTriggerAnalysis, 1);
+  ClassDef(AliOADBTriggerAnalysis, 2);
 };
 
 #endif
