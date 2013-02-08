@@ -87,7 +87,8 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   AliAnalysisCuts *fCutsD0;              //  Cuts D0 
   AliHFEcuts *fCutsHFE;                  //  Cuts HFE
   AliAnalysisCuts *fCuts;                // Cuts which holds info for AliHFCorrelator 
-  AliHFEpid *fPID;                       //  dummy
+  AliHFEpid *fPID;                       //  PID TPC and TOF
+  AliHFEpid *fPIDTOF;                    //  PID TOF only
   Int_t     fFillOnlyD0D0bar;            // flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
   Bool_t fUseMC;                 // use MC info
   Bool_t fUseEventMixing;        // Run Event Mixing analysis
@@ -96,7 +97,7 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   TObjArray *fSelectedElectrons; // Array for selected Electrons
 
 
-  ClassDef(AliAnalysisTaskDxHFECorrelation, 3);
+  ClassDef(AliAnalysisTaskDxHFECorrelation, 4);
 };
 
 #endif

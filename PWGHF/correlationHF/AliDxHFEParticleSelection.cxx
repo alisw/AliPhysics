@@ -241,7 +241,7 @@ TObjArray* AliDxHFEParticleSelection::Select(const AliVEvent* pEvent)
   if (!pEvent) return NULL;
   TObjArray* selectedTracks=new TObjArray;
   if (!selectedTracks) return NULL;
-  selectedTracks->SetOwner(); // creating new track objects below
+  selectedTracks->SetOwner(kFALSE); // creating new track objects below
   int nofTracks=pEvent->GetNumberOfTracks();
   for (int itrack=0; itrack<nofTracks; itrack++) {
     AliVParticle* track=pEvent->GetTrack(itrack);
