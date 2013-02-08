@@ -34,7 +34,7 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
 
   //Prepare the objects and return them
   TList *listBF = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0);
-  TList *listBFShuffled = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1);
+  TList *listBFShuffled = 0x0;//GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1);
   TList *listBFMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2);
   if(!listBF) {
     Printf("The TList object was not created");
@@ -240,22 +240,24 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   AliTHn *hNPShuffled = NULL;
   AliTHn *hPPShuffled = NULL;
   AliTHn *hNNShuffled = NULL;
-  //listBFShuffled->ls();
-  hPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistP_shuffleV0M");
-  hNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistN_shuffleV0M");
-  hPNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPN_shuffleV0M");
-  hNPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNP_shuffleV0M");
-  hPPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPP_shuffleV0M");
-  hNNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNN_shuffleV0M");
-
-  AliBalancePsi *bShuffled = new AliBalancePsi();
-  bShuffled->SetEventClass(eventClass);
-  bShuffled->SetHistNp(hPShuffled);
-  bShuffled->SetHistNn(hNShuffled);
-  bShuffled->SetHistNpn(hPNShuffled);
-  bShuffled->SetHistNnp(hNPShuffled);
-  bShuffled->SetHistNpp(hPPShuffled);
-  bShuffled->SetHistNnn(hNNShuffled);
+  if(listBFShuffled) {
+    //listBFShuffled->ls();
+    hPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistP_shuffleV0M");
+    hNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistN_shuffleV0M");
+    hPNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPN_shuffleV0M");
+    hNPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNP_shuffleV0M");
+    hPPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPP_shuffleV0M");
+    hNNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNN_shuffleV0M");
+    
+    AliBalancePsi *bShuffled = new AliBalancePsi();
+    bShuffled->SetEventClass(eventClass);
+    bShuffled->SetHistNp(hPShuffled);
+    bShuffled->SetHistNn(hNShuffled);
+    bShuffled->SetHistNpn(hPNShuffled);
+    bShuffled->SetHistNnp(hNPShuffled);
+    bShuffled->SetHistNpp(hPPShuffled);
+    bShuffled->SetHistNnn(hNNShuffled);
+  }
 
   //balance function mixing
   AliTHn *hPMixed = NULL;
@@ -348,31 +350,31 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   gHistBalanceFunction->SetName("gHistBalanceFunction");
   
   //Shuffled balance function
-  if(k2pMethod){ 
-    if(bMixed)
-      gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
-    else{
-      cerr<<"SHUFFLE: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
-      return;
-    }
-  }
-  else if(k2pMethod2D){ 
-    if(bMixed){
-      if(gDeltaEtaDeltaPhi==1) //Delta eta
-	gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunction1DFrom2D2pMethod(0,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
-      else //Delta phi
-	gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunction1DFrom2D2pMethod(1,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
-    }
-    else{
-      cerr<<"SHUFFLE: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
-      return;
-    }
-  }
-  else
-    gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  gHistBalanceFunctionShuffled->SetMarkerStyle(24);
-  gHistBalanceFunctionShuffled->SetName("gHistBalanceFunctionShuffled");
-
+  //if(k2pMethod){ 
+  //if(bMixed)
+      //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+  //else{
+  //cerr<<"SHUFFLE: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
+  //return;
+  //}
+  //}
+  //else if(k2pMethod2D){ 
+  //if(bMixed){
+  //  if(gDeltaEtaDeltaPhi==1) //Delta eta
+  //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunction1DFrom2D2pMethod(0,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+  //  else //Delta phi
+  //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunction1DFrom2D2pMethod(1,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+  //}
+  //else{
+  //  cerr<<"SHUFFLE: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
+  //  return;
+  //}
+  //}
+  //else
+  //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  //gHistBalanceFunctionShuffled->SetMarkerStyle(24);
+  //gHistBalanceFunctionShuffled->SetName("gHistBalanceFunctionShuffled");
+  
   //Mixed balance function
   if(k2pMethod){ 
     if(bMixed)
@@ -414,7 +416,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   c1->SetHighLightColor(10);
   c1->SetLeftMargin(0.15);
   gHistBalanceFunction->DrawCopy("E");
-  gHistBalanceFunctionShuffled->DrawCopy("ESAME");
+  //gHistBalanceFunctionShuffled->DrawCopy("ESAME");
   gHistBalanceFunctionMixed->DrawCopy("ESAME");
   
   legend = new TLegend(0.18,0.62,0.45,0.82,"","brNDC");
@@ -426,7 +428,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   legend->SetMargin(0.25); 
   legend->SetShadowColor(10);
   legend->AddEntry(gHistBalanceFunction,"Data","lp");
-  legend->AddEntry(gHistBalanceFunctionShuffled,"Shuffled data","lp");
+  //legend->AddEntry(gHistBalanceFunctionShuffled,"Shuffled data","lp");
   legend->AddEntry(gHistBalanceFunctionMixed,"Mixed data","lp");
   legend->Draw();
   
@@ -463,7 +465,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   c1->SaveAs(pngName.Data());
   
   GetWeightedMean(gHistBalanceFunction);
-  GetWeightedMean(gHistBalanceFunctionShuffled);
+  //GetWeightedMean(gHistBalanceFunctionShuffled);
   
   TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
   meanLatex = "#mu = "; 
@@ -538,7 +540,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   TFile *fOutput = new TFile(newFileName.Data(),"recreate");
   fOutput->cd();
   gHistBalanceFunction->Write();
-  gHistBalanceFunctionShuffled->Write();
+  //gHistBalanceFunctionShuffled->Write();
   gHistBalanceFunctionMixed->Write();
   gHistBalanceFunctionSubtracted->Write();
   fOutput->Close();
