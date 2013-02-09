@@ -53,7 +53,7 @@
 #include "AliEventplane.h"
 #include "TProfile.h"
 #include "AliOADBContainer.h"
-#include "AliPHOSEPFlattener.h"
+#include "AliEPFlattener.h"
 
 // Analysis task to fill histograms with PHOS ESD or AOD clusters and cells
 // Authors : Dmitri Peressounko
@@ -1746,17 +1746,17 @@ void AliAnalysisTaskPi0Flow::SetFlatteningData(){
   }
   else{
     AliInfo(Form("Setting PHOS flattening with name %s \n",maps->GetName())) ;
-    AliPHOSEPFlattener * h = (AliPHOSEPFlattener*)maps->At(0) ;  
+    AliEPFlattener * h = (AliEPFlattener*)maps->At(0) ;  
     if(fTPCFlat) delete fTPCFlat ;
-    fTPCFlat = new AliPHOSEPFlattener() ;
+    fTPCFlat = new AliEPFlattener() ;
     fTPCFlat = h ;
-    h = (AliPHOSEPFlattener*)maps->At(1) ;  
+    h = (AliEPFlattener*)maps->At(1) ;  
     if(fV0AFlat) delete fV0AFlat ;
-    fV0AFlat = new AliPHOSEPFlattener() ;
+    fV0AFlat = new AliEPFlattener() ;
     fV0AFlat = h ;
-    h = (AliPHOSEPFlattener*)maps->At(2) ;  
+    h = (AliEPFlattener*)maps->At(2) ;  
     if(fV0CFlat) delete fV0CFlat ;
-    fV0CFlat = new AliPHOSEPFlattener() ;
+    fV0CFlat = new AliEPFlattener() ;
     fV0CFlat = h ;
   }    
   

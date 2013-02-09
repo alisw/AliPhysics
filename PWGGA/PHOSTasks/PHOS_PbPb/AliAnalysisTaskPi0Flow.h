@@ -23,7 +23,7 @@ class AliESDEvent ;
 class AliPHOSCalibData;
 class AliESDtrack ;
 class AliESDCaloCluster ;
-class AliPHOSEPFlattener;
+class AliEPFlattener;
 
 #include "TArrayD.h"
 
@@ -186,9 +186,9 @@ private:
     AliESDtrackCuts *fESDtrackCuts; // Track cut
     AliPHOSCalibData *fPHOSCalibData; // PHOS calibration object
     TString fEPcalibFileName; 
-    AliPHOSEPFlattener * fTPCFlat ; //Object for flattening of TPC
-    AliPHOSEPFlattener * fV0AFlat ; //Object for flattening of V0A
-    AliPHOSEPFlattener * fV0CFlat ; //Object for flattening of V0C
+    AliEPFlattener * fTPCFlat ; //Object for flattening of TPC
+    AliEPFlattener * fV0AFlat ; //Object for flattening of V0A
+    AliEPFlattener * fV0CFlat ; //Object for flattening of V0C
     
     
     // Step 2: Vertex
