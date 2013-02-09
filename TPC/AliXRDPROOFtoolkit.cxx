@@ -47,6 +47,7 @@
 #include <exception>
 #include <fstream>
 #include <TRandom.h>
+#include <TTimeStamp.h>
 #include <AliXRDPROOFtoolkit.h>
 
 
@@ -619,6 +620,7 @@ void AliXRDPROOFtoolkit::JoinTreesIndex(const char * outputFile, const char * ou
   // 3. Make join tree
   //
   Int_t jrun=0;
+  fout->cd();
   joinTree->Branch(indexName, &jrun,Form("%s/I",indexName));
   Int_t *status=new Int_t[nTrees];
   char *brName = new char[10000];
@@ -686,9 +688,132 @@ void AliXRDPROOFtoolkit::JoinTreesIndex(const char * outputFile, const char * ou
       joinTree->Fill();
       printf("\n");
     }}
-  joinTree->Write("joinTree");
+  fout->cd();
+  joinTree->Write(outputTree);
   fout->Close();
 
 }
 
 
+
+void AliXRDPROOFtoolkit::CacheFileList(const char * fileIn, const char* cachePrefix){
+  //
+  // cache the list of file locally, cache valeus are stored in the location
+  // specified by optional argumen prefix 
+  // 2 new files are created 
+  //       <fileIn>.cache    - file with the location of cahe files
+  //       <fileIn>.cacheLog - log file +list of files which can not be cached 
+  //      
+  /*
+    fileIn = "TPCCPass1.list";
+    cachePrefix = "";
+  */
+  ifstream fin;
+  fin.open(fileIn);  
+  ofstream fout;
+  fout.open(Form("%s.cache",fileIn));  
+  ofstream foutLog;
+  foutLog.open(Form("%s.cacheLog",fileIn));  
+  // Read the input list of files and add them to the chain
+  TString currentFile;
+  TString cacheFile;
+  Int_t counter=0;
+  {while(fin.good()) {
+      TTimeStamp s;
+      TString fname;
+      fin >> currentFile;
+      fname=currentFile;
+      fname.ReplaceAll("-","_");
+      fname.ReplaceAll("/","_");
+      fname.ReplaceAll(":","_");
+      cacheFile=cachePrefix;
+      cacheFile+=fname;
+      printf("%s\t%s\n",currentFile.Data(),cacheFile.Data());
+      if (TFile::Cp(currentFile.Data(),cacheFile.Data())){
+	fout<<cacheFile.Data()<<"\n";
+	foutLog<<s.AsString();
+	foutLog<<cacheFile.Data()<<"n";
+      }else{
+	foutLog<<"Copy failed"<<currentFile.Data()<<cacheFile.Data()<<"\n";
+      }
+    }}
+  fout.close();
+  foutLog.close();
+}
+
+
+
+void   AliXRDPROOFtoolkit::MakeTreeFromList(const char *fout, const char * treeOut, const char * treeIn, const char * flist, Bool_t debug){
+  //
+  // join trees from the list  and make a common tree - stored in the file 
+  // 
+  /*
+    Example:
+    const char * fout="TPCCpass1.root";
+    const char *treeOut="tpcQA"
+    const char *treeIn="tpcQA"
+    const char * flist="TPCCPass1.list"    
+  */
+  if (debug>0){
+    printf("MakeTreeFromList\n");
+    printf("fout=%s\n",fout);
+    printf("treeOut=%s\n",treeOut);
+    printf("treeIn=%s\n",treeIn);
+    printf("fileList=%s\n",flist);
+  } 
+  ifstream fin;
+  fin.open(flist);  
+  ofstream foutLog;
+  foutLog.open(Form("%s.chainLog",flist));  
+  // Read the input list of files and add them to the chain
+  TString currentFile;
+  Int_t counter=0;
+  Int_t nbranches=0;
+  {while(fin.good()) {
+      fin >> currentFile;
+      TFile * f = TFile::Open(currentFile.Data());
+      foutLog<<"Opening file"<<currentFile.Data();
+      if (!f) {
+	foutLog<<"Error opening file\t"<<currentFile<<"\n";
+	cout<<"Error opening file\t"<<currentFile<<"\n";
+	continue;
+      }
+      TTree * tree = (TTree*)f->Get(treeIn);
+      if (!tree) {
+	foutLog<<"Error opening tree\t"<<currentFile<<treeIn<<"\n";
+	cout<<"Error opening tree\t"<<currentFile<<treeIn<<"\n";
+	f->ls();	
+	continue;
+      }
+      if (tree->GetListOfBranches()==0){
+	foutLog<<"Error opening tree\t"<<currentFile<<treeIn<<"\n";
+	cout<<"Error opening tree\t"<<currentFile<<treeIn<<"\n";
+	continue;
+      }
+      Int_t nbranchesCurrent = tree->GetListOfBranches()->GetEntries();
+      if ( nbranches ==0 ) nbranches=nbranchesCurrent;
+      if ( nbranches!=nbranchesCurrent){
+	foutLog<<"Error  tree layout\t"<<currentFile<<treeIn<<nbranches<<nbranchesCurrent<<"\n";
+	cout<<"Error tree layout\t"   <<currentFile<<treeIn<<nbranches<<nbranchesCurrent<<"\n";
+      }     
+      counter++;
+    }
+  }
+  foutLog<<"Number of files"<<counter<<"\n";
+  cout<<   "Number of files"<<counter<<"\n";
+  //
+
+  TChain * chain = AliXRDPROOFtoolkit::MakeChain(flist,treeIn,0,1000000000,0);
+  Bool_t status=kTRUE;
+  if (!chain) status=kFALSE;
+  if (chain->GetEntries()==0) status=kFALSE;
+  if (!status){
+    printf("Incorrect list (%s) or trees (%s)", flist,treeIn);
+    return;
+  }
+  TFile *fileOut= TFile::Open(fout, "recreate");
+  TTree * tree = chain->CopyTree("1");
+  fileOut->cd();
+  tree->Write(treeOut);
+  fileOut->Close(); 
+}
