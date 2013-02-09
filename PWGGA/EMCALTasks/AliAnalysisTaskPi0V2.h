@@ -28,7 +28,7 @@ class AliCaloPID;
 class AliCalorimeterUtils;
 class AliCaloTrackReader;
 class TProfile;
-class AliPHOSEPFlattener;
+class AliEPFlattener;
 class AliOADBContainer;
 
 #ifndef ALIANALYSISTASKSE_H
@@ -174,9 +174,9 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TH3F			*hdifout_EPV0C;		//! 3-D histo dif phi out EMC with EPV0C
 
     TString fEPcalibFileName;
-    AliPHOSEPFlattener * fTPCFlat ;			 //Object for flattening of TPC
-    AliPHOSEPFlattener * fV0AFlat ;			 //Object for flattening of V0A
-    AliPHOSEPFlattener * fV0CFlat ; 			//Object for flattening of V0C
+    AliEPFlattener * fTPCFlat ;			 //Object for flattening of TPC
+    AliEPFlattener * fV0AFlat ;			 //Object for flattening of V0A
+    AliEPFlattener * fV0CFlat ; 		 //Object for flattening of V0C
 
     THnSparse		        *fClusterPbV0;
     THnSparse		        *fClusterPbV0A;
