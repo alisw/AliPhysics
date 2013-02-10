@@ -651,7 +651,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(mcLabel==-1) // nsigma mean correction
       {
        double mean_corr = NsigCorr(cent);
-       //printf("correction %f\n",fTPCnSigma);
+       printf("correction %f\n",mean_corr);
        fTPCnSigma -= mean_corr;
       }    
 
@@ -1707,7 +1707,7 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
 }
 
 
-double NsigCorr(int cent)
+double AliAnalysisTaskHFECal::NsigCorr(int cent)
 {
  double shift = 0.0;
  if(cent>=20 && cent<30)shift = 0.156;
