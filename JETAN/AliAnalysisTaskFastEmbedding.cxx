@@ -35,6 +35,7 @@
 #include <TH2F.h>
 #include <TProfile.h>
 #include <TKey.h>
+#include <TGrid.h>
 
 
 #include "AliAnalysisTaskFastEmbedding.h"
@@ -665,7 +666,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 
 
       Bool_t useEntry = kFALSE;
-      while(!useEntry){  // protection need, if no event fulfills requierment
+      while(!useEntry){  // protection need, if no event fulfills requirement
 
          fAODEntry++; // go to next event 
          fCountEvents++;
@@ -1005,13 +1006,13 @@ Int_t AliAnalysisTaskFastEmbedding::SelectAODfile()
    Int_t pendingEvents = fInputEntries-Entry();
    //Printf("input entries %d, entry %d, pending events %d", fInputEntries, (Int_t)Entry(), pendingEvents);
    if(fAODEntriesArray){
-   while(rndm->Rndm()>tmpProp){
-      n = rndm->Integer(nFiles);
-      fAODEntries = fAODEntriesArray->At(n);
-      Int_t tmpEntries = fAODEntries<pendingEvents ? pendingEvents : fAODEntries;
-      tmpProp = fAODEntriesMax ? (Float_t)tmpEntries/fAODEntriesMax : 1.;
-   }
-   fAODEntry = (Int_t)(rndm->Uniform(fAODEntries));
+     while(rndm->Rndm()>tmpProp){
+       n = rndm->Integer(nFiles);
+       fAODEntries = fAODEntriesArray->At(n);
+       Int_t tmpEntries = fAODEntries<pendingEvents ? pendingEvents : fAODEntries;
+       tmpProp = fAODEntriesMax ? (Float_t)tmpEntries/fAODEntriesMax : 1.;
+     }
+     fAODEntry = (Int_t)(rndm->Uniform(fAODEntries));
    } else {
       AliWarning("Number of entries in extra AODs not set!");
       n = rndm->Integer(nFiles);
@@ -1036,6 +1037,11 @@ Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(Int_t trial)
 
    if(fAODPathArray) fFileId = SelectAODfile();
    if(fFileId<0) return -1;
+
+   if (!gGrid) {
+     AliInfo("Trying to connect to AliEn ...");
+     TGrid::Connect("alien://");
+   }
 
    TDirectory *owd = gDirectory;
    if (fAODfile && fAODfile->IsOpen()) fAODfile->Close();
@@ -1156,9 +1162,11 @@ Bool_t AliAnalysisTaskFastEmbedding::PythiaInfoFromFile(const char* currFile,Flo
    fTrials = 1;
 
    if(file.Contains("root_archive.zip#")){
-      Ssiz_t pos1 = file.Index("root_archive",12,TString::kExact);
-      Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
-      file.Replace(pos+1,20,"");
+     Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
+     Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+     Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+      file.Replace(pos+1,pos2-pos1,"");
+      //      file.Replace(pos+1,20,"");
    }
    else {
       // not an archive take the basename....

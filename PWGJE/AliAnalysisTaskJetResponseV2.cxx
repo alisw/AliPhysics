@@ -319,8 +319,8 @@ void AliAnalysisTaskJetResponseV2::UserCreateOutputObjects()
 
   // cent : nInpTrks : jetPt(3x) : deltaPt : delta : jetArea(3x) : fraction(2x) : pT hard bin
   if(fbJets3Branches){
-    entries = 1<<0 | 1<<1 | 1<<6 | 1<<7 | 1<<7 | 1<<14 | 1<<14 | 1<<12 | 1<<13 | 1<<13 | 1<<19 | 1<<19 | 1<<26;
-    opt = 1<<6 | 1<<7 | 1<<14;
+    entries = 1<<0 | 1<<1 | 1<<6 | 1<<7 | 1<<27 | 1<<14 | 1<<28 | 1<<12 | 1<<13 | 1<<29 | 1<<19 | 1<<30 | 1<<26;
+    opt = 1<<6 | 1<<7 | 1<<27 | 1<<14 | 1<<28;
     fhnJets3Branches = NewTHnSparseF("fhnJets3Branches", entries, opt);
   }
 
@@ -482,8 +482,10 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
   TClonesArray *aodJets[3];
   aodJets[0] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[0].Data())); // in general: embedded jet
   aodJets[1] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[1].Data())); // in general: embedded jet + UE version1
-  if( strlen(fJetBranchName[2].Data()) )
+  if( strlen(fJetBranchName[2].Data()) ) {
     aodJets[2] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[2].Data())); // in general: embedded jet + UE version2
+    fkNbranches=3;
+  }
 
   for (Int_t iJetType = 0; iJetType < fkNbranches; iJetType++) {
     fListJets[iJetType]->Clear();
@@ -511,10 +513,12 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
 					    aMatchIndex, aPtFraction, fDebug, fMatchMaxDist, fIsPbPb?1:2);
   static TArrayI aMatchIndexv2(fListJets[0]->GetEntries());
   static TArrayF aPtFractionv2(fListJets[0]->GetEntries());
+  if(aMatchIndexv2.GetSize()<fListJets[0]->GetEntries()) aMatchIndexv2.Set(fListJets[0]->GetEntries());
+  if(aPtFractionv2.GetSize()<fListJets[0]->GetEntries()) aPtFractionv2.Set(fListJets[0]->GetEntries());
   if( strlen(fJetBranchName[2].Data()) ) {
-    if(aMatchIndexv2.GetSize()<fListJets[0]->GetEntries()) aMatchIndexv2.Set(fListJets[0]->GetEntries());
-    if(aPtFractionv2.GetSize()<fListJets[0]->GetEntries()) aPtFractionv2.Set(fListJets[0]->GetEntries());
-    AliAnalysisHelperJetTasks::GetJetMatching(fListJets[0], TMath::Min((Int_t)fNMatchJets,(Int_t)fListJets[0]->GetEntries()), fListJets[2], TMath::Min((Int_t)fNMatchJets,(Int_t)fListJets[2]->GetEntries()), aMatchIndexv2, aPtFractionv2, fDebug, fMatchMaxDist, fIsPbPb?1:2);
+    AliAnalysisHelperJetTasks::GetJetMatching(fListJets[0], TMath::Min((Int_t)fNMatchJets,(Int_t)fListJets[0]->GetEntries()), 
+					      fListJets[2], TMath::Min((Int_t)fNMatchJets,(Int_t)fListJets[2]->GetEntries()), 
+					      aMatchIndexv2, aPtFractionv2, fDebug, fMatchMaxDist, fIsPbPb?1:2);
   }
    
   // loop over matched jets
@@ -532,7 +536,8 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
    
   for(Int_t ig=0; ig<fListJets[0]->GetEntries(); ++ig){
     ir = aMatchIndex[ig];
-    ir2 = aMatchIndexv2[ig];
+    if(aMatchIndexv2.GetSize()>ig) ir2 = aMatchIndexv2[ig];
+    else ir2 =0;
 
     //fetch jets
     jet[0] = (AliAODJet*)(fListJets[0]->At(ig));
@@ -560,7 +565,8 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
       }
     }
     fraction  = aPtFraction[ig];
-    fraction2 = aPtFractionv2[ig];
+    if(aPtFractionv2.GetSize()>ig) fraction2 = aPtFractionv2[ig];
+    else fraction2 = 0.;
 
     // jet statistics
     fHistJetSelection->Fill(1); // all probe jets
@@ -767,11 +773,10 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
     if(fbJets3Branches){
       Double_t jetEntries3Branches[13] = {
 	(Double_t)centValue, (Double_t)nInputTracks, 
-	(Double_t)jetPt[0], (Double_t)jetPt[1], (Double_t)jetPt[2], 
-	(Double_t)deltaPt, (Double_t)delta,
-	(Double_t)jetArea[0], (Double_t)jetArea[1],(Double_t)jetArea[2], 
-	(Double_t)fraction, (Double_t)fraction2,
-	(Double_t)pthardbin
+	(Double_t)jetPt[0], (Double_t)jetPt[1],
+	(Double_t)jetArea[0], (Double_t)jetArea[1],
+	(Double_t)deltaPt, (Double_t)fraction, (Double_t)pthardbin,
+	(Double_t)jetPt[2],(Double_t)delta,(Double_t)jetArea[2], (Double_t)fraction2
       };				 
       fhnJets3Branches->Fill(jetEntries3Branches);
     }
@@ -937,8 +942,9 @@ void AliAnalysisTaskJetResponseV2::GetDimParams(Int_t iEntry, Bool_t hr, TString
       
   case 6:
   case 7:
+  case 27:
     if(iEntry==6)label = "probe p_{T} (GeV/c)";
-    if(iEntry==7)label = "rec p_{T} (GeV/c)";
+    if(iEntry==7 || iEntry==27)label = "rec p_{T} (GeV/c)";
     if(hr){
       nbins = 300;
       xmin = -50.;
@@ -985,8 +991,9 @@ void AliAnalysisTaskJetResponseV2::GetDimParams(Int_t iEntry, Bool_t hr, TString
       
   case 12:
   case 13:
+  case 29:
     if(iEntry==12)label = "probe area";
-    if(iEntry==13)label = "rec area";
+    if(iEntry==13 || iEntry==29)label = "rec area";
     if(hr){
       nbins = 100;
       xmin = 0.;
@@ -999,7 +1006,9 @@ void AliAnalysisTaskJetResponseV2::GetDimParams(Int_t iEntry, Bool_t hr, TString
     break;
       
   case 14:
-    label = "#Delta p_{T}";
+  case 28:
+    if(iEntry==14) label = "#delta p_{T}";
+    if(iEntry==28) label = "#delta";
     if(hr){
       nbins = 241;
       xmin = -120.5;
@@ -1068,6 +1077,7 @@ void AliAnalysisTaskJetResponseV2::GetDimParams(Int_t iEntry, Bool_t hr, TString
       
       
   case 19:
+  case 30:
     label = "fraction";
     if(hr){
       nbins = 52;
