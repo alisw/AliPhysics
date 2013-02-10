@@ -1280,9 +1280,9 @@ Int_t AliAnalysisTaskPi0Flow::GetRPBin()
 {
   Double_t averageRP;
   if(fHaveTPCRP)
-    averageRP = fRPV0A+fRPV0C+fRP /3.;
+    averageRP = (fRPV0A+fRPV0C+fRP) /3.;
   else
-    averageRP = fRPV0A+fRPV0C /2.;
+    averageRP = (fRPV0A+fRPV0C) /2.;
 
   fEMRPBin = Int_t(fNEMRPBins*(averageRP)/TMath::Pi());
 
@@ -1649,7 +1649,7 @@ Int_t AliAnalysisTaskPi0Flow::ConvertToInternalRunNumber(Int_t run){
     default : return 199;
     }
   }
-  if(kUndefinedPeriod && (fDebug >= 1) ) {
+  if((fPeriod == kUndefinedPeriod) && (fDebug >= 1) ) {
     AliWarning("Period not defined");
   }
   return 1;
@@ -1712,9 +1712,10 @@ Double_t AliAnalysisTaskPi0Flow::TestCPV(Double_t dx, Double_t dz, Double_t pt, 
   Double_t sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
 			 6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
   Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
-  AliVEvent *event = InputEvent();
   Double_t mf = 0.; //
-  if(event) mf = event->GetMagneticField(); //Positive for ++ and negative for --
+  if(fEventAOD) mf = fEventAOD->GetMagneticField(); //Positive for ++ and negative for -- 
+  else if(fEventESD) mf = fEventESD->GetMagneticField(); //Positive for ++ and negative for --
+  
 
   if(mf<0.){ //field --
     meanZ = -0.468318 ;
