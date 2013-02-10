@@ -41,6 +41,7 @@
 #include "AliZDCReconstructor.h"
 #include "AliZDCPedestals.h"
 #include "AliZDCEnCalib.h"
+#include "AliZDCSaturationCalib.h"
 #include "AliZDCTowerCalib.h"
 #include "AliZDCMBCalib.h"
 #include "AliZDCTDCCalib.h"
@@ -59,6 +60,7 @@ AliZDCMBCalib *AliZDCReconstructor::fgMBCalibData=0;  //calibration parameters f
 AliZDCReconstructor:: AliZDCReconstructor() :
   fPedData(GetPedestalData()),
   fEnCalibData(GetEnergyCalibData()),
+  fSatCalibData(GetSaturationCalibData()),
   fTowCalibData(GetTowerCalibData()),
   fTDCCalibData(GetTDCCalibData()),
   fRecoMode(0),
@@ -81,6 +83,7 @@ AliZDCReconstructor::~AliZDCReconstructor()
 //   if(fgRecoParam)    delete fgRecoParam;
    if(fPedData)      delete fPedData;    
    if(fEnCalibData)  delete fEnCalibData;
+   if(fSatCalibData)  delete fSatCalibData;
    if(fTowCalibData) delete fTowCalibData;
    if(fgMBCalibData) delete fgMBCalibData;
    if(fESDZDC)       delete fESDZDC;
@@ -734,10 +737,14 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
      equalCoeffZP2[ji] = fTowCalibData->GetZP2EqualCoeff(ji); 
   }
   // --- Energy calibration factors ------------------------------------
-  Float_t calibEne[6];
+  Float_t calibEne[6], calibSatZNA[4], calibSatZNC[4];
   // **** Energy calibration coefficient set to 1 
   // **** (no trivial way to calibrate in p-p runs)
   for(Int_t ij=0; ij<6; ij++) calibEne[ij] = fEnCalibData->GetEnCalib(ij);
+  for(Int_t ij=0; ij<4; ij++){
+    calibSatZNA[ij] = fSatCalibData->GetZNASatCalib(ij);
+    calibSatZNC[ij] = fSatCalibData->GetZNCSatCalib(ij);
+  }
   
   // ******	Equalization of detector responses
   Float_t equalTowZN1[10], equalTowZN2[10], equalTowZP1[10], equalTowZP2[10];
@@ -756,7 +763,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
      }
   }
   // Ch. debug
-  /*printf("\n ------------- EQUALIZATION -------------\n");
+  printf("\n ------------- EQUALIZATION -------------\n");
   printf(" ADCZN1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	equalTowZN1[0],equalTowZN1[1],equalTowZN1[2],equalTowZN1[3],equalTowZN1[4]);
   printf(" ADCZP1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
@@ -765,7 +772,25 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   	equalTowZN2[0],equalTowZN2[1],equalTowZN2[2],equalTowZN2[3],equalTowZN2[4]);
   printf(" ADCZP2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	equalTowZP2[0],equalTowZP2[1],equalTowZP2[2],equalTowZP2[3],equalTowZP2[4]);
-  printf(" ----------------------------------------\n");*/
+  printf(" ----------------------------------------\n");
+  
+  //  *** p-A RUN 2013 -> new calibration object
+  //      to take into account saturation in ZN PMC
+  //   -> 5th order pol. fun. to be applied BEFORE en. calibration 
+  equalTowZN1[0] = equalTowZN1[0] + calibSatZNC[0]*equalTowZN1[0]*equalTowZN1[0] +
+  	calibSatZNC[1]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0] +
+	calibSatZNC[2]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0] +
+	calibSatZNC[3]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0];
+  equalTowZN2[0] = equalTowZN2[0] + calibSatZNA[0]*equalTowZN2[0]*equalTowZN2[0] +
+  	calibSatZNA[1]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0] +
+	calibSatZNA[2]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0] +
+	calibSatZNA[3]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0];
+
+ // Ch. debug
+  printf("\n ------------- SATURATION CORRECTION -------------\n");
+  printf(" ZNC PMC %1.2f\n", equalTowZN1[0]);
+  printf(" ZNA PMC %1.2f\n", equalTowZN2[0]);
+  printf(" ----------------------------------------\n");
   
   // ******	Summed response for hadronic calorimeter (SUMMED and then CALIBRATED!)
   Float_t calibSumZN1[]={0,0}, calibSumZN2[]={0,0}, calibSumZP1[]={0,0}, calibSumZP2[]={0,0};
@@ -930,10 +955,14 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
      equalCoeffZP2[ji] = fTowCalibData->GetZP2EqualCoeff(ji); 
   }
   // --- Energy calibration factors ------------------------------------
-  Float_t calibEne[6];
-  // The energy calibration object already takes into account of E_beam 
-  // -> the value from the OCDB can be directly used (Jul 2010)
+  Float_t calibEne[6], calibSatZNA[4], calibSatZNC[4];
+  // **** Energy calibration coefficient set to 1 
+  // **** (no trivial way to calibrate in p-p runs)
   for(Int_t ij=0; ij<6; ij++) calibEne[ij] = fEnCalibData->GetEnCalib(ij);
+  for(Int_t ij=0; ij<4; ij++){
+    calibSatZNA[ij] = fSatCalibData->GetZNASatCalib(ij);
+    calibSatZNC[ij] = fSatCalibData->GetZNCSatCalib(ij);
+  }
   
   // ******	Equalization of detector responses
   Float_t equalTowZN1[10], equalTowZN2[10], equalTowZP1[10], equalTowZP2[10];
@@ -965,6 +994,18 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   printf(" ----------------------------------------\n");
 */
   
+  //  *** p-A RUN 2013 -> new calibration object
+  //      to take into account saturation in ZN PMC
+  //   -> 5th order pol. fun. to be applied BEFORE en. calibration 
+  equalTowZN1[0] = equalTowZN1[0] + calibSatZNC[0]*equalTowZN1[0]*equalTowZN1[0] +
+  	calibSatZNC[1]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0] +
+	calibSatZNC[2]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0] +
+	calibSatZNC[3]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0]*equalTowZN1[0];
+  equalTowZN2[0] = equalTowZN2[0] + calibSatZNA[0]*equalTowZN2[0]*equalTowZN2[0] +
+  	calibSatZNA[1]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0] +
+	calibSatZNA[2]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0] +
+	calibSatZNA[3]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0];
+  
   // ******	Summed response for hadronic calorimeter (SUMMED and then CALIBRATED!)
   Float_t calibSumZN1[]={0,0}, calibSumZN2[]={0,0}, calibSumZP1[]={0,0}, calibSumZP2[]={0,0};
   for(Int_t gi=0; gi<5; gi++){
@@ -993,9 +1034,9 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   calibSumZP2[1] = calibSumZP2[1]*calibEne[3];
   //
   Float_t sumZEM[]={0,0}, calibZEM1[]={0,0}, calibZEM2[]={0,0};
-  calibZEM1[0] = corrADCZEM1[0]*calibEne[4]*8.;
+  calibZEM1[0] = corrADCZEM1[0]*calibEne[4];
   calibZEM1[1] = corrADCZEM1[1]*calibEne[4];
-  calibZEM2[0] = corrADCZEM2[0]*calibEne[5]*8.;
+  calibZEM2[0] = corrADCZEM2[0]*calibEne[5];
   calibZEM2[1] = corrADCZEM2[1]*calibEne[5];
   for(Int_t k=0; k<2; k++) sumZEM[k] = calibZEM1[k] + calibZEM2[k];
     
@@ -1436,6 +1477,22 @@ AliZDCEnCalib* AliZDCReconstructor::GetEnergyCalibData() const
   entry->SetOwner(kFALSE);
 
   AliZDCEnCalib *calibdata = dynamic_cast<AliZDCEnCalib*> (entry->GetObject());
+  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+
+  return calibdata;
+}
+
+//_____________________________________________________________________________
+AliZDCSaturationCalib* AliZDCReconstructor::GetSaturationCalibData() const
+{
+
+  // Getting energy and equalization calibration object for ZDC set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/SaturationCalib");
+  if(!entry) AliFatal("No calibration data loaded!");  
+  entry->SetOwner(kFALSE);
+
+  AliZDCSaturationCalib *calibdata = dynamic_cast<AliZDCSaturationCalib*> (entry->GetObject());
   if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
   return calibdata;

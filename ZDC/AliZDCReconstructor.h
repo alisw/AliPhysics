@@ -19,6 +19,7 @@ class AliCDBManager;
 class AliCDBStorage;
 class AliZDCPedestals;
 class AliZDCEnCalib;
+class AliZDCSaturationCalib;
 class AliZDCTowerCalib;
 class AliZDCMBCalib;
 class AliZDCTDCCalib;
@@ -70,6 +71,7 @@ public:
   AliCDBStorage       *SetStorage(const char* uri);
   AliZDCPedestals     *GetPedestalData() const; 
   AliZDCEnCalib       *GetEnergyCalibData() const; 
+  AliZDCSaturationCalib *GetSaturationCalibData() const; 
   AliZDCTowerCalib    *GetTowerCalibData() const; 
   AliZDCMBCalib       *GetMBCalibData() const; 
   AliZDCTDCCalib      *GetTDCCalibData() const; 
@@ -98,6 +100,7 @@ private:
   static AliZDCMBCalib   *fgMBCalibData;   //! mb calibration data
   AliZDCPedestals  *fPedData; 	    	  //! pedestal calibration data
   AliZDCEnCalib    *fEnCalibData;   	  //! energy calibration data
+  AliZDCSaturationCalib  *fSatCalibData;   	  //! energy calibration data
   AliZDCTowerCalib *fTowCalibData;  	  //! equalization calibration data
   AliZDCTDCCalib   *fTDCCalibData;  	  //! TDC offset data
   
@@ -111,7 +114,7 @@ private:
   
   AliESDZDC* fESDZDC;       // ESD output object  
 
-  ClassDef(AliZDCReconstructor, 13)   // class for the ZDC reconstruction
+  ClassDef(AliZDCReconstructor, 14)   // class for the ZDC reconstruction
 };
 
 #endif
