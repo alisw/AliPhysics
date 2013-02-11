@@ -87,23 +87,24 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
   }
 
   //create output container
+  TString containerName = "JPSI.root";
   AliAnalysisDataContainer *cOutputHist1 =
     mgr->CreateContainer(Form("jbook_QA_%s",triggerNames[j]),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("jbook_%s.root",triggerNames[j]));
+			 containerName.Data());
 
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer(Form("jbook_CF_%s",triggerNames[j]),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("jbook_%s.root",triggerNames[j]));
+			 containerName.Data());
 
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer(Form("jbook_EventStat_%s",triggerNames[j]),
 			 TH1D::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("jbook_%s.root",triggerNames[j]));
+			 containerName.Data());
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   //  mgr->ConnectOutput(task, 0, coutput1 );

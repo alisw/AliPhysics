@@ -94,8 +94,8 @@ AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="", ULon
   */
 
   // prefilter settings
-  die->SetNoPairing();
-  //die->SetPreFilterUnlikeOnly();
+  //  die->SetNoPairing();
+  die->SetPreFilterUnlikeOnly();
   //die->SetPreFilterAllSigns();
 
   // setup eta correction
@@ -270,9 +270,9 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
   die->GetPairPreFilter().AddCuts(gammaCuts);
 
   // rapidity selection
-  //  AliDielectronVarCuts *rapCut=new AliDielectronVarCuts("|Y|<.9","|Y|<.9");
-  // rapCut->AddCut(AliDielectronVarManager::kY,-0.9,0.9);
-  // die->GetPairFilter().AddCuts(rapCut);
+  //AliDielectronVarCuts *rapCut=new AliDielectronVarCuts("|Y|<.9","|Y|<.9");
+  //rapCut->AddCut(AliDielectronVarManager::kY,-0.9,0.9);
+  //die->GetPairFilter().AddCuts(rapCut);
 
   // minv cut (for better jpsi candidate to mc comparison) 
   AliDielectronVarCuts *minvCut=new AliDielectronVarCuts("PairCut","PairCut");
@@ -306,6 +306,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
     //add histograms to event class
     histos->AddClass("Event");
+    Int_t bins[]={125,100,100,55}; Double_t min[]={0.,0.,0.,0.}; Double_t max[]={25000.,20000.,4000.,1.1}; 
+    UInt_t var[]={AliDielectronVarManager::kMultV0,AliDielectronVarManager::kNTrk,AliDielectronVarManager::kNacc,AliDielectronVarManager::kMatchEffITSTPC};
+    histos->UserSparse("Event", 4, bins, min, max, var);
+    //histos->UserHistogram("Event", 3, bins, min, max, var);
     histos->UserHistogram("Event","","", 80,0.,80., AliDielectronVarManager::kCentrality);
     histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronVarManager::kRunNumber);
     histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(80,0.,80.),

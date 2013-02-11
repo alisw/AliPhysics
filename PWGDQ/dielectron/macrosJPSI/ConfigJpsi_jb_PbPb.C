@@ -158,7 +158,7 @@ void SetupEventCuts(AliDielectron *die, ULong64_t triggers, Int_t cutDefinition)
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
   eventCuts->SetCentralityRange(minCent,maxCent);
-  eventCuts->SetCutOnV0MultipicityNTrks(fMean, fSigma, 4.0);
+  //  eventCuts->SetCutOnV0MultipicityNTrks(fMean, fSigma, 4.0);
   eventCuts->Print();
   die->GetEventFilter().AddCuts(eventCuts);
 
