@@ -2,16 +2,18 @@
 
 AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
    const char *outfilename    = "AnalysisOutput.root",
-   const char *nJets          = "Jets",
    UInt_t type                = AliAnalysisTaskEmcal::kTPC,
-   const char *nRhosChEm      = "rhoChEm",
+   const char *nRhosCh        = "rhoChEm",
+   const Double_t radius      = 0.2,
    const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
    const Double_t minEta      = -0.3,
    const Double_t maxEta      = 0.3,
-   const Double_t minArea     = 0.4,
-   const char *nTracks        = "PicoTracks"
-)
+   const char* usedTracks     = "PicoTracks",
+   const char* outClusName    = "CaloClustersCorr",
+   const Double_t minTrackPt  = 0.15,
+   const Double_t minClusterPt = 0.30
+   )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -30,19 +32,48 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
     return NULL;
   }
   
+  //Run the jet finder and rho tasks first
+
+  // Some constants for the jet finders
+  const Int_t cKT                 = 0;
+  const Int_t cANTIKT             = 1;
+  const Int_t cFULLJETS           = 0;
+  const Int_t cCHARGEDJETS        = 1;
+  const Int_t cNEUTRALJETS        = 2;
+
+  const UInt_t type = 1;
+    
+  float AreaCut = radius*radius*TMath::Pi();
+
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+
+    AliEmcalJetTask* jetFinderTaskChBack = AddTaskEmcalJet(usedTracks,"",cKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt);
+
+
+  AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cANTIKT,radius, cFULLJETS,minTrackPt,minClusterPt);
+
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
+
+  AliAnalysisTaskRho *rhochtask = AddTaskRho(jetFinderTaskChBack->GetName(),usedTracks,outClusName,nRhosCh,0.2,0,0.01,0,sfunc,0,kTRUE,nRhosCh);
+
+
+
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
+  const char *nJets = jetFinderTask->GetName();
+
+
   TString name(Form("SpectraMECpA_%s", nJets));
   AliAnalysisTaskEmcalJetSpectraMECpA *spectratask = new AliAnalysisTaskEmcalJetSpectraMECpA(name);
-  spectratask->SetJetsName(nJets);
+  spectratask->SetJetsName(jetFinderTask->GetName());
   spectratask->SetAnaType(type);
-  spectratask->SetRhoName(nRhosChEm);
+  spectratask->SetRhoName(nRhosCh);
   spectratask->SetJetPhiLimits(minPhi,maxPhi);
   spectratask->SetJetEtaLimits(minEta,maxEta);
-  spectratask->SetJetAreaCut(minArea);
-  spectratask->SetTracksName(nTracks);
+  spectratask->SetJetAreaCut(AreaCut);
+  spectratask->SetTracksName(usedTracks);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
