@@ -281,7 +281,7 @@ void AliAnalysisTaskZDCpA::UserExec(Option_t */*option*/)
   }
   // ****************************************************
   
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+//  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
     
   AliESDZDC *esdZDC = esd->GetESDZDC();
   
