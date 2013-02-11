@@ -796,8 +796,6 @@ AliCFDataGrid* AliHFEBeautySpectrum::GetNonHFEBackground(Int_t decay, Int_t sour
     backgroundGrid->SetElementError(nBinpp, backgroundGrid->GetElementError(nBinpp)*evtnorm[0]);
     backgroundGrid->SetElement(nBinpp,fitFactor*evtnorm[0]);
   }
-  delete[] nBinpp;
-  delete[] binspp;
   //end of workaround for statistical errors
   if(source == 0){  
     AliCFDataGrid *weightedBGContainer = 0x0;   
@@ -809,7 +807,9 @@ AliCFDataGrid* AliHFEBeautySpectrum::GetNonHFEBackground(Int_t decay, Int_t sour
     if(stepbackground == 3){    
       backgroundGrid->Multiply(weightedBGContainer,1.0);
     }  
-  }  
+  }
+  delete[] nBinpp;
+  delete[] binspp;  
   return backgroundGrid;
 }
 //____________________________________________________________
@@ -1477,11 +1477,15 @@ void AliHFEBeautySpectrum::SetParameterizedEff(AliCFContainer *container, AliCFC
 
    if(fBeamType==0){
      //AliCFEffGrid  *nonHFEEffGrid = (AliCFEffGrid*)  GetEfficiency(GetContainer(kMCWeightedContainerNonHFEESD),1,0);
-     AliCFEffGrid  *nonHFEEffGrid = (AliCFEffGrid*)  GetEfficiency(GetContainer(AliHFECorrectSpectrumBase::kMCWeightedContainerNonHFEESDSig),1,0); //mjmj
+     AliCFContainer *cfcontainer = GetContainer(AliHFECorrectSpectrumBase::kMCWeightedContainerNonHFEESDSig);
+     if(!cfcontainer) return;
+     AliCFEffGrid  *nonHFEEffGrid = (AliCFEffGrid*)  GetEfficiency(cfcontainer,1,0); //mjmj
      fNonHFEEffbgc = (TH1D *) nonHFEEffGrid->Project(0);
      
      //AliCFEffGrid  *conversionEffGrid = (AliCFEffGrid*)  GetEfficiency(GetContainer(kMCWeightedContainerConversionESD),1,0);
-     AliCFEffGrid  *conversionEffGrid = (AliCFEffGrid*)  GetEfficiency(GetContainer(AliHFECorrectSpectrumBase::kMCWeightedContainerConversionESDSig),1,0); //mjmj
+     AliCFContainer *cfcontainerr = GetContainer(AliHFECorrectSpectrumBase::kMCWeightedContainerConversionESDSig);
+     if(!cfcontainerr) return;
+     AliCFEffGrid  *conversionEffGrid = (AliCFEffGrid*)  GetEfficiency(cfcontainerr,1,0); //mjmj
      fConversionEffbgc = (TH1D *) conversionEffGrid->Project(0);
      
      //MHMH
