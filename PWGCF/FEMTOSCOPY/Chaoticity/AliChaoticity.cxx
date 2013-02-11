@@ -920,8 +920,17 @@ void AliChaoticity::UserCreateOutputObjects()
   TProfile *fAvgMult = new TProfile("fAvgMult","",fMbins,.5,fMbins+.5, 0,1500,"");
   fOutputList->Add(fAvgMult);
 
-  TH3D *fTPNRejects = new TH3D("fTPNRejects","",kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
-  fOutputList->Add(fTPNRejects);
+  TH3D *fTPNRejects1 = new TH3D("fTPNRejects1","",kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
+  fOutputList->Add(fTPNRejects1);
+  TH3D *fTPNRejects2 = new TH3D("fTPNRejects2","",kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
+  fOutputList->Add(fTPNRejects2);
+  TH3D *fTPNRejects3 = new TH3D("fTPNRejects3","",kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
+  fOutputList->Add(fTPNRejects3);
+  TH3D *fTPNRejects4 = new TH3D("fTPNRejects4","",kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
+  fOutputList->Add(fTPNRejects4);
+  TH3D *fTPNRejects5 = new TH3D("fTPNRejects5","",kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
+  fOutputList->Add(fTPNRejects5);
+
 
   TH2D *fKt3Dist = new TH2D("fKt3Dist","",fMbins,.5,fMbins+.5, 10,0,1);
   fOutputList->Add(fKt3Dist);
@@ -2766,8 +2775,12 @@ void AliChaoticity::Exec(Option_t *)
 	      GetWeight(pVect1, pVect2, weight12, weight12Err);
 	      GetWeight(pVect1, pVect3, weight13, weight13Err);
 	      GetWeight(pVect2, pVect3, weight23, weight23Err);
-	      if(sqrt(fabs(weight12*weight13*weight23)) > 1.0) continue;// weight should never be larger than 1
-	     
+	      if(sqrt(fabs(weight12*weight13*weight23)) > 1.0) {
+		if(fMbin==0 && bin1==0) {
+		  ((TH3F*)fOutputList->FindObject("fTPNRejects1"))->Fill(qinv12, qinv13, qinv23, sqrt(fabs(weight12*weight13*weight23)));
+		}
+		continue;// weight should never be larger than 1
+	      }
 	      	      
 	      // Coul correlations from Wave-functions
 	      //for(Int_t rIter=0; rIter<kRVALUES; rIter++){// 3fm to 8fm, last value for Therminator 
@@ -2785,7 +2798,7 @@ void AliChaoticity::Exec(Option_t *)
 	      Float_t coulCorr23 = FSICorrelationTherm2(+1,+1, qinv23);
 	      if(coulCorr12 < 0.1 || coulCorr13 < 0.1 || coulCorr23 < 0.1) {// Safety check
 		if(fMbin==0 && bin1==0) {
-		  ((TH3F*)fOutputList->FindObject("fTPNRejects"))->Fill(qinv12, qinv13, qinv23, sqrt(fabs(weight12*weight13*weight23)));
+		  ((TH3F*)fOutputList->FindObject("fTPNRejects2"))->Fill(qinv12, qinv13, qinv23, sqrt(fabs(weight12*weight13*weight23)));
 		}
 		continue;
 	      }
@@ -2802,7 +2815,7 @@ void AliChaoticity::Exec(Option_t *)
 		MomResCorr23 = fMomResC2->GetBinContent(momResIndex+1, momBin23);
 		if(MomResCorr12 > 1.2 || MomResCorr13 > 1.2 || MomResCorr23 > 1.2) {// Safety check
 		  if(fMbin==0 && bin1==0) {
-		    ((TH3F*)fOutputList->FindObject("fTPNRejects"))->Fill(qinv12, qinv13, qinv23, sqrt(fabs(weight12*weight13*weight23)));
+		    ((TH3F*)fOutputList->FindObject("fTPNRejects3"))->Fill(qinv12, qinv13, qinv23, sqrt(fabs(weight12*weight13*weight23)));
 		  }
 		  continue;
 		}
@@ -2817,7 +2830,7 @@ void AliChaoticity::Exec(Option_t *)
 	      if(weight12CC < 0 || weight13CC < 0 || weight23CC < 0) {
 		if(fMbin==0 && bin1==0) {
 		  weightTotal = sqrt(fabs(weight12CC*weight13CC*weight23CC));
-		  ((TH3F*)fOutputList->FindObject("fTPNRejects"))->Fill(qinv12, qinv13, qinv23, weightTotal);
+		  ((TH3F*)fOutputList->FindObject("fTPNRejects4"))->Fill(qinv12, qinv13, qinv23, weightTotal);
 		}
 		continue;// C2^QS can never be less than unity
 	      }
@@ -2828,7 +2841,7 @@ void AliChaoticity::Exec(Option_t *)
 
 	      if(weightTotal > 1.5) {
 		if(fMbin==0 && bin1==0) {
-		  ((TH3F*)fOutputList->FindObject("fTPNRejects"))->Fill(qinv12, qinv13, qinv23, weightTotal);
+		  ((TH3F*)fOutputList->FindObject("fTPNRejects5"))->Fill(qinv12, qinv13, qinv23, weightTotal);
 		}
 		continue;// C2^QS never be greater than 1.0 in theory. Can be slightly larger than 1.0 with fluctuations
 	      }

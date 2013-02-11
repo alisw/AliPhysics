@@ -288,11 +288,11 @@ class AliChaoticity : public AliAnalysisTaskSE {
   AliChaoticityNormPairStruct *fNormPairs[3];//!
   
  public:
-  TH2D *fFSI2SS[2];
-  TH2D *fFSI2OS[2];
-  TH3D *fFSIOmega0SS[6];
-  TH3D *fFSIOmega0OS[6];
-  TH2D *fMomResC2;
+  TH2D *fFSI2SS[2];//!
+  TH2D *fFSI2OS[2];//!
+  TH3D *fFSIOmega0SS[6];//!
+  TH3D *fFSIOmega0OS[6];//!
+  TH2D *fMomResC2;//!
   //
   Float_t *******fNormWeight;//! osl kt binning
   Float_t *******fNormWeightErr;//! osl kt binning
