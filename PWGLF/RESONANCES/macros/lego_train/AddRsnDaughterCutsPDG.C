@@ -11,6 +11,7 @@ Int_t AddRsnDaughterCutsPDG(AliPID::EParticleType type1,AliPID::EParticleType ty
    if (!rsnIH) return 0;
    Bool_t valid;
    Int_t isRsnMini = AliRsnTrainManager::GetGlobalInt("IsRsnMini",valid);
+   TString rsnQualityCut = AliRsnTrainManager::GetGlobalStr("RsnQualityCut",valid); 
 
    // === USER HAS TO SET CORRECT NUMBER OF CUTS SETS =====
    Int_t numberOfCuts = 1;
@@ -59,7 +60,12 @@ Int_t AddRsnDaughterCutsPDG(AliPID::EParticleType type1,AliPID::EParticleType ty
    }
    if (useQuality) {
       AliRsnCutTrackQuality *qualityCut1 = new AliRsnCutTrackQuality("cutQuatityPDG1");
-      qualityCut1->SetDefaults2010();
+      if (!rsnQualityCut.IsNull()) {
+         AliESDtrackCuts *esdTK = RsnQualityCut(rsnQualityCut.Data());
+         qualityCut1->SetESDtrackCuts(esdTK);
+      } else {
+         qualityCut1->SetDefaults2010();
+      }
       cuts1->AddCut(qualityCut1);
       if (!scheme.IsNull()) scheme += "&";
       scheme += qualityCut1->GetName();

@@ -75,8 +75,10 @@ AliAnalysisTaskSE *AddRsnTask(TString rsnPart,TString rsnCut,TString postfix="")
    // create paths for the output in the common file
    TString commonPath = AliAnalysisManager::GetCommonFileName();
 
+   //just small fix to replace ':' by '_' (easier to read)
+   postfix.ReplaceAll(":","_");
    // create containers for output
-   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnHist%s", postfix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, commonPath.Data());
+   AliAnalysisDataContainer *output = mgr->CreateContainer(TString::Format("RsnHist%s", postfix.Data()).Data(), TList::Class(), AliAnalysisManager::kOutputContainer, commonPath.Data());
 
 //   // big outout (expert only)
 //   Int_t useBigOutput = 0;
