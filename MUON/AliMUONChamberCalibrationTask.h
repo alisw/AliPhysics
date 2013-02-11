@@ -59,7 +59,7 @@ class AliMUONChamberCalibrationTask : public AliAnalysisTaskSE
 
   // Getters
   /// Return TTree filled with the cluster information
-  TTree* OutputTree() { return fClusterInfoTree; }
+  TTree* OutputTree() const { return fClusterInfoTree; }
 
   UInt_t BuildClusterMap( AliMUONTrack &track );
 
