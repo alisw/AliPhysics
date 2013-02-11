@@ -66,7 +66,7 @@ AliAnalysisTaskZDCpAcalib::AliAnalysisTaskZDCpAcalib():
     fUseSpecialOutput(kFALSE),
     fOutput(0x0),
     fCentralityTree(0x0),
-    fTrigClass(""),
+   // fTrigClass(""),
     fIsEventSelected(kFALSE),
     fIsV0ATriggered(0),
     fIsV0CTriggered(0)
@@ -102,7 +102,7 @@ AliAnalysisTaskZDCpAcalib::AliAnalysisTaskZDCpAcalib(const char *name):
     fUseSpecialOutput(kFALSE),
     fOutput(0x0),
     fCentralityTree(0x0),
-    fTrigClass(""),
+  //  fTrigClass(""),
     fIsEventSelected(kFALSE),
     fIsV0ATriggered(0),
     fIsV0CTriggered(0)
