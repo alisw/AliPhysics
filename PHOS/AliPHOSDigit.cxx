@@ -138,8 +138,8 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Float_t energy, Float_t time
 //____________________________________________________________________________
 AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) : 
   AliDigitNew(digit),
-  fNprimary(digit.fNprimary),
   fIsLG(digit.fIsLG),
+  fNprimary(digit.fNprimary),
   fPrimary(0),
   fEnergy(digit.fEnergy),
   fTime(digit.fTime),
