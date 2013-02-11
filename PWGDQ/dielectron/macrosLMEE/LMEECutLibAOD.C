@@ -202,14 +202,14 @@ class LMEECutLib {
 	  //___________________________________________
 
 	  AliDielectronVarCuts *pidTPCsignalWide = new AliDielectronVarCuts("pidTPCsignalWide","cut on the TPC signal");
-	  pidTPCsignalWide->AddCut(AliDielectronVarManager::kTPCsignal,70.,90.);
+	  pidTPCsignalWide->AddCut(AliDielectronVarManager::kTPCsignal,75.,90.);
 
 
 	  AliDielectronVarCuts *pTPC = new AliDielectronVarCuts("P>.4","P>.4");
-	  pTPC->AddCut(AliDielectronVarManager::kPt,.4,5.);
+	  pTPC->AddCut(AliDielectronVarManager::kPt,.4,2.5);
 	  
 	  AliDielectronVarCuts *pMin = new AliDielectronVarCuts("P>.2","P>.2");
-	  pMin->AddCut(AliDielectronVarManager::kPt,.2,5.);
+	  pMin->AddCut(AliDielectronVarManager::kPt,.2,2.5);
 
 	  switch (cutSet) {
 		case kPbPb2011NoPID:
