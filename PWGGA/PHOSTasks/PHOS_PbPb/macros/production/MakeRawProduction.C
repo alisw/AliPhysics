@@ -109,7 +109,7 @@ namespace RawProduction {
   // Object describing the output of the macros
   class Output {
   public:
-    Output(const TString& fileName = "Pi0_FitResult.root", const char* options = "UPDATE");
+    Output(const TString& fileName = "RawProduction.root", const char* options = "UPDATE");
     TH1* GetHistogram(const TString& name, const InputBin& inBin);
     void SetDir(const InputBin& inBin);
     void Write();
