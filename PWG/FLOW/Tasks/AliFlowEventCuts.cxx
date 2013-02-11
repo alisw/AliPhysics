@@ -286,7 +286,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
     QAbefore(0)->Fill(pvtxz);
     QAbefore(1)->Fill(multGlobal,multTPC);
   }
-  if (fCutTPCmultiplicityOutliers)
+  if (fCutTPCmultiplicityOutliers && esdevent)
   {
     //this is pretty slow as we check the event track by track twice
     //this cut will work for 2010 PbPb data and is dependent on
@@ -319,10 +319,6 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   if (fCutCentralityPercentile&&esdevent)
   {
     AliCentrality* centr = esdevent->GetCentrality();
-    if(!fCutTPCmultiplicityOutliers && !centr->IsEventInCentralityClass(0,99.99,"TRK")){ // TPC centr < 100
-      pass=kFALSE;
-    }
-
     if (fUseCentralityUnchecked)
     {
       if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
@@ -377,11 +373,13 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
 
   // Handles AOD event
   if(aodevent) {
+    AliCentrality* centr = aodevent->GetHeader()->GetCentralityP();
+    if(fCutTPCmultiplicityOutliers){
+      Double_t v0Centr  = centr->GetCentralityPercentile("V0M");
+      Double_t trkCentr = centr->GetCentralityPercentile("TRK"); 
+      if(TMath::Abs(v0Centr-trkCentr) > 5) pass = kFALSE;
+    }
     if (fCutCentralityPercentile) {
-      AliCentrality* centr = aodevent->GetHeader()->GetCentralityP();
-      if(!fCutTPCmultiplicityOutliers && !centr->IsEventInCentralityClass(0,99.99,"TRK")){ // TPC centr < 100
-         pass=kFALSE;
-      }
       if (fUseCentralityUnchecked) {
 	if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
 						       fCentralityPercentileMax,
