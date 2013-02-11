@@ -46,7 +46,9 @@ AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE){
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *taskMB = new AliAnalysisTaskMultiDielectron("MultiDieMB");
   if (!hasMC) taskMB->UsePhysicsSelection();
-  taskMB->SelectCollisionCandidates(AliVEvent::kMB);
+//  taskMB->SelectCollisionCandidates(AliVEvent::kMB);
+//  taskMB->SelectCollisionCandidates(AliVEvent::kINT7); //kINT7
+  taskMB->SetTriggerMask(AliVEvent::kINT7);
 //taskMB->SetRejectPileup();
 
   //Add event filter
