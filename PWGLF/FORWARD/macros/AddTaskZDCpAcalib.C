@@ -1,4 +1,4 @@
-AliAnalysisTaskSE* AddTaskZDCPbPb(Bool_t  applyPS = kTRUE,
+AliAnalysisTaskSE* AddTaskZDCpAcalib(Bool_t  applyPS = kTRUE,
 				  TString outfname = "ZDCpAcalib",
 				  Bool_t  isMC = kFALSE)
 {
