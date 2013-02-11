@@ -4156,6 +4156,10 @@ Int_t AliITSAlignMille2::LoadPreSDDCalib()
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetRun(fRunID);
   AliCDBEntry *entry = man->Get("ITS/Calib/MapsTimeSDD");
+  if(!entry){
+    AliError("Error accessing OCDB: SDD maps not found");
+    return -1;
+  }
   delete fPreCorrMapSDD;
   TObjArray* arr = (TObjArray*) entry->GetObject();
   entry->SetObject(NULL);
@@ -4164,12 +4168,20 @@ Int_t AliITSAlignMille2::LoadPreSDDCalib()
   fPreCorrMapSDD = new AliITSCorrectSDDPoints(arr);
   //
   entry = man->Get("ITS/Calib/RespSDD");
+  if(!entry){
+    AliError("Error accessing OCDB: SDD response not found");
+    return -1;
+  }
   delete fPreRespSDD;
   fPreRespSDD = (AliITSresponseSDD*) entry->GetObject();
   entry->SetObject(NULL);
   entry->SetOwner(kTRUE);
   //
   entry = man->Get("ITS/Calib/DriftSpeedSDD");
+  if(!entry){
+    AliError("Error accessing OCDB: SDD Drift speed not found");
+    return -1;
+  }
   delete fPreVDriftSDD;
   fPreVDriftSDD = (TObjArray*) entry->GetObject();
   entry->SetObject(NULL);
