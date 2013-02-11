@@ -358,8 +358,10 @@ void AliHFEInclusiveSpectrumQA::DrawCorrectWithEfficiency(Int_t typeeff) const
     efficiencyparametrized = (TF1 *) fListOfResult->UncheckedAt(kPEfficiency);
   }
 
- if((typeeff==kV0 || typeeff==kMC) && (!afterE || !beforeE || !efficiencyDproj)) return;
- if(typeeff==kParametrized && (!afterE || !beforeE || !efficiencyparametrized)) return;
+ if(!afterE || !beforeE) return;
+
+ if((typeeff==kV0 || typeeff==kMC) && !efficiencyDproj) return;
+ if(typeeff==kParametrized && !efficiencyparametrized) return;
 
   SetStyle();
 

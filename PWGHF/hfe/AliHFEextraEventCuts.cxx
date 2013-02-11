@@ -216,9 +216,10 @@ void AliHFEextraEventCuts::SelectionBitMap(TObject* obj) {
 	vtxESD = esd->GetPrimaryVertexSPD() ;
 	if(fCheckCorrelationSPDVtx) {
 	  const AliESDVertex* vtxESDtr = esd->GetPrimaryVertexTracks();
-	  if((!vtxESD) || (vtxESD->GetNContributors() <= 0) || (!vtxESDtr) || (vtxESDtr->GetNContributors() <= 0)) {
+	  if((vtxESD) && (vtxESD->GetNContributors() > 0) && (vtxESDtr) && (vtxESDtr->GetNContributors() > 0)) {
 	    if(TMath::Abs(vtxESD->GetZv()-vtxESDtr->GetZv())>0.5) return;
 	  }
+	  else return;
 	}
       }
       else {
@@ -281,9 +282,10 @@ void AliHFEextraEventCuts::SelectionBitMap(TObject* obj) {
 	vtxAOD = aod->GetPrimaryVertexSPD() ;
 	if(fCheckCorrelationSPDVtx) {
 	  const AliAODVertex* vtxAODtr = aod->GetPrimaryVertex();
-	  if((!vtxAOD) || (vtxAOD->GetNContributors() <= 0) || (!vtxAODtr) || (vtxAODtr->GetNContributors() <= 0)) {
+	  if((vtxAOD) && (vtxAOD->GetNContributors() > 0) && (vtxAODtr) && (vtxAODtr->GetNContributors() > 0)) {
 	    if(TMath::Abs(vtxAOD->GetZ()-vtxAODtr->GetZ())>0.5) return;
 	  }
+	  else return;
 	}
       }
       else {

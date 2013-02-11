@@ -293,8 +293,10 @@ void AliHFEBeautySpectrumQA::DrawCorrectWithEfficiency(Int_t typeeff) const
     efficiencyparametrized = (TF1 *) fListOfResult->UncheckedAt(kPEfficiency);
   }
   
-  if(typeeff==kMC && (!afterE || !beforeE || !efficiencyDproj)) return;
-  if(typeeff==kParametrized && (!afterE || !beforeE || !efficiencyparametrized)) return;
+  if(!afterE || !beforeE) return;
+
+  if(typeeff==kMC && !efficiencyDproj) return;
+  if(typeeff==kParametrized && !efficiencyparametrized) return;
   
   SetStyle();
   
