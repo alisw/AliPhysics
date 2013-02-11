@@ -19,6 +19,7 @@ TObject(src), fTracks(src.fTracks.GetEntriesFast()), fVertex(src.GetVertex()),
 {
   // copy c-tor
   fCrvVars = new Double32_t[fNVars];
+  fTPCVars = new Double32_t[fNVars];
   TObjArray& arrSrc = src.GetTracks();
   for (int i=fNVars;i--;) {
     fCrvVars[i] = src.fCrvVars[i];
@@ -37,6 +38,7 @@ AliITSSumTP& AliITSSumTP::operator=(const AliITSSumTP& src)
   fVertex = src.GetVertex();
   fNVars = src.fNVars;
   fCrvVars = new Double32_t[fNVars];
+  fTPCVars = new Double32_t[fNVars];
   TObjArray& arrSrc = src.GetTracks();
   for (int i=fNVars;i--;) {
     fCrvVars[i] = src.fCrvVars[i];
