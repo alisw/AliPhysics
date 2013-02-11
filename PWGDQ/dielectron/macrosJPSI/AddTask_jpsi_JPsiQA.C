@@ -85,23 +85,24 @@ AliAnalysisTask *AddTask_jpsi_JPsiQA(TString prod="",
   }
 
   //create output container
+  TString containerName = "JPSI.root";
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("jpsi_QA_%s",triggerNames[j]),
+    mgr->CreateContainer(Form("jpsiQA_QA_%s",triggerNames[j]),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("jpsi_%s.root",triggerNames[j]));
+			 containerName.Data());
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("jpsi_CF_%s",triggerNames[j]),
+    mgr->CreateContainer(Form("jpsiQA_CF_%s",triggerNames[j]),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("jpsi_%s.root",triggerNames[j]));
+			 containerName.Data());//			 Form("jpsi_%s.root",triggerNames[j]));
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("jpsi_EventStat_%s",triggerNames[j]),
+    mgr->CreateContainer(Form("jpsiQA_EventStat_%s",triggerNames[j]),
 			 TH1D::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("jpsi_%s.root",triggerNames[j]));
+			 containerName.Data());//			 Form("jpsi_%s.root",triggerNames[j]));
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   //  mgr->ConnectOutput(task, 0, coutput1 );

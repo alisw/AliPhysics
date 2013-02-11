@@ -83,29 +83,26 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliV
   //----------------------
   //create data containers
   //----------------------
-  
-  TString containerName = mgr->GetCommonFileName();
-  containerName += ":PWGDQ_dielectron";
-    
+
   //create output container
-    //create output container
+  TString containerName = "JPSI.root";
   AliAnalysisDataContainer *cOutputHist1 =
     mgr->CreateContainer(Form("mfigueredo_QA_%s",triggerNames[j]),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("mfig_%s.root",triggerNames[j]));
+			 containerName.Data());
 
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer(Form("mfigueredo_CF_%s",triggerNames[j]),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("mfig_%s.root",triggerNames[j]));
+			 containerName.Data());
 
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer(Form("mfigueredo_EventStat_%s",triggerNames[j]),
 			 TH1D::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("mfig_%s.root",triggerNames[j]));
+			 containerName.Data());
   
  
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());

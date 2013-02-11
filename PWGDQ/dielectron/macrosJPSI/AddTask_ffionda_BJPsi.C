@@ -48,29 +48,30 @@ AliAnalysisTask *AddTask_ffionda_BJPsi(Bool_t isMC=kFALSE){
 
   
   //create output container
+  TString containerName = "JPSI.root";
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("Analysis_tree",
+    mgr->CreateContainer("ffionda_tree",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         "Analysis_default");
+			 containerName.Data());
   
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("Analysis_QA",
+    mgr->CreateContainer("ffionda_QA",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "AnalysisResults.root");
+			 containerName.Data());
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("Analysis_CF",
+    mgr->CreateContainer("ffionda_CF",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "AnalysisResults.root");
+			 containerName.Data());
   
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("Analysis_EventStat",
+    mgr->CreateContainer("ffionda_EventStat",
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "AnalysisResults.root");
+			 containerName.Data());
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );

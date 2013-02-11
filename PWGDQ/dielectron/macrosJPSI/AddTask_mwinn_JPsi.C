@@ -63,29 +63,30 @@ AliAnalysisTask *AddTask_mwinn_JPsi(){
   if ( trainConfig=="pp" ) task->SetRejectPileup();
   
   //create output container
+  TString containerName = "JPSI.root";
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("jpsi_mwinn_tree",
+    mgr->CreateContainer("mwinn_tree",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         "jpsi_mwinn_default");
+			 containerName.Data());
   
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("jpsi_mwinn_QA",
+    mgr->CreateContainer("mwinn_QA",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "jpsi_mwinn.root");
+			 containerName.Data());
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("jpsi_mwinn_CF",
+    mgr->CreateContainer("mwinn_CF",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "jpsi_mwinn.root");
+			 containerName.Data());
   
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("jpsi_mwinn_EventStat",
+    mgr->CreateContainer("mwinn_EventStat",
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "jpsi_mwinn.root");
+			 containerName.Data());
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );

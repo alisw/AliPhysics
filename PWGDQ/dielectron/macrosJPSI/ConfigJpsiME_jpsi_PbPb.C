@@ -7,8 +7,8 @@ void SetupPairCuts( AliDielectron *die,  Int_t cutDefinition);
 void ConfigEvtPlane(AliDielectron *die,  Int_t cutDefinition);
 void ConfigBgrd(    AliDielectron *die,  Int_t cutDefinition);
 
-TString names=("NoBins;Zvtx;ZvtxCent;ZvtxNcontr;ZvtxNcontrPE;ZvtxNcontrPEepTPC;ZvtxNcontrPEepTPCmag");
-enum { kNoBins=0, kZvtx, kZvtxCent, kZvtxNcontr, kZvtxNcontrPE, kZvtxNcontrPEepTPC, kZvtxNcontrPEepTPCmag};
+TString names=("NoBins;Zvtx;ZvtxNoKF;ZvtxCent;ZvtxNcontr;ZvtxNcontrPE;ZvtxNcontrPEepTPC;ZvtxNcontrPEepTPCmag");
+enum { kNoBins=0, kZvtx, kZvtxNoKF, kZvtxCent, kZvtxNcontr, kZvtxNcontrPE, kZvtxNcontrPEepTPC, kZvtxNcontrPEepTPCmag};
 
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
@@ -63,6 +63,9 @@ AliDielectron* ConfigJpsiME_jpsi_PbPb(Int_t cutDefinition, TString prod="", ULon
   die->SetPreFilterUnlikeOnly();
   //die->SetPreFilterAllSigns();
   //die->SetNoPairing();
+
+  // KF usgae
+  if(cutDefinition==kZvtxNoKF) die->SetUseKF(kFALSE);
 
   return die;
 }
@@ -212,6 +215,7 @@ void ConfigBgrd(AliDielectron *die, Int_t cutDefinition)
   switch(cutDefinition) {
   case kNoBins: /* */ break;
   case kZvtx:
+  case kZvtxNoKF:
     mix->AddVariable(AliDielectronVarManager::kZvPrim, "-10.,-5.,-4.,-3.,-2.,-1.,0.,1.,2.,3.,4.,5.,10.");
     break;
   case kZvtxCent:
@@ -286,6 +290,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   case kZvtxNcontr:
     histos->UserHistogram("Event","","", 200,  0., 4000.,    AliDielectronVarManager::kNVtxContrib);
   case kZvtx:
+  case kZvtxNoKF:
     histos->UserHistogram("Event","","", 200,-10.,   10.,    AliDielectronVarManager::kZvPrim);
     break;
   }
@@ -299,7 +304,11 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(4)));
 
   ///// add histograms to Pair classes /////
-  histos->UserHistogram("Pair","","",  300,.0,300*0.04, AliDielectronVarManager::kM); // 40MeV bins, 12GeV/c2
+  histos->UserHistogram("Pair","","",  300,.0,300*0.04, 80,0.,80.,
+			AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality); // 40MeV bins, 12GeV/c2
+  histos->UserHistogram("Pair","","",  300,.0,300*0.04, 20,0.,20.,
+			AliDielectronVarManager::kM, AliDielectronVarManager::kPt); // 40MeV bins, 12GeV/c2
+
   histos->UserHistogram("Pair","","",  100,-1.,1.,      AliDielectronVarManager::kY);
   histos->UserHistogram("Pair","","",  400,0,20.,       AliDielectronVarManager::kPt);
 
