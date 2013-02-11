@@ -26,13 +26,13 @@ AliAnalysisTaskSE* AddTaskZDCpAcalib(Bool_t  applyPS = kTRUE,
    AliAnalysisTaskZDCpAcalib* task = new AliAnalysisTaskZDCpAcalib("taskZDCpA");
 
    if(inputDataType.CompareTo("ESD")==0){
-      task->SetInput(1);
+      task->SetInput("ESD");
       //
       // apply physics selection
       if(applyPS) task->SelectCollisionCandidates();
    }
    else if(inputDataType.CompareTo("AOD")==0){
-      task->SetInput(2);
+      task->SetInput("AOD");
       //printf("  AliAnalysisTaskZDCpAcalib initialized for AOD analysis\n");
    }
    
