@@ -3164,7 +3164,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       }
       // Do we need to change the ROOT version ? The success of this cannot be checked.
       if (!fROOTVersion.IsNull() && !testMode) {
-         gROOT->ProcessLine(Form("TProof::Mgr(\"%s\")->SetROOTVersion(\"%s\");", 
+         gROOT->ProcessLine(Form("TProof::Mgr(\"%s\")->SetROOTVersion(\"VO_ALICE@ROOT::%s\");", 
                             fProofCluster.Data(), fROOTVersion.Data()));
       }
       // Connect to PROOF and check the status
