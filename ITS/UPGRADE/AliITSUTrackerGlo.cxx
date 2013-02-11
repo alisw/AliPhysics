@@ -978,7 +978,7 @@ void AliITSUTrackerGlo::CookMCLabel(AliITSUTrackHyp* hyp)
     seed = (AliITSUSeed*)seed->GetParent();
   } // loop over clusters
   // 
-  if (nCl) {
+  if (nCl && nLab) {
     int maxLab=0,nTPCok=0;
     AliESDtrack* esdTr = hyp->GetESDTrack();
     int tpcLab = esdTr ? Abs(esdTr->GetTPCLabel()) : -kDummyLabel;
