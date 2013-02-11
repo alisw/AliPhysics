@@ -185,11 +185,11 @@ void AliAnalysisTaskZDCpA::UserCreateOutputObjects()
   fOutput->SetOwner();
   //fOutput->SetName("output");
   
-  fhTDCZNC = new TH1F("fhTDCZNC","TDC_{ZNC}",160, -60., -20.);
+  fhTDCZNC = new TH1F("fhTDCZNC","TDC_{ZNC}",120, -60., -20.);
   fhTDCZNC->GetXaxis()->SetTitle("TDC_{ZNC} (ns)");
   fOutput->Add(fhTDCZNC);      
   
-  fhTDCZNA = new TH1F("fhTDCZNA","TDC_{ZNA}",160, -60., -20.);
+  fhTDCZNA = new TH1F("fhTDCZNA","TDC_{ZNA}",120, -60., -20.);
   fhTDCZNA->GetXaxis()->SetTitle("TDC_{ZNA} (ns)");
   fOutput->Add(fhTDCZNA);     
   
@@ -228,9 +228,9 @@ void AliAnalysisTaskZDCpA::UserCreateOutputObjects()
   fhZNACentroid = new TH2F("fhZNACentroid","Centroid over ZNA",70,-3.5,3.5,70,-3.5,3.5); 
   fOutput->Add(fhZNACentroid);      
   
-  fhPMCZNCemd = new TH1F("fhPMCZNCemd","ZNC PMC lg",200, 10., 6000.);   
+  fhPMCZNCemd = new TH1F("fhPMCZNCemd","ZNC PMC lg",200, 0., 600.);   
   fOutput->Add(fhPMCZNCemd);      
-  fhPMCZNAemd = new TH1F("fhPMCZNAemd","ZNA PMC lg",200, 10., 6000.);   
+  fhPMCZNAemd = new TH1F("fhPMCZNAemd","ZNA PMC lg",200, 0., 600.);   
   fOutput->Add(fhPMCZNAemd);     
   
   fDebunch = new TH2F("fDebunch","ZN TDC sum vs. diff", 120,-30,30,120,-30,-30);
@@ -337,9 +337,10 @@ void AliAnalysisTaskZDCpA::UserExec(Option_t */*option*/)
       fhTDCZNC->Fill(tdcC-tdcL0);
       if(tdcA != 0.){
         fhTDCZNA->Fill(tdcA-tdcL0);
-        fhTDCZNDiff->Fill(tdcC-tdcA);
-        fhTDCZNSum->Fill(tdcC+tdcA-2*tdcL0);
-	fDebunch->Fill(tdcC-tdcA, tdcC+tdcA-2*tdcL0);
+        fhTDCZNDiff->Fill(esdZDC->GetZDCTDCCorrected(10,i)-esdZDC->GetZDCTDCCorrected(12,i));
+        fhTDCZNSum->Fill(esdZDC->GetZDCTDCCorrected(10,i)-esdZDC->GetZDCTDCCorrected(12,i));
+	fDebunch->Fill(esdZDC->GetZDCTDCCorrected(10,i)-esdZDC->GetZDCTDCCorrected(12,i),
+	               esdZDC->GetZDCTDCCorrected(10,i)+esdZDC->GetZDCTDCCorrected(12,i));
       }
     }
   }  
