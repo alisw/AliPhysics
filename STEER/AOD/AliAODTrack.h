@@ -160,7 +160,7 @@ class AliAODTrack : public AliVTrack {
  
   template <typename T> void SetPID(const T *pid) {
     if(pid) for(Int_t i=0; i<10; ++i) fPID[i]=pid[i];
-    else {for(Int_t i=0; i<10; fPID[i++]=0.) ; fPID[AliAODTrack::kUnknown]=1.;}}
+    else {  for(Int_t i=0; i<10; i++) fPID[i]=0.; fPID[AliAODTrack::kUnknown]=1.;}}
 
   Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
   ULong_t GetStatus() const { return GetFlags(); }
