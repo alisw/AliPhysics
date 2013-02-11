@@ -56,6 +56,8 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
    if (opt.Contains("KTPCnsig20")) nSigmaTPC = 2.0;
    if (opt.Contains("KTPCnsig25")) nSigmaTPC = 2.5;
    if (opt.Contains("KTPCnsig30")) nSigmaTPC = 3.0;
+   if (opt.Contains("KTPCnsig40")) nSigmaTPC = 4.0;
+   if (opt.Contains("KTPCnsig50")) nSigmaTPC = 5.0;
    if (opt.Contains("KTPCnsig1000")) nSigmaTPC = 100.0;
 
    if (opt.Contains("KTOFnsig10")) nSigmaTOF = 1.0;
