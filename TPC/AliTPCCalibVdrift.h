@@ -15,6 +15,7 @@ class AliTPCTempMap;
 class AliTPCCalibVdrift : public TNamed {
 
 public:
+  AliTPCCalibVdrift();
   AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, AliDCSSensor *SensPres, TObject *SensGasComp);
   AliTPCCalibVdrift(const AliTPCCalibVdrift& source);
   virtual ~AliTPCCalibVdrift();

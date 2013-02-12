@@ -74,6 +74,20 @@ namespace paramDefinitions {
 
 using namespace paramDefinitions;
 
+AliTPCCalibVdrift::AliTPCCalibVdrift():
+  TNamed(),
+  fSensTemp(0),
+  fSensPres(0),
+  fTempMap(0),
+  fSensGasComp(0),
+  fNominalTemp(0),    // nominal temperature in Kelvin
+  fNominalPress(0)    // nominal pressure    in mbar 
+{
+  //
+  //  default constructor
+  //
+}
+
 AliTPCCalibVdrift::AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, AliDCSSensor *SensPres, TObject *SensGasComp):
   TNamed(),
   fSensTemp(0),
