@@ -100,7 +100,7 @@ void AliITSUSimulation::InitSimulationModule(AliITSUModule* mod, Int_t event, Al
   SetResponseParam(resp);
   ClearMap();
   //
-  if (event != fEvent) GenerateStrobePhase(); 
+  if (event != fEvent) GenerateReadOutCycleOffset(); 
   SetEvent(event);
   
 }

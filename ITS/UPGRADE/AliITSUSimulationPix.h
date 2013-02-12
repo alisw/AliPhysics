@@ -31,8 +31,16 @@ public:
   // fist kParamStart entried of spread fun params are reserved for common parameters
   enum {kSpreadFunParamNXoffs,               // number of pixels to consider +- from injection point (in X)
 	kSpreadFunParamNZoffs,               // number of pixels to consider +- from injection point (in Z)
-	kParamStart
+        kReadOutSchemeType,                  // readout type strobe, rolling shuttle etc
+	kReadOutCycleLength,                 // full readout cycle window
+	// some reserved slots
+	kParamStart = 20
   };
+  //
+  // defined readout types:
+  enum {kReadOutStrobe,                     // hits in static time window fReadOutCycleLength wrt offset fReadOOutCycleOffset (global for sensor) are seen
+	kReadOutRollingShuttle,             // hits in rolling (row-wise) window are seen (see IsHitInReadOutWindowRollingShuttle)
+	kNReadOutTypes}; 
   // elements of the SpreadFunGauss2D parameterization (offsetted by kParamStart)
   enum {kG1MeanX=kParamStart,kG1SigX,kG1MeanZ,kG1SigZ,kNG1Par};
   // elements of the SpreadFunDoubleGauss2D parameterization (offsetted by kParamStart)
@@ -62,14 +70,17 @@ public:
   // For backwards compatibility
   void SDigitsToDigits(){ FinishSDigitiseModule();}
   
-  // This sets fStrobe flag and allows generating the strobe and applying it to select hits 
-  void SetStrobeGeneration(Bool_t b=kFALSE) {fStrobe=b;};
-  virtual void GenerateStrobePhase();
+  virtual void GenerateReadOutCycleOffset();
   //
   Double_t SpreadFunDoubleGauss2D(const Double_t *dtIn);
   Double_t SpreadFunGauss2D(const Double_t *dtIn);
   //
   virtual void SetResponseParam(AliParamList* resp);
+  //
+  Bool_t IsHitInReadOutWindow(Int_t row, Int_t col, Double_t hitTime);
+  Bool_t IsHitInReadOutWindowRollingShuttle(Int_t row, Int_t col, Double_t hitTime);
+  //
+  void GenerateRollingShutterGlobPhase();
   //
  private:
   void SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, Int_t ix0,Int_t iz0,
@@ -79,12 +90,12 @@ public:
   void SetCouplingOld(AliITSUSDigit* old,Int_t ntrack,Int_t idhit);  // "Old" coupling routine  Rocco Caliandro
   //   
  protected:
-   Double_t      fTanLorAng;    //! Tangent of the Lorentz Angle (weighted average for hole and electrons)
-   Bool_t        fStrobe;       // kTRUE if readout strobe with proper phase applied to select hits
-   Int_t         fStrobeLenght; // Strobe signal lenght in units of 25 ns
-   Double_t      fStrobePhase;  // The phase of the strobe signal with respect to the trigger
+   Double_t      fTanLorAng;               //! Tangent of the Lorentz Angle (weighted average for hole and electrons)
+   Double_t      fReadOutCycleLength;      // readout cycle lenght in s
+   Double_t      fReadOutCycleOffset;      // The phase of the RO with respect to the trigger
    //   
    Double_t (AliITSUSimulationPix::*fSpreadFun)(const Double_t *dtIn); //! pointer on current spread function
+   Bool_t   (AliITSUSimulationPix::*fROTimeFun)(Int_t row,Int_t col, Double_t hitTime); //! pointer on current R/O time check function
 
    ClassDef(AliITSUSimulationPix,1)  // Simulation of pixel clusters
  };

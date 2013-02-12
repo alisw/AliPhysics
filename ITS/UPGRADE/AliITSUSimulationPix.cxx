@@ -63,10 +63,10 @@ ClassImp(AliITSUSimulationPix)
 //______________________________________________________________________
 AliITSUSimulationPix::AliITSUSimulationPix()
 :  fTanLorAng(0)
-  ,fStrobe(kTRUE)
-  ,fStrobeLenght(4)
-  ,fStrobePhase(-12.5e-9)
+  ,fReadOutCycleLength(25e-6)
+  ,fReadOutCycleOffset(0)
   ,fSpreadFun(0)
+  ,fROTimeFun(0)
 {
    // Default constructor.
   SetUniqueID(AliITSUGeomTGeo::kDetTypePix);
@@ -76,10 +76,10 @@ AliITSUSimulationPix::AliITSUSimulationPix()
 AliITSUSimulationPix::AliITSUSimulationPix(AliITSUSimuParam* sim,AliITSUSensMap* map)
   :AliITSUSimulation(sim,map)
   ,fTanLorAng(0)
-  ,fStrobe(kTRUE)
-  ,fStrobeLenght(4)
-  ,fStrobePhase(-12.5e-9)
+  ,fReadOutCycleLength(25e-6)
+  ,fReadOutCycleOffset(0)
   ,fSpreadFun(0)
+  ,fROTimeFun(0)
 {
   // standard constructor
   SetUniqueID(AliITSUGeomTGeo::kDetTypePix);
@@ -90,10 +90,10 @@ AliITSUSimulationPix::AliITSUSimulationPix(AliITSUSimuParam* sim,AliITSUSensMap*
 AliITSUSimulationPix::AliITSUSimulationPix(const AliITSUSimulationPix &s) 
   :AliITSUSimulation(s)
   ,fTanLorAng(s.fTanLorAng)
-  ,fStrobe(s.fStrobe)
-  ,fStrobeLenght(s.fStrobeLenght)
-  ,fStrobePhase(s.fStrobePhase)
+  ,fReadOutCycleLength(s.fReadOutCycleLength)
+  ,fReadOutCycleOffset(s.fReadOutCycleOffset)
   ,fSpreadFun(s.fSpreadFun)
+  ,fROTimeFun(s.fROTimeFun)
 {
   //     Copy Constructor
 }
@@ -112,10 +112,10 @@ AliITSUSimulationPix& AliITSUSimulationPix::operator=(const AliITSUSimulationPix
   //    Assignment operator
   if (&s == this) return *this;
   AliITSUSimulation::operator=(s);
-  fStrobe       = s.fStrobe;
-  fStrobeLenght = s.fStrobeLenght;
-  fStrobePhase  = s.fStrobePhase;
+  fReadOutCycleLength = s.fReadOutCycleLength;
+  fReadOutCycleOffset = s.fReadOutCycleOffset;
   fSpreadFun    = s.fSpreadFun;
+  fROTimeFun    = s.fROTimeFun;
   //
   return *this;
 }
@@ -215,25 +215,20 @@ void AliITSUSimulationPix::DigitiseModule()
 void AliITSUSimulationPix::Hits2SDigits()
 {
   // Does the charge distributions using Gaussian diffusion charge charing.
-  const Double_t kBunchLenght = 25e-9; // LHC clock
   Int_t nhits = fModule->GetNHits();
   if (!nhits) return;
   //
   Int_t h,ix,iz,i;
   Int_t idtrack;
   Float_t x,y,z;  // keep coordinates float (required by AliSegmentation)
-  Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0;
+  Double_t tof,x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0;
   Double_t t,tp,st,dt=0.2,el;
   Double_t thick = 0.5*fSeg->Dy();  // Half Thickness
 
   //
   for (h=0;h<nhits;h++) {
-    if (fStrobe && 
-	((fModule->GetHit(h)->GetTOF()<fStrobePhase) || 
-	 (fModule->GetHit(h)->GetTOF()>(fStrobePhase+fStrobeLenght*kBunchLenght)))
-	) continue;
     //
-    if (!fModule->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
+    if (!fModule->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,tof,idtrack)) continue;
     st = Sqrt(x1*x1+y1*y1+z1*z1);
     if (st>0.0) {
       st = (Double_t)((Int_t)(st*1e4)); // number of microns
@@ -250,6 +245,8 @@ void AliITSUSimulationPix::Hits2SDigits()
 	el  = dt * de / fSimuParam->GetGeVToCharge();
 	//
 	if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
+        // Check if the hit is inside readout window
+	if ( !(((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof) ) continue;
 	SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
       } // end for t
     } else { // st == 0.0 deposit it at this point
@@ -259,6 +256,8 @@ void AliITSUSimulationPix::Hits2SDigits()
       if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
       el  = de / fSimuParam->GetGeVToCharge();
       if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
+      // Check if the hit is inside readout window
+      if ( !(((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof) ) continue;
       SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
     } // end if st>0.0    
   } // Loop over all hits h
@@ -294,7 +293,6 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
   // Does the charge distributions using Gaussian diffusion charge charing.    // Inputs:
   //    AliITSUModule *mod  Pointer to this module
   //
-  const Double_t kBunchLenght = 25e-9; // LHC clock
   TObjArray *hits = fModule->GetHits();
   Int_t nhits = hits->GetEntriesFast();
   if (nhits<=0) return;
@@ -302,36 +300,34 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
   Int_t h,ix,iz,i;
   Int_t idtrack;
   Float_t x,y,z; // keep coordinates float (required by AliSegmentation)
-  Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0; 
-  Double_t t,st,el,de=0.0;
+  Double_t tof,x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0; 
+  Double_t step,st,el,de=0.0,dt;
   Double_t minDim = Min(fSeg->Dpx(1),fSeg->Dpz(1)); // RStmp: smallest pitch
   Double_t thick = fSeg->Dy();
   //
   for (h=0;h<nhits;h++) {
-    // Check if the hit is inside readout window
-    if (fStrobe && 
-	((fModule->GetHit(h)->GetTOF()<fStrobePhase) || 
-	 (fModule->GetHit(h)->GetTOF()>(fStrobePhase+fStrobeLenght*kBunchLenght)))
-	) continue;
     //
-    if (!fModule->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
+    if (!fModule->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,tof,idtrack)) continue;
+    //
     st = Sqrt(x1*x1+y1*y1+z1*z1); 
     if (st>0.0) {
-      int np = int(1.5*st/minDim);  //RStmp: at the moment neglect kti,kwi: inject the points in such a way that there is ~1.5 point per cell
-      if (np<3) np = 3;             //RStmp
-      double dt = 1./np;
+      int np = int(1.5*st/minDim);  //RStmp: inject the points in such a way that there is ~1.5 point per cell
+      if (np<3) np = 3;
+      double dstep = 1./np;
       double dy = dt*thick;
       y = -0.5*dy;
-      t = -0.5*dt;
+      step = -0.5*dstep;
       for (i=0;i<np;i++) {          //RStmp Integrate over t
 	//      for (i=0;i<kn10;i++) { // Integrate over t
-	t  += dt;  // RStmp kti[i];
-	x   = x0+x1*t;
+	step  += dstep;  // RStmp kti[i];
+	x   = x0+x1*step;
 	y  += dy;
-	z   = z0+z1*t;
+	z   = z0+z1*step;
 	if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
-	el  = dt*de/fSimuParam->GetGeVToCharge();
+	el  = dstep*de/fSimuParam->GetGeVToCharge();
 	if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
+        // Check if the hit is inside readout window
+	if ( !(((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof) ) continue;
 	SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
       } // end for i // End Integrate over t
     }
@@ -342,6 +338,8 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
       if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
       el  = de / fSimuParam->GetGeVToCharge();
       if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
+      // Check if the hit is inside readout window
+      if ( !(((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof) ) continue;
       SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
     } // end if st>0.0
     
@@ -717,16 +715,12 @@ void AliITSUSimulationPix::SetCouplingOld(AliITSUSDigit* old, Int_t ntrack,Int_t
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::GenerateStrobePhase()
+void AliITSUSimulationPix::GenerateReadOutCycleOffset()
 {
   // Generate randomly the strobe
   // phase w.r.t to the LHC clock
-  // Done once per event
-  const Double_t kBunchLenght = 25e-9; // LHC clock
-  if (!fStrobe) return;
-  fStrobePhase = ((Double_t)gRandom->Integer(fStrobeLenght))*kBunchLenght-
-    (Double_t)fStrobeLenght*kBunchLenght+
-    kBunchLenght/2;
+  fReadOutCycleOffset = fReadOutCycleLength*gRandom->Rndm();
+  //
 }
 
 //______________________________________________________________________
@@ -742,4 +736,46 @@ void AliITSUSimulationPix::SetResponseParam(AliParamList* resp)
   default: AliFatal(Form("Did not find requested spread function id=%d",fResponseParam->GetID()));
   }
   //
+  int readoutType = Nint(fResponseParam->GetParameter(kReadOutSchemeType));
+  switch (readoutType) {
+  case kReadOutStrobe         : fROTimeFun = &AliITSUSimulationPix::IsHitInReadOutWindow;
+    break;
+  case kReadOutRollingShuttle : fROTimeFun = &AliITSUSimulationPix::IsHitInReadOutWindowRollingShuttle;
+    break;
+  default: AliFatal(Form("Did not find requested readout time type id=%d",readoutType));
+  }
+  //
+  fReadOutCycleLength = fResponseParam->GetParameter(kReadOutCycleLength);
+  //
 }
+
+//______________________________________________________________________
+Bool_t AliITSUSimulationPix::IsHitInReadOutWindowRollingShuttle(Int_t row, Int_t col, Double_t hitTime)
+{
+  //
+  // Check whether the hit is in the read out window of the given column/row of the sensor
+  // hitTime is the time of the subhit (hit is divided to nstep charge deposit) in seconds
+  // globalPhaseShift gives the start of the RO for the cycle in pixel wrt the LHC clock
+  // GetRollingShutterWindow give the with of the rolling shutter read out window
+  //
+  double timePerRow = fReadOutCycleLength / fSeg->Npx();
+  double tmax = fReadOutCycleOffset + timePerRow*(row+1);
+  double tmin = tmax - fReadOutCycleLength;
+  AliDebug(3,Form("Rolling shutter at row%d/col%d: particle time: %e, tmin: %e : %e",row,col,hitTime,tmin,tmax));
+  return (hitTime<tmin || hitTime>tmax) ? kFALSE : kTRUE;
+  //  
+}
+
+//______________________________________________________________________
+Bool_t AliITSUSimulationPix::IsHitInReadOutWindow(Int_t row, Int_t col, Double_t hitTime)
+{
+  //
+  // Check whether the hit is in the read out window of the given column/row of the sensor
+  //
+  AliDebug(3,Form("Strobe readout: row%d/col%d: particle time: %e, tmin: %e, tmax %e",
+		  row,col,hitTime,fReadOutCycleOffset,fReadOutCycleOffset+fReadOutCycleLength));
+  hitTime -= fReadOutCycleOffset;
+  return (hitTime<0 || hitTime>fReadOutCycleLength) ? kFALSE : kTRUE;
+  //  
+}
+

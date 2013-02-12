@@ -46,10 +46,10 @@ class AliITSUModule: public TObject {
   void     MedianHit(Int_t index, Float_t xg,Float_t yg,Float_t zg,Int_t status,Float_t &xMg, Float_t &yMg, Float_t &zMg,Int_t &flag);
   void     PathLength(Float_t x,Float_t y,Float_t z,Int_t status,Int_t &nseg,Float_t &x1,Float_t &y1,Float_t &z1,Float_t &dx1,Float_t &dy1, Float_t &dz1,Int_t &flag) const;
   Bool_t   LineSegmentL(Int_t hindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,Double_t &e,Double_t &f,Double_t &de);
-  Bool_t   LineSegmentL(Int_t hindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,Double_t &e,Double_t &f,Double_t &de,Int_t &track);
+  Bool_t   LineSegmentL(Int_t hindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,Double_t &e,Double_t &f,Double_t &de, Double_t &tof, Int_t &track);
   //
   Bool_t   LineSegmentG(Int_t hindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,Double_t &e,Double_t &f,Double_t &de);
-  Bool_t   LineSegmentG(Int_t hindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,Double_t &e,Double_t &f,Double_t &de,Int_t &track);
+  Bool_t   LineSegmentG(Int_t hindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,Double_t &e,Double_t &f,Double_t &de, Double_t &tof, Int_t &track);
   //
  protected:
     AliITSUModule(const AliITSUModule &source); 

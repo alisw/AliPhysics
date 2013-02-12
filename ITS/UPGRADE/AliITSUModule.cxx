@@ -175,12 +175,10 @@ Bool_t AliITSUModule::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double
 
 //___________________________________________________________________________
 Bool_t AliITSUModule::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,
-				  Double_t &e,Double_t &f,Double_t &de,Int_t &track)
+				   Double_t &e,Double_t &f,Double_t &de,Double_t &tof, Int_t &track)
 {
   // line segmente
   AliITSUHit *h1;
-  Double_t t;
-  //
   if(hitindex>= fHitsM->GetEntriesFast()) return kFALSE;
   //
   h1 = (AliITSUHit *) (fHitsM->At(hitindex));
@@ -191,7 +189,7 @@ Bool_t AliITSUModule::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double
   } // end if StatusEntering()
     // else stepping
   de = h1->GetIonization();
-  h1->GetPositionL0(a,c,e,t);
+  h1->GetPositionL0(a,c,e,tof);
   h1->GetPositionL(b,d,f);
   b = b - a;
   d = d - c;
@@ -202,12 +200,10 @@ Bool_t AliITSUModule::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double
 
 //___________________________________________________________________________
 Bool_t AliITSUModule::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,
-				  Double_t &e,Double_t &f,Double_t &de,Int_t &track)
+				   Double_t &e,Double_t &f,Double_t &de,Double_t &tof, Int_t &track)
 {
   // line segment
   AliITSUHit *h1;
-  Double_t t;
-  //
   if(hitindex>= fHitsM->GetEntriesFast()) return kFALSE;
   //
   h1 = (AliITSUHit *) (fHitsM->At(hitindex));
@@ -217,7 +213,7 @@ Bool_t AliITSUModule::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double
     return kFALSE;
   } // end if StatusEntering()
   de = h1->GetIonization();
-  h1->GetPositionG0(a,c,e,t);
+  h1->GetPositionG0(a,c,e,tof);
   h1->GetPositionG(b,d,f);
   b = b - a;
   d = d - c;

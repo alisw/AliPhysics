@@ -32,7 +32,10 @@ void MakeITSUSimuParam(const char* cdbURI="local://") {
   // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
   // injected one to consider
   parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,3,"nPixX");
-  parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,3,"nPixZ"); 
+  parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,3,"nPixZ");
+  // and readout timing scheme
+  parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShuttle,"ROType");
+  parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
   //
   // now set the parameters according selected function
   parData->SetParameter(AliITSUSimulationPix::kG2MeanX0  , -0.1e-4  , "G1 Mean_x");
@@ -59,6 +62,9 @@ void MakeITSUSimuParam(const char* cdbURI="local://") {
   // injected one to consider
   parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,3,"nPixX");
   parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,3,"nPixZ"); 
+  // and readout timing scheme
+  parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShuttle,"ROType");
+  parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
   // 
   // now set the parameters according selected function
   parData->SetParameter(AliITSUSimulationPix::kG2MeanX0  , -0.1e-4  , "G1 Mean_x");
@@ -85,6 +91,9 @@ void MakeITSUSimuParam(const char* cdbURI="local://") {
   // injected one to consider
   parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,3,"nPixX");
   parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,3,"nPixZ"); 
+  // and readout timing scheme
+  parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShuttle,"ROType");
+  parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
   // 
   // now set the parameters according selected function
   parData->SetParameter(AliITSUSimulationPix::kG1MeanX  , -0.1e-4  , "Mean_x");

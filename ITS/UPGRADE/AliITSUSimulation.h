@@ -59,7 +59,7 @@ class AliITSUSimulation : public TObject
   virtual void CreateFastRecPoints(AliITSUModule *,Int_t,TRandom *,TClonesArray* /*recp*/) {}
   //
   // readout phase (strobe, timing etc) generation
-  virtual void GenerateStrobePhase() {}
+  virtual void GenerateReadOutCycleOffset() {}
   //
   AliITSCalibration*  GetCalibDead()                   const {return fCalibDead;}
   AliITSCalibration*  GetCalibNoisy()                  const {return fCalibNoisy;}
