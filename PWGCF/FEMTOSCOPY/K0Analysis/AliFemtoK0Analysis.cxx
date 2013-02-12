@@ -551,7 +551,6 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     {
      if( (statusNeg&AliESDtrack::kTOFpid)!=0 && (statusNeg&AliESDtrack::kTIME)!=0 && (statusNeg&AliESDtrack::kTOFout)!=0 && (statusNeg&AliESDtrack::kTOFmismatch)<=0)
      {
-      continue;
       if(fabs(fPidAOD->NumberOfSigmasTOF(prongTrackNeg,AliPID::kPion)) < kMaxTOFSigmaPion) goodPiMinus = kTRUE;
       else goodPiMinus = kFALSE;
       }
