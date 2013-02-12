@@ -194,10 +194,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  ana[ichg][imult]->SetEPhistname(Form("hist%i%i",ichg,imult));
 
 		mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
-		mecetaphitpc[aniter]->SetEventMult(0.01,100000);  //remove 0 events
+		mecetaphitpc[aniter]->SetEventMult(5,100000);  //remove 0 events
 		mecetaphitpc[aniter]->SetVertZPos(-8,8);
-		if (isrealdata)
-			mecetaphitpc[aniter]->SetAcceptOnlyPhysics(kTRUE);
+		//if (isrealdata)
+		//	mecetaphitpc[aniter]->SetAcceptOnlyPhysics(kTRUE);
 	  
 		cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", chrgs[ichg], imult));
 		cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%i", chrgs[ichg], imult));

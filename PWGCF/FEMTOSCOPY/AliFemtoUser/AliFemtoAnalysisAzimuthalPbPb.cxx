@@ -307,7 +307,7 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
       fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
 //       cout << "and here?" << endl;
       fRPdist->Fill(RP);
-//       fsubRPdist->Fill(fPicoEventRP->PicoEventplane()->GetQsubRes());
+      fsubRPdist->Fill(fPicoEventRP->PicoEventplane()->GetQsubRes());
 //       cout << "before making real pairs" << endl;
 
         MakePairs("real", fPicoEventRP);
