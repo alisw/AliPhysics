@@ -63,7 +63,7 @@ private:
   Bool_t  fIsTunedOnData;              // flag to tune MC on data (dE/dx)
   Int_t   fRecoPassTuned;              // Reco pass tuned on data for MC
   
-  Bool_t  fUseTPCEtaCorrection;        //! Use TPC eta correction
+  Bool_t  fUseTPCEtaCorrection;        // Use TPC eta correction
   
   //
   void SetRecoInfo();
@@ -71,6 +71,6 @@ private:
   AliAnalysisTaskPIDResponse(const AliAnalysisTaskPIDResponse &other);
   AliAnalysisTaskPIDResponse& operator=(const AliAnalysisTaskPIDResponse &other);
   
-  ClassDef(AliAnalysisTaskPIDResponse,4)  // Task to properly set the PID response functions of all detectors
+  ClassDef(AliAnalysisTaskPIDResponse,5)  // Task to properly set the PID response functions of all detectors
 };
 #endif
