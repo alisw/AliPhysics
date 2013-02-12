@@ -124,13 +124,8 @@ AliAnalysisTaskSE(),
   fNormPairSwitch(),
   fPairSplitCut(),
   fNormPairs(),
-  fFSI2SS(),
-  fFSI2OS(),
-  fFSIOmega0SS(),
-  fFSIOmega0OS(),
-  fMomResC2(),
-  fNormWeight(0x0),
-  fNormWeightErr(0x0)
+  fMomResC2(0x0)
+  
 {
   // Default constructor
   for(Int_t mb=0; mb<fMbins; mb++){
@@ -185,6 +180,37 @@ AliAnalysisTaskSE(),
     }// ED
   }// Mbin
   
+  // Initialize FSI histograms
+  for(Int_t i=0; i<2; i++){
+    fFSI2SS[i]=0x0; 
+    fFSI2OS[i]=0x0;
+  }
+  for(Int_t i=0; i<6; i++){
+    fFSIOmega0SS[i]=0x0; 
+    fFSIOmega0OS[i]=0x0;
+  }
+
+
+  // Initialize fNormWeight and fNormWeightErr to 0
+  for(Int_t i=0; i<fMbins; i++){// Mbin iterator
+    for(Int_t j=0; j<kEDbins; j++){// ED iterator
+      for(Int_t k=0; k<kKbinsT; k++){// Kt iterator
+	for(Int_t l=0; l<kKbinsY; l++){// Ky iterator
+	  for(Int_t m=0; m<kQbinsWeights; m++){// Qout iterator
+	    for(Int_t n=0; n<kQbinsWeights; n++){// Qside iterator
+	      for(Int_t o=0; o<kQbinsWeights; o++){// Qlong iterator
+		fNormWeight[i][j][k][l][m][n][o] = 0;
+		fNormWeightErr[i][j][k][l][m][n][o] = 0;
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+
+
 }
 //________________________________________________________________________
 AliChaoticity::AliChaoticity(const Char_t *name, Bool_t MCdecision, Bool_t Tabulatedecision, Bool_t PbPbdecision, Int_t lowCentBin, Int_t highCentBin, Bool_t lego) 
@@ -272,13 +298,8 @@ AliChaoticity::AliChaoticity(const Char_t *name, Bool_t MCdecision, Bool_t Tabul
   fNormPairSwitch(),
   fPairSplitCut(),
   fNormPairs(),
-  fFSI2SS(),
-  fFSI2OS(),
-  fFSIOmega0SS(),
-  fFSIOmega0OS(),
-  fMomResC2(),
-  fNormWeight(0x0),
-  fNormWeightErr(0x0)
+  fMomResC2(0x0)
+
 {
   // Main constructor
   fLEGO = lego;
@@ -343,6 +364,33 @@ AliChaoticity::AliChaoticity(const Char_t *name, Bool_t MCdecision, Bool_t Tabul
     }// ED
   }// Mbin
   
+  // Initialize FSI histograms
+  for(Int_t i=0; i<2; i++){
+    fFSI2SS[i]=0x0; 
+    fFSI2OS[i]=0x0;
+  }
+  for(Int_t i=0; i<6; i++){
+    fFSIOmega0SS[i]=0x0; 
+    fFSIOmega0OS[i]=0x0;
+  }
+
+  // Initialize fNormWeight and fNormWeightErr to 0
+  for(Int_t i=0; i<fMbins; i++){// Mbin iterator
+    for(Int_t j=0; j<kEDbins; j++){// ED iterator
+      for(Int_t k=0; k<kKbinsT; k++){// Kt iterator
+	for(Int_t l=0; l<kKbinsY; l++){// Ky iterator
+	  for(Int_t m=0; m<kQbinsWeights; m++){// Qout iterator
+	    for(Int_t n=0; n<kQbinsWeights; n++){// Qside iterator
+	      for(Int_t o=0; o<kQbinsWeights; o++){// Qlong iterator
+		fNormWeight[i][j][k][l][m][n][o] = 0;
+		fNormWeightErr[i][j][k][l][m][n][o] = 0;
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
 
   DefineOutput(1, TList::Class());
 }
@@ -432,15 +480,36 @@ AliChaoticity::AliChaoticity(const AliChaoticity &obj)
     fNormPairSwitch(),
     fPairSplitCut(),
     fNormPairs(),
-    fFSI2SS(),
-    fFSI2OS(),
-    fFSIOmega0SS(),
-    fFSIOmega0OS(),
-    fMomResC2(),
-    fNormWeight(),
-    fNormWeightErr()
+    fMomResC2(obj.fMomResC2)
 {
   // Copy constructor  
+  for(Int_t i=0; i<2; i++){
+    fFSI2SS[i]=obj.fFSI2SS[i]; 
+    fFSI2OS[i]=obj.fFSI2OS[i];
+  }
+  for(Int_t i=0; i<6; i++){
+    fFSIOmega0SS[i]=obj.fFSIOmega0SS[i]; 
+    fFSIOmega0OS[i]=obj.fFSIOmega0OS[i];
+  }
+  
+  // Initialize fNormWeight and fNormWeightErr to 0
+  for(Int_t i=0; i<fMbins; i++){// Mbin iterator
+    for(Int_t j=0; j<kEDbins; j++){// ED iterator
+      for(Int_t k=0; k<kKbinsT; k++){// Kt iterator
+	for(Int_t l=0; l<kKbinsY; l++){// Ky iterator
+	  for(Int_t m=0; m<kQbinsWeights; m++){// Qout iterator
+	    for(Int_t n=0; n<kQbinsWeights; n++){// Qside iterator
+	      for(Int_t o=0; o<kQbinsWeights; o++){// Qlong iterator
+		fNormWeight[i][j][k][l][m][n][o] = obj.fNormWeight[i][j][k][l][m][n][o];
+		fNormWeightErr[i][j][k][l][m][n][o] = obj.fNormWeightErr[i][j][k][l][m][n][o];
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+
 }
 //________________________________________________________________________
 AliChaoticity &AliChaoticity::operator=(const AliChaoticity &obj) 
@@ -451,7 +520,6 @@ AliChaoticity &AliChaoticity::operator=(const AliChaoticity &obj)
 
   fname = obj.fname;
   fAOD = obj.fAOD; 
-  //fESD = obj.fESD; 
   fOutputList = obj.fOutputList;
   fPIDResponse = obj.fPIDResponse;
   fEC = obj.fEC;
@@ -476,23 +544,12 @@ AliChaoticity &AliChaoticity::operator=(const AliChaoticity &obj)
   fEventCounter = obj.fEventCounter;
   fEventsToMix = obj.fEventsToMix;
   fZvertexBins = obj.fZvertexBins;
-  //fMultLimits = ;
-  //fQcut = ;
   fQLowerCut = obj.fQLowerCut;
-  //fNormQcutLow = ;
-  //fNormQcutHigh = ;
   fKupperBound = obj.fKupperBound;
   fQupperBound = obj.fQupperBound;
   fQupperBoundWeights = obj.fQupperBoundWeights;
-  //fKstepT = ;
-  //fKstepY = ;
-  //fKmeanT = ;
-  //fKmeanY = ;
-  //fKmiddleT = ;
-  //fKmiddleY = ;
   fQstep = obj.fQstep;
   fQstepWeights = obj.fQstepWeights;
-  //fQmean = ;
   fDampStart = obj.fDampStart;
   fDampStep = obj.fDampStep;
   fTPCTOFboundry = obj.fTPCTOFboundry;
@@ -519,8 +576,34 @@ AliChaoticity &AliChaoticity::operator=(const AliChaoticity &obj)
   fQlbinL = obj.fQlbinL;
   fQlbinH = obj.fQlbinH;
   fDummyB = obj.fDummyB;
-  fNormWeight = obj.fNormWeight;
-  fNormWeightErr = obj.fNormWeightErr;
+  fMomResC2 = obj.fMomResC2;
+
+  for(Int_t i=0; i<2; i++){
+    fFSI2SS[i]=obj.fFSI2SS[i]; 
+    fFSI2OS[i]=obj.fFSI2OS[i];
+  }
+  for(Int_t i=0; i<6; i++){
+    fFSIOmega0SS[i]=obj.fFSIOmega0SS[i]; 
+    fFSIOmega0OS[i]=obj.fFSIOmega0OS[i];
+  }
+  
+  // Initialize fNormWeight and fNormWeightErr to 0
+  for(Int_t i=0; i<fMbins; i++){// Mbin iterator
+    for(Int_t j=0; j<kEDbins; j++){// ED iterator
+      for(Int_t k=0; k<kKbinsT; k++){// Kt iterator
+	for(Int_t l=0; l<kKbinsY; l++){// Ky iterator
+	  for(Int_t m=0; m<kQbinsWeights; m++){// Qout iterator
+	    for(Int_t n=0; n<kQbinsWeights; n++){// Qside iterator
+	      for(Int_t o=0; o<kQbinsWeights; o++){// Qlong iterator
+		fNormWeight[i][j][k][l][m][n][o] = obj.fNormWeight[i][j][k][l][m][n][o];
+		fNormWeightErr[i][j][k][l][m][n][o] = obj.fNormWeightErr[i][j][k][l][m][n][o];
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
       
   return (*this);
 }
@@ -536,39 +619,23 @@ AliChaoticity::~AliChaoticity()
   if(fEvt) delete fEvt;
   if(fTempStruct) delete [] fTempStruct;
   if(fRandomNumber) delete fRandomNumber;
-  if(fFSI2SS[0]) delete fFSI2SS[0];
-  if(fFSI2OS[0]) delete fFSI2OS[0];
-  if(fFSI2SS[1]) delete fFSI2SS[1];
-  if(fFSI2OS[1]) delete fFSI2OS[1];
-  if(fFSIOmega0SS[0]) delete fFSIOmega0SS[0];
-  if(fFSIOmega0SS[1]) delete fFSIOmega0SS[1];
-  if(fFSIOmega0SS[2]) delete fFSIOmega0SS[2];
-  if(fFSIOmega0SS[3]) delete fFSIOmega0SS[3];
-  if(fFSIOmega0SS[4]) delete fFSIOmega0SS[4];
-  if(fFSIOmega0SS[5]) delete fFSIOmega0SS[5];
-  if(fFSIOmega0OS[0]) delete fFSIOmega0OS[0];
-  if(fFSIOmega0OS[1]) delete fFSIOmega0OS[1];
-  if(fFSIOmega0OS[2]) delete fFSIOmega0OS[2];
-  if(fFSIOmega0OS[3]) delete fFSIOmega0OS[3];
-  if(fFSIOmega0OS[4]) delete fFSIOmega0OS[4];
-  if(fFSIOmega0OS[5]) delete fFSIOmega0OS[5];
   if(fMomResC2) delete fMomResC2;
   if(fNormWeight) delete fNormWeight;
   if(fNormWeightErr) delete fNormWeightErr;
 
-  for(int i=0; i<fMultLimit; i++){
+  for(Int_t i=0; i<fMultLimit; i++){
     if(fPairLocationSE[i]) delete [] fPairLocationSE[i];
     if(fPairLocationME[i]) delete [] fPairLocationME[i];
-    for(int j=0; j<2; j++){
+    for(Int_t j=0; j<2; j++){
       if(fOtherPairLocation1[j][i]) delete [] fOtherPairLocation1[j][i];
       if(fOtherPairLocation2[j][i]) delete [] fOtherPairLocation2[j][i];
     }
-    for(int j=0; j<3; j++) if(fNormPairSwitch[j][i]) delete [] fNormPairSwitch[j][i];
-    for(int j=0; j<4; j++) if(fPairSplitCut[j][i]) delete [] fPairSplitCut[j][i];
+    for(Int_t j=0; j<3; j++) if(fNormPairSwitch[j][i]) delete [] fNormPairSwitch[j][i];
+    for(Int_t j=0; j<4; j++) if(fPairSplitCut[j][i]) delete [] fPairSplitCut[j][i];
   }
-  for(int i=0; i<kPairLimit; i++) if(fTripletSkip1[i]) delete [] fTripletSkip1[i];
-  for(int i=0; i<2*kPairLimit; i++) if(fTripletSkip2[i]) delete [] fTripletSkip2[i];
-  for(int i=0; i<3; i++) if(fNormPairs[i]) delete [] fNormPairs[i];
+  for(Int_t i=0; i<kPairLimit; i++) if(fTripletSkip1[i]) delete [] fTripletSkip1[i];
+  for(Int_t i=0; i<2*kPairLimit; i++) if(fTripletSkip2[i]) delete [] fTripletSkip2[i];
+  for(Int_t i=0; i<3; i++) if(fNormPairs[i]) delete [] fNormPairs[i];
   //
   for(Int_t mb=0; mb<fMbins; mb++){
     for(Int_t edB=0; edB<kEDbins; edB++){
@@ -642,7 +709,20 @@ AliChaoticity::~AliChaoticity()
       
     }// ED
   }// Mbin
+  
+  if(fMomResC2) delete fMomResC2;
+ 
+  for(Int_t i=0; i<2; i++){
+    if(fFSI2SS[i]) delete fFSI2SS[i]; 
+    if(fFSI2OS[i]) delete fFSI2OS[i];
+  }
+  for(Int_t i=0; i<6; i++){
+    if(fFSIOmega0SS[i]) delete fFSIOmega0SS[i]; 
+    if(fFSIOmega0OS[i]) delete fFSIOmega0OS[i];
+  }
 
+  if(fNormWeight) delete fNormWeight;
+  if(fNormWeightErr) delete fNormWeightErr;
 
 }
 //________________________________________________________________________
@@ -796,40 +876,6 @@ void AliChaoticity::ParInit()
    
   fTrueMassP=0.93827, fTrueMassPi=0.13957, fTrueMassK=0.493677, fTrueMassKs=0.497614, fTrueMassLam=1.11568;
 
-  
-  // Initialize Weight Array  
-  fNormWeight = new Float_t******[fMbins];// fMbin
-  fNormWeightErr = new Float_t******[fMbins];// fMbin
-  for(Int_t i=0; i<fMbins; i++){// Mbin iterator
-    fNormWeight[i] = new Float_t*****[kEDbins];// create ED bins
-    fNormWeightErr[i] = new Float_t*****[kEDbins];// create ED bins
-    
-    for(Int_t j=0; j<kEDbins; j++){// ED iterator
-      fNormWeight[i][j] = new Float_t****[kKbinsT];// create Kt bins
-      fNormWeightErr[i][j] = new Float_t****[kKbinsT];// create Kt bins
-      
-      for(Int_t k=0; k<kKbinsT; k++){// Kt iterator
-	fNormWeight[i][j][k] = new Float_t***[kKbinsY];// create Ky bins
-	fNormWeightErr[i][j][k] = new Float_t***[kKbinsY];// create Ky bins
-	
-	for(Int_t l=0; l<kKbinsY; l++){// Ky iterator
-	  fNormWeight[i][j][k][l] = new Float_t**[kQbinsWeights];// create Qout bins
-	  fNormWeightErr[i][j][k][l] = new Float_t**[kQbinsWeights];// create Qout bins
-	  
-	  for(Int_t m=0; m<kQbinsWeights; m++){// Qout iterator
-	    fNormWeight[i][j][k][l][m] = new Float_t*[kQbinsWeights];// create Qside bins
-	    fNormWeightErr[i][j][k][l][m] = new Float_t*[kQbinsWeights];// create Qside bins
-	    
-	    for(Int_t n=0; n<kQbinsWeights; n++){// Qside iterator
-	      fNormWeight[i][j][k][l][m][n] = new Float_t[kQbinsWeights];// create Qlong bins
-	      fNormWeightErr[i][j][k][l][m][n] = new Float_t[kQbinsWeights];// create Qlong bins
-	    }
-	  }
-	}
-      }
-    }
-  }
-  
   
 
   // Set weights, Coulomb corrections, and Momentum resolution corrections manually if not on LEGO
