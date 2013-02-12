@@ -2001,7 +2001,20 @@ void AliPHOSHijingEfficiency::ProcessMC(){
 //___________________________________________________________________________
 Int_t AliPHOSHijingEfficiency::FindPrimary(AliESDCaloCluster*clu,  Bool_t&sure){
   //Finds primary and estimates if it unique one?
+  //First check can it be photon/electron
+  const Double_t emFraction=0.9; //part of energy of cluster to be assigned to EM particle
   Int_t n=clu->GetNLabels() ;
+  for(Int_t i=0;  i<n;  i++){
+    TParticle*  p=  fStack->Particle(clu->GetLabelAt(i)) ;
+    Int_t pdg = p->GetPdgCode() ;
+    if(pdg==22  ||  pdg==11 || pdg == -11){
+      if(p->Energy()>emFraction*clu->E()){
+	sure=kTRUE ;
+	return clu->GetLabelAt(i);
+      }
+    }
+  }
+
   Double_t*  Ekin=  new  Double_t[n] ;
   for(Int_t i=0;  i<n;  i++){
     TParticle*  p=  fStack->Particle(clu->GetLabelAt(i)) ;
