@@ -1405,9 +1405,89 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC13b->SetHardwareTrigger         ( triggerCount,"SPDGFOL1 >= 10 && (V0A && V0C)");                                         //<------------ FIX ME : SPDFO threshold
   oadbLHC13b->SetOfflineTrigger          ( triggerCount,"(SPDGFOL1 >= 10 && V0A && V0C) && !V0ABG && !V0CBG  && !ZNABG && !ZNCBG && !TPCLaserWarmUp"); //<------------ FIX ME : SPDFO threshold
 
-  oadbContPS->AppendObject(oadbLHC13b, 194713, 250000);
-  triggerCount=0;
+  oadbContPS->AppendObject(oadbLHC13b, 194713, 197411);
 
+
+  //
+  // Low energy pp 2.76 TeV data in 2013
+  //
+  
+  AliOADBPhysicsSelection * oadbLHC13g = new AliOADBPhysicsSelection("oadbLHC13g");
+  
+  triggerCount=0;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kINT7,"+CINT7-[B|I]-NOPF-ALLNOTRD","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kINT7,"+CINT7-ACE-NOPF-ALLNOTRD","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kPHI7,"+CPHI7-[B|I]-NOPF-ALLNOTRD","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kPHI7,"+CPHI7-ACE-NOPF-ALLNOTRD","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kEMC7,"+CEMC7-[B|I]-NOPF-CENTNOTRD","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kEMC7,"+CEMC7-ACE-NOPF-CENTNOTRD","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kEMCEGA,"+CEMC7EG1-[B|I]-NOPF-CENTNOTRD,CEMC7EG2-[B|I]-NOPF-CENTNOTRD","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kEMCEGA,"+CEMC7EG1-ACE-NOPF-CENTNOTRD,CEMC7EG2-ACE-NOPF-CENTNOTRD","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kEMCEJE,"+CEMC7EJ1-[B|I]-NOPF-CENTNOTRD,CEMC7EJ2-[B|I]-NOPF-CENTNOTRD","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kEMCEJE,"+CEMC7EJ1-ACE-NOPF-CENTNOTRD,CEMC7EJ2-ACE-NOPF-CENTNOTRD","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kTRD,"+CINT7WUHJT-[B|I]-NOPF-[CENT,FAST]","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kTRD,"+CINT7WUHJT-ACE-NOPF-[CENT,FAST]","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kTRD,"+CINT7WUHSE-[B|I]-NOPF-[CENT,FAST]","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kTRD,"+CINT7WUHSE-ACE-NOPF-[CENT,FAST]","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kTRD,"+CINT7WUHQU-[B|I]-NOPF-[CENT,FAST]","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kTRD,"+CINT7WUHQU-ACE-NOPF-[CENT,FAST]","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kMUS7,"+CMSL7-[B|I]-NOPF-MUON","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kMUS7,"+CMSL7-ACE-NOPF-MUON","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kMUSH7,"+CMSH7-[B|I]-NOPF-MUON","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kMUSH7,"+CMSH7-ACE-NOPF-MUON","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kMUU7,"+CMUL7-[B|I]-NOPF-MUON","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kMUU7,"+CMUL7-ACE-NOPF-MUON","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kMUL7,"+CMLL7-[B|I]-NOPF-MUON","B", triggerCount);
+  oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kMUL7,"+CMLL7-ACE-NOPF-MUON","ACE", triggerCount);
+  oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+
+  oadbContPS->AppendObject(oadbLHC13g, 197412, 250000);
+  triggerCount=0;
   // ------------------------------------------------------------------------------------------------------------
 
   // Trigger Analysis: ZDC timing cuts
@@ -1438,7 +1518,11 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
 
   AliOADBTriggerAnalysis * oadbTrigAnalysisZDC7 = new AliOADBTriggerAnalysis("ZDCCut7");
   oadbTrigAnalysisZDC7->SetZNCorrParameters(2.0,5.0);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC7, 194713, 250000);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC7, 194713, 196345);
+
+  AliOADBTriggerAnalysis * oadbTrigAnalysisZDC8 = new AliOADBTriggerAnalysis("ZDCCut8");
+  oadbTrigAnalysisZDC8->SetZNCorrParameters(5.0,2.0);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC8, 196346, 197411);
 
   oadbTrigAnalysisZDC1->Print();
   oadbTrigAnalysisZDC2->Print();
@@ -1447,6 +1531,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisZDC5->Print();
   oadbTrigAnalysisZDC6->Print();
   oadbTrigAnalysisZDC7->Print();
+  oadbTrigAnalysisZDC8->Print();
 
   
   // ----------------- visualize coverage
