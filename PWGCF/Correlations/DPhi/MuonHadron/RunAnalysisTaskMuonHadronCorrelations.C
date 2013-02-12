@@ -129,37 +129,9 @@ Bool_t RunAnalysisTaskMuonHadronCorrelations(Int_t runNumber = 188362, const cha
   //  AddTaskPhysicsSelection(0);
   mgr->AddStatisticsTask(AliVEvent::kAny);
   
-  // -------------------------------
-  // MUON TRACK CUTS CONFIGURATION
-  // -------------------------------
+  gROOT->LoadMacro("AddAnalysisTaskMuonHadronCorrelations.C");
+  AddAnalysisTaskMuonHadronCorrelations();
 
-  gROOT->LoadMacro("AliAnalysisTaskMuonHadronCorrelations.cxx++g");
-  AliAnalysisTaskMuonHadronCorrelations *task = new AliAnalysisTaskMuonHadronCorrelations("AliAnalysisTaskMuonHadronCorrelations");
-
-  // Set analysis cuts   
-  task->SetFilterBitCentralBarrel(7);  // -> 128
-  task->SetMaxEtaCentralBarrel(1.0);
-  task->SetTriggerMatchLevelMuon(1);
-
-  const Int_t nBinCent = 4;
-  Double_t centLimits[nBinCent+1] = {0., 20., 40, 60., 100.};
-  task->SetCentBinning(nBinCent, centLimits);
-
-  task->SetCentMethod(centMethod);
-
-  const Int_t nBinPt = 3;
-  Double_t ptLimits[nBinPt+1] = {0., 1., 2., 4.};
-  task->SetPtBinning(nBinPt, ptLimits);
-
-  mgr->AddTask(task);
-
-  // create output container
-  AliAnalysisDataContainer *output1 = mgr->CreateContainer("list", TList::Class(), AliAnalysisManager::kOutputContainer, "MuonHadronCorrelations.root");
-  
-  // finaly connect input and output
-  mgr->ConnectInput(task, 0,  mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, output1);
-    
   TStopwatch timer;
   timer.Start();
   // -------------------------------

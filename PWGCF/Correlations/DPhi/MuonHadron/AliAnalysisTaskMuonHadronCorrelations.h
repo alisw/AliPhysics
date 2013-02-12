@@ -42,7 +42,7 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
   Double_t GetITSMultiplicity();
   Bool_t IsTriggerFired();
   TObjArray* GetAcceptedTracksCentralBarrel(AliAODEvent *aodEvent);
-  TObjArray* GetAcceptedTracksMuonArm(AliAODEvent *aodEvent);
+  TObjArray* GetAcceptedTracksMuonArm(AliAODEvent *aodEvent, Int_t centBin);
   void SetPtBinning(Int_t nBins, Double_t *limits);
   void SetCentBinning(Int_t nBins, Double_t *limits);
   void SetCentMethod(const Char_t *method) { fCentMethod = method; }
@@ -73,10 +73,14 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
   TH1D *fHistDeltaPhi[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsPt]; //!
   TH1D *fHistDeltaPhiMix[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsPt]; //!
   TH2D *fHistNTracksCB_vs_NTracksMA[fNMaxBinsCentrality]; //!
+  TH2D *fHistNTracksCB_vs_NTracksMAmixed[fNMaxBinsCentrality]; //!
 
   TH1D *fHistV0Multiplicity; //!
   TH1D *fHistITSMultiplicity; //!
   TH1D *fHistCentrality; //!
+
+  TH2D *fHistSingleMuonsEtaVsPt[fNMaxBinsCentrality]; //!
+  TH2D *fHistSingleMuonsEtaVsRAbs[fNMaxBinsCentrality]; //!
 
   TString fCentMethod;
 

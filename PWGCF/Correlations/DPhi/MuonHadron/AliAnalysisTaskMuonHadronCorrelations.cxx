@@ -50,6 +50,9 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() :
       }
     }
     fHistNTracksCB_vs_NTracksMA[iCent]  = NULL;
+    fHistNTracksCB_vs_NTracksMAmixed[iCent]  = NULL;
+    fHistSingleMuonsEtaVsPt[iCent]   = NULL;
+    fHistSingleMuonsEtaVsRAbs[iCent] = NULL;
   }  
   
 }
@@ -90,6 +93,9 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(con
       }
     }
     fHistNTracksCB_vs_NTracksMA[iCent]  = NULL;
+    fHistNTracksCB_vs_NTracksMAmixed[iCent]  = NULL;
+    fHistSingleMuonsEtaVsPt[iCent]   = NULL;
+    fHistSingleMuonsEtaVsRAbs[iCent] = NULL;
   }  
   
   // Define input and output slots here
@@ -153,13 +159,29 @@ void AliAnalysisTaskMuonHadronCorrelations::UserCreateOutputObjects() {
 
     fHistNTracksCB_vs_NTracksMA[iCent] = new TH2D(Form("fHistNTracksCB_vs_NTracksMA_Cent%02d",iCent),
 						  Form("%d-%d %%",Int_t(fCentAxis->GetBinLowEdge(iCent+1)),Int_t(fCentAxis->GetBinUpEdge(iCent+1))),
-						  100, 0, 1000, 100, 0, 100);
+						  100, 0, 500, 20, 0, 20);
     fHistNTracksCB_vs_NTracksMA[iCent] -> SetXTitle("N_{tracks} Central Barrel");
     fHistNTracksCB_vs_NTracksMA[iCent] -> SetYTitle("N_{tracks} Muon Arm");
-
     fHistNTracksCB_vs_NTracksMA[iCent] -> Sumw2();
 
+    fHistNTracksCB_vs_NTracksMAmixed[iCent] = new TH2D(Form("fHistNTracksCB_vs_NTracksMAmixed_Cent%02d",iCent),
+						  Form("%d-%d %% MIXED",Int_t(fCentAxis->GetBinLowEdge(iCent+1)),Int_t(fCentAxis->GetBinUpEdge(iCent+1))),
+						  100, 0, 500, 20, 0, 20);
+    fHistNTracksCB_vs_NTracksMAmixed[iCent] -> SetXTitle("N_{tracks} Central Barrel");
+    fHistNTracksCB_vs_NTracksMAmixed[iCent] -> SetYTitle("N_{tracks} Muon Arm");
+    fHistNTracksCB_vs_NTracksMAmixed[iCent] -> Sumw2();
+
     fOutputList -> Add(fHistNTracksCB_vs_NTracksMA[iCent]);
+    fOutputList -> Add(fHistNTracksCB_vs_NTracksMAmixed[iCent]);
+
+    fHistSingleMuonsEtaVsPt[iCent]   = new TH2D(Form("fHistSingleMuonsEtaVsPt_Cent%02d",iCent),
+					       "#eta vs p_{T} for single muons",
+					       100, -4.5, -2., 100, 0., 10.);
+    fOutputList->Add(fHistSingleMuonsEtaVsPt[iCent]);
+    fHistSingleMuonsEtaVsRAbs[iCent] = new TH2D(Form("fHistSingleMuonsEtaVsRAbs_Cent%02d",iCent),
+					       "#eta vs R_{Abs} for single muons",
+					       100, -4.5, -2., 100, 0, 100);
+    fOutputList->Add(fHistSingleMuonsEtaVsRAbs[iCent]);
     
   }
   
@@ -213,7 +235,7 @@ void AliAnalysisTaskMuonHadronCorrelations::UserExec(Option_t *) {
   Double_t zVtx = vertex->GetZ();
   if (TMath::Abs(zVtx) > 10.) return;
   
-  TObjArray *tracksMuonArm = GetAcceptedTracksMuonArm(fAOD);
+  TObjArray *tracksMuonArm = GetAcceptedTracksMuonArm(fAOD,centBin);
   if (tracksMuonArm->GetEntriesFast() == 0) {
     delete tracksMuonArm;
     return;
@@ -239,9 +261,10 @@ void AliAnalysisTaskMuonHadronCorrelations::UserExec(Option_t *) {
     //pool->PrintInfo();
     if (pool->IsReady() || pool->NTracksInPool() > 2000 || pool->GetCurrentNEvents() >= 5) 
       for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) {
+	TObjArray *mixedTracks = pool->GetEvent(jMix);
+	fHistNTracksCB_vs_NTracksMAmixed[centBin]->Fill(mixedTracks->GetEntriesFast(), tracksMuonArm->GetEntriesFast());
 	for (Int_t iTrMA=0; iTrMA<tracksMuonArm->GetEntriesFast(); iTrMA++) {
 	  fTrackMA = (AliAODTrack*) tracksMuonArm->At(iTrMA);
-	  TObjArray *mixedTracks = pool->GetEvent(jMix);
 	  for (Int_t iTrCB=0; iTrCB<mixedTracks->GetEntriesFast(); iTrCB++) {
 	    fTrackCB = (AliAODTrack*) mixedTracks -> At(iTrCB);
 	    FillHistograms(centBin, kMixedEvent);
@@ -320,7 +343,7 @@ TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksCentralBarrel
 
 //====================================================================================================================================================
 
-TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksMuonArm(AliAODEvent *aodEvent) {
+TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksMuonArm(AliAODEvent *aodEvent, Int_t centBin) {
 
   // fills the array of muon tracks that pass the cuts
 
@@ -334,7 +357,17 @@ TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksMuonArm(AliAO
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
     track = aodEvent->GetTrack(iTrack);
     if (track->IsMuonTrack() && track->GetMatchTrigger()>=fTriggerMatchLevelMuon) {
-      tracks->Add(new AliAODTrack(*track));
+      if (track->Chi2perNDF() < 5.) {
+	// histos
+	fHistSingleMuonsEtaVsPt[centBin]->Fill(track->Eta(),track->Pt());
+	fHistSingleMuonsEtaVsRAbs[centBin]->Fill(track->Eta(),track->GetRAtAbsorberEnd());
+	if (track->Eta() > -4. && track->Eta() < -2.5) {
+	  Double_t rabs = track->GetRAtAbsorberEnd();
+	  if (rabs > 17.6 && rabs < 89.5) {
+	    tracks->Add(new AliAODTrack(*track));
+	  }
+	}
+      }
     }
   }
 
