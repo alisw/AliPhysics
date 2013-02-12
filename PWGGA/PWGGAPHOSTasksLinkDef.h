@@ -12,6 +12,9 @@
 #pragma link C++ class AliAnalysisTaskPi0Flow+;
 #pragma link C++ class AliPHOSTenderTask+;
 
+//PHOS_PbPb_MC
+#pragma link C++ class AliPHOSHijingEfficiency+;
+
 // PHOS_embedding
 #pragma link C++ class AliPHOSEmbedding+;
 #pragma link C++ class AliAnalysisTaskPi0Efficiency+;
