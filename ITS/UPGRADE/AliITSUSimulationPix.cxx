@@ -774,7 +774,7 @@ Bool_t AliITSUSimulationPix::IsHitInReadOutWindow(Int_t row, Int_t col, Double_t
   //
   AliDebug(3,Form("Strobe readout: row%d/col%d: particle time: %e, tmin: %e, tmax %e",
 		  row,col,hitTime,fReadOutCycleOffset,fReadOutCycleOffset+fReadOutCycleLength));
-  hitTime -= fReadOutCycleOffset;
+  hitTime -= fReadOutCycleOffset+0.5*fReadOutCycleLength;
   return (hitTime<0 || hitTime>fReadOutCycleLength) ? kFALSE : kTRUE;
   //  
 }
