@@ -80,8 +80,6 @@ public:
   Bool_t IsHitInReadOutWindow(Int_t row, Int_t col, Double_t hitTime);
   Bool_t IsHitInReadOutWindowRollingShuttle(Int_t row, Int_t col, Double_t hitTime);
   //
-  void GenerateRollingShutterGlobPhase();
-  //
  private:
   void SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, Int_t ix0,Int_t iz0,
 		      Double_t el, Int_t tID, Int_t hID);
