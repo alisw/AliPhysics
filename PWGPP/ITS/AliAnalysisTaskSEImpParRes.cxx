@@ -24,9 +24,14 @@
 #include <TList.h>
 #include <TH1F.h>
 
+#include <AliAnalysisDataSlot.h>
+#include <AliAnalysisDataContainer.h>
 #include "AliAnalysisManager.h"
+#include "TParticle.h"
 #include "AliGeomManager.h"
 #include "AliMultiplicity.h"
+#include "AliTriggerClass.h"
+#include "AliTriggerCluster.h"
 #include "AliTriggerConfiguration.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -35,11 +40,19 @@
 #include "AliGenEventHeader.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliAODHandler.h"
+#include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
-#include "AliESDtrack.h"   
+#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
+#include "AliAODEvent.h"
+#include "AliAODTrack.h"   
 #include "AliVertexerTracks.h"
 #include "AliVVertex.h"
+#include "AliVEvent.h"
+#include "AliVTrack.h"
 #include "AliPID.h"
 #include "AliAnalysisTaskSEImpParRes.h"
 
@@ -47,46 +60,49 @@ ClassImp(AliAnalysisTaskSEImpParRes)
 
 //________________________________________________________________________
 AliAnalysisTaskSEImpParRes::AliAnalysisTaskSEImpParRes():
-AliAnalysisTaskSE(),
-fReadMC(kFALSE),
-fSelectedPdg(-1),
-fUseDiamond(kFALSE),
-fSkipTrack(kTRUE),
-fMinMult(0),
-fMaxMult(1000000),
-fCheckSDDIsIn(0),
-fTriggerClass(""),
-fTrigConfig(0),
-fOCDBPath(""),
-fOutputitspureSARec(0),
-fOutputitspureSASkip(0), 
-fOutputallPointRec(0),
-fOutputallPointSkip(0),
-fOutputpartPointRec(0),
-fOutputpartPointSkip(0),
-fOutputonepointSPDRec(0),
-fOutputonepointSPDSkip(0),
-fOutputpostvTracRec(0),
-fOutputpostvTracSkip(0),
-fOutputnegtvTracRec(0),
-fOutputnegtvTracSkip(0),
-fOutputpullAllpointRec(0),
-fOutputpullAllpointSkip(0),
-fOutputOnlyRefitRec(0),
-fOutputOnlyRefitSkip(0),
-fOutputSinThetaRec(0),
-fOutputSinThetaSkip(0),
-fOutputallPointTrue(0),
-fOutputpostvTracTrue(0),
-fOutputnegtvTracTrue(0),
-fOutputpullAllpointTrue(0),
-fOutputphiAllpointSkip(0),
-fOutputphiPostvtracSkip(0),
-fOutputphiNegtvtracSkip(0),
-fOutputparticlePID(0),
-fOutputPt(0),
-fNentries(0),
-fEstimVtx(0)
+  AliAnalysisTaskSE(),
+  fIsAOD(kFALSE),
+  fReadMC(kFALSE),
+  fSelectedPdg(-1),
+  fUseDiamond(kFALSE),
+  fSkipTrack(kTRUE),
+  fMinMult(0),
+  fMaxMult(1000000),
+  fCheckSDDIsIn(0),
+  fTriggerClass(""),
+  fTrigConfig(0),
+  fOCDBPath(""),
+  fESDtrackCuts(0),
+  fOutputitspureSARec(0),
+  fOutputitspureSASkip(0), 
+  fOutputallPointRec(0),
+  fOutputallPointSkip(0),
+  fOutputpartPointRec(0),
+  fOutputpartPointSkip(0),
+  fOutputonepointSPDRec(0),
+  fOutputonepointSPDSkip(0),
+  fOutputpostvTracRec(0),
+  fOutputpostvTracSkip(0),
+  fOutputnegtvTracRec(0),
+  fOutputnegtvTracSkip(0),
+  fOutputpullAllpointRec(0),
+  fOutputpullAllpointSkip(0),
+  fOutputOnlyRefitRec(0),
+  fOutputOnlyRefitSkip(0),
+  fOutputSinThetaRec(0),
+  fOutputSinThetaSkip(0),
+  fOutputallPointTrue(0),
+  fOutputpostvTracTrue(0),
+  fOutputnegtvTracTrue(0),
+  fOutputpullAllpointTrue(0),
+  fOutputphiAllpointSkip(0),
+  fOutputphiPostvtracSkip(0),
+  fOutputphiNegtvtracSkip(0),
+  fOutputparticlePID(0),
+  fOutputWithTrackCuts(0),
+  fOutputPt(0),
+  fNentries(0),
+  fEstimVtx(0)
 {
   //
   // Default constructor
@@ -95,46 +111,49 @@ fEstimVtx(0)
 
 //________________________________________________________________________
 AliAnalysisTaskSEImpParRes::AliAnalysisTaskSEImpParRes(const char *name):
-AliAnalysisTaskSE(name),
-fReadMC(kFALSE),
-fSelectedPdg(-1),
-fUseDiamond(kFALSE),
-fSkipTrack(kTRUE),
-fMinMult(0),
-fMaxMult(1000000),
-fCheckSDDIsIn(0),
-fTriggerClass(""),
-fTrigConfig(0),
-fOCDBPath(""),
-fOutputitspureSARec(0),
-fOutputitspureSASkip(0), 
-fOutputallPointRec(0),
-fOutputallPointSkip(0),
-fOutputpartPointRec(0),
-fOutputpartPointSkip(0),
-fOutputonepointSPDRec(0),
-fOutputonepointSPDSkip(0),
-fOutputpostvTracRec(0),
-fOutputpostvTracSkip(0),
-fOutputnegtvTracRec(0),
-fOutputnegtvTracSkip(0),
-fOutputpullAllpointRec(0),
-fOutputpullAllpointSkip(0),
-fOutputOnlyRefitRec(0),
-fOutputOnlyRefitSkip(0),
-fOutputSinThetaRec(0),
-fOutputSinThetaSkip(0),
-fOutputallPointTrue(0),
-fOutputpostvTracTrue(0),
-fOutputnegtvTracTrue(0),
-fOutputpullAllpointTrue(0),
-fOutputphiAllpointSkip(0),
-fOutputphiPostvtracSkip(0),
-fOutputphiNegtvtracSkip(0),
-fOutputparticlePID(0),
-fOutputPt(0),
-fNentries(0),
-fEstimVtx(0)
+  AliAnalysisTaskSE(name),
+  fIsAOD(kFALSE),
+  fReadMC(kFALSE),
+  fSelectedPdg(-1),
+  fUseDiamond(kFALSE),
+  fSkipTrack(kTRUE),
+  fMinMult(0),
+  fMaxMult(1000000),
+  fCheckSDDIsIn(0),
+  fTriggerClass(""),
+  fTrigConfig(0),
+  fOCDBPath(""),
+  fESDtrackCuts(0),
+  fOutputitspureSARec(0),
+  fOutputitspureSASkip(0), 
+  fOutputallPointRec(0),
+  fOutputallPointSkip(0),
+  fOutputpartPointRec(0),
+  fOutputpartPointSkip(0),
+  fOutputonepointSPDRec(0),
+  fOutputonepointSPDSkip(0),
+  fOutputpostvTracRec(0),
+  fOutputpostvTracSkip(0),
+  fOutputnegtvTracRec(0),
+  fOutputnegtvTracSkip(0),
+  fOutputpullAllpointRec(0),
+  fOutputpullAllpointSkip(0),
+  fOutputOnlyRefitRec(0),
+  fOutputOnlyRefitSkip(0),
+  fOutputSinThetaRec(0),
+  fOutputSinThetaSkip(0),
+  fOutputallPointTrue(0),
+  fOutputpostvTracTrue(0),
+  fOutputnegtvTracTrue(0),
+  fOutputpullAllpointTrue(0),
+  fOutputphiAllpointSkip(0),
+  fOutputphiPostvtracSkip(0),
+  fOutputphiNegtvtracSkip(0),
+  fOutputparticlePID(0),
+  fOutputWithTrackCuts(0),
+  fOutputPt(0),
+  fNentries(0),
+  fEstimVtx(0)
 {
   //
   // Default constructor
@@ -167,8 +186,10 @@ fEstimVtx(0)
   DefineOutput(25, TList::Class());
   DefineOutput(26, TList::Class());  //My private output
   DefineOutput(27, TList::Class());
-  DefineOutput(28, TH1F::Class());
+  DefineOutput(28, TH1F::Class());  //My private output
   DefineOutput(29, TH1F::Class());
+  DefineOutput(30, TList::Class());
+  
 }
 
 //________________________________________________________________________
@@ -179,6 +200,7 @@ AliAnalysisTaskSEImpParRes::~AliAnalysisTaskSEImpParRes()
   // 
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return; // RS
   //
+  if (fESDtrackCuts) {    delete fESDtrackCuts;  fESDtrackCuts = 0;  }
   if (fOutputitspureSARec)                      { delete fOutputitspureSARec; fOutputitspureSARec=0x0;}
   if (fOutputitspureSASkip)                   { delete fOutputitspureSASkip; fOutputitspureSASkip=0x0;}
   if (fOutputallPointRec)                        { delete fOutputallPointRec; fOutputallPointRec=0x0; }
@@ -205,13 +227,13 @@ AliAnalysisTaskSEImpParRes::~AliAnalysisTaskSEImpParRes()
   if (fOutputphiPostvtracSkip)            {delete fOutputphiPostvtracSkip;fOutputphiPostvtracSkip=0x0;}
   if (fOutputphiNegtvtracSkip)            {delete fOutputphiNegtvtracSkip;fOutputphiNegtvtracSkip=0x0;}
   if (fOutputparticlePID)                           {delete fOutputparticlePID;fOutputparticlePID=0x0;}
+  if (fOutputWithTrackCuts) {  delete fOutputWithTrackCuts; fOutputWithTrackCuts=0;}
   if (fOutputPt)                                                      {delete fOutputPt;fOutputPt=0x0;}
   if (fNentries)                                           { delete fNentries;     fNentries    =0x0; }
   if (fEstimVtx)                                           { delete fEstimVtx;     fEstimVtx    =0x0; }
 
 } 
-
-//________________________________________________________________________
+//______________________________________________________________________________________________________
 void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
 {
   // 
@@ -354,6 +376,12 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     fOutputPt->SetName("Pt");
   }
 
+  if (!fOutputWithTrackCuts) {
+    fOutputWithTrackCuts = new TList();
+    fOutputWithTrackCuts->SetOwner();
+    fOutputWithTrackCuts->SetName("OutputWithESDTrackCuts");
+  }
+
   const Int_t nhist=26;
   const TString d0ITSpureSArphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
   const TString d0ITSpureSAzTitle = "d_{0} Distribution_z; d_{0} [#mum]; Entries";
@@ -385,6 +413,10 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
   TString  named0itspureSArphiSkip,named0itspureSAzSkip,named0allpointrphiSkip, named0allpointzSkip,named0partpointrphiSkip, named0partpointzSkip,named0onepointSPDrphiSkip, named0onepointSPDzSkip,named0postvtracrphiSkip, named0postvtraczSkip,named0negtvtracrphiSkip, named0negtvtraczSkip,named0ptSkip,named0pullAllpointrphiSkip,named0pullAllpointzSkip,named0onlyRefitrphiSkip,named0onlyRefitzSkip,named0allpointrphiTrue, named0allpointzTrue,named0postvtracrphiTrue, named0postvtraczTrue,named0negtvtracrphiTrue, named0negtvtraczTrue,named0pullAllpointrphiTrue,named0pullAllpointzTrue,named0pionPIDrphiSkip, named0pionPIDzSkip,named0kaonPIDrphiSkip, named0kaonPIDzSkip,named0protonPIDrphiSkip, named0protonPIDzSkip;
 
   TH1F *d0ITSpureSArphiSkip=0,*d0ITSpureSAzSkip=0,*d0AllpointrphiSkip=0, *d0AllpointzSkip=0,*d0PartpointrphiSkip=0, *d0PartpointzSkip=0,*d0OnepointSPDrphiSkip=0,*d0OnepointSPDzSkip=0,*d0PostvtracrphiSkip=0, *d0PostvtraczSkip=0,*d0NegtvtracrphiSkip=0,*d0NegtvtraczSkip=0,*d0PullAllpointrphiSkip=0,*d0PullAllpointzSkip=0,*d0OnlyRefitrphiSkip=0,*d0OnlyRefitzSkip=0,*d0AllpointrphiTrue=0, *d0AllpointzTrue=0,*d0PostvtracrphiTrue=0, *d0PostvtraczTrue=0,*d0NegtvtracrphiTrue=0,*d0NegtvtraczTrue=0,*d0PullAllpointrphiTrue,*d0PullAllpointzTrue,*d0PionPIDrphiSkip=0,*d0PionPIDzSkip=0,*d0KaonPIDrphiSkip=0,*d0KaonPIDzSkip=0,*d0ProtonPIDrphiSkip=0,*d0ProtonPIDzSkip=0;
+
+  TString named0DistrESDTCrphiRec, named0DistrESDTCrphiSkip, named0DistrESDTCrphiTrue, named0DistrESDTCzRec, named0DistrESDTCzSkip, named0DistrESDTCzTrue, named0PullESDTCrphiRec, named0PullESDTCrphiSkip, named0PullESDTCrphiTrue, named0PullESDTCzRec, named0PullESDTCzSkip, named0PullESDTCzTrue, named0ptESDTC;
+
+  TH1F *d0DistrESDTCrphiRec=0, *d0DistrESDTCrphiSkip=0, *d0DistrESDTCrphiTrue=0, *d0DistrESDTCzRec=0, *d0DistrESDTCzSkip=0, *d0DistrESDTCzTrue=0, *d0PullESDTCrphiRec=0, *d0PullESDTCrphiSkip=0, *d0PullESDTCrphiTrue=0, *d0PullESDTCzRec=0, *d0PullESDTCzSkip=0, *d0PullESDTCzTrue=0, *d0PtESDTC;
 
   for(Int_t i=1; i<=nhist; i++) {
    
@@ -732,6 +764,94 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     d0Pt->Sumw2();
     d0Pt->SetMinimum(0);  
     fOutputPt->Add(d0Pt);
+
+    //foutputwithtrackcuts
+    named0DistrESDTCrphiRec = "d0DistrESDTCrphiRec_";
+    named0DistrESDTCrphiRec +=i;
+    named0DistrESDTCzRec = "d0DistrESDTCzRec_";
+    named0DistrESDTCzRec +=i;
+    d0DistrESDTCrphiRec = new TH1F(named0DistrESDTCrphiRec.Data(),d0allpointrphiTitle.Data(),400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0DistrESDTCrphiRec->Sumw2();
+    d0DistrESDTCrphiRec->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0DistrESDTCrphiRec);
+    d0DistrESDTCzRec = new TH1F(named0DistrESDTCzRec.Data(),d0allpointzTitle.Data(),400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0DistrESDTCzRec->Sumw2();
+    d0DistrESDTCzRec->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0DistrESDTCzRec);
+
+    named0DistrESDTCrphiSkip = "d0DistrESDTCrphiSkip_";
+    named0DistrESDTCrphiSkip +=i;
+    named0DistrESDTCzSkip = "d0DistrESDTCzSkip_";
+    named0DistrESDTCzSkip +=i;
+    d0DistrESDTCrphiSkip = new TH1F(named0DistrESDTCrphiSkip.Data(),d0allpointrphiTitle.Data(),400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0DistrESDTCrphiSkip->Sumw2();
+    d0DistrESDTCrphiSkip->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0DistrESDTCrphiSkip);
+    d0DistrESDTCzSkip = new TH1F(named0DistrESDTCzSkip.Data(),d0allpointzTitle.Data(),400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0DistrESDTCzSkip->Sumw2();
+    d0DistrESDTCzSkip->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0DistrESDTCzSkip);
+
+    named0DistrESDTCrphiTrue = "d0DistrESDTCrphiTrue_";
+    named0DistrESDTCrphiTrue +=i;
+    named0DistrESDTCzTrue = "d0DistrESDTCzTrue_";
+    named0DistrESDTCzTrue +=i;
+    d0DistrESDTCrphiTrue = new TH1F(named0DistrESDTCrphiTrue.Data(),d0allpointrphiTitle.Data(),400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0DistrESDTCrphiTrue->Sumw2();
+    d0DistrESDTCrphiTrue->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0DistrESDTCrphiTrue);
+    d0DistrESDTCzTrue = new TH1F(named0DistrESDTCzTrue.Data(),d0allpointzTitle.Data(),400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0DistrESDTCzTrue->Sumw2();
+    d0DistrESDTCzTrue->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0DistrESDTCzTrue);
+
+    named0PullESDTCrphiRec = "d0PullESDTCrphiRec_";
+    named0PullESDTCrphiRec +=i;
+    named0PullESDTCzRec = "d0PullESDTCzRec_";
+    named0PullESDTCzRec +=i;
+    d0PullESDTCrphiRec = new TH1F(named0PullESDTCrphiRec.Data(),d0pullAllpointrphiTitle.Data(),400,-10.,10.);
+    d0PullESDTCrphiRec->Sumw2();
+    d0PullESDTCrphiRec->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0PullESDTCrphiRec);
+    d0PullESDTCzRec = new TH1F(named0PullESDTCzRec.Data(),d0pullAllpointzTitle.Data(),400,-10.,10.);
+    d0PullESDTCzRec->Sumw2();
+    d0PullESDTCzRec->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0PullESDTCzRec);
+
+    named0PullESDTCrphiSkip = "d0PullESDTCrphiSkip_";
+    named0PullESDTCrphiSkip +=i;
+    named0PullESDTCzSkip = "d0PullESDTCzSkip_";
+    named0PullESDTCzSkip +=i;
+    d0PullESDTCrphiSkip = new TH1F(named0PullESDTCrphiSkip.Data(),d0pullAllpointrphiTitle.Data(),400,-10.,10.);
+    d0PullESDTCrphiSkip->Sumw2();
+    d0PullESDTCrphiSkip->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0PullESDTCrphiSkip);
+    d0PullESDTCzSkip = new TH1F(named0PullESDTCzSkip.Data(),d0pullAllpointzTitle.Data(),400,-10.,10.);
+    d0PullESDTCzSkip->Sumw2();
+    d0PullESDTCzSkip->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0PullESDTCzSkip);
+
+    named0PullESDTCrphiTrue = "d0PullESDTCrphiTrue_";
+    named0PullESDTCrphiTrue +=i;
+    named0PullESDTCzTrue = "d0PullESDTCzTrue_";
+    named0PullESDTCzTrue +=i;
+    d0PullESDTCrphiTrue = new TH1F(named0PullESDTCrphiTrue.Data(),d0pullAllpointrphiTitle.Data(),400,-10.,10.);
+    d0PullESDTCrphiTrue->Sumw2();
+    d0PullESDTCrphiTrue->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0PullESDTCrphiTrue);
+    d0PullESDTCzTrue = new TH1F(named0PullESDTCzTrue.Data(),d0pullAllpointzTitle.Data(),400,-10.,10.);
+    d0PullESDTCzTrue->Sumw2();
+    d0PullESDTCzTrue->SetMinimum(0);
+    fOutputWithTrackCuts->Add(d0PullESDTCzTrue);
+
+    named0ptESDTC = "d0ptESDTC_";
+    named0ptESDTC += i;
+    d0PtESDTC = new TH1F(named0ptESDTC.Data(), d0ptTitle.Data(), 100, 0, 35.);
+    d0PtESDTC->Sumw2();
+    d0PtESDTC->SetMinimum(0);  
+    fOutputWithTrackCuts->Add(d0PtESDTC);
+
+
   }
 
   
@@ -1020,6 +1140,7 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
   PostData(27, fOutputPt);
   PostData(28, fNentries);
   PostData(29, fEstimVtx);  
+  PostData(30, fOutputWithTrackCuts);
 
   return;
 }
@@ -1030,18 +1151,31 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   //
   // Track selection and filling of d0 histograms
   //
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!esd) {
-    AliError("ESD event not found. Nothing done!");
+  AliVEvent* event = dynamic_cast<AliVEvent*>(InputEvent());
+  if (!event) {
+    AliError("event not found. Nothing done!");
     return;
   }
 
   // only events in the requested multiplicity range
-  if(!IsSelectedCentrality(esd)) return;
+  TString firedTriggerClasses="";
+  Int_t runNumber=0;
+  if(fIsAOD){
+    Int_t nclsITS = 0;
+    runNumber=((AliAODEvent*)event)->GetRunNumber();
+    nclsITS = ((AliAODEvent*)event)->GetHeader()->GetNumberOfITSClusters(1);
+    if(nclsITS<fMinMult || nclsITS>fMaxMult) return;
+    firedTriggerClasses=((AliAODEvent*)event)->GetFiredTriggerClasses();
+    if(!firedTriggerClasses.Contains(fTriggerClass.Data())) return;
+  }
+  else{
+    runNumber=((AliESDEvent*)event)->GetRunNumber();
+    if(!IsSelectedCentrality(((AliESDEvent*)event))) return;
+    firedTriggerClasses=((AliESDEvent*)event)->GetFiredTriggerClasses();
+    if(!firedTriggerClasses.Contains(fTriggerClass.Data())) return;
+  }
 
-  TString firedTriggerClasses=esd->GetFiredTriggerClasses();  
-  if(!firedTriggerClasses.Contains(fTriggerClass.Data())) return;
-  
+ 
 
   Bool_t sddIsIn=kTRUE;
   if(fCheckSDDIsIn) {
@@ -1049,24 +1183,41 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     if(!fTrigConfig) {    
       AliCDBManager* man = AliCDBManager::Instance();
       if(fOCDBPath.Contains("OCDB")) { // when running in the QAtrain this is not called (OCBD is already set)
-	man->SetDefaultStorage(fOCDBPath.Data());
-	man->SetRun(esd->GetRunNumber());
+        man->SetDefaultStorage(fOCDBPath.Data());
+        man->SetRun(runNumber);
       }
-      if(!man) {       
-	AliFatal("CDB not set but needed by AliAnalysisTaskITSTrackingCheck");
-	return;    
-      }   
+      if(!man) {      
+        AliFatal("CDB not set but needed by AliAnalysisTaskITSTrackingCheck");
+        return;    
+      }  
       AliCDBEntry* eT=(AliCDBEntry*)man->Get("GRP/CTP/Config");    
       if(eT) {      
-	fTrigConfig=(AliTriggerConfiguration*)eT->GetObject();    
+        fTrigConfig=(AliTriggerConfiguration*)eT->GetObject();    
       }    
       if(!eT || !fTrigConfig) {      
-	AliError("Cannot retrieve CDB entry for GRP/CTP/Config");      
-	return;     
+        AliError("Cannot retrieve CDB entry for GRP/CTP/Config");      
+        return;    
       }
     }
 
-    sddIsIn=esd->IsDetectorInTriggerCluster("ITSSDD",fTrigConfig);
+    if(fIsAOD){
+      const TObjArray& classesArray=fTrigConfig->GetClasses();
+      ULong64_t trigMask=((AliAODEvent*)event)->GetTriggerMask();
+      Int_t nclasses = classesArray.GetEntriesFast();
+      for(Int_t iclass=0; iclass < nclasses; iclass++ ) 
+	{
+	  AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
+	  ULong64_t classMask=trclass->GetMask();
+	  if(trigMask & classMask)
+	    {
+	      TString detList=trclass->GetCluster()->GetDetectorsInCluster();
+	      if(detList.Contains("ITSSDD")) sddIsIn = kTRUE;
+	      else sddIsIn = kFALSE;
+	    }
+	}
+      //sddIsIn = kFALSE;
+    }
+    else sddIsIn=((AliESDEvent*)event)->IsDetectorInTriggerCluster("ITSSDD",fTrigConfig);
     if(fCheckSDDIsIn==1 && !sddIsIn) return;
     if(fCheckSDDIsIn==-1 && sddIsIn) return;
   }
@@ -1074,153 +1225,229 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   fNentries->Fill(1);
 
 
-  Int_t nTrks = esd->GetNumberOfTracks();
+  Int_t nTrks = event->GetNumberOfTracks();
   Bool_t highMult=(nTrks>500 ? kTRUE : kFALSE);
 
-  
-  // diamond constraint
-  Float_t diamondcovxy[3];
-  esd->GetDiamondCovXY(diamondcovxy);
-  Double_t pos[3]={esd->GetDiamondX(),esd->GetDiamondY(),0.};
-  Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.};
-  AliESDVertex diamond(pos,cov,1.,1);
-  
   Double_t vtxTrue[3];
   AliStack *stack=0;
+  TClonesArray *mcArray=0;
   AliESDVertex *vtxESDTrue=0;
-  AliESDVertex *vtxESDSkip=0;
-  AliESDVertex *vtxESDRec=0;  
+  AliVVertex *vtxVSkip=0;
+  AliVVertex *vtxVRec=0;  
+  AliVVertex* primaryVtx=0;
+
 
   // event primary vertex
-  AliVertexerTracks vertexer0(esd->GetMagneticField());
+  AliVertexerTracks vertexer0(event->GetMagneticField());
   vertexer0.SetITSMode();
-  vertexer0.SetMinClusters(3);  
-  if(highMult) vertexer0.SetITSMode(0.1,0.1,0.5,5,1,3.,100.,1000.,3.,30.,1,1); 
-  if(fUseDiamond) vertexer0.SetVtxStart(&diamond);
-  vtxESDRec = (AliESDVertex*)vertexer0.FindPrimaryVertex(esd);
-  if(vtxESDRec->GetNContributors()<1) {
-    delete vtxESDRec; vtxESDRec=NULL;
+  vertexer0.SetMinClusters(3);
+  if(highMult) vertexer0.SetITSMode(0.1,0.1,0.5,5,1,3.,100.,1000.,3.,30.,1,1);
+  if(fUseDiamond){
+    // diamond constraint
+    Float_t diamondcovxy[3];
+    event->GetDiamondCovXY(diamondcovxy);
+    Double_t pos[3]={event->GetDiamondX(),event->GetDiamondY(),0.};
+    Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.};
+    AliESDVertex diamond(pos,cov,1.,1);
+    vertexer0.SetVtxStart(&diamond);
+  }
+  vtxVRec=(AliVVertex*)vertexer0.FindPrimaryVertex(event);
+  if(!vtxVRec) return;
+  if(vtxVRec->GetNContributors()<1){
+    delete vtxVRec; vtxVRec=NULL;
     return;
   }
+  
+  if (fReadMC) {
+    if (fIsAOD){
+      mcArray = dynamic_cast<TClonesArray*>(((AliAODEvent*)event)->FindListObject(AliAODMCParticle::StdBranchName()));
+      if(!mcArray){
+	AliError("Clould not find Monte-Carlo in AOD");
+	return;
+      }
+      AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(((AliAODEvent*)(event))->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+      if (!mcHeader) {
+	AliError("Could not find MC Header in AOD");
+	return;
+      }
+      
+      Double_t mcVertex[3]={9999.,9999.,9999.};
+      mcHeader->GetVertex(mcVertex);
+      vtxTrue[0]=mcVertex[0];vtxTrue[1]=mcVertex[1];vtxTrue[2]=mcVertex[2];
+      Double_t sigmaTrue[3]={0., 0., 0.,};
+      vtxESDTrue = new AliESDVertex(vtxTrue,sigmaTrue);
+    }//end if isAOD
+    else{
+      AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+      if (!eventHandler) {
+	Printf("ERROR: Could not retrieve MC event handler");
+	return;
+      }
+      
+      AliMCEvent* mcEvent = eventHandler->MCEvent();
+      if (!mcEvent) {
+	Printf("ERROR: Could not retrieve MC event");
+	return;
+      }
+      
+      stack = mcEvent->Stack();
+      if (!stack) {
+	AliDebug(AliLog::kError, "Stack not available");
+	return;
+      }
+      
+      //load MC header for ESD;//see $ALICE_ROOT/PWGPP/global/AliAnalysisTaskSEVertexESD.cxx
+      AliHeader *mcHeader = eventHandler->MCEvent()->Header();
+      if (!mcHeader) {
+	AliDebug(AliLog::kError, "Header not available");
+	return;
+      }
 
-  if (fReadMC) { 
-    AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()); 
-    if (!eventHandler) { 
-      Printf("ERROR: Could not retrieve MC event handler"); 
-      return; 
-    } 
-    
-    AliMCEvent* mcEvent = eventHandler->MCEvent(); 
-    if (!mcEvent) { 
-      Printf("ERROR: Could not retrieve MC event"); 
-      return; 
-    } 
-    
-    stack = mcEvent->Stack(); 
-    if (!stack) { 
-      AliDebug(AliLog::kError, "Stack not available"); 
-      return; 
-    } 
-
-    //load MC header for ESD;//see $ALICE_ROOT/PWGPP/global/AliAnalysisTaskSEVertexESD.cxx
-    AliHeader *mcHeader = eventHandler->MCEvent()->Header();
-    if (!mcHeader) {
-      AliDebug(AliLog::kError, "Header not available");
-      return;
-    }
-
-    AliGenEventHeader* genHeader = mcHeader->GenEventHeader();   
-    TArrayF mcVertex(3);
-    mcVertex[0]=9999.; mcVertex[1]=9999.; mcVertex[2]=9999.;
-    genHeader->PrimaryVertex(mcVertex);
-    vtxTrue[0]=mcVertex[0];vtxTrue[1]=mcVertex[1];vtxTrue[2]=mcVertex[2];
-    Double_t sigmaTrue[3]={0., 0., 0.,};
-    //mcHeader->GetVertex(vtxTrue);//note the vtxTrue is void here,so must need the next line.
-    //AliESDVertex *vtxESDTrue = new AliESDVertex(vtxTrue,sigmaTrue);
-    vtxESDTrue = new AliESDVertex(vtxTrue,sigmaTrue);
+      AliGenEventHeader* genHeader = mcHeader->GenEventHeader();  
+      TArrayF mcVertex(3);
+      mcVertex[0]=9999.; mcVertex[1]=9999.; mcVertex[2]=9999.;
+      genHeader->PrimaryVertex(mcVertex);
+      vtxTrue[0]=mcVertex[0];vtxTrue[1]=mcVertex[1];vtxTrue[2]=mcVertex[2];
+      Double_t sigmaTrue[3]={0., 0., 0.,};
+      //mcHeader->GetVertex(vtxTrue);//note the vtxTrue is void here,so must need the next line.
+      //AliESDVertex *vtxESDTrue = new AliESDVertex(vtxTrue,sigmaTrue);
+      vtxESDTrue = new AliESDVertex(vtxTrue,sigmaTrue);
+      
+    }//end else (!isAOD)
   }
- 
+  
   Double_t beampiperadius=3.;
-  AliESDtrack *esdtrack = 0;
-  Int_t pdgCode=0; 
+  AliVTrack *vtrack = 0;
+  Int_t pdgCode=0;
   Int_t trkLabel;
   TParticle  *part =0;
+  AliAODMCParticle *AODpart=0;
   Int_t npointsITS=0,npointsSPD=0;
-  Int_t ilayer;
   Int_t skipped[2];
   Double_t dzRec[2], covdzRec[3], dzRecSkip[2], covdzRecSkip[3],dzTrue[2], covdzTrue[3];
   Double_t pt;
   Int_t bin;
+  Int_t nClsTotTPC=0;
+  Bool_t haskITSrefit=kFALSE;
+  Bool_t haskTPCrefit=kFALSE;
+  Int_t charge=0;
+  Double_t phi=0.;
+  Double_t theta=0.;
+  Double_t eta=0.;
 
-  for (Int_t it=0; it<nTrks; it++) {  // loop over tracks
-    // read track
-    esdtrack = esd->GetTrack(it);
+  
+  for (Int_t it=0; it<nTrks; it++){ //start loop over tracks
+    vtrack = (AliVTrack*)event->GetTrack(it);
+    if(!vtrack) continue;
 
-    // ask for ITS refit
-    if (!(esdtrack->GetStatus()&AliESDtrack::kITSrefit)) {
-      continue;
-    }
+    eta = vtrack->Eta();
+    if(eta<-0.8 || eta>0.8) continue;
     
-    pdgCode=0;
-    if(fReadMC && stack) { 
-      trkLabel = esdtrack->GetLabel(); 
+    npointsITS=0; npointsSPD=0;
+    if(fIsAOD){
+      haskITSrefit=(((AliAODTrack*)vtrack)->GetStatus()&AliESDtrack::kITSrefit);
+      haskTPCrefit=(((AliAODTrack*)vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
+      nClsTotTPC=((AliAODTrack*)vtrack)->GetTPCNcls();
+      if(!haskITSrefit) continue;
+      for(Int_t ilayer=0; ilayer<6; ilayer++){
+	if (ilayer<2 && ((AliAODTrack*)vtrack)->HasPointOnITSLayer(ilayer)) npointsSPD++;
+	if (((AliAODTrack*)vtrack)->HasPointOnITSLayer(ilayer)) npointsITS++;  
+      }
+    }
+    else {
+      haskITSrefit=(((AliESDtrack*)vtrack)->GetStatus()&AliESDtrack::kITSrefit);
+      haskTPCrefit=(((AliESDtrack*)vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
+      nClsTotTPC=((AliESDtrack*)vtrack)->GetTPCNcls();
+      if(!haskITSrefit) continue;
+      for (Int_t ilayer=0; ilayer<6; ilayer++){ 
+	if (ilayer<2 && ((AliESDtrack*)vtrack)->HasPointOnITSLayer(ilayer)) npointsSPD++;
+	if (((AliESDtrack*)vtrack)->HasPointOnITSLayer(ilayer)) npointsITS++;  
+      }
+    }
+    charge=vtrack->Charge();
+    phi=vtrack->Phi();
+    theta=vtrack->Theta();
+
+    //MC
+    if (fReadMC){
+      trkLabel = vtrack->GetLabel();
       if(trkLabel<0) continue;
-      part = (TParticle*)stack->Particle(trkLabel);
-      pdgCode = TMath::Abs(part->GetPdgCode()); 
+      if(fIsAOD && mcArray){
+	AODpart = (AliAODMCParticle*)mcArray->At(trkLabel);
+	if(!AODpart) printf("NOPART\n");
+	pdgCode = TMath::Abs(AODpart->GetPdgCode());	
+      }
+      if(!fIsAOD && stack) {
+	part = (TParticle*)stack->Particle(trkLabel);
+	pdgCode = TMath::Abs(part->GetPdgCode());
+      }
+      //pdgCode = TMath::Abs(part->GetPdgCode());
       //printf("pdgCode===%d\n", pdgCode);
       if(fSelectedPdg>0 && pdgCode!=fSelectedPdg) continue;
     }
-
-    npointsITS=0; npointsSPD=0;
-    for (ilayer=0; ilayer<6; ilayer++){ 
-      if (ilayer<2 && esdtrack->HasPointOnITSLayer(ilayer)) npointsSPD++;
-      if (esdtrack->HasPointOnITSLayer(ilayer)) npointsITS++;  
-    }
-
-    //Get specific primary vertex--Reconstructed primary vertex do not include the track considering.
-    AliVertexerTracks vertexer(esd->GetMagneticField());
+    
+      
+      //Get specific primary vertex--Reconstructed primary vertex do not include the track considering.
+    AliVertexerTracks vertexer(event->GetMagneticField());
     vertexer.SetITSMode();
     vertexer.SetMinClusters(3);
-    if(fUseDiamond) vertexer.SetVtxStart(&diamond);
-    skipped[0] = (Int_t)esdtrack->GetID();
+    if(fUseDiamond){
+      Float_t diamondcovxy[3];
+      event->GetDiamondCovXY(diamondcovxy);
+      Double_t pos[3]={event->GetDiamondX(),event->GetDiamondY(),0.};
+      Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.};
+      AliESDVertex diamond(pos,cov,1.,1);
+      vertexer.SetVtxStart(&diamond);
+    }
+    skipped[0] = (Int_t)vtrack->GetID();
     vertexer.SetSkipTracks(1,skipped);      
     // create vertex with new!
     if(!highMult && fSkipTrack) {
-      vtxESDSkip = (AliESDVertex*)vertexer.FindPrimaryVertex(esd);
-      if(vtxESDSkip->GetNContributors()<1) {
-	delete vtxESDSkip; vtxESDSkip=NULL;
+      vtxVSkip = (AliVVertex*)vertexer.FindPrimaryVertex(event);
+      if(!vtxVSkip) continue;
+      if(vtxVSkip->GetNContributors()<1) {
+	delete vtxVSkip; vtxVSkip=NULL;
 	continue;
       }
-    } else {
-      vtxESDSkip = new AliESDVertex(); // dummy
-    }
-
-    //pt= esdtrack->P();
-    pt = esdtrack->Pt();
+    } // else {
+      // vtxVSkip = new AliVVertex(); produce error!!!
+      // } 
+ 
+    pt = vtrack->Pt();
     bin = PtBin(pt);
-
+ 
     if(bin==-1) {
-      delete vtxESDSkip; vtxESDSkip=NULL;
+      delete vtxVSkip; vtxVSkip=NULL;
       continue;
     }
 
-   
-    // Select primary particle if MC event (for ESD event), Rprod < 1 micron 
+    // Select primary particle if MC event (for ESD event), Rprod < 1 micron
     if(fReadMC){
-      if((part->Vx()-vtxTrue[0])*(part->Vx()-vtxTrue[0])+
-	 (part->Vy()-vtxTrue[1])*(part->Vy()-vtxTrue[1])
-	 > 0.0001*0.0001) {
-	delete vtxESDSkip; vtxESDSkip=NULL;
-	continue;
+      if(fIsAOD){
+	if((AODpart->Xv()-vtxTrue[0])*(AODpart->Xv()-vtxTrue[0])+
+	   (AODpart->Yv()-vtxTrue[1])*(AODpart->Yv()-vtxTrue[1])
+	   > 0.0001*0.0001) {
+	  delete vtxVSkip; vtxVSkip=NULL;
+	  continue;
+	}
+      }
+      else{
+	if((part->Vx()-vtxTrue[0])*(part->Vx()-vtxTrue[0])+
+	   (part->Vy()-vtxTrue[1])*(part->Vy()-vtxTrue[1])
+	   > 0.0001*0.0001) {
+	  delete vtxVSkip; vtxVSkip=NULL;
+	  continue;
+	}
       }
     }
-
+    
+    
     // compute impact patameters
     // wrt event vertex
-    esdtrack->PropagateToDCA(vtxESDRec, esd->GetMagneticField(), beampiperadius, dzRec, covdzRec);
+    vtrack->PropagateToDCA(vtxVRec, event->GetMagneticField(), beampiperadius, dzRec, covdzRec);
     // wrt event vertex without this track
     if(!highMult && fSkipTrack) {
-      esdtrack->PropagateToDCA(vtxESDSkip, esd->GetMagneticField(), beampiperadius, dzRecSkip, covdzRecSkip);
+      vtrack->PropagateToDCA(vtxVSkip, event->GetMagneticField(), beampiperadius, dzRecSkip, covdzRecSkip);
     } else if(!fSkipTrack) {
       dzRecSkip[0]=dzRec[0]; 
       dzRecSkip[1]=dzRec[1];
@@ -1234,310 +1461,34 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       covdzRecSkip[1]=0;
       covdzRecSkip[2]=0;
     }
-    delete vtxESDSkip; vtxESDSkip=NULL; // not needed anymore
-    // wrt MC vertex
-    if(fReadMC) esdtrack->PropagateToDCA(vtxESDTrue, esd->GetMagneticField(), beampiperadius, dzTrue, covdzTrue);
-
-    if(covdzRec[0]<1.e-13 || covdzRec[2]<1.e-13 || covdzRecSkip[0]<1.e-13 || covdzRecSkip[2]<1.e-13) continue;
+    //delete vtxVSkip; vtxVSkip=NULL; // not needed anymore
  
+    if(fReadMC) vtrack->PropagateToDCA(vtxESDTrue, event->GetMagneticField(), beampiperadius, dzTrue, covdzTrue);
+    if(covdzRec[0]<1.e-13 || covdzRec[2]<1.e-13 || covdzRecSkip[0]<1.e-13 || covdzRecSkip[2]<1.e-13) continue;
     if(fReadMC && (covdzTrue[0]<1.e-13 || covdzTrue[2]<1.e-13)) continue;
-      
-    //printf("Pt: %f GeV/c; Impact parameter: rphi %f cm  z %f cm\n", pt, dzRec[0], dzRec[1]);
-
-    /*
-    // RUBEN'S METHOD, NOT FULLY IMPLEMENTED YET    
-    Double_t      fIPCenIni[3], xyzDCA[3];
-    for (int i=3;i--;) fIPCenIni[i] = 0.;
-    //Int_t nTracks = nTrks - 1;
-    esdtrack->GetXYZ(xyzDCA);
-    //double pTrack = esdtrack->GetP();
-    double phiTrack = esdtrack->Phi();
-    double cs = TMath::Cos(phiTrack);
-    double sn = TMath::Sin(phiTrack);
-    double trDCA = (xyzDCA[0]-fIPCenIni[0])         *sn - (xyzDCA[1]-fIPCenIni[1])         *cs;  // track signed DCA to origin
-    double vtDCA = (vtxESDSkip->GetXv()-fIPCenIni[0])*sn - (vtxESDSkip->GetYv()-fIPCenIni[1])*cs;  // vertex signed DCA to origin
-    
-    // update the estimator values
-    //double estIP  = rvD*rtD;
-    double estVtx = vtDCA*( vtDCA- trDCA);
-    //double estTrc = rtD*(rtD - rvD);
-    //
-    //if (nTracks >= fMinTracksForIP) fEstimIP->Fill(phiTrack, estIP);
-    fEstimVtx->Fill(10000*estVtx);
-    //if (pTrack<1e-6) pTrack = GetTrackMinP()+1e6;
-    //fEstimTrc->Fill(1./pTrack,estTrc);
-    */
 
 
-    //fill the histgram with all particle 
-    //-------------------------------------------1----------------------------------------------
-    
-    /*
-    TString named0AllrphiRec=" ",named0AllzRec =" ";//named0AllrphiTrue=" ",named0AllzTrue =" ";
-      //named0AllrphiSkip=" ",named0AllzSkip =" ";
-      
-      named0AllrphiRec ="d0allrphiRec_";
-      named0AllrphiRec += bin;
-      named0AllzRec = "d0allzRec_";
-      named0AllzRec += bin;
-      ((TH1F*)(fOutputallRec->FindObject(named0AllrphiRec)))->Fill(10000*dzRec[0]);
-      ((TH1F*)(fOutputallRec->FindObject(named0AllzRec)))->Fill(10000*dzRec[1]);
-    */
-
-    //-------------------------------------------2----------------------------------------------
-    //TSting named0AllrphiRec = "d0allrphiRec_" + bin;
-    //TSting named0AllzRec = "d0allzRec_" + bin;
-    //((TH1F*)(fOutputallRec->FindObject(named0AllrphiRec.Data())))->Fill(10000.*dzRec[0]);
-    //((TH1F*)(fOutputallRec->FindObject(named0AllzRec.Data())))->Fill(10000.*dzRec[1]);
-
-    //-------------------------------------------3------------------------------------------------
-
-
-    // ITS standalone
-    if (esdtrack->GetNcls(1)==0 && 
-	(esdtrack->GetStatus()&AliESDtrack::kITSrefit)
-	&& npointsSPD>0 && npointsITS>=4) {
-      char *named0ITSpureSArphiRec = Form("d0itspureSArphiRec_%d", bin);
-      char *named0ITSpureSArphiSkip = Form("d0itspureSArphiSkip_%d", bin);
-      char *named0ITSpureSAzRec = Form("d0itspureSAzRec_%d", bin); 
-      char *named0ITSpureSAzSkip = Form("d0itspureSAzSkip_%d", bin); 
-      ((TH1F*)(fOutputitspureSARec->FindObject(named0ITSpureSArphiRec)))->Fill(10000.*dzRec[0]);
-      ((TH1F*)(fOutputitspureSARec->FindObject(named0ITSpureSAzRec)))->Fill(10000.*dzRec[1]);
-      ((TH1F*)(fOutputitspureSASkip->FindObject(named0ITSpureSArphiSkip)))->Fill(10000.*dzRecSkip[0]);
-      ((TH1F*)(fOutputitspureSASkip->FindObject(named0ITSpureSAzSkip)))->Fill(10000.*dzRecSkip[1]);
-    }
-
-    
-    // ask for TPC refit
-    if (!(esdtrack->GetStatus()&AliESDtrack::kTPCrefit) || 
-	esdtrack->GetNcls(1)<70) continue;
-
-    // only ITS and TPC refit
-    char *named0OnlyrefitrphiRec = Form("d0onlyrefitrphiRec_%d", bin);
-    char *named0OnlyrefitrphiSkip = Form("d0onlyrefitrphiSkip_%d", bin);
-    char *named0OnlyrefitzRec = Form("d0onlyrefitzRec_%d", bin);
-    char *named0OnlyrefitzSkip = Form("d0onlyrefitzSkip_%d", bin); 
-    ((TH1F*)(fOutputOnlyRefitRec->FindObject(named0OnlyrefitrphiRec)))->Fill(10000.*dzRec[0]);
-    ((TH1F*)(fOutputOnlyRefitRec->FindObject(named0OnlyrefitzRec)))->Fill(10000.*dzRec[1]);
-    ((TH1F*)(fOutputOnlyRefitSkip->FindObject(named0OnlyrefitrphiSkip)))->Fill(10000.*dzRecSkip[0]);
-    ((TH1F*)(fOutputOnlyRefitSkip->FindObject(named0OnlyrefitzSkip)))->Fill(10000.*dzRecSkip[1]);  
-   
-
-    if(npointsITS>=4 && npointsSPD>0) {
-      char *named0PartpointrphiRec = Form("d0partpointrphiRec_%d", bin);
-      char *named0PartpointrphiSkip = Form("d0partpointrphiSkip_%d", bin);
-      char *named0PartpointzRec = Form("d0partpointzRec_%d", bin); 
-      char *named0PartpointzSkip = Form("d0partpointzSkip_%d", bin); 
-      ((TH1F*)(fOutputpartPointRec->FindObject(named0PartpointrphiRec)))->Fill(10000.*dzRec[0]);
-      ((TH1F*)(fOutputpartPointRec->FindObject(named0PartpointzRec)))->Fill(10000.*dzRec[1]);
-      ((TH1F*)(fOutputpartPointSkip->FindObject(named0PartpointrphiSkip)))->Fill(10000.*dzRecSkip[0]);
-      ((TH1F*)(fOutputpartPointSkip->FindObject(named0PartpointzSkip)))->Fill(10000.*dzRecSkip[1]);
-    }
-
-    if(npointsSPD>0) {
-      char *named0OnepointSPDrphiRec = Form("d0onepointSPDrphiRec_%d", bin);
-      char *named0OnepointSPDrphiSkip = Form("d0onepointSPDrphiSkip_%d", bin);
-      char *named0OnepointSPDzRec = Form("d0onepointSPDzRec_%d", bin); 
-      char *named0OnepointSPDzSkip = Form("d0onepointSPDzSkip_%d", bin); 
-      ((TH1F*)(fOutputonepointSPDRec->FindObject(named0OnepointSPDrphiRec)))->Fill(10000.*dzRec[0]);
-      ((TH1F*)(fOutputonepointSPDRec->FindObject(named0OnepointSPDzRec)))->Fill(10000.*dzRec[1]);
-      ((TH1F*)(fOutputonepointSPDSkip->FindObject(named0OnepointSPDrphiSkip)))->Fill(10000.*dzRecSkip[0]);
-      ((TH1F*)(fOutputonepointSPDSkip->FindObject(named0OnepointSPDzSkip)))->Fill(10000.*dzRecSkip[1]);
-    }
-
-    // with 6 ITS points (including different selection)
-    if(npointsITS==6 || (npointsITS==4 && !sddIsIn)) {
-      //pt 
-      char *named0Pt = Form("d0pt_%d",bin);
-      ((TH1F*)(fOutputPt->FindObject(named0Pt)))->Fill(pt);
-     
-      // allpoint
-      char *named0AllpointrphiRec = Form("d0allpointrphiRec_%d", bin);
-      char *named0AllpointrphiSkip = Form("d0allpointrphiSkip_%d", bin);
-      char *named0AllpointrphiTrue = Form("d0allpointrphiTrue_%d", bin);
-      char *named0AllpointzRec = Form("d0allpointzRec_%d", bin);
-      char *named0AllpointzSkip = Form("d0allpointzSkip_%d", bin); 
-      char *named0AllpointzTrue = Form("d0allpointzTrue_%d", bin);
-      ((TH1F*)(fOutputallPointRec->FindObject(named0AllpointrphiRec)))->Fill(10000.*dzRec[0]);
-      ((TH1F*)(fOutputallPointRec->FindObject(named0AllpointzRec)))->Fill(10000.*dzRec[1]);
-      ((TH1F*)(fOutputallPointSkip->FindObject(named0AllpointrphiSkip)))->Fill(10000.*dzRecSkip[0]);
-      ((TH1F*)(fOutputallPointSkip->FindObject(named0AllpointzSkip)))->Fill(10000.*dzRecSkip[1]);
-      if(fReadMC) {
-	((TH1F*)(fOutputallPointTrue->FindObject(named0AllpointrphiTrue)))->Fill(10000.*dzTrue[0]);
-	((TH1F*)(fOutputallPointTrue->FindObject(named0AllpointzTrue)))->Fill(10000.*dzTrue[1]);
-      }
-      
-      // pulls
-      char *named0PullAllpointrphiRec = Form("d0pullAllpointrphiRec_%d", bin);
-      char *named0PullAllpointrphiSkip = Form("d0pullAllpointrphiSkip_%d", bin);
-      char *named0PullAllpointrphiTrue = Form("d0pullAllpointrphiTrue_%d", bin);
-      char *named0PullAllpointzRec = Form("d0pullAllpointzRec_%d", bin);
-      char *named0PullAllpointzSkip = Form("d0pullAllpointzSkip_%d", bin); 
-      char *named0PullAllpointzTrue = Form("d0pullAllpointzTrue_%d", bin);
-      ((TH1F*)(fOutputpullAllpointRec->FindObject(named0PullAllpointrphiRec)))->Fill(dzRec[0]/TMath::Sqrt(covdzRec[0]));     
-      ((TH1F*)(fOutputpullAllpointRec->FindObject(named0PullAllpointzRec)))->Fill(dzRec[1]/TMath::Sqrt(covdzRec[2]));
-      ((TH1F*)(fOutputpullAllpointSkip->FindObject(named0PullAllpointrphiSkip)))->Fill(dzRecSkip[0]/TMath::Sqrt(covdzRecSkip[0]));
-      ((TH1F*)(fOutputpullAllpointSkip->FindObject(named0PullAllpointzSkip)))->Fill(dzRecSkip[1]/TMath::Sqrt(covdzRecSkip[2]));
-      if(fReadMC) {
-	((TH1F*)(fOutputpullAllpointTrue->FindObject(named0PullAllpointrphiTrue)))->Fill(dzTrue[0]/TMath::Sqrt(covdzTrue[0]));
-	((TH1F*)(fOutputpullAllpointTrue->FindObject(named0PullAllpointzTrue)))->Fill(dzTrue[1]/TMath::Sqrt(covdzTrue[2]));
-      }
-      //postive and negative track
-      Int_t charge=esdtrack->Charge();
-      if(charge==1) {
-	char *named0PostvtracrphiRec = Form("d0postvtracrphiRec_%d", bin);
-	char *named0PostvtracrphiSkip = Form("d0postvtracrphiSkip_%d", bin);
-	char *named0PostvtracrphiTrue = Form("d0postvtracrphiTrue_%d", bin);
-	char *named0PostvtraczRec = Form("d0postvtraczRec_%d", bin); 
-	char *named0PostvtraczSkip = Form("d0postvtraczSkip_%d", bin);
-	char *named0PostvtraczTrue = Form("d0postvtraczTrue_%d", bin);
-	((TH1F*)(fOutputpostvTracRec->FindObject(named0PostvtracrphiRec)))->Fill(10000.*dzRec[0]);
-	((TH1F*)(fOutputpostvTracRec->FindObject(named0PostvtraczRec)))->Fill(10000.*dzRec[1]);
-	((TH1F*)(fOutputpostvTracSkip->FindObject(named0PostvtracrphiSkip)))->Fill(10000.*dzRecSkip[0]);
-	((TH1F*)(fOutputpostvTracSkip->FindObject(named0PostvtraczSkip)))->Fill(10000.*dzRecSkip[1]);
-	if(fReadMC) {
-	  ((TH1F*)(fOutputpostvTracTrue->FindObject(named0PostvtracrphiTrue)))->Fill(10000.*dzTrue[0]);
-	  ((TH1F*)(fOutputpostvTracTrue->FindObject(named0PostvtraczTrue)))->Fill(10000.*dzTrue[1]);
-	}
-      }
-      
-      if(charge==-1) {
-	char *named0NegtvtracrphiRec = Form("d0negtvtracrphiRec_%d", bin);
-	char *named0NegtvtracrphiSkip = Form("d0negtvtracrphiSkip_%d", bin);
-	char *named0NegtvtracrphiTrue = Form("d0negtvtracrphiTrue_%d", bin);
-	char *named0NegtvtraczRec = Form("d0negtvtraczRec_%d", bin); 
-	char *named0NegtvtraczSkip = Form("d0negtvtraczSkip_%d", bin);
-	char *named0NegtvtraczTrue = Form("d0negtvtraczTrue_%d", bin);
-	((TH1F*)(fOutputnegtvTracRec->FindObject(named0NegtvtracrphiRec)))->Fill(10000.*dzRec[0]);
-	((TH1F*)(fOutputnegtvTracRec->FindObject(named0NegtvtraczRec)))->Fill(10000.*dzRec[1]);
-	((TH1F*)(fOutputnegtvTracSkip->FindObject(named0NegtvtracrphiSkip)))->Fill(10000.*dzRecSkip[0]);
-	((TH1F*)(fOutputnegtvTracSkip->FindObject(named0NegtvtraczSkip)))->Fill(10000.*dzRecSkip[1]);
-	if(fReadMC) {
-	  ((TH1F*)(fOutputnegtvTracTrue->FindObject(named0NegtvtracrphiTrue)))->Fill(10000.*dzTrue[0]);
-	  ((TH1F*)(fOutputnegtvTracTrue->FindObject(named0NegtvtraczTrue)))->Fill(10000.*dzTrue[1]);	
-	}    
-      }
-      
-      // SinTheta 
-      Double_t theta=esdtrack->Theta(); 
-      Double_t Sintheta=TMath::Sin(theta);
-      Double_t pi=TMath::Pi();
-      Double_t halfpi=0.5*pi;
-      Int_t thetabin = SinThetaBin(Sintheta);
-      if(thetabin<0) continue;
-      if(bin==4 && theta<halfpi){
-	char *named0ThetaforwardrphiRec = Form("d0thetaforwardrphiRec_%d", thetabin);
-	char *named0ThetaforwardzRec = Form("d0thetaforwardzRec_%d", thetabin);
-	char *named0ThetaforwardrphiSkip = Form("d0thetaforwardrphiSkip_%d", thetabin);
-	char *named0ThetaforwardzSkip = Form("d0thetaforwardzSkip_%d", thetabin);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetaforwardrphiRec)))->Fill(10000*dzRec[0]);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetaforwardzRec)))->Fill(10000*dzRec[1]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetaforwardrphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetaforwardzSkip)))->Fill(10000*dzRecSkip[1]);
-      }
-
-      if(bin==4 && theta>halfpi){
-	char *named0ThetabackwardrphiRec = Form("d0thetabackwardrphiRec_%d", thetabin);
-	char *named0ThetabackwardzRec = Form("d0thetabackwardzRec_%d", thetabin);
-	char *named0ThetabackwardrphiSkip = Form("d0thetabackwardrphiSkip_%d", thetabin);
-	char *named0ThetabackwardzSkip = Form("d0thetabackwardzSkip_%d", thetabin);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetabackwardrphiRec)))->Fill(10000*dzRec[0]);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetabackwardzRec)))->Fill(10000*dzRec[1]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetabackwardrphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetabackwardzSkip)))->Fill(10000*dzRecSkip[1]);
-      }
-      
-      if(bin==1) {
-	char *named0SinthetaonerphiRec = Form("d0sinthetaonerphiRec_%d", thetabin);
-	char *named0SinthetaonezRec = Form("d0sinthetaonezRec_%d", thetabin);
-	char *named0SinthetaonerphiSkip = Form("d0sinthetaonerphiSkip_%d", thetabin);
-	char *named0SinthetaonezSkip = Form("d0sinthetaonezSkip_%d", thetabin);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetaonerphiRec)))->Fill(10000*dzRec[0]);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetaonezRec)))->Fill(10000*dzRec[1]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetaonerphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetaonezSkip)))->Fill(10000*dzRecSkip[1]);
-      }
-      
-      if(bin==5) {
-	char *named0SinthetatworphiRec = Form("d0sinthetatworphiRec_%d", thetabin);
-	char *named0SinthetatwozRec = Form("d0sinthetatwozRec_%d", thetabin);
-	char *named0SinthetatworphiSkip = Form("d0sinthetatworphiSkip_%d", thetabin);
-	char *named0SinthetatwozSkip = Form("d0sinthetatwozSkip_%d", thetabin);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetatworphiRec)))->Fill(10000*dzRec[0]);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetatwozRec)))->Fill(10000*dzRec[1]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetatworphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetatwozSkip)))->Fill(10000*dzRecSkip[1]);
-      }
-      
-      if(bin==10) {
-	char *named0SinthetathreerphiRec = Form("d0sinthetathreerphiRec_%d", thetabin);
-	char *named0SinthetathreezRec = Form("d0sinthetathreezRec_%d", thetabin);
-	char *named0SinthetathreerphiSkip = Form("d0sinthetathreerphiSkip_%d", thetabin);
-	char *named0SinthetathreezSkip = Form("d0sinthetathreezSkip_%d", thetabin);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetathreerphiRec)))->Fill(10000*dzRec[0]);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetathreezRec)))->Fill(10000*dzRec[1]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetathreerphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetathreezSkip)))->Fill(10000*dzRecSkip[1]);
-      }
-      
-      if(bin==15) {
-	char *named0SinthetafourrphiRec = Form("d0sinthetafourrphiRec_%d", thetabin);
-	char *named0SinthetafourzRec = Form("d0sinthetafourzRec_%d", thetabin);
-	char *named0SinthetafourrphiSkip = Form("d0sinthetafourrphiSkip_%d", thetabin);
-	char *named0SinthetafourzSkip = Form("d0sinthetafourzSkip_%d", thetabin);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetafourrphiRec)))->Fill(10000*dzRec[0]);
-	((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetafourzRec)))->Fill(10000*dzRec[1]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetafourrphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetafourzSkip)))->Fill(10000*dzRecSkip[1]);
-      }
-      
-      //Phi
-      Double_t phi=esdtrack->Phi(); 
-      //Double_t pi=TMath::Pi();
-      Int_t phibin=PhiBin(phi);
-      if(phibin<0) continue;
-      if(pt>0.34 && pt<0.5) {
-	char *named0PhiallpointrphiSkip =Form("d0phiallpointrphiSkip_%d",phibin);
-	char *named0PhiallpointzSkip = Form("d0phiallpointzSkip_%d",phibin);
-	char *named0PhipostvtracrphiSkip =Form("d0phipostvtracrphiSkip_%d",phibin);
-	char *named0PhipostvtraczSkip = Form("d0phipostvtraczSkip_%d",phibin);
-	char *named0PhinegtvtracrphiSkip =Form("d0phinegtvtracrphiSkip_%d",phibin);
-	char *named0PhinegtvtraczSkip = Form("d0phinegtvtraczSkip_%d",phibin);
-	((TH1F*)(fOutputphiAllpointSkip->FindObject(named0PhiallpointrphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputphiAllpointSkip->FindObject(named0PhiallpointzSkip)))->Fill(10000*dzRecSkip[1]);
-	if(charge==+1) {
-	  ((TH1F*)(fOutputphiPostvtracSkip->FindObject(named0PhipostvtracrphiSkip)))->Fill(10000*dzRecSkip[0]);
-	  ((TH1F*)(fOutputphiPostvtracSkip->FindObject(named0PhipostvtraczSkip)))->Fill(10000*dzRecSkip[1]);
-	} 
-	if(charge==-1) {
-	  ((TH1F*)(fOutputphiNegtvtracSkip->FindObject(named0PhinegtvtracrphiSkip)))->Fill(10000*dzRecSkip[0]);
-	  ((TH1F*)(fOutputphiNegtvtracSkip->FindObject(named0PhinegtvtraczSkip)))->Fill(10000*dzRecSkip[1]);
-	}
-      }
-
-     
-      // Bayesian PID
+    // Bayesian PID only for ESD
+    if(!fIsAOD && (npointsITS==6 || (npointsITS==4 && !sddIsIn))){
       Double_t prob[AliPID::kSPECIES];
-      esdtrack->GetESDpid(prob);
+      ((AliESDtrack*)(vtrack))->GetESDpid(prob);
       Double_t priors[5] = {0.01, 0.01, 0.85, 0.10, 0.05};
       
-      //Int_t charge = track->Charge();
-      //Int_t esdPid = -1;
       
       AliPID pid;
       pid.SetPriors(priors);
       pid.SetProbabilities(prob);
       
-      // identify particle as the most probable     
+      // identify particle as the most probable    
       Double_t pelectron = pid.GetProbability(AliPID::kElectron);
       Double_t pmuon = pid.GetProbability(AliPID::kMuon);
       Double_t ppion = pid.GetProbability(AliPID::kPion);
       Double_t pkaon = pid.GetProbability(AliPID::kKaon);
       Double_t pproton = pid.GetProbability(AliPID::kProton);  
-  
-      if (ppion > pelectron && 
-	  ppion >pmuon  && 
-	  ppion > pkaon && 
+      
+      if (ppion > pelectron &&
+	  ppion > pmuon  &&
+	  ppion > pkaon &&
 	  ppion > pproton ) {
 	//esdPid =-kPDGelectron;
 	char *named0PionPIDrphiRec = Form("d0pionPIDrphiRec_%d", bin);
@@ -1551,9 +1502,9 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       }
       
       
-      if (pkaon > pelectron && 
-	  pkaon >pmuon  && 
-	  pkaon > ppion && 
+      if (pkaon > pelectron &&
+	  pkaon > pmuon  &&
+	  pkaon > ppion &&
 	  pkaon > pproton ) {
 	//esdPid =-kPDGelectron;
 	char *named0KaonPIDrphiRec = Form("d0kaonPIDrphiRec_%d", bin);
@@ -1565,11 +1516,11 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	((TH1F*)(fOutputparticlePID->FindObject(named0KaonPIDrphiSkip)))->Fill(10000.*dzRecSkip[0]);
 	((TH1F*)(fOutputparticlePID->FindObject(named0KaonPIDzSkip)))->Fill(10000.*dzRecSkip[1]);
       }
-
-
-      if (pproton > pelectron && 
-	  pproton >pmuon  && 
-	  pproton > ppion && 
+      
+      
+      if (pproton > pelectron &&
+	  pproton >pmuon  &&
+	  pproton > ppion &&
 	  pproton > pkaon ) {
 	//esdPid =-kPDGelectron;
 	//if(p<0.5 && fReadMC){fEstimVtx->Fill(pdgCode);}
@@ -1582,13 +1533,286 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	((TH1F*)(fOutputparticlePID->FindObject(named0ProtonPIDrphiSkip)))->Fill(10000.*dzRecSkip[0]);
 	((TH1F*)(fOutputparticlePID->FindObject(named0ProtonPIDzSkip)))->Fill(10000.*dzRecSkip[1]);
       }
+    }
+
+    // ESD TRACK CUTS
+    if(fReadMC) primaryVtx=vtxESDTrue;
+    else if(fSkipTrack) primaryVtx=vtxVSkip;
+    else primaryVtx=vtxVRec;
+
+    if(IsTrackSelected(vtrack,primaryVtx,fESDtrackCuts)){
+
+
+      char *named0PtESDTC = Form("d0ptESDTC_%d",bin);
+	((TH1F*)(fOutputWithTrackCuts->FindObject(named0PtESDTC)))->Fill(pt);
+
+       	char *named0DistrESDTCrphiRec = Form("d0DistrESDTCrphiRec_%d", bin);
+	char *named0DistrESDTCrphiSkip = Form("d0DistrESDTCrphiSkip_%d", bin);
+	char *named0DistrESDTCrphiTrue = Form("d0DistrESDTCrphiTrue_%d", bin);
+	char *named0DistrESDTCzRec = Form("d0DistrESDTCzRec_%d", bin);
+	char *named0DistrESDTCzSkip = Form("d0DistrESDTCzSkip_%d", bin);
+	char *named0DistrESDTCzTrue = Form("d0DistrESDTCzTrue_%d", bin);
+	((TH1F*)(fOutputWithTrackCuts->FindObject(named0DistrESDTCrphiRec)))->Fill(10000.*dzRec[0]);
+	((TH1F*)(fOutputWithTrackCuts->FindObject(named0DistrESDTCzRec)))->Fill(10000.*dzRec[1]);
+	((TH1F*)(fOutputWithTrackCuts->FindObject(named0DistrESDTCrphiSkip)))->Fill(10000.*dzRecSkip[0]);
+	((TH1F*)(fOutputWithTrackCuts->FindObject(named0DistrESDTCzSkip)))->Fill(10000.*dzRecSkip[1]);
+	
+ 
+	if(fReadMC) {
+	  ((TH1F*)(fOutputWithTrackCuts->FindObject(named0DistrESDTCrphiTrue)))->Fill(10000.*dzTrue[0]);
+	  ((TH1F*)(fOutputWithTrackCuts->FindObject(named0DistrESDTCzTrue)))->Fill(10000.*dzTrue[1]);
+	}
+	
+	// pulls
+	char *named0PullESDTCrphiRec = Form("d0PullESDTCrphiRec_%d", bin);
+	char *named0PullESDTCrphiSkip = Form("d0PullESDTCrphiSkip_%d", bin);
+	char *named0PullESDTCrphiTrue = Form("d0PullESDTCrphiTrue_%d", bin);
+	char *named0PullESDTCzRec = Form("d0PullESDTCzRec_%d", bin);
+	char *named0PullESDTCzSkip = Form("d0PullESDTCzSkip_%d", bin);
+	char *named0PullESDTCzTrue = Form("d0PullESDTCzTrue_%d", bin);
+	((TH1F*)(fOutputWithTrackCuts->FindObject(named0PullESDTCrphiRec)))->Fill(dzRec[0]/TMath::Sqrt(covdzRec[0]));    
+	((TH1F*)(fOutputWithTrackCuts->FindObject(named0PullESDTCzRec)))->Fill(dzRec[1]/TMath::Sqrt(covdzRec[2]));
+	((TH1F*)(fOutputWithTrackCuts->FindObject(named0PullESDTCrphiSkip)))->Fill(dzRecSkip[0]/TMath::Sqrt(covdzRecSkip[0]));
+	((TH1F*)(fOutputWithTrackCuts->FindObject(named0PullESDTCzSkip)))->Fill(dzRecSkip[1]/TMath::Sqrt(covdzRecSkip[2]));
+	if(fReadMC) {
+	  ((TH1F*)(fOutputWithTrackCuts->FindObject(named0PullESDTCrphiTrue)))->Fill(dzTrue[0]/TMath::Sqrt(covdzTrue[0]));
+	  ((TH1F*)(fOutputWithTrackCuts->FindObject(named0PullESDTCzTrue)))->Fill(dzTrue[1]/TMath::Sqrt(covdzTrue[2]));
+	}
+	
+	}
+
+    
+
+    // ITS standalone
+    if (nClsTotTPC==0 && haskITSrefit && npointsSPD>0 && npointsITS>=4) {
+      char *named0ITSpureSArphiRec = Form("d0itspureSArphiRec_%d", bin);
+      char *named0ITSpureSArphiSkip = Form("d0itspureSArphiSkip_%d", bin);
+      char *named0ITSpureSAzRec = Form("d0itspureSAzRec_%d", bin);
+      char *named0ITSpureSAzSkip = Form("d0itspureSAzSkip_%d", bin);
+      ((TH1F*)(fOutputitspureSARec->FindObject(named0ITSpureSArphiRec)))->Fill(10000.*dzRec[0]);
+      ((TH1F*)(fOutputitspureSARec->FindObject(named0ITSpureSAzRec)))->Fill(10000.*dzRec[1]);
+      ((TH1F*)(fOutputitspureSASkip->FindObject(named0ITSpureSArphiSkip)))->Fill(10000.*dzRecSkip[0]);
+      ((TH1F*)(fOutputitspureSASkip->FindObject(named0ITSpureSAzSkip)))->Fill(10000.*dzRecSkip[1]);
+    }
+
+
+   
+    // ask for TPC refit
+    if (!haskTPCrefit || nClsTotTPC<70) continue;
+   
+    // only ITS and TPC refit
+    char *named0OnlyrefitrphiRec = Form("d0onlyrefitrphiRec_%d", bin);
+    char *named0OnlyrefitrphiSkip = Form("d0onlyrefitrphiSkip_%d", bin);
+    char *named0OnlyrefitzRec = Form("d0onlyrefitzRec_%d", bin);
+    char *named0OnlyrefitzSkip = Form("d0onlyrefitzSkip_%d", bin);
+    ((TH1F*)(fOutputOnlyRefitRec->FindObject(named0OnlyrefitrphiRec)))->Fill(10000.*dzRec[0]);
+    ((TH1F*)(fOutputOnlyRefitRec->FindObject(named0OnlyrefitzRec)))->Fill(10000.*dzRec[1]);
+    ((TH1F*)(fOutputOnlyRefitSkip->FindObject(named0OnlyrefitrphiSkip)))->Fill(10000.*dzRecSkip[0]);
+    ((TH1F*)(fOutputOnlyRefitSkip->FindObject(named0OnlyrefitzSkip)))->Fill(10000.*dzRecSkip[1]);  
+   
+
+    if(npointsITS>=4 && npointsSPD>0) {
+      char *named0PartpointrphiRec = Form("d0partpointrphiRec_%d", bin);
+      char *named0PartpointrphiSkip = Form("d0partpointrphiSkip_%d", bin);
+      char *named0PartpointzRec = Form("d0partpointzRec_%d", bin);
+      char *named0PartpointzSkip = Form("d0partpointzSkip_%d", bin);
+      ((TH1F*)(fOutputpartPointRec->FindObject(named0PartpointrphiRec)))->Fill(10000.*dzRec[0]);
+      ((TH1F*)(fOutputpartPointRec->FindObject(named0PartpointzRec)))->Fill(10000.*dzRec[1]);
+      ((TH1F*)(fOutputpartPointSkip->FindObject(named0PartpointrphiSkip)))->Fill(10000.*dzRecSkip[0]);
+      ((TH1F*)(fOutputpartPointSkip->FindObject(named0PartpointzSkip)))->Fill(10000.*dzRecSkip[1]);
+    }
+
+    if(npointsSPD>0) {
+      char *named0OnepointSPDrphiRec = Form("d0onepointSPDrphiRec_%d", bin);
+      char *named0OnepointSPDrphiSkip = Form("d0onepointSPDrphiSkip_%d", bin);
+      char *named0OnepointSPDzRec = Form("d0onepointSPDzRec_%d", bin);
+      char *named0OnepointSPDzSkip = Form("d0onepointSPDzSkip_%d", bin);
+      ((TH1F*)(fOutputonepointSPDRec->FindObject(named0OnepointSPDrphiRec)))->Fill(10000.*dzRec[0]);
+      ((TH1F*)(fOutputonepointSPDRec->FindObject(named0OnepointSPDzRec)))->Fill(10000.*dzRec[1]);
+      ((TH1F*)(fOutputonepointSPDSkip->FindObject(named0OnepointSPDrphiSkip)))->Fill(10000.*dzRecSkip[0]);
+      ((TH1F*)(fOutputonepointSPDSkip->FindObject(named0OnepointSPDzSkip)))->Fill(10000.*dzRecSkip[1]);
+    }
+
+   
+    if(npointsITS==6 || (npointsITS==4 && !sddIsIn)) {
+      //pt
+      char *named0Pt = Form("d0pt_%d",bin);
+      ((TH1F*)(fOutputPt->FindObject(named0Pt)))->Fill(pt);
+
+
+      // allpoint
+      char *named0AllpointrphiRec = Form("d0allpointrphiRec_%d", bin);
+      char *named0AllpointrphiSkip = Form("d0allpointrphiSkip_%d", bin);
+      char *named0AllpointrphiTrue = Form("d0allpointrphiTrue_%d", bin);
+      char *named0AllpointzRec = Form("d0allpointzRec_%d", bin);
+      char *named0AllpointzSkip = Form("d0allpointzSkip_%d", bin);
+      char *named0AllpointzTrue = Form("d0allpointzTrue_%d", bin);
+      ((TH1F*)(fOutputallPointRec->FindObject(named0AllpointrphiRec)))->Fill(10000.*dzRec[0]);
+      ((TH1F*)(fOutputallPointRec->FindObject(named0AllpointzRec)))->Fill(10000.*dzRec[1]);
+      ((TH1F*)(fOutputallPointSkip->FindObject(named0AllpointrphiSkip)))->Fill(10000.*dzRecSkip[0]);
+      ((TH1F*)(fOutputallPointSkip->FindObject(named0AllpointzSkip)))->Fill(10000.*dzRecSkip[1]);
+      if(fReadMC) {
+        ((TH1F*)(fOutputallPointTrue->FindObject(named0AllpointrphiTrue)))->Fill(10000.*dzTrue[0]);
+        ((TH1F*)(fOutputallPointTrue->FindObject(named0AllpointzTrue)))->Fill(10000.*dzTrue[1]);
+      }
+     
+      // pulls
+      char *named0PullAllpointrphiRec = Form("d0pullAllpointrphiRec_%d", bin);
+      char *named0PullAllpointrphiSkip = Form("d0pullAllpointrphiSkip_%d", bin);
+      char *named0PullAllpointrphiTrue = Form("d0pullAllpointrphiTrue_%d", bin);
+      char *named0PullAllpointzRec = Form("d0pullAllpointzRec_%d", bin);
+      char *named0PullAllpointzSkip = Form("d0pullAllpointzSkip_%d", bin);
+      char *named0PullAllpointzTrue = Form("d0pullAllpointzTrue_%d", bin);
+      ((TH1F*)(fOutputpullAllpointRec->FindObject(named0PullAllpointrphiRec)))->Fill(dzRec[0]/TMath::Sqrt(covdzRec[0]));    
+      ((TH1F*)(fOutputpullAllpointRec->FindObject(named0PullAllpointzRec)))->Fill(dzRec[1]/TMath::Sqrt(covdzRec[2]));
+      ((TH1F*)(fOutputpullAllpointSkip->FindObject(named0PullAllpointrphiSkip)))->Fill(dzRecSkip[0]/TMath::Sqrt(covdzRecSkip[0]));
+      ((TH1F*)(fOutputpullAllpointSkip->FindObject(named0PullAllpointzSkip)))->Fill(dzRecSkip[1]/TMath::Sqrt(covdzRecSkip[2]));
+      if(fReadMC) {
+        ((TH1F*)(fOutputpullAllpointTrue->FindObject(named0PullAllpointrphiTrue)))->Fill(dzTrue[0]/TMath::Sqrt(covdzTrue[0]));
+        ((TH1F*)(fOutputpullAllpointTrue->FindObject(named0PullAllpointzTrue)))->Fill(dzTrue[1]/TMath::Sqrt(covdzTrue[2]));
+      }
+      //postive and negative track
+      //Int_t charge=esdtrack->Charge();
+      if(charge==1) {
+        char *named0PostvtracrphiRec = Form("d0postvtracrphiRec_%d", bin);
+        char *named0PostvtracrphiSkip = Form("d0postvtracrphiSkip_%d", bin);
+        char *named0PostvtracrphiTrue = Form("d0postvtracrphiTrue_%d", bin);
+        char *named0PostvtraczRec = Form("d0postvtraczRec_%d", bin);
+        char *named0PostvtraczSkip = Form("d0postvtraczSkip_%d", bin);
+        char *named0PostvtraczTrue = Form("d0postvtraczTrue_%d", bin);
+        ((TH1F*)(fOutputpostvTracRec->FindObject(named0PostvtracrphiRec)))->Fill(10000.*dzRec[0]);
+        ((TH1F*)(fOutputpostvTracRec->FindObject(named0PostvtraczRec)))->Fill(10000.*dzRec[1]);
+        ((TH1F*)(fOutputpostvTracSkip->FindObject(named0PostvtracrphiSkip)))->Fill(10000.*dzRecSkip[0]);
+        ((TH1F*)(fOutputpostvTracSkip->FindObject(named0PostvtraczSkip)))->Fill(10000.*dzRecSkip[1]);
+        if(fReadMC) {
+          ((TH1F*)(fOutputpostvTracTrue->FindObject(named0PostvtracrphiTrue)))->Fill(10000.*dzTrue[0]);
+          ((TH1F*)(fOutputpostvTracTrue->FindObject(named0PostvtraczTrue)))->Fill(10000.*dzTrue[1]);
+        }
+      }
+     
+      if(charge==-1) {
+        char *named0NegtvtracrphiRec = Form("d0negtvtracrphiRec_%d", bin);
+        char *named0NegtvtracrphiSkip = Form("d0negtvtracrphiSkip_%d", bin);
+        char *named0NegtvtracrphiTrue = Form("d0negtvtracrphiTrue_%d", bin);
+        char *named0NegtvtraczRec = Form("d0negtvtraczRec_%d", bin);
+        char *named0NegtvtraczSkip = Form("d0negtvtraczSkip_%d", bin);
+        char *named0NegtvtraczTrue = Form("d0negtvtraczTrue_%d", bin);
+        ((TH1F*)(fOutputnegtvTracRec->FindObject(named0NegtvtracrphiRec)))->Fill(10000.*dzRec[0]);
+        ((TH1F*)(fOutputnegtvTracRec->FindObject(named0NegtvtraczRec)))->Fill(10000.*dzRec[1]);
+        ((TH1F*)(fOutputnegtvTracSkip->FindObject(named0NegtvtracrphiSkip)))->Fill(10000.*dzRecSkip[0]);
+        ((TH1F*)(fOutputnegtvTracSkip->FindObject(named0NegtvtraczSkip)))->Fill(10000.*dzRecSkip[1]);
+        if(fReadMC) {
+          ((TH1F*)(fOutputnegtvTracTrue->FindObject(named0NegtvtracrphiTrue)))->Fill(10000.*dzTrue[0]);
+          ((TH1F*)(fOutputnegtvTracTrue->FindObject(named0NegtvtraczTrue)))->Fill(10000.*dzTrue[1]);   
+        }    
+      }
+     
+      // SinTheta
+      //Double_t theta=esdtrack->Theta();
+      Double_t Sintheta=TMath::Sin(theta);
+      Double_t pi=TMath::Pi();
+      Double_t halfpi=0.5*pi;
+      Int_t thetabin = SinThetaBin(Sintheta);
+      if(thetabin<0) continue;
+      if(bin==4 && theta<halfpi){
+        char *named0ThetaforwardrphiRec = Form("d0thetaforwardrphiRec_%d", thetabin);
+        char *named0ThetaforwardzRec = Form("d0thetaforwardzRec_%d", thetabin);
+        char *named0ThetaforwardrphiSkip = Form("d0thetaforwardrphiSkip_%d", thetabin);
+        char *named0ThetaforwardzSkip = Form("d0thetaforwardzSkip_%d", thetabin);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetaforwardrphiRec)))->Fill(10000*dzRec[0]);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetaforwardzRec)))->Fill(10000*dzRec[1]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetaforwardrphiSkip)))->Fill(10000*dzRecSkip[0]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetaforwardzSkip)))->Fill(10000*dzRecSkip[1]);
+      }
+
+      if(bin==4 && theta>halfpi){
+        char *named0ThetabackwardrphiRec = Form("d0thetabackwardrphiRec_%d", thetabin);
+        char *named0ThetabackwardzRec = Form("d0thetabackwardzRec_%d", thetabin);
+        char *named0ThetabackwardrphiSkip = Form("d0thetabackwardrphiSkip_%d", thetabin);
+        char *named0ThetabackwardzSkip = Form("d0thetabackwardzSkip_%d", thetabin);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetabackwardrphiRec)))->Fill(10000*dzRec[0]);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetabackwardzRec)))->Fill(10000*dzRec[1]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetabackwardrphiSkip)))->Fill(10000*dzRecSkip[0]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetabackwardzSkip)))->Fill(10000*dzRecSkip[1]);
+      }
+     
+      if(bin==1) {
+        char *named0SinthetaonerphiRec = Form("d0sinthetaonerphiRec_%d", thetabin);
+        char *named0SinthetaonezRec = Form("d0sinthetaonezRec_%d", thetabin);
+        char *named0SinthetaonerphiSkip = Form("d0sinthetaonerphiSkip_%d", thetabin);
+        char *named0SinthetaonezSkip = Form("d0sinthetaonezSkip_%d", thetabin);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetaonerphiRec)))->Fill(10000*dzRec[0]);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetaonezRec)))->Fill(10000*dzRec[1]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetaonerphiSkip)))->Fill(10000*dzRecSkip[0]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetaonezSkip)))->Fill(10000*dzRecSkip[1]);
+      }
+     
+      if(bin==5) {
+        char *named0SinthetatworphiRec = Form("d0sinthetatworphiRec_%d", thetabin);
+        char *named0SinthetatwozRec = Form("d0sinthetatwozRec_%d", thetabin);
+        char *named0SinthetatworphiSkip = Form("d0sinthetatworphiSkip_%d", thetabin);
+        char *named0SinthetatwozSkip = Form("d0sinthetatwozSkip_%d", thetabin);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetatworphiRec)))->Fill(10000*dzRec[0]);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetatwozRec)))->Fill(10000*dzRec[1]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetatworphiSkip)))->Fill(10000*dzRecSkip[0]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetatwozSkip)))->Fill(10000*dzRecSkip[1]);
+      }
+     
+      if(bin==10) {
+        char *named0SinthetathreerphiRec = Form("d0sinthetathreerphiRec_%d", thetabin);
+        char *named0SinthetathreezRec = Form("d0sinthetathreezRec_%d", thetabin);
+        char *named0SinthetathreerphiSkip = Form("d0sinthetathreerphiSkip_%d", thetabin);
+        char *named0SinthetathreezSkip = Form("d0sinthetathreezSkip_%d", thetabin);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetathreerphiRec)))->Fill(10000*dzRec[0]);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetathreezRec)))->Fill(10000*dzRec[1]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetathreerphiSkip)))->Fill(10000*dzRecSkip[0]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetathreezSkip)))->Fill(10000*dzRecSkip[1]);
+      }
+     
+      if(bin==15) {
+        char *named0SinthetafourrphiRec = Form("d0sinthetafourrphiRec_%d", thetabin);
+        char *named0SinthetafourzRec = Form("d0sinthetafourzRec_%d", thetabin);
+        char *named0SinthetafourrphiSkip = Form("d0sinthetafourrphiSkip_%d", thetabin);
+        char *named0SinthetafourzSkip = Form("d0sinthetafourzSkip_%d", thetabin);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetafourrphiRec)))->Fill(10000*dzRec[0]);
+        ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetafourzRec)))->Fill(10000*dzRec[1]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetafourrphiSkip)))->Fill(10000*dzRecSkip[0]);
+        ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetafourzSkip)))->Fill(10000*dzRecSkip[1]);
+      }
+     
+      //Phi
+      //Double_t phi=esdtrack->Phi();
+      //Double_t pi=TMath::Pi();
+      Int_t phibin=PhiBin(phi);
+      if(phibin<0) continue;
+      if(pt>0.34 && pt<0.5) {
+        char *named0PhiallpointrphiSkip =Form("d0phiallpointrphiSkip_%d",phibin);
+        char *named0PhiallpointzSkip = Form("d0phiallpointzSkip_%d",phibin);
+        char *named0PhipostvtracrphiSkip =Form("d0phipostvtracrphiSkip_%d",phibin);
+        char *named0PhipostvtraczSkip = Form("d0phipostvtraczSkip_%d",phibin);
+        char *named0PhinegtvtracrphiSkip =Form("d0phinegtvtracrphiSkip_%d",phibin);
+        char *named0PhinegtvtraczSkip = Form("d0phinegtvtraczSkip_%d",phibin);
+        ((TH1F*)(fOutputphiAllpointSkip->FindObject(named0PhiallpointrphiSkip)))->Fill(10000*dzRecSkip[0]);
+        ((TH1F*)(fOutputphiAllpointSkip->FindObject(named0PhiallpointzSkip)))->Fill(10000*dzRecSkip[1]);
+        if(charge==+1) {
+          ((TH1F*)(fOutputphiPostvtracSkip->FindObject(named0PhipostvtracrphiSkip)))->Fill(10000*dzRecSkip[0]);
+          ((TH1F*)(fOutputphiPostvtracSkip->FindObject(named0PhipostvtraczSkip)))->Fill(10000*dzRecSkip[1]);
+        }
+        if(charge==-1) {
+          ((TH1F*)(fOutputphiNegtvtracSkip->FindObject(named0PhinegtvtracrphiSkip)))->Fill(10000*dzRecSkip[0]);
+          ((TH1F*)(fOutputphiNegtvtracSkip->FindObject(named0PhinegtvtraczSkip)))->Fill(10000*dzRecSkip[1]);
+        }
+      }
       
     }
 
      
-  }  // end loop of tracks
-  
-  delete vtxESDRec;  vtxESDRec=NULL;
+  }//end loop over tracks
+
+  //delete esdTrackCuts; esdTrackCuts=NULL;
+  //delete primaryVtx; primaryVtx=NULL;
+  delete vtxVSkip; vtxVSkip=NULL;
+  delete vtxVRec;  vtxVRec=NULL;
   delete vtxESDTrue; vtxESDTrue=NULL;
   PostData(1, fOutputitspureSARec);
   PostData(2, fOutputitspureSASkip);
@@ -1618,7 +1842,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   PostData(26, fOutputparticlePID);
   PostData(27, fOutputPt);
   PostData(28, fNentries);
-  PostData(29, fEstimVtx);  
+  PostData(29, fEstimVtx); 
+  PostData(30, fOutputWithTrackCuts);
 
   return;
 }
@@ -1656,32 +1881,32 @@ Int_t AliAnalysisTaskSEImpParRes::PtBin(Double_t pt) const {
   if (pt>22.1  && pt<29.)  return 25;
   if (pt>29.05  && pt<35.)  return 26;
   /*
-  if (pt>0.22 && pt<0.23) return 1 ;
-  if (pt>0.26 && pt<0.27) return 2 ; 
-  if (pt>0.35 && pt<0.36) return 3 ;
-  if (pt>0.45 && pt<0.46) return 4 ; 
-  if (pt>0.55 && pt<0.56) return 5 ;
-  if (pt>0.65 && pt<0.66) return 6 ; 
-  if (pt>0.75 && pt<0.76) return 7 ; 
-  if (pt>0.85 && pt<0.86) return 8 ; 
-  if (pt>1.05 && pt<1.06) return 9 ;
-  if (pt>1.25 && pt<1.27) return 10; 
-  if (pt>1.45 && pt<1.47) return 11; 
-  if (pt>1.65 && pt<1.67) return 12; 
-  if (pt>1.85 && pt<1.87) return 13; 
-  if (pt>2.15 && pt<2.17) return 14; 
-  if (pt>2.45 && pt<2.48) return 15; 
-  if (pt>2.65 && pt<2.67) return 16; 
-  if (pt>2.85 && pt<2.87) return 17; 
-  if (pt>3.25 && pt<3.27) return 18; 
-  if (pt>3.75 && pt<3.8)  return 19; 
-  if (pt>4.15 && pt<4.20) return 20; 
-  if (pt>4.95 && pt<5.15) return 21;
-  if (pt>5.35 && pt<5.55) return 22; 
-  if (pt>6.0  && pt<6.8)  return 23;
-  if (pt>8.5  && pt<10.5) return 24; 
-  if (pt>12.  && pt<19.)  return 25;
-  if (pt>21.  && pt<32.)  return 26;
+    if (pt>0.22 && pt<0.23) return 1 ;
+    if (pt>0.26 && pt<0.27) return 2 ; 
+    if (pt>0.35 && pt<0.36) return 3 ;
+    if (pt>0.45 && pt<0.46) return 4 ; 
+    if (pt>0.55 && pt<0.56) return 5 ;
+    if (pt>0.65 && pt<0.66) return 6 ; 
+    if (pt>0.75 && pt<0.76) return 7 ; 
+    if (pt>0.85 && pt<0.86) return 8 ; 
+    if (pt>1.05 && pt<1.06) return 9 ;
+    if (pt>1.25 && pt<1.27) return 10; 
+    if (pt>1.45 && pt<1.47) return 11; 
+    if (pt>1.65 && pt<1.67) return 12; 
+    if (pt>1.85 && pt<1.87) return 13; 
+    if (pt>2.15 && pt<2.17) return 14; 
+    if (pt>2.45 && pt<2.48) return 15; 
+    if (pt>2.65 && pt<2.67) return 16; 
+    if (pt>2.85 && pt<2.87) return 17; 
+    if (pt>3.25 && pt<3.27) return 18; 
+    if (pt>3.75 && pt<3.8)  return 19; 
+    if (pt>4.15 && pt<4.20) return 20; 
+    if (pt>4.95 && pt<5.15) return 21;
+    if (pt>5.35 && pt<5.55) return 22; 
+    if (pt>6.0  && pt<6.8)  return 23;
+    if (pt>8.5  && pt<10.5) return 24; 
+    if (pt>12.  && pt<19.)  return 25;
+    if (pt>21.  && pt<32.)  return 26;
   */  
   return -1; 
 }
@@ -1778,9 +2003,9 @@ void AliAnalysisTaskSEImpParRes::Terminate(Option_t */*option*/) {
 //__________________________________________________________________________
 Int_t AliAnalysisTaskSEImpParRes::ClusterTypeOnITSLayer(AliESDtrack *track,
 							Int_t layer) const {
-//
-// Returns cluster type on ITS layer. Returns -1 if no cluster on this layer
-//
+  //
+  // Returns cluster type on ITS layer. Returns -1 if no cluster on this layer
+  //
   Int_t ctype=-1;
 
   if(layer<0 || layer>5) return ctype;
@@ -1788,7 +2013,7 @@ Int_t AliAnalysisTaskSEImpParRes::ClusterTypeOnITSLayer(AliESDtrack *track,
   
   const AliTrackPointArray *array = track->GetTrackPointArray();
   if(!array) {
-//    printf("No tracks points avaialble: check ESDfriends\n");
+    //    printf("No tracks points avaialble: check ESDfriends\n");
     return ctype;
   }
   AliTrackPoint point;
@@ -1824,4 +2049,24 @@ Bool_t AliAnalysisTaskSEImpParRes::IsSelectedCentrality(AliESDEvent *esd) const
 
 
   return kTRUE;
+}
+
+//----------------------------------------------------------------------------------
+Bool_t AliAnalysisTaskSEImpParRes::IsTrackSelected(AliVTrack *track, AliVVertex *primary, AliESDtrackCuts *cuts) const{
+
+  if(!cuts) return kTRUE;
+  Bool_t retval = kTRUE;
+  if(fIsAOD) {
+    AliESDtrack esdTrack(track);
+    esdTrack.SetTPCClusterMap(((AliAODTrack*)track)->GetTPCClusterMap());
+    esdTrack.SetTPCSharedMap(((AliAODTrack*)track)->GetTPCSharedMap());
+    esdTrack.SetTPCPointsF(((AliAODTrack*)track)->GetTPCNclsF());
+    esdTrack.RelateToVertex((AliESDVertex*)primary,0.,3.);
+    if(!cuts->IsSelected(&esdTrack)) retval = kFALSE;
+  }
+  else {
+    AliESDtrack *esdTrack = (AliESDtrack*)track;
+    if(!cuts->IsSelected(esdTrack)) retval = kFALSE;
+  }
+  return retval;
 }

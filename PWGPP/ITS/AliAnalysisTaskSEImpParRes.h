@@ -15,6 +15,10 @@
 class TList;
 class TH1F;
 class AliTriggerConfiguration;
+class AliVTrack;
+class AliVVertex;
+class AliESDtrackCuts;
+
 
 #include "AliAnalysisTaskSE.h"
 
@@ -32,6 +36,7 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   void SetReadMC(Bool_t readMC) { fReadMC=readMC; return; }
+  void SetIsAOD(Bool_t isAOD) { fIsAOD=isAOD; return; }
   void SetSelectedPdg(Int_t pdg) { fSelectedPdg=pdg; return; }
   void SetUseDiamond(Bool_t use=kFALSE) { fUseDiamond=use; return; }
   void SetSkipTrack(Bool_t skip=kFALSE) { fSkipTrack=skip; return; }
@@ -39,6 +44,7 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   void SetCheckSDDIsIn(Int_t check=0) { fCheckSDDIsIn=check; }
   void SetTriggerClass(TString tclass="") { fTriggerClass=tclass; }
   void SetOCDBPath(TString path="") { fOCDBPath=path; }
+  void SetESDtrackCuts(AliESDtrackCuts *esdCuts) {fESDtrackCuts=esdCuts;}
 
  private:
   
@@ -50,6 +56,8 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   Double_t Getd0HistRange(Int_t i) const;
   Int_t PhiBin(Double_t phi) const;
   Int_t ClusterTypeOnITSLayer(AliESDtrack *t,Int_t layer) const;
+  Bool_t IsTrackSelected(AliVTrack *t,AliVVertex *v, AliESDtrackCuts *cuts) const;
+  Bool_t fIsAOD;  // flag to read AOD or ESD (default is ESD)
   Bool_t fReadMC;       // flag used to switch on/off MC reading
   Int_t  fSelectedPdg;  // only for a given particle species (-1 takes all tracks)
   Bool_t fUseDiamond;   // use diamond constraint in primary vertex
@@ -60,6 +68,7 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   TString      fTriggerClass; // trigger class to be inspected
   AliTriggerConfiguration *fTrigConfig; // trigger configuration (read from OCDB)
   TString      fOCDBPath; // to the OCDB
+  AliESDtrackCuts *fESDtrackCuts; // track cuts 
   TList *fOutputitspureSARec;  //! ITS StandAlone: with track in vtx 
   TList *fOutputitspureSASkip; //! ITS StandAlone: w/o track in vtx
   TList *fOutputallPointRec;   //! ITS+TPC: 6 ITScls, with track in vtx      
@@ -86,13 +95,14 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   TList *fOutputphiPostvtracSkip;  //!
   TList *fOutputphiNegtvtracSkip;  //!
   TList *fOutputparticlePID;  //!
+  TList *fOutputWithTrackCuts; //!
   TList *fOutputPt;     //!           
   TH1F  *fNentries;   //! histogram of number of events
   TH1F  *fEstimVtx;   //! vertex resolution
 
   Bool_t IsSelectedCentrality(AliESDEvent *esd) const;
 
-  ClassDef(AliAnalysisTaskSEImpParRes,7); // AliAnalysisTaskSE for the study of the impact parameter resolution
+  ClassDef(AliAnalysisTaskSEImpParRes,8); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif
