@@ -73,7 +73,9 @@ public:
 		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0, TString option="");
 
   void UserHistogram(const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars);
-  void UserSparse(const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars);
+  void UserSparse(   const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars);
+  void UserHistogram(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars);
+  void UserSparse(   const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars);
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      Int_t nbinsX, Double_t xmin, Double_t xmax, UInt_t valTypeX=kNoAutoFill, Bool_t logBinX=kFALSE)
@@ -106,7 +108,7 @@ public:
                      const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
                      UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0)
   { UserProfile(histClass,name,title,999,binsX,binsY,binsZ,valTypeX,valTypeY,valTypeZ); }
-  
+
   void UserHistogram(const char* histClass, TObject* hist, UInt_t valTypes=kNoAutoFill);
 
   void Fill(const char* histClass, const char* name, Double_t xval);

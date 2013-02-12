@@ -412,6 +412,56 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, Int_t
 }
 
 //_____________________________________________________________________________
+void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars)
+{
+  //
+  // Histogram creation n>3 dimension only with non-linear binning
+  //
+
+  Bool_t isOk=kTRUE;
+  isOk&=(ndim<21 && ndim>3);
+  if(!isOk) { Warning("UserHistogram","Array sizes should be between 3 and 20. Not adding Histogram to '%s'.", histClass); return; }
+  isOk&=(ndim==limits->GetEntriesFast());
+  if(!isOk) return;
+
+  // set automatic histo name
+  TString name;
+  for(Int_t iv=0; iv < ndim; iv++)
+    name+=Form("%s_",AliDielectronVarManager::GetValueName(vars[iv]));
+  name.Resize(name.Length()-1);
+
+  isOk&=IsHistogramOk(histClass,name);
+
+  THnD *hist;
+  Int_t bins[ndim];
+  if (isOk) {
+    // get number of bins
+    for(Int_t idim=0 ;idim<ndim; idim++) {
+      TVectorD *vec = (TVectorD*) limits->At(idim);
+      bins[idim]=vec->GetNrows()-1;
+    }
+
+    hist=new THnD(name.Data(),"", ndim, bins, 0x0, 0x0);
+
+    // set binning
+    for(Int_t idim=0 ;idim<ndim; idim++) {
+      TVectorD *vec = (TVectorD*) limits->At(idim);
+      hist->SetBinEdges(idim,vec->GetMatrixArray());
+    }
+
+    // store variales in axes
+    StoreVariables(hist, vars);
+
+    Bool_t isReserved=fReservedWords->Contains(histClass);
+    if (isReserved)
+      UserHistogramReservedWords(histClass, hist, 999);
+    else
+      UserHistogram(histClass, hist, 999);
+
+  }
+}
+
+//_____________________________________________________________________________
 void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars)
 {
   //
@@ -426,15 +476,59 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, Int_t *b
     name+=Form("%s_",AliDielectronVarManager::GetValueName(vars[iv]));
   name.Resize(name.Length()-1);
 
-  printf(" name %s \n",name.Data());
-  //  name=Form("%s%s_%s_%s%s", (strcmp(histClass,"Pair")==0?"p":""), AliDielectronVarManager::GetValueName(valTypeX), AliDielectronVarManager::GetValueName(valTypeY), AliDielectronVarManager::GetValueName(valTypeZ),
-  //	    (valTypeP!=999? Form("-%s%s",(option.Contains("s",TString::kIgnoreCase)?"rms":"avg"),AliDielectronVarManager::GetValueName(valTypeP)) : "") );
-
   isOk&=IsHistogramOk(histClass,name);
 
   THnSparseD *hist;
   if (isOk) {
     hist=new THnSparseD(name.Data(),"", ndim, bins, mins, maxs);
+
+    // store variales in axes
+    StoreVariables(hist, vars);
+
+    Bool_t isReserved=fReservedWords->Contains(histClass);
+    if (isReserved)
+      UserHistogramReservedWords(histClass, hist, 999);
+    else
+      UserHistogram(histClass, hist, 999);
+
+  }
+}
+
+//_____________________________________________________________________________
+void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars)
+{
+  //
+  // THnSparse creation with non-linear binning
+  //
+
+  Bool_t isOk=kTRUE;
+  isOk&=(ndim==limits->GetEntriesFast());
+  if(!isOk) return;
+
+  // set automatic histo name
+  TString name;
+  for(Int_t iv=0; iv < ndim; iv++)
+    name+=Form("%s_",AliDielectronVarManager::GetValueName(vars[iv]));
+  name.Resize(name.Length()-1);
+
+  isOk&=IsHistogramOk(histClass,name);
+
+  THnSparseD *hist;
+  Int_t bins[ndim];
+  if (isOk) {
+    // get number of bins
+    for(Int_t idim=0 ;idim<ndim; idim++) {
+      TVectorD *vec = (TVectorD*) limits->At(idim);
+      bins[idim]=vec->GetNrows()-1;
+    }
+
+    hist=new THnSparseD(name.Data(),"", ndim, bins, 0x0, 0x0);
+
+    // set binning
+    for(Int_t idim=0 ;idim<ndim; idim++) {
+      TVectorD *vec = (TVectorD*) limits->At(idim);
+      hist->SetBinEdges(idim,vec->GetMatrixArray());
+    }
 
     // store variales in axes
     StoreVariables(hist, vars);
@@ -1172,7 +1266,6 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
     }
     if(option.Contains("s",TString::kIgnoreCase)) bStdOpt=kFALSE;
     if(pmin!=pmax) calcrange=Form("#cbar_{%+.*f}^{%+.*f}",GetPrecision(pmin),pmin,GetPrecision(pmax),pmax);
-    printf("dimesnion    %d       erropt %s \n",dim,option.Data());
   }
 
   UInt_t varx = hist->GetXaxis()->GetUniqueID();
@@ -1249,16 +1342,16 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 	currentName+=Form("%s_",AliDielectronVarManager::GetValueName(varx));
 	currentName+=Form("%s_",AliDielectronVarManager::GetValueName(vary));
 	currentName+=Form("%s",AliDielectronVarManager::GetValueName(varz));
-	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(varp),(bStdOpt ? "var" : "rms"));
+	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(varp),(bStdOpt ? "avg" : "rms"));
 	break;
       case 2:
 	currentName+=Form("%s_",AliDielectronVarManager::GetValueName(varx));
 	currentName+=Form("%s",AliDielectronVarManager::GetValueName(vary));
-	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(varz),(bStdOpt ? "var" : "rms"));
+	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(varz),(bStdOpt ? "avg" : "rms"));
 	break;
       case 1:
 	currentName+=Form("%s",AliDielectronVarManager::GetValueName(varx));
-	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(vary),(bStdOpt ? "var" : "rms"));
+	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(vary),(bStdOpt ? "avg" : "rms"));
 	break;
       }
     // to differentiate btw. leg and pair histos

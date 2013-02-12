@@ -358,6 +358,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NaccItsPureEsd10Corr",   "N_{acc. trkl}^{corr.} #cbar_{#||{#eta}<1.0} (ITS)",  ""},
   {"NaccItsPureEsd16Corr",   "N_{acc. trkl}^{corr.} #cbar_{#||{#eta}<1.6} (ITS)",  ""},
 
+  {"RefMult",                "N_{trk}^{ref}",                                      ""},
+  {"RefMultTPConly",         "N_{trk}^{TPConly}",                                  ""},
   {"Nch",                    "N_{ch} #cbar_{#||{#eta}<1.6}",                       ""},
   {"Nch05",                  "N_{ch} #cbar_{#||{#eta}<0.5}",                       ""},
   {"Nch10",                  "N_{ch} #cbar_{#||{#eta}<1.0}",                       ""},
