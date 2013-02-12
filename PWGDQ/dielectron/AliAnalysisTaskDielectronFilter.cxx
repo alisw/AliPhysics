@@ -330,7 +330,7 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
          Int_t posCaloCls = nanoEv->AddCaloCluster(static_cast<AliAODEvent*>(InputEvent())->GetCaloCluster(caloIndex));
          nanoEv->GetTrack(posit)->SetEMCALcluster(posCaloCls);
          AliAODCaloCluster *clCls = nanoEv->GetCaloCluster(posCaloCls);
-         for(int t=0; t<clCls->GetNTracksMatched(); t++) clCls->RemoveTrackMatched(clCls->GetTrackMatched(t)); 
+         for(int u=0; u<clCls->GetNTracksMatched(); u++) clCls->RemoveTrackMatched(clCls->GetTrackMatched(u)); 
          nanoEv->GetCaloCluster(posCaloCls)->AddTrackMatched((AliAODTrack*)nanoEv->GetTrack(posit)); 
          }
          // set references for vtx
@@ -351,7 +351,7 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
          Int_t negCaloCls = nanoEv->AddCaloCluster(static_cast<AliAODEvent*>(InputEvent())->GetCaloCluster(caloIndex));
          nanoEv->GetTrack(negat)->SetEMCALcluster(negCaloCls);
          AliAODCaloCluster *clCls = nanoEv->GetCaloCluster(negCaloCls); 
-         for(int t=0; t<clCls->GetNTracksMatched(); t++) clCls->RemoveTrackMatched(clCls->GetTrackMatched(t));
+         for(int u=0; u<clCls->GetNTracksMatched(); u++) clCls->RemoveTrackMatched(clCls->GetTrackMatched(u));
          nanoEv->GetCaloCluster(negCaloCls)->AddTrackMatched((AliAODTrack*)nanoEv->GetTrack(negat));
          }
          nanoEv->GetTrack(negat)->SetProdVertex(nanoEv->GetVertex(negVtx)); 
