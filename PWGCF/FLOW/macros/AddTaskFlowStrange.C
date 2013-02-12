@@ -1,52 +1,27 @@
-// FULL ANALYSIS OF ONE CENTRALITY CLASS
-void AddTaskFlowStrange(int trigger, int centrMin, int centrMax, int harmonic, int matchMC=-1,
-      bool doQC=true, bool doSPTPC=true, bool doSPVZE=true) {
-  // K0s
-  AddTaskFlowStrange(trigger,centrMin,centrMax,2,"K0",Form("Kv%d_%02d%02dc2",harmonic,centrMin,centrMax),   0,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,3,"K0",Form("Kv%d_%02d%02dc3",harmonic,centrMin,centrMax),   0,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,4,"K0",Form("Kv%d_%02d%02dc4",harmonic,centrMin,centrMax),   0,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,5,"K0",Form("Kv%d_%02d%02dc5",harmonic,centrMin,centrMax),   0,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,2,"K0",Form("Kv%d_%02d%02dc2TRK",harmonic,centrMin,centrMax),0,"TRK",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
-  // Lambda
-  AddTaskFlowStrange(trigger,centrMin,centrMax,2,"L0",Form("Lv%d_%02d%02dc2",harmonic,centrMin,centrMax),   1,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,3,"L0",Form("Lv%d_%02d%02dc3",harmonic,centrMin,centrMax),   1,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,5,"L0",Form("Lv%d_%02d%02dc5",harmonic,centrMin,centrMax),   1,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,2,"L0",Form("Lv%d_%02d%02dc2TRK",harmonic,centrMin,centrMax),1,"TRK",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
-}
 // ONE PRECONF WAGON
-void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, int set, TString folderName="myFolder", TString suffixName="mySuffix", int specie=0,
-  char* MULT="V0M", int harmonic=2, int matchMC=-1, bool doQC=true, bool doSPTPC=true, bool doSPVZE=true) {
+void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, int set, TString folderName="myFolder", TString suffixName="mySuffix", 
+			int specie=0, char* MULT="V0M", int harmonic=2, int matchMC=-1, bool doQC=true, bool doSPTPC=true, bool doSPVZE=true,
+			bool doQA=false, bool useFlowEventCuts=true) {
   Double_t c[11];
   switch(set) {
-  case(0): // Loose cuts + noQT // Baseline sanity check
-    c[0] =-1e+6; c[1] =+1e+6; c[2] =  -1e+6; c[3] =-1e+6; c[4] =+1e+6; c[5] =-1e-6; c[6] =-1e+6; c[7] =+1e+6; c[8] =+1e+6; c[9] =-1e+6; c[10] =0;
+  case(0): // Filtering cuts //
+    c[0]=0; c[1]=+1; c[2]=+0.500; c[3]=0;    c[4]=1e+6; c[5]=0;    c[6]=-1;   c[7]=+1;   c[8]=1e+6; c[9]=1e+6; c[10]=0;
     break;
-  case(1): // Tight cuts + QT // 
-    c[0] = +0.5; c[1] = +1.0; c[2] = +0.998; c[3] = +0.1; c[4] = +0.0; c[5] = +0.2; c[6] = -0.8; c[7] = +0.8; c[8] =+1e+6; c[9] = +3.0; c[10] =0;
-    break;
-  case(2): // Tight cuts + PID + QT // nominal cuts
-    c[0] = +0.5; c[1] = +1.0; c[2] = +0.998; c[3] = +0.1; c[4] = +0.0; c[5] = +0.2; c[6] = -0.8; c[7] = +0.8; c[8] = +3.0; c[9] = +3.0; c[10] =0;
-    break;
-  case(3): // Loose cuts + PID + QT // for K0s and Lambda systematics
-    c[0] =-1e+6; c[1] =+1e+6; c[2] =  -1e+6; c[3] =-1e+6; c[4] =+1e+6; c[5] = +0.2; c[6] =-1e+6; c[7] =+1e+6; c[8] = +3.0; c[9] =-1e+6; c[10] =0;
-    break;
-  case(4): // Tight cuts + PID + tighterQT(+20%) // for K0s systematics
-    c[0] = +0.5; c[1] = +1.0; c[2] = +0.998; c[3] = +0.1; c[4] = +0.0; c[5] =+0.24; c[6] = -0.8; c[7] = +0.8; c[8] = +3.0; c[9] = +3.0; c[10] =0;
-    break;
-  case(5): // Tight cuts + tighterPID(2sigma) + QT // for K0s and Lambda systematics
-    c[0] = +0.5; c[1] = +1.0; c[2] = +0.998; c[3] = +0.1; c[4] = +0.0; c[5] = +0.2; c[6] = -0.8; c[7] = +0.8; c[8] = +2.0; c[9] = +3.0; c[10] =0;
+  case(1): // Topological cuts // 
+    c[0]=0; c[1]=+1; c[2]=+0.998; c[3]=+0.1; c[4]=0;    c[5]=+0.2; c[6]=-0.8; c[7]=+0.8; c[8]=+3.0; c[9]=+3.0; c[10]=5;
     break;
   default:
     return;
   }
   AddTaskFlowStrange(trigger, centrMin, centrMax, folderName, suffixName, specie,
-                    c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],
-                    MULT, harmonic, matchMC, doQC, doSPTPC, doSPVZE);
+		     c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],
+		     MULT, harmonic, matchMC, doQC, doSPTPC, doSPVZE, doQA, useFlowEventCuts);
 }
 // ONE WAGON
 void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString folderName="myFolder", TString suffixName="mySuffix", int specie=0, 
-  double cut0, double cut1, double cut2, double cut3, double cut4, double cut5, double cut6, double cut7, double cut8, double cut9, double cut10,
-  char* MULT="V0M", int harmonic=2, int matchMC=-1, bool doQC=true, bool doSPTPC=true, bool doSPVZE=true) {
+			double cut0, double cut1, double cut2, double cut3, double cut4, double cut5, double cut6, double cut7, double cut8,
+			double cut9, double cut10, char* MULT="V0M", int harmonic=2, int matchMC=-1, 
+			bool doQC=true, bool doSPTPC=true, bool doSPVZE=true, bool doQA=false, bool useFlowEventCuts=true) {
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName.ReplaceAll(".root","");
 
@@ -87,8 +62,10 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString fol
   Double_t cuts[11];
   cuts[0]=cut0; cuts[1]=cut1; cuts[2]=cut2; cuts[3]=cut3; cuts[4]=cut4; cuts[5]=cut5; cuts[6]=cut6; cuts[7]=cut7; cuts[8]=cut8; cuts[9]=cut9; cuts[10]=cut10;
   taskSel->SetCuts(cuts);
+  taskSel->SetQA(doQA);
   taskSel->SetK0L0(specie);
   taskSel->SetMCmatch(matchMC);
+  taskSel->SetUseEventSelection(useFlowEventCuts);
   taskSel->SetCommonConstants( SFT_MassBins(specie), SFT_MinMass(specie), SFT_MaxMass(specie) );
   AliAnalysisDataContainer *cOutHist = mgr->CreateContainer(Form("OutHistos_%s",suffixName.Data()),
 							    TList::Class(),
@@ -106,6 +83,8 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString fol
   mgr->ConnectOutput(taskSel,1,exc_TPC);
   mgr->ConnectOutput(taskSel,2,exc_VZE);
   mgr->ConnectOutput(taskSel,3,cOutHist);
+
+  if( (!doQC) && (!doSPVZE) && (!doSPVZE) ) return;
 
   //-------------------FLOW TASKS----------------------------
   AliFlowTrackSimpleCuts *filter[12], *filterhf[12][2]; // MASS BANDS

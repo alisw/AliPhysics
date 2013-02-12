@@ -59,6 +59,7 @@
 #include "AliFlowEvent.h"
 #include "AliFlowBayesianPID.h"
 #include "AliFlowCommonConstants.h"
+#include "AliFlowVector.h"
 
 #include "AliAnalysisTaskFlowStrange.h"
 
@@ -70,6 +71,9 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fPIDResponse(NULL),
   fBayesianPID(NULL),
   fDebug(kFALSE),
+  fUseEventSelection(kTRUE),
+  fDoQA(kFALSE),
+  fPsi2(0.0),
   fSpecie(0),
   fMCmatch(-1),
   fMassBins(0),
@@ -99,6 +103,9 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name,
   fPIDResponse(NULL),
   fBayesianPID(NULL),
   fDebug(kFALSE),
+  fUseEventSelection(kTRUE),
+  fDoQA(kFALSE),
+  fPsi2(0.0),
   fSpecie(0),
   fMCmatch(-1),
   fMassBins(0),
@@ -149,7 +156,7 @@ void AliAnalysisTaskFlowStrange::UserCreateOutputObjects()
   cc->SetNbinsMult(1); cc->SetMultMin(0);   cc->SetMultMax(1);
   cc->SetNbinsPt(120); cc->SetPtMin(0.0);   cc->SetPtMax(12.0);
   cc->SetNbinsPhi(1);  cc->SetPhiMin(0.0);  cc->SetPhiMax(TMath::TwoPi());
-  cc->SetNbinsEta(1);  cc->SetEtaMin(-2.0); cc->SetEtaMax(+2.0);
+  cc->SetNbinsEta(18);  cc->SetEtaMin(-0.9); cc->SetEtaMax(+0.9);
   cc->SetNbinsQ(1);    cc->SetQMin(0.0);    cc->SetQMax(1.0);
   cc->SetNbinsMass(fMassBins);
   cc->SetMassMin(fMinMass);
@@ -180,14 +187,16 @@ void AliAnalysisTaskFlowStrange::UserCreateOutputObjects()
 void AliAnalysisTaskFlowStrange::Exec(Option_t* option)
 {
   //bypassing ::exec (needed because of AMPT)
-  AliAnalysisTaskSE::Exec(option); // executes EVENT only for data analysis
-  if(fMCmatch>-1) AliAnalysisTaskFlowStrange::MyUserExec(option); // executes EVENT only for monteCarlo
+  if(fMCmatch==-1) // executes EVENT in data analysis
+    AliAnalysisTaskSE::Exec(option);
+  else // executes EVENT in monteCarlo
+    AliAnalysisTaskFlowStrange::MyUserExec(option);
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::UserExec(Option_t *option)
 {
   // dummy user exec
-  if(fMCmatch==-1) AliAnalysisTaskFlowStrange::MyUserExec(option);
+  AliAnalysisTaskFlowStrange::MyUserExec(option);
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::AddQAEvents()
@@ -204,7 +213,12 @@ void AliAnalysisTaskFlowStrange::AddQAEvents()
 
   TH1D *tTPCRFP = new TH1D("RFPTPC","TPC Reference Flow Particles;multiplicity",100,0,3000); tQAEvents->Add(tTPCRFP);
   TH1D *tVZERFP = new TH1D("RFPVZE","VZERO Reference Flow Particles;multiplicity",100,0,30000); tQAEvents->Add(tVZERFP);
-
+  TH1D *tPOI = new TH1D("POI","POIs;multiplicity",500,0,500); tQAEvents->Add( tPOI );
+  if(fDoQA) {
+    TH2D *tH2D = new TH2D("VTXZ","VTXZ;Global||SPD;SPD",60,-15,+15,60,-15,+15); tQAEvents->Add( tH2D );
+    TH3D *tH3D = new TH3D("EVPLANE","EVPLANE;TPC;V0A;V0C",72,0,TMath::Pi(),72,0,TMath::Pi(),72,0,TMath::Pi()); tQAEvents->Add( tH3D );
+    tH2D = new TH2D("VTXZSEL","VTXZ SEL;Global||SPD;SPD",40,-10,+10,40,-10,+10); tQAEvents->Add( tH2D );
+  }
   TProfile *tCuts = new TProfile("Cuts","Analysis Cuts",11,0,11);
   tCuts->Fill(0.5,fV0Cuts[0],1); tCuts->GetXaxis()->SetBinLabel(1,"dl");
   tCuts->Fill(1.5,fV0Cuts[1],1); tCuts->GetXaxis()->SetBinLabel(2,"dca");
@@ -224,111 +238,146 @@ void AliAnalysisTaskFlowStrange::AddQAEvents()
 void AliAnalysisTaskFlowStrange::AddQACandidates()
 {
   // function to add histogramming for candidates
-  TList *tQACuts;
-  TH1D *tPOI, *tMCdaughters;
-  TH2D *tDL, *tDCA, *tCTP, *tD0, *tD0D0, *tMCrads;
-  TH3D *tAP, *tMCmother, *tMCpdg;
+  TList *tList;
+  TH1D *tH1D;
+  TH2D *tH2D;
+  TH3D *tH3D;
 
-  tQACuts = new TList(); tQACuts->SetOwner(); tQACuts->SetName("QACutsBefore");
-  tDL   = new TH2D("BefDL",  "DL;[cm];Pt [GeV]",  50,0,10,  24,0,12); tQACuts->Add(tDL);
-  tDCA  = new TH2D("BefDCA", "DCA;[cm];Pt [GeV]", 50,0,1.001, 24,0,12); tQACuts->Add(tDCA);
-  tCTP  = new TH2D("BefCTP", "CTP;;Pt [GeV]",     80,0.91,1.001, 24,0,12); tQACuts->Add(tCTP);
-  tD0   = new TH2D("BefD0",  "D0;[cm];Pt [GeV]",  50,-1,+1, 24,0,12); tQACuts->Add(tD0);
-  tD0D0 = new TH2D("BefD0D0","D0D0;[cm^{2}];Pt [GeV]", 100,-1,+1, 24,0,12); tQACuts->Add(tD0D0);
-  tAP   = new TH3D("BefAP",  "AP;#alpha;q_{t}[GeV];Pt [GeV]", 80,-1,+1, 90,0,0.3, 24,0,12); tQACuts->Add(tAP);
-  fQAList->Add(tQACuts);
-
-  tQACuts = new TList(); tQACuts->SetOwner(); tQACuts->SetName("QACutsAfter");
-  tAP     = new TH3D("AftAP","AP;#alpha;q_{t}[GeV];Pt [GeV]", 80,-1,+1, 90,0,0.3, 60,0,12); tQACuts->Add(tAP);
-  tPOI    = new TH1D("POI","POIs;multiplicity",500,0,500); tQACuts->Add(tPOI);
+  Int_t nMass = 88;
+  Double_t dMinMass = 0.412, dMaxMass=0.588;
   switch(fSpecie) {
-  case(0):
-    tMCpdg = new TH3D("MCPDG","MC PDGm;p_{T} (GeV);Mass [GeV]",24,0,12,88,0.412,0.588,30,0,30); tQACuts->Add(tMCpdg);
-    break;
   case(1):
-    tMCpdg = new TH3D("MCPDG","MC PDGm;p_{T} (GeV);Mass [GeV]",24,0,12,92,1.075,1.167,30,0,30); tQACuts->Add(tMCpdg);
+    nMass = 92;
+    dMinMass = 1.075;
+    dMaxMass = 1.167;
     break;
   case(90):
-    tMCpdg = new TH3D("MCPDG","MC PDGm;p_{T} (GeV);Mass [GeV]",24,0,12,100,0.00,1.000,30,0,30); tQACuts->Add(tMCpdg);
+    nMass = 100;
+    dMinMass = 0.0;
+    dMaxMass = 1.0;
     break;
   }
-  if(tMCpdg) {
-    tMCpdg->GetZaxis()->SetBinLabel( 1,"NONE");
-    tMCpdg->GetZaxis()->SetBinLabel( 2,"NONE chked");
-    tMCpdg->GetZaxis()->SetBinLabel( 3,"NONPDG");
-    tMCpdg->GetZaxis()->SetBinLabel( 4,"NONPDG chked"); // 3
-    tMCpdg->GetZaxis()->SetBinLabel( 5,"Truths");
-    tMCpdg->GetZaxis()->SetBinLabel( 6,"Truths chked"); // 1
-    tMCpdg->GetZaxis()->SetBinLabel( 7,"K_L0 chked");
-    tMCpdg->GetZaxis()->SetBinLabel( 8,"K_S0 chked");
-    tMCpdg->GetZaxis()->SetBinLabel( 9,"Lambda0 chked");
-    tMCpdg->GetZaxis()->SetBinLabel(10,"Lambda0_bar chked");
-    tMCpdg->GetZaxis()->SetBinLabel(11,"phi chked");
-    tMCpdg->GetZaxis()->SetBinLabel(12,"rho0 chked");
-    tMCpdg->GetZaxis()->SetBinLabel(13,"omega chked");
-    tMCpdg->GetZaxis()->SetBinLabel(14,"f_0 chked");
-    tMCpdg->GetZaxis()->SetBinLabel(15,"e- chked");
-    tMCpdg->GetZaxis()->SetBinLabel(16,"e+ chked");
-    tMCpdg->GetZaxis()->SetBinLabel(17,"pi+ chked");
-    tMCpdg->GetZaxis()->SetBinLabel(18,"pi- chked");
-    tMCpdg->GetZaxis()->SetBinLabel(19,"mu+ chked");
-    tMCpdg->GetZaxis()->SetBinLabel(20,"mu- chked");
-    tMCpdg->GetZaxis()->SetBinLabel(21,"K+ chked");
-    tMCpdg->GetZaxis()->SetBinLabel(22,"K- chked");
-    tMCpdg->GetZaxis()->SetBinLabel(23,"proton chked");
-    tMCpdg->GetZaxis()->SetBinLabel(24,"antiproton chked");
+
+  if(fDoQA) {
+    tList = new TList(); tList->SetOwner(); tList->SetName("QACutsBefore_IP");
+    tH3D = new TH3D("BefVOL", "VOLUME;Phi;Eta;Pt [GeV]",       63, 0.0,+6.3, 40,-1.0,+1.0, 60,0,12); tList->Add( tH3D );
+    tH3D = new TH3D("BefRAP", "RAPIDITY;y;Pt [GeV]",           40,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefDLZ", "DLZ;[cm];Pt [GeV]",             50,-5.0,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefDLXY","DLXY;[cm];Pt [GeV]",           100,0.00,100., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefCTau","CTau;[cm];Pt [GeV]",           250,0.00,250., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefDCA", "DCA;[cm];Pt [GeV]",             50,0.00,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefCTP", "CTP;;Pt [GeV]",                 80,0.99,1.00, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefD0",  "D0;[cm];Pt [GeV]",              50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefD0D0","D0D0;[cm^{2}];Pt [GeV]",        50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefAP",  "AP;#alpha;q_{t}[GeV];Pt [GeV]", 80,-1.0,+1.0, 90,0,0.3, 60,0,12); tList->Add( tH3D );
+    fQAList->Add(tList);
+    tList = new TList(); tList->SetOwner(); tList->SetName("QACutsBefore_OP");
+    tH3D = new TH3D("BefVOL", "VOLUME;Phi;Eta;Pt [GeV]",       63, 0.0,+6.3, 40,-1.0,+1.0, 60,0,12); tList->Add( tH3D );
+    tH3D = new TH3D("BefRAP", "RAPIDITY;y;Pt [GeV]",           40,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefDLZ", "DLZ;[cm];Pt [GeV]",             50,-5.0,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefDLXY","DLXY;[cm];Pt [GeV]",           100,0.00,100., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefCTau","CTau;[cm];Pt [GeV]",           250,0.00,250., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefDCA", "DCA;[cm];Pt [GeV]",             50,0.00,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefCTP", "CTP;;Pt [GeV]",                 50,0.99,1.00, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefD0",  "D0;[cm];Pt [GeV]",              50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefD0D0","D0D0;[cm^{2}];Pt [GeV]",        50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("BefAP",  "AP;#alpha;q_{t}[GeV];Pt [GeV]", 80,-1.0,+1.0, 90,0,0.3, 60,0,12); tList->Add( tH3D );
+    fQAList->Add(tList);
+    tList = new TList(); tList->SetOwner(); tList->SetName("QACutsAfter_IP");
+    tH3D = new TH3D("AftVOL", "VOLUME;Phi;Eta;Pt [GeV]",       63, 0.0,+6.3, 40,-1.0,+1.0, 60,0,12); tList->Add( tH3D );
+    tH3D = new TH3D("AftRAP", "RAPIDITY;y;Pt [GeV]",           40,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftDLZ", "DLZ;[cm];Pt [GeV]",             50,-5.0,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftDLXY","DLXY;[cm];Pt [GeV]",           100,0.00,100., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftCTau","CTau;[cm];Pt [GeV]",           250,0.00,250., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftDCA", "DCA;[cm];Pt [GeV]",             50,0.00,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftCTP", "CTP;;Pt [GeV]",                 50,0.99,1.00, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftD0",  "D0;[cm];Pt [GeV]",              50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftD0D0","D0D0;[cm^{2}];Pt [GeV]",        50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftAP",  "AP;#alpha;q_{t}[GeV];Pt [GeV]", 80,-1.0,+1.0, 90,0,0.3, 60,0,12); tList->Add( tH3D );
+    fQAList->Add(tList);
+    tList = new TList(); tList->SetOwner(); tList->SetName("QACutsAfter_OP");
+    tH3D = new TH3D("AftVOL", "VOLUME;Phi;Eta;Pt [GeV]",       63, 0.0,+6.3, 40,-1.0,+1.0, 60,0,12); tList->Add( tH3D );
+    tH3D = new TH3D("AftRAP", "RAPIDITY;y;Pt [GeV]",           40,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftDLZ", "DLZ;[cm];Pt [GeV]",             50,-5.0,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftDLXY","DLXY;[cm];Pt [GeV]",           100,0.00,100., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftCTau","CTau;[cm];Pt [GeV]",           250,0.00,250., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftDCA", "DCA;[cm];Pt [GeV]",             50,0.00,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftCTP", "CTP;;Pt [GeV]",                 50,0.99,1.00, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftD0",  "D0;[cm];Pt [GeV]",              50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftD0D0","D0D0;[cm^{2}];Pt [GeV]",        50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
+    tH3D = new TH3D("AftAP",  "AP;#alpha;q_{t}[GeV];Pt [GeV]", 80,-1.0,+1.0, 90,0,0.3, 60,0,12); tList->Add( tH3D );
+    fQAList->Add(tList);
   }
-  //Int_t nptbins=21;
-  //Double_t ptbins[22] = {0.0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,
-  //			 2.0,2.2,2.4,2.6,2.8,3.2,3.6,4.0,5.0,6.0,
-  //			 8.0,12.};
-  tMCmother = new TH3D("MCMOTHER","MC MOTHER;truth p_{T} (GeV); mother p_{T} (GeV)",60,0,12,60,0,12,50,0,50); tQACuts->Add(tMCmother);
-  tMCmother->GetZaxis()->SetBinLabel( 1,"NONPDG chked");
-  tMCmother->GetZaxis()->SetBinLabel( 2,"PRIMARY chked");
 
-  tMCmother->GetZaxis()->SetBinLabel( 3,"Xi0 chked");
-  tMCmother->GetZaxis()->SetBinLabel( 4,"Xi0_bar chked");
-  tMCmother->GetZaxis()->SetBinLabel( 5,"Xi- chked");
-  tMCmother->GetZaxis()->SetBinLabel( 6,"Xi-_bar chked");
-  tMCmother->GetZaxis()->SetBinLabel( 7,"Omega- chked");
-  tMCmother->GetZaxis()->SetBinLabel( 8,"Omega+ chked");
-
-  tMCmother->GetZaxis()->SetBinLabel( 9,"K+ chked");
-  tMCmother->GetZaxis()->SetBinLabel(10,"K- chked");
-  tMCmother->GetZaxis()->SetBinLabel(11,"Lambda0 chked");
-  tMCmother->GetZaxis()->SetBinLabel(12,"Lambda0_bar chked");
-  tMCmother->GetZaxis()->SetBinLabel(13,"K0 chked");
-  tMCmother->GetZaxis()->SetBinLabel(14,"K0_bar chked");
-  tMCmother->GetZaxis()->SetBinLabel(15,"K_S0 chked");
-  tMCmother->GetZaxis()->SetBinLabel(16,"K_L0 chked");
-  tMCmother->GetZaxis()->SetBinLabel(17,"phi chked");
-
-  tMCmother->GetZaxis()->SetBinLabel(18,"D+ chked");
-  tMCmother->GetZaxis()->SetBinLabel(19,"D- chked");
-  tMCmother->GetZaxis()->SetBinLabel(20,"D0 chked");
-  tMCmother->GetZaxis()->SetBinLabel(21,"D0_bar chked");
-  tMCmother->GetZaxis()->SetBinLabel(22,"D_s+ chked");
-  tMCmother->GetZaxis()->SetBinLabel(23,"D_s- chked");
-  tMCmother->GetZaxis()->SetBinLabel(24,"Lambda_c+ chked");
-  tMCmother->GetZaxis()->SetBinLabel(25,"Lambda_c- chked");
-
-  tMCmother->GetZaxis()->SetBinLabel(26,"Sigma*- chked");
-  tMCmother->GetZaxis()->SetBinLabel(27,"Sigma*-_bar chked");
-  tMCmother->GetZaxis()->SetBinLabel(28,"Sigma*+ chked");
-  tMCmother->GetZaxis()->SetBinLabel(29,"Sigma*+_bar chked");
-  tMCmother->GetZaxis()->SetBinLabel(30,"Sigma*0 chked");
-  tMCmother->GetZaxis()->SetBinLabel(31,"Sigma*0_bar chked");
-  tMCmother->GetZaxis()->SetBinLabel(32,"Sigma- chked");
-  tMCmother->GetZaxis()->SetBinLabel(33,"Sigma+_bar chked");
-  tMCmother->GetZaxis()->SetBinLabel(34,"Sigma0 chked");
-  tMCmother->GetZaxis()->SetBinLabel(35,"Sigma0_bar chked");
-
-  tMCmother->GetZaxis()->SetBinLabel(36,"NONE chked");
-
-  tMCdaughters = new TH1D("MCDAUGHTERS","MC DAUGHTERS",10,0,10); tQACuts->Add(tMCdaughters);
-  tMCrads = new TH2D("MCRADS","MC RADS",2,0,2,200,0,10); tQACuts->Add(tMCrads);
-
-  fQAList->Add(tQACuts);
+  if(fMCmatch>0) { // only for MCanalysis
+    tList = new TList(); tList->SetOwner(); tList->SetName("QAMC");
+    tH3D = new TH3D("MCPDG","MC PDGm;p_{T} (GeV);Mass [GeV]",24,0,12,nMass,dMinMass,dMaxMass,30,0,30); tList->Add( tH3D );
+    tH3D->GetZaxis()->SetBinLabel( 1,"NONE");
+    tH3D->GetZaxis()->SetBinLabel( 2,"NONE chked");
+    tH3D->GetZaxis()->SetBinLabel( 3,"NONPDG");
+    tH3D->GetZaxis()->SetBinLabel( 4,"NONPDG chked"); // 3
+    tH3D->GetZaxis()->SetBinLabel( 5,"Truths");
+    tH3D->GetZaxis()->SetBinLabel( 6,"Truths chked"); // 1
+    tH3D->GetZaxis()->SetBinLabel( 7,"K_L0 chked");
+    tH3D->GetZaxis()->SetBinLabel( 8,"K_S0 chked");
+    tH3D->GetZaxis()->SetBinLabel( 9,"Lambda0 chked");
+    tH3D->GetZaxis()->SetBinLabel(10,"Lambda0_bar chked");
+    tH3D->GetZaxis()->SetBinLabel(11,"phi chked");
+    tH3D->GetZaxis()->SetBinLabel(12,"rho0 chked");
+    tH3D->GetZaxis()->SetBinLabel(13,"omega chked");
+    tH3D->GetZaxis()->SetBinLabel(14,"f_0 chked");
+    tH3D->GetZaxis()->SetBinLabel(15,"e- chked");
+    tH3D->GetZaxis()->SetBinLabel(16,"e+ chked");
+    tH3D->GetZaxis()->SetBinLabel(17,"pi+ chked");
+    tH3D->GetZaxis()->SetBinLabel(18,"pi- chked");
+    tH3D->GetZaxis()->SetBinLabel(19,"mu+ chked");
+    tH3D->GetZaxis()->SetBinLabel(20,"mu- chked");
+    tH3D->GetZaxis()->SetBinLabel(21,"K+ chked");
+    tH3D->GetZaxis()->SetBinLabel(22,"K- chked");
+    tH3D->GetZaxis()->SetBinLabel(23,"proton chked");
+    tH3D->GetZaxis()->SetBinLabel(24,"antiproton chked");
+  
+    tH3D = new TH3D("MCMOTHER","MC MOTHER;truth p_{T} (GeV); mother p_{T} (GeV)",60,0,12,60,0,12,50,0,50); tList->Add( tH3D );
+    tH3D->GetZaxis()->SetBinLabel( 1,"NONPDG chked");
+    tH3D->GetZaxis()->SetBinLabel( 2,"PRIMARY chked");
+    tH3D->GetZaxis()->SetBinLabel( 3,"Xi0 chked");
+    tH3D->GetZaxis()->SetBinLabel( 4,"Xi0_bar chked");
+    tH3D->GetZaxis()->SetBinLabel( 5,"Xi- chked");
+    tH3D->GetZaxis()->SetBinLabel( 6,"Xi-_bar chked");
+    tH3D->GetZaxis()->SetBinLabel( 7,"Omega- chked");
+    tH3D->GetZaxis()->SetBinLabel( 8,"Omega+ chked");
+    tH3D->GetZaxis()->SetBinLabel( 9,"K+ chked");
+    tH3D->GetZaxis()->SetBinLabel(10,"K- chked");
+    tH3D->GetZaxis()->SetBinLabel(11,"Lambda0 chked");
+    tH3D->GetZaxis()->SetBinLabel(12,"Lambda0_bar chked");
+    tH3D->GetZaxis()->SetBinLabel(13,"K0 chked");
+    tH3D->GetZaxis()->SetBinLabel(14,"K0_bar chked");
+    tH3D->GetZaxis()->SetBinLabel(15,"K_S0 chked");
+    tH3D->GetZaxis()->SetBinLabel(16,"K_L0 chked");
+    tH3D->GetZaxis()->SetBinLabel(17,"phi chked");
+    tH3D->GetZaxis()->SetBinLabel(18,"D+ chked");
+    tH3D->GetZaxis()->SetBinLabel(19,"D- chked");
+    tH3D->GetZaxis()->SetBinLabel(20,"D0 chked");
+    tH3D->GetZaxis()->SetBinLabel(21,"D0_bar chked");
+    tH3D->GetZaxis()->SetBinLabel(22,"D_s+ chked");
+    tH3D->GetZaxis()->SetBinLabel(23,"D_s- chked");
+    tH3D->GetZaxis()->SetBinLabel(24,"Lambda_c+ chked");
+    tH3D->GetZaxis()->SetBinLabel(25,"Lambda_c- chked");
+    tH3D->GetZaxis()->SetBinLabel(26,"Sigma*- chked");
+    tH3D->GetZaxis()->SetBinLabel(27,"Sigma*-_bar chked");
+    tH3D->GetZaxis()->SetBinLabel(28,"Sigma*+ chked");
+    tH3D->GetZaxis()->SetBinLabel(29,"Sigma*+_bar chked");
+    tH3D->GetZaxis()->SetBinLabel(30,"Sigma*0 chked");
+    tH3D->GetZaxis()->SetBinLabel(31,"Sigma*0_bar chked");
+    tH3D->GetZaxis()->SetBinLabel(32,"Sigma- chked");
+    tH3D->GetZaxis()->SetBinLabel(33,"Sigma+_bar chked");
+    tH3D->GetZaxis()->SetBinLabel(34,"Sigma0 chked");
+    tH3D->GetZaxis()->SetBinLabel(35,"Sigma0_bar chked");
+    tH3D->GetZaxis()->SetBinLabel(36,"NONE chked");
+    tH1D = new TH1D("MCDAUGHTERS","MC DAUGHTERS",10,0,10); tList->Add( tH1D );
+    tH2D = new TH2D("MCRADS","MC RADS",2,0,2,200,0,10); tList->Add( tH2D );
+    fQAList->Add(tList);
+  } // only for MCanalysis
 
 }
 //=======================================================================
@@ -340,15 +389,27 @@ void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *)
   fCandidates->SetLast(-1);
   if(tAOD) {
     ((TH1D*)((TList*)fQAList->FindObject("Event"))->FindObject("Events"))->Fill(0);
-    if(fCutsEvent->IsSelected(tAOD)) {
+    Double_t tVtxZ = tAOD->GetPrimaryVertex()->GetZ();
+    Double_t tSPDVtxZ = tAOD->GetPrimaryVertexSPD()->GetZ();
+    if( fDoQA )
+      ((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
+    Bool_t tESelection = TMath::Abs(tVtxZ-tSPDVtxZ) < 0.5;
+    Bool_t tDSelection = kTRUE;
+    if(fUseEventSelection) {
+      tDSelection = fCutsEvent->IsSelected(tAOD);
+    } else {
+      if(TMath::Abs(tVtxZ)>10.0) tDSelection = kFALSE; // Cut on VtxZ mandatory!
+    }
+    if(tDSelection&&tESelection) {
       acceptEvent=kTRUE;
       ReadFromAODv0(tAOD);
+      if( fDoQA )
+	((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("VTXZSEL"))->Fill( tVtxZ, tSPDVtxZ );
     }
   }
   if(!acceptEvent) return;
   // QA filling
   ((TH1D*)((TList*)fQAList->FindObject("Event"))->FindObject("Events"))->Fill(1);
-
   ((TH1D*)((TList*)fQAList->FindObject("Event"))->FindObject("RFPTPC"))->Fill( fFlowEventTPC->GetNumberOfRPs() );
   Double_t mult=0;
   for(Int_t i=0;i!=fFlowEventVZE->GetNumberOfRPs();++i) {
@@ -356,11 +417,7 @@ void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *)
     mult += pTrack->Weight();
   }
   ((TH1D*)((TList*)fQAList->FindObject("Event"))->FindObject("RFPVZE"))->Fill( mult );
-
-  if(fDebug) printf("TPCevent %d | VZEevent %d\n",
-		    fFlowEventTPC->NumberOfTracks(),
-		    fFlowEventVZE->NumberOfTracks() );
-  ((TH1D*)((TList*)fQAList->FindObject("QACutsAfter"))->FindObject("POI"))->Fill( fCandidates->GetEntriesFast() );
+  ((TH1D*)((TList*)fQAList->FindObject("Event"))->FindObject("POI"))->Fill( fCandidates->GetEntriesFast() );
   AddCandidates();
 
   PostData(1,fFlowEventTPC);
@@ -430,47 +487,46 @@ void AliAnalysisTaskFlowStrange::ChargedParticleAnalysis(AliAODEvent *tAOD)
       iRP->SetForRPSelection(kTRUE);
       // === MATCHED TO MC ===>>
       if(fMCmatch>0) {
-	TClonesArray* mcArray = dynamic_cast<TClonesArray*>(tAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-	if(mcArray) {
-	  TString sPDG="NONE";
-	  TString sMOTHER = "NONE";
-	  Double_t ptTruth=-1, ptMom=-1;
-	  AliAODMCParticle *iTMC = dynamic_cast<AliAODMCParticle*>(mcArray->At( TMath::Abs(iT->GetLabel()) ));
-	  if(iTMC) {
-	    sPDG="NONPDG";
-	    ptTruth = iTMC->Pt();
-	    Int_t iPDG = iTMC->GetPdgCode();
-	    TDatabasePDG *pdgDatabase = TDatabasePDG::Instance();
-	    if(pdgDatabase->GetParticle(iPDG))
-	      sPDG = (pdgDatabase->GetParticle(iPDG))->GetName();
-	    if(iTMC->GetMother()>=0) {
-	      AliAODMCParticle *iTMom = dynamic_cast<AliAODMCParticle*>(mcArray->At(iTMC->GetMother()));
-	      if(iTMom) {
-		ptMom = iTMom->Pt();
-		sMOTHER="NONPDG";
-		Int_t iMomPDG = iTMom->GetPdgCode();
-		pdgDatabase = TDatabasePDG::Instance();
-		if(pdgDatabase->GetParticle(iMomPDG))
-		  sMOTHER = (pdgDatabase->GetParticle(iMomPDG))->GetName();
-	      }
-	    } else {
-	      sMOTHER="PRIMARY";
-	    }
-	  }
-	  Double_t dMASS=prob[3];
-	  if(dMASS>1) dMASS=1;
-	  if(dMASS<0) dMASS=0;
-	  if(iT->GetLabel()>=0) {
-	    sPDG = Form("%s chked",sPDG.Data());
-	    sMOTHER = Form("%s chked",sMOTHER.Data());
-	  }
-	  ((TH3D*)((TList*)fQAList->FindObject("QACutsAfter"))->FindObject("MCPDG"))->Fill(iT->Pt(),dMASS,sPDG.Data(),1);
-	  if(dMASS>=0.90)
-	    ((TH3D*)((TList*)fQAList->FindObject("QACutsAfter"))->FindObject("MCMOTHER"))->Fill(ptTruth,ptMom,sMOTHER.Data(),1);
-	}
+      	TClonesArray* mcArray = dynamic_cast<TClonesArray*>(tAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+      	if(mcArray) {
+      	  TString sPDG="NONE";
+      	  TString sMOTHER = "NONE";
+      	  Double_t ptTruth=-1, ptMom=-1;
+      	  AliAODMCParticle *iTMC = dynamic_cast<AliAODMCParticle*>(mcArray->At( TMath::Abs(iT->GetLabel()) ));
+          if(iTMC) {
+            sPDG="NONPDG";
+            ptTruth = iTMC->Pt();
+      	    Int_t iPDG = iTMC->GetPdgCode();
+            TDatabasePDG *pdgDatabase = TDatabasePDG::Instance();
+            if(pdgDatabase->GetParticle(iPDG))
+              sPDG = (pdgDatabase->GetParticle(iPDG))->GetName();
+            if(iTMC->GetMother()>=0) {
+              AliAODMCParticle *iTMom = dynamic_cast<AliAODMCParticle*>(mcArray->At(iTMC->GetMother()));
+              if(iTMom) {
+                ptMom = iTMom->Pt();
+                sMOTHER="NONPDG";
+                Int_t iMomPDG = iTMom->GetPdgCode();
+                pdgDatabase = TDatabasePDG::Instance();
+                if(pdgDatabase->GetParticle(iMomPDG))
+                sMOTHER = (pdgDatabase->GetParticle(iMomPDG))->GetName();
+              }
+            } else {
+              sMOTHER="PRIMARY";
+            }
+          }
+          Double_t dMASS=prob[3];
+          if(dMASS>1) dMASS=1;
+          if(dMASS<0) dMASS=0;
+          if(iT->GetLabel()>=0) {
+            sPDG = Form("%s chked",sPDG.Data());
+            sMOTHER = Form("%s chked",sMOTHER.Data());
+          }
+          ((TH3D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCPDG"))->Fill(iT->Pt(),dMASS,sPDG.Data(),1);
+          if(dMASS>=0.90)
+            ((TH3D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCMOTHER"))->Fill(ptTruth,ptMom,sMOTHER.Data(),1);
+        }
       }
       // <<=== MATCHED TO MC ===
-
     }
   }
 }
@@ -482,13 +538,24 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD)
   fCutsPOI->SetEvent(tAOD,MCEvent());
   fFlowEventTPC->Fill(fCutsRFPTPC,fCutsPOI);
   fFlowEventVZE->Fill(fCutsRFPVZE,fCutsPOI);
+  fPsi2 = (fFlowEventVZE->GetQ()).Phi()/2;
+  if(fDoQA) {
+    AliFlowVector Qs[2];
+    fFlowEventVZE->TagSubeventsInEta(-5,1,1,+5);
+    fFlowEventVZE->Get2Qsub(Qs,2);
+    Double_t dEPV0C = Qs[1].Phi()/2;
+    Double_t dEPV0A = Qs[0].Phi()/2;
+    Double_t dEPTPC = (fFlowEventTPC->GetQ()).Phi()/2;
+    ((TH3D*)((TList*)fQAList->FindObject("Event"))->FindObject("EVPLANE"))->Fill( dEPTPC, dEPV0A, dEPV0C );
+  }
+
   if(fSpecie>80) {
     ChargedParticleAnalysis(tAOD);
     return;
   }
   Int_t nV0s = tAOD->GetNumberOfV0s();
   AliAODv0 *myV0;
-  Double_t dQT, dALPHA, dPT, dMASS=0.0;
+  Double_t dMASS=0.0;
   for (Int_t i=0; i!=nV0s; ++i) {
     myV0 = (AliAODv0*) tAOD->GetV0(i);
     if(!myV0) continue;
@@ -501,11 +568,7 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD)
       dMASS = myV0->MassLambda();
       if(pass==2) dMASS = myV0->MassAntiLambda();
     }
-    dPT=myV0->Pt();
-    dQT=myV0->PtArmV0();
-    dALPHA=myV0->AlphaV0();
-    ((TH3D*)((TList*)fQAList->FindObject("QACutsAfter"))->FindObject("AftAP"))  ->Fill(dALPHA,dQT,dPT);
-    MakeTrack(dMASS, dPT, myV0->Phi(), myV0->Eta(),
+    MakeTrack(dMASS, myV0->Pt(), myV0->Phi(), myV0->Eta(),
               ((AliAODTrack*) myV0->GetDaughter(0))->GetID(),
               ((AliAODTrack*) myV0->GetDaughter(1))->GetID());
   }
@@ -552,7 +615,13 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
   pvertex[0]=tAOD->GetPrimaryVertex()->GetX();
   pvertex[1]=tAOD->GetPrimaryVertex()->GetY();
   pvertex[2]=tAOD->GetPrimaryVertex()->GetZ();
+  Double_t dRAP;
+  if(fSpecie==0)
+    dRAP=myV0->RapK0Short();
+  else
+    dRAP=myV0->RapLambda();
   Double_t dDL=myV0->DecayLengthV0( pvertex );
+  Double_t dDLZ=myV0->DecayVertexV0Z()-pvertex[2];
   Double_t dDLXY=myV0->RadiusV0();
   Double_t dDCA=myV0->DcaV0Daughters();
   Double_t dCTP=myV0->CosPointingAngle( pvertex );
@@ -564,14 +633,17 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
   if(myV0->ChargeProng(iPos)<0) dALPHA = -dALPHA; // protects for a change in convention
   Double_t dPT=myV0->Pt();
   Double_t dETA=myV0->Eta();
-  ((TH2D*)((TList*)fQAList->FindObject("QACutsBefore"))->FindObject("BefDL"))  ->Fill(dDL,dPT);
-  ((TH2D*)((TList*)fQAList->FindObject("QACutsBefore"))->FindObject("BefDCA")) ->Fill(dDCA,dPT);
-  ((TH2D*)((TList*)fQAList->FindObject("QACutsBefore"))->FindObject("BefCTP")) ->Fill(dCTP,dPT);
-  ((TH2D*)((TList*)fQAList->FindObject("QACutsBefore"))->FindObject("BefD0"))  ->Fill(dD0M,dPT);
-  ((TH2D*)((TList*)fQAList->FindObject("QACutsBefore"))->FindObject("BefD0"))  ->Fill(dD0P,dPT);
-  ((TH2D*)((TList*)fQAList->FindObject("QACutsBefore"))->FindObject("BefD0D0"))->Fill(dD0D0,dPT);
-  ((TH3D*)((TList*)fQAList->FindObject("QACutsBefore"))->FindObject("BefAP"))  ->Fill(dALPHA,dQT,dPT);
   Int_t passes = 1;
+  if(fSpecie==1&&dALPHA<0) passes = 2; // antilambda
+  Double_t dMASS = myV0->MassK0Short();
+  if(fSpecie==1) {
+    if(passes==2) dMASS = myV0->MassAntiLambda();
+    else dMASS = myV0->MassLambda();
+  }
+  Double_t dCT = dDL*dMASS/myV0->P();
+  Double_t ctaucut = 2.68;
+  if(fSpecie==1) ctaucut = 7.89;
+  ctaucut *= fV0Cuts[9];
   if(dDL<fV0Cuts[0]) passes = 0;
   if(dDCA >fV0Cuts[1]) passes = 0;
   if(dCTP <fV0Cuts[2]) passes = 0;
@@ -582,52 +654,56 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
   if(dETA >fV0Cuts[7]) passes = 0;
   if(fSpecie==0) if(dQT<+fV0Cuts[5]*dALPHA) passes = 0;
   if(fSpecie==0) if(dQT<-fV0Cuts[5]*dALPHA) passes = 0;
-  if(fSpecie==1&&passes==1&&dALPHA<0) passes = 2; // antilambda
-
-  if(passes) {  // ct cut
-    Double_t ctaucut;
-    if(fSpecie==0) ctaucut = 2.68; else ctaucut = 7.89;
-    ctaucut *= fV0Cuts[9];
-    Double_t dCT = dDL;
-    Double_t dMASS;
-    if(fSpecie==0) {
-      dMASS = myV0->MassK0Short();
-    } else {
-      if(passes==2) dMASS = myV0->MassAntiLambda();
-      else dMASS = myV0->MassLambda();
-    }
-    dCT*=dMASS/myV0->P();
-    if(dCT<ctaucut) passes = 0;
-  }
+  if(dCT>ctaucut) passes = 0;
   if(dDLXY<fV0Cuts[10]) passes = 0;
 
-  //printf("PASSES %d\n",passes);
+  Double_t dPHI = myV0->Phi();
+  Double_t dDPHI = dPHI - fPsi2;
+  if( dDPHI < 0 ) dDPHI += TMath::TwoPi();
+  if( dDPHI > TMath::Pi() ) dDPHI = TMath::TwoPi()-dDPHI;
+  TString sIPOP = "IP";
+  if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) )
+    sIPOP = "OP";
+  if(fDoQA) {
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefRAP")) ->Fill(dRAP,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefDLZ")) ->Fill(dDLZ,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefDLXY"))->Fill(dDLXY, dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefCTau"))->Fill(dCT,   dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefDCA")) ->Fill(dDCA,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefCTP")) ->Fill(dCTP,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefD0"))  ->Fill(dD0M,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefD0"))  ->Fill(dD0P,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefD0D0"))->Fill(dD0D0, dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefAP"))  ->Fill(dALPHA,dQT,dPT);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefVOL")) ->Fill(dPHI, dETA,dPT);
+  }
+
   if(passes&&fV0Cuts[8]) {
     switch(fSpecie) {
     case 0: // K0 PID
       if( (jT->GetTPCmomentum()<15) &&
-	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>fV0Cuts[8]) )
-	passes = 0;
+        (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>fV0Cuts[8]) )
+        passes = 0;
       if( (iT->GetTPCmomentum()<15) &&
-	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>fV0Cuts[8]) )
-	passes = 0;
+        (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>fV0Cuts[8]) )
+        passes = 0;
       break;
     case 1: // Lambda PID  i==pos j ==neg
       if(passes==1) {
-	if( (iT->GetTPCmomentum()<15) &&
-	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kProton))>fV0Cuts[8]) )
-	  passes = 0;
-	if( (jT->GetTPCmomentum()<15) &&
-	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>fV0Cuts[8]) )
-	  passes = 0;
+        if( (iT->GetTPCmomentum()<15) &&
+          (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kProton))>fV0Cuts[8]) )
+          passes = 0;
+        if( (jT->GetTPCmomentum()<15) &&
+          (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>fV0Cuts[8]) )
+          passes = 0;
       }
       if(passes==2) {
-	if( (iT->GetTPCmomentum()<15) &&
-	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>fV0Cuts[8]) )
-	  passes = 0;
-	if( (jT->GetTPCmomentum()<15) &&
-	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kProton))>fV0Cuts[8]) )
-	  passes = 0;
+        if( (iT->GetTPCmomentum()<15) &&
+          (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>fV0Cuts[8]) )
+          passes = 0;
+        if( (jT->GetTPCmomentum()<15) &&
+          (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kProton))>fV0Cuts[8]) )
+          passes = 0;
       }
       break;
     }
@@ -636,7 +712,7 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
   // AliAODRecoDecay::MatchToMC()
   if((passes>0)&&(fMCmatch>0)) {
     TClonesArray* mcArray = dynamic_cast<TClonesArray*>(tAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-    passes=0;
+    Int_t mcpasses=0;
     if(mcArray) {
       TString sPDG="NONE";
       TString sMOTHER = "NONE";
@@ -645,34 +721,34 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
       AliAODMCParticle *iTMC = dynamic_cast<AliAODMCParticle*>(mcArray->At( TMath::Abs(iT->GetLabel()) ));
       AliAODMCParticle *jTMC = dynamic_cast<AliAODMCParticle*>(mcArray->At( TMath::Abs(jT->GetLabel()) ));
       if((iTMC)&&(jTMC)) {
-	if((iTMC->GetMother()>=0)&&(jTMC->GetMother()>=0)) {
-	  AliAODMCParticle *iTMom = dynamic_cast<AliAODMCParticle*>(mcArray->At(iTMC->GetMother()));
-	  AliAODMCParticle *jTMom = dynamic_cast<AliAODMCParticle*>(mcArray->At(jTMC->GetMother()));
-	  if((iTMom)&&(jTMom)) {
-	    sPDG="NONPDG";
-	    abc=3;
-	    if(iTMC->GetMother()==jTMC->GetMother()) {
-	      Int_t iMomPDG = iTMom->GetPdgCode();
-	      abc=2;
-	      TDatabasePDG *pdgDatabase = TDatabasePDG::Instance();
-	      if(pdgDatabase->GetParticle(iMomPDG))
-		sPDG = (pdgDatabase->GetParticle(iMomPDG))->GetName();
-	      Int_t pdgcode;
-	      if(fSpecie) pdgcode = 3122; else pdgcode = 310;
-	      if(TMath::Abs(iMomPDG)==pdgcode) {
-		Double_t pxSumDgs = iTMC->Px()+jTMC->Px();
-		Double_t pySumDgs = iTMC->Py()+jTMC->Py();
-		Double_t pzSumDgs = iTMC->Pz()+jTMC->Pz();
-		Double_t pxMother = iTMom->Px();
-		Double_t pyMother = iTMom->Py();
-		Double_t pzMother = iTMom->Pz();
-		sPDG = "Truths";
-		Double_t rads = TMath::Sqrt( iTMC->Xv()*iTMC->Xv() + iTMC->Yv()*iTMC->Yv() );
-		((TH1D*)((TList*)fQAList->FindObject("QACutsAfter"))->FindObject("MCDAUGHTERS"))->Fill(iTMom->GetNDaughters());
-		if((TMath::Abs(pxMother-pxSumDgs)/(TMath::Abs(pxMother)+1.e-13)) < 0.00001 &&
-		   (TMath::Abs(pyMother-pySumDgs)/(TMath::Abs(pyMother)+1.e-13)) < 0.00001 &&
-		   (TMath::Abs(pzMother-pzSumDgs)/(TMath::Abs(pzMother)+1.e-13)) < 0.00001) {
-		  ((TH2D*)((TList*)fQAList->FindObject("QACutsAfter"))->FindObject("MCRADS"))->Fill(1.0,rads);
+        if((iTMC->GetMother()>=0)&&(jTMC->GetMother()>=0)) {
+          AliAODMCParticle *iTMom = dynamic_cast<AliAODMCParticle*>(mcArray->At(iTMC->GetMother()));
+          AliAODMCParticle *jTMom = dynamic_cast<AliAODMCParticle*>(mcArray->At(jTMC->GetMother()));
+          if((iTMom)&&(jTMom)) {
+            sPDG="NONPDG";
+            abc=3;
+            if(iTMC->GetMother()==jTMC->GetMother()) {
+              Int_t iMomPDG = iTMom->GetPdgCode();
+              abc=2;
+              TDatabasePDG *pdgDatabase = TDatabasePDG::Instance();
+              if(pdgDatabase->GetParticle(iMomPDG))
+                sPDG = (pdgDatabase->GetParticle(iMomPDG))->GetName();
+              Int_t pdgcode;
+              if(fSpecie) pdgcode = 3122; else pdgcode = 310;
+              if(TMath::Abs(iMomPDG)==pdgcode) {
+                Double_t pxSumDgs = iTMC->Px()+jTMC->Px();
+                Double_t pySumDgs = iTMC->Py()+jTMC->Py();
+                Double_t pzSumDgs = iTMC->Pz()+jTMC->Pz();
+                Double_t pxMother = iTMom->Px();
+                Double_t pyMother = iTMom->Py();
+                Double_t pzMother = iTMom->Pz();
+                sPDG = "Truths";
+                Double_t rads = TMath::Sqrt( iTMC->Xv()*iTMC->Xv() + iTMC->Yv()*iTMC->Yv() );
+                ((TH1D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCDAUGHTERS"))->Fill(iTMom->GetNDaughters());
+                if((TMath::Abs(pxMother-pxSumDgs)/(TMath::Abs(pxMother)+1.e-13)) < 0.00001 &&
+                  (TMath::Abs(pyMother-pySumDgs)/(TMath::Abs(pyMother)+1.e-13)) < 0.00001 &&
+                  (TMath::Abs(pzMother-pzSumDgs)/(TMath::Abs(pzMother)+1.e-13)) < 0.00001) {
+                  ((TH2D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCRADS"))->Fill(1.0,rads);
 		  abc=1;
 		  if(iTMom->GetMother()>=0) {
 		    AliAODMCParticle *iGrandMa = dynamic_cast<AliAODMCParticle*>(mcArray->At(iTMom->GetMother()));
@@ -681,39 +757,52 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
 		    ptTruth = iTMom->Pt();
 		    if(pdgDatabase->GetParticle(iGrandMaPDG))
 		      sMOTHER = (pdgDatabase->GetParticle(iGrandMaPDG))->GetName();
-		  } else {
-		    sMOTHER = "PRIMARY";
-		  }
-		} else {
-		  ((TH2D*)((TList*)fQAList->FindObject("QACutsAfter"))->FindObject("MCRADS"))->Fill(0.0,rads);
-		}
-	      }
-	    }
-	  }
-	}
+                  } else {
+                    sMOTHER = "PRIMARY";
+                  }
+                } else {
+                  ((TH2D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCRADS"))->Fill(0.0,rads);
+                }
+              }
+            }
+          }
+        }
       }
-      Double_t dMASS;
+      Double_t dMCMASS;
       if(fSpecie==0) {
-	dMASS = myV0->MassK0Short();
-	if(dMASS>0.588) dMASS=0.587999;
-	if(dMASS<0.412) dMASS=0.412001;
+        dMCMASS = myV0->MassK0Short();
+        if(dMCMASS>0.588) dMCMASS=0.587999;
+        if(dMCMASS<0.412) dMCMASS=0.412001;
       } else {
-	dMASS = myV0->MassLambda();
-	if(passes==2) dMASS = myV0->MassAntiLambda();
-	if(dMASS>1.167) dMASS=1.1669;
-	if(dMASS<1.075) dMASS=1.0751;
+        dMCMASS = myV0->MassLambda();
+        if(passes==2) dMCMASS = myV0->MassAntiLambda();
+        if(dMCMASS>1.167) dMCMASS=1.1669;
+        if(dMCMASS<1.075) dMCMASS=1.0751;
       }
       if((iT->GetLabel()>=0)&&(jT->GetLabel()>=0)) {
-	sPDG = Form("%s chked",sPDG.Data());
-	sMOTHER = Form("%s chked",sMOTHER.Data());
-	if(fMCmatch==abc) passes=1;
+        sPDG = Form("%s chked",sPDG.Data());
+        sMOTHER = Form("%s chked",sMOTHER.Data());
+        if(fMCmatch==abc) mcpasses=1;
       }
-      ((TH3D*)((TList*)fQAList->FindObject("QACutsAfter"))->FindObject("MCPDG"))->Fill(dPT,dMASS,sPDG.Data(),1);
-      ((TH3D*)((TList*)fQAList->FindObject("QACutsAfter"))->FindObject("MCMOTHER"))->Fill(ptTruth,ptMom,sMOTHER.Data(),1);
-    }
+      ((TH3D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCPDG"))->Fill(dPT,dMCMASS,sPDG.Data(),1);
+      ((TH3D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCMOTHER"))->Fill(ptTruth,ptMom,sMOTHER.Data(),1);
+    }//mcArray
+    passes=mcpasses;
   }
   // <<=== MATCHED TO MC ===
-
+  if(passes&&fDoQA) {
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftRAP")) ->Fill(dRAP,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftDLZ")) ->Fill(dDLZ,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftDLXY"))->Fill(dDLXY, dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftCTau"))->Fill(dCT,   dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftDCA")) ->Fill(dDCA,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftCTP")) ->Fill(dCTP,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftD0"))  ->Fill(dD0M,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftD0"))  ->Fill(dD0P,  dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftD0D0"))->Fill(dD0D0, dPT, dMASS);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftAP"))  ->Fill(dALPHA,dQT,dPT);
+    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftVOL")) ->Fill(dPHI, dETA,dPT);
+  }
   return passes;
 }
 //=======================================================================
