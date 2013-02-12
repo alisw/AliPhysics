@@ -39,10 +39,12 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
     virtual void Terminate(Option_t *);
     void MyUserExec(Option_t *);
     void SetDebug() {fDebug = kTRUE;}
+    void SetQA(Bool_t qa) {fDoQA = qa;}
     void SetCuts(Double_t cuts[11]);
     void SetK0L0(Int_t specie) {fSpecie=specie;}
     void SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass);
     void SetMCmatch(Int_t match) {fMCmatch=match;}
+    void SetUseEventSelection(Bool_t value) {fUseEventSelection=value;}
 
   private:
     AliAnalysisTaskFlowStrange(const AliAnalysisTaskFlowStrange& analysisTask);
@@ -59,6 +61,9 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
     AliPIDResponse *fPIDResponse;     //! PID response object
     AliFlowBayesianPID *fBayesianPID;  //! Bayesian PID object
     Bool_t fDebug; // true if we want to inspect the main steps of the task
+    Bool_t fUseEventSelection; // true if we want to use AliFlowEventCuts
+    Bool_t fDoQA;  // true if we want to produce QA plots
+    Double_t fPsi2;// best estimation of Psi2
     Int_t fSpecie; // K0=>0 L0=>1
     Int_t fMCmatch; // for studies regarding background and efficiency
     Double_t fV0Cuts[11]; // v0 cuts: dl dca ctp d0 d0d0 qt minEta maxEta PID ct dlxy
@@ -76,7 +81,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
 
     TList *fQAList; // stores the final list of output histograms
 
-  ClassDef(AliAnalysisTaskFlowStrange, 3);
+  ClassDef(AliAnalysisTaskFlowStrange, 4);
 };
 
 #endif
