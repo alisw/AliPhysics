@@ -348,6 +348,8 @@ public:
     kNaccItsPureEsd05Corr,   // 
     kNaccItsPureEsd10Corr,   // 
     kNaccItsPureEsd16Corr,   // 
+    kRefMult,                // reference multiplicity (only in AODs) should be Ntrk w/o double counts
+    kRefMultTPConly,         // TPC only Reference Multiplicty (AliESDtrackCuts::GetReferenceMultiplicity(&esd, kTRUE))
     
     kNch,                    // MC true number of charged particles in |eta|<1.6
     kNch05,                  // MC true number of charged particles in |eta|<0.5
@@ -358,6 +360,7 @@ public:
     kNevents,                // event counter
     kRunNumber,              // run number
     kMixingBin,
+
     kNMaxValues              //
     // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
   };
@@ -1508,6 +1511,8 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kNaccTrcklts]     = 0;
   values[AliDielectronVarManager::kNaccTrcklts0916] = 0;
   values[AliDielectronVarManager::kNevents]         = 0; //always fill bin 0;
+  values[AliDielectronVarManager::kRefMult]         = 0;
+  values[AliDielectronVarManager::kRefMultTPConly]  = 0;
   
   if (primVtx){
     values[AliDielectronVarManager::kXvPrim]       = primVtx->GetX();
@@ -1516,7 +1521,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     values[AliDielectronVarManager::kNVtxContrib]  = primVtx->GetNContributors();
   }
   //   values[AliDielectronVarManager::kChi2NDF]      = primVtx->GetChi2perNDF(); //this is the pair value
-
+  
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);
   values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
@@ -1763,12 +1768,22 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   values[AliDielectronVarManager::kCentrality] = centralityF;
   values[AliDielectronVarManager::kCentralitySPD] = centralitySPD;
 
+  values[AliDielectronVarManager::kRefMult]        = header->GetRefMultiplicity();        // similar to Ntrk
+  values[AliDielectronVarManager::kRefMultTPConly] = header->GetTPConlyRefMultiplicity(); // similar to Nacc
+
   // nanoAODs (w/o AliCentrality branch) should have the VOM centrality stored in the header
   if(!header->GetCentralityP())
     values[AliDielectronVarManager::kCentrality] = header->GetCentrality();
   // nanoAODs (w/o AliEventPlane branch) should have the tpc event plane angle stored in the header
-  if(!header->GetEventplaneP())
-    values[AliDielectronVarManager::kTPCrpH2uc] = header->GetEventplane();
+  if(!header->GetEventplaneP()) {
+    values[AliDielectronVarManager::kTPCrpH2uc]  = header->GetEventplane();
+    //TODO: activate after new nano production
+    /*
+    values[AliDielectronVarManager::kTPCmagH2uc] = header->GetEventplaneMag();
+    values[AliDielectronVarManager::kTPCxH2uc]   = TMath::Cos(header->GetEventplane())*header->GetEventplaneMag();
+    values[AliDielectronVarManager::kTPCyH2uc]   = TMath::Sin(header->GetEventplane())*header->GetEventplaneMag();
+    */
+  }
 
   const AliAODVertex *vtxtpc = GetVertex(event, AliAODVertex::kMainTPC);
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxtpc ? vtxtpc->GetNContributors() : 0);
