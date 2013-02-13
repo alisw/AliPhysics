@@ -78,10 +78,12 @@ namespace RawProduction {
   public:
     TriggerBin(const TString& trigger = "kCentral" );
     TriggerBin(const char* trigger);
+    const TString& Dir() const {return fDir;}
     const TString& Key() const {return fKey;}
     const TString& Trigger() const {return fTrigger;}
   protected:
     TString fTrigger;
+    TString fDir;
     TString fKey;
   };
   // Object describing the input for the macros
@@ -839,17 +841,18 @@ namespace RawProduction {
 
   //OutputBin Definitions
   TriggerBin::TriggerBin(const TString& trigger)
-  : fTrigger(trigger), fKey(trigger)
+  : fTrigger(trigger), fDir(trigger), fKey(trigger)
   { }
 
   TriggerBin::TriggerBin(const char* trigger)
-  : fTrigger(trigger), fKey(trigger)
+  : fTrigger(trigger), fDir(trigger), fKey(trigger)
   { }
 
   TriCenPidBin::TriCenPidBin(Int_t centrality, const TString& pid, const TString& trigger)
   : TriggerBin(trigger), fCentrality(centrality), fPID(pid)
   {
-    fKey.Form("c%03i_%s_%s", centrality, pid.Data(), trigger.Data());
+    fDir.Form("%s/c%03i/%s", trigger.Data(), centrality, pid.Data());
+    fKey.Form("%s_c%03i_%s", trigger.Data(), centrality, pid.Data());
   }
 
   Output::Output(const TString& fileName, const char* options)
@@ -860,16 +863,22 @@ namespace RawProduction {
 
   void Output::SetDir(const TriggerBin& inBin)
   {
-    Bool_t success = fFile->cd(inBin.Key().Data());
-    if( ! success ) {
-      TDirectory* newDir = fFile->mkdir(inBin.Key().Data());
-      newDir->cd();
+    TDirectory* dir = (TDirectoryFile*) fFile;
+    TStringToken dirs(inBin.Dir(), "/");
+    while( dirs.NextToken() ) {
+      Printf("%s", dirs.Data());
+      TDirectory* ndir = dir->GetDirectory(dirs.Data());
+      if(!ndir)
+	dir = dir->mkdir(dirs.Data());
+      else
+	dir = ndir;
     }
+    dir->cd();
   }
 
   TH1* Output::GetHistogram(const TString& name, const RawProduction::TriggerBin& inBin)
   {
-    TDirectory* dir = fFile->GetDirectory(inBin.Key().Data(), true);
+    TDirectory* dir = fFile->GetDirectory(inBin.Dir().Data(), true);
     TH1* hist = dynamic_cast<TH1*>( dir->Get(name.Data()) );
     if( hist )
       return hist;
