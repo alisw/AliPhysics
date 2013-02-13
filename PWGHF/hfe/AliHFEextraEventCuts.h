@@ -27,6 +27,8 @@
 #include "AliCFCutBase.h"
 class TH1F;
 class TBits;
+class AliVVertex;
+class AliVEvent;
 //_____________________________________________________________________________
 class AliHFEextraEventCuts: public AliCFCutBase 
 {
@@ -46,6 +48,7 @@ class AliHFEextraEventCuts: public AliCFCutBase
   void SetUseMixedVertex() {fVtxMixed=kTRUE; fVtxSPD=kFALSE;} //default is vertex from tracks
   void SetUseSPDVertex() {fVtxSPD=kTRUE; fVtxMixed=kFALSE;} //default is vertex from tracks
   void SetCheckCorrelationSPDVtx() {fCheckCorrelationSPDVtx=kTRUE;} // check the correlation between z of different vertices
+  void SetCheckSPDResolution() {fVtxResolution = kTRUE;} // check resolution on the SPD vertex
  
   Bool_t   GetRequireVtxCuts() const {return fRequireVtxCuts;} // cut value getter
   Double_t GetVertexZMax() const {return fVtxZMax;} // cut values getter
@@ -57,6 +60,8 @@ class AliHFEextraEventCuts: public AliCFCutBase
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin, Double_t xmax);
   enum{kVtxPosZ,
        kVtxNCtrb,
+       kCorrelation,
+       kResolution,
        kNCuts,
        kNStepQA=2
   };
@@ -67,6 +72,8 @@ class AliHFEextraEventCuts: public AliCFCutBase
   void DefineHistograms(); 		// books histograms 
   void Initialise();			// sets everything to 0
   void FillHistograms(TObject* obj, Bool_t b);
+  const AliVVertex *GetPrimaryVertexSPD(const AliVEvent * const inputEvent);
+  const AliVVertex *GetPrimaryVertexTracks(const AliVEvent *const inputEvent);
 
   Bool_t fRequireVtxCuts ; //The type of trigger to be checked
   Double_t fVtxZMax ; //Z vertex position, maximum value
@@ -75,6 +82,7 @@ class AliHFEextraEventCuts: public AliCFCutBase
   Bool_t   fVtxMixed;  //Flag for use of mixed vertex (primary vertex with track, if not SPD vertex)
   Bool_t   fVtxSPD;    //Flag for use of SPD vertex 
   Bool_t   fCheckCorrelationSPDVtx;   //Check the correlation SPD, track vertex
+  Bool_t   fVtxResolution;            //Check vertex resolution cut
  
   TBits *fBitMap ; //cut mask
 
