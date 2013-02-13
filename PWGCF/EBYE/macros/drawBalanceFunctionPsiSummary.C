@@ -2,18 +2,31 @@ const Int_t numberOfCentralityBins = 8;
 TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
 
 void drawBalanceFunctionPsiSummarySummary(const char* lhcPeriod = "LHC11h",
-					      Int_t gTrainID = 250,			      
+					      Int_t gTrainID = 290,			      
 					      Double_t psiMin = -0.5, 
-					      Double_t psiMax = 3.5){
+					  Double_t psiMax = 3.5,
+					  TString eventClass = "Centrality"){
   TFile        *fPar[3];
   TGraphErrors *gPar[3][18];
 
   Int_t iCentrality[3] = {1,2,3};
+  Double_t fCentralityMin[3] = {0.,20.,40.};
+  Double_t fCentralityMax[3] = {10.,30.,50.};
   
+
   for(Int_t iCent = 0 ; iCent < 3; iCent++){
 
     // open file
-    fPar[iCent] = TFile::Open(Form("PbPb/%s/Train%d/figs/balanceFunctionFit_Cent%d_FitParameters.root",lhcPeriod,gTrainID,iCentrality[iCent]));
+    if(eventClass == "Centrality"){
+      fPar[iCent] = TFile::Open(Form("PbPb/%s/Train%d/figs/balanceFunctionFit_Cent%.1fTo%.1f_FitParameters.root",lhcPeriod,gTrainID,fCentralityMin[iCent],fCentralityMax[iCent]),"READ");
+    }
+    else if(eventClass == "Multiplicity"){
+      fPar[iCent] = TFile::Open(Form("PbPb/%s/Train%d/figs/balanceFunctionFit_Mult%.1fTo%.1f_FitParameters.root",lhcPeriod,gTrainID,fCentralityMin[iCent],fCentralityMax[iCent]),"RED");
+    }
+    else{
+      fPar[iCent] = TFile::Open(Form("PbPb/%s/Train%d/figs/balanceFunctionFit_Cent%d_FitParameters.root",lhcPeriod,gTrainID,iCentrality[iCent]),"READ");
+    }  
+  
     if(!fPar[iCent]){
       cerr<<"FILE "<<Form("PbPb/%s/Train%d/figs/correlationFunctionFit_Cent%d_FitParameters.root",lhcPeriod,gTrainID,iCentrality[iCent])<<" not found!"<<endl;
       return;
@@ -23,7 +36,8 @@ void drawBalanceFunctionPsiSummarySummary(const char* lhcPeriod = "LHC11h",
     for(Int_t iPar = 0 ; iPar < 18; iPar++){
       gPar[iCent][iPar] = (TGraphErrors*)fPar[iCent]->Get(Form("gPar%d",iPar));
       if(!gPar[iCent][iPar]){
-	cerr<<"Graph for parameter "<<iPar<<" not found!"<<endl;
+	cerr<<"Graph for parameter "<<iPar<<" in centrality "<< iCent << " not found!"<<endl;
+	fPar[iCent]->ls();
 	return;
       } 
     }
@@ -63,10 +77,11 @@ void drawBalanceFunctionPsiSummarySummary(const char* lhcPeriod = "LHC11h",
   
 
 void drawBalanceFunctionPsiSummary(const char* lhcPeriod = "LHC11h",
-				   Int_t gTrainID = 208,			      
-				   Int_t gCentrality = 1,
-				   Double_t psiMin = -0.5, 
-				   Double_t psiMax = 3.5) {
+				   Int_t gTrainID = 290,			      
+				   Int_t gCentrality = 9,
+				   Double_t psiMin = 0, 
+				   Double_t psiMax = 10,
+				   TString eventClass = "Centrality") {
   // Macro that draws the fit results for the 
   // correlation functions from the balance function analysis
   // Author: m.weber@cern.ch
@@ -87,10 +102,10 @@ void drawBalanceFunctionPsiSummary(const char* lhcPeriod = "LHC11h",
   // this could also be retrieved directly from AliBalancePsi
   //const Int_t kNPtBins = 16;
   //Double_t ptBins[kNPtBins+1] = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
-  //const Int_t kNPtBins = 5;
-  //Double_t ptBins[kNPtBins+1] = {0.2,1.0,2.0,3.0,4.0,8.0};
-  const Int_t kNPtBins = 4;
-  Double_t ptBins[kNPtBins+1] = {1.0,2.0,3.0,4.0,8.0};
+  const Int_t kNPtBins = 5;
+  Double_t ptBins[kNPtBins+1] = {0.2,1.0,2.0,3.0,4.0,8.0};
+  //const Int_t kNPtBins = 4;
+  //Double_t ptBins[kNPtBins+1] = {1.0,2.0,3.0,4.0,8.0};
   //const Int_t kNPtBins = 1;
   //Double_t ptBins[kNPtBins+1] = {0.2,2.0};
 
@@ -182,13 +197,23 @@ void drawBalanceFunctionPsiSummary(const char* lhcPeriod = "LHC11h",
       
       // Open input file
       inFileName = Form("PbPb/%s/Train%d/Fits/balanceFunctionFit2D",lhcPeriod,gTrainID);
-      inFileName += ".Centrality";  
-      inFileName += gCentrality; inFileName += ".Psi";
-      if((psiMin == -0.5)&&(psiMax == 0.5)) inFileName += "InPlane.Ptt";
-      else if((psiMin == 0.5)&&(psiMax == 1.5)) inFileName += "Intermediate.Ptt";
-      else if((psiMin == 1.5)&&(psiMax == 2.5)) inFileName += "OutOfPlane.Ptt";
-      else if((psiMin == 2.5)&&(psiMax == 3.5)) inFileName += "Rest.PttFrom";
-      else inFileName += "All.PttFrom";
+      if(eventClass == "Centrality"){
+	inFileName += Form(".Centrality%.1fTo%.1f",psiMin,psiMax);
+	inFileName += ".PsiAll.PttFrom";
+      }
+      else if(eventClass == "Multiplicity"){
+	inFileName += Form(".Multiplicity%.0fTo%.0f",psiMin,psiMax);
+	inFileName += ".PsiAll.PttFrom";
+      }
+      else{ // "EventPlane" (default)
+	inFileName += ".Centrality";  
+	inFileName += gCentrality; inFileName += ".Psi";
+	if((psiMin == -0.5)&&(psiMax == 0.5)) inFileName += "InPlane.Ptt";
+	else if((psiMin == 0.5)&&(psiMax == 1.5)) inFileName += "Intermediate.Ptt";
+	else if((psiMin == 1.5)&&(psiMax == 2.5)) inFileName += "OutOfPlane.Ptt";
+	else if((psiMin == 2.5)&&(psiMax == 3.5)) inFileName += "Rest.PttFrom";
+	else inFileName += "All.PttFrom";
+      }
       inFileName += Form("%.1f",ptTriggerMin); inFileName += "To"; 
       inFileName += Form("%.1f",ptTriggerMax); inFileName += "PtaFrom";
       inFileName += Form("%.1f",ptAssociatedMin); inFileName += "To"; 
@@ -309,7 +334,17 @@ void drawBalanceFunctionPsiSummary(const char* lhcPeriod = "LHC11h",
   cPar->SaveAs(Form("PbPb/%s/Train%d/figs/balanceFunctionFit_Cent%d_FitParameters.eps",lhcPeriod,gTrainID,gCentrality));
   cPar->SaveAs(Form("PbPb/%s/Train%d/figs/balanceFunctionFit_Cent%d_FitParameters.pdf",lhcPeriod,gTrainID,gCentrality));
 
-  TFile *fOut = TFile::Open(Form("PbPb/%s/Train%d/figs/balanceFunctionFit_Cent%d_FitParameters.root",lhcPeriod,gTrainID,gCentrality),"RECREATE");
+  TFile *fOut = NULL;
+  if(eventClass == "Centrality"){
+    fOut = TFile::Open(Form("PbPb/%s/Train%d/figs/balanceFunctionFit_Cent%.1fTo%.1f_FitParameters.root",lhcPeriod,gTrainID,psiMin,psiMax),"RECREATE");
+  }
+  else if(eventClass == "Multiplicity"){
+    fOut = TFile::Open(Form("PbPb/%s/Train%d/figs/balanceFunctionFit_Mult%.1fTo%.1f_FitParameters.root",lhcPeriod,gTrainID,psiMin,psiMax),"RECREATE");
+  }
+  else{
+    fOut = TFile::Open(Form("PbPb/%s/Train%d/figs/balanceFunctionFit_Cent%d_FitParameters.root",lhcPeriod,gTrainID,gCentrality),"RECREATE")
+  }  
+
   for(Int_t iPar = 0; iPar < 18; iPar++){
     gPar[iPar]->Write();
   }

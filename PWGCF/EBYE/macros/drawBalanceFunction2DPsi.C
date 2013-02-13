@@ -1,5 +1,6 @@
-const Int_t numberOfCentralityBins = 11;
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-1","1-2","0-100"};
+const Int_t numberOfCentralityBins = 12;
+TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+
 
 const Int_t gRebin = 1;
 void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root", 
@@ -546,7 +547,7 @@ void fitbalanceFunction(Int_t gCentrality = 1,
 
   // just release the near side peak
   gFitFunction->ReleaseParameter(0);gFitFunction->SetParameter(0,1.0);
-  gFitFunction->ReleaseParameter(1);gFitFunction->SetParameter(1,0.3);gFitFunction->SetParLimits(1,0.0,100);
+  gFitFunction->ReleaseParameter(1);gFitFunction->SetParameter(1,0.3);gFitFunction->SetParLimits(1,0.0,100000);
   gFitFunction->ReleaseParameter(2);gFitFunction->SetParameter(2,0.3);gFitFunction->SetParLimits(2,0.05,0.7);
   gFitFunction->ReleaseParameter(3);gFitFunction->SetParameter(3,0.3);gFitFunction->SetParLimits(3,0.05,1.7);
 
