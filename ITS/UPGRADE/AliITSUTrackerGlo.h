@@ -55,6 +55,7 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 NeedToProlong(AliESDtrack* estTr);
   void                   Init(AliITSUReconstructor* rec);
   void                   FindTrack(AliESDtrack* esdTr, Int_t esdID);
+  void                   CreateDefaultTrackCond();
   Bool_t                 InitHypothesis(AliESDtrack *esdTr, Int_t esdID);
   Bool_t                 TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo);
   Bool_t                 TransportToLayer(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo);
@@ -110,7 +111,8 @@ class AliITSUTrackerGlo : public AliTracker {
   Int_t                           fNFreeSeeds;     //! number of seeds freed in the pool
   Int_t                           fLastSeedID;     //! id of the pool seed on which is returned by the NextFreeSeed method
   //
-  AliITSUTrackCond                fTrCond;         // tmp, to be moved to recoparam
+  TObjArray                       fDefTrackConds;  //! default tracking conditions
+  AliITSUTrackCond*               fCurrTrackCond;  // current tracking condition
   Int_t                           fTrackPhase;     // tracking phase
   Int_t*                          fClInfo;         //! auxiliary track cluster info
   //

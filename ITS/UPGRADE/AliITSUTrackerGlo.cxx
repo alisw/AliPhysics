@@ -60,7 +60,8 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fFreeSeedsID(0)
   ,fNFreeSeeds(0)
   ,fLastSeedID(0)
-  ,fTrCond()
+  ,fDefTrackConds(0)
+  ,fCurrTrackCond(0)
   ,fTrackPhase(-1)
   ,fClInfo(0)
 {
@@ -93,6 +94,7 @@ void AliITSUTrackerGlo::Init(AliITSUReconstructor* rec)
   fSeedsPool.ExpandCreateFast(1000); // RS TOCHECK
   fFreeSeedsID.Set(1000);
   //
+  /*
   fTrCond.SetNLayers(fITS->GetNLayersActive());
   fTrCond.AddNewCondition(5);
   fTrCond.AddGroupPattern( (0x1<<0)|(0x1<<1) );
@@ -111,12 +113,35 @@ void AliITSUTrackerGlo::Init(AliITSUReconstructor* rec)
   //
   printf("Tracking Conditions: ");
   fTrCond.Print();
+  */
 }
+
+//_________________________________________________________________________
+void AliITSUTrackerGlo::CreateDefaultTrackCond()
+{
+  // creates default tracking conditions to be used when recoparam does not provide them
+  int nLr = fITS->GetNLayersActive();
+  fClInfo = new Int_t[nLr<<1];
+  //
+  AliITSUTrackCond* cond = new AliITSUTrackCond();
+  //
+  cond->SetNLayers(fITS->GetNLayersActive());
+  cond->AddNewCondition(nLr);
+  cond->AddGroupPattern( 0xffff ); // require all layers hit
+  //
+  fDefTrackConds.AddLast(cond);
+  //
+  AliInfo("Created conditions: ");
+  for (int i=0;i<fDefTrackConds.GetEntriesFast();i++) fDefTrackConds[i]->Print();
+  //
+}
+
 
 //_________________________________________________________________________
 Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
 {
   //
+  TObjArray *trackConds = 0;
   //
   SetTrackingPhase(kClus2Tracks);
   ResetSeedsPool();
@@ -127,17 +152,32 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   if (fHypStore.GetSize()<nTrESD) fHypStore.Expand(nTrESD+100);
   //
   fITS->ProcessClusters();
-  // select ESD tracks to propagate
-  for (int itr=0;itr<nTrESD;itr++) {
-    AliESDtrack *esdTr = esdEv->GetTrack(itr);
-    AliInfo(Form("Processing track %d | MCLabel: %d",itr,esdTr->GetTPCLabel()));
-    if (!NeedToProlong(esdTr)) continue;  // are we interested in this track?
-    FindTrack(esdTr, itr);
-  }
   //
-  AliInfo(Form("SeedsPool: %d, BookedUpTo: %d, free: %d",fSeedsPool.GetSize(),fSeedsPool.GetEntriesFast(),fNFreeSeeds));
-  fHypStore.Print();
-  FinalizeHypotheses();
+  int nTrackCond = AliITSUReconstructor::GetRecoParam()->GetNTrackingConditions();
+  if (nTrackCond<1) {
+    if (!fDefTrackConds.GetEntriesFast()) {
+      AliInfo("No tracking conditions found in recoparams, creating default one requesting all layers hit");
+      CreateDefaultTrackCond();
+    }
+    trackConds = &fDefTrackConds;
+    nTrackCond = trackConds->GetEntriesFast();
+  } 
+  else trackConds = AliITSUReconstructor::GetRecoParam()->GetTrackingConditions();
+  //
+  for (int icnd=0;icnd<nTrackCond;icnd++) {
+    fCurrTrackCond = (AliITSUTrackCond*)trackConds->UncheckedAt(icnd);
+    // select ESD tracks to propagate
+    for (int itr=0;itr<nTrESD;itr++) {
+      AliESDtrack *esdTr = esdEv->GetTrack(itr);
+      AliInfo(Form("Processing track %d | MCLabel: %d",itr,esdTr->GetTPCLabel()));
+      if (!NeedToProlong(esdTr)) continue;  // are we interested in this track?
+      FindTrack(esdTr, itr);
+    }   
+    //
+    AliInfo(Form("SeedsPool: %d, BookedUpTo: %d, free: %d",fSeedsPool.GetSize(),fSeedsPool.GetEntriesFast(),fNFreeSeeds));
+    fHypStore.Print();
+    FinalizeHypotheses();
+  }
   //
   return 0;
 }
@@ -708,7 +748,7 @@ Bool_t AliITSUTrackerGlo::NeedToKill(AliITSUSeed *seed, Int_t flag)
     int lastChecked = seed->GetLayerID();
     UShort_t patt = seed->GetHitsPattern();
     if (lastChecked) patt |= ~(kMask<<lastChecked); // not all layers were checked, complete unchecked once by potential hits
-    Bool_t seedOK = fTrCond.CheckPattern(patt);
+    Bool_t seedOK = fCurrTrackCond->CheckPattern(patt);
     return !seedOK;
   }
   return kTRUE;

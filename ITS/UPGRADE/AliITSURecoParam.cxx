@@ -15,7 +15,7 @@
 
 #include "AliITSURecoParam.h"
 #include "AliLog.h"
-
+#include "AliITSUTrackCond.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -66,6 +66,7 @@ AliITSURecoParam::AliITSURecoParam()
   ,fSigmaZ2(0)
   ,fMaxTr2ClChi2(0)
   ,fMissPenalty(0)
+  ,fTrackingConditions(0)
 {
   // def c-tor
   SetName("ITS");
@@ -92,6 +93,7 @@ AliITSURecoParam::AliITSURecoParam(Int_t nLr)
   ,fSigmaZ2(0)
   ,fMaxTr2ClChi2(0)
   ,fMissPenalty(0)
+  ,fTrackingConditions(0)
 {
   // def c-tor
   SetName("ITS");
@@ -108,6 +110,7 @@ AliITSURecoParam::~AliITSURecoParam()
   delete[] fSigmaZ2;
   delete[] fMaxTr2ClChi2;
   delete[] fMissPenalty;
+  fTrackingConditions.Delete();
 }
 
 //_____________________________________________________________________________
@@ -219,4 +222,17 @@ void AliITSURecoParam::Print(Option_t *opt) const
     printf("%-30s\t:","fMissPenalty");      for (int i=0;i<fNLayers;i++) printf(" %+.2e",fMissPenalty[i]); printf("\n");
   }
   //
+  int nTrCond = GetNTrackingConditions();
+  printf("%d tracking conditions defined\n",nTrCond);
+  for (int itc=0;itc<nTrCond;itc++) {
+    printf("Tracking condition %d\n",itc);
+    GetTrackingCondition(itc)->Print();
+  }
+}
+
+//__________________________________________________
+void  AliITSURecoParam::AddTrackingCondition(AliITSUTrackCond* cond)
+{
+  // Add new tracking condition
+  fTrackingConditions.AddLast(cond);
 }

@@ -1,14 +1,15 @@
 void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult, const char* cdbURI="local://") {
 //========================================================================
 //
-// Steering macro for ITS reconstruction parameters
+// Steering macro for ITSU reconstruction parameters
 //
-// Author: A.Dainese
-// Contact: andrea.dainese@lnl.infn.it
+// Contact: ruben.shahoyan@cern.ch
 //
 //========================================================================
-
   const char* macroname = "MakeITSRecoParam.C";
+  //
+  enum {kBit0=0x1<<0,kBit1=0x1<<1,kBit2=0x1<<2,kBit3=0x1<<3,kBit4=0x1<<4,kBit5=0x1<<5,kBit6=0x1<<6,kBit7=0x7<<2,kBit8=0x1<<8};
+  //
   //
   gSystem->Load("libITSUpgradeBase.so");
   gSystem->Load("libITSUpgradeSim.so");
@@ -17,7 +18,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(cdbURI);
-
+  AliITSUTrackCond* trcond = 0;
   int nLr = 7;
   
   TObjArray *recoParamArray = new TObjArray();
@@ -42,6 +43,27 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     itsRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
     itsRecoParam->SetTitle("LowMult");
     recoParamArray->AddLast(itsRecoParam);
+    //******************************************************************
+    // Add tracking conditions >>>
+    trCond = new AliITSUTrackCond();
+    trCond->SetNLayers(nLr); 
+    trCond->AddNewCondition(5); // min hits
+    trCond->AddGroupPattern( kBit0|kBit1 );
+    trCond->AddGroupPattern( kBit3|kBit4 );
+    trCond->AddGroupPattern( kBit5|kBit6 );
+    //
+    trCond->AddNewCondition(5);
+    trCond->AddGroupPattern( kBit0|kBit2 );
+    trCond->AddGroupPattern( kBit3|kBit4 );
+    trCond->AddGroupPattern( kBit5|kBit6 );
+    //
+    trCond->AddNewCondition(5);
+    trCond->AddGroupPattern( kBit1|kBit2 );
+    trCond->AddGroupPattern( kBit3|kBit4 );
+    trCond->AddGroupPattern( kBit5|kBit6 );
+    //    
+    itsRecoParam->AddTrackingCondition(trCond);
+    // Add tracking conditions >>>
   }
   {
     AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetHighFluxParam();
@@ -52,6 +74,28 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     itsRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
     itsRecoParam->SetTitle("HighMult");
     recoParamArray->AddLast(itsRecoParam);
+    //******************************************************************
+    // Add tracking conditions >>>
+    trCond = new AliITSUTrackCond();
+    trCond->SetNLayers(nLr); 
+    trCond->AddNewCondition(5); // min hits
+    trCond->AddGroupPattern( kBit0|kBit1 );
+    trCond->AddGroupPattern( kBit3|kBit4 );
+    trCond->AddGroupPattern( kBit5|kBit6 );
+    //
+    trCond->AddNewCondition(5);
+    trCond->AddGroupPattern( kBit0|kBit2 );
+    trCond->AddGroupPattern( kBit3|kBit4 );
+    trCond->AddGroupPattern( kBit5|kBit6 );
+    //
+    trCond->AddNewCondition(5);
+    trCond->AddGroupPattern( kBit1|kBit2 );
+    trCond->AddGroupPattern( kBit3|kBit4 );
+    trCond->AddGroupPattern( kBit5|kBit6 );
+    //    
+    itsRecoParam->AddTrackingCondition(trCond);
+    // Add tracking conditions >>>
+    //
   }
   //
   // Set the default

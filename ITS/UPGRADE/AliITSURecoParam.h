@@ -11,7 +11,9 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+class AliITSUTrackCond;
 
+#include <TObjArray.h>
 #include "AliDetectorRecoParam.h"
 
 class AliITSURecoParam : public AliDetectorRecoParam
@@ -42,6 +44,9 @@ class AliITSURecoParam : public AliDetectorRecoParam
   Double_t    GetTPCITSWallRMax()                const {return fTPCITSWallRMax;}
   Double_t    GetTPCITSWallZSpanH()              const {return fTPCITSWallZSpanH;}
   Double_t    GetTPCITSWallMaxStep()             const {return fTPCITSWallMaxStep;}
+  TObjArray*  GetTrackingConditions()            const {return (TObjArray*)&fTrackingConditions;}
+  Int_t       GetNTrackingConditions()           const {return fTrackingConditions.GetEntriesFast();}
+  AliITSUTrackCond* GetTrackingCondition(Int_t i) const {return (AliITSUTrackCond*)fTrackingConditions[i];}
   //
   void        SetNLayers(Int_t n);
   void        SetTanLorentzAngle(Int_t lr, Double_t v);
@@ -62,6 +67,7 @@ class AliITSURecoParam : public AliDetectorRecoParam
   void        SetTPCITSWallZSpanH(double v)                           {fTPCITSWallZSpanH = v;}
   void        SetTPCITSWallMaxStep(double v)                          {fTPCITSWallMaxStep = v;}
   //
+  void        AddTrackingCondition(AliITSUTrackCond* cond);
   virtual void Print(Option_t *opt="")  const;
   //
  protected:
@@ -85,8 +91,8 @@ class AliITSURecoParam : public AliDetectorRecoParam
   Double_t*      fMaxTr2ClChi2;     //[fNLayers] max track-to-cluster chi2
   Double_t*      fMissPenalty;      //[fNLayers] chi2 penalty for missing hit on the layer
   //
-
-
+  TObjArray      fTrackingConditions; // array of tracking conditions for different iterations
+  //
   static const Double_t fgkMaxDforV0dghtrForProlongation;      // default
   static const Double_t fgkMaxDForProlongation;                // default
   static const Double_t fgkMaxDZForProlongation;               // default
