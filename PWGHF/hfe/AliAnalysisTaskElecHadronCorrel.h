@@ -56,6 +56,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
     void ElectronHadCorrel(Int_t itrack, AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2,TH2F *DphiPt3,TH2F *DphiPt4);	
+    void ElectronHadCorrelEtaFarSide(Int_t itrack, AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2,TH2F *DphiPt3,TH2F *DphiPt4);	
     void ElectronHadCorrelNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH2F *DphiPtNew,TH2F *DphiPtNew1,TH2F *DphiPtNew2,TH2F *DphiPtNew3,TH2F *DphiPtNew4);	
     void HadronInfo(Int_t itrack);
     void    SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
@@ -100,8 +101,8 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
 
     TH1F			*fNoEvents;		//no of events
 //    TH1F			*fTrkpt;		//track pt
-    TH2F			*fTrkEovPBef;		//track E/p before HFE pid
-    TH2F			*fTrkEovPBefHad;		//track E/p before HFE pid
+ //   TH2F			*fTrkEovPBef;		//track E/p before HFE pid
+ //   TH2F			*fTrkEovPBefHad;		//track E/p before HFE pid
 //    TH2F			*fdEdxBef;		//track dEdx vs p before HFE pid
     TH2F			*fSemiIncElecDphi;  	//Semi Inclusive elec - had DPhi
     TH2F			*fSemiIncElecDphi1;  	//Semi Inclusive elec - had DPhi
@@ -118,6 +119,11 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH2F			*fInclusiveElecDphi2;  	//Inclusive elec - had DPhi
     TH2F			*fInclusiveElecDphi3;  	//Inclusive elec - had DPhi
     TH2F			*fInclusiveElecDphi4;  	//Inclusive elec - had DPhi
+    TH2F       *fInclusiveElecDphiEtaFS;    //Inclusive elec EtaFS- had DPhi
+    TH2F       *fInclusiveElecDphiEtaFS1;   //Inclusive elec EtaFS- had DPhi
+    TH2F       *fInclusiveElecDphiEtaFS2;   //Inclusive elec EtaFS- had DPhi
+    TH2F       *fInclusiveElecDphiEtaFS3;   //Inclusive elec EtaFS- had DPhi
+    TH2F       *fInclusiveElecDphiEtaFS4;   //Inclusive elec EtaFS- had DPhi
     TH2F			*fDphiULSMassLow;	//Dphi - ULS, mass< mass cut
     TH2F			*fDphiULSMassLow1;	//Dphi - ULS, mass< mass cut
     TH2F			*fDphiULSMassLow2;	//Dphi - ULS, mass< mass cut
@@ -144,22 +150,22 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH1F        *fULSElecPt; //ULS elec Pt
     TH1F        *fLSElecPt;// LS elec pt 
 
-    TH1F			*fTrackPtBefTrkCuts;	//Track pt before track cuts	
-    TH1F			*fTrackPtAftTrkCuts;	//Track pt after track cuts
-    TH2F			*fTPCnsigma;		//TPC n sigma vs p	
-    TH1F			*fNCellv1;		//No of cells in cluster, all EMCAL cluster
-    TH1F			*fClsEv1;		//Cluster energy, all EMCAL cluster
-    TH1F			*fNClusv1;		//No of clusters in event, all EMCAL cluster
+ //   TH1F			*fTrackPtBefTrkCuts;	//Track pt before track cuts	
+ //   TH1F			*fTrackPtAftTrkCuts;	//Track pt after track cuts
+ //   TH2F			*fTPCnsigma;		//TPC n sigma vs p	
+ //   TH1F			*fNCellv1;		//No of cells in cluster, all EMCAL cluster
+ //   TH1F			*fClsEv1;		//Cluster energy, all EMCAL cluster
+ //   TH1F			*fNClusv1;		//No of clusters in event, all EMCAL cluster
     TH1F        *fInvmassLS1; //LS Invmass for all rec par
-    TH1F        *fInvmassLS2; //LS Invmass for all rec par
-    TH1F        *fInvmassLS3; //LS Invmass for all rec par
-    TH1F        *fInvmassLS4; //LS Invmass for all rec par
-    TH1F        *fInvmassLS5; //LS Invmass for all rec par
+ //   TH1F        *fInvmassLS2; //LS Invmass for all rec par
+ //   TH1F        *fInvmassLS3; //LS Invmass for all rec par
+ //   TH1F        *fInvmassLS4; //LS Invmass for all rec par
+ //   TH1F        *fInvmassLS5; //LS Invmass for all rec par
     TH1F        *fInvmassULS1;//ULS Invmass for all rec par
-    TH1F        *fInvmassULS2;//ULS Invmass for all rec par
-    TH1F        *fInvmassULS3;//ULS Invmass for all rec par
-    TH1F        *fInvmassULS4;//ULS Invmass for all rec par
-    TH1F        *fInvmassULS5;//ULS Invmass for all rec par
+ //   TH1F        *fInvmassULS2;//ULS Invmass for all rec par
+ //   TH1F        *fInvmassULS3;//ULS Invmass for all rec par
+ //   TH1F        *fInvmassULS4;//ULS Invmass for all rec par
+ //   TH1F        *fInvmassULS5;//ULS Invmass for all rec par
     TH1F        *fcentrality;//
     TH1F        *fElecPhi;//
     TH1F        *fElecPhiTPChalf;//
@@ -206,8 +212,15 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH2F       *fHadronDphi4;   //Hadron - had DPhi
     TH1F       *fPiPt; //TPC nsig < 3.5 pt
 
-    //  THnSparse  *fSparseElectron;//!Electron info 
-    //  Double_t *fvalueElectron;//!Electron info 
+    TH2F       *fHadronDphiNoSS;    //Hadron - had DPhi
+    TH2F       *fHadronDphiNoSS1;   //Hadron - had DPhi
+    TH2F       *fHadronDphiNoSS2;   //Hadron - had DPhi
+    TH2F       *fHadronDphiNoSS3;   //Hadron - had DPhi
+    TH2F       *fHadronDphiNoSS4;   //Hadron - had DPhi
+    TH1F       *fPiPtNoSS; //TPC nsig < 3.5 pt
+
+    THnSparse  *fSparseElectron;//!Electron info 
+    Double_t *fvalueElectron;//!Electron info 
 
     AliAnalysisTaskElecHadronCorrel(const AliAnalysisTaskElecHadronCorrel&); // not implemented
     AliAnalysisTaskElecHadronCorrel& operator=(const AliAnalysisTaskElecHadronCorrel&); // not implemented
