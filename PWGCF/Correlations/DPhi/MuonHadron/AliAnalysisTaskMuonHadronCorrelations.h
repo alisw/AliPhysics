@@ -74,10 +74,13 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
   TH1D *fHistDeltaPhiMix[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsPt]; //!
   TH2D *fHistNTracksCB_vs_NTracksMA[fNMaxBinsCentrality]; //!
   TH2D *fHistNTracksCB_vs_NTracksMAmixed[fNMaxBinsCentrality]; //!
+  TH1D *fHistSingleMuonsPt[fNMaxBinsCentrality]; //!
+  TH1D *fHistSingleMuonsPtmixed[fNMaxBinsCentrality]; //!
 
   TH1D *fHistV0Multiplicity; //!
   TH1D *fHistITSMultiplicity; //!
   TH1D *fHistCentrality; //!
+  TH1D *fHistEvStat; //!
 
   TH2D *fHistSingleMuonsEtaVsPt[fNMaxBinsCentrality]; //!
   TH2D *fHistSingleMuonsEtaVsRAbs[fNMaxBinsCentrality]; //!

@@ -36,6 +36,7 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() :
   fHistV0Multiplicity(0x0), 
   fHistITSMultiplicity(0x0),
   fHistCentrality(0x0),
+  fHistEvStat(0x0),
   fCentMethod(0),
   fOutputList(0x0)
 {
@@ -51,6 +52,8 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() :
     }
     fHistNTracksCB_vs_NTracksMA[iCent]  = NULL;
     fHistNTracksCB_vs_NTracksMAmixed[iCent]  = NULL;
+    fHistSingleMuonsPt[iCent]   = NULL;
+    fHistSingleMuonsPtmixed[iCent]   = NULL;
     fHistSingleMuonsEtaVsPt[iCent]   = NULL;
     fHistSingleMuonsEtaVsRAbs[iCent] = NULL;
   }  
@@ -79,6 +82,7 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(con
   fHistV0Multiplicity(0x0), 
   fHistITSMultiplicity(0x0),
   fHistCentrality(0x0),
+  fHistEvStat(0x0),
   fCentMethod(0),
   fOutputList(0x0)
 {
@@ -94,6 +98,8 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(con
     }
     fHistNTracksCB_vs_NTracksMA[iCent]  = NULL;
     fHistNTracksCB_vs_NTracksMAmixed[iCent]  = NULL;
+    fHistSingleMuonsPt[iCent]   = NULL;
+    fHistSingleMuonsPtmixed[iCent]   = NULL;
     fHistSingleMuonsEtaVsPt[iCent]   = NULL;
     fHistSingleMuonsEtaVsRAbs[iCent] = NULL;
   }  
@@ -174,13 +180,22 @@ void AliAnalysisTaskMuonHadronCorrelations::UserCreateOutputObjects() {
     fOutputList -> Add(fHistNTracksCB_vs_NTracksMA[iCent]);
     fOutputList -> Add(fHistNTracksCB_vs_NTracksMAmixed[iCent]);
 
+    fHistSingleMuonsPt[iCent] = new TH1D(Form("fHistSingleMuonPt_Cent%02d",iCent),
+					 "p_{T} for single muons",
+					 fNbinsPt, (Double_t*)fPtAxis->GetXbins()->GetArray());
+    fHistSingleMuonsPtmixed[iCent] = new TH1D(Form("fHistSingleMuonPtmixed_Cent%02d",iCent),
+					      "p_{T} for single muons",
+					      fNbinsPt, (Double_t*)fPtAxis->GetXbins()->GetArray());
+    fOutputList -> Add(fHistSingleMuonsPt[iCent]);
+    fOutputList -> Add(fHistSingleMuonsPtmixed[iCent]);
+
     fHistSingleMuonsEtaVsPt[iCent]   = new TH2D(Form("fHistSingleMuonsEtaVsPt_Cent%02d",iCent),
 					       "#eta vs p_{T} for single muons",
-					       100, -4.5, -2., 100, 0., 10.);
+						100, -4.5, -2., 100, 0., 10.);
     fOutputList->Add(fHistSingleMuonsEtaVsPt[iCent]);
     fHistSingleMuonsEtaVsRAbs[iCent] = new TH2D(Form("fHistSingleMuonsEtaVsRAbs_Cent%02d",iCent),
-					       "#eta vs R_{Abs} for single muons",
-					       100, -4.5, -2., 100, 0, 100);
+						"#eta vs R_{Abs} for single muons",
+						100, -4.5, -2., 100, 0, 100);
     fOutputList->Add(fHistSingleMuonsEtaVsRAbs[iCent]);
     
   }
@@ -201,6 +216,10 @@ void AliAnalysisTaskMuonHadronCorrelations::UserCreateOutputObjects() {
   fOutputList -> Add(fHistITSMultiplicity);
   fOutputList -> Add(fHistCentrality);
 
+  fHistEvStat = new TH1D("fHistEvStat","Event cuts statistics",20,-0.5,19.5);
+  fHistEvStat->SetXTitle("Cut index");
+  fOutputList->Add(fHistEvStat);
+
   const Int_t kNZvtxBins  = 10;
   // bins for further buffers are shifted by 100 cm
   Double_t vertexBins[kNZvtxBins+1] = { -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10 };
@@ -219,27 +238,48 @@ void AliAnalysisTaskMuonHadronCorrelations::UserExec(Option_t *) {
 
   fAOD = dynamic_cast<AliAODEvent *>(InputEvent());  
   if (!fAOD) return;  
-  
+
+  Int_t cutIndex = 0;
+  fHistEvStat->Fill(cutIndex++);
   // Trigger selection
   if (!(IsTriggerFired())) return;
+  fHistEvStat->Fill(cutIndex++);
   
   fHistV0Multiplicity  -> Fill(GetV0Multiplicity());
   fHistITSMultiplicity -> Fill(GetITSMultiplicity());
 
   Int_t centBin = GetCentBin();
   if (centBin<0) return;
+  fHistEvStat->Fill(cutIndex++);
   Double_t percentile = fAOD->GetCentrality()->GetCentralityPercentile(fCentMethod.Data());
   fHistCentrality->Fill(percentile);
 
-  const AliVVertex* vertex = fAOD->GetPrimaryVertex();
-  Double_t zVtx = vertex->GetZ();
-  if (TMath::Abs(zVtx) > 10.) return;
-  
+  // Vertex selection
+  const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
+  if (!trkVtx || trkVtx->GetNContributors()<=0) return;
+  TString vtxTtl = trkVtx->GetTitle();
+  if (!vtxTtl.Contains("VertexerTracks")) return;
+  fHistEvStat->Fill(cutIndex++);
+  Double_t zvtx = trkVtx->GetZ();
+  const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
+  if (spdVtx->GetNContributors()<=0) return;
+  TString vtxTyp = spdVtx->GetTitle();
+  Double_t cov[6]={0};
+  spdVtx->GetCovarianceMatrix(cov);
+  Double_t zRes = TMath::Sqrt(cov[5]);
+  if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
+  if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
+  fHistEvStat->Fill(cutIndex++);
+
+  if (TMath::Abs(zvtx) > 10.) return;
+  fHistEvStat->Fill(cutIndex++);
+
   TObjArray *tracksMuonArm = GetAcceptedTracksMuonArm(fAOD,centBin);
   if (tracksMuonArm->GetEntriesFast() == 0) {
     delete tracksMuonArm;
     return;
   }
+  fHistEvStat->Fill(cutIndex++);
   TObjArray *tracksCentralBarrel = GetAcceptedTracksCentralBarrel(fAOD);
   
   fHistNTracksCB_vs_NTracksMA[centBin] -> Fill(tracksCentralBarrel->GetEntries(), tracksMuonArm->GetEntries());
@@ -249,6 +289,7 @@ void AliAnalysisTaskMuonHadronCorrelations::UserExec(Option_t *) {
   // Same event  
   for (Int_t iTrMA=0; iTrMA<tracksMuonArm->GetEntriesFast(); iTrMA++) {
     fTrackMA = (AliAODTrack*) tracksMuonArm->At(iTrMA);
+    fHistSingleMuonsPt[centBin]->Fill(fTrackMA->Pt());
     for (Int_t iTrCB=0; iTrCB<tracksCentralBarrel->GetEntriesFast(); iTrCB++) {
       fTrackCB = (AliAODTrack*) tracksCentralBarrel -> At(iTrCB);
       FillHistograms(centBin, kSingleEvent);
@@ -257,7 +298,7 @@ void AliAnalysisTaskMuonHadronCorrelations::UserExec(Option_t *) {
 
   // Mixed event
   {
-    AliEventPool* pool = fPoolMgr->GetEventPool(percentile, zVtx);
+    AliEventPool* pool = fPoolMgr->GetEventPool(percentile, zvtx);
     //pool->PrintInfo();
     if (pool->IsReady() || pool->NTracksInPool() > 2000 || pool->GetCurrentNEvents() >= 5) 
       for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) {
@@ -265,6 +306,7 @@ void AliAnalysisTaskMuonHadronCorrelations::UserExec(Option_t *) {
 	fHistNTracksCB_vs_NTracksMAmixed[centBin]->Fill(mixedTracks->GetEntriesFast(), tracksMuonArm->GetEntriesFast());
 	for (Int_t iTrMA=0; iTrMA<tracksMuonArm->GetEntriesFast(); iTrMA++) {
 	  fTrackMA = (AliAODTrack*) tracksMuonArm->At(iTrMA);
+	  fHistSingleMuonsPtmixed[centBin]->Fill(fTrackMA->Pt());
 	  for (Int_t iTrCB=0; iTrCB<mixedTracks->GetEntriesFast(); iTrCB++) {
 	    fTrackCB = (AliAODTrack*) mixedTracks -> At(iTrCB);
 	    FillHistograms(centBin, kMixedEvent);
