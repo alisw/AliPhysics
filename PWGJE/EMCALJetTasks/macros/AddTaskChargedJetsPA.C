@@ -33,7 +33,6 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
     triggerName = "kEMCEGA";
 
   // #### Define manager and data container names
-  const char*         kFileName               = "ChargedJetsPA.root"; // hard coded
   AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
   if (!manager) {
     ::Error("AddTaskChargedJetsPA", "No analysis manager to connect to.");

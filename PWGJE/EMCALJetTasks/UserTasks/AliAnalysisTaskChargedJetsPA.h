@@ -13,6 +13,7 @@ class AliEmcalJet;
 class AliRhoParameter;
 class AliVParticle;
 class AliLog;
+class AliAnalysisUtils;
 
 #ifndef ALIANALYSISTASKSE_H
 #include <Riostream.h>
@@ -52,12 +53,13 @@ class AliLog;
 #include <AliRhoParameter.h>
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
+#include "AliAnalysisUtils.h"
 
 
 class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
  public:
 
-  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeQA(1), fAnalyzeJets(1), fAnalyzeBackground(1), fAnalyzePythia(0), fHasTracks(0), fHasClusters(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fClusterArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fClusterArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fKTDeltaPtEtaBin(3), fTrackBackgroundConeRadius(0.4), fNumberRandCones(8), fNumberExcludedJets(2), fDijetMaxAngleDeviation(10.0), fBackgroundEtaBins(5), fJetBgrdCorrectionFactors(0), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fClusterEtaWindow(0.7), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinClusterPt(0.300), fMinJetPt(1.0), fMinJetArea(0.4), fMinBackgroundJetPt(0.15), fMinDijetLeadingPt(10.0), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0), fRandom(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0) {}
+  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeQA(1), fAnalyzeJets(1), fAnalyzeBackground(1), fAnalyzePythia(0), fHasTracks(0), fHasClusters(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fClusterArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fClusterArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fKTDeltaPtEtaBin(3), fTrackBackgroundConeRadius(0.4), fNumberRandCones(8), fNumberExcludedJets(2), fDijetMaxAngleDeviation(10.0), fBackgroundEtaBins(5), fJetBgrdCorrectionFactors(0), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fClusterEtaWindow(0.7), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinClusterPt(0.300), fMinJetPt(1.0), fMinJetArea(0.4), fMinBackgroundJetPt(0.15), fMinDijetLeadingPt(10.0), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0) {}
   
   AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* clusterArrayName, const char* jetArrayName, const char* backgroundJetArrayName);
 
@@ -261,6 +263,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
 
   // ########## GENERAL VARS
   TRandom3*           fRandom;                //! A random number
+  AliAnalysisUtils*   fHelperClass;           //! Vertex selection helper
   Bool_t              fInitialized;           //! trigger if tracks/jets are loaded
   Int_t               fTaskInstanceCounter;   // for naming reasons
   TList*              fHistList;              // Histogram list
@@ -269,7 +272,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   AliAnalysisTaskChargedJetsPA(const AliAnalysisTaskChargedJetsPA&); // not implemented
   AliAnalysisTaskChargedJetsPA& operator=(const AliAnalysisTaskChargedJetsPA&); // not implemented
 
-  ClassDef(AliAnalysisTaskChargedJetsPA, 1); // example of analysis
+  ClassDef(AliAnalysisTaskChargedJetsPA, 1); // Charged jet analysis for pA
 
 };
 #endif
