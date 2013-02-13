@@ -683,7 +683,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
     AliCounterCollection *trigCounter=new AliCounterCollection("trigCounter");
     trigCounter->AddRubric("run",500000);
-    trigCounter->AddRubric("triggerType","All/Any/MB/Cent/SemiCent/EMCAL/MUON/NoPhysSelMUON/NoPhysSelEvNot7/NoPhysSelCMUP1/NoPhysSelMB/NoPhysSelCent/NoPhysSelSemiCent");
+    trigCounter->AddRubric("triggerType","All/Any/MB/Cent/SemiCent/EMCAL/MUON/NoPhysSelMUON/NoPhysSelEvNot7/NoPhysSelCMUP1/NoPhysSelMB/NoPhysSelCent/NoPhysSelSemiCent/CINT7");
     trigCounter->Init();
 
     fOutputEvSelection->Add(evselection);
@@ -1078,6 +1078,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     if(evSelMask & AliVEvent::kINT7){ 
       hTrigC->Fill(2.,centrality);
       hTrigM->Fill(2.,multiplicity);
+      trigCount->Count(Form("triggerType:CINT7/Run:%d",runNumber));
     }
     if(evSelMask & AliVEvent::kCINT5){ 
       hTrigC->Fill(3.,centrality);
