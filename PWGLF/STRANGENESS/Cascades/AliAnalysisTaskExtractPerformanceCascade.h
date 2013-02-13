@@ -108,7 +108,13 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Float_t fTreeCascVarV0CosPointingAngle;   //!
   Float_t fTreeCascVarV0Radius;             //!
   Int_t   fTreeCascVarLeastNbrClusters;     //!
+  
   Int_t   fTreeCascVarMultiplicity;         //!
+  Int_t   fTreeCascVarMultiplicityV0A;         //!
+  Int_t   fTreeCascVarMultiplicityZNA;         //!
+  Int_t   fTreeCascVarMultiplicityTRK;         //!
+  Int_t   fTreeCascVarMultiplicitySPD;         //!
+  
   Float_t fTreeCascVarDistOverTotMom;       //!
   Int_t   fTreeCascVarPID;         //!
   Int_t   fTreeCascVarPIDBachelor; //!  
@@ -140,6 +146,34 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
    TH1F      *fHistMultiplicity;                  //! multiplicity distribution
    TH1F      *fHistMultiplicityNoTPCOnly;         //! multiplicity distribution
    TH1F      *fHistMultiplicityNoTPCOnlyNoPileup; //! multiplicity distribution
+  
+  //V0A Centrality
+  TH1F    *fHistMultiplicityV0ABeforeTrigSel; 	        //! multiplicity distribution
+	TH1F    *fHistMultiplicityV0AForTrigEvt;  		        //! multiplicity distribution
+	TH1F    *fHistMultiplicityV0A;     					        //! multiplicity distribution
+	TH1F    *fHistMultiplicityV0ANoTPCOnly;			        //! multiplicity distribution
+	TH1F    *fHistMultiplicityV0ANoTPCOnlyNoPileup;			//! multiplicity distribution
+  
+  //ZNA Centrality
+  TH1F    *fHistMultiplicityZNABeforeTrigSel; 	        //! multiplicity distribution
+	TH1F    *fHistMultiplicityZNAForTrigEvt;  		        //! multiplicity distribution
+	TH1F    *fHistMultiplicityZNA;     					        //! multiplicity distribution
+	TH1F    *fHistMultiplicityZNANoTPCOnly;			        //! multiplicity distribution
+	TH1F    *fHistMultiplicityZNANoTPCOnlyNoPileup;			//! multiplicity distribution
+  
+  //TRK Centrality
+  TH1F    *fHistMultiplicityTRKBeforeTrigSel; 	        //! multiplicity distribution
+	TH1F    *fHistMultiplicityTRKForTrigEvt;  		        //! multiplicity distribution
+	TH1F    *fHistMultiplicityTRK;     					        //! multiplicity distribution
+	TH1F    *fHistMultiplicityTRKNoTPCOnly;			        //! multiplicity distribution
+	TH1F    *fHistMultiplicityTRKNoTPCOnlyNoPileup;			//! multiplicity distribution
+  
+  //SPD Centrality
+  TH1F    *fHistMultiplicitySPDBeforeTrigSel; 	        //! multiplicity distribution
+	TH1F    *fHistMultiplicitySPDForTrigEvt;  		        //! multiplicity distribution
+	TH1F    *fHistMultiplicitySPD;     					        //! multiplicity distribution
+	TH1F    *fHistMultiplicitySPDNoTPCOnly;			        //! multiplicity distribution
+	TH1F    *fHistMultiplicitySPDNoTPCOnlyNoPileup;			//! multiplicity distribution
 
 //---> Generated Histograms
 
