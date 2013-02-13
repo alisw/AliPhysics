@@ -35,7 +35,7 @@ AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276
      taskCheckPerfCascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);     // choose if reconstruct the vertex of V0 in the cascades
      taskCheckPerfCascadepp276->SetSDDSelection               (fwithsdd);               // choose if apply SDD event selection
      taskCheckPerfCascadepp276->SetQualityCutZprimVtxPos      (kTRUE);                  // choose if apply Z vtx PV position event selection
-     taskCheckPerfCascadepp276->SetRejectEventPileUp          (kFALSE);                 // choose if apply no Pileup event selection
+     taskCheckPerfCascadepp276->SetRejectEventPileUp          (kTRUE);                  // choose if apply no Pileup event selection
      taskCheckPerfCascadepp276->SetQualityCutNoTPConlyPrimVtx (kTRUE);                  // choose if apply no TPC only event selection
      taskCheckPerfCascadepp276->SetQualityCutTPCrefit         (kTRUE);                  // choose if apply TPC refit on daughter tracks
      taskCheckPerfCascadepp276->SetQualityCutnTPCcls          (kTRUE);                  // choose if apply n TPC cluster selection on daughter tracks
