@@ -7,8 +7,11 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 	Double_t neventsdata =  ecutsdata->NumberOfPhysSelEvents();
 	Double_t neventsmc =  ecutsmc->NumberOfPhysSelEvents();
 	
+	
+	
 	for(Int_t ipart=0;ipart<3;ipart++)
 	{
+			
 			for(Int_t imethod=0;imethod<3;imethod++)
 			{
 				 TH2F *nsig_data = (TH2F*)((TH2F*)hman_data->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data())))->Clone();
@@ -23,6 +26,15 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 				 
 				Int_t ibin=1;
 				Float_t binsize=nsig_mc->GetXaxis()->GetBinWidth(1);
+
+				TH1F* maxposdata=(TH1F*)nsig_data->ProjectionX(Form("%s%sdatamaxpos",Particle[ipart].Data(),pidmethods[imethod].Data()),-1,-1));
+				maxposdata->Reset();
+				maxposdata->SetTitle(";p_{T} (GeV/c);max in (-2,2)");
+				TH1F* maxposmc=(TH1F*)nsig_data->ProjectionX(Form("%s%smcmaxpos",Particle[ipart].Data(),pidmethods[imethod].Data()),-1,-1));
+				maxposmc->Reset();
+				maxposmc->SetTitle(";p_{T} (GeV/c);max in (-2,2)");
+
+	
 				 while (ibin*binsize<3.0)
 				 {
 					// TCanvas* c=new TCanvas(Form("canvas%s%s%d",Particle[ipart].Data(),pidmethods[imethod].Data(),ibin),Form("canvas%s%s%d",Particle[ipart].Data(),pidmethods[imethod].Data(),ibin),700,500);
@@ -36,19 +48,44 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 						ibin++;	
 						continue;
 					 } 
-					 nsig_data_Proj1->Scale(1.0/neventsdata);
-					  nsig_mc_Proj1->Scale(1.0/neventsmc);
-				//	nsig_data_Proj1->Sumw2();
+									//	nsig_data_Proj1->Sumw2();
 				//	nsig_mc_Proj1->Sumw2();
 					  //nsig_data_Proj1->GetXaxis()->SetRangeUser(-5,5);
 					 
 					 //c->cd()->SetLogy();
 					 //nsig_data_Proj1->Draw();
 					 //nsig_mc_Proj1->Draw("same");
+					nsig_data_Proj1->GetXaxis()->SetRange(nsig_data_Proj1->GetXaxis()->FindBin(-2.0),nsig_data_Proj1->GetXaxis()->FindBin(2.0));
+					if(nsig_data_Proj1->GetMaximumBin()<=nsig_data_Proj1->GetXaxis()->FindBin(2.0)&&nsig_data_Proj1->GetMaximumBin()>=nsig_data_Proj1->GetXaxis()->FindBin(-2.0))
+					{
+						maxposdata->SetBinContent(ibin,nsig_data_Proj1->GetXaxis()->GetBinCenter(nsig_data_Proj1->GetMaximumBin()));	
+						maxposdata->SetBinError(ibin,nsig_data_Proj1->GetXaxis()->GetBinWidth(nsig_data_Proj1->GetMaximumBin())/2.0);	
+	 				}
+				cout<<Form("%s%sdatamaxpos",Particle[ipart].Data(),pidmethods[imethod].Data())<<" "<<nsig_data_Proj1->GetMaximumBin()<<" "<<nsig_data_Proj1->GetXaxis()->FindBin(2.0)<<" "<<nsig_data_Proj1->GetXaxis()->FindBin(-2.0)<<" "<<nsig_data_Proj1->GetXaxis()->GetBinCenter(nsig_data_Proj1->GetMaximumBin())<<" "<<ibin<<endl;
+
+					nsig_data_Proj1->GetXaxis()->SetRange(0,nsig_data_Proj1->GetXaxis()->GetNbins());
+									
+					nsig_mc_Proj1->GetXaxis()->SetRange(nsig_mc_Proj1->GetXaxis()->FindBin(-2.0),nsig_mc_Proj1->GetXaxis()->FindBin(2.0));
+					if(nsig_mc_Proj1->GetMaximumBin()<=nsig_mc_Proj1->GetXaxis()->FindBin(2.0)&&nsig_mc_Proj1->GetMaximumBin()>=nsig_mc_Proj1->GetXaxis()->FindBin(-2.0))
+					{
+						maxposmc->SetBinContent(ibin,nsig_mc_Proj1->GetXaxis()->GetBinCenter(nsig_mc_Proj1->GetMaximumBin()));	
+						maxposmc->SetBinError(ibin,nsig_mc_Proj1->GetXaxis()->GetBinWidth(nsig_mc_Proj1->GetMaximumBin())/2.0);	
+	 				}
+						cout<<Form("%s%smcmaxpos",Particle[ipart].Data(),pidmethods[imethod].Data())<<" "<<nsig_mc_Proj1->GetMaximumBin()<<" "<<nsig_mc_Proj1->GetXaxis()->FindBin(2.0)<<" "<<nsig_mc_Proj1->GetXaxis()->FindBin(-2.0)<<" "<<ibin<<" "<<nsig_mc_Proj1->GetXaxis()->GetBinCenter(nsig_mc_Proj1->GetMaximumBin())<<endl;
+
+					nsig_mc_Proj1->GetXaxis()->SetRange(0,nsig_mc_Proj1->GetXaxis()->GetNbins());
+
+
+					nsig_data_Proj1->Scale(1.0/neventsdata);
+					 nsig_mc_Proj1->Scale(1.0/neventsmc);
+
+					
 					flistqa->Add(nsig_data_Proj1);
 					flistqa->Add(nsig_mc_Proj1);
 					ibin++;
 				 }
+				flistqa->Add(maxposmc);
+				flistqa->Add(maxposdata);
 			}
 	}
 	TH1F* fHistoVtxAftSeldata=(TH1F*)ecuts_data->GetHistoVtxAftSel();
