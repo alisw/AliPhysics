@@ -229,7 +229,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
     if (h){
       if (hasMC && AliDielectronMC::Instance()->ConnectMCEvent() && h->GetHistogramList()->FindObject("MCEvent_noCuts")) {
 	AliDielectronVarManager::SetEvent(AliDielectronMC::Instance()->GetMCEvent());
-        h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,AliDielectronVarManager::GetData());
+        h->FillClass("MCEvent_noCuts",AliDielectronVarManager::kNMaxValues,AliDielectronVarManager::GetData());
       }
       if (h->GetHistogramList()->FindObject("Event_noCuts")) {
 	AliDielectronVarManager::SetEvent(InputEvent());

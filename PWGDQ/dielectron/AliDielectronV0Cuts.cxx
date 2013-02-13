@@ -203,7 +203,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   else
     return;
 
-  printf(" Number of V0s candiates found %d \n",nV0s);
+  //  printf(" Number of V0s candiates found %d \n",nV0s);
 
 }
 //________________________________________________________________________
