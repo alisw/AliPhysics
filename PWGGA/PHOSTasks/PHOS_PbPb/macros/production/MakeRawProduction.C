@@ -28,12 +28,12 @@
 
 namespace RawProduction {
 
-  bool ignoreErrors = true;
+  bool ignoreErrors = false;
 
   // Fit range
   Double_t rangeMin=0.05 ;
   Double_t rangeMax=0.3 ;
-  
+
   // Fit limits
   double lowerMass = 0.110; double upperMass = 0.145;
   double lowerWidth = 0.001; double upperWidth = 0.012;
@@ -55,11 +55,11 @@ namespace RawProduction {
   int fool;
   double GetPtBin(int bin);
   void MakePtBins();
-  
-  // various parameters 
+
+  // various parameters
   const Double_t kMean=0.136 ; //Approximate peak position to facilitate error estimate
   const char format[] = ".pdf"; // say if you want .pdf
-  
+
   class Input;
 
   TH1* GetHistogram_cent(Input& input, const TString& name, int centrality);
@@ -71,8 +71,8 @@ namespace RawProduction {
   Double_t CGausPol0(Double_t * x, Double_t * par);
   Double_t CPol1(Double_t * x, Double_t * par);
   Double_t CPol2(Double_t * x, Double_t * par);
-  
- 
+
+
   // Output Bin
   class TriggerBin {
   public:
@@ -80,7 +80,7 @@ namespace RawProduction {
     TriggerBin(const char* trigger);
     const TString& Key() const {return fKey;}
     const TString& Trigger() const {return fTrigger;}
-  private:
+  protected:
     TString fTrigger;
     TString fKey;
   };
@@ -95,7 +95,7 @@ namespace RawProduction {
     TList* fList;
     TriggerBin fBin;
   };
-  
+
   // Output Bin
   class TriCenPidBin : public TriggerBin {
   public:
@@ -122,7 +122,7 @@ namespace RawProduction {
     MakePtBins();
     Printf("\nMakePi0Fit(%s)", outBin.Key().Data());
     output.SetDir(outBin);
-    
+
     TH1F * hTotSelEvents          = (TH1F*) input.GetHistogram("hTotSelEvents");
     TH2F * hCentrality  = (TH2F*) input.GetHistogram("hCenPHOSCells");
     TH1D * hCentralityX = hCentrality->ProjectionX();
@@ -131,7 +131,7 @@ namespace RawProduction {
 
     printf("TotSelEvents (4): %.0f \n", hTotSelEvents->GetBinContent(4)) ;
     printf("Centrality:   %.0f \n",     hCentralityX->Integral()) ;
-  
+
     if( !hPi0 || !hPi0Mix ) {
       Printf(Form("no histogram(0x%p, 0x%p), returning", hPi0, hPi0Mix));
       return;
@@ -139,8 +139,8 @@ namespace RawProduction {
 
     // for temp convas for drawing/monitoring
     TCanvas* canvas = new TCanvas("cMakePi0Fit", Form("MakePi0Fit Canvas, %s", outBin.Key().Data()),10,10,1200,800);
-  
-  
+
+
     // Peak Parameterization
     //  1. Linear Bg
     TF1 * funcRatioFit1 = new TF1("funcRatioFit1",CGausPol1,0.,1.,5) ;
@@ -176,9 +176,9 @@ namespace RawProduction {
       new TH1D(names2.Data(), titles2.Data(), nPtBins,ptBinEdges);
       new TH1D(Form("%s_error", names2.Data()), titles2.Data(), nPtBins,ptBinEdges);
     }
-    
+
     TH1D* hMixRawRatio =new TH1D("hMixRawRatio", "ratio of statistics in RAW and Mixed", nPtBins, ptBinEdges);
-  
+
     // Pt slice loop
     for(Int_t ptBin=1; ptBin<=nPtBins; ptBin++){
       //gSystem->Sleep(2000);
@@ -186,7 +186,7 @@ namespace RawProduction {
       canvas->Divide(2,2);
       canvas->cd(1);
       printf("pt bin %i, %3.1f to %3.1f, ", ptBin, ptBinEdges[ptBin-1], ptBinEdges[ptBin]);
-    
+
       //TList* ptBinOutputList = outputList;
       TAxis * ptAxis=hPi0->GetYaxis() ;
       Int_t imin=ptAxis->FindBin(ptBinEdges[ptBin-1]+0.0001);
@@ -199,7 +199,7 @@ namespace RawProduction {
 	Printf("\nError: hPi0 upper bin edge (%f) different from ptBinEdges upper (%f)", ptAxis->GetBinLowEdge(imax+1), ptBinEdges[ptBin]);
 	continue;
       }
-    
+
       Double_t pt=(ptBinEdges[ptBin]+ptBinEdges[ptBin-1])/2. ;
       Double_t dpt= ptBinEdges[ptBin] - ptBinEdges[ptBin-1];
 
@@ -207,7 +207,7 @@ namespace RawProduction {
       hPi0Proj->Sumw2();
       TH1D * hPi0ProjMix= hPi0Mix->ProjectionX(Form("pt%03i_hPi0Mix",ptBin), imin, imax) ;
       hPi0ProjMix->Sumw2();
-    
+
       const Int_t pi0Entries = hPi0Proj->Integral(hPi0Proj->FindBin(lowerMass), hPi0Proj->FindBin(upperMass));
       const Int_t mixEntries = hPi0ProjMix->Integral(hPi0Proj->FindBin(lowerMass), hPi0Proj->FindBin(upperMass));
       if( pi0Entries >0)  {
@@ -219,7 +219,7 @@ namespace RawProduction {
 	Printf("to few entries");
 	continue;
       }
-    
+
       const bool rebin = pi0Entries < 1000;
       if( rebin && pi0Entries >= 500 ) {
 	printf("rebin by factor 2, ");
@@ -235,17 +235,17 @@ namespace RawProduction {
 	hPi0ProjMix->Rebin(5);
       }
       std::cout << std::endl;
-    
-      hPi0Proj->SetTitle(Form("M_{#gamma#gamma}, PID=%s, %.1f<p_{T}<%.1f GeV/c",outBin.PID().Data(),ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
+
+      hPi0Proj->SetTitle(Form("M_{#gamma#gamma}, %.1f<p_{T}<%.1f, PID=%s, %s", ptBinEdges[ptBin-1], ptBinEdges[ptBin], outBin.PID().Data(), outBin.Trigger().Data()));
       hPi0Proj->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
-      hPi0ProjMix->SetTitle(Form("M_{#gamma#gamma}^{Mix}, PID=%s, %.1f<p_{T}<%.1f GeV/c",outBin.PID().Data(),ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
+      hPi0ProjMix->SetTitle(Form("M_{#gamma#gamma}^{Mix}, %.1f<p_{T}<%.1f, PID=%s, %s",ptBinEdges[ptBin-1],ptBinEdges[ptBin],outBin.PID().Data(), outBin.Trigger().Data()));
       hPi0ProjMix->SetXTitle("M_{#gamma#gamma}^{Mix} (GeV/c^{2})");
 
 
       // Error Fix
       for(Int_t ib=1; ib<=hPi0Proj->GetNbinsX();ib++){if(hPi0Proj ->GetBinContent(ib)==0)hPi0Proj ->SetBinError(ib,1.);}
       for(Int_t ib=1; ib<=hPi0Proj->GetNbinsX();ib++){if(hPi0ProjMix->GetBinContent(ib)==0)hPi0ProjMix->SetBinError(ib,1.);}
-    
+
       // Signal-Mix Ratio
       canvas->cd(2);
       TH1D * hPi0Ratio = (TH1D*)hPi0Proj->Clone( Form("pt%03i_hPi0Ratio",ptBin) ) ;
@@ -259,21 +259,21 @@ namespace RawProduction {
       //       rangeMin=0.06 ;
       //       rangeMax=0.25 ;
       //     }
-    
-    
-    
+
+
+
       // ================================================
       // Fit Pol1 ratio
       // ================================================
       printf("Pol1 ratio Fit, ");
       canvas->cd(2);
-      
+
       funcRatioFit1->SetParameters(0.001,0.136,0.0055,0.0002,-0.002) ;
       funcRatioFit1->SetParLimits(0,0.000,1.000) ;
       funcRatioFit1->SetParLimits(1,lowerMass,upperMass) ;
       funcRatioFit1->SetParLimits(2,lowerWidth,upperWidth) ;
 
-    
+
       TFitResultPtr ratioFitResultPtr1 = hPi0Ratio->Fit(funcRatioFit1,"MSQ" ,"",rangeMin,rangeMax) ;
       if( int(ratioFitResultPtr1) % 4000 ) // "More" error is acceptable
 	ratioFitResultPtr1 = hPi0Ratio->Fit(funcRatioFit1,"MSQ" ,"",rangeMin,rangeMax) ;
@@ -284,7 +284,7 @@ namespace RawProduction {
       ratioFitError1 = ratioFitError1 || funcRatioFit1->GetParError(1) > (upperMass - lowerMass)/2; // to large of an error
       ratioFitError1 = ratioFitError1 || TMath::Abs( funcRatioFit1->GetParameter(2) - lowerWidth) < 0.0001 || TMath::Abs( funcRatioFit1->GetParameter(2) - upperWidth) < 0.0001;//  st. error converged to limit
       ratioFitError1 = ratioFitError1 || funcRatioFit1->GetParError(2) > (upperWidth - lowerWidth)/2; // to large of an error
-    
+
       if( ratioFitError1) {
 	Printf("in ERROR, %i", ratioFitError1);
 	((TH1D*) output.GetHistogram("mr1r_error", outBin))->SetBinContent(ptBin,fgs->GetParameter(1)) ;
@@ -295,7 +295,7 @@ namespace RawProduction {
 	((TH1D*) output.GetHistogram("ar1_error", outBin))->SetBinError  (ptBin,funcRatioFit1->GetParError(3)) ;
 	((TH1D*) output.GetHistogram("br1_error", outBin))->SetBinContent(ptBin,funcRatioFit1->GetParameter(4)) ;
 	((TH1D*) output.GetHistogram("br1_error", outBin))->SetBinError  (ptBin,funcRatioFit1->GetParError(4)) ;
-      } 
+      }
       if( !ratioFitError1 || ignoreErrors ) {
 	Printf("converged, status:%i, covMatrixStatus: %i", ratioFitResultPtr1->Status(), ratioFitResultPtr1->CovMatrixStatus());
 	((TH1D*) output.GetHistogram("mr1r", outBin))->SetBinContent(ptBin,fgs->GetParameter(1)) ;
@@ -308,8 +308,8 @@ namespace RawProduction {
 	((TH1D*) output.GetHistogram("br1", outBin))->SetBinError  (ptBin,funcRatioFit1->GetParError(4)) ;
       }
 
-    
-    
+
+
       // ================================================
       // Fit Pol2 ratio
       // ================================================
@@ -349,7 +349,7 @@ namespace RawProduction {
 	((TH1D*) output.GetHistogram("br2_error", outBin))->SetBinError  (ptBin,funcRatioFit2->GetParError(4)) ;
 	((TH1D*) output.GetHistogram("cr2_error", outBin))->SetBinContent(ptBin,funcRatioFit2->GetParameter(5)) ;
 	((TH1D*) output.GetHistogram("cr2_error", outBin))->SetBinError  (ptBin,funcRatioFit2->GetParError(5)) ;
-      } 
+      }
       if( !ratioFitError2 || ignoreErrors ) {
 	Printf("converged, status:%i, covMatrixStatus: %i", ratioFitResultPtr2->Status(), ratioFitResultPtr2->CovMatrixStatus());
 	((TH1D*) output.GetHistogram("mr2r", outBin))->SetBinContent(ptBin,fgs->GetParameter(1)) ;
@@ -363,9 +363,9 @@ namespace RawProduction {
 	((TH1D*) output.GetHistogram("cr2", outBin))->SetBinContent(ptBin,funcRatioFit2->GetParameter(5)) ;
 	((TH1D*) output.GetHistogram("cr2", outBin))->SetBinError  (ptBin,funcRatioFit2->GetParError(5)) ;
       }
-    
 
-    
+
+
       // ================================================
       // Plot Ratio Fits
       // ================================================
@@ -374,7 +374,7 @@ namespace RawProduction {
       canvas->Update();
 
 
-    
+
       // ================================================
       // Pol1 Scaled Background Subtraction
       // ================================================
@@ -407,7 +407,7 @@ namespace RawProduction {
 	TFitResultPtr bs1FitResultPtr = hPi0BSPol1->Fit(fgs,"MSQ","",rangeMin,rangeMax) ;
 	if( int(bs1FitResultPtr) != 4000 ) // if error, "More" error is acceptable
 	  bs1FitResultPtr = hPi0BSPol1->Fit(fgs,"MSQ","",rangeMin,rangeMax) ;
-      
+
 	Int_t bs1FitError = bs1FitResultPtr;
 	bs1FitError = bs1FitError % 4000; // "More" error is acceptable
 	bs1FitError = bs1FitError || TMath::Abs( fgs->GetParameter(1) - lowerMass) < 0.0001 || TMath::Abs( fgs->GetParameter(1) - upperMass) < 0.0001;  // "center" mass converged to limit
@@ -433,7 +433,7 @@ namespace RawProduction {
 	    ((TH1D*) output.GetHistogram("yr1int_error", outBin))->SetBinContent(ptBin,npiInt/dpt) ;
 	    ((TH1D*) output.GetHistogram("yr1int_error", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt) ;
 	  }
-	} 
+	}
 	if( !bs1FitError || ignoreErrors ) {
 	  Printf("converged, status:%i, covMatrixStatus: %i", bs1FitResultPtr->Status(), bs1FitResultPtr->CovMatrixStatus());
 	  ((TH1D*) output.GetHistogram("mr1", outBin))->SetBinContent(ptBin,fgs->GetParameter(1)) ;
@@ -459,10 +459,10 @@ namespace RawProduction {
 	canvas->Update();
 	//printf("end pt");
       }
-    
-    
+
+
       // ================================================
-      // Pol2 Scaled Background Subtraction 
+      // Pol2 Scaled Background Subtraction
       // ================================================
       canvas->cd(4);
       fbg2->SetParameters(funcRatioFit2->GetParameter(3),funcRatioFit2->GetParameter(4),funcRatioFit2->GetParameter(5));
@@ -470,7 +470,7 @@ namespace RawProduction {
 	printf("Pol1 Scaled Background Subtraction, ");
 	TH1D * hPi0MixScaledPol2 = (TH1D*)hPi0ProjMix->Clone(Form("pt%03i_hPi0MixScaledPol2", ptBin)) ;
 	TH1D * hPi0BSPol2     = (TH1D*)hPi0Proj    ->Clone(Form("pt%03i_hPi0BSPol2", ptBin)) ;
-	
+
 	hPi0MixScaledPol2->Multiply(fbg2) ;
 	hPi0BSPol2 ->Add(hPi0MixScaledPol2,-1.) ;
 	hPi0BSPol2->SetOption();
@@ -487,7 +487,7 @@ namespace RawProduction {
 	TFitResultPtr bs2FitResultPtr = hPi0BSPol2->Fit(fgs,"MSQ","",rangeMin,rangeMax) ;
 	if( int(bs2FitResultPtr) != 4000 ) // if error, "More" error is acceptable
 	  bs2FitResultPtr = hPi0BSPol2->Fit(fgs,"MSQ","",rangeMin,rangeMax) ;
-      
+
 	Int_t bs2FitError = bs2FitResultPtr;
 	bs2FitError = bs2FitError % 4000; // "More" error is acceptable
 	bs2FitError = bs2FitError || TMath::Abs( fgs->GetParameter(1) - lowerMass) < 0.0001 || TMath::Abs( fgs->GetParameter(1) - upperMass) < 0.0001;  // "center" mass converged to limit
@@ -514,7 +514,7 @@ namespace RawProduction {
 	    ((TH1D*) output.GetHistogram("yr2int_error", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt) ;
 	    // maybe we should use TH1::IntegralAndError
 	    }
-	} 
+	}
 	if( !bs2FitError || ignoreErrors ) {
 	  Printf("converged, status:%i, covMatrixStatus: %i", bs2FitResultPtr->Status(), bs2FitResultPtr->CovMatrixStatus());
 	  ((TH1D*) output.GetHistogram("mr2", outBin))->SetBinContent(ptBin,fgs->GetParameter(1)) ;
@@ -540,7 +540,7 @@ namespace RawProduction {
 	canvas->Update();
 
       }
-    
+
       canvas->cd(1);
       TH1D * hPi0MixScaled = (TH1D*)hPi0ProjMix ->Clone(Form("%sScaled", hPi0Proj->GetName())) ;
       //hPi0MixScaled->Scale(double(pi0Entries)/mixEntries);
@@ -552,12 +552,12 @@ namespace RawProduction {
       hPi0Proj->SetMinimum(0);
       hPi0Proj->Draw();
       hPi0MixScaled->Draw("same");
-      
+
       canvas->Update();
-      
+
       canvas->Print(Form("imgs/%s_ptBin:%03i.pdf", outBin.Key().Data(), ptBin));
       canvas->Print(Form("imgs/%s_ptBin:%03i.png", outBin.Key().Data(), ptBin));
-    
+
       std::cout << std::endl;
     }// end of Pt slice loop
 
@@ -565,14 +565,14 @@ namespace RawProduction {
     //Normalize by the number of events
     Int_t cMin=0, cMax=0;
     if( input.Bin().Trigger().EqualTo("kCentral") )
-      switch(outBin.Centrality()) { 
+      switch(outBin.Centrality()) {
       case 0: cMin = 1; cMax = 5; break;
       case 1: cMin = 6; cMax = 10; break;
       case -1: cMin = 1; cMax = 10; break;
       default: Printf("ERROR: cent bin not defined for trigger");
       }
     else if( input.Bin().Trigger().EqualTo("kSemiCentral") )
-      switch(outBin.Centrality()) { 
+      switch(outBin.Centrality()) {
       case 0: cMin = 11; cMax = 20; break;
       case 1: cMin = 21; cMax = 30; break;
       case 2: cMin = 31; cMax = 40; break;
@@ -610,7 +610,7 @@ namespace RawProduction {
       ((TH1D*) output.GetHistogram("yr1int", outBin)) ->Scale(1./nevents) ;
       ((TH1D*) output.GetHistogram("yr2", outBin)) ->Scale(1./nevents) ;
       ((TH1D*) output.GetHistogram("yr2int", outBin)) ->Scale(1./nevents) ;
-      
+
       ((TH1D*) output.GetHistogram("yr1_error", outBin)) ->Scale(1./nevents) ;
       ((TH1D*) output.GetHistogram("yr1int_error", outBin)) ->Scale(1./nevents) ;
       ((TH1D*) output.GetHistogram("yr2_error", outBin)) ->Scale(1./nevents) ;
@@ -620,7 +620,7 @@ namespace RawProduction {
 
     }
 
-  
+
     // store to file
     //  TFile* outputFile = TFile::Open(saveToFileName.Data(), "UPDATE");
     //outputList->Write(input.KeySuggestion(), TObject::kSingleKey);
@@ -722,10 +722,10 @@ namespace RawProduction {
     return par[0]+par[1]*(x[0]-kMean)+par[2]*(x[0]-kMean)*(x[0]-kMean) ;
   }
 
-  
+
   // Input Definitions
   TFile* Input::fFile = 0;
-  Input::Input(const TString& fileName, const RawProduction::TriggerBin& inputBin, TString listPath) 
+  Input::Input(const TString& fileName, const RawProduction::TriggerBin& inputBin, TString listPath)
   : fList(0x0), fBin(inputBin.Trigger())
   {
     // File
@@ -735,21 +735,21 @@ namespace RawProduction {
       fFile = 0x0;
     } else if(! fFile) {
       Printf("Opening %s", fileName.Data());
-     fFile = TFile::Open(fileName.Data(), "READ"); 
+     fFile = TFile::Open(fileName.Data(), "READ");
     }
-    
+
     if( listPath.EqualTo("") ) {
       char cstr[256] = "";
       sprintf(cstr, "PHOSPi0Flow_%s/PHOSPi0Flow_%sCoutput1", fBin.Trigger().Data(), fBin.Trigger().Data());
       listPath = cstr;
     }
-    
+
     Printf("Getting list, %s", listPath.Data());
     fFile->GetObject(listPath.Data(), fList);
-    if( !fList ) 
+    if( !fList )
       Printf("ERROR: list not found");
   }
-  
+
   TH1* Input::GetHistogram(const char* name){
     TObject* obj = fList->FindObject(name);
     TH1* hist = dynamic_cast<TH1*> (obj);
@@ -778,7 +778,7 @@ namespace RawProduction {
   {
     fFile = TFile::Open(fileName.Data(), options);
   }
-  
+
   void Output::SetDir(const TriggerBin& inBin)
   {
     Bool_t success = fFile->cd(inBin.Key().Data());
@@ -787,11 +787,11 @@ namespace RawProduction {
       newDir->cd();
     }
   }
-  
+
   TH1* Output::GetHistogram(const TString& name, const RawProduction::TriggerBin& inBin)
   {
     TDirectory* dir = fFile->GetDirectory(inBin.Key().Data(), true);
-    TH1* hist = dynamic_cast<TH1*>( dir->FindObject(name.Data()) );
+    TH1* hist = dynamic_cast<TH1*>( dir->Get(name.Data()) );
     if( hist )
       return hist;
     else {
@@ -808,8 +808,8 @@ namespace RawProduction {
   }
 
 
-  
-  
+
+
   TH1* GetHistogram_cent(Input& input, const TString& name, int centrality)
   {
     // Getter (and merger) for histograms following the naming patern of %s_cen%i
@@ -821,13 +821,13 @@ namespace RawProduction {
     // -4  30-40%
     // -5  40-50%
     // -6  50-80%
-    // -10  0-80% 
+    // -10  0-80%
     if( centrality >= 0 ) {
       char cname[256] = "";
       sprintf(cname, "%s_cen%i", name.Data(), centrality);
       input.GetHistogram(cname);
     }
-    
+
     TH1* hist = 0x0;
     if( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") ) {
       switch(centrality) {
@@ -856,7 +856,7 @@ namespace RawProduction {
       Printf("ERROR:GetHistogram_cent: %i not possible for %s trigger", centrality, input.Bin().Trigger().Data());
       return 0x0;
     }
-    
+
     switch(centrality) {
       case -10: hist->SetTitle( Form("%s, 0-80%% centrality", hist->GetTitle())); break;
       case -1:  hist->SetTitle( Form("%s, 0-10%% centrality", hist->GetTitle())); break;
@@ -868,7 +868,7 @@ namespace RawProduction {
     }
     return hist;
   }
-  
+
   TH1* MergeHistogram_cent(Input& input, const TString& name, int newCentIndex, int fromCentIndex, int toCentIndex)
   {
     // Merger (All cent) for histograms following the naming patern of %s_cen%i, from including to excluding
@@ -876,22 +876,22 @@ namespace RawProduction {
     // Merges centralites bins into one histogram, from including to excluding, and names the histogram using the patern above.
     // If an histogram with that name Allready exist in the current directory (gDirectory), then no merge
     // occurs and this hist. is simply returned.
-    
+
     char mergeHistName[256] = "";
     sprintf(mergeHistName, "%s_cen%i", name.Data(), newCentIndex);
-    
+
     // Check if histogram allready exists in current directory.
     TH1* mergeHist = dynamic_cast<TH1*>( gDirectory->FindObject(mergeHistName) );
     if ( mergeHist )
       return mergeHist;
-    
+
     // If not so; get the first hist, clone, and add the others
     char cname[256] = "";
     sprintf(cname, "%s_cen%i", name.Data(), fromCentIndex);
     TH1* hist0 = input.GetHistogram(cname);
     sprintf(cname, "%s_cen%i", name.Data(), newCentIndex);
     TH1 * histMerged = (TH1*) hist0->Clone(cname);
-    
+
     for(int cent=fromCentIndex+1; cent < toCentIndex; ++cent) {
       sprintf(cname, "%s_cen%i", name.Data(), cent);
       TH1* nextHist = input.GetHistogram(cname);
@@ -902,7 +902,7 @@ namespace RawProduction {
   }
 
 
-  
+
   //-----------------------------------------------------------------------------
   void PPRstyle()
   {
@@ -990,16 +990,17 @@ void MakeRawProductionAll()
 {
   //gStyle->SetOptStat(0);
   gStyle->SetOptFit(1);
-  
-  
+
   RawProduction::Output output;
 
-
-  //TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
-  TStringToken triggers("kMB kCentral ", " ");
+  TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
+  //TStringToken triggers("kCentral ", " ");
   while(triggers.NextToken()) {
-    RawProduction::TriggerBin inBin(triggers);
-    RawProduction::Input input("AnalysisResults.root", inBin);
+    RawProduction::TriggerBin triggerBin(triggers);
+    RawProduction::Input input("AnalysisResults.root", triggerBin);
+
+    RawProduction::MakePi0Fit(input, triggerBin, output);
+
     //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou CPV CPVcore CPV2 Both Bothcore", " ");
     //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou", " ");
     TStringToken pids("All", " ");
@@ -1008,13 +1009,13 @@ void MakeRawProductionAll()
 	if(triggers.EqualTo("kCentral") && cent != -1) continue;
 	if(triggers.EqualTo("kSemiCentral") && !(-1 > cent && cent > -6 )) continue;
 
-	RawProduction::TriCenPidBin outBin(cent, pids, inBin.Trigger());
-	RawProduction::MakePi0Fit(input, outBin, output);
+	RawProduction::TriCenPidBin tcpBin(cent, pids, triggerBin.Trigger());
+	RawProduction::MakePi0FitTCP(input, tcpBin, output);
       }
-      
+
       if( triggers.EqualTo("kCentral") || triggers.EqualTo("kSemiCentral") ) continue;
-      RawProduction::TriCenPidBin ob(-10, pids, inBin.Trigger());
-      RawProduction::MakePi0Fit(input, ob, output);
+      RawProduction::TriCenPidBin tcpBinc(-10, pids, triggerBin.Trigger());
+      RawProduction::MakePi0FitTCP(input, tcpBinc, output);
     }
   }
   output.Write();
