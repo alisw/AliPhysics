@@ -164,6 +164,34 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
    fHistMultiplicityNoTPCOnly(0),
    fHistMultiplicityNoTPCOnlyNoPileup(0),
 
+//V0A Centrality
+fHistMultiplicityV0ABeforeTrigSel(0),
+fHistMultiplicityV0AForTrigEvt(0),
+fHistMultiplicityV0A(0),
+fHistMultiplicityV0ANoTPCOnly(0),
+fHistMultiplicityV0ANoTPCOnlyNoPileup(0),
+
+//ZNA Centrality
+fHistMultiplicityZNABeforeTrigSel(0),
+fHistMultiplicityZNAForTrigEvt(0),
+fHistMultiplicityZNA(0),
+fHistMultiplicityZNANoTPCOnly(0),
+fHistMultiplicityZNANoTPCOnlyNoPileup(0),
+
+//TRK Centrality
+fHistMultiplicityTRKBeforeTrigSel(0),
+fHistMultiplicityTRKForTrigEvt(0),
+fHistMultiplicityTRK(0),
+fHistMultiplicityTRKNoTPCOnly(0),
+fHistMultiplicityTRKNoTPCOnlyNoPileup(0),
+
+//SPD Centrality
+fHistMultiplicitySPDBeforeTrigSel(0),
+fHistMultiplicitySPDForTrigEvt(0),
+fHistMultiplicitySPD(0),
+fHistMultiplicitySPDNoTPCOnly(0),
+fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
+
   //Raw Data for Vertex Z position estimator change
 	f2dHistMultiplicityVsVertexZBeforeTrigSel(0),
 	f2dHistMultiplicityVsVertexZForTrigEvt(0),
@@ -256,6 +284,35 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
    fHistMultiplicity(0),
    fHistMultiplicityNoTPCOnly(0),
    fHistMultiplicityNoTPCOnlyNoPileup(0),
+
+
+//V0A Centrality
+fHistMultiplicityV0ABeforeTrigSel(0),
+fHistMultiplicityV0AForTrigEvt(0),
+fHistMultiplicityV0A(0),
+fHistMultiplicityV0ANoTPCOnly(0),
+fHistMultiplicityV0ANoTPCOnlyNoPileup(0),
+
+//ZNA Centrality
+fHistMultiplicityZNABeforeTrigSel(0),
+fHistMultiplicityZNAForTrigEvt(0),
+fHistMultiplicityZNA(0),
+fHistMultiplicityZNANoTPCOnly(0),
+fHistMultiplicityZNANoTPCOnlyNoPileup(0),
+
+//TRK Centrality
+fHistMultiplicityTRKBeforeTrigSel(0),
+fHistMultiplicityTRKForTrigEvt(0),
+fHistMultiplicityTRK(0),
+fHistMultiplicityTRKNoTPCOnly(0),
+fHistMultiplicityTRKNoTPCOnlyNoPileup(0),
+
+//SPD Centrality
+fHistMultiplicitySPDBeforeTrigSel(0),
+fHistMultiplicitySPDForTrigEvt(0),
+fHistMultiplicitySPD(0),
+fHistMultiplicitySPDNoTPCOnly(0),
+fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
 
   //Raw Data for Vertex Z position estimator change
 	f2dHistMultiplicityVsVertexZBeforeTrigSel(0),
@@ -430,6 +487,7 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
 // Track Multiplicity Histograms
 //------------------------------------------------
 
+  //Default V0M Centrality (if PbPb) 
    if(! fHistMultiplicityBeforeTrigSel) {
       fHistMultiplicityBeforeTrigSel = new TH1F("fHistMultiplicityBeforeTrigSel", 
          "Tracks per event;Nbr of Tracks;Events", 
@@ -460,9 +518,135 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
          200, 0, 200); 		
       fListHistV0->Add(fHistMultiplicityNoTPCOnlyNoPileup);
    }
-
-
-
+  
+  //V0A Centrality (if PbPb / pPb)
+  if(! fHistMultiplicityV0ABeforeTrigSel) {
+    fHistMultiplicityV0ABeforeTrigSel = new TH1F("fHistMultiplicityV0ABeforeTrigSel",
+                                              "Centrality Distribution: V0A;V0A Centrality;Events",
+                                              200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityV0ABeforeTrigSel);
+  }
+  if(! fHistMultiplicityV0AForTrigEvt) {
+    fHistMultiplicityV0AForTrigEvt = new TH1F("fHistMultiplicityV0AForTrigEvt",
+                                              "Centrality Distribution: V0A;V0A Centrality;Events",
+                                           200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityV0AForTrigEvt);
+  }
+  if(! fHistMultiplicityV0A) {
+    fHistMultiplicityV0A = new TH1F("fHistMultiplicityV0A",
+                                              "Centrality Distribution: V0A;V0A Centrality;Events",
+                                 200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityV0A);
+  }
+  if(! fHistMultiplicityV0ANoTPCOnly) {
+    fHistMultiplicityV0ANoTPCOnly = new TH1F("fHistMultiplicityV0ANoTPCOnly",
+                                              "Centrality Distribution: V0A;V0A Centrality;Events",
+                                          200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityV0ANoTPCOnly);
+  }
+  if(! fHistMultiplicityV0ANoTPCOnlyNoPileup) {
+    fHistMultiplicityV0ANoTPCOnlyNoPileup = new TH1F("fHistMultiplicityV0ANoTPCOnlyNoPileup",
+                                              "Centrality Distribution: V0A;V0A Centrality;Events",
+                                                  200, 0, 200); 		
+    fListHistV0->Add(fHistMultiplicityV0ANoTPCOnlyNoPileup);
+  }
+  
+  //ZNA Centrality (if PbPb / pPb)
+  if(! fHistMultiplicityZNABeforeTrigSel) {
+    fHistMultiplicityZNABeforeTrigSel = new TH1F("fHistMultiplicityZNABeforeTrigSel",
+                                                 "Centrality Distribution: ZNA;ZNA Centrality;Events",
+                                                 200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityZNABeforeTrigSel);
+  }
+  if(! fHistMultiplicityZNAForTrigEvt) {
+    fHistMultiplicityZNAForTrigEvt = new TH1F("fHistMultiplicityZNAForTrigEvt",
+                                              "Centrality Distribution: ZNA;ZNA Centrality;Events",
+                                              200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityZNAForTrigEvt);
+  }
+  if(! fHistMultiplicityZNA) {
+    fHistMultiplicityZNA = new TH1F("fHistMultiplicityZNA",
+                                    "Centrality Distribution: ZNA;ZNA Centrality;Events",
+                                    200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityZNA);
+  }
+  if(! fHistMultiplicityZNANoTPCOnly) {
+    fHistMultiplicityZNANoTPCOnly = new TH1F("fHistMultiplicityZNANoTPCOnly",
+                                             "Centrality Distribution: ZNA;ZNA Centrality;Events",
+                                             200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityZNANoTPCOnly);
+  }
+  if(! fHistMultiplicityZNANoTPCOnlyNoPileup) {
+    fHistMultiplicityZNANoTPCOnlyNoPileup = new TH1F("fHistMultiplicityZNANoTPCOnlyNoPileup",
+                                                     "Centrality Distribution: ZNA;ZNA Centrality;Events",
+                                                     200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityZNANoTPCOnlyNoPileup);
+  }
+  
+  //TRK Centrality (if PbPb / pPb)
+  if(! fHistMultiplicityTRKBeforeTrigSel) {
+    fHistMultiplicityTRKBeforeTrigSel = new TH1F("fHistMultiplicityTRKBeforeTrigSel",
+                                                 "Centrality Distribution: TRK;TRK Centrality;Events",
+                                                 200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityTRKBeforeTrigSel);
+  }
+  if(! fHistMultiplicityTRKForTrigEvt) {
+    fHistMultiplicityTRKForTrigEvt = new TH1F("fHistMultiplicityTRKForTrigEvt",
+                                              "Centrality Distribution: TRK;TRK Centrality;Events",
+                                              200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityTRKForTrigEvt);
+  }
+  if(! fHistMultiplicityTRK) {
+    fHistMultiplicityTRK = new TH1F("fHistMultiplicityTRK",
+                                    "Centrality Distribution: TRK;TRK Centrality;Events",
+                                    200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityTRK);
+  }
+  if(! fHistMultiplicityTRKNoTPCOnly) {
+    fHistMultiplicityTRKNoTPCOnly = new TH1F("fHistMultiplicityTRKNoTPCOnly",
+                                             "Centrality Distribution: TRK;TRK Centrality;Events",
+                                             200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityTRKNoTPCOnly);
+  }
+  if(! fHistMultiplicityTRKNoTPCOnlyNoPileup) {
+    fHistMultiplicityTRKNoTPCOnlyNoPileup = new TH1F("fHistMultiplicityTRKNoTPCOnlyNoPileup",
+                                                     "Centrality Distribution: TRK;TRK Centrality;Events",
+                                                     200, 0, 200);
+    fListHistV0->Add(fHistMultiplicityTRKNoTPCOnlyNoPileup);
+  }
+  
+  //SPD Centrality (if PbPb / pPb)
+  if(! fHistMultiplicitySPDBeforeTrigSel) {
+    fHistMultiplicitySPDBeforeTrigSel = new TH1F("fHistMultiplicitySPDBeforeTrigSel",
+                                                 "Centrality Distribution: SPD;SPD Centrality;Events",
+                                                 200, 0, 200);
+    fListHistV0->Add(fHistMultiplicitySPDBeforeTrigSel);
+  }
+  if(! fHistMultiplicitySPDForTrigEvt) {
+    fHistMultiplicitySPDForTrigEvt = new TH1F("fHistMultiplicitySPDForTrigEvt",
+                                              "Centrality Distribution: SPD;SPD Centrality;Events",
+                                              200, 0, 200);
+    fListHistV0->Add(fHistMultiplicitySPDForTrigEvt);
+  }
+  if(! fHistMultiplicitySPD) {
+    fHistMultiplicitySPD = new TH1F("fHistMultiplicitySPD",
+                                    "Centrality Distribution: SPD;SPD Centrality;Events",
+                                    200, 0, 200);
+    fListHistV0->Add(fHistMultiplicitySPD);
+  }
+  if(! fHistMultiplicitySPDNoTPCOnly) {
+    fHistMultiplicitySPDNoTPCOnly = new TH1F("fHistMultiplicitySPDNoTPCOnly",
+                                             "Centrality Distribution: SPD;SPD Centrality;Events",
+                                             200, 0, 200);
+    fListHistV0->Add(fHistMultiplicitySPDNoTPCOnly);
+  }
+  if(! fHistMultiplicitySPDNoTPCOnlyNoPileup) {
+    fHistMultiplicitySPDNoTPCOnlyNoPileup = new TH1F("fHistMultiplicitySPDNoTPCOnlyNoPileup",
+                                                     "Centrality Distribution: SPD;SPD Centrality;Events",
+                                                     200, 0, 200);
+    fListHistV0->Add(fHistMultiplicitySPDNoTPCOnlyNoPileup);
+  }
+  
   //Raw Data for Vertex Z position estimator change
 	//TH2F    *f2dHistMultiplicityVsVertexZBeforeTrigSel; 	        //! multiplicity distribution    
 	//TH2F    *f2dHistMultiplicityVsVertexZForTrigEvt;  		        //! multiplicity distribution
@@ -581,7 +765,11 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
         ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
 
    //REVISED multiplicity estimator after 'multiplicity day' (2011)
-   Int_t lMultiplicity = -100; 
+   Int_t lMultiplicity = -100;
+   Int_t lMultiplicityV0A = -100;
+   Int_t lMultiplicityZNA = -100;
+   Int_t lMultiplicityTRK = -100;
+   Int_t lMultiplicitySPD = -100;
 
    if(fkIsNuclear == kFALSE) lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
 
@@ -591,6 +779,10 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       AliCentrality* centrality;
       centrality = lESDevent->GetCentrality();
       lMultiplicity = ( ( Int_t ) ( centrality->GetCentralityPercentile(   fCentralityEstimator.Data() ) ) );
+      lMultiplicityV0A = ( ( Int_t ) ( centrality->GetCentralityPercentile(   "V0A" ) ) );
+      lMultiplicityZNA = ( ( Int_t ) ( centrality->GetCentralityPercentile(   "ZNA" ) ) );
+      lMultiplicityTRK = ( ( Int_t ) ( centrality->GetCentralityPercentile(   "TRK" ) ) );
+      lMultiplicitySPD = ( ( Int_t ) ( centrality->GetCentralityPercentile(   "SPD" ) ) );
       if (centrality->GetQuality()>1) {
         PostData(1, fListHistV0);
         PostData(2, fTree);
@@ -601,9 +793,19 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
    //Set variable for filling tree afterwards!
    //---> pp case......: GetReferenceMultiplicity
    //---> Pb-Pb case...: Centrality by V0M
-   fTreeVariableMultiplicity = lMultiplicity;
-   fHistMultiplicityBeforeTrigSel->Fill ( lMultiplicity );
-   fHistV0MultiplicityBeforeTrigSel->Fill ( lESDevent->GetNumberOfV0s() );
+  fTreeVariableMultiplicity = lMultiplicity;
+  fTreeVariableMultiplicityV0A = lMultiplicityV0A;
+  fTreeVariableMultiplicityZNA = lMultiplicityZNA;
+  fTreeVariableMultiplicityTRK = lMultiplicityTRK;
+  fTreeVariableMultiplicitySPD = lMultiplicitySPD;
+  
+  fHistMultiplicityBeforeTrigSel->Fill ( lMultiplicity );
+  fHistMultiplicityV0ABeforeTrigSel->Fill ( lMultiplicityV0A );
+  fHistMultiplicityZNABeforeTrigSel->Fill ( lMultiplicityZNA );
+  fHistMultiplicityTRKBeforeTrigSel->Fill ( lMultiplicityTRK );
+  fHistMultiplicitySPDBeforeTrigSel->Fill ( lMultiplicitySPD );
+  
+  fHistV0MultiplicityBeforeTrigSel->Fill ( lESDevent->GetNumberOfV0s() );
 
 //------------------------------------------------
 // Physics Selection
@@ -632,7 +834,11 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
 
   fHistV0MultiplicityForTrigEvt     ->Fill( nV0s       );
   fHistMultiplicityForTrigEvt       ->Fill( lMultiplicity  );
-
+  fHistMultiplicityV0AForTrigEvt       ->Fill( lMultiplicityV0A  );
+  fHistMultiplicityZNAForTrigEvt       ->Fill( lMultiplicityZNA  );
+  fHistMultiplicityTRKForTrigEvt       ->Fill( lMultiplicityTRK  );
+  fHistMultiplicitySPDForTrigEvt       ->Fill( lMultiplicitySPD  );
+  
 //------------------------------------------------
 // Getting: Primary Vertex + MagField Info
 //------------------------------------------------
@@ -672,9 +878,13 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
 
    f2dHistMultiplicityVsVertexZ->Fill( lMultiplicity, tPrimaryVtxPosition[2] );
 
-   lMagneticField = lESDevent->GetMagneticField( );
-   fHistV0MultiplicityForSelEvt ->Fill( nV0s );
-   fHistMultiplicity->Fill(lMultiplicity);
+  lMagneticField = lESDevent->GetMagneticField( );
+  fHistV0MultiplicityForSelEvt ->Fill( nV0s );
+  fHistMultiplicity->Fill(lMultiplicity);
+  fHistMultiplicityV0A->Fill(lMultiplicityV0A);
+  fHistMultiplicityZNA->Fill(lMultiplicityZNA);
+  fHistMultiplicityTRK->Fill(lMultiplicityTRK);
+  fHistMultiplicitySPD->Fill(lMultiplicitySPD);
 
 //------------------------------------------------
 // Only look at events with well-established PV
@@ -691,8 +901,12 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
 
 
    f2dHistMultiplicityVsVertexZNoTPCOnly->Fill( lMultiplicity, tPrimaryVtxPosition[2] );
-   fHistV0MultiplicityForSelEvtNoTPCOnly ->Fill( nV0s );
-   fHistMultiplicityNoTPCOnly->Fill(lMultiplicity);
+  fHistV0MultiplicityForSelEvtNoTPCOnly ->Fill( nV0s );
+  fHistMultiplicityNoTPCOnly->Fill(lMultiplicity);
+  fHistMultiplicityV0ANoTPCOnly->Fill(lMultiplicityV0A);
+  fHistMultiplicityZNANoTPCOnly->Fill(lMultiplicityZNA);
+  fHistMultiplicityTRKNoTPCOnly->Fill(lMultiplicityTRK);
+  fHistMultiplicitySPDNoTPCOnly->Fill(lMultiplicitySPD);
 
 //------------------------------------------------
 // Pileup Rejection
@@ -705,9 +919,13 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       return;
    }
 
-   f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup->Fill( lMultiplicity, tPrimaryVtxPosition[2] );
-   fHistV0MultiplicityForSelEvtNoTPCOnlyNoPileup ->Fill( nV0s );
-   fHistMultiplicityNoTPCOnlyNoPileup->Fill(lMultiplicity);
+  f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup->Fill( lMultiplicity, tPrimaryVtxPosition[2] );
+  fHistV0MultiplicityForSelEvtNoTPCOnlyNoPileup ->Fill( nV0s );
+  fHistMultiplicityNoTPCOnlyNoPileup->Fill(lMultiplicity);
+  fHistMultiplicityV0ANoTPCOnlyNoPileup->Fill(lMultiplicityV0A);
+  fHistMultiplicityZNANoTPCOnlyNoPileup->Fill(lMultiplicityZNA);
+  fHistMultiplicityTRKNoTPCOnlyNoPileup->Fill(lMultiplicityTRK);
+  fHistMultiplicitySPDNoTPCOnlyNoPileup->Fill(lMultiplicitySPD);
   
 //------------------------------------------------
 // MAIN LAMBDA LOOP STARTS HERE
