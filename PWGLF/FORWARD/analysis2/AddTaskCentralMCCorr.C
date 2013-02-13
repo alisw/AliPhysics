@@ -41,11 +41,11 @@ AddTaskCentralMCCorr()
   
   // --- create containers for input/output --------------------------
   AliAnalysisDataContainer *sums = 
-    mgr->CreateContainer("CentralSums", TList::Class(), 
+    mgr->CreateContainer("CentralCorrSums", TList::Class(), 
 			 AliAnalysisManager::kOutputContainer, 
 			 AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *output = 
-    mgr->CreateContainer("CentralResults", TList::Class(), 
+    mgr->CreateContainer("CentralCorrResults", TList::Class(), 
 			 AliAnalysisManager::kParamContainer, 
 			 AliAnalysisManager::GetCommonFileName());
 
