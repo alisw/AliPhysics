@@ -90,14 +90,17 @@ Double_t Contamination_40_50(const Double_t *x, const Double_t *par)
   
 }
 
-AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,UInt_t trigger,Int_t aodfilter=-1,Bool_t cutPileup=kTRUE,Int_t tpcCls=110, Double_t tpcClsr=60.,Int_t tpcClspid=80, Double_t tpcsharedfraction=11., Bool_t rejectkinkmother = kFALSE, Int_t itsCls=4, Double_t chi2peritscl=36., Int_t pixellayer=2, Double_t dcaxy=100., Double_t dcaz=200.,  Double_t tofsig=30., Double_t *tpcdedx=NULL, Int_t vzero=1, Int_t debuglevel=0, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0)
+AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,UInt_t trigger,Int_t aodfilter=-1,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kTRUE,Int_t tpcCls=110, Double_t tpcClsr=60.,Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100., Double_t dcaz=200.,  Double_t tofsig=30., Double_t *tpcdedx=NULL, Int_t vzero=1, Int_t debuglevel=0, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0)
 {
   //
   // HFE flow task 
   //
+  Bool_t rejectkinkmother = kFALSE;
+  Double_t tpcsharedfraction=11;
+  Double_t chi2peritscl=36.;
+
   printf("Summary settings flow task\n");
   printf("filter %d\n",aodfilter);
-  printf("PileUp cut %d\n",cutPileup);
   printf("TPC number of tracking clusters %d\n",tpcCls);
   printf("TPC ratio clusters %f\n",tpcClsr*0.01);
   printf("TPC number of pid clusters %d\n",tpcClspid);
@@ -124,6 +127,8 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   printf("Number of ITS back clusters %d\n",(Int_t)ITSclustersback);
   printf("Min TPC back %f\n",minTPCback);
   printf("Max TPC back %f\n",maxTPCback);
+  printf("PileUp cut %d\n",cutPileup);
+  printf("Scalar Product %d\n",scalarProduct);
 
   // Cut HFE
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCuts","HFE Standard Cuts");
@@ -139,8 +144,9 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetMaxImpactParam(dcaxy*0.01,dcaz*0.01);
       
-  //hfecuts->UnsetVertexRequirement();
   hfecuts->SetVertexRange(10.);
+  hfecuts->SetUseSPDVertex(kTRUE);
+  hfecuts->SetUseCorrelationVertex();
   
   hfecuts->SetTOFPIDStep(kTRUE);
 
@@ -182,20 +188,6 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
     task->SetAfterBurnerOn(kTRUE);
     task->SetV1V2V3V4V5(0.0,0.2,0.0,0.0,0.0);
   }
-  if(cutPileup){
-    TF1 *uppercut=new TF1("fupcut","[0]+[1]*x+[5]*([2]+sqrt([3]*x+[4]))");
-    uppercut->SetParameter(0,-357.098973);
-    uppercut->SetParameter(1,0.673831);
-    uppercut->SetParameter(2,115.089350);
-    uppercut->SetParameter(3,5.433380);
-    uppercut->SetParameter(4,-1907.241935);
-    uppercut->SetParameter(5,3);
-    TF1 *lowercut=new TF1(*uppercut);
-    lowercut->SetParameter(5,-3);
-    task->SetPileUpCuts(uppercut,lowercut);
-  }
-  
-
   if(vzero>=1) task->SetVZEROEventPlane(kTRUE);
   if(vzero==2) task->SetVZEROEventPlaneA(kTRUE);
   if(vzero==3) task->SetVZEROEventPlaneC(kTRUE);
@@ -223,6 +215,9 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
     TF1 *etacorrection = GetEtaCorrection();
     if(etacorrection) tpcpid->SetEtaCorrection(etacorrection);
   }
+
+  task->SetPileUpCut(cutPileup);
+  task->SetUseSP(scalarProduct);
   
   //pid->AddDetector("BAYES", 0);
   //pid->ConfigureBayesDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF+AliPIDResponse::kDetTRD);
