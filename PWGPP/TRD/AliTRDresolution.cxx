@@ -75,6 +75,7 @@
 #include "AliPID.h"
 #include "AliLog.h"
 #include "AliESDtrack.h"
+#include "AliESDHeader.h"
 #include "AliMathBase.h"
 #include "AliTrackPointArray.h"
 
@@ -453,7 +454,6 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
   return H->Projection(kYrez);
 }
 
-
 //________________________________________________________
 TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
 {
@@ -635,11 +635,13 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   if(fkESD->IsElectron()) v0pid = -1;
   else if(fkESD->IsPion()) v0pid = 0;
   else if(fkESD->IsProton()) v0pid = 1;
-  if(DebugLevel()>=1 && v0pid>-2){
+  if(DebugLevel()>=1/* && v0pid>-2*/){
     Float_t tpc(fkESD->GetTPCdedx());
     Float_t tof(fkESD->GetTOFbeta());
+    Int_t ev(fEvent->GetEventHeader()->GetEventNumberInFile());
     AliTRDtrackV1 t(*fkTrack); t.SetOwner();
     (*DebugStream()) << "trackIn"
+      <<"ev="       << ev
       <<"pid="      << v0pid
       <<"tpc="      << tpc
       <<"tof="      << tof
@@ -818,6 +820,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
         val[kPrez]        = (TMath::ASin(tin->GetSnp())-TMath::ATan(dydx0))*TMath::RadToDeg();
         val[kNdim+1]      = 0.;//dx;
         if((H = (THnSparseI*)fContainer->At(kMCtrackIn))) H->Fill(val);
+        val[kBC]          = ily; // reset for subsequent components
 
         if(DebugLevel()>=1 && exactPID>-2){
           Float_t tpc(fkESD->GetTPCdedx());
@@ -1595,6 +1598,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
             +npad;
       ioff=isel*4;
     } else {
+      if(mc && ly<0) ly=0; // fix for bug in PlotMC
       isel = ly; ioff = isel;
     }
     if(ioff>=ih){
@@ -1883,6 +1887,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
     if(ac) cen = coord[kNdim]-1;
     // global selection
     if(ndim==kNdimTrklt){
+      if(mc && ly<0) ly=0; // fix for bug in PlotMC
       ioff = ly*3/*4*/;
       isel = ly;
     } else {
@@ -2785,6 +2790,7 @@ Bool_t AliTRDresolution::MakeProjectionTrack()
     v = H->GetBinContent(ib, coord);
     if(v<1.) continue;
     ly = coord[kBC]-1; // layer selection
+    if(ly<0) ly=0; // fix for bug in PlotMC
     // charge selection
     ch=0; sp=2;// [pi-] track [dafault]
     if(rcBin>0){ // debug mode in which species are also saved
