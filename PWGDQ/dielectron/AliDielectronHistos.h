@@ -118,16 +118,6 @@ public:
 //   void FillClass(const char* histClass, const TVectorD &vals);
   void FillClass(const char* histClass, Int_t nValues, const Double_t *values);
   
-  void StoreVariables(TObject *obj, UInt_t valType[20]);
-  void StoreVariables(TH1 *obj, UInt_t valType[20]);
-  void StoreVariables(THnBase *obj, UInt_t valType[20]);
-  void AdaptNameTitle(TH1 *hist, const char* histClass);
-  Int_t GetPrecision(Double_t value);
-  void FillVarArray(TObject *obj, UInt_t *valType);
-  void FillValues(TObject *obj, const Double_t *values);
-  void FillValues(TH1 *obj, const Double_t *values);
-  void FillValues(THnBase *obj, const Double_t *values);
-
   TObject* GetHist(const char* histClass, const char* name) const;
   TH1* GetHistogram(const char* histClass, const char* name) const;
   TObject* GetHist(const char* cutClass, const char* histClass, const char* name) const;
@@ -150,7 +140,7 @@ public:
   virtual void DrawSame(const char* histName, const Option_t *opt="leg can");
 
   void SetReservedWords(const char* words);
-  //  void StoreVarForProfile(TObject *obj, UInt_t valType);
+
 //   virtual void       Add(TObject *obj) {};
 //   virtual void       Clear(Option_t *option="") {};
 //   virtual void       Delete(Option_t *option="") {};
@@ -161,6 +151,17 @@ public:
   Bool_t SetCutClass(const char* cutClass);
   
 private:
+
+  void StoreVariables(TObject *obj, UInt_t valType[20]);
+  void StoreVariables(TH1 *obj, UInt_t valType[20]);
+  void StoreVariables(THnBase *obj, UInt_t valType[20]);
+  void AdaptNameTitle(TH1 *hist, const char* histClass);
+  Int_t GetPrecision(Double_t value);
+  void FillVarArray(TObject *obj, UInt_t *valType);
+  void FillValues(TObject *obj, const Double_t *values);
+  void FillValues(TH1 *obj, const Double_t *values);
+  void FillValues(THnBase *obj, const Double_t *values);
+
   THashList fHistoList;             //-> list of histograms
   TList    *fList;                  //! List of list of histograms
 

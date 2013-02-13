@@ -1082,11 +1082,9 @@ void AliDielectronHistos::StoreVariables(TH1 *obj, UInt_t valType[20])
   //
 
   Int_t dim   = obj->GetDimension();
-  Bool_t bprf = kFALSE;
 
   // dimension correction for profiles
   if(obj->IsA() == TProfile::Class() || obj->IsA() == TProfile2D::Class() || obj->IsA() == TProfile3D::Class()) {
-    bprf=kTRUE;
     dim++;
   }
 
