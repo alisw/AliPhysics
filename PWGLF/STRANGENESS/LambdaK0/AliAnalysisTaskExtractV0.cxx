@@ -130,6 +130,10 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
 	fTreeVariableLeastNbrCrossedRows(0),
 	fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 	fTreeVariableMultiplicity(0),
+	fTreeVariableMultiplicityV0A(0),
+	fTreeVariableMultiplicityZNA(0),
+	fTreeVariableMultiplicityTRK(0),
+	fTreeVariableMultiplicitySPD(0),
   
   fTreeVariableRunNumber(0),
   fTreeVariableEventNumber(0),
@@ -251,7 +255,11 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
 	fTreeVariableLeastNbrCrossedRows(0),
 	fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 	fTreeVariableMultiplicity(0),
-  
+  fTreeVariableMultiplicityV0A(0),
+  fTreeVariableMultiplicityZNA(0),
+  fTreeVariableMultiplicityTRK(0),
+  fTreeVariableMultiplicitySPD(0),
+
   fTreeVariableRunNumber(0),
   fTreeVariableEventNumber(0),
   
@@ -393,6 +401,10 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
 /*16*/	fTree->Branch("fTreeVariableLeastRatioCrossedRowsOverFindable",&fTreeVariableLeastRatioCrossedRowsOverFindable,"fTreeVariableLeastRatioCrossedRowsOverFindable/F");
 //-----------MULTIPLICITY-INFO--------------------
 /*17*/	fTree->Branch("fTreeVariableMultiplicity",&fTreeVariableMultiplicity,"fTreeVariableMultiplicity/I");
+  /*17*/	fTree->Branch("fTreeVariableMultiplicityV0A",&fTreeVariableMultiplicityV0A,"fTreeVariableMultiplicityV0A/I");
+  /*17*/	fTree->Branch("fTreeVariableMultiplicityZNA",&fTreeVariableMultiplicityZNA,"fTreeVariableMultiplicityZNA/I");
+  /*17*/	fTree->Branch("fTreeVariableMultiplicityTRK",&fTreeVariableMultiplicityTRK,"fTreeVariableMultiplicityTRK/I");
+  /*17*/	fTree->Branch("fTreeVariableMultiplicitySPD",&fTreeVariableMultiplicitySPD,"fTreeVariableMultiplicitySPD/I");
 //------------------------------------------------
 /*18*/	fTree->Branch("fTreeVariableDistOverTotMom",&fTreeVariableDistOverTotMom,"fTreeVariableDistOverTotMom/F");
 /*19*/	fTree->Branch("fTreeVariableNSigmasPosProton",&fTreeVariableNSigmasPosProton,"fTreeVariableNSigmasPosProton/F");
