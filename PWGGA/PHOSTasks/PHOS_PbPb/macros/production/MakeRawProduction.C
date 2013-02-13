@@ -74,10 +74,10 @@ namespace RawProduction {
   
  
   // Output Bin
-  class InputBin {
+  class TriggerBin {
   public:
-    InputBin(const TString& trigger = "kCentral" );
-    InputBin(const char* trigger);
+    TriggerBin(const TString& trigger = "kCentral" );
+    TriggerBin(const char* trigger);
     const TString& Key() const {return fKey;}
     const TString& Trigger() const {return fTrigger;}
   private:
@@ -87,19 +87,19 @@ namespace RawProduction {
   // Object describing the input for the macros
   class Input {
   public:
-    Input(const TString& fileName, const InputBin& inputBin, TString listPath = "");
+    Input(const TString& fileName, const TriggerBin& inputBin, TString listPath = "");
     TH1 * GetHistogram(const char* name="");
-    const InputBin& Bin() const {return fBin;}
+    const TriggerBin& Bin() const {return fBin;}
   private:
     static TFile* fFile;
     TList* fList;
-    InputBin fBin;
+    TriggerBin fBin;
   };
   
   // Output Bin
-  class OutputBin : public InputBin {
+  class TriCenPidBin : public TriggerBin {
   public:
-    OutputBin(Int_t centrality, const TString& pid, const TString& trigger);
+    TriCenPidBin(Int_t centrality, const TString& pid, const TString& trigger);
     Int_t Centrality() const {return fCentrality;}
     const TString& PID() const {return fPID;}
   private:
@@ -110,14 +110,14 @@ namespace RawProduction {
   class Output {
   public:
     Output(const TString& fileName = "RawProduction.root", const char* options = "UPDATE");
-    TH1* GetHistogram(const TString& name, const InputBin& inBin);
-    void SetDir(const InputBin& inBin);
+    TH1* GetHistogram(const TString& name, const TriggerBin& inBin);
+    void SetDir(const TriggerBin& inBin);
     void Write();
   private:
     TFile* fFile;
   };
 
-  void MakePi0Fit(Input& input, const OutputBin& outBin, Output& output)
+  void MakePi0Fit(Input& input, const TriCenPidBin& outBin, Output& output)
   {
     MakePtBins();
     Printf("\nMakePi0Fit(%s)", outBin.Key().Data());
@@ -725,7 +725,7 @@ namespace RawProduction {
   
   // Input Definitions
   TFile* Input::fFile = 0;
-  Input::Input(const TString& fileName, const RawProduction::InputBin& inputBin, TString listPath) 
+  Input::Input(const TString& fileName, const RawProduction::TriggerBin& inputBin, TString listPath) 
   : fList(0x0), fBin(inputBin.Trigger())
   {
     // File
@@ -759,16 +759,16 @@ namespace RawProduction {
   }
 
   //OutputBin Definitions
-  InputBin::InputBin(const TString& trigger)
+  TriggerBin::TriggerBin(const TString& trigger)
   : fTrigger(trigger), fKey(trigger)
   { }
 
-  InputBin::InputBin(const char* trigger)
+  TriggerBin::TriggerBin(const char* trigger)
   : fTrigger(trigger), fKey(trigger)
   { }
 
-  OutputBin::OutputBin(Int_t centrality, const TString& pid, const TString& trigger)
-  : InputBin(trigger), fCentrality(centrality), fPID(pid)
+  TriCenPidBin::TriCenPidBin(Int_t centrality, const TString& pid, const TString& trigger)
+  : TriggerBin(trigger), fCentrality(centrality), fPID(pid)
   {
     fKey.Form("c%03i_%s_%s", centrality, pid.Data(), trigger.Data());
   }
@@ -779,7 +779,7 @@ namespace RawProduction {
     fFile = TFile::Open(fileName.Data(), options);
   }
   
-  void Output::SetDir(const InputBin& inBin)
+  void Output::SetDir(const TriggerBin& inBin)
   {
     Bool_t success = fFile->cd(inBin.Key().Data());
     if( ! success ) {
@@ -788,14 +788,14 @@ namespace RawProduction {
     }
   }
   
-  TH1* Output::GetHistogram(const TString& name, const RawProduction::InputBin& inBin)
+  TH1* Output::GetHistogram(const TString& name, const RawProduction::TriggerBin& inBin)
   {
     TDirectory* dir = fFile->GetDirectory(inBin.Key().Data(), true);
     TH1* hist = dynamic_cast<TH1*>( dir->FindObject(name.Data()) );
     if( hist )
       return hist;
     else {
-      Printf("ERROR: Output::GetHistogram: hist could not be found");
+      Printf("ERROR: Output::GetHistogram: %s could not be found", name.Data());
       return 0x0;
     }
   }
@@ -973,12 +973,12 @@ void MakeRawProduction()
   //TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
   TStringToken triggers("kMB kPHOSPb", " ");
   while(triggers.NextToken()) {
-    RawProduction::InputBin inBin(triggers);
+    RawProduction::TriggerBin inBin(triggers);
     RawProduction::Input input("AnalysisResults.root", inBin);
     TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou CPV CPVcore CPV2 Both Bothcore", " ");
     //TStringToken pids("Bothcore", " ");
     while(pids.NextToken()) {
-      RawProduction::OutputBin outBin(-10, pids, inBin.Trigger());
+      RawProduction::TriCenPidBin outBin(-10, pids, inBin.Trigger());
       RawProduction::MakePi0Fit(input, outBin, output);
     }
   }
@@ -998,7 +998,7 @@ void MakeRawProductionAll()
   //TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
   TStringToken triggers("kMB kCentral ", " ");
   while(triggers.NextToken()) {
-    RawProduction::InputBin inBin(triggers);
+    RawProduction::TriggerBin inBin(triggers);
     RawProduction::Input input("AnalysisResults.root", inBin);
     //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou CPV CPVcore CPV2 Both Bothcore", " ");
     //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou", " ");
@@ -1008,12 +1008,12 @@ void MakeRawProductionAll()
 	if(triggers.EqualTo("kCentral") && cent != -1) continue;
 	if(triggers.EqualTo("kSemiCentral") && !(-1 > cent && cent > -6 )) continue;
 
-	RawProduction::OutputBin outBin(cent, pids, inBin.Trigger());
+	RawProduction::TriCenPidBin outBin(cent, pids, inBin.Trigger());
 	RawProduction::MakePi0Fit(input, outBin, output);
       }
       
       if( triggers.EqualTo("kCentral") || triggers.EqualTo("kSemiCentral") ) continue;
-      RawProduction::OutputBin ob(-10, pids, inBin.Trigger());
+      RawProduction::TriCenPidBin ob(-10, pids, inBin.Trigger());
       RawProduction::MakePi0Fit(input, ob, output);
     }
   }
