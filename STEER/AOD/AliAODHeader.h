@@ -70,6 +70,7 @@ class AliAODHeader : public AliVHeader {
   
   Double_t  GetCentrality()         const { return fCentrality; }
   Double_t  GetEventplane()         const { return fEventplane; }
+  Double_t  GetEventplaneMag()      const { return fEventplaneMag; }
   Double_t  GetZDCN1Energy()        const { return fZDCN1Energy; }
   Double_t  GetZDCP1Energy()        const { return fZDCP1Energy; }
   Double_t  GetZDCN2Energy()        const { return fZDCN2Energy; }
