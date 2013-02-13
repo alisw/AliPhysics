@@ -111,6 +111,7 @@ namespace RawProduction {
   public:
     Output(const TString& fileName = "RawProduction.root", const char* options = "UPDATE");
     TH1* GetHistogram(const TString& name, const TriggerBin& inBin);
+    TH1* GetHistogram(const TString& name);
     void SetDir(const TriggerBin& inBin);
     void Write();
   private:
@@ -877,6 +878,17 @@ namespace RawProduction {
       return 0x0;
     }
   }
+  
+  TH1* Output::GetHistogram(const TString& name) {
+    TH1* hist = dynamic_cast<TH1*>( fFile->Get(name.Data()) );
+    if( hist )
+      return hist;
+    else {
+      Printf("ERROR: Output::GetHistogram: %s could not be found", name.Data());
+      return 0x0;
+    }
+  }
+
 
 
 
