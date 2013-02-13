@@ -427,7 +427,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       //	trackVariablesPair[5]    =  fCentrality;  // centrality
 
       // HBT like cut
-      if(fHBTCut && charge1 * charge2 > 0){
+      if(fHBTCut){ // VERSION 3 (all pairs)
+        //if(fHBTCut && charge1 * charge2 > 0){  // VERSION 2 (only for LS)
 	//if( dphi < 3 || deta < 0.01 ){   // VERSION 1
 	//  continue;
 	
