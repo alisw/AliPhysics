@@ -39,11 +39,11 @@ AddTaskForwardMCCorr()
   
   // --- create containers for input/output --------------------------
   AliAnalysisDataContainer *sums = 
-    mgr->CreateContainer("ForwardSums", TList::Class(), 
+    mgr->CreateContainer("ForwardCorrSums", TList::Class(), 
 			 AliAnalysisManager::kOutputContainer, 
 			 AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *output = 
-    mgr->CreateContainer("ForwardResults", TList::Class(), 
+    mgr->CreateContainer("ForwardCorrResults", TList::Class(), 
 			 AliAnalysisManager::kParamContainer, 
 			 AliAnalysisManager::GetCommonFileName());
 
