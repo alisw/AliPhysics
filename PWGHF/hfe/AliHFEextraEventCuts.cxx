@@ -42,6 +42,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts() :
   fVtxMixed(0),
   fVtxSPD(0),
   fCheckCorrelationSPDVtx(0),
+  fVtxResolution(kFALSE),
   fBitMap(0x0)
 {
   //
@@ -59,6 +60,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts(Char_t* name, Char_t* title) :
   fVtxMixed(0),
   fVtxSPD(0),
   fCheckCorrelationSPDVtx(0),
+  fVtxResolution(kFALSE),
   fBitMap(0x0)
  {
   //
@@ -78,6 +80,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts(const AliHFEextraEventCuts& c) :
   fVtxMixed(c.fVtxMixed),
   fVtxSPD(c.fVtxSPD),
   fCheckCorrelationSPDVtx(c.fCheckCorrelationSPDVtx),
+  fVtxResolution(c.fVtxResolution),
   fBitMap(c.fBitMap)
 {
   //
@@ -140,6 +143,7 @@ AliHFEextraEventCuts& AliHFEextraEventCuts::operator=(const AliHFEextraEventCuts
     fVtxMixed=c.fVtxMixed;
     fVtxSPD=c.fVtxSPD;
     fCheckCorrelationSPDVtx=c.fCheckCorrelationSPDVtx;
+    fVtxResolution = c.fVtxResolution;
     fBitMap=c.fBitMap;
   }
 
@@ -181,147 +185,76 @@ void AliHFEextraEventCuts::SelectionBitMap(TObject* obj) {
   //
 
   //Check if the requested cuts are passed and return a bitmap
-  for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE);
 
-
-
-  AliESDEvent* esd = dynamic_cast<AliESDEvent *>(obj);
-  AliAODEvent* aod = dynamic_cast<AliAODEvent *>(obj);
-
-
-  // ESD
-
-  if ( esd ) {
-    
-    //now start checking the cuts,
-    //first assume the event will be accepted: 
-    for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kTRUE);
-    
-    
-    
-    if(fRequireVtxCuts){
-      const AliESDVertex* vtxESD = 0x0;
-      if      (fVtxMixed) {
-	vtxESD = esd->GetPrimaryVertexTracks() ;
-	if((!vtxESD) || (vtxESD->GetNContributors() <= 0)) {
-	  vtxESD = esd->GetPrimaryVertexSPD() ;
-	  if((!vtxESD) || (vtxESD->GetNContributors() <= 0)) {
-	    for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
-	    AliWarning("Cannot get vertex, skipping event");
-	    return;
-	  }
-	}
-      }
-      else if(fVtxSPD) {   
-	vtxESD = esd->GetPrimaryVertexSPD() ;
-	if(fCheckCorrelationSPDVtx) {
-	  const AliESDVertex* vtxESDtr = esd->GetPrimaryVertexTracks();
-	  if((vtxESD) && (vtxESD->GetNContributors() > 0) && (vtxESDtr) && (vtxESDtr->GetNContributors() > 0)) {
-	    if(TMath::Abs(vtxESD->GetZv()-vtxESDtr->GetZv())>0.5) return;
-	  }
-	  else return;
-	}
-      }
-      else {
-      	vtxESD = esd->GetPrimaryVertexTracks() ;
-      }
-      
-      if(!vtxESD){
-	for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
-	AliWarning("Cannot get vertex, skipping event");
-	return;
-      }
-      
-      // Pick up the position and uncertainties
-      Double_t vtxPos[3];
-      vtxPos[0] = vtxESD->GetXv();
-      vtxPos[1] = vtxESD->GetYv();
-      vtxPos[2] = vtxESD->GetZv();
-      
-      Int_t nCtrb = vtxESD->GetNContributors();
-      
-      // Apply the cut
-      
-      if (vtxPos[2]>fVtxZMax || vtxPos[2]<fVtxZMin)
-	fBitMap->SetBitNumber(0,kFALSE); 
-      if (nCtrb<fVtxNCtrbMin)
-	fBitMap->SetBitNumber(1,kFALSE);
-      
-    }  
+  AliVEvent *inputEvent = dynamic_cast<AliVEvent *>(obj);
+  if(!inputEvent){
+    AliDebug(1, "Not a virtual event");
+    for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE);
     return;
-    
-    
+  }
+  const AliVVertex *vtxTracks = GetPrimaryVertexTracks(inputEvent),
+                   *vtxSPD = GetPrimaryVertexSPD(inputEvent),
+                   *vtxPrim(NULL);
+  
+  //first assume the event will be accepted: 
+  for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kTRUE);
+
+  if(fVtxMixed){
+    // Use mixed vertex: Prefer vertex with tracks, in case not available use SPD vertex
+    if(vtxTracks && vtxTracks->GetNContributors() > 0) vtxPrim = vtxTracks;
+    else if(vtxSPD && vtxSPD->GetNContributors() > 0) vtxPrim = vtxSPD;
+  } else if(fVtxSPD){
+    if(vtxSPD && vtxSPD->GetNContributors () > 0) vtxPrim = vtxSPD;
+  } else {
+    if(vtxTracks && vtxTracks->GetNContributors() > 0) vtxPrim = vtxTracks;
+  }
+  if(!vtxPrim){
+    // No primary vertex: Reject event
+	  for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
+	  AliWarning("Cannot get vertex, skipping event");
+	  return;
+  }
+  // Check standard vertex cuts using the primary vertex 
+  if(fVtxZMin > - 1000. && fVtxZMax < 1000.){
+    // Primary vertex z cut required
+    // Pick up the position and uncertainties
+    Double_t vtxPos[3];
+    vtxPos[0] = vtxPrim->GetX();
+    vtxPos[1] = vtxPrim->GetY();
+    vtxPos[2] = vtxPrim->GetZ();
+    if (vtxPos[2]>fVtxZMax || vtxPos[2]<fVtxZMin)
+	    fBitMap->SetBitNumber(kVtxPosZ,kFALSE); 
+  }
+  if(fVtxNCtrbMin > 0){  
+    // cut required if the cut value is set to something larger than 0
+    // same effect as setting the min. cut value to 0
+    Int_t nCtrb = vtxPrim->GetNContributors();
+    if (nCtrb<fVtxNCtrbMin)
+	    fBitMap->SetBitNumber(kVtxNCtrb,kFALSE);
   }
 
-  //
-
-  // AOD
-
-  if ( aod ) {
-    
-    //now start checking the cuts,
-    //first assume the event will be accepted: 
-    for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kTRUE);
-    
-    
-    
-    if(fRequireVtxCuts){
-      const AliAODVertex* vtxAOD = 0x0;
-      if      (fVtxMixed) {
-	vtxAOD = aod->GetPrimaryVertex();
-	if((!vtxAOD) || (vtxAOD->GetNContributors() <= 0)) {
-	  vtxAOD = aod->GetPrimaryVertexSPD() ;
-	  if((!vtxAOD) || (vtxAOD->GetNContributors() <= 0)) {
-	    for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
-	    AliWarning("Cannot get vertex, skipping event");
-	    return;
-	  }
-	}
-      }
-      else if(fVtxSPD) {   
-	vtxAOD = aod->GetPrimaryVertexSPD() ;
-	if(fCheckCorrelationSPDVtx) {
-	  const AliAODVertex* vtxAODtr = aod->GetPrimaryVertex();
-	  if((vtxAOD) && (vtxAOD->GetNContributors() > 0) && (vtxAODtr) && (vtxAODtr->GetNContributors() > 0)) {
-	    if(TMath::Abs(vtxAOD->GetZ()-vtxAODtr->GetZ())>0.5) return;
-	  }
-	  else return;
-	}
-      }
-      else {
-	vtxAOD = aod->GetPrimaryVertex() ;
-      }
-      
-      if(!vtxAOD){
-	for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
-	AliWarning("Cannot get vertex, skipping event");
-	return;
-      }
-      
-      // Pick up the position and uncertainties
-      Double_t vtxPos[3];
-      vtxPos[0] = vtxAOD->GetX();
-      vtxPos[1] = vtxAOD->GetY();
-      vtxPos[2] = vtxAOD->GetZ();
-      
-      Int_t nCtrb = vtxAOD->GetNContributors();
-      //printf("AliHFEextraCuts:: %d, %f, %f, %f\n",nCtrb,vtxPos[0],vtxPos[1],vtxPos[2]);
-      
-      // Apply the cut
-      
-      if (vtxPos[2]>fVtxZMax || vtxPos[2]<fVtxZMin)
-	fBitMap->SetBitNumber(0,kFALSE); 
-      if (nCtrb<fVtxNCtrbMin)
-	fBitMap->SetBitNumber(1,kFALSE);
-      
-    }  
-    return;
-    
-    
+  // check vertex correlation cut
+  if(fCheckCorrelationSPDVtx){
+    if(vtxTracks && vtxTracks->GetNContributors() && vtxSPD && vtxSPD->GetNContributors()){
+      // Both vertices available, check correlation
+      if(TMath::Abs(vtxTracks->GetZ() - vtxSPD->GetZ()) >= 0.5) fBitMap->SetBitNumber(kCorrelation, kFALSE);
+    } else {
+      // No correlation available: set the cut to false
+      fBitMap->SetBitNumber(kCorrelation, kFALSE); 
+    }
   }
-  
-  return;
-  
+  // check cut on the SPD vertex resolution
+  if(fVtxResolution){
+    if(vtxSPD){
+      TString vtxTyp = vtxSPD->GetTitle();
+      Double_t cov[6]={0};
+      vtxSPD->GetCovarianceMatrix(cov);
+      Double_t zRes = TMath::Sqrt(cov[5]);
+      if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fBitMap->SetBitNumber(kResolution, kFALSE);
+    } else{
+      fBitMap->SetBitNumber(kResolution, kFALSE);
+    }
+  }
 }
 
 //_____________________________________________________________________________
@@ -332,35 +265,41 @@ void AliHFEextraEventCuts::FillHistograms(TObject* obj, Bool_t b)
   //
 
   if(!fIsQAOn) return;
-  // cast TObject into VParticle
-  AliESDEvent* esd = dynamic_cast<AliESDEvent *>(obj);
-  if (!esd ) return  ;
+  // cast TObject into VEvent
+  AliVEvent* inputEvent = dynamic_cast<AliESDEvent *>(obj);
+  if (!inputEvent) return;
 
   // index = 0: fill histograms before cuts
   // index = 1: fill histograms after cuts
   Int_t index = -1;
   index = ((b) ? 1 : 0);
 
+  // Obtain vertices
+  const AliVVertex *vtxTracks = GetPrimaryVertexTracks(inputEvent),
+                   *vtxSPD = GetPrimaryVertexSPD(inputEvent),
+                   *vtxPrim(NULL);
 
   //look at vertex parameters:
-  const AliESDVertex* vtxESD = 0x0;
-  if      (fVtxMixed) {
-    vtxESD = esd->GetPrimaryVertexTracks() ;
-    if((!vtxESD) || (vtxESD->GetNContributors() <= 0)) {
-      vtxESD = esd->GetPrimaryVertexSPD() ;
-      if((!vtxESD) || (vtxESD->GetNContributors() <= 0)) {
-	return;
-      }
-    }
+  if(fVtxMixed){
+    if(vtxTracks->GetNContributors() > 0) vtxPrim = vtxTracks;
+    else if(vtxSPD->GetNContributors()) vtxPrim = vtxSPD;
   }
   else {   
-    vtxESD = esd->GetPrimaryVertexTracks() ;
+    vtxPrim = vtxTracks; 
   }
-  if(!vtxESD)return;
+  if(!vtxPrim)return;
   // vertex position and uncertainties
-  fhQA[kVtxPosZ] [index]->Fill(vtxESD->GetZv());
-  fhQA[kVtxNCtrb][index]->Fill(vtxESD->GetNContributors());
-  
+  fhQA[kVtxPosZ] [index]->Fill(vtxPrim->GetZ());
+  fhQA[kVtxNCtrb][index]->Fill(vtxPrim->GetNContributors());
+  // SPD Vertex Position Correlation 
+  if(vtxTracks && vtxSPD){
+    fhQA[kCorrelation][index]->Fill(vtxTracks->GetZ()-vtxSPD->GetZ());
+  }
+  if(vtxSPD){
+    Double_t cov[6]={0};
+    vtxSPD->GetCovarianceMatrix(cov);
+    fhQA[kResolution][index]->Fill(TMath::Sqrt(cov[5]));
+  }
 }
 
 //____________________________________________________________________
@@ -405,7 +344,6 @@ void AliHFEextraEventCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t x
   }  
   
   // book QA histograms
-
   Char_t str[5];
   for (Int_t i=0; i<kNStepQA; i++) {
     if (i==0) snprintf(str,5," ");
@@ -413,6 +351,8 @@ void AliHFEextraEventCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t x
 
     fhQA[kVtxPosZ][i]	= new  TH1F(Form("%s_Vtx_Pos_Z%s",GetName(),str),		"",200,-50.,50.);
     fhQA[kVtxNCtrb][i]	= new  TH1F(Form("%s_Vtx_N_Ctrb%s",GetName(),str),		"",1000,0.,1000.);
+    fhQA[kCorrelation][i] = new TH1F(Form("%s_SPDCorrelation_%s",GetName(),str), "",200, -10., 10);
+    fhQA[kResolution][i] = new TH1F(Form("%s_SPDResolution_%s",GetName(), str), "", 100, 0., 1.); 
  
     fhQA[kVtxPosZ][i]	->SetXTitle("Vertex Position Z (cm)");
     fhQA[kVtxNCtrb][i]	->SetXTitle("Number of contributors");
@@ -435,3 +375,41 @@ void AliHFEextraEventCuts::AddQAHistograms(TList *qaList) {
 	qaList->Add(fhQA[i][j]);
   }
 }
+
+//_____________________________________________________________________________
+const AliVVertex *AliHFEextraEventCuts::GetPrimaryVertexSPD(const AliVEvent * const inputEvent){
+  //
+  // Get SPD vertex from event
+  //
+  const AliVVertex *spdvtx(NULL);
+  const AliESDEvent *esd(NULL);
+  const AliAODEvent *aod(NULL);
+  if((esd = dynamic_cast<const AliESDEvent *>(inputEvent))){
+    spdvtx = esd->GetPrimaryVertexSPD();
+  } else if((aod = dynamic_cast<const AliAODEvent *>(inputEvent))){
+    spdvtx = aod->GetPrimaryVertexSPD();
+  }
+  return spdvtx;
+}
+
+//_____________________________________________________________________________
+const AliVVertex *AliHFEextraEventCuts::GetPrimaryVertexTracks(const AliVEvent *const inputEvent){
+  // 
+  // Get Primary Vertex from tracks
+  //
+  const AliVVertex *trkvtx(NULL);
+  const AliESDEvent *esd(NULL);
+  const AliAODEvent *aod(NULL);
+  if((esd = dynamic_cast<const AliESDEvent *>(inputEvent))){
+    trkvtx = esd->GetPrimaryVertexTracks();
+  } else if((aod = dynamic_cast<const AliAODEvent *>(inputEvent))){
+    const AliVVertex *vtxTmp = aod->GetPrimaryVertex();
+    // check whether the primary vertex is the vertex from tracks
+    TString vtxTtl = vtxTmp->GetTitle();
+    if(vtxTtl.Contains("VertexerTracks")){
+      trkvtx = vtxTmp;
+    }
+  }
+  return trkvtx;
+}
+

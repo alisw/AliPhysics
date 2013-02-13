@@ -146,7 +146,7 @@ public:
   void  SetMaxopeningphi(Double_t maxOpeningphi) { fMaxopeningphi = maxOpeningphi; };
   void  SetAlgorithmMA(Bool_t algorithmMA) { fAlgorithmMA = algorithmMA; };
   void  SetMassConstraint(Bool_t massConstraint) { fSetMassConstraint = massConstraint; };
-  void  SetPileUpCuts(TF1 *up, TF1 *lo) { fUpperPileUpCut=up; fLowerPileUpCut=lo; }
+  void  SetPileUpCut(Bool_t cut=kTRUE) { fPileUpCut=cut; }
 
   Int_t    LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, AliVEvent *fESD, AliMCEvent *mcEvent,Int_t binct,Double_t deltaphi,Int_t source,Int_t indexmother);
   
@@ -236,9 +236,8 @@ private:
   // Histos
   TH2D *fHistEV;               //! Number of events
   THnSparseF *fHistPileUp;     //! Pile up histogram
-  TF1 *fUpperPileUpCut;        //! Pile up cut
-  TF1 *fLowerPileUpCut;        //! Pile up cut
-  
+  Bool_t fPileUpCut;
+
   // A Event plane as function of phiepa, phiepb, phiepc, phiepd centrality 
   // a V0A, b V0C, c TPC,
   THnSparseF *fEventPlane;     //! Event plane

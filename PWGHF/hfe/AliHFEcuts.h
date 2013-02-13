@@ -168,6 +168,7 @@ class AliHFEcuts : public TNamed{
     inline void SetUseMixedVertex(Bool_t useMixedVertex);    
     inline void SetUseSPDVertex(Bool_t useSPDVertex);
     void SetUseCorrelationVertex() { fUseCorrelationVertex = kTRUE;};
+    void SetSPDVtxResolutionCut() {fSPDVtxResolution = kTRUE;}
     void SetFractionOfSharedTPCClusters(Double_t fractionOfSharedTPCClusters) {fFractionOfSharedTPCClusters = fractionOfSharedTPCClusters;};
     void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) { fMaxImpactParameterRpar = maxImpactParameterRpar; };
     
@@ -249,6 +250,7 @@ class AliHFEcuts : public TNamed{
     Bool_t   fUseMixedVertex;         // Use primary vertex from track if there otherwise SPD vertex
     Bool_t   fUseSPDVertex;           // Use primary SPD vertex 
     Bool_t   fUseCorrelationVertex;   // Use the correlation of the vertex in z
+    Bool_t   fSPDVtxResolution;       // Check resolution of the SPD vertex
     Float_t  fIPCutParams[4];         // Parameters of impact parameter cut parametrization
     Bool_t   fIsIPSigmacut;           // if IP cut or IP sigma cut 
     Bool_t   fIsIPcharge;             // if cut on IP * charge (cut using only positive side of distribution, to eliminate conversions)
@@ -265,7 +267,7 @@ class AliHFEcuts : public TNamed{
 
     Int_t fDebugLevel;            // Debug Level
     
-  ClassDef(AliHFEcuts, 4)         // Container for HFE cuts
+  ClassDef(AliHFEcuts, 5)         // Container for HFE cuts
 };
 
 //__________________________________________________________________

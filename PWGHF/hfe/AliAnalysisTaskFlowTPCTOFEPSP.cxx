@@ -147,8 +147,7 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP() :
   fHFEVZEROEventPlane(0x0),
   fHistEV(0),
   fHistPileUp(0),
-  fUpperPileUpCut(0),
-  fLowerPileUpCut(0),
+  fPileUpCut(kFALSE),
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
@@ -262,8 +261,7 @@ AliAnalysisTaskFlowTPCTOFEPSP:: AliAnalysisTaskFlowTPCTOFEPSP(const char *name) 
   fHFEVZEROEventPlane(0x0),
   fHistEV(0),
   fHistPileUp(0),
-  fUpperPileUpCut(0),
-  fLowerPileUpCut(0),
+  fPileUpCut(kFALSE),
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
@@ -399,8 +397,7 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTa
   fHFEVZEROEventPlane(NULL),
   fHistEV(NULL),
   fHistPileUp(NULL),
-  fUpperPileUpCut(NULL),
-  fLowerPileUpCut(NULL),
+  fPileUpCut(kFALSE),
   fEventPlane(NULL),
   fEventPlaneaftersubtraction(NULL),
   fFractionContamination(NULL),
@@ -461,7 +458,6 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   // Copy into object o
   //
   AliAnalysisTaskFlowTPCTOFEPSP &target = dynamic_cast<AliAnalysisTaskFlowTPCTOFEPSP &>(o);
-  target.fListHist = fListHist;
   target.fAODAnalysis = fAODAnalysis;
   target.fUseFilterAOD = fUseFilterAOD;
   target.fApplyCut = fApplyCut;
@@ -498,6 +494,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   target.fMaxopening3D = fMaxopening3D;
   target.fMaxInvmass = fMaxInvmass;
   target.fSetMassConstraint =  fSetMassConstraint;
+  target.fAlgorithmMA = fAlgorithmMA;
   target.fCounterPoolBackground = fCounterPoolBackground;
   target.fDebugLevel = fDebugLevel;
   target.fMonitorEventPlane = fMonitorEventPlane;
@@ -511,58 +508,8 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   target.fHFECuts = fHFECuts;
   target.fRejectKinkMother = fRejectKinkMother;
   target.fPID = fPID;
-  target.fPIDTOFOnly = fPIDTOFOnly;
   target.fPIDqa = fPIDqa;
-  target.fflowEvent = fflowEvent;
-  target.fHFEBackgroundCuts = fHFEBackgroundCuts;
-  target.fPIDBackground = fPIDBackground;
-  target.fPIDBackgroundqa = fPIDBackgroundqa;
-  target.fAlgorithmMA = fAlgorithmMA;
-  target.fArraytrack = fArraytrack;
-  target.fCounterPoolBackground = fCounterPoolBackground;
   target.fHFEVZEROEventPlane = fHFEVZEROEventPlane;
-  target.fHistEV=fHistEV;      
-  target.fHistPileUp=fHistPileUp;  
-  target.fUpperPileUpCut=fUpperPileUpCut;        
-  target.fLowerPileUpCut=fLowerPileUpCut;        
-  target.fEventPlane=fEventPlane;     
-  target.fEventPlaneaftersubtraction=fEventPlaneaftersubtraction; 
-  target.fFractionContamination=fFractionContamination;    
-  target.fContaminationv2=fContaminationv2;          
-  target.fCosSin2phiep=fCosSin2phiep;        
-  target.fCos2phie=fCos2phie;  
-  target.fSin2phie=fSin2phie;  
-  target.fCos2phiep=fCos2phiep; 
-  target.fSin2phiep=fSin2phiep; 
-  target.fSin2phiephiep=fSin2phiephiep;  
-  target.fCosResabc=fCosResabc; 
-  target.fSinResabc=fSinResabc; 
-  target.fProfileCosResab=fProfileCosResab; 
-  target.fProfileCosResac=fProfileCosResac; 
-  target.fProfileCosResbc=fProfileCosResbc; 
-  target.fCosRes=fCosRes; 
-  target.fSinRes=fSinRes; 
-  target.fProfileCosRes=fProfileCosRes; 
-  target.fTrackingCuts=fTrackingCuts; 
-  target.fDeltaPhiMapsBeforePID=fDeltaPhiMapsBeforePID; 
-  target.fCosPhiMapsBeforePID=fCosPhiMapsBeforePID; 
-  target.fDeltaPhiMaps=fDeltaPhiMaps; 
-  target.fDeltaPhiMapsContamination=fDeltaPhiMapsContamination; 
-  target.fCosPhiMaps=fCosPhiMaps;         
-  target.fProfileCosPhiMaps=fProfileCosPhiMaps;  
-  target.fDeltaPhiMapsTaggedPhotonic=fDeltaPhiMapsTaggedPhotonic; 
-  target.fDeltaPhiMapsTaggedNonPhotonic=fDeltaPhiMapsTaggedNonPhotonic; 
-  target.fDeltaPhiMapsTaggedPhotonicLS=fDeltaPhiMapsTaggedPhotonicLS; 
-  target.fMCSourceDeltaPhiMaps=fMCSourceDeltaPhiMaps; 
-  target.fOppSignDeltaPhiMaps=fOppSignDeltaPhiMaps;  
-  target.fSameSignDeltaPhiMaps=fSameSignDeltaPhiMaps; 
-  target.fOppSignAngle=fOppSignAngle;         
-  target.fSameSignAngle=fSameSignAngle;   
- 
-  for(Int_t k = 0; k < 10; k++) {
-    target.fBinCentralityLess[k] = fBinCentralityLess[k];
-  }     
-
   for(Int_t k = 0; k < 11; k++) {
     target.fContamination[k] = fContamination[k];
     target.fv2contamination[k] = fv2contamination[k];
@@ -807,6 +754,12 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   Double_t binLimCMore[nBinsCMore+1];
   for(Int_t i=0; i<=nBinsCMore; i++) binLimCMore[i]=(Double_t)minCMore + (maxCMore-minCMore)/nBinsCMore*(Double_t)i ;
 
+  Int_t nBinsCEvenMore = 100;
+  Double_t minCEvenMore = 0.0;
+  Double_t maxCEvenMore = 100.0;
+  Double_t binLimCEvenMore[nBinsCEvenMore+1];
+  for(Int_t i=0; i<=nBinsCEvenMore; i++) binLimCEvenMore[i]=(Double_t)minCEvenMore + (maxCEvenMore-minCEvenMore)/nBinsCEvenMore*(Double_t)i ;
+
   Int_t nBinsPhi = 8;
   Double_t minPhi = 0.0;
   Double_t maxPhi = TMath::Pi();
@@ -861,7 +814,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
 
   Int_t nBinsMult = 100;
   Double_t minMult = 0.;
-  Double_t maxMult = 25000;
+  Double_t maxMult = 3000;
   Double_t binLimMult[nBinsMult+1];
   //for(Int_t i=0; i<=nBinsMult; i++) binLimMult[i]=TMath::Power((Double_t)minMult + (TMath::Sqrt(maxMult)-TMath::Sqrt(minMult))/nBinsMult*(Double_t)i,2);
   for(Int_t i=0; i<=nBinsMult; i++) binLimMult[i]=(Double_t)minMult + (maxMult-minMult)/nBinsMult*(Double_t)i;
@@ -885,12 +838,13 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: histev");
 
   // V0 multiplicity vs # of tracks vs centraliy
-  const Int_t nDimPU=3;
-  Int_t nBinPU[nDimPU] = {nBinsMult,nBinsMult,nBinsCMore};
+  const Int_t nDimPU=4;
+  Int_t nBinPU[nDimPU] = {nBinsCEvenMore,nBinsCEvenMore,nBinsMult,nBinsMult};
   fHistPileUp = new THnSparseF("PileUp","PileUp",nDimPU,nBinPU);
-  fHistPileUp->SetBinEdges(0,binLimMult);
-  fHistPileUp->SetBinEdges(1,binLimMult);
-  fHistPileUp->SetBinEdges(2,binLimCMore);
+  fHistPileUp->SetBinEdges(0,binLimCEvenMore);
+  fHistPileUp->SetBinEdges(1,binLimCEvenMore);
+  fHistPileUp->SetBinEdges(2,binLimMult);
+  fHistPileUp->SetBinEdges(3,binLimMult);
   fHistPileUp->Sumw2();
   
   AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: eventplane");
@@ -1514,26 +1468,76 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
   ///////////////////////////////////////////////////////////
   // PileUpCut
   ///////////////////////////////////////////////////////////
- 
-  AliVVZERO* vzeroData=fInputEvent->GetVZEROData();
-  Double_t mult[3],multV0A(0),multV0C(0);
-  for(Int_t i=0; i<32; ++i) {
-    multV0A += vzeroData->GetMultiplicityV0A(i);
-    multV0C += vzeroData->GetMultiplicityV0C(i);
-  }
-  mult[0]=fInputEvent->GetNumberOfTracks();
-  mult[1]=multV0A+multV0C;
-  mult[2]=binctMore;
-  fHistPileUp->Fill(mult);
 
-  if(fUpperPileUpCut&&fLowerPileUpCut){
-    if((mult[0]<fLowerPileUpCut->Eval(mult[1])) || 
-       (mult[0]>fUpperPileUpCut->Eval(mult[1]))){
-      AliDebug(2,"Does not pass the pileup cut");
-      PostData(1, fListHist);
+  Float_t multTPC(0.); // tpc mult estimate
+  Float_t multGlob(0.); // global multiplicity
+  const Int_t nGoodTracks = fInputEvent->GetNumberOfTracks();
+  for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
+    AliAODTrack* trackAOD = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(iTracks));
+    if (!trackAOD) continue;
+    if (!(trackAOD->TestFilterBit(1))) continue;
+    if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70)  || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2)) continue;
+    multTPC++;
+  }
+  for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill global mult
+    AliAODTrack* trackAOD = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(iTracks));
+    if (!trackAOD) continue;
+    if (!(trackAOD->TestFilterBit(16))) continue;
+    if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
+    Double_t b[2] = {-99., -99.};
+    Double_t bCov[3] = {-99., -99., -99.};
+    if (!(trackAOD->PropagateToDCA(fInputEvent->GetPrimaryVertex(), fInputEvent->GetMagneticField(), 100., b, bCov))) continue;
+    if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
+    multGlob++;
+  } //track loop
+
+  Double_t pileup[4];
+  pileup[0]=fInputEvent->GetCentrality()->GetCentralityPercentile("V0M");
+  pileup[1]=fInputEvent->GetCentrality()->GetCentralityPercentile("TRK");
+  pileup[2]=multTPC;
+  pileup[3]=multGlob;
+  fHistPileUp->Fill(pileup);
+
+  if(fPileUpCut){
+    if (TMath::Abs(pileup[0]-pileup[1]) > 5) {
+      AliDebug(2,"Does not pass the centrality correlation cut");
+      return;
+    }
+    if(multTPC < (-36.81+1.48*multGlob) && multTPC > (63.03+1.78*multGlob)){
+      AliDebug(2,"Does not pass the multiplicity correlation cut");
       return;
     }
   }
+ 
+  // AliVVZERO* vzeroData=fInputEvent->GetVZEROData();
+  // Double_t mult[3],multV0A(0),multV0C(0);
+  // for(Int_t i=0; i<32; ++i) {
+  //   multV0A += vzeroData->GetMultiplicityV0A(i);
+  //   multV0C += vzeroData->GetMultiplicityV0C(i);
+  // }
+
+  // int ntrk=0;
+  // for(Int_t k = 0; k < fInputEvent->GetNumberOfTracks(); k++){
+  //   AliVTrack *track = (AliVTrack *) fInputEvent->GetTrack(k);
+  //   if(!track) continue;
+  //   if(!(track->GetStatus()&AliVTrack::kITSrefit)) continue;
+  //   if(!(track->GetStatus()&AliVTrack::kTPCrefit)) continue;
+  //   ntrk++;
+  // }
+    
+  // mult[0]=fInputEvent->GetNumberOfTracks();
+  // mult[1]=multV0A+multV0C;
+  // mult[2]=binctMore;
+  // fHistPileUp->Fill(mult);
+
+  // if(fUpperPileUpCut&&fLowerPileUpCut){
+  //   if((mult[0]<fLowerPileUpCut->Eval(mult[1])) || 
+  //      (mult[0]>fUpperPileUpCut->Eval(mult[1]))){
+  //     AliDebug(2,"Does not pass the pileup cut");
+  //     PostData(1, fListHist);
+  //     return;
+  //   }
+  // }
 
   ////////////////////////////////////  
   // First method event plane
@@ -1581,7 +1585,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
   else {
     
     Double_t qVx, qVy;  //TR: info
-    eventPlaneV0 = vEPa->CalculateVZEROEventPlane(fInputEvent,10,2,qVx,qVy);
+    eventPlaneV0 = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,10,2,qVx,qVy));
     if(eventPlaneV0 > TMath::Pi()) eventPlaneV0 = eventPlaneV0 - TMath::Pi();
     qV0.Set(qVx,qVy);
     eventPlaneV0A = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,8,2,qVx,qVy));
@@ -1596,8 +1600,8 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
     if(eventPlaneV0C<-900) return;
 
     eventPlaneV0=TVector2::Phi_0_2pi(eventPlaneV0);
-    eventPlaneV0A=TVector2::Phi_0_2pi(eventPlaneV0);
-    eventPlaneV0C=TVector2::Phi_0_2pi(eventPlaneV0);
+    eventPlaneV0A=TVector2::Phi_0_2pi(eventPlaneV0A);
+    eventPlaneV0C=TVector2::Phi_0_2pi(eventPlaneV0C);
   }
 
 
@@ -1784,6 +1788,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
     valuensparsea[1] = eventPlanesub1a;
     valuensparsea[2] = eventPlanesub2a;
   } 
+  //printf("%f %f %f\n",valuensparsea[0],valuensparsea[1],valuensparsea[2]);
   fEventPlane->Fill(&valuensparsea[0]);
 
   // Fill
