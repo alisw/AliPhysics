@@ -117,8 +117,86 @@ namespace RawProduction {
     TFile* fFile;
   };
 
-  void MakePi0Fit(Input& input, const TriCenPidBin& outBin, Output& output)
-  {
+  void MakePi0Fit(Input& input, const TriggerBin& outBin, Output& output);
+  void MakePi0FitTCP(Input& input, const TriCenPidBin& outBin, Output& output);
+
+  void MakePi0Fit(Input& input, const TriggerBin& outBin, Output& output) {
+    MakePtBins();
+    Printf("\nMakePi0Fit(%s)", outBin.Key().Data());
+    output.SetDir(outBin);
+
+    for(int m1i = 1; m1i <=3; ++m1i) {
+      for(int m2i = m1i; m2i <=3; ++m2i) {
+	TStringToken names("A;M;W;p0;p1;p2", ";");
+	TStringToken titles("Amplitude;Mass;Width;p0;p1;p2", ";");
+	while( names.NextToken() && titles.NextToken() ) {
+	  TString  name(Form("%s_M%i%i",  names.Data(), m1i, m2i));
+	  TString title(Form("%s_M%i%i", titles.Data(), m1i, m2i));
+	  new TH1D(name.Data(), title.Data(), nPtBins,ptBinEdges);
+	  new TH1D(Form("%s_error", name.Data()), title.Data(), nPtBins,ptBinEdges);
+	}
+      }
+    }
+
+    TF1 * pol2Gaus = new TF1("pol2Gaus", CGausPol2, 0., 1., 6);
+    pol2Gaus->SetParNames("A", "m_{0}", "#sigma", "a_{0}", "a_{1}", "a_{2}");
+    for(int m1i = 1; m1i <=3; ++m1i) {
+      for(int m2i = m1i; m2i <=3; ++m2i) {
+	TH2F* hPi0MNN = (TH2F*) input.GetHistogram(Form("hPi0M%i%i", m1i, m2i));
+	for(Int_t ptBin=1; ptBin<=nPtBins; ptBin++){
+	  Int_t imin = hPi0MNN->GetYaxis()->FindBin(ptBinEdges[ptBin-1]+0.0001);
+	  Int_t imax = hPi0MNN->GetYaxis()->FindBin(ptBinEdges[ptBin]+0.0001) -1;
+	  TH1D* hPi0MNNProj = hPi0MNN->ProjectionX(Form("pt%03i_hPi0M%i%i",ptBin, m1i, m2i), imin, imax);
+	  hPi0MNNProj->SetTitle(Form("M_{#gamma#gamma}, M%i%i, %.1f<p_{T}<%.1f, %s", m1i, m2i, ptBinEdges[ptBin-1], ptBinEdges[ptBin], outBin.Trigger().Data()));
+	  hPi0MNNProj->Sumw2();
+	  int entries = hPi0MNNProj->Integral(hPi0MNNProj->FindBin(lowerMass), hPi0MNNProj->FindBin(upperMass));
+	  Printf("pt bin %i, %3.1f to %3.1f, entries: %i", ptBin, ptBinEdges[ptBin-1], ptBinEdges[ptBin], entries);
+	  if( entries < 10 ) continue;
+
+
+	  // Error Fix
+	  for(Int_t ib=1; ib<=hPi0MNNProj->GetNbinsX();ib++){if(hPi0MNNProj ->GetBinContent(ib)==0)hPi0MNNProj ->SetBinError(ib,1.);}
+
+	  pol2Gaus->SetParameters(entries, 0.134, 0.006, entries, 0, 0);
+	  pol2Gaus->SetParLimits(1, lowerMass, upperMass);
+	  pol2Gaus->SetParLimits(2, lowerWidth, upperWidth);
+	  TFitResultPtr resPtr = hPi0MNNProj->Fit(pol2Gaus, "MSQ", "", rangeMin, rangeMax);
+	  Int_t error = int(resPtr) != 4000;
+	  error = error || TMath::Abs(pol2Gaus->GetParameter(1) - lowerMass) < 0.0001 || TMath::Abs(pol2Gaus->GetParameter(1) - upperMass) <0.0001;
+	  error = error || TMath::Abs(pol2Gaus->GetParameter(2) - lowerWidth) < 0.0001 || TMath::Abs(pol2Gaus->GetParameter(2) - upperWidth) <0.0001;
+
+	  if(error) {
+	    ((TH1D*) output.GetHistogram(Form("A_M%i%i_error", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(0));
+	    ((TH1D*) output.GetHistogram(Form("M_M%i%i_error", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(1));
+	    ((TH1D*) output.GetHistogram(Form("W_M%i%i_error", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(2));
+	    ((TH1D*) output.GetHistogram(Form("p0_M%i%i_error", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(3));
+	    ((TH1D*) output.GetHistogram(Form("p1_M%i%i_error", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(4));
+	    ((TH1D*) output.GetHistogram(Form("p2_M%i%i_error", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(5));
+	    ((TH1D*) output.GetHistogram(Form("A_M%i%i_error", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(0));
+	    ((TH1D*) output.GetHistogram(Form("M_M%i%i_error", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(1));
+	    ((TH1D*) output.GetHistogram(Form("W_M%i%i_error", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(2));
+	    ((TH1D*) output.GetHistogram(Form("p0_M%i%i_error", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(3));
+	    ((TH1D*) output.GetHistogram(Form("p1_M%i%i_error", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(4));
+	    ((TH1D*) output.GetHistogram(Form("p2_M%i%i_error", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(5));
+	  } else {
+	    ((TH1D*) output.GetHistogram(Form("A_M%i%i", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(0));
+	    ((TH1D*) output.GetHistogram(Form("M_M%i%i", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(1));
+	    ((TH1D*) output.GetHistogram(Form("W_M%i%i", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(2));
+	    ((TH1D*) output.GetHistogram(Form("p0_M%i%i", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(3));
+	    ((TH1D*) output.GetHistogram(Form("p1_M%i%i", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(4));
+	    ((TH1D*) output.GetHistogram(Form("p2_M%i%i", m1i, m2i), outBin))->SetBinContent(ptBin, pol2Gaus->GetParameter(5));
+	    ((TH1D*) output.GetHistogram(Form("A_M%i%i", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(0));
+	    ((TH1D*) output.GetHistogram(Form("M_M%i%i", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(1));
+	    ((TH1D*) output.GetHistogram(Form("W_M%i%i", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(2));
+	    ((TH1D*) output.GetHistogram(Form("p0_M%i%i", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(3));
+	    ((TH1D*) output.GetHistogram(Form("p1_M%i%i", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(4));
+	    ((TH1D*) output.GetHistogram(Form("p2_M%i%i", m1i, m2i), outBin))->SetBinError(ptBin, pol2Gaus->GetParError(5));
+	  }
+	}
+      }
+    }
+  }
+  void MakePi0FitTCP(Input& input, const TriCenPidBin& outBin, Output& output) {
     MakePtBins();
     Printf("\nMakePi0Fit(%s)", outBin.Key().Data());
     output.SetDir(outBin);
