@@ -1,15 +1,5 @@
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
 /* $Id: AliAnalysisTaskPi0V2.h 45956 2010-12-10 12:55:37Z agheata $ */
-/* AliAnalysisTaskPi0V2.h
- *
- * Template task producing a P_t spectrum and pseudorapidity distribution.
- * Includes explanations of physics and primary track selections
- *
- * Based on tutorial example from offline pages
- * Edited by Arvinder Palaha
- */
+
 #ifndef ALIANALYSISTASKPI0V2_H
 #define ALIANALYSISTASKPI0V2_H
 
@@ -64,7 +54,6 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     void                SetTrigClass(const char *n)     { fTrigClass  =n ;} 
     void                SetV1ClusName(const char *n)    { fV1ClusName =n ;} 
     void                SetV2ClusName(const char *n)    { fV2ClusName =n ;} 
-    void                SetInputData(const char *n)     { type        =n ;} 
     Int_t		ConvertToInternalRunNumber(Int_t n);
     void		FillEPQA();
     void		SetIsV1Clus(Bool_t e)		{ isV1Clus     =e  ;}
@@ -84,7 +73,6 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TString                     fV1ClusName;	        // name of V1 Clus collection
     TString                     fV2ClusName;	        // name of V1 Clus collection
     TString                     fTrigClass;	        // trigger class name for event selection
-    TString			type;			// AOD or ESD
     TClonesArray                *fTracks;		//! pico tracks specific for Skim ESD
     TClonesArray                *fV1Clus;		//! Cluster Array for V1
     TClonesArray                *fV2Clus;		//! Cluster Array for V2
@@ -95,7 +83,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Double_t			fECut;			// Cluster E cut
     Double_t			fEtaCut;		// Cluster Eta Cut
     Double_t			fM02Cut;		// Cluster long axis cut
-    Double_t			fDrCut;		// Cluster long axis cut
+    Double_t			fDrCut;		        // Cluster long axis cut
     Bool_t			fPi0AsyCut;		// pion Asymetry cut 0=off 1=on
     Bool_t			isV1Clus;		// pion Asymetry cut 0=off 1=on
     Bool_t			isPhosCali;		// use Phos flattening
@@ -173,28 +161,24 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TH3F			*hdifout_EPV0A;		//! 3-D histo dif phi out EMC with EPV0A
     TH3F			*hdifout_EPV0C;		//! 3-D histo dif phi out EMC with EPV0C
 
-    TString fEPcalibFileName;
-    AliEPFlattener * fTPCFlat ;			 //Object for flattening of TPC
-    AliEPFlattener * fV0AFlat ;			 //Object for flattening of V0A
-    AliEPFlattener * fV0CFlat ; 		 //Object for flattening of V0C
+    TString                      fEPcalibFileName;      // Name for calibration
+    AliEPFlattener              *fTPCFlat;		//! Object for flattening of TPC
+    AliEPFlattener              *fV0AFlat;		//! Object for flattening of V0A
+    AliEPFlattener              *fV0CFlat; 		//! Object for flattening of V0C
 
-    THnSparse		        *fClusterPbV0;
-    THnSparse		        *fClusterPbV0A;
-    THnSparse		        *fClusterPbV0C;
-    THnSparse			 *fClusterPbTPC;
+    THnSparse		        *fClusterPbV0;          //!
+    THnSparse		        *fClusterPbV0A;         //!
+    THnSparse		        *fClusterPbV0C;         //!
+    THnSparse			*fClusterPbTPC;         //!
 
     THnSparse                   *fHEPV0r;	        //! Flow 4-D Histo
     THnSparse                   *fHEPV0A;	        //! Flow 4-D Histo
     THnSparse                   *fHEPV0C;	        //! Flow 4-D Histo
     THnSparse                   *fHEPTPC;	        //! Flow 4-D Histo
-
-    
     
     AliAnalysisTaskPi0V2(const AliAnalysisTaskPi0V2&); // not implemented
     AliAnalysisTaskPi0V2& operator=(const AliAnalysisTaskPi0V2&); // not implemented
     
     ClassDef(AliAnalysisTaskPi0V2, 5); // example of analysis
 };
-
 #endif
-
