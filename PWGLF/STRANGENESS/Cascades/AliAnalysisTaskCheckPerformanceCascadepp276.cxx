@@ -2449,6 +2449,10 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
                 if(lNegTPCClusters  < 70) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
                 if(lBachTPCClusters < 70) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
              }
+
+             etaPos  = pTrackXi->Eta();
+             etaNeg  = nTrackXi->Eta();
+             etaBach = bachTrackXi->Eta();
 	
 	     // - Info over reconstructed cascades
 	     Double_t lV0quality = 0.;
@@ -2774,6 +2778,10 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
                  if(lNegTPCClusters  < 70) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
                  if(lBachTPCClusters < 70) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
              }
+
+             etaPos  = pTrackXi->Eta();
+             etaNeg  = nTrackXi->Eta();
+             etaBach = bachTrackXi->Eta();
 
              // - Info over reconstructed cascades
              if( bachTrackXi->Charge() < 0 ) {
