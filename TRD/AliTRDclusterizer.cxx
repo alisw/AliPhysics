@@ -398,6 +398,8 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     AliError(Form("Unexpected detector index %d.\n",det));
     return kFALSE;
   }
+  Int_t nRecPoints = RecPoints()->GetEntriesFast();
+  if(!nRecPoints) return kTRUE;
 
   TObjArray *ioArray = new TObjArray(400);
   TBranch *branch = fClusterTree->GetBranch("TRDcluster");
@@ -405,21 +407,28 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
   } else branch->SetAddress(&ioArray);
   
-  Int_t nRecPoints = RecPoints()->GetEntriesFast();
+  AliTRDcluster *c(NULL);
   if(det >= 0){
     for (Int_t i = 0; i < nRecPoints; i++) {
-      AliTRDcluster *c = (AliTRDcluster *) RecPoints()->UncheckedAt(i);
+      if(!(c = (AliTRDcluster *) RecPoints()->UncheckedAt(i))) continue;
       if(det != c->GetDetector()) continue;
       ioArray->AddLast(c);
     }
     fClusterTree->Fill();
     ioArray->Clear();
   } else {
-    Int_t detOld = -1, nw(0);
-    for (Int_t i = 0; i < nRecPoints; i++) {
-      AliTRDcluster *c = (AliTRDcluster *) RecPoints()->UncheckedAt(i);
+    if(!(c = (AliTRDcluster*)RecPoints()->UncheckedAt(0))){
+      AliError("Missing first cluster.");
+      delete ioArray;
+      return kFALSE;  
+    }
+    Int_t detOld(c->GetDetector()), nw(0);
+    ioArray->AddLast(c);
+    for (Int_t i(1); i<nRecPoints; i++) {
+      if(!(c = (AliTRDcluster *) RecPoints()->UncheckedAt(i))) continue;
       if(c->GetDetector() != detOld){
         nw += ioArray->GetEntriesFast();
+        // fill & clear previously detector set of clusters
         fClusterTree->Fill();
         ioArray->Clear();
         detOld = c->GetDetector();
@@ -428,10 +437,12 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     }
     if(ioArray->GetEntriesFast()){
       nw += ioArray->GetEntriesFast();
+      // fill & clear last detector set of clusters (if any)
       fClusterTree->Fill();
       ioArray->Clear();
     }
     AliDebug(2, Form("Clusters FOUND[%d] WRITTEN[%d] STATUS[%s]", nRecPoints, nw, nw==nRecPoints?"OK":"FAILED"));
+    if(nw!=nRecPoints) AliWarning(Form("Clusters FOUND[%d] WRITTEN[%d]", nRecPoints, nw));
   }
   delete ioArray;
 
