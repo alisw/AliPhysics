@@ -223,24 +223,18 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   //Fill Event histograms before the event filter
   TIter nextDie(&fListDielectron);
   AliDielectron *die=0;
-  Double_t values[AliDielectronVarManager::kNMaxValues]={0};
-  Double_t valuesMC[AliDielectronVarManager::kNMaxValues]={0};
-  AliDielectronVarManager::SetEvent(InputEvent());
-  AliDielectronVarManager::Fill(InputEvent(),values);
-  AliDielectronVarManager::Fill(InputEvent(),valuesMC);
   Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
-  if (hasMC) {
-    if (AliDielectronMC::Instance()->ConnectMCEvent())
-      AliDielectronVarManager::Fill(AliDielectronMC::Instance()->GetMCEvent(),valuesMC);
-  }
-
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
     AliDielectronHistos *h=die->GetHistoManager();
     if (h){
-      if (h->GetHistogramList()->FindObject("Event_noCuts"))
-        h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,values);
-      if (hasMC && h->GetHistogramList()->FindObject("MCEvent_noCuts"))
-        h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,valuesMC);
+      if (hasMC && AliDielectronMC::Instance()->ConnectMCEvent() && h->GetHistogramList()->FindObject("MCEvent_noCuts")) {
+	AliDielectronVarManager::SetEvent(AliDielectronMC::Instance()->GetMCEvent());
+        h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,AliDielectronVarManager::GetData());
+      }
+      if (h->GetHistogramList()->FindObject("Event_noCuts")) {
+	AliDielectronVarManager::SetEvent(InputEvent());
+        h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,AliDielectronVarManager::GetData());
+      }
     }
   }
   nextDie.Reset();

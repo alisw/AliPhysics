@@ -229,18 +229,12 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     AliError("At least first event must be set!");
     return;
   }
-  AliDielectronVarManager::SetEvent(ev1);
-  if (fMixing){
-    //set mixing bin to event data
-    Int_t bin=fMixing->FindBin(AliDielectronVarManager::GetData());
-    AliDielectronVarManager::SetValue(AliDielectronVarManager::kMixingBin,bin);
-  }
 
   //in case we have MC load the MC event and process the MC particles
   if (AliDielectronMC::Instance()->ConnectMCEvent()){
     ProcessMC(ev1);
   }
-  
+
   //if candidate array doesn't exist, create it
   if (!fPairCandidates->UncheckedAt(0)) {
     InitPairCandidateArrays();
@@ -254,8 +248,6 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //apply event cuts
     if ((ev1&&fEventFilter.IsSelected(ev1)!=selectedMask) ||
         (ev2&&fEventFilter.IsSelected(ev2)!=selectedMask)) return;
-  
-//   AliDielectronVarManager::SetEvent(ev1); // why a second time???
 
   //fill track arrays for the first event
   if (ev1){
@@ -274,6 +266,14 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   AliEventplane *cevplane = new AliEventplane();
   if (ev1 && cevplane && fPreFilterEventPlane && ( fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0)) 
     EventPlanePreFilter(0, 1, fTracks[0], fTracks[1], ev1, cevplane);
+
+  // set event
+  AliDielectronVarManager::SetEvent(ev1);
+  if (fMixing){
+    //set mixing bin to event data
+    Int_t bin=fMixing->FindBin(AliDielectronVarManager::GetData());
+    AliDielectronVarManager::SetValue(AliDielectronVarManager::kMixingBin,bin);
+  }
 
   if (!fNoPairing){
     // create pairs and fill pair candidate arrays
@@ -296,7 +296,7 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //process event mixing
   if (fMixing) {
     fMixing->Fill(ev1,this);
-//     FillHistograms(0x0,kTRUE);
+    //     FillHistograms(0x0,kTRUE);
   }
 
   //in case there is a histogram manager, fill the QA histograms
@@ -469,20 +469,13 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
   
   TString  className,className2;
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
+
   //Fill event information
-  if (ev){  //TODO: Why not use GetData() ??? See below event plane stuff!!!
-    AliDielectronVarManager::Fill(ev, values); //data should already be stored in AliDielectronVarManager from SetEvent, does EV plane correction rely on this???
-      if (fMixing){
-    //set mixing bin to event data
-    Int_t bin=fMixing->FindBin(values);
-    values[AliDielectronVarManager::kMixingBin]=bin;
+  if (ev){
+    if (fHistos->GetHistogramList()->FindObject("Event"))
+      fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, AliDielectronVarManager::GetData());
   }
 
-    if (fHistos->GetHistogramList()->FindObject("Event"))
-//       fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, AliDielectronVarManager::GetData());
-      fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, values); //check event plane stuff and replace with above...
-  }
-  
   //Fill track information, separately for the track array candidates
   if (!pairInfoOnly){
     for (Int_t i=0; i<4; ++i){
@@ -611,8 +604,10 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
   // Needed for rejection in the Q-Vector of the event plane
   // remove contribution of all tracks to the Q-vector that are in invariant mass window 
   //
+
+  // TODO: how should we implement the filtering for the nanoADOs
+
   AliEventplane *evplane = const_cast<AliVEvent *>(ev)->GetEventplane();
-//   AliEventplane *evplane = ev->GetEventplane();
   if(!evplane) return;
   
   // do not change these vectors qref

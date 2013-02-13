@@ -109,11 +109,12 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 
   // basic quality cut, at least one of the V0 daughters has to fullfill
   AliDielectronVarCuts dauQAcuts1;
-  dauQAcuts1.AddCut(AliDielectronVarManager::kPt,           0.5,  1e30);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kPt,           0.3,  1e30);
   dauQAcuts1.AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
   dauQAcuts1.AddCut(AliDielectronVarManager::kNclsTPC,     50.0, 160.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   AliDielectronTrackCuts dauQAcuts2;
-  dauQAcuts2.SetRequireITSRefit(kTRUE);
+  //  dauQAcuts2.SetRequireITSRefit(kTRUE);
   dauQAcuts2.SetRequireTPCRefit(kTRUE);
 
   Int_t nV0s = 0;
@@ -138,6 +139,9 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 	printf("Error: Couldn't get V0 daughter: %p - %p\n",trNeg,trPos);
 	continue;
       }
+
+      // reject tracks with neative ID
+      if(trNeg->GetID()<0 || trPos->GetID()) continue;
 
       // at least one of the daughter has to pass basic QA cuts
       if(!(dauQAcuts1.IsSelected(trNeg) && dauQAcuts2.IsSelected(trNeg)) ||
@@ -175,6 +179,9 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 	continue;
       }
 
+      // reject tracks with neative ID
+      if(trNeg->GetID()<0 || trPos->GetID()) continue;
+
       // at least one of the daughter has to pass basic QA cuts
       if(!(dauQAcuts1.IsSelected(trNeg) && dauQAcuts2.IsSelected(trNeg)) ||
 	 !(dauQAcuts1.IsSelected(trPos) && dauQAcuts2.IsSelected(trPos))  ) continue;
@@ -196,7 +203,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   else
     return;
 
-  //  printf(" Number of V0s candiates found %d \n",nV0s);
+  printf(" Number of V0s candiates found %d \n",nV0s);
 
 }
 //________________________________________________________________________
@@ -210,7 +217,7 @@ Bool_t AliDielectronV0Cuts::IsSelected(TObject* track)
 
   AliVTrack *vtrack = static_cast<AliVTrack*>(track);
   InitEvent(vtrack);
-  //  printf(" track ID %d selected result %d \n",vtrack->GetID(),(fV0TrackArr.TestBitNumber(vtrack->GetID()))^fExcludeTracks);
+  //printf(" track ID %d selected result %d %d \n",vtrack->GetID(),(fV0TrackArr.TestBitNumber(vtrack->GetID())),fExcludeTracks);
   return ( (fV0TrackArr.TestBitNumber(vtrack->GetID()))^fExcludeTracks );
 }
 

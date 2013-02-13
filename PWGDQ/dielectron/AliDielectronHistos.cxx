@@ -1066,8 +1066,7 @@ void AliDielectronHistos::StoreVariables(TObject *obj, UInt_t valType[20])
   //
   if (!obj) return;
   if      (obj->InheritsFrom(TH1::Class()))         StoreVariables(static_cast<TH1*>(obj), valType);
-  else if (obj->InheritsFrom(THnBase::Class()))         StoreVariables(static_cast<THnBase*>(obj), valType);
-  //  else if (obj->InheritsFrom(THnSparse::Class()))   StoreVariables(static_cast<THnSparse*>(obj), valType);
+  else if (obj->InheritsFrom(THnBase::Class()))     StoreVariables(static_cast<THnBase*>(obj), valType);
 
   return;
 
@@ -1126,9 +1125,8 @@ void AliDielectronHistos::FillValues(TObject *obj, const Double_t *values)
   //
   //
   if (!obj) return;
-  if      (obj->InheritsFrom(TH1::Class()))   FillValues(static_cast<TH1*>(obj), values);
-  else if (obj->InheritsFrom(THn::Class()))   FillValues(static_cast<THn*>(obj), values);
-  else if (obj->InheritsFrom(THnSparse::Class()))   FillValues(static_cast<THnSparse*>(obj), values);
+  if      (obj->InheritsFrom(TH1::Class()))       FillValues(static_cast<TH1*>(obj), values);
+  else if (obj->InheritsFrom(THnBase::Class()))   FillValues(static_cast<THnBase*>(obj), values);
 
   return;
 
@@ -1150,16 +1148,11 @@ void AliDielectronHistos::FillValues(TH1 *obj, const Double_t *values)
 
   if(obj->IsA() == TProfile::Class() || obj->IsA() == TProfile2D::Class() || obj->IsA() == TProfile3D::Class())
     bprf=kTRUE;
-  
+
   UInt_t value1=obj->GetXaxis()->GetUniqueID();
   UInt_t value2=obj->GetYaxis()->GetUniqueID();
   UInt_t value3=obj->GetZaxis()->GetUniqueID();
   UInt_t value4=obj->GetUniqueID();            // get profile var stored in the unique ID
-
-  //  if (value1>=(UInt_t)nValues||value2>=(UInt_t)nValues||value3>=(UInt_t)nValues||(value4>=(UInt_t)nValues && value4!=999)) {
-  //  Warning("FillClass","One of the values is out of range. Not filling Histogram '%s/%s'.", histClass, obj->GetName());
-  //  return;
-  // }
 
   switch ( dim ) {
   case 1:
