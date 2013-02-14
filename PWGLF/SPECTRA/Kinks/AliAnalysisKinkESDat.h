@@ -38,6 +38,7 @@ class AliAnalysisKinkESDat : public AliAnalysisTaskSE {
   const AliESDVertex *GetEventVertex(const AliESDEvent* esd) const;
 //           Marek multiplicity bins
   void SetMulCut(Int_t low, Int_t up){fLowMulcut=low;fUpMulcut=up;}	  
+  void SetKinkRadius(Float_t lRadiusKLow, Float_t lRadiusKUp)  { fKinkRadLow=lRadiusKLow; fKinkRadUp=lRadiusKUp;}	  
 
  private:
    TH1F        *fHistPtESD; //Pt spectrum of all ESD inside eta, Pt cuts
@@ -123,6 +124,8 @@ class AliAnalysisKinkESDat : public AliAnalysisTaskSE {
 //          Marek Multiplicity
 Int_t fLowMulcut;  // 
 Int_t fUpMulcut;
+Int_t fKinkRadUp;
+Int_t fKinkRadLow;
 AliESDtrackCuts* fCutsMul;
 AliESDtrackCuts* fMaxDCAtoVtxCut;  
 AliPIDResponse *fPIDResponse;     //! PID response object
