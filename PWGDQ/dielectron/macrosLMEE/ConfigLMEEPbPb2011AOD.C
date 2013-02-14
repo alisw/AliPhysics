@@ -4,7 +4,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFCentnoTOF;NoPIDNoPairing");
+TString names=("noPairing;TPCTOFCentHPT;TPCTOFSemiCentHPT;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFCentnoTOF;NoPIDNoPairing");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -44,12 +44,12 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	//not yet implemented
   }
   else if (cutDefinition==1) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFHPT;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kFALSE;
   }
   else if (cutDefinition==2) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFHPT;
 	selectedCentrality = LMEECutLib::kPbPb2011SemiCentral;
 	rejectionStep = kFALSE;
   }
@@ -111,11 +111,9 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	  
 	  die->GetTrackFilter().AddCuts( LMCL->GetTrackCutsAna(selectedPID) );
 	  die->GetTrackFilter().AddCuts( LMCL->GetPIDCutsAna(selectedPID) );
-	  /*
-		if ((cutDefinition >=6) &&  (cutDefinition <=7)) {
-		  die->GetPairFilter().AddCuts(LMCL->GetPairCuts2(selectedPID,kFALSE));
-		}
-*/
+	  
+	  die->GetPairFilter().AddCuts(LMCL->GetPairCuts2(selectedPID,kFALSE));
+
 
 	}
 	//Introduce NULL-check for pp?
