@@ -461,7 +461,7 @@ void AliDielectron::FillHistogramsMC(const AliMCEvent *ev, AliVEvent *ev1)
 
 
 //________________________________________________________________
-void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
+void AliDielectron::FillHistograms(AliVEvent *ev, Bool_t pairInfoOnly)
 {
   //
   // Fill Histogram information for tracks and pairs
