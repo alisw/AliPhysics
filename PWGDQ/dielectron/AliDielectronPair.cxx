@@ -331,7 +331,7 @@ Double_t AliDielectronPair::ThetaPhiCM(const AliVParticle* d1, const AliVParticl
   Double_t pz2=d2->Pz();
   Double_t eleMass=AliPID::ParticleMass(AliPID::kElectron);
   Double_t proMass=AliPID::ParticleMass(AliPID::kProton);
-  printf(" beam energy %f \n ", fBeamEnergy);
+  //  printf(" beam energy %f \n ", fBeamEnergy);
   TLorentzVector projMom(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
   TLorentzVector targMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
   
