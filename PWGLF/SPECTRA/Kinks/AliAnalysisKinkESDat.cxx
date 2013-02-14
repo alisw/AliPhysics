@@ -42,6 +42,7 @@
 #include "AliVEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
+/////////#include "AliTENDERSupplies.h"
 ClassImp(AliAnalysisKinkESDat)
 
 
@@ -57,9 +58,10 @@ AliAnalysisKinkESDat::AliAnalysisKinkESDat(const char *name)
     fradPtRpDt(0), fInvMuNuAll(0), fQtInvM(0), 
          fDCAkink(0), fPosiKink(0),  fPosiKinkK(0),fPosiKinKXZ(0), fPosiKinKYZ(0), fPosiKinKBg(0), fQtMothP(0), fTPCSgnlPtpc(0),
        fTPCMomNSgnl(0),  fMothKinkMomSgnl(0), fNSigmTPC(0),  fTPCSgnlKinkDau(0), fPtKinkPos(0), fPtKinkNeg(0),  fRadNclCln(0),
+       fRatioCrossedRows(0), fRatioCrossedRowsKink(0),fRadiusPt(0), fRadiusPtcln(0),  fInvMassMuNuPt(0), fPtCut1(0), fPtCut2(0), fPtCut3(0),
+      fAngMomKKinks(0),
  f1(0), f2(0),
-      fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1),fCutsMul(0), fPIDResponse(0)
-
+      fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1),fCutsMul(0),  fMaxDCAtoVtxCut(0),  fPIDResponse(0)
 {
   // Constructor
 
@@ -84,6 +86,13 @@ AliAnalysisKinkESDat::AliAnalysisKinkESDat(const char *name)
 
         fCutsMul->SetEtaRange(-0.8,+0.8);
         fCutsMul->SetPtRange(0.15, 1e10);
+
+        fMaxDCAtoVtxCut=new AliESDtrackCuts("fMaxDCA", "fMaxDCA");
+       fMaxDCAtoVtxCut->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    fMaxDCAtoVtxCut->SetMaxChi2TPCConstrainedGlobal(36);
+//        esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+  //  esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+
 
 
   DefineOutput(1, TList::Class());
@@ -138,7 +147,7 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
   fKinkKaon= new TH1F("fKinkKaon", "P_{T}Kaon kinks identi",300, 0.0,15.0); 
   fKinKRbn= new TH1F("fKinKRbn", "p_{t}Kaon kinks identi[GeV/c],Entries",46,gPt7TOF); 
   fKinkKaonBg= new TH1F("fKinkKaonBg", "P_{T}Kaon kinks backgr",300, 0.0,15.0); 
-  fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",80,0.0, 0.8); 
+  fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",180,0.10, 1.0); 
   fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  distribution, counts",44, gPt7K0); 
   fptKink= new TH1F("fptKink", "P_{T}Kaon Kink  bution",300, 0.0,15.0); 
   fAngMomK= new TH2F("fAngMomK","Decay angle vrs Mother Mom,K",100,0.0,5.0,80,0.,80.);
@@ -153,8 +162,8 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
   fChi2NclTPC= new TH2F("fChi2NclTPC","Chi2vrs nclust,K",100,0.,500., 70,20, 160);
   fRatChi2Ncl= new TH1F("fRatChi2Ncl","Ratio chi2/nclusters in TPC,K",50,0.0,5.0);
   fRadiusNcl = new TH2F("fRadiusNcl","kink radius vrs Nclust,K",75,100.,250., 80,0, 160);
-    fTPCSgnlP = new TH2F("fTPCSgnlP","TPC signal de/dx Mom,K",300,0.0,15.0,150,0.,300.);
-  fTPCSgnlPa= new TH2F("fTPCSgnlPa","TPC signal de/dx Mom,K",300,0.0,15.,150, 0.,300.);
+    fTPCSgnlP = new TH2F("fTPCSgnlP","TPC signal de/dx Mom,K",1000,0.0,20.0,150,0.,300.);
+  fTPCSgnlPa= new TH2F("fTPCSgnlPa","TPC signal de/dx Mom,K",1000,0.0,20.,150, 0.,300.);
   fRpr = new TH1D("fRpr", "rad distribution  PID pr",100,-10.0, 10.0);
   fZpr = new TH1D("fZpr", "z distribution PID pr  ",80,-20.,20.);
   fdcatoVxXY = new TH1D("fdcatoVxXY", "dca  distribution PID  ",20,-1.,1.);
@@ -169,7 +178,7 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
   flifetime= new TH1F("flifetime", "ct study of K-kinks",100,0.,1000.); 
   fradLK= new TH1F("fradLK", "Length of   K generated",100,0.,1000.); 
   fradPtRpDt=new TH3F("fradPtRpDt","rad pt rap dat",28,100.,240., 20, 0., 5., 20, -1., 1. );
-  fInvMuNuAll= new TH1F("fInvMuNuAll", " Inv Mass MuNu all kink",80,0.,0.8); 
+  fInvMuNuAll= new TH1F("fInvMuNuAll", " Inv Mass MuNu all kink",180,0.1,1.0); 
   fQtInvM= new TH2F("fQtInvM", "Q_{T} Versus Inv MuNu ",80, 0., 0.80 , 100 , 0., 0.300); 
     fDCAkink = new TH1F("fDCAkink ", "DCA kink vetrex ",50, 0.0,1.0);
   fPosiKink= new TH2F("fPosiKink", "Y vrx kink Vrex ",100, -300.0,300.0,100, -300, 300.);
@@ -180,12 +189,21 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
   fQtMothP = new TH2F("fQtMothP", " Qt vrs Mother P", 100, 0., 5.0,100, 0.,0.300);
     fTPCSgnlPtpc = new TH2F("fTPCSgnlPtpc","TPC signal de/dx Mom TPC,K  ",300,0.0,15.0,100, 0., 250.    );
     fTPCMomNSgnl = new TH2F("fTPCMomNsgnl","TPC signal de/dx Mom TPC,K  ",300,0.0,15.0,20 , -10., 10.);
-    fMothKinkMomSgnl  = new TH2F("fMothKinkMomSgnl","TPC signal de/dx Mom TPC,Kink  ",300,0.0,15.0,100, 0., 250.    );
+    fMothKinkMomSgnl  = new TH2F("fMothKinkMomSgnl","TPC signal de/dx Mom TPC,Kink  ",100,0.0,250.0,100, 0., 250.    );
     fNSigmTPC    = new TH1F("fNSigmTPC","TPC Nsigma  de/dx  TPC,K  ", 30 , -7.5, 7.5);
-    fTPCSgnlKinkDau = new TH2F("fTPCSgnlKinkDau","TPC signal de/dx Mom,K",300,0.0,15.0,100,0.,250.);
+    fTPCSgnlKinkDau = new TH2F("fTPCSgnlKinkDau","TPC signal de/dx Mom,K",500,0.0,10.0,100,0.,250.);
   fPtKinkPos= new TH1F("fPtKinkPos", "Pos P_{T}Kaon Kink  distribution, counts",44, gPt7K0); 
   fPtKinkNeg= new TH1F("fPtKinkNeg", "Neg P_{T}Kaon Kink  distribution, counts",44, gPt7K0); 
   fRadNclCln = new TH2F("fRadNclCln","kink radius vrs Nclust,K Clean ",75,100.,250., 80,0, 160);
+  fRatioCrossedRows = new TH1F("fRatioCrossedRows","Ratio crossed rows  in TPC",20,0.0,1.0);
+  fRatioCrossedRowsKink = new TH1F("fRatioCrossedRowsKink","Ratio crossed rows  in TPC for kinks",20,0.0,1.0);
+  fRadiusPt =new TH2F("fRadiusPt","radius vs pt  ",80, 90.,250.,100, 0.,10.              );
+  fRadiusPtcln =new TH2F("fRadiusPtcln","radius vs pt clean ",80, 90.,250.,100, 0.,10.              );
+  fInvMassMuNuPt =new TH2F("fInvMassMuNuPt","Invariant mass-munu  vs pt  ",180, 0.10, 1.00, 100, 0.0, 10.0  );
+  fPtCut1 = new TH1F("fPtCut1", "P_{T}Kaon distribution",300, 0.0,15.0); 
+  fPtCut2 = new TH1F("fPtCut2", "P_{T}Kaon distribution",300, 0.0,15.0); 
+  fPtCut3 = new TH1F("fPtCut3", "P_{T}Kaon distribution",300, 0.0,15.0); 
+  fAngMomKKinks = new TH2F("fAngMomKKinks","Decay angle vrs Mother Mom,Kinks",300,0.0,15.0,100,0.,100.);
 
    fListOfHistos=new TList();
 
@@ -254,7 +272,15 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
    fListOfHistos->Add(fPtKinkPos);
    fListOfHistos->Add(fPtKinkNeg);
    fListOfHistos->Add(fRadNclCln);
-
+   fListOfHistos->Add(fRatioCrossedRows);
+   fListOfHistos->Add(fRatioCrossedRowsKink);
+   fListOfHistos->Add(fRadiusPt);
+   fListOfHistos->Add(fRadiusPtcln);
+   fListOfHistos->Add(fInvMassMuNuPt);
+   fListOfHistos->Add(fPtCut1);
+   fListOfHistos->Add(fPtCut2);
+   fListOfHistos->Add(fPtCut3);
+  fListOfHistos->Add(fAngMomKKinks);
 
 }
 //________________________________________________________________________
@@ -332,6 +358,9 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
        Double_t nsigmall = 100.0;
        Double_t nsigma = 100.0;
        Double_t nsigmaPion =-100.0;
+       Double_t nsigmaDau  =-100.0;
+       Double_t dEdxKinkDau =0.0;
+       Double_t KinkDauCl   =0.0;
 // apo Eftihi 
                   if(!fPIDResponse) {
     AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
@@ -348,13 +377,19 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
       Printf("ERROR: Could not receive track %d", iTrack);
       continue;
     }
-
+//
    	    	Int_t indexKinkDau=trackD->GetKinkIndex(0);
 // daughter kink 
 //	  AliESDkink *kink=esd->GetKink(TMath::Abs(indexKinkDau)-1);
-             nsigmaPion     = (fPIDResponse->NumberOfSigmasTPC(trackD  , AliPID::kPion));// 26/10 eftihis
+      if ( indexKinkDau > 0 )    {
+    Int_t labelD = trackD->GetLabel();
+    labelD = TMath::Abs(labelD);
+   nsigmaPion     = (fPIDResponse->NumberOfSigmasTPC(trackD  , AliPID::kPion));// 26/10 eftihis
+     dEdxKinkDau =  (trackD->GetTPCsignal()  )  ;  //  daughter kink  dEdx 
+   KinkDauCl=(trackD->GetTPCclusters(0)  )  ;
+ }
 //if((indexKinkDau >0)&& (nsigmaPion>1.2)) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  ) ) ;  //  daughter kink 
-if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  ) ) ;  //  daughter kink 
+// Ayto mexri 26/11/2012     if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  ) ) ;  //  daughter kink 
    }
 
 // track loop
@@ -375,6 +410,14 @@ if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  
   //  nsigmaPion= (fESDpid->NumberOfSigmasTPC(track,AliPID::kPion));
       nsigma  = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon));
 
+//=======================new 
+     Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
+  Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
+  if (track->GetTPCNclsF()>0) {
+    ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / track->GetTPCNclsF();
+    fRatioCrossedRows->Fill(ratioCrossedRowsOverFindableClustersTPC);
+   }
+//_______
 
    	    	Int_t indexKinkPos=track->GetKinkIndex(0);   // kink index 
 
@@ -429,8 +472,15 @@ if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  
     fRpr->Fill(dcaToVertexZpos);
  
    if((TMath::Abs(dcaToVertexXYpos)>0.3)||(TMath::Abs(dcaToVertexZpos)>2.5))  nESDTrKink++;  //  count of second  23Jul11    
+ //if((TMath::Abs(dcaToVertexXYpos)>0.3)||(TMath::Abs(dcaToVertexZpos)>2.5))
+//          continue;   //    allagi  23Jul11
+
+      //    apo Filhmona                      if (!fMaxDCAtoVtxCut->AcceptTrack(track)) continue;
+// Float_t MaxDCAxy =       fMaxDCAtoVtxCut->GetMaxDCAToVertexXYPtDep(track );
+   //       if (MaxDCAxy > 2.4 )  continue ; 
+
+    fdcatoVxXY->Fill(dcaToVertexXYpos);
 //
-     if((TMath::Abs(dcaToVertexXYpos)>0.3)||(TMath::Abs(dcaToVertexZpos)>2.5)) continue;   //    allagi  23Jul11               
     
 //  track Mult. after selection 
     nESDTracK++;        
@@ -448,6 +498,7 @@ if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  
 
              fptKMC   ->Fill(  track->Pt()    );  // Pt from tracks , all kinks
 
+    fRatioCrossedRowsKink->Fill(ratioCrossedRowsOverFindableClustersTPC);
 	// select kink class	
 
 	  AliESDkink *kink=esd->GetKink(TMath::Abs(indexKinkPos)-1);
@@ -464,10 +515,11 @@ if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  
  fPosiKink ->Fill( vposKink[0], vposKink[1]  );
    Double_t  dzKink=vpos[2]-vposKink[2]; 
 //
+//   lifitime
             Double_t tanLamda = track->GetTgl();  // 25/6/2010
 
    Double_t lifeKink= (TMath::Abs( dzKink ))*( TMath::Sqrt(1.+ tanLamda*tanLamda) ) / (TMath::Abs( tanLamda)) ;
-
+//
 	   const TVector3 motherMfromKink(kink->GetMotherP());
 	   const TVector3 daughterMKink(kink->GetDaughterP());
 
@@ -477,7 +529,8 @@ if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  
      Double_t trMomTPCKink=motherMfromKink.Mag();        
 // TPC mother momentun
      Double_t trMomTPC=track->GetTPCmomentum();      
-
+  //     fTPCSgnlKinkDau->Fill( daughterMKink.Mag(), dEdxKinkDau  ) ;  //  daughter kink 
+  //   
            fHistQtAll->Fill(qT) ;  //  Qt   distr
                   
            fptKink->Fill(motherMfromKink.Pt()); /// pt from kink
@@ -496,6 +549,7 @@ if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  
 
             fHistEta->Fill(trackEta) ;  //   Eta distr 
           fHistQt2->Fill(qT);  //             
+            fKinkKaonBg->Fill(motherPt);     
 
 //          maximum decay angle at a given mother momentum
 	   //Double_t maxDecAngKmu=f1->Eval(motherMfromKink.Mag(),0.,0.,0.);
@@ -510,7 +564,7 @@ if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  
               if ( TMath::Abs(vposKink[2]) >  225. ) continue ;
               if ( TMath::Abs(vposKink[2]) <  0.5 ) continue ;
 //
-            fKinkKaonBg->Fill(motherPt);     
+            fPtCut1   ->Fill(trackPt );     
             fAngMomPi->Fill( track->P(),           kinkAngle); 
 //
 // invariant mass of mother track decaying to mu
@@ -526,6 +580,7 @@ if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  
            fQtInvM -> Fill ( invariantMassKmu,  qT);
            fInvMuNuAll->Fill(invariantMassKmu);
 //
+         fRadiusPt->Fill( kink->GetR(), trackPt); // 
  //  radius and Minv selection 
        if( ( kink->GetR()> 120 ) && ( kink->GetR() < 210 )  )  {
     //  for systematics   if( ( kink->GetR()> 130 ) && ( kink->GetR() < 200 )  )  {
@@ -543,20 +598,24 @@ if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  
       Int_t tpcNClMin  = -85.5 + (65./95.)  *( kink->GetR() ) ;  
                if ( tpcNCl < tpcNClMin ) continue;   
 
+   //  back, 20/1/2013   if (ratioCrossedRowsOverFindableClustersTPC< 0.5) continue;// test 14/1/2013 
 //
                fHistPtKPDG->Fill(track->Pt());  // ALL  K-candidates until now                 
     //  if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=120.)&&(kink->GetR()<=210.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.6)){
      if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=120.)&&(kink->GetR()<=210.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
   // systematics   if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=130.)&&(kink->GetR()<=200.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
 //
+        fAngMomKKinks->Fill(track->P(), kinkAngle); 
+            fPtCut2   ->Fill(trackPt );     
 //  maximum angles selection with some error cut 
         if( (kinkAngle<maxDecAngpimu*1.2) ) continue; 
                  if ( (kinkAngle>maxDecAngKmu*.98) && ( track->P() >1.2 )) continue;  ///5/5/2010
 
+            fPtCut3   ->Fill(trackPt );     
 //  here the kaons selected by the decay features
            fTPCSgnlPa->Fill( track->GetInnerParam()->GetP() ,(track->GetTPCsignal()  ) ) ;
 //
-                           if ( nsigma               > 3.5) continue;
+            //  NO dEdx cut test 9/2/13               if ( nsigma               > 3.5) continue;
             // system               if ( nsigma               > 4.0) continue;   // gia systamatic error
 // 
 //  next plots for the identified kaons by the kink analysis
@@ -566,9 +625,14 @@ if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  
                if ( tpcSign <0.)    fHistPtKaoN->Fill(  track->Pt()        ) ;   //
           fTPCSgnlP->Fill(track->GetInnerParam()->GetP(), (track->GetTPCsignal()  ) ) ;
          fRadNclCln->Fill( (kink->GetR()) ,(track->GetTPCclusters(0)  ) ) ;
+         fRadiusPtcln->Fill( kink->GetR(), trackPt); // 
+           fInvMassMuNuPt ->Fill(invariantMassKmu,  trackPt);
                  
-         fTPCSgnlPtpc->Fill(trMomTPC  , (track->GetTPCsignal()  ) ) ;
-         fMothKinkMomSgnl ->Fill(trMomTPCKink  , (track->GetTPCsignal()  ) ) ;
+      //   fTPCSgnlPtpc->Fill(trMomTPC  , (track->GetTPCsignal()  ) ) ;
+         //fMothKinkMomSgnl ->Fill(trMomTPCKink  , (track->GetTPCsignal()  ) ) ;
+         fMothKinkMomSgnl ->Fill(  dEdxKinkDau  , (track->GetTPCsignal()  ) ) ;
+//
+       fTPCSgnlKinkDau->Fill( daughterMKink.Mag(), dEdxKinkDau  ) ;  //  daughter kink 
 // 
          fTPCMomNSgnl->Fill(trMomTPC ,nsigmall );     
          fNSigmTPC   ->Fill(nsigmall );     
@@ -586,8 +650,11 @@ if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  
                   fSignPt->Fill( signPt );
                   fChi2NclTPC->Fill( (track->GetTPCchi2() ) ,  tpcNCl );
          fRatChi2Ncl-> Fill (  (track->GetTPCchi2()/track->GetTPCclusters(0)  )) ;
-    fdcatoVxXY->Fill(dcaToVertexXYpos);
-                  fKinkMothDau->Fill(track->P(),daughterMKink.Mag());
+ //   fdcatoVxXY->Fill(dcaToVertexXYpos);
+           //if( dEdxKinkDau> 1.5* (track->GetTPCsignal()   )  )      fKinkMothDau->Fill(track->P(),daughterMKink.Mag());
+       //    if((dEdxKinkDau>  80. ) && (dEdxKinkDau > 4.*nsigmaPion)   )      fKinkMothDau->Fill(track->P(),daughterMKink.Mag());
+         if (nsigmaPion>  3.             ) fTPCSgnlPtpc->Fill( daughterMKink.Mag(),  dEdxKinkDau    ) ;
+         //if (TMath::Abs(dEdxKinkDau -(track->GetTPCsignal() )> 10. )) fTPCSgnlPtpc->Fill( daughterMKink.Mag(),  dEdxKinkDau    ) ;
 		        flifetime->Fill(( lifeKink*.493667   )  /track->P()   ) ;
              fKinkKaon->Fill(track->Pt());        
             fDCAkink->Fill( Dist2   );

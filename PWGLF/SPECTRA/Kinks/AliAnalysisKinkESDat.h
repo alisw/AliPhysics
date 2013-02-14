@@ -105,6 +105,17 @@ class AliAnalysisKinkESDat : public AliAnalysisTaskSE {
    TH1F        *fPtKinkPos; //Pos K Pt  spectrum   of all kinks  from track bank, K0 bins
    TH1F        *fPtKinkNeg; //Neg K Pt  spectrum   of all kinks  from track bank, K0 bins
    TH2F        *fRadNclCln;//kink  Radius      Ncl  TPC  for kaons from kink clean sample
+   TH1F        *fRatioCrossedRows; //ratio  crossed rows                                           
+   TH1F        *fRatioCrossedRowsKink; //ratio  crossed rows  for kinks                                         
+   TH2F        *fRadiusPt;//kinks,  Radius      vs Pt                                        
+   TH2F        *fRadiusPtcln;//kinks,  Radius      vs Pt    for clean kaons                                     
+   TH2F        *fInvMassMuNuPt;//kinks,Invariant Mass MuNu     vs Pt                                         
+   TH1F        *fPtCut1; //K Pt  spectrum   of all kinks  from track bank, K0 bins
+   TH1F        *fPtCut2; //K Pt  spectrum   of all kinks  from track bank, K0 bins
+   TH1F        *fPtCut3; //K Pt  spectrum   of all kinks  from track bank, K0 bins
+   TH2F        *fAngMomKKinks;//kinks,  Angle vs Momentum  for K-kinks                                      
+
+
 
    TF1         *f1;
    TF1         *f2;
@@ -113,6 +124,7 @@ class AliAnalysisKinkESDat : public AliAnalysisTaskSE {
 Int_t fLowMulcut;  // 
 Int_t fUpMulcut;
 AliESDtrackCuts* fCutsMul;
+AliESDtrackCuts* fMaxDCAtoVtxCut;  
 AliPIDResponse *fPIDResponse;     //! PID response object
 
   AliAnalysisKinkESDat(const AliAnalysisKinkESDat&); // not implemented
