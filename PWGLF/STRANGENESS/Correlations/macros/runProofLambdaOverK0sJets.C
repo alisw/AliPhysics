@@ -4,10 +4,11 @@ void runProofLambdaOverK0sJets(TString  proofCluster  = "xsanchez@skaf.saske.sk"
 			       TString  rootVer       = "VO_ALICE@ROOT::v5-34-02", 
 			       TString  path          = "/alice/data/LHC10h_000138624_p2_AOD049",
 			       TString  name          = "LambdaOverK0sRatio", 
+			       TString  data       = "PbPb2010",
 			       Float_t  minCen        = 0.,
 			       Float_t  maxCen        = 90.,
-			       Float_t  ptMinTrig     = 8.,
-			       Float_t  ptMaxTrig     = 20.,
+			       Float_t  ptMinTrig     = 5.,
+			       Float_t  ptMaxTrig     = 10.,
 			       Float_t  etaMaxTrig    = 0.75,
 			       Float_t  rapMaxV0      = 0.75,
 			       Bool_t   sepInjec      = kTRUE,
@@ -56,14 +57,13 @@ void runProofLambdaOverK0sJets(TString  proofCluster  = "xsanchez@skaf.saske.sk"
   //AliAnalysisTask *pidTask = AddTaskPIDResponse(isMC,kTRUE);
   if(!pidTask) { printf("no PIDtask\n"); return; }
 
-  Float_t checkIDTrig= kFALSE;
-  Float_t nSigmaPID = 3.0;
-  
+  Float_t checkIDTrig= kTRUE;
+    
   // My task
   gROOT->LoadMacro("AliAnalysisTaskLambdaOverK0sJets.cxx+g"); 
   gROOT->LoadMacro("AddTaskLambdaOverK0sJets.C");
-  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,checkIDTrig,rapMaxV0,nSigmaPID,sepInjec,isMC,usePID,doQA);
-
+  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,data,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,checkIDTrig,rapMaxV0,sepInjec,isMC,usePID,doQA);
+  
   // _____________________________________________________ //
   
   if (!mgr->InitAnalysis()) return;
