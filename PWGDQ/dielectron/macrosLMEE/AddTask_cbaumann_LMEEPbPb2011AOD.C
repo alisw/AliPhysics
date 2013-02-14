@@ -71,9 +71,9 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t se
   task->AddDielectron(lowmass4);
   printf("add: %s\n",lowmass4->GetName());
 
-  AliDielectron *lowmass6=ConfigLMEEPbPb2011AOD(6,hasMC,bESDANA);
-  task->AddDielectron(lowmass6);
-  printf("add: %s\n",lowmass6->GetName());
+  AliDielectron *lowmass1=ConfigLMEEPbPb2011AOD(1,hasMC,bESDANA);
+  task->AddDielectron(lowmass1);
+  printf("add: %s\n",lowmass1->GetName());
 
 if (PIDbaseline) {
 	AliDielectron *lowmass7=ConfigLMEEPbPb2011AOD(7,hasMC,bESDANA);
