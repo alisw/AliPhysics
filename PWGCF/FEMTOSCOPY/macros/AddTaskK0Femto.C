@@ -1,13 +1,13 @@
-AliFemtoK0Analysis *AddTaskK0Femto(){
+AliFemtoK0Analysis *AddTaskK0Femto(bool FieldPositive = kTRUE){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskK0Femto", "No analysis manager to connect to.");
+    ::Error("AddTaskBF", "No analysis manager to connect to.");
     return NULL;
   }
 
-  AliFemtoK0Analysis *K0Task = new AliFemtoK0Analysis("K0Task");
-  if(!K0Task) return NULL;
+  AliFemtoK0Analysis *K0Task = new AliFemtoK0Analysis("K0Task", FieldPositive);
+  if(!K0Task) exit(-1);
   mgr->AddTask(K0Task);
 
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
