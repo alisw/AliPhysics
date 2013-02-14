@@ -123,7 +123,7 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
 //  ,fPoolMgr(0x0)  
   ,fNoEvents(0)
 //  ,fTrkpt(0)
-//  ,fTrkEovPBef(0)	 
+  ,fTrkEovPAft(0)	 
 //  ,fTrkEovPBefHad(0)	 
  // ,fdEdxBef(0)	 
   ,fSemiIncElecDphi(0) 	
@@ -281,7 +281,7 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
 //  ,fPoolMgr(0x0)    
   ,fNoEvents(0)
 //  ,fTrkpt(0)
-//  ,fTrkEovPBef(0)	 
+  ,fTrkEovPAft(0)	 
 //  ,fTrkEovPBefHad(0)	 
 //  ,fdEdxBef(0)	 
   ,fSemiIncElecDphi(0) 	
@@ -607,14 +607,14 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
      fSparseElectron->Fill(fvalueElectron);
 
      //----------------
-     //hadron E/p and Dphi distribution with shower shape cuts
-     if(((fTPCnSigma > -10) && (fTPCnSigma < -3.5)) && ((cluster->GetM20()>0.03) && (cluster->GetM20()<0.3)) &&  ((cluster->GetM02()>0.03) && (cluster->GetM02()<0.5)) && ((cluster->GetDispersion()<1))){
+     //Dphi distribution with shower shape cuts
+     if(((fTPCnSigma > -10) && (fTPCnSigma < -3.5)) && ((cluster->GetM20()>0.03) && (cluster->GetM20()<0.3)) &&  ((cluster->GetM02()>0.03) && (cluster->GetM02()<0.5)) && ((cluster->GetDispersion()<1))&&(fEovP >= 0.8 && fEovP <=1.2)){
        ElectronHadCorrel(iTracks, track, fHadronDphi, fHadronDphi1,fHadronDphi2,fHadronDphi3,fHadronDphi4);
        fPiPt->Fill(pt);
      }
 
-     //hadron E/p and Dphi distribution without shower shape cuts
-     if((fTPCnSigma > -10) && (fTPCnSigma < -3.5)){
+     //Dphi distribution without shower shape cuts
+     if((fTPCnSigma > -10) && (fTPCnSigma < -3.5)&&(fEovP >= 0.8 && fEovP <=1.2)){
        ElectronHadCorrel(iTracks, track, fHadronDphiNoSS, fHadronDphiNoSS1,fHadronDphiNoSS2,fHadronDphiNoSS3,fHadronDphiNoSS4);
        fPiPtNoSS->Fill(pt);
      }
@@ -626,6 +626,7 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
        //Electron id with shower shape  
        if(cluster->GetM20()>0.03 && cluster->GetM20()<0.3 && cluster->GetM02()>0.03 && cluster->GetM02()< 0.5 && cluster->GetDispersion()<1){
 
+         fTrkEovPAft->Fill(pt,fEovP);
          fElecPhi->Fill(track->Phi());
          fElecPhiPt->Fill(track->Phi(),track->Pt());
          if (track->Eta() >0 && track->Eta() <0.7) fElecPhiTPChalf->Fill(track->Phi());
@@ -761,8 +762,8 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 //  fTPCnsigma = new TH2F("fTPCnsigma", "TPC - n sigma",1000,0,50,200,-10,10);
 //  fOutputList->Add(fTPCnsigma);
   
-//  fTrkEovPBef = new TH2F("fTrkEovPBef","track E/p before HFE pid",1000,0,50,100,0,2);
-//  fOutputList->Add(fTrkEovPBef);
+  fTrkEovPAft = new TH2F("fTrkEovPAft","track E/p after HFE pid",1000,0,50,100,0,2);
+  fOutputList->Add(fTrkEovPAft);
 
 //  fTrkEovPBefHad = new TH2F("fTrkEovPBefHad","track E/p for TPCnsig < 3.5",1000,0,50,100,0,2);
 //  fOutputList->Add(fTrkEovPBefHad);
