@@ -35,6 +35,8 @@ class AliAODHeader : public AliVHeader {
 	       Int_t refMult,
 	       Int_t refMultPos,
 	       Int_t refMultNeg,
+	       Int_t refMultComb05,
+	       Int_t refMultComb08,
 	       Double_t magField,
 	       Double_t muonMagFieldScale,
 	       Double_t cent,
@@ -81,6 +83,8 @@ class AliAODHeader : public AliVHeader {
   Int_t     GetRefMultiplicityNeg() const { return fRefMultNeg; }
   Int_t     GetNumberOfMuons()      const { return fNMuons; }
   Int_t     GetNumberOfDimuons()    const { return fNDimuons; }
+  Int_t     GetRefMultiplicityComb05() const { return fRefMultComb05; }
+  Int_t     GetRefMultiplicityComb08() const { return fRefMultComb08; }
 
   Double_t  GetQTheta(UInt_t i) const;
   UInt_t    GetNQTheta() const { return (UInt_t)fNQTheta; }
@@ -125,7 +129,9 @@ class AliAODHeader : public AliVHeader {
   void SetRefMultiplicityNeg(Int_t refMultNeg) { fRefMultNeg = refMultNeg; }
   void SetNumberOfMuons(Int_t nMuons) { fNMuons = nMuons; }
   void SetNumberOfDimuons(Int_t nDimuons) { fNDimuons = nDimuons; }
-  
+  void SetRefMultiplicityComb05(Int_t refMult)   { fRefMultComb05 = refMult; }
+  void SetRefMultiplicityComb08(Int_t refMult)   { fRefMultComb08 = refMult; }  
+
   void SetQTheta(Double_t *QTheta, UInt_t size = 5);  
   void RemoveQTheta();
 
@@ -208,6 +214,8 @@ class AliAODHeader : public AliVHeader {
   UInt_t      fOrbitNumber;         // Orbit Number
   UInt_t      fPeriodNumber;        // Period Number
   UShort_t    fBunchCrossNumber;    // BunchCrossingNumber
+  Short_t     fRefMultComb05;       // combined reference multiplicity (tracklets + ITSTPC) in |eta|<0.5
+  Short_t     fRefMultComb08;       // combined reference multiplicity (tracklets + ITSTPC) in |eta|<0.8
   UChar_t     fTriggerCluster;      // Trigger cluster (mask)
   Double32_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
   Double32_t      fDiamondCovXY[3]; // Interaction diamond covariance (x,y) in RUN
@@ -227,7 +235,7 @@ class AliAODHeader : public AliVHeader {
   AliEventplane* fEventplaneP;	    // Pointer to full event plane information
   Float_t     fVZEROEqFactors[64];  // V0 channel equalization factors for event-plane reconstruction
   Float_t     fT0spread[kT0SpreadSize]; // spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
-  ClassDef(AliAODHeader, 19);
+  ClassDef(AliAODHeader, 20);
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 

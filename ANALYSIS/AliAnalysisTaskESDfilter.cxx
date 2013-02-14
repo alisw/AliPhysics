@@ -410,7 +410,9 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   // TPC only Reference Multiplicty
   Int_t refMult  = fTPCaloneTrackCuts ? (Short_t)fTPCaloneTrackCuts->GetReferenceMultiplicity(&esd, kTRUE) : -1;
   header->SetTPConlyRefMultiplicity(refMult);
-  
+  //
+  header->SetRefMultiplicityComb05(AliESDtrackCuts::GetReferenceMultiplicity(&esd,AliESDtrackCuts::kTrackletsITSTPC,0.5));
+  header->SetRefMultiplicityComb08(AliESDtrackCuts::GetReferenceMultiplicity(&esd,AliESDtrackCuts::kTrackletsITSTPC,0.8));
   //
   Float_t diamxy[2]={esd.GetDiamondX(),esd.GetDiamondY()};
   Float_t diamcov[3]; 
