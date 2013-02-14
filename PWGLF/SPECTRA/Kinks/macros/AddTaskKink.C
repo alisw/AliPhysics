@@ -1,4 +1,4 @@
-AliAnalysisKinkESDat* AddTaskKink()
+AliAnalysisKinkESDat* AddTaskKink(TString lCustomName="")
 {
   //pp settings 	
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -37,7 +37,9 @@ task->SetMulCut(0,1002);
 //  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());     
    mgr->ConnectInput(task,0,cinput);
   
-  AliAnalysisDataContainer *coutput1= mgr->CreateContainer("PWGLFKKinks",TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+  TString lContainerName="PWGLFKinks";
+  lContainerName.Append(lCustomName);
+  AliAnalysisDataContainer *coutput1= mgr->CreateContainer(lContainerName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
   mgr->ConnectOutput(task, 1, coutput1);
  
   
