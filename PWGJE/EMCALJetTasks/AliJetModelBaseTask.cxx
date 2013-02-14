@@ -7,7 +7,7 @@
 #include "AliJetModelBaseTask.h"
 
 #include <TClonesArray.h>
-#include <TH1.h>
+#include <TH1I.h>
 #include <TLorentzVector.h>
 #include <TRandom3.h>
 #include <TList.h>
@@ -20,6 +20,7 @@
 #include "AliEMCALRecPoint.h"
 #include "AliESDCaloCells.h"
 #include "AliAODCaloCells.h"
+#include "AliAODMCParticle.h"
 #include "AliVCaloCells.h"
 #include "AliPicoTrack.h"
 #include "AliEMCALGeometry.h"
@@ -37,6 +38,8 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fOutCaloName(),
   fCellsName(),
   fOutCellsName(),
+  fMCParticlesName(),
+  fOutMCParticlesName(),
   fSuffix(),
   fEtaMin(-1),
   fEtaMax(1),
@@ -60,6 +63,11 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fCaloCells(0),
   fOutCaloCells(0),
   fAddedCells(0),
+  fMCParticles(0),
+  fMCParticlesMap(0),
+  fOutMCParticles(0),
+  fOutMCParticlesMap(0),
+  fMCLabelShift(0),
   fEsdMode(kFALSE),
   fOutput(0)
 {
@@ -76,6 +84,8 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fOutCaloName("CaloClustersCorrEmbedded"),
   fCellsName(""),
   fOutCellsName(""),
+  fMCParticlesName(""),
+  fOutMCParticlesName(""),
   fSuffix("Processed"),
   fEtaMin(-1),
   fEtaMax(1),
@@ -99,6 +109,11 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fCaloCells(0),
   fOutCaloCells(0),
   fAddedCells(0),
+  fMCParticles(0),
+  fMCParticlesMap(0),
+  fOutMCParticles(0),
+  fOutMCParticlesMap(0),
+  fMCLabelShift(0),
   fEsdMode(kFALSE),
   fOutput(0)
 {
@@ -145,6 +160,8 @@ void AliJetModelBaseTask::UserExec(Option_t *)
       fOutTracks->Delete();
     if (fOutClusters)
       fOutClusters->Delete();
+    if (fOutMCParticles)
+      fOutMCParticles->Delete();
   }
 
   AliVCaloCells *tempCaloCells = 0;
@@ -190,14 +207,12 @@ Bool_t AliJetModelBaseTask::ExecOnce()
     fPhiMax = fPhiMin;
   }
 
-  if (!fCaloCells && !fCellsName.IsNull()) {
+  if (!fCellsName.IsNull()) {
     fCaloCells = dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCellsName));
     if (!fCaloCells) {
-      AliError(Form("%s: Couldn't retrieve calo cells with name %s!", GetName(), fCellsName.Data()));
-      return kFALSE;
+      AliWarning(Form("%s: Couldn't retrieve calo cells with name %s!", GetName(), fCellsName.Data()));
     }
-    
-    if (!fCaloCells->InheritsFrom("AliVCaloCells")) {
+    else if (!fCaloCells->InheritsFrom("AliVCaloCells")) {
       AliError(Form("%s: Collection %s does not contain a AliVCaloCells object!", GetName(), fCellsName.Data())); 
       fCaloCells = 0;
       return kFALSE;
@@ -205,9 +220,9 @@ Bool_t AliJetModelBaseTask::ExecOnce()
 
     if (!fOutCaloCells) {
       fOutCellsName = fCellsName;
-      if (fCopyArray) {
+      if (fCopyArray) 
 	fOutCellsName += fSuffix;
-
+      if (fCopyArray || !fCaloCells) {
 	if (fEsdMode) 
 	  fOutCaloCells = new AliESDCaloCells(fOutCellsName,fOutCellsName);
 	else
@@ -227,14 +242,12 @@ Bool_t AliJetModelBaseTask::ExecOnce()
     }
   }
 
-  if (fNTracks > 0 && !fTracks && !fTracksName.IsNull()) {
+  if (fNTracks > 0 && !fTracksName.IsNull()) {
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
     if (!fTracks) {
-      AliError(Form("%s: Couldn't retrieve tracks with name %s!", GetName(), fTracksName.Data()));
-      return kFALSE;
+      AliWarning(Form("%s: Couldn't retrieve tracks with name %s!", GetName(), fTracksName.Data()));
     }
-    
-    if (!fTracks->GetClass()->GetBaseClass("AliPicoTrack")) {
+    else if (!fTracks->GetClass()->GetBaseClass("AliPicoTrack")) {
       AliError(Form("%s: Collection %s does not contain AliPicoTrack objects!", GetName(), fTracksName.Data())); 
       fTracks = 0;
       return kFALSE;
@@ -242,9 +255,10 @@ Bool_t AliJetModelBaseTask::ExecOnce()
 
     if (!fOutTracks) {
       fOutTracksName = fTracksName;
-      if (fCopyArray) {
+      if (fCopyArray)
 	fOutTracksName += fSuffix;
-	fOutTracks = new TClonesArray("AliPicoTrack", fTracks->GetSize());
+      if (fCopyArray || !fTracks) {
+	fOutTracks = new TClonesArray("AliPicoTrack");
 	fOutTracks->SetName(fOutTracksName);
 	if (InputEvent()->FindListObject(fOutTracksName)) {
 	  AliFatal(Form("%s: Collection %s is already present in the event!", GetName(), fOutTracksName.Data())); 
@@ -260,15 +274,13 @@ Bool_t AliJetModelBaseTask::ExecOnce()
     }
   }
 
-  if (fNClusters > 0 && !fClusters && !fCaloName.IsNull()) {
+  if (fNClusters > 0 && !fCaloName.IsNull()) {
     fClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
  
     if (!fClusters) {
-      AliError(Form("%s: Couldn't retrieve clusters with name %s!", GetName(), fCaloName.Data()));
-      return kFALSE;
+      AliWarning(Form("%s: Couldn't retrieve clusters with name %s!", GetName(), fCaloName.Data()));
     }
-
-    if (!fClusters->GetClass()->GetBaseClass("AliVCluster")) {
+    else if (!fClusters->GetClass()->GetBaseClass("AliVCluster")) {
       AliError(Form("%s: Collection %s does not contain AliVCluster objects!", GetName(), fCaloName.Data())); 
       fClusters = 0;
       return kFALSE;
@@ -276,8 +288,9 @@ Bool_t AliJetModelBaseTask::ExecOnce()
 
     if (!fOutClusters) {
       fOutCaloName = fCaloName;
-      if (fCopyArray) {
+      if (fCopyArray) 
 	fOutCaloName += fSuffix;
+      if (fCopyArray || !fClusters) {
 	fOutClusters = new TClonesArray(fClusters->GetClass()->GetName(), fClusters->GetSize());
 	fOutClusters->SetName(fOutCaloName);
 	if (InputEvent()->FindListObject(fOutCaloName)) {
@@ -290,6 +303,61 @@ Bool_t AliJetModelBaseTask::ExecOnce()
       }
       else {
 	fOutClusters = fClusters;
+      }
+    }
+  }
+
+  if (!fMCParticlesName.IsNull()) {
+    fMCParticles = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCParticlesName));
+    if (!fMCParticles) {
+      AliWarning(Form("%s: Couldn't retrieve MC particles with name %s!", GetName(), fMCParticlesName.Data()));
+    }
+    else {
+      if (!fMCParticles->GetClass()->GetBaseClass("AliAODMCParticle")) {
+	AliError(Form("%s: Collection %s does not contain AliAODMCParticle objects!", GetName(), fMCParticlesName.Data())); 
+	fMCParticles = 0;
+	return kFALSE;
+      }
+      
+      fMCParticlesMap = dynamic_cast<TH1I*>(InputEvent()->FindListObject(fMCParticlesName + "_Map"));
+
+      if (!fMCParticlesMap) {
+	AliWarning(Form("%s: Could not retrieve map for MC particles %s! Will assume MC labels consistent with indexes...", GetName(), fMCParticlesName.Data())); 
+	fMCParticlesMap = new TH1I(fMCParticlesName + "_Map", fMCParticlesName + "_Map",9999,0,1);
+	for (Int_t i = 0; i < 9999; i++) {
+	  fMCParticlesMap->SetBinContent(i,i);
+	}
+      }
+    }
+
+    if (!fOutMCParticles) {
+      fOutMCParticlesName = fMCParticlesName;
+      if (fCopyArray)
+	fOutMCParticlesName += fSuffix;
+      if (fCopyArray || !fMCParticles) {
+
+	fOutMCParticles = new TClonesArray("AliAODMCParticle");
+	fOutMCParticles->SetName(fOutMCParticlesName);
+	if (InputEvent()->FindListObject(fOutMCParticlesName)) {
+	  AliFatal(Form("%s: Collection %s is already present in the event!", GetName(), fOutMCParticlesName.Data())); 
+	  return kFALSE;
+	}
+	else {
+	  InputEvent()->AddObject(fOutMCParticles);
+	}
+
+	fOutMCParticlesMap = new TH1I(fOutMCParticlesName + "_Map", fOutMCParticlesName + "_Map",9999,0,1);
+	if (InputEvent()->FindListObject(fOutMCParticlesName + "_Map")) {
+	  AliFatal(Form("%s: Map %s_Map is already present in the event!", GetName(), fOutMCParticlesName.Data())); 
+	  return kFALSE;
+	}
+	else {
+	  InputEvent()->AddObject(fOutMCParticlesMap);
+	}
+      }
+      else {
+	fOutMCParticles = fMCParticles;
+	fOutMCParticlesMap = fMCParticlesMap;
       }
     }
   }
@@ -349,6 +417,9 @@ Int_t AliJetModelBaseTask::SetNumberOfOutCells(Int_t n)
 //________________________________________________________________________
 void AliJetModelBaseTask::CopyCells()
 {
+  if (!fCaloCells)
+    return;
+
   for (Short_t i = 0; i < fCaloCells->GetNumberOfCells(); i++) {
     Short_t mclabel = 0;
     Double_t efrac = 0.;
@@ -396,11 +467,16 @@ Int_t AliJetModelBaseTask::AddCell(Double_t e, Double_t eta, Double_t phi)
 }
 
 //________________________________________________________________________
-Int_t AliJetModelBaseTask::AddCell(Double_t e, Int_t absId, Double_t time)
+Int_t AliJetModelBaseTask::AddCell(Double_t e, Int_t absId, Double_t time, Int_t label)
 {
   // Add a cell to the event.
 
-  Bool_t r = fOutCaloCells->SetCell(fAddedCells, absId, e, time, fMarkMC, 0);
+  if (label == 0)
+    label = fMarkMC;
+  else
+    label += fMCLabelShift;
+
+  Bool_t r = fOutCaloCells->SetCell(fAddedCells, absId, e, time, label, 0);
 
   if (r) {
     fAddedCells++;
@@ -413,7 +489,7 @@ Int_t AliJetModelBaseTask::AddCell(Double_t e, Int_t absId, Double_t time)
 
 
 //________________________________________________________________________
-AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Double_t eta, Double_t phi)
+AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Double_t eta, Double_t phi, Int_t label)
 {
   // Add a cluster to the event.
 
@@ -439,11 +515,11 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Double_t eta, Double_t 
     e = nPart.E();
   }
 
-  return AddCluster(e, absId);
+  return AddCluster(e, absId, label);
 }
       
 //________________________________________________________________________
-AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId)
+AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId, Int_t label)
 {
   // Add a cluster to the event.
 
@@ -479,21 +555,26 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId)
   cluster->SetEmcCpvDistance(-1);
 
   //MC label
+  if (label == 0)
+    label = fMarkMC;
+  else
+    label += fMCLabelShift;
+
   if (fEsdMode) {
     AliESDCaloCluster *esdClus = static_cast<AliESDCaloCluster*>(cluster);
-    TArrayI parents(1, &fMarkMC);
+    TArrayI parents(1, &label);
     esdClus->AddLabels(parents); 
   }
   else {
     AliAODCaloCluster *aodClus = static_cast<AliAODCaloCluster*>(cluster);
-    aodClus->SetLabel(&fMarkMC, 1); 
+    aodClus->SetLabel(&label, 1); 
   }
   
   return cluster;
 }
 
 //________________________________________________________________________
-AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t type, Double_t etaemc, Double_t phiemc, Bool_t ise)
+AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t type, Double_t etaemc, Double_t phiemc, Bool_t ise, Int_t label)
 {
   // Add a track to the event.
 
@@ -506,11 +587,16 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
   if (phi < 0) 
     phi = GetRandomPhi();
 
+  if (label == 0)
+    label = fMarkMC;
+  else
+    label += fMCLabelShift;
+
   AliPicoTrack *track = new ((*fOutTracks)[nTracks]) AliPicoTrack(pt, 
 								  eta, 
 								  phi, 
 								  1,
-								  fMarkMC,    // MC flag!
+								  label,
 								  type, 
 								  etaemc, 
 								  phiemc, 
@@ -520,9 +606,23 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
 }
 
 //________________________________________________________________________
+AliAODMCParticle* AliJetModelBaseTask::AddMCParticle(AliAODMCParticle *part, Int_t origIndex)
+{
+  const Int_t nPart = fOutMCParticles->GetEntriesFast();
+
+  AliAODMCParticle *aodpart = new ((*fOutMCParticles)[nPart]) AliAODMCParticle(*part);
+
+  fOutMCParticlesMap->SetBinContent(origIndex + fMCLabelShift, nPart);
+
+  return aodpart;
+}
+
+//________________________________________________________________________
 void AliJetModelBaseTask::CopyClusters()
 {
   // Copy all the clusters in the new collection
+  if (!fClusters)
+    return;
 
   const Int_t nClusters = fClusters->GetEntriesFast();
   Int_t nCopiedClusters = 0;
@@ -550,6 +650,11 @@ void AliJetModelBaseTask::CopyClusters()
 //________________________________________________________________________
 void AliJetModelBaseTask::CopyTracks()
 {
+  // Copy all the tracks in the new collection
+
+  if (!fTracks)
+    return;
+
   const Int_t nTracks = fTracks->GetEntriesFast();
   Int_t nCopiedTracks = 0;
   for (Int_t i = 0; i < nTracks; ++i) {
@@ -559,6 +664,39 @@ void AliJetModelBaseTask::CopyTracks()
     new ((*fOutTracks)[nCopiedTracks]) AliPicoTrack(*track);
     nCopiedTracks++;
   }
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::CopyMCParticles()
+{
+  // Copy all the MC particles in the new collection
+
+  if (!fMCParticles)
+    return;
+
+  const Int_t nPart = fMCParticles->GetEntriesFast();
+  Int_t nCopiedPart = 0;
+  for (Int_t i = 0; i < nPart; ++i) {
+    AliAODMCParticle *part = static_cast<AliAODMCParticle*>(fMCParticles->At(i));
+    if (!part)
+      continue;
+    new ((*fOutMCParticles)[nCopiedPart]) AliAODMCParticle(*part);
+
+    nCopiedPart++;
+  }
+
+  if (!fMCParticlesMap)
+    return;
+
+  Int_t shift = 0;
+
+  for (Int_t i = 0; i < fMCParticlesMap->GetNbinsX()+2; i++) {
+    fOutMCParticlesMap->SetBinContent(i, fMCParticlesMap->GetBinContent(i));
+    if (fMCParticlesMap->GetBinContent(i) != 0)
+      shift = i;
+  }
+
+  fMCLabelShift = shift;
 }
 
 //________________________________________________________________________

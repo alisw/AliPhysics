@@ -62,6 +62,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 
   for (Int_t i = 0; i < 4; i++) {
     for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
+    fHistTrPhiEtaPtNegLab[i] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
     fHistJetsPhiEtaPt[i] = 0;
     fHistJetsPtArea[i] = 0;
@@ -101,6 +102,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
 
   for (Int_t i = 0; i < 4; i++) {
     for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
+    fHistTrPhiEtaPtNegLab[i] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
     fHistJetsPhiEtaPt[i] = 0;
     fHistJetsPtArea[i] = 0;
@@ -142,6 +144,14 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 	fHistTrPhiEtaPt[i][j]->GetYaxis()->SetTitle("#phi");
 	fHistTrPhiEtaPt[i][j]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
 	fOutput->Add(fHistTrPhiEtaPt[i][j]);
+      }
+      if (!fParticleLevel) {
+	histname = Form("fHistTrPhiEtaPtNegLab_%d",i);
+	fHistTrPhiEtaPtNegLab[i] = new TH3F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
+	fHistTrPhiEtaPtNegLab[i]->GetXaxis()->SetTitle("#eta");
+	fHistTrPhiEtaPtNegLab[i]->GetYaxis()->SetTitle("#phi");
+	fHistTrPhiEtaPtNegLab[i]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
+	fOutput->Add(fHistTrPhiEtaPtNegLab[i]);
       }
     }
 
@@ -499,6 +509,9 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     }
     else {
       fHistTrPhiEtaPt[fCentBin][3]->Fill(track->Eta(), track->Phi(), track->Pt());
+      if (fHistTrPhiEtaPtNegLab[fCentBin] && track->GetLabel() < 0)
+	fHistTrPhiEtaPtNegLab[fCentBin]->Fill(track->Eta(), track->Phi(), track->Pt());
+
       Int_t type = 0;
 
       AliPicoTrack* ptrack = dynamic_cast<AliPicoTrack*>(track);

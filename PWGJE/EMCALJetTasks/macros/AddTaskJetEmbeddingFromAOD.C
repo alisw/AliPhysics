@@ -4,17 +4,22 @@ TObjArray* GenerateFileList(const char* list, Int_t nFiles);
 
 AliJetEmbeddingFromAODTask* AddTaskJetEmbeddingFromAOD(
   const char     *tracksName    = "Tracks",
+  const char     *clusName      = "",
   const char     *cellsName     = "EMCALCells",
+  const char     *MCPartName    = "",
   const char     *fileList      = "files.txt",
   const char     *aodTreeName   = "aodTree",
   const char     *aodTracksName = "tracks",
+  const char     *aodClusName   = "",
   const char     *aodCellsName  = "emcalCells",
+  const char     *aodMCPartName = "",
   const char     *runperiod     = "",
   Bool_t          includeNoITS  = kTRUE,
   Double_t        minCent       = 0,
   Double_t        maxCent       = 10,
   UInt_t          mask          = AliVEvent::kAny,
   const Int_t     nTracks       = 1234567890,
+  const Int_t     nClus         = 0,
   const Int_t     nCells        = 1234567890,
   const Bool_t    copyArray     = kTRUE,
   const Int_t     nFiles        = 1234567890,
@@ -51,14 +56,19 @@ AliJetEmbeddingFromAODTask* AddTaskJetEmbeddingFromAOD(
 
   AliJetEmbeddingFromAODTask *jetEmb = new AliJetEmbeddingFromAODTask(taskName,makeQA);
   jetEmb->SetTracksName(tracksName);
+  jetEmb->SetClusName(clusName);
   jetEmb->SetCellsName(cellsName);
+  jetEmb->SetMCParticlesName(MCPartName);
   jetEmb->SetFileList(GenerateFileList(fileList, nFiles));
   jetEmb->SetAODTreeName(aodTreeName);
   jetEmb->SetAODTracksName(aodTracksName);
+  jetEmb->SetAODClusName(aodClusName);
   jetEmb->SetAODCellsName(aodCellsName);
+  jetEmb->SetAODMCParticlesName(aodMCPartName);
   jetEmb->SetCentralityRange(minCent, maxCent);
   jetEmb->SetTriggerMask(mask);
   jetEmb->SetNCells(nCells);
+  jetEmb->SetNClusters(nClus);
   jetEmb->SetNTracks(nTracks);
   jetEmb->SetCopyArray(copyArray);
   jetEmb->SetEtaRange(minEta, maxEta);

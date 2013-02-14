@@ -50,6 +50,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
 
   // Tracks
   TH3F                       *fHistTrPhiEtaPt[4][4];     //!Phi-Eta-Pt distribution of tracks
+  TH3F                       *fHistTrPhiEtaPtNegLab[4];  //!Phi-Eta-Pt distribution of tracks with negative labels
   TH2F                       *fHistTrEmcPhiEta;          //!Phi-Eta emcal propagated distribution of tracks
   TH2F                       *fHistTrPhiEtaNonProp;      //!Phi-Eta distribution of non emcal propagated tracks
   TH2F                       *fHistDeltaEtaPt;           //!Eta-EtaProp vs. Pt
