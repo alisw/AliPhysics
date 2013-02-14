@@ -82,4 +82,10 @@
 #pragma link C++ class  AliHFEsmearDCA+;
 #pragma link C++ class  AliAnalysisTaskFlowTPCEMCalQCSP+;
 
+#pragma link C++ class  AliHFEreducedEventCreatorAOD+;
+#pragma link C++ class  AliHFEreducedEventCreatorESD+;
+#pragma link C++ class  AliHFEreducedEvent+;
+#pragma link C++ class  AliHFEreducedTrack+;
+#pragma link C++ class  AliHFEreducedMCParticle+;
+
 #endif
