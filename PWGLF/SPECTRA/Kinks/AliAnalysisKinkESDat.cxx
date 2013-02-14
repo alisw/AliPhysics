@@ -471,11 +471,11 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
     
     fRpr->Fill(dcaToVertexZpos);
  
-   if((TMath::Abs(dcaToVertexXYpos)>0.3)||(TMath::Abs(dcaToVertexZpos)>2.5))  nESDTrKink++;  //  count of second  23Jul11    
+//  14/2/13 /================/   if((TMath::Abs(dcaToVertexXYpos)>0.3)||(TMath::Abs(dcaToVertexZpos)>2.5))  nESDTrKink++;  //  count of second  23Jul11    
  //if((TMath::Abs(dcaToVertexXYpos)>0.3)||(TMath::Abs(dcaToVertexZpos)>2.5))
 //          continue;   //    allagi  23Jul11
 
-      //    apo Filhmona                      if (!fMaxDCAtoVtxCut->AcceptTrack(track)) continue;
+                    if (!fMaxDCAtoVtxCut->AcceptTrack(track)) continue;
 // Float_t MaxDCAxy =       fMaxDCAtoVtxCut->GetMaxDCAToVertexXYPtDep(track );
    //       if (MaxDCAxy > 2.4 )  continue ; 
 
