@@ -620,8 +620,7 @@ AliChaoticity::~AliChaoticity()
   if(fTempStruct) delete [] fTempStruct;
   if(fRandomNumber) delete fRandomNumber;
   if(fMomResC2) delete fMomResC2;
-  if(fNormWeight) delete fNormWeight;
-  if(fNormWeightErr) delete fNormWeightErr;
+  
 
   for(Int_t i=0; i<fMultLimit; i++){
     if(fPairLocationSE[i]) delete [] fPairLocationSE[i];
@@ -721,8 +720,6 @@ AliChaoticity::~AliChaoticity()
     if(fFSIOmega0OS[i]) delete fFSIOmega0OS[i];
   }
 
-  if(fNormWeight) delete fNormWeight;
-  if(fNormWeightErr) delete fNormWeightErr;
 
 }
 //________________________________________________________________________
