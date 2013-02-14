@@ -609,7 +609,8 @@ void AliPIDResponse::SetRecoInfo()
 //   if (fRun >= 188167 && fRun <= 188355 ) { fLHCperiod="LHC12G"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
 //   if (fRun >= 188356 && fRun <= 188503 ) { fLHCperiod="LHC12G"; fBeamType="PPB"; /*fMCperiodTPC="";*/ }
 // for the moment use 12g parametrisation for all full gain runs (LHC12f+)
-  if (fRun >= 186636  ) { fLHCperiod="LHC12G"; fBeamType="PPB"; fMCperiodTPC="LHC12G"; }
+  if (fRun >= 186636  && fRun < 194480) { fLHCperiod="LHC12G"; fBeamType="PPB"; fMCperiodTPC="LHC12G"; }
+  if (fRun >= 194480) { fLHCperiod="LHC13B"; fBeamType="PPB"; fMCperiodTPC="LHC12G"; }
 
   //exception new pp MC productions from 2011
   if (fBeamType=="PP" && reg.MatchB(fCurrentFile)) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
