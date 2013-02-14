@@ -61,6 +61,8 @@ AliITSPidParams::AliITSPidParams(Char_t * name, Bool_t isMC):
   fSDDElecGaussWidth(0),
   fSSDElecLandauWidth(0),
   fSSDElecGaussWidth(0),
+  fSDDPionLandauWidth(0),
+  fSDDPionGaussWidth(0),
   fSSDPionLandauWidth(0),
   fSSDPionGaussWidth(0),
   fSDDKaonLandauWidth(0),
@@ -400,11 +402,11 @@ Double_t AliITSPidParams::GetLandauGausNorm(Double_t dedx, Int_t partType, Doubl
   }
   if(!isSet) return 0.;
   // Numeric constants
-  Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
-  Double_t mpshift  = -0.22278298;       // Landau maximum location
+  const Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
+  const Double_t mpshift  = -0.22278298;       // Landau maximum location
   // Control constants
-  Double_t np = 100.0;      // number of convolution steps
-  Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
+  const Double_t np = 100.0;      // number of convolution steps
+  const Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
   // Variables
   Double_t xx;
   Double_t mpc;
@@ -419,7 +421,7 @@ Double_t AliITSPidParams::GetLandauGausNorm(Double_t dedx, Int_t partType, Doubl
   // Range of convolution integral
   xlow = dedx - sc * par[2];
   xupp = dedx + sc * par[2];
-  if(np!=0) step = (xupp-xlow) / np;
+  step = (xupp-xlow) / np;
   
   // Convolution integral of Landau and Gaussian by sum
   for(i=1.0; i<=np/2; i++) {
