@@ -473,7 +473,7 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
   //Fill event information
   if (ev){
     if (fHistos->GetHistogramList()->FindObject("Event")) {
-      if(fMixing)   AliDielectronVarManager::SetEvent(ev1); // data can be overwritten by mixed event
+      if(fMixing)   AliDielectronVarManager::SetEvent(ev); // data can be overwritten by mixed event
       fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, AliDielectronVarManager::GetData());
     }
   }
