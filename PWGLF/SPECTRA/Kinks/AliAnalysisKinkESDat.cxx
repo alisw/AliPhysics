@@ -61,7 +61,7 @@ AliAnalysisKinkESDat::AliAnalysisKinkESDat(const char *name)
        fRatioCrossedRows(0), fRatioCrossedRowsKink(0),fRadiusPt(0), fRadiusPtcln(0),  fInvMassMuNuPt(0), fPtCut1(0), fPtCut2(0), fPtCut3(0),
       fAngMomKKinks(0),
  f1(0), f2(0),
-      fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1),fCutsMul(0),  fMaxDCAtoVtxCut(0),  fPIDResponse(0)
+      fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200), fKinkRadLow(130), fCutsMul(0),  fMaxDCAtoVtxCut(0),  fPIDResponse(0)
 {
   // Constructor
 
@@ -582,7 +582,8 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
 //
          fRadiusPt->Fill( kink->GetR(), trackPt); // 
  //  radius and Minv selection 
-       if( ( kink->GetR()> 120 ) && ( kink->GetR() < 210 )  )  {
+       //if( ( kink->GetR()> 120 ) && ( kink->GetR() < 210 )  )  {
+       if( ( kink->GetR()> fKinkRadLow ) && ( kink->GetR() <fKinkRadUp   )  )  {
     //  for systematics   if( ( kink->GetR()> 130 ) && ( kink->GetR() < 200 )  )  {
       if (qT>0.12)  fAngMomKC->Fill(track->P(), kinkAngle); 
           if ( qT>0.12) fM1kaon->Fill(invariantMassKmu);
@@ -602,7 +603,8 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
 //
                fHistPtKPDG->Fill(track->Pt());  // ALL  K-candidates until now                 
     //  if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=120.)&&(kink->GetR()<=210.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.6)){
-     if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=120.)&&(kink->GetR()<=210.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
+     //if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=120.)&&(kink->GetR()<=210.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
+     if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>= fKinkRadLow )&&(kink->GetR()<= fKinkRadUp ))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
   // systematics   if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=130.)&&(kink->GetR()<=200.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
 //
         fAngMomKKinks->Fill(track->P(), kinkAngle); 
