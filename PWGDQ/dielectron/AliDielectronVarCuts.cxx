@@ -109,6 +109,7 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
     Int_t cut=fActiveCuts[iCut];
     SETBIT(fSelectedCutsMask,iCut);
     if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
+    if ( fCutType==kAll && !TESTBIT(fSelectedCutsMask,iCut) ) return kFALSE; // option to (minor) speed improvement
   }
   
   Bool_t isSelected=(fSelectedCutsMask==fActiveCutsMask);
