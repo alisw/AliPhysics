@@ -23,6 +23,7 @@
 #include "AliVTrack.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
+#include "AliAODMCParticle.h"
 #include "AliCentrality.h"
 #include "AliVHeader.h"
 #include "AliVVertex.h"
@@ -42,6 +43,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fAODTrackName(),
   fAODClusName(),
   fAODCellsName(),
+  fAODMCParticlesName(),
   fMinCentrality(0),
   fMaxCentrality(10),
   fTriggerMask(AliVEvent::kAny),
@@ -58,6 +60,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fAODTracks(0),
   fAODClusters(0),
   fAODCaloCells(0),
+  fAODMCParticles(0),
   fHistFileIDs(0)
 {
   // Default constructor.
@@ -75,8 +78,9 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fAODHeaderName("header"),
   fAODVertexName("vertices"),
   fAODTrackName("tracks"),
-  fAODClusName("caloClusters"),
+  fAODClusName(""),
   fAODCellsName("emcalCells"),
+  fAODMCParticlesName(AliAODMCParticle::StdBranchName()),
   fMinCentrality(0),
   fMaxCentrality(10),
   fTriggerMask(AliVEvent::kAny),
@@ -92,7 +96,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fAODVertex(0),
   fAODTracks(0),
   fAODClusters(0),
-  fAODCaloCells(0),
+  fAODCaloCells(0),  
+  fAODMCParticles(0),
   fHistFileIDs(0)
 {
   // Standard constructor.
@@ -232,6 +237,9 @@ Bool_t AliJetEmbeddingFromAODTask::GetNextEntry()
       
       if (!fAODCellsName.IsNull()) 
 	tree->SetBranchAddress(fAODCellsName, &fAODCaloCells);
+
+      if (!fAODMCParticlesName.IsNull()) 
+	tree->SetBranchAddress(fAODMCParticlesName, &fAODMCParticles);
       
       entry = 0;
     }
@@ -289,9 +297,30 @@ void AliJetEmbeddingFromAODTask::Run()
     return;
   }
 
-  if (fTracks && fOutTracks) {
+  if (fOutMCParticles) {
 
-    if (fCopyArray)
+    if (fCopyArray && fMCParticles)
+      CopyMCParticles();
+
+    if (fAODMCParticles) {
+      for (Int_t i = 0; i < fAODMCParticles->GetEntriesFast(); i++) {
+	AliAODMCParticle *part = static_cast<AliAODMCParticle*>(fAODMCParticles->At(i));
+	if (!part) {
+	  AliError(Form("Could not find MC particle %d in branch %s of tree %s!", i, fAODMCParticlesName.Data(), fAODTreeName.Data()));
+	  continue;
+	}
+	
+	if (!part->IsPhysicalPrimary()) 
+	  continue;
+
+	AddMCParticle(part, i);
+      }
+    }
+  }
+
+  if (fOutTracks) {
+
+    if (fCopyArray && fTracks)
       CopyTracks();
 
     if (fAODTracks) {
@@ -342,14 +371,14 @@ void AliJetEmbeddingFromAODTask::Run()
 	}
 	
 	AliDebug(3, Form("Embedding track with pT = %f, eta = %f, phi = %f", track->Pt(), track->Eta(), track->Phi()));
-	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), isEmc);
+	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), isEmc, track->GetLabel());
       }
     }
   }
 
-  if (fClusters && fOutClusters) {
+  if (fOutClusters) {
 
-    if (fCopyArray)
+    if (fCopyArray && fClusters)
       CopyClusters();
 
     if (fAODClusters) {
@@ -362,20 +391,24 @@ void AliJetEmbeddingFromAODTask::Run()
 	TLorentzVector vect;
 	Double_t vert[3] = {0,0,0};
 	clus->GetMomentum(vect,vert);
-	AddCluster(clus->E(), vect.Eta(), vect.Phi());
+	AddCluster(clus->E(), vect.Eta(), vect.Phi(), clus->GetLabel());
       }
     }
   }
 
-  if (fCaloCells && fOutCaloCells) {
+  if (fOutCaloCells) {
 
-    Int_t totalCells = fCaloCells->GetNumberOfCells();
+    Int_t totalCells = 0;
+
+    if (fCaloCells)
+      totalCells += fCaloCells->GetNumberOfCells();
     if (fAODCaloCells)
       totalCells += fAODCaloCells->GetNumberOfCells();
 
     SetNumberOfOutCells(totalCells);
 
-    CopyCells();
+    if (fCaloCells)
+      CopyCells();
 
     if (fAODCaloCells) {
       for (Short_t i = 0; i < fAODCaloCells->GetNumberOfCells(); i++) {
@@ -387,7 +420,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	
 	fAODCaloCells->GetCell(i, cellNum, amp, time, mclabel, efrac);
 	AliDebug(3,Form("Adding cell with amplitude %f, absolute ID %d, time %f", amp, cellNum, time));
-	AddCell(amp, cellNum, time);
+	AddCell(amp, cellNum, time, mclabel);
       }
     }
 

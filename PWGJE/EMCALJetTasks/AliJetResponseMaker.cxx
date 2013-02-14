@@ -16,8 +16,8 @@
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliLog.h"
 #include "AliMCEvent.h"
+#include "AliLog.h"
 #include "AliRhoParameter.h"
 
 ClassImp(AliJetResponseMaker)
@@ -267,7 +267,7 @@ void AliJetResponseMaker::UserCreateOutputObjects()
     fHistDeltaCorrPtvsMatchingLevel->GetXaxis()->SetTitle("Matching level");  
     fHistDeltaCorrPtvsMatchingLevel->GetYaxis()->SetTitle("#Deltap_{T}^{corr} (GeV/c)");
     fHistDeltaCorrPtvsMatchingLevel->GetZaxis()->SetTitle("counts");
-    fOutput->Add(fHistDeltaCorrPtvsJet2Pt);
+    fOutput->Add(fHistDeltaCorrPtvsMatchingLevel);
   }
 
   fHistNonMatchedJets1PtArea = new TH2F("fHistNonMatchedJets1PtArea", "fHistNonMatchedJets1PtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
@@ -461,23 +461,23 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
 
   if (fRho2)
     fRho2Val = fRho2->GetVal();
-  
-  fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
-
-  if (!fPythiaHeader)
-    return kFALSE;
 
   const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
   const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+  
+  if (MCEvent())
+    fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
 
-  Double_t pthard = fPythiaHeader->GetPtHard();
-
-  for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
-    if (pthard >= ptHardLo[fPtHardBin] && pthard < ptHardHi[fPtHardBin])
-      break;
+  if (fPythiaHeader) {
+    Double_t pthard = fPythiaHeader->GetPtHard();
+    
+    for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
+      if (pthard >= ptHardLo[fPtHardBin] && pthard < ptHardHi[fPtHardBin])
+	break;
+    }
+    
+    fNTrials = fPythiaHeader->Trials();
   }
-
-  fNTrials = fPythiaHeader->Trials();
 
   return kTRUE;
 }
@@ -620,10 +620,10 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 	AliWarning(Form("Could not find track %d!", iTrack));
 	continue;
       }
-      Int_t MClabel = track->GetLabel();
+      Int_t MClabel = TMath::Abs(track->GetLabel());
       Int_t index = -1;
 	  
-      if (MClabel <= 0) {// this is not a MC particle; remove it completely
+      if (MClabel == 0) {// this is not a MC particle; remove it completely
 	AliDebug(3,Form("Track %d (pT = %f) is not a MC particle (MClabel = %d)!",iTrack,track->Pt(),MClabel));
 	totalPt1 -= track->Pt();
 	d1 -= track->Pt();
@@ -662,10 +662,10 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 	  Int_t cellId = clus->GetCellAbsId(iCell);
 	  Double_t cellFrac = clus->GetCellAmplitudeFraction(iCell);
 
-	  Int_t MClabel = fCaloCells->GetCellMCLabel(cellId);
+	  Int_t MClabel = TMath::Abs(fCaloCells->GetCellMCLabel(cellId));
 	  Int_t index = -1;
 	  
-	  if (MClabel <= 0) {// this is not a MC particle; remove it completely
+	  if (MClabel == 0) {// this is not a MC particle; remove it completely
 	    AliDebug(3,Form("Cell %d (frac = %f) is not a MC particle (MClabel = %d)!",iCell,cellFrac,MClabel));
 	    totalPt1 -= part.Pt() * cellFrac;
 	    d1 -= part.Pt() * cellFrac;
@@ -693,10 +693,10 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 	}
       }
       else { //otherwise look for the first contributor to the cluster, and if matched to a MC label remove it
-	Int_t MClabel = clus->GetLabel();
+	Int_t MClabel = TMath::Abs(clus->GetLabel());
 	Int_t index = -1;
 	    
-	if (MClabel <= 0) {// this is not a MC particle; remove it completely
+	if (MClabel == 0) {// this is not a MC particle; remove it completely
 	  AliDebug(3,Form("Cluster %d (pT = %f) is not a MC particle (MClabel = %d)!",iClus,part.Pt(),MClabel));
 	  totalPt1 -= part.Pt();
 	  d1 -= part.Pt();
