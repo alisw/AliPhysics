@@ -37,13 +37,13 @@ Double_t GetCd(Double_t z)
 	return 0.046133 + 0.0484458*z;
 }
 
-Int_t B2Mult(const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-Spectra.root",
-             const TString& ptag         = "lhc10d",
-             const TString& dSpectra     = "~/alice/output/Deuteron-lhc10d-Mult-Spectra.root",
-             const TString& dtag         = "lhc10d",
-             const TString& outputMultPt = "~/alice/output/B2-Mult-Pt.root",
-             const TString& outputPtMult = "~/alice/output/B2-Pt-Mult.root",
-             const TString& otag         = "lhc10d")
+Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-nsd-Mult-Spectra.root"
+             , const TString& ptag         = "lhc10d-nsd"
+             , const TString& dSpectra     = "~/alice/output/Deuteron-lhc10bcde-nsd-Mult-Spectra.root"
+             , const TString& dtag         = "lhc10bcde-nsd"
+             , const TString& outputMultPt = "~/alice/output/B2-Mult-Pt.root"
+             , const TString& outputPtMult = "~/alice/output/B2-Pt-Mult.root"
+             , const TString& otag         = "pp-nsd")
 {
 //
 // B2 as a function of multiplicity
@@ -69,7 +69,7 @@ Int_t B2Mult(const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-Sp
 		{
 			TString b2file = kPrefix[j] + "B2.root";
 			
-			AliLnB2 b2(pSpectra, ptag + "-" + kMultClass[i], dSpectra, dtag + "-" + kMultClass[i], b2file, otag + "-" + kMultClass[i], 2, kCharge[j]);
+			AliLnB2 b2(pSpectra, ptag + "-" + kMultTag[i], dSpectra, dtag + "-" + kMultTag[i], b2file, otag + "-" + kMultTag[i], 2, kCharge[j]);
 			
 			b2.SetCd(GetCd(kKNOmult[i]));
 			
@@ -80,7 +80,7 @@ Int_t B2Mult(const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-Sp
 		
 		// merge B2 and B2bar
 		
-		TString outputfile = otag + "-" + kMultClass[i] + "-B2.root";
+		TString outputfile = otag + "-" + kMultTag[i] + "-B2.root";
 		
 		m.OutputFile(outputfile.Data());
 		m.Merge();
@@ -94,7 +94,7 @@ Int_t B2Mult(const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-Sp
 	
 	for(Int_t i=0; i<kNmult; ++i)
 	{
-		TString b2 = otag + "-" + kMultClass[i] + "-B2.root";
+		TString b2 = otag + "-" + kMultTag[i] + "-B2.root";
 		m.AddFile(b2.Data(),0);
 	}
 	
@@ -105,7 +105,7 @@ Int_t B2Mult(const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-Sp
 	
 	for(Int_t i=0; i<kNmult; ++i)
 	{
-		gSystem->Exec(Form("rm -f %s-%s-B2.root",otag.Data(),kMultClass[i].Data()));
+		gSystem->Exec(Form("rm -f %s-%s-B2.root",otag.Data(),kMultTag[i].Data()));
 	}
 	
 	// B2 as a function of multiplicity for each pt
@@ -120,8 +120,8 @@ Int_t B2Mult(const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-Sp
 	{
 		for(Int_t j=0; j<kNmult; ++j)
 		{
-			grB2pt[i][j] = (TGraphErrors*)FindObj(finput, otag + "-" + kMultClass[j], Form("B2%s_Pt", kSuffix[i].Data()));
-			grR3pt[i][j] = (TGraphErrors*)FindObj(finput, otag + "-" + kMultClass[j], Form("R3%s_Pt", kSuffix[i].Data()));
+			grB2pt[i][j] = (TGraphErrors*)FindObj(finput, otag + "-" + kMultTag[j], Form("B2%s_Pt", kSuffix[i].Data()));
+			grR3pt[i][j] = (TGraphErrors*)FindObj(finput, otag + "-" + kMultTag[j], Form("R3%s_Pt", kSuffix[i].Data()));
 		}
 	}
 	
@@ -138,7 +138,7 @@ Int_t B2Mult(const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-Sp
 	
 	for(Int_t i=kNMinPt; i<kNMaxPt; ++i)
 	{
-		ptLabel[i] = Form("pt%.02fA",pt[i]);
+		ptLabel[i] = Form("pT%.02fA",pt[i]);
 		foutput->mkdir(ptLabel[i].Data());
 	}
 	
@@ -189,7 +189,7 @@ Int_t B2Mult(const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-Sp
 	
 	// particle ratios
 	
-	gROOT->ProcessLine(Form(".x RatioMult.C+g(\"%s\",\"%s\",\"%s\",\"%s\")",pSpectra.Data(), ptag.Data(),dSpectra.Data(), dtag.Data()));
+	gROOT->ProcessLine(Form(".x RatioMult.C+g(\"%s\",\"%s\",\"%s\",\"%s\")", pSpectra.Data(), dSpectra.Data(), ptag.Data(), dtag.Data()));
 	
 	// draw B2 as a function of pt
 	
@@ -204,9 +204,9 @@ Int_t B2Mult(const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-Sp
 	
 	for(Int_t i=0; i<kNpart; ++i)
 	{
-		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"B2%s_Zmult\",\"\",0,7, 1.e-3, 7.e-2,\"z\",\"B_{2} (GeV^{2}/c^{3})\", 0,\"c%d.B2z\",\"B2%sZ\")", outputPtMult.Data(), kSuffix[i].Data(), i, kSuffix[i].Data()));
+		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"B2%s_Zmult\",\"\",0,5, 3.e-3, 6.e-2,\"z\",\"B_{2} (GeV^{2}/c^{3})\", 0,\"c%d.B2z\",\"B2%sZ\")", outputPtMult.Data(), kSuffix[i].Data(), i, kSuffix[i].Data()));
 		
-		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"R3%s_Zmult\",\"\",0,8, 0, 4,\"z\",\"R_{side}^{2} R_{long} (fm^{3})\", 0,\"c%d.R3z\",\"R3%sZ\")", outputPtMult.Data(), kSuffix[i].Data(), i, kSuffix[i].Data()));
+		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"R3%s_Zmult\",\"\",0,5, 0, 4,\"z\",\"R_{side}^{2} R_{long} (fm^{3})\", 0,\"c%d.R3z\",\"R3%sZ\")", outputPtMult.Data(), kSuffix[i].Data(), i, kSuffix[i].Data()));
 	}
 	
 	return 0;

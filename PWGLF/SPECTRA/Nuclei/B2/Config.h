@@ -37,6 +37,18 @@ namespace B2mult
 	const TString  kKNOmultName        = "z";
 };
 
+namespace HiMult
+{
+//
+// high multiplicity
+//
+	const Int_t    kNmult              = 6;
+	const TString  kMultTag[kNmult]    = { "kno04xx", "kno05xx", "kno06xx", "kno07xx", "kno08xx",  "kno09xx"};
+	const Double_t kKNOmult[kNmult]    = { 4.16, 5.85, 6.70, 7.70, 8.73, 9.75 };
+	const Double_t kKNOmultErr[kNmult] = { 0 };
+	const TString  kKNOmultName        = "z";
+};
+
 TString GetCollSystem(const TString& period)
 {
 //
@@ -160,6 +172,7 @@ TString GetSimuPeriod(const TString& period)
 	if(period=="lhc10c")      return "lhc10d4";
 	if(period=="lhc10d")      return "lhc10f6a";
 	if(period=="lhc10e")      return "lhc10e21";
+	if(period=="lhc10de")     return "lhc10f6ade";
 	if(period=="lhc11a_wsdd") return "lhc11e3a_wsdd";
 	
 	return "";
@@ -178,6 +191,7 @@ TString GetSimuFixPeriod(const TString& period)
 	if(period=="lhc10c")      return "lhc12a5bc";
 	if(period=="lhc10d")      return "lhc12a5bd";
 	if(period=="lhc10e")      return "lhc12a5be";
+	if(period=="lhc10de")     return "lhc12a5bde";
 	if(period=="lhc10cde")    return "lhc12a5bcde";
 	if(period=="lhc10bcde")   return "lhc12a5bbcde";
 	if(period=="lhc11a_wsdd") return "lhc12a5c_wsdd";
@@ -326,7 +340,7 @@ void DrawOutputSpectraMult(const TString& spectra, const TString& species, Doubl
 	
 	for(Int_t i=0; i<2; ++i)
 	{
-		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"%s_InvDiffYield_Pt\",\"%s\",0,4.5, %g, %g, \"p_{T} (GeV/c)\", \"#frac{1}{2#piN_{ev}} #frac{d^{2}N}{p_{T}dp_{T}dy} (GeV^{-2}c^{3})\", %d, \"%s\",\"%s\")", spectra.Data(), kParticle[i].Data(), refdir.Data(),ymin, ymax, option, kParticle[i].Data(), kParticle[i].Data()));
+		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"%s_InvDiffYield_Pt\",\"%s\",0,3.5, %g, %g, \"p_{T} (GeV/c)\", \"#frac{1}{2#piN_{ev}} #frac{d^{2}N}{p_{T}dp_{T}dy} (GeV^{-2}c^{3})\", %d, \"%s\",\"%s\")", spectra.Data(), kParticle[i].Data(), refdir.Data(),ymin, ymax, option, kParticle[i].Data(), kParticle[i].Data()));
 	}
 }
 

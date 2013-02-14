@@ -24,11 +24,12 @@
 #include "AliLnDriver.h"
 #include "Config.h"
 
-Int_t LHC10xMult(const TString& species   = "Proton",
-                 const TString& inputDir  = "~/alice/input",
-                 const TString& outputDir = "~/alice/output",
-                 const TString& period    = "lhc10d",
-                 Int_t option = 2)
+Int_t LHC10xMult(  const TString& species   = "Proton"
+                 , const TString& inputDir  = "~/alice/input"
+                 , const TString& outputDir = "~/alice/output"
+                 , const TString& period    = "lhc10d"
+                 , const TString& otag      = "lhc10d"
+                 , Int_t option = 2)
 {
 //
 // lhc10x multiplicity config
@@ -38,17 +39,18 @@ Int_t LHC10xMult(const TString& species   = "Proton",
 // if option = 1 then use Config_XXX_TOF
 // if option = 2 then use Config_TPCTOF
 //
-	const Bool_t  kINEL[kNmult] = { 1, 0 }; // only normalize first bin
+	using namespace B2mult;
+	using namespace std;
+	
+	const Bool_t  kINEL[kNmult] = { 0 };
 	
 	Int_t lowbin   = (species=="Proton") ? 5  : 4;
 	Int_t jointbin = (species=="Proton") ? 11 : 6;
 	Int_t hibin    = (species=="Proton") ? 31 : 12;
 	
 	Double_t ymin  = (species=="Proton") ? 1.1e-6 : 1.1e-8;
-	Double_t ymax  = (species=="Proton") ? 4.e-1  : 4.e-4;
+	Double_t ymax  = (species=="Proton") ? 4.e-1  : 7.e-4;
 	
-	using namespace B2mult;
-	using namespace std;
 	
 	if( (option<0) || (option>2) || ((species != "Proton") && (species != "Deuteron")))
 	{
@@ -65,16 +67,16 @@ Int_t LHC10xMult(const TString& species   = "Proton",
 	for(Int_t i=0; i<kNmult; ++i)
 	{
 		cout << endl;
-		cout << "Multiplicity class : " << kMultClass[i] << endl;
+		cout << "Multiplicity class : " << kMultTag[i] << endl;
 		cout << "Period             : " << period << endl;
 		
-		TString outputTag  = period + "-" + kMultClass[i];
+		TString outputTag  = otag + "-" + kMultTag[i];
 		
 		TString arg =          inputDir            + "\","
 			      + "\"" + outputDir           + "\","
 			      + "\"" + period              + "\","
 			      + "\"" + outputTag           + "\","
-			      + "\"" + "-" + kMultClass[i] + "\"," // data
+			      + "\"" + "-" + kMultTag[i]   + "\"," // data
 			      + "\"" + "";                         // same simulations for all mult
 			
 		switch(option)
@@ -102,8 +104,8 @@ Int_t LHC10xMult(const TString& species   = "Proton",
 	
 	// merge
 	
-	TString allRatios  = outputDir + "/" + species + "-" + period + "-Mult-Ratio.root";
-	TString allSpectra = outputDir + "/" + species + "-" + period + "-Mult-Spectra.root";
+	TString allRatios  = outputDir + "/" + species + "-" + otag + "-Mult-Ratio.root";
+	TString allSpectra = outputDir + "/" + species + "-" + otag + "-Mult-Spectra.root";
 	
 	m1.OutputFile(allRatios.Data());
 	m2.OutputFile(allSpectra.Data());
