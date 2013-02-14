@@ -34,17 +34,17 @@
 void GetRatio(Double_t x, Double_t y, Double_t errx, Double_t erry, Double_t& r, Double_t& rerr);
 void Draw(TGraph* gr, Int_t marker, Int_t color, const TString& xtitle, const TString& ytitle);
 
-void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-Mult-Spectra.root"
-               , const TString&  dSpectra   = "~/alice/output/Deuteron-lhc10d-Mult-Spectra.root"
-               , const TString&  ptag       = "lhc10d"
-               , const TString&  dtag       = "lhc10d"
+void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-nsd-Mult-Spectra.root"
+               , const TString&  dSpectra   = "~/alice/output/Deuteron-lhc10bcde-nsd-Mult-Spectra.root"
+               , const TString&  ptag       = "lhc10d-nsd"
+               , const TString&  dtag       = "lhc10bcde-nsd"
                , const Int_t     nx         = B2mult::kNmult
                , const TString*  xtag       = B2mult::kMultTag
                , const Double_t* x          = B2mult::kKNOmult
                , const Double_t* xerr       = B2mult::kKNOmultErr
                , const TString&  xname      = B2mult::kKNOmultName
                , const Bool_t    tsallis    = 1
-               , const TString&  outputfile = "~/alice/output/Ratio-Mult.root"
+               , const TString&  outputfile = "~/alice/output/Ratio-Tsallis-Mult.root"
                , const TString&  otag       = "Tsallis")
 {
 //
@@ -55,7 +55,7 @@ void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-Mult
 	
 	const TString kParticle[kNspec][kNpart] = { {"Proton", "AntiProton"}, { "Deuteron", "AntiDeuteron"} };
 	
-	//TVirtualFitter::SetDefaultFitter("Minuit2");
+	TVirtualFitter::SetDefaultFitter("Minuit2");
 	
 	TFile* fproton = new TFile(pSpectra.Data(), "read");
 	if(fproton->IsZombie()) exit(1);
