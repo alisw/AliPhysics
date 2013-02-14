@@ -34,40 +34,32 @@ class TString;
 const int    kN1 = 4; 
 const float  kPtBinV0[kN1+1] = {2.,2.5,3.,4.,5.};
 
+const int    kNVtxZ = 10; 
+const double kBinVtxZ[kNVtxZ+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
+
+const int    kNCent  = 9;
+const double kBinCent[kNCent+1] = {0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
+
 class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
  public:
-
-  enum V0LoopStep_t { kTriggerCheck=1, kCorrelation=2, kMixedEvent=3 };
+  
+  enum V0LoopStep_t { kTriggerCheck=1, kReconstruction=2 };
 
   AliAnalysisTaskLambdaOverK0sJets(const char *name = "AliAnalysisTaskLambdaOverK0sJets");
-  virtual ~AliAnalysisTaskLambdaOverK0sJets() {}
+  virtual ~AliAnalysisTaskLambdaOverK0sJets();
 
   // Setter for global variables in the event
+  void SetData(TString data="PbPb2010") {fData=data;}
   void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;} 
   void SetPID(Bool_t usePID=kTRUE) {fUsePID=usePID;} 
   void SetCentrality(Float_t min=0., Float_t max=90.) {fCentMin=min;fCentMax=max;} 
   void SetQA(Bool_t doQA=kFALSE){fDoQA=doQA;}
+  void SetDoMix(Bool_t doMixEvt=kTRUE) {fDoMixEvt=doMixEvt;} 
   void SetTriggerPt(Float_t ptMinTrig=8., Float_t ptMaxTrig=50.) {fTrigPtMin=ptMinTrig;fTrigPtMax=ptMaxTrig;} 
   void SetTriggerEta(Float_t etaMaxTrig=0.8){fTrigEtaMax=etaMaxTrig;} 
   void SetCheckIDTrig(Bool_t checkIDTrig=kFALSE){fCheckIDTrig=checkIDTrig;}
   void SetSeparateInjectedPart(Bool_t doSep=kTRUE) {fSeparateInjPart=doSep;} 
-
-  // Setters for V0 candidate selection
-  // TO BE FIXED!!!
-  void SetV0Cuts(Float_t *cutsV0){
-    //   1.  Daughter cuts
-    fMinPtDaughter=cutsV0[0];
-    fMaxEtaDaughter=cutsV0[1];
-    fMaxDCADaughter=cutsV0[2];
-    //   2.  V0 candidate
-    fYMax=cutsV0[3];
-    fDCAToPrimVtx=cutsV0[4];
-    fMinCPA=cutsV0[5];
-    fNSigma=cutsV0[6];
-    fMinCtau=cutsV0[7];
-    fMaxCtau=cutsV0[8];
-  }
 
   //   1.  Daughter cuts
   void SetMinPtDaughter(Float_t minPtDaughter=0.160) {fMinPtDaughter=minPtDaughter;} 
@@ -86,9 +78,10 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
   // Main functions
   virtual void     UserCreateOutputObjects();
+  virtual Bool_t   AcceptTrack(AliAODTrack *t); 
   virtual Bool_t   AcceptV0(AliAODVertex *vtx, const AliAODv0 *v0);
   virtual void     RecCascade(AliAODTrack *trk1,const AliAODTrack *trk2,const AliAODTrack *trkBch,TString histo);
-  virtual void     V0Loop(V0LoopStep_t step, Bool_t isTriggered);
+  virtual void     V0Loop(V0LoopStep_t step, Bool_t isTriggered, Int_t iArray, Int_t idTrig);
   virtual void     TriggerParticle();
     
   virtual void     UserExec(Option_t *option);
@@ -101,10 +94,12 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
   AliAODEvent *fAOD;
   Bool_t   fIsMC;                        //  Use MC data 
+  TString  fData;                        //  Data: PbPb2010 / PbPb2011
   Bool_t   fUsePID;                      //  Use PID for tracks
   Float_t  fCentMin;                     //  Minimum centrality
   Float_t  fCentMax;                     //  Maximum centrality
   Bool_t   fDoQA;                        //  Do Auality Assurance?
+  Bool_t   fDoMixEvt;                    //  Do Mixed Events
   Float_t  fTrigPtMin;                   //  Minimum pt for trigger particle
   Float_t  fTrigPtMax;                   //  Maximum pt for trigger particle
   Float_t  fTrigEtaMax;                  //  Maximum eta for trigger particle
@@ -125,7 +120,6 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Float_t fMaxCtau;                      //  Maximum ctau
 
   Int_t   fIdTrigger;                    //  ID track of the trigger particle
-  Int_t   fIsTrigFromV0daug;             //  Flag: trigger particle is a V0's daughter
   Int_t   fIsV0LP;                       //  Flag: V0 has the highest pt in the event
   Float_t fPtV0LP;                       //  Pt of the leading V0
   Int_t   fIsSndCheck;                   //  Flag: trigger particle is the second leaidng particle
@@ -133,6 +127,12 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
   TList*  fOutput;                       //! List of histograms for main analysis
   TList*  fOutputQA;                     //! List of histograms for Quality Assurance
+  TList*  fOutputME;                     //! List of histograms for Mixed Events
+  TList** fMEList;                       //![] List of Mixed Events
+
+  TObjArray* fTriggerParticles;
+  TObjArray* fAssocParticles;
+
 
   TH1F*   fEvents;                       //! Counter for the number of events in each step
   TH1F*   fCentrality;                   //! Event centrality per centil
@@ -145,14 +145,22 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
   TH3F*   fTriggerMCPtCent;              //! Trigger particle MC: pt vs centrality
   TH3F*   fTriggerPtCent;                //! Trigger particle: pt vs centrality vs Z vertex
+  TH1F*   fNTrigPerEvt;                  //! Trigger particle: Number of particle triggers per event
+  TH1F*   fTriggerWiSPDHit;              //! Trigger particle: Has Hits in the SPD?
   TH2F*   fTriggerEtaPhi;                //! Trigger particle: eta vs phi
   TH1F*   fCheckTriggerFromV0Daug;       //! Trigger particle: it is a daughter from a V0-candidate
   TH1F*   fTriggerComingFromDaug;        //! Trigger particle: pt when LP is a daughter from a V0-candidate
   TH1F*   fTriggerIsV0;                  //! Trigger particle: the V0 is the highest-pt particle
   TH3F*   fCheckIDTrigPtK0s;             //! Trigger particle: pt comparison between trigger track and K0s daughter track
   TH3F*   fCheckIDTrigPhiK0s;            //! Trigger particle: phi comparison between trigger track and K0s daughter track
+  TH3F*   fCheckIDTrigEtaK0s;            //! Trigger particle: eta comparison between trigger track and K0s daughter track
   TH3F*   fCheckIDTrigPtLambda;          //! Trigger particle: pt comparison between trigger track and Lambda daughter track
   TH3F*   fCheckIDTrigPhiLambda;         //! Trigger particle: phi comparison between trigger track and Lambda daughter track
+  TH3F*   fCheckIDTrigEtaLambda;         //! Trigger particle: eta comparison between trigger track and Lambda daughter track
+  TH3F*   fCheckIDTrigPtAntiLambda;      //! Trigger particle: pt comparison between trigger track and Lambda daughter track
+  TH3F*   fCheckIDTrigPhiAntiLambda;     //! Trigger particle: phi comparison between trigger track and Lambda daughter track
+  TH3F*   fCheckIDTrigEtaAntiLambda;     //! Trigger particle: eta comparison between trigger track and Lambda daughter track
+ 
 
   TH1F*   fInjectedParticles;            //! Number of injected particles
 
@@ -189,31 +197,20 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fHistArmPodBckg;               //! Armenteros-Podolanski plot outside 3 sigma of the signal      
 
   TH3F*   fK0sMass;                      //! Mass for K0s
-  TH2F*   fK0sPtLtSB;                    //! K0s: Side-band subtracted lt vs pt
   TH3F*   fK0sPtvsEta;                   //! K0s: pt vs eta
   TH3F*   fK0sPtvsRap;                   //! K0s: pt vs rap
   TH2F*   fK0sEtaPhi;                    //! K0s: eta vs phi
   TH3F*   fK0sMassPtPhi;                 //! K0s: mass vs phi
 
-  TH3F*   fK0sMassPtvsPtL;               //! K0s: mass, pt vs pt of leading particle
   TH3F*   fK0sSiPtL;                     //! K0s: mass, vs leading particle
   TH2F*   fK0sDaughtersPt;               //! K0s: pt of daughters
-  TH3F*   fK0sdPhiPtAssocPtL;            //! K0s: Delta phi,pt vs pt of the leading particle
   TH3F*   fK0sDCADaugToPrimVtx;          //! K0s: DCA to primary vertex of daughters vs leading particle's pt inside a radio wrt the near-side peak
+  TH3F*   fK0sSpatialRes;                //! K0s: Spatial resolution  
    
-  TH3F*   fK0sdPhidEtaMC[kN1];           //! K0s MC: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fK0sdPhidEtaMCCent[kN1];       //! K0s MC in central events: Delta phi,Delta eta vs pt of the leading particle
-
-  TH3F*   fK0sdPhidEtaPtL[kN1];          //! K0s: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fK0sdPhidEtaPtLCent[kN1];      //! K0s in central events: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fK0sdPhidEtaPtLBckg[kN1];      //! K0s background: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fK0sdPhidEtaPtLCentBckg[kN1];  //! K0s background in central events: Delta phi,Delta eta vs pt of the leading particle
-
-  TH3F*   fK0sdPhidEtaPtL2[kN1];         //! K0s: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fK0sdPhidEtaPtLCent2[kN1];     //! K0s in central events: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fK0sdPhidEtaPtLBckg2[kN1];     //! K0s background: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fK0sdPhidEtaPtLCentBckg2[kN1]; //! K0s background in central events: Delta phi,Delta eta vs pt of the leading particle
-
+  TH3F*   fK0sdPhidEtaMC[kNCent*kN1];           //! K0s MC: Delta phi,Delta eta vs pt of the leading particle
+  TH3F*   fK0sdPhidEtaPtL[kNCent*kN1];          //! K0s: Delta phi,Delta eta vs pt of the leading particle
+  TH3F*   fK0sdPhidEtaPtLBckg[kNCent*kN1];      //! K0s background: Delta phi,Delta eta vs pt of the leading particle
+ 
   TH2F*   fK0sBckgDecLength;             //! K0s background: Decay lenght vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fK0sBckgDCADaugToPrimVtx;      //! K0s background: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH2F*   fK0sdEdxPosDaug;               //! K0s background: dE/dx of the positive daughter particle inside a radio wrt the near-side peak
@@ -222,33 +219,23 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH2F*   fK0sBckgPhiRadio;              //! K0s background: Phi vs radio inside a radio wrt the near-side peak
   TH2F*   fK0sBckgDCANegDaugToPrimVtx;   //! K0s background: DCA of Negative daughter to the primary vertex inside the radio 0.4 wrt the near-side peak
   TH2F*   fK0sBckgDCAPosDaugToPrimVtx;   //! K0s background: DCA of Positive daughter to the primary vertex inside the radio 0.4 wrt the near-side peak
-  TH2F*   fK0sMassCascade;               //! K0s background: Poddible mismatching of tracks due to cascades decays
+  TH2F*   fV0MassCascade;                //! V0s candiates: Possible mismatching of tracks due to cascades decays
 
   TH3F*   fLambdaMass;                   //! Mass for Lambda
-  TH2F*   fLambdaPtLtSB;                 //! Lambda: l vs p with side-band subtraction
   TH3F*   fLambdaPtvsEta;                //! Lambda: pt vs eta
   TH3F*   fLambdaPtvsRap;                //! Lambda: pt vs rap
   TH2F*   fLambdaEtaPhi;                 //! Lambda: eta vs phi
   TH3F*   fLambdaMassPtPhi;              //! Lambda: mass vs phi 
 
-  TH3F*   fLambdaMassPtvsPtL;            //! Lambda: mass, pt vs pt of leading particle
   TH3F*   fLambdaSiPtL;                  //! Lambda: mass, vs leading particle
   TH2F*   fLambdaDaughtersPt;            //! Lambda: pt of daughters
-  TH3F*   fLambdadPhiPtAssocPtL;         //! Lambda: Delta phi,pt vs pt of the leading particle
   TH3F*   fLambdaDCADaugToPrimVtx;       //! Lambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
+  TH3F*   fLambdaSpatialRes;             //! Lambda: Spatial resolution  
 
-  TH3F*   fLambdadPhidEtaMC[kN1];          //! Lambda MC: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fLambdadPhidEtaMCCent[kN1];      //! Lambda MC in central events: Delta phi,Delta eta vs pt of the leading particle
-
-  TH3F*   fLambdadPhidEtaPtL[kN1];         //! Lambda: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fLambdadPhidEtaPtLCent[kN1];     //! Lambda in central events: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fLambdadPhidEtaPtLBckg[kN1];     //! Lambda background: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fLambdadPhidEtaPtLCentBckg[kN1]; //! Lambda background in central events: Delta phi,Delta eta vs pt of the leading particle
-
-  TH3F*   fLambdadPhidEtaPtL2[kN1];        //! Lambda: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fLambdadPhidEtaPtLCent2[kN1];    //! Lambda in central events: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fLambdadPhidEtaPtLBckg2[kN1];    //! Lambda background: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fLambdadPhidEtaPtLCentBckg2[kN1];//! Lambda background in central events: Delta phi,Delta eta vs pt of the leading particle
+  TH3F*   fLambdadPhidEtaMC[kNCent*kN1];          //! Lambda MC: Delta phi,Delta eta vs pt of the leading particle
+  TH3F*   fLambdadPhidEtaPtL[kNCent*kN1];         //! Lambda: Delta phi,Delta eta vs pt of the leading particle
+  TH3F*   fLambdadPhidEtaPtLBckg[kNCent*kN1];     //! Lambda background: Delta phi,Delta eta vs pt of the leading particle
+ 
 
   TH2F*   fLambdaBckgDecLength;            //! Lambda background: Decay lenght vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fLambdaBckgDCADaugToPrimVtx;     //! Lambda background: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
@@ -258,33 +245,21 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH2F*   fLambdaBckgPhiRadio ;            //! Lambda background: Phi vs radio inside a radio wrt the near-side peak
   TH2F*   fLambdaBckgDCANegDaugToPrimVtx;  //! Lambda background: DCA of Negative daughter to the primary vertex inside the radio 0.4 wrt the near-side peak
   TH2F*   fLambdaBckgDCAPosDaugToPrimVtx;  //! Lambda background: DCA of Positive daughter to the primary vertex inside the radio 0.4 wrt the near-side peak
-  TH2F*   fLambdaMassCascade;              //! Lambda background: Poddible mismatching of tracks due to cascades decays
 
   TH3F*   fAntiLambdaMass;                     //! Mass for AntiLambda
-  TH2F*   fAntiLambdaPtLtSB;                   //! AntiLambda: l vs p with side-band subtraction
   TH3F*   fAntiLambdaPtvsEta;                  //! AntiLambda: pt vs eta
   TH3F*   fAntiLambdaPtvsRap;                  //! AntiLambda: pt vs rap
   TH2F*   fAntiLambdaEtaPhi;                   //! AntiLambda: eta vs phi
   TH3F*   fAntiLambdaMassPtPhi;                //! Lambda: mass vs phi 
 
-  TH3F*   fAntiLambdaMassPtvsPtL;              //! AntiLambda: mass, pt vs pt of leading particle
   TH3F*   fAntiLambdaSiPtL;                    //! AntiLambda: mass, vs leading particle
   TH2F*   fAntiLambdaDaughtersPt;              //! AntiLambda: pt of daughters
-  TH3F*   fAntiLambdadPhiPtAssocPtL;           //! AntiLambda: Delta phi,pt vs pt of the leading particle
   TH3F*   fAntiLambdaDCADaugToPrimVtx;         //! AntiLambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
+  TH3F*   fAntiLambdaSpatialRes;               //! AntiLambda: Spatial resolution  
 
-  TH3F*   fAntiLambdadPhidEtaMC[kN1];          //! AntiLambda MC: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fAntiLambdadPhidEtaMCCent[kN1];      //! AntiLambda MC in central events: Delta phi,Delta eta vs pt of the leading particle
-
-  TH3F*   fAntiLambdadPhidEtaPtL[kN1];         //! AntiLambda: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fAntiLambdadPhidEtaPtLCent[kN1];     //! AntiLambda in central events: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fAntiLambdadPhidEtaPtLBckg[kN1];     //! AntiLambda background: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fAntiLambdadPhidEtaPtLCentBckg[kN1]; //! AntiLambda background in central events: Delta phi,Delta eta vs pt of the leading particle
-
-  TH3F*   fAntiLambdadPhidEtaPtL2[kN1];        //! AntiLambda: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fAntiLambdadPhidEtaPtLCent2[kN1];    //! AntiLambda in central events: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fAntiLambdadPhidEtaPtLBckg2[kN1];    //! AntiLambda background: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fAntiLambdadPhidEtaPtLCentBckg2[kN1];//! AntiLambda background in central events: Delta phi,Delta eta vs pt of the leading particle
+  TH3F*   fAntiLambdadPhidEtaMC[kNCent*kN1];          //! AntiLambda MC: Delta phi,Delta eta vs pt of the leading particle
+  TH3F*   fAntiLambdadPhidEtaPtL[kNCent*kN1];         //! AntiLambda: Delta phi,Delta eta vs pt of the leading particle
+  TH3F*   fAntiLambdadPhidEtaPtLBckg[kNCent*kN1];     //! AntiLambda background: Delta phi,Delta eta vs pt of the leading particle
 
   TH2F*   fAntiLambdaBckgDecLength;            //! AntiLambda background: Decay lenght vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fAntiLambdaBckgDCADaugToPrimVtx;     //! AntiLambda background: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
@@ -294,8 +269,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH2F*   fAntiLambdaBckgPhiRadio ;            //! AntiLambda background: Phi vs radio inside a radio wrt the near-side peak
   TH2F*   fAntiLambdaBckgDCANegDaugToPrimVtx;  //! AntiLambda background: DCA of Negative daughter to the primary vertex inside the radio 0.4 wrt the near-side peak
   TH2F*   fAntiLambdaBckgDCAPosDaugToPrimVtx;  //! AntiLambda background: DCA of Positive daughter to the primary vertex inside the radio 0.4 wrt the near-side peak
-  TH2F*   fAntiLambdaMassCascade;              //! AntiLambda background: Poddible mismatching of tracks due to cascades decays
 
+  TH3F*  fGammaConversiondPhidEta[kNCent];
+  
     
   ///  ==== Quality Assurance plots === ///
 
@@ -423,8 +399,78 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaBckgNClustersITSNeg;           //! AntiLambda Bckg: Neg. Daug. Numbers of ITS clusters of the daughter tracks 
 
 
+  ///  ==== Mixed Events plots === ///
+  TH2F*  fK0sdPhidEtaME[kNVtxZ*kNCent*kN1+1];             //! K0s Mixed Events
+  TH2F*  fLambdadPhidEtaME[kNVtxZ*kNCent*kN1+1];          //! Lambda Mixed Events
+  TH2F*  fAntiLambdadPhidEtaME[kNVtxZ*kNCent*kN1+1];      //! AntiLambda Mixed Events
+
   ClassDef(AliAnalysisTaskLambdaOverK0sJets,1);
 
+};
+
+
+/*  
+    Based on AliV0ChBasicParticle class of AliAnalysisTaskV0ChCorrelations.
+    Keeps basic information to reduce memory consumption for event mixing.
+*/
+class AliMiniParticle : public AliVParticle
+{
+  public:
+ AliMiniParticle(Float_t centrality, Float_t vtxZ, Int_t id,
+		 Double_t pt, Double_t phi, Double_t eta, Short_t candidate)
+   :fCentrality(centrality), fVtxZ(vtxZ),  fId(id), fPt(pt),
+    fPhi(phi), fEta(eta), fCandidate(candidate)
+    {
+    }
+  
+  virtual ~AliMiniParticle() {}
+  
+  // event
+  virtual Float_t Centrality() const { return fCentrality; }
+  virtual Float_t VtxZ() const { return fVtxZ; }
+
+  virtual Int_t   ID()  const { return fId; }  
+  // kinematics
+  virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
+  virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
+  virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
+
+  virtual Double_t Pt() const { return fPt; }
+  virtual Double_t P()  const { AliFatal("Not implemented"); return 0; }
+  virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+
+  virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
+  virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
+  virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
+  virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+
+  virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
+    
+  virtual Double_t Phi()        const { return fPhi; }
+  virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
+  virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
+  virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
+    
+  virtual Double_t Eta()        const { return fEta; }
+  virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
+
+  virtual Short_t Charge()      const { AliFatal("Not implemented"); return 0; }
+  virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
+  // PID
+  virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
+  virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
+  virtual Short_t WhichCandidate() const { return fCandidate; }
+  
+ private:
+  Float_t fCentrality; // centrality of the event
+  Float_t fVtxZ;       // vertex postition in the event
+  Int_t   fId;         // ID related either to AliAODtrack or AliAODv0
+  Float_t fPt;         // pt 
+  Float_t fPhi;        // phi
+  Float_t fEta;        // eta 
+  Short_t fCandidate;  // Candidate: 0-Not trigger, 1-Trigger, 2-Gamma Conversion, 3-K0s candidates, 4-Lambda candidates, 5-AntiLambda candidates
+  
+  ClassDef( AliMiniParticle, 1); // class required for event mixing
 };
 
 #endif

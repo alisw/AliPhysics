@@ -1,12 +1,13 @@
 class AliAnalysisAlien;
 
 void runGridLambdaOverK0sJets(TString  runMode    = "full", 
-			      TString  alirootVer = "v5-03-70-AN",
-			      TString  rootVer    = "v5-34-02",
-			      TString  dataPath   = "ESDs/pass2/AOD049/*/AliAOD.root",
+			      TString  alirootVer = "v5-04-14-AN",
+			      TString  rootVer    = "v5-34-02-1",
+			      TString  dataPath   = "ESDs/pass2/AOD086/*/AliAOD.root",
 			      TString  dataDir    = "/alice/data/2010/LHC10h",
 			      TString  workDir    = "work",
 			      TString  name       = "LambdaOverK0sRatio", 
+			      TString  data       = "PbPb2010",
 			      Float_t  minCen     = 0.,
 			      Float_t  maxCen     = 90.,
 			      Float_t  ptMinTrig  = 8.,
@@ -44,13 +45,12 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
   //AliAnalysisTask *pidTask = AddTaskPIDResponse(isMC,kTRUE);
   if(!pidTask) { printf("no PIDtask\n"); return; }
  
-  Float_t checkIDTrig= kFALSE;
-  Float_t nSigmaPID = 3.0;
+  Float_t checkIDTrig= kTRUE;
 
   // My task
   gROOT->LoadMacro("AliAnalysisTaskLambdaOverK0sJets.cxx+g"); 
   gROOT->LoadMacro("AddTaskLambdaOverK0sJets.C");
-  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,checkIDTrig,rapMaxV0,nSigmaPID,sepInjec,isMC,usePID,doQA);
+  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,data,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,checkIDTrig,rapMaxV0,sepInjec,isMC,usePID,doQA);
    // _____________________________________________________ //
  
    if (!mgr->InitAnalysis()) return;
@@ -121,7 +121,13 @@ AliAnalysisAlien* CreateAlienHandler(TString runMode,TString alirootVer,
   plugin->AddRunNumber(kRun);
 
   // Method 2: Declare existing data files (raw collections, xml collections, root file)
-  plugin->SetGridWorkingDir(workDir);
+  const char working_dir[250];
+
+  sprintf(working_dir, "%s/%d",workDir.Data(),kRun);
+  TString path = TString(working_dir);
+  plugin->SetGridWorkingDir(path);
+
+  //plugin->SetGridWorkingDir(workDir);
   // Declare alien output directory. Relative to working directory.
   plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
   // Declare the analysis source files names separated by blancs. To be compiled runtime
@@ -144,6 +150,7 @@ AliAnalysisAlien* CreateAlienHandler(TString runMode,TString alirootVer,
   // Optionally modify the name of the generated JDL (default analysis.jdl)
   plugin->SetJDLName("TaskProduction.jdl");
   //plugin->SetJDLName("mytask.jdl");
+  plugin->SetMergeViaJDL(kTRUE);
   // Optionally modify job price (default 1)
   plugin->SetPrice(1);      
   // Optionally modify split mode (default 'se')    
