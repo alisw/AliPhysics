@@ -1060,7 +1060,7 @@ Int_t AliAnalyseLeadingTrackUE::GetParticleSpecies(AliVTrack      * trk)
   AliVParticle *inEvHMain = dynamic_cast<AliVParticle *>(trk);
   
   const Double_t fshiftTPC = 0, fshiftTOF=0;
-  const Double_t fNSigmaPID = 3; // FIXME
+  const Double_t fNSigmaPID = 1; // FIXME
   // --- TPC
   Double_t nsigmaTPCkProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kProton)+fshiftTPC);
   Double_t nsigmaTPCkKaon   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kKaon)+fshiftTPC); 
