@@ -23,11 +23,17 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   void SetChargedMC(Bool_t c = kTRUE)                { fChargedMC        = c    ; }
 
  protected:
+  Int_t              GetNumberOfTracks() const;
+  AliVParticle      *GetTrack(Int_t i);
+  void               AddTrack(AliVParticle *track, Int_t nacc);
+
   TString            fTracksOutName;        // name of output track array
   Bool_t             fRejectNK;             // true = reject k0l and neutrons
   Bool_t             fChargedMC;            // true = only charged particles
   Bool_t             fInit;                 // true = task initialized
   TString            fTracksMapName;        // name of the track map
+  Bool_t             fEsdMode;              //!switch for ESD/AOD mode
+  TClonesArray      *fTracksIn;             //!track array in (AOD only)
   TClonesArray      *fTracksOut;            //!track array out
   TH1I              *fTracksMap;            //!track mapping
 
