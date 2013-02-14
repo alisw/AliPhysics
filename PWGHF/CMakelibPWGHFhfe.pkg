@@ -89,6 +89,11 @@ set (SRCS
     hfe/AliHFEBeautySpectrumQA.cxx 
     hfe/AliHFEsmearDCA.cxx
     hfe/AliAnalysisTaskFlowTPCEMCalQCSP.cxx
+    hfe/AliHFEreducedEventCreatorAOD.cxx
+    hfe/AliHFEreducedEventCreatorESD.cxx
+    hfe/AliHFEreducedEvent.cxx
+    hfe/AliHFEreducedTrack.cxx
+    hfe/AliHFEreducedMCParticle.cxx
     )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")

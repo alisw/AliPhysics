@@ -172,6 +172,6 @@ class AliHFEBeautySpectrum : public AliHFECorrectSpectrumBase{
   Bool_t fUnfoldBG;             // flag to unfold backgroud
   
   ClassDef(AliHFEBeautySpectrum, 1) 
-};
+    };
 #endif
 
