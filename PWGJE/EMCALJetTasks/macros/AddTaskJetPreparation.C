@@ -13,6 +13,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   const Double_t etaMatch           = 0.015,
   const Double_t minPtEt            = 0.15,
   const UInt_t   pSel               = AliVEvent::kAny,
+  const Bool_t   trackclus          = kTRUE,
   const Bool_t   doHistos           = kFALSE,
   const Bool_t   makePicoTracks     = kTRUE,
   const Bool_t   isEmcalTrain       = kFALSE
@@ -78,7 +79,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   if (isEmcalTrain)
     RequestMemory(emcalClus,100*1024);
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskHadCorr.C"); 
-  AliHadCorrTask *hCorr = AddTaskHadCorr("EmcalTracks","EmcalClusters",outClusName,hadcorr,minPtEt,phiMatch,etaMatch,Eexcl,doHistos);
+  AliHadCorrTask *hCorr = AddTaskHadCorr("EmcalTracks","EmcalClusters",outClusName,hadcorr,minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
   hCorr->SelectCollisionCandidates(pSel);
   if (isEmcalTrain) {
     if (doHistos)
