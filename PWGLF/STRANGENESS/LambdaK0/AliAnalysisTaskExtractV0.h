@@ -82,7 +82,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Bool_t fkSwitchINT7; // if true, skip FASTOnly (default FALSE)
   Bool_t fkUseOnTheFly; // if true, will use On-the-fly V0s instead of Offline V0s (default FALSE)
   Bool_t fkTakeAllTracks; // if true, no TPC crossed rows and ratio cut
-  TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
+  TString fCentralityEstimator; //Centrality Estimator String value (default V0M, DEPRECATED)
   Bool_t fkLightWeight; // if true, analysis output will exclude some non-fundamental
                         // debugging information. This creates smaller output.
   TString fkFastOnly; //"" if no extra selection, "kFastOnly" -> without SDD, "NotkFastOnly" -> With SDD

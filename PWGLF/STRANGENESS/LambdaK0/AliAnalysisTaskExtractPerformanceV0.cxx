@@ -103,7 +103,8 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
    fkTakeAllTracks ( kFALSE ),
    fpArapidityShift ( 0.465 ),
   fCentralityEstimator("V0M"),
-  fkLightWeight  ( kFALSE ),  
+  fkLightWeight  ( kFALSE ),
+  fkFastOnly     ( "" ),
 //------------------------------------------------
 // Tree Variables 
 
@@ -327,7 +328,8 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
    fkTakeAllTracks ( kFALSE ),
    fpArapidityShift ( 0.465 ),
   fCentralityEstimator("V0M"),
-  fkLightWeight  ( kFALSE ),  
+  fkLightWeight  ( kFALSE ),
+  fkFastOnly     ( "" ),
 //------------------------------------------------
 // Tree Variables 
 
@@ -1636,23 +1638,44 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 //------------------------------------------------
 // Physics Selection
 //------------------------------------------------
-
-   UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-   Bool_t isSelected = 0;
-   isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
-
-   //pA triggering: CINT7
-   if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
-
-   //Standard Min-Bias Selection
-   if ( ! isSelected ) { 
-      PostData(1, fListHistV0);
-      PostData(2, fTree);
-      return;
-   }
-
-   f2dHistMultiplicityVsTrueForTrigEvt->Fill ( lMultiplicity , lNumberOfCharged );
-   fHistGenVertexZForTrigEvt->Fill( mcPrimaryVtx.At(2) );
+  
+  UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  Bool_t isSelected = 0;
+  Bool_t isSelectedExtra = kTRUE; //extra sel, default YES
+  isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+  
+  //pA triggering: CINT7
+  if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+  
+  //Extra selection applies if with/without SDD is to be dealth with
+  if( fkFastOnly == "kFastOnly"){
+    //If not kFastOnly, isSelectedExtra will be kFALSE; procedure will reject it
+    isSelectedExtra = (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly;
+  }
+  if( fkFastOnly == "NotkFastOnly"){
+    //If not kFastOnly, isSelectedExtra will be kTRUE; procedure will accept it
+    isSelectedExtra = !( (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly );
+  }
+  
+  //Standard Min-Bias Selection
+  if ( ! isSelected ) {
+    PostData(1, fListHistV0);
+    PostData(2, fTree);
+    return;
+  }
+  //Check if goes through extra selections
+  //isSelectedExtra will be true in case -> fkFastOnly==""
+  //isSelectedExtra will be true in case -> fkFastOnly=="kFastOnly"    && bit kFastOnly ON
+  //isSelectedExtra will be true in case -> fkFastOnly=="NotkFastOnly" && bit kFastOnly OFF
+  if ( !isSelectedExtra ) {
+    PostData(1, fListHistV0);
+    PostData(2, fTree);
+    return;
+  }
+  
+  f2dHistMultiplicityVsTrueForTrigEvt->Fill ( lMultiplicity , lNumberOfCharged );
+  fHistGenVertexZForTrigEvt->Fill( mcPrimaryVtx.At(2) );
+  
 //------------------------------------------------
 // After Trigger Selection
 //------------------------------------------------
