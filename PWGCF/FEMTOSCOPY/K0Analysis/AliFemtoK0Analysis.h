@@ -30,7 +30,7 @@ class AliESDpid;
 class AliFemtoK0Analysis : public AliAnalysisTaskSE {
  public:
   AliFemtoK0Analysis();
-  AliFemtoK0Analysis(const char *name);
+  AliFemtoK0Analysis(const char *name, bool FieldPositive = kTRUE);
   virtual ~AliFemtoK0Analysis();
   AliFemtoK0Analysis(const AliFemtoK0Analysis&);
   AliFemtoK0Analysis& operator=(const AliFemtoK0Analysis&);
@@ -55,6 +55,7 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
     nphibins    = 72
   };
 
+  bool fFieldPos;
   int fEventCount;
 
   AliFemtoK0EventCollection ***fEC; //!

@@ -63,6 +63,7 @@ ClassImp(AliFemtoK0Analysis)
 //________________________________________________________________________
 AliFemtoK0Analysis::AliFemtoK0Analysis():
 AliAnalysisTaskSE(),
+  fFieldPos(kTRUE),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -79,8 +80,9 @@ AliAnalysisTaskSE(),
 {
 }
 //________________________________________________________________________
-AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name) 
+AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive) 
 : AliAnalysisTaskSE(name), 
+  fFieldPos(FieldPositive),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -95,7 +97,8 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name)
   fNegDaughter1(0x0),
   fNegDaughter2(0x0)
 {
- 
+  //main constructor
+  fFieldPos = FieldPositive;
   // Define output slots here 
   // Output slot #1
   DefineOutput(1, TList::Class());
@@ -104,6 +107,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name)
 //________________________________________________________________________
 AliFemtoK0Analysis::AliFemtoK0Analysis(const AliFemtoK0Analysis &obj)
 : AliAnalysisTaskSE(obj.fName),
+  fFieldPos(obj.fFieldPos),
   fEventCount(obj.fEventCount),
   fEC(obj.fEC),
   fEvt(obj.fEvt),
@@ -124,7 +128,8 @@ AliFemtoK0Analysis &AliFemtoK0Analysis::operator=(const AliFemtoK0Analysis &obj)
 {
  //Assignment operator
  if (this == &obj) return *this;
-
+ 
+ fFieldPos = obj.fFieldPos;
  fEventCount = obj.fEventCount;
  fEC = obj.fEC;
  fEvt = obj.fEvt;
@@ -376,7 +381,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 {
   // Main loop
   // Called for each event
-  cout<<"===========  Event # "<<fEventCount+1<<"  ==========="<<endl;
+  //cout<<"===========  Event # "<<fEventCount+1<<"  ==========="<<endl;
   fEventCount++;
   fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
   if (!fAOD) {Printf("ERROR: fAOD not available"); return;}
@@ -384,7 +389,10 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral));
   bool isCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
   //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
-  if(!isSelected) {cout << "Failed trigger selection." << endl; return;}
+  if(!isSelected) {
+   //cout << "Failed trigger selection." << endl; 
+   return;
+  }
   
   ///////////////////////////////////////////////////////////
 
@@ -393,6 +401,9 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 
   float bField=0;
   bField = fAOD->GetMagneticField();
+  if(fFieldPos && bField < 0) return;
+  if(!fFieldPos && bField > 0) return;
+  if(bField == 0) return;
   
   int zBin=0;
   double zStep=2*10/double(kZVertexBins), zstart=-10.;
@@ -405,14 +416,20 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   AliCentrality *centrality = fAOD->GetCentrality();
   float percent = centrality->GetCentralityPercentile("V0M");
   int centBin=0;
-  Printf("Centrality percent = %f", percent);
+  //Printf("Centrality percent = %f", percent);
   
   AliAODVZERO *aodV0 = fAOD->GetVZEROData();
   float multV0A=aodV0->GetMTotV0A();
   float multV0C=aodV0->GetMTotV0C();
 
-  if(percent < 0) {Printf("No centrality info"); return;}
-  if(percent == 0 && (multV0A + multV0C < 19500)) {Printf("No centrality info"); return;}
+  if(percent < 0) {
+   //Printf("No centrality info"); 
+   return;
+  }
+  if(percent < 0.1 && (multV0A + multV0C < 19500)){
+   //Printf("No centrality info"); 
+   return;
+  }
   else if(percent <= 5)   centBin=15;
   else if(percent <= 10)  centBin=14;
   else if(percent <= 15)  centBin=13;
@@ -429,7 +446,10 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   else if(percent <= 70)  centBin=2;
   else if(percent <= 75)  centBin=1;
   else if(percent <= 80)  centBin=0;
-  else {Printf("Skipping Peripheral Event"); return;}
+  else {
+   //Printf("Skipping Peripheral Event"); 
+   return;
+  }
   if(percent > 10 && isCentral) return;
   ((TH1F*)fOutputList->FindObject("fHistCent"))->Fill(percent);
   
@@ -686,7 +706,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 
   ((TH1F*)fOutputList->FindObject("fHistMultK0"))->Fill(k0Count);
 
-  Printf("Reconstruction Finished. Starting pair studies.");
+  //Printf("Reconstruction Finished. Starting pair studies.");
 
   //////////////////////////////////////////////////////////////////////
   // Correlations
@@ -972,14 +992,14 @@ void AliFemtoK0Analysis::Exec(Option_t *)
             if(centBin > 13){
              ((TH3F*)fOutputList->FindObject("fHistOSLCentLowKt"))->Fill(qOut,qSide,qLong);
              ((TH3F*)fOutputList->FindObject("fHistSHCentLowKt"))->Fill(qLength,thetaSHCos,phiSH);}
-            else if(centBin > 5){
+            else if(centBin > 9){
              ((TH3F*)fOutputList->FindObject("fHistOSLSemiCentLowKt"))->Fill(qOut,qSide,qLong);
              ((TH3F*)fOutputList->FindObject("fHistSHSemiCentLowKt"))->Fill(qLength,thetaSHCos,phiSH);}}            
            else if(pairKt < 2.0){
             if(centBin > 13){
              ((TH3F*)fOutputList->FindObject("fHistOSLCentHighKt"))->Fill(qOut,qSide,qLong);
              ((TH3F*)fOutputList->FindObject("fHistSHCentHighKt"))->Fill(qLength,thetaSHCos, phiSH);}
-            else if(centBin > 5){
+            else if(centBin > 9){
              ((TH3F*)fOutputList->FindObject("fHistOSLSemiCentHighKt"))->Fill(qOut,qSide,qLong);
              ((TH3F*)fOutputList->FindObject("fHistSHSemiCentHighKt"))->Fill(qLength, thetaSHCos, phiSH);}}
           }
@@ -1014,14 +1034,14 @@ void AliFemtoK0Analysis::Exec(Option_t *)
             if(centBin > 13){
              ((TH3F*)fOutputList->FindObject("fHistOSLCentLowKtBkg"))->Fill(qOut,qSide,qLong);
              ((TH3F*)fOutputList->FindObject("fHistSHCentLowKtBkg"))->Fill(qLength,thetaSHCos,phiSH);}
-            else if(centBin > 5){
+            else if(centBin > 9){
              ((TH3F*)fOutputList->FindObject("fHistOSLSemiCentLowKtBkg"))->Fill(qOut,qSide,qLong);
              ((TH3F*)fOutputList->FindObject("fHistSHSemiCentLowKtBkg"))->Fill(qLength,thetaSHCos,phiSH);}}
            else if(pairKt < 2.0){
             if(centBin > 13){
              ((TH3F*)fOutputList->FindObject("fHistOSLCentHighKtBkg"))->Fill(qOut,qSide,qLong);
              ((TH3F*)fOutputList->FindObject("fHistSHCentHighKtBkg"))->Fill(qLength, thetaSHCos, phiSH);}
-            else if(centBin > 5){
+            else if(centBin > 9){
              ((TH3F*)fOutputList->FindObject("fHistOSLSemiCentHighKtBkg"))->Fill(qOut,qSide,qLong);
              ((TH3F*)fOutputList->FindObject("fHistSHSemiCentHighKtBkg"))->Fill(qLength, thetaSHCos, phiSH);}}
           }
