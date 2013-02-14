@@ -77,6 +77,7 @@ set ( SRCS
     vertexingHF/AliAnalysisTaskSEMonitNorm.cxx 
     vertexingHF/AliAnalysisTaskSEBkgLikeSignD0.cxx 
     vertexingHF/AliAnalysisTaskSEImproveITS.cxx 
+    vertexingHF/charmFlow/AliEventPlaneResolutionHandler.cxx
     vertexingHF/charmFlow/AliAnalysisTaskSEHFv2.cxx
     vertexingHF/charmFlow/AliHFAfterBurner.cxx
     vertexingHF/charmFlow/AliAnalysisTaskFlowD2H.cxx
