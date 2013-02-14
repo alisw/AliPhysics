@@ -101,7 +101,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
 
     TH1F			*fNoEvents;		//no of events
 //    TH1F			*fTrkpt;		//track pt
- //   TH2F			*fTrkEovPBef;		//track E/p before HFE pid
+    TH2F			*fTrkEovPAft;		//track E/p after HFE pid
  //   TH2F			*fTrkEovPBefHad;		//track E/p before HFE pid
 //    TH2F			*fdEdxBef;		//track dEdx vs p before HFE pid
     TH2F			*fSemiIncElecDphi;  	//Semi Inclusive elec - had DPhi
