@@ -472,8 +472,10 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
 
   //Fill event information
   if (ev){
-    if (fHistos->GetHistogramList()->FindObject("Event"))
+    if (fHistos->GetHistogramList()->FindObject("Event")) {
+      if(fMixing)   AliDielectronVarManager::SetEvent(ev1); // data can be overwritten by mixed event
       fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, AliDielectronVarManager::GetData());
+    }
   }
 
   //Fill track information, separately for the track array candidates
