@@ -52,6 +52,8 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() :
     }
     fHistNTracksCB_vs_NTracksMA[iCent]  = NULL;
     fHistNTracksCB_vs_NTracksMAmixed[iCent]  = NULL;
+    fHistTracksEtaMAvsEtaCB[iCent] = NULL;
+    fHistTracksEtaMAvsEtaCBmixed[iCent] = NULL;
     fHistSingleMuonsPt[iCent]   = NULL;
     fHistSingleMuonsPtmixed[iCent]   = NULL;
     fHistSingleMuonsEtaVsPt[iCent]   = NULL;
@@ -98,6 +100,8 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(con
     }
     fHistNTracksCB_vs_NTracksMA[iCent]  = NULL;
     fHistNTracksCB_vs_NTracksMAmixed[iCent]  = NULL;
+    fHistTracksEtaMAvsEtaCB[iCent] = NULL;
+    fHistTracksEtaMAvsEtaCBmixed[iCent] = NULL;
     fHistSingleMuonsPt[iCent]   = NULL;
     fHistSingleMuonsPtmixed[iCent]   = NULL;
     fHistSingleMuonsEtaVsPt[iCent]   = NULL;
@@ -177,8 +181,17 @@ void AliAnalysisTaskMuonHadronCorrelations::UserCreateOutputObjects() {
     fHistNTracksCB_vs_NTracksMAmixed[iCent] -> SetYTitle("N_{tracks} Muon Arm");
     fHistNTracksCB_vs_NTracksMAmixed[iCent] -> Sumw2();
 
+    fHistTracksEtaMAvsEtaCB[iCent] = new TH2D(Form("fHistTracksEtaMAvsEtaCB_%02d",iCent),
+					      "#eta muon vs #eta barrel",
+					      100,-4.5,-2.,100,-1.5,1.5);
+    fHistTracksEtaMAvsEtaCBmixed[iCent] = new TH2D(Form("fHistTracksEtaMAvsEtaCBmixed_%02d",iCent),
+						   "#eta muon vs #eta barrel",
+						   100,-4.5,-2.,100,-1.5,1.5);
+
     fOutputList -> Add(fHistNTracksCB_vs_NTracksMA[iCent]);
     fOutputList -> Add(fHistNTracksCB_vs_NTracksMAmixed[iCent]);
+    fOutputList -> Add(fHistTracksEtaMAvsEtaCB[iCent]);
+    fOutputList -> Add(fHistTracksEtaMAvsEtaCBmixed[iCent]);
 
     fHistSingleMuonsPt[iCent] = new TH1D(Form("fHistSingleMuonPt_Cent%02d",iCent),
 					 "p_{T} for single muons",
@@ -338,6 +351,8 @@ void AliAnalysisTaskMuonHadronCorrelations::FillHistograms(Int_t centrality, Int
   if (option==kSingleEvent)     fHistDeltaPhi[centrality][ptBinTrackCB-1][ptBinTrackMA-1]    -> Fill(TMath::RadToDeg()*deltaPhi);
   else if (option==kMixedEvent) fHistDeltaPhiMix[centrality][ptBinTrackCB-1][ptBinTrackMA-1] -> Fill(TMath::RadToDeg()*deltaPhi);
 
+  if (option==kSingleEvent)     fHistTracksEtaMAvsEtaCB[centrality]->Fill(fTrackMA->Eta(),fTrackCB->Eta());
+  else if (option==kMixedEvent) fHistTracksEtaMAvsEtaCBmixed[centrality]->Fill(fTrackMA->Eta(),fTrackCB->Eta());
 }
 
 //====================================================================================================================================================
