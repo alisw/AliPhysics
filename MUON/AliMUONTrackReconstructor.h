@@ -15,13 +15,15 @@ class AliMUONVCluster;
 class AliMUONVClusterStore;
 class AliMUONTrackParam;
 class AliMUONTrack;
+class AliMUONGeometryTransformer;
 
 class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor 
 {
  
  public:
   
-  AliMUONTrackReconstructor(const AliMUONRecoParam* recoParam, AliMUONVClusterServer* clusterServer); // default Constructor
+  AliMUONTrackReconstructor(const AliMUONRecoParam* recoParam, AliMUONVClusterServer* clusterServer,
+			    const AliMUONGeometryTransformer* transformer); // default Constructor
   virtual ~AliMUONTrackReconstructor(); // Destructor
 
   virtual Bool_t RefitTrack(AliMUONTrack &track, Bool_t enableImprovement = kTRUE);

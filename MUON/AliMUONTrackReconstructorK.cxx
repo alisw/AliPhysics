@@ -38,6 +38,7 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONRecoParam.h"
+#include "AliMUONGeometryTransformer.h"
 
 #include "AliMpArea.h"
 
@@ -55,8 +56,9 @@ ClassImp(AliMUONTrackReconstructorK) // Class implementation in ROOT context
 /// \endcond
 
   //__________________________________________________________________________
-AliMUONTrackReconstructorK::AliMUONTrackReconstructorK(const AliMUONRecoParam* recoParam, AliMUONVClusterServer* clusterServer)
-  : AliMUONVTrackReconstructor(recoParam, clusterServer)
+AliMUONTrackReconstructorK::AliMUONTrackReconstructorK(const AliMUONRecoParam* recoParam, AliMUONVClusterServer* clusterServer,
+						       const AliMUONGeometryTransformer* transformer)
+  : AliMUONVTrackReconstructor(recoParam, clusterServer, transformer)
 {
   /// Constructor
 }

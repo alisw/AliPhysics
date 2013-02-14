@@ -118,7 +118,7 @@ fCalibrationData(0x0),
 fTriggerProcessor(0x0),
 fNoiseFunctionTrig(0x0),
 fGenerateNoisyDigits(generateNoisyDigits),
-fLogger(new AliMUONLogger(1000)),
+fLogger(new AliMUONLogger(4207)), /* 4207 = 25% of the 16828 MCH manus */
 fTriggerStore(new AliMUONTriggerStoreV1),
 fDigitStore(0x0),
 fOutputDigitStore(0x0),

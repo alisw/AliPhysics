@@ -33,7 +33,8 @@ class AliMUONLocalTrigger;
 class AliMUONVTrackReconstructor : public TObject {
 
  public:
-  AliMUONVTrackReconstructor(const AliMUONRecoParam* recoParam, AliMUONVClusterServer* clusterServer); // default Constructor
+  AliMUONVTrackReconstructor(const AliMUONRecoParam* recoParam, AliMUONVClusterServer* clusterServer,
+			     const AliMUONGeometryTransformer* transformer); // default Constructor
   virtual ~AliMUONVTrackReconstructor(); // Destructor
 
 
@@ -70,6 +71,7 @@ class AliMUONVTrackReconstructor : public TObject {
   AliMUONVClusterServer* fClusterServer; ///< reference to our cluster server
 
   const AliMUONRecoParam* fkRecoParam; ///< reference to reco parameters
+  const AliMUONGeometryTransformer* fkTransformer; //!< geometry transformer (not owner)
   
   Double_t* fMaxMCSAngle2; ///< maximum angle dispersion due to MCS
   
@@ -92,6 +94,9 @@ class AliMUONVTrackReconstructor : public TObject {
   /// Finalize the given track
   virtual Bool_t FinalizeTrack(AliMUONTrack &track) = 0;
   
+  void DiscardMonoCathodClusters();
+  void ChangeMonoCathodClusterRes(AliMUONTrack &track);
+  
   Bool_t IsAcceptable(AliMUONTrackParam &trackParam);
   
   TClonesArray* MakeSegmentsBetweenChambers(const AliMUONVClusterStore& clusterStore, Int_t ch1, Int_t ch2);
@@ -99,6 +104,7 @@ class AliMUONVTrackReconstructor : public TObject {
   void RemoveUsedSegments(TClonesArray& segments);
   void RemoveIdenticalTracks();
   void RemoveDoubleTracks();
+  void RemoveBadTracks();
   void RemoveConnectedTracks(Int_t stMin, Int_t stMax, Bool_t all);
   void TagConnectedTracks(Int_t stMin, Int_t stMax, Bool_t all);
 

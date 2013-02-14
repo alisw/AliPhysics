@@ -85,7 +85,10 @@ AliMUONRecoParam::AliMUONRecoParam()
   fEventSizeSoftLimit(35.0),
   fEventSizeHardLimit(45.0),
   fTokenLostLimit(0.0),
-  fTryRecover(kFALSE)
+  fTryRecover(kFALSE),
+  fDiscardMonoCathodClusters(kFALSE),
+  fMonoCathodClNonBendingRes(0.),
+  fMonoCathodClBendingRes(0.)
 {  
   /// Constructor
   
@@ -216,6 +219,9 @@ void AliMUONRecoParam::SetLowFluxParam()
   fBypassSt45 = 0;
   fMaxTriggerTracks = 100;
   fMaxTrackCandidates = 10000;  
+  fDiscardMonoCathodClusters = kFALSE;
+  fMonoCathodClNonBendingRes = 10.;
+  fMonoCathodClBendingRes = 10.;
 }
 
 //_____________________________________________________________________________
@@ -258,6 +264,9 @@ void AliMUONRecoParam::SetHighFluxParam()
   fBypassSt45 = 0;
   fMaxTriggerTracks = 100;
   fMaxTrackCandidates = 10000;
+  fDiscardMonoCathodClusters = kFALSE;
+  fMonoCathodClNonBendingRes = 10.;
+  fMonoCathodClBendingRes = 10.;
 }
 
 //_____________________________________________________________________________
@@ -307,6 +316,9 @@ void AliMUONRecoParam::SetCosmicParam()
   fPadGoodnessMask = 0x400BE80; // Ped Mean is Zero | Ped Mean Too Low | Ped Mean Too High | Ped Sigma Too Low | Ped Sigma Too High | Ped is missing | HV is missing | manu occupancy too high
   fMaxTriggerTracks = 100;
   fMaxTrackCandidates = 10000;
+  fDiscardMonoCathodClusters = kFALSE;
+  fMonoCathodClNonBendingRes = 10.;
+  fMonoCathodClBendingRes = 10.;
   
   SetPedMeanLimits(20, 700);
   SetManuOccupancyLimits(-1.,0.01); // reject manu above occ=1%
@@ -531,6 +543,14 @@ void AliMUONRecoParam::Print(Option_t *option) const
   cout << Form("and clusters below %5.2f times this noise charge (i.e. %7.2f fC) are discarded",
                ClusterChargeCut(),ClusterChargeCut()*AverageNoisePadCharge()) << endl;
   cout << Form("Note that LowestPadCharge is then %7.2f fC",LowestPadCharge()) << endl;
+  
+  if (strstr(option,"FULL")) {
+    cout<<"Try to improve the reconstructed tracks by changing the resolution of mono-cathod clusters: ";
+    if (fDiscardMonoCathodClusters) cout<<Form("ON (res = %6.3f, %6.3f)",fMonoCathodClNonBendingRes,fMonoCathodClBendingRes)<<endl;
+    else cout<<"OFF"<<endl;
+  } else if (fDiscardMonoCathodClusters)
+    cout<<Form("Try to improve the reconstructed tracks by changing the resolution of mono-cathod clusters (res = %6.3f, %6.3f)",
+	       fMonoCathodClNonBendingRes,fMonoCathodClBendingRes)<<endl;
   
   if (TryRecover())
   {

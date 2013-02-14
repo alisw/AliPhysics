@@ -56,7 +56,9 @@ class AliMUONTracker : public AliTracker
   /// Dummy implementation
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return 0;}
 
-  static AliMUONVTrackReconstructor* CreateTrackReconstructor(const AliMUONRecoParam* recoParam, AliMUONVClusterServer* clusterServer);
+  static AliMUONVTrackReconstructor* CreateTrackReconstructor(const AliMUONRecoParam* recoParam,
+							      AliMUONVClusterServer* clusterServer,
+							      const AliMUONGeometryTransformer* transformer);
   
 private:
   /// Not implemented

@@ -319,6 +319,18 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// Set the try recover corrupted raw data (use kTRUE only if you know what you are doing. Should be left to kFALSE by default)
   virtual void TryRecover(Bool_t flag) { fTryRecover = flag; }
 
+  /// Discard or not the mono-cathod clusters by assigning to them different resolutions (use default values)
+  void     DiscardMonoCathodClusters(Bool_t flag) { fDiscardMonoCathodClusters = flag; }
+  /// Discard or not the mono-cathod clusters by assigning to them different resolutions (use given values)
+  void     DiscardMonoCathodClusters(Bool_t flag, Double_t resNB, Double_t resB) { fDiscardMonoCathodClusters = flag;
+                                     fMonoCathodClNonBendingRes = resNB; fMonoCathodClBendingRes = resB; }
+  /// Check whether to discard or not the mono-cathod clusters
+  Bool_t   DiscardMonoCathodClusters() const { return fDiscardMonoCathodClusters; }
+  /// Get the non-bending resolution of mono-cathod clusters when the non-bending plane is missing
+  Double_t GetMonoCathodClNonBendingRes() const { return fMonoCathodClNonBendingRes; }
+  /// Get the bending resolution of mono-cathod clusters when the bending plane is missing
+  Double_t GetMonoCathodClBendingRes() const { return fMonoCathodClBendingRes; }
+  
   /// Create object ready to be put in OCDB
   static TObjArray* Create(const char* settings);
   
@@ -431,13 +443,17 @@ private:
 
   Double32_t fHVLimit[10]; // HV limit (below which we consider that chamber efficiency is to be considered zero)
   
+  Double32_t fDiscardMonoCathodClusters; // assign a different resolution to mono-cathod clusters in the direction of the missing plane
+  Double32_t fMonoCathodClNonBendingRes; // resolution of mono-cathod clusters in the non-bending direction when the non-bending plane is missing
+  Double32_t fMonoCathodClBendingRes; // resolution of mono-cathod clusters in the bending direction when the bending plane is missing
+  
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   void SetCosmicParam();
   void SetCalibrationParam();
   
-  ClassDef(AliMUONRecoParam,169) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,170) // MUON reco parameters
   // we're at 167 not because we had that many versions, but because at some point (version 15->16)
   // 166 was committed by error, and we did not to go reverse afterwards...
 };

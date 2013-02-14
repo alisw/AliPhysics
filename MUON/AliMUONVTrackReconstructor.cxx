@@ -74,6 +74,8 @@
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONVTriggerTrackStore.h"
 #include "AliMUONRecoParam.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONVDigit.h"
 
 #include "AliMpDEManager.h"
 #include "AliMpArea.h"
@@ -82,6 +84,8 @@
 #include "AliMpVSegmentation.h"
 #include "AliMpSegmentation.h"
 #include "AliMpPad.h"
+#include "AliMpDetElement.h"
+#include "AliMpCathodType.h"
 
 #include "AliLog.h"
 #include "AliCodeTimer.h"
@@ -102,12 +106,14 @@ ClassImp(AliMUONVTrackReconstructor) // Class implementation in ROOT context
 
   //__________________________________________________________________________
 AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(const AliMUONRecoParam* recoParam,
-                                                       AliMUONVClusterServer* clusterServer)
+                                                       AliMUONVClusterServer* clusterServer,
+						       const AliMUONGeometryTransformer* transformer)
 : TObject(),
 fRecTracksPtr(0x0),
 fNRecTracks(0),
 fClusterServer(clusterServer),
 fkRecoParam(recoParam),
+fkTransformer(transformer),
 fMaxMCSAngle2(0x0)
 {
   /// Constructor for class AliMUONVTrackReconstructor
@@ -187,15 +193,20 @@ void AliMUONVTrackReconstructor::EventReconstruct(AliMUONVClusterStore& clusterS
   Finalize();
   if (!GetRecoParam()->RemoveConnectedTracksInSt12()) TagConnectedTracks(0, 1, kTRUE);
   
+  // Make sure there is no bad track left
+  RemoveBadTracks();
+  
+  // Refit the reconstructed tracks with a different resolution for mono-cathod clusters
+  if (GetRecoParam()->DiscardMonoCathodClusters()) DiscardMonoCathodClusters();
+  
   // Add tracks to MUON data container 
   for (Int_t i=0; i<fNRecTracks; ++i)
   {
     AliMUONTrack * track = (AliMUONTrack*) fRecTracksPtr->At(i);
-    if (track->GetGlobalChi2() < AliMUONTrack::MaxChi2()) {
-      track->SetUniqueID(i+1);
-      trackStore.Add(*track);
-    } else AliWarning("problem occur somewhere during track refitting --> discard track");
+    track->SetUniqueID(i+1);
+    trackStore.Add(*track);
   }
+  
 }
 
 //__________________________________________________________________________
@@ -536,6 +547,35 @@ void AliMUONVTrackReconstructor::RemoveDoubleTracks()
     } // track2
   } // track1
   fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+}
+
+  //__________________________________________________________________________
+void AliMUONVTrackReconstructor::RemoveBadTracks()
+{
+  /// Remove tracks for which a problem occured somewhere during the tracking
+  
+  AliMUONTrack *track, *nextTrack;
+  Bool_t trackRemoved = kFALSE;
+  
+  track = (AliMUONTrack*) fRecTracksPtr->First();
+  while (track) {
+    
+    nextTrack = (AliMUONTrack*) fRecTracksPtr->After(track);
+    
+    if (track->GetGlobalChi2() >= AliMUONTrack::MaxChi2()) {
+      AliWarning("problem occured somewhere during the tracking --> discard track");
+      fRecTracksPtr->Remove(track);
+      fNRecTracks--;
+      trackRemoved = kTRUE;
+    }
+    
+    track = nextTrack;
+    
+  }
+  
+  // compress array of tracks if needed
+  if (trackRemoved) fRecTracksPtr->Compress();
+  
 }
 
   //__________________________________________________________________________
@@ -1253,6 +1293,111 @@ void AliMUONVTrackReconstructor::Finalize()
   
   // compress array of tracks if needed
   if (trackRemoved) fRecTracksPtr->Compress();
+  
+}
+
+//__________________________________________________________________________
+void AliMUONVTrackReconstructor::DiscardMonoCathodClusters()
+{
+  /// Assign a different resolution to the mono-cathod clusters
+  /// in the direction of the missing plane and refit the track
+  /// Remove the track in case of failure
+  
+  if (!fkTransformer) AliFatal("missing geometry transformer");
+  
+  AliMUONTrack *track, *nextTrack;
+  Bool_t trackRemoved = kFALSE;
+  
+  track = (AliMUONTrack*) fRecTracksPtr->First();
+  while (track) {
+    
+    nextTrack = (AliMUONTrack*) fRecTracksPtr->After(track);
+    
+    ChangeMonoCathodClusterRes(*track);
+    
+    if (!RefitTrack(*track) || (GetRecoParam()->ImproveTracks() && !track->IsImproved())) {
+      fRecTracksPtr->Remove(track);
+      fNRecTracks--;
+      trackRemoved = kTRUE;
+    }
+    
+    track = nextTrack;
+    
+  }
+  
+  // compress array of tracks if needed
+  if (trackRemoved) fRecTracksPtr->Compress();
+  
+}
+
+//__________________________________________________________________________
+void AliMUONVTrackReconstructor::ChangeMonoCathodClusterRes(AliMUONTrack &track)
+{
+  /// Assign a different resolution to the mono-cathod clusters
+  /// in the direction of the missing plane and refit the track
+  
+  // Loop over clusters
+  AliMUONVCluster *cluster;
+  Int_t nClusters = track.GetNClusters();
+  for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
+    cluster = ((AliMUONTrackParam*) track.GetTrackParamAtCluster()->UncheckedAt(iCluster))->GetClusterPtr();
+    
+    // do it only for stations 3, 4 & 5
+    if (cluster->GetChamberId() < 4) continue;
+    
+    // get the cathod corresponding to the bending/non-bending plane
+    Int_t deId = cluster->GetDetElemId();
+    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(deId, kFALSE);
+    if (!de) continue;
+    AliMp::CathodType cath1 = de->GetCathodType(AliMp::kBendingPlane); 
+    AliMp::CathodType cath2 = de->GetCathodType(AliMp::kNonBendingPlane); 
+    
+    // get the corresponding segmentation
+    const AliMpVSegmentation* seg1 = AliMpSegmentation::Instance()->GetMpSegmentation(deId, cath1);
+    const AliMpVSegmentation* seg2 = AliMpSegmentation::Instance()->GetMpSegmentation(deId, cath2);
+    if (!seg1 || !seg2) continue;
+    
+    // get local coordinate of the cluster
+    Double_t lX,lY,lZ;
+    Double_t gX = cluster->GetX();
+    Double_t gY = cluster->GetY();
+    Double_t gZ = cluster->GetZ();
+    fkTransformer->Global2Local(deId,gX,gY,gZ,lX,lY,lZ);
+    
+    // find pads below the cluster
+    AliMpPad pad1 = seg1->PadByPosition(lX, lY, kFALSE);
+    AliMpPad pad2 = seg2->PadByPosition(lX, lY, kFALSE);
+    
+    // build their ID if pads are valid
+    UInt_t padId1 = (pad1.IsValid()) ? AliMUONVDigit::BuildUniqueID(deId, pad1.GetManuId(), pad1.GetManuChannel(), cath1) : 0;
+    UInt_t padId2 = (pad2.IsValid()) ? AliMUONVDigit::BuildUniqueID(deId, pad2.GetManuId(), pad2.GetManuChannel(), cath2) : 0;
+    
+    // check if the cluster contains these pads 
+    Bool_t hasNonBending = kFALSE;
+    Bool_t hasBending = kFALSE;
+    for (Int_t iDigit = 0; iDigit < cluster->GetNDigits(); iDigit++) {
+      
+      UInt_t digitId = cluster->GetDigitId(iDigit);
+      
+      if (digitId == padId1) {
+	
+	hasBending = kTRUE;
+	if (hasNonBending) break;
+	
+      } else if (digitId == padId2) {
+	
+	hasNonBending = kTRUE;
+	if (hasBending) break;
+	
+      }
+      
+    }
+    
+    // modify the cluster resolution if needed
+    if (!hasNonBending) cluster->SetErrXY(GetRecoParam()->GetMonoCathodClNonBendingRes(), cluster->GetErrY());
+    if (!hasBending) cluster->SetErrXY(cluster->GetErrX(), GetRecoParam()->GetMonoCathodClBendingRes());
+    
+  }
   
 }
 

@@ -471,7 +471,7 @@ void AliMUONESDInterface::ResetTracker(const AliMUONRecoParam* recoParam, Bool_t
   if (!TGeoGlobalMagField::Instance()->GetField() && !AliMUONCDB::LoadField())
     AliFatalClass("Magnetic field has not been set!");
   
-  fgTracker = AliMUONTracker::CreateTrackReconstructor(fgRecoParam,0x0);
+  fgTracker = AliMUONTracker::CreateTrackReconstructor(fgRecoParam,0x0,0x0);
   
 }
 

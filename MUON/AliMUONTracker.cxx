@@ -216,7 +216,7 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
   
   if (!fTrackReco) 
   {
-    fTrackReco = CreateTrackReconstructor(GetRecoParam(),fClusterServer);
+    fTrackReco = CreateTrackReconstructor(GetRecoParam(),fClusterServer,fkTransformer);
     fInternalTrackStore = new AliMUONTrackStoreV1;
   }
   
@@ -339,7 +339,9 @@ void AliMUONTracker::FillESD(const AliMUONVTrackStore& trackStore, AliESDEvent* 
 }
 
 //_____________________________________________________________________________
-AliMUONVTrackReconstructor* AliMUONTracker::CreateTrackReconstructor(const AliMUONRecoParam* recoParam, AliMUONVClusterServer* clusterServer)
+AliMUONVTrackReconstructor* AliMUONTracker::CreateTrackReconstructor(const AliMUONRecoParam* recoParam,
+								     AliMUONVClusterServer* clusterServer,
+								     const AliMUONGeometryTransformer* transformer)
 {
   /// Create track reconstructor, depending on tracking mode set in RecoParam
   
@@ -350,11 +352,11 @@ AliMUONVTrackReconstructor* AliMUONTracker::CreateTrackReconstructor(const AliMU
   
   if (strstr(opt,"ORIGINAL"))
   {
-    trackReco = new AliMUONTrackReconstructor(recoParam,clusterServer);
+    trackReco = new AliMUONTrackReconstructor(recoParam,clusterServer,transformer);
   }
   else if (strstr(opt,"KALMAN"))
   {
-    trackReco = new AliMUONTrackReconstructorK(recoParam,clusterServer);
+    trackReco = new AliMUONTrackReconstructorK(recoParam,clusterServer,transformer);
   }
   else
   {
