@@ -61,6 +61,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   void SetpARapidityShift     (Double_t lRapShift = 0.465 ) { fpArapidityShift = lRapShift; }
   void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
   void SetLightWeightAnalysis (Bool_t lLightWeight = kTRUE) {fkLightWeight = lLightWeight;  }
+  void SetFastOnly (TString lFastOnly = "kFastOnly") {fkFastOnly = lFastOnly;  }
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -80,10 +81,10 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Bool_t fkUseOnTheFly; //if true, will use On-the-fly V0s instead of Offline V0s (default FALSE)
   Bool_t fkTakeAllTracks; // if true, no TPC crossed rows and ratio cut
   Double_t fpArapidityShift; //pA rapidity shift (should be 0.465, usually)
-  TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
-  
+  TString fCentralityEstimator; //Centrality Estimator String value (default V0M, DEPRECATED)
   Bool_t fkLightWeight; //if true, skip a number of debugging information branches in TTree
                         //(to make resulting tree output significantly smaller!
+  TString fkFastOnly; //"" if no extra selection, "kFastOnly" -> without SDD, "NotkFastOnly" -> With SDD
 
 //===========================================================================================
 //   Variables for Tree, V0s
