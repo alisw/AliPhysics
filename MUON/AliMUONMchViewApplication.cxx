@@ -497,6 +497,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.13");
+  rn->AddLine("");
+  rn->AddLine("Make default OCDB = 2013 one");
+  rn->AddLine("");
+
   rn->AddLine("1.11");
   rn->AddLine("");
   rn->AddLine("Adding [Compare alignments] in the Tools menu + make default OCDB be 2012's version");
