@@ -48,6 +48,7 @@
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliGenEventHeader.h"
 
 
 
@@ -944,9 +945,11 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
   if(fAnapp){// pp Analysis
     // SDD test for 2.76TeV pp
     // select events with SDD
-    TString trCl = fESD->GetFiredTriggerClasses();
-    if(!(trCl.Contains("ALLNOTRD")) && fSelSDD) return;
-      
+    //    TString trCl = fESD->GetFiredTriggerClasses();
+    //if(!(trCl.Contains("ALLNOTRD")) && fSelSDD) return;
+    UInt_t maskSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    if(maskSel& AliVEvent::kFastOnly && fSelSDD) return;  
+
     Int_t ntracks = fESD->GetNumberOfTracks();
     for(Int_t i=0;i<ntracks;i++){//check sdd event selection
       AliESDtrack *tr=   fESD->GetTrack(i);
