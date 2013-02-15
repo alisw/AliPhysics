@@ -39,7 +39,7 @@ task->SetMulCut(0,1002);
   
   TString lContainerName="PWGLFKinks";
   lContainerName.Append(lCustomName);
-  AliAnalysisDataContainer *coutput1= mgr->CreateContainer(lContainerName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+  AliAnalysisDataContainer *coutput1= mgr->CreateContainer(lContainerName.Data(),TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
   mgr->ConnectOutput(task, 1, coutput1);
  
   
