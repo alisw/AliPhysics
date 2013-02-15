@@ -20,6 +20,7 @@
 #include "AliForwardCorrectionManager.h"
 #include "AliLog.h"
 #include <TH2D.h>
+#include <TH3D.h>
 #include <TH1I.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
@@ -578,7 +579,10 @@ Bool_t
 AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
 			     AliForwardUtil::Histos& sums,
 			     UShort_t                vtxbin, 
-			     TH2D&                   out)
+			     TH2D&                   out,
+			     TList* 		     lout,
+			     Double_t 		     cent,
+			     TList*      sumsv)
 {
   // 
   // Do the calculations 
@@ -603,7 +607,6 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
 						vMax < 0 ? 'm' : 'p', 
 						int(TMath::Abs(vMax)))));
   
-  
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
     UShort_t db = d << 4;
@@ -611,14 +614,26 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
       UShort_t rb = db | ((q+1));
       // Skipping selected FMD rings 
       if (rb & fSkipFMDRings) continue;
-
       Char_t      r = (q == 0 ? 'I' : 'O');
       TH2D*       h = hists.Get(d,r);
       TH2D*       t = static_cast<TH2D*>(h->Clone(Form("FMD%d%c_tmp",d,r)));
       Int_t       i = (d == 1 ? 1 : 2*d + (q == 0 ? -2 : -1));
       TH2D*       o = sums.Get(d, r);
-      
-      
+      TH2D* 	  ovrt=0x0;
+      if(sumsv)
+      {	
+	AliForwardUtil::Histos* sumsvhistos=static_cast<AliForwardUtil::Histos*>(sumsv->At(vtxbin-1));
+	if(sumsvhistos)
+	{
+		ovrt=sumsvhistos->Get(d, r);
+	}	
+      }	
+      TH3D* detavcent=0x0;
+      if(lout)
+      {
+      	 detavcent=static_cast<TH3D*>(lout->FindObject(Form("FMD%d%cetavcent",d,r)));	      
+      }	
+ 
       // Get valid range 
       Int_t first = 0;
       Int_t last  = 0;
@@ -645,7 +660,34 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
       }
       // Add to our per-ring sum 
       o->Add(t);
-      
+      if(ovrt)	
+      	ovrt->Add(t);	
+      // fillinig the deta v cent histo
+      if(cent>0&&detavcent)
+      {
+		Int_t nYbins=t->GetYaxis()->GetNbins();
+		Int_t nXbins=t->GetXaxis()->GetNbins();
+		Int_t cenbin=detavcent->GetYaxis()->FindBin(cent);
+		if(cenbin>0&&cenbin<=detavcent->GetYaxis()->GetNbins())	
+		{
+			TH1D* projectionX=(TH1D*)t->ProjectionX("tmp",1,nYbins);
+			for (int ibineta=1;ibineta<nXbins;ibineta++) 
+			{
+				Double_t v1=projectionX->GetBinContent(ibineta);
+				Double_t e1=projectionX->GetBinError(ibineta);
+				Double_t v2=detavcent->GetBinContent(ibineta,cenbin,1);
+				Double_t e2=detavcent->GetBinError(ibineta,cenbin,1);
+				detavcent->SetBinContent(ibineta,cenbin,1,v1+v2);
+				detavcent->SetBinError(ibineta,cenbin,1,TMath::Sqrt(e1*e1+e2*e2));
+				if (t->GetBinContent(ibineta,0)>0.0)
+					detavcent->SetBinContent(ibineta,cenbin,0,detavcent->GetBinContent(ibineta,cenbin,0)+t->GetBinContent(ibineta,0));
+				if (t->GetBinContent(ibineta,nYbins+1)>0.0)
+					detavcent->SetBinContent(ibineta,cenbin,2,detavcent->GetBinContent(ibineta,cenbin,2)+t->GetBinContent(ibineta,nYbins+1));	  
+			}
+		}	
+      }			      
+
+
       // Outer rings have better phi segmentation - rebin to same as inner. 
       if (q == 1) t->RebinY(2);
 
@@ -711,7 +753,7 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
       delete t;
     } // for r
   } // for d 
-  return kTRUE;
+ return kTRUE;
 }
 
 //____________________________________________________________________

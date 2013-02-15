@@ -220,8 +220,9 @@ protected:
   AliFMDEventPlaneFinder    fEventPlaneFinder;  // Algorithm
 
   TList* fList; // Output list 
+  TList* fListVertexBins; // list of the signal  in vertex bin	
 
-  ClassDef(AliForwardMCMultiplicityTask,2) // Forward multiplicity class
+  ClassDef(AliForwardMCMultiplicityTask,3) // Forward multiplicity class
 };
 
 #endif

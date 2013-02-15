@@ -28,6 +28,7 @@
 class AliESDEvent;
 class TH2D;
 class TList;
+class TH3D;	
 
 /** 
  * Calculate the multiplicity in the forward regions event-by-event 
@@ -210,9 +211,17 @@ protected:
   AliFMDHistCollector     fHistCollector;     // Algorithm
   AliFMDEventPlaneFinder  fEventPlaneFinder;  // Algorithm
 
-  TList* fList; // Output list 
+  TH3D* fFMD1icent; // Histogram for dndeta FMD1i vs centrality 
+  TH3D* fFMD2icent; // Histogram for dndeta FMD2i vs centrality
+  TH3D* fFMD2ocent; // Histogram for dndeta FMD2o vs centrality
+  TH3D* fFMD3icent; // Histogram for dndeta FMD3i vs centrality
+  TH3D* fFMD3ocent; // Histogram for dndeta FMD3o vs centrality
 
-  ClassDef(AliForwardMultiplicityTask,2) // Forward multiplicity class
+ 
+  TList* fList; // Output list 
+	
+
+  ClassDef(AliForwardMultiplicityTask,3) // Forward multiplicity class
 };
 
 #endif

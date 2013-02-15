@@ -22,6 +22,7 @@
 #include "AliForwardCorrectionManager.h"
 #include "AliAnalysisManager.h"
 #include <TH1.h>
+#include <TH3D.h>
 #include <TDirectory.h>
 #include <TTree.h>
 #include <TROOT.h>
@@ -42,7 +43,13 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
     fCorrections(),
     fHistCollector(),
     fEventPlaneFinder(),
+    fFMD1icent(0),
+    fFMD2icent(0),
+    fFMD2ocent(0),
+    fFMD3icent(0),
+    fFMD3ocent(0),
     fList(0)
+
 {
   // 
   // Constructor
@@ -65,7 +72,14 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
     fCorrections("corrections"),
     fHistCollector("collector"),
     fEventPlaneFinder("eventplane"),
+    fFMD1icent(0),
+    fFMD2icent(0),
+    fFMD2ocent(0),
+    fFMD3icent(0),
+    fFMD3ocent(0),
     fList(0)
+
+
 {
   // 
   // Constructor 
@@ -93,7 +107,13 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
     fCorrections(o.fCorrections),
     fHistCollector(o.fHistCollector),
     fEventPlaneFinder(o.fEventPlaneFinder),
-    fList(o.fList) 
+     fFMD1icent(o.fFMD1icent),
+    fFMD2icent(o.fFMD2icent),
+    fFMD2ocent(o.fFMD2ocent),
+    fFMD3icent(o.fFMD3icent),
+    fFMD3ocent(o.fFMD3ocent),
+    fList(o.fList)
+
 {
   // 
   // Copy constructor 
@@ -134,6 +154,11 @@ AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
   fAODFMD            = o.fAODFMD;
   fAODEP             = o.fAODEP;
   fRingSums          = o.fRingSums;
+  fFMD1icent	     = o.fFMD1icent;
+  fFMD2icent	     = o.fFMD2icent;
+  fFMD2ocent	     = o.fFMD2ocent;
+  fFMD3icent	     = o.fFMD3icent;
+  fFMD3ocent	     = o.fFMD3ocent;
   fList              = o.fList;
 
   return *this;
@@ -203,6 +228,19 @@ AliForwardMultiplicityTask::SetupForData()
   fCorrections.SetupForData(*pe);
   fHistCollector.SetupForData(*pv,*pe);
   fEventPlaneFinder.SetupForData(*pe);
+  
+  fFMD1icent=new TH3D("FMD1Ietavcent","FMD1ietavcent;#eta;cent",pe->GetNbins(),pe->GetXmin(),pe->GetXmax(),101,-0.5,100.5,1,0,1);
+  fFMD2icent=new TH3D("FMD2Ietavcent","FMD2ietavcent;#eta;cent",pe->GetNbins(),pe->GetXmin(),pe->GetXmax(),101,-0.5,100.5,1,0,1);
+  fFMD2ocent=new TH3D("FMD2Oetavcent","FMD2oetavcent;#eta;cent",pe->GetNbins(),pe->GetXmin(),pe->GetXmax(),101,-0.5,100.5,1,0,1);
+  fFMD3icent=new TH3D("FMD3Ietavcent","FMD3ietavcent;#eta;cent",pe->GetNbins(),pe->GetXmin(),pe->GetXmax(),101,-0.5,100.5,1,0,1);
+  fFMD3ocent=new TH3D("FMD3Oetavcent","FMD3oetavcent;#eta;cent",pe->GetNbins(),pe->GetXmin(),pe->GetXmax(),101,-0.5,100.5,1,0,1);
+  fList->Add(fFMD1icent);
+  fList->Add(fFMD2icent);
+  fList->Add(fFMD2ocent);
+  fList->Add(fFMD3icent);
+  fList->Add(fFMD3ocent);
+
+	
 
   this->Print();
   return true;
@@ -325,7 +363,7 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   }
 
   if (!fHistCollector.Collect(fHistos, fRingSums, 
-			      ivz, fAODFMD.GetHistogram())) {
+			      ivz, fAODFMD.GetHistogram(),fList,fAODFMD.GetCentrality())) {
     AliWarning("Histogram collector failed");
     return;
   }
