@@ -23,6 +23,7 @@
 
 #include "Riostream.h"
 #include "AliITSUReconstructor.h"
+#include "AliITSURecoDet.h"
 #include "AliRun.h"
 #include "AliRawReader.h"
 #include "AliESDEvent.h"
@@ -43,6 +44,7 @@ ClassImp(AliITSUReconstructor)
 AliITSUReconstructor::AliITSUReconstructor() 
 :  AliReconstructor()
   ,fGeom(0)
+  ,fITS(0)
   ,fClusterFinders(0)
   ,fClusters(0)
 {
@@ -69,13 +71,17 @@ AliITSUReconstructor::~AliITSUReconstructor()
   }
   delete[] fClusters;
   //
+  delete fITS;
   delete fGeom;
 } 
 
 //______________________________________________________________________
 void AliITSUReconstructor::Init() 
 {
-  // Initalize this constructor 
+  // Initalize this reconstructor 
+  // Note: fITS cannot be initialized here since it requires RecoParams (not available ar
+  // the moment of reconstructors initialization)
+  //
   AliInfo("Initializing");
   if (fGeom) AliFatal("was already done, something is wrong...");
   //
@@ -103,7 +109,6 @@ void AliITSUReconstructor::Init()
   }
   //
   return;
-
 }
 
 //_____________________________________________________________________________
@@ -225,4 +230,16 @@ Int_t AliITSUReconstructor::LoadClusters(TTree* treeRP)
   }
   treeRP->GetEntry(0); // we are still in 1 ev/tree mode...
   return 1;
+}
+
+//_____________________________________________________________________________
+AliITSURecoDet* AliITSUReconstructor::GetITSInterface()
+{
+  // Create reco oriented interface to geometry
+  if (fITS) return fITS;
+  //
+  fITS = new AliITSURecoDet(fGeom,"ITSURecoInterface");
+  int nLr = fITS->GetNLayersActive();
+  for (int ilr=nLr;ilr--;) fITS->GetLayerActive(ilr)->SetClusters(GetClusters(ilr));
+  return fITS;
 }

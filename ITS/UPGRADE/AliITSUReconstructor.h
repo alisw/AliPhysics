@@ -16,6 +16,7 @@
 class AliTracker;
 class AliTrackleter;
 class AliITSUGeomTGeo;
+class AliITSURecoDet;
 
 class AliITSUReconstructor: public AliReconstructor {
 public:
@@ -34,6 +35,7 @@ public:
   //
   TClonesArray*          GetClusters(Int_t lrID)            const {return fClusters ? fClusters[lrID] : 0;}
   AliITSUGeomTGeo*       GetGeom()                          const {return (AliITSUGeomTGeo*)fGeom;}
+  AliITSURecoDet*        GetITSInterface();
   //
   Int_t                  LoadClusters(TTree* treeRP);
   //
@@ -45,6 +47,7 @@ private:
   AliITSUReconstructor(const AliITSUReconstructor &); //Not implemented
   AliITSUReconstructor& operator=(const AliITSUReconstructor &); //Not implemented
   AliITSUGeomTGeo* fGeom;          // geometry wrapper
+  AliITSURecoDet*  fITS;           // interface to ITS (reconstruction oriented)
   TObjArray        fClusterFinders; // array of clusterfinders per layer
   TClonesArray**   fClusters;      // container for recpoints TClonesArrays
   //

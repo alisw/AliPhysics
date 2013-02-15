@@ -74,7 +74,6 @@ AliITSUTrackerGlo::~AliITSUTrackerGlo()
 {
  // Default destructor
  //  
-  delete fITS;
   delete[] fClInfo;
   //
 }
@@ -84,36 +83,13 @@ void AliITSUTrackerGlo::Init(AliITSUReconstructor* rec)
 {
   // init with external reconstructor
   //
-  fITS = new AliITSURecoDet(rec->GetGeom(),"ITSURecoInterface");
+  fITS = rec->GetITSInterface();
   int nLr = fITS->GetNLayersActive();
   fClInfo = new Int_t[nLr<<1];
-  for (int ilr=nLr;ilr--;) {
-    fITS->GetLayerActive(ilr)->SetClusters(rec->GetClusters(ilr));
-  }
   //
   fSeedsPool.ExpandCreateFast(1000); // RS TOCHECK
   fFreeSeedsID.Set(1000);
   //
-  /*
-  fTrCond.SetNLayers(fITS->GetNLayersActive());
-  fTrCond.AddNewCondition(5);
-  fTrCond.AddGroupPattern( (0x1<<0)|(0x1<<1) );
-  fTrCond.AddGroupPattern( (0x1<<3)|(0x1<<4) );
-  fTrCond.AddGroupPattern( (0x1<<5)|(0x1<<6) );
-  //
-  fTrCond.AddNewCondition(5);
-  fTrCond.AddGroupPattern( (0x1<<0)|(0x1<<2) );
-  fTrCond.AddGroupPattern( (0x1<<3)|(0x1<<4) );
-  fTrCond.AddGroupPattern( (0x1<<5)|(0x1<<6) );
-  //
-  fTrCond.AddNewCondition(5);
-  fTrCond.AddGroupPattern( (0x1<<1)|(0x1<<2) );
-  fTrCond.AddGroupPattern( (0x1<<3)|(0x1<<4) );
-  fTrCond.AddGroupPattern( (0x1<<5)|(0x1<<6) );
-  //
-  printf("Tracking Conditions: ");
-  fTrCond.Print();
-  */
 }
 
 //_________________________________________________________________________

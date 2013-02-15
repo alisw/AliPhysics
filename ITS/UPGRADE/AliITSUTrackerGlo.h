@@ -98,7 +98,7 @@ class AliITSUTrackerGlo : public AliTracker {
   //
  protected:
   AliITSUReconstructor*           fReconstructor;  // ITS global reconstructor 
-  AliITSURecoDet*                 fITS;            // interface to ITS
+  AliITSURecoDet*                 fITS;            // interface to ITS, borrowed from reconstructor
   AliESDtrack*                    fCurrESDtrack;   // current esd track in processing
   Double_t                        fCurrMass;       // current track mass
   Double_t                        fTrImpData[kNTrImpData];  // data on track impact on the layer
