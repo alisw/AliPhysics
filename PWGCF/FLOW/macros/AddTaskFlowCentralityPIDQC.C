@@ -111,6 +111,7 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
   cutsRP->SetMaxDCAToVertexZ(3.0);
   cutsRP->SetAcceptKinkDaughters(kFALSE);
   cutsRP->SetMinimalTPCdedx(10.);
+  cutsRP->SetAODfilterBit(1);  
   cutsRP->SetQA(doQA);
 
   // POI TRACK CUTS:
