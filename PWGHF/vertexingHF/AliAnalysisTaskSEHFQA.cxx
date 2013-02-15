@@ -275,14 +275,12 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   fNEntries->GetXaxis()->SetBinLabel(4,"nCandidates(AnCuts)");
   fNEntries->GetXaxis()->SetBinLabel(5,"EventsWithGoodVtx");
   //fNEntries->GetXaxis()->SetBinLabel(6,"N. of 0SMH");
-  fNEntries->GetXaxis()->SetBinLabel(6,"N. of CSH1");
+  fNEntries->GetXaxis()->SetBinLabel(6,"N candidates");
   if(fReadMC){
     fNEntries->GetXaxis()->SetBinLabel(7,"MC Cand from c");
     fNEntries->GetXaxis()->SetBinLabel(8,"MC Cand from b");
     fNEntries->GetXaxis()->SetBinLabel(9,"N fake Trks");
     fNEntries->GetXaxis()->SetBinLabel(10,"N true Trks");
-  } else{
-    fNEntries->GetXaxis()->SetBinLabel(7,"N candidates");
   }
 
   fNEntries->GetXaxis()->SetNdivisions(1,kFALSE);
@@ -686,6 +684,16 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     trigCounter->AddRubric("triggerType","All/Any/MB/Cent/SemiCent/EMCAL/MUON/NoPhysSelMUON/NoPhysSelEvNot7/NoPhysSelCMUP1/NoPhysSelMB/NoPhysSelCent/NoPhysSelSemiCent/CINT7");
     trigCounter->Init();
 
+    TH1F* hWhyEvRejected=new TH1F("hWhyEvRejected", "Why Event rejected",6,-0.5,5.5);
+
+    hWhyEvRejected->GetXaxis()->SetBinLabel(1,"pileup");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(2,"centrality");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(3,"Vertex (more reasons)");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(4,"trigger");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(5,"z vertex out");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(6,"physics sel");
+
+
     fOutputEvSelection->Add(evselection);
     fOutputEvSelection->Add(hxvtx);
     fOutputEvSelection->Add(hyvtx);
@@ -699,6 +707,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputEvSelection->Add(hTrigMul);
     fOutputEvSelection->Add(hTrigCentSel);
     fOutputEvSelection->Add(trigCounter);
+    fOutputEvSelection->Add(hWhyEvRejected);
+
   }
   if(fOnOff[4]){ // FLOW OBSERVABLES
     fOutputFlowObs=new TList();
@@ -1116,6 +1126,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       hTrigC->Fill(10.,centrality);
       hTrigM->Fill(10.,multiplicity);
     }
+
   }
   
 
@@ -1149,19 +1160,25 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
   Bool_t evSelbyCentrality=kTRUE,evSelected=kTRUE,evSelByVertex=kTRUE,evselByPileup=kTRUE,evSelByPS=kTRUE;
+
+  TH1F* hWhyEvRejected=(TH1F*)fOutputEvSelection->FindObject("hWhyEvRejected");
+
   //select event
   if(!fCuts->IsEventSelected(aod)) {
     evSelected=kFALSE;
-    if(fCuts->IsEventRejectedDueToPileupSPD()) {fNEntries->Fill(1); evselByPileup=kFALSE;}// rejected for pileup
-    if(fCuts->IsEventRejectedDueToCentrality()) evSelbyCentrality=kFALSE; //rejected by centrality
+    if(fCuts->IsEventRejectedDueToPileupSPD()) {hWhyEvRejected->Fill(1); evselByPileup=kFALSE;}// rejected for pileup
+    if(fCuts->IsEventRejectedDueToCentrality()) {hWhyEvRejected->Fill(2); evSelbyCentrality=kFALSE; //rejected by centrality
+    }
     if(fCuts->IsEventRejectedDueToNotRecoVertex() ||
        fCuts->IsEventRejectedDueToVertexContributors() ||
        fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()){ 
       evSelByVertex=kFALSE; 
+      hWhyEvRejected->Fill(3);
     }
-    if(fCuts->IsEventRejectedDueToTrigger()) fNEntries->Fill(5);//tmp
-    if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion() && fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber));
-    if(fCuts->IsEventRejectedDuePhysicsSelection()) { evSelByPS=kFALSE; }
+    if(fCuts->IsEventRejectedDueToTrigger()) hWhyEvRejected->Fill(4);//tmp
+    if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion() && fOnOff[3]) {((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber)); hWhyEvRejected->Fill(5);
+    }
+    if(fCuts->IsEventRejectedDuePhysicsSelection()) { evSelByPS=kFALSE;hWhyEvRejected->Fill(6); }
   }
   if(evSelected){
     TH2F* hTrigS=(TH2F*)fOutputEvSelection->FindObject("hTrigCentSel");
@@ -1550,7 +1567,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    }
 	  }
 	}//end MC
-	else fNEntries->Fill(6); //count the candidates (data)
+	fNEntries->Fill(5); //count the candidates (data and MC)
 
 	for(Int_t id=0;id<ndaugh;id++){
 	  //other histograms to be filled when the cut object is given
@@ -1589,7 +1606,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      }
 	    }
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
-	  
+	      fNEntries->Fill(3); //candidates passing analysis cuts
 	      AliAODPid *pid = track->GetDetPid();
 	      if(pid){
 		Double_t times[5];
@@ -1608,7 +1625,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 		}
 		if(pidHF && pidHF->CheckStatus(track,"TPC")) ((TH2F*)fOutputPID->FindObject("hTPCsigvspAC"))->Fill(pid->GetTPCmomentum(),pid->GetTPCsignal());
 	      }
-	      fNEntries->Fill(3);
+	      
 	    } //end analysis cuts
 	  } //end acceptance and track cuts
 	} //end loop on tracks in the candidate
