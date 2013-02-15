@@ -255,7 +255,10 @@ Bool_t AliMuonTrackCuts::ReadParamFromOADB ( Int_t runNumber, TString passName )
     fOADBParam = *defaultParams;
     AliWarning(Form("Requested run %i not found in %s: using %s (%s)", runNumber, passName.Data(), fOADBParam.GetName(), selectedContainer->GetName()));
   }
-  else AliFatal(Form("Requested run %i not found in %s! Please check your pass name or allow default parameters", runNumber, passName.Data()));
+  else {
+    AliFatal(Form("Requested run %i not found in %s! Please check your pass name or allow default parameters", runNumber, passName.Data()));
+    return kFALSE; // Coverity fix
+  }
   
   file->Close();
 
