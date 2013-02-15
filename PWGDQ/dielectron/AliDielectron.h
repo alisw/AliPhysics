@@ -198,7 +198,7 @@ private:
 
   void ProcessMC(AliVEvent *ev1);
   
-  void  FillHistograms(AliVEvent *ev, Bool_t pairInfoOnly=kFALSE);
+  void  FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly=kFALSE);
   void  FillMCHistograms(const AliVEvent *ev);
   void  FillHistogramsMC(const AliMCEvent *ev,  AliVEvent *ev1);
   void  FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFilter=kFALSE);

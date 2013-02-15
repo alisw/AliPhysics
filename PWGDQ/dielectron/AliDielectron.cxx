@@ -230,6 +230,14 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     return;
   }
 
+  // set event
+  AliDielectronVarManager::SetEvent(ev1);
+  if (fMixing){
+    //set mixing bin to event data
+    Int_t bin=fMixing->FindBin(AliDielectronVarManager::GetData());
+    AliDielectronVarManager::SetValue(AliDielectronVarManager::kMixingBin,bin);
+  }
+
   //in case we have MC load the MC event and process the MC particles
   if (AliDielectronMC::Instance()->ConnectMCEvent()){
     ProcessMC(ev1);
@@ -266,14 +274,6 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   AliEventplane *cevplane = new AliEventplane();
   if (ev1 && cevplane && fPreFilterEventPlane && ( fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0)) 
     EventPlanePreFilter(0, 1, fTracks[0], fTracks[1], ev1, cevplane);
-
-  // set event
-  AliDielectronVarManager::SetEvent(ev1);
-  if (fMixing){
-    //set mixing bin to event data
-    Int_t bin=fMixing->FindBin(AliDielectronVarManager::GetData());
-    AliDielectronVarManager::SetValue(AliDielectronVarManager::kMixingBin,bin);
-  }
 
   if (!fNoPairing){
     // create pairs and fill pair candidate arrays
@@ -461,7 +461,7 @@ void AliDielectron::FillHistogramsMC(const AliMCEvent *ev, AliVEvent *ev1)
 
 
 //________________________________________________________________
-void AliDielectron::FillHistograms(AliVEvent *ev, Bool_t pairInfoOnly)
+void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
 {
   //
   // Fill Histogram information for tracks and pairs
@@ -473,7 +473,6 @@ void AliDielectron::FillHistograms(AliVEvent *ev, Bool_t pairInfoOnly)
   //Fill event information
   if (ev){
     if (fHistos->GetHistogramList()->FindObject("Event")) {
-      if(fMixing)   AliDielectronVarManager::SetEvent(ev); // data can be overwritten by mixed event
       fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, AliDielectronVarManager::GetData());
     }
   }
