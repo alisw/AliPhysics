@@ -28,6 +28,7 @@
 #include "AliVertexingHFUtils.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
+#include "AliEventPlaneResolutionHandler.h"
 #include <AliVertexingHFUtils.h>
 
 #endif
@@ -40,13 +41,17 @@
 //         Francesco Prino prino@to.infn.it
 
 //global variables to be set
-TString filename="AnalysisResults_train60.root";
+TString filename="AnalysisResults_train63.root";
 TString suffix="v2Dplus3050Cut4upcutPIDTPC";
 TString partname="Dplus";
 Int_t minCent=30;
 Int_t maxCent=50;
-//evPlane flag: -1=V0C,0=V0,1=V0A,2=TPC2subevs,3=TPC3subevs
-Int_t evPlane=2;
+//evPlane flag from AliEventPlaneResolutionHandler: 
+//kTPCFullEta, kTPCPosEta,kVZERO,kVZEROA,kVZEROC
+Int_t evPlane=AliEventPlaneResolutionHandler::kTPCPosEta;
+//resolution flag fromAliEventPlaneResolutionHandler:
+//kTwoRandSub,kTwoChargeSub,kTwoEtaSub,kThreeSub,kThreeSubTPCGap
+Int_t evPlaneRes=AliEventPlaneResolutionHandler::kTwoEtaSub;
 Bool_t useNcollWeight=kFALSE;
 // pt and phi binning
 const Int_t nptbinsnew=4;
@@ -80,10 +85,19 @@ Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, 
 //method implementation
 //_________________________________________________________________
 Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, TH1F* hsubev3){
-  Double_t resolFull;
-  if(evPlane==2){
+  Double_t resolFull=1.;
+  if(evPlaneRes==AliEventPlaneResolutionHandler::kTwoRandSub ||
+     evPlaneRes==AliEventPlaneResolutionHandler::kTwoChargeSub){
     resolFull=AliVertexingHFUtils::GetFullEvResol(hsubev1);
     error = TMath::Abs(resolFull-AliVertexingHFUtils::GetFullEvResolLowLim(hsubev1));
+  }else if(evPlaneRes==AliEventPlaneResolutionHandler::kTwoEtaSub){
+    if(evPlane==AliEventPlaneResolutionHandler::kTPCFullEta){
+      resolFull=AliVertexingHFUtils::GetFullEvResol(hsubev1);
+      error = TMath::Abs(resolFull-AliVertexingHFUtils::GetFullEvResolLowLim(hsubev1));
+    }else if(evPlane==AliEventPlaneResolutionHandler::kTPCPosEta){
+      resolFull=AliVertexingHFUtils::GetSubEvResol(hsubev1);
+      error = TMath::Abs(resolFull-AliVertexingHFUtils::GetSubEvResolLowLim(hsubev1));      
+    }
   }else{
     Double_t resolSub[3];
     Double_t errors[3];
@@ -96,15 +110,17 @@ Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, 
       errors[ires]=hevplresos[ires]->GetMeanError();
     }
     Double_t lowlim[3];for(Int_t ie=0;ie<3;ie++)lowlim[ie]=TMath::Abs(resolSub[ie]-errors[ie]);
-    if(evPlane<=0){
+    if(evPlane==AliEventPlaneResolutionHandler::kVZEROC ||
+       evPlane==AliEventPlaneResolutionHandler::kVZERO){
       resolFull=TMath::Sqrt(resolSub[1]*resolSub[2]/resolSub[0]);
       error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[1]/lowlim[0]);
     }
-    else if(evPlane==1){
+    else if(evPlane==AliEventPlaneResolutionHandler::kVZEROA){
       resolFull=TMath::Sqrt(resolSub[0]*resolSub[2]/resolSub[1]);
       error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[0]/lowlim[1]);
     }
-    else if(evPlane==3){
+    else if(evPlane==AliEventPlaneResolutionHandler::kTPCFullEta ||
+	    evPlane==AliEventPlaneResolutionHandler::kTPCPosEta){
       resolFull=TMath::Sqrt(resolSub[0]*resolSub[1]/resolSub[2]);
       error=resolFull-TMath::Sqrt(lowlim[0]*lowlim[1]/lowlim[2]);
     }
@@ -129,7 +145,8 @@ TList* LoadResolutionHistos(TList *inputlist){
   TGraphErrors* gResolVsCent=new TGraphErrors(0);
   Int_t iPt=0;
   Int_t nSubRes=1;
-  if(evPlane!=2)nSubRes=3;//3 sub-events method for VZERO EP
+  if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
+     evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
   TString namereso[3]={"Reso","Reso2","Reso3"};
   TString suffixcentr=Form("centr%d_%d",minCent,maxCent);
   TH2F* hevpls=(TH2F*)inputlist->FindObject(Form("hEvPlanecentr%d_%d",minCentTimesTen,minCentTimesTen+25));
@@ -138,6 +155,7 @@ TList* LoadResolutionHistos(TList *inputlist){
     //    TH1F* hevplresos=(TH1F*)list->FindObject(Form("hEvPlaneResocentr%d_%d",mincentr,mincentr+5));QUI!!!
   TH1F* hevplresos[3];
   Int_t ncBin=minCentTimesTen/25;
+  
   for(Int_t ires=0;ires<nSubRes;ires++){
     hevplresos[ires]=(TH1F*)inputlist->FindObject(Form("hEvPlane%scentr%d_%d",namereso[ires].Data(),minCentTimesTen,minCentTimesTen+25));
     if(hevplresos[ires]){
@@ -402,11 +420,6 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
   TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
   TString listname=Form("coutputv2%s%s",partname.Data(),suffix.Data());
 
-  if(evPlane>3||evPlane<-1){
-    printf("Wrong EP flag %d \n",evPlane);
-    return;
-  }
-
   AliRDHFCuts *cutsobj=0x0;
   //Load input data from AliAnalysisTaskSEHFv2
   TFile *f = TFile::Open(filename.Data());
@@ -441,6 +454,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
   if(!DefinePtBins(cutsobj)){
     printf("cut not define pt bins\n");return;
   }
+  
   //Load mass histograms corresponding to the required centrality, pt range and phi binning
   printf("Load mass histos \n");
   TList *histlist=LoadMassHistos(list,inoutanis);
@@ -508,17 +522,24 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
   FillSignalGraph(histlist,gSignal,gSignalfs,gSignalBC1,gSignalBC2,inoutanis);
 
   //EP resolution
-  TList* resolhist=LoadResolutionHistos(list);
-  TString suffixcentr=Form("centr%d_%d",minCent,maxCent);
-  TH1F* hevplresos[3];
-  TString namereso[3]={"Reso","Reso2","Reso3"};
-  Int_t nSubRes=1;
-  if(evPlane!=2)nSubRes=3;//3 sub-events method for VZERO EP
-  for(Int_t ires=0;ires<nSubRes;ires++){
-    hevplresos[ires]=(TH1F*)resolhist->FindObject(Form("hEvPlane%s%s",namereso[ires].Data(),suffixcentr.Data()));
-  }
-  Double_t errorres;
-  Double_t resol=GetEventPlaneResolution(errorres,hevplresos[0],hevplresos[1],hevplresos[2]);
+  // TList* resolhist=LoadResolutionHistos(list);
+  // TString suffixcentr=Form("centr%d_%d",minCent,maxCent);
+  // TH1F* hevplresos[3];
+  // TString namereso[3]={"Reso","Reso2","Reso3"};
+  // Int_t nSubRes=1;
+  // if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
+  //    evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
+  // for(Int_t ires=0;ires<nSubRes;ires++){
+  //   hevplresos[ires]=(TH1F*)resolhist->FindObject(Form("hEvPlane%s%s",namereso[ires].Data(),suffixcentr.Data()));
+  // }
+  // Double_t errorres;
+  // Double_t resol=GetEventPlaneResolution(errorres,hevplresos[0],hevplresos[1],hevplresos[2]);
+  AliEventPlaneResolutionHandler* epres=new AliEventPlaneResolutionHandler();
+  epres->SetEventPlane(evPlane);
+  epres->SetResolutionOption(evPlaneRes);
+  epres->SetUseNcollWeights(useNcollWeight);
+  Double_t resol=epres->GetEventPlaneResolution(minCent,maxCent);
+  delete epres;
   printf("Event plane resolution %f\n",resol);
 
   printf("Compute v2 \n");
@@ -716,6 +737,11 @@ void DrawEventPlane(){
   TList *list =(TList*)dir->Get(listname.Data());
   if(!list){
     printf("list %s not found in file, please check list name\n",listname.Data());return;
+  } 
+  if(evPlane==AliEventPlaneResolutionHandler::kTPCPosEta &&
+     evPlaneRes==AliEventPlaneResolutionHandler::kTwoEtaSub){
+    printf("Wrong setting of event plane resolution forced it to kTwoSub\n");
+    evPlaneRes=AliEventPlaneResolutionHandler::kTwoRandSub;
   }
   TList* resolhist=LoadResolutionHistos(list);
   TGraphErrors* gResolVsCent=(TGraphErrors*)resolhist->FindObject("gResolVsCent");
@@ -732,7 +758,8 @@ void DrawEventPlane(){
   TH1F* hevplresos[3];
   TString namereso[3]={"Reso","Reso2","Reso3"};
   Int_t nSubRes=1;
-  if(evPlane!=2)nSubRes=3;//3 sub-events method for VZERO EP
+  if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
+     evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
   for(Int_t ires=0;ires<nSubRes;ires++){
     hevplresos[ires]=(TH1F*)resolhist->FindObject(Form("hEvPlane%s%s",namereso[ires].Data(),suffixcentr.Data()));
   }
@@ -755,7 +782,9 @@ void DrawEventPlane(){
   TH1F* htpc = (TH1F*)hevpls->ProjectionX();
   TH1F* hv0 = (TH1F*)hevpls->ProjectionY();
   TH1F* hUsedPlane;
-  if(evPlane<2) hUsedPlane=(TH1F*)hv0->Clone("hUsedPlane");
+  if(evPlane==AliEventPlaneResolutionHandler::kVZERO ||
+     evPlane==AliEventPlaneResolutionHandler::kVZEROA ||
+     evPlane==AliEventPlaneResolutionHandler::kVZEROC) hUsedPlane=(TH1F*)hv0->Clone("hUsedPlane");
   else hUsedPlane=(TH1F*)htpc->Clone("hUsedPlane");
 
   TCanvas* cvtotevpl=new TCanvas(Form("cvtotevpl%s",suffixcentr.Data()),Form("Ev plane %s",suffixcentr.Data()),1200,400);
