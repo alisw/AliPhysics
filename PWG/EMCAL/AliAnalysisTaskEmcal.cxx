@@ -396,8 +396,13 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
     Int_t runNumber = InputEvent()->GetRunNumber();
     if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
 	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
-    {
+    { 
       return kAA;
+    } 
+    else if ((runNumber>=188365 && runNumber <= 188366) || // LHC12g
+	     (runNumber >= 195344 && runNumber <= 196608))  // LHC13b-f
+    {
+      return kpA;
     } else {
       return kpp;
     }
@@ -552,9 +557,8 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   if (fBeamType == kAA || fBeamType == kpA ) {
     AliCentrality *aliCent = InputEvent()->GetCentrality();
     if (aliCent) {
-      fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
- 
-     if      (fCent >=  0 && fCent <   10) fCentBin = 0;
+      fCent = aliCent->GetCentralityPercentile(fCentEst.Data()); 
+      if      (fCent >=  0 && fCent <   10) fCentBin = 0;
       else if (fCent >= 10 && fCent <   30) fCentBin = 1;
       else if (fCent >= 30 && fCent <   50) fCentBin = 2;
       else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
