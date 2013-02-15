@@ -50,7 +50,6 @@
 #pragma link C++ class AliUnfolding+;
 
 #pragma link C++ class AliAnalysisUtils+;
-#pragma link C++ class AliAnalysisTaskBadChunkID+;
 
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;
