@@ -25,7 +25,7 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
 
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
-  AliAnalysisTaskPi0V2Pdsf* taskMB = new  AliAnalysisTaskPi0V2Pdsf("Pi0v2Task");
+  AliAnalysisTaskPi0V2* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task");
   //taskMB->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kAnyINT);
   taskMB->SetTracksName(trackName.Data());
   taskMB->SetClusE(Ecut);
