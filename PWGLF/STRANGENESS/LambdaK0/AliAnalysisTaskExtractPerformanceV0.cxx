@@ -1399,7 +1399,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       lMultiplicityV0A = ( ( Int_t ) ( centrality->GetCentralityPercentile(   "V0A" ) ) );
       lMultiplicityZNA = ( ( Int_t ) ( centrality->GetCentralityPercentile(   "ZNA" ) ) );
       lMultiplicityTRK = ( ( Int_t ) ( centrality->GetCentralityPercentile(   "TRK" ) ) );
-      lMultiplicitySPD = ( ( Int_t ) ( centrality->GetCentralityPercentile(   "SPD" ) ) );
+      lMultiplicitySPD = ( ( Int_t ) ( centrality->GetCentralityPercentile(   "CL1" ) ) );
       if (centrality->GetQuality()>1) {
         PostData(1, fListHistV0);
         PostData(2, fTree);
