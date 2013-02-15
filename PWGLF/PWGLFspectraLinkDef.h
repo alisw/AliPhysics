@@ -29,6 +29,7 @@
 #pragma link C++ class AliSpectraAODPID+;
 #pragma link C++ class AliSpectraAODTrackCuts+;
 #pragma link C++ class AliAnalysisKinkESDat+;
+#pragma link C++ class AliAnalysisKinkESDMC+;
 
 #pragma link C++ class AliAnalysisTaskSpectraBoth+;
 #pragma link C++ class AliSpectraBothEventCuts+;
