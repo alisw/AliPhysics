@@ -32,8 +32,9 @@
   includePath        += "-I${ALICE_ROOT}/MUON/mapping ";
   includePath        += "-I${ALICE_ROOT}/RAW ";
   includePath        += "-I${ALICE_ROOT}/include ";
-  includePath        += "-I${ALICE_INSTALL}/include ";
-  includePath        += "-I${ALICE_BUILD}/include ";
+  
+  if ( gSystem->Getenv("ALICE_INSTALL") ) includePath += "-I${ALICE_INSTALL}/include ";
+  if ( gSystem->Getenv("ALICE_BUILD") ) includePath += "-I${ALICE_BUILD}/include ";
 
   gSystem->SetIncludePath(includePath.Data());
 }
