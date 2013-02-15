@@ -237,6 +237,16 @@ public:
   {
     fUseDisplacedVertices = use;
   }  
+  // Settter for fmincentrality 
+  void SetMinCentrality(Double_t mincent=-1.0)
+  {	 		
+  	fminCent=mincent;
+  }
+  // Settter for fmincentrality 
+  void SetMaxCentrality(Double_t maxcent=-1.0)
+  {	 		
+  	fmaxCent=maxcent;
+  }
   /** 
    * Set the centrality method to use.  Possible values are 
    *
@@ -313,6 +323,13 @@ public:
    * 
    * @param option Not used 
    */
+  // getter for fmincentrality
+  Double_t GetMinCentrality() const { return fminCent;}
+  // gettter for fmaxcentrality 
+ Double_t GetMaxCentrality() const { return fmaxCent;}
+
+
+
   void Print(Option_t* option="") const;
   /** 
    * Store information about running conditions in output list 
@@ -505,7 +522,10 @@ protected:
   TList    fCollWords;     //! Configured collision words 
   TList    fBgWords;       //! Configured background words 
   TString  fCentMethod;
-  ClassDef(AliFMDEventInspector,7); // Inspect the event 
+  Double_t fminCent;  //min centrality
+  Double_t fmaxCent;  //max centrailty  	  	
+
+  ClassDef(AliFMDEventInspector,8); // Inspect the event 
 };
 
 #endif

@@ -48,7 +48,9 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask()
     fCorrections(),
     fHistCollector(),
     fEventPlaneFinder(),
-    fList(0)
+    fList(0),
+    fListVertexBins(0)	    
+	
 {
   // 
   // Constructor
@@ -75,7 +77,8 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const char* name)
     fCorrections("corrections"),
     fHistCollector("collector"),
     fEventPlaneFinder("eventplane"),
-    fList(0)
+    fList(0),
+    fListVertexBins(0)	  	
 {
   // 
   // Constructor 
@@ -107,7 +110,8 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const AliForwardMCMul
     fCorrections(o.fCorrections),
     fHistCollector(o.fHistCollector),
     fEventPlaneFinder(o.fEventPlaneFinder),
-    fList(o.fList) 
+    fList(o.fList),	
+    fListVertexBins(o.fListVertexBins)	  	 
 {
   // 
   // Copy constructor 
@@ -151,7 +155,7 @@ AliForwardMCMultiplicityTask::operator=(const AliForwardMCMultiplicityTask& o)
   fMCRingSums        = o.fMCRingSums;
   fPrimary           = o.fPrimary;
   fList              = o.fList;
-
+  fListVertexBins    = o.fListVertexBins; 	
   return *this;
 }
 
@@ -239,6 +243,29 @@ AliForwardMCMultiplicityTask::SetupForData()
   fMCRingSums.Get(3, 'I')->SetMarkerColor(AliForwardUtil::RingColor(3, 'I'));
   fMCRingSums.Get(3, 'O')->SetMarkerColor(AliForwardUtil::RingColor(3, 'O'));
 
+
+  for(int i=1;i<=pv->GetNbins();i++)	
+  {
+	TString nametmp=Form("vtxbin%03d",i);
+	//TList* lbin= new TList();
+	//lbin->SetName(nametmp.Data());
+	//lbin->SetOwner();
+	//fListVertexBins->Add(lbin);
+	AliForwardUtil::Histos* bin=new AliForwardUtil::Histos();
+	bin->Init(*pe);
+	bin->Get(1, 'I')->SetName(Form("%s%s",bin->Get(1, 'I')->GetName(),nametmp.Data()));
+	bin->Get(2, 'I')->SetName(Form("%s%s",bin->Get(2, 'I')->GetName(),nametmp.Data()));
+	bin->Get(2, 'O')->SetName(Form("%s%s",bin->Get(2, 'O')->GetName(),nametmp.Data())); 
+	bin->Get(3, 'I')->SetName(Form("%s%s",bin->Get(3, 'I')->GetName(),nametmp.Data()));
+	bin->Get(3, 'O')->SetName(Form("%s%s",bin->Get(3, 'O')->GetName(),nametmp.Data()));
+	fList->Add(bin->Get(1, 'I'));
+	fList->Add(bin->Get(2, 'I'));
+	fList->Add(bin->Get(2, 'O'));
+	fList->Add(bin->Get(3, 'I'));
+	fList->Add(bin->Get(3, 'O'));
+	fListVertexBins->Add(bin);
+
+}
   fEventInspector.SetupForData(*pv);
   fSharingFilter.SetupForData(*pe);
   fDensityCalculator.SetupForData(*pe);
@@ -262,6 +289,10 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
   fList = new TList;
   fList->SetOwner();
 
+  fListVertexBins=new TList();
+  fListVertexBins->SetOwner();		
+  //fList->Add(fListVertexBins);
+	
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
@@ -293,6 +324,9 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
   fCorrections.CreateOutputObjects(fList);
   fHistCollector.CreateOutputObjects(fList);
   fEventPlaneFinder.CreateOutputObjects(fList);
+
+
+ 	
 
   PostData(1, fList);
 }
@@ -433,7 +467,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   fCorrections.CompareResults(fHistos, fMCHistos);
     
   if (!fHistCollector.Collect(fHistos, fRingSums, 
-			      ivz, fAODFMD.GetHistogram())) {
+			      ivz, fAODFMD.GetHistogram(),0x0,-1,fListVertexBins)) {
     AliWarning("Histogram collector failed");
     return;
   }

@@ -74,7 +74,9 @@ AliFMDEventInspector::AliFMDEventInspector()
   fDisplacedVertex(),
   fCollWords(),
   fBgWords(),
-  fCentMethod("V0M")
+  fCentMethod("V0M"),
+  fminCent(-1.0),
+  fmaxCent(-1.0)  		
 {
   // 
   // Constructor 
@@ -113,7 +115,9 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   fDisplacedVertex(),
   fCollWords(),
   fBgWords(),
-  fCentMethod("V0M")
+  fCentMethod("V0M"),
+  fminCent(-1.0),
+  fmaxCent(-1.0)  	
 {
   // 
   // Constructor 
@@ -155,7 +159,9 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fDisplacedVertex(o.fDisplacedVertex),
   fCollWords(),
   fBgWords(),
-  fCentMethod(o.fCentMethod)
+  fCentMethod(o.fCentMethod),
+  fminCent(o.fminCent),
+  fmaxCent(o.fmaxCent)  	
 {
   // 
   // Copy constructor 
@@ -219,6 +225,9 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fUseDisplacedVertices  = o.fUseDisplacedVertices;
   fDisplacedVertex       = o.fDisplacedVertex;
   fCentMethod            = o.fCentMethod;
+  fminCent		 = o.fminCent;
+  fmaxCent		 = o.fmaxCent; 
+
   if (fList) { 
     fList->SetName(GetName());
     if (fHEventsTr)    fList->Add(fHEventsTr);
@@ -620,8 +629,7 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   // Return:
   //    0 (or kOk) on success, otherwise a bit mask of error codes 
   //
-  DGUARD(fDebug,1,"Process event in AliFMDEventInspector");
-
+  DGUARD(fDebug,1,"Process event in AliFMDEventInspector"); 
   // --- Check that we have an event ---------------------------------
   if (!event) { 
     AliWarning("No ESD event found for input event");
@@ -661,6 +669,12 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     if (fDebug > 3) 
       AliWarning("Failed to get centrality");
   }
+//check centrality cut
+ 
+  if(fminCent>0.0&&cent<fminCent)
+	return  kNoEvent; 
+  if(fmaxCent>0.0&&cent>fmaxCent)
+	 return  kNoEvent; 
   fHCent->Fill(cent);
   if (qual == 0) fHCentVsQual->Fill(0., cent);
   else { 

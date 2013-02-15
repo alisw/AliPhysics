@@ -161,7 +161,10 @@ public:
   virtual Bool_t Collect(const AliForwardUtil::Histos& hists, 
 			 AliForwardUtil::Histos&       sums, 
 			 UShort_t                      vtxBin, 
-			 TH2D&                         out);
+			 TH2D&                         out,
+			 TList* 			lout=0x0,
+			 Double_t 		        cent=-1.0,
+			 TList*       sumsv=0x0);
   /** 
    * Output diagnostic histograms to directory 
    * 
