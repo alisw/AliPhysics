@@ -602,7 +602,6 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
       if (!lumiB)
       {
         AliError(Form("Did not find lumiTrigger %s for run %09d",lumiTriggerClassName.Data(),runNumber));
-        continue;
       }
 
       if (!lumiB || !muonA || !muonB) continue;
@@ -894,7 +893,14 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
         if (swhat.Contains("L0AOVERB") )
         {
           value = l0a*1.0/l0b;
-          error = value*TMath::Sqrt(1.0/l0b+1.0/l0a);
+          if ( l0a > 0 )
+          {
+            error = value*TMath::Sqrt(1.0/l0b+1.0/l0a);
+          }
+          else
+          {
+            error = 0.0;
+          }
         }
         else if ( swhat.Contains("L0B") )
         {
@@ -999,7 +1005,6 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
     g->SetMarkerColor(color);
     g->SetMarkerStyle(marker);
     g->Draw("ALP");
-    c->SaveAs(Form("%s.pdf",title.Data()));
     c->SaveAs(Form("%s.png",title.Data()));
   }
   
