@@ -209,6 +209,13 @@ public:
     kV0ArpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-A
     kV0CrpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-C
     kV0ACrpH2FlowV2,         // v2 coefficient with respect to the 2nd order reaction plane from V0-A + V0-C
+    kDeltaPhiv0ArpH2,          // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A (EPtask)
+    kDeltaPhiv0CrpH2,          // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-C
+    kDeltaPhiv0ACrpH2,         // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-AC
+    kv0ArpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-A (EPtask)
+    kv0CrpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-C
+    kv0ACrpH2FlowV2,         // v2 coefficient with respect to the 2nd order reaction plane from V0-A + V0-C
+
     kLegDist,                // distance of the legs
     kLegDistXY,              // distance of the legs in XY
     kDeltaEta,         // Absolute value of Delta Eta for the legs
@@ -249,9 +256,6 @@ public:
     kv0A3rpH2,                 // VZERO-A last ring reaction plane of the Q vector for 2nd harmonic
     kv0C0rpH2,                 // VZERO-C 1st  ring reaction plane of the Q vector for 2nd harmonic
     kv0C3rpH2,                 // VZERO-C last ring reaction plane of the Q vector for 2nd harmonic
-    kDeltaPhiv0ArpH2,          // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A
-    kDeltaPhiv0CrpH2,          // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-C
-    kDeltaPhiv0ACrpH2,         // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-AC
     kv0ATPCDiffH2,             // V0A-TPC reaction plane difference for 2nd harmonic
     kv0CTPCDiffH2,             // V0C-TPC reaction plane difference for 2nd harmonic
     kv0Av0CDiffH2,             // V0A-V0C reaction plane difference for 2nd harmonic
@@ -261,9 +265,6 @@ public:
     kv0Cv0A3DiffH2,             // V0C-ring 3 ofV0A reaction plane difference for 2nd harmonic
     kv0A0v0A3DiffH2,             // V0C-ring 0 ofV0A reaction plane difference for 2nd harmonic
     kv0C0v0C3DiffH2,             // V0C-ring 0 ofV0A reaction plane difference for 2nd harmonic
-    kv0ArpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-A
-    kv0CrpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-C
-    kv0ACrpH2FlowV2,         // v2 coefficient with respect to the 2nd order reaction plane from V0-A + V0-C
 
     kMultV0A,                // VZERO multiplicity and ADC amplitudes
     kMultV0C,
@@ -1349,10 +1350,14 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
 
   // quantities using the values of  AliEPSelectionTask
-  values[AliDielectronVarManager::kDeltaPhiv0ArpH2] = values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ArpH2];
-  values[AliDielectronVarManager::kDeltaPhiv0CrpH2] = values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0CrpH2];
+  values[AliDielectronVarManager::kDeltaPhiv0ArpH2]  = values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ArpH2];
+  values[AliDielectronVarManager::kDeltaPhiv0CrpH2]  = values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0CrpH2];
   values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] = values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ACrpH2];
-  // keep the interval [-pi,+pi]                                                                                 
+  values[AliDielectronVarManager::kv0ACrpH2FlowV2]   = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ACrpH2]) );
+  values[AliDielectronVarManager::kv0ArpH2FlowV2]    = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ArpH2]) );
+  values[AliDielectronVarManager::kv0CrpH2FlowV2]    = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0CrpH2]) );
+
+  // keep the interval [-pi,+pi]
   if ( values[AliDielectronVarManager::kDeltaPhiv0ArpH2] > TMath::Pi() ) 
     values[AliDielectronVarManager::kDeltaPhiv0ArpH2] -= TMath::TwoPi(); 
   if ( values[AliDielectronVarManager::kDeltaPhiv0CrpH2] > TMath::Pi() ) 
@@ -1367,7 +1372,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if ( values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] < -1.*TMath::Pi() )
     values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] += TMath::TwoPi(); 
 
-             
+
   AliDielectronMC *mc=AliDielectronMC::Instance();
   
   if (mc->HasMC()){
@@ -1570,9 +1575,6 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kv0C3rpH2]  = TVector2::Phi_mpi_pi(ep2.CalculateVZEROEventPlane(event, 3, 3, 2, qx, qy)); qx = 0, qy = 0;
   values[AliDielectronVarManager::kv0A0rpH2]  = TVector2::Phi_mpi_pi(ep2.CalculateVZEROEventPlane(event, 4, 4, 2, qx, qy)); qx = 0, qy = 0;
   values[AliDielectronVarManager::kv0A3rpH2]  = TVector2::Phi_mpi_pi(ep2.CalculateVZEROEventPlane(event, 7, 7, 2, qx, qy)); qx = 0, qy = 0;
-  values[AliDielectronVarManager::kv0ACrpH2FlowV2]  = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ACrpH2]) );
-  values[AliDielectronVarManager::kv0ArpH2FlowV2]   = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ArpH2]) );
-  values[AliDielectronVarManager::kv0CrpH2FlowV2]   = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0CrpH2]) );
 
   // TPC event plane quantities (uncorrected)  
   AliEventplane *ep = const_cast<AliVEvent*>(event)->GetEventplane();
@@ -1840,6 +1842,7 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
 									 values[AliDielectronVarManager::kTPCsub2rpH2]) );
       values[AliDielectronVarManager::kTPCsub12DiffH2Sin] = TMath::Sin( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] -
 									    values[AliDielectronVarManager::kTPCsub2rpH2]) );
+
     }
   }
 }
@@ -2146,6 +2149,7 @@ inline void AliDielectronVarManager::SetTPCEventPlane(AliEventplane *const evpla
 {
   
   fgTPCEventPlane = evplane;
+  FillVarTPCEventPlane(evplane,fgData);
   //  for (Int_t i=0; i<AliDielectronVarManager::kNMaxValues;++i) fgData[i]=0.;
   //  AliDielectronVarManager::Fill(fgEvent, fgData);
 }
