@@ -76,7 +76,7 @@ static Int_t   nMaxEvMix = 250;
 AliAnalysisTaskLambdaOverK0sJets::AliAnalysisTaskLambdaOverK0sJets(const char *name) :
   AliAnalysisTaskSE(name),
 
-  fAOD(0), fIsMC(kFALSE), fData("PbPb2010"), fUsePID(kFALSE), fCentMin(0.), fCentMax(90.), fDoQA(kFALSE), fDoMixEvt(kFALSE), fTrigPtMin(8.), fTrigPtMax(20.), fTrigEtaMax(0.8), fCheckIDTrig(kFALSE), fSeparateInjPart(kTRUE), fEndOfHijingEvent(-1),  fPIDResponse(0),
+  fAOD(0),  fData(2010), fIsMC(kFALSE), fUsePID(kFALSE), fCentMin(0.), fCentMax(90.), fDoQA(kFALSE), fDoMixEvt(kFALSE), fTrigPtMin(8.), fTrigPtMax(20.), fTrigEtaMax(0.8), fCheckIDTrig(kFALSE), fSeparateInjPart(kTRUE), fEndOfHijingEvent(-1),  fPIDResponse(0),
 
   fMinPtDaughter(0.160), fMaxEtaDaughter(0.8), fMaxDCADaughter(1.0), fYMax(0.5), fDCAToPrimVtx(0.1), fMinCPA(0.998), fNSigma(3.0), fMinCtau(0.), fMaxCtau(3.), fIdTrigger(-1), fIsV0LP(0), fPtV0LP(0.), fIsSndCheck(0),
 
@@ -2823,9 +2823,9 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   UInt_t maskIsSelected = hdr->IsEventSelected();
   Bool_t isSelected = kFALSE;
 
-  if( fData.Contains("PbPb2010") )
+  if( fData==2010 )
     isSelected = (maskIsSelected & AliVEvent::kMB);
-  else if( fData.Contains("PbPb2011") ){
+  else if( fData==2011 ){
       Bool_t isSelectedCentral   =  maskIsSelected  &  AliVEvent::kCentral;
       Bool_t isSelectedSemiCentral   =  maskIsSelected  &  AliVEvent::kSemiCentral;
       Bool_t isSelectedMB   =  maskIsSelected   &  AliVEvent::kMB;

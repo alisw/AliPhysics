@@ -1,5 +1,5 @@
 AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      = "LambdaOverK0sRatio", 
-							    TString  data      = "PbPb2010", 
+							    Int_t    data      = 2010, 
 							    Float_t  minCen    = 0.,
 							    Float_t  maxCen    = 90.,
 							    Float_t  ptMinTrig = 8.,
@@ -23,7 +23,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   
   // Create and configure the task
   AliAnalysisTaskLambdaOverK0sJets *task = new AliAnalysisTaskLambdaOverK0sJets(name.Data());
-  task->SetData(data);
+  //task->SetDataType(data);
   task->SetCentrality(minCen,maxCen);
   task->SetTriggerPt(ptMinTrig,ptMaxTrig);
   task->SetTriggerEta(etaMaxTrig);
@@ -49,22 +49,23 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   
   AliAnalysisDataContainer *coutput1 =  
     mgr->CreateContainer(name, TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, 
-			 name+".root");
+                         AliAnalysisManager::kOutputContainer, 
+                         "AnalysisResults.root");
 
   AliAnalysisDataContainer *coutput2 =  
     mgr->CreateContainer(name+"_ME", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, 
-			 name+"_ME.root");
+                         AliAnalysisManager::kOutputContainer, 
+                         "AnalysisResults.root");
 
   AliAnalysisDataContainer *coutput3 =  
     mgr->CreateContainer(name+"_QA", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, 
-			 name+"_QA.root");
+                         AliAnalysisManager::kOutputContainer, 
+                         "AnalysisResults.root");
   
   mgr->ConnectOutput(task,1,coutput1);
   mgr->ConnectOutput(task,2,coutput2);
   mgr->ConnectOutput(task,3,coutput3);
+
   
   return task;
 }   
