@@ -25,18 +25,24 @@
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliHFMassFitter.h"
+#include "AliEventPlaneResolutionHandler.h"
 #include "AliVertexingHFUtils.h"
 #endif
 
 
 // Common variables: to be configured by the user
-TString filename="AnalysisResults_train60.root";
+TString filename="AnalysisResults_train63.root";
 TString suffix="v2Dplus3050Cut4upcutPIDTPC";
 TString partname="Dplus";
 Int_t minCent=30;
 Int_t maxCent=50;
-//evPlane flag: -1=V0C,0=V0,1=V0A,2=TPC2subevs,3=TPC3subevs
-Int_t evPlane=2;
+//evPlane flag from AliEventPlaneResolutionHandler: 
+//kTPCFullEta, kTPCPosEta,kVZERO,kVZEROA,kVZEROC
+Int_t evPlane=AliEventPlaneResolutionHandler::kTPCPosEta;
+//resolution flag fromAliEventPlaneResolutionHandler:
+//kTwoRandSub,kTwoChargeSub,kTwoEtaSub,kThreeSub,kThreeSubTPCGap
+Int_t evPlaneRes=AliEventPlaneResolutionHandler::kTwoEtaSub;
+Bool_t useNcollWeight=kFALSE;
 
 const Int_t nFinalPtBins=4;
 Double_t ptlims[nFinalPtBins+1]={3.,4.,6.,8.,12.};
@@ -90,7 +96,7 @@ Double_t systErrMeth2[nFinalPtBins]={
   (0.164-0.097)/2.,
   (0.110-0.012)/2.,
   (0.131-0.036)/2.
-};
+;
 */
 
 
@@ -158,10 +164,20 @@ void Extractv2from2Dhistos(){
     return;
   }
  
-  Double_t rcfmin,rcfmax;
-  Double_t resolFull=GetEPResolution(lst,rcfmin,rcfmax);
-  Double_t resolSyst=(rcfmax-rcfmin)/2./resolFull;
-  printf("Relative Systematic Error on RCF=%f\n",resolSyst);
+  // Double_t rcfmin,rcfmax;
+  // Double_t resolFull=GetEPResolution(lst,rcfmin,rcfmax);
+  // Double_t resolSyst=(rcfmax-rcfmin)/2./resolFull;
+  // printf("Relative Systematic Error on RCF=%f\n",resolSyst);
+  AliEventPlaneResolutionHandler* epres=new AliEventPlaneResolutionHandler();
+  epres->SetEventPlane(evPlane);
+  epres->SetResolutionOption(evPlaneRes);
+  epres->SetUseNcollWeights(useNcollWeight);
+  Double_t resolFull=epres->GetEventPlaneResolution(minCent,maxCent);
+  Double_t rcfmin=epres->GetEventPlaneResolution(minCent,minCent+2.5);
+  Double_t rcfmax=epres->GetEventPlaneResolution(maxCent-2.5,maxCent);
+  Double_t resolSyst=TMath::Abs(rcfmax-rcfmin)/2./resolFull;
+  delete epres;
+  printf("Event plane resolution %f\n",resolFull);
 
   TH2F** hMassDphi=new TH2F*[nFinalPtBins];
   for(Int_t iFinalPtBin=0; iFinalPtBin<nFinalPtBins; iFinalPtBin++){
@@ -665,7 +681,8 @@ Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
     cout<<hResolSubABsing->GetName()<<endl;
     TH1F* hResolSubBCsing=0x0;
     TH1F* hResolSubACsing=0x0;
-    if(evPlane!=2){
+    if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
+       evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap){
       hResolSubBCsing=(TH1F*)lst->FindObject(hisnameBC.Data());
       cout<<hResolSubBCsing->GetName()<<endl;
       hResolSubACsing=(TH1F*)lst->FindObject(hisnameAC.Data());
@@ -687,13 +704,15 @@ Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
     if(resolFullmax>xmax) xmax=resolFullmax;
     if(iHisC==minCentTimesTen){
       hResolSubAB=(TH1F*)hResolSubABsing->Clone("hResolSubAB");
-      if(evPlane!=2){
+      if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
+	 evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap){
 	hResolSubBC=(TH1F*)hResolSubBCsing->Clone("hResolSubAB");
 	hResolSubAC=(TH1F*)hResolSubACsing->Clone("hResolSubAB");
       }
     }else{
       hResolSubAB->Add(hResolSubABsing);
-      if(evPlane!=2){
+      if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
+	 evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap){
 	hResolSubBC->Add(hResolSubBCsing);
 	hResolSubAC->Add(hResolSubACsing);
       }
@@ -717,7 +736,8 @@ Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
   cEP->Divide(1,2);
   cEP->cd(1);
   hResolSubAB->Draw();
-  if(evPlane!=2){
+  if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
+     evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap){
     hResolSubBC->SetLineColor(2);
     hResolSubBC->Draw("same");
     hResolSubAC->SetLineColor(4);
@@ -743,9 +763,18 @@ Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
 //______________________________________________________________________________
 Double_t ComputeEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, TH1F* hsubev3){
   Double_t resolFull;
-  if(evPlane==2){
+  if(evPlaneRes==AliEventPlaneResolutionHandler::kTwoRandSub ||
+     evPlaneRes==AliEventPlaneResolutionHandler::kTwoChargeSub){
     resolFull=AliVertexingHFUtils::GetFullEvResol(hsubev1);
     error = TMath::Abs(resolFull-AliVertexingHFUtils::GetFullEvResolLowLim(hsubev1));
+  }else if(evPlaneRes==AliEventPlaneResolutionHandler::kTwoEtaSub){
+    if(evPlane==AliEventPlaneResolutionHandler::kTPCFullEta){
+      resolFull=AliVertexingHFUtils::GetFullEvResol(hsubev1);
+      error = TMath::Abs(resolFull-AliVertexingHFUtils::GetFullEvResolLowLim(hsubev1));
+    }else if(evPlane==AliEventPlaneResolutionHandler::kTPCPosEta){
+      resolFull=AliVertexingHFUtils::GetSubEvResol(hsubev1);
+      error = TMath::Abs(resolFull-AliVertexingHFUtils::GetSubEvResolLowLim(hsubev1));      
+    }
   }else{
     Double_t resolSub[3];
     Double_t errors[3];
@@ -758,15 +787,17 @@ Double_t ComputeEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsube
       errors[ires]=hevplresos[ires]->GetMeanError();
     }
     Double_t lowlim[3];for(Int_t ie=0;ie<3;ie++)lowlim[ie]=TMath::Abs(resolSub[ie]-errors[ie]);
-    if(evPlane<=0){
+    if(evPlane==AliEventPlaneResolutionHandler::kVZEROC ||
+       evPlane==AliEventPlaneResolutionHandler::kVZERO){
       resolFull=TMath::Sqrt(resolSub[1]*resolSub[2]/resolSub[0]);
       error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[1]/lowlim[0]);
     }
-    else if(evPlane==1){
+    else if(evPlane==AliEventPlaneResolutionHandler::kVZEROA){
       resolFull=TMath::Sqrt(resolSub[0]*resolSub[2]/resolSub[1]);
       error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[0]/lowlim[1]);
     }
-    else if(evPlane==3){
+    else if(evPlane==AliEventPlaneResolutionHandler::kTPCFullEta ||
+	    evPlane==AliEventPlaneResolutionHandler::kTPCPosEta){
       resolFull=TMath::Sqrt(resolSub[0]*resolSub[1]/resolSub[2]);
       error=resolFull-TMath::Sqrt(lowlim[0]*lowlim[1]/lowlim[2]);
     }
@@ -855,8 +886,13 @@ void SystForSideBands(){
     return;
   }
 
-  Double_t rcfmin,rcfmax;
-  Double_t resolFull=GetEPResolution(lst,rcfmin,rcfmax);
+  AliEventPlaneResolutionHandler* epres=new AliEventPlaneResolutionHandler();
+  epres->SetEventPlane(evPlane);
+  epres->SetResolutionOption(evPlaneRes);
+  epres->SetUseNcollWeights(useNcollWeight);
+  Double_t resolFull=epres->GetEventPlaneResolution(minCent,maxCent);
+  delete epres;
+  printf("Event plane resolution %f\n",resolFull);
   
   TH2F** hMassDphi=new TH2F*[nFinalPtBins];
   for(Int_t iFinalPtBin=0; iFinalPtBin<nFinalPtBins; iFinalPtBin++){
@@ -1071,9 +1107,14 @@ void SystForFitv2Mass(){
     return;
   }
 
-  Double_t rcfmin,rcfmax;
-  Double_t resolFull=GetEPResolution(lst,rcfmin,rcfmax);
-  
+  AliEventPlaneResolutionHandler* epres=new AliEventPlaneResolutionHandler();
+  epres->SetEventPlane(evPlane);
+  epres->SetResolutionOption(evPlaneRes);
+  epres->SetUseNcollWeights(useNcollWeight);
+  Double_t resolFull=epres->GetEventPlaneResolution(minCent,maxCent);
+  delete epres;
+  printf("Event plane resolution %f\n",resolFull);
+
   TH2F** hMassDphi=new TH2F*[nFinalPtBins];
   for(Int_t iFinalPtBin=0; iFinalPtBin<nFinalPtBins; iFinalPtBin++){
     hMassDphi[iFinalPtBin]=0x0;
