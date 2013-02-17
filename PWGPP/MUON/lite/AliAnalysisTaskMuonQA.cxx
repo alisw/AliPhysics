@@ -43,6 +43,8 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskMuonQA.h"
 #include "AliCounterCollection.h"
+#include "AliPhysicsSelection.h"
+#include "AliTriggerAnalysis.h"
 
 // PWG includes
 #include "AliAnalysisMuonUtility.h"
@@ -361,7 +363,11 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   fTrackCounters->AddRubric("pt", "low/high/any");
   fTrackCounters->AddRubric("acc", "in/out");
   fTrackCounters->AddRubric("tagTrack", "beamGas/good");
+  fTrackCounters->AddRubric("t0pileup", "yes/no");
+  fTrackCounters->AddRubric("bgID", "yes/no");
+  fTrackCounters->AddRubric("spdpileup", "yes/no");
   fTrackCounters->Init();
+
   
   // initialize event counters
   fEventCounters = new AliCounterCollection("eventCounters");
@@ -371,6 +377,9 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   fEventCounters->AddRubric("selected", "yes/no");
   fEventCounters->AddRubric("triggerRO", "good/bad");
   fEventCounters->AddRubric("v0mult", "low/int/high/any");
+  fEventCounters->AddRubric("t0pileup", "yes/no");
+  fEventCounters->AddRubric("spdpileup", "yes/no");
+  fEventCounters->AddRubric("bgID", "yes/no");
   fEventCounters->Init();
   
   // Post data at least once per task to ensure data synchronisation (required for merging)
@@ -384,19 +393,32 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
 void AliAnalysisTaskMuonQA::UserExec(Option_t *)
 {
   /// Called for each event
-  
+
   AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     Printf("ERROR: fESD not available");
     return;
   }
-  
+
+  //Flag for T0Pileup, SPDPileup and bgID (SPD cluster vs tracket)
+  Bool_t t0PileUp = kFALSE, spdPileUp = kFALSE, bgID = kFALSE;
+  spdPileUp = fESD->IsPileupFromSPDInMultBins();
+  AliPhysicsSelection *physicsSelection = (AliPhysicsSelection*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEventSelection();
+  AliTriggerAnalysis * triggerAnalysis = (AliTriggerAnalysis*)physicsSelection->GetTriggerAnalysis();
+  if ( physicsSelection && triggerAnalysis ) {
+    t0PileUp = triggerAnalysis->EvaluateTrigger(fESD, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup));
+    bgID = triggerAnalysis->EvaluateTrigger(fESD,  (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kSPDClsVsTrkBG | AliTriggerAnalysis::kOfflineFlag)); 
+  }
+
   UInt_t geomAccMask = ( AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs );
   
   // check physics selection
   UInt_t triggerWord = (fInputHandler) ? fInputHandler->IsEventSelected() : 0;
   Bool_t isPhysicsSelected = (triggerWord != 0);
   TString selected = isPhysicsSelected ? "selected:yes" : "selected:no";
+  selected += t0PileUp ? "/t0pileup:yes" : "/t0pileup:no";
+  selected += bgID ? "/bgID:yes" : "/bgID:no";
+  selected += spdPileUp ? "/spdpileup:yes" : "/spdpileup:no";
 
   // fill muon trigger cases
   for ( Int_t idx=0; idx<fMuonTrigIndex.GetSize(); idx++ ) {
