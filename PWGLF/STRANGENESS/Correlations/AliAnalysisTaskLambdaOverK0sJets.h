@@ -50,7 +50,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskLambdaOverK0sJets();
 
   // Setter for global variables in the event
-  void SetData(TString data="PbPb2010") {fData=data;}
+  void SetDataType(Int_t data=2010) {fData=data;}
   void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;} 
   void SetPID(Bool_t usePID=kTRUE) {fUsePID=usePID;} 
   void SetCentrality(Float_t min=0., Float_t max=90.) {fCentMin=min;fCentMax=max;} 
@@ -93,8 +93,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   AliAnalysisTaskLambdaOverK0sJets& operator=(const AliAnalysisTaskLambdaOverK0sJets&);//not implemented 
 
   AliAODEvent *fAOD;
+  Int_t    fData;                        //  Data: PbPb2010 / PbPb2011
   Bool_t   fIsMC;                        //  Use MC data 
-  TString  fData;                        //  Data: PbPb2010 / PbPb2011
   Bool_t   fUsePID;                      //  Use PID for tracks
   Float_t  fCentMin;                     //  Minimum centrality
   Float_t  fCentMax;                     //  Maximum centrality

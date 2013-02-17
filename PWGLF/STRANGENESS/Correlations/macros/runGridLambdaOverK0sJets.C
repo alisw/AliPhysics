@@ -1,13 +1,13 @@
 class AliAnalysisAlien;
 
-void runGridLambdaOverK0sJets(TString  runMode    = "full", 
-			      TString  alirootVer = "v5-04-14-AN",
+void runGridLambdaOverK0sJets(TString  runMode    = "test", 
+			      TString  alirootVer = "v5-04-31LF-AN"/*"v5-04-14-AN"*/,
 			      TString  rootVer    = "v5-34-02-1",
 			      TString  dataPath   = "ESDs/pass2/AOD086/*/AliAOD.root",
 			      TString  dataDir    = "/alice/data/2010/LHC10h",
-			      TString  workDir    = "work",
+			      TString  workDir    = "test",
 			      TString  name       = "LambdaOverK0sRatio", 
-			      TString  data       = "PbPb2010",
+			      Int_t    data       = 2010,
 			      Float_t  minCen     = 0.,
 			      Float_t  maxCen     = 90.,
 			      Float_t  ptMinTrig  = 8.,
@@ -18,7 +18,7 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
 			      Bool_t   isMC       = kFALSE,
 			      Bool_t   usePID     = kTRUE,
 			      Bool_t   doQA       = kFALSE,
-			      Int_t    run        = 138624){
+			      Int_t    run        = 137530/*138624*/){
   
   Printf("   \nThe parameters of the programm are : \n ");
   Printf(" \t Analysis mode:\t %s\n \t Centrality:\t %.1lf - %.1lf\n \t Use MC Data?:\t %s\n \t Use PID?:\t %s\n",
@@ -48,7 +48,8 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
   Float_t checkIDTrig= kTRUE;
 
   // My task
-  gROOT->LoadMacro("AliAnalysisTaskLambdaOverK0sJets.cxx+g"); 
+  gROOT->LoadMacro("AliAnalysisTaskLambdaOverK0sJets.cxx++g"); 
+  //gSystem->Load("libPWGLFSTRANGENESS");
   gROOT->LoadMacro("AddTaskLambdaOverK0sJets.C");
   AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,data,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,checkIDTrig,rapMaxV0,sepInjec,isMC,usePID,doQA);
    // _____________________________________________________ //
