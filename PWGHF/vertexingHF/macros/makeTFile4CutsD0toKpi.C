@@ -16,6 +16,62 @@
 
 
 //macro to make a .root file which contains an AliRDHFCutsD0toKpi for AliAnalysisTaskSED0Mass task
+void ModifyFromStandardCuts(Int_t system=1 /*0=pp, 1=PbPb, 2=pp 2.76TeV*/){
+  AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
+  TString info="",cent="";
+
+  if(system==0) {
+    RDHFD0toKpi->SetStandardCutsPP2010();
+    info+="ppStd";
+  }
+  if(system==1) {
+    RDHFD0toKpi->SetStandardCutsPbPb2010();
+    //Change centrality if needed
+    /*
+    Float_t minc=20,maxc=80;
+    RDHFD0toKpi->SetMinCentrality(minc);
+    RDHFD0toKpi->SetMaxCentrality(maxc);
+    */
+    RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentOff); //kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid
+
+    cent=Form("%.0f%.0f",RDHFD0toKpi->GetMinCentrality(),RDHFD0toKpi->GetMaxCentrality());
+    info+="PbPbStd";
+
+  }
+  if(system==2) {
+    RDHFD0toKpi->SetStandardCutsPP2011_276TeV();
+    info+="pp276Std";
+  }
+
+  RDHFD0toKpi->SetName("D0toKpiCuts");
+  RDHFD0toKpi->SetTitle("Cuts for D0 analysis");
+  
+
+  //here add what you need! Find examples below
+
+  //Trigger mask
+  /*
+  RDHFD0toKpi->SetTriggerMask(0);
+  RDHFD0toKpi->SetTriggerMask(AliVEvent::kEMC1 | AliVEvent::kEMC7);
+  RDHFD0toKpi->SetTriggerClass("CEMC");
+
+  info+="EMCTr";
+  */
+
+  //Event selection
+  RDHFD0toKpi->SetUsePhysicsSelection(kFALSE);
+  info+="noPhysSel";
+
+  cout<<"This is the odject I'm going to save:"<<endl;
+  cout<<info<<endl;
+  RDHFD0toKpi->PrintAll();
+  TFile* fout=new TFile(Form("D0toKpiCuts%s%sRecVtx%sPileupRej%s.root", RDHFD0toKpi->GetUseCentrality()==0 ? "" : cent.Data(),RDHFD0toKpi->GetIsPrimaryWithoutDaughters() ? "" : "No",RDHFD0toKpi->GetOptPileUp() ? "" : "No",info.Data()),"recreate");   //set this!! 
+
+  fout->cd();
+  RDHFD0toKpi->Write();
+  fout->Close();
+
+}
 
 void makeInputAliAnalysisTaskSED0Mass(){
 
