@@ -38,12 +38,11 @@ class AliMuonEventCuts : public AliAnalysisCuts
   void SetDefaultParameters();
   
   // Handle trigger
-  void SetTrigClassPatterns ( const TString pattern );
+  void SetTrigClassPatterns ( const TString trigPattern );
   /// Get default trigger class patterns
   TString GetDefaultTrigClassPatterns() { return fDefaultTrigClassPatterns; };
   void SetTrigClassLevels ( const TString pattern = "MSL:Lpt,MUSL:Lpt,MSH:Hpt,MUSH:Hpt,MUL:LptLpt,MUU:LptLpt,MLL:LptLpt" );
   TArrayI GetTrigClassPtCutLevel ( const TString trigClassName ) const;
-  void SetTrigClassCombination ( const TString trigClassCombination, Bool_t disableTrigPattern = kTRUE );
   void SetTrigInputsMap ( const TString trigInputsMap );
   /// Get trigger classes found in run
   TList* GetAllSelectedTrigClasses () const { return fAllSelectedTrigClasses; }

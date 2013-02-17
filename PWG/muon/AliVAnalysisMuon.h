@@ -16,6 +16,7 @@ class TObjArray;
 class TAxis;
 class TLorentzVector;
 class TList;
+class THashList;
 class AliMergeableCollection;
 class AliCounterCollection;
 class AliVParticle;
@@ -65,6 +66,9 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
                                Int_t ivar, TString labelName,
                                Double_t varMin, Double_t varMax,
                                TString option = "");
+  
+  void SetWeight ( TObject* wgtObj );
+  TObject* GetWeight ( const char* wgtName );
 
  protected:
   
@@ -124,6 +128,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   TObjArray* fChargeKeys;      ///< Muon charge keys
   TObjArray* fSrcKeys;         ///< MC sources names
   TObjArray* fPhysSelKeys;     ///< Physics selection names
+  THashList* fWeights;         ///< List of objects to weight histograms
   
   AliCounterCollection* fEventCounters;  //!< event counters
   AliMergeableCollection* fMergeableCollection; //!< collection of mergeable objects
@@ -137,7 +142,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   void CreateMergeableObjects(TString physSel, TString trigClassName, TString centrality);
   TObjArray* fOutputPrototypeList; //!< List of prototype object to be used in collection
 
-  ClassDef(AliVAnalysisMuon, 4);
+  ClassDef(AliVAnalysisMuon, 5);
 };
 
 #endif
