@@ -238,6 +238,8 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
 
   TH1* hBNoPS[centBinMax][kNMaxTriggers];
   TH1* hBWithPS[centBinMax][kNMaxTriggers];
+  TH1* hBWithPST0Flag[centBinMax][kNMaxTriggers]; 
+  TH1* hBWithPST0SPDFlag[centBinMax][kNMaxTriggers]; 
   TH1* hB[centBinMax][kNMaxTriggers]={};
   TH1* hTriggerB[centBinMax][kNMaxTriggers], *hTrackerB[centBinMax][kNMaxTriggers], *hMatchedB[centBinMax][kNMaxTriggers], *hAllTracksB[centBinMax][kNMaxTriggers], *hMatchedLowPtB[centBinMax][kNMaxTriggers], *hMatchedHighPtB[centBinMax][kNMaxTriggers];
   TH1* hMatchedLowPtBNoPS[centBinMax][kNMaxTriggers], *hMatchedHighPtBNoPS[centBinMax][kNMaxTriggers];
@@ -276,6 +278,16 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       histoName = histoNameBase;
       histoName += "BWithPS";
       hBWithPS[centBin][i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel.", colorInd->At(i));
+    // Histo trigger with Phys. Sel. and T0 pile up not flagged
+      selection = selectionCent; selection += Form("trigger:%s/%s/selected:yes/t0pileup:no", triggerName.Data(), selectRuns.Data());
+      histoName = histoNameBase;
+      histoName += "BWithPST0Flag";
+      hBWithPST0Flag[centBin][i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel. and no pile up from T0 flag", colorInd->At(i));
+    // Histo trigger with Phys. Sel. and T0 + SPD pile up not flagged
+      selection = selectionCent; selection += Form("trigger:%s/%s/selected:yes/t0pileup:no/spdpileup:no", triggerName.Data(), selectRuns.Data());
+      histoName = histoNameBase;
+      histoName += "BWithPST0SPDFlag";
+      hBWithPST0SPDFlag[centBin][i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel. and no pile up from T0 and SPD flag", colorInd->At(i));
       // Histo trigger : Phys. Sel.  is selected or not depending on the macro arguments
       selection = selectionCent; selection += Form("trigger:%s/%s/%s", triggerName.Data(), selectRuns.Data(), select.Data());
       histoName = histoNameBase;
@@ -360,6 +372,8 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
 	
   Int_t NumOfBNoPS[centBinMax][kNMaxTriggers];
   Int_t NumOfBWithPS[centBinMax][kNMaxTriggers];
+  Int_t NumOfBWithPST0Flag[centBinMax][kNMaxTriggers];
+  Int_t NumOfBWithPST0SPDFlag[centBinMax][kNMaxTriggers];
   Int_t NumOfACNoPS[centBinMax][kNMaxTriggers];
   Int_t NumOfENoPS[centBinMax][kNMaxTriggers];
   Int_t NumOfACWithPS[centBinMax][kNMaxTriggers];
@@ -369,6 +383,8 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     for(Int_t i = 0; i < triggersB->GetEntriesFast(); i++){
       NumOfBNoPS[centBin][i] = hBNoPS[centBin][i]->Integral();
       NumOfBWithPS[centBin][i] = hBWithPS[centBin][i]->Integral();
+      NumOfBWithPST0Flag[centBin][i] = hBWithPST0Flag[centBin][i]->Integral();
+      NumOfBWithPST0SPDFlag[centBin][i] = hBWithPST0Flag[centBin][i]->Integral();
       NumOfACNoPS[centBin][i] = hACNoPS[centBin][i]->Integral();
       NumOfENoPS[centBin][i] = hENoPS[centBin][i]->Integral();
       NumOfACWithPS[centBin][i] = hACWithPS[centBin][i]->Integral();
@@ -438,6 +454,33 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   cPhysSelCut->Write();
   rootFileOut->cd();
 	
+  cout<<"//==================================================================================="<<endl;
+  cout<<"// new canvas with effect from T0 pile-up flag for each trigger and background trigger "<<endl;
+  cout<<"//==================================================================================="<<endl;
+	
+  TCanvas *cPhysSelCutT0Flag = 0x0;
+  cPhysSelCutT0Flag = ProcessCanvasPhysSelCut(triggersB, triggersAC, triggersE, hBWithPS[centBin], hACNoPS[centBin], hENoPS[centBin], hBWithPST0Flag[centBin], "PhysSelCutOnCollTriggerT0Flag", colorInd,isHeavyIon);
+  cPhysSelCutT0Flag->Draw();
+  cPhysSelCutT0Flag->Print(OutFileNamePDF.Data());
+  dirGlobal->cd();
+  cPhysSelCutT0Flag->Write();
+  rootFileOut->cd();
+	
+
+ cout<<"//==================================================================================="<<endl;
+  cout<<"// new canvas with effect from T0 + SPD pile-up flag for each trigger and background trigger "<<endl;
+  cout<<"//==================================================================================="<<endl;
+	
+  TCanvas *cPhysSelCutT0SPDFlag = 0x0;
+  cPhysSelCutT0SPDFlag = ProcessCanvasPhysSelCut(triggersB, triggersAC, triggersE, hBWithPS[centBin], hACNoPS[centBin], hENoPS[centBin], hBWithPST0SPDFlag[centBin], "PhysSelCutOnCollTriggerT0Flag", colorInd,isHeavyIon);
+  cPhysSelCutT0SPDFlag->Draw();
+  cPhysSelCutT0SPDFlag->Print(OutFileNamePDF.Data());
+  dirGlobal->cd();
+  cPhysSelCutT0SPDFlag->Write();
+  rootFileOut->cd();
+
+
+
   cout<<"//==================================================================================="<<endl;
   cout<<"// new canvas with effect from physics selection for each trigger and centrality bin (only in PbPb) "<<endl;
   cout<<"//==================================================================================="<<endl;
@@ -707,9 +750,9 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     } 
   }
   
-  
-  //return;
-	 
+  //temporary
+  //    return;
+
   
   //--------------------------------------------- //
   //        monitor quantities run per run        //
@@ -767,6 +810,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     isAlienFile = 1;
     alienBaseDir.ReplaceAll("alien://","");
   }
+
   cout<<"============================================================"<<endl;
   cout<< "Monitoring quantities run per run: loop over "<<runs->GetEntriesFast()<<" runs."<<endl;
   cout<<"  directory = "<<alienBaseDir.Data()<<endl;
