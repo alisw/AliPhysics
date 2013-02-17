@@ -262,12 +262,11 @@ class AliChaoticity : public AliAnalysisTaskSE {
   
   Float_t fTrueMassP, fTrueMassPi, fTrueMassK, fTrueMassKs, fTrueMassLam;
  
-  Int_t fKtbinL,fKtbinH;
-  Int_t fKybinL,fKybinH;
+  Int_t fKtIndexL,fKtIndexH;
   //
-  Int_t fQobinL,fQobinH;
-  Int_t fQsbinL,fQsbinH;
-  Int_t fQlbinL,fQlbinH;
+  Int_t fQoIndexL,fQoIndexH;
+  Int_t fQsIndexL,fQsIndexH;
+  Int_t fQlIndexL,fQlIndexH;
 
   Bool_t fDummyB;
 
@@ -293,10 +292,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   TH3D *fFSIOmega0SS[6];
   TH3D *fFSIOmega0OS[6];
   TH2D *fMomResC2;
-  //
-  Float_t fNormWeight[kCentBins][kEDbins][kKbinsT][kKbinsY][kQbinsWeights][kQbinsWeights][kQbinsWeights];
-  Float_t fNormWeightErr[kCentBins][kEDbins][kKbinsT][kKbinsY][kQbinsWeights][kQbinsWeights][kQbinsWeights];
-  
+  TH3F *fNormWeight[3][10];
+    
 
   ClassDef(AliChaoticity, 1); 
 };

@@ -61,7 +61,7 @@ AliAnalysisTaskSE(),
   fMbin(0),
   fFSIbin(0),
   fEDbin(0),
-  fMbins(0),
+  fMbins(kCentBins),
   fMultLimit(0),
   fCentBinLowLimit(0),
   fCentBinHighLimit(1),
@@ -100,16 +100,14 @@ AliAnalysisTaskSE(),
   fTrueMassK(0), 
   fTrueMassKs(0), 
   fTrueMassLam(0),
-  fKtbinL(0),
-  fKtbinH(0),
-  fKybinL(0),
-  fKybinH(0),
-  fQobinL(0),
-  fQobinH(0),
-  fQsbinL(0),
-  fQsbinH(0),
-  fQlbinL(0),
-  fQlbinH(0),
+  fKtIndexL(0),
+  fKtIndexH(0),
+  fQoIndexL(0),
+  fQoIndexH(0),
+  fQsIndexL(0),
+  fQsIndexH(0),
+  fQlIndexL(0),
+  fQlIndexH(0),
   fDummyB(0),
   fDefaultsCharMult(),
   fDefaultsCharSE(),
@@ -192,24 +190,12 @@ AliAnalysisTaskSE(),
 
 
   // Initialize fNormWeight and fNormWeightErr to 0
-  for(Int_t i=0; i<fMbins; i++){// Mbin iterator
-    for(Int_t j=0; j<kEDbins; j++){// ED iterator
-      for(Int_t k=0; k<kKbinsT; k++){// Kt iterator
-	for(Int_t l=0; l<kKbinsY; l++){// Ky iterator
-	  for(Int_t m=0; m<kQbinsWeights; m++){// Qout iterator
-	    for(Int_t n=0; n<kQbinsWeights; n++){// Qside iterator
-	      for(Int_t o=0; o<kQbinsWeights; o++){// Qlong iterator
-		fNormWeight[i][j][k][l][m][n][o] = 0;
-		fNormWeightErr[i][j][k][l][m][n][o] = 0;
-	      }
-	    }
-	  }
-	}
-      }
+  for(Int_t i=0; i<3; i++){// Kt iterator
+    for(Int_t j=0; j<10; j++){// Mbin iterator
+      fNormWeight[i][j]=0x0;
     }
   }
-
-
+  
 
 }
 //________________________________________________________________________
@@ -235,7 +221,7 @@ AliChaoticity::AliChaoticity(const Char_t *name, Bool_t MCdecision, Bool_t Tabul
   fMbin(0),
   fFSIbin(0),
   fEDbin(0),
-  fMbins(0),
+  fMbins(kCentBins),
   fMultLimit(0),
   fCentBinLowLimit(lowCentBin),
   fCentBinHighLimit(highCentBin),
@@ -274,16 +260,14 @@ AliChaoticity::AliChaoticity(const Char_t *name, Bool_t MCdecision, Bool_t Tabul
   fTrueMassK(0), 
   fTrueMassKs(0), 
   fTrueMassLam(0),
-  fKtbinL(0),
-  fKtbinH(0),
-  fKybinL(0),
-  fKybinH(0),
-  fQobinL(0),
-  fQobinH(0),
-  fQsbinL(0),
-  fQsbinH(0),
-  fQlbinL(0),
-  fQlbinH(0),
+  fKtIndexL(0),
+  fKtIndexH(0),
+  fQoIndexL(0),
+  fQoIndexH(0),
+  fQsIndexL(0),
+  fQsIndexH(0),
+  fQlIndexL(0),
+  fQlIndexH(0),
   fDummyB(0),
   fDefaultsCharMult(),
   fDefaultsCharSE(),
@@ -373,24 +357,14 @@ AliChaoticity::AliChaoticity(const Char_t *name, Bool_t MCdecision, Bool_t Tabul
     fFSIOmega0SS[i]=0x0; 
     fFSIOmega0OS[i]=0x0;
   }
-
+  
   // Initialize fNormWeight and fNormWeightErr to 0
-  for(Int_t i=0; i<fMbins; i++){// Mbin iterator
-    for(Int_t j=0; j<kEDbins; j++){// ED iterator
-      for(Int_t k=0; k<kKbinsT; k++){// Kt iterator
-	for(Int_t l=0; l<kKbinsY; l++){// Ky iterator
-	  for(Int_t m=0; m<kQbinsWeights; m++){// Qout iterator
-	    for(Int_t n=0; n<kQbinsWeights; n++){// Qside iterator
-	      for(Int_t o=0; o<kQbinsWeights; o++){// Qlong iterator
-		fNormWeight[i][j][k][l][m][n][o] = 0;
-		fNormWeightErr[i][j][k][l][m][n][o] = 0;
-	      }
-	    }
-	  }
-	}
-      }
+  for(Int_t i=0; i<3; i++){// Kt iterator
+    for(Int_t j=0; j<10; j++){// Mbin iterator
+      fNormWeight[i][j]=0x0;
     }
   }
+
 
   DefineOutput(1, TList::Class());
 }
@@ -456,16 +430,14 @@ AliChaoticity::AliChaoticity(const AliChaoticity &obj)
     fTrueMassK(obj.fTrueMassK), 
     fTrueMassKs(obj.fTrueMassKs), 
     fTrueMassLam(obj.fTrueMassLam),
-    fKtbinL(obj.fKtbinL),
-    fKtbinH(obj.fKtbinH),
-    fKybinL(obj.fKybinL),
-    fKybinH(obj.fKybinH),
-    fQobinL(obj.fQobinL),
-    fQobinH(obj.fQobinH),
-    fQsbinL(obj.fQsbinL),
-    fQsbinH(obj.fQsbinH),
-    fQlbinL(obj.fQlbinL),
-    fQlbinH(obj.fQlbinH),
+    fKtIndexL(obj.fKtIndexL),
+    fKtIndexH(obj.fKtIndexH),
+    fQoIndexL(obj.fQoIndexL),
+    fQoIndexH(obj.fQoIndexH),
+    fQsIndexL(obj.fQsIndexL),
+    fQsIndexH(obj.fQsIndexH),
+    fQlIndexL(obj.fQlIndexL),
+    fQlIndexH(obj.fQlIndexH),
     fDummyB(obj.fDummyB),
     fDefaultsCharMult(),
     fDefaultsCharSE(),
@@ -493,22 +465,12 @@ AliChaoticity::AliChaoticity(const AliChaoticity &obj)
   }
   
   // Initialize fNormWeight and fNormWeightErr to 0
-  for(Int_t i=0; i<fMbins; i++){// Mbin iterator
-    for(Int_t j=0; j<kEDbins; j++){// ED iterator
-      for(Int_t k=0; k<kKbinsT; k++){// Kt iterator
-	for(Int_t l=0; l<kKbinsY; l++){// Ky iterator
-	  for(Int_t m=0; m<kQbinsWeights; m++){// Qout iterator
-	    for(Int_t n=0; n<kQbinsWeights; n++){// Qside iterator
-	      for(Int_t o=0; o<kQbinsWeights; o++){// Qlong iterator
-		fNormWeight[i][j][k][l][m][n][o] = obj.fNormWeight[i][j][k][l][m][n][o];
-		fNormWeightErr[i][j][k][l][m][n][o] = obj.fNormWeightErr[i][j][k][l][m][n][o];
-	      }
-	    }
-	  }
-	}
-      }
+  for(Int_t i=0; i<3; i++){// Kt iterator
+    for(Int_t j=0; j<10; j++){// Mbin iterator
+      fNormWeight[i][j]=0x0;
     }
   }
+  
 
 }
 //________________________________________________________________________
@@ -565,16 +527,14 @@ AliChaoticity &AliChaoticity::operator=(const AliChaoticity &obj)
   fTrueMassK = obj.fTrueMassK; 
   fTrueMassKs = obj.fTrueMassKs; 
   fTrueMassLam = obj.fTrueMassLam;
-  fKtbinL = obj.fKtbinL;
-  fKtbinH = obj.fKtbinH;
-  fKybinL = obj.fKybinL;
-  fKybinH = obj.fKybinH;
-  fQobinL = obj.fQobinL;
-  fQobinH = obj.fQobinH;
-  fQsbinL = obj.fQsbinL;
-  fQsbinH = obj.fQsbinH;
-  fQlbinL = obj.fQlbinL;
-  fQlbinH = obj.fQlbinH;
+  fKtIndexL = obj.fKtIndexL;
+  fKtIndexH = obj.fKtIndexH;
+  fQoIndexL = obj.fQoIndexL;
+  fQoIndexH = obj.fQoIndexH;
+  fQsIndexL = obj.fQsIndexL;
+  fQsIndexH = obj.fQsIndexH;
+  fQlIndexL = obj.fQlIndexL;
+  fQlIndexH = obj.fQlIndexH;
   fDummyB = obj.fDummyB;
   fMomResC2 = obj.fMomResC2;
 
@@ -586,25 +546,12 @@ AliChaoticity &AliChaoticity::operator=(const AliChaoticity &obj)
     fFSIOmega0SS[i]=obj.fFSIOmega0SS[i]; 
     fFSIOmega0OS[i]=obj.fFSIOmega0OS[i];
   }
-  
-  // Initialize fNormWeight and fNormWeightErr to 0
-  for(Int_t i=0; i<fMbins; i++){// Mbin iterator
-    for(Int_t j=0; j<kEDbins; j++){// ED iterator
-      for(Int_t k=0; k<kKbinsT; k++){// Kt iterator
-	for(Int_t l=0; l<kKbinsY; l++){// Ky iterator
-	  for(Int_t m=0; m<kQbinsWeights; m++){// Qout iterator
-	    for(Int_t n=0; n<kQbinsWeights; n++){// Qside iterator
-	      for(Int_t o=0; o<kQbinsWeights; o++){// Qlong iterator
-		fNormWeight[i][j][k][l][m][n][o] = obj.fNormWeight[i][j][k][l][m][n][o];
-		fNormWeightErr[i][j][k][l][m][n][o] = obj.fNormWeightErr[i][j][k][l][m][n][o];
-	      }
-	    }
-	  }
-	}
-      }
+  for(Int_t i=0; i<3; i++){// Kt iterator
+    for(Int_t j=0; j<10; j++){// Mbin iterator
+      fNormWeight[i][j]=obj.fNormWeight[i][j];
     }
   }
-      
+  
   return (*this);
 }
 //________________________________________________________________________
@@ -719,8 +666,12 @@ AliChaoticity::~AliChaoticity()
     if(fFSIOmega0SS[i]) delete fFSIOmega0SS[i]; 
     if(fFSIOmega0OS[i]) delete fFSIOmega0OS[i];
   }
-
-
+  for(Int_t i=0; i<3; i++){// Kt iterator
+    for(Int_t j=0; j<10; j++){// Mbin iterator
+      if(fNormWeight[i][j]) delete fNormWeight[i][j];
+    }
+  }
+  
 }
 //________________________________________________________________________
 void AliChaoticity::ParInit()
@@ -2395,6 +2346,7 @@ void AliChaoticity::Exec(Option_t *)
     //
     ///////////////////////////////////////////////////////////////////////
     
+    
 
     /////////////////////////////////////////////////////////    
     // Skip 3-particle part if Tabulate6DPairs is set to true
@@ -3510,62 +3462,22 @@ void AliChaoticity::GetQosl(Float_t track1[], Float_t track2[], Float_t& qout, F
   qlong = (p0*vz - pz*v0)/mt;
 }
 //________________________________________________________________________
-//void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F ***histos){
 void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[3][10]){
 //void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[AliChaoticity::kKbinsT][AliChaoticity::kCentBins]){
-  
-  for(Int_t mb=0; mb<fMbins; mb++){
-    for(Int_t edB=0; edB<kEDbins; edB++){
-      for(Int_t tKbin=0; tKbin<kKbinsT; tKbin++){
-	for(Int_t yKbin=0; yKbin<kKbinsY; yKbin++){
-	  //
-	  for(Int_t qobin=1; qobin<=kQbinsWeights; qobin++){
-	    for(Int_t qsbin=1; qsbin<=kQbinsWeights; qsbin++){
-	      for(Int_t qlbin=1; qlbin<=kQbinsWeights; qlbin++){
-		
-		fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = 0;
-		fNormWeightErr[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = 0;
-	      }
-	    }
-	  }
-	}
-      }
-      //
-    }
-  }
+  //
+  // This function call assumes 3 = kKbinsT and 10 = kCentBins!!
+  //
   
   if(legoCase){
     cout<<"LEGO call to SetWeightArrays"<<endl;
-    // histos[0][0]->GetBinContent(3, 3, 3) should be ~0.14
-    if(histos[0][0]->GetBinContent(3, 3, 3) > 0.5) AliFatal("AliChaoticity: SetWeightArray Problem");// Additional test to make sure loaded correctly
-    if(histos[0][0]->GetBinContent(3, 3, 3) < 0.05) AliFatal("AliChaoticity: SetWeightArray Problem");// Additional test to make sure loaded correctly
     
-    for(Int_t mb=0; mb<fMbins; mb++){
-      for(Int_t edB=0; edB<kEDbins; edB++){
-	for(Int_t tKbin=0; tKbin<kKbinsT; tKbin++){
-	  for(Int_t yKbin=0; yKbin<kKbinsY; yKbin++){
-	    //
-	    for(Int_t qobin=1; qobin<=kQbinsWeights; qobin++){
-	      for(Int_t qsbin=1; qsbin<=kQbinsWeights; qsbin++){
-		for(Int_t qlbin=1; qlbin<=kQbinsWeights; qlbin++){
-		  
-		  fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = histos[tKbin][mb]->GetBinContent(qobin, qsbin, qlbin);
-		  fNormWeightErr[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = histos[tKbin][mb]->GetBinError(qobin, qsbin, qlbin);
-		  if(fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] > 2.0) {// In theory never greater than 1.0
-		    fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = 2.0;
-		  }
-		  if(fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] < -0.5) {// In theory never significantly less than 0
-		    fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = -0.5;
-		  }
-		
-		}
-	      }
-	    }
-	  }
-	}
-	//
+    for(Int_t tKbin=0; tKbin<kKbinsT; tKbin++){
+      for(Int_t mb=0; mb<kCentBins; mb++){
+	fNormWeight[tKbin][mb] = (TH3F*)histos[tKbin][mb]->Clone();
+	fNormWeight[tKbin][mb]->SetDirectory(0);
       }
     }
+    
   }else{
     
     TFile *wFile = new TFile("WeightFile.root","READ");
@@ -3573,39 +3485,28 @@ void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[3][10]){
     else cout<<"Good Weight File Found!"<<endl;
     
     for(Int_t tKbin=0; tKbin<kKbinsT; tKbin++){
-      for(Int_t yKbin=0; yKbin<kKbinsY; yKbin++){
-	for(Int_t mb=0; mb<fMbins; mb++){
-	  for(Int_t edB=0; edB<kEDbins; edB++){
-	    
-	    TString *name = new TString("Weight_Kt_");
-	    *name += tKbin;
-	    name->Append("_Ky_");
-	    *name += yKbin;
-	    name->Append("_M_");
-	    *name += mb;
-	    name->Append("_ED_");
-	    *name += edB;
-	    
-	    TH3F *fTempHisto = (TH3F*)wFile->Get(name->Data());
-	    
-	    for(Int_t qobin=1; qobin<=kQbinsWeights; qobin++){
-	      for(Int_t qsbin=1; qsbin<=kQbinsWeights; qsbin++){
-		for(Int_t qlbin=1; qlbin<=kQbinsWeights; qlbin++){
-		  
-		  fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = fTempHisto->GetBinContent(qobin, qsbin, qlbin);
-		  fNormWeightErr[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = fTempHisto->GetBinError(qobin, qsbin, qlbin);
-		}
-	      }
-	    }
-	    delete fTempHisto;
-	  }//ED
-	}//mb
-      }//ky
+      for(Int_t mb=0; mb<kCentBins; mb++){
+		    
+	TString *name = new TString("Weight_Kt_");
+	*name += tKbin;
+	name->Append("_Ky_0");
+	name->Append("_M_");
+	*name += mb;
+	name->Append("_ED_0");
+	
+	//TH3F *fTempHisto = (TH3F*)wFile->Get(name->Data());
+	
+	fNormWeight[tKbin][mb] = (TH3F*)wFile->Get(name->Data());
+	fNormWeight[tKbin][mb]->SetDirectory(0);
+	
+	
+	//delete fTempHisto;
+      }//mb
     }//kt
     
     wFile->Close();
   }
-    
+  
   cout<<"Done reading weight file"<<endl;
   
 }
@@ -3613,7 +3514,6 @@ void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[3][10]){
 void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Float_t& wgtErr){
   
   Float_t kt=sqrt( pow(track1[1]+track2[1],2) + pow(track1[2]+track2[2],2))/2.;
-  Float_t ky=0;// central rapidity
   //
   Float_t qOut=0,qSide=0,qLong=0;
   GetQosl(track1, track2, qOut, qSide, qLong);
@@ -3622,68 +3522,58 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, 
   qLong = fabs(qLong);
   //
   
-  if(kt < fKmeanT[0]) {fKtbinL=0; fKtbinH=0;}
-  else if(kt >= fKmeanT[kKbinsT-1]) {fKtbinL=kKbinsT-1; fKtbinH=kKbinsT-1;}
+  if(kt < fKmeanT[0]) {fKtIndexL=0; fKtIndexH=0;}
+  else if(kt >= fKmeanT[kKbinsT-1]) {fKtIndexL=kKbinsT-1; fKtIndexH=kKbinsT-1;}
   else {
     for(Int_t i=0; i<kKbinsT-1; i++){
-      if((kt >= fKmeanT[i]) && (kt < fKmeanT[i+1])) {fKtbinL=i; fKtbinH=i+1; break;}
-    }
-  }
-  //
-  if(ky < fKmeanY[0]) {fKybinL=0; fKybinH=0;}
-  else if(ky >= fKmeanY[kKbinsY-1]) {fKybinL=kKbinsY-1; fKybinH=kKbinsY-1;}
-  else {
-    for(Int_t i=0; i<kKbinsY-1; i++){
-      if((ky >= fKmeanY[i]) && (ky < fKmeanY[i+1])) {fKybinL=i; fKybinH=i+1; break;}
+      if((kt >= fKmeanT[i]) && (kt < fKmeanT[i+1])) {fKtIndexL=i; fKtIndexH=i+1; break;}
     }
   }
   //
   /////////
-  if(qOut < fQmean[0]) {fQobinL=0; fQobinH=0;}
-  else if(qOut >= fQmean[kQbinsWeights-1]) {fQobinL=kQbinsWeights-1; fQobinH=kQbinsWeights-1;}
+  if(qOut < fQmean[0]) {fQoIndexL=0; fQoIndexH=0;}
+  else if(qOut >= fQmean[kQbinsWeights-1]) {fQoIndexL=kQbinsWeights-1; fQoIndexH=kQbinsWeights-1;}
   else {
         for(Int_t i=0; i<kQbinsWeights-1; i++){
-      if((qOut >= fQmean[i]) && (qOut < fQmean[i+1])) {fQobinL=i; fQobinH=i+1; break;}
+      if((qOut >= fQmean[i]) && (qOut < fQmean[i+1])) {fQoIndexL=i; fQoIndexH=i+1; break;}
     }
   }
   //
-  if(qSide < fQmean[0]) {fQsbinL=0; fQsbinH=0;}
-  else if(qSide >= fQmean[kQbinsWeights-1]) {fQsbinL=kQbinsWeights-1; fQsbinH=kQbinsWeights-1;}
+  if(qSide < fQmean[0]) {fQsIndexL=0; fQsIndexH=0;}
+  else if(qSide >= fQmean[kQbinsWeights-1]) {fQsIndexL=kQbinsWeights-1; fQsIndexH=kQbinsWeights-1;}
   else {
     for(Int_t i=0; i<kQbinsWeights-1; i++){
-      if((qSide >= fQmean[i]) && (qSide < fQmean[i+1])) {fQsbinL=i; fQsbinH=i+1; break;}
+      if((qSide >= fQmean[i]) && (qSide < fQmean[i+1])) {fQsIndexL=i; fQsIndexH=i+1; break;}
     }
   }
   //
-  if(qLong < fQmean[0]) {fQlbinL=0; fQlbinH=0;}
-  else if(qLong >= fQmean[kQbinsWeights-1]) {fQlbinL=kQbinsWeights-1; fQlbinH=kQbinsWeights-1;}
+  if(qLong < fQmean[0]) {fQlIndexL=0; fQlIndexH=0;}
+  else if(qLong >= fQmean[kQbinsWeights-1]) {fQlIndexL=kQbinsWeights-1; fQlIndexH=kQbinsWeights-1;}
   else {
     for(Int_t i=0; i<kQbinsWeights-1; i++){
-      if((qLong >= fQmean[i]) && (qLong < fQmean[i+1])) {fQlbinL=i; fQlbinH=i+1; break;}
+      if((qLong >= fQmean[i]) && (qLong < fQmean[i+1])) {fQlIndexL=i; fQlIndexH=i+1; break;}
     }
   }
   //
 
-
-  Float_t min = fNormWeight[fMbin][0][fKtbinL][fKybinL][fQobinH][fQsbinH][fQlbinH];
-  Float_t minErr = fNormWeightErr[fMbin][0][fKtbinL][fKybinL][fQobinH][fQsbinH][fQlbinH];
+  
+  Float_t min = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
+  Float_t minErr = fNormWeight[fKtIndexL][fMbin]->GetBinError(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
   
 
   Float_t deltaW=0;
   // kt
-  deltaW += (fNormWeight[fMbin][0][fKtbinH][fKybinL][fQobinH][fQsbinH][fQlbinH] - min)*(kt-fKmeanT[fKtbinL])/((fKstepT[fKtbinL]+fKstepT[fKtbinH])/2.);
-  // Ky 
-  deltaW += (fNormWeight[fMbin][0][fKtbinL][fKybinH][fQobinH][fQsbinH][fQlbinH] - min)*(ky-fKmeanY[fKybinL])/((fKstepY[fKybinL]+fKstepY[fKybinH])/2.);
+  deltaW += (fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1) - min)*(kt-fKmeanT[fKtIndexL])/((fKstepT[fKtIndexL]+fKstepT[fKtIndexH])/2.);
   // Qo 
-  deltaW += (fNormWeight[fMbin][0][fKtbinL][fKybinL][fQobinL][fQsbinH][fQlbinH] - min)*(qOut-fQmean[fQobinL])/fQstepWeights;
+  deltaW += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1) - min)*(qOut-fQmean[fQoIndexL])/fQstepWeights;
   // Qs
-  deltaW += (fNormWeight[fMbin][0][fKtbinL][fKybinL][fQobinH][fQsbinL][fQlbinH] - min)*(qSide-fQmean[fQsbinL])/fQstepWeights;
+  deltaW += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1) - min)*(qSide-fQmean[fQsIndexL])/fQstepWeights;
   // Ql
-  deltaW += (fNormWeight[fMbin][0][fKtbinL][fKybinL][fQobinH][fQsbinH][fQlbinL] - min)*(qLong-fQmean[fQlbinL])/fQstepWeights;
-  
+  deltaW += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1) - min)*(qLong-fQmean[fQlIndexL])/fQstepWeights;
   //
   wgt = min + deltaW;
   
+ 
 
   ////
   
@@ -3691,18 +3581,15 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, 
   Float_t deltaWErr=0;
   // Kt
   /*
-  deltaWErr += (fNormWeightErr[fMbin][0][fKtbinH][fKybinL][fQobinH][fQsbinH][fQlbinH] - minErr)*(kt-fKmeanT[fKtbinL])/((fKstepT[fKtbinL]+fKstepT[fKtbinH])/2.);
-  // Ky 
-  deltaWErr += (fNormWeightErr[fMbin][0][fKtbinL][fKybinH][fQobinH][fQsbinH][fQlbinH] - minErr)*(ky-fKmeanY[fKybinL])/((fKstepY[fKybinL]+fKstepY[fKybinH])/2.);
+  deltaWErr += (fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1) - minErr)*(kt-fKmeanT[fKtIndexL])/((fKstepT[fKtIndexL]+fKstepT[fKtIndexH])/2.);
   // Qo 
-  deltaWErr += (fNormWeightErr[fMbin][0][fKtbinL][fKybinL][fQobinL][fQsbinH][fQlbinH] - minErr)*(qOut-fQmean[fQobinL])/fQstepWeights;
+  deltaWErr += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1) - minErr)*(qOut-fQmean[fQoIndexL])/fQstepWeights;
   // Qs
-  deltaWErr += (fNormWeightErr[fMbin][0][fKtbinL][fKybinL][fQobinH][fQsbinL][fQlbinH] - minErr)*(qSide-fQmean[fQsbinL])/fQstepWeights;
+  deltaWErr += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1) - minErr)*(qSide-fQmean[fQsIndexL])/fQstepWeights;
   // Ql
-  deltaWErr += (fNormWeightErr[fMbin][0][fKtbinL][fKybinL][fQobinH][fQsbinH][fQlbinL] - minErr)*(qLong-fQmean[fQlbinL])/fQstepWeights;
+  deltaWErr += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1) - minErr)*(qLong-fQmean[fQlIndexL])/fQstepWeights;
   */
   wgtErr = minErr + deltaWErr;
-
   
  
 }
