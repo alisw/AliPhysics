@@ -42,6 +42,9 @@ public:
   /// Set the sigma cut for tracker/trigger track matching (by default use the one set in the recoParam)
   void SetSigmaCutForTrigger(Double_t val) {fSigmaCutForTrigger = val;}
   
+  /// Set the OCDB path to the alignment file used in the reco (if not set use default storage)
+  void SetAlignStorage(const char* ocdbPath) { fOldAlignStorage = ocdbPath; }
+  
   // set the OCDB path to the alignment files to be used to realign the clusters before refitting
   void ReAlign(const char* oldAlignStorage = 0x0, const char* newAlignStorage = "");
   
