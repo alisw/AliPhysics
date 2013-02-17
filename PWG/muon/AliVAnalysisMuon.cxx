@@ -88,6 +88,7 @@ AliVAnalysisMuon::AliVAnalysisMuon() :
   fChargeKeys(0x0),
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
+  fWeights(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
@@ -108,6 +109,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fChargeKeys(0x0),
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
+  fWeights(new THashList()),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
@@ -120,6 +122,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   InitKeys();
   SetTrigClassPatterns("");
   SetCentralityClasses();
+  fWeights->SetOwner();
 
   DefineOutput(1, TObjArray::Class());
 }
@@ -136,6 +139,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fChargeKeys(0x0),
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
+  fWeights(new THashList()),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
@@ -148,6 +152,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   InitKeys();
   SetTrigClassPatterns("");
   SetCentralityClasses();
+  fWeights->SetOwner();
   
   DefineOutput(1, TObjArray::Class());
 }
@@ -165,6 +170,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonPairCuts& pair
   fChargeKeys(0x0),
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
+  fWeights(new THashList()),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
@@ -176,6 +182,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonPairCuts& pair
   InitKeys();
   SetTrigClassPatterns("");
   SetCentralityClasses();
+  fWeights->SetOwner();
     
   DefineOutput(1, TObjArray::Class());
 }
@@ -195,6 +202,7 @@ AliVAnalysisMuon::~AliVAnalysisMuon()
   delete fChargeKeys;
   delete fSrcKeys;
   delete fPhysSelKeys;
+  delete fWeights;
   delete fOutputPrototypeList;
 
 
@@ -612,37 +620,9 @@ Bool_t AliVAnalysisMuon::SetSparseRange(AliCFGridSparse* gridSparse,
   /// Check the bin limits.
   //
   
-  option.ToUpper();
-  Int_t minVarBin = -1, maxVarBin = -1;
-  TAxis* axis = gridSparse->GetAxis(ivar);
+  // Keep for backward compatibility
   
-  if ( ! axis ) {
-    printf("Warning: Axis %i not found in %s", ivar, gridSparse->GetName());
-    return kFALSE;
-  }
-  
-  if ( ! labelName.IsNull() ) {
-    minVarBin = axis->FindBin(labelName.Data());
-    maxVarBin = minVarBin;
-    if ( minVarBin < 1 ) {
-      printf("Warning: %s: label %s not found. Nothing done", gridSparse->GetName(), labelName.Data());
-      return kFALSE;
-    }
-  }
-  else if ( option.Contains( "USEBIN" ) ) {
-    minVarBin = (Int_t)varMin;
-    maxVarBin = (Int_t)varMax;
-  }
-  else {
-    minVarBin = axis->FindBin(varMin);
-    maxVarBin = axis->FindBin(varMax);
-  }
-  
-  if ( axis->GetFirst() == minVarBin && axis->GetLast() == maxVarBin ) return kFALSE;
-  
-  gridSparse->SetRangeUser(ivar, axis->GetBinCenter(minVarBin), axis->GetBinCenter(maxVarBin));
-  
-  return kTRUE;
+  return AliAnalysisMuonUtility::SetSparseRange(gridSparse,ivar,labelName,varMin, varMax,option);
 }
 
 //________________________________________________________________________
@@ -659,7 +639,7 @@ void AliVAnalysisMuon::SetTrigClassPatterns(const TString pattern)
   TString currPattern = pattern;
   if ( currPattern.IsNull() ) { 
     currPattern = GetDefaultTrigClassPatterns();
-    currPattern.Append(",!CMUP"); // by default do not account for UltraPeripheral events
+    currPattern.Append(",!CMUP*"); // by default do not account for UltraPeripheral events
   }
   fMuonEventCuts->SetTrigClassPatterns(currPattern);
 }
@@ -749,6 +729,9 @@ void AliVAnalysisMuon::SetTerminateOptions(TString physSel, TString trigClass, T
 //________________________________________________________________________
 void AliVAnalysisMuon::InitKeys()
 {
+  //
+  /// Init keys
+  //
   TString chargeKeys = "MuMinus MuPlus";
   fChargeKeys = chargeKeys.Tokenize(" ");
   
@@ -758,3 +741,24 @@ void AliVAnalysisMuon::InitKeys()
   TString physSelKeys = "PhysSelPass PhysSelReject";
   fPhysSelKeys = physSelKeys.Tokenize(" ");
 }
+
+
+//________________________________________________________________________
+void AliVAnalysisMuon::SetWeight ( TObject* wgtObj )
+{
+  /// Set weight
+  if ( fWeights->FindObject(wgtObj->GetName()) ) {
+    AliWarning(Form("Weight object %s is already in the list",wgtObj->GetName()));
+    return;
+  }
+  fWeights->Add(wgtObj);
+}
+
+//________________________________________________________________________
+TObject* AliVAnalysisMuon::GetWeight ( const Char_t* wgtName )
+{
+  /// Get weight
+  return fWeights->FindObject(wgtName);
+}
+
+

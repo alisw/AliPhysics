@@ -26,6 +26,8 @@
 #include "TSystem.h"
 #include "TAxis.h"
 #include "TArrayI.h"
+#include "TRegexp.h"
+#include "TPRegexp.h"
 
 #include "AliLog.h"
 #include "AliInputEventHandler.h"
@@ -223,46 +225,171 @@ void AliMuonEventCuts::SetDefaultTrigClassPatterns ()
 {
   /// Set the default patterns
   /// (done in such a way to get all muon triggers)
-  fDefaultTrigClassPatterns = "CM,C0M,CINT,CPBI,CCENT,CV,!ABCE,!-ACE-,!-AC-,!-E-,!WU,!EGA,!EJE,!PHS";
+  fDefaultTrigClassPatterns = "CM*,C0M*,CINT*,CPBI*,CCENT*,CV*,!*ABCE*,!*-ACE-*,!*-AC-*,!*-E-*,!*WU*,!*EGA*,!*EJE*,!*PHS*";
   SetTrigClassPatterns(fDefaultTrigClassPatterns);
 }
 
+
 //________________________________________________________________________
-void AliMuonEventCuts::SetTrigClassPatterns ( TString pattern )
+void AliMuonEventCuts::SetTrigClassPatterns ( const TString trigPattern )
 {
   /// Set trigger classes
   ///
-  /// Classes are filled dynamically according to the pattern
+  /// 1) specify trigger class pattern and reject pattern (wildcard * accepted)
+  /// Classes will be filled dynamycally according to the pattern
   /// - if name contains ! (without spaces): reject it
-  /// - otherwise, keep it
-  /// example:
-  /// SetTrigClassPatterns("CMBAC,!ALLNOTRD")
-  /// keeps classes containing CMBAC, and not containing ALLNOTRD.
+  /// - otherwise keep it
+  /// e.g. CMBAC*,!*ALLNOTRD*
+  /// keeps classes beginning with CMBAC, and not containing ALLNOTRD.
   ///
-  /// CAVEAT: if you use an fCFContainer and you want an axis to contain the trigger classes,
-  ///         please be sure that each pattern matches only 1 trigger class, or triggers will be mixed up
-  ///         when merging different chuncks.
+  /// CAVEATs:
+  ///   a ) if a wildcard is not specified, exact match is required
+  ///   b ) if you use an fCFContainer and you want an axis to contain the trigger classes,
+  ///       please be sure that each pattern matches only 1 trigger class, or triggers will be mixed up
+  ///       when merging different chuncks.
+  ///
+  ///
+  /// 2) specify a combination of triggers
+  /// combined through a logical AND "&" or a logical OR "|" (wildcard * NOT accepted)
+  /// It is also possible to ask for a trigger class containing a specific trigger input:
+  /// e.g. CMSL7-B-NOPF-MUON&0MSH,CMSL7-B-NOPF-MUON,CMSL7-B-NOPF-MUON|CMSL8-B-NOPF-MUON
+  /// will give the events with:
+  /// - the single low trigger class fired and containing a single high trigger input
+  /// - the single low trigger class fired
+  /// - the single low trigger class 7 or 8 fired
+  /// By default, when specific trigger combinations are provided, the most general case
+  /// based on trigger pattern is disabled...but it can be activated with the disableTrigPattern flag
+  ///
+  /// example:
+  /// SetTrigClassPatterns("CINT7*,!*-ACE-*,CMSL7-B-NOPF-MUON,CMSL7-B-NOPF-MUON&0MSH")
   
+  
+  fSelectedTrigCombination->SetOwner();
+  if ( fSelectedTrigCombination->GetEntries() > 0 ) fSelectedTrigCombination->Delete();
   fSelectedTrigPattern->SetOwner();
   if ( fSelectedTrigPattern->GetEntries() > 0 ) fSelectedTrigPattern->Delete();
   fRejectedTrigPattern->SetOwner();
   if ( fRejectedTrigPattern->GetEntries() > 0 ) fRejectedTrigPattern->Delete();
   
+  TString badSyntax = "", duplicated = "";
+  TString listName[4] = {"L0","L1","L2","trigClass"};
+  
+  TString pattern(trigPattern);
   pattern.ReplaceAll(" ","");
-  
   TObjArray* fullList = pattern.Tokenize(",");
+  TIter next(fullList);
+  TObjString* objString = 0x0;
   
-  for ( Int_t ipat=0; ipat<fullList->GetEntries(); ++ipat ) {
-    TString currPattern = fullList->At(ipat)->GetName();
+  TObjArray combinationList;
+  // First search for patterns
+  while ( ( objString = static_cast<TObjString*>(next()) ) ) {
+    TString currPattern = objString->String();
+    Bool_t isCombination = ( currPattern.Contains("&") || currPattern.Contains("|") );
+    Bool_t isMatchPattern = currPattern.Contains("*");
+    Bool_t isRejectPattern = kFALSE;
     if ( currPattern.Contains("!") ) {
       currPattern.ReplaceAll("!","");
-      fRejectedTrigPattern->AddLast(new TObjString(currPattern));
+      isRejectPattern = kTRUE;
     }
-    else fSelectedTrigPattern->AddLast(new TObjString(currPattern));
+    if ( isCombination && ( isMatchPattern || isRejectPattern ) ) {
+      badSyntax += Form(" %s;", currPattern.Data());
+      continue;
+    }
+    if ( isRejectPattern ) {
+      fRejectedTrigPattern->AddLast(new TObjString(currPattern));
+      AliDebug(2,Form("Adding %s to reject pattern",currPattern.Data()));
+    }
+    else if ( isMatchPattern ) {
+      fSelectedTrigPattern->AddLast(new TObjString(currPattern));
+      AliDebug(2,Form("Adding %s to match pattern",currPattern.Data()));
+    }
+    else combinationList.Add(objString);
   }
   
+  // Then check for combinations
+  TIter nextCombo(&combinationList);
+  while ( ( objString = static_cast<TObjString*>(nextCombo()) ) ) {
+    TString currPattern = objString->String();
+    
+    TString tn (currPattern);
+    Bool_t isCombination = kFALSE;
+    Bool_t requiresFromula = kFALSE;
+    if ( tn.Contains("&") ) {
+      tn.ReplaceAll("&",":");
+      isCombination = kTRUE;
+    }
+    if ( tn.Contains("|") ) {
+      tn.ReplaceAll("|",":");
+      isCombination = kTRUE;
+      requiresFromula = kTRUE;
+    }
+    if ( tn.Contains("(") || tn.Contains(")") ) {
+      tn.ReplaceAll("(","");
+      tn.ReplaceAll(")","");
+    }
+    
+    if ( ! isCombination ) {
+      if ( CheckTriggerClassPattern(currPattern) ) {
+        duplicated += Form("%s ", currPattern.Data());
+        continue;
+      }
+    }
+    
+    TObjArray* trigCombo = new TObjArray();
+    trigCombo->SetOwner();
+    trigCombo->SetName(currPattern.Data());
+    
+    
+    if ( requiresFromula ) trigCombo->SetUniqueID(1);
+    
+    TObjArray* arr = tn.Tokenize(":");
+    
+    TIter nextA(arr);
+    TObjString* an = 0x0;
+    while ( ( an = static_cast<TObjString*>(nextA()) ) )
+    {
+      Int_t listIdx = 3;
+      if ( an->String().BeginsWith("0") ) listIdx = 0;
+      else if ( an->String().BeginsWith("1") ) listIdx = 1;
+      else if ( an->String().BeginsWith("2") ) listIdx = 2;
+      
+      TObjArray* currList = static_cast<TObjArray*>(trigCombo->FindObject(listName[listIdx].Data()));
+      if ( ! currList ) {
+        currList = new TObjArray();
+        currList->SetOwner();
+        currList->SetName(listName[listIdx].Data());
+        currList->SetUniqueID(listIdx);
+        trigCombo->AddAt(currList,listIdx);
+      }
+      TObjString* currStr = new TObjString(an->String());
+      
+      if ( listIdx < 3 ) {
+        // that's an input
+        TObject* trigInput = fTrigInputsMap->FindObject(an->String().Data());
+        if ( trigInput ) currStr->SetUniqueID(trigInput->GetUniqueID());
+        else {
+          AliError(Form("Uknown input %s in formula %s", an->String().Data(), currPattern.Data()));
+          delete trigCombo;
+          trigCombo = 0x0;
+          break;
+        }
+      }
+      currList->AddLast(currStr);
+    }
+    delete arr;
+    if ( trigCombo) {
+      fSelectedTrigCombination->AddLast(trigCombo);
+      AliDebug(2,Form("Adding %s to trigger combination",currPattern.Data()));
+    }
+  }
   delete fullList;
+  
+  if ( ! duplicated.IsNull() )
+    AliWarning(Form("Triggers %s already accounted in patterns",duplicated.Data()));
+  if ( ! badSyntax.IsNull() )
+    AliWarning(Form("%s : illegal expressions. Must be in the form:\n   pattern* => keep class if it contains pattern\n   !pattern* => reject class if it contains pattern\n   class&input = keep class if it satisfies the expression (exact matching required)",badSyntax.Data()));
 }
+
 
 //________________________________________________________________________
 void AliMuonEventCuts::SetTrigClassLevels ( TString pattern )
@@ -336,91 +463,6 @@ TArrayI AliMuonEventCuts::GetTrigClassPtCutLevel ( const TString trigClassName )
   return ptCutLevel;
 }
 
-//________________________________________________________________________
-void AliMuonEventCuts::SetTrigClassCombination ( TString trigClassCombination, Bool_t disableTrigPattern )
-{
-  /// Set trigger classes combinations
-  ///
-  /// Differently from the pattern, one needs to specify combination of triggers
-  /// combined through a logical AND "&" or a logical OR "|"
-  /// It is also possible to ask for a trigger class containing a specific trigger input:
-  /// e.g. CMSL7-B-NOPF-MUON&0MSH,CMSL7-B-NOPF-MUON,CMSL7-B-NOPF-MUON|CMSL8-B-NOPF-MUON
-  /// will give the events with:
-  /// - the single low trigger class fired and containing a single high trigger input
-  /// - the single low trigger class fired
-  /// - the single low trigger class 7 or 8 fired
-  /// By default, when specific trigger combinations are provided, the most general case
-  /// based on trigger pattern is disabled...but it can be activated with the disableTrigPattern flag
-  
-  if ( disableTrigPattern ) SetTrigClassPatterns("");
-  
-  fSelectedTrigCombination->SetOwner();
-  if ( fSelectedTrigCombination->GetEntries() > 0 ) fSelectedTrigCombination->Delete();
-  
-  trigClassCombination.ReplaceAll(" ","");
-  
-  TString listName[4] = {"L0","L1","L2","trigClass"};
-  
-  TObjArray* fullList = trigClassCombination.Tokenize(",");
-  for ( Int_t ipat=0; ipat<fullList->GetEntries(); ++ipat ) {
-    TString currPattern = fullList->At(ipat)->GetName();
-    
-    TObjArray* trigCombo = new TObjArray();
-    trigCombo->SetOwner();
-    trigCombo->SetName(currPattern.Data());
-    
-    TString tn (currPattern);
-    Bool_t requiresFromula = kFALSE;
-    if ( tn.Contains("&") ) tn.ReplaceAll("&",":");
-    if ( tn.Contains("|") ) {
-      tn.ReplaceAll("|",":");
-      requiresFromula = kTRUE;
-    }
-    if ( tn.Contains("(") || tn.Contains(")") ) {
-      tn.ReplaceAll("(","");
-      tn.ReplaceAll(")","");
-    }
-    if ( requiresFromula ) trigCombo->SetUniqueID(1);
-    
-    TObjArray* arr = tn.Tokenize(":");
-    
-    TIter nextA(arr);
-    TObjString* an = 0x0;
-    while ( ( an = static_cast<TObjString*>(nextA()) ) )
-    {
-      Int_t listIdx = 3;
-      if ( an->String().BeginsWith("0") ) listIdx = 0;
-      else if ( an->String().BeginsWith("1") ) listIdx = 1;
-      else if ( an->String().BeginsWith("2") ) listIdx = 2;
-      
-      TObjArray* currList = static_cast<TObjArray*>(trigCombo->FindObject(listName[listIdx].Data()));
-      if ( ! currList ) {
-        currList = new TObjArray();
-        currList->SetOwner();
-        currList->SetName(listName[listIdx].Data());
-        currList->SetUniqueID(listIdx);
-        trigCombo->AddAt(currList,listIdx);
-      }
-      TObjString* currStr = new TObjString(an->String());
-
-      if ( listIdx < 3 ) {
-        // that's an input
-        TObject* trigInput = fTrigInputsMap->FindObject(an->String().Data());
-        if ( trigInput ) currStr->SetUniqueID(trigInput->GetUniqueID());
-        else {
-          AliError(Form("Uknown input %s in formula %s", an->String().Data(), currPattern.Data()));
-          delete trigCombo;
-          trigCombo = 0x0;
-          break;
-        }
-      }
-      currList->AddLast(currStr);
-    }
-    delete arr;
-    if ( trigCombo) fSelectedTrigCombination->AddLast(trigCombo);
-  }
-  delete fullList;
-}
 
 //________________________________________________________________________
 void AliMuonEventCuts::SetTrigInputsMap ( TString trigInputsMap )
@@ -563,11 +605,11 @@ AliMuonEventCuts::CheckTriggerClassPattern ( const TString& toCheck ) const
   // Check if the "toCheck" class matches the user pattern
   
   for ( Int_t ipat=0; ipat<fRejectedTrigPattern->GetEntries(); ++ipat ) {
-    if ( toCheck.Contains(fRejectedTrigPattern->At(ipat)->GetName() ) ) return kFALSE;
+    if ( toCheck.Contains(TRegexp(fRejectedTrigPattern->At(ipat)->GetName(),kTRUE) ) ) return kFALSE;
   } // loop on reject pattern
 
   for ( Int_t ipat=0; ipat<fSelectedTrigPattern->GetEntries(); ++ipat ) {
-    if ( toCheck.Contains(fSelectedTrigPattern->At(ipat)->GetName() ) ) return kTRUE;
+    if ( toCheck.Contains(TRegexp(fSelectedTrigPattern->At(ipat)->GetName(),kTRUE) ) ) return kTRUE;
   } // loop on keep pattern
   
   return kFALSE;
@@ -606,8 +648,10 @@ AliMuonEventCuts::CheckTriggerClassCombination ( const TObjArray* combo,
         else ok = matchInput;
       }
       else {
-        if ( requiresFromula ) comp.ReplaceAll(an->String().Data(),Form("%d",firedTriggerClasses.Contains(an->String().Data())));
-        else ok = firedTriggerClasses.Contains(an->String().Data());
+        TPRegexp re(Form("(^|[ ])%s([ ]|$)",an->String().Data()));
+        Bool_t matchTrig = firedTriggerClasses.Contains(re);
+        if ( requiresFromula ) comp.ReplaceAll(an->String().Data(),Form("%d",matchTrig));
+        else ok = matchTrig;
       }
       if ( ! requiresFromula && ! ok ) {
         exitLoop = kTRUE;
