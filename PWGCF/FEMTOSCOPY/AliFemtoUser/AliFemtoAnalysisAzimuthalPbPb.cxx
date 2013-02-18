@@ -286,7 +286,7 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
   // event cut and event cut monitor
   bool tmpPassEvent = fEventCut->Pass(hbtEvent);
   if (!tmpPassEvent) {
-    cout << "event not passed!!!!!!!!!!!!!!!!!!!!!" << endl;
+    //cout << "event not passed!!!!!!!!!!!!!!!!!!!!!" << endl;
     fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
   }
   if (tmpPassEvent) {

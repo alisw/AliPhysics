@@ -46,7 +46,8 @@ public:
   TVector2 GetQVector(AliFemtoParticleCollection* particlecollection);
   virtual void MakePairs(const char* typeIn, AliFemtoPicoEventRP *coll1, AliFemtoPicoEventRP *coll2=0);
   virtual TList* GetOutputList();
-
+  virtual void Finish() {;}
+	
  // Get the particle cuts
   virtual AliFemtoParticleCut*   FirstParticleCut() {return fFirstParticleCut;}
   virtual AliFemtoParticleCut*   SecondParticleCut() {return fSecondParticleCut;}
