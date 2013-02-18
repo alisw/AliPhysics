@@ -4,7 +4,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFCentHPT;TPCTOFSemiCentHPT;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFCentnoTOF;NoPIDNoPairing");
+TString names=("noPairing;TPCTOFCentHPT;TPCTOFSemiCentHPT;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFCentnoTOF;NoPIDNoPairing;TPCTOFCentRej");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -79,7 +79,12 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kFALSE;
   }
-  else Semi{
+  else if (cutDefinition==8) {
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedCentrality = LMEECutLib::kPbPb2011Central;
+	rejectionStep = kTRUE;
+  }
+  else {
 	cout << " =============================== " << endl;
 	cout << " ==== INVALID CONFIGURATION ==== " << endl;
 	cout << " =============================== " << endl;
@@ -98,10 +103,17 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	  die->SetNoPairing();
    }
 
-	if (rejectionStep) {
-		die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(selectedPID) );
-		die->GetPairPreFilterLegs().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
-		die->GetPairPreFilter().AddCuts(LMCL->GetPairCuts(selectedPID) );
+  if (rejectionStep) {
+	  if (ESDanalysis) {
+		  die->GetTrackFilter().AddCuts( LMCL->GetESDTrackCutsAna(selectedPID) );
+		  die->GetPairPreFilterLegs().AddCuts( LMCL->GetESDTrackCutsAna(selectedPID) );
+	  }
+
+	  //die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(selectedPID) );
+	  die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
+	  die->GetPairPreFilterLegs().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
+	  die->GetPairPreFilter().AddCuts(LMCL->GetPairCuts2(selectedPID) );
+	  //die->GetPairPreFilter().AddCuts(LMCL->GetPairCuts(selectedPID) );
 	}
 	else { //No Prefilter, no Pairfilter
 	  
