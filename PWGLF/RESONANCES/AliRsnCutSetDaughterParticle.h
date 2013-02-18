@@ -50,7 +50,7 @@ public:
    void           SetAODTrackCutFilterBit(Int_t ibit) {fAODTrkCutFilterBit=ibit; return;}
    //getters
    const char   *GetAppliedDaughterCutSetName() { return GetName();}
-   const Int_t   GetAppliedDaughterCutSetId() { return fAppliedCutSetID;}
+   Int_t   GetAppliedDaughterCutSetId() { return fAppliedCutSetID;}
    const AliRsnCutTrackQuality *GetQualityCut() {return fCutQuality;};
 
 private:
