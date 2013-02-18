@@ -4,6 +4,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
    const char *outfilename    = "AnalysisOutput.root",
    UInt_t type                = AliAnalysisTaskEmcal::kTPC,
    const char *nRhosCh        = "rhoChEm",
+   TF1 *sfunc                 = 0,
    const Double_t radius      = 0.2,
    const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
@@ -40,8 +41,6 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   const Int_t cFULLJETS           = 0;
   const Int_t cCHARGEDJETS        = 1;
   const Int_t cNEUTRALJETS        = 2;
-
-  const UInt_t type = 1;
     
   float AreaCut = radius*radius*TMath::Pi();
 
