@@ -255,7 +255,47 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultAntiLambda; //! AntiLambda
    TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultK0Short;    //! K0Short
 
-//---> Containers for monte carlo information for calculating efficiency! 
+//V0A containers
+  
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultV0ALambda;     //! Lambda
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultV0AAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultV0AK0Short;    //! K0Short
+  
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0ALambda;     //! Lambda
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0AAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short;    //! K0Short
+
+//ZNA containers
+  
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultZNALambda;     //! Lambda
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultZNAAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultZNAK0Short;    //! K0Short
+  
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultZNALambda;     //! Lambda
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultZNAAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultZNAK0Short;    //! K0Short
+  
+//TRK containers
+  
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultTRKLambda;     //! Lambda
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultTRKAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultTRKK0Short;    //! K0Short
+  
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultTRKLambda;     //! Lambda
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultTRKAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultTRKK0Short;    //! K0Short
+  
+//SPD containers
+  
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultSPDLambda;     //! Lambda
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultSPDAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultSPDK0Short;    //! K0Short
+  
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultSPDLambda;     //! Lambda
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultSPDAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultSPDK0Short;    //! K0Short
+  
+//---> Containers for monte carlo information for calculating efficiency!
 
    TH3F      *f3dHistPrimRawPtVsYVsMultLambda;     //! Lambda
    TH3F      *f3dHistPrimRawPtVsYVsMultAntiLambda; //! AntiLambda
@@ -265,6 +305,48 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH3F      *f3dHistPrimRawPtVsYCMSVsMultAntiLambda; //! AntiLambda
    TH3F      *f3dHistPrimRawPtVsYCMSVsMultK0Short;    //! K0Short
 
+//V0A Containers
+  
+  TH3F      *f3dHistPrimRawPtVsYVsMultV0ALambda;     //! Lambda
+  TH3F      *f3dHistPrimRawPtVsYVsMultV0AAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimRawPtVsYVsMultV0AK0Short;    //! K0Short
+  
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultV0ALambda;     //! Lambda
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultV0AAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultV0AK0Short;    //! K0Short
+
+//ZNA Containers
+  
+  TH3F      *f3dHistPrimRawPtVsYVsMultZNALambda;     //! Lambda
+  TH3F      *f3dHistPrimRawPtVsYVsMultZNAAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimRawPtVsYVsMultZNAK0Short;    //! K0Short
+  
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultZNALambda;     //! Lambda
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultZNAAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultZNAK0Short;    //! K0Short
+  
+//TRK Containers
+  
+  TH3F      *f3dHistPrimRawPtVsYVsMultTRKLambda;     //! Lambda
+  TH3F      *f3dHistPrimRawPtVsYVsMultTRKAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimRawPtVsYVsMultTRKK0Short;    //! K0Short
+  
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultTRKLambda;     //! Lambda
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultTRKAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultTRKK0Short;    //! K0Short
+  
+//SPD Containers
+  
+  TH3F      *f3dHistPrimRawPtVsYVsMultSPDLambda;     //! Lambda
+  TH3F      *f3dHistPrimRawPtVsYVsMultSPDAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimRawPtVsYVsMultSPDK0Short;    //! K0Short
+  
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultSPDLambda;     //! Lambda
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultSPDAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultSPDK0Short;    //! K0Short
+  
+//Miscellaneous checking containers
+  
    TH3F      *f3dHistPrimRawPtVsYVsMultNonInjLambda;     //! Non-injected Lambda
    TH3F      *f3dHistPrimRawPtVsYVsMultNonInjAntiLambda; //! Non-injected AntiLambda
    TH3F      *f3dHistPrimRawPtVsYVsMultNonInjK0Short;    //! Non-injected K0Short
@@ -291,24 +373,73 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
 
    TH3F      *f3dHistGenPtVsYVsMultXiMinus;      //! Generated Xi- Distrib
    TH3F      *f3dHistGenPtVsYVsMultXiPlus;       //! Generated Xi+ Distrib
-   TH3F      *f3dHistGenPtVsYVsMultOmegaMinus;      //! Generated Omega- Distrib
-   TH3F      *f3dHistGenPtVsYVsMultOmegaPlus;       //! Generated Omega+ Distrib
 
    TH3F      *f3dHistGenSelectedPtVsYVsMultXiMinus;      //! Generated Xi- Distrib, at event selection level
    TH3F      *f3dHistGenSelectedPtVsYVsMultXiPlus;       //! Generated Xi+ Distrib, at event selection level
-   TH3F      *f3dHistGenSelectedPtVsYVsMultOmegaMinus;      //! Generated Omega- Distrib, at event selection level
-   TH3F      *f3dHistGenSelectedPtVsYVsMultOmegaPlus;       //! Generated Omega+ Distrib, at event selection level
 
    TH3F      *f3dHistGenPtVsYCMSVsMultXiMinus;      //! Generated Xi- Distrib
    TH3F      *f3dHistGenPtVsYCMSVsMultXiPlus;       //! Generated Xi+ Distrib
-   TH3F      *f3dHistGenPtVsYCMSVsMultOmegaMinus;      //! Generated Omega- Distrib
-   TH3F      *f3dHistGenPtVsYCMSVsMultOmegaPlus;       //! Generated Omega+ Distrib
 
    TH3F      *f3dHistGenSelectedPtVsYCMSVsMultXiMinus;      //! Generated Xi- Distrib, at event selection level
    TH3F      *f3dHistGenSelectedPtVsYCMSVsMultXiPlus;       //! Generated Xi+ Distrib, at event selection level
-   TH3F      *f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus;      //! Generated Omega- Distrib, at event selection level
-   TH3F      *f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus;       //! Generated Omega+ Distrib, at event selection level
+  
+//V0A Containers
 
+  TH3F      *f3dHistGenPtVsYVsMultV0AXiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHistGenPtVsYVsMultV0AXiPlus;       //! Generated Xi+ Distrib
+  
+  TH3F      *f3dHistGenSelectedPtVsYVsMultV0AXiMinus;      //! Generated Xi- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYVsMultV0AXiPlus;       //! Generated Xi+ Distrib, at event selection level
+  
+  TH3F      *f3dHistGenPtVsYCMSVsMultV0AXiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHistGenPtVsYCMSVsMultV0AXiPlus;       //! Generated Xi+ Distrib
+  
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus;      //! Generated Xi- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus;       //! Generated Xi+ Distrib, at event selection level
+
+//ZNA Containers
+  
+  TH3F      *f3dHistGenPtVsYVsMultZNAXiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHistGenPtVsYVsMultZNAXiPlus;       //! Generated Xi+ Distrib
+  
+  TH3F      *f3dHistGenSelectedPtVsYVsMultZNAXiMinus;      //! Generated Xi- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYVsMultZNAXiPlus;       //! Generated Xi+ Distrib, at event selection level
+  
+  TH3F      *f3dHistGenPtVsYCMSVsMultZNAXiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHistGenPtVsYCMSVsMultZNAXiPlus;       //! Generated Xi+ Distrib
+  
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultZNAXiMinus;      //! Generated Xi- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultZNAXiPlus;       //! Generated Xi+ Distrib, at event selection level
+
+//TRK Containers
+  
+  TH3F      *f3dHistGenPtVsYVsMultTRKXiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHistGenPtVsYVsMultTRKXiPlus;       //! Generated Xi+ Distrib
+  
+  TH3F      *f3dHistGenSelectedPtVsYVsMultTRKXiMinus;      //! Generated Xi- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYVsMultTRKXiPlus;       //! Generated Xi+ Distrib, at event selection level
+  
+  TH3F      *f3dHistGenPtVsYCMSVsMultTRKXiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHistGenPtVsYCMSVsMultTRKXiPlus;       //! Generated Xi+ Distrib
+  
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultTRKXiMinus;      //! Generated Xi- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultTRKXiPlus;       //! Generated Xi+ Distrib, at event selection level
+  
+//SPD Containers
+  
+  TH3F      *f3dHistGenPtVsYVsMultSPDXiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHistGenPtVsYVsMultSPDXiPlus;       //! Generated Xi+ Distrib
+  
+  TH3F      *f3dHistGenSelectedPtVsYVsMultSPDXiMinus;      //! Generated Xi- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYVsMultSPDXiPlus;       //! Generated Xi+ Distrib, at event selection level
+  
+  TH3F      *f3dHistGenPtVsYCMSVsMultSPDXiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHistGenPtVsYCMSVsMultSPDXiPlus;       //! Generated Xi+ Distrib
+  
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultSPDXiMinus;      //! Generated Xi- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultSPDXiPlus;       //! Generated Xi+ Distrib, at event selection level
+  
+  
    TH1F      *fHistPVx;                      //! PVx distrib
    TH1F      *fHistPVy;                      //! PVy distrib
    TH1F      *fHistPVz;                      //! PVz distrib
