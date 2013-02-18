@@ -71,7 +71,7 @@ AddTaskForwardMult(Bool_t   mc,
     what ^= AliForwardCorrectionManager::kDoubleHit;
     what ^= AliForwardCorrectionManager::kVertexBias;
     what ^= AliForwardCorrectionManager::kMergingEfficiency;
-    what ^= AliForwardCorrectionManager::kAcceptance;
+  //  what ^= AliForwardCorrectionManager::kAcceptance;
     if (!cm.Init(sys,sNN,field,mc,what))
       Fatal("AddTaskForwardMult", "Failed to initialize corrections");
   }
