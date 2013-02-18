@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE, Bool_t PIDbaseline=kFALSE){
+AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE, Bool_t PIDbaseline=kFALSE, Bool_t rejOnly=kTRUE) {
 
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   //get the current analysis manager
@@ -67,6 +67,15 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t se
   //load dielectron configuration file
 
   //add dielectron analysis with different cuts to the task
+
+if (rejOnly) {
+
+  AliDielectron *lowmass8=ConfigLMEEPbPb2011AOD(8,hasMC,bESDANA);
+  task->AddDielectron(lowmass8);
+  printf("add: %s\n",lowmass8->GetName());
+
+}
+else {
   AliDielectron *lowmass4=ConfigLMEEPbPb2011AOD(4,hasMC,bESDANA);
   task->AddDielectron(lowmass4);
   printf("add: %s\n",lowmass4->GetName());
@@ -79,6 +88,7 @@ if (PIDbaseline) {
 	AliDielectron *lowmass7=ConfigLMEEPbPb2011AOD(7,hasMC,bESDANA);
 	task->AddDielectron(lowmass7);
 	printf("add: %s\n",lowmass7->GetName());
+}
 }
 
   mgr->AddTask(task);
