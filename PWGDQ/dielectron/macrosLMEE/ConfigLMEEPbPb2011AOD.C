@@ -112,8 +112,7 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	  //die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(selectedPID) );
 	  die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
 	  die->GetPairPreFilterLegs().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
-	  die->GetPairPreFilter().AddCuts(LMCL->GetPairCuts2(selectedPID) );
-	  //die->GetPairPreFilter().AddCuts(LMCL->GetPairCuts(selectedPID) );
+	  die->GetPairPreFilter().AddCuts(LMCL->GetPairCuts(selectedPID) );
 	}
 	else { //No Prefilter, no Pairfilter
 	  
