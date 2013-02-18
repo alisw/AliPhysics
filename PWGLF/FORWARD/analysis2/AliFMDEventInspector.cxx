@@ -662,14 +662,25 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
       AliWarning("Failed to process satellite event");
   }
   
-  // --- Read centrality information 
+ 
+  // --- Get the interaction point -----------------------------------
+  Bool_t vzOk = ReadVertex(*event, ip);
+  fHEventsTr->Fill(ip.Z());
+  if (!vzOk) { 
+    if (fDebug > 3) {
+      AliWarning("Failed to read vertex from ESD"); }
+    fHStatus->Fill(6);
+    return kNoVertex;
+  }
+
+   // --- Read centrality information 
   cent          = -10;
   UShort_t qual = 0;
   if (!ReadCentrality(*event, cent, qual)) {
     if (fDebug > 3) 
       AliWarning("Failed to get centrality");
   }
-//check centrality cut
+  // --- check centrality cut
  
   if(fminCent>0.0&&cent<fminCent)
 	return  kNoEvent; 
@@ -681,16 +692,8 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     for (UShort_t i = 0; i < 4; i++) 
       if (qual & (1 << i)) fHCentVsQual->Fill(Double_t(i+1), cent);
   }
+	
 
-  // --- Get the interaction point -----------------------------------
-  Bool_t vzOk = ReadVertex(*event, ip);
-  fHEventsTr->Fill(ip.Z());
-  if (!vzOk) { 
-    if (fDebug > 3) {
-      AliWarning("Failed to read vertex from ESD"); }
-    fHStatus->Fill(6);
-    return kNoVertex;
-  }
   fHEventsTrVtx->Fill(ip.Z());
   
   // --- Get the vertex bin ------------------------------------------
