@@ -253,7 +253,7 @@ private:
  TH1F *fhMult; //! 
  TH1F *fhPtJ;//! 
  TH2F *fhPtJvsPtCorr;//! 
- TH1F *fhPsiVsR;//! 
+ TH3F *fhPsiVsR;//! 
  TH2F *fhPsiVsRPtJ;//! 
  TH2F *fhPhiEtaTrack;//! 
 
@@ -275,7 +275,7 @@ private:
     TH2F *fhRresVsPt[3][2];//!
     TH2F *fhDCAxy[3][2]; //!
     TH2F *fhDCAz[3][2]; //!
-    TH3F *fhTrackPtEtaPhi[2][2];//!
+    TH3F *fhTrackPtEtaPhi[3][2];//!
 
  Int_t     fPtJetNbin;
  TArrayD   fPtJetArray;
@@ -303,6 +303,7 @@ private:
  TH2F *Hist2D(const char* name, Int_t nBinsx, Double_t xMin, Double_t xMax, Int_t nBinsy, Double_t *yArray, const char* xLabel = NULL, const char* yLabel = NULL, Int_t color=1, const char* zLabel = NULL);
  TH2F *Hist2D(const char* name, Int_t nBinsx, Double_t *yArrax, Int_t nBinsy, Double_t yMin, Double_t yMax, const char* xLabel = NULL, const char* yLabel = NULL, Int_t color=1, const char* zLabel = NULL);
   TH3F *Hist3D(const char* name, Int_t nBinsx, Double_t xMin, Double_t xMax, Int_t nBinsy, Double_t yMin, Double_t yMax, Int_t nBinsz, Double_t zMin, Double_t zMax, const char* xLabel = NULL, const char* yLabel = NULL, const char* zLabel = NULL, Int_t color=1);
+  TH3F *Hist3D(const char* name, Int_t nBinsx, Double_t xMin, Double_t xMax, Int_t nBinsy, Double_t yMin, Double_t yMax, Int_t nBinsz, Double_t *z, const char* xLabel = NULL, const char* yLabel = NULL, const char* zLabel = NULL, Int_t color=1);
 
 
   AliAnalysisTaskJetShapeHM(const AliAnalysisTaskJetShapeHM&);            // not implemented

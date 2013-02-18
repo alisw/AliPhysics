@@ -64,6 +64,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistMatchingLevelvsJet2Pt(0),
   fHistDistancevsCommonEnergy1(0),
   fHistDistancevsCommonEnergy2(0),
+  fHistJet2PtOverJet1PtvsJet2Pt(0),
   fHistDeltaEtaPhivsJet2Pt(0),
   fHistDeltaPtvsJet2Pt(0),
   fHistDeltaPtvsMatchingLevel(0),
@@ -124,6 +125,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistMatchingLevelvsJet2Pt(0),
   fHistDistancevsCommonEnergy1(0),
   fHistDistancevsCommonEnergy2(0),
+  fHistJet2PtOverJet1PtvsJet2Pt(0),
   fHistDeltaEtaPhivsJet2Pt(0),
   fHistDeltaPtvsJet2Pt(0),
   fHistDeltaPtvsMatchingLevel(0),
@@ -246,13 +248,19 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistDistancevsCommonEnergy2->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistDistancevsCommonEnergy2);
 
+  fHistJet2PtOverJet1PtvsJet2Pt = new TH2F("fHistJet2PtOverJet1PtvsJet2Pt", "fHistJet2PtOverJet1PtvsJet2Pt", fNbins, fMinBinPt, fMaxBinPt, 240, 0, 1.2);
+  fHistJet2PtOverJet1PtvsJet2Pt->GetXaxis()->SetTitle("p_{T,2}");  
+  fHistJet2PtOverJet1PtvsJet2Pt->GetYaxis()->SetTitle("p_{T,2} / p_{T,1}");
+  fHistJet2PtOverJet1PtvsJet2Pt->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistJet2PtOverJet1PtvsJet2Pt);
+
   fHistDeltaEtaPhivsJet2Pt = new TH3F("fHistDeltaEtaPhivsJet2Pt", "fHistDeltaEtaPhivsJet2Pt", 40, -1, 1, 128, -1.6, 4.8, fNbins/2, fMinBinPt, fMaxBinPt);
   fHistDeltaEtaPhivsJet2Pt->GetXaxis()->SetTitle("#Delta#eta");
   fHistDeltaEtaPhivsJet2Pt->GetYaxis()->SetTitle("#Delta#phi");
   fHistDeltaEtaPhivsJet2Pt->GetZaxis()->SetTitle("p_{T,2}");
   fOutput->Add(fHistDeltaEtaPhivsJet2Pt);
 
-  fHistDeltaPtvsJet2Pt = new TH2F("fHistDeltaPtvsJet2Pt", "fHistDeltaPtvsJet2Pt", fNbins/2, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+  fHistDeltaPtvsJet2Pt = new TH2F("fHistDeltaPtvsJet2Pt", "fHistDeltaPtvsJet2Pt", fNbins, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
   fHistDeltaPtvsJet2Pt->GetXaxis()->SetTitle("p_{T,2}");  
   fHistDeltaPtvsJet2Pt->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
   fHistDeltaPtvsJet2Pt->GetZaxis()->SetTitle("counts");
@@ -521,9 +529,6 @@ Bool_t AliJetResponseMaker::DoJetMatching()
       continue;
 
     if (jet1->Eta() < fJetMinEta || jet1->Eta() > fJetMaxEta || jet1->Phi() < fJetMinPhi || jet1->Phi() > fJetMaxPhi)
-      continue;
-
-    if (jet1->Pt() > fMaxBinPt)
       continue;
 
     if (jet1->ClosestJet() && jet1->ClosestJet()->ClosestJet() == jet1 && 
@@ -880,9 +885,6 @@ Bool_t AliJetResponseMaker::FillHistograms()
       continue;
     }
 
-    if (jet2->Pt() > fMaxBinPt)
-      continue;
-
     if (!AcceptJet(jet2))
       continue;
 
@@ -942,6 +944,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
 	Double_t dpt = jet2->MatchedJet()->Pt() - jet2->Pt();
 	fHistDeltaPtvsJet2Pt->Fill(jet2->Pt(), dpt);
 	fHistDeltaPtvsMatchingLevel->Fill(jet2->ClosestJetDistance(), dpt);
+
+	fHistJet2PtOverJet1PtvsJet2Pt->Fill(jet2->Pt(),jet2->Pt() / jet2->MatchedJet()->Pt());
 
 	fHistJet1PtvsJet2Pt->Fill(jet2->MatchedJet()->Pt(), jet2->Pt());
 	
