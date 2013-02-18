@@ -541,6 +541,12 @@ void AliDielectronPID::SetDefaults(Int_t def){
     AddCut(kTPC,AliPID::kElectron,lowerCut,4.);
     AddCut(kTOF,AliPID::kElectron,-5,5,0,200,kFALSE,AliDielectronPID::kIfAvailable);
   }
+  else if (def==13) {
+    // TPC electron inclusion
+    // TOF electron inclusion if available
+    AddCut(kTOF,AliPID::kElectron,-4.,4.,0,200,kFALSE,AliDielectronPID::kIfAvailable);
+    AddCut(kTPC,AliPID::kElectron,-3.5,3.5);
+  }
 
 }
 

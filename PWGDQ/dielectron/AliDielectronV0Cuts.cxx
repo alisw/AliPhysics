@@ -31,6 +31,7 @@
 #include "AliDielectronV0Cuts.h"
 #include "AliDielectronVarManager.h"
 #include "AliDielectronTrackCuts.h"
+#include "AliDielectronPID.h"
 #include "AliESDv0.h"
 
 ClassImp(AliDielectronV0Cuts)
@@ -43,6 +44,7 @@ AliDielectronV0Cuts::AliDielectronV0Cuts() :
   fMotherPdg(0),
   fNegPdg(0),
   fPosPdg(0),
+  fPID(-1),
   fOrbit(0),
   fPeriod(0),
   fBunchCross(0)
@@ -60,6 +62,7 @@ AliDielectronV0Cuts::AliDielectronV0Cuts(const char* name, const char* title) :
   fMotherPdg(0),
   fNegPdg(0),
   fPosPdg(0),
+  fPID(-1),
   fOrbit(0),
   fPeriod(0),
   fBunchCross(0)
@@ -109,13 +112,14 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 
   // basic quality cut, at least one of the V0 daughters has to fullfill
   AliDielectronVarCuts dauQAcuts1;
-  dauQAcuts1.AddCut(AliDielectronVarManager::kPt,           0.3,  1e30);
-  dauQAcuts1.AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  dauQAcuts1.AddCut(AliDielectronVarManager::kNclsTPC,     50.0, 160.0);
-  dauQAcuts1.AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kEta,          -0.9,   0.9);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kNclsTPC,      50.0, 160.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kTPCchi2Cl,     0.0,   4.0);
   AliDielectronTrackCuts dauQAcuts2;
   //  dauQAcuts2.SetRequireITSRefit(kTRUE);
   dauQAcuts2.SetRequireTPCRefit(kTRUE);
+  AliDielectronPID dauPIDcuts;
+  if(fPID>=0) dauPIDcuts.SetDefaults(fPID);
 
   Int_t nV0s = 0;
   AliDielectronPair candidate;
@@ -125,6 +129,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   if(ev->IsA() == AliESDEvent::Class()) {
     const AliESDEvent *esdev = static_cast<const AliESDEvent*>(ev);
 
+    printf("there are %d V0s in the event \n",esdev->GetNumberOfV0s());
     // loop over V0s
     for (Int_t iv=0; iv<esdev->GetNumberOfV0s(); ++iv){
       AliESDv0 *v = esdev->GetV0(iv);
@@ -140,8 +145,10 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 	continue;
       }
 
-      // reject tracks with neative ID
-      if(trNeg->GetID()<0 || trPos->GetID()) continue;
+      // PID default cuts
+      if(fPID>=0) {
+	if( !dauPIDcuts.IsSelected(trNeg) || !dauPIDcuts.IsSelected(trPos) ) continue;
+      }
 
       // at least one of the daughter has to pass basic QA cuts
       if(!(dauQAcuts1.IsSelected(trNeg) && dauQAcuts2.IsSelected(trNeg)) ||
@@ -166,6 +173,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   else if(ev->IsA() == AliAODEvent::Class()) {
     const AliAODEvent *aodEv = static_cast<const AliAODEvent*>(ev);
 
+    //    Int_t nV0stored = 0;
     // loop over vertices
     for (Int_t ivertex=0; ivertex<aodEv->GetNumberOfVertices(); ++ivertex){
       AliAODVertex *v=aodEv->GetVertex(ivertex);
@@ -178,9 +186,12 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 	printf("Error: Couldn't get V0 daughter: %p - %p\n",trNeg,trPos);
 	continue;
       }
+      //nV0stored++;
 
-      // reject tracks with neative ID
-      if(trNeg->GetID()<0 || trPos->GetID()) continue;
+      // PID default cuts
+      if(fPID>=0) {
+	if( !dauPIDcuts.IsSelected(trNeg) || !dauPIDcuts.IsSelected(trPos) ) continue;
+      }
 
       // at least one of the daughter has to pass basic QA cuts
       if(!(dauQAcuts1.IsSelected(trNeg) && dauQAcuts2.IsSelected(trNeg)) ||
@@ -198,7 +209,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 	fV0TrackArr.SetBitNumber(trPos->GetID());
       }
     }
-
+    //printf("there are %d V0s in the event \n",nV0stored);
   }
   else
     return;
