@@ -42,8 +42,8 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
   fEmbeddedTrackNIds(0),
   fHistRCPhiEta(0),
   fHistRCPtExLJVSDPhiLJ(0),
-  fHistEmbJetPhiEta(0),
-  fHistEmbPartPhiEta(0)
+  fHistEmbJetsPhiEta(0),
+  fHistLeadPartPhiEta(0)
 {
   // Default constructor.
 
@@ -55,11 +55,13 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
     fHistDeltaPtRC[i] = 0;
     fHistDeltaPtRCExLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
+    fHistEmbNotFoundPt[i] = 0;
     fHistEmbNotFoundPhiEta[i] = 0;
     fHistEmbJetsPtArea[i] = 0;
     fHistEmbJetsCorrPtArea[i] = 0;
-    fHistEmbPartPt[i] = 0;
-    fHistDistEmbPartJetAxis[i] = 0;
+    fHistEmbPartPtvsJetPt[i] = 0;
+    fHistLeadPartPtvsArea[i] = 0;
+    fHistDistLeadPart2JetAxis[i] = 0;
     fHistEmbBkgArea[i] = 0;
     fHistRhoVSEmbBkg[i] = 0;
     fHistDeltaPtEmbArea[i] = 0;
@@ -88,8 +90,8 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
   fEmbeddedTrackNIds(0),
   fHistRCPhiEta(0),
   fHistRCPtExLJVSDPhiLJ(0),
-  fHistEmbJetPhiEta(0),
-  fHistEmbPartPhiEta(0)
+  fHistEmbJetsPhiEta(0),
+  fHistLeadPartPhiEta(0)
 {
   // Standard constructor.
 
@@ -101,11 +103,13 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
     fHistDeltaPtRC[i] = 0;
     fHistDeltaPtRCExLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
+    fHistEmbNotFoundPt[i] = 0;
     fHistEmbNotFoundPhiEta[i] = 0;
     fHistEmbJetsPtArea[i] = 0;
     fHistEmbJetsCorrPtArea[i] = 0;
-    fHistEmbPartPt[i] = 0;
-    fHistDistEmbPartJetAxis[i] = 0;
+    fHistEmbPartPtvsJetPt[i] = 0;
+    fHistLeadPartPtvsArea[i] = 0;
+    fHistDistLeadPart2JetAxis[i] = 0;
     fHistEmbBkgArea[i] = 0;
     fHistRhoVSEmbBkg[i] = 0;
     fHistDeltaPtEmbArea[i] = 0;
@@ -127,108 +131,127 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  fHistRCPhiEta = new TH2F("fHistRCPhiEta","Phi-Eta distribution of rigid cones", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
-  fHistRCPhiEta->GetXaxis()->SetTitle("#eta");
-  fHistRCPhiEta->GetYaxis()->SetTitle("#phi");
-  fOutput->Add(fHistRCPhiEta);
+  if (!fTracksName.IsNull() || !fCaloName.IsNull()) {
+    fHistRCPhiEta = new TH2F("fHistRCPhiEta","fHistRCPhiEta", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
+    fHistRCPhiEta->GetXaxis()->SetTitle("#eta");
+    fHistRCPhiEta->GetYaxis()->SetTitle("#phi");
+    fOutput->Add(fHistRCPhiEta);
 
-  fHistRCPtExLJVSDPhiLJ = new TH2F("fHistRCPtExLJVSDPhiLJ","fHistRCPtExLJVSDPhiLJ", fNbins, fMinBinPt, fMaxBinPt, 128, -1.6, 4.8);
-  fHistRCPtExLJVSDPhiLJ->GetXaxis()->SetTitle("rigid cone #it{p}_{T} (GeV/#it{c})");
-  fHistRCPtExLJVSDPhiLJ->GetYaxis()->SetTitle("#Delta#phi");
-  fOutput->Add(fHistRCPtExLJVSDPhiLJ);
+    if (!fJetsName.IsNull()) {
+      fHistRCPtExLJVSDPhiLJ = new TH2F("fHistRCPtExLJVSDPhiLJ","fHistRCPtExLJVSDPhiLJ", fNbins, fMinBinPt, fMaxBinPt, 128, -1.6, 4.8);
+      fHistRCPtExLJVSDPhiLJ->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+      fHistRCPtExLJVSDPhiLJ->GetYaxis()->SetTitle("#Delta#phi");
+      fOutput->Add(fHistRCPtExLJVSDPhiLJ);
+    }
+  }
 
-  if (!fJetsName.IsNull()) {
-    fHistEmbJetPhiEta = new TH2F("fHistEmbJetPhiEta","Phi-Eta distribution of embedded jets", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
-    fHistEmbJetPhiEta->GetXaxis()->SetTitle("#eta");
-    fHistEmbJetPhiEta->GetYaxis()->SetTitle("#phi");
-    fOutput->Add(fHistEmbJetPhiEta);
+  if (!fEmbJetsName.IsNull()) {
+    fHistEmbJetsPhiEta = new TH2F("fHistEmbJetsPhiEta","fHistEmbJetsPhiEta", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
+    fHistEmbJetsPhiEta->GetXaxis()->SetTitle("#eta");
+    fHistEmbJetsPhiEta->GetYaxis()->SetTitle("#phi");
+    fOutput->Add(fHistEmbJetsPhiEta);
     
-    fHistEmbPartPhiEta = new TH2F("fHistEmbPartPhiEta","Phi-Eta distribution of embedded particles", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
-    fHistEmbPartPhiEta->GetXaxis()->SetTitle("#eta");
-    fHistEmbPartPhiEta->GetYaxis()->SetTitle("#phi");
-    fOutput->Add(fHistEmbPartPhiEta);
+    fHistLeadPartPhiEta = new TH2F("fHistLeadPartPhiEta","fHistLeadPartPhiEta", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
+    fHistLeadPartPhiEta->GetXaxis()->SetTitle("#eta");
+    fHistLeadPartPhiEta->GetYaxis()->SetTitle("#phi");
+    fOutput->Add(fHistLeadPartPhiEta);
   }
 
   TString histname;
 
-  for (Int_t i = 0; i < 4; i++) {
-    histname = "fHistRCPt_";
-    histname += i;
-    fHistRCPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
-    fHistRCPt[i]->GetXaxis()->SetTitle("rigid cone #it{p}_{T} (GeV/#it{c})");
-    fHistRCPt[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistRCPt[i]);
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    if (!fTracksName.IsNull() || !fCaloName.IsNull()) {
+      histname = "fHistRCPt_";
+      histname += i;
+      fHistRCPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
+      fHistRCPt[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+      fHistRCPt[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistRCPt[i]);
 
-    histname = "fHistRCPtExLJ_";
-    histname += i;
-    fHistRCPtExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
-    fHistRCPtExLJ[i]->GetXaxis()->SetTitle("rigid cone #it{p}_{T}^{RC} (GeV/#it{c})");
-    fHistRCPtExLJ[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistRCPtExLJ[i]);
+      histname = "fHistRhoVSRCPt_";
+      histname += i;
+      fHistRhoVSRCPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+      fHistRhoVSRCPt[i]->GetXaxis()->SetTitle("A#rho (GeV/#it{c})");
+      fHistRhoVSRCPt[i]->GetYaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+      fOutput->Add(fHistRhoVSRCPt[i]);
 
-    histname = "fHistRCPtRand_";
-    histname += i;
-    fHistRCPtRand[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
-    fHistRCPtRand[i]->GetXaxis()->SetTitle("rigid cone #it{p}_{T}^{RC} (GeV/#it{c})");
-    fHistRCPtRand[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistRCPtRand[i]);
+      histname = "fHistDeltaPtRC_";
+      histname += i;
+      fHistDeltaPtRC[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaPtRC[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
+      fHistDeltaPtRC[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistDeltaPtRC[i]);
+      
+      if (!fJetsName.IsNull()) {
+	histname = "fHistRCPtExLJ_";
+	histname += i;
+	fHistRCPtExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
+	fHistRCPtExLJ[i]->GetXaxis()->SetTitle("#it{p}_{T}^{RC} (GeV/#it{c})");
+	fHistRCPtExLJ[i]->GetYaxis()->SetTitle("counts");
+	fOutput->Add(fHistRCPtExLJ[i]);
 
-    histname = "fHistRhoVSRCPt_";
-    histname += i;
-    fHistRhoVSRCPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
-    fHistRhoVSRCPt[i]->GetXaxis()->SetTitle("A#rho (GeV/#it{c})");
-    fHistRhoVSRCPt[i]->GetYaxis()->SetTitle("rigid cone #it{p}_{T} (GeV/#it{c})");
-    fOutput->Add(fHistRhoVSRCPt[i]);
+	histname = "fHistDeltaPtRCExLJ_";
+	histname += i;
+	fHistDeltaPtRCExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
+	fHistDeltaPtRCExLJ[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
+	fHistDeltaPtRCExLJ[i]->GetYaxis()->SetTitle("counts");
+	fOutput->Add(fHistDeltaPtRCExLJ[i]);
+      }
+    }
 
-    histname = "fHistDeltaPtRC_";
-    histname += i;
-    fHistDeltaPtRC[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-    fHistDeltaPtRC[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
-    fHistDeltaPtRC[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistDeltaPtRC[i]);
+    if (!fRandTracksName.IsNull() || !fRandCaloName.IsNull()) {
+      histname = "fHistRCPtRand_";
+      histname += i;
+      fHistRCPtRand[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
+      fHistRCPtRand[i]->GetXaxis()->SetTitle("#it{p}_{T}^{RC} (GeV/#it{c})");
+      fHistRCPtRand[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistRCPtRand[i]);
 
-    histname = "fHistDeltaPtRCExLJ_";
-    histname += i;
-    fHistDeltaPtRCExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-    fHistDeltaPtRCExLJ[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
-    fHistDeltaPtRCExLJ[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistDeltaPtRCExLJ[i]);
+      histname = "fHistDeltaPtRCRand_";
+      histname += i;
+      fHistDeltaPtRCRand[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaPtRCRand[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
+      fHistDeltaPtRCRand[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistDeltaPtRCRand[i]);
+    }
 
-    histname = "fHistDeltaPtRCRand_";
-    histname += i;
-    fHistDeltaPtRCRand[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-    fHistDeltaPtRCRand[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
-    fHistDeltaPtRCRand[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistDeltaPtRCRand[i]);
 
     if (!fEmbJetsName.IsNull()) {
       histname = "fHistEmbJetsPtArea_";
       histname += i;
       fHistEmbJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
       fHistEmbJetsPtArea[i]->GetXaxis()->SetTitle("area");
-      fHistEmbJetsPtArea[i]->GetYaxis()->SetTitle("embedded jet #it{p}_{T}^{raw} (GeV/#it{c})");
+      fHistEmbJetsPtArea[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb,raw} (GeV/#it{c})");
       fOutput->Add(fHistEmbJetsPtArea[i]);
 
       histname = "fHistEmbJetsCorrPtArea_";
       histname += i;
       fHistEmbJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins * 2, -fMaxBinPt, fMaxBinPt);
       fHistEmbJetsCorrPtArea[i]->GetXaxis()->SetTitle("area");
-      fHistEmbJetsCorrPtArea[i]->GetYaxis()->SetTitle("embedded jet #it{p}_{T}^{corr} (GeV/#it{c})");
+      fHistEmbJetsCorrPtArea[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb,corr} (GeV/#it{c})");
       fOutput->Add(fHistEmbJetsCorrPtArea[i]);
 
-      histname = "fHistEmbPartPt_";
+      histname = "fHistEmbPartPtvsJetPt_";
       histname += i;
-      fHistEmbPartPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
-      fHistEmbPartPt[i]->GetXaxis()->SetTitle("embedded particle #it{p}_{T}^{emb} (GeV/#it{c})");
-      fHistEmbPartPt[i]->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistEmbPartPt[i]);
+      fHistEmbPartPtvsJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbPartPtvsJetPt[i]->GetXaxis()->SetTitle("#sum#it{p}_{T,const}^{emb} (GeV/#it{c})");
+      fHistEmbPartPtvsJetPt[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} (GeV/#it{c})");
+      fHistEmbPartPtvsJetPt[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistEmbPartPtvsJetPt[i]);
 
-      histname = "fHistDistEmbPartJetAxis_";
+      histname = "fHistLeadPartPtvsArea_";
       histname += i;
-      fHistDistEmbPartJetAxis[i] = new TH1F(histname.Data(), histname.Data(), 50, 0, 0.5);
-      fHistDistEmbPartJetAxis[i]->GetXaxis()->SetTitle("distance");
-      fHistDistEmbPartJetAxis[i]->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistDistEmbPartJetAxis[i]);
+      fHistLeadPartPtvsArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+      fHistLeadPartPtvsArea[i]->GetXaxis()->SetTitle("area");
+      fHistLeadPartPtvsArea[i]->GetYaxis()->SetTitle("#it{p}_{T,const}^{leading} (GeV/#it{c})");
+      fOutput->Add(fHistLeadPartPtvsArea[i]);
+
+      histname = "fHistDistLeadPart2JetAxis_";
+      histname += i;
+      fHistDistLeadPart2JetAxis[i] = new TH1F(histname.Data(), histname.Data(), 50, 0, 0.5);
+      fHistDistLeadPart2JetAxis[i]->GetXaxis()->SetTitle("distance");
+      fHistDistLeadPart2JetAxis[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistDistLeadPart2JetAxis[i]);
 
       histname = "fHistEmbNotFoundPhiEta_";
       histname += i;
@@ -237,18 +260,25 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       fHistEmbNotFoundPhiEta[i]->GetYaxis()->SetTitle("#phi");
       fOutput->Add(fHistEmbNotFoundPhiEta[i]);
 
+      histname = "fHistEmbNotFoundPt_";
+      histname += i;
+      fHistEmbNotFoundPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbNotFoundPt[i]->GetXaxis()->SetTitle("#it{p}_{T,const}^{emb} (GeV/#it{c})");
+      fHistEmbNotFoundPt[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistEmbNotFoundPt[i]);
+
       histname = "fHistEmbBkgArea_";
       histname += i;
       fHistEmbBkgArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
       fHistEmbBkgArea[i]->GetXaxis()->SetTitle("area");
-      fHistEmbBkgArea[i]->GetYaxis()->SetTitle("background of embedded track (GeV/#it{c})");
+      fHistEmbBkgArea[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} - #sum#it{p}_{T,const}^{emb} (GeV/#it{c})");
       fOutput->Add(fHistEmbBkgArea[i]);
 
       histname = "fHistRhoVSEmbBkg_";
       histname += i;
       fHistRhoVSEmbBkg[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
       fHistRhoVSEmbBkg[i]->GetXaxis()->SetTitle("A#rho (GeV/#it{c})");
-      fHistRhoVSEmbBkg[i]->GetYaxis()->SetTitle("background of embedded track (GeV/#it{c})");
+      fHistRhoVSEmbBkg[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} - #sum#it{p}_{T,const}^{emb} (GeV/#it{c})");
       fOutput->Add(fHistRhoVSEmbBkg[i]);
       
       histname = "fHistDeltaPtEmbArea_";
@@ -268,50 +298,61 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
 {
   // Fill histograms.
 
-  Int_t *sortedJets = GetSortedArray(fJets);
-  
-  AliEmcalJet* jet = 0;
-
-  if (sortedJets && sortedJets[0] > 0) 
-    jet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[0]));
-
   // ************
   // Random cones
   // _________________________________
   
   const Float_t rcArea = fJetRadius * fJetRadius * TMath::Pi();
-
-  for (Int_t i = 0; i < fRCperEvent; i++) {
-    // Simple random cones
-    Float_t RCpt = 0;
-    Float_t RCeta = 0;
-    Float_t RCphi = 0;
-    GetRandomCone(RCpt, RCeta, RCphi, 0);
-    if (RCpt > 0) {
-      fHistRCPhiEta->Fill(RCeta, RCphi);
-      fHistRhoVSRCPt[fCentBin]->Fill(fRhoVal * rcArea, RCpt);
-
-      fHistRCPt[fCentBin]->Fill(RCpt);
-      fHistDeltaPtRC[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
-    }
+  Float_t RCpt = 0;
+  Float_t RCeta = 0;
+  Float_t RCphi = 0;
   
-    // Random cones far from leading jet
-    RCpt = 0;
-    RCeta = 0;
-    RCphi = 0;
-    GetRandomCone(RCpt, RCeta, RCphi, jet);
-    if (RCpt > 0) {
-      if (jet) {
-	Float_t dphi = RCphi - jet->Phi();
-	if (dphi > 4.8) dphi -= TMath::Pi() * 2;
-	if (dphi < -1.6) dphi += TMath::Pi() * 2; 
-	fHistRCPtExLJVSDPhiLJ->Fill(RCpt, dphi);
-      }
-      fHistRCPtExLJ[fCentBin]->Fill(RCpt);
-      fHistDeltaPtRCExLJ[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
-    }
+  if (fTracks || fCaloClusters) {
     
-    // Random cones with randomized particles
+    for (Int_t i = 0; i < fRCperEvent; i++) {
+      // Simple random cones
+      RCpt = 0;
+      RCeta = 0;
+      RCphi = 0;
+      GetRandomCone(RCpt, RCeta, RCphi, 0);
+      if (RCpt > 0) {
+	fHistRCPhiEta->Fill(RCeta, RCphi);
+	fHistRhoVSRCPt[fCentBin]->Fill(fRhoVal * rcArea, RCpt);
+	
+	fHistRCPt[fCentBin]->Fill(RCpt);
+	fHistDeltaPtRC[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
+      }
+      
+      if (fJets) {
+
+	// Random cones far from leading jet
+	Int_t *sortedJets = GetSortedArray(fJets);
+	
+	AliEmcalJet* jet = 0;
+	
+	if (sortedJets && sortedJets[0] > 0) 
+	  jet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[0]));
+	
+	RCpt = 0;
+	RCeta = 0;
+	RCphi = 0;
+	GetRandomCone(RCpt, RCeta, RCphi, jet);
+	if (RCpt > 0) {
+	  if (jet) {
+	    Float_t dphi = RCphi - jet->Phi();
+	    if (dphi > 4.8) dphi -= TMath::Pi() * 2;
+	    if (dphi < -1.6) dphi += TMath::Pi() * 2; 
+	    fHistRCPtExLJVSDPhiLJ->Fill(RCpt, dphi);
+	  }
+	  fHistRCPtExLJ[fCentBin]->Fill(RCpt);
+	  fHistDeltaPtRCExLJ[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
+	}
+      }
+    }
+  }
+  
+  // Random cones with randomized particles
+  if (fRandTracks || fRandCaloClusters) {
     RCpt = 0;
     RCeta = 0;
     RCphi = 0;
@@ -321,109 +362,105 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
       fHistDeltaPtRCRand[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
     }  
   }
-  
+
   // ************
   // Embedding
   // _________________________________
 
-  if (!fEmbJets)
-    return kTRUE;
+  if (fEmbJets) {
+    
+    AliEmcalJet *embJet = NextEmbeddedJet(0);
+    
+    Int_t countEmbJets = 0;
+    
+    while (embJet != 0) {
+      
+      countEmbJets++;
+      
+      Double_t maxClusterPt = 0;
+      Double_t maxClusterEta = 0;
+      Double_t maxClusterPhi = 0;
 
-  AliEmcalJet *embJet = NextEmbeddedJet(0);
-
-  Int_t countEmbJets = 0;
-
-  while (embJet != 0) {
-
-    countEmbJets++;
-
-    Double_t maxClusterPt = 0;
-    Double_t maxClusterEta = 0;
-    Double_t maxClusterPhi = 0;
-
-    Double_t maxTrackPt = 0;
-    Double_t maxTrackEta = 0;
-    Double_t maxTrackPhi = 0;
-
-    Double_t probePt = 0;
-    Double_t probeEta = 0;
-    Double_t probePhi = 0;
-
-    AliVCluster *cluster = embJet->GetLeadingCluster(fEmbCaloClusters);
-    if (cluster) {
-      TLorentzVector nPart;
-      cluster->GetMomentum(nPart, fVertex);
-
-      maxClusterEta = nPart.Eta();
-      maxClusterPhi = nPart.Phi();
-      maxClusterPt = nPart.Pt();
-    }
-
-    AliVParticle *track = embJet->GetLeadingTrack(fEmbTracks);
-    if (track) {
-      maxTrackEta = track->Eta();
-      maxTrackPhi = track->Phi();
-      maxTrackPt = track->Pt();
-    }
-
-    if (!track && !cluster) {
-      AliWarning(Form("%s - Embedded jet found but no leading particle was found (?) !", GetName()));
-      return kTRUE;
-    }
-
-    if (maxTrackPt > maxClusterPt) {
-      probePt = maxTrackPt;
-      probeEta = maxTrackEta;
-      probePhi = maxTrackPhi;
-    }
-    else {
-      probePt = maxClusterPt;
-      probeEta = maxClusterEta;
-      probePhi = maxClusterPhi;
-    }
-
-    Double_t distProbeJet = TMath::Sqrt((embJet->Eta() - probeEta) * (embJet->Eta() - probeEta) + (embJet->Phi() - probePhi) * (embJet->Phi() - probePhi));
-
-    fHistEmbPartPt[fCentBin]->Fill(probePt);
-    fHistEmbPartPhiEta->Fill(probeEta, probePhi);
-    fHistDistEmbPartJetAxis[fCentBin]->Fill(distProbeJet);
-
-    fHistEmbJetsPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt());
-    fHistEmbJetsCorrPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - fRhoVal * embJet->Area());
-    fHistEmbJetPhiEta->Fill(embJet->Eta(), embJet->Phi());
-
-    fHistEmbBkgArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->MCPt());
-    fHistRhoVSEmbBkg[fCentBin]->Fill(fRhoVal * embJet->Area(), embJet->Pt() - embJet->MCPt());
-    fHistDeltaPtEmbArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->Area() * fRhoVal - embJet->MCPt());
-
-    embJet = NextEmbeddedJet();
-  }
-
-  if (countEmbJets==0) {
-    if (fEmbTracks) {
-      DoEmbTrackLoop();
-      AliVParticle* maxTrack = 0;
-      for (Int_t i = 0; i < fEmbeddedTrackNIds; i++) {
-	AliVParticle *track2 = static_cast<AliVParticle*>(fEmbTracks->At(fEmbeddedTrackIds[i]));
-	if (!maxTrack || track2->Pt() > maxTrack->Pt())
-	  maxTrack = track2;
-      }
-      if (maxTrack)
-	fHistEmbNotFoundPhiEta[fCentBin]->Fill(maxTrack->Eta(), maxTrack->Phi());
-    }
-
-    if (fEmbCaloClusters) {
-      DoEmbClusterLoop();
-      TLorentzVector maxCluster;
-      for (Int_t i = 0; i < fEmbeddedClusterNIds; i++) {
-	AliVCluster *cluster2 = static_cast<AliVCluster*>(fEmbCaloClusters->At(fEmbeddedClusterIds[i]));
+      Double_t maxTrackPt = 0;
+      Double_t maxTrackEta = 0;
+      Double_t maxTrackPhi = 0;
+      
+      Double_t maxPartPt = 0;
+      Double_t maxPartEta = 0;
+      Double_t maxPartPhi = 0;
+      
+      AliVCluster *cluster = embJet->GetLeadingCluster(fEmbCaloClusters);
+      if (cluster) {
 	TLorentzVector nPart;
-	cluster2->GetMomentum(nPart, fVertex);
-	if (nPart.Pt() > maxCluster.Pt())
-	  maxCluster = nPart;
+	cluster->GetMomentum(nPart, fVertex);
+	
+	maxClusterEta = nPart.Eta();
+	maxClusterPhi = nPart.Phi();
+	maxClusterPt = nPart.Pt();
       }
-      if (maxCluster.Pt() > 0)
-	fHistEmbNotFoundPhiEta[fCentBin]->Fill(maxCluster.Eta(), maxCluster.Phi());
+      
+      AliVParticle *track = embJet->GetLeadingTrack(fEmbTracks);
+      if (track) {
+	maxTrackEta = track->Eta();
+	maxTrackPhi = track->Phi();
+	maxTrackPt = track->Pt();
+      }
+      
+      if (!track && !cluster) {
+	AliWarning(Form("%s - Embedded jet found but no leading particle was found (?) !", GetName()));
+	return kTRUE;
+      }
+      
+      if (maxTrackPt > maxClusterPt) {
+	maxPartPt = maxTrackPt;
+	maxPartEta = maxTrackEta;
+	maxPartPhi = maxTrackPhi;
+      }
+      else {
+	maxPartPt = maxClusterPt;
+	maxPartEta = maxClusterEta;
+	maxPartPhi = maxClusterPhi;
+      }
+      
+      Double_t distLeading2Jet = TMath::Sqrt((embJet->Eta() - maxPartEta) * (embJet->Eta() - maxPartEta) + (embJet->Phi() - maxPartPhi) * (embJet->Phi() - maxPartPhi));
+      
+      fHistEmbPartPtvsJetPt[fCentBin]->Fill(embJet->MCPt(), embJet->Pt());
+      fHistLeadPartPhiEta->Fill(maxPartEta, maxPartPhi);
+      fHistLeadPartPtvsArea[fCentBin]->Fill(maxPartPt, embJet->Area());
+      fHistDistLeadPart2JetAxis[fCentBin]->Fill(distLeading2Jet);
+      
+      fHistEmbJetsPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt());
+      fHistEmbJetsCorrPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - fRhoVal * embJet->Area());
+      fHistEmbJetsPhiEta->Fill(embJet->Eta(), embJet->Phi());
+      
+      fHistEmbBkgArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->MCPt());
+      fHistRhoVSEmbBkg[fCentBin]->Fill(fRhoVal * embJet->Area(), embJet->Pt() - embJet->MCPt());
+      fHistDeltaPtEmbArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->Area() * fRhoVal - embJet->MCPt());
+
+      embJet = NextEmbeddedJet();
+    }
+
+    if (countEmbJets==0) {
+      if (fEmbTracks) {
+	DoEmbTrackLoop();
+	for (Int_t i = 0; i < fEmbeddedTrackNIds; i++) {
+	  AliVParticle *track2 = static_cast<AliVParticle*>(fEmbTracks->At(fEmbeddedTrackIds[i]));
+	  if (!track2) continue;
+	  fHistEmbNotFoundPhiEta[fCentBin]->Fill(track2->Eta(), track2->Phi());
+	  fHistEmbNotFoundPt[fCentBin]->Fill(track2->Pt());
+	}
+      }
+      
+      if (fEmbCaloClusters) {
+	DoEmbClusterLoop();
+	for (Int_t i = 0; i < fEmbeddedClusterNIds; i++) {
+	  AliVCluster *cluster2 = static_cast<AliVCluster*>(fEmbCaloClusters->At(fEmbeddedClusterIds[i]));
+	  TLorentzVector nPart;
+	  cluster2->GetMomentum(nPart, fVertex);
+	  fHistEmbNotFoundPhiEta[fCentBin]->Fill(nPart.Eta(), nPart.Phi());
+	  fHistEmbNotFoundPt[fCentBin]->Fill(nPart.Pt());
+	}
+      }
     }
   }
 

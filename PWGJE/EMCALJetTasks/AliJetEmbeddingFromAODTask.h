@@ -10,6 +10,7 @@ class TString;
 class AliVCaloCells;
 class AliVHeader;
 class TH2;
+class TH1;
 
 #include "AliJetModelBaseTask.h"
 
@@ -34,15 +35,19 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)      { fAODfilterBits[0]   = b0    ; fAODfilterBits[1] = b1  ; }
   void           SetIncludeNoITS(Bool_t f)                         { fIncludeNoITS       = f     ; }
   void           SetTotalFiles(Int_t n)                            { fTotalFiles         = n     ; }
+  void           SetAttempts(Int_t n)                              { fAttempts           = n     ; }
+  void           SetRandomAccess(Bool_t r=kTRUE)                   { fRandomAccess       = r     ; }
 
  protected:
-  Bool_t         ExecOnce()            ;// intialize task
-  void           Run()                 ;// do jet model action
-  Bool_t         OpenNextFile()        ;// open next file in fFileList
-  Bool_t         GetNextEntry()        ;// get next entry in current tree
-  Bool_t         IsAODEventSelected()  ;// AOD event trigger/centrality selection
+  Bool_t          ExecOnce()            ;// intialize task
+  void            Run()                 ;// do jet model action
+  virtual TString GetNextFileName()     ;// get next file name from fFileList
+  virtual Bool_t  OpenNextFile()        ;// open next file
+  virtual Bool_t  GetNextEntry()        ;// get next entry in current tree
+  virtual Bool_t  IsAODEventSelected()  ;// AOD event trigger/centrality selection
 
-  TObjArray     *fFileList            ;//  List of AOD files
+  TObjArray     *fFileList            ;//  List of AOD files 
+  Bool_t         fRandomAccess        ;//  Random access to file number and event
   TString        fAODTreeName         ;//  Name of the tree in the AOD file
   TString        fAODHeaderName       ;//  Name of the header in the AOD tree
   TString        fAODVertexName       ;//  Name of the vertex branch in the AOD tree
@@ -57,23 +62,28 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   Int_t          fAODfilterBits[2]    ;//  AOD track filter bit map
   Bool_t         fIncludeNoITS        ;//  True = includes tracks with failed ITS refit
   Int_t          fTotalFiles          ;//  Total number of files per pt hard bin
+  Int_t          fAttempts            ;//  Attempts to be tried before giving up in opening the next file
   Bool_t         fEsdTreeMode         ;//! True = embed from ESD (must be a skimmed ESD!)
-  Int_t          fCurrentFileID       ;//! Current file being processed (trough the event handler)
+  Int_t          fCurrentFileID       ;//! Current file being processed (via the event handler)
   Int_t          fCurrentAODFileID    ;//! Current file ID
   TFile         *fCurrentAODFile      ;//! Current open file
   Int_t          fPicoTrackVersion    ;//! Version of the PicoTrack class (if any) in fCurrentAODFile
+  TTree         *fCurrentAODTree      ;//! Current open tree
   AliVHeader    *fAODHeader           ;//! AOD header
   TClonesArray  *fAODVertex           ;//! AOD vertex
   TClonesArray  *fAODTracks           ;//! AOD track collection
   TClonesArray  *fAODClusters         ;//! AOD cluster collection
   AliVCaloCells *fAODCaloCells        ;//! AOD cell collection
   TClonesArray  *fAODMCParticles      ;//! AOD MC particles collection
-  TH2           *fHistFileIDs         ;//! Current file ID vs. AOD file ID (to be embedded)
+  Int_t          fCurrentAODEntry     ;//! Current entry in the AOD tree
+  TH2           *fHistFileMatching    ;//! Current file ID vs. AOD file ID (to be embedded)
+  TH1           *fHistAODFileError    ;//! AOD file ID (to be embedded) error
+  TH1           *fHistNotEmbedded     ;//! File ID not embedded
 
  private:
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
   AliJetEmbeddingFromAODTask &operator=(const AliJetEmbeddingFromAODTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromAODTask, 3) // Jet embedding from AOD task
+  ClassDef(AliJetEmbeddingFromAODTask, 4) // Jet embedding from AOD task
 };
 #endif

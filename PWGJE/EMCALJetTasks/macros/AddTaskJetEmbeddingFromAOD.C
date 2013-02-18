@@ -13,7 +13,7 @@ AliJetEmbeddingFromAODTask* AddTaskJetEmbeddingFromAOD(
   const char     *aodClusName   = "",
   const char     *aodCellsName  = "emcalCells",
   const char     *aodMCPartName = "",
-  const char     *runperiod     = "",
+  const char     *runperiod     = "lhc11h",
   Bool_t          includeNoITS  = kTRUE,
   Double_t        minCent       = 0,
   Double_t        maxCent       = 10,
@@ -74,7 +74,6 @@ AliJetEmbeddingFromAODTask* AddTaskJetEmbeddingFromAOD(
   jetEmb->SetEtaRange(minEta, maxEta);
   jetEmb->SetPhiRange(minPhi, maxPhi);
   jetEmb->SetPtRange(minPt, maxPt);
-  jetEmb->SetMarkMC(-1);
 
   jetEmb->SetIncludeNoITS(includeNoITS);
   TString runPeriod(runperiod);

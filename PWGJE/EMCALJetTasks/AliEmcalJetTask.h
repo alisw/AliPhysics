@@ -11,6 +11,24 @@ class AliVEvent;
 
 class AliEmcalJetTask : public AliAnalysisTaskSE {
  public:
+
+  enum JetType {
+    kNone=0,
+    kKT=1<<0,
+    kAKT=1<<1,
+    kFullJet=1<<2,
+    kChargedJet=1<<3,
+    kNeutralJet=1<<4,
+    kR020Jet=1<<5,
+    kR030Jet=1<<6,
+    kR040Jet=1<<7,
+    kRX1Jet=1<<8,  // user defined radii, use SetRadius(Double_t)
+    kRX2Jet=1<<9,
+    kRX3Jet=1<<10,
+    kAllJets=kKT|kAKT|kFullJet|kChargedJet|kNeutralJet|kR020Jet|kR030Jet|kR040Jet|kRX1Jet|kRX2Jet|kRX3Jet
+  };
+
+
   AliEmcalJetTask();
   AliEmcalJetTask(const char *name);
   virtual ~AliEmcalJetTask();
@@ -19,16 +37,21 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   UserExec(Option_t *option);
   void                   Terminate(Option_t *option);
 
-  void                   SetAlgo(Int_t a)                 { fAlgo          = a     ; }
+  void                   SelectConstituents(UInt_t constSel, UInt_t MCconstSel)  { fConstSel = constSel; fMCConstSel = MCconstSel; };
+  void                   SetAlgo(Int_t a)                 { if (a==0) fJetType |= kKT; else fJetType |= kAKT; }  // for backward compatibility only
   void                   SetClusName(const char *n)       { fCaloName      = n     ; }
   void                   SetJetsName(const char *n)       { fJetsName      = n     ; }
+  void                   SetJetType(UInt_t t)             { fJetType       = t     ; }
+  void                   SetMarkConstituents(Bool_t m)    { fMarkConst     = m     ; }
   void                   SetMinJetArea(Double_t a)        { fMinJetArea    = a     ; }
   void                   SetMinJetClusPt(Double_t min)    { fMinJetClusPt  = min   ; }
   void                   SetMinJetPt(Double_t j)          { fMinJetPt      = j     ; }
   void                   SetMinJetTrackPt(Double_t min)   { fMinJetTrackPt = min   ; }
-  void                   SetRadius(Double_t r)            { fRadius        = r     ; }
+  void                   SetRadius(Double_t r)            { fRadius        = r     ; if ((fJetType & (kRX1Jet|kRX2Jet|kRX3Jet)) == 0) AliWarning("Radius value will be ignored if jet type is not set to a user defined radius (kRX1Jet,kRX2Jet,kRX3Jet)."); }
   void                   SetTracksName(const char *n)     { fTracksName    = n     ; }
-  void                   SetType(Int_t t)                 { fType          = t     ; }
+  void                   SetType(Int_t t)                 { if (t==0) fJetType |= kFullJet; 
+                                                            else if (t==1) fJetType |= kChargedJet; 
+                                                            else if (t==2) fJetType |= kNeutralJet; } // for backward compatibility only
   void                   SetEtaRange(Double_t emi, Double_t ema) {fEtaMin = emi; fEtaMax = ema; }
   void                   SetPhiRange(Double_t pmi, Double_t pma) {fPhiMin = pmi; fPhiMax = pma; }
   void                   SetGhostArea(Double_t gharea)    { fGhostArea      = gharea;  }
@@ -45,6 +68,9 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
       fOfflineTriggerMask = fOfflineTriggerMask | offlineTriggerMask;
     }
   }
+
+  UInt_t                 GetJetType()                     { return fJetType; }
+
  protected:
   void                   FindJets();
   Bool_t                 DoInit();
@@ -52,9 +78,11 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection
   TString                fJetsName;               // name of jet collection
-  Int_t                  fAlgo;                   // algo (0==kt, 1==antikt)
+  UInt_t                 fJetType;                // jet type (algorithm, radius, constituents)
+  UInt_t                 fConstSel;               // select constituents from a previous jet finding
+  UInt_t                 fMCConstSel;             // select MC constituents (label!=0) from a previous jet finding
+  Bool_t                 fMarkConst;              // =true constituents are marked (via TObject::SetBit) as belonging to the jet
   Double_t               fRadius;                 // jet radius
-  Int_t                  fType;                   // jet type (0=all, 1=ch, 2=neutral)
   Double_t               fMinJetTrackPt;          // min jet track momentum   (applied before clustering)
   Double_t               fMinJetClusPt;           // min jet cluster momentum (applied before clustering)
   Double_t               fPhiMin;                 // minimum phi for constituents (applied before clustering)
@@ -77,6 +105,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 5) // Jet producing task
+  ClassDef(AliEmcalJetTask, 6) // Jet producing task
 };
 #endif

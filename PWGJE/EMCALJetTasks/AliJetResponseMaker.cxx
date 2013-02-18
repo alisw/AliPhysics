@@ -62,7 +62,8 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistJets2PtAreaAcceptance(0),
   fHistJets2CorrPtAreaAcceptance(0),
   fHistMatchingLevelvsJet2Pt(0),
-  fHistDistancevsCommonEnergy(0),
+  fHistDistancevsCommonEnergy1(0),
+  fHistDistancevsCommonEnergy2(0),
   fHistDeltaEtaPhivsJet2Pt(0),
   fHistDeltaPtvsJet2Pt(0),
   fHistDeltaPtvsMatchingLevel(0),
@@ -121,7 +122,8 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistJets2PtAreaAcceptance(0),
   fHistJets2CorrPtAreaAcceptance(0),
   fHistMatchingLevelvsJet2Pt(0),
-  fHistDistancevsCommonEnergy(0),
+  fHistDistancevsCommonEnergy1(0),
+  fHistDistancevsCommonEnergy2(0),
   fHistDeltaEtaPhivsJet2Pt(0),
   fHistDeltaPtvsJet2Pt(0),
   fHistDeltaPtvsMatchingLevel(0),
@@ -232,11 +234,17 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistMatchingLevelvsJet2Pt->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistMatchingLevelvsJet2Pt);
 
-  fHistDistancevsCommonEnergy = new TH2F("fHistDistancevsCommonEnergy", "fHistDistancevsCommonEnergy", fNbins/2, 0, 1.2, fNbins/2, 0, 1.2);
-  fHistDistancevsCommonEnergy->GetXaxis()->SetTitle("Distance");
-  fHistDistancevsCommonEnergy->GetYaxis()->SetTitle("Common energy (%)");  
-  fHistDistancevsCommonEnergy->GetZaxis()->SetTitle("counts");
-  fOutput->Add(fHistDistancevsCommonEnergy);
+  fHistDistancevsCommonEnergy1 = new TH2F("fHistDistancevsCommonEnergy1", "fHistDistancevsCommonEnergy1", fNbins/2, 0, 1.2, fNbins/2, 0, 1.2);
+  fHistDistancevsCommonEnergy1->GetXaxis()->SetTitle("Distance");
+  fHistDistancevsCommonEnergy1->GetYaxis()->SetTitle("Common energy 1 (%)");  
+  fHistDistancevsCommonEnergy1->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistDistancevsCommonEnergy1);
+
+  fHistDistancevsCommonEnergy2 = new TH2F("fHistDistancevsCommonEnergy2", "fHistDistancevsCommonEnergy2", fNbins/2, 0, 1.2, fNbins/2, 0, 1.2);
+  fHistDistancevsCommonEnergy2->GetXaxis()->SetTitle("Distance");
+  fHistDistancevsCommonEnergy2->GetYaxis()->SetTitle("Common energy 2 (%)");  
+  fHistDistancevsCommonEnergy2->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistDistancevsCommonEnergy2);
 
   fHistDeltaEtaPhivsJet2Pt = new TH3F("fHistDeltaEtaPhivsJet2Pt", "fHistDeltaEtaPhivsJet2Pt", 40, -1, 1, 128, -1.6, 4.8, fNbins/2, fMinBinPt, fMaxBinPt);
   fHistDeltaEtaPhivsJet2Pt->GetXaxis()->SetTitle("#Delta#eta");
@@ -916,11 +924,13 @@ Bool_t AliJetResponseMaker::FillHistograms()
 	  else if ((fAreCollections1MC && fAreCollections2MC) || (!fAreCollections1MC && !fAreCollections2MC))
 	    GetSameCollectionsMatchingLevel(jet2->MatchedJet(), jet2, d1, d2);
 
-	  fHistDistancevsCommonEnergy->Fill(jet2->ClosestJetDistance(), d2);
+	  fHistDistancevsCommonEnergy1->Fill(jet2->ClosestJetDistance(), d1);
+	  fHistDistancevsCommonEnergy2->Fill(jet2->ClosestJetDistance(), d2);
 	}
 	else if (jet2->GetMatchingType() == kMCLabel || jet2->GetMatchingType() == kSameCollections) {
 	  GetGeometricalMatchingLevel(jet2->MatchedJet(), jet2, d1);
-	  fHistDistancevsCommonEnergy->Fill(d1, jet2->ClosestJetDistance());
+	  fHistDistancevsCommonEnergy1->Fill(d1, jet2->MatchedJet()->ClosestJetDistance());
+	  fHistDistancevsCommonEnergy2->Fill(d1, jet2->ClosestJetDistance());
 	}
 	  
 	fHistMatchingLevelvsJet2Pt->Fill(jet2->ClosestJetDistance(), jet2->Pt());

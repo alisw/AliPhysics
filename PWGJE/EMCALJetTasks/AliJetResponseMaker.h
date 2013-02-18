@@ -96,7 +96,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistJets2CorrPtAreaAcceptance; //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
   // Jet1-Jet2 matching
   TH2                        *fHistMatchingLevelvsJet2Pt;              //!matching level vs jet 2 pt
-  TH2                        *fHistDistancevsCommonEnergy;             //!distance vs common energy (%)
+  TH2                        *fHistDistancevsCommonEnergy1;            //!distance vs common energy 1 (%)
+  TH2                        *fHistDistancevsCommonEnergy2;            //!distance vs common energy 2 (%)
   TH3                        *fHistDeltaEtaPhivsJet2Pt;                //!delta eta-phi between matched jets vs jet 2 pt
   TH2                        *fHistDeltaPtvsJet2Pt;                    //!delta pt between matched jets vs jet 2 pt
   TH2                        *fHistDeltaPtvsMatchingLevel;             //!delta pt between matched jets vs matching level

@@ -32,9 +32,11 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
-  fAlgo(1),
+  fJetType(kNone),
+  fConstSel(kAllJets),
+  fMCConstSel(kAllJets),
+  fMarkConst(kFALSE),
   fRadius(0.4),
-  fType(0),
   fMinJetTrackPt(0.15),
   fMinJetClusPt(0.15),
   fPhiMin(0),
@@ -62,9 +64,11 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
-  fAlgo(1),
+  fJetType(kAKT|kFullJet|kRX1Jet),
+  fConstSel(kAllJets),
+  fMCConstSel(kAllJets),
+  fMarkConst(kFALSE),
   fRadius(0.4),
-  fType(0),
   fMinJetTrackPt(0.15),
   fMinJetClusPt(0.15),
   fPhiMin(0),
@@ -133,10 +137,17 @@ void AliEmcalJetTask::FindJets()
 
   TString name("kt");
   fastjet::JetAlgorithm jalgo(fastjet::kt_algorithm);
-  if (fAlgo>=1) {
+  if ((fJetType & kAKT) != 0) {
     name  = "antikt";
     jalgo = fastjet::antikt_algorithm;
   }
+
+  if ((fJetType & kR020Jet) != 0)
+    fRadius = 0.2;
+  else if ((fJetType & kR030Jet) != 0)
+    fRadius = 0.3; 
+  else if ((fJetType & kR040Jet) != 0)
+    fRadius = 0.4;
 
   // setup fj wrapper
   AliFJWrapper fjw(name, name);
@@ -151,16 +162,32 @@ void AliEmcalJetTask::FindJets()
   Double_t vertex[3] = {0, 0, 0};
   fEvent->GetPrimaryVertex()->GetXYZ(vertex);
 
-  if ((fIsMcPart || fType == 0 || fType == 1) && fTracks) {
+  AliDebug(2,Form("Jet type = %d)", fJetType));
+
+  if ((fIsMcPart || ((fJetType & kFullJet) != 0) || ((fJetType & kChargedJet) != 0)) && fTracks) {
     const Int_t Ntracks = fTracks->GetEntries();
     for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
       AliVParticle *t = static_cast<AliVParticle*>(fTracks->At(iTracks));
       if (!t)
         continue;
-      if (fIsMcPart && fType == 1 && t->Charge() == 0)
-	continue;
-      if (fIsMcPart && fType == 2 && t->Charge() != 0)
-	continue;
+      if (fIsMcPart) {
+	if (((fJetType & kChargedJet) != 0) && (t->Charge() == 0))
+	  continue;
+	if (((fJetType & kNeutralJet) != 0) && (t->Charge() != 0))
+	  continue;
+      }
+      if (fIsMcPart || t->GetLabel() != 0) {
+	if (fMCConstSel != kAllJets && t->TestBits(fMCConstSel) != (Int_t)fMCConstSel) {
+	  AliDebug(2,Form("Skipping track %d because it does not match the bit mask (%d, %d)", iTracks, fMCConstSel, t->TestBits(TObject::kBitMask)));
+	  continue;
+	}
+      }
+      else {
+	if (fConstSel != kAllJets && t->TestBits(fConstSel) != (Int_t)fConstSel) {
+	  AliDebug(2,Form("Skipping track %d because it does not match the bit mask (%d, %d)", iTracks, fConstSel, t->TestBits(TObject::kBitMask)));
+	  continue;
+	}
+      }
       if (t->Pt() < fMinJetTrackPt) 
         continue;
       Double_t eta = t->Eta();
@@ -174,7 +201,7 @@ void AliEmcalJetTask::FindJets()
     }
   }
 
-  if ((fType == 0 || fType == 2) && fClus) {
+  if ((((fJetType & kFullJet) != 0) || ((fJetType & kNeutralJet) != 0)) && fClus) {
     const Int_t Nclus = fClus->GetEntries();
     for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
       AliVCluster *c = 0;
@@ -184,9 +211,20 @@ void AliEmcalJetTask::FindJets()
 	AliEmcalParticle *ep = static_cast<AliEmcalParticle*>(fClus->At(iClus));
 	if (!ep)
 	  continue;
+
 	c = ep->GetCluster();
 	if (!c)
-            continue;
+	  continue;
+
+	if (c->GetLabel() > 0) {
+	  if (fMCConstSel != kAllJets && ep->TestBits(fMCConstSel) != (Int_t)fMCConstSel)
+	    continue;
+	}
+	else {
+	  if (fConstSel != kAllJets && ep->TestBits(fConstSel) != (Int_t)fConstSel)
+	    continue;
+	}
+
 	cEta = ep->Eta();
 	cPhi = ep->Phi();
 	cPt  = ep->Pt();
@@ -197,6 +235,16 @@ void AliEmcalJetTask::FindJets()
 	c = static_cast<AliVCluster*>(fClus->At(iClus));
 	if (!c)
 	  continue;
+
+	if (c->GetLabel() > 0) {
+	  if (fMCConstSel != kAllJets && c->TestBits(fMCConstSel) != (Int_t)fMCConstSel)
+	    continue;
+	}
+	else {
+	  if (fConstSel != kAllJets && c->TestBits(fConstSel) != (Int_t)fConstSel)
+	    continue;
+	}
+
 	TLorentzVector nP;
 	c->GetMomentum(nP, vertex);
 	cEta = nP.Eta();
@@ -275,6 +323,8 @@ void AliEmcalJetTask::FindJets()
         AliVParticle *t = static_cast<AliVParticle*>(fTracks->At(tid));
         if (!t)
           continue;
+	if (fMarkConst)
+	  t->SetBit(fJetType);
         Double_t cEta = t->Eta();
         Double_t cPhi = t->Phi();
         Double_t cPt  = t->Pt();
@@ -289,8 +339,7 @@ void AliEmcalJetTask::FindJets()
           if (cPt > maxCh)
             maxCh = cPt;
         }
-
-        if (fIsMcPart || t->GetLabel() > 0) // check if MC particle
+        if (fIsMcPart || t->GetLabel() != 0) // check if MC particle
           mcpt += cPt;
 
         if (cPhi<0) 
@@ -315,6 +364,8 @@ void AliEmcalJetTask::FindJets()
           c = ep->GetCluster();
           if (!c)
             continue;
+	  if (fMarkConst)
+	    ep->SetBit(fJetType);
           cEta = ep->Eta();
           cPhi = ep->Phi();
           cPt  = ep->Pt();
@@ -323,6 +374,8 @@ void AliEmcalJetTask::FindJets()
           c = static_cast<AliVCluster*>(fClus->At(cid));
           if (!c)
             continue;
+	  if (fMarkConst)
+	    c->SetBit(fJetType);
           TLorentzVector nP;
           c->GetMomentum(nP, vertex);
           cEta = nP.Eta();

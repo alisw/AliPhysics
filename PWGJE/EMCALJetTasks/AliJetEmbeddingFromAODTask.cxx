@@ -15,6 +15,7 @@
 #include <TH2C.h>
 #include <TList.h>
 #include <TStreamerInfo.h>
+#include <TRandom.h>
 
 #include "AliVEvent.h"
 #include "AliAODTrack.h"
@@ -37,6 +38,7 @@ ClassImp(AliJetEmbeddingFromAODTask)
 AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() : 
   AliJetModelBaseTask("AliJetEmbeddingFromAODTask"),
   fFileList(0),
+  fRandomAccess(kFALSE),
   fAODTreeName(),
   fAODHeaderName(),
   fAODVertexName(),
@@ -49,19 +51,24 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
   fIncludeNoITS(kTRUE),
-  fTotalFiles(2200),
+  fTotalFiles(2050),
+  fAttempts(5),
   fEsdTreeMode(kFALSE),
   fCurrentFileID(0),
-  fCurrentAODFileID(-1),
+  fCurrentAODFileID(0),
   fCurrentAODFile(0),
   fPicoTrackVersion(0),
+  fCurrentAODTree(0),
   fAODHeader(0),
   fAODVertex(0),
   fAODTracks(0),
   fAODClusters(0),
   fAODCaloCells(0),
   fAODMCParticles(0),
-  fHistFileIDs(0)
+  fCurrentAODEntry(-1),
+  fHistFileMatching(0),
+  fHistAODFileError(0),
+  fHistNotEmbedded(0)
 {
   // Default constructor.
   SetSuffix("AODEmbedding");
@@ -74,6 +81,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
 AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t drawqa) : 
   AliJetModelBaseTask(name, drawqa),
   fFileList(0),
+  fRandomAccess(kFALSE),
   fAODTreeName("aodTree"),
   fAODHeaderName("header"),
   fAODVertexName("vertices"),
@@ -86,19 +94,24 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
   fIncludeNoITS(kTRUE),
-  fTotalFiles(2200),
+  fTotalFiles(2050),
+  fAttempts(5),
   fEsdTreeMode(kFALSE),
   fCurrentFileID(0),
-  fCurrentAODFileID(-1),
+  fCurrentAODFileID(0),
   fCurrentAODFile(0),
   fPicoTrackVersion(0),
+  fCurrentAODTree(0),
   fAODHeader(0),
   fAODVertex(0),
   fAODTracks(0),
   fAODClusters(0),
   fAODCaloCells(0),  
   fAODMCParticles(0),
-  fHistFileIDs(0)
+  fCurrentAODEntry(-1),
+  fHistFileMatching(0),
+  fHistAODFileError(0),
+  fHistNotEmbedded(0)
 {
   // Standard constructor.
   SetSuffix("AODEmbedding");
@@ -126,10 +139,21 @@ void AliJetEmbeddingFromAODTask::UserCreateOutputObjects()
 
   AliJetModelBaseTask::UserCreateOutputObjects();
   
-  fHistFileIDs = new TH2C("fHistFileIDs", "fHistFileIDs", fTotalFiles, -0.5, fTotalFiles - 0.5, fFileList->GetEntriesFast(), -0.5, fFileList->GetEntriesFast() -0.5);
-  fHistFileIDs->GetXaxis()->SetTitle("File no. (PYTHIA)");
-  fHistFileIDs->GetYaxis()->SetTitle("File no. (Embedded AOD)");
-  fOutput->Add(fHistFileIDs);
+  fHistFileMatching = new TH2C("fHistFileMatching", "fHistFileMatching", fTotalFiles, -0.5, fTotalFiles - 0.5, fFileList->GetEntriesFast(), -0.5, fFileList->GetEntriesFast() -0.5);
+  fHistFileMatching->GetXaxis()->SetTitle("File no. (PYTHIA)");
+  fHistFileMatching->GetYaxis()->SetTitle("File no. (Embedded AOD)");
+  fHistFileMatching->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistFileMatching);
+
+  fHistAODFileError = new TH1C("fHistAODFileError", "fHistAODFileError", fFileList->GetEntriesFast(), -0.5, fFileList->GetEntriesFast() -0.5);
+  fHistAODFileError->GetXaxis()->SetTitle("File no. (Embedded AOD)");
+  fHistAODFileError->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistAODFileError);
+
+  fHistNotEmbedded = new TH1C("fHistNotEmbedded", "fHistNotEmbedded", fTotalFiles, -0.5, fTotalFiles - 0.5);
+  fHistNotEmbedded->GetXaxis()->SetTitle("File no. (PYTHIA)");
+  fHistNotEmbedded->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistNotEmbedded);
 
   PostData(1, fOutput);
 }
@@ -147,8 +171,10 @@ Bool_t AliJetEmbeddingFromAODTask::UserNotify()
     return kTRUE;
   }
   fCurrentFileID = path.Atoi();
-  fCurrentAODFileID = fFileList->GetEntriesFast() * fCurrentFileID / fTotalFiles;
-  AliInfo(Form("Start embedding from file ID %d", fCurrentAODFileID));
+  if (!fRandomAccess) {
+    fCurrentAODFileID = fFileList->GetEntriesFast() * fCurrentFileID / fTotalFiles-1;
+    AliInfo(Form("Start embedding from file ID %d", fCurrentAODFileID));
+  }
   return kTRUE;
 }
 
@@ -172,22 +198,33 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
     fCurrentAODFile = 0;
   }
 
-  if (fCurrentAODFileID >= fFileList->GetEntriesFast())
-    return kFALSE;
+  Int_t i = 0;
+  TString fileName;
 
-  TObjString *objFileName = static_cast<TObjString*>(fFileList->At(fCurrentAODFileID));
-  TString fileName = objFileName->GetString();
-  
-  if (fileName.BeginsWith("alien://") && !gGrid) {
+  do {
+    if (i>0) {
+      AliDebug(2,Form("Failed to open file %s...", fileName.Data()));
+      if (fQAhistos)
+	fHistAODFileError->Fill(fCurrentAODFileID);
+    }
+
+    fileName = GetNextFileName();
+
+    if (fileName.IsNull())
+      break;
+    
+    if (fileName.BeginsWith("alien://") && !gGrid) {
       AliInfo("Trying to connect to AliEn ...");
       TGrid::Connect("alien://");
-  }
+    }
 
-  fCurrentAODFile = TFile::Open(fileName);
+    AliDebug(2,Form("Trying to open file %s...", fileName.Data()));
+    fCurrentAODFile = TFile::Open(fileName);
 
-  if (!fCurrentAODFile || fCurrentAODFile->IsZombie()) {
+  } while ((!fCurrentAODFile || fCurrentAODFile->IsZombie()) && i < fAttempts);
+
+  if (!fCurrentAODFile || fCurrentAODFile->IsZombie())
     return kFALSE;
-  }
 
   const TList *clist = fCurrentAODFile->GetStreamerInfoCache();
   if(clist) {
@@ -198,62 +235,75 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
       fPicoTrackVersion = 0;
   }
 
-  if (fQAhistos)
-    fHistFileIDs->Fill(fCurrentFileID, fCurrentAODFileID);
+  fCurrentAODTree = static_cast<TTree*>(fCurrentAODFile->Get(fAODTreeName));
+  if (!fCurrentAODTree)
+    return kFALSE;
+
+  if (!fAODHeaderName.IsNull()) 
+    fCurrentAODTree->SetBranchAddress(fAODHeaderName, &fAODHeader);
   
-  fCurrentAODFileID++;
+  if (!fAODVertexName.IsNull()) 
+    fCurrentAODTree->SetBranchAddress(fAODVertexName, &fAODVertex);
+      
+  if (!fAODTrackName.IsNull()) 
+    fCurrentAODTree->SetBranchAddress(fAODTrackName, &fAODTracks);
+  
+  if (!fAODClusName.IsNull()) 
+    fCurrentAODTree->SetBranchAddress(fAODClusName, &fAODClusters);
+  
+  if (!fAODCellsName.IsNull()) 
+    fCurrentAODTree->SetBranchAddress(fAODCellsName, &fAODCaloCells);
+  
+  if (!fAODMCParticlesName.IsNull()) 
+    fCurrentAODTree->SetBranchAddress(fAODMCParticlesName, &fAODMCParticles);
+  
+  if (fRandomAccess)
+    fCurrentAODEntry = TMath::Nint(gRandom->Rndm()*fCurrentAODTree->GetEntries());
+  else
+    fCurrentAODEntry = 0;
+  
+  if (fQAhistos)
+    fHistFileMatching->Fill(fCurrentFileID, fCurrentAODFileID-1);
+  
   return kTRUE;
+}
+
+//________________________________________________________________________
+TString AliJetEmbeddingFromAODTask::GetNextFileName()
+{
+    if (fRandomAccess) 
+      fCurrentAODFileID = TMath::Nint(gRandom->Rndm()*fFileList->GetEntriesFast());
+    else
+      fCurrentAODFileID++;
+
+    if (fCurrentAODFileID >= fFileList->GetEntriesFast())
+      return "";
+    
+    TObjString *objFileName = static_cast<TObjString*>(fFileList->At(fCurrentAODFileID));
+    return objFileName->GetString();
 }
 
 //________________________________________________________________________
 Bool_t AliJetEmbeddingFromAODTask::GetNextEntry() 
 {
-  static TTree *tree = 0;
-  static Int_t entry = 0;
-
   Int_t attempts = 0;
 
   do {
-    
-    if (!fCurrentAODFile || !tree || entry >= tree->GetEntries()) {
+    if (!fCurrentAODFile || !fCurrentAODTree || fCurrentAODEntry >= fCurrentAODTree->GetEntries()) {
       if (!OpenNextFile())
 	return kFALSE;
-      
-      tree = static_cast<TTree*>(fCurrentAODFile->Get(fAODTreeName));
-      if (!tree)
-	return kFALSE;
-
-      if (!fAODHeaderName.IsNull()) 
-	tree->SetBranchAddress(fAODHeaderName, &fAODHeader);
-
-      if (!fAODVertexName.IsNull()) 
-	tree->SetBranchAddress(fAODVertexName, &fAODVertex);
-      
-      if (!fAODTrackName.IsNull()) 
-	tree->SetBranchAddress(fAODTrackName, &fAODTracks);
-      
-      if (!fAODClusName.IsNull()) 
-	tree->SetBranchAddress(fAODClusName, &fAODClusters);
-      
-      if (!fAODCellsName.IsNull()) 
-	tree->SetBranchAddress(fAODCellsName, &fAODCaloCells);
-
-      if (!fAODMCParticlesName.IsNull()) 
-	tree->SetBranchAddress(fAODMCParticlesName, &fAODMCParticles);
-      
-      entry = 0;
     }
     
-    tree->GetEntry(entry);
-    entry++;
+    fCurrentAODTree->GetEntry(fCurrentAODEntry);
+    fCurrentAODEntry++;
     attempts++;
 
     if (attempts == 1000) 
       AliWarning("After 1000 attempts no event has been accepted by the event selection (trigger, centrality...)!");
 
-  } while (!IsAODEventSelected() && tree);
+  } while (!IsAODEventSelected() && fCurrentAODTree);
 
-  return (tree!=0);
+  return (fCurrentAODTree!=0);
 }
 
 //________________________________________________________________________
@@ -262,18 +312,22 @@ Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
   if (!fEsdTreeMode && fAODHeader) {
     AliAODHeader *aodHeader = static_cast<AliAODHeader*>(fAODHeader);
 
-    UInt_t offlineTrigger = aodHeader->GetOfflineTrigger();
-  
-    if ((offlineTrigger & fTriggerMask) == 0) {
-      AliDebug(2, Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.", offlineTrigger, fTriggerMask));
-      return kFALSE;
+    if (fTriggerMask != AliVEvent::kAny) {
+      UInt_t offlineTrigger = aodHeader->GetOfflineTrigger();
+      
+      if ((offlineTrigger & fTriggerMask) == 0) {
+	AliDebug(2,Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.", offlineTrigger, fTriggerMask));
+	return kFALSE;
+      }
     }
     
-    AliCentrality *cent = aodHeader->GetCentralityP();
-    Float_t centVal = cent->GetCentralityPercentile("V0M");
-    if (centVal < fMinCentrality || centVal >= fMaxCentrality) {
-      AliDebug(2, Form("Event rejected due to centrality selection. Event centrality: %f, centrality range selection: %f to %f", centVal, fMinCentrality, fMaxCentrality));
-      return kFALSE;
+    if (fMinCentrality >= 0) {
+      AliCentrality *cent = aodHeader->GetCentralityP();
+      Float_t centVal = cent->GetCentralityPercentile("V0M");
+      if (centVal < fMinCentrality || centVal >= fMaxCentrality) {
+	AliDebug(2,Form("Event rejected due to centrality selection. Event centrality: %f, centrality range selection: %f to %f", centVal, fMinCentrality, fMaxCentrality));
+	return kFALSE;
+      }
     }
   }
 
@@ -293,7 +347,8 @@ Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
 void AliJetEmbeddingFromAODTask::Run() 
 {
   if (!GetNextEntry()) {
-    AliError("Unable to get AOD event to embed. Nothing will be embedded.");
+    fHistNotEmbedded->Fill(fCurrentFileID);
+    AliError("Unable to get the AOD event to embed. Nothing will be embedded.");
     return;
   }
 
