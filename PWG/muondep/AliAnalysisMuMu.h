@@ -6,23 +6,29 @@
 
 // $Id$
 
-/// 
-/// AliAnalysisMuMu : helper class to digest results from
-/// AliAnalysisTaskMuMu(fromAOD or fromESD)
+///
+/// AliAnalysisMuMu : helper class to digest/plot/massage results from
+/// AliAnalysisTaskMuMu
 ///
 /// author : Laurent Aphecetche (Subatech)
 
+#include "AliAnalysisMuMuBinning.h"
 #include "TNamed.h"
+#include <map>
+#include <set>
 #include <string>
 #include <TString.h>
+#include <vector>
 
-class TH1;
-class AliHistogramCollection;
+class AliAnalysisMuMuResult;
+class AliAnalysisMuMuSpectra;
 class AliCounterCollection;
+class AliMergeableCollection;
 class TF1;
-class TGraph;
-class TMap;
 class TFile;
+class TGraph;
+class TH1;
+class TMap;
 
 class AliAnalysisMuMu : public TObject
 {
@@ -38,275 +44,179 @@ public:
   AliAnalysisMuMu(const char* filename="LHC12c_muons_AOD000_000179687.saf.root");
   virtual ~AliAnalysisMuMu();
   
-  class Result : public TNamed
-  {
-    
-  public:
-    
-    enum EFitType
-    {
-      kJpsi=(1<<0),
-      kJpsiPrime=(1<<1),
-      kUpsilon=(1<<2),
-      kPbPb2010=(1<<3),
-      kPbPb2011=(1<<4),
-      kpp2011=(1<<5),
-      kMatchAny=(1<<6)
-    };
-    
-    Result(TRootIOCtor* /*io*/) :
-    TNamed("",""),
-    fTriggerName(),
-    fEventSelection(),
-    fPairSelection(),
-    fCentralitySelection(),
-    fNofRuns(),
-    fNofTriggers(),
-    fHC(0x0), fRebin(0),
-    fFitTotal(0x0),
-    fMinv(0x0), fMinvLS(0), 
-    fFitType(0), fMap(0x0)
-    {
-    }
-    
-    Result(const char* triggerClass,
-           const char* eventSelection,
-           const char* pairSelection,
-           const char* centSelection,
-           Int_t ntriggers, AliHistogramCollection* hc, Int_t nrebin=1, UInt_t fitType=(kJpsi | kJpsiPrime)) :
-    TNamed("",""), fTriggerName(triggerClass),
-    fEventSelection(eventSelection),
-    fPairSelection(pairSelection),
-    fCentralitySelection(centSelection),
-    fNofRuns(1),
-    fNofTriggers(ntriggers), fHC(hc), fRebin(nrebin),
-    fFitTotal(0x0),
-    fMinv(0x0), fMinvLS(0), 
-    fFitType(fitType), fMap(0x0)
-    {
-      if (hc) Fit(nrebin);
-    }
-  
-    virtual ~Result();
-  
-    const char* GetName() const { return fTriggerName.Data(); }
-    
-    AliHistogramCollection* HC() const { return fHC; }
-    
-    const char* TriggerClass() const { return GetName(); }
-    
-    const char* EventSelection() const { return fEventSelection.Data(); }
-    const char* PairSelection() const { return fPairSelection.Data(); }
-    const char* CentralitySelection() const { return fCentralitySelection.Data(); }
-    
-    Int_t NofTriggers() const { return fNofTriggers; }
-    
-    Double_t NofJpsi() const { return GetValue("NofJpsi"); }
-    
-    Double_t ErrorOnNofJpsi() const { return GetError("NofJpsi"); }
-    
-    Double_t MeanJpsi() const { return GetValue("MeanJpsi"); }
-    
-    Double_t ErrorOnMeanJpsi() const { return GetError("MeanJpsi"); }
-    
-    Double_t SigmaJpsi() const { return GetValue("SigmaJpsi"); }
-    
-    Double_t ErrorOnSigmaJpsi() const { return GetError("SigmaJpsi"); }
-    
-    Double_t NofJpsiPrime() const { return GetValue("NofJpsiPrime"); }
-    
-    Double_t ErrorOnNofJpsiPrime() const { return GetError("NofJpsiPrime"); }
-    
-    Double_t MeanJpsiPrime() const { return GetValue("MeanJpsiPrime"); }
-    
-    Double_t ErrorOnMeanJpsiPrime() const { return GetError("MeanJpsiPrime"); }
-    
-    Double_t SigmaJpsiPrime() const { return GetValue("SigmaJpsiPrime"); }
-    
-    Double_t ErrorOnSigmaJpsiPrime() const { return GetError("SigmaJpsiPrime"); }
-    
-    Double_t NofUpsilon() const { return GetValue("NofUpsilon"); }
-    
-    Double_t ErrorOnNofUpsilon() const { return GetError("NofUpsilon"); }
-    
-    Double_t MeanUpsilon() const { return GetValue("MeanUpsilon"); }
-    
-    Double_t ErrorOnMeanUpsilon() const { return GetError("MeanUpsilon"); }
-    
-    Double_t SigmaUpsilon() const { return GetValue("SigmaUpsilon"); }
-    
-    Double_t ErrorOnSigmaUpsilon() const { return GetError("SigmaUpsilon"); }
-    
-    void Set(const char* name, double value, double error);
-    
-    void Print(Option_t* opt="") const;
-    
-    void Fit(Int_t rebin=1);
-    
-    void FitJpsiJpsiPrimeCB(TH1& h);
-    
-    void FitJpsiJpsiPrimeCustom(TH1& h);
-    
-    void FitJpsi(TH1& h);
-    
-    void FitJpsiCBE(TH1& h);
-    
-    void FitJpsiECBE(TH1& h);
-    
-    void FitJpsiPCBE(TH1& h);
-    
-    void FitUpsilon(TH1& h);
-    
-    void FitJpsiGCBE(TH1& h);
-    
-    Bool_t HasValue(const char* name) const;
-    Double_t GetValue(const char* name) const;
-    Double_t GetError(const char* name) const;
-    
-    TH1* Minv() const { return fMinv; }
-    TH1* MinvLS() const { return fMinvLS; }
-    
-    UInt_t FitType() const { return fFitType; }
-    
-    Int_t NofRuns() const { return fNofRuns; }
-    
-    void SetNofRuns(int n) { fNofRuns=n; }
-    
-  private:
-    Result(const Result&);
-    Result& operator=(const Result&);
-    TMap* Map() const;
-    
-  private:
-    TString fTriggerName;
-    TString fEventSelection;
-    TString fPairSelection;
-    TString fCentralitySelection;
-    Int_t fNofRuns;
-    Int_t fNofTriggers;
-    AliHistogramCollection* fHC;
-    Int_t fRebin;
-    TF1* fFitTotal;
-    TH1* fMinv;
-    TH1* fMinvLS;
-    UInt_t fFitType;
-    
-    mutable TMap* fMap; // map of results (string,TObjArray) each TObjArray = (value,error) = (TParameter<double>, TParameter<double>)
-    
-    ClassDef(AliAnalysisMuMu::Result,7)
-  };
-
   /* Basic checks */
   void BasicCounts(Bool_t detailTrigger=kFALSE,
                    ULong64_t* totalNmb=0x0,
                    ULong64_t* totalNmsl=0x0,
                    ULong64_t* totalNmul=0x0);
-
+  
   static void BasicCountsEvolution(const char* filelist, Bool_t detailTrigger=kFALSE);
   
-  void TriggerCountCoverage(const char* triggerList, Bool_t compact=kTRUE);
-
-
+  void TriggerCountCoverage(const char* triggerList, Bool_t compact=kTRUE,
+                            Bool_t orderByTriggerCount=kTRUE);
+  
+  
   /** Background evolution functions */
   static TObjArray* ComputeBackgroundEvolution(const char* filelist, const char* triggerList,
+                                               Double_t ptmin=0.0,
                                                const char* outputfile="background-evolution.root", const char* outputMode="UPDATE");
-
-  static void PlotBackgroundEvolution(const char* gfile, const char* triggerList);
   
-
+  static void PlotBackgroundEvolution(const char* gfile, const char* triggerList, Double_t ymax=100.0, Bool_t fillBoundaries=kFALSE);
+  
+  
   /** Fitting */
   static TMap* ComputeJpsiEvolution(const char* filelist, const char* triggerList,
-                                         const char* outputFile="jpsi-evolution.root", const char* outputMode="UPDATE",
-                                         Bool_t simulation=kFALSE);
+                                    const char* outputFile="jpsi-evolution.root");
   
   static void PlotJpsiEvolution(const char* resultFile, const char* triggerList, Bool_t fillBoundaries=kFALSE,
-                                const char* efficiencyFile=0x0);
+                                const char* efficiencyFile=0x0, Bool_t simulation=kFALSE);
+  
+  
+  AliAnalysisMuMuSpectra* FitParticle(const char* particle,
+                                      const char* trigger,
+                                      const char* eventType,
+                                      const char* pairCut,
+                                      const char* centrality,
+                                      const AliAnalysisMuMuBinning& binning);
 
   ///------
   
-  static void CentralityCheck(const char* filelist);
+  static AliAnalysisMuMuSpectra* CorrectSpectra(const char* realFile="ds.list.saf.root", const char* simFile="ds.sim.list.saf.root", const char* particle="Jpsi", const char* type="PSI-PT");
 
+  static AliAnalysisMuMuSpectra* RABy(const char* realFile="ds.list.saf.root", const char* simFile="ds.sim.list.saf.root", const char* type="", const char* direction="pPb");
+
+  static TGraph* ResultEvolution(const char* runlist, const char* period="LHC13f", const char* what="Y",
+                                 Bool_t forceRecomputation=kFALSE);
+  
+  ///-------
+  
+  TGraph* PlotEventSelectionEvolution(const char* trigger1="CINT7-B-NOPF-MUON", const char* event1="PSALL",
+                                   const char* trigger2="CINT7-B-NOPF-MUON", const char* event2="PSALL",
+                                      Bool_t drawFills=kFALSE,
+                                      Bool_t asRejection=kTRUE) const;
+
+  Bool_t Upgrade();
+  
+  static Bool_t Upgrade(const char* filename);
+  
+  static void CentralityCheck(const char* filelist);
+  
   static TObjArray* CompareJpsiPerCMUUWithBackground(const char* jpsiresults="results.root",
                                                      const char* backgroundresults="background.lhc11d.root");
-
+  
   static TGraph* CompareJpsiPerCMUUWithSimu(const char* realjpsiresults="results.root",
                                             const char* simjpsiresults="results.sim.root");
-
+  
   static Bool_t DecodeFileName(const char* filename, TString& period, int& esdpass, int& aodtrain, int& runnumber);
   
-
+  
   static TFile* FileOpen(const char* file);
   
-
+  
   static Bool_t GetCollections(const char* rootfile,
-                               AliHistogramCollection*& hc,
-                               AliCounterCollection*& cc);
-    
-  static Result* GetResult(const AliHistogramCollection& hc,
-                           AliCounterCollection& cc,
-                           const char* base,
-                           const char* selection,
-                           const char* paircut,
-                           const char* centrality,
-                           UInt_t fitType,
-                           Int_t nrebin=1);
+                               AliMergeableCollection*& mc,
+                               AliCounterCollection*& cc,
+                               AliAnalysisMuMuBinning*& bin,
+                               std::set<int>& runnumbers);
   
   static UInt_t GetSum(AliCounterCollection& cc, const char* triggerList, const char* eventSelection, Int_t runNumber=-1);
   
   static ULong64_t GetTriggerScalerCount(const char* triggerList, Int_t runNumber);
-
-  TObjArray* Jpsi(Bool_t simulation=kFALSE);
-
+  
+  Int_t Jpsi(const char* what="");
+  
+  Bool_t IsSimulation() const;
+  
   static TObjArray* ReadFileList(const char* filelist);
   
   static Int_t RunNumberFromFileName(const char* filename);
   
-  static void SinglePtPlot(const char* rootfile);
-
-  void SetDimuonTriggerList(const char* dimuonTriggerList) { fDimuonTriggers = dimuonTriggerList; }
-  void SetMuonTriggerList(const char* muonTriggerList) { fMuonTriggers = muonTriggerList; }
-  void SetMinbiasTriggerList(const char* minbiasTriggerList) { fMinbiasTriggers = minbiasTriggerList; }
-
   TString DimuonTriggerList() const { return fDimuonTriggers; }
+  void SetDimuonTriggerList(const char* dimuonTriggerList) { fDimuonTriggers = dimuonTriggerList; }
+
   TString MuonTriggerList() const { return fMuonTriggers; }
+  void SetMuonTriggerList(const char* muonTriggerList) { fMuonTriggers = muonTriggerList; }
+
   TString MinbiasTriggerList() const { return fMinbiasTriggers; }
+  void SetMinbiasTriggerList(const char* minbiasTriggerList) { fMinbiasTriggers = minbiasTriggerList; }
   
+  TString EventSelectionList() const { return fEventSelectionList; }
   void SetEventSelectionList(const char* eventSelectionList) { fEventSelectionList = eventSelectionList; }
-  void SetPairSelectionList(const char* pairSelectionList) { fPairSelectionList = pairSelectionList; }
   
+  TString PairSelectionList() const { return fPairSelectionList; }
+  void SetPairSelectionList(const char* pairSelectionList) { fPairSelectionList = pairSelectionList; }
+
+  TString CentralitySelectionList() const { return fCentralitySelectionList; }
+  void SetCentralitySelectionList(const char* centralitySelectionList) { fCentralitySelectionList = centralitySelectionList; }
+
   static void SetDefaultDimuonTriggerList(const char* dimuonTriggerList) { fgDefaultDimuonTriggers = dimuonTriggerList; }
   static void SetDefaultMuonTriggerList(const char* muonTriggerList) { fgDefaultMuonTriggers = muonTriggerList; }
   static void SetDefaultMinbiasTriggerList(const char* minbiasTriggerList) { fgDefaultMinbiasTriggers = minbiasTriggerList; }
   static void SetDefaultEventSelectionList(const char* eventSelectionList) { fgDefaultEventSelectionList = eventSelectionList; }
   static void SetDefaultPairSelectionList(const char* pairSelectionList) { fgDefaultPairSelectionList = pairSelectionList; }
-
+  static void SetDefaultCentralitySelectionList(const char* centralitySelectionList) { fgDefaultCentralitySelectionList = centralitySelectionList; }
   
-  AliHistogramCollection* HC() const { return fHistogramCollection; }
+  
+  AliMergeableCollection* MC() const { return fMergeableCollection; }
   AliCounterCollection* CC() const { return fCounterCollection; }
+  AliAnalysisMuMuBinning* BIN() const { return fBinning; }
   
   static void SetOCDBPath(const char* ocdbPath) { fgOCDBPath = ocdbPath; }
   
   static void SetColorScheme();
+  
+  static void SetCompactGraphs(Bool_t value=kTRUE) { fgIsCompactGraphs = value; }
+  
+  static Bool_t CompactGraphs() { return fgIsCompactGraphs; }
+  
+  static void Compact(TGraph& g);
+  
+  void Print(Option_t* opt="") const;
+  
+  void GetMBR(Int_t runNumber, const char* eventSelection, Double_t& value, Double_t& error) const;
 
-  static void DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label);
+  TGraph* MBREvolution(const char* eventSelection1="PSALLNOTZEROPILEUP", const char* eventSelection2="PSALL") const;
 
+  const std::set<int>& RunNumbers() const { return fRunNumbers; }
+  
+  void DrawMinv(const char* type,
+                const char* particle,
+                const char* trigger,
+                const char* eventType,
+                const char* pairCut,
+                const char* centrality) const;
+
+  void DrawMinv(const char* type="PT", const char* particle="PSI") const;
+  
+  Bool_t SetCorrectionPerRun(const TGraph& corr);
+  
+  void UnsetCorrectionPerRun();
+  
 private:
   AliAnalysisMuMu(const AliAnalysisMuMu& rhs); // not implemented on purpose
   AliAnalysisMuMu& operator=(const AliAnalysisMuMu& rhs); // not implemented on purpose
   
+  TFile* ReOpen(const char* filename, const char* mode) const;
+
+  TString First(const TString& list) const;
+  
 private:
 
-  static TString ExpandPathName(const char* file);
+  void SetNofInputParticles(AliAnalysisMuMuResult& r);
 
-  TString fFilename; // file containing the result collections (of histograms and counters) from AliAnalysisTaskMuMu
-  AliHistogramCollection* fHistogramCollection; // collection of histograms in file
+  static TString ExpandPathName(const char* file);
+  
+  TString fFilename; // file containing the result collections (of objects and counters) from AliAnalysisTaskMuMu
   AliCounterCollection* fCounterCollection; // collection of counters in file
   TString fDimuonTriggers; // list of dimuon triggers to consider
   TString fMuonTriggers; // list of single muon triggers to consider
   TString fMinbiasTriggers;   // list of minbias triggers to consider
   TString fEventSelectionList; // list of event types to consider
   TString fPairSelectionList; // list of pair cuts to consider
-
+  TString fCentralitySelectionList; // list of centrality cuts to consider
+  
+  AliAnalysisMuMuBinning* fBinning; // binning
+  
   static TString fgOCDBPath; // OCDB to be used (raw:// by default)
   
   static TString fgDefaultMuonTriggers; // default list of single muon triggers
@@ -314,8 +224,17 @@ private:
   static TString fgDefaultDimuonTriggers; // default list of dimuon triggers
   static TString fgDefaultEventSelectionList; // default list of event selections
   static TString fgDefaultPairSelectionList; // default list of pair selections
+  static TString fgDefaultCentralitySelectionList; // default list of centrality selections
+  
+  static Bool_t fgIsCompactGraphs; // whether the graph produced should be compact
+  
+  AliMergeableCollection* fMergeableCollection; // collection of objects in file
 
-  ClassDef(AliAnalysisMuMu,3) // class to analysis results from AliAnalysisTaskMuMuXXX tasks
+  std::set<int> fRunNumbers; // run numbers
+  
+  TGraph* fCorrectionPerRun; // correction factor per run
+  
+  ClassDef(AliAnalysisMuMu,10) // class to analysis results from AliAnalysisTaskMuMuXXX tasks
 };
 
 #endif

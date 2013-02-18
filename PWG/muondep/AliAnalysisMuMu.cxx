@@ -18,1166 +18,66 @@
 
 #include "AliAnalysisMuMu.h"
 
+#include "AliAnalysisMuMuBinning.h"
+#include "AliAnalysisMuMuResult.h"
+#include "AliAnalysisMuMuSpectra.h"
 #include "AliAnalysisTriggerScalers.h"
 #include "AliCounterCollection.h"
 #include "AliHistogramCollection.h"
 #include "AliLog.h"
+#include "AliMergeableCollection.h"
 #include "Riostream.h"
 #include "TArrayL64.h"
+#include "TASImage.h"
 #include "TAxis.h"
 #include "TCanvas.h"
+#include "TColor.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TGraphErrors.h"
 #include "TGrid.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TKey.h"
 #include "TLegend.h"
 #include "TLegendEntry.h"
+#include "TLine.h"
 #include "TList.h"
+#include "TMap.h"
 #include "TMath.h"
 #include "TObjArray.h"
 #include "TObjString.h"
+#include "TParameter.h"
+#include "TPaveText.h"
 #include "TROOT.h"
 #include "TStyle.h"
+#include "TStyle.h"
 #include "TSystem.h"
+#include <cassert>
 #include <map>
 #include <set>
 #include <string>
-#include "TParameter.h"
-#include "TMap.h"
-#include "TFitResult.h"
-#include "TLine.h"
-#include "TASImage.h"
-#include "TPaveText.h"
-#include "TStyle.h"
-#include "TColor.h"
 
 ClassImp(AliAnalysisMuMu)
 
-void Add(TObjArray* a, AliAnalysisMuMu::Result* r)
-{
-  if ( r ) a->Add(r);
-}
+TString AliAnalysisMuMu::fgOCDBPath("raw://");
 
-void ALICEseal(Double_t xPad, Double_t yPad, TList* extraLines)
-{
-  TVirtualPad* currPad = gPad;
-  TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",0.76,0.7,0.90,0.87);
-  myPadLogo->SetFillColor(kWhite);
-  myPadLogo->SetFillStyle(1001);
-  myPadLogo->SetBorderMode(0);
-  myPadLogo->SetBorderSize(2);
-  myPadLogo->SetFrameBorderMode(0);
-  myPadLogo->SetLeftMargin(0.0);
-  myPadLogo->SetTopMargin(0.0);
-  myPadLogo->SetBottomMargin(0.0);
-  myPadLogo->SetRightMargin(0.0);
-  myPadLogo->Draw();
-  myPadLogo->cd();
-  TASImage *myAliceLogo = new TASImage("$HOME/Pictures/2011-Nov-24-ALICE_PERFORMANCE_logo_BLACK_small_usage_design.gif");
-  myAliceLogo->Draw();
-  currPad->cd();
-  Double_t x1 = xPad - 0.07, y1 = yPad - 0.06;
-  Double_t x2 = x1 + 0.25, y2 = y1 + 0.08;
-  TPaveText* t2=new TPaveText(x1+0.06,y1-0.06,x2-0.06,y2-0.06,"NDC");
-  //  t2->SetFillStyle(0);
-  t2->SetFillColor(kWhite);
-  t2->SetBorderSize(0);
-  t2->SetTextColor(kBlack);
-  t2->SetTextFont(52);
-  t2->SetTextSize(0.035);
-  TDatime dt;
-  TString today = Form("%02i/%02i/%4i", dt.GetDay(), dt.GetMonth(), dt.GetYear());
-  t2->AddText(0.,0.,today.Data());
-  t2->Draw();
-  
-  if ( extraLines ) 
-  {
-    int n = extraLines->GetSize();
-    TPaveText* t3 = new TPaveText(xPad-0.07,yPad-0.06*2,xPad-0.07+0.25,yPad-0.06*(n+3),"NDC");
-    t3->SetFillColor(kWhite);
-    t3->SetBorderSize(0);
-    t3->SetTextColor(kBlack);
-    t3->SetTextFont(42);
-    t3->SetTextSize(0.035);
-    
-    TIter next(extraLines);
-    TObjString* str;
-    
-    while ( ( str = static_cast<TObjString*>(next()) ) )
-    {
-      t3->AddText(str->String().Data());
-    }
-    t3->SetFillColor(kWhite);
-    t3->Draw();
-  }
-}
+TString AliAnalysisMuMu::fgDefaultDimuonTriggers("CMUL7-B-NOPF-MUON,CMUL7-S-NOPF-ALLNOTRD,CMUL7-S-NOPF-MUON,CMUL8-S-NOPF-MUON,CMUL7-B-NOPF-ALLNOTRD,CMUU7-B-NOPF-ALLNOTRD,CMUU7-B-NOPF-MUON,CPBI1MUL-B-NOPF-MUON,CMULLO-B-NOPF-MUON");
 
-Double_t funcCB(Double_t* xx, Double_t* par)
-{ 
-  Double_t N = par[0];
-  Double_t alpha = par[1];
-  Double_t n = par[2];
-  Double_t mean = par[3];
-  Double_t sigma = par[4];
-  
-  Double_t x = xx[0];
-  
-  Double_t A = TMath::Power(n/TMath::Abs(alpha),n)*TMath::Exp(-0.5*alpha*alpha);
-  Double_t B = n/TMath::Abs(alpha) - TMath::Abs(alpha);
-  
-  Double_t y = ( TMath::Abs(sigma) > 1E-12 ? (x-mean)/sigma : 0 );
-  
-  if ( y > alpha*-1.0 ) 
-  {
-    return N*TMath::Exp(-0.5*y*y);
-  }
-  else 
-  {
-    return N*A*TMath::Power(B-y,-n);
-  }
-}
+TString AliAnalysisMuMu::fgDefaultMuonTriggers("CMSL7-S-NOPF-MUON,CMSL7-S-NOPF-ALLNOTRD,CMSL8-S-NOPF-MUON,CMSL8-S-NOPF-ALLNOTRD,CMSL7-B-NOPF-MUON,CMUS1-B-NOPF-MUON,CMUS7-B-NOPF-MUON,CMSNGL-B-NOPF-MUON");
 
-Double_t funcJpsiGCBE(Double_t* xx, Double_t* par)
-{
-  Double_t x = xx[0];
-  
-  Double_t g = par[0]*TMath::Gaus(x,par[1],par[2]);
-  
-  Double_t jpsi = funcCB(xx,par+3);
-  
-  Double_t expo = par[8]*TMath::Exp(par[9]*x);
-  
-  return g+expo+jpsi;
-}
+TString AliAnalysisMuMu::fgDefaultMinbiasTriggers("CINT7-B-NOPF-ALLNOTRD,CINT7-S-NOPF-ALLNOTRD,CINT8-B-NOPF-ALLNOTRD,CINT8-S-NOPF-ALLNOTRD,CINT1-B-NOPF-ALLNOTRD,CPBI2_B1-B-NOPF-ALLNOTRD");
 
-Double_t funcJpsiJpsiPrimeCustom(Double_t* xx, Double_t* par)
-{ 
-  Double_t N = par[0];
-  Double_t alpha = par[1];
-  Double_t n = par[2];
-  Double_t mean = par[3];
-  Double_t sigma = par[4];
-  Double_t alphaprime = par[5];
-  Double_t nprime = par[6];
-  
-  Double_t x = xx[0];
-  
-  Double_t A = TMath::Power(n/TMath::Abs(alpha),n)*TMath::Exp(-0.5*alpha*alpha);
-  Double_t B = n/TMath::Abs(alpha) - TMath::Abs(alpha);
-  Double_t C = TMath::Power(nprime/TMath::Abs(alphaprime),nprime)*TMath::Exp(-0.5*alphaprime*alphaprime);
-  Double_t D = nprime/TMath::Abs(alphaprime) - TMath::Abs(alphaprime);
-  
-  Double_t y = ( TMath::Abs(sigma) > 1E-12 ? (x-mean)/sigma : 0 );
-  
-  Double_t cb(0);
-  
-  if ( y > alphaprime )
-  {
-    cb = N*C*TMath::Power(D+y,-nprime);
-  }
-  else if ( y > alpha*-1.0 ) 
-  {
-    cb = N*TMath::Exp(-0.5*y*y);
-  }
-  else 
-  {
-    cb = N*A*TMath::Power(B-y,-n);
-  }
-  
-  if ( x < mean )
-  {
-    return cb + par[7] + par[8]*x; // gaus + pol1
-  }
-  else
-  {
-    Double_t yprime = (x-par[10])/par[11];
-    return cb + par[9]*TMath::Exp(-0.5*yprime*yprime)+par[12]*TMath::Exp(-par[13]*x);
-    // gaus (j/psi) + gaus (psi') + expo
-  }
-}
+TString AliAnalysisMuMu::fgDefaultEventSelectionList("PSALL");
 
+TString AliAnalysisMuMu::fgDefaultPairSelectionList("pMATCHLOWRABSBOTH");
 
-Double_t funcCB2(Double_t* xx, Double_t* par)
-{ 
-  Double_t N = par[0];
-  Double_t alpha = par[1];
-  Double_t n = par[2];
-  Double_t mean = par[3];
-  Double_t sigma = par[4];
-  Double_t alphaprime = par[5];
-  Double_t nprime = par[6];
-  
-  Double_t x = xx[0];
-  
-  Double_t A = TMath::Power(n/TMath::Abs(alpha),n)*TMath::Exp(-0.5*alpha*alpha);
-  Double_t B = n/TMath::Abs(alpha) - TMath::Abs(alpha);
-  Double_t C = TMath::Power(nprime/TMath::Abs(alphaprime),nprime)*TMath::Exp(-0.5*alphaprime*alphaprime);
-  Double_t D = nprime/TMath::Abs(alphaprime) - TMath::Abs(alphaprime);
-  
-  Double_t y = ( TMath::Abs(sigma) > 1E-12 ? (x-mean)/sigma : 0 );
-  
-  if ( y > alphaprime )
-  {
-    return N*C*TMath::Power(D+y,-nprime);
-  }
-  else if ( y > alpha*-1.0 ) 
-  {
-    return N*TMath::Exp(-0.5*y*y);
-  }
-  else 
-  {
-    return N*A*TMath::Power(B-y,-n);
-  }
-}
+TString AliAnalysisMuMu::fgDefaultCentralitySelectionList("PP");
 
-Double_t funcJpsiJpsiPrime(Double_t* xx, Double_t* par)
-{
-  Double_t jpsi = funcCB(xx,par);
-  Double_t jpsiprime = funcCB2(xx,par+5);
-  
-  int n = 10;
-  Double_t x = xx[0];
-    
-  Double_t e1 = par[n]*TMath::Exp(par[n+1]*x);
-  Double_t e2 = par[n+2]*TMath::Exp(par[n+3]*x);    
-  
-  Double_t e = e1;
-  
-  if ( x > par[3] ) e=e2;
-  
-  return jpsi+jpsiprime+e;
-}
-
-Double_t funcJpsiCBE(Double_t* xx, Double_t* par)
-{
-  // CB + expo
-  
-  Double_t jpsi = funcCB(xx,par);
-  
-  Double_t x = xx[0];
-  
-  Double_t e1 = par[5]*TMath::Exp(par[6]*x);
-  
-  return jpsi+e1;
-}
-
-
-Double_t funcJpsiPCBE(Double_t* xx, Double_t* par)
-{
-  Double_t x = xx[0];
-
-  Double_t pol2 = par[0] + par[1]*x + par[2]*x*x;
-
-  Double_t jpsi = funcCB(xx,par+3);
-  
-  Double_t expo = par[8]*TMath::Exp(par[9]*x);
-  
-  return pol2+jpsi+expo;
-}
-
-Double_t funcJpsiECBE(Double_t* xx, Double_t* par)
-{
-  // CB + expo
-  
-  Double_t jpsi = funcCB(xx,par+2);
-  
-  Double_t x = xx[0];
-  
-  Double_t e1 = par[0]*TMath::Exp(par[1]*x);
-  
-  Double_t e2 = par[7]*TMath::Exp(par[8]*x);
-  
-  return e1+e2+jpsi;
-}
-
-const char* NormalizeName(const char* name, const char* suffix)
-{
-  TString str(Form("%s_%s",name,suffix));
-  
-  str.ReplaceAll("-","_");
-  str.ReplaceAll("/","%");
-  
-  return str.Data();
-}
+Bool_t AliAnalysisMuMu::fgIsCompactGraphs(kFALSE);
 
 //_____________________________________________________________________________
-AliAnalysisMuMu::Result::~Result()
-{
-  delete fHC;
-  delete fMap;
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Result::FitJpsiJpsiPrimeCustom(TH1& h)
-{
-  std::cout << "Fit with jpsi + jpsiprime' (custom)" << std::endl;
-  
-  const Double_t xmin(1.5);
-  const Double_t xmax(8.0);
-  
-  fFitTotal = new TF1("fFitTotal",funcJpsiJpsiPrimeCustom,xmin,xmax,14);
-  fFitTotal->SetLineColor(4);
-  
-  fFitTotal->SetParName(0,"cstecb");
-  fFitTotal->SetParName(1,"alpha");
-  fFitTotal->SetParName(2,"n");
-  fFitTotal->SetParName(3,"meanjpsi");
-  fFitTotal->SetParName(4,"sigmajpsi");
-  fFitTotal->SetParName(5,"alphaprime");
-  fFitTotal->SetParName(6,"nprime");
-  fFitTotal->SetParName(7,"cstepol1");
-  fFitTotal->SetParName(8,"slopepol1");
-  fFitTotal->SetParName(9,"cstegaus");
-  fFitTotal->SetParName(10,"meanpsiprime");
-  fFitTotal->SetParName(11,"sigmapsiprime");
-  fFitTotal->SetParName(12,"csteexpo");
-  fFitTotal->SetParName(13,"slopeexpo");
-  
-  fFitTotal->SetParameter( 0,1);
-    
-  const char* fitOption = "SQBR+";
-  const Double_t alphaMC = 0.936;
-  const Double_t nMC = 4.44;
-  const Double_t alphaprimeMC = 1.60;
-  const Double_t nprimeMC = 3.23;
-  
-  TF1* fcb = new TF1("cb",funcCB2,2.9,3.3,7);
-  fcb->SetParameters(1,1.0,4.0,3.1,0.1,1.5,3);
-
-  fcb->SetParLimits(3,3,4); 
-  fcb->SetParLimits(4,0,1); 
-
-  fcb->FixParameter(1,alphaMC);
-  fcb->FixParameter(2,nMC);
-  fcb->FixParameter(5,alphaprimeMC);
-  fcb->FixParameter(6,nprimeMC);
-  
-  TFitResultPtr rcb = h.Fit(fcb,fitOption,"",2.9,3.3);
-
-  if (!rcb.Get())
-  {
-    return;
-  }
-  
-  fFitTotal->SetParameter(0,rcb->Parameter(0));
-  fFitTotal->SetParameter(1,rcb->Parameter(1)); fFitTotal->SetParLimits(1,0,10); // alpha
-  fFitTotal->SetParameter(2,rcb->Parameter(2)); fFitTotal->SetParLimits(2,1,10); // n
-  fFitTotal->SetParameter(3,rcb->Parameter(3)); fFitTotal->SetParLimits(3,3.0,3.5); // mean
-  fFitTotal->SetParameter(4,rcb->Parameter(4)); fFitTotal->SetParLimits(4,0,1); // sigma
-  fFitTotal->SetParameter(5,rcb->Parameter(5)); fFitTotal->SetParLimits(1,0,10); // alphaprime
-  fFitTotal->SetParameter(6,rcb->Parameter(6)); fFitTotal->SetParLimits(2,1,10); // nprime
-
-  fFitTotal->FixParameter(1,alphaMC);
-  fFitTotal->FixParameter(2,nMC);
-  fFitTotal->FixParameter(5,alphaprimeMC);
-  fFitTotal->FixParameter(6,nprimeMC);
-  
-  TF1* fge = new TF1("fge","gaus(0)+expo(3)",3.5,4.4);
-  fge->SetParameters(1,3.6,0.25,1,1);
-  TFitResultPtr rpsiprime = h.Fit(fge,fitOption,"",3.5,4.4);
-  
-  if (static_cast<int>(rpsiprime))
-  {
-    AliInfo("Will fix psiprime parameters");
-    fFitTotal->FixParameter(9,0);
-    fFitTotal->FixParameter(10,3.7);
-    fFitTotal->FixParameter(11,0.1);
-  }
-  else
-  {
-    fFitTotal->SetParameter(10,rpsiprime->Parameter(1)); fFitTotal->SetParLimits(10,3.5,3.8); // mean'
-    fFitTotal->SetParameter(11,rpsiprime->Parameter(2)); fFitTotal->SetParLimits(11,0.05,0.7); // sigma'
-  }
-  
-  TFitResultPtr rpol1 = h.Fit("pol1",fitOption,"",1.5,2.5);
-  fFitTotal->SetParameter( 7,rpol1->Parameter(0));
-  fFitTotal->SetParameter( 8,rpol1->Parameter(1));
-  
-  TFitResultPtr rexpo = h.Fit("expo",fitOption,"",4.5,7.0);
-  fFitTotal->SetParameter(12,rexpo->Parameter(0));
-  fFitTotal->SetParameter(13,rexpo->Parameter(1));
-  
-  
-  TFitResultPtr r = h.Fit(fFitTotal,fitOption,"",1.5,7);
-  
-  TF1* signal = new TF1("signal","gaus",2,6);  
-  signal->SetParameters(fFitTotal->GetParameter(0),
-                        fFitTotal->GetParameter(3),
-                        fFitTotal->GetParameter(4));
-
-  TF1* signalPrime = new TF1("signalPrime","gaus",2,6);  
-  signalPrime->SetParameters(fFitTotal->GetParameter(9),
-                             fFitTotal->GetParameter(10),
-                             fFitTotal->GetParameter(11));
-  
-  Double_t gausParameters[3];
-  Double_t covarianceMatrix[3][3];
-  Double_t gausParametersPrime[3];
-  Double_t covarianceMatrixPrime[3][3];
-  
-  covarianceMatrix[0][0] = (r->GetCovarianceMatrix())(0,0);
-  covarianceMatrix[1][0] = (r->GetCovarianceMatrix())(3,0);
-  covarianceMatrix[2][0] = (r->GetCovarianceMatrix())(4,0);
-  covarianceMatrix[0][1] = (r->GetCovarianceMatrix())(0,3);
-  covarianceMatrix[0][2] = (r->GetCovarianceMatrix())(0,4);  
-  
-  for ( int iy = 1; iy < 3; ++iy )
-  {
-    for ( int ix = 1; ix < 3; ++ix )
-    {
-      covarianceMatrix[ix][iy] = (r->GetCovarianceMatrix())(ix+2,iy+2);
-    }
-  }
-  
-  gausParameters[0] = fFitTotal->GetParameter(0);
-  gausParameters[1] = fFitTotal->GetParameter(3);
-  gausParameters[2] = fFitTotal->GetParameter(4);
-
-  gausParametersPrime[0] = fFitTotal->GetParameter(9);
-  gausParametersPrime[1] = fFitTotal->GetParameter(10);
-  gausParametersPrime[2] = fFitTotal->GetParameter(11);
-  
-  covarianceMatrixPrime[0][0] = (r->GetCovarianceMatrix())(9,9);
-  covarianceMatrixPrime[1][0] = (r->GetCovarianceMatrix())(10,9);
-  covarianceMatrixPrime[2][0] = (r->GetCovarianceMatrix())(11,9);
-  covarianceMatrixPrime[0][1] = (r->GetCovarianceMatrix())(9,10);
-  covarianceMatrixPrime[0][2] = (r->GetCovarianceMatrix())(9,11);  
-  
-  for ( int iy = 1; iy < 3; ++iy )
-  {
-    for ( int ix = 1; ix < 3; ++ix )
-    {
-      covarianceMatrixPrime[ix][iy] = (r->GetCovarianceMatrix())(ix+2,iy+2);
-    }
-  }
-  
-  double n = signal->Integral(2,6)/h.GetBinWidth(10);
-  double nerr = signal->IntegralError(2,6,&gausParameters[0],&covarianceMatrix[0][0])/h.GetBinWidth(10);
-  Set("NofJpsi",n,nerr);      
-  Set("MeanJpsi",fFitTotal->GetParameter(3),fFitTotal->GetParError(3));
-  Set("SigmaJpsi",fFitTotal->GetParameter(4),fFitTotal->GetParError(4));
-
-  double nprime = signalPrime->Integral(2,6)/h.GetBinWidth(10);
-  double nerrprime = signalPrime->IntegralError(2,6,&gausParametersPrime[0],&covarianceMatrixPrime[0][0])/h.GetBinWidth(10);
-  Set("NofJpsiPrime",nprime,nerrprime);      
-  Set("MeanJpsiPrime",fFitTotal->GetParameter(10),fFitTotal->GetParError(10));
-  Set("SigmaJpsiPrime",fFitTotal->GetParameter(11),fFitTotal->GetParError(11));
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Result::FitJpsiJpsiPrimeCB(TH1& h)
-{
-  std::cout << "Fit with jpsi + jpsiprime' (CB) " << std::endl;
-
-  const Double_t xmin(1.5);
-  const Double_t xmax(8.0);
-  
-  fFitTotal = new TF1("fFitTotal",funcJpsiJpsiPrime,xmin,xmax,14);
-
-//  Double_t N = par[0];
-//  Double_t alpha = par[1];
-//  Double_t n = par[2];
-//  Double_t mean = par[3];
-//  Double_t sigma = par[4];
-  
-  fFitTotal->SetParameter( 0,1); // N
-  fFitTotal->FixParameter( 1,0.936); // alpha
-  fFitTotal->FixParameter( 2,4.44); // n
-  fFitTotal->SetParameter( 3,3.1); fFitTotal->SetParLimits(3,3.0,3.2); // mean
-  fFitTotal->SetParameter( 4,0.07); fFitTotal->SetParLimits(4,0.02,1); // sigma
-
-  fFitTotal->SetParameter( 5,0.01); // N'
-  fFitTotal->FixParameter( 6,0.936); // alpha'
-  fFitTotal->FixParameter( 7,4.44); // n'
-  fFitTotal->SetParameter( 8,3.7); fFitTotal->SetParLimits(8,3.5,3.8); // mean'
-  fFitTotal->SetParameter( 9,0.1); fFitTotal->SetParLimits(9,0.02,1.0); // sigma'
-  
-  fFitTotal->SetParameter(10,h.GetMaximum());
-  fFitTotal->SetParameter(11,-1);
-
-  fFitTotal->SetParameter(12,h.GetMaximum()/100);
-  fFitTotal->SetParameter(13,-1);
-
-  TFitResultPtr r = h.Fit(fFitTotal,"SQBI","",1.5,6);
-  
-//  for ( int ix = 0; ix < fFitTotal->GetNpar(); ++ix )
-//  {
-//    for ( int iy = 0; iy < fFitTotal->GetNpar(); ++iy )
-//    {      
-//      std::cout << Form("COV(%d,%d)=%e ",ix,iy,r->GetCovarianceMatrix()(ix,iy));        
-//    }
-//    std::cout << std::endl;
-//  }
-  
-  
-  TF1* signal = new TF1("signal","gaus",2,8);
-  
-  signal->SetParameters(fFitTotal->GetParameter(0),
-                        fFitTotal->GetParameter(3),
-                        fFitTotal->GetParameter(4));
-
-  TF1* signalPrime = new TF1("signalPrime","gaus",2,8);
-  
-  signalPrime->SetParameters(fFitTotal->GetParameter(0),
-                             fFitTotal->GetParameter(8),
-                             fFitTotal->GetParameter(9));
-  
-  Double_t gausParameters[3];
-  Double_t gausParametersPrime[3];
-  Double_t covarianceMatrix[3][3];
-  Double_t covarianceMatrixPrime[3][3];
-  
-  gausParameters[0] = fFitTotal->GetParameter(0);
-  gausParameters[1] = fFitTotal->GetParameter(3);
-  gausParameters[2] = fFitTotal->GetParameter(4);
-
-  covarianceMatrix[0][0] = (r->GetCovarianceMatrix())(0,0);
-  covarianceMatrix[1][0] = (r->GetCovarianceMatrix())(3,0);
-  covarianceMatrix[2][0] = (r->GetCovarianceMatrix())(4,0);
-  covarianceMatrix[0][1] = (r->GetCovarianceMatrix())(0,3);
-  covarianceMatrix[0][2] = (r->GetCovarianceMatrix())(0,4);
-  
-  for ( int iy = 1; iy < 3; ++iy )
-  {
-    for ( int ix = 1; ix < 3; ++ix )
-    {
-      covarianceMatrix[ix][iy] = (r->GetCovarianceMatrix())(ix+2,iy+2);
-    }
-  }
-
-  gausParametersPrime[0] = fFitTotal->GetParameter(0);
-  gausParametersPrime[1] = fFitTotal->GetParameter(8);
-  gausParametersPrime[2] = fFitTotal->GetParameter(9);
-
-  covarianceMatrixPrime[0][0] = (r->GetCovarianceMatrix())(0,0);
-  covarianceMatrixPrime[1][0] = (r->GetCovarianceMatrix())(8,0);
-  covarianceMatrixPrime[2][0] = (r->GetCovarianceMatrix())(9,0);
-  covarianceMatrixPrime[0][1] = (r->GetCovarianceMatrix())(0,8);
-  covarianceMatrixPrime[0][2] = (r->GetCovarianceMatrix())(0,9);
-  
-  for ( int iy = 1; iy < 3; ++iy )
-  {
-    for ( int ix = 1; ix < 3; ++ix )
-    {
-      covarianceMatrixPrime[ix][iy] = (r->GetCovarianceMatrix())(ix+2,iy+2);
-    }
-  }
-  
-  double n = signal->Integral(2,6)/h.GetBinWidth(10);
-  double nerr = signal->IntegralError(2,6,&gausParameters[0],&covarianceMatrix[0][0])/h.GetBinWidth(10);
-
-  Set("NofJpsi",n,nerr);      
-  Set("MeanJpsi",fFitTotal->GetParameter(3),fFitTotal->GetParError(3));
-  Set("SigmaJpsi",fFitTotal->GetParameter(4),fFitTotal->GetParError(4));
-
-  double nprime = signalPrime->Integral(2,6)/h.GetBinWidth(10);
-  double nerrprime = signalPrime->IntegralError(2,6,&gausParametersPrime[0],&covarianceMatrixPrime[0][0])/h.GetBinWidth(10);
-  
-  Set("NofJpsiPrime",nprime,nerrprime);
-  Set("MeanJpsiPrime",fFitTotal->GetParameter(8),fFitTotal->GetParError(8));
-  Set("SigmaJpsiPrime",fFitTotal->GetParameter(9),fFitTotal->GetParError(9));
-  
-}
-  
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Result::FitJpsiGCBE(TH1& h)
-{
-  std::cout << "Fit with jpsi alone (gaus + CB + expo)" << std::endl;
-  
-  const Double_t xmin(1.0);
-  const Double_t xmax(8.0);
-  
-  fFitTotal = new TF1("fFitTotal",funcJpsiGCBE,xmin,xmax,10);
-  fFitTotal->SetParNames("cste","x0","sigma0","N","alpha","n","mean","sigma","expocste","exposlope");
-  
-  fFitTotal->SetParLimits(3,0,h.GetMaximum()*2); // N
-  
-  const Double_t cbalpha(0.98);
-  const Double_t cbn(5.2);
-  
-  fFitTotal->FixParameter(4,cbalpha);
-  fFitTotal->FixParameter(5,cbn);
-  
-  fFitTotal->SetParLimits(6,2.8,3.2); // mean
-  fFitTotal->SetParLimits(7,0.02,0.3); // sigma
-  
-  TF1* fg = new TF1("fg","gaus",xmin,xmax);
-  
-  h.Fit(fg,"","",0.75,3.0);
-  
-  fFitTotal->SetParameter(0,fg->GetParameter(0));
-  fFitTotal->SetParameter(1,fg->GetParameter(1));
-  fFitTotal->SetParameter(2,fg->GetParameter(2));
-  
-  TF1* fexpo = new TF1("expo","expo",xmin,xmax);
-  
-  h.Fit(fexpo,"","",3.5,5);
-  
-  fFitTotal->SetParameter(8,fexpo->GetParameter(0));
-  fFitTotal->SetParameter(9,fexpo->GetParameter(1));
-  
-  fFitTotal->SetParameter(3,h.GetMaximum()),
-  fFitTotal->SetParameter(4,cbalpha);
-  fFitTotal->SetParameter(5,cbn);
-  fFitTotal->SetParameter(6,3.15);
-  fFitTotal->SetParameter(7,0.1);
-  
-  const char* fitOption = "SI+";
-  
-  TFitResultPtr r = h.Fit(fFitTotal,fitOption,"",2,5);
-  
-  Set("MeanJpsi",fFitTotal->GetParameter(6),fFitTotal->GetParError(6));
-  Set("SigmaJpsi",fFitTotal->GetParameter(7),fFitTotal->GetParError(7));
-  
-  double m = MeanJpsi();
-  double s = SigmaJpsi();
-  double n = 3.0;
-  
-  TF1* fcb = new TF1("fcb",funcCB,xmin,xmax,5);
-  fcb->SetParameters(fFitTotal->GetParameter(3),
-                     fFitTotal->GetParameter(4),
-                     fFitTotal->GetParameter(5),
-                     fFitTotal->GetParameter(6),
-                     fFitTotal->GetParameter(7));
-  
-  fcb->SetLineColor(6);
-  fcb->SetNpx(100);
-  TLine* l1 = new TLine(m-n*s,0,m-n*s,fFitTotal->GetParameter(3));
-  TLine* l2 = new TLine(m+n*s,0,m+n*s,fFitTotal->GetParameter(3));
-  l1->SetLineColor(6);
-  l2->SetLineColor(6);
-  h.GetListOfFunctions()->Add(fcb);
-  h.GetListOfFunctions()->Add(l1);
-  h.GetListOfFunctions()->Add(l2);
-  
-  
-  Double_t cbParameters[5];
-  Double_t covarianceMatrix[5][5];
-  
-  cbParameters[0] = fFitTotal->GetParameter(3);
-  cbParameters[1] = fFitTotal->GetParameter(4);
-  cbParameters[2] = fFitTotal->GetParameter(5);
-  cbParameters[3] = fFitTotal->GetParameter(6);
-  cbParameters[4] = fFitTotal->GetParameter(7);
-  
-  for ( int iy = 0; iy < 5; ++iy )
-  {
-    for ( int ix = 0; ix < 5; ++ix )
-    {
-      covarianceMatrix[ix][iy] = (r->GetCovarianceMatrix())(ix+3,iy+3);
-    }
-  }
-  
-  double njpsi = fcb->Integral(m-n*s,m+n*s)/h.GetBinWidth(1);
-  
-  double nerr = fcb->IntegralError(m-n*s,m+n*s,&cbParameters[0],&covarianceMatrix[0][0])/h.GetBinWidth(1);
-  
-  Set("NofJpsi",njpsi,nerr);
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Result::FitJpsiPCBE(TH1& h)
-{
-  std::cout << "Fit with jpsi alone (pol2 + CB + expo)" << std::endl;
-  
-  const Double_t xmin(2.0);
-  const Double_t xmax(5.0);
-  
-  fFitTotal = new TF1("fFitTotal",funcJpsiPCBE,xmin,xmax,10);
-  fFitTotal->SetParNames("p0","p1","p2","N","alpha","n","mean","sigma","expocste","exposlope");
-  
-  fFitTotal->SetParLimits(3,0,h.GetMaximum()*2); // N
-
-  const Double_t cbalpha(0.98);
-  const Double_t cbn(5.2);
-  
-  fFitTotal->FixParameter(4,cbalpha);
-  fFitTotal->FixParameter(5,cbn);
-  
-  fFitTotal->SetParLimits(6,2,4); // mean
-  fFitTotal->SetParLimits(7,0.05,0.2); // sigma
-  
-  TF1* fpol2 = new TF1("pol2","pol2",xmin,xmax);
-                       
-  h.Fit(fpol2,"+","",2,2.8);
-  
-  fFitTotal->SetParameter(0,fpol2->GetParameter(0));
-  fFitTotal->SetParameter(1,fpol2->GetParameter(1));
-  fFitTotal->SetParameter(2,fpol2->GetParameter(2));
-
-  TF1* fexpo = new TF1("expo","expo",xmin,xmax);
-  
-  h.Fit(fexpo,"+","",3.5,4.5);
-  
-  fFitTotal->SetParameter(8,fexpo->GetParameter(0));
-  fFitTotal->SetParameter(9,fexpo->GetParameter(1));
-    
-  fFitTotal->SetParameter(3,h.GetMaximum()),
-  fFitTotal->SetParameter(4,cbalpha);
-  fFitTotal->SetParameter(5,cbn);
-  fFitTotal->SetParameter(6,3.15);
-  fFitTotal->SetParameter(7,0.1);
-  
-  h.Fit(fFitTotal,"+","",2.5,5);
-    
-  Set("MeanJpsi",fFitTotal->GetParameter(6),fFitTotal->GetParError(6));
-  Set("SigmaJpsi",fFitTotal->GetParameter(7),fFitTotal->GetParError(7));
-  
-  double m = MeanJpsi();
-  double s = SigmaJpsi();
-  double n = 2.0;
-  
-  TF1* fcb = new TF1("fcb",funcCB,xmin,xmax,5);
-  fcb->SetParameters(fFitTotal->GetParameter(3),
-                     fFitTotal->GetParameter(4),
-                     fFitTotal->GetParameter(5),
-                     fFitTotal->GetParameter(6),
-                     fFitTotal->GetParameter(7));
-  
-  fcb->SetLineColor(6);
-  fcb->SetNpx(100);
-  TLine* l1 = new TLine(m-n*s,0,m-n*s,fFitTotal->GetParameter(3));
-  TLine* l2 = new TLine(m+n*s,0,m+n*s,fFitTotal->GetParameter(3));
-  l1->SetLineColor(6);
-  l2->SetLineColor(6);
-  h.GetListOfFunctions()->Add(fcb);
-  h.GetListOfFunctions()->Add(l1);
-  h.GetListOfFunctions()->Add(l2);
-  
-  
-  Set("NofJpsi",fFitTotal->Integral(m-n*s,m+n*s)/h.GetBinWidth(1),fFitTotal->IntegralError(m-n*s,m+n*s)/h.GetBinWidth(1));
-  
-  //  Set("NofJpsi",fFitTotal->Integral(0,10)/h.GetBinWidth(1),fFitTotal->IntegralError(0,10)/h.GetBinWidth(1));
-  
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Result::FitJpsiCBE(TH1& h)
-{
-  std::cout << "Fit with jpsi alone" << std::endl;
-  
-  const Double_t xmin(1.5);
-  const Double_t xmax(8.0);
-  
-  fFitTotal = new TF1("fFitTotal",funcJpsiCBE,xmin,xmax,7);
-  fFitTotal->SetParNames("N","alpha","n","mean","sigma","expocste","exposlope");
-  
-//  fFitTotal->SetParameters(h.GetMaximum(),1,5,3.0,0.07,1.5,3,1,0);
-
-  fFitTotal->SetParameters(1,1.15,3.6,3.0,0.07,1,-1);
-
-  fFitTotal->SetParLimits(0,0,h.GetMaximum()); // N
-//  fFitTotal->SetParLimits(1,0.1,2); // alpha
-  fFitTotal->FixParameter(1,0.98);
-//  fFitTotal->SetParLimits(2,0.01,5); // n
-  fFitTotal->FixParameter(2,5.2);
-  fFitTotal->SetParLimits(3,2.8,3.5); // mean
-  fFitTotal->SetParLimits(4,0.05,0.2); // sigma
-  
-  TF1* fexpo = new TF1("expo","expo",xmin,xmax);
-  
-  h.Fit(fexpo,"+","",2,3);
-  
-  fFitTotal->SetParameter(5,fexpo->GetParameter(0));
-  fFitTotal->SetParameter(6,fexpo->GetParameter(1));
-  
-  h.Fit(fFitTotal,"+","",2,5);
-  
-  
-  Set("MeanJpsi",fFitTotal->GetParameter(3),fFitTotal->GetParError(3));
-  Set("SigmaJpsi",fFitTotal->GetParameter(4),fFitTotal->GetParError(4));
-  
-  double m = MeanJpsi();
-  double s = SigmaJpsi();
-  double n = 2.0;
-  
-  TF1* fcb = new TF1("fcb",funcCB,xmin,xmax,5);
-  fcb->SetParameters(fFitTotal->GetParameter(0),
-                     fFitTotal->GetParameter(1),
-                     fFitTotal->GetParameter(2),
-                     fFitTotal->GetParameter(3),
-                     fFitTotal->GetParameter(4));
-
-  fcb->SetLineColor(6);
-  fcb->SetNpx(1000);
-  TLine* l1 = new TLine(m-n*s,0,m-n*s,fFitTotal->GetParameter(0));
-  TLine* l2 = new TLine(m+n*s,0,m+n*s,fFitTotal->GetParameter(0));
-  l1->SetLineColor(6);
-  l2->SetLineColor(6);
-  h.GetListOfFunctions()->Add(fcb);
-  h.GetListOfFunctions()->Add(l1);
-  h.GetListOfFunctions()->Add(l2);
-  
-  
-  Set("NofJpsi",fFitTotal->Integral(m-n*s,m+n*s)/h.GetBinWidth(1),fFitTotal->IntegralError(m-n*s,m+n*s)/h.GetBinWidth(1));
-  
-  //  Set("NofJpsi",fFitTotal->Integral(0,10)/h.GetBinWidth(1),fFitTotal->IntegralError(0,10)/h.GetBinWidth(1));
-  
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Result::FitJpsiECBE(TH1& h)
-{
-  std::cout << "Fit with jpsi alone (expo + CB + expo)" << std::endl;
-  
-  const Double_t xmin(1.5);
-  const Double_t xmax(8.0);
-  
-  fFitTotal = new TF1("fFitTotal",funcJpsiECBE,xmin,xmax,9);
-  fFitTotal->SetParNames("e0","s0","N","alpha","n","mean","sigma","e1","s1");
-  
-  fFitTotal->SetParameters(1,-1,1,1.15,3.6,3.2,0.06,-1);
-
-  fFitTotal->SetParLimits(0,0,h.GetMaximum()*2);
-  
-  fFitTotal->FixParameter(3,0.98); // alpha
-  fFitTotal->FixParameter(4,5.2); // n
-  fFitTotal->SetParLimits(5,2.8,3.5); // mean
-  fFitTotal->SetParLimits(6,0.05,0.2); // sigma
-  
-  TF1* fexpo1 = new TF1("expo1","expo",xmin,xmax);
-  TF1* fexpo2 = new TF1("expo2","expo",xmin,xmax);
-  
-  h.Fit(fexpo1,"","",1.5,3);
-  
-  fFitTotal->SetParameter(0,fexpo1->GetParameter(0));
-  fFitTotal->SetParameter(1,fexpo1->GetParameter(1));
-
-  h.Fit(fexpo2,"","",3.5,5.0);
-
-  fFitTotal->SetParameter(7,fexpo2->GetParameter(0));
-  fFitTotal->SetParameter(8,fexpo2->GetParameter(1));
-
-  const char* fitOption = "SI+";
-  
-  TFitResultPtr r = h.Fit(fFitTotal,fitOption,"",2,5);
-  
-  Set("MeanJpsi",fFitTotal->GetParameter(5),fFitTotal->GetParError(5));
-  Set("SigmaJpsi",fFitTotal->GetParameter(6),fFitTotal->GetParError(6));
-  
-  double m = MeanJpsi();
-  double s = SigmaJpsi();
-  double n = 3.0;
-  
-  TF1* fcb = new TF1("fcb",funcCB,xmin,xmax,5);
-  fcb->SetParameters(fFitTotal->GetParameter(2),
-                     fFitTotal->GetParameter(3),
-                     fFitTotal->GetParameter(4),
-                     fFitTotal->GetParameter(5),
-                     fFitTotal->GetParameter(6));
-
-  fcb->SetParError(0,fFitTotal->GetParError(2));
-  fcb->SetParError(1,fFitTotal->GetParError(3));
-  fcb->SetParError(2,fFitTotal->GetParError(4));
-  fcb->SetParError(3,fFitTotal->GetParError(5));
-  fcb->SetParError(4,fFitTotal->GetParError(6));
-  
-  fcb->SetLineColor(6);
-  fcb->SetNpx(1000);
-  TLine* l1 = new TLine(m-n*s,0,m-n*s,fFitTotal->GetParameter(2));
-  TLine* l2 = new TLine(m+n*s,0,m+n*s,fFitTotal->GetParameter(2));
-  l1->SetLineColor(6);
-  l2->SetLineColor(6);
-  h.GetListOfFunctions()->Add(fcb);
-  h.GetListOfFunctions()->Add(l1);
-  h.GetListOfFunctions()->Add(l2);
-  
-  
-  Double_t cbParameters[5];
-  Double_t covarianceMatrix[5][5];
-  
-  cbParameters[0] = fFitTotal->GetParameter(2);
-  cbParameters[1] = fFitTotal->GetParameter(3);
-  cbParameters[2] = fFitTotal->GetParameter(4);
-  cbParameters[3] = fFitTotal->GetParameter(5);
-  cbParameters[4] = fFitTotal->GetParameter(6);
-  
-  for ( int iy = 0; iy < 5; ++iy )
-  {
-    for ( int ix = 0; ix < 5; ++ix )
-    {
-      covarianceMatrix[ix][iy] = (r->GetCovarianceMatrix())(ix+2,iy+2);
-    }
-  }
-  
-
-  double njpsi = fcb->Integral(m-n*s,m+n*s)/h.GetBinWidth(1);
-  
-  double nerr = fcb->IntegralError(m-n*s,m+n*s,&cbParameters[0],&covarianceMatrix[0][0])/h.GetBinWidth(1);
-  
-
-  Set("NofJpsi",njpsi,nerr);
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Result::FitJpsi(TH1& h)
-{
-  std::cout << "Fit with jpsi alone" << std::endl;
-
-  const Double_t xmin(1.5);
-  const Double_t xmax(8.0);
-
-  fFitTotal = new TF1("fFitTotal",funcCB2,xmin,xmax,7);
-  fFitTotal->SetParNames("N","alpha","n","mean","sigma","alphaprime","nprime");
-  fFitTotal->SetParameters(h.GetMaximum(),1,5,3.0,0.07,1.5,3);
-  fFitTotal->SetParLimits(0,0,h.GetMaximum()*2); // N
-  fFitTotal->SetParLimits(1,0,10); // alpha
-  fFitTotal->SetParLimits(2,1,10); // n
-  fFitTotal->SetParLimits(3,1,4); // mean
-  fFitTotal->SetParLimits(4,0.01,1); // sigma
-  fFitTotal->SetParLimits(5,0,10); // alpha
-  fFitTotal->SetParLimits(6,1,10); // n
-  
-  h.Fit(fFitTotal,"+","",2,5);
-  
-  
-  Set("MeanJpsi",fFitTotal->GetParameter(3),fFitTotal->GetParError(3));
-  Set("SigmaJpsi",fFitTotal->GetParameter(4),fFitTotal->GetParError(4));
-
-  double m = MeanJpsi();
-  double s = SigmaJpsi();
-  double n = 2.0;
-  
-  Set("NofJpsi",fFitTotal->Integral(m-n*s,m+n*s)/h.GetBinWidth(1),fFitTotal->IntegralError(m-n*s,m+n*s)/h.GetBinWidth(1));
-
-//  Set("NofJpsi",fFitTotal->Integral(0,10)/h.GetBinWidth(1),fFitTotal->IntegralError(0,10)/h.GetBinWidth(1));
-
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Result::FitUpsilon(TH1& h)
-{
-  std::cout << "Fit with upsilon alone" << std::endl;
-  
-  const Double_t xmin(6.0);
-  const Double_t xmax(12.0);
-  
-  fFitTotal = new TF1("fFitTotal",funcCB2,xmin,xmax,7);
-  fFitTotal->SetParNames("N","alpha","n","mean","sigma","alphaprime","nprime");
-  fFitTotal->SetParameters(h.GetMaximum(),1,5,9.46,0.2,1.5,3);
-  fFitTotal->SetParLimits(0,0,h.GetMaximum()*2); // N
-  fFitTotal->SetParLimits(1,0,10); // alpha
-  fFitTotal->SetParLimits(2,1,10); // n
-  fFitTotal->SetParLimits(3,8,12); // mean
-  fFitTotal->SetParLimits(4,0.01,1); // sigma
-  fFitTotal->SetParLimits(5,0,10); // alpha
-  fFitTotal->SetParLimits(6,1,10); // n
-  
-  h.Fit(fFitTotal,"+","",6,12);
-  
-  
-  Set("MeanUpsilon",fFitTotal->GetParameter(3),fFitTotal->GetParError(3));
-  Set("SigmaUpsilon",fFitTotal->GetParameter(4),fFitTotal->GetParError(4));
-  
-  double m = MeanUpsilon();
-  double s = SigmaUpsilon();
-  double n = 2.0;
-  
-  Set("NofUpsilon",fFitTotal->Integral(m-n*s,m+n*s)/h.GetBinWidth(1),fFitTotal->IntegralError(m-n*s,m+n*s)/h.GetBinWidth(1));  
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Result::Fit(Int_t nrebin)
-{
-  //  new TCanvas;
-  
-  static int n(0);
-  
-  fRebin = nrebin;
-  
-//  TH2* h2 = static_cast<TH2*>(fHC->Histo("MinvUSPt"));  
-//  int binptmin = h2->GetXaxis()->FindBin(2.0);
-//  TH1* hminv = static_cast<TH1*>(h2->ProjectionY("minv0",binptmin,h2->GetXaxis()->GetNbins()));
-  
-  TH1* hminv = fHC->Histo("MinvUSPt:py");
-  
-  if (!hminv || hminv->GetEntries()<100 ) return;
-    
-  fMinv = static_cast<TH1*>(hminv->Clone(Form("minv%d",n)));
-  fMinv->Rebin(fRebin);
-  fMinv->SetDirectory(0);
-//  fMinv->SetStats(false);
-  fMinv->SetTitle(TriggerClass());
-                  
-  if ( ( fFitType & kJpsi ) &&
-      ( fFitType & kJpsiPrime ) )
-  {
-    FitJpsiJpsiPrimeCustom(*fMinv);
-//    FitJpsiJpsiPrimeCB(*fMinv);
-  }
-  else if ( ( fFitType & kJpsi ) && ( fFitType & kPbPb2011 ) )
-  {
-    if ( fFitType & kMatchAny )
-    {
-      FitJpsiECBE(*fMinv); // for MATCH
-    }
-    else
-    {
-      //    FitJpsiPCBE(*fMinv);
-      FitJpsiGCBE(*fMinv); // for MATCHLOW      
-    }
-    fMinv->GetXaxis()->SetRangeUser(2.0,5.0);
-    fMinv->SetMarkerStyle(kFullDotMedium);
-    fMinv->SetMarkerColor(kBlue);
-    fMinv->SetLineColor(kBlue);
-    fMinv->SetDrawOption("EP");
-  }
-  else
-  {
-    int bminjpsi = fMinv->GetXaxis()->FindBin(2);
-    int bmaxjpsi = fMinv->GetXaxis()->FindBin(4);
-
-    int bminupsilon = fMinv->GetXaxis()->FindBin(8);
-    int bmaxupsilon = fMinv->GetXaxis()->FindBin(12);
-
-    if ( fMinv->Integral(bminjpsi,bmaxjpsi) > 100.0 ) FitJpsi(*fMinv);
-    if ( fMinv->Integral(bminupsilon,bmaxupsilon) > 100.0 ) FitUpsilon(*fMinv);
-  }
-  
-  TH2* hpp = static_cast<TH2*>(fHC->Histo("MinvPPPt"));
-  TH2* hmm = static_cast<TH2*>(fHC->Histo("MinvMMPt"));
-  
-  if ( hpp && hmm )
-  {
-    TH2* htmp = static_cast<TH2*>(hpp->Clone("htmp"));
-    htmp->SetDirectory(0);
-    htmp->Add(hmm);
-    htmp->Scale(0.5);
-  
-    fMinvLS = htmp->ProjectionY();
-    fMinvLS->SetDirectory(0);
-    fMinvLS->Rebin(fRebin);
-      
-    delete htmp;
-  }
-  else
-  {
-    AliDebug(1,Form("hpp=%p hmm=%p",hpp,hmm)); // this might happen for small runs and
-    // strict cuts on pairs
-  }
-  
-//  Print();
-}
-
-//_____________________________________________________________________________
-TMap* AliAnalysisMuMu::Result::Map() const
-{
-  if (!fMap)
-  {
-    fMap = new TMap;
-    fMap->SetOwnerKeyValue(kTRUE,kTRUE);
-  }
-  return fMap;
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Result::Set(const char* name, double value, double error)
-{
-  TObjArray* p = static_cast<TObjArray*>(Map()->GetValue(name));
-  if (!p) 
-  {
-    TParameter<double>* v = new TParameter<double>(name,value);
-    TParameter<double>* e = new TParameter<double>(name,error);
-    p = new TObjArray;
-    p->SetOwner(kTRUE);
-    p->Add(v);
-    p->Add(e);
-    Map()->Add(new TObjString(name),p);
-  }
-  else
-  {
-    TParameter<double>* v = static_cast<TParameter<double>*>(p->At(0));
-    TParameter<double>* e = static_cast<TParameter<double>*>(p->At(1));
-    v->SetVal(value);
-    e->SetVal(error);    
-  }
-}
-
-//_____________________________________________________________________________
-Bool_t AliAnalysisMuMu::Result::HasValue(const char* name) const
-{
-  return ( Map()->GetValue(name) != 0x0 );
-}
-
-//_____________________________________________________________________________
-Double_t AliAnalysisMuMu::Result::GetValue(const char* name) const
-{
-  TObjArray* p = static_cast<TObjArray*>(Map()->GetValue(name));
-  if (p)
-  {
-    TParameter<double>* val = static_cast<TParameter<double>*>(p->At(0));
-    return val->GetVal();
-  }
-  return 0.0;
-}
-
-//_____________________________________________________________________________
-Double_t AliAnalysisMuMu::Result::GetError(const char* name) const
-{
-  TObjArray* p = static_cast<TObjArray*>(Map()->GetValue(name));
-  if (p)
-  {
-    TParameter<double>* val = static_cast<TParameter<double>*>(p->At(1));
-    return val->GetVal();
-  }
-  return 0.0;
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Result::Print(Option_t* /*opt*/) const
-{
-  std::cout << Form("%20s - %s %s %s - NRUNS %d - NTRIGGER %10d",
-               GetName(),
-               EventSelection(),
-                    PairSelection(),
-                    CentralitySelection(),
-                    NofRuns(),
-               NofTriggers()) << std::endl;
-  
-  if (NofJpsi())
-  {
-    std::cout << Form("\t\tNjpsi %7.2f +- %5.2f \n\t\tRatio (x10^4) %7.2f +- %5.2f CHI2/NDF %5.2f"
-                 "\n\t\tPEAK %7.2f +- %5.2f Gev/c^2 SIGMA %7.2f +- %5.2f MeV/c^2",
-                 NofJpsi(),ErrorOnNofJpsi(),
-                 NofJpsi()*1E4/fNofTriggers,
-                 ErrorOnNofJpsi()*1E4/fNofTriggers,
-                 (fFitTotal ? fFitTotal->GetChisquare()/fFitTotal->GetNDF() : 0),
-                 MeanJpsi(),ErrorOnMeanJpsi(),
-                 1E3*SigmaJpsi(),1E3*ErrorOnSigmaJpsi()) << std::endl;
-
-  }
-
-  if (NofJpsiPrime())
-  {
-    std::cout << Form("\t\tNjpsiPrime %7.2f +- %5.2f \n\t\tRatio (x10^4) %7.2f +- %5.2f CHI2/NDF %5.2f"
-                 "\n\t\tPEAK %7.2f +- %5.2f Gev/c^2 SIGMA %7.2f +- %5.2f MeV/c^2",
-                 NofJpsiPrime(),ErrorOnNofJpsiPrime(),
-                 NofJpsiPrime()*1E4/fNofTriggers,
-                 ErrorOnNofJpsiPrime()*1E4/fNofTriggers,
-                 (fFitTotal ? fFitTotal->GetChisquare()/fFitTotal->GetNDF() : 0),
-                 MeanJpsiPrime(),ErrorOnMeanJpsiPrime(),
-                 1E3*SigmaJpsiPrime(),1E3*ErrorOnSigmaJpsiPrime()) << std::endl;
-    
-  }
-  
-  if ( NofUpsilon() )
-  {
-    std::cout << Form("\t\tNupsilon %7.2f +- %5.2f \n\t\tRatio (x10^4) %7.2f +- %5.2f CHI2/NDF %5.2f"
-                 "\n\t\tPEAK %7.2f +- %5.2f Gev/c^2 SIGMA %7.2f +- %5.2f MeV/c^2",
-                 NofUpsilon(),ErrorOnNofUpsilon(),
-                 NofUpsilon()*1E4/fNofTriggers,
-                 ErrorOnNofUpsilon()*1E4/fNofTriggers,
-                 (fFitTotal ? fFitTotal->GetChisquare()/fFitTotal->GetNDF() : 0),
-                 MeanUpsilon(),ErrorOnMeanUpsilon(),
-                 1E3*SigmaUpsilon(),1E3*ErrorOnSigmaUpsilon()) << std::endl;
-  }
-}
-
-
-//_____________________________________________________________________________
-TString FindTrigger(const AliHistogramCollection& hc,
+TString FindTrigger(const AliMergeableCollection& mc,
                     const char* base,
                     const char* selection,
                     const char* paircut,
@@ -1203,105 +103,55 @@ TString FindTrigger(const AliHistogramCollection& hc,
   }
   trigger2test.push_back("ANY");
   
-  for ( std::vector<std::string>::size_type i = 0; i < trigger2test.size(); ++i ) 
+  for ( std::vector<std::string>::size_type i = 0; i < trigger2test.size(); ++i )
   {
     std::string trigger = trigger2test[i];
     
-    if ( hc.Histo(selection,trigger.c_str(),centrality,paircut,"MinvUSPt") )
+    if ( mc.GetObject(Form("/%s/%s/%s/%s",selection,trigger.c_str(),centrality,paircut),"MinvUS") ||
+        mc.GetObject(Form("/%s/%s/%s/%s",selection,trigger.c_str(),centrality,paircut),"MinvUSPt")
+        )
     {
       return trigger.c_str();
     }
   }
   
-//  AliWarningGeneral("FindTrigger",Form("DID NOT FIND TRIGGER base=%s selection=%s paircut=%s centrality=%s",
-//                  base,selection,paircut,centrality));
-//  for ( std::vector<std::string>::size_type i = 0; i < trigger2test.size(); ++i ) 
-//  {
-//    AliWarningGeneral("FindTrigger",Form("tested trigger = %s",trigger2test[i].c_str()));
-//  }
+  //  AliWarningGeneral("FindTrigger",Form("DID NOT FIND TRIGGER base=%s selection=%s paircut=%s centrality=%s",
+  //                  base,selection,paircut,centrality));
+  //  for ( std::vector<std::string>::size_type i = 0; i < trigger2test.size(); ++i )
+  //  {
+  //    AliWarningGeneral("FindTrigger",Form("tested trigger = %s",trigger2test[i].c_str()));
+  //  }
   return "";
 }
 
 //_____________________________________________________________________________
-//_____________________________________________________________________________
-//_____________________________________________________________________________
-//_____________________________________________________________________________
-//_____________________________________________________________________________
-
-TString AliAnalysisMuMu::fgOCDBPath("raw://");
-
-TString AliAnalysisMuMu::fgDefaultDimuonTriggers("CMUL7-S-NOPF-ALLNOTRD,CMUL7-S-NOPF-MUON,CMUL8-S-NOPF-MUON,CMUL7-B-NOPF-ALLNOTRD,CMUL7-B-NOPF-MUON,CMUU7-B-NOPF-ALLNOTRD,CMUU7-B-NOPF-MUON,CPBI1MUL-B-NOPF-MUON");
-
-TString AliAnalysisMuMu::fgDefaultMuonTriggers("CMSL7-S-NOPF-MUON,CMSL7-S-NOPF-ALLNOTRD,CMSL8-S-NOPF-MUON,CMSL8-S-NOPF-ALLNOTRD,CMSL7-B-NOPF-MUON,CMUS1-B-NOPF-MUON,CMUS7-B-NOPF-MUON");
-
-TString AliAnalysisMuMu::fgDefaultMinbiasTriggers("CINT7-B-NOPF-ALLNOTRD,CINT7-S-NOPF-ALLNOTRD,CINT8-B-NOPF-ALLNOTRD,CINT8-S-NOPF-ALLNOTRD,CINT1-B-NOPF-ALLNOTRD,CPBI2_B1-B-NOPF-ALLNOTRD");
-
-TString AliAnalysisMuMu::fgDefaultEventSelectionList("ALL");
-
-TString AliAnalysisMuMu::fgDefaultPairSelectionList("pMATCHLOWRABSDCABOTH");
-
-//_____________________________________________________________________________
 AliAnalysisMuMu::AliAnalysisMuMu(const char* filename) : TObject(),
 fFilename(filename),
-fHistogramCollection(0x0),
 fCounterCollection(0x0),
 fDimuonTriggers(fgDefaultDimuonTriggers),
 fMuonTriggers(fgDefaultMuonTriggers),
 fMinbiasTriggers(fgDefaultMinbiasTriggers),
 fEventSelectionList(fgDefaultEventSelectionList),
-fPairSelectionList(fgDefaultPairSelectionList)
+fPairSelectionList(fgDefaultPairSelectionList),
+fCentralitySelectionList(fgDefaultCentralitySelectionList),
+fBinning(0x0),
+fMergeableCollection(0x0),
+fRunNumbers(),
+fCorrectionPerRun(0x0)
 {
   // ctor
   
-  GetCollections(fFilename,fHistogramCollection,fCounterCollection);
+  GetCollections(fFilename,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
 }
 
 //_____________________________________________________________________________
 AliAnalysisMuMu::~AliAnalysisMuMu()
 {
   // dtor
-  gROOT->CloseFiles();
   delete fCounterCollection;
-  delete fHistogramCollection;
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::CentralityCheck(const char* filelist)
-{
-  // Check if we get correctly filled centrality
-  
-  TObjArray* files = ReadFileList(filelist);
-  
-  if (!files || files->IsEmpty() ) return;
-  
-  TIter next(files);
-  TObjString* str;
-  
-  while ( ( str = static_cast<TObjString*>(next()) ) )
-  {
-    AliHistogramCollection* hc(0x0);
-    AliCounterCollection* cc(0x0);
-    
-    if (!GetCollections(str->String().Data(),hc,cc)) continue;
-    
-    int run = RunNumberFromFileName(str->String().Data());
-    
-    TH1* h = hc->Histo("/ALL/CPBI1MUL-B-NOPF-MUON/Centrality");
- 
-    float percent(0);
-    
-    if (h)
-    {
-      percent = 100*h->Integral(1,1)/h->Integral();
-    }
-    
-    std::cout << Form("RUN %09d PERCENT %7.2f",run,percent) << std::endl;
-    
-    delete hc;
-  }
-  
-  gROOT->CloseFiles();
-  
+  delete fBinning;
+  delete fMergeableCollection;
+  delete fCorrectionPerRun;
 }
 
 //_____________________________________________________________________________
@@ -1321,7 +171,7 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers,
   // if detailTriggers is kTRUE, each kind of (MB,MUL,MSL) is counted separately
   //
   
-  if (!fHistogramCollection || !fCounterCollection) return;
+  if (!fMergeableCollection || !fCounterCollection) return;
   
   TObjArray* runs = fCounterCollection->GetKeyWords("run").Tokenize(",");
   TIter nextRun(runs);
@@ -1468,6 +318,86 @@ void AliAnalysisMuMu::BasicCountsEvolution(const char* filelist, Bool_t detailTr
                                  totalNmb,totalNmsl,totalNmul) << std::endl;
 
 }
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::CentralityCheck(const char* filelist)
+{
+  // Check if we get correctly filled centrality
+  
+  TObjArray* files = ReadFileList(filelist);
+  
+  if (!files || files->IsEmpty() ) return;
+  
+  TIter next(files);
+  TObjString* str;
+  
+  while ( ( str = static_cast<TObjString*>(next()) ) )
+  {
+    AliMergeableCollection* mc(0x0);
+    AliCounterCollection* cc(0x0);
+    AliAnalysisMuMuBinning* bin(0x0);
+    std::set<int> runnumbers;
+    
+    if (!GetCollections(str->String().Data(),mc,cc,bin,runnumbers)) continue;
+    
+    int run = RunNumberFromFileName(str->String().Data());
+    
+    TH1* h = mc->Histo("/ALL/CPBI1MUL-B-NOPF-MUON/Centrality");
+    
+    float percent(0);
+    
+    if (h)
+    {
+      percent = 100*h->Integral(1,1)/h->Integral();
+    }
+    
+    std::cout << Form("RUN %09d PERCENT %7.2f",run,percent) << std::endl;
+    
+    delete mc;
+  }
+  
+  gROOT->CloseFiles();
+  
+}
+
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::Compact(TGraph& g)
+{
+  /// Compact (i.e. get the equivalent of 1 bin = 1 run number for an histogram)
+  /// the graph.
+  /// Only works if the x content of this graph represents run numbers. Otherwise
+  /// result is unpredictable ;-)
+  
+  if ( !g.GetN() ) return;
+  
+  TGraph* newgraph = static_cast<TGraph*>(g.Clone());
+  Double_t x,xerr,y,yerr;
+  TGraphErrors* ge = dynamic_cast<TGraphErrors*>(newgraph);
+  
+  TAxis* axis = g.GetXaxis();
+  
+  for ( Int_t i = 0; i < newgraph->GetN(); ++i )
+  {
+    g.GetPoint(i,x,y);
+    if (ge)
+    {
+      xerr = ge->GetErrorX(i);
+      yerr = ge->GetErrorY(i);
+    }
+    
+    g.SetPoint(i,i+0.5,y);
+    if (ge)
+    {
+      static_cast<TGraphErrors&>(g).SetPointError(i,0.5,yerr);
+    }
+    
+    axis->SetBinLabel(i,Form("%d",TMath::Nint(x)));
+  }
+  
+  
+}
+
 
 //_____________________________________________________________________________
 TObjArray* AliAnalysisMuMu::CompareJpsiPerCMUUWithBackground(const char* jpsiresults,
@@ -1622,7 +552,8 @@ TGraph* AliAnalysisMuMu::CompareJpsiPerCMUUWithSimu(const char* realjpsiresults,
 
 //_____________________________________________________________________________
 TObjArray* AliAnalysisMuMu::ComputeBackgroundEvolution(const char* filelist, 
-                                                       const char* triggerList, 
+                                                       const char* triggerList,
+                                                       Double_t ptmin,
                                                        const char* outputFile,
                                                        const char* outputMode)
 {
@@ -1637,7 +568,7 @@ TObjArray* AliAnalysisMuMu::ComputeBackgroundEvolution(const char* filelist,
   TIter next(files);
   TObjString* str;
   
-  const char* ps = "ALL";
+  const char* ps = "PSALL";
   const char* centrality = "PP";
   const char* ts1 = "sMATCHLOWRABS";
   const char* ts2 = "sMATCHLOWRABSDCA";
@@ -1658,17 +589,26 @@ TObjArray* AliAnalysisMuMu::ComputeBackgroundEvolution(const char* filelist,
   {
     AliInfoClass(str->String().Data());
     
-    AliHistogramCollection* hc(0x0);
+    AliMergeableCollection* mc(0x0);
     AliCounterCollection* cc(0x0);
+    AliAnalysisMuMuBinning* bin(0x0);
+    std::set<int> runnumbers;
     
-    if (!GetCollections(str->String().Data(),hc,cc)) continue;
+    if (!GetCollections(str->String().Data(),mc,cc,bin,runnumbers)) continue;
     
-    TIter nextHisto(hc->CreateIterator());
-    TH1* h;
+    TIter nextObject(mc->CreateIterator());
+    TObject* o;
     int nplus(0), nminus(0);
     
-    while ( ( h = static_cast<TH1*>(nextHisto()) ) )
+    while ( (  o = nextObject() ) )
     {
+      if ( o->InheritsFrom("TH1") )
+      {
+        continue;
+      }
+      
+      TH1* h = static_cast<TH1*>(o);
+      
       if ( TString(h->GetName()).EndsWith("Plus") )
       {
         nplus++;
@@ -1705,22 +645,25 @@ TObjArray* AliAnalysisMuMu::ComputeBackgroundEvolution(const char* filelist,
         format = "/%s/%s/%s/%s/PtEtaMu:py";
       }
       
-      h1p = hc->Histo(Form(format.Data(),ps,trigger->String().Data(),centrality,ts1));
+      TString hname(Form(format.Data(),ps,trigger->String().Data(),centrality,ts1));
+      
+      h1p = mc->Histo(hname.Data());
       
       if (!h1p)
       {
+        AliInfoClass(Form("Could not get %s",hname.Data()));
         continue;
       }
       
       AliInfoClass(Form("Will use trigger %s",trigger->String().Data()));
       
-      h2p = hc->Histo(Form(format.Data(),ps,trigger->String().Data(),centrality,ts2));
+      h2p = mc->Histo(Form(format.Data(),ps,trigger->String().Data(),centrality,ts2));
       
       if ( bothSigns )
       {
         format.ReplaceAll("Plus","Minus");
-        h1m = hc->Histo(Form(format.Data(),ps,trigger->String().Data(),centrality,ts1));
-        h2m = hc->Histo(Form(format.Data(),ps,trigger->String().Data(),centrality,ts2));
+        h1m = mc->Histo(Form(format.Data(),ps,trigger->String().Data(),centrality,ts1));
+        h2m = mc->Histo(Form(format.Data(),ps,trigger->String().Data(),centrality,ts2));
       }
       else
       {
@@ -1730,19 +673,31 @@ TObjArray* AliAnalysisMuMu::ComputeBackgroundEvolution(const char* filelist,
       
       if (h1m && h2m && h1p && h2p)
       {
+        Int_t bin1 = h1m->GetXaxis()->FindBin(ptmin);
+        Int_t bin2 = h1m->GetXaxis()->GetNbins();
+
         runs[trigger->String().Data()].push_back(RunNumberFromFileName(str->String().Data()));
         errruns[trigger->String().Data()].push_back(0.5);
-        
-        double value = 100-h2m->Integral()*100/h1m->Integral();
+
+        double e1,e2;
+        double v1 = h2m->IntegralAndError(bin1,bin2,e1);
+        double v2 = h1m->IntegralAndError(bin1,bin2,e2);
+        double value = 100*(1.0-v1/v2);
+        e1/=v1;
+        e2/=v2;
         yminus[trigger->String().Data()].push_back(value);
-        double e1 = 1.0/TMath::Sqrt(h1m->GetEntries());
-        double e2 = 1.0/TMath::Sqrt(h2m->GetEntries());
+//        double e1 = 1.0/TMath::Sqrt(h1m->GetEntries());
+//        double e2 = 1.0/TMath::Sqrt(h2m->GetEntries());
         erryminus[trigger->String().Data()].push_back(TMath::Sqrt(e1*e1+e2*e2)*value);
         
-        value = 100-h2p->Integral()*100/h1p->Integral();
+        v1=h2p->IntegralAndError(bin1,bin2,e1);
+        v2=h1p->IntegralAndError(bin1,bin2,e1);
+        value = 100*(1.0-v1/v2);
+        e1/=v1;
+        e2/=v2;
         yplus[trigger->String().Data()].push_back(value);
-        e1 = 1.0/TMath::Sqrt(h1p->GetEntries());
-        e2 = 1.0/TMath::Sqrt(h2p->GetEntries());
+//        e1 = 1.0/TMath::Sqrt(h1p->GetEntries());
+//        e2 = 1.0/TMath::Sqrt(h2p->GetEntries());
         erryplus[trigger->String().Data()].push_back(TMath::Sqrt(e1*e1+e2*e2)*value);
       }
       else
@@ -1751,7 +706,7 @@ TObjArray* AliAnalysisMuMu::ComputeBackgroundEvolution(const char* filelist,
       }
     }
     
-    delete hc;
+    delete mc;
     delete cc;
     TFile* f = static_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(str->String().Data()));    
     delete f;
@@ -1795,8 +750,7 @@ TObjArray* AliAnalysisMuMu::ComputeBackgroundEvolution(const char* filelist,
 //_____________________________________________________________________________
 TMap*
 AliAnalysisMuMu::ComputeJpsiEvolution(const char* filelist, const char* triggerList,
-                                      const char* outputFile, const char* outputMode,
-                                      Bool_t simulation)
+                                      const char* outputFile)
 {
   /// Compute some jpsi information for a list of files / trigger combinations
   
@@ -1809,34 +763,27 @@ AliAnalysisMuMu::ComputeJpsiEvolution(const char* filelist, const char* triggerL
   
   TIter nextFile(files);
   TObjString* str;
-  UInt_t fitType(0);
+  TString fitType;
   
-  while ( ( str = static_cast<TObjString*>(nextFile()) ) )
-  {
-    std::cout << str->String().Data() << std::endl;
-    
-    AliAnalysisMuMu m(str->String().Data());
-    
-    m.SetDimuonTriggerList(triggerList);
-    m.SetEventSelectionList("ALL");
-    
-    TObjArray* array = m.Jpsi(simulation); // the array will contain results for all triggers in fDimuonTriggers variable
-    
-    if (!array)
-    {
-      AliWarningClass(Form("Got no jpsi for %s",str->String().Data()));
-    }
-    else
-    {
-      Result* r = static_cast<Result*>(array->First());
-      if (!r) continue;
-      fitType = r->FitType();
-    }
-    
-    results.Add(new TObjString(str->String()), array);
-  }
-  
-  if (!results.GetSize()) return 0x0;
+//  while ( ( str = static_cast<TObjString*>(nextFile()) ) )
+//  {
+//    std::cout << str->String().Data() << std::endl;
+//    
+//    AliAnalysisMuMu m(str->String().Data());
+//    
+//    m.SetDimuonTriggerList(triggerList);
+//        
+//    TMap* map = m.Jpsi();
+//    
+//    if (!map)
+//    {
+//      AliWarningClass(Form("Got no jpsi for %s",str->String().Data()));
+//    }
+//    
+//    results.Add(new TObjString(str->String()), map);
+//  }
+//  
+//  if (!results.GetSize()) return 0x0;
   
   // compute the total over all files
   
@@ -1853,67 +800,79 @@ AliAnalysisMuMu::ComputeJpsiEvolution(const char* filelist, const char* triggerL
   {
     nextFile.Reset();
     
-    Int_t nruns(0);
-    Int_t n(0);
-    TList l;    
-    Result* ref(0x0);
-    AliHistogramCollection* hc(0x0);
+    TList l;
+    AliAnalysisMuMuResult* ref(0x0);
     
     while ( ( str = static_cast<TObjString*>(nextFile()) ) )
     {
-      TObjArray* a = static_cast<TObjArray*>(results.GetValue(str->String().Data()));
+//      TObjArray* a = static_cast<TObjArray*>(results.GetValue(str->String().Data()));
       
-      Result* r(0x0);
+      AliInfoClass("FIXME: write the merging of AliAnalysisMuMuResult objects !");
       
-      if (a)
-      {
-        r = static_cast<Result*>(a->FindObject(trigger->String().Data()));
-        
-        if (r)
-        {
-          if (!ref) ref = r;
-
-          if ( !hc )
-          {
-            AliHistogramCollection* htmp = r->HC();
-            if (!htmp)
-            {
-              continue;
-            }
-            hc = static_cast<AliHistogramCollection*>(htmp->Clone(Form("hc%d",0)));
-          }
-          else
-          {
-            l.Add(r->HC());
-          }
-          
-          n += r->NofTriggers();
-          ++nruns;
-        }
-      }
+//      AliAnalysisMuMuResult* r(0x0);
+//      
+//      if (a)
+//      {
+//        r = static_cast<AliAnalysisMuMuResult*>(a->FindObject(trigger->String().Data()));
+//        
+//        if (r)
+//        {
+//          if (!ref) ref = r;
+//
+//          if ( !hminv )
+//          {
+//            TH1* htmp = static_cast<TH1*>(r->Minv()->Clone());
+//            if (!htmp)
+//            {
+//              continue;
+//            }
+//            hminv = htmp;
+//          }
+//          else
+//          {
+//            l.Add(r->Minv());
+//          }
+//          
+//          n += r->NofTriggers();
+//          ++nruns;
+//        }
+//      }
     }
     
-    hc->Merge(&l);
+//    sum->Merge(&l);
     
     if (!ref) continue;
     
-    Result* sum = new Result(ref->TriggerClass(),ref->EventSelection(),
-                             ref->PairSelection(),ref->CentralitySelection(),
-                             n,hc,1,fitType);
 
-    sum->SetNofRuns(nruns);
-    
-    total->Add(new TObjString(trigger->String().Data()),sum);
+//    AliAnalysisMuMuResult* sum = new AliAnalysisMuMuResult(*hminv,
+//                                                           ref->TriggerClass(),
+//                                                           ref->EventSelection(),
+//                                                           ref->PairSelection(),
+//                                                           ref->CentralitySelection(),
+//                                                           AliAnalysisMuMuBinning::Range());
+//
+//    sum->SetNofTriggers(n);
+//    
+//    sum->SetNofRuns(nruns);
+//    
+//    sum->Fit(1);
+//    
+//    total->Add(new TObjString(trigger->String().Data()),sum);
     
   }
 
+  AliInfoClass("--------------------------------------");
   StdoutToAliInfoClass(total->Print(););
+
+  AliInfoClass("---------------------------Going to write file");
+
+  TFile* fout = new TFile(outputFile,"RECREATE");
   
-  TFile* fout = new TFile(outputFile,outputMode);
+  results.Write("rbr",TObject::kSingleKey);
   
-  results.Write("rbr",TObject::kSingleKey|TObject::kOverwrite);
-  
-  total->Write("total",TObject::kSingleKey|TObject::kOverwrite);
+  total->Write("total",TObject::kSingleKey);
+
+  fout->Close();
   
   delete fout;
   
@@ -2018,20 +977,58 @@ Bool_t AliAnalysisMuMu::DecodeFileName(const char* filename,
   return kTRUE;
 }
 
-//______________________________________________________________________________
-void AliAnalysisMuMu::DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label)
+//_____________________________________________________________________________
+void AliAnalysisMuMu::DrawMinv(const char* type,
+                               const char* particle,
+                               const char* trigger,
+                               const char* eventType,
+                               const char* pairCut,
+                               const char* centrality) const
 {
-  AliDebugClass(1,Form("RUN1 %09d RUN2 %09d YMIN %e YMAX %e %s",
-                       run1,run2,ymin,ymax,label));
-  TBox* b = new TBox(run1*1.0,ymin,run2*1.0,ymax);
-  b->SetFillColor(5);
-  b->Draw();
-  TText* text = new TText((run1+run2)/2.0,ymax*0.85,label);
-  text->SetTextSize(0.025);
-  text->SetTextFont(42);
-  text->SetTextAlign(23);
-  text->SetTextAngle(45);
-  text->Draw();
+  /// Draw minv spectra for binning of given type
+  
+  if (!MC() || !BIN()) return;
+  
+  TObjArray* bins = BIN()->CreateBinObjArray(particle,type);
+  if (!bins)
+  {
+    AliError(Form("Could not get %s bins",type));
+    return;
+  }
+  
+  TIter next(bins);
+  AliAnalysisMuMuBinning::Range* r;
+  
+  while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
+  {
+    TString name(Form("/%s/%s/%s/%s/MinvUS%s",eventType,trigger,centrality,pairCut,r->AsString().Data()));
+
+    AliDebug(1,name.Data());
+                 
+    TH1* h = MC()->Histo(name.Data());
+    if (h)
+    {
+      TString cname(name);
+      cname.ReplaceAll("/","_");
+      TCanvas* c = new TCanvas(cname.Data(),cname.Data());
+      c->SetLogy();
+      h->Draw("histe");
+    }
+  }
+  
+  delete bins;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::DrawMinv(const char* type, const char* particle) const
+{
+  /// Draw minv spectra for binning of given type
+
+  DrawMinv(type,particle,           
+           First(DimuonTriggerList()).Data(),
+           First(EventSelectionList()).Data(),
+           First(PairSelectionList()).Data(),
+           First(CentralitySelectionList()).Data());
 }
 
 //_____________________________________________________________________________
@@ -2064,6 +1061,159 @@ AliAnalysisMuMu::FileOpen(const char* file)
 }
 
 //_____________________________________________________________________________
+TString AliAnalysisMuMu::First(const TString& list) const
+{
+  TObjArray* a = list.Tokenize(",");
+  if ( a->GetLast() < 0 ) return "";
+  
+  TString rv = static_cast<TObjString*>(a->First())->String();
+  
+  delete a;
+  
+  return rv;
+}
+
+//_____________________________________________________________________________
+AliAnalysisMuMuSpectra*
+AliAnalysisMuMu::FitParticle(const char* particle,
+                             const char* trigger,
+                             const char* eventType,
+                             const char* pairCut,
+                             const char* centrality,
+                             const AliAnalysisMuMuBinning& binning)
+{
+  // Fit the minv spectra to find the given particle
+  // Returns an array of AliAnalysisMuMuResult objects
+  
+  static int n(0);
+  
+  TObjArray* bins = binning.CreateBinObjArray(particle);
+  if (!bins)
+  {
+    AliError(Form("Did not get any bin for particle %s",particle));
+    return 0x0;
+  }
+  
+  TObjArray* triggers = fCounterCollection->GetKeyWords("trigger").Tokenize(",");
+  if ( !triggers->FindObject(trigger) )
+  {
+    AliDebug(1,Form("Did not find trigger %s",trigger));
+    delete bins;
+    delete triggers;
+    return 0x0;
+  }
+  delete triggers;
+  
+  TObjArray* events = fCounterCollection->GetKeyWords("event").Tokenize(",");
+  if ( !events->FindObject(eventType) )
+  {
+    AliError(Form("Did not find eventType %s",eventType));
+    delete bins;
+    delete events;
+    return 0x0;
+  }
+  delete events;
+
+  Int_t ntrigger = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s",trigger,eventType)));
+  
+  if  (ntrigger<=0)
+  {
+    AliError(Form("No trigger for trigger:%s/event:%s",trigger,eventType));
+    delete bins;
+    return 0x0;
+  }
+  
+//  AliDebug(1,Form("will project fMergeableCollection=%p...",fMergeableCollection));
+//  
+//  AliMergeableCollection* hp = fMergeableCollection->Project(Form("/%s/%s/%s/%s/",eventType,trigger,centrality,pairCut));
+//  
+//  AliDebug(1,Form("projection=hp=%p",hp));
+  
+//  if (!hp)
+//  {
+//    AliError(Form("projection %s/%s/%s/%s failed",eventType,trigger,centrality,pairCut));
+//    delete bins;
+//    return 0x0;
+//  }
+  
+  binning.Print();
+  
+  AliAnalysisMuMuSpectra* spectra(0x0);
+  
+  AliAnalysisMuMuBinning::Range* bin;
+  TIter next(bins);
+  Int_t nrebin=1;
+  
+  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
+  {
+    TString hname(Form("MinvUS%s",bin->AsString().Data()));
+    
+//    TH1* hminv = hp->Histo(hname.Data());
+    TH1* hminv = fMergeableCollection->Histo(Form("/%s/%s/%s/%s",eventType,trigger,centrality,pairCut),hname.Data());
+    
+    if (!hminv)
+    {
+      if (!fBinning && bin->IsNullObject() )
+      {
+        // old file, we only had MinvUSPt
+        hminv = fMergeableCollection->Histo(Form("/%s/%s/%s/%s",eventType,trigger,centrality,pairCut),"MinvUSPt:py");
+      }
+      
+      if (!hminv)
+      {
+        AliDebug(1,Form("Could not find histo %s",hname.Data()));
+        continue;
+      }
+    }
+    
+    hminv = static_cast<TH1*>(hminv->Clone(Form("minv%d",n++)));
+    
+    
+    AliAnalysisMuMuResult* r = new AliAnalysisMuMuResult(*hminv,
+                                                         trigger,
+                                                         eventType,
+                                                         pairCut,
+                                                         centrality,
+                                                         *bin);
+    
+    r->SetNofTriggers(ntrigger);
+    
+//    r->AddFit("PSILOW",nrebin);
+    if (IsSimulation())
+    {
+      r->AddFit("PSI1",1);
+      r->AddFit("COUNTPSI",1);
+    }
+    else
+    {
+      r->AddFit("PSILOW",nrebin+1);
+    }
+//    r->AddFit("PSILOW",nrebin+2);
+//    r->AddFit("PSILOW",nrebin+3);
+    
+//    r->Print();
+  
+    if (!spectra)
+    {
+      spectra = new AliAnalysisMuMuSpectra(binning.GetName());
+    }
+    
+    spectra->AdoptResult(*bin,r);
+    
+    if ( IsSimulation() )
+    {
+      SetNofInputParticles(*r);
+    }
+  
+    
+  } // loop on bins
+  
+  delete bins;
+  
+  return spectra;
+}
+
+//_____________________________________________________________________________
 ULong64_t AliAnalysisMuMu::GetTriggerScalerCount(const char* triggerList, Int_t runNumber)
 {
   // Get the expected (from OCDB scalers) trigger count
@@ -2090,7 +1240,8 @@ ULong64_t AliAnalysisMuMu::GetTriggerScalerCount(const char* triggerList, Int_t 
 }
 
 //_____________________________________________________________________________
-UInt_t AliAnalysisMuMu::GetSum(AliCounterCollection& cc, const char* triggerList, const char* eventSelection, Int_t runNumber)
+UInt_t AliAnalysisMuMu::GetSum(AliCounterCollection& cc, const char* triggerList,
+                               const char* eventSelection, Int_t runNumber)
 {
   TObjArray* ktrigger = cc.GetKeyWords("trigger").Tokenize(",");
   TObjArray* kevent = cc.GetKeyWords("event").Tokenize(",");
@@ -2128,33 +1279,137 @@ UInt_t AliAnalysisMuMu::GetSum(AliCounterCollection& cc, const char* triggerList
 }
 
 //_____________________________________________________________________________
-TObjArray* 
-AliAnalysisMuMu::Jpsi(Bool_t simulation)
+Bool_t
+AliAnalysisMuMu::GetCollections(const char* rootfile,
+                                AliMergeableCollection*& mc,
+                                AliCounterCollection*& cc,
+                                AliAnalysisMuMuBinning*& bin,
+                                std::set<int>& runnumbers)
+{
+  mc = 0x0;
+  cc = 0x0;
+  bin = 0x0;
+  
+  TFile* f = static_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(rootfile));
+  if (!f)
+  {
+    f = TFile::Open(rootfile);
+  }
+  
+  if ( !f || f->IsZombie() )
+  {
+    return kFALSE;
+  }
+
+  f->GetObject("MC",mc);
+  f->GetObject("CC",cc);
+  
+  TIter next(f->GetListOfKeys());
+  TKey* key;
+  
+  while ( ( key = static_cast<TKey*>(next())) && !bin )
+  {
+    if ( strcmp(key->GetClassName(),"AliAnalysisMuMuBinning")==0 )
+    {
+      bin = dynamic_cast<AliAnalysisMuMuBinning*>(key->ReadObj());
+    }
+  }
+  
+  if (!mc || !cc)
+  {
+    AliErrorClass("Old file. Please upgrade it!");
+    
+    return kFALSE;
+  }
+  
+  // get run list
+  TObjArray* runs = cc->GetKeyWords("run").Tokenize(",");
+  runs->Sort();
+  TIter nextRun(runs);
+  TObjString* srun;
+
+  runnumbers.clear();
+  
+  while ( ( srun = static_cast<TObjString*>(nextRun()) ) )
+  {
+    runnumbers.insert(srun->String().Atoi());
+  }
+  
+  delete runs;
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisMuMu::IsSimulation() const
+{
+  // whether or not we have MC information
+  
+  return ( fMergeableCollection->Histo("/INPUT/ALL/MinvUS") != 0x0 );
+}
+
+//_____________________________________________________________________________
+Int_t
+AliAnalysisMuMu::Jpsi(const char* what)
 {
   // Fit the J/psi (and psiprime) peaks for the triggers in fDimuonTriggers list
+  // what="" => fit only fully integrated MinvUS
+  // what="pt" => fit MinvUS in pt bins
+  // what="y" => fit MinvUS in y bins
+  // what="pt,y" => fit MinvUS in (pt,y) bins
   
-  TObjArray* a = new TObjArray;
-  a->SetOwner(kTRUE);
-  
-  if ( simulation )
+  if (!fMergeableCollection)
   {
-    const char* selection = "ALL";
-    
-    Add(a,GetResult(*fHistogramCollection,*fCounterCollection,"ANY",selection,"pMATCHLOWRABSBOTH","PP",Result::kJpsi));
+    AliError("No mergeable collection. Consider Upgrade()");
+    return 0;
   }
-  else
+  
+  Int_t nfits(0);
+  
+  TObjArray* triggerArray = fDimuonTriggers.Tokenize(",");
+  TObjArray* eventTypeArray = fEventSelectionList.Tokenize(",");
+  TObjArray* pairCutArray = fPairSelectionList.Tokenize(",");
+  TObjArray* whatArray = TString(what).Tokenize(",");
+  
+  if ( whatArray->GetEntries() <= 0 )
   {
-    TObjArray* triggerArray = fDimuonTriggers.Tokenize(",");
-    TObjArray* eventTypeArray = fEventSelectionList.Tokenize(",");
-    TObjArray* pairCutArray = fPairSelectionList.Tokenize(",");
+    whatArray->Add(new TObjString(""));
+  }
+  
+  TIter nextTrigger(triggerArray);
+  TIter nextEventType(eventTypeArray);
+  TIter nextPairCut(pairCutArray);
+  TIter nextWhat(whatArray);
+  
+  TObjString* trigger;
+  TObjString* eventType;
+  TObjString* pairCut;
+  TObjString* swhat;
+  
+  while ( ( swhat = static_cast<TObjString*>(nextWhat()) ) )
+  {    
+    AliAnalysisMuMuBinning* binning(0x0);
     
-    TIter nextTrigger(triggerArray);
-    TIter nextEventType(eventTypeArray);
-    TIter nextPairCut(pairCutArray);
+    if ( fBinning && swhat->String().Length() > 0 )
+    {
+      binning = fBinning->Project("psi",swhat->String().Data());
+    }
+    else
+    {
+      binning = new AliAnalysisMuMuBinning;
+      binning->AddBin("psi",swhat->String().Data());
+    }
     
-    TObjString* trigger;
-    TObjString* eventType;
-    TObjString* pairCut;
+    std::cout << "++++++++++++ swhat=" << swhat->String().Data() << std::endl;
+    
+    if (!binning)
+    {
+      AliError("oups. binning is NULL");
+      continue;
+    }
+    binning->Print();
+    
+    nextTrigger.Reset();
     
     while ( ( trigger = static_cast<TObjString*>(nextTrigger())) )
     {
@@ -2164,42 +1419,178 @@ AliAnalysisMuMu::Jpsi(Bool_t simulation)
       
       while ( ( eventType = static_cast<TObjString*>(nextEventType())) )
       {
-        AliDebug(1,Form("EVENTTYPE %s",eventType->String().Data()));
+        AliDebug(1,Form("--EVENTTYPE %s",eventType->String().Data()));
         
         nextPairCut.Reset();
         
         while ( ( pairCut = static_cast<TObjString*>(nextPairCut())) )
         {
-          AliDebug(1,Form("PAIRCUT %s",pairCut->String().Data()));
-          Add(a,GetResult(*fHistogramCollection,*fCounterCollection,
-                          trigger->String().Data(),
-                          eventType->String().Data(),
-                          pairCut->String().Data(),
-                          "PP",
-                          Result::kJpsi | Result::kJpsiPrime,2));
+          AliDebug(1,Form("----PAIRCUT %s",pairCut->String().Data()));
+          
+          AliDebug(1,"----Fitting...");
+          
+          AliAnalysisMuMuSpectra* spectra = FitParticle("psi",
+                                                  trigger->String().Data(),
+                                                  eventType->String().Data(),
+                                                  pairCut->String().Data(),
+                                                  "PP",
+                                                  *binning);
+          
+          AliDebug(1,Form("----fitting done spectra = %p",spectra));
+          
+          if ( spectra )
+          {
+            ++nfits;
+            
+            TString id(Form("/%s/%s/PP/%s",eventType->String().Data(),
+                            trigger->String().Data(),
+                            pairCut->String().Data()));
+            
+            TObject* o = fMergeableCollection->GetObject(id.Data(),spectra->GetName());
+          
+            AliDebug(1,Form("----nfits=%d id=%s o=%p",nfits,id.Data(),o));
+            
+            if (o)
+            {
+              AliWarning(Form("Replacing %s/%s",id.Data(),spectra->GetName()));
+              fMergeableCollection->Remove(Form("%s/%s",id.Data(),spectra->GetName()));
+            }
+          
+            fMergeableCollection->Adopt(id.Data(),spectra);
+            
+            spectra->Print();
+          }
         }
       }
     }
-    
-    delete triggerArray;
-    delete eventTypeArray;
-    delete pairCutArray;
   }
   
-  if ( a->GetLast() < 0 )
+  delete whatArray;
+  delete triggerArray;
+  delete eventTypeArray;
+  delete pairCutArray;
+  
+  if (nfits)
   {
-    delete a;
-    a = 0;
+    ReOpen(fFilename,"UPDATE");
+    fMergeableCollection->Write("MC",TObjArray::kOverwrite);// | TObjArray::kSingleKey);
+    ReOpen(fFilename,"READ");
   }
-  return a;
+  return nfits;
   
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::PlotBackgroundEvolution(const char* gfile, const char* triggerList, Double_t ymax, Bool_t fillBoundaries)
+{
+  // plot the graphs found in the file (and generated using the ComputeBackgroundEvolution() method)
+  
+  TFile* f = TFile::Open(ExpandPathName(gfile).Data());
+  
+  if ( !f || !f->IsOpen() )
+  {
+    return;
+  }
+  
+  SetColorScheme();
+  
+  
+  TCanvas* c = new TCanvas("background-evolution","background-evolution");
+  
+  c->Draw();
+  
+  TLegend* l = new TLegend(0.4,0.6,0.97,0.97);
+  l->SetFillColor(0);
+  l->SetTextColor(AliAnalysisMuMu::kBlue);
+  l->SetLineColor(AliAnalysisMuMu::kBlue);
+  
+  TObjArray* triggers = TString(triggerList).Tokenize(",");
+  
+  gStyle->SetOptTitle(0);
+  
+  TObjString* str(0x0);
+  TIter next(triggers);
+  Int_t i(0);
+  Int_t run1(99999999);
+  Int_t run2(0);
+  
+  std::set<int> runnumbers;
+  
+  while ( ( str = static_cast<TObjString*>(next()) ) )
+  {
+    TGraph* g = static_cast<TGraph*>(f->Get(Form("mu_%s",str->String().Data())));
+    if (!g) continue;
+    for ( Int_t ir = 0; ir < g->GetN(); ++ir )
+    {
+      Int_t run = TMath::Nint(g->GetX()[ir]);
+      runnumbers.insert(run);
+      run1 = TMath::Min(run1,run);
+      run2 = TMath::Max(run2,run);
+    }
+  }
+  
+  AliInfoClass(Form("run1 %d run2 %d",run1,run2));
+  
+  Double_t ymin(0);
+  
+  TH2* hframe = new TH2F("hframe","hframe",run2-run1+1,run1,run2,100,ymin,ymax);
+  hframe->Draw();
+  hframe->GetXaxis()->SetNoExponent();
+  hframe->GetYaxis()->SetTitle("Background percentage");
+  
+  if (fillBoundaries)
+  {
+    AliAnalysisTriggerScalers ts(runnumbers,fgOCDBPath.Data());
+    ts.DrawFills(ymin,ymax);
+  }
+  
+  next.Reset();
+  
+  while ( ( str = static_cast<TObjString*>(next()) ) )
+  {
+    TGraph* g = static_cast<TGraph*>(f->Get(Form("mu_%s",str->String().Data())));
+    if (!g)
+    {
+      AliErrorClass(Form("Graph mu_%s not found",str->String().Data()));
+      continue;
+    }
+    
+    Int_t color(i+1);
+    
+    if (i==0) color = AliAnalysisMuMu::kBlue;
+    if (i==1) color = AliAnalysisMuMu::kOrange;
+    
+    g->SetLineColor(color);
+    g->SetMarkerColor(color);
+    g->SetMarkerStyle(20+i);
+    
+    g->Draw("LP");
+    
+    TLegendEntry* le = l->AddEntry(g,str->String().Data(),"lp");
+    le->SetTextColor(color);
+    
+    g->GetYaxis()->SetTitleColor(AliAnalysisMuMu::kBlue);
+    g->GetXaxis()->SetTitleColor(AliAnalysisMuMu::kBlue);
+    //    g->Print();
+    
+    ++i;
+  }
+  
+  hframe->Draw("sameaxis");
+  
+  l->Draw();
 }
 
 //_____________________________________________________________________________
 void
 AliAnalysisMuMu::PlotJpsiEvolution(const char* resultFile, const char* triggerList, Bool_t fillBoundaries,
-                                   const char* efficiencyFile)
+                                   const char* efficiencyFile, Bool_t simulation)
 {
+  /// Will plot the Jpsi rate (or AccxEff if simulation=kTRUE) evolution.
+  /// (JpsiRate is the number of Jpsi divided by the number of triggers)
+  
+  std::map<int, float> efficiencies;
+  
   if ( efficiencyFile && strlen(efficiencyFile) > 0 )
   {
     std::ifstream in(gSystem->ExpandPathName(efficiencyFile));
@@ -2207,20 +1598,24 @@ AliAnalysisMuMu::PlotJpsiEvolution(const char* resultFile, const char* triggerLi
     {
       char line[1024];
       int run;
-      float eff, error;
+      float eff;
+      float dummy,errorl,errorh;
+      int idummy;
       while ( in.getline(line,1023,'\n') )
       {
-        sscanf(line,"%d %f ± %f",&run,&eff,&error);
-        AliInfoClass(Form("%09d %8.6f ± %8.6f",run,eff,error));
+        sscanf(line,"%d, x[%d]=%f, y[%d]=%f, exl[%d]=%f, exh[%d]=%f, eyl[%d]=%f, eyh[%d]=%f",
+               &run,&idummy,&dummy,&idummy,&eff,&idummy,&dummy,&idummy,&dummy,&idummy,&errorl,&idummy,&errorh);
+
+        AliDebugClass(1,Form("%09d %8.6f +- %8.6f ",run,eff,errorl+errorh));
+
+        efficiencies[run] = eff;
       }
     }
-    
-    return;
   }
   
   TFile* f = TFile::Open(gSystem->ExpandPathName(resultFile));
   
-  std::map<int, std::pair<int,int> > fills;
+  std::set<int> runnumbers;
   
   TMap* m = static_cast<TMap*>(f->Get("rbr"));
 
@@ -2250,18 +1645,24 @@ AliAnalysisMuMu::PlotJpsiEvolution(const char* resultFile, const char* triggerLi
 
   TIter nextFile(&files);
 
+  Double_t ymin(TMath::Limits<double>::Max());
+  Double_t ymax(TMath::Limits<double>::Min());
+  
+
   while ( ( trigger = static_cast<TObjString*>(nextTrigger())))
   {
+    Double_t sumw(0);
+    Double_t n(0);
+    
     TString triggerClass(trigger->String());
     
     nextFile.Reset();
-    
-    
+        
     while ( ( str = static_cast<TObjString*>(nextFile())) )
     {
       TObjArray* a = static_cast<TObjArray*>(m->GetValue(str->String().Data()));
       if (!a) continue;
-      Result* r = static_cast<Result*>(a->FindObject(triggerClass.Data()));
+      AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(a->FindObject(triggerClass.Data()));
       if (!r) continue;
 
       TString period;
@@ -2269,77 +1670,107 @@ AliAnalysisMuMu::PlotJpsiEvolution(const char* resultFile, const char* triggerLi
 
       if ( DecodeFileName(str->String().Data(),period,esdpass,aodtrain,runnumber) )
       {
+        runnumbers.insert(runnumber);
+        
         runMin = TMath::Min(runMin,runnumber);
         runMax = TMath::Max(runMax,runnumber);
         
         x_jpsirate[triggerClass.Data()].push_back(runnumber);
         xerr_jpsirate[triggerClass.Data()].push_back(0.5);
-
-        if ( fillBoundaries )
-        {
-          AliAnalysisTriggerScalers ts(runnumber,fgOCDBPath.Data());
-          int fill = ts.GetFillNumberFromRunNumber(runnumber);
-          
-          if (fills.count(fill))
-          {
-            std::pair<int,int>& p = fills[fill];
-            p.first = TMath::Min(runnumber,p.first);
-            p.second = TMath::Max(runnumber,p.second);
-          }
-          else
-          {
-            fills[fill] = std::make_pair<int,int>(runnumber,runnumber);
-          }
-        }
         
         Double_t y(0.0);
         Double_t yerr(0.0);
-        
-        if ( TMath::Finite(r->SigmaJpsi()) && r->NofTriggers() > 10 )
+        TString what("RateJpsi");
+        if ( simulation )
         {
-          y = 100*r->NofJpsi()/r->NofTriggers();
+          what = "AccEffJpsi";
+        }
+        
+        if ( TMath::Finite(r->GetValue("SigmaJpsi")) && r->NofTriggers() > 10 )
+        {
+          y = 100*r->GetValue(what.Data());
+          yerr = 100*r->GetErrorStat(what.Data());
           
-          if ( r->NofJpsi() > 0 )
+          if  (!efficiencies.empty() )
           {
-            yerr = y * TMath::Sqrt( (r->ErrorOnNofJpsi()*r->ErrorOnNofJpsi())/(r->NofJpsi()*r->NofJpsi()) + 1.0/r->NofTriggers());
+            if (efficiencies.count(runnumber))
+            {
+              y /= ( efficiencies[runnumber] );
+            }
+            else
+            {
+              continue;
+            }
           }
+          
+          ymin = TMath::Min(ymin,y);
+          ymax = TMath::Max(ymax,y);
+          
+          sumw += y*r->NofTriggers();
+          n += r->NofTriggers();
         }
         
         y_jpsirate[triggerClass.Data()].push_back(y);
         yerr_jpsirate[triggerClass.Data()].push_back(yerr);
       }
     }
+    
+    AliInfoClass(Form("Trigger %30s ponderated mean is %7.2f",trigger->String().Data(),sumw/n));
   }
 
   delete f;
   
-  TCanvas* c = new TCanvas("cJpsiRateEvolution","cJpsiRateEvolution");
+  TString canvasName("cJpsiRateEvolution");
+  
+  if ( !efficiencies.empty() )
+  {
+    canvasName += "Corr";
+    
+  }
+  TCanvas* c = new TCanvas(canvasName.Data(),canvasName.Data());
   
   c->Draw();
   
-  Double_t ymin(0);
-  Double_t ymax(2);
+  Int_t nbins = runnumbers.size();
+  Int_t xmin(runMin);
+  Int_t xmax(runMax);
   
-  TH2* h = new TH2F("h","h;RunNumber;J/#psi per CMUL (%)",100,runMin,runMax,100,ymin,ymax);
+  if ( CompactGraphs() )
+  {
+    xmin = 0;
+    xmax = nbins-1;
+  }
+  
+  TH2* h = new TH2F("h",Form("h;RunNumber;%s",(simulation ? "AccxEff (%)":"J/#psi per CMUL (%)")),
+                    nbins,xmin,xmax,100,ymin,ymax*1.2);
   
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   
-  h->GetXaxis()->SetNoExponent();
+  if (!CompactGraphs())
+  {
+    h->GetXaxis()->SetNoExponent();
+  }
+  else
+  {
+    std::set<int>::const_iterator it;
+    int i(0);
+    
+    for ( it = runnumbers.begin(); it != runnumbers.end(); ++it )
+    {
+      h->GetXaxis()->SetBinLabel(i,Form("%d",*it));
+      ++i;
+    }
+    h->GetXaxis()->SetNdivisions(1,kFALSE);
+    
+  }
   
   h->Draw();
 
   if (fillBoundaries)
   {
-    std::map<int, std::pair<int,int> >::const_iterator it;
-    
-    for ( it = fills.begin(); it != fills.end(); ++it )
-    {
-      const std::pair<int,int>& p = it->second;
-      TString fillnumber;
-      fillnumber.Form("%d",it->first);
-      DrawFill(p.first,p.second,ymin,ymax,fillnumber.Data());
-    }
+    AliAnalysisTriggerScalers ts(runnumbers,fgOCDBPath);
+    ts.DrawFills(ymin,ymax);
   }
 
   h->Draw("sameaxis");
@@ -2349,7 +1780,7 @@ AliAnalysisMuMu::PlotJpsiEvolution(const char* resultFile, const char* triggerLi
   nextTrigger.Reset();
   
   int i(0);
-  int color[] = { 1,2,4,5,6 };
+  int color[] = { 2,1,4,5,6 };
   int marker[] = { 20,23,25,21,22 };
   
   while ( ( trigger = static_cast<TObjString*>(nextTrigger())))
@@ -2361,11 +1792,21 @@ AliAnalysisMuMu::PlotJpsiEvolution(const char* resultFile, const char* triggerLi
     
     TGraphErrors* g = new TGraphErrors(x.size(),&x[0],&y[0],&xerr[0],&yerr[0]);
     
-    g->SetLineColor(color[i]);
+    g->SetLineColor(1);//color[i]);
     g->SetMarkerColor(color[i]);
     g->SetMarkerStyle(marker[i]);
+    g->SetMarkerSize(0.7);
     g->GetXaxis()->SetNoExponent();
-    g->Draw("LP");
+    
+    if ( CompactGraphs() )
+    {
+      Compact(*g);
+    }
+    
+    g->Draw("P");
+    TString gname(trigger->String());
+    gname.ReplaceAll("-","_");
+    g->SetName(gname.Data());
 //    g->Print();
 
     Double_t m2 = g->GetMean(2);
@@ -2382,158 +1823,285 @@ AliAnalysisMuMu::PlotJpsiEvolution(const char* resultFile, const char* triggerLi
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMu::Result*
-AliAnalysisMuMu::GetResult(const AliHistogramCollection& hc,
-                           AliCounterCollection& cc,
-                           const char* base,
-                           const char* selection,
-                           const char* paircut,
-                           const char* centrality,
-                           UInt_t fitType,
-                           Int_t nrebin)
+TGraph* AliAnalysisMuMu::PlotEventSelectionEvolution(const char* trigger1, const char* event1,
+                                                     const char* trigger2, const char* event2,
+                                                     Bool_t drawFills,
+                                                     Bool_t asRejection) const
 {
-  Result* r(0x0);
-
-  TString trigger = FindTrigger(hc,base,selection,paircut,centrality);
+  if (!CC()) return 0x0;
   
-  if ( trigger == "" )
-  {
-    return 0;
-  }
+  const std::set<int>& runnumbers = RunNumbers();
   
-  Int_t ntrigger = (Int_t)cc.GetSum(Form("trigger:%s/event:%s",trigger.Data(),selection));
-
-//  new TCanvas;
+  TGraphErrors* g = new TGraphErrors(runnumbers.size());
   
-  r = new Result(trigger.Data(),
-                 selection,
-                 paircut,
-                 centrality,
-                 ntrigger,
-                 hc.Project(selection,trigger,centrality,paircut),
-                 nrebin,
-                 fitType);
-  
-  return r;
-}
-
-//_____________________________________________________________________________
-Bool_t
-AliAnalysisMuMu::GetCollections(const char* rootfile,
-                                      AliHistogramCollection*& hc,
-                                      AliCounterCollection*& cc)
-{
-  hc = 0x0;
-  cc = 0x0;
-  
-  TFile* f = static_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(rootfile));
-  
-  if (!f)
-  {
-    f = TFile::Open(rootfile);    
-  }
-  
-  if ( !f || !f->IsOpen() ) 
-  {
-    return kFALSE;    
-  }
-  
-  TList* list = static_cast<TList*>(f->Get("chist"));
-  
-  if (!list) return kFALSE;
-  
-  hc = static_cast<AliHistogramCollection*>(list->At(0));
-  cc = static_cast<AliCounterCollection*>(list->At(1));
-  
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::PlotBackgroundEvolution(const char* gfile, const char* triggerList)
-{
-  // plot the graphs found in the file (and generated using the ComputeBackgroundEvolution() method)
-  
-  TFile* f = TFile::Open(ExpandPathName(gfile).Data());    
-  
-  if ( !f || !f->IsOpen() ) 
-  {
-    return;
-  }
-  
-  SetColorScheme();
-  
-
-  TCanvas* c = new TCanvas("background-evolution","background-evolution");
-  
-  c->Draw();
-  
-  TLegend* l = new TLegend(0.4,0.6,0.97,0.97);
-  l->SetFillColor(0);
-  l->SetTextColor(AliAnalysisMuMu::kBlue);
-  l->SetLineColor(AliAnalysisMuMu::kBlue);
-  
-  TObjArray* triggers = TString(triggerList).Tokenize(",");
-  
-  gStyle->SetOptTitle(0);
-  
-  TObjString* str(0x0);
-  TIter next(triggers);
+  std::set<int>::const_iterator it;
   Int_t i(0);
-  Int_t run1(99999999);
-  Int_t run2(0);
-  
-  while ( ( str = static_cast<TObjString*>(next()) ) )
-  {
-    TGraph* g = static_cast<TGraph*>(f->Get(Form("mu_%s",str->String().Data())));
-    if (!g) continue;
-    run1 = TMath::Min(run1,TMath::Nint(g->GetX()[0]));
-    run2 = TMath::Max(run2,TMath::Nint(g->GetX()[g->GetN()-1]));
-  }
-  
-  AliInfoClass(Form("run1 %d run2 %d",run1,run2));
-  
-  TH2* hframe = new TH2F("hframe","hframe",run2-run1+1,run1,run2,100,0,100);
-  hframe->Draw();
-  hframe->GetXaxis()->SetNoExponent();
-  hframe->GetYaxis()->SetTitle("Background percentage");
 
-  next.Reset();
-  
-  while ( ( str = static_cast<TObjString*>(next()) ) )
+  Double_t ymin(TMath::Limits<double>::Max());
+  Double_t ymax(TMath::Limits<double>::Min());
+
+  for ( it = runnumbers.begin(); it != runnumbers.end(); ++it )
   {
-    TGraph* g = static_cast<TGraph*>(f->Get(Form("mu_%s",str->String().Data())));
-    if (!g)
+    Int_t runNumber = *it;
+    Double_t n = CC()->GetSum(Form("trigger:%s/event:%s/run:%d",trigger1,event1,runNumber));
+    Double_t d = CC()->GetSum(Form("trigger:%s/event:%s/run:%d",trigger2,event2,runNumber));
+    if (n>0 && d>0)
     {
-      AliErrorClass(Form("Graph mu_%s not found",str->String().Data()));
-      continue;
+      Double_t y = n/d;
+      
+      if ( fCorrectionPerRun )
+      {
+        Double_t xcorr,ycorr;
+        fCorrectionPerRun->GetPoint(i,xcorr,ycorr); // note that the fact that xcorr==runNumber has been checked by the SetCorrectionPerRun method
+        if ( TMath::Abs(ycorr)  > 1E-12 )
+        {
+          y /= ycorr;
+        }
+        else
+        {
+          y = 0.0;
+        }
+      }
+      
+      if ( asRejection ) y = 100*(1.0 - y);
+      ymin = TMath::Min(ymin,y);
+      ymax = TMath::Max(ymax,y);
+      Double_t yerr = y*AliAnalysisMuMuResult::ErrorAB(n,TMath::Sqrt(n),d,TMath::Sqrt(d));
+      g->SetPoint(i,runNumber,y);
+      g->SetPointError(i,0.5,yerr);
+      
+      ++i;
     }
     
-    Int_t color(i+1);
-    
-    if (i==0) color = AliAnalysisMuMu::kBlue;
-    if (i==1) color = AliAnalysisMuMu::kOrange;
-    
-    g->SetLineColor(color);
-    g->SetMarkerColor(color);
-    g->SetMarkerStyle(20+i);
-    
-    g->Draw("LP");
-    
-    TLegendEntry* le = l->AddEntry(g,str->String().Data(),"lp");
-    le->SetTextColor(color);
-    
-    g->GetYaxis()->SetTitleColor(AliAnalysisMuMu::kBlue);
-    g->GetXaxis()->SetTitleColor(AliAnalysisMuMu::kBlue);
-//    g->GetXaxis()->SetNoExponent();
-//    g->GetYaxis()->SetRangeUser(0,100);
-//    g->GetYaxis()->SetTitle("Background percentage");
-    g->Print();
-    
-    ++i;
+  }
+
+  TH2* hframe = new TH2F(Form("%s %s-%s / %s-%s",(asRejection ? "1 - ":""),trigger1,event1,trigger2,event2),
+                         Form("%s %s-%s / %s-%s",(asRejection ? "1 - ":""),trigger1,event1,trigger2,event2),
+                         runnumbers.size()+50,
+                         *(runnumbers.begin())-25,
+                         *(runnumbers.rbegin())+25,100,0,ymax*1.3);
+  
+  gStyle->SetOptStat(0);
+  
+  hframe->Draw();
+  
+  hframe->GetXaxis()->SetNoExponent();
+           
+  hframe->GetYaxis()->SetTitle(asRejection ? "Rejection (%)" : "Ratio");
+  
+  g->Set(i);
+  g->SetTitle(Form("%s %s-%s / %s-%s",(asRejection ? "1 - ":""),trigger1,event1,trigger2,event2));
+  g->GetXaxis()->SetNoExponent();
+  g->Draw("lp");
+
+  AliAnalysisTriggerScalers ts(RunNumbers(),fgOCDBPath.Data());
+
+  if ( drawFills )
+  {
+    ts.DrawFills(ymin,ymax);
+    g->Draw("lp");
   }
   
-  l->Draw();
-  delete triggers;
+  
+  std::map<std::string, std::pair<int,int> > periods;
+  
+  ts.GetLHCPeriodBoundaries(periods);
+  
+  TLegend* legend = new TLegend(0.15,0.82,0.90,0.92);
+  legend->SetFillColor(0);
+  Int_t n(0);
+  
+
+  for ( std::map<std::string, std::pair<int,int> >::const_iterator pit = periods.begin(); pit != periods.end(); ++pit )
+  {
+    std::string period = pit->first;
+    int run1 = (pit->second).first;
+    int run2 = (pit->second).second;
+    int nruns(0);
+    for ( std::set<int>::const_iterator rit = RunNumbers().begin(); rit != RunNumbers().end(); ++ rit )
+    {
+      if ( (*rit) >= run1 && (*rit) <= run2 )
+      {
+        ++nruns;
+      }
+    }
+    AliInfo(Form("Period %s runs %6d-%6d ; %d actual runs",period.c_str(),run1,run2,nruns));
+    
+    g->Fit("pol0","+Q","",run1,run2);
+    TF1* func = static_cast<TF1*>(g->GetListOfFunctions()->Last());
+    if (func)
+    {
+      func->SetLineColor(2+n);
+      legend->AddEntry(func,Form("%s %5.2f #pm %5.2f %s (rel. error %5.2f %%)",period.c_str(),func->GetParameter(0),func->GetParError(0),
+                                 (asRejection ? "%":""),100*func->GetParError(0)/func->GetParameter(0)));
+      ++n;
+    }
+  }
+
+  legend->SetNColumns(3);
+
+  Double_t mean = TMath::Mean(g->GetN(),g->GetY());
+  Double_t rms = TMath::RMS(g->GetN(),g->GetY());
+  
+  legend->AddEntry("",Form("Mean %5.2f RMS %5.2f (%5.2f %%)",mean,rms,(mean) ? 100.0*rms/mean : 0.0),"");
+  
+  legend->Draw();
+  
+  return g;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::Print(Option_t* opt) const
+{
+    /// printout
+  std::cout << "Reading from file : " << fFilename.Data() << std::endl;
+  std::cout << "List of dimuon triggers to consider : " << DimuonTriggerList() << std::endl;
+  std::cout << "List of   muon triggers to consider : " << MuonTriggerList() << std::endl;
+  std::cout << "List of     MB triggers to consider : " << MinbiasTriggerList() << std::endl;
+  std::cout << "Event selection list : " << EventSelectionList() << std::endl;
+  std::cout << "Pair  selection list : " << PairSelectionList() << std::endl;
+  
+  std::cout << RunNumbers().size() << " runs";
+  if ( fCorrectionPerRun )
+  {
+    std::cout << " with correction factors";
+  }
+  std::cout << std::endl;
+  Int_t i(0);
+  for ( std::set<int>::const_iterator it = RunNumbers().begin(); it != RunNumbers().end(); ++it )
+  {
+    std::cout << (*it);
+    if ( fCorrectionPerRun )
+    {
+      std::cout << Form("(%e)",fCorrectionPerRun->GetY()[i]);
+    }
+    std::cout << ",";
+    ++i;
+  }
+  std::cout << std::endl;
+  
+  TString sopt(opt);
+  sopt.ToUpper();
+  
+  if ( sopt.Contains("BIN") && BIN() )
+  {
+    std::cout << "Binning : " << std::endl;
+    TString topt(sopt);
+    topt.ReplaceAll("BIN","");
+    BIN()->Print(topt.Data());
+  }
+  if ( sopt.Contains("MC") && MC() )
+  {
+    TString topt(sopt);
+    topt.ReplaceAll("MC","");
+    MC()->Print(topt.Data());
+  }
+  if ( sopt.Contains("CC") && CC() )
+  {
+    CC()->Print("trigger/event");
+  }
+  
+  if ( sopt.Contains("SIZE") )
+  {
+    TFile* f = ReOpen(fFilename,"READ");
+    TIter next(f->GetListOfKeys());
+    TKey* key;
+    
+    while ( ( key = static_cast<TKey*>(next()) ) )
+    {
+      std::cout << key->GetName() << " " << key->GetNbytes() << " " << key->GetObjlen() << std::endl;
+    }
+  }
+}
+
+//_____________________________________________________________________________
+TObjArray*
+AliAnalysisMuMu::ReadFileList(const char* filelist)
+{
+  //
+  // read the filelist and try to order it by runnumber
+  //
+  // filelist can either be a real filelist (i.e. a text file containing
+  // root filenames) or a root file itself.
+  //
+  
+  char line[1024];
+  
+  TObjArray* files = new TObjArray;
+  files->SetOwner(kTRUE);
+  
+  TString sfilelist(ExpandPathName(filelist));
+  
+  if ( sfilelist.EndsWith(".root") )
+  {
+    files->Add(new TObjString(sfilelist.Data()));
+    return files;
+  }
+  
+  std::set<int> runnumbers;
+  std::map<int,std::string> filemap;
+  
+  std::ifstream in(sfilelist.Data());
+  
+  TString period;
+  int aodtrain,esdpass,runnumber;
+  
+  while ( in.getline(line,1022,'\n') )
+  {
+    DecodeFileName(line,period,esdpass,aodtrain,runnumber);
+    
+    AliDebugClass(1,Form("line %s => period %s esdpass %d aodtrain %d runnumber %09d",
+                         line,period.Data(),esdpass,aodtrain,runnumber));
+    
+    filemap.insert(std::make_pair<int,std::string>(runnumber,line));
+    runnumbers.insert(runnumber);
+  }
+  
+  in.close();
+  
+  std::set<int>::const_iterator it;
+  
+  for ( it = runnumbers.begin(); it != runnumbers.end(); ++it )
+  {
+    files->Add(new TObjString(filemap[*it].c_str()));
+  }
+  
+  return files;
+}
+
+//_____________________________________________________________________________
+TFile* AliAnalysisMuMu::ReOpen(const char* filename, const char* mode) const
+{
+  /// Tries to reopen the file with a new mode
+  
+  TFile* f = static_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(filename));
+  
+  if (f)
+  {
+    f->Close();
+    delete f;
+  }
+  
+  f = TFile::Open(filename,"update");
+  
+  if ( !f || !f->IsOpen() )
+  {
+    AliError(Form("Cannot open file %s in mode %s",filename,mode));
+    return 0x0;
+  }
+  
+  return f;
+}
+
+//_____________________________________________________________________________
+Int_t
+AliAnalysisMuMu::RunNumberFromFileName(const char* filename)
+{
+  TString period;
+  int esdpass,aodtrain,runnumber;
+  Bool_t ok = DecodeFileName(filename,period,esdpass,aodtrain,runnumber);
+  if ( ok ) return runnumber;
+  return -1;
 }
 
 //_____________________________________________________________________________
@@ -2558,98 +2126,57 @@ void AliAnalysisMuMu::SetColorScheme()
 }
 
 //_____________________________________________________________________________
-void 
-AliAnalysisMuMu::SinglePtPlot(const char* rootfile)
+Bool_t AliAnalysisMuMu::SetCorrectionPerRun(const TGraph& corr)
 {
-  AliHistogramCollection* histogramCollection(0x0);
-  AliCounterCollection* counterCollection(0x0);
+    /// Sets the graph used to correct values per run
+  delete fCorrectionPerRun;
+  fCorrectionPerRun=0x0;
   
-  if (!GetCollections(rootfile,histogramCollection,counterCollection))
+  // check that corr has the same runs as we do
+  
+  Int_t i(0);
+  
+  for ( std::set<int>::const_iterator it = RunNumbers().begin(); it != RunNumbers().end(); ++it )
   {
-    return;
-  }
-
-  TCanvas* c1 = new TCanvas("singlept","singlept");
-  
-  gStyle->SetTextSize(1.0);
-  
-  c1->SetLogy();
-  
-  TLegend* l = new TLegend(0.12,0.12,0.4,0.3,"","NDC");
-  l->SetFillStyle(0);
-  l->SetLineWidth(0);
-  l->SetLineColor(0);
-  l->SetTextColor(kBlack);
-  l->SetTextFont(42);
-  l->SetTextSize(0.035);
-  
-  const char* cuts[] = { "ALL","ETA","ETARABS","ETARABSMATCH","ETARABSMATCHDCA" };
-  const char* cutnames[] = {
-    "all",
-    "+ -4 < #eta < -2.5",
-    "+ 171^{#circ} < #theta_{abs} < 178^{#circ}",
-    "+ trigger matching",
-    "+ PxDCA"
-  };
-  const int colors[] = { 1,2,3,4,6 };
-
-  for ( int i = 0; i < 5; ++i )
-  {
-    TH1* minus = histogramCollection->Histo(Form("/PS/CPBI1MSH-B-NOPF-MUON/CENT80/s%s/PtEtaMuMinus:py",cuts[i]));
-    TH1* plus = histogramCollection->Histo(Form("/PS/CPBI1MSH-B-NOPF-MUON/CENT80/s%s/PtEtaMuPlus:py",cuts[i]));
-    if (!minus || !plus)
+    Int_t corrRun = TMath::Nint(corr.GetX()[i]);
+    if (corrRun != *it)
     {
-      AliErrorClass(Form("Form cannot get histos for cut %s",cuts[i]));
-      continue;
+      AliError(Form("%d-th run mistmatch %d vs %d",i,corrRun,*it));
+      
+      return kFALSE;
     }
-    TH1* h = static_cast<TH1*>(minus->Clone(Form("h%d",i)));
-    h->Add(plus);
-    h->SetDirectory(0);
-    h->SetLineColor(colors[i]);
-    h->SetMinimum(1);
-    h->SetMarkerSize(0);
-    h->SetLineWidth(2);
-    h->SetStats(0);
-    h->SetBit(TH1::kNoTitle);
-    if (i==0)
-    {
-      h->Draw("e");
-    }
-    else
-    {
-      h->Draw("esame");
-    }
-    h->GetYaxis()->SetTitle("dN/dp_{t} (counts/0.5 GeV/c)");
-    h->GetXaxis()->SetTitle("p_{t} (GeV/c)");
-    
-    h->GetXaxis()->SetLabelSize(0.04);
-    h->GetYaxis()->SetLabelSize(0.04);
-    h->GetYaxis()->SetTitleSize(0.04);
-    h->GetXaxis()->SetTitleSize(0.04);
-
-    h->GetXaxis()->SetRangeUser(0,30);
-    l->AddEntry(h,cutnames[i]);
+    ++i;
   }
   
-  l->Draw();
-  
-  TList extralines;
-  extralines.SetOwner(kTRUE);
-  
-  extralines.Add(new TObjString("PbPb #sqrt{s_{NN}}=2.76 TeV"));
-  extralines.Add(new TObjString("MUON high p_{t} trigger events"));
-  extralines.Add(new TObjString("w/ phys. sel."));
-  extralines.Add(new TObjString("w/ reco. vertex"));
-  extralines.Add(new TObjString("centrality 0-80 %"));
-  
-  ALICEseal(0.5,0.93,&extralines);
-  
-  delete histogramCollection;
-  delete counterCollection;
+  fCorrectionPerRun = static_cast<TGraph*>(corr.Clone());
+
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList, Bool_t compact)
+void AliAnalysisMuMu::SetNofInputParticles(AliAnalysisMuMuResult& r)
+{
+  /// Set the "NofInput" variable(s) of one result
+  
+  TString hname(Form("MinvUS%s",r.Bin().AsString().Data()));
+
+  TH1* hinput = fMergeableCollection->Histo("/INPUT/INYRANGE",hname.Data());
+
+  if (!hinput)
+  {
+    AliError(Form("Got a simulation file where I did not find histogram /INPUT/INYRANGE/%s",hname.Data()));
+  
+  }
+  else
+  {
+    r.SetNofInputParticles(*hinput);
+  }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
+                                           Bool_t compact,
+                                           Bool_t orderByTriggerCount)
 {
   // Give the fraction of triggers (in triggerList) relative 
   // to what is expected in the scalers
@@ -2660,7 +2187,7 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList, Bool_t compa
   
   AliLog::SetGlobalLogLevel(AliLog::kFatal);
   
-  if (!fHistogramCollection || !fCounterCollection) return;
+  if (!fMergeableCollection || !fCounterCollection) return;
   
   TObjArray* runs = fCounterCollection->GetKeyWords("run").Tokenize(",");
   TIter nextRun(runs);
@@ -2675,13 +2202,20 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList, Bool_t compa
   
   ULong64_t total(0);
   ULong64_t totalExpected(0);
+  TString msg;
+  std::multimap<ULong64_t,std::string> messages;
   
   while ( ( srun = static_cast<TObjString*>(nextRun()) ) )
   {
-    std::cout << Form("RUN %09d ",srun->String().Atoi());
+    msg.Form("RUN %09d ",srun->String().Atoi());
     
-    if (!compact) std::cout << std::endl;
-    
+    if (!compact)
+    {
+        msg += "\n";
+    }
+
+    ULong64_t nmax(0);
+
     nextTrigger.Reset();
     
     while ( ( strigger = static_cast<TObjString*>(nextTrigger()) ) )
@@ -2690,169 +2224,546 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList, Bool_t compa
       {
         continue;
       }
-      ULong64_t n = fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
-                                                    strigger->String().Data(),"ALL",srun->String().Atoi()));
+      ULong64_t n = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
+                                                                strigger->String().Data(),"ALL",srun->String().Atoi())));
    
       ULong64_t expected = GetTriggerScalerCount(strigger->String().Data(),srun->String().Atoi());
     
       
+      nmax = TMath::Max(n,nmax);
+      
       total += n;
       totalExpected += expected;
       
-      std::cout << Form("%30s %9lld expected %9lld ",strigger->String().Data(),n,expected);
+      msg += TString::Format("%30s %9lld expected %9lld ",strigger->String().Data(),n,expected);
       
       if ( expected > 0 ) {
-        std::cout << Form("fraction %5.1f %%",n*100.0/expected);
+        msg += TString::Format("fraction %5.1f %%",n*100.0/expected);
       }
       if (!compact)
       {
-        std::cout << std::endl;
+        msg += "\n";
       }
     }
-    std::cout << std::endl;
+    if (nmax>0)
+    {
+      if (!orderByTriggerCount)
+      {
+        std::cout << msg.Data() << std::endl;
+      }
+      else
+      {
+        messages.insert(std::make_pair<ULong64_t,std::string>(nmax,msg.Data()));
+      }
+    }
   }
   
-  std::cout << Form("TOTAL %lld expected %lld fraction %5.1f %%",
-               total,totalExpected,totalExpected ? total*100.0/totalExpected : 0.0) << std::endl;
+  std::multimap<ULong64_t,std::string>::const_reverse_iterator it;
   
+  ULong64_t current(0);
+  Int_t n(0);
+  
+  for ( it = messages.rbegin(); it != messages.rend(); ++it )
+  {
+    ++n;
+    current += it->first;
+    std::cout << Form("%10lld",it->first) << " " << it->second << " percentage of total = " << Form("%7.2f %% %3d",current*100.0/total,n ) << std::endl;
+  }
+
+  std::cout << Form("--- TOTAL %lld expected %lld fraction %5.1f %%",
+                    total,totalExpected,totalExpected ? total*100.0/totalExpected : 0.0) << std::endl;
+  
+
   AliLog::SetGlobalLogLevel(oldLevel);
   delete triggers;
   delete runs;
 }
 
 //_____________________________________________________________________________
-void AnalyisResultLocation(const char* runlist, const char* basedir, const char* what)
+void AliAnalysisMuMu::UnsetCorrectionPerRun()
 {
-    std::ifstream in(runlist);
-  int run;
-  while ( in >> run )
-  {
-    std::cout << Form("%s/%09d/%s",basedir,run,what) << std::endl;
-  }
+    // drop the correction factors
+  delete fCorrectionPerRun;
+  fCorrectionPerRun=0x0;
 }
 
 //_____________________________________________________________________________
-void plot(const char* file="results.root", const char* pdfname="toto.pdf")
+Bool_t AliAnalysisMuMu::Upgrade(const char* filename)
 {
-  gROOT->SetStyle("Plain");
-  gStyle->SetOptTitle(0);
+  /// Upgrade a file
+  AliAnalysisMuMu m(filename);
   
-  TFile* f = TFile::Open(file);
+  return m.Upgrade();
+}
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisMuMu::Upgrade()
+{
+  /// Upgrade the current file
+  /// - from single list to one key per object, if needed
+  /// - from histogramCollection to mergeableCollection, if needed
+
+  TFile* f = ReOpen(fFilename,"UPDATE");
   
-  TObjArray* a = static_cast<TObjArray*>(f->Get("results"));
+  TList* list = static_cast<TList*>(f->Get("chist"));
   
-  if (!a) return;
-  
-  TCanvas* c = new TCanvas("jpsiresults","jpsiresults");
-  
-  c->Draw();
-  
-  TLegend* l = new TLegend(0.5,0.7,0.9,0.9);
-  l->SetFillColor(0);
-  TH1* h0(0x0);
-  
-  for ( int i = 0; i <= a->GetLast(); ++i ) 
+  if (list)
   {
-    AliAnalysisMuMu::Result* r = static_cast<AliAnalysisMuMu::Result*>(a->At(i));
-    r->Print();
+    // really old file where everything was in a single list
+  
+    AliHistogramCollection* hc = static_cast<AliHistogramCollection*>(list->At(0));
+    AliCounterCollection* cc = static_cast<AliCounterCollection*>(list->At(1));
     
-    TH1* h = static_cast<TH1*>(r->Minv());
+    AliMergeableCollection* mc = hc->Convert();
     
-    h->SetStats(kFALSE);
-    h->SetXTitle("M_{#mu^{+}#mu^{-}} (Gev/c^{2})");
-    h->SetLineColor(i+1);
+    f->cd();
     
-    h->SetMaximum(5E3);
-    h->SetMarkerStyle(0);
+    mc->Write("MC",TObject::kSingleKey);
+    cc->Write("CC",TObject::kSingleKey);
     
-    if ( i == 0 )
+    f->Delete("chist;*");
+    
+    f->Write();
+    
+  }
+  else
+  {
+    AliHistogramCollection* hc = static_cast<AliHistogramCollection*>(f->Get("HC"));
+
+    if ( hc )
     {
-      h0 = h;
-      h->Draw("hist");
+      // old file with histogram collection instead of mergeable collection
+      
+      AliMergeableCollection* mc = hc->Convert();
+
+      f->cd();
+
+      mc->Write("MC",TObject::kSingleKey);
+
+      f->Delete("HC;*");
+      
+      f->Write();
+    }
+  }
+
+  delete f;
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::CorrectSpectra(const char* realFile, const char* simFile, const char* particle, const char* type)
+{
+  
+  AliAnalysisMuMu real(realFile);
+    AliAnalysisMuMu sim(simFile);
+  
+  
+  AliAnalysisMuMuSpectra* realpt = static_cast<AliAnalysisMuMuSpectra*>(real.MC()->GetObject(Form("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/%s",type)));
+  AliAnalysisMuMuSpectra* simpt = static_cast<AliAnalysisMuMuSpectra*>(sim.MC()->GetObject(Form("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/%s",type)));
+  
+  if ( !realpt )
+  {
+    AliErrorClass("could not get real spectra");
+    return 0x0;
+  }
+  
+  if ( !simpt )
+  {
+    AliErrorClass("could not get sim spectra");
+    return 0x0;
+  }
+  
+  AliInfoClass("REAL >>>");
+  realpt->Print("4");
+  AliInfoClass("SIM >>>");
+  simpt->Print("1");
+  
+  AliInfoClass("CORRECTED >>>");
+
+  AliAnalysisMuMuSpectra* spectra = static_cast<AliAnalysisMuMuSpectra*>(realpt->Clone());
+  spectra->Correct(*simpt,particle);
+  
+  spectra->Print("1");
+  
+  return spectra;
+}
+
+//_____________________________________________________________________________
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* simFile, const char* type,
+                                               const char* direction)
+{
+  /// Compute the RAB...
+  Double_t rapidityShift = 0.465;// 0.5*TMath::Log(208.0/82.0);
+  const Double_t sqrts=5.023;
+  const Double_t ymax=TMath::Log(sqrts*1000.0/3.096916);
+  const Double_t tab = 0.093e-6; // nb^-1
+  const Double_t tabError = 0.0035E-6; // nb^-1
+  const char* accEffSubResultName="COUNTJPSI-1";
+  
+  TF1 ydist("ydist","[0]*TMath::Exp(-(x*x)/(2.0*0.39*0.39))",0.,0.5);
+  ydist.SetParameter(0,1.);
+
+  //Normalization to the values presented by Zaida and Rosana on January 11th 2013 https://indico.cern.ch/conferenceDisplay.py?confId=224985 slide 22
+  // Normalization is done in the rapidity range 2.75<y<3.25 where Rosanas values is 230.8+212.1
+  Double_t y1_norma= 2.75/ymax;
+  Double_t y2_norma= 3.25/ymax;
+  Double_t normalization = 0.25*(230.8+212.1)/ydist.Integral(y1_norma, y2_norma);
+  ydist.SetParameter(0,normalization);
+//  AliInfoClass(Form("ymax=%e normalization=%f",ymax,ydist.Integral(y1_norma, y2_norma)));
+  
+  AliAnalysisMuMu real(realFile);
+  AliAnalysisMuMu sim(simFile);
+  
+  
+  AliAnalysisMuMuSpectra* realSpectra = static_cast<AliAnalysisMuMuSpectra*>(real.MC()->GetObject(Form("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-%s",type)));
+  AliAnalysisMuMuSpectra* simSpectra = static_cast<AliAnalysisMuMuSpectra*>(sim.MC()->GetObject(Form("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-%s",type)));
+  
+  if ( !realSpectra )
+  {
+    AliErrorClass("could not get real spectra");
+    return 0x0;
+  }
+  
+  if ( !simSpectra)
+  {
+    AliErrorClass("could not get sim spectra");
+    return 0x0;
+  }
+  
+  AliAnalysisMuMuSpectra* corrSpectra = static_cast<AliAnalysisMuMuSpectra*>(realSpectra->Clone());
+  corrSpectra->Correct(*simSpectra,"Jpsi",accEffSubResultName);
+  
+  Double_t nofCMUL7 = real.CC()->GetSum(Form("trigger:CMUL7-B-NOPF-MUON/event:PSALL"));
+  Double_t nofCINT7 = real.CC()->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD/event:PSALL"));
+  Double_t nofCINT7w0MUL = real.CC()->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD&0MUL/event:PSALL"));
+  
+  AliAnalysisMuMuBinning* binning = realSpectra->Binning();
+  TObjArray* bins = binning->CreateBinObjArray();
+  TIter nextBin(bins);
+  AliAnalysisMuMuBinning::Range* bin;
+  Int_t i(0);
+  AliAnalysisMuMuResult* r;
+  
+  Int_t n = bins->GetLast();
+  
+  TObjArray finalBins(n+1);
+  finalBins.SetOwner(kTRUE);
+  
+  TObjArray finalResults(n+1);
+  finalResults.SetOwner(kFALSE);
+  
+  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) )
+  {
+    Double_t ylowlab = bin->Xmin();
+    Double_t yhighlab = bin->Xmax();
+
+    Double_t ylowcms, yhighcms;
+    Double_t ylownorm, yhighnorm;
+    
+    if ( bin->IsNullObject() )
+    {
+      ylowlab = -4;
+      yhighlab = -2.5;
+    }
+    
+    if ( strcmp(direction,"pPb")==0 )
+    {
+      ylowcms = TMath::Abs(yhighlab) -  rapidityShift;
+      yhighcms = TMath::Abs(ylowlab) - rapidityShift;
+      ylownorm = ylowcms/ymax;
+      yhighnorm = yhighcms/ymax;
     }
     else
     {
-      h->Draw("histsame");
+      ylowcms = ylowlab - rapidityShift;
+      yhighcms = yhighlab - rapidityShift;
+      ylownorm = -yhighcms/ymax;
+      yhighnorm = -ylowcms/ymax;
     }
     
-    TObjArray* n = TString(r->TriggerClass()).Tokenize("-");
-    TObjString* nn = static_cast<TObjString*>(n->First());
-    l->AddEntry(h,Form("%6d %s",r->NofTriggers(),nn->String().Data()));
     
-    delete n;
+    Double_t brsigmapp = ydist.Integral(ylownorm,yhighnorm);
+    Double_t brsigmappError = 0.0; // FIXME
+    
+    AliInfoClass(Form("y range : LAB %f ; %f CMS %f ; %f -> ynorm : %f ; %f -> BR x sigmapp = %f",
+                      ylowlab,yhighlab,ylowcms,yhighcms,ylownorm,yhighnorm,brsigmapp));
+    
+    r = static_cast<AliAnalysisMuMuResult*>(corrSpectra->Bins()->At(i)->Clone());
+
+    AliAnalysisMuMuResult* rsim = static_cast<AliAnalysisMuMuResult*>(simSpectra->Bins()->At(i));
+    
+    Double_t mbeq = nofCINT7w0MUL / ( nofCINT7 * nofCMUL7);
+    Double_t mbeqError = mbeq * AliAnalysisMuMuResult::ErrorABC( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
+                                         nofCINT7,TMath::Sqrt(nofCINT7),
+                                         nofCMUL7,TMath::Sqrt(nofCMUL7));
+    
+    r->Set("MBR",nofCINT7/nofCINT7w0MUL,(nofCINT7/nofCINT7w0MUL)*AliAnalysisMuMuResult::ErrorAB( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
+                                                                      nofCINT7,TMath::Sqrt(nofCINT7)));
+    
+    Double_t yield =  r->GetValue("CorrNofJpsi") * mbeq;
+
+    Double_t yieldError = yield * AliAnalysisMuMuResult::ErrorAB( r->GetValue("CorrNofJpsi"), r->GetErrorStat("CorrNofJpsi"),
+                                          mbeq,mbeqError);
+    
+    r->Set(Form("Y%sJpsi",direction),yield,yieldError);
+
+    Double_t raa = yield/(tab*brsigmapp);
+    Double_t raaError = AliAnalysisMuMuResult::ErrorABC(yield,yieldError,
+                                                        tab,tabError,
+                                                        brsigmapp,brsigmappError);
+    r->Set(Form("R%sJpsi",direction),raa,raaError);
+
+    r->Set("NofInputJpsi",rsim->GetValue("NofInputJpsi",accEffSubResultName),rsim->GetErrorStat("NofInputJpsi",accEffSubResultName));
+    r->Set("AccEffJpsi",rsim->GetValue("AccEffJpsi",accEffSubResultName),rsim->GetErrorStat("AccEffJpsi",accEffSubResultName));
+    
+    AliAnalysisMuMuBinning::Range* bincm = new AliAnalysisMuMuBinning::Range(bin->Particle(),bin->Type(),ylowcms,yhighcms);
+    
+    r->SetBin(*bincm);
+        
+    finalBins.Add(bincm);
+    finalResults.Add(r);
+    
+    ++i;
   }
   
-  h0->Draw("histsame");
-  l->Draw();
-  c->SetLogy();
+  delete bins;
   
-  delete f;
+  AliAnalysisMuMuSpectra* spectra = new AliAnalysisMuMuSpectra(type,direction);
   
-  c->SaveAs(pdfname);
+  for ( i = 0; i <= n; ++i )
+  {
+    Int_t j(i);
+    if ( strcmp(direction,"pPb")==0 )
+    {
+      j = n-i;
+    }
+    
+    r = static_cast<AliAnalysisMuMuResult*>(finalResults.At(j));
+
+    bin = static_cast<AliAnalysisMuMuBinning::Range*>(finalBins.At(j));
+    
+    spectra->AdoptResult(*bin,r);
+  }
+  
+
+  delete corrSpectra;
+  
+  return spectra;
 }
 
 //_____________________________________________________________________________
-TObjArray*
-AliAnalysisMuMu::ReadFileList(const char* filelist)
+TGraph* AliAnalysisMuMu::ResultEvolution(const char* runlist, const char* period, const char* what, Bool_t forceRecomputation)
 {
-  // 
-  // read the filelist and try to order it by runnumber
-  // 
-  // filelist can either be a real filelist (i.e. a text file containing
-  // root filenames) or a root file itself.
-  //
+  std::vector<int> runs;
+  AliAnalysisTriggerScalers::ReadIntegers(runlist,runs);
+
+  TGraphErrors* g = new TGraphErrors(runs.size());
   
-  char line[1024];
+  TString direction("Pbp");
   
-  TObjArray* files = new TObjArray;
-  files->SetOwner(kTRUE);
-  
-  TString sfilelist(ExpandPathName(filelist));
-  
-  if ( sfilelist.EndsWith(".root") )
+  if (TString(period) == "LHC13b" ||
+    TString(period) == "LHC13c" ||
+      TString(period) == "LHC13d" ||
+      TString(period) == "LHC13e"
+      )
   {
-    files->Add(new TObjString(sfilelist.Data()));
-    return files;
+    direction = "pPb";
   }
+  
+  AliInfoClass(Form("period %s direction %s",period,direction.Data()));
+  
+  Double_t weightedMean(0.0);
+  Double_t sumOfWeights(0.0);
+
+  Double_t mean(0.0);
+  TString subResultName("");
+  TString swhat(what);
+    
+  for ( std::vector<int>::size_type i = 0; i < runs.size(); ++i )
+  {
+    Int_t runNumber = runs[i];
+    
+    AliInfoClass(Form("RUN %09d",runNumber));
+    
+    TString realFile(Form("RUNBYRUN/%s_muon_calo_AODMUON000_%09d.saf.root",period,runNumber));
+    
+    TString simFileName(Form("RUNBYRUN/SIM_JPSI_%s_pp503_newalign_%09d.saf.root",period,runNumber));
+    if ( direction == "pPb" )
+    {
+      simFileName = Form("RUNBYRUN/SIM_JPSI_%s_pp503_%09d.saf.root",period,runNumber);
+    }
+
+    TString simFile(simFileName);
+
+    TString resultName(Form("%s%sJpsi",what,direction.Data()));
+    
+    if ( swhat == "MBR")
+    {
+      resultName = "MBR";
+    }
+    else if ( swhat.Contains("Acc") )
+    {
+      resultName.ReplaceAll(direction,"");
+    }
+    
+    AliAnalysisMuMu mreal(realFile);
+    
+    AliAnalysisMuMuSpectra* real = static_cast<AliAnalysisMuMuSpectra*>(mreal.MC()->GetObject("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-"));
+
+    if (!real || forceRecomputation)
+    {
+      mreal.Jpsi();
+      real = static_cast<AliAnalysisMuMuSpectra*>(mreal.MC()->GetObject("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-"));
+      if (!real)
+      {
+        AliErrorClass(Form("Could not get real spectra for run %d",runNumber));
+        return 0x0;
+      }
+    }
+    
+    AliAnalysisMuMu msim(simFile);
+    
+    AliAnalysisMuMuSpectra* sim = static_cast<AliAnalysisMuMuSpectra*>(msim.MC()->GetObject("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-"));
+
+    if (!sim || forceRecomputation)
+    {
+      msim.SetEventSelectionList("ALL");
+      msim.Jpsi();
+      sim = static_cast<AliAnalysisMuMuSpectra*>(msim.MC()->GetObject("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-"));
+      if (!sim)
+      {
+        AliErrorClass(Form("Could not get sim spectra for run %d",runNumber));
+        return 0x0;
+      }
+    }
+    
+    AliAnalysisMuMuSpectra* corrected = AliAnalysisMuMu::RABy(realFile.Data(),simFile.Data(),"",direction.Data());
+
+    AliAnalysisMuMuResult* result = static_cast<AliAnalysisMuMuResult*>(corrected->Bins()->First());
+
+    result->Print();
+
+    Double_t value = result->GetValue(resultName.Data());
+    Double_t error = result->GetErrorStat(resultName.Data());
+    
+    g->SetPoint(i,runNumber,value);
+    g->SetPointError(i,1,error);
+    
+    Double_t n = mreal.CC()->GetSum(Form("trigger:CMUL7-B-NOPF-MUON/event:PSALL/run:%d",runNumber));
+    
+    weightedMean += n*result->GetValue(resultName.Data());
+    sumOfWeights += n;
+    
+    mean += result->GetValue(resultName.Data());
+    
+//    std::cout << result->SubResults() << " " << result->GetError(resultName.Data()) << std::endl;
+
+  }
+  
+  gStyle->SetOptFit(1);
+  g->Draw("alp");
+  g->Fit("pol0");
+  g->SetTitle("");
+  g->GetXaxis()->SetTitle("Run number");
+  g->GetXaxis()->SetNoExponent();
+  if ( TString(what) ==  "Y" )
+  {
+    g->GetYaxis()->SetTitle("J/#psi yield");
+  }
+  else if ( TString(what) == "R" )
+  {
+    g->GetYaxis()->SetTitle(Form("R_{%s}^{J/#psi}",direction.Data()));
+  }
+  else if ( TString(what).Contains("Acc") )
+  {
+    g->GetYaxis()->SetTitle("Acc#timesEff_{J/#psi}");    
+  }
+  else if ( TString(what).Contains("MBR") )
+  {
+    g->GetYaxis()->SetTitle("CINT7 / CINT7&0MUL");
+  }
+  
+  if (CompactGraphs())
+  {
+    Compact(*g);
+  }
+  
+  mean /= runs.size();
+  weightedMean /= sumOfWeights;
+  
+  AliInfoClass(Form("Mean %e Weighted Mean %e",mean,weightedMean));
+  
+  return g;
+}
+
+//______________________________________________________________________________
+void AliAnalysisMuMu::GetMBR(Int_t runNumber, const char* eventSelection, Double_t& value, Double_t& error) const
+{
+   // Get the scaling factor to go from CMUL to CINT7 for a given event selection
+  value = 0.0;
+  error = 0.0;
+  if ( strlen(eventSelection) > 0 )
+  {
+    ULong64_t a = fCounterCollection->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD/event:%s/run:%d",
+                                                  eventSelection,runNumber));
+    
+    ULong64_t b = fCounterCollection->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD&0MUL/event:%s/run:%d",
+                                                  eventSelection,runNumber));
+    
+    value = b > 0 ? a/b : 0;
+    error = value*AliAnalysisMuMuResult::ErrorAB(a,TMath::Sqrt(a),b,TMath::Sqrt(b));
+  }
+}
+
+//______________________________________________________________________________
+TGraph* AliAnalysisMuMu::MBREvolution(const char* eventSelection1, const char* eventSelection2) const
+{
+  if (!fCounterCollection) return 0x0;
+  
+  TObjArray* runs = fCounterCollection->GetKeyWords("run").Tokenize(",");
+  runs->Sort();
+  TIter nextRun(runs);
+  TObjString* srun;
   
   std::set<int> runnumbers;
-  std::map<int,std::string> filemap;
   
-    std::ifstream in(sfilelist.Data());
+  TGraphErrors* g = new TGraphErrors(runs->GetEntries());
+  Int_t i(0);
   
-  TString period;
-  int aodtrain,esdpass,runnumber;
-  
-  while ( in.getline(line,1022,'\n') )
+  while ( ( srun = static_cast<TObjString*>(nextRun()) ) )
   {
-    DecodeFileName(line,period,esdpass,aodtrain,runnumber);
+    Int_t runNumber = srun->String().Atoi();
     
-    AliDebugClass(1,Form("line %s => period %s esdpass %d aodtrain %d runnumber %09d",
-                         line,period.Data(),esdpass,aodtrain,runnumber));
+    runnumbers.insert(runNumber);
     
-    filemap.insert(std::make_pair<int,std::string>(runnumber,line));
-    runnumbers.insert(runnumber);      
+    Double_t mbr1,mbrError1;
+    Double_t mbr2,mbrError2;
+    
+    GetMBR(runNumber,eventSelection1,mbr1,mbrError1);
+    
+    GetMBR(runNumber,eventSelection2,mbr2,mbrError2);
+
+    Double_t mbr = mbr1;
+    
+    if ( mbr2 > 0 ) mbr /= mbr2;
+
+    Double_t mbrError = mbr*AliAnalysisMuMuResult::ErrorAB(mbr1,mbrError1,mbr2,mbrError2);
+
+    g->SetPoint(i,runNumber,mbr);
+    g->SetPointError(i,0.5,mbrError);
+    
+    ++i;
   }
   
-  in.close();
+  g->GetXaxis()->SetNoExponent();
   
-  std::set<int>::const_iterator it;
-  
-  for ( it = runnumbers.begin(); it != runnumbers.end(); ++it ) 
-  {
-    files->Add(new TObjString(filemap[*it].c_str()));
-  }
-  
-  return files;
+  AliAnalysisTriggerScalers ts(RunNumbers(),fgOCDBPath.Data());
+  ts.DrawFills(0,1000);
+
+  return g;
 }
 
-//_____________________________________________________________________________
-Int_t 
-AliAnalysisMuMu::RunNumberFromFileName(const char* filename)
-{
-  TString period;
-  int esdpass,aodtrain,runnumber;
-  Bool_t ok = DecodeFileName(filename,period,esdpass,aodtrain,runnumber);
-  if ( ok ) return runnumber;
-  return -1;
-}
+
+
+

@@ -32,6 +32,9 @@ set ( SRCS
     muondep/AliAnalysisTaskMuonRefit.cxx
     muondep/AliAnalysisTriggerScalers.cxx
     muondep/AliAnalysisMuMu.cxx
+    muondep/AliAnalysisMuMuResult.cxx
+    muondep/AliAnalysisMuMuSpectra.cxx
+    muondep/AliMuonAccEffSubmitter.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -40,4 +43,4 @@ set ( DHDR  PWGmuondepLinkDef.h )
 
 set ( EXPORT "muondep/AliAnalysisTriggerScalers.h" )
 
-set ( EINCLUDE  MUON MUON/mapping PWG/muondep STEER/STEER STEER/STEERBase)
+set ( EINCLUDE RAW MUON MUON/mapping PWG/muondep STEER/STEER STEER/STEERBase)
