@@ -6,7 +6,7 @@ AliAnalysisTaskMuonHadronCorrelations *AddAnalysisTaskMuonHadronCorrelations(con
     return NULL;
   }
 
-  AliAnalysisTaskMuonHadronCorrelations *task = new AliAnalysisTaskMuonHadronCorrelations("AliAnalysisTaskMuonHadronCorrelations");
+  AliAnalysisTaskMuonHadronCorrelations *task = new AliAnalysisTaskMuonHadronCorrelations(Form("AliAnalysisTaskMuonHadronCorrelations_%s",centMethod));
 
   // Set analysis cuts   
   task->SetFilterBitCentralBarrel(7);  // -> 128
