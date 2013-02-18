@@ -85,31 +85,31 @@ if (PIDbaseline) {
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-	mgr->CreateContainer("cbaumann_LMEEPbPb2011_tree",
+	mgr->CreateContainer("cbaumann_LMEEPbPb2011SemiCent_tree",
 		TTree::Class(),
 		AliAnalysisManager::kExchangeContainer,
 		"cbaumann_LMEEPbPb2011_default.root");
 
   AliAnalysisDataContainer *cOutputHist1 =
-	mgr->CreateContainer("cbaumann_LMEEPbPb2011_out",
+	mgr->CreateContainer("cbaumann_LMEEPbPb2011SemiCent_out",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
 		"cbaumann_LMEEPbPb2011_out.root");
 
   /*  AliAnalysisDataContainer *cOutputHist2 =
-	  mgr->CreateContainer("cbaumann_lowmass_CF",
+	  mgr->CreateContainer("cbaumann_lowmassSemiCent_CF",
 	  TList::Class(),
 	  AliAnalysisManager::kOutputContainer,
 	  "cbaumann_lowmass_CF.root");
 	  */
   AliAnalysisDataContainer *cOutputHist2 =
-	mgr->CreateContainer("cbaumann_LMEEPbPb2011_CF",
+	mgr->CreateContainer("cbaumann_LMEEPbPb2011SemiCent_CF",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
 		"cbaumann_LMEEPbPb2011_out.root");
 
   AliAnalysisDataContainer *cOutputHist3 =
-	mgr->CreateContainer("cbaumann_EventStatPbPb2011",
+	mgr->CreateContainer("cbaumann_EventStatPbPb2011SemiCent",
 		TH1D::Class(),
 		AliAnalysisManager::kOutputContainer,
 		"cbaumann_LMEEPbPb2011_out.root");
