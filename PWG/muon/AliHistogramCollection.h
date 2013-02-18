@@ -34,6 +34,7 @@
 class TH1;
 class TMap;
 class AliHistogramCollectionIterator;
+class AliMergeableCollection;
 
 class AliHistogramCollection : public TNamed
 {
@@ -45,6 +46,8 @@ public:
   virtual ~AliHistogramCollection();
 
   virtual AliHistogramCollection* Clone(const char* name="") const;
+  
+  AliMergeableCollection* Convert() const;
   
   Bool_t Adopt(TH1* histo);
   Bool_t Adopt(const char* keyA, TH1* histo);

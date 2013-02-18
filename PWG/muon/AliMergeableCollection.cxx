@@ -42,7 +42,11 @@ ClassImp(AliMergeableCollection)
 #include "TROOT.h"
 #include "TSystem.h"
 #include "TH1.h"
+#include "TH2.h"
+#include "TProfile.h"
 #include "THnSparse.h"
+#include <cassert>
+#include <vector>
 //#include "AliCFGridSparse.h"
 //#include "AliCFContainer.h"
 //#include "TH2.h"
@@ -58,7 +62,6 @@ AliMergeableCollection::AliMergeableCollection(const char* name, const char* tit
 AliMergeableCollection::~AliMergeableCollection()
 {
   /// dtor. Note that the map is owner
-  if ( fMap ) fMap->DeleteAll();
   delete fMap;
 }
 
@@ -213,14 +216,17 @@ TString
 AliMergeableCollection::GetIdentifier(const char* fullIdentifier) const
 {
   /// Extract the identifier from the fullIdentifier
-  TString sfullIdentifier(fullIdentifier);
-  TObjArray* arr = sfullIdentifier.Tokenize("/");
-  TString identifier = "";
-  for ( Int_t istr=0; istr<arr->GetLast(); istr++ ) {
-    identifier += "/" + GetKey(fullIdentifier, istr, kTRUE);
+
+  TString identifier;
+  
+  Int_t n = TString(fullIdentifier).CountChar('/')-1;
+  
+  for (Int_t i=0; i < n; ++i)
+  {
+    identifier += "/";
+    identifier += InternalDecode(fullIdentifier,i);
   }
-  delete arr;
-  identifier.Append("/");
+  identifier += "/";
   return identifier;
 }
 
@@ -229,9 +235,15 @@ TString
 AliMergeableCollection::GetKey(const char* identifier, Int_t index, Bool_t idContainsObjName) const
 {
   /// Extract the index element of the key pair from the fullIdentifier
-  TString sidentifier(identifier);
-  if ( ! idContainsObjName ) sidentifier.Append("/dummy");
-  return InternalDecode(sidentifier.Data(),index);
+
+  if ( ! idContainsObjName )
+  {
+    TString sidentifier(identifier);
+    sidentifier.Append("/dummy");
+    return InternalDecode(sidentifier.Data(),index);
+  }
+  
+  return InternalDecode(identifier,index);
 }
 
 //_____________________________________________________________________________
@@ -243,56 +255,135 @@ AliMergeableCollection::GetObjectName(const char* fullIdentifier) const
   return InternalDecode(fullIdentifier,-1);  
 }
 
-
 //_____________________________________________________________________________
-TObject* 
-AliMergeableCollection::GetObject(const char* fullIdentifier) const
+TH1*
+AliMergeableCollection::Histo(const char* fullIdentifier) const
 {
-  /// Get object key1/key2/.../objectName:action
+  /// Get histogram key1/key2/.../objectName:action
+  /// action is used for 2D histograms :
+  /// might be px for projection along x-axis
+  /// py for projection along y-axis
+  /// pfx for profile along x-axis
+  /// pfy for profile along y-axis
   
-  TObjArray* arr = TString(fullIdentifier).Tokenize(":");
+  TString sfullIdentifier(fullIdentifier);
   
-  TString fullIdWithoutAction(static_cast<TObjString*>(arr->At(0))->String());
+  TString fullIdWithoutAction(fullIdentifier);
   TString action;
   
-  if ( arr->GetLast() > 0 ) 
+  if ( sfullIdentifier.First(':') != kNPOS )
+  {
+    TObjArray* arr = sfullIdentifier.Tokenize(":");
+  
+    fullIdWithoutAction = static_cast<TObjString*>(arr->At(0))->String();
+  
+    if ( arr->GetLast() > 0 )
+    {
+      action = static_cast<TObjString*>(arr->At(1))->String();
+      action.ToUpper();
+    }
+  
+    delete arr;
+  }
+  
+  Int_t nslashes = sfullIdentifier.CountChar('/');
+  
+  TObject* o(0x0);
+  
+  if (!nslashes)
+  {
+    o = GetObject("", fullIdWithoutAction);    
+  }  
+  else
+  {
+    o = GetObject(GetIdentifier(fullIdWithoutAction).Data(), GetObjectName(fullIdWithoutAction));
+  }
+  
+  return HistoWithAction(fullIdWithoutAction.Data(),o,action);
+}
+
+//_____________________________________________________________________________
+TH1*
+AliMergeableCollection::Histo(const char* identifier,
+                              const char* objectName) const
+{
+  TObject* o = GetObject(identifier,objectName);
+  
+  TObjArray* arr = TString(objectName).Tokenize(":");
+  TString action;
+  
+  if ( arr->GetLast() > 0 )
   {
     action = static_cast<TObjString*>(arr->At(1))->String();
     action.ToUpper();
   }
   
   delete arr;
+
+  return HistoWithAction(identifier,o,action);
+}
+
+
+//_____________________________________________________________________________
+TH1*
+AliMergeableCollection::HistoWithAction(const char* identifier, TObject* o, const TString& action) const
+{
+  /// Convert o to an histogram if possible, applying a given action if there
+
+  if (!o) return 0x0;
   
-  return GetObject(GetIdentifier(fullIdWithoutAction).Data(), GetObjectName(fullIdWithoutAction));
+  if (!o->InheritsFrom("TH1"))
+  {
+    AliError(Form("%s is not an histogram",o->GetName()));
+    return 0x0;
+  }
   
+  TH2* h2 = dynamic_cast<TH2*>(o);
   
-  //  if (obj)
-  //  {
-  //    TH2* h2(0x0);
-  //    
-  //    if ( action == "PX" && ( (h2 = dynamic_cast<TH2*>(obj)) ) ) 
-  //    {
-  //      return h2->ProjectionX(NormalizeName(identifier.Data(),action.Data()).Data());
-  //    }
-  //    else if ( action == "PY" && ( (h2 = dynamic_cast<TH2*>(obj)) ) ) 
-  //    {
-  //      return h2->ProjectionY(NormalizeName(identifier.Data(),action.Data()).Data());
-  //    }
-  //    else if ( action == "PFX" && ( (h2 = dynamic_cast<TH2*>(obj)) ) ) 
-  //    {
-  //      return h2->ProfileX(NormalizeName(identifier.Data(),action.Data()).Data());
-  //    }
-  //    else if ( action == "PFY" && ( (h2 = dynamic_cast<TH2*>(obj)) ) ) 
-  //    {
-  //      return h2->ProfileY(NormalizeName(identifier.Data(),action.Data()).Data());
-  //    }
-  //    
-  //  }
-  //  else
-  //  {
-  //    AliDebug(1,Form("Object %s not found",sidentifier));
-  //  }
-  //  return obj;
+  if (h2)
+  {
+    if ( action == "PX" )
+    {
+      return h2->ProjectionX(NormalizeName(Form("%s/%s",identifier,o->GetName()),action.Data()).Data());
+    }
+    if ( action == "PY" )
+    {
+      return h2->ProjectionY(NormalizeName(Form("%s/%s",identifier,o->GetName()),action.Data()).Data());
+    }
+    if ( action == "PFX" )
+    {
+      return h2->ProfileX(NormalizeName(Form("%s/%s",identifier,o->GetName()),action.Data()).Data());
+    }
+    if ( action == "PFY" )
+    {
+      return h2->ProfileY(NormalizeName(Form("%s/%s",identifier,o->GetName()),action.Data()).Data());
+    }
+  }
+  
+  return static_cast<TH1*>(o);
+}
+
+
+//_____________________________________________________________________________
+TObject* 
+AliMergeableCollection::GetObject(const char* fullIdentifier) const
+{
+  /// Get object key1/key2/.../objectName
+  /// Note that no action is allowed for generic objects (only for histograms,
+  /// see Histo() methods)
+  
+  TString sfullIdentifier(fullIdentifier);
+  
+  Int_t nslashes = sfullIdentifier.CountChar('/');
+  
+  if (!nslashes)
+  {
+    return GetObject("", sfullIdentifier);
+  }
+  else
+  {
+    return GetObject(GetIdentifier(fullIdentifier).Data(), GetObjectName(fullIdentifier));
+  }
 }
 
 
@@ -453,29 +544,33 @@ AliMergeableCollection::InternalDecode(const char* identifier, Int_t index) cons
     return "";
   }
   
-  TObjArray* array = TString(identifier).Tokenize("/");
-
-  if ( index >= array->GetLast() ) 
+  std::vector<Int_t> splitIndex;
+  
+  Int_t start(0);
+  TString sidentifier(identifier);
+  
+  while (start < sidentifier.Length())
   {
-    AliError(Form("Requiring index %i of identifier %s which only have %i",index, identifier, array->GetLast()));
-    delete array;
+    Int_t pos = sidentifier.Index('/', start);
+    if (pos == kNPOS) break;
+    splitIndex.push_back(pos);
+    start = pos + 1;
+  }
+
+  Int_t nkeys = splitIndex.size() - 1;
+  
+  if ( index >= nkeys )
+  {
+    AliError(Form("Requiring index %i of identifier %s which only have %i",index, identifier, nkeys));
     return "";
   }
 
-  TString value("");
-  
-  if ( index < 0 ) 
+  if ( index < 0 )
   {
-    value = static_cast<TObjString*>(array->Last())->String();    
+    return sidentifier(splitIndex.back()+1,sidentifier.Length()-splitIndex.back()-1);
   }
-  else if ( index <= array->GetLast() ) 
-  {
-    value = static_cast<TObjString*>(array->At(index))->String();
-  }
-  
-  delete array;
-  
-  return value;
+
+  return sidentifier(splitIndex[index]+1,splitIndex[index+1]-splitIndex[index]-1);
 }
 
 //_____________________________________________________________________________
@@ -721,14 +816,33 @@ AliMergeableCollection::Print(Option_t* option) const
   /// For other selections the full syntax /*/*/*/*/* must be used.
   /// 
   /// Use "-" as objectName to disable object's name output
+  ///
+  /// One might also use /*/*/*/*/:classname syntax to restrict
+  /// output to only those objects matching a given classname pattern
+  ///
   
   cout << Form("AliMergeableCollection(%s,%s) : %d keys and %d objects",
                GetName(),GetTitle(),
                NumberOfKeys(), NumberOfObjects()) << endl;
   
   if (!strlen(option)) return;
-    
-  TObjArray* select = TString(option).Tokenize("/");
+  
+  TString soption(option);
+  
+  TObjArray* classes = soption.Tokenize(":");
+  
+  TRegexp* classPattern(0x0);
+  
+  if ( classes->GetLast() > 0 )
+  {
+    TString pat = static_cast<TObjString*>(classes->At(1))->String();
+    classPattern = new TRegexp(pat,kTRUE);
+    soption = static_cast<TObjString*>(classes->At(0))->String();
+  }
+  
+  delete classes;
+
+  TObjArray* select = soption.Tokenize("/");
   
   TString sreObjectName(select->Last()->GetName());
   TRegexp reObjectName(sreObjectName.Data(),kTRUE);
@@ -756,18 +870,25 @@ AliMergeableCollection::Print(Option_t* option) const
     }
     if ( ! matchPattern ) continue;
     
-    if ( sreObjectName == "*" ) {
+    if ( sreObjectName == "*" && !classPattern)
+    {
       identifierPrinted = kTRUE;
       cout << identifier.Data() << endl;
     }
       
-    THashList * list = static_cast<THashList*>(Map()->GetValue(sid->String().Data()));      
+    THashList * list = static_cast<THashList*>(Map()->GetValue(sid->String().Data()));
+
     TObjArray names;
     names.SetOwner(kTRUE);
     TIter nextUnsortedObj(list);
     TObject* obj;
     while ( ( obj = nextUnsortedObj() ) )
     {
+      TString cname(obj->ClassName());
+      if ( classPattern && !cname.Contains((*classPattern)) )
+      {
+        continue;
+      }
       names.Add(new TObjString(obj->GetName()));
     }
     names.Sort();
@@ -1017,6 +1138,33 @@ AliMergeableCollection::Remove(const char* fullIdentifier)
   
   return rmObj;
 }
+
+//_____________________________________________________________________________
+Int_t AliMergeableCollection::RemoveByType(const char* typeName)
+{
+  /// Remove all the objects in this collection that are of a given type
+  TIter nextIdentifier(Map());
+  TObjString* identifier;
+  Int_t nremoved(0);
+  
+  while ( (identifier = static_cast<TObjString*>(nextIdentifier()) ) )
+  {
+    THashList* list  = static_cast<THashList*>(Map()->GetValue(identifier->String()));
+    TIter next(list);
+    TObject* o;
+    
+    while ( ( o = next() ) )
+    {
+      if ( strcmp(o->ClassName(),typeName) == 0 )
+      {
+        list->Remove(o);
+        ++nremoved;
+      }
+    }
+  }
+  return nremoved;
+}
+
 
 //_____________________________________________________________________________
 TObjArray*

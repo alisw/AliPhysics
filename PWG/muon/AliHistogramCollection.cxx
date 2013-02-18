@@ -29,6 +29,7 @@
 ClassImp(AliHistogramCollection)
 
 #include "AliLog.h"
+#include "AliMergeableCollection.h"
 #include "Riostream.h"
 #include "TError.h"
 #include "TH1.h"
@@ -38,10 +39,10 @@ ClassImp(AliHistogramCollection)
 #include "TMap.h"
 #include "TObjArray.h"
 #include "TObjString.h"
+#include "TProfile.h"
 #include "TRegexp.h"
 #include "TROOT.h"
 #include "TSystem.h"
-#include "TProfile.h"
 
 using std::cout;
 using std::endl;
@@ -170,6 +171,37 @@ AliHistogramCollection::FindObject(const TObject *key) const
   }
   return 0x0;
 }
+
+//_____________________________________________________________________________
+AliMergeableCollection* AliHistogramCollection::Convert() const
+{
+  /// Convert this into a mergeable collection so it can receive objects
+  /// that are not histograms
+  
+  AliMergeableCollection* mc = new AliMergeableCollection(GetName(),GetTitle());
+  
+  TObjArray* ids = SortAllIdentifiers();
+  TIter next(ids);
+  TObjString* key;
+  
+  while ( ( key = static_cast<TObjString*>(next()) ) )
+  {
+    THashList* list = static_cast<THashList*>(fMap->GetValue(key->String().Data()));
+    TIter nextHisto(list);
+    TH1* histo;
+    
+    while ( ( histo = static_cast<TH1*>(nextHisto())))
+    {
+      TH1* h = static_cast<TH1*>(histo->Clone());
+      mc->Adopt(key->String().Data(),h);
+    }
+  }
+  
+  delete ids;
+  
+  return mc;
+}
+
 
 //_____________________________________________________________________________
 TList*
@@ -893,7 +925,10 @@ AliHistogramCollection::EstimateSize(Bool_t show) const
   
 //  sizeof(TH1) + (nbins+2)*(nbytes_per_bin) +name+title_sizes 
 //  if you have errors add (nbins+2)*8 
-    
+  
+  TMap sizeMap;
+  sizeMap.SetOwnerKeyValue(kTRUE,kTRUE);
+  
   TIter next(CreateIterator());
   TH1* h;
   UInt_t n(0);
@@ -934,13 +969,63 @@ AliHistogramCollection::EstimateSize(Bool_t show) const
     UInt_t thissize = sizeof(h) + nbins*(nbytesPerBin) + strlen(h->GetName())
     + strlen(h->GetTitle());
     
+    TObjString* m = static_cast<TObjString*>(sizeMap.GetValue(h->GetName()));
+    
+    if (!m)
+    {
+      m = new TObjString(Form("%u %u",thissize,1));
+      sizeMap.Add(new TObjString(h->GetName()),m);
+    }
+    else
+    {
+      UInt_t s;
+      UInt_t d;
+      
+      sscanf(m->String().Data(),"%u %u",&s,&d);
+      
+      s += thissize;
+      ++d;
+      
+      m->String().Form("%u %u",s,d);
+    }
+    
     if ( hasErrors) thissize += nbins*8;
 
     n += thissize;
     
-    if ( show ) 
+  }
+
+  if ( show )
+  {
+    std::multimap<UInt_t,std::string> sorted;
+    
+    TIter nextMapSize(&sizeMap);
+    TObjString* m;
+
+    UInt_t s;
+    UInt_t d;
+
+    while ( ( m = static_cast<TObjString*>(nextMapSize()) ) )
     {
-      AliInfo(Form("Size of %30s is %20d bytes",h->GetName(),thissize));
+
+      TObjString* sizeMsg = static_cast<TObjString*>(sizeMap.GetValue(m->String()));
+      
+      sscanf(sizeMsg->String().Data(),"%u %u",&s,&d);
+
+      sorted.insert(std::pair<UInt_t,std::string>(s,m->String().Data()));
+    }
+    
+    std::multimap<UInt_t,std::string>::const_iterator it;
+    
+    for ( it = sorted.begin(); it != sorted.end(); ++it )
+    {
+      TObjString* sizeMsg = static_cast<TObjString*>(sizeMap.GetValue(it->second.c_str()));
+      
+      sscanf(sizeMsg->String().Data(),"%u %u",&s,&d);
+
+      AliInfo(Form("%40s : size %10u (%7u per object, %6d objects)",
+                   it->second.c_str(),s,s/d,d));
+                   
     }
   }
 

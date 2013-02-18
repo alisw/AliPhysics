@@ -1,4 +1,3 @@
-
 #ifndef ALIANALYSISTASKMUMU_H
 #define ALIANALYSISTASKMUMU_H
 
@@ -20,14 +19,15 @@
 #  include "TArrayI.h"
 #endif
 
-class TList;
-class AliHistogramCollection;
-class TObjArray;
+class AliAnalysisMuMuBinning;
 class AliCounterCollection;
-class TArrayF;
+class AliMergeableCollection;
 class AliMuonTrackCuts;
-class AliVEvent;
+class AliMuonEventCuts;
 class AliVParticle;
+class TArrayF;
+class TList;
+class TObjArray;
 
 class AliAnalysisTaskMuMu : public AliAnalysisTaskSE
 {
@@ -64,7 +64,10 @@ public:
     kEventV0UP=BIT(4),
     kEventZSPD=BIT(5),
     kEventZ7=BIT(7),    
+    kEventNOTZEROPILEUP=BIT(8),
+    kEventOFFLINEMUL1=BIT(9),
     kEventZ10=BIT(10),
+    kEventOFFLINEMUL2=BIT(11),
     kEventSD2=BIT(16),
     kEventMSL=BIT(17)
   };
@@ -74,24 +77,30 @@ public:
   AliAnalysisTaskMuMu(Bool_t fromESD, const char* beamYear, TArrayF* centralities=0x0);
   virtual ~AliAnalysisTaskMuMu();
   
+  void AddBin(const char* particle, const char* type,
+              Double_t xmin, Double_t xmax,
+              Double_t ymin=0.0, Double_t ymax=0.0);
+
+  void CreateMesh(const char* particle, const char* type1, const char* type2, Bool_t remove12=kFALSE);
+  
   virtual void AddEventCut(const char* cutName, UInt_t mask);
   
   virtual void AddPairCut(const char* cutName, UInt_t maskForOneOrBothTrack, UInt_t maskForTrackPair=0);
   
   virtual void AddSingleCut(const char* cutName, UInt_t mask);
   
-  void AddTriggerClasses(const char* triggerlist, const char* sep=",");
+  virtual void DisableHistograms(const char* pattern="*");
   
-  virtual void DisableHistogramming() { fIsHistogrammingDisabled = kTRUE; }
+  AliMuonEventCuts* EventCuts() const;
   
   virtual void FinishTaskOutput();
   
   Bool_t IsPP() const;
 
-  virtual Bool_t IsHistogrammingDisabled() const { return fIsHistogrammingDisabled; }
+  Bool_t IsHistogrammingDisabled() const;
 
-  static void MergeCentralities(AliHistogramCollection* histogramCollection);
-  
+  virtual Bool_t IsHistogramDisabled(const char* hname) const;
+
   virtual void NotifyRun();
   
   virtual void Print(Option_t* opt="") const;
@@ -131,19 +140,24 @@ public:
   
 private:
 
-  Bool_t PassPhysicsSelection() const;
-
-  Bool_t CheckTriggerClass(const TString& toCheck, const TString& firedTriggerClasses, UInt_t l0Inputs) const;
-
-  virtual void FillHistos(const char* physics, const char* triggerClassName, const char* centrality, const AliVEvent& event);
+  virtual void FillHistos(const char* physics, const char* triggerClassName, const char* centrality);
 
   void FillHistosForTrack(const char* physics, const char* triggerClassName, const char* centrality, const AliVParticle& track, Int_t trackIndex);
 
-  void Fill(const char* eventtype, TObjString* tname, const char* centrality, float fcent, const AliVEvent& event);
+  void FillHistogramCollection(const char* physics, const char* triggerClassName);
+  
+  void FillEventHistos(const char* physics, const char* triggerClassName,
+                       const char* centrality);
+  
+  void Fill(const char* eventtype, TObjString* tname, const char* centrality, float fcent);
+
+  void FillMC();
 
   void AssertHistogramCollection(const char* physics, const char* triggerClassName);
 
   void BeautifyHistos();
+
+  void CreateMinvHistograms(const char* physics, const char* triggerClassName);
 
    void CreateHisto(TObjArray* array,
                    const char* physics,
@@ -173,8 +187,6 @@ private:
   
    void DefineCentralityClasses(TArrayF* centralities);
   
-  void FillHistogramCollection(const char* physics, const char* triggerClassName);
-
   UInt_t GetTriggerInputBitMaskFromInputName(const char* inputName) const;
 
   TH1* Histo(const char* physics, const char* histoname);
@@ -191,19 +203,11 @@ private:
   
   const char* CentralityName(Double_t centrality) const;
   
-  Double_t Deg2() const { return 2.0*TMath::DegToRad(); }
-  Double_t Deg3() const { return 3.0*TMath::DegToRad(); }
-  Double_t Deg10() const { return 10.2*TMath::DegToRad(); }
-    
-  Double_t AbsZEnd() const { return 505.0; /* cm */ }
-  
-  Bool_t IsDynamicTriggerClasses() const { return fIsDynamicTriggerClasses; }
-
-private:
+  Bool_t HasMC() const { return fHasMC; }
   
   void ComputeTrackMask(const AliVParticle& track, Int_t trackIndex);
 
-  UInt_t GetEventMask(const AliVEvent& event) const;
+  UInt_t GetEventMask() const;
 
   void GetPairMask(const AliVParticle& t1, const AliVParticle& t2,
                    Int_t trackIndex1, Int_t trackIndex2,
@@ -221,25 +225,13 @@ private:
    inadequate...
    */
   
-  void EAComputeTrackMasks(const AliVEvent& event);
+  void EAComputeTrackMasks();
 
-  TString EAGetFiredTriggerClasses(const AliVEvent& event) const;
-  
-  Int_t EAGetNumberOfMuonTracks(const AliVEvent& event) const;
-
-  UInt_t EAGetL0TriggerInputs(const AliVEvent& event) const;
-  
-  AliVParticle* EAGetTrack(const AliVEvent& event, Int_t i) const;
-  
-  Double_t EAGetTrackChi2MatchTrigger(const AliVParticle& track) const;
+  Int_t EAGetNumberOfMuonTracks() const;
 
   Double_t EAGetTrackDCA(const AliVParticle& particle) const;
 
-  Double_t EAGetTrackRabs(const AliVParticle& particle) const;
-
-  Double_t EAGetTrackNormalizedChi2(const AliVParticle& particle) const;
-
-  Bool_t EAGetTZEROFlags(const AliVEvent& event, Bool_t& backgroundFlag, Bool_t& pileupFlag, Bool_t& satelliteFlag) const;
+  Bool_t EAGetTZEROFlags(Bool_t& backgroundFlag, Bool_t& pileupFlag, Bool_t& satelliteFlag) const;
 
   Bool_t AtLeastOneMuonTrigger(const TString& firedTriggerClasses) const;
 
@@ -249,24 +241,22 @@ private:
 
   Bool_t TriggerSBACECondition(const TString& triggerName) const;
 
+  void DefineDefaultBinning();
+  
+  AliVEvent* Event() const;
+  
 private:
   
-  TList* fOutput; //! list of output objects
-  AliHistogramCollection* fHistogramCollection; //! collection of histograms
+  AliMergeableCollection* fHistogramCollection; //! collection of histograms
   AliCounterCollection* fEventCounters; //! event counters
   
   AliMuonTrackCuts* fMuonTrackCuts; //! common cuts for muon tracks (from Diego)
   TArrayI fPrecomputedTrackMasks; //! track masks
 
   Bool_t fIsFromESD; // whether we read from ESD or AOD
-  Bool_t fIsDynamicTriggerClasses; // whether or not to update considered triggers on the fly
   Bool_t fShouldSeparatePlusAndMinus; // whether or not to histogram mu+ and mu- separately
-  Bool_t fIsHistogrammingDisabled; // disable histogramming completely (only counters will be filled)
-
   TString fBeamYear; // beam and year
-  std::vector<double> fCentralityLimits; // centrality limits
-
-  TList* fTriggerClasses; // trigger classes to consider
+  
   TObjArray* fSingleTrackCutNames; // cut on single tracks (array of TObjString)
   TObjArray* fPairTrackCutNames; // cut on track pairs (array of TObjString)
   TObjArray* fCentralityNames; // names to create histograms
@@ -276,11 +266,19 @@ private:
   
   std::map<std::string,int> fTriggerInputBitMap; // map of L0 input name to bit
   
+  AliAnalysisMuMuBinning* fBinning; // binning for particles
+  
+  TList* fHistogramToDisable; // list of regexp of histo name to disable
+
+  TObjArray* fBinArray; //!  cache for the bins
+  Bool_t fHasMC; //! current event has MC information
+  
+  mutable AliMuonEventCuts* fEventCuts; // common cuts for muon events (from Diego)
+  
   AliAnalysisTaskMuMu(const AliAnalysisTaskMuMu&); // not implemented (on purpose)
   AliAnalysisTaskMuMu& operator=(const AliAnalysisTaskMuMu&); // not implemented (on purpose)
   
-  
-  ClassDef(AliAnalysisTaskMuMu,17) // a class to analyse muon pairs (and single also ;-) )
+  ClassDef(AliAnalysisTaskMuMu,24) // a class to analyse muon pairs (and single also ;-) )
 };
 
 #endif

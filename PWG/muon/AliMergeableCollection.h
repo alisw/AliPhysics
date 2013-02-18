@@ -33,6 +33,7 @@
 
 class TMap;
 class AliMergeableCollectionIterator;
+class TH1;
 
 class AliMergeableCollection : public TNamed
 {
@@ -62,7 +63,10 @@ public:
 
   TObject* GetObject(const char* fullIdentifier) const;
   TObject* GetObject(const char* identifier, const char* objectName) const;
-  
+
+  TH1* Histo(const char* fullIdentifier) const;
+  TH1* Histo(const char* identifier, const char* objectName) const;
+
   virtual TIterator* CreateIterator(Bool_t dir = kIterForward) const;
   
   virtual TList* CreateListOfKeys(Int_t index) const;
@@ -70,6 +74,8 @@ public:
   virtual TList* CreateListOfObjectNames(const char* identifier) const;
   
   virtual TObject* Remove(const char* fullIdentifier);
+  
+  Int_t RemoveByType(const char* typeName);
   
   TString GetKey(const char* identifier, Int_t index, Bool_t idContainsObjName = kFALSE) const;
   TString GetIdentifier(const char* fullIdentifier) const;
@@ -104,13 +110,17 @@ private:
   AliMergeableCollection(const AliMergeableCollection& rhs);
   AliMergeableCollection& operator=(const AliMergeableCollection& rhs);
   
+  TH1* HistoWithAction(const char* identifier, TObject* o, const TString& action) const;
+
   Bool_t InternalAdopt(const char* identifier, TObject* obj);
   
   TString InternalDecode(const char* fullIdentifier, Int_t index) const;
   
-  TObject* InternalObject(const char* identifier, const char* objectName) const;  
-  TObjArray* SortAllIdentifiers() const;
+  TObject* InternalObject(const char* identifier, const char* objectName) const;
   
+public:
+  TObjArray* SortAllIdentifiers() const;
+
   TString NormalizeName(const char* identifier, const char* action) const;
   
   TMap* Map() const;
