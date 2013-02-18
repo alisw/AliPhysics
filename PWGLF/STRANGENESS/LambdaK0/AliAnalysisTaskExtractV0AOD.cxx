@@ -652,8 +652,8 @@ void AliAnalysisTaskExtractV0AOD::UserExec(Option_t *)
       lRapLambda  = v0->RapLambda();
       if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
 
-      UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPosID());
-      UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetPosID());
+      //UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPosID());
+      //UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetPosID());
 
       Double_t lMomPos[3]; //v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
       Double_t lMomNeg[3]; //v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
