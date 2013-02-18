@@ -1,4 +1,4 @@
-// $Id: AliAnalysisTaskEmcalJetSpectraMECpA2.cxx 3010 2012-06-10 05:40:56Z loizides $
+// $Id: AliAnalysisTaskEmcalJetSpectraMECpA.cxx 3010 2012-06-10 05:40:56Z loizides $
 //
 // Jet spectrum task.
 //
@@ -200,6 +200,8 @@ Float_t AliAnalysisTaskEmcalJetSpectraMECpA:: RelativePhi(Double_t mphi,Double_t
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetSpectraMECpA::Run()
 {
+
+
   Int_t centbin = GetCentBin(fCent);
   //for pp analyses we will just use the first centrality bin
   if (centbin == -1)
@@ -223,7 +225,6 @@ Bool_t AliAnalysisTaskEmcalJetSpectraMECpA::Run()
   fHistEP0C[centbin]->Fill(fEPV0C);
   fHistEPAvsC[centbin]->Fill(fEPV0A,fEPV0C);
   TString fRhoScaledName = fRhoName;
-  fRhoScaledName.Append("_Scaled");
   fRho = GetRhoFromEvent(fRhoScaledName);
   fRhoVal = fRho->GetVal();
   fHistRhovsCent->Fill(fCent,fRhoVal);
