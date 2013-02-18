@@ -693,7 +693,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
 		  double valdedx[16];
 		  valdedx[0] = pt; valdedx[1] = nITS; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
-		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nTPCclF; valdedx[9] = m20; valdedx[10] = mcpT;
+		  //valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nTPCclF; valdedx[9] = m20; valdedx[10] = mcpT;
+		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nmatch; valdedx[9] = m20; valdedx[10] = mcpT;
 		  valdedx[11] = cent; valdedx[12] = charge; valdedx[13] = oppstatus; valdedx[14] = nTPCcl;
                   valdedx[15] = mcele;
                   if(fqahist==1)fEleInfo->Fill(valdedx);
@@ -1707,7 +1708,7 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
 }
 
 
-double AliAnalysisTaskHFECal::NsigCorr(int cent)
+double AliAnalysisTaskHFECal::NsigCorr(float cent)
 {
  double shift = 0.0;
  if(cent>=20 && cent<30)shift = 0.156;
