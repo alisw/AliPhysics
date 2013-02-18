@@ -1112,6 +1112,7 @@ void AliDielectronHistos::StoreVariables(THnBase *obj, UInt_t valType[20])
 
   for(Int_t it=0; it<dim; it++) {
     obj->GetAxis(it)->SetUniqueID(valType[it]);
+    obj->GetAxis(it)->SetName(Form("%s", AliDielectronVarManager::GetValueName(valType[it])));
     obj->GetAxis(it)->SetTitle(Form("%s %s", AliDielectronVarManager::GetValueLabel(valType[it]), AliDielectronVarManager::GetValueUnit(valType[it])));
   }
   obj->Sumw2();
@@ -1268,55 +1269,64 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
   if(btitle) {
     switch( dim ) {
     case 3:
-      hist->GetXaxis()->SetTitle(Form("%s %s",
-				      AliDielectronVarManager::GetValueLabel(varx), 
+      hist->GetXaxis()->SetNameTitle(AliDielectronVarManager::GetValueName(varx),
+				     Form("%s %s",
+				      AliDielectronVarManager::GetValueLabel(varx),
 				      AliDielectronVarManager::GetValueUnit(varx))
 				 );
-      hist->GetYaxis()->SetTitle(Form("%s %s",
-				      AliDielectronVarManager::GetValueLabel(vary), 
+      hist->GetYaxis()->SetNameTitle(AliDielectronVarManager::GetValueName(vary),
+				     Form("%s %s",
+				      AliDielectronVarManager::GetValueLabel(vary),
 				      AliDielectronVarManager::GetValueUnit(vary))
 				 );
-      hist->GetZaxis()->SetTitle(Form("%s %s",
-				      AliDielectronVarManager::GetValueLabel(varz), 
+      hist->GetZaxis()->SetNameTitle(AliDielectronVarManager::GetValueName(varz),
+				     Form("%s %s",
+				      AliDielectronVarManager::GetValueLabel(varz),
 				      AliDielectronVarManager::GetValueUnit(varz))
 				 );
       if(bprf)
-	hist->SetTitle(Form("%s  %s%s%s%s %s",
+	hist->SetNameTitle(AliDielectronVarManager::GetValueName(varp),
+			   Form("%s  %s%s%s%s %s",
 			    hist->GetTitle(),
 			    (bStdOpt ? "#LT" : "RMS("),
-			    AliDielectronVarManager::GetValueLabel(varp), 
+			    AliDielectronVarManager::GetValueLabel(varp),
 			    (bStdOpt ? "#GT" : ")"),
 			    calcrange.Data(),
 			    AliDielectronVarManager::GetValueUnit(varp))
 		       );
       break;
     case 2:
-      hist->GetXaxis()->SetTitle(Form("%s %s",
-				      AliDielectronVarManager::GetValueLabel(varx), 
+      hist->GetXaxis()->SetNameTitle(AliDielectronVarManager::GetValueName(varx),
+				     Form("%s %s",
+				      AliDielectronVarManager::GetValueLabel(varx),
 				      AliDielectronVarManager::GetValueUnit(varx))
 				 );
-      hist->GetYaxis()->SetTitle(Form("%s %s",
-				      AliDielectronVarManager::GetValueLabel(vary), 
+      hist->GetYaxis()->SetNameTitle(AliDielectronVarManager::GetValueName(vary),
+				     Form("%s %s",
+				      AliDielectronVarManager::GetValueLabel(vary),
 				      AliDielectronVarManager::GetValueUnit(vary))
 				 );
       hist->GetZaxis()->SetTitle(Form("#%ss",histClass));
       if(bprf)
-	hist->GetZaxis()->SetTitle(Form("%s%s%s%s %s",
+	hist->GetZaxis()->SetNameTitle(AliDielectronVarManager::GetValueName(varz),
+				       Form("%s%s%s%s %s",
 					(bStdOpt ? "#LT" : "RMS("),
-					AliDielectronVarManager::GetValueLabel(varz), 
+					AliDielectronVarManager::GetValueLabel(varz),
 					(bStdOpt ? "#GT" : ")"),
 					calcrange.Data(),
 					AliDielectronVarManager::GetValueUnit(varz))
 				   );
       break;
     case 1:
-      hist->GetXaxis()->SetTitle(Form("%s %s",
-				      AliDielectronVarManager::GetValueLabel(varx), 
+      hist->GetXaxis()->SetNameTitle(AliDielectronVarManager::GetValueName(varx),
+				     Form("%s %s",
+				      AliDielectronVarManager::GetValueLabel(varx),
 				      AliDielectronVarManager::GetValueUnit(varx))
 				 );
       hist->GetYaxis()->SetTitle(Form("#%ss",histClass));
       if(bprf)
-	hist->GetYaxis()->SetTitle(Form("%s%s%s%s %s",
+	hist->GetYaxis()->SetNameTitle(AliDielectronVarManager::GetValueName(vary),
+				       Form("%s%s%s%s %s",
 					(bStdOpt ? "#LT" : "RMS("),
 					AliDielectronVarManager::GetValueLabel(vary), 
 					(bStdOpt ? "#GT" : ")"),
