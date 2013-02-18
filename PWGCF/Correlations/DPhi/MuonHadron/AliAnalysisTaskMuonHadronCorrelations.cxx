@@ -33,6 +33,7 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() :
   fNbinsPt(1),
   fCentAxis(0x0), 
   fPtAxis(0x0),
+  fEtaAxis(0x0),
   fHistV0Multiplicity(0x0), 
   fHistITSMultiplicity(0x0),
   fHistCentrality(0x0),
@@ -48,6 +49,8 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() :
       for (Int_t iPtBinMA=0; iPtBinMA<fNMaxBinsPt; iPtBinMA++) {
 	fHistDeltaPhi[iCent][iPtBinCB][iPtBinMA]    = NULL;
 	fHistDeltaPhiMix[iCent][iPtBinCB][iPtBinMA] = NULL;
+	fHistEtaDeltaPhi[iCent][iPtBinCB][iPtBinMA]    = NULL;
+	fHistEtaDeltaPhiMix[iCent][iPtBinCB][iPtBinMA] = NULL;
       }
     }
     fHistNTracksCB_vs_NTracksMA[iCent]  = NULL;
@@ -56,6 +59,8 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() :
     fHistTracksEtaMAvsEtaCBmixed[iCent] = NULL;
     fHistSingleMuonsPt[iCent]   = NULL;
     fHistSingleMuonsPtmixed[iCent]   = NULL;
+    fHistSingleMuonsEtaPt[iCent]   = NULL;
+    fHistSingleMuonsEtaPtmixed[iCent]   = NULL;
     fHistSingleMuonsEtaVsPt[iCent]   = NULL;
     fHistSingleMuonsEtaVsRAbs[iCent] = NULL;
   }  
@@ -81,6 +86,7 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(con
   fNbinsPt(1),
   fCentAxis(0x0), 
   fPtAxis(0x0),
+  fEtaAxis(0x0),
   fHistV0Multiplicity(0x0), 
   fHistITSMultiplicity(0x0),
   fHistCentrality(0x0),
@@ -96,6 +102,8 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(con
       for (Int_t iPtBinMA=0; iPtBinMA<fNMaxBinsPt; iPtBinMA++) {
 	fHistDeltaPhi[iCent][iPtBinCB][iPtBinMA]    = NULL;
 	fHistDeltaPhiMix[iCent][iPtBinCB][iPtBinMA] = NULL;
+	fHistEtaDeltaPhi[iCent][iPtBinCB][iPtBinMA]    = NULL;
+	fHistEtaDeltaPhiMix[iCent][iPtBinCB][iPtBinMA] = NULL;
       }
     }
     fHistNTracksCB_vs_NTracksMA[iCent]  = NULL;
@@ -104,6 +112,8 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(con
     fHistTracksEtaMAvsEtaCBmixed[iCent] = NULL;
     fHistSingleMuonsPt[iCent]   = NULL;
     fHistSingleMuonsPtmixed[iCent]   = NULL;
+    fHistSingleMuonsEtaPt[iCent]   = NULL;
+    fHistSingleMuonsEtaPtmixed[iCent]   = NULL;
     fHistSingleMuonsEtaVsPt[iCent]   = NULL;
     fHistSingleMuonsEtaVsRAbs[iCent] = NULL;
   }  
@@ -119,6 +129,7 @@ AliAnalysisTaskMuonHadronCorrelations::~AliAnalysisTaskMuonHadronCorrelations() 
   
   delete fCentAxis;
   delete fPtAxis;
+  delete fEtaAxis;
 
   if (fOutputList  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
     delete fOutputList;
@@ -164,6 +175,39 @@ void AliAnalysisTaskMuonHadronCorrelations::UserCreateOutputObjects() {
 	fOutputList -> Add(fHistDeltaPhi[iCent][iPtBinCB][iPtBinMA]);
 	fOutputList -> Add(fHistDeltaPhiMix[iCent][iPtBinCB][iPtBinMA]);
 
+	fHistEtaDeltaPhi[iCent][iPtBinCB][iPtBinMA]    = new TH2D(Form("fHistEtaDeltaPhi_Cent%02d_PtBin%02d_%02d",iCent,iPtBinCB,iPtBinMA), 
+								  Form("%d-%d %%, %3.1f<p_{T}^{TPC}<%3.1f, %3.1f<p_{T}^{Muon}<%3.1f",
+								       Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
+								       Int_t(fCentAxis->GetBinUpEdge(iCent+1)),
+								       fPtAxis->GetBinLowEdge(iPtBinCB+1),
+								       fPtAxis->GetBinUpEdge(iPtBinCB+1),
+								       fPtAxis->GetBinLowEdge(iPtBinMA+1),
+								       fPtAxis->GetBinUpEdge(iPtBinMA+1)),
+								  100, -0.5*TMath::RadToDeg()*TMath::Pi(), 1.5*TMath::RadToDeg()*TMath::Pi(),
+								  fEtaAxis->GetNbins(),(Double_t*)fEtaAxis->GetXbins()->GetArray());
+	
+	fHistEtaDeltaPhiMix[iCent][iPtBinCB][iPtBinMA]    = new TH2D(Form("fHistEtaDeltaPhiMix_Cent%02d_PtBin%02d_%02d",iCent,iPtBinCB,iPtBinMA), 
+								     Form("%d-%d %%, %3.1f<p_{T}^{TPC}<%3.1f, %3.1f<p_{T}^{Muon}<%3.1f MIXED",
+									  Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
+									  Int_t(fCentAxis->GetBinUpEdge(iCent+1)),
+									  fPtAxis->GetBinLowEdge(iPtBinCB+1),
+									  fPtAxis->GetBinUpEdge(iPtBinCB+1),
+									  fPtAxis->GetBinLowEdge(iPtBinMA+1),
+									  fPtAxis->GetBinUpEdge(iPtBinMA+1)),
+								     100, -0.5*TMath::RadToDeg()*TMath::Pi(), 1.5*TMath::RadToDeg()*TMath::Pi(),
+								     fEtaAxis->GetNbins(),(Double_t*)fEtaAxis->GetXbins()->GetArray());
+	
+	fHistEtaDeltaPhi[iCent][iPtBinCB][iPtBinMA]    -> SetXTitle("#Delta#varphi  [degrees]");
+	fHistEtaDeltaPhiMix[iCent][iPtBinCB][iPtBinMA] -> SetXTitle("#Delta#varphi  [degrees]");
+	fHistEtaDeltaPhi[iCent][iPtBinCB][iPtBinMA]    -> SetYTitle("#eta");
+	fHistEtaDeltaPhiMix[iCent][iPtBinCB][iPtBinMA] -> SetYTitle("#eta");
+
+	fHistEtaDeltaPhi[iCent][iPtBinCB][iPtBinMA]    -> Sumw2();
+	fHistEtaDeltaPhiMix[iCent][iPtBinCB][iPtBinMA] -> Sumw2();
+	
+	fOutputList -> Add(fHistEtaDeltaPhi[iCent][iPtBinCB][iPtBinMA]);
+	fOutputList -> Add(fHistEtaDeltaPhiMix[iCent][iPtBinCB][iPtBinMA]);
+
       }
     }
 
@@ -201,6 +245,17 @@ void AliAnalysisTaskMuonHadronCorrelations::UserCreateOutputObjects() {
 					      fNbinsPt, (Double_t*)fPtAxis->GetXbins()->GetArray());
     fOutputList -> Add(fHistSingleMuonsPt[iCent]);
     fOutputList -> Add(fHistSingleMuonsPtmixed[iCent]);
+
+    fHistSingleMuonsEtaPt[iCent] = new TH2D(Form("fHistSingleMuonEtaPt_Cent%02d",iCent),
+					    "#eta vs p_{T} for single muons",
+					    fNbinsPt, (Double_t*)fPtAxis->GetXbins()->GetArray(),
+					    fEtaAxis->GetNbins(),(Double_t*)fEtaAxis->GetXbins()->GetArray());
+    fHistSingleMuonsEtaPtmixed[iCent] = new TH2D(Form("fHistSingleMuonEtaPtmixed_Cent%02d",iCent),
+						 "#eta vs p_{T} for single muons",
+						 fNbinsPt, (Double_t*)fPtAxis->GetXbins()->GetArray(),
+						 fEtaAxis->GetNbins(),(Double_t*)fEtaAxis->GetXbins()->GetArray());
+    fOutputList -> Add(fHistSingleMuonsEtaPt[iCent]);
+    fOutputList -> Add(fHistSingleMuonsEtaPtmixed[iCent]);
 
     fHistSingleMuonsEtaVsPt[iCent]   = new TH2D(Form("fHistSingleMuonsEtaVsPt_Cent%02d",iCent),
 					       "#eta vs p_{T} for single muons",
@@ -303,6 +358,7 @@ void AliAnalysisTaskMuonHadronCorrelations::UserExec(Option_t *) {
   for (Int_t iTrMA=0; iTrMA<tracksMuonArm->GetEntriesFast(); iTrMA++) {
     fTrackMA = (AliAODTrack*) tracksMuonArm->At(iTrMA);
     fHistSingleMuonsPt[centBin]->Fill(fTrackMA->Pt());
+    fHistSingleMuonsEtaPt[centBin]->Fill(fTrackMA->Pt(),fTrackMA->Eta());
     for (Int_t iTrCB=0; iTrCB<tracksCentralBarrel->GetEntriesFast(); iTrCB++) {
       fTrackCB = (AliAODTrack*) tracksCentralBarrel -> At(iTrCB);
       FillHistograms(centBin, kSingleEvent);
@@ -320,6 +376,7 @@ void AliAnalysisTaskMuonHadronCorrelations::UserExec(Option_t *) {
 	for (Int_t iTrMA=0; iTrMA<tracksMuonArm->GetEntriesFast(); iTrMA++) {
 	  fTrackMA = (AliAODTrack*) tracksMuonArm->At(iTrMA);
 	  fHistSingleMuonsPtmixed[centBin]->Fill(fTrackMA->Pt());
+	  fHistSingleMuonsEtaPtmixed[centBin]->Fill(fTrackMA->Pt(),fTrackMA->Eta());
 	  for (Int_t iTrCB=0; iTrCB<mixedTracks->GetEntriesFast(); iTrCB++) {
 	    fTrackCB = (AliAODTrack*) mixedTracks -> At(iTrCB);
 	    FillHistograms(centBin, kMixedEvent);
@@ -350,6 +407,9 @@ void AliAnalysisTaskMuonHadronCorrelations::FillHistograms(Int_t centrality, Int
 
   if (option==kSingleEvent)     fHistDeltaPhi[centrality][ptBinTrackCB-1][ptBinTrackMA-1]    -> Fill(TMath::RadToDeg()*deltaPhi);
   else if (option==kMixedEvent) fHistDeltaPhiMix[centrality][ptBinTrackCB-1][ptBinTrackMA-1] -> Fill(TMath::RadToDeg()*deltaPhi);
+
+  if (option==kSingleEvent)     fHistEtaDeltaPhi[centrality][ptBinTrackCB-1][ptBinTrackMA-1]    -> Fill(TMath::RadToDeg()*deltaPhi,fTrackMA->Eta());
+  else if (option==kMixedEvent) fHistEtaDeltaPhiMix[centrality][ptBinTrackCB-1][ptBinTrackMA-1] -> Fill(TMath::RadToDeg()*deltaPhi,fTrackMA->Eta());
 
   if (option==kSingleEvent)     fHistTracksEtaMAvsEtaCB[centrality]->Fill(fTrackMA->Eta(),fTrackCB->Eta());
   else if (option==kMixedEvent) fHistTracksEtaMAvsEtaCBmixed[centrality]->Fill(fTrackMA->Eta(),fTrackCB->Eta());
@@ -465,6 +525,23 @@ void AliAnalysisTaskMuonHadronCorrelations::SetPtBinning(Int_t nBins, Double_t *
   
   fNbinsPt = nBins;
   fPtAxis  = new TAxis(fNbinsPt, limits);
+
+}
+
+//====================================================================================================================================================
+
+void AliAnalysisTaskMuonHadronCorrelations::SetEtaBinning(Int_t nBins, Double_t *limits) {
+
+  if (nBins>fNMaxBinsEta) {
+    AliInfo(Form("WARNING : only %d pt bins (out of the %d proposed) will be considered",fNMaxBinsEta,nBins));
+    nBins = fNMaxBinsEta;
+  }
+  if (nBins<=0) {
+    AliInfo("WARNING : at least one pt bin must be considered");
+    nBins = 1;
+  }
+  
+  fEtaAxis  = new TAxis(nBins, limits);
 
 }
 

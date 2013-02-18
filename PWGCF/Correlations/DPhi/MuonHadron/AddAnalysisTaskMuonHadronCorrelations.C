@@ -23,6 +23,10 @@ AliAnalysisTaskMuonHadronCorrelations *AddAnalysisTaskMuonHadronCorrelations(con
   Double_t ptLimits[nBinPt+1] = {0., 1., 2., 4.};
   task->SetPtBinning(nBinPt, ptLimits);
 
+  const Int_t nBinEta = 3;
+  Double_t etaLimits[nBinEta+1] = {-4., -3.6, -3.2, -2.5};
+  task->SetEtaBinning(nBinEta, etaLimits);
+
   mgr->AddTask(task);
 
   // create output container
