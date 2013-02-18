@@ -21,79 +21,121 @@
 class AliTriggerBCMask;
 class AliAnalysisTriggerScalerItem;
 class TGraph;
+class AliTriggerConfiguration;
+class AliTriggerRunScalers;
+class AliLHCData;
+class AliTriggerScalersRecord;
 
 class AliAnalysisTriggerScalers : public TObject
 {
 public:
-  AliAnalysisTriggerScalers(const std::vector<int>& runs, const char* ocdbPath="raw://");
-  AliAnalysisTriggerScalers(const std::set<int>& runs, const char* ocdbPath="raw://");
-  AliAnalysisTriggerScalers(Int_t runNumber, const char* ocdbPath="raw://");
-  AliAnalysisTriggerScalers(const char* runlist, const char* ocdbPath="raw://");
+  
+  AliAnalysisTriggerScalers(const std::vector<int>& runs, const char* source="raw://");
+  AliAnalysisTriggerScalers(const std::set<int>& runs, const char* source="raw://");
+  AliAnalysisTriggerScalers(Int_t runNumber, const char* source="raw://");
+  AliAnalysisTriggerScalers(const char* runlist, const char* source="raw://");
+  
   virtual ~AliAnalysisTriggerScalers();
   
-  Int_t GetTriggerInput(Int_t runNumber, const char* inputname);
+  void CrossSectionUnit(const char* unit="ub") { fCrossSectionUnit=unit; fCrossSectionUnit.ToUpper(); }
+  TString CrossSectionUnit() const { return fCrossSectionUnit; }
+  
+  void DrawFills(Double_t ymin, Double_t ymax);
+  void DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label);
+
+  void GetCTPObjects(Int_t runNumber, AliTriggerConfiguration*& tc, AliTriggerRunScalers*& trs, AliLHCData*& lhc) const;
 
   Int_t GetFillNumberFromRunNumber(Int_t runNumber);
+  
+  void GetFillBoundaries(std::map<int, std::pair<int,int> >& fills);
 
+  TString GetLHCPeriodFromRunNumber(Int_t runNumber) const;
+  
+  void GetLHCPeriodBoundaries(std::map<std::string, std::pair<int,int> >& periods);
+
+  void GetLuminosityTriggerAndCrossSection(Int_t runNumber,
+                                           TString& lumiTriggerClassName,
+                                           Double_t& lumiTriggerCrossSection,
+                                           Double_t& lumiTriggerCrossSectionError) const;
+  
+  TObject* GetOCDBObject(const char* path, Int_t runNumber) const;
+  
+  Float_t GetPauseAndConfigCorrection(Int_t runNumber, const char* triggerClassName);
+
+  const std::vector<int>& GetRunList() const { return fRunList; }
+
+  Int_t GetTriggerInput(Int_t runNumber, const char* inputname);
+  
   AliAnalysisTriggerScalerItem* GetTriggerScaler(Int_t runNumber, const char* level, const char* triggerClassName);
-
+  
+  TGraph* IntegratedLuminosityGraph(const char* triggerName, const char* triggerClassNameForPACEstimate="");
+  
+  TGraph* IntegratedLuminosityGraph(Int_t runNumber, const char* triggerClassName, const char* triggerClassNameForPACEstimate="");
+  
   void IntegratedLuminosity(const char* triggerList="",
                             const char* lumiTrigger="C0TVX-B-NOPF-ALLNOTRD",
                             Double_t lumiCrossSection=0.755*2000,
                             const char* csvOutputFile="",
                             const char sep='\t',
                             const char* csUnit="ub");
-    
-  TGraph* PlotTriggerRatio(const char* triggerClassName1,
-                           const char* what1,
-                           const char* triggerClassName2,
-                           const char* what2);
+
+  TGraph* MakeGraph(const std::vector<int>& vx, const std::vector<int>& vex,
+                    const std::vector<double>& vy, const std::vector<double>& vey);
+
+  Int_t NumberOfInteractingBunches(const AliLHCData& lhc) const;
 
   TGraph* PlotTrigger(const char* triggerClassName, const char* what);
-
+  
   TGraph* PlotTriggerEvolution(const char* triggerClassName,
                                const char* what,
                                bool draw=kTRUE,
                                double* mean=0x0,
                                bool removeZero=kFALSE);
+  
+  TGraph* PlotTriggerRatio(const char* triggerClassName1,
+                           const char* what1,
+                           const char* triggerClassName2,
+                           const char* what2);
+  
+  TGraph* PlotTriggerRatioEvolution(const char* triggerClassName1,
+                                    const char* what1,
+                                    const char* triggerClassName2,
+                                    const char* what2);
+  
+  virtual void Print(Option_t* opt="") const;
 
   void SetRunList(const std::vector<int>& runlist);
   void SetRunList(const std::set<int>& runlist);
   void SetRunList(Int_t runNumber);
   void SetRunList(const char* runlist);
-
-  virtual void Print(Option_t* opt="") const;
   
-  void SetVerbose(Int_t level=1) { fVerbose=level; }
-    
-  static void ReadIntegers(const char* filename, std::vector<int>& integers, Bool_t resetVector=kTRUE);
+  void ShouldCorrectForPileUp(Bool_t flag) { fShouldCorrectForPileUp = flag; }
+  Bool_t ShouldCorrectForPileUp() const { return fShouldCorrectForPileUp; }
 
+  /// static methods -----
+  
+  static void ReadIntegers(const char* filename, std::vector<int>& integers, Bool_t resetVector=kTRUE);
+  
   static void PrintIntegers(const std::vector<int>& integers, const char sep = '\n',
                             std::ostream& out = std::cout);
-
-  TObject* GetOCDBObject(const char* path, Int_t runNumber);
   
-  const std::vector<int>& GetRunList() const { return fRunList; }
-
-  void DrawFills(Double_t ymin, Double_t ymax);
   
 private:
+
+  Bool_t CheckRecord(const AliTriggerScalersRecord& record,
+                                                UInt_t index,
+                                                UInt_t refa,
+                                                UInt_t refb,
+                     UInt_t timelapse) const;
+
   
-  void DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label);
-
-  void GetFillBoundaries(std::map<int, std::pair<int,int> >& fills);
-  
-  Float_t GetPauseAndConfigCorrection(Int_t runNumber, const char* triggerClassName);
-
-  TGraph* MakeGraph(const std::vector<int>& vx, const std::vector<int>& vex,
-                    const std::vector<double>& vy, const std::vector<double>& vey);
-
 private:
   std::vector<int> fRunList; // input run list
-  Int_t fVerbose; // whether or not to be verbose
   TString fOCDBPath; // OCDB path (default raw://)
+  Bool_t fShouldCorrectForPileUp; // whether or not to correct scalers by pile-up
+  TString fCrossSectionUnit; // cross-section unit (UB = microbarns) by default
   
-  ClassDef(AliAnalysisTriggerScalers,2) // Utility class to play with scalers
+  ClassDef(AliAnalysisTriggerScalers,3) // Utility class to play with scalers
 };
 
 class AliAnalysisTriggerScalerItem : public TObject
