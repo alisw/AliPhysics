@@ -301,7 +301,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
   Int_t idtrack;
   Float_t x,y,z; // keep coordinates float (required by AliSegmentation)
   Double_t tof,x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0; 
-  Double_t step,st,el,de=0.0,dt;
+  Double_t step,st,el,de=0.0;
   Double_t minDim = Min(fSeg->Dpx(1),fSeg->Dpz(1)); // RStmp: smallest pitch
   Double_t thick = fSeg->Dy();
   //
@@ -314,7 +314,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
       int np = int(1.5*st/minDim);  //RStmp: inject the points in such a way that there is ~1.5 point per cell
       if (np<3) np = 3;
       double dstep = 1./np;
-      double dy = dt*thick;
+      double dy = dstep*thick;
       y = -0.5*dy;
       step = -0.5*dstep;
       for (i=0;i<np;i++) {          //RStmp Integrate over t
