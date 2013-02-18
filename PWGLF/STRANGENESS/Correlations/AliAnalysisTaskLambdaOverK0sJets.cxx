@@ -1593,7 +1593,7 @@ static Int_t PtBin(Double_t pt)
 {
   // Bin in pt
   Int_t bin = -1;
-  for(Int_t i=0;i<kNVtxZ;i++)
+  for(Int_t i=0;i<kN1;i++)
     if ((pt>=kPtBinV0[i]) && (pt<kPtBinV0[i+1]) )
       bin = i;
 
