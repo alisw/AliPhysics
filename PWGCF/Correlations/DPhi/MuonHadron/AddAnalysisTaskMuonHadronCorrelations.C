@@ -26,7 +26,7 @@ AliAnalysisTaskMuonHadronCorrelations *AddAnalysisTaskMuonHadronCorrelations(con
   mgr->AddTask(task);
 
   // create output container
-  AliAnalysisDataContainer *output = mgr->CreateContainer("MuonHadronCorrHistos", TList::Class(), AliAnalysisManager::kOutputContainer,
+  AliAnalysisDataContainer *output = mgr->CreateContainer(Form("MuonHadronCorrHistos_%s",centMethod), TList::Class(), AliAnalysisManager::kOutputContainer,
 							  Form("%s:MuonHadronCorrelations_%s", AliAnalysisManager::GetCommonFileName(), centMethod));
   
   // finaly connect input and output
