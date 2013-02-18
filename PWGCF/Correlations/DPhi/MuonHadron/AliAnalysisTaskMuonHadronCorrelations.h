@@ -45,6 +45,7 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
   TObjArray* GetAcceptedTracksMuonArm(AliAODEvent *aodEvent, Int_t centBin);
   void SetPtBinning(Int_t nBins, Double_t *limits);
   void SetCentBinning(Int_t nBins, Double_t *limits);
+  void SetEtaBinning(Int_t nBins, Double_t *limits);
   void SetCentMethod(const Char_t *method) { fCentMethod = method; }
   void FillHistograms(Int_t centrality, Int_t option);
   Int_t GetCentBin();
@@ -53,6 +54,7 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
 
   static const Int_t fNMaxBinsCentrality = 20;
   static const Int_t fNMaxBinsPt = 10;
+  static const Int_t fNMaxBinsEta = 10;
 
   AliAODEvent *fAOD; //!
   AliEventPoolManager *fPoolMgr; //! event pool manager
@@ -69,15 +71,20 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
   
   TAxis *fCentAxis;
   TAxis *fPtAxis;
+  TAxis *fEtaAxis;
 
   TH1D *fHistDeltaPhi[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsPt]; //!
   TH1D *fHistDeltaPhiMix[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsPt]; //!
+  TH2D *fHistEtaDeltaPhi[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsPt]; //!
+  TH2D *fHistEtaDeltaPhiMix[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsPt]; //!
   TH2D *fHistNTracksCB_vs_NTracksMA[fNMaxBinsCentrality]; //!
   TH2D *fHistNTracksCB_vs_NTracksMAmixed[fNMaxBinsCentrality]; //!
   TH2D *fHistTracksEtaMAvsEtaCB[fNMaxBinsCentrality]; //!
   TH2D *fHistTracksEtaMAvsEtaCBmixed[fNMaxBinsCentrality]; //!
   TH1D *fHistSingleMuonsPt[fNMaxBinsCentrality]; //!
   TH1D *fHistSingleMuonsPtmixed[fNMaxBinsCentrality]; //!
+  TH2D *fHistSingleMuonsEtaPt[fNMaxBinsCentrality]; //!
+  TH2D *fHistSingleMuonsEtaPtmixed[fNMaxBinsCentrality]; //!
 
   TH1D *fHistV0Multiplicity; //!
   TH1D *fHistITSMultiplicity; //!
@@ -94,7 +101,7 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
   AliAnalysisTaskMuonHadronCorrelations(const AliAnalysisTaskMuonHadronCorrelations&);//not implimented
   AliAnalysisTaskMuonHadronCorrelations& operator=(const AliAnalysisTaskMuonHadronCorrelations&);//not implimnted
   
-  ClassDef(AliAnalysisTaskMuonHadronCorrelations, 1)  // example of analysis
+  ClassDef(AliAnalysisTaskMuonHadronCorrelations, 2)  // example of analysis
 
 };
 
