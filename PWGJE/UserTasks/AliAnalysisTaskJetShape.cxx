@@ -1248,7 +1248,8 @@ void AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::InitHistos()
   }
 
   fhPtJ      = Hist1D("hPtJ"  , fPtJetNbin, fPtJetArray.GetArray(), "Pt_{J} GeV/c");
-  fhPsiVsR   = Hist1D("hPsiVsR", fPsiVsRNbin, 0., fRmax, "R", 1, "#Psi(R)");
+  //  fhPsiVsR   = Hist1D("hPsiVsR", fPsiVsRNbin, 0., fRmax, "R", 1, "#Psi(R)");
+  fhPsiVsR   = Hist3D("hPsiVsR", fPsiVsRNbin, 0., fRmax, 10, 0., 1., fPtJetNbin, fPtJetArray.GetArray(), "R", "P_{Jt, frac}", "P_{J} GeV/c");
   fhPsiVsRPtJ   = Hist2D("hPsiVsRPtJ", fPsiVsRNbin, 0., fRmax, fPtJetNbin, fPtJetArray.GetArray(), "R", "P_{tJ} GeV/c", 1, "#Psi(R)");
 
   fhPtJvsPtCorr  = Hist2D("fhPtJvsPtCorr", fPtJetNbin, fPtJetArray.GetArray(), 100, -100, 100, "P_{tJ} GeV/c", "P_{tJ} - P_{tJ,corr} GeV/c" , 1);
@@ -1273,7 +1274,7 @@ void AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::InitHistos()
   fhPsiVsR_MCtr      = Hist1D("hPsiVsR_MCtr", fPsiVsRNbin, 0., fRmax, "R", 1, "#Psi(R)");
   fhPsiVsRPtJ_MCtr   = Hist2D("hPsiVsRPtJ_MCtr", fPsiVsRNbin, 0., fRmax, fPtJetNbin, fPtJetArray.GetArray(), "R", "P_{tJ} GeV/c", 1, "#Psi(R)");
   fhJetTrPtVsPartPt  = Hist2D("fhJetTrPtVsPartPt", fPtJetNbin, fPtJetArray.GetArray(), 100, -1, 1, "P_{tJ,part} GeV/c", "1-P_{tJ,tr}/P_{tJ,part} GeV/c" , 1);
-      const char *ch[2]={"p","m"};
+  const char *ch[2]={"m","p"};
       for(Int_t i=0; i<3; i++)
 	{
 	  for(Int_t j=0; j<2; j++)
@@ -1282,8 +1283,8 @@ void AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::InitHistos()
 	  fhPhiresVsPhi[i][j]  = Hist2D(Form("hPhiresVsPhi%d%s",i,ch[j]), 600, 0, TMath::TwoPi(), 128, -0.2, 0.2, "#phi^{gen} rad", "#phi^{rec} - #phi^{gen} rad" );
 	  fhEtaresVsEta[i][j]  = Hist2D(Form("hEtaresVsEta%d%s",i,ch[j]), 200, -1, 1, 40, -0.2, 0.2, "#eta^{gen}", "#eta^{rec} - #eta^{gen}" ); 
 	  fhRresVsPt[i][j]     = Hist2D(Form("hRresVsPt%d%s",i,ch[j])  , 100, 0, 100, 500, -fRmax, fRmax, "P_{t, track}^{gen} GeV/c", "R^{gen}-R^{rec}" );    
-	  fhDCAxy[i][j]        = Hist2D(Form("hDCAxy%d%s",i,ch[j]), 100, 0, 100, 300, -3, 3, "DCAxy of prim [cm]");
-	  fhDCAz[i][j]         = Hist2D(Form("hDCAz%d%s",i,ch[j]) , 100, 0, 100, 300, -3, 3, "DCAz of prim [cm]") ;
+	  fhDCAxy[i][j]        = Hist2D(Form("hDCAxy%d%s",i,ch[j]), 100, 0, 100, 300, -3, 3, Form("p_{t} of part. type %d%s [GeV/c]",i,ch[j]), "DCAxy [cm]");
+	  fhDCAz[i][j]         = Hist2D(Form("hDCAz%d%s",i,ch[j]) , 100, 0, 100, 300, -3, 3, Form("p_{t} of part. type %d%s [GeV/c]",i,ch[j]), "DCAz  [cm]") ;
 	  fhTrackPtEtaPhi[i][j]= Hist3D(Form("hTrackPtEtaPhi%d%s",i,ch[j]), 100, 0, 100, 100, -1, 1, 100, 0, TMath::TwoPi(),"P_{t} GeV/c ","#eta","#phi rad");
 	    }
 	}
@@ -1383,11 +1384,13 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
 
   TVector3 vecJ(jet->Px(),jet->Py(),jet->Pz());
 
-  for(int it = 0;it < size;++it){
 
+
+
+  for(int it = 0;it < size;++it){
     TVector3 vec;
     Int_t ch = -999;
-    Int_t label = -999;
+    Int_t label = 0;
 
  
     if(fkMC)
@@ -1449,13 +1452,14 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
 
 	Double_t phip = AliAnalysisTaskJetShapeTool::CalcdPhi0To2pi(part->Phi());
 	Double_t dphi = AliAnalysisTaskJetShapeTool::CalcdPhiSigned(part->Phi(), vec.Phi());
+	Double_t phiT = AliAnalysisTaskJetShapeTool::CalcdPhi0To2pi(vec.Phi());
 
 	fhPtresVsPt[type][ch]->Fill(part->Pt(), 1-vec.Pt()/part->Pt());
 	fhPhiresVsPhi[type][ch]->Fill(phip, dphi);
 	fhEtaresVsEta[type][ch]->Fill(part->Eta(), vec.Eta() - part->Eta());
 	fhDCAxy[type][ch]->Fill(part->Pt(), dca[0]);
 	fhDCAz[type][ch]->Fill( part->Pt(), dca[1]);
-	fhTrackPtEtaPhi[type][ch]->Fill(vec.Pt(), vec.Eta(), vec.Phi());
+	fhTrackPtEtaPhi[type][ch]->Fill(vec.Pt(), vec.Eta(), phiT);
 
 	TVector3 vecP(part->Px(), part->Py(), part->Pz());
 	Double_t Rgen = CalcR(vecJ, vecP);
@@ -1509,10 +1513,10 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
 
 	Double_t R = CalcR(fJvec, vec);
 	//	Double_t pt = (tr->Px()*pJ[0] + tr->Py()*pJ[1])/PtJ;
-	//	Double_t probL = fJvec.Dot(vec)/fJvec.Mag2();
+	Double_t probL = fJvec.Dot(vec)/fJvec.Mag2();
 	//	fhPsiVsR->Fill(R, probL);
 	//	fhPsiVsRPtJ->Fill(R, fPtJ, probL);
-	fhPsiVsR->Fill(R);
+	fhPsiVsR->Fill(R,probL, fJvec.Mag());
 	fhPsiVsRPtJ->Fill(R, fPtJ);
  
 	Double_t phi = AliAnalysisTaskJetShapeTool::CalcdPhi0To2pi(vec.Phi());
@@ -1524,14 +1528,14 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
   if(fkMCprod)
     {
       TVector3 fJvecMCtr(pJmc[0], pJmc[1], pJmc[2]);
-  Double_t fPtJMCtr=  fJvecMCtr.Perp();
+      Double_t fPtJMCtr=  fJvecMCtr.Perp();
 
-  fhJetTrPtVsPartPt->Fill(fPtJMCtr, 1-fPtJ/fPtJMCtr);
+      fhJetTrPtVsPartPt->Fill(fPtJMCtr, 1-fPtJ/fPtJMCtr);
       for(Int_t it = 0; it<counterMC; it++)
 	{
 	  TVector3 vec;
 
-	  AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(arrP->At(IndexArrayMC[it]));
+	  AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(arrP->At(TMath::Abs(IndexArrayMC[it])));
 	  if(!part) continue;
 	  vec.SetXYZ(part->Px(), part->Py(), part->Pz());
 
@@ -1723,6 +1727,28 @@ TH3F *AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::Hist3D(const char* nam
 // create a 3D histogram
 
   TH3F *res = new TH3F(Form("%s_%s",fComment.Data(), name), Form("%s_%s",fComment.Data(), name), nBinsx, xMin, xMax, nBinsy, yMin, yMax, nBinsz, zMin, zMax);
+  if (xLabel) res->GetXaxis()->SetTitle(xLabel);
+  if (yLabel) res->GetYaxis()->SetTitle(yLabel);
+  if (zLabel) res->GetZaxis()->SetTitle(zLabel);
+  //  res->SetMarkerStyle(kFullCircle);
+  //  res->SetOption("E");
+  res->SetLineColor(color);
+  //  fOutputList->Add(res);
+  return res;
+}
+
+TH3F *AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::Hist3D(const char* name, Int_t nBinsx, Double_t xMin, Double_t xMax, 
+                                                  Int_t nBinsy, Double_t yMin, Double_t yMax, 
+				                  Int_t nBinsz, Double_t *zArr, const char* xLabel, const char* yLabel, const char* zLabel, Int_t color)
+{
+// create a 3D histogram
+
+  Double_t xArr[nBinsx+1], yArr[nBinsy+1];
+
+  for(Int_t i=0; i<=nBinsx; i++) xArr[i]=xMin+i*(xMax-xMin)/nBinsx;
+  for(Int_t i=0; i<=nBinsy; i++) yArr[i]=yMin+i*(yMax-yMin)/nBinsy;
+
+  TH3F *res = new TH3F(Form("%s_%s",fComment.Data(), name), Form("%s_%s",fComment.Data(), name), nBinsx, xArr, nBinsy, yArr, nBinsz, zArr);
   if (xLabel) res->GetXaxis()->SetTitle(xLabel);
   if (yLabel) res->GetYaxis()->SetTitle(yLabel);
   if (zLabel) res->GetZaxis()->SetTitle(zLabel);
