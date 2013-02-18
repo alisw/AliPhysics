@@ -10,7 +10,7 @@ void DrawMNN()
   TH1* hist = output.GetHistogram(example1);
   hist->SetAxisRange(0.05, 0.3);
   hist->Draw();
-  canv->SaveAs("imgs/kMB_pt003_hPi0M11");
+  canv->SaveAs("imgs/kMB_pt003_hPi0M11.pdf");
 
   const char* example2 = "kMB/pt003_hPi0M12";
   TCanvas* canv = new TCanvas(example2, example2);
@@ -18,7 +18,7 @@ void DrawMNN()
   TH1* hist = output.GetHistogram(example2);
   hist->SetAxisRange(0.05, 0.3);
   hist->Draw();
-  canv->SaveAs(Form("imgs/kMB_pt003_hPi0M11", example2));
+  canv->SaveAs(Form("imgs/kMB_pt003_hPi0M12.pdf", example2));
   
  
   
@@ -39,7 +39,9 @@ void DrawMNN()
     hM12->SetMarkerColor(kCyan+1);
     hM12->SetLineColor(kCyan+1);
     hM12->GetYaxis()->SetRangeUser(0.12, 0.15);
-    hM12->SetTitle("#pi^{0} Peak Mean");
+    hM12->SetTitle(Form("#pi^{0} Peak Mean, %s", triggers.Data()));
+    hM12->GetYaxis()->SetTitle("Peak Mean");
+    hM12->GetXaxis()->SetTitle("p_T");
     gStyle->SetOptStat(0);
     hM12->Draw();
 
@@ -96,8 +98,10 @@ void DrawMNN()
     hW12->SetMarkerStyle(24);
     hW12->SetMarkerColor(kCyan+1);
     hW12->SetLineColor(kCyan+1);
-    hW12->GetYaxis()->SetRangeUser(0., 0.02);
-    hW12->SetTitle("#pi^{0} Peak Width");
+    hW12->GetYaxis()->SetRangeUser(0., 0.012);
+    hW12->SetTitle(Form("#pi^{0} Peak Width, %s", triggers.Data()));
+    hM12->GetYaxis()->SetTitle("Peak Width");
+    hM12->GetXaxis()->SetTitle("p_T");
     gStyle->SetOptStat(0);
     hW12->Draw();
 
@@ -129,12 +133,12 @@ void DrawMNN()
     hW33->Draw("same");
 
     leg = new TLegend(0.8,0.6,0.95,0.95);
-    leg->AddEntry(hW11, "W11", "lep");
-    leg->AddEntry(hW22, "W22", "lep");
-    leg->AddEntry(hW33, "W33", "lep");
-    leg->AddEntry(hW12, "W12", "lep");
-    leg->AddEntry(hW13, "W13", "lep");
-    leg->AddEntry(hW23, "W23", "lep");
+    leg->AddEntry(hW11, "M11", "lep");
+    leg->AddEntry(hW22, "M22", "lep");
+    leg->AddEntry(hW33, "M33", "lep");
+    leg->AddEntry(hW12, "M12", "lep");
+    leg->AddEntry(hW13, "M13", "lep");
+    leg->AddEntry(hW23, "M23", "lep");
     leg->Draw();
     
     canv->SaveAs(Form("imgs/MNN_Width_%s.pdf", triggers.Data()));
