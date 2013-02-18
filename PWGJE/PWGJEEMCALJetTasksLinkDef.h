@@ -19,6 +19,7 @@
 #pragma link C++ class AliJetEmbeddingTask+;
 #pragma link C++ class AliJetEmbeddingFromGenTask+;
 #pragma link C++ class AliJetEmbeddingFromAODTask+;
+#pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
 #pragma link C++ class AliJetModelBaseTask+;
 #pragma link C++ class AliJetRandomizerTask+;
 #pragma link C++ class AliJetResponseMaker+;

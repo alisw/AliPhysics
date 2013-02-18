@@ -190,14 +190,15 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
     }
 
     Int_t label = 0;
-    if (track->GetLabel() > 0 || fUseNegativeLabels)
-      label = track->GetLabel();
-    else
-      label = -track->GetLabel();
-	
-
-    if (fIsMC && label == 0) 
-      label = 99999;
+    if (fIsMC) {
+      if (track->GetLabel() > 0 || fUseNegativeLabels)
+	label = track->GetLabel();
+      else
+	label = -track->GetLabel();
+      
+      if (label == 0) 
+	label = 99999;
+    }
 
     /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 
 									 track->Eta(), 

@@ -5,9 +5,8 @@
 
 class TClonesArray;
 class TString;
-class TH1F;
-class TH2F;
-class AliRhoParameter;
+class TH1;
+class TH2;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -60,27 +59,29 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   Int_t                       fEmbeddedTrackIds[999];      //!Embedded track ids
 
   // Random cones
-  TH2F                       *fHistRCPhiEta;               //!Phi-Eta distribution of random cones
-  TH1F                       *fHistRCPt[4];                //!Random cone pt
-  TH1F                       *fHistRCPtExLJ[4];            //!Random cone pt, imposing min distance from leading jet
-  TH1F                       *fHistRCPtRand[4];            //!Random cone pt, randomized particles
-  TH2F                       *fHistRCPtExLJVSDPhiLJ;       //!Random cone pt, imposing min distance from leading jet, vs. deltaPhi leading jet
-  TH2F                       *fHistRhoVSRCPt[4];           //!Area(RC) * rho vs. Pt(RC)
-  TH1F                       *fHistDeltaPtRC[4];           //!deltaPt = Pt(RC) - A * rho
-  TH1F                       *fHistDeltaPtRCExLJ[4];       //!deltaPt = Pt(RC) - A * rho, imposing min distance from leading jet
-  TH1F                       *fHistDeltaPtRCRand[4];       //!deltaPt = Pt(RC) - A * rho, randomzied particles
+  TH2                        *fHistRCPhiEta;               //!Phi-Eta distribution of random cones
+  TH1                        *fHistRCPt[4];                //!Random cone pt
+  TH1                        *fHistRCPtExLJ[4];            //!Random cone pt, imposing min distance from leading jet
+  TH1                        *fHistRCPtRand[4];            //!Random cone pt, randomized particles
+  TH2                        *fHistRCPtExLJVSDPhiLJ;       //!Random cone pt, imposing min distance from leading jet, vs. deltaPhi leading jet
+  TH2                        *fHistRhoVSRCPt[4];           //!Area(RC) * rho vs. Pt(RC)
+  TH1                        *fHistDeltaPtRC[4];           //!deltaPt = Pt(RC) - A * rho
+  TH1                        *fHistDeltaPtRCExLJ[4];       //!deltaPt = Pt(RC) - A * rho, imposing min distance from leading jet
+  TH1                        *fHistDeltaPtRCRand[4];       //!deltaPt = Pt(RC) - A * rho, randomzied particles
 
   // Jet embedding
-  TH2F                       *fHistEmbNotFoundPhiEta[4];   //!Phi-Eta of "not found" embedded particles
-  TH2F                       *fHistEmbJetsPtArea[4];       //!Pt vs. area of embedded jets
-  TH2F                       *fHistEmbJetsCorrPtArea[4];   //!Pt-rho*A vs. area of embedded jets
-  TH1F                       *fHistEmbPartPt[4];           //!Pt distribution of embedded particle
-  TH2F                       *fHistEmbJetPhiEta;           //!Phi-Eta distribution of embedded jets
-  TH2F                       *fHistEmbPartPhiEta;          //!Phi-Eta distribution of embedded particles
-  TH1F                       *fHistDistEmbPartJetAxis[4];  //!Distance between embedded particle and jet axis
-  TH2F                       *fHistEmbBkgArea[4];          //!Pt(embjet) - Pt(embtrack) vs. area of embedded jets
-  TH2F                       *fHistRhoVSEmbBkg[4];         //!Area(embjet) * rho vs. Pt(embjet) - Pt(embtrack)
-  TH2F                       *fHistDeltaPtEmbArea[4];      //!deltaPt = Pt(embjet) - Area(embjet) * rho - Pt(embtrack)
+  TH2                        *fHistEmbNotFoundPhiEta[4];   //!Phi-Eta of "not found" embedded particles
+  TH1                        *fHistEmbNotFoundPt[4];       //!Pt of "not found" embedded particles
+  TH2                        *fHistEmbJetsPtArea[4];       //!Pt vs. area of embedded jets
+  TH2                        *fHistEmbJetsCorrPtArea[4];   //!Pt-rho*A vs. area of embedded jets
+  TH2                        *fHistEmbPartPtvsJetPt[4];    //!MC pt vs total pt of embedded jets
+  TH2                        *fHistEmbJetsPhiEta;          //!Phi-Eta distribution of embedded jets
+  TH2                        *fHistLeadPartPhiEta;         //!Phi-Eta distribution of the leading particle of embedded jets
+  TH2                        *fHistLeadPartPtvsArea[4];    //!Pt of the leading particle vs. area of embedded jets
+  TH1                        *fHistDistLeadPart2JetAxis[4];//!Distance between leading particle and jet axis
+  TH2                        *fHistEmbBkgArea[4];          //!Pt(embjet) - Pt(embtrack) vs. area of embedded jets
+  TH2                        *fHistRhoVSEmbBkg[4];         //!Area(embjet) * rho vs. Pt(embjet) - Pt(embtrack)
+  TH2                        *fHistDeltaPtEmbArea[4];      //!deltaPt = Pt(embjet) - Area(embjet) * rho - Pt(embtrack)
 
  private:
   AliAnalysisTaskDeltaPt(const AliAnalysisTaskDeltaPt&);            // not implemented
