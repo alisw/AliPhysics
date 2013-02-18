@@ -101,16 +101,16 @@ void AliDhcTask::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once (per slave on PROOF!)
-  if (fVerbosity > 1) {
-    AliInfo("Initialize Dhc Task");
-    AliInfo(Form(" efficiency correct triggers? %d", fHEffT!=0));
-    AliInfo(Form(" efficiency correct associates? %d", fHEffA!=0));
-    AliInfo(Form(" fill muons? %d", fFillMuons));
-    AliInfo(Form(" use pTT > pTA criterion? %d", fPtTACrit));
-    AliInfo(Form(" create all pTT, pTA hists? %d", fAllTAHists));
-    AliInfo(Form(" trigger eta range %f .. %f", fEtaTLo, fEtaTHi));
-    AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
-  }
+  AliInfo("Initialize Dhc Task");
+  AliInfo(Form(" centrality estimator %s", fCentMethod.Data()));
+  AliInfo(Form(" using tracks named %s", fTracksName.Data()));
+  AliInfo(Form(" efficiency correct triggers? %d", fHEffT!=0));
+  AliInfo(Form(" efficiency correct associates? %d", fHEffA!=0));
+  AliInfo(Form(" fill muons? %d", fFillMuons));
+  AliInfo(Form(" use pTT > pTA criterion? %d", fPtTACrit));
+  AliInfo(Form(" create all pTT, pTA hists? %d", fAllTAHists));
+  AliInfo(Form(" trigger eta range %f .. %f", fEtaTLo, fEtaTHi));
+  AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
 
   fOutputList = new TList();
   fOutputList->SetOwner(1);
