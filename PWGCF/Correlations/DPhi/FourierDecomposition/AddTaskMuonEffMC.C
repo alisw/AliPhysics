@@ -1,12 +1,12 @@
 
-AliMuonEffMC* AddTaskMuonEffMC(Bool_t MDProcess = kTRUE,
-			       Bool_t IsMc = kTRUE,
+AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kFALSE,
+			       Bool_t MDProcess = kFALSE,
 			       TString centralityEstimator = "V0M",
 			       const Int_t NEtaBins = 15,
 			       const Int_t NpTBins = 100,
-			       const Int_t NCentBins = 1,
+			       const Int_t NCentBins = 5,
 			       const Int_t NZvtxBins = 10,
-			       const Int_t NPhiBins = 12,
+			       const Int_t NPhiBins = 36,
 			       const char* outputFileName = 0,
 			       const char* folderName = "Muon_TrkEff")
 {

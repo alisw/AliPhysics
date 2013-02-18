@@ -11,6 +11,8 @@
 #include <TChain.h>
 #include <TFile.h>
 
+#include "TParticle.h"
+#include "AliStack.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTask.h"
 #include "AliESDVertex.h"
@@ -34,21 +36,24 @@ ClassImp(AliMuonEffMC)
 
 //________________________________________________________________________
 AliMuonEffMC::AliMuonEffMC() :
-  AliAnalysisTaskSE(), fESD(0), fAOD(0), fMC(0), fCentrality(99), fZVertex(99), fOutputList(0x0),      
-  fHEventStat(0), fHEvt(0x0), fIsMc(kTRUE), fMDProcess(kTRUE), fCentralityEstimator("V0M"),
-  fNEtaBins(15), fNpTBins(100), fNCentBins(5), fNZvtxBins(10), fNPhiBins(24),
-  fHMuonParGen(0x0), fHMuonDetGen(0x0), fHMuonDetRec(0x0), fHEtcDetRec(0x0)
+  AliAnalysisTaskSE(), fESD(0), fAOD(0), fMC(0), fStack(0), fCentrality(99), fZVertex(99), fOutputList(0x0),      
+  fHEventStat(0), fHEvt(0x0), fIsMc(kFALSE), fMDProcess(kFALSE), fCentralityEstimator("V0M"),
+  fNEtaBins(15), fNpTBins(100), fNCentBins(5), fNZvtxBins(10), fNPhiBins(36),
+  fHMuonParGen(0x0), fHMuonDetGen(0x0), fHMuonDetRec(0x0), fHEtcDetRec(0x0), fHFXu(0), fHFXantiu(0), fHFXd(0), fHFXantid(0), fHFXg(0), fHFXetc(0), fHFXmuonP(0), fHFXmuonM(0)
 {
   // Constructor
- 
+  //DefineInput(0, TChain::Class());
+  //DefineOutput(1, TList::Class());
+
+
 }
 
 //________________________________________________________________________
 AliMuonEffMC::AliMuonEffMC(const char *name) :
-  AliAnalysisTaskSE(name), fESD(0), fAOD(0), fMC(0), fCentrality(99), fZVertex(99), fOutputList(0x0),      
-  fHEventStat(0), fHEvt(0x0),  fIsMc(kTRUE), fMDProcess(kTRUE), fCentralityEstimator("V0M"),
-  fNEtaBins(15), fNpTBins(100), fNCentBins(5), fNZvtxBins(10), fNPhiBins(24),
-  fHMuonParGen(0x0), fHMuonDetGen(0x0), fHMuonDetRec(0x0), fHEtcDetRec(0x0)
+  AliAnalysisTaskSE(name), fESD(0), fAOD(0), fMC(0), fStack(0), fCentrality(99), fZVertex(99), fOutputList(0x0),      
+  fHEventStat(0), fHEvt(0x0),  fIsMc(kFALSE), fMDProcess(kFALSE), fCentralityEstimator("V0M"),
+  fNEtaBins(15), fNpTBins(100), fNCentBins(5), fNZvtxBins(10), fNPhiBins(36),
+  fHMuonParGen(0x0), fHMuonDetGen(0x0), fHMuonDetRec(0x0), fHEtcDetRec(0x0), fHFXu(0), fHFXantiu(0), fHFXd(0), fHFXantid(0), fHFXg(0), fHFXetc(0), fHFXmuonP(0), fHFXmuonM(0)
 {
   // Constructor
   DefineInput(0, TChain::Class());
@@ -81,6 +86,13 @@ void AliMuonEffMC::UserCreateOutputObjects()
     fHMuMotherGenEta[i] = 0x0;
     fHMuMotherRecEta[i] = 0x0;
     fHMuDCA[i] = 0x0;
+    for(Int_t j=0; j<3; j++)
+    {
+      fHMuMohterPhiDifGen[i][j] = 0x0;
+      fHMuMohterPhiDifRec[i][j] = 0x0;
+      fHMuMohterEtaDifGen[i][j] = 0x0;
+      fHMuMohterEtaDifRec[i][j] = 0x0;
+    }
   }
 
   fHEventStat = new TH1D("fHEventStat","Event statistics for analysis",18,0,18);
@@ -169,33 +181,66 @@ void AliMuonEffMC::UserCreateOutputObjects()
   fHEtcDetRec->Sumw2();
   fOutputList->Add(fHEtcDetRec);
 
-  if(fMDProcess)
+  if(fIsMc)
   {
     const char* MotherSpecies[4] = {"Pion","Kaon","D", "Etc"};
-    
-    for(Int_t i=0; i<4; i++)
+    const char *MuPt[3] = {"0510","1020","2040"};
+    if(fMDProcess)
     {
-      fHMuMotherGenPt[i] = new TH2F(Form("fHMuMotherGenPt_%s",MotherSpecies[i]),";p_{T,muon}^{gen} (GeV/c);p_{T,mother}^{Truth} (GeV/c);",500, 0, 50, 500, 0, 50);
-      fOutputList->Add(fHMuMotherGenPt[i]);
-      
-      fHMuMotherRecPt[i] = new TH2F(Form("fHMuMotherRecPt_%s",MotherSpecies[i]),";p_{T,muon}^{rec} (GeV/c);p_{T,mother}^{Truth} (GeV/c);",500, 0, 50, 500, 0, 50);
-      fOutputList->Add(fHMuMotherRecPt[i]);
-      
-      fHMuMotherGenPhi[i] = new TH2F(Form("fHMuMotherGenPhi_%s",MotherSpecies[i]),";#phi_{gen};mother #phi;",100, 0, TMath::TwoPi(), 100, 0, TMath::TwoPi());
-      fOutputList->Add(fHMuMotherGenPhi[i]);
-      
-      fHMuMotherRecPhi[i] = new TH2F(Form("fHMuMotherRecPhi_%s",MotherSpecies[i]),";#phi_{rec};mother #phi;",100, 0, TMath::TwoPi(), 100, 0, TMath::TwoPi());
-      fOutputList->Add(fHMuMotherRecPhi[i]);
-      
-      fHMuMotherGenEta[i] = new TH2F(Form("fHMuMotherGenEta_%s",MotherSpecies[i]),";#eta_{gen};mother #eta;",100, -5., -1., 100, -5., -1.);
-      fOutputList->Add(fHMuMotherGenEta[i]);
-      
-      fHMuMotherRecEta[i] = new TH2F(Form("fHMuMotherRecEta_%s",MotherSpecies[i]),";#eta_{rec};mother #eta;",100, -5., -1., 100, -5., -1.);
-      fOutputList->Add(fHMuMotherRecEta[i]);
-      
-      fHMuDCA[i] =  new TH1F(Form("fHMuDCA_%s",MotherSpecies[i]), ";DCA", 100, 0, 50);
-      fOutputList->Add(fHMuDCA[i]);
+      for(Int_t i=0; i<4; i++)
+      {
+	fHMuMotherGenPt[i] = new TH2F(Form("fHMuMotherGenPt_%s",MotherSpecies[i]),";p_{T,muon}^{gen} (GeV/c);p_{T,mother}^{Truth} (GeV/c);",500, 0, 50, 500, 0, 50);
+	fOutputList->Add(fHMuMotherGenPt[i]);
+	fHMuMotherRecPt[i] = new TH2F(Form("fHMuMotherRecPt_%s",MotherSpecies[i]),";p_{T,muon}^{rec} (GeV/c);p_{T,mother}^{Truth} (GeV/c);",500, 0, 50, 500, 0, 50);
+	fOutputList->Add(fHMuMotherRecPt[i]);
+	fHMuMotherGenPhi[i] = new TH2F(Form("fHMuMotherGenPhi_%s",MotherSpecies[i]),";#phi_{gen};mother #phi;",100, 0, TMath::TwoPi(), 100, 0, TMath::TwoPi());
+	fOutputList->Add(fHMuMotherGenPhi[i]);
+	fHMuMotherRecPhi[i] = new TH2F(Form("fHMuMotherRecPhi_%s",MotherSpecies[i]),";#phi_{rec};mother #phi;",100, 0, TMath::TwoPi(), 100, 0, TMath::TwoPi());
+	fOutputList->Add(fHMuMotherRecPhi[i]);
+	fHMuMotherGenEta[i] = new TH2F(Form("fHMuMotherGenEta_%s",MotherSpecies[i]),";#eta_{gen};mother #eta;",100, -5., -1., 100, -5., -1.);
+	fOutputList->Add(fHMuMotherGenEta[i]);
+	fHMuMotherRecEta[i] = new TH2F(Form("fHMuMotherRecEta_%s",MotherSpecies[i]),";#eta_{rec};mother #eta;",100, -5., -1., 100, -5., -1.);
+	fOutputList->Add(fHMuMotherRecEta[i]);
+	fHMuDCA[i] =  new TH1F(Form("fHMuDCA_%s",MotherSpecies[i]), ";DCA", 100, 0, 50);
+	fOutputList->Add(fHMuDCA[i]);
+	
+	for(Int_t j=0; j<3; j++)
+	{
+	  fHMuMohterPhiDifGen[i][j] = new TH1F(Form("fHMuMohterPhiDifGen_%s_%s",MotherSpecies[i], MuPt[j]),";#Delta#phi",100, -1.0*TMath::Pi(), TMath::Pi());
+	  fOutputList->Add(fHMuMohterPhiDifGen[i][j]);
+	  fHMuMohterPhiDifRec[i][j] = new TH1F(Form("fHMuMohterPhiDifRec_%s_%s",MotherSpecies[i], MuPt[j]),";#Delta#phi",100, -1.0*TMath::Pi(), TMath::Pi());
+	  fOutputList->Add(fHMuMohterPhiDifRec[i][j]);
+	  fHMuMohterEtaDifGen[i][j] = new TH1F(Form("fHMuMohterEtaDifGen_%s_%s",MotherSpecies[i], MuPt[j]),";#Delta#eta",100, -5.0, 5.0);
+	  fOutputList->Add(fHMuMohterEtaDifGen[i][j]);
+	  fHMuMohterEtaDifRec[i][j] = new TH1F(Form("fHMuMohterEtaDifRec_%s_%s",MotherSpecies[i], MuPt[j]),";#Delta#eta",100, -5.0, 5.0);
+	  fOutputList->Add(fHMuMohterEtaDifRec[i][j]);
+	}
+      }
     }
+    
+    fHFXu = new TH1F("fHFXu",";x_{F}",1000, 0.0, 1.0);
+    fOutputList->Add(fHFXu);
+    
+    fHFXantiu = new TH1F("fHFXantiu",";x_{F}",1000, 0.0, 1.0);
+    fOutputList->Add(fHFXantiu);
+    
+    fHFXd = new TH1F("fHFXd",";x_{F}",1000, 0.0, 1.0);
+    fOutputList->Add(fHFXd);
+    
+    fHFXantid = new TH1F("fHFXantid",";x_{F}",1000, 0.0, 1.0);
+    fOutputList->Add(fHFXantid);
+    
+    fHFXg = new TH1F("fHFXg",";x_{F}",1000, 0.0, 1.0);
+    fOutputList->Add(fHFXg);
+    
+    fHFXetc = new TH1F("fHFXetc",";x_{F}",1000, 0.0, 1.0);
+    fOutputList->Add(fHFXetc);
+    
+    fHFXmuonP = new TH1F("fHFXmuonP",";x_{F}",1000, 0.0, 1.0);
+    fOutputList->Add(fHFXmuonP);
+    
+    fHFXmuonM = new TH1F("fHFXmuonM",";x_{F}",1000, 0.0, 1.0);
+    fOutputList->Add(fHFXmuonM);
   }
   PostData(1, fOutputList);
 }
@@ -223,7 +268,6 @@ void AliMuonEffMC::UserExec(Option_t *)
   if(fIsMc) 
   {
     fMC = MCEvent();
-    if (!fMC) { AliError("MC event not avaliable."); return; }
   }
 
   // Centrality, vertex, other event variables...
@@ -240,10 +284,12 @@ void AliMuonEffMC::UserExec(Option_t *)
     if(fESD->GetCentrality()) fCentrality = fESD->GetCentrality()->GetCentralityPercentile(fCentralityEstimator);
   }   
 
-  if ((fESD && !VertexOk(fESD)) || (fAOD && !VertexOk(fAOD))) { AliInfo(Form("Event REJECTED. z = %.1f", fZVertex)); return; }
-  if (fCentrality > 100. || fCentrality < -1.5) { AliInfo(Form("Event REJECTED. fCentrality = %.1f", fCentrality)); return; }
+  if ((fESD && !VertexOk(fESD)) || (fAOD && !VertexOk(fAOD))) { //AliInfo(Form("Event REJECTED. z = %.1f", fZVertex)); 
+    return; }
+  if (fCentrality > 100. || fCentrality < -1.5) { //AliInfo(Form("Event REJECTED. fCentrality = %.1f", fCentrality)); 
+    return; }
  
-  if(fCentrality < 0) fCentrality = 0.5; //ad hoc centrality for pp
+  if(fCentrality < 0) fCentrality = 0.0; //ad hoc centrality for pp
   // Fill Event histogram
   fHEvt->Fill(fZVertex, fCentrality);
   fHEventStat->Fill(1.5);
@@ -269,24 +315,27 @@ void AliMuonEffMC::UserExec(Option_t *)
   if (trigword & 0x4000) fHEventStat->Fill(16.5);
   
   // generated level loop
-  for (Int_t ipart=0; ipart<fMC->GetNumberOfTracks(); ipart++)
+  if(fIsMc)
   {
-    if(fAOD)
+    for (Int_t ipart=0; ipart<fMC->GetNumberOfTracks(); ipart++)
     {
-      AliAODMCParticle *AodMcParticle  = (AliAODMCParticle*)fMC->GetTrack(ipart);
-      if(TMath::Abs(AodMcParticle->PdgCode())==13) 
+      if(fAOD)
       {
-	Double_t fillArrayParGen[5] = { AodMcParticle->Eta(), AodMcParticle->Pt(), fCentrality, fZVertex, AodMcParticle->Phi() };
-	fHMuonParGen->Fill(fillArrayParGen);
-      }
-    } 
-    else if(fESD)
-    {
-      AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(ipart);
-      if(TMath::Abs(McParticle->PdgCode())==13) 
+	AliAODMCParticle *AodMcParticle  = (AliAODMCParticle*)fMC->GetTrack(ipart);
+	if(TMath::Abs(AodMcParticle->PdgCode())==13) 
+	{
+	  Double_t fillArrayParGen[5] = { AodMcParticle->Eta(), AodMcParticle->Pt(), fCentrality, fZVertex, AodMcParticle->Phi() };
+	  fHMuonParGen->Fill(fillArrayParGen);
+	}
+      } 
+      else if(fESD)
       {
-	Double_t fillArrayParGen[5] = { McParticle->Eta(), McParticle->Pt(), fCentrality, fZVertex, McParticle->Phi() };
-	fHMuonParGen->Fill(fillArrayParGen);
+	AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(ipart);
+	if(TMath::Abs(McParticle->PdgCode())==13) 
+	{
+	  Double_t fillArrayParGen[5] = { McParticle->Eta(), McParticle->Pt(), fCentrality, fZVertex, McParticle->Phi() };
+	  fHMuonParGen->Fill(fillArrayParGen);
+	}
       }
     }
   }
@@ -335,104 +384,60 @@ void AliMuonEffMC::UserExec(Option_t *)
 	dcavalue = muonTrack->GetDCA();
       }
     }
-    
     Double_t fillArrayDetRec[5] = { tracketa, trackpt, fCentrality, fZVertex, trackphi };
     fHMuonDetRec->Fill(fillArrayDetRec); 
     
-    if(fAOD)
+    if(fIsMc)
     {
-      AliAODMCParticle *aodMcParticle  = (AliAODMCParticle*)fMC->GetTrack(label);
-      if(TMath::Abs(aodMcParticle->PdgCode()) != 13) 
+      if(fAOD)
       {
-	fHEtcDetRec->Fill(fillArrayDetRec); 
-	continue;
+	AliAODMCParticle *aodMcParticle  = (AliAODMCParticle*)fMC->GetTrack(label);
+	if(TMath::Abs(aodMcParticle->PdgCode()) != 13) 
+	{
+	  fHEtcDetRec->Fill(fillArrayDetRec); 
+	  continue;
+	}
+	mcpt = aodMcParticle->Pt();
+	mceta = aodMcParticle->Eta();
+	mcphi = aodMcParticle->Phi();
+	motherlabel = aodMcParticle->GetMother();
+	if(motherlabel > 0) 
+	{ 
+	  AliAODMCParticle *aodMotherParticle  = (AliAODMCParticle*)fMC->GetTrack(motherlabel);
+	  motherpdg = TMath::Abs(aodMotherParticle->PdgCode());
+	  motherpt = aodMotherParticle->Pt();
+	  mothereta = aodMotherParticle->Eta();
+	  motherphi = aodMotherParticle->Phi();
+	}      
       }
-      mcpt = aodMcParticle->Pt();
-      mceta = aodMcParticle->Eta();
-      mcphi = aodMcParticle->Phi();
-      motherlabel = aodMcParticle->GetMother();
-      if(motherlabel > 0) 
-      { 
-	AliAODMCParticle *aodMotherParticle  = (AliAODMCParticle*)fMC->GetTrack(motherlabel);
-	motherpdg = TMath::Abs(aodMotherParticle->PdgCode());
-	motherpt = aodMotherParticle->Pt();
-	mothereta = aodMotherParticle->Eta();
-	motherphi = aodMotherParticle->Phi();
-      }      
-    }
-    else if(fESD)
-    {
-      AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(label);
-      if(TMath::Abs(McParticle->PdgCode()) != 13) 
+      else if(fESD)
       {
-	fHEtcDetRec->Fill(fillArrayDetRec); 
-	continue;
+	AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(label);
+	if(TMath::Abs(McParticle->PdgCode()) != 13) 
+	{
+	  fHEtcDetRec->Fill(fillArrayDetRec); 
+	  continue;
+	}
+	mcpt = McParticle->Pt();
+	mceta = McParticle->Eta();
+	mcphi = McParticle->Phi();
+	motherlabel = McParticle->GetMother();
+	if(motherlabel > 0) 
+	{ 
+	  AliMCParticle *MotherParticle  = (AliMCParticle*)fMC->GetTrack(motherlabel);
+	  motherpdg = TMath::Abs(MotherParticle->PdgCode());
+	  motherpt = MotherParticle->Pt();
+	  mothereta = MotherParticle->Eta();
+	  motherphi = MotherParticle->Phi();
+	}
       }
-      mcpt = McParticle->Pt();
-      mceta = McParticle->Eta();
-      mcphi = McParticle->Phi();
-      motherlabel = McParticle->GetMother();
-      if(motherlabel > 0) 
-      { 
-	AliMCParticle *MotherParticle  = (AliMCParticle*)fMC->GetTrack(motherlabel);
-	motherpdg = TMath::Abs(MotherParticle->PdgCode());
-	motherpt = MotherParticle->Pt();
-	mothereta = MotherParticle->Eta();
-	motherphi = MotherParticle->Phi();
-      }
-    }
-    Double_t fillArrayDetGen[5] = { mceta, mcpt, fCentrality, fZVertex, mcphi };
-    fHMuonDetGen->Fill(fillArrayDetGen);
+      Double_t fillArrayDetGen[5] = { mceta, mcpt, fCentrality, fZVertex, mcphi };
+      fHMuonDetGen->Fill(fillArrayDetGen);
     
-    // mother-daughter kinematic relation
-    if(fMDProcess)
-    {
-      if(motherlabel > 0)
-      {
-	if(motherpdg==411 || motherpdg==413 || motherpdg==421 || motherpdg==423 || motherpdg==431 || motherpdg==433 || motherpdg==10413 || motherpdg==10411 || motherpdg==10423 || motherpdg==10421 || motherpdg==10433 || motherpdg==10431 || motherpdg==20413 || motherpdg==415 || motherpdg==20423 || motherpdg==425 || motherpdg==20433 || motherpdg==435)
-	{  
-	  fHMuMotherGenPt[2]->Fill(mcpt, motherpt);
-	  fHMuMotherRecPt[2]->Fill(trackpt, motherpt);
-	  fHMuMotherGenPhi[2]->Fill(mcphi, motherphi);
-	  fHMuMotherRecPhi[2]->Fill(trackphi, motherphi);
-	  fHMuMotherGenEta[2]->Fill(mceta, mothereta);
-	  fHMuMotherRecEta[2]->Fill(tracketa, mothereta);
-	  if(fESD) fHMuDCA[2]->Fill(dcavalue);
-	}
-	else if(motherpdg==211) 
-	{
-	  fHMuMotherGenPt[0]->Fill(mcpt, motherpt);
-	  fHMuMotherRecPt[0]->Fill(trackpt, motherpt);
-	  fHMuMotherGenPhi[0]->Fill(mcphi, motherphi);
-	  fHMuMotherRecPhi[0]->Fill(trackphi, motherphi);
-	  fHMuMotherGenEta[0]->Fill(mceta, mothereta);
-	  fHMuMotherRecEta[0]->Fill(tracketa, mothereta);
-	  if(fESD) fHMuDCA[0]->Fill(dcavalue);
-	}
-	else if(motherpdg==321)
-	{
-	  fHMuMotherGenPt[1]->Fill(mcpt, motherpt);
-	  fHMuMotherRecPt[1]->Fill(trackpt, motherpt);
-	  fHMuMotherGenPhi[1]->Fill(mcphi, motherphi);
-	  fHMuMotherRecPhi[1]->Fill(trackphi, motherphi);
-	  fHMuMotherGenEta[1]->Fill(mceta, mothereta);
-	  fHMuMotherRecEta[1]->Fill(tracketa, mothereta);
-	  if(fESD) fHMuDCA[1]->Fill(dcavalue);
-	}	
-	else 
-	{
-	  fHMuMotherGenPt[3]->Fill(mcpt, motherpt);
-	  fHMuMotherRecPt[3]->Fill(trackpt, motherpt);
-	  fHMuMotherGenPhi[3]->Fill(mcphi, motherphi);
-	  fHMuMotherRecPhi[3]->Fill(trackphi, motherphi);
-	  fHMuMotherGenEta[3]->Fill(mceta, mothereta);
-	  fHMuMotherRecEta[3]->Fill(tracketa, mothereta);
-	  if(fESD) fHMuDCA[3]->Fill(dcavalue);
-	}
-      }    
-    }	 // (mother hadron) : (daughter muon) QA */
-  } 
-  
+      // mother-daughter kinematic relation
+      if(fMDProcess && motherlabel>0) MDProcess(motherpdg, mcpt, mcphi, mceta, trackpt, trackphi, tracketa, motherpt, motherphi, mothereta, dcavalue);
+    }
+  }
   PostData(1, fOutputList);
   return;
 }
@@ -442,9 +447,7 @@ void AliMuonEffMC::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
-
 }
-
 //________________________________________________________________________
 Bool_t AliMuonEffMC::VertexOk(TObject* obj) const
 {
@@ -519,4 +522,188 @@ Bool_t AliMuonEffMC::IsGoodMUONtrack(AliAODTrack &track)
   if (track.GetMatchTrigger()<0.5) return kFALSE;
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliMuonEffMC::MDProcess(Int_t motherpdg, Double_t mcpt, Double_t mcphi, Double_t mceta, Double_t trackpt, Double_t trackphi, Double_t tracketa, Double_t motherpt, Double_t motherphi, Double_t mothereta, Double_t dcavalue)
+{
+  if(motherpdg==411 || motherpdg==413 || motherpdg==421 || motherpdg==423 || motherpdg==431 || motherpdg==433 || motherpdg==10413 || motherpdg==10411 || motherpdg==10423 || motherpdg==10421 || motherpdg==10433 || motherpdg==10431 || motherpdg==20413 || motherpdg==415 || motherpdg==20423 || motherpdg==425 || motherpdg==20433 || motherpdg==435)
+  {  
+    fHMuMotherGenPt[2]->Fill(mcpt, motherpt);
+    fHMuMotherRecPt[2]->Fill(trackpt, motherpt);
+    fHMuMotherGenPhi[2]->Fill(mcphi, motherphi);
+    fHMuMotherRecPhi[2]->Fill(trackphi, motherphi);
+    fHMuMotherGenEta[2]->Fill(mceta, mothereta);
+    fHMuMotherRecEta[2]->Fill(tracketa, mothereta);
+    
+    // generated 
+    if((0.5 <= mcpt) && (mcpt < 1.0))
+    {
+      fHMuMohterPhiDifGen[2][0]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[2][0]->Fill(mothereta-mceta);
+    }
+    else if((1.0 <= mcpt) && (mcpt < 2.0))
+    {
+      fHMuMohterPhiDifGen[2][1]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[2][1]->Fill(mothereta-mceta);
+    }
+    else if((2.0 <= mcpt) && (mcpt < 4.0))
+    {
+      fHMuMohterPhiDifGen[2][2]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[2][2]->Fill(mothereta-mceta);
+    }
+    // reconstructed
+    if((0.5 <= trackpt) && (trackpt < 1.0))
+    {
+      fHMuMohterPhiDifRec[2][0]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[2][0]->Fill(mothereta-tracketa);
+    }
+    else if((1.0 <= trackpt) && (trackpt < 2.0))
+    {
+      fHMuMohterPhiDifRec[2][1]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[2][1]->Fill(mothereta-tracketa);
+    }
+    else if((2.0 <= trackpt) && (trackpt < 4.0))
+    {
+      fHMuMohterPhiDifRec[2][2]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[2][2]->Fill(mothereta-tracketa);
+    }
+    
+    // DCA
+    if(fESD) fHMuDCA[2]->Fill(dcavalue);
+  }
+  
+  else if(motherpdg==211) 
+  {
+    fHMuMotherGenPt[0]->Fill(mcpt, motherpt);
+    fHMuMotherRecPt[0]->Fill(trackpt, motherpt);
+    fHMuMotherGenPhi[0]->Fill(mcphi, motherphi);
+    fHMuMotherRecPhi[0]->Fill(trackphi, motherphi);
+    fHMuMotherGenEta[0]->Fill(mceta, mothereta);
+    fHMuMotherRecEta[0]->Fill(tracketa, mothereta);
+    // generated 
+    if((0.5 <= mcpt) && (mcpt < 1.0))
+    {
+      fHMuMohterPhiDifGen[0][0]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[0][0]->Fill(mothereta-mceta);
+    }
+    else if((1.0 <= mcpt) && (mcpt < 2.0))
+    {
+      fHMuMohterPhiDifGen[0][1]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[0][1]->Fill(mothereta-mceta);
+    }
+    else if((2.0 <= mcpt) && (mcpt < 4.0))
+    {
+      fHMuMohterPhiDifGen[0][2]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[0][2]->Fill(mothereta-mceta);
+    }
+    // reconstructed
+    if((0.5 <= trackpt) && (trackpt < 1.0))
+    {
+      fHMuMohterPhiDifRec[0][0]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[0][0]->Fill(mothereta-tracketa);
+    }
+    else if((1.0 <= trackpt) && (trackpt < 2.0))
+    {
+      fHMuMohterPhiDifRec[0][1]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[0][1]->Fill(mothereta-tracketa);
+    }
+    else if((2.0 <= trackpt) && (trackpt < 4.0))
+    {
+      fHMuMohterPhiDifRec[0][2]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[0][2]->Fill(mothereta-tracketa);
+    }
+    if(fESD) fHMuDCA[0]->Fill(dcavalue);
+  }
+  else if(motherpdg==321)
+  {
+    fHMuMotherGenPt[1]->Fill(mcpt, motherpt);
+    fHMuMotherRecPt[1]->Fill(trackpt, motherpt);
+    fHMuMotherGenPhi[1]->Fill(mcphi, motherphi);
+    fHMuMotherRecPhi[1]->Fill(trackphi, motherphi);
+    fHMuMotherGenEta[1]->Fill(mceta, mothereta);
+    fHMuMotherRecEta[1]->Fill(tracketa, mothereta);
+    // generated 
+    if((0.5 <= mcpt) && (mcpt < 1.0))
+    {
+      fHMuMohterPhiDifGen[1][0]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[1][0]->Fill(mothereta-mceta);
+    }
+    else if((1.0 <= mcpt) && (mcpt < 2.0))
+    {
+      fHMuMohterPhiDifGen[1][1]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[1][1]->Fill(mothereta-mceta);
+    }
+    else if((2.0 <= mcpt) && (mcpt < 4.0))
+    {
+      fHMuMohterPhiDifGen[1][2]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[1][2]->Fill(mothereta-mceta);
+    }
+    // reconstructed
+    if((0.5 <= trackpt) && (trackpt < 1.0))
+    {
+      fHMuMohterPhiDifRec[1][0]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[1][0]->Fill(mothereta-tracketa);
+    }
+    else if((1.0 <= trackpt) && (trackpt < 2.0))
+    {
+      fHMuMohterPhiDifRec[1][1]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[1][1]->Fill(mothereta-tracketa);
+    }
+    else if((2.0 <= trackpt) && (trackpt < 4.0))
+    {
+      fHMuMohterPhiDifRec[1][2]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[1][2]->Fill(mothereta-tracketa);
+    }
+    if(fESD) fHMuDCA[1]->Fill(dcavalue);
+  }	
+  else 
+  {
+    fHMuMotherGenPt[3]->Fill(mcpt, motherpt);
+    fHMuMotherRecPt[3]->Fill(trackpt, motherpt);
+    fHMuMotherGenPhi[3]->Fill(mcphi, motherphi);
+    fHMuMotherRecPhi[3]->Fill(trackphi, motherphi);
+    fHMuMotherGenEta[3]->Fill(mceta, mothereta);
+    fHMuMotherRecEta[3]->Fill(tracketa, mothereta);
+    // generated 
+    if((0.5 <= mcpt) && (mcpt < 1.0))
+    {
+      fHMuMohterPhiDifGen[3][0]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[3][0]->Fill(mothereta-mceta);
+    }
+    else if((1.0 <= mcpt) && (mcpt < 2.0))
+    {
+      fHMuMohterPhiDifGen[3][1]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[3][1]->Fill(mothereta-mceta);
+    }
+    else if((2.0 <= mcpt) && (mcpt < 4.0))
+    {
+      fHMuMohterPhiDifGen[3][2]->Fill(deltaphi(motherphi-mcphi));
+      fHMuMohterEtaDifGen[3][2]->Fill(mothereta-mceta);
+    }
+    // reconstructed
+    if((0.5 <= trackpt) && (trackpt < 1.0))
+    {
+      fHMuMohterPhiDifRec[3][0]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[3][0]->Fill(mothereta-tracketa);
+    }
+    else if((1.0 <= trackpt) && (trackpt < 2.0))
+    {
+      fHMuMohterPhiDifRec[3][1]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[3][1]->Fill(mothereta-tracketa);
+    }
+    else if((2.0 <= trackpt) && (trackpt < 4.0))
+    {
+      fHMuMohterPhiDifRec[3][2]->Fill(deltaphi(motherphi-trackphi));
+      fHMuMohterEtaDifRec[3][2]->Fill(mothereta-tracketa);
+    }
+    if(fESD) fHMuDCA[3]->Fill(dcavalue);
+  }  
+}
+//________________________________________________________________________
+Double_t AliMuonEffMC::deltaphi(Double_t phi)
+{
+  if(phi < -1.0*TMath::Pi()) { return (phi + TMath::TwoPi()); }
+  else if(phi > TMath::Pi()) { return (phi - TMath::TwoPi()); }
+  else { return phi; }
 }

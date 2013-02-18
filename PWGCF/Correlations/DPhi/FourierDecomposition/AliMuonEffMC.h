@@ -13,6 +13,7 @@ class THn;
 class TList;
 class TObjArray;
 class TObject;
+class AliStack;
 
 class AliAODEvent;
 class AliESDEvent;
@@ -33,15 +34,17 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   void         UserCreateOutputObjects();
   void         UserExec(Option_t *option);
   void         Terminate(Option_t *);
-
+ 
   void         SetMcAna(Bool_t IsMc)               { fIsMc = IsMc;               }
-  void         SetMDProcess(Bool_t MDProcess)      { fMDProcess = MDProcess;     }
+  void         SetMDProcess(Bool_t kMDProcess)     { fMDProcess = kMDProcess;    }
   void         SetCentEstimator(TString Cent)      { fCentralityEstimator = Cent;}
   void         SetNEtaBins(Int_t NEtaBins)         { fNEtaBins = NEtaBins;       }
   void         SetNpTBins(Int_t NpTBins)           { fNpTBins = NpTBins;         }
   void         SetNCentBins(Int_t NCentBins)       { fNCentBins = NCentBins;     }
   void         SetNZvtxBins(Int_t NZvtxBins)       { fNZvtxBins = NZvtxBins;     }
   void         SetNPhiBins(Int_t NPhiBins)         { fNPhiBins = NPhiBins;       }
+  void         MDProcess(Int_t motherpdg, Double_t mcpt, Double_t mcphi, Double_t mceta, Double_t trackpt, Double_t trackphi, Double_t tracketa, Double_t motherpt, Double_t motherphi, Double_t mothereta, Double_t dcavalue);
+  Double_t     deltaphi(Double_t phi);
 
  protected:
   Bool_t       VertexOk(TObject* obj) const;
@@ -52,6 +55,7 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   AliESDEvent *fESD;               //! ESD object
   AliAODEvent *fAOD;               //! AOD object 
   AliMCEvent  *fMC;                //! MC object
+  AliStack    *fStack;             //! MC stack
   Double_t     fCentrality;        //! Of current event
   Double_t     fZVertex;           //! Of current event
   TList       *fOutputList;        //! Output list
@@ -81,10 +85,24 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   TH2F        *fHMuMotherRecEta[4];//! detector-level muon eta vs. mother eta
   TH1F        *fHMuDCA[4];         //! muon DCA
 
+  TH1F        *fHMuMohterPhiDifGen[4][3]; //!
+  TH1F        *fHMuMohterPhiDifRec[4][3]; //!
+  TH1F        *fHMuMohterEtaDifGen[4][3]; //!
+  TH1F        *fHMuMohterEtaDifRec[4][3]; //!
+
+  TH1F        *fHFXu;              //!
+  TH1F        *fHFXantiu;          //!
+  TH1F        *fHFXd;              //!
+  TH1F        *fHFXantid;          //!
+  TH1F        *fHFXg;              //!
+  TH1F        *fHFXetc;            //!
+  TH1F        *fHFXmuonP;          //!
+  TH1F        *fHFXmuonM;          //!
+
   AliMuonEffMC(const AliMuonEffMC&);            // not implemented
   AliMuonEffMC &operator=(const AliMuonEffMC&); // not implemented
 
-  ClassDef(AliMuonEffMC, 4);
+  ClassDef(AliMuonEffMC, 5);
 };
 
 #endif

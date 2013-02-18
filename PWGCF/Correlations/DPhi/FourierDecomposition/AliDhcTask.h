@@ -40,6 +40,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetPtTACrit(Bool_t b)                  { fPtTACrit = b;            }
   void         SetAllTAHists(Bool_t b)                { fAllTAHists = b;          }
   void         SetEtaMax(Double_t eta)                { fEtaMax = eta;            }
+  void         SetEtaTRange(Double_t eL, Double_t eH) { fEtaTLo=eL; fEtaTHi=eH;   }
   void         SetPoolSize(Int_t p)                   { fPoolSize = p;            }
   void         SetPtABins(TAxis *bins)                { fBPtA=bins;               }
   void         SetPtRange(Double_t min, Double_t max) { fPtMin=min; fPtMax=max;   }
@@ -131,7 +132,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   AliDhcTask(const AliDhcTask&);            // not implemented
   AliDhcTask &operator=(const AliDhcTask&); // not implemented
 
-  ClassDef(AliDhcTask, 3);
+  ClassDef(AliDhcTask, 4);
 };
 
 #endif
