@@ -22,7 +22,12 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
    Int_t       aodFilterBit = 5,
    Int_t       piPIDCut = 3.0,
    Int_t       pPIDCut = 3.0,
-   Int_t       nmix = 0,
+   Float_t     piDCAcut = 0.05,
+   Float_t     massTol = 0.01,
+   Float_t     lambdaDCA = 0.03,
+   Float_t     lambdaCosPoinAn = 0.99,
+   Float_t     lambdaDaughDCA = 0.5,
+   Int_t       nmix = 5,
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
    Float_t     maxDiffAngleMixDeg = 20.0,
@@ -119,11 +124,9 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigSigmaStar.C");
    if (isMC) {
        Printf("========================== MC analysis - PID cuts not used");
-       //ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, "", cutsPair);
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-     //ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, "", cutsPair);
-   if (!ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, "", cutsPair)) return 0x0;
+   if (!ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, piDCAcut, massTol, lambdaDCA, lambdaCosPoinAn, lambdaDaughDCA "", cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

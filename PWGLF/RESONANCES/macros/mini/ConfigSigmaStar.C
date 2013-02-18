@@ -15,7 +15,12 @@ Bool_t ConfigSigmaStar
    Bool_t                  isMC,
    Float_t                 piPIDCut,
    Float_t                 pPIDCut,
-   Int_t                  aodFilterBit,
+   Int_t                   aodFilterBit,
+   Float_t                 piDCAcut,
+   Float_t                 massTol,
+   Float_t                 lambdaDCA,
+   Float_t                 lambdaCosPoinAn,
+   Float_t                 lambdaDaughDCA,
    const char             *suffix,
    AliRsnCutSet           *cutsPair
 )
@@ -32,7 +37,7 @@ Bool_t ConfigSigmaStar
    cutPi->SetPIDCut(piPIDCut);
    AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi->CutQuality();
    cutQuality->SetAODTestFilterBit(aodFilterBit);
-   cutQuality->SetDCARmax(0.05);	         
+   cutQuality->SetDCARmax(piDCAcut);	         
     
    // cut set
    AliRsnCutSet *cutSetPi = new AliRsnCutSet("setPionForSigmaStar", AliRsnTarget::kDaughter);
@@ -45,7 +50,7 @@ Bool_t ConfigSigmaStar
    AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterLambda");
    
    esdTrackCuts->SetAcceptKinkDaughters(0); // 0 = kFalse
-   //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
    esdTrackCuts->SetMinNClustersTPC(70);
    esdTrackCuts->SetRequireTPCRefit();
@@ -54,10 +59,10 @@ Bool_t ConfigSigmaStar
    //AliRsnCutV0 *cutLambda = new AliRsnCutV0("cutLambda", kLambda0);
    AliRsnCutV0 *cutLambda = new AliRsnCutV0("cutLambda", kLambda0, AliPID::kProton, AliPID::kPion);
    cutLambda->SetESDtrackCuts(esdTrackCuts);
-   cutLambda->SetTolerance(0.01);
-   cutLambda->SetMaxDCAVertex(0.3);
-   cutLambda->SetMinCosPointingAngle(0.99);
-   cutLambda->SetMaxDaughtersDCA(0.5);
+   cutLambda->SetTolerance(massTol);
+   cutLambda->SetMaxDCAVertex(lambdaDCA);
+   cutLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
+   cutLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
    cutLambda->SetMaxRapidity(0.8);
    cutLambda->SetAODTestFilterBit(aodFilterBit);
    cutLambda->SetPIDCut1(pPIDCut);
@@ -76,10 +81,10 @@ Bool_t ConfigSigmaStar
    //AliRsnCutV0 *cutAntiLambda = new AliRsnCutV0("cutAntiLambda", kLambda0Bar);
    AliRsnCutV0 *cutAntiLambda = new AliRsnCutV0("cutAntiLambda", kLambda0Bar, AliPID::kProton, AliPID::kPion);
    cutAntiLambda->SetESDtrackCuts(esdTrackCuts);
-   cutAntiLambda->SetTolerance(0.01);
-   cutAntiLambda->SetMaxDCAVertex(0.3);
-   cutAntiLambda->SetMinCosPointingAngle(0.99);
-   cutAntiLambda->SetMaxDaughtersDCA(0.5);
+   cutAntiLambda->SetTolerance(massTol);
+   cutAntiLambda->SetMaxDCAVertex(lambdaDCA);
+   cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
+   cutAntiLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
    cutAntiLambda->SetMaxRapidity(0.8);
    cutAntiLambda->SetAODTestFilterBit(aodFilterBit);
    cutAntiLambda->SetPIDCut1(pPIDCut);
