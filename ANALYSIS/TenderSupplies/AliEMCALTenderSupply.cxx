@@ -1363,7 +1363,12 @@ Bool_t AliEMCALTenderSupply::InitClusterization()
     AliInfo(Form("Initialising reclustering parameters: Clusterizer type: %d",fRecParam->GetClusterizerFlag()));
   
   //---setup clusterizer
-  delete fClusterizer;
+  if (fClusterizer) {
+    // avoid deleting fDigitsArr
+    fClusterizer->SetDigitsArr(0);
+    delete fClusterizer;
+    fClusterizer = 0;
+  }
   if     (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
     fClusterizer = new AliEMCALClusterizerv1 (fEMCALGeo);
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
