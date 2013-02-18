@@ -103,6 +103,8 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
 // Assignment operator.
 // Just copy all data member values.
 //
+   if (this == &copy)
+     return *this;
    fHypothesis = copy.fHypothesis;
    fMass = copy.fMass;
    fTolerance = copy.fTolerance;
