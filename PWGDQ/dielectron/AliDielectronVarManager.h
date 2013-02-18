@@ -1551,7 +1551,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
 
   // event plane quantities from the AliEPSelectionTask
-  for(Int_t ivar=AliDielectronVarManager::kv0ArpH2; ivar<=kv0ACrpH2FlowV2;   ivar++) values[ivar] = 0.0; // v0  variables
+  for(Int_t ivar=AliDielectronVarManager::kv0ArpH2; ivar<=kv0C0v0C3DiffH2;   ivar++) values[ivar] = 0.0; // v0  variables
   for(Int_t ivar=AliDielectronVarManager::kTPCxH2;  ivar<=kTPCsub12DiffH2uc; ivar++) values[ivar] = 0.0; // tpc variables
   AliEventplane ep2;
   // VZERO

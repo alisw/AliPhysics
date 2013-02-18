@@ -42,6 +42,7 @@ public:
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
   void SetPdgCodes(Int_t mother, Int_t negDaughter, Int_t posDaughter) {fMotherPdg=mother; fNegPdg=negDaughter; fPosPdg=posDaughter;}
   void SetExcludeTracks(Bool_t exclude) {fExcludeTracks=exclude;}
+  void SetDefaultPID(Int_t def) {fPID=def;}
 
 private:
 
@@ -51,6 +52,7 @@ private:
   Int_t fMotherPdg;                         // target pdg code of the mother
   Int_t fNegPdg;                            // target pdg code of the negative daughter
   Int_t fPosPdg;                            // target pdg code of the positive daughter
+  Int_t fPID;                               // default PID usage (see AliDielectronPID)
 
   // memebers needed to identify an event
   UInt_t fOrbit;                            // orbit number
