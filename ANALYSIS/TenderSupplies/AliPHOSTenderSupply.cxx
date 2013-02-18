@@ -111,7 +111,12 @@ void AliPHOSTenderSupply::InitTender()
       runNumber = aod->GetRunNumber() ;
     else{
       AliESDEvent *esd = dynamic_cast<AliESDEvent*>(fTask->InputEvent()) ;
-      runNumber = esd->GetRunNumber() ;
+      if(esd)
+        runNumber = esd->GetRunNumber() ;
+      else{
+        AliError("Taks does not contain neither ESD nor AOD") ;
+        return ;
+      }
     }   
   }
     
@@ -527,17 +532,18 @@ Double_t AliPHOSTenderSupply::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int
     mf = esd->GetMagneticField();
   }
   else{ 
-    AliESDEvent *esd= dynamic_cast<AliESDEvent*>(fTask->InputEvent());
-    if(esd)
-      mf = esd->GetMagneticField();
-    else{
-      if(fTask){
+    if(fTask){
+      AliESDEvent *esd= dynamic_cast<AliESDEvent*>(fTask->InputEvent());
+      if(esd)
+         mf = esd->GetMagneticField();
+      else{
         AliAODEvent *aod= dynamic_cast<AliAODEvent*>(fTask->InputEvent());
 	if(aod)
           mf = aod->GetMagneticField();
       }
-      AliError("Neither Tender nor Task defined") ;
-    }    
+    }else{
+       AliError("Neither Tender nor Task defined") ;    
+    }
   }
   
   if(mf<0.){ //field --
