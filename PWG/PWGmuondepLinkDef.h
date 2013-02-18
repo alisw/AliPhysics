@@ -9,9 +9,12 @@
 #pragma link C++ class AliAnalysisTaskMuonRefit+;
 
 #pragma link C++ class AliAnalysisMuMu+;
-#pragma link C++ class AliAnalysisMuMu::Result+;
+#pragma link C++ class AliAnalysisMuMuResult+;
+#pragma link C++ class AliAnalysisMuMuSpectra+;
 #pragma link C++ class AliAnalysisTriggerScalers+;
 #pragma link C++ class AliAnalysisTriggerScalerItem+;
+
+#pragma link C++ class AliMuonAccEffSubmitter+;
 
 #endif
 
