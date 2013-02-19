@@ -71,7 +71,9 @@ AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask()
     fHEventsTrVtx(0),
     fVtxAxis(),
     fEtaAxis(),
-    fList()
+    fList(),
+    fUseESDVertexCoordinate(false),
+    fCalculateafterESDeventcuts(false)
 {
   // 
   // Constructor 
@@ -94,7 +96,10 @@ AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const char* name)
     fHEventsTrVtx(0),
     fVtxAxis(10,-10,10), 
     fEtaAxis(200,-4,6),
-    fList()
+    fList(),
+    fUseESDVertexCoordinate(false),
+    fCalculateafterESDeventcuts(false)
+
 {
   // 
   // Constructor 
@@ -122,7 +127,10 @@ AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const AliForwardMCCorre
     fHEventsTrVtx(o.fHEventsTrVtx),
     fVtxAxis(10,-10,10), 
     fEtaAxis(200,-4,6),
-    fList(o.fList)
+    fList(o.fList),
+    fUseESDVertexCoordinate(o.fUseESDVertexCoordinate),
+    fCalculateafterESDeventcuts(o.fCalculateafterESDeventcuts)
+	
 {
   // 
   // Copy constructor 
@@ -156,6 +164,8 @@ AliForwardMCCorrectionsTask::operator=(const AliForwardMCCorrectionsTask& o)
   fHEventsTrVtx      = o.fHEventsTrVtx;
   SetVertexAxis(o.fVtxAxis);
   SetEtaAxis(o.fEtaAxis);
+  fUseESDVertexCoordinate=o.fUseESDVertexCoordinate;
+  fCalculateafterESDeventcuts=o.fCalculateafterESDeventcuts;
 
   return *this;
 }
@@ -398,6 +408,20 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
   // Process the data 
   UInt_t retESD = fInspector.Process(esd, triggers, lowFlux, iVz, ip, 
 				     cent, nClusters);
+
+  Bool_t isAccepted = true;
+  if(fCalculateafterESDeventcuts)
+  {
+  	 if (retESD & AliFMDEventInspector::kNoEvent)    isAccepted = false; // return;
+  	 if (retESD & AliFMDEventInspector::kNoTriggers) isAccepted = false; // return;
+	 if (retESD & AliFMDEventInspector::kNoVertex) isAccepted = false;
+	 if (retESD  & AliFMDEventInspector::kNoFMD)     isAccepted = false;  
+         if (!isAccepted) return; 
+	//returns if there is not event , does not pass phys selection , has no veretx and lack of FMD data.
+	// with good veretx outside z range it will continue
+  }		
+
+
   fInspector.ProcessMC(mcEvent, triggers, iVzMc, vZMc, 
 		       b, cMC, nPart, nBin, phiR);
 
@@ -411,8 +435,13 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
 
   // Now find our vertex bin object 
   VtxBin* bin = 0;
-  if (iVzMc > 0 && iVzMc <= fVtxAxis.GetNbins()) 
-    bin = static_cast<VtxBin*>(fVtxBins->At(iVzMc));
+  UShort_t usedZbin=iVzMc; 
+  if(fUseESDVertexCoordinate)
+	usedZbin=iVz;
+
+
+  if (usedZbin > 0 && usedZbin <= fVtxAxis.GetNbins()) 
+    bin = static_cast<VtxBin*>(fVtxBins->At(usedZbin));
   if (!bin) { 
     // AliError(Form("No vertex bin object @ %d (%f)", iVzMc, vZMc));
     return;

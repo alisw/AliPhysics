@@ -76,7 +76,8 @@ AliFMDEventInspector::AliFMDEventInspector()
   fBgWords(),
   fCentMethod("V0M"),
   fminCent(-1.0),
-  fmaxCent(-1.0)  		
+  fmaxCent(-1.0),
+  fUsepA2012Vertex(false)	  		
 {
   // 
   // Constructor 
@@ -117,7 +118,8 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   fBgWords(),
   fCentMethod("V0M"),
   fminCent(-1.0),
-  fmaxCent(-1.0)  	
+  fmaxCent(-1.0),
+ fUsepA2012Vertex(false)	  	
 {
   // 
   // Constructor 
@@ -161,7 +163,8 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
   fBgWords(),
   fCentMethod(o.fCentMethod),
   fminCent(o.fminCent),
-  fmaxCent(o.fmaxCent)  	
+  fmaxCent(o.fmaxCent),
+  fUsepA2012Vertex(o.fUsepA2012Vertex)  	
 {
   // 
   // Copy constructor 
@@ -227,6 +230,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fCentMethod            = o.fCentMethod;
   fminCent		 = o.fminCent;
   fmaxCent		 = o.fmaxCent; 
+  fUsepA2012Vertex       =o.fUsepA2012Vertex;
 
   if (fList) { 
     fList->SetName(GetName());
@@ -1079,6 +1083,7 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent& esd, TVector3& ip)
 
   if(fUseFirstPhysicsVertex) return CheckPWGUDVertex(esd, ip);
   
+  if(fUsepA2012Vertex) return CheckpA2012Vertex(esd,ip);	
   
   return CheckVertex(esd, ip);
 }
@@ -1120,6 +1125,27 @@ AliFMDEventInspector::CheckPWGUDVertex(const AliESDEvent& esd,
   }
   return true;
 }
+//
+Bool_t AliFMDEventInspector::CheckpA2012Vertex(const AliESDEvent& esd, 
+				       TVector3& ip)  const
+{      
+      const AliESDVertex *vertex = esd.GetPrimaryVertexSPD();
+      Bool_t fVtxOK = kFALSE;
+      if (vertex->GetNContributors()>0) 
+      {
+           TString vtxTyp = vertex->GetTitle();
+           if ( !vtxTyp.Contains("vertexer: Z") || (vertex->GetDispersion()<0.04 && vertex->GetZRes()<0.25))
+	   {	 
+		fVtxOK = kTRUE;
+		ip.SetX(vertex->GetX());
+		ip.SetY(vertex->GetY());
+		ip.SetZ(vertex->GetZ());		
+	   }	
+      }
+   return fVtxOK;	
+      	
+}
+
 //____________________________________________________________________
 Bool_t
 AliFMDEventInspector::CheckVertex(const AliESDEvent& esd, 

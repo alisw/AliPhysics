@@ -209,6 +209,13 @@ public:
    * 
    * @param use Use it or not 
    */
+  void SetpA2012Vtx(Bool_t use) {fUsepA2012Vertex= use; }
+ /** 
+   * Use the 2012 pA vtx code.   
+   * 
+   * @param use Use it or not 
+   */
+
   void SetUseV0AndForNSD(Bool_t use=true) {fUseV0AND = use; }
   /** 
    * Set the minimum number of contributors for a 2nd pile-up vertex 
@@ -478,6 +485,21 @@ protected:
    * 
    * @return true if the vertex was found and met the requirements
    */
+ virtual Bool_t CheckpA2012Vertex(const AliESDEvent& esd, 
+				  TVector3& ip) const;
+  /** 
+   * Check the vertex for pA 2012 settings. That is
+   *
+   * 
+   * @param esd Data 
+   * @param ip  On return, the coordinates of the IP
+   * 
+   * @return true if the vertex was found and met the requirements
+   */
+
+
+
+
   virtual Bool_t CheckVertex(const AliESDEvent& esd, TVector3& ip) const;
   /** 
    * Read centrality from event 
@@ -523,9 +545,10 @@ protected:
   TList    fBgWords;       //! Configured background words 
   TString  fCentMethod;
   Double_t fminCent;  //min centrality
-  Double_t fmaxCent;  //max centrailty  	  	
+  Double_t fmaxCent;  //max centrailty
+  Bool_t   fUsepA2012Vertex;// flag to use pA2012 Veretx selection 	  	  	
 
-  ClassDef(AliFMDEventInspector,8); // Inspect the event 
+  ClassDef(AliFMDEventInspector,9); // Inspect the event 
 };
 
 #endif
