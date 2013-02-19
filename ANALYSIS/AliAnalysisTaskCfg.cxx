@@ -550,12 +550,13 @@ TObjArray *AliAnalysisTaskCfg::ExtractModulesFrom(const char *filename)
       } else if (cfg && line.BeginsWith("#Module.StartConfig")) {
          // Marker for start of the configuration macro
          addConfig = new TMacro();
-         TString shortName = gSystem->BaseName(cfg->GetMacroName());
-         shortName = shortName(0,shortName.Index("."));
-         shortName += "Config";
+//         TString shortName = gSystem->BaseName(cfg->GetMacroName());
+//         shortName = shortName(0,shortName.Index("."));
+         TString shortName = cfg->GetName();
+         shortName += "_Config";
          addConfig->SetName(shortName);
-         shortName.Prepend("/");
-         shortName.Prepend(gSystem->DirName(cfg->GetMacroName()));
+//         shortName.Prepend("/");
+//         shortName.Prepend(gSystem->DirName(cfg->GetMacroName()));
          shortName += ".C";
          addConfig->SetTitle(shortName);
       } else if (cfg && line.BeginsWith("#Module.EndMacro")) {
