@@ -281,8 +281,8 @@ void AliHFEextraEventCuts::FillHistograms(TObject* obj, Bool_t b)
 
   //look at vertex parameters:
   if(fVtxMixed){
-    if(vtxTracks->GetNContributors() > 0) vtxPrim = vtxTracks;
-    else if(vtxSPD->GetNContributors()) vtxPrim = vtxSPD;
+    if(vtxTracks && vtxTracks->GetNContributors() > 0) vtxPrim = vtxTracks;
+    else if(vtxSPD && vtxSPD->GetNContributors()) vtxPrim = vtxSPD;
   }
   else {   
     vtxPrim = vtxTracks; 
