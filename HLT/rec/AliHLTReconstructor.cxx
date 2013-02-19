@@ -287,7 +287,9 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
       pHLTOUT=NULL;
     }
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
-      AliError("HLT system in error state");
+      // this is the highest level where an error can be detected, no error
+      // codes can be returned
+      AliFatal("HLT system in error state");
       return;
     }
     if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
@@ -347,7 +349,9 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
 
   if (pSystem) {
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
-      AliError("HLT system in error state");
+      // this is the highest level where an error can be detected, no error
+      // codes can be returned
+      AliFatal("HLT system in error state");
       return;
     }
     if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
@@ -484,7 +488,9 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
   AliHLTSystem* pSystem=fpPluginBase->GetInstance();
   if (pSystem) {
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
-      AliError("HLT system in error state");
+      // this is the highest level where an error can be detected, no error
+      // codes can be returned
+      AliFatal("HLT system in error state");
       return;
     }
     if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
