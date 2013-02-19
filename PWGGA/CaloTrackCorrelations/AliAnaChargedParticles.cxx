@@ -1122,7 +1122,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
         {
           AliAODMCParticle * aodmom = 0;
           //Get the list of MC particles
-          aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(track->GetInputFileIndex()))->At(label);
+          aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
           mompdg =TMath::Abs(aodmom->GetPdgCode());
         }
       }

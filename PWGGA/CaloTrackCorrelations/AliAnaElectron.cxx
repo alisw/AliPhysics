@@ -1091,7 +1091,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //Check origin of the candidates
     if(IsDataMC())
     {
-      aodpart.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodpart.GetInputFileIndex()));
+      aodpart.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader()));
       
       if(GetDebug() > 0)
         printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodpart.GetTag());
@@ -1213,7 +1213,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     else if(GetReader()->ReadAODMCParticles()){
       
       //Get the list of MC particles
-      mcparticles = GetReader()->GetAODMCParticles(0);
+      mcparticles = GetReader()->GetAODMCParticles();
       if(!mcparticles && GetDebug() > 0) 	{
         printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
       }	

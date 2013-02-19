@@ -76,16 +76,21 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t in
   Int_t counter1 = 0;
   Int_t counter2 = 0;
   
-  if(label1[0]==label2[0]) {
+  if(label1[0]==label2[0])
+  {
     //printf("AliMCAnalysisUtils::CheckCommonAncestor() - Already the same label: %d\n",label1[0]);
     counter1=1;
     counter2=1;
   }
-  else{
-    if(reader->ReadAODMCParticles()){
-      TClonesArray * mcparticles = reader->GetAODMCParticles(0);
+  else
+  {
+    if(reader->ReadAODMCParticles())
+    {
+      TClonesArray * mcparticles = reader->GetAODMCParticles();
       
       Int_t label=label1[0];
+      if(label < 0) return -1;
+      
       while(label > -1 && counter1 < 99){
         counter1++;
         AliAODMCParticle * mom = (AliAODMCParticle *) mcparticles->At(label);
@@ -97,6 +102,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t in
       }
       //printf("Org label2=%d,\n",label2[0]);
       label=label2[0];
+      if(label < 0) return -1;
       while(label > -1 && counter2 < 99){
         counter2++;
         AliAODMCParticle * mom = (AliAODMCParticle *) mcparticles->At(label);
@@ -144,7 +150,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t in
         ancLabel = label1[c1];
         commonparents++;
         if(reader->ReadAODMCParticles()){
-          AliAODMCParticle * mom = (AliAODMCParticle *) reader->GetAODMCParticles(0)->At(label1[c1]);
+          AliAODMCParticle * mom = (AliAODMCParticle *) reader->GetAODMCParticles()->At(label1[c1]);
           if (mom) {
             ancPDG    = mom->GetPdgCode();
             ancStatus = mom->GetStatus();
@@ -174,8 +180,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t in
 //_____________________________________________________________________
 Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, 
                                       const Int_t nlabels, 
-                                      const AliCaloTrackReader* reader, 
-                                      const Int_t input = 0) 
+                                      const AliCaloTrackReader* reader)
 {
   //Play with the montecarlo particles if available
   Int_t tag = 0;
@@ -190,7 +195,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label,
     tag = CheckOriginInStack(label, nlabels, reader->GetStack());
   }
   else if(reader->ReadAODMCParticles()){
-    tag = CheckOriginInAOD(label, nlabels, reader->GetAODMCParticles(input));
+    tag = CheckOriginInAOD(label, nlabels, reader->GetAODMCParticles());
   }
   
   return tag ;
@@ -198,8 +203,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label,
 
 //_____________________________________________________________________
 Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, 
-                                      const AliCaloTrackReader* reader, 
-                                      const Int_t input = 0) 
+                                      const AliCaloTrackReader* reader)
 {
   //Play with the montecarlo particles if available
   Int_t tag = 0;
@@ -216,7 +220,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label,
     tag = CheckOriginInStack(labels, 1,reader->GetStack());
   }
   else if(reader->ReadAODMCParticles()){
-    tag = CheckOriginInAOD(labels, 1,reader->GetAODMCParticles(input));
+    tag = CheckOriginInAOD(labels, 1,reader->GetAODMCParticles());
   }
   
   return tag ;
@@ -855,7 +859,8 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,
 {
   //Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. Input in AODMCParticles
   
-  if(labels[0] < 0 || labels[0] > mcparticles->GetEntriesFast() || nlabels <= 1) {
+  if(labels[0] < 0 || labels[0] > mcparticles->GetEntriesFast() || nlabels <= 1)
+  {
     if(fDebug > 2) 
       printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Exit : label[0] %d, n primaries %d, nlabels %d \n",
              labels[0],mcparticles->GetEntriesFast(), nlabels);
@@ -864,7 +869,8 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,
   
   AliAODMCParticle * meson = (AliAODMCParticle *) mcparticles->At(mesonIndex);
   Int_t mesonPdg = meson->GetPdgCode();
-  if(mesonPdg != 111 && mesonPdg != 221) {
+  if(mesonPdg != 111 && mesonPdg != 221)
+  {
     printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Wrong pi0/eta PDG : %d \n",mesonPdg);
     return;
   }
@@ -873,11 +879,13 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,
   
   
   //Get the daughters
-  if(meson->GetNDaughters() != 2){
+  if(meson->GetNDaughters() != 2)
+  {
     if(fDebug > 2) 
       printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(stack) - Not overalapped. Number of daughters is %d, not 2 \n",meson->GetNDaughters());
     return;
   }
+  
   Int_t iPhoton0 = meson->GetDaughter(0);
   Int_t iPhoton1 = meson->GetDaughter(1);
   //if((iPhoton0 == -1) || (iPhoton1 == -1)){
@@ -887,9 +895,10 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,
   //}	
   AliAODMCParticle *photon0 = (AliAODMCParticle *) mcparticles->At(iPhoton0);
   AliAODMCParticle *photon1 = (AliAODMCParticle *) mcparticles->At(iPhoton1);
-  
+    
   //Check if both daughters are photons
-  if(photon0->GetPdgCode() != 22 && photon1->GetPdgCode()!=22){
+  if(photon0->GetPdgCode() != 22 && photon1->GetPdgCode()!=22)
+  {
     printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Not overlapped. PDG:  daughter 1 = %d, of daughter 2 = %d \n",photon0->GetPdgCode(),photon1->GetPdgCode());
     return;
   }
@@ -904,9 +913,12 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,
   if(fDebug > 3) 
     printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Labels loop:\n");
   
-  for(Int_t i = 0; i < nlabels; i++){
-    if(fDebug > 3) 
+  for(Int_t i = 0; i < nlabels; i++)
+  {
+    if(fDebug > 3)
       printf("\t label %d/%d: %d, ok? %d, %d\n", i, nlabels, labels[i], okPhoton0, okPhoton1);
+    
+    if(labels[i]<0) continue;
     
     //If we already found both, break the loop
     if(okPhoton0 && okPhoton1) break;
@@ -951,7 +963,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,
       tmpindex = daught->GetMother();
     }//While to check if pi0/eta daughter was one of these contributors to the cluster
     
-    if(i == 0 && (!okPhoton0 && !okPhoton1) && fDebug>=-1 ) 
+    if(i == 0 && (!okPhoton0 && !okPhoton1) && fDebug>=0 )
       printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Something happens, first label should be from a photon decay!\n");
     
   }//loop on list of labels
@@ -1159,7 +1171,7 @@ TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTra
   }
   else if(reader->ReadAODMCParticles())
   {
-    TClonesArray* mcparticles = reader->GetAODMCParticles(0);
+    TClonesArray* mcparticles = reader->GetAODMCParticles();
     if(!mcparticles) 
     {
       if(fDebug >= 0)
@@ -1234,7 +1246,7 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int
   }
   else if(reader->ReadAODMCParticles())
   {
-    TClonesArray* mcparticles = reader->GetAODMCParticles(0);
+    TClonesArray* mcparticles = reader->GetAODMCParticles();
     if(!mcparticles) 
     {
       if(fDebug >= 0)
@@ -1332,7 +1344,7 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
   }
   else if(reader->ReadAODMCParticles())
   {
-    TClonesArray* mcparticles = reader->GetAODMCParticles(0);
+    TClonesArray* mcparticles = reader->GetAODMCParticles();
     if(!mcparticles) 
     {
       if(fDebug >= 0)

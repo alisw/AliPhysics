@@ -44,6 +44,7 @@
 #include "AliVCaloCells.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliAODMCParticle.h"
 
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
@@ -81,7 +82,7 @@ fRecalculateClusters(kFALSE),fSelectEmbeddedClusters(kFALSE),
 fTrackStatus(0),             fTrackFilterMask(0),             
 fESDtrackCuts(0),            fESDtrackComplementaryCuts(0),   fConstrainTrack(kFALSE),
 fSelectHybridTracks(0),      fSelectSPDHitTracks(kFALSE),
-fTrackMult(0),               fTrackMultEtaCut(0.8),
+fTrackMult(0),               fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE), 
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),      
 fEventTriggerMask(0),        fMixEventTriggerMask(0),         fEventTriggerAtSE(0), 
@@ -93,7 +94,9 @@ fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),                    
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE), 
-fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),  fDoVertexBCEventSelection(kFALSE),
+fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
+fDoVertexBCEventSelection(kFALSE),
+fDoRejectNoTrackEvents(kFALSE),
 fUseEventsWithPrimaryVertex(kFALSE),
 fTriggerAnalysis (0x0),      fTimeStampEventSelect(0),
 fTimeStampEventFracMin(0),   fTimeStampEventFracMax(0),
@@ -254,6 +257,44 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
   
 }
 
+//_________________________________________________________________
+void AliCaloTrackReader::CorrectMCLabelForAODs(AliVCluster * clus)
+{
+ // AODs filter particles, not anymore correspondance with MC position in array
+ // Check if label is correct and if not, change it
+  
+  Int_t * labels = clus->GetLabels();
+
+  for(UInt_t ilabel = 0; ilabel < clus->GetNLabels(); ilabel++)
+  {
+    Int_t orgLabel = labels[ilabel];
+        
+    TClonesArray * arr = GetAODMCParticles()  ;
+        
+    if(!arr)
+    {
+      printf("AliCaloTrackReader::CorrectMCLabelForAODs() - Input array not available\n");
+      return ;
+    }
+    
+    AliAODMCParticle *  particle = (AliAODMCParticle *)arr->At(orgLabel);
+    
+    if(orgLabel != particle->Label())
+    {
+      // loop on the particles list and check if there is one with the same label
+      for(Int_t ind = 0; ind < arr->GetEntriesFast(); ind++ )
+      {
+        particle = (AliAODMCParticle *) arr->At(ind);
+        
+        if(orgLabel == particle->Label()) labels[ilabel] = ind;
+      }
+    }
+    
+    //if(orgLabel!=labels[ilabel]) printf("\t Label in %d - out %d \n",orgLabel, clus->GetLabels()[ilabel]);
+    
+  }
+}
+
 //____________________________________________
 AliStack* AliCaloTrackReader::GetStack() const 
 {
@@ -320,23 +361,19 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
 }
 
 //____________________________________________________________________
-TClonesArray* AliCaloTrackReader::GetAODMCParticles(Int_t input) const 
+TClonesArray* AliCaloTrackReader::GetAODMCParticles() const 
 {
   //Return list of particles in AOD. Do it for the corresponding input event.
   
   TClonesArray * rv = NULL ; 
   if(fDataType == kAOD)
   {
-    if(input == 0)
-    {
-      //Normal input AOD
-      AliAODEvent * evt = dynamic_cast<AliAODEvent*> (fInputEvent) ;
-      if(evt)
-        rv = (TClonesArray*)evt->FindListObject("mcparticles");
-      else  
-        printf("AliCaloTrackReader::GetAODMCParticles() - wrong AOD input index? %d, or non existing tree? \n",input); 
-    }  
-    
+    //Normal input AOD
+    AliAODEvent * evt = dynamic_cast<AliAODEvent*> (fInputEvent) ;
+    if(evt)
+      rv = (TClonesArray*)evt->FindListObject("mcparticles");
+    else  
+      printf("AliCaloTrackReader::GetAODMCParticles() - Null AOD event \n"); 
   } 
   else 
   {
@@ -906,7 +943,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   {
     FillInputCTS();
     //Accept events with at least one track
-    if(fTrackMult == 0 && fDoEventSelection) return kFALSE;
+    if(fTrackMult == 0 && fDoRejectNoTrackEvents) return kFALSE ;
   }
   
   if(fDoVertexBCEventSelection)
@@ -1244,10 +1281,6 @@ void AliCaloTrackReader::FillInputCTS()
       
     } // AOD
     
-    //Count the tracks in eta < 0.9
-    //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
-    if(TMath::Abs(track->Eta())< fTrackMultEtaCut) fTrackMult++;
-    
     TLorentzVector momentum(pTrack[0],pTrack[1],pTrack[2],0);
     
     Bool_t okTOF  = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
@@ -1261,10 +1294,6 @@ void AliCaloTrackReader::FillInputCTS()
 
       tof = track->GetTOFsignal()*1e-3;
     }
-    
-    if(fCTSPtMin > momentum.Pt() || fCTSPtMax < momentum.Pt()) continue ;
-        
-    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
                 
     if(fUseTrackDCACut)
     {
@@ -1304,6 +1333,14 @@ void AliCaloTrackReader::FillInputCTS()
       //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
       
     }
+    
+    //Count the tracks in eta < 0.9
+    //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
+    if(TMath::Abs(track->Eta())< fTrackMultEtaCut) fTrackMult++;
+    
+    if(fCTSPtMin > momentum.Pt() || fCTSPtMax < momentum.Pt()) continue ;
+    
+    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
     
     if(fDebug > 2 && momentum.Pt() > 0.1)
       printf("AliCaloTrackReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
@@ -1450,8 +1487,13 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   if (fMixedEvent) 
     clus->SetID(iclus) ; 
   
-  fEMCALClusters->Add(clus);	
-    
+  //Correct MC label for AODs
+  
+  if(ReadAODMCParticles())
+    CorrectMCLabelForAODs(clus);
+  
+  fEMCALClusters->Add(clus);
+  
 }
 
 //_______________________________________
@@ -1640,6 +1682,9 @@ void AliCaloTrackReader::FillInputPHOS()
         {
           clus->SetID(iclus) ; 
         }              
+        
+        if(ReadAODMCParticles())
+          CorrectMCLabelForAODs(clus);
         
         fPHOSClusters->Add(clus);	
         
