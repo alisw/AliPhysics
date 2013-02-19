@@ -158,6 +158,14 @@ public:
    * @return Reference to the event inspector 
    */
   const AliFMDMCEventInspector& GetEventInspector() const { return fInspector;}
+// setter for the fUseESDVertexCoordinate flag 
+void SetUseESDVertexCoordinate(Bool_t use){ fUseESDVertexCoordinate=use;}
+ // setter for the fCalculateafterESDeventcuts flag 
+void SetCalculateafterESDeventcuts(Bool_t use){ fCalculateafterESDeventcuts=use;}
+
+
+
+
 protected: 
   /**
    * A vertex bin 
@@ -252,9 +260,11 @@ protected:
   TH1I*      fHEventsTrVtx; // Events w/trigger and vertex 
   TAxis      fVtxAxis;      // Vertex axis 
   TAxis      fEtaAxis;      // Eta axis 
-  TList*     fList;         // Output list 
+  TList*     fList;         // Output list
+  Bool_t     fUseESDVertexCoordinate; // if yes it will  used Z vertex from ESD in calculations
+  Bool_t     fCalculateafterESDeventcuts; //if yes corrections will be calculated for events passing esd cuts     		 
 
-  ClassDef(AliForwardMCCorrectionsTask,2) // Forward corrections class
+  ClassDef(AliForwardMCCorrectionsTask,3) // Forward corrections class
 };
 
 #endif
