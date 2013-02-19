@@ -76,7 +76,7 @@ class AliFlowBayesianPID : public AliPIDResponse{
   virtual ~AliFlowBayesianPID();
   
   // virtual method of AliPIDResponse
-  virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const {if(vtrack) printf("Don't call AliFlowBayesianPID::NumberOfSigmasTOF method (%i)\n",type); return 0.0;} // do not use it
+
 
   // setter
   void SetDetResponse(AliESDEvent *esd,Float_t centrality=-1.0,EStartTimeType_t flagStart=AliESDpid::kTOF_T0,Bool_t /*recomputeT0TOF*/=kFALSE);
