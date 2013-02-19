@@ -1,6 +1,6 @@
 const Int_t numberOfCentralityBins = 12;
 //TString centralityArray[numberOfCentralityBins] = {"0-100","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
-TString centralityArray[numberOfCentralityBins] = {"0-4","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
 
 const Int_t gRebin = 1;
 
@@ -440,7 +440,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += " - ";
     histoTitle += psiMax;
     histoTitle += " % ";
-    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+    histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
   else if(eventClass == "Multiplicity"){
     histoTitle = "(+-) | Multiplicity: ";
@@ -448,20 +448,20 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += " - ";
     histoTitle += psiMax;
     histoTitle += " tracks";
-    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+    histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
   else{ // "EventPlane" (default)
     histoTitle = "(+-) | Centrality: ";
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
 
   gHistPN[0] = b->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -490,13 +490,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     gHistPN[1] = bShuffled->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
@@ -526,13 +526,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistPN[2] = bMixed->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -592,13 +592,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     if(rebinEta > 1 || rebinPhi > 1){
       gHistPN[2]->Rebin2D(rebinEta,rebinPhi);
@@ -658,7 +658,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += " - ";
     histoTitle += psiMax;
     histoTitle += " % ";
-    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+    histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
   else if(eventClass == "Multiplicity"){
     histoTitle = "(-+) | Multiplicity: ";
@@ -666,20 +666,20 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += " - ";
     histoTitle += psiMax;
     histoTitle += " tracks";
-    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+    histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
   else{ // "EventPlane" (default)
     histoTitle = "(-+) | Centrality: ";
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
 
   gHistNP[0] = b->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -709,13 +709,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     gHistNP[1] = bShuffled->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
@@ -745,13 +745,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
 
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistNP[2] = bMixed->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -810,13 +810,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
 
     if(rebinEta > 1 || rebinPhi > 1){
       gHistNP[2]->Rebin2D(rebinEta,rebinPhi);
@@ -877,7 +877,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += " - ";
     histoTitle += psiMax;
     histoTitle += " % ";
-    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+    histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
   else if(eventClass == "Multiplicity"){
     histoTitle = "(++) | Multiplicity: ";
@@ -885,20 +885,20 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += " - ";
     histoTitle += psiMax;
     histoTitle += " tracks";
-    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+    histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
   else{ // "EventPlane" (default)
     histoTitle = "(++) | Centrality: ";
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
 
   gHistPP[0] = b->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -928,13 +928,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     gHistPP[1] = bShuffled->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
@@ -964,13 +964,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistPP[2] = bMixed->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -1029,13 +1029,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     if(rebinEta > 1 || rebinPhi > 1){
       gHistPP[2]->Rebin2D(rebinEta,rebinPhi);
@@ -1094,7 +1094,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += " - ";
     histoTitle += psiMax;
     histoTitle += " % ";
-    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+    histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
   else if(eventClass == "Multiplicity"){
     histoTitle = "(--) | Multiplicity: ";
@@ -1102,20 +1102,20 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += " - ";
     histoTitle += psiMax;
     histoTitle += " tracks";
-    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+    histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
   else{ // "EventPlane" (default)
     histoTitle = "(--) | Centrality: ";
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   } 
 
   gHistNN[0] = b->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -1145,13 +1145,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     gHistNN[1] = bShuffled->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
@@ -1181,13 +1181,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistNN[2] = bMixed->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -1246,13 +1246,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     if(rebinEta > 1 || rebinPhi > 1){
       gHistNN[2]->Rebin2D(rebinEta,rebinPhi);
@@ -1393,14 +1393,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
 }
 
 //____________________________________________________________//
-void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
-			      Int_t gTrainID = 208,			      
+void drawCorrelationFunctions(const char* lhcPeriod = "LHC10h",
+			      const char* gCentralityEstimator = "V0M",
+			      Int_t gBit = 128,
+			      const char* gEventPlaneEstimator = "VZERO",
 			      Int_t gCentrality = 1,
 			      Double_t psiMin = -0.5, Double_t psiMax = 3.5,
 			      Double_t ptTriggerMin = -1.,
 			      Double_t ptTriggerMax = -1.,
 			      Double_t ptAssociatedMin = -1.,
-			      Double_t ptAssociatedMax = -1.) {
+			      Double_t ptAssociatedMax = -1.,
+			      Bool_t kFit = kFALSE) {
   //Macro that draws the charge dependent correlation functions
   //for each centrality bin for the different pT of trigger and 
   //associated particles
@@ -1408,12 +1411,16 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   TGaxis::SetMaxDigits(3);
 
   //Get the input file
-  /* TString filename = "PbPb/"; filename += lhcPeriod; 
-     filename +="/Train"; filename += gTrainID;*/
-  TString filename;
-  //filename +="/Centrality"; 
-  //filename += gCentrality;
-  filename += "correlationFunction.Centrality";
+  TString filename = lhcPeriod; 
+  filename += "/Centrality"; filename += gCentralityEstimator;
+  filename += "_Bit"; filename += gBit;
+  filename += "_"; filename += gEventPlaneEstimator;
+  filename +="/PttFrom";
+  filename += Form("%.1f",ptTriggerMin); filename += "To"; 
+  filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
+  filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
+  filename += Form("%.1f",ptAssociatedMax); 
+  filename += "/correlationFunction.Centrality";
   filename += gCentrality; filename += ".Psi";
   if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
@@ -1430,7 +1437,7 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   TFile *f = TFile::Open(filename.Data());
   if((!f)||(!f->IsOpen())) {
     Printf("The file %s is not found. Aborting...",filename);
-    return listBF;
+    return;
   }
   //f->ls();
   
@@ -1441,13 +1448,13 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
 
   TString psiLatex;
   if((psiMin == -0.5)&&(psiMax == 0.5))
-    psiLatex = " -7.5^{o} < #varphi - #Psi_{2} < 7.5^{o}"; 
+    psiLatex = " -7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o}"; 
   else if((psiMin == 0.5)&&(psiMax == 1.5))
-    psiLatex = " 37.5^{o} < #varphi - #Psi_{2} < 52.5^{o}"; 
+    psiLatex = " 37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o}"; 
   else if((psiMin == 1.5)&&(psiMax == 2.5))
-    psiLatex = " 82.5^{o} < #varphi - #Psi_{2} < 97.5^{o}"; 
+    psiLatex = " 82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o}"; 
   else 
-    psiLatex = " 0^{o} < #varphi - #Psi_{2} < 180^{o}"; 
+    psiLatex = " 0^{o} < #varphi^{t} - #Psi_{2} < 180^{o}"; 
  
   TString pttLatex = Form("%.1f",ptTriggerMin);
   pttLatex += " < p_{T,trig} < "; pttLatex += Form("%.1f",ptTriggerMax);
@@ -1469,7 +1476,7 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   TH2D *gHistPN = dynamic_cast<TH2D *>(f->Get("gHistPNCorrelationFunctions"));
   gHistPN->SetStats(kFALSE);
   gHistPN->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
-  gHistPN->GetXaxis()->SetRangeUser(-6,-6);
+  gHistPN->GetXaxis()->SetRangeUser(-1.4,1.4);
   gHistPN->GetXaxis()->CenterTitle();
   gHistPN->GetXaxis()->SetTitleOffset(1.2);
   gHistPN->GetYaxis()->CenterTitle();
@@ -1484,10 +1491,10 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   gPad->SetPhi(-60); // default is 30
   gPad->Update();
 
-  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
-  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.95,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.89,psiLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
   pngName = "CorrelationFunction.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
@@ -1503,15 +1510,17 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   pngName += Form("%.1f",ptAssociatedMax); 
   pngName += ".PositiveNegative.png";
   cPN->SaveAs(pngName.Data());
-  fitCorrelationFunctions(gCentrality, psiMin, psiMax,
-			  ptTriggerMin,ptTriggerMax,
-			  ptAssociatedMin, ptAssociatedMax,gHistPN);
+  if(kFit)
+    fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+			    ptTriggerMin,ptTriggerMax,
+			    ptAssociatedMin, ptAssociatedMax,gHistPN);
+
   //============================================================//
   //Get the -+ correlation function
   TH2D *gHistNP = dynamic_cast<TH2D *>(f->Get("gHistNPCorrelationFunctions"));
   gHistNP->SetStats(kFALSE);
   gHistNP->SetTitle("C_{-+}(#Delta#eta,#Delta#varphi)");
-  gHistNP->GetXaxis()->SetRangeUser(-6,6);
+  gHistNP->GetXaxis()->SetRangeUser(-1.4,1);
   gHistNP->GetXaxis()->CenterTitle();
   gHistNP->GetXaxis()->SetTitleOffset(1.2);
   gHistNP->GetYaxis()->CenterTitle();
@@ -1526,10 +1535,10 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   gPad->SetPhi(-60); // default is 30
   gPad->Update();
 
-  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
-  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.95,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.89,psiLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
   pngName = "CorrelationFunction.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
@@ -1546,15 +1555,17 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   pngName += ".NegativePositive.png";
   cNP->SaveAs(pngName.Data());
 
-  fitCorrelationFunctions(gCentrality, psiMin, psiMax,
-			  ptTriggerMin,ptTriggerMax,
-			  ptAssociatedMin, ptAssociatedMax,gHistNP);
+  if(kFit)
+    fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+			    ptTriggerMin,ptTriggerMax,
+			    ptAssociatedMin, ptAssociatedMax,gHistNP);
+
   //============================================================//
   //Get the ++ correlation function
   TH2D *gHistPP = dynamic_cast<TH2D *>(f->Get("gHistPPCorrelationFunctions"));
   gHistPP->SetStats(kFALSE);
   gHistPP->SetTitle("C_{++}(#Delta#eta,#Delta#varphi)");
-  gHistPP->GetXaxis()->SetRangeUser(-6,6);
+  gHistPP->GetXaxis()->SetRangeUser(-1.4,1.4);
   gHistPP->GetXaxis()->CenterTitle();
   gHistPP->GetXaxis()->SetTitleOffset(1.2);
   gHistPP->GetYaxis()->CenterTitle();
@@ -1569,10 +1580,10 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   gPad->SetPhi(-60); // default is 30
   gPad->Update();
 
-  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
-  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.95,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.89,psiLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
   pngName = "CorrelationFunction.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
@@ -1589,15 +1600,17 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   pngName += ".PositivePositive.png";
   cPP->SaveAs(pngName.Data());
 
-  fitCorrelationFunctions(gCentrality, psiMin, psiMax,
-			  ptTriggerMin,ptTriggerMax,
-			  ptAssociatedMin, ptAssociatedMax,gHistPP);
+  if(kFit)
+    fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+			    ptTriggerMin,ptTriggerMax,
+			    ptAssociatedMin, ptAssociatedMax,gHistPP);
+
   //============================================================//
   //Get the -- correlation function
   TH2D *gHistNN = dynamic_cast<TH2D *>(f->Get("gHistNNCorrelationFunctions"));
   gHistNN->SetStats(kFALSE);
   gHistNN->SetTitle("C_{--}(#Delta#eta,#Delta#varphi)");
-  gHistNN->GetXaxis()->SetRangeUser(-6,6);
+  gHistNN->GetXaxis()->SetRangeUser(-1.4,1.4);
   gHistNN->GetXaxis()->CenterTitle();
   gHistNN->GetXaxis()->SetTitleOffset(1.2);
   gHistNN->GetYaxis()->CenterTitle();
@@ -1612,10 +1625,10 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   gPad->SetPhi(-60); // default is 30
   gPad->Update();
 
-  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
-  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.95,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.89,psiLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
   pngName = "CorrelationFunction.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
@@ -1632,29 +1645,41 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   pngName += ".NegativeNegative.png";
   cNN->SaveAs(pngName.Data());
 
-  fitCorrelationFunctions(gCentrality, psiMin, psiMax,
-			  ptTriggerMin,ptTriggerMax,
-			  ptAssociatedMin, ptAssociatedMax,gHistNN);
+  if(kFit)
+    fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+			    ptTriggerMin,ptTriggerMax,
+			    ptAssociatedMin, ptAssociatedMax,gHistNN);
 }
 
-
-
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
-void drawCorrelationFunctionsProjection(Bool_t eta = kFALSE, //kFALSE = phi projection, kTRUE = eta projection
-					Int_t gCentrality = 1,
-					Double_t psiMin = -0.5, Double_t psiMax = 3.5,
-					Double_t ptTriggerMin = -1.,
-					Double_t ptTriggerMax = -1.,
-					Double_t ptAssociatedMin = -1.,
-					Double_t ptAssociatedMax = -1.) {
+//____________________________________________________________//
+void drawProjections(const char* lhcPeriod = "LHC10h",
+		     const char* gCentralityEstimator = "V0M",
+		     Int_t gBit = 128,
+		     const char* gEventPlaneEstimator = "VZERO",
+		     Bool_t kProjectInEta = kFALSE,
+		     Int_t gCentrality = 1,
+		     Double_t psiMin = -0.5, 
+		     Double_t psiMax = 3.5,
+		     Double_t ptTriggerMin = -1.,
+		     Double_t ptTriggerMax = -1.,
+		     Double_t ptAssociatedMin = -1.,
+		     Double_t ptAssociatedMax = -1.) {
   //Macro that draws the charge dependent correlation functions PROJECTIONS 
   //for each centrality bin for the different pT of trigger and 
   //associated particles
   TGaxis::SetMaxDigits(3);
 
   //Get the input file
-  TString filename;
-  filename += "correlationFunction.Centrality";
+  TString filename = lhcPeriod; 
+  filename += "/Centrality"; filename += gCentralityEstimator;
+  filename += "_Bit"; filename += gBit;
+  filename += "_"; filename += gEventPlaneEstimator;
+  filename +="/PttFrom";
+  filename += Form("%.1f",ptTriggerMin); filename += "To"; 
+  filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
+  filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
+  filename += Form("%.1f",ptAssociatedMax); 
+  filename += "/correlationFunction.Centrality";
   filename += gCentrality; filename += ".Psi";
   if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
@@ -1682,13 +1707,13 @@ void drawCorrelationFunctionsProjection(Bool_t eta = kFALSE, //kFALSE = phi proj
 
   TString psiLatex;
   if((psiMin == -0.5)&&(psiMax == 0.5))
-    psiLatex = " -7.5^{o} < #varphi - #Psi_{2} < 7.5^{o}"; 
+    psiLatex = " -7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o}"; 
   else if((psiMin == 0.5)&&(psiMax == 1.5))
-    psiLatex = " 37.5^{o} < #varphi - #Psi_{2} < 52.5^{o}"; 
+    psiLatex = " 37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o}"; 
   else if((psiMin == 1.5)&&(psiMax == 2.5))
-    psiLatex = " 82.5^{o} < #varphi - #Psi_{2} < 97.5^{o}"; 
+    psiLatex = " 82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o}"; 
   else 
-    psiLatex = " 0^{o} < #varphi - #Psi_{2} < 180^{o}"; 
+    psiLatex = " 0^{o} < #varphi^{t} - #Psi_{2} < 180^{o}"; 
  
   TString pttLatex = Form("%.1f",ptTriggerMin);
   pttLatex += " < p_{T,trig} < "; pttLatex += Form("%.1f",ptTriggerMax);
@@ -1710,7 +1735,7 @@ void drawCorrelationFunctionsProjection(Bool_t eta = kFALSE, //kFALSE = phi proj
   TH2D *gHistPN = dynamic_cast<TH2D *>(f->Get("gHistPNCorrelationFunctions"));
   gHistPN->SetStats(kFALSE);
   gHistPN->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
-  gHistPN->GetXaxis()->SetRangeUser(-6,6);
+  gHistPN->GetXaxis()->SetRangeUser(-1.4,1.4);
   gHistPN->GetXaxis()->CenterTitle();
   gHistPN->GetXaxis()->SetTitleOffset(1.2);
   gHistPN->GetYaxis()->CenterTitle();
@@ -1720,42 +1745,84 @@ void drawCorrelationFunctionsProjection(Bool_t eta = kFALSE, //kFALSE = phi proj
   cPN->SetFillColor(10); 
   cPN->SetHighLightColor(10);
   cPN->SetLeftMargin(0.15);
-  //gHistPN->DrawCopy("surf1fb");
 
   //================//
-  TH1D* gHistPNprojection=0x0;
-  if (eta == 1){
-    gHistPNprojection = (TH1D*)gHistPN->ProjectionX("gHistPNprojection",1,-1);
-    gHistPNprojection->Scale(1./gHistPN->GetNbinsX());
+  TH1D* gHistPNprojection = 0x0;
+  Double_t sum = 0.0;
+  Double_t gError = 0.0;
+  Int_t nCounter = 0;
+  if(kProjectInEta) {
+    gHistPNprojection = new TH1D("gHistPNprojection","",gHistPN->GetNbinsX(),gHistPN->GetXaxis()->GetXmin(),gHistPN->GetXaxis()->GetXmax());
+    for(Int_t iBinX = 1; iBinX <= gHistPN->GetNbinsX(); iBinX++) {
+      sum = 0.; gError = 0.0; nCounter = 0;
+      for(Int_t iBinY = 1; iBinY <= gHistPN->GetNbinsY(); iBinY++) {
+	sum += gHistPN->GetBinContent(iBinX,iBinY);
+	if(gHistPN->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
+        Double_t exy = gHistPN->GetCellError(iBinX,iBinY);
+	gError += exy*exy;
+      }
+      if(nCounter != 0) {
+	sum /= nCounter;
+	gError = TMath::Sqrt(gError)/nCounter;
+      }
+      gHistPNprojection->SetBinContent(iBinX,sum);
+      gHistPNprojection->SetBinError(iBinX,gError);
+    }
+    gHistPNprojection->GetXaxis()->SetRangeUser(-1.4,1.4);
+    //gHistPNprojection = (TH1D*)gHistPN->ProjectionX("gHistPNprojection",1,-1);
+    //gHistPNprojection->Scale(1./gHistPN->GetNbinsY());
+    gHistPNprojection->Scale(2.*TMath::Pi());
+    gHistPNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    gHistPNprojection->GetXaxis()->SetTitle("#Delta#eta");
   }
-  else if (eta == 0){
-    gHistPNprojection = (TH1D*)gHistPN->ProjectionY("gHistPNprojection",1,-1);
-    gHistPNprojection->Scale(1./gHistPN->GetNbinsY());
+  else {
+    gHistPNprojection = new TH1D("gHistPNprojection","",gHistPN->GetNbinsY(),gHistPN->GetYaxis()->GetXmin(),gHistPN->GetYaxis()->GetXmax());
+    for(Int_t iBinY = 1; iBinY <= gHistPN->GetNbinsY(); iBinY++) {
+      sum = 0.; gError = 0.0; nCounter = 0;
+      for(Int_t iBinX = 1; iBinX <= gHistPN->GetNbinsX(); iBinX++) {
+	sum += gHistPN->GetBinContent(iBinX,iBinY);
+	if(gHistPN->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
+        Double_t exy = gHistPN->GetCellError(iBinX,iBinY);
+	gError += exy*exy;
+      }
+      if(nCounter != 0) {
+	sum /= nCounter;
+	gError = TMath::Sqrt(gError)/nCounter;
+      }
+      gHistPNprojection->SetBinContent(iBinY,sum);
+      gHistPNprojection->SetBinError(iBinY,gError);
+    }
+    gHistPNprojection->Scale(3.2);
+    gHistPNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    gHistPNprojection->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   }
-
-  gHistPNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+  //ZYAM
+  Double_t reference = gHistPNprojection->GetBinContent(gHistPNprojection->GetMinimumBin());
+  for(Int_t iBinX = 1; iBinX <= gHistPNprojection->GetNbinsX(); iBinX++) 
+    gHistPNprojection->SetBinContent(iBinX,gHistPNprojection->GetBinContent(iBinX) - reference);
+  
   gHistPNprojection->GetYaxis()->SetTitleOffset(1.5);
-  gHistPNprojection->DrawCopy();
+  gHistPNprojection->SetMarkerStyle(20);
+  gHistPNprojection->SetStats(kFALSE);
+  gHistPNprojection->DrawCopy("E");
   //=================//
   
   gPad->SetTheta(30); // default is 30
   gPad->SetPhi(-60); // default is 30
   gPad->Update();
 
-  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
-  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.95,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.89,psiLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
   pngName = "Projection.CorrelationFunction.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; 
-  if (eta == 1){ 
+  if(kProjectInEta)
     pngName += ".ETAprojection.";
-  }
-  else if(eta == 0){
+  else
     pngName += ".PHIprojection.";
-  }
   if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
   else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
@@ -1773,7 +1840,7 @@ void drawCorrelationFunctionsProjection(Bool_t eta = kFALSE, //kFALSE = phi proj
   TH2D *gHistNP = dynamic_cast<TH2D *>(f->Get("gHistNPCorrelationFunctions"));
   gHistNP->SetStats(kFALSE);
   gHistNP->SetTitle("C_{-+}(#Delta#eta,#Delta#varphi)");
-  gHistNP->GetXaxis()->SetRangeUser(-6,6);
+  gHistNP->GetXaxis()->SetRangeUser(-1.4,1.4);
   gHistNP->GetXaxis()->CenterTitle();
   gHistNP->GetXaxis()->SetTitleOffset(1.2);
   gHistNP->GetYaxis()->CenterTitle();
@@ -1782,41 +1849,84 @@ void drawCorrelationFunctionsProjection(Bool_t eta = kFALSE, //kFALSE = phi proj
   TCanvas *cNP = new TCanvas("cNP","",50,50,600,500);
   cNP->SetFillColor(10); cNP->SetHighLightColor(10);
   cNP->SetLeftMargin(0.15);
-  //gHistNP->DrawCopy("surf1fb");
 
   //================//
-  if (eta == 1){
-    TH1F* gHistNPprojection = (TH1F*)gHistNP->ProjectionX("gHistNPprojection",-1,-1);
-    gHistNPprojection->Scale(1./gHistNP->GetNbinsX());
+  TH1D* gHistNPprojection = 0x0;
+  Double_t sum = 0.0;
+  Double_t gError = 0.0;
+  Int_t nCounter = 0;
+  if(kProjectInEta) {
+    gHistNPprojection = new TH1D("gHistNPprojection","",gHistNP->GetNbinsX(),gHistNP->GetXaxis()->GetXmin(),gHistNP->GetXaxis()->GetXmax());
+    for(Int_t iBinX = 1; iBinX <= gHistNP->GetNbinsX(); iBinX++) {
+      sum = 0.; gError = 0.0; nCounter = 0;
+      for(Int_t iBinY = 1; iBinY <= gHistNP->GetNbinsY(); iBinY++) {
+	sum += gHistNP->GetBinContent(iBinX,iBinY);
+	if(gHistNP->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
+        Double_t exy = gHistNP->GetCellError(iBinX,iBinY);
+	gError += exy*exy;
+      }
+      if(nCounter != 0) {
+	sum /= nCounter;
+	gError = TMath::Sqrt(gError)/nCounter;
+      }
+      gHistNPprojection->SetBinContent(iBinX,sum);
+      gHistNPprojection->SetBinError(iBinX,gError);
+    }
+    gHistNPprojection->GetXaxis()->SetRangeUser(-1.4,1.4);
+    //gHistNPprojection = (TH1D*)gHistNP->ProjectionX("gHistNPprojection",1,-1);
+    //gHistNPprojection->Scale(1./gHistNP->GetNbinsY());
+    gHistNPprojection->Scale(2.*TMath::Pi());
+    gHistNPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    gHistNPprojection->GetXaxis()->SetTitle("#Delta#eta");
   }
-  else if (eta == 0){
-    TH1F* gHistNPprojection = (TH1F*)gHistNP->ProjectionY("gHistNPprojection",-1,-1);
-    gHistNPprojection->Scale(1./gHistNP->GetNbinsY());
+  else {
+    gHistNPprojection = new TH1D("gHistNPprojection","",gHistNP->GetNbinsY(),gHistNP->GetYaxis()->GetXmin(),gHistNP->GetYaxis()->GetXmax());
+    for(Int_t iBinY = 1; iBinY <= gHistNP->GetNbinsY(); iBinY++) {
+      sum = 0.; gError = 0.0; nCounter = 0;
+      for(Int_t iBinX = 1; iBinX <= gHistNP->GetNbinsX(); iBinX++) {
+	sum += gHistNP->GetBinContent(iBinX,iBinY);
+	if(gHistNP->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
+        Double_t exy = gHistNP->GetCellError(iBinX,iBinY);
+	gError += exy*exy;
+      }
+      if(nCounter != 0) {
+	sum /= nCounter;
+	gError = TMath::Sqrt(gError)/nCounter;
+      }
+      gHistNPprojection->SetBinContent(iBinY,sum);
+      gHistNPprojection->SetBinError(iBinY,gError);
+    }
+    gHistNPprojection->Scale(3.2);
+    gHistNPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    gHistNPprojection->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   }
-  
-  gHistNPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+  //ZYAM
+  Double_t reference = gHistNPprojection->GetBinContent(gHistNPprojection->GetMinimumBin());
+  for(Int_t iBinX = 1; iBinX <= gHistNPprojection->GetNbinsX(); iBinX++) 
+    gHistNPprojection->SetBinContent(iBinX,gHistNPprojection->GetBinContent(iBinX) - reference);
+
   gHistNPprojection->GetYaxis()->SetTitleOffset(1.5);
-  gHistNPprojection->DrawCopy();
+  gHistNPprojection->SetMarkerStyle(20);
+  gHistNPprojection->SetStats(kFALSE);
+  gHistNPprojection->DrawCopy("E");
   //================//
 
   gPad->SetTheta(30); // default is 30
   gPad->SetPhi(-60); // default is 30
   gPad->Update();
 
-  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
-  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.95,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.89,psiLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
   pngName = "Projection.CorrelationFunction.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; 
-  if (eta == 1){ 
+  if(kProjectInEta)
     pngName += ".ETAprojection.";
-  }
-  else if(eta == 0){
+  else
     pngName += ".PHIprojection.";
-  }
   if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
   else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
@@ -1834,7 +1944,7 @@ void drawCorrelationFunctionsProjection(Bool_t eta = kFALSE, //kFALSE = phi proj
   TH2D *gHistPP = dynamic_cast<TH2D *>(f->Get("gHistPPCorrelationFunctions"));
   gHistPP->SetStats(kFALSE);
   gHistPP->SetTitle("C_{++}(#Delta#eta,#Delta#varphi)");
-  gHistPP->GetXaxis()->SetRangeUser(-6,6);
+  gHistPP->GetXaxis()->SetRangeUser(-1.4,1.4);
   gHistPP->GetXaxis()->CenterTitle();
   gHistPP->GetXaxis()->SetTitleOffset(1.2);
   gHistPP->GetYaxis()->CenterTitle();
@@ -1843,42 +1953,84 @@ void drawCorrelationFunctionsProjection(Bool_t eta = kFALSE, //kFALSE = phi proj
   TCanvas *cPP = new TCanvas("cPP","",100,100,600,500);
   cPP->SetFillColor(10); cPP->SetHighLightColor(10);
   cPP->SetLeftMargin(0.15);
-  //gHistPP->DrawCopy("surf1fb");
-
+ 
   //=================//
   TH1D* gHistPPprojection = 0x0;
-  if (eta == 1){
-    gHistPPprojection = (TH1D*)gHistPP->ProjectionX("gHistPPprojection",21,60);
-    gHistPPprojection->Scale(1./gHistPP->GetNbinsX());
+  Double_t sum = 0.0;
+  Double_t gError = 0.0;
+  Int_t nCounter = 0;
+  if(kProjectInEta) {
+    gHistPPprojection = new TH1D("gHistPPprojection","",gHistPP->GetNbinsX(),gHistPP->GetXaxis()->GetXmin(),gHistPP->GetXaxis()->GetXmax());
+    for(Int_t iBinX = 1; iBinX <= gHistPP->GetNbinsX(); iBinX++) {
+      sum = 0.; gError = 0.0; nCounter = 0;
+      for(Int_t iBinY = 1; iBinY <= gHistPP->GetNbinsY(); iBinY++) {
+	sum += gHistPP->GetBinContent(iBinX,iBinY);
+	if(gHistPP->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
+        Double_t exy = gHistPP->GetCellError(iBinX,iBinY);
+	gError += exy*exy;
+      }
+      if(nCounter != 0) {
+	sum /= nCounter;
+	gError = TMath::Sqrt(gError)/nCounter;
+      }
+      gHistPPprojection->SetBinContent(iBinX,sum);
+      gHistPPprojection->SetBinError(iBinX,gError);
+    }
+    gHistPPprojection->GetXaxis()->SetRangeUser(-1.4,1.4);
+    //gHistPPprojection = (TH1D*)gHistPP->ProjectionX("gHistPPprojection",1,-1);
+    //gHistPPprojection->Scale(1./gHistPP->GetNbinsY());
+    gHistPPprojection->Scale(2.*TMath::Pi());
+    gHistPPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    gHistPPprojection->GetXaxis()->SetTitle("#Delta#eta");
   }
-  else if (eta == 0){
-    gHistPPprojection = (TH1D*)gHistPP->ProjectionY("gHistPPprojection",51,70);
-    gHistPPprojection->Scale(1./gHistPP->GetNbinsY());
+  else {
+    gHistPPprojection = new TH1D("gHistPPprojection","",gHistPP->GetNbinsY(),gHistPP->GetYaxis()->GetXmin(),gHistPP->GetYaxis()->GetXmax());
+    for(Int_t iBinY = 1; iBinY <= gHistPP->GetNbinsY(); iBinY++) {
+      sum = 0.; gError = 0.0; nCounter = 0;
+      for(Int_t iBinX = 1; iBinX <= gHistPP->GetNbinsX(); iBinX++) {
+	sum += gHistPP->GetBinContent(iBinX,iBinY);
+	if(gHistPP->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
+        Double_t exy = gHistPP->GetCellError(iBinX,iBinY);
+	gError += exy*exy;
+      }
+      if(nCounter != 0) {
+	sum /= nCounter;
+	gError = TMath::Sqrt(gError)/nCounter;
+      }
+      gHistPPprojection->SetBinContent(iBinY,sum);
+      gHistPPprojection->SetBinError(iBinY,gError);
+    }
+    gHistPPprojection->Scale(3.2);
+    gHistPPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    gHistPPprojection->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   }
+  //ZYAM
+  Double_t reference = gHistPPprojection->GetBinContent(gHistPPprojection->GetMinimumBin());
+  for(Int_t iBinX = 1; iBinX <= gHistPPprojection->GetNbinsX(); iBinX++) 
+    gHistPPprojection->SetBinContent(iBinX,gHistPPprojection->GetBinContent(iBinX) - reference);
   
-  gHistPPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
   gHistPPprojection->GetYaxis()->SetTitleOffset(1.5);
-  gHistPPprojection->DrawCopy();
+  gHistPPprojection->SetMarkerStyle(20);
+  gHistPPprojection->SetStats(kFALSE);
+  gHistPPprojection->DrawCopy("E");
   //================//
 
   gPad->SetTheta(30); // default is 30
   gPad->SetPhi(-60); // default is 30
   gPad->Update();
 
-  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
-  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.95,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.89,psiLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
   pngName = "Projection.CorrelationFunction.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; 
-  if (eta == 1){ 
+  if(kProjectInEta) 
     pngName += ".ETAprojection.";
-  }
-  else if(eta == 0){
+  else
     pngName += ".PHIprojection.";
-  }
   if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
   else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
@@ -1896,7 +2048,7 @@ void drawCorrelationFunctionsProjection(Bool_t eta = kFALSE, //kFALSE = phi proj
   TH2D *gHistNN = dynamic_cast<TH2D *>(f->Get("gHistNNCorrelationFunctions"));
   gHistNN->SetStats(kFALSE);
   gHistNN->SetTitle("C_{--}(#Delta#eta,#Delta#varphi)");
-  gHistNN->GetXaxis()->SetRangeUser(-6,6);
+  gHistNN->GetXaxis()->SetRangeUser(-1.4,1.4);
   gHistNN->GetXaxis()->CenterTitle();
   gHistNN->GetXaxis()->SetTitleOffset(1.2);
   gHistNN->GetYaxis()->CenterTitle();
@@ -1905,41 +2057,84 @@ void drawCorrelationFunctionsProjection(Bool_t eta = kFALSE, //kFALSE = phi proj
   TCanvas *cNN = new TCanvas("cNN","",150,150,600,500);
   cNN->SetFillColor(10); cNN->SetHighLightColor(10);
   cNN->SetLeftMargin(0.15);
-  //gHistNN->DrawCopy("surf1fb");
 
   //=================//
-  if (eta == 1){
-    TH1F* gHistNNprojection = (TH1F*)gHistNN->ProjectionX("gHistNNprojection",-1,-1);
-    gHistNNprojection->Scale(1./gHistNN->GetNbinsX());
+  TH1D* gHistNNprojection = 0x0;
+  Double_t sum = 0.0;
+  Double_t gError = 0.0;
+  Int_t nCounter = 0;
+  if(kProjectInEta) {
+    gHistNNprojection = new TH1D("gHistNNprojection","",gHistNN->GetNbinsX(),gHistNN->GetXaxis()->GetXmin(),gHistNN->GetXaxis()->GetXmax());
+    for(Int_t iBinX = 1; iBinX <= gHistNN->GetNbinsX(); iBinX++) {
+      sum = 0.; gError = 0.0; nCounter = 0;
+      for(Int_t iBinY = 1; iBinY <= gHistNN->GetNbinsY(); iBinY++) {
+	sum += gHistNN->GetBinContent(iBinX,iBinY);
+	if(gHistNN->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
+        Double_t exy = gHistNN->GetCellError(iBinX,iBinY);
+	gError += exy*exy;
+      }
+      if(nCounter != 0) {
+	sum /= nCounter;
+	gError = TMath::Sqrt(gError)/nCounter;
+      }
+      gHistNNprojection->SetBinContent(iBinX,sum);
+      gHistNNprojection->SetBinError(iBinX,gError);
+    }
+    gHistNNprojection->GetXaxis()->SetRangeUser(-1.4,1.4);
+    //gHistNNprojection = (TH1D*)gHistNN->ProjectionX("gHistNNprojection",1,-1);
+    //gHistNNprojection->Scale(1./gHistNN->GetNbinsY());
+    gHistNNprojection->Scale(2.*TMath::Pi());
+    gHistNNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    gHistNNprojection->GetXaxis()->SetTitle("#Delta#eta");
   }
-  else if (eta == 0){
-    TH1F* gHistNNprojection = (TH1F*)gHistNN->ProjectionY("gHistNNprojection",-1,-1);
-    gHistNNprojection->Scale(1./gHistNN->GetNbinsY());
+  else {
+    gHistNNprojection = new TH1D("gHistNNprojection","",gHistNN->GetNbinsY(),gHistNN->GetYaxis()->GetXmin(),gHistNN->GetYaxis()->GetXmax());
+    for(Int_t iBinY = 1; iBinY <= gHistNN->GetNbinsY(); iBinY++) {
+      sum = 0.; gError = 0.0; nCounter = 0;
+      for(Int_t iBinX = 1; iBinX <= gHistNN->GetNbinsX(); iBinX++) {
+	sum += gHistNN->GetBinContent(iBinX,iBinY);
+	if(gHistNN->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
+        Double_t exy = gHistNN->GetCellError(iBinX,iBinY);
+	gError += exy*exy;
+      }
+      if(nCounter != 0) {
+	sum /= nCounter;
+	gError = TMath::Sqrt(gError)/nCounter;
+      }
+      gHistNNprojection->SetBinContent(iBinY,sum);
+      gHistNNprojection->SetBinError(iBinY,gError);
+    }
+    gHistNNprojection->Scale(3.2);
+    gHistNNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    gHistNNprojection->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   }
+  //ZYAM
+  Double_t reference = gHistNNprojection->GetBinContent(gHistNNprojection->GetMinimumBin());
+  for(Int_t iBinX = 1; iBinX <= gHistNNprojection->GetNbinsX(); iBinX++) 
+    gHistNNprojection->SetBinContent(iBinX,gHistNNprojection->GetBinContent(iBinX) - reference); 
 
-  gHistNNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
   gHistNNprojection->GetYaxis()->SetTitleOffset(1.5);
-  gHistNNprojection->DrawCopy();
+  gHistNNprojection->SetMarkerStyle(20);
+  gHistNNprojection->SetStats(kFALSE);
+  gHistNNprojection->DrawCopy("E");
   //=================//
 
   gPad->SetTheta(30); // default is 30
   gPad->SetPhi(-60); // default is 30
   gPad->Update();
 
-  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
-  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
-  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.95,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.89,psiLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
+  latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
   pngName = "Projection.CorrelationFunction.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; 
-  if (eta == 1){ 
+  if(kProjectInEta) 
     pngName += ".ETAprojection.";
-  }
-  else if(eta == 0){
+  else
     pngName += ".PHIprojection.";
-  }
   if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
   else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
@@ -1955,152 +2150,12 @@ void drawCorrelationFunctionsProjection(Bool_t eta = kFALSE, //kFALSE = phi proj
   TFile *fProjection = TFile::Open("ProjectionCorrelationFunction.root",
 					  "recreate");
   
-  //for(Int_t iBin = 0; iBin < numberOfCentralityBins; iBin++) {
-   gHistNPprojection->Write();
-   gHistPNprojection->Write();
-   gHistNNprojection->Write();
-   gHistPPprojection->Write();
-   //}
+  gHistNPprojection->Write();
+  gHistPNprojection->Write();
+  gHistNNprojection->Write();
+  gHistPPprojection->Write();
   fProjection->Close();
-
 }
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
-
-// //____________________________________________________________//
-// void fitCorrelationFunctions(Int_t gCentrality = 1,
-// 			     Double_t psiMin = -0.5, Double_t psiMax = 3.5,
-// 			     Double_t ptTriggerMin = -1.,
-// 			     Double_t ptTriggerMax = -1.,
-// 			     Double_t ptAssociatedMin = -1.,
-// 			     Double_t ptAssociatedMax = -1.,
-// 			     TH2D *gHist) {
-
-//   cout<<"FITTING FUNCTION (MW style)"<<endl;
-
-//   //near side peak(s): [1]*(TMath::Exp(-TMath::Power((0.5*TMath::Power(((x-[5])/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4])) + 
-//   //                        TMath::Exp(-TMath::Power((0.5*TMath::Power(((x+[5])/[6]),2)+0.5*TMath::Power((y/[3]),2)),[4])))
-//   //away side peak(s): [7]*(TMath::Exp(-TMath::Power((0.5*TMath::Power(((x-[11])/[8]),2)+0.5*TMath::Power((y/[9]),2)),[10])) + 
-//   //                        TMath::Exp(-TMath::Power((0.5*TMath::Power(((x+[11])/[12]),2)+0.5*TMath::Power((y/[9]),2)),[10])))
-//   //flow contribution (v1 up to v4): 2.*[13]*([14]*TMath::Cos(y) + [15]*TMath::Cos(2.*y) + [16]*TMath::Cos(3.*y) + [17]*TMath::Cos(4.*y))
-
-
-
-//   TF2 *gFitFunction = new TF2("gFitFunction","[0]+[1]*(TMath::Exp(-TMath::Power((0.5*TMath::Power(((x-[5])/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4])) + TMath::Exp(-TMath::Power((0.5*TMath::Power(((x+[5])/[6]),2)+0.5*TMath::Power((y/[3]),2)),[4]))) + [7]*(TMath::Exp(-TMath::Power((0.5*TMath::Power(((x-[11])/[8]),2)+0.5*TMath::Power(((y-TMath::Pi())/[9]),2)),[10])) + TMath::Exp(-TMath::Power((0.5*TMath::Power(((x+[11])/[12]),2)+0.5*TMath::Power(((y-TMath::Pi())/[9]),2)),[10]))) + 2.*[13]*([14]*TMath::Cos(y) + [15]*TMath::Cos(2.*y) + [16]*TMath::Cos(3.*y) + [17]*TMath::Cos(4.*y))",-2.0,2.0,-TMath::Pi()/2.,3.*TMath::Pi()/2.); 
-//   gFitFunction->SetName("gFitFunction");
-
-
-//   //Normalization
-//   gFitFunction->SetParName(0,"N1"); 
-//   //near side peak(s)
-//   gFitFunction->SetParName(1,"N_{near side}");gFitFunction->FixParameter(1,0.0);
-//   gFitFunction->SetParName(2,"Sigma_{near side}(delta eta 1)"); gFitFunction->FixParameter(2,0.0);
-//   gFitFunction->SetParName(3,"Sigma_{near side}(delta phi)"); gFitFunction->FixParameter(3,0.0);
-//   gFitFunction->SetParName(4,"Exponent_{near side}"); gFitFunction->FixParameter(4,1.0);
-//   gFitFunction->SetParName(5,"Offset_{near side}"); gFitFunction->FixParameter(5,0.0);
-//   gFitFunction->SetParName(6,"Sigma_{near side}(delta eta 2)"); gFitFunction->FixParameter(6,0.0);
-
-//   //away side peak(s)
-//   gFitFunction->SetParName(7,"N_{near side}");gFitFunction->FixParameter(7,0.0);
-//   gFitFunction->SetParName(8,"Sigma_{near side}(delta eta 1)"); gFitFunction->FixParameter(8,0.0);
-//   gFitFunction->SetParName(9,"Sigma_{near side}(delta phi)"); gFitFunction->FixParameter(9,0.0);
-//   gFitFunction->SetParName(10,"Exponent_{near side}"); gFitFunction->FixParameter(10,1.0);
-//   gFitFunction->SetParName(11,"Offset_{near side}"); gFitFunction->FixParameter(11,0.0);
-//   gFitFunction->SetParName(12,"Sigma_{near side}(delta eta 2)"); gFitFunction->FixParameter(12,0.0);
-
-//   //flow contribution
-//   gFitFunction->SetParName(13,"N_{flow}"); gFitFunction->SetParameter(13,0.2);
-//   gFitFunction->SetParName(14,"V1"); gFitFunction->SetParameter(14,0.005);
-//   gFitFunction->SetParName(15,"V2"); gFitFunction->SetParameter(15,0.1);
-//   gFitFunction->SetParName(16,"V3"); gFitFunction->SetParameter(16,0.05);
-//   gFitFunction->SetParName(17,"V4"); gFitFunction->SetParameter(17,0.005);
-
-//   // flow parameters
-//   Double_t fNV = 0.;
-//   Double_t fV1 = 0.;
-//   Double_t fV2 = 0.;
-//   Double_t fV3 = 0.;
-//   Double_t fV4 = 0.;
- 
-//   //Fitting the correlation function (first the edges to extract flow)
-//   gHist->Fit("gFitFunction","nm","",1.0,1.6);
-
-//   fNV += gFitFunction->GetParameter(13);
-//   fV1 += gFitFunction->GetParameter(14);
-//   fV2 += gFitFunction->GetParameter(15);
-//   fV3 += gFitFunction->GetParameter(16);
-//   fV4 += gFitFunction->GetParameter(17);
-
-//   gHist->Fit("gFitFunction","nm","",-1.6,-1.0);
-
-//   fNV += gFitFunction->GetParameter(13);
-//   fV1 += gFitFunction->GetParameter(14);
-//   fV2 += gFitFunction->GetParameter(15);
-//   fV3 += gFitFunction->GetParameter(16);
-//   fV4 += gFitFunction->GetParameter(17);
-
-//   // Now fit the whole with fixed flow
-//   gFitFunction->FixParameter(13,fNV/2.);
-//   gFitFunction->FixParameter(14,fV1/2.);
-//   gFitFunction->FixParameter(15,fV2/2.);
-//   gFitFunction->FixParameter(16,fV3/2.);
-//   gFitFunction->FixParameter(17,fV4/2.);
-  
-//   gFitFunction->ReleaseParameter(1);gFitFunction->SetParameter(1,0.3);
-//   gFitFunction->ReleaseParameter(2);gFitFunction->SetParameter(2,0.3);gFitFunction->SetParLimits(2,0.05,0.7);
-//   gFitFunction->ReleaseParameter(3);gFitFunction->SetParameter(3,0.3);gFitFunction->SetParLimits(3,0.05,1.7);
-//   gFitFunction->ReleaseParameter(5);gFitFunction->SetParameter(5,0.7);gFitFunction->SetParLimits(5,0.0,0.9);
-//   gFitFunction->ReleaseParameter(6);gFitFunction->SetParameter(6,0.3);gFitFunction->SetParLimits(6,0.01,1.7);
-
-//   gFitFunction->ReleaseParameter(7);gFitFunction->SetParameter(1,0.3);
-//   gFitFunction->ReleaseParameter(8);gFitFunction->SetParameter(2,0.3);gFitFunction->SetParLimits(2,0.05,0.7);
-//   gFitFunction->ReleaseParameter(9);gFitFunction->SetParameter(3,0.3);gFitFunction->SetParLimits(3,0.05,1.7);
-//   gFitFunction->ReleaseParameter(11);gFitFunction->SetParameter(5,0.7);gFitFunction->SetParLimits(5,0.0,0.9);
-//   gFitFunction->ReleaseParameter(12);gFitFunction->SetParameter(6,0.3);gFitFunction->SetParLimits(6,0.01,1.7);
-
-//   gHist->Fit("gFitFunction","nm");
-
-
-//   //Cloning the histogram
-//   TString histoName = gHist->GetName(); histoName += "Fit"; 
-//   TH2D *gHistFit = new TH2D(histoName.Data(),";#Delta#eta;#Delta#varphi (rad);C(#Delta#eta,#Delta#varphi)",gHist->GetNbinsX(),gHist->GetXaxis()->GetXmin(),gHist->GetXaxis()->GetXmax(),gHist->GetNbinsY(),gHist->GetYaxis()->GetXmin(),gHist->GetYaxis()->GetXmax());
-//   TH2D *gHistResidual = dynamic_cast<TH2D *>(gHist->Clone());
-//   gHistResidual->SetName("gHistResidual");
-//   gHistResidual->Sumw2();
-
-//   for(Int_t iBinDeltaEta = 1; iBinDeltaEta <= gHist->GetNbinsX(); iBinDeltaEta++) {
-//     for(Int_t iBinDeltaPhi = 1; iBinDeltaPhi <= gHist->GetNbinsY(); iBinDeltaPhi++) {
-//       gHistFit->SetBinContent(iBinDeltaEta,iBinDeltaPhi,gFitFunction->Eval(gHist->GetXaxis()->GetBinCenter(iBinDeltaEta),gHist->GetYaxis()->GetBinCenter(iBinDeltaPhi)));
-//     }
-//   }
-//   gHistResidual->Add(gHistFit,-1);
-
-//   //Write to output file
-//   TString newFileName = "correlationFunctionFit";
-//   if(histoName.Contains("PN")) newFileName += "PN";
-//   else if(histoName.Contains("NP")) newFileName += "NP";
-//   else if(histoName.Contains("PP")) newFileName += "PP";
-//   else if(histoName.Contains("NN")) newFileName += "NN";
-//   newFileName += ".Centrality";  
-//   newFileName += gCentrality; newFileName += ".Psi";
-//   if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
-//   else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
-//   else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
-//   else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
-//   else newFileName += "All.PttFrom";
-//   newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
-//   newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
-//   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
-//   newFileName += Form("%.1f",ptAssociatedMax); 
-//   newFileName += ".root";
-//   TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
-//   gHist->Write();
-//   gHistFit->Write();
-//   gHistResidual->Write();
-//   gFitFunction->Write();
-//   newFile->Close();
-  
-
-// }
 
 //____________________________________________________________//
 void fitCorrelationFunctions(Int_t gCentrality = 1,
@@ -2237,105 +2292,8 @@ void fitCorrelationFunctions(Int_t gCentrality = 1,
 
 }
 
-
-
-// //____________________________________________________________//
-// void fitCorrelationFunctions(Int_t gCentrality = 1,
-// 			     Double_t psiMin = -0.5, Double_t psiMax = 3.5,
-// 			     Double_t ptTriggerMin = -1.,
-// 			     Double_t ptTriggerMax = -1.,
-// 			     Double_t ptAssociatedMin = -1.,
-// 			     Double_t ptAssociatedMax = -1.,
-// 			     TH2D *gHist) {
-
-//   cout<<"FITTING FUNCTION (HOUSTON)"<<endl;
-
-//   // Fit Function
-//    //x axis = delta_eta
-//    //y axis = delta_phi
-//                                                                                                                                                                                         //  [9]*exp(-1*pow(((x/[10])^2 + (y/[10])^2),0.5)) Hyper expo
-//   TF2 *fit1 = new TF2("fit1","[0] + [1]*cos(y) + [2]*cos(2*y) + [3]*cos(3*y) + [4]*cos(4*y) +[5]*cos(5*y)+ [6]*exp(-0.5*pow(((x/[7])^2 + (y/[8])^2),[11])) + [6]*exp(-0.5*pow(((x/[7])^2 + ((y-6.283)/[8])^2),[11]))+ [9]*exp(-1*((x/[10])^2 + (y/[10])^2)) ",-2.0,2.0,-TMath::Pi()/2.,3.*TMath::Pi()/2.);
- 
-  
-   
-//   Double_t Parameters[] = {0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.3,0.3,1.0,0.1,0.1};
-  	
-//   fit1->SetParameters(Parameters);  // input pars from macro arguments
-	
-//   fit1->SetParName(0,"offset");
-//   fit1->SetParName(1,"v1");
-//   fit1->SetParName(2,"v2");
-//   fit1->SetParName(3,"v3");
-//   fit1->SetParName(4,"v4");
-//   fit1->SetParName(5,"v5");
-//   fit1->SetParName(6,"Ridgeamp");
-//   fit1->SetParName(7,"Ridgesigx");
-//   fit1->SetParName(8,"Ridgesigy");
-//   fit1->SetParName(9,"Expoamp");
-//   fit1->SetParName(10,"Exposig");
-//   fit1->SetParName(11,"Gausspara");
-    
-
-//   //Fit Parameter Ranges
-//   fit1->SetParLimits(0,-2.0,2.0);   //offset
-//   fit1->SetParLimits(1,-1.0,0.1);   //v1
-//   fit1->SetParLimits(2,-1.6,0.9);   //v2
-//   fit1->SetParLimits(3,0.0,0.5);    //v3
-//   fit1->SetParLimits(4,0.0,0.9);    //v4
-//   fit1->SetParLimits(5,0.0,0.9);    //v5
-//   fit1->SetParLimits(6,0.0,1.5);    //Ridgeamp
-//   fit1->SetParLimits(7,0.1,3.0);    //Ridgesigx
-//   fit1->SetParLimits(8,0.1,2.0);    //Ridgesigy
-//   fit1->SetParLimits(9,0.0,6.0);      //Expoamp
-//   fit1->SetParLimits(10,0.05,0.5); //Exposig
-//   fit1->SetParLimits(11,0.0,2.0);    //Gausspara
-
-//   //Fitting the correlation function
-//   gHist->Fit("fit1","nm");
-
-//   //Cloning the histogram
-//   TString histoName = gHist->GetName(); histoName += "Fit"; 
-//   TH2D *gHistFit = new TH2D(histoName.Data(),";#Delta#eta;#Delta#varphi (rad);C(#Delta#eta,#Delta#varphi)",gHist->GetNbinsX(),gHist->GetXaxis()->GetXmin(),gHist->GetXaxis()->GetXmax(),gHist->GetNbinsY(),gHist->GetYaxis()->GetXmin(),gHist->GetYaxis()->GetXmax());
-//   TH2D *gHistResidual = dynamic_cast<TH2D *>(gHist->Clone());
-//   gHistResidual->SetName("gHistResidual");
-//   gHistResidual->Sumw2();
-
-//   for(Int_t iBinDeltaEta = 1; iBinDeltaEta <= gHist->GetNbinsX(); iBinDeltaEta++) {
-//     for(Int_t iBinDeltaPhi = 1; iBinDeltaPhi <= gHist->GetNbinsY(); iBinDeltaPhi++) {
-//       gHistFit->SetBinContent(iBinDeltaEta,iBinDeltaPhi,fit1->Eval(gHist->GetXaxis()->GetBinCenter(iBinDeltaEta),gHist->GetYaxis()->GetBinCenter(iBinDeltaPhi)));
-//     }
-//   }
-//   gHistResidual->Add(gHistFit,-1);
-
-//   //Write to output file
-//   TString newFileName = "correlationFunctionFit";
-//   if(histoName.Contains("PN")) newFileName += "PN";
-//   else if(histoName.Contains("NP")) newFileName += "NP";
-//   else if(histoName.Contains("PP")) newFileName += "PP";
-//   else if(histoName.Contains("NN")) newFileName += "NN";
-//   newFileName += ".Centrality";  
-//   newFileName += gCentrality; newFileName += ".Psi";
-//   if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
-//   else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
-//   else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
-//   else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
-//   else newFileName += "All.PttFrom";
-//   newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
-//   newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
-//   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
-//   newFileName += Form("%.1f",ptAssociatedMax); 
-//   newFileName += ".root";
-//   TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
-//   gHist->Write();
-//   gHistFit->Write();
-//   gHistResidual->Write();
-//   fit1->Write();
-//   newFile->Close();
-  
-
-// }
-
-TH2D *convolute2D(TH2D* h1, TH2D* h2, TString hname){
+//____________________________________________________________//
+TH2D *convolute2D(TH2D* h1, TH2D* h2, TString hname) {
   //
   // this function does the convolution of 2 eta or phi "efficiencies" in a deta or dphi "efficiency"
   // and returns a new histogram which is normalized to the number of bin combinations
