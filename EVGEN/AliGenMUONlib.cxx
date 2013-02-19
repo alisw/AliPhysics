@@ -173,6 +173,14 @@ Double_t AliGenMUONlib::PtJpsiPP7000(const Double_t *px, const Double_t */*dummy
   return PtJpsiPPdummy(*px,7000);
 }
 
+Double_t AliGenMUONlib::PtJpsiPP8000(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi pT
+// pp 7 TeV
+//
+  return PtJpsiPPdummy(*px,8000);
+}
+
 Double_t AliGenMUONlib::PtJpsiPP2760(const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT
@@ -848,6 +856,14 @@ Double_t AliGenMUONlib::YJpsiPP7000(const Double_t *px, const Double_t */*dummy*
 // pp 7 TeV
 //
   return YJpsiPPdummy(*px, 7000);
+}
+
+Double_t AliGenMUONlib::YJpsiPP8000(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// pp 7 TeV
+//
+  return YJpsiPPdummy(*px, 8000);
 }
 
 Double_t AliGenMUONlib::YJpsiPP2760(const Double_t *px, const Double_t */*dummy*/)
@@ -3859,6 +3875,8 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiPP;
 	} else if (sname == "pp 7") {
 	    func=PtJpsiPP7000;
+	} else if (sname == "pp 8") {
+	    func=PtJpsiPP8000;
 	} else if (sname == "pp 2.76") {
 	    func=PtJpsiPP2760;
 	} else if (sname == "pp 4.4") {
@@ -4194,6 +4212,8 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiPP;
 	} else if (sname == "pp 7") {
 	    func=YJpsiPP7000;
+	} else if (sname == "pp 7") {
+	    func=YJpsiPP8000;
 	} else if (sname == "pp 2.76") {
 	    func=YJpsiPP2760;
 	} else if (sname == "pp 4.4") {

@@ -59,6 +59,7 @@ class AliGenMUONlib :
 // J/Psi     
     static Double_t PtJpsiPPdummy(Double_t px, Double_t en);
     static Double_t PtJpsiPP7000(const Double_t *px, const Double_t *dummy);
+    static Double_t PtJpsiPP8000(const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiPP2760(const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiPP4400(const Double_t *px, const Double_t *dummy);	
     static Double_t PtJpsiPP5030(const Double_t *px, const Double_t *dummy);	
@@ -119,6 +120,7 @@ class AliGenMUONlib :
     static Double_t YJpsiPPdummy(Double_t px, Double_t en);
     static Double_t YJpsiPPpoly(Double_t px, Double_t en);
     static Double_t YJpsiPP7000(const Double_t *px, const Double_t *dummy);
+    static Double_t YJpsiPP8000(const Double_t *px, const Double_t *dummy);
     static Double_t YJpsiPP2760(const Double_t *px, const Double_t *dummy);
     static Double_t YJpsiPPpoly7000(const Double_t *px, const Double_t *dummy);
     static Double_t YJpsiPPpoly2760(const Double_t *px, const Double_t *dummy);
