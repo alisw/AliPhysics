@@ -43,6 +43,7 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
   else 
     draw(listBF,listBFShuffled,listBFMixed,
 	 gCentrality,gDeltaEtaDeltaPhi,
+	 gCentralityEstimator,
 	 psiMin,psiMax,
 	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,
 	 k2pMethod,k2pMethod2D,eventClass);  
@@ -95,24 +96,22 @@ TList *GetListOfObjects(const char* filename,
   if(dir->Get(Form("%s_histograms",listBFName.Data()))){
     listBF = dynamic_cast<TList *>(dir->Get(Form("%s_histograms",listBFName.Data())));
   }
-
   // histograms were not yet retrieved (this is the first iteration)
   else{
-
     listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
     cout<<"======================================================="<<endl;
-    cout<<"List name (check): "<<listBFName.Data()<<endl;
     cout<<"List name: "<<listBF->GetName()<<endl;
     //listBF->ls();
     
     //Get the histograms
     TString histoName;
     if(kData == 0)
-      histoName = "fHistPV0M";
+      histoName = "fHistP";
     else if(kData == 1)
-      histoName = "fHistP_shuffleV0M";
+      histoName = "fHistP_shuffle";
     else if(kData == 2)
-      histoName = "fHistPV0M";
+      histoName = "fHistP";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
     AliTHn *fHistP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));  
     if(!fHistP) {
       Printf("fHistP %s not found!!!",histoName.Data());
@@ -121,11 +120,12 @@ TList *GetListOfObjects(const char* filename,
     fHistP->FillParent(); fHistP->DeleteContainers();
     
     if(kData == 0)
-      histoName = "fHistNV0M";
+      histoName = "fHistN";
     if(kData == 1)
-      histoName = "fHistN_shuffleV0M";
+      histoName = "fHistN_shuffle";
     if(kData == 2)
-      histoName = "fHistNV0M";
+      histoName = "fHistN";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
     AliTHn *fHistN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
     if(!fHistN) {
       Printf("fHistN %s not found!!!",histoName.Data());
@@ -134,11 +134,12 @@ TList *GetListOfObjects(const char* filename,
     fHistN->FillParent(); fHistN->DeleteContainers();
     
     if(kData == 0)
-      histoName = "fHistPNV0M";
+      histoName = "fHistPN";
     if(kData == 1)
-      histoName = "fHistPN_shuffleV0M";
+      histoName = "fHistPN_shuffle";
     if(kData == 2)
-      histoName = "fHistPNV0M";
+      histoName = "fHistPN";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
     AliTHn *fHistPN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
     if(!fHistPN) {
       Printf("fHistPN %s not found!!!",histoName.Data());
@@ -147,11 +148,12 @@ TList *GetListOfObjects(const char* filename,
     fHistPN->FillParent(); fHistPN->DeleteContainers();
     
     if(kData == 0)
-      histoName = "fHistNPV0M";
+      histoName = "fHistNP";
     if(kData == 1)
-      histoName = "fHistNP_shuffleV0M";
+      histoName = "fHistNP_shuffle";
     if(kData == 2)
-      histoName = "fHistNPV0M";
+      histoName = "fHistNP";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
     AliTHn *fHistNP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
     if(!fHistNP) {
       Printf("fHistNP %s not found!!!",histoName.Data());
@@ -160,11 +162,12 @@ TList *GetListOfObjects(const char* filename,
     fHistNP->FillParent(); fHistNP->DeleteContainers();
     
     if(kData == 0)
-      histoName = "fHistPPV0M";
+      histoName = "fHistPP";
     if(kData == 1)
-      histoName = "fHistPP_shuffleV0M";
+      histoName = "fHistPP_shuffle";
     if(kData == 2)
-      histoName = "fHistPPV0M";
+      histoName = "fHistPP";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
     AliTHn *fHistPP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
     if(!fHistPP) {
       Printf("fHistPP %s not found!!!",histoName.Data());
@@ -173,11 +176,12 @@ TList *GetListOfObjects(const char* filename,
     fHistPP->FillParent(); fHistPP->DeleteContainers();
     
     if(kData == 0)
-      histoName = "fHistNNV0M";
+      histoName = "fHistNN";
     if(kData == 1)
-      histoName = "fHistNN_shuffleV0M";
+      histoName = "fHistNN_shuffle";
     if(kData == 2)
-      histoName = "fHistNNV0M";
+      histoName = "fHistNN";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
     AliTHn *fHistNN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
     if(!fHistNN) {
       Printf("fHistNN %s not found!!!",histoName.Data());
@@ -198,6 +202,7 @@ TList *GetListOfObjects(const char* filename,
 //______________________________________________________//
 void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 	  Int_t gCentrality, Int_t gDeltaEtaDeltaPhi, 
+	  const char* gCentralityEstimator,
 	  Double_t psiMin, Double_t psiMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
@@ -217,12 +222,30 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   AliTHn *hNN = NULL;
   //listBF->ls();
   //Printf("=================");
-  hP = (AliTHn*) listBF->FindObject("fHistPV0M");
-  hN = (AliTHn*) listBF->FindObject("fHistNV0M");
-  hPN = (AliTHn*) listBF->FindObject("fHistPNV0M");
-  hNP = (AliTHn*) listBF->FindObject("fHistNPV0M");
-  hPP = (AliTHn*) listBF->FindObject("fHistPPV0M");
-  hNN = (AliTHn*) listBF->FindObject("fHistNNV0M");
+  TString histoName = "fHistP";
+  if(gCentralityEstimator) histoName += gCentralityEstimator;
+  hP = (AliTHn*) listBF->FindObject(histoName.Data());
+  hP->SetName("gHistP");
+  histoName = "fHistN";
+  if(gCentralityEstimator) histoName += gCentralityEstimator;
+  hN = (AliTHn*) listBF->FindObject(histoName.Data());
+  hN->SetName("gHistN");
+  histoName = "fHistPN";
+  if(gCentralityEstimator) histoName += gCentralityEstimator;
+  hPN = (AliTHn*) listBF->FindObject(histoName.Data());
+  hPN->SetName("gHistPN");
+  histoName = "fHistNP";
+  if(gCentralityEstimator) histoName += gCentralityEstimator;
+  hNP = (AliTHn*) listBF->FindObject(histoName.Data());
+  hNP->SetName("gHistNP");
+  histoName = "fHistPP";
+  if(gCentralityEstimator) histoName += gCentralityEstimator;
+  hPP = (AliTHn*) listBF->FindObject(histoName.Data());
+  hPP->SetName("gHistPP");
+  histoName = "fHistNN";
+  if(gCentralityEstimator) histoName += gCentralityEstimator;
+  hNN = (AliTHn*) listBF->FindObject(histoName.Data());
+  hNN->SetName("gHistNN");
 
   AliBalancePsi *b = new AliBalancePsi();
   b->SetEventClass(eventClass);
@@ -242,12 +265,30 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   AliTHn *hNNShuffled = NULL;
   if(listBFShuffled) {
     //listBFShuffled->ls();
-    hPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistP_shuffleV0M");
-    hNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistN_shuffleV0M");
-    hPNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPN_shuffleV0M");
-    hNPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNP_shuffleV0M");
-    hPPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPP_shuffleV0M");
-    hNNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNN_shuffleV0M");
+    histoName = "fHistP";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hPShuffled = (AliTHn*) listBFShuffled->FindObject(histoName.Data());
+    hPShuffled->SetName("gHistPShuffled");
+    histoName = "fHistN";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hNShuffled = (AliTHn*) listBFShuffled->FindObject(histoName.Data());
+    hNShuffled->SetName("gHistNShuffled");
+    histoName = "fHistPN";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hPNShuffled = (AliTHn*) listBFShuffled->FindObject(histoName.Data());
+    hPNShuffled->SetName("gHistPNShuffled");
+    histoName = "fHistNP";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hNPShuffled = (AliTHn*) listBFShuffled->FindObject(histoName.Data());
+    hNPShuffled->SetName("gHistNPShuffled");
+    histoName = "fHistPP";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hPPShuffled = (AliTHn*) listBFShuffled->FindObject(histoName.Data());
+    hPPShuffled->SetName("gHistPPShuffled");
+    histoName = "fHistNN";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hNNShuffled = (AliTHn*) listBFShuffled->FindObject(histoName.Data());
+    hNNShuffled->SetName("gHistNNShuffled");
     
     AliBalancePsi *bShuffled = new AliBalancePsi();
     bShuffled->SetEventClass(eventClass);
@@ -266,22 +307,44 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   AliTHn *hNPMixed = NULL;
   AliTHn *hPPMixed = NULL;
   AliTHn *hNNMixed = NULL;
-  //listBFMixed->ls();
-  hPMixed = (AliTHn*) listBFMixed->FindObject("fHistPV0M");
-  hNMixed = (AliTHn*) listBFMixed->FindObject("fHistNV0M");
-  hPNMixed = (AliTHn*) listBFMixed->FindObject("fHistPNV0M");
-  hNPMixed = (AliTHn*) listBFMixed->FindObject("fHistNPV0M");
-  hPPMixed = (AliTHn*) listBFMixed->FindObject("fHistPPV0M");
-  hNNMixed = (AliTHn*) listBFMixed->FindObject("fHistNNV0M");
+  if(listBFMixed) {
+    //listBFMixed->ls();
+    histoName = "fHistP";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hPMixed = (AliTHn*) listBFMixed->FindObject(histoName.Data());
+    hPMixed->SetName("gHistPMixed");
+    histoName = "fHistN";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hNMixed = (AliTHn*) listBFMixed->FindObject(histoName.Data());
+    hNMixed->SetName("gHistNMixed");
+    histoName = "fHistPN";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hPNMixed = (AliTHn*) listBFMixed->FindObject(histoName.Data());
+    hPNMixed->SetName("gHistPNMixed");
+    histoName = "fHistNP";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hNPMixed = (AliTHn*) listBFMixed->FindObject(histoName.Data());
+    histoName = "fHistNP";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hNPMixed->SetName("gHistNPMixed");
+    histoName = "fHistPP";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hPPMixed = (AliTHn*) listBFMixed->FindObject(histoName.Data());
+    hPPMixed->SetName("gHistPPMixed");
+    histoName = "fHistNN";
+    if(gCentralityEstimator) histoName += gCentralityEstimator;
+    hNNMixed = (AliTHn*) listBFMixed->FindObject(histoName.Data());
+    hNNMixed->SetName("gHistNNMixed");
 
-  AliBalancePsi *bMixed = new AliBalancePsi();
-  bMixed->SetEventClass(eventClass);
-  bMixed->SetHistNp(hPMixed);
-  bMixed->SetHistNn(hNMixed);
-  bMixed->SetHistNpn(hPNMixed);
-  bMixed->SetHistNnp(hNPMixed);
-  bMixed->SetHistNpp(hPPMixed);
-  bMixed->SetHistNnn(hNNMixed);
+    AliBalancePsi *bMixed = new AliBalancePsi();
+    bMixed->SetEventClass(eventClass);
+    bMixed->SetHistNp(hPMixed);
+    bMixed->SetHistNn(hNMixed);
+    bMixed->SetHistNpn(hPNMixed);
+    bMixed->SetHistNnp(hNPMixed);
+    bMixed->SetHistNpp(hPPMixed);
+    bMixed->SetHistNnn(hNNMixed);
+  }
 
   TH1D *gHistBalanceFunction;
   TH1D *gHistBalanceFunctionShuffled;
@@ -296,7 +359,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     histoTitle += " - ";
     histoTitle += psiMax;
     histoTitle += " % ";
-    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+    histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
   else if(eventClass == "Multiplicity"){
     histoTitle = "Multiplicity: ";
@@ -304,20 +367,20 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     histoTitle += " - ";
     histoTitle += psiMax;
     histoTitle += " tracks";
-    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+    histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
   else{ // "EventPlane" (default)
     histoTitle = "Centrality: ";
     histoTitle += centralityArray[gCentrality-1]; 
     histoTitle += "%";
     if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
     else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
     else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
     else 
-      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
 
   //Raw balance function
@@ -597,13 +660,19 @@ void GetWeightedMean(TH1D *gHistBalance, Int_t fStartBin = 1) {
 
 //______________________________________________________//
 void drawBFPsi(const char* lhcPeriod = "LHC10h",
+	       const char* gCentralityEstimator = "V0M",
+	       Int_t gBit = 128,
+	       const char* gEventPlaneEstimator = "VZERO",
+	       Bool_t kShowShuffled = kFALSE, 
+	       Bool_t kShowMixed = kFALSE, 
 	       Int_t gCentrality = 1,
 	       Int_t gDeltaEtaDeltaPhi = 2,
 	       Double_t psiMin = -0.5, Double_t psiMax = 0.5,
 	       Double_t ptTriggerMin = -1.,
 	       Double_t ptTriggerMax = -1.,
 	       Double_t ptAssociatedMin = -1.,
-	       Double_t ptAssociatedMax = -1.) {
+	       Double_t ptAssociatedMax = -1., 
+	       Bool_t k2pMethod = kTRUE) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
   //Author: Panos.Christakoglou@nikhef.nl
@@ -611,7 +680,11 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   SetPlotStyle();
 
   //Get the input file
-  TString filename = lhcPeriod; filename +="/PttFrom";
+  TString filename = lhcPeriod; 
+  filename += "/Centrality"; filename += gCentralityEstimator;
+  filename += "_Bit"; filename += gBit;
+  filename += "_"; filename += gEventPlaneEstimator;
+  filename +="/PttFrom";
   filename += Form("%.1f",ptTriggerMin); filename += "To"; 
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
@@ -628,7 +701,9 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   filename += Form("%.1f",ptTriggerMin); filename += "To"; 
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
-  filename += Form("%.1f",ptAssociatedMax);  filename += ".root";  
+  filename += Form("%.1f",ptAssociatedMax);    
+  if(k2pMethod) filename += "_2pMethod2D";
+  filename += ".root";  
 
   //Open the file
   TFile *f = TFile::Open(filename.Data());
@@ -645,27 +720,34 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.3);
   if(gDeltaEtaDeltaPhi == 2) {
     gHistBalanceFunction->GetYaxis()->SetTitle("B(#Delta #varphi)");
-    gHistBalanceFunction->GetXaxis()->SetTitle("#Delta #varphi (deg.)");
+    gHistBalanceFunction->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   }
 
   //Shuffled balance function
-  TH1D *gHistBalanceFunctionShuffled = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionShuffled"));
-  gHistBalanceFunction->SetStats(kFALSE);
-  gHistBalanceFunctionShuffled->SetMarkerStyle(24);
+  TH1D *gHistBalanceFunctionShuffled = 0x0;
+  if(kShowShuffled) {
+    gHistBalanceFunctionShuffled = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionShuffled"));
+    gHistBalanceFunction->SetStats(kFALSE);
+    gHistBalanceFunctionShuffled->SetMarkerStyle(24);
+  }
 
   //Mixed balance function
-  TH1D *gHistBalanceFunctionMixed = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionMixed"));
-  gHistBalanceFunction->SetStats(kFALSE);
-  gHistBalanceFunctionMixed->SetMarkerStyle(25);
+  TH1D *gHistBalanceFunctionMixed = 0x0;
+  TH1D *gHistBalanceFunctionSubtracted = 0x0;
+  if(kShowMixed) {
+    gHistBalanceFunctionMixed = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionMixed"));
+    gHistBalanceFunction->SetStats(kFALSE);
+    gHistBalanceFunctionMixed->SetMarkerStyle(25);
 
-  //Subtracted balance function
-  TH1D *gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionSubtracted"));
-  gHistBalanceFunctionSubtracted->SetStats(kFALSE);
-  gHistBalanceFunctionSubtracted->SetMarkerStyle(20);
-  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
-  if(gDeltaEtaDeltaPhi == 2) {
-    gHistBalanceFunctionSubtracted->GetYaxis()->SetTitle("B(#Delta #varphi)");
-    gHistBalanceFunctionSubtracted->GetXaxis()->SetTitle("#Delta #varphi (deg.)");
+    //Subtracted balance function
+    gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionSubtracted"));
+    gHistBalanceFunctionSubtracted->SetStats(kFALSE);
+    gHistBalanceFunctionSubtracted->SetMarkerStyle(20);
+    gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
+    if(gDeltaEtaDeltaPhi == 2) {
+      gHistBalanceFunctionSubtracted->GetYaxis()->SetTitle("B(#Delta #varphi)");
+      gHistBalanceFunctionSubtracted->GetXaxis()->SetTitle("#Delta#varphi (rad)");
+    }
   }
   
   TString pngName;
@@ -677,11 +759,11 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
 
   TString psiLatex;
   if((psiMin == -0.5)&&(psiMax == 0.5))
-    psiLatex = " -7.5^{o} < #varphi - #Psi_{2} < 7.5^{o}"; 
+    psiLatex = " -7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o}"; 
   else if((psiMin == 0.5)&&(psiMax == 1.5))
-    psiLatex = " 37.5^{o} < #varphi - #Psi_{2} < 52.5^{o}"; 
+    psiLatex = " 37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o}"; 
   else if((psiMin == 1.5)&&(psiMax == 2.5))
-    psiLatex = " 82.5^{o} < #varphi - #Psi_{2} < 97.5^{o}"; 
+    psiLatex = " 82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o}"; 
   else 
     psiLatex = " 0^{o} < #varphi - #Psi_{2} < 180^{o}"; 
  
@@ -702,8 +784,8 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   gHistBalanceFunction->GetYaxis()->SetNdivisions(10);
   gHistBalanceFunction->GetXaxis()->SetNdivisions(10);
   gHistBalanceFunction->DrawCopy("E");
-  gHistBalanceFunctionShuffled->DrawCopy("ESAME");
-  gHistBalanceFunctionMixed->DrawCopy("ESAME");
+  if(kShowShuffled) gHistBalanceFunctionShuffled->DrawCopy("ESAME");
+  if(kShowMixed) gHistBalanceFunctionMixed->DrawCopy("ESAME");
   
   legend = new TLegend(0.2,0.72,0.45,0.92,"","brNDC");
   legend->SetTextSize(0.05); 
@@ -714,8 +796,10 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   legend->SetMargin(0.25); 
   legend->SetShadowColor(10);
   legend->AddEntry(gHistBalanceFunction,"Data","lp");
-  legend->AddEntry(gHistBalanceFunctionShuffled,"Shuffled data","lp");
-  legend->AddEntry(gHistBalanceFunctionMixed,"Mixed data","lp");
+  if(kShowShuffled) 
+    legend->AddEntry(gHistBalanceFunctionShuffled,"Shuffled data","lp");
+  if(kShowMixed) 
+    legend->AddEntry(gHistBalanceFunctionMixed,"Mixed data","lp");
   legend->Draw();
   
   TLatex *latexInfo1 = new TLatex();
@@ -738,7 +822,7 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   c2->SetLeftMargin(0.17); c2->SetTopMargin(0.05);
   gHistBalanceFunctionSubtracted->SetTitle("");
   gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.4);
-  gHistBalanceFunctionSubtracted->GetYaxis()->SetNdivisions(10);
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetNdivisions(5);
   gHistBalanceFunctionSubtracted->GetXaxis()->SetNdivisions(10);
   gHistBalanceFunctionSubtracted->DrawCopy("E");
   
@@ -795,9 +879,17 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   filenameKurtosis += Form("%.1f",ptAssociatedMin); filenameKurtosis += "To"; 
   filenameKurtosis += Form("%.1f",ptAssociatedMax);  
   filenameKurtosis += ".txt";  
+ 
+  //==================================================================//
+  //In Delta phi we calculate the moments from the near side structure//
+  if(gDeltaEtaDeltaPhi == 2)
+    gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2.,TMath::Pi()/2.);
+  //==================================================================//
 
   TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
-  meanLatex = "#mu = "; 
+  meanLatex = "#mu"; 
+  if(gDeltaEtaDeltaPhi == 1) meanLatex += "_{#Delta#eta} = "; 
+  else if(gDeltaEtaDeltaPhi == 2) meanLatex += "_{#Delta#varphi} = "; 
   meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMean());
   meanLatex += " #pm "; 
   meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMeanError());
@@ -805,7 +897,9 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   fileMean << gCentrality << " " << gHistBalanceFunctionSubtracted->GetMean() << " " <<gHistBalanceFunctionSubtracted->GetMeanError()<<endl;
   fileMean.close();
 
-  rmsLatex = "#sigma = "; 
+  rmsLatex = "#sigma"; 
+  if(gDeltaEtaDeltaPhi == 1) rmsLatex += "_{#Delta#eta} = "; 
+  else if(gDeltaEtaDeltaPhi == 2) rmsLatex += "_{#Delta#varphi} = "; 
   rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMS());
   rmsLatex += " #pm "; 
   rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMSError());
@@ -813,7 +907,9 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   fileSigma << gCentrality << " " << gHistBalanceFunctionSubtracted->GetRMS() << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;
   fileSigma.close();
   
-  skewnessLatex = "S = "; 
+  skewnessLatex = "S"; 
+  if(gDeltaEtaDeltaPhi == 1) skewnessLatex += "_{#Delta#eta} = "; 
+  else if(gDeltaEtaDeltaPhi == 2) skewnessLatex += "_{#Delta#varphi} = "; 
   skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(1));
   skewnessLatex += " #pm "; 
   skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(11));
@@ -821,7 +917,9 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   fileSkewness << gCentrality << " " << gHistBalanceFunctionSubtracted->GetSkewness(1) << " " <<gHistBalanceFunctionSubtracted->GetSkewness(11)<<endl;
   fileSkewness.close();
 
-  kurtosisLatex = "K = "; 
+  kurtosisLatex = "K"; 
+  if(gDeltaEtaDeltaPhi == 1) kurtosisLatex += "_{#Delta#eta} = "; 
+  else if(gDeltaEtaDeltaPhi == 2) kurtosisLatex += "_{#Delta#varphi} = "; 
   kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(1));
   kurtosisLatex += " #pm "; 
   kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(11));
@@ -834,18 +932,49 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
   Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
 
-  latexInfo1->DrawLatex(0.18,0.88,centralityLatex.Data());
-  latexInfo1->DrawLatex(0.18,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.18,0.76,pttLatex.Data());
-  latexInfo1->DrawLatex(0.18,0.70,ptaLatex.Data());
+  //latexInfo1->DrawLatex(0.18,0.88,centralityLatex.Data());
+  //latexInfo1->DrawLatex(0.18,0.82,psiLatex.Data());
+  //latexInfo1->DrawLatex(0.18,0.76,pttLatex.Data());
+  //latexInfo1->DrawLatex(0.18,0.70,ptaLatex.Data());
+  latexInfo1->DrawLatex(0.59,0.88,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.58,0.82,psiLatex.Data());
+  latexInfo1->DrawLatex(0.59,0.76,pttLatex.Data());
+  latexInfo1->DrawLatex(0.59,0.70,ptaLatex.Data());
+
 
   TLatex *latexResults = new TLatex();
   latexResults->SetNDC();
   latexResults->SetTextSize(0.04);
   latexResults->SetTextColor(1);
-  latexResults->DrawLatex(0.6,0.88,meanLatex.Data());
-  latexResults->DrawLatex(0.6,0.82,rmsLatex.Data());
-  latexResults->DrawLatex(0.6,0.76,skewnessLatex.Data());
-  latexResults->DrawLatex(0.6,0.70,kurtosisLatex.Data());
 
+  if(gDeltaEtaDeltaPhi == 1) {
+    latexResults->DrawLatex(0.18,0.88,meanLatex.Data());
+    latexResults->DrawLatex(0.18,0.82,rmsLatex.Data());
+    latexResults->DrawLatex(0.18,0.76,skewnessLatex.Data());
+    latexResults->DrawLatex(0.18,0.70,kurtosisLatex.Data());
+  }
+  else if(gDeltaEtaDeltaPhi == 2) {
+    latexResults->DrawLatex(0.59,0.60,meanLatex.Data());
+    latexResults->DrawLatex(0.59,0.54,rmsLatex.Data());
+    latexResults->DrawLatex(0.59,0.48,skewnessLatex.Data());
+    latexResults->DrawLatex(0.59,0.42,kurtosisLatex.Data());
+  }
+
+  TString pngName = "BalanceFunction."; 
+  pngName += "Centrality";
+  pngName += gCentrality; 
+  if(gDeltaEtaDeltaPhi == 1) pngName += ".InDeltaEta.Psi";
+  else if(gDeltaEtaDeltaPhi == 2) pngName += ".InDeltaPhi.Psi";
+  if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.PttFrom";
+  else pngName += "All.PttFrom";  
+  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
+  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
+  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
+  pngName += Form("%.1f",ptAssociatedMax); 
+  pngName += ".png";
+
+  c2->SaveAs(pngName.Data());
 }
