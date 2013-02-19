@@ -272,6 +272,10 @@ public:
   void             SwitchOffPrimaryVertexSelection()       { fUseEventsWithPrimaryVertex = kFALSE ; }
   Bool_t           IsPrimaryVertexSelectionDone()    const { return fUseEventsWithPrimaryVertex   ; } 
   
+  void             SwitchOnRejectNoTrackEvents()           { fDoRejectNoTrackEvents = kTRUE  ; }
+  void             SwitchOffRejectNoTrackEvents()          { fDoRejectNoTrackEvents = kFALSE ; }
+  Bool_t           IsEventWithNoTrackRejectionDone() const { return fDoRejectNoTrackEvents   ; }
+  
   //Time Stamp
   
   Double_t         GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
@@ -442,9 +446,10 @@ public:
   virtual AliGenEventHeader* GetGenEventHeader()     const ;
   
   //Filtered kinematics in AOD	
-  virtual TClonesArray*     GetAODMCParticles(Int_t input = 0) const ;
-  virtual AliAODMCHeader*   GetAODMCHeader()         const ;
-	
+  virtual TClonesArray*     GetAODMCParticles()      const ;
+  virtual AliAODMCHeader*   GetAODMCHeader   ()      const ;
+	virtual void              CorrectMCLabelForAODs(AliVCluster * clus);
+  
   virtual AliVEvent*        GetInputEvent()          const { return fInputEvent            ; }
   virtual AliVEvent*        GetOriginalInputEvent()  const { return 0x0                    ; }
   virtual AliAODEvent*      GetOutputEvent()         const { return fOutputEvent           ; }
@@ -592,6 +597,7 @@ public:
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
   Bool_t           fDoVertexBCEventSelection;    // Select events with vertex on BC=0 or -100
+  Bool_t           fDoRejectNoTrackEvents;       // Reject events with no selected tracks in event
   Bool_t           fUseEventsWithPrimaryVertex ; // Select events with primary vertex
   AliTriggerAnalysis* fTriggerAnalysis;          // Access to trigger selection algorithm for V0AND calculation
   
@@ -631,7 +637,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,50)
+  ClassDef(AliCaloTrackReader,51)
   
 } ;
 

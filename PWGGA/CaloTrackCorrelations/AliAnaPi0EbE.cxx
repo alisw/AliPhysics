@@ -1519,8 +1519,8 @@ void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1,
   
   if(label1 < 0 || label2 < 0 ) return ;
   
-  //Int_t tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader(), photon1->GetInputFileIndex());
-  //Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), photon2->GetInputFileIndex());
+  //Int_t tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader());
+  //Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader());
   Int_t tag1 = photon1->GetTag();
   Int_t tag2 = photon2->GetTag();
   
@@ -1552,13 +1552,13 @@ void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1,
     {//&& (input > -1)){
       if(label1>=0)
       {
-        AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon1->GetInputFileIndex()))->At(label1);//photon in kine tree
+        AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label1);//photon in kine tree
         label1 = mother1->GetMother();
         //mother1 = GetMCStack()->Particle(label1);//pi0
       }
       if(label2>=0)
       {
-        AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon2->GetInputFileIndex()))->At(label2);//photon in kine tree
+        AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label2);//photon in kine tree
         label2 = mother2->GetMother();
         //mother2 = GetMCStack()->Particle(label2);//pi0
       }
@@ -1906,7 +1906,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       if(IsDataMC())
       {
         Int_t	label2 = photon2->GetLabel();
-        if(label2 >= 0 )photon2->SetTag(GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), photon2->GetInputFileIndex()));
+        if(label2 >= 0 )photon2->SetTag(GetMCAnalysisUtils()->CheckOrigin(label2, GetReader()));
         
         HasPairSameMCMother(photon1, photon2, label, tag) ;
       }
@@ -2049,7 +2049,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Int_t tag	= 0 ;
     if(IsDataMC())
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),0);
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader());
       //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
       if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",tag);
     }      

@@ -728,8 +728,9 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
     else if(GetReader()->ReadAODMCParticles()){
       
       //Get the list of MC particles
-      mcparticles = GetReader()->GetAODMCParticles(0);
-      if(!mcparticles && GetDebug() > 0) 	{
+      mcparticles = GetReader()->GetAODMCParticles();
+      if(!mcparticles && GetDebug() > 0)
+      {
         printf("AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
       }	
     }

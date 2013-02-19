@@ -3581,7 +3581,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
   else if(GetReader()->ReadAODMCParticles())
   {
     //Get the list of MC particles
-    mcparticles0 = GetReader()->GetAODMCParticles(0);
+    mcparticles0 = GetReader()->GetAODMCParticles();
     if(!mcparticles0) return;
     
     if(label >=mcparticles0->GetEntriesFast())
