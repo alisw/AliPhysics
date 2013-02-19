@@ -53,12 +53,14 @@ AliFlowEventSimple::AliFlowEventSimple():
   fReferenceMultiplicity(0),
   fNumberOfTracks(0),
   fNumberOfRPs(0),
+  fNumberOfPOIs(0),
   fMCReactionPlaneAngle(0.),
   fMCReactionPlaneAngleIsSet(kFALSE),
   fAfterBurnerPrecision(0.001),
   fUserModified(kFALSE),
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
+  fNumberOfPOIsWrap(NULL),
   fMCReactionPlaneAngleWrap(NULL)
 {
   cout << "AliFlowEventSimple: Default constructor to be used only by root for io" << endl;
@@ -76,12 +78,14 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   fReferenceMultiplicity(0),
   fNumberOfTracks(0),
   fNumberOfRPs(0),
+  fNumberOfPOIs(0),
   fMCReactionPlaneAngle(0.),
   fMCReactionPlaneAngleIsSet(kFALSE),
   fAfterBurnerPrecision(0.001),
   fUserModified(kFALSE),
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
+  fNumberOfPOIsWrap(NULL),
   fMCReactionPlaneAngleWrap(NULL)
 {
   //ctor
@@ -100,12 +104,14 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fReferenceMultiplicity(anEvent.fReferenceMultiplicity),
   fNumberOfTracks(anEvent.fNumberOfTracks),
   fNumberOfRPs(anEvent.fNumberOfRPs),
+  fNumberOfPOIs(anEvent.fNumberOfPOIs),
   fMCReactionPlaneAngle(anEvent.fMCReactionPlaneAngle),
   fMCReactionPlaneAngleIsSet(anEvent.fMCReactionPlaneAngleIsSet),
   fAfterBurnerPrecision(anEvent.fAfterBurnerPrecision),
   fUserModified(anEvent.fUserModified),
   fNumberOfTracksWrap(anEvent.fNumberOfTracksWrap),
   fNumberOfRPsWrap(anEvent.fNumberOfRPsWrap),
+  fNumberOfPOIsWrap(anEvent.fNumberOfPOIsWrap),
   fMCReactionPlaneAngleWrap(anEvent.fMCReactionPlaneAngleWrap)
 {
   //copy constructor
@@ -122,12 +128,14 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fReferenceMultiplicity = anEvent.fReferenceMultiplicity;
   fNumberOfTracks = anEvent.fNumberOfTracks;
   fNumberOfRPs = anEvent.fNumberOfRPs;
+  fNumberOfPOIs = anEvent.fNumberOfPOIs;
   fMCReactionPlaneAngle = anEvent.fMCReactionPlaneAngle;
   fMCReactionPlaneAngleIsSet = anEvent.fMCReactionPlaneAngleIsSet;
   fAfterBurnerPrecision = anEvent.fAfterBurnerPrecision;
   fUserModified=anEvent.fUserModified;
   fNumberOfTracksWrap = anEvent.fNumberOfTracksWrap;
   fNumberOfRPsWrap = anEvent.fNumberOfRPsWrap;
+  fNumberOfPOIsWrap = anEvent.fNumberOfPOIsWrap;
   fMCReactionPlaneAngleWrap=anEvent.fMCReactionPlaneAngleWrap;
   return *this;
 }
@@ -140,6 +148,7 @@ AliFlowEventSimple::~AliFlowEventSimple()
   delete fTrackCollection;
   delete fNumberOfTracksWrap;
   delete fNumberOfRPsWrap;
+  delete fNumberOfPOIsWrap;
   delete fMCReactionPlaneAngleWrap;
 }
 
@@ -464,8 +473,8 @@ void AliFlowEventSimple::Print(Option_t *option) const
   //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
   //             ===============================================
   //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
-  printf( "Class.Print Name = %s, #tracks= %d, Number of RPs= %d, MC EventPlaneAngle= %f\n",
-          GetName(),fNumberOfTracks, fNumberOfRPs, fMCReactionPlaneAngle );
+  printf( "Class.Print Name = %s, #tracks= %d, Number of RPs= %d, Number of POIs= %d, MC EventPlaneAngle= %f\n",
+          GetName(),fNumberOfTracks, fNumberOfRPs, fNumberOfPOIs, fMCReactionPlaneAngle );
 
   TString optionstr(option);
   if (!optionstr.Contains("all")) return;
@@ -494,6 +503,11 @@ void AliFlowEventSimple::Browse(TBrowser *b)
     fNumberOfRPsWrap = new TParameter<int>("fNumberOfRPs", fNumberOfRPs);
     b->Add(fNumberOfRPsWrap);
   }
+  if (!fNumberOfPOIsWrap)
+  {
+    fNumberOfPOIsWrap = new TParameter<int>("fNumberOfPOIs", fNumberOfPOIs);
+    b->Add(fNumberOfPOIsWrap);
+  }
   if (!fMCReactionPlaneAngleWrap)
   {
     fMCReactionPlaneAngleWrap = new TParameter<double>(" fMCReactionPlaneAngle",  fMCReactionPlaneAngle);
@@ -510,12 +524,14 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fReferenceMultiplicity(0),
   fNumberOfTracks(0),
   fNumberOfRPs(0),
+  fNumberOfPOIs(0),
   fMCReactionPlaneAngle(0.),
   fMCReactionPlaneAngleIsSet(kFALSE),
   fAfterBurnerPrecision(0.001),
   fUserModified(kFALSE),
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
+  fNumberOfPOIsWrap(NULL),
   fMCReactionPlaneAngleWrap(NULL)
 {
   //constructor, fills the event from a TTree of kinematic.root files
@@ -526,8 +542,6 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
 
   TParticle* pParticle = new TParticle();
   inputTree->SetBranchAddress("Particles",&pParticle);
-
-  Int_t iSelParticlesPOI = 0;
 
   for (Int_t i=0; i<numberOfInputTracks; i++)
   {
@@ -548,12 +562,14 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
       {
         pTrack->SetForRPSelection(kTRUE);
         fNumberOfRPs++;
+        cout<<"fNumberOfRPs = "<<fNumberOfRPs<<endl;
       }
       //marking the particles used for diff. flow:
       if(poiOK)
       {
         pTrack->SetForPOISelection(kTRUE);
-        iSelParticlesPOI++;
+        fNumberOfPOIs++;
+        cout<<"fNumberOfPOIs = "<<fNumberOfPOIs<<endl;
       }
       //adding a particles which were used either for int. or diff. flow to the list
       AddTrack(pTrack);
@@ -756,6 +772,15 @@ void AliFlowEventSimple::TagPOI( const AliFlowTrackSimpleCuts* cuts )
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
     if (!track) continue;
     Bool_t pass=cuts->PassesCuts(track);
+    Bool_t poiTrack=track->InPOISelection();
+    if (pass) 
+    {
+      if (!poiTrack) fNumberOfPOIs++; //only increase if not already tagged
+    }
+    else
+    {
+      if (poiTrack) fNumberOfPOIs--; //only decrease if detagging
+    }
     track->SetForPOISelection(pass);
   }
 }
@@ -775,7 +800,8 @@ void AliFlowEventSimple::DefineDeadZone( Double_t etaMin,
     Double_t phi = track->Phi();
     if (eta>etaMin && eta<etaMax && phi>phiMin && phi<phiMax)
     {
-      if (track->InRPSelection()) fNumberOfRPs--;
+      if (track->InRPSelection()) {fNumberOfRPs--;}
+      if (track->InPOISelection()) {fNumberOfPOIs--;}
       track->ResetFlowTags();
     }
   }
@@ -819,6 +845,7 @@ void AliFlowEventSimple::ClearFast()
   fReferenceMultiplicity = 0;
   fNumberOfTracks = 0;
   fNumberOfRPs = 0;
+  fNumberOfPOIs = 0;
   fMCReactionPlaneAngle = 0.0;
   fMCReactionPlaneAngleIsSet = kFALSE;
   fAfterBurnerPrecision = 0.001;

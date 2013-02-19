@@ -229,6 +229,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
   } // end of if(fNTimes>1)       
  } // end of for(Int_t p=0;p<iMult;p++)
  pEvent->SetNumberOfRPs(fNTimes*nRPs);
+ pEvent->SetNumberOfPOIs(fNTimes*nPOIs);
  
  // e) Cosmetics for the printout on the screen:
  Int_t cycle = (fPtDependentV2 ? 10 : 100);

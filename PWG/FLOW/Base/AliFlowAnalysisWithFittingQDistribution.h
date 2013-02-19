@@ -83,6 +83,7 @@ class AliFlowAnalysisWithFittingQDistribution{
   Int_t GetHarmonic() const {return this->fHarmonic;};
   void SetAnalysisLabel(const char *aLabel) {this->fAnalysisLabel->Append(*aLabel);};
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
+  void SetMultiplicityIs(AliFlowCommonConstants::ERefMultSource mi) {this->fMultiplicityIs = mi;};
   // 2.) weights:
   void SetWeightsList(TList* wlist) {this->fWeightsList = (TList*)wlist->Clone();};
   TList* GetWeightsList() const {return this->fWeightsList;}  
@@ -113,8 +114,6 @@ class AliFlowAnalysisWithFittingQDistribution{
   Int_t GetqNbins() const {return this->fqNbins;};
   void SetStoreqDistributionVsMult(Bool_t const sqdvm) {this->fStoreqDistributionVsMult = sqdvm;};
   Bool_t GetStoreqDistributionVsMult() const {return this->fStoreqDistributionVsMult;};  
-  void SetMultiplicityIsRefMultiplicity(Bool_t const mirm) {this->fMultiplicityIsRefMultiplicity = mirm;};
-  Bool_t GetMultiplicityIsRefMultiplicity() const {return this->fMultiplicityIsRefMultiplicity;};
   void SetqDistributionVsMult(TH2D* const qdvm) {this->fqDistributionVsMult = qdvm;};
   TH2D* GetqDistributionVsMult() const {return this->fqDistributionVsMult;};
   void SetMinMult(Double_t const minm) {this->fMinMult = minm;};
@@ -153,6 +152,8 @@ class AliFlowAnalysisWithFittingQDistribution{
   Bool_t GetFinalResultIsFromSigma2Fitted() const {return this->fFinalResultIsFromSigma2Fitted;};  
   void SetPrintOnTheScreen(Bool_t pots) {this->fPrintOnTheScreen = pots;};
   Bool_t GetPrintOnTheScreen() const {return this->fPrintOnTheScreen;};  
+  void SetDoFit(Bool_t df) {this->fDoFit = df;};
+  Bool_t GetDoFit() const {return this->fDoFit;};  
   
  private:
   AliFlowAnalysisWithFittingQDistribution(const AliFlowAnalysisWithFittingQDistribution &afawfqd);
@@ -177,6 +178,7 @@ class AliFlowAnalysisWithFittingQDistribution{
   Double_t fEtaBinWidth; // bin width for eta histograms 
   Int_t fHarmonic; // harmonic 
   TString *fAnalysisLabel; // analysis label (all histograms and output file will have this label)
+  AliFlowCommonConstants::ERefMultSource fMultiplicityIs; // by default "kRP", see AliFlowCommonConstants to see the other options
   // 2.) particle weights (abbreviated to 'pWeights' or even to 'pW' throughout the code):
   TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
   Bool_t fUsePhiWeights; // use phi weights
@@ -193,7 +195,6 @@ class AliFlowAnalysisWithFittingQDistribution{
   Double_t fqMax; // upper boundary of TH1D *fqDistribution
   Int_t fqNbins; // number of bins of TH1D *fqDistribution
   Bool_t fStoreqDistributionVsMult; // store q-distributions vs M 
-  Bool_t fMultiplicityIsRefMultiplicity; // kFALSE = multiplicity is # of selected tracks; kTRUE = multiplicity is ref. mult from ESD     
   TH2D *fqDistributionVsMult; // distribution of Q/sqrt{M} vs multiplicity
   Double_t fMinMult; // minimum multiplicity
   Double_t fMaxMult; // maximum multiplicity
@@ -214,6 +215,7 @@ class AliFlowAnalysisWithFittingQDistribution{
   Double_t fSigma2Max; // sigma2 range, upper boundary
   Bool_t fFinalResultIsFromSigma2Fitted; // the result obtained with sigma^2 fitted or sigma^2 fixed is being stored
   Bool_t fPrintOnTheScreen; // print or not the final results on the screen
+  Bool_t fDoFit; // do the final fit
   
   ClassDef(AliFlowAnalysisWithFittingQDistribution, 0);
 };

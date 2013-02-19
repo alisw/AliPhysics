@@ -13,13 +13,14 @@
  *          Raimond Snellings         *
  *           (snelling@nikhef.nl)     * 
  *          Ante Bilandzic            *
- *           (anteb@nikhef.nl)        * 
+ *           (abilandzic@gmail.com)   * 
  * ***********************************/
 
 #ifndef ALIANALYSISTASKFITTINGQDISTRIBUTION_H
 #define ALIANALYSISTASKFITTINGQDISTRIBUTION_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliFlowCommonConstants.h"
 
 class TString;
 class TList;
@@ -54,8 +55,6 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
   Int_t GetqNbins() const {return this->fqNbins;};  
   void SetStoreqDistributionVsMult(Bool_t const sqdvm) {this->fStoreqDistributionVsMult = sqdvm;};
   Bool_t GetStoreqDistributionVsMult() const {return this->fStoreqDistributionVsMult;};  
-  void SetMultiplicityIsRefMultiplicity(Bool_t const mirm) {this->fMultiplicityIsRefMultiplicity = mirm;};
-  Bool_t GetMultiplicityIsRefMultiplicity() const {return this->fMultiplicityIsRefMultiplicity;};  
   void SetqDistributionVsMult(TH2D* const qdvm) {this->fqDistributionVsMult = qdvm;};
   TH2D* GetqDistributionVsMult() const {return this->fqDistributionVsMult;};
   void SetMinMult(Double_t const minm) {this->fMinMult = minm;};
@@ -64,6 +63,9 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
   Double_t GetMaxMult() const {return this->fMaxMult;};
   void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
   Int_t GetnBinsMult() const {return this->fnBinsMult;};  
+  void SetDoFit(Bool_t df) {this->fDoFit = df;};
+  Bool_t GetDoFit() const {return this->fDoFit;}; 
+  void SetMultiplicityIs(AliFlowCommonConstants::ERefMultSource mi) {this->fMultiplicityIs = mi;};
  
  private:
   AliAnalysisTaskFittingQDistribution(const AliAnalysisTaskFittingQDistribution& aatfqd);
@@ -82,11 +84,12 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
   Double_t fqMax;                        // upper boundary of TH1D *fqDistribution
   Int_t fqNbins;                         // number of bins of TH1D *fqDistribution                                             
   Bool_t fStoreqDistributionVsMult;      // store q-distributions vs M
-  Bool_t fMultiplicityIsRefMultiplicity; // kFALSE = multiplicity is # of selected tracks; kTRUE = multiplicity is ref. mult from ESD  
   TH2D *fqDistributionVsMult;            // distribution of Q/sqrt{M} vs multiplicity
   Double_t fMinMult;                     // minimum multiplicity
   Double_t fMaxMult;                     // maximum multiplicity
   Int_t fnBinsMult;                      // number of multiplicity bins
+  Bool_t fDoFit;                         // do the final fit
+  AliFlowCommonConstants::ERefMultSource fMultiplicityIs;              // by default kRP
                                                            
   ClassDef(AliAnalysisTaskFittingQDistribution, 1); 
 };

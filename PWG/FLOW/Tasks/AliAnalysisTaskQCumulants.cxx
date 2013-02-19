@@ -59,9 +59,9 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE), 
  fCalculateAllCorrelationsVsM(kFALSE), 
- fMultiplicityIsRefMultiplicity(kFALSE),
  fCalculateMixedHarmonics(kFALSE),
  fCalculateMixedHarmonicsVsM(kFALSE),
+ fStoreControlHistograms(kFALSE),
  fMinimumBiasReferenceFlow(kTRUE), 
  fForgetAboutCovariances(kFALSE),  
  fStorePhiDistributionForOneEvent(kFALSE),
@@ -74,10 +74,11 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fUseEtaWeights(kFALSE),
  fUseTrackWeights(kFALSE),
  fWeightsList(NULL),
- fMultiplicityWeight(NULL)
+ fMultiplicityWeight(NULL),
+ fMultiplicityIs(AliFlowCommonConstants::kRP)
 {
  // constructor
-  AliDebug(2,"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t useParticleWeights)");
+ AliDebug(2,"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t useParticleWeights)");
  
  // Define input and output slots here
  // Input slot #0 works with an AliFlowEventSimple
@@ -99,7 +100,6 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  {
   fPhiDistributionForOneEventSettings[p] = 0.;
  } 
-  
 }
 
 AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(): 
@@ -119,9 +119,9 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE),  
  fCalculateAllCorrelationsVsM(kFALSE),  
- fMultiplicityIsRefMultiplicity(kFALSE), 
  fCalculateMixedHarmonics(kFALSE),
  fCalculateMixedHarmonicsVsM(kFALSE),
+ fStoreControlHistograms(kFALSE),
  fMinimumBiasReferenceFlow(kFALSE), 
  fForgetAboutCovariances(kFALSE), 
  fStorePhiDistributionForOneEvent(kFALSE), 
@@ -134,7 +134,8 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fUseEtaWeights(kFALSE),
  fUseTrackWeights(kFALSE),
  fWeightsList(NULL),
- fMultiplicityWeight(NULL)
+ fMultiplicityWeight(NULL),
+ fMultiplicityIs(AliFlowCommonConstants::kRP)
 {
  // Dummy constructor
   AliDebug(2,"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants()");
@@ -170,9 +171,9 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  fQC->SetStoreDistributions(fStoreDistributions);
  fQC->SetCalculateCumulantsVsM(fCalculateCumulantsVsM);
  fQC->SetCalculateAllCorrelationsVsM(fCalculateAllCorrelationsVsM);
- fQC->SetMultiplicityIsRefMultiplicity(fMultiplicityIsRefMultiplicity);
  fQC->SetCalculateMixedHarmonics(fCalculateMixedHarmonics);
  fQC->SetCalculateMixedHarmonicsVsM(fCalculateMixedHarmonicsVsM);
+ fQC->SetStoreControlHistograms(fStoreControlHistograms);
  fQC->SetMinimumBiasReferenceFlow(fMinimumBiasReferenceFlow); 
  fQC->SetForgetAboutCovariances(fForgetAboutCovariances); 
  // Multiparticle correlations vs multiplicity:
@@ -196,10 +197,12 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
   if(fWeightsList) fQC->SetWeightsList(fWeightsList);
  }
  // Event weights:
- if(!(strcmp(fMultiplicityWeight->Data(),"combinations")==0)) // default is "combinations"
+ if(!fMultiplicityWeight->Contains("combinations")) // default is "combinations"
  {
   fQC->SetMultiplicityWeight(fMultiplicityWeight->Data());
  }
+
+ fQC->SetMultiplicityIs(fMultiplicityIs);
 
  // Store phi distribution for one event to illustrate flow:
  fQC->SetStorePhiDistributionForOneEvent(fStorePhiDistributionForOneEvent);

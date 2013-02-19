@@ -19,6 +19,7 @@
 #define ALIANALYSISTASKQCUMULANTS_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliFlowCommonConstants.h"
 
 class TString;
 class TList;
@@ -62,12 +63,12 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};
   void SetCalculateAllCorrelationsVsM(Bool_t const cacvm) {this->fCalculateAllCorrelationsVsM = cacvm;};
   Bool_t GetCalculateAllCorrelationsVsM() const {return this->fCalculateAllCorrelationsVsM;}; 
-  void SetMultiplicityIsRefMultiplicity(Bool_t const mirm) {this->fMultiplicityIsRefMultiplicity = mirm;};
-  Bool_t GetMultiplicityIsRefMultiplicity() const {return this->fMultiplicityIsRefMultiplicity;};   
   void SetCalculateMixedHarmonics(Bool_t const cmh) {this->fCalculateMixedHarmonics = cmh;};
   Bool_t GetCalculateMixedHarmonics() const {return this->fCalculateMixedHarmonics;};   
   void SetCalculateMixedHarmonicsVsM(Bool_t const cmhvm) {this->fCalculateMixedHarmonicsVsM = cmhvm;};
-  Bool_t GetCalculateMixedHarmonicsVsM() const {return this->fCalculateMixedHarmonicsVsM;};   
+  Bool_t GetCalculateMixedHarmonicsVsM() const {return this->fCalculateMixedHarmonicsVsM;}; 
+  void SetStoreControlHistograms(Bool_t const sch) {this->fStoreControlHistograms = sch;};
+  Bool_t GetStoreControlHistograms() const {return this->fStoreControlHistograms;};
   void SetMinimumBiasReferenceFlow(Bool_t const mmrf) {this->fMinimumBiasReferenceFlow = mmrf;};
   Bool_t GetMinimumBiasReferenceFlow() const {return this->fMinimumBiasReferenceFlow;};     
   void SetForgetAboutCovariances(Bool_t const fac) {this->fForgetAboutCovariances = fac;};
@@ -95,6 +96,7 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t GetUseTrackWeights() const {return this->fUseTrackWeights;};
   // Event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
+  void SetMultiplicityIs(AliFlowCommonConstants::ERefMultSource mi) {this->fMultiplicityIs = mi;};
  
  private:
   AliAnalysisTaskQCumulants(const AliAnalysisTaskQCumulants& aatqc);
@@ -116,9 +118,9 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t fStoreDistributions;            // store or not distributions of correlations
   Bool_t fCalculateCumulantsVsM;         // calculate cumulants versus multiplicity  
   Bool_t fCalculateAllCorrelationsVsM;   // calculate all correlations versus multiplicity   
-  Bool_t fMultiplicityIsRefMultiplicity; // kFALSE = multiplicity is # of selected tracks; kTRUE = multiplicity is ref. mult from ESD  
   Bool_t fCalculateMixedHarmonics;       // calculate all mixed harmonics correlations     
-  Bool_t fCalculateMixedHarmonicsVsM;    // calculate all mixed harmonics correlations versus multiplicity     
+  Bool_t fCalculateMixedHarmonicsVsM;    // calculate all mixed harmonics correlations versus multiplicity 
+  Bool_t fStoreControlHistograms;        // store or not control histograms
   Bool_t fMinimumBiasReferenceFlow;      // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)     
   Bool_t fForgetAboutCovariances;        // when propagating error forget about the covariances  
   Bool_t fStorePhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
@@ -136,6 +138,7 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   TList *fWeightsList;                // list with weights
   // Event weights:
   TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")  
+  AliFlowCommonConstants::ERefMultSource fMultiplicityIs;           // by default "#RPs", other supported options are "RefMultFromESD" = ref. mult. from ESD, and "#POIs"
   
   ClassDef(AliAnalysisTaskQCumulants, 1); 
 };

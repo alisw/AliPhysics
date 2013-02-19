@@ -48,12 +48,16 @@ class AliFlowEventSimple: public TObject {
   void    Print(Option_t* option = "") const;      //method to print stats
   
   Int_t    NumberOfTracks() const                   { return fNumberOfTracks; }
-  Int_t    GetReferenceMultiplicity() const               { return fReferenceMultiplicity; }
-  void     SetReferenceMultiplicity( Int_t m )            { fReferenceMultiplicity = m; }
+  Int_t    GetReferenceMultiplicity() const         { return fReferenceMultiplicity; }
+  void     SetReferenceMultiplicity( Int_t m )      { fReferenceMultiplicity = m; }
   Int_t    GetEventNSelTracksRP() const             { return fNumberOfRPs; } 
   void     SetEventNSelTracksRP(Int_t nr)           { fNumberOfRPs = nr; }  
+  Int_t    GetEventNSelTracksPOI() const            { return fNumberOfPOIs; } 
+  void     SetEventNSelTracksPOI(Int_t np)          { fNumberOfPOIs = np; }  
   Int_t    GetNumberOfRPs() const                   { return fNumberOfRPs; }
   void     SetNumberOfRPs( Int_t nr )               { fNumberOfRPs=nr; }
+  Int_t    GetNumberOfPOIs() const                  { return fNumberOfPOIs; }
+  void     SetNumberOfPOIs( Int_t np )              { fNumberOfPOIs=np; }
   Double_t GetMCReactionPlaneAngle() const          { return fMCReactionPlaneAngle; }
   void     SetMCReactionPlaneAngle(Double_t fPhiRP) { fMCReactionPlaneAngle=fPhiRP; fMCReactionPlaneAngleIsSet=kTRUE; }
   Bool_t   IsSetMCReactionPlaneAngle() const        { return fMCReactionPlaneAngleIsSet; }
@@ -104,12 +108,14 @@ class AliFlowEventSimple: public TObject {
   Int_t                   fReferenceMultiplicity;     // reference multiplicity
   Int_t                   fNumberOfTracks;            // number of tracks
   Int_t                   fNumberOfRPs;               // number of tracks that have passed the RP selection
+  Int_t                   fNumberOfPOIs;              // number of tracks that have passed the POI selection
   Double_t                fMCReactionPlaneAngle;      // the angle of the reaction plane from the MC truth
   Bool_t                  fMCReactionPlaneAngleIsSet; // did we set it from MC?
   Double_t                fAfterBurnerPrecision;      // iteration precision in afterburner
   Bool_t                  fUserModified;              // did we modify the event in any way (afterburner etc) ?
   TParameter<Int_t>*      fNumberOfTracksWrap;        //! number of tracks in TBrowser
   TParameter<Int_t>*      fNumberOfRPsWrap;           //! number of tracks that have passed the RP selection in TBrowser
+  TParameter<Int_t>*      fNumberOfPOIsWrap;          //! number of tracks that have passed the POI selection in TBrowser
   TParameter<Double_t>*   fMCReactionPlaneAngleWrap;  //! the angle of the reaction plane from the MC truth in TBrowser
 
   ClassDef(AliFlowEventSimple,1)

@@ -111,6 +111,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fEtaWeights(NULL),
  // 2b.) event weights:
  fMultiplicityWeight(NULL),
+ fMultiplicityIs(AliFlowCommonConstants::kRP),
  // 3.) integrated flow:
  fIntFlowList(NULL), 
  fIntFlowProfiles(NULL),
@@ -125,7 +126,6 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fPropagateErrorAlsoFromNIT(kFALSE), 
  fCalculateCumulantsVsM(kFALSE),
  fCalculateAllCorrelationsVsM(kFALSE), 
- fMultiplicityIsRefMultiplicity(kFALSE),
  fMinimumBiasReferenceFlow(kTRUE), 
  fForgetAboutCovariances(kFALSE), 
  fStorePhiDistributionForOneEvent(kFALSE),
@@ -135,6 +135,8 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fIntFlowCorrelationsEBE(NULL),
  fIntFlowEventWeightsForCorrelationsEBE(NULL),
  fIntFlowCorrelationsAllEBE(NULL),
+ fNumberOfRPsEBE(0.),
+ fNumberOfPOIsEBE(0.),
  fReferenceMultiplicityEBE(0.),  
  fAvMultiplicity(NULL),
  fIntFlowCorrelationsPro(NULL),
@@ -208,7 +210,14 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  f7pCumulants(NULL),
  f8pCumulants(NULL),
  fMixedHarmonicProductOfEventWeights(NULL),
- fMixedHarmonicProductOfCorrelations(NULL)
+ fMixedHarmonicProductOfCorrelations(NULL),
+ // 10.) Control histograms:
+ fControlHistogramsList(NULL), 
+ fControlHistogramsFlags(NULL),
+ fStoreControlHistograms(kFALSE),
+ fCorrelationNoRPsVsRefMult(NULL), 
+ fCorrelationNoPOIsVsRefMult(NULL),
+ fCorrelationNoRPsVsNoPOIs(NULL)
  {
   // constructor  
   
@@ -222,7 +231,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
   
   // multiplicity weight:
   fMultiplicityWeight = new TString("combinations");
-    
+
   // analysis label;
   fAnalysisLabel = new TString();
       
@@ -279,6 +288,7 @@ void AliFlowAnalysisWithQCumulants::Init()
  this->BookEverythingForVarious();
  this->BookEverythingForNestedLoops();
  this->BookEverythingForMixedHarmonics();
+ this->BookEverythingForControlHistograms();
 
  // d) Store flags for integrated and differential flow:
  this->StoreIntFlowFlags();
@@ -325,18 +335,19 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t wPt  = 1.; // pt weight
  Double_t wEta = 1.; // eta weight
  Double_t wTrack = 1.; // track weight
- Int_t nRP = anEvent->GetEventNSelTracksRP(); // number of RPs (i.e. number of reference particles)
+ fNumberOfRPsEBE = anEvent->GetNumberOfRPs(); // number of RPs (i.e. number of reference particles)
+ fNumberOfPOIsEBE = anEvent->GetNumberOfPOIs(); // number of POIs (i.e. number of particles of interest)
  fReferenceMultiplicityEBE = anEvent->GetReferenceMultiplicity(); // reference multiplicity for current event
  Double_t ptEta[2] = {0.,0.}; // 0 = dPt, 1 = dEta
   
  // c) Fill the common control histograms and call the method to fill fAvMultiplicity:
  this->FillCommonControlHistograms(anEvent);                                                               
- this->FillAverageMultiplicities(nRP);                                                                  
+ this->FillAverageMultiplicities(fNumberOfRPsEBE); 
+ if(fStoreControlHistograms){this->FillControlHistograms(anEvent);}                                                              
                                                                                                                                                                                                                                                                                         
  // d) Loop over data and calculate e-b-e quantities Q_{n,k}, S_{p,k} and s_{p,k}:
- Int_t nPrim = anEvent->NumberOfTracks();  // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI where:
-                                           //  nRP   = # of reference particles;
-                                           //  nPOI  = # of particles of interest.
+ Int_t nPrim = anEvent->NumberOfTracks();  // nPrim = total number of primary tracks
+
  AliFlowTrackSimple *aftsTrack = NULL;
  Int_t n = fHarmonic; // shortcut for the harmonic 
  for(Int_t i=0;i<nPrim;i++) 
@@ -521,29 +532,29 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  {
   if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights||fUseTrackWeights))
   {
-   if(nRP>1){this->CalculateIntFlowCorrelations();} // without using particle weights
+   if(fNumberOfRPsEBE>1){this->CalculateIntFlowCorrelations();} // without using particle weights
   } else // to if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights||fUseTrackWeights))
     {
-     if(nRP>1){this->CalculateIntFlowCorrelationsUsingParticleWeights();} // with using particle weights   
+     if(fNumberOfRPsEBE>1){this->CalculateIntFlowCorrelationsUsingParticleWeights();} // with using particle weights   
     }        
   // Whether or not using particle weights the following is calculated in the same way:  
-  if(nRP>3){this->CalculateIntFlowProductOfCorrelations();}
-  if(nRP>1){this->CalculateIntFlowSumOfEventWeights();}
-  if(nRP>1){this->CalculateIntFlowSumOfProductOfEventWeights();}  
+  if(fNumberOfRPsEBE>3){this->CalculateIntFlowProductOfCorrelations();}
+  if(fNumberOfRPsEBE>1){this->CalculateIntFlowSumOfEventWeights();}
+  if(fNumberOfRPsEBE>1){this->CalculateIntFlowSumOfProductOfEventWeights();}  
   // Non-isotropic terms:
   if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights||fUseTrackWeights))
   {
-   if(nRP>0){this->CalculateIntFlowCorrectionsForNUASinTerms();}
-   if(nRP>0){this->CalculateIntFlowCorrectionsForNUACosTerms();}
+   if(fNumberOfRPsEBE>0){this->CalculateIntFlowCorrectionsForNUASinTerms();}
+   if(fNumberOfRPsEBE>0){this->CalculateIntFlowCorrectionsForNUACosTerms();}
   } else // to if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights||fUseTrackWeights))
     {
-     if(nRP>0){this->CalculateIntFlowCorrectionsForNUASinTermsUsingParticleWeights();}
-     if(nRP>0){this->CalculateIntFlowCorrectionsForNUACosTermsUsingParticleWeights();}     
+     if(fNumberOfRPsEBE>0){this->CalculateIntFlowCorrectionsForNUASinTermsUsingParticleWeights();}
+     if(fNumberOfRPsEBE>0){this->CalculateIntFlowCorrectionsForNUACosTermsUsingParticleWeights();}     
     }      
   // Whether or not using particle weights the following is calculated in the same way:  
-  if(nRP>0){this->CalculateIntFlowProductOfCorrectionTermsForNUA();}     
-  if(nRP>0){this->CalculateIntFlowSumOfEventWeightsNUA();}     
-  if(nRP>0){this->CalculateIntFlowSumOfProductOfEventWeightsNUA();}     
+  if(fNumberOfRPsEBE>0){this->CalculateIntFlowProductOfCorrectionTermsForNUA();}     
+  if(fNumberOfRPsEBE>0){this->CalculateIntFlowSumOfEventWeightsNUA();}     
+  if(fNumberOfRPsEBE>0){this->CalculateIntFlowSumOfProductOfEventWeightsNUA();}     
   // Mixed harmonics:
   if(fCalculateMixedHarmonics){this->CalculateMixedHarmonics();}
  } // end of if(!fEvaluateIntFlowNestedLoops)
@@ -706,7 +717,6 @@ void AliFlowAnalysisWithQCumulants::Finish()
  fStorePhiDistributionForOneEvent = (Bool_t)fIntFlowFlags->GetBinContent(13);
  fFillMultipleControlHistograms = (Bool_t)fIntFlowFlags->GetBinContent(14); 
  fCalculateAllCorrelationsVsM = (Bool_t)fIntFlowFlags->GetBinContent(15);
- fMultiplicityIsRefMultiplicity = (Bool_t)fIntFlowFlags->GetBinContent(16);
  fEvaluateIntFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(1);
  fEvaluateDiffFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(2); 
  fCrossCheckInPtBinNo = (Int_t)fEvaluateNestedLoops->GetBinContent(3);
@@ -842,7 +852,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowNestedLoops(AliFlowEventSimpl
 {
  // Evaluate all correlators for reference flow with nested loops.
  
- Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = nRP + nPOI 
+ Int_t nPrim = anEvent->NumberOfTracks(); // number of primaries
  if(nPrim>0 && nPrim<=fMaxAllowedMultiplicity) // by default fMaxAllowedMultiplicity = 10 
  {
   // Without using particle weights:
@@ -893,7 +903,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowNestedLoops(AliFlowEventSimp
 
  if(!fCalculateDiffFlow){return;}
 
- Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = nRP + nPOI 
+ Int_t nPrim = anEvent->NumberOfTracks(); // number of primaries
  if(nPrim>0 && nPrim<=fMaxAllowedMultiplicity) // by default fMaxAllowedMultiplicity = 10
  {
   // Without using particle weights:
@@ -986,14 +996,17 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
 
  // Multiplicity bin of an event (relevant for all histos vs M): 
  Double_t dMultiplicityBin = 0.;
- if(!fMultiplicityIsRefMultiplicity)
+ if(fMultiplicityIs==AliFlowCommonConstants::kRP)
  {
-  dMultiplicityBin = dMult+0.5;
- } else
+  dMultiplicityBin = fNumberOfRPsEBE+0.5;
+ } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
    {
     dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
-   }
-        
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+     {
+      dMultiplicityBin = fNumberOfPOIsEBE+0.5;
+     } 
+
  //                                  *************************************************************
  //                                  **** corrections for non-uniform acceptance (cos terms): ****
  //                                  *************************************************************
@@ -1092,13 +1105,16 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
         
  // Multiplicity bin of an event (relevant for all histos vs M): 
  Double_t dMultiplicityBin = 0.;
- if(!fMultiplicityIsRefMultiplicity)
+ if(fMultiplicityIs==AliFlowCommonConstants::kRP)
  {
-  dMultiplicityBin = dMult+0.5;
- } else
+  dMultiplicityBin = fNumberOfRPsEBE+0.5;
+ } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
    {
     dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
-   }
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+     {
+      dMultiplicityBin = fNumberOfPOIsEBE+0.5;
+     } 
 
  //                                  *************************************************************
  //                                  **** corrections for non-uniform acceptance (sin terms): ****
@@ -1629,7 +1645,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  // a) Book profile to hold all flags for integrated flow:
  TString intFlowFlagsName = "fIntFlowFlags";
  intFlowFlagsName += fAnalysisLabel->Data();
- fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",16,0,16);
+ fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",16,0.,16.);
  fIntFlowFlags->SetTickLength(-0.01,"Y");
  fIntFlowFlags->SetMarkerStyle(25);
  fIntFlowFlags->SetLabelSize(0.04);
@@ -1650,7 +1666,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowFlags->GetXaxis()->SetBinLabel(13,"fStorePhiDistributionForOneEvent");
  fIntFlowFlags->GetXaxis()->SetBinLabel(14,"fFillMultipleControlHistograms");
  fIntFlowFlags->GetXaxis()->SetBinLabel(15,"Calculate all correlations vs M");
- fIntFlowFlags->GetXaxis()->SetBinLabel(16,"fMultiplicityIsRefMultiplicity");
+ fIntFlowFlags->GetXaxis()->SetBinLabel(16,"fMultiplicityIs");
  fIntFlowList->Add(fIntFlowFlags);
 
  // b) Book event-by-event quantities:
@@ -1747,8 +1763,16 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
                                                  fnBinsMult,fMinMult,fMaxMult,"s");   
    fIntFlowCorrelationsVsMPro[ci]->Sumw2();                                                                                       
    fIntFlowCorrelationsVsMPro[ci]->GetYaxis()->SetTitle(correlationFlag[ci].Data());
-   fIntFlowCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("M");
-   if(fMultiplicityIsRefMultiplicity){fIntFlowCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");} 
+   if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+   {
+    fIntFlowCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("# RPs"); 
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+     {
+      fIntFlowCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");
+     } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+       {
+        fIntFlowCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("# POIs"); 
+       } 
    fIntFlowProfiles->Add(fIntFlowCorrelationsVsMPro[ci]);
    // average squared correlations <<2>^2>, <<4>^2>, <<6>^2> and <<8>^2> versus multiplicity for all events:  
    TString intFlowSquaredCorrelationsVsMProName = "fIntFlowSquaredCorrelationsVsMPro";
@@ -1758,8 +1782,16 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
                                                         fnBinsMult,fMinMult,fMaxMult,"s");   
    fIntFlowSquaredCorrelationsVsMPro[ci]->Sumw2();                                                                                              
    fIntFlowSquaredCorrelationsVsMPro[ci]->GetYaxis()->SetTitle(squaredCorrelationFlag[ci].Data());
-   fIntFlowSquaredCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("M");
-   if(fMultiplicityIsRefMultiplicity){fIntFlowSquaredCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");} 
+   if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+   {
+    fIntFlowSquaredCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("# RPs");
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+     {
+      fIntFlowSquaredCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");
+     } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+       {
+        fIntFlowSquaredCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("# POIs");
+       }
    fIntFlowProfiles->Add(fIntFlowSquaredCorrelationsVsMPro[ci]);
   } // end of for(Int_t ci=0;ci<4;ci++) // correlation index  
  } // end of if(fCalculateCumulantsVsM)
@@ -1911,8 +1943,16 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
    if(fIntFlowCorrelationsAllVsMPro[n])
    {
     fIntFlowCorrelationsAllVsMPro[n]->Sumw2();
-    fIntFlowCorrelationsAllVsMPro[n]->GetXaxis()->SetTitle("M");  
-    if(fMultiplicityIsRefMultiplicity){fIntFlowCorrelationsAllVsMPro[n]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}  
+    if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+    {
+     fIntFlowCorrelationsAllVsMPro[n]->GetXaxis()->SetTitle("# RPs"); 
+    } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+      {
+       fIntFlowCorrelationsAllVsMPro[n]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");
+      } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+        {
+         fIntFlowCorrelationsAllVsMPro[n]->GetXaxis()->SetTitle("# POIs");
+        }
     fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[n]);
    } // end of if(fIntFlowCorrelationsAllVsMPro[n])
   } // end of for(Int_t n=0;n<63;n++)
@@ -1958,8 +1998,16 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
    fIntFlowProductOfCorrelationsVsMPro[pi] = new TProfile(Form("%s, %s",intFlowProductOfCorrelationsVsMProName.Data(),productFlag[pi].Data()),
                                                           Form("%s versus multiplicity",productFlag[pi].Data()),
                                                           fnBinsMult,fMinMult,fMaxMult);             
-   fIntFlowProductOfCorrelationsVsMPro[pi]->GetXaxis()->SetTitle("M");
-   if(fMultiplicityIsRefMultiplicity){fIntFlowProductOfCorrelationsVsMPro[pi]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}
+   if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+   {
+    fIntFlowProductOfCorrelationsVsMPro[pi]->GetXaxis()->SetTitle("# RPs");
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+     {
+      fIntFlowProductOfCorrelationsVsMPro[pi]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");
+     } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+       {
+        fIntFlowProductOfCorrelationsVsMPro[pi]->GetXaxis()->SetTitle("# POIs");
+       }
    fIntFlowProfiles->Add(fIntFlowProductOfCorrelationsVsMPro[pi]);
   } // end of for(Int_t pi=0;pi<6;pi++)
  } // end of if(fCalculateCumulantsVsM) 
@@ -2053,8 +2101,16 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
                                               Form("%s vs multiplicity",correlationFlag[ci].Data()),
                                               fnBinsMult,fMinMult,fMaxMult);                                            
    fIntFlowCorrelationsVsMHist[ci]->GetYaxis()->SetTitle(correlationFlag[ci].Data());
-   fIntFlowCorrelationsVsMHist[ci]->GetXaxis()->SetTitle("M");
-   if(fMultiplicityIsRefMultiplicity){fIntFlowCorrelationsVsMHist[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}
+   if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+   {
+    fIntFlowCorrelationsVsMHist[ci]->GetXaxis()->SetTitle("# RPs");
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+     {
+      fIntFlowCorrelationsVsMHist[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");
+     } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+       {
+        fIntFlowCorrelationsVsMHist[ci]->GetXaxis()->SetTitle("# POIs");
+       }
    fIntFlowResults->Add(fIntFlowCorrelationsVsMHist[ci]);
   } // end of for(Int_t ci=0;ci<4;ci++) // correlation index   
  } // end of if(fCalculateCumulantsVsM) 
@@ -2177,8 +2233,16 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
                                          Form("%s vs multiplicity",covarianceFlag[ci].Data()),
                                          fnBinsMult,fMinMult,fMaxMult);
    fIntFlowCovariancesVsM[ci]->GetYaxis()->SetTitle(covarianceFlag[ci].Data());
-   fIntFlowCovariancesVsM[ci]->GetXaxis()->SetTitle("M");
-   if(fMultiplicityIsRefMultiplicity){fIntFlowCovariancesVsM[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}
+   if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+   {
+    fIntFlowCovariancesVsM[ci]->GetXaxis()->SetTitle("# RPs");
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+     {
+      fIntFlowCovariancesVsM[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");
+     } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+       {
+        fIntFlowCovariancesVsM[ci]->GetXaxis()->SetTitle("# POIs");
+       }
    fIntFlowResults->Add(fIntFlowCovariancesVsM[ci]);
   }
  } // end of if(fCalculateCumulantsVsM) 
@@ -2198,8 +2262,16 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
                                                        Form("%s vs multiplicity",sumFlag[power][si].Data()),
                                                        fnBinsMult,fMinMult,fMaxMult);    
     fIntFlowSumOfEventWeightsVsM[si][power]->GetYaxis()->SetTitle(sumFlag[power][si].Data());  
-    fIntFlowSumOfEventWeightsVsM[si][power]->GetXaxis()->SetTitle("M"); 
-    if(fMultiplicityIsRefMultiplicity){fIntFlowSumOfEventWeightsVsM[si][power]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");} 
+    if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+    {
+     fIntFlowSumOfEventWeightsVsM[si][power]->GetXaxis()->SetTitle("# RPs");
+    } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+      {
+       fIntFlowSumOfEventWeightsVsM[si][power]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");
+      } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+        {
+         fIntFlowSumOfEventWeightsVsM[si][power]->GetXaxis()->SetTitle("# POIs");
+        }
     fIntFlowResults->Add(fIntFlowSumOfEventWeightsVsM[si][power]);
    } // end of for(Int_t power=0;power<2;power++)
   } // end of for(Int_t si=0;si<4;si++)   
@@ -2218,8 +2290,16 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
    fIntFlowSumOfProductOfEventWeightsVsM[pi] = new TH1D(Form("%s, %s",intFlowSumOfProductOfEventWeightsVsMName.Data(),sopowFlag[pi].Data()),
                                                         Form("%s versus multiplicity",sopowFlag[pi].Data()),
                                                         fnBinsMult,fMinMult,fMaxMult); 
-   fIntFlowSumOfProductOfEventWeightsVsM[pi]->GetXaxis()->SetTitle("M");
-   if(fMultiplicityIsRefMultiplicity){fIntFlowSumOfProductOfEventWeightsVsM[pi]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}
+   if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+   {
+    fIntFlowSumOfProductOfEventWeightsVsM[pi]->GetXaxis()->SetTitle("# RPs"); 
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+     {
+      fIntFlowSumOfProductOfEventWeightsVsM[pi]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");
+     } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+       {
+        fIntFlowSumOfProductOfEventWeightsVsM[pi]->GetXaxis()->SetTitle("# POIs");
+       }
    fIntFlowSumOfProductOfEventWeightsVsM[pi]->GetYaxis()->SetTitle(sopowFlag[pi].Data()); 
    fIntFlowResults->Add(fIntFlowSumOfProductOfEventWeightsVsM[pi]);
   } // end of for(Int_t pi=0;pi<6;pi++) 
@@ -2370,8 +2450,16 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
    fIntFlowQcumulantsVsM[co] = new TH1D(Form("%s, %s",intFlowQcumulantsVsMName.Data(),cumulantFlag[co].Data()),
                                         Form("%s vs multiplicity",cumulantFlag[co].Data()),
                                         fnBinsMult,fMinMult,fMaxMult);
-   fIntFlowQcumulantsVsM[co]->GetXaxis()->SetTitle("M"); 
-   if(fMultiplicityIsRefMultiplicity){fIntFlowQcumulantsVsM[co]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}                                    
+   if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+   {
+    fIntFlowQcumulantsVsM[co]->GetXaxis()->SetTitle("# RPs");
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+     {
+      fIntFlowQcumulantsVsM[co]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");
+     } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+       {
+        fIntFlowQcumulantsVsM[co]->GetXaxis()->SetTitle("# POIs");
+       }
    fIntFlowQcumulantsVsM[co]->GetYaxis()->SetTitle(cumulantFlag[co].Data());  
    fIntFlowResults->Add(fIntFlowQcumulantsVsM[co]);                                    
   } // end of for(Int_t co=0;co<4;co++) // cumulant order
@@ -2413,8 +2501,16 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
    fIntFlowVsM[co] = new TH1D(Form("%s, %s",intFlowVsMName.Data(),flowFlag[co].Data()),
                               Form("%s vs multiplicity",flowFlag[co].Data()),
                               fnBinsMult,fMinMult,fMaxMult);
-   fIntFlowVsM[co]->GetXaxis()->SetTitle("M");
-   if(fMultiplicityIsRefMultiplicity){fIntFlowVsM[co]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}                                      
+   if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+   {
+    fIntFlowVsM[co]->GetXaxis()->SetTitle("# RPs");
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+     {
+      fIntFlowVsM[co]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");
+     } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+       {
+        fIntFlowVsM[co]->GetXaxis()->SetTitle("# POIs"); 
+       }
    fIntFlowVsM[co]->GetYaxis()->SetTitle(flowFlag[co].Data());  
    fIntFlowResults->Add(fIntFlowVsM[co]);                                    
   } // end of for(Int_t co=0;co<4;co++) // cumulant order
@@ -2440,14 +2536,84 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
    fIntFlowDetectorBiasVsM[ci] = new TH1D(Form("%s for %s",intFlowDetectorBiasVsMName.Data(),cumulantFlag[ci].Data()),
                                           Form("Quantifying detector bias for %s vs multiplicity",cumulantFlag[ci].Data()),
                                           fnBinsMult,fMinMult,fMaxMult);
-   fIntFlowDetectorBiasVsM[ci]->GetXaxis()->SetTitle("M");    
-   if(fMultiplicityIsRefMultiplicity){fIntFlowDetectorBiasVsM[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}                                 
+   if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+   {
+    fIntFlowDetectorBiasVsM[ci]->GetXaxis()->SetTitle("# RPs"); 
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+     {
+      fIntFlowDetectorBiasVsM[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");
+     } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+       {
+        fIntFlowDetectorBiasVsM[ci]->GetXaxis()->SetTitle("# POIs");
+       }
    fIntFlowDetectorBiasVsM[ci]->GetYaxis()->SetTitle("#frac{corrected}{measured}");  
    fIntFlowResults->Add(fIntFlowDetectorBiasVsM[ci]);                                    
   } // end of for(Int_t co=0;co<4;co++) // cumulant order
  } // end of if(fCalculateCumulantsVsM)
    
 } // end of AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::BookEverythingForControlHistograms()
+{
+ // Book all objects for control histograms.
+
+ // a) Book profile to hold all flags for control histograms;
+ // b) Book all control histograms.
+
+ // a) Book profile to hold all flags for control histograms:
+ TString controlHistogramsFlagsName = "fControlHistogramsFlags";
+ controlHistogramsFlagsName += fAnalysisLabel->Data();
+ fControlHistogramsFlags = new TProfile(controlHistogramsFlagsName.Data(),"Flags for Control Histograms",3,0,3);
+ fControlHistogramsFlags->SetTickLength(-0.01,"Y");
+ fControlHistogramsFlags->SetMarkerStyle(25);
+ fControlHistogramsFlags->SetLabelSize(0.04);
+ fControlHistogramsFlags->SetLabelOffset(0.02,"Y");
+ fControlHistogramsFlags->SetStats(kFALSE);
+ fControlHistogramsFlags->GetXaxis()->SetBinLabel(1,"fCorrelationNoRPsVsRefMult");
+ fControlHistogramsFlags->GetXaxis()->SetBinLabel(2,"fCorrelationNoPOIsVsRefMult");
+ fControlHistogramsFlags->GetXaxis()->SetBinLabel(3,"fCorrelationNoRPsVsNoPOIs");
+ fControlHistogramsList->Add(fControlHistogramsFlags);
+
+ if(!fStoreControlHistograms){return;}
+
+ // b) Book all control histograms:
+ //  b1) Correlation between # RPs and ref. mult. determined centrally:
+ TString sCorrelationNoRPsVsRefMultName = "fCorrelationNoRPsVsRefMult";
+ sCorrelationNoRPsVsRefMultName += fAnalysisLabel->Data();
+ fCorrelationNoRPsVsRefMult = new TH2D(sCorrelationNoRPsVsRefMultName.Data(),"# RPs vs. Reference Multiplicity",fnBinsMult,fMinMult,fMaxMult,fnBinsMult,fMinMult,fMaxMult);
+ fCorrelationNoRPsVsRefMult->SetTickLength(-0.01,"Y");
+ fCorrelationNoRPsVsRefMult->SetLabelSize(0.04);
+ fCorrelationNoRPsVsRefMult->SetLabelOffset(0.02,"Y");
+ fCorrelationNoRPsVsRefMult->SetStats(kTRUE);
+ fCorrelationNoRPsVsRefMult->GetXaxis()->SetTitle("# RPs");
+ fCorrelationNoRPsVsRefMult->GetYaxis()->SetTitle("Reference Multiplicity");
+ fControlHistogramsList->Add(fCorrelationNoRPsVsRefMult);
+ //  b2) Correlation between # POIs and ref. mult. determined centrally:
+ TString sCorrelationNoPOIsVsRefMultName = "fCorrelationNoPOIsVsRefMult";
+ sCorrelationNoPOIsVsRefMultName += fAnalysisLabel->Data();
+ fCorrelationNoPOIsVsRefMult = new TH2D(sCorrelationNoPOIsVsRefMultName.Data(),"# POIs vs. Reference Multiplicity",fnBinsMult,fMinMult,fMaxMult,fnBinsMult,fMinMult,fMaxMult);
+ fCorrelationNoPOIsVsRefMult->SetTickLength(-0.01,"Y");
+ fCorrelationNoPOIsVsRefMult->SetLabelSize(0.04);
+ fCorrelationNoPOIsVsRefMult->SetLabelOffset(0.02,"Y");
+ fCorrelationNoPOIsVsRefMult->SetStats(kTRUE);
+ fCorrelationNoPOIsVsRefMult->GetXaxis()->SetTitle("# POIs");
+ fCorrelationNoPOIsVsRefMult->GetYaxis()->SetTitle("Reference Multiplicity");
+ fControlHistogramsList->Add(fCorrelationNoPOIsVsRefMult);
+ //  b3) Correlation between # RPs and # POIs:
+ TString sCorrelationNoRPsVsNoPOIsName = "fCorrelationNoRPsVsNoPOIs";
+ sCorrelationNoRPsVsNoPOIsName += fAnalysisLabel->Data();
+ fCorrelationNoRPsVsNoPOIs = new TH2D(sCorrelationNoRPsVsNoPOIsName.Data(),"# RPs vs. # POIs",fnBinsMult,fMinMult,fMaxMult,fnBinsMult,fMinMult,fMaxMult);
+ fCorrelationNoRPsVsNoPOIs->SetTickLength(-0.01,"Y");
+ fCorrelationNoRPsVsNoPOIs->SetLabelSize(0.04);
+ fCorrelationNoRPsVsNoPOIs->SetLabelOffset(0.02,"Y");
+ fCorrelationNoRPsVsNoPOIs->SetStats(kTRUE);
+ fCorrelationNoRPsVsNoPOIs->GetXaxis()->SetTitle("# RPs");
+ fCorrelationNoRPsVsNoPOIs->GetYaxis()->SetTitle("# POIs");
+ fControlHistogramsList->Add(fCorrelationNoRPsVsNoPOIs);
+
+} // end of void AliFlowAnalysisWithQCumulants::BookEverythingForControlHistograms()
 
 //=======================================================================================================================
 
@@ -3384,13 +3550,16 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
 
  // Multiplicity bin of an event (relevant for all histos vs M): 
  Double_t dMultiplicityBin = 0.;
- if(!fMultiplicityIsRefMultiplicity)
+ if(fMultiplicityIs==AliFlowCommonConstants::kRP)
  {
-  dMultiplicityBin = dMult+0.5;
- } else
+  dMultiplicityBin = fNumberOfRPsEBE+0.5;
+ } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
    {
     dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
-   }
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+     {
+      dMultiplicityBin = fNumberOfPOIsEBE+0.5;
+     }
   
  // Real parts of expressions involving various combinations of Q-vectors which appears
  // simultaneously in several equations for multiparticle correlations bellow: 
@@ -3580,13 +3749,13 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowCorrelationsEBE->SetBinContent(1,two1n1n); // <2>  
   // Testing other multiplicity weights:
   Double_t mWeight2p = 0.;
-  if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+  if(fMultiplicityWeight->Contains("combinations"))
   {
    mWeight2p = dMult*(dMult-1.);
-  } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+  } else if(fMultiplicityWeight->Contains("unit"))
     {
      mWeight2p = 1.;    
-    } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+    } else if(fMultiplicityWeight->Contains("multiplicity"))
       {
        mWeight2p = dMult;           
       }          
@@ -3723,13 +3892,13 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowCorrelationsEBE->SetBinContent(2,four1n1n1n1n); // <4>
   // Testing other multiplicity weights:
   Double_t mWeight4p = 0.;
-  if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+  if(fMultiplicityWeight->Contains("combinations"))
   {
    mWeight4p = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.);
-  } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+  } else if(fMultiplicityWeight->Contains("unit"))
     {
      mWeight4p = 1.;    
-    } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+    } else if(fMultiplicityWeight->Contains("multiplicity"))
       {
        mWeight4p = dMult;           
       }      
@@ -3870,13 +4039,13 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowCorrelationsEBE->SetBinContent(3,six1n1n1n1n1n1n); // <6>
   // Testing other multiplicity weights:
   Double_t mWeight6p = 0.;
-  if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+  if(fMultiplicityWeight->Contains("combinations"))
   {
    mWeight6p = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.);
-  } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+  } else if(fMultiplicityWeight->Contains("unit"))
     {
      mWeight6p = 1.;    
-    } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+    } else if(fMultiplicityWeight->Contains("multiplicity"))
       {
        mWeight6p = dMult;           
       }
@@ -3965,13 +4134,13 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowCorrelationsEBE->SetBinContent(4,eight1n1n1n1n1n1n1n1n); // <8>
   // Testing other multiplicity weights:
   Double_t mWeight8p = 0.;
-  if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+  if(fMultiplicityWeight->Contains("combinations"))
   {
    mWeight8p = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.)*(dMult-7.);
-  } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+  } else if(fMultiplicityWeight->Contains("unit"))
     {
      mWeight8p = 1.;    
-    } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+    } else if(fMultiplicityWeight->Contains("multiplicity"))
       {
        mWeight8p = dMult;           
       }        
@@ -4611,7 +4780,7 @@ void AliFlowAnalysisWithQCumulants::CalculateMixedHarmonics()
  Double_t d6pMultiplicityWeight = 0.; // weight for <6>_{...} to get <<6>>_{...}
  Double_t d7pMultiplicityWeight = 0.; // weight for <7>_{...} to get <<7>>_{...}
  Double_t d8pMultiplicityWeight = 0.; // weight for <8>_{...} to get <<8>>_{...}
- if(!strcmp(fMultiplicityWeight->Data(),"combinations")) // default multiplicity weight
+ if(fMultiplicityWeight->Contains("combinations")) // default multiplicity weight
  {
   d2pMultiplicityWeight = dMult*(dMult-1.);
   d3pMultiplicityWeight = dMult*(dMult-1.)*(dMult-2.);
@@ -4620,7 +4789,7 @@ void AliFlowAnalysisWithQCumulants::CalculateMixedHarmonics()
   d6pMultiplicityWeight = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.);
   d7pMultiplicityWeight = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.);
   d8pMultiplicityWeight = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.)*(dMult-7.);
- } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+ } else if(fMultiplicityWeight->Contains("unit"))
    {
     d2pMultiplicityWeight = 1.;
     d3pMultiplicityWeight = 1.;
@@ -4629,7 +4798,7 @@ void AliFlowAnalysisWithQCumulants::CalculateMixedHarmonics()
     d6pMultiplicityWeight = 1.;
     d7pMultiplicityWeight = 1.;
     d8pMultiplicityWeight = 1.;
-   } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+   } else if(fMultiplicityWeight->Contains("multiplicity"))
      {
       d2pMultiplicityWeight = dMult;
       d3pMultiplicityWeight = dMult;
@@ -12649,19 +12818,19 @@ void AliFlowAnalysisWithQCumulants::StorePhiDistributionForOneEvent(AliFlowEvent
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
 {
  // Calculate averages of products of correlations for integrated flow.
- 
- // multiplicity:
- Double_t dMult = (*fSpk)(0,0);
- 
+
  // Multiplicity bin of an event (relevant for all histos vs M): 
  Double_t dMultiplicityBin = 0.;
- if(!fMultiplicityIsRefMultiplicity)
+ if(fMultiplicityIs==AliFlowCommonConstants::kRP)
  {
-  dMultiplicityBin = dMult+0.5;
- } else
+  dMultiplicityBin = fNumberOfRPsEBE+0.5;
+ } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
    {
     dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
-   }
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+     {
+      dMultiplicityBin = fNumberOfPOIsEBE+0.5;
+     }
 
  Int_t counter = 0;
  
@@ -15192,7 +15361,8 @@ void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
  //  e) Book and nest list for various unclassified objects; 
  //  f) Book and nest list for other differential correlators;
  //  g) Book and nest list for nested loops;
- //  h) Book and nest lists for mixed harmonics.
+ //  h) Book and nest lists for mixed harmonics;
+ //  i) Book and nest lists for control histograms. 
  
  // a) Book and nest all lists for integrated flow:
  //  Base list for integrated flow:
@@ -15275,6 +15445,13 @@ void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
  fMixedHarmonicsErrorPropagation->SetName("Error Propagation");
  fMixedHarmonicsErrorPropagation->SetOwner(kTRUE);
  if(fCalculateMixedHarmonics){fMixedHarmonicsList->Add(fMixedHarmonicsErrorPropagation);}
+
+ // i) Book and nest lists for control histograms:
+ //  Base list for mixed harmonics:
+ fControlHistogramsList = new TList();
+ fControlHistogramsList->SetName("Control Histograms");
+ fControlHistogramsList->SetOwner(kTRUE);
+ fHistList->Add(fControlHistogramsList);
 
 } // end of void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
 
@@ -15554,18 +15731,19 @@ void AliFlowAnalysisWithQCumulants::CommonConstants(TString method)
 
 void AliFlowAnalysisWithQCumulants::CrossCheckSettings()
 {
- // a) Cross check if the choice for multiplicity weights make sense.
- 
- // a) Cross check if the choice for multiplicity weights make sense:
- if(strcmp(fMultiplicityWeight->Data(),"combinations") && 
-    strcmp(fMultiplicityWeight->Data(),"unit") &&
-    strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+ // a) Cross-check if the choice for multiplicity weights make sense;
+ // b) Cross-check if the choice for multiplicity itself make sense.
+
+ // a) Cross-check if the choice for multiplicity weights make sense:
+ if((!fMultiplicityWeight->Contains("combinations")) && 
+    (!fMultiplicityWeight->Contains("unit")) &&
+    (!fMultiplicityWeight->Contains("multiplicity")) )
  {
   cout<<"WARNING (QC): Multiplicity weight can be either \"combinations\", \"unit\""<<endl;
   cout<<"              or \"multiplicity\". Certainly not \""<<fMultiplicityWeight->Data()<<"\"."<<endl;
   exit(0);
  }   
- 
+
 } // end of void AliFlowAnalysisWithQCumulants::CrossCheckSettings()
 
 //=======================================================================================================================
@@ -15574,18 +15752,20 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
 {
  // Calculate sum of linear and quadratic event weights for correlations.
  
- // multiplicity:
- Double_t dMult = (*fSpk)(0,0);
+ // TBI re-think what is the right multiplicity when particle weights are used! 
 
  // Multiplicity bin of an event (relevant for all histos vs M): 
  Double_t dMultiplicityBin = 0.;
- if(!fMultiplicityIsRefMultiplicity)
+ if(fMultiplicityIs==AliFlowCommonConstants::kRP)
  {
-  dMultiplicityBin = dMult+0.5;
- } else
+  dMultiplicityBin = fNumberOfRPsEBE+0.5;
+ } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
    {
     dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
-   }
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+     {
+      dMultiplicityBin = fNumberOfPOIsEBE+0.5;
+     }
                         
  for(Int_t p=0;p<2;p++) // power-1
  {
@@ -15626,18 +15806,20 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
 {
  // Calculate sum of product of event weights for correlations.
   
- // multiplicity:
- Double_t dMult = (*fSpk)(0,0);
+ // TBI re-think what is the right multiplicity when particle weights are used!
 
  // Multiplicity bin of an event (relevant for all histos vs M): 
  Double_t dMultiplicityBin = 0.;
- if(!fMultiplicityIsRefMultiplicity)
+ if(fMultiplicityIs==AliFlowCommonConstants::kRP)
  {
-  dMultiplicityBin = dMult+0.5;
- } else
+  dMultiplicityBin = fNumberOfRPsEBE+0.5;
+ } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
    {
     dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
-   }
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+     {
+      dMultiplicityBin = fNumberOfPOIsEBE+0.5;
+     }
   
  Int_t counter = 0;
  
@@ -15879,10 +16061,10 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelations(TString type, 
     two1n1nPtEta = (p1n0kRe*dReQ1n+p1n0kIm*dImQ1n-mq)
                  / (mp*dMult-mq);
     // determine multiplicity weight:
-    if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+    if(fMultiplicityWeight->Contains("combinations"))
     {
      mWeight2pPrime = mp*dMult-mq;
-    } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+    } else if(fMultiplicityWeight->Contains("unit"))
       {
        mWeight2pPrime = 1.;    
       } 
@@ -15929,10 +16111,10 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelations(TString type, 
                       / ((mp-mq)*dMult*(dMult-1.)*(dMult-2.)
                           + mq*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
     // determine multiplicity weight:
-    if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+    if(fMultiplicityWeight->Contains("combinations"))
     {
      mWeight4pPrime = (mp-mq)*dMult*(dMult-1.)*(dMult-2.) + mq*(dMult-1.)*(dMult-2.)*(dMult-3.);
-    } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+    } else if(fMultiplicityWeight->Contains("unit"))
       {
        mWeight4pPrime = 1.;    
       }     
@@ -16106,10 +16288,10 @@ void AliFlowAnalysisWithQCumulants::CalculateOtherDiffCorrelators(TString type, 
                + 2.*mq)
                / ((mp*dMult-2.*mq)*(dMult-1.));
     // determine multiplicity weight:
-    if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+    if(fMultiplicityWeight->Contains("combinations"))
     {
      mWeightTaeneyYan = (mp*dMult-2.*mq)*(dMult-1.);
-    } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+    } else if(fMultiplicityWeight->Contains("unit"))
       {
        mWeightTaeneyYan = 1.;    
       } 
@@ -16231,10 +16413,10 @@ void AliFlowAnalysisWithQCumulants::Calculate2DDiffFlowCorrelations(TString type
     two1n1nPtEta = (p1n0kRe*dReQ1n+p1n0kIm*dImQ1n-mq)
                  / (mp*dMult-mq);
     // Determine multiplicity weight:
-    if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+    if(fMultiplicityWeight->Contains("combinations"))
     {
      mWeight2pPrime = mp*dMult-mq;
-    } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+    } else if(fMultiplicityWeight->Contains("unit"))
       {
        mWeight2pPrime = 1.;    
       } 
@@ -16263,10 +16445,10 @@ void AliFlowAnalysisWithQCumulants::Calculate2DDiffFlowCorrelations(TString type
                       / ((mp-mq)*dMult*(dMult-1.)*(dMult-2.)
                           + mq*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
     // Determine multiplicity weight:
-    if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+    if(fMultiplicityWeight->Contains("combinations"))
     {
      mWeight4pPrime = (mp-mq)*dMult*(dMult-1.)*(dMult-2.) + mq*(dMult-1.)*(dMult-2.)*(dMult-3.);
-    } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+    } else if(fMultiplicityWeight->Contains("unit"))
       {
        mWeight4pPrime = 1.;    
       }     
@@ -17170,13 +17352,13 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
  // particle weights used or not:
  fIntFlowFlags->Fill(0.5,(Int_t)fUsePhiWeights||fUsePtWeights||fUseEtaWeights||fUseTrackWeights);
  // which event weights were used:
- if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+ if(fMultiplicityWeight->Contains("combinations"))
  {
   fIntFlowFlags->Fill(1.5,0); // 0 = "combinations" (default)
- } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+ } else if(fMultiplicityWeight->Contains("unit"))
    {
     fIntFlowFlags->Fill(1.5,1); // 1 = "unit"   
-   } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+   } else if(fMultiplicityWeight->Contains("multiplicity"))
      {
       fIntFlowFlags->Fill(1.5,2); // 2 = "multiplicity"        
      } 
@@ -17193,7 +17375,18 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
  fIntFlowFlags->Fill(12.5,(Int_t)fStorePhiDistributionForOneEvent); 
  fIntFlowFlags->Fill(13.5,(Int_t)fFillMultipleControlHistograms);  
  fIntFlowFlags->Fill(14.5,(Int_t)fCalculateAllCorrelationsVsM);  
- fIntFlowFlags->Fill(15.5,(Int_t)fMultiplicityIsRefMultiplicity);  
+ // which multiplicity was used:
+ if(fMultiplicityIs==AliFlowCommonConstants::kRP) // # of Reference Particles
+ {
+  fIntFlowFlags->Fill(15.5,0); // 0 = # of Reference Particles
+ } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+   {
+    fIntFlowFlags->Fill(15.5,1); // 1 = ref. mult. from ESD
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+     {
+      fIntFlowFlags->Fill(15.5,2); // 2 = # of Particles of Interest
+     } 
+
 } // end of void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 
 //=======================================================================================================================
@@ -17234,13 +17427,13 @@ void AliFlowAnalysisWithQCumulants::StoreMixedHarmonicsFlags()
  fMixedHarmonicsFlags->Fill(2.5,(Int_t)fCalculateMixedHarmonicsVsM);
  // Which multiplicity weight was used?:
 
- if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+ if(fMultiplicityWeight->Contains("combinations"))
  {
   fMixedHarmonicsFlags->Fill(3.5,0); // 0 = "combinations" (default)
- } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+ } else if(fMultiplicityWeight->Contains("unit"))
    {
     fMixedHarmonicsFlags->Fill(3.5,1); // 1 = "unit"   
-   } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+   } else if(fMultiplicityWeight->Contains("multiplicity"))
      {
       fMixedHarmonicsFlags->Fill(3.5,2); // 2 = "multiplicity"        
      } 
@@ -19873,7 +20066,7 @@ void AliFlowAnalysisWithQCumulants::FillCommonControlHistograms(AliFlowEventSimp
 {
  // Fill common control histograms.
  
- Int_t nRP = anEvent->GetEventNSelTracksRP(); // number of RPs (i.e. number of particles used to determine the reaction plane)
+ Int_t nRP = anEvent->GetNumberOfRPs(); // number of Reference Particles 
  fCommonHists->FillControlHistograms(anEvent); 
  if(fFillMultipleControlHistograms)
  {
@@ -19896,6 +20089,22 @@ void AliFlowAnalysisWithQCumulants::FillCommonControlHistograms(AliFlowEventSimp
  } // end of if(fFillMultipleControlHistograms)
  
 } // end of void AliFlowAnalysisWithQCumulants::FillCommonControlHistograms(AliFlowEventSimple *anEvent)
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::FillControlHistograms(AliFlowEventSimple *anEvent)
+{
+ // Fill common control histograms.
+ 
+ Int_t nRPs = anEvent->GetNumberOfRPs(); // number of Reference Particles
+ Int_t nPOIs = anEvent->GetNumberOfPOIs(); // number of Particles Of Interest
+ Int_t nRefMult = anEvent->GetReferenceMultiplicity(); // reference multiplicity for current event (TBI: This call is not really needed here, use fReferenceMultiplicityEBE instead)
+
+ fCorrelationNoRPsVsRefMult->Fill(nRPs,nRefMult);
+ fCorrelationNoPOIsVsRefMult->Fill(nPOIs,nRefMult);
+ fCorrelationNoRPsVsNoPOIs->Fill(nRPs,nPOIs);
+ 
+} // end of void AliFlowAnalysisWithQCumulants::FillControlHistograms(AliFlowEventSimple *anEvent)
 
 //=======================================================================================================================
 
