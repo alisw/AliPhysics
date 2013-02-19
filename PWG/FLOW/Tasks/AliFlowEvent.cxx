@@ -179,6 +179,7 @@ AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
     if (poiOK && poiCFManager)
     {
       pTrack->SetForPOISelection(kTRUE);
+      fNumberOfPOIs++;
     }
 
     AddTrack(pTrack) ;
@@ -227,6 +228,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
     if(poiOK && poiCFManager)
     {
       pTrack->SetForPOISelection(kTRUE);
+      fNumberOfPOIs++;
     }
 
     AddTrack(pTrack);
@@ -271,6 +273,7 @@ AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
     if (poiOK /* && poiCFManager*/ )
     {
       pTrack->SetForPOISelection(kTRUE);
+      fNumberOfPOIs++;
     }
     AddTrack(pTrack);
   }
@@ -380,7 +383,11 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       fNumberOfRPs++;
       pTrack->SetForRPSelection();
     }
-    if (poiOK && poiCFManager) pTrack->SetForPOISelection();
+    if (poiOK && poiCFManager) 
+    { 
+      fNumberOfPOIs++;
+      pTrack->SetForPOISelection();
+    }
 
     AddTrack(pTrack);
   }
@@ -417,6 +424,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       //marking the particles used for the particle of interest (POI) selection:
       if(poiOK && poiCFManager)
 	{
+          fNumberOfPOIs++;
 	  pTrack->SetForPOISelection(kTRUE);
 	  pTrack->SetSource(AliFlowTrack::kFromESD);
 	}
@@ -519,6 +527,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
       if(poiOK && poiCFManager)
       {
         pTrack->SetForPOISelection(kTRUE);
+        fNumberOfPOIs++;
       }
 
       if(useTPC)
@@ -563,6 +572,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       //marking the particles used for the particle of interest (POI) selection:
       if(poiOK && poiCFManager)
 	{
+          fNumberOfPOIs++; 
 	  pTrack->SetForPOISelection(kTRUE);
 	  pTrack->SetSource(AliFlowTrack::kFromESD);
 	}
@@ -641,13 +651,13 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
         pTrack = ReuseTrack(fNumberOfTracks);
         if (!rpCuts->FillFlowTrack(pTrack)) continue;
         pTrack->TagRP(); fNumberOfRPs++;
-        if (poi) pTrack->TagPOI();
+        if (poi) {pTrack->TagPOI(); fNumberOfPOIs++;}
       }
       else if (poi)
       {
         pTrack = ReuseTrack(fNumberOfTracks);
         if (!poiCuts->FillFlowTrack(pTrack)) continue;
-        pTrack->TagPOI();
+        pTrack->TagPOI(); fNumberOfPOIs++;
       }
       fNumberOfTracks++;
     }//end of while (i < numberOfTracks)
@@ -677,6 +687,7 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
       pTrack = ReuseTrack(fNumberOfTracks);
       if (!poiCuts->FillFlowTrack(pTrack)) continue;
       pTrack->TagPOI();
+      fNumberOfPOIs++;
       fNumberOfTracks++;
     }
   }
@@ -754,14 +765,14 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
         pTrack = rpCuts->MakeFlowTrack();
         if (!pTrack) continue;
         pTrack->TagRP(); fNumberOfRPs++;
-        if (poi) pTrack->TagPOI();
+        if (poi) {pTrack->TagPOI(); fNumberOfPOIs++;}
       }
       else
       if (poi)
       {
         pTrack = poiCuts->MakeFlowTrack();
         if (!pTrack) continue;
-        pTrack->TagPOI();
+        pTrack->TagPOI(); fNumberOfPOIs++;
       }
       AddTrack(pTrack);
     }//end of while (i < numberOfTracks)
@@ -790,7 +801,7 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
       if (!poi) continue;
       pTrack = poiCuts->MakeFlowTrack();
       if (!pTrack) continue;
-      pTrack->TagPOI();
+      pTrack->TagPOI(); fNumberOfPOIs++;
       AddTrack(pTrack);
     }
   }
@@ -828,6 +839,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       //marking the particles used for the particle of interest (POI) selection:
       if(poiOK && poiCFManager)
 	{
+          fNumberOfPOIs++;
 	  pTrack->SetForPOISelection(kTRUE);
 	  pTrack->SetSource(AliFlowTrack::kFromESD);
 	}

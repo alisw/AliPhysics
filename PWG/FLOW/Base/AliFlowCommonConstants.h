@@ -22,6 +22,8 @@ class AliFlowCommonConstants: public TNamed {
   virtual ~AliFlowCommonConstants();
   static AliFlowCommonConstants* GetMaster();
 
+  enum ERefMultSource {kExternal, kRP, kPOI};
+
   Int_t GetNbinsMult() const { return fNbinsMult; }
   Int_t GetNbinsPt()   const { return fNbinsPt; }
   Int_t GetNbinsPhi()  const { return fNbinsPhi; }

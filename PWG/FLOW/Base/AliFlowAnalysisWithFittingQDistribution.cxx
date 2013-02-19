@@ -78,6 +78,7 @@ AliFlowAnalysisWithFittingQDistribution::AliFlowAnalysisWithFittingQDistribution
  fEtaBinWidth(0),
  fHarmonic(2),
  fAnalysisLabel(NULL),
+ fMultiplicityIs(AliFlowCommonConstants::kRP),
  fWeightsList(NULL),
  fUsePhiWeights(kFALSE),
  fUsePtWeights(kFALSE),
@@ -92,7 +93,6 @@ AliFlowAnalysisWithFittingQDistribution::AliFlowAnalysisWithFittingQDistribution
  fqMax(100.),
  fqNbins(10000),
  fStoreqDistributionVsMult(kFALSE),
- fMultiplicityIsRefMultiplicity(kFALSE),
  fqDistributionVsMult(NULL),
  fMinMult(0.),
  fMaxMult(10000.),
@@ -106,7 +106,8 @@ AliFlowAnalysisWithFittingQDistribution::AliFlowAnalysisWithFittingQDistribution
  fSigma2Min(0.5), 
  fSigma2Max(2.5),
  fFinalResultIsFromSigma2Fitted(kTRUE),
- fPrintOnTheScreen(kTRUE)
+ fPrintOnTheScreen(kTRUE),
+ fDoFit(kTRUE)
  {
   // constructor 
   
@@ -201,10 +202,7 @@ void AliFlowAnalysisWithFittingQDistribution::Make(AliFlowEventSimple* anEvent)
  Int_t n = fHarmonic; // shortcut for the harmonic 
  Double_t dSumOfParticleWeights = 0.; // when particle weights are not used dSumOfParticleWeights is equal to multiplicity
  AliFlowTrackSimple *aftsTrack = NULL;  
- Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI + rest, where:
-                                          // nRP   = # of particles used to determine the reaction plane;
-                                          // nPOI  = # of particles of interest for a detailed flow analysis;
-                                          // rest  = # of particles which are not niether RPs nor POIs.   
+ Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = total number of primary tracks
                                                                                     
  // Start loop over particles:
  for(Int_t i=0;i<nPrim;i++) 
@@ -246,15 +244,25 @@ void AliFlowAnalysisWithFittingQDistribution::Make(AliFlowEventSimple* anEvent)
   fSumOfParticleWeights->Fill(dSumOfParticleWeights,1.);
   if(fStoreqDistributionVsMult)
   {
-   if(!fMultiplicityIsRefMultiplicity)
+   // Multiplicity bin of an event (relevant for all histos vs M): 
+   Double_t dMultiplicityBin = 0.;
+   if(fMultiplicityIs==AliFlowCommonConstants::kRP)
    {
-    fqDistributionVsMult->Fill(q,dSumOfParticleWeights); 
-   } else
+    Int_t nNumberOfRPsEBE = anEvent->GetNumberOfRPs(); // number of RPs (i.e. number of reference particles)
+    dMultiplicityBin = nNumberOfRPsEBE+0.5;
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
      {
-      fqDistributionVsMult->Fill(q,anEvent->GetReferenceMultiplicity()); 
-     }
+      Int_t nReferenceMultiplicityEBE = anEvent->GetReferenceMultiplicity(); // reference multiplicity for current event
+      dMultiplicityBin = nReferenceMultiplicityEBE+0.5;
+     } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+       {
+        Int_t nNumberOfPOIsEBE = anEvent->GetNumberOfPOIs(); // number of POIs (i.e. number of particles of interest)
+        dMultiplicityBin = nNumberOfPOIsEBE+0.5;
+       }
+   // Fill qDist vs M:
+   fqDistributionVsMult->Fill(q,dMultiplicityBin); 
   } // end of if(fStoreqDistributionVsMult)
- }
+ } // end of if(dSumOfParticleWeights > 1.)
 
 } // end of Make()
 
@@ -281,7 +289,7 @@ void AliFlowAnalysisWithFittingQDistribution::Finish(Bool_t doFit)
  this->AccessFittingParameters();
  
  // d) Do the final fit of q-distribution:             
- if(doFit) 
+ if(doFit && fDoFit) 
  {
   this->DoFit(kFALSE); // sigma^2 not fitted (fixed to 0.5)
   this->DoFit(kTRUE); // sigma^2 fitted
@@ -774,8 +782,16 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
   fqDistributionVsMultName += fAnalysisLabel->Data();
   fqDistributionVsMult = new TH2D(Form("%s",fqDistributionVsMultName.Data()),"q-distribution vs M",fqNbins,fqMin,fqMax,fnBinsMult,fMinMult,fMaxMult);  
   fqDistributionVsMult->GetXaxis()->SetTitle(Form("q_{%d}=|Q_{%d}|/#sqrt{M}",fHarmonic,fHarmonic));
-  fqDistributionVsMult->GetYaxis()->SetTitle("M");
-  if(fMultiplicityIsRefMultiplicity){fqDistributionVsMult->GetYaxis()->SetTitle("Reference multiplicity (from ESD)");} 
+  if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+  {
+   fqDistributionVsMult->GetYaxis()->SetTitle("# RPs"); 
+  } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+    {
+     fqDistributionVsMult->GetYaxis()->SetTitle("Reference multiplicity (from ESD)");
+    } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+      {
+       fqDistributionVsMult->GetYaxis()->SetTitle("# POIs"); 
+      } 
   fqDistributionVsMult->GetZaxis()->SetTitle("Counts");
   fHistList->Add(fqDistributionVsMult);
  } // end of if(fStoreqDistributionVsMult)
@@ -824,21 +840,22 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
  // Book profile fFittingParameters which will hold all fitting parameters:
  TString fFittingParametersName = "fFittingParameters";
  fFittingParametersName += fAnalysisLabel->Data(); 
- fFittingParameters = new TProfile(fFittingParametersName.Data(),"Parameters for fitting q-distribution",11,0,11);
+ fFittingParameters = new TProfile(fFittingParametersName.Data(),"Parameters for fitting q-distribution",12,0,12);
  fFittingParameters->SetLabelSize(0.05);
- (fFittingParameters->GetXaxis())->SetBinLabel(1,"treshold");
- (fFittingParameters->GetXaxis())->SetBinLabel(2,Form("starting v_{%d}",fHarmonic));
- (fFittingParameters->GetXaxis())->SetBinLabel(3,Form("min. v_{%d}",fHarmonic));
- (fFittingParameters->GetXaxis())->SetBinLabel(4,Form("max. v_{%d}",fHarmonic));
- (fFittingParameters->GetXaxis())->SetBinLabel(5,"starting #sigma^{2}");
- (fFittingParameters->GetXaxis())->SetBinLabel(6,"min. #sigma^{2}");
- (fFittingParameters->GetXaxis())->SetBinLabel(7,"max. #sigma^{2}");
- (fFittingParameters->GetXaxis())->SetBinLabel(8,"Final result is from #sigma^{2} fitted?"); 
- (fFittingParameters->GetXaxis())->SetBinLabel(9,"Print results on the screen?"); 
- (fFittingParameters->GetXaxis())->SetBinLabel(10,"fStoreqDistributionVsMult"); 
- (fFittingParameters->GetXaxis())->SetBinLabel(11,"fMultiplicityIsRefMultiplicity"); 
+ fFittingParameters->GetXaxis()->SetBinLabel(1,"treshold");
+ fFittingParameters->GetXaxis()->SetBinLabel(2,Form("starting v_{%d}",fHarmonic));
+ fFittingParameters->GetXaxis()->SetBinLabel(3,Form("min. v_{%d}",fHarmonic));
+ fFittingParameters->GetXaxis()->SetBinLabel(4,Form("max. v_{%d}",fHarmonic));
+ fFittingParameters->GetXaxis()->SetBinLabel(5,"starting #sigma^{2}");
+ fFittingParameters->GetXaxis()->SetBinLabel(6,"min. #sigma^{2}");
+ fFittingParameters->GetXaxis()->SetBinLabel(7,"max. #sigma^{2}");
+ fFittingParameters->GetXaxis()->SetBinLabel(8,"Final result is from #sigma^{2} fitted?"); 
+ fFittingParameters->GetXaxis()->SetBinLabel(9,"Print results on the screen?"); 
+ fFittingParameters->GetXaxis()->SetBinLabel(10,"fStoreqDistributionVsMult"); 
+ fFittingParameters->GetXaxis()->SetBinLabel(11,"fMultiplicityIs"); 
+ fFittingParameters->GetXaxis()->SetBinLabel(12,"fDoFit"); 
  fHistList->Add(fFittingParameters);
- 
+
 } // end of void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
 
 //================================================================================================================================
@@ -1045,7 +1062,18 @@ void AliFlowAnalysisWithFittingQDistribution::StoreFittingParameters()
  fFittingParameters->Fill(7.5,fFinalResultIsFromSigma2Fitted); 
  fFittingParameters->Fill(8.5,fPrintOnTheScreen); 
  fFittingParameters->Fill(9.5,fStoreqDistributionVsMult); 
- fFittingParameters->Fill(10.5,fMultiplicityIsRefMultiplicity); 
+ // which multiplicity was used:
+ if(fMultiplicityIs==AliFlowCommonConstants::kRP) // # of Reference Particles
+ {
+  fFittingParameters->Fill(10.5,0); // 0 = # of Reference Particles
+ } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+   {
+    fFittingParameters->Fill(10.5,1); // 1 = ref. mult. from ESD
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+     {
+      fFittingParameters->Fill(10.5,2); // 2 = # of Particles of Interest
+     } 
+ fFittingParameters->Fill(11.5,fDoFit); 
  
 } // end of void AliFlowAnalysisWithFittingQDistribution::StoreFittingParameters()
 
@@ -1065,6 +1093,6 @@ void AliFlowAnalysisWithFittingQDistribution::AccessFittingParameters()
  fFinalResultIsFromSigma2Fitted = (Bool_t)fFittingParameters->GetBinContent(8);
  fPrintOnTheScreen = (Bool_t)fFittingParameters->GetBinContent(9);
  fStoreqDistributionVsMult = (Bool_t)fFittingParameters->GetBinContent(10);
- fMultiplicityIsRefMultiplicity = (Bool_t)fFittingParameters->GetBinContent(11);
+ fDoFit = (Bool_t)fFittingParameters->GetBinContent(12);
  
 } // end of void AliFlowAnalysisWithFittingQDistribution::AccessFittingParameters()

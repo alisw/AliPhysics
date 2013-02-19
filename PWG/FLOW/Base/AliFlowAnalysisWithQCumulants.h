@@ -17,6 +17,7 @@
 #include "TMatrixD.h"
 #include "TH2D.h"
 #include "TBits.h"
+#include "AliFlowCommonConstants.h"
 
 class TObjArray;
 class TList;
@@ -31,7 +32,6 @@ class TDirectoryFile;
 class AliFlowEventSimple;
 class AliFlowVector;
 
-class AliFlowCommonConstants;
 class AliFlowCommonHist;
 class AliFlowCommonHistResults;
 
@@ -63,6 +63,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void BookEverythingForVarious();
     virtual void BookEverythingForNestedLoops();   
     virtual void BookEverythingForMixedHarmonics();
+    virtual void BookEverythingForControlHistograms();
     virtual void StoreIntFlowFlags();
     virtual void StoreDiffFlowFlags();
     virtual void StoreFlagsForDistributions();   
@@ -74,6 +75,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CheckPointersUsedInMake();     
     virtual void FillAverageMultiplicities(Int_t nRP);
     virtual void FillCommonControlHistograms(AliFlowEventSimple *anEvent);
+    virtual void FillControlHistograms(AliFlowEventSimple *anEvent);
     virtual void ResetEventByEventQuantities();
     // 2b.) Reference flow:
     virtual void CalculateIntFlowCorrelations(); 
@@ -236,6 +238,7 @@ class AliFlowAnalysisWithQCumulants{
   
   // 2b.) event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
+  void SetMultiplicityIs(AliFlowCommonConstants::ERefMultSource mi) {this->fMultiplicityIs = mi;};
   
   // 3.) Reference flow:
   // Flags:
@@ -257,8 +260,6 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};   
   void SetCalculateAllCorrelationsVsM(Bool_t const cacvm) {this->fCalculateAllCorrelationsVsM = cacvm;};
   Bool_t GetCalculateAllCorrelationsVsM() const {return this->fCalculateAllCorrelationsVsM;};   
-  void SetMultiplicityIsRefMultiplicity(Bool_t const mirm) {this->fMultiplicityIsRefMultiplicity = mirm;};
-  Bool_t GetMultiplicityIsRefMultiplicity() const {return this->fMultiplicityIsRefMultiplicity;};   
   void SetMinimumBiasReferenceFlow(Bool_t const mmrf) {this->fMinimumBiasReferenceFlow = mmrf;};
   Bool_t GetMinimumBiasReferenceFlow() const {return this->fMinimumBiasReferenceFlow;};  
   void SetForgetAboutCovariances(Bool_t const fac) {this->fForgetAboutCovariances = fac;};
@@ -477,6 +478,19 @@ class AliFlowAnalysisWithQCumulants{
   void SetMixedHarmonicProductOfCorrelations(TProfile2D* const mhpoc) {this->fMixedHarmonicProductOfCorrelations = mhpoc;};
   TProfile2D* GetMixedHarmonicProductOfCorrelations() const {return this->fMixedHarmonicProductOfCorrelations;};
 
+  // 10.) Control histograms:
+  void SetControlHistogramsList(TList* const chl) {this->fControlHistogramsList = chl;};
+  void SetControlHistogramsFlags(TProfile* const chf) {this->fControlHistogramsFlags = chf;};
+  TProfile* GetControlHistogramsFlags() const {return this->fControlHistogramsFlags;}; 
+  void SetStoreControlHistograms(Bool_t const sch) {this->fStoreControlHistograms = sch;};
+  Bool_t GetStoreControlHistograms() const {return this->fStoreControlHistograms;};
+  void SetCorrelationNoRPsVsRefMult(TH2D* const cnrvrm) {this->fCorrelationNoRPsVsRefMult = cnrvrm;};
+  TH2D* GetCorrelationNoRPsVsRefMult() const {return this->fCorrelationNoRPsVsRefMult;};
+  void SetCorrelationNoPOIsVsRefMult(TH2D* const cnpvrm) {this->fCorrelationNoPOIsVsRefMult = cnpvrm;};
+  TH2D* GetCorrelationNoPOIsVsRefMult() const {return this->fCorrelationNoPOIsVsRefMult;};
+  void SetCorrelationNoRPsVsNoPOIs(TH2D* const cnrvnp) {this->fCorrelationNoRPsVsNoPOIs = cnrvnp;};
+  TH2D* GetCorrelationNoRPsVsNoPOIs() const {return this->fCorrelationNoRPsVsNoPOIs;};
+
  private:
   
   AliFlowAnalysisWithQCumulants(const AliFlowAnalysisWithQCumulants& afawQc);
@@ -527,6 +541,7 @@ class AliFlowAnalysisWithQCumulants{
   
   // 2b.) event weights:
   TString *fMultiplicityWeight; // event-by-event weights for multiparticle correlations
+  AliFlowCommonConstants::ERefMultSource fMultiplicityIs; // by default "kRP"
   
   // 3.) integrated flow       
   //  3a.) lists:
@@ -543,8 +558,7 @@ class AliFlowAnalysisWithQCumulants{
   Double_t fMaxMult; // maximal multiplicity for flow analysis versus multiplicity  
   Bool_t fPropagateErrorAlsoFromNIT; // propagate error by taking into account also non-isotropic terms (not sure if resulting error then is correct - to be improved)
   Bool_t fCalculateCumulantsVsM; // calculate cumulants versus multiplicity  
-  Bool_t fCalculateAllCorrelationsVsM; // calculate all correlations versus multiplicity   
-  Bool_t fMultiplicityIsRefMultiplicity; // kFALSE = multiplicity is # of selected tracks; kTRUE = multiplicity is ref. mult from ESD     
+  Bool_t fCalculateAllCorrelationsVsM; // calculate all correlations versus multiplicity 
   Bool_t fMinimumBiasReferenceFlow; // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)   
   Bool_t fForgetAboutCovariances; // when propagating error forget about the covariances  
   Bool_t fStorePhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
@@ -558,6 +572,8 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fIntFlowCorrelationsAllEBE; // to be improved (add comment)
   TH1D *fIntFlowCorrectionTermsForNUAEBE[2]; // [0=sin terms,1=cos terms], NUA = non-uniform acceptance
   TH1D *fIntFlowEventWeightForCorrectionTermsForNUAEBE[2]; // [0=sin terms,1=cos terms], NUA = non-uniform acceptance 
+  Double_t fNumberOfRPsEBE; // # of Reference Particles  
+  Double_t fNumberOfPOIsEBE; // # of Particles of Interest
   Double_t fReferenceMultiplicityEBE; // reference multiplicity 
   //  3d.) profiles:
   TProfile *fAvMultiplicity; // profile to hold average multiplicities and number of events for events with nRP>=0, nRP>=1, ... , and nRP>=8
@@ -728,8 +744,19 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fMixedHarmonicEventWeights[2]; // sum of linear and quadratic event weights for mixed harmonics => [0=linear 1,1=quadratic]    
   TH2D *fMixedHarmonicProductOfEventWeights; // sum of products of event weights for mixed harmonics
   TProfile2D *fMixedHarmonicProductOfCorrelations; // averages of products of mixed harmonics correlations
+
+  // 10.) Control histograms:
+  //  10a.) list:
+  TList *fControlHistogramsList; // list to hold all control histograms 
+  //  10b.) flags:
+  TProfile *fControlHistogramsFlags; // profile to hold all flags for control histograms
+  Bool_t fStoreControlHistograms; // store or not control histograms
+  //  10c.) histograms:
+  TH2D *fCorrelationNoRPsVsRefMult; // correlation between # RPs and ref. mult. determined centrally
+  TH2D *fCorrelationNoPOIsVsRefMult; // correlation between # POIs and ref. mult. determined centrally
+  TH2D *fCorrelationNoRPsVsNoPOIs; // correlation between # RPs and # POIs
    
-  ClassDef(AliFlowAnalysisWithQCumulants, 2);
+  ClassDef(AliFlowAnalysisWithQCumulants, 3);
 };
 
 //================================================================================================================
