@@ -30,6 +30,7 @@ class TObject;
 class TROOT;
 class TVector3;
 class AliVTrack;
+class AliHelperPID;
 
 class AliAnalyseLeadingTrackUE : public TObject {
 
@@ -61,9 +62,10 @@ class AliAnalyseLeadingTrackUE : public TObject {
   Bool_t         VertexSelection(const TObject* obj, Int_t ntracks, Double_t zed);       // Vertex selection: see implementation
   void 		 RemoveInjectedSignals(TObjArray* tracks, TObject* arrayMC, Int_t maxLabel);
   void 		 RemoveWeakDecays(TObjArray* tracks, TObject* mcObj);
-  Int_t          GetParticleSpecies(AliVTrack      * trk);// PID
+  AliHelperPID*  GetHelperPID() { return fHelperPID; }
+  void 		 SetHelperPID(AliHelperPID* pid) { fHelperPID = pid; }
   
- private:
+private:
   Int_t          fDebug;             // debug flag
   Int_t          fFilterBit;         // track selection cuts
   Bool_t         fOnlyHadrons;       // consider only charged Pions, Protons and Kaons 
@@ -73,6 +75,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   AliESDtrackCuts *fEsdTrackCuts;    // set of cuts when reading ESD
   AliESDtrackCuts *fEsdTrackCutsExtra1;    // set of cuts when reading ESD
   AliESDtrackCuts *fEsdTrackCutsExtra2;    // set of cuts when reading ESD
+  AliHelperPID   *fHelperPID;    // PID Helper object
   
   ClassDef(AliAnalyseLeadingTrackUE,0)
 };

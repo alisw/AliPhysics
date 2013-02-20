@@ -44,6 +44,7 @@ class TH1D;
 class TObjArray;
 class AliEventPoolManager;
 class AliESDEvent;
+class AliHelperPID;
 
 
 class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
@@ -104,6 +105,9 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetWeightPerEvent(Bool_t flag = kTRUE)   { fWeightPerEvent = flag; }
     void   SetCustomBinning(const char* binningStr) { fCustomBinning = binningStr; }
     
+    AliHelperPID* GetHelperPID() { return fHelperPID; }
+    void   SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
+    
   private:
     AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
     AliAnalysisTaskPhiCorrelations&   operator=(const  AliAnalysisTaskPhiCorrelations &det);
@@ -132,6 +136,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t		fInjectedSignals;	  // check header to skip injected signals in MC
     
     // Pointers to external UE classes
+    AliHelperPID*     fHelperPID;      // points to class containing common analysis algorithms
     AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms
     AliUEHistograms*  fHistos;       //! points to class to handle histograms/containers  
     AliUEHistograms*  fHistosMixed;       //! points to class to handle mixed histograms/containers  
@@ -183,7 +188,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 25); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 26); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

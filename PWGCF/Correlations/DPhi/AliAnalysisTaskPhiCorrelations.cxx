@@ -54,6 +54,7 @@
 #include "AliESDZDC.h"
 #include "AliESDtrackCuts.h"
 
+#include "AliHelperPID.h"
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -96,6 +97,7 @@ fCourseCentralityBinning(kFALSE),
 fSkipTrigger(kFALSE),
 fInjectedSignals(kFALSE),
 // pointers to UE classes
+fHelperPID(0x0),
 fAnalyseUE(0x0),
 fHistos(0x0),
 fHistosMixed(0),
@@ -213,6 +215,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fAnalyseUE->SetDebug(fDebug); 
   fAnalyseUE->DefineESDCuts(fFilterBit);
   fAnalyseUE->SetEventSelection(fSelectBit);
+  fAnalyseUE->SetHelperPID(fHelperPID);
+  if ((fParticleSpeciesTrigger != -1 || fParticleSpeciesAssociated != -1) && !fHelperPID)
+    AliFatal("HelperPID object should be set in the steering macro");
 
   // Initialize output list of containers
   if (fListOfHistos != NULL){
@@ -268,6 +273,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // add histograms to list
   fListOfHistos->Add(fHistos);
   fListOfHistos->Add(fHistosMixed);
+  // add HelperPID to list
+  if (fHelperPID)
+    fListOfHistos->Add(fHelperPID);
   
   fListOfHistos->Add(new TH2F("trackletsVsV0Cent", ";L1 clusters;v0 centrality", 100, -0.5, 9999.5, 101, 0, 101));
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
