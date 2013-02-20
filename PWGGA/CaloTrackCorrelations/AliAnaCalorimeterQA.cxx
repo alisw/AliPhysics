@@ -158,8 +158,9 @@ fh1EOverP(0),                          fh2dR(0),
 fh2EledEdx(0),                         fh2MatchdEdx(0),
 fhMCEle1EOverP(0),                     fhMCEle1dR(0),                          fhMCEle2MatchdEdx(0),
 fhMCChHad1EOverP(0),                   fhMCChHad1dR(0),                        fhMCChHad2MatchdEdx(0),
-fhMCNeutral1EOverP(0),                 fhMCNeutral1dR(0),                      fhMCNeutral2MatchdEdx(0), fh1EOverPR02(0),           
-fhMCEle1EOverPR02(0),                  fhMCChHad1EOverPR02(0),                 fhMCNeutral1EOverPR02(0)
+fhMCNeutral1EOverP(0),                 fhMCNeutral1dR(0),                      fhMCNeutral2MatchdEdx(0), fh1EOverPR02(0),       
+fhMCEle1EOverPR02(0),                  fhMCChHad1EOverPR02(0),                 fhMCNeutral1EOverPR02(0),
+fh1EleEOverP(0), fhMCEle1EleEOverP(0), fhMCChHad1EleEOverP(0), fhMCNeutral1EleEOverP(0)
 {
   //Default Ctor
   
@@ -1356,7 +1357,10 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
   Double_t eOverP = e/tmom;
   
   fh1EOverP->Fill(tpt, eOverP);
-  if(dR < 0.02) fh1EOverPR02->Fill(tpt,eOverP);
+  if(dR < 0.02){
+    fh1EOverPR02->Fill(tpt,eOverP);
+    if(dedx > 60 && dedx < 100) fh1EleEOverP->Fill(tpt,eOverP);
+  }
   
   fh2dR->Fill(e,dR);
   fh2MatchdEdx->Fill(tmom,dedx);
@@ -1370,21 +1374,30 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
       fhMCEle1EOverP->Fill(tpt,eOverP);
       fhMCEle1dR->Fill(dR);
       fhMCEle2MatchdEdx->Fill(tmom,dedx);		
-      if(dR < 0.02) fhMCEle1EOverPR02->Fill(tpt,eOverP);
+      if(dR < 0.02){
+	fhMCEle1EOverPR02->Fill(tpt,eOverP);
+	if(dedx > 60 && dedx < 100) fhMCEle1EleEOverP->Fill(tpt,eOverP);
+      }
     }
     else if(charge!=0)
     {
       fhMCChHad1EOverP->Fill(tpt,eOverP);
       fhMCChHad1dR->Fill(dR);
       fhMCChHad2MatchdEdx->Fill(tmom,dedx);	
-      if(dR < 0.02) fhMCChHad1EOverPR02->Fill(tpt,eOverP);
+      if(dR < 0.02){
+	fhMCChHad1EOverPR02->Fill(tpt,eOverP);
+	if(dedx > 60 && dedx < 100) fhMCChHad1EleEOverP->Fill(tpt,eOverP);
+      }
     }
     else if(charge == 0)
     {
       fhMCNeutral1EOverP->Fill(tpt,eOverP);
       fhMCNeutral1dR->Fill(dR);
       fhMCNeutral2MatchdEdx->Fill(tmom,dedx);	
-      if(dR < 0.02) fhMCNeutral1EOverPR02->Fill(tpt,eOverP);
+      if(dR < 0.02){
+	fhMCNeutral1EOverPR02->Fill(tpt,eOverP);
+	if(dedx > 60 && dedx < 100) fhMCNeutral1EleEOverP->Fill(tpt,eOverP);
+      }
     }
   }//DataMC
   
@@ -2117,6 +2130,11 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fh1EOverPR02->SetYTitle("E/p");
     fh1EOverPR02->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fh1EOverPR02);	
+
+    fh1EleEOverP = new TH2F("h1EleEOverP","Electron candidates E/p (60<dEdx<100)",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
+    fh1EleEOverP->SetYTitle("E/p");
+    fh1EleEOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fh1EleEOverP);
   }
   
   if(fFillAllPi0Histo)
