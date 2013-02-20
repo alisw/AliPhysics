@@ -10,5 +10,6 @@
 #pragma link C++ class AliPWGFunc+;
 #pragma link C++ class AliLatexTable+;
 #pragma link C++ class AliFigure+;
+#pragma link C++ class AliHelperPID+;
 
 #endif
