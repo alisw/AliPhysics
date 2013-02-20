@@ -44,7 +44,6 @@
 #include "AliVCaloCells.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-#include "AliAODMCParticle.h"
 
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
@@ -255,44 +254,6 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
   
   return kTRUE ;
   
-}
-
-//_________________________________________________________________
-void AliCaloTrackReader::CorrectMCLabelForAODs(AliVCluster * clus)
-{
- // AODs filter particles, not anymore correspondance with MC position in array
- // Check if label is correct and if not, change it
-  
-  Int_t * labels = clus->GetLabels();
-
-  for(UInt_t ilabel = 0; ilabel < clus->GetNLabels(); ilabel++)
-  {
-    Int_t orgLabel = labels[ilabel];
-        
-    TClonesArray * arr = GetAODMCParticles()  ;
-        
-    if(!arr)
-    {
-      printf("AliCaloTrackReader::CorrectMCLabelForAODs() - Input array not available\n");
-      return ;
-    }
-    
-    AliAODMCParticle *  particle = (AliAODMCParticle *)arr->At(orgLabel);
-    
-    if(orgLabel != particle->Label())
-    {
-      // loop on the particles list and check if there is one with the same label
-      for(Int_t ind = 0; ind < arr->GetEntriesFast(); ind++ )
-      {
-        particle = (AliAODMCParticle *) arr->At(ind);
-        
-        if(orgLabel == particle->Label()) labels[ilabel] = ind;
-      }
-    }
-    
-    //if(orgLabel!=labels[ilabel]) printf("\t Label in %d - out %d \n",orgLabel, clus->GetLabels()[ilabel]);
-    
-  }
 }
 
 //____________________________________________
@@ -1489,9 +1450,6 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   
   //Correct MC label for AODs
   
-  if(ReadAODMCParticles())
-    CorrectMCLabelForAODs(clus);
-  
   fEMCALClusters->Add(clus);
   
 }
@@ -1682,9 +1640,6 @@ void AliCaloTrackReader::FillInputPHOS()
         {
           clus->SetID(iclus) ; 
         }              
-        
-        if(ReadAODMCParticles())
-          CorrectMCLabelForAODs(clus);
         
         fPHOSClusters->Add(clus);	
         
