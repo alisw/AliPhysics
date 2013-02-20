@@ -851,7 +851,7 @@ void AliAnalysisTaskPi0Flow::FillSelectedClusterHistograms()
 	  FillHistogram(Form("hPhotPhiTPCBoth2core_cen%d",fCentBin),ptcore,dphiT) ;
 
 	FillHistogram(Form("hPhotBoth2_cen%d",fCentBin),pt) ;
-	FillHistogram(Form("hPhotBothc2ore_cen%d",fCentBin),ptcore) ;
+	FillHistogram(Form("hPhotBoth2core_cen%d",fCentBin),ptcore) ;
       }
     }
   }
