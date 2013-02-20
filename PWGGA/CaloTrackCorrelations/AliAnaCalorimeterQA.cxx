@@ -2728,6 +2728,22 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhMCNeutral1EOverPR02->SetYTitle("E/p");
     fhMCNeutral1EOverPR02->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhMCNeutral1EOverPR02);
+    
+    fhMCEle1EleEOverP = new TH2F("hMCEle1EleEOverP","Electron candidates E/p (60<dEdx<100), MC electrons",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
+    fhMCEle1EleEOverP->SetYTitle("E/p");
+    fhMCEle1EleEOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCEle1EleEOverP);
+
+    fhMCChHad1EleEOverP = new TH2F("hMCEle1EleEOverP","Electron candidates E/p (60<dEdx<100), MC charged hadrons",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
+    fhMCChHad1EleEOverP->SetYTitle("E/p");
+    fhMCChHad1EleEOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCChHad1EleEOverP);
+
+    fhMCNeutral1EleEOverP = new TH2F("hMCNeutral1EleEOverP","Electron candidates E/p (60<dEdx<100), MC neutrals",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
+    fhMCNeutral1EleEOverP->SetYTitle("E/p");
+    fhMCNeutral1EleEOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCNeutral1EleEOverP);
+    
   }
   
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
