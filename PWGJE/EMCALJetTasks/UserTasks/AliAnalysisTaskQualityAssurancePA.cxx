@@ -1,3 +1,44 @@
+#ifndef ALIANALYSISTASKSE_H
+#include <Riostream.h>
+#include <TROOT.h>
+#include <TString.h>
+#include <TFile.h>
+#include <TCint.h>
+#include <TChain.h>
+#include <TTree.h>
+#include <TKey.h>
+#include <TProfile.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TCanvas.h>
+#include <TList.h>
+#include <TClonesArray.h>
+#include <TObject.h>
+#include <TMath.h>
+#include <TSystem.h>
+#include <TInterpreter.h>
+#include <TH1.h>
+#include "AliAnalysisTask.h"
+#include "AliCentrality.h"
+#include "AliStack.h"
+#include "AliESDEvent.h"
+#include "AliESDInputHandler.h"
+#include "AliAODEvent.h"
+#include "AliAODHandler.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskSE.h"
+#endif
+
+#include <TRandom3.h>
+#include "AliGenPythiaEventHeader.h"
+#include "AliMCEvent.h"
+#include "AliLog.h"
+#include <AliEmcalJet.h>
+#include <AliRhoParameter.h>
+#include "AliVEventHandler.h"
+#include "AliVParticle.h"
+#include "AliAnalysisUtils.h"
+
 #include "AliAnalysisTaskQualityAssurancePA.h"
 
 
@@ -60,7 +101,7 @@ void AliAnalysisTaskQualityAssurancePA::Init()
       AddHistogram1D<TH1D>(tmpRunNum, "hJetArea", "Jets area distribution", "", 200, 0., 2., "Area","dN^{Jets}/dA");
       AddHistogram2D<TH2D>(tmpRunNum, "hJetAreaVsPt", "Jets area vs. p_{T} distribution", "COLZ", 200, 0., 2., 400, 0., 200., "Area", "p_{T}", "dN^{Jets}/dA dp_{T}");
 
-      AddHistogram2D<TH2D>(tmpRunNum, "hJetPhiEta", "Jets angular distribution", "LEGO2", 100, 0., 2*TMath::Pi(),100, -0.6, 0.6, "#phi","#eta","dN^{Jets}/(d#phi d#eta)");
+      AddHistogram2D<TH2D>(tmpRunNum, "hJetPhiEta", "Jets angular distribution", "LEGO2", 360, 0., 2*TMath::Pi(),100, -0.6, 0.6, "#phi","#eta","dN^{Jets}/(d#phi d#eta)");
       AddHistogram2D<TH2D>(tmpRunNum, "hJetPtVsConstituentCount", "Jets number of constituents vs. jet p_{T}", "COLZ", 800, 0., 400., 100, 0., 100., "p_{T}","N^{Tracks}","dN^{Jets}/(dp_{T} dN^{tracks})");
       AddHistogram1D<TH1D>(tmpRunNum, "hJetCountAll", "Number of Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
       AddHistogram1D<TH1D>(tmpRunNum, "hJetCountAccepted", "Number of accepted Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
@@ -76,6 +117,14 @@ void AliAnalysisTaskQualityAssurancePA::Init()
   PostData(1,fOutputList); // important for merging
 
 }
+
+
+//________________________________________________________________________
+AliAnalysisTaskQualityAssurancePA::AliAnalysisTaskQualityAssurancePA() : AliAnalysisTaskSE("AliAnalysisTaskQualityAssurancePA"), fOutputList(0), fAnalyzeQA(1), fAnalyzeJets(1), fAnalyzePythia(0), fHasTracks(0), fHasClusters(0), fHasJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fClusterArray(0), fJetArrayName(0), fTrackArrayName(0), fClusterArrayName(0), fRunNumbers(0), fNumPtHardBins(11), fSignalJetRadius(0.4), fNumberExcludedJets(2), fSignalJetEtaWindow(0.5), fTrackEtaWindow(0.9), fClusterEtaWindow(0.7), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinClusterPt(0.300), fMinJetPt(1.0), fMinJetArea(0.4), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0)
+{
+  // default constructor
+}
+
 
 //________________________________________________________________________
 AliAnalysisTaskQualityAssurancePA::AliAnalysisTaskQualityAssurancePA(const char *name, const char* trackArrayName, const char* clusterArrayName, const char* jetArrayName) : AliAnalysisTaskSE(name), fOutputList(0), fAnalyzeQA(1), fAnalyzeJets(1), fAnalyzePythia(0), fHasTracks(0), fHasClusters(0), fHasJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fClusterArray(0), fJetArrayName(0), fTrackArrayName(0), fClusterArrayName(0), fRunNumbers(0), fNumPtHardBins(11), fSignalJetRadius(0.4), fNumberExcludedJets(2), fSignalJetEtaWindow(0.5), fTrackEtaWindow(0.9), fClusterEtaWindow(0.7), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinClusterPt(0.300), fMinJetPt(1.0), fMinJetArea(0.4), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0)

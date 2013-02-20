@@ -110,7 +110,7 @@ void runEMCalJetAnalysis(
     cout << "Using " << localFiles.Data() << " as input file list.\n";
 
   // Create MC handler, if MC is demanded
-  if (isMC)
+  if (isMC && (usedData != "AOD"))
   {
     AliMCEventHandler* mcH = new AliMCEventHandler();
     mcH->SetPreReadMode(AliMCEventHandler::kLmPreRead);
