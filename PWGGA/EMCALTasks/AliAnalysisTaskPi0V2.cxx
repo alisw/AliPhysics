@@ -719,7 +719,13 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
   hEvtCount->Fill(3);
 
   if (isPhosCali) {
-    SetFlatteningData();
+    if(fESD){
+     if( fRunNumber != fESD->GetRunNumber()) 
+      SetFlatteningData();
+    } else{
+    if( fRunNumber != fAOD->GetRunNumber())
+      SetFlatteningData();
+    }
   }
 
   const AliVVertex* fvertex;
@@ -827,7 +833,13 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
   }
 
   if (!isPhosCali) { 
-    SetFlatteningData();
+    if(fESD){
+     if( fRunNumber != fESD->GetRunNumber())
+      SetFlatteningData();
+    } else{
+    if( fRunNumber != fAOD->GetRunNumber())
+      SetFlatteningData();
+    }
     hEPTPCCor->Fill(fCentrality, ApplyFlattening(fEPTPC, fCentrality));
     hEPV0ACor->Fill(fCentrality, ApplyFlatteningV0A(fEPV0A, fCentrality));
     hEPV0CCor->Fill(fCentrality, ApplyFlatteningV0C(fEPV0C, fCentrality));

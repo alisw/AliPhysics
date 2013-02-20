@@ -18,8 +18,8 @@ class AliCaloPID;
 class AliCalorimeterUtils;
 class AliCaloTrackReader;
 class TProfile;
-class AliEPFlattener;
 class AliOADBContainer;
+class AliEPFlattener;
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
