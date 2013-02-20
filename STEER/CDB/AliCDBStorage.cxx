@@ -229,23 +229,6 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
 	if (oldStatus != kFALSE)
   		TH1::AddDirectory(kTRUE);
 
-  	if (entry) {
-		// this is to make the SHUTTLE output lighter
-		if(!(query.GetPath().Contains("SHUTTLE/STATUS")))
-    			AliDebug(2, Form("CDB object retrieved: %s", entry->GetId().ToString().Data()));
-  	} else {
-		// this is to make the SHUTTLE output lighter
-		if(!(query.GetPath().Contains("SHUTTLE/STATUS"))){
-
-			if(!(query.GetPath().Contains("SHUTTLE"))){
-				AliFatal(Form("No valid CDB object found! request was: %s", query.ToString().Data()));
-			}
-			else {
-				AliInfo(Form("No valid CDB object found! request was: %s", query.ToString().Data()));
-			}
-		}
-  	}
-
 	// if drain storage is set, drain entry into drain storage
 	if(entry && (AliCDBManager::Instance())->IsDrainSet())
 		AliCDBManager::Instance()->Drain(entry);

@@ -1277,6 +1277,7 @@ Bool_t AliReconstruction::LoadCDB()
   // in the trigger or that are needed in order to put correct
   // information in ESD
   AliCDBManager::Instance()->GetAll("TRIGGER/*/*");
+  AliCDBManager::Instance()->GetAll("HLT/*/*");
 
   return kTRUE;
 }

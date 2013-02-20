@@ -477,20 +477,31 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
 AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
 // get AliCDBEntry from the database
 
+        Printf("Entering AliCDBGrid::GetEntry");
+
 	AliCDBId* dataId = GetEntryId(queryId);
 
-	if (!dataId) return NULL;
+	if (!dataId){
+                AliFatal(TString::Format("No valid CDB object found! request was: %s", queryId.ToString().Data()));
+                return NULL;
+        }
 
 	TString filename;
 	if (!IdToFilename(*dataId, filename)) {
 		AliDebug(2,Form("Bad data ID encountered! Subnormal error!"));
 		delete dataId;
+                AliFatal(TString::Format("No valid CDB object found! request was: %s", queryId.ToString().Data()));
 		return NULL;
 	}
 
 	AliCDBEntry* anEntry = GetEntryFromFile(filename, dataId);
 
 	delete dataId;
+	if(!anEntry){
+                Printf("follows an alifatal");
+                AliFatal(TString::Format("No valid CDB object found! request was: %s", queryId.ToString().Data()));
+        }
+
 	return anEntry;
 }
 
