@@ -43,11 +43,9 @@ void FillHbtParticleCollection(       AliFemtoParticleCut*         partCut,
 				      AliFemtoEvent*               hbtEvent,
 				      AliFemtoPicoEventRP* 	   picoevent)
 {
-//      cout << "in filling" << endl;
       AliEventplane* evpl;
       evpl = picoevent->PicoEventplane();
       *evpl = *hbtEvent->EP();
-//      cout << "EP here " << evpl->GetEventplane("Q") << endl;
       AliFemtoTrackCut* pCut = (AliFemtoTrackCut*) partCut;
       AliFemtoTrack* pParticle;
       AliFemtoTrackIterator pIter;
@@ -57,7 +55,6 @@ void FillHbtParticleCollection(       AliFemtoParticleCut*         partCut,
 	pParticle = *pIter;
 	bool tmpPassParticle = pCut->Pass(pParticle);
 	pCut->FillCutMonitor(pParticle, tmpPassParticle);
-// 	cout << pCut->Report() << endl;
 	if (tmpPassParticle){	
 	  AliFemtoParticle* particle = new AliFemtoParticle(pParticle,pCut->Mass());
 	  picoevent->FirstParticleCollection()->push_back(particle);
@@ -152,30 +149,23 @@ AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnaly
   
   if ( fEventCut ) {
       SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - event cut set " << endl;
   }
   if ( fFirstParticleCut ) {
       SetFirstParticleCut(fFirstParticleCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - femto particle cut set " << endl;
   }
   if ( fSecondParticleCut ) {
       SetSecondParticleCut(fSecondParticleCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - flow particle cut set " << endl;
   }
   if ( fPairCut ) {
       SetPairCut(fPairCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - pair cut set " << endl;
   }
 
   AliFemtoCorrFctnIterator iter;
   for (iter=a.fCorrFctnCollection->begin(); iter!=a.fCorrFctnCollection->end();iter++){
-    cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - looking for correlation functions " << endl;
     AliFemtoCorrFctn* fctn = (*iter)->Clone();
     if (fctn) AddCorrFctn(fctn);
-    else cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - correlation function not found " << endl;
   }
   fNumEventsToMix = a.fNumEventsToMix;
-  cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - analysis copied " << endl;
 }
 
 AliFemtoAnalysisAzimuthalPbPb& AliFemtoAnalysisAzimuthalPbPb::operator=(const AliFemtoAnalysisAzimuthalPbPb& a)
@@ -205,30 +195,23 @@ AliFemtoAnalysisAzimuthalPbPb& AliFemtoAnalysisAzimuthalPbPb::operator=(const Al
   
   if ( fEventCut ) {
       SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - event cut set " << endl;
   }
   if ( fFirstParticleCut ) {
       SetFirstParticleCut(fFirstParticleCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - femto particle cut set " << endl;
   }
   if ( fSecondParticleCut ) {
       SetSecondParticleCut(fSecondParticleCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - flow particle cut set " << endl;
   }
   if ( fPairCut ) {
       SetPairCut(fPairCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - pair cut set " << endl;
   }
 
   AliFemtoCorrFctnIterator iter;
   for (iter=a.fCorrFctnCollection->begin(); iter!=a.fCorrFctnCollection->end();iter++){
-    cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - looking for correlation functions " << endl;
     AliFemtoCorrFctn* fctn = (*iter)->Clone();
     if (fctn) AddCorrFctn(fctn);
-    else cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - correlation function not found " << endl;
   }
   fNumEventsToMix = a.fNumEventsToMix;
-  cout << " AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) - analysis copied " << endl;
 
   return *this;
   
@@ -244,15 +227,10 @@ AliFemtoAnalysisAzimuthalPbPb::~AliFemtoAnalysisAzimuthalPbPb(){
 void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) {
   // Perform event processing in bins of z vertex, multiplicity and Reaction Plane angle
   //****from AliFemtoSimpleAnalysis****
-// cout << "in processing event" << endl;
   fFirstParticleCut->EventBegin(hbtEvent);
-//   cout << "what is after that?" << endl;
   double vertexZ = hbtEvent->PrimVertPos().z();
-//   cout << "vertexZ" << vertexZ << endl;
   double mult = hbtEvent->UncorrectedNumberOfPrimaries();
-//   cout << "cent" << mult << endl;
   double RP = hbtEvent->ReactionPlaneAngle();  
-//   cout << "RP " << RP << endl;
   fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ,mult,RP); 
   if (!fMixingBuffer) {
 //     cout << "no mixing buffer!!!" << endl;
@@ -263,7 +241,6 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
     return;
   }
 
-//   cout << "in process event by simple analysis" << endl;
   // Add event to processed events
   fPicoEventRP=0; // we will get a new pico event, if not prevent corr. fctn to access old pico event
   fNeventsProcessed++;
@@ -277,7 +254,6 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
   if(hbtEvent->MagneticField()>0) magsign = 1;
   else if(hbtEvent->MagneticField()<0) magsign = -1;
   fPairCutRD->SetMagneticFieldSign(magsign);
-//   cout << "magnetic field " << hbtEvent->MagneticField() << "magsign " << magsign << endl;
 
   for (AliFemtoCorrFctnIterator iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
     (*iter)->EventBegin(hbtEvent);
@@ -286,33 +262,21 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
   // event cut and event cut monitor
   bool tmpPassEvent = fEventCut->Pass(hbtEvent);
   if (!tmpPassEvent) {
-    //cout << "event not passed!!!!!!!!!!!!!!!!!!!!!" << endl;
     fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
   }
   if (tmpPassEvent) {
 
     if (RP>0){
-     cout << "blaaaa " << hbtEvent->ReactionPlaneAngle() << endl;
-//       cout << " what is here?" << endl;
-    fPicoEventRP = new AliFemtoPicoEventRP; // this is what we will make pairs from and put in Mixing Buffer
+      fPicoEventRP = new AliFemtoPicoEventRP; // this is what we will make pairs from and put in Mixing Buffer
     // no memory leak. we will delete picoevents when they come out of the mixing buffer
-// cout << " what is here?" << endl;
     FillHbtParticleCollection(fFirstParticleCut,(AliFemtoEvent*)hbtEvent,fPicoEventRP);
-    
-//     cout << "after filling" << endl;
-    
-//     cout << "here" << endl;
-   cout << "here " << fPicoEventRP->FirstParticleCollection()->size() << endl;
     if (fPicoEventRP->FirstParticleCollection()->size() >= fMinSizePartCollection) {
       fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
-//       cout << "and here?" << endl;
       fRPdist->Fill(RP);
       fsubRPdist->Fill(fPicoEventRP->PicoEventplane()->GetQsubRes());
-//       cout << "before making real pairs" << endl;
 
         MakePairs("real", fPicoEventRP);
 
-//       cout << "AliFemtoSimpleAnalysis::ProcessEvent() - reals done ";
 
       //---- Make pairs for mixed events, looping over events in mixingBuffer ----//
 
@@ -320,14 +284,10 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
       AliFemtoPicoEventIterator fPicoEventIter;
       for (fPicoEventIter=MixingBuffer()->begin();fPicoEventIter!=MixingBuffer()->end();fPicoEventIter++){
         storedEvent = (AliFemtoPicoEventRP*) *fPicoEventIter;
-
-// 	cout << "before making mixed pairs" << endl;
-	
           MakePairs("mixed",fPicoEventRP,
                             storedEvent );
         
       }
-//       cout << " - mixed done   " << endl;
 
       if ( MixingBufferFull() ) {
         delete MixingBuffer()->back();
@@ -345,14 +305,10 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
 //       cout << "and here?" << endl;
     }
   }   // if currentEvent is accepted by currentAnalysis
-//   cout << "1" << endl;
   fFirstParticleCut->EventEnd(hbtEvent);
-//   cout << "2" << endl;
   fSecondParticleCut->EventEnd(hbtEvent);
-//   cout << "3" << endl;
   fPairCut->EventEnd(hbtEvent);
   fPairCutRD->EventEnd(hbtEvent);
-//   cout << "4" << endl;
   for (AliFemtoCorrFctnIterator iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
     (*iter)->EventEnd(hbtEvent);
   } 
@@ -362,10 +318,8 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
 //_______________________________________________________________________________
 void AliFemtoAnalysisAzimuthalPbPb::MakePairs(const char* typeIn, AliFemtoPicoEventRP *picoevent1,
 				       AliFemtoPicoEventRP *picoevent2){
-//   cout << "In makepairs" << endl;
    string type = typeIn;
 
-  //  int swpart = ((long int) partCollection1) % 2;
   int swpart = fNeventsProcessed % 2;
 
   AliFemtoParticleCollection* partCollection1 = picoevent1->FirstParticleCollection();
@@ -415,22 +369,11 @@ void AliFemtoAnalysisAzimuthalPbPb::MakePairs(const char* typeIn, AliFemtoPicoEv
       
       //For getting the pair angle wrt EP
   if (type == "real"){
-//     cout << "real pairs " << endl;
 	Double_t PairAngleEP=0;
 	TVector2* q=0;
-// 	float qx=0, qy=0;
 	q = picoevent1->PicoEventplane()->GetQVector();
-// 	cout << "real pairs 1" << endl;
 
-// 	cout << "track ID " << ((AliVTrack*)tPair->Track1()->Track())->GetID() << endl;
-// 	
-// 	qx = q->X() - picoevent1->PicoEventplane()->GetQContributionX((AliVTrack*)tPair->Track1()->Track()) - picoevent1->PicoEventplane()->GetQContributionX((AliVTrack*)tPair->Track2()->Track());
-// 	qy = q->Y() - picoevent1->PicoEventplane()->GetQContributionY((AliVTrack*)tPair->Track1()->Track()) - picoevent1->PicoEventplane()->GetQContributionY((AliVTrack*)tPair->Track2()->Track());
-//  
-// 	cout << "6" << endl;
-// 	q->Set(qx,qy);
 	float psi = q->Phi()/2;
-// 	cout << "psi " << psi << endl;
 	PairAngleEP = (tPair->EmissionAngle() - TMath::RadToDeg()*psi);
 	while (PairAngleEP < 0) PairAngleEP += 180;
 	while (PairAngleEP > 180) PairAngleEP -= 180;
@@ -439,50 +382,25 @@ void AliFemtoAnalysisAzimuthalPbPb::MakePairs(const char* typeIn, AliFemtoPicoEv
 	fphidist->Fill(tPair->Track1()->FourMomentum().Phi());
 	fphidist->Fill(tPair->Track2()->FourMomentum().Phi());
 	fpairphi->Fill(tPair->EmissionAngle()*TMath::DegToRad());
-// 	cout << "tPair->EmissionAngle()*TMath::DegToRad()" << tPair->EmissionAngle()*TMath::DegToRad() << endl;
-// 	cout << "real pairs 2" << endl;
+
   }
 
   if (type == "mixed"){
-//     cout << "mixed pairs " << endl;
-// 	float qx1=0, qy1=0, qx2=0, qy2=0;
+
 	TVector2* q1=0;
 	TVector2* q2=0;
 	q1 = picoevent1->PicoEventplane()->GetQVector();
 	q2 = picoevent2->PicoEventplane()->GetQVector();
 	Double_t PairAngleEP=0;
-// 	cout << "mixed pairs 1" << endl;
-// 	qx1 = q1->X() - picoevent1->PicoEventplane()->GetQContributionX((AliVTrack*)tPair->Track1()->Track());
-// 	qy1 = q1->Y() - picoevent1->PicoEventplane()->GetQContributionY((AliVTrack*)tPair->Track1()->Track());
-// 	qx2 = q2->X() - picoevent2->PicoEventplane()->GetQContributionX((AliVTrack*)tPair->Track2()->Track());
-// 	qy2 = q2->Y() - picoevent2->PicoEventplane()->GetQContributionY((AliVTrack*)tPair->Track2()->Track());
-//  
-// 	q1->Set(qx1,qy1);
-// 	q2->Set(qx2,qy2);
+
 	
 	float psi1 = q1->Phi()/2;
 	float psi2 = q2->Phi()/2;
-// 	cout << "mixed pairs 2" << endl;
 	PairAngleEP = TMath::RadToDeg()*(TMath::ATan2(((tPair->Track1()->Track()->Pt()*TMath::Sin(tPair->Track1()->FourMomentum().Phi() - psi1))+(tPair->Track2()->Track()->Pt()*TMath::Sin(tPair->Track2()->FourMomentum().Phi() - psi2))),((tPair->Track1()->Track()->Pt()*TMath::Cos(tPair->Track1()->FourMomentum().Phi() - psi1))+(tPair->Track2()->Track()->Pt()*TMath::Cos(tPair->Track2()->FourMomentum().Phi() - psi2)))));
 	while (PairAngleEP < 0) PairAngleEP += 180;
 	while (PairAngleEP > 180) PairAngleEP -= 180;
-// 	cout << "PairAngleEP " << PairAngleEP << endl;
 	fmixedpsi->Fill(PairAngleEP);
 	tPair->SetPairAngleEP(PairAngleEP);
-// 	cout << "mixed pairs 3" << endl;
-// 	double eta1 = tPair->Track1()->Track()->P().PseudoRapidity();
-// 	double eta2 = tPair->Track2()->Track()->P().PseudoRapidity();
-// 	cout << "mixed pair: deta = " << fabs(eta2 - eta1) << endl;
-// 	
-// 	double phi1 = tPair->Track1()->Track()->P().Phi();
-// 	double phi2 = tPair->Track2()->Track()->P().Phi();
-// 	double chg1 = tPair->Track1()->Track()->Charge();
-// 	double chg2 = tPair->Track2()->Track()->Charge();
-// 	double ptv1 = tPair->Track1()->Track()->Pt();
-// 	double ptv2 = tPair->Track2()->Track()->Pt();
-// 	
-// 	Double_t dps = (phi1-phi2+(TMath::ASin(+0.075*chg1*1.2/ptv1))-(TMath::ASin(+0.075*chg2*1.2/ptv2)));
-// 	cout << "mixed pair: dphi = " << fabs(dps) << endl;
   }
 
       if (fPairCutRD->Pass(tPair)){
@@ -492,19 +410,11 @@ void AliFemtoAnalysisAzimuthalPbPb::MakePairs(const char* typeIn, AliFemtoPicoEv
           if(type == "real")
             tCorrFctn->AddRealPair(tPair);
 	  else if(type == "mixed") {
-// 	    cout << "mixed pair accepted" << endl;
             tCorrFctn->AddMixedPair(tPair);
 	  }
-          else
-            cout << "Problem with pair type, type = " << type.c_str() << endl;
-        }
+       
+	}
       }
-//       else if (!fPairCutRD->Pass(tPair)) {
-// 	if (type == "mixed") cout << "mixed pair rejected!!!!!!!!!"<< endl;
-// 	if (type == "real") cout << "real pair rejected!!!!!!!!!"<< endl;
-//       }
-
-
     }    // loop over second particle
 
   }      // loop over first particle
@@ -561,27 +471,7 @@ TList* AliFemtoAnalysisAzimuthalPbPb::GetOutputList()
   // Collect the list of output objects to be written
 
   TList *tOutputList = new TList();
-//   tOutputList->SetOwner();
-//   TList *p1Cut = fFirstParticleCut->GetOutputList();
-// 
-//   TListIter nextp1(p1Cut);
-//   while (TObject *obj = nextp1.Next()) {
-//     tOutputList->Add(obj);
-//   }
-// 
-//   TList *pairCut = fPairCut->GetOutputList();
-// 
-//   TIter nextpair(pairCut);
-//   while (TObject *obj = nextpair()) {
-//     tOutputList->Add(obj);
-//   }
-// 
-//   TList *eventCut = fEventCut->GetOutputList();
-// 
-//   TIter nextevent(eventCut);
-//   while (TObject *obj = nextevent()) {
-//     tOutputList->Add(obj);
-//   }
+
 
   AliFemtoCorrFctnIterator iter;
   for (iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
