@@ -1222,24 +1222,22 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     AliStack*    stack=0;
     AliMCEvent*  mcEvent=0;
     if (fIsMCInput && eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
-      
       AliGenHijingEventHeader* hHijing=0;
       AliGenDPMjetEventHeader* dpmHeader=0;
       
       AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-      if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())) {
-	hHijing = (AliGenHijingEventHeader*)mcGenH;
-	if(hHijing) Npart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
-      }
+      if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())) 
+	hHijing = (AliGenHijingEventHeader*)mcGenH;      
       else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
 	TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
 	hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
-	if(hHijing) Npart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
+	if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
       }
       else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
 	dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
-	if(dpmHeader) Npart = dpmHeader->ProjectileParticipants()+ dpmHeader->TargetParticipants();
       }
+      if(hHijing)   Npart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
+      if(dpmHeader) Npart = dpmHeader->ProjectileParticipants()+ dpmHeader->TargetParticipants();
     }
   }   
 
