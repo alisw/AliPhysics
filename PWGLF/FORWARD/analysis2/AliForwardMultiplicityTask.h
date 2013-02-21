@@ -219,9 +219,10 @@ protected:
 
  
   TList* fList; // Output list 
+  TList* fListVertexBins; // list of the signal  in vertex bin	
 	
 
-  ClassDef(AliForwardMultiplicityTask,3) // Forward multiplicity class
+  ClassDef(AliForwardMultiplicityTask,4) // Forward multiplicity class
 };
 
 #endif
