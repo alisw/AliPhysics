@@ -195,6 +195,23 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   else clusterize->SwitchOffSelectEMCALEvent();
   
   //-------------------------------------------------------
+  // Cluster MC labels recalculation
+  //-------------------------------------------------------
+  
+  if(bMC)
+  {
+    printf("Recalculate MC labels\n");
+    clusterize->SwitchOnUseClusterMCLabelForCell(0) ; // Take the cell MC label as basis (only possible in recent productions)
+    clusterize->SwitchOnRemapMCLabelForAODs()  ;      // Only in case 0, and for productions where the re-mapping of cell label in AODs was not done (productions before March 2013?)
+
+    //clusterize->SwitchOnUseClusterMCLabelForCell(1) ; // Assign to each cell the same MC label as the original cluster to which it belonged
+    //clusterize->SwitchOnUseClusterMCLabelForCell(2) ; // Find the original clusters that have the same cells as the new cluster,
+                                                        // assign the labels of the original clusters to the new cluster.
+                                                        // only interesting if output is V1
+  
+  }
+  
+  //-------------------------------------------------------
   // Trigger options
   //-------------------------------------------------------
 

@@ -46,6 +46,7 @@
 #include "AliVEventHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliOADBContainer.h"
+#include "AliAODMCParticle.h"
 
 // --- EMCAL
 #include "AliEMCALAfterBurnerUF.h"
@@ -77,6 +78,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fFillAODFile(kFALSE),   fFillAODHeader(0)
 , fFillAODCaloCells(0),   fRun(-1)
 , fRecoUtils(0),          fConfigName("")
+, fOrgClusterCellId()
 , fCellLabels(),          fCellSecondLabels(),        fCellTime()
 , fCellMatchdEta(),       fCellMatchdPhi()
 , fRecalibrateWithClusterTime(0)
@@ -87,19 +89,14 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")
 , fCentralityClass(""),   fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),    fEMCALNcellsCut (0)
-, fSetCellMCLabelFromCluster(kFALSE)
+, fSetCellMCLabelFromCluster(0)
+, fRemapMCLabelForAODs(0)
 {
   // Constructor
   
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
-  for(Int_t j = 0; j < 24*48*11; j++)  
-  {
-    fCellLabels[j]       = -1;
-    fCellSecondLabels[j] = -1;
-    fCellTime[j]         =  0.;    
-    fCellMatchdEta[j]    = -999;
-    fCellMatchdPhi[j]    = -999;
-  }  
+  
+  ResetArrays();
   
   fCentralityBin[0] = fCentralityBin[1]=-1;
   
@@ -120,6 +117,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fFillAODFile(kFALSE),     fFillAODHeader(0)
 , fFillAODCaloCells(0),     fRun(-1)
 , fRecoUtils(0),            fConfigName("")
+, fOrgClusterCellId()
 , fCellLabels(),            fCellSecondLabels(),        fCellTime()
 , fCellMatchdEta(),         fCellMatchdPhi()
 , fRecalibrateWithClusterTime(0)
@@ -130,20 +128,15 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")
 , fCentralityClass(""),     fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),      fEMCALNcellsCut (0)
-, fSetCellMCLabelFromCluster(kFALSE)
+, fSetCellMCLabelFromCluster(0)
+, fRemapMCLabelForAODs(0)
 {
   // Constructor
   
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
-  for(Int_t j = 0; j < 24*48*11; j++)  
-  {
-    fCellLabels[j]       = -1;
-    fCellSecondLabels[j] = -1;
-    fCellTime[j]         =  0.; 
-    fCellMatchdEta[j]    = -999;
-    fCellMatchdPhi[j]    = -999;
-  }
- 
+  
+  ResetArrays();
+  
   fCentralityBin[0] = fCentralityBin[1]=-1;
 
 }
@@ -586,7 +579,9 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
   AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   if(aodIH && aodIH->GetEventToMerge())  //Embedding
     nClusters = aodIH->GetEventToMerge()->GetNumberOfCaloClusters(); //Get clusters directly from embedded signal
-  
+
+  ResetArrays();
+   
   for (Int_t i = 0; i < nClusters; i++)
   {
     AliVCluster *clus = 0;
@@ -598,17 +593,21 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     if(!clus) return;
     
     if(clus->IsEMCAL())
-    {   
+    {
       Int_t label = clus->GetLabel();
       Int_t label2 = -1 ;
-      //printf("Org cluster E %f, Time  %e, Id = ", clus->E(), clus->GetTOF() );
+      //printf("Org cluster E %f, Time  %e, Index = %d, ID %d, MC label %d\n", clus->E(), clus->GetTOF(),i, clus->GetID(),label );
+      //printf("Original list of labels for new cluster : \n");
+      //for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) printf("\t Label %d\n",clus->GetLabelAt(imc));
       if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1) ;
       UShort_t * index    = clus->GetCellsAbsId() ;
       for(Int_t icell=0; icell < clus->GetNCells(); icell++ )
       {
+        //printf("\t cell %d, MC label %d\n",index[icell],fEvent->GetEMCALCells()->GetCellMCLabel(index[icell]));
+        fOrgClusterCellId[index[icell]] = i;
         fCellLabels[index[icell]]       = label;
         fCellSecondLabels[index[icell]] = label2;
-        fCellTime[index[icell]]         = clus->GetTOF();    
+        fCellTime[index[icell]]         = clus->GetTOF();
         fCellMatchdEta[index[icell]]    = clus->GetTrackDz();
         fCellMatchdPhi[index[icell]]    = clus->GetTrackDx();
         //printf(" %d,", index[icell] );
@@ -625,7 +624,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
   Float_t  amp    = -1; 
   Double_t time   = -1; 
   
-  AliVCaloCells *cells   = fEvent->GetEMCALCells();
+  AliVCaloCells *cells = fEvent->GetEMCALCells();
   
   Int_t bc = InputEvent()->GetBunchCrossNumber();
   for (Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++)
@@ -654,11 +653,6 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     
     if( !accept )
     {
-      fCellLabels[id]      =-1; //reset the entry in the array for next event
-      fCellSecondLabels[id]=-1; //reset the entry in the array for next event
-      fCellTime[id]        = 0.; 
-      fCellMatchdEta[id]   =-999;
-      fCellMatchdPhi[id]   =-999;
       if( DebugLevel() > 2 )
         printf("AliAnalysisTaksEMCALClusterize::ClusterizeCells() - Remove channel absId %d, index %d of %d, amp %f, time %f\n",
                id,icell, cells->GetNumberOfCells(), amp, time*1.e9);
@@ -666,16 +660,18 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     }
     
     Int_t mcLabel = cells->GetMCLabel(icell);
+    //printf("AliAnalysisTaksEMCALClusterize::ClusterizeCells() - cell %d, mc label %d",id,mcLabel);
+
     //if(fCellLabels[id]!=mcLabel)printf("mcLabel %d - %d\n",mcLabel,fCellLabels[id]);
-    if(fSetCellMCLabelFromCluster) mcLabel = fCellLabels[id]; // Older aliroot MC productions
+    if     ( fSetCellMCLabelFromCluster == 1 ) mcLabel = fCellLabels[id]; // Older aliroot MC productions
+    else if( fSetCellMCLabelFromCluster == 0 && fRemapMCLabelForAODs) RemapMCLabelForAODs(mcLabel);
+    //printf(", new label %d\n",mcLabel);
     
     // Create the digit, put a fake primary deposited energy to trick the clusterizer
     // when checking the most likely primary
-    
+        
     new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, 1);
-    
-    fCellLabels[id] =-1; //reset the entry in the array for next event
-    
+        
     idigit++;
   }
   
@@ -710,10 +706,6 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
              fClusterArr->GetEntriesFast(), fCaloClusterArr->GetEntriesFast(), fCaloClusterArr->GetEntries());
     }
   }
-  
-  //Reset the array with second labels for this event
-  memset(fCellSecondLabels, -1, sizeof(fCellSecondLabels));
-  
 }
 
 //_____________________________________________________
@@ -758,15 +750,8 @@ void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
           
           //Do not include bad channels found in analysis?
           if( fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
-             fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi))
-          {
-            fCellLabels[cellNumber]      =-1; //reset the entry in the array for next event
-            fCellSecondLabels[cellNumber]=-1; //reset the entry in the array for next event
-            fCellTime[cellNumber]        = 0.;   
-            fCellMatchdEta[cellNumber]   =-999;
-            fCellMatchdPhi[cellNumber]   =-999;
+              fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi))
             continue;
-          }
           
           cells->SetCell(icell, cellNumber, cellAmplitude*fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi),cellTime);
           
@@ -1479,41 +1464,199 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
       
     }
     
-    //MC
-    Int_t  parentMult = 0;
-    Int_t *parentList = recPoint->GetParents(parentMult);
-    clus->SetLabel(parentList, parentMult); 
-    
-    //Write the second major contributor to each MC cluster.
-    Int_t iNewLabel ;
-    for ( Int_t iLoopCell = 0 ; iLoopCell < clus->GetNCells() ; iLoopCell++ )
+    // MC
+
+    if     ( fSetCellMCLabelFromCluster == 1 ) SetClustersMCLabelFrom2SelectedLabels(recPoint,clus) ;
+    else if( fSetCellMCLabelFromCluster == 2 ) SetClustersMCLabelFromOriginalClusters(clus) ;
+    else
     {
-      
-      Int_t idCell = clus->GetCellAbsId(iLoopCell) ;
-      if(idCell>=0)
-      {
-        iNewLabel = 1 ; //iNewLabel makes sure we  don't write twice the same label.
-        for ( UInt_t iLoopLabels = 0 ; iLoopLabels < clus->GetNLabels() ; iLoopLabels++ )
-        {
-          if ( fCellSecondLabels[idCell] == -1 )  iNewLabel = 0;  // -1 is never a good second label.
-          if ( fCellSecondLabels[idCell] == clus->GetLabelAt(iLoopLabels) )  iNewLabel = 0;
-        }
-        if (iNewLabel == 1) 
-        {
-          Int_t * newLabelArray = new Int_t[clus->GetNLabels()+1] ;
-          for ( UInt_t iLoopNewLabels = 0 ; iLoopNewLabels < clus->GetNLabels() ; iLoopNewLabels++ )
-          {
-            newLabelArray[iLoopNewLabels] = clus->GetLabelAt(iLoopNewLabels) ;
-          }
-          
-          newLabelArray[clus->GetNLabels()] = fCellSecondLabels[idCell] ;
-          clus->SetLabel(newLabelArray,clus->GetNLabels()+1) ;
-          delete [] newLabelArray;
-        }
-      }//positive cell number
+      // Normal case, trust what the clusterizer has found
+      Int_t  parentMult = 0;
+      Int_t *parentList = recPoint->GetParents(parentMult);
+      clus->SetLabel(parentList, parentMult);
     }
     
   } // recPoints loop
+  
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskEMCALClusterize::RemapMCLabelForAODs(Int_t & label)
+{
+  // MC label for Cells not remapped after ESD filtering, do it here.
+  
+  if(label < 0) return ;
+  
+  AliAODEvent  * evt = dynamic_cast<AliAODEvent*> (fEvent) ;
+  if(!evt) return ;
+  
+  TClonesArray * arr = dynamic_cast<TClonesArray*>(evt->FindListObject("mcparticles")) ;
+  if(!arr) return ;
+    
+  if(label < arr->GetEntriesFast())
+  {
+    AliAODMCParticle * particle = dynamic_cast<AliAODMCParticle *>(arr->At(label));
+    if(!particle) return ;
+        
+    if(label == particle->Label()) return ; // label already OK
+    //else printf("AliAnalysisTaskEMCALClusterize::RemapMCLabelForAODs() - Label  %d - AOD stack %d \n",label, particle->Label());
+  }
+  //else printf("AliAnalysisTaskEMCALClusterize::RemapMCLabelForAODs() - Label  %d > AOD labels %d \n",label, arr->GetEntriesFast());
+  
+  // loop on the particles list and check if there is one with the same label
+  for(Int_t ind = 0; ind < arr->GetEntriesFast(); ind++ )
+  {
+    AliAODMCParticle * particle = dynamic_cast<AliAODMCParticle *>(arr->At(ind));
+    if(label == particle->Label())
+    {
+      label = ind;
+      //printf("AliAnalysisTaskEMCALClusterize::RemapMCLabelForAODs() - New Label Index  %d \n",label);
+      return;
+    }
+  }
+  
+  label = -1;
+  
+  //printf("AliAnalysisTaskEMCALClusterize::RemapMCLabelForAODs() - Label not found set to -1 \n");
+  
+}
+
+//________________________________________________
+void AliAnalysisTaskEMCALClusterize::ResetArrays()
+{
+  // Reset arrays containing information for all possible cells
+  for(Int_t j = 0; j < 12672; j++)
+  {
+    fOrgClusterCellId[j] = -1;
+    fCellLabels[j]       = -1;
+    fCellSecondLabels[j] = -1;
+    fCellTime[j]         =  0.;
+    fCellMatchdEta[j]    = -999;
+    fCellMatchdPhi[j]    = -999;
+  }
+}
+
+//_____________________________________________________________________________________________________
+void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFrom2SelectedLabels(AliEMCALRecPoint  * recPoint,
+                                                                           AliAODCaloCluster * clus)
+{
+  // Set the cluster MC label, the digizer was filled with most likely MC label for all cells in original cluster
+  // Now check the second most likely MC label and add it to the new cluster
+  
+  Int_t  parentMult = 0;
+  Int_t *parentList = recPoint->GetParents(parentMult);
+  clus->SetLabel(parentList, parentMult);
+  
+  //Write the second major contributor to each MC cluster.
+  Int_t iNewLabel ;
+  for ( Int_t iLoopCell = 0 ; iLoopCell < clus->GetNCells() ; iLoopCell++ )
+  {
+    
+    Int_t idCell = clus->GetCellAbsId(iLoopCell) ;
+    if(idCell>=0)
+    {
+      iNewLabel = 1 ; //iNewLabel makes sure we  don't write twice the same label.
+      for ( UInt_t iLoopLabels = 0 ; iLoopLabels < clus->GetNLabels() ; iLoopLabels++ )
+      {
+        if ( fCellSecondLabels[idCell] == -1 )  iNewLabel = 0;  // -1 is never a good second label.
+          if ( fCellSecondLabels[idCell] == clus->GetLabelAt(iLoopLabels) )  iNewLabel = 0;
+            }
+      if (iNewLabel == 1)
+      {
+        Int_t * newLabelArray = new Int_t[clus->GetNLabels()+1] ;
+        for ( UInt_t iLoopNewLabels = 0 ; iLoopNewLabels < clus->GetNLabels() ; iLoopNewLabels++ )
+        {
+          newLabelArray[iLoopNewLabels] = clus->GetLabelAt(iLoopNewLabels) ;
+        }
+        
+        newLabelArray[clus->GetNLabels()] = fCellSecondLabels[idCell] ;
+        clus->SetLabel(newLabelArray,clus->GetNLabels()+1) ;
+        delete [] newLabelArray;
+      }
+    }//positive cell number
+  }
+}
+
+//___________________________________________________________________________________________________
+void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliAODCaloCluster * clus)
+{
+  // Get the original clusters that contribute to the new cluster, assign the labels of such clusters
+  // to the new cluster.
+  // Only approximatedly valid  when output are V1 clusters, handle with care
+  
+  TArrayI clArray(100) ; //Weird if more than a few clusters are in the origin ...
+  clArray.Reset();
+  Int_t nClu = 0;
+  Int_t nLabTotOrg = 0;
+  
+  //Find the clusters that originally had the cells
+  for ( Int_t iLoopCell = 0 ; iLoopCell < clus->GetNCells() ; iLoopCell++ )
+  {
+    Int_t idCell = clus->GetCellAbsId(iLoopCell) ;
+    
+    if(idCell>=0)
+    {
+      Int_t idCluster = fOrgClusterCellId[idCell];
+      
+      Bool_t set = kTRUE;
+      for(Int_t icl =0; icl < nClu; icl++)
+      {
+        if( idCluster == ((Int_t)clArray.GetAt(icl)) ) set = kFALSE;
+        //   printf("\t \t icell %d  Cluster in array %d, IdCluster %d, in array %d, set %d\n",
+        //          iLoopCell,                 icl,  idCluster,((Int_t)clArray.GetAt(icl)),set);
+      }
+      if( set && idCluster >= 0)
+      {
+        clArray.SetAt(idCluster,nClu++);
+        //printf("******** idCluster %d \n",idCluster);
+        nLabTotOrg+=(fEvent->GetCaloCluster(idCluster))->GetNLabels();
+      }
+    }
+  }// cell loop
+  
+  if(nClu==0 || nLabTotOrg == 0)
+  {
+    if(clus->E() > 0.25) printf("AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters() - Check: N org clusters %d, n tot labels %d, cluster E %f,  n cells %d\n",nClu,nLabTotOrg,clus->E(), clus->GetNCells());
+    //for(Int_t icell = 0; icell < clus->GetNCells(); icell++) printf("\t cell %d",clus->GetCellsAbsId()[icell]);
+    //printf("\n");
+  }
+  
+  // Get the labels list in the original clusters, assign all to the new cluster
+  TArrayI clMCArray(nLabTotOrg) ;
+  clMCArray.Reset();
+  
+  Int_t nLabTot = 0;
+  for ( Int_t iLoopCluster = 0 ; iLoopCluster < nClu ; iLoopCluster++ )
+  {
+    Int_t idCluster = clArray.GetAt(iLoopCluster);
+    //printf("\t cl %d \n",idCluster);
+    AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+    Int_t nLab = clOrg->GetNLabels();
+    
+    for ( Int_t iLab = 0 ; iLab < nLab ; iLab++ )
+    {
+      Int_t lab = clOrg->GetLabelAt(iLab) ;
+      if(lab>=0)
+      {
+        Bool_t set = kTRUE;
+        //printf("\t \t Set Label %d \n", lab);
+        for(Int_t iLabTot =0; iLabTot < nLabTot; iLabTot++)
+        {
+          if( lab == ((Int_t)clMCArray.GetAt(iLabTot)) ) set = kFALSE;
+          //printf("iLoopCluster %d, Label ID in Org Cluster %d,label %d  Label ID in array %d, label in array %d, set %d\n",
+          //       iLoopCluster,                           iLab,     lab,           iLabTot,  ((Int_t)clMCArray.GetAt(iLabTot)),set);
+        }
+        if( set ) clMCArray.SetAt(lab,nLabTot++);
+      }
+    }
+  }// cluster loop
+  
+  // Set the final list of labels
+  
+  clus->SetLabel(clMCArray.GetArray(), nLabTot);
+  
+  //printf("Final list of labels for new cluster : \n");
+  //for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) printf("\t Label %d\n",clus->GetLabelAt(imc));
   
 }
 
