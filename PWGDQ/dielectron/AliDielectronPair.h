@@ -132,6 +132,8 @@ public:
 
   Double_t PsiPair(Double_t MagField)const; //Angle cut w.r.t. to magnetic field
   Double_t PhivPair(Double_t MagField)const; //Angle of ee plane w.r.t. to magnetic field
+  Double_t PairPlanev0rpH2Angle(Double_t kv0CrpH2)const;
+  Double_t PairPlaneMagAngle(Double_t kv0CrpH2)const;
   Double_t GetCosPointingAngle(const AliVVertex *primVtx) const;
   Double_t GetArmAlpha() const;
   Double_t GetArmPt()    const;

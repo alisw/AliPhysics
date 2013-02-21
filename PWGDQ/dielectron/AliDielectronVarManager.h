@@ -121,6 +121,7 @@ public:
     kImpactParZ,             // Impact parameter in Z
     kTrackLength,            // Track length
 
+
     kPdgCode,                // PDG code
     kPdgCodeMother, 
     kPdgCodeGrandMother,     // PDG code of the grandmother
@@ -153,7 +154,8 @@ public:
     
     kTOFsignal,              // TOF signal
     kTOFbeta,                // TOF beta
-    kTOFPIDBit,              // TOF PID bit (1:set, 0:TOF not available)
+    kTOFPIDBit,              // TOF PID bit (1:set, 0:TOF not available)a
+	kTOFmismProb, 	         // and mismatchPorbability as explain in TOF-twiki
 	
     kTPCnSigmaEle,           // number of sigmas to the dE/dx electron line in the TPC
     kTPCnSigmaPio,           // number of sigmas to the dE/dx pion line in the TPC
@@ -200,7 +202,9 @@ public:
     kPhiCS,                  // phi in mother's rest frame in Collins-Soper picture
     kThetaSqCS,              // squared value of kThetaCS
     kPsiPair,                // phi in mother's rest frame in Collins-Soper picture
-    kPhivPair,               // angle between ee plane and the magnetic field (can be useful for conversion rejection)
+	kPhivPair,               // angle between ee plane and the magnetic field (can be useful for conversion rejection)
+	kPairPlanev0rpH2Angle,   // angle between ee plane and VZERO-C reaction plane           
+	kPairPlaneMagAngle,      // angle between ee plane and strong magnetic field  
     kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
     kCosTilPhiCS,            // Shifted phi depending on kThetaCS
     kDeltaPhiV0ArpH2,        // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A
@@ -361,7 +365,6 @@ public:
     kNevents,                // event counter
     kRunNumber,              // run number
     kMixingBin,
-
     kNMaxValues              //
     // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
   };
@@ -673,6 +676,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
 	values[AliDielectronVarManager::kTOFbeta]=beta;
   }
   values[AliDielectronVarManager::kTOFPIDBit]=(particle->GetStatus()&AliESDtrack::kTOFpid? 1: 0);
+
+  values[AliDielectronVarManager::kTOFmismProb] = fgPIDResponse->GetTOFMismatchProbability(particle);
   
   // nsigma to Electron band
   // TODO: for the moment we set the bethe bloch parameters manually
@@ -877,8 +882,10 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     values[AliDielectronVarManager::kTOFnSigmaMuo]=tofNsigmaMuo;
     values[AliDielectronVarManager::kTOFnSigmaKao]=tofNsigmaKao;
     values[AliDielectronVarManager::kTOFnSigmaPro]=tofNsigmaPro;
-    
-    pid->SetTPCsignal(origdEdx);
+
+	values[AliDielectronVarManager::kTOFmismProb] = fgPIDResponse->GetTOFMismatchProbability(particle);
+  
+	pid->SetTPCsignal(origdEdx);
   }
 
   //EMCAL PID information
@@ -1323,8 +1330,6 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kPsiPair]      = 0.;
 
 	 */
-
-
   }
   //common, regardless of calculation method 
    // Flow quantities
@@ -1372,6 +1377,10 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if ( values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] < -1.*TMath::Pi() )
     values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] += TMath::TwoPi(); 
 
+  //angle between ee plane and Mag/Reaction plane
+  values[AliDielectronVarManager::kPairPlanev0rpH2Angle] = pair->PairPlanev0rpH2Angle(values[AliDielectronVarManager::kv0CrpH2]);
+  values[AliDielectronVarManager::kPairPlaneMagAngle] = pair->PairPlaneMagAngle(values[AliDielectronVarManager::kv0CrpH2]);
+
 
   AliDielectronMC *mc=AliDielectronMC::Instance();
   
@@ -1415,6 +1424,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         values[AliDielectronVarManager::kTRDpidEffPair] = valuesLeg1[AliDielectronVarManager::kTRDpidEffLeg]*valuesLeg2[AliDielectronVarManager::kTRDpidEffLeg];
       }
     }
+
+
   }//if (mc->HasMC())
 
 

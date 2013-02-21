@@ -320,9 +320,9 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut)
   // ITS part of the PID check
   // Don't accept the track if there was no pid bit set
   //
-  
-  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(part->GetStatus()&AliVTrack::kITSpid)) return kFALSE;
-  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(part->GetStatus()&AliVTrack::kITSpid)) return kTRUE;
+  AliPIDResponse::EDetPidStatus pidStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS,part);
+  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kFALSE;
+  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
 
   Double_t mom=part->P();
   
@@ -343,8 +343,9 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut)
   // TPC part of the PID check
   // Don't accept the track if there was no pid bit set
   //
-  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(part->GetStatus()&AliVTrack::kTPCpid)) return kFALSE;
-  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(part->GetStatus()&AliVTrack::kTPCpid)) return kTRUE;
+  AliPIDResponse::EDetPidStatus pidStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,part);
+  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kFALSE;
+  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
 
   Double_t mom=part->GetTPCmomentum();
   
@@ -370,8 +371,10 @@ Bool_t AliDielectronPID::IsSelectedTRD(AliVTrack * const part, Int_t icut)
   // the TRD checks on the probabilities.
   //
 
-  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(part->GetStatus()&AliVTrack::kTRDpid)) return kFALSE;
-  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(part->GetStatus()&AliVTrack::kTRDpid)) return kTRUE;
+  AliPIDResponse::EDetPidStatus pidStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD,part);
+  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kFALSE;
+  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
+
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable && (part->GetTRDntrackletsPID()<4)) return kTRUE;
 
   Double_t p[AliPID::kSPECIES]={0.};
@@ -391,8 +394,9 @@ Bool_t AliDielectronPID::IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut,
   //   and the lower limit regarded as the requested electron efficiency
   //
 
-  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(part->GetStatus()&AliVTrack::kTRDpid)) return kFALSE;
-  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(part->GetStatus()&AliVTrack::kTRDpid)) return kTRUE;
+  AliPIDResponse::EDetPidStatus pidStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD,part);
+  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kFALSE;
+  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
 
   Double_t centrality = -1.;
   if(part->IsA() == AliESDtrack::Class())
@@ -411,9 +415,9 @@ Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut)
   // TOF part of the PID check
   // Don't accept the track if there was no pid bit set
   //
-  
-  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(part->GetStatus()&AliVTrack::kTOFpid)) return kFALSE;
-  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(part->GetStatus()&AliVTrack::kTOFpid)) return kTRUE;
+  AliPIDResponse::EDetPidStatus pidStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,part);
+  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kFALSE;
+  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
 
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTOF(part, fPartType[icut]);
   

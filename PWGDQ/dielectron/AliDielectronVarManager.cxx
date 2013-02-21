@@ -75,7 +75,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
   {"ImpactParZ",             "#it{dca}_{z}",                                       "(cm)"},
   {"TrackLength",            "#it{l}_{track}",                                     "(cm)"},
-
+  
   {"PdgCode",                "PDG code",                                           ""},
   {"PdgCodeMother",          "mothers PDG code",                                   ""},
   {"PdgCodeGrandMother",     "grand mothers PDG code",                             ""},
@@ -109,6 +109,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TOF_signal",             "TOF signal",                                         "(ps)"},
   {"TOF_beta",               "TOF #beta",                                          "(#it{c})"},
   {"TOF_PIDbit",             "TOF PID bit",                                        ""},
+  {"TOF_mismProb",           "TOF mismatch probability",                               ""},
   
   {"TPC_nSigma_Electrons",   "n#sigma_{e}^{TPC}",                                  ""},
   {"TPC_nSigma_Pions",       "n#sigma_{#pi}^{TPC}",                                ""},
@@ -150,6 +151,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ThetaSqCS",              "cos^{2}(#theta_{CS})",                               ""},
   {"PsiPair",                "#Psi^{pair}",                                        "(rad.)"},
   {"PhivPair",               "#Phi_{v}^{pair}",                                    "(rad.)"},
+  {"PairPlanev0rpH2Angle",   "PairPlanev0rpH2Angle",                               "(rad.)"},
+  {"PairPlaneMagAngle",      "PairPlaneMagAngle",                                  "(rad.)"},
   {"Cos2PhiCS",              "cos(2#phi_{CS})",                                    ""},
   {"CosTilPhiCS",            "cos(#phi_{CS})",                                     ""},
   {"DeltaPhiV0ArpH2",        "#phi^{pair}-#Psi^{V0A}",                             ""},
@@ -176,6 +179,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"PseudoProperTimeResolution", "(#tau-#tau^{MC truth})",                         "(#mus)"},
   {"PseudoProperTimePull",   "#frac{(#tau-#tau^{MC truth})}{#tau error}",          ""},
   {"TRDpidEffPair",          "#epsilon^{TRD pair}(PID)",                           ""},
+
   //
   {"X",                      "x_{prim.vtx}",                                       "(cm)"},
   {"Y",                      "y_{prim.vtx}",                                       "(cm)"},

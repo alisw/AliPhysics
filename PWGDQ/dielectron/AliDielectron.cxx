@@ -296,7 +296,7 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //process event mixing
   if (fMixing) {
     fMixing->Fill(ev1,this);
-    //     FillHistograms(0x0,kTRUE);
+//     FillHistograms(0x0,kTRUE);
   }
 
   //in case there is a histogram manager, fill the QA histograms
