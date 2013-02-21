@@ -6,6 +6,10 @@
 class TClonesArray;
 class AliVEvent;
 
+namespace fastjet {
+  class PseudoJet;
+}
+
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 
@@ -42,7 +46,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetClusName(const char *n)       { fCaloName      = n     ; }
   void                   SetJetsName(const char *n)       { fJetsName      = n     ; }
   void                   SetJetType(UInt_t t)             { fJetType       = t     ; }
-  void                   SetMarkConstituents(Bool_t m)    { fMarkConst     = m     ; }
+  void                   SetMarkConstituents(UInt_t m)    { fMarkConst     = m     ; }
   void                   SetMinJetArea(Double_t a)        { fMinJetArea    = a     ; }
   void                   SetMinJetClusPt(Double_t min)    { fMinJetClusPt  = min   ; }
   void                   SetMinJetPt(Double_t j)          { fMinJetPt      = j     ; }
@@ -71,6 +75,8 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
 
   UInt_t                 GetJetType()                     { return fJetType; }
 
+  static bool            ComparePseudoJets(fastjet::PseudoJet a, fastjet::PseudoJet b);
+
  protected:
   void                   FindJets();
   Bool_t                 DoInit();
@@ -81,7 +87,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   UInt_t                 fJetType;                // jet type (algorithm, radius, constituents)
   UInt_t                 fConstSel;               // select constituents from a previous jet finding
   UInt_t                 fMCConstSel;             // select MC constituents (label!=0) from a previous jet finding
-  Bool_t                 fMarkConst;              // =true constituents are marked (via TObject::SetBit) as belonging to the jet
+  UInt_t                 fMarkConst;              // constituents are marked (via TObject::SetBit) as belonging to the # leading jets
   Double_t               fRadius;                 // jet radius
   Double_t               fMinJetTrackPt;          // min jet track momentum   (applied before clustering)
   Double_t               fMinJetClusPt;           // min jet cluster momentum (applied before clustering)
@@ -105,6 +111,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 6) // Jet producing task
+  ClassDef(AliEmcalJetTask, 7) // Jet producing task
 };
 #endif

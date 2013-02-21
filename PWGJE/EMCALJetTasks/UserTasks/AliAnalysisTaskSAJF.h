@@ -43,6 +43,8 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH2F                       *fHistConstituents[4];        //!x axis = constituents pt; y axis = no. of constituents
   TH2F                       *fHistTracksJetPt[4];         //!Track pt vs. jet pt
   TH2F                       *fHistClustersJetPt[4];       //!Cluster pt vs. jet pt
+  TH2F                       *fHistTracksPtDist[4];        //!Track pt vs. distance form jet axis
+  TH2F                       *fHistClustersPtDist[4];      //!Cluster pt vs. distance form jet axis
   TH3F                       *fHistJetNconstVsPt[4];       //!Jet no. of constituents vs. pt
 
  private:

@@ -423,6 +423,11 @@ void AliHadCorrTask::ExecOnce()
 {
   // Init the analysis.
 
+  AliAnalysisTaskEmcal::ExecOnce();
+
+  if (!fInitialized)
+    return;
+
   if (dynamic_cast<AliAODEvent*>(InputEvent()))
     fEsdMode = kFALSE;
 
@@ -447,11 +452,10 @@ void AliHadCorrTask::ExecOnce()
     InputEvent()->AddObject(fOutClusters);
   }
   else {
+    fInitialized = kFALSE;
     AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutCaloName.Data()));
     return;
   }
-
-  AliAnalysisTaskEmcal::ExecOnce();
 }
 
 //________________________________________________________________________

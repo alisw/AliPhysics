@@ -40,14 +40,16 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
     return 0;
   }    
 
-  if ((strcmp(dataType,"AOD") == 0) && (clusterColName == "CaloClusters"))
+  TString dType(dataType);
+
+  if (dType == "AOD")
     clusterColName = "caloClusters";
 
-  if (makePicoTracks && ((strcmp(dataType,"ESD") == 0) || (strcmp(dataType,"AOD") == 0)) )
+  if (makePicoTracks && (dType == "ESD" || dType == "AOD") )
   {
     TString inputTracks = "tracks";
 
-    if (strcmp(dataType,"ESD") == 0)
+    if (dType == "ESD")
     {
       inputTracks = "HybridTracks";
       TString trackCuts(Form("Hybrid_%s", period.Data()));
