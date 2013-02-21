@@ -129,7 +129,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   if(ev->IsA() == AliESDEvent::Class()) {
     const AliESDEvent *esdev = static_cast<const AliESDEvent*>(ev);
 
-    printf("there are %d V0s in the event \n",esdev->GetNumberOfV0s());
+    //printf("there are %d V0s in the event \n",esdev->GetNumberOfV0s());
     // loop over V0s
     for (Int_t iv=0; iv<esdev->GetNumberOfV0s(); ++iv){
       AliESDv0 *v = esdev->GetV0(iv);

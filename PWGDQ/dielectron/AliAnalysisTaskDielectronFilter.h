@@ -84,8 +84,7 @@ private:
   
   Bool_t fStoreLikeSign;        // flag to store like-sign candidates
   Bool_t fStoreRotatedPairs;    // flag to store rotation
-  Bool_t fCreateNanoAOD;        // flag to store track legs
-
+  Bool_t fCreateNanoAOD;       // flag to store track legs
 
   AliAnalysisCuts *fEventFilter;     // event filter
   

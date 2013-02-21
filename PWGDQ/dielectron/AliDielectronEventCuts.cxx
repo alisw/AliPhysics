@@ -53,6 +53,8 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fCentMin(1.),
   fCentMax(0.),
   fVtxType(kVtxTracks),
+  fRequire13sel(kFALSE),
+  fUtils(),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
   fkVertex(0x0),
@@ -80,6 +82,8 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fCentMin(1.),
   fCentMax(0.),
   fVtxType(kVtxTracks),
+  fRequire13sel(kFALSE),
+  fUtils(),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
   fkVertex(0x0),
@@ -164,7 +168,12 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
     Double_t zvtx=fkVertex->GetZv();
     if (zvtx<fVtxZmin||zvtx>fVtxZmax) return kFALSE;
   }
-  
+
+  if(fRequire13sel){
+    if(!fUtils.IsVertexSelected2013pA(ev)) return kFALSE;
+    if(fUtils.IsFirstEventInChunk(ev)) return kFALSE;
+  }
+
   if (fRequireV0and){
     if (!fTriggerAnalysis) fTriggerAnalysis=new AliTriggerAnalysis;
     Bool_t v0AND = kFALSE;
@@ -261,6 +270,11 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
     if (zvtx<fVtxZmin||zvtx>fVtxZmax) return kFALSE;
   }
 
+  if(fRequire13sel){
+    if(!fUtils.IsVertexSelected2013pA(ev)) return kFALSE;
+    if(fUtils.IsFirstEventInChunk(ev)) return kFALSE;
+  }
+
   /*
   if (fRequireV0and){
     //    if (!fTriggerAnalysis) fTriggerAnalysis=new AliTriggerAnalysis;
@@ -336,6 +350,8 @@ void AliDielectronEventCuts::Print(const Option_t* /*option*/) const
     printf("Cut %02d: cut on multiplcity ITS vs. TPC \n", iCut);                   iCut++; }
   if(fparMean&&fparSigma) {
     printf("Cut %02d: multplicity vs. #tracks correlation +-%.1f sigma inclusion \n", iCut, fcutSigma); iCut++; }
+  if(fRequire13sel){
+    printf("Cut %02d: vertex and event selection for 2013 pPb data taking required \n",iCut);   iCut++; } 
   if(fRequireV0and) {
     printf("Cut %02d: require V0and type: %c \n", iCut, fRequireV0and);            iCut++; }
 

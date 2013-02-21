@@ -331,7 +331,7 @@ Double_t AliDielectronPair::ThetaPhiCM(const AliVParticle* d1, const AliVParticl
   Double_t pz2=d2->Pz();
   Double_t eleMass=AliPID::ParticleMass(AliPID::kElectron);
   Double_t proMass=AliPID::ParticleMass(AliPID::kProton);
-  //  printf(" beam energy %f \n ", fBeamEnergy);
+//   printf(" beam energy %f \n ", fBeamEnergy);
   TLorentzVector projMom(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
   TLorentzVector targMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
   
@@ -611,6 +611,114 @@ Double_t AliDielectronPair::PhivPair(Double_t MagField) const
   return phiv;
 
 }
+
+//______________________________________________
+Double_t AliDielectronPair::PairPlanev0rpH2Angle(Double_t kv0CrpH2) const
+{
+  // Calculate the angle between electron pair plane and VZERO-C reaction plane for 2nd harmonic
+  // kv0CrpH2 is reaction plane angle 
+  // 
+
+  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
+  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
+
+  px1 = fD1.GetPx();
+  py1 = fD1.GetPy();
+  pz1 = fD1.GetPz();
+
+  px2 = fD2.GetPx();
+  py2 = fD2.GetPy();
+  pz2 = fD2.GetPz();
+
+  // normal vector of ee plane
+  Double_t pnorx = py1*pz2 - pz1*py2;
+  Double_t pnory = pz1*px2 - px1*pz2;
+  Double_t pnorz = px1*py2 - py1*px2;
+  Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
+
+  //unit vector  
+  Double_t upnx = pnorx/pnor;
+  Double_t upny = pnory/pnor;
+  //  Double_t upnz = pnorz/pnor;
+
+  // normal vector of reaction plane
+  //rotation coordinates (x,y,z)->(x',y',z')
+  //x'=(cos(v0CrpH2),sin(v0CrpH2),0);y'=(-sin(v0CrpH2),cos(v0CrpH2),0);z'=(0,0,1)=z
+  //reaction plane = x'-z' plane
+  Double_t ax = TMath::Sin(kv0CrpH2);
+  Double_t ay = -TMath::Cos(kv0CrpH2);
+
+  //unit vector  
+  Double_t uax = ax/TMath::Sqrt(ax*ax + ay*ay);
+  Double_t uay = ay/TMath::Sqrt(ax*ax + ay*ay);
+  // Double_t uaz = 0.0;
+
+  //PR is the angle between Pair plane and Reaction plane
+  Double_t cosPR = upnx*uax + upny*uay;
+  Double_t PR = TMath::ACos(cosPR);
+
+  //keep interval [0,pi/2]
+  if(PR > TMath::Pi()/2){
+	PR -= TMath::Pi();
+	PR *= -1.0;
+  }
+  return PR;
+}
+
+//______________________________________________
+
+Double_t AliDielectronPair::PairPlaneMagAngle(Double_t kv0CrpH2) const
+{
+
+  // Calculate the angle between electron pair plane and VZERO-C reaction plane for 2nd harmonic
+  // kv0CrpH2 is reaction plane angle 
+
+  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
+  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
+
+  px1 = fD1.GetPx();
+  py1 = fD1.GetPy();
+  pz1 = fD1.GetPz();
+
+  px2 = fD2.GetPx();
+  py2 = fD2.GetPy();
+  pz2 = fD2.GetPz();
+
+  // normal vector of ee plane
+  Double_t pnorx = py1*pz2 - pz1*py2;
+  Double_t pnory = pz1*px2 - px1*pz2;
+  Double_t pnorz = px1*py2 - py1*px2;
+  Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
+
+  //unit vector  
+  Double_t upnx = pnorx/pnor;
+  Double_t upny = pnory/pnor;
+  //  Double_t upnz = pnorz/pnor;
+
+  // normal vector of strong magnetic field plane
+  //rotation coordinates (x,y,z)->(x',y',z')
+  //x'=(cos(v0CrpH2),sin(v0CrpH2),0);y'=(-sin(v0CrpH2),cos(v0CrpH2),0);z'=(0,0,1)=z
+  //mag plane = y'-z' plane
+  Double_t ax = TMath::Cos(kv0CrpH2);
+  Double_t ay = TMath::Sin(kv0CrpH2);
+  Double_t uax = ax/TMath::Sqrt(ax*ax + ay*ay);
+  Double_t uay = ay/TMath::Sqrt(ax*ax + ay*ay);
+  // Double_t uaz = 0.0;
+
+  //PM is the angle between Pair plane and Magnetic field plane 
+  Double_t cosPM = upnx*uax + upny*uay;
+  Double_t PM = TMath::ACos(cosPM);
+
+  //keep interval [0,pi/2]
+  if(PM > TMath::Pi()/2){
+	PM -= TMath::Pi();
+	PM *= -1.0;
+
+  }
+  return PM;
+}
+
+
 
 //______________________________________________
 void AliDielectronPair::SetBeamEnergy(AliVEvent *ev, Double_t beamEbyHand)

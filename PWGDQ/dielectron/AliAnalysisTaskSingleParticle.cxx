@@ -185,7 +185,6 @@ void AliAnalysisTaskSingleParticle::UserCreateOutputObjects()
       if(fCFVarBins[ivar][0]!='\0') {
         TObjArray* arr = fCFVarBins[ivar].Tokenize(",");
         fCFVarsNbins[ivar] = arr->GetEntries()-1;
-	delete arr;
       }
     }
     fCFVarsNbins[fCFNVars] = AliPID::kSPECIES;
@@ -220,7 +219,6 @@ void AliAnalysisTaskSingleParticle::UserCreateOutputObjects()
 	    }
 	    fCfContainer->SetBinLimits(ivar, binLims);
 	  }
-	  delete arr;
         }
         fCfContainer->SetVarTitle(ivar, AliDielectronVarManager::GetValueName(fCFVarsEnabled[ivar]));
       }

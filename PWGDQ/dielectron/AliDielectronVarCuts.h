@@ -82,7 +82,7 @@ public:
   AliDielectronVarCuts(const AliDielectronVarCuts &c);
   AliDielectronVarCuts &operator=(const AliDielectronVarCuts &c);
   
-  ClassDef(AliDielectronVarCuts,3)         //Cut class providing cuts to all infomation available for the AliVParticle interface
+  ClassDef(AliDielectronVarCuts,2)         //Cut class providing cuts to all infomation available for the AliVParticle interface
 };
 
 
