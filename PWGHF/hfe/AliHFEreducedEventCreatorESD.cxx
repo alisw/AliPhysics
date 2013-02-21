@@ -202,8 +202,8 @@ void AliHFEreducedEventCreatorESD::UserExec(Option_t *){
     if (strstr(beamtype,"p-p")) {
       //printf("Reject\n");
       if(fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5)){
-	AliDebug(1, "Event flagged as pileup\n");
-	return;
+	      AliDebug(1, "Event flagged as pileup\n");
+	      return;
       }
     }
   }
@@ -236,8 +236,24 @@ void AliHFEreducedEventCreatorESD::UserExec(Option_t *){
   fHFEevent->SetVX(vtx[0]);
   fHFEevent->SetVY(vtx[1]);
   fHFEevent->SetVZ(vtx[2]);
-  Int_t ncontrib(fInputEvent->GetPrimaryVertex()->GetNContributors());
+  Int_t ncontrib(vertex->GetNContributors());
   fHFEevent->SetNContribVertex(ncontrib);
+  Double_t vcov[6];
+  vertex->GetCovarianceMatrix(vcov);
+  fHFEevent->SetVertexResolution(TMath::Sqrt(vcov[5]));
+  // Get Primary Vertex from SPD
+  const AliVVertex *vertexSPD = event->GetPrimaryVertexSPD();
+  if(vertexSPD){
+    memset(vtx, 0, sizeof(Double_t) *3);
+    vertexSPD->GetXYZ(vtx);
+    fHFEevent->SetVXSPD(vtx[0]);
+    fHFEevent->SetVYSPD(vtx[1]);
+    fHFEevent->SetVZSPD(vtx[2]);
+    fHFEevent->SetNContribVertexSPD(vertexSPD->GetNContributors());
+    memset(vcov, 0, sizeof(Double_t)*6);
+    vertex->GetCovarianceMatrix(vcov);
+    fHFEevent->SetVertexResolutionSPD(TMath::Sqrt(vcov[5]));
+  }
 
   // Get centrality
   AliCentrality *hicent = fInputEvent->GetCentrality();

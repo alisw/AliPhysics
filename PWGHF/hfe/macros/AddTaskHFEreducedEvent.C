@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEreducedEvent(UInt_t trigger=131073,Int_t minnbTPC=30,Int_t minnbTPCPID=80,Int_t minnbITS=2){
+AliAnalysisTask *AddTaskHFEreducedEvent(UInt_t trigger=131073,Int_t minnbTPC=70,Int_t minnbTPCPID=80,Int_t minnbITS=3,Float_t nbOfSigmaTOF=3.){
 
   //
   // Produce reduced events
@@ -6,8 +6,7 @@ AliAnalysisTask *AddTaskHFEreducedEvent(UInt_t trigger=131073,Int_t minnbTPC=30,
   
 
   // Name
-  TString appendixx("HFEreducedEvent");
- 
+  TString appendixx(TString::Format("HFEreducedEventt%dTPCcl%dpidcl%dITScl%dTOFsigma%d",(Int_t)trigger,(Int_t) minnbTPC,(Int_t) minnbTPCPID,(Int_t) minnbITS,(Int_t) nbOfSigmaTOF));
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
@@ -16,6 +15,7 @@ AliAnalysisTask *AddTaskHFEreducedEvent(UInt_t trigger=131073,Int_t minnbTPC=30,
   reducedEventCreator->SetMinNclustersTPC(minnbTPC);
   reducedEventCreator->SetMinNclustersTPCPID(minnbTPCPID);
   reducedEventCreator->SetMinNclustersITS(minnbITS);
+  reducedEventCreator->SetNbOfTOFSigma(nbOfSigmaTOF);
   reducedEventCreator->SelectCollisionCandidates(trigger); 
 
   //AliHFEpidTPC *tpcpid = reducedEventCreator->GetTPCResponse();

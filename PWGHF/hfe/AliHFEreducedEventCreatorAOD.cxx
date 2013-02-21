@@ -24,6 +24,7 @@
 #include <TFile.h>
 #include <TString.h>
 #include <TTree.h>
+#include <TMath.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisUtils.h"
@@ -72,6 +73,7 @@ AliHFEreducedEventCreatorAOD::AliHFEreducedEventCreatorAOD():
   fNclustersTPC(70),
   fNclustersTPCPID(0),
   fNclustersITS(2),
+  fNbOfTOFSigma(-1.0),
   fRemoveFirstEvent(kFALSE)
 {
   //
@@ -94,6 +96,7 @@ AliHFEreducedEventCreatorAOD::AliHFEreducedEventCreatorAOD(const char *name):
   fNclustersTPC(70),
   fNclustersTPCPID(0),
   fNclustersITS(2),
+  fNbOfTOFSigma(-1.0),
   fRemoveFirstEvent(kFALSE)
 {
   //
@@ -158,13 +161,13 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   AliPIDResponse *pid = NULL;
   AliInputEventHandler *handler = dynamic_cast<AliInputEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(handler){
-//    printf("testb\n");
+    //    printf("testb\n");
     pid = handler->GetPIDResponse();
   } else {
     AliError("No Handler");
   }
   if(!pid){
- //   printf("testc\n");
+    //   printf("testc\n");
     AliError("No PID response");
     return;
   }
@@ -183,19 +186,19 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   Bool_t mcthere = kTRUE;
   AliAODEvent *aodE = dynamic_cast<AliAODEvent *>(fInputEvent);
   if(!aodE){
-  //  printf("testd\n");
+    //  printf("testd\n");
     AliError("No AOD Event");
     return;
   }
   fAODMCHeader = dynamic_cast<AliAODMCHeader *>(fInputEvent->FindListObject(AliAODMCHeader::StdBranchName()));
   if(!fAODMCHeader){ 
       mcthere = kFALSE;
-  //   return;
+      //   return;
   }
   fAODArrayMCInfo = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if(!fAODArrayMCInfo){ 
       mcthere = kFALSE;
-  //  return;
+      //  return;
   }
   else {
     fSignalCuts->SetMCAODInfo(fAODArrayMCInfo);
@@ -244,8 +247,24 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   fHFEevent->SetVX(vtx[0]);
   fHFEevent->SetVY(vtx[1]);
   fHFEevent->SetVZ(vtx[2]);
-  Int_t ncontrib(fInputEvent->GetPrimaryVertex()->GetNContributors());
+  Int_t ncontrib(vertex->GetNContributors());
   fHFEevent->SetNContribVertex(ncontrib);
+  Double_t vcov[6];
+  vertex->GetCovarianceMatrix(vcov);
+  fHFEevent->SetVertexResolution(TMath::Sqrt(vcov[5]));
+  // Get Primary Vertex from SPD
+  const AliVVertex *vertexSPD = aodE->GetPrimaryVertexSPD();
+  if(vertexSPD){
+    memset(vtx, 0, sizeof(Double_t) *6);
+    vertexSPD->GetXYZ(vtx);
+    fHFEevent->SetVXSPD(vtx[0]);
+    fHFEevent->SetVYSPD(vtx[1]);
+    fHFEevent->SetVZSPD(vtx[2]);
+    fHFEevent->SetNContribVertexSPD(vertexSPD->GetNContributors());
+    memset(vcov, 0, sizeof(Double_t)*6);
+    vertex->GetCovarianceMatrix(vcov);
+    fHFEevent->SetVertexResolutionSPD(TMath::Sqrt(vcov[5]));
+  }
 
   // Get centrality
   AliCentrality *hicent = fInputEvent->GetCentrality();
@@ -504,6 +523,12 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
       hfetrack.SetEMCALSigmaEl(pid->NumberOfSigmasEMCAL(track, AliPID::kElectron, emcalEnergyOverP, &showershape[0]));
       hfetrack.SetEMCALEoverP(emcalEnergyOverP);
       hfetrack.SetEMCALShowerShape(showershape);
+    }
+
+    // If TOF cut
+    if(fNbOfTOFSigma>0.0){
+      if(!((status & AliVTrack::kTOFpid) == AliVTrack::kTOFpid)) continue; 
+      if(TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kElectron))> fNbOfTOFSigma) continue;
     }
 
     // Track finished, add NOW to the Event

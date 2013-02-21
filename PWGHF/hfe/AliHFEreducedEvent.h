@@ -39,10 +39,18 @@ class AliHFEreducedEvent : public TObject{
   const AliHFEreducedMCParticle *GetMCParticle(int itrk) const;
   Int_t GetNumberOfMCParticles() const { return fNmcparticles; }
   
-  Double_t GetVX() const { return fVX; }
-  Double_t GetVY() const { return fVY; }
-  Double_t GetVZ() const { return fVZ; }
-  Int_t GetNContribVertex() const { return fNContrib; }
+  Float_t GetVX() const { return fVX[0]; }
+  Float_t GetVY() const { return fVY[0]; }
+  Float_t GetVZ() const { return fVZ[0]; }
+  Float_t GetVXSPD() const { return fVX[1]; }
+  Float_t GetVYSPD() const { return fVY[1]; }
+  Float_t GetVZSPD() const { return fVZ[1]; }
+  Int_t GetNContribVertex() const { return fNContrib[0]; }
+  Int_t GetNContribVertexSPD() const { return fNContrib[1]; }
+  Bool_t HasPrimaryVertex() const { return fNContrib[0] > 0; }
+  Bool_t HasPrimaryVertexSPD() const { return fNContrib[1] > 0; }
+  Float_t GetVertexZResolution() const { return fVertexResolution[0]; };
+  Float_t GetVertexZResolutionSPD() const { return fVertexResolution[1]; };
   Int_t GetRunNumber() const { return fRunNumber; }
   Double_t GetCentrality() const { return fCentrality[0]; }
   Double_t GetCentralityV0M() const { return fCentrality[0]; }
@@ -66,12 +74,18 @@ class AliHFEreducedEvent : public TObject{
   Float_t GetZDCPEnergyAsymmetry() const { return fZDCEnergy[2] + fZDCEnergy[3] != 0 ? (fZDCEnergy[2] - fZDCEnergy[3])/(fZDCEnergy[2] + fZDCEnergy[3]) : 1.; }
   Int_t   GetSPDMultiplicity() const { return fSPDMultiplicity; }
   
-  void SetVX(Double_t vx) { fVX = vx; }
-  void SetVY(Double_t vy) { fVY = vy; }
-  void SetVZ(Double_t vz) { fVZ = vz; }
+  void SetVX(Float_t vx) { fVX[0] = vx; }
+  void SetVY(Float_t vy) { fVY[0] = vy; }
+  void SetVZ(Float_t vz) { fVZ[0] = vz; }
+  void SetVXSPD(Float_t vx) { fVX[1] = vx; }
+  void SetVYSPD(Float_t vy) { fVY[1] = vy; }
+  void SetVZSPD(Float_t vz) { fVZ[1] = vz; }
   void SetRunNumber(Int_t runnumber) { fRunNumber = runnumber; }
   inline void SetCentrality(Float_t centV0M, Float_t centV0A, Float_t centV0C, Float_t centTLS, Float_t centTrks, Float_t centZNA);
-  void SetNContribVertex(Int_t ncontrib) { fNContrib = ncontrib; }
+  void SetNContribVertex(Int_t ncontrib) { fNContrib[0] = ncontrib; }
+  void SetNContribVertexSPD(Int_t ncontrib) { fNContrib[1] = ncontrib; }
+  void SetVertexResolution(Float_t res) { fVertexResolution[0] = res; }
+  void SetVertexResolutionSPD(Float_t res) { fVertexResolution[1] = res; }
   
   Bool_t IsMBTrigger() const { return TESTBIT(fTrigger, kMB); }
   Bool_t IsSemiCentralTrigger() const { return TESTBIT(fTrigger, kSemiCentral); }
@@ -110,15 +124,16 @@ class AliHFEreducedEvent : public TObject{
   Int_t fRunNumber;             // Run Number
   Float_t  fCentrality[6];      // Centrality (V0M, V0A, V0C, TLS, TRK, ZNA)
   Int_t fTrigger;               // Trigger bits
-  Double_t fVX;                 // Vertex X
-  Double_t fVY;                 // Vertex Y
-  Double_t fVZ;                 // Vertex Z
-  Int_t    fNContrib;           // Number of vertex contributors
+  Float_t fVX[2];               // Vertex X
+  Float_t fVY[2];               // Vertex Y
+  Float_t fVZ[2];               // Vertex Z
+  Int_t    fNContrib[2];        // Number of vertex contributors
+  Float_t  fVertexResolution[2];// z-Vertex resolution 
   Float_t  fV0Multiplicity[2];  // V0 multiplicity
   Float_t  fZDCEnergy[4];       // ZDC Energy (n,p)
   Int_t    fSPDMultiplicity;    // SPD tracklet multiplicity
   
-  ClassDef(AliHFEreducedEvent, 1)
+  ClassDef(AliHFEreducedEvent, 2)
 };
 
 //____________________________________________________________
