@@ -767,47 +767,6 @@ Bool_t AliCDBDump::IdToFilename(const AliCDBId& /*id*/, TString& /*filename*/) c
         return kFALSE;
 }
 
-//_____________________________________________________________________________
-Int_t AliCDBDump::GetLatestVersion(const char* path, Int_t run){
-// get last version found in the database valid for run and path
-
-	AliCDBPath aCDBPath(path);
-	if(!aCDBPath.IsValid() || aCDBPath.IsWildcard()) {
-		AliError(Form("Invalid path in request: %s", path));
-		return -1;
-	}
-
-	AliCDBId query(path, run, run, -1, -1);
-	AliCDBId *dataId = GetId(query);
-
-	if(!dataId) return -1;
-	Int_t version = dataId->GetVersion();
-
-	delete dataId;
-	return version;
-}
-
-//_____________________________________________________________________________
-Int_t AliCDBDump::GetLatestSubVersion(const char* path, Int_t run, Int_t version){
-// get last version found in the database valid for run and path
-
-	AliCDBPath aCDBPath(path);
-	if(!aCDBPath.IsValid() || aCDBPath.IsWildcard()) {
-		AliError(Form("Invalid path in request: %s", path));
-		return -1;
-	}
-
-	AliCDBId query(path, run, run, version, -1);
-	AliCDBId *dataId = GetId(query);
-
-	if(!dataId) return -1;
-
-	Int_t subVersion = dataId->GetSubVersion();
-
-	delete dataId;
-	return subVersion;
-
-}
 
 //_____________________________________________________________________________
 void AliCDBDump::SetRetry(Int_t /* nretry */, Int_t /* initsec */) {

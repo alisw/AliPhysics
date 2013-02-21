@@ -100,9 +100,6 @@ public:
 			Int_t version=-1, AliCDBMetaData *mdFilter=0);
 	void PrintQueryCDB();
 	TObjArray* GetQueryCDBList() {return &fValidFileIds;}
-
-	virtual Int_t GetLatestVersion(const char* path, Int_t run)=0;
-	virtual Int_t GetLatestSubVersion(const char* path, Int_t run, Int_t version=-1)=0;
 	virtual void SetRetry(Int_t nretry, Int_t initsec) = 0;
 
 protected:

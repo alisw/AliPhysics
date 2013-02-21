@@ -25,8 +25,6 @@ public:
 	virtual Bool_t IsReadOnly() const {return fReadOnly;};
 	virtual Bool_t HasSubVersion() const {return kFALSE;};
 	virtual Bool_t Contains(const char* path) const;
-	virtual Int_t GetLatestVersion(const char* path, Int_t run);
-	virtual Int_t GetLatestSubVersion(const char* path, Int_t run, Int_t version=-1);
 	virtual Bool_t IdToFilename(const AliCDBId& id, TString& filename) const;
 	virtual void SetRetry(Int_t /* nretry */, Int_t /* initsec */);
 
