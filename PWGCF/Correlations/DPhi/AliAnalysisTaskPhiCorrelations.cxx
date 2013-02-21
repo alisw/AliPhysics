@@ -128,6 +128,7 @@ fParticleSpeciesTrigger(-1),
 fParticleSpeciesAssociated(-1),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
+fAssociatedSelectCharge(0),
 fTriggerRestrictEta(-1),
 fEtaOrdering(kFALSE),
 fCutConversions(kFALSE),
@@ -245,6 +246,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   
   fHistos->SetSelectTriggerCharge(fTriggerSelectCharge);
   fHistosMixed->SetSelectTriggerCharge(fTriggerSelectCharge);
+  
+  fHistos->SetSelectAssociatedCharge(fAssociatedSelectCharge);
+  fHistosMixed->SetSelectAssociatedCharge(fAssociatedSelectCharge);
 
   fHistos->SetTriggerRestrictEta(fTriggerRestrictEta);
   fHistosMixed->SetTriggerRestrictEta(fTriggerRestrictEta);
@@ -367,6 +371,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fParticleSpeciesAssociated", &fParticleSpeciesAssociated,"ParticleSpeciesAssociated/I");
   settingsTree->Branch("fSelectCharge", &fSelectCharge,"SelectCharge/I");
   settingsTree->Branch("fTriggerSelectCharge", &fTriggerSelectCharge,"TriggerSelectCharge/I");
+  settingsTree->Branch("fAssociatedSelectCharge", &fAssociatedSelectCharge,"fAssociatedSelectCharge/I");
   settingsTree->Branch("fTriggerRestrictEta", &fTriggerRestrictEta,"TriggerRestrictEta/D");
   settingsTree->Branch("fEtaOrdering", &fEtaOrdering,"EtaOrdering/O");
   settingsTree->Branch("fCutConversions", &fCutConversions,"CutConversions/O");
