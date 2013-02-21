@@ -82,6 +82,7 @@ class AliAODv0;
 #include "AliESDUtils.h"
 #include "AliESDHeader.h"
 
+#include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskExtractV0.h"
 
 //debugging purposes
@@ -90,14 +91,15 @@ class AliAODv0;
 ClassImp(AliAnalysisTaskExtractV0)
 
 AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0() 
-  : AliAnalysisTaskSE(), fListHistV0(0), fTree(0), fPIDResponse(0),fESDtrackCuts(0),
-   fkIsNuclear     ( kFALSE ), 
-   fkSwitchINT7    ( kFALSE ),
-   fkUseOnTheFly   ( kFALSE ),
-   fkTakeAllTracks ( kFALSE ),
-   fCentralityEstimator("V0M"),
-   fkLightWeight   ( kFALSE ),
-   fkFastOnly      ( "" ),
+  : AliAnalysisTaskSE(), fListHistV0(0), fTree(0), fPIDResponse(0),fESDtrackCuts(0), fUtils(0),
+  fkIsNuclear     ( kFALSE ), 
+  fkSwitchINT7    ( kFALSE ),
+  fkUseOnTheFly   ( kFALSE ),
+  fkTakeAllTracks ( kFALSE ),
+  fCentralityEstimator("V0M"),
+  fkLightWeight   ( kFALSE ),
+  fkFastOnly      ( "" ),
+  fkpAVertexSelection( kFALSE ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -216,14 +218,15 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
 }
 
 AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name) 
-  : AliAnalysisTaskSE(name), fListHistV0(0), fTree(0), fPIDResponse(0),fESDtrackCuts(0),
-   fkIsNuclear     ( kFALSE ), 
-   fkSwitchINT7    ( kFALSE ),
-   fkUseOnTheFly   ( kFALSE ),
-   fkTakeAllTracks ( kFALSE ),
-   fCentralityEstimator("V0M"),
-   fkLightWeight   ( kFALSE ),
-   fkFastOnly      ( "" ),
+  : AliAnalysisTaskSE(name), fListHistV0(0), fTree(0), fPIDResponse(0),fESDtrackCuts(0), fUtils(0),
+  fkIsNuclear     ( kFALSE ), 
+  fkSwitchINT7    ( kFALSE ),
+  fkUseOnTheFly   ( kFALSE ),
+  fkTakeAllTracks ( kFALSE ),
+  fCentralityEstimator("V0M"),
+  fkLightWeight   ( kFALSE ),
+  fkFastOnly      ( "" ),
+  fkpAVertexSelection( kFALSE ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -365,7 +368,10 @@ AliAnalysisTaskExtractV0::~AliAnalysisTaskExtractV0()
     delete fESDtrackCuts;
     fESDtrackCuts = 0x0; 
   }
-
+  if (fUtils){
+    delete fUtils;
+    fUtils = 0x0;
+  }
 
 }
 
@@ -440,16 +446,18 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
 // Particle Identification Setup
 //------------------------------------------------
 
-   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-   fPIDResponse = inputHandler->GetPIDResponse();
-
-  // Multiplicity 
-
-    if(! fESDtrackCuts ){
-          fESDtrackCuts = new AliESDtrackCuts();
-    }
-
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
+  
+  // Multiplicity
+  
+  if(! fESDtrackCuts ){
+    fESDtrackCuts = new AliESDtrackCuts();
+  }
+  if(! fUtils ){
+    fUtils = new AliAnalysisUtils();
+  }
 
 //------------------------------------------------
 // V0 Multiplicity Histograms
@@ -904,15 +912,27 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
 // Primary Vertex Z position: SKIP
 //------------------------------------------------
 
-   if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0 ) { 
-      AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !"); 
-      PostData(1, fListHistV0);
-      PostData(2, fTree);
-      return; 
-   }
-
-   f2dHistMultiplicityVsVertexZ->Fill( lMultiplicity, tPrimaryVtxPosition[2] );
-
+  if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0 && fkpAVertexSelection==kFALSE) {
+    AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
+    PostData(1, fListHistV0);
+    PostData(2, fTree);
+    return;
+  }
+  if(fkpAVertexSelection==kTRUE && fUtils->IsFirstEventInChunk(lESDevent)) {
+    AliWarning("Pb / | This is the first event in the chunk!");
+    PostData(1, fListHistV0);
+    PostData(2, fTree);
+    return;
+  }
+  if(fkpAVertexSelection==kTRUE && !fUtils->IsVertexSelected2013pA(lESDevent)) {
+    AliWarning("Pb / | Vertex not selected by 2013 pA criteria!");
+    PostData(1, fListHistV0);
+    PostData(2, fTree);
+    return;
+  }
+  
+  f2dHistMultiplicityVsVertexZ->Fill( lMultiplicity, tPrimaryVtxPosition[2] );
+  
   lMagneticField = lESDevent->GetMagneticField( );
   fHistV0MultiplicityForSelEvt ->Fill( nV0s );
   fHistMultiplicity->Fill(lMultiplicity);
@@ -927,7 +947,7 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
 	
    const AliESDVertex *lPrimaryTrackingESDVtxCheck = lESDevent->GetPrimaryVertexTracks();
    const AliESDVertex *lPrimarySPDVtx = lESDevent->GetPrimaryVertexSPD();
-   if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtxCheck->GetStatus() ){
+   if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtxCheck->GetStatus() && fkpAVertexSelection==kFALSE ){
       AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
       PostData(1, fListHistV0);
       PostData(2, fTree);
