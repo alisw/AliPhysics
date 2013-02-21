@@ -17,6 +17,8 @@ class AliEMCALCalibData;
 class AliCaloCalibPedestal;
 class AliEMCALClusterizer;
 class AliEMCALAfterBurnerUF;
+class AliEMCALRecPoint;
+class AliAODCaloCluster;
 #include "AliEMCALRecParam.h"
 #include "AliEMCALRecoUtils.h"
 
@@ -82,6 +84,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOnRecalibrateWithClusterTime()           { fRecalibrateWithClusterTime  = kTRUE   ; }
   void           SwitchOffRecalibrateWithClusterTime()          { fRecalibrateWithClusterTime  = kFALSE  ; }
   
+
+  
   //Algorithms settings
   
   AliEMCALRecParam * GetRecParam()                              { if(!fRecParam)  fRecParam  = new AliEMCALRecParam  ;
@@ -120,25 +124,34 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // Centrality selection
   
   AliCentrality* GetCentrality()                                { return InputEvent()->GetCentrality() ; } //Look in AOD reader, different there
-  void          SetCentralityClass(TString name)                { fCentralityClass   = name            ; }
-  TString       GetCentralityClass()                      const { return fCentralityClass              ; }
-  Float_t       GetEventCentrality()                            { if(GetCentrality()) return GetCentrality()->GetCentralityPercentile(fCentralityClass) ;
+  void           SetCentralityClass(TString name)               { fCentralityClass   = name            ; }
+  TString        GetCentralityClass()                     const { return fCentralityClass              ; }
+  Float_t        GetEventCentrality()                           { if(GetCentrality()) return GetCentrality()->GetCentralityPercentile(fCentralityClass) ;
                                                                   else                return -1.       ; }
-  void          SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
+  void           SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
                                                                 { fCentralityBin[0]=min ; fCentralityBin[1]=max ; }
-  Float_t       GetCentralityBin(Int_t i)                 const { if(i < 0 || i > 1) return -1 ; 
+  Float_t        GetCentralityBin(Int_t i)                const { if(i < 0 || i > 1) return -1 ; 
                                                                   else               return fCentralityBin[i]   ; }
   
-  void          SwitchOnUseClusterMCLabelForCell()              { fSetCellMCLabelFromCluster = kTRUE  ;}
-  void          SwitchOffUseClusterMCLabelForCell()             { fSetCellMCLabelFromCluster = kFALSE ;}
-
+  //MC label methods
   
- private:
+  void           RemapMCLabelForAODs(Int_t &label);
+  void           SwitchOnRemapMCLabelForAODs()                  { fRemapMCLabelForAODs  = kTRUE   ; }
+  void           SwitchOffRemapMCLabelForAODs()                 { fRemapMCLabelForAODs  = kFALSE  ; }
+
+  void           SetClustersMCLabelFrom2SelectedLabels(AliEMCALRecPoint* recPoint, AliAODCaloCluster *clus) ;
+  void           SetClustersMCLabelFromOriginalClusters(AliAODCaloCluster * clus) ;
+  
+  void           SwitchOnUseClusterMCLabelForCell(Int_t opt = 2) { fSetCellMCLabelFromCluster = opt ; }
+  void           SwitchOffUseClusterMCLabelForCell()             { fSetCellMCLabelFromCluster = 0   ; }
+
+private:
     
   virtual void   FillCaloClusterInEvent();
   
   virtual void   RecPoints2Clusters();
   
+  virtual void   ResetArrays();
   
   AliVEvent             *fEvent;                   // Event 
   
@@ -180,7 +193,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   AliEMCALRecoUtils*     fRecoUtils;               // Access to factorized reconstruction algorithms
   TString                fConfigName;              // Name of analysis configuration file
   
-  Int_t                  fCellLabels[12672];       // Array with MC label to be passed to digit. 
+  
+  Int_t                  fOrgClusterCellId[12672]; // Array ID of cluster to wich the cell belongs in unmodified clusters
+  Int_t                  fCellLabels[12672];       // Array with MC label to be passed to digit.
   Int_t                  fCellSecondLabels[12672]; // Array with Second MC label to be passed to digit. 
   Double_t               fCellTime[12672];         // Array with cluster time to be passed to digit in case of AODs 
   Float_t                fCellMatchdEta[12672];    // Array with cluster-track dPhi 
@@ -213,13 +228,17 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Float_t                fEMCALEnergyCut;         //  At least an EMCAL cluster with this energy in the event
   Int_t                  fEMCALNcellsCut;         //  At least an EMCAL cluster with fNCellsCut cells over fEnergyCut
 
-  Bool_t                 fSetCellMCLabelFromCluster; // Use cluster MC label as cell label
+  Int_t                  fSetCellMCLabelFromCluster; // Use cluster MC label as cell label:
+                                                     // 0 - get the MC label stored in cells
+                                                     // 1 - from old way, select 2 most likely labels
+                                                     // 2 - from new way, get the original clusters, add all the MC labels (useful for any reclusterization with output V1 clusters)
+  Bool_t                 fRemapMCLabelForAODs ;      // Remap AOD cells MC label
 
   
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterize, 25);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 26);
 
 };
 
