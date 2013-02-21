@@ -420,16 +420,8 @@ int AliHLTRootSchemaEvolutionComponent::WriteToFile(const char* filename, const 
 
   const char* entrypath="HLT/Calib/StreamerInfo";
   int version = -1;
-  AliCDBStorage* store = NULL;
-  // TODO: to be activated later, first some methods need to be made
-  // public in AliCDBManager. Or some new methods to be added 
-  //if (AliCDBManager::Instance()->SelectSpecificStorage(entrypath))
-  //  store = AliCDBManager::Instance()->GetSpecificStorage(entrypath);
-  if (!store) 
-    store = AliCDBManager::Instance()->GetDefaultStorage();
-  AliCDBEntry* existingEntry=NULL;
-  if (store && store->GetLatestVersion(entrypath, GetRunNo())>=0 &&
-      (existingEntry=AliCDBManager::Instance()->Get(entrypath))!=NULL) {
+  AliCDBEntry* existingEntry=AliHLTMisc::Instance().LoadOCDBEntry(entrypath);
+  if (existingEntry) {
     version=existingEntry->GetId().GetVersion();
   }
   version++;

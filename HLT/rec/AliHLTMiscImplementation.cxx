@@ -40,6 +40,7 @@
 #include "TClass.h"
 #include "TStreamerInfo.h"
 #include "TObjArray.h"
+#include <stdexcept>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMiscImplementation);
@@ -122,40 +123,16 @@ AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo
   }
   if (runNo<0) runNo=man->GetRun();
 
-  // check the cache first if no specific version required
-  { //condition was deprecated, but keep for formatting
-    const TMap* pCache=man->GetEntryCache();
-    TObject* pEntryObj=NULL;
-    if (pCache && (pEntryObj=pCache->GetValue(path))!=NULL) {
-      AliCDBEntry* pEntry=dynamic_cast<AliCDBEntry*>(pEntryObj);
-      if (pEntry) {
-	log.Logging(kHLTLogDebug, "AliHLTMiscImplementation::LoadOCDBEntry", "CDB handling", "using OCDB object %s from cache", path);
-	return pEntry;
-      } else {
-	log.Logging(kHLTLogError, "AliHLTMiscImplementation::LoadOCDBEntry", "CDB handling", "invalid OCDB object %s found in cache, not of type AliCDBEntry", path);
-      }
-    }
+  AliCDBEntry* entry=NULL;
+  try {
+    // exceptions for the loading of OCDB objects have been introduced in r61012 on
+    // Feb 20 2013. This allows to reduce this function to try and catch of AliCDBManager::Get
+    entry=man->Get(path, runNo);
   }
-
-  const char* uri=man->GetURI(path);
-  if (!uri) {
-    log.Logging(kHLTLogError, "AliHLTMiscImplementation::LoadOCDBEntry", "CDB handling", "can not find URI for CDB object \"%s\"", path);
-    return NULL;
+  catch (...) {
+    // ignore the exception, missing object can be a valid condition, and is handled
+    // downstream
   }
-
-  AliCDBStorage* store = AliCDBManager::Instance()->GetStorage(uri);
-  if (!store) {
-    log.Logging(kHLTLogError, "AliHLTMiscImplementation::LoadOCDBEntry", "CDB handling", "can not find storage for URI \"%s\"", uri);
-    return NULL;
-  }
-
-  int latest = store->GetLatestVersion(path, runNo);
-  if (latest<0) {
-    log.Logging(kHLTLogError, "AliHLTMiscImplementation::LoadOCDBEntry", "CDB handling", "Could not find an entry for \"%s\" in storage \"%s\", run %d.", path, uri, runNo>=0?runNo:man->GetRun());
-    return NULL;
-  }
-
-  AliCDBEntry* entry=man->Get(path, runNo);
   return entry;
 }
 
@@ -183,8 +160,6 @@ int AliHLTMiscImplementation::CheckOCDBEntries(const TMap* const pMap) const
     ALIHLTERRORGUARD(1, "failed to access CDB manager");
     return -ENOSYS;
   }
-  const TMap* pCache=man->GetEntryCache();
-
   Int_t runNo = GetCDBRunNo();
 
   TIterator* next=pMap->MakeIterator();
@@ -192,31 +167,21 @@ int AliHLTMiscImplementation::CheckOCDBEntries(const TMap* const pMap) const
 
   TObject* pEntry=NULL;
   while ((pEntry=next->Next())) {
-    // check if already on cache
-    if (pCache && pCache->GetValue(pEntry->GetName())!=NULL) {
-      log.Logging(kHLTLogDebug, "AliHLTMiscImplementation::CheckOCDBEntries", "CDB handling", "found OCDB object %s on cache", pEntry->GetName());      
-      continue;
+    try {
+      // exceptions for the loading of OCDB objects have been introduced in r61012 on
+      // Feb 20 2013. This allows to reduce this function to try and catch of AliCDBManager::Get
+      man->Get(pEntry->GetName(), runNo);
     }
+    catch (...) {
+      // find out the storage for more details in the error message
+      AliCDBStorage* pStorage=NULL;
+      const char* uri=man->GetURI(pEntry->GetName());
+      if (uri) {
+	pStorage = AliCDBManager::Instance()->GetStorage(uri);
+      }
 
-    // check if the entry has specific storage
-    const char* uri=man->GetURI(pEntry->GetName());
-    if (!uri) {
-      log.Logging(kHLTLogError, "AliHLTMiscImplementation::CheckOCDBEntries", "CDB handling", "can not find URI for CDB object \"%s\"", pEntry->GetName());
-      return -ENODEV;
-    }
-
-    AliCDBStorage* pStorage = AliCDBManager::Instance()->GetStorage(uri);
-    if (!pStorage) {
-      log.Logging(kHLTLogError, "AliHLTMiscImplementation::CheckOCDBEntries", "CDB handling", "can not find storage for URI \"%s\"", uri);
-      return -EBADF;
-    }
-
-    // GetLatestVersion is the only method to check the existence without potential AliFatal
-    if (pStorage->GetLatestVersion(pEntry->GetName(), runNo)<0) {
-      log.Logging(kHLTLogError, "AliHLTMiscImplementation::CheckOCDBEntries", "CDB handling", "can not find required OCDB object %s for run number %d in storage %s", pEntry->GetName(), runNo, pStorage->GetURI().Data());
+      log.Logging(kHLTLogError, "AliHLTMiscImplementation::CheckOCDBEntries", "CDB handling", "can not find required OCDB object %s for run number %d in storage %s", pEntry->GetName(), runNo, (pStorage!=NULL?pStorage->GetURI().Data():"<unavailable>"));
       iResult=-ENOENT;
-    } else {
-      log.Logging(kHLTLogDebug, "AliHLTMiscImplementation::CheckOCDBEntries", "CDB handling", "found required OCDB object %s for run number %d in storage %s", pEntry->GetName(), runNo, pStorage->GetURI().Data());
     }
   }
   delete next;
