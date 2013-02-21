@@ -1596,7 +1596,8 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
   clArray.Reset();
   Int_t nClu = 0;
   Int_t nLabTotOrg = 0;
-  
+  Float_t emax = -1;
+  Int_t idMax = -1;
   //Find the clusters that originally had the cells
   for ( Int_t iLoopCell = 0 ; iLoopCell < clus->GetNCells() ; iLoopCell++ )
   {
@@ -1618,6 +1619,17 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
         clArray.SetAt(idCluster,nClu++);
         //printf("******** idCluster %d \n",idCluster);
         nLabTotOrg+=(fEvent->GetCaloCluster(idCluster))->GetNLabels();
+
+        //printf("Cluster in array %d, IdCluster %d\n",nClu-1,  idCluster);
+
+        //Search highest E cluster
+        AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+        //printf("\t E %f\n",clOrg->E());
+        if(emax < clOrg->E())
+        {
+          emax  = clOrg->E();
+          idMax = idCluster;
+        }        
       }
     }
   }// cell loop
@@ -1629,6 +1641,22 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
     //printf("\n");
   }
   
+  
+  // Put the first in the list the cluster with highest energy
+  if(idMax != ((Int_t)clArray.GetAt(0))) // Max not at first position
+  {
+    Int_t maxIndex = -1;
+    Int_t firstCluster = ((Int_t)clArray.GetAt(0));
+    for ( Int_t iLoopCluster = 0 ; iLoopCluster < nClu ; iLoopCluster++ )
+    {
+      if(idMax == ((Int_t)clArray.GetAt(iLoopCluster))) maxIndex = iLoopCluster;
+    }
+    
+    clArray.SetAt(idMax,0);
+    clArray.SetAt(firstCluster,maxIndex);
+    
+  }
+ 
   // Get the labels list in the original clusters, assign all to the new cluster
   TArrayI clMCArray(nLabTotOrg) ;
   clMCArray.Reset();
@@ -1637,7 +1665,7 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
   for ( Int_t iLoopCluster = 0 ; iLoopCluster < nClu ; iLoopCluster++ )
   {
     Int_t idCluster = clArray.GetAt(iLoopCluster);
-    //printf("\t cl %d \n",idCluster);
+    //printf("New Cluster in Array %d,  idCluster %d \n",iLoopCluster,idCluster);
     AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
     Int_t nLab = clOrg->GetNLabels();
     
