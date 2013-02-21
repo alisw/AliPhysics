@@ -48,7 +48,8 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
     fFMD2ocent(0),
     fFMD3icent(0),
     fFMD3ocent(0),
-    fList(0)
+    fList(0),	
+    fListVertexBins(0)
 
 {
   // 
@@ -77,7 +78,8 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
     fFMD2ocent(0),
     fFMD3icent(0),
     fFMD3ocent(0),
-    fList(0)
+    fList(0),
+    fListVertexBins(0)	
 
 
 {
@@ -112,7 +114,8 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
     fFMD2ocent(o.fFMD2ocent),
     fFMD3icent(o.fFMD3icent),
     fFMD3ocent(o.fFMD3ocent),
-    fList(o.fList)
+    fList(o.fList),
+    fListVertexBins(o.fListVertexBins)	
 
 {
   // 
@@ -160,7 +163,8 @@ AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
   fFMD3icent	     = o.fFMD3icent;
   fFMD3ocent	     = o.fFMD3ocent;
   fList              = o.fList;
-
+  fListVertexBins    =o.fListVertexBins;
+  
   return *this;
 }
 
@@ -222,6 +226,30 @@ AliForwardMultiplicityTask::SetupForData()
   fRingSums.Get(3, 'I')->SetMarkerColor(AliForwardUtil::RingColor(3, 'I'));
   fRingSums.Get(3, 'O')->SetMarkerColor(AliForwardUtil::RingColor(3, 'O'));
 
+  for(int i=1;i<=pv->GetNbins();i++)	
+  {
+	TString nametmp=Form("vtxbin%03d",i);
+	//TList* lbin= new TList();
+	//lbin->SetName(nametmp.Data());
+	//lbin->SetOwner();
+	//fListVertexBins->Add(lbin);
+	AliForwardUtil::Histos* bin=new AliForwardUtil::Histos();
+	bin->Init(*pe);
+	bin->Get(1, 'I')->SetName(Form("%s%s",bin->Get(1, 'I')->GetName(),nametmp.Data()));
+	bin->Get(2, 'I')->SetName(Form("%s%s",bin->Get(2, 'I')->GetName(),nametmp.Data()));
+	bin->Get(2, 'O')->SetName(Form("%s%s",bin->Get(2, 'O')->GetName(),nametmp.Data())); 
+	bin->Get(3, 'I')->SetName(Form("%s%s",bin->Get(3, 'I')->GetName(),nametmp.Data()));
+	bin->Get(3, 'O')->SetName(Form("%s%s",bin->Get(3, 'O')->GetName(),nametmp.Data()));
+	fList->Add(bin->Get(1, 'I'));
+	fList->Add(bin->Get(2, 'I'));
+	fList->Add(bin->Get(2, 'O'));
+	fList->Add(bin->Get(3, 'I'));
+	fList->Add(bin->Get(3, 'O'));
+	fListVertexBins->Add(bin);
+
+}
+
+
   fEventInspector.SetupForData(*pv);
   fSharingFilter.SetupForData(*pe);
   fDensityCalculator.SetupForData(*pe);
@@ -257,7 +285,9 @@ AliForwardMultiplicityTask::UserCreateOutputObjects()
   DGUARD(fDebug,1,"Create user ouput");
   fList = new TList;
   fList->SetOwner();
-
+  fListVertexBins=new TList();
+  fListVertexBins->SetOwner();	
+  
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
@@ -363,7 +393,7 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   }
 
   if (!fHistCollector.Collect(fHistos, fRingSums, 
-			      ivz, fAODFMD.GetHistogram(),fList,fAODFMD.GetCentrality())) {
+			      ivz, fAODFMD.GetHistogram(),fList,fAODFMD.GetCentrality(),fListVertexBins)) {
     AliWarning("Histogram collector failed");
     return;
   }
