@@ -1,0 +1,397 @@
+##
+Decay anti-B0
+#                   b -> c semileptonic
+#
+0.0529   D*+    e-   anti-nu_e          PHOTOS  HQET 0.77 1.33 0.92;
+0.0208   D+     e-   anti-nu_e          PHOTOS  ISGW2;
+0.0052   D_1+   e-   anti-nu_e          PHOTOS  ISGW2;
+0.0045   D_0*+   e-   anti-nu_e          PHOTOS  ISGW2;
+0.0083   D'_1+   e-   anti-nu_e          PHOTOS  ISGW2;
+0.0023   D_2*+   e-   anti-nu_e          PHOTOS  ISGW2;
+0.0003   D*+  pi0   e-   anti-nu_e      PHOTOS  GOITY_ROBERTS;
+0.0065   D*0  pi+   e-   anti-nu_e      PHOTOS  GOITY_ROBERTS;
+0.0010   D+   pi0   e-   anti-nu_e      PHOTOS  GOITY_ROBERTS;
+0.0032   D0   pi+   e-   anti-nu_e      PHOTOS  GOITY_ROBERTS;
+#
+0.0529   D*+    mu-  anti-nu_mu         PHOTOS  HQET 0.77 1.33 0.92;
+0.0208   D+     mu-  anti-nu_mu         PHOTOS  ISGW2;
+0.0052   D_1+   mu-  anti-nu_mu         PHOTOS  ISGW2;
+0.0045   D_0*+   mu-  anti-nu_mu         PHOTOS  ISGW2;
+0.0083   D'_1+   mu-  anti-nu_mu         PHOTOS  ISGW2;
+0.0023   D_2*+   mu-  anti-nu_mu         PHOTOS  ISGW2;
+0.0003   D*+  pi0   mu-  anti-nu_mu    PHOTOS   GOITY_ROBERTS;
+0.0065   D*0  pi+   mu-  anti-nu_mu    PHOTOS   GOITY_ROBERTS;
+0.0010   D+   pi0   mu-  anti-nu_mu    PHOTOS   GOITY_ROBERTS;
+0.0032   D0   pi+   mu-  anti-nu_mu    PHOTOS   GOITY_ROBERTS;
+#
+#                    b -> c tau nu
+#
+0.0202   D*+    tau- anti-nu_tau                 ISGW2;
+0.0088   D+     tau- anti-nu_tau                 ISGW2;
+0.0013   D_1+   tau- anti-nu_tau                 ISGW2;
+0.0013   D_0*+   tau- anti-nu_tau                 ISGW2;
+0.0020   D'_1+   tau- anti-nu_tau                 ISGW2;
+0.0020   D_2*+   tau- anti-nu_tau                 ISGW2;
+#
+#
+# b->u hadronic 
+# Ref. [B1]:
+# Lange Nov 14, 2004  (flip D_s K -- is opposite of D_s pi)
+0.000015   D_s-  pi+   PHSP;
+0.000028   D_s+  K-    PHSP;
+0.000029   D_s*-  pi+  SVS;
+0.000022   D_s*+  K-   SVS;
+#
+0.000016   rho+   D_s-    SVS;
+0.000016   K*-   D_s+     SVS;
+0.000016   D_s*-  rho+    SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.000016   D_s*+  K*-     SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+Enddecay
+
+Decay B0
+#                   b -> c semileptonic
+# =10.4% total  non-D and D* = 3.4% (changing to 2.7)
+0.0529   D*-    e+   nu_e           PHOTOS HQET 0.77 1.33 0.92;
+0.0208   D-     e+   nu_e           PHOTOS ISGW2;
+0.0052   D_1-   e+   nu_e           PHOTOS ISGW2;
+0.0045   D_0*-   e+   nu_e           PHOTOS ISGW2;
+0.0083   D'_1-   e+   nu_e           PHOTOS ISGW2;
+0.0023   D_2*-   e+   nu_e           PHOTOS ISGW2;
+0.0003   D*-  pi0   e+   nu_e       PHOTOS GOITY_ROBERTS;
+0.0065   anti-D*0  pi-   e+   nu_e       PHOTOS GOITY_ROBERTS;
+0.0010   D-   pi0   e+   nu_e       PHOTOS GOITY_ROBERTS;
+0.0032   anti-D0  pi-   e+   nu_e       PHOTOS GOITY_ROBERTS;
+0.0529   D*-    mu+  nu_mu           PHOTOS HQET 0.77 1.33 0.92;
+0.0208   D-     mu+  nu_mu           PHOTOS ISGW2;
+0.0052   D_1-   mu+  nu_mu           PHOTOS ISGW2;
+0.0045   D_0*-   mu+  nu_mu          PHOTOS  ISGW2;
+0.0083   D'_1-   mu+  nu_mu          PHOTOS  ISGW2;
+0.0023   D_2*-   mu+  nu_mu          PHOTOS  ISGW2;
+0.0003   D*-  pi0   mu+  nu_mu       PHOTOS GOITY_ROBERTS;
+0.0065   anti-D*0  pi-   mu+  nu_mu   PHOTOS     GOITY_ROBERTS;
+0.0010   D-   pi0   mu+  nu_mu       PHOTOS GOITY_ROBERTS;
+0.0032   anti-D0  pi-   mu+  nu_mu    PHOTOS    GOITY_ROBERTS;
+#
+#                    b -> c tau nu
+#
+0.0202   D*-    tau+ nu_tau                  ISGW2; # taken from Belle- Phys. Rev. Lett. 99, 191807 (2007) 
+0.0088   D-     tau+ nu_tau                  ISGW2;
+0.0013   D_1-   tau+ nu_tau                  ISGW2;
+0.0013   D_0*-   tau+ nu_tau                  ISGW2;
+0.0020   D'_1-   tau+ nu_tau                  ISGW2;
+0.0020   D_2*-   tau+ nu_tau                  ISGW2;
+#
+# b->u hadronic 
+# Ref. [B1]:
+# Lange Nov14,2004 (flip D_s K --opposite of D_s pi)
+0.000015   D_s+  pi-   PHSP;
+0.000028   D_s-  K+    PHSP;
+0.000029   D_s*+  pi-  SVS;
+0.000022   D_s*-  K+   SVS;
+#
+0.000016   rho-   D_s+    SVS;
+0.000016   K*+   D_s-     SVS;
+0.000016   D_s*+  rho-    SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.000016   D_s*-  K*+     SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+Enddecay
+
+Decay B+
+#
+#                  b -> c semileptonic
+0.0650   anti-D*0    e+   nu_e        PHOTOS  HQET 0.77 1.33 0.92;
+0.0215   anti-D0    e+   nu_e        PHOTOS  ISGW2;
+0.0056   anti-D_10   e+   nu_e        PHOTOS  ISGW2;
+0.0049   anti-D_0*0   e+   nu_e        PHOTOS  ISGW2;
+0.009   anti-D'_10   e+   nu_e        PHOTOS  ISGW2;
+0.003   anti-D_2*0   e+   nu_e        PHOTOS  ISGW2;
+0.0063   D*-  pi+   e+   nu_e    PHOTOS  GOITY_ROBERTS;
+0.0003   anti-D*0  pi0   e+   nu_e    PHOTOS  GOITY_ROBERTS;
+0.0052   D-   pi+   e+   nu_e    PHOTOS  GOITY_ROBERTS;
+0.0010   anti-D0  pi0   e+   nu_e    PHOTOS  GOITY_ROBERTS;
+#
+0.0650   anti-D*0    mu+  nu_mu       PHOTOS   HQET 0.77 1.33 0.92;
+0.0215   anti-D0    mu+  nu_mu        PHOTOS  ISGW2;
+0.0056   anti-D_10   mu+  nu_mu       PHOTOS   ISGW2;
+0.0049   anti-D_0*0   mu+  nu_mu      PHOTOS    ISGW2;
+0.009   anti-D'_10   mu+  nu_mu      PHOTOS    ISGW2;
+0.003   anti-D_2*0   mu+  nu_mu      PHOTOS    ISGW2;
+0.0063   D*-  pi+   mu+   nu_mu       PHOTOS    GOITY_ROBERTS;
+0.0003   anti-D*0  pi0   mu+   nu_mu  PHOTOS         GOITY_ROBERTS;
+0.0052   D-   pi+   mu+   nu_mu       PHOTOS    GOITY_ROBERTS;
+0.0010   anti-D0  pi0   mu+   nu_mu   PHOTOS        GOITY_ROBERTS;
+#
+#                   b -> c tau nu
+#
+0.0208   anti-D*0    tau+ nu_tau                ISGW2;
+0.0088   anti-D0    tau+ nu_tau                ISGW2;
+0.0013   anti-D_10   tau+ nu_tau                ISGW2;
+0.0013   anti-D_0*0   tau+ nu_tau                ISGW2;
+0.0020   anti-D'_10   tau+ nu_tau                ISGW2;
+0.0020   anti-D_2*0   tau+ nu_tau                ISGW2;
+#
+#
+# b->u hadronic  
+# Ref. [B1]:
+#
+0.000016   D_s+  pi0   PHSP; 
+0.000020   D_s*+  pi0  SVS;  
+#
+0.000028   rho0  D_s+     SVS;
+0.000028   D_s*+  rho0    SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+
+Enddecay
+
+
+
+
+Decay B-
+#
+#                  b -> c semileptonic
+#
+0.0650   D*0    e-   anti-nu_e         PHOTOS  HQET 0.77 1.33 0.92;
+0.0215   D0     e-   anti-nu_e         PHOTOS  ISGW2;
+0.0056   D_10   e-   anti-nu_e         PHOTOS  ISGW2;
+0.0049   D_0*0   e-   anti-nu_e         PHOTOS  ISGW2;
+0.009   D'_10   e-   anti-nu_e         PHOTOS  ISGW2;
+0.003   D_2*0   e-   anti-nu_e         PHOTOS  ISGW2;
+0.0063   D*+  pi-   e-   anti-nu_e     PHOTOS  GOITY_ROBERTS;
+0.0003   D*0  pi0   e-   anti-nu_e     PHOTOS  GOITY_ROBERTS;
+0.0052   D+   pi-   e-   anti-nu_e     PHOTOS  GOITY_ROBERTS;
+0.0010   D0   pi0   e-   anti-nu_e     PHOTOS  GOITY_ROBERTS;
+#
+0.0650   D*0   mu-  anti-nu_mu         PHOTOS   HQET 0.77 1.33 0.92;
+0.0215   D0    mu-  anti-nu_mu         PHOTOS   ISGW2;
+0.0056   D_10  mu-  anti-nu_mu         PHOTOS   ISGW2;
+0.0049   D_0*0  mu-  anti-nu_mu        PHOTOS    ISGW2;
+0.009   D'_10  mu-  anti-nu_mu        PHOTOS    ISGW2;
+0.003   D_2*0  mu-  anti-nu_mu        PHOTOS    ISGW2;
+0.0063   D*+   pi-   mu-   anti-nu_mu  PHOTOS   GOITY_ROBERTS;
+0.0003   D*0   pi0   mu-   anti-nu_mu  PHOTOS   GOITY_ROBERTS;
+0.0052   D+    pi-   mu-   anti-nu_mu  PHOTOS   GOITY_ROBERTS;
+0.0010   D0    pi0   mu-   anti-nu_mu  PHOTOS   GOITY_ROBERTS;
+#
+#                   b -> c tau nu
+#
+0.0208   D*0    tau- anti-nu_tau                 ISGW2;# equel to B0-> D*- tau+ nu
+0.0088   D0     tau- anti-nu_tau                 ISGW2;
+0.0013   D_10   tau- anti-nu_tau                 ISGW2;
+0.0013   D_0*0   tau- anti-nu_tau                 ISGW2;
+0.0020   D'_10   tau- anti-nu_tau                 ISGW2;
+0.0020   D_2*0   tau- anti-nu_tau                 ISGW2;
+#
+# b->u hadronic 
+# Ref. [B1]:
+#
+0.000016   D_s-  pi0   PHSP;
+0.000020   D_s*-  pi0  SVS;
+#
+0.000028   rho0  D_s-     SVS;
+0.000028   D_s*-  rho0    SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+
+Enddecay
+
+Decay B_s0
+0.0210   D_s-     e+     nu_e         PHOTOS  ISGW2;
+0.0490   D_s*-    e+     nu_e         PHOTOS  ISGW2;
+0.0040   D_s1-    e+     nu_e         PHOTOS  ISGW2;
+0.0040   D_s0*-   e+     nu_e         PHOTOS  ISGW2;
+0.0070   D'_s1-   e+     nu_e         PHOTOS  ISGW2;
+0.0070   D_s2*-   e+     nu_e         PHOTOS  ISGW2;
+0.0210   D_s-     mu+    nu_mu        PHOTOS  ISGW2;
+0.0490   D_s*-    mu+    nu_mu        PHOTOS  ISGW2;
+0.0040   D_s1-    mu+    nu_mu        PHOTOS  ISGW2;
+0.0040   D_s0*-   mu+    nu_mu        PHOTOS  ISGW2;
+0.0070   D'_s1-   mu+    nu_mu        PHOTOS  ISGW2;
+0.0070   D_s2*-   mu+    nu_mu        PHOTOS  ISGW2;
+#fkw 5/04/01 changed these to account for taking out non-res
+#0.0070   D_s-     tau+   nu_tau                 ISGW2;
+#0.0150   D_s*-    tau+   nu_tau                 ISGW2;
+#0.0013   D_s1-    tau+   nu_tau                 ISGW2;
+#0.0013   D_s0*-   tau+   nu_tau                 ISGW2;
+#0.0023   D'_s1-   tau+   nu_tau                 ISGW2;
+#0.0023   D_s2*-   tau+   nu_tau                 ISGW2;
+0.0080   D_s-     tau+   nu_tau                 ISGW2;
+0.0160   D_s*-    tau+   nu_tau                 ISGW2;
+0.0018   D_s1-    tau+   nu_tau                 ISGW2;
+0.0018   D_s0*-   tau+   nu_tau                 ISGW2;
+0.0028   D'_s1-   tau+   nu_tau                 ISGW2;
+0.0028   D_s2*-   tau+   nu_tau                 ISGW2;
+Enddecay
+
+Decay anti-B_s0
+#                                        b --> c  (l nu)
+#                                        Sum = 24.5%
+0.0210   D_s+     e-     anti-nu_e    PHOTOS  ISGW2;
+0.0490   D_s*+    e-     anti-nu_e    PHOTOS  ISGW2;
+0.0040   D_s1+    e-     anti-nu_e    PHOTOS  ISGW2;
+0.0040   D_s0*+   e-     anti-nu_e    PHOTOS  ISGW2;
+0.0070   D'_s1+   e-     anti-nu_e    PHOTOS  ISGW2;
+0.0070   D_s2*+   e-     anti-nu_e    PHOTOS  ISGW2;
+#
+0.0210   D_s+     mu-    anti-nu_mu   PHOTOS  ISGW2;
+0.0490   D_s*+    mu-    anti-nu_mu   PHOTOS  ISGW2;
+0.0040   D_s1+    mu-    anti-nu_mu   PHOTOS  ISGW2;
+0.0040   D_s0*+   mu-    anti-nu_mu   PHOTOS  ISGW2;
+0.0070   D'_s1+   mu-    anti-nu_mu   PHOTOS  ISGW2;
+0.0070   D_s2*+   mu-    anti-nu_mu   PHOTOS  ISGW2;
+#
+#0.0070   D_s+     tau-   anti-nu_tau          ISGW2;
+#0.0150   D_s*+    tau-   anti-nu_tau            ISGW2;
+#0.0013   D_s1+    tau-   anti-nu_tau            ISGW2;
+#0.0013   D_s0*+   tau-   anti-nu_tau            ISGW2;
+#0.0023   D'_s1+   tau-   anti-nu_tau            ISGW2;
+#0.0023   D_s2*+   tau-   anti-nu_tau            ISGW2;
+# fkw 5/04/01 changed the above to account for the non-res part that I
+#             had to take out.
+0.0080   D_s+     tau-   anti-nu_tau          ISGW2;
+0.0160   D_s*+    tau-   anti-nu_tau            ISGW2;
+0.0018   D_s1+    tau-   anti-nu_tau            ISGW2;
+0.0018   D_s0*+   tau-   anti-nu_tau            ISGW2;
+0.0028   D'_s1+   tau-   anti-nu_tau            ISGW2;
+0.0028   D_s2*+   tau-   anti-nu_tau            ISGW2;
+Enddecay
+
+Decay B_c-
+0.00004    anti-D0    e-      anti-nu_e         PHOTOS  PHSP;
+0.00018    anti-D*0   e-      anti-nu_e         PHOTOS  PHSP;
+0.00004    anti-D0    mu-     anti-nu_mu        PHOTOS  PHSP;
+0.00018    anti-D*0   mu-     anti-nu_mu        PHOTOS  PHSP;
+0.00002    anti-D0    tau-    anti-nu_tau               PHSP;
+0.00008    anti-D*0   tau-    anti-nu_tau               PHSP;
+0.000053   D-         D0                    PHSP;
+0.000075   D*0        D-                    SVS;
+0.000049   D*-        D0                    SVS;
+0.00033    D*-        D*0                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.0000048  D_s-       D0                    PHSP;
+0.0000071  D*0        D_s-                  SVS;
+0.0000045  D_s*-      D0                    SVS;
+0.000026   D_s*-      D*0                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+#
+0.0000003  D-         anti-D0               PHSP;
+0.0000003  anti-D*0   D-                    SVS;
+0.0000004  D*-        anti-D0               SVS;
+0.0000016  anti-D*0   D*-                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.0000066  D_s-       anti-D0               PHSP;
+0.0000063  anti-D*0   D_s-                  SVS;
+0.0000085  D_s*-      anti-D0               SVS;
+0.0000404  D_s*-      anti-D*0              SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+#
+0.00280    eta_c      D_s-                  PHSP;
+0.00270    D_s*-      eta_c                 SVS;
+0.00015    eta_c      D-                    PHSP;
+0.00010    D*-        eta_c                 SVS;
+0.00170    J/psi      D_s-                  SVS;
+0.00670    J/psi      D_s*-                 SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00009    J/psi      D-                    SVS;
+0.00028    J/psi      D*-                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+Enddecay
+
+Decay B_c+
+0.00004    D0         e+          nu_e         PHOTOS  PHSP;
+0.00018    D*0        e+          nu_e         PHOTOS  PHSP;
+0.00004    D0         mu+         nu_mu        PHOTOS  PHSP;
+0.00018    D*0        mu+         nu_mu        PHOTOS  PHSP;
+0.00002    D0         tau+        nu_tau               PHSP;
+0.00008    D*0        tau+        nu_tau               PHSP;
+#
+0.000053   D+         anti-D0               PHSP;
+0.000075   anti-D*0   D+                    SVS;
+0.000049   D*+        anti-D0               SVS;
+0.00033    D*+        anti-D*0              SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.0000048  D_s+       anti-D0               PHSP;
+0.0000071  anti-D*0   D_s+                  SVS;
+0.0000045  D_s*+      anti-D0               SVS;
+0.000026   D_s*+      anti-D*0              SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+#
+0.0000003  D+         D0                    PHSP;
+0.0000003  D*0        D+                    SVS;
+0.0000004  D*+        D0                    SVS;
+0.0000016  D*0        D*+                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.0000066  D_s+       D0                    PHSP;
+0.0000063  D*0        D_s+                  SVS;
+0.0000085  D_s*+      D0                    SVS;
+0.0000404  D_s*+      D*0                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+#
+0.00280    eta_c      D_s+                  PHSP;
+0.00270    D_s*+      eta_c                 SVS;
+0.00015    eta_c      D+                    PHSP;
+0.00010    D*+        eta_c                 SVS;
+0.00170    J/psi      D_s+                  SVS;
+0.00670    J/psi      D_s*+                 SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00009    J/psi      D+                    SVS;
+0.00028    J/psi      D*+                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+Enddecay
+
+#Decay  anti-D*0
+#Enddecay
+
+#Decay  D*0
+#Enddecay
+
+Decay anti-D0
+Enddecay
+
+Decay D0
+Enddecay
+
+#Decay anti-D_10
+#Enddecay
+
+#Decay D_10
+#Enddecay
+
+#Decay anti-D_0*0
+#Enddecay
+
+#Decay D_0*0
+#Enddecay
+
+#Decay anti-D'_10
+#Enddecay
+
+#Decay D'_10
+#Enddecay
+
+#Decay anti-D_2*0
+#Enddecay
+
+#Decay D_2*0
+#Enddecay
+
+#Decay D*+
+#Enddecay
+
+#Decay D*-
+#Enddecay
+
+Decay D+
+Enddecay
+
+Decay D-
+Enddecay
+
+#Decay D_1+
+#Enddecay
+
+Decay J/psi 
+Enddecay
+
+Decay eta_c
+Enddecay
+
+#Decay D_s*+
+#Enddecay
+
+#Decay D_s*-
+#Enddecay
+
+Decay D_s+ 
+Enddecay
+
+Decay D_s-
+Enddecay
+#
+Decay  pi0
+Enddecay
+
+End

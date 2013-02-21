@@ -207,7 +207,10 @@ void AliDecayerEvtGen::ForceDecay()
      break;
      case kBSemiElectronic:
      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOELE.DEC"));
-     break;  
+     break;
+     case kHadronicD:
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOD.DEC"));
+      break;
      case kHardMuons:
      case kChiToJpsiGammaToMuonMuon:
      case kChiToJpsiGammaToElectronElectron:
@@ -225,7 +228,6 @@ void AliDecayerEvtGen::ForceDecay()
      case kWToCharmToMuon:
      case kZDiMuon:
      case kZDiElectron:
-     case kHadronicD:
      case kHadronicDWithout4Bodies:
      case kPhiKK:
      case kOmega:
