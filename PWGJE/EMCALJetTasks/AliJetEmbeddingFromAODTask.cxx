@@ -203,8 +203,8 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
 
   do {
     if (i>0) {
-      AliDebug(2,Form("Failed to open file %s...", fileName.Data()));
-      if (fQAhistos)
+      AliDebug(3,Form("Failed to open file %s...", fileName.Data()));
+      if (fHistAODFileError)
 	fHistAODFileError->Fill(fCurrentAODFileID);
     }
 
@@ -218,8 +218,10 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
       TGrid::Connect("alien://");
     }
 
-    AliDebug(2,Form("Trying to open file %s...", fileName.Data()));
+    AliDebug(3,Form("Trying to open file %s...", fileName.Data()));
     fCurrentAODFile = TFile::Open(fileName);
+
+    i++;
 
   } while ((!fCurrentAODFile || fCurrentAODFile->IsZombie()) && i < fAttempts);
 
@@ -261,8 +263,10 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
     fCurrentAODEntry = TMath::Nint(gRandom->Rndm()*fCurrentAODTree->GetEntries());
   else
     fCurrentAODEntry = 0;
+
+  AliDebug(2,Form("Will start embedding from entry %d", fCurrentAODEntry));
   
-  if (fQAhistos)
+  if (fHistFileMatching)
     fHistFileMatching->Fill(fCurrentFileID, fCurrentAODFileID-1);
   
   return kTRUE;
@@ -347,7 +351,8 @@ Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
 void AliJetEmbeddingFromAODTask::Run() 
 {
   if (!GetNextEntry()) {
-    fHistNotEmbedded->Fill(fCurrentFileID);
+    if (fHistNotEmbedded)
+      fHistNotEmbedded->Fill(fCurrentFileID);
     AliError("Unable to get the AOD event to embed. Nothing will be embedded.");
     return;
   }
@@ -425,8 +430,17 @@ void AliJetEmbeddingFromAODTask::Run()
 	  }
 	}
 	
+	Int_t label = 0;
+
+	if (fOutMCParticles) {
+	  label = track->GetLabel();
+
+	  if (label == 0)
+	    label = 99999;
+	}
+
 	AliDebug(3, Form("Embedding track with pT = %f, eta = %f, phi = %f", track->Pt(), track->Eta(), track->Phi()));
-	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), isEmc, track->GetLabel());
+	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), isEmc, label);
       }
     }
   }

@@ -5,6 +5,7 @@
 // Authors: C.Loizides, S.Aiola
 
 #include <vector>
+#include <algorithm> 
 #include "AliEmcalJetTask.h"
 
 #include <TChain.h>
@@ -25,6 +26,15 @@
 #include "AliVParticle.h"
 
 ClassImp(AliEmcalJetTask)
+
+//________________________________________________________________________
+inline bool AliEmcalJetTask::ComparePseudoJets(fastjet::PseudoJet a, fastjet::PseudoJet b)
+{
+  if (a.perp() > b.perp())
+    return true;
+  else
+    return false;
+}
 
 //________________________________________________________________________
 AliEmcalJetTask::AliEmcalJetTask() : 
@@ -278,6 +288,8 @@ void AliEmcalJetTask::FindJets()
 
   // loop over fastjet jets
   std::vector<fastjet::PseudoJet> jets_incl = fjw.GetInclusiveJets();
+  if (fMarkConst > 0)
+    std::sort(jets_incl.begin(), jets_incl.end(), ComparePseudoJets);
   for (UInt_t ij=0, jetCount=0; ij<jets_incl.size(); ++ij) {
     if (jets_incl[ij].perp()<fMinJetPt) 
       continue;
@@ -323,7 +335,7 @@ void AliEmcalJetTask::FindJets()
         AliVParticle *t = static_cast<AliVParticle*>(fTracks->At(tid));
         if (!t)
           continue;
-	if (fMarkConst)
+	if (jetCount < fMarkConst)
 	  t->SetBit(fJetType);
         Double_t cEta = t->Eta();
         Double_t cPhi = t->Phi();
@@ -364,7 +376,7 @@ void AliEmcalJetTask::FindJets()
           c = ep->GetCluster();
           if (!c)
             continue;
-	  if (fMarkConst)
+	  if (jetCount < fMarkConst)
 	    ep->SetBit(fJetType);
           cEta = ep->Eta();
           cPhi = ep->Phi();
@@ -374,7 +386,7 @@ void AliEmcalJetTask::FindJets()
           c = static_cast<AliVCluster*>(fClus->At(cid));
           if (!c)
             continue;
-	  if (fMarkConst)
+	  if (jetCount < fMarkConst)
 	    c->SetBit(fJetType);
           TLorentzVector nP;
           c->GetMomentum(nP, vertex);
@@ -436,7 +448,7 @@ void AliEmcalJetTask::FindJets()
       jet->SetAxisInEmcal(kTRUE);
     jetCount++;
   }
-  fJets->Sort();
+  //fJets->Sort();
 }
 
 //________________________________________________________________________

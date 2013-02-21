@@ -433,7 +433,7 @@ void AliJetModelBaseTask::CopyCells()
 
   fAddedCells = fCaloCells->GetNumberOfCells();
 
-  AliDebug(2, Form("%d cells from the PYTHIA event", fAddedCells));
+  AliDebug(2, Form("%d cells from the current event", fAddedCells));
 }
 
 //________________________________________________________________________

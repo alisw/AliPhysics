@@ -44,6 +44,8 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistConstituents[i] = 0;
     fHistTracksJetPt[i] = 0;
     fHistClustersJetPt[i] = 0;
+    fHistTracksPtDist[i] = 0;
+    fHistClustersPtDist[i] = 0;
     fHistJetNconstVsPt[i] = 0;
   }
 
@@ -71,6 +73,8 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistConstituents[i] = 0;
     fHistTracksJetPt[i] = 0;
     fHistClustersJetPt[i] = 0;
+    fHistTracksPtDist[i] = 0;
+    fHistClustersPtDist[i] = 0;
     fHistJetNconstVsPt[i] = 0;
   }
 
@@ -221,6 +225,14 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     fHistTracksJetPt[i]->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistTracksJetPt[i]);
 
+    histname = "fHistTracksPtDist_";
+    histname += i;
+    fHistTracksPtDist[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, 100, 0, 5);
+    fHistTracksPtDist[i]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
+    fHistTracksPtDist[i]->GetYaxis()->SetTitle("d");
+    fHistTracksPtDist[i]->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistTracksPtDist[i]);
+
     if (!fCaloName.IsNull()) {
       histname = "fHistClustersJetPt_";
       histname += i;
@@ -229,6 +241,14 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       fHistClustersJetPt[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
       fHistClustersJetPt[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistClustersJetPt[i]);
+
+      histname = "fHistClustersPtDist_";
+      histname += i;
+      fHistClustersPtDist[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, 100, 0, 5);
+      fHistClustersPtDist[i]->GetXaxis()->SetTitle("p_{T,clus} (GeV/c)");
+      fHistClustersPtDist[i]->GetYaxis()->SetTitle("d");
+      fHistClustersPtDist[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistClustersPtDist[i]);
     }
 
     histname = "fHistJetNconstVsPt_";
@@ -356,6 +376,8 @@ Int_t AliAnalysisTaskSAJF::DoJetLoop()
 	  fHistJetsZvsPt[fCentBin]->Fill(track->Pt() / jet->Pt(), jet->Pt(), ptLeading);
 	  constituents.Fill(track->Pt());
 	  fHistTracksJetPt[fCentBin]->Fill(track->Pt(), jet->Pt());
+	  Double_t dist = TMath::Sqrt((track->Eta() - jet->Eta()) * (track->Eta() - jet->Eta()) + (track->Phi() - jet->Phi()) * (track->Phi() - jet->Phi()));
+	  fHistTracksPtDist[fCentBin]->Fill(track->Pt(), dist);
 	}
       }
     }
@@ -370,6 +392,8 @@ Int_t AliAnalysisTaskSAJF::DoJetLoop()
 	  fHistJetsZvsPt[fCentBin]->Fill(nPart.Et() / jet->Pt(), jet->Pt(), ptLeading);
 	  constituents.Fill(nPart.Pt());
 	  fHistClustersJetPt[fCentBin]->Fill(nPart.Pt(), jet->Pt());
+	  Double_t dist = TMath::Sqrt((nPart.Eta() - jet->Eta()) * (nPart.Eta() - jet->Eta()) + (nPart.Phi() - jet->Phi()) * (nPart.Phi() - jet->Phi()));
+	  fHistClustersPtDist[fCentBin]->Fill(nPart.Pt(), dist);
 	}
       }
     }

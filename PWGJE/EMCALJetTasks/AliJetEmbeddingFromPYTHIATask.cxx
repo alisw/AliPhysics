@@ -28,6 +28,7 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask() :
   // Default constructor.
   SetSuffix("PYTHIAEmbedding");
   fTotalFiles = 2000;
+  fRandomAccess = kTRUE;
 }
 
 //________________________________________________________________________
@@ -42,6 +43,7 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask(const char *name) :
   // Standard constructor.
   SetSuffix("PYTHIAEmbedding");
   fTotalFiles = 2000;
+  fRandomAccess = kTRUE;
 }
 
 //________________________________________________________________________

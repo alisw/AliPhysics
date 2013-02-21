@@ -99,9 +99,12 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistDistancevsCommonEnergy1;            //!distance vs common energy 1 (%)
   TH2                        *fHistDistancevsCommonEnergy2;            //!distance vs common energy 2 (%)
   TH2                        *fHistJet2PtOverJet1PtvsJet2Pt;           //!jet 2 pt over jet 1 pt vs jet 2 pt
+  TH2                        *fHistJet1PtOverJet2PtvsJet1Pt;           //!jet 1 pt over jet 2 pt vs jet 1 pt
   TH3                        *fHistDeltaEtaPhivsJet2Pt;                //!delta eta-phi between matched jets vs jet 2 pt
+  TH2                        *fHistDeltaPtvsJet1Pt;                    //!delta pt between matched jets vs jet 1 pt
   TH2                        *fHistDeltaPtvsJet2Pt;                    //!delta pt between matched jets vs jet 2 pt
   TH2                        *fHistDeltaPtvsMatchingLevel;             //!delta pt between matched jets vs matching level
+  TH2                        *fHistDeltaCorrPtvsJet1Pt;                //!delta pt corr between matched jets vs jet 1 pt
   TH2                        *fHistDeltaCorrPtvsJet2Pt;                //!delta pt corr between matched jets vs jet 2 pt
   TH2                        *fHistDeltaCorrPtvsMatchingLevel;         //!delta pt corr between matched jets vs matching level
   TH2                        *fHistNonMatchedJets1PtArea;              //!non-matched jet 1 pt distribution
