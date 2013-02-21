@@ -22,6 +22,7 @@
 #include <TF1.h>
 #include "AliAODEvent.h"
 #include "AliAODMCHeader.h"
+#include "AliGenEventHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliVertexingHFUtils.h"
@@ -467,4 +468,18 @@ Double_t AliVertexingHFUtils::GetCorrectedNtracklets(TProfile* estimatorAvg, Dou
 
   return correctedNacc;
 }
-
+//______________________________________________________________________
+TString AliVertexingHFUtils::GetGenerator(Int_t label, AliAODMCHeader* header){
+   Int_t nsumpart=0;
+   TList *lh=header->GetCocktailHeaders();
+   Int_t nh=lh->GetEntries();
+   for(Int_t i=0;i<nh;i++){
+     AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+     TString genname=gh->GetName();
+     Int_t npart=gh->NProduced();
+     if(label>=nsumpart && label<(nsumpart+npart)) return genname;
+     nsumpart+=npart;
+   }
+   TString empty="";
+   return empty;
+ }
