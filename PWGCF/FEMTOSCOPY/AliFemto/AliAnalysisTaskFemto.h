@@ -38,9 +38,9 @@
 
 class AliAnalysisTaskFemto : public AliAnalysisTaskSE { //AliAnalysisTask
  public:
-  AliAnalysisTaskFemto() : AliAnalysisTaskSE(), fESD(0), fESDpid(0), fAOD(0), fAODpidUtil(0), fAODheader(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0), fConfigParams(0) {}
-  AliAnalysisTaskFemto(const char *name, const char *aConfigMacro, const char *aConfigParams);
-  AliAnalysisTaskFemto(const char *name, const char *aConfigMacro);
+AliAnalysisTaskFemto() : AliAnalysisTaskSE(), fESD(0), fESDpid(0), fAOD(0), fAODpidUtil(0), fAODheader(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0), fConfigParams(0), fVerbose(kTRUE) {}
+    AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose);
+    AliAnalysisTaskFemto(TString name, TString aConfigMacro, Bool_t aVerbose);
   AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask);
   virtual ~AliAnalysisTaskFemto();
   
@@ -73,7 +73,7 @@ class AliAnalysisTaskFemto : public AliAnalysisTaskSE { //AliAnalysisTask
   int                          fAnalysisType; //  Mark ESD of AOD analysis
     TString                      fConfigMacro;  //  Config macro location
     TString                      fConfigParams; //  Config macro parameters
-
+  Bool_t fVerbose;
 
   ClassDef(AliAnalysisTaskFemto, 3); // example of analysis
 };

@@ -127,7 +127,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis() :
   fPicoEvent(0),          
   fNumEventsToMix(0),                     
   fNeventsProcessed(0),                   
-  fMinSizePartCollection(0)
+  fMinSizePartCollection(0),
+  fVerbose(kTRUE)
 {
   // Default constructor
   //  mControlSwitch     = 0;
@@ -148,7 +149,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) 
   fPicoEvent(0),          
   fNumEventsToMix(0),                     
   fNeventsProcessed(0),                   
-  fMinSizePartCollection(0)
+  fMinSizePartCollection(0),
+  fVerbose(kTRUE)
 {
   // Copy constructor
   //AliFemtoSimpleAnalysis();
@@ -273,6 +275,8 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
 
   fMinSizePartCollection = aAna.fMinSizePartCollection;  // minimum # particles in ParticleCollection
 
+  fVerbose = aAna.fVerbose;
+
   return *this;
 }
 //______________________
@@ -339,6 +343,7 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 //       fPicoEvent->FirstParticleCollection()->size() << " " <<
 //       fPicoEvent->SecondParticleCollection()->size() << endl;
     
+    if (fVerbose)
     cout << "#particles in Collection 1, 2: " <<
        fPicoEvent->FirstParticleCollection()->size() << " " <<
        fPicoEvent->SecondParticleCollection()->size() << endl;
@@ -370,6 +375,8 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
         MakePairs("real", fPicoEvent->FirstParticleCollection(),
                           fPicoEvent->SecondParticleCollection() );
       }
+
+      if (fVerbose)
        cout << "AliFemtoSimpleAnalysis::ProcessEvent() - reals done ";
 
       //---- Make pairs for mixed events, looping over events in mixingBuffer ----//
@@ -390,6 +397,8 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
                             fPicoEvent->SecondParticleCollection() );
         }
       }
+
+      if (fVerbose)
        cout << " - mixed done   " << endl;
 
       //--------- If mixing buffer is full, delete oldest event ---------//
