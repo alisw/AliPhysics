@@ -11,6 +11,7 @@ AliAnalysisTaskMuonHadronCorrelations *AddAnalysisTaskMuonHadronCorrelations(con
   // Set analysis cuts   
   task->SetFilterBitCentralBarrel(7);  // -> 128
   task->SetMaxEtaCentralBarrel(1.0);
+  task->SetMinEtaCentralBarrel(0.0);
   task->SetTriggerMatchLevelMuon(1);
 
   const Int_t nBinCent = 4;

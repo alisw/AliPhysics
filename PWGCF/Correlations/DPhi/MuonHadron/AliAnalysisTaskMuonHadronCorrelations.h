@@ -32,6 +32,7 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
 
   void SetFilterBitCentralBarrel(Int_t filter) { fFilterBitCentralBarrel = filter; }
   void SetMaxEtaCentralBarrel(Double_t eta) { fMaxEtaCentralBarrel = eta; }
+  void SetMinEtaCentralBarrel(Double_t eta) { fMinEtaCentralBarrel = eta; }
   void SetTriggerMatchLevelMuon(Short_t level) { fTriggerMatchLevelMuon = level; }
   //  void SetMaxChi2Muon(Double_t chi2Max) { fMaxChi2Muon = chi2Max; }
   void SetRAbsRangeMuon (Double_t rAbsMin,Double_t rAbsMax) { fMinRAbsMuon = rAbsMin; fMaxRAbsMuon = rAbsMax; }
@@ -63,6 +64,7 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
   
   Int_t fFilterBitCentralBarrel;
   Double_t fMaxEtaCentralBarrel;
+  Double_t fMinEtaCentralBarrel;
 
   Double_t fMaxChi2Muon, fMinRAbsMuon, fMaxRAbsMuon;
   Short_t fTriggerMatchLevelMuon;
