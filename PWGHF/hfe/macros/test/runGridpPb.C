@@ -1,9 +1,11 @@
+//Replace User Task with your Add Task and appropriate parameters
+
 Bool_t SetupPar(const char *parfile);
 
-void runGridAODPbPb()
+void runGridpPb()
 {
    // Load common libraries
-  gSystem->Load("libCore.so");  
+   gSystem->Load("libCore.so");  
    gSystem->Load("libTree.so");
    gSystem->Load("libGeom.so");
    gSystem->Load("libVMC.so");
@@ -11,7 +13,6 @@ void runGridAODPbPb()
    gSystem->Load("libMinuit.so"); 
    gSystem->Load("libGui.so");
    gSystem->Load("libXMLParser.so");
-   //gSystem->Load("libSTEER.so");
    gSystem->Load("libSTEERBase.so");
    gSystem->Load("libESD.so");
    gSystem->Load("libCDB.so");
@@ -21,8 +22,11 @@ void runGridAODPbPb()
 
    //lib necessary for dielectron
    gSystem->Load("libCORRFW.so");
+   gSystem->Load("libPWGflowBase.so");
+   gSystem->Load("libPWGflowTasks.so");
 
    gSystem->Load("libTENDER"); 
+   gSystem->Load("libTENDERSupplies"); 
    gSystem->Load("libProof.so");
    gSystem->Load("libRAWDatabase.so");
    gSystem->Load("libSTEER.so");
@@ -30,11 +34,11 @@ void runGridAODPbPb()
 
    gSystem->Load("libTRDbase.so");
    gSystem->Load("libVZERObase.so");
+   gSystem->Load("libPWGHFbase.so");
    gSystem->Load("libPWGHFhfe.so"); 
-   //gSystem->Load("libTENDERSupplies.so"); 
+   gSystem->Load("libTENDERSupplies.so"); 
 
    // Load common libraries
-
 
    // Use AliRoot includes to compile our task
    gROOT->ProcessLine(".include $ALICE_ROOT/include");
@@ -45,60 +49,43 @@ void runGridAODPbPb()
    gROOT->ProcessLine(".include $ALICE_ROOT/PWG/FLOW/Tasks");
 
    // Create and configure the alien handler plugin
-   gROOT->LoadMacro("CreateAlienHandlerAODPbPb.C");
-   AliAnalysisGrid *alienHandler = CreateAlienHandlerAODPbPb();  
+   gROOT->LoadMacro("CreateAlienHandlerpPb.C");
+   AliAnalysisGrid *alienHandler = CreateAlienHandlerpPb();  
    if (!alienHandler) return;
 
    // Create the analysis manager
-   AliAnalysisManager *mgr = new AliAnalysisManager("tpctofv2");
+   AliAnalysisManager *mgr = new AliAnalysisManager("tpctofAnalysis");
 
    // Connect plug-in to the analysis manager
    mgr->SetGridHandler(alienHandler);
-/*
+
    AliESDInputHandler* esdH = new AliESDInputHandler();
    esdH->SetReadFriends(kFALSE);
    mgr->SetInputEventHandler(esdH);
-*/
-   // Read AODs
-   aodH = new AliAODInputHandler();
-   mgr->SetInputEventHandler(aodH);
 
-   // // Read MC info  // not for real data
-   // mcHandler = new AliMCEventHandler();
-   // mcHandler->SetReadTR(kFALSE);
-   // mgr->SetMCtruthEventHandler(mcHandler);
 
-   //AOD Output Hanlder for Filter:
-   /*
-	  AliAODHandler* aodHandler   = new AliAODHandler();
-	  mgr->SetOutputEventHandler(aodHandler);
-	  aodHandler->SetOutputFileName("AliAODs.root");
-	*/
 
-   // gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-   // AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+   //==== Physics Selection ====
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 
+   //==== Add tender ====
+
+//   gROOT->LoadMacro("AddTaskTender.C");
+//   AddTaskTender();
 
    //===== ADD PID RESPONSE: ===
+
    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-   //AliAnalysisTaskPIDResponse* aodPIDresponse = AddTaskPIDResponse();
    AddTaskPIDResponse();
 
-   //===== ADD VZERO event plane: ===
-   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
-   AddTaskVZEROEPSelection();
-
-   //===== ADD TPC event plane: ===
-   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskEventPlaneTPC.C");
-   AddTaskEventPlaneTPC(kTRUE,0.,kFALSE);
+   //===== ADD CENTRALITY: ===
+   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+   AddTaskCentrality();
 
    //===== ADD TASK::
-   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEFlowTPCTOFEPSP.C");
-   AddTaskHFEFlowTPCTOFEPSP();
-
-   //===== ADD TASK::
-   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEreducedEvent.C");
-   AddTaskHFEreducedEvent();
+   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEpPb.C");
+   AddTaskHFEpPb();
 
 
 

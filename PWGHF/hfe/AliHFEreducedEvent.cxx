@@ -36,10 +36,6 @@ TObject(),
   fNmcparticles(0),
   fRunNumber(0),
   fTrigger(0),
-  fVX(0.),
-  fVY(0.),
-  fVZ(0.),
-  fNContrib(0),
   fSPDMultiplicity(0)
 {
   //
@@ -52,6 +48,11 @@ TObject(),
   memset(fCentrality, 0, sizeof(Float_t) * 6);
   memset(fV0Multiplicity, 0, sizeof(Float_t) * 2);
   memset(fZDCEnergy, 0, sizeof(Float_t) * 4);
+  memset(fVX, 0, sizeof(Float_t)*2);
+  memset(fVY, 0, sizeof(Float_t)*2);
+  memset(fVZ, 0, sizeof(Float_t)*2);
+  memset(fNContrib, 0, sizeof(Int_t) * 2);
+  memset(fVertexResolution, 0, sizeof(Float_t)*2);
 }
 
 //_______________________________________
@@ -63,10 +64,6 @@ AliHFEreducedEvent::AliHFEreducedEvent(const AliHFEreducedEvent &ref):
   fNmcparticles(ref.fNmcparticles),
   fRunNumber(ref.fRunNumber),
   fTrigger(ref.fTrigger),
-  fVX(ref.fVX),
-  fVY(ref.fVY),
-  fVZ(ref.fVZ),
-  fNContrib(ref.fNContrib),
   fSPDMultiplicity(ref.fSPDMultiplicity)
 {
   //
@@ -83,6 +80,11 @@ AliHFEreducedEvent::AliHFEreducedEvent(const AliHFEreducedEvent &ref):
   memcpy(fCentrality, ref.fCentrality, sizeof(Float_t) * 6);
   memcpy(fV0Multiplicity, ref.fV0Multiplicity, sizeof(Float_t) * 2);
   memcpy(fZDCEnergy, ref.fZDCEnergy, sizeof(Float_t) *4);
+  memcpy(fVX, ref.fVX, sizeof(Float_t)*2);
+  memcpy(fVY, ref.fVY, sizeof(Float_t)*2);
+  memcpy(fVZ, ref.fVZ, sizeof(Float_t)*2);
+  memcpy(fVertexResolution, ref.fVertexResolution, sizeof(Float_t)*2);
+  memcpy(fNContrib, ref.fNContrib, sizeof(Int_t) * 2);
 }
 
 //_______________________________________
@@ -104,9 +106,11 @@ AliHFEreducedEvent &AliHFEreducedEvent::operator=(const AliHFEreducedEvent &ref)
     fNmcparticles = ref.fNmcparticles;
     fRunNumber = ref.fRunNumber;
     fTrigger = ref.fTrigger;
-    fVX = ref.fVX;
-    fVY = ref.fVY;
-    fVZ = ref.fVZ;
+    memcpy(fVX, ref.fVX, sizeof(Float_t)*2);
+    memcpy(fVY, ref.fVY, sizeof(Float_t)*2);
+    memcpy(fVZ, ref.fVZ, sizeof(Float_t)*2);
+    memcpy(fNContrib, ref.fNContrib, sizeof(Int_t) * 2);
+    memcpy(fVertexResolution, ref.fVertexResolution, sizeof(Float_t)*2);
     fSPDMultiplicity = ref.fSPDMultiplicity;
     memcpy(fCentrality, ref.fCentrality, sizeof(Float_t) * 6);
     memcpy(fV0Multiplicity, ref.fV0Multiplicity, sizeof(Float_t) * 2);

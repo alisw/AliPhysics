@@ -47,6 +47,7 @@ class AliHFEreducedEventCreatorAOD : public AliAnalysisTaskSE{
     void SetMinNclustersTPC(Int_t mincl) { fNclustersTPC = mincl; };
     void SetMinNclustersTPCPID(Int_t mincl) { fNclustersTPCPID = mincl; };
     void SetMinNclustersITS(Int_t mincl) { fNclustersITS = mincl; };
+    void SetNbOfTOFSigma(Float_t nbOfTOFSigma) { fNbOfTOFSigma = nbOfTOFSigma; };
     AliHFEpidTPC *GetTPCResponse() { return fTPCpid; }
 
     Bool_t IsTOFmismatch(const AliVTrack *const track, const AliPIDResponse *const pid) const;
@@ -68,6 +69,7 @@ class AliHFEreducedEventCreatorAOD : public AliAnalysisTaskSE{
     Int_t fNclustersTPC;              // Min Number of clusters in TPC
     Int_t fNclustersTPCPID;           // Min Number of clusters for TPC PID
     Int_t fNclustersITS;              // Min Number of clusters in ITS
+    Float_t fNbOfTOFSigma;            // Nb of TOF Sigma
     Bool_t fRemoveFirstEvent;         // Remove first event from chunk
   
     ClassDef(AliHFEreducedEventCreatorAOD, 1)
