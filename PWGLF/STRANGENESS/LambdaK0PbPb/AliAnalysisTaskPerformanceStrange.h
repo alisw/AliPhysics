@@ -172,7 +172,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH2F        *fHistCosPointAngleK0;       //! Histo
 //  TH2F        *fHistCosPointAngleZoomK0;       //! Histo
 //  TH2F        *fHistProdRadiusK0;       //! Histo
-  TH2F        *fHistTranscTauVsMassK0s;                 //! Histo
+
 
 ///////////////////////////K0s 2D histos: cut vs mass//////////////
   TH2F        *fHistDcaPosToPrimVertexK0vsMassK0;  //! Histo
@@ -220,7 +220,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
 
 //  TH2F        *fHistCosPointAngleZoomL;       //! Histo
 //  TH2F        *fHistProdRadiusL;       //! Histo    
-  TH2F        *fHistTranscTauVsMassL;                 //! Histo
+
 //////////////////////////Lambda 2D histos: cut vs mass////////////////
   TH2F        *fHistDcaPosToPrimVertexLvsMassL;      //! Histo
   TH2F        *fHistDcaNegToPrimVertexLvsMassL;      //! Histo
@@ -271,7 +271,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH2F        *fHistCosPointAngleAntiL;       //! Histo
 //  TH2F        *fHistCosPointAngleZoomL;       //! Histo
 //  TH2F        *fHistProdRadiusL;       //! Histo    
-  TH2F        *fHistTranscTauVsMassAntiL;                 //! Histo
+
 //////////////////////////Lambda 2D histos: cut vs mass////////////////
   TH2F        *fHistDcaPosToPrimVertexAntiLvsMass;      //! Histo
   TH2F        *fHistDcaNegToPrimVertexAntiLvsMass;      //! Histo
@@ -330,6 +330,24 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH2F        *fHistPtVsMassLambdaRap3;       //! Histo
   TH2F        *fHistPtVsMassAntiLambdaRap3;       //! Histo
 
+  TH2F        *fHistTranscTauVsMassL;                 //! Histo
+  TH2F        *fHistTranscTauVsMassAntiL;                 //! Histo
+  TH2F        *fHistTranscTauVsMassK0s;                 //! Histo
+
+  // cTauVsMass Rap3
+  TH2F        *fHistTranscTauVsMassLRap3;       //! Histo
+  TH2F        *fHistTranscTauVsMassAntiLRap3;       //! Histo
+  TH2F        *fHistTranscTauVsMassK0sRap3;       //! Histo
+
+  // cTauVsMass Low pt
+  TH2F    *fHistTranscTauVsMassLptLow;        //! Histo
+  TH2F    *fHistTranscTauVsMassAntiLptLow;    //! Histo
+  TH2F    *fHistTranscTauVsMassK0sptLow;       //! Histo
+
+  //cTauVsMass Low pt Rap3 
+  TH2F    *fHistTranscTauVsMassLptLowRap3;        //! Histo
+  TH2F    *fHistTranscTauVsMassAntiLptLowRap3;    //! Histo
+  TH2F    *fHistTranscTauVsMassK0sptLowRap3;       //! Histo
 
 /////////////////////////////////////////////
 
@@ -364,6 +382,21 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistAsMcTranscTauL;       //! Histo
   TH1F        *fHistAsMcTranscTauAntiL;       //! Histo
   TH1F        *fHistAsMcTranscTauK0s;       //! Histo
+
+  TH1F        *fHistAsMcTranscTauLRap3;       //! Histo
+  TH1F        *fHistAsMcTranscTauAntiLRap3;       //! Histo
+  TH1F        *fHistAsMcTranscTauK0sRap3;       //! Histo
+
+
+  TH1F    *fHistAsMcTranscTauLptLow;        //! Histo
+  TH1F    *fHistAsMcTranscTauAntiLptLow;    //! Histo
+  TH1F    *fHistAsMcTranscTauK0sptLow;       //! Histo
+
+  //Rap3
+  TH1F    *fHistAsMcTranscTauLptLowRap3;        //! Histo
+  TH1F    *fHistAsMcTranscTauAntiLptLowRap3;    //! Histo
+  TH1F    *fHistAsMcTranscTauK0sptLowRap3;       //! Histo
+
 
   //Rap3
   TH1F        *fHistAsMcPtK0Rap3;       //! Histo

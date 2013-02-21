@@ -36,16 +36,15 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
   // 2 grid
 
   if (nev < 0)
-    nev = 1234567890;
+    //    nev = 1234567890;
+    nev = 5000;
   InitAndLoadLibs(runMode,workers,debug);
-
+  
   // Create the analysis manager
   AliAnalysisManager * mgr = new AliAnalysisManager;
 
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
-  // Do I need any of this? 
-  // esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks AliESDTZERO ALIESDACORDE MuonTracks TrdTracks");
   mgr->SetInputEventHandler(esdH);
 
   if(isMC) {
@@ -70,11 +69,11 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
   
   // PID task
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-   AddTaskPIDResponse();
+  AddTaskPIDResponse(isMC,kTRUE);
   //AddTaskPIDResponse();
   // Physics selection
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(isMC);
+  AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(isMC,kTRUE,0);
 
   // Centrality
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
@@ -108,7 +107,7 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
   
   gROOT->ProcessLine(".L AddTaskLambdaK0PbPb.C");
   Int_t nbin = 0; // will contain the number of centrality bins
-  AliAnalysisTaskPerformanceStrange ** task = AddTaskLambdaK0PbPb("lambdak0.root", centrSelector, nbin, binMin, binMax,isMC); // FIXME also pass cuts, centrality bin type selection(5,10% percentiles, ranges...)
+  AliAnalysisTaskPerformanceStrange ** task = AddTaskLambdaK0PbPb("lambdak0.root", centrSelector, nbin, binMin, binMax,isMC);
   // configure task
   //  else if (iAODanalysis) task->SetAnalysisType("AOD");
   // FIXME: add options to macro
@@ -122,10 +121,12 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
     cout << "1" << endl;
     task[ibin]->SetAnalysisMC(isMC); // 0 or 1
     cout << "2" << endl;
-    task[ibin]->SetCollidingSystems(1); // 0 =pp, 1=AA
+    task[ibin]->SetCollidingSystems(2); // 0 =pp, 1=AA  2=pA
     cout << "3" << endl;
     task[ibin]->SetAnalysisCut("no");
     cout << "4" << endl;
+    task[ibin]->SetQASelector(kFALSE);  // Todo -> put trees for QA
+    cout<< "5" << endl;
     if(usePID) 
       task[ibin]->SetUsePID("withPID"); // withPID or withoutPID
     else
@@ -154,7 +155,7 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
 
   pathsuffix += customSuffix;
 
-  if (doSave) MoveOutput(data, pathsuffix.Data());
+      if (doSave) MoveOutput(data, pathsuffix.Data());
 
   
 }
@@ -227,13 +228,11 @@ void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
       Char_t* alienuser = gSystem->Getenv("alien_API_USER");
       TProof * p = TProof::Open(alienuser!=0 ? Form("%s@alice-caf.cern.ch",alienuser) : "alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
       //TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
-      p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE); // avoid submerging
-      //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-18-AN");
-      //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-20-AN");
-      //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-21-AN");
-      //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-28-AN");
-      //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-31-AN");
-      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-33-AN");
+      //p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE); // avoid submerging
+             gProof->EnablePackage("VO_ALICE@AliRoot::v5-04-11-AN");
+            gProof->GetManager()->SetROOTVersion("VO_ALICE@ROOT::v5-34-02");
+      // gProof->EnablePackage("VO_ALICE@AliRoot::v5-02-04-AN");
+
 
       // Enable the needed package
       // FIXME: what if I don't want to use par files?
@@ -258,20 +257,26 @@ void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
   else
     {
       cout << "Init in Local or Grid mode" << endl;
-      gSystem->Load("libCore.so");  
-      gSystem->Load("libTree.so");
-      gSystem->Load("libGeom.so");
-      gSystem->Load("libVMC.so");
-      gSystem->Load("libPhysics.so");
-      gSystem->Load("libSTEERBase");
-      gSystem->Load("libESD");
-      gSystem->Load("libAOD");
-      gSystem->Load("libANALYSIS");
-      gSystem->Load("libANALYSISalice");   
+      Int_t ret=-1;
 
-      // gSystem->Load("libVMC");
+      if ( gSystem->Load("libCore") < 0 ) return ret; ret--;
+      if ( gSystem->Load("libTree") < 0 ) return ret; ret--;
+      if ( gSystem->Load("libGeom") < 0 ) return ret; ret--;
+      if ( gSystem->Load("libVMC") < 0 ) return ret; ret--;
+      if ( gSystem->Load("libPhysics") < 0 ) return ret; ret--;
+      if ( gSystem->Load("libMinuit") < 0 ) return ret; ret--;
+      if ( gSystem->Load("libSTEERBase") < 0 ){ cout<<"libSTEERBase coul not be loaded!!!"<<endl; }//return ret; ret--;}
+      if ( gSystem->Load("libESD") < 0 ) return ret; ret--;
+      if ( gSystem->Load("libAOD") < 0 ) return ret; ret--;
+      if ( gSystem->Load("libANALYSIS") < 0 ) return ret; ret--;
+      if ( gSystem->Load("libANALYSISalice") < 0 ) return ret; ret--;
+
+
       gROOT->ProcessLine(".include $ALICE_ROOT/include");
       gROOT->ProcessLine(".include $ALICE_ROOT/STEER");
+      cout<<"/////////////////////////////////////"<<endl;
+      cout<<endl<<"libraries loaded !"<<endl;
+      cout<<"/////////////////////////////////////"<<endl;
     }
   // Load helper classes
   TIterator * iter = listToLoad->MakeIterator();
