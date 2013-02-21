@@ -50,6 +50,8 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
 
   void SetMinSizePartCollection(unsigned int minSize);
 
+  void SetVerboseMode(Bool_t aVerbose);
+
   unsigned int NumEventsToMix() const;
   void SetNumEventsToMix(const unsigned int& NumberOfEventsToMix);
   AliFemtoPicoEvent* CurrentPicoEvent();
@@ -94,6 +96,7 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
 
   unsigned int fMinSizePartCollection;               //  Don't use event if it has fewer than this many particles passing ParticleCuts default 0
 
+  Bool_t fVerbose;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoSimpleAnalysis, 0)
@@ -126,5 +129,7 @@ inline bool AliFemtoSimpleAnalysis::MixingBufferFull(){return (fMixingBuffer->si
 inline int AliFemtoSimpleAnalysis::GetNeventsProcessed() const {return fNeventsProcessed;}
 
 inline void AliFemtoSimpleAnalysis::SetMinSizePartCollection(unsigned int minSize){fMinSizePartCollection = minSize;}
+
+inline void AliFemtoSimpleAnalysis::SetVerboseMode(Bool_t aVerbose){fVerbose = aVerbose;}
 
 #endif

@@ -513,7 +513,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	  aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
 	else
 	  aodtrackpid = fEvent->GetTrack(i);
-	//CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
+        CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
 	
 	if (mcP) {
 	  // Fill the hidden information with the simulated data
@@ -985,9 +985,9 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
       tFemtoV0->SetdedxPos(trackpos->GetTPCsignal());
       tFemtoV0->SetdedxNeg(trackneg->GetTPCsignal());
 
-      if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFmismatch)>0)
+        if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 )
 	{
-	  if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFmismatch)>0)
+            if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 )
 	    {
 	      tFemtoV0->SetPosNSigmaTOFK(-1000);
 	      tFemtoV0->SetNegNSigmaTOFK(-1000);
@@ -1169,8 +1169,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
 
     if ((tAodTrack->GetStatus() & AliESDtrack::kTOFpid) && //AliESDtrack::kTOFpid=0x8000
 	(tAodTrack->GetStatus() & AliESDtrack::kTOFout) && //AliESDtrack::kTOFout=0x2000
-	(tAodTrack->GetStatus() & AliESDtrack::kTIME) && //AliESDtrack::kTIME=0x80000000
-	!(tAodTrack->GetStatus() & AliESDtrack::kTOFmismatch)) //AliESDtrack::kTOFmismatch=0x100000
+        (tAodTrack->GetStatus() & AliESDtrack::kTIME) ) //AliESDtrack::kTIME=0x80000000
       {
 	if(tAodTrack->IsOn(AliESDtrack::kTOFpid)) //AliESDtrack::kTOFpid=0x8000
 	  {
