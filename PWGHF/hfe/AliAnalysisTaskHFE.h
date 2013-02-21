@@ -28,6 +28,11 @@
 #include <TString.h>
 #endif
 
+#ifndef ROOT_TBits
+#include <TBits.h>
+#endif
+
+class AliAnalysisUtils;
 class AliESDtrackCuts;
 class AliHFEcontainer;
 class AliHFEcollection;
@@ -80,6 +85,11 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       kCentBins = 11,
       kBgLevels = 3
     };
+    typedef enum{
+      kpp = 0,
+      kpPb = 1,
+      kPbPb = 2
+    } ECollisionSystem_t;
 
     AliAnalysisTaskHFE();
     AliAnalysisTaskHFE(const char * name);
@@ -98,7 +108,10 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
     Bool_t IsESDanalysis() const { return !TestBit(kAODanalysis); };
     Bool_t HasMCData() const { return TestBit(kHasMCdata); }
-    Bool_t IsPbPb() const { return TestBit(kBeamType); }
+    Bool_t Ispp() const { return fCollisionSystem.TestBitNumber(kpp); }
+    Bool_t IsPbPb() const { return fCollisionSystem.TestBitNumber(kPbPb); }
+    Bool_t IspPb() const { return fCollisionSystem.TestBitNumber(kpPb); }
+    Bool_t IsHeavyIon() const { return IsPbPb() || IspPb(); }
     Bool_t GetPlugin(Int_t plug) const { return TESTBIT(fPlugins, plug); };
 
     // Get Components for configuration
@@ -120,14 +133,31 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetFillSignalOnly(Bool_t signalOnly) { fFillSignalOnly = signalOnly; }
    
     void SetFillNoCuts(Bool_t fillNoCuts) { fFillNoCuts = fillNoCuts; }
-    void SetUseFilterAOD(Bool_t useFilterAOD) { fUseFilterAOD = useFilterAOD; }
     void SetApplyCutAOD(Bool_t applyCutAOD)   { fApplyCutAOD = applyCutAOD; }
-    void SetFilter(UInt_t filter)             { fFilter = filter; }
     void SetRemovePileUp(Bool_t removePileUp) { fRemovePileUp = removePileUp; }
+    void SetRemoveFirstEventInChunk() {fRemoveFirstEvent = kTRUE;}
     void SetPIDPreselect(AliHFEpid * const cuts) { fPIDpreselect = cuts; };
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
-    void SetPbPbAnalysis(Bool_t isPbPb = kFALSE) { SetBit(kBeamType, isPbPb); };
+    void SetCollisionSystem(ECollisionSystem_t system){
+      fCollisionSystem.Clear();
+      fCollisionSystem.SetBitNumber(system, kTRUE);
+    }
+    void SetppAnalysis(){
+      fCollisionSystem.SetBitNumber(kpPb, kFALSE); 
+      fCollisionSystem.SetBitNumber(kPbPb, kFALSE); 
+      fCollisionSystem.SetBitNumber(kpp, kTRUE); 
+    }
+    void SetpPbAnalysis() {
+      fCollisionSystem.SetBitNumber(kpp, kFALSE); 
+      fCollisionSystem.SetBitNumber(kPbPb, kFALSE); 
+      fCollisionSystem.SetBitNumber(kpPb, kTRUE); 
+    }
+    void SetPbPbAnalysis() { 
+      fCollisionSystem.SetBitNumber(kpp, kFALSE); 
+      fCollisionSystem.SetBitNumber(kpPb, kFALSE); 
+      fCollisionSystem.SetBitNumber(kPbPb, kTRUE); 
+    };
     void SetPbPbUserCentralityLimit(Bool_t isPbPbUserBinning = kFALSE){fPbPbUserCentralityBinning = isPbPbUserBinning; };
     void SetPbPbUserCentralityArray(Int_t icentr, Float_t valuecentr) {fCentralityLimits[icentr] = valuecentr;};
     void SetPPMultiBinAnalysis(Bool_t isppMultiBin) { fisppMultiBin = isppMultiBin; };
@@ -138,7 +168,6 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       fBackGroundFactorApply=kTRUE;
       SetBit(kBackgroundInitialized);
     };
-    void SetBackgroundFactorsFromOADB(AliOADBContainer *cont) { fHadronBackgroundOADB = cont; fBackGroundFactorApply = kTRUE; }
     void SetElecBackGroundFactors(Int_t iPt, Int_t iType, Int_t iCent, Int_t iError, Double_t elecBackGroundFactor) {fElecBackgroundFactor[iError][iCent][iType][iPt] = elecBackGroundFactor; };
     void SetBinLimits(Int_t iPt, Double_t momentum){fBinLimit[iPt] = momentum;};
     void PrintStatus() const;
@@ -151,18 +180,15 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     enum{
       kHasMCdata = BIT(19),
       kAODanalysis = BIT(20),
-      kBeamType = BIT(21),
-      kBackgroundInitialized = BIT(22),
-      kTreeStream = BIT(23)
+      kBackgroundInitialized = BIT(21),
+      kTreeStream = BIT(22)
     };
 
     Bool_t FillProductionVertex(const AliVParticle * const track) const;
     void MakeParticleContainer();
     void MakeEventContainer();
-    void InitPIDperformanceQA();
-    void InitContaminationQA();
     void InitHistoITScluster();
-    Bool_t InitializeHadronBackground(Int_t run);
+    void InitContaminationQA();
     const Char_t *GetSpecialTrigger(Int_t run);
     void ProcessMC();
     void ProcessESD();
@@ -175,11 +201,10 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     TClonesArray *fAODArrayMCInfo;        // ! MC info particle AOD
     ULong_t fQAlevel;                     // QA level
     UShort_t fPlugins;                    // Enabled Plugins
+    TBits fCollisionSystem;              // Collision System;
     Bool_t fFillSignalOnly;               // Fill container only with MC Signal Tracks
     Bool_t fFillNoCuts;                   // Fill container before any cut
-    Bool_t fUseFilterAOD;                   // Use the preselected AOD track
     Bool_t fApplyCutAOD;                  // Apply the analysis cut for AOD tracks
-    UInt_t fFilter;                       // filter AOD status  
     Bool_t fBackGroundFactorApply;        // Apply Background Function Subtraction,   MF: To be removed when transition to OADB container is finished
     Bool_t fRemovePileUp;                 // Remove Pile Up
     Bool_t fIdentifiedAsPileUp;           // Identified as pile-up
@@ -188,6 +213,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t fRejectKinkMother;             // Reject Kink Mother
     Bool_t fisppMultiBin;                 // pp Multiplicity Bin analysis
     Bool_t fPbPbUserCentralityBinning;    // PbPb user centrality binning
+    Bool_t fRemoveFirstEvent;             // Remove first event from chunk
     Bool_t fisNonHFEsystematics;          // Non-HFE background systematics analysis
     AliOADBContainer *fSpecialTrigger;    // Special trigger selection
     Int_t   fCentralityF;                 // Centrality bin
@@ -195,7 +221,6 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Float_t fContributors;                // Contributors
     Double_t fWeightBackGround;            // weight background function
     Double_t fVz;                         // z position of the primary vertex
-    AliOADBContainer *fHadronBackgroundOADB;  // OADB Container for hadron contamination
     const TF1  *fkBackGroundFactorArray[12];   // Array of BackGround factors for each centrality bin, bin0 = min bias
     Double_t fElecBackgroundFactor[kBgLevels][kCentBins][kElecBgSpecies][kBgPtBins];     // Electron background factors
     Double_t fBinLimit[kBgPtBins+1];      // Electron pt bin edges
@@ -212,6 +237,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliHFEcuts *fTaggedTrackCuts;         // Cut Collection for V0 tagged tracks
     Bool_t fCleanTaggedTrack;             // Loose cleaning of the V0 tagged tracks electron
     Bool_t fVariablesTRDTaggedTrack;      // Take the variables at the TRD for the V0 tagged tracks electron
+    AliAnalysisUtils *fAnalysisUtils;     // Utility object to remove the first event of a chunk from the analysis
     AliESDtrackCuts *fCutspreselect;      // Cut Collection for pre-selected tracks
     AliHFEsecVtx *fSecVtx;                //! Secondary Vertex Analysis
     AliHFEelecbackground *fElecBackGround;//! Background analysis
@@ -227,7 +253,6 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     TList *fHistSECVTX;                   //! Output container for sec. vertexing results
     TList *fHistELECBACKGROUND;           //! Output container for electron background analysis
     AliHFEcollection *fQACollection;      //! Tasks own QA collection
-    AliHFEcollection *fQAAODCollection;   //! Task own QA AOD collection
     //---------------------------------------
 
     ClassDef(AliAnalysisTaskHFE, 2)       // The electron Analysis Task

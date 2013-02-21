@@ -630,7 +630,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
 
     int nTPCcl = track->GetTPCNcls();
-    int nTPCclF = track->GetTPCNclsF();
+    //int nTPCclF = track->GetTPCNclsF(); // warnings
     int nITS = track->GetNcls(0);
     
     fTrackPtAftTrkCuts->Fill(track->Pt());		
