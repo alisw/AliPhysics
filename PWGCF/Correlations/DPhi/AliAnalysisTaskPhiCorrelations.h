@@ -92,6 +92,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetSelectParticleSpecies( Int_t trigger, Int_t associated ) { fParticleSpeciesTrigger = trigger; fParticleSpeciesAssociated = associated; }
     void   SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
     void   SetSelectTriggerCharge(Int_t selectCharge) { fTriggerSelectCharge = selectCharge; }
+    void   SetSelectAssociatedCharge(Int_t selectCharge) { fAssociatedSelectCharge = selectCharge; }
     void   SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
     void   SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
     void   SetPairCuts(Bool_t conversions, Bool_t resonances) { fCutConversions = conversions; fCutResonances = resonances; }
@@ -172,7 +173,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t               fParticleSpeciesAssociated; // Select which particle to use for the associated [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
 
     Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
-    Int_t fTriggerSelectCharge;    // select charge of trigger particle
+    Int_t fTriggerSelectCharge;    // select charge of trigger particle: 1: positive; -1 negative
+    Int_t fAssociatedSelectCharge; // select charge of associated particle: 1: positive; -1 negative
     Float_t fTriggerRestrictEta;   // restrict eta range for trigger particle (default: -1 [off])
     Bool_t fEtaOrdering;           // eta ordering, see AliUEHistograms.h for documentation
     Bool_t fCutConversions;        // cut on conversions (inv mass)
@@ -188,7 +190,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 26); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 27); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

@@ -63,6 +63,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fCorrectTriggers(kFALSE),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
+  fAssociatedSelectCharge(0),
   fTriggerRestrictEta(-1),
   fEtaOrdering(kFALSE),
   fCutConversions(kFALSE),
@@ -231,6 +232,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCorrectTriggers(kFALSE),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
+  fAssociatedSelectCharge(0),
   fTriggerRestrictEta(-1),
   fEtaOrdering(kFALSE),
   fCutConversions(kFALSE),
@@ -605,7 +607,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
       if (fTriggerSelectCharge != 0)
 	if (triggerParticle->Charge() * fTriggerSelectCharge < 0)
 	  continue;
-
+	
       for (Int_t j=0; j<jMax; j++)
       {
         if (!mixed && i == j)
@@ -624,6 +626,10 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         if (particle->Pt() > triggerParticle->Pt())
           continue;
           
+	if (fAssociatedSelectCharge != 0)
+	  if (particle->Charge() * fAssociatedSelectCharge < 0)
+	    continue;
+
         if (fSelectCharge > 0)
         {
           // skip like sign
@@ -1087,6 +1093,7 @@ void AliUEHistograms::Copy(TObject& c) const
     
   target.fSelectCharge = fSelectCharge;
   target.fTriggerSelectCharge = fTriggerSelectCharge;
+  target.fAssociatedSelectCharge = fAssociatedSelectCharge;
   target.fTriggerRestrictEta = fTriggerRestrictEta;
   target.fEtaOrdering = fEtaOrdering;
   target.fCutConversions = fCutConversions;
