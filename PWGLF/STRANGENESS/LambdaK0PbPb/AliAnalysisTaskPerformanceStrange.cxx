@@ -1,4 +1,3 @@
-
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -176,7 +175,7 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
   fHistDcaV0DaughtersK0(0),
   fHistChi2K0(0),
   fHistCosPointAngleK0(0),
-  fHistTranscTauVsMassK0s(0),
+
 
   fHistDcaPosToPrimVertexK0vsMassK0(0),
   fHistDcaNegToPrimVertexK0vsMassK0(0),
@@ -215,7 +214,7 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
   fHistDcaV0DaughtersL(0),
   fHistChi2L(0),
   fHistCosPointAngleL(0),
-  fHistTranscTauVsMassL(0),
+
 
   fHistDcaPosToPrimVertexLvsMassL(0),
   fHistDcaNegToPrimVertexLvsMassL(0),
@@ -258,7 +257,7 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
   fHistDcaV0DaughtersAntiL(0),
   fHistChi2AntiL(0),
   fHistCosPointAngleAntiL(0),
-  fHistTranscTauVsMassAntiL(0),
+
 
   fHistDcaPosToPrimVertexAntiLvsMass(0),
   fHistDcaNegToPrimVertexAntiLvsMass(0),
@@ -309,6 +308,27 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
   fHistPtVsMassLambdaRap3(0),
   fHistPtVsMassAntiLambdaRap3(0),
 
+    // cTau dist
+    fHistTranscTauVsMassL(0),
+    fHistTranscTauVsMassAntiL(0),
+    fHistTranscTauVsMassK0s(0),
+
+    // cTau Trans Vs. Mass Rap3
+    fHistTranscTauVsMassLRap3(0),
+    fHistTranscTauVsMassAntiLRap3(0),
+    fHistTranscTauVsMassK0sRap3(0),
+
+    // cTau Trans Vs Mass Low pt
+    fHistTranscTauVsMassLptLow(0),
+    fHistTranscTauVsMassAntiLptLow(0),
+    fHistTranscTauVsMassK0sptLow(0),
+
+    // cTau Trans Vs Mass Low pt Rap3
+    fHistTranscTauVsMassLptLowRap3(0),
+    fHistTranscTauVsMassAntiLptLowRap3(0),
+    fHistTranscTauVsMassK0sptLowRap3(0),
+
+
 ////////////////////////////////////////
 
   fHistArmenterosPodolanski(0),
@@ -339,9 +359,16 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
   fHistAsMcTranscTauAntiL(0),
   fHistAsMcTranscTauK0s(0),
 
+    fHistAsMcTranscTauLptLow(0),
+    fHistAsMcTranscTauAntiLptLow(0),
+    fHistAsMcTranscTauK0sptLow(0),
 
+//Rap3
+    fHistAsMcTranscTauLptLowRap3(0),
+    fHistAsMcTranscTauAntiLptLowRap3(0),
+    fHistAsMcTranscTauK0sptLowRap3(0),
 
-///Rap3
+//Rap3
   fHistAsMcPtK0Rap3(0),
   fHistAsMcPtLambdaRap3(0),
   fHistAsMcPtAntiLambdaRap3(0),
@@ -538,7 +565,7 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistDcaV0DaughtersK0(0),
     fHistChi2K0(0),
     fHistCosPointAngleK0(0),
-    fHistTranscTauVsMassK0s(0),
+
 
     fHistDcaPosToPrimVertexK0vsMassK0(0),
     fHistDcaNegToPrimVertexK0vsMassK0(0),
@@ -577,7 +604,7 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistDcaV0DaughtersL(0),
     fHistChi2L(0),
     fHistCosPointAngleL(0),
-    fHistTranscTauVsMassL(0),
+
     
 
     fHistDcaPosToPrimVertexLvsMassL(0),
@@ -621,7 +648,7 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistDcaV0DaughtersAntiL(0),
     fHistChi2AntiL(0),
     fHistCosPointAngleAntiL(0),
-    fHistTranscTauVsMassAntiL(0),
+
 
     fHistDcaPosToPrimVertexAntiLvsMass(0),
     fHistDcaNegToPrimVertexAntiLvsMass(0),
@@ -672,8 +699,27 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistPtVsMassLambdaRap3(0),
     fHistPtVsMassAntiLambdaRap3(0),
 
-    ////////////////////////////////////////
+    // cTau dist
+    fHistTranscTauVsMassL(0),
+    fHistTranscTauVsMassAntiL(0),
+    fHistTranscTauVsMassK0s(0),
 
+    // cTau Trans Vs. Mass Rap3
+    fHistTranscTauVsMassLRap3(0),
+    fHistTranscTauVsMassAntiLRap3(0),
+    fHistTranscTauVsMassK0sRap3(0),
+
+    // cTau Trans Vs Mass Low pt
+    fHistTranscTauVsMassLptLow(0),
+    fHistTranscTauVsMassAntiLptLow(0),
+    fHistTranscTauVsMassK0sptLow(0),
+
+    // cTau Trans Vs Mass Low pt Rap3
+    fHistTranscTauVsMassLptLowRap3(0),
+    fHistTranscTauVsMassAntiLptLowRap3(0),
+    fHistTranscTauVsMassK0sptLowRap3(0),
+
+    ////////////////////////////////////////
     fHistArmenterosPodolanski(0),
     fHistK0sMassVsLambdaMass(0),
     fHistTPCsigPLambda(0),
@@ -700,6 +746,22 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistAsMcTranscTauL(0),
     fHistAsMcTranscTauAntiL(0),
     fHistAsMcTranscTauK0s(0),
+
+    //   cTau Rap3
+    fHistAsMcTranscTauLRap3(0),
+    fHistAsMcTranscTauAntiLRap3(0),
+    fHistAsMcTranscTauK0sRap3(0),
+
+
+    fHistAsMcTranscTauLptLow(0),
+    fHistAsMcTranscTauAntiLptLow(0),
+    fHistAsMcTranscTauK0sptLow(0),
+
+    //Rap3 
+    fHistAsMcTranscTauLptLowRap3(0),
+    fHistAsMcTranscTauAntiLptLowRap3(0),
+    fHistAsMcTranscTauK0sptLowRap3(0),
+    
 
     ///Rap3
     fHistAsMcPtK0Rap3(0),
@@ -1438,6 +1500,37 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fHistTranscTauVsMassK0s                    = new TH2F("h2TranscTauVsMassK0s","Transverse K0s cTau vs Mass ",100,0,100,400, 0.4, 0.6);
   fListHist->Add(fHistTranscTauVsMassK0s);
 
+  // cTauVsMass Rap3
+  fHistTranscTauVsMassLRap3                    = new TH2F("h2TranscTauVsMassLRap3","cTauVsMass Lambdas",100,0,100,280, 1.06, 1.2);
+  fListHist->Add(fHistTranscTauVsMassLRap3);
+
+  fHistTranscTauVsMassAntiLRap3                    = new TH2F("h2TranscTauVsMassAntiLRap3","cTauVsMass AntiLambdas",100,0,100,280, 1.06, 1.2);
+  fListHist->Add(fHistTranscTauVsMassAntiLRap3);
+
+  fHistTranscTauVsMassK0sRap3                    = new TH2F("h2TranscTauVsMassK0sRap3","Transverse K0s cTau vs Mass ",100,0,100,400, 0.4, 0.6);
+  fListHist->Add(fHistTranscTauVsMassK0sRap3);
+
+  //cTauVsMass Low pt
+  fHistTranscTauVsMassLptLow                    = new TH2F("h2TranscTauVsMassLptLow","cTauVsMass Lambdas",100,0,100,280, 1.06, 1.2);
+  fListHist->Add(fHistTranscTauVsMassLptLow);
+
+  fHistTranscTauVsMassAntiLptLow                    = new TH2F("h2TranscTauVsMassAntiLptLow","cTauVsMass AntiLambdas",100,0,100,280, 1.06, 1.2);
+  fListHist->Add(fHistTranscTauVsMassAntiLptLow);
+
+  fHistTranscTauVsMassK0sptLow                    = new TH2F("h2TranscTauVsMassK0sptLow","Transverse K0s cTau vs Mass ",100,0,100,400, 0.4, 0.6);
+  fListHist->Add(fHistTranscTauVsMassK0sptLow);
+
+  //cTauVsMass Low pt Rap3
+  fHistTranscTauVsMassLptLowRap3                    = new TH2F("h2TranscTauVsMassLptLowRap3","cTauVsMass Lambdas",100,0,100,280, 1.06, 1.2);
+  fListHist->Add(fHistTranscTauVsMassLptLowRap3);
+
+  fHistTranscTauVsMassAntiLptLowRap3                    = new TH2F("h2TranscTauVsMassAntiLptLowRap3","cTauVsMass AntiLambdas",100,0,100,280, 1.06, 1.2);
+  fListHist->Add(fHistTranscTauVsMassAntiLptLowRap3);
+
+  fHistTranscTauVsMassK0sptLowRap3                    = new TH2F("h2TranscTauVsMassK0sptLowRap3","Transverse K0s cTau vs Mass ",100,0,100,400, 0.4, 0.6);
+  fListHist->Add(fHistTranscTauVsMassK0sptLowRap3);
+
+
  
 
   // Pt Vs Mass Rap3
@@ -1551,6 +1644,33 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fListHist->Add(fHistAsMcTranscTauAntiL);
   fHistAsMcTranscTauK0s                    = new TH1F("h1AsMcTranscTauK0s","cTau of K0s",100,0,100);
   fListHist->Add(fHistAsMcTranscTauK0s);
+
+  //cTau Rap3
+  fHistAsMcTranscTauLRap3                    = new TH1F("h1AsMcTranscTauLRap3","cTau of AntiLambdas",100,0,100);
+  fListHist->Add(fHistAsMcTranscTauLRap3);
+  fHistAsMcTranscTauAntiLRap3                    = new TH1F("h1AsMcTranscTauAntiLRap3","cTau of AntiLambdas",100,0,100);
+  fListHist->Add(fHistAsMcTranscTauAntiLRap3);
+  fHistAsMcTranscTauK0sRap3                    = new TH1F("h1AsMcTranscTauK0sRap3","cTau of K0s",100,0,100);
+  fListHist->Add(fHistAsMcTranscTauK0sRap3);
+
+
+  //cTau lowpt
+  fHistAsMcTranscTauLptLow                    = new TH1F("h1AsMcTranscTauLptLow","cTau of AntiLambdas",100,0,100);
+  fListHist->Add(fHistAsMcTranscTauLptLow);
+  fHistAsMcTranscTauAntiLptLow                    = new TH1F("h1AsMcTranscTauAntiLptLow","cTau of AntiLambdas",100,0,100);
+  fListHist->Add(fHistAsMcTranscTauAntiLptLow);
+  fHistAsMcTranscTauK0sptLow                    = new TH1F("h1AsMcTranscTauK0sptLow","cTau of K0s",100,0,100);
+  fListHist->Add(fHistAsMcTranscTauK0sptLow);
+ 
+
+  //cTau ptLowRap3 Low pt
+  fHistAsMcTranscTauLptLowRap3                    = new TH1F("h1AsMcTranscTauLptLowRap3","cTau of AntiLambdas",100,0,100);
+  fListHist->Add(fHistAsMcTranscTauLptLowRap3);
+  fHistAsMcTranscTauAntiLptLowRap3                    = new TH1F("h1AsMcTranscTauAntiLptLowRap3","cTau of AntiLambdas",100,0,100);
+  fListHist->Add(fHistAsMcTranscTauAntiLptLowRap3);
+  fHistAsMcTranscTauK0sptLowRap3                    = new TH1F("h1AsMcTranscTauK0sptLowRap3","cTau of K0s",100,0,100);
+  fListHist->Add(fHistAsMcTranscTauK0sptLowRap3);
+
 
 
 
@@ -1812,8 +1932,13 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   //******************
   // Trigger Selection ! Warning Works only for ESD, add protection in case of AOD loop
   //******************
+  Bool_t isSelected = kFALSE;
+  if(fCollidingSystems == 2)
+        isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()& AliVEvent::kCINT5 && ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()& AliVEvent::kINT7); 
+    //    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()& AliVEvent::kCINT7);
+  else
+   isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()& AliVEvent::kMB);
 
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()& AliVEvent::kMB);
   if (!isSelected) return;
 
   fHistNumberEvents->Fill(1.5);  
@@ -2094,9 +2219,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	ProdDistance = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
 
 	if (ProdDistance > 0.001) continue; // secondary V0
-
-
-     
+    
 	lNtimesReconstructedK0s   = 0; lNtimesReconstructedLambda   = 0; lNtimesReconstructedAntiLambda   = 0;
 
  
@@ -2330,9 +2453,9 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   const AliMultiplicity *myMultiplicty = ((AliESDEvent*)fESD)->GetMultiplicity();
 
   if(fAnalysisType == "ESD") {  
-  
-    // Best Primary Vertex:  
-
+    ////////////////////////////////////////////////////////////////////////////////////
+    //////   Best Primary Vertex:  
+    if(fCollidingSystems ==0 || fCollidingSystems == 1){ //pp, PbPb Analysis
     const AliESDVertex *myBestPrimaryVertex = ((AliESDEvent*)fESD)->GetPrimaryVertex();
     myBestPrimaryVertex = ((AliESDEvent*)fESD)->GetPrimaryVertex();
     if (!myBestPrimaryVertex) return;
@@ -2342,33 +2465,43 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
     myBestPrimaryVertex->GetXYZ(lPrimaryVtxPosition);
     myBestPrimaryVertex->GetCovMatrix(lPrimaryVtxCov);
-
     if ( ( TMath::Abs(lPrimaryVtxPosition[2]) ) > cutPrimVertex) return ; //// cut on z of prim. vertex!!!!!
-
     fHistNumberEvents->Fill(4.5);    
-
     lPrimaryVtxChi2 = myBestPrimaryVertex->GetChi2toNDF();
     lResPrimaryVtxX = myBestPrimaryVertex->GetXRes();
     lResPrimaryVtxY = myBestPrimaryVertex->GetYRes();
     lResPrimaryVtxZ = myBestPrimaryVertex->GetZRes();
-
     // remove TPC-only primary vertex : retain only events with tracking + SPD vertex
-
     const AliESDVertex *mySPDPrimaryVertex = ((AliESDEvent*)fESD)->GetPrimaryVertexSPD();
     if (!mySPDPrimaryVertex) return;
-
     fHistSPDPrimaryVertexZ->Fill(mySPDPrimaryVertex->GetZ());
-
     const AliESDVertex *myPrimaryVertexTracking = ((AliESDEvent*)fESD)->GetPrimaryVertexTracks();
     if (!myPrimaryVertexTracking) return;
-
     if (!mySPDPrimaryVertex->GetStatus() && !myPrimaryVertexTracking->GetStatus() ) return;
-
     fHistNumberEvents->Fill(5.5);
     fHistTrackPerEvent->Fill(fESD->GetNumberOfTracks());   
-
     myPrimaryVertex = new AliAODVertex(lPrimaryVtxPosition, lPrimaryVtxCov, lPrimaryVtxChi2, NULL, -1, AliAODVertex::kPrimary);
     if (!myPrimaryVertex) return;
+  }
+    ///  pPb analysis
+    if(fCollidingSystems == 2){  //twiky https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PAVertexSelectionStudies 
+      const AliESDVertex* trkVtx = ((AliESDEvent*)fESD)->GetPrimaryVertex();
+      if (!trkVtx || trkVtx->GetNContributors()<=0) return;
+      TString vtxTtl = trkVtx->GetTitle();
+      if (!vtxTtl.Contains("VertexerTracks")) return;
+      Float_t zvtx = trkVtx->GetZ();
+      const AliESDVertex* spdVtx = ((AliESDEvent*)fESD)->GetPrimaryVertexSPD();
+      if (spdVtx->GetNContributors()<=0) return;
+      TString vtxTyp = spdVtx->GetTitle();
+      Double_t cov[6]={0};
+      spdVtx->GetCovarianceMatrix(cov);
+      Double_t zRes = TMath::Sqrt(cov[5]);
+      if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
+      if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
+
+      if (TMath::Abs(zvtx) > cutPrimVertex) return;
+
+    }
 
 
     // Number of Tracklets:
@@ -2932,7 +3065,18 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
 
     if (TMath::Abs(lRapK0s) < lCutRap ) {
-      if (lOnFlyStatus==0) fHistTranscTauVsMassK0s->Fill(lcTauK0s,lInvMassK0s);
+      if (lOnFlyStatus==0){
+         fHistTranscTauVsMassK0s->Fill(lcTauK0s,lInvMassK0s);
+             if (TMath::Abs(lRapK0s) < 0.3)
+	       fHistTranscTauVsMassK0sRap3->Fill(lcTauK0s,lInvMassK0s);
+	 if (lPtK0s >= 3 && lPtK0s <= 6 )
+	   {
+	     fHistTranscTauVsMassK0sptLow->Fill(lcTauK0s,lInvMassK0s);
+             if (TMath::Abs(lRapK0s) < 0.3)
+	       fHistTranscTauVsMassK0sptLowRap3->Fill(lcTauK0s,lInvMassK0s);
+	   }
+	}   
+
       if (lcTauK0s< cutcTauK0s) {
 
 	//////2D histos: cut vs on fly status/////////////////////
@@ -3004,7 +3148,18 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     if ((LambdaPID==1 && lMomInnerWallPos <=1 ) || (lMomInnerWallPos > 1) ||  !(fUsePID.Contains("withPID")  )){  
 
       if (TMath::Abs(lRapLambda) < lCutRap) {
-	if (lOnFlyStatus==0) fHistTranscTauVsMassL->Fill(lcTauLambda,lInvMassLambda);
+	if (lOnFlyStatus==0) {
+         fHistTranscTauVsMassL->Fill(lcTauLambda,lInvMassLambda);
+             if (TMath::Abs(lRapLambda) < 0.3)
+	       fHistTranscTauVsMassLRap3->Fill(lcTauLambda,lInvMassLambda);
+	 if (lPtLambda >= 3 && lPtLambda <= 6 )
+	   {
+	     fHistTranscTauVsMassLptLow->Fill(lcTauLambda,lInvMassLambda);
+             if (TMath::Abs(lRapLambda) < 0.3)
+	       fHistTranscTauVsMassLptLowRap3->Fill(lcTauLambda,lInvMassLambda);
+	   }
+	}   
+
 	if (lcTauLambda < cutcTauL){
 	  //////2D histos: cut vs on fly status/////////////////////
 
@@ -3061,9 +3216,9 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	      }   
 	    }//QA Selector
 	  }
-	} //end of Rap condition
-      } // end of PID condition
-    } // end ctau condition
+	}// end ctau condition
+      } //end of Rap condition
+    }// end of PID condition
 
 
     //////////////////////////////
@@ -3075,7 +3230,18 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     if ((AntiLambdaPID==1 && lMomInnerWallNeg <=1) || (lMomInnerWallNeg>1) ||  !(fUsePID.Contains("withPID"))){  
 
       if (TMath::Abs(lRapAntiLambda) < lCutRap) {
-	if (lOnFlyStatus==0) fHistTranscTauVsMassAntiL->Fill(lcTauAntiLambda,lInvMassAntiLambda);
+	if (lOnFlyStatus==0) {
+         fHistTranscTauVsMassAntiL->Fill(lcTauAntiLambda,lInvMassAntiLambda);
+             if (TMath::Abs(lRapAntiLambda) < 0.3)
+	       fHistTranscTauVsMassAntiLRap3->Fill(lcTauAntiLambda,lInvMassAntiLambda);
+	 if (lPtAntiLambda >= 3 && lPtAntiLambda <= 6 )
+	   {
+	     fHistTranscTauVsMassAntiLptLow->Fill(lcTauAntiLambda,lInvMassAntiLambda);
+             if (TMath::Abs(lRapAntiLambda) < 0.3)
+	       fHistTranscTauVsMassAntiLptLowRap3->Fill(lcTauAntiLambda,lInvMassAntiLambda);
+	   }
+	}   
+
 	if (lcTauAntiLambda < cutcTauL){
 	  //////2D histos: cut vs on fly status/////////////////////
 
@@ -3160,7 +3326,17 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	
       switch (lOnFlyStatus){
       case 0 : 
-	if(lCheckMcK0Short)      fHistAsMcTranscTauK0s->Fill(lcTauK0s);
+	if(lCheckMcK0Short) {
+         fHistAsMcTranscTauK0s->Fill(lcTauK0s);
+             if (TMath::Abs(lRapK0s) < 0.3)
+	       fHistAsMcTranscTauK0sRap3->Fill(lcTauK0s);
+	 if (lPtK0s >= 3 && lPtK0s <= 6 )
+	   {
+	     fHistAsMcTranscTauK0sptLow->Fill(lcTauK0s);
+             if (TMath::Abs(lRapK0s) < 0.3)
+	       fHistAsMcTranscTauK0sptLowRap3->Fill(lcTauK0s);
+	   }
+	}   
 	if (lcTauK0s< cutcTauK0s) {
 	  fHistNsigmaPosPionK0->Fill(nSigmaPosPion);
 	  fHistNsigmaNegPionK0->Fill(nSigmaNegPion);
@@ -3218,12 +3394,23 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
 
 
-    // if ((LambdaPID==1 && lMomInnerWallPos <=1) || (lMomInnerWallPos>1) ||  !(fUsePID.Contains("withPID"))){  
+     if ((LambdaPID==1 && lMomInnerWallPos <=1) || (lMomInnerWallPos>1) ||  !(fUsePID.Contains("withPID"))){  
 
     if (TMath::Abs(lRapLambda) < lCutRap) {
       switch (lOnFlyStatus){
       case 0 : 
-	if(lCheckMcLambda) fHistAsMcTranscTauL->Fill(lcTauLambda);
+	if(lCheckMcLambda) {
+         fHistAsMcTranscTauL->Fill(lcTauLambda);
+             if (TMath::Abs(lRapLambda) < 0.3)
+	       fHistAsMcTranscTauLRap3->Fill(lcTauLambda);
+	 if (lPtLambda >= 3 && lPtLambda <= 6 )
+	   {
+	     fHistAsMcTranscTauLptLow->Fill(lcTauLambda);
+             if (TMath::Abs(lRapLambda) < 0.3)
+	       fHistAsMcTranscTauLptLowRap3->Fill(lcTauLambda);
+	   }
+	}   
+
 	if (lcTauLambda < cutcTauL){    
 	  fHistNsigmaPosProtonLambda->Fill(nSigmaPosProton);
 	  fHistNsigmaNegPionLambda->Fill(nSigmaNegPion);
@@ -3304,19 +3491,30 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  
 	}
       } // end rapidity condition
-      //  }// end PID condition
+     }// end PID condition
     }// end ctau condition
 
     ////////////////////////////////////////////////////////
     // Associated AntiLambda histograms in |rap| < lCutRap
     ////////////////////////////////////////////////////////
 
-    //  if ((AntiLambdaPID==1 && lMomInnerWallNeg <=1) || (lMomInnerWallNeg>1) ||  !(fUsePID.Contains("withPID"))){          
+      if ((AntiLambdaPID==1 && lMomInnerWallNeg <=1) || (lMomInnerWallNeg>1) ||  !(fUsePID.Contains("withPID"))){          
 
     if (TMath::Abs(lRapAntiLambda) < lCutRap) {
       switch (lOnFlyStatus){
       case 0 : 
-	if(lCheckMcAntiLambda) fHistAsMcTranscTauAntiL->Fill(lcTauAntiLambda);
+	if(lCheckMcAntiLambda) {
+         fHistAsMcTranscTauAntiL->Fill(lcTauAntiLambda);
+             if (TMath::Abs(lRapAntiLambda) < 0.3)
+	       fHistAsMcTranscTauAntiLRap3->Fill(lcTauAntiLambda);
+	 if (lPtAntiLambda >= 3 && lPtAntiLambda <= 6 )
+	   {
+	     fHistAsMcTranscTauAntiLptLow->Fill(lcTauAntiLambda);
+             if (TMath::Abs(lRapAntiLambda) < 0.3)
+	       fHistAsMcTranscTauAntiLptLowRap3->Fill(lcTauAntiLambda);
+	   }
+	}   
+
 	if (lcTauAntiLambda < cutcTauL){
 	  fHistNsigmaPosProtonAntiLambda->Fill(nSigmaPosProton);
 	  fHistNsigmaNegPionAntiLambda->Fill(nSigmaNegPion);
@@ -3395,7 +3593,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  
 	}
       } // end rapidity condition
-      // }// end PID condition     
+     }// end PID condition     
     }// end ctau cut
   
   } // end V0 loop
