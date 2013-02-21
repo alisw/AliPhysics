@@ -144,6 +144,7 @@ AliHFEcuts::AliHFEcuts():
   fAdditionalStatusRequirement(0),
   fTOFsignaldx(-1.0),
   fTOFsignaldz(-1.0),
+  fAODFilterBit(-1),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -195,6 +196,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fAdditionalStatusRequirement(0),
   fTOFsignaldx(-1.0),
   fTOFsignaldz(-1.0),
+  fAODFilterBit(-1),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -245,6 +247,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fAdditionalStatusRequirement(0),
   fTOFsignaldx(-1.0),
   fTOFsignaldz(-1.0),
+  fAODFilterBit(-1),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -303,6 +306,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fAdditionalStatusRequirement = fAdditionalStatusRequirement;
   target.fTOFsignaldx = fTOFsignaldx;
   target.fTOFsignaldz = fTOFsignaldz;
+  target.fAODFilterBit = fAODFilterBit;
   target.fDebugLevel = 0;
 
   memcpy(target.fProdVtx, fProdVtx, sizeof(Double_t) * 4);
@@ -631,6 +635,7 @@ void AliHFEcuts::SetRecKineITSTPCCutList(){
   hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC,AliHFEextraCuts::ETPCclrDef_t(fTPCratioDef));
   if(fFractionOfSharedTPCClusters > 0.0) hfecuts->SetFractionOfTPCSharedClusters(fFractionOfSharedTPCClusters); 
   if(fITSpatternCut) hfecuts->SetITSpatternCut();
+  if(fAODFilterBit > -1) hfecuts->SetAODFilterBit(fAODFilterBit);
   
   AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts((Char_t *)"fCutsKineRec", (Char_t *)"REC Kine Cuts");
   kineCuts->SetPtRange(fPtRange[0], fPtRange[1]);

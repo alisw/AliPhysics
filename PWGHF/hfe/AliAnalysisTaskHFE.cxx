@@ -45,6 +45,7 @@
 
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisManager.h"
+#include "AliAnalysisUtils.h"
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
@@ -76,7 +77,6 @@
 #include "AliHFEpairs.h"
 #include "AliHFEpid.h"
 #include "AliHFEpidQAmanager.h"
-#include "AliHFEpostAnalysis.h"
 #include "AliHFEsecVtxs.h"
 #include "AliHFEsecVtx.h"
 #include "AliHFEsignalCuts.h"
@@ -96,11 +96,10 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fAODArrayMCInfo(NULL)
   , fQAlevel(0)
   , fPlugins(0)
+  , fCollisionSystem(3)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
-  , fUseFilterAOD(kTRUE)
   , fApplyCutAOD(kFALSE)
-  , fFilter(1<<4)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -109,6 +108,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fRejectKinkMother(kTRUE)
   , fisppMultiBin(kFALSE)
   , fPbPbUserCentralityBinning(kFALSE)
+  , fRemoveFirstEvent(kFALSE)
   , fisNonHFEsystematics(kFALSE)
   , fSpecialTrigger(NULL)
   , fCentralityF(-1)
@@ -116,7 +116,6 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fContributors(0.5)
   , fWeightBackGround(0.)
   , fVz(0.0)
-  , fHadronBackgroundOADB(NULL)
   , fContainer(NULL)
   , fVarManager(NULL)
   , fSignalCuts(NULL)
@@ -129,6 +128,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fTaggedTrackCuts(NULL)
   , fCleanTaggedTrack(kFALSE)
   , fVariablesTRDTaggedTrack(kFALSE)
+  , fAnalysisUtils(NULL)
   , fCutspreselect(NULL)
   , fSecVtx(NULL)
   , fElecBackGround(NULL)
@@ -142,7 +142,6 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fHistSECVTX(NULL)
   , fHistELECBACKGROUND(NULL)
   , fQACollection(NULL)
-  , fQAAODCollection(NULL)
 {
   //
   // Dummy constructor
@@ -153,7 +152,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   memset(&fisppMultiBin, kFALSE, sizeof(fisppMultiBin));
   memset(fCentralityLimits, 0, sizeof(Float_t) * 12);
 
-
+  SetppAnalysis();
 }
 
 //____________________________________________________________
@@ -163,11 +162,10 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fAODArrayMCInfo(NULL)
   , fQAlevel(0)
   , fPlugins(0)
+  , fCollisionSystem(3)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
-  , fUseFilterAOD(kTRUE)
   , fApplyCutAOD(kFALSE)
-  , fFilter(1<<4)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -176,6 +174,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fRejectKinkMother(kTRUE)
   , fisppMultiBin(kFALSE)
   , fPbPbUserCentralityBinning(kFALSE)
+  , fRemoveFirstEvent(kFALSE)
   , fisNonHFEsystematics(kFALSE)
   , fSpecialTrigger(NULL)
   , fCentralityF(-1)
@@ -183,7 +182,6 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fContributors(0.5)
   , fWeightBackGround(0.)
   , fVz(0.0)
-  , fHadronBackgroundOADB(NULL)
   , fContainer(NULL)
   , fVarManager(NULL)
   , fSignalCuts(NULL)
@@ -196,6 +194,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fTaggedTrackCuts(NULL)
   , fCleanTaggedTrack(kFALSE)
   , fVariablesTRDTaggedTrack(kFALSE)
+  , fAnalysisUtils(NULL)
   , fCutspreselect(NULL)
   , fSecVtx(NULL)
   , fElecBackGround(NULL)
@@ -209,7 +208,6 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fHistSECVTX(NULL)
   , fHistELECBACKGROUND(NULL)
   , fQACollection(0x0)
-  , fQAAODCollection(NULL)
 {
   //
   // Default constructor
@@ -220,6 +218,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   fPID = new AliHFEpid("hfePid");
   fPIDqa = new AliHFEpidQAmanager;
   fVarManager = new AliHFEvarManager("hfeVarManager");
+  fAnalysisUtils = new AliAnalysisUtils;
 
   memset(fElecBackgroundFactor, 0, sizeof(Double_t) * kElecBgSpecies * kBgPtBins * kCentBins * kBgLevels);
   memset(fkBackGroundFactorArray, 0, sizeof(TF1 *) * 12);
@@ -227,6 +226,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   memset(&fisppMultiBin, kFALSE, sizeof(fisppMultiBin));
   memset(fCentralityLimits, 0, sizeof(Float_t) * 12);
 
+  SetppAnalysis();
 }
 
 //____________________________________________________________
@@ -236,11 +236,10 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fAODArrayMCInfo(NULL)
   , fQAlevel(0)
   , fPlugins(0)
+  , fCollisionSystem(ref.fCollisionSystem)
   , fFillSignalOnly(ref.fFillSignalOnly)
   , fFillNoCuts(ref.fFillNoCuts)
-  , fUseFilterAOD(ref.fUseFilterAOD)
   , fApplyCutAOD(ref.fApplyCutAOD)
-  , fFilter(ref.fFilter) 
   , fBackGroundFactorApply(ref.fBackGroundFactorApply)
   , fRemovePileUp(ref.fRemovePileUp)
   , fIdentifiedAsPileUp(ref.fIdentifiedAsPileUp)
@@ -249,6 +248,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fRejectKinkMother(ref.fRejectKinkMother)
   , fisppMultiBin(ref.fisppMultiBin)
   , fPbPbUserCentralityBinning(ref.fPbPbUserCentralityBinning)
+  , fRemoveFirstEvent(ref.fRemoveFirstEvent)
   , fisNonHFEsystematics(ref.fisNonHFEsystematics)
   , fSpecialTrigger(ref.fSpecialTrigger)
   , fCentralityF(ref.fCentralityF)
@@ -256,7 +256,6 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fContributors(ref.fContributors)
   , fWeightBackGround(ref.fWeightBackGround)
   , fVz(ref.fVz)
-  , fHadronBackgroundOADB(ref.fHadronBackgroundOADB)
   , fContainer(NULL)
   , fVarManager(NULL)
   , fSignalCuts(NULL)
@@ -269,6 +268,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fTaggedTrackCuts(NULL)
   , fCleanTaggedTrack(ref.fCleanTaggedTrack)
   , fVariablesTRDTaggedTrack(ref.fVariablesTRDTaggedTrack)
+  , fAnalysisUtils(NULL)
   , fCutspreselect(NULL)
   , fSecVtx(NULL)
   , fElecBackGround(NULL)
@@ -282,7 +282,6 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fHistSECVTX(NULL)
   , fHistELECBACKGROUND(NULL)
   , fQACollection(NULL)
-  , fQAAODCollection(NULL)
 {
   //
   // Copy Constructor
@@ -310,11 +309,10 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fAODArrayMCInfo = fAODArrayMCInfo;
   target.fQAlevel = fQAlevel;
   target.fPlugins = fPlugins;
+  target.fCollisionSystem = fCollisionSystem;
   target.fFillSignalOnly = fFillSignalOnly;
   target.fFillNoCuts = fFillNoCuts;
-  target.fUseFilterAOD = fUseFilterAOD;
   target.fApplyCutAOD = fApplyCutAOD;
-  target.fFilter = fFilter;
   target.fBackGroundFactorApply = fBackGroundFactorApply;
   target.fRemovePileUp = fRemovePileUp;
   target.fIdentifiedAsPileUp = fIdentifiedAsPileUp;
@@ -323,6 +321,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fRejectKinkMother = fRejectKinkMother;
   target.fisppMultiBin =   fisppMultiBin;
   target.fPbPbUserCentralityBinning = fPbPbUserCentralityBinning;
+  target.fRemoveFirstEvent = fRemoveFirstEvent;
   target.fisNonHFEsystematics = fisNonHFEsystematics;
   target.fSpecialTrigger = fSpecialTrigger;
   target.fCentralityF = fCentralityF;
@@ -330,7 +329,6 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fContributors = fContributors;
   target.fWeightBackGround = fWeightBackGround;
   target.fVz = fVz;
-  target.fHadronBackgroundOADB = fHadronBackgroundOADB;
   target.fContainer = fContainer;
   target.fVarManager = fVarManager;
   target.fSignalCuts = fSignalCuts;
@@ -343,6 +341,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fTaggedTrackCuts = fTaggedTrackCuts;
   target.fCleanTaggedTrack = fCleanTaggedTrack;
   target.fVariablesTRDTaggedTrack = fVariablesTRDTaggedTrack;
+  target.fAnalysisUtils = fAnalysisUtils;
   target.fCutspreselect = fCutspreselect;
   target.fSecVtx = fSecVtx;
   target.fElecBackGround = fElecBackGround;
@@ -356,7 +355,6 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fHistSECVTX = fHistSECVTX;
   target.fHistELECBACKGROUND = fHistELECBACKGROUND;
   target.fQACollection = fQACollection;
-  target.fQAAODCollection = fQAAODCollection;
 }
 
 //____________________________________________________________
@@ -375,6 +373,7 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
   if(fElecBackGround) delete fElecBackGround;
   if(fBackgroundSubtraction) delete fBackgroundSubtraction;
   if(fSpecialTrigger) delete fSpecialTrigger;
+  if(fAnalysisUtils) delete fAnalysisUtils;
   // Delete output objects only if we are not running in PROOF mode because otherwise this produces a crash during merging
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(mgr && mgr->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
@@ -414,15 +413,6 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
       SetHasMCData();
   }
   printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
-  if(IsAODanalysis()) {
-    printf("AOD filter: %s \n", fUseFilterAOD ? "Yes" : "No");
-    if(fUseFilterAOD) printf("AOD filter used: %d \n", fFilter);
-    // First Part: Make QA histograms
-    fQAAODCollection = new AliHFEcollection("TaskQAAOD", "QA histos from the AOD Electron Task");
-    fQAAODCollection->CreateTH1F("Filterorigin", "AOD filter of tracks at the origin", 21, -1, 20);
-    fQAAODCollection->CreateTH1F("Filterend", "AOD filter of tracks after all cuts", 21, -1, 20);
-    fQA->Add(fQAAODCollection);
-  }
   printf("MC Data available %s\n", HasMCData() ? "Yes" : "No");
 
   // Enable Trigger Analysis
@@ -435,12 +425,9 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH1F("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
   fQACollection->CreateTH1F("nElectron", "Number of electrons", 100, 0, 100);
   fQACollection->CreateTH2F("radius", "Production Vertex", 100, 0.0, 5.0, 100, 0.0, 5.0);
-  fQACollection->CreateTH2F("TPCdEdxBeforePID", "TPC dE/dx; p (GeV/c); TPC dE/dx (a.u.)", 1000, 0., 10., 200, 0., 200.); 
-  fQACollection->CreateTH2F("TPCnSigmaBeforePID", "TPC dE/dx; p (GeV/c); TPC dE/dx - <TPC dE/dx>|_{el} (#sigma)", 1000, 0., 10., 1000, -10., 10.);
  
-  InitPIDperformanceQA();
-  InitContaminationQA();
   InitHistoITScluster();
+  InitContaminationQA();
   fQA->Add(fQACollection);
 
   // Initialize PID
@@ -456,6 +443,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   // Background subtraction-------------------------------------------------------------------
   if (GetPlugin(kNonPhotonicElectron)) {
     if(!fBackgroundSubtraction) fBackgroundSubtraction = new AliHFENonPhotonicElectron();
+    if(IsAODanalysis()) fBackgroundSubtraction->SetAOD(kTRUE);
     fBackgroundSubtraction->Init();
     fOutput->Add(fBackgroundSubtraction->GetListOutput());
   }
@@ -565,6 +553,8 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     fQA->Add(fTaggedTrackAnalysis->GetQAcollection());
   }
 
+  //fQA->Print();
+
   PrintStatus();
   // Done!!!
   PostData(1, fOutput);
@@ -603,18 +593,9 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     fPID->InitializePID(fInputEvent->GetRunNumber());
   }
 
-  //printf("test0\n");
-
-  // Initialize hadronic background from OADB Container
-  AliDebug(2, Form("Apply background factors: %s, OADB Container %p", fBackGroundFactorApply ? "Yes" : "No", fHadronBackgroundOADB));
-  if(fBackGroundFactorApply && !TestBit(kBackgroundInitialized)){ 
-    AliDebug(2, "Initializing Background from OADB");
-    if(!InitializeHadronBackground(fInputEvent->GetRunNumber())) AliError("Failed initializing hadronic background parameterization from OADB");
-    else AliDebug(2, "Successfully loaded Background from OADB");
-    SetBit(kBackgroundInitialized); 
+  if(fRemoveFirstEvent){
+    if(fAnalysisUtils->IsFirstEventInChunk(fInputEvent)) return;
   }
-
-  //printf("test1\n");
 
   if(IsESDanalysis() && HasMCData()){
     // Protect against missing MC trees
@@ -626,10 +607,9 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     if(!mcH->InitOk()) return;
     if(!mcH->TreeK()) return;
     if(!mcH->TreeTR()) return;
+
     // Background subtraction-------------------------------------------------------------------
-    if(GetPlugin(kNonPhotonicElectron)){
-      fBackgroundSubtraction->SetMCEvent(fMCEvent);
-    }
+    if(GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->SetMCEvent(fMCEvent);
     //------------------------------------------------------------------------------------------
   }
 
@@ -654,9 +634,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     }
     fSignalCuts->SetMCAODInfo(fAODArrayMCInfo);
     // Background subtraction-------------------------------------------------------------------
-    if (GetPlugin(kNonPhotonicElectron)) {
-      fBackgroundSubtraction->SetAODArrayMCInfo(fAODArrayMCInfo);
-    }
+    if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->SetAODArrayMCInfo(fAODArrayMCInfo);
     //------------------------------------------------------------------------------------------
   }
 
@@ -720,49 +698,8 @@ void AliAnalysisTaskHFE::Terminate(Option_t *){
   //
   // Terminate not implemented at the moment
   //
-  if(GetPlugin(kPostProcess)){
-    fOutput = dynamic_cast<TList *>(GetOutputData(1));
-    fQA = dynamic_cast<TList *>(GetOutputData(2));
-    if(!fOutput){
-      AliError("Results not available");
-      return;
-    }
-    if(!fQA){
-      AliError("QA output not available");
-      return;
-    }
-    fContainer = dynamic_cast<AliHFEcontainer *>(fOutput->FindObject("trackContainer")); 
-    if(!fContainer){
-      AliError("Track container not found");
-      return;
-    }
-    AliHFEpostAnalysis postanalysis;
-    postanalysis.SetTaskResults(fContainer);
-    TList *qalist = dynamic_cast<TList *>(fQA->FindObject("list_TaskQA"));
-    if(!qalist){
-      AliError("QA List not found");
-      return;
-    }
-    postanalysis.SetTaskQA(qalist);
-    //printf("Running post analysis\n");
-    //if(HasMCData())
-    postanalysis.DrawMCSignal2Background();
-    postanalysis.DrawEfficiency();
-    postanalysis.DrawPIDperformance();
-    postanalysis.DrawCutEfficiency();
-
-    if (GetPlugin(kIsElecBackGround)) {
-      AliHFEelecbackground elecBackGround;
-      TList *oe = 0x0;
-      if(!(oe = (TList*)dynamic_cast<TList *>(fOutput->FindObject("HFEelecbackground")))){
-        return;
-      }
-      elecBackGround.Load(oe);
-      elecBackGround.Plot();
-      elecBackGround.PostProcess();      
-    }
-  }
 }
+
 //_______________________________________________________________
 Bool_t AliAnalysisTaskHFE::IsEventInBinZero() {
   //
@@ -795,7 +732,7 @@ void AliAnalysisTaskHFE::ProcessMC(){
   // In case MC QA is on also MC QA loop is done
   //
   AliDebug(3, "Processing MC Information");
-  Double_t eventContainer [4];
+  Double_t eventContainer [4] = {0., 0., 0., 0.};
   if(IsESDanalysis()) eventContainer[0] = fMCEvent->GetPrimaryVertex()->GetZ();
   else eventContainer[0] = fAODMCHeader->GetVtxZ();
   eventContainer[2] = fCentralityF;
@@ -894,7 +831,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
   if(fTaggedTrackAnalysis) {
     fTaggedTrackAnalysis->SetMagneticField(fESD->GetMagneticField());
     fTaggedTrackAnalysis->SetCentrality(fCentralityF);
-    if(IsPbPb()) fTaggedTrackAnalysis->SetPbPb();
+    if(IsHeavyIon()) fTaggedTrackAnalysis->SetPbPb();
     else fTaggedTrackAnalysis->SetPP();
   }
 
@@ -903,7 +840,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
   eventContainer[0] = 0.; 
   if(HasMCData()) eventContainer[0] = fVz;
   else {
-    if(fESD->GetPrimaryVertexSPD()) eventContainer[0] = fESD->GetPrimaryVertexSPD()->GetZ();
+    const AliESDVertex* vtxESD = fESD->GetPrimaryVertex();
+    if(vtxESD) eventContainer[0] = vtxESD->GetZ();
   }
   eventContainer[1] = 0.;
   eventContainer[2] = fCentralityF;
@@ -955,13 +893,11 @@ void AliAnalysisTaskHFE::ProcessESD(){
   Double_t container[10];
   memset(container, 0, sizeof(Double_t) * 10);
   // container for the output THnSparse
-  Double_t dataE[6]; // [pT, eta, Phi, type, 'C' or 'B']
   Double_t dataDca[6]; // [source, pT, dca, centrality]
   Int_t nElectronCandidates = 0;
   AliESDtrack *track = NULL, *htrack = NULL;
   AliMCParticle *mctrack = NULL;
   AliMCParticle *mctrackmother = NULL;
-  Int_t pid = 0;
 
   Bool_t signal = kTRUE;
 
@@ -977,23 +913,21 @@ void AliAnalysisTaskHFE::ProcessESD(){
   // minjung for IP QA(temporary ~ 2weeks)
   if(!fExtraCuts){
     fExtraCuts = new AliHFEextraCuts("hfetmpCuts","HFE tmp Cuts");
-  }   
+  }
   fExtraCuts->SetRecEventInfo(fESD);
 
   // Electron background analysis 
   if (GetPlugin(kIsElecBackGround)) {
-    
+
     AliDebug(2, "Running BackGround Analysis");
-    
+
     fElecBackGround->Reset();
-    
+
   } // end of electron background analysis
-  
+
 
   // Background subtraction-------------------------------------------------------------------
-  if (GetPlugin(kNonPhotonicElectron)) {
-    fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent,fCentralityF);
-  }
+  if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent, fCentralityF);
   //------------------------------------------------------------------------------------------
 
   //
@@ -1051,43 +985,6 @@ void AliAnalysisTaskHFE::ProcessESD(){
       if(signal || !fFillSignalOnly){
         fVarManager->FillContainer(fContainer, "recTrackContReco", AliHFEcuts::kStepRecNoCut, kFALSE);
         fVarManager->FillContainer(fContainer, "recTrackContMC", AliHFEcuts::kStepRecNoCut, kTRUE);
-      }
-    }
-        
-    if(fisNonHFEsystematics && IsPbPb())  {
-      //FillProductionVertex(track);     
-      if(fMCQA && signal){ 
-	fMCQA->SetCentrality(fCentralityF);
-	if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) == 11)){
-	  Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.};
-          
-	  fMCQA->SetTrkKine(track->Pt(),track->Eta(), track->Phi());
-	  fMCQA->SetContainerStep(4);
-          
-	  weightElecBgV0[0] = fMCQA->GetWeightFactor(mctrack, 0); // positive:conversion e, negative: nonHFE 
-          
-	  //Fill additional containers for electron source distinction
-	  Int_t elecSource = 0;
-	  elecSource = fMCQA->GetElecSource(mctrack->Particle());
-	  const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho"};
-	  const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
-	  Int_t iName = 0;
-	  for(Int_t iSource = AliHFEmcQA::kPi0; iSource <=  AliHFEmcQA::kGammaRho0; iSource++){
-	    if((iSource == AliHFEmcQA::kElse)||(iSource == AliHFEmcQA::kMisID)) continue;
-	    if(elecSource == iSource){
-	      
-	      if(weightElecBgV0[0]>0){ 
-		fVarManager->FillContainer(fContainer, Form("conversionElecs%s%s",sourceName[iName], levelName[0]), 4, kTRUE, weightElecBgV0[0]);
-	      } 
-	      else if(weightElecBgV0[0]<0){ 
-		fVarManager->FillContainer(fContainer, Form("mesonElecs%s%s",sourceName[iName], levelName[0]), 4, kTRUE, -1*weightElecBgV0[0]);
-	      }           
-	      break;
-	    }
-	    iName++;
-	    if(iName == kElecBgSpecies)iName = 0;
-	  }
-	}
       }
     }
   
@@ -1226,19 +1123,13 @@ void AliAnalysisTaskHFE::ProcessESD(){
       }
     }
 
-    if(TMath::Abs(track->Eta()) < 0.5){
-      if(track->GetInnerParam())
-        fQACollection->Fill("TPCdEdxBeforePID", track->GetInnerParam()->P(), track->GetTPCsignal());
-      fQACollection->Fill("TPCnSigmaBeforePID", track->P(), fInputHandler->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron));
-    }
-
     AliHFEpidObject hfetrack;
     hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
     hfetrack.SetRecTrack(track);
     if(HasMCData()) hfetrack.SetMCTrack(mctrack);
     hfetrack.SetCentrality(fCentralityF);
     hfetrack.SetMulitplicity(ncontribVtx);
-    if(IsPbPb()) hfetrack.SetPbPb();
+    if(IsHeavyIon()) hfetrack.SetPbPb();
     else hfetrack.SetPP();
     fPID->SetVarManager(fVarManager);
     if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;
@@ -1257,17 +1148,17 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
     // Temporary histogram for chi2/ITS cluster
     if(IsPbPb()) {
-            TBits shared = track->GetTPCSharedMap();
+      TBits shared = track->GetTPCSharedMap();
 	    Int_t sharebit=0;
-            if(shared.CountBits() >= 2) sharebit=1;
+      if(shared.CountBits() >= 2) sharebit=1;
 
 	    Double_t itschi2percluster = 0.0;
 	    Double_t itsnbcls = static_cast<Double_t>(track->GetNcls(0));
 	    if(itsnbcls > 0) itschi2percluster = track->GetITSchi2()/itsnbcls;
 
-            Double_t itsChi2[7] = {track->Pt(),track->Eta(), track->Phi(),
-				   fCentralityF,track->GetTPCsignalN(), sharebit,itschi2percluster};
-            fQACollection->Fill("fChi2perITScluster", itsChi2);
+      Double_t itsChi2[7] = {track->Pt(),track->Eta(), track->Phi(),
+			fCentralityF,track->GetTPCsignalN(), sharebit,itschi2percluster};
+      fQACollection->Fill("fChi2perITScluster", itsChi2);
     }
     else{
 
@@ -1298,12 +1189,12 @@ void AliAnalysisTaskHFE::ProcessESD(){
     // Fill Containers
     if(signal) {
       // Apply weight for background contamination
-            if(fBackGroundFactorApply) {
-              if(IsPbPb() && fCentralityF >= 0) fWeightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
-              else    fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
+      if(fBackGroundFactorApply) {
+        if(IsHeavyIon() && fCentralityF >= 0) fWeightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
+        else    fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
 
-              if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
-              else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
+        if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
+        else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
         // weightBackGround as special weight
         fVarManager->FillContainer(fContainer, "hadronicBackground", 1, kFALSE, fWeightBackGround);
       }
@@ -1317,44 +1208,6 @@ void AliAnalysisTaskHFE::ProcessESD(){
         fVarManager->FillContainer(fContainer, "recTrackContSecvtxReco", AliHFEcuts::kStepHFEcutsSecvtx, kFALSE);
         fVarManager->FillContainer(fContainer, "recTrackContSecvtxMC", AliHFEcuts::kStepHFEcutsSecvtx, kTRUE);
         bTagged=kTRUE;
-      }
-    }
-
-    if(HasMCData()){
-      dataE[0] = track->Pt();
-      dataE[1] = track->Eta();
-      dataE[2] = track->Phi();
-      dataE[3] = track->Charge();
-      dataE[4] = -1.;
-      dataE[5] = -1.;
-
-      // Track selected: distinguish between true and fake
-      AliDebug(1, Form("Candidate Selected, filling THnSparse, PID: %d\n", mctrack->Particle()->GetPdgCode()));
-      if((pid = TMath::Abs(mctrack->Particle()->GetPdgCode())) == 11){
-        Int_t type = 0;
-        if(fSignalCuts->IsCharmElectron(track))
-          type = 1;
-        else if(fSignalCuts->IsBeautyElectron(track))
-          type = 2;
-        AliDebug(1, Form("Type: %d\n", type));
-        if(type){
-                dataE[5] = type; // beauty[1] or charm[2]
-                dataE[4] = 2;  // signal electron
-        }
-        else{
-                dataE[4] = 1; // not a signal electron
-                dataE[5] = 0;
-        }
-      } 
-      else {
-        // Fill THnSparse with the information for Fake Electrons
-        dataE[4] = 0;
-        dataE[5] = 0;
-      }
-      // fill the performance THnSparse, if the mc origin could be defined
-      if(dataE[4] > -1){
-        AliDebug(1, Form("Entries: [%.3f|%.3f|%.3f|%f|%f|%f]\n", dataE[0],dataE[1],dataE[2],dataE[3],dataE[4],dataE[5]));
-        fQACollection->Fill("PIDperformance", dataE);
       }
     }
 
@@ -1498,6 +1351,11 @@ void AliAnalysisTaskHFE::ProcessESD(){
     }
 
   }
+
+  // Background subtraction-------------------------------------------------------------------
+  if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->CountPoolAssociated(fInputEvent, fCentralityF);
+  //------------------------------------------------------------------------------------------
+
   fQACollection->Fill("nElectronTracksEvent", nElectronCandidates);
 }
 
@@ -1579,40 +1437,20 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   //printf("Number of kink mother in the events %d\n",numberofmotherkink);
 
   // Background subtraction-------------------------------------------------------------------
-  if (GetPlugin(kNonPhotonicElectron)) {
-    fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent,fCentralityF);
-  }
+  if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent, fCentralityF);
   //------------------------------------------------------------------------------------------
 
   // Loop over tracks
   AliAODTrack *track = NULL;
   AliAODMCParticle *mctrack = NULL;
-  Double_t dataE[6]; // [pT, eta, Phi, Charge, type, 'C' or 'B']
   Double_t dataDca[6]; // [source, pT, dca, centrality]
   Int_t nElectronCandidates = 0;
-  Int_t pid;
   Bool_t signal;
+
   //printf("Number of track %d\n",(Int_t) fAOD->GetNumberOfTracks());
   for(Int_t itrack = 0; itrack < fAOD->GetNumberOfTracks(); itrack++){
     track = fAOD->GetTrack(itrack); mctrack = NULL;
     if(!track) continue;
-    // Begining
-    Bool_t passone = kFALSE;  
-    fQAAODCollection->Fill("Filterorigin", -1);
-    for(Int_t k=0; k<20; k++) {
-      Int_t u = 1<<k;     
-      if((track->TestFilterBit(u))) {
-	fQAAODCollection->Fill("Filterorigin", k);
-      	passone = kTRUE;
-      }
-    }
-    //if(!passone) printf("what is the filter %d\n",track->GetFilterMap());
-
-    if(fUseFilterAOD){
-      //printf("Filter of the track  %d\n",track->GetFilterMap());
-      if(!(track->TestFilterBit(fFilter))) continue;  // Only process AOD tracks where the HFE is set
-    }
-    //printf("Pass the flag\n");
     
     signal = kTRUE;
     if(HasMCData()){
@@ -1727,7 +1565,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if(HasMCData()) hfetrack.SetMCTrack(mctrack);
     hfetrack.SetCentrality(fCentralityF);
     hfetrack.SetMulitplicity(ncontribVtx); // for correction
-    if(IsPbPb()) hfetrack.SetPbPb();
+    if(IsHeavyIon()) hfetrack.SetPbPb();
     else hfetrack.SetPP();
     fPID->SetVarManager(fVarManager);
     if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;   
@@ -1743,11 +1581,11 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     //---------------------------------------------------------------------------------------------------------------------
 
     // end AOD QA
-    fQAAODCollection->Fill("Filterend", -1);  
+    fQACollection->Fill("Filterend", -1);  
     for(Int_t k=0; k<20; k++) {
       Int_t u = 1<<k;
       if((track->TestFilterBit(u))) {
-	fQAAODCollection->Fill("Filterend", k);
+	      fQACollection->Fill("Filterend", k);
       }
     }
        
@@ -1756,11 +1594,11 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if(signal) {
       // Apply weight for background contamination
       if(fBackGroundFactorApply) {
-	if(IsPbPb() && fCentralityF >= 0) fWeightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
-	else    fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
+	      if(IsHeavyIon() && fCentralityF >= 0) fWeightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
+	      else    fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
 	
-	if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
-	else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
+	      if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
+	      else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
         // weightBackGround as special weight
         fVarManager->FillContainer(fContainer, "hadronicBackground", 1, kFALSE, fWeightBackGround);
       }
@@ -1768,43 +1606,6 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     }
     
     nElectronCandidates++;    
-    if(HasMCData()){
-      dataE[0] = track->Pt();
-      dataE[1] = track->Eta();
-      dataE[2] = track->Phi();
-      dataE[3] = track->Charge();
-      dataE[4] = -1;
-      dataE[5] = -1;
-      // Track selected: distinguish between true and fake
-      AliDebug(1, Form("Candidate Selected, filling THnSparse, PID: %d\n", mctrack ? mctrack->GetPdgCode(): -1));
-      if(mctrack && ((pid = TMath::Abs(mctrack->GetPdgCode())) == 11)){
-      
-        Int_t type = 0;
-        if(fSignalCuts->IsCharmElectron(track))
-          type = 1;
-        else if(fSignalCuts->IsBeautyElectron(track))
-          type = 2;
-        AliDebug(1, Form("Type: %d\n", type));
-        if(type){
-                dataE[5] = type; // beauty[1] or charm[2]
-                dataE[4] = 2;  // signal electron
-        }
-        else{
-                dataE[4] = 1; // not a signal electron
-                dataE[5] = 0;
-        }
-      } 
-      else {
-        // Fill THnSparse with the information for Fake Electrons
-        dataE[4] = 0;
-        dataE[5] = 0;
-      }
-      // fill the performance THnSparse, if the mc origin could be defined
-      if(dataE[4] > -1){
-        AliDebug(1, Form("Entries: [%.3f|%.3f|%.3f|%f|%f|%f]\n", dataE[0],dataE[1],dataE[2],dataE[3],dataE[4],dataE[5]));
-        fQACollection->Fill("PIDperformance", dataE);
-      }
-    }
 
     if (GetPlugin(kDEstep)) {
       if (!HasMCData()){
@@ -1833,6 +1634,11 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       }
     }
   }
+
+  // Background subtraction-------------------------------------------------------------------
+  if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->CountPoolAssociated(fInputEvent, fCentralityF);
+  //------------------------------------------------------------------------------------------
+
   fQACollection->Fill("nElectronTracksEvent", nElectronCandidates);
 }
 
@@ -1844,12 +1650,7 @@ Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
   // Works for AOD and MC analysis Type
   //
   fVarManager->NewTrack(track, NULL, fCentralityF, -1, kTRUE);
-  Double_t signalContainer[6];
 
-  signalContainer[0] = track->Pt();
-  signalContainer[1] = track->Eta();
-  signalContainer[2] = track->Phi();
-  signalContainer[3] = track->Charge()/3;
 
   Double_t vertex[3] = {0.,0.,0.}; // Production vertex cut to mask gammas which are NOT supposed to have hits in the first ITS layer(s)
   if(IsESDanalysis()){
@@ -1867,29 +1668,6 @@ Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
   if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, track)) return kFALSE;
   //printf("MC Generated pass\n");
   fVarManager->FillContainer(fContainer, "MCTrackCont", AliHFEcuts::kStepMCGenerated, kFALSE);
-  signalContainer[4] = 0;
-  if(fSignalCuts->IsSelected(track)){
-    //fVarManager->FillContainer(fContainer, "MCTrackCont", AliHFEcuts::kStepMCsignal, kFALSE);
-    // Filling of the Signal/Background histogram using the 
-    // definition of the codes for charm and beauty as below in
-    // th crearion of the histogram
-    if(fSignalCuts->IsCharmElectron(track))
-      signalContainer[4] = 1;
-    else 
-      signalContainer[4] = 2;
-  } else {
-    signalContainer[4] = 0; // (and other background)
-  }
-  signalContainer[5] = 0;
-  // apply cut on the sqrt of the production vertex
-  Double_t radVertex = TMath::Sqrt(vertex[0]*vertex[0] + vertex[1] * vertex[1]);
-  if(radVertex < 3.5){
-    // Within first ITS layer(2) -> Background we cannot reject by ITS cut, let it pass
-    signalContainer[5] = 1;
-  } else if (radVertex < 7.5){
-    signalContainer[5] = 2;
-  }
-  fQACollection->Fill("SignalToBackgroundMC", signalContainer);
 
   // Step GeneratedZOutNoPileUp
   if((fIdentifiedAsPileUp) || (TMath::Abs(fVz) > fCuts->GetVertexRange()) || (fCentralityF < 0)) return kFALSE;
@@ -2028,31 +1806,6 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
     fContainer->SetStepTitle("recTrackContMC", fPID->SortedDetectorName(ipid), AliHFEcuts::kNcutStepsRecTrack + ipid);
   }
 }
-
-//____________________________________________________________
-void AliAnalysisTaskHFE::InitPIDperformanceQA(){
-  // Add a histogram for Fake electrons
-  const Int_t nDim=6;
-  Int_t nBin[nDim] = {40, 8, 18, 2, 3, 3};
-  //number of variables on the grid:pt,eta,phi,charge,
-  const Double_t kPtbound[2] = {0.1, 20.};
-  const Double_t kEtabound[2] = {-0.8, 0.8};
-  const Double_t kPhibound[2] = {0., 2. * TMath::Pi()}; 
-  const Double_t kChargebound[2] = {-1.1, 1.1};
-  const Double_t kAddInf1bound[2] = {0., 3.};
-  const Double_t kAddInf2bound[2] = {0., 3.};
-  Double_t minima[nDim] = {kPtbound[0], kEtabound[0], kPhibound[0], kChargebound[0], kAddInf1bound[0], kAddInf2bound[0]}; 
-  Double_t maxima[nDim] = {kPtbound[1], kEtabound[1], kPhibound[1], kChargebound[1], kAddInf1bound[1], kAddInf2bound[1]}; 
-  
-  fQACollection->CreateTHnSparse("PIDperformance", "PID performance; pT [GeV/c]; theta [rad]; phi [rad]; charge; type (0 - not el, 1 - other el, 2 - HF el; flavor (0 - no, 1 - charm, 2 - bottom)", nDim, nBin, minima, maxima);
-  fQACollection->CreateTHnSparse("SignalToBackgroundMC", "PID performance; pT [GeV/c]; theta [rad]; phi [rad]; charge; flavor (0 - no, 1 - charm, 2 - bottom); ITS Cluster (0 - no, 1 - first (and maybe second), 2 - second)", nDim, nBin, minima, maxima);
-
-  fQACollection->BinLogAxis("PIDperformance", 0);
-  fQACollection->BinLogAxis("SignalToBackgroundMC", 0);
-  fQACollection->Sumw2("PIDperformance");
-  fQACollection->Sumw2("SignalToBackgroundMC");
-}
-
 //____________________________________________________________
 void AliAnalysisTaskHFE::InitContaminationQA(){
   // 
@@ -2258,7 +2011,7 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
   
 
   Int_t bin = -1;
-  if(IsPbPb()) {
+  if(IsHeavyIon()) {
     // Centrality
     AliCentrality *centrality = fInputEvent->GetCentrality();
     fCentralityPercent = centrality->GetCentralityPercentile("V0M");
@@ -2304,7 +2057,7 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
       AliError("ESD Event required for ESD Analysis");
       return kFALSE;
     }
-    vtx = fESD->GetPrimaryVertexSPD();
+    vtx = fESD->GetPrimaryVertex() ;
   }
   if(!vtx){ 
     fContributors = 0.5;
@@ -2351,29 +2104,6 @@ Int_t AliAnalysisTaskHFE::GetITSMultiplicity(AliVEvent *ev){
 }
 
 //___________________________________________________
-Bool_t AliAnalysisTaskHFE::InitializeHadronBackground(Int_t run){
-  //
-  // Initialize background factors array from the AliOADBContainer
-  // The container is expected to provide a TObjArray with the name
-  // "hadronBackground" and the size 12 for the given run number
-  //
-  AliDebug(1, "Deriving hadronic background parameterization from OADB container");
-  TObjArray *functions = dynamic_cast<TObjArray *>(fHadronBackgroundOADB->GetObject(run, "hadronBackground"));
-  if(!functions){
-    AliDebug(1, "Content in the OADB Container is not a TObjArray");
-    fBackGroundFactorApply = kFALSE;
-    return kFALSE;
-  } 
-  if(functions->GetSize() < 12){
-    AliDebug(1, Form("Size not matching: 12 expected, %d provided", functions->GetSize()));
-    fBackGroundFactorApply = kFALSE;
-    return kFALSE;
-  }
-  for(Int_t icent = 0; icent < 12; icent++) fkBackGroundFactorArray[icent] = dynamic_cast<const TF1 *>(functions->UncheckedAt(icent));
-  return kTRUE;
-}
-
-//___________________________________________________
 void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
   //
   // Recover the centrality of the event from ESD or AOD
@@ -2408,25 +2138,22 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
    // PileUp
    fIdentifiedAsPileUp = kFALSE;
    if(fRemovePileUp && fESD->IsPileupFromSPD()) fIdentifiedAsPileUp = kTRUE; 
+   
+
+
    // Z vertex
    fIdentifiedAsOutInz = kFALSE;
-   if (IsPbPb()) {
-     //printf("PbPb\n");
-     if(fESD->GetPrimaryVertex()){
-       if(TMath::Abs(fESD->GetPrimaryVertex()->GetZ()) > fCuts->GetVertexRange()) fIdentifiedAsOutInz = kTRUE;
-     }
+   Bool_t findvertex = kTRUE;
+   const AliESDVertex* vtxESD = fESD->GetPrimaryVertex();
+   if((!vtxESD) || (vtxESD->GetNContributors() <= 0)) findvertex = kFALSE;
+   if(findvertex) {
+     if(TMath::Abs(vtxESD->GetZ()) > fCuts->GetVertexRange()) fIdentifiedAsOutInz = kTRUE;
    }
-   else {
-     //printf("pp\n");
-     if(fESD->GetPrimaryVertexTracks()){
-       if(TMath::Abs(fESD->GetPrimaryVertexTracks()->GetZ()) > fCuts->GetVertexRange()) fIdentifiedAsOutInz = kTRUE;
-     }
-   }
+   
    //Event Cut
    fPassTheEventCut = kTRUE;
    if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fESD)) fPassTheEventCut = kFALSE;   
   
-
  }
 
 }

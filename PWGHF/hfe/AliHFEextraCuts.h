@@ -91,6 +91,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     void SetTOFsignalDxz(Double_t tofsignalDx,Double_t tofsignalDz) { fTOFsignalDx=tofsignalDx; fTOFsignalDz=tofsignalDz; SETBIT(fRequirements, kTOFsignalDxy); }
     void SetRejectKinkDaughter() { SETBIT(fRequirements, kRejectKinkDaughter);}; 
     void SetRejectKinkMother() { SETBIT(fRequirements, kRejectKinkMother);}; 
+    void SetAODFilterBit(Int_t bit) {fAODFilterBit = bit; SETBIT(fRequirements, kAODFilterBit);};
     void SetCheckITSstatus(Bool_t check) { fCheck = check; };
     void SetITSpatternCut() { SETBIT(fRequirements, kITSpattern); }
     void SetDebugLevel(Int_t level) { fDebugLevel = level; };
@@ -160,7 +161,8 @@ class AliHFEextraCuts: public AliCFCutBase{
       kMaxTRDChi2 = 22,
       kITSpattern = 23,
       kMinHFEImpactParamRcharge = 24,
-      kNcuts = 25
+      kAODFilterBit=25,
+      kNcuts = 26
     } Cut_t;
     enum{
       //
@@ -191,6 +193,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     Double_t fTOFsignalDx;            // TOF signal dx
     Double_t fTOFsignalDz;            // TOF signal dz
     Double_t fMagField;               // Magnetic field
+    Int_t    fAODFilterBit;           // Require AOD filter bit
 
     Bool_t  fCheck;                     // check
     TList *fQAlist;			//! Directory for QA histograms

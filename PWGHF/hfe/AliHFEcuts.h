@@ -151,6 +151,7 @@ class AliHFEcuts : public TNamed{
     void SetMinRatioTPCclusters(Double_t minRatioTPC) { fMinClusterRatioTPC = minRatioTPC; };
     void SetPtRange(Double_t ptmin, Double_t ptmax){fPtRange[0] = ptmin; fPtRange[1] = ptmax;};
     void SetTOFsignaldxz(Double_t tofsignaldx, Double_t tofsignaldz){fTOFsignaldx = tofsignaldx; fTOFsignaldz = tofsignaldz;};
+    void SetAODFilterBit(Int_t bit) { fAODFilterBit = bit; };
     inline void SetProductionVertex(Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
     inline void SetSigmaToVertex(Double_t sig);
     inline void SetSigmaToVertexXY(Double_t sig);
@@ -260,7 +261,7 @@ class AliHFEcuts : public TNamed{
     Long_t   fAdditionalStatusRequirement; // Additional status bit requirement 
     Double_t fTOFsignaldx;                 // TOF signal Dx
     Double_t fTOFsignaldz;                 // TOF signal Dz
-
+    Int_t    fAODFilterBit;                // AOD Filter Bit Number
     
     TList *fHistQA;		            //! QA Histograms
     TObjArray *fCutList;	        //! List of cut objects(Correction Framework Manager)

@@ -75,6 +75,7 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fTOFsignalDx(1.0),
   fTOFsignalDz(1.0),
   fMagField(-10000),
+  fAODFilterBit(0),
   fCheck(kFALSE),
   fQAlist(0x0) ,
   fDebugLevel(0)
@@ -109,6 +110,7 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fTOFsignalDx(c.fTOFsignalDx),
   fTOFsignalDz(c.fTOFsignalDz),
   fMagField(c.fMagField),
+  fAODFilterBit(c.fAODFilterBit),
   fCheck(c.fCheck),
   fQAlist(0x0),
   fDebugLevel(0)
@@ -152,6 +154,7 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fTOFsignalDx = c.fTOFsignalDx;
     fTOFsignalDz = c.fTOFsignalDz;
     fMagField = c.fMagField;
+    fAODFilterBit = c.fAODFilterBit;
     fCheck = c.fCheck;
     fDebugLevel = c.fDebugLevel;
     memcpy(fImpactParamCut, c.fImpactParamCut, sizeof(Float_t) * 4);
@@ -468,6 +471,13 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   if(TESTBIT(fRequirements, kITSpattern)){
     // cut on ITS pattern (every layer with a working ITS module must have an ITS cluster)
     if(CheckITSpattern(track)) SETBIT(survivedCut, kITSpattern); 
+  }
+  if(TESTBIT(fRequirements, kAODFilterBit)){
+    AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
+    if(aodtrack){
+      Int_t aodfilter = 1 << fAODFilterBit;
+      if(aodtrack->TestFilterBit(aodfilter)) SETBIT(survivedCut, kAODFilterBit);
+    }
   }
   
   if(fRequirements == survivedCut){
