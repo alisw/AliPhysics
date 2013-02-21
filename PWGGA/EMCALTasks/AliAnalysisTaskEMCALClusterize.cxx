@@ -597,8 +597,9 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       Int_t label = clus->GetLabel();
       Int_t label2 = -1 ;
       //printf("Org cluster E %f, Time  %e, Index = %d, ID %d, MC label %d\n", clus->E(), clus->GetTOF(),i, clus->GetID(),label );
-      //printf("Original list of labels for new cluster : \n");
+      //printf("Original list of labels from old cluster : \n");
       //for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) printf("\t Label %d\n",clus->GetLabelAt(imc));
+      
       if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1) ;
       UShort_t * index    = clus->GetCellsAbsId() ;
       for(Int_t icell=0; icell < clus->GetNCells(); icell++ )
@@ -660,17 +661,21 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     }
     
     Int_t mcLabel = cells->GetMCLabel(icell);
-    //printf("AliAnalysisTaksEMCALClusterize::ClusterizeCells() - cell %d, mc label %d",id,mcLabel);
+    //printf("AliAnalysisTaksEMCALClusterize::ClusterizeCells() - cell %d, mc label %d\n",id,mcLabel);
 
     //if(fCellLabels[id]!=mcLabel)printf("mcLabel %d - %d\n",mcLabel,fCellLabels[id]);
     if     ( fSetCellMCLabelFromCluster == 1 ) mcLabel = fCellLabels[id]; // Older aliroot MC productions
     else if( fSetCellMCLabelFromCluster == 0 && fRemapMCLabelForAODs) RemapMCLabelForAODs(mcLabel);
-    //printf(", new label %d\n",mcLabel);
+    else mcLabel = -1; // found later
+    
+    //printf("\t new label %d\n",mcLabel);
     
     // Create the digit, put a fake primary deposited energy to trick the clusterizer
     // when checking the most likely primary
         
-    new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, 1);
+    new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, amp);
+    // Last parameter should be MC deposited energy, since it is not available, add just the cell amplitude so that
+    // we give more weight to the MC label of the cell with highest energy in the cluster
         
     idigit++;
   }
@@ -1474,6 +1479,9 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
       Int_t  parentMult = 0;
       Int_t *parentList = recPoint->GetParents(parentMult);
       clus->SetLabel(parentList, parentMult);
+      printf("Label list : ");
+      for(Int_t ilabel = 0; ilabel < parentMult; ilabel++ ) printf(" %d ",parentList[ilabel]);
+      printf("\n");
     }
     
   } // recPoints loop
@@ -1484,7 +1492,7 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
 void AliAnalysisTaskEMCALClusterize::RemapMCLabelForAODs(Int_t & label)
 {
   // MC label for Cells not remapped after ESD filtering, do it here.
-  
+
   if(label < 0) return ;
   
   AliAODEvent  * evt = dynamic_cast<AliAODEvent*> (fEvent) ;
@@ -1518,7 +1526,7 @@ void AliAnalysisTaskEMCALClusterize::RemapMCLabelForAODs(Int_t & label)
   label = -1;
   
   //printf("AliAnalysisTaskEMCALClusterize::RemapMCLabelForAODs() - Label not found set to -1 \n");
-  
+ 
 }
 
 //________________________________________________
@@ -1583,7 +1591,7 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
   // Get the original clusters that contribute to the new cluster, assign the labels of such clusters
   // to the new cluster.
   // Only approximatedly valid  when output are V1 clusters, handle with care
-  
+    
   TArrayI clArray(100) ; //Weird if more than a few clusters are in the origin ...
   clArray.Reset();
   Int_t nClu = 0;
@@ -1655,9 +1663,16 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
   
   clus->SetLabel(clMCArray.GetArray(), nLabTot);
   
-  //printf("Final list of labels for new cluster : \n");
-  //for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) printf("\t Label %d\n",clus->GetLabelAt(imc));
-  
+//  printf("Final list of labels for new cluster : \n");
+//  for(Int_t ice = 0; ice < clus->GetNCells() ; ice++)
+//  {
+//    printf("\t Cell %d ",clus->GetCellsAbsId()[ice]);
+//    Int_t label = InputEvent()->GetEMCALCells()->GetCellMCLabel(clus->GetCellsAbsId()[ice]);
+//    printf(" org %d ",label);
+//    RemapMCLabelForAODs(label);
+//    printf(" new %d \n",label);
+//  }
+//  for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) printf("\t Label %d\n",clus->GetLabelAt(imc));
 }
 
 
