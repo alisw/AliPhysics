@@ -13,8 +13,7 @@ class AliEmcalParticleMaker : public AliAnalysisTaskEmcal {
   AliEmcalParticleMaker(const char *name);
   virtual ~AliEmcalParticleMaker();
 
-  void UserCreateOutputObjects();
-
+  void ExecOnce();
   Bool_t Run();
 
   void SetTracksOutName(const char *name) { fTracksOutName      = name; }

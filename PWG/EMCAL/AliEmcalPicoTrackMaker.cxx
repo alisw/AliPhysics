@@ -191,10 +191,13 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 
     Int_t label = 0;
     if (fIsMC) {
-      if (track->GetLabel() > 0 || fUseNegativeLabels)
+      if (track->GetLabel() > 0) {
 	label = track->GetLabel();
-      else
-	label = -track->GetLabel();
+      }
+      else {
+	if (!fUseNegativeLabels)
+	  label = -track->GetLabel();
+      }
       
       if (label == 0) 
 	label = 99999;
