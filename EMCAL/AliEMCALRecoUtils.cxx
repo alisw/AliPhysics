@@ -1786,9 +1786,9 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     Bool_t desc1 = (mask1 >> 3) & 0x1;
     Bool_t desc2 = (mask2 >> 3) & 0x1;
     if (desc1==0 || desc2==0) { 
-      AliError(Form("TPC not in DAQ/RECO: %u (%u)/%u (%u)", 
-      mask1, esdevent->GetESDRun()->GetDetectorsInReco(),
-      mask2, esdevent->GetESDRun()->GetDetectorsInDAQ()));
+//       AliError(Form("TPC not in DAQ/RECO: %u (%u)/%u (%u)", 
+//       mask1, esdevent->GetESDRun()->GetDetectorsInReco(),
+//       mask2, esdevent->GetESDRun()->GetDetectorsInDAQ()));
       fITSTrackSA=kTRUE;
     }
   }
@@ -1866,6 +1866,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     if(!ExtrapolateTrackToEMCalSurface(&emcalParam, 430., fMass, fStepSurface, eta, phi)) 
       {
   if(aodevent && trackParam) delete trackParam;
+  if(fITSTrackSA && trackParam) delete trackParam;
   continue;
       }
 
@@ -1877,6 +1878,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad())
       {
   if(aodevent && trackParam) delete trackParam;
+  if(fITSTrackSA && trackParam) delete trackParam;
   continue;
       }
 
@@ -1902,6 +1904,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
       matched++;
     }
     if(aodevent && trackParam) delete trackParam;
+    if(fITSTrackSA && trackParam) delete trackParam;
   }//track loop
 
   if(clusterArray)
@@ -1939,9 +1942,16 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
   if(!trackParam) return index;
   AliExternalTrackParam emcalParam(*trackParam);
   Float_t eta, phi;
-  if(!ExtrapolateTrackToEMCalSurface(&emcalParam, 430., fMass, fStepSurface, eta, phi)) return index;
-  if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()) return index;
 
+  if(!ExtrapolateTrackToEMCalSurface(&emcalParam, 430., fMass, fStepSurface, eta, phi))	{
+	if(fITSTrackSA) delete trackParam;
+	return index;
+  }
+  if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()){
+	if(fITSTrackSA) delete trackParam;
+	return index;
+  }
+  
   TObjArray *clusterArr = new TObjArray(event->GetNumberOfCaloClusters());
 
   for(Int_t icl=0; icl<event->GetNumberOfCaloClusters(); icl++)
@@ -1954,7 +1964,8 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
   index = FindMatchedClusterInClusterArr(&emcalParam, &emcalParam, clusterArr, dEta, dPhi);  
   clusterArr->Clear();
   delete clusterArr;
-  
+  if(fITSTrackSA) delete trackParam;
+
   return index;
 }
 

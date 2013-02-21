@@ -265,9 +265,9 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
   Bool_t desc1 = (mask1 >> 3) & 0x1;
   Bool_t desc2 = (mask2 >> 3) & 0x1;
   if (desc1==0 || desc2==0) {
-    AliError(Form("TPC not in DAQ/RECO: %u (%u)/%u (%u)",
-                  mask1, esd->GetESDRun()->GetDetectorsInReco(),
-                  mask2, esd->GetESDRun()->GetDetectorsInDAQ()));
+//     AliError(Form("TPC not in DAQ/RECO: %u (%u)/%u (%u)",
+//                   mask1, esd->GetESDRun()->GetDetectorsInReco(),
+//                   mask2, esd->GetESDRun()->GetDetectorsInDAQ()));
     fITSTrackSA = kTRUE;
   }
   
@@ -406,9 +406,15 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   
   AliExternalTrackParam trkParamTmp(*trkParam);
   Float_t eta, phi;
-  if(!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, 430., track->GetMass(kTRUE), fStep, eta, phi))  return index;
+  if(!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, 430., track->GetMass(kTRUE), fStep, eta, phi))  {
+	if(fITSTrackSA) delete trkParam;
+	return index;
+  }
   track->SetTrackPhiEtaOnEMCal(phi,eta);
-  if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()) return index;
+  if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()){
+	 if(fITSTrackSA) delete trkParam;
+	return index;
+  }
 
   //Perform extrapolation
   Double_t trkPos[3];
@@ -433,6 +439,8 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
           index=ic;
         }
       }
+
+  if(fITSTrackSA) delete trkParam;
   return index;
 }
 

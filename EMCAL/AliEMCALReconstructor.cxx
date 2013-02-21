@@ -729,6 +729,7 @@ Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCl
   // Otherwise use the TPCInner point
 
   dEta = -999, dPhi = -999;
+  Bool_t ITSTrackSA = 0;
 
   AliExternalTrackParam *trkParam = 0;
   
@@ -737,13 +738,19 @@ Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCl
     trkParam = const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
   else if(track->GetInnerParam())
     trkParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
-  else
+  else{
     trkParam = new AliExternalTrackParam(*track); //If there is ITSSa track 
+    ITSTrackSA = 1;	
+  }
   if(!trkParam) return kFALSE;
   
   AliExternalTrackParam trkParamTmp (*trkParam);
-  if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trkParamTmp, cluster, track->GetMass(kTRUE), GetRecParam()->GetExtrapolateStep(), dEta, dPhi)) return kFALSE;
+  if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trkParamTmp, cluster, track->GetMass(kTRUE), GetRecParam()->GetExtrapolateStep(), dEta, dPhi)){
+	if(ITSTrackSA) delete trkParam;
+	return kFALSE;
+  }
 
+  if(ITSTrackSA) delete trkParam;
   return kTRUE;
 }
 
