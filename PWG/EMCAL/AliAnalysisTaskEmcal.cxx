@@ -321,8 +321,10 @@ void AliAnalysisTaskEmcal::ExecOnce()
   }
 
   fGeom = AliEMCALGeometry::GetInstance();
-  if (!fGeom) 
-    AliWarning(Form("%s: Can not create geometry", GetName()));
+  if (!fGeom) {
+    AliError(Form("%s: Can not create geometry", GetName()));
+    return;
+  }
 
   if (fEventPlaneVsEmcal >= 0) {
     Double_t ep = (fGeom->GetArm1PhiMax() + fGeom->GetArm1PhiMin()) / 2 * TMath::DegToRad() + fEventPlaneVsEmcal - TMath::Pi();

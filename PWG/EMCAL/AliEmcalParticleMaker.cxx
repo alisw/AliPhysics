@@ -45,37 +45,54 @@ AliEmcalParticleMaker::~AliEmcalParticleMaker()
 }
 
 //________________________________________________________________________
-void AliEmcalParticleMaker::UserCreateOutputObjects()
+void AliEmcalParticleMaker::ExecOnce()
 {
-  // Create my user objects.
+  // Init the analysis.
 
-  fTracksOut = new TClonesArray("AliEmcalParticle");
-  fTracksOut->SetName(fTracksOutName);
+  AliAnalysisTaskEmcal::ExecOnce();
 
-  fCaloClustersOut = new TClonesArray("AliEmcalParticle");
-  fCaloClustersOut->SetName(fCaloOutName);
+  if (!fInitialized)
+    return;
+
+  if (!fTracksOutName.IsNull()) {
+    fTracksOut = new TClonesArray("AliEmcalParticle");
+    fTracksOut->SetName(fTracksOutName);
+
+    if (!(InputEvent()->FindListObject(fTracksOutName))) {
+      InputEvent()->AddObject(fTracksOut);
+    }
+    else {
+      fInitialized = kFALSE;
+      AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fTracksOutName.Data()));
+      return;
+    }
+  }
+
+  if (!fCaloOutName.IsNull()) {
+    fCaloClustersOut = new TClonesArray("AliEmcalParticle");
+    fCaloClustersOut->SetName(fCaloOutName);
+    
+    // post output in event if not yet present
+    if (!(InputEvent()->FindListObject(fCaloOutName))) {
+      InputEvent()->AddObject(fCaloClustersOut);
+    }
+    else {
+      fInitialized = kFALSE;
+      AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fCaloOutName.Data()));
+      return;
+    }
+  }
 }
 
 //________________________________________________________________________
 Bool_t AliEmcalParticleMaker::Run() 
 {
-  // Create th emcal particles
+  // Create the emcal particles
 
-  // add tracks to event if not yet there
-  fTracksOut->Delete();
-  if (!(InputEvent()->FindListObject(fTracksOutName))) {
-    InputEvent()->AddObject(fTracksOut);
-  }
-  fCaloClustersOut->Delete();
-  if (!(InputEvent()->FindListObject(fCaloOutName))) {
-    InputEvent()->AddObject(fCaloClustersOut);
-  }
+  if (fTracks && fTracksOut) {
+    // clear container (normally a null operation as the event should clean it already)
+    fTracksOut->Delete();
 
-  // clear container (normally a null operation as the event should clean it already)
-  fTracksOut->Delete();
-  fCaloClustersOut->Delete();
-
-  if (fTracks) {
     // loop over tracks
     const Int_t Ntracks = fTracks->GetEntries();
     for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
@@ -85,11 +102,13 @@ Bool_t AliEmcalParticleMaker::Run()
     }
   }
 
-  if (fCaloClusters) {
+  if (fCaloClusters && fCaloClustersOut) {
+    // clear container (normally a null operation as the event should clean it already)
+    fCaloClustersOut->Delete();
+
     // loop over clusters
     const Int_t Nclusters = fCaloClusters->GetEntries();
     for (Int_t iClusters = 0; iClusters < Nclusters; ++iClusters) {
-      
       AliVCluster *cluster = dynamic_cast<AliVCluster*>(fCaloClusters->At(iClusters));
       new ((*fCaloClustersOut)[iClusters]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
     }
