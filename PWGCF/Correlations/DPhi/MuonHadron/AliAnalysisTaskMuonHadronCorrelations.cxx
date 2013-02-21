@@ -25,6 +25,7 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() :
   fTrackMA(0x0),
   fFilterBitCentralBarrel(0),
   fMaxEtaCentralBarrel(1.0),
+  fMinEtaCentralBarrel(-1.0),
   fMaxChi2Muon(9999999999.), 
   fMinRAbsMuon(0), 
   fMaxRAbsMuon(9999999999.),
@@ -78,6 +79,7 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(con
   fTrackMA(0x0),
   fFilterBitCentralBarrel(0),
   fMaxEtaCentralBarrel(1.0),
+  fMinEtaCentralBarrel(-1.0),
   fMaxChi2Muon(9999999999.), 
   fMinRAbsMuon(0), 
   fMaxRAbsMuon(9999999999.),
@@ -449,7 +451,7 @@ TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksCentralBarrel
 
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
     track = aodEvent->GetTrack(iTrack);
-    if (track->TestFilterBit(fFilterBitCentralBarrel) && TMath::Abs(track->Eta())<fMaxEtaCentralBarrel) {
+    if (track->TestFilterBit(fFilterBitCentralBarrel) && track->Eta()>fMinEtaCentralBarrel && track->Eta()<fMaxEtaCentralBarrel) {
       tracks->Add(new AliAODTrack(*track));
     }
   }
