@@ -957,7 +957,7 @@ AliShuttleStatus* AliShuttle::ReadShuttleStatus()
                 fStatusEntry = AliCDBManager::Instance()->GetStorage(GetLocalCDB())
                         ->Get(Form("/SHUTTLE/%s/%d", fCurrentDetector.Data(), path1), GetCurrentRun());
         } catch(std::exception& x) {
-                AliInfo("%s",x.what());
+                AliInfo(TString::Format("%s",x.what()));
         }
 
 	if (!fStatusEntry) return 0;
