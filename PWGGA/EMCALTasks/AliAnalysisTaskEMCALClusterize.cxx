@@ -1479,9 +1479,9 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
       Int_t  parentMult = 0;
       Int_t *parentList = recPoint->GetParents(parentMult);
       clus->SetLabel(parentList, parentMult);
-      printf("Label list : ");
-      for(Int_t ilabel = 0; ilabel < parentMult; ilabel++ ) printf(" %d ",parentList[ilabel]);
-      printf("\n");
+//      printf("Label list : ");
+//      for(Int_t ilabel = 0; ilabel < parentMult; ilabel++ ) printf(" %d ",parentList[ilabel]);
+//      printf("\n");
     }
     
   } // recPoints loop
