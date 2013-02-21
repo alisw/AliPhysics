@@ -28,6 +28,7 @@
 // For detSpec is used the alias name.
 //
 
+#include <stdexcept>
 #include "AliShuttle.h"
 
 #include "AliCDBManager.h"
@@ -67,6 +68,7 @@
 #include <sys/wait.h>
 
 #include <signal.h>
+using namespace std;
 
 ClassImp(AliShuttle)
 
