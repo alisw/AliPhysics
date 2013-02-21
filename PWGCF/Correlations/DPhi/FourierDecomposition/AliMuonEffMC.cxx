@@ -42,10 +42,23 @@ AliMuonEffMC::AliMuonEffMC() :
   fHMuonParGen(0x0), fHMuonDetGen(0x0), fHMuonDetRec(0x0), fHEtcDetRec(0x0), fHFXu(0), fHFXantiu(0), fHFXd(0), fHFXantid(0), fHFXg(0), fHFXetc(0), fHFXmuonP(0), fHFXmuonM(0)
 {
   // Constructor
-  //DefineInput(0, TChain::Class());
-  //DefineOutput(1, TList::Class());
-
-
+   for(Int_t i=0; i<4; i++)
+  {
+    fHMuMotherGenPt[i] = NULL;
+    fHMuMotherRecPt[i] = NULL;
+    fHMuMotherGenPhi[i] = NULL;
+    fHMuMotherRecPhi[i] = NULL;
+    fHMuMotherGenEta[i] = NULL;
+    fHMuMotherRecEta[i] = NULL;
+    fHMuDCA[i] = 0x0;
+    for(Int_t j=0; j<3; j++)
+    {
+      fHMuMohterPhiDifGen[i][j] = NULL;
+      fHMuMohterPhiDifRec[i][j] = NULL;
+      fHMuMohterEtaDifGen[i][j] = NULL;
+      fHMuMohterEtaDifRec[i][j] = NULL;
+    }
+  }
 }
 
 //________________________________________________________________________
@@ -56,6 +69,23 @@ AliMuonEffMC::AliMuonEffMC(const char *name) :
   fHMuonParGen(0x0), fHMuonDetGen(0x0), fHMuonDetRec(0x0), fHEtcDetRec(0x0), fHFXu(0), fHFXantiu(0), fHFXd(0), fHFXantid(0), fHFXg(0), fHFXetc(0), fHFXmuonP(0), fHFXmuonM(0)
 {
   // Constructor
+   for(Int_t i=0; i<4; i++)
+  {
+    fHMuMotherGenPt[i] = NULL;
+    fHMuMotherRecPt[i] = NULL;
+    fHMuMotherGenPhi[i] = NULL;
+    fHMuMotherRecPhi[i] = NULL;
+    fHMuMotherGenEta[i] = NULL;
+    fHMuMotherRecEta[i] = NULL;
+    fHMuDCA[i] = 0x0;
+    for(Int_t j=0; j<3; j++)
+    {
+      fHMuMohterPhiDifGen[i][j] = NULL;
+      fHMuMohterPhiDifRec[i][j] = NULL;
+      fHMuMohterEtaDifGen[i][j] = NULL;
+      fHMuMohterEtaDifRec[i][j] = NULL;
+    }
+  }
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 
@@ -76,24 +106,6 @@ void AliMuonEffMC::UserCreateOutputObjects()
 
   fOutputList = new TList();
   fOutputList->SetOwner(1);
- 
-  for(Int_t i=0; i<4; i++)
-  {
-    fHMuMotherGenPt[i] = 0x0;
-    fHMuMotherRecPt[i] = 0x0;
-    fHMuMotherGenPhi[i] = 0x0;
-    fHMuMotherRecPhi[i] = 0x0;
-    fHMuMotherGenEta[i] = 0x0;
-    fHMuMotherRecEta[i] = 0x0;
-    fHMuDCA[i] = 0x0;
-    for(Int_t j=0; j<3; j++)
-    {
-      fHMuMohterPhiDifGen[i][j] = 0x0;
-      fHMuMohterPhiDifRec[i][j] = 0x0;
-      fHMuMohterEtaDifGen[i][j] = 0x0;
-      fHMuMohterEtaDifRec[i][j] = 0x0;
-    }
-  }
 
   fHEventStat = new TH1D("fHEventStat","Event statistics for analysis",18,0,18);
   fHEventStat->GetXaxis()->SetBinLabel(1,"Event");
