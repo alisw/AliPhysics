@@ -39,6 +39,7 @@ class THnSparse;
 
 class AliESDpid;
 class AliESDtrackCuts;
+class AliAnalysisUtils;
 class AliESDEvent;
 class AliPhysicsSelection;
 class AliCFContainer;
@@ -65,6 +66,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
   void SetLightWeightAnalysis (Bool_t lLightWeight = kTRUE) {fkLightWeight = lLightWeight;  }
   void SetFastOnly (TString lFastOnly = "kFastOnly") {fkFastOnly = lFastOnly;  }
+  void SetpAVertexSelection   (Bool_t lpAVertexSelection = kTRUE) {fkpAVertexSelection = lpAVertexSelection;  }
   
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -75,7 +77,8 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
 
   AliPIDResponse *fPIDResponse;     // PID response object
   AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
-
+  AliAnalysisUtils *fUtils;         // analysis utils (for pA vertex selection)
+  
   //Objects Controlling Task Behaviour 
   
   Bool_t fkIsNuclear;   // if true, replace multiplicity est. by centrality (default FALSE) 
@@ -86,6 +89,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Bool_t fkLightWeight; // if true, analysis output will exclude some non-fundamental
                         // debugging information. This creates smaller output.
   TString fkFastOnly; //"" if no extra selection, "kFastOnly" -> without SDD, "NotkFastOnly" -> With SDD
+  Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
 
   //Variables for Tree
 	Float_t fTreeVariableChi2V0;         //!
