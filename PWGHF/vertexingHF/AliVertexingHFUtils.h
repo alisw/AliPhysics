@@ -18,6 +18,7 @@
 
 class AliAODMCParticle;
 class AliAODMCHeader;
+class AliGenEventHeader;
 class AliAODEvent;
 class TProfile;
 class TClonesArray;
@@ -64,7 +65,7 @@ class AliVertexingHFUtils : public TObject{
   static Double_t GetFullEvResol(const TH1F* hSubEvCorr, Int_t k=1);
   static Double_t GetFullEvResolLowLim(const TH1F* hSubEvCorr, Int_t k=1);
   static Double_t GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_t k=1);
-
+  static TString  GetGenerator(Int_t label, AliAODMCHeader* header); 
   // Functions for tracklet multiplcity calculation
   void SetEtaRangeForTracklets(Double_t mineta, Double_t maxeta){
     fMinEtaForTracklets=mineta; 
