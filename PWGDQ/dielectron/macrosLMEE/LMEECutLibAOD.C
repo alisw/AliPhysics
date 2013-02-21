@@ -441,7 +441,7 @@ class LMEECutLib {
 		case kpp2010TPCorTOF  :
 			trackCuts = new AliDielectronCutGroup("cgPIDTPC1","cgPIDTPC1",AliDielectronCutGroup::kCompAND);
 
-			trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+			AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
 			trackCutsAOD->AddCut(AliDielectronVarManager::kPt,0.05,6.);
 			trackCutsAOD->AddCut(AliDielectronVarManager::kEta,-0.84,0.84);
 			//DCA Cut

@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE, Bool_t PIDbaseline=kFALSE, Bool_t rejOnly=kTRUE) {
+AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEoutput.root", Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE, Bool_t PIDbaseline=kFALSE, Bool_t rejOnly=kTRUE) {
 
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   //get the current analysis manager
@@ -98,31 +98,25 @@ if (PIDbaseline) {
 	mgr->CreateContainer("cbaumann_LMEEPbPb2011_tree",
 		TTree::Class(),
 		AliAnalysisManager::kExchangeContainer,
-		"cbaumann_LMEEPbPb2011_default.root");
+		outputFileName);
 
   AliAnalysisDataContainer *cOutputHist1 =
 	mgr->CreateContainer("cbaumann_LMEEPbPb2011_out",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
-		"cbaumann_LMEEPbPb2011_out.root");
+		outputFileName);
 
-  /*  AliAnalysisDataContainer *cOutputHist2 =
-	  mgr->CreateContainer("cbaumann_lowmass_CF",
-	  TList::Class(),
-	  AliAnalysisManager::kOutputContainer,
-	  "cbaumann_lowmass_CF.root");
-	  */
   AliAnalysisDataContainer *cOutputHist2 =
 	mgr->CreateContainer("cbaumann_LMEEPbPb2011_CF",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
-		"cbaumann_LMEEPbPb2011_out.root");
+		outputFileName);
 
   AliAnalysisDataContainer *cOutputHist3 =
 	mgr->CreateContainer("cbaumann_EventStatPbPb2011",
 		TH1D::Class(),
 		AliAnalysisManager::kOutputContainer,
-		"cbaumann_LMEEPbPb2011_out.root");
+		outputFileName);
 
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
