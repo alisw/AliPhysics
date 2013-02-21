@@ -7,7 +7,7 @@ AddAnalysisTaskPIDFluctuation(Int_t aodFilterBit, Float_t ptMin, Float_t ptMax, 
   /* init analysis name */
   TString analysisName = "PIDFluctuation";
   analysisName += "_";
-  analysisName += GetAODFilterBitName(aodFilterBit);
+  analysisName += Form("FilterBit%d", aodFilterBit);
   analysisName += "_";
   analysisName += Form("pt_%.1f_%.1f", ptMin, ptMax);
   analysisName += "_";
@@ -77,20 +77,4 @@ GetESDtrackCuts(Int_t type)
   return trackCuts;
 }
 
-//__________________________________________________________________
 
-Char_t *
-GetAODFilterBitName(Int_t type)
-{
-  switch (type) {
-  case AliAODTrack::kTrkGlobal:
-    return "TrkGlobal";
-    break;
-  case AliAODTrack::kTrkTPCOnlyConstrained:
-    return "TrkTPCOnlyConstrained";
-    break;
-  case AliAODTrack::kTrkTPCOnly:
-    return "TrkTPCOnly";
-    break;
-  }
-}
