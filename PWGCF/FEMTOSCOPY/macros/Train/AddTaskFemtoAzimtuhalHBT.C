@@ -31,7 +31,7 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName, const ch
     return NULL;
   }  
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  cout << "Found " <<type << " event handler" << endl;
+ // cout << "Found " <<type << " event handler" << endl;
 
 	//gROOT->LoadMacro("AliEPSelectionTask3.cxx+g");
 	//gROOT->LoadMacro("AddTaskEventplane.C");
@@ -96,12 +96,12 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName, const ch
    mgr->ConnectInput(taskfemto, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskfemto, 0, cout_femto);
 	AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
-	//AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containername,
-															  //TList::Class(), AliAnalysisManager::kOutputContainer,
-															  //"EventStat_temph.root");
+	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containername,
+															  TList::Class(), AliAnalysisManager::kOutputContainer,
+															  "EventStat_temp.root");
 	
 	mgr->ConnectInput(eventplaneTask, 0, mgr->GetCommonInputContainer());
-	//mgr->ConnectOutput(eventplaneTask,1,coutput1);
+	mgr->ConnectOutput(eventplaneTask,1,coutput1);
 
    // Return task pointer at the end
    return taskfemto;
