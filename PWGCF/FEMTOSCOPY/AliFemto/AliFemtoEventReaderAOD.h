@@ -30,7 +30,7 @@ class AliFemtoTrack;
 class AliFemtoEventReaderAOD : public AliFemtoEventReader 
 {
  public:
-  enum EventMult {kCentrality=0, kGlobalCount=1, kReference=2, kTPCOnlyRef=3};
+  enum EventMult {kCentrality=0, kGlobalCount=1, kReference=2, kTPCOnlyRef=3, kVZERO=4};
   typedef enum EventMult EstEventMult;
 
   AliFemtoEventReaderAOD();

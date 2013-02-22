@@ -32,7 +32,7 @@ ClassImp(AliAnalysisTaskFemto)
 // extern AliFemtoManager *ConfigFemtoAnalysis();
 
 //________________________________________________________________________
-AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose = kFALSE):
+AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose):
 AliAnalysisTaskSE(name), //AliAnalysisTask(name,""), 
   fESD(0), 
   fESDpid(0),
@@ -56,7 +56,7 @@ AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
 
 }
 //________________________________________________________________________
-AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro="ConfigFemtoAnalysis.C", Bool_t aVerbose = kFALSE): 
+AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro="ConfigFemtoAnalysis.C", Bool_t aVerbose): 
     AliAnalysisTaskSE(name), //AliAnalysisTask(name,""), 
     fESD(0), 
     fESDpid(0),
@@ -324,6 +324,15 @@ void AliAnalysisTaskFemto::CreateOutputObjects() {
 void AliAnalysisTaskFemto::Exec(Option_t *) {
   // Task making a femtoscopic analysis.
 
+  if(fOfflineTriggerMask){
+    Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fOfflineTriggerMask);
+        if(!isSelected) {
+            if (fVerbose)
+                cout << "AliAnalysisTaskFemto: is not selected" << endl; 
+            return;
+        }
+  }
+
   if (fAnalysisType==1) {
     if (!fESD) {
             if (fVerbose)
@@ -444,14 +453,6 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 //       fAOD = aodH->GetEvent();
 //     }
 
-
-
-    Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fOfflineTriggerMask);
-        if(!isSelected) {
-            if (fVerbose)
-                cout << "AliAnalysisTaskFemto: is not selected" << endl; 
-            return;
-        }
 
 
 
