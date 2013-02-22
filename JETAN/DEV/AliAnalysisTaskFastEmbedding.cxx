@@ -1013,7 +1013,8 @@ Int_t AliAnalysisTaskFastEmbedding::SelectAODfile()
        tmpProp = fAODEntriesMax ? (Float_t)tmpEntries/fAODEntriesMax : 1.;
      }
      fAODEntry = (Int_t)(rndm->Uniform(fAODEntries));
-   } else {
+   }
+   else {
       AliWarning("Number of entries in extra AODs not set!");
       n = rndm->Integer(nFiles);
       fAODEntry = 0;

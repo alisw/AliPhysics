@@ -114,6 +114,29 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(const char* filepath, Int_t m
 	
 	task->SetArrayOfAODPaths(objarray);
 
+
+	Int_t count = 0;
+	Int_t iEntry = -1;
+	Int_t iEntrySum = 0;
+	Int_t iEntryMax = 0;
+
+	TArrayI* array = new TArrayI();
+
+	for(int i=0; i<objarray->GetEntriesFast(); i++) {
+	  TObjString *objStr = (TObjString*) fAODPathArray->At(i);
+	  TString str = objStr->GetString();
+	  iEntry = str.Atoi();
+	  array->Set(count+1);
+	  array->AddAt(iEntry,count);
+	  count++;
+	  iEntrySum += iEntry;
+	  if(iEntry>iEntryMax) iEntryMax = iEntry;
+	}
+	
+	task->SetArrayOfAODEntries(array);
+	task->SetAODEntriesSum(iEntrySum);
+	task->SetAODEntriesMax(iEntryMax);
+
       }
 
       task->SetEmbedMode(AliAnalysisTaskFastEmbedding::kAODFull);
