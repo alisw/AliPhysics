@@ -124,7 +124,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     // AOD reading -> MC from AOD
     // ESD reading -> MC from Kinematics
     // this has to match with our selection of input events
-    enum {kTrackUndef = 0, kTrackAOD, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance, kTrackAODextra, kTrackAODextraonly};
+    enum {kTrackUndef = 0, kTrackAOD, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance, kTrackAODextra, kTrackAODextraonly, kTrackAODMCextra, kTrackAODMCextraonly};
     enum {kMaxJets = 4};
     enum {kMaxCorrelation =  3};
     enum {kMaxRadius =       5};

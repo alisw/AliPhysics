@@ -37,6 +37,7 @@
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
 #include  "TDatabasePDG.h"
+#include <TGrid.h>
 
 #include "AliAnalysisTaskJetCluster.h"
 #include "AliAnalysisManager.h"
@@ -426,7 +427,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
     fh2TracksLeadingJetPhiPtC[i] = 0;
     fh2TracksLeadingJetPhiPtWC[i] = 0;
   }
- DefineOutput(1, TList::Class());  
+  DefineOutput(1, TList::Class());  
 }
 
 
@@ -648,34 +649,34 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 				 nBinEta,binLimitsEta,nBinPt,binLimitsPt);
 
   fh2TrackEtaPt  = new TH2F("fh2TrackEtaPt","pt vs eta all jets;#eta;p_{T}",
-			  nBinEta,binLimitsEta,nBinPt,binLimitsPt);
+			    nBinEta,binLimitsEta,nBinPt,binLimitsPt);
   fh2LeadingTrackEtaPt  = new TH2F("fh2LeadingTrackEtaPt","pT vs eta leading jets;#eta;p_{T}",
-				 nBinEta,binLimitsEta,nBinPt,binLimitsPt);
+				   nBinEta,binLimitsEta,nBinPt,binLimitsPt);
 
 
 
   fh2JetsLeadingPhiEta = new TH2F("fh2JetsLeadingPhiEta","delta eta vs delta phi to leading jet;#Delta#phi;#Delta#eta",
-				nBinPhi,binLimitsPhi,nBinEta,binLimitsEta);
+				  nBinPhi,binLimitsPhi,nBinEta,binLimitsEta);
   fh2JetsLeadingPhiPt = new TH2F("fh2JetsLeadingPhiPt","leading p_T vs delta phi to leading jet;#Delta#phi;p_{T} (GeV/c)",
-				nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
+				 nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
   fh2TracksLeadingPhiEta = new TH2F("fh2TracksLeadingPhiEta","delta eta vs delta phi to leading track;#Delta#phi;#Delta#eta",
 				    nBinPhi,binLimitsPhi,nBinEta,binLimitsEta);
   fh2TracksLeadingPhiPt = new TH2F("fh2TracksLeadingPhiPt","leading p_T vs delta phi to leading jet;#Delta#phi;p_{T} (GeV/c)",
-				 nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
+				   nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
   fh2TracksLeadingJetPhiPt = new TH2F("fh2TracksLeadingJetPhiPt","leading p_T vs delta phi to leading jet;#Delta#phi;p_{T} (GeV/c)",
-				 nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
+				      nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
   fh2TracksLeadingJetPhiPtRan = new TH2F("fh2TracksLeadingJetPhiPtRan","leading p_T vs delta phi to leading jet;#Delta#phi;p_{T} (GeV/c)",
-				 nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
+					 nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
   fh2JetsLeadingPhiPtW      = new TH2F("fh2JetsLeadingPhiPtW","leading p_T vs delta phi p_T weigted to leading jet;#Delta#phi;p_{T} (GeV/c)",
-				nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
+				       nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
   fh2TracksLeadingPhiPtW    = new TH2F("fh2TracksLeadingPhiPtW","leading p_T vs delta phi to leading jet (p_T weighted);#Delta#phi;p_{T} (GeV/c)",
-				    nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
+				       nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
   fh2TracksLeadingJetPhiPtW = new TH2F("fh2TracksLeadingJetPhiPtW","leading p_T vs delta phi to leading jet;#Delta#phi;p_{T} (GeV/c)",
 				       nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
   fh2TracksLeadingJetPhiPtWRan = new TH2F("fh2TracksLeadingJetPhiPtWRan","leading p_T vs delta phi to leading jet;#Delta#phi;p_{T} (GeV/c)",
-				       nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
+					  nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
   if(fStoreRhoLeadingTrackCorr) {
     fh3CentvsRhoLeadingTrackPt = new TH3F("fh3CentvsRhoLeadingTrackPt","centrality vs background density full event; centrality; #rho", 50,0.,100.,500,0.,250.,100,0.,100.);
@@ -798,12 +799,12 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 	fHistList->Add(fh1BiARandomConesRan[i]);
       }
     }
-  for(int i = 0;i < kMaxCent;i++){
-    fHistList->Add(fh2JetsLeadingPhiPtC[i]);
-    fHistList->Add(fh2JetsLeadingPhiPtWC[i]);
-    fHistList->Add(fh2TracksLeadingJetPhiPtC[i]);
-    fHistList->Add(fh2TracksLeadingJetPhiPtWC[i]);
-  }
+    for(int i = 0;i < kMaxCent;i++){
+      fHistList->Add(fh2JetsLeadingPhiPtC[i]);
+      fHistList->Add(fh2JetsLeadingPhiPtWC[i]);
+      fHistList->Add(fh2TracksLeadingJetPhiPtC[i]);
+      fHistList->Add(fh2TracksLeadingJetPhiPtWC[i]);
+    }
 
     fHistList->Add(fh2NRecJetsPt);
     fHistList->Add(fh2NRecTracksPt);
@@ -1175,11 +1176,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
  
   // now create the object that holds info about ghosts                        
   /*
-  if(!fUseBackgroundCalc&& fNonStdBranch.Length()==0){
+    if(!fUseBackgroundCalc&& fNonStdBranch.Length()==0){
     // reduce CPU time...
     fGhostArea = 0.5; 
     fActiveAreaRepeats = 0; 
-  }
+    }
   */
 
   fastjet::GhostedAreaSpec ghostSpec(fGhostEtamax, fActiveAreaRepeats, fGhostArea);
@@ -1203,7 +1204,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
  
   fh1NJetsRec->Fill(sortedJets.size());
 
- // loop over all jets an fill information, first on is the leading jet
+  // loop over all jets an fill information, first on is the leading jet
 
   Int_t nRecOver = inclusiveJets.size();
   Int_t nRec     = inclusiveJets.size();
@@ -1236,7 +1237,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     if(externalBackground){
       // carefull has to be filled in a task before
       // todo, ReArrange to the botom 
-     pTback = externalBackground->GetBackground(2)*leadingJet.EffectiveAreaCharged();
+      pTback = externalBackground->GetBackground(2)*leadingJet.EffectiveAreaCharged();
     }
     pt = leadingJet.Pt() - pTback;
     // correlation of leading jet with tracks
@@ -1282,7 +1283,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       Float_t tmpPtBack = 0;
       if(externalBackground){
 	// carefull has to be filled in a task before
-       // todo, ReArrange to the botom
+	// todo, ReArrange to the botom
 	tmpPtBack = externalBackground->GetBackground(2)*tmpRec.EffectiveAreaCharged();
       }
       tmpPt = tmpPt - tmpPtBack;
@@ -1332,201 +1333,201 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	}
       }
     
-     // correlation
-     Float_t tmpPhi =  tmpRec.Phi();
-     Float_t tmpEta =  tmpRec.Eta();
-     if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;        
-     if(j==0){
-       fh1PtJetsLeadingRecIn->Fill(tmpPt);
-       fh2LeadingJetPhiEta->Fill(tmpPhi,tmpEta);
-       fh2LeadingJetEtaPt->Fill(tmpEta,tmpPt);
-       fh1NConstLeadingRec->Fill(constituents.size());
-       fh2NConstLeadingPt->Fill(tmpPt,constituents.size());
-       continue;
-     }
-     fh2JetPhiEta->Fill(tmpRec.Phi(),tmpEta);
-     fh2JetEtaPt->Fill(tmpEta,tmpPt);
-     Float_t dPhi = phi - tmpPhi;
-     if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
-     if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
-     Float_t dEta = eta - tmpRec.Eta();
-     fh2JetsLeadingPhiEta->Fill(dPhi,dEta);
-     fh2JetsLeadingPhiPt->Fill(dPhi,pt);
-     if(cenClass>=0){
-       fh2JetsLeadingPhiPtC[cenClass]->Fill(dPhi,pt);
-       fh2JetsLeadingPhiPtWC[cenClass]->Fill(dPhi,pt,tmpPt);
-     }
-     fh2JetsLeadingPhiPtW->Fill(dPhi,pt,tmpPt);
+      // correlation
+      Float_t tmpPhi =  tmpRec.Phi();
+      Float_t tmpEta =  tmpRec.Eta();
+      if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;        
+      if(j==0){
+	fh1PtJetsLeadingRecIn->Fill(tmpPt);
+	fh2LeadingJetPhiEta->Fill(tmpPhi,tmpEta);
+	fh2LeadingJetEtaPt->Fill(tmpEta,tmpPt);
+	fh1NConstLeadingRec->Fill(constituents.size());
+	fh2NConstLeadingPt->Fill(tmpPt,constituents.size());
+	continue;
+      }
+      fh2JetPhiEta->Fill(tmpRec.Phi(),tmpEta);
+      fh2JetEtaPt->Fill(tmpEta,tmpPt);
+      Float_t dPhi = phi - tmpPhi;
+      if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
+      if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
+      Float_t dEta = eta - tmpRec.Eta();
+      fh2JetsLeadingPhiEta->Fill(dPhi,dEta);
+      fh2JetsLeadingPhiPt->Fill(dPhi,pt);
+      if(cenClass>=0){
+	fh2JetsLeadingPhiPtC[cenClass]->Fill(dPhi,pt);
+	fh2JetsLeadingPhiPtWC[cenClass]->Fill(dPhi,pt,tmpPt);
+      }
+      fh2JetsLeadingPhiPtW->Fill(dPhi,pt,tmpPt);
     }// loop over reconstructed jets
-   delete recIter;
+    delete recIter;
 
 
 
-   // Add the random cones...
-   if(fNRandomCones>0&&fTCARandomConesOut){       
-     // create a random jet within the acceptance
-     Double_t etaMax = fTrackEtaWindow - fRparam;
-     Int_t nCone = 0;
-     Int_t nConeRan = 0;
-     Double_t pTC = 1; // small number
-     for(int ir = 0;ir < fNRandomCones;ir++){
-       Double_t etaC = etaMax*2.*(fRandom->Rndm()-0.5); // +- etamax
-       Double_t phiC = fRandom->Rndm()*2.*TMath::Pi(); // 0 - 2pi
-       // massless jet
-       Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
-       Double_t pZC = pTC/TMath::Tan(thetaC);
-       Double_t pXC = pTC * TMath::Cos(phiC);
-       Double_t pYC = pTC * TMath::Sin(phiC);
-       Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
-       AliAODJet tmpRecC (pXC,pYC,pZC, pC); 
-       bool skip = false;
-       for(int jj = 0; jj < TMath::Min(nRec,fNSkipLeadingCone);jj++){// test for overlap with leading jets
-	 AliAODJet jet (sortedJets[jj].px(), sortedJets[jj].py(), sortedJets[jj].pz(), sortedJets[jj].E());
-	 if(jet.DeltaR(& tmpRecC)<2.*fRparam+0.2){
-	   skip = true;
-	   break;
-	 }
-       }
-       // test for overlap with previous cones to avoid double counting
-       for(int iic = 0;iic<ir;iic++){
-	 AliAODJet *iicone = (AliAODJet*)fTCARandomConesOut->At(iic);
-	 if(iicone){
-	   if(iicone->DeltaR(&tmpRecC)<2.*fRparam){
-	     skip = true;
-	     break;
-	   }
-	 }
-       }
-       if(skip)continue;
-       tmpRecC.SetBgEnergy(0,0); // this is use as temporary storage of the summed p_T below
-       tmpRecC.SetPtLeading(-1.);
-       if(fTCARandomConesOut)new ((*fTCARandomConesOut)[nCone++]) AliAODJet(tmpRecC);
-       if(fTCARandomConesOutRan)new ((*fTCARandomConesOutRan)[nConeRan++]) AliAODJet(tmpRecC);
-     }// loop over random cones creation
+    // Add the random cones...
+    if(fNRandomCones>0&&fTCARandomConesOut){       
+      // create a random jet within the acceptance
+      Double_t etaMax = fTrackEtaWindow - fRparam;
+      Int_t nCone = 0;
+      Int_t nConeRan = 0;
+      Double_t pTC = 1; // small number
+      for(int ir = 0;ir < fNRandomCones;ir++){
+	Double_t etaC = etaMax*2.*(fRandom->Rndm()-0.5); // +- etamax
+	Double_t phiC = fRandom->Rndm()*2.*TMath::Pi(); // 0 - 2pi
+	// massless jet
+	Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
+	Double_t pZC = pTC/TMath::Tan(thetaC);
+	Double_t pXC = pTC * TMath::Cos(phiC);
+	Double_t pYC = pTC * TMath::Sin(phiC);
+	Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
+	AliAODJet tmpRecC (pXC,pYC,pZC, pC); 
+	bool skip = false;
+	for(int jj = 0; jj < TMath::Min(nRec,fNSkipLeadingCone);jj++){// test for overlap with leading jets
+	  AliAODJet jet (sortedJets[jj].px(), sortedJets[jj].py(), sortedJets[jj].pz(), sortedJets[jj].E());
+	  if(jet.DeltaR(& tmpRecC)<2.*fRparam+0.2){
+	    skip = true;
+	    break;
+	  }
+	}
+	// test for overlap with previous cones to avoid double counting
+	for(int iic = 0;iic<ir;iic++){
+	  AliAODJet *iicone = (AliAODJet*)fTCARandomConesOut->At(iic);
+	  if(iicone){
+	    if(iicone->DeltaR(&tmpRecC)<2.*fRparam){
+	      skip = true;
+	      break;
+	    }
+	  }
+	}
+	if(skip)continue;
+	tmpRecC.SetBgEnergy(0,0); // this is use as temporary storage of the summed p_T below
+	tmpRecC.SetPtLeading(-1.);
+	if(fTCARandomConesOut)new ((*fTCARandomConesOut)[nCone++]) AliAODJet(tmpRecC);
+	if(fTCARandomConesOutRan)new ((*fTCARandomConesOutRan)[nConeRan++]) AliAODJet(tmpRecC);
+      }// loop over random cones creation
 
   
-     // loop over the reconstructed particles and add up the pT in the random cones
-     // maybe better to loop over randomized particles not in the real jets...
-     // but this by definition brings dow average energy in the whole  event
-     AliAODJet vTmpRanR(1,0,0,1);
-     for(int i = 0; i < recParticles.GetEntries(); i++){
-       AliVParticle *vp = (AliVParticle*)recParticles.At(i);
-       if(fTCARandomConesOut){
-	 for(int ir = 0;ir < fNRandomCones;ir++){
-	   AliAODJet *jC = (AliAODJet*)fTCARandomConesOut->At(ir);  
-	   if(jC&&jC->DeltaR(vp)<fRparam){
-	     if(vp->Pt()>fMaxTrackPtInJet)jC->SetTrigger(AliAODJet::kHighTrackPtTriggered);
-	     jC->SetBgEnergy(jC->ChargedBgEnergy()+vp->Pt(),0);
-	     if(vp->Pt() > jC->GetPtLeading()) jC->SetPtLeading(vp->Pt());
-	   }
-	 }  
-       }// add up energy in cone
+      // loop over the reconstructed particles and add up the pT in the random cones
+      // maybe better to loop over randomized particles not in the real jets...
+      // but this by definition brings dow average energy in the whole  event
+      AliAODJet vTmpRanR(1,0,0,1);
+      for(int i = 0; i < recParticles.GetEntries(); i++){
+	AliVParticle *vp = (AliVParticle*)recParticles.At(i);
+	if(fTCARandomConesOut){
+	  for(int ir = 0;ir < fNRandomCones;ir++){
+	    AliAODJet *jC = (AliAODJet*)fTCARandomConesOut->At(ir);  
+	    if(jC&&jC->DeltaR(vp)<fRparam){
+	      if(vp->Pt()>fMaxTrackPtInJet)jC->SetTrigger(AliAODJet::kHighTrackPtTriggered);
+	      jC->SetBgEnergy(jC->ChargedBgEnergy()+vp->Pt(),0);
+	      if(vp->Pt() > jC->GetPtLeading()) jC->SetPtLeading(vp->Pt());
+	    }
+	  }  
+	}// add up energy in cone
 
-       // the randomized input changes eta and phi, but keeps the p_T
-       if(i>=fNSkipLeadingRan){// eventually skip the leading particles
-	 Double_t pTR = vp->Pt();
-	 Double_t etaR = 2.*fTrackEtaWindow* fRandom->Rndm() - fTrackEtaWindow;
-	 Double_t phiR = 2.* TMath::Pi() * fRandom->Rndm();
+	// the randomized input changes eta and phi, but keeps the p_T
+	if(i>=fNSkipLeadingRan){// eventually skip the leading particles
+	  Double_t pTR = vp->Pt();
+	  Double_t etaR = 2.*fTrackEtaWindow* fRandom->Rndm() - fTrackEtaWindow;
+	  Double_t phiR = 2.* TMath::Pi() * fRandom->Rndm();
 	 
-	 Double_t thetaR = 2.*TMath::ATan(TMath::Exp(-etaR));  
-	 Double_t pZR = pTR/TMath::Tan(thetaR);
+	  Double_t thetaR = 2.*TMath::ATan(TMath::Exp(-etaR));  
+	  Double_t pZR = pTR/TMath::Tan(thetaR);
 	 
-	 Double_t pXR = pTR * TMath::Cos(phiR);
-	 Double_t pYR = pTR * TMath::Sin(phiR);
-	 Double_t pR  = TMath::Sqrt(pTR*pTR+pZR*pZR); 
-	 vTmpRanR.SetPxPyPzE(pXR,pYR,pZR,pR);
-	 if(fTCARandomConesOutRan){
-	   for(int ir = 0;ir < fTCARandomConesOutRan->GetEntriesFast();ir++){
-	     AliAODJet *jC = (AliAODJet*)fTCARandomConesOutRan->At(ir);  
-	     if(jC&&jC->DeltaR(&vTmpRanR)<fRparam){
-	       if(vTmpRanR.Pt()>fMaxTrackPtInJet)jC->SetTrigger(AliAODJet::kHighTrackPtTriggered);
-	       jC->SetBgEnergy(jC->ChargedBgEnergy()+vTmpRanR.Pt(),0);
-	       if(vTmpRanR.Pt() > jC->GetPtLeading()) jC->SetPtLeading(vTmpRanR.Pt());
-	     }
-	   }  
-	 }
-       }
-     }// loop over recparticles
+	  Double_t pXR = pTR * TMath::Cos(phiR);
+	  Double_t pYR = pTR * TMath::Sin(phiR);
+	  Double_t pR  = TMath::Sqrt(pTR*pTR+pZR*pZR); 
+	  vTmpRanR.SetPxPyPzE(pXR,pYR,pZR,pR);
+	  if(fTCARandomConesOutRan){
+	    for(int ir = 0;ir < fTCARandomConesOutRan->GetEntriesFast();ir++){
+	      AliAODJet *jC = (AliAODJet*)fTCARandomConesOutRan->At(ir);  
+	      if(jC&&jC->DeltaR(&vTmpRanR)<fRparam){
+		if(vTmpRanR.Pt()>fMaxTrackPtInJet)jC->SetTrigger(AliAODJet::kHighTrackPtTriggered);
+		jC->SetBgEnergy(jC->ChargedBgEnergy()+vTmpRanR.Pt(),0);
+		if(vTmpRanR.Pt() > jC->GetPtLeading()) jC->SetPtLeading(vTmpRanR.Pt());
+	      }
+	    }  
+	  }
+	}
+      }// loop over recparticles
     
-     Float_t jetArea = fRparam*fRparam*TMath::Pi();
-     if(fTCARandomConesOut){
-       for(int ir = 0;ir < fTCARandomConesOut->GetEntriesFast();ir++){
-	 // rescale the momentum vectors for the random cones
+      Float_t jetArea = fRparam*fRparam*TMath::Pi();
+      if(fTCARandomConesOut){
+	for(int ir = 0;ir < fTCARandomConesOut->GetEntriesFast();ir++){
+	  // rescale the momentum vectors for the random cones
 	 
-	 AliAODJet *rC = (AliAODJet*)fTCARandomConesOut->At(ir);
-	 if(rC){
-	   Double_t etaC = rC->Eta();
-	   Double_t phiC = rC->Phi();
-	   // massless jet, unit vector
-	   pTC = rC->ChargedBgEnergy();
-	   if(pTC<=0)pTC = 0.001; // for almost empty events
-	   Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
-	   Double_t pZC = pTC/TMath::Tan(thetaC);
-	   Double_t pXC = pTC * TMath::Cos(phiC);
-	   Double_t pYC = pTC * TMath::Sin(phiC);
-	   Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
-	   rC->SetPxPyPzE(pXC,pYC,pZC, pC); 
-	   rC->SetBgEnergy(0,0);
-	   rC->SetEffArea(jetArea,0);
-	 }
-       }
-     }
-     if(fTCARandomConesOutRan){
-       for(int ir = 0;ir < fTCARandomConesOutRan->GetEntriesFast();ir++){
-	 AliAODJet* rC = (AliAODJet*)fTCARandomConesOutRan->At(ir);
-	 // same wit random
-	 if(rC){
-	   Double_t etaC = rC->Eta();
-	   Double_t phiC = rC->Phi();
-	   // massless jet, unit vector
-	   pTC = rC->ChargedBgEnergy();
-	   if(pTC<=0)pTC = 0.001;// for almost empty events
-	   Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
-	   Double_t pZC = pTC/TMath::Tan(thetaC);
-	   Double_t pXC = pTC * TMath::Cos(phiC);
-	   Double_t pYC = pTC * TMath::Sin(phiC);
-	   Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
-	   rC->SetPxPyPzE(pXC,pYC,pZC, pC); 
-	   rC->SetBgEnergy(0,0);
-	   rC->SetEffArea(jetArea,0);
-	 }
-       }
-     }
-   }// if(fNRandomCones
+	  AliAODJet *rC = (AliAODJet*)fTCARandomConesOut->At(ir);
+	  if(rC){
+	    Double_t etaC = rC->Eta();
+	    Double_t phiC = rC->Phi();
+	    // massless jet, unit vector
+	    pTC = rC->ChargedBgEnergy();
+	    if(pTC<=0)pTC = 0.001; // for almost empty events
+	    Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
+	    Double_t pZC = pTC/TMath::Tan(thetaC);
+	    Double_t pXC = pTC * TMath::Cos(phiC);
+	    Double_t pYC = pTC * TMath::Sin(phiC);
+	    Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
+	    rC->SetPxPyPzE(pXC,pYC,pZC, pC); 
+	    rC->SetBgEnergy(0,0);
+	    rC->SetEffArea(jetArea,0);
+	  }
+	}
+      }
+      if(fTCARandomConesOutRan){
+	for(int ir = 0;ir < fTCARandomConesOutRan->GetEntriesFast();ir++){
+	  AliAODJet* rC = (AliAODJet*)fTCARandomConesOutRan->At(ir);
+	  // same wit random
+	  if(rC){
+	    Double_t etaC = rC->Eta();
+	    Double_t phiC = rC->Phi();
+	    // massless jet, unit vector
+	    pTC = rC->ChargedBgEnergy();
+	    if(pTC<=0)pTC = 0.001;// for almost empty events
+	    Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
+	    Double_t pZC = pTC/TMath::Tan(thetaC);
+	    Double_t pXC = pTC * TMath::Cos(phiC);
+	    Double_t pYC = pTC * TMath::Sin(phiC);
+	    Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
+	    rC->SetPxPyPzE(pXC,pYC,pZC, pC); 
+	    rC->SetBgEnergy(0,0);
+	    rC->SetEffArea(jetArea,0);
+	  }
+	}
+      }
+    }// if(fNRandomCones
   
-   //background estimates:all bckg jets(0) & wo the 2 hardest(1)
+    //background estimates:all bckg jets(0) & wo the 2 hardest(1)
 
-   if(fAODJetBackgroundOut){
-     vector<fastjet::PseudoJet> jets2=sortedJets;
-     if(jets2.size()>2) jets2.erase(jets2.begin(),jets2.begin()+2); 
+    if(fAODJetBackgroundOut){
+      vector<fastjet::PseudoJet> jets2=sortedJets;
+      if(jets2.size()>2) jets2.erase(jets2.begin(),jets2.begin()+2); 
 
-     Double_t bkg1=0;
-     Double_t sigma1=0.;
-     Double_t meanarea1=0.;
-     Double_t bkg2=0;
-     Double_t sigma2=0.;
-     Double_t meanarea2=0.;
+      Double_t bkg1=0;
+      Double_t sigma1=0.;
+      Double_t meanarea1=0.;
+      Double_t bkg2=0;
+      Double_t sigma2=0.;
+      Double_t meanarea2=0.;
 
-     Double_t bkg4=0;
-     Double_t sigma4=0.;
-     Double_t meanarea4=0.;
+      Double_t bkg4=0;
+      Double_t sigma4=0.;
+      Double_t meanarea4=0.;
 
-     clustSeq.get_median_rho_and_sigma(jets2, range, true, bkg1, sigma1, meanarea1, true);
-     fAODJetBackgroundOut->SetBackground(0,bkg1,sigma1,meanarea1);
+      clustSeq.get_median_rho_and_sigma(jets2, range, true, bkg1, sigma1, meanarea1, true);
+      fAODJetBackgroundOut->SetBackground(0,bkg1,sigma1,meanarea1);
 
-     //     fh1BiARandomCones[0]->Fill(omCone-(bkg1*areaRandomCone));    
-     //  fh1BiARandomConesRan[0]->Fill(ptRandomConeRan-(bkg1*areaRandomCone));      
-       clustSeq.get_median_rho_and_sigma(sortedJets, range, true, bkg4, sigma4, meanarea4, true);
-     fAODJetBackgroundOut->SetBackground(3,bkg4,sigma4,meanarea4);
+      //     fh1BiARandomCones[0]->Fill(omCone-(bkg1*areaRandomCone));    
+      //  fh1BiARandomConesRan[0]->Fill(ptRandomConeRan-(bkg1*areaRandomCone));      
+      clustSeq.get_median_rho_and_sigma(sortedJets, range, true, bkg4, sigma4, meanarea4, true);
+      fAODJetBackgroundOut->SetBackground(3,bkg4,sigma4,meanarea4);
 
-     //////////////////////
+      //////////////////////
      
-     clustSeq.get_median_rho_and_sigma(jets2, range, false, bkg2, sigma2, meanarea2, true);
-     fAODJetBackgroundOut->SetBackground(1,bkg2,sigma2,meanarea2);
-     //  fh1BiARandomCones[1]->Fill(ptRandomCone-(bkg2*areaRandomCone));    
-     //   fh1BiARandomConesRan[1]->Fill(ptRandomConeRan-(bkg2*areaRandomCone));    
+      clustSeq.get_median_rho_and_sigma(jets2, range, false, bkg2, sigma2, meanarea2, true);
+      fAODJetBackgroundOut->SetBackground(1,bkg2,sigma2,meanarea2);
+      //  fh1BiARandomCones[1]->Fill(ptRandomCone-(bkg2*areaRandomCone));    
+      //   fh1BiARandomConesRan[1]->Fill(ptRandomConeRan-(bkg2*areaRandomCone));    
 
-   }
+    }
   }
 
   if(fStoreRhoLeadingTrackCorr) {
@@ -1632,79 +1633,79 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   // do the same for tracks and jets
 
   if(nTrackOver>0){
-   TIterator *recIter = recParticles.MakeIterator();
-   AliVParticle *tmpRec = (AliVParticle*)(recIter->Next());  
-   Float_t pt = tmpRec->Pt();
+    TIterator *recIter = recParticles.MakeIterator();
+    AliVParticle *tmpRec = (AliVParticle*)(recIter->Next());  
+    Float_t pt = tmpRec->Pt();
 
-   //    Printf("Leading track p_t %3.3E",pt);
-   for(int i = 1;i <= fh2NRecTracksPt->GetNbinsX();i++){
-     Float_t ptCut = fh2NRecTracksPt->GetXaxis()->GetBinCenter(i);
-     while(pt<ptCut&&tmpRec){
-       nTrackOver--;
-       tmpRec = (AliVParticle*)(recIter->Next()); 
-       if(tmpRec){
-	 pt = tmpRec->Pt();
-       }
-     }
-     if(nTrackOver<=0)break;
-     fh2NRecTracksPt->Fill(ptCut,nTrackOver);
-   }
+    //    Printf("Leading track p_t %3.3E",pt);
+    for(int i = 1;i <= fh2NRecTracksPt->GetNbinsX();i++){
+      Float_t ptCut = fh2NRecTracksPt->GetXaxis()->GetBinCenter(i);
+      while(pt<ptCut&&tmpRec){
+	nTrackOver--;
+	tmpRec = (AliVParticle*)(recIter->Next()); 
+	if(tmpRec){
+	  pt = tmpRec->Pt();
+	}
+      }
+      if(nTrackOver<=0)break;
+      fh2NRecTracksPt->Fill(ptCut,nTrackOver);
+    }
    
-   recIter->Reset();
-   AliVParticle *leading = (AliVParticle*)recParticles.At(0);
-   Float_t phi = leading->Phi();
-   if(phi<0)phi+=TMath::Pi()*2.;    
-   Float_t eta = leading->Eta();
-   pt  = leading->Pt();
-   while((tmpRec = (AliVParticle*)(recIter->Next()))){
-     Float_t tmpPt = tmpRec->Pt();
-     Float_t tmpEta = tmpRec->Eta();
-     fh1PtTracksRecIn->Fill(tmpPt);
-     fh2TrackEtaPt->Fill(tmpEta,tmpPt);
-     if(tmpRec==leading){
-       fh1PtTracksLeadingRecIn->Fill(tmpPt);
-       fh2LeadingTrackEtaPt->Fill(tmpEta,tmpPt);
-       continue;
-     }
+    recIter->Reset();
+    AliVParticle *leading = (AliVParticle*)recParticles.At(0);
+    Float_t phi = leading->Phi();
+    if(phi<0)phi+=TMath::Pi()*2.;    
+    Float_t eta = leading->Eta();
+    pt  = leading->Pt();
+    while((tmpRec = (AliVParticle*)(recIter->Next()))){
+      Float_t tmpPt = tmpRec->Pt();
+      Float_t tmpEta = tmpRec->Eta();
+      fh1PtTracksRecIn->Fill(tmpPt);
+      fh2TrackEtaPt->Fill(tmpEta,tmpPt);
+      if(tmpRec==leading){
+	fh1PtTracksLeadingRecIn->Fill(tmpPt);
+	fh2LeadingTrackEtaPt->Fill(tmpEta,tmpPt);
+	continue;
+      }
       // correlation
-     Float_t tmpPhi =  tmpRec->Phi();
+      Float_t tmpPhi =  tmpRec->Phi();
      
-     if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
-     Float_t dPhi = phi - tmpPhi;
-     if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
-     if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
-     Float_t dEta = eta - tmpRec->Eta();
-     fh2TracksLeadingPhiEta->Fill(dPhi,dEta);
-     fh2TracksLeadingPhiPt->Fill(dPhi,pt);
-     fh2TracksLeadingPhiPtW->Fill(dPhi,pt,tmpPt);
-   }  
-   delete recIter;
- }
+      if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
+      Float_t dPhi = phi - tmpPhi;
+      if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
+      if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
+      Float_t dEta = eta - tmpRec->Eta();
+      fh2TracksLeadingPhiEta->Fill(dPhi,dEta);
+      fh2TracksLeadingPhiPt->Fill(dPhi,pt);
+      fh2TracksLeadingPhiPtW->Fill(dPhi,pt,tmpPt);
+    }  
+    delete recIter;
+  }
 
- // find the random jets
+  // find the random jets
 
- fastjet::ClusterSequenceArea clustSeqRan(inputParticlesRecRan, jetDef, areaDef);
+  fastjet::ClusterSequenceArea clustSeqRan(inputParticlesRecRan, jetDef, areaDef);
   
- // fill the jet information from random track
- const vector <fastjet::PseudoJet> &inclusiveJetsRan = clustSeqRan.inclusive_jets();
- const vector <fastjet::PseudoJet> &sortedJetsRan    = sorted_by_pt(inclusiveJetsRan);
+  // fill the jet information from random track
+  const vector <fastjet::PseudoJet> &inclusiveJetsRan = clustSeqRan.inclusive_jets();
+  const vector <fastjet::PseudoJet> &sortedJetsRan    = sorted_by_pt(inclusiveJetsRan);
 
   fh1NJetsRecRan->Fill(sortedJetsRan.size());
 
- // loop over all jets an fill information, first on is the leading jet
+  // loop over all jets an fill information, first on is the leading jet
 
- Int_t nRecOverRan = inclusiveJetsRan.size();
- Int_t nRecRan     = inclusiveJetsRan.size();
+  Int_t nRecOverRan = inclusiveJetsRan.size();
+  Int_t nRecRan     = inclusiveJetsRan.size();
 
- if(inclusiveJetsRan.size()>0){
-   AliAODJet leadingJet (sortedJetsRan[0].px(), sortedJetsRan[0].py(), sortedJetsRan[0].pz(), sortedJetsRan[0].E());
-   Float_t pt = leadingJet.Pt();
+  if(inclusiveJetsRan.size()>0){
+    AliAODJet leadingJet (sortedJetsRan[0].px(), sortedJetsRan[0].py(), sortedJetsRan[0].pz(), sortedJetsRan[0].E());
+    Float_t pt = leadingJet.Pt();
    
-   Int_t iCount = 0;
-   TLorentzVector vecarearanb;
+    Int_t iCount = 0;
+    TLorentzVector vecarearanb;
 
-   for(int i = 1;i <= fh2NRecJetsPtRan->GetNbinsX();i++){
-     Float_t ptCut = fh2NRecJetsPtRan->GetXaxis()->GetBinCenter(i);
+    for(int i = 1;i <= fh2NRecJetsPtRan->GetNbinsX();i++){
+      Float_t ptCut = fh2NRecJetsPtRan->GetXaxis()->GetBinCenter(i);
       while(pt<ptCut&&iCount<nRecRan){
 	nRecOverRan--;
 	iCount++;
@@ -1735,7 +1736,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       }  
 
     Int_t nAodOutJetsRan = 0;
-     AliAODJet *aodOutJetRan = 0;
+    AliAODJet *aodOutJetRan = 0;
     for(int j = 0; j < nRecRan;j++){
       AliAODJet tmpRec (sortedJetsRan[j].px(), sortedJetsRan[j].py(), sortedJetsRan[j].pz(), sortedJetsRan[j].E());
       Float_t tmpPt = tmpRec.Pt();
@@ -1748,16 +1749,16 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fh2PtNchNRan->Fill(nCh,tmpPt,constituents.size());
 
 
-     if(tmpPt>fJetOutputMinPt&&fTCAJetsOutRan){
-       aodOutJetRan =  new ((*fTCAJetsOutRan)[nAodOutJetsRan++]) AliAODJet(tmpRec);
-       Double_t arearan=clustSeqRan.area(sortedJetsRan[j]);
-       aodOutJetRan->GetRefTracks()->Clear();
-       aodOutJetRan->SetEffArea(arearan,0);
-       fastjet::PseudoJet vecarearan=clustSeqRan.area_4vector(sortedJetsRan[j]);  
-       vecarearanb.SetPxPyPzE(vecarearan.px(),vecarearan.py(),vecarearan.pz(),vecarearan.e());
-       aodOutJetRan->SetVectorAreaCharged(&vecarearanb);
+      if(tmpPt>fJetOutputMinPt&&fTCAJetsOutRan){
+	aodOutJetRan =  new ((*fTCAJetsOutRan)[nAodOutJetsRan++]) AliAODJet(tmpRec);
+	Double_t arearan=clustSeqRan.area(sortedJetsRan[j]);
+	aodOutJetRan->GetRefTracks()->Clear();
+	aodOutJetRan->SetEffArea(arearan,0);
+	fastjet::PseudoJet vecarearan=clustSeqRan.area_4vector(sortedJetsRan[j]);  
+	vecarearanb.SetPxPyPzE(vecarearan.px(),vecarearan.py(),vecarearan.pz(),vecarearan.e());
+	aodOutJetRan->SetVectorAreaCharged(&vecarearanb);
 
-     }
+      }
 
       // correlation
       Float_t tmpPhi =  tmpRec.Phi();
@@ -1773,62 +1774,62 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
      
     if(fAODJetBackgroundOut){
-     Double_t bkg3=0.;
-     Double_t sigma3=0.;
-     Double_t meanarea3=0.;
-     clustSeqRan.get_median_rho_and_sigma(sortedJetsRan ,range, false, bkg3, sigma3, meanarea3, true);
-     fAODJetBackgroundOut->SetBackground(2,bkg3,sigma3,meanarea3);
-     //     float areaRandomCone = rRandomCone2 *TMath::Pi();         
-     /*
-     fh1BiARandomCones[2]->Fill(ptRandomCone-(bkg3*areaRandomCone));    
-     fh1BiARandomConesRan[2]->Fill(ptRandomConeRan-(bkg3*areaRandomCone));    
-     */
+      Double_t bkg3=0.;
+      Double_t sigma3=0.;
+      Double_t meanarea3=0.;
+      clustSeqRan.get_median_rho_and_sigma(sortedJetsRan ,range, false, bkg3, sigma3, meanarea3, true);
+      fAODJetBackgroundOut->SetBackground(2,bkg3,sigma3,meanarea3);
+      //     float areaRandomCone = rRandomCone2 *TMath::Pi();         
+      /*
+	fh1BiARandomCones[2]->Fill(ptRandomCone-(bkg3*areaRandomCone));    
+	fh1BiARandomConesRan[2]->Fill(ptRandomConeRan-(bkg3*areaRandomCone));    
+      */
     }
 
 
 
- }
+  }
 
 
- // do the event selection if activated
- if(fJetTriggerPtCut>0){
-   bool select = false;
-   Float_t minPt = fJetTriggerPtCut;
-   /*
-   // hard coded for now ...
-   // 54.50 44.5 29.5 18.5 for anti-kt rejection 1E-3
-   if(cent<10)minPt = 50;
-   else if(cent<30)minPt = 42;
-   else if(cent<50)minPt = 28;
-   else if(cent<80)minPt = 18;
-   */
-   float rho = 0;
-   if(externalBackground)rho = externalBackground->GetBackground(2);
-   if(fTCAJetsOut){
-     for(int i = 0;i < fTCAJetsOut->GetEntriesFast();i++){
-       AliAODJet *jet = (AliAODJet*)fTCAJetsOut->At(i);
-       Float_t ptSub = jet->Pt() - rho *jet->EffectiveAreaCharged();
-       if(ptSub>=minPt){
-	 select = true;
-	 break;
-       }
-     }
-   }   
+  // do the event selection if activated
+  if(fJetTriggerPtCut>0){
+    bool select = false;
+    Float_t minPt = fJetTriggerPtCut;
+    /*
+    // hard coded for now ...
+    // 54.50 44.5 29.5 18.5 for anti-kt rejection 1E-3
+    if(cent<10)minPt = 50;
+    else if(cent<30)minPt = 42;
+    else if(cent<50)minPt = 28;
+    else if(cent<80)minPt = 18;
+    */
+    float rho = 0;
+    if(externalBackground)rho = externalBackground->GetBackground(2);
+    if(fTCAJetsOut){
+      for(int i = 0;i < fTCAJetsOut->GetEntriesFast();i++){
+	AliAODJet *jet = (AliAODJet*)fTCAJetsOut->At(i);
+	Float_t ptSub = jet->Pt() - rho *jet->EffectiveAreaCharged();
+	if(ptSub>=minPt){
+	  select = true;
+	  break;
+	}
+      }
+    }   
  
-   if(select){
-     static AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
-     fh1CentralitySelect->Fill(cent);
-     fh1ZSelect->Fill(zVtx);
-     aodH->SetFillAOD(kTRUE);
-   }
- }
- if (fDebug > 2){
-   if(fTCAJetsOut)Printf("%s:%d Rec Jets %d",(char*)__FILE__,__LINE__,fTCAJetsOut->GetEntriesFast());
-   if(fTCAJetsOutRan)Printf("%s:%d Rec Jets Ran %d",(char*)__FILE__,__LINE__,fTCAJetsOutRan->GetEntriesFast());
-   if(fTCARandomConesOut)Printf("%s:%d RC %d",(char*)__FILE__,__LINE__,fTCARandomConesOut->GetEntriesFast());
-   if(fTCARandomConesOutRan)Printf("%s:%d RC Ran %d",(char*)__FILE__,__LINE__,fTCARandomConesOutRan->GetEntriesFast());
- }
- PostData(1, fHistList);
+    if(select){
+      static AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+      fh1CentralitySelect->Fill(cent);
+      fh1ZSelect->Fill(zVtx);
+      aodH->SetFillAOD(kTRUE);
+    }
+  }
+  if (fDebug > 2){
+    if(fTCAJetsOut)Printf("%s:%d Rec Jets %d",(char*)__FILE__,__LINE__,fTCAJetsOut->GetEntriesFast());
+    if(fTCAJetsOutRan)Printf("%s:%d Rec Jets Ran %d",(char*)__FILE__,__LINE__,fTCAJetsOutRan->GetEntriesFast());
+    if(fTCARandomConesOut)Printf("%s:%d RC %d",(char*)__FILE__,__LINE__,fTCARandomConesOut->GetEntriesFast());
+    if(fTCARandomConesOutRan)Printf("%s:%d RC Ran %d",(char*)__FILE__,__LINE__,fTCARandomConesOutRan->GetEntriesFast());
+  }
+  PostData(1, fHistList);
 }
 
 void AliAnalysisTaskJetCluster::Terminate(Option_t */*option*/)
@@ -1836,11 +1837,11 @@ void AliAnalysisTaskJetCluster::Terminate(Option_t */*option*/)
   //
   // Terminate analysis
   //
-    if (fDebug > 1) printf("AnalysisJetCluster: Terminate() \n");
+  if (fDebug > 1) printf("AnalysisJetCluster: Terminate() \n");
 
-    if(fMomResH1Fit) delete fMomResH1Fit;
-    if(fMomResH2Fit) delete fMomResH2Fit;
-    if(fMomResH3Fit) delete fMomResH3Fit;
+  if(fMomResH1Fit) delete fMomResH1Fit;
+  if(fMomResH2Fit) delete fMomResH2Fit;
+  if(fMomResH3Fit) delete fMomResH3Fit;
     
 }
 
@@ -1854,8 +1855,9 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
   if(fDebug>2)Printf("%s:%d Selecting tracks with %d",(char*)__FILE__,__LINE__,type);
 
   Int_t iCount = 0;
-  if(type==kTrackAOD || type==kTrackAODextra || type==kTrackAODextraonly){
-    if(type!=kTrackAODextraonly) {
+  if(type==kTrackAOD || type==kTrackAODextra || type==kTrackAODextraonly || type==kTrackAODMCextra || type==kTrackAODMCextraonly){
+
+    if(type!=kTrackAODextraonly && type!=kTrackAODMCextraonly) {
       AliAODEvent *aod = 0;
       if(fUseAODTrackInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
       else aod = AODEvent();
@@ -1908,12 +1910,36 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	else if(fFilterType == 1)bGood = trackAOD->IsHybridTPCConstrainedGlobal();
 	else if(fFilterType == 2)bGood = trackAOD->IsHybridGlobalConstrainedGlobal();
 	if((fFilterMask>0)&&((!trackAOD->TestFilterBit(fFilterMask)||(!bGood))))continue;
-        if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
+	if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
 	if(trackAOD->Pt()<fTrackPtCut) continue;
 	list->Add(trackAOD);
 	iCount++;
       }
     }
+
+    if(type==kTrackAODMCextra || type==kTrackAODMCextraonly) { //embed generator level particles
+      AliAODEvent *aod = 0;
+      if(fUseAODTrackInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
+      else aod = AODEvent();
+      if(!aod){
+	return iCount;
+      }
+      TClonesArray *aodExtraTracks = dynamic_cast<TClonesArray*>(aod->FindListObject("aodExtraMCparticles"));
+      if(!aodExtraTracks)return iCount;
+      for(int it =0; it<aodExtraTracks->GetEntries(); it++) {
+	AliVParticle *track = dynamic_cast<AliVParticle*> ((*aodExtraTracks)[it]);
+	if (!track) continue;
+
+	AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*> (track);
+	if(!trackAOD)continue;
+        
+	if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
+	if(trackAOD->Pt()<fTrackPtCut) continue;
+	list->Add(trackAOD);
+	iCount++;
+      }
+    }
+    
   }
   else if (type ==  kTrackKineAll||type == kTrackKineCharged){
     AliMCEvent* mcEvent = MCEvent();
@@ -1970,6 +1996,11 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 
 void AliAnalysisTaskJetCluster::LoadTrPtResolutionRootFileFromOADB() {
 
+   if (!gGrid) {
+     AliInfo("Trying to connect to AliEn ...");
+     TGrid::Connect("alien://");
+   }
+
   TFile *f = TFile::Open(fPathTrPtResolution.Data());
 
   if(!f)return;
@@ -1985,6 +2016,11 @@ void AliAnalysisTaskJetCluster::LoadTrPtResolutionRootFileFromOADB() {
 }
 
 void AliAnalysisTaskJetCluster::LoadTrEfficiencyRootFileFromOADB() {
+
+   if (!gGrid) {
+     AliInfo("Trying to connect to AliEn ...");
+     TGrid::Connect("alien://");
+   }
 
   TFile *f = TFile::Open(fPathTrEfficiency.Data());
   if(!f)return;
@@ -2102,16 +2138,16 @@ void AliAnalysisTaskJetCluster::FitMomentumResolution() {
 }
 
 /*
-Int_t AliAnalysisTaskJetCluster::AddParticlesFastJet(TList &particles,vector<fastjet::PseudoJet> &inputParticles){
+  Int_t AliAnalysisTaskJetCluster::AddParticlesFastJet(TList &particles,vector<fastjet::PseudoJet> &inputParticles){
   for(int i = 0; i < particles.GetEntries(); i++){
-    AliVParticle *vp = (AliVParticle*)particles.At(i);
-    // Carefull energy is not well determined in real data, should not matter for p_T scheme?
-    fastjet::PseudoJet jInp(vp->Px(),vp->Py(),vp->Pz(),vp->E());
-    jInp.set_user_index(i);
-    inputParticles.push_back(jInp);
+  AliVParticle *vp = (AliVParticle*)particles.At(i);
+  // Carefull energy is not well determined in real data, should not matter for p_T scheme?
+  fastjet::PseudoJet jInp(vp->Px(),vp->Py(),vp->Pz(),vp->E());
+  jInp.set_user_index(i);
+  inputParticles.push_back(jInp);
   }
 
   return 0;
 
-}
+  }
 */

@@ -104,6 +104,16 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
      clus->SetTrackPtCut(kPtTrackCutCl);
      clus->SetTrackEtaWindow(5);
    }
+   else if (typeRec.Contains("AODMCextraonly")) {
+     clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCextraonly);
+     clus->SetTrackPtCut(kPtTrackCutCl);
+     clus->SetTrackEtaWindow(kTrackEtaWindowCl);
+   }
+   else if (typeRec.Contains("AODMCextra")) {
+     clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCextra);
+     clus->SetTrackPtCut(kPtTrackCutCl);
+     clus->SetTrackEtaWindow(kTrackEtaWindowCl);
+   }
    else if (typeRec.Contains("AODMC")){
      clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCAll);
      clus->SetTrackPtCut(kPtTrackCutCl);
@@ -115,7 +125,6 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
      clus->SetTrackEtaWindow(kTrackEtaWindowCl);
    }
    else if (typeRec.Contains("AODextra")) {
-     cout << "AliAnalysisTaskJetCluster::kTrackAODextra: " << AliAnalysisTaskJetCluster::kTrackAODextra << endl;
      clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextra);
      clus->SetTrackPtCut(kPtTrackCutCl);
      clus->SetTrackEtaWindow(kTrackEtaWindowCl);
