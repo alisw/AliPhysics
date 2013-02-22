@@ -686,9 +686,9 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   }
   // --- check centrality cut
  
-  if(fminCent>0.0&&cent<fminCent)
+  if(fminCent>-0.0001&&cent<fminCent)
 	return  kNoEvent; 
-  if(fmaxCent>0.0&&cent>fmaxCent)
+  if(fmaxCent>-0.0001&&cent>fmaxCent)
 	 return  kNoEvent; 
   fHCent->Fill(cent);
   if (qual == 0) fHCentVsQual->Fill(0., cent);
