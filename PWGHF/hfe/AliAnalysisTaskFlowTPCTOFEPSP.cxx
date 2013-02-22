@@ -439,6 +439,16 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTa
   //
   // Copy Constructor
   //
+
+  for(Int_t k = 0; k < 10; k++) {
+    fBinCentralityLess[k] = 0.0;
+  }
+  for(Int_t k = 0; k < 11; k++) {
+    fContamination[k] = NULL;
+    fv2contamination[k] = NULL;
+  }
+   
+
   ref.Copy(*this);
 }
 
@@ -458,6 +468,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   // Copy into object o
   //
   AliAnalysisTaskFlowTPCTOFEPSP &target = dynamic_cast<AliAnalysisTaskFlowTPCTOFEPSP &>(o);
+  target.fListHist = fListHist;
   target.fAODAnalysis = fAODAnalysis;
   target.fUseFilterAOD = fUseFilterAOD;
   target.fApplyCut = fApplyCut;
@@ -494,8 +505,6 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   target.fMaxopening3D = fMaxopening3D;
   target.fMaxInvmass = fMaxInvmass;
   target.fSetMassConstraint =  fSetMassConstraint;
-  target.fAlgorithmMA = fAlgorithmMA;
-  target.fCounterPoolBackground = fCounterPoolBackground;
   target.fDebugLevel = fDebugLevel;
   target.fMonitorEventPlane = fMonitorEventPlane;
   target.fMonitorContamination = fMonitorContamination;
@@ -508,8 +517,57 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   target.fHFECuts = fHFECuts;
   target.fRejectKinkMother = fRejectKinkMother;
   target.fPID = fPID;
+  target.fPIDTOFOnly = fPIDTOFOnly;
   target.fPIDqa = fPIDqa;
-  target.fHFEVZEROEventPlane = fHFEVZEROEventPlane;
+  target.fflowEvent = fflowEvent;
+  target.fHFEBackgroundCuts = fHFEBackgroundCuts;  	 
+  target.fPIDBackground = fPIDBackground; 		
+  target.fPIDBackgroundqa = fPIDBackgroundqa; 		 	 
+  target.fAlgorithmMA = fAlgorithmMA; 		 	 
+  target.fArraytrack = fArraytrack; 		 	 
+  target.fCounterPoolBackground = fCounterPoolBackground; 		 	 
+  target.fHFEVZEROEventPlane = fHFEVZEROEventPlane; 	
+  target.fHistEV=fHistEV;       		 	 
+  target.fHistPileUp=fHistPileUp;   		 	 
+  target.fPileUpCut=fPileUpCut;         		 	 
+  target.fEventPlane=fEventPlane;     		 	 
+  target.fEventPlaneaftersubtraction=fEventPlaneaftersubtraction; 		 	 
+  target.fFractionContamination=fFractionContamination;     		 	 
+  target.fContaminationv2=fContaminationv2;           		 	 
+  target.fCosSin2phiep=fCosSin2phiep;         		 	 
+  target.fCos2phie=fCos2phie;   		 	 
+  target.fSin2phie=fSin2phie;   		 	 
+  target.fCos2phiep=fCos2phiep; 		 	 
+  target.fSin2phiep=fSin2phiep; 		 	 
+  target.fSin2phiephiep=fSin2phiephiep;   		 	 
+  target.fCosResabc=fCosResabc; 		 	 
+  target.fSinResabc=fSinResabc; 		 	 
+  target.fProfileCosResab=fProfileCosResab; 		 	 
+  target.fProfileCosResac=fProfileCosResac; 		 	 
+  target.fProfileCosResbc=fProfileCosResbc; 		 	 
+  target.fCosRes=fCosRes; 		 	 
+  target.fSinRes=fSinRes; 		 	 
+  target.fProfileCosRes=fProfileCosRes; 		 	 
+  target.fTrackingCuts=fTrackingCuts; 		 	 
+  target.fDeltaPhiMapsBeforePID=fDeltaPhiMapsBeforePID; 		 	 
+  target.fCosPhiMapsBeforePID=fCosPhiMapsBeforePID; 		 	 
+  target.fDeltaPhiMaps=fDeltaPhiMaps; 		 	 
+  target.fDeltaPhiMapsContamination=fDeltaPhiMapsContamination; 		 	 
+  target.fCosPhiMaps=fCosPhiMaps;         		 	 
+  target.fProfileCosPhiMaps=fProfileCosPhiMaps;   		 	 
+  target.fDeltaPhiMapsTaggedPhotonic=fDeltaPhiMapsTaggedPhotonic; 		 	 
+  target.fDeltaPhiMapsTaggedNonPhotonic=fDeltaPhiMapsTaggedNonPhotonic; 		     
+  target.fDeltaPhiMapsTaggedPhotonicLS=fDeltaPhiMapsTaggedPhotonicLS; 		 	 
+  target.fMCSourceDeltaPhiMaps=fMCSourceDeltaPhiMaps; 		 	 
+  target.fOppSignDeltaPhiMaps=fOppSignDeltaPhiMaps;   		 	 
+  target.fSameSignDeltaPhiMaps=fSameSignDeltaPhiMaps; 		 	 
+  target.fOppSignAngle=fOppSignAngle;         		 	 
+  target.fSameSignAngle=fSameSignAngle;   		 	 
+  
+  
+  for(Int_t k = 0; k < 10; k++) {
+    target.fBinCentralityLess[k] = fBinCentralityLess[k];
+  }
   for(Int_t k = 0; k < 11; k++) {
     target.fContamination[k] = fContamination[k];
     target.fv2contamination[k] = fv2contamination[k];

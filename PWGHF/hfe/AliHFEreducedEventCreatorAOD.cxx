@@ -234,6 +234,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   fHFEevent->SetRunNumber(fInputEvent->GetRunNumber());
 
   // Derive trigger 
+  AliDebug(1, "Get triggers\n");
   UInt_t trigger = fInputHandler->IsEventSelected();
   if(trigger & AliVEvent::kMB) fHFEevent->SetMBTrigger();
   if(trigger & AliVEvent::kCentral) fHFEevent->SetCentralTrigger();
@@ -241,34 +242,42 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   if(trigger & AliVEvent::kEMCEJE) fHFEevent->SetEMCALTrigger();
 
   // Get Primary Vertex
+  AliDebug(1, "Get Primary Vertex\n");
   const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
   Double_t vtx[3];
-  vertex->GetXYZ(vtx);
+  Double_t vcov[6];
+  Int_t ncontrib = -1;
+  if(vertex) {
+    AliDebug(1, "Found vertex\n");
+    vertex->GetXYZ(vtx);
+    ncontrib = vertex->GetNContributors();
+    vertex->GetCovarianceMatrix(vcov);
+  }
   fHFEevent->SetVX(vtx[0]);
   fHFEevent->SetVY(vtx[1]);
   fHFEevent->SetVZ(vtx[2]);
-  Int_t ncontrib(vertex->GetNContributors());
   fHFEevent->SetNContribVertex(ncontrib);
-  Double_t vcov[6];
-  vertex->GetCovarianceMatrix(vcov);
-  fHFEevent->SetVertexResolution(TMath::Sqrt(vcov[5]));
+  fHFEevent->SetVertexResolution(TMath::Sqrt(TMath::Abs(vcov[5])));
   // Get Primary Vertex from SPD
   const AliVVertex *vertexSPD = aodE->GetPrimaryVertexSPD();
   if(vertexSPD){
-    memset(vtx, 0, sizeof(Double_t) *6);
+    AliDebug(1, "Found SPD vertex\n");
+    memset(vtx, 0, sizeof(Double_t) *3);
     vertexSPD->GetXYZ(vtx);
     fHFEevent->SetVXSPD(vtx[0]);
     fHFEevent->SetVYSPD(vtx[1]);
     fHFEevent->SetVZSPD(vtx[2]);
     fHFEevent->SetNContribVertexSPD(vertexSPD->GetNContributors());
     memset(vcov, 0, sizeof(Double_t)*6);
-    vertex->GetCovarianceMatrix(vcov);
-    fHFEevent->SetVertexResolutionSPD(TMath::Sqrt(vcov[5]));
+    vertexSPD->GetCovarianceMatrix(vcov);
+    AliDebug(1, Form("Covariance Matrix vcov[5] %f\n",vcov[5]));
+    fHFEevent->SetVertexResolutionSPD(TMath::Sqrt(TMath::Abs(vcov[5])));
   }
 
   // Get centrality
+  AliDebug(1, "Centrality\n");
   AliCentrality *hicent = fInputEvent->GetCentrality();
-  fHFEevent->SetCentrality(
+  if(hicent) fHFEevent->SetCentrality(
     hicent->GetCentralityPercentile("V0M"),
     hicent->GetCentralityPercentile("V0A"),
     hicent->GetCentralityPercentile("V0C"),
@@ -278,18 +287,22 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   );
 
   // Get VZERO Information
+  AliDebug(1, "VZERO info\n");
   AliVVZERO *vzeroinfo = fInputEvent->GetVZEROData();
   if(vzeroinfo) fHFEevent->SetV0Multiplicity(vzeroinfo->GetMTotV0A(), vzeroinfo->GetMTotV0C());
 
   // Get ZDC Information
+  AliDebug(1, "ZDC info\n");
   AliVZDC *zdcinfo = fInputEvent->GetZDCData();
   if(zdcinfo) fHFEevent->SetZDCEnergy(zdcinfo->GetZNAEnergy(), zdcinfo->GetZNCEnergy(), zdcinfo->GetZPAEnergy(), zdcinfo->GetZPCEnergy()); 
   
   // Set SPD multiplicity
+  AliDebug(1, "SPD multiplicity\n");
   AliAODTracklets *tls = aodE->GetTracklets();
   if(tls) fHFEevent->SetSPDMultiplicity(tls->GetNumberOfTracklets());
 
   // Look for kink mother
+  AliDebug(1, "Vertices\n");
   Int_t numberofvertices = aodE->GetNumberOfVertices();
   Double_t listofmotherkink[numberofvertices];
   Int_t numberofmotherkink = 0;
@@ -317,6 +330,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   // Monte-Carlo info
   Int_t source(5);
   if(mcthere){
+    AliDebug(1, "Loop MC tracks\n");
     for(Int_t itrack = 0; itrack < fAODArrayMCInfo->GetEntriesFast(); itrack++) {
       mctrack = (AliAODMCParticle *)(fAODArrayMCInfo->At(itrack));
       if(!mctrack) continue;
@@ -360,6 +374,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   Int_t counterdc=0;
   
   AliAODTrack *track = 0x0;
+  AliDebug(1, "Loop reconstructed tracks\n");
   for(Int_t itrack = 0; itrack < fInputEvent->GetNumberOfTracks(); itrack++){
     // Run track loop
     track = dynamic_cast<AliAODTrack *>(fInputEvent->GetTrack(itrack));
@@ -527,6 +542,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
 
     // If TOF cut
     if(fNbOfTOFSigma>0.0){
+      AliDebug(1, "TOF cut\n");
       if(!((status & AliVTrack::kTOFpid) == AliVTrack::kTOFpid)) continue; 
       if(TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kElectron))> fNbOfTOFSigma) continue;
     }
