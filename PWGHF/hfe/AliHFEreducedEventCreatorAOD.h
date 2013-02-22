@@ -72,7 +72,7 @@ class AliHFEreducedEventCreatorAOD : public AliAnalysisTaskSE{
     Float_t fNbOfTOFSigma;            // Nb of TOF Sigma
     Bool_t fRemoveFirstEvent;         // Remove first event from chunk
   
-    ClassDef(AliHFEreducedEventCreatorAOD, 1)
+    ClassDef(AliHFEreducedEventCreatorAOD, 2)
 };
 #endif
 
