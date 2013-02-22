@@ -663,6 +663,13 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     {
       tEvent->SetNormalizedMult(fAODheader->GetTPConlyRefMultiplicity());
     }
+  else if(fEstEventMult == kVZERO)
+    {
+      Float_t multV0 = 0;
+      for (Int_t i=0; i<64; i++)
+	multV0 += fEvent->GetVZEROData()->GetMultiplicity(i);
+      tEvent->SetNormalizedMult(multV0);
+    }
 
   if (mcP) delete [] motherids;
 

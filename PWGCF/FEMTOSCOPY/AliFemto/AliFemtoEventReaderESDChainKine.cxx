@@ -56,7 +56,7 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine():
   fStack(0x0),
   fGenHeader(0x0),
   fTrackType(kGlobal),
-  fEstEventMult(kV0Centrality),
+  fEstEventMult(kReferenceITSTPC),
   fRotateToEventPlane(0),
   fESDpid(0),
   fIsPidOwner(0),
@@ -81,7 +81,7 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   fStack(0x0),
   fGenHeader(0x0),
   fTrackType(kGlobal),
-  fEstEventMult(kV0Centrality),
+  fEstEventMult(kReferenceITSTPC),
   fRotateToEventPlane(0),
   fESDpid(0),
   fIsPidOwner(0),
@@ -285,9 +285,9 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
   Float_t b[2];
   Float_t bCov[3];
 
-  Int_t tTracklet=0, tITSTPC=0, tITSPure=0;
+  Int_t tTracklet=0, tITSTPC=0;
   
-  fEvent->EstimateMultiplicity(tTracklet, tITSTPC, tITSPure, 1.2);
+  //fEvent->EstimateMultiplicity(tTracklet, tITSTPC, tITSPure, 1.2);
   
   hbtEvent->SetMultiplicityEstimateITSTPC(tITSTPC);
   hbtEvent->SetMultiplicityEstimateTracklets(tTracklet);
@@ -445,8 +445,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 
 	if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
 	    (esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
-	    (esdtrack->GetStatus()&AliESDtrack::kTIME) &&
-	    !(esdtrack->GetStatus()&AliESDtrack::kTOFmismatch))
+	    (esdtrack->GetStatus()&AliESDtrack::kTIME))
 	  {
 
 	    //if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
@@ -817,15 +816,16 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
     hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTrackletsITSSA,1.2));
   else if(fEstEventMult == kReferenceTracklets)
     hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTracklets,1.2));
-  else if (fEstEventMult == kTracklet)
-    hbtEvent->SetNormalizedMult(tTracklet);
-  else if (fEstEventMult == kITSTPC)
-    hbtEvent->SetNormalizedMult(tITSTPC);
-  else if (fEstEventMult == kITSPure)
-    hbtEvent->SetNormalizedMult(tITSPure);
   else if (fEstEventMult == kSPDLayer1)
     hbtEvent->SetNormalizedMult(fEvent->GetMultiplicity()->GetNumberOfITSClusters(1));
-  else if (fEstEventMult == kV0Centrality) {
+  else if (fEstEventMult == kVZERO)
+    {
+      Float_t multV0 = 0;
+      for (Int_t i=0; i<64; i++)
+	multV0 += fEvent->GetVZEROData()->GetMultiplicity(i);
+      hbtEvent->SetNormalizedMult(multV0);
+    }
+  else if (fEstEventMult == kCentrality) {
     // centrality between 0 (central) and 1 (very peripheral)
 
     if (cent) {
@@ -1094,9 +1094,9 @@ void AliFemtoEventReaderESDChainKine::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemt
 	tFemtoV0->SetNegNSigmaTPCPi(-1000);
       }
 
-      if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFmismatch)>0)
+      if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0)
 	{
-	  if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFmismatch)>0)
+	  if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0)
 	    {
 	      tFemtoV0->SetPosNSigmaTOFK(-1000);
 	      tFemtoV0->SetNegNSigmaTOFK(-1000);

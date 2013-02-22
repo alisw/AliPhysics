@@ -398,7 +398,11 @@ double AliFemtoPair::QOutCMS() const
 
     double k1 = (::sqrt(xt*xt+yt*yt));
     double k2 = (dx*xt+dy*yt);
-    double tmp = k2/k1;
+    double tmp;
+
+    if(k1!=0) tmp= k2/k1;
+    else tmp=0;
+
     return (tmp);
 }
 //_________________
@@ -413,8 +417,11 @@ double AliFemtoPair::QSideCMS() const
 
     double xt = x1+x2;  double yt = y1+y2;
     double k1 = ::sqrt(xt*xt+yt*yt);
+    
+    double tmp;
+    if(k1!=0) tmp= 2.0*(x2*y1-x1*y2)/k1;
+    else tmp=0;
 
-    double tmp = 2.0*(x2*y1-x1*y2)/k1;
     return (tmp);
 }
 

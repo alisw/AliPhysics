@@ -349,7 +349,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   Float_t b[2];
   Float_t bCov[3];
 
-  Int_t tTracklet=0, tITSTPC=0, tITSPure=0;
+  Int_t tTracklet=0, tITSTPC=0;
   
   //W-AliESDEvent::EstimateMultiplicity: This obsolete method will be eliminated soon. Use AliESDtrackCuts::GetReferenceMultiplicity
   //fEvent->EstimateMultiplicity(tTracklet, tITSTPC, tITSPure, 1.2);
@@ -464,8 +464,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	
 	if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
 	    (esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
-	    (esdtrack->GetStatus()&AliESDtrack::kTIME) &&
-	    !(esdtrack->GetStatus()&AliESDtrack::kTOFmismatch))
+	    (esdtrack->GetStatus()&AliESDtrack::kTIME))
 	  {
 
 	    //if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
@@ -712,7 +711,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	multV0 += fEvent->GetVZEROData()->GetMultiplicity(i);
       hbtEvent->SetNormalizedMult(multV0);
     }
-  else if (fEstEventMult == kV0Centrality) {
+  else if (fEstEventMult == kCentrality) {
     // centrality between 0 (central) and 1 (very peripheral)
 
     if (cent) {
@@ -964,9 +963,9 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 
 	tFemtoV0->SetNegNSigmaTPCPi(-1000);
       }
 
-      if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFmismatch)>0)
+      if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0)
 	{
-	  if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFmismatch)>0)
+	  if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0)
 	    {
 	      tFemtoV0->SetPosNSigmaTOFK(-1000);
 	      tFemtoV0->SetNegNSigmaTOFK(-1000);
