@@ -28,6 +28,7 @@
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliExternalTrackParam.h"
+#include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAnalysisTaskSEImproveITS.h"
 
@@ -217,6 +218,70 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   AliVVertex *primaryVertex=ev->GetPrimaryVertex();
 
   // Recalculate all candidates
+  // D0->Kpi
+  TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
+  if (array2Prong) {
+      for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
+      AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
+
+      // recalculate vertices
+      AliVVertex *oldSecondaryVertex=decay->GetSecondaryVtx();
+
+
+      AliExternalTrackParam et1; et1.CopyFromVTrack(static_cast<AliAODTrack*>(decay->GetDaughter(0)));
+      AliExternalTrackParam et2; et2.CopyFromVTrack(static_cast<AliAODTrack*>(decay->GetDaughter(1)));
+
+      TObjArray ta12;
+     
+      ta12.Add(&et1); ta12.Add(&et2); 
+      AliESDVertex *v12 =RecalculateVertex(oldSecondaryVertex,&ta12 ,bz);
+     
+
+      // update secondary vertex
+      Double_t pos[3];
+      v12->GetXYZ(pos);
+      
+      decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
+      decay->GetSecondaryVtx()->SetChi2perNDF(v12->GetChi2toNDF()); 
+     
+      //!!!!TODO: covariance matrix
+
+      // update d0 
+      Double_t d0z0[2],covd0z0[2];
+      Double_t d0[2],d0err[2];
+      et1.PropagateToDCA(primaryVertex,bz,100.,d0z0,covd0z0);
+      d0[0]=d0z0[0];
+      d0err[0] = TMath::Sqrt(covd0z0[0]);
+      et2.PropagateToDCA(primaryVertex,bz,100.,d0z0,covd0z0);
+      d0[1]=d0z0[0];
+      d0err[1] = TMath::Sqrt(covd0z0[0]);   
+      decay->Setd0Prongs(2,d0);
+      decay->Setd0errProngs(2,d0err);
+      // 
+
+
+      Double_t xdummy=0.,ydummy=0.;
+      Double_t dca;
+      dca=et1.GetDCA(&et2,bz,xdummy,ydummy);
+      decay->SetDCA(dca);
+
+      
+      delete v12;
+
+      Double_t px[2],py[2],pz[2];
+      for (Int_t i=0;i<2;++i) {
+        const AliAODTrack *t=static_cast<AliAODTrack*>(decay->GetDaughter(i));
+        px[i]=t->Px();
+        py[i]=t->Py();
+        pz[i]=t->Pz();
+      }
+      decay->SetPxPyPzProngs(2,px,py,pz);
+    }
+  }
+
+
+
+  // Three prong
   TClonesArray *array3Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("Charm3Prong"));
   if (array3Prong) {
     for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
