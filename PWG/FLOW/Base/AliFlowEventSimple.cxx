@@ -61,7 +61,9 @@ AliFlowEventSimple::AliFlowEventSimple():
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
   fNumberOfPOIsWrap(NULL),
-  fMCReactionPlaneAngleWrap(NULL)
+  fMCReactionPlaneAngleWrap(NULL),
+  fShuffledIndexes(NULL),
+  fShuffleTracks(kFALSE)
 {
   cout << "AliFlowEventSimple: Default constructor to be used only by root for io" << endl;
 }
@@ -86,7 +88,9 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
   fNumberOfPOIsWrap(NULL),
-  fMCReactionPlaneAngleWrap(NULL)
+  fMCReactionPlaneAngleWrap(NULL),
+  fShuffledIndexes(NULL),
+  fShuffleTracks(kFALSE)
 {
   //ctor
   // if second argument is set to AliFlowEventSimple::kGenerate
@@ -112,7 +116,9 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fNumberOfTracksWrap(anEvent.fNumberOfTracksWrap),
   fNumberOfRPsWrap(anEvent.fNumberOfRPsWrap),
   fNumberOfPOIsWrap(anEvent.fNumberOfPOIsWrap),
-  fMCReactionPlaneAngleWrap(anEvent.fMCReactionPlaneAngleWrap)
+  fMCReactionPlaneAngleWrap(anEvent.fMCReactionPlaneAngleWrap),
+  fShuffledIndexes(NULL),
+  fShuffleTracks(anEvent.fShuffleTracks)
 {
   //copy constructor
 }
@@ -137,6 +143,8 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fNumberOfRPsWrap = anEvent.fNumberOfRPsWrap;
   fNumberOfPOIsWrap = anEvent.fNumberOfPOIsWrap;
   fMCReactionPlaneAngleWrap=anEvent.fMCReactionPlaneAngleWrap;
+  fShuffleTracks=anEvent.fShuffleTracks;
+  delete [] fShuffledIndexes;
   return *this;
 }
 
@@ -150,6 +158,7 @@ AliFlowEventSimple::~AliFlowEventSimple()
   delete fNumberOfRPsWrap;
   delete fNumberOfPOIsWrap;
   delete fMCReactionPlaneAngleWrap;
+  delete fShuffledIndexes;
 }
 
 //-----------------------------------------------------------------------
@@ -187,7 +196,20 @@ AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
 {
   //get track i from collection
   if (i>=fNumberOfTracks) return NULL;
-  AliFlowTrackSimple* pTrack = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i)) ;
+  Int_t trackIndex=i;
+  //if asked use the shuffled index
+  if (fShuffleTracks)
+  {
+    if (!fShuffledIndexes) 
+    {
+      //initialize the table with shuffeled indexes
+      fShuffledIndexes = new Int_t[fNumberOfTracks];
+      for (Int_t j=0; j<fNumberOfTracks; j++) { fShuffledIndexes[j]=j; }
+      std::random_shuffle(&fShuffledIndexes[0], &fShuffledIndexes[fNumberOfTracks]);
+    }
+    trackIndex=fShuffledIndexes[i];
+  }
+  AliFlowTrackSimple* pTrack = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(trackIndex)) ;
   return pTrack;
 }
 
@@ -202,6 +224,7 @@ void AliFlowEventSimple::AddTrack( AliFlowTrackSimple* track )
   }
   fTrackCollection->AddAtAndExpand(track,fNumberOfTracks);
   fNumberOfTracks++;
+  delete [] fShuffledIndexes;
 }
 
 //-----------------------------------------------------------------------
@@ -532,7 +555,9 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
   fNumberOfPOIsWrap(NULL),
-  fMCReactionPlaneAngleWrap(NULL)
+  fMCReactionPlaneAngleWrap(NULL),
+  fShuffledIndexes(NULL),
+  fShuffleTracks(kFALSE)
 {
   //constructor, fills the event from a TTree of kinematic.root files
   //applies RP and POI cuts, tags the tracks
@@ -821,6 +846,7 @@ Int_t AliFlowEventSimple::CleanUpDeadTracks()
   }
   fTrackCollection->Compress(); //clean up empty slots
   fNumberOfTracks-=ncleaned; //update number of tracks
+  delete [] fShuffledIndexes;
   return ncleaned;
 }
 

@@ -65,6 +65,7 @@ class AliFlowEventSimple: public TObject {
   Double_t GetAfterBurnerPrecision() const          { return fAfterBurnerPrecision; }
   void     SetUserModified(Bool_t s=kTRUE)          { fUserModified=s; }
   Bool_t   IsUserModified() const                   { return fUserModified; }
+  void     SetShuffleTracks(Bool_t b)               {fShuffleTracks=b;}
 
   void ResolutionPt(Double_t res);
   void TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB );
@@ -117,6 +118,8 @@ class AliFlowEventSimple: public TObject {
   TParameter<Int_t>*      fNumberOfRPsWrap;           //! number of tracks that have passed the RP selection in TBrowser
   TParameter<Int_t>*      fNumberOfPOIsWrap;          //! number of tracks that have passed the POI selection in TBrowser
   TParameter<Double_t>*   fMCReactionPlaneAngleWrap;  //! the angle of the reaction plane from the MC truth in TBrowser
+  Int_t*                  fShuffledIndexes;           //! placeholder for randomized indexes
+  Bool_t                  fShuffleTracks;             // do we shuffle tracks on get?
 
   ClassDef(AliFlowEventSimple,1)
 };
