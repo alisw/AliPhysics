@@ -63,19 +63,19 @@ void AliAnalysisTaskQualityAssurancePA::Init()
     if (fAnalyzeQA)
     {
       AddHistogram1D<TH1D>(tmpRunNum, "hNumberEvents", "Number of events (0 = before, 1 = after vertex cuts)", "", 2, 0, 2, "#Delta z(cm)","N^{Events}/cut");
-      AddHistogram1D<TH1D>(tmpRunNum, "hVertexX", "X distribution of the vertex", "", 10000, -1., 1., "#Delta x(cm)","dN^{Events}/dx");
-      AddHistogram1D<TH1D>(tmpRunNum, "hVertexY", "Y distribution of the vertex", "", 10000, -1., 1., "#Delta y(cm)","dN^{Events}/dy");
-      AddHistogram2D<TH2D>(tmpRunNum, "hVertexXY", "XY distribution of the vertex", "COLZ", 1000, -1., 1., 1000, -1., 1.,"#Delta x(cm)", "#Delta y(cm)","dN^{Events}/dxdy");
-      AddHistogram1D<TH1D>(tmpRunNum, "hVertexZ", "Z distribution of the vertex", "", 400, -40., 40., "#Delta z(cm)","dN^{Events}/dz");
+      AddHistogram1D<TH1D>(tmpRunNum, "hVertexX", "X distribution of the vertex", "", 500, -1., 1., "#Delta x(cm)","dN^{Events}/dx");
+      AddHistogram1D<TH1D>(tmpRunNum, "hVertexY", "Y distribution of the vertex", "", 500, -1., 1., "#Delta y(cm)","dN^{Events}/dy");
+      AddHistogram2D<TH2D>(tmpRunNum, "hVertexXY", "XY distribution of the vertex", "COLZ", 250, -1., 1., 250, -1., 1.,"#Delta x(cm)", "#Delta y(cm)","dN^{Events}/dxdy");
+      AddHistogram1D<TH1D>(tmpRunNum, "hVertexZ", "Z distribution of the vertex", "", 100, -10., 10., "#Delta z(cm)","dN^{Events}/dz");
       AddHistogram1D<TH1D>(tmpRunNum, "hVertexR", "R distribution of the vertex", "", 100, 0., 1., "#Delta r(cm)","dN^{Events}/dr");
       AddHistogram1D<TH1D>(tmpRunNum, "hCentralityV0M", "Centrality distribution V0M", "", 100, 0., 100., "Centrality","dN^{Events}");
       AddHistogram1D<TH1D>(tmpRunNum, "hCentralityV0A", "Centrality distribution V0A", "", 100, 0., 100., "Centrality","dN^{Events}");
       AddHistogram1D<TH1D>(tmpRunNum, "hCentralityV0C", "Centrality distribution V0C", "", 100, 0., 100., "Centrality","dN^{Events}");
 
       AddHistogram2D<TH2D>(tmpRunNum, "hTrackCountAcc", "Number of tracks in acceptance vs. centrality", "LEGO2", 750, 0., 750., 100, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
-      AddHistogram1D<TH1D>(tmpRunNum, "hTrackPt", "Tracks p_{T} distribution", "", 20000, 0., 400., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");
-      AddHistogram1D<TH1D>(tmpRunNum, "hTrackPtNegEta", "Tracks p_{T} distribution (negative #eta)", "", 2000, 0., 400., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");
-      AddHistogram1D<TH1D>(tmpRunNum, "hTrackPtPosEta", "Tracks p_{T} distribution (positive #eta)", "", 2000, 0., 400., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");      
+      AddHistogram1D<TH1D>(tmpRunNum, "hTrackPt", "Tracks p_{T} distribution", "", 1000, 0., 250., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");
+      AddHistogram1D<TH1D>(tmpRunNum, "hTrackPtNegEta", "Tracks p_{T} distribution (negative #eta)", "", 1000, 0., 250., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");
+      AddHistogram1D<TH1D>(tmpRunNum, "hTrackPtPosEta", "Tracks p_{T} distribution (positive #eta)", "", 1000, 0., 250., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");      
       AddHistogram1D<TH1D>(tmpRunNum, "hTrackCharge", "Charge", "", 11, -5, 5, "Charge (e)","dN^{Tracks}/dq");
       AddHistogram1D<TH1D>(tmpRunNum, "hTrackPhi", "Track #phi distribution", "", 360, 0, TMath::TwoPi(), "#phi","dN^{Tracks}/d#phi");
       AddHistogram2D<TH2D>(tmpRunNum, "hTrackPhiEta", "Track angular distribution", "LEGO2", 100, 0., 2*TMath::Pi(),100, -2.5, 2.5, "#phi","#eta","dN^{Tracks}/(d#phi d#eta)");
@@ -88,7 +88,7 @@ void AliAnalysisTaskQualityAssurancePA::Init()
     // NOTE: Pythia histograms
     if (fAnalyzePythia)
     {
-      AddHistogram1D<TH1D>(tmpRunNum, "hPythiaPtHard", "Pythia p_{T} hard distribution", "", 2000, 0, 400, "p_{T} hard","dN^{Events}/dp_{T,hard}");
+      AddHistogram1D<TH1D>(tmpRunNum, "hPythiaPtHard", "Pythia p_{T} hard distribution", "", 1000, 0, 400, "p_{T} hard","dN^{Events}/dp_{T,hard}");
       AddHistogram1D<TProfile>(tmpRunNum, "hPythiaXSection", "Pythia cross section distribution", "", fNumPtHardBins, 0, fNumPtHardBins, "p_{T} hard bin","dN^{Events}/dp_{T,hard}");
       AddHistogram1D<TH1D>(tmpRunNum, "hPythiaNTrials", "Pythia trials (no correction for manual cuts)", "", fNumPtHardBins, 0, fNumPtHardBins, "p_{T} hard bin", "Trials");
     }
@@ -97,14 +97,14 @@ void AliAnalysisTaskQualityAssurancePA::Init()
     if (fAnalyzeJets)
     {
       // ######## Jet spectra
-      AddHistogram1D<TH1D>(tmpRunNum, "hJetPt", "Jets p_{T} distribution", "", 1000, 0., 200., "p_{T} (GeV/c)","dN^{Jets}/dp_{T}");
+      AddHistogram1D<TH1D>(tmpRunNum, "hJetPt", "Jets p_{T} distribution", "", 800, 0., 200., "p_{T} (GeV/c)","dN^{Jets}/dp_{T}");
       AddHistogram1D<TH1D>(tmpRunNum, "hJetArea", "Jets area distribution", "", 200, 0., 2., "Area","dN^{Jets}/dA");
-      AddHistogram2D<TH2D>(tmpRunNum, "hJetAreaVsPt", "Jets area vs. p_{T} distribution", "COLZ", 200, 0., 2., 400, 0., 200., "Area", "p_{T}", "dN^{Jets}/dA dp_{T}");
+      AddHistogram2D<TH2D>(tmpRunNum, "hJetAreaVsPt", "Jets area vs. p_{T} distribution", "COLZ", 100, 0., 2., 200, 0., 200., "Area", "p_{T}", "dN^{Jets}/dA dp_{T}");
 
       AddHistogram2D<TH2D>(tmpRunNum, "hJetPhiEta", "Jets angular distribution", "LEGO2", 360, 0., 2*TMath::Pi(),100, -0.6, 0.6, "#phi","#eta","dN^{Jets}/(d#phi d#eta)");
-      AddHistogram2D<TH2D>(tmpRunNum, "hJetPtVsConstituentCount", "Jets number of constituents vs. jet p_{T}", "COLZ", 800, 0., 400., 100, 0., 100., "p_{T}","N^{Tracks}","dN^{Jets}/(dp_{T} dN^{tracks})");
-      AddHistogram1D<TH1D>(tmpRunNum, "hJetCountAll", "Number of Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
-      AddHistogram1D<TH1D>(tmpRunNum, "hJetCountAccepted", "Number of accepted Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
+      AddHistogram2D<TH2D>(tmpRunNum, "hJetPtVsConstituentCount", "Jets number of constituents vs. jet p_{T}", "COLZ", 400, 0., 200., 100, 0., 100., "p_{T}","N^{Tracks}","dN^{Jets}/(dp_{T} dN^{tracks})");
+      AddHistogram1D<TH1D>(tmpRunNum, "hJetCountAll", "Number of Jets", "", 100, 0., 100., "N jets","dN^{Events}/dN^{Jets}");
+      AddHistogram1D<TH1D>(tmpRunNum, "hJetCountAccepted", "Number of accepted Jets", "", 100, 0., 100., "N jets","dN^{Events}/dN^{Jets}");
 
     }
   }
@@ -117,14 +117,6 @@ void AliAnalysisTaskQualityAssurancePA::Init()
   PostData(1,fOutputList); // important for merging
 
 }
-
-
-//________________________________________________________________________
-AliAnalysisTaskQualityAssurancePA::AliAnalysisTaskQualityAssurancePA() : AliAnalysisTaskSE("AliAnalysisTaskQualityAssurancePA"), fOutputList(0), fAnalyzeQA(1), fAnalyzeJets(1), fAnalyzePythia(0), fHasTracks(0), fHasClusters(0), fHasJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fClusterArray(0), fJetArrayName(0), fTrackArrayName(0), fClusterArrayName(0), fRunNumbers(0), fNumPtHardBins(11), fSignalJetRadius(0.4), fNumberExcludedJets(2), fSignalJetEtaWindow(0.5), fTrackEtaWindow(0.9), fClusterEtaWindow(0.7), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinClusterPt(0.300), fMinJetPt(1.0), fMinJetArea(0.4), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0)
-{
-  // default constructor
-}
-
 
 //________________________________________________________________________
 AliAnalysisTaskQualityAssurancePA::AliAnalysisTaskQualityAssurancePA(const char *name, const char* trackArrayName, const char* clusterArrayName, const char* jetArrayName) : AliAnalysisTaskSE(name), fOutputList(0), fAnalyzeQA(1), fAnalyzeJets(1), fAnalyzePythia(0), fHasTracks(0), fHasClusters(0), fHasJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fClusterArray(0), fJetArrayName(0), fTrackArrayName(0), fClusterArrayName(0), fRunNumbers(0), fNumPtHardBins(11), fSignalJetRadius(0.4), fNumberExcludedJets(2), fSignalJetEtaWindow(0.5), fTrackEtaWindow(0.9), fClusterEtaWindow(0.7), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinClusterPt(0.300), fMinJetPt(1.0), fMinJetArea(0.4), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0)
@@ -258,7 +250,7 @@ void AliAnalysisTaskQualityAssurancePA::ExecOnce()
     fHasTracks = kTRUE;
     if (!fTrackArray) 
     {
-      AliInfo(Form("%s: Could not retrieve tracks %s! This is OK, if tracks are not demanded.", GetName(), fTrackArrayName->Data())); 
+      AliWarning(Form("%s: Could not retrieve tracks %s! This is OK, if tracks are not demanded.", GetName(), fTrackArrayName->Data())); 
       fHasTracks = kFALSE;
     } 
     else
@@ -279,7 +271,7 @@ void AliAnalysisTaskQualityAssurancePA::ExecOnce()
     fHasClusters = kTRUE;
     if (!fClusterArray) 
     {
-      AliInfo(Form("%s: Could not retrieve clusters %s! This is OK, if clusters are not demanded.", GetName(), fClusterArrayName->Data())); 
+      AliWarning(Form("%s: Could not retrieve clusters %s! This is OK, if clusters are not demanded.", GetName(), fClusterArrayName->Data())); 
       fHasClusters = kFALSE;
     } 
     else
@@ -302,7 +294,7 @@ void AliAnalysisTaskQualityAssurancePA::ExecOnce()
 
     if (!fJetArray) 
     {
-      AliInfo(Form("%s: Could not retrieve jets %s! This is OK, if jets are not demanded.", GetName(), fJetArrayName->Data())); 
+      AliWarning(Form("%s: Could not retrieve jets %s! This is OK, if jets are not demanded.", GetName(), fJetArrayName->Data())); 
       fHasJets = kFALSE;
     } 
     else

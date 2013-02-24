@@ -421,6 +421,12 @@ void AliHadCorrTask::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliHadCorrTask::ExecOnce() 
 {
+  // Do base class initializations and if it fails -> bail out
+  if (!fInitialized)
+    AliAnalysisTaskEmcal::ExecOnce();
+  if (!fInitialized)
+    return;
+
   // Init the analysis.
 
   AliAnalysisTaskEmcal::ExecOnce();
@@ -454,6 +460,7 @@ void AliHadCorrTask::ExecOnce()
   else {
     fInitialized = kFALSE;
     AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutCaloName.Data()));
+    fInitialized = kFALSE;
     return;
   }
 }

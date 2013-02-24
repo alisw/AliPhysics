@@ -18,8 +18,9 @@ class AliAnalysisTaskQualityAssurancePA : public AliAnalysisTaskSE
 {
  public:
 
+  AliAnalysisTaskQualityAssurancePA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeQA(1), fAnalyzeJets(1), fAnalyzePythia(0), fHasTracks(0), fHasClusters(0), fHasJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fClusterArray(0), fJetArrayName(0), fTrackArrayName(0), fClusterArrayName(0), fRunNumbers(0), fNumPtHardBins(11), fSignalJetRadius(0.4), fNumberExcludedJets(2), fSignalJetEtaWindow(0.5), fTrackEtaWindow(0.9), fClusterEtaWindow(0.7), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinClusterPt(0.300), fMinJetPt(1.0), fMinJetArea(0.4), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0) {}
+
   AliAnalysisTaskQualityAssurancePA(const char *name, const char* trackArrayName, const char* clusterArrayName, const char* jetArrayName);
-  AliAnalysisTaskQualityAssurancePA();
 
   // Standard  functions
   virtual           ~AliAnalysisTaskQualityAssurancePA();
