@@ -45,6 +45,9 @@ void AddTaskFlow(Float_t centrMin=-1,
   // charge of poi
   const Int_t  chargePOI = 1; 
 
+  //shuffle tracks
+  Bool_t shuffleTracks=kFALSE;
+
   // QA
   Bool_t runQAtask=kFALSE;
   Bool_t FillQAntuple=kFALSE;
@@ -341,6 +344,9 @@ void AddTaskFlow(Float_t centrMin=-1,
   // Pass cuts for RPs and POIs to the task:
   taskFE->SetCutsRP(cutsRP);
   taskFE->SetCutsPOI(cutsPOI);
+
+  //shuffle tracks is so desired
+  taskFE->SetShuffleTracks(shuffleTracks);
 
   // Create the analysis tasks, add them to the manager.
   //===========================================================================
