@@ -48,13 +48,13 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
 
   // #### Add necessary jet finder tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-  AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300);// anti-kt
+  AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300); // anti-kt
   AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,jetRadius,1,0.150,0.300); // kt
 
   // #### Load correction factors from alien
-  TH2D* corrFactorsKT = NULL;
-  TH2D* corrFactorsRC = NULL;
-  TH2D* corrFactorsTR = NULL;
+  TH1D* corrFactorsKT = NULL;
+  TH1D* corrFactorsRC = NULL;
+  TH1D* corrFactorsTR = NULL;
   if (fileEtaCorrectionFactors)
   {
     // trying to connect to alien
@@ -68,9 +68,9 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
       if(copied)
       {
         TFile* tmpFile= new TFile("EtaCorrectionFactors.root","READ");
-        corrFactorsKT = static_cast<TH2D*>(tmpFile->Get("EtaCorrectionFactorsKT"));
-        corrFactorsRC = static_cast<TH2D*>(tmpFile->Get("EtaCorrectionFactorsRC"));
-        corrFactorsTR = static_cast<TH2D*>(tmpFile->Get("EtaCorrectionFactorsTR"));
+        corrFactorsKT = static_cast<TH1D*>(tmpFile->Get("EtaCorrectionFactorsKT"));
+        corrFactorsRC = static_cast<TH1D*>(tmpFile->Get("EtaCorrectionFactorsRC"));
+        corrFactorsTR = static_cast<TH1D*>(tmpFile->Get("EtaCorrectionFactorsTR"));
       }
       else
         ::Warning("AddTaskChargedJetsPA", "AliEn copying failed!");

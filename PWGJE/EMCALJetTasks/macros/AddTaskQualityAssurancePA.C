@@ -9,8 +9,8 @@ AliAnalysisTaskQualityAssurancePA* AddTaskQualityAssurancePA(
   Double_t            vertexMaxR              = 1.0,
   Double_t            minJetPt                = 5.0, // signal jet min pt
   Int_t               numberOfPtHardBins      = 0,
-  TString             runNumbers              = "",
-  Bool_t              isEMCalTrain            = kFALSE
+  TString             runNumbers              = "195344 195346 195351 195389 195390 195391 195478 195479 195480 195481 195482 195483",
+  Bool_t              isEMCalTrain            = kTRUE
 )
 {
   // #### Detect the demanded trigger with its readable name
@@ -63,7 +63,7 @@ AliAnalysisTaskQualityAssurancePA* AddTaskQualityAssurancePA(
   task = new AliAnalysisTaskQualityAssurancePA(Form("QualityAssurancePA_%s_%s", jetFinderTask->GetName(), triggerName.Data()), usedTracks, usedClusters, jetFinderTask->GetName());
 
   if(isEMCalTrain)
-    RequestMemory(task,100*1024);
+    RequestMemory(task,150*1024);
 
   // #### Task preferences
   task->SetAcceptanceWindows(trackEtaWindow, vertexWindow, vertexMaxR, jetRadius);
@@ -76,6 +76,7 @@ AliAnalysisTaskQualityAssurancePA* AddTaskQualityAssurancePA(
 
   // #### Add analysis task
   manager->AddTask(task);
+
   manager->ConnectInput(task, 0, manager->GetCommonInputContainer());
   manager->ConnectOutput(task, 1, contHistos);
   return task;
