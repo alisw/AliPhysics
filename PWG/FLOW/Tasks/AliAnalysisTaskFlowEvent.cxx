@@ -132,6 +132,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fV5(0.),
   fDifferentialV2(0),
   fFlowEvent(NULL),
+  fShuffleTracks(kFALSE),
   fMyTRandom3(NULL)
 {
   // Constructor
@@ -192,6 +193,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fV5(0.),
   fDifferentialV2(0),
   fFlowEvent(NULL),
+  fShuffleTracks(kFALSE),
   fMyTRandom3(NULL)
 {
   // Constructor
@@ -556,6 +558,9 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     TH1* h1 = static_cast<TH1*>(fQAList->FindObject("event plane angle"));
     h1->Fill(fFlowEvent->GetMCReactionPlaneAngle());
   }
+
+  //do we want to serve shullfed tracks to everybody?
+  fFlowEvent->SetShuffleTracks(fShuffleTracks);
 
   //fListHistos->Print();
   //fOutputFile->WriteObject(fFlowEvent,"myFlowEventSimple");

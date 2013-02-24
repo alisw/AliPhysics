@@ -73,6 +73,8 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   void          SetQAOn(Bool_t kt)        {fQAon = kt; }
   Bool_t        GetQAOn()   const         {return fQAon; }
 
+  void          SetShuffleTracks(Bool_t b)  {fShuffleTracks=b;}
+
   // setters for common constants
   void SetNbinsMult( Int_t i ) { fNbinsMult = i; }
   void SetNbinsPt( Int_t i )   { fNbinsPt = i; }
@@ -177,6 +179,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   TF1 *fDifferentialV2; // pt-differential v2
 
   AliFlowEvent* fFlowEvent; //flowevent
+  Bool_t fShuffleTracks;    //serve the tracks shuffled
     
   TRandom3* fMyTRandom3;     // TRandom3 generator
   // end afterburner
