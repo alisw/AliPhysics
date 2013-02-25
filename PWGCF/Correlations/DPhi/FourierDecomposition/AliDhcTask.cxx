@@ -35,13 +35,13 @@ ClassImp(AliDhcTask)
 AliDhcTask::AliDhcTask()
 : AliAnalysisTaskSE(), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
-  fPtTACrit(kTRUE), fAllTAHists(kFALSE),
+  fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
   fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0),
-  fHQAT(0x0), fHQAA(0x0),
+  fHQAT(0x0), fHQAA(0x0), fHPtCentT(0x0), fHPtCentA(0x0),
   fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
@@ -56,13 +56,13 @@ AliDhcTask::AliDhcTask()
 AliDhcTask::AliDhcTask(const char *name) 
 : AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
-  fPtTACrit(kTRUE), fAllTAHists(kFALSE),
+  fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
   fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0),
-  fHQAT(0x0), fHQAA(0x0),
+  fHQAT(0x0), fHQAA(0x0), fHPtCentT(0x0), fHPtCentA(0x0),
   fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
@@ -101,16 +101,7 @@ void AliDhcTask::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once (per slave on PROOF!)
-  AliInfo("Initialize Dhc Task");
-  AliInfo(Form(" centrality estimator %s", fCentMethod.Data()));
-  AliInfo(Form(" using tracks named %s", fTracksName.Data()));
-  AliInfo(Form(" efficiency correct triggers? %d", fHEffT!=0));
-  AliInfo(Form(" efficiency correct associates? %d", fHEffA!=0));
-  AliInfo(Form(" fill muons? %d", fFillMuons));
-  AliInfo(Form(" use pTT > pTA criterion? %d", fPtTACrit));
-  AliInfo(Form(" create all pTT, pTA hists? %d", fAllTAHists));
-  AliInfo(Form(" trigger eta range %f .. %f", fEtaTLo, fEtaTHi));
-  AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
+  PrintDhcSettings();
 
   fOutputList = new TList();
   fOutputList->SetOwner(1);
@@ -123,6 +114,23 @@ void AliDhcTask::UserCreateOutputObjects()
   BookHistos();
   InitEventMixer(); 
   PostData(1, fOutputList);
+}
+
+//________________________________________________________________________
+void AliDhcTask::PrintDhcSettings()
+{
+  AliInfo(Form("Dhc Task %s settings",fName.Data()));
+  AliInfo(Form(" centrality estimator %s", fCentMethod.Data()));
+  AliInfo(Form(" using tracks named %s", fTracksName.Data()));
+  AliInfo(Form(" efficiency correct triggers? %d", fHEffT!=0));
+  AliInfo(Form(" efficiency correct associates? %d", fHEffA!=0));
+  AliInfo(Form(" fill muons? %d", fFillMuons));
+  AliInfo(Form(" use pTT > pTA criterion? %d", fPtTACrit));
+  AliInfo(Form(" create all pTT, pTA hists? %d", fAllTAHists));
+  AliInfo(Form(" Mix in eta_T bins instead of z_vertex? %d", fMixInEtaT));
+  AliInfo(Form(" trigger eta range %f .. %f", fEtaTLo, fEtaTHi));
+  AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
+
 }
 
 //________________________________________________________________________
@@ -202,6 +210,15 @@ void AliDhcTask::BookHistos()
                    40,fEtaALo,fEtaAHi,
                    36,0.0,TMath::TwoPi());
   fOutputList->Add(fHQAA);
+
+  fHPtCentT = new TH2F("fHPtCentT",Form("trigger particles;p_{T} (GeV/c);centrality (%s)",fCentMethod.Data()),
+                       100,0.0,10.0,
+                       100,cent[0],cent[nCent]);
+  fOutputList->Add(fHPtCentT);
+  fHPtCentA = new TH2F("fHPtCentA",Form("associated particles;p_{T} (GeV/c);centrality (%s)",fCentMethod.Data()),
+                       100,0.0,10.0,
+                       100,cent[0],cent[nCent]);
+  fOutputList->Add(fHPtCentA);
 
   fNbins = nPtTrig*nPtAssc*nCent*nZvtx;
   fHSs   = new TH2*[fNbins];
@@ -800,6 +817,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
         Int_t bbin = fHPtAss->FindBin(pta);
         if (!(fHPtAss->IsBinOverflow(bbin) || fHPtAss->IsBinUnderflow(bbin))) {
           fHQAA->Fill(pta,etaa,phia); // fill every associated particle once
+          fHPtCentA->Fill(pta,fCentrality);
         }
       }
     }
@@ -831,6 +849,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
     if (pairing == kSameEvt) {
       fHTrk->Fill(phia,etaa);
       fHQAT->Fill(pta,etaa,phia);
+      fHPtCentT->Fill(pta,fCentrality);
       fHPtTrg->Fill(pta);
       fHPtTrgNorm1S->Fill(pta,fCentrality,fZVertex,effWtT);
     } else {

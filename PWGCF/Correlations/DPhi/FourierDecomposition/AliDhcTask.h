@@ -39,6 +39,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetFillMuons(Bool_t b)                 { fFillMuons = b;           }
   void         SetPtTACrit(Bool_t b)                  { fPtTACrit = b;            }
   void         SetAllTAHists(Bool_t b)                { fAllTAHists = b;          }
+  void         SetMixInEtaT(Bool_t b)                 { fMixInEtaT = b;           }
   void         SetEtaMax(Double_t eta)                { fEtaMax = eta;            }
   void         SetEtaTRange(Double_t eL, Double_t eH) { fEtaTLo=eL; fEtaTHi=eH;   }
   void         SetPoolSize(Int_t p)                   { fPoolSize = p;            }
@@ -54,6 +55,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetHEffT(THnF *h)                      { fHEffT=h;                 }
   void         SetHEffA(THnF *h)                      { fHEffA=h;                 }
   void         SetAnaMode(Int_t iAna);
+  void         PrintDhcSettings();
   enum eAnaMode       {kHH, kMuH, kHMu, kMuMu, kPSide, kASide};
 
  protected:
@@ -88,6 +90,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   Bool_t             fFillMuons;       //  fill the muon tracks into the mini event
   Bool_t             fPtTACrit;        //  use the pTT > pTA criterion?
   Bool_t             fAllTAHists;      //  create all pTT,pTA combination hists, even t<a?
+  Bool_t             fMixInEtaT;       //  mix in bins of eta_T instead of z_vertex
   Double_t           fEtaTLo;          //  Min eta for triggers
   Double_t           fEtaTHi;          //  Max eta for triggers
   Double_t           fEtaALo;          //  Min eta for associated
@@ -112,6 +115,8 @@ class AliDhcTask : public AliAnalysisTaskSE {
   TH1              **fHPts;            //! Pt distributions
   TH3               *fHQAT;            //! trigger particle distribution for QA
   TH3               *fHQAA;            //! associated particle distribution for QA
+  TH2               *fHPtCentT;        //! trigger pT vs centrality
+  TH2               *fHPtCentA;        //! associated pT vs centrality
   TFormula          *fIndex;           //! Index for histograms
   Double_t           fCentrality;      //! V0M for now
   Double_t           fZVertex;         //! Of current event
