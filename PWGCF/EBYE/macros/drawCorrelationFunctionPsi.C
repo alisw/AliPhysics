@@ -1,5 +1,5 @@
 const Int_t numberOfCentralityBins = 12;
-//TString centralityArray[numberOfCentralityBins] = {"0-100","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+//TString centralityArray[numberOfCentralityBins] = {"0-4","4-5","6-14","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
 TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
 
 const Int_t gRebin = 1;
@@ -569,8 +569,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     gHistPN[3] = dynamic_cast<TH2D *>(gHistPN[0]->Clone());
     gHistPN[3]->Divide(gHistPN[2]);
     gHistPN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
-    //gHistPN[3]->GetZaxis()->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
-    gHistPN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    if(normToTrig)
+      gHistPN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    else
+      gHistPN[3]->GetZaxis()->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
     //gHistPN[3]->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
     cPN[3] = new TCanvas("cPN3","",0,300,600,500);
     cPN[3]->SetFillColor(10); 
@@ -633,8 +635,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     gHistPN[3] = dynamic_cast<TH2D *>(gHistPN[0]->Clone());
     gHistPN[3]->Divide(gHistPN[2]);
     gHistPN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
-    //gHistPN[3]->GetZaxis()->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
-    gHistPN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    if(normToTrig)
+      gHistPN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    else
+      gHistPN[3]->GetZaxis()->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
     //gHistPN[3]->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
     cPN[3] = new TCanvas("cPN3","",0,300,600,500);
     cPN[3]->SetFillColor(10); 
@@ -787,8 +791,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     gHistNP[3] = dynamic_cast<TH2D *>(gHistNP[0]->Clone());
     gHistNP[3]->Divide(gHistNP[2]);
     gHistNP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
-    //gHistNP[3]->GetZaxis()->SetTitle("C_{-+}(#Delta#eta,#Delta#varphi)");
-    gHistNP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    if(normToTrig)
+      gHistNP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    else
+      gHistNP[3]->GetZaxis()->SetTitle("C_{-+}(#Delta#eta,#Delta#varphi)");
     //gHistNP[3]->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
     cNP[3] = new TCanvas("cNP3","",100,300,600,500);
     cNP[3]->SetFillColor(10); 
@@ -851,8 +857,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     gHistNP[3] = dynamic_cast<TH2D *>(gHistNP[0]->Clone());
     gHistNP[3]->Divide(gHistNP[2]);
     gHistNP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
-    //gHistNP[3]->GetZaxis()->SetTitle("C_{-+}(#Delta#eta,#Delta#varphi)");
-    gHistNP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    if(normToTrig)
+      gHistNP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    else
+      gHistNP[3]->GetZaxis()->SetTitle("C_{-+}(#Delta#eta,#Delta#varphi)");
     //gHistNP[3]->SetTitle("C_{-+}(#Delta#eta,#Delta#varphi)");
     cNP[3] = new TCanvas("cNP3","",100,300,600,500);
     cNP[3]->SetFillColor(10); 
@@ -1006,8 +1014,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     gHistPP[3] = dynamic_cast<TH2D *>(gHistPP[0]->Clone());
     gHistPP[3]->Divide(gHistPP[2]);
     gHistPP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
-    //gHistPP[3]->GetZaxis()->SetTitle("C_{++}(#Delta#eta,#Delta#varphi)");
-    gHistPP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    if(normToTrig)
+      gHistPP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    else
+      gHistPP[3]->GetZaxis()->SetTitle("C_{++}(#Delta#eta,#Delta#varphi)");
     // gHistPP[3]->SetTitle("C_{++}(#Delta#eta,#Delta#varphi)");
     cPP[3] = new TCanvas("cPP3","",200,300,600,500);
     cPP[3]->SetFillColor(10); 
@@ -1069,8 +1079,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     gHistPP[3] = dynamic_cast<TH2D *>(gHistPP[0]->Clone());
     gHistPP[3]->Divide(gHistPP[2]);
     gHistPP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
-    //gHistPP[3]->GetZaxis()->SetTitle("C_{++}(#Delta#eta,#Delta#varphi)");
-    gHistPP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    if(normToTrig)
+      gHistPP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    else
+      gHistPP[3]->GetZaxis()->SetTitle("C_{++}(#Delta#eta,#Delta#varphi)");
     //gHistPP[3]->SetTitle("C_{++}(#Delta#eta,#Delta#varphi)");
     cPP[3] = new TCanvas("cPP3","",200,300,600,500);
     cPP[3]->SetFillColor(10); 
@@ -1223,8 +1235,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     gHistNN[3] = dynamic_cast<TH2D *>(gHistNN[0]->Clone());
     gHistNN[3]->Divide(gHistNN[2]);
     gHistNN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
-    //gHistNN[3]->GetZaxis()->SetTitle("C_{--}(#Delta#eta,#Delta#varphi)");
-    gHistNN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    if(normToTrig)
+      gHistNN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    else
+      gHistNN[3]->GetZaxis()->SetTitle("C_{--}(#Delta#eta,#Delta#varphi)");
     // gHistNN[3]->SetTitle("C_{--}(#Delta#eta,#Delta#varphi)");
     cNN[3] = new TCanvas("cNN3","",300,300,600,500);
     cNN[3]->SetFillColor(10); 
@@ -1286,8 +1300,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     gHistNN[3] = dynamic_cast<TH2D *>(gHistNN[0]->Clone());
     gHistNN[3]->Divide(gHistNN[2]);
     gHistNN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
-    //gHistNN[3]->GetZaxis()->SetTitle("C_{--}(#Delta#eta,#Delta#varphi)");
-    gHistNN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    if(normToTrig)
+      gHistNN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
+    else
+      gHistNN[3]->GetZaxis()->SetTitle("C_{--}(#Delta#eta,#Delta#varphi)");
     //gHistNN[3]->SetTitle("C_{--}(#Delta#eta,#Delta#varphi)");
     cNN[3] = new TCanvas("cNN3","",300,300,600,500);
     cNN[3]->SetFillColor(10); 
@@ -1420,7 +1436,7 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
   filename += Form("%.1f",ptAssociatedMax); 
-  filename += "/correlationFunction.Centrality";
+  filename += "correlationFunction.Centrality";
   filename += gCentrality; filename += ".Psi";
   if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
@@ -1657,13 +1673,16 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
 		     Int_t gBit = 128,
 		     const char* gEventPlaneEstimator = "VZERO",
 		     Bool_t kProjectInEta = kFALSE,
+		     Int_t binMin = 1,
+		     Int_t binMax = 80,
 		     Int_t gCentrality = 1,
 		     Double_t psiMin = -0.5, 
 		     Double_t psiMax = 3.5,
 		     Double_t ptTriggerMin = -1.,
 		     Double_t ptTriggerMax = -1.,
 		     Double_t ptAssociatedMin = -1.,
-		     Double_t ptAssociatedMax = -1.) {
+		     Double_t ptAssociatedMax = -1.,
+		     Bool_t kUseZYAM = kFALSE) {
   //Macro that draws the charge dependent correlation functions PROJECTIONS 
   //for each centrality bin for the different pT of trigger and 
   //associated particles
@@ -1679,7 +1698,7 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
   filename += Form("%.1f",ptAssociatedMax); 
-  filename += "/correlationFunction.Centrality";
+  filename += "correlationFunction.Centrality";
   filename += gCentrality; filename += ".Psi";
   if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
@@ -1751,11 +1770,12 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   Double_t sum = 0.0;
   Double_t gError = 0.0;
   Int_t nCounter = 0;
+  //projection in delta eta
   if(kProjectInEta) {
     gHistPNprojection = new TH1D("gHistPNprojection","",gHistPN->GetNbinsX(),gHistPN->GetXaxis()->GetXmin(),gHistPN->GetXaxis()->GetXmax());
     for(Int_t iBinX = 1; iBinX <= gHistPN->GetNbinsX(); iBinX++) {
       sum = 0.; gError = 0.0; nCounter = 0;
-      for(Int_t iBinY = 1; iBinY <= gHistPN->GetNbinsY(); iBinY++) {
+      for(Int_t iBinY = binMin; iBinY <= binMax; iBinY++) {
 	sum += gHistPN->GetBinContent(iBinX,iBinY);
 	if(gHistPN->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
         Double_t exy = gHistPN->GetCellError(iBinX,iBinY);
@@ -1769,12 +1789,13 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
       gHistPNprojection->SetBinError(iBinX,gError);
     }
     gHistPNprojection->GetXaxis()->SetRangeUser(-1.4,1.4);
-    //gHistPNprojection = (TH1D*)gHistPN->ProjectionX("gHistPNprojection",1,-1);
-    //gHistPNprojection->Scale(1./gHistPN->GetNbinsY());
-    gHistPNprojection->Scale(2.*TMath::Pi());
-    gHistPNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    if(kUseZYAM) 
+      gHistPNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    else 
+      gHistPNprojection->GetYaxis()->SetTitle("C_{+-}(#Delta#eta)");
     gHistPNprojection->GetXaxis()->SetTitle("#Delta#eta");
-  }
+  }//projection in delta eta
+  //projection in delta phi
   else {
     gHistPNprojection = new TH1D("gHistPNprojection","",gHistPN->GetNbinsY(),gHistPN->GetYaxis()->GetXmin(),gHistPN->GetYaxis()->GetXmax());
     for(Int_t iBinY = 1; iBinY <= gHistPN->GetNbinsY(); iBinY++) {
@@ -1792,14 +1813,19 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
       gHistPNprojection->SetBinContent(iBinY,sum);
       gHistPNprojection->SetBinError(iBinY,gError);
     }
-    gHistPNprojection->Scale(3.2);
-    gHistPNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    if(kUseZYAM) 
+      gHistPNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    else 
+      gHistPNprojection->GetYaxis()->SetTitle("C_{+-}(#Delta#varphi)");
     gHistPNprojection->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   }
+
   //ZYAM
-  Double_t reference = gHistPNprojection->GetBinContent(gHistPNprojection->GetMinimumBin());
-  for(Int_t iBinX = 1; iBinX <= gHistPNprojection->GetNbinsX(); iBinX++) 
-    gHistPNprojection->SetBinContent(iBinX,gHistPNprojection->GetBinContent(iBinX) - reference);
+  if(kUseZYAM) {
+    Double_t reference = gHistPNprojection->GetBinContent(gHistPNprojection->GetMinimumBin());
+    for(Int_t iBinX = 1; iBinX <= gHistPNprojection->GetNbinsX(); iBinX++) 
+      gHistPNprojection->SetBinContent(iBinX,gHistPNprojection->GetBinContent(iBinX) - reference);
+  }
   
   gHistPNprojection->GetYaxis()->SetTitleOffset(1.5);
   gHistPNprojection->SetMarkerStyle(20);
@@ -1873,10 +1899,10 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
       gHistNPprojection->SetBinError(iBinX,gError);
     }
     gHistNPprojection->GetXaxis()->SetRangeUser(-1.4,1.4);
-    //gHistNPprojection = (TH1D*)gHistNP->ProjectionX("gHistNPprojection",1,-1);
-    //gHistNPprojection->Scale(1./gHistNP->GetNbinsY());
-    gHistNPprojection->Scale(2.*TMath::Pi());
-    gHistNPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    if(kUseZYAM) 
+      gHistNPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    else
+      gHistNPprojection->GetYaxis()->SetTitle("C_{-+}(#Delta#eta)");
     gHistNPprojection->GetXaxis()->SetTitle("#Delta#eta");
   }
   else {
@@ -1896,14 +1922,18 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
       gHistNPprojection->SetBinContent(iBinY,sum);
       gHistNPprojection->SetBinError(iBinY,gError);
     }
-    gHistNPprojection->Scale(3.2);
-    gHistNPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    if(kUseZYAM) 
+      gHistNPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    else
+      gHistNPprojection->GetYaxis()->SetTitle("C_{-+}(#Delta#varphi)");
     gHistNPprojection->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   }
   //ZYAM
-  Double_t reference = gHistNPprojection->GetBinContent(gHistNPprojection->GetMinimumBin());
+  if(kUseZYAM) {
+    Double_t reference = gHistNPprojection->GetBinContent(gHistNPprojection->GetMinimumBin());
   for(Int_t iBinX = 1; iBinX <= gHistNPprojection->GetNbinsX(); iBinX++) 
     gHistNPprojection->SetBinContent(iBinX,gHistNPprojection->GetBinContent(iBinX) - reference);
+  }
 
   gHistNPprojection->GetYaxis()->SetTitleOffset(1.5);
   gHistNPprojection->SetMarkerStyle(20);
@@ -1977,10 +2007,10 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
       gHistPPprojection->SetBinError(iBinX,gError);
     }
     gHistPPprojection->GetXaxis()->SetRangeUser(-1.4,1.4);
-    //gHistPPprojection = (TH1D*)gHistPP->ProjectionX("gHistPPprojection",1,-1);
-    //gHistPPprojection->Scale(1./gHistPP->GetNbinsY());
-    gHistPPprojection->Scale(2.*TMath::Pi());
-    gHistPPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    if(kUseZYAM) 
+      gHistPPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    else
+      gHistPPprojection->GetYaxis()->SetTitle("C_{++}(#Delta#eta)");
     gHistPPprojection->GetXaxis()->SetTitle("#Delta#eta");
   }
   else {
@@ -2000,15 +2030,19 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
       gHistPPprojection->SetBinContent(iBinY,sum);
       gHistPPprojection->SetBinError(iBinY,gError);
     }
-    gHistPPprojection->Scale(3.2);
-    gHistPPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    if(kUseZYAM) 
+      gHistPPprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    else
+      gHistPPprojection->GetYaxis()->SetTitle("C_{++}(#Delta#varphi)");
     gHistPPprojection->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   }
   //ZYAM
-  Double_t reference = gHistPPprojection->GetBinContent(gHistPPprojection->GetMinimumBin());
-  for(Int_t iBinX = 1; iBinX <= gHistPPprojection->GetNbinsX(); iBinX++) 
-    gHistPPprojection->SetBinContent(iBinX,gHistPPprojection->GetBinContent(iBinX) - reference);
-  
+  if(kUseZYAM) {
+    Double_t reference = gHistPPprojection->GetBinContent(gHistPPprojection->GetMinimumBin());
+    for(Int_t iBinX = 1; iBinX <= gHistPPprojection->GetNbinsX(); iBinX++) 
+      gHistPPprojection->SetBinContent(iBinX,gHistPPprojection->GetBinContent(iBinX) - reference);
+  }
+
   gHistPPprojection->GetYaxis()->SetTitleOffset(1.5);
   gHistPPprojection->SetMarkerStyle(20);
   gHistPPprojection->SetStats(kFALSE);
@@ -2081,10 +2115,10 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
       gHistNNprojection->SetBinError(iBinX,gError);
     }
     gHistNNprojection->GetXaxis()->SetRangeUser(-1.4,1.4);
-    //gHistNNprojection = (TH1D*)gHistNN->ProjectionX("gHistNNprojection",1,-1);
-    //gHistNNprojection->Scale(1./gHistNN->GetNbinsY());
-    gHistNNprojection->Scale(2.*TMath::Pi());
-    gHistNNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    if(kUseZYAM) 
+      gHistNNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#eta} - b_{ZYAM}");
+    else
+      gHistNNprojection->GetYaxis()->SetTitle("C_{--}(#Delta#eta)");
     gHistNNprojection->GetXaxis()->SetTitle("#Delta#eta");
   }
   else {
@@ -2104,14 +2138,18 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
       gHistNNprojection->SetBinContent(iBinY,sum);
       gHistNNprojection->SetBinError(iBinY,gError);
     }
-    gHistNNprojection->Scale(3.2);
-    gHistNNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    if(kUseZYAM) 
+      gHistNNprojection->GetYaxis()->SetTitle("#frac{1}{N_{trig}}#frac{dN_{assoc}}{#Delta#varphi} - b_{ZYAM} (rad^{-1})");
+    else
+      gHistNNprojection->GetYaxis()->SetTitle("C_{--}(#Delta#varphi)");
     gHistNNprojection->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   }
   //ZYAM
-  Double_t reference = gHistNNprojection->GetBinContent(gHistNNprojection->GetMinimumBin());
-  for(Int_t iBinX = 1; iBinX <= gHistNNprojection->GetNbinsX(); iBinX++) 
-    gHistNNprojection->SetBinContent(iBinX,gHistNNprojection->GetBinContent(iBinX) - reference); 
+  if(kUseZYAM) {
+    Double_t reference = gHistNNprojection->GetBinContent(gHistNNprojection->GetMinimumBin());
+    for(Int_t iBinX = 1; iBinX <= gHistNNprojection->GetNbinsX(); iBinX++) 
+      gHistNNprojection->SetBinContent(iBinX,gHistNNprojection->GetBinContent(iBinX) - reference); 
+  }
 
   gHistNNprojection->GetYaxis()->SetTitleOffset(1.5);
   gHistNNprojection->SetMarkerStyle(20);
