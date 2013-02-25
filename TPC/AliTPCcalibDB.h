@@ -138,7 +138,16 @@ class AliTPCcalibDB : public TObject
   static Float_t GetGGoffsetVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
   static Float_t GetGGnegVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
   static Float_t GetGGposVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
+  //
+  Bool_t  GetChamberHVStatus(UInt_t roc)                  const { return (roc<72)?fChamberHVStatus[roc]:kFALSE;   }
+  Float_t GetChamberHighVoltageMedian(UInt_t roc)         const { return (roc<72)?fChamberHVmedian[roc]:0.;       }
+  Float_t GetChamberCurrentNominalHighVoltage(UInt_t roc) const { return (roc<72)?fCurrentNominalVoltage[roc]:0.; }
+  Float_t GetChamberGoodHighVoltageFraction(UInt_t roc)   const { return (roc<72)?fChamberHVgoodFraction[roc]:0.; }
+  AliDCSSensor* GetChamberHVSensor(UInt_t roc)            const { return (roc<72)?fHVsensors[roc]:0x0;            }
+  Bool_t  IsDataTakingActive(time_t timeStamp);
+  //
   //Goofie Values
+  //
   static Float_t GetValueGoofie(Int_t timeStamp, Int_t run, Int_t type);
   //
   static Bool_t  GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit);
@@ -150,9 +159,11 @@ class AliTPCcalibDB : public TObject
   AliDCSSensorArray *     GetGoofieSensors(Int_t run);
   AliDCSSensorArray *     GetVoltageSensors(Int_t run);
   AliTPCCalibVdrift *     GetVdrift(Int_t run);
-  TObjArray *							GetTimeGainSplinesRun(Int_t run);
+  TObjArray *             GetTimeGainSplinesRun(Int_t run);
   TObjArray*              GetTimeVdriftSplineRun(Int_t run);
   static Float_t GetGain(Int_t sector, Int_t row, Int_t pad);
+  //
+  // Drift velocity information
   //
   Double_t      GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t mode);
   Double_t      GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t mode);
@@ -178,6 +189,7 @@ class AliTPCcalibDB : public TObject
 protected:
   
   AliCDBEntry* GetCDBEntry(const char* cdbPath);   
+  void         UpdateChamberHighVoltageData();
   Int_t        InitDeadMap();
 
   Int_t        fRun;         // current run number
@@ -202,6 +214,15 @@ protected:
   TObjArray * fIonTailArray;      // array of graphs with the ion tail 
   TObjArray *fPulserData;         // Calibration Pulser data
   TObjArray *fCEData;             // CE data
+  //
+  // Chamber HV info
+  //
+  Bool_t  fChamberHVStatus[72];       // Status of the Chamber, HV wise (on/off)
+  Float_t fChamberHVmedian[72];       // median chamber high voltage
+  Float_t fCurrentNominalVoltage[72]; // current nominal voltages
+  Float_t fChamberHVgoodFraction[72]; // fraction of time the chamber has a good HV (wrt. robust median)
+  AliDCSSensor *fHVsensors[72];       // HV sensors
+  TGraph *fGrRunState;                // store information if run is active or paused
   //
   //
   //

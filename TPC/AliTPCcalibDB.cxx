@@ -127,7 +127,10 @@ class AliTPCCalDet;
 #include "AliTPCCorrection.h"
 #include "AliTPCComposedCorrection.h"
 #include "AliTPCPreprocessorOnline.h"
-
+#include "AliTimeStamp.h"
+#include "AliTriggerRunScalers.h"
+#include "AliTriggerScalers.h"
+#include "AliTriggerScalersRecord.h"
 
 ClassImp(AliTPCcalibDB)
 
@@ -191,6 +194,8 @@ AliTPCcalibDB::AliTPCcalibDB():
   fIonTailArray(0),
   fPulserData(0),
   fCEData(0),
+  fHVsensors(),
+  fGrRunState(0x0),
   fTemperature(0),
   fMapping(0),
   fParam(0),
@@ -215,6 +220,12 @@ AliTPCcalibDB::AliTPCcalibDB():
   //  
   //
   fgInstance=this;
+  for (Int_t i=0;i<72;++i){
+    fChamberHVStatus[i]=kTRUE;
+    fChamberHVmedian[i]=-1;
+    fCurrentNominalVoltage[i]=0.;
+    fChamberHVgoodFraction[i]=0.;
+  }
   Update();    // temporary
   fTimeGainSplinesArray.SetOwner(); //own the keys
   fGRPArray.SetOwner(); //own the keys
@@ -246,6 +257,8 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fIonTailArray(0),
   fPulserData(0),
   fCEData(0),
+  fHVsensors(),
+  fGrRunState(0x0),
   fTemperature(0),
   fMapping(0),
   fParam(0),
@@ -268,7 +281,13 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   //
   // Copy constructor invalid -- singleton implementation
   //
-   Error("copy constructor","invalid -- singleton implementation");
+  Error("copy constructor","invalid -- singleton implementation");
+  for (Int_t i=0;i<72;++i){
+    fChamberHVStatus[i]=kTRUE;
+    fChamberHVmedian[i]=-1;
+    fCurrentNominalVoltage[i]=0.;
+    fChamberHVgoodFraction[i]=0.;
+  }
   fTimeGainSplinesArray.SetOwner(); //own the keys
   fGRPArray.SetOwner(); //own the keys
   fGRPMaps.SetOwner(); //own the keys
@@ -298,6 +317,7 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //
   
   delete fActiveChannelMap;
+  delete fGrRunState;
 }
 AliTPCCalPad* AliTPCcalibDB::GetDistortionMap(Int_t i) const {
   //
@@ -522,6 +542,10 @@ void AliTPCcalibDB::Update(){
     fTransform->SetCurrentRun(AliCDBManager::Instance()->GetRun());
   }
 
+  // Chamber HV data
+  // needs to be called before InitDeadMap
+  UpdateChamberHighVoltageData();
+  
   // Create Dead Channel Map
   InitDeadMap();
 
@@ -596,7 +620,7 @@ void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObj
       if ( !sObjType || ! sObjFileName ) continue;
       TString sType(sObjType->GetString());
       TString sFileName(sObjFileName->GetString());
-      printf("%s\t%s\n",sType.Data(),sFileName.Data());
+//       printf("%s\t%s\n",sType.Data(),sFileName.Data());
       
       TFile *fIn = TFile::Open(sFileName);
       if ( !fIn ){
@@ -657,17 +681,17 @@ void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObj
 Int_t AliTPCcalibDB::InitDeadMap() {
   // Initialize DeadChannel Map 
   // Source of information:
-  // -  HV < HVnominal -delta
+  // -  HV (see UpdateChamberHighVoltageData())
   // -  Altro disabled channels. Noisy channels.
   // -  DDL list
 
   // check necessary information
-  Int_t run=AliCDBManager::Instance()->GetRun();
+  const Int_t run=GetRun();
   if (run<0){
     AliError("run not set in CDB manager. Cannot create active channel map");
     return 0;
   }
-  AliDCSSensorArray* voltageArray = AliTPCcalibDB::Instance()->GetVoltageSensors(run);
+  AliDCSSensorArray* voltageArray = GetVoltageSensors(run);
   AliTPCCalPad*          altroMap = GetALTROMasked();
   TMap*                    mapddl = GetDDLMap();
 
@@ -676,76 +700,6 @@ Int_t AliTPCcalibDB::InitDeadMap() {
     return 0;
   }
   
-  if (!fActiveChannelMap) fActiveChannelMap=new AliTPCCalPad("ActiveChannelMap","ActiveChannelMap");
-  
-  //=============================================================
-  //get map of bad ROCs from VOLTAGE deviations
-  //
-  Bool_t badVoltage[AliTPCCalPad::kNsec]={kFALSE};
-  Double_t maxVdiff=100.;
-
-  if (voltageArray){
-    //1. get median of median of all chambers
-    Double_t chamberMedian[AliTPCCalPad::kNsec]={0.};
-    for (Int_t iROC=0;iROC<AliTPCCalPad::kNsec;++iROC){
-      TString sensorName="";
-      Char_t sideName='A';
-      if ((iROC/18)%2==1) sideName='C';
-      if (iROC<36) sensorName=Form("TPC_ANODE_I_%c%02d_VMEAS",sideName,iROC%18);
-      else         sensorName=Form("TPC_ANODE_O_%c%02d_0_VMEAS",sideName,iROC%18);
-
-      AliDCSSensor *sensor = voltageArray->GetSensor(sensorName);
-      if (!sensor) continue;
-
-      chamberMedian[iROC]=0;
-      TGraph *gr=sensor->GetGraph();
-      AliSplineFit *fit=sensor->GetFit();
-      if ( gr && gr->GetN()>0 ){
-        chamberMedian[iROC]=TMath::Median(gr->GetN(),gr->GetY());
-      } else if (fit && fit->GetKnots()>0) {
-        chamberMedian[iROC]=TMath::Median(fit->GetKnots(), fit->GetY0());
-      }
-    }
-    Double_t medianIROC=TMath::Median( 36, chamberMedian );
-    Double_t medianOROC=TMath::Median( 36, chamberMedian+36 );
-
-    //2. check if 90% of the knots (points) are out of a given threshold
-    for (Int_t iROC=0;iROC<AliTPCCalPad::kNsec;++iROC){
-      badVoltage[iROC]=kFALSE;
-      TString sensorName="";
-      Char_t sideName='A';
-      Double_t median=medianIROC;
-      if ((iROC/18)%2==1) sideName='C';
-      if (iROC<36) sensorName=Form("TPC_ANODE_I_%c%02d_VMEAS",sideName,iROC%18);
-      else           {sensorName=Form("TPC_ANODE_O_%c%02d_0_VMEAS",sideName,iROC%18); median=medianOROC; }
-
-      AliDCSSensor *sensor = voltageArray->GetSensor(sensorName);
-      if (!sensor) continue;
-
-      chamberMedian[iROC]=0;
-      TGraph *gr=sensor->GetGraph();
-      AliSplineFit *fit=sensor->GetFit();
-      Int_t nmax=1;
-      Int_t nout=0;
-      if ( gr && gr->GetN()>0 ){
-        nmax=gr->GetN();
-        for (Int_t i=0; i<gr->GetN(); ++i)
-          if ( TMath::Abs( gr->GetY()[i]-median ) > maxVdiff ) ++nout;
-      } else if (fit && fit->GetKnots()>0) {
-        nmax=fit->GetKnots();
-        for (Int_t i=0; i<fit->GetKnots(); ++i)
-          if ( TMath::Abs( fit->GetY0()[i]-median ) > maxVdiff ) ++nout;
-      }
-      if ( (Double_t)nout/(Double_t)nmax > 0.9 ) badVoltage[iROC]=kTRUE;
-      //     printf("%d, %d, %d, %f\n",iROC, nout, nmax, median);
-    }
-
-  } else {
-    AliError("Voltage Array missing. ActiveChannelMap can only be created with parts of the information.");
-  }
-  // Voltage map is done
-  //=============================================================
-
   //=============================================================
   // Setup DDL map
 
@@ -766,6 +720,8 @@ Int_t AliTPCcalibDB::InitDeadMap() {
   // Setup active chnnel map
   //
 
+  if (!fActiveChannelMap) fActiveChannelMap=new AliTPCCalPad("ActiveChannelMap","ActiveChannelMap");
+
   AliTPCmapper map(gSystem->ExpandPathName("$ALICE_ROOT/TPC/mapping/"));
 
   if (!altroMap) AliError("ALTRO dead channel map missing. ActiveChannelMap can only be created with parts of the information.");
@@ -778,7 +734,8 @@ Int_t AliTPCcalibDB::InitDeadMap() {
     }
     
     // check for bad voltage
-    if (badVoltage[iROC]){
+    // see UpdateChamberHighVoltageData()
+    if (!fChamberHVStatus[iROC]){
       roc->Multiply(0.);
       continue;
     }
@@ -1515,6 +1472,197 @@ Float_t AliTPCcalibDB::GetDCSSensorMeanValue(AliDCSSensorArray *arr, const char 
     //    val*=10;
   }
   return val;
+}
+
+Bool_t AliTPCcalibDB::IsDataTakingActive(time_t timeStamp)
+{
+  if (!fGrRunState) return kFALSE;
+  Double_t time=Double_t(timeStamp);
+  Int_t currentPoint=0;
+  Bool_t currentVal=fGrRunState->GetY()[currentPoint]>0.5;
+  Bool_t retVal=currentVal;
+  Double_t currentTime=fGrRunState->GetX()[currentPoint];
+  
+  while (time>currentTime){
+    retVal=currentVal;
+    if (currentPoint==fGrRunState->GetN()) break;
+    currentVal=fGrRunState->GetY()[currentPoint]>0.5;
+    currentTime=fGrRunState->GetX()[currentPoint];
+    ++currentPoint;
+  }
+
+  return retVal;
+}
+
+void AliTPCcalibDB::UpdateChamberHighVoltageData()
+{
+  //
+  // set chamber high voltage data
+  // 1. Robust median (sampling the hv graphs over time)
+  // 2. Current nominal voltages (nominal voltage corrected for common HV offset)
+  // 3. Fraction of good HV values over time (deviation from robust median)
+  // 4. HV status, based on the above
+  //
+
+  // start and end time of the run
+  const Int_t run=GetRun();
+  if (run<0) return;
+  const Int_t startTimeGRP = GetGRP(run)->GetTimeStart();
+  const Int_t stopTimeGRP  = GetGRP(run)->GetTimeEnd();
+
+  //
+  // check active state by analysing the scalers
+  //
+  // initialise graph with active running
+  AliCDBEntry *entry = GetCDBEntry("GRP/CTP/Scalers");
+  entry->SetOwner(kTRUE);
+  AliTriggerRunScalers *sca = (AliTriggerRunScalers*)entry->GetObject();
+  Int_t nchannels = sca->GetNumClasses(); // number of scaler channels (i.e. trigger classes)
+  Int_t npoints = sca->GetScalersRecords()->GetEntries(); // number of samples
+
+  delete fGrRunState;
+  fGrRunState=new TGraph;
+  fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(startTimeGRP)-.001,0);
+  fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(startTimeGRP),1);
+  ULong64_t lastSum=0;
+  Double_t timeLast=0.;
+  Bool_t active=kTRUE;
+  for (int i=0; i<npoints; i++) {
+    AliTriggerScalersRecord *rec = (AliTriggerScalersRecord *) sca->GetScalersRecord(i);
+    Double_t time = ((AliTimeStamp*) rec->GetTimeStamp())->GetSeconds();
+    ULong64_t sum=0;
+    for (int j=0; j<nchannels; j++) sum += ((AliTriggerScalers*) rec->GetTriggerScalers()->At(j))->GetL2CA();
+    if (TMath::Abs(time-timeLast)<.001 && sum==lastSum ) continue;
+    if (active && sum==lastSum){
+      fGrRunState->SetPoint(fGrRunState->GetN(),timeLast-.01,1);
+      fGrRunState->SetPoint(fGrRunState->GetN(),timeLast,0);
+      active=kFALSE;
+    } else if (!active && sum>lastSum ){
+      fGrRunState->SetPoint(fGrRunState->GetN(),timeLast-.01,0);
+      fGrRunState->SetPoint(fGrRunState->GetN(),timeLast,1);
+      active=kTRUE;
+    }
+    lastSum=sum;
+    timeLast=time;
+  }
+  fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(stopTimeGRP),active);
+  fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(stopTimeGRP)+.001,0);
+  
+  
+  
+  // reset all values
+  for (Int_t iROC=0;iROC<72;++iROC) {
+    fChamberHVmedian[iROC]       = -1;
+    fChamberHVgoodFraction[iROC] = 0.;
+    fCurrentNominalVoltage[iROC] = -999.;
+    fChamberHVStatus[iROC]       = kFALSE;
+  }
+  
+  AliDCSSensorArray* voltageArray = GetVoltageSensors(run);
+  if (!voltageArray) {
+    AliError("Voltage Array missing. Cannot calculate HV information!");
+    return;
+  }
+
+  // max HV diffs before a chamber is masked
+  const Float_t maxVdiff      = fParam->GetMaxVoltageDeviation();
+  const Float_t maxDipVoltage = fParam->GetMaxDipVoltage();
+  const Float_t maxFracHVbad  = fParam->GetMaxFractionHVbad();
+
+  const Int_t samplingPeriod=1;
+
+  // array with sampled voltages
+  const Int_t maxSamples=(stopTimeGRP-startTimeGRP)/samplingPeriod + 10*samplingPeriod;
+  Float_t *vSampled = new Float_t[maxSamples];
+
+  // deviation of the median from the nominal voltage
+  Double_t chamberMedianDeviation[72]={0.};
+
+  for (Int_t iROC=0; iROC<72; ++iROC){
+    chamberMedianDeviation[iROC]=0.;
+    TString sensorName="";
+    Char_t sideName='A';
+    if ((iROC/18)%2==1) sideName='C';
+    if (iROC<36) sensorName=Form("TPC_ANODE_I_%c%02d_VMEAS",sideName,iROC%18);
+    else        sensorName=Form("TPC_ANODE_O_%c%02d_0_VMEAS",sideName,iROC%18);
+
+    AliDCSSensor *sensor = voltageArray->GetSensor(sensorName);
+
+    fHVsensors[iROC]=sensor;
+    if (!sensor) continue;
+
+    Int_t nPointsSampled=0;
+    
+    TGraph *gr=sensor->GetGraph();
+    if ( gr && gr->GetN()>1 ){
+      //1. sample voltage over time
+      //   get a robust median
+      //   buffer sampled voltages
+      
+      // current sampling time
+      Int_t time=startTimeGRP;
+      
+      // input graph sampling point
+      const Int_t nGraph=gr->GetN();
+      Int_t pointGraph=0;
+      
+      //initialise graph information
+      Int_t timeGraph=TMath::Nint(gr->GetX()[pointGraph+1]*3600+sensor->GetStartTime());
+      Double_t sampledHV=gr->GetY()[pointGraph++];
+
+      while (time<stopTimeGRP){
+        while (timeGraph<=time && pointGraph+1<nGraph){
+          timeGraph=TMath::Nint(gr->GetX()[pointGraph+1]*3600+sensor->GetStartTime());
+          sampledHV=gr->GetY()[pointGraph++];
+        }
+        time+=samplingPeriod;
+        if (!IsDataTakingActive(time-samplingPeriod)) continue;
+        vSampled[nPointsSampled++]=sampledHV;
+      }
+
+      if (nPointsSampled<1) continue;
+      
+      fChamberHVmedian[iROC]=TMath::Median(nPointsSampled,vSampled);
+      chamberMedianDeviation[iROC]=fChamberHVmedian[iROC]-fParam->GetNominalVoltage(iROC);
+
+      //2. calculate good HV fraction
+      Int_t ngood=0;
+      for (Int_t ipoint=0; ipoint<nPointsSampled; ++ipoint) {
+        if (TMath::Abs(vSampled[ipoint]-fChamberHVmedian[iROC])<maxDipVoltage) ++ngood;
+      }
+
+      fChamberHVgoodFraction[iROC]=Float_t(ngood)/Float_t(nPointsSampled);
+    } else {
+      AliError(Form("No Graph or too few points found for HV sensor of ROC %d",iROC));
+    }
+  }
+
+  delete [] vSampled;
+  vSampled=0x0;
+  
+  // get median deviation from all chambers (detect e.g. -50V)
+  const Double_t medianIROC=TMath::Median( 36, chamberMedianDeviation );
+  const Double_t medianOROC=TMath::Median( 36, chamberMedianDeviation+36 );
+  
+  // Define current default voltages
+  for (Int_t iROC=0;iROC<72/*AliTPCCalPad::kNsec*/;++iROC){
+    const Float_t averageDeviation=(iROC<36)?medianIROC:medianOROC;
+    fCurrentNominalVoltage[iROC]=fParam->GetNominalVoltage(iROC)+averageDeviation;
+  }
+
+  //
+  // Check HV status
+  //
+  for (Int_t iROC=0;iROC<72/*AliTPCCalPad::kNsec*/;++iROC){
+    fChamberHVStatus[iROC]=kTRUE;
+
+    //a. Deviation of median from current nominal voltage
+    //   allow larger than nominal voltages
+    if (fCurrentNominalVoltage[iROC]-fChamberHVmedian[iROC] >  maxVdiff) fChamberHVStatus[iROC]=kFALSE;
+
+    //b. Fraction of bad hv values
+    if ( 1-fChamberHVgoodFraction[iROC] > maxFracHVbad ) fChamberHVStatus[iROC]=kFALSE;
+  }
 }
 
 Float_t AliTPCcalibDB::GetChamberHighVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits, Bool_t current) {

@@ -14,8 +14,12 @@
 class TFile;
 class TLegend;
 class TGraph;
+class TH1;
+class TH1F;
 #include <TTree.h>
 #include <TMatrixDfwd.h>
+#include <TVectorDfwd.h>
+#include <TVectorFfwd.h>
 
 class AliTPCCalPad;
 class AliTPCCalROC;

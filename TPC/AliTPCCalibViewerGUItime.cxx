@@ -861,11 +861,11 @@ void AliTPCCalibViewerGUItime::AdjustYRange()
   //
   TIter nextGraphicObject(fTrashBox);
   TObject *o=0x0;
-  Float_t min=0,max=0;
+  Float_t min=1,max=0;
   while ( (o=nextGraphicObject()) ){
     if (o->IsA()==TGraph::Class()){
       TGraph *gr=(TGraph*)o;
-      if (min==max) {
+      if (min>max) {
         min=TMath::MinElement(gr->GetN(),gr->GetY());
         max=TMath::MaxElement(gr->GetN(),gr->GetY());
       } else {

@@ -114,6 +114,7 @@
 #include <TObjArray.h>
 #include <TTree.h>
 #include <TGraphErrors.h>
+#include <TTimeStamp.h>
 #include "AliLog.h"
 #include "AliComplexCluster.h"
 #include "AliESDEvent.h"
@@ -7794,52 +7795,54 @@ void AliTPCtrackerMI::AddCovarianceAdd(AliTPCseed * seed){
 }
 
 //_____________________________________________________________________________
-Bool_t  AliTPCtrackerMI::IsTPCHVDipEvent(AliESDEvent const *esdEvent) {
-//
-// check events affected by TPC HV dip
-//
-if(!esdEvent) return kFALSE;
+Bool_t  AliTPCtrackerMI::IsTPCHVDipEvent(AliESDEvent const *esdEvent)
+{
+  //
+  // check events affected by TPC HV dip
+  //
+  if(!esdEvent) return kFALSE;
 
-// Init TPC OCDB
-if(!AliTPCcalibDB::Instance()) return kFALSE;
-AliTPCcalibDB::Instance()->SetRun(esdEvent->GetRunNumber());
+  // Init TPC OCDB
+  AliTPCcalibDB *db=AliTPCcalibDB::Instance();
+  if(!db) return kFALSE;
+  db->SetRun(esdEvent->GetRunNumber());
 
-// Get HV TPC chamber sensors and calculate the median
-AliDCSSensorArray *voltageArray= AliTPCcalibDB::Instance()->GetVoltageSensors(esdEvent->GetRunNumber());
-if(!voltageArray) return kFALSE;
-
-TString sensorName="";
-Double_t kTPCHVdip = 2.0; // allow for 2V dip as compared to median from given sensor
-
-
+  // maximum allowed voltage before an event is identified as a dip event
+  // and scanning period
+  const Double_t kTPCHVdip          = db->GetParameters()->GetMaxDipVoltage(); 
+  const Double_t dipEventScanPeriod = db->GetParameters()->GetVoltageDipScanPeriod();
+  const Double_t tevSec             = esdEvent->GetTimeStamp();
+  
   for(Int_t sector=0; sector<72; sector++)
   {
-    Char_t sideName='A';
-    if ((sector/18)%2==1) sideName='C';
-    if (sector<36){
-      //IROC
-      sensorName=Form("TPC_ANODE_I_%c%02d_VMEAS",sideName,sector%18);
-    } else {
-      //OROC
-      sensorName=Form("TPC_ANODE_O_%c%02d_0_VMEAS",sideName,sector%18);
-    }
+    // don't use excluded chambers, since the state is not defined at all
+    if (!db->GetChamberHVStatus(sector)) continue;
     
-    AliDCSSensor* sensor = voltageArray->GetSensor(sensorName.Data());
-    if(!sensor) continue;
-    TGraph *graph = sensor->GetGraph();
-    if(!graph) continue;
-    Double_t median = TMath::Median(graph->GetN(), graph->GetY());
-    if(median == 0) continue;
-
-    //printf("chamber %d, sensor %s, HV %f, median %f\n", sector, sensorName.Data(), sensor->GetValue(esdEvent->GetTimeStamp()), median);
+    // get hv sensor of the chamber
+    AliDCSSensor *sensor = db->GetChamberHVSensor(sector);
+    if (!sensor) continue;
+    TGraph *grSensor=sensor->GetGraph();
+    if (!grSensor) continue;
+    if (grSensor->GetN()<1) continue;
     
-    if(TMath::Abs(sensor->GetValue(esdEvent->GetTimeStamp())-median)>kTPCHVdip) {
-      return kTRUE; 
+    // get median
+    const Double_t median = db->GetChamberHighVoltageMedian(sector);
+    if(median < 1.) continue;
+    
+    for (Int_t ipoint=0; ipoint<grSensor->GetN()-1; ++ipoint){
+      Double_t nextTime=grSensor->GetX()[ipoint+1]*3600+sensor->GetStartTime();
+      if (tevSec-dipEventScanPeriod>nextTime) continue;
+      const Float_t deltaV=TMath::Abs(grSensor->GetY()[ipoint]-median);
+      if (deltaV>kTPCHVdip) {
+        AliDebug(3,Form("HV dip detected in ROC '%02d' with dV '%.2f' at time stamp '%.0f'",sector,deltaV,tevSec));
+        return kTRUE;
+      }
+      if (nextTime>tevSec+dipEventScanPeriod) break;
     }
-  } 
- 
-  return kFALSE; 
-} 
+  }
+  
+  return kFALSE;
+}
 
 //________________________________________
 void AliTPCtrackerMI::MarkSeedFree(TObject *sd) 

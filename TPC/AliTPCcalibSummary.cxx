@@ -315,10 +315,38 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       vecGoofie.ResizeTo(19);
     }
     //
-    TVectorD voltagesIROC(36);
-    TVectorD voltagesOROC(36); 
-      for(Int_t j=0; j<36; j++) voltagesIROC[j] = fCalibDB->GetChamberHighVoltage(irun, j,itime); 
-    for(Int_t j=36; j<72; j++) voltagesOROC[j-36] = fCalibDB->GetChamberHighVoltage(irun, j,itime);
+    static TVectorF voltagesIROC(36);
+    static TVectorF voltagesIROCMedian(36);
+    static TVectorF voltagesIROCNominal(36);
+    static TVectorF voltagesIROCCurrentNominal(36);
+    static TVectorF voltagesIROCStatus(36);
+    static TVectorF voltagesIROCGoodFraction(36);
+    //
+    static TVectorF voltagesOROC(36);
+    static TVectorF voltagesOROCMedian(36);
+    static TVectorF voltagesOROCNominal(36);
+    static TVectorF voltagesOROCCurrentNominal(36);
+    static TVectorF voltagesOROCStatus(36);
+    static TVectorF voltagesOROCGoodFraction(36);
+    
+    for(Int_t j=0; j<36; j++){
+      voltagesIROC[j]               = fCalibDB->GetChamberHighVoltage(irun, j,itime);
+      voltagesIROCMedian[j]         = fCalibDB->GetChamberHighVoltageMedian(j);
+      voltagesIROCNominal[j]        = fCalibDB->GetParameters()->GetNominalVoltage(j);
+      voltagesIROCCurrentNominal[j] = fCalibDB->GetChamberCurrentNominalHighVoltage(j);
+      voltagesIROCStatus[j]         = fCalibDB->GetChamberHVStatus(j);
+      voltagesIROCGoodFraction[j]   = fCalibDB->GetChamberGoodHighVoltageFraction(j);
+    }
+    
+    for(Int_t j=36; j<72; j++) {
+      voltagesOROC[j-36]               = fCalibDB->GetChamberHighVoltage(irun, j,itime);
+      voltagesOROCMedian[j-36]         = fCalibDB->GetChamberHighVoltageMedian(j);
+      voltagesOROCNominal[j-36]        = fCalibDB->GetParameters()->GetNominalVoltage(j);
+      voltagesOROCCurrentNominal[j-36] = fCalibDB->GetChamberCurrentNominalHighVoltage(j);
+      voltagesOROCStatus[j-36]         = fCalibDB->GetChamberHVStatus(j);
+      voltagesOROCGoodFraction[j-36]   = fCalibDB->GetChamberGoodHighVoltageFraction(j);
+    }
+    
     Double_t voltIROC = TMath::Median(36, voltagesIROC.GetMatrixArray());
     Double_t voltOROC = TMath::Median(36, voltagesOROC.GetMatrixArray());
     //
@@ -333,6 +361,8 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     //drift velocity
     Float_t dvCorr=-5;
     if (fitVdrift) dvCorr=fitVdrift->Eval(itime);
+    //data taking active
+    Bool_t dataTakingActive=fCalibDB->IsDataTakingActive((time_t)itime);
     
     //tempMap->GetLinearFitter(0,0,itime);
     (*fPcstream)<<"dcs"<<
@@ -340,11 +370,23 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       "time="<<itime<<
       "startTimeGRP="<<startTimeGRP<<
       "stopTimeGRP="<<stopTimeGRP<<
+      "dataTakingActive="<<dataTakingActive<<
       //run type
       "runType.="<<&runType<<
       // voltage setting
-      "VIROC.="<<&voltagesIROC<<
-      "VOROC.="<<&voltagesOROC<<
+      "VIROC.="               << &voltagesIROC<<
+      "VIROCMedian.="         << &voltagesIROCMedian<<
+      "VIROCNominal.="        << &voltagesIROCNominal <<
+      "VIROCCurrentNominal.=" << &voltagesIROCCurrentNominal <<
+      "VIROCGoodHVFraction.=" << &voltagesIROCGoodFraction <<
+      "VIROCStatus.="         << &voltagesIROCStatus <<
+      //
+      "VOROC.="               << &voltagesOROC<<
+      "VOROCMedian.="         << &voltagesOROCMedian<<
+      "VOROCNominal.="        << &voltagesOROCNominal <<
+      "VOROCCurrentNominal.=" << &voltagesOROCCurrentNominal <<
+      "VOROCGoodHVFraction.=" << &voltagesOROCGoodFraction <<
+      "VOROCStatus.="         << &voltagesOROCStatus <<
       "medianVIROC="<<voltIROC<<
       "medianVOROC="<<voltOROC<<
       "coverIA=" << coverIA <<
@@ -570,8 +612,8 @@ void AliTPCcalibSummary::ProcessDriftCE(Int_t run,Int_t timeStamp){
   static TVectorD vdriftCE(74);
   static TVectorD tcdriftCE(74);
   static TVectorD tddriftCE(74);
-  static Double_t ltime0A;
-  static Double_t ltime0C;
+  static Double_t ltime0A=0.;
+  static Double_t ltime0C=0.;
   //
   //
   //
@@ -618,9 +660,9 @@ void AliTPCcalibSummary::ProcessDriftAll(Int_t run,Int_t timeStamp){
   static Double_t vdriftP=0;
   static Double_t dcea=0, dcec=0, dcem=0,  dla=0,dlc=0,dlm=0, dlaon=0,dlcon=0,dlmon=0, dp=0;
   static Double_t dits=0;
-  static Double_t ltime0A;
-  static Double_t ltime0C;
-  static Double_t ctime0;
+  static Double_t ltime0A=0.;
+  static Double_t ltime0C=0.;
+  static Double_t ctime0=0.;
   static Double_t vdrift1=0;
   vdrift1= fCalibDB->GetVDriftCorrectionTime(timeStamp,run,0,1);
   vdriftP = fDButil->GetVDriftTPC(dp, run, timeStamp, 86400, 3600,0);
@@ -757,6 +799,13 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
   static TVectorD vGainGraphIROCErr(36);
   static TVectorD vGainGraphOROCmedErr(36);
   static TVectorD vGainGraphOROClongErr(36);
+  
+  vGainGraphIROC.Zero();
+  vGainGraphOROCmed.Zero();
+  vGainGraphOROClong.Zero();
+  vGainGraphIROCErr.Zero();
+  vGainGraphOROCmedErr.Zero();
+  vGainGraphOROClongErr.Zero();
   
   TGraphErrors grDummy;
   TObjArray * gainSplines = fCalibDB->GetTimeGainSplinesRun(irun);

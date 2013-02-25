@@ -194,7 +194,14 @@ public:
   void  SetMaxTBin(Int_t maxtbin)  {  fMaxTBin = maxtbin;}
   void  SetADCSat(Int_t adcsat)    {  fADCSat  = adcsat;}
   void  SetADCDynRange(Float_t adcdynrange) {fADCDynRange = adcdynrange;}
-  void  SetNominalVoltage(Float_t v, UInt_t i) {if (i<72) fNominalVoltage[i]=v;}
+  //
+  // High voltage parameters
+  //
+  void  SetNominalVoltage(Float_t v, UInt_t i)  {if (i<72) fNominalVoltage[i]=v;}
+  void  SetMaxVoltageDeviation(Float_t voltage) { fMaxVoltageDeviation=voltage; }
+  void  SetMaxDipVoltage(Float_t voltage)       { fMaxDipVoltage=voltage;       }
+  void  SetMaxFractionHVbad(Float_t frac )      { fMaxHVfractionBad=frac;       }
+  void  SetVoltageDipScanPeriod(Float_t period) { fVoltageDipScanPeriod=period; }
   //
   //set response  parameters  
   //
@@ -319,7 +326,15 @@ public:
   Float_t  GetADCDynRange() const {return fADCDynRange;}
   Float_t  GetTotalNormFac() const {return fTotalNormFac;}
   Float_t  GetNoiseNormFac() const {return fNoiseNormFac;}
+  //
+  // High voltage parameters
+  //
   Float_t  GetNominalVoltage(UInt_t i) const {return (i<72)?fNominalVoltage[i]:0;} //0-35:IROC, 36-71:OROC
+  Float_t  GetMaxVoltageDeviation()    const { return fMaxVoltageDeviation;      }
+  Float_t  GetMaxDipVoltage()          const { return fMaxDipVoltage;            }
+  Float_t  GetMaxFractionHVbad()       const { return fMaxHVfractionBad;         }
+  Float_t  GetVoltageDipScanPeriod()   const { return fVoltageDipScanPeriod;     }
+  
   //
   // get response data
   //  
@@ -441,8 +456,15 @@ protected :
   Int_t   fADCSat;          //saturation value of ADC (10 bits)
   Float_t fADCDynRange;     //input dynamic range (mV)
   Float_t fTotalNormFac;    //full normalisation factor - calculated
-  Float_t fNoiseNormFac;    //normalisation factor to transform noise in electron to ADC channel   
+  Float_t fNoiseNormFac;    //normalisation factor to transform noise in electron to ADC channel
+  //---------------------------------------------------------------------
+  // High voltage parameters
+  //---------------------------------------------------------------------
   Float_t fNominalVoltage[72];  //nominal voltage in [V] per chamber
+  Float_t fMaxVoltageDeviation; // maximum voltage deviation from nominal voltage before a chamber is masked
+  Float_t fMaxDipVoltage;       // maximum voltage deviation from median before a dip event is marked
+  Float_t fMaxHVfractionBad;    // maximum fraction of bad HV entries (deviation from Median) before a chamber is marked bad
+  Float_t fVoltageDipScanPeriod; // scanning period to detect a high volrage dip: event time stamp +- fVoltageDipScanPeriod [sec]
   
   //---------------------------------------------------------------------
   // ALICE TPC response data 
@@ -467,7 +489,7 @@ private:
 
   void CleanGeoMatrices();
 
-  ClassDef(AliTPCParam,4)  //parameter  object for set:TPC
+  ClassDef(AliTPCParam,5)  //parameter  object for set:TPC
 };
 
  
