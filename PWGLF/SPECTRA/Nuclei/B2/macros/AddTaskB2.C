@@ -17,21 +17,24 @@
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
 Double_t GetMeanNtrk(const TString& period);
+Double_t GetNSDMeanNtrk(const TString& period);
 
-AliAnalysisTaskB2* AddTaskB2(const TString& species,
-                             const TString& outputfile,
-                             const TString& trksel,
-                             Int_t pidProc,
-                             const TString& periodname,
-                             Bool_t simulation=kFALSE,
-                             Bool_t heavyIons=kFALSE,
-                             Double_t maxDCAxy=1,
-                             Double_t maxDCAz=2,
-                             Double_t minKNOmult=-10,
-                             Double_t maxKNOmult=10000,
-                             Bool_t V0AND=kFALSE,
-                             Double_t minCentrality=0,
-                             Double_t maxCentrality=20)
+AliAnalysisTaskB2* AddTaskB2( const TString& species
+                             , const TString& outputfile
+                             , const TString& trksel
+                             , Int_t pidProc
+                             , const TString& periodname
+                             , Bool_t simulation         = kFALSE
+                             , Bool_t heavyIons          = kFALSE
+                             , Double_t maxDCAxy         = 1
+                             , Double_t maxDCAz          = 2
+                             , Double_t minKNOmult       = -10
+                             , Double_t maxKNOmult       = 10000
+                             , Bool_t V0AND              = kFALSE
+                             , Double_t minCentrality    = 0
+                             , Double_t maxCentrality    = 20
+                             , Double_t minM2            = 2.
+                             , Double_t maxM2            = 6.)
 {
 //
 // Create, configure and add the analysis task to the analysis manager
@@ -52,9 +55,6 @@ AliAnalysisTaskB2* AddTaskB2(const TString& species,
 	const Int_t kMaxNSigmaTPC = 3;
 	const Int_t kMaxNSigmaTOF = 3;
 	const Int_t kMinTPCnCls   = 70;
-	
-	const Double_t kMinM2     = 2.; // for deuterons
-	const Double_t kMaxM2     = 6.;
 	
 	TString period = periodname;
 	period.ToLower();
@@ -87,13 +87,15 @@ AliAnalysisTaskB2* AddTaskB2(const TString& species,
 	task->SetMaxNSigmaTPC(kMaxNSigmaTPC);
 	task->SetMaxNSigmaTOF(kMaxNSigmaTOF);
 	
-	task->SetMeanNtrk(GetMeanNtrk(period));
+	Double_t meanNtrk = V0AND ? GetNSDMeanNtrk(period) : GetMeanNtrk(period);
+	
+	task->SetMeanNtrk(meanNtrk);
 	task->SetKNOmultInterval(minKNOmult, maxKNOmult);
 	task->SetVertexXInterval(-kMaxVx, kMaxVx);
 	task->SetVertexYInterval(-kMaxVy, kMaxVy);
 	task->SetVertexZInterval(-kMaxVz, kMaxVz);
 	
-	task->SetM2Interval(kMinM2, kMaxM2);
+	task->SetM2Interval(minM2, maxM2);
 	
 	task->SetCentralityInterval(minCentrality, maxCentrality);
 	
@@ -164,14 +166,42 @@ Double_t GetMeanNtrk(const TString& period)
 	if(period =="lhc10d")       return 5.82333; // pass2
 	if(period =="lhc10e")       return 5.89367; // pass2
 	if(period =="lhc11a_wosdd") return 4.28597; // pass3
-	if(period =="lhc11a_wsdd")  return 4.57960; // pass4
+	if(period =="lhc11a_wsdd")  return 4.69927; // pass4
 	
 	// MC
-	if(period =="lhc10e13")            return 3.17763;
+	if(period =="lhc10e13")            return 3.13712;
 	if(period =="lhc10f6a")            return 4.41362;
 	if(period =="lhc10e21")            return 4.74991;
 	if(period =="lhc11e3a_plus_wosdd") return 3.37669;
-	if(period =="lhc11e3a_plus_wsdd")  return 3.55973;
+	if(period =="lhc11e3a_plus_wsdd")  return 3.47885;
+	
+	cerr << "Warning in GetMeanNtrk: no <Ntrk> for period " << period << endl;
+	
+	return 1;
+}
+
+Double_t GetNSDMeanNtrk(const TString& period)
+{
+//
+// average track multiplicity <Ntrk> for the given period
+// (NSD events)
+//
+	if(period =="lhc10c900")    return 3.84362; // pass3
+	if(period =="lhc10b")       return 6.18470; // pass3
+	if(period =="lhc10c")       return 6.16175; // pass3
+	if(period =="lhc10d")       return 6.03108; // pass2
+	if(period =="lhc10e")       return 6.10384; // pass2
+	if(period =="lhc11a_wosdd") return 4.40312; // pass3
+	if(period =="lhc11a_wsdd")  return 4.87609; // pass4
+	
+	// MC
+	if(period =="lhc10e13")            return 3.33273;
+	if(period =="lhc10f6a")            return 4.80771;
+	if(period =="lhc10e21")            return 4.91967;
+	if(period =="lhc11e3a_plus_wosdd") return 3.4774;
+	if(period =="lhc11e3a_plus_wsdd")  return 3.6467;
+	
+	cerr << "Warning in GetNSDMeanNtrk: no <Ntrk> for period " << period << endl;
 	
 	return 1;
 }

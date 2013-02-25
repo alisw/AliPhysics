@@ -196,7 +196,7 @@ Int_t AliLnID::GetPID(const TParticle* p) const
 Int_t AliLnID::GetPID(Int_t pidCode, Double_t pITS, Double_t dEdxITS, Int_t nPointsITS, Double_t pTPC, Double_t dEdxTPC, Int_t nPointsTPC, Double_t pTOF, Double_t beta, Double_t nSigITS, Double_t nSigTPC, Double_t nSigTOF) const
 {
 //
-// PID according to the seletected procedure
+// PID according to the selected procedure
 //
 	if(fPidProcedure == kBayes)
 	{
