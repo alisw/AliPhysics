@@ -57,7 +57,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
   if (fAnalyzeJets)
   {
     // ######## Jet spectra
-    AddHistogram2D<TH2D>("hJetPt", "Jets p_{T} distribution", "", 1000, 0., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetPt", "Jets p_{T} distribution", "", 500, -50., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedRC", "Jets p_{T} distribution, RC background subtracted", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKT", "Jets p_{T} distribution, KT background subtracted", "", 500, -50., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedTR", "Jets p_{T} distribution, TR background subtracted", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
