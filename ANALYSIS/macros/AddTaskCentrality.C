@@ -1,4 +1,4 @@
-AliCentralitySelectionTask *AddTaskCentrality(Bool_t fillHistos=kTRUE)
+AliCentralitySelectionTask *AddTaskCentrality(Bool_t fillHistos=kTRUE, Bool_t aod=kFALSE)
 {
 // Macro to connect a centrality selection task to an existing analysis manager.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -13,11 +13,12 @@ AliCentralitySelectionTask *AddTaskCentrality(Bool_t fillHistos=kTRUE)
     return NULL;
   }
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if (inputDataType != "ESD") {
+  if (!aod && (inputDataType != "ESD")) {
     ::Error("AddTaskCentrality", "This task works only on ESD analysis");
     return NULL;
   }
   AliCentralitySelectionTask *centralityTask = new AliCentralitySelectionTask("CentralitySelection");
+  centralityTask->SetInput(inputDataType);
   centralityTask->SelectCollisionCandidates(AliVEvent::kAny);
   mgr->AddTask(centralityTask);
   

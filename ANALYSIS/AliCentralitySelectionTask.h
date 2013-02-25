@@ -44,7 +44,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
  private:
 
-  Int_t SetupRun(const AliESDEvent* const esd);
+  Int_t SetupRun(const AliVEvent* const esd);
   Bool_t IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_t cent) const;
   Bool_t IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int_t cent) const;
   Bool_t IsOutlierV0MZDC(Float_t zdc, Float_t v0) const;

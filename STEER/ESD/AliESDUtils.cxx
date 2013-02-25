@@ -31,7 +31,7 @@
 #include "AliVertexerTracks.h"
 
 //______________________________________________________________________________
-Float_t AliESDUtils::GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc, Float_t *v0multChCorr, Float_t *v0multChCorrResc)
+Float_t AliESDUtils::GetCorrV0(const AliVEvent* esd, Float_t &v0CorrResc, Float_t *v0multChCorr, Float_t *v0multChCorrResc)
 {
   // Correct V0 non-linearity, prepare a version rescaled to SPD2 corr.
   // Please describe better parameters...
@@ -118,7 +118,7 @@ Float_t AliESDUtils::GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc, Floa
   Float_t multCorr2 = 0;
   Float_t multChCorr[64];
   Float_t multChCorrResc[64];
-  AliESDVZERO* esdV0 = esd->GetVZEROData();
+  AliVVZERO* esdV0 = esd->GetVZEROData();
   for(Int_t i = 0; i < 64; ++i) {
     if (esdV0->TestBit(AliESDVZERO::kCorrectedForSaturation)) {
       multChCorr[i] = esdV0->GetMultiplicity(i);

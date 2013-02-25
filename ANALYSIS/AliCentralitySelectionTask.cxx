@@ -849,108 +849,108 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fHOutVertex  = new TH1F("fHOutVertex", "fHOutVertex", 100,-20,20);
     fHOutVertexT0  = new TH1F("fHOutVertexT0", "fHOutVertexT0", 100,-20,20);
   
-    fOutputList->Add(  fHOutCentV0M    );
-    fOutputList->Add(  fHOutCentV0A    );
-    fOutputList->Add(  fHOutCentV0C    );
-    fOutputList->Add(  fHOutCentV0MCVHN);
-    fOutputList->Add(  fHOutCentV0MCVLN);
-    fOutputList->Add(  fHOutCentV0MCVHNinMB);
-    fOutputList->Add(  fHOutCentV0MCVLNinMB);
-    fOutputList->Add(  fHOutCentV0MCCENT);
-    fOutputList->Add(  fHOutCentV0MCSEMI);
-    fOutputList->Add(  fHOutCentV0MCCENTinMB);
-    fOutputList->Add(  fHOutCentV0MCSEMIinMB);
-    fOutputList->Add(  fHOutCentV0MMSL    );
-    fOutputList->Add(  fHOutCentV0MMSH    );
-    fOutputList->Add(  fHOutCentV0MMUL    );
-    fOutputList->Add(  fHOutCentV0MMLL    );
-    fOutputList->Add(  fHOutCentV0MEJE    );
-    fOutputList->Add(  fHOutCentV0MEGA    );
-    fOutputList->Add(  fHOutCentV0MPHS   );
-    fOutputList->Add(  fHOutCentV0MMSLinMB);
-    fOutputList->Add(  fHOutCentV0MMSHinMB);
-    fOutputList->Add(  fHOutCentV0MMULinMB);
-    fOutputList->Add(  fHOutCentV0MMLLinMB);
-    fOutputList->Add(  fHOutCentV0MEJEinMB);
-    fOutputList->Add(  fHOutCentV0MEGAinMB);
-    fOutputList->Add(  fHOutCentV0MPHSinMB);
-    fOutputList->Add(  fHOutCentFMD     );
-    fOutputList->Add(  fHOutCentTRK     );
-    fOutputList->Add(  fHOutCentTKL     );
-    fOutputList->Add(  fHOutCentCL0     );
-    fOutputList->Add(  fHOutCentCL1     );
-    fOutputList->Add(  fHOutCentCND     );
-    fOutputList->Add(  fHOutCentNPA     );
-    fOutputList->Add(  fHOutCentZNA     );
-    fOutputList->Add(  fHOutCentV0MvsFMD);
-    fOutputList->Add(  fHOutCentTKLvsV0M);
-    fOutputList->Add(  fHOutCentZEMvsZDC);
-    fOutputList->Add(  fHOutCentV0MvsCentCL1);
-    fOutputList->Add(  fHOutCentV0MvsCentTRK);
-    fOutputList->Add(  fHOutCentTRKvsCentCL1);
-    fOutputList->Add(  fHOutCentV0MvsCentZDC);
-    fOutputList->Add(  fHOutCentV0AvsCentV0C);
-    fOutputList->Add(  fHOutCentV0AvsCentTRK);
-    fOutputList->Add(  fHOutCentV0AvsCentCND);
-    fOutputList->Add(  fHOutCentV0AvsCentCL1);
-    fOutputList->Add(  fHOutCentV0CvsCentTRK);
-    fOutputList->Add(  fHOutCentV0CvsCentCND);
-    fOutputList->Add(  fHOutCentV0CvsCentCL1);
-    fOutputList->Add(  fHOutCentNPAvsCentV0A);
-    fOutputList->Add(  fHOutCentNPAvsCentV0C);
-    fOutputList->Add(  fHOutCentNPAvsCentTRK);
-    fOutputList->Add(  fHOutCentNPAvsCentCND);
-    fOutputList->Add(  fHOutCentNPAvsCentCL1);
-    fOutputList->Add(  fHOutCentZNAvsCentV0A);
-    fOutputList->Add(  fHOutCentZNAvsCentV0C);
-    fOutputList->Add(  fHOutCentZNAvsCentTRK);
-    fOutputList->Add(  fHOutCentZNAvsCentCND);
-    fOutputList->Add(  fHOutCentZNAvsCentCL1);
+    fOutputList->Add(fHOutCentV0M);
+    fOutputList->Add(fHOutCentV0A);
+    fOutputList->Add(fHOutCentV0C);
+    fOutputList->Add(fHOutCentV0MCVHN);
+    fOutputList->Add(fHOutCentV0MCVLN);
+    fOutputList->Add(fHOutCentV0MCVHNinMB);
+    fOutputList->Add(fHOutCentV0MCVLNinMB);
+    fOutputList->Add(fHOutCentV0MCCENT);
+    fOutputList->Add(fHOutCentV0MCSEMI);
+    fOutputList->Add(fHOutCentV0MCCENTinMB);
+    fOutputList->Add(fHOutCentV0MCSEMIinMB);
+    fOutputList->Add(fHOutCentV0MMSL);
+    fOutputList->Add(fHOutCentV0MMSH);
+    fOutputList->Add(fHOutCentV0MMUL);
+    fOutputList->Add(fHOutCentV0MMLL);
+    fOutputList->Add(fHOutCentV0MEJE);
+    fOutputList->Add(fHOutCentV0MEGA);
+    fOutputList->Add(fHOutCentV0MPHS);
+    fOutputList->Add(fHOutCentV0MMSLinMB);
+    fOutputList->Add(fHOutCentV0MMSHinMB);
+    fOutputList->Add(fHOutCentV0MMULinMB);
+    fOutputList->Add(fHOutCentV0MMLLinMB);
+    fOutputList->Add(fHOutCentV0MEJEinMB);
+    fOutputList->Add(fHOutCentV0MEGAinMB);
+    fOutputList->Add(fHOutCentV0MPHSinMB);
+    fOutputList->Add(fHOutCentFMD);
+    fOutputList->Add(fHOutCentTRK);
+    fOutputList->Add(fHOutCentTKL);
+    fOutputList->Add(fHOutCentCL0);
+    fOutputList->Add(fHOutCentCL1);
+    fOutputList->Add(fHOutCentCND);
+    fOutputList->Add(fHOutCentNPA);
+    fOutputList->Add(fHOutCentZNA);
+    fOutputList->Add(fHOutCentV0MvsFMD);
+    fOutputList->Add(fHOutCentTKLvsV0M);
+    fOutputList->Add(fHOutCentZEMvsZDC);
+    fOutputList->Add(fHOutCentV0MvsCentCL1);
+    fOutputList->Add(fHOutCentV0MvsCentTRK);
+    fOutputList->Add(fHOutCentTRKvsCentCL1);
+    fOutputList->Add(fHOutCentV0MvsCentZDC);
+    fOutputList->Add(fHOutCentV0AvsCentV0C);
+    fOutputList->Add(fHOutCentV0AvsCentTRK);
+    fOutputList->Add(fHOutCentV0AvsCentCND);
+    fOutputList->Add(fHOutCentV0AvsCentCL1);
+    fOutputList->Add(fHOutCentV0CvsCentTRK);
+    fOutputList->Add(fHOutCentV0CvsCentCND);
+    fOutputList->Add(fHOutCentV0CvsCentCL1);
+    fOutputList->Add(fHOutCentNPAvsCentV0A);
+    fOutputList->Add(fHOutCentNPAvsCentV0C);
+    fOutputList->Add(fHOutCentNPAvsCentTRK);
+    fOutputList->Add(fHOutCentNPAvsCentCND);
+    fOutputList->Add(fHOutCentNPAvsCentCL1);
+    fOutputList->Add(fHOutCentZNAvsCentV0A);
+    fOutputList->Add(fHOutCentZNAvsCentV0C);
+    fOutputList->Add(fHOutCentZNAvsCentTRK);
+    fOutputList->Add(fHOutCentZNAvsCentCND);
+    fOutputList->Add(fHOutCentZNAvsCentCL1);
 
-    fOutputList->Add(  fHOutMultV0AC); 
-    fOutputList->Add(  fHOutMultV0M); 
-    fOutputList->Add(  fHOutMultV0A); 
-    fOutputList->Add(  fHOutMultV0C); 
-    fOutputList->Add(  fHOutMultV0Mnc); 
-    fOutputList->Add(  fHOutMultV0Anc); 
-    fOutputList->Add(  fHOutMultV0Cnc); 
-    fOutputList->Add(  fHOutMultV0O);
-    fOutputList->Add(  fHOutMultV0Cells) ;   
-    fOutputList->Add(  fHOutMultFMD); 
-    fOutputList->Add(  fHOutMultTRK); 
-    fOutputList->Add(  fHOutMultTKL); 
-    fOutputList->Add(  fHOutMultCL0); 
-    fOutputList->Add(  fHOutMultCL1); 
-    fOutputList->Add(  fHOutMultCND); 
-    fOutputList->Add(  fHOutMultNPA); 
-    fOutputList->Add(  fHOutMultZNA); 
-    fOutputList->Add(  fHOutMultV0MvsZDN);
-    fOutputList->Add(  fHOutMultZEMvsZDN);
-    fOutputList->Add(  fHOutMultV0MvsZDC);
-    fOutputList->Add(  fHOutMultZEMvsZDC);
-    fOutputList->Add(  fHOutMultZEMvsZDCw);
-    fOutputList->Add(  fHOutMultV0MvsCL1);
-    fOutputList->Add(  fHOutMultV0MvsTRK);
-    fOutputList->Add(  fHOutMultTRKvsCL1);
-    fOutputList->Add(  fHOutMultV0MvsV0O);
-    fOutputList->Add(  fHOutMultV0OvsCL1);
-    fOutputList->Add(  fHOutMultV0OvsTRK);
-    fOutputList->Add(  fHOutMultCL1vsTKL);
-    fOutputList->Add(  fHOutCentV0Mqual1 );
-    fOutputList->Add(  fHOutCentTRKqual1 );
-    fOutputList->Add(  fHOutCentCL1qual1 );                   
-    fOutputList->Add(  fHOutMultV0MvsCL1qual1);
-    fOutputList->Add(  fHOutMultV0MvsTRKqual1);
-    fOutputList->Add(  fHOutMultTRKvsCL1qual1);
-    fOutputList->Add(  fHOutCentV0Mqual2 );
-    fOutputList->Add(  fHOutCentTRKqual2 );
-    fOutputList->Add(  fHOutCentCL1qual2 );
-    fOutputList->Add(  fHOutMultV0MvsCL1qual2);
-    fOutputList->Add(  fHOutMultV0MvsTRKqual2);
-    fOutputList->Add(  fHOutMultTRKvsCL1qual2);
-    fOutputList->Add(  fHOutQuality );
-    fOutputList->Add(  fHOutVertex );
-    fOutputList->Add(  fHOutVertexT0 );
+    fOutputList->Add(fHOutMultV0AC); 
+    fOutputList->Add(fHOutMultV0M); 
+    fOutputList->Add(fHOutMultV0A); 
+    fOutputList->Add(fHOutMultV0C); 
+    fOutputList->Add(fHOutMultV0Mnc); 
+    fOutputList->Add(fHOutMultV0Anc); 
+    fOutputList->Add(fHOutMultV0Cnc); 
+    fOutputList->Add(fHOutMultV0O);
+    fOutputList->Add(fHOutMultV0Cells) ;   
+    fOutputList->Add(fHOutMultFMD); 
+    fOutputList->Add(fHOutMultTRK); 
+    fOutputList->Add(fHOutMultTKL); 
+    fOutputList->Add(fHOutMultCL0); 
+    fOutputList->Add(fHOutMultCL1); 
+    fOutputList->Add(fHOutMultCND); 
+    fOutputList->Add(fHOutMultNPA); 
+    fOutputList->Add(fHOutMultZNA); 
+    fOutputList->Add(fHOutMultV0MvsZDN);
+    fOutputList->Add(fHOutMultZEMvsZDN);
+    fOutputList->Add(fHOutMultV0MvsZDC);
+    fOutputList->Add(fHOutMultZEMvsZDC);
+    fOutputList->Add(fHOutMultZEMvsZDCw);
+    fOutputList->Add(fHOutMultV0MvsCL1);
+    fOutputList->Add(fHOutMultV0MvsTRK);
+    fOutputList->Add(fHOutMultTRKvsCL1);
+    fOutputList->Add(fHOutMultV0MvsV0O);
+    fOutputList->Add(fHOutMultV0OvsCL1);
+    fOutputList->Add(fHOutMultV0OvsTRK);
+    fOutputList->Add(fHOutMultCL1vsTKL);
+    fOutputList->Add(fHOutCentV0Mqual1);
+    fOutputList->Add(fHOutCentTRKqual1);
+    fOutputList->Add(fHOutCentCL1qual1);                   
+    fOutputList->Add(fHOutMultV0MvsCL1qual1);
+    fOutputList->Add(fHOutMultV0MvsTRKqual1);
+    fOutputList->Add(fHOutMultTRKvsCL1qual1);
+    fOutputList->Add(fHOutCentV0Mqual2);
+    fOutputList->Add(fHOutCentTRKqual2);
+    fOutputList->Add(fHOutCentCL1qual2);
+    fOutputList->Add(fHOutMultV0MvsCL1qual2);
+    fOutputList->Add(fHOutMultV0MvsTRKqual2);
+    fOutputList->Add(fHOutMultTRKvsCL1qual2);
+    fOutputList->Add(fHOutQuality);
+    fOutputList->Add(fHOutVertex);
+    fOutputList->Add(fHOutVertexT0);
   
     PostData(1, fOutputList); 
   }
@@ -987,7 +987,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   Int_t    nTracks = 0;             //  no. tracks
   Int_t    nTracklets = 0;          //  no. tracklets
   Int_t    nClusters[6] = {0};      //  no. clusters on 6 ITS layers
-  Int_t    nChips[2];               //  no. chips on 2 SPD layers
+  Int_t    nChips[2] = {0,0};       //  no. chips on 2 SPD layers
   Float_t  spdCorr =0;              //  corrected spd2 multiplicity
   Int_t    multCND = 0;             //  no. tracks (candle condition)
 
@@ -1013,56 +1013,76 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
   AliCentrality *esdCent = 0;
 
+  AliVEvent *event = InputEvent();
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+  AliAODEvent *aod =  dynamic_cast<AliAODEvent*>(event);
   if(fAnalysisInput.CompareTo("ESD")==0){
-  
-    AliVEvent* event = InputEvent();
-    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
     if (!esd) {
       AliError("No ESD Event");
       return;
     }
-  
-    LoadBranches();
-    
-    if (SetupRun(esd)<0) {
-      AliError("Centrality File not available for this run");
+  } else if(fAnalysisInput.CompareTo("AOD")==0){
+    if (!aod) {
+      AliError("No AOD Event");
       return;
     }
-    
+  }
+  LoadBranches();
+
+  if (SetupRun(event)<0) {
+    AliError("Centrality File not available for this run");
+    return;
+  }
+
+  if (esd) {
     if (strcmp(esd->GetESDRun()->GetBeamType(), "A-A") == 0) runType=0;
     else runType=1;  
+  } else {
+    Int_t runNumber = event->GetRunNumber();
+    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
+	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
+      runType=0;
+  }
 
-    esdCent = esd->GetCentrality();
+  esdCent = event->GetCentrality();
 
-    // ***** Vertex Info
+  // ***** Vertex Info
+  if (esd) {
     const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
     zvtx        = vtxESD->GetZ(); 
     zvtxNcont   = vtxESD->GetNContributors();
+  } else {
+    const AliAODVertex* spdVtx = aod->GetPrimaryVertexSPD();
+    zvtx        = spdVtx->GetZ(); 
+    zvtxNcont   = spdVtx->GetNContributors();
+  }
 
     // ***** V0 info    
-    AliESDVZERO* esdV0 = esd->GetVZEROData();
-    if (!esdV0)
-      {
-	AliError("AliESDVZERO not available");
-	return;
-      }
-    multV0A=esdV0->GetMTotV0A();
-    multV0C=esdV0->GetMTotV0C();
+  AliVVZERO* esdV0 = event->GetVZEROData();
+  if (!esdV0) {
+    AliError("AliVVZERO not available");
+    return;
+  }
 
-    multV0ACorr = AliESDUtils::GetCorrV0A(multV0A,zvtx);    
-    multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);    
+  multV0A=esdV0->GetMTotV0A();
+  multV0C=esdV0->GetMTotV0C();
 
-    v0Corr = multV0A+multV0C;
+  multV0ACorr = AliESDUtils::GetCorrV0A(multV0A,zvtx);    
+  multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);    
 
-    multV0AOnline=esdV0->GetTriggerChargeA(); 
-    multV0COnline=esdV0->GetTriggerChargeC(); 
+  v0Corr = multV0A+multV0C; // Todo: C.L. not clear why here we do not use the sum of the corrected values?
 
-    // Count V0 flags
-    for(Int_t i = 0; i < 32; ++i) {
-      if (esdV0->GetBBFlag(i)) nV0C++;
-      if (esdV0->GetBBFlag(i+32)) nV0A++;
-    }
+  multV0AOnline=esdV0->GetTriggerChargeA(); 
+  multV0COnline=esdV0->GetTriggerChargeC(); 
+
+  // Count V0 flags
+  for(Int_t i = 0; i < 32; ++i) {
+    if (esdV0->GetBBFlag(i)) nV0C++;
+    if (esdV0->GetBBFlag(i+32)) nV0A++;
+  }
     
+  Bool_t kT0BB = kFALSE;    
+  if (esd) {
     // ***** T0 info    
     const AliESDTZERO* esdT0 = esd->GetESDTZERO();
     if (!esdT0)
@@ -1071,62 +1091,80 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 	return;
       }
     Int_t trig=esdT0->GetT0Trig();
-    Bool_t kT0BB = kFALSE;    
     if(trig&1) kT0BB=kTRUE;
     zvtxT0=esdT0->GetT0zVertex();
+  } else {
+    const AliAODTZERO* esdT0 = aod->GetTZEROData();
+    if (!esdT0)
+      {
+	AliError("AliAODTZERO not available");
+	return;
+      }
+    Int_t trig=1;//esdT0->GetT0Trig(); //* Todo: C.L. This info is not in AOD? */
+    if(trig&1) kT0BB=kTRUE;
+    zvtxT0=esdT0->GetT0zVertex();
+  }
 
-
-    // ***** Trigger info    
-    fIsSelected = ((esdV0->GetV0ADecision()==1) && (esdV0->GetV0CDecision()==1));
-    TString trigStr(esd->GetFiredTriggerClasses());
+  // ***** Trigger info    
+  fIsSelected = ((esdV0->GetV0ADecision()==1) && (esdV0->GetV0CDecision()==1));
+  TString trigStr;
+  if (esd)
+    trigStr = esd->GetFiredTriggerClasses();
+  else
+    trigStr = aod->GetFiredTriggerClasses();
     
-    fMB=kFALSE;
-    fCVHN=kFALSE; fCVLN=kFALSE; fCCENT=kFALSE; fCSEMI=kFALSE; 
-    fMSL=kFALSE;  fMSH=kFALSE;  fMUL=kFALSE;   fMLL=kFALSE;
-    fEJE=kFALSE;  fEGA=kFALSE;  fPHS=kFALSE;
+  fMB=kFALSE;
+  fCVHN=kFALSE; fCVLN=kFALSE; fCCENT=kFALSE; fCSEMI=kFALSE; 
+  fMSL=kFALSE;  fMSH=kFALSE;  fMUL=kFALSE;   fMLL=kFALSE;
+  fEJE=kFALSE;  fEGA=kFALSE;  fPHS=kFALSE;
 
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI")) && (fIsSelected)) 
-      fMB=kTRUE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVHN")) && (fIsSelected)) 
-      fCVHN=kTRUE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVLN")) && (fIsSelected))
-      fCVLN=kTRUE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CCENT")) && (fIsSelected)) 
-      fCCENT=kTRUE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CSEMI")) && (fIsSelected))
-      fCSEMI=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI")) && (fIsSelected)) 
+    fMB=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVHN")) && (fIsSelected)) 
+    fCVHN=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVLN")) && (fIsSelected))
+    fCVLN=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CCENT")) && (fIsSelected)) 
+    fCCENT=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CSEMI")) && (fIsSelected))
+    fCSEMI=kTRUE;
     
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MSL")) && (fIsSelected))
-      fMSL=kTRUE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MSH")) && (fIsSelected))
-      fMSH=kTRUE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MUL")) && (fIsSelected))
-      fMUL=kTRUE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MLL")) && (fIsSelected))
-      fMLL=kTRUE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1EJE")) && (fIsSelected))
-      fEJE=kTRUE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1EGA")) && (fIsSelected))
-      fEGA=kTRUE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1PHS")) && (fIsSelected))
-      fPHS=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MSL")) && (fIsSelected))
+    fMSL=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MSH")) && (fIsSelected))
+    fMSH=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MUL")) && (fIsSelected))
+    fMUL=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MLL")) && (fIsSelected))
+    fMLL=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1EJE")) && (fIsSelected))
+    fEJE=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1EGA")) && (fIsSelected))
+    fEGA=kTRUE;
+  if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1PHS")) && (fIsSelected))
+    fPHS=kTRUE;
+  
+  fCVHNbit=kFALSE;    fCVLNbit=kFALSE;       fCCENTbit=kFALSE;    fCSEMIbit=kFALSE; 
+  if (esdV0->GetTriggerBits() & (1<<8)) 
+    fCVHNbit=kTRUE;
+  if (esdV0->GetTriggerBits() & (1<<6)) 
+    fCVLNbit=kTRUE;
+    
+  if (kT0BB && fCVHNbit)
+    fCCENTbit=kTRUE;
+  if (kT0BB && fCVLNbit)
+    fCSEMIbit=kTRUE;
 
-    fCVHNbit=kFALSE;    fCVLNbit=kFALSE;       fCCENTbit=kFALSE;    fCSEMIbit=kFALSE; 
-    if (esdV0->GetTriggerBits() & (1<<8)) 
-      fCVHNbit=kTRUE;
-    if (esdV0->GetTriggerBits() & (1<<6)) 
-      fCVLNbit=kTRUE;
-    
-    if (kT0BB && fCVHNbit)
-      fCCENTbit=kTRUE;
-    if (kT0BB && fCVLNbit)
-      fCSEMIbit=kTRUE;
-
-    
+  if (esd) {  
     // ***** CB info (tracklets, clusters, chips)
     //nTracks    = event->GetNumberOfTracks();     
     nTracks    = fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esd,kTRUE):-1;
+  } else {
+    AliAODHeader *h = aod->GetHeader();
+    nTracks    = h!=0 ? (Short_t)h->GetTPConlyRefMultiplicity():-1;
+  }
 
+  if (esd) {
     Short_t nTrTPCcandle = 0;
     for (Int_t iTracks = 0; iTracks < esd->GetNumberOfTracks(); iTracks++) {
 
@@ -1142,7 +1180,22 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       if (track->Pt() > 0.4 && TMath::Abs(track->Eta()) < 0.9)	nTrTPCcandle++;
     } 
     multCND = nTrTPCcandle;
+  } else {
+    Short_t nTrTPCcandle = 0;
+    for (Int_t iTracks = 0; iTracks < aod->GetNumberOfTracks(); iTracks++) {
 
+      AliAODTrack* track = aod->GetTrack(iTracks);
+
+      if (!track) continue;
+      if (!track->TestFilterBit(1<<5) && 
+	  !track->TestFilterBit(1<<6)) continue;
+
+      if (track->Pt() > 0.4 && TMath::Abs(track->Eta()) < 0.9)	nTrTPCcandle++;
+    }
+    multCND = nTrTPCcandle;
+  }
+
+  if (esd) {
     const AliMultiplicity *mult = esd->GetMultiplicity();
     nTracklets = mult->GetNumberOfTracklets();
 
@@ -1153,9 +1206,17 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     for(Int_t ilay=0; ilay<2; ilay++){
       nChips[ilay] = mult->GetNumberOfFiredChips(ilay);
     }
-
-    spdCorr = AliESDUtils::GetCorrSPD2(nClusters[1],zvtx);    
-
+  } else {
+    AliAODTracklets *mult = aod->GetTracklets();
+    nTracklets = mult->GetNumberOfTracklets();
+    AliAODHeader *h = aod->GetHeader();
+    for(Int_t ilay=0; ilay<6; ilay++){
+      nClusters[ilay] = h->GetNumberOfITSClusters(ilay);
+    }
+  }
+  spdCorr = AliESDUtils::GetCorrSPD2(nClusters[1],zvtx);
+  
+  if (esd) {
     // ***** FMD info
     AliESDFMD *fmd = esd->GetFMDData();
     Float_t totalMultA = 0;
@@ -1189,7 +1250,9 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     }
     multFMDA = totalMultA;
     multFMDC = totalMultC;
-  
+  }
+
+  if (esd) {
     // ***** ZDC info
     AliESDZDC *esdZDC = esd->GetESDZDC();
     zdcEnergyCal = esdZDC->AliESDZDC::TestBit(AliESDZDC::kEnergyCalibratedSignal);
@@ -1215,7 +1278,25 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 	znaFired = kTRUE;
       }
     } 
-  
+  } else {
+    AliAODHeader *h = aod->GetHeader();
+    zncEnergy = (Float_t) (h->GetZDCN1Energy());
+    zpcEnergy = (Float_t) (h->GetZDCP1Energy());
+    znaEnergy = (Float_t) (h->GetZDCN2Energy());
+    zpaEnergy = (Float_t) (h->GetZDCP2Energy());
+    zem1Energy = (Float_t) (h->GetZDCEMEnergy(0))/8.; //Todo: C.L. Should we devide here by 8? It is done in the ESD case!
+    zem2Energy = (Float_t) (h->GetZDCEMEnergy(1))/8.;
+
+    AliAODZDC *aodZDC = aod->GetZDCData();
+    const Double_t *ZNAtower = aodZDC->GetZNATowerEnergy(); 
+    znaTower = ZNAtower[0];
+
+    znaFired = kFALSE; // trick because info is not stored in AOD
+    if (esdCent->GetCentralityPercentile("ZNA") != 101)
+      znaFired = kTRUE;
+  }
+
+  if (esd) {
     // ***** MC info
     AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
     AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
@@ -1239,13 +1320,6 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       if(hHijing)   Npart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
       if(dpmHeader) Npart = dpmHeader->ProjectileParticipants()+ dpmHeader->TargetParticipants();
     }
-  }   
-
-  else if(fAnalysisInput.CompareTo("AOD")==0){
-    //AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
-    // to be implemented
-    printf("  AOD analysis not yet implemented!!!\n\n");
-    return;
   } 
 
   // ***** Scaling for MC
@@ -1293,7 +1367,6 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   if(fHtempZNAtrue) fCentZNAtrue = fHtempZNAtrue->GetBinContent(fHtempZNAtrue->FindBin(znaTower));
    
 
-
   // ***** Cleaning
   if (fUseCleaning) {
     fQuality=0;
@@ -1319,6 +1392,16 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
       
   if (esdCent) {
+    if (aod&&(fDebug>1)) {
+      Double_t v0m = esdCent->GetCentralityPercentile("V0M");
+      Double_t cl1 = esdCent->GetCentralityPercentile("CL1");
+      Double_t trk = esdCent->GetCentralityPercentile("TRK");
+      Double_t cnd = esdCent->GetCentralityPercentile("CND");
+      Double_t zna = esdCent->GetCentralityPercentile("ZNA");
+      printf("AOD: v0m %.2f %.2f (%.2f) cl1 %.2f %.2f (%.2f) trk %.2f %.2f (%.2f) cnd %.2f %.2f (%.2f) zna %.2f %.2f (%.2f)\n", 
+	     v0m, fCentV0M, fCentV0M!=0?v0m/fCentV0M:1, cl1, fCentCL1, fCentCL1!=0?cl1/fCentCL1:1, trk, fCentTRK, 
+	     fCentTRK!=0?trk/fCentTRK:1, cnd, fCentCND, fCentCND!=0?cnd/fCentCND:1, zna, fCentZNA, fCentZNA!=0?zna/fCentZNA:1);
+    }
     esdCent->SetQuality(fQuality);
     esdCent->SetCentralityV0M(fCentV0M);
     esdCent->SetCentralityV0A(fCentV0A);
@@ -1478,7 +1561,7 @@ void AliCentralitySelectionTask::Terminate(Option_t */*option*/)
   // Terminate analysis
 }
 //________________________________________________________________________
-Int_t AliCentralitySelectionTask::SetupRun(const AliESDEvent* const esd)
+Int_t AliCentralitySelectionTask::SetupRun(const AliVEvent* const esd)
 {
   // Setup files for run
 
@@ -1603,8 +1686,6 @@ Int_t AliCentralitySelectionTask::SetupRun(const AliESDEvent* const esd)
   fV0MZDCEcalOutlierPar0 =  centOADB->V0MZDCEcalOutlierPar0();  
   fV0MZDCEcalOutlierPar1 =  centOADB->V0MZDCEcalOutlierPar1();  
 
-
-
   return 0;
 }
 
@@ -1655,5 +1736,3 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MZDCECal(Float_t zdc, Float_t v0) 
   else 
     return kFALSE;
 }
-
-
