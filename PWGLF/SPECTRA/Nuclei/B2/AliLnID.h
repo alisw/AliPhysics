@@ -10,6 +10,8 @@
 #include <TObject.h>
 #include <AliPID.h>
 
+class TParticle;
+
 class AliLnID: public TObject
 {
   public:
@@ -19,7 +21,7 @@ class AliLnID: public TObject
 	
 	virtual ~AliLnID();
 	
-	Int_t GetPID(const class TParticle* p) const;
+	Int_t GetPID(const TParticle* p) const;
 	
 	Int_t GetPID(Int_t partCode, Double_t pITS, Double_t dEdxITS, Int_t nPointsITS, Double_t pTPC, Double_t dEdxTPC, Int_t nPointsTPC, Double_t pTOF, Double_t beta, Double_t nSigITS=3, Double_t nSigTPC=3, Double_t nSigTOF=3) const;
 	

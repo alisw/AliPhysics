@@ -339,11 +339,11 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 			
 			hMap->Add( particle[i] + "_Gen_PhS_Prim_Pt", ptBins, ptMin, ptMax, Form("Primary %s (all events, |y| < %0.1f)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Gen_Trig_Prim_Pt", ptBins, ptMin, ptMax, Form("Primary %s (triggered events, |y| < %0.1f)", particle[i].Data(), maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Gen_Trig_Prim_Pt", ptBins, ptMin, ptMax, Form("Primary %s (triggering events, |y| < %0.1f)", particle[i].Data(), maxY), "p_{T} (GeV/c)");
 			
 			hMap->Add( particle[i] + "_Gen_Vtx_Prim_Pt", ptBins, ptMin, ptMax, Form("Primary %s (good vertex, |y| < %0.1f)", particle[i].Data(), maxY), "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Gen_NoTrig_Prim_Pt", ptBins, ptMin, ptMax, Form("Primary %s (no triggered events, |y| < %0.1f)", particle[i].Data(), maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Gen_NoTrig_Prim_Pt", ptBins, ptMin, ptMax, Form("Primary %s (non-triggering events, |y| < %0.1f)", particle[i].Data(), maxY), "p_{T} (GeV/c)");
 			
 			hMap->Add( particle[i] + "_Gen_NoVtx_Prim_Pt", ptBins, ptMin, ptMax, Form("Primary %s (no reconstructed vertex, |y| < %0.1f)", particle[i].Data(), maxY), "p_{T} (GeV/c)");
 			

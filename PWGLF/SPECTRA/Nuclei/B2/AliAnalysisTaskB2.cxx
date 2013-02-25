@@ -380,11 +380,11 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	
 	if(fTriggerFired)
 	{
-		((TH1D*)fHistoMap->Get(fSpecies + "_Stats"))->Fill(1); // triggered events
+		((TH1D*)fHistoMap->Get(fSpecies + "_Stats"))->Fill(1); // triggering events
 		
 		if(vtx->GetStatus())
 		{
-			((TH1D*)fHistoMap->Get(fSpecies + "_Stats"))->Fill(3); // valid vertex within a triggered event
+			((TH1D*)fHistoMap->Get(fSpecies + "_Stats"))->Fill(3); // valid vertex within a triggering event
 			
 			if((vtx->GetZ() > fMinVz) && (vtx->GetZ() < fMaxVz))
 			{
@@ -483,7 +483,7 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		
 		((TH1D*)fHistoMap->Get(particle + "_Gen_PhS_Prim_Pt"))->Fill(genPt);
 		
-		// ------- is from a triggered event? (same as rec.) --------
+		// ------- is from a triggering event? (same as rec.) --------
 		
 		if(!fTriggerFired)
 		{
@@ -493,7 +493,7 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Trig_Prim_Pt"))->Fill(genPt);
 		
-		// ------- is from an triggered event with good vertex? -------------
+		// ------- is from a triggering event with good vertex? -------------
 		
 		if(!fESDevent->GetPrimaryVertex()->GetStatus())
 		{
@@ -507,7 +507,7 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		
 		// ------ is within the geometrical acceptance? ------------
 		
-		if(TMath::Abs(iParticle->Eta()) >= fMaxEta) continue;
+		if(TMath::Abs(genEta) >= fMaxEta) continue;
 		
 		((TH2D*)fHistoMap->Get(particle + "_Gen_Acc_Prim_PtY"))->Fill(genY,genPt);
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Acc_Prim_P"))->Fill(genP);
