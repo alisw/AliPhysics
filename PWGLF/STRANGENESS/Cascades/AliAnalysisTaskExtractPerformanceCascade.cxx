@@ -85,6 +85,7 @@ class AliAODv0;
 #include "AliESDcascade.h"
 #include "AliAODcascade.h"
 #include "AliESDUtils.h"
+#include "AliAnalysisUtils.h"
 #include "AliGenEventHeader.h"
 
 #include "AliAnalysisTaskExtractPerformanceCascade.h"
@@ -95,11 +96,12 @@ using std::endl;
 ClassImp(AliAnalysisTaskExtractPerformanceCascade)
 
 AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCascade() 
-  : AliAnalysisTaskSE(), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0),
+  : AliAnalysisTaskSE(), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
    fkIsNuclear   ( kFALSE ), 
    fkSwitchINT7  ( kFALSE ),
    fpArapidityShift ( 0.465 ),
    fCentralityEstimator("V0M"),
+   fkpAVertexSelection( kFALSE ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -223,11 +225,12 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
 }
 
 AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCascade(const char *name) 
-  : AliAnalysisTaskSE(name), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0),
+  : AliAnalysisTaskSE(name), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
    fkIsNuclear   ( kFALSE ), 
    fkSwitchINT7  ( kFALSE ),
    fpArapidityShift ( 0.465 ),
    fCentralityEstimator("V0M"),
+   fkpAVertexSelection( kFALSE ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -394,6 +397,10 @@ AliAnalysisTaskExtractPerformanceCascade::~AliAnalysisTaskExtractPerformanceCasc
     delete fESDtrackCuts;
     fESDtrackCuts = 0x0; 
   }
+  if (fUtils){
+    delete fUtils;
+    fUtils = 0x0;
+  }
 
 }
 
@@ -475,9 +482,12 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
 
 // Multiplicity 
 
-    if(! fESDtrackCuts ){
-          fESDtrackCuts = new AliESDtrackCuts();
-    }
+  if(! fESDtrackCuts ){
+    fESDtrackCuts = new AliESDtrackCuts();
+  }
+  if(! fUtils ){
+    fUtils = new AliAnalysisUtils();
+  }
 
 //------------------------------------------------
 // V0 Multiplicity Histograms
@@ -1093,17 +1103,29 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 //------------------------------------------------
 // Primary Vertex Z position: SKIP
 //------------------------------------------------
-
-   if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0 ) { 
-      AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !"); 
-        PostData(1, fListHist);
-        PostData(2, fTreeCascade);
-      return; 
-   }
-
-   lMagneticField = lESDevent->GetMagneticField( );
-   fHistV0MultiplicityForSelEvt ->Fill( lNumberOfV0s );
-   fHistMultiplicity->Fill(lMultiplicity);
+  
+  if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0 && fkpAVertexSelection==kFALSE) {
+    AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
+    PostData(1, fListHist);
+    PostData(2, fTreeCascade);
+    return;
+  }
+  if(fkpAVertexSelection==kTRUE && fUtils->IsFirstEventInChunk(lESDevent)) {
+    AliWarning("Pb / | This is the first event in the chunk!");
+    PostData(1, fListHist);
+    PostData(2, fTreeCascade);
+    return;
+  }
+  if(fkpAVertexSelection==kTRUE && !fUtils->IsVertexSelected2013pA(lESDevent)) {
+    AliWarning("Pb / | Vertex not selected by 2013 pA criteria!");
+    PostData(1, fListHist);
+    PostData(2, fTreeCascade);
+    return;
+  }
+  
+  lMagneticField = lESDevent->GetMagneticField( );
+  fHistV0MultiplicityForSelEvt ->Fill( lNumberOfV0s );
+  fHistMultiplicity->Fill(lMultiplicity);
   fHistMultiplicityV0A->Fill(lMultiplicityV0A);
   fHistMultiplicityZNA->Fill(lMultiplicityZNA);
   fHistMultiplicityTRK->Fill(lMultiplicityTRK);
@@ -1115,7 +1137,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 	
    const AliESDVertex *lPrimaryTrackingESDVtxCheck = lESDevent->GetPrimaryVertexTracks();
    const AliESDVertex *lPrimarySPDVtx = lESDevent->GetPrimaryVertexSPD();
-   if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtxCheck->GetStatus() ){
+   if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtxCheck->GetStatus() && fkpAVertexSelection==kFALSE ){
       AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
         PostData(1, fListHist);
         PostData(2, fTreeCascade);
