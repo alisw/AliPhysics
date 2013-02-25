@@ -63,9 +63,9 @@ void AliAnalysisTaskQualityAssurancePA::Init()
     if (fAnalyzeQA)
     {
       AddHistogram1D<TH1D>(tmpRunNum, "hNumberEvents", "Number of events (0 = before, 1 = after vertex cuts)", "", 2, 0, 2, "#Delta z(cm)","N^{Events}/cut");
-      AddHistogram1D<TH1D>(tmpRunNum, "hVertexX", "X distribution of the vertex", "", 500, -1., 1., "#Delta x(cm)","dN^{Events}/dx");
-      AddHistogram1D<TH1D>(tmpRunNum, "hVertexY", "Y distribution of the vertex", "", 500, -1., 1., "#Delta y(cm)","dN^{Events}/dy");
-      AddHistogram2D<TH2D>(tmpRunNum, "hVertexXY", "XY distribution of the vertex", "COLZ", 250, -1., 1., 250, -1., 1.,"#Delta x(cm)", "#Delta y(cm)","dN^{Events}/dxdy");
+      AddHistogram1D<TH1D>(tmpRunNum, "hVertexX", "X distribution of the vertex", "", 2000, -1., 1., "#Delta x(cm)","dN^{Events}/dx");
+      AddHistogram1D<TH1D>(tmpRunNum, "hVertexY", "Y distribution of the vertex", "", 2000, -1., 1., "#Delta y(cm)","dN^{Events}/dy");
+      AddHistogram2D<TH2D>(tmpRunNum, "hVertexXY", "XY distribution of the vertex", "COLZ", 500, -1., 1., 500, -1., 1.,"#Delta x(cm)", "#Delta y(cm)","dN^{Events}/dxdy");
       AddHistogram1D<TH1D>(tmpRunNum, "hVertexZ", "Z distribution of the vertex", "", 100, -10., 10., "#Delta z(cm)","dN^{Events}/dz");
       AddHistogram1D<TH1D>(tmpRunNum, "hVertexR", "R distribution of the vertex", "", 100, 0., 1., "#Delta r(cm)","dN^{Events}/dr");
       AddHistogram1D<TH1D>(tmpRunNum, "hCentralityV0M", "Centrality distribution V0M", "", 100, 0., 100., "Centrality","dN^{Events}");
@@ -97,7 +97,7 @@ void AliAnalysisTaskQualityAssurancePA::Init()
     if (fAnalyzeJets)
     {
       // ######## Jet spectra
-      AddHistogram1D<TH1D>(tmpRunNum, "hJetPt", "Jets p_{T} distribution", "", 800, 0., 200., "p_{T} (GeV/c)","dN^{Jets}/dp_{T}");
+      AddHistogram1D<TH1D>(tmpRunNum, "hJetPt", "Jets p_{T} distribution", "", 2000, 0., 200., "p_{T} (GeV/c)","dN^{Jets}/dp_{T}");
       AddHistogram1D<TH1D>(tmpRunNum, "hJetArea", "Jets area distribution", "", 200, 0., 2., "Area","dN^{Jets}/dA");
       AddHistogram2D<TH2D>(tmpRunNum, "hJetAreaVsPt", "Jets area vs. p_{T} distribution", "COLZ", 100, 0., 2., 200, 0., 200., "Area", "p_{T}", "dN^{Jets}/dA dp_{T}");
 

@@ -108,7 +108,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
 
   // #### Do some nasty piggybacking on demand
   if (externalMacro)
-    gROOT->LoadMacro(externalMacro);
+    gROOT->Macro(externalMacro);
 
 
   return task;
