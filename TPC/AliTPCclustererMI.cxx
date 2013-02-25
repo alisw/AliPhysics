@@ -956,6 +956,15 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   }
   fRowDig = NULL;
 
+  fEventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
+  if (fEventHeader){
+    fTimeStamp = fEventHeader->Get("Timestamp");
+    fEventType = fEventHeader->Get("Type");
+    AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+    transform->SetCurrentTimeStamp(fTimeStamp);
+    transform->SetCurrentRun(rawReader->GetRunNumber());
+  }
+
   //-----------------------------------------------------------------
   // Use HLT clusters
   //-----------------------------------------------------------------
@@ -992,14 +1001,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
   //
   AliTPCRawStreamV3 input(rawReader,(AliAltroMapping**)mapping);
-  fEventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
-  if (fEventHeader){
-    fTimeStamp = fEventHeader->Get("Timestamp");
-    fEventType = fEventHeader->Get("Type");
-    AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
-    transform->SetCurrentTimeStamp(fTimeStamp);
-    transform->SetCurrentRun(rawReader->GetRunNumber());
-  }
   
   // creaate one TClonesArray for all clusters
   if(fBClonesArray && !fOutputClonesArray) fOutputClonesArray = new TClonesArray("AliTPCclusterMI",1000);
