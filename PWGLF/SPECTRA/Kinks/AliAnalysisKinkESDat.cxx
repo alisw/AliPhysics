@@ -618,6 +618,7 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
            fTPCSgnlPa->Fill( track->GetInnerParam()->GetP() ,(track->GetTPCsignal()  ) ) ;
 //
             //  NO dEdx cut test 9/2/13               if ( nsigma               > 3.5) continue;
+                        if ( nsigma               > 3.5) continue;
             // system               if ( nsigma               > 4.0) continue;   // gia systamatic error
 // 
 //  next plots for the identified kaons by the kink analysis

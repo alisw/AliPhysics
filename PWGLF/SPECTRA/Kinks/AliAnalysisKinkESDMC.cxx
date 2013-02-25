@@ -1089,7 +1089,7 @@ for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
      //fTPCSgnlPa->Fill(track->P(),track->GetTPCsignal());
      fTPCSgnlPa->Fill(track->GetInnerParam()->GetP(),track->GetTPCsignal());
                 //    if( nsigma > 3.5 )      fcode2->Fill(TMath::Abs(code1), TMath::Abs(dcode1));
-                  if(nsigma  > 3.5) continue;  // 1/11/12
+        // test 25/2/13 NOdEdx test          if(nsigma  > 3.5) continue;  // 1/11/12
                //  if(nsigma  > 4.0) continue; // test 17/2/2011  4% or more ? bg? 
 //
    fTPCSgnlP->Fill(track->GetInnerParam()->GetP(), (track->GetTPCsignal()  ) ) ;
