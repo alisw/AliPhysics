@@ -39,13 +39,22 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  TString name(Form("%s_%s_%s_%s_R0%d_",taskname,ntracks,nclusters,nrho,(Int_t)floor(jetradius*100+0.5)));
+  TString name;
+  if (strcmp(ntracks, "") == 0 && strcmp(nclusters, "") == 0) 
+    name = Form("%s_%s_R0%d",taskname,nrho,(Int_t)floor(jetradius*100+0.5));
+  else if (strcmp(ntracks, "") == 0) 
+    name = Form("%s_%s_%s_R0%d",taskname,nclusters,nrho,(Int_t)floor(jetradius*100+0.5));
+  else if (strcmp(nclusters, "") == 0) 
+    name = Form("%s_%s_%s_R0%d",taskname,ntracks,nrho,(Int_t)floor(jetradius*100+0.5));
+  else
+    name = Form("%s_%s_%s_%s_R0%d",taskname,ntracks,nclusters,nrho,(Int_t)floor(jetradius*100+0.5));
+
   if (type == AliAnalysisTaskEmcal::kTPC) 
-    name += "TPC";
+    name += "_TPC";
   else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "EMCAL";
+    name += "_EMCAL";
   else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "USER";
+    name += "_USER";
 
   AliAnalysisTaskDeltaPt* jetTask = new AliAnalysisTaskDeltaPt(name);
   jetTask->SetAnaType(type);
@@ -77,8 +86,8 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
-  mgr->ConnectInput  (jetTask, 0,  cinput1 );
-  mgr->ConnectOutput (jetTask, 1, coutput1 );
+  mgr->ConnectInput(jetTask, 0, cinput1);
+  mgr->ConnectOutput(jetTask, 1, coutput1);
   
   return jetTask;
 }

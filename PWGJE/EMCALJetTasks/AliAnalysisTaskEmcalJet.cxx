@@ -43,6 +43,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fMaxClusterPt(100),
   fMaxTrackPt(100),
   fLeadingHadronType(0),
+  fNLeadingJets(2),
   fJets(0),
   fRho(0),
   fRhoVal(0)
@@ -69,6 +70,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   fMaxClusterPt(100),
   fMaxTrackPt(100),
   fLeadingHadronType(0),
+  fNLeadingJets(2),
   fJets(0),
   fRho(0),
   fRhoVal(0)
@@ -130,14 +132,18 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet) const
 {   
   // Return true if jet is accepted.
 
-  if (jet->Pt() <= fJetPtCut)
+  if (jet->Pt() <= fJetPtCut) 
     return kFALSE;
-  if (jet->Area() <= fJetAreaCut)
+ 
+  if (jet->Area() <= fJetAreaCut) 
     return kFALSE;
+
   if (jet->AreaEmc()<fAreaEmcCut)
     return kFALSE;
+
   if (!AcceptBiasJet(jet))
     return kFALSE;
+  
   if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt)
     return kFALSE;
 
@@ -217,12 +223,11 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
 }
 
 //________________________________________________________________________
-Int_t* AliAnalysisTaskEmcalJet::GetSortedArray(TClonesArray *array) const
+Bool_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho) const
 {
   // Get the leading jets.
 
-  static Float_t pt[9999];
-  static Int_t indexes[9999];
+  static Float_t pt[9999] = {0};
 
   if (!array)
     return 0;
@@ -230,7 +235,7 @@ Int_t* AliAnalysisTaskEmcalJet::GetSortedArray(TClonesArray *array) const
   const Int_t n = array->GetEntriesFast();
 
   if (n < 1)
-    return 0;
+    return kFALSE;
 
   if (array->GetClass()->GetBaseClass("AliEmcalJet")) {
 
@@ -248,7 +253,7 @@ Int_t* AliAnalysisTaskEmcalJet::GetSortedArray(TClonesArray *array) const
       if (!AcceptJet(jet))
 	continue;
       
-      pt[i] = jet->Pt() - fRhoVal * jet->Area();
+      pt[i] = jet->Pt() - rho * jet->Area();
     }
   }
 
@@ -300,7 +305,7 @@ Int_t* AliAnalysisTaskEmcalJet::GetSortedArray(TClonesArray *array) const
   if (pt[indexes[0]] == -FLT_MAX) 
     return 0;
 
-  return indexes;
+  return kTRUE;
 }
 
 //________________________________________________________________________

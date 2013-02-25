@@ -7,7 +7,6 @@ class AliGenPythiaEventHeader;
 class TClonesArray;
 class TH1;
 class TH2;
-class TH3;
 
 #include "AliEmcalJet.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -26,6 +25,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   };
 
   void                        UserCreateOutputObjects();
+  Bool_t                      UserNotify();
 
   void                        SetJets2Name(const char *n)                                     { fJets2Name         = n         ; }
   void                        SetTracks2Name(const char *n)                                   { fTracks2Name       = n         ; }
@@ -40,6 +40,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetAreMCCollections(Bool_t f1, Bool_t f2)                       { fAreCollections1MC = f1; fAreCollections2MC = f2; }
 
  protected:
+  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
   Bool_t                      IsEventSelected();
   Bool_t                      AcceptJet(AliEmcalJet* jet) const;
   Bool_t                      AcceptBiasJet2(AliEmcalJet *jet) const;
@@ -63,8 +64,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Bool_t                      fAreCollections1MC;             // collections 1 MC
   Bool_t                      fAreCollections2MC;             // collections 1 MC
   MatchingType                fMatching;                      // matching type
-  Double_t                    fMatchingPar1;                  // matching parameter for generated-reconstructed matching
-  Double_t                    fMatchingPar2;                  // matching parameter for reconstructed-generated matching
+  Double_t                    fMatchingPar1;                  // matching parameter for jet1-jet2 matching
+  Double_t                    fMatchingPar2;                  // matching parameter for jet2-jet1 matching
   Float_t                     fJet2MinEta;                    // minimum eta jet 2 acceptance
   Float_t                     fJet2MaxEta;                    // maximum eta jet 2 acceptance
   Float_t                     fJet2MinPhi;                    // minimum phi jet 2 acceptance
@@ -81,26 +82,38 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Double_t                    fRho2Val;                       //!Event rho 2 value 
   TH1                        *fTracks2Map;                    //!MC particle map
   // General histograms
-  TH1                        *fHistNTrials;                   //!total number of trials per pt hard bin
+  TH1                        *fHistTrialsAfterSel;            //!total number of trials per pt hard bin after selection
+  TH1                        *fHistEventsAfterSel;            //!total number of events per pt hard bin after selection
+  TH1                        *fHistTrials;                    //!trials from pyxsec.root
+  TH1                        *fHistXsection;                  //!x section from pyxsec.root
   TH1                        *fHistEvents;                    //!total number of events per pt hard bin
   // Jets 1
   TH2                        *fHistJets1PhiEta;               //!phi-eta distribution of jets 1
   TH2                        *fHistJets1PtArea;               //!inclusive jet pt vs area histogram 1
   TH2                        *fHistJets1CorrPtArea;           //!inclusive jet pt vs. area histogram 1
+  TH2                        *fHistLeadingJets1PtArea;        //!leading jet pt vs area histogram 1
+  TH2                        *fHistLeadingJets1CorrPtArea;    //!leading jet pt vs. area histogram 1
   // Jets 2
   TH2                        *fHistJets2PhiEta;               //!phi-eta distribution of jets 2
   TH2                        *fHistJets2PtArea;               //!inclusive jet pt vs. area histogram 2
   TH2                        *fHistJets2CorrPtArea;           //!inclusive jet pt vs. area histogram 2
+  TH2                        *fHistLeadingJets2PtArea;        //!leading jet pt vs. area histogram 2
+  TH2                        *fHistLeadingJets2CorrPtArea;    //!leading jet pt vs. area histogram 2
   TH2                        *fHistJets2PhiEtaAcceptance;     //!phi-eta distribution of jets 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
   TH2                        *fHistJets2PtAreaAcceptance;     //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
   TH2                        *fHistJets2CorrPtAreaAcceptance; //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
+  TH2                        *fHistLeadingJets2PtAreaAcceptance;     //!leading jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
+  TH2                        *fHistLeadingJets2CorrPtAreaAcceptance; //!leading jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
   // Jet1-Jet2 matching
-  TH2                        *fHistMatchingLevelvsJet2Pt;              //!matching level vs jet 2 pt
+  TH2                        *fHistCommonEnergy1vsJet1Pt;              //!common energy 1 (%) vs jet 1 pt
+  TH2                        *fHistCommonEnergy2vsJet2Pt;              //!common energy 2 (%) vs jet 2 pt
+  TH2                        *fHistDistancevsJet1Pt;                   //!distance vs jet 1 pt
+  TH2                        *fHistDistancevsJet2Pt;                   //!distance vs jet 2 pt
   TH2                        *fHistDistancevsCommonEnergy1;            //!distance vs common energy 1 (%)
   TH2                        *fHistDistancevsCommonEnergy2;            //!distance vs common energy 2 (%)
   TH2                        *fHistJet2PtOverJet1PtvsJet2Pt;           //!jet 2 pt over jet 1 pt vs jet 2 pt
   TH2                        *fHistJet1PtOverJet2PtvsJet1Pt;           //!jet 1 pt over jet 2 pt vs jet 1 pt
-  TH3                        *fHistDeltaEtaPhivsJet2Pt;                //!delta eta-phi between matched jets vs jet 2 pt
+  TH2                        *fHistDeltaEtaPhi;                        //!delta eta-phi between matched jets
   TH2                        *fHistDeltaPtvsJet1Pt;                    //!delta pt between matched jets vs jet 1 pt
   TH2                        *fHistDeltaPtvsJet2Pt;                    //!delta pt between matched jets vs jet 2 pt
   TH2                        *fHistDeltaPtvsMatchingLevel;             //!delta pt between matched jets vs matching level
@@ -119,6 +132,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 11) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 12) // Jet response matrix producing task
 };
 #endif

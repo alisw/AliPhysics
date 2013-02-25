@@ -23,6 +23,7 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   const Int_t     nCells        = 1234567890,
   const Bool_t    copyArray     = kTRUE,
   const Int_t     nFiles        = 1234567890,
+  const Bool_t    makeQA        = kFALSE,
   const Double_t  minPt         = 0,
   const Double_t  maxPt         = 1000,
   const Double_t  minEta        = -0.9,
@@ -53,7 +54,7 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliJetEmbeddingFromPYTHIATask *jetEmb = new AliJetEmbeddingFromPYTHIATask(taskName);
+  AliJetEmbeddingFromPYTHIATask *jetEmb = new AliJetEmbeddingFromPYTHIATask(taskName,makeQA);
   jetEmb->SetTracksName(tracksName);
   jetEmb->SetClusName(clusName);
   jetEmb->SetCellsName(cellsName);
@@ -103,6 +104,16 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
     
   // Create containers for input/output
   mgr->ConnectInput(jetEmb, 0, mgr->GetCommonInputContainer());
+
+  if (makeQA) {
+    TString contName = taskName;
+    contName += "_histos";
+    AliAnalysisDataContainer *outc = mgr->CreateContainer(contName,
+							  TList::Class(),
+							  AliAnalysisManager::kOutputContainer,
+							  "AnalysisResults.root");
+    mgr->ConnectOutput(jetEmb, 1, outc);
+  }
 
   return jetEmb;
 }

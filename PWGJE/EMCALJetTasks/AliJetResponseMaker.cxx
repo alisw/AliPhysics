@@ -11,7 +11,12 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TLorentzVector.h>
+#include <TSystem.h>
+#include <TFile.h>
+#include <TKey.h>
+#include <TProfile.h>
 
+#include "AliAnalysisManager.h"
 #include "AliVCluster.h"
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
@@ -50,23 +55,35 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fRho2(0),
   fRho2Val(0),
   fTracks2Map(0),
-  fHistNTrials(0),
+  fHistTrialsAfterSel(0),
+  fHistEventsAfterSel(0),
+  fHistTrials(0),
+  fHistXsection(0),
   fHistEvents(0),
   fHistJets1PhiEta(0),
   fHistJets1PtArea(0),
   fHistJets1CorrPtArea(0),
+  fHistLeadingJets1PtArea(0),
+  fHistLeadingJets1CorrPtArea(0),
   fHistJets2PhiEta(0),
   fHistJets2PtArea(0),
   fHistJets2CorrPtArea(0),
+  fHistLeadingJets2PtArea(0),
+  fHistLeadingJets2CorrPtArea(0),
   fHistJets2PhiEtaAcceptance(0),
   fHistJets2PtAreaAcceptance(0),
   fHistJets2CorrPtAreaAcceptance(0),
-  fHistMatchingLevelvsJet2Pt(0),
+  fHistLeadingJets2PtAreaAcceptance(0),
+  fHistLeadingJets2CorrPtAreaAcceptance(0),
+  fHistCommonEnergy1vsJet1Pt(0),
+  fHistCommonEnergy2vsJet2Pt(0),
+  fHistDistancevsJet1Pt(0),
+  fHistDistancevsJet2Pt(0),
   fHistDistancevsCommonEnergy1(0),
   fHistDistancevsCommonEnergy2(0),
   fHistJet2PtOverJet1PtvsJet2Pt(0),
   fHistJet1PtOverJet2PtvsJet1Pt(0),
-  fHistDeltaEtaPhivsJet2Pt(0),
+  fHistDeltaEtaPhi(0),
   fHistDeltaPtvsJet1Pt(0),
   fHistDeltaPtvsJet2Pt(0),
   fHistDeltaPtvsMatchingLevel(0),
@@ -114,23 +131,35 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fRho2(0),
   fRho2Val(0),
   fTracks2Map(0),
-  fHistNTrials(0),
+  fHistTrialsAfterSel(0),
+  fHistEventsAfterSel(0),
+  fHistTrials(0),
+  fHistXsection(0),
   fHistEvents(0),
   fHistJets1PhiEta(0),
   fHistJets1PtArea(0),
   fHistJets1CorrPtArea(0),
+  fHistLeadingJets1PtArea(0),
+  fHistLeadingJets1CorrPtArea(0),
   fHistJets2PhiEta(0),
   fHistJets2PtArea(0),
   fHistJets2CorrPtArea(0),
+  fHistLeadingJets2PtArea(0),
+  fHistLeadingJets2CorrPtArea(0),
   fHistJets2PhiEtaAcceptance(0),
   fHistJets2PtAreaAcceptance(0),
   fHistJets2CorrPtAreaAcceptance(0),
-  fHistMatchingLevelvsJet2Pt(0),
+  fHistLeadingJets2PtAreaAcceptance(0),
+  fHistLeadingJets2CorrPtAreaAcceptance(0),
+  fHistCommonEnergy1vsJet1Pt(0),
+  fHistCommonEnergy2vsJet2Pt(0),
+  fHistDistancevsJet1Pt(0),
+  fHistDistancevsJet2Pt(0),
   fHistDistancevsCommonEnergy1(0),
   fHistDistancevsCommonEnergy2(0),
   fHistJet2PtOverJet1PtvsJet2Pt(0),
   fHistJet1PtOverJet2PtvsJet1Pt(0),
-  fHistDeltaEtaPhivsJet2Pt(0),
+  fHistDeltaEtaPhi(0),
   fHistDeltaPtvsJet1Pt(0),
   fHistDeltaPtvsJet2Pt(0),
   fHistDeltaPtvsMatchingLevel(0),
@@ -157,27 +186,152 @@ AliJetResponseMaker::~AliJetResponseMaker()
 }
 
 //________________________________________________________________________
+Bool_t AliJetResponseMaker::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard)
+{
+  //
+  // Get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+  // Get the pt hard bin from the file path
+  // This is to called in Notify and should provide the path to the AOD/ESD file
+  // (Partially copied from AliAnalysisHelperJetTasks)
+
+  TString file(currFile);  
+  fXsec = 0;
+  fTrials = 1;
+
+  if(file.Contains("root_archive.zip#")){
+    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
+    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+    file.Replace(pos+1,pos2-pos1,"");
+  }
+  else {
+    // not an archive take the basename....
+    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+  }
+  Printf("%s",file.Data());
+
+  // Get the pt hard bin
+  TString strPthard(file);
+  strPthard.Remove(strPthard.Last('/'));
+  strPthard.Remove(strPthard.Last('/'));
+  strPthard.Remove(0,strPthard.Last('/')+1);
+  if (strPthard.IsDec()) 
+    pthard = strPthard.Atoi();
+  else 
+    AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
+
+  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
+  if(!fxsec){
+    // next trial fetch the histgram file
+    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
+    if(!fxsec){
+	// not a severe condition but inciate that we have no information
+      return kFALSE;
+    }
+    else{
+      // find the tlist we want to be independtent of the name so use the Tkey
+      TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
+      if(!key){
+	fxsec->Close();
+	return kFALSE;
+      }
+      TList *list = dynamic_cast<TList*>(key->ReadObj());
+      if(!list){
+	fxsec->Close();
+	return kFALSE;
+      }
+      fXsec = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
+      fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
+      fxsec->Close();
+    }
+  } // no tree pyxsec.root
+  else {
+    TTree *xtree = (TTree*)fxsec->Get("Xsection");
+    if(!xtree){
+      fxsec->Close();
+      return kFALSE;
+    }
+    UInt_t   ntrials  = 0;
+    Double_t  xsection  = 0;
+    xtree->SetBranchAddress("xsection",&xsection);
+    xtree->SetBranchAddress("ntrials",&ntrials);
+    xtree->GetEntry(0);
+    fTrials = ntrials;
+    fXsec = xsection;
+    fxsec->Close();
+  }
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliJetResponseMaker::UserNotify()
+{
+  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+  if (!tree) {
+    AliError(Form("%s - UserNotify: No current tree!",GetName()));
+    return kFALSE;
+  }
+
+  Float_t xsection = 0;
+  Float_t trials   = 0;
+  Int_t   pthard   = 0;
+
+  TFile *curfile = tree->GetCurrentFile();
+  if (!curfile) {
+    AliError(Form("%s - UserNotify: No current file!",GetName()));
+    return kFALSE;
+  }
+
+  PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthard);
+
+  fHistTrials->SetBinContent(pthard + 1, fHistTrials->GetBinContent(pthard + 1) + trials);
+  fHistXsection->SetBinContent(pthard + 1, fHistXsection->GetBinContent(pthard + 1) + xsection);
+  fHistEvents->SetBinContent(pthard + 1, fHistEvents->GetBinContent(pthard + 1) + 1);
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
 void AliJetResponseMaker::UserCreateOutputObjects()
 {
   // Create user objects.
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
-  const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+  fHistTrialsAfterSel = new TH1F("fHistTrialsAfterSel", "fHistTrialsAfterSel", 11, 0, 11);
+  fHistTrialsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
+  fHistTrialsAfterSel->GetYaxis()->SetTitle("trials");
+  fOutput->Add(fHistTrialsAfterSel);
 
-  fHistNTrials = new TH1F("fHistNTrials", "fHistNTrials", 11, 0, 11);
-  fHistNTrials->GetXaxis()->SetTitle("p_{T} hard bin");
-  fHistNTrials->GetYaxis()->SetTitle("trials");
-  fOutput->Add(fHistNTrials);
+  fHistEventsAfterSel = new TH1F("fHistEventsAfterSel", "fHistEventsAfterSel", 11, 0, 11);
+  fHistEventsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
+  fHistEventsAfterSel->GetYaxis()->SetTitle("total events");
+  fOutput->Add(fHistEventsAfterSel);
+
+  fHistTrials = new TH1F("fHistTrials", "fHistTrials", 11, 0, 11);
+  fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
+  fHistTrials->GetYaxis()->SetTitle("trials");
+  fOutput->Add(fHistTrials);
+
+  fHistXsection = new TH1F("fHistXsection", "fHistXsection", 11, 0, 11);
+  fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
+  fHistXsection->GetYaxis()->SetTitle("xsection");
+  fOutput->Add(fHistXsection);
 
   fHistEvents = new TH1F("fHistEvents", "fHistEvents", 11, 0, 11);
   fHistEvents->GetXaxis()->SetTitle("p_{T} hard bin");
   fHistEvents->GetYaxis()->SetTitle("total events");
   fOutput->Add(fHistEvents);
 
+  const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+  const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+
   for (Int_t i = 1; i < 12; i++) {
-    fHistNTrials->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+    fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+    fHistEventsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+
+    fHistTrials->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+    fHistXsection->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
     fHistEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
   }
 
@@ -192,12 +346,24 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistJets1PtArea->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets1PtArea);
 
+  fHistLeadingJets1PtArea = new TH2F("fHistLeadingJets1PtArea", "fHistLeadingJets1PtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+  fHistLeadingJets1PtArea->GetXaxis()->SetTitle("area");
+  fHistLeadingJets1PtArea->GetYaxis()->SetTitle("p_{T,1} (GeV/c)");
+  fHistLeadingJets1PtArea->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistLeadingJets1PtArea);
+
   if (!fRhoName.IsNull()) {
     fHistJets1CorrPtArea = new TH2F("fHistJets1CorrPtArea", "fHistJets1CorrPtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets1CorrPtArea->GetXaxis()->SetTitle("area");
     fHistJets1CorrPtArea->GetYaxis()->SetTitle("p_{T,1}^{corr} (GeV/c)");
     fHistJets1CorrPtArea->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistJets1CorrPtArea);
+
+    fHistLeadingJets1CorrPtArea = new TH2F("fHistLeadingJets1CorrPtArea", "fHistLeadingJets1CorrPtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+    fHistLeadingJets1CorrPtArea->GetXaxis()->SetTitle("area");
+    fHistLeadingJets1CorrPtArea->GetYaxis()->SetTitle("p_{T,1}^{corr} (GeV/c)");
+    fHistLeadingJets1CorrPtArea->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistLeadingJets1CorrPtArea);
   }
 
   fHistJets2PhiEta = new TH2F("fHistJets2PhiEta", "fHistJets2PhiEta", 40, -1, 1, 40, 0, TMath::Pi()*2);
@@ -216,11 +382,23 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistJets2PtArea->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets2PtArea);
 
+  fHistLeadingJets2PtArea = new TH2F("fHistLeadingJets2PtArea", "fHistLeadingJets2PtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+  fHistLeadingJets2PtArea->GetXaxis()->SetTitle("area");
+  fHistLeadingJets2PtArea->GetYaxis()->SetTitle("p_{T,2} (GeV/c)");
+  fHistLeadingJets2PtArea->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistLeadingJets2PtArea);
+
   fHistJets2PtAreaAcceptance = new TH2F("fHistJets2PtAreaAcceptance", "fHistJets2PtAreaAcceptance", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
   fHistJets2PtAreaAcceptance->GetXaxis()->SetTitle("area");
   fHistJets2PtAreaAcceptance->GetYaxis()->SetTitle("p_{T,2} (GeV/c)");
   fHistJets2PtAreaAcceptance->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets2PtAreaAcceptance);
+
+  fHistLeadingJets2PtAreaAcceptance = new TH2F("fHistLeadingJets2PtAreaAcceptance", "fHistLeadingJets2PtAreaAcceptance", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+  fHistLeadingJets2PtAreaAcceptance->GetXaxis()->SetTitle("area");
+  fHistLeadingJets2PtAreaAcceptance->GetYaxis()->SetTitle("p_{T,2} (GeV/c)");
+  fHistLeadingJets2PtAreaAcceptance->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistLeadingJets2PtAreaAcceptance);
 
   if (!fRho2Name.IsNull()) {
     fHistJets2CorrPtArea = new TH2F("fHistJets2CorrPtArea", "fHistJets2CorrPtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, 2*fNbins, -fMaxBinPt, fMaxBinPt);
@@ -229,18 +407,48 @@ void AliJetResponseMaker::UserCreateOutputObjects()
     fHistJets2CorrPtArea->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistJets2CorrPtArea);
 
+    fHistLeadingJets2CorrPtArea = new TH2F("fHistLeadingJets2CorrPtArea", "fHistLeadingJets2CorrPtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+    fHistLeadingJets2CorrPtArea->GetXaxis()->SetTitle("area");
+    fHistLeadingJets2CorrPtArea->GetYaxis()->SetTitle("p_{T,2}^{corr} (GeV/c)");
+    fHistLeadingJets2CorrPtArea->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistLeadingJets2CorrPtArea);
+
     fHistJets2CorrPtAreaAcceptance = new TH2F("fHistJets2CorrPtAreaAcceptance", "fHistJets2CorrPtAreaAcceptance", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets2CorrPtAreaAcceptance->GetXaxis()->SetTitle("area");
     fHistJets2CorrPtAreaAcceptance->GetYaxis()->SetTitle("p_{T,2}^{corr} (GeV/c)");
     fHistJets2CorrPtAreaAcceptance->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistJets2CorrPtAreaAcceptance);
+
+    fHistLeadingJets2CorrPtAreaAcceptance = new TH2F("fHistLeadingJets2CorrPtAreaAcceptance", "fHistLeadingJets2CorrPtAreaAcceptance", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+    fHistLeadingJets2CorrPtAreaAcceptance->GetXaxis()->SetTitle("area");
+    fHistLeadingJets2CorrPtAreaAcceptance->GetYaxis()->SetTitle("p_{T,2}^{corr} (GeV/c)");
+    fHistLeadingJets2CorrPtAreaAcceptance->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistLeadingJets2CorrPtAreaAcceptance);
   }
 
-  fHistMatchingLevelvsJet2Pt = new TH2F("fHistMatchingLevelvsJet2Pt", "fHistMatchingLevelvsJet2Pt", fNbins/2, 0, 1.2, fNbins/2, fMinBinPt, fMaxBinPt);
-  fHistMatchingLevelvsJet2Pt->GetXaxis()->SetTitle("Matching level");
-  fHistMatchingLevelvsJet2Pt->GetYaxis()->SetTitle("p_{T,2}");  
-  fHistMatchingLevelvsJet2Pt->GetZaxis()->SetTitle("counts");
-  fOutput->Add(fHistMatchingLevelvsJet2Pt);
+  fHistCommonEnergy1vsJet1Pt = new TH2F("fHistCommonEnergy1vsJet1Pt", "fHistCommonEnergy1vsJet1Pt", fNbins/2, 0, 1.2, fNbins/2, fMinBinPt, fMaxBinPt);
+  fHistCommonEnergy1vsJet1Pt->GetXaxis()->SetTitle("Common energy 1 (%)");
+  fHistCommonEnergy1vsJet1Pt->GetYaxis()->SetTitle("p_{T,1}");  
+  fHistCommonEnergy1vsJet1Pt->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistCommonEnergy1vsJet1Pt);
+
+  fHistCommonEnergy2vsJet2Pt = new TH2F("fHistCommonEnergy2vsJet2Pt", "fHistCommonEnergy2vsJet2Pt", fNbins/2, 0, 1.2, fNbins/2, fMinBinPt, fMaxBinPt);
+  fHistCommonEnergy2vsJet2Pt->GetXaxis()->SetTitle("Common energy 2 (%)");
+  fHistCommonEnergy2vsJet2Pt->GetYaxis()->SetTitle("p_{T,2}");  
+  fHistCommonEnergy2vsJet2Pt->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistCommonEnergy2vsJet2Pt);
+
+  fHistDistancevsJet1Pt = new TH2F("fHistDistancevsJet1Pt", "fHistDistancevsJet1Pt", fNbins/2, 0, 1.2, fNbins/2, fMinBinPt, fMaxBinPt);
+  fHistDistancevsJet1Pt->GetXaxis()->SetTitle("Distance");
+  fHistDistancevsJet1Pt->GetYaxis()->SetTitle("p_{T,1}");  
+  fHistDistancevsJet1Pt->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistDistancevsJet1Pt);
+
+  fHistDistancevsJet2Pt = new TH2F("fHistDistancevsJet2Pt", "fHistDistancevsJet2Pt", fNbins/2, 0, 1.2, fNbins/2, fMinBinPt, fMaxBinPt);
+  fHistDistancevsJet2Pt->GetXaxis()->SetTitle("Distance");
+  fHistDistancevsJet2Pt->GetYaxis()->SetTitle("p_{T,2}");  
+  fHistDistancevsJet2Pt->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistDistancevsJet2Pt);
 
   fHistDistancevsCommonEnergy1 = new TH2F("fHistDistancevsCommonEnergy1", "fHistDistancevsCommonEnergy1", fNbins/2, 0, 1.2, fNbins/2, 0, 1.2);
   fHistDistancevsCommonEnergy1->GetXaxis()->SetTitle("Distance");
@@ -266,11 +474,11 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistJet1PtOverJet2PtvsJet1Pt->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJet1PtOverJet2PtvsJet1Pt);
 
-  fHistDeltaEtaPhivsJet2Pt = new TH3F("fHistDeltaEtaPhivsJet2Pt", "fHistDeltaEtaPhivsJet2Pt", 40, -1, 1, 128, -1.6, 4.8, fNbins/2, fMinBinPt, fMaxBinPt);
-  fHistDeltaEtaPhivsJet2Pt->GetXaxis()->SetTitle("#Delta#eta");
-  fHistDeltaEtaPhivsJet2Pt->GetYaxis()->SetTitle("#Delta#phi");
-  fHistDeltaEtaPhivsJet2Pt->GetZaxis()->SetTitle("p_{T,2}");
-  fOutput->Add(fHistDeltaEtaPhivsJet2Pt);
+  fHistDeltaEtaPhi = new TH2F("fHistDeltaEtaPhi", "fHistDeltaEtaPhi", 200, -1, 1, 250, -1.6, 4.8);
+  fHistDeltaEtaPhi->GetXaxis()->SetTitle("#Delta#eta");
+  fHistDeltaEtaPhi->GetYaxis()->SetTitle("#Delta#phi");
+  fHistDeltaEtaPhi->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistDeltaEtaPhi);
 
   fHistDeltaPtvsJet1Pt = new TH2F("fHistDeltaPtvsJet1Pt", "fHistDeltaPtvsJet1Pt", fNbins, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
   fHistDeltaPtvsJet1Pt->GetXaxis()->SetTitle("p_{T,1}");  
@@ -895,14 +1103,21 @@ Bool_t AliJetResponseMaker::FillHistograms()
 {
   // Fill histograms.
 
-  fHistEvents->SetBinContent(fPtHardBin + 1, fHistEvents->GetBinContent(fPtHardBin + 1) + 1);
-  fHistNTrials->SetBinContent(fPtHardBin + 1, fHistNTrials->GetBinContent(fPtHardBin + 1) + fNTrials);
+  static Int_t indexes[9999] = {-1};
+
+  fHistEventsAfterSel->SetBinContent(fPtHardBin + 1, fHistEventsAfterSel->GetBinContent(fPtHardBin + 1) + 1);
+  fHistTrialsAfterSel->SetBinContent(fPtHardBin + 1, fHistTrialsAfterSel->GetBinContent(fPtHardBin + 1) + fNTrials);
+
+  GetSortedArray(indexes, fJets2, fRho2Val);
 
   const Int_t nJets2 = fJets2->GetEntriesFast();
 
+  Int_t naccJets2 = 0;
+  Int_t naccJets2Acceptance = 0;
+
   for (Int_t i = 0; i < nJets2; i++) {
 
-    AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(fJets2->At(i));
+    AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(fJets2->At(indexes[i]));
 
     if (!jet2) {
       AliError(Form("Could not receive jet2 %d", i));
@@ -918,8 +1133,16 @@ Bool_t AliJetResponseMaker::FillHistograms()
       fHistJets2PtAreaAcceptance->Fill(jet2->Area(), jet2->Pt());
       fHistJets2PhiEtaAcceptance->Fill(jet2->Eta(), jet2->Phi());
       
-      if (!fRho2Name.IsNull())
+      if (naccJets2Acceptance < fNLeadingJets)
+	fHistLeadingJets2PtAreaAcceptance->Fill(jet2->Area(), jet2->Pt());
+      
+      if (!fRho2Name.IsNull()) {
 	fHistJets2CorrPtAreaAcceptance->Fill(jet2->Area(), jet2->Pt() - fRho2Val * jet2->Area());
+	if (naccJets2Acceptance < fNLeadingJets)
+	  fHistLeadingJets2CorrPtAreaAcceptance->Fill(jet2->Area(), jet2->Pt() - fRho2Val * jet2->Area());
+      }
+      
+      naccJets2Acceptance++;
     }
 
     if (!AcceptBiasJet2(jet2))
@@ -927,21 +1150,31 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     if (jet2->Eta() < fJet2MinEta || jet2->Eta() > fJet2MaxEta || jet2->Phi() < fJet2MinPhi || jet2->Phi() > fJet2MaxPhi)
       continue;
-
+    
     fHistJets2PtArea->Fill(jet2->Area(), jet2->Pt());
     fHistJets2PhiEta->Fill(jet2->Eta(), jet2->Phi());
+    
+    if (naccJets2 < fNLeadingJets)
+      fHistLeadingJets2PtArea->Fill(jet2->Area(), jet2->Pt());
 
-    if (!fRho2Name.IsNull())
+    if (!fRho2Name.IsNull()) {
       fHistJets2CorrPtArea->Fill(jet2->Area(), jet2->Pt() - fRho2Val * jet2->Area());
+      if (naccJets2 < fNLeadingJets)
+	fHistLeadingJets2CorrPtArea->Fill(jet2->Area(), jet2->Pt() - fRho2Val * jet2->Area());
+    }
+
+    naccJets2++;
 
     if (jet2->MatchedJet()) {
 
       if (!AcceptBiasJet(jet2->MatchedJet()) || 
-	  jet2->MatchedJet()->MaxTrackPt() > fMaxTrackPt || jet2->MatchedJet()->MaxClusterPt() > fMaxClusterPt ||
-	  jet2->MatchedJet()->Pt() > fMaxBinPt) {
+	  jet2->MatchedJet()->MaxTrackPt() > fMaxTrackPt || jet2->MatchedJet()->MaxClusterPt() > fMaxClusterPt) {
 	fHistMissedJets2PtArea->Fill(jet2->Area(), jet2->Pt());
       }
       else {
+	if (jet2->MatchedJet()->Pt() > fMaxBinPt)
+	  fHistMissedJets2PtArea->Fill(jet2->Area(), jet2->Pt());
+
 	Double_t d1=-1, d2=-1;
 	if (jet2->GetMatchingType() == kGeometrical) {
 
@@ -952,18 +1185,29 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
 	  fHistDistancevsCommonEnergy1->Fill(jet2->ClosestJetDistance(), d1);
 	  fHistDistancevsCommonEnergy2->Fill(jet2->ClosestJetDistance(), d2);
+
+	  fHistDistancevsJet1Pt->Fill(jet2->ClosestJetDistance(), jet2->MatchedJet()->Pt());
+	  fHistDistancevsJet2Pt->Fill(jet2->ClosestJetDistance(), jet2->Pt());
+
+	  fHistCommonEnergy1vsJet1Pt->Fill(d1, jet2->MatchedJet()->Pt());
+	  fHistCommonEnergy2vsJet2Pt->Fill(d2, jet2->Pt());
 	}
 	else if (jet2->GetMatchingType() == kMCLabel || jet2->GetMatchingType() == kSameCollections) {
 	  GetGeometricalMatchingLevel(jet2->MatchedJet(), jet2, d1);
+
 	  fHistDistancevsCommonEnergy1->Fill(d1, jet2->MatchedJet()->ClosestJetDistance());
 	  fHistDistancevsCommonEnergy2->Fill(d1, jet2->ClosestJetDistance());
+
+	  fHistDistancevsJet1Pt->Fill(d1, jet2->MatchedJet()->Pt());
+	  fHistDistancevsJet2Pt->Fill(d1, jet2->Pt());
+
+	  fHistCommonEnergy1vsJet1Pt->Fill(jet2->MatchedJet()->ClosestJetDistance(), jet2->MatchedJet()->Pt());
+	  fHistCommonEnergy2vsJet2Pt->Fill(jet2->ClosestJetDistance(), jet2->Pt());
 	}
-	  
-	fHistMatchingLevelvsJet2Pt->Fill(jet2->ClosestJetDistance(), jet2->Pt());
 
 	Double_t deta = jet2->MatchedJet()->Eta() - jet2->Eta();
 	Double_t dphi = jet2->MatchedJet()->Phi() - jet2->Phi();
-	fHistDeltaEtaPhivsJet2Pt->Fill(deta, dphi, jet2->Pt());
+	fHistDeltaEtaPhi->Fill(deta, dphi, jet2->Pt());
 
 	Double_t dpt = jet2->MatchedJet()->Pt() - jet2->Pt();
 	fHistDeltaPtvsJet1Pt->Fill(jet2->MatchedJet()->Pt(), dpt);
@@ -993,11 +1237,15 @@ Bool_t AliJetResponseMaker::FillHistograms()
     }
   }
 
+  GetSortedArray(indexes, fJets, fRhoVal);
+
   const Int_t nJets1 = fJets->GetEntriesFast();
+  Int_t naccJets1 = 0;
 
   for (Int_t i = 0; i < nJets1; i++) {
 
-    AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(fJets->At(i));
+    AliDebug(2,Form("Processing jet %d", i));
+    AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(fJets->At(indexes[i]));
 
     if (!jet1) {
       AliError(Form("Could not receive jet %d", i));
@@ -1025,8 +1273,17 @@ Bool_t AliJetResponseMaker::FillHistograms()
     fHistJets1PtArea->Fill(jet1->Area(), jet1->Pt());
     fHistJets1PhiEta->Fill(jet1->Eta(), jet1->Phi());
 
-    if (!fRhoName.IsNull())
+    if (naccJets1 < fNLeadingJets)
+      fHistLeadingJets1PtArea->Fill(jet1->Area(), jet1->Pt());
+
+    if (!fRhoName.IsNull()) {
       fHistJets1CorrPtArea->Fill(jet1->Area(), jet1->Pt() - fRhoVal * jet1->Area());
+
+      if (naccJets1 < fNLeadingJets)
+	fHistLeadingJets1CorrPtArea->Fill(jet1->Area(), jet1->Pt() - fRhoVal * jet1->Area());
+    }
+
+    naccJets1++;
   }
 
   return kTRUE;

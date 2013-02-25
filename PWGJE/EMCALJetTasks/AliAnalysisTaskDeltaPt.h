@@ -7,6 +7,7 @@ class TClonesArray;
 class TString;
 class TH1;
 class TH2;
+class TH3;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -72,12 +73,12 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   // Jet embedding
   TH2                        *fHistEmbNotFoundPhiEta[4];   //!Phi-Eta of "not found" embedded particles
   TH1                        *fHistEmbNotFoundPt[4];       //!Pt of "not found" embedded particles
-  TH2                        *fHistEmbJetsPtArea[4];       //!Pt vs. area of embedded jets
-  TH2                        *fHistEmbJetsCorrPtArea[4];   //!Pt-rho*A vs. area of embedded jets
-  TH2                        *fHistEmbPartPtvsJetPt[4];    //!MC pt vs total pt of embedded jets
-  TH2                        *fHistEmbJetsPhiEta;          //!Phi-Eta distribution of embedded jets
+  TH3                        *fHistEmbJetsPtArea[4];       //!Pt vs. area of embedded jets
+  TH3                        *fHistEmbJetsCorrPtArea[4];   //!Pt-rho*A vs. area of embedded jets
+  TH2                        *fHistEmbPartPtvsJetPt[4];    //!MC jet pt total jet pt
+  TH2                        *fHistEmbPartPtvsJetCorrPt[4];//!MC jet pt total jet pt - rho*A
+  TH2                        *fHistEmbJetsPhiEta;          //!Phi-Eta distribution of embedded jets<
   TH2                        *fHistLeadPartPhiEta;         //!Phi-Eta distribution of the leading particle of embedded jets
-  TH2                        *fHistLeadPartPtvsArea[4];    //!Pt of the leading particle vs. area of embedded jets
   TH1                        *fHistDistLeadPart2JetAxis[4];//!Distance between leading particle and jet axis
   TH2                        *fHistEmbBkgArea[4];          //!Pt(embjet) - Pt(embtrack) vs. area of embedded jets
   TH2                        *fHistRhoVSEmbBkg[4];         //!Area(embjet) * rho vs. Pt(embjet) - Pt(embtrack)

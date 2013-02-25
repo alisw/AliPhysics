@@ -75,11 +75,10 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
 
   UInt_t                 GetJetType()                     { return fJetType; }
 
-  static bool            ComparePseudoJets(fastjet::PseudoJet a, fastjet::PseudoJet b);
-
  protected:
   void                   FindJets();
   Bool_t                 DoInit();
+  Bool_t                 GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
 
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection

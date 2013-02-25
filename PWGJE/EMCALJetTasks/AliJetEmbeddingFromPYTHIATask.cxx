@@ -10,6 +10,9 @@
 #include <TMath.h>
 #include <TString.h>
 #include <TRandom.h>
+#include <TParameter.h>
+#include <TSystem.h>
+#include <TH1F.h>
 
 #include "AliVEvent.h"
 #include "AliLog.h"
@@ -18,12 +21,14 @@ ClassImp(AliJetEmbeddingFromPYTHIATask)
 
 //________________________________________________________________________
 AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask() : 
-  AliJetEmbeddingFromAODTask("AliJetEmbeddingFromPYTHIATask", kFALSE),
+  AliJetEmbeddingFromAODTask("AliJetEmbeddingFromPYTHIATask"),
   fPYTHIAPath(),
   fPtHardBinScaling(),
   fLHC11hAnchorRun(kTRUE),
   fAnchorRun(-1),
-  fCurrentPtHardBin(-1)
+  fCurrentPtHardBin(-1),
+  fPtHardBinParam(0),
+  fHistPtHardBins(0)
 {
   // Default constructor.
   SetSuffix("PYTHIAEmbedding");
@@ -32,13 +37,15 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask() :
 }
 
 //________________________________________________________________________
-AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask(const char *name) : 
-  AliJetEmbeddingFromAODTask(name, kFALSE),
+AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask(const char *name, Bool_t drawqa) : 
+  AliJetEmbeddingFromAODTask(name, drawqa),
   fPYTHIAPath("/alice/sim/2012/LHC12a15e"),
   fPtHardBinScaling(),
   fLHC11hAnchorRun(kTRUE),
   fAnchorRun(-1),
-  fCurrentPtHardBin(-1)
+  fCurrentPtHardBin(-1),
+  fPtHardBinParam(0),
+  fHistPtHardBins(0)
 {
   // Standard constructor.
   SetSuffix("PYTHIAEmbedding");
@@ -50,6 +57,28 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask(const char *name) :
 AliJetEmbeddingFromPYTHIATask::~AliJetEmbeddingFromPYTHIATask()
 {
   // Destructor
+}
+
+//________________________________________________________________________
+void AliJetEmbeddingFromPYTHIATask::UserCreateOutputObjects()
+{
+  if (!fQAhistos)
+    return;
+
+  AliJetModelBaseTask::UserCreateOutputObjects();
+
+  fHistPtHardBins = new TH1F("fHistPtHardBins", "fHistPtHardBins", 11, 0, 11);
+  fHistPtHardBins->GetXaxis()->SetTitle("p_{T} hard bin");
+  fHistPtHardBins->GetYaxis()->SetTitle("total events");
+  fOutput->Add(fHistPtHardBins);
+
+  const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+  const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+
+  for (Int_t i = 1; i < 12; i++) 
+    fHistPtHardBins->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+
+  PostData(1, fOutput);
 }
 
 //________________________________________________________________________
@@ -69,6 +98,13 @@ Bool_t AliJetEmbeddingFromPYTHIATask::ExecOnce()
       fPtHardBinScaling[i] /= sum;
   }
 
+  fPtHardBinParam = static_cast<TParameter<int>*>(InputEvent()->FindListObject("PYTHIAPtHardBin"));
+  if (!fPtHardBinParam) {
+    fPtHardBinParam = new TParameter<int>("PYTHIAPtHardBin", 0);
+    AliDebug(2,"Adding pt hard bin param object to the event list...");
+    InputEvent()->AddObject(fPtHardBinParam);
+  }
+
   return AliJetEmbeddingFromAODTask::ExecOnce();
 }
 
@@ -76,6 +112,11 @@ Bool_t AliJetEmbeddingFromPYTHIATask::ExecOnce()
 Bool_t AliJetEmbeddingFromPYTHIATask::GetNextEntry() 
 {
   Int_t newPtHard = GetRandomPtHardBin();
+
+  fPtHardBinParam->SetVal(newPtHard);
+
+  if (fHistPtHardBins)
+    fHistPtHardBins->Fill(newPtHard+1);
 
   if (newPtHard != fCurrentPtHardBin) {
     fCurrentPtHardBin = newPtHard;
@@ -150,7 +191,13 @@ TString AliJetEmbeddingFromPYTHIATask::GetNextFileName()
   else if (fCurrentAODFileID < 100)
     fileName += "0";
   fileName += fCurrentAODFileID;
-  fileName += "/AliAOD.root";
+
+  if (!gSystem->AccessPathName(Form("%s/AliAOD.root")))
+    fileName += "/AliAOD.root";
+  else if (!gSystem->AccessPathName(Form("%s/aod_archive.zip")))
+    fileName += "/aod_archive.zip#AliAOD.root";
+  else
+    fileName += "/root_archive.zip#AliAOD.root";
 
   return fileName;
 }

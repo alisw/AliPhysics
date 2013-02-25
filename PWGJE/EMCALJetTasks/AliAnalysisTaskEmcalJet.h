@@ -33,6 +33,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b                ; }
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b                ; }
   void                        SetLeadingHadronType(Int_t t)                        { fLeadingHadronType = t             ; }
+  void                        SetNLeadingJets(Int_t t)                             { fNLeadingJets   = t                ; }
  
  protected:
   Float_t*                    GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const;
@@ -41,7 +42,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Double_t                    GetLeadingHadronPt(AliEmcalJet* jet)                                     const;
   void                        ExecOnce()                                                                    ;
   AliRhoParameter            *GetRhoFromEvent(const char *name)                                             ;
-  Int_t                      *GetSortedArray(TClonesArray *array)                                      const;
+  Bool_t                      GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho=0)     const;
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)        const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)       const;
   Bool_t                      RetrieveEventObjects()                                                        ;
@@ -62,14 +63,15 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Float_t                     fMaxClusterPt;               // maximum cluster constituent pt to accept the jet
   Float_t                     fMaxTrackPt;                 // maximum track constituent pt to accept the jet
   Int_t                       fLeadingHadronType;          // 0 = charged, 1 = neutral, 2 = both
+  Int_t                       fNLeadingJets;               // how many jets are to be considered the leading jet(s)
   TClonesArray               *fJets;                       //!jets
-  AliRhoParameter            *fRho;                        //!Event rho
-  Double_t                    fRhoVal;                     //!Event rho value
+  AliRhoParameter            *fRho;                        //!event rho
+  Double_t                    fRhoVal;                     //!event rho value
 
  private:
   AliAnalysisTaskEmcalJet(const AliAnalysisTaskEmcalJet&);            // not implemented
   AliAnalysisTaskEmcalJet &operator=(const AliAnalysisTaskEmcalJet&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJet, 5) // EMCAL Jet base analysis task
+  ClassDef(AliAnalysisTaskEmcalJet, 6) // EMCAL Jet base analysis task
 };
 #endif
