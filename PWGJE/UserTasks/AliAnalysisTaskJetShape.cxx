@@ -1249,7 +1249,7 @@ void AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::InitHistos()
 
   fhPtJ      = Hist1D("hPtJ"  , fPtJetNbin, fPtJetArray.GetArray(), "Pt_{J} GeV/c");
   //  fhPsiVsR   = Hist1D("hPsiVsR", fPsiVsRNbin, 0., fRmax, "R", 1, "#Psi(R)");
-  fhPsiVsR   = Hist3D("hPsiVsR", fPsiVsRNbin, 0., fRmax, 10, 0., 1., fPtJetNbin, fPtJetArray.GetArray(), "R", "P_{Jt, frac}", "P_{J} GeV/c");
+  fhPsiVsR   = Hist3D("hPsiVsR", fPsiVsRNbin, 0., fRmax, 100, 0., 1., fPtJetNbin, fPtJetArray.GetArray(), "R", "P_{Jt, frac}", "P_{J} GeV/c");
   fhPsiVsRPtJ   = Hist2D("hPsiVsRPtJ", fPsiVsRNbin, 0., fRmax, fPtJetNbin, fPtJetArray.GetArray(), "R", "P_{tJ} GeV/c", 1, "#Psi(R)");
 
   fhPtJvsPtCorr  = Hist2D("fhPtJvsPtCorr", fPtJetNbin, fPtJetArray.GetArray(), 100, -100, 100, "P_{tJ} GeV/c", "P_{tJ} - P_{tJ,corr} GeV/c" , 1);
@@ -1271,7 +1271,8 @@ void AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::InitHistos()
 
   if(fkMCprod)
     {
-  fhPsiVsR_MCtr      = Hist1D("hPsiVsR_MCtr", fPsiVsRNbin, 0., fRmax, "R", 1, "#Psi(R)");
+  fhPsiVsR_MCtr      = Hist3D("hPsiVsR_MCtr", fPsiVsRNbin, 0., fRmax, 100, 0., 1., fPtJetNbin, fPtJetArray.GetArray(), "R", "P_{Jt, frac}", "P_{J} GeV/c");
+  //  fhPsiVsR_MCtr      = Hist1D("hPsiVsR_MCtr", fPsiVsRNbin, 0., fRmax, "R", 1, "#Psi(R)");
   fhPsiVsRPtJ_MCtr   = Hist2D("hPsiVsRPtJ_MCtr", fPsiVsRNbin, 0., fRmax, fPtJetNbin, fPtJetArray.GetArray(), "R", "P_{tJ} GeV/c", 1, "#Psi(R)");
   fhJetTrPtVsPartPt  = Hist2D("fhJetTrPtVsPartPt", fPtJetNbin, fPtJetArray.GetArray(), 100, -1, 1, "P_{tJ,part} GeV/c", "1-P_{tJ,tr}/P_{tJ,part} GeV/c" , 1);
   const char *ch[2]={"m","p"};
@@ -1540,11 +1541,11 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
 	  vec.SetXYZ(part->Px(), part->Py(), part->Pz());
 
 	  Double_t R = CalcR(fJvecMCtr, vec);
-	  //	  Double_t probL = fJvecMCtr.Dot(vec)/fJvecMCtr.Mag2();
+	  Double_t probL = fJvecMCtr.Dot(vec)/fJvecMCtr.Mag2();
 	  //	  fhPsiVsR->Fill(R, probL);
 	  //	  fhPsiVsRPtJ->Fill(R, fPtJ, probL);
-	  //	  Double_t probL = fJvecMCtr.Dot(vec)/fJvecMCtr.Mag2();
-	  fhPsiVsR_MCtr->Fill(R);
+	  //Double_t probL = fJvecMCtr.Dot(vec)/fJvecMCtr.Mag2();
+	  fhPsiVsR_MCtr->Fill(R,probL, fJvecMCtr.Mag());
 	  fhPsiVsRPtJ_MCtr->Fill(R, fPtJMCtr);
  	}
     }
