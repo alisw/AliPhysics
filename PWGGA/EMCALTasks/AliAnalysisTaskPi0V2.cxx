@@ -389,12 +389,14 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVect
   xV0C[3]       = dphiV0C;
   fHEPV0C->Fill(xV0C);
 
-  Double_t xTPC[4]; // Match ndims in fH TPC EP
-  xTPC[0]       = mass;
-  xTPC[1]       = pt;
-  xTPC[2]       = fCentrality;
-  xTPC[3]       = dphiTPC;
-  fHEPTPC->Fill(xTPC);
+  if (fEPTPC!=-999.){
+    Double_t xTPC[4]; // Match ndims in fH TPC EP
+    xTPC[0]       = mass;
+    xTPC[1]       = pt;
+    xTPC[2]       = fCentrality;
+    xTPC[3]       = dphiTPC;
+    fHEPTPC->Fill(xTPC);
+  }
 }
 
 //________________________________________________________________________________________________________________________________
@@ -660,18 +662,13 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 
   // create pointer to event
   TString type = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetDataType();
-  if (!type){
-    AliError("Cannot get the event");
-    return;
-  }
-
-  if (type=="ESD"){
+  if (type=="ESD") {
     fESD = dynamic_cast<AliESDEvent*>(event);
     if (!fESD) {
       AliError("Cannot get the ESD event");
       return;
     }
-  } else if (type=="AOD"){
+  } else if (type=="AOD") {
     fAOD = dynamic_cast<AliAODEvent*>(event);
     if (!fAOD) {
       AliError("Cannot get the AOD event");
@@ -681,13 +678,6 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     AliError("Cannot happen");
     return;
   }
-
-  if (fESD) 
-    fRunNumber = fESD->GetRunNumber();
-  else 
-    fRunNumber = fAOD->GetRunNumber();
-
-  fInterRunNumber = ConvertToInternalRunNumber(fRunNumber);
 
   hEvtCount->Fill(2);
   if (!fTrigClass.IsNull()) {
@@ -719,21 +709,15 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
   hEvtCount->Fill(3);
 
   if (isPhosCali) {
-    if(fESD){
-     if( fRunNumber != fESD->GetRunNumber()) 
+    if (fRunNumber != event->GetRunNumber()) 
       SetFlatteningData();
-    } else{
-    if( fRunNumber != fAOD->GetRunNumber())
-      SetFlatteningData();
-    }
   }
 
+  fRunNumber = event->GetRunNumber();
+  fInterRunNumber = ConvertToInternalRunNumber(fRunNumber);
+
   const AliVVertex* fvertex;
-  if (fESD){
-    fvertex = fESD->GetPrimaryVertex();
-  } else {
-    fvertex = fAOD->GetPrimaryVertex();
-  }
+  fvertex = event->GetPrimaryVertex();
 
   if (TMath::Abs(fvertex->GetZ())>fVtxCut)
     return;
@@ -747,34 +731,34 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 
   AliEventplane *ep = event->GetEventplane();
   if (ep) {
-    if (ep->GetQVector())
-      fEPTPC    = ep->GetQVector()->Phi()/2. ;
+    if (ep->GetEventplane("Q") != -1)
+      fEPTPC    = ep->GetEventplane("Q");
     else
       fEPTPC = -999.;
-    if (ep->GetQsub1()&&ep->GetQsub2())
-      fEPTPCreso  = TMath::Cos(2.*(ep->GetQsub1()->Phi()/2.-ep->GetQsub2()->Phi()/2.));
+    if (ep->GetEventplane("Q") != -1)
+      fEPTPCreso  = TMath::Cos(2.*(ep->GetQsubRes()));
     else
       fEPTPCreso = -1;
-    
-    fEPV0    = ep->GetEventplane("V0",  fESD);
-    fEPV0A   = ep->GetEventplane("V0A", fESD);
-    fEPV0C   = ep->GetEventplane("V0C", fESD);
+
+    fEPV0    = ep->GetEventplane("V0",  event);
+    fEPV0A   = ep->GetEventplane("V0A", event);
+    fEPV0C   = ep->GetEventplane("V0C", event);
     Double_t qx=0, qy=0;
     Double_t qxr=0, qyr=0;
-    fEPV0Ar  = ep->CalculateVZEROEventPlane(fESD, 4, 5, 2, qxr, qyr);
-    fEPV0Cr  = ep->CalculateVZEROEventPlane(fESD, 2, 3, 2, qx,  qy);
+    fEPV0Ar  = ep->CalculateVZEROEventPlane(event, 4, 5, 2, qxr, qyr);
+    fEPV0Cr  = ep->CalculateVZEROEventPlane(event, 2, 3, 2, qx,  qy);
     qxr += qx;
     qyr += qy;
     fEPV0r   = TMath::ATan2(qyr,qxr)/2.;
-    fEPV0AR4 = ep->CalculateVZEROEventPlane(fESD, 4, 2, qx, qy);
-    fEPV0AR5 = ep->CalculateVZEROEventPlane(fESD, 5, 2, qx, qy);
-    fEPV0AR6 = ep->CalculateVZEROEventPlane(fESD, 6, 2, qx, qy);
-    fEPV0AR7 = ep->CalculateVZEROEventPlane(fESD, 7, 2, qx, qy);
-    fEPV0CR0 = ep->CalculateVZEROEventPlane(fESD, 0, 2, qx, qy);
-    fEPV0CR1 = ep->CalculateVZEROEventPlane(fESD, 1, 2, qx, qy);
-    fEPV0CR2 = ep->CalculateVZEROEventPlane(fESD, 2, 2, qx, qy);
-    fEPV0CR3 = ep->CalculateVZEROEventPlane(fESD, 3, 2, qx, qy);
-  }
+    fEPV0AR4 = ep->CalculateVZEROEventPlane(event, 4, 2, qx, qy);
+    fEPV0AR5 = ep->CalculateVZEROEventPlane(event, 5, 2, qx, qy);
+    fEPV0AR6 = ep->CalculateVZEROEventPlane(event, 6, 2, qx, qy);
+    fEPV0AR7 = ep->CalculateVZEROEventPlane(event, 7, 2, qx, qy);
+    fEPV0CR0 = ep->CalculateVZEROEventPlane(event, 0, 2, qx, qy);
+    fEPV0CR1 = ep->CalculateVZEROEventPlane(event, 1, 2, qx, qy);
+    fEPV0CR2 = ep->CalculateVZEROEventPlane(event, 2, 2, qx, qy);
+    fEPV0CR3 = ep->CalculateVZEROEventPlane(event, 3, 2, qx, qy);
+  } 
 
   FillEPQA(); //Fill the EP QA
 
@@ -810,7 +794,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
   fEPV0CR3   = TVector2::Phi_0_2pi(fEPV0CR3);    
   if (fEPV0CR3>TMath::Pi())   
     fEPV0CR3  = fEPV0CR3 - TMath::Pi();
-  if (fEPTPC != -999. &&  fEPTPC != -1)
+  if (fEPTPC != -999. )
     hEPTPC->Fill(fCentrality,  fEPTPC); 
   if (fEPTPCreso!=-1) 
     hresoTPC->Fill(fCentrality, fEPTPCreso);
@@ -829,22 +813,18 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     // PHOS Flattening
     fEPV0A = ApplyFlatteningV0A(fEPV0A, fCentrality); //V0A after Phos flatten
     fEPV0C = ApplyFlatteningV0C(fEPV0C, fCentrality); //V0C after Phos flatten
-    fEPTPC = ApplyFlattening(fEPTPC, fCentrality);    //TPC after Phos flatten
+    if(fEPTPC != -999.)
+      fEPTPC = ApplyFlattening(fEPTPC, fCentrality);  //TPC after Phos flatten
   }
 
   if (!isPhosCali) { 
-    if(fESD){
-     if( fRunNumber != fESD->GetRunNumber())
-      SetFlatteningData();
-    } else{
-    if( fRunNumber != fAOD->GetRunNumber())
-      SetFlatteningData();
-    }
-    hEPTPCCor->Fill(fCentrality, ApplyFlattening(fEPTPC, fCentrality));
+    if(fEPTPC != -999.)
+      hEPTPCCor->Fill(fCentrality, ApplyFlattening(fEPTPC, fCentrality));
     hEPV0ACor->Fill(fCentrality, ApplyFlatteningV0A(fEPV0A, fCentrality));
     hEPV0CCor->Fill(fCentrality, ApplyFlatteningV0C(fEPV0C, fCentrality));
   } else {
-    hEPTPCCor->Fill(fCentrality, fEPTPC);
+    if(fEPTPC != -999.)
+      hEPTPCCor->Fill(fCentrality, fEPTPC);
     hEPV0ACor->Fill(fCentrality, fEPV0A);
     hEPV0CCor->Fill(fCentrality, fEPV0C);
   } 
@@ -858,7 +838,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
   hdifV0AR4_V0AR7->Fill(fCentrality, TMath::Cos(2*(fEPV0AR4 - fEPV0AR7)));
         
   hdifV0A_V0C->Fill(fCentrality, TMath::Cos(2*(fEPV0A - fEPV0C)));
-  if (fEPTPC!=-1 && fEPTPC!=-999.){
+  if (fEPTPC!=-999.){
     hdifV0A_TPC->Fill(fCentrality, TMath::Cos(2*(fEPV0A - fEPTPC)));
     hdifV0C_TPC->Fill(fCentrality, TMath::Cos(2*(fEPV0C - fEPTPC)));
   }
@@ -1185,8 +1165,10 @@ void AliAnalysisTaskPi0V2::FillEPQA()
   h2DsinV0A->Fill(fInterRunNumber, TMath::Sin(fEPV0A));
   h2DcosV0C->Fill(fInterRunNumber, TMath::Cos(fEPV0C));
   h2DsinV0C->Fill(fInterRunNumber, TMath::Sin(fEPV0C));
-  h2DcosTPC->Fill(fInterRunNumber, TMath::Cos(fEPTPC));
-  h2DsinTPC->Fill(fInterRunNumber, TMath::Sin(fEPTPC));
+  if (fEPTPC!=-999.){
+    h2DcosTPC->Fill(fInterRunNumber, TMath::Cos(fEPTPC));
+    h2DsinTPC->Fill(fInterRunNumber, TMath::Sin(fEPTPC));
+  }
 }
 
 //_________________________________________________________________________________
