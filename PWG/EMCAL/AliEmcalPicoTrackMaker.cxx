@@ -33,7 +33,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
   fMaxTrackPhi(10),
   fTrackEfficiency(1),
   fIncludeNoITS(kTRUE),
-  fUseNegativeLabels(kFALSE),
+  fUseNegativeLabels(kTRUE),
   fIsMC(kFALSE),
   fTracksIn(0),
   fTracksOut(0)
@@ -58,7 +58,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
   fMaxTrackPhi(10),
   fTrackEfficiency(1),
   fIncludeNoITS(kTRUE),
-  fUseNegativeLabels(kFALSE),
+  fUseNegativeLabels(kTRUE),
   fIsMC(kFALSE),
   fTracksIn(0),
   fTracksOut(0)
@@ -191,16 +191,15 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 
     Int_t label = 0;
     if (fIsMC) {
-      if (track->GetLabel() > 0) {
+      if (fUseNegativeLabels)
 	label = track->GetLabel();
-      }
-      else {
-	if (!fUseNegativeLabels)
-	  label = -track->GetLabel();
-      }
-      
-      if (label == 0) 
+      else 
+	label = TMath::Abs(track->GetLabel());
+
+      if (label == 0) {
+	AliWarning(Form("Track %d with label==0", iTracks));
 	label = 99999;
+      }
     }
 
     /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 

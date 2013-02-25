@@ -28,7 +28,7 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   void SetTrackPhiLimits(Double_t min, Double_t max)     { fMaxTrackPhi      = max ; fMinTrackPhi      = min ; }
   void SetTrackEfficiency(Double_t eff = 0.95)           { fTrackEfficiency  = eff ; }
   void SetIncludeNoITS(Bool_t f)                         { fIncludeNoITS     = f   ; }
-  void SetUseNegativeLabels(Bool_t f)                     { fUseNegativeLabels= f   ; }
+  void SetUseNegativeLabels(Bool_t f)                    { fUseNegativeLabels= f   ; }
   void SetMC(Bool_t a)                                   { fIsMC             = a   ; }
 
  protected:
