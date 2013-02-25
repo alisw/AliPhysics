@@ -19,21 +19,6 @@ AliAnalysisTask *AddTaskHFEpPb(){
   
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   
-  //============= Set Task Name ===================
-  //TString taskName=("AliAnalysisTaskHFE.cxx+");
-  //===============================================
-  //            Load the task
-  //gROOT->LoadMacro(taskName.Data());
-  /*if (gProof){
-    TString taskSO=gSystem->pwd();
-    taskSO+="/";
-    taskSO+=taskName(0,taskName.First('.'))+"_cxx.so";
-    gProof->Exec(Form("gSystem->Load(\"%s\")",taskSO.Data()),kTRUE);
-    }*/
-  
-  // Load config macros for the minitrain and the single tasks
-  printf("TRAIN ROOT %s\n", gSystem->Getenv("TRAIN_ROOT"));
-  
   //@@ 0 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   
   // Default settings 
