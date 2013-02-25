@@ -257,7 +257,7 @@ private:
  TH2F *fhPsiVsRPtJ;//! 
  TH2F *fhPhiEtaTrack;//! 
 
- TH1F *fhPsiVsR_MCtr; //!
+ TH3F *fhPsiVsR_MCtr; //!
  TH2F *fhPsiVsRPtJ_MCtr; //!
  TH2F *fhJetTrPtVsPartPt;//!
 
