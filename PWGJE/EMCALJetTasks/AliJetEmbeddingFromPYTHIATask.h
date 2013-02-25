@@ -6,15 +6,19 @@
 #include "AliJetEmbeddingFromAODTask.h"
 #include <TArrayD.h>
 
+template<class T> 
+class TParameter;
+
 class TString;
 
 class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
  public:
   AliJetEmbeddingFromPYTHIATask();
-  AliJetEmbeddingFromPYTHIATask(const char *name); 
+  AliJetEmbeddingFromPYTHIATask(const char *name, Bool_t drawqa=kFALSE); 
   virtual ~AliJetEmbeddingFromPYTHIATask();
 
   Bool_t         UserNotify();
+  void           UserCreateOutputObjects();
 
   void           SetPYTHIAPath(const char* p)                      { fPYTHIAPath                                = p ; }
   void           SetPtHardBinScaling(Int_t n, Double_t *scaling)   { new (&fPtHardBinScaling) TArrayD(n, scaling)   ; }
@@ -32,7 +36,9 @@ class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
   Bool_t         fLHC11hAnchorRun     ;// LHC11h anchor runs
   Int_t          fAnchorRun           ;// Anchor run
   Int_t          fCurrentPtHardBin    ;//!Pt hard bin of the current open file
+  TParameter<int> *fPtHardBinParam    ;//!Pt hard bin param
 
+  TH1           *fHistPtHardBins      ;//!Embeded pt hard bin distribution
 
  private:
   AliJetEmbeddingFromPYTHIATask(const AliJetEmbeddingFromPYTHIATask&);            // not implemented

@@ -5,13 +5,13 @@
 // Authors: C.Loizides, S.Aiola
 
 #include <vector>
-#include <algorithm> 
 #include "AliEmcalJetTask.h"
 
 #include <TChain.h>
 #include <TClonesArray.h>
 #include <TList.h>
 #include <TLorentzVector.h>
+#include <TMath.h>
 
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
@@ -26,15 +26,6 @@
 #include "AliVParticle.h"
 
 ClassImp(AliEmcalJetTask)
-
-//________________________________________________________________________
-inline bool AliEmcalJetTask::ComparePseudoJets(fastjet::PseudoJet a, fastjet::PseudoJet b)
-{
-  if (a.perp() > b.perp())
-    return true;
-  else
-    return false;
-}
 
 //________________________________________________________________________
 AliEmcalJetTask::AliEmcalJetTask() : 
@@ -150,6 +141,10 @@ void AliEmcalJetTask::FindJets()
   if ((fJetType & kAKT) != 0) {
     name  = "antikt";
     jalgo = fastjet::antikt_algorithm;
+    AliDebug(1,"Using AKT algorithm");
+  }
+  else {
+    AliDebug(1,"Using KT algorithm");
   }
 
   if ((fJetType & kR020Jet) != 0)
@@ -172,7 +167,7 @@ void AliEmcalJetTask::FindJets()
   Double_t vertex[3] = {0, 0, 0};
   fEvent->GetPrimaryVertex()->GetXYZ(vertex);
 
-  AliDebug(2,Form("Jet type = %d)", fJetType));
+  AliDebug(2,Form("Jet type = %d", fJetType));
 
   if ((fIsMcPart || ((fJetType & kFullJet) != 0) || ((fJetType & kChargedJet) != 0)) && fTracks) {
     const Int_t Ntracks = fTracks->GetEntries();
@@ -187,17 +182,35 @@ void AliEmcalJetTask::FindJets()
 	  continue;
       }
       if (fIsMcPart || t->GetLabel() != 0) {
-	if (fMCConstSel != kAllJets && t->TestBits(fMCConstSel) != (Int_t)fMCConstSel) {
-	  AliDebug(2,Form("Skipping track %d because it does not match the bit mask (%d, %d)", iTracks, fMCConstSel, t->TestBits(TObject::kBitMask)));
+	if (fMCConstSel == kNone) {
+	  AliDebug(2,Form("Skipping track %d because bit mask is 0.", iTracks));
 	  continue;
+	}
+	if (fMCConstSel != kAllJets) {
+	  if (t->TestBits(fMCConstSel) != (Int_t)fMCConstSel) {
+	    AliDebug(2,Form("Skipping track %d because it does not match the bit mask (%d, %d)", iTracks, fMCConstSel, t->TestBits(TObject::kBitMask)));
+	    continue;
+	  }
+	  else {
+	    AliDebug(2,Form("Track %d matches the bit mask (%d, %d)", iTracks, fMCConstSel, t->TestBits(TObject::kBitMask)));
+	  }
 	}
       }
       else {
-	if (fConstSel != kAllJets && t->TestBits(fConstSel) != (Int_t)fConstSel) {
-	  AliDebug(2,Form("Skipping track %d because it does not match the bit mask (%d, %d)", iTracks, fConstSel, t->TestBits(TObject::kBitMask)));
+	if (fConstSel == kNone) {
+	  AliDebug(2,Form("Skipping track %d because bit mask is 0.", iTracks));
 	  continue;
 	}
-      }
+	if (fConstSel != kAllJets) {
+	  if (t->TestBits(fConstSel) != (Int_t)fConstSel) {
+	    AliDebug(2,Form("Skipping track %d because it does not match the bit mask (%d, %d)", iTracks, fConstSel, t->TestBits(TObject::kBitMask)));
+	    continue;
+	  }
+	  else {
+	    AliDebug(2,Form("Track %d matches the bit mask (%d, %d)", iTracks, fConstSel, t->TestBits(TObject::kBitMask)));	    
+	  }
+	}
+      }	    
       if (t->Pt() < fMinJetTrackPt) 
         continue;
       Double_t eta = t->Eta();
@@ -207,6 +220,7 @@ void AliEmcalJetTask::FindJets()
         continue;
 
       // offset of 100 for consistency with cluster ids
+      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", iTracks, t->GetLabel(), t->Pt()));
       fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks + 100);  
     }
   }
@@ -227,12 +241,34 @@ void AliEmcalJetTask::FindJets()
 	  continue;
 
 	if (c->GetLabel() > 0) {
-	  if (fMCConstSel != kAllJets && ep->TestBits(fMCConstSel) != (Int_t)fMCConstSel)
+	  if (fMCConstSel == kNone) {
+	    AliDebug(2,Form("Skipping cluster %d because bit mask is 0.", iClus));
 	    continue;
+	  }
+	  if (fMCConstSel != kAllJets) {
+	    if (ep->TestBits(fMCConstSel) != (Int_t)fMCConstSel) {
+	      AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fMCConstSel, ep->TestBits(TObject::kBitMask)));
+	      continue;
+	    }
+	    else {
+	      AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fMCConstSel, ep->TestBits(TObject::kBitMask)));
+	    }
+	  }
 	}
 	else {
-	  if (fConstSel != kAllJets && ep->TestBits(fConstSel) != (Int_t)fConstSel)
+	  if (fConstSel == kNone) {
+	    AliDebug(2,Form("Skipping cluster %d because bit mask is 0.", iClus));
 	    continue;
+	  }
+	  if (fConstSel != kAllJets) {
+	    if (ep->TestBits(fConstSel) != (Int_t)fConstSel) {
+	      AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fConstSel, ep->TestBits(TObject::kBitMask)));
+	      continue;
+	    }
+	    else {
+	      AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fConstSel, ep->TestBits(TObject::kBitMask)));	    
+	    }
+	  }
 	}
 
 	cEta = ep->Eta();
@@ -247,12 +283,34 @@ void AliEmcalJetTask::FindJets()
 	  continue;
 
 	if (c->GetLabel() > 0) {
-	  if (fMCConstSel != kAllJets && c->TestBits(fMCConstSel) != (Int_t)fMCConstSel)
+	  if (fMCConstSel == kNone) {
+	    AliDebug(2,Form("Skipping cluster %d because bit mask is 0.", iClus));
 	    continue;
+	  }
+	  if (fMCConstSel != kAllJets) {
+	    if (c->TestBits(fMCConstSel) != (Int_t)fMCConstSel) {
+	      AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fMCConstSel, c->TestBits(TObject::kBitMask)));
+	      continue;
+	    }
+	    else {
+	      AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fMCConstSel, c->TestBits(TObject::kBitMask)));
+	    }
+	  }
 	}
 	else {
-	  if (fConstSel != kAllJets && c->TestBits(fConstSel) != (Int_t)fConstSel)
+	  if (fConstSel == kNone) {
+	    AliDebug(2,Form("Skipping cluster %d because bit mask is 0.", iClus));
 	    continue;
+	  }
+	  if (fConstSel != kAllJets) {
+	    if (c->TestBits(fConstSel) != (Int_t)fConstSel) {
+	      AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fConstSel, c->TestBits(TObject::kBitMask)));
+	      continue;
+	    }
+	    else {
+	      AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fConstSel, c->TestBits(TObject::kBitMask)));	    
+	    }
+	  }
 	}
 
 	TLorentzVector nP;
@@ -272,6 +330,7 @@ void AliEmcalJetTask::FindJets()
 	  (cPhi<fPhiMin) || (cPhi>fPhiMax))
 	continue;
       // offset of 100 to skip ghost particles uid = -1
+      AliDebug(2,Form("Cluster %d accepted (label = %d)", iClus, c->GetLabel()));
       fjw.AddInputVector(cPx, cPy, cPz, TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz), -iClus - 100);
     }
   }
@@ -288,9 +347,15 @@ void AliEmcalJetTask::FindJets()
 
   // loop over fastjet jets
   std::vector<fastjet::PseudoJet> jets_incl = fjw.GetInclusiveJets();
-  if (fMarkConst > 0)
-    std::sort(jets_incl.begin(), jets_incl.end(), ComparePseudoJets);
-  for (UInt_t ij=0, jetCount=0; ij<jets_incl.size(); ++ij) {
+  // sort jets according to jet pt
+  static Int_t indexes[9999] = {-1};
+  GetSortedArray(indexes, jets_incl);
+
+  AliDebug(1,Form("%d jets found", (Int_t)jets_incl.size()));
+  for (UInt_t ijet=0, jetCount=0; ijet<jets_incl.size(); ++ijet) {
+    Int_t ij = indexes[ijet];
+    AliDebug(3,Form("Jet pt = %f, area = %f", jets_incl[ij].perp(), fjw.GetJetArea(ij)));
+
     if (jets_incl[ij].perp()<fMinJetPt) 
       continue;
     if (fjw.GetJetArea(ij)<fMinJetArea)
@@ -319,7 +384,7 @@ void AliEmcalJetTask::FindJets()
 
     for(UInt_t ic = 0; ic < constituents.size(); ++ic) {
       Int_t uid = constituents[ic].user_index();
-
+      AliDebug(2,Form("Processing constituent %d", uid));
       if ((uid == -1) /*&& (constituents[ic].kt2() < 1e-25)*/) { //ghost particle
         ++gall;
         Double_t gphi = constituents[ic].phi();
@@ -333,10 +398,14 @@ void AliEmcalJetTask::FindJets()
       }	else if ((uid > 0) && fTracks) { // track constituent
 	Int_t tid = uid - 100;
         AliVParticle *t = static_cast<AliVParticle*>(fTracks->At(tid));
-        if (!t)
+        if (!t) {
+	  AliError(Form("Could not find track %d",tid));
           continue;
-	if (jetCount < fMarkConst)
+	}
+	if (jetCount < fMarkConst) {
+	  AliDebug(2,Form("Marking track %d with bit map %d", tid, fJetType));
 	  t->SetBit(fJetType);
+	}
         Double_t cEta = t->Eta();
         Double_t cPhi = t->Phi();
         Double_t cPt  = t->Pt();
@@ -446,9 +515,31 @@ void AliEmcalJetTask::FindJets()
 	(jet->Eta() > geom->GetArm1EtaMin()) && 
 	(jet->Eta() < geom->GetArm1EtaMax()))
       jet->SetAxisInEmcal(kTRUE);
+
+    AliDebug(2,Form("Added jet n. %d, pt = %f, area = %f, constituents = %d", jetCount, jet->Pt(), jet->Area(), (Int_t)constituents.size()));
     jetCount++;
   }
   //fJets->Sort();
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const
+{
+  // Get the leading jets.
+
+  static Float_t pt[9999] = {0};
+
+  const Int_t n = (Int_t)array.size();
+
+  if (n < 1)
+    return kFALSE;
+  
+  for (Int_t i = 0; i < n; i++) 
+    pt[i] = array[i].perp();
+
+  TMath::Sort(n, pt, indexes);
+
+  return kTRUE;
 }
 
 //________________________________________________________________________

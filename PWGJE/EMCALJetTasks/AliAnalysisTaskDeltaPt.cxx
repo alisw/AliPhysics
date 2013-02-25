@@ -7,6 +7,7 @@
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 #include <TRandom3.h>
@@ -60,7 +61,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
     fHistEmbJetsPtArea[i] = 0;
     fHistEmbJetsCorrPtArea[i] = 0;
     fHistEmbPartPtvsJetPt[i] = 0;
-    fHistLeadPartPtvsArea[i] = 0;
+    fHistEmbPartPtvsJetCorrPt[i] = 0;
     fHistDistLeadPart2JetAxis[i] = 0;
     fHistEmbBkgArea[i] = 0;
     fHistRhoVSEmbBkg[i] = 0;
@@ -108,7 +109,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
     fHistEmbJetsPtArea[i] = 0;
     fHistEmbJetsCorrPtArea[i] = 0;
     fHistEmbPartPtvsJetPt[i] = 0;
-    fHistLeadPartPtvsArea[i] = 0;
+    fHistEmbPartPtvsJetCorrPt[i] = 0;
     fHistDistLeadPart2JetAxis[i] = 0;
     fHistEmbBkgArea[i] = 0;
     fHistRhoVSEmbBkg[i] = 0;
@@ -158,6 +159,13 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
   }
 
   TString histname;
+
+  const Int_t nbinsZ = 12;
+  Float_t binsZ[nbinsZ+1] = {0,1,2,3,4,5,6,7,8,9,10,20,1000};
+
+  Float_t *binsPt       = GenerateFixedBinArray(fNbins, fMinBinPt, fMaxBinPt);
+  Float_t *binsCorrPt   = GenerateFixedBinArray(fNbins*2, -fMaxBinPt, fMaxBinPt);
+  Float_t *binsArea     = GenerateFixedBinArray(40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     if (!fTracksName.IsNull() || !fCaloName.IsNull()) {
@@ -219,14 +227,14 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
     if (!fEmbJetsName.IsNull()) {
       histname = "fHistEmbJetsPtArea_";
       histname += i;
-      fHistEmbJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbJetsPtArea[i] = new TH3F(histname.Data(), histname.Data(), 40, binsArea, fNbins, binsPt, nbinsZ, binsZ);
       fHistEmbJetsPtArea[i]->GetXaxis()->SetTitle("area");
       fHistEmbJetsPtArea[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb,raw} (GeV/#it{c})");
       fOutput->Add(fHistEmbJetsPtArea[i]);
 
       histname = "fHistEmbJetsCorrPtArea_";
       histname += i;
-      fHistEmbJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins * 2, -fMaxBinPt, fMaxBinPt);
+      fHistEmbJetsCorrPtArea[i] = new TH3F(histname.Data(), histname.Data(), 40, binsArea, fNbins * 2, binsCorrPt, nbinsZ, binsZ);
       fHistEmbJetsCorrPtArea[i]->GetXaxis()->SetTitle("area");
       fHistEmbJetsCorrPtArea[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb,corr} (GeV/#it{c})");
       fOutput->Add(fHistEmbJetsCorrPtArea[i]);
@@ -239,12 +247,13 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       fHistEmbPartPtvsJetPt[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistEmbPartPtvsJetPt[i]);
 
-      histname = "fHistLeadPartPtvsArea_";
+      histname = "fHistEmbPartPtvsJetCorrPt_";
       histname += i;
-      fHistLeadPartPtvsArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
-      fHistLeadPartPtvsArea[i]->GetXaxis()->SetTitle("area");
-      fHistLeadPartPtvsArea[i]->GetYaxis()->SetTitle("#it{p}_{T,const}^{leading} (GeV/#it{c})");
-      fOutput->Add(fHistLeadPartPtvsArea[i]);
+      fHistEmbPartPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
+      fHistEmbPartPtvsJetCorrPt[i]->GetXaxis()->SetTitle("#sum#it{p}_{T,const}^{emb} (GeV/#it{c})");
+      fHistEmbPartPtvsJetCorrPt[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} - A#rho (GeV/#it{c})");
+      fHistEmbPartPtvsJetCorrPt[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistEmbPartPtvsJetCorrPt[i]);
 
       histname = "fHistDistLeadPart2JetAxis_";
       histname += i;
@@ -326,11 +335,12 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
       if (fJets) {
 
 	// Random cones far from leading jet
-	Int_t *sortedJets = GetSortedArray(fJets);
+	static Int_t sortedJets[9999] = {-1};
+	GetSortedArray(sortedJets, fJets);
 	
 	AliEmcalJet* jet = 0;
 	
-	if (sortedJets && sortedJets[0] > 0) 
+	if (sortedJets[0] >= 0) 
 	  jet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[0]));
 	
 	RCpt = 0;
@@ -374,7 +384,7 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
     Int_t countEmbJets = 0;
     
     while (embJet != 0) {
-      
+      AliDebug(2,Form("Elaborating embedded jet n. %d", countEmbJets));
       countEmbJets++;
       
       Double_t maxClusterPt = 0;
@@ -389,26 +399,25 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
       Double_t maxPartEta = 0;
       Double_t maxPartPhi = 0;
       
-      AliVCluster *cluster = embJet->GetLeadingCluster(fEmbCaloClusters);
-      if (cluster) {
-	TLorentzVector nPart;
-	cluster->GetMomentum(nPart, fVertex);
-	
-	maxClusterEta = nPart.Eta();
-	maxClusterPhi = nPart.Phi();
-	maxClusterPt = nPart.Pt();
+      if (fLeadingHadronType == 1 || fLeadingHadronType == 2) {
+	AliVCluster *cluster = embJet->GetLeadingCluster(fEmbCaloClusters);
+	if (cluster) {
+	  TLorentzVector nPart;
+	  cluster->GetMomentum(nPart, fVertex);
+	  
+	  maxClusterEta = nPart.Eta();
+	  maxClusterPhi = nPart.Phi();
+	  maxClusterPt = nPart.Pt();
+	}
       }
       
-      AliVParticle *track = embJet->GetLeadingTrack(fEmbTracks);
-      if (track) {
-	maxTrackEta = track->Eta();
-	maxTrackPhi = track->Phi();
-	maxTrackPt = track->Pt();
-      }
-      
-      if (!track && !cluster) {
-	AliWarning(Form("%s - Embedded jet found but no leading particle was found (?) !", GetName()));
-	return kTRUE;
+      if (fLeadingHadronType == 0 || fLeadingHadronType == 2) {
+	AliVParticle *track = embJet->GetLeadingTrack(fEmbTracks);
+	if (track) {
+	  maxTrackEta = track->Eta();
+	  maxTrackPhi = track->Phi();
+	  maxTrackPt = track->Pt();
+	}
       }
       
       if (maxTrackPt > maxClusterPt) {
@@ -425,12 +434,12 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
       Double_t distLeading2Jet = TMath::Sqrt((embJet->Eta() - maxPartEta) * (embJet->Eta() - maxPartEta) + (embJet->Phi() - maxPartPhi) * (embJet->Phi() - maxPartPhi));
       
       fHistEmbPartPtvsJetPt[fCentBin]->Fill(embJet->MCPt(), embJet->Pt());
+      fHistEmbPartPtvsJetCorrPt[fCentBin]->Fill(embJet->MCPt(), embJet->Pt() - embJet->Area() * fRhoVal);
       fHistLeadPartPhiEta->Fill(maxPartEta, maxPartPhi);
-      fHistLeadPartPtvsArea[fCentBin]->Fill(maxPartPt, embJet->Area());
       fHistDistLeadPart2JetAxis[fCentBin]->Fill(distLeading2Jet);
       
-      fHistEmbJetsPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt());
-      fHistEmbJetsCorrPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - fRhoVal * embJet->Area());
+      fHistEmbJetsPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt(), maxPartPt);
+      fHistEmbJetsCorrPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - fRhoVal * embJet->Area(), maxPartPt);
       fHistEmbJetsPhiEta->Fill(embJet->Eta(), embJet->Phi());
       
       fHistEmbBkgArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->MCPt());
@@ -441,9 +450,11 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
     }
 
     if (countEmbJets==0) {
+      AliDebug(1,"No embedded jets found!");
       if (fEmbTracks) {
 	DoEmbTrackLoop();
 	for (Int_t i = 0; i < fEmbeddedTrackNIds; i++) {
+	  AliDebug(2,Form("Embedded track %d found!",i));
 	  AliVParticle *track2 = static_cast<AliVParticle*>(fEmbTracks->At(fEmbeddedTrackIds[i]));
 	  if (!track2) continue;
 	  fHistEmbNotFoundPhiEta[fCentBin]->Fill(track2->Eta(), track2->Phi());
@@ -454,6 +465,7 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
       if (fEmbCaloClusters) {
 	DoEmbClusterLoop();
 	for (Int_t i = 0; i < fEmbeddedClusterNIds; i++) {
+	  AliDebug(2,Form("Embedded cluster %d found!",i));
 	  AliVCluster *cluster2 = static_cast<AliVCluster*>(fEmbCaloClusters->At(fEmbeddedClusterIds[i]));
 	  TLorentzVector nPart;
 	  cluster2->GetMomentum(nPart, fVertex);
@@ -556,12 +568,14 @@ AliEmcalJet* AliAnalysisTaskDeltaPt::NextEmbeddedJet(Int_t i)
       AliError(Form("Could not receive jet %d", iJet));
       continue;
     } 
+
+    if (jet->MCPt() < fMCJetPtThreshold)
+      continue;
       
     if (!AcceptJet(jet))
       continue;
 
-    if (jet->MCPt() >= fMCJetPtThreshold)
-      return jet;
+    return jet;
   }
 
   return 0;

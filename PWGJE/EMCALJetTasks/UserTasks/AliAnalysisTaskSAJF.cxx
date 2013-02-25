@@ -33,7 +33,6 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
   for (Int_t i = 0; i < 4; i++) {
     fHistEvents[i] = 0;
     fHistLeadingJetPt[i] = 0;
-    fHist2LeadingJetPt[i] = 0;
     fHistLeadingJetCorrPt[i] = 0;
     fHistRhoVSleadJetPt[i] = 0;
     fHistJetPhiEta[i] = 0;
@@ -62,7 +61,6 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
   for (Int_t i = 0; i < 4; i++) {
     fHistEvents[i] = 0;
     fHistLeadingJetPt[i] = 0;
-    fHist2LeadingJetPt[i] = 0;
     fHistLeadingJetCorrPt[i] = 0;
     fHistRhoVSleadJetPt[i] = 0;
     fHistJetPhiEta[i] = 0;
@@ -131,13 +129,6 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     fHistLeadingJetPt[i]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
     fHistLeadingJetPt[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistLeadingJetPt[i]);
-
-    histname = "fHist2LeadingJetPt_";
-    histname += i;
-    fHist2LeadingJetPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
-    fHist2LeadingJetPt[i]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
-    fHist2LeadingJetPt[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHist2LeadingJetPt[i]);
 
     histname = "fHistLeadingJetCorrPt_";
     histname += i;
@@ -285,44 +276,41 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
     return kTRUE;
   }
 
-  Int_t *sortedJets = GetSortedArray(fJets);
+  static Int_t sortedJets[9999] = {-1};
+  GetSortedArray(sortedJets, fJets, fRhoVal);
   
-  if (!sortedJets || sortedJets[0] < 0) { // no accepted jets, skipping
+  if (sortedJets[0] < 0) { // no accepted jets, skipping
     fHistEvents[fCentBin]->Fill("No jets", 1);
-    return kTRUE;
-  }
-
-  AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[0]));
-  if (!jet) {  // error, I cannot get the leading jet from collection (should never happen), skipping
-    fHistEvents[fCentBin]->Fill("Max jet not found", 1);
     return kTRUE;
   }
 
   // OK, event accepted
 
-  Float_t maxJetCorrPt = jet->Pt() - fRhoVal * jet->Area();
-
   if (fRhoVal == 0) 
     fHistEvents[fCentBin]->Fill("Rho == 0", 1);
-
-  else if (maxJetCorrPt <= 0)
-    fHistEvents[fCentBin]->Fill("Max jet <= 0", 1);
 
   else
     fHistEvents[fCentBin]->Fill("OK", 1);
 
-  if (jet) {
+  for (Int_t i = 0; i < fNLeadingJets && i < fJets->GetEntriesFast(); i++) {
+    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[i]));
+
+    if (!jet) {
+      AliError(Form("Could not receive jet %d", sortedJets[i]));
+      continue;
+    }  
+
+    if (!AcceptJet(jet))
+      continue;
+
+    Float_t corrPt = jet->Pt() - fRhoVal * jet->Area();
+
+    fHistLeadingJetCorrPt[fCentBin]->Fill(corrPt);
     fHistLeadingJetPt[fCentBin]->Fill(jet->Pt());
-    fHistRhoVSleadJetPt[fCentBin]->Fill(fRhoVal, jet->Pt());
-    fHistLeadingJetCorrPt[fCentBin]->Fill(maxJetCorrPt);
+
+    if (i==0) 
+      fHistRhoVSleadJetPt[fCentBin]->Fill(fRhoVal, jet->Pt());
   }
-
-  AliEmcalJet* jet2 = 0;
-  if (sortedJets[1] >= 0)
-    jet2 = static_cast<AliEmcalJet*>(fJets->At(sortedJets[1]));
-
-  if (jet2)
-    fHist2LeadingJetPt[fCentBin]->Fill(jet2->Pt());
 
   Int_t njets = DoJetLoop();
 

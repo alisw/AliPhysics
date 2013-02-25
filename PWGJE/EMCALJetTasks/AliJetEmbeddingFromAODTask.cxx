@@ -373,6 +373,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	if (!part->IsPhysicalPrimary()) 
 	  continue;
 
+	AliDebug(3, Form("Embedding MC particle with pT = %f, eta = %f, phi = %f", part->Pt(), part->Eta(), part->Phi()));
 	AddMCParticle(part, i);
       }
     }
@@ -439,7 +440,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	    label = 99999;
 	}
 
-	AliDebug(3, Form("Embedding track with pT = %f, eta = %f, phi = %f", track->Pt(), track->Eta(), track->Phi()));
+	AliDebug(3, Form("Embedding track with pT = %f, eta = %f, phi = %f, label = %d", track->Pt(), track->Eta(), track->Phi(), label));
 	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), isEmc, label);
       }
     }
