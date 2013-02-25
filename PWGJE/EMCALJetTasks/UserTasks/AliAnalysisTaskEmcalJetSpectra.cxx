@@ -208,9 +208,7 @@ Bool_t AliAnalysisTaskEmcalJetSpectra::Run()
   fHistEP0A[centbin]->Fill(fEPV0A);
   fHistEP0C[centbin]->Fill(fEPV0C);
   fHistEPAvsC[centbin]->Fill(fEPV0A,fEPV0C);
-  TString fRhoScaledName = fRhoName;
-  fRhoScaledName.Append("_Scaled");
-  fRho = GetRhoFromEvent(fRhoScaledName);
+  fRho = GetRhoFromEvent(fRhoName);
   fRhoVal = fRho->GetVal();
   fHistRhovsCent->Fill(fCent,fRhoVal);
   fHistRhovsEP[centbin]->Fill(fRhoVal,fEPV0);
