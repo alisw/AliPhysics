@@ -72,6 +72,9 @@ class AliHelperPID : public TNamed
   //TOF PID
   void SetfRequestTOFPID(Bool_t tof){fRequestTOFPID=tof;}//fRequestTOFPID
   Bool_t GetfRequestTOFPID(){return   fRequestTOFPID;}//fRequestTOFPID
+  //Exclusive NSIgma
+  void SetfUseExclusiveNSigma(Bool_t nsigEx){fUseExclusiveNSigma=nsigEx;}//fUseExclusiveNSigma
+  Bool_t GetfUseExclusiveNSigma(){return   fUseExclusiveNSigma;}//fUseExclusiveNSigma
   //lower pt fot TOF PID
   Double_t SetPtTOFPID(){return   fPtTOFPID;}
   void SetfPtTOFPID(Double_t pttof){fPtTOFPID=pttof;}
@@ -101,6 +104,7 @@ class AliHelperPID : public TNamed
   Double_t fnsigmas[kNSpecies][kNSigmaPIDType+1]; //nsigma values
   Bool_t fHasDoubleCounting[kNSpecies];//array with compatible identities
   Bool_t fRequestTOFPID;//if true returns kSpUndefined if the TOF signal is missing
+  Bool_t fUseExclusiveNSigma;//if true returns the identity only if no double counting
   Double_t fPtTOFPID; //lower pt bound for the TOF pid
   Bool_t fHasTOFPID;
   
@@ -108,7 +112,7 @@ class AliHelperPID : public TNamed
   AliHelperPID(const AliHelperPID&);
   AliHelperPID& operator=(const AliHelperPID&);
   
-  ClassDef(AliHelperPID, 1);
+  ClassDef(AliHelperPID, 2);
   
 };
 #endif

@@ -43,7 +43,7 @@ const char * kParticleSpeciesName[]={"Pions","Kaons","Protons","Undefined"} ;
 
 ClassImp(AliHelperPID)
 
-AliHelperPID::AliHelperPID() : TNamed("HelperPID", "PID object"),fisMC(0), fPIDType(kNSigmaTPCTOF), fNSigmaPID(3), fPIDResponse(0),fOutputList(0),fRequestTOFPID(1),fPtTOFPID(.6),fHasTOFPID(0){
+AliHelperPID::AliHelperPID() : TNamed("HelperPID", "PID object"),fisMC(0), fPIDType(kNSigmaTPCTOF), fNSigmaPID(3), fPIDResponse(0),fOutputList(0),fRequestTOFPID(1),fUseExclusiveNSigma(0),fPtTOFPID(.6),fHasTOFPID(0){
   
   for(Int_t ipart=0;ipart<kNSpecies;ipart++)
     for(Int_t ipid=0;ipid<=kNSigmaPIDType;ipid++)
@@ -137,7 +137,14 @@ Int_t AliHelperPID::GetParticleSpecies(AliVTrack * trk, Bool_t FIllQAHistos){
   
   CalculateNSigmas(trk,FIllQAHistos);//fill the data member fnsigmas with the nsigmas value [ipart][iPID]
   
-  return FindMinNSigma(trk,FIllQAHistos);//NSigmaRec distr filled here
+  if(fUseExclusiveNSigma){
+    Bool_t *HasDC;
+    HasDC=GetDoubleCounting(trk,kFALSE);
+    for(Int_t ipart=0;ipart<kNSpecies;ipart++){
+      if(HasDC[ipart]==kTRUE)  return kSpUndefined;
+    }
+  }
+  else return FindMinNSigma(trk,FIllQAHistos);//NSigmaRec distr filled here
   
 }
 
