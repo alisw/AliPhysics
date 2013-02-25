@@ -20,8 +20,8 @@
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODInputHandler.h"
+#include "AliCollisionGeometry.h"
 #include "AliGenEventHeader.h"
-#include "AliGenHijingEventHeader.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
@@ -767,6 +767,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	      
 	      // take only events inside centrality class
 	      if((fImpactParameterMin < gCentrality) && (fImpactParameterMax > gCentrality)){
+		fHistEventStats->Fill(5,gCentrality); //events with correct centrality
 		return gCentrality;	    
 	      }//centrality class
 	    }//Vz cut
@@ -836,11 +837,13 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     }//ESD
     else if(gAnalysisLevel == "MC"){
       Double_t gImpactParameter = 0.;
-      AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
-      if(headerH){
-        gImpactParameter = headerH->ImpactParameter();
-        gCentrality      = gImpactParameter;
-      }//MC header
+      if(dynamic_cast<AliMCEvent*>(event)){
+	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());      
+	if(headerH){
+	  gImpactParameter = headerH->ImpactParameter();
+	  gCentrality      = gImpactParameter;
+	}//MC header
+      }//MC event cast
     }//MC
     else{
       gCentrality = -1.;
@@ -878,12 +881,13 @@ Double_t AliAnalysisTaskBFPsi::GetEventPlane(AliVEvent *event){
 
   //MC: from reaction plane
   if(gAnalysisLevel == "MC"){
-   
-    AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
-    if (headerH) {
-      gReactionPlane = headerH->ReactionPlaneAngle();
-      //gReactionPlane *= TMath::RadToDeg();
-    }
+    if(dynamic_cast<AliMCEvent*>(event)){
+      AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());    
+      if (headerH) {
+	gReactionPlane = headerH->ReactionPlaneAngle();
+	//gReactionPlane *= TMath::RadToDeg();
+      }//MC header
+    }//MC event cast
   }//MC
   
   // AOD,ESD,ESDMC: from VZERO Event Plane
