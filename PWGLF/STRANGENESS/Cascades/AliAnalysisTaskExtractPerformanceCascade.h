@@ -37,6 +37,7 @@ class AliESDtrackCuts;
 class AliESDEvent;
 class AliPhysicsSelection;
 class AliCFContainer;
+class AliAnalysisUtils;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -57,6 +58,7 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   void SetINT7Trigger         (Bool_t lSwitchINT7  = kTRUE ) { fkSwitchINT7   = lSwitchINT7; }
   void SetpARapidityShift     (Double_t lRapShift = 0.465 ) { fpArapidityShift = lRapShift; }
   void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
+  void SetpAVertexSelection   (Bool_t lpAVertexSelection = kTRUE) {fkpAVertexSelection = lpAVertexSelection;  }
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -68,6 +70,7 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   //Objects that have to be streamed:
   AliPIDResponse *fPIDResponse;     // PID response object
   AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
+  AliAnalysisUtils *fUtils;         // analysis utils (for pA vertex selection)
 
   //Objects Controlling Task Behaviour 
   // (have to be streamed too or configuration is lost)
@@ -76,7 +79,8 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Bool_t fkSwitchINT7 ; //if true, skip FASTOnly (default FALSE)
   Double_t fpArapidityShift; //pA rapidity shift (should be 0.465, usually)
   TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
-
+  Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
+  
 	Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
 

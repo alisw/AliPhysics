@@ -37,6 +37,7 @@ class AliESDtrackCuts;
 class AliESDEvent;
 class AliPhysicsSelection;
 class AliCFContainer;
+class AliAnalysisUtils;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -56,6 +57,7 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   void SetIsNuclear           (Bool_t lIsNuclear   = kTRUE ) { fkIsNuclear   = lIsNuclear;   }
   void SetINT7Trigger         (Bool_t lSwitchINT7  = kTRUE ) { fkSwitchINT7   = lSwitchINT7; }
   void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
+  void SetpAVertexSelection   (Bool_t lpAVertexSelection = kTRUE) {fkpAVertexSelection = lpAVertexSelection;  }
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -63,10 +65,12 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
         // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
   TList  *fListHist;  //! List of Cascade histograms
   TTree  *fTreeCascade;              //! Output Tree, Cascades
+  
 
   //Objects that have to be streamed:
   AliPIDResponse *fPIDResponse;     // PID response object
   AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
+  AliAnalysisUtils *fUtils;         // analysis utils (for pA vertex selection)
 
   //Objects Controlling Task Behaviour 
   // (have to be streamed too or configuration is lost)
@@ -74,6 +78,7 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   Bool_t fkIsNuclear;   //if true, replace multiplicity est. by centrality (default FALSE) 
   Bool_t fkSwitchINT7;  //if true, skip FASTOnly (default FALSE)
   TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
+  Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
 
 	Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
