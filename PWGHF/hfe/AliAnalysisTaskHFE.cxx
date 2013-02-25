@@ -604,9 +604,11 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
       AliError("No MC Event Handler available");
       return;
     }
+    /*
     if(!mcH->InitOk()) return;
     if(!mcH->TreeK()) return;
     if(!mcH->TreeTR()) return;
+    */
 
     // Background subtraction-------------------------------------------------------------------
     if(GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->SetMCEvent(fMCEvent);

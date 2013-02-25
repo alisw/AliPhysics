@@ -86,6 +86,8 @@ void runGridpPb()
    //===== ADD TASK::
    gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEpPb.C");
    AddTaskHFEpPb();
+   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEnpepPb.C");
+   AddTaskHFEnpepPb();
 
 
 
