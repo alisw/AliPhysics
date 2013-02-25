@@ -16,6 +16,8 @@ void AddTaskFlowCentralityPIDSP( Float_t centrMin=10.,
                                Int_t charge=0,
                                Int_t harmonic=2,
                                Bool_t doQA=kFALSE,
+			       Float_t etamin=-0.8,
+			       Float_t etamax=0.8,	 
                                TString uniqueStr="" )
 {
   // Define the range for eta subevents (for SP method)
@@ -103,7 +105,7 @@ void AddTaskFlowCentralityPIDSP( Float_t centrMin=10.,
   cutsRP->SetParamType(rptype);
   cutsRP->SetParamMix(rpmix);
   cutsRP->SetPtRange(0.2,5.);
-  cutsRP->SetEtaRange(-0.8,0.8);
+  cutsRP->SetEtaRange(etamin,etamax);
   cutsRP->SetMinNClustersTPC(70);
 //  cutsRP->SetMinChi2PerClusterTPC(0.1);
 //  cutsRP->SetMaxChi2PerClusterTPC(4.0);
@@ -118,7 +120,7 @@ void AddTaskFlowCentralityPIDSP( Float_t centrMin=10.,
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
   cutsPOI->SetPtRange(0.0,10.);
-  cutsPOI->SetEtaRange(-0.8,0.8);
+  cutsPOI->SetEtaRange(etamin,etamax);
   cutsPOI->SetMinNClustersTPC(70);
 //  cutsPOI->SetMinChi2PerClusterTPC(0.1);
 //  cutsPOI->SetMaxChi2PerClusterTPC(4.0);

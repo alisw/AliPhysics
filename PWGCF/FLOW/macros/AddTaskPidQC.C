@@ -1,4 +1,4 @@
-AddTaskPidQC(){
+AddTaskPidQC(Float_t etamin=-0.8,Float_t etamax=0.8){
   gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskFlowCentralityPIDQC.C");
 
   const Int_t ncentr = 9;
@@ -6,15 +6,15 @@ AddTaskPidQC(){
   Int_t cmax[ncentr]={5,10,20,30,40,50,60,70,80};
 
   for(Int_t i=0;i < ncentr;i++){
-    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kFALSE,AliPID::kPion,AliFlowTrackCuts::kTOFbayesian,0,2,1); // no pid + QA
-    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kPion,AliFlowTrackCuts::kTOFbayesian,0);
-    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kKaon,AliFlowTrackCuts::kTOFbayesian,0);
-    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kProton,AliFlowTrackCuts::kTOFbayesian,-1);
-    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kProton,AliFlowTrackCuts::kTOFbayesian,0);
-    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kPion,AliFlowTrackCuts::kTPCbayesian,0);
-    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kKaon,AliFlowTrackCuts::kTPCbayesian,0);
-    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kProton,AliFlowTrackCuts::kTPCbayesian,-1);
-    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kProton,AliFlowTrackCuts::kTPCbayesian,0);
+    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kFALSE,AliPID::kPion,AliFlowTrackCuts::kTOFbayesian,0,2,1,etamin,etamax); // no pid + QA
+    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kPion,AliFlowTrackCuts::kTOFbayesian,0,2,0,etamin,etamax);
+    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kKaon,AliFlowTrackCuts::kTOFbayesian,0,2,0,etamin,etamax);
+    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kProton,AliFlowTrackCuts::kTOFbayesian,-1,2,0,etamin,etamax);
+    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kProton,AliFlowTrackCuts::kTOFbayesian,0,2,0,etamin,etamax);
+    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kPion,AliFlowTrackCuts::kTPCbayesian,0,2,0,etamin,etamax);
+    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kKaon,AliFlowTrackCuts::kTPCbayesian,0,2,0,etamin,etamax);
+    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kProton,AliFlowTrackCuts::kTPCbayesian,-1,2,0,etamin,etamax);
+    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kProton,AliFlowTrackCuts::kTPCbayesian,0,2,0,etamin,etamax);
   }
 }
 
