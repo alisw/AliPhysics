@@ -75,7 +75,7 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName, const ch
   }  
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters);
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
   	//taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral) ;
 
 	mgr->AddTask(taskfemto);
@@ -95,13 +95,11 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName, const ch
 
    mgr->ConnectInput(taskfemto, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskfemto, 0, cout_femto);
-	AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containername,
-															  TList::Class(), AliAnalysisManager::kOutputContainer,
-															  "EventStat_temp.root");
-	
-	mgr->ConnectInput(eventplaneTask, 0, mgr->GetCommonInputContainer());
-	mgr->ConnectOutput(eventplaneTask,1,coutput1);
+   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containername, TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
+   
+   mgr->ConnectInput(eventplaneTask, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectOutput(eventplaneTask,1,coutput1);
 
    // Return task pointer at the end
    return taskfemto;
