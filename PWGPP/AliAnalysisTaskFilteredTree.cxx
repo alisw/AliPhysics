@@ -1191,6 +1191,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       {
 
         (*fTreeSRedirector)<<"highPt"<<
+        "fileName.="<<&fileName<<
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
         "evtNumberInFile="<<evtNumberInFile<<
