@@ -19,6 +19,34 @@ void DrawMNN()
   hist->SetAxisRange(0.05, 0.3);
   hist->Draw();
   canv->SaveAs(Form("imgs/kMB_pt003_hPi0M12.pdf", example2));
+
+
+
+  const char* badM11 = "kCentral/pt003_hPi0M11";
+  TCanvas* canv = new TCanvas(badM11, badM11);
+  gStyle->SetOptFit(1);
+  TH1* hist = output.GetHistogram(badM11);
+  hist->SetAxisRange(0.05, 0.3);
+  hist->Draw();
+  canv->SaveAs(Form("imgs/kCentral_pt003_hPi0M11.pdf", badM11));
+
+
+  const char* badM22 = "kCentral/pt003_hPi0M22";
+  TCanvas* canv = new TCanvas(badM22, badM22);
+  gStyle->SetOptFit(1);
+  TH1* hist = output.GetHistogram(badM22);
+  hist->SetAxisRange(0.05, 0.3);
+  hist->Draw();
+  canv->SaveAs(Form("imgs/kCentral_pt003_hPi0M22.pdf", badM22));
+
+
+  const char* badM33 = "kCentral/pt003_hPi0M33";
+  TCanvas* canv = new TCanvas(badM33, badM33);
+  gStyle->SetOptFit(1);
+  TH1* hist = output.GetHistogram(badM33);
+  hist->SetAxisRange(0.05, 0.3);
+  hist->Draw();
+  canv->SaveAs(Form("imgs/kCentral_pt003_hPi0M33.pdf", badM33));
   
  
   
@@ -82,6 +110,7 @@ void DrawMNN()
     leg->Draw();
     
     canv->SaveAs(Form("imgs/MNN_Mean_%s.pdf", triggers.Data()));
+    canv->SaveAs(Form("imgs/MNN_Mean_%s.png", triggers.Data()));
 
     
     
