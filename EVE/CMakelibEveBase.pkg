@@ -32,7 +32,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  EveBase/EveBaseLinkDef.h)
 
-set ( EINCLUDE  RAW ITS TPC EVE/EveBase STEER/STEER STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  RAW ITS TPC TPC/Base EVE/EveBase STEER/STEER STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)
 
 set ( EXPORT 
   EveBase/AliEveApplication.h  
