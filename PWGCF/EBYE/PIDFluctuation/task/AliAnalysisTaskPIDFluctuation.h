@@ -2,6 +2,8 @@
 #define ALIANALYSISTASKPIDFLUCTUATION_H
 
 /* 
+ * updated by Zubayer Ahammed to instruct CINT about streaming
+ * of data members.
  * Event by event PID fluctuation analysis
  * author: Roberto Preghenella (R+)
  * email:  preghenella@bo.infn.it
@@ -105,20 +107,20 @@ public AliAnalysisTaskSE
   Float_t fEtaMax; // eta max
   Float_t fPtMin; // pt min
   Float_t fPtMax; // pt max
-  AliPIDResponse *fPID; // PID
+  AliPIDResponse *fPID; //! PID
 
   /*** PID histos ***/
-  TList *fHistoList; // histo list
-  TH1F *fHistoEventCounter; // event counter
-  TH2F *fHistoAcceptedTracks; // accepted tracks
-  TH2F *fHistoTOFMatchedTracks; // TOF-matched tracks
-  TH3F *fHistoTPCdEdx; // TPC dEdx
-  TH3F *fHistoTPCdEdx_inclusive; // TPC dEdx
-  TH3F *fHistoTOFbeta; // TOF beta
-  TH3F *fHistoTPCdEdx_selected[AliPID::kSPECIES]; // TPC dEdx
-  TH3F *fHistoTOFbeta_selected[AliPID::kSPECIES]; // TOF beta
-  TH3F *fHistoNSigmaTPC[AliPID::kSPECIES]; // nsigma TPC
-  TH3F *fHistoNSigmaTOF[AliPID::kSPECIES]; // nsigma TOF
+  TList *fHistoList; //! histo list
+  TH1F *fHistoEventCounter; //! event counter
+  TH2F *fHistoAcceptedTracks; //! accepted tracks
+  TH2F *fHistoTOFMatchedTracks; //! TOF-matched tracks
+  TH3F *fHistoTPCdEdx; //! TPC dEdx
+  TH3F *fHistoTPCdEdx_inclusive; //! TPC dEdx
+  TH3F *fHistoTOFbeta; //! TOF beta
+  TH3F *fHistoTPCdEdx_selected[AliPID::kSPECIES]; //! TPC dEdx
+  TH3F *fHistoTOFbeta_selected[AliPID::kSPECIES]; //! TOF beta
+  TH3F *fHistoNSigmaTPC[AliPID::kSPECIES]; //! nsigma TPC
+  TH3F *fHistoNSigmaTOF[AliPID::kSPECIES]; //! nsigma TOF
 
   /*** correlation histos */
   THnSparseI *fHistoCorrelation; // correlation THnSparse
