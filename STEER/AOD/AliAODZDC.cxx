@@ -39,7 +39,9 @@ AliAODZDC::AliAODZDC() :
   fImpactParamSideA(0),
   fImpactParamSideC(0),
   fZDCTDCSum(0),	 
-  fZDCTDCDifference(0)
+  fZDCTDCDifference(0),
+  fZNCTDC(0),
+  fZNATDC(0)
 {
 // Default constructor
   for(Int_t i=0; i<5; i++){
@@ -65,7 +67,9 @@ AliAODZDC::AliAODZDC(const AliAODZDC &zdcAOD) :
   fImpactParamSideA(zdcAOD.fImpactParamSideA),
   fImpactParamSideC(zdcAOD.fImpactParamSideC),
   fZDCTDCSum(zdcAOD.fZDCTDCSum),	 
-  fZDCTDCDifference(zdcAOD.fZDCTDCDifference)
+  fZDCTDCDifference(zdcAOD.fZDCTDCDifference),
+  fZNCTDC(zdcAOD.fZNCTDC),
+  fZNATDC(zdcAOD.fZNATDC)
 {
 // Constructor
   for(Int_t i=0; i<5; i++){
@@ -114,6 +118,9 @@ AliAODZDC& AliAODZDC::operator=(const AliAODZDC& zdcAOD)
     //
     fZDCTDCSum = zdcAOD.fZDCTDCSum;    
     fZDCTDCDifference = zdcAOD.fZDCTDCDifference;
+    fZNCTDC = zdcAOD.fZNCTDC;
+    fZNATDC = zdcAOD.fZNATDC;
+
   } 
   return *this;
 }

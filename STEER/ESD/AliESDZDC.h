@@ -141,6 +141,20 @@ public:
   void SetZDCTDCCorrected(const Float_t values[32][4]) 
        {for(Int_t k=0; k<32; k++)
        	   for(Int_t j=0; j<4; j++) fZDCTDCCorrected[k][j] = values[k][j];}
+  
+  Bool_t IsZNChit() {return fZNCTDChit;}
+  Bool_t IsZNAhit() {return fZNATDChit;}
+  Bool_t IsZPChit() {return fZPCTDChit;}
+  Bool_t IsZPAhit() {return fZPATDChit;}
+  Bool_t IsZEM1hit() {return fZEM1TDChit;}
+  Bool_t IsZEM2hit() {return fZEM2TDChit;}
+  //
+  void SetZNCTDChit(Bool_t isf)  {fZNCTDChit = isf;} 
+  void SetZPCTDChit(Bool_t isf)  {fZNATDChit = isf;} 
+  void SetZNATDChit(Bool_t isf)  {fZPCTDChit = isf;} 
+  void SetZPATDChit(Bool_t isf)  {fZPATDChit = isf;} 
+  void SetZEM1TDChit(Bool_t isf) {fZEM1TDChit = isf;} 
+  void SetZEM2TDChit(Bool_t isf) {fZEM2TDChit = isf;} 
 
   void    Reset();
   void    Print(const Option_t *opt=0) const;
@@ -174,8 +188,14 @@ private:
   UInt_t       fVMEScaler[32]; 	  // counts from VME scaler
   Int_t        fZDCTDCData[32][4];     // ZDC TDC data
   Float_t      fZDCTDCCorrected[32][4];// ZDC TDC data in ns corrected 4 phase shift
+  Bool_t       fZNCTDChit;    // true if ZNC TDC has at least 1 hit
+  Bool_t       fZNATDChit;    // true if ZNA TDC has at least 1 hit
+  Bool_t       fZPCTDChit;    // true if ZPC TDC has at least 1 hit
+  Bool_t       fZPATDChit;    // true if ZPA TDC has at least 1 hit
+  Bool_t       fZEM1TDChit;   // true if ZEM1 TDC has at least 1 hit
+  Bool_t       fZEM2TDChit;   // true if ZEM2 TDC has at least 1 hit
   
-  ClassDef(AliESDZDC,17)
+  ClassDef(AliESDZDC,18)
 };
 
 #endif

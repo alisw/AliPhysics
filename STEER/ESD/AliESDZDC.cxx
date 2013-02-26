@@ -42,7 +42,14 @@ AliESDZDC::AliESDZDC() :
   fImpactParameter(0),
   fImpactParamSideA(0),
   fImpactParamSideC(0),
-  fESDQuality(0)
+  fESDQuality(0),
+  fZNCTDChit(kFALSE),
+  fZNATDChit(kFALSE),
+  fZPCTDChit(kFALSE),
+  fZPATDChit(kFALSE),
+  fZEM1TDChit(kFALSE),
+  fZEM2TDChit(kFALSE)
+
 {
   for(Int_t i=0; i<5; i++){
     fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
@@ -77,7 +84,14 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
   fImpactParameter(zdc.fImpactParameter),
   fImpactParamSideA(zdc.fImpactParamSideA),
   fImpactParamSideC(zdc.fImpactParamSideC),
-  fESDQuality(zdc.fESDQuality)
+  fESDQuality(zdc.fESDQuality),
+  fZNCTDChit(zdc.fZNCTDChit),
+  fZNATDChit(zdc.fZNATDChit),
+  fZPCTDChit(zdc.fZPCTDChit),
+  fZPATDChit(zdc.fZPATDChit),
+  fZEM1TDChit(zdc.fZEM1TDChit),
+  fZEM2TDChit(zdc.fZEM2TDChit)
+
 {
   // copy constructor
   for(Int_t i=0; i<5; i++){
@@ -147,6 +161,13 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
       }
     }
   } 
+  fZNCTDChit = zdc.fZNCTDChit;
+  fZNATDChit = zdc.fZNATDChit;
+  fZPCTDChit = zdc.fZPCTDChit;
+  fZPATDChit = zdc.fZPATDChit;
+  fZEM1TDChit = zdc.fZEM1TDChit;
+  fZEM2TDChit = zdc.fZEM2TDChit;
+ 
   return *this;
 }
 
@@ -198,6 +219,13 @@ void AliESDZDC::Reset()
         fZDCTDCCorrected[i][y] = 0.;
      }
   }
+  fZNCTDChit = kFALSE;
+  fZNATDChit = kFALSE;
+  fZPCTDChit = kFALSE;
+  fZPATDChit = kFALSE;
+  fZEM1TDChit = kFALSE;
+  fZEM2TDChit = kFALSE;
+
 }
 
 //______________________________________________________________________________

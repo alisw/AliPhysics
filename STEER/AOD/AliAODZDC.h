@@ -44,6 +44,9 @@ public:
   virtual Bool_t GetZNCentroidInPbPb(Float_t beamEne, Double_t centrZNC[2], Double_t centrZNA[2]);
   virtual Bool_t GetZNCentroidInpp(Double_t centrZNC[2], Double_t centrZNA[2]);
 
+  virtual Float_t GetZNCTime() const {return fZNCTDC;}
+  virtual Float_t GetZNATime() const {return fZNATDC;}
+
   virtual Float_t GetZDCTimeSum() const {return fZDCTDCSum;}
   virtual Float_t GetZDCTimeDiff() const {return fZDCTDCDifference;}
 
@@ -66,6 +69,9 @@ public:
  
   void  SetZDCTDCSum(Float_t tdc)  {fZDCTDCSum = tdc;}
   void  SetZDCTDCDiff(Float_t tdc) {fZDCTDCDifference = tdc;}
+  
+  void  SetZNCTDC(Float_t tdc) {fZNCTDC = tdc;}
+  void  SetZNATDC(Float_t tdc) {fZNATDC = tdc;}
  
  
 protected:
@@ -93,8 +99,11 @@ protected:
   //
   Float_t   fZDCTDCSum;	   	   // ZDC TDC sum in ns corrected 4 phase shift
   Float_t   fZDCTDCDifference;	   // ZDC TDC diff. in ns corrected 4 phase shift
+  Float_t   fZNCTDC; 	   	   // ZNCC TDC sum in ns corrected 4 phase shift        
+  Float_t   fZNATDC;     	   // ZNA TDC diff. in ns corrected 4 phase shift;     
 
-  ClassDef(AliAODZDC,1)
+
+  ClassDef(AliAODZDC,2)
 };
 
 #endif

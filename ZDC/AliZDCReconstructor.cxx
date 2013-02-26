@@ -70,8 +70,7 @@ AliZDCReconstructor:: AliZDCReconstructor() :
   fPedSubMode(0),
   fSignalThreshold(7),
   fMeanPhase(0),
-  fESDZDC(NULL)
-{
+  fESDZDC(NULL){
   // **** Default constructor
 }
 
@@ -763,7 +762,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
      }
   }
   // Ch. debug
-  printf("\n ------------- EQUALIZATION -------------\n");
+  /*printf("\n ------------- EQUALIZATION -------------\n");
   printf(" ADCZN1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	equalTowZN1[0],equalTowZN1[1],equalTowZN1[2],equalTowZN1[3],equalTowZN1[4]);
   printf(" ADCZP1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
@@ -772,7 +771,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   	equalTowZN2[0],equalTowZN2[1],equalTowZN2[2],equalTowZN2[3],equalTowZN2[4]);
   printf(" ADCZP2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	equalTowZP2[0],equalTowZP2[1],equalTowZP2[2],equalTowZP2[3],equalTowZP2[4]);
-  printf(" ----------------------------------------\n");
+  printf(" ----------------------------------------\n");*/
   
   //  *** p-A RUN 2013 -> new calibration object
   //      to take into account saturation in ZN PMC
@@ -786,11 +785,11 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
 	calibSatZNA[2]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0] +
 	calibSatZNA[3]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0]*equalTowZN2[0];
 
- // Ch. debug
-  printf("\n ------------- SATURATION CORRECTION -------------\n");
+  // Ch. debug
+  /*printf("\n ------------- SATURATION CORRECTION -------------\n");
   printf(" ZNC PMC %1.2f\n", equalTowZN1[0]);
   printf(" ZNA PMC %1.2f\n", equalTowZN2[0]);
-  printf(" ----------------------------------------\n");
+  printf(" ----------------------------------------\n");*/
   
   // ******	Summed response for hadronic calorimeter (SUMMED and then CALIBRATED!)
   Float_t calibSumZN1[]={0,0}, calibSumZN2[]={0,0}, calibSumZP1[]={0,0}, calibSumZP2[]={0,0};
@@ -1391,10 +1390,17 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   }    
   
   Int_t tdcValues[32][4] = {{0,}}; 
-  Float_t tdcCorrected[32][4] = {{0.,}};
+  Float_t tdcCorrected[32][4] = {{9999.,}};
   for(Int_t jk=0; jk<32; jk++){
     for(Int_t lk=0; lk<4; lk++){
       tdcValues[jk][lk] = reco.GetZDCTDCData(jk, lk);
+      //
+      if(jk==8 && TMath::Abs(tdcValues[jk][lk])>1e-09)      fESDZDC->SetZEM1TDChit(kTRUE);
+      else if(jk==9 && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZEM2TDChit(kTRUE);
+      else if(jk==10 && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZNCTDChit(kTRUE);
+      else if(jk==11 && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZPCTDChit(kTRUE);
+      else if(jk==12 && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZNATDChit(kTRUE);
+      else if(jk==13 && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZPATDChit(kTRUE);
       //Ch debug
       //if((jk>=8 && jk<=13 && lk==0) || jk==15) printf(" *** ZDC: tdc%d =  %d = %f ns \n",jk,tdcValues[jk][lk],0.025*tdcValues[jk][lk]);
     }
@@ -1406,12 +1412,14 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   for(Int_t jk=0; jk<32; jk++){
     for(Int_t lk=0; lk<4; lk++){
       if(tdcValues[jk][lk]!=0.){
-        tdcCorrected[jk][lk] = 0.025*(tdcValues[jk][lk]-tdcValues[15][0])+fMeanPhase;
-        // Sep 2011: TDC ch. from 8 to 13 centered around 0 using OCDB 
-	if(jk>=8 && jk<=13) tdcCorrected[jk][lk] =  tdcCorrected[jk][lk] - tdcOffset[jk-8];
-	//Ch. debug
-	//if(jk>=8 && jk<=13) printf(" *** tdcOffset%d %f  tdcCorr%d %f \n",jk,tdcOffset[jk-8],tdcCorrected[jk][lk]);
-   
+        // Feb2013 _-> TDC correct entry is there ONLY IF tdc has a hit!
+        if(TMath::Abs(tdcValues[jk][lk])>1e-09){
+	   tdcCorrected[jk][lk] = 0.025*(tdcValues[jk][lk]-tdcValues[15][0])+fMeanPhase;
+           // Sep 2011: TDC ch. from 8 to 13 centered around 0 using OCDB 
+	   if(jk>=8 && jk<=13) tdcCorrected[jk][lk] =  tdcCorrected[jk][lk] - tdcOffset[jk-8];
+	   //Ch. debug
+	   //if(jk>=8 && jk<=13) printf(" *** tdcOffset%d %f  tdcCorr%d %f \n",jk,tdcOffset[jk-8],tdcCorrected[jk][lk]);
+        }
       }
     }
   }

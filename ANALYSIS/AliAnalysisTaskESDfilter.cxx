@@ -2061,7 +2061,8 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
   	esdZDC->GetImpactParamSideC());
   zdcAOD->SetZDCTDCSum(esdZDC->GetZNTDCSum(0));	
   zdcAOD->SetZDCTDCDiff(esdZDC->GetZNTDCDiff(0));	
-
+  if(esdZDC->IsZNChit()) zdcAOD->SetZNCTDC(esdZDC->GetZDCTDCCorrected(10,0));
+  if(esdZDC->IsZNAhit()) zdcAOD->SetZNATDC(esdZDC->GetZDCTDCCorrected(12,0));
 }
 
 //_______________________________________________________________________________________________________________________________________
