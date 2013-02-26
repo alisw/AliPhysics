@@ -1141,20 +1141,25 @@ void MakeRawProductionAll()
 
     //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou CPV CPVcore CPV2 Both Bothcore", " ");
     //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou", " ");
-    TStringToken pids("All", " ");
+    //TStringToken pids("All", " ");
+    TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Disp2core Dispwou CPV CPVcore CPV2 CPV2core Both Bothcore Both2 Both2core", " ");
     while(pids.NextToken()) {
-      for(int cent = -1; cent > -7; cent--) {
-	if(triggers.EqualTo("kCentral") && cent != -1) continue;
-	if(triggers.EqualTo("kSemiCentral") && !(-1 > cent && cent > -6 )) continue;
-
+      for(int cent = -11; cent < 0; ++cent) {
 	RawProduction::TriCenPidBin tcpBin(cent, pids, triggerBin.Trigger());
-	RawProduction::MakePi0FitTCP(input, tcpBin, output);
-      }
-
-      if( triggers.EqualTo("kCentral") || triggers.EqualTo("kSemiCentral") ) continue;
-      RawProduction::TriCenPidBin tcpBinc(-10, pids, triggerBin.Trigger());
-      RawProduction::MakePi0FitTCP(input, tcpBinc, output);
-    }
-  }
+	if(triggers.EqualTo("kMB") || triggers.EqualTo("kPHOSPb")) {
+	  if( -1 == cent || -11 == cent || -10 == cent || -6 == cent )
+	    RawProduction::MakePi0FitTCP(input, tcpBin, output);
+	}
+	if(triggers.EqualTo("kCentral") ) {
+	  if( -1 == cent )
+	    RawProduction::MakePi0FitTCP(input, tcpBin, output);
+	}
+	if(triggers.EqualTo("kSemiCentral") ) {
+	  if( -11 == cent )
+	    RawProduction::MakePi0FitTCP(input, tcpBin, output);
+	}
+      } // cent
+    } // pid
+  } // trigger
   output.Write();
 }
