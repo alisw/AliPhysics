@@ -17,6 +17,25 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, int set, TS
 		     c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],
 		     MULT, harmonic, matchMC, doQC, doSPTPC, doSPVZE, doQA, useFlowEventCuts);
 }
+// ALL CENTRALITIES
+void AddTaskFlowStrange(int trigger, TString folderName="myFolder", TString suffix="mySuffix", int specie=0,
+                        double cut0, double cut1, double cut2, double cut3, double cut4, double cut5, double cut6, double cut7, double cut8,
+                        double cut9, double cut10, char* MULT="V0M", int harmonic=2, int matchMC=-1,
+                        bool doQC=true, bool doSPTPC=true, bool doSPVZE=true, bool doQA=false, bool useFlowEventCuts=true ) {
+  int centMin[8] = {00,05,10,20,30,40,50,60};
+  int centMax[8] = {05,10,20,30,40,50,60,80};
+  TString particle="none";
+  if(specie==0) particle="kze";
+  if(specie==1) particle="lda";
+  if(specie==90) particle="kch";
+  TString name;
+  for(int i=0; i!=8; ++i) {
+    name = Form("%s%02d%02d%s",particle.Data(),centMin[i],centMax[i],suffix.Data());
+    AddTaskFlowStrange(trigger, centMin[i], centMax[i], folderName, name, specie,
+		       cut0, cut1, cut2, cut3, cut4, cut5, cut6, cut7, cut8, cut9, cut10, MULT, harmonic, matchMC,
+		       doQC, doSPTPC, doSPVZE, doQA, useFlowEventCuts);
+  }
+}
 // ONE WAGON
 void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString folderName="myFolder", TString suffixName="mySuffix", int specie=0, 
 			double cut0, double cut1, double cut2, double cut3, double cut4, double cut5, double cut6, double cut7, double cut8,

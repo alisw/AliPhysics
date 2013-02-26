@@ -76,6 +76,7 @@ AliFlowEventCuts::AliFlowEventCuts():
   fMeanPtMax(-DBL_MAX),
   fMeanPtMin(DBL_MAX),
   fCutSPDvertexerAnomaly(kFALSE),
+  fCutSPDTRKVtxZ(kFALSE),
   fCutTPCmultiplicityOutliers(kFALSE),
   fCutCentralityPercentile(kFALSE),
   fUseCentralityUnchecked(kFALSE),
@@ -121,6 +122,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fMeanPtMax(-DBL_MAX),
   fMeanPtMin(DBL_MAX),
   fCutSPDvertexerAnomaly(kFALSE),
+  fCutSPDTRKVtxZ(kFALSE),
   fCutTPCmultiplicityOutliers(kFALSE),
   fCutCentralityPercentile(kFALSE),
   fUseCentralityUnchecked(kFALSE),
@@ -166,6 +168,7 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fMeanPtMax(that.fMeanPtMax),
   fMeanPtMin(that.fMeanPtMin),
   fCutSPDvertexerAnomaly(that.fCutSPDvertexerAnomaly),
+  fCutSPDTRKVtxZ(that.fCutSPDTRKVtxZ),
   fCutTPCmultiplicityOutliers(that.fCutTPCmultiplicityOutliers),
   fCutCentralityPercentile(that.fCutCentralityPercentile),
   fUseCentralityUnchecked(that.fUseCentralityUnchecked),
@@ -247,6 +250,7 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fMeanPtMax=that.fMeanPtMax;
   fMeanPtMin=that.fMeanPtMin;
   fCutSPDvertexerAnomaly=that.fCutSPDvertexerAnomaly;
+  fCutSPDTRKVtxZ=that.fCutSPDTRKVtxZ;
   fCutTPCmultiplicityOutliers=that.fCutTPCmultiplicityOutliers;
   fCutCentralityPercentile=that.fCutCentralityPercentile;
   fUseCentralityUnchecked=that.fUseCentralityUnchecked;
@@ -373,6 +377,11 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
 
   // Handles AOD event
   if(aodevent) {
+    if(fCutSPDTRKVtxZ) {
+      Double_t tVtxZ = aodevent->GetPrimaryVertex()->GetZ();
+      Double_t tSPDVtxZ = aodevent->GetPrimaryVertexSPD()->GetZ();
+      if( TMath::Abs(tVtxZ-tSPDVtxZ) > 0.5 ) pass = kFALSE;
+    }
     AliCentrality* centr = aodevent->GetHeader()->GetCentralityP();
     if(fCutTPCmultiplicityOutliers){
       Double_t v0Centr  = centr->GetCentralityPercentile("V0M");
