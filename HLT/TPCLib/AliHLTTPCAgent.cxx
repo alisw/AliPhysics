@@ -45,7 +45,6 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCdEdxComponent.h"
 #include "AliHLTTPCdEdxMonitoringComponent.h"
 #include "AliHLTTPCClusterFinderComponent.h"
-#include "AliHLTTPCRawDataUnpackerComponent.h"
 #include "AliHLTTPCDigitPublisherComponent.h"
 #include "AliHLTTPCDigitDumpComponent.h"
 #include "AliHLTTPCClusterDumpComponent.h"
@@ -335,7 +334,6 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderUnpacked));
   pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderDecoder));
   pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinder32Bit));
-  pHandler->AddComponent(new AliHLTTPCRawDataUnpackerComponent);
   pHandler->AddComponent(new AliHLTTPCDigitPublisherComponent);
   pHandler->AddComponent(new AliHLTTPCDigitDumpComponent);
   pHandler->AddComponent(new AliHLTTPCClusterDumpComponent);

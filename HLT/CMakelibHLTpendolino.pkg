@@ -48,7 +48,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  	HLT/pendolino HLT/pendolino/PredictionProcessor HLT/pendolino/PredictionProcessor/GRP HLT/pendolino/PredictionProcessor/HLT HLT/pendolino/PredictionProcessor/MUON HLT/pendolino/PredictionProcessor/TPC HLT/BASE TPC MUON STEER/CDB STEER/STEERBase)
+set ( EINCLUDE  	HLT/pendolino HLT/pendolino/PredictionProcessor HLT/pendolino/PredictionProcessor/GRP HLT/pendolino/PredictionProcessor/HLT HLT/pendolino/PredictionProcessor/MUON HLT/pendolino/PredictionProcessor/TPC HLT/BASE TPC TPC/Base MUON STEER/CDB STEER/STEERBase)
 
 set ( ELIBS  "HLTbase CDB")
 

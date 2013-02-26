@@ -52,7 +52,6 @@ set ( CLASS_HDRS
     AliHLTTPCClusters.h
     AliHLTTPCPad.h
     AliHLTTPCDefinitions.h
-    AliHLTTPCRawDataUnpackerComponent.h
     AliHLTTPCClusterFinderComponent.h
     AliHLTTPCHWClusterTransformComponent.h
     AliHLTTPCCFComparisonComponent.h
