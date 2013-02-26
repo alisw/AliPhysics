@@ -1507,8 +1507,13 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
   // start and end time of the run
   const Int_t run=GetRun();
   if (run<0) return;
-  const Int_t startTimeGRP = GetGRP(run)->GetTimeStart();
-  const Int_t stopTimeGRP  = GetGRP(run)->GetTimeEnd();
+
+  // if no valid run information - return
+  AliGRPObject* grp = GetGRP(run);
+  if (!grp) return;
+
+  const Int_t startTimeGRP = grp->GetTimeStart();
+  const Int_t stopTimeGRP  = grp->GetTimeEnd();
 
   //
   // check active state by analysing the scalers
