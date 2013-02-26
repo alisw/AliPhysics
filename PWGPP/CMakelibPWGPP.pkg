@@ -67,6 +67,7 @@ set ( DHDR  PWGPPLinkDef.h)
 
 set ( EINCLUDE
   TPC 
+  TPC/Base
   ITS 
   TRD 
   TOF 
