@@ -961,6 +961,7 @@ namespace RawProduction {
       if( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") ) {
 	switch(centrality) {
 	case -10: hist = MergeHistogram_cent(input, name, centrality, 0, 8); break;
+	case -11: hist = MergeHistogram_cent(input, name, centrality, 1, 5); break;
 	case -1:  hist = MergeHistogram_cent(input, name, centrality, 0, 1); break;
 	case -2:  hist = MergeHistogram_cent(input, name, centrality, 1, 2); break;
 	case -3:  hist = MergeHistogram_cent(input, name, centrality, 2, 3); break;
@@ -973,14 +974,15 @@ namespace RawProduction {
 	}
       } else if ( input.Bin().Trigger().EqualTo("kCentral") ) {
 	switch( centrality ) {
-	case -1: return MergeHistogram_cent(input, name, centrality, 0, 4); break;
+	case -1: hist = MergeHistogram_cent(input, name, centrality, 0, 4); break;
 	}
       } else if ( input.Bin().Trigger().EqualTo("kSemiCentral") ) {
 	switch( centrality ) {
-	case -2: return MergeHistogram_cent(input, name, centrality, 0, 5); break;
-	case -3: return MergeHistogram_cent(input, name, centrality, 5, 6); break;
-	case -4: return MergeHistogram_cent(input, name, centrality, 6, 7); break;
-	case -5: return MergeHistogram_cent(input, name, centrality, 7, 8); break;
+	case -11:hist = MergeHistogram_cent(input, name, centrality, 0, 8); break;
+	case -2: hist = MergeHistogram_cent(input, name, centrality, 0, 5); break;
+	case -3: hist = MergeHistogram_cent(input, name, centrality, 5, 6); break;
+	case -4: hist = MergeHistogram_cent(input, name, centrality, 6, 7); break;
+	case -5: hist = MergeHistogram_cent(input, name, centrality, 7, 8); break;
 	}
       }
       
@@ -1131,8 +1133,8 @@ void MakeRawProductionAll()
 
   RawProduction::Output output;
 
-  TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
-  //TStringToken triggers("kCentral ", " ");
+  //TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
+  TStringToken triggers("kSemiCentral ", " ");
   while(triggers.NextToken()) {
     RawProduction::TriggerBin triggerBin(triggers);
     RawProduction::Input input("AnalysisResults.root", triggerBin);
