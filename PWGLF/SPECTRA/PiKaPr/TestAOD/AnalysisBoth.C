@@ -27,10 +27,11 @@ enum {
  kgeantflukaKaon=0x2,
  kgeantflukaProton=0x4,
  knormalizationtoeventspassingPhySel=0x8,
- kveretxcorrectionandbadchunkscorr=0x10
+ kveretxcorrectionandbadchunkscorr=0x10,
+ kmcisusedasdata=0x20	
 };	
 
-Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag);
+Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag,Bool_t mcasdata=false);
 void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TString outnamemc="" )
 {
 	TH1::AddDirectory(kFALSE);
@@ -72,7 +73,7 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 
 
 	OpenFile(indirname,outnamemc,true);
-	OpenFile(indirname,outnamedata,false);
+	OpenFile(indirname,outnamedata,false,((Bool_t)(options&kmcisusedasdata)));
 	if(!managermc||!managerdata)
 	{
 		cout<<managermc<<" "<<managerdata<<endl;
@@ -306,8 +307,9 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 
 }
 
-Bool_t   OpenFile(TString dirname,TString outputname, Bool_t mcflag)
+Bool_t   OpenFile(TString dirname,TString outputname, Bool_t mcflag, Bool_t mcasdata)
 {
+	
 
 	TString nameFile = Form("./%s/AnalysisResults%s.root",dirname.Data(),(mcflag?"MC":"DATA"));
 	TFile *file = TFile::Open(nameFile.Data());
@@ -317,12 +319,22 @@ Bool_t   OpenFile(TString dirname,TString outputname, Bool_t mcflag)
 		return false;
 	}	
 	TString sname=Form("OutputBothSpectraTask_%s_%s",(mcflag?"MC":"Data"),outputname.Data());
+	if(mcasdata)
+	{
+		cout<<"using MC as data "<<endl;
+		sname=Form("OutputBothSpectraTask_%s_%s","MC",outputname.Data());
+	}
 	file->ls();
 	TDirectoryFile *dir=(TDirectoryFile*)file->Get(sname.Data());
 	if(!dir)
 	{
-	//	cout<<"no dir "<<sname.Data()<<endl;
-		sname=Form("OutputAODSpectraTask_%s_%s",(mcflag?"MC":"Data"),outputname.Data());
+	//	cout<<"no dir "<<sname.Data()<<endl;	if(mcasdata)
+		{
+			cout<<"using MC as data "<<endl;
+			sname=Form("OutputAODSpectraTask_%s_%s","MC",outputname.Data());
+		}
+		else	
+			sname=Form("OutputAODSpectraTask_%s_%s",(mcflag?"MC":"Data"),outputname.Data());
 	//	cout<<"trying "<<sname.Data()<<endl;
 		dir=(TDirectoryFile*)file->Get(sname.Data());
 		if(!dir)
