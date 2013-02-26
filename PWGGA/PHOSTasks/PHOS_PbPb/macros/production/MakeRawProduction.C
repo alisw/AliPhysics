@@ -648,40 +648,45 @@ namespace RawProduction {
     Int_t cMin=0, cMax=0;
     if( input.Bin().Trigger().EqualTo("kCentral") )
       switch(outBin.Centrality()) {
-      case 0: cMin = 1; cMax = 5; break;
-      case 1: cMin = 6; cMax = 10; break;
+//       case 0: cMin = 1; cMax = 5; break;
+//       case 1: cMin = 6; cMax = 10; break;
       case -1: cMin = 1; cMax = 10; break;
-      default: Printf("ERROR: cent bin not defined for trigger");
+      default: Printf("ERROR: cent bin %d not defined for trigger kCentral", outBin.Centrality());
       }
     else if( input.Bin().Trigger().EqualTo("kSemiCentral") )
       switch(outBin.Centrality()) {
-      case 0: cMin = 11; cMax = 20; break;
-      case 1: cMin = 21; cMax = 30; break;
-      case 2: cMin = 31; cMax = 40; break;
-      case 3: cMin = 41; cMax = 50; break;
+//       case 0: cMin = 11; cMax = 20; break;
+//       case 1: cMin = 21; cMax = 30; break;
+//       case 2: cMin = 31; cMax = 40; break;
+//       case 3: cMin = 41; cMax = 50; break;
       case -2: cMin = 11; cMax = 20; break;
       case -3: cMin = 21; cMax = 30; break;
       case -4: cMin = 31; cMax = 40; break;
       case -5: cMin = 41; cMax = 50; break;
-      default: Printf("ERROR: cent bin not defined for trigger");
+      case -11: cMin = 11; cMax = 50; break;
+      default: Printf("ERROR: cent bin %d not defined for trigger kSemiCentral", outBin.Centrality());
       }
     else if ( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") )
       switch(outBin.Centrality()) {
-      case 0: cMin = 1; cMax = 5; break;
-      case 1: cMin = 6; cMax = 10; break;
-      case 2: cMin = 11; cMax = 20; break;
-      case 3: cMin = 21; cMax = 30; break;
-      case 4: cMin = 31; cMax = 40; break;
-      case 5: cMin = 41; cMax = 50; break;
-      case 6: cMin = 51; cMax = 80; break;
+//       case 0: cMin = 1; cMax = 5; break;
+//       case 1: cMin = 6; cMax = 10; break;
+//       case 2: cMin = 11; cMax = 20; break;
+//       case 3: cMin = 21; cMax = 30; break;
+//       case 4: cMin = 31; cMax = 40; break;
+//       case 5: cMin = 41; cMax = 50; break;
+//       case 6: cMin = 51; cMax = 80; break;
       case -10: cMin=1; cMax = 80; break;
+      case -11: cMin = 11; cMax = 50; break;
       case -1: cMin = 1; cMax = 10; break;
       case -2: cMin = 11; cMax = 20; break;
       case -3: cMin = 21; cMax = 30; break;
       case -4: cMin = 31; cMax = 40; break;
       case -5: cMin = 41; cMax = 50; break;
       case -6: cMin = 51; cMax = 80; break;
-      default: Printf("ERROR: cent bin not defined for trigger");
+      case -7: cMin = 51; cMax = 60; break;
+      case -8: cMin = 61; cMax = 70; break;
+      case -9: cMin = 71; cMax = 80; break;
+      default: Printf("ERROR: cent bin %d not defined for trigger %s", outBin.Centrality(), input.Bin().Trigger().Data());
       }
     else
       Printf("ERROR: cent bins not defined for trigger, %s", input.Bin().Trigger().Data());
@@ -1133,8 +1138,8 @@ void MakeRawProductionAll()
 
   RawProduction::Output output;
 
-  //TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
-  TStringToken triggers("kSemiCentral ", " ");
+  TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
+  //TStringToken triggers("kCentral", " ");
   while(triggers.NextToken()) {
     RawProduction::TriggerBin triggerBin(triggers);
     RawProduction::Input input("AnalysisResults.root", triggerBin);
