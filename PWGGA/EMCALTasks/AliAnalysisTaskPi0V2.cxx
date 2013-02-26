@@ -708,12 +708,11 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
   }
   hEvtCount->Fill(3);
 
-  if (isPhosCali) {
-    if (fRunNumber != event->GetRunNumber()) 
-      SetFlatteningData();
+  if (fRunNumber != event->GetRunNumber()) {
+    fRunNumber = event->GetRunNumber();
+    SetFlatteningData();
   }
 
-  fRunNumber = event->GetRunNumber();
   fInterRunNumber = ConvertToInternalRunNumber(fRunNumber);
 
   const AliVVertex* fvertex;
