@@ -313,8 +313,9 @@ void AliESDpid::MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const
 
   if (heavy) track->ResetStatus(AliESDtrack::kTOFpid);
   
-  if (!CheckTOFMatching(track)) track->SetStatus(AliESDtrack::kTOFmismatch);
-  else track->ResetStatus(AliESDtrack::kTOFmismatch);
+  // kTOFmismatch flas is not set because deprecated from 18/02/2013
+  //  if (!CheckTOFMatching(track)) track->SetStatus(AliESDtrack::kTOFmismatch);
+  //  else track->ResetStatus(AliESDtrack::kTOFmismatch);
 }
 //_________________________________________________________________________
 void AliESDpid::MakeTRDPID(AliESDtrack *track) const
