@@ -173,8 +173,7 @@ gSystem->Load("libPWGLFspectra.so");
 
  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse(mcfactor,kTRUE,kFALSE,2,kFALSE,"",kTRUE);
-
-
+taskPID->SetUseTPCEtaCorrection(kTRUE);
  if(!aod)
   {	
   	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
@@ -190,22 +189,18 @@ gSystem->Load("libPWGLFspectra.so");
 	AliAnalysisTaskSpectraBoth* task2=0x0;
 	AliAnalysisTaskSpectraBoth* task3=0x0;
 	AliAnalysisTaskSpectraBoth* task4=0x0;  
-	AliAnalysisTaskSpectraBoth* task5=0x0;
-	AliAnalysisTaskSpectraBoth* task6=0x0;
 
 
 
 	task1=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,-0.5,0.5,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor,"V0M",2);
 
-	task2=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,0.465,0.965,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor,"V0M",2);
+	task2=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,-0.465,0.035,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor,"V0M",2);
 	
-	task3=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,0.265,0.665,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor,"V0M",2);
+	task3=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,2.0,pt,p,-0.465,0.035,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,rebinfactor,"V0M",2);
 
-	task4=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,-0.5,0.5,ptTofMatch,trkbit2,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC2,rebinfactor,"V0M",2);
+	task4=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,-0.465,0.035,ptTofMatch,trkbit2,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC2,rebinfactor,"V0M",2);
 
-	task5=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,0.465,0.965,ptTofMatch,trkbit2,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC2,rebinfactor,"V0M",2);
 	
-	task6=AddTaskSpectraBoth(mcfactor,-1,-1,-1,-1,-0.8,0.8,Nsigmapid,pt,p,0.265,0.665,ptTofMatch,trkbit2,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC2,rebinfactor,"V0M",2);
 
 
   if(mc)
@@ -214,8 +209,6 @@ gSystem->Load("libPWGLFspectra.so");
 	task2->SetdotheMCLoopAfterEventCuts(kTRUE);
 	task3->SetdotheMCLoopAfterEventCuts(kTRUE);
 	task4->SetdotheMCLoopAfterEventCuts(kTRUE);
-	task5->SetdotheMCLoopAfterEventCuts(kTRUE);
-	task6->SetdotheMCLoopAfterEventCuts(kTRUE);
 
 
   }
@@ -225,8 +218,6 @@ gSystem->Load("libPWGLFspectra.so");
 	task2->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
 	task3->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
 	task4->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
-	task5->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
-	task6->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
 
 
 }	
