@@ -1465,7 +1465,7 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide s
 
   const Int_t runNumber = aEsd->GetRunNumber();
   if(runNumber<188124 || (runNumber>188374 && runNumber<194713)){ // FIXME: end of pA-run is not known
-    AliError(Form(" ZN BG time cut not implemented for run %d",runNumber));
+    AliDebug(3,Form(" ZN BG time cut not implemented for run %d",runNumber));
     return kFALSE;
   }
 
