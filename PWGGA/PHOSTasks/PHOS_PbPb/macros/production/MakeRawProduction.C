@@ -29,6 +29,7 @@
 namespace RawProduction {
 
   bool ignoreErrors = false;
+  const int centBinVersion = 2;
 
   // Fit range
   Double_t rangeMin=0.05 ;
@@ -919,8 +920,12 @@ namespace RawProduction {
     // -3  20-30%
     // -4  30-40%
     // -5  40-50%
-    // -6  50-80%
+    // -6   50-80%
+    // -7  50-60%
+    // -8  60-70%
+    // -9  70-80%
     // -10  0-80%
+    // -11 10-50%
     if( centrality >= 0 ) {
       char cname[256] = "";
       sprintf(cname, "%s_cen%i", name.Data(), centrality);
@@ -928,27 +933,57 @@ namespace RawProduction {
     }
 
     TH1* hist = 0x0;
-    if( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") ) {
-      switch(centrality) {
-      case -10: hist = MergeHistogram_cent(input, name, centrality, 0, 7); break;
-      case -1:  hist = MergeHistogram_cent(input, name, centrality, 0, 2); break;
-      case -2:  hist = MergeHistogram_cent(input, name, centrality, 2, 3); break;
-      case -3:  hist = MergeHistogram_cent(input, name, centrality, 3, 4); break;
-      case -4:  hist = MergeHistogram_cent(input, name, centrality, 4, 5); break;
-      case -5:  hist = MergeHistogram_cent(input, name, centrality, 5, 6); break;
-      case -6:  hist = MergeHistogram_cent(input, name, centrality, 6, 7); break;
+    if( 1 == centBinVersion ) {
+      if( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") ) {
+	switch(centrality) {
+	case -10: hist = MergeHistogram_cent(input, name, centrality, 0, 7); break;
+	case -1:  hist = MergeHistogram_cent(input, name, centrality, 0, 2); break;
+	case -2:  hist = MergeHistogram_cent(input, name, centrality, 2, 3); break;
+	case -3:  hist = MergeHistogram_cent(input, name, centrality, 3, 4); break;
+	case -4:  hist = MergeHistogram_cent(input, name, centrality, 4, 5); break;
+	case -5:  hist = MergeHistogram_cent(input, name, centrality, 5, 6); break;
+	case -6:  hist = MergeHistogram_cent(input, name, centrality, 6, 7); break;
+	}
+      } else if ( input.Bin().Trigger().EqualTo("kCentral") ) {
+	switch( centrality ) {
+	case -1: return MergeHistogram_cent(input, name, centrality, 0, 2); break;
+	}
+      } else if ( input.Bin().Trigger().EqualTo("kSemiCentral") ) {
+	switch( centrality ) {
+	case -2: return MergeHistogram_cent(input, name, centrality, 0, 1); break;
+	case -3: return MergeHistogram_cent(input, name, centrality, 1, 2); break;
+	case -4: return MergeHistogram_cent(input, name, centrality, 2, 3); break;
+	case -5: return MergeHistogram_cent(input, name, centrality, 3, 4); break;
+	}
       }
-    } else if ( input.Bin().Trigger().EqualTo("kCentral") ) {
-      switch( centrality ) {
-      case -1: return MergeHistogram_cent(input, name, centrality, 0, 2); break;
+    } 
+    else if ( 2 == centBinVersion ) {
+      if( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") ) {
+	switch(centrality) {
+	case -10: hist = MergeHistogram_cent(input, name, centrality, 0, 8); break;
+	case -1:  hist = MergeHistogram_cent(input, name, centrality, 0, 1); break;
+	case -2:  hist = MergeHistogram_cent(input, name, centrality, 1, 2); break;
+	case -3:  hist = MergeHistogram_cent(input, name, centrality, 2, 3); break;
+	case -4:  hist = MergeHistogram_cent(input, name, centrality, 3, 4); break;
+	case -5:  hist = MergeHistogram_cent(input, name, centrality, 4, 5); break;
+	case -6:  hist = MergeHistogram_cent(input, name, centrality, 5, 8); break;
+	case -7:  hist = MergeHistogram_cent(input, name, centrality, 5, 6); break;
+	case -8:  hist = MergeHistogram_cent(input, name, centrality, 6, 7); break;
+	case -9:  hist = MergeHistogram_cent(input, name, centrality, 7, 8); break;
+	}
+      } else if ( input.Bin().Trigger().EqualTo("kCentral") ) {
+	switch( centrality ) {
+	case -1: return MergeHistogram_cent(input, name, centrality, 0, 4); break;
+	}
+      } else if ( input.Bin().Trigger().EqualTo("kSemiCentral") ) {
+	switch( centrality ) {
+	case -2: return MergeHistogram_cent(input, name, centrality, 0, 5); break;
+	case -3: return MergeHistogram_cent(input, name, centrality, 5, 6); break;
+	case -4: return MergeHistogram_cent(input, name, centrality, 6, 7); break;
+	case -5: return MergeHistogram_cent(input, name, centrality, 7, 8); break;
+	}
       }
-    } else if ( input.Bin().Trigger().EqualTo("kSemiCentral") ) {
-      switch( centrality ) {
-      case -2: return MergeHistogram_cent(input, name, centrality, 0, 1); break;
-      case -3: return MergeHistogram_cent(input, name, centrality, 1, 2); break;
-      case -4: return MergeHistogram_cent(input, name, centrality, 2, 3); break;
-      case -5: return MergeHistogram_cent(input, name, centrality, 3, 4); break;
-      }
+      
     }
     // in case not defined above
     if( ! hist ) {
@@ -958,12 +993,16 @@ namespace RawProduction {
 
     switch(centrality) {
       case -10: hist->SetTitle( Form("%s, 0-80%% centrality", hist->GetTitle())); break;
-      case -1:  hist->SetTitle( Form("%s, 0-10%% centrality", hist->GetTitle())); break;
+      case -11: hist->SetTitle( Form("%s,10-50%% centrality", hist->GetTitle())); break;
+      case -1:  hist->SetTitle(Form("%s, 0-10%% centrality", hist->GetTitle())); break;
       case -2:  hist->SetTitle(Form("%s, 10-20%% centrality", hist->GetTitle())); break;
       case -3:  hist->SetTitle(Form("%s, 20-30%% centrality", hist->GetTitle())); break;
       case -4:  hist->SetTitle(Form("%s, 30-40%% centrality", hist->GetTitle())); break;
       case -5:  hist->SetTitle(Form("%s, 40-50%% centrality", hist->GetTitle())); break;
-      case -6:  hist->SetTitle(Form("%s, 50-80%% centrality", hist->GetTitle())); break;
+      case -6:  hist->SetTitle( Form("%s, 50-80%% centrality", hist->GetTitle())); break;
+      case -7:  hist->SetTitle(Form("%s, 50-60%% centrality", hist->GetTitle())); break;
+      case -8:  hist->SetTitle(Form("%s, 60-70%% centrality", hist->GetTitle())); break;
+      case -9:  hist->SetTitle(Form("%s, 70-80%% centrality", hist->GetTitle())); break;
     }
     return hist;
   }
