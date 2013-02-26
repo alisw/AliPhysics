@@ -54,6 +54,7 @@ class AliFlowEventCuts : public TNamed {
   void SetMeanPtRange(Double_t min, Double_t max) {fCutMeanPt=kTRUE; fMeanPtMax=max; fMeanPtMin=min;}
   void SetCutSPDvertexerAnomaly(Bool_t b=kTRUE) {fCutSPDvertexerAnomaly=b;}
   void SetCutZDCtiming(Bool_t c=kTRUE) {fCutZDCtiming=c;}
+  void SetCutSPDTRKVtxZ(Bool_t b=kTRUE) {fCutSPDTRKVtxZ=b;}
   void SetCutTPCmultiplicityOutliers(Bool_t b=kTRUE) {fCutTPCmultiplicityOutliers=b;}
 
   Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
@@ -117,6 +118,7 @@ class AliFlowEventCuts : public TNamed {
   Double_t fMeanPtMax; //max mean pt
   Double_t fMeanPtMin; //min mean pt
   Bool_t fCutSPDvertexerAnomaly; //cut on the spd vertexer anomaly
+  Bool_t fCutSPDTRKVtxZ; //require compatibility between SPDvertexz TRKvertexz
   Bool_t fCutTPCmultiplicityOutliers; //cut TPC multiplicity outliers
   Bool_t fCutCentralityPercentile; //cut on centrality perc. from AliESDCentrality
   Bool_t fUseCentralityUnchecked; //use the unchecked method
