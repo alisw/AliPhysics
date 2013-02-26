@@ -7,7 +7,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
+void AddTaskFlowCentralityPIDQC(Int_t centralitysel,
+                               Float_t centrMin=10.,
                                Float_t centrMax=20.,
                                TString fileNameBase="output",
                                Bool_t isPID = kTRUE,
@@ -297,6 +298,7 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
     AliFMDAnalysisTaskSE *taskfmd = NULL;
     if (rptypestr == "FMD") {
       taskfmd = new AliFMDAnalysisTaskSE("TaskFMD");
+      taskfmd->SelectCollisionCandidates(centralitysel);
       mgr->AddTask(taskfmd);
       
       AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
@@ -319,8 +321,10 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
       taskFE->SetFlow(v1,v2,v3,v4); 
       taskFE->SetNonFlowNumberOfTrackClones(numberOfTrackClones);
       taskFE->SetAfterburnerOn();
+      taskFE->SelectCollisionCandidates(centralitysel);
     }
-  else {taskFE = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent %s",outputSlotName.Data()),"",doQA); }
+  else {taskFE = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent %s",outputSlotName.Data()),"",doQA); 
+    taskFE->SelectCollisionCandidates(centralitysel);}
   if (ExcludeRegion) {
     taskFE->DefineDeadZone(excludeEtaMin, excludeEtaMax, excludePhiMin, excludePhiMax); 
   }
@@ -347,40 +351,47 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
   //===========================================================================
   if (SP){
     AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct %s",outputSlotName.Data()),WEIGHTS[0]);
+    taskSP->SelectCollisionCandidates(centralitysel);
     taskSP->SetRelDiffMsub(1.0);
     taskSP->SetApplyCorrectionForNUA(kTRUE);
     mgr->AddTask(taskSP);
   }
   if (LYZ1SUM){
     AliAnalysisTaskLeeYangZeros *taskLYZ1SUM = new AliAnalysisTaskLeeYangZeros(Form("TaskLeeYangZerosSUM %s",outputSlotName.Data()),kTRUE);
+    taskLYZ1SUM->SelectCollisionCandidates(centralitysel);
     taskLYZ1SUM->SetFirstRunLYZ(kTRUE);
     taskLYZ1SUM->SetUseSumLYZ(kTRUE);
     mgr->AddTask(taskLYZ1SUM);
   }
   if (LYZ1PROD){
     AliAnalysisTaskLeeYangZeros *taskLYZ1PROD = new AliAnalysisTaskLeeYangZeros(Form("TaskLeeYangZerosPROD %s",outputSlotName.Data()),kTRUE);
+    taskLYZ1PROD->SelectCollisionCandidates(centralitysel);
     taskLYZ1PROD->SetFirstRunLYZ(kTRUE);
     taskLYZ1PROD->SetUseSumLYZ(kFALSE);
     mgr->AddTask(taskLYZ1PROD);
   }
   if (LYZ2SUM){
     AliAnalysisTaskLeeYangZeros *taskLYZ2SUM = new AliAnalysisTaskLeeYangZeros(Form("TaskLeeYangZerosSUM %s",outputSlotName.Data()),kFALSE);
+    taskLYZ2SUM->SelectCollisionCandidates(centralitysel);
     taskLYZ2SUM->SetFirstRunLYZ(kFALSE);
     taskLYZ2SUM->SetUseSumLYZ(kTRUE);
     mgr->AddTask(taskLYZ2SUM);
   }
   if (LYZ2PROD){
     AliAnalysisTaskLeeYangZeros *taskLYZ2PROD = new AliAnalysisTaskLeeYangZeros(Form("TaskLeeYangZerosPROD %s",outputSlotName.Data()),kFALSE);
+    taskLYZ2PROD->SelectCollisionCandidates(centralitysel);
     taskLYZ2PROD->SetFirstRunLYZ(kFALSE);
     taskLYZ2PROD->SetUseSumLYZ(kFALSE);
     mgr->AddTask(taskLYZ2PROD);
   }
   if (LYZEP){
     AliAnalysisTaskLYZEventPlane *taskLYZEP = new AliAnalysisTaskLYZEventPlane(Form("TaskLYZEventPlane %s",outputSlotName.Data()));
+    taskLYZEP->SelectCollisionCandidates(centralitysel);
     mgr->AddTask(taskLYZEP);
   }
   if (GFC){
     AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants(Form("TaskCumulants %s",outputSlotName.Data()),useWeights);
+    taskGFC->SelectCollisionCandidates(centralitysel);
     taskGFC->SetUsePhiWeights(WEIGHTS[0]); 
     taskGFC->SetUsePtWeights(WEIGHTS[1]);
     taskGFC->SetUseEtaWeights(WEIGHTS[2]); 
@@ -388,6 +399,7 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
   }
   if (QC){
     AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants %s",outputSlotName.Data()),useWeights);
+    taskQC->SelectCollisionCandidates(centralitysel);
     taskQC->SetUsePhiWeights(WEIGHTS[0]); 
     taskQC->SetUsePtWeights(WEIGHTS[1]);
     taskQC->SetUseEtaWeights(WEIGHTS[2]); 
@@ -402,6 +414,7 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
   }
   if (FQD){
     AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution(Form("TaskFittingQDistribution %s",outputSlotName.Data()),kFALSE);
+    taskFQD->SelectCollisionCandidates(centralitysel);
     taskFQD->SetUsePhiWeights(WEIGHTS[0]); 
     taskFQD->SetqMin(0.);
     taskFQD->SetqMax(1000.);
@@ -410,10 +423,12 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
   }
   if (MCEP){
     AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane(Form("TaskMCEventPlane %s",outputSlotName.Data()));
+    taskMCEP->SelectCollisionCandidates(centralitysel);
     mgr->AddTask(taskMCEP);
   }
   if (MH){
     AliAnalysisTaskMixedHarmonics *taskMH = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonics %s",outputSlotName.Data()),useWeights);
+    taskMH->SelectCollisionCandidates(centralitysel);
     taskMH->SetHarmonic(1); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
     taskMH->SetNoOfMultipicityBins(10000);
     taskMH->SetMultipicityBinWidth(1.);
@@ -425,6 +440,7 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
   }  
   if (NL){
     AliAnalysisTaskNestedLoops *taskNL = new AliAnalysisTaskNestedLoops(Form("TaskNestedLoops %s",outputSlotName.Data()),useWeights);
+    taskNL->SelectCollisionCandidates(centralitysel);
     taskNL->SetHarmonic(1); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
     taskNL->SetEvaluateNestedLoopsForRAD(kTRUE); // RAD = Relative Angle Distribution
     taskNL->SetEvaluateNestedLoopsForMH(kTRUE); // evalaute <<cos[n(phi1+phi2-2phi3)]>> (Remark: three nested loops)   
@@ -628,6 +644,7 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
   if (runQAtask)
   {
     AliAnalysisTaskQAflow* taskQAflow = new AliAnalysisTaskQAflow(Form("TaskQAflow %s",outputSlotName.Data()));
+    taskQAflow->SelectCollisionCandidates(centralitysel);
     taskQAflow->SetEventCuts(cutsEvent);
     taskQAflow->SetTrackCuts(cutsRP);
     taskQAflow->SetFillNTuple(FillQAntuple);
