@@ -123,7 +123,7 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(const char* filepath, Int_t m
 	TArrayI* array = new TArrayI();
 
 	for(int i=0; i<objarray->GetEntriesFast(); i++) {
-	  TObjString *objStr = (TObjString*) fAODPathArray->At(i);
+	  TObjString *objStr = (TObjString*) objarray->At(i);
 	  TString str = objStr->GetString();
 	  iEntry = str.Atoi();
 	  array->Set(count+1);

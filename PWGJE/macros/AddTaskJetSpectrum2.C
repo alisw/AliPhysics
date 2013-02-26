@@ -156,7 +156,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    if(hjet>0)
      coutput1_Spec = mgr->CreateContainer(Form("pwgje_spec2_%s_%s_%010d_Class%02d_HJ%d",bRec,bGen,iEventSelectionMask,iCl,hjet),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_spec2_%s_%s_%010d_Class%02d_HJ%d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask,iCl,hjet));
    else
-     coutput1_Spec = mgr->CreateContainer(Form("pwgje_spec2_%s_%s_%010d_Class%02d_HJ%d",bRec,bGen,iEventSelectionMask,iCl,hjet),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_spec2_%s_%s_%010d_Class%02d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask,iCl));
+     coutput1_Spec = mgr->CreateContainer(Form("pwgje_spec2_%s_%s_%010d_Class%02d",bRec,bGen,iEventSelectionMask,iCl),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_spec2_%s_%s_%010d_Class%02d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask,iCl));
 
    mgr->ConnectInput  (jetspec, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (jetspec, 0, mgr->GetCommonOutputContainer());
