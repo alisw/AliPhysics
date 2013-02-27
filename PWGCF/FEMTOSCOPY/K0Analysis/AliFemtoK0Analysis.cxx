@@ -64,6 +64,8 @@ ClassImp(AliFemtoK0Analysis)
 AliFemtoK0Analysis::AliFemtoK0Analysis():
 AliAnalysisTaskSE(),
   fFieldPos(kTRUE),
+  fOnlineCase(kTRUE),
+  fMeritCase(kTRUE),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -80,9 +82,11 @@ AliAnalysisTaskSE(),
 {
 }
 //________________________________________________________________________
-AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive) 
+AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive, bool OnlineCase, bool MeritCase) 
 : AliAnalysisTaskSE(name), 
   fFieldPos(FieldPositive),
+  fOnlineCase(OnlineCase),
+  fMeritCase(MeritCase),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -98,7 +102,9 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive)
   fNegDaughter2(0x0)
 {
   //main constructor
-  fFieldPos = FieldPositive;
+  fFieldPos 	= FieldPositive;
+  fOnlineCase 	= OnlineCase;
+  fMeritCase 	= MeritCase;
   // Define output slots here 
   // Output slot #1
   DefineOutput(1, TList::Class());
@@ -108,6 +114,8 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive)
 AliFemtoK0Analysis::AliFemtoK0Analysis(const AliFemtoK0Analysis &obj)
 : AliAnalysisTaskSE(obj.fName),
   fFieldPos(obj.fFieldPos),
+  fOnlineCase(obj.fOnlineCase),
+  fMeritCase(obj.fMeritCase),
   fEventCount(obj.fEventCount),
   fEC(obj.fEC),
   fEvt(obj.fEvt),
@@ -129,20 +137,22 @@ AliFemtoK0Analysis &AliFemtoK0Analysis::operator=(const AliFemtoK0Analysis &obj)
  //Assignment operator
  if (this == &obj) return *this;
  
- fFieldPos = obj.fFieldPos;
- fEventCount = obj.fEventCount;
- fEC = obj.fEC;
- fEvt = obj.fEvt;
- fRandomNumber = obj.fRandomNumber;
- fName = obj.fName;
- fAOD = obj.fAOD;
- fOutputList = obj.fOutputList;
- fPidAOD = obj.fPidAOD;
- fPidESD = obj.fPidESD;
- fPosDaughter1 = obj.fPosDaughter1;  
- fPosDaughter2 = obj.fPosDaughter2;
- fNegDaughter1 = obj.fNegDaughter1;
- fNegDaughter2 = obj.fNegDaughter2;
+ fFieldPos 	= obj.fFieldPos;
+ fOnlineCase 	= obj.fOnlineCase;
+ fMeritCase 	= obj.fMeritCase;
+ fEventCount 	= obj.fEventCount;
+ fEC 		= obj.fEC;
+ fEvt 		= obj.fEvt;
+ fRandomNumber 	= obj.fRandomNumber;
+ fName 		= obj.fName;
+ fAOD 		= obj.fAOD;
+ fOutputList 	= obj.fOutputList;
+ fPidAOD 	= obj.fPidAOD;
+ fPidESD 	= obj.fPidESD;
+ fPosDaughter1 	= obj.fPosDaughter1;  
+ fPosDaughter2 	= obj.fPosDaughter2;
+ fNegDaughter1 	= obj.fNegDaughter1;
+ fNegDaughter2 	= obj.fNegDaughter2;
 
  return (*this);
 }
@@ -184,6 +194,7 @@ void AliFemtoK0Analysis::MyInit()
   //fPidAOD = new AliAODpidUtil();
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   fPidAOD = aodH->GetAODpidUtil();
+  //fPidAOD = aodH->GetPIDResponse();
   fPidESD = new AliESDpid();
 
   fPosDaughter1 = new AliESDtrack();
@@ -520,9 +531,13 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     //load v0 track
     AliAODv0* v0 = fAOD->GetV0(i);
     if(!v0) continue;
-    if(!(v0->GetOnFlyStatus())) continue; //for online
-    //if((v0->GetOnFlyStatus())) continue; //for offline
-
+    if(fOnlineCase){
+     if(!(v0->GetOnFlyStatus())) continue;
+    } //for online
+    else{
+     if((v0->GetOnFlyStatus())) continue; //for offline
+    }
+ 
     //for on-the-fly ordering
     AliAODTrack* tempTrack = (AliAODTrack*)v0->GetDaughter(0);
     short int pos0or1;
@@ -612,21 +627,23 @@ void AliFemtoK0Analysis::Exec(Option_t *)
      
     //Check for shared daughters, using v0 DCA to judge
     tempK0[v0Count].fSkipShared = kFALSE;
-    for(int iID = 0; iID<v0Count; iID++){
-     if(tempK0[iID].fSkipShared == kFALSE){
-      if(tempK0[iID].fDaughterID1 == prongTrackPos->GetID() || tempK0[iID].fDaughterID2 == prongTrackNeg->GetID()){
-        if(tempK0[iID].fV0Dca <= v0Dca){	//if old beats new
-         tempK0[v0Count].fSkipShared = kTRUE;	//skip new
-         break;					//no need to keep checking others
-        }
-        else{//new beats old
-	 tempK0[iID].fSkipShared = kTRUE;	//skip old	
-	 k0Count--;}				//subtract from number of K0s (new one will be added later, if it succeeds)
+    if(fMeritCase){
+     for(int iID = 0; iID<v0Count; iID++){
+      if(tempK0[iID].fSkipShared == kFALSE){
+       if(tempK0[iID].fDaughterID1 == prongTrackPos->GetID() || tempK0[iID].fDaughterID2 == prongTrackNeg->GetID()){
+         if(tempK0[iID].fV0Dca <= v0Dca){	//if old beats new
+          tempK0[v0Count].fSkipShared = kTRUE;	//skip new
+          break;					//no need to keep checking others
+         }
+         else{//new beats old
+	  tempK0[iID].fSkipShared = kTRUE;	//skip old	
+	  k0Count--;}				//subtract from number of K0s (new one will be added later, if it succeeds)
+       }
       }
      }
-    }
-    if(tempK0[v0Count].fSkipShared) continue;	
-										
+    if(tempK0[v0Count].fSkipShared) continue;
+    }//if MeritCase	 	
+									
     //load parameters into temporary class instance
     if(v0Count < kMaxNumK0)
     {
@@ -758,6 +775,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         //pt2 = (fEvt+evnum)->fK0Particle[j].fPt;
 
         pairPx = px1 + px2;
+
 	pairPy = py1 + py2;
 	pairPz = pz1 + pz2;
 	pairKt = sqrt(pairPx*pairPx + pairPy*pairPy)/2.;
