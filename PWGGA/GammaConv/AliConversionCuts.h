@@ -276,14 +276,16 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t fDoSharedElecCut; //
   UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
   TRandom3 fRandom; //
-  Int_t *fElectronLabelArray; // Array with elec/pos v0 label
+  Int_t fSizeElectronArray;
+  Int_t *fElectronLabelArray; //[fSizeElectronArray]
   Float_t fConversionPointXArray; // Array with conversion Point x
   Float_t fConversionPointYArray; // Array with conversion Point y
   Float_t fConversionPointZArray; // Array with conversion Point z
-  Int_t *fNotRejectedStart;
-  Int_t *fNotRejectedEnd;
-  TString *fGeneratorNames;
-  Int_t fnHeaders;
+  Int_t fnHeaders;  
+  Int_t *fNotRejectedStart; //[fnHeaders]
+  Int_t *fNotRejectedEnd; //[fnHeaders]
+  TString *fGeneratorNames; //[fnHeaders]
+  
 
 
   // Histograms
