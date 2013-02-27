@@ -156,7 +156,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   // Input slot #0 works with a TChain
 
   //======================================================correction
-  for (Int_t i=0; i<=kCENTRALITY; i++){
+  for (Int_t i=0; i<kCENTRALITY; i++){
     fHistMatrixCorrectionPlus[i] = NULL; 
     fHistMatrixCorrectionMinus[i] = NULL; 
   }
@@ -748,6 +748,11 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
     
     // Event Vertex MC
     if(gAnalysisLevel == "MC"){
+      if(!event) {
+	AliError("mcEvent not available");
+	return 0x0;
+      }
+      
       AliGenEventHeader *header = dynamic_cast<AliMCEvent*>(event)->GenEventHeader();
       if(header){  
 	TArrayF gVertexArray;
@@ -881,6 +886,11 @@ Double_t AliAnalysisTaskBFPsi::GetEventPlane(AliVEvent *event){
 
   //MC: from reaction plane
   if(gAnalysisLevel == "MC"){
+    if(!event) {
+      AliError("mcEvent not available");
+      return 0x0;
+    }
+
     if(dynamic_cast<AliMCEvent*>(event)){
       AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());    
       if (headerH) {
@@ -936,7 +946,7 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
   }
 
   Int_t gCentralityInt = 1;
-  for (Int_t i=0; i<=kCENTRALITY; i++){
+  for (Int_t i=0; i<kCENTRALITY; i++){
     if((centralityArrayForPbPb[i] <= gCentrality)&&(gCentrality <= centralityArrayForPbPb[i+1]))
       gCentralityInt = i;
   }
@@ -1231,7 +1241,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
   }// ESD analysis
 
   else if(gAnalysisLevel == "MC"){
-    
+    if(!event) {
+      AliError("mcEvent not available");
+      return 0x0;
+    }
+
     // Loop over tracks in event
     for (Int_t iTracks = 0; iTracks < dynamic_cast<AliMCEvent*>(event)->GetNumberOfPrimaries(); iTracks++) {
       AliMCParticle* track = dynamic_cast<AliMCParticle *>(event->GetTrack(iTracks));
