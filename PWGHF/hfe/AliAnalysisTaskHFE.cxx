@@ -99,7 +99,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fCollisionSystem(3)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
-  , fApplyCutAOD(kFALSE)
+  , fApplyCutAOD(kTRUE)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -165,7 +165,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fCollisionSystem(3)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
-  , fApplyCutAOD(kFALSE)
+  , fApplyCutAOD(kTRUE)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -425,6 +425,11 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH1F("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
   fQACollection->CreateTH1F("nElectron", "Number of electrons", 100, 0, 100);
   fQACollection->CreateTH2F("radius", "Production Vertex", 100, 0.0, 5.0, 100, 0.0, 5.0);
+
+  if(IsAODanalysis()){
+    fQACollection->CreateTH1F("Filterorigin","AOD filter of tracks at origin", 21,-1, 20);
+    fQACollection->CreateTH1F("Filterend","AOD filter of tracks after all cuts", 21, -1, 20);
+  }
  
   InitHistoITScluster();
   InitContaminationQA();
@@ -1472,6 +1477,14 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       }
     }
 
+    fQACollection->Fill("Filterorigin", -1);  
+    for(Int_t k=0; k<20; k++) {
+      Int_t u = 1<<k;
+      if((track->TestFilterBit(u))) {
+	      fQACollection->Fill("Filterorigin", k);
+      }
+    }
+
     if(fApplyCutAOD) {
       //printf("Apply cuts\n");
       // RecKine: ITSTPC cuts  
@@ -1479,14 +1492,14 @@ void AliAnalysisTaskHFE::ProcessAOD(){
 
       // Reject kink mother
       if(fRejectKinkMother) {
-	Bool_t kinkmotherpass = kTRUE;
-	for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
-	  if(track->GetID() == listofmotherkink[kinkmother]) {
-	    kinkmotherpass = kFALSE;
-	    continue;
-	  }
-	}
-	if(!kinkmotherpass) continue;
+	    Bool_t kinkmotherpass = kTRUE;
+	    for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
+	      if(track->GetID() == listofmotherkink[kinkmother]) {
+	        kinkmotherpass = kFALSE;
+	        continue;
+	      }
+	    }
+	    if(!kinkmotherpass) continue;
       }
       
       // RecPrim

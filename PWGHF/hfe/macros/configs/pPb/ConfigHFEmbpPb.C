@@ -1,4 +1,4 @@
-AliAnalysisTaskHFE* ConfigHFEmbpPb(Bool_t useMC, UChar_t TPCcl=70, UChar_t TPCclPID = 80, UChar_t ITScl=3, 
+AliAnalysisTaskHFE* ConfigHFEmbpPb(Bool_t useMC, Bool_t isAOD, UChar_t TPCcl=70, UChar_t TPCclPID = 80, UChar_t ITScl=3, 
 				    Double_t DCAxy=1000., Double_t DCAz=1000.,
 				    Double_t TPCs=0., Double_t TPCu=3.09, Double_t TOFs=3., Int_t TOFmis=0,
 				    Double_t IpSig=3., Bool_t prodcut = kFALSE, 
@@ -37,6 +37,7 @@ AliAnalysisTaskHFE* ConfigHFEmbpPb(Bool_t useMC, UChar_t TPCcl=70, UChar_t TPCcl
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetCutITSpixel(itshitpixel);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
+  if(isAOD) hfecuts->SetAODFilterBit(4);
   Bool_t ipCharge = kFALSE;
   if(IpSig<0)ipCharge = kTRUE;
 
@@ -123,7 +124,7 @@ AliAnalysisTaskHFE* ConfigHFEmbpPb(Bool_t useMC, UChar_t TPCcl=70, UChar_t TPCcl
 
   //task->SetApplypAVertexCut();
   
-  task->SetRemoveFirstEventInChunk();
+  if(!isAOD) task->SetRemoveFirstEventInChunk(); // Remove first event in chunk in case of ESD analysis
   //task->SetRemovePileUp(kTRUE);
   task->GetPIDQAManager()->SetHighResolutionHistos();
 
