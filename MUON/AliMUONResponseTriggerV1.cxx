@@ -292,10 +292,11 @@ void AliMUONResponseTriggerV1::SetHV()
       }
       
       Double_t deltaTime = timeend - timebegin;
-      Double_t meanVoltage = ( deltaTime > 0 ) ? 0. : voltage/deltaTime/1000.;
+      Double_t meanVoltage = ( deltaTime == 0. ) ? 0. : voltage/deltaTime/1000.;
       fHVvalues.AddAt(meanVoltage,18*iPlane+iRPC); //voltage in kV, not in V
       
       voltage=0;
+      AliDebug(1,Form("HV value for MTR_%s_MT%d_RPC%d_HV.vEff = %g (kV)",side.Data(),newPlane,newRPC,meanVoltage));
     }
   }
 }
