@@ -49,7 +49,9 @@ AliESDHeader::AliESDHeader() :
   fTriggerScalersDeltaRun(),
   fTriggerInputsNames(kNTriggerInputs),
   fCTPConfig(NULL),
-  fIRBufferArray()
+  fIRBufferArray(),
+  fIRInt2InteractionsMap(0),
+  fIRInt1InteractionsMap(0)
 {
   // default constructor
 
@@ -87,7 +89,9 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fTriggerScalersDeltaRun(header.fTriggerScalersDeltaRun),
   fTriggerInputsNames(TObjArray(kNTriggerInputs)),
   fCTPConfig(header.fCTPConfig),
-  fIRBufferArray()
+  fIRBufferArray(),
+  fIRInt2InteractionsMap(header.fIRInt2InteractionsMap),
+  fIRInt1InteractionsMap(header.fIRInt1InteractionsMap)
 {
   // copy constructor
   for(Int_t i = 0; i<kNMaxIR ; i++) {
@@ -125,6 +129,9 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fTriggerScalers = header.fTriggerScalers;
     fTriggerScalersDeltaEvent = header.fTriggerScalersDeltaEvent;
     fTriggerScalersDeltaRun = header.fTriggerScalersDeltaRun;
+    fIRInt2InteractionsMap = header.fIRInt2InteractionsMap;
+    fIRInt1InteractionsMap = header.fIRInt1InteractionsMap;
+
     delete fCTPConfig;
     fCTPConfig = header.fCTPConfig;
 
@@ -180,6 +187,10 @@ void AliESDHeader::Reset()
   fTriggerScalersDeltaEvent.Reset();
   fTriggerScalersDeltaRun.Reset();
   fTriggerInputsNames.Clear();
+
+  fIRInt2InteractionsMap.ResetAllBits();
+  fIRInt1InteractionsMap.ResetAllBits();
+
   delete fCTPConfig;
   fCTPConfig = 0;
   for(Int_t i=0;i<kNMaxIR;i++)if(fIRArray[i]){
@@ -466,4 +477,125 @@ TObjArray AliESDHeader::GetIRArray(Int_t int1, Int_t int2, Float_t deltaTime) co
     }//1
   
   return arr;
+}
+
+//__________________________________________________________________________
+void AliESDHeader::SetIRInteractionMap()
+{
+  //
+  // Function to compute the map of interations 
+  // within 0TVX (int2) or V0A&V0C (int1) and the Event Id 
+  // Note, the zero value is excluded
+  //
+  const AliTriggerIR *ir[5] = {GetTriggerIR(0),GetTriggerIR(1),GetTriggerIR(2),GetTriggerIR(3),GetTriggerIR(4)};
+
+  Long64_t orb = (Long64_t)GetOrbitNumber();
+  Long64_t bc = (Long64_t)GetBunchCrossNumber();
+  
+  Long64_t evId = orb*3564 + bc;
+
+  for(Int_t i = 0; i < 5; ++i) {
+    if (ir[i] == NULL || ir[i]->GetNWord() == 0) continue;
+    Long64_t irOrb = (Long64_t)ir[i]->GetOrbit();
+    Bool_t* int2 = ir[i]->GetInt2s();
+    Bool_t* int1 = ir[i]->GetInt1s();
+    UShort_t* bcs = ir[i]->GetBCs();
+    for(UInt_t nW = 0; nW < ir[i]->GetNWord(); ++nW) {
+      Long64_t intId = irOrb*3564 + (Long64_t)bcs[nW];
+      if (int2[nW] == kTRUE) {
+	  Int_t item = (intId-evId);
+	  Int_t bin = FindIRIntInteractionsBXMap(item);
+	  if(bin>=0) {
+	    fIRInt2InteractionsMap.SetBitNumber(bin,kTRUE);
+	  }
+      }
+      if (int1[nW] == kTRUE) {
+	  Int_t item = (intId-evId);
+	  Int_t bin = FindIRIntInteractionsBXMap(item);
+	  if(bin>=0) {
+	    fIRInt1InteractionsMap.SetBitNumber(bin,kTRUE);
+	  }
+      }
+    }
+  }
+
+  fIRInt2InteractionsMap.Compact();
+  fIRInt1InteractionsMap.Compact();
+}
+
+//__________________________________________________________________________
+Int_t AliESDHeader::FindIRIntInteractionsBXMap(Int_t difference)
+{
+  //
+  // The mapping is of 181 bits, from -90 to +90
+  //
+  Int_t bin=-1;
+
+  if(difference<-90 || difference>90) return bin;
+  else { bin = 90 + difference; }
+  
+  return bin;
+}
+
+//__________________________________________________________________________
+Int_t AliESDHeader::GetIRInt2ClosestInteractionMap()
+{
+  //
+  // Calculation of the closest interaction
+  //
+  SetIRInteractionMap();
+
+  Int_t firstNegative=100;
+  for(Int_t item=-1; item>=-90; item--) {
+    Int_t bin = FindIRIntInteractionsBXMap(item);
+    Bool_t isFired = fIRInt2InteractionsMap.TestBitNumber(bin);
+    if(isFired) {
+      firstNegative = item;
+      break;
+    }
+  }
+  Int_t firstPositive=100;
+  for(Int_t item=1; item<=90; item++) {
+    Int_t bin = FindIRIntInteractionsBXMap(item);
+    Bool_t isFired = fIRInt2InteractionsMap.TestBitNumber(bin);
+    if(isFired) {
+      firstPositive = item;
+      break;
+    }
+  }
+
+  Int_t closest = firstPositive < TMath::Abs(firstNegative) ? firstPositive : TMath::Abs(firstNegative);
+  if(firstPositive==100 && firstNegative==100) closest=0;
+  return closest;
+}
+
+//__________________________________________________________________________
+Int_t  AliESDHeader::GetIRInt2LastInteractionMap()
+{
+  //
+  // Calculation of the last interaction
+  //
+  SetIRInteractionMap();
+
+  Int_t lastNegative=0;
+  for(Int_t item=-90; item<=-1; item++) {
+    Int_t bin = FindIRIntInteractionsBXMap(item);
+    Bool_t isFired = fIRInt2InteractionsMap.TestBitNumber(bin);
+    if(isFired) {
+      lastNegative = item;
+      break;
+    }
+  }
+  Int_t lastPositive=0;
+  for(Int_t item=90; item>=1; item--) {
+    Int_t bin = FindIRIntInteractionsBXMap(item);
+    Bool_t isFired = fIRInt2InteractionsMap.TestBitNumber(bin);
+    if(isFired) {
+      lastPositive = item;
+      break;
+    }
+  }
+
+  Int_t last = lastPositive > TMath::Abs(lastNegative) ? lastPositive : TMath::Abs(lastNegative);
+  return last;
 }

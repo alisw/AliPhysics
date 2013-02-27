@@ -14,6 +14,7 @@
 
 #include <TObjArray.h>
 #include <TClonesArray.h>
+#include <TBits.h>
 #include "AliVHeader.h"
 #include "AliTriggerScalersESD.h"
 #include "AliTriggerScalersRecordESD.h"
@@ -62,6 +63,12 @@ public:
   TString     GetFiredTriggerInputs() const;
   Bool_t      IsTriggerInputFired(const char *name) const;
   const AliTriggerConfiguration*  GetCTPConfig() const { return fCTPConfig;}
+  void   SetIRInteractionMap();
+  Int_t  FindIRIntInteractionsBXMap(Int_t difference);
+  TBits  GetIRInt2InteractionMap() { SetIRInteractionMap(); return fIRInt2InteractionsMap; }
+  TBits  GetIRInt1InteractionMap() { SetIRInteractionMap(); return fIRInt1InteractionsMap; }
+  Int_t  GetIRInt2ClosestInteractionMap();
+  Int_t  GetIRInt2LastInteractionMap();
 //**************************************************************************
 
   ULong64_t GetTriggerMask() const {return fTriggerMask;}
@@ -104,10 +111,11 @@ private:
   TObjArray    fTriggerInputsNames;// Array of TNamed of the active trigger inputs (L0,L1 and L2)
   AliTriggerConfiguration*  fCTPConfig; // Trigger configuration for the run
   TObjArray    fIRBufferArray;// Array with interaction records before and after triggered event
+  TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId within -90 +90 BXs
+  TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId within -90 +90 BXs
 
 
-
-  ClassDef(AliESDHeader,10)
+  ClassDef(AliESDHeader,11)
 };
 
 #endif

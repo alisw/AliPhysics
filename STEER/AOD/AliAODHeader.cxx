@@ -67,7 +67,9 @@ AliAODHeader::AliAODHeader() :
   fL2TriggerInputs(0),
   fTPConlyRefMult(-1), 
   fCentralityP(0),
-  fEventplaneP(0)
+  fEventplaneP(0),
+  fIRInt2InteractionsMap(0),
+  fIRInt1InteractionsMap(0)
 {
   // default constructor
 
@@ -126,7 +128,9 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fL2TriggerInputs(0),
   fTPConlyRefMult(-1), 
   fCentralityP(0),
-  fEventplaneP(0)
+  fEventplaneP(0),
+  fIRInt2InteractionsMap(0),
+  fIRInt1InteractionsMap(0)
 {
   // constructor
 
@@ -204,7 +208,9 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fL2TriggerInputs(0),
   fTPConlyRefMult(-1), 
   fCentralityP(0),
-  fEventplaneP(0)
+  fEventplaneP(0),
+  fIRInt2InteractionsMap(0),
+  fIRInt1InteractionsMap(0)
 {
   // constructor
 
@@ -269,7 +275,9 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fL2TriggerInputs(hdr.fL2TriggerInputs),
   fTPConlyRefMult(hdr.fTPConlyRefMult), 
   fCentralityP(new AliCentrality(*hdr.fCentralityP)),
-  fEventplaneP(new AliEventplane(*hdr.fEventplaneP))
+  fEventplaneP(new AliEventplane(*hdr.fEventplaneP)),
+  fIRInt2InteractionsMap(hdr.fIRInt2InteractionsMap),
+  fIRInt1InteractionsMap(hdr.fIRInt1InteractionsMap)
 {
   // Copy constructor.
   
@@ -342,6 +350,9 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fL1TriggerInputs    = hdr.fL1TriggerInputs;
     fL2TriggerInputs    = hdr.fL2TriggerInputs;
     fTPConlyRefMult     = hdr.fTPConlyRefMult;
+
+    fIRInt2InteractionsMap  = hdr.fIRInt2InteractionsMap;
+    fIRInt1InteractionsMap  = hdr.fIRInt1InteractionsMap;
 
     if(hdr.fEventplaneP){
       if(fEventplaneP)*fEventplaneP = *hdr.fEventplaneP;
@@ -488,4 +499,77 @@ void AliAODHeader::Print(Option_t* /*option*/) const
   printf("\n");
 
   return;
+}
+
+//__________________________________________________________________________
+Int_t AliAODHeader::FindIRIntInteractionsBXMap(Int_t difference)
+{
+  //
+  // The mapping is of 181 bits, from -90 to +90
+  //
+  Int_t bin=-1;
+
+  if(difference<-90 || difference>90) return bin;
+  else { bin = 90 + difference; }
+  
+  return bin;
+}
+
+//__________________________________________________________________________
+Int_t AliAODHeader::GetIRInt2ClosestInteractionMap()
+{
+  //
+  // Calculation of the closest interaction
+  //
+  Int_t firstNegative=100;
+  for(Int_t item=-1; item>=-90; item--) {
+    Int_t bin = FindIRIntInteractionsBXMap(item);
+    Bool_t isFired = fIRInt2InteractionsMap.TestBitNumber(bin);
+    if(isFired) {
+      firstNegative = item;
+      break;
+    }
+  }
+  Int_t firstPositive=100;
+  for(Int_t item=1; item<=90; item++) {
+    Int_t bin = FindIRIntInteractionsBXMap(item);
+    Bool_t isFired = fIRInt2InteractionsMap.TestBitNumber(bin);
+    if(isFired) {
+      firstPositive = item;
+      break;
+    }
+  }
+
+  Int_t closest = firstPositive < TMath::Abs(firstNegative) ? firstPositive : TMath::Abs(firstNegative);
+  if(firstPositive==100 && firstNegative==100) closest=0;
+  return closest;
+}
+
+//__________________________________________________________________________
+Int_t AliAODHeader::GetIRInt2LastInteractionMap()
+{
+  //
+  // Calculation of the last interaction
+  //
+  Int_t lastNegative=0;
+  for(Int_t item=-90; item<=-1; item++) {
+    Int_t bin = FindIRIntInteractionsBXMap(item);
+    Bool_t isFired = fIRInt2InteractionsMap.TestBitNumber(bin);
+    if(isFired) {
+      lastNegative = item;
+      break;
+    }
+  }
+  Int_t lastPositive=0;
+  for(Int_t item=90; item>=1; item--) {
+    Int_t bin = FindIRIntInteractionsBXMap(item);
+    Bool_t isFired = fIRInt2InteractionsMap.TestBitNumber(bin);
+    if(isFired) {
+      lastPositive = item;
+      break;
+    }
+  }
+
+  Int_t last = lastPositive > TMath::Abs(lastNegative) ? lastPositive : TMath::Abs(lastNegative);
+  return last;
 }

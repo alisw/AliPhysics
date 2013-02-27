@@ -15,6 +15,7 @@
 #include "AliVHeader.h"
 #include "AliAODVertex.h"
 #include <TString.h>
+#include <TBits.h>
 #include "AliCentrality.h"
 #include "AliEventplane.h"
 
@@ -187,6 +188,13 @@ class AliAODHeader : public AliVHeader {
   void       SetT0spread(Int_t i, Float_t t) {
     if ((i>=0)&&(i<kT0SpreadSize)) fT0spread[i]=t;}
 
+  Int_t  FindIRIntInteractionsBXMap(Int_t difference);
+  void   SetIRInt2InteractionMap(TBits bits) { fIRInt2InteractionsMap = bits; }
+  void   SetIRInt1InteractionMap(TBits bits) { fIRInt1InteractionsMap = bits; }
+  TBits  GetIRInt2InteractionMap() { return fIRInt2InteractionsMap; }
+  TBits  GetIRInt1InteractionMap() { return fIRInt1InteractionsMap; }
+  Int_t  GetIRInt2ClosestInteractionMap();
+  Int_t  GetIRInt2LastInteractionMap();
   
  private :
   
@@ -235,7 +243,9 @@ class AliAODHeader : public AliVHeader {
   AliEventplane* fEventplaneP;	    // Pointer to full event plane information
   Float_t     fVZEROEqFactors[64];  // V0 channel equalization factors for event-plane reconstruction
   Float_t     fT0spread[kT0SpreadSize]; // spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
-  ClassDef(AliAODHeader, 20);
+  TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
+  TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
+  ClassDef(AliAODHeader, 21);
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 

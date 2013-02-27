@@ -402,6 +402,9 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   header->SetZDCN2Energy(esd.GetZDCN2Energy());
   header->SetZDCP2Energy(esd.GetZDCP2Energy());
   header->SetZDCEMEnergy(esd.GetZDCEMEnergy(0),esd.GetZDCEMEnergy(1));
+
+  header->SetIRInt2InteractionMap(esd.GetHeader()->GetIRInt2InteractionMap());
+  header->SetIRInt1InteractionMap(esd.GetHeader()->GetIRInt1InteractionMap());
   
   // ITS Cluster Multiplicty
   const AliMultiplicity *mult = esd.GetMultiplicity();
