@@ -92,12 +92,16 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
 
    Int_t eventQuality = ((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetEventQuality();
-   if(eventQuality != 0){// Event Not Accepted
+	if(eventQuality != 0){// Event Not Accepted
       return;
    }
    fESDEvent = (AliESDEvent*) InputEvent();
    if(fIsHeavyIon && !fConversionCuts->IsCentralitySelected(fESDEvent)) return;
-	Int_t nESDtracks = CountESDTracks(); // Estimate Event Multiplicity
+	Int_t nESDtracksEta09 = CountESDTracks09(); // Estimate Event Multiplicity
+	Int_t nESDtracksEta0914 = CountESDTracks0914(); // Estimate Event Multiplicity
+	//	Int_t nESDtracksEta14 = CountESDTracks14(); // Estimate Event Multiplicity
+	Int_t nESDtracksEta14; // Estimate Event Multiplicity
+  nESDtracksEta14= nESDtracksEta09 + nESDtracksEta0914;
 	Int_t nContrVtx;
 	if(fESDEvent){
 		if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors()>0) {
@@ -111,13 +115,15 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
 			}
 		}
    }
-	Int_t primVtxZ = fESDEvent->GetPrimaryVertex()->GetZ();
+	Float_t primVtxZ = fESDEvent->GetPrimaryVertex()->GetZ();
 	
 	if (fStreamMaterial){
 		(*fStreamMaterial)<<"Event"
 						<< "primVtxZ=" << primVtxZ
 						<< "nContrVtx=" << nContrVtx
-						<< "nGoodTracks=" << nESDtracks
+						<< "nGoodTracksEta09=" << nESDtracksEta09
+						<< "nGoodTracksEta0914=" << nESDtracksEta0914
+						<< "nGoodTracksEta14=" << nESDtracksEta14
 						<< "\n";
 	}
 	
@@ -132,6 +138,55 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
    PostData(1, fOutputList);
 }
 
+///________________________________________________________________________
+void AliAnalysisTaskMaterial::FillMCTree(Int_t stackPos){
+	AliStack *MCStack = fMCEvent->Stack();
+	TParticle* candidate = (TParticle *)MCStack->Particle(stackPos);
+	if(fConversionCuts->PhotonIsSelectedMC(candidate,MCStack,kFALSE)){
+		Float_t gammaPt = candidate->Pt();
+		Float_t gammaTheta = candidate->Theta();
+		if (fStreamMaterial){
+			(*fStreamMaterial)<<"AllGamma"
+							<< "pt=" << gammaPt
+// 							<< "p=" << gammaP
+							<< "theta=" << gammaTheta
+							<< "\n";
+		}	
+	}
+	if(fConversionCuts->PhotonIsSelectedMC(candidate,MCStack,kTRUE)){
+		Float_t gammaPt = candidate->Pt();
+		Float_t gammaTheta = candidate->Theta();
+		TParticle* daughter1 = (TParticle *)MCStack->Particle(candidate->GetFirstDaughter()); 
+		TParticle* daughter2 = (TParticle *)MCStack->Particle(candidate->GetLastDaughter()); 
+		TVectorF coord(5);	
+		coord(0) = daughter1->Vx();
+		coord(1) = daughter1->Vy();
+		coord(2) = daughter1->Vz();
+		coord(3) = daughter1->R();
+		coord(4) = candidate->Phi();
+		TVectorF daughterProp(4);	
+		if (daughter1->	GetPdgCode() < 0){
+			daughterProp(0) = daughter2->Pt();
+			daughterProp(1) = daughter2->Theta();
+			daughterProp(2) = daughter1->Pt();
+			daughterProp(3) = daughter1->Theta();
+		} else {
+			daughterProp(0) = daughter1->Pt();
+			daughterProp(1) = daughter1->Theta();
+			daughterProp(2) = daughter2->Pt();
+			daughterProp(3) = daughter2->Theta();
+		}
+		if (fStreamMaterial){
+			(*fStreamMaterial)<<"ConvGammaMC"
+							<< "pt=" << gammaPt
+// 							<< "p=" << gammaP
+ 							<< "theta=" << gammaTheta
+							<< "coord.=" << &coord
+							<< "daughterProp.=" << &daughterProp
+							<< "\n";
+		}
+	} // Converted MC Gamma		
+}
 
 ///________________________________________________________________________
 void AliAnalysisTaskMaterial::ProcessMCPhotons(){
@@ -140,42 +195,14 @@ void AliAnalysisTaskMaterial::ProcessMCPhotons(){
 	for(Int_t i = 0; i < ffMCStack->GetNprimary(); i++) {
 		TParticle* particle = (TParticle *)ffMCStack->Particle(i);
 		if (!particle) continue;		
-		if(fConversionCuts->PhotonIsSelectedMC(particle,ffMCStack,kFALSE)){
-			Float_t gammaPt = particle->Pt();
-			Float_t gammaP = particle->P();
-			Float_t gammaEta = particle->Eta();
-			if (fStreamMaterial){
-				(*fStreamMaterial)<<"AllGamma"
-								<< "pt=" << gammaPt
-								<< "p=" << gammaP
-								<< "eta=" << gammaEta
-								<< "\n";
-			}	
-		}
-		if(fConversionCuts->PhotonIsSelectedMC(particle,ffMCStack,kTRUE)){
-			Float_t gammaPt = particle->Pt();
-			Float_t gammaP = particle->P();
-			Float_t gammaEta = particle->Eta();
-			TParticle* daughter = (TParticle *)ffMCStack->Particle(particle->GetFirstDaughter());
-			Float_t gammaX = daughter->Vx();
-			Float_t gammaY =  daughter->Vy();
-			Float_t gammaZ = daughter->Vz();
-			Float_t gammaR = daughter->R();
-			Float_t gammaPhi = particle->Phi();
-			
-			if (fStreamMaterial){
-				(*fStreamMaterial)<<"ConvGammaMC"
-								<< "pt=" << gammaPt
-								<< "p=" << gammaP
-								<< "eta=" << gammaEta
-								<< "X=" << gammaX
-								<< "Y=" << gammaY
-								<< "Z=" << gammaZ
-								<< "R=" << gammaR
-								<< "Phi=" << gammaPhi
-								<< "\n";
+		if (particle->GetPdgCode() == 111 && particle->GetFirstDaughter() >= ffMCStack->GetNprimary()){
+// 			cout << "Undecayed pi0 found with mother: " << particle->GetMother(0) << endl;
+			for (Int_t j = 0; j < 2 ; j++){
+ 				FillMCTree(particle->GetDaughter(j));
 			}
-		} // Converted MC Gamma
+		} else {
+			FillMCTree(i);
+		}	
 	}	
 }
 
@@ -188,14 +215,30 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
       if(!fConversionCuts->PhotonIsSelected(gamma,fESDEvent)) continue;
 // 		cout << "i=  " <<firstGammaIndex << " of "<< fConversionGammas->GetEntriesFast() << endl;
       Float_t gammaPt = gamma->GetPhotonPt();
-		Float_t gammaP = gamma->GetPhotonP();
+// 		Float_t gammaP = gamma->GetPhotonP();
+		Float_t gammaTheta = gamma->GetPhotonTheta();
 		Float_t gammaEta = gamma->GetPhotonEta();
 		Float_t gammaChi2NDF = gamma->GetChi2perNDF();
-		Float_t gammaX = gamma->GetConversionX();
-		Float_t gammaY = gamma->GetConversionY();
-		Float_t gammaZ = gamma->GetConversionZ();
+// 		Float_t gammaX = gamma->GetConversionX();
+// 		Float_t gammaY = gamma->GetConversionY();
+ 		Float_t gammaZ = gamma->GetConversionZ();
       Float_t gammaR = gamma->GetConversionRadius();
-		Float_t gammaPhi = gamma->GetPhotonPhi();
+ 		Float_t gammaPhi = gamma->GetPhotonPhi();
+		
+		TVectorF coord(5);	
+		coord(0) = gamma->GetConversionX();
+		coord(1) = gamma->GetConversionY();
+		coord(2) = gamma->GetConversionZ();
+		coord(3) = gamma->GetConversionRadius();
+		coord(4) = gamma->GetPhotonPhi();
+		TVectorF daughterProp(4);	
+		AliESDtrack * negTrack = fConversionCuts->GetESDTrack(fESDEvent, gamma->GetTrackLabelNegative());
+      AliESDtrack * posTrack = fConversionCuts->GetESDTrack(fESDEvent, gamma->GetTrackLabelPositive());
+		daughterProp(0) = posTrack->Pt();
+      daughterProp(1) = posTrack->Theta();
+      daughterProp(2) = negTrack->Pt();
+      daughterProp(3) = negTrack->Theta();
+				
 		UInt_t kind = 9;
 		if(fMCEvent){
 // 			cout << "generating MC stack"<< endl;
@@ -247,12 +290,13 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 					kind = 2; // combinatorics from hadronic decays
 				else if ( !(pdgCodeNeg==pdgCodePos)){
 					TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCStack);
+					Int_t motherLabelPhoton = truePhotonCanditate->GetMother(0);
 					if(pdgCode == 111) 
 						kind = 3; // pi0 Dalitz
 					else if (pdgCode == 221) 
 						kind = 4; // eta Dalitz
 					else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
-						if(pdgCode == 22 && negDaughter->GetMother(0) <= fMCStack->GetNprimary()){
+						if(pdgCode == 22 && motherLabelPhoton < fMCStack->GetNprimary()){
 							kind = 0; // primary photons
 						} else if (pdgCode == 22){
 							kind = 5; //secondary photons
@@ -287,29 +331,21 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 			if (fStreamMaterial){
 				(*fStreamMaterial)<<"ConvPointRec"
 								<< "pt=" << gammaPt
-								<< "p=" << gammaP
-								<< "eta=" << gammaEta
+								<< "theta=" << gammaTheta
 								<< "chi2ndf=" << gammaChi2NDF
 								<< "kind=" << kind
-								<< "X=" << gammaX
-								<< "Y=" << gammaY
-								<< "Z=" << gammaZ
-								<< "R=" << gammaR
-								<< "Phi=" << gammaPhi
+								<< "coord.=" << &coord
+								<< "daughterProp.=" << &daughterProp
 								<< "\n";
 			}		
 		} else {
 				if (fStreamMaterial){
 				(*fStreamMaterial)<<"ConvPointRec"
 								<< "pt=" << gammaPt
-								<< "p=" << gammaP
-								<< "eta=" << gammaEta
+								<< "theta=" << gammaTheta
 								<< "chi2ndf=" << gammaChi2NDF
-								<< "X=" << gammaX
-								<< "Y=" << gammaY
-								<< "Z=" << gammaZ
-								<< "R=" << gammaR
-								<< "Phi=" << gammaPhi
+								<< "coord.=" << &coord
+								<< "daughterProp.=" << &daughterProp
 								<< "\n";
 			}
 		}
@@ -317,14 +353,66 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMaterial::CountESDTracks(){
+Int_t AliAnalysisTaskMaterial::CountESDTracks09(){
 
    AliESDtrackCuts *EsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
    // Using standard function for setting Cuts
    Bool_t selectPrimaries=kTRUE;
    EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
    EsdTrackCuts->SetMaxDCAToVertexZ(2);
-   EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+   EsdTrackCuts->SetEtaRange(-0.9, 0.9);
+   EsdTrackCuts->SetPtRange(0.15);
+
+   Int_t fNumberOfESDTracks = 0;
+   for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = fESDEvent->GetTrack(iTracks);
+      if(!curTrack) continue;
+      if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTracks++;
+   }
+   delete EsdTrackCuts;
+   EsdTrackCuts=0x0;
+
+   return fNumberOfESDTracks;
+}
+
+Int_t AliAnalysisTaskMaterial::CountESDTracks0914(){
+
+   AliESDtrackCuts *EsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+   // Using standard function for setting Cuts ; We use TPCOnlyTracks for outer eta region
+   Bool_t selectPrimaries=kTRUE;
+	 //   EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+   EsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+	 EsdTrackCuts->SetMaxDCAToVertexXY(5);
+	 //	 EsdTrackCuts->SetMaxDCAToVertexXYPtDep("sqrt(0.15^2+(0.4/pt)^2");
+   EsdTrackCuts->SetEtaRange(0.9, 1.4);
+   EsdTrackCuts->SetPtRange(0.15);
+
+   Int_t fNumberOfESDTracks = 0;
+   for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = fESDEvent->GetTrack(iTracks);
+      if(!curTrack) continue;
+      if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTracks++;
+   }
+   EsdTrackCuts->SetEtaRange(-1.4, -0.9);
+   for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = fESDEvent->GetTrack(iTracks);
+      if(!curTrack) continue;
+      if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTracks++;
+   }
+   delete EsdTrackCuts;
+   EsdTrackCuts=0x0;
+
+   return fNumberOfESDTracks;
+}
+
+Int_t AliAnalysisTaskMaterial::CountESDTracks14(){
+
+   AliESDtrackCuts *EsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+   // Using standard function for setting Cuts
+   Bool_t selectPrimaries=kTRUE;
+   EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+   EsdTrackCuts->SetMaxDCAToVertexZ(2);
+   EsdTrackCuts->SetEtaRange(-1.4, 1.4);
    EsdTrackCuts->SetPtRange(0.15);
 
    Int_t fNumberOfESDTracks = 0;

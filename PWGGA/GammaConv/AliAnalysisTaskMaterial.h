@@ -39,7 +39,10 @@ private:
 
     void ProcessPhotons();
 	 void ProcessMCPhotons();
-	 Int_t CountESDTracks();
+	 void FillMCTree(Int_t stackPos);
+	 Int_t CountESDTracks14();
+	 Int_t CountESDTracks0914();
+	 Int_t CountESDTracks09();
 	 
     AliV0ReaderV1 *fV0Reader;
     TClonesArray *fConversionGammas; //Reconstructed Photons;

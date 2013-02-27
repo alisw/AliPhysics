@@ -297,11 +297,11 @@ void AliAnalysisTaskGammaConvDalitzV1::InitBack(){
       fBackList[iCut]->Add(sESDMotherBackInvMassPtZM[iCut]);
 
       if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseTrackMultiplicity()){
-         fBGHandler[iCut] = new AliGammaConversionAODBGHandler(9,6,((AliConversionMesonCuts*)fCutGammaArray->At(iCut))->NumberOfBGEvents());
+         fBGHandler[iCut] = new AliGammaConversionAODBGHandler(9,6,((AliConversionMesonCuts*)fCutGammaArray->At(iCut))->GetNumberOfBGEvents());
          fBGHandler[iCut]->Initialize(zBinLimitsArray, multiplicityBinLimitsArrayTracks);
       }
       else{
-         fBGHandler[iCut] = new AliGammaConversionAODBGHandler(9,5,((AliConversionMesonCuts*)fCutGammaArray->At(iCut))->NumberOfBGEvents());
+         fBGHandler[iCut] = new AliGammaConversionAODBGHandler(9,5,((AliConversionMesonCuts*)fCutGammaArray->At(iCut))->GetNumberOfBGEvents());
          fBGHandler[iCut]->Initialize(zBinLimitsArray, multiplicityBinLimitsArrayV0s);
       }
    }
@@ -854,7 +854,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
                } else {
                   mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGoodGammas->GetEntries());
                }
-               Double_t sparesFill[4] = {pi0cand->M(),pi0cand->Pt(),zbin,mbin};
+               Double_t sparesFill[4] = {pi0cand->M(),pi0cand->Pt(),(Double_t)zbin,(Double_t)mbin};
                sESDMotherInvMassPtZM[fiCut]->Fill(sparesFill,1);
                if(fMCEvent){
                   ProcessTrueMesonCandidates(pi0cand,gamma,Vgamma);
@@ -911,7 +911,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculateBackground(){
                   AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
                   if( ( ((AliConversionMesonCuts*)fCutMesonArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE) ) ){
                      hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
-                     Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),zbin,mbin};
+                     Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
                      sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
                   }
                   delete backgroundCandidate;
@@ -941,7 +941,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculateBackground(){
 
                      if((((AliConversionMesonCuts*)fCutMesonArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE))){
                         hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
-                        Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),zbin,mbin};
+                        Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
                         sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
                      }
                      delete backgroundCandidate;
@@ -969,7 +969,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculateBackground(){
                   if((((AliConversionMesonCuts*)fCutMesonArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE))){
 
                      hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
-                     Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),zbin,mbin};
+                     Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
                      sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
                   }
                   delete backgroundCandidate;

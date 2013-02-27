@@ -85,6 +85,7 @@ class AliConversionPhotonBase {
   virtual Double_t GetPhotonP() const = 0;
   virtual Double_t GetPhotonEta() const = 0;
   virtual Double_t GetPhotonPhi() const =0;
+//  virtual Double_t GetPhotonTheta() const =0;
   virtual Double_t GetPx() const = 0;
   virtual Double_t GetPy() const = 0;
   virtual Double_t GetPz() const = 0;

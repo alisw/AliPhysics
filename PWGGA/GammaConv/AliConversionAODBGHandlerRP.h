@@ -5,6 +5,7 @@
 #include "TObject.h"
 #include "AliAODConversionPhoton.h"
 #include "TObjArray.h"
+#include "TList.h"
 using namespace std;
 
 typedef vector<AliAODConversionPhoton*> AliGammaConversionPhotonVector;   // Vector containing photons
@@ -25,12 +26,16 @@ public:
     Int_t GetMultiplicityBinIndex(Int_t mult) const;
     void Initialize();
     Bool_t FindBins(TObjArray * const eventGammas,AliVEvent *fInputEvent,Int_t &zbin,Int_t &mbin);
+    Bool_t FindBins(TList * const eventGammas,AliVEvent *fInputEvent,Int_t &zbin,Int_t &mbin);
 
  
     AliGammaConversionPhotonVector* GetBGGoodGammas(TObjArray * const eventGammas,AliVEvent *fInputEvent,Int_t event);
+    AliGammaConversionPhotonVector* GetBGGoodGammas(TList * const eventGammas,AliVEvent *fInputEvent,Int_t event);
     void AddEvent(TObjArray * const eventGammas,AliVEvent *fInputEvent);
+    void AddEvent(TList * const eventGammas,AliVEvent *fInputEvent);
     Int_t GetNBGEvents()const {return fNEvents;} // Size of the Pool (20)
     Int_t GetNBGEvents(TObjArray * const eventGammas,AliVEvent *fInputEvent);
+    Int_t GetNBGEvents(TList * const eventGammas,AliVEvent *fInputEvent);
     Int_t GetNZBins()const{return fNBinsZ;};
     Int_t GetNMultiplicityBins()const{return fNBinsMultiplicity;};
 

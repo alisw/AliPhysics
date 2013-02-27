@@ -656,18 +656,18 @@ Bool_t AliAnalysisTaskGammaConversion::DoEventSelection() {
 		for(Int_t iC = 0; iC < 32; ++iC) {
 			if (fV0Reader->GetESDEvent()->GetVZEROData()->BBTriggerV0C(iC)) hitsC++;
 		}
-    if (fSelectV0AND==2 ){
-			if (hitsA<2 || hitsC<2) {
-				eventQuality=5;
-				fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-				if(fDoMCTruth){
-					if(!fV0Reader->GetIsHeavyIon()){
-						CheckMesonProcessTypeEventQuality(eventQuality);
-					}
-				}
-
-				return kFALSE;
-			}
+                if (fSelectV0AND==2 ){
+                   if (hitsA<2 || hitsC<2) {
+                      eventQuality=5;
+                      fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+                      if(fDoMCTruth){
+                         if(!fV0Reader->GetIsHeavyIon()){
+                            CheckMesonProcessTypeEventQuality(eventQuality);
+                         }
+                      }
+                      
+                      return kFALSE;
+                   }
 		}
 		if (fSelectV0AND==3 ){
 			if (hitsA>=2 && hitsC>=2) {
