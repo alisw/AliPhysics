@@ -54,6 +54,8 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
         ,fEMinCorrection(1.0/0.687)
 	,fRecEffCorrection(1.0)
 	,fClusterPosition(0)
+	,fClusterEnergy(0)
+	,fClusterEt(0)
 	,fHistChargedEnergyRemoved(0)
 	,fHistNeutralEnergyRemoved(0)
 	,fHistGammaEnergyAdded(0)
@@ -72,6 +74,8 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
 
     delete fHistRemovedEnergy; // removed energy
     delete fClusterPosition;
+    delete fClusterEnergy;
+    delete fClusterEt;
     delete fHistChargedEnergyRemoved;
     delete fHistNeutralEnergyRemoved;
     delete fHistGammaEnergyAdded;
@@ -227,6 +231,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    TVector3 p2(pos);
 	    
 	    fClusterPosition->Fill(p2.Phi(), p2.PseudoRapidity());
+	    fClusterEnergy->Fill(cluster->E());
+	    fClusterEt->Fill(TMath::Sin(p2.Theta())*cluster->E());
 
 	    fTotNeutralEt += CorrectForReconstructionEfficiency(*cluster);
             fNeutralMultiplicity++;
@@ -321,6 +327,8 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
 
     list->Add(fHistRemovedEnergy);
     list->Add(fClusterPosition);
+    list->Add(fClusterEnergy);
+    list->Add(fClusterEt);
     
     list->Add(fHistChargedEnergyRemoved);
     list->Add(fHistNeutralEnergyRemoved);
@@ -336,11 +344,11 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     Double_t maxEt = 10;
 
     // possibly change histogram limits
-    if (fCuts) {
-        nbinsEt = fCuts->GetHistNbinsParticleEt();
-        minEt = fCuts->GetHistMinParticleEt();
-        maxEt = fCuts->GetHistMaxParticleEt();
-    }
+//     if (fCuts) {
+//         nbinsEt = fCuts->GetHistNbinsParticleEt();
+//         minEt = fCuts->GetHistMinParticleEt();
+//         maxEt = fCuts->GetHistMaxParticleEt();
+//     }
 
     TString histname;
     histname = "fHistChargedPionEnergyDeposit" + fHistogramNameSuffix;
@@ -378,6 +386,15 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fClusterPosition->SetXTitle("Energy deposited in calorimeter");
     fClusterPosition->SetYTitle("Energy of track");
 
+    histname = "fClusterEnergy" + fHistogramNameSuffix;
+    fClusterEnergy = new TH1F(histname.Data(), histname.Data(), 100, 0, 5);
+    fClusterEnergy->SetXTitle("Number of clusters");
+    fClusterEnergy->SetYTitle("Energy of cluster");
+
+    histname = "fClusterEt" + fHistogramNameSuffix;
+    fClusterEt = new TH1F(histname.Data(), histname.Data(), 100, 0, 5);
+    fClusterEt->SetXTitle("Number of clusters");
+    fClusterEt->SetYTitle("E_{T} of cluster");
 
     histname = "fHistChargedEnergyRemoved" + fHistogramNameSuffix;
     fHistChargedEnergyRemoved = new TH2D(histname.Data(), histname.Data(), 1000, .0, 30, 100, -0.5 , 99.5);
