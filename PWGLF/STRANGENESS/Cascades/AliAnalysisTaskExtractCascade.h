@@ -80,8 +80,8 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
   Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
 
-	Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
-	Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
+	//Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
+	//Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
 
 //===========================================================================================
 //   Variables for tree, cascades
