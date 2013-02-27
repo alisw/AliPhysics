@@ -52,7 +52,7 @@ AliAODCaloCells::AliAODCaloCells(const AliAODCaloCells& cells) :
   fCellNumber = new Short_t[fNCells];
   fAmplitude  = new Double32_t[fNCells]; 
   fTime       = new Double32_t[fNCells]; 
-  fMCLabel    = new Short_t[fNCells]; 
+  fMCLabel    = new Int_t[fNCells]; 
   fEFraction  = new Double32_t[fNCells]; 
 
   for (Int_t i = 0; i < fNCells; i++) {
@@ -85,14 +85,14 @@ AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& source)
       fCellNumber = new Short_t[fNCells];
       fAmplitude  = new Double32_t[fNCells];
       fTime       = new Double32_t[fNCells];
-      fMCLabel    = new Short_t[fNCells];
+      fMCLabel    = new Int_t[fNCells];
       fEFraction  = new Double32_t[fNCells];
     }
     
     memcpy(fCellNumber,source.fCellNumber, fNCells*sizeof(Short_t));
     memcpy(fAmplitude, source.fAmplitude,  fNCells*sizeof(Double32_t));
     if(source.fTime      && fTime)      memcpy(fTime,      source.fTime,      fNCells*sizeof(Double32_t));
-    if(source.fMCLabel   && fMCLabel)   memcpy(fMCLabel,   source.fMCLabel,   fNCells*sizeof(Short_t));
+    if(source.fMCLabel   && fMCLabel)   memcpy(fMCLabel,   source.fMCLabel,   fNCells*sizeof(Int_t));
     if(source.fEFraction && fEFraction) memcpy(fEFraction, source.fEFraction, fNCells*sizeof(Double32_t));
 
     fIsSorted = source.fIsSorted;
@@ -184,7 +184,7 @@ void AliAODCaloCells::CreateContainer(Short_t nCells)
   fCellNumber = new Short_t[fNCells];
   fAmplitude  = new Double32_t[fNCells];
   fTime       = new Double32_t[fNCells];
-  fMCLabel    = new Short_t[fNCells];
+  fMCLabel    = new Int_t[fNCells];
   fEFraction  = new Double32_t[fNCells];
 
   // set to zero
@@ -250,10 +250,10 @@ void AliAODCaloCells::Sort()
   Double32_t *newAmplitude = new Double32_t[fNCells];
   
   Double32_t *newTime      = 0; 
-  Short_t    *newMCLabel   = 0 ;
+  Int_t     *newMCLabel   = 0 ;
   Double32_t *newEFraction = 0 ; 
   if(fTime)      newTime      = new Double32_t[fNCells];
-  if(fMCLabel)   newMCLabel   = new Short_t[fNCells];
+  if(fMCLabel)   newMCLabel   = new Int_t[fNCells];
   if(fEFraction) newEFraction = new Double32_t[fNCells];
   
   for (Int_t i=0; i < fNCells; i++) 
@@ -284,7 +284,7 @@ void AliAODCaloCells::Sort()
 
 //________________________________________________________________________________________
 Bool_t AliAODCaloCells::SetCell(Short_t pos,     Short_t cellNumber, Double32_t amplitude, 
-                                Double32_t time, Short_t mclabel,    Double32_t efrac)
+                                Double32_t time, Int_t mclabel,    Double32_t efrac)
 {
   // Sets a cell at the given position
 
@@ -302,7 +302,7 @@ Bool_t AliAODCaloCells::SetCell(Short_t pos,     Short_t cellNumber, Double32_t 
         fTime[i] = -1;
     }
     if(!fMCLabel){
-      fMCLabel = new Short_t[fNCells];
+      fMCLabel = new Int_t[fNCells];
       
       for( Int_t i = 0; i < fNCells; i++ )
         fMCLabel[i] = -1;

@@ -425,6 +425,43 @@ void AliAODHandler::StoreMCParticles(){
       //      cluster->SetLabels(labels,nLabel);
     }// iClust
   }// clusters
+  
+  // AOD calo cells MC label re-index
+  Int_t iCell, nCell, cellMCLabel, cellMCLabelNew;;
+  Short_t cellAbsId;
+  Double_t cellE, cellT, cellEFrac;
+  AliAODCaloCells *cells;
+  
+  // EMCal
+  cells = fAODEvent->GetEMCALCells();
+  if( cells ){
+    nCell = cells->GetNumberOfCells() ;
+    for( iCell = 0; iCell < nCell; iCell++ ){ 
+      cells->GetCell( iCell, cellAbsId, cellE, cellT, cellMCLabel, cellEFrac );
+      // GetNewLabel returns 1 in case when -1 is supplied
+      if( cellMCLabel < 0 )
+        cellMCLabelNew = cellMCLabel;
+      else
+        cellMCLabelNew = fMCEventH->GetNewLabel( cellMCLabel );
+        
+      cells->SetCell( iCell, cellAbsId, cellE, cellT, cellMCLabelNew, cellEFrac );
+    }
+  }
+  // PHOS
+  cells = fAODEvent->GetPHOSCells();
+  if( cells ){
+    nCell = cells->GetNumberOfCells() ;
+    for( iCell = 0; iCell < nCell; iCell++ ){ 
+      cells->GetCell( iCell, cellAbsId, cellE, cellT, cellMCLabel, cellEFrac );
+      // GetNewLabel returns 1 in case when -1 is supplied
+      if( cellMCLabel < 0 )
+        cellMCLabelNew = cellMCLabel;
+      else
+        cellMCLabelNew = fMCEventH->GetNewLabel( cellMCLabel );
+        
+      cells->SetCell( iCell, cellAbsId, cellE, cellT, cellMCLabelNew, cellEFrac );
+    }
+  }
 
   // AOD tracklets
   AliAODTracklets *tracklets = fAODEvent->GetTracklets();

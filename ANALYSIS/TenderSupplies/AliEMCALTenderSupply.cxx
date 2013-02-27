@@ -1266,7 +1266,7 @@ void AliEMCALTenderSupply::UpdateCells()
     Double_t ecell = 0;
     Double_t tcell = 0;
     Double_t efrac = 0;
-    Short_t  mclabel = -1;
+    Int_t  mclabel = -1;
     Bool_t   isExot = kFALSE;
   
     // loop through cells
@@ -1461,7 +1461,8 @@ void AliEMCALTenderSupply::FillDigitsArray()
   for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) 
   {
     Double_t cellAmplitude=0, cellTime=0, efrac = 0;
-    Short_t  cellNumber=0, mcLabel=-1;
+    Short_t  cellNumber=0;
+    Int_t mcLabel=-1;
 
     if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime, mcLabel, efrac) != kTRUE)
       break;

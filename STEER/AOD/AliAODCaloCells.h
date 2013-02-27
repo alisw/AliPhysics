@@ -30,8 +30,8 @@ class AliAODCaloCells : public AliVCaloCells
   void            DeleteContainer();
   void            Sort();
   
-  inline Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude,  Double_t &time, Short_t &mclabel,      Double_t &efrac) const ;
-  Bool_t          SetCell(Short_t pos, Short_t  cellNumber, Double_t  amplitude,  Double_t  time, Short_t  mclabel = -1, Double_t  efrac = 0.)  ;
+  inline Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude,  Double_t &time, Int_t &mclabel,      Double_t &efrac) const ;
+  Bool_t          SetCell(Short_t pos, Short_t  cellNumber, Double_t  amplitude,  Double_t  time, Int_t  mclabel = -1, Double_t  efrac = 0.)  ;
   
   Short_t         GetNumberOfCells() const  { return fNCells ; }
   void            SetNumberOfCells(Int_t n) { fNCells = n    ; }
@@ -51,8 +51,8 @@ class AliAODCaloCells : public AliVCaloCells
   void            SetType(Char_t ttype) { fType=ttype; }
   
   // MC & embedding
-  inline Short_t  GetCellMCLabel(Short_t cellNumber) ;
-  inline Short_t  GetMCLabel(Short_t pos) const ;
+  inline Int_t    GetCellMCLabel(Short_t cellNumber) ;
+  inline Int_t    GetMCLabel(Short_t pos) const ;
   
   inline Double_t GetCellEFraction(Short_t cellNumber) ;
   inline Double_t GetEFraction(Short_t pos) const ;  
@@ -67,16 +67,16 @@ class AliAODCaloCells : public AliVCaloCells
   Double32_t *fAmplitude;    //[fNCells][0.,0.,16] array with cell amplitudes (= energy!)
   Double32_t *fTime;         //[fNCells][0.,0.,16] array with cell times
   Double32_t *fEFraction;    //[fNCells][0.,0.,16] array with fraction of MC energy and data - for embedding
-  Short_t    *fMCLabel;      //[fNCells] array of MC labels
+  Int_t      *fMCLabel;      //[fNCells] array of MC labels
   Bool_t      fIsSorted;     //! true if cell arrays are sorted by index
   Char_t      fType;         // Cell type
   
-  ClassDef(AliAODCaloCells, 3);
+  ClassDef(AliAODCaloCells, 4);
   
 };
 
 Bool_t AliAODCaloCells::GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, 
-                                Double_t &time, Short_t & mclabel, Double_t & efrac) const 
+                                Double_t &time, Int_t & mclabel, Double_t & efrac) const 
 { 
   if (pos>=0 && pos<fNCells) 
   {
@@ -181,7 +181,7 @@ Short_t AliAODCaloCells::GetCellPosition(Short_t cellNumber)
   return pos;
 }
 
-Short_t AliAODCaloCells::GetMCLabel(Short_t pos) const 
+Int_t AliAODCaloCells::GetMCLabel(Short_t pos) const 
 { 
   if (pos>=0 && pos<fNCells && fMCLabel) {
     return fMCLabel[pos];
@@ -199,7 +199,7 @@ Double_t AliAODCaloCells::GetEFraction(Short_t pos) const
   }
 }
 
-Short_t AliAODCaloCells::GetCellMCLabel(Short_t cellNumber)
+Int_t AliAODCaloCells::GetCellMCLabel(Short_t cellNumber)
 { 
   if(!fMCLabel) return -1;
   

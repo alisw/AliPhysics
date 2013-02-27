@@ -38,8 +38,8 @@ class AliVCaloCells : public TNamed
   virtual void     DeleteContainer()               = 0;
   virtual void     Sort()                          = 0;
   
-  virtual Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t &time, Short_t &mclabel,    Double_t  &efrac) const = 0;
-  virtual Bool_t   SetCell(Short_t pos, Short_t  cellNumber, Double_t  amplitude, Double_t  time, Short_t  mclabel=-1, Double_t   efrac=0)     = 0;
+  virtual Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t &time, Int_t &mclabel,    Double_t  &efrac) const = 0;
+  virtual Bool_t   SetCell(Short_t pos, Short_t  cellNumber, Double_t  amplitude, Double_t  time, Int_t  mclabel=-1, Double_t   efrac=0)     = 0;
   
   virtual Short_t  GetNumberOfCells() const              = 0;
   virtual void     SetNumberOfCells(Int_t n)             = 0;
@@ -56,8 +56,8 @@ class AliVCaloCells : public TNamed
   virtual AliVCaloCells* CopyCaloCells(Bool_t all) const = 0;
 
   // MC & embedding
-  virtual Short_t  GetCellMCLabel(Short_t cellNumber)    = 0;
-  virtual Short_t  GetMCLabel(Short_t pos) const         = 0;
+  virtual Int_t  GetCellMCLabel(Short_t cellNumber)    = 0;
+  virtual Int_t  GetMCLabel(Short_t pos) const         = 0;
 
   virtual Double_t GetCellEFraction(Short_t cellNumber)  = 0;
   virtual Double_t GetEFraction(Short_t pos) const       = 0;

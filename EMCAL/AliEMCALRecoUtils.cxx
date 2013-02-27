@@ -1240,7 +1240,7 @@ void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells,
   Double_t tcell  = 0;
   Double_t ecellin = 0;
   Double_t tcellin = 0;
-  Short_t  mclabel = -1;
+  Int_t  mclabel = -1;
   Double_t efrac = 0;
   
   Int_t nEMcell  = cells->GetNumberOfCells() ;  
