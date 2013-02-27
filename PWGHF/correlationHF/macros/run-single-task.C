@@ -90,6 +90,7 @@
 /// your changes and use cases.
 
 
+#if defined(__CINT__) && !defined(__MAKECINT__)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // environment
@@ -106,6 +107,8 @@ const char* libraryDependencies=
   ;
 
 TString GetIncludeHeaders(const char* filename, TString& headers, TString& libs, bool loadClass=true);
+TObject* BuildCodeTree(TObject* pTree);
+int  ProcessCodeTree(TObject* tree, TString& sources, TString& headers, TString& libs);
 void ErrorConfigurationFile(const char* fileName);
 
 void run_single_task(const char* mode,
@@ -283,12 +286,16 @@ void run_single_task(const char* mode,
   TString taskSources="";
   TString taskHeaders="";
   TString addTaskMacros="";
+  TString dependencyHeader;
+  TString dependencySource;
   TString parPackages="";
-  TObjArray* pTaskNames=taskNames.Tokenize(" ");
-  if (pTaskNames) {
-    for (int iTaskName=0; iTaskName<pTaskNames->GetEntriesFast(); iTaskName++) {
-      TString taskSource=pTaskNames->At(iTaskName)->GetName();
-      TString taskHeader=pTaskNames->At(iTaskName)->GetName();
+  TString delimiter(" ");
+  TStringToken taskNameTokens(taskNames, delimiter);
+  TObject* pCodeTree=NULL;
+  {
+    while (taskNameTokens.NextToken()) {
+      TString taskSource(taskNameTokens);
+      TString taskHeader(taskNameTokens);
       bool bIsAddTask=false;
       if (taskSource.EndsWith(".C")) {
 	// suppose that's an 'AddTask' macro
@@ -319,35 +326,19 @@ void run_single_task(const char* mode,
 	taskSource+=".cxx";
 	taskHeader+=".h";
       }
-      TString dependencyHeader;
-      TString dependencySource;
-      if (gSystem->AccessPathName(taskHeader)==0) {
-	GetIncludeHeaders(taskHeader, dependencyHeader, libraries);
-	taskHeaders+=" "; taskHeaders+=taskHeader;
-      }
       if (gSystem->AccessPathName(taskSource)==0) {
-	GetIncludeHeaders(taskSource, dependencyHeader, libraries);
+	pCodeTree=BuildCodeTree(taskSource, pCodeTree);
 	if (!bIsAddTask) {taskSources+=" "; taskSources+=taskSource;}
 	else {addTaskMacros+=" "; addTaskMacros+=taskSource;}
       }
-      TObjArray* pTokens=dependencyHeader.Tokenize(" ");
-      if (pTokens) {
-	for (int i=0; i<pTokens->GetEntriesFast(); i++) {
-	  TString sourceFile=pTokens->At(i)->GetName();
-	  sourceFile.ReplaceAll(".h", ".cxx");
-	  if (gSystem->AccessPathName(sourceFile)!=0) continue;
-	  if (!dependencySource.IsNull()) dependencySource+=" ";
-	  dependencySource+=sourceFile;
-	  if (!libraries.IsNull()) libraries+=" ";
-	  libraries+=sourceFile;
-	}
-	delete pTokens;
+      if (gSystem->AccessPathName(taskHeader)==0) {
+	pCodeTree=BuildCodeTree(taskHeader, pCodeTree);
+	taskHeaders+=" "; taskHeaders+=taskHeader;
       }
-      dependencySource.ReplaceAll(taskSource, "");
-      dependencyHeader.ReplaceAll(taskHeader, "");
     }
-    delete pTaskNames;
   }
+  ProcessCodeTree(pCodeTree, dependencySource, dependencyHeader, libraries);
+
   cout << "Tasks: " << taskClasses << endl;
   cout << "Task files: " << taskSources << addTaskMacros << taskHeaders << endl;
   cout << "Dependency classes: " << dependencySource << endl;
@@ -756,3 +747,402 @@ void ErrorConfigurationFile(const char* fileName) {
   cout << "{} // note this empty body";
   cout << endl;
 }
+
+class AliCodeNode : public TNamed
+{
+public:
+  AliCodeNode();
+  AliCodeNode(const char* filename);
+  ~AliCodeNode();
+
+  enum {
+    kTypeInvalid = 0,
+    kTypeSource = 1,
+    kTypeHeader,
+    kTypeMacro,
+    kNofTypes
+  };
+    
+  const TList& GetParents() const {return fParents;}
+  const TList& GetChilds() const {return fChilds;}
+  int AddParent(AliCodeNode* pParent);
+  int InsertChild(AliCodeNode* pChild);
+  bool HasChilds() const {return (GetChilds().GetEntries()-fProcessedChilds.GetEntries())>0;}
+  int MarkProcessed();
+  int MarkChildProcessed(AliCodeNode* pChild);
+  bool HasSourceParent();
+  //int DisconnectParents();
+
+  bool IsHeader() const {return fType==kTypeHeader;}
+  bool IsSource() const {return fType==kTypeSource;}
+  void Print(Option_t *option="") const;
+
+protected:
+  //int DisconnectChild(const AliCodeNode& child);
+
+private:
+  TList fParents; // list of parents
+  TList fChilds;  // list of childs
+  TList fProcessedChilds;  // list of processed childs
+  int   fType;    // source of header
+
+  ClassDef(AliCodeNode, 1)
+};
+
+class AliCodeTree : public TObject
+{
+public:
+  AliCodeTree(short verbosity=0) : fNodes(), fIndentCount(0), fVerbosity(verbosity) {fNodes.SetOwner(kTRUE);}
+  ~AliCodeTree() {}
+
+  AliCodeNode* Build(const char* topfile, AliCodeNode* parent=NULL);
+  AliCodeNode* FindNode(const char* name);
+  int Sort();
+  int LoadClasses(TString& libs);
+  int LoadClasses() {TString dummy; return LoadClasses(dummy);}
+  int GetHeaders(TString& headers);
+  int GetSources(TString& sources);
+
+  void Print(Option_t *option="") const;
+
+private:
+  TObjArray fNodes; // list of nodes
+  short fIndentCount;
+  short fVerbosity;
+
+  ClassDef(AliCodeTree, 1)
+};
+
+ClassImp(AliCodeNode)
+
+AliCodeNode::AliCodeNode()
+ : TNamed()
+ , fParents()
+ , fChilds()
+ , fProcessedChilds()
+ , fType(AliCodeNode::kTypeInvalid)
+{
+}
+
+AliCodeNode::AliCodeNode(const char* filename)
+  : TNamed(filename, filename)
+  , fParents()
+  , fChilds()
+  , fProcessedChilds()
+  , fType(AliCodeNode::kTypeInvalid)
+{
+  TString s(filename);
+  if (s.EndsWith(".cxx")) fType=kTypeSource;
+  else if (s.EndsWith(".h")) fType=kTypeHeader;
+  else if (s.EndsWith(".C")) fType=kTypeMacro;
+}
+
+AliCodeNode::~AliCodeNode()
+{
+}
+
+int AliCodeNode::AddParent(AliCodeNode* pParent)
+{
+  if (!pParent) return -1;
+  if (fParents.FindObject(pParent)) return 0;
+  if (GetChilds().FindObject(pParent)) {
+    cerr << "error: circular dependency: can not add " << pParent->GetName() << " as parent to " << this->GetName() << endl;
+    return -2;
+  }
+  fParents.Add(pParent);
+  return 0;
+}
+
+int AliCodeNode::InsertChild(AliCodeNode* pChild)
+{
+  if (!pChild) return -1;
+  if (fChilds.FindObject(pChild)) return 0;
+  if (pChild->GetChilds().FindObject(this)) {
+    cerr << "error: circular dependency: can not add " << pChild->GetName() << " as child to " << this->GetName() << endl;
+    return -2;
+  }
+  fChilds.Add(pChild);
+  return 0;
+}
+
+int AliCodeNode::MarkProcessed()
+{
+  TIter parents(&fParents);
+  TObject* obj=NULL;
+  while ((obj=parents())) {
+    AliCodeNode* parent=dynamic_cast<AliCodeNode*>(obj);
+    parent->MarkChildProcessed(this);
+  }
+
+  return 0;
+}
+
+bool AliCodeNode::HasSourceParent()
+{
+  if (fType!=kTypeHeader) return false;
+  TString name(GetName());
+  name.ReplaceAll(".h", ".cxx");
+  TIter parents(&fParents);
+  TObject* obj=NULL;
+  while ((obj=parents())) {
+    if (name.CompareTo(obj->GetName())==0)
+      return true;
+  }
+  return false;
+}
+
+int AliCodeNode::MarkChildProcessed(AliCodeNode* pChild)
+{
+  if (!pChild) return -1;
+  if (fChilds.FindObject(pChild)==NULL) {
+    cerr << "node " << GetName() << ": failed to find child node " << pChild->GetName() << endl;
+    return -1;
+  }
+  if (fProcessedChilds.FindObject(pChild)!=NULL) {
+    cerr << "node " << GetName() << ": child node " << pChild->GetName() << " already processed" << endl;
+    return 0;
+  }
+  fProcessedChilds.Add(pChild);
+  return 0;
+}
+
+void AliCodeNode::Print(Option_t */*option*/) const
+{
+  cout   << "-- " << GetName() << endl;
+  TObject* obj=NULL;
+  cout   << "    - parents" << endl;
+  TIter parents(&fParents);
+  while ((obj=parents())) {
+    cout << "    |- " << obj->GetName() << endl;
+  }
+  cout   << "    - childs" << endl;
+  TIter childs(&fChilds);
+  while ((obj=childs())) {
+    cout << "    |- " << obj->GetName() << endl;
+  }
+}
+
+ClassImp(AliCodeTree)
+
+AliCodeNode* AliCodeTree::Build(const char* topfile, AliCodeNode* parent)
+{
+  // scan the file and recursively add all include headers found by path
+  int iResult=0;
+  ifstream input(topfile);
+  if (input.bad()) {
+    cerr << "failed to open file " << topfile << endl;
+    return NULL;
+  }
+  AliCodeNode* node=FindNode(topfile);
+  if (!node) {
+    if (fVerbosity>0) cout << setw(2*fIndentCount) << " " << "new node " << topfile << endl;
+    fIndentCount++;
+    node=new AliCodeNode(topfile);
+    fNodes.Add(node);
+    TString line; 
+    while (!line.ReadLine(input).eof()) {
+      if (!line.Contains("#include") || !line.Contains(".h")) continue;
+      line=line(0, line.Index(".h"));line+=".h";
+      line.Replace(0, line.Index("#include"), "");
+      line.ReplaceAll("#include", "");
+      line.ReplaceAll(" ", "");
+      line.ReplaceAll("\"", "");
+      if (!line.BeginsWith("Ali") && !line.BeginsWith("T")) continue;
+      if (gSystem->AccessPathName(line)==0) {
+	TString source=line; source.ReplaceAll(".h", ".cxx");
+	if (source.CompareTo(topfile)!=0 && gSystem->AccessPathName(source)==0) {
+	  AliCodeNode* child=Build(source, node);
+	  node->InsertChild(child);
+	}
+	if (gSystem->AccessPathName(line)==0) {
+	  AliCodeNode* child=Build(line, node);
+	  node->InsertChild(child);
+	}
+      }
+    }
+    fIndentCount--;
+  }
+  if (parent) {
+    if ((iResult=node->AddParent(parent))<0)
+      return NULL;
+  }
+  if (fVerbosity>0) cout << setw(2*fIndentCount) << " " << "finished " << topfile << endl;
+  return node;
+}
+
+int AliCodeTree::Sort()
+{
+  TObjArray sortedNodes;
+  int nNodes=fNodes.GetEntriesFast();
+  int nCount=0;
+  while (sortedNodes.GetEntriesFast()<nNodes && nCount<nNodes) {
+    for (int i=0; i<nNodes; i++) {
+      if (fNodes[i]==NULL) continue;
+      AliCodeNode* node=dynamic_cast<AliCodeNode*>(fNodes[i]);
+      if (node->HasChilds()) {
+	continue;
+      }
+      fNodes[i]=NULL;
+      sortedNodes.Add(node);
+      node->MarkProcessed();
+    }
+    nCount++;
+  }
+
+  for (int i=0; i<nNodes; i++) {
+    fNodes[i]=sortedNodes[i];
+  }
+
+  return 0;
+}
+
+int AliCodeTree::LoadClasses(TString& libs)
+{
+  TIter next(&fNodes);
+  TObject* obj=NULL;
+  while ((obj=next())!=NULL) {
+    AliCodeNode* node=dynamic_cast<AliCodeNode*>(obj);
+    TString name(node->GetName());
+    if (node->IsHeader()) {
+      if (node->HasSourceParent()) {
+	// nothing to do, class going to be compiled from source
+	continue;
+      }
+      name.ReplaceAll(".h", "");
+      if (TClass::GetClass(name)!=NULL) {
+	// class available in the system
+	continue;
+      }
+
+      TString command;
+      TString resfilename(gSystem->TempDirectory()); resfilename+="/findlib.txt";
+      command.Form("for lib in $ALICE_ROOT/lib/*/lib*.so; do (nm $lib | grep %s | grep ' T ' | grep Class_Name > /dev/null) && echo $lib > %s; done", name.Data(), resfilename.Data());
+      gSystem->Exec(command);
+      ifstream resfile(resfilename.Data());
+      if (resfile.good()) {
+	TString result;
+	if (!result.ReadLine(resfile).eof()) {
+	  Ssiz_t haveSlash=-1;
+	  while ((haveSlash=result.First('/'))>=0) result.Replace(0, haveSlash+1, "");
+	  if (!libs.Contains(result)) {
+	    cout << "loading dependency library '" << result << "' for class '" << name << "'" << endl;
+	    gSystem->Load(result);
+	    if (!libs.IsNull()) libs+=" ";
+	    libs+=result;
+	  }
+	}
+	command="rm "; command+=resfilename;
+	gSystem->Exec(command);
+      }
+      continue;
+    }
+    if (node->IsSource()) {
+      TString classname(name);
+      classname.ReplaceAll(".cxx", "");
+      if (TClass::GetClass(classname)!=NULL) {
+	// class available in the system
+	continue;
+      }
+      name+="+g";
+      gROOT->LoadMacro(name);
+    }
+  }
+  return 0;
+}
+
+int AliCodeTree::GetHeaders(TString& headers)
+{
+  TIter next(&fNodes);
+  TObject* obj=NULL;
+  while ((obj=next())!=NULL) {
+    AliCodeNode* node=dynamic_cast<AliCodeNode*>(obj);
+    if (!node->IsHeader()) continue;
+    if (!headers.IsNull()) headers+=" ";
+    headers+=node->GetName();
+  }
+  return 0;
+}
+
+int AliCodeTree::GetSources(TString& sources)
+{
+  TIter next(&fNodes);
+  TObject* obj=NULL;
+  while ((obj=next())!=NULL) {
+    AliCodeNode* node=dynamic_cast<AliCodeNode*>(obj);
+    if (!node->IsSource()) continue;
+    if (!sources.IsNull()) sources+=" ";
+    sources+=node->GetName();
+  }
+  return 0;
+}
+
+AliCodeNode* AliCodeTree::FindNode(const char* name)
+{
+  TObject* node=fNodes.FindObject(name);
+  if (!node) return NULL;
+  return dynamic_cast<AliCodeNode*>(node);
+}
+
+void AliCodeTree::Print(Option_t *option) const
+{
+  const char* key=NULL;
+  int indent=0;
+  TString childOptions;
+  const TString delimiter(" ");
+  TStringToken options(option, delimiter);
+  while (options.NextToken()) {
+    key="indent=";
+    if (options.BeginsWith(key)) {
+      TString arg(options);
+      arg.ReplaceAll(key, "");
+      indent=arg.Atoi();
+      continue;
+    }
+    childOptions+=" ";
+    childOptions+=options;
+  }
+  childOptions+=Form("indent=%d", indent+1);
+  TIter next(&fNodes);
+  TObject* obj=NULL;
+  while ((obj=next())!=NULL) {
+    obj->Print(childOptions);
+  }
+}
+
+TObject* BuildCodeTree(const char* filename, TObject* useObject)
+{
+  AliCodeTree* pTree=NULL;
+  if (useObject) pTree=dynamic_cast<AliCodeTree*>(useObject);
+  if (!pTree) pTree=new AliCodeTree;
+  if (!pTree) return NULL;
+  
+  pTree->Build(filename);
+  return pTree;
+}
+
+int ProcessCodeTree(TObject* tree, TString& sources, TString& headers, TString& libs)
+{
+  if (!tree) return -1;
+  AliCodeTree* pTree=dynamic_cast<AliCodeTree*>(tree);
+  pTree->Sort();
+  pTree->LoadClasses(libs);
+  pTree->GetHeaders(headers);
+  pTree->GetSources(sources);
+  return 0;
+}
+
+#else
+#include "TObject.h"
+#include "TNamed.h"
+#include "TList.h"
+#include "TObjArray.h"
+#include "TString.h"
+#include "TPRegexp.h"
+#include "TSystem.h"
+#include "TROOT.h"
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+using namespace std;
+
+#endif
