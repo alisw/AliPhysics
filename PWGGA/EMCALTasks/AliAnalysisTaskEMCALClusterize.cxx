@@ -722,7 +722,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
   Double_t cellAmplitude = 0;
   Double_t cellTime      = 0;
   Short_t  cellNumber    = 0;
-  Int_t  cellMCLabel   = 0;
+  Int_t    cellMCLabel   = 0;
   Double_t cellEFrac     = 0;
   Int_t    nClustersOrg  = 0;
   
@@ -1515,6 +1515,8 @@ void AliAnalysisTaskEMCALClusterize::RemapMCLabelForAODs(Int_t & label)
   for(Int_t ind = 0; ind < arr->GetEntriesFast(); ind++ )
   {
     AliAODMCParticle * particle = dynamic_cast<AliAODMCParticle *>(arr->At(ind));
+    if(!particle) continue ;
+
     if(label == particle->Label())
     {
       label = ind;
