@@ -1,4 +1,4 @@
-AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, TString appendix, 
+AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix, 
 				 UChar_t TPCcl=70, UChar_t TPCclPID = 80, 
 				 UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000.,
 				 Double_t* tpcdEdxcutlow=NULL,Double_t* tpcdEdxcuthigh=NULL,
@@ -22,6 +22,7 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, TString appendix,
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetCutITSpixel(itshitpixel);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
+  if(isAOD) hfecuts->SetAODFilterBit(4);
   
   //if((iPixelAny==AliHFEextraCuts::kAny) || (iPixelAny==AliHFEextraCuts::kSecond))     
   //hfecuts->SetProductionVertex(0,7,0,7);
@@ -54,7 +55,7 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, TString appendix,
   AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(appendix);
   printf("task %p\n", task);
   task->SetpPbAnalysis();
-  task->SetRemoveFirstEventInChunk();
+  if(!isAOD) task->SetRemoveFirstEventInChunk();
   task->SetRemovePileUp(kFALSE);
   task->SetHFECuts(hfecuts);
   task->GetPIDQAManager()->SetHighResolutionHistos();

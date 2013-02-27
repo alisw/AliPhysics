@@ -2,7 +2,7 @@
 //please check settings for output files
 //for local test use 'test' mode
 
-AliAnalysisGrid* CreateAlienHandlerpPb()
+AliAnalysisGrid* CreateAlienHandlerpPb(bool isAOD = kFALSE)
 {
 // Check if user has a valid token, otherwise make one. This has limitations.
 // One can always follow the standard procedure of calling alien-token-init then
@@ -25,9 +25,12 @@ AliAnalysisGrid* CreateAlienHandlerpPb()
 // Method 1: Create automatically XML collections using alien 'find' command.
 // Define production directory LFN
 // On real reconstructed data:
- plugin->SetGridDataDir("/alice/data/2013/LHC13b");
+   plugin->SetGridDataDir("/alice/data/2013/LHC13b");
 // Set data search pattern
-plugin->SetDataPattern("*/pass2/*/AliESDs.root");
+   if(isAOD)
+      plugin->SetDataPattern("*/pass2/AOD/*/AliAOD.root");
+   else
+      plugin->SetDataPattern("*/pass2/*/AliESDs.root");
 
 //same for pp MC:
 //   plugin->SetGridDataDir("/alice/sim/LHC10f6a");
@@ -70,7 +73,7 @@ plugin->AddRunNumber(195351);
 //   plugin->SetOutputFiles("Output.root");
    //plugin->SetDefaultOutputs(); 
    plugin->SetDefaultOutputs(kFALSE);
-     plugin->SetOutputFiles("HFEpPb.root"); 
+   plugin->SetOutputFiles("AnalysisResults.root"); 
      //plugin->SetOutputFiles("cbaumann_LMEEpp2010_out.root"); 
 //   plugin->SetOutputFiles("cbaumann_lowmass_out.root cbaumann_lowmass_CF.root");
 // Optionally define the files to be archived.

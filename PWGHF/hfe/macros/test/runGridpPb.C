@@ -2,7 +2,7 @@
 
 Bool_t SetupPar(const char *parfile);
 
-void runGridpPb()
+void runGridpPb(bool isAOD = kFALSE)
 {
    // Load common libraries
    gSystem->Load("libCore.so");  
@@ -50,7 +50,7 @@ void runGridpPb()
 
    // Create and configure the alien handler plugin
    gROOT->LoadMacro("CreateAlienHandlerpPb.C");
-   AliAnalysisGrid *alienHandler = CreateAlienHandlerpPb();  
+   AliAnalysisGrid *alienHandler = CreateAlienHandlerpPb(isAOD);  
    if (!alienHandler) return;
 
    // Create the analysis manager
@@ -59,16 +59,19 @@ void runGridpPb()
    // Connect plug-in to the analysis manager
    mgr->SetGridHandler(alienHandler);
 
-   AliESDInputHandler* esdH = new AliESDInputHandler();
-   esdH->SetReadFriends(kFALSE);
-   mgr->SetInputEventHandler(esdH);
-
+   TString macroname = "$ALICE_ROOT/ANALYSIS/macros/train/";
+   if(isAOD)
+       macroname += "AddAODHandler.C";
+   else
+       macroname += "AddESDHandler.C";
+   gROOT->Macro(macroname.Data());
 
 
    //==== Physics Selection ====
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-
+   if(!isAOD){
+        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+        AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+   }
    //==== Add tender ====
 
 //   gROOT->LoadMacro("AddTaskTender.C");
@@ -85,14 +88,15 @@ void runGridpPb()
 
    //===== ADD TASK::
    gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEpPb.C");
-   AddTaskHFEpPb();
-   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEnpepPb.C");
-   AddTaskHFEnpepPb();
-
+   AddTaskHFEpPb(isAOD);
+   if(!isAOD){
+      gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEnpepPb.C");
+      AddTaskHFEnpepPb();
+   }
 
 
    // Enable debug printouts
-   mgr->SetDebugLevel(10);
+   //mgr->SetDebugLevel(10);
 
    if (!mgr->InitAnalysis())
 	  return;
