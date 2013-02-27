@@ -199,6 +199,9 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
   fTreeVariableNegTrackStatus(0),
   fTreeVariablePosTrackStatus(0),
 
+  fTreeVariableNegPhysicalStatus(0),
+  fTreeVariablePosPhysicalStatus(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -908,8 +911,10 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
         fTree->Branch("fTreeVariableIsNonInjected",&fTreeVariableIsNonInjected,"fTreeVariableIsNonInjected/O"); //O for bOOlean...
   
   if ( fkLightWeight == kFALSE ){ // these are debugging branches!
-        fTree->Branch("fTreeVariableNegTrackStatus",&fTreeVariableNegTrackStatus,"fTreeVariableNegTrackStatus/l");
-        fTree->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
+    fTree->Branch("fTreeVariableNegTrackStatus",&fTreeVariableNegTrackStatus,"fTreeVariableNegTrackStatus/l");
+    fTree->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
+    fTree->Branch("fTreeVariableNegPhysicalStatus",&fTreeVariableNegPhysicalStatus,"fTreeVariableNegPhysicalStatus/I");
+    fTree->Branch("fTreeVariablePosPhysicalStatus",&fTreeVariablePosPhysicalStatus,"fTreeVariablePosPhysicalStatus/I");
   }
   
 //------------------------------------------------
@@ -2791,8 +2796,11 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       fTreeVariablePrimaryStatus = 0; 
       fTreeVariablePrimaryStatusMother = 0; 
       fTreeVariableV0CreationRadius = -1;
-
-      Int_t lblPosV0Dghter = (Int_t) TMath::Abs( pTrack->GetLabel() );  
+    
+      fTreeVariableNegPhysicalStatus = 0;
+      fTreeVariablePosPhysicalStatus = 0;
+    
+      Int_t lblPosV0Dghter = (Int_t) TMath::Abs( pTrack->GetLabel() );
       Int_t lblNegV0Dghter = (Int_t) TMath::Abs( nTrack->GetLabel() );
 		
       TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
@@ -2809,7 +2817,15 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 
       Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother() ; 
       Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
+    
+      if( lMCstack->IsPhysicalPrimary       (lblNegV0Dghter) ) fTreeVariableNegPhysicalStatus = 1; //Is Primary!
+      if( lMCstack->IsSecondaryFromWeakDecay(lblNegV0Dghter) ) fTreeVariableNegPhysicalStatus = 2; //Weak Decay!
+      if( lMCstack->IsSecondaryFromMaterial (lblNegV0Dghter) ) fTreeVariableNegPhysicalStatus = 3; //Material Int!
 
+      if( lMCstack->IsPhysicalPrimary       (lblPosV0Dghter) ) fTreeVariablePosPhysicalStatus = 1; //Is Primary!
+      if( lMCstack->IsSecondaryFromWeakDecay(lblPosV0Dghter) ) fTreeVariablePosPhysicalStatus = 2; //Weak Decay!
+      if( lMCstack->IsSecondaryFromMaterial (lblPosV0Dghter) ) fTreeVariablePosPhysicalStatus = 3; //Material Int!
+    
       if( lblMotherPosV0Dghter == lblMotherNegV0Dghter && lblMotherPosV0Dghter > -1 ){
          //either label is fine, they're equal at this stage
          TParticle* pThisV0 = lMCstack->Particle( lblMotherPosV0Dghter ); 

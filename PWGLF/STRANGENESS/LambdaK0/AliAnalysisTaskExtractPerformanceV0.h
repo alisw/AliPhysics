@@ -183,7 +183,11 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   //Decay Length issue debugging: ULong_t with track status
   ULong64_t fTreeVariableNegTrackStatus;
   ULong64_t fTreeVariablePosTrackStatus;
-
+  
+  //Physical Primary, Sec-Weak, Sec-Material -- debug only
+  Int_t fTreeVariableNegPhysicalStatus;
+  Int_t fTreeVariablePosPhysicalStatus;
+  
 //===========================================================================================
 //   Histograms
 //===========================================================================================
