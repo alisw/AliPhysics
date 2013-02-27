@@ -312,7 +312,7 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
    //Set Variables for re-running the cascade vertexers (as done for MS paper)
         
         // New Loose : 1st step for the 7 TeV pp analysis
-        
+        /*
         fV0Sels[0] =  33.  ;  // max allowed chi2
         fV0Sels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
         fV0Sels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
@@ -329,7 +329,7 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
         fCascSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
         fCascSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
         fCascSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
-
+        */
    // Output slot #0 writes into a TList container (Cascade)
    DefineOutput(1, TList::Class());
    DefineOutput(2, TTree::Class());
