@@ -208,6 +208,9 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   if(!ev) return;
   Double_t bz=ev->GetMagneticField();
 
+
+
+
   // Smear all tracks
   TClonesArray *mcs=static_cast<TClonesArray*>(ev->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
   if (!mcs) return;
@@ -247,7 +250,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
       //!!!!TODO: covariance matrix
 
       // update d0 
-      Double_t d0z0[2],covd0z0[2];
+      Double_t d0z0[2],covd0z0[3];
       Double_t d0[2],d0err[2];
       et1.PropagateToDCA(primaryVertex,bz,100.,d0z0,covd0z0);
       d0[0]=d0z0[0];
@@ -356,6 +359,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
 void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArray *mcs) {
   // Early exit, if this track has nothing in common with the ITS
+
   if (!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)))
     return;
 
