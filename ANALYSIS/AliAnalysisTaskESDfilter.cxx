@@ -1975,6 +1975,18 @@ void AliAnalysisTaskESDfilter::ConvertPrimaryVertices(const AliESDEvent& esd)
     pVTRK->SetNContributors(vtxP->GetNContributors());
     pVTRK->SetBC(vtxP->GetBC());
   }
+
+  // Add TPC "main" vertex 
+  const AliESDVertex *vtxT = esd.GetPrimaryVertexTPC();
+  vtxT->GetXYZ(pos); // position
+  vtxT->GetCovMatrix(covVtx); //covariance matrix
+  AliAODVertex * mVTPC = new(Vertices()[fNumberOfVertices++])
+  AliAODVertex(pos, covVtx, vtxT->GetChi2toNDF(), NULL, -1, AliAODVertex::kMainTPC);
+  mVTPC->SetName(vtxT->GetName());
+  mVTPC->SetTitle(vtxT->GetTitle());
+  mVTPC->SetNContributors(vtxT->GetNContributors()); 
+
+
 }
 
 //______________________________________________________________________________
