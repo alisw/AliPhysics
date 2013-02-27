@@ -569,7 +569,8 @@ void AliCaloCellsQA::FillJustCells(AliVCaloCells *cells)
 {
   // Fill cell histograms not related with a cluster
 
-  Short_t absId,mclabel;
+  Short_t absId;
+  Int_t mclabel;
   Double_t amp, time,efrac;
   Int_t sm;
 

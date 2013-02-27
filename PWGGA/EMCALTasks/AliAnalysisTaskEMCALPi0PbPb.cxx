@@ -1356,7 +1356,8 @@ void AliAnalysisTaskEMCALPi0PbPb::ClusterAfterburner()
     return;
 
   for (Int_t i = 0; i<ncells; ++i) {
-    Short_t id=-1, mclabel = -1;
+    Short_t id=-1;
+    Int_t mclabel = -1;
     Double_t amp=0,time=0, efrac = 0;
     if (!cells->GetCell(i, id, amp, time,mclabel,efrac))
       continue;

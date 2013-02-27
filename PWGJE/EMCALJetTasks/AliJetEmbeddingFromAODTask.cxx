@@ -482,7 +482,7 @@ void AliJetEmbeddingFromAODTask::Run()
 
     if (fAODCaloCells) {
       for (Short_t i = 0; i < fAODCaloCells->GetNumberOfCells(); i++) {
-	Short_t mclabel = 0;
+	Int_t mclabel = 0;
 	Double_t efrac = 0.;
 	Double_t time = -1;
 	Short_t cellNum = -1;

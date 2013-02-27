@@ -421,7 +421,7 @@ void AliJetModelBaseTask::CopyCells()
     return;
 
   for (Short_t i = 0; i < fCaloCells->GetNumberOfCells(); i++) {
-    Short_t mclabel = 0;
+    Int_t mclabel = 0;
     Double_t efrac = 0.;
     Double_t time = -1;
     Short_t cellNum = -1;
