@@ -192,7 +192,7 @@ void AliPHOSEmbedding::CopyRecalibrateDigits(){
     for (Short_t icell = 0; icell < event->GetPHOSCells()->GetNumberOfCells(); icell++) {
       Short_t id=0;
       Double_t time=0., amp=0. ;
-      Short_t mclabel; 
+      Int_t mclabel; 
       Double_t efrac =0. ;
 //      if (fCellsPHOS->GetCell(icell, id, amp,time,mclabel,efrac) != kTRUE)
       if (event->GetPHOSCells()->GetCell(icell, id, amp,time,mclabel,efrac) != kTRUE)
@@ -762,7 +762,7 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
   for (Short_t icell = 0; icell < fCellsPHOS->GetNumberOfCells(); icell++) {
     Short_t id=0;
     Double_t time=0., amp=0. ;
-    Short_t mclabel;
+    Int_t mclabel;
     Double_t efrac =0. ;
     if (fCellsPHOS->GetCell(icell, id, amp, time,mclabel, efrac) != kTRUE)
       break;
@@ -805,7 +805,7 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
         for (Int_t icell = 0; icell < cellsS->GetNumberOfCells(); icell++){
 	   Short_t cellNumber;
 	   Double_t cellAmplitude=0., cellTime=0. ;
-           Short_t mclabel;
+           Int_t mclabel;
            Double_t efrac =0. ;
 	   cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime,mclabel,efrac) ;
 	   if(cellNumber==index[ic]){
@@ -820,7 +820,7 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
     for (Int_t icell = 0; icell < cellsS->GetNumberOfCells(); icell++) {
       Short_t cellNumber;
       Double_t cellAmplitude=0., cellTime=0. ;
-      Short_t mclabel;
+      Int_t mclabel;
       Double_t efrac =0. ;
       if (cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime,mclabel,efrac) != kTRUE)
         break;

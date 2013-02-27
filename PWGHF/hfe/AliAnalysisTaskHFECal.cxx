@@ -1550,7 +1550,8 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
   // part 2 go through the clusters here -----------------------------------
   //cout << " part 2 go through the clusters here ----------------------------------- " << endl; 
   Int_t nCluster=0, nCell=0, iCell=0, gCell=0;
-  Short_t cellAddr, nSACell, mclabel;
+  Short_t cellAddr, nSACell;
+  Int_t mclabel;
   //Int_t nSACell, iSACell, mclabel;
   Int_t iSACell;
   Double_t cellAmp=0, cellTimeT=0, clusterTime=0, efrac=0;

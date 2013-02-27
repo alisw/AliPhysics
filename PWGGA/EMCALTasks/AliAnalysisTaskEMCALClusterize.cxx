@@ -722,7 +722,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
   Double_t cellAmplitude = 0;
   Double_t cellTime      = 0;
   Short_t  cellNumber    = 0;
-  Short_t  cellMCLabel   = 0;
+  Int_t  cellMCLabel   = 0;
   Double_t cellEFrac     = 0;
   Int_t    nClustersOrg  = 0;
   
