@@ -34,19 +34,72 @@ public:
        fConversionCuts=conversionCuts;
        fIsHeavyIon = IsHeavyIon;
     }
+    void FillType(Bool_t fillTree, Bool_t fillHistorams){
+       ffillTree = fillTree;
+       ffillHistograms = fillHistorams;
+    }
     
 private:
 
+    void ProcessQATree();
     void ProcessQA();
-
-    AliV0ReaderV1 *fV0Reader;
-    TClonesArray *fConversionGammas; //Reconstructed Photons;
+    void ProcessTrueQA(AliAODConversionPhoton *TruePhotonCandidate, AliESDtrack *elec, AliESDtrack *posi);
+    Bool_t IsTruePhoton(AliAODConversionPhoton *TruePhotonCandidate);
+    void CountESDTracks();
+	
+    AliV0ReaderV1 *fV0Reader;    
+    TClonesArray *fConversionGammas;
     AliConversionCuts *fConversionCuts; // Cuts used by the V0Reader
+    AliVEvent *fInputEvent;
+    Int_t fNumberOfESDTracks;
+    AliMCEvent *fMCEvent;
+    AliStack *fMCStack;
     TTreeSRedirector *fStreamQA;
     Bool_t fIsHeavyIon;
+    Bool_t ffillTree;
+    Bool_t ffillHistograms;
     TList *fOutputList;
-
-    ClassDef(AliAnalysisTaskConversionQA, 0);
+    TList *fESDList;
+    TH1F *hVertexZ;
+	 TH1I *hNGoodESDTracks;
+    TH1I *hNV0Tracks;
+	 TH1I *hNContributorsVertex;
+    TH2F *hITSClusterPhi;
+    TH1F *hGammaPt;
+    TH1F *hGammaPhi;
+    TH1F *hGammaEta;
+    TH1F *hGammaChi2perNDF;
+    TH1F *hGammaPsiPair;
+    TH1F *hGammaQt;
+    TH1F *hGammaCosinePointingAngle;
+    TH2F *hGammaXY;
+    TH2F *hGammaZR;
+    TH2F *hElecPt;
+    TH2F *hElecEta;
+    TH2F *hElecPhi;
+    TH1F *hElecNfindableClsTPC;
+    TH1F *hPosiNfindableClsTPC;
+    TList *fTrueList;
+    TH2F *hTrueResoulutionR;
+    TH2F *hTrueResoulutionZ;
+    TH2F *hTrueResoulutionPhi;
+    TH1F *hTrueGammaPt;
+    TH1F *hTrueGammaPhi;
+    TH1F *hTrueGammaEta;
+    TH1F *hTrueGammaMass;
+    TH1F *hTrueGammaChi2perNDF;
+    TH1F *hTrueGammaPsiPair;
+    TH1F *hTrueGammaQt;
+    TH1F *hTrueGammaCosinePointingAngle;
+    TH2F *hTrueGammaXY;
+    TH2F *hTrueGammaZR;
+    TH2F *hTrueElecPt;
+    TH2F *hTrueElecEta;
+    TH2F *hTrueElecPhi;
+    TH1F *hTrueElecNfindableClsTPC;
+    TH1F *hTruePosiNfindableClsTPC;
+    
+    ClassDef(AliAnalysisTaskConversionQA, 1);
 };
 
 #endif

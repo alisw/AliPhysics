@@ -29,13 +29,47 @@ AliConversionSelection::AliConversionSelection(AliConversionCuts *convCut, AliCo
     fUnsmearedPy(NULL),
     fUnsmearedPz(NULL),
     fUnsmearedE(NULL),
-    fCurrentEventNumber(-1)
+    fCurrentEventNumber(-1),
+    fIsOwner(kFALSE)
 {
     // Default Values
     fInvMassRange=new Double_t[2];
     fInvMassRange[0]=0.05;
     fInvMassRange[1]=0.3;
 }
+
+//________________________________________________________________________
+AliConversionSelection::AliConversionSelection(TString convCut, TString mesonCut) : TObject(),
+    fInputEvent(NULL),
+    fMCEvent(NULL),
+    fConversionCut(NULL),
+    fMesonCut(NULL),
+    fESDTrackCuts(NULL),
+    fGoodGammas(NULL),
+    fPi0Candidates(NULL),
+    fBGPi0s(NULL),
+    fRandomizer(NULL),
+    fBGHandler(NULL),
+    fInvMassRange(NULL),
+    fUnsmearedPx(NULL),
+    fUnsmearedPy(NULL),
+    fUnsmearedPz(NULL),
+    fUnsmearedE(NULL),
+    fCurrentEventNumber(-1),
+    fIsOwner(kTRUE)
+{
+    // Default Values
+    fInvMassRange=new Double_t[2];
+    fInvMassRange[0]=0.05;
+    fInvMassRange[1]=0.3;
+
+    fConversionCut = new AliConversionCuts();
+    fConversionCut -> InitializeCutsFromCutString(convCut.Data());
+    fMesonCut = new AliConversionMesonCuts();
+    fMesonCut -> InitializeCutsFromCutString(mesonCut.Data());
+
+}
+
 //________________________________________________________________________
 AliConversionSelection::~AliConversionSelection(){
 
@@ -62,6 +96,16 @@ AliConversionSelection::~AliConversionSelection(){
     if(fESDTrackCuts){
 	delete fESDTrackCuts;
 	fESDTrackCuts=NULL;
+    }
+    if(fIsOwner){
+	if(fConversionCut){
+	    delete fConversionCut;
+	    fConversionCut=NULL;
+	}
+	if(fMesonCut){
+	    delete fMesonCut;
+	    fMesonCut=NULL;
+	}
     }
 }
 
@@ -256,7 +300,7 @@ void AliConversionSelection::CalculateBackground(){
 
 	// Correct for the number of rotations
 	// BG is for rotation the same, except for factor NRotations
-	Double_t weight=1./Double_t(fMesonCut->NumberOfBGEvents());
+	Double_t weight=1./Double_t(fMesonCut->GetNumberOfBGEvents());
 
 	for(Int_t firstGammaIndex=0;firstGammaIndex<fGoodGammas->GetEntriesFast();firstGammaIndex++){
 
@@ -265,7 +309,7 @@ void AliConversionSelection::CalculateBackground(){
 	    for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fGoodGammas->GetEntriesFast();secondGammaIndex++){
 		AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(secondGammaIndex));
 		if(!fConversionCut->PhotonIsSelected(gamma1,fInputEvent))continue;
-		for(Int_t nRandom=0;nRandom<fMesonCut->NumberOfBGEvents();nRandom++){
+		for(Int_t nRandom=0;nRandom<fMesonCut->GetNumberOfBGEvents();nRandom++){
 
 		    RotateParticle(gamma1,fMesonCut->NDegreesRotation());
 
@@ -417,3 +461,10 @@ Int_t AliConversionSelection::GetEventNumber(AliVEvent *inputEvent){
     }
     return 0;
 }
+
+//________________________________________________________________________
+TString AliConversionSelection::GetCutString(){
+    TString a= Form("%s%s",fConversionCut->GetCutNumber().Data(),fMesonCut->GetCutNumber().Data());
+    return a;
+}
+

@@ -18,6 +18,7 @@ class AliConversionSelection : public TObject{
 public:
 
     AliConversionSelection(AliConversionCuts *convCut, AliConversionMesonCuts *mesonCut);
+    AliConversionSelection(TString convCut, TString mesonCut);
     virtual ~AliConversionSelection();
 
     // Main Functions
@@ -52,6 +53,8 @@ public:
 
     Int_t GetEventNumber(AliVEvent *inputEvent);
 
+    TString GetCutString();
+
 protected:
    
     void InitializeBGHandler();
@@ -65,7 +68,7 @@ protected:
     AliVEvent *fInputEvent;
     AliMCEvent *fMCEvent;
     AliConversionCuts *fConversionCut;
-	 AliConversionMesonCuts *fMesonCut;
+    AliConversionMesonCuts *fMesonCut;
     AliESDtrackCuts *fESDTrackCuts;
     TObjArray *fGoodGammas; // Pointer to selected photons
     TClonesArray *fPi0Candidates;
@@ -78,6 +81,7 @@ protected:
     Double_t *fUnsmearedPz;
     Double_t *fUnsmearedE;
     Int_t fCurrentEventNumber; // Current Event Number
+    Bool_t fIsOwner; // Cuts will be deleted when the destructor is called
 
     AliConversionSelection(const AliConversionSelection&); // not implemented
     AliConversionSelection& operator=(const AliConversionSelection&); // not implemented

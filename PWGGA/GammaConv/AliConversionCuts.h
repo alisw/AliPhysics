@@ -27,7 +27,6 @@ class iostream;
 class TList;
 class AliAnalysisManager;
 
-
 using namespace std;
 
 class AliConversionCuts : public AliAnalysisCuts {
@@ -79,7 +78,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t SetCutIds(TString cutString); 
   Int_t fCuts[kNCuts];
   Bool_t SetCut(cutIds cutID, Int_t cut);
-  Bool_t UpdateCutString(cutIds cutID, Int_t value);
+  Bool_t UpdateCutString();
 
 
   static const char * fgkCutNames[kNCuts];
@@ -91,9 +90,11 @@ class AliConversionCuts : public AliAnalysisCuts {
   void SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) {fOfflineTriggerMask = offlineTriggerMask;}
   void FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0);
   void SetAcceptedHeader(TList *HeaderList){fHeaderList = HeaderList;}   
+  TString *GetFoundHeader(){return fGeneratorNames;}
 
   Int_t GetEventQuality(){return fEventQuality;}
-
+  Bool_t GetIsFromPileup(){return fRemovePileUp;}
+  
   AliConversionCuts(const char *name="V0Cuts", const char * title="V0 Cuts");
   virtual ~AliConversionCuts();                            //virtual destructor
 
@@ -106,6 +107,7 @@ class AliConversionCuts : public AliAnalysisCuts {
 
   // Cut Selection
   Bool_t EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent);
+  Int_t IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Bool_t isHeavyIon);
   Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
   Bool_t PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma=kTRUE);
   Bool_t ElectronIsSelectedMC(TParticle *particle,AliStack *fMCStack);
@@ -127,7 +129,8 @@ class AliConversionCuts : public AliAnalysisCuts {
   void FillPhotonCutIndex(Int_t photoncut){if(hCutIndex)hCutIndex->Fill(photoncut);}
 
   static AliVTrack * GetTrack(AliVEvent * event, Int_t label);
-
+  static AliESDtrack *GetESDTrack(AliESDEvent * event, Int_t label);
+  
   ///Cut functions
   Bool_t SpecificTrackCuts(AliAODTrack * negTrack, AliAODTrack * posTrack,Int_t &cutIndex);
   Bool_t SpecificTrackCuts(AliESDtrack * negTrack, AliESDtrack * posTrack,Int_t &cutIndex);
@@ -151,11 +154,14 @@ class AliConversionCuts : public AliAnalysisCuts {
   void GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliMCEvent *MCEvent);
 
   // Event Cuts
-  Bool_t IsCentralitySelected(AliVEvent *fInputEvent);
+  Bool_t IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
   Double_t GetCentrality(AliVEvent *event);
   Int_t GetNumberOfContributorsVtx(AliVEvent *event);
   Bool_t VertexZCut(AliVEvent *fInputEvent);
   Bool_t IsTriggerSelected();
+  Bool_t HasV0AND(){return fHasV0AND;}
+  Bool_t IsSDDFired(){return fIsSDDFired;}
+  Int_t IsSpecialTrigger(){return fSpecialTrigger;}
 
   // Set Individual Cuts
   Bool_t SetRCut(Int_t RCut);
@@ -178,13 +184,12 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut);
   Bool_t SetRemovePileUp(Int_t removePileUp);  
   Bool_t SetMultiplicityMethod(Int_t multiplicityMethod);
-  Bool_t SetSelectV0AND(Int_t selectV0AND);
+  Int_t SetSelectSpecialTrigger(Int_t selectSpecialTrigger);
   Bool_t SetCosPAngleCut(Int_t cosCut);
   Bool_t SetPsiPairCut(Int_t psiCut);
   Bool_t SetSharedElectronCut(Int_t sharedElec);
   Bool_t SetToCloseV0sCut(Int_t toClose);
   Bool_t SetRejectExtraSignalsCut(Int_t extraSignal);
-
   // Request Flags
 
   Bool_t IsHeavyIon(){return fIsHeavyIon;}
@@ -265,7 +270,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
   Bool_t fUseTOFpid; // flag to use tof pid
   Int_t fMultiplicityMethod; // selected multiplicity method
-  Bool_t fSelectV0AND; // flag
+  Int_t fSpecialTrigger; // flag
   Bool_t fRemovePileUp; //flag
   Float_t fOpeningAngle; // min opening angle for meson
   Float_t fPsiPairCut;
@@ -275,17 +280,19 @@ class AliConversionCuts : public AliAnalysisCuts {
   Double_t fminV0Dist; //
   Bool_t fDoSharedElecCut; //
   UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
+  Bool_t fHasV0AND; // V0AND Offline Trigger
+  Bool_t fIsSDDFired; // SDD FIRED to select with SDD events
   TRandom3 fRandom; //
-  Int_t fSizeElectronArray;
-  Int_t *fElectronLabelArray; //[fSizeElectronArray]
+  Int_t fElectronArraySize; // Size of electron array
+  Int_t *fElectronLabelArray; //[fElectronArraySize]
   Float_t fConversionPointXArray; // Array with conversion Point x
   Float_t fConversionPointYArray; // Array with conversion Point y
   Float_t fConversionPointZArray; // Array with conversion Point z
-  Int_t fnHeaders;  
+  Int_t fnHeaders; // Number of Headers
   Int_t *fNotRejectedStart; //[fnHeaders]
   Int_t *fNotRejectedEnd; //[fnHeaders]
   TString *fGeneratorNames; //[fnHeaders]
-  
+
 
 
   // Histograms
@@ -293,8 +300,11 @@ class AliConversionCuts : public AliAnalysisCuts {
   TH1F *hdEdxCuts;  // bookkeeping for dEdx cuts
   TH2F *hTPCdEdxbefore; // TPC dEdx before cuts
   TH2F *hTPCdEdxafter; // TPC dEdx after cuts
-  TH2F *hTOFbefore; // TOF after cuts
-  TH2F *hTOFafter; // TOF after cuts
+  TH2F *hTPCdEdxSigbefore; // TPC Sigma dEdx before cuts
+  TH2F *hTPCdEdxSigafter; // TPC Sigm dEdx after cuts
+  TH2F *hTOFbefore; // TOF before cuts
+  TH2F *hTOFSigbefore; // TOF Sigma before cuts
+  TH2F *hTOFSigafter; // TOF Sigma after cuts
   TH1F *hTrackCuts; // bookkeeping for track cuts
   TH1F *hPhotonCuts; // bookkeeping for photon specific cuts
   TH1F *hInvMassbefore; // e+e- inv mass distribution before cuts

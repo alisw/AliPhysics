@@ -6,9 +6,10 @@
 #include "AliV0ReaderV1.h"
 #include "AliKFConversionPhoton.h"
 #include "AliGammaConversionAODBGHandler.h"
+#include "AliConversionAODBGHandlerRP.h"
 #include "AliConversionMesonCuts.h"
 #include "TH3.h"
-
+#include "TH3F.h"
 
 class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
  public:
@@ -27,6 +28,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    void ProcessPhotonCandidates();
    void CalculatePi0Candidates();
    void CalculateBackground();
+   void CalculateBackgroundRP();
    void ProcessMCParticles();
    void ProcessTruePhotonCandidates( AliAODConversionPhoton* TruePhotonCandidate);
    void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
@@ -49,7 +51,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
  protected:
    AliV0ReaderV1 *fV0Reader;
    AliGammaConversionAODBGHandler **fBGHandler;
-   AliESDEvent *fESDEvent;
+   AliConversionAODBGHandlerRP    **fBGHandlerRP;
+   AliVEvent *fInputEvent;
    AliMCEvent *fMCEvent;
    AliStack *fMCStack;
    TList **fCutFolder;
@@ -64,9 +67,10 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TList *fGoodGammas;
    TList *fCutArray;
    AliConversionCuts *fConversionCuts;
-	TList *fMesonCutArray;
-	AliConversionMesonCuts *fMesonCuts;
+   TList *fMesonCutArray;
+   AliConversionMesonCuts *fMesonCuts;
    TH1F **hESDConvGammaPt;
+   TH1F **hESDConvGammaR;
    TH2F **hESDMotherInvMassPt;
    THnSparseF **sESDMotherInvMassPtZM;
    TH2F **hESDMotherBackInvMassPt;
@@ -79,49 +83,59 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1F **hMCDecayGammaOmegaPt;
    TH1F **hMCDecayGammaEtapPt;
    TH1F **hMCDecayGammaPhiPt;
+   TH1F **hMCDecayGammaSigmaPt;
    TH1F **hMCConvGammaPt;
    TH1F **hMCConvGammaR;
    TH1F **hMCConvGammaEta;
+   TH1F **hMCConvGammaRSPt;
+   TH1F **hMCConvGammaRSR;
+   TH1F **hMCConvGammaRSEta;
    TH1F **hMCPi0Pt;
    TH1F **hMCEtaPt;
    TH1F **hMCPi0InAccPt;
    TH1F **hMCEtaInAccPt;
    TH2F **hESDTrueMotherInvMassPt;
+   TH2F **hESDTruePi0FromEtaInvMassPt;
    TH2F **hESDTruePrimaryMotherInvMassMCPt;
    TH2F **hESDTruePrimaryPi0ESDPtMCPt;
    TH2F **hESDTrueSecondaryMotherInvMassPt;
    TH2F **hESDTrueSecondaryMotherFromK0sInvMassPt;
+   TH1F **hESDTrueK0sWithPi0DaughterMCPt;
+   TH2F **hESDTrueSecondaryMotherFromEtaInvMassPt;
+   TH1F **hESDTrueEtaWithPi0DaughterMCPt;
    TH2F **hESDTrueBckGGInvMassPt;
    TH2F **hESDTrueBckContInvMassPt;
    TH2F **hESDTrueMotherDalitzInvMassPt;
    TH1F **hESDTrueConvGammaPt;
-   TH1F **hESDTrueTwoElecCombPt;
-   TH1F **hESDTrueTwoPionCombPt;
-   TH1F **hESDTrueElecPionCombPt;
-   TH1F **hESDTrueCombPt;
+   TH2F **hESDCombinatorialPt;
    TH1F **hESDTruePrimaryConvGammaPt;
    TH1F **hESDTruePrimaryConvGammaR;
    TH1F **hESDTruePrimaryConvGammaEta;
    TH2F **hESDTruePrimaryConvGammaESDPtMCPt;
+   TH2F **hESDTruePrimaryConvGammaRSESDPtMCPt;
    TH1F **hESDTrueSecondaryConvGammaPt;
-   TH1F **hESDTrueSecondaryConvGammaFromK0sPt;
+   TH1F **hESDTrueSecondaryConvGammaR;
    TH1F **hESDTrueSecondaryConvGammaFromXFromK0sPt;
+   TH1F **hESDPi0Alpha;
+   TH1F **hESDBackAlpha;
+   TH1F **hESDTruePi0Alpha;
    TH1I **hNEvents;
    TH1I **hNGoodESDTracks;
    TH1I **hNV0Tracks;
 
    TRandom3 fRandom;
-   Double_t *fUnsmearedPx;
-   Double_t *fUnsmearedPy;
-   Double_t *fUnsmearedPz;
-   Double_t *fUnsmearedE;
+   Int_t fnGoodGammas;
+   Double_t *fUnsmearedPx; //[fnGoodGammas]
+   Double_t *fUnsmearedPy; //[fnGoodGammas]
+   Double_t *fUnsmearedPz; //[fnGoodGammas]
+   Double_t *fUnsmearedE;  //[fnGoodGammas]
    Int_t fnCuts;
    Int_t fiCut;
    Int_t fNumberOfESDTracks;
-   Int_t fNumberOfHijingPythiaParticles;
    Bool_t fMoveParticleAccordingToVertex;
    Bool_t fIsHeavyIon;
    Bool_t fDoMesonAnalysis;
+   Bool_t fIsFromBGEvent;
 
    ClassDef(AliAnalysisTaskGammaConvV1, 2);
 };

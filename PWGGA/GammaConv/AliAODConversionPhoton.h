@@ -31,6 +31,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
   virtual Double_t GetPhotonPt() const {return AliAODConversionParticle::Pt();}
   virtual Double_t GetPhotonP() const {return AliAODConversionParticle::P();}
   virtual Double_t GetPhotonEta() const {return AliAODConversionParticle::Eta();}
+  virtual Double_t GetPhotonTheta() const {return AliAODConversionParticle::Theta();}
   virtual Double_t GetPhotonPhi() const {return AliAODConversionParticle::Phi();}
   virtual Double_t GetPx() const { return AliAODConversionParticle::Px();}
   virtual Double_t GetPy() const { return AliAODConversionParticle::Py();}

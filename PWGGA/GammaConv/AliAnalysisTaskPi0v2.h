@@ -27,6 +27,15 @@ public:
 	knEPMethod=4
     };
 
+    enum EEventPlane{
+	kEPTPC=0,
+	kEPTPCEtaA,
+	kEPTPCEtaC,
+	kEPV0A,
+	kEPV0C,
+        knEP
+    };
+
     enum EPDGCode{
 	kPi0=111,
 	kEta=221
@@ -34,7 +43,7 @@ public:
 
     static const Int_t knBinsPhi=6;
 
-    AliAnalysisTaskPi0v2(const char *name);
+    AliAnalysisTaskPi0v2(const char *name,Int_t harmonic=2);
     virtual ~AliAnalysisTaskPi0v2();
 
     virtual void   UserCreateOutputObjects();
@@ -51,13 +60,11 @@ public:
     void SetEtaGap(Double_t gapsize){fEtaGap=gapsize;};
 
     void SetMesonCuts(const TString cut);
-    void SetCuts(TString *cutarray,Int_t ncuts);
-    void SetMesonCutList(Int_t nCuts, TList *cutArray){
-      fMesonCutList = cutArray;
-    }
-
+    void SetCuts(AliConversionSelection **conversionselection,Int_t numberOfCuts);
 
     void SetFillQA(Bool_t fill){fFillQA=fill;}
+
+    void SetEPSelectionMask(Int_t mask[knEPMethod]){for(Int_t ii=0;ii<knEPMethod;ii++)fEPSelectionMask[ii]=mask[ii];};
 
 private:
     Bool_t InitEvent();
@@ -66,34 +73,38 @@ private:
     void ProcessPi0s(Int_t iCut,EEventPlaneMethod iEP);
     void ProcessQA();
 
-    void InitConversionSelection();
-    Double_t GetPhiwrtRP(Double_t phi);
-    Double_t GetPhotonPhiwrtRP(AliAODConversionPhoton *gamma,EEventPlaneMethod iEP);
-    Double_t GetPi0PhiwrtRP(AliAODConversionMother *pi0,EEventPlaneMethod iEP);
-    Double_t GetChargedPhiwrtRP(AliVTrack *charged,EEventPlaneMethod iEP);
+    Double_t GetPhiwrtRP(Double_t dPhi);
+    Double_t GetPhotonPhiwrtRP(AliAODConversionPhoton *gamma,EEventPlaneMethod iEP,Bool_t bDoFlattening=kTRUE);
+    Double_t GetPi0PhiwrtRP(AliAODConversionMother *pi0,EEventPlaneMethod iEP,Bool_t bDoFlattening=kTRUE);
+    Double_t GetChargedPhiwrtRP(AliVTrack *charged,EEventPlaneMethod iEP,Bool_t bDoFlattening=kTRUE);
     void GetPhotondNdPhi(Int_t *dNdPhi,Int_t iEP,Int_t iCut=0);
     void GetChargeddNdPhi(Int_t *dNdPhi,Int_t &ntot,Int_t iEP);
     Int_t GetPhiBin(Double_t phiwrt);
     Int_t GetPhotonPhiBin(AliAODConversionPhoton *gamma,Int_t iEP);
-    Double_t GetMCPhotonPhiwrtRP(TParticle *gamma,EEventPlaneMethod iEP);
+    Double_t GetMCPhotonPhiwrtRP(TParticle *gamma,EEventPlaneMethod iEP,Bool_t bDoFlattening=kTRUE);
     TVector2 GetEPContribution(AliAODConversionPhoton *gamma);
-    Double_t GetEventPlaneAngle(EEventPlaneMethod EPmethod,Double_t eta=0,AliAODConversionPhoton *gamma0=NULL,AliAODConversionPhoton *gamma1=NULL);
-    Double_t GetTPCSubEPEta(Double_t etamin,Double_t etamax);
-    Double_t GetCorrectedTPCEPAngle(AliAODConversionPhoton *gamma0=NULL,AliAODConversionPhoton *gamma1=NULL);
+    Double_t GetEventPlaneAngle(EEventPlaneMethod EPmethod,Double_t eta=0,AliAODConversionPhoton *gamma0=NULL,AliAODConversionPhoton *gamma1=NULL,Bool_t bDoFlattening=kTRUE);
+    Double_t GetTPCSubEPEta(EEventPlane ep);
+    Double_t GetCorrectedTPCEPAngle(AliAODConversionPhoton *gamma0=NULL,AliAODConversionPhoton *gamma1=NULL,Bool_t bDoFlattening=kTRUE);
     Bool_t SetCentrality();
     void ProcessEventPlane();
     Int_t GetRadialBin(Double_t radius);
     Int_t GetRunIndex(Int_t run);
+    Double_t ApplyFlattening(Double_t phi,EEventPlane ep);
+    Bool_t GetTPCEventPlane();
 
-    // For V0 EP
-    void GetV0EP(AliVEvent * event);
+    void GetV0EP(AliVEvent * event,Double_t &rpv0a,Double_t &rpv0c);
     void OpenInfoCalibration(Int_t run);
+    Double_t GetWeight(TObject* track1);
+    Double_t GetPhiWeight(TObject* track1);
+    TH1F* SelectPhiDist(AliVTrack *track);
 
-    Double_t ApplyFlatteningTPC(Double_t phi, Double_t c);
-    Double_t ApplyFlatteningV0A(Double_t phi, Double_t c);
-    Double_t ApplyFlatteningV0C(Double_t phi, Double_t c);
+    Double_t GetPsiInRange(Double_t phi);
 
-
+    TObjArray* GetEventPlaneTracks(Int_t &maxID);
+    TVector2 GetContributionEP(AliVTrack *track);
+    Int_t GetAODEPTrackFilterBit();
+   
     // Constants
 
     enum Ebinsgamma{
@@ -130,18 +141,21 @@ private:
     Int_t fCentralityBin; // Event Centrality Bin
     Int_t fNBinsPhi; // Number of Phi wrt RP bins
     AliEventplane *fEP; // Event Plane Pointer
-    Bool_t fWeightMultiplicity; // Use Multiplicity Weight
+    Bool_t fUseTPCOnlyTracks; // Use TPC Only Tracks for EP
     Double_t fEtaMax; // Eta Max for analysis;
     Double_t fEtaGap; // Eta Gap
     Double_t fRPTPCEtaA; // TPCEtaA event plane
     Double_t fRPTPCEtaC; // TPCEtaC event plane
     Double_t fRPV0A; // V0A event plane
     Double_t fRPV0C; // V0C event plane
+    Double_t fRPTPC; // TPC event plane
+    Double_t fRPTPCEtaABF; // TPCEtaA event plane before flattening
+    Double_t fRPTPCEtaCBF; // TPCEtaC event plane before flattening
+    Double_t fRPV0ABF;// V0A event plane before flattening
+    Double_t fRPV0CBF;// V0C event plane before flattening
+    Double_t fRPTPCBF;// TPC event plane before flattening
     Int_t fNCuts; // NUmber of Photon Cuts for v2 analysis
-    TList *fCutList; // Cuts for Photon v2 analysis
     AliConversionCuts *fConversionCuts; // Cuts used by the V0Reader
-   TList *fMesonCutList; // Cuts for Photon v2 analysis
-    AliConversionMesonCuts *fMesonCuts; // Cuts used by the V0Reader
     TRandom3 *fRandomizer; // Randomizer for Event Plane Randomisation
     TList *fOutputList; // List for Output (Histograms etc.)
     EPDGCode fMesonPDGCode; // PDG Code of the processed Meson (for MC truth)
@@ -151,7 +165,15 @@ private:
     Int_t fRunIndex; // current internal run index
     Int_t fNEPMethods; // number of EP methods
     Bool_t fFillQA; // Fill QA Histograms
-
+    Int_t fHarmonic; // Harmonic to be analyzed (v2,v3,..)
+    Double_t fPsiMax; //Range for Psi
+    TString  fPeriod; //"LHC11h","LHC10h"
+    Bool_t fIsAOD; // Is AOD? else ESD
+    TH1F*	 fPhiDist[4];			// array of Phi distributions used to calculate phi weights
+    THnSparse *fSparseDist;               //! THn for eta-charge phi-weighting
+    TH1F *fHruns;                         // information about runwise statistics of phi-weights
+    Bool_t fDoEPFlattening; // Do flattening
+    Int_t fEPSelectionMask[knEPMethod]; // Which EP methods shall be applied
     // Histograms
 
     TH1F *hNEvents;
@@ -172,25 +194,12 @@ private:
     TH2F *hRPTPCEtaC;
     TH2F *hRPTPCEtaAC;
     TH2F *hCos2TPCEta;
-
-    TH2F *hCos2TPCWeightedPhoton;
-    TH2F *hCos2TPCEtaWeightedPhoton;
-    TH2F *hCos2V0ATPCWeightedPhoton;
-    TH2F *hCos2V0CTPCWeightedPhoton;
-    TH2F *hCos2V0ACWeightedPhoton;
-
-    TH2F *hCos2TPCWeightedCharged;
-    TH2F *hCos2TPCEtaWeightedCharged;
-    TH2F *hCos2V0ATPCWeightedCharged;
-    TH2F *hCos2V0CTPCWeightedCharged;
-    TH2F *hCos2V0ACWeightedCharged;
-
-    TH2F *hCos2TPCWeightedV0Mult;
-    TH2F *hCos2TPCEtaWeightedV0Mult;
-    TH2F *hCos2V0ATPCWeightedV0Mult;
-    TH2F *hCos2V0CTPCWeightedV0Mult;
-    TH2F *hCos2V0ACWeightedV0Mult;
-
+    TH2F *hCos2V0ATPCEtaA;
+    TH2F *hCos2V0ATPCEtaC;
+    TH2F *hCos2V0CTPCEtaA;
+    TH2F *hCos2V0CTPCEtaC;
+    TH2F *hCos2SumWeights;
+    TH2F *hEtaTPCEP;
 
     // Gamma
     TH2F *hGammaMultCent;
@@ -225,7 +234,8 @@ private:
     Float_t fWidthQ[nCentrBinV0][2][2];   // ...
 
     //Event Plane
-    THnSparse *hEPVertex;
+    //THnSparse *hEPVertex;
+    THnSparse *hEPQA;
 
     AliAnalysisTaskPi0v2(const AliAnalysisTaskPi0v2&); // not implemented
     AliAnalysisTaskPi0v2& operator=(const AliAnalysisTaskPi0v2&); // not implemented
