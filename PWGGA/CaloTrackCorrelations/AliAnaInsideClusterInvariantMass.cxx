@@ -75,7 +75,7 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   //default ctor
   
   // Init array of histograms
-  for(Int_t i = 0; i < 7; i++)
+  for(Int_t i = 0; i < 8; i++)
   {
     fhMassAfterCutsNLocMax1[i] = 0;
     fhMassAfterCutsNLocMax2[i] = 0;
@@ -286,12 +286,12 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();          
   Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();  
   
-  TString ptype[] ={"","#gamma","#gamma->e^{#pm}","#pi^{0}","#eta","e^{#pm}", "hadron"}; 
-  TString pname[] ={"","Photon","Conversion",     "Pi0",    "Eta", "Electron","Hadron"};
+  TString ptype[] ={"","#gamma","#gamma->e^{#pm}","#pi^{0}","#eta","e^{#pm}", "hadron","#pi^{0} (#gamma->e^{#pm})"}; 
+  TString pname[] ={"","Photon","Conversion",     "Pi0",    "Eta", "Electron","Hadron","Pi0Conv"};
   
   Int_t n = 1;
   
-  if(IsDataMC()) n = 7;
+  if(IsDataMC()) n = 8;
   
   Int_t nMaxBins = 10;
   
@@ -1534,7 +1534,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     {
       Int_t tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader());
             
-      if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  )      mcindex = kmcPi0;
+      if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
+               !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPi0;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  )      mcindex = kmcPi0Conv;
       else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  )      mcindex = kmcEta;
       else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && 
                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPhoton;
