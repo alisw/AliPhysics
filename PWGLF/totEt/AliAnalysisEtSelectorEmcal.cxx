@@ -75,17 +75,30 @@ Bool_t AliAnalysisEtSelectorEmcal::PassDistanceToBadChannelCut(const AliESDCaloC
 Bool_t AliAnalysisEtSelectorEmcal::PassTrackMatchingCut(const AliESDCaloCluster& cluster) const
 {
 
-    Float_t pos[3];
+  Int_t nTracksMatched = cluster.GetNTracksMatched();
+  if(nTracksMatched == 0){
+    return kTRUE;
+  }
+  
+  Int_t trackMatchedIndex = cluster.GetTrackMatchedIndex();
+  if(trackMatchedIndex < 0){
+    return kTRUE;
+  }
+  //Float_t pos[3];
 
-    cluster.GetPosition(pos);
-    Int_t trackMatchIdx = cluster.GetTrackMatchedIndex();
-    Double_t distance = 9999.0;
-    if(trackMatchIdx>-1)
-    {
-      distance = CalcTrackClusterDistance(pos, &trackMatchIdx);
-    }
-    
-    return distance > fCuts->GetEmcalTrackDistanceCut();
+//     //cluster.GetPosition(pos);
+//     Int_t trackMatchIdx = cluster.GetTrackMatchedIndex();
+//     //Double_t distance = 9999.0;
+//     if(trackMatchIdx>-1)
+//     {
+//       return kTRUE;
+//       //distance = CalcTrackClusterDistance(pos, &trackMatchIdx);
+//     }
+
+  //Float_t recoE = cluster->E();
+
+    return kFALSE;
+    //return distance > fCuts->GetEmcalTrackDistanceCut();
 }
 
 Bool_t AliAnalysisEtSelectorEmcal::CutGeometricalAcceptance(const TParticle& part) const
