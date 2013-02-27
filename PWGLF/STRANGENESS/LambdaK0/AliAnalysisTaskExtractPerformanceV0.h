@@ -258,6 +258,16 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultLambda;     //! Lambda
    TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultAntiLambda; //! AntiLambda
    TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultK0Short;    //! K0Short
+  
+//---> TRUE Multiplicity Containers
+  
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultMCLambda;     //! Lambda
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultMCAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimAnalysisPtVsYVsMultMCK0Short;    //! K0Short
+  
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultMCLambda;     //! Lambda
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultMCAntiLambda; //! AntiLambda
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultMCK0Short;    //! K0Short
 
 //V0A containers
   
