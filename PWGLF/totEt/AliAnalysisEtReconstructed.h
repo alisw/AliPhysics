@@ -62,6 +62,8 @@ protected:
     Double_t fRecEffCorrection; // Eff correction
     
     TH2D *fClusterPosition; // Position of clusters
+    TH1F *fClusterEnergy; // Distribution of cluster energies
+    TH1F *fClusterEt; // Distribution of cluster energies
     
     TH2D *fHistChargedEnergyRemoved; // Charged energy removed
     TH2D *fHistNeutralEnergyRemoved; // Neutral energy removed
