@@ -119,6 +119,7 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Int_t   fTreeCascVarMultiplicityTRK;         //!
   Int_t   fTreeCascVarMultiplicitySPD;         //!
   
+  Int_t   fTreeCascVarMultiplicityMC;         //!
   Float_t fTreeCascVarDistOverTotMom;       //!
   Int_t   fTreeCascVarPID;         //!
   Int_t   fTreeCascVarPIDBachelor; //!  
@@ -201,6 +202,29 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
    TH3F      *f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus;      //! Generated Omega- Distrib, at event selection level
    TH3F      *f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus;       //! Generated Omega+ Distrib, at event selection level
 
+//---> Multiplicity -> MC multiplicity
+  
+  TH3F      *f3dHistGenPtVsYVsMultMCXiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHistGenPtVsYVsMultMCXiPlus;       //! Generated Xi+ Distrib
+  TH3F      *f3dHistGenPtVsYVsMultMCOmegaMinus;      //! Generated Omega- Distrib
+  TH3F      *f3dHistGenPtVsYVsMultMCOmegaPlus;       //! Generated Omega+ Distrib
+  
+  TH3F      *f3dHistGenSelectedPtVsYVsMultMCXiMinus;      //! Generated Xi- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYVsMultMCXiPlus;       //! Generated Xi+ Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYVsMultMCOmegaMinus;      //! Generated Omega- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYVsMultMCOmegaPlus;       //! Generated Omega+ Distrib, at event selection level
+  
+  TH3F      *f3dHistGenPtVsYCMSVsMultMCXiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHistGenPtVsYCMSVsMultMCXiPlus;       //! Generated Xi+ Distrib
+  TH3F      *f3dHistGenPtVsYCMSVsMultMCOmegaMinus;      //! Generated Omega- Distrib
+  TH3F      *f3dHistGenPtVsYCMSVsMultMCOmegaPlus;       //! Generated Omega+ Distrib
+  
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultMCXiMinus;      //! Generated Xi- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultMCXiPlus;       //! Generated Xi+ Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultMCOmegaMinus;      //! Generated Omega- Distrib, at event selection level
+  TH3F      *f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus;       //! Generated Omega+ Distrib, at event selection level
+  
+  
    TH1F      *fHistPVx;                      //! PVx distrib
    TH1F      *fHistPVy;                      //! PVy distrib
    TH1F      *fHistPVz;                      //! PVz distrib

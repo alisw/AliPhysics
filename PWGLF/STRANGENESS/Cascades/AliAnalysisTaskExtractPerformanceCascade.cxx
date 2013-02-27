@@ -134,6 +134,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarMultiplicityZNA(0),
    fTreeCascVarMultiplicityTRK(0),
    fTreeCascVarMultiplicitySPD(0),
+   fTreeCascVarMultiplicityMC(0),
    fTreeCascVarDistOverTotMom(0),
    fTreeCascVarPID(0),
    fTreeCascVarPIDBachelor(0),
@@ -263,6 +264,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarMultiplicityZNA(0),
    fTreeCascVarMultiplicityTRK(0),
    fTreeCascVarMultiplicitySPD(0),
+   fTreeCascVarMultiplicityMC(0),
    fTreeCascVarDistOverTotMom(0),
    fTreeCascVarPID(0),
    fTreeCascVarPIDBachelor(0),
@@ -453,6 +455,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
 /*24*/		fTreeCascade->Branch("fTreeCascVarMultiplicityZNA",&fTreeCascVarMultiplicityZNA,"fTreeCascVarMultiplicityZNA/I");
 /*24*/		fTreeCascade->Branch("fTreeCascVarMultiplicityTRK",&fTreeCascVarMultiplicityTRK,"fTreeCascVarMultiplicityTRK/I");
 /*24*/		fTreeCascade->Branch("fTreeCascVarMultiplicitySPD",&fTreeCascVarMultiplicitySPD,"fTreeCascVarMultiplicitySPD/I");
+/*24*/		fTreeCascade->Branch("fTreeCascVarMultiplicityMC",&fTreeCascVarMultiplicityMC,"fTreeCascVarMultiplicityMC/I");
 //-----------DECAY-LENGTH-INFO--------------------
 /*25*/		fTreeCascade->Branch("fTreeCascVarDistOverTotMom",&fTreeCascVarDistOverTotMom,"fTreeCascVarDistOverTotMom/F");
 //-----------MC-PID-------------------------------
@@ -917,6 +920,30 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
    //testing purposes
    if(fkIsNuclear == kFALSE) lMultiplicity =  fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
 
+  //--------- GENERATED NUMBER OF CHARGED PARTICLES
+  // ---> Set Variables to Zero again
+  // ---> Variable Definition
+  
+  Long_t lNumberOfCharged = 0;
+  
+  //----- Loop on Stack ----------------------------------------------------------------
+  for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
+  {// This is the begining of the loop on tracks
+    TParticle* particleOne = lMCstack->Particle(iCurrentLabelStack);
+    if(!particleOne) continue;
+    if(!particleOne->GetPDG()) continue;
+    Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+    if(TMath::Abs(lThisCharge)<0.001) continue;
+    if(! (lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
+    
+    //Double_t gpt = particleOne -> Pt();
+    Double_t geta = particleOne -> Eta();
+    
+    if( TMath::Abs(geta) < 0.5) lNumberOfCharged++;
+  }//End of loop on tracks
+  //----- End Loop on Stack ------------------------------------------------------------
+
+  
    //---> If this is a nuclear collision, then go nuclear on "multiplicity" variable...
    //---> Warning: Experimental
    if(fkIsNuclear == kTRUE){ 
@@ -939,7 +966,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
    //---> Pb-Pb case...: Centrality by V0M
 
    fTreeCascVarMultiplicity = lMultiplicity;
-   fTreeCascVarMultiplicity = lMultiplicity;
+   fTreeCascVarMultiplicityMC = lNumberOfCharged;
    fTreeCascVarMultiplicityV0A = lMultiplicityV0A;
    fTreeCascVarMultiplicityZNA = lMultiplicityZNA;
    fTreeCascVarMultiplicityTRK = lMultiplicityTRK;
@@ -999,27 +1026,39 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
          //=================================================================================
          // Xi Histograms
          if( lCurrentParticlePrimary->GetPdgCode() == 3312 ){ 
-            lPtCurrentPart    = lCurrentParticlePrimary->Pt();
-            f3dHistGenPtVsYVsMultXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
-            f3dHistGenPtVsYCMSVsMultXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
+           lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+           f3dHistGenPtVsYVsMultXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+           f3dHistGenPtVsYCMSVsMultXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
+           //MultMC
+           f3dHistGenPtVsYVsMultMCXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
+           f3dHistGenPtVsYCMSVsMultMCXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){ 
-            lPtCurrentPart    = lCurrentParticlePrimary->Pt();
-            f3dHistGenPtVsYVsMultXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
-            f3dHistGenPtVsYCMSVsMultXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
+           lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+           f3dHistGenPtVsYVsMultXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+           f3dHistGenPtVsYCMSVsMultXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
+           //MultMC
+           f3dHistGenPtVsYVsMultMCXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
+           f3dHistGenPtVsYCMSVsMultMCXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
          }
          // Omega Histograms
          if( lCurrentParticlePrimary->GetPdgCode() == 3334 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenPtVsYVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
             f3dHistGenPtVsYCMSVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
+            //MultMC
+            f3dHistGenPtVsYVsMultMCOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
+            f3dHistGenPtVsYCMSVsMultMCOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
          }
-         if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){ 
+         if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenPtVsYVsMultOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
             f3dHistGenPtVsYCMSVsMultOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
+            //MultMC
+            f3dHistGenPtVsYVsMultMCOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
+            f3dHistGenPtVsYCMSVsMultMCOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
          }
-      } 
+      }
    }
 //----- End Loop on primary Xi, Omega ----------------------------------------------------------
 
@@ -1203,24 +1242,36 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenSelectedPtVsYVsMultXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
             f3dHistGenSelectedPtVsYCMSVsMultXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
+            //MultMC
+            f3dHistGenSelectedPtVsYVsMultMCXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
+            f3dHistGenSelectedPtVsYCMSVsMultMCXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
          }
-         if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){ 
+         if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenSelectedPtVsYVsMultXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
             f3dHistGenSelectedPtVsYCMSVsMultXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
+            //MultMC
+            f3dHistGenSelectedPtVsYVsMultMCXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
+            f3dHistGenSelectedPtVsYCMSVsMultMCXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
          }
          // Omega Histograms
          if( lCurrentParticlePrimary->GetPdgCode() == 3334 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenSelectedPtVsYVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
             f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
+            //MultMC
+            f3dHistGenSelectedPtVsYVsMultMCOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
+            f3dHistGenSelectedPtVsYCMSVsMultMCOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
          }
-         if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){ 
+         if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenSelectedPtVsYVsMultOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
             f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
+            //MultMC
+            f3dHistGenSelectedPtVsYVsMultMCOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
+            f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
          }
-      } 
+      }
    }
 //----- End Loop on primary Xi, Omega ----------------------------------------------------------
 
