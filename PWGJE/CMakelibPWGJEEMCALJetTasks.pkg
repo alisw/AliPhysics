@@ -43,6 +43,7 @@ set ( SRCS
  EMCALJetTasks/AliJetEmbeddingFromPYTHIATask.cxx
  EMCALJetTasks/AliJetModelBaseTask.cxx
  EMCALJetTasks/AliJetRandomizerTask.cxx
+ EMCALJetTasks/AliJetConstituentTagCopier.cxx
  EMCALJetTasks/AliJetResponseMaker.cxx
  EMCALJetTasks/AliRhoParameter.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx

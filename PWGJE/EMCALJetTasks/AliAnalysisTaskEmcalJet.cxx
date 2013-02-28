@@ -43,7 +43,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fMaxClusterPt(100),
   fMaxTrackPt(100),
   fLeadingHadronType(0),
-  fNLeadingJets(2),
+  fNLeadingJets(1),
   fJets(0),
   fRho(0),
   fRhoVal(0)
@@ -70,7 +70,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   fMaxClusterPt(100),
   fMaxTrackPt(100),
   fLeadingHadronType(0),
-  fNLeadingJets(2),
+  fNLeadingJets(1),
   fJets(0),
   fRho(0),
   fRhoVal(0)
