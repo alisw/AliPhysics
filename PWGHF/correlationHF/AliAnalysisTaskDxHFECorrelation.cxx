@@ -77,24 +77,20 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fD0s(NULL)
   , fElectrons(NULL)
   , fCutsD0(NULL)
-  , fCutsHFE(NULL)
   , fCuts(NULL)
-  , fPID(NULL)
-  , fPIDTOF(NULL)
   , fFillOnlyD0D0bar(0)
   , fUseMC(kFALSE)
   , fUseEventMixing(kFALSE)
   , fSystem(0)
   , fSelectedD0s(NULL)
   , fSelectedElectrons(NULL)
+  , fListHFE(NULL)
+  , fTriggerParticle(AliDxHFECorrelation::kD)
 {
   // constructor
   //
   //
   DefineSlots();
-  fPID = new AliHFEpid("hfePid");
-  fPIDTOF = new AliHFEpid("hfePidTOF");
-
 }
 
 int AliAnalysisTaskDxHFECorrelation::DefineSlots()
@@ -103,7 +99,7 @@ int AliAnalysisTaskDxHFECorrelation::DefineSlots()
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2,AliRDHFCutsD0toKpi::Class());
-  DefineOutput(3,AliHFEcuts::Class());
+  DefineOutput(3,TList::Class());
   DefineOutput(4,AliHFAssociatedTrackCuts::Class());
   return 0;
 }
@@ -130,15 +126,14 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   // external object, do not delete
   fCutsD0=NULL;
   // external object, do not delete
-  fCutsHFE=NULL;
-  if(fPID) delete fPID;
-  fPID=NULL;
-  if(fPIDTOF) delete fPIDTOF;
-  fPIDTOF=NULL;
+  // TODO: also delete it here? this class is set as owner...
+  fListHFE=NULL;
   if(fSelectedElectrons) delete fSelectedElectrons;
   fSelectedElectrons=NULL;
   if(fSelectedD0s) delete fSelectedD0s;
   fSelectedD0s=NULL;
+  if(fListHFE) delete fListHFE;
+  fListHFE=NULL;
 
 
 }
@@ -148,31 +143,12 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   // create result objects and add to output list
   int iResult=0;
 
-  //Initialize PID for electron selection
-  // TODO: Put the initialization of these objects in the AddTask..
-  // PID for Only TOF
-  if(!fPIDTOF->GetNumberOfPIDdetectors()) { 
-    fPIDTOF->AddDetector("TOF",0);
-  }
-  fPIDTOF->ConfigureTOF(3); // number of sigma TOF
-  
-  // PID object for TPC and TOF combined
-  if(!fPID->GetNumberOfPIDdetectors()) { 
-    fPID->AddDetector("TOF",0);
-    fPID->AddDetector("TPC",1);
-  }
-
-  const int paramSize=4;
-  Double_t params[paramSize];
-  memset(params, 0, sizeof(Double_t)*paramSize);
-  params[0]=-1.;
-  fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
-  fPID->InitializePID();
+  ParseArguments(fOption.Data());
 
   fOutput = new TList;
   fOutput->SetOwner();
 
-  // setting up for D0s
+  // D0s ===============================================
   TString selectionD0Options;
   switch (fFillOnlyD0D0bar) {
   case 1: selectionD0Options+="FillOnlyD0 "; break;
@@ -182,25 +158,23 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
 
   if(fUseMC) fD0s=new AliDxHFEParticleSelectionMCD0(selectionD0Options);
   else fD0s=new AliDxHFEParticleSelectionD0(selectionD0Options);
-  fD0s->SetCuts(fCutsD0);
+  fD0s->SetCuts(fCutsD0,AliDxHFEParticleSelectionD0::kCutD0);
   iResult=fD0s->Init();
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fD0s failed with error %d", iResult));
   }
 
-  //Electrons
+  //Electrons ============================================
+  fListHFE->SetOwner(); // NOt sure if needed
   if(fUseMC) fElectrons=new AliDxHFEParticleSelectionMCEl;
   else fElectrons=new AliDxHFEParticleSelectionEl;
-  //TODO: Create a TList containing all cut-objects needed for the worker classes
-  fElectrons->SetCuts(fPID, AliDxHFEParticleSelectionEl::kCutPID);
-  fElectrons->SetCuts(fPIDTOF, AliDxHFEParticleSelectionEl::kCutPIDTOF);
-  fElectrons->SetCuts(fCutsHFE, AliDxHFEParticleSelectionEl::kCutHFE);
+  fElectrons->SetCuts(fListHFE, AliDxHFEParticleSelectionEl::kCutList);
   iResult=fElectrons->Init();
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fElectrons failed with error %d", iResult));
   }
 
-  //Correlation
+  //Correlation ===========================================
   if(fUseMC) fCorrelation=new AliDxHFECorrelationMC;
   else fCorrelation=new AliDxHFECorrelation;
   fCorrelation->SetCuts(fCuts);
@@ -209,9 +183,10 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   TString arguments;
   if (fUseMC)          arguments+=" use-mc";
   if (fUseEventMixing) arguments+=" event-mixing";
-  // TODO: fSystem is a boolean right now, needs to be changed to fit also p-Pb
-  if (!fSystem)         arguments+=" system=pp";
-  else                 arguments+=" system=Pb-Pb";
+  if (fSystem==0)         arguments+=" system=pp";
+  else if (fSystem==1)       arguments+=" system=Pb-Pb";
+  if(fTriggerParticle==AliDxHFECorrelation::kD) arguments+=" trigger=D";
+  if(fTriggerParticle==AliDxHFECorrelation::kElectron) arguments+=" trigger=electron";
   iResult=fCorrelation->Init(arguments);
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
@@ -256,7 +231,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   // all tasks must post data once for all outputs
   PostData(1, fOutput);
   PostData(2,copyfCuts);
-  PostData(3,fCutsHFE);
+  PostData(3,fListHFE);
   PostData(4,fCuts);
 
 }
@@ -306,30 +281,35 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   if (!cutsd0) return; // Fatal thrown already in initialization
 
   if(!cutsd0->IsEventSelected(pEvent)) {
+    // TODO: Fill histograms based on why the event is rejected
     AliDebug(2,"rejected at IsEventSelected");
     return;
   }
 
-  if(!fPID->IsInitialized()){ 
-    // Initialize PID with the given run number
-    AliWarning("PID not initialised, get from Run no");
-    fPID->InitializePID(pEvent->GetRunNumber());
-  }
-  if(!fPIDTOF->IsInitialized()){ 
-    // Initialize PID with the given run number
-    AliWarning("PIDTOF not initialised, get from Run no");
-    fPIDTOF->InitializePID(pEvent->GetRunNumber());
-  }
-
+  // Gets the PID response from the analysis manager
   AliPIDResponse *pidResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetPIDResponse();
   if(!pidResponse){
     // TODO: consider issuing fatal instead of debug in case pidresponse not available
     AliDebug(1, "Using default PID Response");
     pidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
   }
- 
-  fPID->SetPIDResponse(pidResponse);
-  fPIDTOF->SetPIDResponse(pidResponse);
+  
+  // Fetching the PID objects from the list, checks if the objects are AliHFEpids
+  // If so, checks if they are initialized and also sets the pidresponse
+  TObject *obj=NULL;
+  TIter next(fListHFE);
+  while((obj = next())){
+    AliHFEpid* pidObj=dynamic_cast<AliHFEpid*>(obj);
+    if(pidObj){
+      if(!pidObj->IsInitialized()){
+	AliWarning("PID not initialised, get from Run no");
+	pidObj->InitializePID(pEvent->GetRunNumber());
+      }
+      pidObj->SetPIDResponse(pidResponse);
+    }
+  }
+
+  // Also sends the pidresponse to the particle selection class for electron
   fElectrons->SetPIDResponse(pidResponse); 
 
   // Retrieving process from the AODMCHeader. 
@@ -349,6 +329,31 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
 
   fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsSel);
 
+  Int_t nElSelected=0;
+  // Run electron selection first if trigger particle is an electron
+  if(fTriggerParticle==AliDxHFECorrelation::kElectron){
+
+    if (fSelectedElectrons) delete fSelectedElectrons;
+    fSelectedElectrons=(fElectrons->Select(pEvent));
+  
+    if(! fSelectedElectrons) {
+      return;
+    }
+
+    nElSelected =  fSelectedElectrons->GetEntriesFast();
+
+    // No need to go further if no electrons are found, except for event mixing. Will here anyway correlate D0s with electrons from previous events
+    if(!fUseEventMixing && nElSelected==0){
+      AliDebug(4,"No electrons found in this event");
+      return;
+    }
+    // Fill bin with triggered events if electrons are the trigger (only for events with nr electrons >0)
+    if(nElSelected>0) fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsTriggered);
+
+  }
+
+
+  // D0 selection 
   if(fSelectedD0s) delete fSelectedD0s;
   fSelectedD0s=(fD0s->Select(inputArray,pEvent));
   
@@ -357,60 +362,49 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   }
   Int_t nD0Selected = fSelectedD0s->GetEntriesFast();
 
-
-  /*std::auto_ptr<TObjArray> pSelectedD0s(fD0s->Select(inputArray,pEvent));
-  if(! pSelectedD0s.get()) {
-    return;
-  }
-  Int_t nD0Selected = pSelectedD0s->GetEntriesFast();*/
-
   // When not using EventMixing, no need to go further if no D0s are found.
   // For Event Mixing, need to store all found electrons in the pool
   if(!fUseEventMixing && nD0Selected==0){
     AliDebug(4,"No D0s found in this event");
     return;
   }
+  //  Run electron selection second if trigger particle is D0
+  if(fTriggerParticle!=AliDxHFECorrelation::kElectron){
 
-  fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsD0);
+    // Fill bin with triggered events here if D0 are the trigger (only for events with nr D0 >0)
+    if(nD0Selected>0) fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsTriggered);
 
-  /* std::auto_ptr<TObjArray> pSelectedElectrons(fElectrons->Select(pEvent));
-  // note: the pointer is deleted automatically once the scope is left
-  // if the array should be published, the auto pointer must be released
-  // first, however some other cleanup will be necessary in that case
-  // probably a clone with a reduced AliVParticle implementation is
-  // appropriate.
-
-  if(! pSelectedElectrons.get()) {
-    return;
-  }
-
-  Int_t nElSelected =  pSelectedElectrons->GetEntriesFast();*/
-  if (fSelectedElectrons) delete fSelectedElectrons;
-  fSelectedElectrons=(fElectrons->Select(pEvent));
+    if (fSelectedElectrons) delete fSelectedElectrons;
+    fSelectedElectrons=(fElectrons->Select(pEvent));
   
-  if(! fSelectedElectrons) {
-    return;
+    if(! fSelectedElectrons) {
+      return;
+    }
+
+    nElSelected =  fSelectedElectrons->GetEntriesFast();
+
+    // No need to go further if no electrons are found, except for event mixing. Will here anyway correlate D0s with electrons from previous events
+    if(!fUseEventMixing && nElSelected==0){
+      AliDebug(4,"No electrons found in this event");
+      return;
+    }
   }
 
-  Int_t nElSelected =  fSelectedElectrons->GetEntriesFast();
-
-
-  // No need to go further if no electrons are found, except for event mixing. Will here anyway correlate D0s with electrons from previous events
-  if(!fUseEventMixing && nElSelected==0){
-    AliDebug(4,"No electrons found in this event");
-    return;
-  }
-  if(nD0Selected==0 && nElSelected==0){
+  // Should not be necessary:
+  if(!fUseEventMixing && (nD0Selected==0 && nElSelected==0)){
     AliDebug(4,"Neither D0 nor electrons in this event");
     return;
   }
   
   AliDebug(4,Form("Number of D0->Kpi Start: %d , End: %d    Electrons Selected: %d\n", nInD0toKpi, nD0Selected, nElSelected));
 
-  fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsD0e);
+  if(nD0Selected >0 && nElSelected>0) fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsCorrelated);
 
-  //int iResult=fCorrelation->Fill(pSelectedD0s.get(), pSelectedElectrons.get(), pEvent);
-  int iResult=fCorrelation->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
+  int iResult=0;
+  if(fTriggerParticle==AliDxHFECorrelation::kD) 
+    fCorrelation->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
+  else 
+    fCorrelation->Fill(fSelectedElectrons, fSelectedD0s, pEvent);
 
   if (iResult<0) {
     AliFatal(Form("%s processing failed with error %d", fCorrelation->GetName(), iResult));
@@ -419,6 +413,66 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   PostData(1, fOutput);
   return;
 
+}
+
+int AliAnalysisTaskDxHFECorrelation::ParseArguments(const char* arguments)
+{
+  // parse arguments and set internal flags
+  TString strArguments(arguments);
+  auto_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
+  if (!tokens.get()) return 0;
+
+  TIter next(tokens.get());
+  TObject* token;
+  while ((token=next())) {
+    TString argument=token->GetName();
+   
+    if (argument.BeginsWith("event-mixing")) {
+      fUseEventMixing=true;
+      AliInfo("Running with Event mixing");
+      continue;
+    }
+      
+    if (argument.BeginsWith("mc")) {
+      fUseMC=true;
+      AliInfo("Running on MC data");
+      continue;
+    }
+    if (argument.BeginsWith("system=")) {
+      argument.ReplaceAll("system=", "");
+      if (argument.CompareTo("pp")==0)fSystem=0;
+      else if (argument.CompareTo("Pb-Pb")==0) fSystem=1;
+      else {
+	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
+	// TODO: check what makes sense
+	fSystem=0;
+      }
+      continue;
+    }
+    if (argument.BeginsWith("fillD0scheme=")){
+      argument.ReplaceAll("fillD0scheme=", "");
+      if (argument.CompareTo("both")==0){ fFillOnlyD0D0bar=0; AliInfo("Filling both D0 and D0bar ");}
+      else if (argument.CompareTo("D0")==0){ fFillOnlyD0D0bar=1; AliInfo("Filling only D0 ");}
+      else if (argument.CompareTo("D0bar")==0){ fFillOnlyD0D0bar=2; AliInfo("Filling only D0bar"); }
+      else {
+	AliWarning(Form("can not set D0 filling scheme, unknown parameter '%s'", argument.Data()));
+	fFillOnlyD0D0bar=0;
+      }
+      continue;
+    }
+    if (argument.BeginsWith("trigger=")){
+      argument.ReplaceAll("trigger=", "");
+      if (argument.CompareTo("D0")==0) {fTriggerParticle=AliDxHFECorrelation::kD; AliInfo("CorrTask: trigger on D0");}
+      else if (argument.CompareTo("D")==0){ fTriggerParticle=AliDxHFECorrelation::kD; AliInfo("CorrTask: trigger on D0");}
+      else if (argument.CompareTo("electron")==0) { fTriggerParticle=AliDxHFECorrelation::kElectron; AliInfo("CorrTask: trigger on electron");}
+      continue;
+    }
+    
+    AliWarning(Form("unknown argument '%s'", argument.Data()));
+      
+  }
+
+  return 0;
 }
 
 void AliAnalysisTaskDxHFECorrelation::FinishTaskOutput()

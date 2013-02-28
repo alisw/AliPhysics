@@ -37,10 +37,16 @@ class AliDxHFECorrelation : public TNamed {
   enum {
     kEventsAll = 0, // all events
     kEventsSel,     // selected events
-    kEventsD0 ,     // events with D0s
-    kEventsD0e,     // events with correlated D0s
+    kEventsTriggered,     // events with D0s
+    kEventsCorrelated,     // events with correlated D0s
     kNEventControlLabels
   };
+
+  // Enums for setting trigger particle type
+  enum {
+    kD=0,       
+    kElectron=1
+  } ;
 
   // init
   int Init(const char* arguments="");
@@ -92,6 +98,7 @@ class AliDxHFECorrelation : public TNamed {
   Double_t GetDeltaPhi() const {return fDeltaPhi;}
   Double_t GetDeltaEta() const {return fDeltaEta;}
   inline int GetDimTHnSparse() const {return fDimThn;}
+  Int_t GetTriggerParticleType() const {return fTriggerParticleType;}
 
   void EventMixingChecks(const AliVEvent* pEvent);
 
@@ -153,10 +160,10 @@ class AliDxHFECorrelation : public TNamed {
   int fDimThn;                   // Holds dim of THnSparse
   Double_t* fCorrArray;          //! filling array for THnSparse
   Int_t fEventType;              // Event type. Only needed for MC (fix)
-
+  Int_t fTriggerParticleType;    // Which particle to trigger on
 
   static const char* fgkEventControlBinNames[];
 
-  ClassDef(AliDxHFECorrelation, 4)
+  ClassDef(AliDxHFECorrelation, 5)
 };
 #endif

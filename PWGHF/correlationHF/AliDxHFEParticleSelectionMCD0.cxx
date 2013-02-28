@@ -182,6 +182,8 @@ int AliDxHFEParticleSelectionMCD0::CheckMC(AliVParticle* p, const AliVEvent* pEv
   //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx). Checks both D0s and daughters
   MClabel=particle->MatchToMC(AliDxHFEToolsMC::kPDGD0,fMCArray,2,pdgDgD0toKpi); 
   
+  //TODO: Need a different strategy!!!
+  // ALSO: look at AliAnalysisTaskSED0Mass for tips
   if(MClabel<0){
     // Checking PDG of particle if not MC truth D0
     // TODO: done the right way??

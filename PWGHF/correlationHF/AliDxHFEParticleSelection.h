@@ -21,6 +21,7 @@ class AliVParticle;
 class AliPIDResponse;
 class TObjArray;
 class TH1;
+class TH2;
 class THnSparse;
 
 /**
@@ -123,6 +124,19 @@ class AliDxHFEParticleSelection : public TNamed {
 
   /// get the dimension of THn, fixed
   inline int GetDimTHnSparse() const {return fDimThn;}
+
+  /// create 2D control histogram
+  TH2* CreateControl2DHistogram(const char* name,
+				const char* title,
+				double* nBins,
+				const char* xaxis,
+				const char* yaxis) const;
+
+  /// create control histogram
+  TH1* CreateControlHistogram(const char* name,
+			      const char* title,
+			      int nBins,
+			      const char** binLabels) const;
   
   /// create control THnSparse
   THnSparse* CreateControlTHnSparse(const char* name,

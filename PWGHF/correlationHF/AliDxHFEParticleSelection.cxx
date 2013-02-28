@@ -31,6 +31,7 @@
 #include "TList.h"
 #include "TMath.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "THnSparse.h"
 #include "AliReducedParticle.h"
 #include "TFile.h"
@@ -122,6 +123,45 @@ int AliDxHFEParticleSelection::InitControlObjects()
   AddControlObject(fhTrackControl);
 
   return 0;
+}
+
+
+TH1* AliDxHFEParticleSelection::CreateControlHistogram(const char* name,
+						       const char* title,
+						       int nBins,
+						       const char** binLabels) const
+{
+  /// create control histogram
+  std::auto_ptr<TH1> h(new TH1D(name, title, nBins, -0.5, nBins-0.5));
+  if (!h.get()) return NULL;
+  for (int iLabel=0; iLabel<nBins; iLabel++) {
+    h->GetXaxis()->SetBinLabel(iLabel+1, binLabels[iLabel]);    
+  }
+  
+  return h.release();
+}
+
+
+TH2* AliDxHFEParticleSelection::CreateControl2DHistogram(const char* name,
+							 const char* title,
+							 double* nBins,
+							 const char* xaxis,
+							 const char* yaxis
+							 ) const
+{
+  /// create control 2D histogram. Requires as input:
+  // name = name of histogram 
+  // title = title of histogram
+  // nBins (array with 6 elements) containing apropriate binning and range for x and y axis
+  // xaxis = title of x axis 
+  // yaxis = title of y axis 
+
+  std::auto_ptr<TH2> h(new TH2D(name, title, (Int_t)nBins[0], nBins[1], nBins[2], (Int_t)nBins[3], nBins[4],nBins[5]));
+  if (!h.get()) return NULL;
+  h->GetXaxis()->SetTitle(xaxis);
+  h->GetYaxis()->SetTitle(yaxis);
+  
+  return h.release();
 }
 
 THnSparse* AliDxHFEParticleSelection::CreateControlTHnSparse(const char* name,

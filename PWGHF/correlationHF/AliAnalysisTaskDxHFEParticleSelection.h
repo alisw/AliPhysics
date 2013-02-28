@@ -20,6 +20,7 @@
 class AliDxHFEParticleSelection;
 class AliAnalysisCuts;
 class TList;
+class TObjArray;
 
 /**
  * @class AliAnalysisTaskDxHFEParticleSelection
@@ -33,6 +34,11 @@ class AliAnalysisTaskDxHFEParticleSelection : public AliAnalysisTaskSE {
   AliAnalysisTaskDxHFEParticleSelection(const char* opt="");
   /// destructor
   virtual ~AliAnalysisTaskDxHFEParticleSelection();
+
+  enum {
+    kD0=0,
+    kElectron=1
+  };
 
   /// inherited from AliAnalysisTask: connect tree branches at input slots
   virtual void ConnectInputData(Option_t *option="") {
@@ -50,8 +56,10 @@ class AliAnalysisTaskDxHFEParticleSelection : public AliAnalysisTaskSE {
 
   void SetOption(const char* opt) { fOption = opt; }
   void SetFillOnlyD0D0bar(Int_t flagfill){fFillOnlyD0D0bar=flagfill;}
+  void SetParticleType(int particle){fParticleType=particle;}
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
-  virtual void SetCuts(AliAnalysisCuts* cuts){fCuts=cuts;}
+  //  virtual void SetCuts(AliAnalysisCuts* cuts){fCuts=cuts;}
+  virtual void SetCutList(TList* cuts){fCutList=cuts;}
   Bool_t GetUseMC() const {return fUseMC;}
 
  protected:
@@ -63,16 +71,21 @@ class AliAnalysisTaskDxHFEParticleSelection : public AliAnalysisTaskSE {
   AliAnalysisTaskDxHFEParticleSelection& operator=(const AliAnalysisTaskDxHFEParticleSelection&);
 
   int DefineSlots();
+  int ParseArguments(const char* arguments);
 
   TList* fOutput;                       // list send on output slot 1
-  TString fOption;                      //  option string
-  AliAnalysisCuts* fCuts;               //  Cuts 
+  TString fOption;                      // option string
+  TList* fCutList;                         // TList containg cut objects
+  AliAnalysisCuts *fCutsD0;             // Cut Object for D0 
   AliDxHFEParticleSelection* fSelector; // selector instance
   bool fUseMC;                          // use MC info
-  Int_t     fFillOnlyD0D0bar;            // flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
+  Int_t     fFillOnlyD0D0bar;           // flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
+  TObjArray *fSelectedTracks;           // Array for selected Tracks
+  Int_t fParticleType;                   // Holds which particle to run on
+  Int_t fSystem;                        // holds collisions system (0=pp, 1=PbPb(,2=pPb))
 
 
-  ClassDef(AliAnalysisTaskDxHFEParticleSelection, 2);
+  ClassDef(AliAnalysisTaskDxHFEParticleSelection, 3);
 };
 
 #endif

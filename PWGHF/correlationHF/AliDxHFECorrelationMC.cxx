@@ -73,6 +73,7 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
   //
   // Defines the THnSparse. 
 
+  AliDebug(1, "Creating Corr THnSparse");
   // here is the only place to change the dimension
   static const int sizeEventdphi = 10;  
   InitTHnSparseArray(sizeEventdphi);
@@ -121,15 +122,30 @@ int AliDxHFECorrelationMC::FillParticleProperties(AliVParticle* tr, AliVParticle
     // TODO: think about filling only the available data and throwing a warning
     return -ENOSPC;
   }
-  data[i++]=ptrigger->GetInvMass();
-  data[i++]=ptrigger->Pt();
-  data[i++]=ptrigger->Phi();
-  data[i++]=ptrigger->GetPtBin(); 
-  data[i++]=assoc->Pt();
+  if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
+    data[i++]=ptrigger->GetInvMass();
+    data[i++]=ptrigger->Pt();
+    data[i++]=ptrigger->Phi();
+    data[i++]=ptrigger->GetPtBin(); 
+    data[i++]=assoc->Pt();
+  } 
+  else{
+    data[i++]=assoc->GetInvMass();
+    data[i++]=assoc->Pt();
+    data[i++]=assoc->Phi();
+    data[i++]=assoc->GetPtBin(); 
+    data[i++]=ptrigger->Pt();
+  }
   data[i++]=AliDxHFECorrelation::GetDeltaPhi();
   data[i++]=AliDxHFECorrelation::GetDeltaEta();
-  data[i++]=ptrigger->GetOriginMother();
-  data[i++]=assoc->GetOriginMother();
+  if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
+    data[i++]=ptrigger->GetOriginMother();
+    data[i++]=assoc->GetOriginMother();
+  }
+  else {
+    data[i++]=assoc->GetOriginMother();
+    data[i++]=ptrigger->GetOriginMother();
+  }
   data[i++]=fMCEventType;
   
   return i;

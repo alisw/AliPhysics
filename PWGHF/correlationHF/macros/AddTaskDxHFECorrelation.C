@@ -8,7 +8,12 @@
 //#include "AliFlowCandidateTrack.h"   // added as hint for hidden library dependency to libPWGflowTasks
 //#include "AliCFContainer.h"          // added as hint for hidden library dependency to libCORRFW
 //#include "AliAODRecoDecayHF2Prong.h" // added as hint for hidden library dependency to libPWGHFvertexingHF
+
 #include "AliAnalysisTaskDxHFECorrelation.h"
+#include "AliDxHFECorrelation.h"
+#incldue "AliReducedParticle.h"
+#include "AliHFCorrelator.h"
+#include "AliHFAssociatedTrackCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliHFEcuts.h"
@@ -18,7 +23,6 @@
 #include "TDirectory.h"
 #include "TROOT.h"
 #include "AliRDHFCutsD0toKpi.h"
-#include "AliHFAssociatedTrackCuts.h"
 using namespace std;
 #endif
 
@@ -30,7 +34,7 @@ AliAnalysisCuts* createDefaultPoolConfig();
 /// @date   2012-05-09
 /// @brief  Add the D0-HFE correlation task to the manager
 ///
-void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcorrelationDxHF")
+int AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcorrelationDxHF")
 {
   AliAnalysisManager *pManager = AliAnalysisManager::GetAnalysisManager();
   if (!pManager) {
@@ -43,6 +47,10 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
   Bool_t bEventMixing=kFALSE;
   TString poolConfigFile="";
   TString taskOptions;
+  Int_t triggerParticle=AliDxHFECorrelation::kD;
+
+  cout << endl << "===============================================" << endl;
+  cout << "Setting up Correlation task: " << endl;
 
   // look for configuration arguments
   if (gDirectory) {
@@ -78,14 +86,25 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
 	  }
 	  if (argument.BeginsWith("PbPb")) {
 	    system=1;
-	    taskOptions+=" PbPb";
+	    taskOptions+=" system=PbPb";
+	  }
+	  if (argument.BeginsWith("fillD0scheme=")){
+	    taskOptions+=" "+argument;
+	  }
+	  if (argument.BeginsWith("trigger=")) {
+	    taskOptions+=" "+argument;
+	    argument.ReplaceAll("trigger=","");
+	    if (argument.CompareTo("D0")==0) triggerParticle=AliDxHFECorrelation::kD;
+	    else if (argument.CompareTo("D")==0) triggerParticle=AliDxHFECorrelation::kD;
+	    else if (argument.CompareTo("electron")==0) triggerParticle=AliDxHFECorrelation::kElectron;
 	  }
 	}
-	delete tokens;
+	    
       }
+      delete tokens;
     }
   }
-
+  
   // check for existence of PID task and add if not available
   const char* pidTaskName="PIDResponseTask";
   const char* pidTaskMacro="$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C";
@@ -97,15 +116,16 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
     gROOT->ProcessLine(pidFunction);
     if (pManager->GetTask(pidTaskName)==NULL) {
       ::Error("AddTaskDxHFECorrelation", Form("failed to add PID task '%s' from macro '%s'",
-					   pidTaskName, pidTaskMacro));
-      return;
+					      pidTaskName, pidTaskMacro));
+      return 0;
     }
   } else {
     // TODO: would like to check if the PID task was set up
     // with consistent parameters, however there are no getters at the moment
     ::Info("AddTaskDxHFECorrelation", Form("PID task '%s' already existing", pidTaskName));
   }
-
+  if(triggerParticle==AliDxHFECorrelation::kElectron)
+    analysisName="HFExD";
   if (ofilename.IsNull()) ofilename=AliAnalysisManager::GetCommonFileName();
   ofilename+=":"+analysisName;
 
@@ -139,6 +159,38 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
   hfecuts->SetMaxImpactParam(1.,2.);
   hfecuts->SetVertexRange(10.);
 
+  //
+  // PID for HFE
+  // PID for Only TOF
+  AliHFEpid *fPIDOnlyTOF = new AliHFEpid("hfePidTOF");
+  if(!fPIDOnlyTOF->GetNumberOfPIDdetectors()) { 
+    fPIDOnlyTOF->AddDetector("TOF",0);
+  }
+  fPIDOnlyTOF->ConfigureTOF(3); // number of sigma TOF
+  fPIDOnlyTOF->InitializePID();
+  
+  // PID object for TPC and TOF combined
+  AliHFEpid *fPID = new AliHFEpid("hfePid");
+  if(!fPID->GetNumberOfPIDdetectors()) { 
+    fPID->AddDetector("TOF",0);
+    fPID->AddDetector("TPC",1);
+  }
+  //Add settings for asymmetric cut on nSigma TPC
+  const int paramSize=4;
+  Double_t params[paramSize];
+  memset(params, 0, sizeof(Double_t)*paramSize);
+  params[0]=-1.;
+  fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
+  fPID->InitializePID();
+
+  //Create TList of HFE pid and track cuts
+  TList *listHFE = new TList;
+  listHFE->SetName("cut objects HFE");
+  listHFE->Add(hfecuts);
+  listHFE->Add(fPID);
+  listHFE->Add(fPIDOnlyTOF);
+
+
   ///______________________________________________________________________
   /// Info for Pool
   // TODO: Don't think we need the MC part of AliHFCorrelator, needs to be checked
@@ -151,54 +203,45 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
     TFile* filePoolConfiguration=TFile::Open(poolConfigFile.Data());
     if(!filePoolConfiguration){
       ::Error("AddTaskDxHFECorrelation", Form("Pool configuration object file %s not found, exiting", poolConfigFile.Data()));
-      return;
+      return 0;
     }
     TObject* pObj=filePoolConfiguration->Get(poolInfoName);
     if (!pObj) {
       ::Error("AddTaskDxHFECorrelation", Form("No Pool configuration object with name '%s' found in file %s, exiting", poolInfoName, poolConfigFile.Data()));
-      return;
+      return 0;
     }
     poolConfiguration = dynamic_cast<AliHFAssociatedTrackCuts*>(pObj);
     if (!poolConfiguration) {
       ::Error("AddTaskDxHFECorrelation", Form("Pool configuration object '%s' has inconsistent class type %s, exiting", poolInfoName, pObj->ClassName()));
-      return;
+      return 0;
     }
   }
 
   if(!poolConfiguration){
     ::Error("AddTaskDxHFECorrelation", Form("Pool configuration not found"));
-    return;
+    return 0;
   } 
   poolConfiguration->Print();
 
-  const char* taskName=AliAnalysisTaskDxHFECorrelation::Class()->GetName();
-  if (pManager->GetTask(taskName)) {
+  //Taken out, causes problem when adding more than one task
+  /*const char* taskName=AliAnalysisTaskDxHFECorrelation::Class()->GetName();
+    if (pManager->GetTask(taskName)) {
     ::Warning("AddTaskDxHFECorrelation", Form("task '%s' already existing, skipping ...",
-					   taskName));
-    return;
-  }
+    taskName));
+    return 0;
+    }*/
   
-  AliAnalysisTaskDxHFECorrelation *pTask=new AliAnalysisTaskDxHFECorrelation();
+  AliAnalysisTaskDxHFECorrelation *pTask=new AliAnalysisTaskDxHFECorrelation(taskOptions);
   if (!pTask) {
     ::Error("AddTaskDxHFECorrelation", "failed to create task.");
-    return;
+    return 0;
   }
-  pTask->SetFillOnlyD0D0bar(0); //0=both, 1=D0 only, 2=D0bar only
+  //TODO: Could also consider putting RDHFD0toKpi in a list (ParticleSelectionD0 allows it)
   pTask->SetCutsD0(RDHFD0toKpi);
-  pTask->SetCutsHFE(hfecuts);
+  pTask->SetCutsHFE(listHFE);
   pTask->SetCuts(poolConfiguration);
-  pTask->SetUseMC(bUseMC);
-  pTask->SetUseEventMixing(bEventMixing);
-  pTask->SetSystem(system);
-  // TODO: the switches above can be consolidated and collected in the options
-  pTask->SetOption(taskOptions);
 
   pManager->AddTask(pTask);
-
-  TString listName="DxHFElist";
-  TString cutnameD0="cutsD0Corr";
-  TString cutnameEl="cutsElCorr";
-  TString cutnamePool="PoolInfo";
 
   // The AnalysisManager handles the output file name in the following way:
   // The output file names are set by the function SetOutputFiles
@@ -210,6 +253,19 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
   // "myanalysis_A"
   // IMPORTANT: choosing a file name with a different stem at this point will
   // probably lead to an empty file.
+
+  TString listName;
+  TString cutnameD0="cutsD0Corr";
+  TString cutnameEl="cutsElCorr";
+  TString cutnamePool="PoolInfo";
+  if(triggerParticle==AliDxHFECorrelation::kElectron){
+    cutnameD0+="Eltrigg";
+    cutnameEl+="Eltrigg";
+    cutnamePool+="Eltrigg";
+    listName="HFExDlist";
+  }
+  else listName="DxHFElist";
+
   if(bEventMixing){ 
     ofilename+="ME";
     listName+="ME";
@@ -224,8 +280,8 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
 
   AliAnalysisDataContainer *pContainer=pManager->CreateContainer(listName, TList::Class(), AliAnalysisManager::kOutputContainer, ofilename.Data());    
   AliAnalysisDataContainer *pContainer2=pManager->CreateContainer(cutnameD0,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); //cuts D0
-  AliAnalysisDataContainer *pContainer3=pManager->CreateContainer(cutnameEl,AliHFEcuts::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); //cuts El
-  AliAnalysisDataContainer *pContainer4=pManager->CreateContainer(cutnamePool,AliHFAssociatedTrackCuts::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); //cuts El
+  AliAnalysisDataContainer *pContainer3=pManager->CreateContainer(cutnameEl,TList::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); //cuts El
+  AliAnalysisDataContainer *pContainer4=pManager->CreateContainer(cutnamePool,AliHFAssociatedTrackCuts::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); // contains event pool info
 
   pManager->ConnectInput(pTask,0,pManager->GetCommonInputContainer());
   pManager->ConnectOutput(pTask,1,pContainer);
@@ -233,7 +289,7 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
   pManager->ConnectOutput(pTask,3,pContainer3);
   pManager->ConnectOutput(pTask,4,pContainer4);
 
-  return;
+  return 1;
 }
 
 // Note: AliHFAssociatedTrackCuts keeps an instance of the external

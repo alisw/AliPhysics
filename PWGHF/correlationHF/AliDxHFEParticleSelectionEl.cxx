@@ -41,6 +41,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TAxis.h"
+#include "TList.h"
 #include "TObjArray.h"
 #include <iostream>
 #include <cerrno>
@@ -56,19 +57,8 @@ AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   , fPID(NULL)
   , fPIDTOF(NULL)
   , fElectronProperties(NULL)
-  , fWhichCut(NULL)
-  , fdEdx(NULL)
-  , fdEdxCut(NULL)
-  , fdEdxPid(NULL)
-  , fdEdxPidTOF(NULL)
-  , fnSigTPC(NULL)
-  , fnSigTPCCut(NULL)
-  , fnSigTPCPid(NULL)
-  , fnSigTPCPidTOF(NULL)
-  , fnSigTOF(NULL)
-  , fnSigTOFCut(NULL)
-  , fnSigTOFPid(NULL)
-  , fnSigTOFPidTOF(NULL)
+  , fHistoList(NULL)
+  , fCutPidList(NULL)
   , fPIDResponse(NULL)
   , fCuts(NULL)
   , fCFM(NULL)
@@ -87,64 +77,14 @@ AliDxHFEParticleSelectionEl::~AliDxHFEParticleSelectionEl()
     delete fElectronProperties;
     fElectronProperties=NULL;
   }
+  if(fHistoList){
+    delete fHistoList;
+    fHistoList=NULL;
+  }
   if(fCFM){
     delete fCFM;
     fCFM=NULL;
   }
-  if(fWhichCut){
-    delete fWhichCut;
-    fWhichCut=NULL;
-  }
-  if(fdEdx){
-    delete fdEdx;
-    fdEdx=NULL;
-  }
-  if(fdEdxCut){
-    delete fdEdxCut;
-    fdEdxCut=NULL;
-  }
-  if(fdEdxPid){
-    delete fdEdxPid;
-    fdEdxPid=NULL;
-  }
-  if(fdEdxPidTOF){
-    delete fdEdxPidTOF;
-    fdEdxPidTOF=NULL;
-  }
-  if(fnSigTPC){
-    delete fnSigTPC;
-    fnSigTPC=NULL;
-  }
-  if(fnSigTPCCut){
-    delete fnSigTPCCut;
-    fnSigTPCCut=NULL;
-  }
-  if(fnSigTPCPid){
-    delete fnSigTPCPid;
-    fnSigTPCPid=NULL;
-  }
-  if(fnSigTPCPidTOF){
-    delete fnSigTPCPidTOF;
-    fnSigTPCPidTOF=NULL;
-  }
-  if(fnSigTOF){
-    delete fnSigTOF;
-    fnSigTOF=NULL;
-  }
-  if(fnSigTOFCut){
-    delete fnSigTOFCut;
-    fnSigTOFCut=NULL;
-  }
-  if(fnSigTOFPid){
-    delete fnSigTOFPid;
-    fnSigTOFPid=NULL;
-  }
-
-  if(fnSigTOFPidTOF){
-    delete fnSigTOFPidTOF;
-    fnSigTOFPidTOF=NULL;
-  }
-
   if(fPIDResponse){
     delete fPIDResponse;
     fPIDResponse=NULL;
@@ -162,7 +102,7 @@ const char* AliDxHFEParticleSelectionEl::fgkCutBinNames[]={
   "kHFEcutsTOFPID",
   "kHFEcutsTPCPID",
   "kPIDTOF",
-  "kPID",
+  "kPIDTPCTOF",
   "Selected e"
 
 };
@@ -236,88 +176,35 @@ int AliDxHFEParticleSelectionEl::InitControlObjects()
   fElectronProperties=DefineTHnSparse();
   AddControlObject(fElectronProperties);
 
-  //Look into VarManager to set up and fill histos
-  fWhichCut= new TH1F("fWhichCut","effective cut for a rejected particle",kNCutLabels,-0.5,kNCutLabels-0.5);
-  for (int iLabel=0; iLabel<kNCutLabels; iLabel++)
-    fWhichCut->GetXaxis()->SetBinLabel(iLabel+1, fgkCutBinNames[iLabel]);
-  AddControlObject(fWhichCut);
-  //
+  double dEdxBins[6]={1000,0.,10.,200,0.,200.};
+  double nSigBins[6]={1000,0.,10.,200,-10.,10.};
+
+  fHistoList=new TList;
+  fHistoList->SetName("HFE Histograms");
+  fHistoList->SetOwner();
+
+  // Histogram storing which cuts have been applied to the tracks
+  fHistoList->Add(CreateControlHistogram("fWhichCut","effective cut for a rejected particle", kNCutLabels, fgkCutBinNames));
+
   // dEdx plots, TPC signal vs momentum
-  // 
-  fdEdx = new TH2F("fdEdx", "dEdx before cuts", 1000,0.,10.,200,0.,200.);
-  fdEdx->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fdEdx->GetYaxis()->SetTitle("dE/dx in TPC (a.u.)");
-  AddControlObject(fdEdx);
-  //
-  fdEdxCut = new TH2F("fdEdxCut", "dEdx after cuts", 1000,0.,10.,200,0.,200.);
-  fdEdxCut->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fdEdxCut->GetYaxis()->SetTitle("dE/dx in TPC (a.u.)");
-  AddControlObject(fdEdxCut);
-  //
-  fdEdxPid = new TH2F("fdEdxPid", "dEdx after pid",  1000,0.,10.,200,0.,200.);
-  fdEdxPid->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fdEdxPid->GetYaxis()->SetTitle("dE/dx in TPC (a.u.)");
-  AddControlObject(fdEdxPid);
-  //
-  fdEdxPidTOF = new TH2F("fdEdxPidTOF", "dEdx after TOF pid",  1000,0.,10.,200,0.,200.);
-  fdEdxPidTOF->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fdEdxPidTOF->GetYaxis()->SetTitle("dE/dx in TPC (a.u.)");
-  AddControlObject(fdEdxPidTOF);
+  fHistoList->Add(CreateControl2DHistogram("fdEdx", "dEdx before cuts", dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fdEdxCut", "dEdx after cuts",dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fdEdxPidTOF", "dEdx after TOF pid",dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fdEdxPid", "dEdx after pid",dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
 
-  //
   // nSigmaTPC vs momentum
-  //
+  fHistoList->Add(CreateControl2DHistogram("fnSigTPC", "nSigTPC before cuts",nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fnSigTPCCut", "nSigmaTPC after cuts",nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fnSigTPCPidTOF", "nSigmaTPC after TOF PID", nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fnSigTPCPid", "nSigmaTPC after PID", nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
 
-  fnSigTPC = new TH2F("fnSigTPC", "nSigTPC before cuts",  1000,0.,10.,200,-10.,10.);
-  fnSigTPC->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fnSigTPC->GetYaxis()->SetTitle("nSigma in TPC (a.u.)");
-  AddControlObject(fnSigTPC);
-
-
-  fnSigTPCCut = new TH2F("fnSigTPCCut", "nSigmaTPC after cuts",  1000,0.,10.,200,-10.,10.);
-  fnSigTPCCut->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fnSigTPCCut->GetYaxis()->SetTitle("nSigma in TPC (a.u.)");
-  AddControlObject(fnSigTPCCut);
-
-
-  fnSigTPCPid = new TH2F("fnSigTPCPid", "nSigmaTPC after PID",  1000,0.,10.,200,-10.,10.);
-  fnSigTPCPid->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fnSigTPCPid->GetYaxis()->SetTitle("nSigma in TPC (a.u.)");
-  AddControlObject(fnSigTPCPid);
-
-
-  fnSigTPCPidTOF = new TH2F("fnSigTPCPidTOF", "nSigmaTPC after TOF PID",  1000,0.,10.,200,-10.,10.);
-  fnSigTPCPidTOF->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fnSigTPCPidTOF->GetYaxis()->SetTitle("nSigma in TPC (a.u.)");
-  AddControlObject(fnSigTPCPidTOF);
-
-  //
   // nSigmaTOF vs momentum
-  //
-
-  fnSigTOF = new TH2F("fnSigTOF", "nSigmaTOF before cuts",  1000,0.,10.,200,-10.,10.);
-  fnSigTOF->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fnSigTOF->GetYaxis()->SetTitle("nSigma in TOF (a.u.)");
-  AddControlObject(fnSigTOF);
-
-
-  fnSigTOFCut = new TH2F("fnSigTOFCut", "nSigmaTOF after cuts",  1000,0.,10.,200,-10.,10.);
-  fnSigTOFCut->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fnSigTOFCut->GetYaxis()->SetTitle("nSigma in TOF (a.u.)");
-  AddControlObject(fnSigTOFCut);
-
-
-  fnSigTOFPid = new TH2F("fnSigTOFPid", "nSigmaTOF after PID",  1000,0.,10.,200,-10.,10.);
-  fnSigTOFPid->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fnSigTOFPid->GetYaxis()->SetTitle("nSigma in TOF (a.u.)");
-  AddControlObject(fnSigTOFPid);
-
-
-  fnSigTOFPidTOF = new TH2F("fnSigTOFPidTOF", "nSigmaTOF after TOF PID",  1000,0.,10.,200,-10.,10.);
-  fnSigTOFPidTOF->GetXaxis()->SetTitle("momentum (GeV/c)");
-  fnSigTOFPidTOF->GetYaxis()->SetTitle("nSigma in TOF (a.u.)");
-  AddControlObject(fnSigTOFPidTOF);
-
+  fHistoList->Add(CreateControl2DHistogram("fnSigTOF", "nSigmaTOF before cuts",nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));  
+  fHistoList->Add(CreateControl2DHistogram("fnSigTOFCut", "nSigmaTOF after cuts",nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));  
+  fHistoList->Add(CreateControl2DHistogram("fnSigTOFPidTOF", "nSigmaTOF after TOF PID", nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fnSigTOFPid", "nSigmaTOF after PID", nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));
+ 
+  AddControlObject(fHistoList);
 
   return AliDxHFEParticleSelection::InitControlObjects();
 }
@@ -363,47 +250,47 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   AliAODTrack *track=(AliAODTrack*)pEl;
   fCFM->SetRecEventInfo(pEvent);
   
-  fdEdx->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-  fnSigTPC->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-  fnSigTOF->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+  ((TH2D*)fHistoList->FindObject("fdEdx"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+  ((TH2D*)fHistoList->FindObject("fnSigTPC"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+  ((TH2D*)fHistoList->FindObject("fnSigTOF"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
   
   //--------track cut selection-----------------------
   //Using AliHFECuts:
   // RecKine: ITSTPC cuts  
   if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)){
-    fWhichCut->Fill(kRecKineITSTPC);
+    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRecKineITSTPC);
     return 0;
   }
   
   // RecPrim
   if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) {
-    fWhichCut->Fill(kRecPrim);
+    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRecPrim);
     return 0;
   }
   
   // HFEcuts: ITS layers cuts
   if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) {
-    fWhichCut->Fill(kHFEcutsITS);
+    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsITS);
     return 0;
   }
   
   // HFE cuts: TOF PID and mismatch flag
   if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) {
-    fWhichCut->Fill(kHFEcutsTOF);
+    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsTOF);
     return 0;
   }
   
   // HFE cuts: TPC PID cleanup
   if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)){
-    fWhichCut->Fill(kHFEcutsTPC);
+    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsTPC);
     return 0;
   } 
  
   // HFEcuts: Nb of tracklets TRD0
   //if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTRD, track)) continue;
-  fdEdxCut->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-  fnSigTPCCut->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-  fnSigTOFCut->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+  ((TH2D*)fHistoList->FindObject("fdEdxCut"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+  ((TH2D*)fHistoList->FindObject("fnSigTPCCut"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+  ((TH2D*)fHistoList->FindObject("fnSigTOFCut"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
 
 
   //--------PID selection-----------------------
@@ -415,27 +302,29 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   //if(IsPbPb()) hfetrack.SetPbPb();
   hfetrack.SetPP();
 
+  // TODO: Put this into a while-loop instead, looping over the number of pid objects in the cut-list?
+  // This needs a bit of thinking and finetuning (wrt histogramming)
   if(fPIDTOF && fPIDTOF->IsSelected(&hfetrack)) {
-    fdEdxPidTOF->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-    fnSigTPCPidTOF->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-    fnSigTOFPidTOF->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+    ((TH2D*)fHistoList->FindObject("fdEdxPidTOF"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+    ((TH2D*)fHistoList->FindObject("fnSigTPCPidTOF"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+    ((TH2D*)fHistoList->FindObject("fnSigTOFPidTOF"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
   }
   else{
-    fWhichCut->Fill(kPIDTOF);
+    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPIDTOF);
     return 0;
   }
 
   //Combined tof & tpc pid
   if(fPID && fPID->IsSelected(&hfetrack)) {
     AliDebug(3,"Inside FilldPhi, electron is selected");
-    fWhichCut->Fill(kSelected);
-    fdEdxPid->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-    fnSigTPCPid->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-    fnSigTOFPid->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected);
+    ((TH2D*)fHistoList->FindObject("fdEdxPid"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+    ((TH2D*)fHistoList->FindObject("fnSigTPCPid"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+    ((TH2D*)fHistoList->FindObject("fnSigTOFPid"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
     return 1;
   }
   else{
-    fWhichCut->Fill(kPID);
+    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPID);
     return 0;
   }
 
@@ -465,6 +354,39 @@ void AliDxHFEParticleSelectionEl::SetCuts(TObject* cuts, int level)
     fPIDTOF=dynamic_cast<AliHFEpid*>(cuts);
     if (!fPIDTOF && cuts) {
       AliError(Form("cuts object is not of required type AliHFEpid but %s", cuts->ClassName()));
+    }
+    return;
+  }
+  if(level==kCutList){
+    fCutPidList=dynamic_cast<TList*>(cuts);
+    if (!fCutPidList && cuts) {
+      AliError(Form("cuts object is not of required type TList but %s", cuts->ClassName()));
+    }
+    else{
+      // TODO: Could be done more elegantly, at the moment requires that the cut and pid objects are in 
+      // a specific order..
+      TObject *obj=NULL;
+      int iii=0;
+      TIter next(fCutPidList);
+      while((obj = next())){
+	iii++;
+	if(iii==1) {
+	  fCuts=dynamic_cast<AliHFEcuts*>(obj);
+	  if (!fCuts) 
+	    AliError(Form("Cut object is not of required type AliHFEcuts but %s", cuts->ClassName()));
+	}
+	if(iii==2){
+	  fPID=dynamic_cast<AliHFEpid*>(obj);
+	  if (!fPID) 
+	    AliError(Form("cuts object is not of required type AliHFEpid but %s", cuts->ClassName()));
+	}
+	if(iii==3){ 
+	  fPIDTOF=dynamic_cast<AliHFEpid*>(obj);
+	  if (!fPIDTOF) 
+	    AliError(Form("cuts object is not of required type AliHFEpid but %s", cuts->ClassName()));
+	}
+      }
+      
     }
     return;
   }
