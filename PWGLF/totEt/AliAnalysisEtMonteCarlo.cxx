@@ -685,7 +685,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
         } // end of primary particle check
         
-        const int primCode = stack->Particle(primIdx)->GetPdgCode();
+        //const int primCode = stack->Particle(primIdx)->GetPdgCode();
         TParticlePDG *pdg = part->GetPDG();
         if (!pdg)
         {
@@ -693,14 +693,14 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
             continue;
         }
 
-        Int_t code = pdg->PdgCode();
+        //Int_t code = pdg->PdgCode();
 // 	if(primCode == fgGammaCode) 
 // 	{
 	  
-	for(int i = 0; i < caloCluster->GetNLabels(); i++)
+	for(UInt_t i = 0; i < caloCluster->GetNLabels(); i++)
 	{
 	  Int_t pIdx = caloCluster->GetLabelAt(i);
-	  TParticle *p = stack->Particle(pIdx);
+	  //TParticle *p = stack->Particle(pIdx);
 	  
 	  if(!stack->IsPhysicalPrimary(pIdx))
 	  {
@@ -764,7 +764,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	fReconstructedEt = caloCluster->E()*TMath::Sin(cp.Theta());
 	
 	pdg = primPart->GetPDG(0);
-	code = primPart->GetPdgCode();
+	//Int_t code = primPart->GetPdgCode();
 
 	Bool_t written = kFALSE;
 
