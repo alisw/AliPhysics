@@ -100,22 +100,10 @@ void AliBODY::CreateGeometry()
   //
   if(gAlice->GetModule("ZDC")) {
     //
-    // If the ZDC is present we have an asymmetric box
-    // made by a four sides polygone
-    //
-    dALIC[0]=45;
-    dALIC[1]=360;
-    dALIC[2]=4;
-    dALIC[3]=2;
-
-    dALIC[4]=-15000;
-    dALIC[5]=0;
-    dALIC[6]=2500;
-
-    dALIC[7]=15000;
-    dALIC[8]=0;
-    dALIC[9]=2500;
-    gMC->Gsvolu("ALIC","PGON",idtmed[1],dALIC,10);
+    dALIC[0]=2500.;
+    dALIC[1]=2500.;
+    dALIC[2]=15000.;
+    gMC->Gsvolu("ALIC","BOX ",idtmed[1],dALIC,3);
   } else if ( gAlice->GetModule("ACORDE")) {
     //
     // If the Cosmic Ray Trigger  is present we need a large box
