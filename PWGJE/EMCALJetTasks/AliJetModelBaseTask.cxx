@@ -163,6 +163,10 @@ void AliJetModelBaseTask::UserExec(Option_t *)
     if (fOutMCParticles)
       fOutMCParticles->Delete();
   }
+  
+  // Reset name (it is cleared each event by the analysis manager)
+  if (fMCParticlesMap)
+    fMCParticlesMap->SetName(fMCParticlesName + "_Map");
 
   AliVCaloCells *tempCaloCells = 0;
 

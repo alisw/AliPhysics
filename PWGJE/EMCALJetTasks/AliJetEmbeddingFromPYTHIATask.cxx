@@ -109,14 +109,14 @@ Bool_t AliJetEmbeddingFromPYTHIATask::ExecOnce()
 }
 
 //________________________________________________________________________
-Bool_t AliJetEmbeddingFromPYTHIATask::GetNextEntry() 
+Bool_t AliJetEmbeddingFromPYTHIATask::GetNextEntry()
 {
   Int_t newPtHard = GetRandomPtHardBin();
 
-  fPtHardBinParam->SetVal(newPtHard);
+  new (fPtHardBinParam) TParameter<int>("PYTHIAPtHardBin", newPtHard);
 
   if (fHistPtHardBins)
-    fHistPtHardBins->Fill(newPtHard+1);
+    fHistPtHardBins->SetBinContent(newPtHard+1, fHistPtHardBins->GetBinContent(newPtHard+1)+1);
 
   if (newPtHard != fCurrentPtHardBin) {
     fCurrentPtHardBin = newPtHard;
@@ -192,9 +192,9 @@ TString AliJetEmbeddingFromPYTHIATask::GetNextFileName()
     fileName += "0";
   fileName += fCurrentAODFileID;
 
-  if (!gSystem->AccessPathName(Form("%s/AliAOD.root")))
+  if (!gSystem->AccessPathName(Form("%s/AliAOD.root", fileName.Data())))
     fileName += "/AliAOD.root";
-  else if (!gSystem->AccessPathName(Form("%s/aod_archive.zip")))
+  else if (!gSystem->AccessPathName(Form("%s/aod_archive.zip", fileName.Data())))
     fileName += "/aod_archive.zip#AliAOD.root";
   else
     fileName += "/root_archive.zip#AliAOD.root";

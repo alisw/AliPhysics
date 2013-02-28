@@ -93,6 +93,9 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistJets1CorrPtArea;           //!inclusive jet pt vs. area histogram 1
   TH2                        *fHistLeadingJets1PtArea;        //!leading jet pt vs area histogram 1
   TH2                        *fHistLeadingJets1CorrPtArea;    //!leading jet pt vs. area histogram 1
+  TH2                        *fHistJets1NEFvsPt;              //!Jet neutral energy fraction vs. jet pt 1
+  TH2                        *fHistJets1CEFvsCEFPt;           //!Jet charged energy fraction vs. charged jet pt 1
+  TH2                        *fHistJets1ZvsPt;                //!Constituent Pt over Jet Pt ratio vs. jet pt 1
   // Jets 2
   TH2                        *fHistJets2PhiEta;               //!phi-eta distribution of jets 2
   TH2                        *fHistJets2PtArea;               //!inclusive jet pt vs. area histogram 2
@@ -104,6 +107,9 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistJets2CorrPtAreaAcceptance; //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
   TH2                        *fHistLeadingJets2PtAreaAcceptance;     //!leading jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
   TH2                        *fHistLeadingJets2CorrPtAreaAcceptance; //!leading jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
+  TH2                        *fHistJets2NEFvsPt;              //!Jet neutral energy fraction vs. jet pt 2
+  TH2                        *fHistJets2CEFvsCEFPt;           //!Jet charged energy fraction vs. charged jet pt 2
+  TH2                        *fHistJets2ZvsPt;                //!Constituent Pt over Jet Pt ratio vs. jet pt 2
   // Jet1-Jet2 matching
   TH2                        *fHistCommonEnergy1vsJet1Pt;              //!common energy 1 (%) vs jet 1 pt
   TH2                        *fHistCommonEnergy2vsJet2Pt;              //!common energy 2 (%) vs jet 2 pt
