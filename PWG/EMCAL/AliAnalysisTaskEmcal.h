@@ -10,6 +10,7 @@ class AliEmcalParticle;
 class AliMCParticle;
 class AliVCluster;
 class AliVTrack;
+class AliVParticle;
 class AliVCaloCells;
 class TH1F;
 class AliEMCALGeometry;
@@ -63,7 +64,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
  protected:
   Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kTRUE) const;
   Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kTRUE) const;
-  Bool_t                      AcceptTrack(AliVTrack            *track, Bool_t acceptMC = kTRUE) const;
+  Bool_t                      AcceptTrack(AliVParticle         *track, Bool_t acceptMC = kTRUE) const;
   virtual void                ExecOnce();
   virtual Bool_t              FillGeneralHistograms();
   virtual Bool_t              FillHistograms()                                     { return kTRUE                 ; }
