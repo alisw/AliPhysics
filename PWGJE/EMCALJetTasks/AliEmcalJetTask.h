@@ -58,6 +58,8 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
                                                             else if (t==2) fJetType |= kNeutralJet; } // for backward compatibility only
   void                   SetEtaRange(Double_t emi, Double_t ema) {fEtaMin = emi; fEtaMax = ema; }
   void                   SetPhiRange(Double_t pmi, Double_t pma) {fPhiMin = pmi; fPhiMax = pma; }
+  void                   SetJetEtaRange(Double_t emi, Double_t ema) {fJetEtaMin = emi; fJetEtaMax = ema; }
+  void                   SetJetPhiRange(Double_t pmi, Double_t pma) {fJetPhiMin = pmi; fJetPhiMax = pma; }
   void                   SetGhostArea(Double_t gharea)    { fGhostArea      = gharea;  }
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) 
   {
@@ -96,6 +98,10 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Double_t               fEtaMax;                 // maximum eta for constituents (applied before clustering)
   Double_t               fMinJetArea;             // min area to keep jet in output
   Double_t               fMinJetPt;               // min jet pt to keep jet in output
+  Double_t               fJetPhiMin;              // minimum phi to keep jet in output
+  Double_t               fJetPhiMax;              // maximum phi to keep jet in output
+  Double_t               fJetEtaMin;              // minimum eta to keep jet in output
+  Double_t               fJetEtaMax;              // maximum eta to keep jet in output
   Double_t               fGhostArea;              // ghost area
   Bool_t                 fIsInit;                 //!=true if already initialized
   Bool_t                 fIsPSelSet;              //!=true if physics selection was set
@@ -110,6 +116,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 7) // Jet producing task
+  ClassDef(AliEmcalJetTask, 8) // Jet producing task
 };
 #endif

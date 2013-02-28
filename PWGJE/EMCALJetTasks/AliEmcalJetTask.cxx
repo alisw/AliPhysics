@@ -46,6 +46,10 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fEtaMax(1),
   fMinJetArea(0.01),
   fMinJetPt(1.0),
+  fJetPhiMin(-10),
+  fJetPhiMax(10),
+  fJetEtaMin(-1),
+  fJetEtaMax(1),
   fGhostArea(0.01),
   fIsInit(0),
   fIsPSelSet(0),
@@ -78,6 +82,10 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fEtaMax(1),
   fMinJetArea(0.01),
   fMinJetPt(1.0),
+  fJetPhiMin(-10),
+  fJetPhiMax(10),
+  fJetEtaMin(-1),
+  fJetEtaMax(1),
   fGhostArea(0.01),
   fIsInit(0),
   fIsPSelSet(0),
@@ -359,6 +367,9 @@ void AliEmcalJetTask::FindJets()
     if (jets_incl[ij].perp()<fMinJetPt) 
       continue;
     if (fjw.GetJetArea(ij)<fMinJetArea)
+      continue;
+    if ((jets_incl[ij].eta()<fJetEtaMin) || (jets_incl[ij].eta()>fJetEtaMax) ||
+	(jets_incl[ij].phi()<fJetPhiMin) || (jets_incl[ij].phi()>fJetPhiMax))
       continue;
 
     AliEmcalJet *jet = new ((*fJets)[jetCount]) 
