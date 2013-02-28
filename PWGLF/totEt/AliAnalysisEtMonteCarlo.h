@@ -314,6 +314,21 @@ protected:
     
     TH1F *fHistGammasFound;
     TH1F *fHistGammasGenerated;
+    TH1F *fHistChargedTracksCut;
+    TH1F *fHistChargedTracksAccepted;
+    TH1F *fHistGammasCut;
+    TH1F *fHistGammasAccepted;
+    TH1F *fHistBadTrackMatches;
+    TH2F *fHistMatchedTracksEvspTBkgd;
+    TH2F *fHistMatchedTracksEvspTSignal;
+    TH2F *fHistMatchedTracksEvspTBkgdPeripheral;
+    TH2F *fHistMatchedTracksEvspTSignalPeripheral;
+    TH1F *fHistChargedTracksCutPeripheral;
+    TH1F *fHistChargedTracksAcceptedPeripheral;
+    TH1F *fHistGammasCutPeripheral;
+    TH1F *fHistGammasAcceptedPeripheral;
+    TH2F *fHistBadTrackMatchesdPhidEta;
+    TH2F *fHistGoodTrackMatchesdPhidEta;
 
 
 private:

@@ -248,7 +248,22 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
     ,fNClusters(0)
     ,fTotNeutralEtAfterMinEnergyCut(0)
     ,fHistGammasFound(0)
-    ,fHistGammasGenerated(0)
+						  ,fHistGammasGenerated(0)
+						  ,fHistChargedTracksCut(0)
+						  ,fHistChargedTracksAccepted(0)
+						  ,fHistGammasCut(0)
+						  ,fHistGammasAccepted(0)
+						  ,fHistBadTrackMatches(0)
+						  ,fHistMatchedTracksEvspTBkgd(0)
+						  ,fHistMatchedTracksEvspTSignal(0)
+						  ,fHistMatchedTracksEvspTBkgdPeripheral(0)
+						  ,fHistMatchedTracksEvspTSignalPeripheral(0)
+						  ,fHistChargedTracksCutPeripheral(0)
+						  ,fHistChargedTracksAcceptedPeripheral(0)
+						  ,fHistGammasCutPeripheral(0)
+						  ,fHistGammasAcceptedPeripheral(0)
+						  ,fHistBadTrackMatchesdPhidEta(0)
+						  ,fHistGoodTrackMatchesdPhidEta(0)
 {
 }
 
@@ -358,6 +373,21 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistPiZeroMultAcc; // enter comment here
     delete fHistGammasFound; // enter comment here
     delete fHistGammasGenerated; // enter comment here
+    delete fHistChargedTracksCut;
+    delete fHistChargedTracksAccepted;
+    delete fHistGammasCut;
+    delete fHistGammasAccepted;
+    delete fHistBadTrackMatches;
+    delete fHistMatchedTracksEvspTBkgd;
+    delete fHistMatchedTracksEvspTSignal;
+    delete fHistMatchedTracksEvspTBkgdPeripheral;
+    delete fHistMatchedTracksEvspTSignalPeripheral;
+    delete fHistChargedTracksCutPeripheral;
+    delete fHistChargedTracksAcceptedPeripheral;
+    delete fHistGammasCutPeripheral;
+    delete fHistGammasAcceptedPeripheral;
+    delete fHistBadTrackMatchesdPhidEta;
+    delete fHistGoodTrackMatchesdPhidEta;
 }
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
@@ -601,6 +631,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
     AliStack *stack = mcEvent->Stack();
 
+    // get all detector clusters
     //  TRefArray* caloClusters = new TRefArray();
 
 //    if (fDetector == fCuts->GetDetectorEmcal()) realEvent->GetEMCALClusters( caloClusters );
@@ -610,7 +641,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     //return -1;
 //    }
 
-    // get all detector clusters
 //Note that this only returns clusters for the selected detector.  fSelector actually calls the right GetClusters... for the detector
 //It does not apply any cuts on these clusters
     TRefArray *caloClusters = fSelector->GetClusters();
@@ -626,7 +656,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         //Float_t caloE = caloCluster->E()
         fNClusters++;
         const UInt_t iPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
-	
         TParticle *part  =  stack->Particle(iPart);
 
         if (!part)
@@ -634,7 +663,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
             Printf("No MC particle %d", iCluster);
             continue;
         }
-  
+
         int primIdx = iPart;
         if (!stack->IsPhysicalPrimary(iPart)) // check whether particle is primary. we keep secondary electron and gamma for testing.
         {
@@ -647,8 +676,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    //if it is from a K0S
             if(primIdx < 0)
             {
-	      //std::cout << "What!? No primary?" << std::endl;
-                continue;
+	      std::cout << "What!? No primary?" << std::endl;
+	      PrintFamilyTree(iPart, stack);
+	      //continue;
+	      //This is a work around to fix a bug.  For the EMCal when you use the tender supply, the parent particle ID gets messed up.
+	      primIdx = iPart;
             }
 
         } // end of primary particle check
@@ -723,118 +755,136 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
 	//fSecondary = fSelector->FromSecondaryInteraction(*primPart, *stack);
 	fSecondary =fSelector->FromSecondaryInteraction(*part, *stack);
-	if(fSecondary) 
-	{
-	  //std::cout << "Have secondary!" << std::endl;
-	  //PrintFamilyTree(iPart, stack);
-	}
+// 	if(fSecondary) 
+// 	{
+// 	  //std::cout << "Have secondary!" << std::endl;
+// 	  //PrintFamilyTree(iPart, stack);
+// 	}
 	fReconstructedE = caloCluster->E();
 	fReconstructedEt = caloCluster->E()*TMath::Sin(cp.Theta());
-        //if(caloCluster->GetEmcCpvDistance() < fTrackDistanceCut)
 	
 	pdg = primPart->GetPDG(0);
 	code = primPart->GetPdgCode();
-        //if (TMath::Abs(caloCluster->GetTrackDx()) < 5 && TMath::Abs(caloCluster->GetTrackDz()) < 5)
-        if(!fSelector->PassTrackMatchingCut(*caloCluster))
-        {
-	    fPrimaryMatched = true;
-            if (pdg->Charge() != 0)
-            {
-                fChargedRemoved++;
-                fEnergyChargedRemoved += clEt;
-                fHistRemovedOrNot->Fill(0.0, fCentClass);
-                fHistDxDzRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
-             
-            }
-            else
-            {
-		if(code==fgGammaCode)
-		{
-		  fGammaRemoved++;
-		  fGammaRemovedEt+=clEt; 
-		 
-		}
-		else
-		{
-		  fNeutralRemoved++;
-		  fEnergyNeutralRemoved += clEt;
-		  fHistRemovedOrNot->Fill(1.0, fCentClass);
-		  fHistDxDzRemovedNeutral->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
-		}
-            }
-        }
-        else
-	  {
-            fPrimaryAccepted = true;
-	    fPrimaryMatched = false;
-            fCutFlow->Fill(cf++);
-            if (pdg->Charge() != 0)
-            {
 
-		if(fSecondary)
-		{
-		  fSecondaryNotRemoved++;
-		}
-		else
-		{
-		  fChargedNotRemoved++;
-		  fEnergyChargedNotRemoved += clEt;
-		  fHistRemovedOrNot->Fill(2.0, fCentClass);
-		  fHistDxDzNonRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
-		  //PrintFamilyTree(iPart, stack);
-		}
-            }
-            else
-            {
-                if(!fSecondary)
-		{
-		  fNeutralNotRemoved++;
-		  fEnergyNeutralNotRemoved += clEt;
-		  fHistRemovedOrNot->Fill(3.0, fCentClass);
-		  fHistDxDzNonRemovedNeutral->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
-		}
-		else
-		{
-//  		  //PrintFamilyTree(iPart, stack);
-		}
-               // if(TMath::Abs(part->Vx()) < 1.0 && TMath::Abs(part->Vy()) < 1.0 && TMath::Abs(part->Vz()) < 20 && fSelector->IsEmEtParticle(primCode))
-		if(fSecondary && fSelector->IsEmEtParticle(primCode))
-                {
-                    fTotEtSecondaryFromEmEtPrimary += clEt;
-		    fSecondaryNotRemoved++;
-                }
-                else if(fSelector->IsEmEtParticle(primCode))
-                {
-                    fTotEtWithSecondaryRemoved += clEt;
-// 		    PrintFamilyTree(iPart, stack);
-		    
-                }
-                else		
-		{
-                    //fTotEtSecondary += clEt;
-// 		    PrintFamilyTree(iPart,stack);
-                }
-                //code = stack->Particle(primIdx)->GetPdgCode();
-                if (code == fgGammaCode && !fSecondary)
-                {
-                    fEtNonRemovedGammas += clEt;
-                    fMultNonRemovedGammas++;
-		    fNeutralNotRemoved--;
-		    fEnergyNeutralNotRemoved -= clEt;
-		    //PrintFamilyTree(iPart, stack);
-//                    if (pdgMom)
-                    //                  {
-                    //                    if (TMath::Abs(pdgMom->PdgCode()) == fgPi0Code || TMath::Abs(pdgMom->PdgCode()) == fgEtaCode || TMath::Abs(pdgMom->PdgCode()) == 331)
-                    //                  {
-//			std::cout << "Mother of gamma: " << pdgMom->PdgCode() << " " << pdgMom->GetName() <<  ", E: " << part->Energy() << std::endl;
-                    //                    fEtNonRemovedGammasFromPi0 += clEt;
-                    //              }
-                    //        }
-                }
-            }
+	Bool_t written = kFALSE;
+
+	Bool_t nottrackmatched = fSelector->PassTrackMatchingCut(*caloCluster);
+
+	if(fSecondary){//all particles from secondary interactions 
+	  written = kTRUE;
+	  if(nottrackmatched){//secondaries not removed
+	    if (fDepositedCharge != 0){//charged track not removed
+	      fChargedNotRemoved++;
+	      fEnergyChargedNotRemoved += clEt;
+	      fHistRemovedOrNot->Fill(2.0, fCentClass);
+	      fHistDxDzNonRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
+	    }
+	    else{
+	      fSecondaryNotRemoved++;
+	    }
 	  }
+	  else{//secondaries removed
+            if (fDepositedCharge != 0){
+	      fChargedRemoved++;
+	      fEnergyChargedRemoved += clEt;
+	      fHistRemovedOrNot->Fill(0.0, fCentClass);
+	      fHistDxDzRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
+	      fHistChargedTracksCut->Fill(fDepositedEt);
+	      if(fClusterMult<25){fHistChargedTracksCutPeripheral->Fill(fDepositedEt);}
+	      fHistMatchedTracksEvspTBkgd->Fill(part->Pt(),fReconstructedE);
+	      if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(part->P(),fReconstructedE);}
+	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(1);
+	      if(caloCluster->GetLabel()!=trackindex){
+		fHistBadTrackMatches->Fill(part->Pt(),fReconstructedE);
+		fHistBadTrackMatchesdPhidEta->Fill(caloCluster->GetTrackDx(),caloCluster->GetTrackDz());
+		//cout<<"Track matched, label cluster "<<caloCluster->GetLabel()<<" track "<<trackindex<<endl;
+	      }
+	      else{
+		fHistGoodTrackMatchesdPhidEta->Fill(caloCluster->GetTrackDx(),caloCluster->GetTrackDz());
+	      }
+	    }
+	    else{//neutral energy removed
+	      fNeutralRemoved++;
+	      fEnergyNeutralRemoved += clEt;
+	      fHistRemovedOrNot->Fill(1.0, fCentClass);
+	      fHistDxDzRemovedNeutral->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
+	    }
+	  }
+	}
+	else{
+
+	  if (fDepositedCharge != 0 && fDepositedCode!=fgEMinusCode && fDepositedCode!=fgEPlusCode){//if the particle hitting the calorimeter is pi/k/p/mu
+	    written = kTRUE;
+	    if(nottrackmatched){//not removed but should be
+	      fChargedNotRemoved++;
+	      fEnergyChargedNotRemoved += clEt;
+	      fHistRemovedOrNot->Fill(2.0, fCentClass);
+	      fHistDxDzNonRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
+	      fHistChargedTracksAccepted->Fill(fDepositedEt);
+	      if(fClusterMult<25){fHistChargedTracksAcceptedPeripheral->Fill(fDepositedEt);}
+	    }
+	    else{//removed and should have been
+	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(0);
+	      if(caloCluster->GetLabel()!=trackindex){
+		fHistBadTrackMatches->Fill(part->Pt(),fReconstructedE);
+		fHistBadTrackMatchesdPhidEta->Fill(caloCluster->GetTrackDx(),caloCluster->GetTrackDz());
+		//cout<<"Track matched, label cluster "<<caloCluster->GetLabel()<<" track "<<trackindex<<endl;
+	      }
+	      else{
+		fHistGoodTrackMatchesdPhidEta->Fill(caloCluster->GetTrackDx(),caloCluster->GetTrackDz());
+	      }
+	      fChargedRemoved++;
+	      fEnergyChargedRemoved += clEt;
+	      fHistRemovedOrNot->Fill(0.0, fCentClass);
+	      fHistDxDzRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
+	      fHistChargedTracksCut->Fill(fDepositedEt);
+	      if(fClusterMult<25){fHistChargedTracksCutPeripheral->Fill(fDepositedEt);}
+	      fHistMatchedTracksEvspTBkgd->Fill(part->P(),fReconstructedE);
+	      if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(part->P(),fReconstructedE);}
+	    }
+	  }
+	  //K0L and any neutral particles from the decay of K+/- or K0S
+	  if(!written && (fPrimaryCode==fgKPlusCode || fPrimaryCode==fgKMinusCode || fPrimaryCode==fgK0SCode ||fPrimaryCode==fgK0LCode)){
+	    written = kTRUE;//At this point we are not tracking them but we don't count them as neutrals accidentally removed
+	  }
+	  
+	  if(!written && (fDepositedCode==fgGammaCode || fDepositedCode==fgEMinusCode || fDepositedCode ==fgEPlusCode)){//if the particle hitting the calorimeter is gamma, electron and not from a kaon
+	    written = kTRUE;
+	    if(nottrackmatched){//Not removed and not supposed to be removed - signal
+	      fEtNonRemovedGammas += clEt;
+	      fMultNonRemovedGammas++;
+	      fNeutralNotRemoved--;
+	      fEnergyNeutralNotRemoved -= clEt;
+	      fHistGammasAccepted->Fill(fDepositedEt);
+	      if(fClusterMult<25){fHistGammasAcceptedPeripheral->Fill(fDepositedEt);}
+	    }
+	    else{//removed but shouldn't have been
+	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(1);
+	      if(caloCluster->GetLabel()!=trackindex){
+		fHistBadTrackMatches->Fill(part->Pt(),fReconstructedE);
+		fHistBadTrackMatchesdPhidEta->Fill(caloCluster->GetTrackDx(),caloCluster->GetTrackDz());
+// 		cout<<"Track matched, label cluster "<<caloCluster->GetLabel()<<" track "<<trackindex<<endl;
+// 		PrintFamilyTree(trackindex, stack);
+// 		cout<<"Cluster"<<endl;
+	      }
+	      fGammaRemoved++;
+	      fGammaRemovedEt+=clEt; 
+	      fHistGammasCut->Fill(fDepositedEt);
+	      if(fClusterMult<25){fHistGammasCutPeripheral->Fill(fDepositedEt);}
+	      fHistMatchedTracksEvspTSignal->Fill(part->P(),fReconstructedE);
+	      if(fClusterMult<25){fHistMatchedTracksEvspTSignalPeripheral->Fill(part->P(),fReconstructedE);}
+	    }
+	  }
+	  //all other cases - neutron, anti-neutron, not aware of other cases
+	  if(!written){
+	    fNeutralNotRemoved++;
+	    fEnergyNeutralNotRemoved += clEt;
+	    fHistRemovedOrNot->Fill(3.0, fCentClass);
+	    fHistDxDzNonRemovedNeutral->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
+	  }
+	}
         fPrimaryTree->Fill();
-    } // end of loop over clusters
+    } // end of loop over clusters     
 
 
     std::sort(foundGammas.begin(), foundGammas.end());
@@ -843,15 +893,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
 	if(!stack->IsPhysicalPrimary(iPart)) continue;
 	
-	
 	TParticle *part = stack->Particle(iPart);
-	
-	if(part->GetFirstDaughter() != -1)
-	{
-	  TParticle *daughter = stack->Particle(part->GetFirstDaughter());
-// 	  if(TMath::Sqrt(daughter->Vx()*daughter->Vx() + daughter->Vy()*daughter->Vy()) < 455) continue;
-	}
-	
 
         if (!part)
         {
@@ -868,7 +910,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         
         if(pdg->PdgCode()==fgGammaCode && fSelector->CutGeometricalAcceptance(*part))// TMath::Abs(part->Eta()) < 0.12)
 	{
-	  
 	  fHistGammasGenerated->Fill(part->Energy());
 	  if(std::binary_search(foundGammas.begin(),foundGammas.end(),iPart))
 	  {
@@ -877,15 +918,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	}
         
     }
-    //std::cout << "Number of removed neutrals: " << fNeutralRemoved << std::endl;
-    //std::cout << "Number of removed charged: " << fChargedRemoved << std::endl;
-    //std::cout << "Number of non-removed charged: " << fChargedNotRemoved << std::endl;
-    //std::cout << "Number of non-removed neutral: " << fNeutralNotRemoved << std::endl;
-
-//  std::cout << "Energy of removed neutrals: " << fEnergyNeutralRemoved << std::endl;
-//  std::cout << "Energy of removed charged: " << fEnergyChargedRemoved << std::endl;
-//  std::cout << "Energy of non-removed charged: " << fEnergyChargedNotRemoved << std::endl;
-//  std::cout << "Energy of non-removed neutral: " << fEnergyNeutralNotRemoved << std::endl;
     Float_t etCuts[10] = {0.0,0.1,0.15,0.2,0.25, 0.3,0.35,0.4,0.45,0.5};
     Int_t nEtCuts = 10;
     //loop over simulated particles in order to find K0S
@@ -916,10 +948,14 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      Float_t totalClusterEts[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 	      gammaDaughterIDs[4] = stack->Particle(iPart)->GetDaughter(0);
 	      gammaDaughterIDs[5] = stack->Particle(iPart)->GetDaughter(1);
-	      gammaDaughterIDs[0] = stack->Particle(gammaDaughterIDs[4])->GetDaughter(0);
-	      gammaDaughterIDs[1] = stack->Particle(gammaDaughterIDs[4])->GetDaughter(1);
-	      gammaDaughterIDs[2] = stack->Particle(gammaDaughterIDs[5])->GetDaughter(0);
-	      gammaDaughterIDs[3] = stack->Particle(gammaDaughterIDs[5])->GetDaughter(1);
+	      if(gammaDaughterIDs[4]>0){
+		gammaDaughterIDs[0] = stack->Particle(gammaDaughterIDs[4])->GetDaughter(0);
+		gammaDaughterIDs[1] = stack->Particle(gammaDaughterIDs[4])->GetDaughter(1);
+	      }
+	      if(gammaDaughterIDs[5]>0){
+		gammaDaughterIDs[2] = stack->Particle(gammaDaughterIDs[5])->GetDaughter(0);
+		gammaDaughterIDs[3] = stack->Particle(gammaDaughterIDs[5])->GetDaughter(1);
+	      }
 	      for(int k=0;k<4;k++){
 		//if( TMath::Abs(stack->Particle(gammaDaughterIDs[k])->Eta()) <= fCuts->GetGeometryEmcalEtaAccCut() ){//only add the energy if it's within the detector acceptance
 		if(gammaDaughterIDs[k]==-1) continue;
@@ -942,13 +978,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		gammaEts[3] = 0.0;
 		//cout<<"Duplicates.  This has "<<stack->Particle(gammaDaughterIDs[5])->GetNDaughters()<<" daughters"<<endl;
 	      }
-// 	      cout<<"My daughters are ";
-// 	      for(int j=0;j<6;j++){
-// 		cout <<gammaDaughterIDs[j]<<" ";
-// 		if(gammaDaughterIDs[j]>=0) cout<<stack->Particle(gammaDaughterIDs[j])->GetName();
-// 		cout<<",";
-// 	      }
-// 	      cout<<endl;
 	      for(int l=0;l<nEtCuts;l++){//loop over cut values
 		for(int k=0;k<4;k++){//loop over gamma daughter energies
 		  if(gammaEts[k]>=etCuts[l]){
@@ -1308,8 +1337,23 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
 	
     }
 
-    fHistGammasFound = new TH1F("fHistGammasFound", "fHistGammasFound",1000, 0, 2);
-    fHistGammasGenerated = new TH1F("fHistGammasGenerated", "fHistGammasGenerated",1000, 0, 2);
+    fHistGammasFound = new TH1F("fHistGammasFound", "fHistGammasFound",200, 0, 10);
+    fHistGammasGenerated = new TH1F("fHistGammasGenerated", "fHistGammasGenerated",200, 0, 10);
+    fHistChargedTracksCut = new TH1F("fHistChargedTracksCut", "fHistChargedTracksCut",100, 0, 5);
+    fHistChargedTracksAccepted = new TH1F("fHistChargedTracksAccepted", "fHistChargedTracksAccepted",100, 0, 5);
+    fHistGammasCut = new TH1F("fHistGammasTracksCut", "fHistGammasTracksCut",100, 0, 5);
+    fHistGammasAccepted = new TH1F("fHistGammasTracksAccepted", "fHistGammasTracksAccepted",100, 0, 5);
+    fHistBadTrackMatches = new TH1F("fHistBadTrackMatches", "fHistBadTrackMatches",100, 0, 5);
+    fHistMatchedTracksEvspTBkgd = new TH2F("fHistMatchedTracksEvspTBkgd", "fHistMatchedTracksEvspTBkgd",100, 0, 3,100,0,3);
+    fHistMatchedTracksEvspTSignal = new TH2F("fHistMatchedTracksEvspTSignal", "fHistMatchedTracksEvspTSignal",100, 0, 3,100,0,3);
+    fHistMatchedTracksEvspTBkgdPeripheral = new TH2F("fHistMatchedTracksEvspTBkgdPeripheral", "fHistMatchedTracksEvspTBkgd",100, 0, 3,100,0,3);
+    fHistMatchedTracksEvspTSignalPeripheral = new TH2F("fHistMatchedTracksEvspTSignalPeripheral", "fHistMatchedTracksEvspTSignal",100, 0, 3,100,0,3);
+    fHistChargedTracksCutPeripheral = new TH1F("fHistChargedTracksCutPeripheral", "fHistChargedTracksCut",100, 0, 5);
+    fHistChargedTracksAcceptedPeripheral = new TH1F("fHistChargedTracksAcceptedPeripheral", "fHistChargedTracksAccepted",100, 0, 5);
+    fHistGammasCutPeripheral = new TH1F("fHistGammasTracksCutPeripheral", "fHistGammasTracksCut",100, 0, 5);
+    fHistGammasAcceptedPeripheral = new TH1F("fHistGammasTracksAcceptedPeripheral", "fHistGammasTracksAccepted",100, 0, 5);
+    fHistBadTrackMatchesdPhidEta = new TH2F("fHistBadTrackMatchesdPhidEta", "fHistBadTrackMatchesdPhidEta",20, -0.1, 0.1,20,-.1,0.1);
+    fHistGoodTrackMatchesdPhidEta = new TH2F("fHistGoodTrackMatchesdPhidEta", "fHistGoodTrackMatchesdPhidEta",20, -0.1, 0.1,20,-.1,0.1);
 }
 
 void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
@@ -1426,6 +1470,21 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     
     list->Add(fHistGammasFound);
     list->Add(fHistGammasGenerated);
+    list->Add(fHistChargedTracksCut);
+    list->Add(fHistChargedTracksAccepted);
+    list->Add(fHistGammasCut);
+    list->Add(fHistGammasAccepted);
+    list->Add(fHistBadTrackMatches);
+    list->Add(fHistMatchedTracksEvspTBkgd);
+    list->Add(fHistMatchedTracksEvspTSignal);
+    list->Add(fHistMatchedTracksEvspTBkgdPeripheral);
+    list->Add(fHistMatchedTracksEvspTSignalPeripheral);
+    list->Add(fHistChargedTracksCutPeripheral);
+    list->Add(fHistChargedTracksAcceptedPeripheral);
+    list->Add(fHistGammasCutPeripheral);
+    list->Add(fHistGammasAcceptedPeripheral);
+    list->Add(fHistBadTrackMatchesdPhidEta);
+    list->Add(fHistGoodTrackMatchesdPhidEta);
 
 }
 
