@@ -2092,7 +2092,7 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         }							
 						
                         // few checks
-                        fHistNPPElectronFirstMother->Fill(pdgMom->PdgCode());
+                        if(pdgMom) fHistNPPElectronFirstMother->Fill(pdgMom->PdgCode());
                         fHistNPPElectronFirstMotherXY->Fill(part->Vx(),part->Vy());					
                         fHistNPPElectronNDaughters->Fill(nPartDaughters);
 						
@@ -2114,7 +2114,7 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         //if (IsInAcceptance(part,pdg,extParam)) 
                         if (IsInAcceptance(aliPart)) 
                         {
-                            fHistNPPElectronFirstMotherAcc->Fill(pdgMom->PdgCode());
+                            if(pdgMom) fHistNPPElectronFirstMotherAcc->Fill(pdgMom->PdgCode());
                             fHistNPPElectronFirstMotherXYAcc->Fill(part->Vx(),part->Vy());					
                             fHistNPPElectronNDaughtersAcc->Fill(nPartDaughters);
                             
@@ -2309,7 +2309,10 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	
     AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(ev);
     AliESDEvent *realEvent = dynamic_cast<AliESDEvent*>(ev2);
-    
+    if(!mcEvent || !realEvent){//Marcelo - should use AliError
+        Printf("ERROR: Event does not exist");   
+        return 0;
+    }
     fCentBin= -1;
     if(fDataSet==20100){//If this is Pb+Pb
         AliCentrality *centrality = realEvent->GetCentrality();
@@ -2908,7 +2911,7 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
                     fNPPElectronRectotET += et;
 					
                     // few checks
-                    fHistNPPElectronFirstMotherRec->Fill(pdgMom->PdgCode());
+                    if(pdgMom) fHistNPPElectronFirstMotherRec->Fill(pdgMom->PdgCode());
                     fHistNPPElectronFirstMotherXYRec->Fill(part->Vx(),part->Vy());					
                     fHistNPPElectronNDaughtersRec->Fill(nPartDaughters);
 					
