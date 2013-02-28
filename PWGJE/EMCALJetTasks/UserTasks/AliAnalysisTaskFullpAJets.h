@@ -41,6 +41,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     void Method2A();
     void Method2B();
     void Method3(Bool_t EMCalOn);
+    void Method3DiJet();
+    void Method3Perp();
     void JetPtFullProfile();
     void JetPtChargedProfile();
     void JetPtEtaProfile();
@@ -128,7 +130,21 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH1D *fh020JetTPt3;  //!
     TH1D *fhDeltaPt2B;  //! Delta pT spectrum with Method 2B used for rho
     TH1D *fhDeltaPtkT;  //! Delta pT spectrum with kT jets used to calculate rho
-
+    TH1D *fh020DiJetAsy;  //! di-jet asymmetry. Should be scaled by the histogram's integral
+    TH1D *fh020RhokT;  //! 0-20% Centrality rho plot for kT Background estimate
+    TH1D *fh020EMCalkTClusters;  //! Number of kT clusters in EMCal event by event
+    TH1D *fh020EMCalAkTJets;  //! Number of AkT jets in EMCal event by event
+    TH1D *fh020DiJetDeltaPhi;  //! Angular dependance between events that contain two or more signal jets. Always angle between leading jet in the event and other sugnal jets.
+    TH1D *fhDiJetEMCalLeadingPt;  //! Minimum biased plot of leading EMCal jet pT in a dijet event. Used to explore 3-jet events...
+    TH1D *fhDiJetEMCalLeadingDeltaPhi;  //! Minimum biased plot of the angular difference between the leading dijet and the leading EMCal jet in a dijet event. Used to explore 3-jet events...
+    TH1D *fh020EMCalJet2A; //! 0-20% Clusters within the EMCal from di-jets within the TPC satisfying certian criteria
+    
+    TH1D *fhDeltaRho0DiJet; //! QA Plot to investigate the event by event differential between rho_0 and rho_dijet. In principal should be a delta function centered at 0
+    TH1D *fh020Rho2BCore;  //! 0-20% dijet rho from tracks and cluster nearest to the center of the EMCal
+    TH1D *fh020Rho3NoJets;  //! 0-20% Charged background density in events with no signal jets.
+    TH1D *fh020Rho3DiJets;  //! 0-20% Charged background density in events with a dijet.
+    TH1D *fh020Rho3Perp;  //! 0-20% Charged background density in events with a dijet.
+    
     TH2D *fhTrackEtaPhi;  //!
     TH2D *fhClusterEtaPhi; //!
     TH2D *fhJetPtArea; //! Jet Area distribution vs Pt
@@ -151,6 +167,13 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH2D *fhJetTPtCen1C;  //!
     TH2D *fhJetTPtCen2B;  //!
     TH2D *fhJetTPtCen3;  //!
+    TH2D *fhDiJetCenAsy;  //!
+    TH2D *fhDiJetCenDeltaPhi;  //!
+    TH2D *fhEMCalCenJet2A; //!
+    TH2D *fhRho2BCore;  //!
+    TH2D *fhRho3NoJets;  //!
+    TH2D *fhRho3DiJets;  //!
+    TH2D *fhRho3Perp;  //!
     
     TH3D *fhJetTrigR1A; //! Clusters from events with high Pt trigger as a funtion of trigger Pt and delta_R
 
@@ -164,6 +187,13 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TProfile *fpRhokT;  //! Rho profile using rho from median kT jet
     TProfile *fpJetPtRhoTotal;  //!
     TProfile *fpJetPtRhoNoLeading;  //!
+    TProfile *fpJetPtRhokT;  //!
+    TProfile *fpRhoChargedkT;  //!
+    TProfile *fpRhoScalekT;  //!
+    TProfile *fpRho2BCore;  //!
+    TProfile *fpRho3NoJets;  //!
+    TProfile *fpRho3DiJets;  //!
+    TProfile *fpRho3Perp;  //!
     
     TProfile **fpJetEtaProfile; //!
     TProfile **fpJetAbsEtaProfile; //!
@@ -210,8 +240,11 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t fCentralityUp;
     Double_t fEventCentrality;
     
-    Double_t fRhoTotal;
-    Double_t fRhoCharged;
+    Double_t fRhoTotal;  // From Method 1B
+    Double_t fRhoCharged;  // From Method 3
+    Double_t fRhokTTotal;
+    Double_t fRhokTCharged;
+    Double_t fRhoAkTTotal;  // From Total Background
     
     // Jet profile variables
     Int_t fEtaProfileBins;
@@ -236,6 +269,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Int_t fnAKTFullJets;
     Int_t fnAKTChargedJets;
     Int_t fnKTFullJets;
+    Int_t fnKTChargedJets;
     Int_t fnBckgClusters;
     
     Double_t fTPCJetThreshold;
@@ -250,6 +284,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Int_t fnJetsPtTotalCut;
     Int_t fnJetsChargedPtCut;
     Int_t fnJetskTEMCalFull;
+    Int_t fnJetskTTPCFull;
     
     Int_t fPtMaxID;
     Int_t fPtFullMaxID;
@@ -266,10 +301,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t fPtChargedMax;
     
     Int_t fChargedBackJetID;
-    Bool_t fChargedFullMatch; // True if a match is found
-    // These two variables are to mathes the IDs between the dijets from charged jet array to the corresponding Full jets array
-    Int_t fLeadingJetID;
-    Int_t fBackJetID;
 
     // Dynamic Array variables
     TClonesArray *fmyTracks; //!
@@ -277,12 +308,14 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TClonesArray *fmyAKTFullJets; //!
     TClonesArray *fmyAKTChargedJets; //!
     TClonesArray *fmyKTFullJets; //!
+    TClonesArray *fmyKTChargedJets; //!
 
     Int_t *fJetPtCutID; //!  Stores the jets(ID) above a Threshold Pt for EMCal
     Int_t *fJetPtTPCCutID;  //!  Stores the jets above a Threshold Pt for TPC
     Int_t *fJetPtTotalCutID;  //!  Stores the jets(ID) above a Threshold Pt
     Int_t *fJetPtChargedCutID; //!  Stores the jets(ID) above a Threshold Pt for TPC in events without the EMCal on 
     Int_t *fJetkTEMCalFullID;  //!
+    Int_t *fJetkTTPCFullID;  //!
     
     Bool_t *fInEMCal; //!
     Bool_t *fInEMCalFull; //!
