@@ -601,7 +601,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
     AliStack *stack = mcEvent->Stack();
 
-    // get all detector clusters
     //  TRefArray* caloClusters = new TRefArray();
 
 //    if (fDetector == fCuts->GetDetectorEmcal()) realEvent->GetEMCALClusters( caloClusters );
@@ -611,6 +610,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     //return -1;
 //    }
 
+    // get all detector clusters
 //Note that this only returns clusters for the selected detector.  fSelector actually calls the right GetClusters... for the detector
 //It does not apply any cuts on these clusters
     TRefArray *caloClusters = fSelector->GetClusters();
@@ -626,6 +626,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         //Float_t caloE = caloCluster->E()
         fNClusters++;
         const UInt_t iPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
+	
         TParticle *part  =  stack->Particle(iPart);
 
         if (!part)
@@ -633,7 +634,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
             Printf("No MC particle %d", iCluster);
             continue;
         }
-
+  
         int primIdx = iPart;
         if (!stack->IsPhysicalPrimary(iPart)) // check whether particle is primary. we keep secondary electron and gamma for testing.
         {
@@ -661,22 +662,33 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         }
 
         Int_t code = pdg->PdgCode();
-	if(primCode == fgGammaCode) 
-	{
+// 	if(primCode == fgGammaCode) 
+// 	{
 	  
-	 
-	  if(fSelector->PassDistanceToBadChannelCut(*caloCluster))//&&fSelector->CutGeometricalAcceptance(*(stack->Particle(primIdx))))
+	for(int i = 0; i < caloCluster->GetNLabels(); i++)
+	{
+	  Int_t pIdx = caloCluster->GetLabelAt(i);
+	  TParticle *p = stack->Particle(pIdx);
+	  
+	  if(!stack->IsPhysicalPrimary(pIdx))
+	  {
+// 	    PrintFamilyTree(pIdx, stack);
+	    pIdx = GetPrimMother(pIdx, stack);
+	  }
+ 	  if(fSelector->PassDistanceToBadChannelCut(*caloCluster))//&&fSelector->CutGeometricalAcceptance(*(stack->Particle(primIdx))))
 	  {
 //	    std::cout << "Gamma primary: " << primIdx << std::endl;
-	    foundGammas.push_back(primIdx); 
+// 	    foundGammas.push_back(primIdx); 
+	    foundGammas.push_back(pIdx); 
 	  }
-	  
 	}
-        fCutFlow->Fill(cf++);
+	fCutFlow->Fill(cf++);
         if(!fSelector->PassDistanceToBadChannelCut(*caloCluster)) continue;
         Double_t clEt = CorrectForReconstructionEfficiency(*caloCluster);
 //	if(code == fgK0SCode) std::cout << "K0 energy: " << caloCluster->E() << std::endl;
         if(!fSelector->PassMinEnergyCut(*caloCluster)) continue;
+
+	
         fCutFlow->Fill(cf++);
         Float_t pos[3];
 	//PrintFamilyTree(
@@ -831,7 +843,15 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
 	if(!stack->IsPhysicalPrimary(iPart)) continue;
 	
+	
 	TParticle *part = stack->Particle(iPart);
+	
+	if(part->GetFirstDaughter() != -1)
+	{
+	  TParticle *daughter = stack->Particle(part->GetFirstDaughter());
+// 	  if(TMath::Sqrt(daughter->Vx()*daughter->Vx() + daughter->Vy()*daughter->Vy()) < 455) continue;
+	}
+	
 
         if (!part)
         {
@@ -848,26 +868,15 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         
         if(pdg->PdgCode()==fgGammaCode && fSelector->CutGeometricalAcceptance(*part))// TMath::Abs(part->Eta()) < 0.12)
 	{
+	  
 	  fHistGammasGenerated->Fill(part->Energy());
-//	  std::cout << "Searching for gammas..." << std::endl;
 	  if(std::binary_search(foundGammas.begin(),foundGammas.end(),iPart))
 	  {
 	    fHistGammasFound->Fill(part->Energy());
 	  }
-// 	  for(int i = 0; i < foundGammas.size(); i++)
-// 	  {
-// //	    std::cout << iPart << std::endl;
-// 	    if(foundGammas[i] == iPart)
-// 	    {
-// 	      fHistGammasFound->Fill(part->Energy());
-// 	      std::cout << "Match!" << std::endl;
-// 	      break;
-// 	    }
-//	  }
 	}
         
     }
-    //std::cout << "Distance cut: " << fTrackDistanceCut << std::endl;
     //std::cout << "Number of removed neutrals: " << fNeutralRemoved << std::endl;
     //std::cout << "Number of removed charged: " << fChargedRemoved << std::endl;
     //std::cout << "Number of non-removed charged: " << fChargedNotRemoved << std::endl;
@@ -913,6 +922,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      gammaDaughterIDs[3] = stack->Particle(gammaDaughterIDs[5])->GetDaughter(1);
 	      for(int k=0;k<4;k++){
 		//if( TMath::Abs(stack->Particle(gammaDaughterIDs[k])->Eta()) <= fCuts->GetGeometryEmcalEtaAccCut() ){//only add the energy if it's within the detector acceptance
+		if(gammaDaughterIDs[k]==-1) continue;
 		if( fSelector->CutGeometricalAcceptance( * stack->Particle(gammaDaughterIDs[k]))){//only add the energy if it's within the detector acceptance
 		  //cout<<"Found a gamma "<<" K0S eta "<<stack->Particle(iPart)->Eta()<<" gamma daughter  eta "<< stack->Particle(gammaDaughterIDs[k])->Eta()<<endl;
 		  gammaEts[k] = stack->Particle(gammaDaughterIDs[4])->Energy() * TMath::Sin(stack->Particle(gammaDaughterIDs[4])->Theta() );
@@ -1298,8 +1308,8 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
 	
     }
 
-    fHistGammasFound = new TH1F("fHistGammasFound", "fHistGammasFound",200, 0, 10);
-    fHistGammasGenerated = new TH1F("fHistGammasGenerated", "fHistGammasGenerated",200, 0, 10);
+    fHistGammasFound = new TH1F("fHistGammasFound", "fHistGammasFound",1000, 0, 2);
+    fHistGammasGenerated = new TH1F("fHistGammasGenerated", "fHistGammasGenerated",1000, 0, 2);
 }
 
 void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
@@ -1602,16 +1612,6 @@ Int_t AliAnalysisEtMonteCarlo::GetPrimMother(Int_t partIdx, AliStack *stack)
         TParticle *mother = stack->Particle(mothIdx);
         if(mother)
         {
-            // if(mother->GetPdgCode() == fgK0SCode)
-            //{
-//	std::cout << "!!!!!!!!!!!!!!!!! K0S !!!!!!!!!!!!!!!!!!" << std::endl;
-            //return mothIdx;
-            //    }
-            //if(mother->GetPdgCode() == fgK0SCode&& stack->IsPhysicalPrimary(mothIdx))
-            //{
-//	std::cout << "!!!!!!!!!!!!!!!!! Primary K0S !!!!!!!!!!!!!!!!!!" << std::endl;
-            //return mothIdx;
-            //      }
             if(stack->IsPhysicalPrimary(mothIdx)) return mothIdx;
             else return GetPrimMother(mothIdx, stack);
         }
