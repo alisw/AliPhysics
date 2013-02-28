@@ -259,7 +259,7 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Bool_t acceptMC) c
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVTrack *track, Bool_t acceptMC) const
+Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Bool_t acceptMC) const
 {
   // Return true if track is accepted.
 
