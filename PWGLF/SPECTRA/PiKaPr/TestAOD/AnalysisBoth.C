@@ -328,7 +328,8 @@ Bool_t   OpenFile(TString dirname,TString outputname, Bool_t mcflag, Bool_t mcas
 	TDirectoryFile *dir=(TDirectoryFile*)file->Get(sname.Data());
 	if(!dir)
 	{
-	//	cout<<"no dir "<<sname.Data()<<endl;	if(mcasdata)
+	//	cout<<"no dir "<<sname.Data()<<endl;	
+		if(mcasdata)
 		{
 			cout<<"using MC as data "<<endl;
 			sname=Form("OutputAODSpectraTask_%s_%s","MC",outputname.Data());
