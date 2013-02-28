@@ -82,19 +82,19 @@ AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE){
     mgr->CreateContainer("Histos_diel_lowmass",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "tbroeker_lowmass.root");
+                         "LMEEoutput.root");
 
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer("CF_diel_lowmass",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "tbroeker_lowmass.root");
+                         "LMEEoutput.root");
 
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer("tbroeker_lowmass_EventStat",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "tbroeker_lowmass.root");
+                         "LMEEoutput.root");
 
   mgr->ConnectInput(taskMB,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskMB, 0, coutput1 );
