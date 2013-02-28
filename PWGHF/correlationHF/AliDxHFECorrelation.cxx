@@ -71,6 +71,7 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
   , fDimThn(0)
   , fCorrArray(NULL)
   , fEventType(0)
+  , fTriggerParticleType(kD)
 {
   // default constructor
   // 
@@ -81,8 +82,8 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
 const char* AliDxHFECorrelation::fgkEventControlBinNames[]={
   "nEventsAll",
   "nEventsSelected",
-  "nEventsD0",
-  "nEventsD0e"
+  "nEventsTriggerd",
+  "nEventsCorrelated"
 };
 
 AliDxHFECorrelation::~AliDxHFECorrelation()
@@ -124,7 +125,12 @@ int AliDxHFECorrelation::Init(const char* arguments)
   //----------------------------------------------
   // Histogram for storing event information
 
-  std::auto_ptr<TH1D> hEventControl(new TH1D("hEventControlCorr", "hEventControlCorr", 10, 0, 10));
+  TString histoname="";
+  if(fTriggerParticleType==kElectron)
+    histoname="hEventControlHFExDCorr";
+  else
+    histoname="hEventControlDxHFECorr";
+  std::auto_ptr<TH1D> hEventControl(new TH1D(histoname.Data(), histoname.Data(), 10, 0, 10));
   if (!hEventControl.get()) {
     return -ENOMEM;
   }
@@ -169,8 +175,9 @@ int AliDxHFECorrelation::Init(const char* arguments)
   if(!pooldef) AliInfo("Warning:: Event pool not defined properly");
 
 
-    // ============================= EVENT MIXING CHECKS ======================================
+  // ============================= EVENT MIXING CHECKS ======================================
   // TODO: Not sure if all 4 histos are needed. Keep for now..	
+  // TODO: Set them up more nicely
   Int_t MaxNofEvents = cuts->GetMaxNEventsInPool();
   Int_t MinNofTracks = cuts->GetMinNTracksInPool();
   Int_t NofCentBins = cuts->GetNCentPoolBins();
@@ -265,6 +272,13 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
       }
       continue;
     }
+    if (argument.BeginsWith("trigger=")){
+      argument.ReplaceAll("trigger=", "");
+      if (argument.CompareTo("D")==0) { fTriggerParticleType=kD; AliInfo("Trigger on D"); }
+      if (argument.CompareTo("D0")==0) { fTriggerParticleType=kD; AliInfo("Trigger on D");}
+      else if (argument.CompareTo("electron")==0){ fTriggerParticleType=kElectron; AliInfo("trigger on electron");}
+      continue;
+    }   
     AliWarning(Form("unknown argument '%s'", argument.Data()));
       
   }
@@ -276,7 +290,7 @@ THnSparse* AliDxHFECorrelation::DefineTHnSparse()
 {
   //
   //Defines the THnSparse. For now, only calls CreateControlTHnSparse
-
+  AliDebug(1, "Creating Corr THnSparse");
   // here is the only place to change the dimension
   static const int sizeEventdphi = 7;  
   InitTHnSparseArray(sizeEventdphi);
@@ -409,7 +423,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 
     Bool_t execPool = fCorrelator->ProcessEventPool();
     if(fUseEventMixing && !execPool) {
-      AliInfo("Mixed event analysis: pool is not ready");
+      AliDebug(1,"Mixed event analysis: pool is not ready");
       continue;
     }
     Int_t NofEventsinPool = 1;
@@ -445,10 +459,10 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 
   Bool_t updated = fCorrelator->PoolUpdate(associatedTracks);
   if(fUseEventMixing){
-    if(!updated) AliInfo("Pool was not updated");
+    if(!updated) AliDebug(1,"Pool was not updated");
     else {
       EventMixingChecks(pEvent);
-      AliInfo("Pool was updated");
+      AliDebug(1,"Pool was updated");
     }
   }
   return 0;
@@ -468,11 +482,20 @@ int AliDxHFECorrelation::FillParticleProperties(AliVParticle* tr, AliVParticle *
     // TODO: think about filling only the available data and throwing a warning
     return -ENOSPC;
   }
-  data[i++]=ptrigger->GetInvMass();
-  data[i++]=ptrigger->Pt();
-  data[i++]=ptrigger->Phi();
-  data[i++]=ptrigger->GetPtBin(); 
-  data[i++]=assoc->Pt();
+  if(fTriggerParticleType==kD){
+    data[i++]=ptrigger->GetInvMass();
+    data[i++]=ptrigger->Pt();
+    data[i++]=ptrigger->Phi();
+    data[i++]=ptrigger->GetPtBin(); 
+    data[i++]=assoc->Pt();
+  } 
+  else{
+    data[i++]=assoc->GetInvMass();
+    data[i++]=assoc->Pt();
+    data[i++]=assoc->Phi();
+    data[i++]=assoc->GetPtBin(); 
+    data[i++]=ptrigger->Pt();
+  }
   data[i++]=GetDeltaPhi();
   data[i++]=GetDeltaEta();
 

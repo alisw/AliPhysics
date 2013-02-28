@@ -54,6 +54,7 @@ AliDxHFEParticleSelectionD0::AliDxHFEParticleSelectionD0(const char* opt)
   , fFillOnlyD0D0bar(0)
   , fD0InvMass(0.0)
   , fPtBin(-1)
+  , fHistoList(NULL)
 {
   // constructor
   // 
@@ -83,6 +84,10 @@ AliDxHFEParticleSelectionD0::~AliDxHFEParticleSelectionD0()
     delete fD0Daughter1;
     fD0Daughter1=NULL;
   }
+  if (fHistoList){
+    delete fHistoList;
+    fHistoList=NULL;
+  }
 
   // Note: external object deleted elsewhere  
   fCuts=NULL;
@@ -96,6 +101,18 @@ const char* AliDxHFEParticleSelectionD0::fgkDgTrackControlBinNames[]={
   "Eta"
 };
 
+const char* AliDxHFEParticleSelectionD0::fgkCutBinNames[]={
+  "nDstar->D0",
+  "nCandSel(Tr)",
+  "ptbin-1",
+  "No daugthers",
+  "Selectioncode 0",
+  "Selected D0",
+  "Selected D0bar",
+  "Selected as both"
+};
+
+
 int AliDxHFEParticleSelectionD0::InitControlObjects()
 {
   /// init the control objects, can be overloaded by childs which should
@@ -107,6 +124,16 @@ int AliDxHFEParticleSelectionD0::InitControlObjects()
   //Adding control objects for the daughters
   InitControlObjectsDaughters("pi information",0);
   InitControlObjectsDaughters("K information",1);
+  AliInfo(Form("D0 filling scheme: %d\n",fFillOnlyD0D0bar));
+
+  fHistoList=new TList;
+  fHistoList->SetName("D0 Histograms");
+  fHistoList->SetOwner();
+
+  // Histogram storing which cuts have been applied to the tracks
+  fHistoList->Add(CreateControlHistogram("fWhichCutD0","effective cut for a rejected particle", kNCutLabels, fgkCutBinNames));
+
+  AddControlObject(fHistoList);
 
   return AliDxHFEParticleSelection::InitControlObjects();
 }
@@ -231,18 +258,20 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
     if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
     if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
   }
-  else{
-    // If not D0 (or both), check for D0bar (actually now also checks for both, not sure if this is needed)
-    if ((selectionCode==2 || selectionCode==3) && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)) {
-
-      if(fD0Properties && ParticleProperties()) {
-	memset(ParticleProperties(), 0, GetDimTHnSparse()*sizeof(ParticleProperties()[0]));
-	FillParticleProperties(p, ParticleProperties(), GetDimTHnSparse());
-	fD0Properties->Fill(ParticleProperties());
-      }
-      if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
-      if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
+  // Checks for D0bar (or hypothesis both)
+  if ((selectionCode==2 || selectionCode==3) && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)) {
+    // Set the fD0InvMass to InvMassD0bar instead..
+    fD0InvMass= part->InvMassD0bar();
+    if(fD0Properties && ParticleProperties()) {
+      memset(ParticleProperties(), 0, GetDimTHnSparse()*sizeof(ParticleProperties()[0]));
+      FillParticleProperties(p, ParticleProperties(), GetDimTHnSparse());
+      fD0Properties->Fill(ParticleProperties());
     }
+    if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
+    if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
+    //reset value to InvMassD0 for when CreateParticle() is called
+    fD0InvMass= part->InvMassD0();
+    
   }
   return 0;
 }
@@ -263,18 +292,17 @@ TObjArray* AliDxHFEParticleSelectionD0::Select(TObjArray* pTracks, const AliVEve
     int selectionCode=IsSelected(track,pEvent);
     HistogramParticleProperties(track, selectionCode);
 
-    // This should make sure the array only gets filled with D0, D0bar or both:
-
     // Add track if it is either defined as D0(selectionCode==1) or both 
     // D0bar and a D0 (selectionCode==3)
     if ((selectionCode==1 || selectionCode==3) && fFillOnlyD0D0bar<2) 
       selectedTracks->Add(CreateParticle(track));
-    else{
-      // Add track if it is either defined as D0bar(selectionCode==2) or both 
-      // D0bar and a D0 (selectionCode==3)
-      if ((selectionCode==2 || selectionCode==3) && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)) 
-	selectedTracks->Add(CreateParticle(track));
-    }
+    
+    // Add track if it is either defined as D0bar(selectionCode==2) or both 
+    // D0bar and a D0 (selectionCode==3)
+    if ((selectionCode==2 || selectionCode==3) && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)){
+      fD0InvMass= dynamic_cast<AliAODRecoDecayHF2Prong*>(track)->InvMassD0bar();
+      selectedTracks->Add(CreateParticle(track));
+    }    
   }
   return selectedTracks;
 }
@@ -291,6 +319,8 @@ int AliDxHFEParticleSelectionD0::IsSelected(AliVParticle* p, const AliVEvent* pE
   if (!d0) return 0;
   if(d0->GetSelectionMap()) if(!d0->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
       AliDebug(1,"Skip D0 from Dstar");
+      ((TH1D*)fHistoList->FindObject("fWhichCutD0"))->Fill(kDstar);
+
       return 0; //skip the D0 from Dstar
     }
 
@@ -302,42 +332,82 @@ int AliDxHFEParticleSelectionD0::IsSelected(AliVParticle* p, const AliVEvent* pE
   } 
   else if(cuts->IsInFiducialAcceptance(d0->Pt(),d0->Y(421)) ) {
 
-    Int_t ptbin=cuts->PtBin(d0->Pt());
-    if(ptbin==-1) {
-      AliDebug(1,"Pt out of bounds");
-      return 0;
-    } //out of bounds
-
     // TODO: the aod pointer should also be const but the function definition of
     // AliRDHFCuts::IsSelected does not allow this
     AliAODEvent* aod=NULL;
     if (pEvent) aod=dynamic_cast<AliAODEvent*>(const_cast<AliVEvent*>(pEvent));
-  
+
+    //TODO: Should add fSystem for PbPb    if(fSys==0){
+    if(cuts->IsSelected(d0,AliRDHFCuts::kTracks,aod))       ((TH1D*)fHistoList->FindObject("fWhichCutD0"))->Fill(kCandSelTrack);
+    
+    Int_t ptbin=cuts->PtBin(d0->Pt());
+    if(ptbin==-1) {
+      ((TH1D*)fHistoList->FindObject("fWhichCutD0"))->Fill(kNegPtbin);
+      AliDebug(1,"Pt out of bounds");
+      return 0;
+    } //out of bounds
+
     // Selected. Return 0 (none), 1 (D0), 2 (D0bar) or 3 (both)
+    selectionCode=cuts->IsSelected(d0,AliRDHFCuts::kAll,aod); 
+    if(selectionCode==0)
+      ((TH1D*)fHistoList->FindObject("fWhichCutD0"))->Fill(kSelected0);
+
+    if(selectionCode==1)
+      ((TH1D*)fHistoList->FindObject("fWhichCutD0"))->Fill(kSelectedD0);
+
+    if(selectionCode==2)
+      ((TH1D*)fHistoList->FindObject("fWhichCutD0"))->Fill(kSelectedD0bar);
+
+    if(selectionCode==3)
+      ((TH1D*)fHistoList->FindObject("fWhichCutD0"))->Fill(kSelectedboth);
+
+    AliDebug(1,Form("Candidate is %d \n", selectionCode));
+
     // check daughters before calling as there is unchecked code in
     // AliAODRecoDecayHF::HasBadDaughters called
     TObject* o=NULL;
-    if ((o=d0->GetDaughter(0))!=NULL && dynamic_cast<AliAODTrack*>(o)!=NULL &&
-	(o=d0->GetDaughter(1))!=NULL && dynamic_cast<AliAODTrack*>(o)!=NULL) {
-    selectionCode=cuts->IsSelected(d0,AliRDHFCuts::kAll,aod); 
-
-    AliDebug(1,Form("Candidate is %d \n", selectionCode));
-    } else {
+    if (!((o=d0->GetDaughter(0))!=NULL && dynamic_cast<AliAODTrack*>(o)!=NULL &&
+	  (o=d0->GetDaughter(1))!=NULL && dynamic_cast<AliAODTrack*>(o)!=NULL)) {
+      ((TH1D*)fHistoList->FindObject("fWhichCutD0"))->Fill(kNoDaugthers);
       AliDebug(1,"at least one daughter not found!");
-      return 0;
+    
     }
   }
 
   return selectionCode;
 }
 
-void AliDxHFEParticleSelectionD0::SetCuts(TObject* cuts, int /*level*/)
+void AliDxHFEParticleSelectionD0::SetCuts(TObject* cuts, int level)
 {
   /// set cuts objects
-  fCuts=dynamic_cast<AliRDHFCuts*>(cuts);
-  if (!fCuts && cuts) {
-    AliError(Form("cuts object is not of required type AliRDHFCuts but %s", cuts->ClassName()));
+  if (level==kCutD0) {
+    fCuts=dynamic_cast<AliRDHFCuts*>(cuts);
+    if (!fCuts && cuts) {
+      AliError(Form("cuts object is not of required type AliRDHFCuts but %s", cuts->ClassName()));
+    }
+    return;
   }
+  if (level==kCutList){
+    TList* CutList=dynamic_cast<TList*>(cuts);
+    if (!CutList && cuts) {
+      AliError(Form("cuts object is not of required type TList but %s", cuts->ClassName()));
+    }
+    else{
+      TObject *obj=NULL;
+      int iii=0;
+      TIter next(CutList);
+      while((obj = next())){
+	iii++;
+	if(iii==1) {
+	  fCuts=dynamic_cast<AliRDHFCuts*>(obj);
+	  if (!fCuts) 
+	    AliError(Form("Cut object is not of required type AliRDHFCuts but %s", obj->ClassName()));
+	}
+      }
+    }
+    return;
+  }
+  return;
 }
 
 AliVParticle *AliDxHFEParticleSelectionD0::CreateParticle(AliVParticle* track)

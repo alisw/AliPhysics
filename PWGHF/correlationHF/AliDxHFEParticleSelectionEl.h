@@ -38,9 +38,8 @@ class AliHFEpidBase;
 class AliHFEtools;
 class AliVEvent;
 class AliCFManager;
-class TH1;
-class TH1F;
-class TH2F;
+class TList;
+
 /**
  * @class AliDxHFEParticleSelectionEl
  * Electron selection for D-HFE correlations, implements the specific
@@ -57,6 +56,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
     kCutHFE = 0,
     kCutPID = 1,
     kCutPIDTOF = 2,
+    kCutList=3,
     kNCuts
   };
 
@@ -106,26 +106,15 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   AliHFEpid*    fPID;                //! the PID object
   AliHFEpid*    fPIDTOF;             //! the PID TOF object
   THnSparse*    fElectronProperties; // the particle properties of selected particles
-  TH1*          fWhichCut;           // effective cut for a rejected particle
-  TH2F*         fdEdx;               // dedx plot
-  TH2F*         fdEdxCut;            // dedx plot after track cuts
-  TH2F*         fdEdxPid;            // dedx plot after pid
-  TH2F*         fdEdxPidTOF;         // dedx plot after TOF pid
-  TH2F*         fnSigTPC;            // nSigmaTPC vs momentum before track cut
-  TH2F*         fnSigTPCCut;         // nSigmaTPC vs momentum after track cut
-  TH2F*         fnSigTPCPid;         // nSigmaTPC vs momentum after PID
-  TH2F*         fnSigTPCPidTOF;      // nSigmaTPC vs momentum after TOF PID
-  TH2F*         fnSigTOF;            // nSigmaTOF vs momentum before track cut
-  TH2F*         fnSigTOFCut;         // nSigmaTOF vs momentum after track cut
-  TH2F*         fnSigTOFPid;         // nSigmaTOF vs momentum after PID
-  TH2F*         fnSigTOFPidTOF;      // nSigmaTOF vs momentum after  TOF PID
+  TList*        fHistoList;          // list of histograms
+  TList*        fCutPidList;         // list for pid and cut objects
   AliPIDResponse* fPIDResponse;      // fPIDResponse
   AliHFEcuts*   fCuts;               //! Cuts for HF electrons
   AliCFManager* fCFM;                //! Correction Framework Manager
 
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
 
-  ClassDef(AliDxHFEParticleSelectionEl, 3);
+  ClassDef(AliDxHFEParticleSelectionEl, 4); 
 };
 
 #endif

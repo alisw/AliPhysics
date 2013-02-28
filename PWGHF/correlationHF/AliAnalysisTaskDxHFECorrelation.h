@@ -55,14 +55,18 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t*);
 
   /// set options
+  // TODO: Some of them are not in use, as the members are set by parsing arguments.
+  // Keep it for now.
   void SetOption(const char* opt) { fOption = opt; }
   void SetFillOnlyD0D0bar(Int_t flagfill){fFillOnlyD0D0bar=flagfill;}
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
   virtual void SetCutsD0(AliAnalysisCuts* cuts){fCutsD0=cuts;}
-  virtual void SetCutsHFE(AliHFEcuts* cuts){fCutsHFE=cuts;}
+  virtual void SetCutsHFE(TList* cuts){fListHFE=cuts;}
+
   void SetCuts(AliAnalysisCuts* cuts){fCuts=cuts;}
   void SetUseEventMixing(Bool_t useMixing) {fUseEventMixing=useMixing;}
   void SetSystem(Bool_t system){fSystem=system;}
+  void SetTriggerParticle(int trigger){fTriggerParticle=trigger;} 
 
   /// overloaded from TObject: get option
   virtual Option_t* GetOption() const { return fOption;}
@@ -77,6 +81,7 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   /// assignment operator prohibited: might change
   AliAnalysisTaskDxHFECorrelation& operator=(const AliAnalysisTaskDxHFECorrelation&);
 
+  int ParseArguments(const char* arguments);
   int DefineSlots();
 
   TList* fOutput;                        //! list send on output slot 1
@@ -85,19 +90,17 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   AliDxHFEParticleSelection* fD0s;       //  selection of D0s
   AliDxHFEParticleSelection* fElectrons; //  selection of electrons
   AliAnalysisCuts *fCutsD0;              //  Cuts D0 
-  AliHFEcuts *fCutsHFE;                  //  Cuts HFE
   AliAnalysisCuts *fCuts;                // Cuts which holds info for AliHFCorrelator 
-  AliHFEpid *fPID;                       //  PID TPC and TOF
-  AliHFEpid *fPIDTOF;                    //  PID TOF only
   Int_t     fFillOnlyD0D0bar;            // flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
-  Bool_t fUseMC;                 // use MC info
-  Bool_t fUseEventMixing;        // Run Event Mixing analysis
-  Int_t fSystem;                 // Which system pp/PbPb
-  TObjArray *fSelectedD0s; // Array for selected D0s
-  TObjArray *fSelectedElectrons; // Array for selected Electrons
+  Bool_t fUseMC;                         // use MC info
+  Bool_t fUseEventMixing;                // Run Event Mixing analysis
+  Int_t fSystem;                         // Which system pp/PbPb
+  TObjArray *fSelectedD0s;               // Array for selected D0s
+  TObjArray *fSelectedElectrons;         // Array for selected Electrons
+  TList* fListHFE;                       // List containing cut and pid objects for HFE
+  Int_t fTriggerParticle;                // Which particle to trigger on 
 
-
-  ClassDef(AliAnalysisTaskDxHFECorrelation, 4);
+  ClassDef(AliAnalysisTaskDxHFECorrelation, 5);
 };
 
 #endif
