@@ -143,6 +143,7 @@ Int_t AliHelperPID::GetParticleSpecies(AliVTrack * trk, Bool_t FIllQAHistos){
     for(Int_t ipart=0;ipart<kNSpecies;ipart++){
       if(HasDC[ipart]==kTRUE)  return kSpUndefined;
     }
+    return FindMinNSigma(trk,FIllQAHistos);//NSigmaRec distr filled here
   }
   else return FindMinNSigma(trk,FIllQAHistos);//NSigmaRec distr filled here
   
