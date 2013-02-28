@@ -13,7 +13,8 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
    const char* usedTracks     = "PicoTracks",
    const char* outClusName    = "CaloClustersCorr",
    const Double_t minTrackPt  = 0.15,
-   const Double_t minClusterPt = 0.30
+   const Double_t minClusterPt = 0.30,
+   const char *CentEst         = "V0A"
    )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -54,19 +55,27 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
 
   AliAnalysisTaskRho *rhochtask = AddTaskRho(jetFinderTaskChBack->GetName(),usedTracks,outClusName,nRhosCh,0.2,0,0.01,0,sfunc,0,kTRUE,nRhosCh);
+  rhochtask->SetCentralityEstimator(CentEst);
 
+
+  const char *nJets = jetFinderTask->GetName();
+
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskDeltaPt.C");
+
+  AliAnalysisTaskDeltaPt* deltapt = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","","",radius,1,0.557,minTrackPt,minClusterPt,AliAnalysisTaskEmcal::kTPC,"DeltaPtTask");
+  deltapt->SetCentralityEstimator(CentEst);
 
 
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
-  const char *nJets = jetFinderTask->GetName();
 
 
   TString name(Form("SpectraMECpA_%s", nJets));
   AliAnalysisTaskEmcalJetSpectraMECpA *spectratask = new AliAnalysisTaskEmcalJetSpectraMECpA(name);
   spectratask->SetJetsName(jetFinderTask->GetName());
+  spectratask->SetCentralityEstimator(CentEst);
   spectratask->SetAnaType(type);
   spectratask->SetRhoName(nRhosCh);
   spectratask->SetJetPhiLimits(minPhi,maxPhi);

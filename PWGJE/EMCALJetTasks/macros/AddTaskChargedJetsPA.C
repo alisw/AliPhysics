@@ -51,31 +51,6 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300); // anti-kt
   AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,jetRadius,1,0.150,0.300); // kt
 
-  // #### Load correction factors from alien
-  TH1D* corrFactorsKT = NULL;
-  TH1D* corrFactorsRC = NULL;
-  TH1D* corrFactorsTR = NULL;
-  if (fileEtaCorrectionFactors)
-  {
-    // trying to connect to alien
-    if (!TGrid::Connect("alien://"))
-      ::Warning("AddTaskChargedJetsPA", "AliEn connection failed!");
-    else
-    { 
-      ::Info("AddTaskChargedJetsPA", "AliEn connection successful!");
-      // Copy eta correction file
-      Bool_t copied = TFile::Cp(fileEtaCorrectionFactors,"file:EtaCorrectionFactors.root");
-      if(copied)
-      {
-        TFile* tmpFile= new TFile("EtaCorrectionFactors.root","READ");
-        corrFactorsKT = static_cast<TH1D*>(tmpFile->Get("EtaCorrectionFactorsKT"));
-        corrFactorsRC = static_cast<TH1D*>(tmpFile->Get("EtaCorrectionFactorsRC"));
-        corrFactorsTR = static_cast<TH1D*>(tmpFile->Get("EtaCorrectionFactorsTR"));
-      }
-      else
-        ::Warning("AddTaskChargedJetsPA", "AliEn copying failed!");
-    }
-  }
   // #### Define analysis task
   AliAnalysisTaskChargedJetsPA *task = NULL;
   contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChargedJetsPA", AliAnalysisManager::GetCommonFileName()));
@@ -93,13 +68,6 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   task->SetCentralityType(centralityType);
   if(numberOfPtHardBins)
     task->SetNumberOfPtHardBins(numberOfPtHardBins);
-
-  if(corrFactorsKT)
-    task->SetKTEtaCorrectionFactors(corrFactorsKT);
-  if(corrFactorsRC)
-    task->SetRCEtaCorrectionFactors(corrFactorsRC);
-  if(corrFactorsTR)
-    task->SetTREtaCorrectionFactors(corrFactorsTR);
 
   // #### Add analysis task
   manager->AddTask(task);
