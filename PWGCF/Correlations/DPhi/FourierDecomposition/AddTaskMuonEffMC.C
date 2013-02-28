@@ -1,12 +1,15 @@
 
-AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kFALSE,
+AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
 			       Bool_t MDProcess = kFALSE,
+			       Bool_t FeynmanXProcess = kFALSE,
+			       Bool_t ScatFXProcess = kFALSE,
 			       TString centralityEstimator = "V0M",
 			       const Int_t NEtaBins = 15,
-			       const Int_t NpTBins = 100,
-			       const Int_t NCentBins = 5,
-			       const Int_t NZvtxBins = 10,
-			       const Int_t NPhiBins = 36,
+			       const Int_t NpTBins = 50,
+			       const Int_t NCentBins = 1,
+			       const Int_t NZvtxBins = 1,
+			       const Int_t NPhiBins = 12,
+			       const Int_t NPBins = 150,
 			       const char* outputFileName = 0,
 			       const char* folderName = "Muon_TrkEff")
 {
@@ -35,12 +38,15 @@ AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kFALSE,
 
   MuonEff->SetMcAna(IsMc);
   MuonEff->SetMDProcess(MDProcess);
+  MuonEff->SetFeynmanXProcess(FeynmanXProcess);
+  MuonEff->SetScatFX(ScatFXProcess);
   MuonEff->SetCentEstimator(centralityEstimator);
   MuonEff->SetNEtaBins(NEtaBins);
   MuonEff->SetNpTBins(NpTBins);
   MuonEff->SetNCentBins(NCentBins);
   MuonEff->SetNZvtxBins(NZvtxBins);
   MuonEff->SetNPhiBins(NPhiBins);
+  MuonEff->SetNPBins(NPBins);
   MuonEff->SelectCollisionCandidates(AliVEvent::kAnyINT);
 
   // Add task(s)
