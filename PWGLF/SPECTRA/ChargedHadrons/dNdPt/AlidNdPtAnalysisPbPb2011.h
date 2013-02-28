@@ -29,6 +29,7 @@ class AlidNdPtHelper;
 class AliTriggerAnalysis;
 
 #include "AlidNdPt.h"
+#include "TObjString.h"
 
 class AlidNdPtAnalysisPbPb2011 : public AlidNdPt {
 public :
@@ -120,7 +121,6 @@ public :
   THnSparseF *GetRecTrackHist3() const {return fRecTrackHist3;}
   
   TString GetCentralityEstimator() const {return fCentralityEstimator; }
-   
   void SetCentralityEstimator(TString centEst="V0M") { fCentralityEstimator = centEst; }
 
 private:
@@ -197,7 +197,7 @@ private:
 
   AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis object;
   TString fCentralityEstimator;     // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
-  
+   
   //binning for THNsparse
   Int_t fMultNbins;
   Int_t fPtNbins;
