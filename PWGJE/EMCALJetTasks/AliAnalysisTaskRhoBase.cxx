@@ -53,6 +53,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
 
   for (Int_t i = 0; i < 4; i++) {
     fHistJetNconstVsPt[i] = 0;
+    fHistJetRhovsEta[i] = 0;
   }
   for (Int_t i = 0; i < 12; i++) {
     fHistNjUEoverNjVsNj[i] = 0;
@@ -94,11 +95,11 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
 
   for (Int_t i = 0; i < 4; i++) {
     fHistJetNconstVsPt[i] = 0;
+    fHistJetRhovsEta[i] = 0;
   }
   for (Int_t i = 0; i < 12; i++) {
     fHistNjUEoverNjVsNj[i] = 0;
   }
-
   SetMakeGeneralHistograms(histo);
 }
 
@@ -153,6 +154,12 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
       fHistJetNconstVsPt[i]->GetXaxis()->SetTitle("# of constituents");
       fHistJetNconstVsPt[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
       fOutput->Add(fHistJetNconstVsPt[i]);
+
+      name = Form("HistJetRhovsEta_%d",i);
+      fHistJetRhovsEta[i] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt*2, 16, -0.8, 0.8);
+      fHistJetRhovsEta[i]->GetXaxis()->SetTitle("Rho");
+      fHistJetRhovsEta[i]->GetYaxis()->SetTitle("eta");
+      fOutput->Add(fHistJetRhovsEta[i]);
 
       for (Int_t j = 0; j < 3; j++) {
 	name = Form("NjUEoverNjVsNj_%d_%d",i,j+1);
@@ -252,7 +259,8 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
       fHistJetPtvsCent->Fill(fCent, jet->Pt());
       fHistJetAreavsCent->Fill(fCent, jet->Area());
       fHistJetRhovsCent->Fill(fCent, jet->Pt() / jet->Area());
-      
+      fHistJetRhovsEta[fCentBin]->Fill(jet->Pt() / jet->Area(), jet->Eta());
+
       if (fTracks) {
 	fHistJetPtvsNtrack->Fill(Ntracks, jet->Pt());
 	fHistJetAreavsNtrack->Fill(Ntracks, jet->Area());

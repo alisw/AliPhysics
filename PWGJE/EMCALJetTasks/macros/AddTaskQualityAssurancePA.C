@@ -63,7 +63,7 @@ AliAnalysisTaskQualityAssurancePA* AddTaskQualityAssurancePA(
   task = new AliAnalysisTaskQualityAssurancePA(Form("QualityAssurancePA_%s_%s", jetFinderTask->GetName(), triggerName.Data()), usedTracks, usedClusters, jetFinderTask->GetName());
 
   if(isEMCalTrain)
-    RequestMemory(task,150*1024);
+    RequestMemory(task,200*1024);
 
   // #### Task preferences
   task->SetAcceptanceWindows(trackEtaWindow, vertexWindow, vertexMaxR, jetRadius);

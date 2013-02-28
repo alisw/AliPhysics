@@ -17,7 +17,7 @@ class AliAnalysisUtils;
 class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
  public:
   // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
-  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeJets(1), fAnalyzeBackground(1), fAnalyzePythia(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.4), fNumberRandCones(8), fNumberExcludedJets(2), fDijetMaxAngleDeviation(10.0), fJetKTEtaCorrection(0), fJetRCEtaCorrection(0), fJetTREtaCorrection(0), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinJetPt(1.0), fMinJetArea(0.4), fMinBackgroundJetPt(0.15), fMinDijetLeadingPt(10.0), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0) {}
+  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeJets(1), fAnalyzeBackground(1), fAnalyzePythia(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.4), fNumberRandCones(8), fNumberExcludedJets(2), fDijetMaxAngleDeviation(10.0), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinJetPt(1.0), fMinJetArea(0.4), fMinBackgroundJetPt(0.15), fMinDijetLeadingPt(10.0), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0) {}
 
   AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName);
   virtual ~AliAnalysisTaskChargedJetsPA();
@@ -45,23 +45,17 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
 
   void        SetDijetMaxAngleDeviation(Double_t degrees) {fDijetMaxAngleDeviation = degrees/360.0 * TMath::TwoPi();} // degrees are more comfortable
   void        SetAcceptanceWindows(Double_t trackEta, Double_t vertexZ, Double_t vertexMaxR, Double_t signalJetRadius, Double_t bgrdJetRadius){fVertexWindow = vertexZ; fVertexMaxR = vertexMaxR; fTrackEtaWindow = trackEta; fSignalJetRadius = signalJetRadius; fBackgroundJetRadius = bgrdJetRadius; fSignalJetEtaWindow = fTrackEtaWindow-fSignalJetRadius; fBackgroundJetEtaWindow = fTrackEtaWindow-fBackgroundJetRadius;}
-  void        SetKTEtaCorrectionFactors(TH1D* histo);
-  void        SetRCEtaCorrectionFactors(TH1D* histo);
-  void        SetTREtaCorrectionFactors(TH1D* histo);
   Int_t       GetInstanceCounter() {return fTaskInstanceCounter;}
 
  private:
-  enum EtaCorrectionMode {kNoEtaCorrection, kKTEtaCorrection, kRCEtaCorrection, kTREtaCorrection};
 
   // ######### MAIN CALCULATION FUNCTIONS
   void        GetSignalJets();
   Int_t       GetLeadingJets(TClonesArray* jetArray, Int_t* jetIDArray, Bool_t isSignalJets);
-  Double_t    GetBackgroundEtaCorrFactor(EtaCorrectionMode mode, Double_t eta);
-  Double_t    GetBackgroundEtaBinCorrFactor(EtaCorrectionMode mode, Int_t eta);
-  Double_t    GetCorrectedJetPt(AliEmcalJet* jet, Double_t background, EtaCorrectionMode mode);
-  void        GetDeltaPt(Double_t& deltaPt, Double_t rho, EtaCorrectionMode mode, Bool_t leadingJetExclusion = kTRUE);
+  Double_t    GetCorrectedJetPt(AliEmcalJet* jet, Double_t background);
+  void        GetDeltaPt(Double_t& deltaPt, Double_t rho, Bool_t leadingJetExclusion = kTRUE);
 
-  void        GetKTBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMedian, Double_t& areaMean, Double_t etaMin = 0, Double_t etaMax = 0);
+  void        GetKTBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMedian, Double_t& areaMean, Double_t etaMin = 0, Double_t etaMax = 0, Bool_t excludeSignalJets = kFALSE);
   Int_t       GetRCBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& rhoMedian, Double_t etaMin = 0, Double_t etaMax = 0, Int_t numberRandCones = 0);
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& area, Double_t etaMin = 0, Double_t etaMax = 0);
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& area, AliEmcalJet* excludeJet1, AliEmcalJet* excludeJet2, Bool_t doSearchPerpendicular);
@@ -130,9 +124,6 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   Int_t               fNumberRandCones;       // Number of random cones to be put into one event
   Int_t               fNumberExcludedJets;    // Number of jets to be excluded from backgrounds
   Double_t            fDijetMaxAngleDeviation;// Max angle deviation from pi between two jets to be accept. as dijet
-  TH1D*               fJetKTEtaCorrection;    // Correction factors in bins of rho and eta to correct the eta dependence of the jet background
-  TH1D*               fJetRCEtaCorrection;    // Correction factors in bins of rho and eta to correct the eta dependence of the jet background
-  TH1D*               fJetTREtaCorrection;    // Correction factors in bins of rho and eta to correct the eta dependence of the jet background
 
   // ########## CUTS 
   Double_t            fSignalJetEtaWindow;    // +- window in eta for signal jets

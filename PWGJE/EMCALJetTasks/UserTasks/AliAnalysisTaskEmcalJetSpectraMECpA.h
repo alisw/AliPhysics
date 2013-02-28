@@ -26,8 +26,8 @@ class AliAnalysisTaskEmcalJetSpectraMECpA : public AliAnalysisTaskEmcalJet {
   Float_t                RelativePhi(Double_t mphi,Double_t vphi) const;
 
  private:
-  TH2F                  *fHistRhovsCent; //!
-  TH2F                  *fHistNjetvsCent;          //!number of jets versus Centrality
+  TH2F                  *fHistRhovsCent;  //!
+  TH2F                  *fHistNjetvsCent; //!number of jets versus Centrality
   TH2F                  *fHistJetPtvsTrackPt[6];//!
   TH2F                  *fHistRawJetPtvsTrackPt[6];//!
   TH1F                  *fHistTrackPt[6];//!
@@ -48,6 +48,6 @@ class AliAnalysisTaskEmcalJetSpectraMECpA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetSpectraMECpA(const AliAnalysisTaskEmcalJetSpectraMECpA&); // not implemented
   AliAnalysisTaskEmcalJetSpectraMECpA& operator=(const AliAnalysisTaskEmcalJetSpectraMECpA&); // not implemented
   
-  ClassDef(AliAnalysisTaskEmcalJetSpectraMECpA, 1); // Emcal jet spectra task
+  ClassDef(AliAnalysisTaskEmcalJetSpectraMECpA, 2); // Emcal jet spectra task
 };
 #endif

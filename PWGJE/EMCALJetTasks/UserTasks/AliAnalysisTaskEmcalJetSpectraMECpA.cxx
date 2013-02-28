@@ -54,7 +54,6 @@ AliAnalysisTaskEmcalJetSpectraMECpA::AliAnalysisTaskEmcalJetSpectraMECpA() :
     fHistJetPtEtaPhi[i]         = 0;
 
   }
-  SetCentralityEstimator("V0A");
   SetMakeGeneralHistograms(kTRUE);
 }
 
@@ -77,7 +76,6 @@ AliAnalysisTaskEmcalJetSpectraMECpA::AliAnalysisTaskEmcalJetSpectraMECpA(const c
     fHistRhovsEP[i]             = 0;
     fHistJetPtEtaPhi[i]         = 0;
    }
-   SetCentralityEstimator("V0A");
    SetMakeGeneralHistograms(kTRUE);
  }
 
