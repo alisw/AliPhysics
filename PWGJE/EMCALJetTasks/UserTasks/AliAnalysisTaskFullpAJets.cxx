@@ -89,6 +89,20 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fh020JetTPt3(0),
     fhDeltaPt2B(0),
     fhDeltaPtkT(0),
+    fh020DiJetAsy(0),
+    fh020RhokT(0),
+    fh020EMCalkTClusters(0),
+    fh020EMCalAkTJets(0),
+    fh020DiJetDeltaPhi(0),
+    fhDiJetEMCalLeadingPt(0),
+    fhDiJetEMCalLeadingDeltaPhi(0),
+    fh020EMCalJet2A(0),
+    fhDeltaRho0DiJet(0),
+    fh020Rho2BCore(0),
+    fh020Rho3NoJets(0),
+    fh020Rho3DiJets(0),
+    fh020Rho3Perp(0),
+
     fhTrackEtaPhi(0),
     fhClusterEtaPhi(0),
     fhJetPtArea(0),
@@ -111,7 +125,16 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fhJetTPtCen1C(0),
     fhJetTPtCen2B(0),
     fhJetTPtCen3(0),
+    fhDiJetCenAsy(0),
+    fhDiJetCenDeltaPhi(0),
+    fhEMCalCenJet2A(0),
+    fhRho2BCore(0),
+    fhRho3NoJets(0),
+    fhRho3DiJets(0),
+    fhRho3Perp(0),
+
     fhJetTrigR1A(0),
+
     fpEventMult(0),
     fpRhoTotal(0),
     fpRhoNoLeading(0),
@@ -122,6 +145,14 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fpRhokT(0),
     fpJetPtRhoTotal(0),
     fpJetPtRhoNoLeading(0),
+    fpJetPtRhokT(0),
+    fpRhoChargedkT(0),
+    fpRhoScalekT(0),
+    fpRho2BCore(0),
+    fpRho3NoJets(0),
+    fpRho3DiJets(0),
+    fpRho3Perp(0),
+
     fpTrackPtProfile(0),
     fpClusterPtProfile(0),
 
@@ -155,6 +186,9 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fEventCentrality(0),
     fRhoTotal(0),
     fRhoCharged(0),
+    fRhokTTotal(0),
+    fRhokTCharged(0),
+    fRhoAkTTotal(0),
     fEtaProfileBins(0),
     fEtaProfileLow(0),
     fEtaProfileUp(0),
@@ -172,6 +206,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fnAKTFullJets(0),
     fnAKTChargedJets(0),
     fnKTFullJets(0),
+    fnKTChargedJets(0),
     fnBckgClusters(0),
     fTPCJetThreshold(0),
     fEMCalJetThreshold(0),
@@ -182,6 +217,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fnJetsPtTotalCut(0),
     fnJetsChargedPtCut(0),
     fnJetskTEMCalFull(0),
+    fnJetskTTPCFull(0),
     fPtMaxID(0),
     fPtFullMaxID(0),
     fPtTPCMaxID(0),
@@ -195,19 +231,18 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fPtTotalMax(0),
     fPtChargedMax(0),
     fChargedBackJetID(0),
-    fChargedFullMatch(0),
-    fLeadingJetID(0),
-    fBackJetID(0),
     fmyTracks(0),
     fmyClusters(0),
     fmyAKTFullJets(0),
     fmyAKTChargedJets(0),
     fmyKTFullJets(0),
+    fmyKTChargedJets(0),
     fJetPtCutID(0),
     fJetPtTPCCutID(0),
     fJetPtTotalCutID(0),
     fJetPtChargedCutID(0),
     fJetkTEMCalFullID(0),
+    fJetkTTPCFullID(0),
     fInEMCal(0),
     fInEMCalFull(0),
     fInTPCFull(0),
@@ -283,6 +318,20 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fh020JetTPt3(0),
     fhDeltaPt2B(0),
     fhDeltaPtkT(0),
+    fh020DiJetAsy(0),
+    fh020RhokT(0),
+    fh020EMCalkTClusters(0),
+    fh020EMCalAkTJets(0),
+    fh020DiJetDeltaPhi(0),
+    fhDiJetEMCalLeadingPt(0),
+    fhDiJetEMCalLeadingDeltaPhi(0),
+    fh020EMCalJet2A(0),
+    fhDeltaRho0DiJet(0),
+    fh020Rho2BCore(0),
+    fh020Rho3NoJets(0),
+    fh020Rho3DiJets(0),
+    fh020Rho3Perp(0),
+
     fhTrackEtaPhi(0),
     fhClusterEtaPhi(0),
     fhJetPtArea(0),
@@ -305,7 +354,16 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fhJetTPtCen1C(0),
     fhJetTPtCen2B(0),
     fhJetTPtCen3(0),
+    fhDiJetCenAsy(0),
+    fhDiJetCenDeltaPhi(0),
+    fhEMCalCenJet2A(0),
+    fhRho2BCore(0),
+    fhRho3NoJets(0),
+    fhRho3DiJets(0),
+    fhRho3Perp(0),
+
     fhJetTrigR1A(0),
+
     fpEventMult(0),
     fpRhoTotal(0),
     fpRhoNoLeading(0),
@@ -316,6 +374,14 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fpRhokT(0),
     fpJetPtRhoTotal(0),
     fpJetPtRhoNoLeading(0),
+    fpJetPtRhokT(0),
+    fpRhoChargedkT(0),
+    fpRhoScalekT(0),
+    fpRho2BCore(0),
+    fpRho3NoJets(0),
+    fpRho3DiJets(0),
+    fpRho3Perp(0),
+
     fpTrackPtProfile(0),
     fpClusterPtProfile(0),
 
@@ -349,6 +415,9 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fEventCentrality(0),
     fRhoTotal(0),
     fRhoCharged(0),
+    fRhokTTotal(0),
+    fRhokTCharged(0),
+    fRhoAkTTotal(0),
     fEtaProfileBins(0),
     fEtaProfileLow(0),
     fEtaProfileUp(0),
@@ -366,6 +435,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fnAKTFullJets(0),
     fnAKTChargedJets(0),
     fnKTFullJets(0),
+    fnKTChargedJets(0),
     fnBckgClusters(0),
     fTPCJetThreshold(0),
     fEMCalJetThreshold(0),
@@ -376,6 +446,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fnJetsPtTotalCut(0),
     fnJetsChargedPtCut(0),
     fnJetskTEMCalFull(0),
+    fnJetskTTPCFull(0),
     fPtMaxID(0),
     fPtFullMaxID(0),
     fPtTPCMaxID(0),
@@ -389,19 +460,18 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fPtTotalMax(0),
     fPtChargedMax(0),
     fChargedBackJetID(0),
-    fChargedFullMatch(0),
-    fLeadingJetID(0),
-    fBackJetID(0),
     fmyTracks(0),
     fmyClusters(0),
     fmyAKTFullJets(0),
     fmyAKTChargedJets(0),
     fmyKTFullJets(0),
+    fmyKTChargedJets(0),
     fJetPtCutID(0),
     fJetPtTPCCutID(0),
     fJetPtTotalCutID(0),
     fJetPtChargedCutID(0),
     fJetkTEMCalFullID(0),
+    fJetkTTPCFullID(0),
     fInEMCal(0),
     fInEMCalFull(0),
     fInTPCFull(0),
@@ -438,7 +508,6 @@ AliAnalysisTaskFullpAJets::~AliAnalysisTaskFullpAJets()
 //________________________________________________________________________
 void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
 {
-    cout<<endl<<endl<<endl<<"Hello"<<endl<<endl<<endl;
     // Create histograms
     // Called once (on the worker node)
     fIsInitialized=kFALSE;
@@ -650,9 +719,10 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     Double_t JetPtAreaLow=0.0;
     Double_t JetPtAreaUp=2.0;
     
-    fhJetPtArea = new TH2D("fhJetPtArea","Jet Area distribution vs p_{T}",JetPtBins, JetPtLow,JetPtUp,JetPtAreaBins,JetPtAreaLow,JetPtAreaUp);
+    fhJetPtArea = new TH2D("fhJetPtArea","Jet Area Distribution",JetPtBins, JetPtLow,JetPtUp,JetPtAreaBins,JetPtAreaLow,JetPtAreaUp);
     fhJetPtArea->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fhJetPtArea->GetYaxis()->SetTitle("A_{jet}");
+    fhJetPtArea->GetZaxis()->SetTitle("1/N_{Events} dN/dA_{jet}dp_{T}");
     fhJetPtArea->Sumw2();
 
     Int_t A1_PtBins = 100;
@@ -837,17 +907,47 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhEMCalJet2A->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fhEMCalJet2A->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
     fhEMCalJet2A->Sumw2();
-    
+
+    fh020EMCalJet2A = new TH1D("fh020EMCalJet2A","0-20% Centrality, Cluster p_{T} distribution for jets within EMCal from di-jets in TPC",A1_PtBins,A1_PtLow,A1_PtUp);
+    fh020EMCalJet2A->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fh020EMCalJet2A->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
+    fh020EMCalJet2A->Sumw2();
+
+    fhEMCalCenJet2A = new TH2D("fhEMCalCenJet2A","Cluster p_{T} distribution for jets within EMCal from di-jets in TPC",A1_PtBins,A1_PtLow,A1_PtUp,fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
+    fhEMCalCenJet2A->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fhEMCalCenJet2A->GetYaxis()->SetTitle("Centrality (V0M)");
+    fhEMCalCenJet2A->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
+    fhEMCalCenJet2A->Sumw2();
+
     fhEMCalBckg2B = new TH1D("fhEMCalBckg2B","Cluster p_{T} distribution for reconstructed Tracks and Calocluster with dijet Trigger in TPC with R=0.4",JetPtBins, JetPtLow, JetPtUp);
     fhEMCalBckg2B->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fhEMCalBckg2B->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
     fhEMCalBckg2B->Sumw2();
     
+    
+    Int_t EMCalClusterBins=100;
+    Int_t EMCalClusterLow=0;
+    Int_t EMCalClusterUp=100;
+    
+    fh020EMCalkTClusters = new TH1D("fh020EMCalkTClusters","0-20 % Centrality, Number of k_{T} clusters per event",EMCalClusterBins,EMCalClusterLow,EMCalClusterUp);
+    fh020EMCalkTClusters->GetXaxis()->SetTitle("# of Clusters");
+    fh020EMCalkTClusters->GetYaxis()->SetTitle("1/N_{Events}");
+    fh020EMCalkTClusters->Sumw2();
+
+    fh020EMCalAkTJets = new TH1D("fh020EMCalAkTJets","0-20 % Centrality, Number of anti-k_{T} jets per event",EMCalClusterBins,EMCalClusterLow,EMCalClusterUp);
+    fh020EMCalAkTJets->GetXaxis()->SetTitle("# of jets");
+    fh020EMCalAkTJets->GetYaxis()->SetTitle("1/N_{Events}");
+    fh020EMCalAkTJets->Sumw2();
+
     // Background Density Plots
     // 2D Rho plots (fhRho...)
     Int_t RhoPtBins = 500;
     Double_t RhoPtLow=0.0;
     Double_t RhoPtUp=50.0;
+    
+    Int_t DeltaRhoPtBins=100;
+    Double_t DeltaRhoPtLow=-5.0;
+    Double_t DeltaRhoPtUp=5.0;
     
     fhRhoTotal= new TH2D("fhRhoTotal","Background Density #rho_{0}",RhoPtBins,RhoPtLow,RhoPtUp,fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
     fhRhoTotal->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
@@ -855,7 +955,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhRhoTotal->GetZaxis()->SetTitle("1/N_{Events} dN/d#rho");
     fhRhoTotal->Sumw2();
 
-    fhRhoNoLeading= new TH2D("fhRhoNoLeading","Background Density #rho_{1}",RhoPtBins,RhoPtLow,RhoPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
+    fhRhoNoLeading= new TH2D("fhRhoNoLeading","Background Density #rho_{1}",RhoPtBins,RhoPtLow,RhoPtUp,fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
     fhRhoNoLeading->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
     fhRhoNoLeading->GetYaxis()->SetTitle("Centrality (V0M)");
     fhRhoNoLeading->GetZaxis()->SetTitle("1/N_{Events} dN/d#rho");
@@ -879,11 +979,35 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhRho2B->GetZaxis()->SetTitle("1/N_{Events} dN/d#rho");
     fhRho2B->Sumw2();
 
+    fhRho2BCore = new TH2D("fhRho2BCore","Background Density #rho_{dijet}",RhoPtBins, RhoPtLow, RhoPtUp,fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
+    fhRho2BCore->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
+    fhRho2BCore->GetYaxis()->SetTitle("Centrality (V0M)");
+    fhRho2BCore->GetZaxis()->SetTitle("1/N_{Events} dN/d#rho");
+    fhRho2BCore->Sumw2();
+
     fhRho3 = new TH2D("fhRho3","Charged Background Density #rho_{char}",RhoPtBins, RhoPtLow, RhoPtUp,fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
     fhRho3->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
     fhRho3->GetYaxis()->SetTitle("Centrality (V0M)");
     fhRho3->GetZaxis()->SetTitle("1/N_{Events} dN/d#rho");
     fhRho3->Sumw2();
+
+    fhRho3NoJets = new TH2D("fhRho3NoJets","Charged Background Density #rho_{char} for Events with No Signal Jets",RhoPtBins, RhoPtLow, RhoPtUp,fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
+    fhRho3NoJets->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
+    fhRho3NoJets->GetYaxis()->SetTitle("Centrality (V0M)");
+    fhRho3NoJets->GetZaxis()->SetTitle("1/N_{Events} dN/d#rho");
+    fhRho3NoJets->Sumw2();
+
+    fhRho3DiJets = new TH2D("fhRho3DiJets","Charged Background Density #rho_{char} for Events with a DiJet",RhoPtBins, RhoPtLow, RhoPtUp,fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
+    fhRho3DiJets->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
+    fhRho3DiJets->GetYaxis()->SetTitle("Centrality (V0M)");
+    fhRho3DiJets->GetZaxis()->SetTitle("1/N_{Events} dN/d#rho");
+    fhRho3DiJets->Sumw2();
+
+    fhRho3Perp = new TH2D("fhRho3Perp","Charged Background Density #rho_{char} for Events with a DiJet at Median Angle Between Dijets",RhoPtBins, RhoPtLow, RhoPtUp,fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
+    fhRho3Perp->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
+    fhRho3Perp->GetYaxis()->SetTitle("Centrality (V0M)");
+    fhRho3Perp->GetZaxis()->SetTitle("1/N_{Events} dN/d#rho");
+    fhRho3Perp->Sumw2();
 
     // 0-20% Centrality Plots (rh020Rho...)
     fh020RhoTotal = new TH1D("fh020RhoTotal","0-20% Background Density #rho_{0}",RhoPtBins,RhoPtLow,RhoPtUp);
@@ -893,8 +1017,8 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
 
     fh020RhoNoLeading = new TH1D("fh020RhoNoLeading","0-20% Background Density #rho_{1}",RhoPtBins,RhoPtLow,RhoPtUp);
     fh020RhoNoLeading->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
-    fh020RhoTotal->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
-    fh020RhoTotal->Sumw2();
+    fh020RhoNoLeading->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
+    fh020RhoNoLeading->Sumw2();
     
     fh020Rho1B = new TH1D("fh020Rho1B","0-20% Background Density #rho_{n}",RhoPtBins,RhoPtLow,RhoPtUp);
     fh020Rho1B->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
@@ -906,11 +1030,36 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fh020Rho2B->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
     fh020Rho2B->Sumw2();
 
+    fh020Rho2BCore = new TH1D("fh020Rho2BCore","0-20% Background Density #rho_{dijet}",RhoPtBins,RhoPtLow,RhoPtUp);
+    fh020Rho2BCore->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
+    fh020Rho2BCore->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
+    fh020Rho2BCore->Sumw2();
+
     fh020Rho3 = new TH1D("fh020Rho3","0-20% Charged Background Density #rho_{char}",RhoPtBins,RhoPtLow,RhoPtUp);
     fh020Rho3->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
     fh020Rho3->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
     fh020Rho3->Sumw2();
-    
+
+    fh020Rho3NoJets = new TH1D("fh020Rho3NoJets","0-20% Charged Background Density #rho_{char} for Events with No Signal Jets",RhoPtBins,RhoPtLow,RhoPtUp);
+    fh020Rho3NoJets->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
+    fh020Rho3NoJets->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
+    fh020Rho3NoJets->Sumw2();
+
+    fh020Rho3DiJets = new TH1D("fh020Rho3DiJets","0-20% Charged Background Density #rho_{char} for Events with a DiJet",RhoPtBins,RhoPtLow,RhoPtUp);
+    fh020Rho3DiJets->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
+    fh020Rho3DiJets->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
+    fh020Rho3DiJets->Sumw2();
+
+    fh020Rho3Perp = new TH1D("fh020Rho3Perp","0-20% Charged Background Density #rho_{char} for Events with a DiJet at Median Angle Between Dijets",RhoPtBins,RhoPtLow,RhoPtUp);
+    fh020Rho3Perp->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
+    fh020Rho3Perp->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
+    fh020Rho3Perp->Sumw2();
+
+    fh020RhokT = new TH1D("fh020RhokT","0-20% Background Density #rho_{k_{T}}",RhoPtBins,RhoPtLow,RhoPtUp);
+    fh020RhokT->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
+    fh020RhokT->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
+    fh020RhokT->Sumw2();
+
     // Delta pT Plots
     Int_t DeltaPtBins=150;
     Double_t DeltaPtLow=-50.0;
@@ -941,9 +1090,52 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhDeltaPtkT->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
     fhDeltaPtkT->Sumw2();
 
-    fhDeltaRho01 = new TH1D("fhDeltaRho01","Event by Event Differential between #rho_{0} and #rho_{1} of signal jets",RhoPtBins,RhoPtLow,RhoPtUp);
+    fhDeltaRho01 = new TH1D("fhDeltaRho01","Event by Event Differential between #rho_{0} and #rho_{1}",RhoPtBins,RhoPtLow,RhoPtUp);
     fhDeltaRho01->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fhDeltaRho01->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
     fhDeltaRho01->Sumw2();
+
+    fhDeltaRho0DiJet = new TH1D("fhDeltaRho0DiJet","Event by Event Differential between #rho_{0} and #rho_{dijet}",DeltaRhoPtBins,DeltaRhoPtLow,DeltaRhoPtUp);
+    fhDeltaRho0DiJet->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fhDeltaRho0DiJet->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
+    fhDeltaRho0DiJet->Sumw2();
+
+    // DiJet Plots
+    Int_t DiJetBins=20;
+    Double_t DiJetLow=0.0;
+    Double_t DiJetUp=1.0;
+    
+    fh020DiJetAsy = new TH1D("fh020DiJetAsy","0-20% Centrality, Di-Jet Asymmetry",DiJetBins,DiJetLow,DiJetUp);
+    fh020DiJetAsy->GetXaxis()->SetTitle("A_{j}");
+    fh020DiJetAsy->GetYaxis()->SetTitle("1/N_{Events} dN/dA_{j}");
+    fh020DiJetAsy->Sumw2();
+
+    fhDiJetCenAsy = new TH2D("fhDiJetCenAsy","Di-Jet Asymmetry",DiJetBins,DiJetLow,DiJetUp,fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
+    fhDiJetCenAsy->GetXaxis()->SetTitle("A_{j}");
+    fhDiJetCenAsy->GetYaxis()->SetTitle("Centrality (V0M)");
+    fhDiJetCenAsy->GetZaxis()->SetTitle("1/N_{Events} dN/dA_{j}");
+    fhDiJetCenAsy->Sumw2();
+
+    fh020DiJetDeltaPhi = new TH1D("fh020DiJetDeltaPhi","0-20% Centrality, Di-Jet #Delta#phi",TCBins,fTPCPhiMin,0.5*fTPCPhiMax);
+    fh020DiJetDeltaPhi->GetXaxis()->SetTitle("#Delta#phi");
+    fh020DiJetDeltaPhi->GetYaxis()->SetTitle("1/N_{Events} dN/d#Delta#phi");
+    fh020DiJetDeltaPhi->Sumw2();
+
+    fhDiJetCenDeltaPhi = new TH2D("fhDiJetCenDeltaPhi","Di-Jet #Delta#phi",TCBins,fTPCPhiMin,0.5*fTPCPhiMax,fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
+    fhDiJetCenDeltaPhi->GetXaxis()->SetTitle("#Delta#phi");
+    fhDiJetCenDeltaPhi->GetYaxis()->SetTitle("Centrality (V0M)");
+    fhDiJetCenDeltaPhi->GetZaxis()->SetTitle("1/N_{Events} dN/d#Delta#phi");
+    fhDiJetCenDeltaPhi->Sumw2();
+
+    fhDiJetEMCalLeadingPt = new TH1D("fhDiJetEMCalLeadingPt","Leading EMCal anti-k_{T} cluster p_{T} in a dijet event",EMCalClusterBins,EMCalClusterLow,EMCalClusterUp);
+    fhDiJetEMCalLeadingPt->GetXaxis()->SetTitle("p_{T}");
+    fhDiJetEMCalLeadingPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
+    fhDiJetEMCalLeadingPt->Sumw2();
+
+    fhDiJetEMCalLeadingDeltaPhi = new TH1D("fhDiJetEMCalLeadingDeltaPhi","Leading EMCal anti-k_{T} cluster #Delta#phi in a dijet event",TCBins,fTPCPhiMin,0.5*fTPCPhiMax);
+    fhDiJetEMCalLeadingDeltaPhi->GetXaxis()->SetTitle("#Delta#phi");
+    fhDiJetEMCalLeadingDeltaPhi->GetYaxis()->SetTitle("1/N_{Events} dN/d#Delta#phi");
+    fhDiJetEMCalLeadingDeltaPhi->Sumw2();
     
     // Profiles
     // Background Density vs Centrality (fpRho...)
@@ -963,9 +1155,25 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fpRho2B->GetXaxis()->SetTitle("Centrality (V0M)");
     fpRho2B->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
 
+    fpRho2BCore = new TProfile("fpRho2BCore","Background Profile vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp);
+    fpRho2BCore->GetXaxis()->SetTitle("Centrality (V0M)");
+    fpRho2BCore->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
+
     fpRho3 = new TProfile("fpRho3","Background Profile vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp);
     fpRho3->GetXaxis()->SetTitle("Centrality (V0M)");
     fpRho3->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
+
+    fpRho3NoJets = new TProfile("fpRho3NoJets","Background Profile vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp);
+    fpRho3NoJets->GetXaxis()->SetTitle("Centrality (V0M)");
+    fpRho3NoJets->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
+
+    fpRho3DiJets = new TProfile("fpRho3DiJets","Background Profile vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp);
+    fpRho3DiJets->GetXaxis()->SetTitle("Centrality (V0M)");
+    fpRho3DiJets->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
+
+    fpRho3Perp = new TProfile("fpRho3Perp","Background Profile vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp);
+    fpRho3Perp->GetXaxis()->SetTitle("Centrality (V0M)");
+    fpRho3Perp->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
 
     fpRhoScale = new TProfile("fpRhoScale","Scaling Factor Profile vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp);
     fpRhoScale->GetXaxis()->SetTitle("Centrality (V0M)");
@@ -974,6 +1182,14 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fpRhokT = new TProfile("fpRhokT","Background Profile vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp);
     fpRhokT->GetXaxis()->SetTitle("Centrality (V0M)");
     fpRhokT->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
+
+    fpRhoChargedkT = new TProfile("fpRhoChargedkT","Background Profile vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp);
+    fpRhoChargedkT->GetXaxis()->SetTitle("Centrality (V0M)");
+    fpRhoChargedkT->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
+
+    fpRhoScalekT = new TProfile("fpRhoScalekT","Scaling Factor Profile vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp);
+    fpRhoScalekT->GetXaxis()->SetTitle("Centrality (V0M)");
+    fpRhoScalekT->GetYaxis()->SetTitle("Scale Factor");
 
     // Others
     fpEventMult = new TProfile("fpEventMult","Event Multiplcity vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp);
@@ -988,6 +1204,10 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fpJetPtRhoNoLeading->GetXaxis()->SetTitle("Leading jet p_{T} (GeV/c)");
     fpJetPtRhoNoLeading->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
     
+    fpJetPtRhokT = new TProfile("fpJetPtRhokT","#rho_{k_{T}} Profile vs Leading jet p_{T}",JetPtBins,JetPtLow,JetPtUp);
+    fpJetPtRhokT->GetXaxis()->SetTitle("Leading jet p_{T} (GeV/c)");
+    fpJetPtRhokT->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
+
     // QA::2D Energy Density Profiles for Tracks and CLusters
     fpTrackPtProfile = new TProfile2D("fpTrackPtProfile","2D Profile of track pT density throughout the TPC",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax);
     fpTrackPtProfile->GetXaxis()->SetTitle("#eta");
@@ -1124,6 +1344,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fOutput->Add(fhRho1C);
     fOutput->Add(fhEMCalBckg1C);
     fOutput->Add(fhEMCalJet2A);
+    fOutput->Add(fh020EMCalJet2A);
     fOutput->Add(fhJetTPt2B);
     fOutput->Add(fhEMCalBckg2B);
     fOutput->Add(fhRho2B);
@@ -1154,6 +1375,13 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fOutput->Add(fh020JetTPt3);
     fOutput->Add(fhDeltaPt2B);
     fOutput->Add(fhDeltaPtkT);
+    fOutput->Add(fh020DiJetAsy);
+    fOutput->Add(fh020RhokT);
+    fOutput->Add(fh020EMCalkTClusters);
+    fOutput->Add(fh020EMCalAkTJets);
+    fOutput->Add(fh020DiJetDeltaPhi);
+    fOutput->Add(fhDiJetEMCalLeadingPt);
+    fOutput->Add(fhDiJetEMCalLeadingDeltaPhi);
     fOutput->Add(fhJetPtCenEMCal);
     fOutput->Add(fhJetPtCenEMCalAreaCut);
     fOutput->Add(fhJetPtCenEMCalAreaCutSignal);
@@ -1166,19 +1394,40 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fOutput->Add(fhJetTPtCen1C);
     fOutput->Add(fhJetTPtCen2B);
     fOutput->Add(fhJetTPtCen3);
+    fOutput->Add(fhDiJetCenAsy);
+    fOutput->Add(fhDiJetCenDeltaPhi);
+    fOutput->Add(fhEMCalCenJet2A);
+    fOutput->Add(fhDeltaRho0DiJet);
+    fOutput->Add(fh020Rho2BCore);
+    fOutput->Add(fhRho2BCore);
+    fOutput->Add(fh020Rho3NoJets);
+    fOutput->Add(fh020Rho3DiJets);
+    fOutput->Add(fhRho3NoJets);
+    fOutput->Add(fhRho3DiJets);
+    fOutput->Add(fh020Rho3Perp);
+    fOutput->Add(fhRho3Perp);
+    
     fOutput->Add(fpEventMult);
     fOutput->Add(fpRhoTotal);
     fOutput->Add(fpRhoNoLeading);
     fOutput->Add(fpRho1B);
     fOutput->Add(fpRho2B);
+    fOutput->Add(fpRho2BCore);
     fOutput->Add(fpRho3);
+    fOutput->Add(fpRho3NoJets);
+    fOutput->Add(fpRho3DiJets);
+    fOutput->Add(fpRho3Perp);
     fOutput->Add(fpRhoScale);
+    fOutput->Add(fpRhokT);
+    fOutput->Add(fpRhoChargedkT);
+    fOutput->Add(fpRhoScalekT);
     fOutput->Add(fpJetPtRhoTotal);
     fOutput->Add(fpJetPtRhoNoLeading);
-    fOutput->Add(fpRhokT);
+    fOutput->Add(fpJetPtRhokT);
+    
     fOutput->Add(fpTrackPtProfile);
     fOutput->Add(fpClusterPtProfile);
- 
+    
     // Post data for ALL output slots >0 here,
     // To get at least an empty histogram
     // 1 is the outputnumber of a certain weg of task 1
@@ -1187,7 +1436,6 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
 
 void AliAnalysisTaskFullpAJets::UserExecOnce()
 {
-
     // Get the event tracks from PicoTracks
     TString track_name="PicoTracks";
     fmyTracks =dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(track_name));
@@ -1199,6 +1447,9 @@ void AliAnalysisTaskFullpAJets::UserExecOnce()
     // Get charged jets
     TString jet_algorithm=Form("Jet_AKTChargedR0%d0_PicoTracks_pT0150",fRJET);
     fmyAKTChargedJets =dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(jet_algorithm));
+
+    jet_algorithm=Form("Jet_KTChargedR0%d0_PicoTracks_pT0150",fRJET);
+    fmyKTChargedJets =dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(jet_algorithm));
 
     // Get the full jets
     jet_algorithm=Form("Jet_AKTFullR0%d0_PicoTracks_pT0150_CaloClustersCorr_ET0300",fRJET);
@@ -1309,6 +1560,7 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     
     EstimateTotalBackground();
     EstimateBackgoundMinusLJet();
+
     Method1A();
     Method1B();
     Method1C();
@@ -1318,6 +1570,8 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     {
         Method2A();
         Method2B();
+        Method3DiJet();
+        Method3Perp();
     }
     
     Method3(kTRUE);
@@ -1419,21 +1673,6 @@ void AliAnalysisTaskFullpAJets::EventHistos()
     Int_t event_mult=0;
     Int_t clus_mult=0;
     
-    /*
-     // First, make sure there are no signal jets centered within 2R from the center of the EMCal
-     for (i=0;i<fnJetsPtTotalCut;i++)
-     {
-     AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(fJetPtTotalCutID[i]);
-     TLorentzVector *jet_vec= new TLorentzVector;
-     myJet->GetMom(*jet_vec);
-     if (dummy->DeltaR(*jet_vec)<=(2*fJetR))
-     {
-     return;
-     }
-     delete jet_vec;
-     }
-    */
-    
     TLorentzVector *dummy= new TLorentzVector;
     
     for (j=0;j<fnBckgClusters;j++)
@@ -1492,11 +1731,16 @@ void AliAnalysisTaskFullpAJets::EventHistos()
 void AliAnalysisTaskFullpAJets::InitChargedJets()
 {
     // Preliminary Jet Placement and Selection Cuts
-    Int_t i;
+    Int_t i,j;
+    Double_t kTRho=0.0;
+    Double_t delta_phi=0.0;
     
     fnAKTChargedJets = fmyAKTChargedJets->GetEntries();
+    fnKTChargedJets = fmyKTChargedJets->GetEntries();
     fJetPtChargedCutID = new Int_t[fnAKTChargedJets+1];
+    fJetkTTPCFullID = new Int_t[fnKTChargedJets+1];
     fnJetsChargedPtCut=0;
+    fnJetskTTPCFull=0;
     fPtChargedMaxID=-1;  // Initialize to not have any jet(s) fully contained within
     fPtChargedMax=0.0;
     
@@ -1524,12 +1768,69 @@ void AliAnalysisTaskFullpAJets::InitChargedJets()
             {
                 fhChargedJetPtAreaCut->Fill(myJet->Pt());
             }
-            if (myJet->Pt()>=fTPCJetThreshold)
+            if (myJet->Pt()>=fTPCJetThreshold && myJet->Area()>=fJetAreaThreshold)
             {
                 fJetPtChargedCutID[fnJetsChargedPtCut]=i;
                 fnJetsChargedPtCut++;
             }
         }
+    }
+    
+    // Fill dijet delta phi plots
+    if (fnJetsChargedPtCut>1)
+    {
+        AliEmcalJet *myhJet =(AliEmcalJet*) fmyAKTChargedJets->At(fPtChargedMaxID);
+        j=0;
+        while (j<fnJetsChargedPtCut)
+        {
+            if (fJetPtChargedCutID[j]==fPtChargedMaxID)
+            {
+                j++;
+            }
+            else
+            {
+                AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTChargedJets->At(fJetPtChargedCutID[j]);
+                
+                delta_phi=TMath::Min(TMath::Abs(myhJet->Phi()-myJet->Phi()),2*TMath::Pi()-TMath::Abs(myhJet->Phi()-myJet->Phi()));
+                fhDiJetCenDeltaPhi->Fill(delta_phi,fEventCentrality);
+                if (fEventCentrality<=20)
+                {
+                    fh020DiJetDeltaPhi->Fill(delta_phi);
+                }
+                j++;
+            }
+        }
+    }
+    
+    fRhokTCharged=0.0;
+    // kT jets. Used for calculating rho
+    Int_t nkT_mid=-1;
+    for (i=0;i<fnKTChargedJets;i++)
+    {
+        AliEmcalJet *myJet =(AliEmcalJet*) fmyKTChargedJets->At(i);
+        
+        if (IsInTPC(fJetR,myJet->Phi(),myJet->Eta(),kTRUE)==kTRUE)
+        {
+            fJetkTTPCFullID[fnJetskTTPCFull]=i;
+            fnJetskTTPCFull++;
+        }
+    }
+   
+    if (fnJetskTTPCFull>=2)
+    {
+        nkT_mid=fnJetskTTPCFull/2;
+    }
+    else if (fnJetskTTPCFull==1)
+    {
+        nkT_mid=0;
+    }
+    
+    if (nkT_mid>=0)
+    {
+        AliEmcalJet *myJet =(AliEmcalJet*) fmyKTChargedJets->At(fJetkTTPCFullID[nkT_mid]);
+        kTRho=myJet->Pt()/myJet->Area();
+        fRhokTCharged=kTRho;
+        fpRhoChargedkT->Fill(fEventCentrality,kTRho);
     }
 }
 
@@ -1537,6 +1838,8 @@ void AliAnalysisTaskFullpAJets::InitFullJets()
 {
     // Preliminary Jet Placement and Selection Cuts
     Int_t i;
+    Int_t EMCalFullCount=0;
+    Double_t kTRho=0.0;
     
     fnAKTFullJets = fmyAKTFullJets->GetEntries();
     fnKTFullJets = fmyKTFullJets->GetEntries();
@@ -1606,6 +1909,7 @@ void AliAnalysisTaskFullpAJets::InitFullJets()
                     if (fEventCentrality<=20)
                     {
                         fh020JetPtEMCalAreaCut->Fill(myJet->Pt());
+                        EMCalFullCount++;
                     }
                     if (myJet->Pt()>=fEMCalJetThreshold)
                     {
@@ -1676,7 +1980,10 @@ void AliAnalysisTaskFullpAJets::InitFullJets()
             fnJetsPtTotalCut++;
         }
     }
+    fh020EMCalAkTJets->Fill(EMCalFullCount);
+    EMCalFullCount=0;
     
+    fRhokTTotal=0.0;
     // kT jets. Used for calculating rho
     Int_t nkT_mid=-1;
     for (i=0;i<fnKTFullJets;i++)
@@ -1688,6 +1995,10 @@ void AliAnalysisTaskFullpAJets::InitFullJets()
             fJetkTEMCalFullID[fnJetskTEMCalFull]=i;
             fnJetskTEMCalFull++;
         }
+    }
+    if (fEventCentrality<=20)
+    {
+        fh020EMCalkTClusters->Fill(fnJetskTEMCalFull);
     }
     
     if (fnJetskTEMCalFull>=2)
@@ -1702,10 +2013,18 @@ void AliAnalysisTaskFullpAJets::InitFullJets()
     if (nkT_mid>=0)
     {
         AliEmcalJet *myJet =(AliEmcalJet*) fmyKTFullJets->At(fJetkTEMCalFullID[nkT_mid]);
-        fpRhokT->Fill(fEventCentrality,myJet->Pt()/myJet->Area());
+        kTRho=myJet->Pt()/myJet->Area();
+        fRhokTTotal=kTRho;
+        fpRhokT->Fill(fEventCentrality,kTRho);
+        fpJetPtRhokT->Fill(fPtFullMax,kTRho);
+        if (fRhokTCharged!=0.0)
+        {
+            fpRhoScalekT->Fill(fEventCentrality,fRhokTTotal/fRhokTCharged);
+        }
         if (fEventCentrality<=20)
         {
-            FillBckgFlucDeltaPt(fhDeltaPtkT,myJet->Pt()/myJet->Area());
+            FillBckgFlucDeltaPt(fhDeltaPtkT,kTRho);
+            fh020RhokT->Fill(kTRho);
         }
     }
 }
@@ -1737,6 +2056,7 @@ void AliAnalysisTaskFullpAJets::EstimateTotalBackground()
     
     //  Calculate the mean Background density
     EMCal_rho=(E_tracks_total+E_caloclusters_total)/fEMCalArea;
+    fRhoAkTTotal=EMCal_rho;
     
     //  Fill histograms
     fhRhoTotal->Fill(EMCal_rho,fEventCentrality);
@@ -2081,14 +2401,19 @@ void AliAnalysisTaskFullpAJets::Method2A()
 {
     Int_t i;
     
-    if (fChargedFullMatch==kTRUE)
+    for (i=0;i<fnAKTFullJets;i++)
     {
-        for (i=0;i<fnAKTFullJets;i++)
+        if (fInEMCalFull[i]==kTRUE)
         {
-            if (fInEMCalFull[i]==kTRUE && i!= fLeadingJetID && i!=fBackJetID)
+            AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(i);
+            if (myJet->Area()>=fJetAreaThreshold)
             {
-                AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(i);
+                fhEMCalCenJet2A->Fill(myJet->Pt(),fEventCentrality);
                 fhEMCalJet2A->Fill(myJet->Pt());
+                if (fEventCentrality<=20)
+                {
+                    fh020EMCalJet2A->Fill(myJet->Pt());
+                }
             }
         }
     }
@@ -2096,86 +2421,47 @@ void AliAnalysisTaskFullpAJets::Method2A()
 
 void AliAnalysisTaskFullpAJets::Method2B()
 {
-    Int_t i,j;
-    Bool_t track_away_from_jet;
-    Bool_t cluster_away_from_jet;
-    Double_t E_tracks_total=0.;
-    Double_t E_caloclusters_total=0.;
-    Double_t EMCal_rho=0.;
-    Double_t jet_area_total=0.;
+    Int_t i;
     
+    Double_t E_tracks_total=0.0;
+    Double_t E_caloclusters_total=0.0;
+    Double_t EMCal_rho=0.0;
+    Double_t E_tracks_core_total=0.0;
+    Double_t E_caloclusters_core_total=0.0;
+    Double_t EMCal_core_rho=0.0;
+    Double_t RCore=0.4;
+    
+    //  Loop over all tracks
     for (i=0;i<fnTracks;i++)
     {
-        // First, check if track is in the EMCal!!
-        AliVTrack* vtrack = (AliVTrack*) fmyTracks->At(i); // pointer to reconstructed to track
+        AliVTrack* vtrack =(AliVTrack*) fmyTracks->At(i);
         if (IsInEMCal(vtrack->Phi(),vtrack->Eta())==kTRUE)
         {
-            track_away_from_jet=kTRUE;
-            j=0;
-            TLorentzVector *track_vec = new TLorentzVector;
-            track_vec->SetPtEtaPhiE(vtrack->Pt(),vtrack->Eta(),vtrack->Phi(),vtrack->E());
-            while (track_away_from_jet==kTRUE && j<fnJetsPtTotalCut)
+            E_tracks_total+=vtrack->Pt();
+            if (InsideRect(vtrack->Phi(),fEMCalPhiMin+RCore,fEMCalPhiMax-RCore,vtrack->Eta(),fEMCalEtaMin+RCore,fEMCalEtaMax-RCore)==kTRUE)
             {
-                //cout<<"j="<<j<<endl<<endl<<endl;
-                
-                TLorentzVector *jet_vec= new TLorentzVector;
-                AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(fJetPtTotalCutID[j]);
-                myJet->GetMom(*jet_vec);
-                if (track_vec->DeltaR(*jet_vec)<=fJetR)
-                {
-                    track_away_from_jet=kFALSE;
-                }
-                delete jet_vec;
-                j++;
+                E_tracks_core_total+=vtrack->Pt();
             }
-            if (track_away_from_jet==kTRUE)
-            {
-                E_tracks_total+=vtrack->Pt();
-            }
-            delete track_vec;
         }
     }
     
-    // Next, sum all CaloClusters within the EMCal (obviously all clusters must be within EMCal!!) that are away from jet(s) above Pt Threshold
-    
+    //  Loop over all caloclusters
     for (i=0;i<fnClusters;i++)
     {
-        AliVCluster* vcluster = (AliVCluster*) fmyClusters->At(i); // pointer to reconstructed to cluster
-        
-        cluster_away_from_jet=kTRUE;
-        j=0;
-        
+        AliVCluster* vcluster = (AliVCluster*) fmyClusters->At(i);
+        E_caloclusters_total+=vcluster->E();
         TLorentzVector *cluster_vec = new TLorentzVector;
         vcluster->GetMomentum(*cluster_vec,fvertex);
-        
-        while (cluster_away_from_jet==kTRUE && j<fnJetsPtTotalCut)
+        if (InsideRect(cluster_vec->Phi(),fEMCalPhiMin+RCore,fEMCalPhiMax-RCore,cluster_vec->Eta(),fEMCalEtaMin+RCore,fEMCalEtaMax-RCore)==kTRUE)
         {
-            TLorentzVector *jet_vec= new TLorentzVector;
-            AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(fJetPtTotalCutID[j]);
-            myJet->GetMom(*jet_vec);
-            if (cluster_vec->DeltaR(*jet_vec)<=fJetR)
-            {
-                cluster_away_from_jet=kFALSE;
-            }
-            delete jet_vec;
-            j++;
-        }
-        if (cluster_away_from_jet==kTRUE)
-        {
-            E_caloclusters_total+=vcluster->E();
+            E_caloclusters_core_total+=vcluster->E();
         }
         delete cluster_vec;
     }
     
-    // Determine area of all Jets that are within the EMCal
-    for (i=0;i<fnJetsPtTotalCut;i++)
-    {
-        AliEmcalJet *myJet = (AliEmcalJet*) fmyAKTFullJets->At(fJetPtTotalCutID[i]);
-        jet_area_total+=AreaWithinEMCal(fJetR,myJet->Phi(),myJet->Eta());
-    }
-    
-    //Calculate Rho
-    EMCal_rho=(E_tracks_total+E_caloclusters_total)/(fEMCalArea-jet_area_total);
+    //  Calculate the mean Background density
+    EMCal_rho=(E_tracks_total+E_caloclusters_total)/fEMCalArea;
+    EMCal_core_rho=(E_tracks_core_total+E_caloclusters_core_total)/((fEMCalPhiTotal-2*RCore)*(fEMCalEtaTotal-2*RCore));
     
     //Fill Background Cluster Histogram
     fhEMCalBckg2B->Fill(EMCal_rho*TMath::Pi()*TMath::Power(fJetR,2));
@@ -2183,12 +2469,16 @@ void AliAnalysisTaskFullpAJets::Method2B()
     fpRho2B->Fill(fEventCentrality,EMCal_rho);
     FillFullCorrJetPt(fhJetTPt2B,EMCal_rho,kFALSE);
     FillFullCorrJetPt(fhJetTPtCen2B,EMCal_rho,kFALSE);
+    fhDeltaRho0DiJet->Fill(fRhoAkTTotal-EMCal_rho);
+    fhRho2BCore->Fill(EMCal_core_rho,fEventCentrality);
+    fpRho2BCore->Fill(fEventCentrality,EMCal_core_rho);
     
     if (fEventCentrality<=20)
     {
         FillFullCorrJetPt(fh020JetTPt2B,EMCal_rho,kFALSE);
         FillBckgFlucDeltaPt(fhDeltaPt2B,EMCal_rho);
         fh020Rho2B->Fill(EMCal_rho);
+        fh020Rho2BCore->Fill(EMCal_core_rho);
     }
 }
 
@@ -2196,9 +2486,30 @@ void AliAnalysisTaskFullpAJets::Method3(Bool_t EMCalOn)
 {
     Int_t i,j;
     Bool_t track_away_from_jet;
-    Double_t E_tracks_total=0.;
-    Double_t TPC_rho=0.;
-    Double_t jet_area_total=0.;
+    Double_t E_tracks_total=0.0;
+    Double_t TPC_rho=0.0;
+    Double_t jet_area_total=0.0;
+    
+    // Calculate charged background density in events with no signal jets
+    if (fnJetsChargedPtCut==0)
+    {
+        //  Loop over all tracks
+        for (i=0;i<fnTracks;i++)
+        {
+            AliVTrack* vtrack =(AliVTrack*) fmyTracks->At(i);
+            E_tracks_total+=vtrack->Pt();
+        }
+        TPC_rho=E_tracks_total/fTPCArea;
+        
+        fhRho3NoJets->Fill(TPC_rho,fEventCentrality);
+        fpRho3NoJets->Fill(fEventCentrality,TPC_rho);
+        if (fEventCentrality<=20)
+        {
+            fh020Rho3NoJets->Fill(TPC_rho);
+        }
+        E_tracks_total=0.0;
+        TPC_rho=0.0;
+    }
     
     // First, sum all tracks within the TPC that are away from jet(s) above Pt Threshold
     fRhoCharged=0;
@@ -2284,6 +2595,70 @@ void AliAnalysisTaskFullpAJets::Method3(Bool_t EMCalOn)
     if (fEventCentrality<=20)
     {
         fh020Rho3->Fill(TPC_rho);
+    }
+}
+
+void AliAnalysisTaskFullpAJets::Method3DiJet()
+{
+    Int_t i;
+    Double_t E_tracks_total=0.0;
+    Double_t TPC_rho=0.0;
+    Double_t jet_area_total=0.0;
+    Double_t jet_pT_total=0.0;
+    
+    //  Loop over all tracks
+    for (i=0;i<fnTracks;i++)
+    {
+        AliVTrack* vtrack =(AliVTrack*) fmyTracks->At(i);
+        E_tracks_total+=vtrack->Pt();
+    }
+    
+    AliEmcalJet *myhJet =(AliEmcalJet*) fmyAKTChargedJets->At(fPtChargedMaxID);
+    AliEmcalJet *mybJet =(AliEmcalJet*) fmyAKTChargedJets->At(fChargedBackJetID);
+
+    jet_area_total=myhJet->Area()+mybJet->Area();
+    jet_pT_total=myhJet->Pt()+mybJet->Pt();
+    TPC_rho=(E_tracks_total-jet_pT_total)/(fTPCArea-jet_area_total);
+    
+    fhRho3DiJets->Fill(TPC_rho,fEventCentrality);
+    fpRho3DiJets->Fill(fEventCentrality,TPC_rho);
+    if (fEventCentrality<=20)
+    {
+        fh020Rho3DiJets->Fill(TPC_rho);
+    }
+}
+
+void AliAnalysisTaskFullpAJets::Method3Perp()
+{
+    Int_t i;
+    Double_t E_tracks_total=0.0;
+    Double_t TPC_rho=0.0;
+    Double_t phi_perp=0.0;  // By construction, this angle must be between 90 and 270
+    const Double_t delta_phi_prep=(30/360.0)*2*TMath::Pi();  // Half angle...
+    
+    AliEmcalJet *myhJet =(AliEmcalJet*) fmyAKTChargedJets->At(fPtChargedMaxID);
+    AliEmcalJet *mybJet =(AliEmcalJet*) fmyAKTChargedJets->At(fChargedBackJetID);
+    
+    phi_perp=(0.5*(myhJet->Phi()+mybJet->Phi())/360.0)*2*TMath::Pi();
+    
+    //  Loop over all tracks
+    for (i=0;i<fnTracks;i++)
+    {
+        AliVTrack* vtrack =(AliVTrack*) fmyTracks->At(i);
+        // Select only those tracks that are within the "strip"
+        if (vtrack->Phi() >= (phi_perp-delta_phi_prep) && vtrack->Phi() <= (phi_perp+delta_phi_prep))
+        {
+            E_tracks_total+=vtrack->Pt();
+        }
+    }
+    
+    TPC_rho=(E_tracks_total)/(fTPCEtaMax*2*delta_phi_prep);
+    
+    fhRho3Perp->Fill(TPC_rho,fEventCentrality);
+    fpRho3Perp->Fill(fEventCentrality,TPC_rho);
+    if (fEventCentrality<=20)
+    {
+        fh020Rho3Perp->Fill(TPC_rho);
     }
 }
 
@@ -2563,6 +2938,7 @@ void AliAnalysisTaskFullpAJets::DeleteArrays(Bool_t EMCalOn)
 {
     delete [] fJetPtChargedCutID;
     delete [] fInTPCChargedFull;
+    delete [] fJetkTTPCFullID;
     if (EMCalOn==kTRUE)
     {
         delete [] fJetPtCutID;
@@ -2581,54 +2957,53 @@ void AliAnalysisTaskFullpAJets::DeleteArrays(Bool_t EMCalOn)
 
 Bool_t AliAnalysisTaskFullpAJets::IsDiJetEvent()
 {
-    // Determine if event contains a di-jet within the detector. One of the jets could be partially contained within the EMCal. Furthermore, not required for the entire jet to be within the detector (No Fiducial Cut)
-    Int_t i,j;
+    // Determine if event contains a di-jet within the detector. Uses charged jets.
+    // Requires the delta phi of the jets to be 180 +/- 15 degrees.
+    // Requires both jets to be outside of the EMCal
+    // Requires both jets to be signal jets
+
+    Int_t i;
     const Double_t dijet_delta_phi=(180/360.)*2*TMath::Pi();
     const Double_t dijet_phi_acceptance=0.5*(30/360.)*2*TMath::Pi(); //Input the total acceptance within the paraenthesis to be +/- dijet_phi_acceptance
-    Double_t dummy_phi=0.;
-    Double_t dummyR=0.;
-    
-    fLeadingJetID=-1;
-    fBackJetID=-1;
+    Double_t dummy_phi=0.0;
+    Double_t dijet_asymmetry=0.0;
+    Double_t delta_phi=0.0;
     fChargedBackJetID=-1;
-    fChargedFullMatch=kFALSE;
     
     if (fnJetsChargedPtCut>1)
     {
         AliEmcalJet *myhJet =(AliEmcalJet*) fmyAKTChargedJets->At(fPtChargedMaxID);
-        j=0;
-        while (j<fnJetsChargedPtCut)
+        i=0;
+        if (IsInTPCFull(fJetR,myhJet->Phi(),myhJet->Eta())==kFALSE)
         {
-            AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTChargedJets->At(fJetPtChargedCutID[j]);
-            dummy_phi=TMath::Abs(myhJet->Phi() - myJet->Phi());
-            if ((dummy_phi>(dijet_delta_phi-dijet_phi_acceptance)) && (dummy_phi<(dijet_delta_phi+dijet_phi_acceptance)))
+            return kFALSE;
+        }
+        while (i<fnJetsChargedPtCut)
+        {
+            AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTChargedJets->At(fJetPtChargedCutID[i]);
+            dummy_phi=TMath::Min(TMath::Abs(myhJet->Phi()-myJet->Phi()),2*TMath::Pi()-TMath::Abs(myhJet->Phi()-myJet->Phi()));
+            if ((dummy_phi>(dijet_delta_phi-dijet_phi_acceptance)) && (IsInTPCFull(fJetR,myJet->Phi(),myJet->Eta())==kTRUE))
             {
-                fChargedBackJetID=fJetPtTotalCutID[j];
+                fChargedBackJetID=fJetPtChargedCutID[i];
                 fnDiJetEvents++;
-                
-                // Now perform mathing between charged dijets to full dijets
-                // Matched full jet must contain at least 70% of the Pt of the charged jet and must be no futher than R_Jet away
-                for (i=0;i<fnAKTFullJets;i++)
+                dijet_asymmetry=(myhJet->Pt()-myJet->Pt())/(myhJet->Pt()+myJet->Pt());
+                fhDiJetCenAsy->Fill(dijet_asymmetry,fEventCentrality);
+                // Add Anti-kT Plots here...
+                if (fPtFullMaxID!=-1)
                 {
-                    AliEmcalJet *myTestJet =(AliEmcalJet*) fmyAKTFullJets->At(i);
-                    dummyR=TMath::Sqrt(TMath::Power(myhJet->Phi()-myTestJet->Phi(),2)+TMath::Power(myhJet->Eta()-myTestJet->Eta(),2));
-                    if (dummyR<fJetR && myTestJet->Pt()>(0.7*myhJet->Pt()))
-                    {
-                        fLeadingJetID=i;
-                    }
-                    dummyR=TMath::Sqrt(TMath::Power(myJet->Phi()-myTestJet->Phi(),2)+TMath::Power(myJet->Eta()-myTestJet->Eta(),2));
-                    if (dummyR<fJetR && myTestJet->Pt()>(0.7*myJet->Pt()))
-                    {
-                        fBackJetID=i;
-                    }
+                    AliEmcalJet *myTestJet = (AliEmcalJet*) fmyAKTFullJets->At(fPtFullMaxID);
+                    
+                    fhDiJetEMCalLeadingPt->Fill(myTestJet->Pt());
+                    delta_phi=TMath::Min(TMath::Abs(myhJet->Phi()-myTestJet->Phi()),2*TMath::Pi()-TMath::Abs(myhJet->Phi()-myTestJet->Phi()));
+                    fhDiJetEMCalLeadingDeltaPhi->Fill(delta_phi);
                 }
-                if (fLeadingJetID !=-1 && fBackJetID !=-1)
+                if (fEventCentrality<=20)
                 {
-                    fChargedFullMatch=kTRUE;
+                    fh020DiJetAsy->Fill(dijet_asymmetry);
                 }
                 return kTRUE;
             }
-            j++;
+            i++;
         }
     }
     return kFALSE;
