@@ -1,5 +1,12 @@
 // alien:///alice/cern.ch/user/t/tschuste/correction_hybrid_nulled.root
-AliDhcTask *AddTaskDhc(Int_t iAna = 2, TString chUName = "", TString chHEffFile = "", TString chMuEffFile = "", TString chTaskFile = "", TString chTaskName = "", TString chNTracks = "PicoTracks")
+AliDhcTask *AddTaskDhc(
+  Int_t iAna = 2, 
+  TString chUName = "", 
+  TString chHEffFile = "", 
+  TString chMuEffFile = "", 
+  TString chTaskFile = "", 
+  TString chTaskName = "", 
+  TString chNTracks = "PicoTracks")
 {
 
   Char_t chExtraName[256];
@@ -130,5 +137,4 @@ AliDhcTask *AddTaskDhc(Int_t iAna = 2, TString chUName = "", TString chHEffFile 
   mgr->ConnectOutput(dhcTask,1,co_Dhc);
   
   return dhcTask;
-  
 }

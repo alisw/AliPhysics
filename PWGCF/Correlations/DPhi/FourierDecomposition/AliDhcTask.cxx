@@ -130,7 +130,6 @@ void AliDhcTask::PrintDhcSettings()
   AliInfo(Form(" Mix in eta_T bins instead of z_vertex? %d", fMixInEtaT));
   AliInfo(Form(" trigger eta range %f .. %f", fEtaTLo, fEtaTHi));
   AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
-
 }
 
 //________________________________________________________________________
