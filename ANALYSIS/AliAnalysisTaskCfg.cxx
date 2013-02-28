@@ -337,7 +337,19 @@ const char *AliAnalysisTaskCfg::GetDependency(Int_t i) const
 Bool_t AliAnalysisTaskCfg::NeedsDependency(const char *dep) const
 {
 // Check if a given library is needed by the module.
-   return fDeps.Contains(dep);
+   Int_t indmin = 0;
+   Int_t indmax = 0;
+   Int_t len = fDeps.Length();
+   TString crt;
+   while (indmax<len) {
+      indmax = fDeps.Index(",",indmin);
+      if (indmax < 0) indmax = len;
+      // indmin points to the beginning of the string while indmax to the end+1
+      crt = fDeps(indmin, indmax-indmin);
+      if (crt==dep) return kTRUE;
+      indmin = indmax+1;
+   }
+   return kFALSE;
 }
 
 //______________________________________________________________________________
