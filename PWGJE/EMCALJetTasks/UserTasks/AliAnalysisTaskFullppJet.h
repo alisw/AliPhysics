@@ -25,18 +25,18 @@ class AliESDEvent;
 class AliMCEvent;
 class AliStack;
 class AliESDtrack;
-class AliESDtrackCuts;
+//class AliESDtrackCuts;
 class AliEMCALGeometry;
 class AliEMCALRecoUtils;
 class AliESDCaloCluster;
 class AliFJWrapper;
 class AliAODJet;
+class TParticle;
 
+#include "AliESDtrackCuts.h"
 #include "AliAnalysisTaskSE.h"
 #include "fastjet/JetDefinition.hh"
 #include "fastjet/PseudoJet.hh"
-
-#include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskFullppJet : public AliAnalysisTaskSE {
  public:
@@ -53,11 +53,22 @@ class AliAnalysisTaskFullppJet : public AliAnalysisTaskSE {
   enum {kTPCOnlyVtx = 1<<3,
         kTrigger = 1<<4,
 	kHighZ = 1<<5,
-	kSuspicious =   1<<6};
+	kSuspicious =   1<<6,
+	kGluon =   1<<9,
+	kQuark =   1<<10,
+	kLeadCh = 1<<11 };
 
+  enum { kHybrid=0,
+	 kTPCOnly=1,
+	 kGlobal=2};
+
+  void SetAnaType(Int_t ana)                      { fAnaType=ana;                   }
   void SetMCAna(Bool_t mc)                        { fIsMC=mc;                       }
-  void SetMCStandalone(Bool_t mc)                 { fMCStandalone=mc;               }
+  void SetPhySelForMC(Bool_t phy)                 { fPhySelForMC=phy;               }
   void SetChargedMC(Bool_t mc)                    { fChargedMC=mc;                  }
+  void SetRejectSPDPileup(Bool_t re)              { fRejectPileup=re;               }
+  void SetRejectExoticTrigger(Bool_t re)          { fRejectExoticTrigger=re;        }
+  void SetCheckTriggerMask(Bool_t check)          { fCheckTriggerMask=check;        }
   void SetRunPeriod(char *p)                      { fPeriod=p;                      }
   void SetOfflineTrigger(Bool_t t)                { fOfflineTrigger=t;              }
   void SetXsec(Float_t Xsec)                      { fXsecScale=Xsec;                }
@@ -96,6 +107,8 @@ class AliAnalysisTaskFullppJet : public AliAnalysisTaskSE {
   void SetTrkEffCorrCutZ(Double_t zcut)           { fTrkEffCorrCutZ=zcut;           }    
   void SetSmearMC(Double_t smear)                 { fSmearMC=smear;                 }
   void SetRunUE(Bool_t run)                       { fRunUE=run;                     }
+  void SetCheckTPCOnlyVtx(Bool_t check)           { fCheckTPCOnlyVtx=check;         }
+  void SetRunSecondaries(Bool_t run)              { fRunSecondaries=run;            }
 
   //--------------------------------
   // Kinematic cut
@@ -129,6 +142,7 @@ class AliAnalysisTaskFullppJet : public AliAnalysisTaskSE {
   void SetVaryClusterEScale(Double_t vary)          { fVaryClusterEScale=vary;      }
   void SetSysClusterERes(Bool_t sys)                { fSysClusterERes=sys;          }
   void SetVaryClusterERes(Double_t vary)            { fVaryClusterERes=vary;        }
+  void SetSysClusterizer(Bool_t sys)                { fSysClusterizer=sys;          }
     
 
 protected:
@@ -139,9 +153,10 @@ protected:
   void         ProcessMC(const Int_t r=0);
   void         GetMCInfo();
   Bool_t       IsGoodMcPartilce(const AliVParticle* vParticle, const Int_t ipart);
-  Int_t        FindSpatialMatchedJet(fastjet::PseudoJet jet, AliFJWrapper *jetFinder, const Double_t radius);
+  Int_t        FindSpatialMatchedJet(fastjet::PseudoJet jet, AliFJWrapper *jetFinder, Double_t &dEta, Double_t &dPhi, Double_t maxR);
   Int_t        FindEnergyMatchedJet(AliFJWrapper *jetFinder1, const Int_t index1, AliFJWrapper *jetFinder2, const Double_t fraction=0.5);
-  Bool_t       IsPrimaryVertexOk(const Double_t trueVtxZ) const;
+  Bool_t       HasPrimaryVertex() const;
+  Bool_t       IsPrimaryVertexOk() const;
   Bool_t       IsTPCOnlyVtx() const;
   Bool_t       IsLEDEvent() const;
   void         CheckExoticEvent();
@@ -156,7 +171,11 @@ protected:
   void         FindDetJets(const Int_t s=0, const Int_t a=0, const Int_t r=0);
   void         FillAODJets(TClonesArray *fJetArray, AliFJWrapper *jetFinder, const Bool_t isTruth = 0);
   void         AnalyzeJets(AliFJWrapper *jetFinder, const Int_t type, const Int_t r);
-  void         RunAnalyzeUE(AliFJWrapper *jetFinder);
+  void         RunAnalyzeUE(AliFJWrapper *jetFinder, const Int_t type, const Bool_t isMCTruth);
+  void         AnalyzeSecondaryContribution(AliFJWrapper *jetFinder, const Int_t r, const Int_t etaCut);
+  void         AnalyzeSecondaryContributionViaMatching(AliFJWrapper *jetFinder, const Int_t r, const Int_t type, const Int_t etaCut);
+  void         GetSecondaryPtFraction(TParticle *particle, Double_t &chPt, Double_t &reGenPt, Double_t &reRecPt);
+  void         CheckTPCOnlyVtx(const UInt_t trigger);
   Bool_t       IsGoodJet(fastjet::PseudoJet jet, Double_t radius);
   Bool_t       IsGoodJet(AliAODJet *jet, Double_t radius);
   Double_t     GetLeadingZ(const Int_t jetIndex, AliFJWrapper *jetFinder);
@@ -166,7 +185,6 @@ protected:
   Double_t     GetJetMissPtDueToTrackingEfficiency(const Int_t jetIndex, AliFJWrapper *jetFinder, const Int_t radiusIndex);
   Double_t     GetExoticEnergyFraction(AliESDCaloCluster *cluster);
   Double_t     GetSmearedTrackPt(AliESDtrack *track);
-  Double_t     GetAdditionalSmearing(AliESDtrack *track);
 
   enum { kNBins = 20 };
 
@@ -174,6 +192,9 @@ protected:
   Int_t             fVerbosity;                         //  Control output
   Int_t             fEDSFileCounter;                    //  Keep track of the ESD file inside a chain
   Int_t             fNTracksPerChunk;                   //  Number of tracks per ESD file; used for debugging
+  Bool_t            fRejectPileup;                      //  Flag to reject SPD pileup events
+  Bool_t            fRejectExoticTrigger;               //  Flag to reject events triggered by exotic clusters
+  Int_t             fAnaType;                           //  0-local, 1-grid
   TString           fPeriod;                            //  Data period
   AliESDEvent       *fESD;                              //! ESD object
   AliAODEvent       *fAOD;                              //! AOD object 
@@ -182,13 +203,14 @@ protected:
   TObjArray         *fTrackArray;                       //! Array of input tracks
   TObjArray         *fClusterArray;                     //! Array of input clusters
   TArrayI           *fMcPartArray;                      //! Array of MC particles
-  Bool_t            fIsMC;                              //  Flag if analyzing MC data
-  Bool_t            fMCStandalone;                      //  Flag if only analyze Particle-Level MC
-  Bool_t            fChargedMC;                         //  Flag if finding only charged MC jets
-  Float_t           fXsecScale;                         //  Corss section
-  Double_t          fCentrality;                        //! V0M for current event
+  Bool_t            fIsMC;                              //  Flag of MC data
+  Bool_t            fPhySelForMC;                       //  Flag to run physics selection in case of MC data
+  Bool_t            fChargedMC;                         //  Flag to find only charged MC jets
+  Float_t           fXsecScale;                         //  Corss section for each pT hard bin
+  Double_t          fCentrality;                        //  V0M for current event
   Double_t          fZVtxMax;                           //  Max vertex z cut
   Int_t             fTriggerType;                       //  0-MB, 1-EMC
+  Bool_t            fCheckTriggerMask;                  //  Flag to check the trigger mask for triggered events
   Bool_t            fIsTPCOnlyVtx;                      //  Flag of events with ONLY TPC vertex
   Bool_t            fIsExoticEvent3GeV;                 //  Flag of events with exotic cluster above 3 GeV
   Bool_t            fIsExoticEvent5GeV;                 //  Flag of events with exotic cluster above 5 GeV
@@ -199,9 +221,9 @@ protected:
   TF1               *fTriggerEfficiency[10];            //! Fit of trigger turn-on curves for EMCal clusters above 4-5 GeV
   AliEMCALGeometry  *fGeom;                             //! EMCal goemetry utility
   AliEMCALRecoUtils *fRecoUtil;                         //! Reco utility
-  AliESDtrackCuts   *fEsdTrackCuts;                     //! Track cuts for good tracks
-  AliESDtrackCuts   *fHybridTrackCuts1;                 //! Track cuts for tracks without SPD hit
-  AliESDtrackCuts   *fHybridTrackCuts2;                 //! Track cuts for tracks witout SPD hit or ITS refit
+  AliESDtrackCuts   *fEsdTrackCuts;                     //  Track cuts for good tracks
+  AliESDtrackCuts   *fHybridTrackCuts1;                 //  Track cuts for tracks without SPD hit
+  AliESDtrackCuts   *fHybridTrackCuts2;                 //  Track cuts for tracks witout SPD hit or ITS refit
   Int_t             fTrackCutsType;                     //  0-Global track, 1-TPCOnly track
   Int_t             fKinCutType;                        //  0-cut on track before jet finding, 1-cut on jet with high-pt tracks
   Double_t          fTrkEtaMax;                         //  Max |eta| cut
@@ -224,7 +246,6 @@ protected:
   Float_t           fFractionHC;                        //  fraction of hadronic correction
   Double_t          fHCLowerPtCutMIP;                   //  Lower track pt cut for MIP correction    
   TF1               *fClusterEResolution;               //! Parameterization of cluster energy resolution from test beam results
-  TF1               *fMCNonLin;                         //! Non-linearity of simualtion
   Double_t          fJetNEFMin;                         //  Min jet NEF cut
   Double_t          fJetNEFMax;                         //  Max jet NEF cut
   Bool_t            fSpotGoodJet;                       //  Good jet catching
@@ -237,6 +258,9 @@ protected:
   TH1F              *fhCorrTrkEffSample[2][2][kNBins];  //! Tracking efficiency estimated from simulation
   TRandom3          *fRandomGen;                        //! Random number generator
   Bool_t            fRunUE;                             //  Run analysis of underlying event
+  Bool_t            fCheckTPCOnlyVtx;                   //  Check events with TPC only vertices
+  Bool_t            fRunSecondaries;                    //  Run analysise for secondary particles
+  TH2F              *fhSecondaryResponse[3];            //! Response matrix for secondary particles
   
   Bool_t            fSysJetTrigEff;                     //  Flag of systematic uncertainty of jet trigger efficiency
   Double_t          fVaryJetTrigEff;                    //  Variation of cluster E-scale for systematic uncertainty of jet trigger efficiency
@@ -248,64 +272,84 @@ protected:
   Double_t          fCutdEta;                           //  Variation of dEta cut
   Double_t          fCutdPhi;                           //  Variation of dPhi cut
   Bool_t            fSysNonLinearity;                   //  Flag of systematic uncertainty of EMCal non-linearity
+  TF1               *fNonLinear;                        //! Non-linearity correction functions for data
   Bool_t            fSysClusterEScale;                  //  Flag of systematic uncertainty of EMCal energy scale
   Double_t          fVaryClusterEScale;                 //  Variation of EMCal energy scale
   Bool_t            fSysClusterERes;                    //  Flag of systematic uncertainty of EMCal energy resolution
   Double_t          fVaryClusterERes;                   //  Variation of EMCal energy resolution
+  Bool_t            fSysClusterizer;                    //  Flag of systematic uncertainty on clusterizer
   
-  TString           fNonStdBranch;                      //! Non-std branch name for AOD jets
-  TString           fNonStdFile;                        //! Name of optional file that the non-std branch is written to
-  TString           fAlgorithm;                         //! name of algorithm
-  TString           fRadius;                            //! Jet cone radius
+  TString           fNonStdBranch;                      //  Non-std branch name for AOD jets
+  TString           fNonStdFile;                        //  Name of optional file that the non-std branch is written to
+  TString           fAlgorithm;                         //  name of algorithm
+  TString           fRadius;                            //  Jet cone radius
   Int_t             fRecombinationScheme;               //  Recombination scheme of jet finding
-  AliFJWrapper      *fDetJetFinder[3][2][2];            //! Jet finder
-  TClonesArray      *fJetTCA[3][2][2];	                //! TCA of jets: in - akt - 0.4
+  AliFJWrapper      *fDetJetFinder[3][2][3];            //! Jet finder
+  TClonesArray      *fJetTCA[3][2][3];	                //! TCA of jets: in - akt - r
   Bool_t            fConstrainChInEMCal;                //  Constain charged particle to be in EMCal acceptance
   Bool_t            fRejectNK;                          //  Reject neutron and K_L
   Bool_t            fRejectWD;                          //  Reject primaries, mainly k^0_S,  that decay weakly
   Bool_t            fSmearMC;                           //  Flag of smearing tracking resolution in MC to match data. Obselete.
   TF1               *fTrkPtResData;                     //! Parameterazation of momentum resolution estimated from data
-  AliFJWrapper      *fTrueJetFinder[2];                 //! Jet finder for particle jets
-  TClonesArray      *fMcTruthAntikt[2];                 //! TCA of MC truth anti-kt jets
+  AliFJWrapper      *fTrueJetFinder[3];                 //! Jet finder for particle jets
+  TClonesArray      *fMcTruthAntikt[3];                 //! TCA of MC truth anti-kt jets
 
   TList             *fOutputList;                       //! Output list
   Bool_t            fSaveQAHistos;                      //  Flag of saving QA histograms
+  TH1F              *fhJetEventCount;                   //! Event counts to keep track of rejection criteria
   TH1F              *fhJetEventStat;                    //! Event counts used for jet analysis
-  TH1F              *fhEventCheck;                      //! Event statistics for vertex types
-  TH2F              *fhTrkPhiEtaCheck;                  //! Phi vs Eta of tracks in events with only TPC vertex
+  TH1F              *fhEventStatTPCVtx;                 //! Event counts for TPC only vertices
   TH1F              *fhChunkQA;                         //! Check if the chunk is corrupted
   TH1F              *fVertexGenZ[2];                    //! Generated event vertex z
   TH1F              *fEventZ[2];                        //! reconstructed event vertex z
   TH1F              *fhNTrials[2];                      //! # of trials
   TH1F              *fhNMatchedTrack[2];                //! # of matched tracks per cluster
   TH2F              *fhSubEVsTrkPt[2][4];               //! Subtracted energy due to hadronic correction
-  TH2F              *fhNeutralPtInJet[3][2];            //! pt of neutral constituents in jet
-  TH2F              *fhChargedPtInJet[3][2];            //! pt of charged constituents in jet
-  TH2F              *fhLeadNePtInJet[3][2];             //! pt of leading neutral constituents in jet
-  TH2F              *fhLeadChPtInJet[3][2];             //! pt of leading charged constituents in jet
-  TH2F              *fhChLeadZVsJetPt[2][2];            //! Leading charged constituent Z vs jet pt
-  TH3F              *fhJetPtVsZ[3][2];                  //! Jet pt vs constituent Z vs constituent type
-  TH3F              *fRelTrkCon[2][2];                  //! Jet pt vs track pt contribution vs track class
-  TH2F              *fhJetPtWithTrkThres[2][2];         //! pt of jets containing tracks above certian threshold
-  TH2F              *fhJetPtWithClsThres[2][2];         //! pt of jets containing clusters above certian threshold
-  TH2F              *fhJetPtVsLowPtCons[2][2];          //! Contribution of low pt particles to jet energy
-  THnSparse         *fJetEnergyFraction[3][2];          //! Jet energy fraction
-  THnSparse         *fJetNPartFraction[3][2];           //! Jet NPart fraction
-  TH1F              *fJetCount[3][2];                   //! pT distribution of pions detected 
-  TH2F              *fhSubClsEVsJetPt[2][2][5];         //! f*subtracted cluster energy vs jet pt
-  TH2F              *fhHCTrkPtClean[2][2][5];           //! Cleanly subtracted charged pt
-  TH2F              *fhHCTrkPtAmbig[2][2][5];           //! Ambiguously subtracted charged pt
-  TH2F              *fHCOverSubE[2][5];                 //! Error made by hadronic correction assessed by using particle jet
-  TH2F              *fHCOverSubEFrac[2][5];             //! Error made by hadronic correction assessed by using particle jet
-  TH3F              *fhFcrossVsZleading[2][2];          //! Jet pt vs Fcross vs Zleading
-  TH1F              *fhJetPtInExoticEvent[2][2];        //! Jet pt in exotic events
-  TH2F              *fhJetPtVsUE[2];                    //! Underlying event contribution
+  TH2F              *fhNeutralPtInJet[3][3];            //! pt of neutral constituents in jet
+  TH2F              *fhTrigNeuPtInJet[3][3];            //! pt of neutral constituents in jet
+  TH2F              *fhChargedPtInJet[3][3];            //! pt of charged constituents in jet
+  TH2F              *fhLeadNePtInJet[3][3];             //! pt of leading neutral constituents in jet
+  TH2F              *fhLeadChPtInJet[3][3];             //! pt of leading charged constituents in jet
+  TH2F              *fhChLeadZVsJetPt[2][3];            //! Leading charged constituent Z vs jet pt
+  TH3F              *fhJetPtVsZ[3][3];                  //! Jet pt vs constituent Z vs constituent type
+  TH3F              *fRelTrkCon[2][3];                  //! Jet pt vs track pt contribution vs track class
+  TH2F              *fhJetPtWithTrkThres[2][3];         //! pt of jets containing tracks above certian threshold
+  TH2F              *fhJetPtWithClsThres[2][3];         //! pt of jets containing clusters above certian threshold
+  TH2F              *fhJetPtVsLowPtCons[2][3][2];       //! Contribution of low pt particles to jet energy
+  THnSparse         *fJetEnergyFraction[3][3];          //! Jet energy fraction
+  THnSparse         *fJetNPartFraction[3][3];           //! Jet NPart fraction
+  TH1F              *fJetCount[3][3];                   //! pT distribution of pions detected 
+  TH2F              *fhSubClsEVsJetPt[2][3][5];         //! f*subtracted cluster energy vs jet pt
+  TH2F              *fhHCTrkPtClean[2][3][5];           //! Cleanly subtracted charged pt
+  TH2F              *fhHCTrkPtAmbig[2][3][5];           //! Ambiguously subtracted charged pt
+  TH2F              *fHCOverSubE[3][5];                 //! Error made by hadronic correction assessed by using particle jet
+  TH2F              *fHCOverSubEFrac[3][5];             //! Error made by hadronic correction assessed by using particle jet
+  TH3F              *fhFcrossVsZleading[2][3];          //! Jet pt vs Fcross vs Zleading
+  TH1F              *fhJetPtInExoticEvent[2][3];        //! Jet pt in exotic events
+  TH2F              *fhUEJetPtVsSumPt[3][2][2];         //! Leading jet pt vs underlying event pt
+  TH2F              *fhUEJetPtVsConsPt[3][2][2];        //! Leading jet pt vs constituent pt in underlying event
+  TH1F              *fhUEJetPtNorm[3][2][2];            //! Leading jet normalization
   TH1F              *fhClsE[2];                         //! Cluster energy distribution
+  TH3F              *fhJetInTPCOnlyVtx[2][3];           //! Jets in full TPC acceptance in events with TPC only vertex
+  TH1F              *fhSysClusterE[2][2];               //! Cluster energy distribution before and after hadonic correction
+  TH2F              *fhSysNCellVsClsE[2][2];            //! NCell vs cluster energy before and after hadonic correction
+
+  // Secondaries
+  TH2F              *fhNKFracVsJetPt[2][3];             //! Energy fraction lost due to missing neutron and K0L
+  TH2F              *fhWeakFracVsJetPt[2][3];           //! Energy fraction lost due to weakly decaying particles
+  TH2F              *fhJetResponseNK[2][3];             //! Jet response due to missing neutron and K0L using response matrix
+  TH2F              *fhJetResponseWP[2][3];             //! Jet response due to missing weakly decayed particles using response matrix
+  TH2F              *fhJetResolutionNK[2][3];           //! Jet resolution due to missing neutron and K0L using response matrix
+  TH2F              *fhJetResolutionWP[2][3];           //! Jet resolution due to missing weakly decayed particles using response matrix
+  TH2F              *fhJetResponseNKSM[2][3];           //! Jet response due to missing neutron and K0L via matching
+  TH2F              *fhJetResponseWPSM[2][3];           //! Jet response due to missing weakly decayed particles via matching
+  TH3F              *fhJetResolutionNKSM[2][3];         //! Jet resolution due to missing neutron and K0L via matching
+  TH3F              *fhJetResolutionWPSM[2][3];         //! Jet resolution due to missing weakly decayed particles via matching
 
   AliAnalysisTaskFullppJet(const AliAnalysisTaskFullppJet&);            // not implemented
   AliAnalysisTaskFullppJet &operator=(const AliAnalysisTaskFullppJet&); // not implemented
 
-  ClassDef(AliAnalysisTaskFullppJet, 1);
+  ClassDef(AliAnalysisTaskFullppJet, 2);
 };
 
 #endif
