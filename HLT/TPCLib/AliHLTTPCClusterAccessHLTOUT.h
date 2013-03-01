@@ -16,12 +16,9 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTTPCClusterMCData.h"
 #include "AliHLTTPCRawCluster.h"
-#include <map>
+#include <vector>
 
 class AliTPCParam;
-class AliTPCClustersRow;
-class AliTPCclusterMI;
-class AliHLTOUT;
 class TClonesArray;
 class AliHLTTPCDataCompressionDecoder;
 
@@ -89,7 +86,7 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   /** standard constructor */
   AliHLTTPCClusterAccessHLTOUT();
   /** destructor */
-  ~AliHLTTPCClusterAccessHLTOUT();
+  virtual ~AliHLTTPCClusterAccessHLTOUT();
 
   /// inherited from TObject: abstract command interface
   virtual void        Execute(const char *method,  const char *params, Int_t *error=0);
@@ -150,7 +147,7 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
 	if (this==&other) return *this;
 	fClusterNo=other.fClusterNo; fData=other.fData; fEntry=other.fEntry; fRowOffset=other.fRowOffset; return *this;
       }
-      ~iterator() {}
+      virtual ~iterator() {}
 
       void SetPadRow(int row)          {if (fEntry ) fEntry->fCluster.SetPadRow(row-fRowOffset);}
       void SetPad(float pad) 	       {if (fEntry ) fEntry->fCluster.SetPad(pad);}
