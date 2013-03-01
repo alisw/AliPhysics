@@ -13,7 +13,8 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
 			    Double_t ptAssociatedMax = -1.,
 			    Bool_t k2pMethod = kFALSE,
 			    Bool_t k2pMethod2D = kFALSE,
-			    TString eventClass = "EventPlane") //Can be "EventPlane", "Centrality", "Multiplicity"
+			    TString eventClass = "EventPlane", //Can be "EventPlane", "Centrality", "Multiplicity"
+			    Bool_t bRootMoments = kTRUE)
 {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
@@ -46,7 +47,7 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
 	 gCentralityEstimator,
 	 psiMin,psiMax,
 	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,
-	 k2pMethod,k2pMethod2D,eventClass);  
+	 k2pMethod,k2pMethod2D,eventClass,bRootMoments);  
 }
 
 //______________________________________________________//
@@ -206,7 +207,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 	  Double_t psiMin, Double_t psiMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
-	  Bool_t k2pMethod = kFALSE,Bool_t k2pMethod2D = kFALSE, TString eventClass="EventPlane") {
+	  Bool_t k2pMethod = kFALSE,Bool_t k2pMethod2D = kFALSE, TString eventClass="EventPlane",Bool_t bRootMoments=kTRUE) {
   gROOT->LoadMacro("~/SetPlotStyle.C");
   SetPlotStyle();
   gStyle->SetPalette(1,0);
@@ -384,7 +385,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   }
 
   //Raw balance function
-  if(k2pMethod){ 
+  if(k2pMethod && !k2pMethod2D){ 
     if(bMixed){
       gHistBalanceFunction = b->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     }
@@ -393,7 +394,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
       return;
     }
   }
-  else if(k2pMethod2D){ 
+  else if(k2pMethod && k2pMethod2D){ 
     if(bMixed){
       if(gDeltaEtaDeltaPhi==1) //Delta eta
 	gHistBalanceFunction = b->GetBalanceFunction1DFrom2D2pMethod(0,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
@@ -439,7 +440,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   //gHistBalanceFunctionShuffled->SetName("gHistBalanceFunctionShuffled");
   
   //Mixed balance function
-  if(k2pMethod){ 
+  if(k2pMethod && !k2pMethod2D){ 
     if(bMixed)
       gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     else{
@@ -447,7 +448,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
       return;
     }
   }
-  else if(k2pMethod2D){ 
+  else if(k2pMethod && k2pMethod2D){ 
     if(bMixed){
       if(gDeltaEtaDeltaPhi==1) //Delta eta
 	gHistBalanceFunctionMixed = bMixed->GetBalanceFunction1DFrom2D2pMethod(0,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
@@ -531,29 +532,66 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   //GetWeightedMean(gHistBalanceFunctionShuffled);
   
   TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
-  meanLatex = "#mu = "; 
-  meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMean());
-  meanLatex += " #pm "; 
-  meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMeanError());
-  
-  rmsLatex = "#sigma = "; 
-  rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMS());
-  rmsLatex += " #pm "; 
-  rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMSError());
-  
-  skewnessLatex = "S = "; 
-  skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(1));
-  skewnessLatex += " #pm "; 
-  skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(11));
-  
-  kurtosisLatex = "K = "; 
-  kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(1));
-  kurtosisLatex += " #pm "; 
-  kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(11));
-  Printf("Mean: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetMean(),gHistBalanceFunctionSubtracted->GetMeanError());
-  Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
-  Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
-  Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
+
+  if(bRootMoments){
+    meanLatex = "#mu = "; 
+    meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMean());
+    meanLatex += " #pm "; 
+    meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMeanError());
+    
+    rmsLatex = "#sigma = "; 
+    rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMS());
+    rmsLatex += " #pm "; 
+    rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMSError());
+    
+    skewnessLatex = "S = "; 
+    skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(1));
+    skewnessLatex += " #pm "; 
+    skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(11));
+    
+    kurtosisLatex = "K = "; 
+    kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(1));
+    kurtosisLatex += " #pm "; 
+    kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(11));
+    Printf("Mean: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetMean(),gHistBalanceFunctionSubtracted->GetMeanError());
+    Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
+    Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
+    Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
+  }
+  // calculate the moments by hand
+  else{
+
+    Double_t meanAnalytical, meanAnalyticalError;
+    Double_t sigmaAnalytical, sigmaAnalyticalError;
+    Double_t skewnessAnalytical, skewnessAnalyticalError;
+    Double_t kurtosisAnalytical, kurtosisAnalyticalError;
+
+    b->GetMomentsAnalytical(gHistBalanceFunctionSubtracted,meanAnalytical,meanAnalyticalError,sigmaAnalytical,sigmaAnalyticalError,skewnessAnalytical,skewnessAnalyticalError,kurtosisAnalytical,kurtosisAnalyticalError);
+
+    meanLatex = "#mu = "; 
+    meanLatex += Form("%.3f",meanAnalytical);
+    meanLatex += " #pm "; 
+    meanLatex += Form("%.3f",meanAnalyticalError);
+    
+    rmsLatex = "#sigma = "; 
+    rmsLatex += Form("%.3f",sigmaAnalytical);
+    rmsLatex += " #pm "; 
+    rmsLatex += Form("%.3f",sigmaAnalyticalError);
+    
+    skewnessLatex = "S = "; 
+    skewnessLatex += Form("%.3f",skewnessAnalytical);
+    skewnessLatex += " #pm "; 
+    skewnessLatex += Form("%.3f",skewnessAnalyticalError);
+    
+    kurtosisLatex = "K = "; 
+    kurtosisLatex += Form("%.3f",kurtosisAnalytical);
+    kurtosisLatex += " #pm "; 
+    kurtosisLatex += Form("%.3f",kurtosisAnalyticalError);
+    Printf("Mean: %lf - Error: %lf",meanAnalytical, meanAnalyticalError);
+    Printf("Sigma: %lf - Error: %lf",sigmaAnalytical, sigmaAnalyticalError);
+    Printf("Skeweness: %lf - Error: %lf",skewnessAnalytical, skewnessAnalyticalError);
+    Printf("Kurtosis: %lf - Error: %lf",kurtosisAnalytical, kurtosisAnalyticalError);
+  }
 
   TCanvas *c2 = new TCanvas("c2","",600,0,600,500);
   c2->SetFillColor(10); 

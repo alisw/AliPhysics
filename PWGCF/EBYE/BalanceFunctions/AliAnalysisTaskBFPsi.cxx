@@ -5,6 +5,7 @@
 #include "TGraphErrors.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH3F.h" 
 #include "TH2D.h"                  
 #include "TH3D.h"
 #include "TArrayF.h"
@@ -79,6 +80,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistEta(0),
   fHistRapidity(0),
   fHistPhi(0),
+  fHistEtaPhiPos(0), 	       	 
+  fHistEtaPhiNeg(0), 
   fHistPhiBefore(0),
   fHistPhiAfter(0),
   fHistPhiPos(0),
@@ -192,6 +195,8 @@ AliAnalysisTaskBFPsi::~AliAnalysisTaskBFPsi() {
   // delete fHistPt;
   // delete fHistEta;
   // delete fHistPhi;
+  // delete fHistEtaPhiPos; 		 	 
+  // delete fHistEtaPhiNeg;
   // delete fHistV0M;
 }
 
@@ -312,6 +317,10 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistRapidity);
   fHistPhi  = new TH2F("fHistPhi","#phi distribution;#phi (rad);Centrality percentile",200,0.0,2.*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhi);
+  fHistEtaPhiPos  = new TH3F("fHistEtaPhiPos","#eta-#phi distribution (+);#eta;#phi (rad);Centrality percentile",80,-2,2,72,0.0,2.*TMath::Pi(),220,-5,105); 		 	 
+  fList->Add(fHistEtaPhiPos); 			 
+  fHistEtaPhiNeg  = new TH3F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",80,-2,2,72,0.0,2.*TMath::Pi(),220,-5,105); 	       	 
+  fList->Add(fHistEtaPhiNeg);
   fHistPhiBefore  = new TH2F("fHistPhiBefore","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiBefore);
   fHistPhiAfter  = new TH2F("fHistPhiAfter","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
@@ -1046,6 +1055,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
       else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
       fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
@@ -1226,6 +1237,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       fHistPt->Fill(vPt,gCentrality);
       fHistEta->Fill(vEta,gCentrality);
       fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
       fHistRapidity->Fill(vY,gCentrality);
       if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
       else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
@@ -1319,6 +1332,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       fHistPt->Fill(vPt,gCentrality);
       fHistEta->Fill(vEta,gCentrality);
       fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
       //fHistPhi->Fill(vPhi*TMath::RadToDeg(),gCentrality);
       fHistRapidity->Fill(vY,gCentrality);
       //if(vCharge > 0) fHistPhiPos->Fill(vPhi*TMath::RadToDeg(),gCentrality);
