@@ -1,4 +1,8 @@
+// $Id$
+
+// File config location
 // alien:///alice/cern.ch/user/t/tschuste/correction_hybrid_nulled.root
+
 AliDhcTask *AddTaskDhc(
   Int_t iAna = 2, 
   TString chUName = "", 
@@ -6,9 +10,9 @@ AliDhcTask *AddTaskDhc(
   TString chMuEffFile = "", 
   TString chTaskFile = "", 
   TString chTaskName = "", 
-  TString chNTracks = "PicoTracks")
+  TString chNTracks = "PicoTracks"
+)
 {
-
   Char_t chExtraName[256];
   
   // Get the analysis manager
@@ -23,7 +27,7 @@ AliDhcTask *AddTaskDhc(
 
   AliDhcTask *dhcTask = 0x0;
 
-  // If string chTaskFile is given, load a pre-configured task from file
+  // if string chTaskFile is given, load a pre-configured task from file
   if (!chTaskFile.EqualTo("")) {
     iAna=999;
     TFile *fiDhcTask = 0x0;
@@ -67,7 +71,7 @@ AliDhcTask *AddTaskDhc(
       hMuEff = (THnF*) fiMuEff->Get("correction");
     }
     
-    dhcTask = new AliDhcTask("Task_tschuste_Dhc_fornow");
+    dhcTask = new AliDhcTask("Task_Dhc_Temp_Name");
     if (iAna==1) { // h-h
       Int_t nDetaBins = 40;
       Int_t nDPhiBins = 72;
@@ -95,6 +99,23 @@ AliDhcTask *AddTaskDhc(
       if (hHEff) {
         sprintf(chExtraName,"%s_corrH",chExtraName);
       }
+    } else if (iAna==4) { // mu-mu
+      Int_t nDetaBins = 60;
+      Int_t nDPhiBins = 36;
+      dhcTask->SetAnaMode(AliDhcTask::kMuMu);
+      dhcTask->SetHEffT(hMuEff);
+      dhcTask->SetHEffA(hHEff);
+      dhcTask->SetEtaMax(5.0);
+      dhcTask->SetPtTACrit(kFALSE);
+      sprintf(chExtraName,"%s_MuMu",chExtraName);
+      if (hMuEff) {
+        sprintf(chExtraName,"%s_corrMu",chExtraName);
+      }
+      if (hHEff) {
+        sprintf(chExtraName,"%s_corrH",chExtraName);
+      }
+    } else {
+      Error("AddTaskDhc", Form("iAna %d not known", iAna));
     }
     dhcTask->SetTracksName(chNTracks);
     dhcTask->SetDoWeights(kFALSE);
