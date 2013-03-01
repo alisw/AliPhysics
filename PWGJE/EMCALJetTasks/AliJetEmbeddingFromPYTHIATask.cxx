@@ -34,6 +34,7 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask() :
   SetSuffix("PYTHIAEmbedding");
   fTotalFiles = 2000;
   fRandomAccess = kTRUE;
+  SetMC(kTRUE);
 }
 
 //________________________________________________________________________
@@ -51,6 +52,7 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask(const char *name, B
   SetSuffix("PYTHIAEmbedding");
   fTotalFiles = 2000;
   fRandomAccess = kTRUE;
+  SetMC(kTRUE);
 }
 
 //________________________________________________________________________

@@ -56,6 +56,8 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
     fHistDeltaPtRC[i] = 0;
     fHistDeltaPtRCExLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
+    fHistEmbRejectedJetsPhiEta[i] = 0;
+    fHistEmbRejectedJetsPtArea[i] = 0;
     fHistEmbNotFoundPt[i] = 0;
     fHistEmbNotFoundPhiEta[i] = 0;
     fHistEmbJetsPtArea[i] = 0;
@@ -104,6 +106,8 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
     fHistDeltaPtRC[i] = 0;
     fHistDeltaPtRCExLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
+    fHistEmbRejectedJetsPhiEta[i] = 0;
+    fHistEmbRejectedJetsPtArea[i] = 0;
     fHistEmbNotFoundPt[i] = 0;
     fHistEmbNotFoundPhiEta[i] = 0;
     fHistEmbJetsPtArea[i] = 0;
@@ -133,7 +137,7 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   if (!fTracksName.IsNull() || !fCaloName.IsNull()) {
-    fHistRCPhiEta = new TH2F("fHistRCPhiEta","fHistRCPhiEta", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
+    fHistRCPhiEta = new TH2F("fHistRCPhiEta","fHistRCPhiEta", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
     fHistRCPhiEta->GetXaxis()->SetTitle("#eta");
     fHistRCPhiEta->GetYaxis()->SetTitle("#phi");
     fOutput->Add(fHistRCPhiEta);
@@ -147,12 +151,12 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
   }
 
   if (!fEmbJetsName.IsNull()) {
-    fHistEmbJetsPhiEta = new TH2F("fHistEmbJetsPhiEta","fHistEmbJetsPhiEta", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
+    fHistEmbJetsPhiEta = new TH2F("fHistEmbJetsPhiEta","fHistEmbJetsPhiEta", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
     fHistEmbJetsPhiEta->GetXaxis()->SetTitle("#eta");
     fHistEmbJetsPhiEta->GetYaxis()->SetTitle("#phi");
     fOutput->Add(fHistEmbJetsPhiEta);
     
-    fHistLeadPartPhiEta = new TH2F("fHistLeadPartPhiEta","fHistLeadPartPhiEta", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
+    fHistLeadPartPhiEta = new TH2F("fHistLeadPartPhiEta","fHistLeadPartPhiEta", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
     fHistLeadPartPhiEta->GetXaxis()->SetTitle("#eta");
     fHistLeadPartPhiEta->GetYaxis()->SetTitle("#phi");
     fOutput->Add(fHistLeadPartPhiEta);
@@ -223,7 +227,6 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       fOutput->Add(fHistDeltaPtRCRand[i]);
     }
 
-
     if (!fEmbJetsName.IsNull()) {
       histname = "fHistEmbJetsPtArea_";
       histname += i;
@@ -264,7 +267,7 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
 
       histname = "fHistEmbNotFoundPhiEta_";
       histname += i;
-      fHistEmbNotFoundPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 40, -2, 2, 64, 0, 6.4);
+      fHistEmbNotFoundPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
       fHistEmbNotFoundPhiEta[i]->GetXaxis()->SetTitle("#eta");
       fHistEmbNotFoundPhiEta[i]->GetYaxis()->SetTitle("#phi");
       fOutput->Add(fHistEmbNotFoundPhiEta[i]);
@@ -275,6 +278,20 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       fHistEmbNotFoundPt[i]->GetXaxis()->SetTitle("#it{p}_{T,const}^{emb} (GeV/#it{c})");
       fHistEmbNotFoundPt[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistEmbNotFoundPt[i]);
+
+      histname = "fHistEmbRejectedJetsPhiEta_";
+      histname += i;
+      fHistEmbRejectedJetsPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
+      fHistEmbRejectedJetsPhiEta[i]->GetXaxis()->SetTitle("#eta");
+      fHistEmbRejectedJetsPhiEta[i]->GetYaxis()->SetTitle("#phi");
+      fOutput->Add(fHistEmbRejectedJetsPhiEta[i]);
+
+      histname = "fHistEmbRejectedJetsPtArea_";
+      histname += i;
+      fHistEmbRejectedJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbRejectedJetsPtArea[i]->GetXaxis()->SetTitle("area");
+      fHistEmbRejectedJetsPtArea[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb,raw} (GeV/#it{c})");
+      fOutput->Add(fHistEmbRejectedJetsPtArea[i]);
 
       histname = "fHistEmbBkgArea_";
       histname += i;
@@ -384,6 +401,14 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
     Int_t countEmbJets = 0;
     
     while (embJet != 0) {
+      if (!AcceptJet(embJet)) {
+	fHistEmbRejectedJetsPhiEta[fCentBin]->Fill(embJet->Eta(), embJet->Phi());
+	fHistEmbRejectedJetsPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt());
+	
+	embJet = NextEmbeddedJet();
+	continue;
+      }
+
       AliDebug(2,Form("Elaborating embedded jet n. %d", countEmbJets));
       countEmbJets++;
       
@@ -571,10 +596,7 @@ AliEmcalJet* AliAnalysisTaskDeltaPt::NextEmbeddedJet(Int_t i)
 
     if (jet->MCPt() < fMCJetPtThreshold)
       continue;
-      
-    if (!AcceptJet(jet))
-      continue;
-
+     
     return jet;
   }
 

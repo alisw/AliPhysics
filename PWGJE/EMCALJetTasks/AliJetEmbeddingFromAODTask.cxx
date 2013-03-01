@@ -51,6 +51,9 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
   fIncludeNoITS(kTRUE),
+  fUseNegativeLabels(kTRUE),
+  fTrackEfficiency(1),
+  fIsMC(kFALSE),
   fTotalFiles(2050),
   fAttempts(5),
   fEsdTreeMode(kFALSE),
@@ -94,6 +97,9 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
   fIncludeNoITS(kTRUE),
+  fUseNegativeLabels(kTRUE),
+  fTrackEfficiency(1),
+  fIsMC(kFALSE),
   fTotalFiles(2050),
   fAttempts(5),
   fEsdTreeMode(kFALSE),
@@ -431,13 +437,23 @@ void AliJetEmbeddingFromAODTask::Run()
 	  }
 	}
 	
+	if (fTrackEfficiency < 1) {
+	  Double_t r = gRandom->Rndm();
+	  if (fTrackEfficiency < r) 
+	    continue;
+	}
+	
 	Int_t label = 0;
-
-	if (fOutMCParticles) {
-	  label = track->GetLabel();
-
-	  if (label == 0)
+	if (fIsMC) {
+	  if (fUseNegativeLabels)
+	    label = track->GetLabel();
+	  else 
+	    label = TMath::Abs(track->GetLabel());
+	  
+	  if (label == 0) {
+	    AliWarning(Form("%s: Track %d with label==0", GetName(), i));
 	    label = 99999;
+	  }
 	}
 
 	AliDebug(3, Form("Embedding track with pT = %f, eta = %f, phi = %f, label = %d", track->Pt(), track->Eta(), track->Phi(), label));

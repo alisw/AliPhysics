@@ -28,8 +28,9 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 
   // General histograms
   TH1F                       *fHistEvents[4];              //!Events accepted/rejected
-  TH1F                       *fHistLeadingJetPt[4];        //!Leading jet pt spectrum
-  TH1F                       *fHistLeadingJetCorrPt[4];    //!Corrected leading jet pt spectrum
+  TH2F                       *fHistLeadingJetPhiEta[4];    //!Leading jet phi-eta
+  TH2F                       *fHistLeadingJetPtArea[4];    //!Leading jet pt spectrum vs. area
+  TH2F                       *fHistLeadingJetCorrPtArea[4];//!Corrected leading jet pt spectrum vs. area
   TH2F                       *fHistRhoVSleadJetPt[4];      //!Area(leadjet) * rho vs. leading jet pt
   TH2F                       *fNjetsVsCent;                //!No. of jets vs. centrality
 
