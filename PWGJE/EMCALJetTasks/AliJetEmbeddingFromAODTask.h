@@ -34,9 +34,12 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetTriggerMask(UInt_t mask)                       { fTriggerMask        = mask  ; }
   void           SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)      { fAODfilterBits[0]   = b0    ; fAODfilterBits[1] = b1  ; }
   void           SetIncludeNoITS(Bool_t f)                         { fIncludeNoITS       = f     ; }
+  void           SetUseNegativeLabels(Bool_t f)                    { fUseNegativeLabels  = f     ; }
+  void           SetTrackEfficiency(Double_t eff = 0.95)           { fTrackEfficiency    = eff   ; }
   void           SetTotalFiles(Int_t n)                            { fTotalFiles         = n     ; }
   void           SetAttempts(Int_t n)                              { fAttempts           = n     ; }
   void           SetRandomAccess(Bool_t r=kTRUE)                   { fRandomAccess       = r     ; }
+  void           SetMC(Bool_t a)                                   { fIsMC               = a     ; }
 
  protected:
   Bool_t          ExecOnce()            ;// intialize task
@@ -61,6 +64,9 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   Double_t       fZVertexCut          ;//  Z vertex cut
   Int_t          fAODfilterBits[2]    ;//  AOD track filter bit map
   Bool_t         fIncludeNoITS        ;//  True = includes tracks with failed ITS refit
+  Bool_t         fUseNegativeLabels   ;//  Whether or not should use negative MC labels
+  Double_t       fTrackEfficiency     ;//  Track efficiency
+  Bool_t         fIsMC                ;//  Whether the embedding AOD is MC or not
   Int_t          fTotalFiles          ;//  Total number of files per pt hard bin
   Int_t          fAttempts            ;//  Attempts to be tried before giving up in opening the next file
   Bool_t         fEsdTreeMode         ;//! True = embed from ESD (must be a skimmed ESD!)
@@ -84,6 +90,6 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
   AliJetEmbeddingFromAODTask &operator=(const AliJetEmbeddingFromAODTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromAODTask, 4) // Jet embedding from AOD task
+  ClassDef(AliJetEmbeddingFromAODTask, 5) // Jet embedding from AOD task
 };
 #endif

@@ -165,8 +165,10 @@ void AliJetModelBaseTask::UserExec(Option_t *)
   }
   
   // Reset name (it is cleared each event by the analysis manager)
-  if (fMCParticlesMap)
-    fMCParticlesMap->SetName(fMCParticlesName + "_Map");
+  if (fOutMCParticlesMap) {
+    new (fOutMCParticlesMap) TH1I(fOutMCParticlesName + "_Map", fOutMCParticlesName + "_Map",9999,0,1);
+    fOutMCParticlesMap->TArrayI::Reset(-1);
+  }
 
   AliVCaloCells *tempCaloCells = 0;
 
@@ -617,6 +619,8 @@ AliAODMCParticle* AliJetModelBaseTask::AddMCParticle(AliAODMCParticle *part, Int
   AliAODMCParticle *aodpart = new ((*fOutMCParticles)[nPart]) AliAODMCParticle(*part);
 
   fOutMCParticlesMap->SetBinContent(origIndex + fMCLabelShift, nPart);
+  AliDebug(2, Form("Setting bin %d to %d (fMCLabelShift=%d, origIndex=%d)", 
+		   origIndex + fMCLabelShift, fOutMCParticlesMap->At(origIndex + fMCLabelShift), fMCLabelShift, origIndex));
 
   return aodpart;
 }
@@ -692,15 +696,13 @@ void AliJetModelBaseTask::CopyMCParticles()
   if (!fMCParticlesMap)
     return;
 
-  Int_t shift = 0;
-
   for (Int_t i = 0; i < fMCParticlesMap->GetNbinsX()+2; i++) {
     fOutMCParticlesMap->SetBinContent(i, fMCParticlesMap->GetBinContent(i));
     if (fMCParticlesMap->GetBinContent(i) != 0)
-      shift = i;
+      fMCLabelShift = i;
   }
 
-  fMCLabelShift = shift;
+  AliDebug(2,Form("MC particles copied. fMCLabelShift=%d",fMCLabelShift));
 }
 
 //________________________________________________________________________

@@ -8,6 +8,7 @@
 
 #include <TClonesArray.h>
 #include <TH1I.h>
+#include <TMath.h>
 
 #include "AliVCluster.h"
 #include "AliVParticle.h"
@@ -113,7 +114,9 @@ void AliJetConstituentTagCopier::DoClusterLoop(TClonesArray *array)
       continue;
     Int_t mcLabel = cluster->GetLabel();
     if (mcLabel > 0) {
-      Int_t index = fMCParticlesMap->GetBinContent(mcLabel);
+      Int_t index = fMCParticlesMap->At(mcLabel);
+      if (index < 0)
+	continue;
       AliVParticle *part = static_cast<AliVParticle*>(fMCParticles->At(index));
       if (!part) {
 	AliError(Form("%s: Could not get MC particle %d", GetName(), index));
@@ -136,14 +139,18 @@ void AliJetConstituentTagCopier::DoTrackLoop(TClonesArray *array)
     }
     if (!AcceptTrack(track))
       continue;
-    Int_t mcLabel = track->GetLabel();
+    Int_t mcLabel = TMath::Abs(track->GetLabel());
     if (mcLabel != 0) {
-      Int_t index = fMCParticlesMap->GetBinContent(mcLabel);
+      Int_t index = fMCParticlesMap->At(mcLabel);
+      if (index < 0)
+	continue;
       AliVParticle *part = static_cast<AliVParticle*>(fMCParticles->At(index));
       if (!part) {
 	AliError(Form("%s: Could not get MC particle %d", GetName(), index));
 	continue;
       }
+      AliDebug(2, Form("Track %d, pt = %f, eta = %f, phi = %f, label = %d is matched with particle %d, pt = %f, eta = %f, phi = %f", 
+		       i, track->Pt(), track->Eta(), track->Phi(), mcLabel, index, part->Pt(), part->Eta(), part->Phi()));
       UInt_t bits = (UInt_t)part->TestBits(TObject::kBitMask);
       track->SetBit(bits);
     }
@@ -167,9 +174,11 @@ void AliJetConstituentTagCopier::DoEmcalParticleLoop(TClonesArray *array)
     if (cluster)
       mcLabel = cluster->GetLabel();
     else if (track)
-      mcLabel = track->GetLabel();
+      mcLabel = TMath::Abs(track->GetLabel());
     if (mcLabel != 0) {
-      Int_t index = fMCParticlesMap->GetBinContent(mcLabel);
+      Int_t index = fMCParticlesMap->At(mcLabel);
+      if (index < 0)
+	continue;
       AliVParticle *part = static_cast<AliVParticle*>(fMCParticles->At(index));
       if (!part) {
 	AliError(Form("%s: Could not get MC particle %d", GetName(), index));

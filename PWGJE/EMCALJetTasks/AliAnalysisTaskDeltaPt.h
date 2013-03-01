@@ -73,6 +73,8 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   // Jet embedding
   TH2                        *fHistEmbNotFoundPhiEta[4];   //!Phi-Eta of "not found" embedded particles
   TH1                        *fHistEmbNotFoundPt[4];       //!Pt of "not found" embedded particles
+  TH2                        *fHistEmbRejectedJetsPhiEta[4];//!Phi-Eta of rejected embedded jets
+  TH1                        *fHistEmbRejectedJetsPtArea[4];//!Pt-area of rejected embedded jets
   TH3                        *fHistEmbJetsPtArea[4];       //!Pt vs. area of embedded jets
   TH3                        *fHistEmbJetsCorrPtArea[4];   //!Pt-rho*A vs. area of embedded jets
   TH2                        *fHistEmbPartPtvsJetPt[4];    //!MC jet pt total jet pt
