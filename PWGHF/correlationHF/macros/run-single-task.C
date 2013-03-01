@@ -83,6 +83,25 @@
 /// gridwork/<date>_<time> (gridwork/yyyy-mm-dd_hh-mm), can be overridden by command line
 /// parameter.
 ///
+/// Options:
+/// Options to the macro can be propagated via the parameter 'arguments', the known options
+/// are parsed and filtered out from the arguments, which are than further propagated to
+/// AdTask macros and task.
+/// --mcData        switch indicates that the input data is mc data, the run numbers have
+///                 a different format in real data
+/// --nTestFiles=   number of test files to be used in test mode (default 10)
+/// --merge=        merging mode 'local', 'grid', 'collect' (default Grid)
+///
+/// Merging of output:
+/// The output files can be merged locally by using the argument '--merge=local'. In that
+/// case all files are downloaded to the local machine and merged. The merging on grid
+/// requires to launch the analysis with argument '--merge=grid'. After the jobs are done
+/// further steps are required, 
+/// 1) run in mode "terminate" with argument '--merge=grid' and working directory on grid,
+/// 2) run in mode "terminate" with argument '--merge=collect' and working directory on grid.
+/// Step 1) can be repeated  multiple times, the AnalysisManager will in each stage merge
+/// several files of the previous stage, it will notify you when the final result has
+/// already been merged.
 /// 
 /// Suggestions:
 /// Feedback appreciated: Matthias.Richter@cern.ch
@@ -107,7 +126,7 @@ const char* libraryDependencies=
   ;
 
 TString GetIncludeHeaders(const char* filename, TString& headers, TString& libs, bool loadClass=true);
-TObject* BuildCodeTree(TObject* pTree);
+TObject* BuildCodeTree(const char* filename, TObject* pTree);
 int  ProcessCodeTree(TObject* tree, TString& sources, TString& headers, TString& libs);
 void ErrorConfigurationFile(const char* fileName);
 
@@ -191,7 +210,9 @@ void run_single_task(const char* mode,
   //
   // argument settings
   //
+  bool bMergeOnGrid=true;
   bool mcData=false;
+  int nTestFiles=10;
   TString strArguments(arguments);
   TObjArray* tokens=strArguments.Tokenize(" ");
   if (tokens) {
@@ -201,10 +222,40 @@ void run_single_task(const char* mode,
       TString arg=token->GetName();
       const char* key=NULL;
 
-      key="mcData";
+      key="--mcData";
       if (arg.CompareTo(key)==0) {
-	strArguments.ReplaceAll(key, "");
+	// this is an argument to the macro, don't propagate it further to tasks
+	// switch indicates that the input data is mc data, the run numbers have
+	// a different format in real data
+	// NOTE: not to be confused with option 'mc' which is propagated to tasks
+	// and switches processing and output modes inside tasks
 	mcData=true;
+      }
+      key="--merge=";
+      if (arg.BeginsWith(key)) {
+	// this is an argument to the macro, don't propagate it further to tasks
+	strArguments.ReplaceAll(arg, "");
+	arg.ReplaceAll(key, "");
+	if (arg.CompareTo("local")==0) {
+	  // download all files and merge locally
+	  bMergeOnGrid=false;
+	} else if (arg.CompareTo("collect")==0) {
+	  // download the output of merging on Grid
+	  // macro must have been called in mode "terminate" with option
+	  // --merge=grid and the correct grid working directory
+	  bMergeOnGrid=false;
+	} else if (arg.CompareTo("grid")==0) {
+	  // merge output on grid,  the correct grid working directory
+	  // must be provided
+	  bMergeOnGrid=true;
+	}
+      }
+      key="--nTestFiles=";
+      if (arg.BeginsWith(key)) {
+	// this is an argument to the macro, don't propagate it further to tasks
+	strArguments.ReplaceAll(arg, "");
+	arg.ReplaceAll(key, "");
+	nTestFiles=arg.Atoi();
       }
     }
     delete tokens;
@@ -388,8 +439,8 @@ void run_single_task(const char* mode,
       }
     } else if(strInput.EndsWith("ESD")){
       // fetch esd tree from the setup macro
+      const char* esdTreeName="esdTree";
       if (gDirectory!=NULL) {
-	const char* esdTreeName="esdTree";
 	TObject* chainObject=gDirectory->FindObject(esdTreeName);
 	if (chainObject) {
 	  chain=dynamic_cast<TChain*>(chainObject);
@@ -405,8 +456,8 @@ void run_single_task(const char* mode,
       chain->Add(strInput);
     } else if(strInput.EndsWith("AOD")){
       // fetch aod tree from the setup macro
+      const char* aodTreeName="aodTree";
       if (gDirectory!=NULL) {
-	const char* aodTreeName="aodTree";
 	TObject* chainObject=gDirectory->FindObject(aodTreeName);
 	if (chainObject) {
 	  chain=dynamic_cast<TChain*>(chainObject);
@@ -426,7 +477,6 @@ void run_single_task(const char* mode,
     // grid analysis
     //
     bool bSetRun=true;
-    TString strInput(input);
     if (!strInput.IsDigit()) {
       // support for external macros specifying the the runs to be
       // analyzed
@@ -452,16 +502,24 @@ void run_single_task(const char* mode,
 
     // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
     alienHandler->SetRunMode(mode);
+
+    // number of files in test mode configurable via argument '--nTestFiles='
+    if(mode=="test") alienHandler->SetNtestFiles(nTestFiles);
   
     // check the versions available on alien with the command 'packages'
     alienHandler->SetAPIVersion(alienAPIVersion);
     alienHandler->SetROOTVersion(alienROOTVersion);
     alienHandler->SetAliROOTVersion(alienAliROOTVersion);
 
-    //Allow non-default outputs
-    //This is required to set non-default output files with the SetOutputFiles
-    //function below
-    alienHandler->SetDefaultOutputs(kFALSE);
+    // TODO: have to find out how the output is actually organized
+    // root-archieve.root seems to be needed for merging on Grid, set default output to true
+    alienHandler->SetDefaultOutputs(kTRUE);
+
+    // TODO: make non-default output files working
+    //alienHandler->SetOutputFiles(ofile);
+    // Optionally define the files to be archived.
+    //alienHandler->SetOutputArchive("log_archive.zip:stdout,stderr");
+
     if (user && user[0]!=0) alienHandler->SetUser(user);
 
     // data alien directory
@@ -513,13 +571,8 @@ void run_single_task(const char* mode,
 
     // Note: there is no extra source or header file to be transferred if 'AddTask' macros are used
     alienHandler->SetAnalysisSource(Form("%s %s %s %s", dependencySource.Data(), dependencyHeader.Data(), taskSources.Data(), taskHeaders.Data()));
-    alienHandler->SetAdditionalLibs(Form("%s %s %s", libraries.Data(), taskHeaders.Data(), dependencyHeader.Data()));
+    alienHandler->SetAdditionalLibs(Form("%s %s %s %s %s", libraries.Data(), dependencySource.Data(), dependencyHeader.Data(), taskSources.Data(), taskHeaders.Data()));
 
-    alienHandler->SetOutputFiles(ofile);
-
-    // Optionally define the files to be archived.
-    alienHandler->SetOutputArchive("log_archive.zip:stdout,stderr");
-  
     // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
     TString macroName; macroName.Form("run_%s.C",analysisName); macroName.ReplaceAll("-","_");
     alienHandler->SetAnalysisMacro(macroName);
@@ -549,11 +602,9 @@ void run_single_task(const char* mode,
     // Optionally modify split mode (default 'se')
     alienHandler->SetSplitMode("se");
   
-    // comment out the next line when using the "terminate" option, unless
-    // you want separate merged files for each run
-    if (strcmp(mode, "terminate")==0) {
-      alienHandler->SetMergeViaJDL(kFALSE);
-    }
+    // configure merging on grid,
+    // argument '--merge=collect' sets 'false' for fetching the merged output
+    alienHandler->SetMergeViaJDL(bMergeOnGrid); 
 
     alienHandler->SetOneStageMerging(kFALSE);
     alienHandler->SetMaxMergeStages(2);
@@ -581,7 +632,7 @@ void run_single_task(const char* mode,
 	cerr << "can not load class " << taskName << endl;
 	return;
       }
-      TObject* p=pCl->New();
+      void* p=pCl->New();
       if (!p) {
 	cerr << "failed to instantiate class " << taskName << endl;
 	return;
@@ -597,9 +648,13 @@ void run_single_task(const char* mode,
   TObjArray* taskMacroTokens=addTaskMacros.Tokenize(" ");
   if (taskMacroTokens) {
     for (int iTaskMacroToken=0; iTaskMacroToken<taskMacroTokens->GetEntriesFast(); iTaskMacroToken++) {
+      TString taskSource= taskMacroTokens->At(iTaskMacroToken)->GetName();
+
       taskSource+="+g";
       TString configuration;
-      configuration.Form("name=%s file=%s %s", analysisName, ofile.Data(), strArguments.Data());
+      if(!strArguments.Contains("file=")) configuration+=Form(" file=%s",ofile.Data()); 
+      if(!strArguments.Contains("name=")) configuration+=Form(" name=%s",analysisName); 
+      configuration+=" "; configuration+=strArguments.Data();
       if (gDirectory) gDirectory->Add(new TNamed("run_single_task_configuration", configuration.Data()));
       gROOT->Macro(taskMacroTokens->At(iTaskMacroToken)->GetName());
     }
@@ -612,7 +667,7 @@ void run_single_task(const char* mode,
   //
   // run
   //
-  
+
   if (!pManager->InitAnalysis()) {
     cerr << "failed to initialize analysis" << endl;
     return;
@@ -642,15 +697,39 @@ void run_single_task(const char* mode,
 {
   run_single_task(mode,
 		  input,
-		  taskname,
+		  tasknames,
 		  analysisName,
-		  useMC?"mc":"",
+		  (useMC?"mc":""),
 		  nevents,
 		  gridDataDir,
 		  dataPattern,
 		  friendDataPattern,
 		  odir,
 		  user
+		  );
+}
+
+// method for calling with a fixed working directory, e.g. in mode terminate 
+void run_single_task(const char* mode,
+		     const char* input,
+		     const char* tasknames,
+		     const char* analysisName,
+		     const char* arguments,
+		     const char* workdir
+		     )
+{
+  TString odir(workdir);
+  run_single_task(mode,
+		  input,
+		  tasknames,
+		  analysisName,
+		  arguments,
+		  -1,
+		  NULL,
+		  NULL,
+		  NULL,
+		  odir,
+		  NULL
 		  );
 }
 
@@ -775,6 +854,8 @@ public:
 
   bool IsHeader() const {return fType==kTypeHeader;}
   bool IsSource() const {return fType==kTypeSource;}
+  void HaveFile(bool haveFile) {fHaveFile=haveFile;}
+  bool HaveFile() const {return fHaveFile;}
   void Print(Option_t *option="") const;
 
 protected:
@@ -785,6 +866,7 @@ private:
   TList fChilds;  // list of childs
   TList fProcessedChilds;  // list of processed childs
   int   fType;    // source of header
+  bool  fHaveFile;// file is existing in pwd
 
   ClassDef(AliCodeNode, 1)
 };
@@ -821,6 +903,7 @@ AliCodeNode::AliCodeNode()
  , fChilds()
  , fProcessedChilds()
  , fType(AliCodeNode::kTypeInvalid)
+ , fHaveFile(false)
 {
 }
 
@@ -830,6 +913,7 @@ AliCodeNode::AliCodeNode(const char* filename)
   , fChilds()
   , fProcessedChilds()
   , fType(AliCodeNode::kTypeInvalid)
+ , fHaveFile(false)
 {
   TString s(filename);
   if (s.EndsWith(".cxx")) fType=kTypeSource;
@@ -928,36 +1012,32 @@ AliCodeNode* AliCodeTree::Build(const char* topfile, AliCodeNode* parent)
 {
   // scan the file and recursively add all include headers found by path
   int iResult=0;
-  ifstream input(topfile);
-  if (input.bad()) {
-    cerr << "failed to open file " << topfile << endl;
-    return NULL;
-  }
   AliCodeNode* node=FindNode(topfile);
   if (!node) {
     if (fVerbosity>0) cout << setw(2*fIndentCount) << " " << "new node " << topfile << endl;
     fIndentCount++;
     node=new AliCodeNode(topfile);
     fNodes.Add(node);
-    TString line; 
-    while (!line.ReadLine(input).eof()) {
-      if (!line.Contains("#include") || !line.Contains(".h")) continue;
-      line=line(0, line.Index(".h"));line+=".h";
-      line.Replace(0, line.Index("#include"), "");
-      line.ReplaceAll("#include", "");
-      line.ReplaceAll(" ", "");
-      line.ReplaceAll("\"", "");
-      if (!line.BeginsWith("Ali") && !line.BeginsWith("T")) continue;
-      if (gSystem->AccessPathName(line)==0) {
+    ifstream input(topfile);
+    if (input.good()) {
+      node->HaveFile(true);
+      TString line; 
+      while (!line.ReadLine(input).eof()) {
+	if (!line.Contains("#include") || !line.Contains(".h")) continue;
+	line=line(0, line.Index(".h"));line+=".h";
+	line.Replace(0, line.Index("#include"), "");
+	line.ReplaceAll("#include", "");
+	line.ReplaceAll(" ", "");
+	line.ReplaceAll("\"", "");
+	if (!line.BeginsWith("Ali") && !line.BeginsWith("T")) continue;
+	AliCodeNode* child=NULL;
 	TString source=line; source.ReplaceAll(".h", ".cxx");
 	if (source.CompareTo(topfile)!=0 && gSystem->AccessPathName(source)==0) {
-	  AliCodeNode* child=Build(source, node);
+	  child=Build(source, node);
 	  node->InsertChild(child);
 	}
-	if (gSystem->AccessPathName(line)==0) {
-	  AliCodeNode* child=Build(line, node);
-	  node->InsertChild(child);
-	}
+	child=Build(line, node);
+	node->InsertChild(child);
       }
     }
     fIndentCount--;
@@ -1056,7 +1136,7 @@ int AliCodeTree::GetHeaders(TString& headers)
   TObject* obj=NULL;
   while ((obj=next())!=NULL) {
     AliCodeNode* node=dynamic_cast<AliCodeNode*>(obj);
-    if (!node->IsHeader()) continue;
+    if (!node->IsHeader() || !node->HaveFile()) continue;
     if (!headers.IsNull()) headers+=" ";
     headers+=node->GetName();
   }
@@ -1069,7 +1149,7 @@ int AliCodeTree::GetSources(TString& sources)
   TObject* obj=NULL;
   while ((obj=next())!=NULL) {
     AliCodeNode* node=dynamic_cast<AliCodeNode*>(obj);
-    if (!node->IsSource()) continue;
+    if (!node->IsSource() || !node->HaveFile()) continue;
     if (!sources.IsNull()) sources+=" ";
     sources+=node->GetName();
   }
@@ -1140,6 +1220,15 @@ int ProcessCodeTree(TObject* tree, TString& sources, TString& headers, TString& 
 #include "TPRegexp.h"
 #include "TSystem.h"
 #include "TROOT.h"
+#include "TGrid.h"
+#include "TChain.h"
+#include "TChainElement.h"
+// #include "AliAnalysisManager.h"
+// #include "AliAnalysisAlien.h"
+// #include "AliAnalysisTaskSE.h"
+// #include "AliInputEventHandler.h"
+// #include "AliAODInputHandler.h"
+// #include "AliESDInputHandler.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
