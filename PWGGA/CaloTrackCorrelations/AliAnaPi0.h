@@ -239,6 +239,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimPi0AccPhi;            //! Azimutal distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimPi0OpeningAngle ;     //! Opening angle of pair versus pair energy, primaries
   TH2F *   fhPrimPi0CosOpeningAngle ;  //! Cosinus of opening angle of pair version pair energy, primaries
+  TH2F *   fhPrimEtaOpeningAngle ;     //! Opening angle of pair versus pair energy, primaries
+  TH2F *   fhPrimEtaCosOpeningAngle ;  //! Cosinus of opening angle of pair version pair energy, primaries
   //Eta acceptance
   TH1F *   fhPrimEtaPt ;               //! Spectrum of Primary 
   TH1F *   fhPrimEtaAccPt ;            //! Spectrum of primary with accepted daughters 

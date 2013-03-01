@@ -86,7 +86,9 @@ fhEventPlaneResolution(0x0),
 fhRealOpeningAngle(0x0),     fhRealCosOpeningAngle(0x0),   fhMixedOpeningAngle(0x0),     fhMixedCosOpeningAngle(0x0),
 // MC histograms
 fhPrimPi0Pt(0x0),            fhPrimPi0AccPt(0x0),          fhPrimPi0Y(0x0),              fhPrimPi0AccY(0x0), 
-fhPrimPi0Phi(0x0),           fhPrimPi0AccPhi(0x0),         fhPrimPi0OpeningAngle(0x0),   fhPrimPi0CosOpeningAngle(0x0),
+fhPrimPi0Phi(0x0),           fhPrimPi0AccPhi(0x0),
+fhPrimPi0OpeningAngle(0x0),  fhPrimPi0CosOpeningAngle(0x0),
+fhPrimEtaOpeningAngle(0x0),  fhPrimEtaCosOpeningAngle(0x0),
 fhPrimEtaPt(0x0),            fhPrimEtaAccPt(0x0),          fhPrimEtaY(0x0),              fhPrimEtaAccY(0x0), 
 fhPrimEtaPhi(0x0),           fhPrimEtaAccPhi(0x0),         fhPrimPi0PtOrigin(0x0),       fhPrimEtaPtOrigin(0x0), 
 fhMCOrgMass(),               fhMCOrgAsym(),                fhMCOrgDeltaEta(),            fhMCOrgDeltaPhi(),
@@ -752,7 +754,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     outputContainer->Add(fhMCEtaPtOrigin) ;
     
-    if(fFillAngleHisto){
+    if(fFillAngleHisto)
+    {
       fhPrimPi0OpeningAngle  = new TH2F
       ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,0,0.5); 
       fhPrimPi0OpeningAngle->SetYTitle("#theta(rad)");
@@ -764,6 +767,20 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimPi0CosOpeningAngle->SetYTitle("cos (#theta) ");
       fhPrimPi0CosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0CosOpeningAngle) ;
+      
+      fhPrimEtaOpeningAngle  = new TH2F
+      ("hPrimEtaOpeningAngle","Angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,100,0,0.5);
+      fhPrimEtaOpeningAngle->SetYTitle("#theta(rad)");
+      fhPrimEtaOpeningAngle->SetXTitle("E_{#eta} (GeV)");
+      outputContainer->Add(fhPrimEtaOpeningAngle) ;
+      
+      fhPrimEtaCosOpeningAngle  = new TH2F
+      ("hPrimEtaCosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,100,-1,1);
+      fhPrimEtaCosOpeningAngle->SetYTitle("cos (#theta) ");
+      fhPrimEtaCosOpeningAngle->SetXTitle("E_{ #eta} (GeV)");
+      outputContainer->Add(fhPrimEtaCosOpeningAngle) ;
+
+      
     }
     
     for(Int_t i = 0; i<13; i++){
@@ -1117,21 +1134,31 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                 }
               }	  
               
-              if(inacceptance){
-                if(pdg==111){
+              if(inacceptance)
+              {
+                if(pdg==111)
+                {
                   fhPrimPi0AccPt ->Fill(pi0Pt) ;
                   fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
-                  if(fFillAngleHisto){
+                  if(fFillAngleHisto)
+                  {
                     Double_t angle  = lv1.Angle(lv2.Vect());
                     fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
                     fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
                   }
                 }
-                else if(pdg==221){
+                else if(pdg==221)
+                {
                   fhPrimEtaAccPt ->Fill(pi0Pt) ;
                   fhPrimEtaAccPhi->Fill(pi0Pt, phi) ;
                   fhPrimEtaAccY  ->Fill(pi0Pt, pi0Y) ;
+                  if(fFillAngleHisto)
+                  {
+                    Double_t angle  = lv1.Angle(lv2.Vect());
+                    fhPrimEtaOpeningAngle   ->Fill(pi0Pt,angle);
+                    fhPrimEtaCosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
+                  }
                 }
               }//Accepted
             }// 2 photons      
@@ -1260,21 +1287,30 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               }	  
               
               if(inacceptance){
-                if(pdg==111){
+                if(pdg==111)
+                {
                   //                printf("ACCEPTED pi0: pt %2.2f, phi %3.2f, eta %1.2f\n",pi0Pt,phi,pi0Y);
                   fhPrimPi0AccPt ->Fill(pi0Pt) ;
                   fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
-                  if(fFillAngleHisto){
+                  if(fFillAngleHisto)
+                  {
                     Double_t angle  = lv1.Angle(lv2.Vect());
                     fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
                     fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
                   }
                 }
-                else if(pdg==221){
+                else if(pdg==221)
+                {
                   fhPrimEtaAccPt ->Fill(pi0Pt) ;
                   fhPrimEtaAccPhi->Fill(pi0Pt, phi) ;
                   fhPrimEtaAccY  ->Fill(pi0Pt, pi0Y) ;
+                  if(fFillAngleHisto)
+                  {
+                    Double_t angle  = lv1.Angle(lv2.Vect());
+                    fhPrimEtaOpeningAngle   ->Fill(pi0Pt,angle);
+                    fhPrimEtaCosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
+                  }
                 }
               }//Accepted
             }// 2 photons      
