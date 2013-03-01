@@ -802,6 +802,97 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
       f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
       fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus);
    }
+  
+  
+  //--------------------------------------------------------------------------------------
+  // True Generated (For Multiplicity Unfolding)
+  //--------------------------------------------------------------------------------------
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, all generated
+  
+  if(! f3dHistGenPtVsYVsMultMCXiMinus) {
+    f3dHistGenPtVsYVsMultMCXiMinus = new TH3F( "f3dHistGenPtVsYVsMultMCXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenPtVsYVsMultMCXiMinus);
+  }
+  if(! f3dHistGenPtVsYVsMultMCXiPlus) {
+    f3dHistGenPtVsYVsMultMCXiPlus = new TH3F( "f3dHistGenPtVsYVsMultMCXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenPtVsYVsMultMCXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenPtVsYVsMultMCOmegaMinus) {
+    f3dHistGenPtVsYVsMultMCOmegaMinus = new TH3F( "f3dHistGenPtVsYVsMultMCOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenPtVsYVsMultMCOmegaMinus);
+  }
+  if(! f3dHistGenPtVsYVsMultMCOmegaPlus) {
+    f3dHistGenPtVsYVsMultMCOmegaPlus = new TH3F( "f3dHistGenPtVsYVsMultMCOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenPtVsYVsMultMCOmegaPlus);
+  }
+  
+  //All generated cascades, YCMS
+  
+  if(! f3dHistGenPtVsYCMSVsMultMCXiMinus) {
+    f3dHistGenPtVsYCMSVsMultMCXiMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultMCXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenPtVsYCMSVsMultMCXiMinus);
+  }
+  if(! f3dHistGenPtVsYCMSVsMultMCXiPlus) {
+    f3dHistGenPtVsYCMSVsMultMCXiPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultMCXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenPtVsYCMSVsMultMCXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenPtVsYCMSVsMultMCOmegaMinus) {
+    f3dHistGenPtVsYCMSVsMultMCOmegaMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultMCOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenPtVsYCMSVsMultMCOmegaMinus);
+  }
+  if(! f3dHistGenPtVsYCMSVsMultMCOmegaPlus) {
+    f3dHistGenPtVsYCMSVsMultMCOmegaPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultMCOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenPtVsYCMSVsMultMCOmegaPlus);
+  }
+  
+
+  //--------------------------------------------------------------------------------------
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, at selected analysis evts
+  
+  if(! f3dHistGenSelectedPtVsYVsMultMCXiMinus) {
+    f3dHistGenSelectedPtVsYVsMultMCXiMinus = new TH3F( "f3dHistGenSelectedPtVsYVsMultMCXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenSelectedPtVsYVsMultMCXiMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYVsMultMCXiPlus) {
+    f3dHistGenSelectedPtVsYVsMultMCXiPlus = new TH3F( "f3dHistGenSelectedPtVsYVsMultMCXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenSelectedPtVsYVsMultMCXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenSelectedPtVsYVsMultMCOmegaMinus) {
+    f3dHistGenSelectedPtVsYVsMultMCOmegaMinus = new TH3F( "f3dHistGenSelectedPtVsYVsMultMCOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenSelectedPtVsYVsMultMCOmegaMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYVsMultMCOmegaPlus) {
+    f3dHistGenSelectedPtVsYVsMultMCOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYVsMultMCOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenSelectedPtVsYVsMultMCOmegaPlus);
+  }
+  
+  //ANALYSIS level Cascades, YCMS
+  
+  
+  if(! f3dHistGenSelectedPtVsYCMSVsMultMCXiMinus) {
+    f3dHistGenSelectedPtVsYCMSVsMultMCXiMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultMCXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultMCXiMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYCMSVsMultMCXiPlus) {
+    f3dHistGenSelectedPtVsYCMSVsMultMCXiPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultMCXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultMCXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenSelectedPtVsYCMSVsMultMCOmegaMinus) {
+    f3dHistGenSelectedPtVsYCMSVsMultMCOmegaMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultMCOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultMCOmegaMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus) {
+    f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus);
+  }
 
 //----------------------------------
 // Primary Vertex Position Histos
