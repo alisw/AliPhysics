@@ -11,7 +11,7 @@ class AliParamList : public TNamed
   AliParamList(Int_t n=0, const Double_t *parVal=0);
   AliParamList(const AliParamList& src);
   AliParamList& operator=(const AliParamList& src);
-  ~AliParamList();
+  virtual ~AliParamList();
   //
   Int_t         GetID()                const {return fID;}
   Int_t         GetNParams()           const {return fNPar;}
