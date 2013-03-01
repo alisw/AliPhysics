@@ -158,18 +158,15 @@ Bool_t AliITSUSimulationPix::SetTanLorAngle(Double_t weightHole)
 void AliITSUSimulationPix::SDigitiseModule()
 {
   //  This function begins the work of creating S-Digits.
-  if (!(fModule->GetNHits())) {
-    AliDebug(1,Form("In event %d module %d there are %d hits returning.",
-		    fEvent, fModule->GetIndex(),fModule->GetNHits()));
-    return;
-  } 
   //
-  Hits2SDigitsFast();
+  if (fModule->GetNHits()) Hits2SDigitsFast();
   //
   if (fSimuParam->GetPixAddNoisyFlag())   AddNoisyPixels();
-  if (fSimuParam->GetPixRemoveDeadFlag()) RemoveDeadPixels();  
+  if (fSimuParam->GetPixRemoveDeadFlag()) RemoveDeadPixels(); 
+  if (!fSensMap->GetEntries()) return;
   WriteSDigits();
   ClearMap();
+  //
 }
 
 //______________________________________________________________________
