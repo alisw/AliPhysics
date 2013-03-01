@@ -175,7 +175,8 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
     fPIDResponse->SetCurrentFile(fileName.Data());
   }
 
-  if ( (prodInfo.IsMC() == kFALSE) || (fIsMC == kFALSE) ) {      // reco pass is needed only for data
+  if (prodInfo.IsMC() == kTRUE) fIsMC=kTRUE;         // protection if user didn't use macro switch
+  if ( (prodInfo.IsMC() == kFALSE) && (fIsMC == kFALSE) ) {      // reco pass is needed only for data
     fRecoPass = prodInfo.GetRecoPass();
     if (fRecoPass < 0) {   // as last resort we find pass from file name (UGLY, but not stored in ESDs/AODs before LHC12d )
       TString fileName(file->GetName());
@@ -193,8 +194,9 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
     } 
     if (fRecoPass <= 0) {
       AliError(" ******** Failed to find reconstruction pass number *********");
-      AliError(" ******** Insert pass number inside the path of your local file ******");
       AliError(" ******** PID information loaded for 'pass 0': parameters unreliable ******");
+      AliError("      --> If these are MC data: please set kTRUE first argument of AddTaskPIDResponse");
+      AliError("      --> If these are real data: please insert pass number inside the path of your local file ******");
     }
   }
 
