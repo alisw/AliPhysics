@@ -1656,10 +1656,13 @@ void AliCalorimeterUtils::SplitEnergy(const Int_t absId1, const Int_t absId2,
       
       sm = GetModuleNumberCellIndexes(absIdList1[iDigit], calorimeter, icol, irow, iRCU) ;
       
-      if( AreNeighbours(calorimeter, absId2,absIdList1[iDigit]) )
-        hCluster1->Fill(icol,irow,cells->GetCellAmplitude(absIdList1[iDigit])*shareFraction1);
+      Float_t ecell = cells->GetCellAmplitude(absIdList1[iDigit]);
+      RecalibrateCellAmplitude(ecell, calorimeter, absIdList1[iDigit]);
+      
+      if( AreNeighbours(calorimeter, absId2,absIdList1[iDigit]) && absId1!=absIdList1[iDigit])
+        hCluster1->Fill(icol,irow,ecell*shareFraction1);
       else 
-        hCluster1->Fill(icol,irow,cells->GetCellAmplitude(absIdList1[iDigit]));
+        hCluster1->Fill(icol,irow,ecell);
     }
     
     //printf(" \n ");
@@ -1670,10 +1673,14 @@ void AliCalorimeterUtils::SplitEnergy(const Int_t absId1, const Int_t absId2,
       //printf(" %d ",absIdList2[iDigit]);
       
       sm = GetModuleNumberCellIndexes(absIdList2[iDigit], calorimeter, icol, irow, iRCU) ;
-      if( AreNeighbours(calorimeter, absId1,absIdList2[iDigit]) )
-        hCluster2->Fill(icol,irow,cells->GetCellAmplitude(absIdList2[iDigit])*shareFraction2);
+      
+      Float_t ecell = cells->GetCellAmplitude(absIdList2[iDigit]);
+      RecalibrateCellAmplitude(ecell, calorimeter, absIdList2[iDigit]);
+      
+      if( AreNeighbours(calorimeter, absId1,absIdList2[iDigit])  && absId2!=absIdList2[iDigit])
+        hCluster2->Fill(icol,irow,ecell*shareFraction2);
       else
-        hCluster2->Fill(icol,irow,cells->GetCellAmplitude(absIdList2[iDigit]));
+        hCluster2->Fill(icol,irow,ecell);
       
     }
     //printf(" \n ");
@@ -1697,27 +1704,31 @@ void AliCalorimeterUtils::SplitEnergy(const Int_t absId1, const Int_t absId2,
     c->cd(1);
     gPad->SetGridy();
     gPad->SetGridx();
+    gPad->SetLogz();
     hClusterMap    ->SetAxisRange(minCol, maxCol,"X");
     hClusterMap    ->SetAxisRange(minRow, maxRow,"Y");
-    hClusterMap    ->Draw("colz");
+    hClusterMap    ->Draw("colz TEXT");
     c->cd(2);
     gPad->SetGridy();
     gPad->SetGridx();
+    gPad->SetLogz();
     hClusterLocMax ->SetAxisRange(minCol, maxCol,"X");
     hClusterLocMax ->SetAxisRange(minRow, maxRow,"Y");
-    hClusterLocMax ->Draw("colz");
+    hClusterLocMax ->Draw("colz TEXT");
     c->cd(3);
     gPad->SetGridy();
     gPad->SetGridx();
+    gPad->SetLogz();
     hCluster1      ->SetAxisRange(minCol, maxCol,"X");
     hCluster1      ->SetAxisRange(minRow, maxRow,"Y");
-    hCluster1      ->Draw("colz");
+    hCluster1      ->Draw("colz TEXT");
     c->cd(4);
     gPad->SetGridy();
     gPad->SetGridx();
+    gPad->SetLogz();
     hCluster2      ->SetAxisRange(minCol, maxCol,"X");
     hCluster2      ->SetAxisRange(minRow, maxRow,"Y");
-    hCluster2      ->Draw("colz");
+    hCluster2      ->Draw("colz TEXT");
     
     if(eCluster > 6 )c->Print(Form("clusterFigures/Event%d_E%1.0f_nMax%d_NCell1_%d_NCell2_%d.eps",
                                    eventNumber,cluster->E(),nMax,ncells1,ncells2));
