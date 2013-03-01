@@ -1,17 +1,20 @@
+// $Id$
 
-AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
-			       Bool_t MDProcess = kFALSE,
-			       Bool_t FeynmanXProcess = kFALSE,
-			       Bool_t ScatFXProcess = kFALSE,
-			       TString centralityEstimator = "V0M",
-			       const Int_t NEtaBins = 15,
-			       const Int_t NpTBins = 50,
-			       const Int_t NCentBins = 1,
-			       const Int_t NZvtxBins = 1,
-			       const Int_t NPhiBins = 12,
-			       const Int_t NPBins = 150,
-			       const char* outputFileName = 0,
-			       const char* folderName = "Muon_TrkEff")
+AliMuonEffMC* AddTaskMuonEffMC(
+  Bool_t IsMc = kTRUE,
+  Bool_t MDProcess = kFALSE,
+  Bool_t FeynmanXProcess = kFALSE,
+  Bool_t ScatFXProcess = kFALSE,
+  TString centralityEstimator = "V0M",
+  const Int_t NEtaBins = 15,
+  const Int_t NpTBins = 50,
+  const Int_t NCentBins = 1,
+  const Int_t NZvtxBins = 1,
+  const Int_t NPhiBins = 12,
+  const Int_t NPBins = 150,
+  const char* outputFileName = 0,
+  const char* folderName = "Muon_TrkEff"
+)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================

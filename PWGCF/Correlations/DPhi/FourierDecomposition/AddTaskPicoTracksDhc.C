@@ -1,4 +1,9 @@
-void AddTaskPicoTracksDhc(TString chNOutTracks = "PicoTracks") {
+// $Id$
+
+void AddTaskPicoTracksDhc(
+  TString chNOutTracks = "PicoTracks"
+) 
+{
   TString chNIntermTracks = "HybridTracks";
   
   // Get the analysis manager
@@ -25,5 +30,4 @@ void AddTaskPicoTracksDhc(TString chNOutTracks = "PicoTracks") {
     Info("AddTaskPicoTracksDhc","AOD analysis, adding picotrackmaker ...");
     pTrackTask = AddTaskEmcalPicoTrackMaker(chNOutTracks.Data(),"tracks","lhc11h",kFALSE);
   }
-
 }
