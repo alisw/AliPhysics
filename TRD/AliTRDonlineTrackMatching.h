@@ -10,6 +10,7 @@ class TH1;
 class AliESDEvent;
 class AliExternalTrackParam;
 class AliTRDgeometry;
+class AliESDtrack;
 class AliESDTrdTrack;
 
 //#define TRD_TM_DEBUG
