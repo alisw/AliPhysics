@@ -238,9 +238,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimPi0Phi ;              //! Azimutal distribution of primary particles  vs pT
   TH2F *   fhPrimPi0AccPhi;            //! Azimutal distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimPi0OpeningAngle ;     //! Opening angle of pair versus pair energy, primaries
-  TH2F *   fhPrimPi0CosOpeningAngle ;  //! Cosinus of opening angle of pair version pair energy, primaries
-  TH2F *   fhPrimEtaOpeningAngle ;     //! Opening angle of pair versus pair energy, primaries
-  TH2F *   fhPrimEtaCosOpeningAngle ;  //! Cosinus of opening angle of pair version pair energy, primaries
+  TH2F *   fhPrimPi0OpeningAngleAsym ; //! Opening angle of pair versus pair E asymmetry, pi0 primaries
+  TH2F *   fhPrimPi0CosOpeningAngle ;  //! Cosinus of opening angle of pair version pair energy, pi0 primaries
+  TH2F *   fhPrimEtaOpeningAngle ;     //! Opening angle of pair versus pair energy, eta primaries
+  TH2F *   fhPrimEtaOpeningAngleAsym ; //! Opening angle of pair versus pair E asymmetry, eta primaries
+  TH2F *   fhPrimEtaCosOpeningAngle ;  //! Cosinus of opening angle of pair version pair energy, eta primaries
   //Eta acceptance
   TH1F *   fhPrimEtaPt ;               //! Spectrum of Primary 
   TH1F *   fhPrimEtaAccPt ;            //! Spectrum of primary with accepted daughters 
@@ -279,7 +281,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0(              const AliAnaPi0 & api0) ; // cpy ctor
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ; // cpy assignment
   
-  ClassDef(AliAnaPi0,23)
+  ClassDef(AliAnaPi0,24)
 } ;
 
 

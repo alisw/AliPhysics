@@ -87,8 +87,8 @@ fhRealOpeningAngle(0x0),     fhRealCosOpeningAngle(0x0),   fhMixedOpeningAngle(0
 // MC histograms
 fhPrimPi0Pt(0x0),            fhPrimPi0AccPt(0x0),          fhPrimPi0Y(0x0),              fhPrimPi0AccY(0x0), 
 fhPrimPi0Phi(0x0),           fhPrimPi0AccPhi(0x0),
-fhPrimPi0OpeningAngle(0x0),  fhPrimPi0CosOpeningAngle(0x0),
-fhPrimEtaOpeningAngle(0x0),  fhPrimEtaCosOpeningAngle(0x0),
+fhPrimPi0OpeningAngle(0x0),  fhPrimPi0OpeningAngleAsym(0x0),fhPrimPi0CosOpeningAngle(0x0),
+fhPrimEtaOpeningAngle(0x0),  fhPrimEtaOpeningAngleAsym(0x0),fhPrimEtaCosOpeningAngle(0x0),
 fhPrimEtaPt(0x0),            fhPrimEtaAccPt(0x0),          fhPrimEtaY(0x0),              fhPrimEtaAccY(0x0), 
 fhPrimEtaPhi(0x0),           fhPrimEtaAccPhi(0x0),         fhPrimPi0PtOrigin(0x0),       fhPrimEtaPtOrigin(0x0), 
 fhMCOrgMass(),               fhMCOrgAsym(),                fhMCOrgDeltaEta(),            fhMCOrgDeltaPhi(),
@@ -762,6 +762,12 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimPi0OpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0OpeningAngle) ;
       
+      fhPrimPi0OpeningAngleAsym  = new TH2F
+      ("hPrimPi0OpeningAngleAsym","Angle between all primary #gamma pair vs Asymmetry, p_{T}>5 GeV/c",100,0,1,100,0,0.5);
+      fhPrimPi0OpeningAngleAsym->SetXTitle("|A|=| (E_{1}-E_{2}) / (E_{1}+E_{2}) |");
+      fhPrimPi0OpeningAngleAsym->SetYTitle("#theta(rad)");
+      outputContainer->Add(fhPrimPi0OpeningAngleAsym) ;
+      
       fhPrimPi0CosOpeningAngle  = new TH2F
       ("hPrimPi0CosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,-1,1); 
       fhPrimPi0CosOpeningAngle->SetYTitle("cos (#theta) ");
@@ -773,6 +779,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimEtaOpeningAngle->SetYTitle("#theta(rad)");
       fhPrimEtaOpeningAngle->SetXTitle("E_{#eta} (GeV)");
       outputContainer->Add(fhPrimEtaOpeningAngle) ;
+      
+      fhPrimEtaOpeningAngleAsym  = new TH2F
+      ("hPrimEtaOpeningAngleAsym","Angle between all primary #gamma pair vs Asymmetry, p_{T}>5 GeV/c",100,0,1,100,0,0.5);
+      fhPrimEtaOpeningAngleAsym->SetXTitle("|A|=| (E_{1}-E_{2}) / (E_{1}+E_{2}) |");
+      fhPrimEtaOpeningAngleAsym->SetYTitle("#theta(rad)");
+      outputContainer->Add(fhPrimEtaOpeningAngleAsym) ;
+
       
       fhPrimEtaCosOpeningAngle  = new TH2F
       ("hPrimEtaCosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,100,-1,1);
@@ -1094,6 +1107,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               TLorentzVector lv1, lv2;
               phot1->Momentum(lv1);
               phot2->Momentum(lv2);
+              
               Bool_t inacceptance = kFALSE;
               if(fCalorimeter == "PHOS"){
                 if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet()){
@@ -1136,6 +1150,9 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               
               if(inacceptance)
               {
+                Float_t  asym  = TMath::Abs((lv1.E()-lv2.E()) / (lv1.E()+lv2.E()));
+                Double_t angle = lv1.Angle(lv2.Vect());
+
                 if(pdg==111)
                 {
                   fhPrimPi0AccPt ->Fill(pi0Pt) ;
@@ -1143,9 +1160,9 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
                   if(fFillAngleHisto)
                   {
-                    Double_t angle  = lv1.Angle(lv2.Vect());
-                    fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
-                    fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
+                    fhPrimPi0OpeningAngle    ->Fill(pi0Pt,angle);
+                    if(pi0Pt > 5)fhPrimPi0OpeningAngleAsym->Fill(asym,angle);
+                    fhPrimPi0CosOpeningAngle ->Fill(pi0Pt,TMath::Cos(angle));
                   }
                 }
                 else if(pdg==221)
@@ -1155,9 +1172,9 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   fhPrimEtaAccY  ->Fill(pi0Pt, pi0Y) ;
                   if(fFillAngleHisto)
                   {
-                    Double_t angle  = lv1.Angle(lv2.Vect());
-                    fhPrimEtaOpeningAngle   ->Fill(pi0Pt,angle);
-                    fhPrimEtaCosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
+                    fhPrimEtaOpeningAngle    ->Fill(pi0Pt,angle);
+                    if(pi0Pt > 5)fhPrimEtaOpeningAngleAsym->Fill(asym,angle);
+                    fhPrimEtaCosOpeningAngle ->Fill(pi0Pt,TMath::Cos(angle));
                   }
                 }
               }//Accepted
@@ -1187,7 +1204,8 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           
           Double_t pi0Y  = 0.5*TMath::Log((prim->E()-prim->Pz())/(prim->E()+prim->Pz())) ;
           Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
-          if(pdg == 111){
+          if(pdg == 111)
+          {
             if(TMath::Abs(pi0Y) < 1){
               fhPrimPi0Pt->Fill(pi0Pt) ;            
               fhPrimPi0Phi->Fill(pi0Pt, phi) ;
@@ -1195,7 +1213,8 @@ void AliAnaPi0::FillAcceptanceHistograms(){
             fhPrimPi0Y  ->Fill(pi0Pt, pi0Y) ;
           }
           else if(pdg == 221){
-            if(TMath::Abs(pi0Y) < 1){
+            if(TMath::Abs(pi0Y) < 1)
+            {
               fhPrimEtaPt->Fill(pi0Pt) ;            
               fhPrimEtaPhi->Fill(pi0Pt, phi) ;
             }
@@ -1204,7 +1223,8 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           
           //Origin of meson
           Int_t momindex  = prim->GetMother();
-          if(momindex >= 0) {
+          if(momindex >= 0)
+          {
             AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
             Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
             Int_t momstatus = mother->GetStatus();
@@ -1221,7 +1241,8 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
               else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
             }//pi0
-            else {
+            else
+            {
               if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
               else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
               else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
@@ -1245,7 +1266,8 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               lv2.SetPxPyPzE(phot2->Px(),phot2->Py(),phot2->Pz(),phot2->E());
               
               Bool_t inacceptance = kFALSE;
-              if(fCalorimeter == "PHOS"){
+              if(fCalorimeter == "PHOS")
+              {
                 if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet()){
                   Int_t mod ;
                   Double_t x,z ;
@@ -1256,8 +1278,8 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                     inacceptance = kTRUE;
                   if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
                 }
-                else{
-                  
+                else
+                {
                   if(GetFiducialCut()->IsInFiducialCut(lv1,fCalorimeter) && GetFiducialCut()->IsInFiducialCut(lv2,fCalorimeter)) 
                     inacceptance = kTRUE ;
                   if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
@@ -1265,8 +1287,8 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                 
               }	   
               else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
-                if(GetEMCALGeometry()){
-                  
+                if(GetEMCALGeometry())
+                {
                   Int_t absID1=0;
                   Int_t absID2=0;
                   
@@ -1286,7 +1308,11 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                 }
               }	  
               
-              if(inacceptance){
+              if(inacceptance)
+              {
+                Float_t  asym  = TMath::Abs((lv1.E()-lv2.E()) / (lv1.E()+lv2.E()));
+                Double_t angle = lv1.Angle(lv2.Vect());
+
                 if(pdg==111)
                 {
                   //                printf("ACCEPTED pi0: pt %2.2f, phi %3.2f, eta %1.2f\n",pi0Pt,phi,pi0Y);
@@ -1295,9 +1321,9 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
                   if(fFillAngleHisto)
                   {
-                    Double_t angle  = lv1.Angle(lv2.Vect());
-                    fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
-                    fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
+                    fhPrimPi0OpeningAngle    ->Fill(pi0Pt,angle);
+                    if(pi0Pt > 5)fhPrimPi0OpeningAngleAsym->Fill(asym,angle);
+                    fhPrimPi0CosOpeningAngle ->Fill(pi0Pt,TMath::Cos(angle));
                   }
                 }
                 else if(pdg==221)
@@ -1307,9 +1333,9 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   fhPrimEtaAccY  ->Fill(pi0Pt, pi0Y) ;
                   if(fFillAngleHisto)
                   {
-                    Double_t angle  = lv1.Angle(lv2.Vect());
-                    fhPrimEtaOpeningAngle   ->Fill(pi0Pt,angle);
-                    fhPrimEtaCosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
+                    fhPrimEtaOpeningAngle    ->Fill(pi0Pt,angle);
+                    if(pi0Pt > 5)fhPrimEtaOpeningAngleAsym->Fill(asym,angle);
+                    fhPrimEtaCosOpeningAngle ->Fill(pi0Pt,TMath::Cos(angle));
                   }
                 }
               }//Accepted
@@ -1818,9 +1844,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
           if((p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))){ 
             for(Int_t iasym=0; iasym < fNAsymCuts; iasym++){
-              if(a < fAsymCuts[iasym]){
+              if(a < fAsymCuts[iasym])
+              {
                 Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
-                //printf("index %d :(cen %d * nPID %d + ipid %d)*nasym %d + iasym %d\n",index,curCentrBin,fNPIDBits,ipid,fNAsymCuts,iasym);
+                //printf("index %d :(cen %d * nPID %d + ipid %d)*nasym %d + iasym %d - max index %d\n",index,curCentrBin,fNPIDBits,ipid,fNAsymCuts,iasym, curCentrBin*fNPIDBits*fNAsymCuts);
+               
+                if(index < 0 || index >= curCentrBin*fNPIDBits*fNAsymCuts) continue ;
+                
                 fhRe1     [index]->Fill(pt,m);
                 if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt,m,1./pt) ;
                 if(fFillBadDistHisto){
@@ -1907,9 +1937,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }
         
         //-----------------------
-        //Multi cuts analysis 
+        //Multi cuts analysis
         //-----------------------
-        if(fMultiCutAna){
+        if(fMultiCutAna)
+        {
           //Histograms for different PID bits selection
           for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
             
@@ -2053,17 +2084,26 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             }
             //Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
             for(Int_t ipid=0; ipid<fNPIDBits; ipid++){ 
-              if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
-                for(Int_t iasym=0; iasym < fNAsymCuts; iasym++){
-                  if(a < fAsymCuts[iasym]){
+              if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton)))
+              {
+                for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
+                {
+                  if(a < fAsymCuts[iasym])
+                  {
                     Int_t index = ((GetEventCentralityBin()*fNPIDBits)+ipid)*fNAsymCuts + iasym;
+                    
+                    if(index < 0 || index >= curCentrBin*fNPIDBits*fNAsymCuts) continue ;
+
                     fhMi1     [index]->Fill(pt,m) ;
                     if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt,m,1./pt) ;
-                    if(fFillBadDistHisto){
-                      if(p1->DistToBad()>0 && p2->DistToBad()>0){
+                    if(fFillBadDistHisto)
+                    {
+                      if(p1->DistToBad()>0 && p2->DistToBad()>0)
+                      {
                         fhMi2     [index]->Fill(pt,m) ;
                         if(fMakeInvPtPlots)fhMiInvPt2[index]->Fill(pt,m,1./pt) ;
-                        if(p1->DistToBad()>1 && p2->DistToBad()>1){
+                        if(p1->DistToBad()>1 && p2->DistToBad()>1)
+                        {
                           fhMi3     [index]->Fill(pt,m) ;
                           if(fMakeInvPtPlots)fhMiInvPt3[index]->Fill(pt,m,1./pt) ;
                         }
