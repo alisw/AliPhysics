@@ -48,6 +48,7 @@ class AliFlowAnalysisWithQCumulants{
   virtual void InitializeArraysForVarious();
   virtual void InitializeArraysForNestedLoops();
   virtual void InitializeArraysForMixedHarmonics();
+  virtual void InitializeArraysForControlHistograms();
   // 1.) method Init() and methods called within Init():
   virtual void Init();
     virtual void CrossCheckSettings();
@@ -268,6 +269,8 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t GetStorePhiDistributionForOneEvent() const {return this->fStorePhiDistributionForOneEvent;};
   void SetPhiDistributionForOneEventSettings(Double_t const pdfoes, Int_t const i) {this->fPhiDistributionForOneEventSettings[i] = pdfoes;};
   Double_t GetPhiDistributionForOneEventSettings(Int_t const i) const {return this->fPhiDistributionForOneEventSettings[i];};
+  void SetExactNoRPs(Int_t const enr) {this->fExactNoRPs = enr;};
+  Int_t GetExactNoRPs() const {return this->fExactNoRPs;};
 
   // Reference flow profiles:
   void SetAvMultiplicity(TProfile* const avMultiplicity) {this->fAvMultiplicity = avMultiplicity;};
@@ -490,6 +493,8 @@ class AliFlowAnalysisWithQCumulants{
   TH2D* GetCorrelationNoPOIsVsRefMult() const {return this->fCorrelationNoPOIsVsRefMult;};
   void SetCorrelationNoRPsVsNoPOIs(TH2D* const cnrvnp) {this->fCorrelationNoRPsVsNoPOIs = cnrvnp;};
   TH2D* GetCorrelationNoRPsVsNoPOIs() const {return this->fCorrelationNoRPsVsNoPOIs;};
+  void SetCorrelation2468VsMult(TH2D* const c2468vm, Int_t const ci) {this->fCorrelation2468VsMult[ci] = c2468vm;};
+  TH2D* GetCorrelation2468VsMult(Int_t ci) const {return this->fCorrelation2468VsMult[ci];};
 
  private:
   
@@ -563,6 +568,7 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t fForgetAboutCovariances; // when propagating error forget about the covariances  
   Bool_t fStorePhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
   Double_t fPhiDistributionForOneEventSettings[4]; // [v_min,v_max,refMult_min,refMult_max]
+  Int_t fExactNoRPs; // when shuffled, select only this number of RPs for the analysis
   //  3c.) event-by-event quantities:
   TMatrixD *fReQ; // fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQ; // fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
@@ -755,7 +761,8 @@ class AliFlowAnalysisWithQCumulants{
   TH2D *fCorrelationNoRPsVsRefMult; // correlation between # RPs and ref. mult. determined centrally
   TH2D *fCorrelationNoPOIsVsRefMult; // correlation between # POIs and ref. mult. determined centrally
   TH2D *fCorrelationNoRPsVsNoPOIs; // correlation between # RPs and # POIs
-   
+  TH2D *fCorrelation2468VsMult[4]; // <2>, <4>, <6> and <8> vs multiplicity (#RPs, #POIs or external)
+ 
   ClassDef(AliFlowAnalysisWithQCumulants, 3);
 };
 

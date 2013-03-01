@@ -154,6 +154,8 @@ class AliFlowAnalysisWithFittingQDistribution{
   Bool_t GetPrintOnTheScreen() const {return this->fPrintOnTheScreen;};  
   void SetDoFit(Bool_t df) {this->fDoFit = df;};
   Bool_t GetDoFit() const {return this->fDoFit;};  
+  void SetExactNoRPs(Int_t const enr) {this->fExactNoRPs = enr;};
+  Int_t GetExactNoRPs() const {return this->fExactNoRPs;};
   
  private:
   AliFlowAnalysisWithFittingQDistribution(const AliFlowAnalysisWithFittingQDistribution &afawfqd);
@@ -216,6 +218,7 @@ class AliFlowAnalysisWithFittingQDistribution{
   Bool_t fFinalResultIsFromSigma2Fitted; // the result obtained with sigma^2 fitted or sigma^2 fixed is being stored
   Bool_t fPrintOnTheScreen; // print or not the final results on the screen
   Bool_t fDoFit; // do the final fit
+  Int_t fExactNoRPs; // when shuffled, select only this number of RPs for the analysis
   
   ClassDef(AliFlowAnalysisWithFittingQDistribution, 0);
 };

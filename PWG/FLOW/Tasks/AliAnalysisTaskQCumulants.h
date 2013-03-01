@@ -77,6 +77,8 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t GetStorePhiDistributionForOneEvent() const {return this->fStorePhiDistributionForOneEvent;};
   void SetPhiDistributionForOneEventSettings(Double_t const pdfoes, Int_t const i) {this->fPhiDistributionForOneEventSettings[i] = pdfoes;};
   Double_t GetPhiDistributionForOneEventSettings(Int_t const i) const {return this->fPhiDistributionForOneEventSettings[i];};  
+  void SetExactNoRPs(Int_t const enr) {this->fExactNoRPs = enr;};
+  Int_t GetExactNoRPs() const {return this->fExactNoRPs;}; 
  
   // Multiparticle correlations vs multiplicity:
   void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
@@ -97,7 +99,12 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   // Event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
   void SetMultiplicityIs(AliFlowCommonConstants::ERefMultSource mi) {this->fMultiplicityIs = mi;};
- 
+  // Boundaries for distributions of correlations:
+  void SetMinValueOfCorrelation(Int_t const ci, Double_t const minValue) {this->fMinValueOfCorrelation[ci] = minValue;};
+  Double_t GetMinValueOfCorrelation(Int_t ci) const {return this->fMinValueOfCorrelation[ci];};
+  void SetMaxValueOfCorrelation(Int_t const ci, Double_t const maxValue) {this->fMaxValueOfCorrelation[ci] = maxValue;};
+  Double_t GetMaxValueOfCorrelation(Int_t ci) const {return this->fMaxValueOfCorrelation[ci];};
+
  private:
   AliAnalysisTaskQCumulants(const AliAnalysisTaskQCumulants& aatqc);
   AliAnalysisTaskQCumulants& operator=(const AliAnalysisTaskQCumulants& aatqc);
@@ -124,7 +131,8 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t fMinimumBiasReferenceFlow;      // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)     
   Bool_t fForgetAboutCovariances;        // when propagating error forget about the covariances  
   Bool_t fStorePhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
-  Double_t fPhiDistributionForOneEventSettings[4]; // [v_min,v_max,refMult_min,refMult_max]        
+  Double_t fPhiDistributionForOneEventSettings[4]; // [v_min,v_max,refMult_min,refMult_max]
+  Int_t fExactNoRPs; // when shuffled, select only this number of RPs for the analysis        
   // Multiparticle correlations vs multiplicity:
   Int_t fnBinsMult;                   // number of multiplicity bins for flow analysis versus multiplicity  
   Double_t fMinMult;                  // minimal multiplicity for flow analysis versus multiplicity  
@@ -139,6 +147,9 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   // Event weights:
   TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")  
   AliFlowCommonConstants::ERefMultSource fMultiplicityIs;           // by default "#RPs", other supported options are "RefMultFromESD" = ref. mult. from ESD, and "#POIs"
+  // Boundaries for distributions of correlations:
+  Double_t fMinValueOfCorrelation[4]; // min values of <2>, <4>, <6> and <8>
+  Double_t fMaxValueOfCorrelation[4]; // max values of <2>, <4>, <6> and <8>
   
   ClassDef(AliAnalysisTaskQCumulants, 1); 
 };

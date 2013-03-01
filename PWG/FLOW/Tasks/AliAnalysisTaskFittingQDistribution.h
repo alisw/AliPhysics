@@ -65,6 +65,8 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
   Int_t GetnBinsMult() const {return this->fnBinsMult;};  
   void SetDoFit(Bool_t df) {this->fDoFit = df;};
   Bool_t GetDoFit() const {return this->fDoFit;}; 
+  void SetExactNoRPs(Int_t const enr) {this->fExactNoRPs = enr;};
+  Int_t GetExactNoRPs() const {return this->fExactNoRPs;};
   void SetMultiplicityIs(AliFlowCommonConstants::ERefMultSource mi) {this->fMultiplicityIs = mi;};
  
  private:
@@ -89,8 +91,9 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
   Double_t fMaxMult;                     // maximum multiplicity
   Int_t fnBinsMult;                      // number of multiplicity bins
   Bool_t fDoFit;                         // do the final fit
-  AliFlowCommonConstants::ERefMultSource fMultiplicityIs;              // by default kRP
-                                                           
+  Int_t fExactNoRPs;                     // when shuffled, select only this number of RPs for the analysis 
+  AliFlowCommonConstants::ERefMultSource fMultiplicityIs; // by default kRP
+                                                          
   ClassDef(AliAnalysisTaskFittingQDistribution, 1); 
 };
 
