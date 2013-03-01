@@ -200,17 +200,25 @@ AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
   //if asked use the shuffled index
   if (fShuffleTracks)
   {
-    if (!fShuffledIndexes) 
-    {
-      //initialize the table with shuffeled indexes
-      fShuffledIndexes = new Int_t[fNumberOfTracks];
-      for (Int_t j=0; j<fNumberOfTracks; j++) { fShuffledIndexes[j]=j; }
-      std::random_shuffle(&fShuffledIndexes[0], &fShuffledIndexes[fNumberOfTracks]);
-    }
+    if (!fShuffledIndexes) ShuffleTracks();
     trackIndex=fShuffledIndexes[i];
   }
   AliFlowTrackSimple* pTrack = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(trackIndex)) ;
   return pTrack;
+}
+
+//-----------------------------------------------------------------------
+void AliFlowEventSimple::ShuffleTracks()
+{
+  //shuffle track indexes
+  if (!fShuffledIndexes) 
+  {
+    //initialize the table with shuffeled indexes
+    fShuffledIndexes = new Int_t[fNumberOfTracks];
+    for (Int_t j=0; j<fNumberOfTracks; j++) { fShuffledIndexes[j]=j; }
+  }
+  //shuffle
+  std::random_shuffle(&fShuffledIndexes[0], &fShuffledIndexes[fNumberOfTracks]);
 }
 
 //-----------------------------------------------------------------------

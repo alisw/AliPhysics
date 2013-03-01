@@ -66,6 +66,7 @@ class AliFlowEventSimple: public TObject {
   void     SetUserModified(Bool_t s=kTRUE)          { fUserModified=s; }
   Bool_t   IsUserModified() const                   { return fUserModified; }
   void     SetShuffleTracks(Bool_t b)               {fShuffleTracks=b;}
+  void     ShuffleTracks();
 
   void ResolutionPt(Double_t res);
   void TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB );
