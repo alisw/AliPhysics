@@ -37,6 +37,7 @@ AliDhcTask::AliDhcTask()
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
+  fClassName(),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
@@ -58,6 +59,7 @@ AliDhcTask::AliDhcTask(const char *name)
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
+  fClassName(),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
@@ -353,7 +355,7 @@ void AliDhcTask::UserExec(Option_t *)
   static int iEvent = -1; ++iEvent;
 
   if (fVerbosity>2) {
-    if (iEvent % 10 == 0) 
+    if (iEvent % 100 == 0) 
       cout << iEvent << endl;
   }
 
@@ -372,6 +374,16 @@ void AliDhcTask::UserExec(Option_t *)
   else {
     AliError("Neither fESD nor fAOD available");
     return;
+  }
+
+  if (fClassName.Length()>0) {
+    TString cls;
+    if (fESD)
+      cls = fESD->GetFiredTriggerClasses();
+    else
+      cls = fAOD->GetFiredTriggerClasses();
+    if (!cls.Contains(fClassName))
+      return;
   }
 
   Bool_t mcgen = 0;

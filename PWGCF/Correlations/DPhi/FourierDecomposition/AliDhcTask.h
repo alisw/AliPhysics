@@ -31,20 +31,24 @@ class AliDhcTask : public AliAnalysisTaskSE {
   AliDhcTask(const char *name);
   virtual ~AliDhcTask();
   
+  void         SetAllTAHists(Bool_t b)                { fAllTAHists = b;          }
+  void         SetAnaMode(Int_t iAna);
   void         SetCentBins(TAxis *bins)               { fBCent=bins;              }
   void         SetCentMethod(const char *name)        { fCentMethod = name;       }
   void         SetCentMixBins(TAxis *bins)            { fMixBCent=bins;           }
+  void         SetClassName(const char *n)            { fClassName = n;           }
   void         SetDEtaDPhiBins(Int_t nbe, Int_t nbp)  { fNBdeta=nbe; fNBdphi=nbp; }
   void         SetDoWeights(Bool_t b)                 { fDoWeights = b;           }
-  void         SetFillMuons(Bool_t b)                 { fFillMuons = b;           }
-  void         SetPtTACrit(Bool_t b)                  { fPtTACrit = b;            }
-  void         SetAllTAHists(Bool_t b)                { fAllTAHists = b;          }
-  void         SetMixInEtaT(Bool_t b)                 { fMixInEtaT = b;           }
   void         SetEtaMax(Double_t eta)                { fEtaMax = eta;            }
   void         SetEtaTRange(Double_t eL, Double_t eH) { fEtaTLo=eL; fEtaTHi=eH;   }
+  void         SetFillMuons(Bool_t b)                 { fFillMuons = b;           }
+  void         SetHEffA(THnF *h)                      { fHEffA=h;                 }
+  void         SetHEffT(THnF *h)                      { fHEffT=h;                 }
+  void         SetMixInEtaT(Bool_t b)                 { fMixInEtaT = b;           }
   void         SetPoolSize(Int_t p)                   { fPoolSize = p;            }
   void         SetPtABins(TAxis *bins)                { fBPtA=bins;               }
   void         SetPtRange(Double_t min, Double_t max) { fPtMin=min; fPtMax=max;   }
+  void         SetPtTACrit(Bool_t b)                  { fPtTACrit = b;            }
   void         SetPtTBins(TAxis *bins)                { fBPtT=bins;               }
   void         SetTrackDepth(Int_t t)                 { fTrackDepth = t;          }
   void         SetTracksName(const char *n)           { fTracksName = n;          }
@@ -52,9 +56,6 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetZVtxBins(TAxis *bins)               { fBZvtx=bins;              }
   void         SetZVtxMixBins(TAxis *bins)            { fMixBZvtx=bins;           }
   void         SetZvtx(Double_t zvtx)                 { fZVtxMax = zvtx;          }
-  void         SetHEffT(THnF *h)                      { fHEffT=h;                 }
-  void         SetHEffA(THnF *h)                      { fHEffA=h;                 }
-  void         SetAnaMode(Int_t iAna);
   void         PrintDhcSettings();
   enum eAnaMode       {kHH, kMuH, kHMu, kMuMu, kPSide, kASide};
 
@@ -95,6 +96,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   Double_t           fEtaTHi;          //  Max eta for triggers
   Double_t           fEtaALo;          //  Min eta for associated
   Double_t           fEtaAHi;          //  Max eta for associated
+  TString            fClassName;       //  If not null only process events with given class
   AliESDEvent       *fESD;             //! ESD object
   AliAODEvent       *fAOD;             //! AOD object
   TList             *fOutputList;      //! Output list
@@ -137,7 +139,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   AliDhcTask(const AliDhcTask&);            // not implemented
   AliDhcTask &operator=(const AliDhcTask&); // not implemented
 
-  ClassDef(AliDhcTask, 4);
+  ClassDef(AliDhcTask, 5);
 };
 
 #endif
