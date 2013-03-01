@@ -61,6 +61,7 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const c
  fMaxMult(10000.),
  fnBinsMult(1000),
  fDoFit(kTRUE),
+ fExactNoRPs(0),
  fMultiplicityIs(AliFlowCommonConstants::kRP)  
  {
   //constructor
@@ -99,6 +100,7 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution():
  fMaxMult(0.),
  fnBinsMult(0),
  fDoFit(kTRUE),
+ fExactNoRPs(0),
  fMultiplicityIs(AliFlowCommonConstants::kRP)  
  {
   // Dummy constructor
@@ -140,6 +142,7 @@ void AliAnalysisTaskFittingQDistribution::UserCreateOutputObjects()
   fFQD->SetMaxMult(fMaxMult);
   fFQD->SetnBinsMult(fnBinsMult);
   fFQD->SetDoFit(fDoFit);
+  fFQD->SetExactNoRPs(fExactNoRPs);
   fFQD->SetMultiplicityIs(fMultiplicityIs);
 
   fFQD->Init();

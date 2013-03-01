@@ -65,6 +65,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fMinimumBiasReferenceFlow(kTRUE), 
  fForgetAboutCovariances(kFALSE),  
  fStorePhiDistributionForOneEvent(kFALSE),
+ fExactNoRPs(0),
  fnBinsMult(10000),
  fMinMult(0.),  
  fMaxMult(10000.), 
@@ -100,7 +101,21 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  {
   fPhiDistributionForOneEventSettings[p] = 0.;
  } 
+
+ // Initialize default min and max values of correlations:
+ //    (Remark: The default values bellow were chosen for v2=5% and M=500)
+ fMinValueOfCorrelation[0] = -0.01; // <2>_min 
+ fMaxValueOfCorrelation[0] = 0.04; // <2>_max 
+ fMinValueOfCorrelation[1] = -0.00002; // <4>_min 
+ fMaxValueOfCorrelation[1] = 0.00015; // <4>_max  
+ fMinValueOfCorrelation[2] = -0.0000003; // <6>_min 
+ fMaxValueOfCorrelation[2] = 0.0000006; // <6>_max  
+ fMinValueOfCorrelation[3] = -0.000000006; // <8>_min 
+ fMaxValueOfCorrelation[3] = 0.000000003; // <8>_max 
+
 }
+
+//================================================================================================================
 
 AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(): 
  AliAnalysisTaskSE(),
@@ -125,6 +140,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fMinimumBiasReferenceFlow(kFALSE), 
  fForgetAboutCovariances(kFALSE), 
  fStorePhiDistributionForOneEvent(kFALSE), 
+ fExactNoRPs(0),
  fnBinsMult(0),
  fMinMult(0.),  
  fMaxMult(0.), 
@@ -146,6 +162,17 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
   fPhiDistributionForOneEventSettings[p] = 0.;
  } 
  
+ // Initialize default min and max values of correlations:
+ //    (Remark: The default values bellow were chosen for v2=5% and M=500)
+ fMinValueOfCorrelation[0] = -0.01; // <2>_min 
+ fMaxValueOfCorrelation[0] = 0.04; // <2>_max 
+ fMinValueOfCorrelation[1] = -0.00002; // <4>_min 
+ fMaxValueOfCorrelation[1] = 0.00015; // <4>_max  
+ fMinValueOfCorrelation[2] = -0.0000003; // <6>_min 
+ fMaxValueOfCorrelation[2] = 0.0000006; // <6>_max  
+ fMinValueOfCorrelation[3] = -0.000000006; // <8>_min 
+ fMaxValueOfCorrelation[3] = 0.000000003; // <8>_max 
+
 }
 
 //================================================================================================================
@@ -176,6 +203,7 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  fQC->SetStoreControlHistograms(fStoreControlHistograms);
  fQC->SetMinimumBiasReferenceFlow(fMinimumBiasReferenceFlow); 
  fQC->SetForgetAboutCovariances(fForgetAboutCovariances); 
+ fQC->SetExactNoRPs(fExactNoRPs);
  // Multiparticle correlations vs multiplicity:
  fQC->SetnBinsMult(fnBinsMult);
  fQC->SetMinMult(fMinMult);
@@ -210,7 +238,14 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  {
   fQC->SetPhiDistributionForOneEventSettings(fPhiDistributionForOneEventSettings[i],i);
  }
-  
+
+ // Initialize default min and max values of correlations: 
+ for(Int_t ci=0;ci<4;ci++)
+ {
+  fQC->SetMinValueOfCorrelation(ci,fMinValueOfCorrelation[ci]);
+  fQC->SetMaxValueOfCorrelation(ci,fMaxValueOfCorrelation[ci]);
+ }  
+
  fQC->Init();
  
  if(fQC->GetHistList()) 
