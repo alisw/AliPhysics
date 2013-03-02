@@ -31,7 +31,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID};
-  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening};
+  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl};
   enum EV0sel  {kAllV0s = 0, kOnlyOfflineV0s = 1, kOnlyOnTheFlyV0s = 2};
 
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
@@ -108,6 +108,9 @@ class AliRDHFCuts : public AliAnalysisCuts
     fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
     fUseOnlyOneTrigger=kTRUE;
   }
+
+  void SetMaxDifferenceTRKV0Centraltity(Double_t maxd=5.) {fMaxDiffTRKV0Centr=maxd;}
+  void SetNotUseCutOnTRKVsV0Centraltity() {fMaxDiffTRKV0Centr=-1.;}
   void SetRemoveTrackletOutliers(Bool_t opt) {fRemoveTrackletOutliers=opt;}
   void SetCutOnzVertexSPD(Int_t opt) {
     if(opt>=0 && opt<=2) fCutOnzVertexSPD=opt;
@@ -232,6 +235,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsEventRejectedDueToCentralityFlattening() const {
     return fEvRejectionBits&(1<<kCentralityFlattening);
   }
+  Bool_t IsEventRejectedDueToTRKV0CentralityCorrel() const {
+    return fEvRejectionBits&(1<<kBadTrackV0Correl);
+  }
   Bool_t IsEventRejectedDuePhysicsSelection() const {
     return fEvRejectionBits&(1<<kPhysicsSelection);
   }
@@ -327,6 +333,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fIsCandTrackSPDFirst; // flag to select the track kFirst criteria for pt < ptlimit
   Double_t fMaxPtCandTrackSPDFirst; // maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
   Bool_t fApplySPDDeadPbPb2011;  // flag to apply SPD dead module map of PbPb2011
+  Double_t fMaxDiffTRKV0Centr;   // Max. difference between TRK and V0 centrality (remove TPC pileup for PbPb 2011)
   Bool_t fRemoveTrackletOutliers; // flag to apply cut on tracklets vs. centrality for 2011 data
   Int_t fCutOnzVertexSPD; // cut on zSPD vertex to remove outliers in centrality vs. tracklets (0=no cut, 1= cut at 12 cm, 2= cut on difference to z of vtx tracks
   Bool_t fKinkReject; // flag to reject kink daughters
@@ -334,7 +341,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fUseCentrFlatteningInMC; // flag for enabling/diabling centrality flattening in MC
   TH1F *fHistCentrDistr;   // histogram with reference centrality distribution for centrality distribution flattening
 
-  ClassDef(AliRDHFCuts,31);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,32);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
