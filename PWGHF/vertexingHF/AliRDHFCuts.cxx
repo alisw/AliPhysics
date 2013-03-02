@@ -96,6 +96,7 @@ fKeepSignalMC(kFALSE),
 fIsCandTrackSPDFirst(kFALSE),
 fMaxPtCandTrackSPDFirst(0.),
 fApplySPDDeadPbPb2011(kFALSE),
+fMaxDiffTRKV0Centr(-1.),
 fRemoveTrackletOutliers(kFALSE),
 fCutOnzVertexSPD(0),
 fKinkReject(kFALSE),
@@ -155,6 +156,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fIsCandTrackSPDFirst(source.fIsCandTrackSPDFirst),
   fMaxPtCandTrackSPDFirst(source.fMaxPtCandTrackSPDFirst),
   fApplySPDDeadPbPb2011(source.fApplySPDDeadPbPb2011),
+  fMaxDiffTRKV0Centr(source.fMaxDiffTRKV0Centr),
   fRemoveTrackletOutliers(source.fRemoveTrackletOutliers),
   fCutOnzVertexSPD(source.fCutOnzVertexSPD),
   fKinkReject(source.fKinkReject),
@@ -228,6 +230,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fIsCandTrackSPDFirst=source.fIsCandTrackSPDFirst;
   fMaxPtCandTrackSPDFirst=source.fMaxPtCandTrackSPDFirst;
   fApplySPDDeadPbPb2011=source.fApplySPDDeadPbPb2011;
+  fMaxDiffTRKV0Centr=source.fMaxDiffTRKV0Centr;
   fRemoveTrackletOutliers=source.fRemoveTrackletOutliers;
   fCutOnzVertexSPD=source.fCutOnzVertexSPD;
   fKinkReject=source.fKinkReject;
@@ -566,7 +569,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
    
   }
 
-  // PbPb2011 outliers in tracklets vs. VZERO
+  // PbPb2011 outliers in tracklets vs. VZERO and centTRK vs. centV0
   if(event->GetRunNumber()>=167693 && event->GetRunNumber()<=170593){
     if(fRemoveTrackletOutliers){
       Double_t v0cent=GetCentrality((AliAODEvent*)event,kCentV0M);
@@ -576,6 +579,15 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 	if(accept) fWhyRejection=2;      
 	fEvRejectionBits+=1<<kOutsideCentrality;
 	 accept=kFALSE;
+      }
+    }
+    if(fMaxDiffTRKV0Centr>0.){
+      Double_t v0cent=GetCentrality((AliAODEvent*)event,kCentV0M);
+      Double_t trkcent=GetCentrality((AliAODEvent*)event,kCentTRK);
+      if(TMath::Abs(trkcent-v0cent)>fMaxDiffTRKV0Centr){
+	if(accept) fWhyRejection=1;
+	fEvRejectionBits+=1<<kBadTrackV0Correl;
+	accept=kFALSE;	
       }
     }
   }
