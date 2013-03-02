@@ -846,19 +846,24 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2011() {
 Bool_t AliRDHFCutsLctopKpi::IsInFiducialAcceptance(Double_t pt, Double_t y) const
 {
   //
-  //  // Checking if Dplus is in fiducial acceptance region 
+  //  // Checking if Lc is in fiducial acceptance region 
   //    //
   //
+  if(fMaxRapidityCand>-998.){
+    if(TMath::Abs(y) > fMaxRapidityCand) return kFALSE;
+    else return kTRUE;
+  }
+
   if(pt > 5.) {
     // applying cut for pt > 5 GeV
-   AliDebug(2,Form("pt of D+ = %f (> 5), cutting at |y| < 0.8",pt));
+   AliDebug(2,Form("pt of Lc = %f (> 5), cutting at |y| < 0.8",pt));
    if (TMath::Abs(y) > 0.8) return kFALSE;
   
   } else {
    // appliying smooth cut for pt < 5 GeV
    Double_t maxFiducialY = -0.2/15*pt*pt+1.9/15*pt+0.5;
    Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;
-  AliDebug(2,Form("pt of D+ = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY));
+  AliDebug(2,Form("pt of Lc = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY));
   if (y < minFiducialY || y > maxFiducialY) return kFALSE;
  }
   //

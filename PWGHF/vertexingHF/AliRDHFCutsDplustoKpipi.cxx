@@ -290,6 +290,11 @@ Bool_t AliRDHFCutsDplustoKpipi::IsInFiducialAcceptance(Double_t pt, Double_t y) 
   // Checking if Dplus is in fiducial acceptance region 
   //
 
+  if(fMaxRapidityCand>-998.){
+    if(TMath::Abs(y) > fMaxRapidityCand) return kFALSE;
+    else return kTRUE;
+  }
+
   if(pt > 5.) {
     // applying cut for pt > 5 GeV
     AliDebug(2,Form("pt of D+ = %f (> 5), cutting at |y| < 0.8",pt)); 

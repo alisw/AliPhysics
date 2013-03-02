@@ -91,6 +91,7 @@ fIsSelectedCuts(0),
 fIsSelectedPID(0),
 fMinPtCand(-1.),
 fMaxPtCand(100000.),
+fMaxRapidityCand(-999.),
 fKeepSignalMC(kFALSE),
 fIsCandTrackSPDFirst(kFALSE),
 fMaxPtCandTrackSPDFirst(0.),
@@ -149,6 +150,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fIsSelectedPID(source.fIsSelectedPID),
   fMinPtCand(source.fMinPtCand),
   fMaxPtCand(source.fMaxPtCand),
+  fMaxRapidityCand(source.fMaxRapidityCand),
   fKeepSignalMC(source.fKeepSignalMC),
   fIsCandTrackSPDFirst(source.fIsCandTrackSPDFirst),
   fMaxPtCandTrackSPDFirst(source.fMaxPtCandTrackSPDFirst),
@@ -221,6 +223,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fIsSelectedPID=source.fIsSelectedPID;
   fMinPtCand=source.fMinPtCand;
   fMaxPtCand=source.fMaxPtCand;
+  fMaxRapidityCand=source.fMaxRapidityCand;
   fKeepSignalMC=source.fKeepSignalMC;
   fIsCandTrackSPDFirst=source.fIsCandTrackSPDFirst;
   fMaxPtCandTrackSPDFirst=source.fMaxPtCandTrackSPDFirst;
