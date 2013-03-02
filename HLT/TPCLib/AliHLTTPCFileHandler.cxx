@@ -44,7 +44,7 @@
 #include <AliTPCParamSR.h>
 #include <AliTPCDigitsArray.h>
 #include <AliTPCClustersArray.h>
-#include <AliTPCcluster.h>
+#include <AliTPCclusterMI.h>
 #include <AliTPCClustersRow.h>
 #include <AliSimDigits.h>
 #include "AliCDBManager.h"
@@ -1133,7 +1133,7 @@ AliHLTTPCSpacePointData * AliHLTTPCFileHandler::AliPoints2Memory(UInt_t & npoint
 
   AliTPCClustersArray carray;
   carray.Setup(fParam);
-  carray.SetClusterType("AliTPCcluster");
+  carray.SetClusterType("AliTPCclusterMI");
   Bool_t clusterok = carray.ConnectTree(tpcLoader->TreeR());
 
   if(!clusterok) return 0;
@@ -1176,7 +1176,7 @@ AliHLTTPCSpacePointData * AliHLTTPCFileHandler::AliPoints2Memory(UInt_t & npoint
     AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
     Int_t entriesInRow = clusterrow[i]->GetArray()->GetEntriesFast();
     for(Int_t j = 0;j<entriesInRow;j++){
-      AliTPCcluster *c = (AliTPCcluster*)(*clusterrow[i])[j];
+      AliTPCclusterMI *c = (AliTPCclusterMI*)(*clusterrow[i])[j];
       data[n].fZ = c->GetZ();
       data[n].fY = c->GetY();
       data[n].fX = fParam->GetPadRowRadii(sector,row);
