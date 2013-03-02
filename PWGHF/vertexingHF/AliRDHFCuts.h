@@ -3,6 +3,8 @@
 /* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
 //***********************************************************
 // Class AliRDHFCuts
 // base class for cuts on AOD reconstructed heavy-flavour decays
@@ -136,6 +138,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetRecomputePrimaryVertex(Bool_t opt) {fRecomputePrimVertex=opt;}
   void SetMinPtCandidate(Double_t ptCand=-1.) {fMinPtCand=ptCand; return;}
   void SetMaxPtCandidate(Double_t ptCand=1000.) {fMaxPtCand=ptCand; return;}
+  void SetMaxRapidityCandidate(Double_t ycand) {fMaxRapidityCand=ycand; return;}
   void SetOptPileup(Int_t opt=0){
     // see enum below
     fOptPileup=opt;
@@ -225,6 +228,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   }
   Bool_t IsEventRejectedDueToCentrality() const {
     return fEvRejectionBits&(1<<kOutsideCentrality);
+  }
+  Bool_t IsEventRejectedDueToCentralityFlattening() const {
+    return fEvRejectionBits&(1<<kCentralityFlattening);
   }
   Bool_t IsEventRejectedDuePhysicsSelection() const {
     return fEvRejectionBits&(1<<kPhysicsSelection);
@@ -316,6 +322,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t  fIsSelectedPID;  // outcome of PID selection
   Double_t fMinPtCand; // minimum pt of the candidate
   Double_t fMaxPtCand; // minimum pt of the candidate
+  Double_t fMaxRapidityCand; // max rapidity of candidate (if !=-999 overrides IsInFiducialAcceptance)
   Bool_t  fKeepSignalMC; // IsSelected returns always kTRUE for MC signal
   Bool_t fIsCandTrackSPDFirst; // flag to select the track kFirst criteria for pt < ptlimit
   Double_t fMaxPtCandTrackSPDFirst; // maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
@@ -327,7 +334,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fUseCentrFlatteningInMC; // flag for enabling/diabling centrality flattening in MC
   TH1F *fHistCentrDistr;   // histogram with reference centrality distribution for centrality distribution flattening
 
-  ClassDef(AliRDHFCuts,30);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,31);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

@@ -443,6 +443,11 @@ Bool_t AliRDHFCutsDStartoKpipi::IsInFiducialAcceptance(Double_t pt, Double_t y) 
   // D* fiducial acceptance region 
   //
 
+  if(fMaxRapidityCand>-998.){
+    if(TMath::Abs(y) > fMaxRapidityCand) return kFALSE;
+    else return kTRUE;
+  }
+
   if(pt > 5.) {
     // applying cut for pt > 5 GeV
     AliDebug(4,Form("pt of D* = %f (> 5), cutting at |y| < 0.8\n",pt)); 
