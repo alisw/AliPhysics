@@ -139,6 +139,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH1F *   fhEIso ;                               //! Number of isolated particles vs energy
   TH1F *   fhPtIso ;                              //! Number of isolated particles vs pT
+  TH2F *   fhPtCentralityIso ;                    //! centrality vs pT
+  TH2F *   fhPtEventPlaneIso ;                    //! event plane angle vs pT
   TH2F *   fhPtNLocMaxIso ;                       //! Number of isolated particles vs NLM in cluster
   TH2F *   fhPhiIso ;                             //! Phi of isolated particles
   TH2F *   fhEtaIso ;                             //! eta of isolated particles
@@ -318,7 +320,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,21)
+  ClassDef(AliAnaParticleIsolation,22)
 } ;
 
 

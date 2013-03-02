@@ -58,7 +58,9 @@ fNCones(0),                       fNPtThresFrac(0),
 fConeSizes(),                     fPtThresholds(),                 
 fPtFractions(),                   fSumPtThresholds(),
 // Histograms
-fhEIso(0),                        fhPtIso(0),                      fhPtNLocMaxIso(0),                       
+fhEIso(0),                        fhPtIso(0),
+fhPtCentralityIso(0),             fhPtEventPlaneIso(0),
+fhPtNLocMaxIso(0),
 fhPhiIso(0),                      fhEtaIso(0),                     fhEtaPhiIso(0), 
 fhEtaPhiNoIso(0), 
 fhENoIso(0),                      fhPtNoIso(0),                    fhPtNLocMaxNoIso(0),                     
@@ -590,6 +592,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   {
     TString hName [] = {"NoIso",""};
     TString hTitle[] = {"Not isolated"  ,"isolated"};
+    
     if(fFillSSHisto)
     { 
     	fhELambda0SSBkg  = new TH2F
@@ -944,6 +947,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtIso->SetYTitle("dN / p_{T}");
     fhPtIso->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtIso) ; 
+    
+    fhPtCentralityIso  = new TH2F("hPtCentrality","centrality vs p_{T} for isolated particles",nptbins,ptmin,ptmax, 100,0,100);
+    fhPtCentralityIso->SetYTitle("centrality");
+    fhPtCentralityIso->SetXTitle("p_{T}(GeV/c)");
+    outputContainer->Add(fhPtCentralityIso) ;
+    
+    fhPtEventPlaneIso  = new TH2F("hPtEventPlane","event plane angle vs p_{T} for isolated particles",nptbins,ptmin,ptmax, 100,0,TMath::Pi());
+    fhPtEventPlaneIso->SetYTitle("Event plane angle (rad)");
+    fhPtEventPlaneIso->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtEventPlaneIso) ;
+
     
     fhPtNLocMaxIso  = new TH2F("hPtNLocMax",
                                Form("Number of isolated particles vs p_{T} for R = %2.2f, p_{T}^{th} = %2.2f vs NLM, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),
@@ -1839,6 +1853,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     GetReader()->GetVertex(vertex);
   }	
   
+  Float_t cen = GetEventCentrality();
+  Float_t ep  = GetEventPlaneAngle();
+  
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
     AliAODPWG4ParticleCorrelation* aod =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
@@ -2048,7 +2065,10 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhPhiIso    ->Fill(pt,phi);
       fhEtaIso    ->Fill(pt,eta);
       fhEtaPhiIso ->Fill(eta,phi);
-      fhPtNLocMaxIso->Fill(pt,nlm);
+      
+      fhPtNLocMaxIso    ->Fill(pt,nlm) ;
+      fhPtCentralityIso ->Fill(pt,cen) ;
+      fhPtEventPlaneIso ->Fill(pt,ep ) ;
       
       if(decay) 
       {

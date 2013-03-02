@@ -144,6 +144,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEPhi  ;                 //! E vs phi of identified  pi0/eta 
   TH2F         * fhEtaPhi  ;               //! eta vs phi of identified  pi0/eta 
 
+  TH2F         * fhPtCentrality ;          //! centrality  vs pi0/eta pT
+  TH2F         * fhPtEventPlane ;          //! event plane vs pi0/eta pT
+  
   TH1F         * fhPtReject  ;             //! Number of rejected as  pi0/eta vs pT
   TH1F         * fhEReject   ;             //! Number of rejected as  pi0/eta vs E
   TH2F         * fhEEtaReject  ;           //! E vs eta of rejected as  pi0/eta 
@@ -271,7 +274,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,22)
+  ClassDef(AliAnaPi0EbE,23)
 } ;
 
 
