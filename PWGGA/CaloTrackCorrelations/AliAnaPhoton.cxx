@@ -69,6 +69,7 @@ AliAnaPhoton::AliAnaPhoton() :
     fhEPhoton(0),                 fhPtPhoton(0),  
     fhPhiPhoton(0),               fhEtaPhoton(0), 
     fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
+    fhPtCentralityPhoton(0),      fhPtEventPlanePhoton(0),
 
     // Shower shape histograms
     fhNLocMax(0),
@@ -1453,7 +1454,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhPtPhoton->SetYTitle("N");
   fhPtPhoton->SetXTitle("p_{T #gamma}(GeV/c)");
   outputContainer->Add(fhPtPhoton) ; 
+
+  fhPtCentralityPhoton  = new TH2F("hPtCentralityPhoton","centrality vs p_{T}",nptbins,ptmin,ptmax, 100,0,100);
+  fhPtCentralityPhoton->SetYTitle("Centrality");
+  fhPtCentralityPhoton->SetXTitle("p_{T}(GeV/c)");
+  outputContainer->Add(fhPtCentralityPhoton) ;
   
+  fhPtEventPlanePhoton  = new TH2F("hPtEventPlanePhoton","centrality vs p_{T}",nptbins,ptmin,ptmax, 100,0,TMath::Pi());
+  fhPtEventPlanePhoton->SetYTitle("Event plane angle (rad)");
+  fhPtEventPlanePhoton->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtEventPlanePhoton) ;
+
   fhPhiPhoton  = new TH2F
     ("hPhiPhoton","#phi_{#gamma} vs p_{T}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
   fhPhiPhoton->SetYTitle("#phi (rad)");
@@ -2791,6 +2802,9 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   
+  Float_t cen = GetEventCentrality();
+  Float_t ep  = GetEventPlaneAngle();
+  
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
     AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
@@ -2821,6 +2835,9 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     if     (ecluster   > 0.5) fhEtaPhiPhoton  ->Fill(etacluster, phicluster);
     else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster);
 
+    fhPtCentralityPhoton ->Fill(ptcluster,cen) ;
+    fhPtEventPlanePhoton ->Fill(ptcluster,ep ) ;
+    
     //Get original cluster, to recover some information
     Int_t absID             = 0; 
     Float_t maxCellFraction = 0;

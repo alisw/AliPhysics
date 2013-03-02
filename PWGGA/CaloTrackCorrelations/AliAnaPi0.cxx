@@ -88,9 +88,14 @@ fhRealOpeningAngle(0x0),     fhRealCosOpeningAngle(0x0),   fhMixedOpeningAngle(0
 fhPrimPi0Pt(0x0),            fhPrimPi0AccPt(0x0),          fhPrimPi0Y(0x0),              fhPrimPi0AccY(0x0), 
 fhPrimPi0Phi(0x0),           fhPrimPi0AccPhi(0x0),
 fhPrimPi0OpeningAngle(0x0),  fhPrimPi0OpeningAngleAsym(0x0),fhPrimPi0CosOpeningAngle(0x0),
+fhPrimPi0PtCentrality(0),    fhPrimPi0PtEventPlane(0),
+fhPrimPi0AccPtCentrality(0), fhPrimPi0AccPtEventPlane(0),
+fhPrimEtaPt(0x0),            fhPrimEtaAccPt(0x0),          fhPrimEtaY(0x0),              fhPrimEtaAccY(0x0),
+fhPrimEtaPhi(0x0),           fhPrimEtaAccPhi(0x0),         
 fhPrimEtaOpeningAngle(0x0),  fhPrimEtaOpeningAngleAsym(0x0),fhPrimEtaCosOpeningAngle(0x0),
-fhPrimEtaPt(0x0),            fhPrimEtaAccPt(0x0),          fhPrimEtaY(0x0),              fhPrimEtaAccY(0x0), 
-fhPrimEtaPhi(0x0),           fhPrimEtaAccPhi(0x0),         fhPrimPi0PtOrigin(0x0),       fhPrimEtaPtOrigin(0x0), 
+fhPrimEtaPtCentrality(0),    fhPrimEtaPtEventPlane(0),
+fhPrimEtaAccPtCentrality(0), fhPrimEtaAccPtEventPlane(0),
+fhPrimPi0PtOrigin(0x0),      fhPrimEtaPtOrigin(0x0),
 fhMCOrgMass(),               fhMCOrgAsym(),                fhMCOrgDeltaEta(),            fhMCOrgDeltaPhi(),
 fhMCPi0MassPtRec(),          fhMCPi0MassPtTrue(),          fhMCPi0PtTruePtRec(),         
 fhMCEtaMassPtRec(),          fhMCEtaMassPtTrue(),          fhMCEtaPtTruePtRec(),
@@ -668,6 +673,24 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimPi0AccPhi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0AccPhi) ;
     
+    fhPrimPi0PtCentrality     = new TH2F("hPrimPi0PtCentrality","Primary pi0 pt vs reco centrality, Y<1",nptbins,ptmin,ptmax, 100, 0, 100) ;
+    fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary pi0 with both photons in acceptance pt vs reco centrality",nptbins,ptmin,ptmax, 100, 0, 100) ;
+    fhPrimPi0PtCentrality   ->SetXTitle("p_{T} (GeV/c)");
+    fhPrimPi0AccPtCentrality->SetXTitle("p_{T} (GeV/c)");
+    fhPrimPi0PtCentrality   ->SetYTitle("Centrality");
+    fhPrimPi0AccPtCentrality->SetYTitle("Centrality");
+    outputContainer->Add(fhPrimPi0PtCentrality) ;
+    outputContainer->Add(fhPrimPi0AccPtCentrality) ;
+    
+    fhPrimPi0PtEventPlane     = new TH2F("hPrimPi0PtEventPlane","Primary pi0 pt vs reco event plane angle, Y<1",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+    fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary pi0 with both photons in acceptance pt vs reco event plane angle",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+    fhPrimPi0PtEventPlane   ->SetXTitle("p_{T} (GeV/c)");
+    fhPrimPi0AccPtEventPlane->SetXTitle("p_{T} (GeV/c)");
+    fhPrimPi0PtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
+    fhPrimPi0AccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
+    outputContainer->Add(fhPrimPi0PtEventPlane) ;
+    outputContainer->Add(fhPrimPi0AccPtEventPlane) ;
+    
     //Eta
     fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary eta pt",nptbins,ptmin,ptmax) ;
     fhPrimEtaAccPt  = new TH1F("hPrimEtaAccPt","Primary eta pt with both photons in acceptance",nptbins,ptmin,ptmax) ;
@@ -696,6 +719,23 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimEtaAccPhi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimEtaAccPhi) ;
     
+    fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary eta pt vs reco centrality, Y<1",nptbins,ptmin,ptmax, 100, 0, 100) ;
+    fhPrimEtaAccPtCentrality  = new TH2F("hPrimEtaAccPtCentrality","Primary eta with both photons in acceptance pt vs reco centrality",nptbins,ptmin,ptmax, 100, 0, 100) ;
+    fhPrimEtaPtCentrality   ->SetXTitle("p_{T} (GeV/c)");
+    fhPrimEtaAccPtCentrality->SetXTitle("p_{T} (GeV/c)");
+    fhPrimEtaPtCentrality   ->SetYTitle("Centrality");
+    fhPrimEtaAccPtCentrality->SetYTitle("Centrality");
+    outputContainer->Add(fhPrimEtaPtCentrality) ;
+    outputContainer->Add(fhPrimEtaAccPtCentrality) ;
+    
+    fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary eta pt vs reco event plane angle, Y<1",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+    fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary eta with both photons in acceptance pt vs reco event plane angle",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+    fhPrimEtaPtEventPlane   ->SetXTitle("p_{T} (GeV/c)");
+    fhPrimEtaAccPtEventPlane->SetXTitle("p_{T} (GeV/c)");
+    fhPrimEtaPtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
+    fhPrimEtaAccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
+    outputContainer->Add(fhPrimEtaPtEventPlane) ;
+    outputContainer->Add(fhPrimEtaAccPtEventPlane) ;
     
     //Prim origin
     //Pi0
@@ -989,7 +1029,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   return outputContainer;
 }
 
-//_________________________________________________________________________________________________________________________________________________
+//___________________________________________________
 void AliAnaPi0::Print(const Option_t * /*opt*/) const
 {
   //Print some relevant parameters set for the analysis
@@ -1030,13 +1070,19 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   printf("------------------------------------------------------\n") ;
 } 
 
-//_____________________________________________________________
-void AliAnaPi0::FillAcceptanceHistograms(){
+//________________________________________
+void AliAnaPi0::FillAcceptanceHistograms()
+{
   //Fill acceptance histograms if MC data is available
   
-  if(GetReader()->ReadStack()){	
+  Float_t cen = GetEventCentrality();
+  Float_t ep  = GetEventPlaneAngle();
+  
+  if(GetReader()->ReadStack())
+  {
     AliStack * stack = GetMCStack();
-    if(stack){
+    if(stack)
+    {
       for(Int_t i=0 ; i<stack->GetNtrack(); i++){
         TParticle * prim = stack->Particle(i) ;
         Int_t pdg = prim->GetPdgCode();
@@ -1048,28 +1094,38 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           if(prim->Energy() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception	  
           Double_t pi0Y  = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
           Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
-          if(pdg == 111){
-            if(TMath::Abs(pi0Y) < 1.0){
+          if(pdg == 111)
+          {
+            if(TMath::Abs(pi0Y) < 1.0)
+            {
               fhPrimPi0Pt ->Fill(pi0Pt) ;
               fhPrimPi0Phi->Fill(pi0Pt, phi) ;
+              fhPrimPi0PtCentrality->Fill(pi0Pt,cen) ;
+              fhPrimPi0PtEventPlane->Fill(pi0Pt,ep ) ;
             }
             fhPrimPi0Y  ->Fill(pi0Pt, pi0Y) ;
           }
-          else if(pdg == 221){
-            if(TMath::Abs(pi0Y) < 1.0){
+          else if(pdg == 221)
+          {
+            if(TMath::Abs(pi0Y) < 1.0)
+            {
               fhPrimEtaPt ->Fill(pi0Pt) ;
               fhPrimEtaPhi->Fill(pi0Pt, phi) ;
+              fhPrimEtaPtCentrality->Fill(pi0Pt,cen) ;
+              fhPrimEtaPtEventPlane->Fill(pi0Pt,ep ) ;
             }
             fhPrimEtaY  ->Fill(pi0Pt, pi0Y) ;
           }
           
           //Origin of meson
           Int_t momindex  = prim->GetFirstMother();
-          if(momindex >= 0) {
+          if(momindex >= 0)
+          {
             TParticle* mother = stack->Particle(momindex);
             Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
             Int_t momstatus = mother->GetStatusCode();
-            if(pdg == 111){
+            if(pdg == 111)
+            {
               if     (momstatus  == 21)fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
               else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
               else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(pi0Pt,2.5);// resonances
@@ -1082,7 +1138,8 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
               else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
             }//pi0
-            else {
+            else
+            {
               if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
               else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
               else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
@@ -1097,10 +1154,12 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           if(prim->GetNDaughters()!=2) continue; //Only interested in 2 gamma decay
           Int_t iphot1=prim->GetFirstDaughter() ;
           Int_t iphot2=prim->GetLastDaughter() ;
-          if(iphot1>-1 && iphot1<stack->GetNtrack() && iphot2>-1 && iphot2<stack->GetNtrack()){
+          if(iphot1>-1 && iphot1<stack->GetNtrack() && iphot2>-1 && iphot2<stack->GetNtrack())
+          {
             TParticle * phot1 = stack->Particle(iphot1) ;
             TParticle * phot2 = stack->Particle(iphot2) ;
-            if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22){
+            if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22)
+            {
               //printf("2 photons: photon 1: pt %2.2f, phi %3.2f, eta %1.2f; photon 2: pt %2.2f, phi %3.2f, eta %1.2f\n",
               //	phot1->Pt(), phot1->Phi()*180./3.1415, phot1->Eta(), phot2->Pt(), phot2->Phi()*180./3.1415, phot2->Eta());
               
@@ -1109,25 +1168,27 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               phot2->Momentum(lv2);
               
               Bool_t inacceptance = kFALSE;
-              if(fCalorimeter == "PHOS"){
-                if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet()){
+              if(fCalorimeter == "PHOS")
+              {
+                if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet())
+                {
                   Int_t mod ;
                   Double_t x,z ;
                   if(GetPHOSGeometry()->ImpactOnEmc(phot1,mod,z,x) && GetPHOSGeometry()->ImpactOnEmc(phot2,mod,z,x)) 
                     inacceptance = kTRUE;
                   if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
                 }
-                else{
-                  
+                else
+                {
                   if(GetFiducialCut()->IsInFiducialCut(lv1,fCalorimeter) && GetFiducialCut()->IsInFiducialCut(lv2,fCalorimeter)) 
                     inacceptance = kTRUE ;
                   if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
                 }
-                
               }	   
-              else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
-                if(GetEMCALGeometry()){
-                  
+              else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet())
+              {
+                if(GetEMCALGeometry())
+                {
                   Int_t absID1=0;
                   Int_t absID2=0;
                   
@@ -1141,7 +1202,8 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   //                    inacceptance = kTRUE;
                   if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
                 }
-                else{
+                else
+                {
                   if(GetFiducialCut()->IsInFiducialCut(lv1,fCalorimeter) && GetFiducialCut()->IsInFiducialCut(lv2,fCalorimeter)) 
                     inacceptance = kTRUE ;
                   if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
@@ -1158,6 +1220,9 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   fhPrimPi0AccPt ->Fill(pi0Pt) ;
                   fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
+                  fhPrimPi0AccPtCentrality->Fill(pi0Pt,cen) ;
+                  fhPrimPi0AccPtEventPlane->Fill(pi0Pt,ep ) ;
+                  
                   if(fFillAngleHisto)
                   {
                     fhPrimPi0OpeningAngle    ->Fill(pi0Pt,angle);
@@ -1170,6 +1235,9 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   fhPrimEtaAccPt ->Fill(pi0Pt) ;
                   fhPrimEtaAccPhi->Fill(pi0Pt, phi) ;
                   fhPrimEtaAccY  ->Fill(pi0Pt, pi0Y) ;
+                  fhPrimEtaAccPtCentrality->Fill(pi0Pt,cen) ;
+                  fhPrimEtaAccPtEventPlane->Fill(pi0Pt,ep ) ;
+
                   if(fFillAngleHisto)
                   {
                     fhPrimEtaOpeningAngle    ->Fill(pi0Pt,angle);
@@ -1184,9 +1252,11 @@ void AliAnaPi0::FillAcceptanceHistograms(){
       }//loop on primaries	
     }//stack exists and data is MC
   }//read stack
-  else if(GetReader()->ReadAODMCParticles()){
+  else if(GetReader()->ReadAODMCParticles())
+  {
     TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-    if(mcparticles){
+    if(mcparticles)
+    {
       Int_t nprim = mcparticles->GetEntriesFast();
       
       for(Int_t i=0; i < nprim; i++)
@@ -1197,7 +1267,8 @@ void AliAnaPi0::FillAcceptanceHistograms(){
         //if( prim->GetStatus() == 0 && (GetMCAnalysisUtils()->GetMCGenerator()).Length()!=0) break;
         
         Int_t pdg = prim->GetPdgCode();
-        if( pdg == 111 || pdg == 221){
+        if( pdg == 111 || pdg == 221)
+        {
           Double_t pi0Pt = prim->Pt() ;
           //printf("pi0, pt %2.2f, eta %f, phi %f\n",pi0Pt, prim->Eta(), prim->Phi());
           if(prim->E() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception
@@ -1206,17 +1277,23 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
           if(pdg == 111)
           {
-            if(TMath::Abs(pi0Y) < 1){
-              fhPrimPi0Pt->Fill(pi0Pt) ;            
+            if(TMath::Abs(pi0Y) < 1)
+            {
+              fhPrimPi0Pt ->Fill(pi0Pt) ;            
               fhPrimPi0Phi->Fill(pi0Pt, phi) ;
+              fhPrimPi0PtCentrality->Fill(pi0Pt,cen) ;
+              fhPrimPi0PtEventPlane->Fill(pi0Pt,ep ) ;
             }
             fhPrimPi0Y  ->Fill(pi0Pt, pi0Y) ;
           }
-          else if(pdg == 221){
+          else if(pdg == 221)
+          {
             if(TMath::Abs(pi0Y) < 1)
             {
               fhPrimEtaPt->Fill(pi0Pt) ;            
               fhPrimEtaPhi->Fill(pi0Pt, phi) ;
+              fhPrimEtaPtCentrality->Fill(pi0Pt,cen) ;
+              fhPrimEtaPtEventPlane->Fill(pi0Pt,ep ) ;
             }
             fhPrimEtaY  ->Fill(pi0Pt, pi0Y) ;
           }
@@ -1257,10 +1334,12 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           if(prim->GetNDaughters()!=2) continue; //Only interested in 2 gamma decay
           Int_t iphot1=prim->GetDaughter(0) ;
           Int_t iphot2=prim->GetDaughter(1) ;
-          if(iphot1>-1 && iphot1<nprim && iphot2>-1 && iphot2<nprim){
+          if(iphot1>-1 && iphot1<nprim && iphot2>-1 && iphot2<nprim)
+          {
             AliAODMCParticle * phot1 = (AliAODMCParticle *) mcparticles->At(iphot1);   
             AliAODMCParticle * phot2 = (AliAODMCParticle *) mcparticles->At(iphot2);   
-            if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22){
+            if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22)
+            {
               TLorentzVector lv1, lv2;
               lv1.SetPxPyPzE(phot1->Px(),phot1->Py(),phot1->Pz(),phot1->E());
               lv2.SetPxPyPzE(phot2->Px(),phot2->Py(),phot2->Pz(),phot2->E());
@@ -1268,7 +1347,8 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               Bool_t inacceptance = kFALSE;
               if(fCalorimeter == "PHOS")
               {
-                if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet()){
+                if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet())
+                {
                   Int_t mod ;
                   Double_t x,z ;
                   Double_t vtx []={phot1->Xv(),phot1->Yv(),phot1->Zv()};
@@ -1284,9 +1364,9 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                     inacceptance = kTRUE ;
                   if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
                 }
-                
               }	   
-              else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
+              else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet())
+              {
                 if(GetEMCALGeometry())
                 {
                   Int_t absID1=0;
@@ -1298,10 +1378,10 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   if( absID1 >= 0 && absID2 >= 0) 
                     inacceptance = kTRUE;
                   
-                  
                   if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
                 }
-                else{
+                else
+                {
                   if(GetFiducialCut()->IsInFiducialCut(lv1,fCalorimeter) && GetFiducialCut()->IsInFiducialCut(lv2,fCalorimeter)) 
                     inacceptance = kTRUE ;
                   if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
@@ -1319,6 +1399,9 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   fhPrimPi0AccPt ->Fill(pi0Pt) ;
                   fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
+                  fhPrimPi0AccPtCentrality->Fill(pi0Pt,cen) ;
+                  fhPrimPi0AccPtEventPlane->Fill(pi0Pt,ep ) ;
+
                   if(fFillAngleHisto)
                   {
                     fhPrimPi0OpeningAngle    ->Fill(pi0Pt,angle);
@@ -1331,6 +1414,9 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   fhPrimEtaAccPt ->Fill(pi0Pt) ;
                   fhPrimEtaAccPhi->Fill(pi0Pt, phi) ;
                   fhPrimEtaAccY  ->Fill(pi0Pt, pi0Y) ;
+                  fhPrimEtaAccPtCentrality->Fill(pi0Pt,cen) ;
+                  fhPrimEtaAccPtEventPlane->Fill(pi0Pt,ep ) ;
+
                   if(fFillAngleHisto)
                   {
                     fhPrimEtaOpeningAngle    ->Fill(pi0Pt,angle);

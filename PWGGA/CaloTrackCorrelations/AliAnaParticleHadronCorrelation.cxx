@@ -2712,6 +2712,9 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   GetReader()->GetVertex(v);
   if(!GetMixedEvent() && TMath::Abs(v[2]) > GetZvertexCut()) return ;  
   
+  Float_t cen = GetEventCentrality();
+  Float_t ep  = GetEventPlaneAngle();
+  
   //Loop on stored AOD particles, find leading
   Double_t ptTrig    = fMinTriggerPt;
   if(fLeadingTriggerIndex < 0)
@@ -2839,10 +2842,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
         Int_t mcIndex = GetMCTagHistogramIndex(particle->GetTag());
         fhPtLeadingMC[mcIndex]->Fill(pt);
       }        
-      
-      Float_t cen = GetEventCentrality();
-      Float_t ep  = GetEventPlaneAngle();
-      
+            
       fhPtLeadingCentrality        ->Fill(pt,cen);
       fhPtLeadingEventPlane        ->Fill(pt,ep);
       fhLeadingEventPlaneCentrality->Fill(cen,ep);

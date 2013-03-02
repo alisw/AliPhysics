@@ -196,77 +196,92 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhNCellNLocMax2[8][2] ;                  //! n cells in cluster vs E for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhNCellNLocMaxN[8][2] ;                  //! n cells in cluster vs E for N max in cluster > 2, 1-6 for different MC particle types
   
-  TH2F       * fhM02Pi0LocMax1[8][2] ;                  //! M02 for Mass around pi0, N Local Maxima = 1
-  TH2F       * fhM02EtaLocMax1[8][2] ;                  //! M02 for Mass around eta, N Local Maxima = 1
-  TH2F       * fhM02ConLocMax1[8][2] ;                  //! M02 for Mass around close to 0, N Local Maxima = 1
+  TH2F       * fhM02Pi0NLocMax1[8][2] ;                 //! M02 for Mass around pi0, N Local Maxima = 1
+  TH2F       * fhM02EtaNLocMax1[8][2] ;                 //! M02 for Mass around eta, N Local Maxima = 1
+  TH2F       * fhM02ConNLocMax1[8][2] ;                 //! M02 for Mass around close to 0, N Local Maxima = 1
+  
+  TH2F       * fhM02Pi0NLocMax2[8][2] ;                 //! M02 for Mass around pi0, N Local Maxima = 2
+  TH2F       * fhM02EtaNLocMax2[8][2] ;                 //! M02 for Mass around eta, N Local Maxima = 2
+  TH2F       * fhM02ConNLocMax2[8][2] ;                 //! M02 for Mass around close to 0, N Local Maxima = 2
+  
+  TH2F       * fhM02Pi0NLocMaxN[8][2] ;                 //! M02 for Mass around pi0, N Local Maxima > 2
+  TH2F       * fhM02EtaNLocMaxN[8][2] ;                 //! M02 for Mass around eta, N Local Maxima > 2
+  TH2F       * fhM02ConNLocMaxN[8][2] ;                 //! M02 for Mass around close to 0, N Local Maxima > 2
 
-  TH2F       * fhM02Pi0LocMax2[8][2] ;                  //! M02 for Mass around pi0, N Local Maxima = 2
-  TH2F       * fhM02EtaLocMax2[8][2] ;                  //! M02 for Mass around eta, N Local Maxima = 2
-  TH2F       * fhM02ConLocMax2[8][2] ;                  //! M02 for Mass around close to 0, N Local Maxima = 2
+  TH2F       * fhMassPi0NLocMax1[8][2] ;                //! Mass for selected pi0, N Local Maxima = 1
+  TH2F       * fhMassEtaNLocMax1[8][2] ;                //! Mass for selected around eta, N Local Maxima = 1
+  TH2F       * fhMassConNLocMax1[8][2] ;                //! Mass for selected around close to 0, N Local Maxima = 1
   
-  TH2F       * fhM02Pi0LocMaxN[8][2] ;                  //! M02 for Mass around pi0, N Local Maxima > 2
-  TH2F       * fhM02EtaLocMaxN[8][2] ;                  //! M02 for Mass around eta, N Local Maxima > 2
-  TH2F       * fhM02ConLocMaxN[8][2] ;                  //! M02 for Mass around close to 0, N Local Maxima > 2
-
-  TH2F       * fhMassPi0LocMax1[8][2] ;                 //! Mass for selected pi0, N Local Maxima = 1
-  TH2F       * fhMassEtaLocMax1[8][2] ;                 //! Mass for selected around eta, N Local Maxima = 1
-  TH2F       * fhMassConLocMax1[8][2] ;                 //! Mass for selected around close to 0, N Local Maxima = 1
+  TH2F       * fhMassPi0NLocMax2[8][2] ;                //! Mass for selected around pi0, N Local Maxima = 2
+  TH2F       * fhMassEtaNLocMax2[8][2] ;                //! Mass for selected around eta, N Local Maxima = 2
+  TH2F       * fhMassConNLocMax2[8][2] ;                //! Mass for selected around close to 0, N Local Maxima = 2
   
-  TH2F       * fhMassPi0LocMax2[8][2] ;                 //! Mass for selected around pi0, N Local Maxima = 2
-  TH2F       * fhMassEtaLocMax2[8][2] ;                 //! Mass for selected around eta, N Local Maxima = 2
-  TH2F       * fhMassConLocMax2[8][2] ;                 //! Mass for selected around close to 0, N Local Maxima = 2
+  TH2F       * fhMassPi0NLocMaxN[8][2] ;                //! Mass for selected around pi0, N Local Maxima > 2
+  TH2F       * fhMassEtaNLocMaxN[8][2] ;                //! Mass for selected around eta, N Local Maxima > 2
+  TH2F       * fhMassConNLocMaxN[8][2] ;                //! Mass for selected around close to 0, N Local Maxima > 2
   
-  TH2F       * fhMassPi0LocMaxN[8][2] ;                 //! Mass for selected around pi0, N Local Maxima > 2
-  TH2F       * fhMassEtaLocMaxN[8][2] ;                 //! Mass for selected around eta, N Local Maxima > 2
-  TH2F       * fhMassConLocMaxN[8][2] ;                 //! Mass for selected around close to 0, N Local Maxima > 2
+  TH2F       * fhMassAfterCutsNLocMax1[8] ;             //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 1, not matched
+  TH2F       * fhMassAfterCutsNLocMax2[8] ;             //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 2, not matched
+  TH2F       * fhMassAfterCutsNLocMaxN[8] ;             //! Mass after M02, asymmetry cuts for pi0, N Local Maxima > 2, not matched
   
-  TH2F       * fhMassAfterCutsNLocMax1[8] ;              //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 1, not matched
-  TH2F       * fhMassAfterCutsNLocMax2[8] ;              //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 2, not matched
-  TH2F       * fhMassAfterCutsNLocMaxN[8] ;              //! Mass after M02, asymmetry cuts for pi0, N Local Maxima > 2, not matched
+  TH2F       * fhAsyPi0NLocMax1[8][2] ;                 //! Asy for Mass around pi0, N Local Maxima = 1
+  TH2F       * fhAsyEtaNLocMax1[8][2] ;                 //! Asy for Mass around eta, N Local Maxima = 1
+  TH2F       * fhAsyConNLocMax1[8][2] ;                 //! Asy for Mass around close to 0, N Local Maxima = 1
   
-  TH2F       * fhAsyPi0LocMax1[8][2] ;                  //! Asy for Mass around pi0, N Local Maxima = 1
-  TH2F       * fhAsyEtaLocMax1[8][2] ;                  //! Asy for Mass around eta, N Local Maxima = 1
-  TH2F       * fhAsyConLocMax1[8][2] ;                  //! Asy for Mass around close to 0, N Local Maxima = 1
+  TH2F       * fhAsyPi0NLocMax2[8][2] ;                 //! Asy for Mass around pi0, N Local Maxima = 2
+  TH2F       * fhAsyEtaNLocMax2[8][2] ;                 //! Asy for Mass around eta, N Local Maxima = 2
+  TH2F       * fhAsyConNLocMax2[8][2] ;                 //! Asy for Mass around close to 0, N Local Maxima = 2
   
-  TH2F       * fhAsyPi0LocMax2[8][2] ;                  //! Asy for Mass around pi0, N Local Maxima = 2
-  TH2F       * fhAsyEtaLocMax2[8][2] ;                  //! Asy for Mass around eta, N Local Maxima = 2
-  TH2F       * fhAsyConLocMax2[8][2] ;                  //! Asy for Mass around close to 0, N Local Maxima = 2
-  
-  TH2F       * fhAsyPi0LocMaxN[8][2] ;                  //! Asy for Mass around pi0, N Local Maxima > 2
-  TH2F       * fhAsyEtaLocMaxN[8][2] ;                  //! Asy for Mass around eta, N Local Maxima > 2
-  TH2F       * fhAsyConLocMaxN[8][2] ;                  //! Asy for Mass around close to 0, N Local Maxima > 2  
+  TH2F       * fhAsyPi0NLocMaxN[8][2] ;                 //! Asy for Mass around pi0, N Local Maxima > 2
+  TH2F       * fhAsyEtaNLocMaxN[8][2] ;                 //! Asy for Mass around eta, N Local Maxima > 2
+  TH2F       * fhAsyConNLocMaxN[8][2] ;                 //! Asy for Mass around close to 0, N Local Maxima > 2
   
   TH2F       * fhSplitEFractionNLocMax1[8][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1
   TH2F       * fhSplitEFractionNLocMax2[8][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2
   TH2F       * fhSplitEFractionNLocMaxN[8][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2
 
-  TH2F       * fhSplitEFractionAfterCutsNLocMax1 ;      //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1, after M02 and asymmetry cut
-  TH2F       * fhSplitEFractionAfterCutsNLocMax2 ;      //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2, after M02 and asymmetry cut
-  TH2F       * fhSplitEFractionAfterCutsNLocMaxN ;      //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2, after M02 and asymmetry cut
+  TH2F       * fhSplitEFractionAfterCutsNLocMax1[8] ;   //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1, after M02 and asymmetry cut
+  TH2F       * fhSplitEFractionAfterCutsNLocMax2[8] ;   //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2, after M02 and asymmetry cut
+  TH2F       * fhSplitEFractionAfterCutsNLocMaxN[8] ;   //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2, after M02 and asymmetry cut
   
   TH2F       * fhMassSplitEFractionNLocMax1Ebin[8][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 1, 1-6 for different MC particle types, not track matched
   TH2F       * fhMassSplitEFractionNLocMax2Ebin[8][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 2, 1-6 for different MC particle types, not track matched
   TH2F       * fhMassSplitEFractionNLocMaxNEbin[8][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
     
-  TH2F       * fhAnglePairLocMax1[2] ;                  //! pair opening angle vs E
-  TH2F       * fhAnglePairLocMax2[2] ;                  //! pair opening angle vs E
-  TH2F       * fhAnglePairLocMaxN[2] ;                  //! pair opening angle vs E
+  TH2F       * fhAnglePairNLocMax1[2] ;                 //! pair opening angle vs E
+  TH2F       * fhAnglePairNLocMax2[2] ;                 //! pair opening angle vs E
+  TH2F       * fhAnglePairNLocMaxN[2] ;                 //! pair opening angle vs E
+
+  TH2F       * fhAnglePairMassNLocMax1[2] ;             //! pair opening angle vs Mass for E > 7 GeV
+  TH2F       * fhAnglePairMassNLocMax2[2] ;             //! pair opening angle vs Mass for E > 7 GeV
+  TH2F       * fhAnglePairMassNLocMaxN[2] ;             //! pair opening angle vs Mass for E > 7 GeV
   
-  TH2F       * fhAnglePairMassLocMax1[2] ;              //! pair opening angle vs Mass for E > 7 GeV
-  TH2F       * fhAnglePairMassLocMax2[2] ;              //! pair opening angle vs Mass for E > 7 GeV
-  TH2F       * fhAnglePairMassLocMaxN[2] ;              //! pair opening angle vs Mass for E > 7 GeV
+  TH2F       * fhTrackMatchedDEtaNLocMax1[8] ;          //! Eta distance between track and cluster vs cluster E, 1 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMax1[8] ;          //! Phi distance between track and cluster vs cluster E, 1 local maximum
+  TH2F       * fhTrackMatchedDEtaNLocMax2[8] ;          //! Eta distance between track and cluster vs cluster E, 2 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMax2[8] ;          //! Phi distance between track and cluster vs cluster E, 2 local maximum
+  TH2F       * fhTrackMatchedDEtaNLocMaxN[8] ;          //! Eta distance between track and cluster vs cluster E, more than 2 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMaxN[8] ;          //! Phi distance between track and cluster vs cluster E, more than 2 local maximum
   
-  TH2F       * fhTrackMatchedDEtaLocMax1[8] ;           //! Eta distance between track and cluster vs cluster E, 1 local maximum
-  TH2F       * fhTrackMatchedDPhiLocMax1[8] ;           //! Phi distance between track and cluster vs cluster E, 1 local maximum
-  TH2F       * fhTrackMatchedDEtaLocMax2[8] ;           //! Eta distance between track and cluster vs cluster E, 2 local maximum
-  TH2F       * fhTrackMatchedDPhiLocMax2[8] ;           //! Phi distance between track and cluster vs cluster E, 2 local maximum
-  TH2F       * fhTrackMatchedDEtaLocMaxN[8] ;           //! Eta distance between track and cluster vs cluster E, more than 2 local maximum
-  TH2F       * fhTrackMatchedDPhiLocMaxN[8] ;           //! Phi distance between track and cluster vs cluster E, more than 2 local maximum
+  TH2F       * fhCentralityPi0NLocMax1 ;                //! Centrality for selected pi0, N Local Maxima = 1
+  TH2F       * fhCentralityEtaNLocMax1 ;                //! Centrality for selected eta, N Local Maxima = 1
+  TH2F       * fhCentralityPi0NLocMax2 ;                //! Centrality for selected pi0, N Local Maxima = 2
+  TH2F       * fhCentralityEtaNLocMax2 ;                //! Centrality for selected eta, N Local Maxima = 2
+  TH2F       * fhCentralityPi0NLocMaxN ;                //! Centrality for selected pi0, N Local Maxima > 2
+  TH2F       * fhCentralityEtaNLocMaxN ;                //! Centrality for selected eta, N Local Maxima > 2
+
+  TH2F       * fhEventPlanePi0NLocMax1 ;                //! Event plane for selected pi0, N Local Maxima = 1
+  TH2F       * fhEventPlaneEtaNLocMax1 ;                //! Event plane for selected eta, N Local Maxima = 1
+  TH2F       * fhEventPlanePi0NLocMax2 ;                //! Event plane for selected pi0, N Local Maxima = 2
+  TH2F       * fhEventPlaneEtaNLocMax2 ;                //! Event plane for selected eta, N Local Maxima = 2
+  TH2F       * fhEventPlanePi0NLocMaxN ;                //! Event plane for selected pi0, N Local Maxima > 2
+  TH2F       * fhEventPlaneEtaNLocMaxN ;                //! Event plane for selected eta, N Local Maxima > 2
+
   
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,18)
+  ClassDef(AliAnaInsideClusterInvariantMass,19)
   
 } ;
 

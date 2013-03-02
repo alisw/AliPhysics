@@ -152,8 +152,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhoton  ;                  //! Pseudorapidity of identified  photon vs transerse momentum 
   TH2F * fhEtaPhiPhoton  ;               //! Pseudorapidity vs Phi of identified  photon for transerse momentum > 0.5
   TH2F * fhEtaPhi05Photon  ;             //! Pseudorapidity vs Phi of identified  photon for transerse momentum < 0.5
-  
-  
+  TH2F * fhPtCentralityPhoton    ;       //! centrality  vs photon pT
+  TH2F * fhPtEventPlanePhoton    ;       //! event plane vs photon pT
   
   //Shower shape
   TH2F * fhNLocMax;                       //! number of maxima in selected clusters
@@ -318,7 +318,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,28)
+  ClassDef(AliAnaPhoton,29)
 
 } ;
  

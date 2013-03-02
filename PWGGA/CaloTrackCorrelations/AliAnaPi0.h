@@ -240,9 +240,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimPi0OpeningAngle ;     //! Opening angle of pair versus pair energy, primaries
   TH2F *   fhPrimPi0OpeningAngleAsym ; //! Opening angle of pair versus pair E asymmetry, pi0 primaries
   TH2F *   fhPrimPi0CosOpeningAngle ;  //! Cosinus of opening angle of pair version pair energy, pi0 primaries
-  TH2F *   fhPrimEtaOpeningAngle ;     //! Opening angle of pair versus pair energy, eta primaries
-  TH2F *   fhPrimEtaOpeningAngleAsym ; //! Opening angle of pair versus pair E asymmetry, eta primaries
-  TH2F *   fhPrimEtaCosOpeningAngle ;  //! Cosinus of opening angle of pair version pair energy, eta primaries
+  TH2F *   fhPrimPi0PtCentrality ;     //! primary pi0 reconstructed centrality  vs pT
+  TH2F *   fhPrimPi0PtEventPlane ;     //! primary pi0 reconstructed event plane vs pT
+  TH2F *   fhPrimPi0AccPtCentrality ;  //! primary pi0 with accepted daughters reconstructed centrality  vs pT
+  TH2F *   fhPrimPi0AccPtEventPlane ;  //! primary pi0 with accepted daughters reconstructed event plane vs pT
+
   //Eta acceptance
   TH1F *   fhPrimEtaPt ;               //! Spectrum of Primary 
   TH1F *   fhPrimEtaAccPt ;            //! Spectrum of primary with accepted daughters 
@@ -250,6 +252,13 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimEtaAccY ;             //! Rapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimEtaPhi ;              //! Azimutal distribution of primary particles  vs pT
   TH2F *   fhPrimEtaAccPhi;            //! Azimutal distribution of primary with accepted daughters	 vs pT
+  TH2F *   fhPrimEtaOpeningAngle ;     //! Opening angle of pair versus pair energy, eta primaries
+  TH2F *   fhPrimEtaOpeningAngleAsym ; //! Opening angle of pair versus pair E asymmetry, eta primaries
+  TH2F *   fhPrimEtaCosOpeningAngle ;  //! Cosinus of opening angle of pair version pair energy, eta primaries
+  TH2F *   fhPrimEtaPtCentrality ;     //! primary eta reconstructed centrality  vs pT
+  TH2F *   fhPrimEtaPtEventPlane ;     //! primary eta reconstructed event plane vs pT
+  TH2F *   fhPrimEtaAccPtCentrality ;  //! primary eta with accepted daughters reconstructed centrality  vs pT
+  TH2F *   fhPrimEtaAccPtEventPlane ;  //! primary eta with accepted daughters reconstructed event plane vs pT
   
   // Primaries origin
   TH2F *   fhPrimPi0PtOrigin ;         //! Spectrum of generated pi0 vs mother

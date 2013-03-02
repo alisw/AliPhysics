@@ -59,6 +59,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     // Histograms
     fhPt(0),                       fhE(0),                    
     fhEEta(0),                     fhEPhi(0),                    fhEtaPhi(0),
+    fhPtCentrality(),              fhPtEventPlane(0),
     fhPtReject(0),                 fhEReject(0),                    
     fhEEtaReject(0),               fhEPhiReject(0),              fhEtaPhiReject(0),
     fhMass(0),                     fhAsymmetry(0), 
@@ -656,6 +657,16 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhEtaPhi->SetYTitle("#phi (rad)");
   fhEtaPhi->SetXTitle("#eta");
   outputContainer->Add(fhEtaPhi) ; 
+  
+  fhPtCentrality  = new TH2F("hPtCentrality","centrality vs p_{T}",nptbins,ptmin,ptmax, 100,0,100);
+  fhPtCentrality->SetYTitle("centrality");
+  fhPtCentrality->SetXTitle("p_{T}(GeV/c)");
+  outputContainer->Add(fhPtCentrality) ;
+  
+  fhPtEventPlane  = new TH2F("hPtEventPlane","event plane angle vs p_{T}",nptbins,ptmin,ptmax, 100,0,TMath::Pi());
+  fhPtEventPlane->SetYTitle("Event plane angle (rad)");
+  fhPtEventPlane->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtEventPlane) ;
   
   if(fAnaType == kSSCalo)
   {
@@ -2175,6 +2186,9 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   
+  Float_t cen = GetEventCentrality();
+  Float_t ep  = GetEventPlaneAngle();
+  
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
     
@@ -2190,13 +2204,16 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     if(phi < 0) phi+=TMath::TwoPi();
     Float_t eta = pi0->Eta();
     
-    fhPt     ->Fill(pt);
+    fhPt     ->Fill(pt  );
     fhE      ->Fill(ener);
     
     fhEEta   ->Fill(ener,eta);
     fhEPhi   ->Fill(ener,phi);
-    fhEtaPhi ->Fill(eta,phi);
+    fhEtaPhi ->Fill(eta ,phi);
 
+    fhPtCentrality ->Fill(pt,cen) ;
+    fhPtEventPlane ->Fill(pt,ep ) ;
+    
     if(fFillPileUpHistograms)
     {
       if(GetReader()->IsPileUpFromSPD())               fhPtPi0PileUp[0]->Fill(pt);
