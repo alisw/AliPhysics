@@ -9,23 +9,44 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliTPChit+;    // defined in AliTPC.h
-#pragma link C++ class AliTPC+;
-#pragma link C++ class AliTPCv0+;
-#pragma link C++ class AliTPCv1+;
-#pragma link C++ class AliTPCv2+;
-#pragma link C++ class AliTPCv3+;
-#pragma link C++ class AliTPCv4+;
-#pragma link C++ class AliTPCLaser+;
+                                      // Container: Space-point coordinates + charge + track label + VolumeID
+                                      // --- move to extra class 
 
+#pragma link C++ class AliTrackHitsParamV2+; // defined in AliTPCTrackHitsV2.h 
+                                             // Local parabolic parametrization of hits in global coordinates
+                                             // --- move to extra class 
+#pragma link C++ class AliTPCTrackHitsV2+;   // Containter: For Tracks Hits ("compressed" AliTPChit)
 
-#pragma link C++ class AliTrackHitsParamV2+; // defined in AliTPCTrackHitsV2.h
-#pragma link C++ class AliTPCTrackHitsV2+;
+// --- MOVE AliTPC -> AliTPCMC
+// AliTPCv0 -> AliTPCMCCoarse
+// AliTPCv1 -> AliTPCMCParametrized
+// AliTPCv2 -> AliTPCMCDefault
+// AliTPCv4 -> AliTPCMCKrypton
+// AliTPCLaser -> AliTPCMCLaser
 
-#pragma link C++ class AliTPCDigitizer;
+#pragma link C++ class AliTPC+;       // Base class: for TPC simulation: eg defines Material, Geometry, etc ...   
+                                      // --- Check to move relevant parameters to AliTPCParam
+#pragma link C++ class AliTPCv0+;     // Coarse geometry (no sensitive volume)
+                                      // --- Update Documentation
+#pragma link C++ class AliTPCv1+;     // Fast Simulation - paramterized Detector response /not supported since O(10) years
+                                      // --- move to attic
+#pragma link C++ class AliTPCv2+;     // Default version - is used
+                                      // --- Update Documentation
+#pragma link C++ class AliTPCv3+;     // --- obsolete -- remove
+#pragma link C++ class AliTPCv4+;     // Krypton simulation - is used
+                                      // --- Update Documentation
+#pragma link C++ class AliTPCLaser+;  // Laser Simulation 
+                                      // --- Update Documentation
 
-#pragma link C++ class AliTPCBuffer+;
-#pragma link C++ class AliTPCDDLRawData+;
-#pragma link C++ class AliTPCQADataMakerSim+;
+#pragma link C++ class AliTPCDigitizer;   // Create Digits out of SDigits and partially SDigits from Hits
+                                          // --- Update Documentation
+
+#pragma link C++ class AliTPCBuffer+;     // Used to to write digit in raw format
+                                          // --- Update Documentation
+#pragma link C++ class AliTPCDDLRawData+; // Used to to write digit in raw format
+                                          // --- Update Documentation
+
+#pragma link C++ class AliTPCQADataMakerSim+; // Offline QA - to be dropped ...
 
 #endif
 
