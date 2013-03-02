@@ -28,22 +28,20 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS   
-    AliTPC.cxx 
-    AliTPCv0.cxx 
-    AliTPCv1.cxx 
-    AliTPCv2.cxx 
-    AliTPCv3.cxx 
-    AliTPCv4.cxx 
-    AliTPCLaser.cxx 
-    AliTPCTrackHitsV2.cxx 
-    AliTPCDigitizer.cxx 
-    AliTPCBuffer.cxx 
-    AliTPCDDLRawData.cxx 
-    AliTPCQADataMakerSim.cxx
+    Sim/AliTPC.cxx 
+    Sim/AliTPCv0.cxx 
+    Sim/AliTPCv2.cxx 
+    Sim/AliTPCv4.cxx 
+    Sim/AliTPCLaser.cxx 
+    Sim/AliTPCTrackHitsV2.cxx 
+    Sim/AliTPCDigitizer.cxx 
+    Sim/AliTPCBuffer.cxx 
+    Sim/AliTPCDDLRawData.cxx 
+    Sim/AliTPCQADataMakerSim.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TPCsimLinkDef.h)
 
-set ( EINCLUDE  RAW STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  TPC/Base TPC/Sim RAW STEER/STEER STEER/ESD STEER/STEERBase)

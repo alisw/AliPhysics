@@ -28,11 +28,8 @@
                                       // --- Check to move relevant parameters to AliTPCParam
 #pragma link C++ class AliTPCv0+;     // Coarse geometry (no sensitive volume)
                                       // --- Update Documentation
-#pragma link C++ class AliTPCv1+;     // Fast Simulation - paramterized Detector response /not supported since O(10) years
-                                      // --- move to attic
 #pragma link C++ class AliTPCv2+;     // Default version - is used
                                       // --- Update Documentation
-#pragma link C++ class AliTPCv3+;     // --- obsolete -- remove
 #pragma link C++ class AliTPCv4+;     // Krypton simulation - is used
                                       // --- Update Documentation
 #pragma link C++ class AliTPCLaser+;  // Laser Simulation 
