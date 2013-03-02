@@ -10,7 +10,7 @@ Start of the program:
          gSystem->Load("./lib/tgt_linux/libTPCmon.so")
 
    Exectute TPCMonitor macro
-   .x ./macros/TPCMonitor.C   	 
+   .x ${ALICE_ROOT}/Monitor/macros/TPCMonitor.C   	 
 
 // Features of the program /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -77,4 +77,4 @@ For debugging purposes the payload (10bit words format) for each equipment can b
 
 The main window size which also determines the canvas sizes can be changed in
 
-${ALICE_ROOT}/TPC/AliTPCMonitorConfig.txt
+${ALICE_ROOT}/TPC/Monitor/AliTPCMonitorConfig.txt

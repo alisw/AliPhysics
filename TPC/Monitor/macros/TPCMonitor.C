@@ -84,7 +84,7 @@ void TPCMonitor()
   TString fglobalmap=Form("%s/TPC/mapping/MappingGlobal.txt", aliceroot.Data());
   TString frowmap=Form("%s/TPC/mapping/MappingRow.txt",    aliceroot.Data());
   TString ffecmap=Form("%s/TPC/mapping/MappingCards.txt",  aliceroot.Data());
-  TString fnameconf=Form("%s/TPC/AliTPCMonitorConfig.txt",   aliceroot.Data());
+  TString fnameconf=Form("%s/TPC/Monitor/AliTPCMonitorConfig.txt",   aliceroot.Data());
   fMapHand = new AliTPCMonitorMappingHandler("maphand","maphand");
   fMapHand->ReadMapping(fglobalmap.Data());
   fMapHand->ReadRowMappingGlob(frowmap.Data());
@@ -461,7 +461,7 @@ void SetStyle()
 void ReadMe()
 {
 //  AliTPCMonitorEditor *ed = new AliTPCMonitorEditor(fFrameMain, 700, 400);
-//  char nameread[256]; sprintf(nameread,"%s/TPC/AliTPCMonitorReadMe.txt",gSystem->Getenv("ALICE_ROOT"));
+//  char nameread[256]; sprintf(nameread,"%s/TPC/Monitor/TPCMonitorReadMe.txt",gSystem->Getenv("ALICE_ROOT"));
 //  ed->LoadFile(nameread);
 //  ed->Popup();
 }
