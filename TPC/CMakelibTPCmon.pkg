@@ -25,13 +25,21 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliTPCMonitorConfig.cxx AliTPCMonitorAltro.cxx AliTPCMonitorFFT.cxx AliTPCMonitorMappingHandler.cxx AliTPCMonitor.cxx AliTPCMonitorDateFile.cxx AliTPCMonitorDateFormat.cxx AliTPCMonitorDialog.cxx)
+set ( SRCS   
+    Monitor/AliTPCMonitorConfig.cxx 
+    Monitor/AliTPCMonitorAltro.cxx 
+    Monitor/AliTPCMonitorFFT.cxx 
+    Monitor/AliTPCMonitorMappingHandler.cxx 
+    Monitor/AliTPCMonitor.cxx 
+    Monitor/AliTPCMonitorDateFile.cxx 
+    Monitor/AliTPCMonitorDateFormat.cxx 
+    Monitor/AliTPCMonitorDialog.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TPCmonLinkDef.h)
 
-set ( EINCLUDE  RAW STEER)
+set ( EINCLUDE  TPC/Monitor RAW STEER)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 	
@@ -40,10 +48,10 @@ if( ALICE_TARGET STREQUAL "win32gcc")
 endif( ALICE_TARGET STREQUAL "win32gcc")
 
 if (DATE_ROOT)
-  set ( SRCS ${SRCS}   AliTPCMonitorDateMonitor.cxx)
+  set ( SRCS ${SRCS}   Monitor/AliTPCMonitorDateMonitor.cxx)
   set ( PACKBLIBS ${PACKBLIBS}  ${DMONLIBS})
   set ( ELIBSDIR )
   set ( ELIBS )
-  set ( HDRS ${HDRS}   AliTPCMonitorDateMonitor.h)
+  set ( HDRS ${HDRS}   Monitor/AliTPCMonitorDateMonitor.h)
   set ( EINCLUDE ${EINCLUDE}  ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR})
 endif(DATE_ROOT)

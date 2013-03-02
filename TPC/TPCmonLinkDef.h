@@ -10,23 +10,24 @@
 /* New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
 /* */
 
-
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class  AliTPCMonitorConfig+; 
-#pragma link C++ class  AliTPCMonitorAltro+; 
-#pragma link C++ class  AliTPCMonitorFFT+; 
-#pragma link C++ class  AliTPCMonitorMappingHandler+;
+//  re - write for upgraded TPC --- not before
+
+#pragma link C++ class  AliTPCMonitorConfig+;         // Config Conatainer
+#pragma link C++ class  AliTPCMonitorAltro+;          // ALtro Mapping ...  to be checked if ituseds Base mapping
+#pragma link C++ class  AliTPCMonitorFFT+;            // FFT of pad signals
+#pragma link C++ class  AliTPCMonitorMappingHandler+; // TPC mapper ... duplication ... but no time to be spend
 
 #ifdef ALI_DATE
-#pragma link C++ class  AliTPCMonitorDateMonitor+;
+#pragma link C++ class  AliTPCMonitorDateMonitor+;    // Used to read "Date Format" --- check if it is still used   
 #endif
-#pragma link C++ class  AliTPCMonitorDateFile+;  
-#pragma link C++ class  AliTPCMonitorDateFormat+;  
-#pragma link C++ class  AliTPCMonitorDialog+;  
-#pragma link C++ class  AliTPCMonitor+; 
+#pragma link C++ class  AliTPCMonitorDateFile+;       // Used to read "Date Format" --- check if it is still used   
+#pragma link C++ class  AliTPCMonitorDateFormat+;     // Used to read "Date Format" --- check if it is still used   
+#pragma link C++ class  AliTPCMonitorDialog+;         // dialog for opening data streams
+#pragma link C++ class  AliTPCMonitor+;               // Main monitor class
 
 #endif
 
