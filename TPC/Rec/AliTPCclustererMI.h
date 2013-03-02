@@ -36,7 +36,6 @@ public:
   AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoParam * recoParam = 0);
   virtual ~AliTPCclustererMI();
   virtual void Digits2Clusters();
-  virtual void Digits2ClustersOld(AliRawReader* rawReader);
   virtual void Digits2Clusters(AliRawReader* rawReader);
   virtual void SetInput(TTree * tree);  // set input tree with digits
   virtual void SetOutput(TTree * tree); // set output tree with 

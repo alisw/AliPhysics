@@ -28,41 +28,37 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS   
-    AliTPCcluster.cxx 
-    AliTPCclusterMI.cxx 
-    AliComplexCluster.cxx 
-    AliTPCclusterInfo.cxx 
-    AliClusters.cxx 
-    AliTPCClustersRow.cxx 
-    AliClustersArray.cxx 
-    AliTPCClustersArray.cxx 
-    AliTPCclusterer.cxx 
-    AliTPCclustererMI.cxx 
-    AliTPCtrack.cxx 
-    AliTPCpolyTrack.cxx 
-    AliTPCseed.cxx 
-    AliTPCtrackerMI.cxx 
-    AliTPCtrackerSector.cxx 
-    AliTPCPid.cxx 
-    AliTPCtrackPid.cxx 
-    AliTPCReconstructor.cxx 
-    AliTPCRecoParam.cxx 
-    AliTPCClusterParam.cxx 
-    AliTPCTracklet.cxx 
-    AliTPCQADataMakerRec.cxx 
-    AliPadMax.cxx 
-    AliTPCclustererKr.cxx 
-    AliTPCclusterKr.cxx 
-    AliTPCvtpr.cxx
-    AliTPCCosmicUtils.cxx   
-    AliTPCCosmicTrackfit.cxx
-    AliCosmicTracker.cxx
+    Rec/AliTPCclusterMI.cxx 
+    Rec/AliComplexCluster.cxx 
+    Rec/AliTPCclusterInfo.cxx 
+    Rec/AliClusters.cxx 
+    Rec/AliTPCClustersRow.cxx 
+    Rec/AliClustersArray.cxx 
+    Rec/AliTPCClustersArray.cxx 
+    Rec/AliTPCclustererMI.cxx 
+    Rec/AliTPCtrack.cxx 
+    Rec/AliTPCpolyTrack.cxx 
+    Rec/AliTPCseed.cxx 
+    Rec/AliTPCtrackerMI.cxx 
+    Rec/AliTPCtrackerSector.cxx 
+    Rec/AliTPCReconstructor.cxx 
+    Rec/AliTPCRecoParam.cxx 
+    Rec/AliTPCClusterParam.cxx 
+    Rec/AliTPCTracklet.cxx 
+    Rec/AliTPCQADataMakerRec.cxx 
+    Rec/AliPadMax.cxx 
+    Rec/AliTPCclustererKr.cxx 
+    Rec/AliTPCclusterKr.cxx 
+    Rec/AliTPCvtpr.cxx
+    Rec/AliTPCCosmicUtils.cxx   
+    Rec/AliTPCCosmicTrackfit.cxx
+    Rec/AliCosmicTracker.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TPCrecLinkDef.h)
 
-set ( EINCLUDE  RAW STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  TPC/Base TPC/Rec RAW STEER/STEER STEER/ESD STEER/STEERBase)
 
-set ( EXPORT AliTPCClustersRow.h AliTPCclusterMI.h AliClusters.h AliTPCclusterInfo.h )
+set ( EXPORT Rec/AliTPCClustersRow.h Rec/AliTPCclusterMI.h Rec/AliClusters.h Rec/AliTPCclusterInfo.h )

@@ -8,7 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliTPCcluster+;        // remove / obsolete
 #pragma link C++ class AliTPCclusterMI+;      // Derived from Cluster (shape in addition)
                                               // --- ask peter what can happen if renamed (add some pragma !??!)
 #pragma link C++ class AliTPCclusterInfo+;    // additional info attach to cluster (add digit map)
@@ -33,21 +32,17 @@
 #pragma link C++ class AliTPCClustersArray+;  // Container of clusters ?!?!
                                               // --- docu to be added / remove if not needed 
 
-#pragma link C++ class AliTPCclusterer+;      // --- remove / obsolete
 #pragma link C++ class AliTPCclustererMI+;    // The TPC clusterer -> rename -"MI"
 
 #pragma link C++ class AliTPCtrack+;          // Derived from AliTrack base class for TPC tracks
-
 #pragma link C++ class AliTPCpolyTrack+;      // Polynomial description of track (used in AliTPCtrackerMI::MakeSeeds2)
                                               //  working in global coordinate frame
                                               // --- docu to be added
 #pragma link C++ class AliTPCseed+;           // Derived from AliTPCtrack - the track seed
+
 #pragma link C++ class AliTPCtrackerRow+;     // Container for info (cluster) on padrow level, method FindNearest ...
 #pragma link C++ class AliTPCtrackerSector+;  // Container for info (cluster) on sector level (array rows)
 #pragma link C++ class AliTPCtrackerMI+;      // The TPC tracker -> rename -"MI"
-
-#pragma link C++ class AliTPCPid+;            // --- move to attic
-#pragma link C++ class AliTPCtrackPid+;       // --- move to attic
 
 #pragma link C++ class AliTPCReconstructor+;  // The TPC reconstructor steering TPC reconstruction
 #pragma link C++ class AliTPCRecoParam+;      // Config parameters for reconstruction

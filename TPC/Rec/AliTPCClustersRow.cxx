@@ -24,9 +24,9 @@
 //                                                                           //
 //                                                                          //
 ///////////////////////////////////////////////////////////////////////////////
-#include "AliTPCcluster.h"
 #include <TClass.h>
 #include "AliClusters.h"
+#include "AliTPCclusterMI.h"
 #include "AliTPCClustersRow.h"
 #include <TDirectory.h>
 #include <TClonesArray.h>
@@ -67,7 +67,7 @@ TObject *AliTPCClustersRow::InsertCluster(const TObject *c)
   }
   if(!fClusters) fClusters=new TClonesArray(fClass->GetName(),1000);
   TClonesArray &lclusters = *fClusters;
-  return new(lclusters[fNclusters++]) AliTPCcluster(*((AliTPCcluster*)c));
+  return new(lclusters[fNclusters++]) AliTPCclusterMI(*((AliTPCclusterMI*)c));
 }
 //__________________________________________________________________________
 

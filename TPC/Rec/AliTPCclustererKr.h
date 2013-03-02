@@ -32,7 +32,6 @@ class AliTPCROC;
 class AliTPCCalPad;
 class AliTPCAltroMapping;
 class AliTPCcalibDB;
-class AliTPCRawStream;
 class AliTPCRecoParam;
 class AliTPCReconstructor;
 class AliRawReader;
@@ -50,7 +49,6 @@ public:
   //finders
   virtual Int_t FinderIO();//for MC
   virtual Int_t FinderIO(AliRawReader* rawReader);//for data
-  virtual Int_t FinderIOold(AliRawReader* rawReader);//for data
   virtual Int_t FindClusterKrIO();//main routine for finding clusters
   virtual void CleanSector(Int_t sector); // clean isolated digits
 

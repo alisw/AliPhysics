@@ -30,7 +30,6 @@
 #include <TClonesArray.h>
 #include "AliLog.h"
 #include "AliComplexCluster.h"
-#include "AliTPCcluster.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCClustersRow.h"
 #include "AliTPCParam.h"

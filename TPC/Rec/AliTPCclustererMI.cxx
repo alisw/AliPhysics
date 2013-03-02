@@ -72,7 +72,6 @@
 #include "AliTPCClustersArray.h"
 #include "AliTPCClustersRow.h"
 #include "AliTPCParam.h"
-#include "AliTPCRawStream.h"
 #include "AliTPCRawStreamV3.h"
 #include "AliTPCRecoParam.h"
 #include "AliTPCReconstructor.h"
@@ -1026,7 +1025,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     fAllNSigBins[iRow]=0;
   }
 
-  Int_t prevSector=-1;
   rawReader->Reset();
   Int_t digCounter=0;
   //
@@ -1140,7 +1138,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
       fAllNSigBins[iRow] = 0;
     }
-    prevSector=fSector;
     digCounter=0;
   }
   }
@@ -1162,191 +1159,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 
     fZWidth = fParam->GetZWidth();
     ReadHLTClusters();
-  }
-}
-
-
-
-
-
-void AliTPCclustererMI::Digits2ClustersOld
-(AliRawReader* rawReader)
-{
-//-----------------------------------------------------------------
-// This is a cluster finder for the TPC raw data.
-// The method assumes NO ordering of the altro channels.
-// The pedestal subtraction can be switched on and off
-// using an option of the TPC reconstructor
-//-----------------------------------------------------------------
-  fRecoParam = AliTPCReconstructor::GetRecoParam();
-  if (!fRecoParam){
-    AliFatal("Can not get the reconstruction parameters");
-  }
-  if(AliTPCReconstructor::StreamLevel()>5) {
-    AliInfo("Parameter Dumps");
-    fParam->Dump();
-    fRecoParam->Dump();
-  }
-  fRowDig = NULL;
-
-  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
-  AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
-  //
-  AliTPCRawStream input(rawReader,(AliAltroMapping**)mapping);
-  fEventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
-  if (fEventHeader){
-    fTimeStamp = fEventHeader->Get("Timestamp");  
-    fEventType = fEventHeader->Get("Type");  
-  }
-
-  // creaate one TClonesArray for all clusters
-  if(fBClonesArray && !fOutputClonesArray) fOutputClonesArray = new TClonesArray("AliTPCclusterMI",1000);
-  // reset counter
-  fNclusters  = 0;
-  
-  fMaxTime = fRecoParam->GetLastBin() + 6; // add 3 virtual time bins before and 3 after
-  const Int_t kNIS = fParam->GetNInnerSector();
-  const Int_t kNOS = fParam->GetNOuterSector();
-  const Int_t kNS = kNIS + kNOS;
-  fZWidth = fParam->GetZWidth();
-  Int_t zeroSup = fParam->GetZeroSup();
-  //
-  // Clean-up
-  //
-
-  AliTPCROC * roc = AliTPCROC::Instance();
-  Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
-  Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1);
-  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
-    //
-    Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
-    memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
-    fAllNSigBins[iRow]=0;
-  }
-  //
-  // Loop over sectors
-  //
-  for(fSector = 0; fSector < kNS; fSector++) {
-
-    Int_t nRows = 0;
-    Int_t nDDLs = 0, indexDDL = 0;
-    if (fSector < kNIS) {
-      nRows = fParam->GetNRowLow();
-      fSign = (fSector < kNIS/2) ? 1 : -1;
-      nDDLs = 2;
-      indexDDL = fSector * 2;
-    }
-    else {
-      nRows = fParam->GetNRowUp();
-      fSign = ((fSector-kNIS) < kNOS/2) ? 1 : -1;
-      nDDLs = 4;
-      indexDDL = (fSector-kNIS) * 4 + kNIS * 2;
-    }
-
-    // load the raw data for corresponding DDLs
-    rawReader->Reset();
-    rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
-
-    // select only good sector 
-    if (!input.Next()) continue;
-    if(input.GetSector() != fSector) continue;
-
-    AliTPCCalROC * gainROC    = gainTPC->GetCalROC(fSector);  // pad gains per given sector
-    
-    for (Int_t iRow = 0; iRow < nRows; iRow++) {
-      Int_t maxPad;
-      if (fSector < kNIS)
-        maxPad = fParam->GetNPadsLow(iRow);
-      else
-        maxPad = fParam->GetNPadsUp(iRow);
-      
-      Int_t maxBin = fMaxTime*(maxPad+6);  // add 3 virtual pads  before and 3 after
-      memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
-      fAllNSigBins[iRow] = 0;
-    }
-    
-    Int_t digCounter=0;
-    // Begin loop over altro data
-    Bool_t calcPedestal = fRecoParam->GetCalcPedestal();
-    Float_t gain =1;
-    Int_t lastPad=-1;
-
-    input.Reset();
-    while (input.Next()) {
-      if (input.GetSector() != fSector)
-        AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",fSector,input.GetSector()));
-
-
-      Int_t iRow = input.GetRow();
-      if (iRow < 0){
-        continue;
-      }
-
-      if (iRow < 0 || iRow >= nRows){
-        AliError(Form("Pad-row index (%d) outside the range (%d -> %d) !",
-		      iRow, 0, nRows -1));
-        continue;
-      }
-      //pad
-      Int_t iPad = input.GetPad();
-      if (iPad < 0 || iPad >= nPadsMax) {
-        AliError(Form("Pad index (%d) outside the range (%d -> %d) !",
-		      iPad, 0, nPadsMax-1));
-        continue;
-      }
-      if (iPad!=lastPad){
-        gain    = gainROC->GetValue(iRow,iPad);
-        lastPad = iPad;
-      }
-      iPad+=3;
-      //time
-      Int_t iTimeBin = input.GetTime();
-      if ( iTimeBin < fRecoParam->GetFirstBin() || iTimeBin >= fRecoParam->GetLastBin()){
-        continue;
-        AliFatal(Form("Timebin index (%d) outside the range (%d -> %d) !",
-		      iTimeBin, 0, iTimeBin -1));
-      }
-      iTimeBin+=3;
-
-      //signal
-      Float_t signal = input.GetSignal();
-      if (!calcPedestal && signal <= zeroSup) continue;
-
-      if (!calcPedestal) {
-        Int_t bin = iPad*fMaxTime+iTimeBin;
-        if (gain>0){
-          fAllBins[iRow][bin] = signal/gain;
-        }else{
-          fAllBins[iRow][bin] =0;
-        }
-        fAllSigBins[iRow][fAllNSigBins[iRow]++] = bin;
-      }else{
-        fAllBins[iRow][iPad*fMaxTime+iTimeBin] = signal;
-      }
-      fAllBins[iRow][iPad*fMaxTime+0]+=1.;  // pad with signal
-
-      // Temporary
-      digCounter++;
-    } // End of the loop over altro data
-    //
-    //
-    //
-    //
-    // Now loop over rows and perform pedestal subtraction
-    if (digCounter==0) continue;
-    ProcessSectorData();
-  } // End of loop over sectors
-
-  if (rawReader->GetEventId() && fOutput ){
-    Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), fNclusters);
-  }
-  
-  if(rawReader->GetEventId()) {
-    Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), fNclusters);
-  }
-
-  if(fBClonesArray) {
-    //Info("Digits2Clusters", "Number of found clusters : %d\n",fOutputClonesArray->GetEntriesFast());
   }
 }
 
