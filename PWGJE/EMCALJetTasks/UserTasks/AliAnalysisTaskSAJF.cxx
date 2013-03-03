@@ -129,24 +129,36 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistLeadingJetPhiEta_";
     histname += i;
-    fHistLeadingJetPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 50,-1, 1, 101, 0, TMath::Pi() * 2.02);
+    fHistLeadingJetPhiEta[i] = new TH3F(histname.Data(), histname.Data(), 
+				 50, binsEta, 
+				 101, binsPhi, 
+				 nbinsZ, binsZ);
     fHistLeadingJetPhiEta[i]->GetXaxis()->SetTitle("#eta");
     fHistLeadingJetPhiEta[i]->GetYaxis()->SetTitle("#phi");
+    fHistLeadingJetPhiEta[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
     fOutput->Add(fHistLeadingJetPhiEta[i]);
 
     histname = "fHistLeadingJetPtArea_";
     histname += i;
-    fHistLeadingJetPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+    fHistLeadingJetPtArea[i] = new TH3F(histname.Data(), histname.Data(), 
+					fNbins, binsPt, 
+					30, binsArea,
+					nbinsZ, binsZ);
     fHistLeadingJetPtArea[i]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
     fHistLeadingJetPtArea[i]->GetYaxis()->SetTitle("area");
+    fHistLeadingJetPtArea[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
     fOutput->Add(fHistLeadingJetPtArea[i]);
 
     if (!fRhoName.IsNull()) {
       histname = "fHistLeadingJetCorrPtArea_";
       histname += i;
-      fHistLeadingJetCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, 30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+      fHistLeadingJetCorrPtArea[i] = new TH3F(histname.Data(), histname.Data(), 
+					      fNbins * 2, binsCorrPt, 
+					      30, binsArea,
+					      nbinsZ, binsZ);
       fHistLeadingJetCorrPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
       fHistLeadingJetCorrPtArea[i]->GetYaxis()->SetTitle("area");
+      fHistLeadingJetCorrPtArea[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
       fOutput->Add(fHistLeadingJetCorrPtArea[i]);
       
       histname = "fHistRhoVSleadJetPt_";
@@ -221,6 +233,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 					nbinsZ, binsZ);
       fHistJetsCorrPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} [GeV/c]");
       fHistJetsCorrPtArea[i]->GetYaxis()->SetTitle("area");
+      fHistJetsCorrPtArea[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
       fOutput->Add(fHistJetsCorrPtArea[i]);
     }
 
@@ -326,13 +339,15 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
     if (!AcceptJet(jet))
       continue;
 
-    fHistLeadingJetPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi());
-    fHistLeadingJetPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
+    Float_t ptLeading = GetLeadingHadronPt(jet);
+
+    fHistLeadingJetPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi(), ptLeading);
+    fHistLeadingJetPtArea[fCentBin]->Fill(jet->Pt(), jet->Area(), ptLeading);
 
     Float_t corrPt = jet->Pt() - fRhoVal * jet->Area();
 
     if (fHistLeadingJetCorrPtArea[fCentBin])
-      fHistLeadingJetCorrPtArea[fCentBin]->Fill(corrPt, jet->Area());
+      fHistLeadingJetCorrPtArea[fCentBin]->Fill(corrPt, jet->Area(), ptLeading);
 
     if (i==0 && fHistRhoVSleadJetPt[fCentBin]) 
       fHistRhoVSleadJetPt[fCentBin]->Fill(fRhoVal, jet->Pt());

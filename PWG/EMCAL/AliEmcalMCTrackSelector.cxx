@@ -7,8 +7,8 @@
 #include "AliEmcalMCTrackSelector.h"
 
 #include <TClonesArray.h>
-#include <TH1I.h>
 
+#include "AliNamedArrayI.h"
 #include "AliAnalysisManager.h"
 #include "AliVEventHandler.h"
 #include "AliVEvent.h"
@@ -88,7 +88,7 @@ void AliEmcalMCTrackSelector::UserCreateOutputObjects()
 
   fTracksMapName = fTracksOutName;
   fTracksMapName += "_Map";
-  fTracksMap = new TH1I(fTracksMapName, fTracksMapName, 1000, 0, 1);
+  fTracksMap = new AliNamedArrayI(fTracksMapName, 9999);
 }
 
 //________________________________________________________________________
@@ -132,14 +132,14 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
 
   // clear container (normally a null operation as the event should clean it already)
   fTracksOut->Delete();
+  fTracksMap->Clear();
 
   const Int_t Ntracks = GetNumberOfTracks();
-  new (fTracksMap) TH1I(fTracksMapName, fTracksMapName, Ntracks-2, 0, 1);  // Ntracks - 2, we use also over- and uner-flow bins
 
   // loop over tracks
   for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
 
-    fTracksMap->SetBinContent(iTracks, 0);
+    fTracksMap->AddAt(-1, iTracks);
 
     AliVParticle* track = GetTrack(iTracks);
 
@@ -154,7 +154,7 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
     
     if (fChargedMC && track->Charge() == 0) continue;
 
-    fTracksMap->SetBinContent(iTracks, nacc);
+    fTracksMap->AddAt(nacc, iTracks);
 
     AddTrack(track, nacc);
 

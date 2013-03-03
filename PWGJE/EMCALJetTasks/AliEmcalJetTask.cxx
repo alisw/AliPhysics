@@ -184,10 +184,14 @@ void AliEmcalJetTask::FindJets()
       if (!t)
         continue;
       if (fIsMcPart) {
-	if (((fJetType & kChargedJet) != 0) && (t->Charge() == 0))
+	if (((fJetType & kChargedJet) != 0) && (t->Charge() == 0)) {
+	  AliDebug(2,Form("Skipping track %d because it is neutral.", iTracks));
 	  continue;
-	if (((fJetType & kNeutralJet) != 0) && (t->Charge() != 0))
+	}
+	if (((fJetType & kNeutralJet) != 0) && (t->Charge() != 0)) {
+	  AliDebug(2,Form("Skipping track %d because it is charged.", iTracks));
 	  continue;
+	}
       }
       if (fIsMcPart || t->GetLabel() != 0) {
 	if (fMCConstSel == kNone) {
@@ -395,7 +399,7 @@ void AliEmcalJetTask::FindJets()
 
     for(UInt_t ic = 0; ic < constituents.size(); ++ic) {
       Int_t uid = constituents[ic].user_index();
-      AliDebug(2,Form("Processing constituent %d", uid));
+      AliDebug(3,Form("Processing constituent %d", uid));
       if ((uid == -1) /*&& (constituents[ic].kt2() < 1e-25)*/) { //ghost particle
         ++gall;
         Double_t gphi = constituents[ic].phi();
@@ -588,7 +592,7 @@ Bool_t AliEmcalJetTask::DoInit()
   }
   if (fTracks) {
     TClass cls(fTracks->GetClass()->GetName());
-    if (cls.InheritsFrom("AliMCParticle"))
+    if (cls.InheritsFrom("AliMCParticle") || cls.InheritsFrom("AliAODMCParticle"))
       fIsMcPart = 1;
   }
   

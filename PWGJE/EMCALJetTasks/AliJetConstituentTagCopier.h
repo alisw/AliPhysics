@@ -7,6 +7,7 @@
 
 class TClonesArray;
 class TString;
+class AliNamedArrayI;
 
 class AliJetConstituentTagCopier : public AliAnalysisTaskEmcal {
  public:
@@ -25,7 +26,7 @@ class AliJetConstituentTagCopier : public AliAnalysisTaskEmcal {
 
   TString                     fMCParticlesName;                       // name of MC particle collection
   TClonesArray               *fMCParticles;                           //!MC particle collection
-  TH1I                       *fMCParticlesMap;                        //!MC particle map
+  AliNamedArrayI             *fMCParticlesMap;                        //!MC particle map
 
  private:
   AliJetConstituentTagCopier(const AliJetConstituentTagCopier&);            // not implemented

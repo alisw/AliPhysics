@@ -25,6 +25,7 @@
 #include "AliPicoTrack.h"
 #include "AliEMCALGeometry.h"
 #include "AliLog.h"
+#include "AliNamedArrayI.h"
 
 ClassImp(AliJetModelBaseTask)
 
@@ -164,11 +165,9 @@ void AliJetModelBaseTask::UserExec(Option_t *)
       fOutMCParticles->Delete();
   }
   
-  // Reset name (it is cleared each event by the analysis manager)
-  if (fOutMCParticlesMap) {
-    new (fOutMCParticlesMap) TH1I(fOutMCParticlesName + "_Map", fOutMCParticlesName + "_Map",9999,0,1);
-    fOutMCParticlesMap->TArrayI::Reset(-1);
-  }
+  // Clear map
+  if (fOutMCParticlesMap)
+  fOutMCParticlesMap->Clear();
 
   AliVCaloCells *tempCaloCells = 0;
 
@@ -325,13 +324,13 @@ Bool_t AliJetModelBaseTask::ExecOnce()
 	return kFALSE;
       }
       
-      fMCParticlesMap = dynamic_cast<TH1I*>(InputEvent()->FindListObject(fMCParticlesName + "_Map"));
+      fMCParticlesMap = dynamic_cast<AliNamedArrayI*>(InputEvent()->FindListObject(fMCParticlesName + "_Map"));
 
       if (!fMCParticlesMap) {
 	AliWarning(Form("%s: Could not retrieve map for MC particles %s! Will assume MC labels consistent with indexes...", GetName(), fMCParticlesName.Data())); 
-	fMCParticlesMap = new TH1I(fMCParticlesName + "_Map", fMCParticlesName + "_Map",9999,0,1);
+	fMCParticlesMap = new AliNamedArrayI(fMCParticlesName + "_Map", 9999);
 	for (Int_t i = 0; i < 9999; i++) {
-	  fMCParticlesMap->SetBinContent(i,i);
+	  fMCParticlesMap->AddAt(i,i);
 	}
       }
     }
@@ -352,7 +351,7 @@ Bool_t AliJetModelBaseTask::ExecOnce()
 	  InputEvent()->AddObject(fOutMCParticles);
 	}
 
-	fOutMCParticlesMap = new TH1I(fOutMCParticlesName + "_Map", fOutMCParticlesName + "_Map",9999,0,1);
+	fOutMCParticlesMap = new AliNamedArrayI(fOutMCParticlesName + "_Map",9999);
 	if (InputEvent()->FindListObject(fOutMCParticlesName + "_Map")) {
 	  AliFatal(Form("%s: Map %s_Map is already present in the event!", GetName(), fOutMCParticlesName.Data())); 
 	  return kFALSE;
@@ -618,7 +617,7 @@ AliAODMCParticle* AliJetModelBaseTask::AddMCParticle(AliAODMCParticle *part, Int
 
   AliAODMCParticle *aodpart = new ((*fOutMCParticles)[nPart]) AliAODMCParticle(*part);
 
-  fOutMCParticlesMap->SetBinContent(origIndex + fMCLabelShift, nPart);
+  fOutMCParticlesMap->AddAt(nPart, origIndex + fMCLabelShift);
   AliDebug(2, Form("Setting bin %d to %d (fMCLabelShift=%d, origIndex=%d)", 
 		   origIndex + fMCLabelShift, fOutMCParticlesMap->At(origIndex + fMCLabelShift), fMCLabelShift, origIndex));
 
@@ -696,9 +695,9 @@ void AliJetModelBaseTask::CopyMCParticles()
   if (!fMCParticlesMap)
     return;
 
-  for (Int_t i = 0; i < fMCParticlesMap->GetNbinsX()+2; i++) {
-    fOutMCParticlesMap->SetBinContent(i, fMCParticlesMap->GetBinContent(i));
-    if (fMCParticlesMap->GetBinContent(i) != 0)
+  for (Int_t i = 0; i < fMCParticlesMap->GetSize(); i++) {
+    fOutMCParticlesMap->AddAt(fMCParticlesMap->At(i), i);
+    if (fMCParticlesMap->At(i) >= 0)
       fMCLabelShift = i;
   }
 

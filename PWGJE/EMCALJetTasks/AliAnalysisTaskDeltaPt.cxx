@@ -401,16 +401,17 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
     Int_t countEmbJets = 0;
     
     while (embJet != 0) {
+      AliDebug(2,Form("Elaborating embedded jet n. %d", countEmbJets));
+      countEmbJets++;
+
       if (!AcceptJet(embJet)) {
+	AliDebug(2,"Embedded jet not accepted, skipping...");
 	fHistEmbRejectedJetsPhiEta[fCentBin]->Fill(embJet->Eta(), embJet->Phi());
 	fHistEmbRejectedJetsPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt());
 	
 	embJet = NextEmbeddedJet();
 	continue;
       }
-
-      AliDebug(2,Form("Elaborating embedded jet n. %d", countEmbJets));
-      countEmbJets++;
       
       Double_t maxClusterPt = 0;
       Double_t maxClusterEta = 0;

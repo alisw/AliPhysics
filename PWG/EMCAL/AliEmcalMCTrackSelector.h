@@ -6,6 +6,7 @@
 class TClonesArray;
 class TString;
 class TH1I;
+class AliNamedArrayI;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -35,7 +36,7 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   Bool_t             fEsdMode;              //!switch for ESD/AOD mode
   TClonesArray      *fTracksIn;             //!track array in (AOD only)
   TClonesArray      *fTracksOut;            //!track array out
-  TH1I              *fTracksMap;            //!track mapping
+  AliNamedArrayI    *fTracksMap;            //!track mapping
 
  private:
   AliEmcalMCTrackSelector(const AliEmcalMCTrackSelector&);            // not implemented

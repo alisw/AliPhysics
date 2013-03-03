@@ -38,6 +38,7 @@ class AliPicoTrack: public AliVTrack {
   Int_t    GetLabel()                  const { return fLabel;  }
   void     SetLabel(Int_t label)             { fLabel = label; }
   Byte_t   GetTrackType()              const { return fTrackType;}
+  void     SetTrackType(Byte_t type)         { fTrackType = type;}
   Int_t    PdgCode()                   const { return 0;       }
   const Double_t *PID()                const { return 0;       }
   Int_t    GetID()                     const { return 0;       }
