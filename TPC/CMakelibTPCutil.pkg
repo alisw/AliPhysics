@@ -1,7 +1,7 @@
 # -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
-# Package File for TPCcalib                                                      #
-# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Package File for TPCutil                                                       #
+# Author : Jochen Thaeder                                                        #
 # Variables Defined :                                                            #
 #                                                                                #
 # SRCS - C++ source files                                                        #
@@ -27,36 +27,18 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    AliTPCCorrectionFit.cxx 
-    AliTPCcalibTracksCuts.cxx 
-    AliTPCcalibTracks.cxx 
-    AliTPCcalibTracksGain.cxx 
-    AliTPCCalPadRegion.cxx 
-    AliTPCFitPad.cxx 
-    AliTPCcalibAlign.cxx 
-    AliTPCcalibAlignment.cxx 
-    AliTPCcalibV0.cxx 
-    AliTPCCalibKr.cxx 
-    AliTPCAnalysisTaskcalib.cxx 
-    AliTPCCalibKrTask.cxx 
-    AliTPCcalibLaser.cxx 
-    AliTPCcalibCosmic.cxx 
-    AliTPCcalibCalib.cxx 
-    AliTPCcalibTime.cxx 
-#    AliTPCcalibPID.cxx 
-    AliTPCcalibTimeGain.cxx 
-    AliTPCMisAligner.cxx 
-    AliTPCcalibTrigger.cxx 
-#    AliTPCcalibMaterial.cxx 
-    AliTPCPreprocessorOffline.cxx 
-    AliTPCkalmanAlign.cxx 
-    AliTPCcalibSummary.cxx 
-    AliTPCcalibGainMult.cxx 
+    Util/AliTPCGenDBTemp.cxx
+    Util/AliTPCGenDBConf.cxx
+    Util/AliTPCCalibViewerGUIAlarms.cxx 
+    Util/AliTPCCalibQAChecker.cxx 
+    Util/AliTPCAltroEmulator.cxx
+    Util/AliTPCkalmanTime.cxx 
+    Util/AliTPCAlign.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( EINCLUDE RAW TPC TPC/Base TPC/Rec ANALYSIS STAT STEER/STEER STEER/CDB STEER/STEERBase )
+set ( EINCLUDE RAW TPC TPC/Util TPC/Base ANALYSIS STAT STEER/STEER STEER/CDB STEER/STEERBase )
 
-set ( DHDR  TPCcalibLinkDef.h)
+set ( DHDR  TPCutilLinkDef.h)
 

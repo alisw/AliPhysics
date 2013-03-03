@@ -74,7 +74,6 @@ extern "C" {
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliTPCmapper.h"
-#include "AliTPCRawStream.h"
 #include "AliTPCROC.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
@@ -123,7 +122,6 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);

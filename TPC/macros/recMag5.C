@@ -41,7 +41,7 @@ void recMag5(const char *filename="data.root")
  AliITSReconstructor::SetRecoParam(itsRecoParam); 
  
   // TPC settings
-  AliLog::SetClassDebugLevel("AliTPCclustererMI",2);
+  AliLog::SetClassDebugLevel("AliTPCclusterer",2);
   AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetCosmicTestParam(kFALSE);
   Double_t sysError[5]={0.3,3, 0.3/150., 3./150.,0.3/(150*150.)};
   tpcRecoParam->SetSystematicError(sysError);

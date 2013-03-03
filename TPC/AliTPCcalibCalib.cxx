@@ -62,7 +62,6 @@
 #include "AliTPCRecoParam.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
-#include "AliTPCPointCorrection.h"
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include "TDatabasePDG.h"

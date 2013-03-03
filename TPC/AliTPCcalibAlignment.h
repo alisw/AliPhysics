@@ -7,7 +7,7 @@ class AliTPCseed;
 class AliExternalTrackParam;
 class AliESDtrack;
 class AliRieman;
-class AliTPCtrackerMI;
+class AliTPCtracker;
 class TTreeSRedirector;
 
 class AliTPCcalibAlignment:public TNamed {

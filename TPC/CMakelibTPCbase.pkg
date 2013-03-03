@@ -28,96 +28,78 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS   
-    AliSegmentID.cxx 
-    AliSegmentArray.cxx 
-    AliDigits.cxx 
-    AliH2F.cxx 
-    AliTPCLoader.cxx 
-    AliTPCPRF2D.cxx 
-    AliTPCRF1D.cxx 
-    AliDetectorParam.cxx 
-    AliTPCParam.cxx 
-    AliTPCParamSR.cxx 
-    AliTPCParamCR.cxx 
-    AliTPCdigit.cxx 
-    AliSimDigits.cxx 
-    AliDigitsArray.cxx 
-    AliTPCDigitsArray.cxx 
-    AliTPCmapper.cxx 
-    AliTPCROC.cxx 
-    AliTPCCalROC.cxx 
-    AliTPCCalPad.cxx 
-    AliTPCCalDet.cxx 
-    AliTPCcalibDB.cxx 
-    AliTPCcalibDButil.cxx 
-    AliTPCAltroMapping.cxx 
-    AliTPCRawStream.cxx 
-    AliTPCRawStreamV3.cxx 
-    AliTPCLaserTracks.cxx 
-    AliTPCSensorTemp.cxx 
-    AliTPCSensorTempArray.cxx 
-    AliTPCCalibRawBase.cxx 
-    AliTPCCalibPedestal.cxx 
-    AliTPCCalibPulser.cxx 
-    AliTPCCalibCE.cxx 
-    AliTPCCalibRaw.cxx 
-    AliTPCPreprocessor.cxx 
-    AliTPCPreprocessorOnline.cxx 
-    AliTPCCalibViewer.cxx 
-    AliTPCCalibViewerGUI.cxx 
-    AliTPCCalibViewerGUItime.cxx 
-    AliTPCCalibViewerGUIAlarms.cxx 
-    AliTPCCalibQAChecker.cxx 
-    AliTPCGenDBTemp.cxx 
-    AliTPCGenDBConf.cxx 
-    AliTPCExB.cxx 
-    AliTPCExBExact.cxx 
-    AliTPCExBFirst.cxx 
-    AliTPCTempMap.cxx 
-    AliTPCCalibVdrift.cxx 
-    AliTPCCalibTCF.cxx 
-    AliTPCAltroEmulator.cxx 
-    AliTPCeventInfo.cxx 
-    AliTransform.cxx 
-    AliTPCTransform.cxx 
-    AliTPCAlign.cxx 
-    AliTPCGoofieValues.cxx 
-    AliTPCdataQA.cxx 
-    AliTPCQAChecker.cxx 
-    AliTPCConfigDA.cxx 
-    AliTPCConfigParser.cxx 
-    AliTPCkalmanTime.cxx 
-    AliESDcosmic.cxx 
-    AliTPCPointCorrection.cxx 
-    AliTPCTransformation.cxx 
-    AliTPCkalmanFit.cxx 
-    AliTPCLaserTrack.cxx 
-    AliTPCcalibBase.cxx 
-    AliTPCCorrection.cxx 
-    AliTPCInverseCorrection.cxx 
-    AliTPCComposedCorrection.cxx 
-    AliTPCExBBShape.cxx 
-    AliTPCExBTwist.cxx 
-    AliTPCGGVoltError.cxx 
-    AliTPCBoundaryVoltError.cxx 
-    AliTPCCalibGlobalMisalignment.cxx 
-    AliTPCFCVoltError3D.cxx 
-    AliTPCROCVoltError3D.cxx 
-    AliTPCSpaceCharge.cxx 
-    AliTPCSpaceCharge3D.cxx 
-    AliXRDPROOFtoolkit.cxx 
-    AliTPCExBEffective.cxx 
-    AliTPCExBEffectiveSector.cxx 
-    AliTPCCorrectionDrift.cxx 
+    Base/AliSegmentID.cxx 
+    Base/AliSegmentArray.cxx 
+    Base/AliDigits.cxx 
+    AliH2F.cxx   # REMOVE
+    Base/AliTPCLoader.cxx 
+    Base/AliTPCPRF2D.cxx 
+    Base/AliTPCRF1D.cxx 
+    Base/AliDetectorParam.cxx 
+    Base/AliTPCParam.cxx 
+    Base/AliTPCParamSR.cxx 
+    Base/AliSimDigits.cxx 
+    Base/AliDigitsArray.cxx 
+    Base/AliTPCDigitsArray.cxx 
+    Base/AliTPCmapper.cxx 
+    Base/AliTPCROC.cxx 
+    Base/AliTPCCalROC.cxx 
+    Base/AliTPCCalPad.cxx 
+    Base/AliTPCcalibDB.cxx 
+    Base/AliTPCcalibDButil.cxx 
+    Base/AliTPCAltroMapping.cxx 
+    Base/AliTPCRawStreamV3.cxx 
+    Base/AliTPCSensorTemp.cxx 
+    Base/AliTPCSensorTempArray.cxx 
+    Base/AliTPCCalibRawBase.cxx 
+    Base/AliTPCCalibPedestal.cxx 
+    Base/AliTPCCalibPulser.cxx 
+    Base/AliTPCCalibCE.cxx 
+    Base/AliTPCCalibRaw.cxx 
+    Base/AliTPCPreprocessor.cxx 
+    AliTPCPreprocessorOnline.cxx # to RENAME
+    AliTPCCalibViewer.cxx        # UTIL
+    AliTPCCalibViewerGUI.cxx     # UTIL
+    AliTPCCalibViewerGUItime.cxx # UTIL
+    Base/AliTPCExB.cxx 
+    Base/AliTPCExBExact.cxx 
+    Base/AliTPCExBFirst.cxx 
+    Base/AliTPCTempMap.cxx 
+    Base/AliTPCCalibVdrift.cxx 
+    Base/AliTransform.cxx 
+    Base/AliTPCTransform.cxx 
+    Base/AliTPCdataQA.cxx 
+    Base/AliTPCQAChecker.cxx 
+    Base/AliTPCConfigDA.cxx 
+    Base/AliTPCConfigParser.cxx
+	Base/AliTPCPointCorrection.cxx
+    Base/AliTPCLaserTrack.cxx 
+    Base/AliTPCcalibBase.cxx 
+    Base/AliTPCCorrection.cxx 
+    Base/AliTPCInverseCorrection.cxx 
+    Base/AliTPCComposedCorrection.cxx 
+    Base/AliTPCExBBShape.cxx 
+    Base/AliTPCExBTwist.cxx 
+    Base/AliTPCGGVoltError.cxx 
+    Base/AliTPCBoundaryVoltError.cxx 
+    Base/AliTPCCalibGlobalMisalignment.cxx 
+    Base/AliTPCFCVoltError3D.cxx 
+    Base/AliTPCROCVoltError3D.cxx 
+    Base/AliTPCSpaceCharge.cxx 
+    Base/AliTPCSpaceCharge3D.cxx 
+    Base/AliXRDPROOFtoolkit.cxx 
+    Base/AliTPCExBEffective.cxx 
+    Base/AliTPCExBEffectiveSector.cxx 
+    Base/AliTPCCorrectionDrift.cxx 
     )
     
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TPCbaseLinkDef.h)
 
-set ( EINCLUDE  RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  RAW TPC/Base STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
 
-set (EXPORT AliSegmentID.h AliTPCCalibViewerGUI.h AliTPCRawStreamV3.h)
+set (EXPORT Base/AliSegmentID.h AliTPCCalibViewerGUI.h Base/AliTPCRawStreamV3.h)
 
 install ( DIRECTORY mapping
           DESTINATION TPC

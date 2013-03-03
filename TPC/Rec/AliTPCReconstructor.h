@@ -9,8 +9,8 @@
 #include "AliTPCRecoParam.h"
 
 class AliTPCParam;
-class AliTPCclustererMI;
-class AliTPCtrackerMI;
+class AliTPCclusterer;
+class AliTPCtracker;
 class AliTPCAltroEmulator;
 
 class AliTPCReconstructor: public AliReconstructor {
@@ -39,14 +39,14 @@ public:
   static void  SetAltroEmulator(AliTPCAltroEmulator *altro) { fAltroEmulator=altro;}
   static AliTPCAltroEmulator *  GetAltroEmulator() { return fAltroEmulator;}
 
-  void ParseOptions(AliTPCtrackerMI* tracker) const;
+  void ParseOptions(AliTPCtracker* tracker) const;
 
 private:
   AliTPCReconstructor(const AliTPCReconstructor&); //Not implemented
   AliTPCReconstructor& operator=(const AliTPCReconstructor&); //Not implemented
   AliTPCParam*         GetTPCParam() const;
   static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
-  AliTPCclustererMI*         fClusterer;   // TPC clusterer
+  AliTPCclusterer*           fClusterer;   // TPC clusterer
   static AliTPCAltroEmulator * fAltroEmulator;    // ALTRO emulator
   ClassDef(AliTPCReconstructor, 0)   // class for the TPC reconstruction
 };

@@ -17,7 +17,7 @@
 
 //-----------------------------------------------------------------
 //           Implementation of the TPC track class
-//        This class is used by the AliTPCtrackerMI class
+//        This class is used by the AliTPCtracker class
 //      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
 

@@ -40,8 +40,8 @@
 #include "AliRunLoader.h"
 #include "AliRun.h"
 #include "AliRawReader.h"
-#include "AliTPCclustererMI.h"
-#include "AliTPCtrackerMI.h"
+#include "AliTPCclusterer.h"
+#include "AliTPCtracker.h"
 //#include "AliTPCpidESD.h"
 #include "AliTPCParam.h"
 #include "AliTPCParamSR.h"
@@ -72,7 +72,7 @@ fClusterer(NULL)
     AliWarning("Loading default TPC parameters !");
     param = new AliTPCParamSR;
   }
-  fClusterer = new AliTPCclustererMI(param);
+  fClusterer = new AliTPCclusterer(param);
 }
 
 AliTPCReconstructor::AliTPCReconstructor(const AliTPCReconstructor& /*rec*/):
@@ -127,7 +127,7 @@ AliTracker* AliTPCReconstructor::CreateTracker() const
   }
   param->ReadGeoMatrices();
   
-  AliTPCtrackerMI* tracker = new AliTPCtrackerMI(param);
+  AliTPCtracker* tracker = new AliTPCtracker(param);
 
   ParseOptions(tracker);
 
@@ -159,7 +159,7 @@ AliTPCParam* AliTPCReconstructor::GetTPCParam() const
 
 
 //_____________________________________________________________________________
-void AliTPCReconstructor::ParseOptions( AliTPCtrackerMI* tracker ) const
+void AliTPCReconstructor::ParseOptions( AliTPCtracker* tracker ) const
 {
 // parse options from rec.C and set in clusterer and tracker
   

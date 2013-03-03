@@ -35,11 +35,11 @@ set ( SRCS
     Rec/AliTPCClustersRow.cxx 
     Rec/AliClustersArray.cxx 
     Rec/AliTPCClustersArray.cxx 
-    Rec/AliTPCclustererMI.cxx 
+    Rec/AliTPCclusterer.cxx 
     Rec/AliTPCtrack.cxx 
     Rec/AliTPCpolyTrack.cxx 
     Rec/AliTPCseed.cxx 
-    Rec/AliTPCtrackerMI.cxx 
+    Rec/AliTPCtracker.cxx 
     Rec/AliTPCtrackerSector.cxx 
     Rec/AliTPCReconstructor.cxx 
     Rec/AliTPCRecoParam.cxx 

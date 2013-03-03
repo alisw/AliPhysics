@@ -20,7 +20,7 @@
 //                                                                           //  
 //
 /*
-  The reconstruction parameters are used in the AliTPCclustererMI and AliTPCtrackerMI
+  The reconstruction parameters are used in the AliTPCclusterer and AliTPCtracker
   
   They are retrieved:
   0. User speciefied it in reconstruction macro

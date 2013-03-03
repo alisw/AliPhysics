@@ -19,7 +19,7 @@ void recTPC2007(Int_t type, const char *filename="data.root")
   TGrid::Connect("alien://");
   //
 
-  AliLog::SetClassDebugLevel("AliTPCclustererMI",2);
+  AliLog::SetClassDebugLevel("AliTPCclusterer",2);
   AliTPCRecoParam * tpcRecoParam = 0;
   if (type==0)  tpcRecoParam = AliTPCRecoParam::GetCosmicTestParam(kTRUE);
   if (type>0)  tpcRecoParam = AliTPCRecoParam::GetLaserTestParam(kTRUE);

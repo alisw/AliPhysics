@@ -85,7 +85,6 @@ using namespace std;
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
-#include "AliTPCRawStream.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCROC.h"

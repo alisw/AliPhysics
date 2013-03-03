@@ -10,7 +10,6 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   //
   // remove Altro warnings
   //
-  AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);

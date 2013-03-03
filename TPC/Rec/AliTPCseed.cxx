@@ -19,7 +19,7 @@
 //-----------------------------------------------------------------
 //
 //           Implementation of the TPC seed class
-//        This class is used by the AliTPCtrackerMI class
+//        This class is used by the AliTPCtracker class
 //      Origin: Marian Ivanov, CERN, Marian.Ivanov@cern.ch
 //-----------------------------------------------------------------
 #include "TClonesArray.h"
