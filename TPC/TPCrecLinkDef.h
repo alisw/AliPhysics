@@ -27,10 +27,10 @@
                                               //   contains 1 AliTPCClustersRow per segment (1 segment = 1 padrow)
 #pragma link C++ class AliTPCClustersRow+;    // TPC Container array of "cluster" inside 1 padrow
 
-#pragma link C++ class AliClustersArray+;     // Container of clusters ?!?!
-                                              // --- docu to be added / remove if not needed 
-#pragma link C++ class AliTPCClustersArray+;  // Container of clusters ?!?!
-                                              // --- docu to be added / remove if not needed 
+//#pragma link C++ class AliClustersArray+;     // Container of clusters ?!?!
+//                                              // --- docu to be added / remove if not needed 
+//#pragma link C++ class AliTPCClustersArray+;  // Container of clusters ?!?!
+//                                              // --- docu to be added / remove if not needed 
 
 #pragma link C++ class AliTPCclusterer+;      // The TPC clusterer
 

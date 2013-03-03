@@ -71,6 +71,7 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler {
    *
    * Calls the @ref AliHLTTPCMemHandler::Memory2BinaryFile to write the file.
    */
+
   Bool_t AliDigits2BinaryFile(Int_t event=0,Bool_t altro=kFALSE);
 
   /**
@@ -126,8 +127,10 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler {
   Bool_t AliDigits2CompBinary(Int_t event=0,Bool_t altro=kFALSE);  
 
   //Point IO
+
   Bool_t AliPoints2Binary(Int_t eventn=0);
-  AliHLTTPCSpacePointData *AliPoints2Memory(UInt_t & npoint,Int_t eventn=0);//Allocates Memory
+  // Is this really still used : JMT 2013-03-03 - corresponding IO removed in TPC  
+  //  AliHLTTPCSpacePointData *AliPoints2Memory(UInt_t & npoint,Int_t eventn=0);//Allocates Memory
 
  protected:
   AliRunLoader *fInAli;//!

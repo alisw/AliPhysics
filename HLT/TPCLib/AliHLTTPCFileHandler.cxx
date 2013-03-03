@@ -43,7 +43,6 @@
 #include <TTree.h>
 #include <AliTPCParamSR.h>
 #include <AliTPCDigitsArray.h>
-#include <AliTPCClustersArray.h>
 #include <AliTPCclusterMI.h>
 #include <AliTPCClustersRow.h>
 #include <AliSimDigits.h>
@@ -1110,6 +1109,8 @@ Bool_t AliHLTTPCFileHandler::AliPoints2Binary(Int_t eventn)
   return out;
 }
 
+#if 0
+// Is this really still used : JMT 2013-03-03
 AliHLTTPCSpacePointData * AliHLTTPCFileHandler::AliPoints2Memory(UInt_t & npoint,Int_t eventn)
 {
   //points to memory
@@ -1208,4 +1209,4 @@ AliHLTTPCSpacePointData * AliHLTTPCFileHandler::AliPoints2Memory(UInt_t & npoint
 
   return data;
 }
-
+#endif

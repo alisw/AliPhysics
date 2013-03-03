@@ -69,7 +69,6 @@
 #include "AliSimDigits.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
-#include "AliTPCClustersArray.h"
 #include "AliTPCClustersRow.h"
 #include "AliTPCParam.h"
 #include "AliTPCRawStreamV3.h"

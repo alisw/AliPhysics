@@ -33,8 +33,6 @@ set ( SRCS
     Rec/AliTPCclusterInfo.cxx 
     Rec/AliClusters.cxx 
     Rec/AliTPCClustersRow.cxx 
-    Rec/AliClustersArray.cxx 
-    Rec/AliTPCClustersArray.cxx 
     Rec/AliTPCclusterer.cxx 
     Rec/AliTPCtrack.cxx 
     Rec/AliTPCpolyTrack.cxx 
