@@ -34,7 +34,6 @@
 #include "AliTPCParam.h"
 #include "AliTPCClustersArray.h"
 #include "AliTPCClustersRow.h"
-#include "AliTPCcluster.h"
 #include "AliComplexCluster.h"
 #include "AliTPCFast.h"
 #include "AliLog.h"
@@ -61,6 +60,7 @@ AliTPCFast & AliTPCFast::operator =(const AliTPCFast & param)
   return (*this);
 }
 
+#if 0
 //_____________________________________________________________________________
 void AliTPCFast::Hits2Clusters(AliRunLoader* runLoader) const
 {
@@ -577,5 +577,5 @@ void AliTPCFast::Hits2ExactClustersSector(AliRunLoader* runLoader,
   xxxx->Delete();
  
 }
-
+#endif
 
