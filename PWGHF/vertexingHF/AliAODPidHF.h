@@ -89,6 +89,7 @@ class AliAODPidHF : public AliAODPid{
  
  Int_t GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &sigma) const;
  Int_t GetnSigmaTOF(AliAODTrack *track, Int_t species, Double_t &sigma) const;
+ Int_t GetnSigmaITS(AliAODTrack *track, Int_t species, Double_t &sigma) const;
  Double_t GetSigma(Int_t idet) const{return fnSigma[idet];}
  Double_t GetTofSigma() const{return fTOFSigma;}
  //void GetPriors(Double_t *priors) const{priors=fPriors;return;}

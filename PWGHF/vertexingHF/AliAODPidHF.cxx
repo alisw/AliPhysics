@@ -953,3 +953,39 @@ void AliAODPidHF::SetUpCombinedPID(){
   break;
  }
 }
+//-----------------------------
+
+Int_t AliAODPidHF::GetnSigmaITS(AliAODTrack *track,Int_t species, Double_t &nsigma) const{
+  // get n sigma for ITS
+
+  Double_t nsigmaITS=-999;
+
+  if (!CheckITSPIDStatus(track)) return -1;
+
+  if (fOldPid) {
+    Double_t mom=track->P();
+    AliAODPid *pidObj = track->GetDetPid();
+    Double_t dedx=pidObj->GetITSsignal();
+
+    AliITSPIDResponse itsResponse;
+    AliPID::EParticleType type=AliPID::EParticleType(species);
+    nsigmaITS = TMath::Abs(itsResponse.GetNumberOfSigmas(mom,dedx,type));
+
+  } // old pid
+  else { // new pid
+
+    AliPID::EParticleType type=AliPID::EParticleType(species);
+    nsigmaITS = TMath::Abs(fPidResponse->NumberOfSigmasITS(track,type));
+
+  } //new pid
+
+  nsigma = nsigmaITS;
+
+  return 1;
+
+
+
+
+
+}
+
