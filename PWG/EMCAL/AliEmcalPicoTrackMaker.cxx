@@ -197,7 +197,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	label = TMath::Abs(track->GetLabel());
 
       if (label == 0) {
-	AliWarning(Form("Track %d with label==0", iTracks));
+	AliDebug(2,Form("Track %d with label==0", iTracks));
 	label = 99999;
       }
     }

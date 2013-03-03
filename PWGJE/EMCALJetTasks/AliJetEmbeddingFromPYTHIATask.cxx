@@ -12,7 +12,7 @@
 #include <TRandom.h>
 #include <TParameter.h>
 #include <TSystem.h>
-#include <TH1F.h>
+#include <TH1I.h>
 
 #include "AliVEvent.h"
 #include "AliLog.h"
@@ -183,9 +183,11 @@ TString AliJetEmbeddingFromPYTHIATask::GetNextFileName()
   TString fileName(fPYTHIAPath);
   if (!fileName.EndsWith("/"))
     fileName += "/";
-  
-  fileName += fAnchorRun;
-  fileName += "/";
+
+  if (fAnchorRun > 0) {
+    fileName += fAnchorRun;
+    fileName += "/";
+  }
   fileName += fCurrentPtHardBin;
   fileName += "/";
   if (fCurrentAODFileID < 10)

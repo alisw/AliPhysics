@@ -7,9 +7,9 @@
 #include "AliJetConstituentTagCopier.h"
 
 #include <TClonesArray.h>
-#include <TH1I.h>
 #include <TMath.h>
 
+#include "AliNamedArrayI.h"
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 #include "AliEmcalParticle.h"
@@ -62,14 +62,14 @@ void AliJetConstituentTagCopier::ExecOnce()
   }
 
   if (!fMCParticlesMap) {
-    fMCParticlesMap = dynamic_cast<TH1I*>(InputEvent()->FindListObject(fMCParticlesName + "_Map"));
+    fMCParticlesMap = dynamic_cast<AliNamedArrayI*>(InputEvent()->FindListObject(fMCParticlesName + "_Map"));
     // this is needed to map the MC labels with the indexes of the MC particle collection
       // if teh map is not given, the MC labels are assumed to be consistent with the indexes (which is not the case if AliEmcalMCTrackSelector is used)
     if (!fMCParticlesMap) {
       AliWarning(Form("%s: Could not retrieve map for MC particles %s! Will assume MC labels consistent with indexes...", GetName(), fMCParticlesName.Data())); 
-      fMCParticlesMap = new TH1I("tracksMap","tracksMap",9999,0,1);
+      fMCParticlesMap = new AliNamedArrayI("tracksMap",9999);
       for (Int_t i = 0; i < 9999; i++) {
-	fMCParticlesMap->SetBinContent(i,i);
+	fMCParticlesMap->AddAt(i,i);
       }
     }
   }
@@ -114,7 +114,9 @@ void AliJetConstituentTagCopier::DoClusterLoop(TClonesArray *array)
       continue;
     Int_t mcLabel = cluster->GetLabel();
     if (mcLabel > 0) {
-      Int_t index = fMCParticlesMap->At(mcLabel);
+      Int_t index = -1;
+      if (mcLabel < fMCParticlesMap->GetSize())
+	index = fMCParticlesMap->At(mcLabel);
       if (index < 0)
 	continue;
       AliVParticle *part = static_cast<AliVParticle*>(fMCParticles->At(index));
@@ -141,7 +143,9 @@ void AliJetConstituentTagCopier::DoTrackLoop(TClonesArray *array)
       continue;
     Int_t mcLabel = TMath::Abs(track->GetLabel());
     if (mcLabel != 0) {
-      Int_t index = fMCParticlesMap->At(mcLabel);
+      Int_t index = -1;
+      if (mcLabel < fMCParticlesMap->GetSize())
+	index = fMCParticlesMap->At(mcLabel);
       if (index < 0)
 	continue;
       AliVParticle *part = static_cast<AliVParticle*>(fMCParticles->At(index));
@@ -176,7 +180,9 @@ void AliJetConstituentTagCopier::DoEmcalParticleLoop(TClonesArray *array)
     else if (track)
       mcLabel = TMath::Abs(track->GetLabel());
     if (mcLabel != 0) {
-      Int_t index = fMCParticlesMap->At(mcLabel);
+      Int_t index = -1;
+      if (mcLabel < fMCParticlesMap->GetSize())
+	index = fMCParticlesMap->At(mcLabel);
       if (index < 0)
 	continue;
       AliVParticle *part = static_cast<AliVParticle*>(fMCParticles->At(index));

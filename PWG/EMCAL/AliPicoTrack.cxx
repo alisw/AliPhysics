@@ -12,7 +12,7 @@
 //_________________________________________________________________________________________________
 AliPicoTrack::AliPicoTrack() :
   AliVTrack(),
-  fPt(0), fEta(0), fPhi(0), fQ(0), fLabel(-1), fTrackType(-1), fEtaEmc(0), fPhiEmc(0), fEmcal(0), fClusId(-1)
+  fPt(0), fEta(0), fPhi(0), fQ(0), fLabel(-1), fTrackType(0), fEtaEmc(0), fPhiEmc(0), fEmcal(0), fClusId(-1)
 {
   // Default constructor.
 }

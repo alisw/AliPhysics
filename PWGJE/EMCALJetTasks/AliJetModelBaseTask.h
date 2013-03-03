@@ -10,6 +10,7 @@ class AliVCluster;
 class AliPicoTrack;
 class AliVCaloCells;
 class AliAODMCParticle;
+class AliNamedArrayI;
 
 #include <TH1F.h>
 #include <TF1.h>
@@ -99,9 +100,9 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliVCaloCells         *fOutCaloCells;           //!output cells collection
   Int_t                  fAddedCells;             //!number of added cells
   TClonesArray          *fMCParticles;            //!MC particles collection
-  TH1I                  *fMCParticlesMap;          //!MC particles mapping
+  AliNamedArrayI        *fMCParticlesMap;         //!MC particles mapping
   TClonesArray          *fOutMCParticles;         //!output MC particles collection
-  TH1I                  *fOutMCParticlesMap;      //!MC particles mapping
+  AliNamedArrayI        *fOutMCParticlesMap;      //!MC particles mapping
   Int_t                  fMCLabelShift;           //!MC label shift
   Bool_t                 fEsdMode;                //!ESD/AOD mode
   TList                 *fOutput;                 //!output list for QA histograms

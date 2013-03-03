@@ -10,6 +10,7 @@ template<class T>
 class TParameter;
 
 class TString;
+class TH1;
 
 class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
  public:

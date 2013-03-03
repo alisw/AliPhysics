@@ -7,6 +7,7 @@ class AliGenPythiaEventHeader;
 class TClonesArray;
 class TH1;
 class TH2;
+class AliNamedArrayI;
 
 #include "AliEmcalJet.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -80,7 +81,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TClonesArray               *fJets2;                         //!Jets 2
   AliRhoParameter            *fRho2;                          //!Event rho 2
   Double_t                    fRho2Val;                       //!Event rho 2 value 
-  TH1                        *fTracks2Map;                    //!MC particle map
+  AliNamedArrayI             *fTracks2Map;                    //!MC particle map
   // General histograms
   TH1                        *fHistTrialsAfterSel;            //!total number of trials per pt hard bin after selection
   TH1                        *fHistEventsAfterSel;            //!total number of events per pt hard bin after selection

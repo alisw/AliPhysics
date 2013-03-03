@@ -24,6 +24,7 @@
 #include "AliMCEvent.h"
 #include "AliLog.h"
 #include "AliRhoParameter.h"
+#include "AliNamedArrayI.h"
 
 ClassImp(AliJetResponseMaker)
 
@@ -687,14 +688,14 @@ void AliJetResponseMaker::ExecOnce()
     }
 
     if (fAreCollections2MC) {
-      fTracks2Map = dynamic_cast<TH1*>(InputEvent()->FindListObject(fTracks2Name + "_Map"));
+      fTracks2Map = dynamic_cast<AliNamedArrayI*>(InputEvent()->FindListObject(fTracks2Name + "_Map"));
       // this is needed to map the MC labels with the indexes of the MC particle collection
       // if teh map is not given, the MC labels are assumed to be consistent with the indexes (which is not the case if AliEmcalMCTrackSelector is used)
       if (!fTracks2Map) {
 	AliWarning(Form("%s: Could not retrieve map for tracks2 %s! Will assume MC labels consistent with indexes...", GetName(), fTracks2Name.Data())); 
-	fTracks2Map = new TH1I("tracksMap","tracksMap",9999,0,1);
+	fTracks2Map = new AliNamedArrayI("tracksMap",9999);
 	for (Int_t i = 0; i < 9999; i++) {
-	  fTracks2Map->SetBinContent(i,i);
+	  fTracks2Map->AddAt(i,i);
 	}
       }
     }
@@ -922,8 +923,8 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 	d1 -= track->Pt();
 	continue;
       }
-      else if (MClabel < fTracks2Map->GetNbinsX()-2) {
-	index = fTracks2Map->GetBinContent(MClabel);
+      else if (MClabel < fTracks2Map->GetSize()) {
+	index = fTracks2Map->At(MClabel);
       }
 	  
       if (index < 0) {
@@ -964,8 +965,8 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 	    d1 -= part.Pt() * cellFrac;
 	    continue;
 	  }
-	  else if (MClabel < fTracks2Map->GetNbinsX()-2) {
-	    index = fTracks2Map->GetBinContent(MClabel);
+	  else if (MClabel < fTracks2Map->GetSize()) {
+	    index = fTracks2Map->At(MClabel);
 	  }
 
 	  if (index < 0) {
@@ -995,8 +996,8 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 	  d1 -= part.Pt();
 	  continue;
 	}
-	else if (MClabel < fTracks2Map->GetNbinsX()-2) {
-	  index = fTracks2Map->GetBinContent(MClabel);
+	else if (MClabel < fTracks2Map->GetSize()) {
+	  index = fTracks2Map->At(MClabel);
 	}
 	 
 	if (index < 0) {

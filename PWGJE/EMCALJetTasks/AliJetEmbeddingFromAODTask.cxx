@@ -78,6 +78,12 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   SetMarkMC(0);
   fAODfilterBits[0] = -1;
   fAODfilterBits[1] = -1;
+  fEtaMin = -1;
+  fEtaMax = 1;
+  fPhiMin = -10;
+  fPhiMax = 10;
+  fPtMin = 0;
+  fPtMax = 1000;
 }
 
 //________________________________________________________________________
@@ -124,6 +130,12 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   SetMarkMC(0);
   fAODfilterBits[0] = -1;
   fAODfilterBits[1] = -1;
+  fEtaMin = -1;
+  fEtaMax = 1;
+  fPhiMin = -10;
+  fPhiMax = 10;
+  fPtMin = 0;
+  fPtMax = 1000;
 }
 
 //________________________________________________________________________
@@ -369,6 +381,7 @@ void AliJetEmbeddingFromAODTask::Run()
       CopyMCParticles();
 
     if (fAODMCParticles) {
+      AliDebug(2, Form("%d MC particles will be processed for embedding.", fAODMCParticles->GetEntriesFast()));
       for (Int_t i = 0; i < fAODMCParticles->GetEntriesFast(); i++) {
 	AliAODMCParticle *part = static_cast<AliAODMCParticle*>(fAODMCParticles->At(i));
 	if (!part) {
@@ -376,11 +389,18 @@ void AliJetEmbeddingFromAODTask::Run()
 	  continue;
 	}
 	
+	AliDebug(3, Form("Processing MC particle %d with pT = %f, eta = %f, phi = %f", i, part->Pt(), part->Eta(), part->Phi()));
+	
 	if (!part->IsPhysicalPrimary()) 
 	  continue;
 
-	AliDebug(3, Form("Embedding MC particle with pT = %f, eta = %f, phi = %f", part->Pt(), part->Eta(), part->Phi()));
+	if (part->Pt() < fPtMin || part->Pt() > fPtMax ||
+	    part->Eta() < fEtaMin || part->Eta() > fEtaMax ||
+	    part->Phi() < fPhiMin || part->Phi() > fPhiMax)
+	  continue;
+	
 	AddMCParticle(part, i);
+	AliDebug(3, "Embedded!");
       }
     }
   }
@@ -390,6 +410,8 @@ void AliJetEmbeddingFromAODTask::Run()
     if (fCopyArray && fTracks)
       CopyTracks();
 
+    AliDebug(2, Form("Start embedding with %d tracks.", fOutTracks->GetEntriesFast()));
+
     if (fAODTracks) {
       AliDebug(2, Form("%d tracks will be processed for embedding.", fAODTracks->GetEntriesFast()));
       for (Int_t i = 0; i < fAODTracks->GetEntriesFast(); i++) {
@@ -398,6 +420,8 @@ void AliJetEmbeddingFromAODTask::Run()
 	  AliError(Form("Could not find track %d in branch %s of tree %s!", i, fAODTrackName.Data(), fAODTreeName.Data()));
 	  continue;
 	}
+	
+	AliDebug(3, Form("Processing track %d with pT = %f, eta = %f, phi = %f, label = %d", i, track->Pt(), track->Eta(), track->Phi(), track->GetLabel()));
 	
 	Int_t type = 0;
 	Bool_t isEmc = kFALSE;
@@ -410,14 +434,17 @@ void AliJetEmbeddingFromAODTask::Run()
 	    if ((aodtrack->GetStatus()&AliESDtrack::kITSrefit)==0) {
 	      if (fIncludeNoITS)
 		type = 2;
-	      else
+	      else {
+		AliDebug(3, "Track not embedded because ITS refit failed.");
 		continue;
+	    }
 	    }
 	    else {
 	      type = 1;
 	    }
 	  }
 	  else { /*not a good track*/
+	    AliDebug(3, "Track not embedded because not an hybrid track.");
 	    continue;
 	  }
 
@@ -437,10 +464,19 @@ void AliJetEmbeddingFromAODTask::Run()
 	  }
 	}
 	
+	if (track->Pt() < fPtMin || track->Pt() > fPtMax ||
+	    track->Eta() < fEtaMin || track->Eta() > fEtaMax ||
+	    track->Phi() < fPhiMin || track->Phi() > fPhiMax) {
+	  AliDebug(3, "Track not embedded because out of limits.");
+	  continue;
+	}
+	
 	if (fTrackEfficiency < 1) {
 	  Double_t r = gRandom->Rndm();
-	  if (fTrackEfficiency < r) 
+	  if (fTrackEfficiency < r) {
+	    AliDebug(3, "Track not embedded because of artificial inefiiciency.");
 	    continue;
+	}
 	}
 	
 	Int_t label = 0;
@@ -451,13 +487,13 @@ void AliJetEmbeddingFromAODTask::Run()
 	    label = TMath::Abs(track->GetLabel());
 	  
 	  if (label == 0) {
-	    AliWarning(Form("%s: Track %d with label==0", GetName(), i));
+	    AliDebug(2,Form("%s: Track %d with label==0", GetName(), i));
 	    label = 99999;
 	  }
 	}
 
-	AliDebug(3, Form("Embedding track with pT = %f, eta = %f, phi = %f, label = %d", track->Pt(), track->Eta(), track->Phi(), label));
 	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), isEmc, label);
+	AliDebug(3, "Track embedded!");
       }
     }
   }
@@ -477,6 +513,12 @@ void AliJetEmbeddingFromAODTask::Run()
 	TLorentzVector vect;
 	Double_t vert[3] = {0,0,0};
 	clus->GetMomentum(vect,vert);
+
+	if (vect.Pt() < fPtMin || vect.Pt() > fPtMax ||
+	    vect.Eta() < fEtaMin || vect.Eta() > fEtaMax ||
+	    vect.Phi() < fPhiMin || vect.Phi() > fPhiMax)
+	  continue;
+
 	AddCluster(clus->E(), vect.Eta(), vect.Phi(), clus->GetLabel());
       }
     }

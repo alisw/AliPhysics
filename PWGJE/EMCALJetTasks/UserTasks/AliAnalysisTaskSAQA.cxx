@@ -4,7 +4,6 @@
 //
 // Author: S.Aiola
 
-#include <TChain.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -36,6 +35,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAQA", kTRUE),
   fCellEnergyCut(0.1),
   fParticleLevel(kFALSE),
+  fIsMC(kFALSE),
   fNclusters(0),
   fNtracks(0),
   fNjets(0),
@@ -76,6 +76,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fCellEnergyCut(0.1),
   fParticleLevel(kFALSE),
+  fIsMC(kFALSE),
   fNclusters(0),
   fNtracks(0),
   fNjets(0),
@@ -145,7 +146,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 	fHistTrPhiEtaPt[i][j]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
 	fOutput->Add(fHistTrPhiEtaPt[i][j]);
       }
-      if (!fParticleLevel) {
+      if (!fParticleLevel && fIsMC) {
 	histname = Form("fHistTrPhiEtaPtNegLab_%d",i);
 	fHistTrPhiEtaPtNegLab[i] = new TH3F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
 	fHistTrPhiEtaPtNegLab[i]->GetXaxis()->SetTitle("#eta");
@@ -309,7 +310,7 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
 
   if (fTracks) {
     trackSum = DoTrackLoop();
-
+    AliDebug(2,Form("%d tracks found in the event", fTracks->GetEntriesFast()));
     fHistTracksCent->Fill(fCent, fNtracks);
   } 
 
@@ -495,9 +496,7 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
       continue; 
     }
 
-    AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track); 
-    
-    if (vtrack && !AcceptTrack(vtrack)) 
+    if (!AcceptTrack(track)) 
       continue;
 
     fNtracks++;
@@ -509,7 +508,7 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     }
     else {
       fHistTrPhiEtaPt[fCentBin][3]->Fill(track->Eta(), track->Phi(), track->Pt());
-      if (fHistTrPhiEtaPtNegLab[fCentBin] && track->GetLabel() < 0)
+      if (fHistTrPhiEtaPtNegLab[fCentBin] && track->GetLabel() <= 0)
 	fHistTrPhiEtaPtNegLab[fCentBin]->Fill(track->Eta(), track->Phi(), track->Pt());
 
       Int_t type = 0;
@@ -521,8 +520,10 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
       if (type >= 0 && type < 3)
 	fHistTrPhiEtaPt[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
       else
-	AliWarning(Form("%s: track type %d not recognized!", GetName(), type));
+	AliDebug(2,Form("%s: track type %d not recognized!", GetName(), type));
     }
+
+    AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track); 
 
     if (!vtrack)
       continue;
