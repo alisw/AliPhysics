@@ -377,7 +377,7 @@ Bool_t AliCFVertexingHF::CheckMCDaughters()const
 	Int_t label0 = fmcPartCandidate->GetDaughter(0);
 	Int_t label1 = fmcPartCandidate->GetDaughter(1);
 	AliDebug(3,Form("label0 = %d, label1 = %d",label0,label1));
-	if (label1==0 || label0 == 0){
+	if (label1<=0 || label0 <= 0){
 		AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
 		return checkDaughters;  
 	}
@@ -477,7 +477,7 @@ Bool_t AliCFVertexingHF::MCAcceptanceStep() const
 	AliAODMCParticle *mcPartDaughter;
 	Int_t label0 = fmcPartCandidate->GetDaughter(0);
 	Int_t label1 = fmcPartCandidate->GetDaughter(1);
-	if (label1==0 || label0 == 0){
+	if (label1<=0 || label0 <= 0){
 		AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
 		return bMCAccStep;  
 	}
@@ -517,7 +517,7 @@ Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts **tr
 	Int_t label0 = fmcPartCandidate->GetDaughter(0);
 	Int_t label1 = fmcPartCandidate->GetDaughter(1);
 	
-	if (label1==0 || label0 == 0){
+	if (label1<=0 || label0 <= 0){
 		AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
 		return bRefitStep;  
 	}
@@ -692,7 +692,7 @@ Bool_t AliCFVertexingHF::RecoAcceptStep(AliESDtrackCuts **trackCuts) const
 }
 //___________________________________________________________
 
-Bool_t AliCFVertexingHF::FillUnfoldingMatrix(Double_t fill[4]) const
+Bool_t AliCFVertexingHF::FillUnfoldingMatrix(UInt_t pdg, Double_t fill[4]) const
 {
 	//
 	// filling the unfolding matrix
@@ -701,7 +701,7 @@ Bool_t AliCFVertexingHF::FillUnfoldingMatrix(Double_t fill[4]) const
 	if(fmcPartCandidate){
 		
 		fill[0] = GetPtCand();
-		fill[1] = GetYCand();
+		fill[1] = GetYCand(pdg);
 		
 		fill[2] =  fmcPartCandidate->Pt(); 
 		fill[3] =  fmcPartCandidate->Y(); 
@@ -766,7 +766,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 	Int_t label0 = fmcPartCandidate->GetDaughter(0);
 	Int_t label1 = fmcPartCandidate->GetDaughter(1);
 	AliDebug(2,Form("label0 = %d, label1 = %d",label0,label1));
-	if (label1==0 || label0 == 0){
+	if (label1<=0 || label0 <= 0){
 		AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
 		delete [] fLabelArray; 
 		fLabelArray = 0x0;  

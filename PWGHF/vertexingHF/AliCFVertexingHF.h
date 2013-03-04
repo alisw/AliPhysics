@@ -86,18 +86,18 @@ class AliCFVertexingHF : public TObject {
 	virtual Double_t GetPtProng(Int_t iProng) const;
 
 	Double_t GetPtCand() const {return fRecoCandidate->Pt();}
-	Double_t GetYCand() const {return fRecoCandidate->Y();}
+	Double_t GetYCand(UInt_t pdg) const {return fRecoCandidate->Y(pdg);}
 
 	Bool_t RecoAcceptStep(AliESDtrackCuts **trackCuts) const;
 	
-	Bool_t FillUnfoldingMatrix(Double_t fill[4]) const;
+	Bool_t FillUnfoldingMatrix(UInt_t pdg, Double_t fill[4]) const;
 	
 	void SetNProngs(Int_t nProngs){fProngs = nProngs;}
 	Int_t GetNProngs() const {return fProngs;}
 	void SetDselection(UShort_t originDselection); 
 	UShort_t GetDselection() {return fOriginDselection;}; 
 	Int_t CheckReflexion(Char_t isSign);
-	Bool_t SetLabelArray();
+	virtual Bool_t SetLabelArray();
 
 	void SetCentralityValue(Float_t centValue) {fCentValue = centValue;}
 
