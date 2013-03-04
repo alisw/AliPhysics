@@ -85,6 +85,7 @@ public:
   static Double_t dMtdptFunction(Double_t *x, Double_t *p) ;
   static Double_t GetdMtdEta(TH1 *hData, TF1 * fExtrapolation, Double_t mass) ;
 
+  //  static Bool_t Compare2Plots(TObject * obj1, TObject * obj2);
 
 
 private:
