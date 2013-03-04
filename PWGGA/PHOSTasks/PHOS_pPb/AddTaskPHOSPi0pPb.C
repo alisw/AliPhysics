@@ -31,7 +31,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0pPb (const char* name = "PHOSPi0pPb",
 
   task->SetEventMixingRPBinning(1);
   task->SelectCollisionCandidates(offlineTriggerMask);
-  
+  task->SetEnablePHOSModule(2, kFALSE);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
