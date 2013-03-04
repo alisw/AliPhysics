@@ -50,6 +50,8 @@ namespace RawProduction {
     return TMath::Sqrt(a*a+b*b/pt/pt+c*c*pt*pt) ;
   }
 
+  const char* GetCentString(int centrality);
+
   // Pt bin parameters
   Int_t nPtBins=0;
   Double_t ptBinEdges[1000] = {0};
@@ -998,20 +1000,31 @@ namespace RawProduction {
       return 0x0;
     }
 
+    hist->SetTitle(Form("%s, %s cent.", hist->GetTitle(), GetCentString(centrality)));
     switch(centrality) {
-      case -10: hist->SetTitle( Form("%s, 0-80%% centrality", hist->GetTitle())); break;
-      case -11: hist->SetTitle( Form("%s,10-50%% centrality", hist->GetTitle())); break;
-      case -1:  hist->SetTitle(Form("%s, 0-10%% centrality", hist->GetTitle())); break;
-      case -2:  hist->SetTitle(Form("%s, 10-20%% centrality", hist->GetTitle())); break;
-      case -3:  hist->SetTitle(Form("%s, 20-30%% centrality", hist->GetTitle())); break;
-      case -4:  hist->SetTitle(Form("%s, 30-40%% centrality", hist->GetTitle())); break;
-      case -5:  hist->SetTitle(Form("%s, 40-50%% centrality", hist->GetTitle())); break;
-      case -6:  hist->SetTitle( Form("%s, 50-80%% centrality", hist->GetTitle())); break;
-      case -7:  hist->SetTitle(Form("%s, 50-60%% centrality", hist->GetTitle())); break;
-      case -8:  hist->SetTitle(Form("%s, 60-70%% centrality", hist->GetTitle())); break;
-      case -9:  hist->SetTitle(Form("%s, 70-80%% centrality", hist->GetTitle())); break;
     }
     return hist;
+  }
+
+  const char* GetCentString(int centrality)
+  {
+    switch(centrality) {
+      case -10: return "0-80%";
+      case -11: return "10-50%";
+      case -1: return "0-10%";
+      case -2: return "10-20%";
+      case -3: return "20-30%";
+      case -4: return "30-40%";
+      case -5: return "40-50%";
+      case -6: return "50-80%";
+      case -7: return "50-60%";
+      case -8: return "60-70%";
+      case -9: return "70-80%";
+      default:
+	char cstr[64] ="";
+	sprintf(cstr, "centBin:%i", centrality);
+	return cstr;
+    }
   }
 
   TH1* MergeHistogram_cent(Input& input, const TString& name, int newCentIndex, int fromCentIndex, int toCentIndex)
