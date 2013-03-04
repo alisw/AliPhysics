@@ -42,7 +42,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/TPCLib HLT/TPCLib/offline HLT/BASE HLT/BASE/util HLT/TPCLib/calibration TPC TPC/Base ANALYSIS STEER/STEERBase)
+set ( EINCLUDE  HLT/TPCLib HLT/TPCLib/offline HLT/BASE HLT/BASE/util HLT/TPCLib/calibration TPC TPC/Base TPC/Calib ANALYSIS STEER/STEERBase)
 
 set ( ELIBS  "HLTbase AliHLTTPC")
 

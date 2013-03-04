@@ -57,7 +57,7 @@ set ( SRCS
     Base/AliTPCCalibCE.cxx 
     Base/AliTPCCalibRaw.cxx 
     Base/AliTPCPreprocessor.cxx 
-    AliTPCPreprocessorOnline.cxx # to RENAME
+    Base/AliTPCPreprocessorOnline.cxx
     AliTPCCalibViewer.cxx        # UTIL
     AliTPCCalibViewerGUI.cxx     # UTIL
     AliTPCCalibViewerGUItime.cxx # UTIL
@@ -72,9 +72,8 @@ set ( SRCS
     Base/AliTPCQAChecker.cxx 
     Base/AliTPCConfigDA.cxx 
     Base/AliTPCConfigParser.cxx
-	Base/AliTPCPointCorrection.cxx
+    Base/AliTPCPointCorrection.cxx
     Base/AliTPCLaserTrack.cxx 
-    Base/AliTPCcalibBase.cxx 
     Base/AliTPCCorrection.cxx 
     Base/AliTPCInverseCorrection.cxx 
     Base/AliTPCComposedCorrection.cxx 

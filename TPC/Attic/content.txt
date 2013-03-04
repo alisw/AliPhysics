@@ -1,0 +1,6 @@
+#pragma link C++ class AliTPCv1+;              //ATTIC Fast Simulation - paramterized Detector response /not supported since O(10) years  
+
+#pragma link C++ class AliTPCTransformation+;  //ATTIC Interface to TFormula for kalman fit
+#pragma link C++ class AliTPCkalmanFit+;       //ATTIC Kalman fit for tracks with calibration parameters = millipede 
+#pragma link C++ class AliTPCCalibTCF+;        //ATTIC TCF = TailCancelationFilter 
+

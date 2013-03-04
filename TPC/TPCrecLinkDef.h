@@ -9,7 +9,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliTPCclusterMI+;      // Derived from Cluster (shape in addition)
-                                              // --- ask peter what can happen if renamed (add some pragma !??!)
+                                              // --- ask Peter what can happen if renamed (add some pragma !??!)
 #pragma link C++ class AliTPCclusterInfo+;    // additional info attach to cluster (add digit map)
                                               // currently not used by default
 
@@ -26,11 +26,6 @@
 #pragma link C++ class AliClusters+;          // Generic container for clusters derived from segmentID - all clusters
                                               //   contains 1 AliTPCClustersRow per segment (1 segment = 1 padrow)
 #pragma link C++ class AliTPCClustersRow+;    // TPC Container array of "cluster" inside 1 padrow
-
-//#pragma link C++ class AliClustersArray+;     // Container of clusters ?!?!
-//                                              // --- docu to be added / remove if not needed 
-//#pragma link C++ class AliTPCClustersArray+;  // Container of clusters ?!?!
-//                                              // --- docu to be added / remove if not needed 
 
 #pragma link C++ class AliTPCclusterer+;      // The TPC clusterer
 
