@@ -75,7 +75,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual     void    SetInjectedSignals(Bool_t flag) { fInjectedSignals = flag; }
     
     // histogram settings
-    void SetEfficiencyCorrection(THnF* hist, Bool_t correctTriggers) { fEfficiencyCorrection = hist; fCorrectTriggers = correctTriggers; }
+    void SetEfficiencyCorrectionTriggers(THnF* hist) { fEfficiencyCorrectionTriggers = hist; }
+    void SetEfficiencyCorrectionAssociated(THnF* hist) { fEfficiencyCorrectionAssociated = hist; }
 
     // for event QA
     void   SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
@@ -83,9 +84,10 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     // track cuts
     void   SetTrackEtaCut( Double_t val )    { fTrackEtaCut = val; }
-    void   SetOnlyOneEtaSide(Int_t flag)    { fOnlyOneEtaSide = flag; }
+    void   SetOnlyOneEtaSide(Int_t flag)     { fOnlyOneEtaSide = flag; }
     void   SetPtMin(Double_t val)            { fPtMin = val; }
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
+    void   SetTrackStatus(UInt_t status)     { fTrackStatus = status; }
     
     void   SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
     void   SetUseChargeHadrons( Bool_t val ) { fUseChargeHadrons = val; }
@@ -125,7 +127,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t               fDebug;           //  Debug flag
     Int_t 	        fMode;            //  fMode = 0: data-like analysis 
     				          //  fMode = 1: corrections analysis	
-    Bool_t              fReduceMemoryFootprint; // reduce memory consumption by writing less debug histograms
+    Bool_t             fReduceMemoryFootprint; // reduce memory consumption by writing less debug histograms
     Bool_t		fFillMixed;		// enable event mixing (default: ON)
     Int_t  		fMixingTracks;		// size of track buffer for event mixing
     Bool_t		fCompareCentralities;	// use the z vtx axis for a centrality comparison
@@ -142,9 +144,9 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     AliUEHistograms*  fHistos;       //! points to class to handle histograms/containers  
     AliUEHistograms*  fHistosMixed;       //! points to class to handle mixed histograms/containers  
     
-    THnF* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
-    Bool_t fCorrectTriggers;	// if true correct also trigger particles
-
+    THnF* fEfficiencyCorrectionTriggers;   // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
+    THnF* fEfficiencyCorrectionAssociated;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
+    
     // Handlers and events
     AliAODEvent*             fAOD;             //! AOD Event 
     AliESDEvent*             fESD;             //! ESD Event 
@@ -166,7 +168,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Double_t      	fTrackEtaCut;          // Eta cut on particles
     Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
     Double_t            fPtMin;                // Min pT to start correlations
-    UInt_t         	fFilterBit;            // Select tracks from an specific track cut 
+    UInt_t           	fFilterBit;            // Select tracks from an specific track cut 
+    UInt_t         	fTrackStatus;          // if non-0, the bits set in this variable are required for each track
     UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
     Bool_t         	fUseChargeHadrons;     // Only use charge hadrons
     Int_t               fParticleSpeciesTrigger; // Select which particle to use for the trigger [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
@@ -190,7 +193,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 27); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 28); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

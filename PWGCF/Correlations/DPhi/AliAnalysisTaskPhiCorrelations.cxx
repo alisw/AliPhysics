@@ -101,8 +101,8 @@ fHelperPID(0x0),
 fAnalyseUE(0x0),
 fHistos(0x0),
 fHistosMixed(0),
-fEfficiencyCorrection(0),
-fCorrectTriggers(kFALSE),
+fEfficiencyCorrectionTriggers(0),
+fEfficiencyCorrectionAssociated(0),
 // handlers and events
 fAOD(0x0),
 fESD(0x0),
@@ -122,6 +122,7 @@ fTrackEtaCut(0.8),
 fOnlyOneEtaSide(0),
 fPtMin(0.5),
 fFilterBit(0xFF),
+fTrackStatus(0),
 fSelectBit(AliVEvent::kMB|AliVEvent::kUserDefined),
 fUseChargeHadrons(kFALSE),
 fParticleSpeciesTrigger(-1),
@@ -213,6 +214,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // Initialize class with main algorithms, event and track selection. 
   fAnalyseUE = new AliAnalyseLeadingTrackUE();
   fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fPtMin);
+  fAnalyseUE->SetTrackStatus(fTrackStatus);
   fAnalyseUE->SetDebug(fDebug); 
   fAnalyseUE->DefineESDCuts(fFilterBit);
   fAnalyseUE->SetEventSelection(fSelectBit);
@@ -267,11 +269,16 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   
   fHistos->SetWeightPerEvent(fWeightPerEvent);
   fHistosMixed->SetWeightPerEvent(fWeightPerEvent);
-
-  if (fEfficiencyCorrection)
+  
+  if (fEfficiencyCorrectionTriggers)
+   {
+    fHistos->SetEfficiencyCorrectionTriggers(fEfficiencyCorrectionTriggers);
+    fHistosMixed->SetEfficiencyCorrectionTriggers((THnF*) fEfficiencyCorrectionTriggers->Clone());
+   }
+  if (fEfficiencyCorrectionAssociated)
   {
-    fHistos->SetEfficiencyCorrection(fEfficiencyCorrection, fCorrectTriggers);
-    fHistosMixed->SetEfficiencyCorrection((THnF*) fEfficiencyCorrection->Clone(), fCorrectTriggers);
+    fHistos->SetEfficiencyCorrectionAssociated(fEfficiencyCorrectionAssociated);
+    fHistosMixed->SetEfficiencyCorrectionAssociated((THnF*) fEfficiencyCorrectionAssociated->Clone());
   }
   
   // add histograms to list
@@ -365,6 +372,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fOnlyOneEtaSide", &fOnlyOneEtaSide,"OnlyOneEtaSide/I");
   settingsTree->Branch("fPtMin", &fPtMin, "PtMin/D");
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
+  settingsTree->Branch("fTrackStatus", &fTrackStatus,"TrackStatus/I");
   settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
   settingsTree->Branch("fParticleSpeciesTrigger", &fParticleSpeciesTrigger,"ParticleSpeciesTrigger/I");
@@ -386,7 +394,6 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fSkipFastCluster", &fSkipFastCluster,"SkipFastCluster/O");
   settingsTree->Branch("fWeightPerEvent", &fWeightPerEvent,"WeightPerEvent/O");
   //fCustomBinning
-  settingsTree->Branch("fCorrectTriggers", &fCorrectTriggers,"CorrectTriggers/O");
   
   settingsTree->Fill();
   fListOfHistos->Add(settingsTree);
@@ -688,14 +695,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 	fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut);
 
       // apply correction efficiency, STEP 10
-      if (fEfficiencyCorrection)
+      if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated)
       {
-	// with or without two track efficiency depending on if fTwoTrackEfficiencyCut is set
+	  // with or without two track efficiency depending on if fTwoTrackEfficiencyCut is set
 	Bool_t twoTrackCut = (fTwoTrackEfficiencyCut > 0);
 	
 	fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, tracksCorrelate, weight, kTRUE, twoTrackCut, bSign, fTwoTrackEfficiencyCut, kTRUE);
       }
-
+      
       // mixed event
       if (fFillMixed)
       {
@@ -713,7 +720,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 	      fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
 	    
 	    // apply correction efficiency, STEP 10
-	    if (fEfficiencyCorrection)
+	    if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated)
 	    {
 	      // with or without two track efficiency depending on if fTwoTrackEfficiencyCut is set
 	      Bool_t twoTrackCut = (fTwoTrackEfficiencyCut > 0);
@@ -959,6 +966,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     referenceMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity(fESD);
   else if (fAOD)
     referenceMultiplicity = tracks->GetEntriesFast(); // TODO to be replaced by the estimator once available in the AOD
+//    referenceMultiplicity = fAOD->GetHeader()->GetRefMultiplicityComb05();
 
   ((TH2F*) fListOfHistos->FindObject("referenceMultiplicity"))->Fill(centrality, referenceMultiplicity);
   

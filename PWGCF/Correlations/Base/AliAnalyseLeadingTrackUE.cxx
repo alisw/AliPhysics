@@ -74,6 +74,7 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   TObject(),
   fDebug(0),
   fFilterBit(16),
+  fTrackStatus(0),
   fOnlyHadrons(kFALSE),
   fTrackEtaCut(0.8),
   fTrackPtMin(0),
@@ -693,11 +694,11 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
   }else if (obj->InheritsFrom("AliAODEvent")){ // RECO AOD TRACKS
   	AliAODEvent *aodEvent = static_cast<AliAODEvent*>(obj);
         part = aodEvent->GetTrack(ipart);
+	
 	// track selection cuts
 	if ( !(((AliAODTrack*)part)->TestFilterBit(fFilterBit)) ) return 0; 
-	//if ( !(((AliAODTrack*)part)->TestFilterBit(fFilterBit)) && !(((AliAODTrack*)part)->TestFilterBit(32)) ) return 0; 
-	// only primary candidates
-	//if ( ((AliAODTrack*)part)->IsPrimaryCandidate() )return 0;
+	if (fTrackStatus != 0 && !CheckTrack(part)) return 0;
+
 	// eventually only hadrons
 	if (fOnlyHadrons){
 		Bool_t isHadron = ((AliAODTrack*)part)->GetMostProbablePID()==AliAODTrack::kPion ||
@@ -712,11 +713,13 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
   	AliESDEvent *esdEvent = static_cast<AliESDEvent*>(obj);
         part = esdEvent->GetTrack(ipart);
 	if (!part)return 0;
+
 	// track selection cuts
-	
 	if (!( ApplyCuts(part)) )
-	 return 0; 
+	  return 0; 
 	
+	if (fTrackStatus != 0 && !CheckTrack(part)) return 0;
+
 	if (fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512 || fFilterBit == 1024)
 	{
 	  // create TPC only tracks constrained to the SPD vertex
@@ -1003,4 +1006,16 @@ Bool_t  AliAnalyseLeadingTrackUE::VertexSelection(const TObject* obj, Int_t ntra
        }
 	
   return kTRUE;
+}
+
+//____________________________________________________________________
+
+Bool_t AliAnalyseLeadingTrackUE::CheckTrack(AliVParticle * part)
+{
+  // check if the track status flags are set
+  
+  UInt_t status=((AliVTrack*)part)->GetStatus();
+  if ((status & fTrackStatus) == fTrackStatus)
+    return kTRUE;
+  return kFALSE;
 }
