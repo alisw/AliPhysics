@@ -81,16 +81,15 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
   Double_t InvMassLctoLambdaPi() const {
     UInt_t pdg[2]={211,3122}; return InvMass(2,pdg);
   }
-  Bool_t SelectLctoV0(const Double_t *cutsLctoV0, Bool_t okLck0sp, Bool_t okLcLpi) const;
+  Bool_t SelectLctoV0(const Double_t *cutsLctoV0, Bool_t okLck0sp, Bool_t okLcLpi, Bool_t okLcLbarpi) const;
 
   Int_t MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
                   Int_t *pdgDg,Int_t *pdgDg2prong,
                   TClonesArray *mcArray, Bool_t isV0=kFALSE) const;
 
-  Double_t CosV0PointingAngle() const 
-  { if (Getv0()) return Getv0()->CosPointingAngle(GetPrimaryVtx()); else return -999.;}
-
+  Double_t CosV0PointingAngle() const;
   Double_t DecayLengthV0() const;
+  Double_t DecayLengthXYV0() const;
 
  protected:
 
