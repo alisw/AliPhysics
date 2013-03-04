@@ -229,7 +229,7 @@ void AliDhcTask::BookHistos()
   fIndex = new TFormula("GlobIndex","(t-1)*[0]*[1]*[2]+(z-1)*[0]*[1]+(x-1)*[0]+(y-1)+0*[4]");
   fIndex->SetParameters(nPtTrig,nPtAssc,nZvtx,nCent);
   fIndex->SetParNames("NTrigBins","NAssocBins", "NZvertexBins", "NCentBins");
-  fOutputList->Add(fIndex);
+  //fOutputList->Add(fIndex);
   
   Int_t count = 0;
   for (Int_t c=1; c<=nCent; ++c) {
