@@ -97,15 +97,24 @@ public:
   void SetTrackMCId(Int_t id) { fTrackMCId = id; }
   Int_t GetTrackMCId() { return fTrackMCId; }
   
-  Bool_t IsFromResonance();
-  Bool_t IsDirectCharm();
-  Bool_t IsDirectBeauty();
-  Bool_t IsChainBeauty();
-  Bool_t IsFromCharm()  { return IsDirectCharm(); }
-  Bool_t IsFromBeauty() { return IsDirectBeauty() || IsChainBeauty(); }
+  Bool_t IsFromDirectResonance();
+  Bool_t IsFromDirectCharm();
+  Bool_t IsFromDirectBeauty();
+  Bool_t IsFromChainResonance();
+  Bool_t IsFromChainCharm();
+  Bool_t IsFromChainBeauty();
+  Bool_t IsFromCharm()  { return IsFromDirectCharm()  || IsFromChainCharm();  }
+  Bool_t IsFromBeauty() { return IsFromDirectBeauty() || IsFromChainBeauty(); }
+  Bool_t IsMuon();
+  Bool_t IsFake();
+  Bool_t IsPDGResonance(Int_t pdg);
   Bool_t IsPDGCharm(Int_t pdg);
   Bool_t IsPDGBeauty(Int_t pdg);
-  Bool_t IsFromBackground();
+  Bool_t IsMuonFromBackground();
+
+  Int_t GetFirstMotherID();
+
+  void PrintHistory();
 
 protected:
 
