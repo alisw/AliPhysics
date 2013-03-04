@@ -1088,12 +1088,28 @@ void AliChaoticity::UserCreateOutputObjects()
 		      Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3 = new TH3D(name3DQ->Data(),"", kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
 		      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3);
 		      //
+		      /*
 		      const int NEdgesPos=16;
 		      double lowEdges4vectPos[NEdgesPos]={0};
 		      lowEdges4vectPos[0]=0.0;
 		      lowEdges4vectPos[1]=0.0001;// best resolution at low Q^2
 		      for(int edge=2; edge<NEdgesPos; edge++){
 			lowEdges4vectPos[edge] = lowEdges4vectPos[edge-1] + lowEdges4vectPos[1]*(edge);
+		      }
+		      const int NEdges=2*NEdgesPos-1;
+		      double lowEdges4vect[NEdges]={0};
+		      for(int edge=0; edge<NEdges; edge++){
+			if(edge<NEdgesPos-1) lowEdges4vect[edge] = -lowEdges4vectPos[NEdgesPos-1-edge];
+			else if(edge==NEdgesPos-1) lowEdges4vect[edge] = 0;
+			else lowEdges4vect[edge] = lowEdges4vectPos[edge-NEdgesPos+1];
+		      }
+		      */
+		      const int NEdgesPos=16;
+		      double lowEdges4vectPos[NEdgesPos]={0};
+		      lowEdges4vectPos[0]=0.0;
+		      lowEdges4vectPos[1]=0.0005;
+		      for(int edge=2; edge<NEdgesPos; edge++){
+			lowEdges4vectPos[edge] = lowEdges4vectPos[edge-1] + lowEdges4vectPos[1];
 		      }
 		      const int NEdges=2*NEdgesPos-1;
 		      double lowEdges4vect[NEdges]={0};
@@ -1307,7 +1323,7 @@ void AliChaoticity::UserCreateOutputObjects()
       }
  
   }
-
+  
   
   TProfile *fQsmearMean = new TProfile("fQsmearMean","",2,0.5,2.5, -0.2,0.2,"");
   fOutputList->Add(fQsmearMean);
@@ -1315,6 +1331,7 @@ void AliChaoticity::UserCreateOutputObjects()
   fOutputList->Add(fQsmearSq);
   TH1D *fQDist = new TH1D("fQDist","",200,-.2,.2);
   fOutputList->Add(fQDist);
+  
   
 
   ////////////////////////////////////
@@ -2776,14 +2793,14 @@ void AliChaoticity::Exec(Option_t *)
 		}
 		continue;// weight should never be larger than 1
 	      }
-	      	      
+	      	 
 	      // Coul correlations from Wave-functions
 	      //for(Int_t rIter=0; rIter<kRVALUES; rIter++){// 3fm to 8fm, last value for Therminator 
 	      //for(Int_t myDampIt=0; myDampIt<kNDampValues; myDampIt++){// 0.3 to 0.6
 	      //Float_t myDamp = fDampStart + (fDampStep)*myDampIt;
 	      //Int_t denIndex = (kRVALUES-1)*kNDampValues + myDampIt;
 	      //Int_t denIndex = myDampIt;
-	      Int_t myDampIt = 5;
+	      Int_t myDampIt = 11;
 	      Float_t myDamp = 0.52;
 	      Int_t denIndex = 0;
 	      Int_t momResIndex = rIndexForTPN*kNDampValues + myDampIt;// Therminator slot uses R=7 for momentum resolution
@@ -3096,7 +3113,7 @@ Bool_t AliChaoticity::AcceptPair(AliChaoticityTrackStruct first, AliChaoticityTr
 
    
   //
-  /*
+  
   Int_t ncl1 = first.fClusterMap.GetNbits();
   Int_t ncl2 = second.fClusterMap.GetNbits();
   Int_t sumCls = 0; Int_t sumSha = 0; Int_t sumQ = 0;
@@ -3119,7 +3136,7 @@ Bool_t AliChaoticity::AcceptPair(AliChaoticityTrackStruct first, AliChaoticityTr
   }
    
   if(qfactor > fShareQuality || shfrac > fShareFraction) return kFALSE;
-  */
+  
   
   return kTRUE;
   
@@ -3560,7 +3577,6 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, 
   Float_t min = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
   Float_t minErr = fNormWeight[fKtIndexL][fMbin]->GetBinError(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
   
-
   Float_t deltaW=0;
   // kt
   deltaW += (fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1) - min)*(kt-fKmeanT[fKtIndexL])/((fKstepT[fKtIndexL]+fKstepT[fKtIndexH])/2.);
@@ -3573,8 +3589,7 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, 
   //
   wgt = min + deltaW;
   
- 
-
+  
   ////
   
   // Denominator errors negligible compared to numerator so do not waste cpu time below.  
