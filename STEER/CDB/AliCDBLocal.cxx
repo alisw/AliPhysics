@@ -394,7 +394,7 @@ AliCDBId* AliCDBLocal::GetId(const AliCDBId& query) {
 		while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
 
 			TString aString(filename);
-			if (aString == "." || aString == "..") continue;
+                        if (aString.BeginsWith('.')) continue;
 
 			if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)) continue;
                         // aRunRange, aVersion, aSubVersion filled from filename
@@ -440,7 +440,7 @@ AliCDBId* AliCDBLocal::GetId(const AliCDBId& query) {
 		while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
 
                         TString aString(filename);
-                        if (aString == "." || aString == "..") continue;
+                        if (aString.BeginsWith('.')) continue;
 
 			if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)) continue;
                         // aRunRange, aVersion, aSubVersion filled from filename
@@ -476,7 +476,7 @@ AliCDBId* AliCDBLocal::GetId(const AliCDBId& query) {
 	while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
 
                         TString aString(filename);
-                        if (aString == "." || aString == "..") continue;
+                        if (aString.BeginsWith('.')) continue;
 
                         if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)) continue;
                         // aRunRange, aVersion, aSubVersion filled from filename
@@ -615,7 +615,8 @@ void AliCDBLocal::GetEntriesForLevel0(const char* level0,
 	while ((level1 = gSystem->GetDirEntry(level0DirPtr))) {
 
 		TString level1Str(level1);
-		if (level1Str == "." || level1Str == "..") {
+                // skip directories starting with a dot (".svn" and similar in old svn working copies)
+		if (level1Str.BeginsWith('.')) {
 			continue;
 		}
 		
@@ -656,8 +657,9 @@ void AliCDBLocal::GetEntriesForLevel1(const char* level0, const char* level1,
 	while ((level2 = gSystem->GetDirEntry(level1DirPtr))) {
 
 		TString level2Str(level2);
-		if (level2Str == "." || level2Str == "..") {
-			continue;
+                // skip directories starting with a dot (".svn" and similar in old svn working copies)
+		if (level2Str.BeginsWith('.')) {
+                        continue;
 		}
 
 		TString fullPath = Form("%s/%s",level1Dir.Data(), level2); 
@@ -705,7 +707,8 @@ TList* AliCDBLocal::GetEntries(const AliCDBId& queryId) {
 	while ((level0 = gSystem->GetDirEntry(storageDirPtr))) {
 
 		TString level0Str(level0);
-		if (level0Str == "." || level0Str == "..") {
+                // skip directories starting with a dot (".svn" and similar in old svn working copies)
+		if (level0Str.BeginsWith('.')) {
 			continue;
 		}
 		
