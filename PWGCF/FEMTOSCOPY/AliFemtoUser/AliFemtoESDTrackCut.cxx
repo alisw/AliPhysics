@@ -100,6 +100,7 @@ ClassImp(AliFemtoESDTrackCut)
     fRemoveITSFake(kFALSE),
     fMostProbable(0), 
     fMaxImpactXY(1000.0),
+  fMinImpactXY(-1000.0),
     fMaxImpactZ(1000.0),
     fMaxImpactXYPtOff(1000.0),
     fMaxImpactXYPtNrm(1000.0),
@@ -181,6 +182,9 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     }
 
   if (fMaxImpactXY < TMath::Abs(track->ImpactD()))
+    return false;
+
+  if (fMinImpactXY > TMath::Abs(track->ImpactD()))
     return false;
 
   if (fMaxImpactZ < TMath::Abs(track->ImpactZ()))
