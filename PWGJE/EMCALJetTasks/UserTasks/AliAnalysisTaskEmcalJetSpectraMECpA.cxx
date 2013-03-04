@@ -87,6 +87,7 @@ void AliAnalysisTaskEmcalJetSpectraMECpA::UserCreateOutputObjects()
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   fHistRhovsCent             = new TH2F("RhovsCent",              "RhovsCent",             100, 0.0, 100.0, 500, 0, 500);
+  fHistRhoScvsCent             = new TH2F("RhoScvsCent",              "RhoScvsCent",             100, 0.0, 100.0, 500, 0, 500);
   fHistNjetvsCent            = new TH2F("NjetvsCent",             "NjetvsCent",            100, 0.0, 100.0, 100, 0, 100);
 
   TString name;
@@ -96,6 +97,12 @@ void AliAnalysisTaskEmcalJetSpectraMECpA::UserCreateOutputObjects()
     title = TString(Form("Jet pT vs Leading Track pT cent bin %i",i));
     fHistJetPtvsTrackPt[i] = new TH2F(name,title,1000,-500,500,100,0,100);
     fOutput->Add(fHistJetPtvsTrackPt[i]);
+ 
+    name = TString(Form("JetPtScvsTrackPt_%i",i));
+    title = TString(Form("Jet pT Rho_scaled vs Leading Track pT cent bin %i",i));
+    fHistJetPtScvsTrackPt[i] = new TH2F(name,title,1000,-500,500,100,0,100);
+    fOutput->Add(fHistJetPtScvsTrackPt[i]);
+
     name = TString(Form("RawJetPtvsTrackPt_%i",i));
     title = TString(Form("Raw Jet pT vs Leading Track pT cent bin %i",i));
     fHistRawJetPtvsTrackPt[i] = new TH2F(name,title,1000,-500,500,100,0,100);
@@ -222,11 +229,24 @@ Bool_t AliAnalysisTaskEmcalJetSpectraMECpA::Run()
   fHistEP0A[centbin]->Fill(fEPV0A);
   fHistEP0C[centbin]->Fill(fEPV0C);
   fHistEPAvsC[centbin]->Fill(fEPV0A,fEPV0C);
-  TString fRhoScaledName = fRhoName;
-  fRho = GetRhoFromEvent(fRhoScaledName);
+
+  fRho = GetRhoFromEvent(fRhoName);
   fRhoVal = fRho->GetVal();
   fHistRhovsCent->Fill(fCent,fRhoVal);
+  fHistRhovsCent->Fill(fCent,fRhoVal);
   fHistRhovsEP[centbin]->Fill(fRhoVal,fEPV0);
+
+  
+  TString fRhoScaledName = fRhoName;
+  fRhoScaledName.Append("_Scaled");
+  Double_t fRhoScVal = 0;
+  AliRhoParameter *fRhoScaled=GetRhoFromEvent(fRhoScaledName);
+  if(fRhoScaled){
+    fRhoScVal=fRhoScaled->GetVal();
+    if(fRhoScVal){
+      fHistRhoScvsCent->Fill(fCent,fRhoScVal);
+    }
+  }
   const Int_t Njets = fJets->GetEntriesFast();
 
   Int_t NjetAcc = 0;
@@ -247,6 +267,13 @@ Bool_t AliAnalysisTaskEmcalJetSpectraMECpA::Run()
      Double_t jetPt = -500;
      jetPt = jet->Pt()-jet->Area()*fRhoVal;    
      fHistJetPtvsTrackPt[centbin]->Fill(jetPt,jet->MaxTrackPt());
+
+     if(fRhoScVal) {
+       Double_t jetPtSc = -500;
+       jetPtSc = jet->Pt()-jet->Area()*fRhoScVal;    
+       fHistJetPtScvsTrackPt[centbin]->Fill(jetPtSc,jet->MaxTrackPt());
+     }
+
      fHistRawJetPtvsTrackPt[centbin]->Fill(jet->Pt(),jet->MaxTrackPt());
 
      fHistJetPtEtaPhi[centbin]->Fill(jet->Pt(),jet->Eta(),jet->Phi());

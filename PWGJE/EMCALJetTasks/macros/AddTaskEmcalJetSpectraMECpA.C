@@ -3,7 +3,8 @@
 AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
    const char *outfilename    = "AnalysisOutput.root",
    UInt_t type                = AliAnalysisTaskEmcal::kTPC,
-   const char *nRhosCh        = "rhoChEm",
+   const char *nRhosCh        = "rhoCh",
+   const char *nRhosChEm      = "rhoChEm",
    TF1 *sfunc                 = 0,
    const Double_t radius      = 0.2,
    const Double_t minPhi      = 1.8,
@@ -45,18 +46,28 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
     
   float AreaCut = radius*radius*TMath::Pi();
 
+  sfunc=new TF1("sfunc","[0]*x*x+[1]*x+[2]",-1,100);
+  sfunc->SetParameter(0,0.0);
+  sfunc->SetParameter(1,0.0);
+  sfunc->SetParameter(2,1.5);
+
+
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-
-    AliEmcalJetTask* jetFinderTaskChBack = AddTaskEmcalJet(usedTracks,"",cKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt);
-
+  
+  AliEmcalJetTask* jetFinderTaskChBack = AddTaskEmcalJet(usedTracks,"",cKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt);
+  
+  AliEmcalJetTask* jetFinderTaskChEmBack = AddTaskEmcalJet(usedTracks,outClusName,cKT,radius,cFULLJETS,minTrackPt, minClusterPt);
 
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cANTIKT,radius, cFULLJETS,minTrackPt,minClusterPt);
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
 
-  AliAnalysisTaskRho *rhochtask = AddTaskRho(jetFinderTaskChBack->GetName(),usedTracks,outClusName,nRhosCh,0.2,0,0.01,0,sfunc,0,kTRUE,nRhosCh);
+  AliAnalysisTaskRho *rhochtask = AddTaskRho(jetFinderTaskChBack->GetName(),usedTracks,outClusName,nRhosCh,0.2,0,0.01,0,sfunc,2,kTRUE,nRhosCh);
+  rhochtask->SetCentralityEstimator(CentEst);
   rhochtask->SetCentralityEstimator(CentEst);
 
+  AliAnalysisTaskRho *rhochemtask = AddTaskRho(jetFinderTaskChEmBack->GetName(),usedTracks,outClusName,nRhosChEm,0.2,0,0.01,0,0,1,kTRUE,nRhosChEm);
+  rhochemtask->SetCentralityEstimator(CentEst);
 
   const char *nJets = jetFinderTask->GetName();
 
