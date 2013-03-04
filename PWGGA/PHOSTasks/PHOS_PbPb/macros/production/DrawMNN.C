@@ -9,6 +9,7 @@ void DrawMNN()
   gStyle->SetOptFit(1);
   TH1* hist = output.GetHistogram(example1);
   hist->SetAxisRange(0.05, 0.3);
+  hist->GetXaxis()->SetTitle("M_{#gamma#gamma}");
   hist->Draw();
   canv->SaveAs("imgs/kMB_pt003_hPi0M11.pdf");
 
@@ -17,6 +18,7 @@ void DrawMNN()
   gStyle->SetOptFit(1);
   TH1* hist = output.GetHistogram(example2);
   hist->SetAxisRange(0.05, 0.3);
+  hist->GetXaxis()->SetTitle("M_{#gamma#gamma}");
   hist->Draw();
   canv->SaveAs(Form("imgs/kMB_pt003_hPi0M12.pdf", example2));
 
@@ -27,6 +29,7 @@ void DrawMNN()
   gStyle->SetOptFit(1);
   TH1* hist = output.GetHistogram(badM11);
   hist->SetAxisRange(0.05, 0.3);
+  hist->GetXaxis()->SetTitle("M_{#gamma#gamma}");
   hist->Draw();
   canv->SaveAs(Form("imgs/kCentral_pt003_hPi0M11.pdf", badM11));
 
@@ -36,6 +39,7 @@ void DrawMNN()
   gStyle->SetOptFit(1);
   TH1* hist = output.GetHistogram(badM22);
   hist->SetAxisRange(0.05, 0.3);
+  hist->GetXaxis()->SetTitle("M_{#gamma#gamma}");
   hist->Draw();
   canv->SaveAs(Form("imgs/kCentral_pt003_hPi0M22.pdf", badM22));
 
@@ -45,6 +49,7 @@ void DrawMNN()
   gStyle->SetOptFit(1);
   TH1* hist = output.GetHistogram(badM33);
   hist->SetAxisRange(0.05, 0.3);
+  hist->GetXaxis()->SetTitle("M_{#gamma#gamma}");
   hist->Draw();
   canv->SaveAs(Form("imgs/kCentral_pt003_hPi0M33.pdf", badM33));
   
@@ -68,8 +73,9 @@ void DrawMNN()
     hM12->SetLineColor(kCyan+1);
     hM12->GetYaxis()->SetRangeUser(0.12, 0.15);
     hM12->SetTitle(Form("#pi^{0} Peak Mean, %s", triggers.Data()));
-    hM12->GetYaxis()->SetTitle("Peak Mean");
-    hM12->GetXaxis()->SetTitle("p_T");
+    hM12->GetYaxis()->SetTitle("Peak #mu");
+    hM12->GetYaxis()->SetTitleOffset(1.3);
+    hM12->GetXaxis()->SetTitle("p_{T}");
     gStyle->SetOptStat(0);
     hM12->Draw();
 
@@ -129,8 +135,9 @@ void DrawMNN()
     hW12->SetLineColor(kCyan+1);
     hW12->GetYaxis()->SetRangeUser(0., 0.012);
     hW12->SetTitle(Form("#pi^{0} Peak Width, %s", triggers.Data()));
-    hM12->GetYaxis()->SetTitle("Peak Width");
-    hM12->GetXaxis()->SetTitle("p_T");
+    hW12->GetYaxis()->SetTitle("Peak #sigma");
+    hW12->GetYaxis()->SetTitleOffset(1.3);
+    hW12->GetXaxis()->SetTitle("p_{T}");
     gStyle->SetOptStat(0);
     hW12->Draw();
 
