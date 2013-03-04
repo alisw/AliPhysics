@@ -1021,7 +1021,7 @@ namespace RawProduction {
       case -8: return "60-70%";
       case -9: return "70-80%";
       default:
-	char cstr[64] ="";
+	static char cstr[64] ="";
 	sprintf(cstr, "centBin:%i", centrality);
 	return cstr;
     }
