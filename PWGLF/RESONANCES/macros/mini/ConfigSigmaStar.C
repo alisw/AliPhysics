@@ -21,6 +21,7 @@ Bool_t ConfigSigmaStar
    Float_t                 lambdaDCA,
    Float_t                 lambdaCosPoinAn,
    Float_t                 lambdaDaughDCA,
+   Int_t                   NTPCcluster,
    const char             *suffix,
    AliRsnCutSet           *cutsPair
 )
@@ -52,7 +53,7 @@ Bool_t ConfigSigmaStar
    esdTrackCuts->SetAcceptKinkDaughters(0); // 0 = kFalse
    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-   esdTrackCuts->SetMinNClustersTPC(70);
+   esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
    esdTrackCuts->SetRequireTPCRefit();
    
    // cut lambda

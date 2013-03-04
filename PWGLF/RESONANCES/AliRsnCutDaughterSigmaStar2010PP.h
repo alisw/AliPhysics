@@ -25,7 +25,8 @@ public:
    virtual Bool_t         IsSelected(TObject *obj);
 
    void           SetPIDCut(Double_t value)                  {fPIDCut = value;}
-
+   void           SetMinTPCcluster(Int_t value)              {fMinTPCcluster = value;}
+   
 private:
 
    AliPID::EParticleType fPID;              // PID for track
@@ -36,7 +37,7 @@ private:
 protected:
 
    Double_t         fPIDCut;          // nsigmas for pions
-
+   Int_t            fMinTPCcluster;   // min allowed TPC cluster
 };
 
 //__________________________________________________________________________________________________

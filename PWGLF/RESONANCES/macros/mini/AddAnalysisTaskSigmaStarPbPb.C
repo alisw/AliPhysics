@@ -27,6 +27,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPbPb
    Float_t     lambdaDCA = 0.03,
    Float_t     lambdaCosPoinAn = 0.99,
    Float_t     lambdaDaughDCA = 0.5,
+   Int_t       NTPCcluster = 70,
    Int_t       nmix = 5,
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
@@ -128,7 +129,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPbPb
    } else 
      Printf("========================== DATA analysis - PID cuts used");
      
-   if (!ConfigSigmaStarPbPb(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, piDCAcut, massTol, lambdaDCA, lambdaCosPoinAn, lambdaDaughDCA, "", cutsPair)) return 0x0;
+   if (!ConfigSigmaStarPbPb(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, piDCAcut, massTol, lambdaDCA, lambdaCosPoinAn, lambdaDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

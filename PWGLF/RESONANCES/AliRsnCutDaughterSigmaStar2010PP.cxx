@@ -19,7 +19,8 @@ AliRsnCutDaughterSigmaStar2010PP::AliRsnCutDaughterSigmaStar2010PP(const char *n
    AliRsnCut(name, AliRsnTarget::kDaughter),
    fPID(pid),
    fCutQuality(Form("%sQuality", name)),
-   fPIDCut(3.0)
+   fPIDCut(3.0),
+   fMinTPCcluster(70)
 {
 //
 // Constructor
@@ -34,7 +35,7 @@ AliRsnCutDaughterSigmaStar2010PP::AliRsnCutDaughterSigmaStar2010PP(const char *n
    fCutQuality.SetSPDminNClusters(1);
    fCutQuality.SetITSminNClusters(0);
    fCutQuality.SetITSmaxChi2(1E+20);
-   fCutQuality.SetTPCminNClusters(70);
+   fCutQuality.SetTPCminNClusters(fMinTPCcluster);
    fCutQuality.SetTPCmaxChi2(4.0);
    fCutQuality.SetRejectKinkDaughters();
    fCutQuality.SetAODTestFilterBit(5);
