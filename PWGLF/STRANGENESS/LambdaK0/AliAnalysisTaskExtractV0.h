@@ -67,6 +67,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   void SetLightWeightAnalysis (Bool_t lLightWeight = kTRUE) {fkLightWeight = lLightWeight;  }
   void SetFastOnly (TString lFastOnly = "kFastOnly") {fkFastOnly = lFastOnly;  }
   void SetpAVertexSelection   (Bool_t lpAVertexSelection = kTRUE) {fkpAVertexSelection = lpAVertexSelection;  }
+  void SetRunV0Vertexer ( Bool_t lRunV0Vertexer = kTRUE) { fkRunV0Vertexer = lRunV0Vertexer; } 
   
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -90,6 +91,9 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
                         // debugging information. This creates smaller output.
   TString fkFastOnly; //"" if no extra selection, "kFastOnly" -> without SDD, "NotkFastOnly" -> With SDD
   Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
+  Bool_t fkRunV0Vertexer; //if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
+  
+  Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 
   //Variables for Tree
 	Float_t fTreeVariableChi2V0;         //!
