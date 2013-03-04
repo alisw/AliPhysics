@@ -122,6 +122,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
     void RemoveDuplicates(TObjArray* tracks);
     void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
+    void SelectCharge(TObjArray* tracks);
 
     // General configuration
     Int_t               fDebug;           //  Debug flag

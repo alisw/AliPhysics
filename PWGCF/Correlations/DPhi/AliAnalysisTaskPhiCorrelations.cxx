@@ -590,11 +590,19 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       {
         TObjArray* primMCParticles = fAnalyseUE->GetAcceptedParticles(mc, 0x0, kTRUE, particleSpecies, kTRUE);
         TObjArray* primRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE);
-        TObjArray* allRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE);
+        TObjArray* allRecoTracksMatched =  fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE);
 	
 	CleanUp(primMCParticles, mc, skipParticlesAbove);
 	CleanUp(primRecoTracksMatched, mc, skipParticlesAbove);
 	CleanUp(allRecoTracksMatched, mc, skipParticlesAbove);
+	
+	// select charges
+	if (fTriggerSelectCharge != 0)
+	{
+	  SelectCharge(primMCParticles);
+	  SelectCharge(primRecoTracksMatched);
+	  SelectCharge(allRecoTracksMatched);
+	}
       
         fHistos->FillTrackingEfficiency(primMCParticles, primRecoTracksMatched, allRecoTracksMatched, 0, particleSpecies, centrality, zVtx);
         
@@ -1143,4 +1151,30 @@ void AliAnalysisTaskPhiCorrelations::CleanUp(TObjArray* tracks, TObject* mcObj, 
     fAnalyseUE->RemoveWeakDecays(tracks, mcObj);
   if (fRemoveDuplicates)
     RemoveDuplicates(tracks);
+}
+
+//____________________________________________________________________
+void AliAnalysisTaskPhiCorrelations::SelectCharge(TObjArray* tracks)
+{
+  // remove particles with charge not selected (depending on fTriggerSelectCharge)
+  
+  Int_t before = tracks->GetEntriesFast();
+
+  for (Int_t i=0; i<before; ++i) 
+  {
+    AliVParticle* part = (AliVParticle*) tracks->At(i);
+    
+    if (part->Charge() * fTriggerSelectCharge < -1)
+    {
+//       Printf("Removing %d with charge %d", i, part->Charge());
+      TObject* object = tracks->RemoveAt(i);
+      if (tracks->IsOwner())
+	delete object;
+    }
+  }
+ 
+  tracks->Compress();
+  
+  if (before > tracks->GetEntriesFast())
+    AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast())); 
 }
