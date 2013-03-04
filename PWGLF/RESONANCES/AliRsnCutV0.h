@@ -30,6 +30,7 @@ public:
    void           SetMaxDCAVertex(Double_t value)          {fMaxDCAVertex = value;}
    void           SetMinCosPointingAngle(Double_t value)   {fMinCosPointAngle = value;}
    void           SetMaxDaughtersDCA(Double_t value)       {fMaxDaughtersDCA = value;}
+   void           SetMinTPCcluster(Int_t value)            {fMinTPCcluster = value;}
    void           SetMaxRapidity(Double_t value)           {fMaxRapidity = value;}
 
    void           SetPIDCut1(Double_t value)               {fPIDCut1 = value;}
@@ -54,6 +55,7 @@ protected:
    Double_t         fMaxDCAVertex;     // max allowed DCA from primary vertex
    Double_t         fMinCosPointAngle; // min allowed cosine of pointing angle
    Double_t         fMaxDaughtersDCA;  // max allowed DCA between the two daughers
+   Int_t            fMinTPCcluster;    // min allowed TOC cluster
    Double_t         fMaxRapidity;      // max allowed V0 rapidity
 
    AliPID::EParticleType fPID;         // PID for track

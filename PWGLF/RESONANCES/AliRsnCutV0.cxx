@@ -39,6 +39,7 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fMaxDCAVertex(0.3),
    fMinCosPointAngle(0.95),
    fMaxDaughtersDCA(0.5),
+   fMinTPCcluster(70),
    fMaxRapidity(0.8),
    fPID(pid),
    fPID2(pid2),
@@ -66,6 +67,7 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fMaxDCAVertex(copy.fMaxDCAVertex),
    fMinCosPointAngle(copy.fMinCosPointAngle),
    fMaxDaughtersDCA(copy.fMaxDaughtersDCA),
+   fMinTPCcluster(copy.fMinTPCcluster),
    fMaxRapidity(copy.fMaxRapidity),
    fPID(copy.fPID),
    fPID2(copy.fPID2),
@@ -89,7 +91,7 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fCutQuality.SetSPDminNClusters(1);
    fCutQuality.SetITSminNClusters(0);
    fCutQuality.SetITSmaxChi2(1E+20);
-   fCutQuality.SetTPCminNClusters(70);
+   fCutQuality.SetTPCminNClusters(fMinTPCcluster);
    fCutQuality.SetTPCmaxChi2(4.0);
    fCutQuality.SetRejectKinkDaughters();
    fCutQuality.SetAODTestFilterBit(5);
@@ -111,6 +113,7 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fMaxDCAVertex = copy.fMaxDCAVertex;
    fMinCosPointAngle = copy.fMinCosPointAngle;
    fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
+   fMinTPCcluster = copy.fMinTPCcluster;
    fMaxRapidity = copy.fMaxRapidity;
    fPID = copy.fPID;
    fPID2 = copy.fPID2;
