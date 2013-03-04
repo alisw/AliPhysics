@@ -59,8 +59,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fCentralityCorrelation(0),
   fITSClusterMap(0),
   fControlConvResoncances(0),
-  fEfficiencyCorrection(0),
-  fCorrectTriggers(kFALSE),
+  fEfficiencyCorrectionTriggers(0),
+  fEfficiencyCorrectionAssociated(0),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
   fAssociatedSelectCharge(0),
@@ -228,8 +228,8 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCentralityCorrelation(0),
   fITSClusterMap(0),
   fControlConvResoncances(0),
-  fEfficiencyCorrection(0),
-  fCorrectTriggers(kFALSE),
+  fEfficiencyCorrectionTriggers(0),
+  fEfficiencyCorrectionAssociated(0),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
   fAssociatedSelectCharge(0),
@@ -371,10 +371,16 @@ void AliUEHistograms::DeleteContainers()
     fControlConvResoncances = 0;
   }
     
-  if (fEfficiencyCorrection)
+  if (fEfficiencyCorrectionTriggers)
   {
-    delete fEfficiencyCorrection;
-    fEfficiencyCorrection = 0;
+    delete fEfficiencyCorrectionTriggers;
+    fEfficiencyCorrectionTriggers = 0;
+  }
+  
+  if (fEfficiencyCorrectionAssociated)
+  {
+    delete fEfficiencyCorrectionAssociated;
+    fEfficiencyCorrectionAssociated = 0;
   }
 }
 
@@ -759,29 +765,33 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  weight = particle->Pt();
 	
 	Double_t useWeight = weight;
-	if (fEfficiencyCorrection && applyEfficiency)
+	if (applyEfficiency)
 	{
-	  Int_t effVars[4];
-	  
-	  // associated particle
-	  effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(eta[j]);
-	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[1]); //pt
-	  effVars[2] = fEfficiencyCorrection->GetAxis(2)->FindBin(vars[3]); //centrality
-	  effVars[3] = fEfficiencyCorrection->GetAxis(3)->FindBin(vars[5]); //zVtx
-	  
-// 	  Printf("%d %d %d %d %f", effVars[0], effVars[1], effVars[2], effVars[3], fEfficiencyCorrection->GetBinContent(effVars));
-	  
-	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
-	  
-	  // trigger particle
-	  if (fCorrectTriggers)
+	  if (fEfficiencyCorrectionAssociated)
 	  {
-	    effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(triggerEta);
-	    effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[2]); //pt
-	    useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
+	    Int_t effVars[4];
+	    // associated particle
+	    effVars[0] = fEfficiencyCorrectionAssociated->GetAxis(0)->FindBin(eta[j]);
+	    effVars[1] = fEfficiencyCorrectionAssociated->GetAxis(1)->FindBin(vars[1]); //pt
+	    effVars[2] = fEfficiencyCorrectionAssociated->GetAxis(2)->FindBin(vars[3]); //centrality
+	    effVars[3] = fEfficiencyCorrectionAssociated->GetAxis(3)->FindBin(vars[5]); //zVtx
+	    
+	    // 	  Printf("%d %d %d %d %f", effVars[0], effVars[1], effVars[2], effVars[3], fEfficiencyCorrectionAssociated->GetBinContent(effVars));
+	  
+	    useWeight *= fEfficiencyCorrectionAssociated->GetBinContent(effVars);
+	  }
+	  if (fEfficiencyCorrectionTriggers)
+	  {
+	    Int_t effVars[4];
+
+	    effVars[0] = fEfficiencyCorrectionTriggers->GetAxis(0)->FindBin(triggerEta);
+	    effVars[1] = fEfficiencyCorrectionTriggers->GetAxis(1)->FindBin(vars[2]); //pt
+	    effVars[2] = fEfficiencyCorrectionTriggers->GetAxis(2)->FindBin(vars[3]); //centrality
+	    effVars[3] = fEfficiencyCorrectionTriggers->GetAxis(3)->FindBin(vars[5]); //zVtx
+	    useWeight *= fEfficiencyCorrectionTriggers->GetBinContent(effVars);
 	  }
 	}
-	
+
 	if (fWeightPerEvent)
 	{
 	  Int_t weightBin = triggerWeighting->GetXaxis()->FindBin(vars[2]);
@@ -790,8 +800,8 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}
     
         // fill all in toward region and do not use the other regions
-        fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step, useWeight);
-	
+	fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step, useWeight);
+
 // 	Printf("%.2f %.2f --> %.2f", triggerEta, eta[j], vars[0]);
       }
  
@@ -804,16 +814,16 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	vars[2] = zVtx;
 
 	Double_t useWeight = 1;
-	if (fEfficiencyCorrection && applyEfficiency && fCorrectTriggers)
+	if (fEfficiencyCorrectionTriggers && applyEfficiency)
 	{
 	  Int_t effVars[4];
 	  
 	  // trigger particle
-	  effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(triggerEta);
-	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[0]); //pt
-	  effVars[2] = fEfficiencyCorrection->GetAxis(2)->FindBin(vars[1]); //centrality
-	  effVars[3] = fEfficiencyCorrection->GetAxis(3)->FindBin(vars[2]); //zVtx
-	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
+	  effVars[0] = fEfficiencyCorrectionTriggers->GetAxis(0)->FindBin(triggerEta);
+	  effVars[1] = fEfficiencyCorrectionTriggers->GetAxis(1)->FindBin(vars[0]); //pt
+	  effVars[2] = fEfficiencyCorrectionTriggers->GetAxis(2)->FindBin(vars[1]); //centrality
+	  effVars[3] = fEfficiencyCorrectionTriggers->GetAxis(3)->FindBin(vars[2]); //zVtx
+	  useWeight *= fEfficiencyCorrectionTriggers->GetBinContent(effVars);
 	}
 	if (fWeightPerEvent)
 	{
@@ -1088,8 +1098,11 @@ void AliUEHistograms::Copy(TObject& c) const
     if (fTwoTrackDistancePt[i])
       target.fTwoTrackDistancePt[i] = dynamic_cast<TH3F*> (fTwoTrackDistancePt[i]->Clone());
 
-  if (fEfficiencyCorrection)
-    target.fEfficiencyCorrection = dynamic_cast<THnF*> (fEfficiencyCorrection->Clone());
+  if (fEfficiencyCorrectionTriggers)
+    target.fEfficiencyCorrectionTriggers = dynamic_cast<THnF*> (fEfficiencyCorrectionTriggers->Clone());
+ 
+ if (fEfficiencyCorrectionAssociated)
+    target.fEfficiencyCorrectionAssociated = dynamic_cast<THnF*> (fEfficiencyCorrectionAssociated->Clone());
     
   target.fSelectCharge = fSelectCharge;
   target.fTriggerSelectCharge = fTriggerSelectCharge;
@@ -1102,7 +1115,6 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fWeightPerEvent = fWeightPerEvent;
   target.fRunNumber = fRunNumber;
   target.fMergeCount = fMergeCount;
-  target.fCorrectTriggers = fCorrectTriggers;
 }
 
 //____________________________________________________________________
