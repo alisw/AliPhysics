@@ -2445,9 +2445,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
              } 
              if(fkQualityCutnTPCcls){
                 // - Poor quality related to TPC clusters
-                if(lPosTPCClusters  < 70) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
-                if(lNegTPCClusters  < 70) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
-                if(lBachTPCClusters < 70) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
+                if(lPosTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
+                if(lNegTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
+                if(lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
              }
 
              etaPos  = pTrackXi->Eta();
@@ -2774,9 +2774,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
              }
              if (fkQualityCutnTPCcls) {
                  // - Poor quality related to TPC clusters
-                 if(lPosTPCClusters  < 70) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
-                 if(lNegTPCClusters  < 70) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
-                 if(lBachTPCClusters < 70) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
+                 if(lPosTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
+                 if(lNegTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
+                 if(lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
              }
 
              etaPos  = pTrackXi->Eta();
