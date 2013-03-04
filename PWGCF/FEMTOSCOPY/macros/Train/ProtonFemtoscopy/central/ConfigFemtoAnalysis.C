@@ -84,8 +84,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
     //  int gammacut = 1;
 
-    double shqmax = 2.0;
-    int nbinssh = 200;
+    double shqmax = 1.0;
+    int nbinssh = 100;
 
     AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
     Reader->SetFilterBit(7);
@@ -176,9 +176,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                             // if (isrealdata)
                             //     mecetaphitpc[aniter]->SetAcceptOnlyPhysics(kTRUE);
 
-                            cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
-                            cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
-                            mecetaphitpc[aniter]->AddCutMonitor(cutPassEvMetaphitpc[aniter], cutFailEvMetaphitpc[aniter]);
+                            // cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
+                            // cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
+                            // mecetaphitpc[aniter]->AddCutMonitor(cutPassEvMetaphitpc[aniter], cutFailEvMetaphitpc[aniter]);
 
                             // cutPassEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutPass%stpcM%i", chrgs[ichg], imult));
                             // cutFailEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutFail%stpcM%i", chrgs[ichg], imult));
@@ -268,13 +268,13 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
                             }
 
-                            cutPass1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass1%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),ProtonMass);
-                            cutFail1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail1%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),ProtonMass);
-                            dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1YPtetaphitpc[aniter], cutFail1YPtetaphitpc[aniter]);
+                            // cutPass1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass1%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),ProtonMass);
+                            // cutFail1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail1%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),ProtonMass);
+                            // dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1YPtetaphitpc[aniter], cutFail1YPtetaphitpc[aniter]);
 
-                            cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass1%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),2);//0-pion,1-kaon,2-proton
-                            cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail1%stpcM%iPsi%i", chrgs[ichg], imult , iepvzero),2);
-                            dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
+                            // cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass1%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),2);//0-pion,1-kaon,2-proton
+                            // cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail1%stpcM%iPsi%i", chrgs[ichg], imult , iepvzero),2);
+                            // dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
 
                             // if (ichg == 2){
                             //     cutPass2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass2%stpcM%i", chrgs[ichg], imult),2);//0-pion,1-kaon,2-proton
