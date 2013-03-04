@@ -206,7 +206,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* /*aod*/)
                 {return IsSelected(obj,selectionLevel);}
   Int_t PtBin(Double_t pt) const;
-  void PrintAll()const;
+  virtual void PrintAll()const;
   void PrintTrigger() const;
 
   virtual Bool_t IsInFiducialAcceptance(Double_t /*pt*/,Double_t /*y*/) const {return kTRUE;}

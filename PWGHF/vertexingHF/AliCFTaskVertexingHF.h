@@ -218,8 +218,9 @@ protected:
 	Int_t fLctoV0bachelorOption; // Lc->V0+bachelor decay option (selection level)
 	Int_t fGenLctoV0bachelorOption; // Lc->V0+bachelor decay option (generation level)
 	Bool_t fUseSelectionBit;     // flag to use selection bit
+	UInt_t fPDGcode; // PDG code
 
-	ClassDef(AliCFTaskVertexingHF,14); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,15); // class for HF corrections as a function of many variables
 };
 
 #endif

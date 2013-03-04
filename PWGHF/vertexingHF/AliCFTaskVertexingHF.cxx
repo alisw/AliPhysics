@@ -121,7 +121,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fResonantDecay(0),
   fLctoV0bachelorOption(1),
   fGenLctoV0bachelorOption(0),
-  fUseSelectionBit(kTRUE)
+  fUseSelectionBit(kTRUE),
+  fPDGcode(0)
 {
   //
   //Default ctor
@@ -170,7 +171,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fResonantDecay(0),
   fLctoV0bachelorOption(1),
   fGenLctoV0bachelorOption(0),
-  fUseSelectionBit(kTRUE)
+  fUseSelectionBit(kTRUE),
+  fPDGcode(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -248,7 +250,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fResonantDecay(c.fResonantDecay),
   fLctoV0bachelorOption(c.fLctoV0bachelorOption),
   fGenLctoV0bachelorOption(c.fGenLctoV0bachelorOption),
-  fUseSelectionBit(c.fUseSelectionBit)
+  fUseSelectionBit(c.fUseSelectionBit),
+  fPDGcode(c.fPDGcode)
 {
   //
   // Copy Constructor
@@ -291,6 +294,7 @@ void AliCFTaskVertexingHF::Init()
 
   switch (fDecayChannel){
   case 2:{
+    fPDGcode = 421;
     copyfCuts = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fCuts)));
     switch (fConfiguration) {
     case kSnail:  // slow configuration: all variables in
@@ -305,6 +309,7 @@ void AliCFTaskVertexingHF::Init()
     break;
   }
   case 21:{ 
+    fPDGcode = 413;
     copyfCuts = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
     switch (fConfiguration) {
     case kSnail:  // slow configuration: all variables in
@@ -319,6 +324,7 @@ void AliCFTaskVertexingHF::Init()
     break;
   }
   case 22:{
+    fPDGcode = 4122;
     copyfCuts = new AliRDHFCutsLctoV0(*(static_cast<AliRDHFCutsLctoV0*>(fCuts)));
     switch (fConfiguration) {
     case kSnail:  // slow configuration: all variables in
@@ -333,6 +339,7 @@ void AliCFTaskVertexingHF::Init()
     break;
   }
   case 31:{
+    fPDGcode = 411;
     copyfCuts = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fCuts)));
     switch (fConfiguration) {
     case kSnail:  // slow configuration: all variables in
@@ -347,6 +354,7 @@ void AliCFTaskVertexingHF::Init()
     break;
   }
   case 32:{
+    fPDGcode = 4122;
     copyfCuts = new AliRDHFCutsLctopKpi(*(static_cast<AliRDHFCutsLctopKpi*>(fCuts)));
     switch (fConfiguration) {
     case kSnail:  // slow configuration: all variables in
@@ -361,6 +369,7 @@ void AliCFTaskVertexingHF::Init()
     break;
   }
   case 33:{
+    fPDGcode = 431;
     copyfCuts = new AliRDHFCutsDstoKKpi(*(static_cast<AliRDHFCutsDstoKKpi*>(fCuts)));
     switch (fConfiguration) {
     case kSnail:  // slow configuration: all variables in
@@ -375,6 +384,7 @@ void AliCFTaskVertexingHF::Init()
     break;
   }
   case 4:{
+    fPDGcode = 421;
     copyfCuts = new AliRDHFCutsD0toKpipipi(*(static_cast<AliRDHFCutsD0toKpipipi*>(fCuts)));
     switch (fConfiguration) {
     case kSnail:  // slow configuration: all variables in
@@ -663,6 +673,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       AliError("Failed casting particle from MC array!, Skipping particle");
       continue;
     }
+
+    //counting c quarks
+    cquarks += cfVtxHF->MCcquarkCounting(mcPart);
+
     // check the MC-level cuts, must be the desidered particle
     if (!fCFManager->CheckParticleCuts(0, mcPart)) {
       AliDebug(2,"Check the MC-level cuts - not desidered particle");
@@ -670,8 +684,6 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     }
     cfVtxHF->SetMCCandidateParam(iPart);
 	 
-    //counting c quarks
-    cquarks += cfVtxHF->MCcquarkCounting(mcPart);
 	  
     if (!(cfVtxHF->SetLabelArray())){
       AliDebug(2,Form("Impossible to set the label array (decaychannel = %d)",fDecayChannel));
@@ -867,7 +879,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 				  
 	  if(fAcceptanceUnf){
 	    Double_t fill[4]; //fill response matrix
-	    Bool_t bUnfolding = cfVtxHF -> FillUnfoldingMatrix(fill);
+	    Bool_t bUnfolding = cfVtxHF -> FillUnfoldingMatrix(fPDGcode,fill);
 	    if (bUnfolding) fCorrelation->Fill(fill);
 	  }
 					
@@ -911,8 +923,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 		Bool_t keepDs=ProcessDs(recoPidSelection);
 		if(keepDs) recoPidSelection=3;							  
 	      } else if (fDecayChannel==22){ // Lc->V0+bachelor case, where more possibilities are considered
-		Bool_t keepLctoV0bachelor=ProcessLctoV0Bachelor(recoAnalysisCuts);
-		if (keepLctoV0bachelor) recoAnalysisCuts=3;
+		Bool_t keepLctoV0bachelor=ProcessLctoV0Bachelor(recoPidSelection);
+		if (keepLctoV0bachelor) recoPidSelection=3;
 	      }
 
 	      Bool_t tempPid=(recoPidSelection == 3 || recoPidSelection == isPartOrAntipart);
@@ -924,7 +936,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 		AliDebug(3,"Reco PID cuts passed and container filled \n");
 		if(!fAcceptanceUnf){
 		  Double_t fill[4]; //fill response matrix
-		  Bool_t bUnfolding = cfVtxHF -> FillUnfoldingMatrix(fill);
+		  Bool_t bUnfolding = cfVtxHF -> FillUnfoldingMatrix(fPDGcode,fill);
 		  if (bUnfolding) fCorrelation->Fill(fill);
 		}
 	      }
