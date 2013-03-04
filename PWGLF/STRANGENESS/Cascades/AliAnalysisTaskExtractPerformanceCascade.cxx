@@ -215,6 +215,103 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
    f3dHistGenSelectedPtVsYCMSVsMultXiPlus(0),
    f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus(0),
    f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus(0),
+
+//MC Mult
+
+f3dHistGenPtVsYVsMultMCXiMinus(0),
+f3dHistGenPtVsYVsMultMCXiPlus(0),
+f3dHistGenPtVsYVsMultMCOmegaMinus(0),
+f3dHistGenPtVsYVsMultMCOmegaPlus(0),
+f3dHistGenSelectedPtVsYVsMultMCXiMinus(0),
+f3dHistGenSelectedPtVsYVsMultMCXiPlus(0),
+f3dHistGenSelectedPtVsYVsMultMCOmegaMinus(0),
+f3dHistGenSelectedPtVsYVsMultMCOmegaPlus(0),
+f3dHistGenPtVsYCMSVsMultMCXiMinus(0),
+f3dHistGenPtVsYCMSVsMultMCXiPlus(0),
+f3dHistGenPtVsYCMSVsMultMCOmegaMinus(0),
+f3dHistGenPtVsYCMSVsMultMCOmegaPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultMCXiMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultMCXiPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultMCOmegaMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus(0),
+
+//V0A
+
+f3dHistGenPtVsYVsMultV0AXiMinus(0),
+f3dHistGenPtVsYVsMultV0AXiPlus(0),
+f3dHistGenPtVsYVsMultV0AOmegaMinus(0),
+f3dHistGenPtVsYVsMultV0AOmegaPlus(0),
+f3dHistGenSelectedPtVsYVsMultV0AXiMinus(0),
+f3dHistGenSelectedPtVsYVsMultV0AXiPlus(0),
+f3dHistGenSelectedPtVsYVsMultV0AOmegaMinus(0),
+f3dHistGenSelectedPtVsYVsMultV0AOmegaPlus(0),
+f3dHistGenPtVsYCMSVsMultV0AXiMinus(0),
+f3dHistGenPtVsYCMSVsMultV0AXiPlus(0),
+f3dHistGenPtVsYCMSVsMultV0AOmegaMinus(0),
+f3dHistGenPtVsYCMSVsMultV0AOmegaPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus(0),
+
+//ZNA
+
+f3dHistGenPtVsYVsMultZNAXiMinus(0),
+f3dHistGenPtVsYVsMultZNAXiPlus(0),
+f3dHistGenPtVsYVsMultZNAOmegaMinus(0),
+f3dHistGenPtVsYVsMultZNAOmegaPlus(0),
+f3dHistGenSelectedPtVsYVsMultZNAXiMinus(0),
+f3dHistGenSelectedPtVsYVsMultZNAXiPlus(0),
+f3dHistGenSelectedPtVsYVsMultZNAOmegaMinus(0),
+f3dHistGenSelectedPtVsYVsMultZNAOmegaPlus(0),
+f3dHistGenPtVsYCMSVsMultZNAXiMinus(0),
+f3dHistGenPtVsYCMSVsMultZNAXiPlus(0),
+f3dHistGenPtVsYCMSVsMultZNAOmegaMinus(0),
+f3dHistGenPtVsYCMSVsMultZNAOmegaPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultZNAXiMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultZNAXiPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaPlus(0),
+
+//TRK
+
+f3dHistGenPtVsYVsMultTRKXiMinus(0),
+f3dHistGenPtVsYVsMultTRKXiPlus(0),
+f3dHistGenPtVsYVsMultTRKOmegaMinus(0),
+f3dHistGenPtVsYVsMultTRKOmegaPlus(0),
+f3dHistGenSelectedPtVsYVsMultTRKXiMinus(0),
+f3dHistGenSelectedPtVsYVsMultTRKXiPlus(0),
+f3dHistGenSelectedPtVsYVsMultTRKOmegaMinus(0),
+f3dHistGenSelectedPtVsYVsMultTRKOmegaPlus(0),
+f3dHistGenPtVsYCMSVsMultTRKXiMinus(0),
+f3dHistGenPtVsYCMSVsMultTRKXiPlus(0),
+f3dHistGenPtVsYCMSVsMultTRKOmegaMinus(0),
+f3dHistGenPtVsYCMSVsMultTRKOmegaPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultTRKXiMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultTRKXiPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaPlus(0),
+
+//SPD
+
+f3dHistGenPtVsYVsMultSPDXiMinus(0),
+f3dHistGenPtVsYVsMultSPDXiPlus(0),
+f3dHistGenPtVsYVsMultSPDOmegaMinus(0),
+f3dHistGenPtVsYVsMultSPDOmegaPlus(0),
+f3dHistGenSelectedPtVsYVsMultSPDXiMinus(0),
+f3dHistGenSelectedPtVsYVsMultSPDXiPlus(0),
+f3dHistGenSelectedPtVsYVsMultSPDOmegaMinus(0),
+f3dHistGenSelectedPtVsYVsMultSPDOmegaPlus(0),
+f3dHistGenPtVsYCMSVsMultSPDXiMinus(0),
+f3dHistGenPtVsYCMSVsMultSPDXiPlus(0),
+f3dHistGenPtVsYCMSVsMultSPDOmegaMinus(0),
+f3dHistGenPtVsYCMSVsMultSPDOmegaPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultSPDXiMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultSPDXiPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaPlus(0),
+
+
    fHistPVx(0),
    fHistPVy(0),
    fHistPVz(0),
@@ -344,6 +441,103 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
    f3dHistGenSelectedPtVsYCMSVsMultXiPlus(0),
    f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus(0),
    f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus(0),
+
+//MC Mult
+
+f3dHistGenPtVsYVsMultMCXiMinus(0),
+f3dHistGenPtVsYVsMultMCXiPlus(0),
+f3dHistGenPtVsYVsMultMCOmegaMinus(0),
+f3dHistGenPtVsYVsMultMCOmegaPlus(0),
+f3dHistGenSelectedPtVsYVsMultMCXiMinus(0),
+f3dHistGenSelectedPtVsYVsMultMCXiPlus(0),
+f3dHistGenSelectedPtVsYVsMultMCOmegaMinus(0),
+f3dHistGenSelectedPtVsYVsMultMCOmegaPlus(0),
+f3dHistGenPtVsYCMSVsMultMCXiMinus(0),
+f3dHistGenPtVsYCMSVsMultMCXiPlus(0),
+f3dHistGenPtVsYCMSVsMultMCOmegaMinus(0),
+f3dHistGenPtVsYCMSVsMultMCOmegaPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultMCXiMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultMCXiPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultMCOmegaMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus(0),
+
+//V0A
+
+f3dHistGenPtVsYVsMultV0AXiMinus(0),
+f3dHistGenPtVsYVsMultV0AXiPlus(0),
+f3dHistGenPtVsYVsMultV0AOmegaMinus(0),
+f3dHistGenPtVsYVsMultV0AOmegaPlus(0),
+f3dHistGenSelectedPtVsYVsMultV0AXiMinus(0),
+f3dHistGenSelectedPtVsYVsMultV0AXiPlus(0),
+f3dHistGenSelectedPtVsYVsMultV0AOmegaMinus(0),
+f3dHistGenSelectedPtVsYVsMultV0AOmegaPlus(0),
+f3dHistGenPtVsYCMSVsMultV0AXiMinus(0),
+f3dHistGenPtVsYCMSVsMultV0AXiPlus(0),
+f3dHistGenPtVsYCMSVsMultV0AOmegaMinus(0),
+f3dHistGenPtVsYCMSVsMultV0AOmegaPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus(0),
+
+//ZNA
+
+f3dHistGenPtVsYVsMultZNAXiMinus(0),
+f3dHistGenPtVsYVsMultZNAXiPlus(0),
+f3dHistGenPtVsYVsMultZNAOmegaMinus(0),
+f3dHistGenPtVsYVsMultZNAOmegaPlus(0),
+f3dHistGenSelectedPtVsYVsMultZNAXiMinus(0),
+f3dHistGenSelectedPtVsYVsMultZNAXiPlus(0),
+f3dHistGenSelectedPtVsYVsMultZNAOmegaMinus(0),
+f3dHistGenSelectedPtVsYVsMultZNAOmegaPlus(0),
+f3dHistGenPtVsYCMSVsMultZNAXiMinus(0),
+f3dHistGenPtVsYCMSVsMultZNAXiPlus(0),
+f3dHistGenPtVsYCMSVsMultZNAOmegaMinus(0),
+f3dHistGenPtVsYCMSVsMultZNAOmegaPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultZNAXiMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultZNAXiPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaPlus(0),
+
+//TRK
+
+f3dHistGenPtVsYVsMultTRKXiMinus(0),
+f3dHistGenPtVsYVsMultTRKXiPlus(0),
+f3dHistGenPtVsYVsMultTRKOmegaMinus(0),
+f3dHistGenPtVsYVsMultTRKOmegaPlus(0),
+f3dHistGenSelectedPtVsYVsMultTRKXiMinus(0),
+f3dHistGenSelectedPtVsYVsMultTRKXiPlus(0),
+f3dHistGenSelectedPtVsYVsMultTRKOmegaMinus(0),
+f3dHistGenSelectedPtVsYVsMultTRKOmegaPlus(0),
+f3dHistGenPtVsYCMSVsMultTRKXiMinus(0),
+f3dHistGenPtVsYCMSVsMultTRKXiPlus(0),
+f3dHistGenPtVsYCMSVsMultTRKOmegaMinus(0),
+f3dHistGenPtVsYCMSVsMultTRKOmegaPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultTRKXiMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultTRKXiPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaPlus(0),
+
+//SPD
+
+f3dHistGenPtVsYVsMultSPDXiMinus(0),
+f3dHistGenPtVsYVsMultSPDXiPlus(0),
+f3dHistGenPtVsYVsMultSPDOmegaMinus(0),
+f3dHistGenPtVsYVsMultSPDOmegaPlus(0),
+f3dHistGenSelectedPtVsYVsMultSPDXiMinus(0),
+f3dHistGenSelectedPtVsYVsMultSPDXiPlus(0),
+f3dHistGenSelectedPtVsYVsMultSPDOmegaMinus(0),
+f3dHistGenSelectedPtVsYVsMultSPDOmegaPlus(0),
+f3dHistGenPtVsYCMSVsMultSPDXiMinus(0),
+f3dHistGenPtVsYCMSVsMultSPDXiPlus(0),
+f3dHistGenPtVsYCMSVsMultSPDOmegaMinus(0),
+f3dHistGenPtVsYCMSVsMultSPDOmegaPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultSPDXiMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultSPDXiPlus(0),
+f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaMinus(0),
+f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaPlus(0),
+
+
    fHistPVx(0),
    fHistPVy(0),
    fHistPVz(0),
@@ -803,10 +997,12 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
       fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus);
    }
   
-  
+  //======================================================================================
   //--------------------------------------------------------------------------------------
   // True Generated (For Multiplicity Unfolding)
   //--------------------------------------------------------------------------------------
+  //======================================================================================
+  
   //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, all generated
   
   if(! f3dHistGenPtVsYVsMultMCXiMinus) {
@@ -894,6 +1090,380 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
     fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus);
   }
 
+  //======================================================================================
+  //--------------------------------------------------------------------------------------
+  // V0A
+  //--------------------------------------------------------------------------------------
+  //======================================================================================
+  
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, all generated
+  
+  if(! f3dHistGenPtVsYVsMultV0AXiMinus) {
+    f3dHistGenPtVsYVsMultV0AXiMinus = new TH3F( "f3dHistGenPtVsYVsMultV0AXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultV0AXiMinus);
+  }
+  if(! f3dHistGenPtVsYVsMultV0AXiPlus) {
+    f3dHistGenPtVsYVsMultV0AXiPlus = new TH3F( "f3dHistGenPtVsYVsMultV0AXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultV0AXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenPtVsYVsMultV0AOmegaMinus) {
+    f3dHistGenPtVsYVsMultV0AOmegaMinus = new TH3F( "f3dHistGenPtVsYVsMultV0AOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultV0AOmegaMinus);
+  }
+  if(! f3dHistGenPtVsYVsMultV0AOmegaPlus) {
+    f3dHistGenPtVsYVsMultV0AOmegaPlus = new TH3F( "f3dHistGenPtVsYVsMultV0AOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultV0AOmegaPlus);
+  }
+  
+  //All generated cascades, YCMS
+  
+  if(! f3dHistGenPtVsYCMSVsMultV0AXiMinus) {
+    f3dHistGenPtVsYCMSVsMultV0AXiMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultV0AXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultV0AXiMinus);
+  }
+  if(! f3dHistGenPtVsYCMSVsMultV0AXiPlus) {
+    f3dHistGenPtVsYCMSVsMultV0AXiPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultV0AXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultV0AXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenPtVsYCMSVsMultV0AOmegaMinus) {
+    f3dHistGenPtVsYCMSVsMultV0AOmegaMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultV0AOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultV0AOmegaMinus);
+  }
+  if(! f3dHistGenPtVsYCMSVsMultV0AOmegaPlus) {
+    f3dHistGenPtVsYCMSVsMultV0AOmegaPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultV0AOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultV0AOmegaPlus);
+  }
+  
+  
+  //--------------------------------------------------------------------------------------
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, at selected analysis evts
+  
+  if(! f3dHistGenSelectedPtVsYVsMultV0AXiMinus) {
+    f3dHistGenSelectedPtVsYVsMultV0AXiMinus = new TH3F( "f3dHistGenSelectedPtVsYVsMultV0AXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultV0AXiMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYVsMultV0AXiPlus) {
+    f3dHistGenSelectedPtVsYVsMultV0AXiPlus = new TH3F( "f3dHistGenSelectedPtVsYVsMultV0AXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultV0AXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenSelectedPtVsYVsMultV0AOmegaMinus) {
+    f3dHistGenSelectedPtVsYVsMultV0AOmegaMinus = new TH3F( "f3dHistGenSelectedPtVsYVsMultV0AOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultV0AOmegaMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYVsMultV0AOmegaPlus) {
+    f3dHistGenSelectedPtVsYVsMultV0AOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYVsMultV0AOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultV0AOmegaPlus);
+  }
+  
+  //ANALYSIS level Cascades, YCMS
+  
+  
+  if(! f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus) {
+    f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus) {
+    f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus) {
+    f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus) {
+    f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus);
+  }
+  
+  
+  //======================================================================================
+  //--------------------------------------------------------------------------------------
+  // ZNA
+  //--------------------------------------------------------------------------------------
+  //======================================================================================
+  
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, all generated
+  
+  if(! f3dHistGenPtVsYVsMultZNAXiMinus) {
+    f3dHistGenPtVsYVsMultZNAXiMinus = new TH3F( "f3dHistGenPtVsYVsMultZNAXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultZNAXiMinus);
+  }
+  if(! f3dHistGenPtVsYVsMultZNAXiPlus) {
+    f3dHistGenPtVsYVsMultZNAXiPlus = new TH3F( "f3dHistGenPtVsYVsMultZNAXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultZNAXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenPtVsYVsMultZNAOmegaMinus) {
+    f3dHistGenPtVsYVsMultZNAOmegaMinus = new TH3F( "f3dHistGenPtVsYVsMultZNAOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultZNAOmegaMinus);
+  }
+  if(! f3dHistGenPtVsYVsMultZNAOmegaPlus) {
+    f3dHistGenPtVsYVsMultZNAOmegaPlus = new TH3F( "f3dHistGenPtVsYVsMultZNAOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultZNAOmegaPlus);
+  }
+  
+  //All generated cascades, YCMS
+  
+  if(! f3dHistGenPtVsYCMSVsMultZNAXiMinus) {
+    f3dHistGenPtVsYCMSVsMultZNAXiMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultZNAXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultZNAXiMinus);
+  }
+  if(! f3dHistGenPtVsYCMSVsMultZNAXiPlus) {
+    f3dHistGenPtVsYCMSVsMultZNAXiPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultZNAXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultZNAXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenPtVsYCMSVsMultZNAOmegaMinus) {
+    f3dHistGenPtVsYCMSVsMultZNAOmegaMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultZNAOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultZNAOmegaMinus);
+  }
+  if(! f3dHistGenPtVsYCMSVsMultZNAOmegaPlus) {
+    f3dHistGenPtVsYCMSVsMultZNAOmegaPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultZNAOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultZNAOmegaPlus);
+  }
+  
+  
+  //--------------------------------------------------------------------------------------
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, at selected analysis evts
+  
+  if(! f3dHistGenSelectedPtVsYVsMultZNAXiMinus) {
+    f3dHistGenSelectedPtVsYVsMultZNAXiMinus = new TH3F( "f3dHistGenSelectedPtVsYVsMultZNAXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultZNAXiMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYVsMultZNAXiPlus) {
+    f3dHistGenSelectedPtVsYVsMultZNAXiPlus = new TH3F( "f3dHistGenSelectedPtVsYVsMultZNAXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultZNAXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenSelectedPtVsYVsMultZNAOmegaMinus) {
+    f3dHistGenSelectedPtVsYVsMultZNAOmegaMinus = new TH3F( "f3dHistGenSelectedPtVsYVsMultZNAOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultZNAOmegaMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYVsMultZNAOmegaPlus) {
+    f3dHistGenSelectedPtVsYVsMultZNAOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYVsMultZNAOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultZNAOmegaPlus);
+  }
+  
+  //ANALYSIS level Cascades, YCMS
+  
+  
+  if(! f3dHistGenSelectedPtVsYCMSVsMultZNAXiMinus) {
+    f3dHistGenSelectedPtVsYCMSVsMultZNAXiMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultZNAXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultZNAXiMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYCMSVsMultZNAXiPlus) {
+    f3dHistGenSelectedPtVsYCMSVsMultZNAXiPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultZNAXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultZNAXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaMinus) {
+    f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaPlus) {
+    f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaPlus);
+  }
+
+  
+  //======================================================================================
+  //--------------------------------------------------------------------------------------
+  // TRK
+  //--------------------------------------------------------------------------------------
+  //======================================================================================
+  
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, all generated
+  
+  if(! f3dHistGenPtVsYVsMultTRKXiMinus) {
+    f3dHistGenPtVsYVsMultTRKXiMinus = new TH3F( "f3dHistGenPtVsYVsMultTRKXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultTRKXiMinus);
+  }
+  if(! f3dHistGenPtVsYVsMultTRKXiPlus) {
+    f3dHistGenPtVsYVsMultTRKXiPlus = new TH3F( "f3dHistGenPtVsYVsMultTRKXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultTRKXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenPtVsYVsMultTRKOmegaMinus) {
+    f3dHistGenPtVsYVsMultTRKOmegaMinus = new TH3F( "f3dHistGenPtVsYVsMultTRKOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultTRKOmegaMinus);
+  }
+  if(! f3dHistGenPtVsYVsMultTRKOmegaPlus) {
+    f3dHistGenPtVsYVsMultTRKOmegaPlus = new TH3F( "f3dHistGenPtVsYVsMultTRKOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultTRKOmegaPlus);
+  }
+  
+  //All generated cascades, YCMS
+  
+  if(! f3dHistGenPtVsYCMSVsMultTRKXiMinus) {
+    f3dHistGenPtVsYCMSVsMultTRKXiMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultTRKXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultTRKXiMinus);
+  }
+  if(! f3dHistGenPtVsYCMSVsMultTRKXiPlus) {
+    f3dHistGenPtVsYCMSVsMultTRKXiPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultTRKXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultTRKXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenPtVsYCMSVsMultTRKOmegaMinus) {
+    f3dHistGenPtVsYCMSVsMultTRKOmegaMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultTRKOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultTRKOmegaMinus);
+  }
+  if(! f3dHistGenPtVsYCMSVsMultTRKOmegaPlus) {
+    f3dHistGenPtVsYCMSVsMultTRKOmegaPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultTRKOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultTRKOmegaPlus);
+  }
+  
+  
+  //--------------------------------------------------------------------------------------
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, at selected analysis evts
+  
+  if(! f3dHistGenSelectedPtVsYVsMultTRKXiMinus) {
+    f3dHistGenSelectedPtVsYVsMultTRKXiMinus = new TH3F( "f3dHistGenSelectedPtVsYVsMultTRKXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultTRKXiMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYVsMultTRKXiPlus) {
+    f3dHistGenSelectedPtVsYVsMultTRKXiPlus = new TH3F( "f3dHistGenSelectedPtVsYVsMultTRKXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultTRKXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenSelectedPtVsYVsMultTRKOmegaMinus) {
+    f3dHistGenSelectedPtVsYVsMultTRKOmegaMinus = new TH3F( "f3dHistGenSelectedPtVsYVsMultTRKOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultTRKOmegaMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYVsMultTRKOmegaPlus) {
+    f3dHistGenSelectedPtVsYVsMultTRKOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYVsMultTRKOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultTRKOmegaPlus);
+  }
+  
+  //ANALYSIS level Cascades, YCMS
+  
+  
+  if(! f3dHistGenSelectedPtVsYCMSVsMultTRKXiMinus) {
+    f3dHistGenSelectedPtVsYCMSVsMultTRKXiMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultTRKXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultTRKXiMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYCMSVsMultTRKXiPlus) {
+    f3dHistGenSelectedPtVsYCMSVsMultTRKXiPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultTRKXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultTRKXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaMinus) {
+    f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaPlus) {
+    f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaPlus);
+  }
+  
+  //======================================================================================
+  //--------------------------------------------------------------------------------------
+  // SPD
+  //--------------------------------------------------------------------------------------
+  //======================================================================================
+  
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, all generated
+  
+  if(! f3dHistGenPtVsYVsMultSPDXiMinus) {
+    f3dHistGenPtVsYVsMultSPDXiMinus = new TH3F( "f3dHistGenPtVsYVsMultSPDXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultSPDXiMinus);
+  }
+  if(! f3dHistGenPtVsYVsMultSPDXiPlus) {
+    f3dHistGenPtVsYVsMultSPDXiPlus = new TH3F( "f3dHistGenPtVsYVsMultSPDXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultSPDXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenPtVsYVsMultSPDOmegaMinus) {
+    f3dHistGenPtVsYVsMultSPDOmegaMinus = new TH3F( "f3dHistGenPtVsYVsMultSPDOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultSPDOmegaMinus);
+  }
+  if(! f3dHistGenPtVsYVsMultSPDOmegaPlus) {
+    f3dHistGenPtVsYVsMultSPDOmegaPlus = new TH3F( "f3dHistGenPtVsYVsMultSPDOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYVsMultSPDOmegaPlus);
+  }
+  
+  //All generated cascades, YCMS
+  
+  if(! f3dHistGenPtVsYCMSVsMultSPDXiMinus) {
+    f3dHistGenPtVsYCMSVsMultSPDXiMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultSPDXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultSPDXiMinus);
+  }
+  if(! f3dHistGenPtVsYCMSVsMultSPDXiPlus) {
+    f3dHistGenPtVsYCMSVsMultSPDXiPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultSPDXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultSPDXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenPtVsYCMSVsMultSPDOmegaMinus) {
+    f3dHistGenPtVsYCMSVsMultSPDOmegaMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultSPDOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultSPDOmegaMinus);
+  }
+  if(! f3dHistGenPtVsYCMSVsMultSPDOmegaPlus) {
+    f3dHistGenPtVsYCMSVsMultSPDOmegaPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultSPDOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenPtVsYCMSVsMultSPDOmegaPlus);
+  }
+  
+  
+  //--------------------------------------------------------------------------------------
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, at selected analysis evts
+  
+  if(! f3dHistGenSelectedPtVsYVsMultSPDXiMinus) {
+    f3dHistGenSelectedPtVsYVsMultSPDXiMinus = new TH3F( "f3dHistGenSelectedPtVsYVsMultSPDXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultSPDXiMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYVsMultSPDXiPlus) {
+    f3dHistGenSelectedPtVsYVsMultSPDXiPlus = new TH3F( "f3dHistGenSelectedPtVsYVsMultSPDXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultSPDXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenSelectedPtVsYVsMultSPDOmegaMinus) {
+    f3dHistGenSelectedPtVsYVsMultSPDOmegaMinus = new TH3F( "f3dHistGenSelectedPtVsYVsMultSPDOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultSPDOmegaMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYVsMultSPDOmegaPlus) {
+    f3dHistGenSelectedPtVsYVsMultSPDOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYVsMultSPDOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYVsMultSPDOmegaPlus);
+  }
+  
+  //ANALYSIS level Cascades, YCMS
+  
+  
+  if(! f3dHistGenSelectedPtVsYCMSVsMultSPDXiMinus) {
+    f3dHistGenSelectedPtVsYCMSVsMultSPDXiMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultSPDXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultSPDXiMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYCMSVsMultSPDXiPlus) {
+    f3dHistGenSelectedPtVsYCMSVsMultSPDXiPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultSPDXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultSPDXiPlus);
+  }
+  //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+  
+  if(! f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaMinus) {
+    f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaMinus);
+  }
+  if(! f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaPlus) {
+    f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaPlus);
+  }
+  
 //----------------------------------
 // Primary Vertex Position Histos
 //----------------------------------
@@ -1123,6 +1693,18 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
            //MultMC
            f3dHistGenPtVsYVsMultMCXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
            f3dHistGenPtVsYCMSVsMultMCXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
+           //V0A
+           f3dHistGenPtVsYVsMultV0AXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityV0A);
+           f3dHistGenPtVsYCMSVsMultV0AXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+           //ZNA
+           f3dHistGenPtVsYVsMultZNAXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityZNA);
+           f3dHistGenPtVsYCMSVsMultZNAXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityZNA);
+           //TRK
+           f3dHistGenPtVsYVsMultTRKXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityTRK);
+           f3dHistGenPtVsYCMSVsMultTRKXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityTRK);
+           //SPD
+           f3dHistGenPtVsYVsMultSPDXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicitySPD);
+           f3dHistGenPtVsYCMSVsMultSPDXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicitySPD);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){ 
            lPtCurrentPart    = lCurrentParticlePrimary->Pt();
@@ -1131,15 +1713,39 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
            //MultMC
            f3dHistGenPtVsYVsMultMCXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
            f3dHistGenPtVsYCMSVsMultMCXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
+           //V0A
+           f3dHistGenPtVsYVsMultV0AXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityV0A);
+           f3dHistGenPtVsYCMSVsMultV0AXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+           //ZNA
+           f3dHistGenPtVsYVsMultZNAXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityZNA);
+           f3dHistGenPtVsYCMSVsMultZNAXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityZNA);
+           //TRK
+           f3dHistGenPtVsYVsMultTRKXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityTRK);
+           f3dHistGenPtVsYCMSVsMultTRKXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityTRK);
+           //SPD
+           f3dHistGenPtVsYVsMultSPDXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicitySPD);
+           f3dHistGenPtVsYCMSVsMultSPDXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicitySPD);
          }
          // Omega Histograms
          if( lCurrentParticlePrimary->GetPdgCode() == 3334 ){ 
-            lPtCurrentPart    = lCurrentParticlePrimary->Pt();
-            f3dHistGenPtVsYVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
-            f3dHistGenPtVsYCMSVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
+           lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+           f3dHistGenPtVsYVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+           f3dHistGenPtVsYCMSVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
             //MultMC
-            f3dHistGenPtVsYVsMultMCOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
-            f3dHistGenPtVsYCMSVsMultMCOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
+           f3dHistGenPtVsYVsMultMCOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
+           f3dHistGenPtVsYCMSVsMultMCOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
+           //V0A
+           f3dHistGenPtVsYVsMultV0AOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityV0A);
+           f3dHistGenPtVsYCMSVsMultV0AOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+           //ZNA
+           f3dHistGenPtVsYVsMultZNAOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityZNA);
+           f3dHistGenPtVsYCMSVsMultZNAOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityZNA);
+           //TRK
+           f3dHistGenPtVsYVsMultTRKOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityTRK);
+           f3dHistGenPtVsYCMSVsMultTRKOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityTRK);
+           //SPD
+           f3dHistGenPtVsYVsMultSPDOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicitySPD);
+           f3dHistGenPtVsYCMSVsMultSPDOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicitySPD);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
@@ -1148,6 +1754,18 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
             //MultMC
             f3dHistGenPtVsYVsMultMCOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
             f3dHistGenPtVsYCMSVsMultMCOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
+           //V0A
+           f3dHistGenPtVsYVsMultV0AOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityV0A);
+           f3dHistGenPtVsYCMSVsMultV0AOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+           //ZNA
+           f3dHistGenPtVsYVsMultZNAOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityZNA);
+           f3dHistGenPtVsYCMSVsMultZNAOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityZNA);
+           //TRK
+           f3dHistGenPtVsYVsMultTRKOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityTRK);
+           f3dHistGenPtVsYCMSVsMultTRKOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityTRK);
+           //SPD
+           f3dHistGenPtVsYVsMultSPDOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicitySPD);
+           f3dHistGenPtVsYCMSVsMultSPDOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicitySPD);
          }
       }
    }
@@ -1336,6 +1954,18 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
             //MultMC
             f3dHistGenSelectedPtVsYVsMultMCXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
             f3dHistGenSelectedPtVsYCMSVsMultMCXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
+           //V0A
+           f3dHistGenSelectedPtVsYVsMultV0AXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityV0A);
+           f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+           //ZNA
+           f3dHistGenSelectedPtVsYVsMultZNAXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityZNA);
+           f3dHistGenSelectedPtVsYCMSVsMultZNAXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityZNA);
+           //TRK
+           f3dHistGenSelectedPtVsYVsMultTRKXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityTRK);
+           f3dHistGenSelectedPtVsYCMSVsMultTRKXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityTRK);
+           //SPD
+           f3dHistGenSelectedPtVsYVsMultSPDXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicitySPD);
+           f3dHistGenSelectedPtVsYCMSVsMultSPDXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicitySPD);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
@@ -1344,6 +1974,18 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
             //MultMC
             f3dHistGenSelectedPtVsYVsMultMCXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
             f3dHistGenSelectedPtVsYCMSVsMultMCXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
+           //V0A
+           f3dHistGenSelectedPtVsYVsMultV0AXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityV0A);
+           f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+           //ZNA
+           f3dHistGenSelectedPtVsYVsMultZNAXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityZNA);
+           f3dHistGenSelectedPtVsYCMSVsMultZNAXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityZNA);
+           //TRK
+           f3dHistGenSelectedPtVsYVsMultTRKXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityTRK);
+           f3dHistGenSelectedPtVsYCMSVsMultTRKXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityTRK);
+           //SPD
+           f3dHistGenSelectedPtVsYVsMultSPDXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicitySPD);
+           f3dHistGenSelectedPtVsYCMSVsMultSPDXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicitySPD);
          }
          // Omega Histograms
          if( lCurrentParticlePrimary->GetPdgCode() == 3334 ){ 
@@ -1353,6 +1995,18 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
             //MultMC
             f3dHistGenSelectedPtVsYVsMultMCOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
             f3dHistGenSelectedPtVsYCMSVsMultMCOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
+           //V0A
+           f3dHistGenSelectedPtVsYVsMultV0AOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityV0A);
+           f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+           //ZNA
+           f3dHistGenSelectedPtVsYVsMultZNAOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityZNA);
+           f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityZNA);
+           //TRK
+           f3dHistGenSelectedPtVsYVsMultTRKOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityTRK);
+           f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityTRK);
+           //SPD
+           f3dHistGenSelectedPtVsYVsMultSPDOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicitySPD);
+           f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicitySPD);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
@@ -1361,6 +2015,18 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
             //MultMC
             f3dHistGenSelectedPtVsYVsMultMCOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lNumberOfCharged);
             f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lNumberOfCharged);
+           //V0A
+           f3dHistGenSelectedPtVsYVsMultV0AOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityV0A);
+           f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+           //ZNA
+           f3dHistGenSelectedPtVsYVsMultZNAOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityZNA);
+           f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityZNA);
+           //TRK
+           f3dHistGenSelectedPtVsYVsMultTRKOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicityTRK);
+           f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityTRK);
+           //SPD
+           f3dHistGenSelectedPtVsYVsMultSPDOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicitySPD);
+           f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicitySPD);
          }
       }
    }
