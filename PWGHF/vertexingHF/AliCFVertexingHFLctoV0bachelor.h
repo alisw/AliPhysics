@@ -57,17 +57,17 @@ class AliCFVertexingHFLctoV0bachelor : public AliCFVertexingHF{
   
   Bool_t SetRecoCandidateParam(AliAODRecoDecayHF *recoCand);
 
-  void SetPtAccCut(Float_t* ptAccCut);
-  void SetEtaAccCut(Float_t* etaAccCut);
-  void SetAccCut(Float_t* ptAccCut, Float_t* etaAccCut);
-  void SetAccCut();
-
   Double_t GetEtaProng(Int_t iProng)const;
   Double_t GetPtProng(Int_t iProng) const;
+
+  virtual Bool_t SetLabelArray();
 
  protected:
 
   Double_t Ctau(AliAODMCParticle *mcPartCandidate);
+  Bool_t FillVectorFromMCarray(AliAODMCParticle *mcPartDaughterBachelor,
+			       AliAODMCParticle *mcPartDaughterK0,
+			       Double_t *vectorMC);
 
  private:	
 

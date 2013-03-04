@@ -25,7 +25,9 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
 
  enum ELctoV0pidStrategy {
   kTOFandTPC=0,
-  kTOForTPCveto=1
+  kTOForTPCveto=1,
+  kTOFandTPCasym1=2,
+  kTOFandTPCasym2=3
  };
 
   AliRDHFCutsLctoV0(const char* name="CutsLctoV0", Short_t v0channel=0);
@@ -60,6 +62,8 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   virtual void SetStandardCutsPbPb2010();
   virtual void SetStandardCutsPbPb2011();
 
+  virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
+
   void SetPidV0pos(AliAODPidHF* pidV0pos) {
     if (fPidHFV0pos) delete fPidHFV0pos;
     fPidHFV0pos = new AliAODPidHF(*pidV0pos);
@@ -77,6 +81,7 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   }
   virtual AliESDtrackCuts *GetTrackCutsV0daughters() const {return fV0daughtersCuts;}
 
+  virtual void PrintAll() const;
  protected:
 
   void CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliAODTrack *v0Pos,

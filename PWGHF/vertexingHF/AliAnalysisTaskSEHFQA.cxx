@@ -773,6 +773,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputFlowObs->Add(hCentVsMultRPS);
   }
 
+  /*
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
   AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
@@ -787,6 +788,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       lccuts->GetPidV0neg()->SetOldPid(kFALSE);
     }
   }
+  */
 
   // Post the data
   PostData(1,fNEntries);

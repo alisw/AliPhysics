@@ -81,8 +81,8 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDStartoKpipi->AddTrackCutsSoftPi(esdTrackCutsSoftPi);
   vHF->SetCutsDStartoKpipi(cutsDStartoKpipi);
   AliRDHFCutsLctoV0 *cutsLctoV0 = new AliRDHFCutsLctoV0("CutsLctoV0");
-  Float_t cutsArrayLctoV0[10]={1.0,1.0,0.05,0.05,0.0,0.0,0.0,1000.,1000.,0.0};
-  cutsLctoV0->SetCuts(10,cutsArrayLctoV0);
+  Float_t cutsArrayLctoV0[17]={1.0,1.0,0.05,0.05,0.0,0.0,0.0,1000.,1000.,0.99,3.,1000.,0.,0.,0.,0.,0.0};
+  cutsLctoV0->SetCuts(17,cutsArrayLctoV0);
   cutsLctoV0->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsLctoV0(cutsLctoV0);
   //

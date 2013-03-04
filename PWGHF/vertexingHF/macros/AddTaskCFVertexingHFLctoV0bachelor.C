@@ -1,9 +1,9 @@
 //DEFINITION OF A FEW CONSTANTS
 const Double_t ptmin = 0.0;
-const Double_t ptmax = 6.0;
+const Double_t ptmax = 12.0;
 const Double_t ymin  = -1.2 ;
 const Double_t ymax  =  1.2 ;
-const Double_t cosPAV0min = 0.95;
+const Double_t cosPAV0min = 0.99;
 const Double_t cosPAV0max = 1.02;
 const Int_t onFlymin = 0;
 const Int_t onFlymax = 2;
@@ -27,11 +27,11 @@ const Float_t multmin =   0;
 const Float_t multmax = 102;
 
 const Double_t ptBachmin  = 0.0;
-const Double_t ptBachmax  = 5.0;
+const Double_t ptBachmax  = 30.0;
 const Double_t ptV0posmin = 0.0;
-const Double_t ptV0posmax = 5.0;
+const Double_t ptV0posmax = 30.0;
 const Double_t ptV0negmin = 0.0;
-const Double_t ptV0negmax = 5.0;
+const Double_t ptV0negmax = 30.0;
 const Double_t dcaV0min   = 0.0; // nSigma
 const Double_t dcaV0max   = 1.5; // nSigma
 const Double_t cTV0min    = 0.0; // micron
@@ -112,7 +112,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   const Double_t phimin = 0.0;
   const Double_t phimax = 2.*TMath::Pi();
 
-  const Int_t nbinpt          =  6; //bins in pt from 0 to 6 GeV
+  const Int_t nbinpt          =  8; //bins in pt from 0 to 12 GeV
   const Int_t nbiny           = 24; //bins in y
   Int_t nbininvMassV0         = 60; //bins in invMassV0
   if (isSign==3) nbininvMassV0=134; //bins in invMassV0
@@ -132,9 +132,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   //const Int_t nbinmult_50_102 = 13; //bins in multiplicity between 50 and 102
 
 
-  const Int_t nbinptBach      = 50; //bins in pt from 0 to 5 GeV
-  const Int_t nbinptV0pos     = 50; //bins in pt from 0 to 5 GeV
-  const Int_t nbinptV0neg     = 50; //bins in pt from 0 to 5 GeV
+  const Int_t nbinptBach      = 300; //bins in pt from 0 to 30 GeV
+  const Int_t nbinptV0pos     = 300; //bins in pt from 0 to 30 GeV
+  const Int_t nbinptV0neg     = 300; //bins in pt from 0 to 30 GeV
   const Int_t nbinphi         = 18; //bins in Phi
   const Int_t nbindcaV0       = 15; //bins in dcaV0
   const Int_t nbincTV0        = 15; //bins in cTV0
@@ -196,7 +196,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
 
   // pt
   Double_t *binLimpT=new Double_t[iBin[0]+1];
-  for(Int_t i=0; i<=iBin[0]; i++) binLimpT[i]=(Double_t)ptmin + (ptmax-ptmin)/iBin[0]*(Double_t)i ; 
+  //for(Int_t ii=0; ii<=iBin[0]; ii++) binLimpT[ii]=(Double_t)ptmin + (ptmax-ptmin)/iBin[0]*(Double_t)ii ; 
+  for(Int_t ii=0; ii<=iBin[0]-2; ii++) binLimpT[ii]=(Double_t)ptmin + (Double_t)ii;
+  binLimpT[iBin[0]-1]=8.;
+  binLimpT[iBin[0]]=12.;
 
   // y
   Double_t *binLimy=new Double_t[iBin[1]+1];
