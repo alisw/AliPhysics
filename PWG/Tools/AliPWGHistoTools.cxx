@@ -416,9 +416,19 @@ void AliPWGHistoTools::GetMeanDataAndExtrapolation(const TH1 * hData, TF1 * fExt
   for(Int_t ibin = minDataBin; ibin <= maxDataBin; ibin++){
     if(hData->GetBinCenter(ibin) < min) continue;
     if(hData->GetBinCenter(ibin) > max) continue;
-    mean     = mean + (hData->GetBinCenter(ibin) *  hData->GetBinWidth(ibin)* hData->GetBinContent(ibin));
-    err2     = err2 + TMath::Power(hData->GetBinError(ibin) * hData->GetBinCenter(ibin) *  hData->GetBinWidth(ibin),2);
-    integral = integral + hData->GetBinContent(ibin) * hData->GetBinWidth(ibin);
+    if(hData->GetBinContent(ibin)) {
+      mean     = mean + (hData->GetBinCenter(ibin) *  hData->GetBinWidth(ibin)* hData->GetBinContent(ibin));
+      err2     = err2 + TMath::Power(hData->GetBinError(ibin) * hData->GetBinCenter(ibin) *  hData->GetBinWidth(ibin),2);
+      integral = integral + hData->GetBinContent(ibin) * hData->GetBinWidth(ibin);
+    }
+    else {
+      Double_t locMin = hData->GetBinLowEdge(ibin);
+      Double_t locMax = hData->GetBinLowEdge(ibin) + hData->GetBinWidth(ibin);
+      mean     += fExtrapolation->Mean(locMin,locMax)*fExtrapolation->Integral(locMin,locMax);
+      Double_t deltaIntegral = fExtrapolation->Integral(locMin,locMax);
+      integral += deltaIntegral;
+      cout << "WARNING: bin " << ibin << " is empty, patching with function (+" << deltaIntegral<<")" << endl;
+    }
   }
   cout << " Data "<< mean << " " << integral << endl;
   
@@ -875,9 +885,30 @@ void AliPWGHistoTools::GetYield(TH1* h,  TF1 * f, Double_t &yield, Double_t &yie
   Int_t bin2 = h->FindBin(max);
   Float_t bin1Edge = GetLowestNotEmptyBinEdge (h);
   Float_t bin2Edge = GetHighestNotEmptyBinEdge(h);
+  Int_t lowestNE  = GetLowestNotEmptyBin (h);
+  Int_t highestNE = GetHighestNotEmptyBin(h);
 
-  Double_t integralFromHistoError ;
-  Double_t integralFromHisto = DoIntegral(h,bin1,bin2,-1,-1,-1,-1,integralFromHistoError,"width",1);
+  Double_t integralFromHistoError = 0;
+  Double_t integralFromHisto = 0;
+  //  Double_t integralFromHisto = DoIntegral(h,bin1,bin2,-1,-1,-1,-1,integralFromHistoError,"width",1);
+
+  for(Int_t ibin = TMath::Max(bin1,lowestNE); ibin <= TMath::Min(bin2,highestNE); ibin++){
+    if(h->GetBinContent(ibin)) {
+      integralFromHisto = integralFromHisto + h->GetBinContent(ibin) * h->GetBinWidth(ibin);
+      integralFromHistoError    = integralFromHistoError    + h->GetBinError(ibin)*h->GetBinError(ibin) * h->GetBinWidth(ibin);
+    }
+    else {
+      Double_t locMin = h->GetBinLowEdge(ibin);
+      Double_t locMax = h->GetBinLowEdge(ibin) + h->GetBinWidth(ibin);
+      Double_t deltaIntegral = f->Integral(locMin,locMax);
+      integralFromHisto += deltaIntegral;
+      integralFromHistoError = integralFromHistoError + f->IntegralError(locMin,locMax)*f->IntegralError(locMin,locMax);
+      cout << "WARNING: bin " << ibin << " is empty, patching with function (+" << deltaIntegral<<")" << endl;
+    }
+  }
+  
+  integralFromHistoError = TMath::Sqrt(integralFromHistoError);// ok, this is a bit dumb. Just in case the code above is changed again.
+  
   
   Double_t integralBelow      = min < bin1Edge ? f->Integral(min,bin1Edge) : 0;
   Double_t integralBelowError = min < bin1Edge ? f->IntegralError(min,bin1Edge) : 0;
@@ -1390,3 +1421,6 @@ Double_t AliPWGHistoTools::GetdMtdEta(TH1 *hData, TF1 * fExtrapolation, Double_t
   return dMtdEta;
 
 }
+
+
+
