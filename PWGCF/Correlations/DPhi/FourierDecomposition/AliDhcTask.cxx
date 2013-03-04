@@ -732,7 +732,6 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
           nGoodMuons++;
       }
     }
-    cout << " MUONS ----> " << nGoodMuons << " " << fAOD->GetNumberOfTracks() << endl;
     miniEvt->reserve(miniEvt->size()+nGoodMuons);
     // fill them into the mini event
     for (Int_t iMu = 0; iMu<fAOD->GetNumberOfTracks(); iMu++) {
