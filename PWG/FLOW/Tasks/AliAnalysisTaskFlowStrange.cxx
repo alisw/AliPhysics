@@ -73,6 +73,10 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fDebug(kFALSE),
   fUseEventSelection(kTRUE),
   fDoQA(kFALSE),
+  fDoExtraQA(kFALSE),
+  fRunOnpA(kFALSE),
+  fRunOnpp(kFALSE),
+  fCalib(NULL),
   fPsi2(0.0),
   fSpecie(0),
   fMCmatch(-1),
@@ -105,6 +109,10 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name,
   fDebug(kFALSE),
   fUseEventSelection(kTRUE),
   fDoQA(kFALSE),
+  fDoExtraQA(kFALSE),
+  fRunOnpA(kFALSE),
+  fRunOnpp(kFALSE),
+  fCalib(NULL),
   fPsi2(0.0),
   fSpecie(0),
   fMCmatch(-1),
@@ -142,6 +150,7 @@ AliAnalysisTaskFlowStrange::~AliAnalysisTaskFlowStrange()
   if (fCutsPOI)      delete fCutsPOI;
   if (fCutsRFPTPC)   delete fCutsRFPTPC;
   if (fCutsRFPVZE)   delete fCutsRFPVZE;
+  if (fCalib)        delete fCalib;
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::UserCreateOutputObjects()
@@ -196,6 +205,27 @@ void AliAnalysisTaskFlowStrange::Exec(Option_t* option)
 void AliAnalysisTaskFlowStrange::UserExec(Option_t *option)
 {
   // dummy user exec
+  if(fRunOnpA) { // temporal extra cuts for pA (2BE REMOVED!)
+    AliAODEvent *aod=dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!aod) return;
+    if(aod->GetHeader()->GetEventNumberESDFile() == 0) return; //rejecting first chunk
+     // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PAVertexSelectionStudies
+    const AliAODVertex* trkVtx = aod->GetPrimaryVertex();
+    if (!trkVtx || trkVtx->GetNContributors()<=0) return;
+    TString vtxTtl = trkVtx->GetTitle();
+    if (!vtxTtl.Contains("VertexerTracks")) return;
+    Float_t zvtx = trkVtx->GetZ();
+    const AliAODVertex* spdVtx = aod->GetPrimaryVertexSPD();
+    if (spdVtx->GetNContributors()<=0) return;
+    TString vtxTyp = spdVtx->GetTitle();
+    Double_t cov[6]={0};
+    spdVtx->GetCovarianceMatrix(cov);
+    Double_t zRes = TMath::Sqrt(cov[5]);
+    if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
+    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
+    if (TMath::Abs(zvtx) > 10) return;
+  }
+
   AliAnalysisTaskFlowStrange::MyUserExec(option);
 }
 //=======================================================================
@@ -211,13 +241,26 @@ void AliAnalysisTaskFlowStrange::AddQAEvents()
   tEvent->GetXaxis()->SetBinLabel(2,"selected");
   tEvent->GetXaxis()->SetBinLabel(3,"unexpected");
 
-  TH1D *tTPCRFP = new TH1D("RFPTPC","TPC Reference Flow Particles;multiplicity",100,0,3000); tQAEvents->Add(tTPCRFP);
-  TH1D *tVZERFP = new TH1D("RFPVZE","VZERO Reference Flow Particles;multiplicity",100,0,30000); tQAEvents->Add(tVZERFP);
+  TH2D *tH2D;
+  TH1D *tTPCRFP = new TH1D("RFPTPC","TPC Reference Flow Particles;multiplicity",3000,0,3000); tQAEvents->Add(tTPCRFP);
+  TH1D *tVZERFP = new TH1D("RFPVZE","VZERO Reference Flow Particles;multiplicity",3000,0,30000); tQAEvents->Add(tVZERFP);
+  tH2D = new TH2D("TPCPhiEta","TPC RFP;Phi;Eta",100,0,TMath::TwoPi(),100,-1.0,+1.0); tQAEvents->Add( tH2D );
+  tH2D = new TH2D("VZEPhiEta","VZE RFP;Phi;Eta",20,0,TMath::TwoPi(),40,-4.0,+6.0); tQAEvents->Add( tH2D );
   TH1D *tPOI = new TH1D("POI","POIs;multiplicity",500,0,500); tQAEvents->Add( tPOI );
   if(fDoQA) {
-    TH2D *tH2D = new TH2D("VTXZ","VTXZ;Global||SPD;SPD",60,-15,+15,60,-15,+15); tQAEvents->Add( tH2D );
+    printf("QA enabled\n");
+    tH2D = new TH2D("VTXZ","VTXZ;Global||SPD;SPD",60,-25,+25,60,-25,+25); tQAEvents->Add( tH2D );
     TH3D *tH3D = new TH3D("EVPLANE","EVPLANE;TPC;V0A;V0C",72,0,TMath::Pi(),72,0,TMath::Pi(),72,0,TMath::Pi()); tQAEvents->Add( tH3D );
     tH2D = new TH2D("VTXZSEL","VTXZ SEL;Global||SPD;SPD",40,-10,+10,40,-10,+10); tQAEvents->Add( tH2D );
+    tH3D = new TH3D("PRIMVERTEX","PRIMVERTEX;#sigma_{x};#sigma_{y};#sigma_{z}",100,0,5e-3,100,0,5e-3,100,0,8e-3); tQAEvents->Add( tH3D );
+    double dArrayPt[25] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+			   1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
+			   2.5, 3.0, 3.5, 4.0, 5.0 };
+    tH2D = new TH2D("TPCPtQx","TPCPtQx;pT;Qx/M",24,dArrayPt,100,-0.2,+0.2); tQAEvents->Add( tH2D );
+    tH2D = new TH2D("TPCPtQy","TPCPtQy;pT;Qy/M",24,dArrayPt,100,-0.2,+0.2); tQAEvents->Add( tH2D );
+    tH2D = new TH2D("TPCPtEta","TPCPtEta;pT;Eta/M",24,dArrayPt,100,-0.3,+0.3); tQAEvents->Add( tH2D );
+    tH2D = new TH2D("TPCQxQy","TPCQxQy;Qx/M;Qy/M",100,-0.3,+0.3,100,-0.3,+0.3); tQAEvents->Add( tH2D );
+    tH2D = new TH2D("VZEQxQy","VZEQxQy;Qx/M;Qy/M",100,-0.3,+0.3,100,-0.3,+0.3); tQAEvents->Add( tH2D );
   }
   TProfile *tCuts = new TProfile("Cuts","Analysis Cuts",11,0,11);
   tCuts->Fill(0.5,fV0Cuts[0],1); tCuts->GetXaxis()->SetBinLabel(1,"dl");
@@ -257,8 +300,18 @@ void AliAnalysisTaskFlowStrange::AddQACandidates()
     dMaxMass = 1.0;
     break;
   }
+  double dArrayPt[29] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+			 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
+			 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10., 12. };
+  tList=new TList();
+  tList->SetName("Candidates");
+  tList->SetOwner();
+  tH2D = new TH2D("V0MASS","V0MASS;pT;Mass",28,dArrayPt,nMass,dMinMass,dMaxMass); tList->Add(tH2D);
+  tH2D = new TH2D("V0PhiEta","V0PhiEta;Phi;Eta",100,0,TMath::TwoPi(),100,-1.0,+1.0); tList->Add(tH2D);
+  fQAList->Add(tList);
 
-  if(fDoQA) {
+  if(fDoExtraQA) {
+    printf("Extra QA enabled\n");
     tList = new TList(); tList->SetOwner(); tList->SetName("QACutsBefore_IP");
     tH3D = new TH3D("BefVOL", "VOLUME;Phi;Eta;Pt [GeV]",       63, 0.0,+6.3, 40,-1.0,+1.0, 60,0,12); tList->Add( tH3D );
     tH3D = new TH3D("BefRAP", "RAPIDITY;y;Pt [GeV]",           40,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
@@ -310,6 +363,7 @@ void AliAnalysisTaskFlowStrange::AddQACandidates()
   }
 
   if(fMCmatch>0) { // only for MCanalysis
+    printf("MC mode enabled\n");
     tList = new TList(); tList->SetOwner(); tList->SetName("QAMC");
     tH3D = new TH3D("MCPDG","MC PDGm;p_{T} (GeV);Mass [GeV]",24,0,12,nMass,dMinMass,dMaxMass,30,0,30); tList->Add( tH3D );
     tH3D->GetZaxis()->SetBinLabel( 1,"NONE");
@@ -539,6 +593,20 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD)
   fFlowEventTPC->Fill(fCutsRFPTPC,fCutsPOI);
   fFlowEventVZE->Fill(fCutsRFPVZE,fCutsPOI);
   fPsi2 = (fFlowEventVZE->GetQ()).Phi()/2;
+
+  for(Int_t i=0; i!=fFlowEventTPC->NumberOfTracks(); i++) {
+    AliFlowTrackSimple *pTrack = (AliFlowTrackSimple*) fFlowEventTPC->GetTrack(i);
+    if(!pTrack) continue;
+    if(!pTrack->InRPSelection()) continue;
+    ((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("TPCPhiEta"))->Fill( pTrack->Phi(), pTrack->Eta(), pTrack->Weight() );
+  }
+  for(Int_t i=0; i!=fFlowEventVZE->NumberOfTracks(); i++) {
+    AliFlowTrackSimple *pTrack = (AliFlowTrackSimple*) fFlowEventVZE->GetTrack(i);
+    if(!pTrack) continue;
+    if(!pTrack->InRPSelection()) continue;
+    ((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("VZEPhiEta"))->Fill( pTrack->Phi(), pTrack->Eta(), pTrack->Weight() );
+  }
+
   if(fDoQA) {
     AliFlowVector Qs[2];
     fFlowEventVZE->TagSubeventsInEta(-5,1,1,+5);
@@ -547,6 +615,61 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD)
     Double_t dEPV0A = Qs[0].Phi()/2;
     Double_t dEPTPC = (fFlowEventTPC->GetQ()).Phi()/2;
     ((TH3D*)((TList*)fQAList->FindObject("Event"))->FindObject("EVPLANE"))->Fill( dEPTPC, dEPV0A, dEPV0C );
+    Double_t dVZEQx = (fFlowEventVZE->GetQ(2)).Px() / (fFlowEventVZE->GetQ(2)).GetMult();
+    Double_t dVZEQy = (fFlowEventVZE->GetQ(2)).Py() / (fFlowEventVZE->GetQ(2)).GetMult();
+    ((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("VZEQxQy"))->Fill( dVZEQx, dVZEQy );
+    ((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("TPCQxQy"))->Fill( (fFlowEventTPC->GetQ(2)).Px() / (fFlowEventTPC->GetQ(2)).GetMult(),
+										  (fFlowEventTPC->GetQ(2)).Py() / (fFlowEventTPC->GetQ(2)).GetMult() );
+    // TPC Q
+    const int ngr=24;
+    double dArrayPt[25] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+			   1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
+			   2.5, 3.0, 3.5, 4.0, 5.0 };
+    double dTPCPt[ngr];
+    double dTPCQx[ngr];
+    double dTPCQy[ngr];
+    double dTPCEta[ngr];
+    double dTPCM[ngr];
+    for(int i=0; i!=ngr; ++i) {
+      dTPCPt[i] = 0;
+      dTPCQx[i] = 0;
+      dTPCQy[i] = 0;
+      dTPCEta[i] = 0;
+      dTPCM[i] = 0;
+    }
+    for(Int_t i=0; i!=fFlowEventTPC->NumberOfTracks(); i++) {
+      AliFlowTrackSimple *pTrack = (AliFlowTrackSimple*) fFlowEventTPC->GetTrack(i);
+      if(!pTrack) continue;
+      if(!pTrack->InRPSelection()) continue;
+      Double_t dPt  = pTrack->Pt();
+      int npt=-1;
+      for(int pt=0; pt!=ngr; ++pt)
+	if( (dPt > dArrayPt[pt])&&(dPt < dArrayPt[pt+1]) ) {
+	  npt = pt;
+	  break;
+	}
+      if(npt<0) continue;
+      Double_t dPhi = pTrack->Phi();
+      Double_t dWeight = pTrack->Weight();
+      dTPCPt[npt] += dWeight*dPt;
+      dTPCQx[npt] += dWeight*TMath::Cos(2*dPhi);
+      dTPCQy[npt] += dWeight*TMath::Sin(2*dPhi);
+      dTPCEta[npt] += dWeight*pTrack->Eta();
+      dTPCM[npt] += dWeight;
+    }
+    for(int i=0; i!=ngr; ++i)
+      if( dTPCM[i]>0 ) {
+	((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("TPCPtQx"))->Fill( dTPCPt[i]/dTPCM[i], dTPCQx[i]/dTPCM[i] );
+	((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("TPCPtQy"))->Fill( dTPCPt[i]/dTPCM[i], dTPCQy[i]/dTPCM[i] );
+	((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("TPCPtEta"))->Fill( dTPCPt[i]/dTPCM[i], dTPCEta[i]/dTPCM[i] );
+      }
+    // End of TPC Q
+    const AliAODVertex* trkVtx = tAOD->GetPrimaryVertex();
+    Double_t cov[6]={0};
+    trkVtx->GetCovarianceMatrix(cov);
+    ((TH3D*)((TList*)fQAList->FindObject("Event"))->FindObject("PRIMVERTEX"))->Fill( TMath::Sqrt( cov[0] ),
+										     TMath::Sqrt( cov[2] ),
+										     TMath::Sqrt( cov[5] ) );
   }
 
   if(fSpecie>80) {
@@ -664,7 +787,7 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
   TString sIPOP = "IP";
   if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) )
     sIPOP = "OP";
-  if(fDoQA) {
+  if(fDoExtraQA) {
     ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefRAP")) ->Fill(dRAP,  dPT, dMASS);
     ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefDLZ")) ->Fill(dDLZ,  dPT, dMASS);
     ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefDLXY"))->Fill(dDLXY, dPT, dMASS);
@@ -790,7 +913,7 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
     passes=mcpasses;
   }
   // <<=== MATCHED TO MC ===
-  if(passes&&fDoQA) {
+  if(passes&&fDoExtraQA) {
     ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftRAP")) ->Fill(dRAP,  dPT, dMASS);
     ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftDLZ")) ->Fill(dDLZ,  dPT, dMASS);
     ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftDLXY"))->Fill(dDLXY, dPT, dMASS);
@@ -802,6 +925,10 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
     ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftD0D0"))->Fill(dD0D0, dPT, dMASS);
     ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftAP"))  ->Fill(dALPHA,dQT,dPT);
     ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftVOL")) ->Fill(dPHI, dETA,dPT);
+  }
+  if(passes&&fDoQA) {
+    ((TH2D*)((TList*)fQAList->FindObject("Candidates"))->FindObject("V0MASS"))->Fill( dPT, dMASS );
+    ((TH2D*)((TList*)fQAList->FindObject("Candidates"))->FindObject("V0PhiEta"))->Fill( dPHI, dETA );
   }
   return passes;
 }

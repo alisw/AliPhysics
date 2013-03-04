@@ -1,7 +1,8 @@
 // ONE PRECONF WAGON
 void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, int set, TString folderName="myFolder", TString suffixName="mySuffix", 
 			int specie=0, char* MULT="V0M", int harmonic=2, int matchMC=-1, bool doQC=true, bool doSPTPC=true, bool doSPVZE=true,
-			bool doQA=false, bool useFlowEventCuts=true) {
+			bool doQA=false, bool useFlowEventCuts=true,
+			bool runpp=false, bool runpA=false, bool doExtraQA=false, TString calibfile="alien:///alice/cern.ch/user/c/cperez/calib/calibPbPb2010.root") {
   Double_t c[11];
   switch(set) {
   case(0): // Filtering cuts //
@@ -15,13 +16,15 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, int set, TS
   }
   AddTaskFlowStrange(trigger, centrMin, centrMax, folderName, suffixName, specie,
 		     c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],
-		     MULT, harmonic, matchMC, doQC, doSPTPC, doSPVZE, doQA, useFlowEventCuts);
+		     MULT, harmonic, matchMC, doQC, doSPTPC, doSPVZE, doQA, useFlowEventCuts,
+		     runpp, runpA, doExtraQA, calibfile);
 }
 // ALL CENTRALITIES
 void AddTaskFlowStrange(int trigger, TString folderName="myFolder", TString suffix="mySuffix", int specie=0,
                         double cut0, double cut1, double cut2, double cut3, double cut4, double cut5, double cut6, double cut7, double cut8,
                         double cut9, double cut10, char* MULT="V0M", int harmonic=2, int matchMC=-1,
-                        bool doQC=true, bool doSPTPC=true, bool doSPVZE=true, bool doQA=false, bool useFlowEventCuts=true ) {
+                        bool doQC=true, bool doSPTPC=true, bool doSPVZE=true, bool doQA=false, bool useFlowEventCuts=true,
+			bool runpp=false, bool runpA=false, bool doExtraQA=false, TString calibfile="alien:///alice/cern.ch/user/c/cperez/calib/calibPbPb2010.root") {
   int centMin[8] = {00,05,10,20,30,40,50,60};
   int centMax[8] = {05,10,20,30,40,50,60,80};
   TString particle="none";
@@ -33,14 +36,16 @@ void AddTaskFlowStrange(int trigger, TString folderName="myFolder", TString suff
     name = Form("%s%02d%02d%s",particle.Data(),centMin[i],centMax[i],suffix.Data());
     AddTaskFlowStrange(trigger, centMin[i], centMax[i], folderName, name, specie,
 		       cut0, cut1, cut2, cut3, cut4, cut5, cut6, cut7, cut8, cut9, cut10, MULT, harmonic, matchMC,
-		       doQC, doSPTPC, doSPVZE, doQA, useFlowEventCuts);
+		       doQC, doSPTPC, doSPVZE, doQA, useFlowEventCuts,
+		       runpp, runpA, doExtraQA, calibfile);
   }
 }
 // ONE WAGON
 void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString folderName="myFolder", TString suffixName="mySuffix", int specie=0, 
 			double cut0, double cut1, double cut2, double cut3, double cut4, double cut5, double cut6, double cut7, double cut8,
 			double cut9, double cut10, char* MULT="V0M", int harmonic=2, int matchMC=-1, 
-			bool doQC=true, bool doSPTPC=true, bool doSPVZE=true, bool doQA=false, bool useFlowEventCuts=true) {
+			bool doQC=true, bool doSPTPC=true, bool doSPVZE=true, bool doQA=false, bool useFlowEventCuts=true, 
+			bool runpp=false, bool runpA=false, bool doExtraQA=false, TString calibfile="alien:///alice/cern.ch/user/c/cperez/calib/calibPbPb2010.root") {
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName.ReplaceAll(".root","");
 
@@ -54,6 +59,7 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString fol
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
   cutsEvent->SetNContributorsRange(2);
   cutsEvent->SetPrimaryVertexZrange(-10.0,+10.0);
+  cutsEvent->SetCutTPCmultiplicityOutliers();
 
   //-R-P---c-u-t-s--------------------------------------------------------------
   AliFlowTrackCuts *cutsRPTPC = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts();
@@ -86,6 +92,16 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString fol
   taskSel->SetMCmatch(matchMC);
   taskSel->SetUseEventSelection(useFlowEventCuts);
   taskSel->SetCommonConstants( SFT_MassBins(specie), SFT_MinMass(specie), SFT_MaxMass(specie) );
+  taskSel->SetExtraQA( doExtraQA );
+  taskSel->Setpp( runpp );
+  taskSel->SetpA( runpA );
+  TFile *filecal = TFile::Open( calibfile.Data() );
+  if( (!filecal) || ( filecal && !filecal->IsOpen()) ){
+    printf("AddTaskStrange -> no complementary calibration file needed? Very good.\n");
+  } else {
+    TList *myCalib = (TList*)filecal->Get("calibration");
+    if(myCalib) taskSel->SetCalib(myCalib);
+  }
   AliAnalysisDataContainer *cOutHist = mgr->CreateContainer(Form("OutHistos_%s",suffixName.Data()),
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
