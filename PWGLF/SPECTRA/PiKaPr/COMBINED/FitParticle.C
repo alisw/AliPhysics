@@ -205,14 +205,6 @@ void FitParticle(TH1 * h, const char * partName, Float_t min , Float_t max, Floa
   TLatex * l = new TLatex(2,(h->GetMaximum()+h->GetMinimum())/2,Form("%3.3f #pm %3.3f (%s)", yield,yieldE, func->GetName()));
   l->Draw();
 
-  if(fileOut) {
-    TFile * fout = new TFile(fileOut, "update");    
-    c->SetName(Form("c_%s_%s_fit_%2.2f_%2.2f", h->GetName(), func->GetName(), min, max));
-    c->Write();
-    fout->Purge(); // remove old canvases
-    fout->Close();
-  }
-
 //   Float_t yield  = func->Integral(0.45,1.05);
 //   Float_t yieldE = func->IntegralError(0.45,1.05);
   cout << "Slope Par: "<< slopePar << endl;
@@ -242,6 +234,7 @@ void FitParticle(TH1 * h, const char * partName, Float_t min , Float_t max, Floa
   // Float_t mean2=0, mean2e=0;
   //  AliPWGHistoTools::GetMean      (func, mean,  meane , 0.,100., normPar);
   AliPWGHistoTools::GetMeanDataAndExtrapolation      (h, func, mean,  meane , 0.,100.);
+  //  AliPWGHistoTools::GetMeanDataAndExtrapolation      (h, func, mean,  meane , 0.,4.5);
   // AliPWGHistoTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
   if(skipMean) table->SetNextCol("N/A");
   else table->SetNextCol(mean,  meane ,-4);
@@ -249,7 +242,36 @@ void FitParticle(TH1 * h, const char * partName, Float_t min , Float_t max, Floa
   //			 fMean2->IntegralError(0,100)/func->Integral(0,100),-7);
   table->InsertRow();
   table->PrintTable("ASCII");
+  
+  if(fileOut) {
+    TFile * fout = new TFile(fileOut, "update");    
+    c->SetName(Form("c_%s_%s_fit_%2.2f_%2.2f", h->GetName(), func->GetName(), min, max));
+    c->Write();
+    TH1F * hFit = new TH1F ("hFitResults", "hFitResults", 2,0,1);
+    hFit->SetBinContent(1, yield); hFit->SetBinError(1, yieldE);
+    hFit->SetBinContent(2, mean ); hFit->SetBinError(2, meane);
+    hFit->GetXaxis()->SetBinLabel(1, "yield");
+    hFit->GetXaxis()->SetBinLabel(2, "<pt>");
+    hFit->Write(Form("hFit_%s_%s_fit_%2.2f_%2.2f", h->GetName(), func->GetName(), min, max));
+    fout->Purge(); // remove old canvases
+    fout->Close();
+  }
+
+
   if(wait)  c->WaitPrimitive();
 
 
 }
+
+// Double_t MicheleFunction(Double_t *x, Double_t *p) {
+
+//   Double_t xloc = x[0];
+//   Double_t y = 0;
+//   if(xloc < p[0]) {
+//     y = xloc*TMath::Exp(-xloc/p[2]);
+//   } else if (xloc > p[0] && xloc < p[1]) {
+    
+//   }
+
+
+// }
