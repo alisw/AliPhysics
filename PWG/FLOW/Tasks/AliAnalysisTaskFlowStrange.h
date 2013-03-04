@@ -40,6 +40,10 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
     void MyUserExec(Option_t *);
     void SetDebug() {fDebug = kTRUE;}
     void SetQA(Bool_t qa) {fDoQA = qa;}
+    void SetExtraQA(Bool_t qa) {fDoExtraQA = qa;}
+    void SetpA(Bool_t pa) {fRunOnpA = pa;}
+    void Setpp(Bool_t pp) {fRunOnpp = pp;}
+    void SetCalibration(TList *cal) {fCalib = cal;}
     void SetCuts(Double_t cuts[11]);
     void SetK0L0(Int_t specie) {fSpecie=specie;}
     void SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass);
@@ -63,6 +67,10 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
     Bool_t fDebug; // true if we want to inspect the main steps of the task
     Bool_t fUseEventSelection; // true if we want to use AliFlowEventCuts
     Bool_t fDoQA;  // true if we want to produce QA plots
+    Bool_t fDoExtraQA; // full QA
+    Bool_t fRunOnpA; // Make task compatible with pA event selection
+    Bool_t fRunOnpp; // Make task compatible with pp event selection
+    TList *fCalib; // calibration list
     Double_t fPsi2;// best estimation of Psi2
     Int_t fSpecie; // K0=>0 L0=>1
     Int_t fMCmatch; // for studies regarding background and efficiency
