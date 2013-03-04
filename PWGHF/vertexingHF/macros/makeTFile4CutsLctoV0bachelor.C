@@ -20,6 +20,17 @@
 
 void makeInputAliAnalysisTaskSELctoV0bachelor(){
 
+  AliRDHFCutsLctoV0* RDHFLctoV0Prod=new AliRDHFCutsLctoV0();
+  RDHFLctoV0Prod->SetName("LctoV0ProductionCuts");
+  RDHFLctoV0Prod->SetTitle("Production cuts for Lc analysis");
+  AliESDtrackCuts* esdTrackCutsProd=new AliESDtrackCuts();
+  RDHFLctoV0Prod->AddTrackCuts(esdTrackCutsProd);
+  RDHFLctoV0Prod->AddTrackCutsV0daughters(esdTrackCutsProd);
+  RDHFLctoV0Prod->SetPidSelectionFlag(2); // 0 -> TOF AND TPC
+                                          // 1 -> if (TOF) TOF else TPC w veto
+                                          // 2 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
+                                          // 3 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else if (2.5<=p<3) {if (TOF) -2s<TOF<3s AND TPC@3s} else (p>=3) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
+
   AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   //default
@@ -32,6 +43,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   // default is kBoth, otherwise kAny
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetPtRange(0.3,1.e10);
+  esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
 
 
@@ -48,6 +60,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   // default is kBoth, otherwise kAny
   esdTrackCutsV0daughters->SetMinDCAToVertexXY(0.);
   esdTrackCutsV0daughters->SetPtRange(0.,1.e10);
+  esdTrackCutsV0daughters->SetEtaRange(-0.8,0.8);
   esdTrackCutsV0daughters->SetAcceptKinkDaughters(kFALSE);
 
 
@@ -55,31 +68,30 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   AliRDHFCutsLctoV0* RDHFLctoV0An=new AliRDHFCutsLctoV0();
   RDHFLctoV0An->SetName("LctoV0AnalysisCuts");
   RDHFLctoV0An->SetTitle("Analysis cuts for Lc analysis");
-
-  AliRDHFCutsLctoV0* RDHFLctoV0Prod=new AliRDHFCutsLctoV0();
-  RDHFLctoV0Prod->SetName("LctoV0ProductionCuts");
-  RDHFLctoV0Prod->SetTitle("Production cuts for Lc analysis");
-
-  RDHFLctoV0Prod->AddTrackCuts(esdTrackCuts);
   RDHFLctoV0An->AddTrackCuts(esdTrackCuts);
-
-  RDHFLctoV0Prod->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
   RDHFLctoV0An->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
-
-  RDHFLctoV0Prod->SetPidSelectionFlag(1); // 0 -> TOF AND TPC
-                                          // 1 -> if (TOF) TOF else TPC w veto
-  RDHFLctoV0An->SetPidSelectionFlag(1); // 0 -> TOF AND TPC
+  RDHFLctoV0An->SetPidSelectionFlag(2); // 0 -> TOF AND TPC
                                         // 1 -> if (TOF) TOF else TPC w veto
+                                        // 2 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
+                                        // 3 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else if (2.5<=p<3) {if (TOF) -2s<TOF<3s AND TPC@3s} else (p>=3) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
 
-  const Int_t nptbins=1;
+  const Int_t nptbins=9;
   Float_t* ptbins;
   ptbins=new Float_t[nptbins+1];
-  ptbins[0]=0.;
-  ptbins[1]=99999999.;
+  ptbins[0]= 0.;
+  ptbins[1]= 1.;
+  ptbins[2]= 2.;
+  ptbins[3]= 3.;
+  ptbins[4]= 4.;
+  ptbins[5]= 5.;
+  ptbins[6]= 6.;
+  ptbins[7]= 8.;
+  ptbins[8]=12.;
+  ptbins[9]=99999999.;
   RDHFLctoV0Prod->SetPtBins(nptbins+1,ptbins);
   RDHFLctoV0An->SetPtBins(nptbins+1,ptbins);
 
-  const Int_t nvars=9 ;
+  const Int_t nvars=17;
 
   Float_t** prodcutsval;
   prodcutsval=new Float_t*[nvars];
@@ -94,7 +106,17 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
    prodcutsval[6][ipt2]=0.;    // pT min V0-negative track [GeV/c]
    prodcutsval[7][ipt2]=1000.; // dca cascade cut [cm]
    prodcutsval[8][ipt2]=1000.; // dca V0 cut [nSigma] // it's 1.5 x offline V0s
+   prodcutsval[9][ipt2]=-1.;   // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+   prodcutsval[10][ipt2]=3.;   // d0 max bachelor wrt PV [cm]
+   prodcutsval[11][ipt2]=1000.;// d0 max V0 wrt PV [cm]
+   prodcutsval[12][ipt2]=0.;   // mass K0S veto [GeV/c2]
+   prodcutsval[13][ipt2]=0.;   // mass Lambda/LambdaBar veto [GeV/c2]
+   prodcutsval[14][ipt2]=0.;   // mass Gamma veto [GeV/c2]
+   prodcutsval[15][ipt2]=0.;   // pT min V0 track [GeV/c]
+   prodcutsval[16][ipt2]=0.;   // V0 type cut
   }
+
+
   RDHFLctoV0Prod->SetCuts(nvars,nptbins,prodcutsval);
 
   Float_t** anacutsval;
@@ -105,12 +127,32 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
    anacutsval[1][ipt2]=0.25;   // inv. mass if Lambda [GeV/c2]
    anacutsval[2][ipt2]=0.0075; // inv. mass V0 if K0S [GeV/c2]
    anacutsval[3][ipt2]=0.0030; // inv. mass V0 if Lambda [GeV/c2]
-   anacutsval[4][ipt2]=0.3;    // pT min bachelor track [GeV/c] // AOD by construction
-   anacutsval[5][ipt2]=0.;     // pT min V0-positive track [GeV/c]
-   anacutsval[6][ipt2]=0.;     // pT min V0-negative track [GeV/c]
-   anacutsval[7][ipt2]=1000.; // dca cascade cut [cm]
-   anacutsval[8][ipt2]=1.5;   // dca V0 cut [nSigma] // it's 1.5 x offline V0s
+   anacutsval[4][ipt2]=0.4;    // pT min bachelor track [GeV/c] // AOD by construction
+   anacutsval[5][ipt2]=0.2;    // pT min V0-positive track [GeV/c]
+   anacutsval[6][ipt2]=0.2;    // pT min V0-negative track [GeV/c]
+   anacutsval[7][ipt2]=1000.;  // dca cascade cut [cm]
+   anacutsval[8][ipt2]=1.5;    // dca V0 cut [nSigma] // it's 1.5 x offline V0s
+   anacutsval[9][ipt2]=0.99;   // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+   anacutsval[10][ipt2]=0.05;  // d0 max bachelor wrt PV [cm]
+   anacutsval[11][ipt2]=0.1;   // d0 max V0 wrt PV [cm]
+   anacutsval[12][ipt2]=0.;    // mass K0S veto [GeV/c2]
+   anacutsval[13][ipt2]=0.005; // mass Lambda/LambdaBar veto [GeV/c2]
+   anacutsval[14][ipt2]=0.100; // mass Gamma veto [GeV/c2]
+   anacutsval[16][ipt2]=0.;    // V0 type cut
   }
+
+  anacutsval[15][0]=0.0; // pT min V0 track [GeV/c]
+  anacutsval[15][1]=0.6; // pT min V0 track [GeV/c]
+  anacutsval[15][2]=0.8; // pT min V0 track [GeV/c]
+  anacutsval[15][3]=0.8; // pT min V0 track [GeV/c]
+  anacutsval[15][4]=0.8; // pT min V0 track [GeV/c]
+  anacutsval[15][5]=1.0; // pT min V0 track [GeV/c]
+  anacutsval[15][6]=1.0; // pT min V0 track [GeV/c]
+  anacutsval[15][7]=1.0; // pT min V0 track [GeV/c]
+  anacutsval[15][8]=0.0; // pT min V0 track [GeV/c]
+  anacutsval[15][9]=0.0; // pT min V0 track [GeV/c]
+
+
   RDHFLctoV0An->SetCuts(nvars,nptbins,anacutsval);
 
 
@@ -167,8 +209,8 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   //uncomment these lines to apply cuts with the KF package
   //RDHFLctoV0An->SetCutsStrategy(AliRDHFCutsLctoV0::kKF);
   //for(Int_t ipt2=0;ipt2<nptbins;ipt2++){
-  //   anacutsval[0][ipt2]=1.;  //if <0., no topological constraint
-  //   anacutsval[1][ipt2]=2.;  //cut on the Chi2/Ndf
+  //   anacutsval[0]=1.;  //if <0., no topological constraint
+  //   anacutsval[1]=2.;  //cut on the Chi2/Ndf
   // }
 
   Bool_t pidflag=kTRUE;
@@ -210,24 +252,21 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   //default
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetMinNClustersTPC(70);
-  esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersITS(4);
-
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  esdTrackCuts->SetRequireITSRefit(kFALSE);
+  esdTrackCuts->SetMinNClustersITS(0);
+  //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   esdTrackCuts->SetMinDCAToVertexXY(0.);
-  esdTrackCuts->SetEtaRange(-0.8,0.8);
+  //esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetPtRange(0.3,1.e10);
   
   AliESDtrackCuts* esdTrackCutsV0daughters=new AliESDtrackCuts();
   esdTrackCutsV0daughters->SetRequireSigmaToVertex(kFALSE);
   //default
   esdTrackCutsV0daughters->SetRequireTPCRefit(kTRUE);
-  esdTrackCutsV0daughters->SetRequireITSRefit(kTRUE);
-  esdTrackCutsV0daughters->SetMinNClustersITS(4); // default is 5
   esdTrackCutsV0daughters->SetMinNClustersTPC(70);
-  esdTrackCutsV0daughters->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					 AliESDtrackCuts::kAny); 
-  // default is kBoth, otherwise kAny
+  esdTrackCutsV0daughters->SetRequireITSRefit(kFALSE);
+  esdTrackCutsV0daughters->SetMinNClustersITS(0);
+  //esdTrackCutsV0daughters->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); // default is kBoth, otherwise kAny
   esdTrackCutsV0daughters->SetMinDCAToVertexXY(0.);
   esdTrackCutsV0daughters->SetPtRange(0.,1.e10);
 
@@ -235,16 +274,26 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
 
   RDHFLctoV0->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
 
-  RDHFLctoV0->SetPidSelectionFlag(1); // 0 -> TOF AND TPC
+  RDHFLctoV0->SetPidSelectionFlag(2); // 0 -> TOF AND TPC
                                       // 1 -> if (TOF) TOF else TPC w veto
+                                      // 2 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
+                                      // 3 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else if (2.5<=p<3) {if (TOF) -2s<TOF<3s AND TPC@3s} else (p>=3) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
 
-  const Int_t nvars=9;
+  const Int_t nvars=14;
 
-  const Int_t nptbins=1; //change this when adding pt bins!
-  Float_t ptbins[nptbins+1];
-  ptbins[0]=0.;
-  ptbins[1]=999999999.;
-
+  const Int_t nptbins=9;
+  Float_t* ptbins;
+  ptbins=new Float_t[nptbins+1];
+  ptbins[0]= 0.;
+  ptbins[1]= 1.;
+  ptbins[2]= 2.;
+  ptbins[3]= 3.;
+  ptbins[4]= 4.;
+  ptbins[5]= 5.;
+  ptbins[6]= 6.;
+  ptbins[7]= 8.;
+  ptbins[8]=12.;
+  ptbins[9]=99999999.;
   RDHFLctoV0->SetPtBins(nptbins+1,ptbins);
 
   Float_t** rdcutsvalmine;
@@ -262,9 +311,43 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   // pT min V0-positive track [GeV/c]
   // pT min V0-negative track [GeV/c]
   // dca cascade cut (cm)
-  // dca V0 cut (cm)
-  Float_t cutsMatrixLctoV0Stand[nptbins][nvars]=
-    { {0.25,0.25,0.0075,0.0075,0.,0.,0.,1.5,1.5} };
+  // dca V0 cut (nSigmas)
+  // cosPA V0 cut
+  // d0 max bachelor wrt PV [cm]
+  // d0 max V0 wrt PV [cm]
+  // mass K0S veto [GeV/c2]
+  // mass Lambda/LambdaBar veto [GeV/c2]
+  // mass Gamma veto [GeV/c2]
+  // pT min V0 track [GeV/c]
+  Float_t **cutsMatrixLctoV0Stand = new Float_t*[nvars];
+  for(Int_t ic=0;ic<nvars;ic++)
+    cutsMatrixLctoV0Stand[ic]=new Float_t[nptbins];
+  for(Int_t ipt2=0;ipt2<nptbins;ipt2++){
+    cutsMatrixLctoV0Stand[0][ipt2] =0.0075;
+    cutsMatrixLctoV0Stand[1][ipt2] =0.0030;
+    cutsMatrixLctoV0Stand[2][ipt2] =0.4;
+    cutsMatrixLctoV0Stand[3][ipt2] =0.2;
+    cutsMatrixLctoV0Stand[4][ipt2] =0.2;
+    cutsMatrixLctoV0Stand[5][ipt2] =1000.;
+    cutsMatrixLctoV0Stand[6][ipt2] =1.5;
+    cutsMatrixLctoV0Stand[7][ipt2] =0.99;
+    cutsMatrixLctoV0Stand[8][ipt2] =0.05;
+    cutsMatrixLctoV0Stand[9][ipt2] =0.1;
+    cutsMatrixLctoV0Stand[10][ipt2] =0.0;
+    cutsMatrixLctoV0Stand[11][ipt2] =0.005;
+    cutsMatrixLctoV0Stand[12][ipt2] =0.100;
+  }
+  cutsMatrixLctoV0Stand[0][13]=0.0; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[1][13]=0.6; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[2][13]=0.8; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[3][13]=0.8; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[4][13]=0.8; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[5][13]=1.0; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[6][13]=1.0; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[7][13]=1.0; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[8][13]=0.0; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[9][13]=0.0; // pT min V0 track [GeV/c]
+
 
   //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
   Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
@@ -278,7 +361,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
 
 
   Int_t nvarsforopt=RDHFLctoV0->GetNVarsForOpt();
-  Int_t dim=7; //set this!!
+  Int_t dim=14; //set this!!
   Bool_t *boolforopt;
   boolforopt=new Bool_t[nvars];
   if(dim>nvarsforopt){
@@ -318,19 +401,42 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   // 3(5): pT min V0-positive track [GeV/c]
   // 4(6): pT min V0-negative track [GeV/c]
   // 5(7): dca cascade cut (cm)
-  // 6(8): dca V0 cut (cm)
+  // 6(8): dca V0 cut (nSigmas)
+  // 7(9): cosPA V0 cut
+  // 8(10): d0 max bachelor wrt PV [cm]
+  // 9(11): d0 max V0 wrt PV [cm]
+  // 10(12): mass K0S veto [GeV/c2]
+  // 11(13): mass Lambda/LambdaBar veto [GeV/c2]
+  // 12(14): mass Gamma veto [GeV/c2]
+  // 13(15): pT min V0 track [GeV/c]
 
   // number of steps for each variable is set in the AddTask arguments (default=8)
   // set this!!
   for(Int_t ipt=0;ipt<nptbins;ipt++){
-    tighterval[0][ipt]=0.075; // inv. mass V0 if K0S [GeV]
-    tighterval[1][ipt]=0.040; // inv. mass V0 if Lambda [GeV]
-    tighterval[2][ipt]=0.1; // pT min bachelor track [GeV/c]
-    tighterval[3][ipt]=0.1; // pT min V0-positive track [GeV/c]
-    tighterval[4][ipt]=0.1; // pT min V0-negative track [GeV/c]
-    tighterval[5][ipt]=10.; // dca cascade cut (cm)
-    tighterval[6][ipt]=10.; // dca v0 cut (cm)
+    tighterval[0][ipt] =0.075;  // inv. mass V0 if K0S [GeV]
+    tighterval[1][ipt] =0.040;  // inv. mass V0 if Lambda [GeV]
+    tighterval[2][ipt] =0.4;    // pT min bachelor track [GeV/c]
+    tighterval[3][ipt] =0.2;    // pT min V0-positive track [GeV/c]
+    tighterval[4][ipt] =0.2;    // pT min V0-negative track [GeV/c]
+    tighterval[5][ipt] =100.;   // dca cascade cut (cm)
+    tighterval[6][ipt] =1.5;    // dca v0 cut
+    tighterval[7][ipt] =0.99;   // cosPA v0 cut
+    tighterval[8][ipt] =0.05;   // d0 max bachelor wrt PV [cm]
+    tighterval[9][ipt] =0.1;    // d0 max V0 wrt PV [cm]
+    tighterval[10][ipt] =0.0;   // mass K0S veto [GeV/c2]
+    tighterval[11][ipt] =0.005; // mass Lambda/LambdaBar veto [GeV/c2]
+    tighterval[12][ipt] =0.100; // mass Gamma veto [GeV/c2]
   }
+  tighterval[0][13]=0.0; // pT min V0 track [GeV/c]
+  tighterval[1][13]=0.6; // pT min V0 track [GeV/c]
+  tighterval[2][13]=0.8; // pT min V0 track [GeV/c]
+  tighterval[3][13]=0.8; // pT min V0 track [GeV/c]
+  tighterval[4][13]=0.8; // pT min V0 track [GeV/c]
+  tighterval[5][13]=1.0; // pT min V0 track [GeV/c]
+  tighterval[6][13]=1.0; // pT min V0 track [GeV/c]
+  tighterval[7][13]=1.0; // pT min V0 track [GeV/c]
+  tighterval[8][13]=0.0; // pT min V0 track [GeV/c]
+  tighterval[9][13]=0.0; // pT min V0 track [GeV/c]
 
   TString name=""; 
   Int_t arrdim=dim*nptbins;

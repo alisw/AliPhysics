@@ -23,9 +23,14 @@
 //
 /////////////////////////////////////////////////////////////
 
-#include <TDatabasePDG.h>
 #include <Riostream.h>
 
+#include <TDatabasePDG.h>
+#include <TMath.h>
+
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliPIDResponse.h"
 #include "AliRDHFCutsLctoV0.h"
 #include "AliAODRecoCascadeHF.h"
 #include "AliAODTrack.h"
@@ -53,44 +58,65 @@ ClassImp(AliRDHFCutsLctoV0)
   // Default Constructor
   //
 
-  const Int_t nvars=10;
+  const Int_t nvars=17;
   SetNVars(nvars);
-  TString varNames[nvars]={"inv. mass if K0S [GeV/c2]",
-		       "inv. mass if Lambda [GeV/c2]",
-		       "inv. mass V0 if K0S [GeV/c2]",
-		       "inv. mass V0 if Lambda [GeV/c2]",
-		       "pT min bachelor track [GeV/c]",
-		       "pT min V0-positive track [GeV/c]",
-		       "pT min V0-negative track [GeV/c]",
-		       "dca cascade cut [cm]",
-		       "dca V0 cut [cm]",
-               "V0 type"
-                        };
+  TString varNames[nvars]={"Lc inv. mass if K0S [GeV/c2]",                   //  0
+			   "Lc inv. mass if Lambda [GeV/c2]",                //  1
+			   "K0S inv. mass [GeV/c2]",                         //  2
+			   "Lambda/LambdaBar inv. mass[GeV/c2]",             //  3
+			   "pT min bachelor track [GeV/c]",                  //  4
+			   "pT min V0-positive track [GeV/c]",               //  5
+			   "pT min V0-negative track [GeV/c]",               //  6
+			   "dca cascade (prong-to-prong) cut [cm]",          //  7
+			   "dca V0 (prong-to-prong) cut [number of sigmas]", //  8
+			   "V0 cosPA min wrt PV",                            //  9
+			   "d0 max bachelor wrt PV [cm]",                    // 10
+			   "d0 max V0 wrt PV [cm]",                          // 11
+			   "mass K0S veto [GeV/c2]",                         // 12
+			   "mass Lambda/LambdaBar veto [GeV/c2]",            // 13
+			   "mass Gamma veto [GeV/c2]",                       // 14
+			   "pT min V0 track [GeV/c]",                        // 15
+			   "V0 type"                                         // 16
+  };
 
-  Bool_t isUpperCut[nvars]={kTRUE,
-			kTRUE,
-			kTRUE,
-			kTRUE,
-			kFALSE,
-			kFALSE,
-			kFALSE,
-			kTRUE,
-			kTRUE,
-            kTRUE
-                        };
+  Bool_t isUpperCut[nvars]={kTRUE,  //  0
+			    kTRUE,  //  1
+			    kTRUE,  //  2
+			    kTRUE,  //  3
+			    kFALSE, //  4
+			    kFALSE, //  5
+			    kFALSE, //  6
+			    kTRUE,  //  7
+			    kTRUE,  //  8
+			    kFALSE, //  9
+			    kTRUE,  // 10
+			    kTRUE,  // 11
+			    kFALSE, // 12
+			    kFALSE, // 13
+			    kFALSE, // 14
+			    kFALSE, // 15
+			    kFALSE  // 16
+  };
   SetVarNames(nvars,varNames,isUpperCut);
-  Bool_t forOpt[nvars]={kFALSE,
-		    kFALSE,
-		    kTRUE,
-		    kTRUE,
-		    kTRUE,
-		    kTRUE,
-		    kTRUE,
-		    kTRUE,
-		    kTRUE,
-            kTRUE
-                    };
-  SetVarsForOpt(nvars,forOpt); // It was 5: why only 5? And which ones?
+  Bool_t forOpt[nvars]={kFALSE, //  0
+			kFALSE, //  1
+			kTRUE,  //  2
+			kTRUE,  //  3
+			kTRUE,  //  4
+			kTRUE,  //  5
+			kTRUE,  //  6
+			kTRUE,  //  7
+			kTRUE,  //  8
+			kTRUE,  //  9
+			kTRUE,  // 10
+			kTRUE,  // 11
+			kTRUE,  // 12
+			kTRUE,  // 13
+			kTRUE,  // 14
+			kTRUE,  // 15
+			kFALSE  // 16
+  };
+  SetVarsForOpt(nvars,forOpt);
 
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
@@ -113,13 +139,12 @@ ClassImp(AliRDHFCutsLctoV0)
 //--------------------------------------------------------------------------
 AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0 &source) :
   AliRDHFCuts(source),
-  fPidSelectionFlag(0),
+  fPidSelectionFlag(source.fPidSelectionFlag),
   fPidHFV0pos(0),
   fPidHFV0neg(0),
   fV0daughtersCuts(0),
-  fV0Type(0)
-    /*
-		       fV0channel(source.fV0channel)*/
+  fV0Type(source.fV0Type)
+    /*fV0channel(source.fV0channel)*/
 {
   //
   // Copy constructor
@@ -164,7 +189,7 @@ AliRDHFCutsLctoV0 &AliRDHFCutsLctoV0::operator=(const AliRDHFCutsLctoV0 &source)
 //---------------------------------------------------------------------------
 AliRDHFCutsLctoV0::~AliRDHFCutsLctoV0() {
  //
- //  // Default Destructor
+ //  Default Destructor
  //
 
  if (fPidHFV0pos) {
@@ -192,9 +217,13 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
   if (pdgdaughters[0]==-9999) return; // dummy
 
   if (nvars!=fnVarsForOpt) {
-    printf("AliRDHFCutsLctoV0::GetCutsVarsForOpt: wrong number of variables\n");
+    printf("AliRDHFCutsLctoV0::GetCutVarsForOpt: wrong number of variables\n");
     return;
   }
+
+  Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  Double_t mLPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
   AliAODRecoCascadeHF *dd = (AliAODRecoCascadeHF*)d;
 
@@ -208,30 +237,29 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
   // cut on cascade mass, if K0S + p
   if (fVarsForOpt[0]) {
     iter++;
-    vars[iter]=dd->InvMassLctoK0sP();
+    vars[iter]=TMath::Abs(dd->InvMassLctoK0sP()-mLcPDG);
   }
-  // cut on cascade mass, if Lambda + pi
+  // cut on cascade mass, if Lambda/LambdaBar + pi
   if (fVarsForOpt[1]) {
     iter++;
-    vars[iter]=dd->InvMassLctoLambdaPi();
+    vars[iter]=TMath::Abs(dd->InvMassLctoLambdaPi()-mLcPDG);
   }
 
   // cut on V0 mass if K0S
   if (fVarsForOpt[2]) {
     iter++;
-    vars[iter]=v0->MassK0Short();
+    vars[iter]=TMath::Abs(v0->MassK0Short()-mk0sPDG);
   }
 
-  // cut on V0 mass if Lambda
-  // ----------------------------- pb with anti-lambda?? --------->>>>>>>>
+  // cut on V0 mass if Lambda/LambdaBar
   if (fVarsForOpt[3]) {
 
     if (bachelorTrack->Charge()==1) {
       iter++;
-      vars[iter]=v0->MassLambda();
+      vars[iter]=TMath::Abs(v0->MassLambda()-mLPDG);
     } else if (bachelorTrack->Charge()==-1) {
       iter++;
-      vars[iter]=v0->MassAntiLambda();
+      vars[iter]=TMath::Abs(v0->MassAntiLambda()-mLPDG);
     }
 
   }
@@ -254,17 +282,68 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
     vars[iter]=v0negativeTrack->Pt();
   }
 
-  // cut on cascade dca
+  // cut on cascade dca (prong-to-prong)
   if (fVarsForOpt[7]) {
     iter++;
-    vars[iter]=dd->GetDCA(); // prong-to-prong DCA
+    vars[iter]=dd->GetDCA(); // prong-to-prong cascade DCA
   }
 
-  // cut on V0 dca
+  // cut on V0 dca (prong-to-prong)
   if (fVarsForOpt[8]) {
     iter++;
-    vars[iter]=v0->GetDCA(); // prong-to-prong DCA
+    vars[iter]=v0->GetDCA(); // prong-to-prong V0 DCA
   }
+
+  // cut on V0 cosPA wrt PV
+  if (fVarsForOpt[9]) {
+    iter++;
+    vars[iter]=dd->CosV0PointingAngle(); // cosine of V0 pointing angle wrt primary vertex
+  }
+
+  // cut on bachelor transverse impact parameter wrt PV
+  if (fVarsForOpt[10]) {
+    iter++;
+    vars[iter]=dd->Getd0Prong(0); // bachelor transverse impact parameter wrt primary vertex
+  }
+
+  // cut on V0 transverse impact parameter wrt PV
+  if (fVarsForOpt[11]) {
+    iter++;
+    vars[iter]=dd->Getd0Prong(1); // V0 transverse impact parameter wrt primary vertex
+  }
+
+  // cut on K0S invariant mass veto
+  if (fVarsForOpt[12]) {
+    iter++;
+    vars[iter]=TMath::Abs(v0->MassK0Short()-mk0sPDG); // K0S invariant mass veto
+  }
+
+  // cut on Lambda/LambdaBar invariant mass veto
+  if (fVarsForOpt[13]) {
+
+    if (bachelorTrack->Charge()==1) {
+      iter++;
+      vars[iter]=TMath::Abs(v0->MassLambda()-mLPDG);
+    } else if (bachelorTrack->Charge()==-1) {
+      iter++;
+      vars[iter]=TMath::Abs(v0->MassAntiLambda()-mLPDG);
+    }
+
+  }
+
+  // cut on gamma invariant mass veto
+  if (fVarsForOpt[14]) {
+    iter++;
+    vars[iter]= v0->InvMass2Prongs(0,1,11,11); // gamma invariant mass veto
+  }
+
+
+  // cut on V0 pT min
+  if (fVarsForOpt[15]) {
+    iter++;
+    vars[iter]= v0->Pt(); // V0 pT min
+  }
+
 
   return;
 }
@@ -304,8 +383,6 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     AliDebug(2,"No v0 object");
     return 0;
   }
-
-
 
   // Get the V0 daughter tracks
   AliAODTrack *v0positiveTrack = (AliAODTrack*)d->Getv0PositiveTrack();
@@ -358,31 +435,33 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     Double_t mLcLpi   = d->InvMassLctoLambdaPi();
 
     // cut on Lc mass with K0S+p hypothesis
-    if (TMath::Abs(mLck0sp-mLcPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) {
+    if (TMath::Abs(mLck0sp-mLcPDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) {
       okLck0sp = kFALSE;
       AliDebug(4,Form(" cascade mass is %2.2e and does not correspond to Lambda_c into K0S+p cut",mLck0sp));
     }
 
     // cuts on the V0 mass: K0S case
-    if (TMath::Abs(mk0s-mk0sPDG)>fCutsRD[GetGlobalIndex(2,ptbin)]) {
+    if (TMath::Abs(mk0s-mk0sPDG) > fCutsRD[GetGlobalIndex(2,ptbin)]) {
       okK0spipi = kFALSE;
       AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to K0S cut",mk0s));
     }
 
     // cut on Lc mass with Lambda+pi hypothesis
-    if (TMath::Abs(mLcLpi-mLcPDG)>fCutsRD[GetGlobalIndex(1,ptbin)]) {
+    if (TMath::Abs(mLcLpi-mLcPDG) > fCutsRD[GetGlobalIndex(1,ptbin)]) {
       okLcLpi = kFALSE;
       okLcLBarpi = kFALSE;
       AliDebug(4,Form(" cascade mass is %2.2e and does not correspond to Lambda_c into Lambda+pi cut",mLcLpi));
     }
 
     // cuts on the V0 mass: Lambda/LambdaBar case
-    if ( TMath::Abs(mlambda-mLPDG)>fCutsRD[GetGlobalIndex(3,ptbin)] ) {
+    //if ( !(bachelorTrack->Charge()==+1 && TMath::Abs(mlambda-mLPDG) <= fCutsRD[GetGlobalIndex(3,ptbin)] ) ) {
+    if ( TMath::Abs(mlambda-mLPDG) > fCutsRD[GetGlobalIndex(3,ptbin)] ) {
       okLppi = kFALSE;
       AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to LambdaBar cut",mlambda));
     }
 
-    if ( TMath::Abs(malambda-mLPDG)>fCutsRD[GetGlobalIndex(3,ptbin)] ) {
+    //if ( !(bachelorTrack->Charge()==-1 && TMath::Abs(malambda-mLPDG) <= fCutsRD[GetGlobalIndex(3,ptbin)] ) ) {
+    if ( TMath::Abs(malambda-mLPDG) > fCutsRD[GetGlobalIndex(3,ptbin)] ) {
       okLBarpip = kFALSE;
       AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to LambdaBar cut",malambda));
     }
@@ -407,22 +486,58 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
       return 0;
     }
 
-    // cut on cascade dca
-    //if (TMath::Abs(d->GetDCA()) > fCutsRD[GetGlobalIndex(7,ptbin)]) {
-    if ( TMath::Abs(d->GetDCA()) > fCutsRD[GetGlobalIndex(7,ptbin)] /*|| // prong-to-prong DCA
-	 TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(7,ptbin)] || // rphi impact params w.r.t. Primary Vtx
-	 TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(7,ptbin)]*/ ) { // rphi impact params w.r.t. Primary Vtx
+    // cut on cascade dca (prong-to-prong)
+    if ( TMath::Abs(d->GetDCA()) > fCutsRD[GetGlobalIndex(7,ptbin)] ) { // prong-to-prong cascade DCA
       AliDebug(4,Form(" cascade tracks DCA don't pass the cut"));
       return 0;
     }
 
-    // cut on V0 dca
-    //if (TMath::Abs(v0->DcaV0Daughters()) > fCutsRD[GetGlobalIndex(8,ptbin)]) { // prong-to-prong DCA
-    if ( TMath::Abs(v0->GetDCA()) > fCutsRD[GetGlobalIndex(8,ptbin)] /*|| // prong-to-prong DCA
-	 TMath::Abs(v0->DcaV0ToPrimVertex()) > fCutsRD[GetGlobalIndex(8,ptbin)] || // V0-to-vertex DCA
-	 TMath::Abs(v0->DcaPosToPrimVertex()) > fCutsRD[GetGlobalIndex(8,ptbin)] || // prong-to-vertex DCA
-	 TMath::Abs(v0->DcaNegToPrimVertex()) > fCutsRD[GetGlobalIndex(8,ptbin)]*/ ) { // prong-to-vertex DCA
+    // cut on V0 dca (prong-to-prong)
+    if ( TMath::Abs(v0->GetDCA()) > fCutsRD[GetGlobalIndex(8,ptbin)] ) { // prong-to-prong V0 DCA
       AliDebug(4,Form(" V0 DCA don't pass the cut"));
+      return 0;
+    }
+
+    // cut on V0 cosine of pointing angle wrt PV
+    if (d->CosV0PointingAngle() < fCutsRD[GetGlobalIndex(9,ptbin)]) { // cosine of V0 pointing angle wrt primary vertex
+      AliDebug(4,Form(" V0 cosine of pointing angle doesn't pass the cut"));
+      return 0;
+    }
+
+    // cut on bachelor transverse impact parameter wrt PV
+    if (TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(10,ptbin)]) { // bachelor transverse impact parameter wrt PV
+      AliDebug(4,Form(" bachelor transverse impact parameter doesn't pass the cut"));
+      return 0;
+    }
+
+    // cut on V0 transverse impact parameter wrt PV
+    if (TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(11,ptbin)]) { // V0 transverse impact parameter wrt PV
+      AliDebug(4,Form(" V0 transverse impact parameter doesn't pass the cut"));
+      return 0;
+    }
+
+    // cut on K0S invariant mass veto
+    if (TMath::Abs(v0->MassK0Short()-mk0sPDG) < fCutsRD[GetGlobalIndex(12,ptbin)]) { // K0S invariant mass veto
+      AliDebug(4,Form(" veto on K0S invariant mass doesn't pass the cut"));
+      return 0;
+    }
+
+    // cut on Lambda/LambdaBar invariant mass veto
+    if (TMath::Abs(v0->MassLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] ||
+	TMath::Abs(v0->MassAntiLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] ) { // Lambda/LambdaBar invariant mass veto
+      AliDebug(4,Form(" veto on K0S invariant mass doesn't pass the cut"));
+      return 0;
+    }
+
+    // cut on gamma invariant mass veto
+    if (v0->InvMass2Prongs(0,1,11,11) < fCutsRD[GetGlobalIndex(14,ptbin)]) { // K0S invariant mass veto
+      AliDebug(4,Form(" veto on gamma invariant mass doesn't pass the cut"));
+      return 0;
+    }
+
+    // cut on V0 pT min
+    if (v0->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)]) { // V0 pT min
+      AliDebug(4,Form(" V0 track Pt=%2.2e > %2.2e",v0->Pt(),fCutsRD[GetGlobalIndex(15,ptbin)]));
       return 0;
     }
 
@@ -444,7 +559,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
 
   // selection on candidate
   if (selectionLevel==AliRDHFCuts::kAll ||
-      //selectionLevel==AliRDHFCuts::kCandidate ||
+      selectionLevel==AliRDHFCuts::kCandidate ||
       selectionLevel==AliRDHFCuts::kPID )
     returnvaluePID = IsSelectedPID(d);
 
@@ -467,6 +582,20 @@ Int_t AliRDHFCutsLctoV0::IsSelectedPID(AliAODRecoDecayHF* obj) {
   // fPidHFV0neg -> PID object for negative V0 daughter
 
   if (!fUsePID || !obj) return 7; // all hypothesis are valid
+
+  if (fPidHF->GetPidResponse()==0x0 ||
+      fPidHFV0pos->GetPidResponse()==0x0 ||
+      fPidHFV0neg->GetPidResponse()==0x0) {
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+    AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+    fPidHF->SetPidResponse(pidResp);
+    fPidHFV0pos->SetPidResponse(pidResp);
+    fPidHFV0neg->SetPidResponse(pidResp);
+    fPidHF->SetOldPid(kFALSE);
+    fPidHFV0pos->SetOldPid(kFALSE);
+    fPidHFV0neg->SetOldPid(kFALSE);
+  }
 
   AliAODRecoCascadeHF *objD = (AliAODRecoCascadeHF*)obj;
 
@@ -506,6 +635,18 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliA
   Int_t trackIDtof = -1;
   Int_t trackIDtpc = -1;
 
+  Bool_t dummy1 = kFALSE;
+  Bool_t dummy2 = kFALSE;
+  Bool_t dummy4 = kFALSE;
+
+  Int_t tpcID = -1;
+  Int_t tofID = -1;
+  Double_t nTPCsigmasPr = -999;
+  Double_t nTOFsigmasPr = -999;
+
+  Bool_t trackIDtofB = -1;
+  Bool_t trackIDtpcB = -1;
+
   switch (fPidSelectionFlag) {
 
   case 0:
@@ -515,23 +656,23 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliA
     trackIDtpc = fPidHF->ApplyPidTPCRaw(bachelor,4);
     AliDebug(1,Form(" fPidHF->ApplyPidTOFRaw(bachelor,4)=%d fPidHF->ApplyPidTPCRaw(bachelor,4)=%d",trackIDtof,trackIDtpc));
     isBachelorID1 = (trackIDtof==4) && (trackIDtpc==4); // K0S case
-    //Bool_t isBachelorID2 = (fPidHF->ApplyPidTPCRaw(bachelor,2)==2) && (fPidHF->ApplyPidTOFRaw(bachelor,2)==2); // LambdaBar case
-    //Bool_t isBachelorID4 = isBachelorID2; // Lambda case
+    //isBachelorID2 = (fPidHF->ApplyPidTPCRaw(bachelor,2)==2) && (fPidHF->ApplyPidTOFRaw(bachelor,2)==2); // LambdaBar case
+    //isBachelorID4 = isBachelorID2; // Lambda case
 
     // identify V0neg
-    //Bool_t isV0NegID1 = (fPidHFV0neg->ApplyPidTPCRaw(v0Neg,2)==2) && (fPidHFV0neg->ApplyPidTOFRaw(v0Neg,2)==2); // K0S case
     trackIDtof = fPidHFV0neg->ApplyPidTOFRaw(v0Neg,4);
     trackIDtpc = fPidHFV0neg->ApplyPidTPCRaw(v0Neg,4);
     AliDebug(1,Form(" fPidHFV0neg->ApplyPidTOFRaw(v0Neg,4)=%d fPidHFV0neg->ApplyPidTPCRaw(v0Neg,4)=%d",trackIDtof,trackIDtpc));
+    //isV0NegID1 = (fPidHFV0neg->ApplyPidTPCRaw(v0Neg,2)==2) && (fPidHFV0neg->ApplyPidTOFRaw(v0Neg,2)==2); // K0S case
     isV0NegID2 = (trackIDtof==4) && (trackIDtpc==4); // LambdaBar case
-    //Bool_t isV0NegID4 = isV0NegID1; // Lambda case
+    //isV0NegID4 = isV0NegID1; // Lambda case
 
     // identify V0pos
-    //Bool_t isV0PosID1 = (fPidHFV0pos->ApplyPidTPCRaw(v0Pos,2)==2) && (fPidHFV0pos->ApplyPidTOFRaw(v0Pos,2)==2); // K0S case
-    //Bool_t isV0PosID2 = isV0PosID1; // LambdaBar case
     trackIDtof = fPidHFV0pos->ApplyPidTOFRaw(v0Pos,4);
     trackIDtpc = fPidHFV0pos->ApplyPidTPCRaw(v0Pos,4);
     AliDebug(1,Form(" fPidHFV0pos->ApplyPidTOFRaw(v0Pos,4)=%d fPidHFV0pos->ApplyPidTPCRaw(v0POS,4)=%d",trackIDtof,trackIDtpc));
+    //isV0PosID1 = (fPidHFV0pos->ApplyPidTPCRaw(v0Pos,2)==2) && (fPidHFV0pos->ApplyPidTOFRaw(v0Pos,2)==2); // K0S case
+    //isV0PosID2 = isV0PosID1; // LambdaBar case
     isV0PosID4 = (trackIDtof==4) && (trackIDtpc==4); // Lambda case
 
     break;
@@ -542,8 +683,8 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliA
     trackIDtpc = fPidHF->ApplyPidTPCRaw(bachelor,4);
     AliDebug(1,Form(" fPidHF->ApplyPidTOFRaw(bachelor,4)=%d fPidHFV0->ApplyPidTPCRaw(bachelor,4)=%d",trackIDtof,trackIDtpc));
     isBachelorID1 = ( trackIDtof==4 );
-    Bool_t dummy1 = ( !(fPidHF->CheckTOFPIDStatus(bachelor)) && (trackIDtpc==4) &&
-		      fPidHF->IsExcluded(bachelor,2,2.,"TPC") && fPidHF->IsExcluded(bachelor,3,2.,"TPC") ); // K0S case
+    dummy1 = ( !(fPidHF->CheckTOFPIDStatus(bachelor)) && (trackIDtpc==4) &&
+	       fPidHF->IsExcluded(bachelor,2,2.,"TPC") && fPidHF->IsExcluded(bachelor,3,2.,"TPC") ); // K0S case
     isBachelorID1 = isBachelorID1 || dummy1;
 
 
@@ -552,8 +693,8 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliA
     trackIDtpc = fPidHFV0neg->ApplyPidTPCRaw(v0Neg,4);
     AliDebug(1,Form(" fPidHFV0neg->ApplyPidTOFRaw(v0Neg,4)=%d fPidHFV0neg->ApplyPidTPCRaw(v0Neg,4)=%d",trackIDtof,trackIDtpc));
     isV0NegID2    = ( trackIDtof==4 );
-    Bool_t dummy2 = ( !(fPidHFV0neg->CheckTOFPIDStatus(v0Neg)) && (trackIDtpc==4) &&
-		      fPidHFV0neg->IsExcluded(v0Neg,2,2.,"TPC") && fPidHFV0neg->IsExcluded(v0Neg,3,2.,"TPC") ); // LambdaBar case
+    dummy2 = ( !(fPidHFV0neg->CheckTOFPIDStatus(v0Neg)) && (trackIDtpc==4) &&
+	       fPidHFV0neg->IsExcluded(v0Neg,2,2.,"TPC") && fPidHFV0neg->IsExcluded(v0Neg,3,2.,"TPC") ); // LambdaBar case
     isV0NegID2 = isV0NegID2 || dummy2;
 
 
@@ -562,10 +703,91 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliA
     trackIDtpc = fPidHFV0pos->ApplyPidTPCRaw(v0Pos,4);
     AliDebug(1,Form(" fPidHFV0pos->ApplyPidTOFRaw(v0Pos,4)=%d fPidHFV0pos->ApplyPidTPCRaw(v0Pos,4)=%d",trackIDtof,trackIDtpc));
     isV0PosID4    = ( trackIDtof==4 );
-    Bool_t dummy4 = ( !(fPidHFV0pos->CheckTOFPIDStatus(v0Pos)) && (trackIDtpc==4) &&
-		      fPidHFV0pos->IsExcluded(v0Pos,2,2.,"TPC") && fPidHFV0pos->IsExcluded(v0Pos,3,2.,"TPC") ); // Lambda case
+    dummy4 = ( !(fPidHFV0pos->CheckTOFPIDStatus(v0Pos)) && (trackIDtpc==4) &&
+	       fPidHFV0pos->IsExcluded(v0Pos,2,2.,"TPC") && fPidHFV0pos->IsExcluded(v0Pos,3,2.,"TPC") ); // Lambda case
     isV0PosID4 = isV0PosID4 || dummy4;
 
+
+    break;
+  case 2:
+
+    // identify bachelor
+    nTOFsigmasPr = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor,4,nTOFsigmasPr);
+    nTPCsigmasPr = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmasPr);
+    trackIDtofB = (tofID==1) && ( (bachelor->P()>=1.0 && bachelor->P()<2.5 && TMath::Abs(nTOFsigmasPr)<3) ||
+				  (bachelor->P()>=2.5 && nTOFsigmasPr>-2 && nTOFsigmasPr<3) );
+    trackIDtpcB = (tpcID==1) && ( (bachelor->P()<1.0 && TMath::Abs(nTPCsigmasPr)<2) ||
+				  (bachelor->P()>=1.0 && TMath::Abs(nTPCsigmasPr)<3) );
+    AliDebug(1,Form(" trackIDtofB=%d trackIDtpcB=%d",trackIDtofB,trackIDtpcB));
+    isBachelorID1 = (bachelor->P()<1 && trackIDtpcB) || (bachelor->P()>=1 && trackIDtpcB && trackIDtofB); // K0S case
+
+    // identify V0neg
+    nTOFsigmasPr = -999;
+    tofID = fPidHFV0neg->GetnSigmaTOF(v0Neg,4,nTOFsigmasPr);
+    nTPCsigmasPr = -999;
+    tpcID = fPidHFV0neg->GetnSigmaTPC(v0Neg,4,nTPCsigmasPr);
+    trackIDtofB = (tofID==1) && ( (v0Neg->P()>=1.0 && v0Neg->P()<2.5 && TMath::Abs(nTOFsigmasPr)<3) ||
+				  (v0Neg->P()>=2.5 && nTOFsigmasPr>-2 && nTOFsigmasPr<3) );
+    trackIDtpcB = (tpcID==1) && ( (v0Neg->P()<1.0 && TMath::Abs(nTPCsigmasPr)<2) ||
+				  (v0Neg->P()>=1.0 && TMath::Abs(nTPCsigmasPr)<3) );
+    AliDebug(1,Form(" trackIDtofB=%d trackIDtpcB=%d",trackIDtofB,trackIDtpcB));
+    isV0NegID2 = (v0Neg->P()<1 && trackIDtpcB) || (v0Neg->P()>=1 && trackIDtpcB && trackIDtofB); // LambdaBar case
+    
+    // identify V0pos
+    nTOFsigmasPr = -999;
+    tofID = fPidHFV0pos->GetnSigmaTOF(v0Pos,4,nTOFsigmasPr);
+    nTPCsigmasPr = -999;
+    tpcID = fPidHFV0pos->GetnSigmaTPC(v0Pos,4,nTPCsigmasPr);
+    trackIDtofB = (tofID==1) && ( (v0Pos->P()>=1.0 && v0Pos->P()<2.5 && TMath::Abs(nTOFsigmasPr)<3) ||
+				  (v0Pos->P()>=2.5 && nTOFsigmasPr>-2 && nTOFsigmasPr<3) );
+    trackIDtpcB = (tpcID==1) && ( (v0Pos->P()<1.0 && TMath::Abs(nTPCsigmasPr)<2) ||
+				  (v0Pos->P()>=1.0 && TMath::Abs(nTPCsigmasPr)<3) );
+    AliDebug(1,Form(" trackIDtofB=%d trackIDtpcB=%d",trackIDtofB,trackIDtpcB));
+    isV0PosID4 = (v0Pos->P()<1 && trackIDtpcB) || (v0Pos->P()>=1 && trackIDtpcB && trackIDtofB); // Lambda case
+
+    break;
+  case 3:
+
+    // identify bachelor
+    nTOFsigmasPr = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor,4,nTOFsigmasPr);
+    nTPCsigmasPr = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmasPr);
+    trackIDtofB = (tofID==1) && ( (bachelor->P()>=1.0 && bachelor->P()<2.5 && TMath::Abs(nTOFsigmasPr)<3) ||
+				  (bachelor->P()>=2.5 && nTOFsigmasPr>-2 && nTOFsigmasPr<3) );
+    trackIDtpcB = (tpcID==1) && ( (bachelor->P()<1.0 && TMath::Abs(nTPCsigmasPr)<2) ||
+				  (bachelor->P()>=1.0 && bachelor->P()<3.0 && TMath::Abs(nTPCsigmasPr)<3) ||
+				  (bachelor->P()>=3.0 && nTPCsigmasPr>-3 && nTPCsigmasPr<2) );
+    AliDebug(1,Form(" trackIDtofB=%d trackIDtpcB=%d",trackIDtofB,trackIDtpcB));
+    isBachelorID1 = (bachelor->P()<1 && trackIDtpcB) || (bachelor->P()>=1 && trackIDtpcB && trackIDtofB); // K0S case
+
+    // identify V0neg
+    nTOFsigmasPr = -999;
+    tofID = fPidHFV0neg->GetnSigmaTOF(v0Neg,4,nTOFsigmasPr);
+    nTPCsigmasPr = -999;
+    tpcID = fPidHFV0neg->GetnSigmaTPC(v0Neg,4,nTPCsigmasPr);
+    trackIDtofB = (tofID==1) && ( (v0Neg->P()>=1.0 && v0Neg->P()<2.5 && TMath::Abs(nTOFsigmasPr)<3) ||
+				  (v0Neg->P()>=2.5 && nTOFsigmasPr>-2 && nTOFsigmasPr<3) );
+    trackIDtpcB = (tpcID==1) && ( (v0Neg->P()<1.0 && TMath::Abs(nTPCsigmasPr)<2) ||
+				  (v0Neg->P()>=1.0 && v0Neg->P()<3.0 && TMath::Abs(nTPCsigmasPr)<3) ||
+				  (v0Neg->P()>=3.0 && nTPCsigmasPr>-3 && nTPCsigmasPr<2) );
+    AliDebug(1,Form(" trackIDtofB=%d trackIDtpcB=%d",trackIDtofB,trackIDtpcB));
+    isV0NegID2 = (v0Neg->P()<1 && trackIDtpcB) || (v0Neg->P()>=1 && trackIDtpcB && trackIDtofB); // LambdaBar case
+
+    // identify V0pos
+    nTOFsigmasPr = -999;
+    tofID = fPidHFV0pos->GetnSigmaTOF(v0Pos,4,nTOFsigmasPr);
+    nTPCsigmasPr = -999;
+    tpcID = fPidHFV0pos->GetnSigmaTPC(v0Pos,4,nTPCsigmasPr);
+    trackIDtofB = (tofID==1) && ( (v0Pos->P()>=1.0 && v0Pos->P()<2.5 && TMath::Abs(nTOFsigmasPr)<3) ||
+				  (v0Pos->P()>=2.5 && nTOFsigmasPr>-2 && nTOFsigmasPr<3) );
+    trackIDtpcB = (tpcID==1) && ( (v0Pos->P()<1.0 && TMath::Abs(nTPCsigmasPr)<2) ||
+				  (v0Pos->P()>=1.0 && v0Pos->P()<3.0 && TMath::Abs(nTPCsigmasPr)<3) ||
+				  (v0Pos->P()>=3.0 && nTPCsigmasPr>-3 && nTPCsigmasPr<2) );
+    AliDebug(1,Form(" trackIDtofB=%d trackIDtpcB=%d",trackIDtofB,trackIDtpcB));
+    isV0PosID4 = (v0Pos->P()<1 && trackIDtpcB) || (v0Pos->P()>=1 && trackIDtpcB && trackIDtofB); // Lambda case
 
     break;
 
@@ -687,7 +909,9 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
       // cuts on the V0 mass: Lambda/LambdaBar case
       okLck0sp   = kFALSE;
       okLcLpi    = TMath::Abs(mlambda-mLPDG)<=fCutsRD[GetGlobalIndex(3,ptbin)];
+      //okLcLpi    = okLcLpi && (bachelorTrack->Charge()==+1);
       okLcLBarpi = TMath::Abs(malambda-mLPDG)<=fCutsRD[GetGlobalIndex(3,ptbin)];
+      //okLcLBarpi = okLcLBarpi && (bachelorTrack->Charge()==-1);
       break;
     case 4:
       // cuts on the minimum pt of bachelor
@@ -709,25 +933,57 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
       break;
     case 7:
       // cut on cascade dca
-      //okLck0sp = TMath::Abs(d->GetDCA(0))<=fCutsRD[GetGlobalIndex(8,ptbin)];
-      okLck0sp   = TMath::Abs(d->GetDCA())<=fCutsRD[GetGlobalIndex(7,ptbin)] /*&&
-	TMath::Abs(d->Getd0Prong(0))<=fCutsRD[GetGlobalIndex(7,ptbin)] &&
-	TMath::Abs(d->Getd0Prong(1))<=fCutsRD[GetGlobalIndex(7,ptbin)]*/;
+      okLck0sp   = TMath::Abs(d->GetDCA())<=fCutsRD[GetGlobalIndex(7,ptbin)];
       okLcLpi    = okLck0sp;
       okLcLBarpi = okLck0sp;
       break;
     case 8:
       // cut on V0 dca
-      //okLck0sp   = TMath::Abs(v0->DcaV0Daughters())<=fCutsRD[GetGlobalIndex(7,ptbin)];
-      okLck0sp   = TMath::Abs(v0->GetDCA())<=fCutsRD[GetGlobalIndex(8,ptbin)] /*&&
-	TMath::Abs(v0->DcaV0ToPrimVertex())<=fCutsRD[GetGlobalIndex(8,ptbin)] &&
-	TMath::Abs(v0->DcaPosToPrimVertex())<=fCutsRD[GetGlobalIndex(8,ptbin)] &&
-	TMath::Abs(v0->DcaNegToPrimVertex())<=fCutsRD[GetGlobalIndex(8,ptbin)]*/;
+      okLck0sp   = TMath::Abs(v0->GetDCA())<=fCutsRD[GetGlobalIndex(8,ptbin)];
+      okLcLpi    = okLck0sp;
+      okLcLBarpi = okLck0sp;
+      break;
+    case 9:
+      // cut on V0 cosine of pointing angle wrt PV
+      okLck0sp   = d->CosV0PointingAngle()>=fCutsRD[GetGlobalIndex(9,ptbin)];
+      okLcLpi    = okLck0sp;
+      okLcLBarpi = okLck0sp;
+      break;
+    case 10:
+      // cut on bachelor transverse impact parameter wrt PV
+      okLck0sp   = TMath::Abs(d->Getd0Prong(0))<=fCutsRD[GetGlobalIndex(10,ptbin)];
+      okLcLpi    = okLck0sp;
+      okLcLBarpi = okLck0sp;
+      break;
+    case 11:
+      // cut on V0 transverse impact parameter wrt PV
+      okLck0sp   = TMath::Abs(d->Getd0Prong(1))<=fCutsRD[GetGlobalIndex(11,ptbin)];
+      okLcLpi    = okLck0sp;
+      okLcLBarpi = okLck0sp;
+      break;
+    case 12:
+      // cut on K0S invariant mass veto
+      okLcLpi    = TMath::Abs(mk0s-mk0sPDG)>=fCutsRD[GetGlobalIndex(12,ptbin)];
+      okLcLBarpi = TMath::Abs(mk0s-mk0sPDG)>=fCutsRD[GetGlobalIndex(12,ptbin)];
+      break;
+    case 13:
+      // cut on Lambda/LambdaBar invariant mass veto
+      okLck0sp   = (TMath::Abs(mlambda-mLPDG)>=fCutsRD[GetGlobalIndex(13,ptbin)] &&
+		    TMath::Abs(malambda-mLPDG)>=fCutsRD[GetGlobalIndex(13,ptbin)]);
+      break;
+    case 14:
+      // cut on gamma invariant mass veto
+      okLck0sp   = v0->InvMass2Prongs(0,1,11,11)>=fCutsRD[GetGlobalIndex(14,ptbin)];
+      okLcLpi    = okLck0sp;
+      okLcLBarpi = okLck0sp;
+      break;
+    case 15:
+      // cut on V0 pT min
+      okLck0sp   = v0->Pt()>=fCutsRD[GetGlobalIndex(15,ptbin)];
       okLcLpi    = okLck0sp;
       okLcLBarpi = okLck0sp;
       break;
     }
-
   }
 
   Int_t returnvalue = okLck0sp+2*okLcLBarpi+4*okLcLpi;
@@ -748,7 +1004,7 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
 
   // selection on PID
   if (selectionLevel==AliRDHFCuts::kAll ||
-      //selectionLevel==AliRDHFCuts::kCandidate ||
+      selectionLevel==AliRDHFCuts::kCandidate ||
       selectionLevel==AliRDHFCuts::kPID )
     returnvaluePID = IsSelectedPID(d);
   */
@@ -809,7 +1065,7 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
   SetPtBins(nptbins+1,ptbins);
   SetPtBins(nptbins+1,ptbins);
 
-  const Int_t nvars=9 ;
+  const Int_t nvars=17;
 
   Float_t** prodcutsval;
   prodcutsval=new Float_t*[nvars];
@@ -823,7 +1079,15 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
    prodcutsval[5][ipt2]=0.;    // pT min V0-positive track [GeV/c]
    prodcutsval[6][ipt2]=0.;    // pT min V0-negative track [GeV/c]
    prodcutsval[7][ipt2]=1000.; // dca cascade cut [cm]
-   prodcutsval[8][ipt2]=1000.; // dca V0 cut [nSigma] // it's 1.5 x offline V0s
+   prodcutsval[8][ipt2]=1.5;   // dca V0 cut [nSigma] // it's 1.5 x offline V0s
+   prodcutsval[9][ipt2]=-1.;   // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+   prodcutsval[10][ipt2]=3.;   // d0 max bachelor wrt PV [cm]
+   prodcutsval[11][ipt2]=1000.;// d0 max V0 wrt PV [cm]
+   prodcutsval[12][ipt2]=0.;   // mass K0S veto [GeV/c2]
+   prodcutsval[13][ipt2]=0.;   // mass Lambda/LambdaBar veto [GeV/c2]
+   prodcutsval[14][ipt2]=0.;   // mass Gamma veto [GeV/c2]
+   prodcutsval[15][ipt2]=0.;   // pT min V0 track [GeV/c]
+   prodcutsval[16][ipt2]=0.;   // V0 type cut
   }
   SetCuts(nvars,nptbins,prodcutsval);
 
@@ -925,5 +1189,103 @@ Int_t AliRDHFCutsLctoV0::GetV0Type(){
   TString *sVarNames=GetVarNames();
 
   if(sVarNames[nvars-1].Contains("V0 type")) return (Int_t)fV0Type;
-  else {AliInfo("AliRDHFCutsLctoV0 Last variable is not the Vo type!!!"); return -999;}
+  else {AliInfo("AliRDHFCutsLctoV0 Last variable is not the V0 type!!!"); return -999;}
+}
+
+//---------------------------------------------------------------------------
+void AliRDHFCutsLctoV0::PrintAll() const {
+  //
+  // print all cuts values
+  // 
+
+  printf("Minimum vtx type %d\n",fMinVtxType);
+  printf("Minimum vtx contr %d\n",fMinVtxContr);
+  printf("Max vtx red chi2 %f\n",fMaxVtxRedChi2);
+  printf("Min SPD mult %d\n",fMinSPDMultiplicity);
+  printf("Use PID %d (PID selection flag = %d) OldPid=%d\n",(Int_t)fUsePID,(Int_t)fPidSelectionFlag,fPidHF ? fPidHF->GetOldPid() : -1);
+  printf("Remove daughters from vtx %d\n",(Int_t)fRemoveDaughtersFromPrimary);
+  printf("Recompute primary vertex %d\n",(Int_t)fRecomputePrimVertex);
+  printf("Physics selection: %s\n",fUsePhysicsSelection ? "Yes" : "No");
+  printf("Pileup rejection: %s\n",(fOptPileup > 0) ? "Yes" : "No");
+  if(fOptPileup==1) printf(" -- Reject pileup event");
+  if(fOptPileup==2) printf(" -- Reject tracks from pileup vtx");
+  if(fUseCentrality>0) {
+    TString estimator="";
+    if(fUseCentrality==1) estimator = "V0";
+    if(fUseCentrality==2) estimator = "Tracks";
+    if(fUseCentrality==3) estimator = "Tracklets";
+    if(fUseCentrality==4) estimator = "SPD clusters outer"; 
+    printf("Centrality class considered: %.1f-%.1f, estimated with %s",fMinCentrality,fMaxCentrality,estimator.Data());
+  }
+  if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
+
+  if(fVarNames){
+    cout<<"Array of variables"<<endl;
+    for(Int_t iv=0;iv<fnVars;iv++){
+      cout<<fVarNames[iv]<<"\t";
+    }
+    cout<<endl;
+  }
+  if(fVarsForOpt){
+    cout<<"Array of optimization"<<endl;
+    for(Int_t iv=0;iv<fnVars;iv++){
+      cout<<fVarsForOpt[iv]<<"\t";
+    }
+    cout<<endl;
+  }
+  if(fIsUpperCut){
+    cout<<"Array of upper/lower cut"<<endl;
+   for(Int_t iv=0;iv<fnVars;iv++){
+     cout<<fIsUpperCut[iv]<<"\t";
+   }
+   cout<<endl;
+  }
+  if(fPtBinLimits){
+    cout<<"Array of ptbin limits"<<endl;
+    for(Int_t ib=0;ib<fnPtBinLimits;ib++){
+      cout<<fPtBinLimits[ib]<<"\t";
+    }
+    cout<<endl;
+  }
+  if(fCutsRD){
+    cout<<"Matrix of cuts"<<endl;
+   for(Int_t iv=0;iv<fnVars;iv++){
+     for(Int_t ib=0;ib<fnPtBins;ib++){
+       cout<<"fCutsRD["<<iv<<"]["<<ib<<"] = "<<fCutsRD[GetGlobalIndex(iv,ib)]<<"\t";
+     } 
+     cout<<endl;
+   }
+   cout<<endl;
+  }
+  return;
+}
+
+//-------------------------
+Bool_t AliRDHFCutsLctoV0::IsInFiducialAcceptance(Double_t pt, Double_t y) const
+{
+  //
+  //
+  // Checking if Lc is in fiducial acceptance region
+  //
+  //
+
+  if(fMaxRapidityCand>-998.){
+    if(TMath::Abs(y) > fMaxRapidityCand) return kFALSE;
+    else return kTRUE;
+  }
+
+  if(pt > 5.) {
+    // applying cut for pt > 5 GeV
+    AliDebug(2,Form("pt of Lambda_c = %f (> 5), cutting at |y| < 0.8",pt));
+    if (TMath::Abs(y) > 0.8) return kFALSE;
+
+  } else {
+    // appliying smooth cut for pt < 5 GeV
+    Double_t maxFiducialY = -0.2/15*pt*pt+1.9/15*pt+0.5;
+    Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;
+    AliDebug(2,Form("pt of Lambda_c = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY));
+    if (y < minFiducialY || y > maxFiducialY) return kFALSE;
+  }
+  //
+  return kTRUE;
 }

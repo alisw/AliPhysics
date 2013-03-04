@@ -1,6 +1,7 @@
 AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bachelorCuts.root",
 						     Bool_t theMCon=kFALSE,
-						     Bool_t onTheFly=kFALSE)
+						     Bool_t onTheFly=kFALSE,
+						     Bool_t writeVariableTree=kTRUE)
 
 {
 
@@ -49,7 +50,7 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
   //CREATE THE TASK
 
   printf("CREATE TASK\n");
-  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0prod,RDHFCutsLctoV0anal,onTheFly);
+  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0prod,RDHFCutsLctoV0anal,onTheFly,writeVariableTree);
   task->SetMC(theMCon);
   task->SetK0sAnalysis(kTRUE);
   task->SetDebugLevel(0);
@@ -73,6 +74,10 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
   mgr->ConnectOutput(task,4,coutputLc3);
   AliAnalysisDataContainer *coutputLc4 = mgr->CreateContainer("Lc2pK0SCuts",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // cuts
   mgr->ConnectOutput(task,5,coutputLc4);
+  if (writeVariableTree) {
+    AliAnalysisDataContainer *coutputLc5 = mgr->CreateContainer("Lc2pK0Svariables",TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+    mgr->ConnectOutput(task,6,coutputLc5);
+  }
 
   return task;
 
