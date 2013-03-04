@@ -538,30 +538,36 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
   //(private members) of the AliBalancePsi class.
   //iVariableSingle: 0(phi-Psi), 1(pt-trigger)
   //iVariablePair: 0(phi-Psi) 1(Delta eta), 2(Delta phi), 3(pt-trigger), 4(pt-associated
+
+  // security checks
+  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
+  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
+  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+
   // Psi_2
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
 
   //Printf("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0));
@@ -625,30 +631,36 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
   //(private members) of the AliBalancePsi class.
   //iVariableSingle: 0(phi-Psi), 1(pt-trigger)
   //iVariablePair: 0(phi-Psi) 1(Delta eta), 2(Delta phi), 3(pt-trigger), 4(pt-associated
+
+  // security checks
+  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
+  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
+  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+  
   // Psi_2
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
 
   // ============================================================================================
@@ -661,29 +673,29 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
   AliTHn *fHistNNMix = bfMix->GetHistNnn();
 
   // Psi_2
-  fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
-    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
   // ============================================================================================
 
@@ -773,32 +785,38 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin,
   //(private members) of the AliBalancePsi class.
   //iVariableSingle: 0(phi-Psi), 1(pt-trigger)
   //iVariablePair: 0(phi-Psi) 1(Delta eta), 2(Delta phi), 3(pt-trigger), 4(pt-associated
+
+  // security checks
+  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
+  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
+  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+
   TString histName = "gHistBalanceFunctionHistogram2D";
 
   // Psi_2
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
 
   //AliInfo(Form("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0)));
@@ -858,30 +876,35 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
     return NULL;
   }
 
+  // security checks
+  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
+  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
+  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+
   // Psi_2
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
 
 
@@ -895,29 +918,29 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
   AliTHn *fHistNNMix = bfMix->GetHistNnn();
 
   // Psi_2
-  fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
-    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
   // ============================================================================================
 
@@ -1009,30 +1032,35 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
     return NULL;
   }
 
+  // security checks
+  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
+  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
+  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+
   // Psi_2
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
 
 
@@ -1046,29 +1074,29 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
   AliTHn *fHistNNMix = bfMix->GetHistNnn();
 
   // Psi_2
-  fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
-  fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
-  fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
-  fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
-  fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
-  fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax);
+  fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+  fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+  fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+  fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+  fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+  fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
-    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
   // ============================================================================================
 
@@ -1168,19 +1196,25 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
 					      Double_t ptAssociatedMin,
 					      Double_t ptAssociatedMax) {
   //Returns the 2D correlation function for (+-) pairs
+
+  // security checks
+  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
+  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
+  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+
   // Psi_2: axis 0
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.))
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
 
   //fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(-0.5,2.5); 
   //fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(-0.5,2.5); 
@@ -1228,19 +1262,25 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t psiMin,
 					      Double_t ptAssociatedMin,
 					      Double_t ptAssociatedMax) {
   //Returns the 2D correlation function for (+-) pairs
+
+  // security checks
+  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
+  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
+  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+
   // Psi_2: axis 0
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
     
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.))
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
 
   //0:step, 1: Delta eta, 2: Delta phi
   TH2D *gHist = dynamic_cast<TH2D *>(fHistNP->Project(0,1,2));
@@ -1268,19 +1308,25 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t psiMin,
 					      Double_t ptAssociatedMin,
 					      Double_t ptAssociatedMax) {
   //Returns the 2D correlation function for (+-) pairs
+
+  // security checks
+  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
+  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
+  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+
   // Psi_2: axis 0
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.))
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
       
   //0:step, 1: Delta eta, 2: Delta phi
   TH2D *gHist = dynamic_cast<TH2D *>(fHistPP->Project(0,1,2));
@@ -1308,19 +1354,34 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin,
 					      Double_t ptAssociatedMin,
 					      Double_t ptAssociatedMax) {
   //Returns the 2D correlation function for (+-) pairs
+
+  // security checks
+  if(psiMin > psiMax-0.00001){
+    AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(ptTriggerMin > ptTriggerMax-0.00001){
+    AliError("ptTriggerMax <= ptTriggerMin");
+    return NULL;
+  }
+  if(ptAssociatedMin > ptAssociatedMax-0.00001){
+    AliError("ptAssociatedMax <= ptAssociatedMin");
+    return NULL;
+  }
+
   // Psi_2: axis 0
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.))
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     
   //0:step, 1: Delta eta, 2: Delta phi
   TH2D *gHist = dynamic_cast<TH2D *>(fHistNN->Project(0,1,2));
@@ -1348,30 +1409,36 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
 							     Double_t ptAssociatedMin,
 							     Double_t ptAssociatedMax) {
   //Returns the 2D correlation function for the sum of all charge combination pairs
+
+  // security checks
+  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
+  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
+  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+
   // Psi_2: axis 0
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
-    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
   // pt associated
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.))
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     
   //0:step, 1: Delta eta, 2: Delta phi
   TH2D *gHistNN = dynamic_cast<TH2D *>(fHistNN->Project(0,1,2));
