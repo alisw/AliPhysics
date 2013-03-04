@@ -597,9 +597,19 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		       }
 	       }
 
+               //cout << "===================="<<endl;
+               //cout << "mcDtoE : " << mcDtoE << endl; 
+               //cout << "mcBtoE : " << mcBtoE << endl; 
+               //cout << "mcPho : " << mcPho << endl; 
+
+	       if(fabs(mcpid)==11)mcele= 0.; 
+               //cout << "check e: " << mcele << endl; 
 	       if(fabs(mcpid)==11 && mcDtoE)mcele= 1.; 
+               //cout << "check D->e: " << mcele << endl; 
 	       if(fabs(mcpid)==11 && mcBtoE)mcele= 2.; 
+               //cout << "check B->e: " << mcele << endl; 
 	       if(fabs(mcpid)==11 && mcPho)mcele= 3.; 
+               //cout << "check Pho->e: " << mcele << endl; 
 
        } // end of mcLabel>-1
 
