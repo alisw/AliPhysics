@@ -83,6 +83,7 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fPeriod(period),
   fMaxAbsVertexZ(10.),
   fManualV0EPCalc(false),
+  fModuleEnabled({true}),
   fOutputContainer(0x0),
   fNonLinCorr(0),
   fEvent(0x0),
@@ -479,6 +480,13 @@ void AliAnalysisTaskPi0Flow::SetCentralityBinning(const TArrayD& edges, const TA
   fCentNMixed = nMixed;
 }
 
+//_____________________________________________________________________________
+void AliAnalysisTaskPi0Flow::SetEnablePHOSModule(int module, Bool_t enable)
+{
+  if( module < 1 || 5 < module )
+    AliFatal("PHOS Module must be between 1 and 5");
+  fModuleEnabled[module-1] = enable;
+}
 
 
 //________________________________________________________________________
@@ -599,6 +607,8 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     Int_t mod  = relId[0] ;
     Int_t cellX = relId[2];
     Int_t cellZ = relId[3] ;
+    if ( ! fModuleEnabled[mod-1] )
+      continue;
     if ( !IsGoodChannel("PHOS",mod,cellX,cellZ) )
       continue ; // reject if not.
 

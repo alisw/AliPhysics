@@ -47,6 +47,7 @@ public:
     void SetEventMixingRPBinning(UInt_t nBins) { fNEMRPBins = nBins; }
     void SetMaxAbsVertexZ(Float_t z) { fMaxAbsVertexZ = z; }
     void SetManualV0EPCalc(Bool_t manCalc = true) {fManualV0EPCalc = manCalc;}
+    void SetEnablePHOSModule(int module, Bool_t enable = true);
     
     void SetPHOSBadMap(Int_t mod,TH2I * badMapHist);
     //Where to read AODB object with EP calibration if not default
@@ -158,6 +159,7 @@ private:
     Period fPeriod;
     Float_t fMaxAbsVertexZ; // in cm
     Bool_t fManualV0EPCalc;
+    Bool_t fModuleEnabled[5];
 
 
     TList * fOutputContainer;        //final histogram container
