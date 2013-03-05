@@ -29,5 +29,10 @@ TObjArray* findClassesForAlias(THashList &list, const char* aliasName)
 	}
     }
 
+    if (matchingTrClasses->GetEntries() == 0){
+	Printf("No entries for the trigger alias \"%s\" were found. Returning null pointer.", aliasName);
+	return 0;
+    }
+
     return matchingTrClasses;
 }

@@ -12,6 +12,10 @@ TObjArray* findAliasesForClass(THashList &list, const char* className)
 
     TObjArray* matchingTrAliases = new TObjArray(2);
     TNamed *n = dynamic_cast<TNamed*>(list.FindObject(className));
+    if(!n){
+	Printf("No entry for a trigger-class named \"%s\"",className);
+	return;
+    }
     TString aliasList = n->GetTitle();
     TObjArray* arrAliases = aliasList.Tokenize(',');
     Int_t nAliases = arrAliases->GetEntries();
