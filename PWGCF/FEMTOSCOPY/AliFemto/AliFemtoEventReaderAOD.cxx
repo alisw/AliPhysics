@@ -48,6 +48,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fAllTrue(160),
   fAllFalse(160),
   fFilterBit(0),
+  fFilterMask(0),
   //  fPWG2AODTracks(0x0),
   fReadMC(0),
   fReadV0(0),
@@ -77,6 +78,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAllTrue(160),
   fAllFalse(160),
   fFilterBit(0),
+  fFilterMask(0),
   //  fPWG2AODTracks(0x0),
   fReadMC(0),
   fReadV0(0),
@@ -144,6 +146,7 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fAllTrue.ResetAllBits(kTRUE);
   fAllFalse.ResetAllBits(kFALSE);
   fFilterBit = aReader.fFilterBit;
+  fFilterMask = aReader.fFilterMask;
   //  fPWG2AODTracks = aReader.fPWG2AODTracks;
   fAODpidUtil = aReader.fAODpidUtil;
   fAODheader = aReader.fAODheader;
@@ -484,11 +487,16 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
 	if (aodtrack->IsPrimaryCandidate()) tracksPrim++;
 	
-	if (!aodtrack->TestFilterBit(fFilterBit)) {
+	if (fFilterBit && !aodtrack->TestFilterBit(fFilterBit)) {
 	  delete trackCopy;
 	  continue;
-	}	
-	
+	}
+
+	if (fFilterMask && !aodtrack->TestFilterBit(fFilterMask)) {
+	  delete trackCopy;
+	  continue;
+	}		
+
 	//counting particles to set multiplicity
 	double impact[2];
 	double covimpact[3];
@@ -509,7 +517,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
 
 	AliAODTrack *aodtrackpid;
-	if(fFilterBit ==  (1 << (7))) //for TPC Only tracks we have to copy PID information from corresponding global tracks
+	if((fFilterBit ==  (1 << (7))) || fFilterMask==128) //for TPC Only tracks we have to copy PID information from corresponding global tracks
 	  aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
 	else
 	  aodtrackpid = fEvent->GetTrack(i);
@@ -1046,6 +1054,12 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
 void AliFemtoEventReaderAOD::SetFilterBit(UInt_t ibit)
 {
   fFilterBit = (1 << (ibit));
+}
+
+
+void AliFemtoEventReaderAOD::SetFilterMask(int ibit)
+{
+  fFilterMask = ibit;
 }
 
 void AliFemtoEventReaderAOD::SetReadMC(unsigned char a)

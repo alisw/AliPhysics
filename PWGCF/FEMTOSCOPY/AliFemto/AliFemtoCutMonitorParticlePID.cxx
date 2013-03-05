@@ -139,15 +139,17 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
   fTPCdEdx->Fill(tMom, tdEdx);
   fTOFTime->Fill(tMom, tTOF);
 
-  float vp= aTrack->VTOF();
-    if (vp > 0.) {
-        fTOFTime->Fill(tMom, tTOF);
+  //  float vp= aTrack->VTOF();
+  //     if (vp > 0.) {
+  //         fTOFTime->Fill(tMom, tTOF);
+  //         if (fTOFParticle == 0) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFPi());
+  //         if (fTOFParticle == 1) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFK());
+  //         if (fTOFParticle == 2) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFP());
+  // }
 
-        if (fTOFParticle == 0) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFPi());
-        if (fTOFParticle == 1) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFK());
-        if (fTOFParticle == 2) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFP());
-
-}
+    if (fTOFParticle == 0) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFPi());
+    if (fTOFParticle == 1) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFK());
+    if (fTOFParticle == 2) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFP());
 
     if (fTOFParticle == 0) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCPi());
     if (fTOFParticle == 1) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCK());
