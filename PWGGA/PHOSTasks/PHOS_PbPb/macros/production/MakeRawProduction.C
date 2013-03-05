@@ -871,6 +871,8 @@ namespace RawProduction {
   }
   Output::~Output()
   {
+    if( fFile )
+      fFile->DeleteAll();
     delete fFile;
   }
 
@@ -1199,17 +1201,18 @@ void MakeRawProductionRanges()
   float fromRanges[4] = {0.04, 0.05, 0.07, 0.1};
   float toRanges[4] = {0.2, 0.25, 0.3, 0.4};
 
-  for(int fidx=0; fidx<4; fidx++)
-    for(int tidx=0; tidx<4; tidx++) {
-      RawProduction::rangeMin = fromRanges[fidx];
-      RawProduction::rangeMax = toRanges[tidx];
-      
-      RawProduction::Output output(Form("RawProduction_%.2f_%.2f.root", RawProduction::rangeMin, RawProduction::rangeMax));
+  TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
+  while(triggers.NextToken()) {
+    RawProduction::TriggerBin triggerBin(triggers);
+    RawProduction::Input input("AnalysisResults.root", triggerBin);
+    for(int fidx=0; fidx<4; fidx++) {
+      for(int tidx=0; tidx<4; tidx++) {
+	RawProduction::rangeMin = fromRanges[fidx];
+	RawProduction::rangeMax = toRanges[tidx];
 
-      TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
-      while(triggers.NextToken()) {
-	RawProduction::TriggerBin triggerBin(triggers);
-	RawProduction::Input input("AnalysisResults.root", triggerBin);
+	Printf(" RawProduction_%.2f_%.2f.root", RawProduction::rangeMin, RawProduction::rangeMax);
+	RawProduction::Output output(Form("RawProduction_%.2f_%.2f.root", RawProduction::rangeMin, RawProduction::rangeMax));
+
 
 	RawProduction::MakePi0Fit(input, triggerBin, output);
 
@@ -1231,7 +1234,8 @@ void MakeRawProductionRanges()
 	    }
 	  } // cent
 	} // pid
-      } // trigger
-      output.Write();
+	output.Write();
+      }
     }
+  }// trigger
 }
