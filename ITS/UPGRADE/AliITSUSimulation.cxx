@@ -23,7 +23,7 @@
 #include "AliITSUSimulation.h"
 #include "AliITSUSDigit.h"
 #include "AliITSUModule.h"
-#include "AliParamList.h"
+#include "AliITSUParamList.h"
 using namespace TMath;
 
 ClassImp(AliITSUSimulation)
@@ -90,7 +90,7 @@ AliITSUSimulation&  AliITSUSimulation::operator=(const AliITSUSimulation &s)
 }
 
 //______________________________________________________________________
-void AliITSUSimulation::InitSimulationModule(AliITSUModule* mod, Int_t event, AliITSsegmentation* seg, AliParamList* resp)
+void AliITSUSimulation::InitSimulationModule(AliITSUModule* mod, Int_t event, AliITSsegmentation* seg, AliITSUParamList* resp)
 {
   //  This function creates maps to build the list of tracks for each
   //  summable digit. Inputs defined by base class.

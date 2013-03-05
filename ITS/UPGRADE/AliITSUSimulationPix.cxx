@@ -21,6 +21,7 @@
 
 #include <TGeoGlobalMagField.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <TString.h>
 #include "AliITSU.h"
 #include "AliITSUDigitPix.h"
@@ -36,7 +37,7 @@
 #include "AliMathBase.h"
 #include "AliITSUSimuParam.h"
 #include "AliITSUSDigit.h"
-#include "AliParamList.h"
+#include "AliITSUParamList.h"
 
 using std::cout;
 using std::endl;
@@ -58,6 +59,8 @@ ClassImp(AliITSUSimulationPix)
 //
 //  AliITSUSimulationPix is to do the simulation of pixels
 //
+//  2013 Feb: Added MonoPix response and nois calculation al la MIMOSA32 (levente.molnar@cern.ch)
+//
 ////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________
@@ -65,6 +68,8 @@ AliITSUSimulationPix::AliITSUSimulationPix()
 :  fTanLorAng(0)
   ,fReadOutCycleLength(25e-6)
   ,fReadOutCycleOffset(0)
+  ,fGlobalChargeScale(1.0)
+  ,fSpread2DHisto(0)
   ,fSpreadFun(0)
   ,fROTimeFun(0)
 {
@@ -78,6 +83,8 @@ AliITSUSimulationPix::AliITSUSimulationPix(AliITSUSimuParam* sim,AliITSUSensMap*
   ,fTanLorAng(0)
   ,fReadOutCycleLength(25e-6)
   ,fReadOutCycleOffset(0)
+  ,fGlobalChargeScale(1.0)
+  ,fSpread2DHisto(0)
   ,fSpreadFun(0)
   ,fROTimeFun(0)
 {
@@ -92,6 +99,8 @@ AliITSUSimulationPix::AliITSUSimulationPix(const AliITSUSimulationPix &s)
   ,fTanLorAng(s.fTanLorAng)
   ,fReadOutCycleLength(s.fReadOutCycleLength)
   ,fReadOutCycleOffset(s.fReadOutCycleOffset)
+  ,fGlobalChargeScale(s.fGlobalChargeScale)
+  ,fSpread2DHisto(s.fSpread2DHisto)
   ,fSpreadFun(s.fSpreadFun)
   ,fROTimeFun(s.fROTimeFun)
 {
@@ -114,6 +123,8 @@ AliITSUSimulationPix& AliITSUSimulationPix::operator=(const AliITSUSimulationPix
   AliITSUSimulation::operator=(s);
   fReadOutCycleLength = s.fReadOutCycleLength;
   fReadOutCycleOffset = s.fReadOutCycleOffset;
+  fSpread2DHisto = s.fSpread2DHisto;
+  fGlobalChargeScale = s.fGlobalChargeScale;
   fSpreadFun    = s.fSpreadFun;
   fROTimeFun    = s.fROTimeFun;
   //
@@ -158,7 +169,9 @@ Bool_t AliITSUSimulationPix::SetTanLorAngle(Double_t weightHole)
 void AliITSUSimulationPix::SDigitiseModule()
 {
   //  This function begins the work of creating S-Digits.
-  //
+    
+  AliDebug(10,Form("In event %d module %d there are %d hits returning.", fEvent, fModule->GetIndex(),fModule->GetNHits()));       
+      
   if (fModule->GetNHits()) Hits2SDigitsFast();
   //
   if (fSimuParam->GetPixAddNoisyFlag())   AddNoisyPixels();
@@ -309,7 +322,8 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
     st = Sqrt(x1*x1+y1*y1+z1*z1); 
     if (st>0.0) {
       int np = int(1.5*st/minDim);  //RStmp: inject the points in such a way that there is ~1.5 point per cell
-      if (np<3) np = 3;
+      np = TMath::Max(1.0*np,fResponseParam->GetParameter(kSpreadFunMinSteps));   
+      AliDebug(10,Form(" Number of charge injection steps is set to %d ",np));   
       double dstep = 1./np;
       double dy = dstep*thick;
       y = -0.5*dy;
@@ -321,7 +335,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
 	y  += dy;
 	z   = z0+z1*step;
 	if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
-	el  = dstep*de/fSimuParam->GetGeVToCharge();
+	el  = fGlobalChargeScale * dstep * de/fSimuParam->GetGeVToCharge();
 	if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
         // Check if the hit is inside readout window
 	if ( !(((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof) ) continue;
@@ -387,10 +401,10 @@ void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, 
   //
   Int_t ix,iz,ixs,ixe,izs,ize;
   Float_t x,z;   // keep coordinates float (required by AliSegmentation)
+  Float_t xdioshift = 0 , zdioshift = 0 ;
   Double_t s,dtIn[kNDtSpread]; // data transfered to spread function for integral calculation
   //
-  if (GetDebug(2)) AliInfo(Form("(x0=%e,z0=%e,dy=%e, ix0=%d,iz0=%d,el=%e,tID=%d,hID=%d)",
-				x0,z0,dy,ix0,iz0,el,tID,hID));
+  if (GetDebug(2)) AliInfo(Form("(x0=%e,z0=%e,dy=%e, ix0=%d,iz0=%d,el=%e,tID=%d,hID=%d)",x0,z0,dy,ix0,iz0,el,tID,hID));
   //
   Double_t &x1 = dtIn[kCellX1];
   Double_t &x2 = dtIn[kCellX2];
@@ -408,10 +422,12 @@ void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, 
   for (ix=ixs;ix<=ixe;ix++) 
     for (iz=izs;iz<=ize;iz++) {
       fSeg->DetToLocal(ix,iz,x,z); // pixel center
+      xdioshift = zdioshift = 0;
+      CalcDiodeShiftInPixel(ix,iz,xdioshift,zdioshift);    // Check and apply diode shift if needed
       double dxi = 0.5*fSeg->Dpx(ix);
       double dzi = 0.5*fSeg->Dpz(iz);
-      x1  = x - x0;   // calculate distance of cell boundaries from injection center
-      z1  = z - z0;
+      x1  = (x + xdioshift) - x0;   // calculate distance of cell boundaries from injection center
+      z1  = (z + zdioshift) - z0;
       x2  = x1 + dxi; // Upper
       x1 -= dxi;      // Lower
       z2  = z1 + dzi; // Upper
@@ -448,6 +464,26 @@ Double_t AliITSUSimulationPix::SpreadFunDoubleGauss2D(const Double_t *dtIn)
   return (intg1+intg2*scl)/(1+scl);
   //
 } 
+
+
+//______________________________________________________________________
+Double_t AliITSUSimulationPix::SpreadFrom2DHisto(const Double_t *dtIn)
+{
+  // calculate integral of charge in the cell with boundaries at X=dtIn[kCellX1]:dtIn[kCellX2] 
+  // and Z=dtIn[kCellZ1]:dtIn[kCellZ2] 
+  // The spread function integral is taken from fSpread2DHisto extracted from the sensor response parameters
+  // list in the method SetResponseParam. The histo must return the fraction of charge integrates in the 
+  // cell whose center is on the distance X=(dtIn[kCellX1]+dtIn[kCellX2])/2 and Z=(dtIn[kCellZ1]+dtIn[kCellZ2])/2
+  // from the injection point.
+  //
+  Double_t qpixfrac = 0;  
+  Double_t xintp = 1e4*(dtIn[kCellX1]+dtIn[kCellX2])/2.0;
+  Double_t zintp = 1e4*(dtIn[kCellZ1]+dtIn[kCellZ2])/2.0;
+  //    
+  qpixfrac =  fSpread2DHisto->Interpolate(xintp,zintp); //the PSF map is given in um but the dtIn is in cm so we need to convert it 
+  //
+  return qpixfrac;  
+}
 
 //______________________________________________________________________
 Double_t AliITSUSimulationPix::SpreadFunGauss2D(const Double_t *dtIn)
@@ -501,7 +537,7 @@ void AliITSUSimulationPix::AddNoisyPixels()
   // Adds noisy pixels on each module (ladder)
   // This should be called before going from sdigits to digits (FrompListToDigits)
   AliITSUCalibrationPix* calObj = (AliITSUCalibrationPix*) GetCalibNoisy();
-  if (!calObj) return;
+  if (!calObj) { AliDebug(10,Form("  No Calib Object for Noise!!! ")); return;}
   for (Int_t i=calObj->GetNrBad(); i--;) UpdateMapNoise(calObj->GetBadColAt(i), calObj->GetBadRowAt(i), 
 							10*fSimuParam->GetPixThreshold(fModule->GetIndex()));
   //
@@ -521,14 +557,13 @@ void AliITSUSimulationPix::FrompListToDigits()
   // 1) for every pixel w/o hit we have to generate a noise and activate the pixel if the noise exceeds the threshold. 
   // 2) for every pixel with hit we should add random noise and check if the total signal exceeds the threshold
   // With many channels this will be too time consuming, hence I do the following
-  // 1) Precalculate the probability that the nois alone will exceed the threshold. 
-  // 2) Chose randomly empty pixels according to this probability and apply the noise above threshold.
+  // 1) Precalculate the probability that the nois alone will exceed the threshold (probnoisy). 
+  // 2) Chose randomly empty pixels according to fakes rate
   // 3) For pixels having a hits apply the usual noise and compare with threshold
   //
   // RS may use for ordered random sample generation dl.acm.org/ft_gateway.cfm?id=356313&type=pdf
   //
   int maxInd = fSensMap->GetMaxIndex();
-  double minProb = 0.1/maxInd;
   int modId = fModule->GetIndex();
   //
   int nsd = fSensMap->GetEntries();
@@ -544,7 +579,7 @@ void AliITSUSimulationPix::FrompListToDigits()
     if (fSensMap->IsDisabled(sd)) continue;
     curID = (int)sd->GetUniqueID();
     //
-    if (probNoisy>minProb) { // generate randomly noisy pixels above the threshold, with ID's between previous hit and current
+    if ( fSimuParam->GetPixAddNoisyFlag() ) { 
       CreateNoisyDigits(prevID,curID,probNoisy, noiseSig, noiseMean);
       prevID = curID+1;
     }
@@ -558,7 +593,7 @@ void AliITSUSimulationPix::FrompListToDigits()
     fSensMap->GetMapIndex(sd->GetUniqueID(),iz,ix);
     dig.SetCoord1(iz);
     dig.SetCoord2(ix);
-    dig.SetSignal(1);
+    dig.SetSignal((Int_t)sig);
     dig.SetSignalPix((Int_t)sig);
     int ntr = sd->GetNTracks();
     for (int j=0;j<ntr;j++) {
@@ -572,13 +607,17 @@ void AliITSUSimulationPix::FrompListToDigits()
     aliITS->AddSimDigit(AliITSUGeomTGeo::kDetTypePix, &dig);
   }
   // if needed, add noisy pixels with id from last real hit to maxID
-  if (probNoisy>minProb) CreateNoisyDigits(prevID,maxInd,probNoisy, noiseSig, noiseMean);
+  if (fSimuParam->GetPixAddNoisyFlag() && 
+      (nsd>0  || ( nsd==0 && fSimuParam->GetPixNoiseInAllMod()) )) {
+    AliDebug(10,Form("CreateNoisyDigits2( %d ,%d) module %d",prevID,maxInd,modId));
+    CreateNoisyDigits(prevID,maxInd,probNoisy, noiseSig, noiseMean);
+  }
   // 
 }
 
 //______________________________________________________________________
 Int_t AliITSUSimulationPix::CreateNoisyDigits(Int_t minID,Int_t maxID,double probNoisy, double noise, double base)
-{
+{//RS PAYATT2
   // create random noisy digits above threshold within id range [minID,maxID[
   // see FrompListToDigits for details
   //
@@ -590,7 +629,7 @@ Int_t AliITSUSimulationPix::CreateNoisyDigits(Int_t minID,Int_t maxID,double pro
   //
   Int_t ncand = 0;
   int npix = maxID-minID;
-  if (npix<1 || (ncand=gRandom->Poisson(npix*probNoisy))<1) return ncand; // decide how many noisy pixels will be added
+  if (npix<1 || (ncand=gRandom->Poisson(npix * fSimuParam->GetPixFakeRate() ))<1) return ncand; // decide how many noisy pixels will be added
   ncand = GenOrderedSample(npix,ncand,ordSample,ordSampleInd); 
   int* ordV = ordSample.GetArray();
   int* ordI = ordSampleInd.GetArray();
@@ -605,7 +644,7 @@ Int_t AliITSUSimulationPix::CreateNoisyDigits(Int_t minID,Int_t maxID,double pro
       dig.SetHit(k,-1);
     }
     aliITS->AddSimDigit(AliITSUGeomTGeo::kDetTypePix,&dig);
-    if (GetDebug(2)) AliInfo(Form("Add noisy pixel %d(%d/%d) Noise=%d",ordV[ordI[j]],iz,ix,dig.GetSignalPix()));
+    AliDebug(10,Form("Add noisy pixel %d(%d/%d) Noise=%d",ordV[ordI[j]],iz,ix,dig.GetSignalPix()));
   }
   return ncand;
 }
@@ -717,37 +756,89 @@ void AliITSUSimulationPix::GenerateReadOutCycleOffset()
   // Generate randomly the strobe
   // phase w.r.t to the LHC clock
   fReadOutCycleOffset = fReadOutCycleLength*gRandom->Rndm();
-  //
+  // fReadOutCycleOffset = 25e-9*gRandom->Rndm(); // clm: I think this way we shift too much 10-30 us! The global shift should be between the BCs?!
+  // RS: 25 ns is too small number, the staggering will not work. Let's at the moment keep fully random shift (still, no particle from correct
+  // collision will be lost) untill real number is specified
+ //
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::SetResponseParam(AliParamList* resp)
+void AliITSUSimulationPix::SetResponseParam(AliITSUParamList* resp)
 {
   // attach response parameterisation data
   fResponseParam = resp;
-  switch (fResponseParam->GetID()) {
-  case kSpreadFunDoubleGauss2D: fSpreadFun = &AliITSUSimulationPix::SpreadFunDoubleGauss2D; 
+  //
+  int spreadID = Nint(fResponseParam->GetParameter(AliITSUSimulationPix::kChargeSpreadType));
+  const char* hname = 0;
+  fSpread2DHisto = 0;
+  //
+  switch (spreadID) {
+    //
+  case kSpreadFunHisto: 
+    fSpreadFun = &AliITSUSimulationPix::SpreadFrom2DHisto;
+    hname = fResponseParam->GetParName(AliITSUSimulationPix::kChargeSpreadType);
+    if (!(fSpread2DHisto=(TH2*)fResponseParam->GetParamObject(hname))) 
+      AliFatal(Form("Did not find 2D histo %s for charge spread parameterization",hname));
     break;
-  case kSpreadFunGauss2D      : fSpreadFun = &AliITSUSimulationPix::SpreadFunGauss2D;       
+    //
+  case kSpreadFunDoubleGauss2D: 
+    fSpreadFun = &AliITSUSimulationPix::SpreadFunDoubleGauss2D; 
     break;
-  default: AliFatal(Form("Did not find requested spread function id=%d",fResponseParam->GetID()));
+    //
+  case kSpreadFunGauss2D: 
+    fSpreadFun = &AliITSUSimulationPix::SpreadFunGauss2D;       
+    break;
+    //
+  default: AliFatal(Form("Did not find requested spread function id=%d",spreadID));
   }
   //
   int readoutType = Nint(fResponseParam->GetParameter(kReadOutSchemeType));
   switch (readoutType) {
-  case kReadOutStrobe         : fROTimeFun = &AliITSUSimulationPix::IsHitInReadOutWindow;
+  case kReadOutStrobe: 
+    fROTimeFun = &AliITSUSimulationPix::IsHitInReadOutWindow;
     break;
-  case kReadOutRollingShuttle : fROTimeFun = &AliITSUSimulationPix::IsHitInReadOutWindowRollingShuttle;
+  case kReadOutRollingShutter: 
+    fROTimeFun = &AliITSUSimulationPix::IsHitInReadOutWindowRollingShutter;
     break;
   default: AliFatal(Form("Did not find requested readout time type id=%d",readoutType));
   }
-  //
+  //___ Set the Rolling Shutter read-out window 
   fReadOutCycleLength = fResponseParam->GetParameter(kReadOutCycleLength);
+  //___ Pixel discrimination threshold, and the S/N cut
+  fSimuParam->SetPixThreshold(fResponseParam->GetParameter(kPixNoiseMPV) *fResponseParam->GetParameter(kPixSNDisrcCut) , fResponseParam->GetParameter(kPixSNDisrcCut),-1); //for all modules
+  //___ Minimum number of electrons to add 
+  fSimuParam->SetPixMinElToAdd(fResponseParam->GetParameter(kPixMinElToAdd));
+  //___ Set the Pixel Noise MPV and Sigma (the noise distribution is Landau not Gauss due to RTN)
+  fSimuParam->SetPixNoise( fResponseParam->GetParameter(kPixNoiseMPV), fResponseParam->GetParameter(kPixNoiseSigma), -1); //for all modules
+  //___ Pixel fake hit rate
+  fSimuParam->SetPixFakeRate( fResponseParam->GetParameter(kPixFakeRate) );
+  //___ To apply the noise or not
+  if (  fResponseParam->GetParameter(kPixNoiseIsOn) > 0.01)  fSimuParam->SetPixAddNoisyFlag(kTRUE);
+  else fSimuParam->SetPixAddNoisyFlag(kFALSE);
   //
+  if(fResponseParam->GetParameter(kPixNoiseInAllMod) > 0.01 ) fSimuParam->SetPixNoiseInAllMod(kTRUE);
+  else fSimuParam->SetPixNoiseInAllMod(kFALSE);
+  //
+  //  Double_t vGeVToQ = fSimuParam->GetGeVToCharge();
+  fGlobalChargeScale = fResponseParam->GetParameter(kSpreadFunGlobalQScale);
+    
+  AliDebug(10,Form("=============== Setting the response start ============================"));
+  AliDebug(10,Form("=============== RO type: %d",readoutType));
+  AliDebug(10,Form("=============== RO cycle lenght: %lf",fReadOutCycleLength));
+  AliDebug(10,Form("=============== Noise MPV: %lf",fResponseParam->GetParameter(kPixNoiseMPV)));
+  AliDebug(10,Form("=============== Noise Sigma: %lf",fResponseParam->GetParameter(kPixNoiseSigma)));
+  AliDebug(10,Form("=============== Fake rate: %lf",fResponseParam->GetParameter(kPixFakeRate)));
+  AliDebug(10,Form("=============== Noise On/Off: %d",fSimuParam->GetPixAddNoisyFlag()));
+  AliDebug(10,Form("=============== Noise in all mod on/off: %d",fSimuParam->GetPixNoiseInAllMod()));
+  AliDebug(10,Form("=============== Global Charge scale: %lf",fGlobalChargeScale));
+  AliDebug(10,Form("=============== Setting the response done  ============================"));
+  
+  
+  
 }
 
 //______________________________________________________________________
-Bool_t AliITSUSimulationPix::IsHitInReadOutWindowRollingShuttle(Int_t row, Int_t col, Double_t hitTime)
+Bool_t AliITSUSimulationPix::IsHitInReadOutWindowRollingShutter(Int_t row, Int_t col, Double_t hitTime)
 {
   //
   // Check whether the hit is in the read out window of the given column/row of the sensor
@@ -776,3 +867,25 @@ Bool_t AliITSUSimulationPix::IsHitInReadOutWindow(Int_t row, Int_t col, Double_t
   //  
 }
 
+//_______________________________________________________________________
+void AliITSUSimulationPix::CalcDiodeShiftInPixel(Int_t xlin, Int_t zcol, Float_t &x, Float_t &)
+{
+  //
+  // Calculates the shift of the diode wrt the geometric center of the pixel.
+  // It is needed for staggerred pixel layout or double diode pixels with assymetric center
+  // The shift can depend on the column or line or both...
+  // The x and z are passed in cm 
+  //
+  
+  TString parTitle = fResponseParam->GetTitle();
+  
+  // M32terP31 is staggered the diode shift within pixel depends on the column
+  if ( parTitle.Contains("M32terP31") ) 
+  {
+    if ( zcol%2 == 0 )    x += 0.30 * fSeg->Dpx(xlin);
+    else                  x -= 0.19 * fSeg->Dpx(xlin);
+  }
+  
+ 
+}
+//_______________________________________________________________________

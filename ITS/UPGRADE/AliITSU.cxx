@@ -97,7 +97,7 @@ the AliITS class.
 #include "AliITSUSegmentationPix.h"
 #include "AliITSUSimuParam.h"
 #include "AliITSFOSignalsSPD.h"
-#include "AliParamList.h"
+#include "AliITSUParamList.h"
 #include "AliCDBManager.h" // tmp! Later the simuparam should be loaded centrally
 #include "AliCDBEntry.h"
 
@@ -837,7 +837,7 @@ void AliITSU::InitSimulation()
   fSensMap      = new AliITSUSensMap("AliITSUSDigit",0,0);
   fSimModelLr   = new AliITSUSimulation*[fNLayers];
   fSegModelLr   = new AliITSsegmentation*[fNLayers];
-  fResponseLr   = new AliParamList*[fNLayers];
+  fResponseLr   = new AliITSUParamList*[fNLayers];
   //
   TObjArray arrSeg;
   AliITSUSegmentationPix::LoadSegmentations(&arrSeg, AliITSUGeomTGeo::GetITSsegmentationFileName());
@@ -873,7 +873,7 @@ void AliITSU::InitSimulation()
     if (!(fSegModelLr[i]=(AliITSsegmentation*)arrSeg[dType])) {AliFatal(Form("Segmentation for DetType#%d is not found",dType)); exit(1);}
     //
     // add response function for the detectors of this layer
-    if ( !(fResponseLr[i]=(AliParamList*)fSimuParam->FindRespFunParams(dType)) ) {AliFatal(Form("Response for DetType#%d is not found in SimuParams",dType)); exit(1);}
+    if ( !(fResponseLr[i]=(AliITSUParamList*)fSimuParam->FindRespFunParams(dType)) ) {AliFatal(Form("Response for DetType#%d is not found in SimuParams",dType)); exit(1);}
   }
   // delete non needed segmentations
   for (int i=fNLayers;i--;) arrSeg.Remove(fSegModelLr[i]);

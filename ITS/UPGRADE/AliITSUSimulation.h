@@ -25,7 +25,7 @@ class AliITSUSimuParam;
 class AliITSUModule;
 class TRandom;
 class TSegCollection;
-class AliParamList;
+class AliITSUParamList;
 
 // This is the base class for ITS detector signal simulations. Data members
 // include are a pointer to the detectors specific response and segmentation
@@ -47,7 +47,7 @@ class AliITSUSimulation : public TObject
   //
   void UpdateMapSignal(UInt_t dim0,UInt_t dim1, Int_t trk,Int_t ht,Double_t signal);
   void UpdateMapNoise(UInt_t dim0,UInt_t dim1, Double_t noise);
-  virtual void InitSimulationModule(AliITSUModule* mod, Int_t ev, AliITSsegmentation* seg, AliParamList* resp);
+  virtual void InitSimulationModule(AliITSUModule* mod, Int_t ev, AliITSsegmentation* seg, AliITSUParamList* resp);
   //
   // Hits -> SDigits
   virtual void SDigitiseModule() = 0;
@@ -67,7 +67,7 @@ class AliITSUSimulation : public TObject
   AliITSUSimuParam*   GetSimuParam()                   const {return fSimuParam;}
   AliITSUSensMap*     GetMap()                         const {return fSensMap;}
   AliITSUModule*      GetModule()                      const {return fModule;}
-  AliParamList*       GetResponseParam()               const {return fResponseParam;}
+  AliITSUParamList*   GetResponseParam()               const {return fResponseParam;}
   Int_t               GetEvent()                       const {return fEvent;}
   Bool_t              GetDebug(Int_t level=1)          const {return fDebug>=level;}
   
@@ -76,7 +76,7 @@ class AliITSUSimulation : public TObject
   void SetCalibNoisy(AliITSCalibration *calib)             {fCalibNoisy = calib;}
   void SetSegmentation(AliITSsegmentation *seg)            {fSeg = seg; if (seg&&fSensMap) fSensMap->SetDimensions(seg->Npz(),seg->Npx());}
   void SetSimuParam(AliITSUSimuParam *sp)                  {fSimuParam = sp;}
-  virtual void SetResponseParam(AliParamList* resp)        {fResponseParam = resp;}
+  virtual void SetResponseParam(AliITSUParamList* resp)    {fResponseParam = resp;}
   void SetMap(AliITSUSensMap *p)                           {fSensMap = p;}
   void SetModule(AliITSUModule* mod)                       {fModule=mod;} 
   void SetEvent(Int_t evnt)                                {fEvent=evnt;} 
@@ -96,7 +96,7 @@ class AliITSUSimulation : public TObject
   AliITSCalibration   *fCalibNoisy;     //! noisy channels
   AliITSUSensMap      *fSensMap;        //! sensor map for hits manipulations
   AliITSUSimuParam    *fSimuParam;      //! simulation parameters
-  AliParamList        *fResponseParam;  //! response parameterization data
+  AliITSUParamList    *fResponseParam;  //! response parameterization data
   AliITSUModule       *fModule;         //! module being processed
   Int_t                fEvent;          //! event number being processed
   Int_t                fDebug;          //!  debug flag

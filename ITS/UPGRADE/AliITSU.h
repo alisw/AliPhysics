@@ -28,7 +28,7 @@ class AliITSdigit;
 class AliDigitizationInput;
 class AliITSUSensMap;
 class AliITSUSimuParam;
-class AliParamList;
+class AliITSUParamList;
 
 class AliITSU : public AliDetector {
 
@@ -71,7 +71,7 @@ class AliITSU : public AliDetector {
   virtual void SetTreeAddress();
   virtual AliITSUSimulation*   GetSimulationModel(Int_t lr)   {return (AliITSUSimulation*)fSimModelLr[lr];}
   virtual AliITSsegmentation*  GetSegmentation(Int_t lr)      {return (AliITSsegmentation*)fSegModelLr[lr];}
-  virtual AliParamList*        GetResponseParam(Int_t lr)     {return (AliParamList*)fResponseLr[lr];}
+  virtual AliITSUParamList*    GetResponseParam(Int_t lr)     {return (AliITSUParamList*)fResponseLr[lr];}
   //=================== Hits =========================================
   virtual void StepManager() {} // See Step Manager for specific geometry.
   //------------ sort hits by module for Digitisation ----------------
@@ -142,7 +142,7 @@ class AliITSU : public AliDetector {
   //
   AliITSUSimulation    **fSimModelLr;     //! simulation objects per layer
   AliITSsegmentation   **fSegModelLr;     //! segmentation objects per layar
-  AliParamList         **fResponseLr;     //! response parameters for each layer
+  AliITSUParamList     **fResponseLr;     //! response parameters for each layer
   TObjArray            *fCalibration;    //! calibration objects
   Int_t                 fRunNumber;      //! run number
   Bool_t                fSimInitDone;    //! flag initialized simulation

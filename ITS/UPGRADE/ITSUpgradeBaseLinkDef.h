@@ -21,5 +21,6 @@
 #pragma link C++ class  AliITSUSegmentationPix+;
 #pragma link C++ class  AliITSUSensMap+;
 #pragma link C++ class  AliITSUSDigit+;
+#pragma link C++ class  AliITSUParamList+;
 #pragma link C++ namespace  AliITSUAux;
 #endif

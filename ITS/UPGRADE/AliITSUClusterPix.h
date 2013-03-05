@@ -39,12 +39,16 @@ class AliITSUClusterPix : public AliCluster
   void    GoToFrameGlo();
   void    GoToFrameLoc();
   void    GoToFrameTrk();
-  void    GetLocalXYZ(Float_t xyz[3]) const;
-  void    GetTrackingXYZ(Float_t xyz[3]) const;
+  void    GetLocalXYZ(Float_t xyz[3])                       const;
+  void    GetTrackingXYZ(Float_t xyz[3])                    const; 
   //
-  void    SetNxNz(UChar_t nx,UChar_t nz) {fNxNz = (nx<<8) + nz;}
-  Int_t   GetNx()                                           const {return fNxNz>>8;}
-  Int_t   GetNz()                                           const {return fNxNz&0xff;}
+  void    SetNxNzN(UChar_t nx,UChar_t nz,UShort_t n) {fNxNzN = (n<<16) + (nx<<8) + nz;}
+  Int_t   GetNx()                                           const {return (fNxNzN>>8)&0xff;}
+  Int_t   GetNz()                                           const {return fNxNzN&0xff;}
+  Int_t   GetNPix()                                         const {return fNxNzN>>16;}
+  //
+  void    SetQ(UShort_t q)                                        {fCharge = q;}
+  Int_t   GetQ()                                            const {return fCharge;}
   //
   virtual void                 Print(Option_t* option = "") const;
   virtual const TGeoHMatrix*   GetTracking2LocalMatrix()           const;
@@ -66,7 +70,9 @@ class AliITSUClusterPix : public AliCluster
   //
  protected:
   //
-  UShort_t                fNxNz;          //  effective cluster size in X (1st byte) and Z (2nd byte) directions
+  UShort_t                fCharge;        //  charge (for MC studies only)
+  Int_t                   fNxNzN;         //  effective cluster size in X (1st byte) and Z (2nd byte) directions 
+                                          //  and total Npix(3d&4th bytes)
   static UInt_t           fgMode;         //! general mode (sorting mode etc)
   static AliITSUGeomTGeo* fgGeom;         //! pointer on the geometry data
 

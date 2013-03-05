@@ -157,9 +157,11 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
   cand->fLastDigit->fNext=0;
   double x=0,z=0,xmn=1e9,xmx=-1e9,zmn=1e9,zmx=-1e9,px=0,pz=0;
   float  cx,cz;
+  int charge=0;
   for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
     AliITSdigit* dig = idigit->fDigit;
     fSegm->DetToLocal(dig->GetCoord2(),dig->GetCoord1(),cx,cz);
+    charge += dig->GetSignal();
     x += cx;
     z += cz;
     if (cx<xmn) xmn=cx;
@@ -198,7 +200,8 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
   cluster->SetSigmaY2(nx>1 ? dx*dx*k1to12 : px*px*k1to12);
   cluster->SetSigmaYZ(0);
   cluster->SetFrameLoc();
-  cluster->SetNxNz(nx,nz);
+  cluster->SetNxNzN(nx,nz,n);
+  cluster->SetQ(charge); // note: this is MC info
   //
   if (!fRawData) {
     CheckLabels();

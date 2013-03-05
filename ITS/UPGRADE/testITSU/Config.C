@@ -296,28 +296,28 @@ void Config()
       AliITSUSegmentationPix* seg0 = new AliITSUSegmentationPix(0,    // segID (0:9)
 								5,    // chips per module
 								1500, // ncols (total for module)
-								750,  //835,  // nrows
-								20.e-4,  // default row pitch in cm
+								350,  //835,  // nrows
+								33.e-4,  // default row pitch in cm
 								20.e-4,  // default col pitch in cm
-								20.e-4  // sensor thickness in cm
+								18.e-4  // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
       seg0->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       AliITSUSegmentationPix* seg1 = new AliITSUSegmentationPix(1,    // segID (0:9)
 								5*2,    // chips per module
 								1500, // ncols (total for module)
-								750*2,//835,  // nrows
-								20.e-4,  // default row pitch in cm
+								700,//835,  // nrows
+								33.e-4,  // default row pitch in cm
 								20.e-4,  // default col pitch in cm
-								20.e-4  // sensor thickness in cm
+								18.e-4  // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
       seg1->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       AliITSUSegmentationPix* seg2 = new AliITSUSegmentationPix(2,    // segID (0:9)
 								5*2,    // chips per module
 								1500, // ncols (total for module)
-								750*2,//835,  // nrows
-								20.e-4,  // default row pitch in cm
+								700,//835,  // nrows
+								33.e-4,  // default row pitch in cm
 								20.e-4,  // default col pitch in cm
-								20.e-4   // sensor thickness in cm
+								18.e-4   // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
       seg2->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       //

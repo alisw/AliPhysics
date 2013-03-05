@@ -13,7 +13,8 @@ UInt_t           AliITSUClusterPix::fgMode = 0;
 
 //_____________________________________________________
 AliITSUClusterPix::AliITSUClusterPix()
-  : fNxNz(0)
+  : fCharge(0)
+  , fNxNzN(0)
 {
   // default constructor
 }
@@ -27,7 +28,8 @@ AliITSUClusterPix::~AliITSUClusterPix()
 //_____________________________________________________
 AliITSUClusterPix::AliITSUClusterPix(const AliITSUClusterPix& cluster) 
   :AliCluster(cluster)
-  ,fNxNz(cluster.fNxNz)
+  ,fCharge(cluster.fCharge)
+  ,fNxNzN(cluster.fNxNzN)
 {
   // copy constructor
 }
@@ -37,7 +39,8 @@ AliITSUClusterPix& AliITSUClusterPix::operator=(const AliITSUClusterPix& cluster
 {
   // = op
   if(&cluster == this) return *this;
-  fNxNz = cluster.fNxNz;
+  fNxNzN = cluster.fNxNzN;
+  fCharge = cluster.fCharge;
   TObject::operator=(cluster);
   AliCluster::operator=(cluster);
   return *this;
@@ -63,8 +66,8 @@ void AliITSUClusterPix::Print(Option_t* option) const
   // Print cluster information.
   TString str = option; 
   str.ToLower();
-  printf("Cl.in mod %5d, nx:%3d nz:%3d |Err^2:%.3e %.3e %+.3e |",GetVolumeId(),GetNx(),GetNz(),
-	 GetSigmaY2(),GetSigmaZ2(),GetSigmaYZ());
+  printf("Cl.in mod %5d, nx:%3d nz:%3d n:%d |Err^2:%.3e %.3e %+.3e |",GetVolumeId(),GetNx(),GetNz(),
+	 GetNPix(),GetSigmaY2(),GetSigmaZ2(),GetSigmaYZ());
   printf("XYZ: (%+.4e %+.4e %+.4e ",GetX(),GetY(),GetZ());
   if      (IsFrameLoc()) printf("LOC)");
   else if (IsFrameGlo()) printf("GLO)");

@@ -37,6 +37,7 @@ AliITSUSegmentationPix.cxx
 AliITSUSensMap.cxx
 AliITSUSDigit.cxx
 AliITSUAux.cxx
+AliITSUParamList.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
