@@ -936,10 +936,11 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     vtxESD = esdEvent->GetPrimaryVertexTracks();
 	if(vtxESD && (vtxESD->GetStatus()<=0)) return;
   }
-  else {
-    // TPC track vertex
-    vtxESD = esdEvent->GetPrimaryVertexTPC();
-  }
+  // Coverity - removed else branch as vtxESD is not further used in method
+  //  else {  
+  //    // TPC track vertex
+  //    vtxESD = esdEvent->GetPrimaryVertexTPC();
+  //  }
  
 
 
