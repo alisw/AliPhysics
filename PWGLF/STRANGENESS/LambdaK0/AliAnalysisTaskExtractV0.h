@@ -59,6 +59,8 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
 	virtual void	 Terminate(Option_t *);
   void CheckChargeV0(AliESDv0 *thisv0);
 
+//---------------------------------------------------------------------------------------
+  
   void SetIsNuclear           (Bool_t lIsNuclear   = kTRUE ) { fkIsNuclear   = lIsNuclear;   }
   void SetINT7Trigger         (Bool_t lSwitchINT7  = kTRUE ) { fkSwitchINT7  = lSwitchINT7; }
   void SetUseOnTheFly         (Bool_t lUseOnTheFly = kTRUE ) { fkUseOnTheFly = lUseOnTheFly; }
@@ -68,6 +70,17 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   void SetFastOnly (TString lFastOnly = "kFastOnly") {fkFastOnly = lFastOnly;  }
   void SetpAVertexSelection   (Bool_t lpAVertexSelection = kTRUE) {fkpAVertexSelection = lpAVertexSelection;  }
   void SetRunV0Vertexer ( Bool_t lRunV0Vertexer = kTRUE) { fkRunV0Vertexer = lRunV0Vertexer; } 
+  
+//---------------------------------------------------------------------------------------
+//Setters for the V0 Vertexer Parameters
+  void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0Sels[0] = lParameter; }
+  void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ){ fV0Sels[1] = lParameter; }
+  void SetV0VertexerDCASecondtoPV  ( Double_t lParameter ){ fV0Sels[2] = lParameter; }
+  void SetV0VertexerDCAV0Daughters ( Double_t lParameter ){ fV0Sels[3] = lParameter; }
+  void SetV0VertexerCosinePA       ( Double_t lParameter ){ fV0Sels[4] = lParameter; }
+  void SetV0VertexerMinRadius      ( Double_t lParameter ){ fV0Sels[5] = lParameter; }
+  void SetV0VertexerMaxRadius      ( Double_t lParameter ){ fV0Sels[6] = lParameter; }
+//---------------------------------------------------------------------------------------
   
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -153,6 +166,8 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   
 //Note: TDistOverTotMom needs a mass hypothesis to be converted to proper decaylength.
 
+//---------------------------------------------------------------------------------------  
+  
 	TH1F    *fHistV0MultiplicityBeforeTrigSel;             //! V0 multiplicity distribution
 	TH1F    *fHistV0MultiplicityForTrigEvt;                //! V0 multiplicity distribution
 	TH1F    *fHistV0MultiplicityForSelEvt;                 //! V0 multiplicity distribution
@@ -193,6 +208,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
 	TH1F    *fHistMultiplicitySPDNoTPCOnly;			        //! multiplicity distribution
 	TH1F    *fHistMultiplicitySPDNoTPCOnlyNoPileup;			//! multiplicity distribution
   
+//---------------------------------------------------------------------------------------  
   
   //Raw Data for Vertex Z position estimator change
 	TH2F    *f2dHistMultiplicityVsVertexZBeforeTrigSel; 	        //! multiplicity distribution    
@@ -200,7 +216,6 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
 	TH2F    *f2dHistMultiplicityVsVertexZ;     					        //! multiplicity distribution
 	TH2F    *f2dHistMultiplicityVsVertexZNoTPCOnly;			        //! multiplicity distribution
 	TH2F    *f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup;			//! multiplicity distribution
-
 
 	TH1F    *fHistPVx;     					        //! multiplicity distribution
 	TH1F    *fHistPVy;     					        //! multiplicity distribution

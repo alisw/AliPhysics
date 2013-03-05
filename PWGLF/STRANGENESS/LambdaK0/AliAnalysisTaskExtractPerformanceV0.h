@@ -64,6 +64,18 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   void SetLightWeightAnalysis (Bool_t lLightWeight = kTRUE) {fkLightWeight = lLightWeight;  }
   void SetFastOnly (TString lFastOnly = "kFastOnly") {fkFastOnly = lFastOnly;  }
   void SetpAVertexSelection   (Bool_t lpAVertexSelection = kTRUE) {fkpAVertexSelection = lpAVertexSelection;  }
+  void SetRunV0Vertexer ( Bool_t lRunV0Vertexer = kTRUE) { fkRunV0Vertexer = lRunV0Vertexer; }
+  
+  //---------------------------------------------------------------------------------------
+  //Setters for the V0 Vertexer Parameters
+  void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0Sels[0] = lParameter; }
+  void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ){ fV0Sels[1] = lParameter; }
+  void SetV0VertexerDCASecondtoPV  ( Double_t lParameter ){ fV0Sels[2] = lParameter; }
+  void SetV0VertexerDCAV0Daughters ( Double_t lParameter ){ fV0Sels[3] = lParameter; }
+  void SetV0VertexerCosinePA       ( Double_t lParameter ){ fV0Sels[4] = lParameter; }
+  void SetV0VertexerMinRadius      ( Double_t lParameter ){ fV0Sels[5] = lParameter; }
+  void SetV0VertexerMaxRadius      ( Double_t lParameter ){ fV0Sels[6] = lParameter; }
+  //---------------------------------------------------------------------------------------
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -89,6 +101,9 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
                         //(to make resulting tree output significantly smaller!
   TString fkFastOnly; //"" if no extra selection, "kFastOnly" -> without SDD, "NotkFastOnly" -> With SDD
   Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
+  Bool_t fkRunV0Vertexer; //if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
+  
+  Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 
 //===========================================================================================
 //   Variables for Tree, V0s
