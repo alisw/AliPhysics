@@ -198,7 +198,7 @@ void  AliITSURecoParam::SetMaxTr2ClChi2(Int_t lr, Double_t v)
 
 //========================================================================
 //_____________________________________________________________________________
-void AliITSURecoParam::Print(Option_t *opt) const
+void AliITSURecoParam::Print(Option_t *) const
 {
   // print params
   printf("%s: %s %s\n",ClassName(),GetName(),GetTitle());

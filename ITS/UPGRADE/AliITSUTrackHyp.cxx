@@ -167,7 +167,7 @@ Int_t AliITSUTrackHyp::GetClusterIndex(Int_t ind) const
   // This is a temporary (slow) way of accessing cluster index
   // TODO: add dedicated data members filled by winner
   AliITSUSeed* seed = GetWinner();
-  int ncl = 0;
+  //  int ncl = 0;
   if (!seed) {
     AliFatal("The winner is not set");
     return -1;
