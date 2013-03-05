@@ -294,6 +294,12 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	{
 		spectra[i]->Scale(vertexcorrection);
 		spectraLeonardo[i]->Scale(vertexcorrection);
+		if(TMath::Abs(ycut)>0.0)
+		{
+			rawspectradata[i]->Scale(1.0/(2.0*ycut));
+                	rawspectramc[i]->Scale(1.0/(2.0*ycut));
+                	MCTruth[i]->Scale(1.0/(2.0*ycut));
+		}
 	}	
 	allch->Scale(vertexcorrection);
 	spectraall->Scale(vertexcorrection/1.6);
