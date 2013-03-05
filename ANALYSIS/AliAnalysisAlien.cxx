@@ -1702,6 +1702,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
             fMergingJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), obj->GetName()));
          }
       }
+      const char *comment = "List of output files and archives";
       if (fOutputArchive.Length()) {
          TString outputArchive = fOutputArchive;
          if (!fRegisterExcludes.IsNull()) {
@@ -1716,14 +1717,12 @@ Bool_t AliAnalysisAlien::CreateJDL()
          arr = outputArchive.Tokenize(" ");
          TIter next(arr);
          Bool_t first = kTRUE;
-         const char *comment = "Files to be archived";
-         const char *comment1 = comment;
          while ((os=(TObjString*)next())) {
-            if (!first) comment = NULL;
             if (!os->GetString().Contains("@") && fCloseSE.Length())
-               fGridJDL->AddToOutputArchive(Form("%s@%s",os->GetString().Data(), fCloseSE.Data()), comment); 
+               fGridJDL->AddToSet("Output", Form("%s@%s",os->GetString().Data(), fCloseSE.Data()));
             else
-               fGridJDL->AddToOutputArchive(os->GetString(), comment);
+               fGridJDL->AddToSet("Output", os->GetString());
+            if (first) fGridJDL->AddToSetDescription("Output", comment);
             first = kFALSE;   
          }      
          delete arr;
@@ -1745,7 +1744,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
             files.ReplaceAll(".root", "*.root");
             
             if (mgr->IsCollectThroughput())
-               outputArchive += Form("root_archive.zip:%s,*.stat,*%s@disk=%d",files.Data(),mgr->GetFileInfoLog(),fNreplicas);
+               outputArchive += Form("root_archive.zip:%s,*.stat@disk=%d %s@disk=%d",files.Data(),fNreplicas, mgr->GetFileInfoLog(),fNreplicas);
             else
                outputArchive += Form("root_archive.zip:%s,*.stat@disk=%d",files.Data(),fNreplicas);
          } else {
@@ -1755,15 +1754,14 @@ Bool_t AliAnalysisAlien::CreateJDL()
          }   
          arr = outputArchive.Tokenize(" ");
          TIter next2(arr);
-         comment = comment1;
          first = kTRUE;
          while ((os=(TObjString*)next2())) {
-            if (!first) comment = NULL;
             TString currentfile = os->GetString();
             if (!currentfile.Contains("@") && fCloseSE.Length())
-               fMergingJDL->AddToOutputArchive(Form("%s@%s",currentfile.Data(), fCloseSE.Data()), comment);
+               fMergingJDL->AddToSet("Output", Form("%s@%s",currentfile.Data(), fCloseSE.Data()));
             else
-               fMergingJDL->AddToOutputArchive(currentfile, comment);
+               fMergingJDL->AddToSet("Output", currentfile);
+            if (first) fMergingJDL->AddToSetDescription("Output", comment);
             first = kFALSE;   
          }      
          delete arr;         
@@ -1771,7 +1769,6 @@ Bool_t AliAnalysisAlien::CreateJDL()
       arr = fOutputFiles.Tokenize(",");
       TIter next(arr);
       Bool_t first = kTRUE;
-      const char *comment = "Files to be saved";
       while ((os=(TObjString*)next())) {
          // Ignore ouputs in jdl that are also in outputarchive
          TString sout = os->GetString();
@@ -1783,15 +1780,17 @@ Bool_t AliAnalysisAlien::CreateJDL()
          if (fRegisterExcludes.Contains(sout)) continue;
          if (!first) comment = NULL;
          if (!os->GetString().Contains("@") && fCloseSE.Length())
-            fGridJDL->AddToOutputSandbox(Form("%s@%s",os->GetString().Data(), fCloseSE.Data()), comment); 
+            fGridJDL->AddToSet("Output", Form("%s@%s",os->GetString().Data(), fCloseSE.Data())); 
          else
-            fGridJDL->AddToOutputSandbox(os->GetString(), comment);
-         first = kFALSE;
+            fGridJDL->AddToSet("Output", os->GetString());
+         if (first) fGridJDL->AddToSetDescription("Output", comment); 
          if (fMergeExcludes.Contains(sout)) continue;   
          if (!os->GetString().Contains("@") && fCloseSE.Length())
-            fMergingJDL->AddToOutputSandbox(Form("%s@%s",os->GetString().Data(), fCloseSE.Data()), comment); 
+            fMergingJDL->AddToSet("Output", Form("%s@%s",os->GetString().Data(), fCloseSE.Data())); 
          else
-            fMergingJDL->AddToOutputSandbox(os->GetString(), comment);
+            fMergingJDL->AddToSet("Output", os->GetString());
+         if (first) fMergingJDL->AddToSetDescription("Output", comment);
+         first = kFALSE;
       }   
       delete arr;
       fGridJDL->SetPrice((UInt_t)fPrice, "AliEn price for this job");
@@ -1944,7 +1943,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    }  
    TString sjdl2 = fMergingJDL->Generate();
    Int_t index, index1;
-   sjdl.ReplaceAll("\"LF:", "\n   \"LF:");
+   sjdl.ReplaceAll("\",\"", "\",\n   \"");
    sjdl.ReplaceAll("(member", "\n   (member");
    sjdl.ReplaceAll("\",\"VO_", "\",\n   \"VO_");
    sjdl.ReplaceAll("{", "{\n   ");
@@ -1952,7 +1951,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    sjdl.ReplaceAll("{\n   \n", "{\n");
    sjdl.ReplaceAll("\n\n", "\n");
    sjdl.ReplaceAll("OutputDirectory", "OutputDir");
-   sjdl1.ReplaceAll("\"LF:", "\n   \"LF:");
+   sjdl1.ReplaceAll("\",\"", "\",\n   \"");
    sjdl1.ReplaceAll("(member", "\n   (member");
    sjdl1.ReplaceAll("\",\"VO_", "\",\n   \"VO_");
    sjdl1.ReplaceAll("{", "{\n   ");
@@ -1960,7 +1959,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    sjdl1.ReplaceAll("{\n   \n", "{\n");
    sjdl1.ReplaceAll("\n\n", "\n");
    sjdl1.ReplaceAll("OutputDirectory", "OutputDir");
-   sjdl2.ReplaceAll("\"LF:", "\n   \"LF:");
+   sjdl2.ReplaceAll("\",\"", "\",\n   \"");
    sjdl2.ReplaceAll("(member", "\n   (member");
    sjdl2.ReplaceAll("\",\"VO_", "\",\n   \"VO_");
    sjdl2.ReplaceAll("{", "{\n   ");
@@ -2554,7 +2553,8 @@ void AliAnalysisAlien::SetRootVersionForProof(const char *version)
 {
 // Obsolete method. Use SetROOTVersion instead
    Warning("SetRootVersionForProof", "Obsolete. Use SetROOTVersion instead");
-   SetROOTVersion(version);
+   if (fROOTVersion.IsNull()) SetROOTVersion(version);
+   else Error("SetRootVersionForProof", "ROOT version already set to %s", fROOTVersion.Data());
 }
    
 //______________________________________________________________________________
@@ -3389,7 +3389,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       // Compose the output archive.
       fOutputArchive = "log_archive.zip:std*@disk=1 ";
       if (mgr->IsCollectThroughput())
-         fOutputArchive += Form("root_archive.zip:%s,*.stat,*%s@disk=%d",fOutputFiles.Data(),mgr->GetFileInfoLog(),fNreplicas);
+         fOutputArchive += Form("root_archive.zip:%s,*.stat@disk=%d %s@disk=%d",fOutputFiles.Data(),fNreplicas, mgr->GetFileInfoLog(),fNreplicas);
       else
          fOutputArchive += Form("root_archive.zip:%s,*.stat@disk=%d",fOutputFiles.Data(),fNreplicas);
    }
