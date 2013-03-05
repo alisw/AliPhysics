@@ -1520,6 +1520,7 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
   //
   // initialise graph with active running
   AliCDBEntry *entry = GetCDBEntry("GRP/CTP/Scalers");
+  if (!entry) return;
   entry->SetOwner(kTRUE);
   AliTriggerRunScalers *sca = (AliTriggerRunScalers*)entry->GetObject();
   Int_t nchannels = sca->GetNumClasses(); // number of scaler channels (i.e. trigger classes)
