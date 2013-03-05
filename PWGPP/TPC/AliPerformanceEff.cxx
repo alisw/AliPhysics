@@ -940,7 +940,7 @@ void AliPerformanceEff::Analyse()
   TH1::AddDirectory(kFALSE);
   TObjArray *aFolderObj = new TObjArray;
   if(!aFolderObj) return;
-  char title[256];
+  //  char title[256];
 
   //
   // efficiency vs pt
@@ -1415,15 +1415,16 @@ TH1D* AliPerformanceEff::AddHistoEff(Int_t axis, const Char_t *name, const Char_
   }
 
   EffHisto->GetAxis(4)->SetRange(1,0);				//Reset Range
-  
-  recc->SetName(name);
 
-  recc->GetXaxis()->SetTitle(fEffHisto->GetAxis(axis)->GetTitle());
+  if (recc) { // Coverity fix
+    recc->SetName(name);
+    
+    recc->GetXaxis()->SetTitle(fEffHisto->GetAxis(axis)->GetTitle());
 
-  snprintf(title,256,"%s vs %s",vsTitle, fEffHisto->GetAxis(axis)->GetTitle());  
-  recc->SetTitle(title);
+    snprintf(title,256,"%s vs %s",vsTitle, fEffHisto->GetAxis(axis)->GetTitle());  
+    recc->SetTitle(title);
 
-  if (axis == 2 ) recc->SetBit(TH1::kLogX);
-
+    if (axis == 2 ) recc->SetBit(TH1::kLogX);
+  }
   return recc;
 }
