@@ -115,6 +115,7 @@ namespace RawProduction {
   class Output {
   public:
     Output(const TString& fileName = "RawProduction.root", const char* options = "UPDATE");
+    ~Output();
     TH1* GetHistogram(const TString& name, const TriggerBin& inBin);
     TH1* GetHistogram(const TString& name);
     void SetDir(const TriggerBin& inBin);
@@ -868,6 +869,11 @@ namespace RawProduction {
   {
     fFile = TFile::Open(fileName.Data(), options);
   }
+  Output::~Output()
+  {
+    delete fFile;
+  }
+
 
   void Output::SetDir(const TriggerBin& inBin)
   {
@@ -1182,4 +1188,50 @@ void MakeRawProductionAll()
     } // pid
   } // trigger
   output.Write();
+}
+
+
+void MakeRawProductionRanges()
+{
+  //gStyle->SetOptStat(0);
+  gStyle->SetOptFit(1);
+
+  float fromRanges[4] = {0.04, 0.05, 0.07, 0.1};
+  float toRanges[4] = {0.2, 0.25, 0.3, 0.4};
+
+  for(int fidx=0; fidx<4; fidx++)
+    for(int tidx=0; tidx<4; tidx++) {
+      RawProduction::rangeMin = fromRanges[fidx];
+      RawProduction::rangeMax = toRanges[tidx];
+      
+      RawProduction::Output output(Form("RawProduction_%.2f_%.2f.root", RawProduction::rangeMin, RawProduction::rangeMax));
+
+      TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
+      while(triggers.NextToken()) {
+	RawProduction::TriggerBin triggerBin(triggers);
+	RawProduction::Input input("AnalysisResults.root", triggerBin);
+
+	RawProduction::MakePi0Fit(input, triggerBin, output);
+
+	TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Disp2core Dispwou CPV CPVcore CPV2 CPV2core Both Bothcore Both2 Both2core", " ");
+	while(pids.NextToken()) {
+	  for(int cent = -11; cent < 0; ++cent) {
+	    RawProduction::TriCenPidBin tcpBin(cent, pids, triggerBin.Trigger());
+	    if(triggers.EqualTo("kMB") || triggers.EqualTo("kPHOSPb")) {
+	      if( -1 == cent || -11 == cent || -10 == cent || -6 == cent )
+		RawProduction::MakePi0FitTCP(input, tcpBin, output);
+	    }
+	    if(triggers.EqualTo("kCentral") ) {
+	      if( -1 == cent )
+		RawProduction::MakePi0FitTCP(input, tcpBin, output);
+	    }
+	    if(triggers.EqualTo("kSemiCentral") ) {
+	      if( -11 == cent )
+		RawProduction::MakePi0FitTCP(input, tcpBin, output);
+	    }
+	  } // cent
+	} // pid
+      } // trigger
+      output.Write();
+    }
 }
