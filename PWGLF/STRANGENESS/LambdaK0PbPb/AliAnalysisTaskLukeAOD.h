@@ -59,7 +59,7 @@ class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
 	
 	TList           *fOutput;        // Output list
 	AliPIDResponse	*fPIDResponse;	 // PID
-	UInt_t			maskIsSelected; // Physics Selection
+	//UInt_t			maskIsSelected; // Physics Selection
 	
     TH1F            *fHistPt;        // Pt spectrum
     TH1F            *fHistEta;       // pseudorapidity spectrum
