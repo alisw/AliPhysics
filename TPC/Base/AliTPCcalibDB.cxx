@@ -369,6 +369,7 @@ void AliTPCcalibDB::Update(){
   AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
   fDButil = new AliTPCcalibDButil;   
   //
+  fRun = AliCDBManager::Instance()->GetRun();
 
   entry          = GetCDBEntry("TPC/Calib/PadGainFactor");
   if (entry){
