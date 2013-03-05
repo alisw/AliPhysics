@@ -107,6 +107,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
   fkLightWeight  ( kFALSE ),
   fkFastOnly     ( "" ),
   fkpAVertexSelection( kFALSE ),
+  fkRunV0Vertexer( kFALSE ),
 //------------------------------------------------
 // Tree Variables 
 
@@ -435,6 +436,7 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
   fHistSwappedV0Counter(0)
 {
   // Dummy Constructor
+  for(Int_t iV0selIdx   = 0; iV0selIdx   < 7; iV0selIdx++   ) { fV0Sels          [iV0selIdx   ] = -1.; }  
 }
 
 AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const char *name) 
@@ -448,6 +450,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
   fkLightWeight  ( kFALSE ),
   fkFastOnly     ( "" ),
   fkpAVertexSelection( kFALSE ),
+  fkRunV0Vertexer( kFALSE ),
 //------------------------------------------------
 // Tree Variables 
 
@@ -772,9 +775,18 @@ f3dHistGenSelectedPtVsYCMSVsMultSPDXiPlus(0),
    fHistSwappedV0Counter(0)
 {
    // Constructor
-   // Output slot #0 writes into a TList container (Cascade)
-   DefineOutput(1, TList::Class());
-   DefineOutput(2, TTree::Class());
+  // Set Loose cuts or not here...
+  // REALLY LOOSE? Be careful when attempting to run over PbPb if fkRunV0Vertexer is set!
+  fV0Sels[0] =  33.  ;  // max allowed chi2
+  fV0Sels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
+  fV0Sels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
+  fV0Sels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
+  fV0Sels[4] =   0.95;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
+  fV0Sels[5] =   0.5 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
+  fV0Sels[6] = 200.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
+  // Output slot #0 writes into a TList container (Cascade)
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 
@@ -2018,6 +2030,18 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
       return;
    }
+  
+  //------------------------------------------------
+  // Rerun V0 vertexer, if asked for
+  // --- WARNING: Be careful when using in PbPb
+  //------------------------------------------------
+  if( fkRunV0Vertexer ){
+    lESDevent->ResetV0s();
+    AliV0vertexer lV0vtxer;
+    lV0vtxer.SetDefaultCuts(fV0Sels);
+    lV0vtxer.Tracks2V0vertices(lESDevent);
+  }
+  
    TArrayF mcPrimaryVtx;
    AliGenEventHeader* mcHeader=lMCevent->GenEventHeader();
    if(!mcHeader) return;

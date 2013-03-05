@@ -793,18 +793,6 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       AliWarning("ERROR: lESDevent not available \n");
       return;
    }
-   fTreeVariableRunNumber = lESDevent->GetRunNumber();
-   fTreeVariableEventNumber =  
-    ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
-      ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
-        ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
-
-   //REVISED multiplicity estimator after 'multiplicity day' (2011)
-   Int_t lMultiplicity = -100;
-   Int_t lMultiplicityV0A = -100;
-   Int_t lMultiplicityZNA = -100;
-   Int_t lMultiplicityTRK = -100;
-   Int_t lMultiplicitySPD = -100;
   
   //------------------------------------------------
   // Rerun V0 vertexer, if asked for
@@ -817,6 +805,18 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
     lV0vtxer.Tracks2V0vertices(lESDevent);
   }
   
+   fTreeVariableRunNumber = lESDevent->GetRunNumber();
+   fTreeVariableEventNumber =  
+    ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
+      ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
+        ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
+
+   //REVISED multiplicity estimator after 'multiplicity day' (2011)
+   Int_t lMultiplicity = -100;
+   Int_t lMultiplicityV0A = -100;
+   Int_t lMultiplicityZNA = -100;
+   Int_t lMultiplicityTRK = -100;
+   Int_t lMultiplicitySPD = -100;  
 
    if(fkIsNuclear == kFALSE) lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
 
