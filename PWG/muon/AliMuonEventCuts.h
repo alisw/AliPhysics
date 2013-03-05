@@ -46,7 +46,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   void SetTrigInputsMap ( const TString trigInputsMap );
   /// Get trigger classes found in run
   TList* GetAllSelectedTrigClasses () const { return fAllSelectedTrigClasses; }
-  TObjArray* GetSelectedTrigClassesInEvent ( const AliVEvent* event );
+  const TObjArray* GetSelectedTrigClassesInEvent ( const AliVEvent* event );
 
   
   // Handle centrality

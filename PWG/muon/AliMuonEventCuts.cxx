@@ -544,7 +544,7 @@ void AliMuonEventCuts::SetDefaultTrigInputsMap ()
 }
 
 //________________________________________________________________________
-TObjArray* AliMuonEventCuts::GetSelectedTrigClassesInEvent( const AliVEvent* event )
+const TObjArray* AliMuonEventCuts::GetSelectedTrigClassesInEvent( const AliVEvent* event )
 {
   /// Return the selected trigger classes in the current event
   UpdateEvent(event);
