@@ -43,6 +43,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   AliFemtoString Report();
   void SetInputFile(const char* inputfile);
   void SetFilterBit(UInt_t ibit);
+  void SetFilterMask(int ibit);
   void SetReadMC(unsigned char a);
   void SetReadV0(unsigned char a);
   void SetCentralityPreSelection(double min, double max);
@@ -70,6 +71,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   TBits          fAllTrue;          // Bit set with all true bits
   TBits          fAllFalse;         // Bit set with all false bits
   UInt_t         fFilterBit;        // Bitmap bit for AOD filters
+  UInt_t         fFilterMask;       
   //  TClonesArray*  fPWG2AODTracks;    // Link to PWG2 specific AOD information (if it exists)
   
   unsigned char  fReadMC;           // Attempt to read the MC information from the AOD
