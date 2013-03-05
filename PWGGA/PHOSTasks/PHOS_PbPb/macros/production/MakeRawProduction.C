@@ -823,7 +823,9 @@ namespace RawProduction {
       fFile->Close();
       delete fFile;
       fFile = 0x0;
-    } else if(! fFile) {
+    }
+
+    if(! fFile) {
       Printf("Opening %s", fileName.Data());
      fFile = TFile::Open(fileName.Data(), "READ");
     }
