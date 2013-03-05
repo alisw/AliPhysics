@@ -1445,7 +1445,7 @@ void AliCDBManager::UnloadFromCache(const char* path){
 				delete fIds->Remove(id);
 			}*/
 		} else {
-		  AliError(Form("Cache does not contain object \"%s\"!", path));
+		  AliWarning(Form("Cache does not contain object \"%s\"!", path));
 		}
 		AliDebug(2, Form("Cache entries: %d",fEntryCache.GetEntries()));
 		return;

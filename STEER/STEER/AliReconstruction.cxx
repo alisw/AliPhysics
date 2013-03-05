@@ -1564,7 +1564,10 @@ void AliReconstruction::Begin(TTree *)
     Abort("MisalignGeometry", TSelector::kAbortProcess);
     return;
   }
-  AliCDBManager::Instance()->UnloadFromCache("GRP/Geometry/Data");
+
+  const TMap* cdbCache = AliCDBManager::Instance()->GetEntryCache();
+  if(cdbCache->Contains("GRP/Geometry/Data"))
+	  AliCDBManager::Instance()->UnloadFromCache("GRP/Geometry/Data");
   if(!toCDBSnapshot) AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
   AliSysInfo::AddStamp("MisalignGeom");
 
@@ -1573,7 +1576,9 @@ void AliReconstruction::Begin(TTree *)
     return;
   }
   AliSysInfo::AddStamp("InitGRP");
-  if(!toCDBSnapshot) AliCDBManager::Instance()->UnloadFromCache("GRP/Calib/CosmicTriggers");
+  if(!toCDBSnapshot)
+      if(cdbCache->Contains("GRP/Calib/CosmicTriggers"))
+	  AliCDBManager::Instance()->UnloadFromCache("GRP/Calib/CosmicTriggers");
 
   if(!fCDBSnapshotMode || toCDBSnapshot){
       if (!LoadCDB()) {
@@ -1611,7 +1616,8 @@ void AliReconstruction::Begin(TTree *)
   {
       AliCDBManager::Instance()->DumpToSnapshotFile(snapshotFileOut.Data(),kFALSE);
       AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
-      AliCDBManager::Instance()->UnloadFromCache("GRP/Calib/CosmicTriggers");
+      if(cdbCache->Contains("GRP/Calib/CosmicTriggers"))
+	  AliCDBManager::Instance()->UnloadFromCache("GRP/Calib/CosmicTriggers");
   }
 
   if (fInput && gProof) {
