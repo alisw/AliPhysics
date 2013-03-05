@@ -232,7 +232,7 @@ void AliFlowEventSimple::AddTrack( AliFlowTrackSimple* track )
   }
   fTrackCollection->AddAtAndExpand(track,fNumberOfTracks);
   fNumberOfTracks++;
-  delete [] fShuffledIndexes;
+  delete [] fShuffledIndexes; fShuffledIndexes=NULL;
 }
 
 //-----------------------------------------------------------------------
@@ -854,7 +854,7 @@ Int_t AliFlowEventSimple::CleanUpDeadTracks()
   }
   fTrackCollection->Compress(); //clean up empty slots
   fNumberOfTracks-=ncleaned; //update number of tracks
-  delete [] fShuffledIndexes;
+  delete [] fShuffledIndexes; fShuffledIndexes=NULL;
   return ncleaned;
 }
 
