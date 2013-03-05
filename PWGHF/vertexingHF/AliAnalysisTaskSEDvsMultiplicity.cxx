@@ -539,7 +539,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     Double_t trueImpParXY=9999.;
     Double_t impparXY=d->ImpParXY()*10000.;
     Double_t dlen=0.1; //FIXME
-    Double_t mass[2];
+    Double_t mass[2]={-1.,-1.};
     if(fPdgMeson==411){
       mass[0]=d->InvMass(nDau,pdgDau);
       mass[1]=-1.;
