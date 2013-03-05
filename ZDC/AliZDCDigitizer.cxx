@@ -299,13 +299,22 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
     if(genHeader->InheritsFrom(AliGenHijingEventHeader::Class())) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (genHeader);
     else if(genHeader->InheritsFrom(AliGenCocktailEventHeader::Class())){
       TList* listOfHeaders = ((AliGenCocktailEventHeader*) genHeader)->GetHeaders();
-      if(listOfHeaders) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("Hijing"));
+      if(listOfHeaders){ 
+        hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("Hijing"));
+        if(!hijingHeader) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("HijingpPbPb"));
+        if(!hijingHeader) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("HijingpPb"));
+        if(!hijingHeader) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("HijingpPb_0"));      
+      }
       else{
         AliWarning(" No list of headers from generator -> skipping event\n");
 	continue;
       }
     }
-    if(!hijingHeader) continue;
+    if(!hijingHeader){ 
+        listOfHeaders->Dump();
+        printf(" No HIJING header found in list of headers from generator\n");
+	//continue;
+    }
     
     if(fSpectators2Track==kTRUE){
       impPar = hijingHeader->ImpactParameter();
