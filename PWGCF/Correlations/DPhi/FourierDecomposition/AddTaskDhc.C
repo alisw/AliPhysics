@@ -140,7 +140,7 @@ AliDhcTask *AddTaskDhc(
   if (chTaskName.EqualTo("")) {
     sprintf(chNewTaskName,"Task_Dhc%s%s",chExtraName,chUName.Data());
   } else {
-    sprintf(chNewTaskName,"%s",chTaskName);
+    sprintf(chNewTaskName,"%s",chTaskName.Data());
   }
 
   AliDhcTask *mgrTask = mgr->GetTask(chNewTaskName);
