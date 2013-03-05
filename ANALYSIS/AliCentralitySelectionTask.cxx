@@ -814,6 +814,9 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fHOutCentV0M     = new TH1F("fHOutCentV0M","fHOutCentV0M; Centrality V0",505,0,101);
     fHOutCentV0A    = new TH1F("fHOutCentV0A","fHOutCentV0A; Centrality V0A",505,0,101);
     fHOutCentV0C    = new TH1F("fHOutCentV0C","fHOutCentV0C; Centrality V0C",505,0,101);
+    fHOutCentV0MEq     = new TH1F("fHOutCentV0MEq","fHOutCentV0MEq; Centrality V0 equalized",505,0,101);
+    fHOutCentV0AEq    = new TH1F("fHOutCentV0AEq","fHOutCentV0AEq; Centrality V0A equalized",505,0,101);
+    fHOutCentV0CEq    = new TH1F("fHOutCentV0CEq","fHOutCentV0CEq; Centrality V0C equalized",505,0,101);
     fHOutCentV0MCVHN= new TH1F("fHOutCentV0M_CVHN","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
     fHOutCentV0MCVLN= new TH1F("fHOutCentV0M_CVLN","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
     fHOutCentV0MCVHNinMB= new TH1F("fHOutCentV0M_CVHNinMB","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
@@ -844,6 +847,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fHOutCentCND     = new TH1F("fHOutCentCND","fHOutCentCND; Centrality candle",505,0,101);
     fHOutCentNPA     = new TH1F("fHOutCentNPA","fHOutCentNPA; Centrality Npart",505,0,101);
     fHOutCentZNA     = new TH1F("fHOutCentZNA","fHOutCentZNA; Centrality ZNA",505,0,101);
+    fHOutCentZNC     = new TH1F("fHOutCentZNC","fHOutCentZNC; Centrality ZNC",505,0,101);
     fHOutCentV0MvsFMD= new TH1F("fHOutCentV0MvsFMD","fHOutCentV0MvsFMD; Centrality V0 vs FMD",505,0,101);
     fHOutCentTKLvsV0M= new TH1F("fHOutCentTKLvsV0M","fHOutCentTKLvsV0M; Centrality tracklets vs V0",505,0,101);
     fHOutCentZEMvsZDC= new TH1F("fHOutCentZEMvsZDC","fHOutCentZEMvsZDC; Centrality ZEM vs ZDC",505,0,101);
@@ -924,6 +928,9 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fOutputList->Add(fHOutCentV0M);
     fOutputList->Add(fHOutCentV0A);
     fOutputList->Add(fHOutCentV0C);
+    fOutputList->Add(fHOutCentV0MEq);
+    fOutputList->Add(fHOutCentV0AEq);
+    fOutputList->Add(fHOutCentV0CEq);
     fOutputList->Add(fHOutCentV0MCVHN);
     fOutputList->Add(fHOutCentV0MCVLN);
     fOutputList->Add(fHOutCentV0MCVHNinMB);
@@ -954,6 +961,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fOutputList->Add(fHOutCentCND);
     fOutputList->Add(fHOutCentNPA);
     fOutputList->Add(fHOutCentZNA);
+    fOutputList->Add(fHOutCentZNC);
     fOutputList->Add(fHOutCentV0MvsFMD);
     fOutputList->Add(fHOutCentTKLvsV0M);
     fOutputList->Add(fHOutCentZEMvsZDC);
