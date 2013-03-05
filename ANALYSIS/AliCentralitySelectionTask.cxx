@@ -877,6 +877,9 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fHOutMultV0M  = new TH1F("fHOutMultV0M","fHOutMultV0M; Multiplicity V0",25000,0,25000);
     fHOutMultV0A  = new TH1F("fHOutMultV0A","fHOutMultV0A; Multiplicity V0",25000,0,25000);
     fHOutMultV0C  = new TH1F("fHOutMultV0C","fHOutMultV0C; Multiplicity V0",25000,0,25000);
+    fHOutMultV0MEq  = new TH1F("fHOutMultV0MEq","fHOutMultV0MEq; Multiplicity V0",25000,0,25000);
+    fHOutMultV0AEq  = new TH1F("fHOutMultV0AEq","fHOutMultV0AEq; Multiplicity V0",25000,0,25000);
+    fHOutMultV0CEq  = new TH1F("fHOutMultV0CEq","fHOutMultV0CEq; Multiplicity V0",25000,0,25000);
     fHOutMultV0Mnc= new TH1F("fHOutMultV0Mnc","fHOutMultV0Mnc; Multiplicity V0",25000,0,25000);
     fHOutMultV0Anc= new TH1F("fHOutMultV0Anc","fHOutMultV0Anc; Multiplicity V0",25000,0,25000);
     fHOutMultV0Cnc= new TH1F("fHOutMultV0Cnc","fHOutMultV0Cnc; Multiplicity V0",25000,0,25000);
@@ -890,6 +893,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fHOutMultCND = new TH1F("fHOutMultCND","fHOutMultCND; Multiplicity candle",4000,0,4000);
     fHOutMultNPA = new TH1F("fHOutMultNPA","fHOutMultNPA; Nparticipants",450,0,450);
     fHOutMultZNA = new TH1F("fHOutMultZNA","fHOutMultZNA; ZNA Energy",500,0,2000);
+    fHOutMultZNC = new TH1F("fHOutMultZNC","fHOutMultZNC; ZNC Energy",500,0,2000);
 
     fHOutMultV0MvsZDN = new TH2F("fHOutMultV0MvsZDN","fHOutMultV0MvsZDN; Multiplicity V0; Energy ZDC-N",500,0,30000,500,0,180000);
     fHOutMultZEMvsZDN = new TH2F("fHOutMultZEMvsZDN","fHOutMultZEMvsZDN; Energy ZEM; Energy ZDC-N",500,0,2500,500,0,180000);
@@ -991,6 +995,9 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fOutputList->Add(fHOutMultV0M); 
     fOutputList->Add(fHOutMultV0A); 
     fOutputList->Add(fHOutMultV0C); 
+    fOutputList->Add(fHOutMultV0MEq); 
+    fOutputList->Add(fHOutMultV0AEq); 
+    fOutputList->Add(fHOutMultV0CEq); 
     fOutputList->Add(fHOutMultV0Mnc); 
     fOutputList->Add(fHOutMultV0Anc); 
     fOutputList->Add(fHOutMultV0Cnc); 
@@ -1004,6 +1011,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fOutputList->Add(fHOutMultCND); 
     fOutputList->Add(fHOutMultNPA); 
     fOutputList->Add(fHOutMultZNA); 
+    fOutputList->Add(fHOutMultZNC); 
     fOutputList->Add(fHOutMultV0MvsZDN);
     fOutputList->Add(fHOutMultZEMvsZDN);
     fOutputList->Add(fHOutMultV0MvsZDC);
