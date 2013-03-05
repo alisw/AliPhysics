@@ -34,7 +34,7 @@ AliAnalysisCuts* createDefaultPoolConfig();
 /// @date   2012-05-09
 /// @brief  Add the D0-HFE correlation task to the manager
 ///
-int AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcorrelationDxHF")
+int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGHFcorrelationDxHF")
 {
   AliAnalysisManager *pManager = AliAnalysisManager::GetAnalysisManager();
   if (!pManager) {
@@ -44,20 +44,27 @@ int AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcor
 
   TString ofilename;
   Int_t system=0;
+  Bool_t bUseMC=kFALSE;
   Bool_t bEventMixing=kFALSE;
+  Bool_t bRunD0MassReference=kFALSE;
   TString poolConfigFile="";
   TString taskOptions;
   Int_t triggerParticle=AliDxHFECorrelation::kD;
 
   cout << endl << "===============================================" << endl;
-  cout << "Setting up Correlation task: " << endl;
+  cout << "Setting up Correlation task: " << configuration << endl;
 
-  // look for configuration arguments
-  if (gDirectory) {
+  // look for configuration arguments if nothing specified
+  // in the function call
+  if (configuration.IsNull() && gDirectory) {
     const char* confObjectName="run_single_task_configuration";
     TObject* confObject=gDirectory->FindObject(confObjectName);
     if (confObject) {
-      TString configuration=confObject->GetTitle();
+      configuration=confObject->GetTitle();
+    }
+  }
+  {// deprecated, but keep for formatting
+    {// deprecated, but keep for formatting
       TObjArray* tokens=configuration.Tokenize(" ");
       if (tokens) {
 	TIter next(tokens);
@@ -98,8 +105,10 @@ int AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcor
 	    else if (argument.CompareTo("D")==0) triggerParticle=AliDxHFECorrelation::kD;
 	    else if (argument.CompareTo("electron")==0) triggerParticle=AliDxHFECorrelation::kElectron;
 	  }
-	}
-	    
+	  if (argument.CompareTo("runD0MassReference")==0){
+	    bRunD0MassReference=kTRUE;
+	  }
+	}	
       }
       delete tokens;
     }
@@ -124,6 +133,24 @@ int AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcor
     // with consistent parameters, however there are no getters at the moment
     ::Info("AddTaskDxHFECorrelation", Form("PID task '%s' already existing", pidTaskName));
   }
+
+  // optionally add D0Mass task for reference analysis
+  if (bRunD0MassReference) {
+    TString path("AddTaskD0Mass.C");
+    if (gSystem->AccessPathName(path)!=0) {
+      // first try local macro, than AliRoot default path
+      path="$ALICE_ROOT/PWGHF/vertexingHF/macros/AddTaskD0Mass.C";
+    }
+    if (gSystem->AccessPathName(path)==0) {
+      cout << "Setting up D0Mass reference task " << path << endl;
+    } else {
+      cout << "Can not find D0Mass reference task " << path << endl;
+    }
+    gROOT->LoadMacro(path);
+    //flag, readMC,filldistr,cutonDistr, system, flagD0D0bar,minC,maxC,finDirname,finname, finObjname,flagAOD049,FillMassPt, FillImptPar
+    AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass(0,bUseMC,kTRUE,kTRUE, 0, 0, 0, 0, "", "","D0toKpiCuts", kFALSE, false, false);
+  }
+
   if(triggerParticle==AliDxHFECorrelation::kElectron)
     analysisName="HFExD";
   if (ofilename.IsNull()) ofilename=AliAnalysisManager::GetCommonFileName();
@@ -290,6 +317,16 @@ int AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcor
   pManager->ConnectOutput(pTask,4,pContainer4);
 
   return 1;
+}
+
+// old signature kept for backward compatibility
+int AddTaskDxHFECorrelation(Bool_t bUseMC, TString analysisName)
+{
+  TString arguments(bUseMC?"mc":"");
+  if (!analysisName.IsNull()) {
+    arguments+=Form(" name=%s", analysisName.Data())
+  }
+  AddTaskDxHFECorrelation(arguments)
 }
 
 // Note: AliHFAssociatedTrackCuts keeps an instance of the external
