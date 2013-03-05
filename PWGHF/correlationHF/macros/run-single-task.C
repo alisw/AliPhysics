@@ -210,6 +210,8 @@ void run_single_task(const char* mode,
   //
   // argument settings
   //
+  bool bRunAnalysis=true;
+  bool bDefaultOutput=true;
   bool bMergeOnGrid=true;
   bool mcData=false;
   int nTestFiles=10;
@@ -256,6 +258,18 @@ void run_single_task(const char* mode,
 	strArguments.ReplaceAll(arg, "");
 	arg.ReplaceAll(key, "");
 	nTestFiles=arg.Atoi();
+      }
+      key="--noDefaultOutput";
+      if (arg.CompareTo(key)==0) {
+	// this is an argument to the macro, don't propagate it further to tasks
+	strArguments.ReplaceAll(arg, "");
+	bDefaultOutput=false;
+      }
+      key="--stopBeforeRunning";
+      if (arg.CompareTo(key)==0) {
+	// this is an argument to the macro, don't propagate it further to tasks
+	strArguments.ReplaceAll(arg, "");
+	bRunAnalysis=false;
       }
     }
     delete tokens;
@@ -511,14 +525,12 @@ void run_single_task(const char* mode,
     alienHandler->SetROOTVersion(alienROOTVersion);
     alienHandler->SetAliROOTVersion(alienAliROOTVersion);
 
-    // TODO: have to find out how the output is actually organized
-    // root-archieve.root seems to be needed for merging on Grid, set default output to true
-    alienHandler->SetDefaultOutputs(kTRUE);
-
-    // TODO: make non-default output files working
-    //alienHandler->SetOutputFiles(ofile);
-    // Optionally define the files to be archived.
-    //alienHandler->SetOutputArchive("log_archive.zip:stdout,stderr");
+    // using only default output
+    // the alien plugin automatically recognizes all output files associated to output
+    // containers, all files are treated in the standard output and added to the
+    // root-archieve.root, which also seems to be needed for merging on Grid
+    // see further down for using non-default output
+    alienHandler->SetDefaultOutputs(bDefaultOutput);
 
     if (user && user[0]!=0) alienHandler->SetUser(user);
 
@@ -661,6 +673,23 @@ void run_single_task(const char* mode,
     delete taskMacroTokens;
   }
 
+  if (!bDefaultOutput) {
+    // fetch all output files from the output containers
+    TString ofiles;
+    TIter nextcontainer(pManager->GetContainers());
+    TObject* objContainer=NULL;
+    while ((objContainer=nextcontainer())!=NULL) {
+      AliAnalysisDataContainer* container=dynamic_cast<AliAnalysisDataContainer*>(objContainer);
+      if (!container) continue;
+      ofiles+=container->GetFileName();
+      ofiles+=" ";
+    }
+
+    alienHandler->SetOutputFiles(ofiles);
+    // Optionally define the files to be archived.
+    alienHandler->SetOutputArchive("log_archive.zip:stdout,stderr");
+  }
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -674,6 +703,7 @@ void run_single_task(const char* mode,
   }
   if (nevents<0) nevents=1000000000;
   pManager->PrintStatus();
+  if (!bRunAnalysis) return;
   if (bRunLocal) {
     pManager->StartAnalysis("local", chain, nevents);
   } else {
