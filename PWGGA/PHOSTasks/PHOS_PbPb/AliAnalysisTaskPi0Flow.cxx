@@ -83,7 +83,6 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fPeriod(period),
   fMaxAbsVertexZ(10.),
   fManualV0EPCalc(false),
-  fModuleEnabled({true}),
   fOutputContainer(0x0),
   fNonLinCorr(0),
   fEvent(0x0),
@@ -120,6 +119,9 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   TArrayI centNMixed(nbins, nMixed);
   SetCentralityBinning(centEdges, centNMixed);
   
+  for(int mod=1; mod <= 5; ++mod)
+    fModuleEnabled[mod-1] = kFALSE;
+
   for(Int_t i=0;i<kNCenBins;i++){
     for(Int_t j=0;j<2; j++)
       for(Int_t k=0; k<2; k++) {
