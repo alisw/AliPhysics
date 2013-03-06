@@ -367,37 +367,20 @@ Bool_t AliJetModelBaseTask::ExecOnce()
     }
   }
 
-  if (!fCaloName.IsNull() || !fCellsName.IsNull()) {
-    if (!fGeom) {
-      if (fGeomName.Length() > 0) {
-	fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-	if (!fGeom) {
-	  AliFatal(Form("Could not get geometry with name %s!", fGeomName.Data()));
-	  return kFALSE;
-	}
-      } else {
+  if (!fGeom) {
+    if (fGeomName.Length() > 0) {
+      fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+      if (!fGeom) {
+	AliFatal(Form("Could not get geometry with name %s!", fGeomName.Data()));
+	return kFALSE;
+      }
+    } else {
 	fGeom = AliEMCALGeometry::GetInstance();
 	if (!fGeom) {
 	  AliFatal("Could not get default geometry!");
 	  return kFALSE;
 	}
-      }
     }
-  
-    const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
-    const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
-    const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
-    const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
-    
-    if (fEtaMax > EmcalMaxEta) fEtaMax = EmcalMaxEta;
-    if (fEtaMax < EmcalMinEta) fEtaMax = EmcalMinEta;
-    if (fEtaMin > EmcalMaxEta) fEtaMin = EmcalMaxEta;
-    if (fEtaMin < EmcalMinEta) fEtaMin = EmcalMinEta;
-    
-    if (fPhiMax > EmcalMaxPhi) fPhiMax = EmcalMaxPhi;
-    if (fPhiMax < EmcalMinPhi) fPhiMax = EmcalMinPhi;
-    if (fPhiMin > EmcalMaxPhi) fPhiMin = EmcalMaxPhi;
-    if (fPhiMin < EmcalMinPhi) fPhiMin = EmcalMinPhi;
   }
 
   return kTRUE;
@@ -714,9 +697,9 @@ void AliJetModelBaseTask::GetRandomCell(Double_t &eta, Double_t &phi, Int_t &abs
   Double_t rndPhi = phi;
   do {
     if (eta < -100)
-      rndEta = GetRandomEta();
+      rndEta = GetRandomEta(kTRUE);
     if (phi < 0)
-      rndPhi = GetRandomPhi();
+      rndPhi = GetRandomPhi(kTRUE);
     fGeom->GetAbsCellIdFromEtaPhi(rndEta, rndPhi, absId);  
     repeats++;
   } while (absId == -1 && repeats < 100);
@@ -732,19 +715,45 @@ void AliJetModelBaseTask::GetRandomCell(Double_t &eta, Double_t &phi, Int_t &abs
 }
 
 //________________________________________________________________________
-Double_t AliJetModelBaseTask::GetRandomEta()
+Double_t AliJetModelBaseTask::GetRandomEta(Bool_t emcal)
 {
   // Get random eta.
 
-  return gRandom->Rndm() * (fEtaMax - fEtaMin) + fEtaMin;
+  Double_t etamax = fEtaMax;
+  Double_t etamin = fEtaMin;
+
+  if (emcal) {
+    const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
+    const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
+    
+    if (etamax > EmcalMaxEta) etamax = EmcalMaxEta;
+    if (etamax < EmcalMinEta) etamax = EmcalMinEta;
+    if (etamin > EmcalMaxEta) etamin = EmcalMaxEta;
+    if (etamin < EmcalMinEta) etamin = EmcalMinEta;
+  }
+
+  return gRandom->Rndm() * (etamax - etamin) + etamin;
 }
 
 //________________________________________________________________________
-Double_t AliJetModelBaseTask::GetRandomPhi()
+Double_t AliJetModelBaseTask::GetRandomPhi(Bool_t emcal)
 {
   // Get random phi.
+  
+  Double_t phimax = fPhiMax;
+  Double_t phimin = fPhiMin;
 
-  return gRandom->Rndm() * (fPhiMax - fPhiMin) + fPhiMin;
+  if (emcal) {
+    const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+    const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+    
+    if (phimax > EmcalMaxPhi) phimax = EmcalMaxPhi;
+    if (phimax < EmcalMinPhi) phimax = EmcalMinPhi;
+    if (phimin > EmcalMaxPhi) phimin = EmcalMaxPhi;
+    if (phimin < EmcalMinPhi) phimin = EmcalMinPhi;
+  }
+
+  return gRandom->Rndm() * (phimax - phimin) + phimin;
 }
 
 //________________________________________________________________________

@@ -44,6 +44,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fMaxTrackPt(100),
   fLeadingHadronType(0),
   fNLeadingJets(1),
+  fJetBitMap(0),
   fJets(0),
   fRho(0),
   fRhoVal(0)
@@ -71,6 +72,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   fMaxTrackPt(100),
   fLeadingHadronType(0),
   fNLeadingJets(1),
+  fJetBitMap(0),
   fJets(0),
   fRho(0),
   fRhoVal(0)
@@ -131,6 +133,11 @@ Double_t AliAnalysisTaskEmcalJet::GetLeadingHadronPt(AliEmcalJet *jet) const
 Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet) const
 {   
   // Return true if jet is accepted.
+  if (!jet)
+    return kFALSE;
+
+  if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap)
+    return kFALSE;
 
   if (jet->Pt() <= fJetPtCut) 
     return kFALSE;

@@ -13,6 +13,8 @@
 #include <TParameter.h>
 #include <TSystem.h>
 #include <TH1I.h>
+#include <TGrid.h>
+#include <THashTable.h>
 
 #include "AliVEvent.h"
 #include "AliLog.h"
@@ -26,6 +28,8 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask() :
   fPtHardBinScaling(),
   fLHC11hAnchorRun(kTRUE),
   fAnchorRun(-1),
+  fFileTable(0),
+  fUseAsVetoTable(kTRUE),
   fCurrentPtHardBin(-1),
   fPtHardBinParam(0),
   fHistPtHardBins(0)
@@ -44,6 +48,8 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask(const char *name, B
   fPtHardBinScaling(),
   fLHC11hAnchorRun(kTRUE),
   fAnchorRun(-1),
+  fFileTable(0),
+  fUseAsVetoTable(kTRUE),
   fCurrentPtHardBin(-1),
   fPtHardBinParam(0),
   fHistPtHardBins(0)
@@ -79,6 +85,13 @@ void AliJetEmbeddingFromPYTHIATask::UserCreateOutputObjects()
 
   for (Int_t i = 1; i < 12; i++) 
     fHistPtHardBins->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+
+  fHistEmbeddingQA = new TH1F("fHistEmbeddingQA", "fHistEmbeddingQA", 2, 0, 2);
+  fHistEmbeddingQA->GetXaxis()->SetTitle("Event state");
+  fHistEmbeddingQA->GetYaxis()->SetTitle("counts");
+  fHistEmbeddingQA->GetXaxis()->SetBinLabel(1, "OK");
+  fHistEmbeddingQA->GetXaxis()->SetBinLabel(2, "Not embedded");
+  fOutput->Add(fHistEmbeddingQA);
 
   PostData(1, fOutput);
 }
@@ -176,32 +189,36 @@ Bool_t AliJetEmbeddingFromPYTHIATask::UserNotify()
 }
 
 //________________________________________________________________________
-TString AliJetEmbeddingFromPYTHIATask::GetNextFileName() 
+TFile* AliJetEmbeddingFromPYTHIATask::GetNextFile() 
 {
   fCurrentAODFileID = TMath::Nint(gRandom->Rndm()*(fTotalFiles-1))+1;
 
-  TString fileName(fPYTHIAPath);
-  if (!fileName.EndsWith("/"))
-    fileName += "/";
+  TString fileName;
 
-  if (fAnchorRun > 0) {
-    fileName += fAnchorRun;
-    fileName += "/";
-  }
-  fileName += fCurrentPtHardBin;
-  fileName += "/";
-  if (fCurrentAODFileID < 10)
-    fileName += "00";
-  else if (fCurrentAODFileID < 100)
-    fileName += "0";
-  fileName += fCurrentAODFileID;
-
-  if (!gSystem->AccessPathName(Form("%s/AliAOD.root", fileName.Data())))
-    fileName += "/AliAOD.root";
-  else if (!gSystem->AccessPathName(Form("%s/aod_archive.zip", fileName.Data())))
-    fileName += "/aod_archive.zip#AliAOD.root";
+  if (fAnchorRun>0)
+    fileName = Form(fPYTHIAPath.Data(), fAnchorRun, fCurrentPtHardBin, fCurrentAODFileID);
   else
-    fileName += "/root_archive.zip#AliAOD.root";
+    fileName = Form(fPYTHIAPath.Data(), fCurrentPtHardBin, fCurrentAODFileID);
 
-  return fileName;
+  if (fFileTable && fFileTable->GetEntries() > 0) {
+    TObject* obj = fFileTable->FindObject(fileName);
+    if (obj != 0 && fUseAsVetoTable) {
+      AliWarning(Form("File %s found in the vetoed file table. Skipping...", fileName.Data()));
+      return 0;
+    } 
+    if (obj == 0 && !fUseAsVetoTable) {
+      AliWarning(Form("File %s not found in the allowed file table. Skipping...", fileName.Data()));
+      return 0;
+    }
+  }
+
+  if (fileName.BeginsWith("alien://") && !gGrid) {
+    AliInfo("Trying to connect to AliEn ...");
+    TGrid::Connect("alien://");
+  }
+
+  AliDebug(3,Form("Trying to open file %s...", fileName.Data()));
+  TFile *file = TFile::Open(fileName);
+
+  return file;
 }

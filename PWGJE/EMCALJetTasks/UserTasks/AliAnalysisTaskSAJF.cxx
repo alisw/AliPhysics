@@ -39,6 +39,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistJetPhiEta[i] = 0;
     fHistJetsPtArea[i] = 0;
     fHistJetsCorrPtArea[i] = 0;
+    fHistJetPtvsJetCorrPt[i] = 0;
     fHistJetsNEFvsPt[i] = 0;
     fHistJetsCEFvsCEFPt[i] = 0;
     fHistJetsZvsPt[i] = 0;
@@ -69,6 +70,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistJetPhiEta[i] = 0;
     fHistJetsPtArea[i] = 0;
     fHistJetsCorrPtArea[i] = 0;
+    fHistJetPtvsJetCorrPt[i] = 0;
     fHistJetsNEFvsPt[i] = 0;
     fHistJetsCEFvsCEFPt[i] = 0;
     fHistJetsZvsPt[i] = 0;
@@ -231,10 +233,20 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 					fNbins * 2, binsCorrPt, 
 					30, binsArea,
 					nbinsZ, binsZ);
-      fHistJetsCorrPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} [GeV/c]");
+      fHistJetsCorrPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
       fHistJetsCorrPtArea[i]->GetYaxis()->SetTitle("area");
       fHistJetsCorrPtArea[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
       fOutput->Add(fHistJetsCorrPtArea[i]);
+
+      histname = "fHistJetPtvsJetCorrPt_";
+      histname += i;
+      fHistJetPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(),
+					  fNbins, fMinBinPt, fMaxBinPt, 
+					  fNbins * 2, -fMaxBinPt, fMaxBinPt);
+      fHistJetPtvsJetCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
+      fHistJetPtvsJetCorrPt[i]->GetYaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+      fHistJetPtvsJetCorrPt[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetPtvsJetCorrPt[i]);
     }
 
     histname = "fHistConstituents_";
@@ -394,6 +406,8 @@ Int_t AliAnalysisTaskSAJF::DoJetLoop()
     fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area(), ptLeading);
     if (fHistJetsCorrPtArea[fCentBin])
       fHistJetsCorrPtArea[fCentBin]->Fill(corrPt, jet->Area(), ptLeading);
+    if (fHistJetPtvsJetCorrPt[fCentBin])
+      fHistJetPtvsJetCorrPt[fCentBin]->Fill(jet->Pt(), corrPt);
     fHistJetNconstVsPt[fCentBin]->Fill(jet->GetNumberOfConstituents(), jet->Pt(), ptLeading);
 
     fHistJetsNEFvsPt[fCentBin]->Fill(jet->NEF(), jet->Pt(), ptLeading);

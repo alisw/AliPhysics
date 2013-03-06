@@ -79,6 +79,7 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   TH3                        *fHistEmbJetsCorrPtArea[4];   //!Pt-rho*A vs. area of embedded jets
   TH2                        *fHistEmbPartPtvsJetPt[4];    //!MC jet pt total jet pt
   TH2                        *fHistEmbPartPtvsJetCorrPt[4];//!MC jet pt total jet pt - rho*A
+  TH2                        *fHistJetPtvsJetCorrPt[4];    //!Pt vs jet pt - rho*A
   TH2                        *fHistEmbJetsPhiEta;          //!Phi-Eta distribution of embedded jets<
   TH2                        *fHistLeadPartPhiEta;         //!Phi-Eta distribution of the leading particle of embedded jets
   TH1                        *fHistDistLeadPart2JetAxis[4];//!Distance between leading particle and jet axis

@@ -64,6 +64,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
     fHistEmbJetsCorrPtArea[i] = 0;
     fHistEmbPartPtvsJetPt[i] = 0;
     fHistEmbPartPtvsJetCorrPt[i] = 0;
+    fHistJetPtvsJetCorrPt[i] = 0;
     fHistDistLeadPart2JetAxis[i] = 0;
     fHistEmbBkgArea[i] = 0;
     fHistRhoVSEmbBkg[i] = 0;
@@ -114,6 +115,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
     fHistEmbJetsCorrPtArea[i] = 0;
     fHistEmbPartPtvsJetPt[i] = 0;
     fHistEmbPartPtvsJetCorrPt[i] = 0;
+    fHistJetPtvsJetCorrPt[i] = 0;
     fHistDistLeadPart2JetAxis[i] = 0;
     fHistEmbBkgArea[i] = 0;
     fHistRhoVSEmbBkg[i] = 0;
@@ -257,6 +259,14 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       fHistEmbPartPtvsJetCorrPt[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} - A#rho (GeV/#it{c})");
       fHistEmbPartPtvsJetCorrPt[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistEmbPartPtvsJetCorrPt[i]);
+
+      histname = "fHistJetPtvsJetCorrPt_";
+      histname += i;
+      fHistJetPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
+      fHistJetPtvsJetCorrPt[i]->GetXaxis()->SetTitle("#it{p}_{T,jet}^{emb} (GeV/#it{c})");
+      fHistJetPtvsJetCorrPt[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} - A#rho (GeV/#it{c})");
+      fHistJetPtvsJetCorrPt[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetPtvsJetCorrPt[i]);
 
       histname = "fHistDistLeadPart2JetAxis_";
       histname += i;
@@ -467,6 +477,7 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
       fHistEmbJetsPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt(), maxPartPt);
       fHistEmbJetsCorrPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - fRhoVal * embJet->Area(), maxPartPt);
       fHistEmbJetsPhiEta->Fill(embJet->Eta(), embJet->Phi());
+      fHistJetPtvsJetCorrPt[fCentBin]->Fill(embJet->Pt(), embJet->Pt() - fRhoVal * embJet->Area());
       
       fHistEmbBkgArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->MCPt());
       fHistRhoVSEmbBkg[fCentBin]->Fill(fRhoVal * embJet->Area(), embJet->Pt() - embJet->MCPt());

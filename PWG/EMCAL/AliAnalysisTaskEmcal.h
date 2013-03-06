@@ -60,11 +60,14 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
   void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
+  void                        SetTrackBitMap(UInt_t m)                              { fTrackBitMap       = m                              ; }
+  void                        SetClusterBitMap(UInt_t m)                            { fClusterBitMap     = m                              ; }
+  void                        SetParticleBitMap(UInt_t m)                           { fClusterBitMap     = m    ; fTrackBitMap       = m  ; }
 
  protected:
-  Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kTRUE) const;
-  Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kTRUE) const;
-  Bool_t                      AcceptTrack(AliVParticle         *track, Bool_t acceptMC = kTRUE) const;
+  Bool_t                      AcceptCluster(AliVCluster        *clus)  const;
+  Bool_t                      AcceptEmcalPart(AliEmcalParticle *part)  const;
+  Bool_t                      AcceptTrack(AliVParticle         *track) const;
   virtual void                ExecOnce();
   virtual Bool_t              FillGeneralHistograms();
   virtual Bool_t              FillHistograms()                                     { return kTRUE                 ; }
@@ -104,6 +107,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMinEventPlane;              // minimum event plane value
   Double_t                    fMaxEventPlane;              // maximum event plane value
   TString                     fCentEst;                    // name of V0 centrality estimator
+  UInt_t                      fTrackBitMap;                // bit map of accepted tracks
+  UInt_t                      fClusterBitMap;              // bit map of accepted clusters
   Int_t                       fNcentBins;                  //!how many centrality bins
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
@@ -127,6 +132,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 10) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 11) // EMCAL base analysis task
 };
 #endif
