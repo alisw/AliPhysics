@@ -29,6 +29,7 @@
 set ( SRCS 
  EMCAL/AliAnalysisTaskEMCALClusterizeFast.cxx
  EMCAL/AliAnalysisTaskEmcal.cxx
+ EMCAL/AliEMCALClusterParams.cxx
  EMCAL/AliEmcalClusTrackMatcherTask.cxx
  EMCAL/AliEmcalCompatTask.cxx
  EMCAL/AliEmcalEsdTpcTrackTask.cxx
