@@ -582,6 +582,9 @@ void AliITSUSimulationPix::FrompListToDigits()
     if ( fSimuParam->GetPixAddNoisyFlag() ) { 
       CreateNoisyDigits(prevID,curID,probNoisy, noiseSig, noiseMean);
       prevID = curID+1;
+      //
+      // add noise also to sdigit with signal
+      sd->AddNoise(AliITSUSimuParam::GenerateNoiseQFunction(0,noiseMean,noiseSig));
     }
     //
     if ((sig=sd->GetSumSignal())<=fSimuParam->GetPixThreshold(modId)) continue;
