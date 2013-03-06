@@ -58,7 +58,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	
   //multiplicity bins
   int runmults[10] = {1, 1, 1, 1, 0, 0, 0, 0, 0, 0};
-  int multbins[11] = {0.01, 200, 400, 600, 1000, 950, 500, 600, 700, 800, 900};
+  int multbins[11] = {0.01, 200, 400, 600, 900, 950, 500, 600, 700, 800, 900};
 
   int runch[2] = {1, 1};
   const char *chrgs[2] = { "pip", "pim" };
