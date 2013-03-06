@@ -156,25 +156,27 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       }
     }
 
-    fHistTrEmcPhiEta = new TH2F("fHistTrEmcPhiEta","Phi-Eta emcal distribution of tracks", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
-    fHistTrEmcPhiEta->GetXaxis()->SetTitle("#eta");
-    fHistTrEmcPhiEta->GetYaxis()->SetTitle("#phi");
-    fOutput->Add(fHistTrEmcPhiEta);
-
-    fHistTrPhiEtaNonProp = new TH2F("fHistTrPhiEtaNonProp","fHistTrPhiEtaNonProp", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
-    fHistTrPhiEtaNonProp->GetXaxis()->SetTitle("#eta");
-    fHistTrPhiEtaNonProp->GetYaxis()->SetTitle("#phi");
-    fOutput->Add(fHistTrPhiEtaNonProp);
+    if (!fParticleLevel) {
+      fHistTrEmcPhiEta = new TH2F("fHistTrEmcPhiEta","Phi-Eta emcal distribution of tracks", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
+      fHistTrEmcPhiEta->GetXaxis()->SetTitle("#eta");
+      fHistTrEmcPhiEta->GetYaxis()->SetTitle("#phi");
+      fOutput->Add(fHistTrEmcPhiEta);
+      
+      fHistTrPhiEtaNonProp = new TH2F("fHistTrPhiEtaNonProp","fHistTrPhiEtaNonProp", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
+      fHistTrPhiEtaNonProp->GetXaxis()->SetTitle("#eta");
+      fHistTrPhiEtaNonProp->GetYaxis()->SetTitle("#phi");
+      fOutput->Add(fHistTrPhiEtaNonProp);
+      
+      fHistDeltaEtaPt = new TH2F("fHistDeltaEtaPt","fHistDeltaEtaPt", fNbins, fMinBinPt, fMaxBinPt, 80, -0.5, 0.5);
+      fHistDeltaEtaPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistDeltaEtaPt->GetYaxis()->SetTitle("#delta#eta");
+      fOutput->Add(fHistDeltaEtaPt);
     
-    fHistDeltaEtaPt = new TH2F("fHistDeltaEtaPt","fHistDeltaEtaPt", fNbins, fMinBinPt, fMaxBinPt, 80, -0.5, 0.5);
-    fHistDeltaEtaPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistDeltaEtaPt->GetYaxis()->SetTitle("#delta#eta");
-    fOutput->Add(fHistDeltaEtaPt);
-    
-    fHistDeltaPhiPt = new TH2F("fHistDeltaPhiPt","fHistDeltaPhiPt", fNbins, fMinBinPt, fMaxBinPt, 256, -1.6, 4.8);
-    fHistDeltaPhiPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistDeltaPhiPt->GetYaxis()->SetTitle("#delta#phi");
-    fOutput->Add(fHistDeltaPhiPt);
+      fHistDeltaPhiPt = new TH2F("fHistDeltaPhiPt","fHistDeltaPhiPt", fNbins, fMinBinPt, fMaxBinPt, 256, -1.6, 4.8);
+      fHistDeltaPhiPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistDeltaPhiPt->GetYaxis()->SetTitle("#delta#phi");
+      fOutput->Add(fHistDeltaPhiPt);
+    }
   }
 
   if (!fCaloName.IsNull()) {
@@ -528,12 +530,15 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     if (!vtrack)
       continue;
 
-    if (vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999)
+    if ((vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) && fHistTrPhiEtaNonProp)
       fHistTrPhiEtaNonProp->Fill(vtrack->Eta(), vtrack->Phi());
 
-    fHistTrEmcPhiEta->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());
-    fHistDeltaEtaPt->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
-    fHistDeltaPhiPt->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
+    if (fHistTrEmcPhiEta)
+      fHistTrEmcPhiEta->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());
+    if (fHistDeltaEtaPt)
+      fHistDeltaEtaPt->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
+    if (fHistDeltaPhiPt)
+      fHistDeltaPhiPt->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
   }
   
   return sum;

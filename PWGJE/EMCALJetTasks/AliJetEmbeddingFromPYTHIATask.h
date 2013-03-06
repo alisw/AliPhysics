@@ -11,6 +11,7 @@ class TParameter;
 
 class TString;
 class TH1;
+class THashTable;
 
 class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
  public:
@@ -25,17 +26,21 @@ class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
   void           SetPtHardBinScaling(Int_t n, Double_t *scaling)   { new (&fPtHardBinScaling) TArrayD(n, scaling)   ; }
   void           SetAnchorRun(Int_t r)                             { fAnchorRun                                 = r ; }
   void           SetLHC11hAnchorRuns(Bool_t a=kTRUE)               { fLHC11hAnchorRun                           = a ; }
+  void           SetFileTable(THashTable *t)                       { fFileTable                                 = t ; }
+  void           SetUseAsVetoTable(Bool_t v)                       { fUseAsVetoTable                            = v ; }
 
  protected:
   Bool_t         ExecOnce()           ;// intialize task
   Bool_t         GetNextEntry()       ;// get next entry in current tree
   Int_t          GetRandomPtHardBin() ;// get a radnom pt hard bin according to fPtHardBinScaling
-  TString        GetNextFileName()    ;// get next file name
+  TFile         *GetNextFile()        ;// get next file
 
   TString        fPYTHIAPath          ;// Path of the PYTHIA production
   TArrayD        fPtHardBinScaling    ;// Pt hard bin scaling
   Bool_t         fLHC11hAnchorRun     ;// LHC11h anchor runs
   Int_t          fAnchorRun           ;// Anchor run
+  THashTable    *fFileTable           ;// Table of allowed/vetoed files
+  Bool_t         fUseAsVetoTable      ;// Use fFileTable as a veto table
   Int_t          fCurrentPtHardBin    ;//!Pt hard bin of the current open file
   TParameter<int> *fPtHardBinParam    ;//!Pt hard bin param
 
@@ -45,6 +50,6 @@ class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
   AliJetEmbeddingFromPYTHIATask(const AliJetEmbeddingFromPYTHIATask&);            // not implemented
   AliJetEmbeddingFromPYTHIATask &operator=(const AliJetEmbeddingFromPYTHIATask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromPYTHIATask, 1) // Jet embedding from PYTHIA task
+  ClassDef(AliJetEmbeddingFromPYTHIATask, 2) // Jet embedding from PYTHIA task
 };
 #endif

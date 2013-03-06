@@ -195,6 +195,7 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
   return *this;
 }
 
+//_________________________________________________________________________________________________
 Int_t AliEmcalJet::Compare(const TObject* obj) const
 {
   //Return -1 if this is smaller than obj, 0 if objects are equal and 1 if this is larger than obj.
@@ -268,4 +269,14 @@ AliVCluster* AliEmcalJet::GetLeadingCluster(TClonesArray *clusters) const
   }
 
   return maxCluster;
+}
+
+//__________________________________________________________________________________________________
+void AliEmcalJet::ResetMatching()
+{
+  fClosestJets[0] = 0;
+  fClosestJets[1] = 0; 
+  fClosestJetsDist[0] = 999; 
+  fClosestJetsDist[1] = 999; 
+  fMatched = 2;
 }

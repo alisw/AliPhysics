@@ -61,8 +61,8 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void                   CopyTracks();
   void                   CopyMCParticles();
   void                   GetRandomCell(Double_t &eta, Double_t &phi, Int_t &absId);             // generate a random cell in the calorimeter
-  Double_t               GetRandomEta();                                                        // generate a random eta value in the given range
-  Double_t               GetRandomPhi();                                                        // generate a random phi value in the given range
+  Double_t               GetRandomEta(Bool_t emcal=kFALSE);                                     // generate a random eta value in the given range
+  Double_t               GetRandomPhi(Bool_t emcal=kFALSE);                                     // generate a random phi value in the given range
   Double_t               GetRandomPt();                                                         // generate a random pt value in the given range
   virtual Bool_t         ExecOnce();                                                            // intialize task
   virtual void           Run();                                                                 // do jet model action

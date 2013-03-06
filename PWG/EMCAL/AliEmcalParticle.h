@@ -52,7 +52,7 @@ class AliEmcalParticle: public AliVParticle {
                                                    if (fTrack)   return fTrack->IsEMCAL(); 
                                                    return kFALSE; }
   Bool_t            IsTrack()              const { return (Bool_t) fTrack   != 0                                    ; }
-  Bool_t            IsMC()                 const { if (fTrack) return (fTrack->GetLabel() > 0); 
+  Bool_t            IsMC()                 const { if (fTrack) return (fTrack->GetLabel() != 0); 
                                                    return (fCluster->GetLabel() > 0); }
 
   void              AddMatchedObj(Int_t id, Double_t d);

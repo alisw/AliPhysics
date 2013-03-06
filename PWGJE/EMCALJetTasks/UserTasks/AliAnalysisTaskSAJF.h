@@ -38,6 +38,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH3F                       *fHistJetPhiEta[4];           //!Phi-Eta distribution of jets
   TH3F                       *fHistJetsPtArea[4];          //!Jet pt vs. area
   TH3F                       *fHistJetsCorrPtArea[4];      //!Jet corr pt vs. area
+  TH2F                       *fHistJetPtvsJetCorrPt[4];    //!Jet pt vs jet corr pt
   TH3F                       *fHistJetsNEFvsPt[4];         //!Jet neutral energy fraction vs. jet pt
   TH3F                       *fHistJetsCEFvsCEFPt[4];      //!Jet charged energy fraction vs. charged jet pt
   TH3F                       *fHistJetsZvsPt[4];           //!Constituent Pt over Jet Pt ratio vs. jet pt

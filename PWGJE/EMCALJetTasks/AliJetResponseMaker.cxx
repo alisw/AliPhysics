@@ -211,7 +211,7 @@ Bool_t AliJetResponseMaker::PythiaInfoFromFile(const char* currFile, Float_t &fX
   fXsec = 0;
   fTrials = 1;
 
-  if(file.Contains("root_archive.zip#")){
+  if(file.Contains(".zip#")){
     Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
     Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
     Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
@@ -842,6 +842,8 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
   Int_t nJets1 = jets1->GetEntriesFast();
   Int_t nJets2 = jets2->GetEntriesFast();
 
+  Bool_t jet2Reset = kFALSE;
+
   for (Int_t i = 0; i < nJets1; i++) {
 
     AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(jets1->At(i));
@@ -849,7 +851,9 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
     if (!jet1) {
       AliError(Form("Could not receive jet %d", i));
       continue;
-    }  
+    }
+
+    jet1->ResetMatching();
 
     if (!AcceptJet(jet1))
       continue;
@@ -870,7 +874,10 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
       if (!jet2) {
 	AliError(Form("Could not receive jet %d", j));
 	continue;
-      }  
+      }
+
+      if (!jet2Reset)
+	jet2->ResetMatching();
       
       if (!AcceptJet(jet2))
 	continue;
@@ -885,8 +892,10 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
       }
 
       SetMatchingLevel(jet1, jet2, fMatching);
-    }
-  }
+    } // jet2 loop
+
+    jet2Reset = kTRUE;
+  } // jet1 loop
 }
 
 //________________________________________________________________________

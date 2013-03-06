@@ -16,6 +16,7 @@
 #include <TList.h>
 #include <TStreamerInfo.h>
 #include <TRandom.h>
+#include <TSystem.h>
 
 #include "AliVEvent.h"
 #include "AliAODTrack.h"
@@ -71,7 +72,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fCurrentAODEntry(-1),
   fHistFileMatching(0),
   fHistAODFileError(0),
-  fHistNotEmbedded(0)
+  fHistNotEmbedded(0),
+  fHistEmbeddingQA(0)
 {
   // Default constructor.
   SetSuffix("AODEmbedding");
@@ -123,7 +125,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fCurrentAODEntry(-1),
   fHistFileMatching(0),
   fHistAODFileError(0),
-  fHistNotEmbedded(0)
+  fHistNotEmbedded(0),
+  fHistEmbeddingQA(0)
 {
   // Standard constructor.
   SetSuffix("AODEmbedding");
@@ -173,6 +176,13 @@ void AliJetEmbeddingFromAODTask::UserCreateOutputObjects()
   fHistNotEmbedded->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistNotEmbedded);
 
+  fHistEmbeddingQA = new TH1F("fHistEmbeddingQA", "fHistEmbeddingQA", 2, 0, 2);
+  fHistEmbeddingQA->GetXaxis()->SetTitle("Event state");
+  fHistEmbeddingQA->GetYaxis()->SetTitle("counts");
+  fHistEmbeddingQA->GetXaxis()->SetBinLabel(1, "OK");
+  fHistEmbeddingQA->GetXaxis()->SetBinLabel(2, "Not embedded");
+  fOutput->Add(fHistEmbeddingQA);
+
   PostData(1, fOutput);
 }
 
@@ -217,31 +227,15 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
   }
 
   Int_t i = 0;
-  TString fileName;
 
-  do {
-    if (i>0) {
-      AliDebug(3,Form("Failed to open file %s...", fileName.Data()));
-      if (fHistAODFileError)
+  while ((!fCurrentAODFile || fCurrentAODFile->IsZombie()) && i < fAttempts) {
+    if (i > 0 && fHistAODFileError) {
 	fHistAODFileError->Fill(fCurrentAODFileID);
     }
 
-    fileName = GetNextFileName();
-
-    if (fileName.IsNull())
-      break;
-    
-    if (fileName.BeginsWith("alien://") && !gGrid) {
-      AliInfo("Trying to connect to AliEn ...");
-      TGrid::Connect("alien://");
-    }
-
-    AliDebug(3,Form("Trying to open file %s...", fileName.Data()));
-    fCurrentAODFile = TFile::Open(fileName);
-
+    fCurrentAODFile = GetNextFile();
     i++;
-
-  } while ((!fCurrentAODFile || fCurrentAODFile->IsZombie()) && i < fAttempts);
+  } 
 
   if (!fCurrentAODFile || fCurrentAODFile->IsZombie())
     return kFALSE;
@@ -291,18 +285,39 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
 }
 
 //________________________________________________________________________
-TString AliJetEmbeddingFromAODTask::GetNextFileName()
+TFile* AliJetEmbeddingFromAODTask::GetNextFile()
 {
-    if (fRandomAccess) 
-      fCurrentAODFileID = TMath::Nint(gRandom->Rndm()*fFileList->GetEntriesFast());
-    else
-      fCurrentAODFileID++;
+  if (fRandomAccess) 
+    fCurrentAODFileID = TMath::Nint(gRandom->Rndm()*fFileList->GetEntriesFast());
+  else
+    fCurrentAODFileID++;
+  
+  if (fCurrentAODFileID >= fFileList->GetEntriesFast()) {
+    AliError("No more file in the list!");
+    return 0;
+  }
+  
+  TObjString *objFileName = static_cast<TObjString*>(fFileList->At(fCurrentAODFileID));
+  TString fileName(objFileName->GetString());
 
-    if (fCurrentAODFileID >= fFileList->GetEntriesFast())
-      return "";
-    
-    TObjString *objFileName = static_cast<TObjString*>(fFileList->At(fCurrentAODFileID));
-    return objFileName->GetString();
+  TString baseFileName(fileName);
+  if (baseFileName.Contains(".zip#")) {
+    Ssiz_t pos = baseFileName.Last('#');
+    baseFileName.Remove(pos);
+  }
+  
+  if (gSystem->AccessPathName(baseFileName)) {
+    AliDebug(3,Form("File %s does not exist!", baseFileName.Data()));
+    return 0;
+  }
+
+  AliDebug(3,Form("Trying to open file %s...", fileName.Data()));
+  TFile *file = TFile::Open(fileName);
+
+  if (!file)
+    AliDebug(3,Form("Unable to open file: %s!", fileName.Data()));
+
+  return file;
 }
 
 //________________________________________________________________________
@@ -371,9 +386,14 @@ void AliJetEmbeddingFromAODTask::Run()
   if (!GetNextEntry()) {
     if (fHistNotEmbedded)
       fHistNotEmbedded->Fill(fCurrentFileID);
+    if (fHistEmbeddingQA)
+      fHistEmbeddingQA->Fill("Not embedded", 1);
     AliError("Unable to get the AOD event to embed. Nothing will be embedded.");
     return;
   }
+
+  if (fHistEmbeddingQA)
+    fHistEmbeddingQA->Fill("OK", 1);
 
   if (fOutMCParticles) {
 

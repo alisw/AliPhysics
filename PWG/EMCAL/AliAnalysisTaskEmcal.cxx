@@ -60,6 +60,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMinEventPlane(-10),
   fMaxEventPlane(10),
   fCentEst("V0M"),
+  fTrackBitMap(0),
+  fClusterBitMap(0),
   fNcentBins(4),
   fGeom(0),
   fTracks(0),
@@ -117,6 +119,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMinEventPlane(-10),
   fMaxEventPlane(10),
   fCentEst("V0M"),
+  fTrackBitMap(0),
+  fClusterBitMap(0),
   fNcentBins(4),
   fGeom(0),
   fTracks(0),
@@ -233,17 +237,19 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Bool_t acceptMC) const
+Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus) const
 {
   // Return true if cluster is accepted.
 
   if (!clus)
     return kFALSE;
 
-  if (!clus->IsEMCAL())
+  if (clus->GetLabel() > 0 && clus->TestBits(fClusterBitMap) != (Int_t)fClusterBitMap) {
+    AliDebug(2,"Cluster not accepted because of bit map.");
     return kFALSE;
+  }
 
-  if (!acceptMC && clus->GetLabel() > 0)
+  if (!clus->IsEMCAL())
     return kFALSE;
 
   if (clus->GetTOF() > fClusTimeCutUp || clus->GetTOF() < fClusTimeCutLow)
@@ -259,15 +265,17 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Bool_t acceptMC) c
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Bool_t acceptMC) const
+Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track) const
 {
   // Return true if track is accepted.
 
   if (!track)
     return kFALSE;
 
-  if (!acceptMC && track->GetLabel() > 0)
+  if (track->GetLabel() != 0 && track->TestBits(fTrackBitMap) != (Int_t)fTrackBitMap) {
+    AliDebug(2,"Track not accepted because of bit map.");
     return kFALSE;
+  }
 
   if (track->Pt() < fTrackPtCut)
     return kFALSE;
@@ -280,14 +288,17 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Bool_t acceptMC) c
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::AcceptEmcalPart(AliEmcalParticle *part, Bool_t acceptMC) const
+Bool_t AliAnalysisTaskEmcal::AcceptEmcalPart(AliEmcalParticle *part) const
 {
   // Return true if EMCal particle is accepted.
 
   if (!part)
     return kFALSE;
 
-  if (part->IsTrack()) { 
+  if (part->IsTrack()) {
+    if (part->IsMC() && part->TestBits(fTrackBitMap) != (Int_t)fTrackBitMap)
+      return kFALSE;
+
     if (part->Pt() < fTrackPtCut)
       return kFALSE;
 
@@ -297,15 +308,15 @@ Bool_t AliAnalysisTaskEmcal::AcceptEmcalPart(AliEmcalParticle *part, Bool_t acce
   }
 
   if (part->IsCluster()) {
+    if (part->IsMC() && part->TestBits(fClusterBitMap) != (Int_t)fClusterBitMap)
+      return kFALSE;
+
     if (!part->IsEMCAL())
       return kFALSE;
 
     if (part->Pt() < fClusPtCut)
       return kFALSE;
   }
-
-  if (!acceptMC && part->IsMC())
-    return kFALSE;
 
   return kTRUE;
 }

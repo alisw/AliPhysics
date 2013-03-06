@@ -1,5 +1,7 @@
 // $Id: AddTaskJetEmbeddingFromPYTHIA.C  $
 
+THashTable* GenerateFileTable(const char* list);
+
 AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   const char     *tracksName    = "Tracks",
   const char     *clusName      = "",
@@ -18,18 +20,9 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   Double_t        minCent       = -1,
   Double_t        maxCent       = -1,
   UInt_t          mask          = AliVEvent::kAny,
-  const Int_t     nTracks       = 1234567890,
-  const Int_t     nClus         = 0,
-  const Int_t     nCells        = 1234567890,
-  const Bool_t    copyArray     = kTRUE,
-  const Int_t     nFiles        = 1234567890,
+  const Bool_t    copyArray     = kTRUE,  
   const Bool_t    makeQA        = kFALSE,
-  const Double_t  minPt         = 0,
-  const Double_t  maxPt         = 1000,
-  const Double_t  minEta        = -0.9,
-  const Double_t  maxEta        = 0.9,
-  const Double_t  minPhi        = 0,
-  const Double_t  maxPhi        = TMath::Pi() * 2,
+  const char     *fileTable     = "",
   const char     *taskName      = "JetEmbeddingFromPYTHIATask"
 )
 {  
@@ -66,13 +59,9 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   jetEmb->SetAODMCParticlesName(aodMCPartName);
   jetEmb->SetCentralityRange(minCent, maxCent);
   jetEmb->SetTriggerMask(mask);
-  jetEmb->SetNCells(nCells);
-  jetEmb->SetNClusters(nClus);
-  jetEmb->SetNTracks(nTracks);
   jetEmb->SetCopyArray(copyArray);
-  jetEmb->SetEtaRange(minEta, maxEta);
-  jetEmb->SetPhiRange(minPhi, maxPhi);
-  jetEmb->SetPtRange(minPt, maxPt);
+  if (strcmp(fileTable, "") != 0)
+    jetEmb->SetFileTable(GenerateFileTable(fileTable));
 
   jetEmb->SetIncludeNoITS(includeNoITS);
   TString runPeriod(runperiod);
@@ -116,4 +105,33 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   }
 
   return jetEmb;
+}
+
+THashTable* GenerateFileTable(const char* list)
+{
+  THashTable *table = new THashTable();
+
+  TString myList = list;
+  if (myList.Contains("alien:///")) {
+    TFile::Cp(myList,"file:./list.txt");
+    myList = "./list.txt";
+  }
+
+  // Open the input stream
+  ifstream in;
+  in.open(myList.Data());
+
+  // Read the input list of files and add them to the chain
+  TString line;
+  while (in.good()) {
+    in >> line;
+
+    if (line.Length() == 0)
+      continue;
+
+    TObjString *aodFile = new TObjString(line);
+    table->Add(aodFile);
+  }
+
+  return table;
 }

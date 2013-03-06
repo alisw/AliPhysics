@@ -105,10 +105,11 @@ class AliEmcalJet : public AliVParticle
   void              SetPtSubVect(Double_t ps)                       { fPtVectSub      = ps;     } 
 
   // Matching
-  void              SetClosestJet(AliEmcalJet *j, Double_t d)       { fClosestJets[0] = j; fClosestJetsDist[0] = d     ; }
+  void              SetClosestJet(AliEmcalJet *j, Double_t d)       { fClosestJets[0] = j; fClosestJetsDist[0] = d    ; }
   void              SetSecondClosestJet(AliEmcalJet *j, Double_t d) { fClosestJets[1] = j; fClosestJetsDist[1] = d    ; }
   void              SetMatchedToClosest(UShort_t m)                 { fMatched        = 0; fMatchingType       = m    ; }
   void              SetMatchedToSecondClosest(UShort_t m)           { fMatched        = 1; fMatchingType       = m    ; }
+  void              ResetMatching();
   AliEmcalJet*      ClosestJet()                              const { return fClosestJets[0]                          ; }
   Double_t          ClosestJetDistance()                      const { return fClosestJetsDist[0]                      ; }
   AliEmcalJet*      SecondClosestJet()                        const { return fClosestJets[1]                          ; }

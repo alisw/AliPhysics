@@ -18,18 +18,9 @@ AliJetEmbeddingFromAODTask* AddTaskJetEmbeddingFromAOD(
   Double_t        minCent       = 0,
   Double_t        maxCent       = 10,
   UInt_t          mask          = AliVEvent::kAny,
-  const Int_t     nTracks       = 1234567890,
-  const Int_t     nClus         = 0,
-  const Int_t     nCells        = 1234567890,
-  const Bool_t    copyArray     = kTRUE,
-  const Int_t     nFiles        = 1234567890,
+  const Bool_t    copyArray     = kTRUE,  
   const Bool_t    makeQA        = kFALSE,
-  const Double_t  minPt         = 0,
-  const Double_t  maxPt         = 1000,
-  const Double_t  minEta        = -0.9,
-  const Double_t  maxEta        = 0.9,
-  const Double_t  minPhi        = 0,
-  const Double_t  maxPhi        = TMath::Pi() * 2,
+  Int_t           nFiles        = 1234567890,
   const char     *taskName      = "JetEmbeddingFromAODTask"
 )
 {  
@@ -67,13 +58,7 @@ AliJetEmbeddingFromAODTask* AddTaskJetEmbeddingFromAOD(
   jetEmb->SetAODMCParticlesName(aodMCPartName);
   jetEmb->SetCentralityRange(minCent, maxCent);
   jetEmb->SetTriggerMask(mask);
-  jetEmb->SetNCells(nCells);
-  jetEmb->SetNClusters(nClus);
-  jetEmb->SetNTracks(nTracks);
   jetEmb->SetCopyArray(copyArray);
-  jetEmb->SetEtaRange(minEta, maxEta);
-  jetEmb->SetPhiRange(minPhi, maxPhi);
-  jetEmb->SetPtRange(minPt, maxPt);
 
   jetEmb->SetIncludeNoITS(includeNoITS);
   TString runPeriod(runperiod);

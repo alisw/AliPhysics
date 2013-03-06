@@ -44,7 +44,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
  protected:
   Bool_t          ExecOnce()            ;// intialize task
   void            Run()                 ;// do jet model action
-  virtual TString GetNextFileName()     ;// get next file name from fFileList
+  virtual TFile  *GetNextFile()         ;// get next file from fFileList
   virtual Bool_t  OpenNextFile()        ;// open next file
   virtual Bool_t  GetNextEntry()        ;// get next entry in current tree
   virtual Bool_t  IsAODEventSelected()  ;// AOD event trigger/centrality selection
@@ -85,6 +85,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   TH2           *fHistFileMatching    ;//! Current file ID vs. AOD file ID (to be embedded)
   TH1           *fHistAODFileError    ;//! AOD file ID (to be embedded) error
   TH1           *fHistNotEmbedded     ;//! File ID not embedded
+  TH1           *fHistEmbeddingQA     ;//! Embedding QA
 
  private:
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
