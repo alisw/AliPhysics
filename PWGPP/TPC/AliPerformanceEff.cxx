@@ -231,7 +231,7 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
     if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
 
     //Int_t label = TMath::Abs(track->GetLabel()); 
-	Int_t label = track->GetLabel();
+	Int_t label = track->GetTPCLabel(); //Use TPC-only label for TPC-only efficiency analysis
     labelsAllRec[iTrack]=label;
 
     // TPC only
@@ -357,7 +357,7 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
     if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
 
     //Int_t label = TMath::Abs(track->GetLabel());
-	Int_t label = track->GetLabel();
+	Int_t label = track->GetTPCLabel(); //Use TPC-only label for TPC-only efficiency analysis
     labelsAllRecSec[multAll]=label;
     multAll++;
 
@@ -508,7 +508,7 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
     if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
 
     //Int_t label = TMath::Abs(track->GetLabel()); 
-	Int_t label = track->GetLabel(); 
+	Int_t label = track->GetLabel();  //Use global label for combined efficiency analysis
     labelsAllRecTPCITS[iTrack]=label;
 
     // iTPC+ITS
@@ -1386,8 +1386,11 @@ TH1D* AliPerformanceEff::AddHistoEff(Int_t axis, const Char_t *name, const Char_
       TH1D *rec = EffHisto->Projection(axis);
       recc = (TH1D*)rec->Clone();
 
-      recc->Divide(rec,all,1,1,"B");
-      recc->GetYaxis()->SetTitle("efficiency");
+      if(recc) 
+      {
+        recc->Divide(rec,all,1,1,"B");
+        recc->GetYaxis()->SetTitle("efficiency");
+      }
   }
   else if (type == 1) // Clone Rate
   {
@@ -1398,8 +1401,11 @@ TH1D* AliPerformanceEff::AddHistoEff(Int_t axis, const Char_t *name, const Char_
       TH1D *clone = WeightedProjection(EffHisto, axis, 1, &axis_clone);
       recc = (TH1D*) clone->Clone();
 
-      recc->Divide(clone,all,1,1,"B");
-      recc->GetYaxis()->SetTitle("clone rate");
+      if(recc) 
+      {
+        recc->Divide(clone,all,1,1,"B");
+        recc->GetYaxis()->SetTitle("clone rate");
+      }
   }
   else if (type == 2) // Fake Rate
   {
@@ -1410,8 +1416,11 @@ TH1D* AliPerformanceEff::AddHistoEff(Int_t axis, const Char_t *name, const Char_
       TH1D *fake = WeightedProjection(EffHisto, axis, 1, &axis_fake);
       recc = (TH1D*) fake->Clone();
 
-      recc->Divide(fake,all,1,1,"B");
-      recc->GetYaxis()->SetTitle("fake rate");
+      if(recc) 
+      {
+        recc->Divide(fake,all,1,1,"B");
+        recc->GetYaxis()->SetTitle("fake rate");
+      }
   }
 
   EffHisto->GetAxis(4)->SetRange(1,0);				//Reset Range
