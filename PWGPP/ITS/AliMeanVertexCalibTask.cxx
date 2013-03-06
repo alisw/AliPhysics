@@ -170,7 +170,7 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
     }
   
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("raw://");
+  //man->SetDefaultStorage("raw://");
   Int_t runNb = esdE->GetRunNumber();
   man->SetRun(runNb);
   Printf("runNb = %d", runNb);
