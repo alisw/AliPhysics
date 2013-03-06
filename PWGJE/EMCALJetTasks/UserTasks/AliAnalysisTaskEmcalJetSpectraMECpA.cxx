@@ -37,6 +37,7 @@ ClassImp(AliAnalysisTaskEmcalJetSpectraMECpA)
 AliAnalysisTaskEmcalJetSpectraMECpA::AliAnalysisTaskEmcalJetSpectraMECpA() : 
   AliAnalysisTaskEmcalJet("spectra",kFALSE), 
   fHistRhovsCent(0),
+  fHistRhoScvsCent(0),
   fHistNjetvsCent(0)
 {
   // Default constructor.
@@ -61,6 +62,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA::AliAnalysisTaskEmcalJetSpectraMECpA() :
 AliAnalysisTaskEmcalJetSpectraMECpA::AliAnalysisTaskEmcalJetSpectraMECpA(const char *name) :
   AliAnalysisTaskEmcalJet(name,kTRUE),
   fHistRhovsCent(0),
+  fHistRhoScvsCent(0),
   fHistNjetvsCent(0)
  { 
    for (Int_t i = 0;i<6;++i){

@@ -64,7 +64,6 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
 
   AliAnalysisTaskRho *rhochtask = AddTaskRho(jetFinderTaskChBack->GetName(),usedTracks,outClusName,nRhosCh,0.2,0,0.01,0,sfunc,2,kTRUE,nRhosCh);
   rhochtask->SetCentralityEstimator(CentEst);
-  rhochtask->SetCentralityEstimator(CentEst);
 
   AliAnalysisTaskRho *rhochemtask = AddTaskRho(jetFinderTaskChEmBack->GetName(),usedTracks,outClusName,nRhosChEm,0.2,0,0.01,0,0,1,kTRUE,nRhosChEm);
   rhochemtask->SetCentralityEstimator(CentEst);
@@ -73,7 +72,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskDeltaPt.C");
 
-  AliAnalysisTaskDeltaPt* deltapt = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","","",radius,1,0.557,minTrackPt,minClusterPt,AliAnalysisTaskEmcal::kTPC,"DeltaPtTask");
+  AliAnalysisTaskDeltaPt* deltapt = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",nRhosCh,radius,1,0.557,minTrackPt,minClusterPt,AliAnalysisTaskEmcal::kTPC,"DeltaPtTask");
   deltapt->SetCentralityEstimator(CentEst);
 
 
