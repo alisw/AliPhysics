@@ -875,11 +875,13 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
 		  abc=1;
 		  if(iTMom->GetMother()>=0) {
 		    AliAODMCParticle *iGrandMa = dynamic_cast<AliAODMCParticle*>(mcArray->At(iTMom->GetMother()));
-		    Int_t iGrandMaPDG = iGrandMa->GetPdgCode();
-		    ptMom = iGrandMa->Pt();
-		    ptTruth = iTMom->Pt();
-		    if(pdgDatabase->GetParticle(iGrandMaPDG))
-		      sMOTHER = (pdgDatabase->GetParticle(iGrandMaPDG))->GetName();
+		    if(iGrandMa) {
+		      Int_t iGrandMaPDG = iGrandMa->GetPdgCode();
+		      ptMom = iGrandMa->Pt();
+		      ptTruth = iTMom->Pt();
+		      if(pdgDatabase->GetParticle(iGrandMaPDG))
+			sMOTHER = (pdgDatabase->GetParticle(iGrandMaPDG))->GetName();
+		    }
                   } else {
                     sMOTHER = "PRIMARY";
                   }
