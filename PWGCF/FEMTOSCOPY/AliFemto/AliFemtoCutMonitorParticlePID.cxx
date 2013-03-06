@@ -20,11 +20,11 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID():
     fTPCTOFNSigma(0)
 {
   // Default constructor
-    fTPCdEdx =  new TH2D("TPCdEdx", "TPC dEdx vs. transverse momentum", 100, 0.0, 5.0, 250, 0.0, 500.0);
-    fTOFTime = new TH2D("TOFTime", "TOF Time vs. transverse momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
-    fTOFNSigma = new TH2D("TOFNSigma","TOF NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
-    fTPCNSigma = new TH2D("TPCNSigma","TPC NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
-    fTPCTOFNSigma = new TH2D("TPCTOFNSigma","TPC & TOF NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
+    fTPCdEdx =  new TH2D("TPCdEdx", "TPC dEdx vs. momentum", 100, 0.0, 5.0, 250, 0.0, 500.0);
+    fTOFTime = new TH2D("TOFTime", "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
+    fTOFNSigma = new TH2D("TOFNSigma","TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+    fTPCNSigma = new TH2D("TPCNSigma","TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+    fTPCTOFNSigma = new TH2D("TPCTOFNSigma","TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
 
 }
 
@@ -40,19 +40,19 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, 
   // Normal constructor
   char name[200];
   snprintf(name, 200, "TPCdEdx%s", aName);
-    fTPCdEdx = new TH2D(name, "TPC dEdx vs. transverse momentum", 100, 0.0, 6.0, 250, 0.0, 500.0);
+    fTPCdEdx = new TH2D(name, "TPC dEdx vs. momentum", 100, 0.0, 6.0, 250, 0.0, 500.0);
 
   snprintf(name, 200, "TOFTime%s", aName);
-    fTOFTime = new TH2D(name, "TOF Time vs. transverse momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
+    fTOFTime = new TH2D(name, "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
 
     snprintf(name, 200, "TOFNSigma%s", aName);
-    fTOFNSigma = new TH2D(name,"TOF NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+    fTOFNSigma = new TH2D(name,"TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
 
     snprintf(name, 200, "TPCNSigma%s", aName);
-    fTPCNSigma = new TH2D(name,"TPC NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+    fTPCNSigma = new TH2D(name,"TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
 
     snprintf(name, 200, "TPCTOFNSigma%s", aName);
-    fTPCTOFNSigma = new TH2D(name,"TPC & TOF NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
+    fTPCTOFNSigma = new TH2D(name,"TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
 
 }
 
