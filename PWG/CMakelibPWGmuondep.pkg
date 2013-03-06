@@ -43,4 +43,4 @@ set ( DHDR  PWGmuondepLinkDef.h )
 
 set ( EXPORT "muondep/AliAnalysisTriggerScalers.h" )
 
-set ( EINCLUDE RAW MUON MUON/mapping PWG/muondep STEER/STEER STEER/STEERBase)
+set ( EINCLUDE RAW MUON MUON/mapping PWG/muon PWG/muondep STEER/STEER STEER/STEERBase)
