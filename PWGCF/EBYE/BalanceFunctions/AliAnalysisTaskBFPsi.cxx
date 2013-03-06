@@ -649,7 +649,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 	  for (Int_t jMix=0; jMix<nMix; jMix++) 
 	    {
 	      TObjArray* tracksMixed = pool->GetEvent(jMix);
-	      fMixedBalance->CalculateBalance(gReactionPlane,tracksMain,tracksMixed,bSign,lMultiplicityVar);
+	      fMixedBalance->CalculateBalance(gReactionPlane,tracksMain,tracksMixed,bSign,lMultiplicityVar,eventMain->GetPrimaryVertex()->GetZ());
 	    }
 	}
 	
@@ -661,11 +661,11 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     }//run mixing
   
   // calculate balance function
-  fBalance->CalculateBalance(gReactionPlane,tracksMain,NULL,bSign,lMultiplicityVar);
+  fBalance->CalculateBalance(gReactionPlane,tracksMain,NULL,bSign,lMultiplicityVar,eventMain->GetPrimaryVertex()->GetZ());
   
   // calculate shuffled balance function
   if(fRunShuffling && tracksShuffled != NULL) {
-    fShuffledBalance->CalculateBalance(gReactionPlane,tracksShuffled,NULL,bSign,lMultiplicityVar);
+    fShuffledBalance->CalculateBalance(gReactionPlane,tracksShuffled,NULL,bSign,lMultiplicityVar,eventMain->GetPrimaryVertex()->GetZ());
   }
 }      
 

@@ -29,8 +29,8 @@ class TH1D;
 class TH2D;
 class TH3D;
 
-const Int_t kTrackVariablesSingle = 2;       // track variables in histogram (event class, pTtrig)
-const Int_t kTrackVariablesPair   = 5;       // track variables in histogram (event class, dEta, dPhi, pTtrig, ptAssociated)
+const Int_t kTrackVariablesSingle = 3;       // track variables in histogram (event class, pTtrig, vertexZ)
+const Int_t kTrackVariablesPair   = 6;       // track variables in histogram (event class, dEta, dPhi, pTtrig, ptAssociated, vertexZ)
 const TString gBFPsiAnalysisType[ANALYSIS_TYPES] = {"y","eta","qlong","qout","qside","qinv","phi"};
 
 class AliBalancePsi : public TObject {
@@ -58,6 +58,7 @@ class AliBalancePsi : public TObject {
   void SetCentralityInterval(Double_t cStart, Double_t cStop)  { fCentStart = cStart; fCentStop = cStop;};
   void SetEventClass(TString receivedEventClass){ fEventClass = receivedEventClass; } 
   void SetDeltaEtaMax(Double_t receivedDeltaEtaMax){ fDeltaEtaMax = receivedDeltaEtaMax; }
+  void SetVertexZBinning(Bool_t receivedVertexBinning=kTRUE){ fVertexBinning = receivedVertexBinning; }
 
   void InitHistograms(void);
 
@@ -68,7 +69,8 @@ class AliBalancePsi : public TObject {
 			TObjArray* particles,
 			TObjArray* particlesMixed,
 			Float_t bSign,
-            Double_t kMultorCent = -100);
+			Double_t kMultorCent = -100,
+			Double_t vertexZ = 0);
   
   TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax,
 				   Double_t ptTriggerMin=-1.,
@@ -200,6 +202,7 @@ class AliBalancePsi : public TObject {
 
   Bool_t fHBTCut;//HBT cut
   Bool_t fConversionCut;//conversion cut
+  Bool_t fVertexBinning;//use vertex z binning in AliTHn
 
   TString fEventClass;
 
