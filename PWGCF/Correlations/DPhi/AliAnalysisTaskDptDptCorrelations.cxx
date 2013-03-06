@@ -42,9 +42,6 @@
 #include "AliCentrality.h"
 #include "AliAnalysisTaskDptDptCorrelations.h"
 
-using std::cout;
-using std::endl;
-
 ClassImp(AliAnalysisTaskDptDptCorrelations)
 
 AliAnalysisTaskDptDptCorrelations::AliAnalysisTaskDptDptCorrelations()
@@ -1136,7 +1133,14 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
     //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 10" << endl;
     
     //filter on centrality
-    if ( centrality < _centralityMin ||  centrality > _centralityMax)
+    // require the v0 and trk centralities to agree within 5%.
+    
+    //if ((Float_t(GetTPCMult(fAOD)) > (-40.3+1.22*GetGlobalMult(fAOD))) && (Float_t(GetTPCMult(fAOD)) < (32.1+1.59*GetGlobalMult(fAOD)))) {//3 sigma
+
+    
+    if ( centrality < _centralityMin ||  
+         centrality > _centralityMax ||
+         fabs(v0Centr-trkCentr)>5.0)
       {
       //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 11" << endl;
       
@@ -1654,7 +1658,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
     }
   
   
-  ////cout << "Event Done " << endl;
+  cout << "AliAnalysisTaskDptDptCorrelations::UserExec()   -----------------Event Done " << endl;
   PostData(0,_outputHistoList);
   
 }
@@ -1662,14 +1666,17 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 void   AliAnalysisTaskDptDptCorrelations::FinishTaskOutput()
 {
   cout << "AliAnalysisTaskDptDptCorrelations::FinishTaskOutput() Starting." << endl;
+  cout << "= 0 ====================================================================" << endl;
   finalizeHistograms();
+  cout << "= 1 ====================================================================" << endl;
   PostData(0,_outputHistoList);
+  cout << "= 2 ====================================================================" << endl;
   cout << "AliAnalysisTaskDptDptCorrelations::FinishTaskOutput() Done." << endl;
 }
 
 void   AliAnalysisTaskDptDptCorrelations::Terminate(Option_t* /*option*/)
 {
-  // no ops
+  cout << "AliAnalysisTaskDptDptCorrelations::Terminate() Starting/Done." << endl;
 }
 
 
