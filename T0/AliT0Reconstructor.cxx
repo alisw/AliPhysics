@@ -152,7 +152,12 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
   Float_t lowAmpThreshold =  GetRecoParam()->GetAmpLowThreshold();  
   Float_t highAmpThreshold =  GetRecoParam()->GetAmpHighThreshold(); 
-  printf( "AliT0Reconstructor::Reconstruct::: RecoParam amplitude %f %f \n",lowAmpThreshold, highAmpThreshold);
+
+  //shift T0A, T0C , T0AC
+  Float_t shiftA = GetRecoParam() -> GetLow(310);  
+  Float_t shiftC = GetRecoParam() -> GetLow(311);  
+  Float_t shiftAC = GetRecoParam() -> GetLow(312);
+
  
   Double32_t besttimeA=9999999;  Double32_t besttimeA_best=9999999;
   Double32_t besttimeC=9999999;  Double32_t besttimeC_best=9999999;
@@ -250,13 +255,13 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
   if( besttimeA < 999999 && besttimeA!=0) {
     frecpoints.SetTimeBestA((besttimeA_best * channelWidth  - fdZonA/c)  );
-    frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c) );
+    frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c - shiftA) );
     tr[1]=true;
   }
   
   if( besttimeC < 999999 && besttimeC!=0) {
     frecpoints.SetTimeBestC((besttimeC_best * channelWidth  - fdZonC/c) );
-    frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c) );
+    frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c - shiftC) );
     tr[2]=true;
   }
   
@@ -268,7 +273,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     //    timeDiff = (besttimeC - besttimeA)*channelWidth;
     timeDiff = (besttimeA - besttimeC)*channelWidth;
     meanTime = channelWidth * (besttimeA_best + besttimeC_best)/2. ; 
-    timeclock = channelWidth * (besttimeA + besttimeC)/2. ;
+    timeclock = channelWidth * (besttimeA + besttimeC)/2. - shiftAC ;
     vertex = meanVertex - 0.001* c*(timeDiff)/2.;// + (fdZonA - fdZonC)/2;
     tr[0]=true; 
   }
@@ -309,7 +314,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t meanTVDC = fTime0vertex[0] + 2564;
   Int_t timeDelayCFD[24]; 
   Int_t corridor = GetRecoParam() -> GetCorridor();  
-  printf("!!!! corrior %i \n",corridor);
+  printf("!!!! corridor %i \n",corridor);
   Int_t badpmt[24];
   //Bad channel
   for (Int_t i=0; i<24; i++) {
