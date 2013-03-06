@@ -39,7 +39,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fSchemeString(0), 
     fTriggerString(0),
     fFinalMCCorrFile(""),
-    fglobalempiricalcorrection(0)
+    fglobalempiricalcorrection(0),
+   fmeabsignalvscentr(0)	
 {
   // 
   // Constructor
@@ -72,7 +73,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fSchemeString(0),
     fTriggerString(0),
     fFinalMCCorrFile(""),
-   fglobalempiricalcorrection(0)	
+    fglobalempiricalcorrection(0),
+    fmeabsignalvscentr(0)	
 {
   // 
   // Constructor
@@ -116,7 +118,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fSchemeString(o.fSchemeString), 
     fTriggerString(o.fTriggerString),
     fFinalMCCorrFile(o.fFinalMCCorrFile),
-    fglobalempiricalcorrection(o.fglobalempiricalcorrection)	
+    fglobalempiricalcorrection(o.fglobalempiricalcorrection),
+	   fmeabsignalvscentr(o.fmeabsignalvscentr)		
 {
   DGUARD(fDebug, 3,"Copy CTOR of AliBasedNdetaTask");
 }
@@ -380,7 +383,8 @@ AliBasedNdetaTask::UserCreateOutputObjects()
   while ((bin = static_cast<CentralityBin*>(next()))) 
     bin->CreateOutputObjects(fSums, fTriggerMask);
   
-
+   fmeabsignalvscentr=new TH2D("meabsignalvscentr","meabsignalvscentr",400,0,20,100,0,100);
+	fSums->Add(fmeabsignalvscentr);
   // Post data for ALL output slots >0 here, to get at least an empty
   // histogram
   PostData(1, fSums); 
@@ -418,6 +422,33 @@ AliBasedNdetaTask::UserExec(Option_t *)
   TH2D* dataMC = GetHistogram(aod, true);
   if(!ApplyEmpiricalCorrection(forward,data))
  	return;
+
+  Int_t notemptybins=0;
+  Double_t sum=0.0;	
+  for (Int_t ix=1;ix<=data->GetXaxis()->GetNbins();ix++)
+  {
+	Double_t sumy=0.0;					
+  	for(Int_t iy=1;iy<=data->GetYaxis()->GetNbins();iy++)
+	{
+		if(data->GetBinContent(ix,iy)>0.0)
+		{
+			sumy+=data->GetBinContent(ix,iy);
+			notemptybins++;
+		}
+		
+	} 	
+	sum+=sumy;	
+  }
+
+ if(notemptybins>0)		
+{
+  sum=sum/((Double_t)notemptybins);
+} 
+else
+  sum=-1.0;		
+   fmeabsignalvscentr->Fill(sum,cent);		
+	
+
   Bool_t isZero = ((fNormalizationScheme & kZeroBin) &&
 		   !forward->IsTriggerBits(AliAODForwardMult::kNClusterGt0));
 

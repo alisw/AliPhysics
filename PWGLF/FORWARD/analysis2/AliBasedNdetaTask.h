@@ -891,8 +891,9 @@ protected:
   TObject*        fSchemeString;    // Normalization scheme string
   TObject*        fTriggerString;    // Trigger string 
   TString         fFinalMCCorrFile; //Filename for final MC corr
-  TH2D*           fglobalempiricalcorrection; // the ratio of PbPb analysis normal displace vertex 	  
-  ClassDef(AliBasedNdetaTask,11); // Determine charged particle density
+  TH2D*           fglobalempiricalcorrection; // the ratio of PbPb analysis normal displace vertex
+  TH2D* 	  fmeabsignalvscentr; //mean signal per event vs cent	 	  
+  ClassDef(AliBasedNdetaTask,12); // Determine charged particle density
 };
 
 #endif
