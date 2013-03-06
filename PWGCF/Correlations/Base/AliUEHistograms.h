@@ -77,6 +77,7 @@ class AliUEHistograms : public TNamed
   
   void SetEtaRange(Float_t etaMin, Float_t etaMax);
   void SetPtRange(Float_t ptMin, Float_t ptMax);
+  void SetPartSpecies(Int_t species);
   void SetZVtxRange(Float_t min, Float_t max);
   void SetContaminationEnhancement(TH1F* hist);
   void SetCombineMinMax(Bool_t flag);

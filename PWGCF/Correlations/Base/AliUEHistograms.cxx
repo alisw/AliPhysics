@@ -962,6 +962,16 @@ void AliUEHistograms::SetPtRange(Float_t ptMin, Float_t ptMax)
 }
 
 //____________________________________________________________________
+void AliUEHistograms::SetPartSpecies(Int_t species)
+{
+  // sets PartSpecie for all contained AliUEHist classes
+  
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->SetPartSpecies(species);
+}
+
+//____________________________________________________________________
 void AliUEHistograms::SetZVtxRange(Float_t min, Float_t max)
 {
   // sets pT min and max for all contained AliUEHist classes

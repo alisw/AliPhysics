@@ -51,6 +51,7 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   fEtaMax(0),
   fPtMin(0),
   fPtMax(0),
+  fPartSpecies(-1),
   fCentralityMin(0),
   fCentralityMax(0),
   fZVtxMin(0),
@@ -330,6 +331,7 @@ AliUEHist::AliUEHist(const AliUEHist &c) :
   fEtaMax(0),
   fPtMin(0),
   fPtMax(0),
+  fPartSpecies(-1),
   fCentralityMin(0),
   fCentralityMax(0),
   fZVtxMin(0),
@@ -433,6 +435,7 @@ void AliUEHist::Copy(TObject& c) const
   target.fEtaMax = fEtaMax;
   target.fPtMin = fPtMin;
   target.fPtMax = fPtMax;
+  target.fPartSpecies = fPartSpecies;
   target.fCentralityMin = fCentralityMin;
   target.fCentralityMax = fCentralityMax;
   target.fZVtxMin = fZVtxMin;
@@ -1809,6 +1812,12 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
     Printf("Restricted pt-range to %f %f", fPtMin, fPtMax);
     sourceContainer->GetGrid(step1)->SetRangeUser(1, fPtMin, fPtMax);
     sourceContainer->GetGrid(step2)->SetRangeUser(1, fPtMin, fPtMax);
+  }
+  if (fPartSpecies != -1 && axis1 != 2 && axis2 != 2 && axis3 != 2)
+  {
+    Printf("Restricted to particle species %d", fPartSpecies);
+    sourceContainer->GetGrid(step1)->SetRangeUser(2, fPartSpecies, fPartSpecies);
+    sourceContainer->GetGrid(step2)->SetRangeUser(2, fPartSpecies, fPartSpecies);
   }
   if (fCentralityMax > fCentralityMin && axis1 != 3 && axis2 != 3 && axis3 != 3)
   {
