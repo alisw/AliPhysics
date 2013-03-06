@@ -37,7 +37,7 @@ AliDhcTask::AliDhcTask()
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
-  fClassName(),
+  fDoFillSame(kFALSE), fClassName(),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
@@ -54,12 +54,12 @@ AliDhcTask::AliDhcTask()
 }
 
 //________________________________________________________________________
-AliDhcTask::AliDhcTask(const char *name) 
+AliDhcTask::AliDhcTask(const char *name, Bool_t def) 
 : AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
-  fClassName(),
+  fDoFillSame(kFALSE), fClassName(),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
@@ -84,18 +84,20 @@ AliDhcTask::AliDhcTask(const char *name)
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,SPDVertex.,TPCVertex.,Tracks "
                "AOD:header,tracks,vertices,";
 
-  Double_t ptt[4] = {0.25, 1.0, 2.0, 15.0};
-  fBPtT  = new TAxis(3,ptt); 
-  Double_t pta[4] = {0.25, 1.0, 2.0, 15.0};
-  fBPtA  = new TAxis(3,pta); 
-  Double_t cent[2] = {-100.0, 100.0};
-  fBCent = new TAxis(1,cent);
-  Double_t zvtx[2] = {-10, 10};
-  fBZvtx = new TAxis(1,zvtx);
-  Double_t centmix[2] = {-100.0, 100.0};
-  fMixBCent = new TAxis(1,centmix);
-  Double_t zvtxmix[9] = {-10,-6,-4,-2,0,2,4,6,10};
-  fMixBZvtx = new TAxis(8,zvtxmix);
+  if (def) {
+    Double_t ptt[4] = {0.25, 1.0, 2.0, 15.0};
+    fBPtT  = new TAxis(3,ptt); 
+    Double_t pta[4] = {0.25, 1.0, 2.0, 15.0};
+    fBPtA  = new TAxis(3,pta); 
+    Double_t cent[2] = {-100.0, 100.0};
+    fBCent = new TAxis(1,cent);
+    Double_t zvtx[2] = {-10, 10};
+    fBZvtx = new TAxis(1,zvtx);
+    Double_t centmix[2] = {-100.0, 100.0};
+    fMixBCent = new TAxis(1,centmix);
+    Double_t zvtxmix[9] = {-10,-6,-4,-2,0,2,4,6,10};
+    fMixBZvtx = new TAxis(8,zvtxmix);
+  }
 }
 
 //________________________________________________________________________
@@ -132,6 +134,7 @@ void AliDhcTask::PrintDhcSettings()
   AliInfo(Form(" Mix in eta_T bins instead of z_vertex? %d", fMixInEtaT));
   AliInfo(Form(" trigger eta range %f .. %f", fEtaTLo, fEtaTHi));
   AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
+  AliInfo(Form(" fill same event in any case %d", fDoFillSame));
 }
 
 //________________________________________________________________________
@@ -229,7 +232,7 @@ void AliDhcTask::BookHistos()
   fIndex = new TFormula("GlobIndex","(t-1)*[0]*[1]*[2]+(z-1)*[0]*[1]+(x-1)*[0]+(y-1)+0*[4]");
   fIndex->SetParameters(nPtTrig,nPtAssc,nZvtx,nCent);
   fIndex->SetParNames("NTrigBins","NAssocBins", "NZvertexBins", "NCentBins");
-  //fOutputList->Add(fIndex);
+  fOutputList->Add(fIndex);
   
   Int_t count = 0;
   for (Int_t c=1; c<=nCent; ++c) {
@@ -412,8 +415,7 @@ void AliDhcTask::UserExec(Option_t *)
         fCentrality = 
           fESD->GetCentrality()->GetCentralityPercentile(fCentMethod);
       }
-    }
-    if (dType == kAOD) {
+    } else if (dType == kAOD) {
       const AliAODVertex* vertex = fAOD->GetPrimaryVertex();
       fZVertex = vertex->GetZ();
       if (!VertexOk(fAOD)) {
@@ -428,7 +430,7 @@ void AliDhcTask::UserExec(Option_t *)
     }
   }
 
-  // Fill Event histogram
+  // Fill event histogram
   fHEvt->Fill(fZVertex, fCentrality);
   if (fCentrality > fBCent->GetXmax() || fCentrality < fBCent->GetXmin()) {
     if (fVerbosity > 1)
@@ -439,8 +441,7 @@ void AliDhcTask::UserExec(Option_t *)
   // Get array of selected tracks
   if (dType == kESD) {
     GetESDTracks(sTracks);
-  }
-  if (dType == kAOD) {
+  } else if (dType == kAOD) {
     GetAODTracks(sTracks);
   }
 
@@ -454,6 +455,9 @@ void AliDhcTask::UserExec(Option_t *)
 
   if (!pool->IsReady()) {
     pool->UpdatePool(sTracks);
+    if (fDoFillSame) { // fill same event right away if requested
+      Correlate(*sTracks, *sTracks, kSameEvt);  
+    }
     return;
   }
 
@@ -465,8 +469,8 @@ void AliDhcTask::UserExec(Option_t *)
 	MiniEvent* evI = pool->GetEvent(i);
 	for (Int_t j=0; j<nEvs; ++j) {
 	  MiniEvent* evJ = pool->GetEvent(j);
-	  if (i==j) {
-	    Correlate(*evI, *evJ, kSameEvt);
+	  if ((i==j) && !fDoFillSame) {
+            Correlate(*evI, *evJ, kSameEvt);
 	  } else {
 	    Correlate(*evI, *evJ, kDiffEvt);
 	  }
