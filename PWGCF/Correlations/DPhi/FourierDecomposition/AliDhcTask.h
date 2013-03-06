@@ -28,7 +28,7 @@ class AliEvtPoolManager;
 class AliDhcTask : public AliAnalysisTaskSE {
  public:
   AliDhcTask();
-  AliDhcTask(const char *name);
+  AliDhcTask(const char *name, Bool_t def=kFALSE);
   virtual ~AliDhcTask();
   
   void         SetAllTAHists(Bool_t b)                { fAllTAHists = b;          }
@@ -38,6 +38,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetCentMixBins(TAxis *bins)            { fMixBCent=bins;           }
   void         SetClassName(const char *n)            { fClassName = n;           }
   void         SetDEtaDPhiBins(Int_t nbe, Int_t nbp)  { fNBdeta=nbe; fNBdphi=nbp; }
+  void         SetDoFillSame(Bool_t b)                { fDoFillSame = b;          }
   void         SetDoWeights(Bool_t b)                 { fDoWeights = b;           }
   void         SetEtaMax(Double_t eta)                { fEtaMax = eta;            }
   void         SetEtaTRange(Double_t eL, Double_t eH) { fEtaTLo=eL; fEtaTHi=eH;   }
@@ -57,7 +58,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetZVtxMixBins(TAxis *bins)            { fMixBZvtx=bins;           }
   void         SetZvtx(Double_t zvtx)                 { fZVtxMax = zvtx;          }
   void         PrintDhcSettings();
-  enum eAnaMode       {kHH, kMuH, kHMu, kMuMu, kPSide, kASide};
+  enum eAnaMode       {kHH=1, kMuH, kHMu, kMuMu, kPSide, kASide};
 
  protected:
   enum ePairingScheme {kSameEvt, kDiffEvt};
@@ -96,6 +97,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   Double_t           fEtaTHi;          //  Max eta for triggers
   Double_t           fEtaALo;          //  Min eta for associated
   Double_t           fEtaAHi;          //  Max eta for associated
+  Bool_t             fDoFillSame;      //  If true fill same event immediately (not waiting for pool)
   TString            fClassName;       //  If not null only process events with given class
   AliESDEvent       *fESD;             //! ESD object
   AliAODEvent       *fAOD;             //! AOD object
@@ -139,7 +141,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   AliDhcTask(const AliDhcTask&);            // not implemented
   AliDhcTask &operator=(const AliDhcTask&); // not implemented
 
-  ClassDef(AliDhcTask, 5);
+  ClassDef(AliDhcTask, 6);
 };
 
 #endif
