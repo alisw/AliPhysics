@@ -183,6 +183,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fMomDtoE(0) 
   ,fLabelCheck(0)
   ,fgeoFake(0)
+  ,ftimingEle(0) 
 {
   //Named constructor
   
@@ -301,6 +302,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fMomDtoE(0)
   ,fLabelCheck(0)
   ,fgeoFake(0)
+  ,ftimingEle(0)
 {
 	//Default constructor
 	fPID = new AliHFEpid("hfePid");
@@ -672,6 +674,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
         double rmatch = -1.0;  
         double nmatch = -1.0;
         double oppstatus = 0.0;
+        double emctof = 0.0;
 
     Bool_t fFlagPhotonicElec = kFALSE;
     Bool_t fFlagConvinatElec = kFALSE;
@@ -692,6 +695,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		double deleta = clust->GetTrackDz(); 
 		rmatch = sqrt(pow(delphi,2)+pow(deleta,2));
 		nmatch = clust->GetNTracksMatched();
+                emctof = clust->GetTOF();
+                //cout << "emctof = " << emctof << endl;
 
 		if(fTPCnSigma>-1.5 && fTPCnSigma<3.0)
 		{
@@ -775,7 +780,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
     if(m20>0.0 && m20<0.3)
       { 
-       fIncpTM20->Fill(cent,pt);    
+       fIncpTM20->Fill(cent,pt);   
+       ftimingEle->Fill(pt,emctof); 
        if(fFlagPhotonicElec) fPhoElecPtM20->Fill(cent,pt);
        if(fFlagConvinatElec) fSameElecPtM20->Fill(cent,pt);
      }
@@ -1227,6 +1233,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   fgeoFake = new TH2D("fgeoFake","Label==0 eta and phi",628,0,6.28,200,-1,1);
   fOutputList->Add(fgeoFake);
+
+  ftimingEle = new TH2D("ftimingEle","electron TOF",100,0,20,100,1e-7,1e-6);
+  fOutputList->Add(ftimingEle);
 
   PostData(1,fOutputList);
 }
