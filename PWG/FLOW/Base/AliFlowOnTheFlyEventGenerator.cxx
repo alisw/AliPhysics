@@ -246,12 +246,13 @@ void AliFlowOnTheFlyEventGenerator::AddV2(TClonesArray* event)
     // afterburner, adds v2 for different species to all tracks in an event
     Double_t fluc(gRandom->Uniform());  // get a random number in case of fluctuations
     // FIXME at the moment no distincition between mothers and daughters
-    TParticle *part = new TParticle();
+    TParticle *part;
     for(Int_t nTrack=0; nTrack!=event->GetEntriesFast(); ++nTrack) {
         part = (TParticle*) event->At(nTrack);
         // for each track, call overloaded addv2 function with the correct generator
         // create a generator in the case where the decayer has introduced a new particle species
-        AddV2(part, Find(part->GetPdgCode(), kTRUE)->GetV2(part->Pt()), fluc);
+	if(part)
+	  AddV2(part, Find(part->GetPdgCode(), kTRUE)->GetV2(part->Pt()), fluc);
     }
 }
 //_____________________________________________________________________________
@@ -332,7 +333,7 @@ void AliFlowOnTheFlyEventGenerator::DecayOnTheFlyTracks(TClonesArray *event)
 	        secondaries++;
                 if(nDaughter==1) part->SetFirstDaughter(nTracks+secondaries);
                 else if ((nDaughters-1)==nDaughter) part->SetLastDaughter(nTracks+secondaries);
-                else part->SetDaughter(nDaughter,nTracks+secondaries);
+                //else part->SetDaughter(nDaughter,nTracks+secondaries);
                 }
             }
         nStart = nTracks;

@@ -263,9 +263,9 @@ void AliFlowAnalysisWithMSP::Make(AliFlowEventSimple *event)
    const double wqbxy[]={QbW,QbW};
    fQbComponents->Fill(1, qbxy, wqbxy);                        // only one bin (all pt)
 
-   const double QaQbW=QaW*QbW;
-   const double weightedQaQb = (Qa*Qb)/QaQbW;                  // Scalar product of subevent Q vectors with weight, only 1 variable
-   fQaQb->Fill(1,&weightedQaQb,&QaQbW);                        // Average of QaQb per event
+   const double QaQbW[]={QaW*QbW};
+   const double weightedQaQb[] = {(Qa*Qb)/QaQbW[0]};                  // Scalar product of subevent Q vectors with weight, only 1 variable
+   fQaQb->Fill(1,weightedQaQb,QaQbW);                        // Average of QaQb per event
    
    int iTrack=0;
    while( AliFlowTrackSimple *track=event->GetTrack(iTrack++) ) {// Loop over the tracks in the event 
@@ -300,8 +300,8 @@ void AliFlowAnalysisWithMSP::Make(AliFlowEventSimple *event)
       fPtUComponents->Fill(pt, uxy, wxy);    // NUA for POI vs pt
       fEtaUComponents->Fill(eta, uxy, wxy);  // NUA for POI vs eta
 
-      const double par[]={uQa/uQaW, uQb/uQbW, weightedQaQb};   // Three variables to correlate: uQa, uQb and QaQb
-      const double wgt[]={uQaW, uQbW, QaQbW};
+      const double par[]={uQa/uQaW, uQb/uQbW, weightedQaQb[0]};   // Three variables to correlate: uQa, uQb and QaQb
+      const double wgt[]={uQaW, uQbW, QaQbW[0]};
       fAllStatistics->Fill(1,   par, wgt  );    // only 1 bin, integrated over pt and eta
       fPtStatistics->Fill(pt,   par, wgt );     // pt differential correlations
       fEtaStatistics->Fill(eta, par, wgt );     // eta differential correlations
@@ -579,6 +579,7 @@ void AliFlowAnalysisWithMSP::Print(const Option_t *opt)const
 
 AliFlowAnalysisWithMSP &AliFlowAnalysisWithMSP::operator=(const AliFlowAnalysisWithMSP &x)
 {
+   if (&x==this) return *this; //handle self assignmnet
    SetNameTitle("MSP","Flow analysis with the Modified Scalar Product method");
    delete fQaComponents; fQaComponents=0;
    if( x.fQaComponents )   fQaComponents=(AliFlowMSPHistograms *)(x.fQaComponents)->Clone();
