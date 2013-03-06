@@ -239,7 +239,8 @@ void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   // Fill rec vs MC information
   //
   if(!stack) return;
-  Int_t label = TMath::Abs(esdTrack->GetLabel()); 
+  Int_t label = esdTrack->GetTPCLabel(); //Use TPC-only label for TPC-only resolution analysis
+  if (label <= 0) return;
   TParticle* particle = stack->Particle(label);
   if(!particle) return;
   if(!particle->GetPDG()) return;
@@ -348,7 +349,7 @@ void AliPerformanceRes::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
   //
   if(!stack) return;
 
-  Int_t label = TMath::Abs(esdTrack->GetLabel()); 
+  Int_t label = TMath::Abs(esdTrack->GetLabel()); //Use global label for combined resolution analysis
   TParticle* particle = stack->Particle(label);
   if(!particle) return;
   if(!particle->GetPDG()) return;
@@ -605,7 +606,8 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   //
   if(!mcEvent) return;
 
-  Int_t label = TMath::Abs(esdTrack->GetLabel()); 
+  Int_t label = esdTrack->GetTPCLabel(); //Use TPC-only label for TPC-only resolution analysis
+  if (label <= 0) return;
   AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(label);
   if(!mcParticle) return;
 
@@ -636,7 +638,7 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
 
   Double_t xyz[3] = {ref0->X(),ref0->Y(),ref0->Z()};
   // propagate track to the radius of the first track reference within TPC
-  Double_t trRadius = TMath::Sqrt(xyz[1] * xyz[1] + xyz[0] * xyz[0]);
+  //Double_t trRadius = TMath::Sqrt(xyz[1] * xyz[1] + xyz[0] * xyz[0]);
   Double_t field[3]; track->GetBxByBz(field);
   if (TGeoGlobalMagField::Instance()->GetField() == NULL) {
     Error("ProcessInnerTPC", "Magnetic Field not set");
@@ -748,7 +750,8 @@ void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *
   //
   if(!mcEvent) return;
 
-  Int_t label = TMath::Abs(esdTrack->GetLabel()); 
+  Int_t label = esdTrack->GetTPCLabel(); //Use TPC-only label for TPC-only resolution analysis
+  if (label <= 0) return;
   AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(label);
   if(!mcParticle) return;
 
