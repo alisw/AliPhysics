@@ -79,7 +79,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   else shqmax = 0.9;
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
-  Reader->SetFilterBit(4);
+  Reader->SetFilterBit(0);
   //Reader->SetCentralityPreSelection(500, 950);
 
   //AliFemtoEventReaderESDChainKine* Reader=new AliFemtoEventReaderESDChainKine();
