@@ -100,6 +100,7 @@ class AliUEHist : public TObject
   
   void SetEtaRange(Float_t etaMin, Float_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; }
   void SetPtRange(Float_t ptMin, Float_t ptMax)    { fPtMin = ptMin; fPtMax = ptMax; }
+  void SetPartSpecies(Int_t species)    { fPartSpecies = species;}
   void SetCentralityRange(Float_t min, Float_t max)    { fCentralityMin = min; fCentralityMax = max; }
   void SetZVtxRange(Float_t min, Float_t max)          { fZVtxMin = min; fZVtxMax = max; }
   
@@ -146,6 +147,7 @@ protected:
   Float_t fEtaMax;                    // eta max for projections
   Float_t fPtMin;                     // pT min for projections (for track pT, not pT,lead)
   Float_t fPtMax;                     // pT max for projections (for track pT, not pT,lead)
+  Int_t fPartSpecies;                   // Particle species for projections 
   Float_t fCentralityMin;             // centrality min for projections
   Float_t fCentralityMax;             // centrality max for projections
   Float_t fZVtxMin;                   // z vtx min for projections
@@ -164,7 +166,7 @@ protected:
   
   TString fHistogramType;             // what is stored in this histogram
   
-  ClassDef(AliUEHist, 12) // underlying event histogram container
+  ClassDef(AliUEHist, 13) // underlying event histogram container
 };
 
 #endif
