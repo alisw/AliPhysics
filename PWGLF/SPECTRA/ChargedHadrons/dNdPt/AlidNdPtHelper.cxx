@@ -1632,8 +1632,9 @@ AliPWG0Helper::MCProcessType AlidNdPtHelper::GetDPMjetEventProcessTypePA(AliGenE
    
   Int_t nsd1=0, nsd2=0, ndd=0;
   dpmJetGenHeader->GetNDiffractive(nsd1,nsd2,ndd);
-  //      printf("%d+%d->%d %d\n",dpmHeader->ProjectileParticipants(),dpmHeader->TargetParticipants(),
-  //         nsd1,nsd2);
+  if(adebug) {
+        printf("%d+%d->%d %d\n",dpmJetGenHeader->ProjectileParticipants(),dpmJetGenHeader->TargetParticipants(),nsd1,nsd2);
+  }
   if((dpmJetGenHeader->ProjectileParticipants()==nsd1) && (ndd==0)) { return AliPWG0Helper::kSD; }
   else if ((dpmJetGenHeader->ProjectileParticipants()==nsd2) && (ndd==0)) { return AliPWG0Helper::kSD; }
   else { return AliPWG0Helper::kND; }
