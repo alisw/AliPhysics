@@ -300,7 +300,8 @@ TObjArray* AliDxHFEParticleSelectionD0::Select(TObjArray* pTracks, const AliVEve
     // Add track if it is either defined as D0bar(selectionCode==2) or both 
     // D0bar and a D0 (selectionCode==3)
     if ((selectionCode==2 || selectionCode==3) && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)){
-      fD0InvMass= dynamic_cast<AliAODRecoDecayHF2Prong*>(track)->InvMassD0bar();
+      AliAODRecoDecayHF2Prong* prong=dynamic_cast<AliAODRecoDecayHF2Prong*>(track);
+      fD0InvMass=prong?prong->InvMassD0bar():0.;
       selectedTracks->Add(CreateParticle(track));
     }    
   }
