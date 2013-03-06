@@ -610,9 +610,18 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
   //iVariablePair: 0(phi-Psi) 1(Delta eta), 2(Delta phi), 3(pt-trigger), 4(pt-associated
 
   // security checks
-  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
-  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
-  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+  if(psiMin > psiMax-0.00001){
+    AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(ptTriggerMin > ptTriggerMax-0.00001){
+    AliError("ptTriggerMax <= ptTriggerMin");
+    return NULL;
+  }
+  if(ptAssociatedMin > ptAssociatedMax-0.00001){
+    AliError("ptAssociatedMax <= ptAssociatedMin");
+    return NULL;
+  }
 
   // Psi_2
   fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
@@ -703,9 +712,18 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
   //iVariablePair: 0(phi-Psi) 1(Delta eta), 2(Delta phi), 3(pt-trigger), 4(pt-associated
 
   // security checks
-  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
-  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
-  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+  if(psiMin > psiMax-0.00001){
+    AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(ptTriggerMin > ptTriggerMax-0.00001){
+    AliError("ptTriggerMax <= ptTriggerMin");
+    return NULL;
+  }
+  if(ptAssociatedMin > ptAssociatedMax-0.00001){
+    AliError("ptAssociatedMax <= ptAssociatedMin");
+    return NULL;
+  }
   
   // Psi_2
   fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
@@ -857,9 +875,18 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin,
   //iVariablePair: 0(phi-Psi) 1(Delta eta), 2(Delta phi), 3(pt-trigger), 4(pt-associated
 
   // security checks
-  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
-  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
-  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+  if(psiMin > psiMax-0.00001){
+    AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(ptTriggerMin > ptTriggerMax-0.00001){
+    AliError("ptTriggerMax <= ptTriggerMin");
+    return NULL;
+  }
+  if(ptAssociatedMin > ptAssociatedMax-0.00001){
+    AliError("ptAssociatedMax <= ptAssociatedMin");
+    return NULL;
+  }
 
   TString histName = "gHistBalanceFunctionHistogram2D";
 
@@ -947,9 +974,18 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
   }
 
   // security checks
-  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
-  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
-  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+  if(psiMin > psiMax-0.00001){
+    AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(ptTriggerMin > ptTriggerMax-0.00001){
+    AliError("ptTriggerMax <= ptTriggerMin");
+    return NULL;
+  }
+  if(ptAssociatedMin > ptAssociatedMax-0.00001){
+    AliError("ptAssociatedMax <= ptAssociatedMin");
+    return NULL;
+  }
 
   // Psi_2
   fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
@@ -1103,9 +1139,18 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
   }
 
   // security checks
-  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
-  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
-  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+  if(psiMin > psiMax-0.00001){
+    AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(ptTriggerMin > ptTriggerMax-0.00001){
+    AliError("ptTriggerMax <= ptTriggerMin");
+    return NULL;
+  }
+  if(ptAssociatedMin > ptAssociatedMax-0.00001){
+    AliError("ptAssociatedMax <= ptAssociatedMin");
+    return NULL;
+  }
 
   // Psi_2
   fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
@@ -1268,9 +1313,18 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
   //Returns the 2D correlation function for (+-) pairs
 
   // security checks
-  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
-  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
-  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+  if(psiMin > psiMax-0.00001){
+    AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(ptTriggerMin > ptTriggerMax-0.00001){
+    AliError("ptTriggerMax <= ptTriggerMin");
+    return NULL;
+  }
+  if(ptAssociatedMin > ptAssociatedMax-0.00001){
+    AliError("ptAssociatedMax <= ptAssociatedMin");
+    return NULL;
+  }
 
   // Psi_2: axis 0
   fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
@@ -1334,9 +1388,18 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t psiMin,
   //Returns the 2D correlation function for (+-) pairs
 
   // security checks
-  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
-  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
-  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+  if(psiMin > psiMax-0.00001){
+    AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(ptTriggerMin > ptTriggerMax-0.00001){
+    AliError("ptTriggerMax <= ptTriggerMin");
+    return NULL;
+  }
+  if(ptAssociatedMin > ptAssociatedMax-0.00001){
+    AliError("ptAssociatedMax <= ptAssociatedMin");
+    return NULL;
+  }
 
   // Psi_2: axis 0
   fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
@@ -1380,9 +1443,18 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t psiMin,
   //Returns the 2D correlation function for (+-) pairs
 
   // security checks
-  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
-  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
-  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+  if(psiMin > psiMax-0.00001){
+    AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(ptTriggerMin > ptTriggerMax-0.00001){
+    AliError("ptTriggerMax <= ptTriggerMin");
+    return NULL;
+  }
+  if(ptAssociatedMin > ptAssociatedMax-0.00001){
+    AliError("ptAssociatedMax <= ptAssociatedMin");
+    return NULL;
+  }
 
   // Psi_2: axis 0
   fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
@@ -1481,9 +1553,18 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
   //Returns the 2D correlation function for the sum of all charge combination pairs
 
   // security checks
-  if(psiMin > psiMax-0.00001)                   psiMin          = psiMax-0.00001;
-  if(ptTriggerMin > ptTriggerMax-0.00001)       ptTriggerMin    = ptTriggerMax-0.00001;
-  if(ptAssociatedMin > ptAssociatedMax-0.00001) ptAssociatedMin = ptAssociatedMax-0.00001;
+  if(psiMin > psiMax-0.00001){
+    AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(ptTriggerMin > ptTriggerMax-0.00001){
+    AliError("ptTriggerMax <= ptTriggerMin");
+    return NULL;
+  }
+  if(ptAssociatedMin > ptAssociatedMax-0.00001){
+    AliError("ptAssociatedMax <= ptAssociatedMin");
+    return NULL;
+  }
 
   // Psi_2: axis 0
   fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
