@@ -7,7 +7,8 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
 					Bool_t bHBTCut = kFALSE,
 					Bool_t bConversionCut = kFALSE,
 					TString fArgEventClass = "EventPlane",
-					Double_t deltaEtaMax = 2.0) {
+					Double_t deltaEtaMax = 2.0,
+					Bool_t bVertexBinning = kFALSE) {
   //Function to setup the AliBalance object and return it
   AliBalancePsi *gBalance = new AliBalancePsi();
   gBalance->SetAnalysisLevel(analysisLevel);
@@ -15,6 +16,7 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
   if(bHBTCut) gBalance->UseHBTCut();
   if(bConversionCut) gBalance->UseConversionCut();
   if(centralityName) gBalance->SetCentralityIdentifier(centralityName);
+  if(bVertexBinning) gBalance->SetVertexZBinning();
   gBalance->SetCentralityInterval(centrMin,centrMax);
   gBalance->SetEventClass(fArgEventClass);
   gBalance->SetDeltaEtaMax(deltaEtaMax);

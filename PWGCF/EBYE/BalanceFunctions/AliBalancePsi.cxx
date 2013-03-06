@@ -67,6 +67,7 @@ AliBalancePsi::AliBalancePsi() :
   fDeltaEtaMax(2.0),
   fHBTCut(kFALSE),
   fConversionCut(kFALSE),
+  fVertexBinning(kFALSE),
   fEventClass("EventPlane"){
   // Default constructor
 }
@@ -94,6 +95,7 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fDeltaEtaMax(balance.fDeltaEtaMax),
   fHBTCut(balance.fHBTCut),
   fConversionCut(balance.fConversionCut),
+  fVertexBinning(balance.fVertexBinning),
   fEventClass("EventPlane"){
   //copy constructor
 }
@@ -159,8 +161,10 @@ void AliBalancePsi::InitHistograms() {
   //----------------------------------------------------------
     
   //--- Centrality Bins --------------------------------------
-    const Int_t kNCentralityBins = 9;
-    Double_t centralityBins[kNCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
+    const Int_t kNCentralityBins       = 9;
+    const Int_t kNCentralityBinsVertex = 26;
+    Double_t centralityBins[kNCentralityBins+1]             = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
+    Double_t centralityBinsVertex[kNCentralityBinsVertex+1] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.};
   //----------------------------------------------------------
     
   //--- Event Plane Bins -------------------------------------
@@ -179,11 +183,22 @@ void AliBalancePsi::InitHistograms() {
         axisTitlePair[0]  = "kTPCITStracklet multiplicity";
     }
     if(fEventClass == "Centrality"){
-        iBinSingle[0]       = kNCentralityBins;
-        dBinsSingle[0]      = centralityBins;
+        // fine binning in case of vertex Z binning
+        if(fVertexBinning){
+	  iBinSingle[0]       = kNCentralityBinsVertex;
+	  dBinsSingle[0]      = centralityBinsVertex;
+	  
+	  iBinPair[0]       = kNCentralityBinsVertex;
+	  dBinsPair[0]      = centralityBinsVertex;
+	}
+	else{
+	  iBinSingle[0]       = kNCentralityBins;
+	  dBinsSingle[0]      = centralityBins;
+	  
+	  iBinPair[0]       = kNCentralityBins;
+	  dBinsPair[0]      = centralityBins;
+	}
         axisTitleSingle[0]  = "Centrality percentile [%]";
-        iBinPair[0]       = kNCentralityBins;
-        dBinsPair[0]      = centralityBins;
         axisTitlePair[0]  = "Centrality percentile [%]";
     }
     if(fEventClass == "EventPlane"){
@@ -195,14 +210,26 @@ void AliBalancePsi::InitHistograms() {
         axisTitlePair[0]  = "#varphi - #Psi_{2} (a.u.)";
     }
   
-   // delta eta
-  const Int_t kNDeltaEtaBins = 80;
-  Double_t deltaEtaBins[kNDeltaEtaBins+1];
-  for(Int_t i = 0; i < kNDeltaEtaBins+1; i++)
-    deltaEtaBins[i] = - fDeltaEtaMax + i * 2 * fDeltaEtaMax / (Double_t)kNDeltaEtaBins;
-  iBinPair[1]       = kNDeltaEtaBins;
-  dBinsPair[1]      = deltaEtaBins;
-  axisTitlePair[1]  = "#Delta#eta"; 
+    // delta eta
+    const Int_t kNDeltaEtaBins       = 80;
+    const Int_t kNDeltaEtaBinsVertex = 40;    
+    Double_t deltaEtaBins[kNDeltaEtaBins+1];
+    Double_t deltaEtaBinsVertex[kNDeltaEtaBinsVertex+1];
+    for(Int_t i = 0; i < kNDeltaEtaBins+1; i++)
+      deltaEtaBins[i] = - fDeltaEtaMax + i * 2 * fDeltaEtaMax / (Double_t)kNDeltaEtaBins;   
+    for(Int_t i = 0; i < kNDeltaEtaBinsVertex+1; i++)
+      deltaEtaBinsVertex[i] = - fDeltaEtaMax + i * 2 * fDeltaEtaMax / (Double_t)kNDeltaEtaBinsVertex;
+    
+    // coarse binning in case of vertex Z binning
+    if(fVertexBinning){
+      iBinPair[1]       = kNDeltaEtaBinsVertex;
+      dBinsPair[1]      = deltaEtaBinsVertex;
+    }
+    else{
+      iBinPair[1]       = kNDeltaEtaBins;
+      dBinsPair[1]      = deltaEtaBins;
+    }
+    axisTitlePair[1]  = "#Delta#eta"; 
 
    // delta phi
   const Int_t kNDeltaPhiBins = 72;
@@ -216,22 +243,62 @@ void AliBalancePsi::InitHistograms() {
   axisTitlePair[2]  = "#Delta#varphi (rad)"; 
 
   // pt(trigger-associated)
-  const Int_t kNPtBins = 16;
-  Double_t ptBins[kNPtBins+1] = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
-  //for(Int_t i = 0; i < kNPtBins+1; i++){
-  //ptBins[i] = 0.2 + i * 0.5;
-  //} 
-  iBinSingle[1]       = kNPtBins;
-  dBinsSingle[1]      = ptBins;
+  const Int_t kNPtBins       = 16;
+  const Int_t kNPtBinsVertex = 5;
+  Double_t ptBins[kNPtBins+1]             = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
+  Double_t ptBinsVertex[kNPtBinsVertex+1] = {0.2,1.0,2.0,3.0,4.0,8.0};
+
+  // coarse binning in case of vertex Z binning
+  if(fVertexBinning){
+    iBinSingle[1]     = kNPtBinsVertex;
+    dBinsSingle[1]    = ptBinsVertex;
+    
+    iBinPair[3]       = kNPtBinsVertex;
+    dBinsPair[3]      = ptBinsVertex;
+
+    iBinPair[4]       = kNPtBinsVertex;
+    dBinsPair[4]      = ptBinsVertex;
+  }
+  else{
+    iBinSingle[1]     = kNPtBins;
+    dBinsSingle[1]    = ptBins;
+    
+    iBinPair[3]       = kNPtBins;
+    dBinsPair[3]      = ptBins;
+
+    iBinPair[4]       = kNPtBins;
+    dBinsPair[4]      = ptBins;
+  }
+  
   axisTitleSingle[1]  = "p_{T,trig.} (GeV/c)"; 
+  axisTitlePair[3]    = "p_{T,trig.} (GeV/c)"; 
+  axisTitlePair[4]    = "p_{T,assoc.} (GeV/c)";  
+ 
+  // vertex Z
+  const Int_t kNVertexZBins       = 1;
+  const Int_t kNVertexZBinsVertex = 9;
+  Double_t vertexZBins[kNVertexZBins+1]             = {-10., 10.};
+  Double_t vertexZBinsVertex[kNVertexZBinsVertex+1] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.};
 
-  iBinPair[3]       = kNPtBins;
-  dBinsPair[3]      = ptBins;
-  axisTitlePair[3]  = "p_{T,trig.} (GeV/c)"; 
+  // vertex Z binning or not
+  if(fVertexBinning){
+    iBinSingle[2]       = kNVertexZBinsVertex;
+    dBinsSingle[2]      = vertexZBinsVertex;
 
-  iBinPair[4]       = kNPtBins;
-  dBinsPair[4]      = ptBins;
-  axisTitlePair[4]  = "p_{T,assoc.} (GeV/c)";   
+    iBinPair[5]         = kNVertexZBinsVertex;
+    dBinsPair[5]        = vertexZBinsVertex;
+  }
+  else{
+    iBinSingle[2]       = kNVertexZBins;
+    dBinsSingle[2]      = vertexZBins;
+
+    iBinPair[5]         = kNVertexZBins;
+    dBinsPair[5]        = vertexZBins;
+  }
+
+  axisTitleSingle[2]  = "v_{Z} (cm)"; 
+  axisTitlePair[5]    = "v_{Z} (cm)"; 
+
 
   TString histName;
   //+ triggered particles
@@ -310,8 +377,9 @@ void AliBalancePsi::InitHistograms() {
 void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 				     TObjArray *particles, 
 				     TObjArray *particlesMixed,
-                     Float_t bSign,
-                     Double_t kMultorCent) {
+				     Float_t bSign,
+				     Double_t kMultorCent,
+				     Double_t vertexZ) {
   // Calculates the balance function
   fAnalyzedEvents++;
     
@@ -393,6 +461,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     trackVariablesSingle[0]    =  gPsiMinusPhiBin;
     trackVariablesSingle[1]    =  firstPt;
       if(fEventClass=="Multiplicity" || fEventClass == "Centrality" ) trackVariablesSingle[0] = kMultorCent;
+    trackVariablesSingle[2]    =  vertexZ;
+
     
     //fill single particle histograms
     if(charge1 > 0)      fHistP->Fill(trackVariablesSingle,0,firstCorrection); //==========================correction
@@ -424,7 +494,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       
       trackVariablesPair[3]    =  firstPt;      // pt trigger
       trackVariablesPair[4]    =  secondPt[j];  // pt
-      //	trackVariablesPair[5]    =  fCentrality;  // centrality
+      trackVariablesPair[5]    =  vertexZ;      // z of the primary vertex
 
       // HBT like cut
       if(fHBTCut){ // VERSION 3 (all pairs)
