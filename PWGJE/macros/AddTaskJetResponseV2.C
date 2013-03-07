@@ -7,7 +7,7 @@ AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(Char_t* type = "clusters", Ch
 }
 
 
-AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(Bool_t emb = kTRUE, Char_t* type = "clusters", Char_t* jf = "FASTKT", Float_t radius = 0.4, UInt_t filterMask = 256 , Float_t ptTrackMin = 0.15, Int_t iBack = 1, Int_t eventClassMin = 0, Int_t eventClassMax = 4){
+AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(Bool_t emb = kTRUE, Char_t* type = "clusters", Char_t* jf = "FASTKT", Float_t radius = 0.4, UInt_t filterMask = 256 , Float_t ptTrackMin = 0.15, Int_t iBack = 1, Int_t eventClassMin = 0, Int_t eventClassMax = 4, Char_t *recType = "AOD"){
 
    Printf("adding task jet response\n");
 
@@ -44,8 +44,8 @@ AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(Bool_t emb = kTRUE, Char_t* t
       suffix2 += Form("_Cut%05d", (int)((1000.*ptTrackMin)));
       if(type=="clusters") suffix2 += Form("_Skip00");
       
-      branch1 = Form("%sAODextraonly%s",type, suffix.Data());
-      branch2 = Form("%sAODextra%s",type, suffix2.Data());
+      branch1 = Form("%s%sextraonly%s",type, recType, suffix.Data());
+      branch2 = Form("%s%sextra%s",type, recType, suffix2.Data());
       
    } else {
       
@@ -134,7 +134,7 @@ AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(TString branch1 = "", TString
    
    Printf("Branch1: %s",branch1.Data());
    Printf("Branch2: %s",branch2.Data());
-   Printf("Branch2: %s",branch3.Data());
+   Printf("Branch3: %s",branch3.Data());
 
    task->SetBranchNames(branch1,branch2,branch3);
    task->SetOfflineTrgMask(AliVEvent::kMB);

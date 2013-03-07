@@ -160,7 +160,7 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   
   // ITS cuts for new jet analysis 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
-  AliESDtrackCuts* esdTrackCutsHG0 = CreateTrackCutsPWGJE(10001008);
+  AliESDtrackCuts* esdTrackCutsHG0 = CreateTrackCutsPWGJE(10001006);
   
   // throw out tracks with too low number of clusters in
   // the first pass (be consistent with TPC only tracks)
@@ -172,16 +172,16 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   
   
   // the complement to the one with SPD requirement
-  AliESDtrackCuts* esdTrackCutsHG1 = CreateTrackCutsPWGJE(10011008);
+  AliESDtrackCuts* esdTrackCutsHG1 = CreateTrackCutsPWGJE(10011006);
   
   // the tracks that must not be taken pass this cut and
   // non HGC1 and HG
-  AliESDtrackCuts* esdTrackCutsHG2 = CreateTrackCutsPWGJE(10021008);
+  AliESDtrackCuts* esdTrackCutsHG2 = CreateTrackCutsPWGJE(10021006);
   
   // standard cuts also used in R_AA analysis
   AliESDtrackCuts* esdTrackCutsH2 = CreateTrackCutsPWGJE(1000);
 
-  AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWGJE(10041008);
+  AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWGJE(10041006);
   
   // TPC only tracks
   AliESDtrackCuts* esdTrackCutsTPCCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
