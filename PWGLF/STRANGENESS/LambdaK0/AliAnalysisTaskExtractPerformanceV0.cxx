@@ -108,6 +108,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
   fkFastOnly     ( "" ),
   fkpAVertexSelection( kFALSE ),
   fkRunV0Vertexer( kFALSE ),
+  fkRejectPileup ( kTRUE ),
 //------------------------------------------------
 // Tree Variables 
 
@@ -451,6 +452,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
   fkFastOnly     ( "" ),
   fkpAVertexSelection( kFALSE ),
   fkRunV0Vertexer( kFALSE ),
+  fkRejectPileup ( kTRUE ),
 //------------------------------------------------
 // Tree Variables 
 
@@ -2485,7 +2487,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 //------------------------------------------------
 
    // FIXME : quality selection regarding pile-up rejection 
-   if(lESDevent->IsPileupFromSPD() && !fkIsNuclear ){// minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  -> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
+   if(lESDevent->IsPileupFromSPD() && !fkIsNuclear && fkRejectPileup ){// minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  -> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
       AliWarning("Pb / This is tagged as Pileup from SPD... return !");
       PostData(1, fListHistV0);
       PostData(2, fTree);
