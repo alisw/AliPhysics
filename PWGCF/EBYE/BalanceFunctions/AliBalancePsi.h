@@ -167,6 +167,10 @@ class AliBalancePsi : public TObject {
   TH2D *GetQAHistConversionbefore() {return fHistConversionbefore;}
   TH2D *GetQAHistConversionafter() {return fHistConversionafter;}
   TH2D *GetQAHistPsiMinusPhi() {return fHistPsiMinusPhi;}
+  TH3D *GetQAHistResonancesBefore() {return fHistResonancesBefore;}
+  TH3D *GetQAHistResonancesRho() {return fHistResonancesRho;}
+  TH3D *GetQAHistResonancesK0() {return fHistResonancesK0;}
+  TH3D *GetQAHistResonancesLambda() {return fHistResonancesLambda;}
 
   void UseResonancesCut() {fResonancesCut = kTRUE;}
   void UseHBTCut() {fHBTCut = kTRUE;}
@@ -196,7 +200,11 @@ class AliBalancePsi : public TObject {
   TH2D *fHistHBTafter; // Delta Eta vs. Delta Phi after HBT inspired cuts
   TH2D *fHistConversionbefore; // Delta Eta vs. Delta Phi before Conversion cuts
   TH2D *fHistConversionafter; // Delta Eta vs. Delta Phi before Conversion cuts
-  TH2D *fHistPsiMinusPhi;//
+  TH2D *fHistPsiMinusPhi;// psi - phi QA histogram
+  TH3D *fHistResonancesBefore; // 3D histogram (Deta,Dphi,Invmass) before resonance cuts
+  TH3D *fHistResonancesRho;    // 3D histogram (Deta,Dphi,Invmass) after removing rho 
+  TH3D *fHistResonancesK0;     // 3D histogram (Deta,Dphi,Invmass) after removing rho, K0 
+  TH3D *fHistResonancesLambda; // 3D histogram (Deta,Dphi,Invmass) after removing rho, K0, and Lambda 
 
   Double_t fPsiInterval;// interval in Psi-phi1
   Double_t fDeltaEtaMax;// maximum delta eta for output THnSparse

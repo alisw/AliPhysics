@@ -343,6 +343,10 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fBalance->GetQAHistConversionbefore());
   fList->Add(fBalance->GetQAHistConversionafter());
   fList->Add(fBalance->GetQAHistPsiMinusPhi());
+  fList->Add(fBalance->GetQAHistResonancesBefore());
+  fList->Add(fBalance->GetQAHistResonancesRho());
+  fList->Add(fBalance->GetQAHistResonancesK0());
+  fList->Add(fBalance->GetQAHistResonancesLambda());
 
   // Balance function histograms
   // Initialize histograms if not done yet

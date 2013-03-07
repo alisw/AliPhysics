@@ -63,6 +63,10 @@ AliBalancePsi::AliBalancePsi() :
   fHistConversionbefore(0),
   fHistConversionafter(0),
   fHistPsiMinusPhi(0),
+  fHistResonancesBefore(0),
+  fHistResonancesRho(0),
+  fHistResonancesK0(0),
+  fHistResonancesLambda(0),
   fPsiInterval(15.),
   fDeltaEtaMax(2.0),
   fResonancesCut(kTRUE),
@@ -92,6 +96,10 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHistConversionbefore(balance.fHistConversionbefore),
   fHistConversionafter(balance.fHistConversionafter),
   fHistPsiMinusPhi(balance.fHistPsiMinusPhi),
+  fHistResonancesBefore(balance.fHistResonancesBefore),
+  fHistResonancesRho(balance.fHistResonancesRho),
+  fHistResonancesK0(balance.fHistResonancesK0),
+  fHistResonancesLambda(balance.fHistResonancesLambda),
   fPsiInterval(balance.fPsiInterval),
   fDeltaEtaMax(balance.fDeltaEtaMax),
   fResonancesCut(balance.fResonancesCut),
@@ -117,6 +125,10 @@ AliBalancePsi::~AliBalancePsi() {
   delete fHistConversionbefore;
   delete fHistConversionafter;
   delete fHistPsiMinusPhi;
+  delete fHistResonancesBefore;
+  delete fHistResonancesRho;
+  delete fHistResonancesK0;
+  delete fHistResonancesLambda;
     
 }
 
@@ -369,7 +381,12 @@ void AliBalancePsi::InitHistograms() {
   fHistHBTafter         = new TH2D("fHistHBTafter","after HBT cut",200,0,2,200,0,2.*TMath::Pi());
   fHistConversionbefore = new TH2D("fHistConversionbefore","before Conversion cut",200,0,2,200,0,2.*TMath::Pi());
   fHistConversionafter  = new TH2D("fHistConversionafter","after Conversion cut",200,0,2,200,0,2.*TMath::Pi());
-  fHistPsiMinusPhi     = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
+  fHistPsiMinusPhi      = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
+  fHistResonancesBefore = new TH3D("fHistResonancesBefore","before resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
+  fHistResonancesRho    = new TH3D("fHistResonancesRho","after #rho resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
+  fHistResonancesK0     = new TH3D("fHistResonancesK0","after #rho, K0 resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
+  fHistResonancesLambda = new TH3D("fHistResonancesLambda","after #rho, K0, Lambda resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
+
 
   TH1::AddDirectory(oldStatus);
 
@@ -515,16 +532,21 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       //at the invariant mass and not considering the pairs that 
       //fall within 3sigma from the mass peak of: rho0, K0s, Lambda
       if(fResonancesCut) {
+
 	//rho0
 	vectorDaughter[0].SetPtEtaPhiM(firstPt,firstEta,firstPhi,pPion.GetMass());
 	vectorDaughter[1].SetPtEtaPhiM(secondPt[j],secondEta[j],secondPhi[j],pPion.GetMass());
 	vectorMother = vectorDaughter[0] + vectorDaughter[1];
+	fHistResonancesBefore->Fill(trackVariablesPair[1],trackVariablesPair[2],vectorMother.M());
 	if(TMath::Abs(vectorMother.M() - pRho0.GetMass()) <= nSigmaRejection*gWidthForRho0)
 	  continue;
+	fHistResonancesRho->Fill(trackVariablesPair[1],trackVariablesPair[2],vectorMother.M());
 
 	//K0s
 	if(TMath::Abs(vectorMother.M() - pK0s.GetMass()) <= nSigmaRejection*gWidthForK0s)
 	  continue;
+	fHistResonancesK0->Fill(trackVariablesPair[1],trackVariablesPair[2],vectorMother.M());
+
 
 	//Lambda
 	vectorDaughter[0].SetPtEtaPhiM(firstPt,firstEta,firstPhi,pPion.GetMass());
@@ -538,6 +560,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	vectorMother = vectorDaughter[0] + vectorDaughter[1];
 	if(TMath::Abs(vectorMother.M() - pLambda.GetMass()) <= nSigmaRejection*gWidthForLambda)
 	  continue;
+	fHistResonancesLambda->Fill(trackVariablesPair[1],trackVariablesPair[2],vectorMother.M());
+
       }//resonance cut
 
       // HBT like cut
@@ -1706,17 +1730,15 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(TH1D* gHist,
     // first calculate the mean
 
     Double_t fWeightedAverage   = 0.;
-    Double_t fNormalization = 0.;
+    Double_t fNormalization     = 0.;
 
     for(Int_t i = 1; i <= fNumberOfBins; i++) {
 
       fWeightedAverage   += gHist->GetBinContent(i) * gHist->GetBinCenter(i);
       fNormalization     += gHist->GetBinContent(i);
-
     }  
     
     mean = fWeightedAverage / fNormalization;
-
 
     // ----------------------------------------------------------------------
     // then calculate the higher moments
@@ -1727,16 +1749,21 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(TH1D* gHist,
     Double_t fDelta4 = 0.;
 
     for(Int_t i = 1; i <= fNumberOfBins; i++) {
-      fDelta  += gHist->GetBinContent(i) * gHist->GetBinCenter(i) - mean;
-      fDelta2 += TMath::Power((gHist->GetBinContent(i) * gHist->GetBinCenter(i) - mean),2);
-      fDelta3 += TMath::Power((gHist->GetBinContent(i) * gHist->GetBinCenter(i) - mean),3);
-      fDelta4 += TMath::Power((gHist->GetBinContent(i) * gHist->GetBinCenter(i) - mean),4);
+      fDelta  += gHist->GetBinContent(i) * (gHist->GetBinCenter(i) - mean);
+      fDelta2 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),2);
+      fDelta3 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),3);
+      fDelta4 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),4);
     }
     
-    sigma    = fDelta2 / fNormalization;
+    sigma    = TMath::Sqrt(fDelta2 / fNormalization);
     skewness = fDelta3 / fNormalization / TMath::Power(sigma,3);
     kurtosis = fDelta4 / fNormalization / TMath::Power(sigma,4) - 3;
 
+    // ----------------------------------------------------------------------
+    // then calculate the higher moment errors?
+    cout<<fNormalization<<" "<<gHist->GetEffectiveEntries()<<" "<<gHist->Integral()<<endl;
+    meanError = sigma / TMath::Sqrt(fNormalization); //sigma / TMath::Sqrt(gHist->GetEffectiveEntries()) would give the "ROOT" menaError
+    
     success = kTRUE;    
   }
 
