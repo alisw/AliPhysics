@@ -37,11 +37,11 @@ AliDhcTask::AliDhcTask()
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
-  fDoFillSame(kFALSE), fClassName(),
+  fDoFillSame(kFALSE), fDoMassCut(kFALSE), fClassName(),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
-  fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0),
+  fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fHSMass(0x0), fHMMass(0x0),
   fHQAT(0x0), fHQAA(0x0), fHPtCentT(0x0), fHPtCentA(0x0),
   fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
@@ -59,11 +59,11 @@ AliDhcTask::AliDhcTask(const char *name, Bool_t def)
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
-  fDoFillSame(kFALSE), fClassName(),
+  fDoFillSame(kFALSE), fDoMassCut(kFALSE), fClassName(),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
-  fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0),
+  fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fHSMass(0x0), fHMMass(0x0),
   fHQAT(0x0), fHQAA(0x0), fHPtCentT(0x0), fHPtCentA(0x0),
   fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
@@ -134,7 +134,8 @@ void AliDhcTask::PrintDhcSettings()
   AliInfo(Form(" Mix in eta_T bins instead of z_vertex? %d", fMixInEtaT));
   AliInfo(Form(" trigger eta range %f .. %f", fEtaTLo, fEtaTHi));
   AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
-  AliInfo(Form(" fill same event in any case %d", fDoFillSame));
+  AliInfo(Form(" fill same event in any case? %d", fDoFillSame));
+  AliInfo(Form(" do invariant mass cut? %d\n", fDoMassCut));
 }
 
 //________________________________________________________________________
@@ -224,11 +225,13 @@ void AliDhcTask::BookHistos()
                        100,cent[0],cent[nCent]);
   fOutputList->Add(fHPtCentA);
 
-  fNbins = nPtTrig*nPtAssc*nCent*nZvtx;
-  fHSs   = new TH2*[fNbins];
-  fHMs   = new TH2*[fNbins];
-  fHPts  = new TH1*[fNbins];
-  
+  fNbins  = nPtTrig*nPtAssc*nCent*nZvtx;
+  fHSs    = new TH2*[fNbins];
+  fHMs    = new TH2*[fNbins];
+  fHPts   = new TH1*[fNbins];
+  fHSMass = new TH1*[fNbins];
+  fHMMass = new TH1*[fNbins];
+
   fIndex = new TFormula("GlobIndex","(t-1)*[0]*[1]*[2]+(z-1)*[0]*[1]+(x-1)*[0]+(y-1)+0*[4]");
   fIndex->SetParameters(nPtTrig,nPtAssc,nZvtx,nCent);
   fIndex->SetParNames("NTrigBins","NAssocBins", "NZvertexBins", "NCentBins");
@@ -239,12 +242,22 @@ void AliDhcTask::BookHistos()
     for (Int_t z=1; z<=nZvtx; ++z) {
       for (Int_t t=1; t<=nPtTrig; ++t) {
         for (Int_t a=1; a<=nPtAssc; ++a) {
-          fHSs[count]  = 0;
-          fHMs[count]  = 0;
-          fHPts[count] = 0;
+          fHSs[count]    = 0;
+          fHMs[count]    = 0;
+          fHPts[count]   = 0;
+          fHSMass[count] = 0;
+          fHMMass[count] = 0;
           if ((a>t)&&!fAllTAHists) {
             ++count;
             continue;
+          }
+          if (z==1 && t==1 && a==1) {
+            TString title(Form("cen=%d (%.1f to %.1f)",
+                               c, fBCent->GetBinLowEdge(c), fBCent->GetBinUpEdge(c)));
+            fHSMass[count] = new TH1F(Form("hSMass%d",count), Form("Mass Same Event %s;m (GeV)",title.Data()), 10000, 0,10);
+            fOutputList->Add(fHSMass[count]);
+            fHMMass[count] = new TH1F(Form("hMMass%d",count), Form("Mass Mixed Event %s;m (GeV)",title.Data()), 10000, 0,10);
+            fOutputList->Add(fHMMass[count]);
           }
           if (t==1 && a==1) {
             TString title(Form("cen=%d (%.1f to %.1f), zVtx=%d (%.1f to %.1f)",
@@ -803,8 +816,9 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
   Int_t nPtAssc = fHPtAss->GetNbinsX();
 
   Int_t globIndex = (cbin-1)*nZvtx*nPtTrig*nPtAssc+(zbin-1)*nPtTrig*nPtAssc;
+  Int_t ptindex   = (Int_t)fIndex->Eval(1,1,zbin,cbin);
+  Int_t mindex    = (Int_t)fIndex->Eval(1,1,1,cbin);
 
-  Int_t ptindex = (Int_t)fIndex->Eval(1,1,zbin,cbin);
 
   fHPtTrgEvt->Reset();
   for (Int_t i=0; i<iMax; ++i) {
@@ -895,6 +909,14 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
 
       Float_t dphi = DeltaPhi(phia, phib);
       Float_t deta = etaa - etab;
+      Float_t mass = 2*pta*ptb*(TMath::CosH(deta)-TMath::Cos(dphi));
+      Int_t q2 = a.Sign() + b.Sign();
+      if ((q2==0) && fDoMassCut) {
+        if (mass>3.0 && mass<3.2)
+          continue;
+        if (mass>9.2&&mass<9.8)
+          continue;
+      }
 
       Int_t index = globIndex+(abin-1)*nPtAssc+(bbin-1);
       Double_t weight = 1.0;
@@ -913,6 +935,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
         // trigger particle
         weight *= effWtT;
       }
+
       if (fHEffA) {
         // associated particle
         const Int_t nEffDimA = fHEffA->GetNdimensions();
@@ -926,11 +949,17 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
         }
         weight *= fHEffA->GetBinContent(effBinA);
       }
+
       if (hist[index]) { // check if this histogram exists, relevant in the fPtTACrit==kFALSE case
         hist[index]->Fill(dphi,deta,weight);
         bCountTrg = kTRUE;
         if (pairing == kSameEvt) {
           fHPtAss->Fill(ptb); // fill every associated particle every time it is used
+          if (q2==0)
+            fHSMass[mindex]->Fill(mass);
+        } else {
+          if (q2==0)
+            fHMMass[mindex]->Fill(mass);
         }
       }
     }
