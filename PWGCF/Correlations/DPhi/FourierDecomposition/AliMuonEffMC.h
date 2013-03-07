@@ -34,11 +34,14 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   void         UserCreateOutputObjects();
   void         UserExec(Option_t *option);
   void         Terminate(Option_t *);
+  virtual Bool_t    Notify();
 
   void         SetMcAna(Bool_t IsMc)               { fIsMc = IsMc;               }
+  void         SetIsPYTHIA(Bool_t IsPythia)        { fIsPythia = IsPythia;       }
   void         SetMDProcess(Bool_t kMDProcess)     { fMDProcess = kMDProcess;    }
   void         SetFeynmanXProcess(Bool_t kFeynmanX){ fFeynmanX = kFeynmanX;      }
   void         SetScatFX(Bool_t kScatFX)           { fScatFX = kScatFX;          }
+  void         SetZvProcess(Bool_t kZvProcess)     { fZvProcess = kZvProcess;    }
   void         SetCentEstimator(TString Cent)      { fCentralityEstimator = Cent;}
   void         SetNEtaBins(Int_t NEtaBins)         { fNEtaBins = NEtaBins;       }
   void         SetNpTBins(Int_t NpTBins)           { fNpTBins = NpTBins;         }
@@ -48,13 +51,14 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   void         SetNPBins(Int_t NPBins)             { fNPBins = NPBins;           }
   void         MDProcess(Int_t motherpdg, Double_t mcpt, Double_t mcphi, Double_t mceta, Double_t trackpt, Double_t trackphi, Double_t tracketa, Double_t motherpt, Double_t motherphi, Double_t mothereta, Double_t dcavalue);
   Double_t     deltaphi(Double_t phi);
+  Int_t        GetMotherBin(Int_t motherpdg);
   void         FeynmanX();
   void         ScatFX();
 
  protected:
   Bool_t       VertexOk(TObject* obj) const;
-  Bool_t       IsGoodMUONtrack(AliESDMuonTrack &track);
-  Bool_t       IsGoodMUONtrack(AliAODTrack &track);
+  Int_t       IsGoodMUONtrack(AliESDMuonTrack &track);
+  Int_t       IsGoodMUONtrack(AliAODTrack &track);
 
  private:
   AliESDEvent *fESD;               //! ESD object
@@ -65,13 +69,17 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   Double_t     fZVertex;           //! Of current event
   TList       *fOutputList;        //! Output list
   TH1D        *fHEventStat;        //! statistics histo
+  TH1F        *fHXsec;             //! sum of cross section value for hard bins
+  TH1F        *fHTrials;           //! N_trial
   TH2F        *fHEvt;              //! Cent, vtx
 
   Bool_t       fIsMc;              //
+  Bool_t       fIsPythia;          //
   Bool_t       fMDProcess;         // (mother hadron) : (daughter muon) QA
   Bool_t       fFeynmanX;          //
   Bool_t       fScatFX;            //
-    
+  Bool_t       fZvProcess;         //
+
   TString      fCentralityEstimator;//
   Int_t        fNEtaBins;          // number of eta bins
   Int_t        fNpTBins;           // number of p_T bins
@@ -80,14 +88,18 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   Int_t        fNPhiBins;          // number of phi bins
   Int_t        fNPBins;            // number of P bins
 
-  THn         *fHMuonParGen;       //! truth muon track eta, p_T, Centrality, Z-vertex, phi
-  THn         *fHMuonDetGen;       //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi
-  THn         *fHMuonDetRec;       //! reconstructed muon track eta, p_T, Centrality, Z-vertex, phi
-  THn         *fHEtcDetRec;        //! particle reconstructed at MUON detector, but not muon
+  THn         *fHMuonParGen;       //! truth muon track eta, p_T, Centrality, Z-vertex, phi, charge
+  THn         *fHMuonParGenSec;    //! secondary truth muon track eta, p_T, Centrality, Z-vertex, phi, charge
+  THn         *fHMuonDetGen[5];    //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi, charge
+  THn         *fHMuonDetRec[5];    //! reconstructed muon track eta, p_T, Centrality, Z-vertex, phi, charge
+  THn         *fHHadDetRec[5];     //! particle reconstructed at MUON detector, but not muon
+  THn         *fHSecDetRec[5];     //! particle reconstructed at MUON detector, but secondary muon
 
-  THn         *fHMuonParGenP;       //! truth muon track eta, p_T, Centrality, Z-vertex, phi
-  THn         *fHMuonDetGenP;       //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi
-  THn         *fHMuonDetRecP;       //! reconstructed muon track eta, p_T, Centrality, Z-vertex, phi
+  TH2F        *fHCutSpecies;       //!
+
+  THn         *fHMuonParGenP;      //! truth muon track eta, p_T, Centrality, Z-vertex, phi, charge
+  THn         *fHMuonDetGenP;      //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi, charge
+  THn         *fHMuonDetRecP;      //! reconstructed muon track eta, p_T, Centrality, Z-vertex, phi, charge
 
   TH2F        *fHMuMotherGenPt[4]; //! particle-level muon p_T vs. mother p_T
   TH2F        *fHMuMotherRecPt[4]; //! detector-level muon p_T vs. mother p_T
@@ -113,19 +125,21 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
 
   TH1F        *fHaFx;              //!
   TH1F        *fHbFx;              //!
-  TH1F        *fHaFxMu[3][3][3];   //!
-  TH1F        *fHbFxMu[3][3][3];   //!
+  TH2F        *fHabFxMu[3];        //!
   TH1F        *fHabFxRatio;        //!
-  TH1F        *fHabFxRatioMu[3][3][3];//!
+  TH1F        *fHabFxRatioMu[3];   //!
   TH1F        *fHabDeltaFx;        //!
-  TH1F        *fHabDeltaFxMu[3][3][3];//!
+  TH1F        *fHabDeltaFxMu[3];   //!
   TH1F        *fHabRelDeltaFx;     //!
-  TH1F        *fHabRelDeltaFxMu[3][3][3];     //!
+  TH1F        *fHabRelDeltaFxMu[3];//!
+
+  TH1F        *fHMuZv[4];          //! Z-vertex of muon divided into mother species
+  TH1F        *fHMuRelZv[4];       //! (Z-vertex of muon - z-vertex) divided into mother species
 
   AliMuonEffMC(const AliMuonEffMC&);            // not implemented
   AliMuonEffMC &operator=(const AliMuonEffMC&); // not implemented
 
-  ClassDef(AliMuonEffMC, 7);
+  ClassDef(AliMuonEffMC, 8);
 };
 
 #endif
