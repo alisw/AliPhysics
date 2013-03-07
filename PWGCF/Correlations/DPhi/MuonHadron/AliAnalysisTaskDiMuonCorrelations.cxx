@@ -356,8 +356,6 @@ void AliAnalysisTaskDiMuonCorrelations::UserExec(Option_t *) {
   }
   pool->UpdatePool(tracksMuonArm);
 
-  delete tracksMuonArm;
-
   PostData(1, fOutputList); 
 
 }
