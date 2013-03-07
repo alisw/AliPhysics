@@ -617,11 +617,10 @@ class AliTRDtrapConfig : public TNamed
   // DMEM
   AliTRDtrapDmemWord fDmem[fgkDmemWords]; // TRAP data memory
 
-  static const Int_t fgkMaxMcm;            // max. no. of MCMs to be treated
   static const Int_t fgkMcmlistSize=256;     // list of MCMs to which a value has to be written
 
   static Bool_t    fgRegAddressMapInitialized;
-  static TrapReg_t fgRegAddressMap[0x400 + 0x200 + 0x3];
+  static TrapReg_t fgRegAddressMap[0x400 + 0x200 + 0x4];
   static const Int_t fgkRegisterAddressBlockStart[];
   static const Int_t fgkRegisterAddressBlockSize[];
 

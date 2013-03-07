@@ -159,7 +159,6 @@ class AliTRDmcmSim : public TObject {
 
  static const Int_t fgkFormatIndex;                     // index for format settings in stream
 
- static const Int_t fgkNADC;                            // Number of ADC
  static const Int_t fgkMaxTracklets = 4;                // maximum number of tracklet-words submitted per MCM (one per CPU)
  static const Int_t fgkAddDigits = 2;                   // additional digits used for internal representation of ADC data
 	                                                // all internal data as after data control block (i.e. 12 bit), s. TRAP manual
@@ -251,7 +250,7 @@ class AliTRDmcmSim : public TObject {
 
   static Bool_t fgStoreClusters;          // whether to store all clusters in the tracklets
 
-  ClassDef(AliTRDmcmSim,6)
+  ClassDef(AliTRDmcmSim,7)
 };
 
 std::ostream& operator<<(std::ostream& os, const AliTRDmcmSim& mcm);

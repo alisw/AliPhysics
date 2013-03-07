@@ -30,14 +30,15 @@
 
 ClassImp(AliTRDtrackletWord)
 
-AliTRDgeometry* AliTRDtrackletWord::fgGeo = new AliTRDgeometry;
+AliTRDgeometry* AliTRDtrackletWord::fgGeo = 0x0;
 
 AliTRDtrackletWord::AliTRDtrackletWord(UInt_t trackletWord) :
   AliTRDtrackletBase(),
   fHCId(-1),
   fTrackletWord(trackletWord)
 {
-
+  if (!fgGeo)
+    fgGeo = new AliTRDgeometry;
 }
 
 AliTRDtrackletWord::AliTRDtrackletWord(UInt_t trackletWord, Int_t hcid) :
@@ -45,7 +46,8 @@ AliTRDtrackletWord::AliTRDtrackletWord(UInt_t trackletWord, Int_t hcid) :
   fHCId(hcid),
   fTrackletWord(trackletWord)
 {
-
+  if (!fgGeo)
+    fgGeo = new AliTRDgeometry;
 }
 
 AliTRDtrackletWord::AliTRDtrackletWord(const AliTRDtrackletWord &rhs) :
@@ -54,6 +56,8 @@ AliTRDtrackletWord::AliTRDtrackletWord(const AliTRDtrackletWord &rhs) :
   fTrackletWord(rhs.fTrackletWord)
 {
 
+  if (!fgGeo)
+    fgGeo = new AliTRDgeometry;
 }
 
 AliTRDtrackletWord::~AliTRDtrackletWord()

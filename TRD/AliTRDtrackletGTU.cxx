@@ -36,12 +36,12 @@
 
 ClassImp(AliTRDtrackletGTU)
 
-AliTRDtrackletBase* AliTRDtrackletGTU::fgkDummyTracklet = new AliTRDtrackletWord(0);
+AliTRDtrackletBase* AliTRDtrackletGTU::fgkDummyTracklet = 0x0;
 
 AliTRDtrackletGTU::AliTRDtrackletGTU() :
   AliTRDtrackletBase(),
   fGtuParam(AliTRDgtuParam::Instance()),
-  fTracklet(fgkDummyTracklet),
+  fTracklet(0x0),
   fTrackletESD(0x0),
   fMCMtrackletIndex(-1),
   fAssignedZ(kFALSE),
@@ -51,6 +51,10 @@ AliTRDtrackletGTU::AliTRDtrackletGTU() :
   fIndex(0)
 {
   // ctor for any tracklet deriving from AliTRDtrackletBase
+
+  if (!fgkDummyTracklet)
+    fgkDummyTracklet = new AliTRDtrackletWord(0);
+  fTracklet = fgkDummyTracklet;
 
   for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++)
     fSubChannel[zch] = 0;
@@ -59,7 +63,7 @@ AliTRDtrackletGTU::AliTRDtrackletGTU() :
 AliTRDtrackletGTU::AliTRDtrackletGTU(AliTRDtrackletBase *tracklet) :
   AliTRDtrackletBase(*tracklet),
   fGtuParam(AliTRDgtuParam::Instance()),
-  fTracklet(fgkDummyTracklet),
+  fTracklet(0x0),
   fTrackletESD(0x0),
   fMCMtrackletIndex(-1),
   fAssignedZ(kFALSE),
@@ -69,6 +73,9 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(AliTRDtrackletBase *tracklet) :
   fIndex(0)
 {
   // ctor for any tracklet deriving from AliTRDtrackletBase
+
+  if (!fgkDummyTracklet) fgkDummyTracklet = new AliTRDtrackletWord(0);
+  fTracklet = fgkDummyTracklet;
 
   for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++)
     fSubChannel[zch] = 0;
@@ -81,7 +88,7 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(AliTRDtrackletBase *tracklet) :
 AliTRDtrackletGTU::AliTRDtrackletGTU(AliESDTrdTracklet *tracklet) :
   AliTRDtrackletBase(),
   fGtuParam(AliTRDgtuParam::Instance()),
-  fTracklet(fgkDummyTracklet),
+  fTracklet(0x0),
   fTrackletESD(tracklet),
   fMCMtrackletIndex(-1),  // has to be set via SetMCMtrackletIndex() separately
   fAssignedZ(kFALSE),
@@ -91,6 +98,9 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(AliESDTrdTracklet *tracklet) :
   fIndex(0)
 {
   // ctor for an AliESDTrdTracklet
+
+  if (!fgkDummyTracklet) fgkDummyTracklet = new AliTRDtrackletWord(0);
+  fTracklet = fgkDummyTracklet;
 
   for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++)
     fSubChannel[zch] = 0;

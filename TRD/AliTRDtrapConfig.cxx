@@ -31,7 +31,6 @@
 #include <iostream>
 #include <iomanip>
 
-const Int_t AliTRDtrapConfig::fgkMaxMcm = AliTRDfeeParam::GetNmcmRob() + 2;
 const Int_t AliTRDtrapConfig::AliTRDtrapValue::fgkSize[] = {
   0,
   1,
@@ -80,7 +79,8 @@ AliTRDtrapConfig::AliTRDtrapConfig(const TString &name, const TString &title) :
 	AliError(Form("Register address 0x%04x not handled in register map", addr));
       }
       else if (addr < fgkRegisterAddressBlockStart[2] + fgkRegisterAddressBlockSize[2]) {
-	fgRegAddressMap[addr - fgkRegisterAddressBlockStart[2] + fgkRegisterAddressBlockSize[1] + fgkRegisterAddressBlockSize[0]] = (TrapReg_t) iReg;
+	Int_t ind = addr - fgkRegisterAddressBlockStart[2] + fgkRegisterAddressBlockSize[1] + fgkRegisterAddressBlockSize[0];
+	fgRegAddressMap[ind] = (TrapReg_t) iReg;
       }
       else {
 	AliError(Form("Register address 0x%04x not handled in register map", addr));
@@ -708,7 +708,7 @@ Bool_t AliTRDtrapConfig::PrintTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t
 
   if((det >= 0 && det < AliTRDgeometry::Ndet()) &&
      (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) &&
-     (mcm >= 0 && mcm < fgkMaxMcm)) {
+     (mcm >= 0 && mcm < AliTRDfeeParam::GetNmcmRob() + 2)) {
     printf("%10s (%2i bits) at 0x%04x is 0x%08x and resets to: 0x%08x (currently individual mode)\n",
 	   GetRegName((TrapReg_t) reg),
 	   GetRegNBits((TrapReg_t) reg),
