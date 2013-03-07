@@ -4,13 +4,18 @@
 // alien:///alice/cern.ch/user/t/tschuste/correction_hybrid_nulled.root
 
 AliDhcTask *AddTaskDhc(
-  Int_t iAna = 2, 
-  TString chUName = "", 
-  TString chHEffFile = "", 
+  Int_t iAna          = 2, /*1=h-h, 2=mu-h, 4=mu-mu*/ 
+  TString chUName     = "", 
+  TString chHEffFile  = "", 
   TString chMuEffFile = "", 
-  TString chTaskFile = "", 
-  TString chTaskName = "", 
-  TString chNTracks = "PicoTracks"
+  TString chTaskFile  = "", 
+  TString chTaskName  = "", 
+  TString chNTracks   = "PicoTracks",
+  TString centSel     = "V0M",
+  TString className   = "",
+  Bool_t  doMassCut   = kFALSE,
+  Bool_t  doFillSame  = kFALSE,
+  UInt_t  trigsel     = AliVEvent::kINT7
 )
 {
   Char_t chExtraName[256];
@@ -119,7 +124,10 @@ AliDhcTask *AddTaskDhc(
     }
     dhcTask->SetTracksName(chNTracks);
     dhcTask->SetDoWeights(kFALSE);
-    dhcTask->SetCentMethod("V0M");
+    dhcTask->SetDoFillSame(doFillSame);
+    dhcTask->SetDoMassCut(doMassCut);
+    dhcTask->SetClassName(className);
+    dhcTask->SetCentMethod(centSel);
     dhcTask->SetDEtaDPhiBins(nDetaBins,nDPhiBins);
     dhcTask->SetPtTBins(axPt);
     dhcTask->SetPtABins(axPt);
@@ -127,7 +135,7 @@ AliDhcTask *AddTaskDhc(
     dhcTask->SetZVtxBins(axZvtx);
     dhcTask->SetCentMixBins(axCentMix);
     dhcTask->SetZVtxMixBins(axZvtxMix);
-    dhcTask->SelectCollisionCandidates(AliVEvent::kINT7);
+    dhcTask->SelectCollisionCandidates(trigsel);
     dhcTask->SetVerbosity(0);
   }
   if (!dhcTask) {
@@ -138,7 +146,7 @@ AliDhcTask *AddTaskDhc(
   // make a unique task name
   Char_t chNewTaskName[256];
   if (chTaskName.EqualTo("")) {
-    sprintf(chNewTaskName,"Task_Dhc%s%s",chExtraName,chUName.Data());
+    sprintf(chNewTaskName,"Task_Dhc%s%s%s",chExtraName,centSel.Data(),chUName.Data());
   } else {
     sprintf(chNewTaskName,"%s",chTaskName.Data());
   }

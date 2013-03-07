@@ -39,6 +39,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetClassName(const char *n)            { fClassName = n;           }
   void         SetDEtaDPhiBins(Int_t nbe, Int_t nbp)  { fNBdeta=nbe; fNBdphi=nbp; }
   void         SetDoFillSame(Bool_t b)                { fDoFillSame = b;          }
+  void         SetDoMassCut(Bool_t b)                 { fDoMassCut = b;           }
   void         SetDoWeights(Bool_t b)                 { fDoWeights = b;           }
   void         SetEtaMax(Double_t eta)                { fEtaMax = eta;            }
   void         SetEtaTRange(Double_t eL, Double_t eH) { fEtaTLo=eL; fEtaTHi=eH;   }
@@ -98,6 +99,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   Double_t           fEtaALo;          //  Min eta for associated
   Double_t           fEtaAHi;          //  Max eta for associated
   Bool_t             fDoFillSame;      //  If true fill same event immediately (not waiting for pool)
+  Bool_t             fDoMassCut;       //  If true cut on invariant mass
   TString            fClassName;       //  If not null only process events with given class
   AliESDEvent       *fESD;             //! ESD object
   AliAODEvent       *fAOD;             //! AOD object
@@ -117,6 +119,8 @@ class AliDhcTask : public AliAnalysisTaskSE {
   TH2              **fHSs;             //! Same-evt correlations
   TH2              **fHMs;             //! Diff-evt correlations
   TH1              **fHPts;            //! Pt distributions
+  TH1              **fHSMass;          //! Mass distributions same
+  TH1              **fHMMass;          //! Mass distributions mixed
   TH3               *fHQAT;            //! trigger particle distribution for QA
   TH3               *fHQAA;            //! associated particle distribution for QA
   TH2               *fHPtCentT;        //! trigger pT vs centrality
@@ -141,7 +145,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   AliDhcTask(const AliDhcTask&);            // not implemented
   AliDhcTask &operator=(const AliDhcTask&); // not implemented
 
-  ClassDef(AliDhcTask, 6);
+  ClassDef(AliDhcTask, 7);
 };
 
 #endif

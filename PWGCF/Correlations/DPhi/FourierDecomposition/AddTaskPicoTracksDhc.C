@@ -19,7 +19,7 @@ void AddTaskPicoTracksDhc(
   TString chIsESD("ESD");
   
   if (chIsESD.EqualTo(mgr->GetInputEventHandler()->GetDataType())) {
-    Info("AddTaskPicoTracksDhc","adding ESD track selection tasks ...");
+    Info("AddTaskPicoTracksDhc","adding ESD track selection task ...");
     // ESD Track Cuts
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTpcTrack.C");
     AliEmcalEsdTpcTrackTask *hybTask = AddTaskEmcalEsdTpcTrack(chNIntermTracks.Data(),"Hybrid_LHC11h",kFALSE);
@@ -27,7 +27,7 @@ void AddTaskPicoTracksDhc(
     pTrackTask = AddTaskEmcalPicoTrackMaker(chNOutTracks.Data(), chNIntermTracks.Data(), "LHC11h");
   }
   else {
-    Info("AddTaskPicoTracksDhc","AOD analysis, adding picotrackmaker ...");
+    Info("AddTaskPicoTracksDhc","AOD analysis, adding PicoTrack maker ...");
     pTrackTask = AddTaskEmcalPicoTrackMaker(chNOutTracks.Data(),"tracks","lhc11h",kFALSE);
   }
 }
