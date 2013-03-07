@@ -589,12 +589,22 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       for (Int_t particleSpecies = 0; particleSpecies < 4; particleSpecies++)
       {
         TObjArray* primMCParticles = fAnalyseUE->GetAcceptedParticles(mc, 0x0, kTRUE, particleSpecies, kTRUE);
-        TObjArray* primRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE);
-        TObjArray* allRecoTracksMatched =  fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE);
+        TObjArray* primRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE, kFALSE);
+        TObjArray* allRecoTracksMatched  = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE, kFALSE);
+        TObjArray* primRecoTracksMatchedPID = 0;
+        TObjArray* allRecoTracksMatchedPID  = 0;
+	
+	if (fHelperPID)
+	{
+	  primRecoTracksMatchedPID = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE, kTRUE);
+	  allRecoTracksMatchedPID  = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE, kTRUE);
+	}
 	
 	CleanUp(primMCParticles, mc, skipParticlesAbove);
 	CleanUp(primRecoTracksMatched, mc, skipParticlesAbove);
 	CleanUp(allRecoTracksMatched, mc, skipParticlesAbove);
+	CleanUp(primRecoTracksMatchedPID, mc, skipParticlesAbove);
+	CleanUp(allRecoTracksMatchedPID, mc, skipParticlesAbove);
 	
 	// select charges
 	if (fTriggerSelectCharge != 0)
@@ -602,9 +612,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 	  SelectCharge(primMCParticles);
 	  SelectCharge(primRecoTracksMatched);
 	  SelectCharge(allRecoTracksMatched);
+	  SelectCharge(primRecoTracksMatchedPID);
+	  SelectCharge(allRecoTracksMatchedPID);
 	}
       
-        fHistos->FillTrackingEfficiency(primMCParticles, primRecoTracksMatched, allRecoTracksMatched, 0, particleSpecies, centrality, zVtx);
+        fHistos->FillTrackingEfficiency(primMCParticles, primRecoTracksMatched, allRecoTracksMatched, primRecoTracksMatchedPID, allRecoTracksMatchedPID, 0, particleSpecies, centrality, zVtx);
         
 // 	Printf("%d --> %d %d %d", particleSpecies, primMCParticles->GetEntries(), primRecoTracksMatched->GetEntries(), allRecoTracksMatched->GetEntries());
 
@@ -617,7 +629,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       CleanUp((TObjArray*) fakeParticles->At(0), mc, skipParticlesAbove);
       CleanUp((TObjArray*) fakeParticles->At(1), mc, skipParticlesAbove);
 
-      fHistos->FillTrackingEfficiency(0, 0, 0, (TObjArray*) fakeParticles->At(2), -1, centrality, zVtx);
+      fHistos->FillTrackingEfficiency(0, 0, 0, 0, 0, (TObjArray*) fakeParticles->At(2), 0, centrality, zVtx);
       fHistos->FillFakePt(fakeParticles, centrality);
 //       Printf(">>>>> %d %d %d fakes", ((TObjArray*) fakeParticles->At(0))->GetEntriesFast(), ((TObjArray*) fakeParticles->At(1))->GetEntriesFast(), ((TObjArray*) fakeParticles->At(2))->GetEntriesFast());
       delete fakeParticles;
@@ -1145,6 +1157,9 @@ void AliAnalysisTaskPhiCorrelations::CleanUp(TObjArray* tracks, TObject* mcObj, 
 {
   // calls RemoveInjectedSignals, RemoveWeakDecays and RemoveDuplicates
   
+  if (!tracks)
+    return;
+  
   if (fInjectedSignals)
     fAnalyseUE->RemoveInjectedSignals(tracks, mcObj, maxLabel);
   if (fRemoveWeakDecays)
@@ -1157,6 +1172,9 @@ void AliAnalysisTaskPhiCorrelations::CleanUp(TObjArray* tracks, TObject* mcObj, 
 void AliAnalysisTaskPhiCorrelations::SelectCharge(TObjArray* tracks)
 {
   // remove particles with charge not selected (depending on fTriggerSelectCharge)
+  
+  if (!tracks)
+    return;
   
   Int_t before = tracks->GetEntriesFast();
 

@@ -369,11 +369,12 @@ void AliAnalyseLeadingTrackUE::RemoveWeakDecays(TObjArray* tracks, TObject* mcOb
 }
 
 //-------------------------------------------------------------------
-TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts)
+TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts, Bool_t speciesOnTracks)
 {
   // Returns an array of particles that pass the cuts, if arrayMC is given each reconstructed particle is replaced by its corresponding MC particles, depending on the parameter onlyprimaries only for primaries 
   // particleSpecies: -1 all particles are returned
   //                  0 (pions) 1 (kaons) 2 (protons) 3 (others) particles
+  // speciesOnTracks if kFALSE, particleSpecies is only applied on the matched MC particle (not on the track itself)
 
   Int_t nTracks = NParticles(obj);
   TObjArray* tracks = new TObjArray;
@@ -388,7 +389,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
  
   // Loop over tracks or jets
   for (Int_t ipart=0; ipart<nTracks; ++ipart) {
-    AliVParticle* part = ParticleWithCuts( obj, ipart, onlyprimaries, particleSpecies );
+    AliVParticle* part = ParticleWithCuts( obj, ipart, onlyprimaries, (speciesOnTracks) ? particleSpecies : -1);
     if (!part) continue;
     
     if (useEtaPtCuts)

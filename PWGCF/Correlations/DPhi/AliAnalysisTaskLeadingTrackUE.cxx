@@ -401,7 +401,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
               	TObjArray* primRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(fAOD, fArrayMC, kTRUE, particleSpecies);
               	TObjArray* allRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(fAOD, fArrayMC, kFALSE, particleSpecies);
 
-              	fHistosUE->FillTrackingEfficiency(primMCParticles, primRecoTracksMatched, allRecoTracksMatched, 0, particleSpecies);
+              	fHistosUE->FillTrackingEfficiency(primMCParticles, primRecoTracksMatched, allRecoTracksMatched, 0, 0, 0, particleSpecies);
               
               	delete primMCParticles;
               	delete primRecoTracksMatched;

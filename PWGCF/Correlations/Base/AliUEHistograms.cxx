@@ -859,16 +859,18 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 }
   
 //____________________________________________________________________
-void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, TObjArray* fake, Int_t particleType, Double_t centrality, Double_t zVtx)
+void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, TObjArray* recoPrimPID, TObjArray* recoAllPID, TObjArray* fake, Int_t particleType, Double_t centrality, Double_t zVtx)
 {
   // fills the tracking efficiency objects
   //
   // mc: all primary MC particles
   // recoPrim: reconstructed primaries (again MC particles)
   // recoAll: reconstructed (again MC particles)
+  // recoPrim: reconstructed primaries with checks on PID (again MC particles)
+  // recoAll: reconstructed with checks on PID (again MC particles)
   // particleType is: 0 for pion, 1 for kaon, 2 for proton, 3 for others
  
-  for (Int_t step=0; step<4; step++)
+  for (Int_t step=0; step<6; step++)
   {
     TObjArray* list = mc;
     if (step == 1)
@@ -876,6 +878,10 @@ void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim,
     else if (step == 2)
       list = recoAll;
     else if (step == 3)
+      list = recoPrimPID;
+    else if (step == 4)
+      list = recoAllPID;
+    else if (step == 5)
       list = fake;
     
     if (!list)
