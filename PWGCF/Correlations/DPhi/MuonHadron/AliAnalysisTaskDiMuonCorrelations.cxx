@@ -344,7 +344,7 @@ void AliAnalysisTaskDiMuonCorrelations::UserExec(Option_t *) {
   //pool->PrintInfo();
   if (pool->IsReady() || pool->NTracksInPool() > 2000 || pool->GetCurrentNEvents() >= 5) {
     for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) {
-      TObjArray *mixedTracks = pool->GetEvent(jMix);     // Cvetan, here we would need to retrieve the MUON tracks of the event we mix...
+      TObjArray *mixedTracks = pool->GetEvent(jMix);
       fHistNMuons_vs_NMuons_Mixed[centBin]->Fill(mixedTracks->GetEntriesFast(), tracksMuonArm->GetEntriesFast());
       for (Int_t iTrMuon1=0; iTrMuon1<tracksMuonArm->GetEntriesFast(); iTrMuon1++) {
 	fMuonTrack[0] = (AliAODTrack*) tracksMuonArm->At(iTrMuon1);
@@ -357,7 +357,7 @@ void AliAnalysisTaskDiMuonCorrelations::UserExec(Option_t *) {
       }
     }
   }
-  //  pool->UpdatePool(tracksCentralBarrel);    // Cvetan, I think I do not fully understand what this line does, and how it should be modified in a Di-Muon analysis
+  pool->UpdatePool(tracksMuonArm);
 
   delete tracksMuonArm;
 
