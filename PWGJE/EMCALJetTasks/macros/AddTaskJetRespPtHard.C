@@ -26,12 +26,12 @@ AliJetResponseMaker* AddTaskJetRespPtHard(
 {  
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
   
-  AliJetResponseMaker *jetTask = new AliJetResponseMaker[maxPtBin - minPtBin + 1];
+  AliJetResponseMaker *jetTask = new AliJetResponseMaker[maxPtHardBin - minPtHardBin + 1];
 
-  for (Int_t i = minPtBin; i <= maxPtBin; i++) {
+  for (Int_t i = minPtHardBin; i <= maxPtHardBin; i++) {
     AddTaskJetResponseMaker(ntracks1, nclusters1, njets1, nrho1, ntracks2, nclusters2, njets2, nrho2,
 			    jetradius, jetptcut, jetareacut, jetBiasTrack, jetBiasClus, 
-			    matching, maxDistance1, maxDistance2, type, i, taskname, biggerMatrix, jetTask + i - minPtBin);
+			    matching, maxDistance1, maxDistance2, type, i, taskname, biggerMatrix, jetTask + i - minPtHardBin);
   }
   
   return jetTask;
