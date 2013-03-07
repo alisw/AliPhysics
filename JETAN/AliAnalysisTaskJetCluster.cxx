@@ -1852,7 +1852,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
   // get list of tracks/particles for different types
   //
 
-  if(fDebug>2)Printf("%s:%d Selecting tracks with %d",(char*)__FILE__,__LINE__,type);
+  if(fDebug>2) Printf("%s:%d Selecting tracks with %d",(char*)__FILE__,__LINE__,type);
 
   Int_t iCount = 0;
   if(type==kTrackAOD || type==kTrackAODextra || type==kTrackAODextraonly || type==kTrackAODMCextra || type==kTrackAODMCextraonly){
@@ -1912,6 +1912,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	if((fFilterMask>0)&&((!trackAOD->TestFilterBit(fFilterMask)||(!bGood))))continue;
 	if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
 	if(trackAOD->Pt()<fTrackPtCut) continue;
+	if(fDebug) printf("pt extra track %.2f \n", trackAOD->Pt());
 	list->Add(trackAOD);
 	iCount++;
       }
@@ -1928,11 +1929,28 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
       if(!aodExtraTracks)return iCount;
       for(int it =0; it<aodExtraTracks->GetEntries(); it++) {
 	AliVParticle *track = dynamic_cast<AliVParticle*> ((*aodExtraTracks)[it]);
-	if (!track) continue;
+	if (!track) {
+	  if(fDebug)  printf("track %d does not exist\n",it);
+	  continue;
+	}
 
+	Float_t mom[3];
+	mom[0] = track->Pt();
+	mom[1] = track->Phi();
+	mom[2] = track->Theta();
+	 
 	AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*> (track);
-	if(!trackAOD)continue;
-        
+	if(!trackAOD) {
+	  if(fDebug) printf("trackAOD %d does not exist\n",it);
+	  continue;
+	}
+	
+	trackAOD->SetFlags(AliESDtrack::kEmbedded);
+	trackAOD->SetP(mom,kFALSE);
+	trackAOD->SetFilterMap(fFilterMask);
+	
+	if(fDebug) printf("pt extra track %.2f \n", trackAOD->Pt());        
+	
 	if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
 	if(trackAOD->Pt()<fTrackPtCut) continue;
 	list->Add(trackAOD);
