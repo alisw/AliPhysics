@@ -21,8 +21,7 @@ AliJetResponseMaker* AddTaskJetRespPtHard(
   Int_t       maxPtHardBin       = -999,
   Int_t       minPtHardBin       = -999,
   const char *taskname           = "AliJetResponseMaker",
-  Bool_t      biggerMatrix       = kFALSE,
-					  
+  Bool_t      biggerMatrix       = kFALSE
 )
 {  
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
