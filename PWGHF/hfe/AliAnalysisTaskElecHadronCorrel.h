@@ -300,6 +300,30 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH2F       *fEovPHadWoSS;//
     TH2F       *fEovPHadWSS;//
 
+    //Deta < 0.8
+    TH2F       *fHadronDphiEta1;   //Hadron - had DPhi
+    TH2F       *fHadronDphiEta11;     //Hadron - had DPhi
+    TH2F       *fHadronDphiEta12;     //Hadron - had DPhi
+    TH2F       *fHadronDphiEta13;     //Hadron - had DPhi
+    TH2F       *fHadronDphiEta14;     //Hadron - had DPhi
+    TH2F       *fHadronDphiNoSSEta1;   //Hadron - had DPhi NoSS
+    TH2F       *fHadronDphiNoSSEta11;     //Hadron - had DPhi NoSS
+    TH2F       *fHadronDphiNoSSEta12;     //Hadron - had DPhi NoSS
+    TH2F       *fHadronDphiNoSSEta13;     //Hadron - had DPhi NoSS
+    TH2F       *fHadronDphiNoSSEta14;     //Hadron - had DPhi NoSS
+
+    //Deta > 0.8
+    TH2F       *fHadronDphiEta2;   //Hadron - had DPhi
+    TH2F       *fHadronDphiEta21;     //Hadron - had DPhi
+    TH2F       *fHadronDphiEta22;     //Hadron - had DPhi
+    TH2F       *fHadronDphiEta23;     //Hadron - had DPhi
+    TH2F       *fHadronDphiEta24;     //Hadron - had DPhi
+    TH2F       *fHadronDphiNoSSEta2;   //Hadron - had DPhi NoSS
+    TH2F       *fHadronDphiNoSSEta21;     //Hadron - had DPhi NoSS
+    TH2F       *fHadronDphiNoSSEta22;     //Hadron - had DPhi NoSS
+    TH2F       *fHadronDphiNoSSEta23;     //Hadron - had DPhi NoSS
+    TH2F       *fHadronDphiNoSSEta24;     //Hadron - had DPhi NoSS
+
 
     //THnSparse  *fSparseElectron;//!Electron info 
     //Double_t *fvalueElectron;//!Electron info 

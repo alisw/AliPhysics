@@ -311,6 +311,26 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
   ,fEovPWSS(0)  
   ,fEovPHadWoSS(0)  
   ,fEovPHadWSS(0)  
+  ,fHadronDphiEta1(0)   
+  ,fHadronDphiEta11(0)  
+  ,fHadronDphiEta12(0)  
+  ,fHadronDphiEta13(0)  
+  ,fHadronDphiEta14(0)  
+  ,fHadronDphiNoSSEta1(0)   
+  ,fHadronDphiNoSSEta11(0)  
+  ,fHadronDphiNoSSEta12(0)  
+  ,fHadronDphiNoSSEta13(0)  
+  ,fHadronDphiNoSSEta14(0)  
+  ,fHadronDphiEta2(0)  
+  ,fHadronDphiEta21(0) 
+  ,fHadronDphiEta22(0) 
+  ,fHadronDphiEta23(0) 
+  ,fHadronDphiEta24(0) 
+  ,fHadronDphiNoSSEta2(0)   
+  ,fHadronDphiNoSSEta21(0)  
+  ,fHadronDphiNoSSEta22(0)  
+  ,fHadronDphiNoSSEta23(0)  
+    ,fHadronDphiNoSSEta24(0)
     //,fSparseElectron(0)  
     //  ,fvalueElectron(0)   
 {
@@ -542,7 +562,27 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fEovPWoSS(0)
   ,fEovPWSS(0) 
   ,fEovPHadWoSS(0)
-    ,fEovPHadWSS(0) 
+  ,fEovPHadWSS(0) 
+  ,fHadronDphiEta1(0)   
+  ,fHadronDphiEta11(0)  
+  ,fHadronDphiEta12(0)  
+  ,fHadronDphiEta13(0)  
+  ,fHadronDphiEta14(0)  
+  ,fHadronDphiNoSSEta1(0)   
+  ,fHadronDphiNoSSEta11(0)  
+  ,fHadronDphiNoSSEta12(0)  
+  ,fHadronDphiNoSSEta13(0)  
+  ,fHadronDphiNoSSEta14(0)  
+  ,fHadronDphiEta2(0)  
+  ,fHadronDphiEta21(0) 
+  ,fHadronDphiEta22(0) 
+  ,fHadronDphiEta23(0) 
+  ,fHadronDphiEta24(0) 
+  ,fHadronDphiNoSSEta2(0)   
+  ,fHadronDphiNoSSEta21(0)  
+  ,fHadronDphiNoSSEta22(0)  
+  ,fHadronDphiNoSSEta23(0)  
+    ,fHadronDphiNoSSEta24(0)
     //,fSparseElectron(0)  
     //  ,fvalueElectron(0)  
 {
@@ -759,15 +799,17 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
      if((fTPCnSigma > -10) && (fTPCnSigma < -3.5)) fEovPHadWoSS->Fill(pt,fEovP);
      if(((fTPCnSigma > -10) && (fTPCnSigma < -3.5)) && ((cluster->GetM20()>0.03) && (cluster->GetM20()<0.3)) &&  ((cluster->GetM02()>0.03) && (cluster->GetM02()<0.5)) && ((cluster->GetDispersion()<1))) fEovPHadWSS->Fill(pt,fEovP);
 
-     //Dphi distribution with shower shape cuts
+     //Dphi distribution hadrons with shower shape cuts
      if(((fTPCnSigma > -10) && (fTPCnSigma < -3.5)) && ((cluster->GetM20()>0.03) && (cluster->GetM20()<0.3)) &&  ((cluster->GetM02()>0.03) && (cluster->GetM02()<0.5)) && ((cluster->GetDispersion()<1))&&(fEovP >= 0.8 && fEovP <=1.2)){
        ElectronHadCorrel(iTracks, track, fHadronDphi, fHadronDphi1,fHadronDphi2,fHadronDphi3,fHadronDphi4);
+       ElectronHadCorrelEtaBins(iTracks, track, fHadronDphiEta1, fHadronDphiEta11,fHadronDphiEta12,fHadronDphiEta13,fHadronDphiEta14,fHadronDphiEta2, fHadronDphiEta21,fHadronDphiEta22,fHadronDphiEta23,fHadronDphiEta24);
        fPiPt->Fill(pt);
      }
 
-     //Dphi distribution without shower shape cuts
+     //Dphi distribution hadrons without shower shape cuts
      if((fTPCnSigma > -10) && (fTPCnSigma < -3.5)&&(fEovP >= 0.8 && fEovP <=1.2)){
        ElectronHadCorrel(iTracks, track, fHadronDphiNoSS, fHadronDphiNoSS1,fHadronDphiNoSS2,fHadronDphiNoSS3,fHadronDphiNoSS4);
+       ElectronHadCorrelEtaBins(iTracks, track, fHadronDphiNoSSEta1, fHadronDphiNoSSEta11,fHadronDphiNoSSEta12,fHadronDphiNoSSEta13,fHadronDphiNoSSEta14,fHadronDphiNoSSEta2, fHadronDphiNoSSEta21,fHadronDphiNoSSEta22,fHadronDphiNoSSEta23,fHadronDphiNoSSEta24);
        fPiPtNoSS->Fill(pt);
      }
 
@@ -1402,6 +1444,51 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fEovPHadWSS = new TH2F("fEovPHadWSS","E/p distribution for hadrons with SS cuts",1000,0,50,100,0,2);
   fOutputList->Add(fEovPHadWSS);
+
+  fHadronDphiEta1 = new TH2F("fHadronDphiEta1", "Hadron-had Dphi correlation for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiEta1);
+  fHadronDphiEta11 = new TH2F("fHadronDphiEta11", "Hadron-had Dphi correlation for 1<pt^{asso}<3i for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiEta11);
+  fHadronDphiEta12 = new TH2F("fHadronDphiEta12", "Hadron-had Dphi correlation for 3<pt^{asso}<5 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiEta12);
+  fHadronDphiEta13 = new TH2F("fHadronDphiEta13", "Hadron-had Dphi correlation for 5<pt^{asso}<7 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiEta13);
+  fHadronDphiEta14 = new TH2F("fHadronDphiEta14", "Hadron-had Dphi correlation for 7<pt^{asso}<9 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiEta14);
+
+  fHadronDphiNoSSEta1 = new TH2F("fHadronDphiNoSSEta1", "Hadron-had DphiNoSS correlation for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiNoSSEta1);
+  fHadronDphiNoSSEta11 = new TH2F("fHadronDphiNoSSEta11", "Hadron-had DphiNoSS correlation for 1<pt^{asso}<3i for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiNoSSEta11);
+  fHadronDphiNoSSEta12 = new TH2F("fHadronDphiNoSSEta12", "Hadron-had DphiNoSS correlation for 3<pt^{asso}<5 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiNoSSEta12);
+  fHadronDphiNoSSEta13 = new TH2F("fHadronDphiNoSSEta13", "Hadron-had DphiNoSS correlation for 5<pt^{asso}<7 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiNoSSEta13);
+  fHadronDphiNoSSEta14 = new TH2F("fHadronDphiNoSSEta14", "Hadron-had DphiNoSS correlation for 7<pt^{asso}<9 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiNoSSEta14);
+
+  fHadronDphiEta2 = new TH2F("fHadronDphiEta2", "Hadron-had Dphi correlation for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiEta2);
+  fHadronDphiEta21 = new TH2F("fHadronDphiEta21", "Hadron-had Dphi correlation for 1<pt^{asso}<3i for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiEta21);
+  fHadronDphiEta22 = new TH2F("fHadronDphiEta22", "Hadron-had Dphi correlation for 3<pt^{asso}<5 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiEta22);
+  fHadronDphiEta23 = new TH2F("fHadronDphiEta23", "Hadron-had Dphi correlation for 5<pt^{asso}<7 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiEta23);
+  fHadronDphiEta24 = new TH2F("fHadronDphiEta24", "Hadron-had Dphi correlation for 7<pt^{asso}<9 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiEta24);
+
+  fHadronDphiNoSSEta2 = new TH2F("fHadronDphiNoSSEta2", "Hadron-had DphiNoSS correlation for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiNoSSEta2);
+  fHadronDphiNoSSEta21 = new TH2F("fHadronDphiNoSSEta21", "Hadron-had DphiNoSS correlation for 1<pt^{asso}<3i for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiNoSSEta21);
+  fHadronDphiNoSSEta22 = new TH2F("fHadronDphiNoSSEta22", "Hadron-had DphiNoSS correlation for 3<pt^{asso}<5 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiNoSSEta22);
+  fHadronDphiNoSSEta23 = new TH2F("fHadronDphiNoSSEta23", "Hadron-had DphiNoSS correlation for 5<pt^{asso}<7 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiNoSSEta23);
+  fHadronDphiNoSSEta24 = new TH2F("fHadronDphiNoSSEta24", "Hadron-had DphiNoSS correlation for 7<pt^{asso}<9 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphiNoSSEta24);
+
 
   //  Int_t binsv1[6]={500,200,50,50,50,50}; //pt, TPCnsig, E/p, M20, M02, dispersion 
   //  Double_t xminv1[6]={0,-10,0,0,0,0};
