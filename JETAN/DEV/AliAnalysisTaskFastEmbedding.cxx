@@ -843,20 +843,20 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
             Int_t nAODmcpart=0;
             for(Int_t ip=0; ip<nMCpart; ++ip){
                AliAODMCParticle *tmpPart = (AliAODMCParticle*) mcpartIN->At(ip);
-
+	       if(!tmpPart) continue;
                if(fEmbedMode==kAODJetTracks){
                   // jet track? else continue
                   // not implemented yet
                   continue;
                } 
 
-               new((*mcpartOUT)[nAODmcpart++]) AliAODMCParticle(*tmpPart);
-               dummy = (*mcpartOUT)[nAODmcpart-1];
-
-               if(tmpPart->IsPhysicalPrimary() && tmpPart->Charge()!=0. && tmpPart->Charge()!=-99. ){
-                  fh1MCTrackPt->Fill(tmpPart->Pt());
-                  fh2MCTrackEtaPhi->Fill(tmpPart->Eta(), tmpPart->Phi());
-                  nPhysicalPrimary++;
+               if(tmpPart->IsPhysicalPrimary() && tmpPart->Charge()!=0. && tmpPart->Charge()!=-99.  && tmpPart->Pt()>0.){
+		 new((*mcpartOUT)[nAODmcpart++]) AliAODMCParticle(*tmpPart);
+		 dummy = (*mcpartOUT)[nAODmcpart-1];
+		 
+		 fh1MCTrackPt->Fill(tmpPart->Pt());
+		 fh2MCTrackEtaPhi->Fill(tmpPart->Eta(), tmpPart->Phi());
+		 nPhysicalPrimary++;
                }
             }
             fh1MCTrackN->Fill((Float_t)nPhysicalPrimary);
