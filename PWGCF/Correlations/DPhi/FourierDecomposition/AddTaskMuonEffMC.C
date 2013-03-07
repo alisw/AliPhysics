@@ -3,8 +3,10 @@
 AliMuonEffMC* AddTaskMuonEffMC(
   Bool_t IsMc = kTRUE,
   Bool_t MDProcess = kFALSE,
+  Bool_t IsPythia = kFALSE,
   Bool_t FeynmanXProcess = kFALSE,
   Bool_t ScatFXProcess = kFALSE,
+  Bool_t ZvProcess = kTRUE,
   TString centralityEstimator = "V0M",
   const Int_t NEtaBins = 15,
   const Int_t NpTBins = 50,
@@ -40,9 +42,11 @@ AliMuonEffMC* AddTaskMuonEffMC(
   AliMuonEffMC *MuonEff = new AliMuonEffMC("MuonEffMC");
 
   MuonEff->SetMcAna(IsMc);
+  MuonEff->SetIsPYTHIA(IsPythia);
   MuonEff->SetMDProcess(MDProcess);
   MuonEff->SetFeynmanXProcess(FeynmanXProcess);
   MuonEff->SetScatFX(ScatFXProcess);
+  MuonEff->SetZvProcess(ZvProcess);
   MuonEff->SetCentEstimator(centralityEstimator);
   MuonEff->SetNEtaBins(NEtaBins);
   MuonEff->SetNpTBins(NpTBins);
