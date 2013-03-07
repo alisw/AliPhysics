@@ -209,20 +209,20 @@ void AliAnalysisTaskDiMuonCorrelations::UserCreateOutputObjects() {
 
     fHistNMuons_vs_NMuons[iCent] = new TH2D(Form("fHistNMuons_vs_NMuons_Cent%02d",iCent),
 						  Form("%d-%d %%",Int_t(fCentAxis->GetBinLowEdge(iCent+1)),Int_t(fCentAxis->GetBinUpEdge(iCent+1))),
-						  100, 0, 500, 20, 0, 20);
+						  20, 0, 20, 20, 0, 20);
     fHistNMuons_vs_NMuons[iCent] -> SetXTitle("N_{tracks} Muon Arm");
     fHistNMuons_vs_NMuons[iCent] -> SetYTitle("N_{tracks} Muon Arm");
     fHistNMuons_vs_NMuons[iCent] -> Sumw2();
 
     fHistNMuons_vs_NMuons_Mixed[iCent] = new TH2D(Form("fHistNMuons_vs_NMuons_Mixed_Cent%02d",iCent),
 						  Form("%d-%d %% MIXED",Int_t(fCentAxis->GetBinLowEdge(iCent+1)),Int_t(fCentAxis->GetBinUpEdge(iCent+1))),
-						  100, 0, 500, 20, 0, 20);
+						  20, 0, 20, 20, 0, 20);
     fHistNMuons_vs_NMuons_Mixed[iCent] -> SetXTitle("N_{tracks} Muon Arm");
     fHistNMuons_vs_NMuons_Mixed[iCent] -> SetYTitle("N_{tracks} Muon Arm");
     fHistNMuons_vs_NMuons_Mixed[iCent] -> Sumw2();
 
-    fHistTracksEtavsEta[iCent]       = new TH2D(Form("fHistTracksEtavsEta_%02d",iCent),       "#eta 1st muon vs #eta 2nd muon", 100,-4.5,-2.,100,-1.5,1.5);
-    fHistTracksEtavsEta_Mixed[iCent] = new TH2D(Form("fHistTracksEtavsEta_Mixed_%02d",iCent), "#eta 1st muon vs #eta 2nd muon", 100,-4.5,-2.,100,-1.5,1.5);
+    fHistTracksEtavsEta[iCent]       = new TH2D(Form("fHistTracksEtavsEta_%02d",iCent),       "#eta 1st muon vs #eta 2nd muon", 100,-4.5,-2.,100,-4.5,-2.);
+    fHistTracksEtavsEta_Mixed[iCent] = new TH2D(Form("fHistTracksEtavsEta_Mixed_%02d",iCent), "#eta 1st muon vs #eta 2nd muon", 100,-4.5,-2.,100,-4.5,-2.);
 
     fOutputList -> Add(fHistNMuons_vs_NMuons[iCent]);
     fOutputList -> Add(fHistNMuons_vs_NMuons_Mixed[iCent]);
