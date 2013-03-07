@@ -1931,7 +1931,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	AliVParticle *track = dynamic_cast<AliVParticle*> ((*aodExtraTracks)[it]);
 	AliAODMCParticle *partmc = dynamic_cast<AliAODMCParticle*> ((*aodExtraTracks)[it]);
 	if (!track) {
-	  if(fDebug)  printf("track %d does not exist\n",it);
+	  if(fDebug>10)  printf("track %d does not exist\n",it);
 	  continue;
 	}
 
@@ -1944,22 +1944,16 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	}
 
 
-	Float_t mom[3];
-	mom[0] = track->Pt();
-	mom[1] = track->Phi();
-	mom[2] = track->Theta();
-	 
 	AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*> (track);
 	if(!trackAOD) {
-	  if(fDebug) printf("trackAOD %d does not exist\n",it);
+	  if(fDebug>10) printf("trackAOD %d does not exist\n",it);
 	  continue;
 	}
 	
 	trackAOD->SetFlags(AliESDtrack::kEmbedded);
-	trackAOD->SetP(mom,kFALSE);
 	trackAOD->SetFilterMap(fFilterMask);
 	
-	if(fDebug) printf("pt extra track %.2f \n", trackAOD->Pt());        
+	if(fDebug>10) printf("pt extra track %.2f \n", trackAOD->Pt());        
 	
 	if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
 	if(trackAOD->Pt()<fTrackPtCut) continue;
