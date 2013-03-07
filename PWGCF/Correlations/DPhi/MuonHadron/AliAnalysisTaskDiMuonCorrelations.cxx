@@ -377,7 +377,7 @@ void AliAnalysisTaskDiMuonCorrelations::FillHistograms(Int_t centrality, Int_t o
 
   if (ptBinTrackMuon1<1 || ptBinTrackMuon1>fNbinsPt || ptBinTrackMuon2<1 || ptBinTrackMuon2>fNbinsPt) return;
 
-  if (ptBinTrackMuon1 < ptBinTrackMuon2) return;
+  if (fMuonTrack[0]->Pt() < fMuonTrack[1]->Pt()) return;
 
   Double_t deltaPhi = fMuonTrack[0]->Phi() - fMuonTrack[1]->Phi();
   if (deltaPhi >  1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
