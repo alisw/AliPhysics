@@ -298,27 +298,22 @@ void AliAnalysisTaskDiMuonCorrelations::UserExec(Option_t *) {
   fHistCentrality->Fill(percentile);
 
   // Vertex selection
-  const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
-  if (!trkVtx || trkVtx->GetNContributors()<=0) return;
-  TString vtxTtl = trkVtx->GetTitle();
-  if (!vtxTtl.Contains("VertexerTracks")) return;
-  fHistEvStat->Fill(cutIndex++);
-  Double_t zvtx = trkVtx->GetZ();
   const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
   if (spdVtx->GetNContributors()<=0) return;
+  fHistEvStat->Fill(cutIndex++);
   TString vtxTyp = spdVtx->GetTitle();
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
   if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
-  if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
   fHistEvStat->Fill(cutIndex++);
 
+  Double_t zvtx = spdVtx->GetZ();
   if (TMath::Abs(zvtx) > 10.) return;
   fHistEvStat->Fill(cutIndex++);
 
   TObjArray *tracksMuonArm = GetAcceptedTracksMuonArm(fAOD);
-  if (tracksMuonArm->GetEntriesFast() < 2) {
+  if (tracksMuonArm->GetEntriesFast() == 0) {
     delete tracksMuonArm;
     return;
   }
@@ -393,7 +388,8 @@ void AliAnalysisTaskDiMuonCorrelations::FillHistograms(Int_t centrality, Int_t o
 
 Bool_t AliAnalysisTaskDiMuonCorrelations::IsTriggerFired() {
   
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7); 
+  Bool_t isSelected = ((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMUL7) ||
+		       (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMUU7));
 
   return isSelected;
 }
