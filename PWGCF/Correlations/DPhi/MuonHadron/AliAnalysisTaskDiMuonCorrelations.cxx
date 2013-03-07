@@ -366,6 +366,13 @@ void AliAnalysisTaskDiMuonCorrelations::UserExec(Option_t *) {
 
 void AliAnalysisTaskDiMuonCorrelations::FillHistograms(Int_t centrality, Int_t option) {
 
+  if (fLikeSign) {
+    if ((fMuonTrack[0]->Charge()*fMuonTrack[1]->Charge()) <= 0) return;
+  }
+  else {
+    if ((fMuonTrack[0]->Charge()*fMuonTrack[1]->Charge()) >= 0) return;
+  }
+
   Int_t ptBinTrackMuon1 = fPtAxis -> FindBin(fMuonTrack[0]->Pt());
   Int_t ptBinTrackMuon2 = fPtAxis -> FindBin(fMuonTrack[1]->Pt());
 
