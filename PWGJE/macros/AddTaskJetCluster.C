@@ -57,7 +57,7 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
     TString type = mgr->GetInputEventHandler()->GetDataType();
     TString typeRec(bRec);
     TString typeGen(bGen);
-    if(!typeRec.Contains("AODextra") || !typeRec.Contains("AODMCextra")) {
+    if(!typeRec.Contains("AODextra") && !typeRec.Contains("AODMCextra")) {
       typeGen.ToUpper();
       typeRec.ToUpper();
     }
