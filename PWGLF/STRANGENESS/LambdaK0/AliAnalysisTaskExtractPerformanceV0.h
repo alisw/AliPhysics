@@ -103,7 +103,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   TString fkFastOnly; //"" if no extra selection, "kFastOnly" -> without SDD, "NotkFastOnly" -> With SDD
   Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
   Bool_t fkRunV0Vertexer; //if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
-  Bool_t fkRejectPileup; //if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
+  Bool_t fkRejectPileup; //Reject pileup switch
   
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 

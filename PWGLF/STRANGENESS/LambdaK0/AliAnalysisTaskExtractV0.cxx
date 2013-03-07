@@ -101,6 +101,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
   fkFastOnly      ( "" ),
   fkpAVertexSelection( kFALSE ),
   fkRunV0Vertexer ( kFALSE ),
+  fkRejectPileup  ( kTRUE ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -230,6 +231,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
   fkFastOnly      ( "" ),
   fkpAVertexSelection( kFALSE ),
   fkRunV0Vertexer ( kFALSE ),
+  fkRejectPileup  ( kTRUE ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -993,7 +995,7 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
 //------------------------------------------------
 
    // FIXME : quality selection regarding pile-up rejection 
-   if(lESDevent->IsPileupFromSPD() && !fkIsNuclear){// minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  -> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
+   if(lESDevent->IsPileupFromSPD() && !fkIsNuclear && fkRejectPileup){// minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  -> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
       PostData(1, fListHistV0);
       PostData(2, fTree); 
       return;
