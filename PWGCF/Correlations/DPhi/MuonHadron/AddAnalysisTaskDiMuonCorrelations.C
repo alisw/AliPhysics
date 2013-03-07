@@ -8,7 +8,8 @@ AliAnalysisTaskDiMuonCorrelations *AddAnalysisTaskDiMuonCorrelations(const char 
 
   AliAnalysisTaskDiMuonCorrelations *task = new AliAnalysisTaskDiMuonCorrelations(Form("AliAnalysisTaskDiMuonCorrelations_%s",centMethod));
 
-  // Set analysis cuts   
+  // Set analysis cuts  
+  task->SetLikeSign(kTRUE);
   task->SetEtaRangeMuon(-4.0, -2.5);
   task->SetTriggerMatchLevelMuon(1);
 

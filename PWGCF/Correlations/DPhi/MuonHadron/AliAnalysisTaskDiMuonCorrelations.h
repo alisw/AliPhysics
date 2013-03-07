@@ -30,6 +30,7 @@ class  AliAnalysisTaskDiMuonCorrelations : public AliAnalysisTaskSE {
 
   // ------------- Cuts -----------------
 
+  void SetLikeSign(Bool_t likeSign) { fLikeSign = likeSign; }
   void SetTriggerMatchLevelMuon(Short_t level) { fTriggerMatchLevelMuon = level; }
   //  void SetMaxChi2Muon(Double_t chi2Max) { fMaxChi2Muon = chi2Max; }
   void SetEtaRangeMuon (Double_t etaMin, Double_t etaMax) { fMinEtaMuon = etaMin; fMaxEtaMuon = etaMax; }
@@ -56,6 +57,8 @@ class  AliAnalysisTaskDiMuonCorrelations : public AliAnalysisTaskSE {
   AliAODEvent *fAOD; //!
   AliEventPoolManager *fPoolMgr; //! event pool manager
   AliAODTrack *fMuonTrack[2]; //!
+
+  Bool_t fLikeSign;
   
   Double_t fMaxChi2Muon, fMinEtaMuon, fMaxEtaMuon;
   Short_t fTriggerMatchLevelMuon;
