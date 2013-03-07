@@ -330,7 +330,8 @@ void AliAnalysisTaskDiMuonCorrelations::UserExec(Option_t *) {
     fMuonTrack[0] = (AliAODTrack*) tracksMuonArm->At(iTrMuon1);
     fHistSingleMuonsPt[centBin]->Fill(fMuonTrack[0]->Pt());
     fHistSingleMuonsEtaPt[centBin]->Fill(fMuonTrack[0]->Pt(),fMuonTrack[0]->Eta());
-    for (Int_t iTrMuon2=iTrMuon1+1; iTrMuon2<tracksMuonArm->GetEntriesFast(); iTrMuon2++) {
+    for (Int_t iTrMuon2=0; iTrMuon2<tracksMuonArm->GetEntriesFast(); iTrMuon2++) {
+      if (iTrMuon2 == iTrMuon1) continue;
       fMuonTrack[1] = (AliAODTrack*) tracksMuonArm -> At(iTrMuon2);
       FillHistograms(centBin, kSingleEvent);
     }
@@ -375,6 +376,8 @@ void AliAnalysisTaskDiMuonCorrelations::FillHistograms(Int_t centrality, Int_t o
   Int_t ptBinTrackMuon2 = fPtAxis -> FindBin(fMuonTrack[1]->Pt());
 
   if (ptBinTrackMuon1<1 || ptBinTrackMuon1>fNbinsPt || ptBinTrackMuon2<1 || ptBinTrackMuon2>fNbinsPt) return;
+
+  if (ptBinTrackMuon1 < ptBinTrackMuon2) return;
 
   Double_t deltaPhi = fMuonTrack[0]->Phi() - fMuonTrack[1]->Phi();
   if (deltaPhi >  1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
