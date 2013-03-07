@@ -261,7 +261,7 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   iTrackBin[2] = kNSpeciesBins;
   iTrackBin[4] = nVertexBinsEff;
 
-  fTrackHistEfficiency = new AliCFContainer("fTrackHistEfficiency", "Tracking efficiency", 4, 5, iTrackBin);
+  fTrackHistEfficiency = new AliCFContainer("fTrackHistEfficiency", "Tracking efficiency", 6, 5, iTrackBin);
   fTrackHistEfficiency->SetBinLimits(0, trackBins[0]);
   fTrackHistEfficiency->SetVarTitle(0, trackAxisTitle[0]);
   fTrackHistEfficiency->SetBinLimits(1, pTBinsFine);
@@ -2316,7 +2316,7 @@ TH2D* AliUEHist::GetTrackingEfficiency()
 //____________________________________________________________________
 TH2D* AliUEHist::GetFakeRate()
 {
-  return dynamic_cast<TH2D*> (GetTrackEfficiency(kCFStepTracked, kCFStepReconstructed, 0, 1));
+  return dynamic_cast<TH2D*> (GetTrackEfficiency(kCFStepTracked, (CFStep) (kCFStepTracked+3), 0, 1));
 }
 
 //____________________________________________________________________
@@ -2342,7 +2342,7 @@ TH1D* AliUEHist::GetTrackingEfficiency(Int_t axis)
 //____________________________________________________________________
 TH1D* AliUEHist::GetFakeRate(Int_t axis)
 {
-  return dynamic_cast<TH1D*> (GetTrackEfficiency(kCFStepTracked, kCFStepReconstructed, axis));
+  return dynamic_cast<TH1D*> (GetTrackEfficiency(kCFStepTracked, (CFStep) (kCFStepTracked+3), axis));
 }
 //____________________________________________________________________
 TH2D* AliUEHist::GetTrackingCorrection()
