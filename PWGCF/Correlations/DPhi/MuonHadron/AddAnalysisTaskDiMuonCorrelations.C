@@ -1,4 +1,4 @@
-AliAnalysisTaskDiMuonCorrelations *AddAnalysisTaskDiMuonCorrelations(const char *centMethod = "V0M") {
+AliAnalysisTaskDiMuonCorrelations *AddAnalysisTaskDiMuonCorrelations(const char *centMethod = "V0A", Bool_t likeSign = kTRUE) {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -9,7 +9,7 @@ AliAnalysisTaskDiMuonCorrelations *AddAnalysisTaskDiMuonCorrelations(const char 
   AliAnalysisTaskDiMuonCorrelations *task = new AliAnalysisTaskDiMuonCorrelations(Form("AliAnalysisTaskDiMuonCorrelations_%s",centMethod));
 
   // Set analysis cuts  
-  task->SetLikeSign(kTRUE);
+  task->SetLikeSign(likeSign);
   task->SetEtaRangeMuon(-4.0, -2.5);
   task->SetTriggerMatchLevelMuon(1);
 
