@@ -1929,10 +1929,20 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
       if(!aodExtraTracks)return iCount;
       for(int it =0; it<aodExtraTracks->GetEntries(); it++) {
 	AliVParticle *track = dynamic_cast<AliVParticle*> ((*aodExtraTracks)[it]);
+	AliAODMCParticle *partmc = dynamic_cast<AliAODMCParticle*> ((*aodExtraTracks)[it]);
 	if (!track) {
 	  if(fDebug)  printf("track %d does not exist\n",it);
 	  continue;
 	}
+
+
+	if(partmc && !partmc->IsPhysicalPrimary())continue;
+
+	if (track->Pt()<fTrackPtCut) {
+	  if(fDebug>2)  printf("track %d has too low pt %.2f\n",it,track->Pt());
+	  continue;
+	}
+
 
 	Float_t mom[3];
 	mom[0] = track->Pt();
