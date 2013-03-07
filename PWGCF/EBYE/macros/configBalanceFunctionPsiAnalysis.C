@@ -4,6 +4,7 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
 					Double_t centrMin = 0.,
 					Double_t centrMax = 100.,
 					Bool_t bShuffle = kFALSE,
+					Bool_t bResonancesCut = kFALSE,
 					Bool_t bHBTCut = kFALSE,
 					Bool_t bConversionCut = kFALSE,
 					TString fArgEventClass = "EventPlane",
@@ -13,6 +14,7 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
   AliBalancePsi *gBalance = new AliBalancePsi();
   gBalance->SetAnalysisLevel(analysisLevel);
   gBalance->SetShuffle(bShuffle);
+  if(bResonancesCut) gBalance->UseResonancesCut();
   if(bHBTCut) gBalance->UseHBTCut();
   if(bConversionCut) gBalance->UseConversionCut();
   if(centralityName) gBalance->SetCentralityIdentifier(centralityName);

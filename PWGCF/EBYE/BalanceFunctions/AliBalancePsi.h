@@ -1,4 +1,4 @@
-#ifndef ALIBALANCEPSI_H
+ #ifndef ALIBALANCEPSI_H
 #define ALIBALANCEPSI_H
 /*  See cxx source for full Copyright notice */
 
@@ -168,6 +168,7 @@ class AliBalancePsi : public TObject {
   TH2D *GetQAHistConversionafter() {return fHistConversionafter;}
   TH2D *GetQAHistPsiMinusPhi() {return fHistPsiMinusPhi;}
 
+  void UseResonancesCut() {fResonancesCut = kTRUE;}
   void UseHBTCut() {fHBTCut = kTRUE;}
   void UseConversionCut() {fConversionCut = kTRUE;}
 
@@ -200,6 +201,7 @@ class AliBalancePsi : public TObject {
   Double_t fPsiInterval;// interval in Psi-phi1
   Double_t fDeltaEtaMax;// maximum delta eta for output THnSparse
 
+  Bool_t fResonancesCut;//resonances cut
   Bool_t fHBTCut;//HBT cut
   Bool_t fConversionCut;//conversion cut
   Bool_t fVertexBinning;//use vertex z binning in AliTHn

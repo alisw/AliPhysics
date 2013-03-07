@@ -65,8 +65,9 @@ AliBalancePsi::AliBalancePsi() :
   fHistPsiMinusPhi(0),
   fPsiInterval(15.),
   fDeltaEtaMax(2.0),
-  fHBTCut(kFALSE),
-  fConversionCut(kFALSE),
+  fResonancesCut(kTRUE),
+  fHBTCut(kTRUE),
+  fConversionCut(kTRUE),
   fVertexBinning(kFALSE),
   fEventClass("EventPlane"){
   // Default constructor
@@ -93,6 +94,7 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHistPsiMinusPhi(balance.fHistPsiMinusPhi),
   fPsiInterval(balance.fPsiInterval),
   fDeltaEtaMax(balance.fDeltaEtaMax),
+  fResonancesCut(balance.fResonancesCut),
   fHBTCut(balance.fHBTCut),
   fConversionCut(balance.fConversionCut),
   fVertexBinning(balance.fVertexBinning),
@@ -421,6 +423,19 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     secondCorrection[i]  = (Double_t)((AliBFBasicParticle*) particlesSecond->At(i))->Correction();   //==========================correction
   }
   
+  //TLorenzVector implementation for resonances
+  TLorentzVector vectorMother, vectorDaughter[2];
+  TParticle pPion, pProton, pRho0, pK0s, pLambda;
+  pPion.SetPdgCode(211); //pion
+  pRho0.SetPdgCode(113); //rho0
+  pK0s.SetPdgCode(310); //K0s
+  pProton.SetPdgCode(2212); //proton
+  pLambda.SetPdgCode(3122); //Lambda
+  Double_t gWidthForRho0 = 0.01;
+  Double_t gWidthForK0s = 0.01;
+  Double_t gWidthForLambda = 0.006;
+  Double_t nSigmaRejection = 3.0;
+
   // 1st particle loop
   for (Int_t i = 0; i < iMax; i++) {
     //AliVParticle* firstParticle = (AliVParticle*) particles->At(i);
@@ -495,6 +510,35 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       trackVariablesPair[3]    =  firstPt;      // pt trigger
       trackVariablesPair[4]    =  secondPt[j];  // pt
       trackVariablesPair[5]    =  vertexZ;      // z of the primary vertex
+      
+      //Exclude resonances for the calculation of pairs by looking 
+      //at the invariant mass and not considering the pairs that 
+      //fall within 3sigma from the mass peak of: rho0, K0s, Lambda
+      if(fResonancesCut) {
+	//rho0
+	vectorDaughter[0].SetPtEtaPhiM(firstPt,firstEta,firstPhi,pPion.GetMass());
+	vectorDaughter[1].SetPtEtaPhiM(secondPt[j],secondEta[j],secondPhi[j],pPion.GetMass());
+	vectorMother = vectorDaughter[0] + vectorDaughter[1];
+	if(TMath::Abs(vectorMother.M() - pRho0.GetMass()) <= nSigmaRejection*gWidthForRho0)
+	  continue;
+
+	//K0s
+	if(TMath::Abs(vectorMother.M() - pK0s.GetMass()) <= nSigmaRejection*gWidthForK0s)
+	  continue;
+
+	//Lambda
+	vectorDaughter[0].SetPtEtaPhiM(firstPt,firstEta,firstPhi,pPion.GetMass());
+	vectorDaughter[1].SetPtEtaPhiM(secondPt[j],secondEta[j],secondPhi[j],pProton.GetMass());
+	vectorMother = vectorDaughter[0] + vectorDaughter[1];
+	if(TMath::Abs(vectorMother.M() - pLambda.GetMass()) <= nSigmaRejection*gWidthForLambda)
+	  continue;
+
+	vectorDaughter[0].SetPtEtaPhiM(firstPt,firstEta,firstPhi,pProton.GetMass());
+	vectorDaughter[1].SetPtEtaPhiM(secondPt[j],secondEta[j],secondPhi[j],pPion.GetMass());
+	vectorMother = vectorDaughter[0] + vectorDaughter[1];
+	if(TMath::Abs(vectorMother.M() - pLambda.GetMass()) <= nSigmaRejection*gWidthForLambda)
+	  continue;
+      }//resonance cut
 
       // HBT like cut
       if(fHBTCut){ // VERSION 3 (all pairs)
@@ -1725,4 +1769,6 @@ Float_t AliBalancePsi::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, F
   
   return dphistar;
 }
+
+
 
