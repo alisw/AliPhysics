@@ -143,13 +143,13 @@ AliDielectron *lowmass11=ConfigAsakoLMEEPbPb2011AOD(11,hasMC,bESDANA);
 	mgr->CreateContainer("asako_LMEEPbPb2011_tree",
 		TTree::Class(),
 		AliAnalysisManager::kExchangeContainer,
-		"asako_LMEEPbPb2011_default.root");
+		"LMEEoutput.root");
 
   AliAnalysisDataContainer *cOutputHist1 =
 	mgr->CreateContainer("asako_LMEEPbPb2011_out",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
-		"asako_LMEEPbPb2011_out.root");
+		"LMEEoutput.root");
 
   /*  AliAnalysisDataContainer *cOutputHist2 =
 	  mgr->CreateContainer("cbaumann_lowmass_CF",
@@ -161,13 +161,13 @@ AliDielectron *lowmass11=ConfigAsakoLMEEPbPb2011AOD(11,hasMC,bESDANA);
 	mgr->CreateContainer("asako_LMEEPbPb2011_CF",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
-		"asako_LMEEPbPb2011_out.root");
+		"LMEEoutput.root");
 
   AliAnalysisDataContainer *cOutputHist3 =
 	mgr->CreateContainer("asako_EventStatPbPb2011",
 		TH1D::Class(),
 		AliAnalysisManager::kOutputContainer,
-		"asako_LMEEPbPb2011_out.root");
+		"LMEEoutput.root");
 
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
