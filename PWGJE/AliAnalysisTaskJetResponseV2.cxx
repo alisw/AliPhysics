@@ -808,7 +808,9 @@ Int_t AliAnalysisTaskJetResponseV2::GetNInputTracks()
   }
   // use only HI event
   if(jbname.Contains("AODextraonly")) jbname.ReplaceAll("AODextraonly","AOD");
+  else if(jbname.Contains("AODMCextraonly")) jbname.ReplaceAll("AODextraonly","AOD");
   if(jbname.Contains("AODextra")) jbname.ReplaceAll("AODextra","AOD");
+  else if(jbname.Contains("AODMCextra")) jbname.ReplaceAll("AODextra","AOD");
 
   if(fDebug) Printf("Multiplicity from jet branch %s", jbname.Data());
   TClonesArray *tmpAODjets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(jbname.Data()));
