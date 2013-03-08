@@ -1935,16 +1935,17 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	  continue;
 	}
 
-
-	if(partmc && !partmc->IsPhysicalPrimary())continue;
+	if(!partmc) continue;
+	if(!partmc->IsPhysicalPrimary())continue;
 
 	if (track->Pt()<fTrackPtCut) {
-	  if(fDebug>2)  printf("track %d has too low pt %.2f\n",it,track->Pt());
+	  if(fDebug>10)  printf("track %d has too low pt %.2f\n",it,track->Pt());
 	  continue;
 	}
 
+	/*
+	AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>((*aodExtraTracks)[it]);//(track);
 
-	AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*> (track);
 	if(!trackAOD) {
 	  if(fDebug>10) printf("trackAOD %d does not exist\n",it);
 	  continue;
@@ -1952,12 +1953,13 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	
 	trackAOD->SetFlags(AliESDtrack::kEmbedded);
 	trackAOD->SetFilterMap(fFilterMask);
+	*/
+	if(fDebug>10) printf("pt extra track %.2f \n", track->Pt());        
 	
-	if(fDebug>10) printf("pt extra track %.2f \n", trackAOD->Pt());        
-	
-	if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
-	if(trackAOD->Pt()<fTrackPtCut) continue;
-	list->Add(trackAOD);
+	if(TMath::Abs(track->Eta())>fTrackEtaWindow) continue;
+	if(track->Pt()<fTrackPtCut) continue;
+	list->Add(track);
+
 	iCount++;
       }
     }

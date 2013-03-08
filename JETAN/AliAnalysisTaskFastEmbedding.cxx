@@ -853,10 +853,13 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
                if(tmpPart->IsPhysicalPrimary() && tmpPart->Charge()!=0. && tmpPart->Charge()!=-99.  && tmpPart->Pt()>0.){
 		 new((*mcpartOUT)[nAODmcpart++]) AliAODMCParticle(*tmpPart);
 		 dummy = (*mcpartOUT)[nAODmcpart-1];
+
+		 if(fDebug>10) printf("added track %d with pT=%.2f to extra branch\n",nAODmcpart,tmpPart->Pt());
 		 
 		 fh1MCTrackPt->Fill(tmpPart->Pt());
 		 fh2MCTrackEtaPhi->Fill(tmpPart->Eta(), tmpPart->Phi());
 		 nPhysicalPrimary++;
+
                }
             }
             fh1MCTrackN->Fill((Float_t)nPhysicalPrimary);
