@@ -52,13 +52,13 @@
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(int getbinwidth=20) {
+AliFemtoManager* ConfigFemtoAnalysis(int getbinwidth=30) {
 	
 	double PionMass = 0.13956995;
 	double KaonMass = 0.493677;
 	
 	// int runmults[10] = {1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
-	int runmults[10] = {1, 1, 1, 1, 1, 1, 1, 0, 0, 0};
+	int runmults[10] = {0, 0, 1, 1, 1, 1, 0, 0, 0, 0};
 	
 	//int runmults[10] = {1, 1, 1, 1, 1, 1, 1, 0, 0, 0};
 	
@@ -72,8 +72,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int getbinwidth=20) {
 	double ktrng[5] = {0.2, 0.3, 0.4, 0.5, 0.7};
 	//	double ktrng[7] = {0.2,0.3, 0.4, 0.5,0.6,0.7,0.8};
 	
-	//  int phirange[7] = {-15, 15, 45, 75, 105, 135, 165};
-	int phirange[10] = {-15, 5, 25,  45,65,85,105,125,145,165};
+	  int phirange[7] = {-15, 15, 45, 75, 105, 135, 165};
+	//int phirange[10] = {-15, 5, 25,  45,65,85,105,125,145,165};
 	
 	
 	int runtype = 2; // Types 0 - global, 1 - ITS only, 2 - TPC Inner
@@ -81,7 +81,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int getbinwidth=20) {
 	
 	AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 	Reader->SetFilterBit(7);
-	Reader->SetCentralityPreSelection(0.000001, 701);
+	Reader->SetCentralityPreSelection(9, 550);
 	
 	
 	AliFemtoManager* Manager=new AliFemtoManager();
@@ -142,14 +142,14 @@ AliFemtoManager* ConfigFemtoAnalysis(int getbinwidth=20) {
 					anetaphitpc[aniter]->SetNumEventsToMix(3);
 					anetaphitpc[aniter]->SetMinSizePartCollection(4);
 					
-					ana[ichg][imult] = new AliFemtoAnalysisAzimuthalPbPb(4, -8.0, 8.0, 4, multbins[imult], multbins[imult+1],9);
+					ana[ichg][imult] = new AliFemtoAnalysisAzimuthalPbPb(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],6);
 					
 					ana[ichg][imult]->SetNumEventsToMix(3);
 					ana[ichg][imult]->SetMinSizePartCollection(4);
 					ana[ichg][imult]->SetEPhistname(Form("hist%i%i",ichg,imult));
 					
 					mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
-					mecetaphitpc[aniter]->SetEventMult(10,100000);  //remove 0 events
+					mecetaphitpc[aniter]->SetEventMult(1,100000);  //remove 0 events
 					mecetaphitpc[aniter]->SetVertZPos(-8,8);
 					
 					cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", chrgs[ichg], imult));
@@ -292,14 +292,14 @@ AliFemtoManager* ConfigFemtoAnalysis(int getbinwidth=20) {
 					anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
 					
 					for (int ikt=0; ikt<4; ikt++){
-						for (int iphi=0; iphi<9; iphi++){
+						for (int iphi=0; iphi<6; iphi++){
 							
 							ktpaircut[ichg][imult][ikt][iphi] = new AliFemtoKTPairCut(ktrng[ikt],ktrng[ikt+1]);
 							ktpaircut[ichg][imult][ikt][iphi]->SetPhiRange(phirange[iphi],phirange[iphi+1]);
 							
 							
 							//cq3dlcmskttpc[ichg][imult][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("cq3d%imult%ikT%iRP%i", ichg, imult, ikt, iphi),30,-0.15,0.15);
-							cq3dlcmskttpc[ichg][imult][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("cq3d%imult%ikT%iRP%i", ichg, imult, ikt, iphi),getbinwidth,-0.2,0.2);
+							cq3dlcmskttpc[ichg][imult][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("cq3d%imult%ikT%iRP%i", ichg, imult, ikt, iphi),getbinwidth,-0.15,0.15);
 							
 							cq3dlcmskttpc[ichg][imult][ikt][iphi]->SetPairSelectionCut(ktpaircut[ichg][imult][ikt][iphi]);
 							ana[ichg][imult]->AddCorrFctn(cq3dlcmskttpc[ichg][imult][ikt][iphi]);
