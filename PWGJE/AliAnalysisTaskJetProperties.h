@@ -60,6 +60,8 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   void     FillJetProperties(TList *jetlist);
   void     FillJetShape(TList *jetlist);
   void     FillJetShapeUE(TList *jetlist);
+  void     FillFFCorr(TList *jetlist);
+
   void     GetTracksTiltedwrpJetAxis(Float_t alpha, TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius,Double_t& sumPt);
   Int_t    GetListOfTracks(TList *list, Int_t type);
   
@@ -111,7 +113,8 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   TH2F*     fh2EtaTrack;              //!track eta distribution
   TH2F*     fh2PhiTrack;              //!track phi distribution
   TH2F*     fh2PtTrack;               //!track pt distribution
-  TH2F*     fh2FF;                    //!fragmentation function
+  TH2F*     fh2FF;                    //!fragmentation function (z)
+  TH2F*     fh2Ksi;                   //!fragmentation function (Ksi)
   TH2F*     fh2DelEta;                //!delta eta distribution
   TH2F*     fh2DelPhi;                //!delta phi distribution
   TH2F*     fh2DelR;                  //!delta R distribution
@@ -151,8 +154,18 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   TProfile* fProDelRPtSumUE[13];         //!Pt sum vs R (UE)
   TProfile* fProDiffJetShapeAUE[13];     //!Diff jet shape pT (UE)
   TProfile* fProIntJetShapeAUE[13];      //!Int jet shape pT (UE)
-  
 
+  TH1F* fh1CorrJetPt;                    //!jet pt in FillCorr
+  TH2F* fh2CorrPtTrack1;                 //!trk pt in FillCorr
+  TH2F* fh2CorrFF1;                      //!FF in FillCorr
+  TH2F* fh2CorrKsi1;                     //!Ksi in FillCorr
+  TH2F* fh2CorrjT1;                      //!jT in FillCorr
+  TH1F* fh1JetPtvsTrkSum;                //!QA plots to check jetPt-trkPtsum
+  TH2F* fh2CorrPt1Pt2[6];                //!pt1-pt2 in FillCorr
+  TH2F* fh2CorrZ1Z2[6];                  //!z1-z2 in FillCorr
+  TH2F* fh2CorrKsi1Ksi2[6];              //!ksi1-ksi2 in FillCorr
+  TH2F* fh2CorrjT1jT2[6];                //!jt1-jt2 in FillCorr
+  
   AliAnalysisTaskJetProperties(const AliAnalysisTaskJetProperties&);// not implemented
   AliAnalysisTaskJetProperties& operator=(const AliAnalysisTaskJetProperties&);// not implemented
   ClassDef(AliAnalysisTaskJetProperties, 2);
