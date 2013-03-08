@@ -1383,7 +1383,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC13b->AddCollisionTriggerClass   ( AliVEvent::kTRD | AliVEvent::kFastOnly,"+CINT7WUHSE-B-NOPF-FAST -CINT7WUHSE-B-NOPF-[ALL|CENT]", "B",   triggerCount);
   oadbLHC13b->AddBGTriggerClass          ( AliVEvent::kTRD | AliVEvent::kFastOnly,"+CINT7WUHSE-ACE-NOPF-FAST -CINT7WUHSE-ACE-NOPF-[ALL|CENT]","ACE",triggerCount);
   oadbLHC13b->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
-  oadbLHC13b->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG  && !TPCLaserWarmUp");
+  oadbLHC13b->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG  && !ZNABG && !ZNCBG && !TPCLaserWarmUp");
 
   triggerCount++;
   oadbLHC13b->AddCollisionTriggerClass   ( AliVEvent::kTRD,"+CINT7WUHQU-B-NOPF-[ALL|CENT]", "B",   triggerCount);
