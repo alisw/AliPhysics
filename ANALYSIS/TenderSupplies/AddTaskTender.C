@@ -84,6 +84,7 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
     trdSupply->SetPIDmethod(AliTRDTenderSupply::k1DLQpid);
     trdSupply->SwitchOffGainCorrection();                       // Correction only on pass 1
     trdSupply->SetNormalizationFactor(0.12697,114737,130850);   // 1 otherwise
+    trdSupply->SetRedoTRDMatching(kTRUE);
     tender->AddSupply(trdSupply);
   }  
 

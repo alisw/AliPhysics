@@ -17,6 +17,7 @@
 class AliTRDCalDet;
 class AliESDEvent;
 class AliOADBContainer;
+class AliTRDonlineTrackMatching;
 
 class AliTRDTenderSupply: public AliTenderSupply {
   
@@ -40,6 +41,7 @@ public:
   void SetCalibLowpThreshold(Double_t pmin) { fPthreshold = pmin; };
   void SetGeoFile(const char *filename) { fGeoFile = filename; }
   void SetDebugMode() { fDebugMode = kTRUE; }
+  void SetRedoTRDMatching(Bool_t redo = kTRUE) {fRedoTrdMatching = redo;}
 
   virtual void              Init();
   virtual void              ProcessEvent();
@@ -69,6 +71,7 @@ private:
   
   AliESDEvent           *fESD;       //! the ESD Event
   AliESDpid             *fESDpid;    //! ESD PID object
+  AliTRDonlineTrackMatching  *fTrdOnlineTrackMatcher;   //! TRD online track matcher
 
   AliTRDCalDet *fChamberGainOld;     // TRD Chamber Gain Factor used for producing the ESD
   AliTRDCalDet *fChamberGainNew;     // New TRD Chamber Gain Factor
@@ -90,6 +93,7 @@ private:
   Bool_t fHasReferences;             // has references loaded
   Bool_t fHasNewCalibration;         // has new calibration
   Bool_t fDebugMode;                 // Run in debug mode
+  Bool_t fRedoTrdMatching;           // Redo Track Matching
   TString fNameRunByRunCorrection;   // filename with the run-by-run gain correction
   TObjArray *fNormalizationFactorArray; // Array with normalisation Factors
   

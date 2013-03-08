@@ -34,6 +34,7 @@
 #include <AliCDBManager.h>
 #include <AliOADBContainer.h>
 #include <AliTRDCalDet.h>
+#include "AliTRDonlineTrackMatching.h"
 
 #include <AliLog.h>
 #include <TTree.h>
@@ -61,6 +62,7 @@ AliTRDTenderSupply::AliTRDTenderSupply() :
   AliTenderSupply(),
   fESD(NULL),
   fESDpid(NULL),
+  fTrdOnlineTrackMatcher(NULL),
   fChamberGainOld(NULL),
   fChamberGainNew(NULL),
   fChamberVdriftOld(NULL),
@@ -78,6 +80,7 @@ AliTRDTenderSupply::AliTRDTenderSupply() :
   fHasReferences(kFALSE),
   fHasNewCalibration(kTRUE),
   fDebugMode(kFALSE),
+  fRedoTrdMatching(kTRUE),
   fNameRunByRunCorrection(),
   fNormalizationFactorArray(NULL)
 {
@@ -93,6 +96,7 @@ AliTRDTenderSupply::AliTRDTenderSupply(const char *name, const AliTender *tender
   AliTenderSupply(name,tender),
   fESD(NULL),
   fESDpid(NULL),
+  fTrdOnlineTrackMatcher(NULL),
   fChamberGainOld(NULL),
   fChamberGainNew(NULL),
   fChamberVdriftOld(NULL),
@@ -110,6 +114,7 @@ AliTRDTenderSupply::AliTRDTenderSupply(const char *name, const AliTender *tender
   fHasReferences(kFALSE),
   fHasNewCalibration(kTRUE),
   fDebugMode(kFALSE),
+  fRedoTrdMatching(kTRUE),
   fNameRunByRunCorrection(),
   fNormalizationFactorArray(NULL)
 {
@@ -126,7 +131,8 @@ AliTRDTenderSupply::~AliTRDTenderSupply()
   //
   // dtor
   //
-  if(fNormalizationFactorArray) delete fNormalizationFactorArray;
+    if(fNormalizationFactorArray) delete fNormalizationFactorArray;
+    delete fTrdOnlineTrackMatcher;
 }
 
 //_____________________________________________________
@@ -150,7 +156,7 @@ void AliTRDTenderSupply::Init()
   //fESDpid->SetTRDslicesForPID(fSlicesForPID[0], fSlicesForPID[1]);
 
   if(fNameRunByRunCorrection.Length()) LoadRunByRunCorrection(fNameRunByRunCorrection.Data());
-
+  fTrdOnlineTrackMatcher=new AliTRDonlineTrackMatching();
   // Set Normalisation Factors
   if(mgr->GetMCtruthEventHandler()){
     // Assume MC
@@ -191,7 +197,17 @@ void AliTRDTenderSupply::ProcessEvent()
   if (!fESD) return;
   if(fNormalizationFactorArray) fNormalizationFactor = GetNormalizationFactor(fESD->GetRunNumber());
   Int_t ntracks=fESD->GetNumberOfTracks();
-   
+
+
+
+  if (fRedoTrdMatching) {
+      if (!fTrdOnlineTrackMatcher->ProcessEvent(fESD)) {
+	  AliError("TRD online track matching failed!");
+      } 
+  }
+
+
+
   //
   // recalculate PID probabilities
   //
@@ -491,7 +507,7 @@ void AliTRDTenderSupply::ApplyRunByRunCorrection(AliESDtrack *const track) {
 }
 
 //_____________________________________________________
-void AliTRDTenderSupply::SetNormalizationFactor(Double_t norm, Int_t runMin, Int_t runMax) { 
+void AliTRDTenderSupply::SetNormalizationFactor(Double_t norm, Int_t runMin, Int_t runMax) {
   //
   // Set the normalisation factor for a given run range
   //
