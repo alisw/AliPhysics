@@ -169,10 +169,10 @@ void AliAnalysisTaskZDCpAcalib::UserCreateOutputObjects()
     fCentralityTree->Branch("znatower", fZNAtower, "znatower[5]/F");
     fCentralityTree->Branch("znctowerLG", fZNCtowerLG, "znctowerLG[5]/F");
     fCentralityTree->Branch("znatowerLG", fZNAtowerLG, "znatowerLG[5]/F");
-    fCentralityTree->Branch("zpctower", fZNCtower, "znctower[5]/F");
-    fCentralityTree->Branch("zpatower", fZNAtower, "znatower[5]/F");
-    fCentralityTree->Branch("zpctowerLG", fZNCtowerLG, "znctowerLG[5]/F");
-    fCentralityTree->Branch("zpatowerLG", fZNAtowerLG, "znatowerLG[5]/F");
+    fCentralityTree->Branch("zpctower", fZPCtower, "zpctower[5]/F");
+    fCentralityTree->Branch("zpatower", fZPAtower, "zpatower[5]/F");
+    fCentralityTree->Branch("zpctowerLG", fZPCtowerLG, "zpctowerLG[5]/F");
+    fCentralityTree->Branch("zpatowerLG", fZPAtowerLG, "zpatowerLG[5]/F");
     fCentralityTree->Branch("tdcZNC", fZNCtdc, "tdcZNC[4]/I");
     fCentralityTree->Branch("tdcZNA", fZNAtdc, "tdcZNA[4]/I");
     fCentralityTree->Branch("tdcZPC", fZPCtdc, "tdcZPC[4]/I");
