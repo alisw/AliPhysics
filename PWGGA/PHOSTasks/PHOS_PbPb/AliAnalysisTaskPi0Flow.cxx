@@ -684,7 +684,8 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     //Evaluate CoreDispersion
     Double_t m02=0.,m20=0. ;
     EvalCoreLambdas(clu, cells, m02, m20) ;
-    ph->SetDisp2Bit(TestCoreLambda(clu->E(),clu->GetM20(),clu->GetM02())) ;
+    ph->SetDisp2Bit(TestCoreLambda(clu->E(),m20,m02)) ; //Correct order m20,m02
+//    ph->SetDisp2Bit(TestCoreLambda(clu->E(),clu->GetM20(),clu->GetM02())) ;
     if(ph->IsDispOK()){
       FillHistogram(Form("hCluDispM%d",mod),cellX,cellZ,1.);
     }
@@ -1484,7 +1485,8 @@ Int_t AliAnalysisTaskPi0Flow::GetRPBin()
 {
   Double_t averageRP;
   if(fHaveTPCRP)
-    averageRP = (fRPV0A+fRPV0C+fRP) /3.;
+    averageRP = fRP ;// If possible, it is better to have EP bin from TPC
+                     // to have similar events for miximng (including jets etc)   (fRPV0A+fRPV0C+fRP) /3.;
   else
     averageRP = (fRPV0A+fRPV0C) /2.;
 
@@ -2560,7 +2562,7 @@ void  AliAnalysisTaskPi0Flow::EvalCoreLambdas(AliVCluster * clu, AliVCaloCells *
   const Int_t mulDigit=clu->GetNCells() ;
   Double_t xc[mulDigit] ;
   Double_t zc[mulDigit] ;
-  Double_t ei[mulDigit] ;
+  Double_t wi[mulDigit] ;
   Double_t x = 0 ;
   Double_t z = 0 ;
   const Double_t logWeight=4.5 ;
@@ -2573,9 +2575,11 @@ void  AliAnalysisTaskPi0Flow::EvalCoreLambdas(AliVCluster * clu, AliVCaloCells *
     fPHOSGeo->RelPosInModule(relid, xi, zi);
     xc[iDigit]=xi ;
     zc[iDigit]=zi ;
-    ei[iDigit] = elist[iDigit]*cells->GetCellAmplitude(absId) ;
-    if (clu->E()>0 && ei[iDigit]>0) {
-      Float_t w = TMath::Max( 0., logWeight + TMath::Log( ei[iDigit] / clu->E() ) ) ;
+    Double_t ei = elist[iDigit]*cells->GetCellAmplitude(absId) ;
+    wi[iDigit]=0. ;
+    if (clu->E()>0 && ei>0) {
+      wi[iDigit] = TMath::Max( 0., logWeight + TMath::Log( ei / clu->E() ) ) ;
+      Double_t w=wi[iDigit];
       x    += xc[iDigit] * w ;
       z    += zc[iDigit] * w ;
       wtot += w ;
@@ -2593,8 +2597,8 @@ void  AliAnalysisTaskPi0Flow::EvalCoreLambdas(AliVCluster * clu, AliVCaloCells *
   Double_t xCut = 0. ;
   Double_t zCut = 0. ;
   for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
-    if (clu->E()>0 && ei[iDigit]>0.) {
-        Double_t w = TMath::Max( 0., logWeight + TMath::Log( ei[iDigit] / clu->E() ) ) ;
+    Double_t w=wi[iDigit];
+    if (w>0.) {
         Double_t xi= xc[iDigit] ;
         Double_t zi= zc[iDigit] ;
 	if((xi-x)*(xi-x)+(zi-z)*(zi-z) < rCut*rCut){
