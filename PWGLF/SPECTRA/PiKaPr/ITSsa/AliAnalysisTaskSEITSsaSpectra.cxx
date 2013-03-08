@@ -1069,7 +1069,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     Double_t yPartMean=y[minPosMean];
     Double_t yPart=y[minPos];
     
-    if(yPartMean<fMaxY){     
+    if(TMath::Abs(yPartMean)<fMaxY){     
       //DCA distributions, before the DCA cuts, based on asymmetrinc nsigma approach
       if(theBin>=0 && theBin<kNbins){
 	if(track->GetSign()>0){
@@ -1143,7 +1143,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     //Nsigma histos with MC truth
     
     //asymmetric approach
-    if(yPartMean<fMaxY){
+    if(TMath::Abs(yPartMean)<fMaxY){
       //nsigma histos
       if(track->GetSign()>0) fHistPosNSigmaMean[minPosMean]->Fill(pt);
       else fHistNegNSigmaMean[minPosMean]->Fill(pt);
@@ -1167,7 +1167,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     }
     
     //symmetric bands
-    if(min<fMinNSigma && yPart<fMaxY){
+    if(min<fMinNSigma && TMath::Abs(yPart)<fMaxY){
       //nsigma histos
       if(track->GetSign()>0) fHistPosNSigma[minPos]->Fill(pt);
       else fHistNegNSigma[minPos]->Fill(pt);
