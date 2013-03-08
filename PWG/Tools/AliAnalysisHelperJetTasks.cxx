@@ -403,8 +403,10 @@ void AliAnalysisHelperJetTasks::GetJetMatching(const TList *genJetsList, const I
         
     const Int_t nGenJets = TMath::Min(genJetsList->GetEntries(),kGenJets);
     const Int_t nRecJets = TMath::Min(recJetsList->GetEntries(),kRecJets);
-    if(nRecJets==0||nGenJets==0) return;
-    
+    if(nRecJets==0||nGenJets==0) {
+      if(iDebug>10) Printf("No jets nRecJets %d nGenJets %d\n",nRecJets,nGenJets);
+      return;
+    }
     AliAODJet *genJet = 0x0;
     AliAODJet *recJet = 0x0;
     
@@ -418,15 +420,20 @@ void AliAnalysisHelperJetTasks::GetJetMatching(const TList *genJetsList, const I
 
         genJet = (AliAODJet*)genJetsList->At(ig);
         //if(!genJet || !JetSelected(genJet)) continue;
-        if(!genJet) continue;
+        if(!genJet) {
+	  if(iDebug>10) Printf("genJet %d doesnot exist",ig);
+	  continue;
+	}
         
         // find N closest reconstructed jets
         Double_t deltaR = 0.;
         for(Int_t ir=0; ir<nRecJets; ++ir){
             recJet = (AliAODJet*)recJetsList->At(ir);
             //if(!recJet || !JetSelected(recJet)) continue;
-            if(!recJet) continue;
-            
+            if(!recJet) {
+	      if(iDebug>10) Printf("recJet %d doesnot exist",ir);
+	      continue;
+            }
             deltaR = genJet->DeltaR(recJet);
             
             Int_t i=kClosestJetsN-1;
@@ -500,14 +507,18 @@ Double_t AliAnalysisHelperJetTasks::GetFractionOfJet(const AliAODJet *recJet, co
     Int_t nTracksGenJet = genTrackList->GetEntriesFast();
     Int_t nTracksRecJet = recTrackList->GetEntriesFast();
     
-    AliAODTrack* recTrack;
-    AliAODTrack* genTrack;
+    // AliAODTrack* recTrack;
+    // AliAODTrack* genTrack;
+    AliVParticle* recTrack;
+    AliVParticle* genTrack;
     for(Int_t ir=0; ir<nTracksRecJet; ++ir){
-        recTrack = (AliAODTrack*)(recTrackList->At(ir));
+      //        recTrack = (AliAODTrack*)(recTrackList->At(ir));
+        recTrack = dynamic_cast<AliVParticle*>(recTrackList->At(ir));
         if(!recTrack) continue;
         
         for(Int_t ig=0; ig<nTracksGenJet; ++ig){
-            genTrack = (AliAODTrack*)(genTrackList->At(ig));
+	  //            genTrack = (AliAODTrack*)(genTrackList->At(ig));
+            genTrack = dynamic_cast<AliVParticle*>(genTrackList->At(ig));
             if(!genTrack) continue;
             
             // look if it points to the same track
