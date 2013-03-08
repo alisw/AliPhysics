@@ -618,6 +618,8 @@ AliChaoticity::~AliChaoticity()
 		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsIdeal) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsIdeal;
 		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsSmeared) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsSmeared;
 		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsSmeared) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsSmeared;
+		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1Q3W) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1Q3W;
+		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2Q3W) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2Q3W;
 		//
 		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsSumK3) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsSumK3;
 		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsSumK3) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsSumK3;
@@ -1165,11 +1167,15 @@ void AliChaoticity::UserCreateOutputObjects()
 			  TString *name4vect1Smeared=new TString(namePC3->Data());
 			  TString *name4vect2Ideal=new TString(namePC3->Data());
 			  TString *name4vect2Smeared=new TString(namePC3->Data());
+			  TString *name4vect1Q3W=new TString(namePC3->Data());
+			  TString *name4vect2Q3W=new TString(namePC3->Data());
 			  name4vect1Ideal->Append("_4VectProd1Ideal");
 			  name4vect1Smeared->Append("_4VectProd1Smeared");
 			  name4vect2Ideal->Append("_4VectProd2Ideal");
 			  name4vect2Smeared->Append("_4VectProd2Smeared");
-			  // use 3.75e6 MeV^4 as the resolution on QprodSum
+			  name4vect1Q3W->Append("_4VectProd1Q3W");
+			  name4vect2Q3W->Append("_4VectProd2Q3W");
+			  // 
 			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsIdeal = new TH3D(name4vect1Ideal->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
 			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsIdeal);
 			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsSmeared = new TH3D(name4vect1Smeared->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
@@ -1179,6 +1185,13 @@ void AliChaoticity::UserCreateOutputObjects()
 			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsIdeal);
 			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsSmeared = new TH3D(name4vect2Smeared->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
 			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsSmeared);
+			  //
+			  if(term==0){// average Q3 in each FVP cell
+			    Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1Q3W = new TH3D(name4vect1Q3W->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
+			    fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1Q3W);
+			    Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2Q3W = new TH3D(name4vect2Q3W->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
+			    fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2Q3W);
+			  }
 			  //
 			  if(term==0){
 			    TString *name4vect1SumK3=new TString(namePC3->Data());
@@ -2636,6 +2649,8 @@ void AliChaoticity::Exec(Option_t *)
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd1TermsSmeared->Fill(Qsum1v1, Qsum2, Qsum3v1, WInput);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd2TermsIdeal->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, WInput);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd2TermsSmeared->Fill(Qsum1v2, Qsum2, Qsum3v2, WInput);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd1Q3W->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, WInput*q3);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd2Q3W->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, WInput*q3);
 		    //
 		    if(qinv12MC > fQLowerCut && qinv13MC > fQLowerCut && qinv23MC > fQLowerCut){
 		      // does not really matter if MC or real data triplets are used to average 1/K3...but better to use umsmeared values
@@ -3780,7 +3795,7 @@ void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2DGaus[2], TH2
     
     fsifile->Close();
   }
-  
+  /*
   // condition FSI histogram for edge effects
   for(Int_t CB=0; CB<6; CB++){
     for(Int_t ii=1; ii<=fFSIOmega0SS[CB]->GetNbinsX(); ii++){
@@ -3820,6 +3835,7 @@ void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2DGaus[2], TH2
       }
     }
   }
+  */
   // fFSI2SS[1]->GetBinContent(1,2) should be ~0.32
   if(fFSI2SS[1]->GetBinContent(1,2) > 1.0) AliFatal("AliChaoticity: SetFSICorrelations Problem");// Additional Safety check
   if(fFSI2SS[1]->GetBinContent(1,2) < 0.1) AliFatal("AliChaoticity: SetFSICorrelations Problem");// Additional Safety check
@@ -3881,18 +3897,55 @@ Float_t AliChaoticity::FSICorrelationTherm2(Int_t charge1, Int_t charge2, Float_
 }
 //________________________________________________________________________
 Double_t AliChaoticity::FSICorrelationOmega0(Bool_t SameCharge, Double_t Q12, Double_t Q13, Double_t Q23){
-  // remember: Omega0 histogram is in the following order (Q12, Q23, Q13)
   // returns 3d 3-particle Coulomb Correlation = K3
   Int_t Q12bin = fFSIOmega0SS[fFSIbin]->GetXaxis()->FindBin(Q12);
   Int_t Q13bin = fFSIOmega0SS[fFSIbin]->GetZaxis()->FindBin(Q13);
   Int_t Q23bin = fFSIOmega0SS[fFSIbin]->GetYaxis()->FindBin(Q23);
-  
+  Int_t index12L = int(fabs(Q12 - fFSI2SS[1]->GetYaxis()->GetBinWidth(1)/2.)/(fFSI2SS[1]->GetYaxis()->GetBinWidth(1)));
+  Int_t index12H = index12L+1;
+  Int_t index13L = int(fabs(Q13 - fFSI2SS[1]->GetYaxis()->GetBinWidth(1)/2.)/(fFSI2SS[1]->GetYaxis()->GetBinWidth(1)));
+  Int_t index13H = index13L+1;
+  Int_t index23L = int(fabs(Q23 - fFSI2SS[1]->GetYaxis()->GetBinWidth(1)/2.)/(fFSI2SS[1]->GetYaxis()->GetBinWidth(1)));
+  Int_t index23H = index23L+1;
+
   if(SameCharge){
     if(fFSIOmega0SS[fFSIbin]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0) return 1.0;
-    else return fFSIOmega0SS[fFSIbin]->GetBinContent(Q12bin, Q23bin, Q13bin);// K3
-  }else{// mixed charge.
+    Double_t base = fFSIOmega0SS[fFSIbin]->GetBinContent(index12L+1, index23L+1, index13L+1);
+    Double_t InterPolated = 0;
+    Double_t slope12 = fFSIOmega0SS[fFSIbin]->GetBinContent(index12H+1, index23L+1, index13L+1);
+    slope12 -= base;
+    slope12 /= fFSIOmega0SS[fFSIbin]->GetXaxis()->GetBinWidth(1);
+    InterPolated += slope12*fabs(Q12 - fFSIOmega0SS[fFSIbin]->GetXaxis()->GetBinCenter(index12L+1));
+    Double_t slope23 = fFSIOmega0SS[fFSIbin]->GetBinContent(index12L+1, index23H+1, index13L+1);
+    slope23 -= base;
+    slope23 /= fFSIOmega0SS[fFSIbin]->GetYaxis()->GetBinWidth(1);
+    InterPolated += slope23*fabs(Q23 - fFSIOmega0SS[fFSIbin]->GetYaxis()->GetBinCenter(index23L+1));
+    Double_t slope13 = fFSIOmega0SS[fFSIbin]->GetBinContent(index12L+1, index23L+1, index13H+1);
+    slope13 -= base;
+    slope13 /= fFSIOmega0SS[fFSIbin]->GetZaxis()->GetBinWidth(1);
+    InterPolated += slope13*fabs(Q13 - fFSIOmega0SS[fFSIbin]->GetZaxis()->GetBinCenter(index13L+1));
+    if( (base+InterPolated) <= 0) return 1.0;
+    return (base+InterPolated);
+  
+  }else{// mixed charge. Q12 is always designated as the same-charge pair
     if(fFSIOmega0OS[fFSIbin]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0) return 1.0;
-    else return fFSIOmega0OS[fFSIbin]->GetBinContent(Q12bin, Q23bin, Q13bin);// K3
+    Double_t base = fFSIOmega0OS[fFSIbin]->GetBinContent(index12L+1, index23H+1, index13H+1);
+    Double_t InterPolated = 0;
+    Double_t slope12 = fFSIOmega0OS[fFSIbin]->GetBinContent(index12H+1, index23H+1, index13H+1);
+    slope12 -= base;
+    slope12 /= fFSIOmega0OS[fFSIbin]->GetXaxis()->GetBinWidth(1);
+    InterPolated += slope12*fabs(Q12 - fFSIOmega0OS[fFSIbin]->GetXaxis()->GetBinCenter(index12L+1));
+    Double_t slope23 = fFSIOmega0OS[fFSIbin]->GetBinContent(index12L+1, index23L+1, index13H+1);
+    slope23 -= base;
+    slope23 /= fFSIOmega0OS[fFSIbin]->GetYaxis()->GetBinWidth(1);
+    InterPolated += slope23*fabs(Q23 - fFSIOmega0OS[fFSIbin]->GetYaxis()->GetBinCenter(index23L+1));
+    Double_t slope13 = fFSIOmega0OS[fFSIbin]->GetBinContent(index12L+1, index23H+1, index13L+1);
+    slope13 -= base;
+    slope13 /= fFSIOmega0OS[fFSIbin]->GetZaxis()->GetBinWidth(1);
+    InterPolated += slope13*fabs(Q13 - fFSIOmega0OS[fFSIbin]->GetZaxis()->GetBinCenter(index13L+1));
+    if( (base+InterPolated) <= 0) return 1.0;
+    return (base+InterPolated);
+    
   }
 }
 //________________________________________________________________________
