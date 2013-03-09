@@ -10,6 +10,7 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
   TString V2ClusName = "caloClusters", 
   TString trigClass  = "",
   Bool_t IsPhosCali  = kFALSE
+  Int_t EvtType      = 4;
 )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -26,7 +27,15 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
   AliAnalysisTaskPi0V2* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task");
-  //taskMB->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kAnyINT);
+  if(EvtType == 1){ //central
+    taskMB->SelectCollisionCandidates(AliVEvent::kCentral);
+  } else if (EvtType == 2){ //SemiCentral
+    taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+  } else if (EvtType == 3){ //Central + SemiCentral 
+    taskMB->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  } else if (EvtType == 4){ //Central + SemiCentral + kMB
+    taskMB->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB);
+  }
   taskMB->SetTracksName(trackName.Data());
   taskMB->SetClusE(Ecut);
   taskMB->SetClusM02(M02cut);
@@ -42,7 +51,7 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(
-    Form("histv2task_E%1.2f_M02%1.2f", Ecut, M02cut), 
+    Form("histv2task_Evt%d_E%1.2f_M02%1.2f", EvtType, Ecut, M02cut), 
     TList::Class(),
     AliAnalysisManager::kOutputContainer, 
     containerName.Data());
