@@ -1274,6 +1274,28 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
 
 
 //_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276overLHC12a17a(){
+  // ad-hoc weight function from ratio of 
+  // pt spectra from FONLL 2.76 TeV and
+  // pt spectra from MC production LHC12a17a (PYTHIA Perugia0 with pthard bins)
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","[0]+[1]*TMath::Exp(-[2]*x)",0.,50.);
+  fFuncWeight->SetParameter(0,4.63891e-02);
+  fFuncWeight->SetParameter(1,1.51674e+01);
+  fFuncWeight->SetParameter(2,4.09941e-01);
+}
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromDataPbPb276overLHC12a17a(){
+  // ad-hoc weight function from ratio of 
+  // D0 pt spectra in PbPb 2011 0-10% centrality and
+ // pt spectra from MC production LHC12a17a (PYTHIA Perugia0 with pthard bins)
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","[0]+[1]/TMath::Power(x,[2])",0.05,50.);
+  fFuncWeight->SetParameter(0,1.43116e-02);
+  fFuncWeight->SetParameter(1,4.37758e+02);
+  fFuncWeight->SetParameter(2,3.08583);
+}
+//_________________________________________________________________________
 Double_t AliCFTaskVertexingHF::GetWeight(Float_t pt)
 {
   //
