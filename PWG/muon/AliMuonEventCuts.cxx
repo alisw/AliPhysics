@@ -312,23 +312,21 @@ void AliMuonEventCuts::SetTrigClassPatterns ( const TString trigPattern )
     TString currPattern = objString->String();
     
     TString tn (currPattern);
-    Bool_t isCombination = kFALSE;
-    Bool_t requiresFromula = kFALSE;
+    Bool_t hasAND = kFALSE, hasOR = kFALSE;
     if ( tn.Contains("&") ) {
       tn.ReplaceAll("&",":");
-      isCombination = kTRUE;
+      hasAND = kTRUE;
     }
     if ( tn.Contains("|") ) {
       tn.ReplaceAll("|",":");
-      isCombination = kTRUE;
-      requiresFromula = kTRUE;
+      hasOR = kTRUE;
     }
     if ( tn.Contains("(") || tn.Contains(")") ) {
       tn.ReplaceAll("(","");
       tn.ReplaceAll(")","");
     }
     
-    if ( ! isCombination ) {
+    if ( ! hasAND && ! hasOR ) {
       if ( CheckTriggerClassPattern(currPattern) ) {
         duplicated += Form("%s ", currPattern.Data());
         continue;
@@ -339,8 +337,12 @@ void AliMuonEventCuts::SetTrigClassPatterns ( const TString trigPattern )
     trigCombo->SetOwner();
     trigCombo->SetName(currPattern.Data());
     
+    UInt_t uniqueID = kComboSimple;
+    if ( hasAND && hasOR ) uniqueID = kComboFormula;
+    else if ( hasAND ) uniqueID = kComboAND;
+    else if ( hasOR ) uniqueID = kComboOR;
     
-    if ( requiresFromula ) trigCombo->SetUniqueID(1);
+    trigCombo->SetUniqueID(uniqueID);
     
     TObjArray* arr = tn.Tokenize(":");
     
@@ -379,7 +381,7 @@ void AliMuonEventCuts::SetTrigClassPatterns ( const TString trigPattern )
     delete arr;
     if ( trigCombo) {
       fSelectedTrigCombination->AddLast(trigCombo);
-      AliDebug(2,Form("Adding %s to trigger combination",currPattern.Data()));
+      AliDebug(2,Form("Adding %s to trigger combination (type %u)",currPattern.Data(),trigCombo->GetUniqueID()));
     }
   }
   delete fullList;
@@ -458,7 +460,7 @@ TArrayI AliMuonEventCuts::GetTrigClassPtCutLevel ( const TString trigClassName )
   ptCutLevel[0] = obj->GetUniqueID() & 0x3;
   ptCutLevel[1] = ( obj->GetUniqueID() >> 2 ) & 0x3;
   
-  AliDebug(1,Form("Class %s ptCutLevel %i %i",trigClassName.Data(),ptCutLevel[0],ptCutLevel[1]));
+  AliDebug(3,Form("Class %s ptCutLevel %i %i",trigClassName.Data(),ptCutLevel[0],ptCutLevel[1]));
   
   return ptCutLevel;
 }
@@ -593,7 +595,7 @@ void AliMuonEventCuts::BuildTriggerClasses ( const TString firedTrigClasses,
     TObjArray* currComb = static_cast<TObjArray*>(fSelectedTrigCombination->At(icomb));
     if ( CheckTriggerClassCombination(currComb, firedTrigClassesAny, l0Inputs, l1Inputs, l2Inputs) ) {
       TObjString* foundTrig = static_cast<TObjString*>(fAllSelectedTrigClasses->FindObject(currComb->GetName()));
-      AddToEventSelectedClass ( currComb->GetName(), foundTrig );
+      AddToEventSelectedClass ( currComb->GetName(), foundTrig, currComb->GetUniqueID() );
     }
   }
 }
@@ -629,7 +631,6 @@ AliMuonEventCuts::CheckTriggerClassCombination ( const TObjArray* combo,
   
   TString comp(combo->GetName());
   UInt_t trigInputs[3] = {l0Inputs, l1Inputs, l2Inputs};
-  Bool_t requiresFromula = ( combo->GetUniqueID() == 1 );
   
   Bool_t exitLoop = kFALSE;
   
@@ -643,17 +644,14 @@ AliMuonEventCuts::CheckTriggerClassCombination ( const TObjArray* combo,
     {
       if ( listIdx < 3 ) {
         UInt_t bit = an->GetUniqueID();
-        Bool_t matchInput = ( (trigInputs[listIdx] & bit) == bit );
-        if ( requiresFromula ) comp.ReplaceAll(an->String().Data(),( matchInput ) ? "1" : "0");
-        else ok = matchInput;
+        ok = ( (trigInputs[listIdx] & bit) == bit );
       }
       else {
         TPRegexp re(Form("(^|[ ])%s([ ]|$)",an->String().Data()));
-        Bool_t matchTrig = firedTriggerClasses.Contains(re);
-        if ( requiresFromula ) comp.ReplaceAll(an->String().Data(),Form("%d",matchTrig));
-        else ok = matchTrig;
+        ok = firedTriggerClasses.Contains(re);
       }
-      if ( ! requiresFromula && ! ok ) {
+      if ( combo->GetUniqueID() == kComboFormula ) comp.ReplaceAll(an->String().Data(),Form("%d",ok));
+      else if ( ( combo->GetUniqueID() == kComboAND && ! ok ) || ( combo->GetUniqueID() == kComboOR && ok ) ) {
         exitLoop = kTRUE;
         break;
       }
@@ -661,9 +659,12 @@ AliMuonEventCuts::CheckTriggerClassCombination ( const TObjArray* combo,
     if ( exitLoop ) break;
   }
   
-  if ( requiresFromula ) {
+  if ( combo->GetUniqueID() == kComboFormula ) {
     TFormula formula("TriggerClassFormulaCheck", comp.Data());
-    if ( formula.Compile() > 0 ) AliError(Form("Could not evaluate formula %s",comp.Data()));
+    if ( formula.Compile() > 0 ) {
+      AliError(Form("Could not evaluate formula %s",comp.Data()));
+      ok = kFALSE;
+    }
     else ok = formula.Eval(0);
   }
   
@@ -674,7 +675,7 @@ AliMuonEventCuts::CheckTriggerClassCombination ( const TObjArray* combo,
 
 //_____________________________________________________________________________
 void
-AliMuonEventCuts::AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig )
+AliMuonEventCuts::AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig, const UInt_t comboType )
 {
   /// Add current trigger to the selected class for the event
   
@@ -689,11 +690,18 @@ AliMuonEventCuts::AddToEventSelectedClass ( const TString& toCheck, const TObjSt
     // - the lowest pt cut among the macthing ones in case "toCheck" is a trigger class/input
     //   combined through (only) logical OR "|"
     // This may lead to errors in case of complex combinations of trigger/inputs
+    Bool_t isFirst = kTRUE;
     for ( Int_t ipat=0; ipat<fSelectedTrigLevel->GetEntries(); ++ipat ) {
       if ( toCheck.Contains(fSelectedTrigLevel->At(ipat)->GetName() ) ) {
         UInt_t currLevel = fSelectedTrigLevel->At(ipat)->GetUniqueID();
-        if ( toCheck.Contains("&") ) trigLevel = TMath::Max(trigLevel, currLevel);
-        else if ( toCheck.Contains("|") ) trigLevel = TMath::Min(trigLevel, currLevel);
+        if ( comboType == kComboAND ) trigLevel = TMath::Max(trigLevel, currLevel);
+        else if ( comboType == kComboOR || comboType == kComboFormula ) {
+          if ( isFirst ) {
+            trigLevel = currLevel;
+            isFirst = kFALSE;
+          }
+          else trigLevel = TMath::Min(trigLevel, currLevel);
+        }
         else {
           trigLevel = currLevel;
           break;
