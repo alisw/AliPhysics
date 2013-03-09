@@ -33,10 +33,7 @@ static Double_t xBins[]={
 };
 const Int_t nBins=sizeof(xBins)/sizeof(Double_t) - 1; //37
 
-static Bool_t gFlag=kFALSE;
-
 //*** The systematic uncertainties for combining
-// TPC crossed/findable
 // cos(PA)
 // DCA between V0 daughters
 // TPC crossed pad rows
@@ -97,8 +94,19 @@ const Double_t sysFD=0.05;  //Feed down
 
 const Double_t sysRatio=0.05;//Efficiency systematics for the L/K ratio
 
-const Double_t fdCorr=0.81;  //Feed down correction value 
+Double_t fd(Double_t x) {
+  //Effective FD correction
+  return 0.1619 + 0.05295*x - 0.01749*x*x + 0.001425*x*x*x - 3.446e-05*x*x*x*x;
+}
 
+void FeedDown(TH1 *spe) {
+  for (Int_t i=1; i<=spe->GetNbinsX(); i++) {
+      Double_t pt=spe->GetBinCenter(i);
+      Double_t c=spe->GetBinContent(i);
+      c -= (c*fd(pt));
+      spe->SetBinContent(i,c);
+  }
+}
 
 TH1 *MapHisto(const TH1 *h) {
   const Double_t eps=0.0001;
@@ -117,7 +125,6 @@ TH1 *MapHisto(const TH1 *h) {
   }
 
   Int_t iii=h->GetNbinsX();
-  //if (gFlag) iii--;
   for (Int_t i=1; i<=iii; i++) {
     Int_t ni1=n+i-1;
 
@@ -148,8 +155,8 @@ Bool_t
 GetHistos(const Char_t *rName[], const Char_t *eName[], TH1 *&raw, TH1 *&eff) {
 
   /*TFile *fr=*/TFile::Open(rName[0]);
-  //TList *lst=(TList*)gFile->Get("c1DataYields");
-  TList *lst=(TList*)gFile->Get("cLK0Spectra");
+  TList *lst=(TList*)gFile->Get("c1DataYields");
+  //TList *lst=(TList*)gFile->Get("cLK0Spectra");
 
   raw=(TH1F*)lst->FindObject(rName[1]);
   if (!raw) {
@@ -157,9 +164,9 @@ GetHistos(const Char_t *rName[], const Char_t *eName[], TH1 *&raw, TH1 *&eff) {
      return kFALSE;
   }
 
-  ///*TFile *fe=*/TFile::Open(eName[0]);
-  //eff=(TH1F*)gFile->Get(eName[1]);
-  eff=(TH1F*)lst->FindObject(eName[1]);
+  /*TFile *fe=*/TFile::Open(eName[0]);
+  eff=(TH1F*)gFile->Get(eName[1]);
+  //eff=(TH1F*)lst->FindObject(eName[1]);
   if (!eff) {
      cerr<<"No efficiency ! "<<eName[0]<<' '<<eName[1]<<endl; 
      return kFALSE;
@@ -168,20 +175,20 @@ GetHistos(const Char_t *rName[], const Char_t *eName[], TH1 *&raw, TH1 *&eff) {
 }
 
 void SetAttributes(TH1 *h,const Char_t *tit,Int_t col,Int_t mar,Float_t siz,
-Float_t max=1000., Float_t min=1e-6, Float_t factor=1, Int_t range=nBins) {
+Float_t min=1e-7, Float_t max=1000., Int_t range=nBins) {
   h->SetTitle(tit);
   h->SetLineColor(col); 
   h->SetMarkerColor(col);
   h->SetMarkerStyle(mar);
   h->SetMarkerSize(siz);
-  h->Scale(factor);
   h->SetMaximum(max);
   h->SetMinimum(min);
   h->GetXaxis()->SetRange(1,range);
 }
 
 void 
-DrawHisto(TH1 *h, const Option_t *option, Double_t *sysEff, Double_t *sysSig) {
+DrawHisto(const TH1 *h, const Option_t *option, Double_t *sysEff, 
+	  Double_t *sysSig, Double_t scale=1) {
   TH1F *hh=new TH1F(*((TH1F*)h));
   Int_t nb=hh->GetNbinsX();
 
@@ -192,7 +199,7 @@ DrawHisto(TH1 *h, const Option_t *option, Double_t *sysEff, Double_t *sysSig) {
       e = sysEff[j]*sysEff[j] + sysSig[j]*sysSig[j];
 
       if (sysEff==sysEffLam) {// for Lambda
-         e += sysFD*sysFD;
+	 e += sysFD*sysFD;
          if (i<13) e += sysPID*sysPID;
       } else {// for K0s
          e += sysArm*sysArm;
@@ -203,10 +210,30 @@ DrawHisto(TH1 *h, const Option_t *option, Double_t *sysEff, Double_t *sysSig) {
       hh->SetBinError(i,e);
   }
   hh->SetFillColor(17);
-  TString opt("E5"); opt+=option;
-  //TString opt("E2"); opt+=option;
+  //TString opt("E5"); opt+=option;
+  TString opt("E2"); opt+=option;
+  /*
+  TFile *f=TFile::Open("systematics.root","update");
+  hh->Write();
+  f->Close();
+  */
+  hh->Scale(scale);
+  hh->SetMinimum(h->GetMinimum());
+  hh->SetMaximum(h->GetMaximum());
   hh->Draw(opt.Data());
-  h->Draw("e x0 same");
+
+  TH1F *ch=new TH1F(*((TH1F*)h));
+  /*  
+  TFile *f=TFile::Open("k0s_lambda_5cm_with_0510.root","update");
+  ch->Write();
+  f->Close();
+  */
+  ch->Scale(scale);
+  ch->SetMinimum(h->GetMinimum());
+  ch->SetMaximum(h->GetMaximum());
+  ch->Draw("e x0 same");
+  //opt="e x0";  opt+=option;
+  //ch->Draw(opt.Data());
 }
 
 void DrawRatio(TH1 *h, const Option_t *option) {
@@ -230,9 +257,12 @@ void DrawRatio(TH1 *h, const Option_t *option) {
       hh->SetBinError(i,e);
   }
   hh->SetFillColor(17);
-  TString opt("E5"); opt+=option;
+  //TString opt("E5"); opt+=option;
+  TString opt("E2"); opt+=option;
   hh->Draw(opt.Data());
   h->Draw("e x0 same");
+  //opt="e x0";  opt+=option;
+  //h->Draw(opt.Data());
 }
 
 void DrawALICELogo(Float_t x1, Float_t y1, Float_t x2, Float_t y2)
@@ -270,54 +300,59 @@ void DrawFit(const Char_t *nam[], const Float_t *fac, Int_t n){
 
 void DrawSpectraAndRatios() {
 
-  const Int_t nCent=6;
-  const Int_t nCent1=nCent-1;
+  const Int_t nCent=7;
 
   const Char_t *title[nCent]={
-    "0-10 %",
+    "0-5 %",
+    "5-10 %",
     "10-20 %",
-    "20-40 %, x1.2",
-    "40-60 %, x2.0",
-    "60-80 %, x3.0",
+    "20-40 %",
+    "40-60 %",
+    "60-80 %",
     "80-90 %"
   };
-  const Int_t   colour[nCent]={2,   635, 419, 4 , 6,  1  };
-  const Int_t   marker[nCent]={22,  34,  21,  23, 33, 20 };
-  const Float_t masize[nCent]={1.6, 1.3, 1.3, 1.6,2,  1.3};
-  const Float_t factor[nCent]={1.0, 1.0, 1.2, 2.0,3.0,0.0}; //scale for drawing
+  const Int_t   colour[nCent]={2,   635, 797, 419, 4 , 6,  1  };
+  const Int_t   marker[nCent]={22,  29, 34,  21,  23, 33, 20 };
+  const Float_t masize[nCent]={1.3, 1.6, 1.3, 1.2, 1.4, 1.8,  1.3};
+  const Float_t factor[nCent]={1.0, 1.0, 1.1, 1.5, 3.0,7.5,15.0}; //scale for drawing
+  const Float_t factor1[nCent]={1.0, 1/2., 1/4., 1/8., 1/16., 1/32., 1/64.}; //scale for log drawing
   
   const Char_t *rNameL[2*nCent]={ // file name, histo name
-    "LK0Spectra_WeightMean_100712.root", "Data_La_0010", 
-    "LK0Spectra_WeightMean_100712.root", "Data_La_1020", 
-    "LK0Spectra_WeightMean_100712.root", "Data_La_2040", 
-    "LK0Spectra_WeightMean_100712.root", "Data_La_4060", 
-    "LK0Spectra_WeightMean_100712.root", "Data_La_6080", 
-    "LK0Spectra_WeightMean_100712.root", "Data_La_8090" 
+    "raw.root", "YieldLambda_0005", 
+    "raw.root", "YieldLambda_0510", 
+    "raw.root", "YieldLambda_1020", 
+    "raw.root", "YieldLambda_2040", 
+    "raw.root", "YieldLambda_4060", 
+    "raw.root", "YieldLambda_6080", 
+    "raw.root", "YieldLambda_8090" 
   };
   const Char_t *eNameL[2*nCent]={ // file name, histo name
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_La_0010",
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_La_1020",
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_La_2040",
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_La_4060",
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_La_6080",
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_La_8090"
+    "eff.root", "eff_Lambda_comb_0005",
+    "eff.root", "eff_Lambda_comb_0510",
+    "eff.root", "eff_Lambda_comb_1020",
+    "eff.root", "eff_Lambda_comb_2040",
+    "eff.root", "eff_Lambda_comb_4060",
+    "eff.root", "eff_Lambda_comb_6080",
+    "eff.root", "eff_Lambda_comb_8090"
   };
 
   const Char_t *rNameK[2*nCent]={ // file name, histo name
-    "LK0Spectra_WeightMean_100712.root", "Data_K0_0010", 
-    "LK0Spectra_WeightMean_100712.root", "Data_K0_1020", 
-    "LK0Spectra_WeightMean_100712.root", "Data_K0_2040", 
-    "LK0Spectra_WeightMean_100712.root", "Data_K0_4060", 
-    "LK0Spectra_WeightMean_100712.root", "Data_K0_6080", 
-    "LK0Spectra_WeightMean_100712.root", "Data_K0_8090" 
+    "raw.root", "YieldK0Short_0005", 
+    "raw.root", "YieldK0Short_0510", 
+    "raw.root", "YieldK0Short_1020", 
+    "raw.root", "YieldK0Short_2040", 
+    "raw.root", "YieldK0Short_4060", 
+    "raw.root", "YieldK0Short_6080", 
+    "raw.root", "YieldK0Short_8090" 
   };
   const Char_t *eNameK[2*nCent]={ // file name, histo name
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_K0_0010",
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_K0_1020",
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_K0_2040",
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_K0_4060",
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_K0_6080",
-    "LK0Spectra_WeightMean_100712.root", "Efficiency_K0_8090"
+    "eff.root", "eff_K0s_comb_0005",
+    "eff.root", "eff_K0s_comb_0510",
+    "eff.root", "eff_K0s_comb_1020",
+    "eff.root", "eff_K0s_comb_2040",
+    "eff.root", "eff_K0s_comb_4060",
+    "eff.root", "eff_K0s_comb_6080",
+    "eff.root", "eff_K0s_comb_8090"
   };
 
   gStyle->SetOptStat(0);
@@ -343,44 +378,43 @@ void DrawSpectraAndRatios() {
 
   TH1 *lkRatio[nCent]={0};
 
-  for (Int_t cent=0; cent<nCent1; cent++) {
+  for (Int_t cent=0; cent<nCent; cent++) {
       const Char_t *tit=title[cent];
       Int_t col=colour[cent];
       Int_t mar=marker[cent];
       Float_t siz=masize[cent];
-      Float_t fac=factor[cent];
  
       // Lambda
       if (!GetHistos(rNameL+2*cent, eNameL+2*cent, raw, eff)) return;
       TH1 *rawHl=MapHisto(raw);
       TH1 *effHl=MapHisto(eff);
 
-      effHl->Scale(1/fdCorr); //Feed down
+      //Feed down
+      FeedDown(rawHl);
 
       rawHl->Divide(effHl);
       SetAttributes(rawHl,tit,col,mar,siz);
       c1->cd();
-      DrawHisto(rawHl, option.Data(), sysEffLam, sysSigLam);
+      DrawHisto(rawHl, option.Data(), sysEffLam, sysSigLam, factor1[cent]);
 
       TH1 *linHl=(TH1*)rawHl->Clone();
-      SetAttributes(linHl,tit,col,mar,siz,25.0*fdCorr,0.,fac,32); 
+      SetAttributes(linHl,tit,col,mar,siz,0.,20.,32); 
       c1lin->cd();
-      DrawHisto(linHl, option.Data(), sysEffLam, sysSigLam);
+      DrawHisto(linHl, option.Data(), sysEffLam, sysSigLam, factor[cent]);
 
       // K0s
-    if (cent==nCent1) gFlag=kTRUE;
       if (!GetHistos(rNameK+2*cent, eNameK+2*cent, raw, eff)) return;
       TH1 *rawHk=MapHisto(raw);
       TH1 *effHk=MapHisto(eff);
       rawHk->Divide(effHk);
-      SetAttributes(rawHk,tit,col,mar,siz);
+      SetAttributes(rawHk,tit,col,mar,siz,1e-7);
       c2->cd();
-      DrawHisto(rawHk, option.Data(), sysEffK0s, sysSigK0s);
+      DrawHisto(rawHk, option.Data(), sysEffK0s, sysSigK0s, factor1[cent]);
 
       TH1 *linHk=(TH1*)rawHk->Clone();
-      SetAttributes(linHk,tit,col,mar,siz,120.,0.,fac,32); 
+      SetAttributes(linHk,tit,col,mar,siz,0.,120.,32); 
       c2lin->cd();
-      DrawHisto(linHk, option.Data(), sysEffK0s, sysSigK0s);
+      DrawHisto(linHk, option.Data(), sysEffK0s, sysSigK0s, factor[cent]);
 
       // Lambda/K0s
       TH1 *rawHlk=(TH1*)rawHl->Clone();
@@ -391,16 +425,18 @@ void DrawSpectraAndRatios() {
       rawHlk->Divide(rawHk);
       rawHlk->GetYaxis()->SetTitle("#Lambda/K^{0}_{S}");
       c3->cd();
-      if (cent!=1)
+      //if (cent!=1)
       DrawRatio(rawHlk,option.Data());
 
       option+="same";
   }
+
   for (Int_t cent=0; cent<nCent; cent++) {
+    //if (cent != 1) 
     lkRatio[cent]->Draw("same");
   }
 
-  Float_t offx=0.15, offy=0.16, sizx=0.22, sizy=0.22;
+
   TLegend *leg=c1->BuildLegend(0.68,0.46,0.88,0.82,"Centrality:");
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
@@ -413,16 +449,19 @@ void DrawSpectraAndRatios() {
   entry->SetMarkerColor(ci);
 
   c1->cd(); 
-  TLatex *   tex = new TLatex(5.5,5.0,"#Lambda");
+  TLatex *   tex = new TLatex(0.5,0.65,"#Lambda");
+  tex->SetNDC();
   tex->SetTextFont(42);
   tex->SetTextSize(0.11);
   tex->SetLineWidth(2);
   tex->Draw();
-  tex = new TLatex(2.18,200.,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+  tex = new TLatex(0.27,0.83,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+  tex->SetNDC();
   tex->SetTextFont(42);
   tex->SetLineWidth(2);
   tex->Draw();
-  DrawALICELogo(offx,offy,offx+sizx,offy+sizy);
+  //Float_t offx=0.15, offy=0.16, sizx=0.22, sizy=0.22;
+  //DrawALICELogo(offx,offy,offx+sizx,offy+sizy);
 
    leg=c1lin->BuildLegend(0.69,0.43,0.88,0.80,"Centrality:");
    leg->SetBorderSize(0);
@@ -442,22 +481,24 @@ void DrawSpectraAndRatios() {
    entry->SetMarkerSize(1);
 
    c1lin->cd();
-   tex=new TLatex(1.04,22.7*fdCorr,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+   tex=new TLatex(0.27,0.83,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+   tex->SetNDC();
    tex->Draw();
-      tex = new TLatex(2.38,18.5*fdCorr,"#Lambda");  
+      tex = new TLatex(0.5,0.65,"#Lambda");  
+   tex->SetNDC();
    tex->SetTextSize(0.11);
    tex->Draw();
-   {
+   /*{
      TFile::Open("LamFitResults20120711.root");
      const Char_t *name[nCent]={
        "fitBWLambda010","fitBWLambda1020","fitBWLambda2040",
        "fitBWLambda4060","fitBWLambda6080","fitBWLambda8090"
      };
      Float_t fac[nCent]; for (Int_t i=0; i<nCent; i++) fac[i]=fdCorr*factor[i];
-     DrawFit(name, fac, nCent1);
-   }
-   Float_t offx1=0.70, offy1=0.18;
-   DrawALICELogo(offx1,offy1,offx1+sizx,offy1+sizy);
+     DrawFit(name, fac, nCent);
+   }*/
+   //Float_t offx1=0.70, offy1=0.18;
+   //DrawALICELogo(offx1,offy1,offx1+sizx,offy1+sizy);
        
 
 
@@ -473,16 +514,18 @@ void DrawSpectraAndRatios() {
   entry->SetMarkerColor(ci);
 
   c2->cd(); 
-  tex = new TLatex(5.5,5.0,"K^{0}_{S}");
+  tex = new TLatex(0.5,0.65,"K^{0}_{S}");
+  tex->SetNDC();
   tex->SetTextFont(42);
   tex->SetTextSize(0.089);
   tex->SetLineWidth(2);
   tex->Draw();
-  tex = new TLatex(2.18,200.,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+  tex = new TLatex(0.27,0.83,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+  tex->SetNDC();
   tex->SetTextFont(42);
   tex->SetLineWidth(2);
   tex->Draw();
-  DrawALICELogo(offx,offy,offx+sizx,offy+sizy);
+  //DrawALICELogo(offx,offy,offx+sizx,offy+sizy);
 
    leg=c2lin->BuildLegend(0.69,0.43,0.88,0.80,"Centrality:");
    leg->SetBorderSize(0);
@@ -502,20 +545,23 @@ void DrawSpectraAndRatios() {
    entry->SetMarkerSize(1);
 
    c2lin->cd();
-      tex = new TLatex(1.04,109.,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+      tex = new TLatex(0.27,0.83,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+   tex->SetNDC();
    tex->Draw();
-      tex = new TLatex(2.122705,87.70856,"K^{0}_{S}");  
+      tex = new TLatex(0.5,0.65,"K^{0}_{S}");  
+   tex->SetNDC();
    tex->SetTextSize(0.089);
    tex->Draw();
    {
-     TFile::Open("K0FitResults20120711.root");
+     TFile::Open("BWFitResults_K0_stat.root");
      const Char_t *name[nCent]={
-       "fitBWK0s0010","fitBWK0s1020","fitBWK0s2040",
-       "fitBWK0s4060","fitBWK0s6080","fitBWK0s8090"
+       "BWFit_0005",
+       "BWFit_0510","BWFit_1020","BWFit_2040",
+       "BWFit_4060","BWFit_6080","BWFit_8090"
      };
-     DrawFit(name, factor, nCent1);
-   }
-   DrawALICELogo(offx1,offy1,offx1+sizx,offy1+sizy);
+     DrawFit(name, factor, nCent);
+    }
+   //DrawALICELogo(offx1,offy1,offx1+sizx,offy1+sizy);
        
    
    //leg=c3->BuildLegend(0.74,0.62,0.88,0.88,"Centrality:");
