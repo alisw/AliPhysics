@@ -158,6 +158,8 @@ public:
 	
 	void SetWeightFunction(TF1* func) {fFuncWeight = func;}
 	TF1* GetWeightFunction() const {return fFuncWeight;}
+	void SetPtWeightsFromFONLL276overLHC12a17a();
+	void SetPtWeightsFromDataPbPb276overLHC12a17a();
 
         void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
         UInt_t GetResonantDecay() const {return fResonantDecay;}
