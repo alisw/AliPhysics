@@ -37,6 +37,14 @@ Bool_t kUseAcceptanceFilter = kFALSE;
 const char *gAcceptanceFilterFile = "efficiencyALICE.root";
 //=========Acceptance filter=========//
 
+//=========Detector effects=========//
+Bool_t kSimulateDetectorEffects = kTRUE;
+Int_t fNumberOfInefficientSectors = 5;//inefficient secotrs in phi
+Double_t fInefficiencyFactorInPhi = 0.65;//efficiency factor < 1
+Int_t fNumberOfDeadSectors = 3;//number of dead sectors
+Bool_t fEfficiencyDropNearEtaEdges = kTRUE;//efficiency drop in eta edges
+//=========Detector effects=========//
+
 //=========Dynamical Correlations=========//
 Bool_t kUseDynamicalCorrelations = kFALSE;
 Double_t gDynamicalCorrelationsPercentage = 0.1;
@@ -151,6 +159,19 @@ void runBalanceFunctionToyModel(Int_t nEvents = 10,
     toyModelAnalysis->SetAcceptanceParameterization(gParameterization);
   }
 
+  //Detector effects
+  if(kSimulateDetectorEffects) 
+    toyModelAnalysis->SimulateDetectorEffects();
+  if(fNumberOfInefficientSectors) {
+    toyModelAnalysis->SetNumberOfInefficientSectorsInPhi(fNumberOfInefficientSectors);
+    toyModelAnalysis->SetInefficiencyFactor(fInefficiencyFactorInPhi);
+  }
+  if(fNumberOfDeadSectors)
+    toyModelAnalysis->SetNumberOfDeadSectorsInPhi(fNumberOfDeadSectors);
+  if(fEfficiencyDropNearEtaEdges)
+    toyModelAnalysis->EnableEfficiencyDropNearEtaEdges();
+
+  //Initialize and run
   toyModelAnalysis->Init();
   toyModelAnalysis->CreateOutputObjects();
   toyModelAnalysis->Run(nEvents);
