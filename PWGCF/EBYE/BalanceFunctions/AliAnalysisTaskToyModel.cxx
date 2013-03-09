@@ -354,6 +354,8 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
   fHistPtProtons = new TH1F("fHistPtProtons","Pt (acceptance - protons);p_{t} (GeV/c);Entries",1000,0.,10.);
   fList->Add(fHistPtProtons);
 
+  if(fEfficiencyMatrix) fList->Add(fEfficiencyMatrix);
+
   //==============Balance function histograms================//
   // Initialize histograms if not done yet
   if(!fBalance->GetHistNp()){
@@ -475,9 +477,6 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     Int_t nGeneratedNegative = nMultiplicity - nGeneratedPositive;
     if(fUseDebug) 
       Printf("Total multiplicity: %d - Generated positive: %d - Generated negative: %d",nMultiplicity,nGeneratedPositive,nGeneratedNegative);
-
-    //Int_t nGeneratedPositive = 0, nGeneratedNegative = 0;
-    Int_t nGeneratedPions = 0, nGeneratedKaons = 0, nGeneratedProtons = 0;
     
     //Randomization of the reaction plane
     fReactionPlane = 2.0*TMath::Pi()*gRandom->Rndm();
@@ -493,9 +492,126 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     Int_t gNumberOfAcceptedParticles = 0;
     Int_t gNumberOfAcceptedPositiveParticles = 0;
     Int_t gNumberOfAcceptedNegativeParticles = 0;
+    Int_t nGeneratedPions = 0, nGeneratedKaons = 0, nGeneratedProtons = 0;
  
+    //Generate particles
+    for(Int_t iParticleCount = 0; iParticleCount < nMultiplicity; iParticleCount++) {
+      isPion = kFALSE; isKaon = kFALSE; isProton = kFALSE;
+      if(fUseDebug) 
+	Printf("Generating positive: %d(%d)",iParticleCount+1,nGeneratedPositive);
+
+      //Pseudo-rapidity sampled from a Gaussian centered @ 0
+      vEta = gRandom->Gaus(0.0,4.0);
+
+      //Fill QA histograms (full phase space)
+      fHistEtaTotal->Fill(vEta);
+
+      //Decide the charge
+      Double_t gDecideCharge = gRandom->Rndm();
+      if(gDecideCharge <= 1.*nGeneratedPositive/nMultiplicity)       
+	vCharge = 1;
+      else 
+	vCharge = -1;
+      //nGeneratedPositive += 1;
+      
+      //Acceptance
+      if((vEta < fEtaMin) || (vEta > fEtaMax)) continue;
+
+      if(!fUseAllCharges) {
+	//Decide the specie
+	Double_t randomNumberSpecies = gRandom->Rndm();
+	if((randomNumberSpecies >= 0.0)&&(randomNumberSpecies < fPionPercentage)) {
+	  nGeneratedPions += 1;
+	  vPt = fPtSpectraPions->GetRandom();
+	  vPhi = fAzimuthalAnglePions->GetRandom();
+	  fParticleMass = fPionMass;
+	  isPion = kTRUE;
+	}
+	else if((randomNumberSpecies >= fPionPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage)) {
+	  nGeneratedKaons += 1;
+	  vPt = fPtSpectraKaons->GetRandom();
+	  vPhi = fAzimuthalAngleKaons->GetRandom();
+	  fParticleMass = fKaonMass;
+	  isKaon = kTRUE;
+	}
+	else if((randomNumberSpecies >= fPionPercentage + fKaonPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage + fProtonPercentage)) {
+	  nGeneratedProtons += 1;
+	  vPt = fPtSpectraProtons->GetRandom();
+	  vPhi = fAzimuthalAngleProtons->GetRandom();
+	  fParticleMass = fProtonMass;
+	  isProton = kTRUE;
+	}
+      }
+      else {
+	vPt = fPtSpectraAllCharges->GetRandom();
+	vPhi = fAzimuthalAngleAllCharges->GetRandom();
+      }
+      
+      vP[0] = vPt*TMath::Cos(vPhi);
+      vP[1] = vPt*TMath::Sin(vPhi);
+      vP[2] = vPt*TMath::SinH(vEta);
+      vE = TMath::Sqrt(TMath::Power(fParticleMass,2) +
+			TMath::Power(vP[0],2) +
+			TMath::Power(vP[1],2) +
+			TMath::Power(vP[2],2));
+      
+      vY = 0.5*TMath::Log((vE + vP[2])/(vE - vP[2]));
+      
+      //pt coverage
+      if((vPt < fPtMin) || (vPt > fPtMax)) continue;
+      //Printf("pt: %lf - mins: %lf - max: %lf",vPt,fPtMin,fPtMax);
+
+      //acceptance filter
+      if(fUseAcceptanceParameterization) {
+	Double_t gRandomNumberForAcceptance = gRandom->Rndm();
+	if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(vPt)) 
+	  continue;
+      }
+
+      //Detector effects
+      if(fSimulateDetectorEffects) {
+	Double_t randomNumber = gRandom->Rndm();
+	if(randomNumber > fEfficiencyMatrix->GetBinContent(fEfficiencyMatrix->FindBin(vEta,vPt,vPhi)))
+	  continue;
+      }
+
+      //Fill QA histograms (acceptance);
+      if(vCharge > 0) {
+	gNumberOfAcceptedPositiveParticles += 1;
+	fHistEtaPhiPos->Fill(vEta,vPhi);
+      }
+      else {
+	gNumberOfAcceptedNegativeParticles += 1;
+	fHistEtaPhiNeg->Fill(vEta,vPhi);
+      }
+
+      fHistEta->Fill(vEta);
+      fHistRapidity->Fill(vY);
+      fHistPhi->Fill(vPhi);
+      fHistPt->Fill(vPt);
+      if(isPion) {
+	fHistRapidityPions->Fill(vY);
+	fHistPhiPions->Fill(vPhi);
+	fHistPtPions->Fill(vPt);
+      }
+      else if(isKaon) {
+	fHistRapidityKaons->Fill(vY);
+	fHistPhiKaons->Fill(vPhi);
+	fHistPtKaons->Fill(vPt);
+      }
+      else if(isProton) {
+	fHistRapidityProtons->Fill(vY);
+	fHistPhiProtons->Fill(vPhi);
+	fHistPtProtons->Fill(vPt);
+      }
+      gNumberOfAcceptedParticles += 1;
+
+      // add the track to the TObjArray
+      tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
+    }//generated positive particle loop
+
     //Generate positive particles
-    for(Int_t iParticleCount = 0; iParticleCount < nGeneratedPositive; iParticleCount++) {
+    /*for(Int_t iParticleCount = 0; iParticleCount < nGeneratedPositive; iParticleCount++) {
       isPion = kFALSE; isKaon = kFALSE; isProton = kFALSE;
       if(fUseDebug) 
 	Printf("Generating positive: %d(%d)",iParticleCount+1,nGeneratedPositive);
@@ -586,37 +702,14 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	fHistPhiProtons->Fill(vPhi);
 	fHistPtProtons->Fill(vPt);
       }
-
-      // fill charge vector
-      /*chargeVector[0]->push_back(vCharge);
-      chargeVector[1]->push_back(vY);
-      chargeVector[2]->push_back(vEta);
-      chargeVector[3]->push_back(vPhi);
-      chargeVector[4]->push_back(vP[0]);
-      chargeVector[5]->push_back(vP[1]);
-      chargeVector[6]->push_back(vP[2]);
-      chargeVector[7]->push_back(vPt);
-      chargeVector[8]->push_back(vE);
-      
-      if(fRunShuffling) {
-	chargeVectorShuffle[0]->push_back(vCharge);
-	chargeVectorShuffle[1]->push_back(vY);
-	chargeVectorShuffle[2]->push_back(vEta);
-	chargeVectorShuffle[3]->push_back(vPhi);
-	chargeVectorShuffle[4]->push_back(vP[0]);
-	chargeVectorShuffle[5]->push_back(vP[1]);
-	chargeVectorShuffle[6]->push_back(vP[2]);
-	chargeVectorShuffle[7]->push_back(vPt);
-	chargeVectorShuffle[8]->push_back(vE);
-	}*/
       gNumberOfAcceptedParticles += 1;
 
       // add the track to the TObjArray
       tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
-    }//generated positive particle loop
+    }*///generated positive particle loop
  
     //Generate negative particles
-    for(Int_t iParticleCount = 0; iParticleCount < nGeneratedNegative; iParticleCount++) {
+    /*for(Int_t iParticleCount = 0; iParticleCount < nGeneratedNegative; iParticleCount++) {
       isPion = kFALSE; isKaon = kFALSE; isProton = kFALSE;
       if(fUseDebug) 
 	Printf("Generating negative: %d(%d)",iParticleCount+1,nGeneratedNegative);
@@ -707,34 +800,11 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	fHistPhiProtons->Fill(vPhi);
 	fHistPtProtons->Fill(vPt);
       }
-
-      // fill charge vector
-      /*chargeVector[0]->push_back(vCharge);
-      chargeVector[1]->push_back(vY);
-      chargeVector[2]->push_back(vEta);
-      chargeVector[3]->push_back(vPhi);
-      chargeVector[4]->push_back(vP[0]);
-      chargeVector[5]->push_back(vP[1]);
-      chargeVector[6]->push_back(vP[2]);
-      chargeVector[7]->push_back(vPt);
-      chargeVector[8]->push_back(vE);
-      
-      if(fRunShuffling) {
-	chargeVectorShuffle[0]->push_back(vCharge);
-	chargeVectorShuffle[1]->push_back(vY);
-	chargeVectorShuffle[2]->push_back(vEta);
-	chargeVectorShuffle[3]->push_back(vPhi);
-	chargeVectorShuffle[4]->push_back(vP[0]);
-	chargeVectorShuffle[5]->push_back(vP[1]);
-	chargeVectorShuffle[6]->push_back(vP[2]);
-	chargeVectorShuffle[7]->push_back(vPt);
-	chargeVectorShuffle[8]->push_back(vE);
-	}*/
       gNumberOfAcceptedParticles += 1;
 
       // add the track to the TObjArray
       tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
-    }//generated negative particle loop
+    }*///generated negative particle loop
     
     //Dynamical correlations
     Int_t nGeneratedPositiveDynamicalCorrelations = 0;
