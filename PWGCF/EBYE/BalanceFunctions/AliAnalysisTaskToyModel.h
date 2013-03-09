@@ -8,6 +8,7 @@
 class TList;
 class TH1F;
 class TH2F;
+class TH3F;
 class TF1;
 
 class AliBalancePsi;
@@ -51,6 +52,18 @@ class AliAnalysisTaskToyModel : public TObject {
   void SetAcceptanceParameterization(TF1 *parameterization) {
     fUseAcceptanceParameterization = kTRUE;
     fAcceptanceParameterization = parameterization;}
+
+  //Acceptance - simulate detector effects/inefficiencies
+  void SimulateDetectorEffects() {fSimulateDetectorEffects = kTRUE;}
+  void SetNumberOfInefficientSectorsInPhi(Int_t numberOfInefficientSectors) {
+    fNumberOfInefficientSectors = numberOfInefficientSectors;
+    fInefficiencyFactorInPhi = 0.5;}
+  void SetInefficiencyFactor(Double_t gInefficiencyFactorInPhi) {
+    fInefficiencyFactorInPhi = gInefficiencyFactorInPhi;}
+  void SetNumberOfDeadSectorsInPhi(Int_t numberOfDeadSectors) {
+    fNumberOfDeadSectors = numberOfDeadSectors;}
+  void EnableEfficiencyDropNearEtaEdges() {
+    fEfficiencyDropNearEtaEdges = kTRUE;}
 
   //All charges
   void SetSpectraTemperatureForAllCharges(Double_t temperature) {
@@ -128,6 +141,8 @@ class AliAnalysisTaskToyModel : public TObject {
   //============Toy model: List of setters============//
 
  private:
+  void SetupEfficiencyMatrix();
+
   Bool_t fUseDebug; //Debug flag
 
   AliBalancePsi *fBalance; //BF object
@@ -167,9 +182,19 @@ class AliAnalysisTaskToyModel : public TObject {
   Double_t fEtaMin; //eta min for acceptance
   Double_t fEtaMax; //eta max for acceptance
 
+  //Acceptance parameterization
   Bool_t fUseAcceptanceParameterization; //flag acceptance parameterization
   TF1 *fAcceptanceParameterization; //acceptance parameterization
 
+  //Simulate detector effects
+  Bool_t fSimulateDetectorEffects;//simulate detector effects in pT
+  Int_t fNumberOfInefficientSectors;//inefficient secotrs in phi
+  Double_t fInefficiencyFactorInPhi;//efficiency factor < 1
+  Int_t fNumberOfDeadSectors;//number of dead sectors
+  Bool_t fEfficiencyDropNearEtaEdges;//efficiency drop in eta edges
+  TH3F *fEfficiencyMatrix; //efficiency matrix in eta-pt-phi
+
+  //Kinematics
   Bool_t   fUseAllCharges; //use all charges
   Double_t fParticleMass; //particle mass
   TF1     *fPtSpectraAllCharges; //spectra for all charges
