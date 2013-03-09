@@ -1497,6 +1497,8 @@ void AliHLTTPCTransform::Local2Raw(Float_t *xyz,Int_t sector,Int_t row)
     xyz[2]=(GetZLength()-xyz[2]+GetZOffset())/GetZWidth();
   else
     xyz[2]=(GetZLength()+xyz[2]+GetZOffset())/GetZWidth();
+
+  if( xyz[2]<0 ) xyz[2]=0; // protection for negative timebin values
 }
 
 void AliHLTTPCTransform::LocHLT2Raw(Float_t *xyz,Int_t slice,Int_t slicerow)
