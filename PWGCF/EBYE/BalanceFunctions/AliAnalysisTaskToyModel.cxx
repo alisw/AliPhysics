@@ -16,6 +16,8 @@
 
 #include "AliAnalysisTaskToyModel.h"
 #include "AliBalance.h"
+#include "AliBalancePsi.h"
+#include "AliAnalysisTaskTriggeredBF.h"
 
 
 // Analysis task for the toy model analysis
@@ -37,6 +39,7 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fHistNumberOfAcceptedParticles(0),
   fHistReactionPlane(0),
   fHistEtaTotal(0), fHistEta(0),
+  fHistEtaPhiPos(0), fHistEtaPhiNeg(0),
   fHistRapidity(0),
   fHistRapidityPions(0), fHistRapidityKaons(0), fHistRapidityProtons(0),
   fHistPhi(0),
@@ -108,9 +111,12 @@ void AliAnalysisTaskToyModel::Init() {
 
   if(fUseAllCharges) {
     fParticleMass = fPionMass;
-    fPtSpectraAllCharges = new TF1("fPtSpectraAllCharges","x*TMath::Exp(-TMath::Power([0]*[0]+x*x,0.5)/[1])",0.,5.);
-    fPtSpectraAllCharges->SetParName(0,"Mass");
-    fPtSpectraAllCharges->SetParName(1,"Temperature");
+    //fPtSpectraAllCharges = new TF1("fPtSpectraAllCharges","x*TMath::Exp(-TMath::Power([0]*[0]+x*x,0.5)/[1])",0.,5.);
+    //fPtSpectraAllCharges->SetParName(0,"Mass");
+    //fPtSpectraAllCharges->SetParName(1,"Temperature");
+    fPtSpectraAllCharges = new TF1("fPtSpectraAllCharges","(x^2/TMath::Sqrt(TMath::Power(x,2) + TMath::Power(0.139,2)))*TMath::Power((1. + x/[0]),-[1])",0.,20.);
+    fPtSpectraAllCharges->SetParName(0,"pt0");
+    fPtSpectraAllCharges->SetParName(1,"b");
   }
   else {
     fPtSpectraPions = new TF1("fPtSpectraPions","x*TMath::Exp(-TMath::Power([0]*[0]+x*x,0.5)/[1])",0.,5.);
@@ -184,13 +190,15 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
   TH1::AddDirectory(kFALSE);
 
   if(!fBalance) {
-    fBalance = new AliBalance();
-    fBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
+    fBalance = new AliBalancePsi();
+    fBalance->SetDeltaEtaMax(2.0);
+    //fBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
   }
   if(fRunShuffling) {
     if(!fShuffledBalance) {
-      fShuffledBalance = new AliBalance();
-      fShuffledBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
+      fShuffledBalance = new AliBalancePsi();
+      fShuffledBalance->SetDeltaEtaMax(2.0);
+      //fShuffledBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
     }
   }
 
@@ -234,6 +242,11 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
   fHistEta = new TH1F("fHistEta","Pseudo-rapidity (acceptance);#eta;Entries",1000,-1.5,1.5); 
   fList->Add(fHistEta);
 
+  fHistEtaPhiPos = new TH2F("fHistEtaPhiPos","#eta-#phi distribution (+);#eta;#varphi (rad)",80,-2.,2.,72,0.,2.*TMath::Pi());
+  fList->Add(fHistEtaPhiPos);
+  fHistEtaPhiNeg = new TH2F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#varphi (rad)",80,-2.,2.,72,0.,2.*TMath::Pi());
+  fList->Add(fHistEtaPhiNeg);
+
   //Rapidity
   fHistRapidity = new TH1F("fHistRapidity","Rapidity (acceptance);y;Entries",1000,-1.5,1.5); 
   fList->Add(fHistRapidity);
@@ -269,36 +282,34 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
 
   //==============Balance function histograms================//
   // Initialize histograms if not done yet
-  if(!fBalance->GetHistNp(0)){
+  if(!fBalance->GetHistNp()){
     AliWarning("Histograms not yet initialized! --> Will be done now");
     AliWarning("--> Add 'gBalance->InitHistograms()' in your configBalanceFunction");
     fBalance->InitHistograms();
   }
 
   if(fRunShuffling) {
-    if(!fShuffledBalance->GetHistNp(0)) {
+    if(!fShuffledBalance->GetHistNp()) {
       AliWarning("Histograms (shuffling) not yet initialized! --> Will be done now");
       AliWarning("--> Add 'gBalance->InitHistograms()' in your configBalanceFunction");
       fShuffledBalance->InitHistograms();
     }
   }
 
-  for(Int_t a = 0; a < ANALYSIS_TYPES; a++){
-    fListBF->Add(fBalance->GetHistNp(a));
-    fListBF->Add(fBalance->GetHistNn(a));
-    fListBF->Add(fBalance->GetHistNpn(a));
-    fListBF->Add(fBalance->GetHistNnn(a));
-    fListBF->Add(fBalance->GetHistNpp(a));
-    fListBF->Add(fBalance->GetHistNnp(a));
+  fListBF->Add(fBalance->GetHistNp());
+  fListBF->Add(fBalance->GetHistNn());
+  fListBF->Add(fBalance->GetHistNpn());
+  fListBF->Add(fBalance->GetHistNnn());
+  fListBF->Add(fBalance->GetHistNpp());
+  fListBF->Add(fBalance->GetHistNnp());
 
-    if(fRunShuffling) {
-      fListBFS->Add(fShuffledBalance->GetHistNp(a));
-      fListBFS->Add(fShuffledBalance->GetHistNn(a));
-      fListBFS->Add(fShuffledBalance->GetHistNpn(a));
-      fListBFS->Add(fShuffledBalance->GetHistNnn(a));
-      fListBFS->Add(fShuffledBalance->GetHistNpp(a));
-      fListBFS->Add(fShuffledBalance->GetHistNnp(a));
-    }  
+  if(fRunShuffling) {
+    fListBFS->Add(fShuffledBalance->GetHistNp());
+    fListBFS->Add(fShuffledBalance->GetHistNn());
+    fListBFS->Add(fShuffledBalance->GetHistNpn());
+    fListBFS->Add(fShuffledBalance->GetHistNnn());
+    fListBFS->Add(fShuffledBalance->GetHistNpp());
+    fListBFS->Add(fShuffledBalance->GetHistNnp());
   }
 
   // Post output data.
@@ -314,17 +325,18 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
 void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
   // Main loop
   // Called for each event
-  Double_t vCharge = 0;
-  Double_t vY = 0.0;
-  Double_t vEta = 0.0;
-  Double_t vPhi = 0.0;
-  Double_t vP[3] = {0.,0.,0.};
-  Double_t vPt = 0.0;
-  Double_t vE = 0.0;
+  Short_t vCharge = 0;
+  Float_t vY = 0.0;
+  Float_t vEta = 0.0;
+  Float_t vPhi = 0.0;
+  Float_t vP[3] = {0.,0.,0.};
+  Float_t vPt = 0.0;
+  Float_t vE = 0.0;
   Bool_t isPion = kFALSE, isKaon = kFALSE, isProton = kFALSE;
 
   if(fUseAllCharges) {
-    fPtSpectraAllCharges->SetParameter(0,fParticleMass);
+    //fPtSpectraAllCharges->SetParameter(0,fParticleMass);
+    fPtSpectraAllCharges->SetParameter(0,1.05);
     fPtSpectraAllCharges->SetParameter(1,fTemperatureAllCharges);
 
     fAzimuthalAngleAllCharges->SetParameter(1,fDirectedFlowAllCharges);
@@ -360,15 +372,20 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     fAzimuthalAngleProtons->SetParameter(5,fPentangularFlowProtons);
   }
 
+  //TObjArray for the accepted particles
+  TObjArray *tracksMain = new TObjArray();
+  tracksMain->SetOwner(kTRUE);
+
   for(Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     // vector holding the charges/kinematics of all tracks (charge,y,eta,phi,p0,p1,p2,pt,E)
-    vector<Double_t> *chargeVectorShuffle[9];   // this will be shuffled
-    vector<Double_t> *chargeVector[9];          // original charge
-    for(Int_t i = 0; i < 9; i++){
-      chargeVectorShuffle[i] = new vector<Double_t>;
-      chargeVector[i]        = new vector<Double_t>;
-    }
-
+    //vector<Double_t> *chargeVectorShuffle[9];   // this will be shuffled
+    //vector<Double_t> *chargeVector[9];          // original charge
+    //for(Int_t i = 0; i < 9; i++){
+    //chargeVectorShuffle[i] = new vector<Double_t>;
+    //chargeVector[i]        = new vector<Double_t>;
+    //}
+    tracksMain->Clear();
+    
     fHistEventStats->Fill(1);
     fHistEventStats->Fill(2);
     fHistEventStats->Fill(3);
@@ -389,8 +406,8 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     Int_t nGeneratedPions = 0, nGeneratedKaons = 0, nGeneratedProtons = 0;
     
     //Randomization of the reaction plane
-    //fReactionPlane = 2.0*TMath::Pi()*gRandom->Rndm();
-    fReactionPlane = 0.0;
+    fReactionPlane = 2.0*TMath::Pi()*gRandom->Rndm();
+    //fReactionPlane = 0.0;
     if(fUseAllCharges) 
       fAzimuthalAngleAllCharges->SetParameter(0,fReactionPlane);
     else {
@@ -415,7 +432,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       //Fill QA histograms (full phase space)
       fHistEtaTotal->Fill(vEta);
 
-      vCharge = 1.0;
+      vCharge = 1;
       //nGeneratedPositive += 1;
       
       //Acceptance
@@ -475,6 +492,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       gNumberOfAcceptedPositiveParticles += 1;
 
       //Fill QA histograms (acceptance);
+      fHistEtaPhiPos->Fill(vEta,vPhi);
       fHistEta->Fill(vEta);
       fHistRapidity->Fill(vY);
       fHistPhi->Fill(vPhi);
@@ -496,10 +514,10 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       }
 
       // fill charge vector
-      chargeVector[0]->push_back(vCharge);
+      /*chargeVector[0]->push_back(vCharge);
       chargeVector[1]->push_back(vY);
       chargeVector[2]->push_back(vEta);
-      chargeVector[3]->push_back(TMath::RadToDeg()*vPhi);
+      chargeVector[3]->push_back(vPhi);
       chargeVector[4]->push_back(vP[0]);
       chargeVector[5]->push_back(vP[1]);
       chargeVector[6]->push_back(vP[2]);
@@ -510,14 +528,17 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	chargeVectorShuffle[0]->push_back(vCharge);
 	chargeVectorShuffle[1]->push_back(vY);
 	chargeVectorShuffle[2]->push_back(vEta);
-	chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*vPhi);
+	chargeVectorShuffle[3]->push_back(vPhi);
 	chargeVectorShuffle[4]->push_back(vP[0]);
 	chargeVectorShuffle[5]->push_back(vP[1]);
 	chargeVectorShuffle[6]->push_back(vP[2]);
 	chargeVectorShuffle[7]->push_back(vPt);
 	chargeVectorShuffle[8]->push_back(vE);
-      }
+	}*/
       gNumberOfAcceptedParticles += 1;
+
+      // add the track to the TObjArray
+      tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
     }//generated positive particle loop
  
     //Generate negative particles
@@ -532,7 +553,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       //Fill QA histograms (full phase space)
       fHistEtaTotal->Fill(vEta);
 
-      vCharge = -1.0;
+      vCharge = -1;
       //nGeneratedNegative += 1;
       
       //Acceptance
@@ -590,8 +611,9 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       }
 
       gNumberOfAcceptedNegativeParticles += 1;
-
+ 
       //Fill QA histograms (acceptance);
+      fHistEtaPhiNeg->Fill(vEta,vPhi);
       fHistEta->Fill(vEta);
       fHistRapidity->Fill(vY);
       fHistPhi->Fill(vPhi);
@@ -613,10 +635,10 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       }
 
       // fill charge vector
-      chargeVector[0]->push_back(vCharge);
+      /*chargeVector[0]->push_back(vCharge);
       chargeVector[1]->push_back(vY);
       chargeVector[2]->push_back(vEta);
-      chargeVector[3]->push_back(TMath::RadToDeg()*vPhi);
+      chargeVector[3]->push_back(vPhi);
       chargeVector[4]->push_back(vP[0]);
       chargeVector[5]->push_back(vP[1]);
       chargeVector[6]->push_back(vP[2]);
@@ -627,26 +649,29 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	chargeVectorShuffle[0]->push_back(vCharge);
 	chargeVectorShuffle[1]->push_back(vY);
 	chargeVectorShuffle[2]->push_back(vEta);
-	chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*vPhi);
+	chargeVectorShuffle[3]->push_back(vPhi);
 	chargeVectorShuffle[4]->push_back(vP[0]);
 	chargeVectorShuffle[5]->push_back(vP[1]);
 	chargeVectorShuffle[6]->push_back(vP[2]);
 	chargeVectorShuffle[7]->push_back(vPt);
 	chargeVectorShuffle[8]->push_back(vE);
-      }
+	}*/
       gNumberOfAcceptedParticles += 1;
+
+      // add the track to the TObjArray
+      tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
     }//generated negative particle loop
     
     //Dynamical correlations
-    Double_t vChargePrime = 0;
+    Int_t nGeneratedPositiveDynamicalCorrelations = 0;
+    Int_t nGeneratedNegativeDynamicalCorrelations = 0;
+    /*Double_t vChargePrime = 0;
     Double_t vYPrime = 0.0;
     Double_t vEtaPrime = 0.0;
     Double_t vPhiPrime = 0.0;
     Double_t vPPrime[3] = {0.,0.,0.};
     Double_t vPtPrime = 0.0;
     Double_t vEPrime = 0.0;
-    Int_t nGeneratedPositiveDynamicalCorrelations = 0;
-    Int_t nGeneratedNegativeDynamicalCorrelations = 0;
     //Generate "correlated" particles 
     if(fUseDynamicalCorrelations) {
       Int_t gNumberOfDynamicalCorrelations = (Int_t)(0.5*gNumberOfAcceptedParticles*fDynamicalCorrelationsPercentage);
@@ -738,7 +763,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	chargeVector[0]->push_back(vCharge);
 	chargeVector[1]->push_back(vY);
 	chargeVector[2]->push_back(vEta);
-	chargeVector[3]->push_back(TMath::RadToDeg()*vPhi);
+	chargeVector[3]->push_back(vPhi);
 	chargeVector[4]->push_back(vP[0]);
 	chargeVector[5]->push_back(vP[1]);
 	chargeVector[6]->push_back(vP[2]);
@@ -749,7 +774,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	  chargeVectorShuffle[0]->push_back(vCharge);
 	  chargeVectorShuffle[1]->push_back(vY);
 	  chargeVectorShuffle[2]->push_back(vEta);
-	  chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*vPhi);
+	  chargeVectorShuffle[3]->push_back(vPhi);
 	  chargeVectorShuffle[4]->push_back(vP[0]);
 	  chargeVectorShuffle[5]->push_back(vP[1]);
 	  chargeVectorShuffle[6]->push_back(vP[2]);
@@ -761,7 +786,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	chargeVector[0]->push_back(vChargePrime);
 	chargeVector[1]->push_back(vYPrime);
 	chargeVector[2]->push_back(vEtaPrime);
-	chargeVector[3]->push_back(TMath::RadToDeg()*vPhiPrime);
+	chargeVector[3]->push_back(vPhiPrime);
 	chargeVector[4]->push_back(vPPrime[0]);
 	chargeVector[5]->push_back(vPPrime[1]);
 	chargeVector[6]->push_back(vPPrime[2]);
@@ -772,7 +797,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	  chargeVectorShuffle[0]->push_back(vChargePrime);
 	  chargeVectorShuffle[1]->push_back(vYPrime);
 	  chargeVectorShuffle[2]->push_back(vEtaPrime);
-	  chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*vPhiPrime);
+	  chargeVectorShuffle[3]->push_back(vPhiPrime);
 	  chargeVectorShuffle[4]->push_back(vPPrime[0]);
 	  chargeVectorShuffle[5]->push_back(vPPrime[1]);
 	  chargeVectorShuffle[6]->push_back(vPPrime[2]);
@@ -781,8 +806,8 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	}
 
 	gNumberOfAcceptedParticles += 2;
-      }//loop over the dynamical correlations
-    }// usage of dynamical correlations
+	}//loop over the dynamical correlations
+	}*/// usage of dynamical correlations
 
     if(fUseDebug) {
       Printf("=======================================================");
@@ -800,14 +825,14 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     fHistReactionPlane->Fill(fReactionPlane);
 
     //Calculate the balance function
-    fBalance->CalculateBalance(gNumberOfAcceptedParticles,chargeVector);
-    
-    if(fRunShuffling) {
+    //fBalance->CalculateBalance(gNumberOfAcceptedParticles,chargeVector);
+    fBalance->CalculateBalance(fReactionPlane,tracksMain,NULL,1,1.,0.);
+    /*if(fRunShuffling) {
       // shuffle charges
       random_shuffle( chargeVectorShuffle[0]->begin(), chargeVectorShuffle[0]->end() );
       fShuffledBalance->CalculateBalance(gNumberOfAcceptedParticles,chargeVectorShuffle);
-    }
-  }
+      }*/
+  }//event loop
 }      
 
 //________________________________________________________________________
