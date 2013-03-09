@@ -1,13 +1,14 @@
 //=========Total multiplicity=========//
-Double_t nTotalMultiplicityMean = 1000.;
+Double_t nTotalMultiplicityMean = 100.;
 Double_t nTotalMultiplicitySigma = 10.;
 
 //=========Net charge=========//
-Double_t nNetChargeMean = 50.0;
+Double_t nNetChargeMean = 0.0;
 Double_t nNetChargeSigma = 3.0;
 
 //==============Particles and spectra==============//
-Double_t gAllChargesTemperature = 0.11; //in GeV
+//Double_t gAllChargesTemperature = 0.11; //in GeV
+Double_t gAllChargesTemperature = 4.5; //not temperature==>modified hagedorn
 Double_t gPionPercentage = 0.8;
 Double_t gPionTemperature = 0.1; //in GeV
 Double_t gKaonPercentage = 0.12;
@@ -28,7 +29,7 @@ Double_t gPentangularFlow = 0.0;
 Double_t gEtaMin = -1.0;
 Double_t gEtaMax = 1.0;
 Double_t gPtMin = 0.1;
-Double_t gPtMax = 100.0;
+Double_t gPtMax = 20.0;
 //=========Acceptance definition=========//
 
 //=========Acceptance filter=========//
@@ -41,12 +42,24 @@ Bool_t kUseDynamicalCorrelations = kFALSE;
 Double_t gDynamicalCorrelationsPercentage = 0.1;
 //=========Dynamical Correlations=========//
 
+//=========bf object configuration=========//
+Bool_t kRunShuffling = kFALSE;
+Bool_t bResonancesCut = kFALSE;
+Bool_t bHBTcut = kFALSE;
+Bool_t bConversionCut = kFALSE;
+TString fArgEventClass = "EventPlane";
+Double_t deltaEtaMax = TMath::Abs(gEtaMax-gEtaMin);
+Bool_t bVertexBinning = kFALSE;
+//=========bf object configuration=========//
+
+//=========Debug option=========//
 Bool_t kUseDebug = kFALSE;
+//=========Debug option=========//
 
 // Run macro used for the toy model analysis
 // Author: Panos.Christakoglou@nikhef.nl
 
-//______________________________________________________________________________
+//____________________________________________________________________
 void runBalanceFunctionToyModel(Int_t nEvents = 10,
 				Bool_t kUseAllCharges = kTRUE) {
   TStopwatch timer;
@@ -58,24 +71,25 @@ void runBalanceFunctionToyModel(Int_t nEvents = 10,
   gSystem->Load("libVMC.so");
   gSystem->Load("libPhysics.so");
   gSystem->Load("libTree.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   gSystem->Load("libEventMixing.so");
-  gSystem->Load("libPWGCFebye.so");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGCFebye");
   
   //configure the bf objects
-  gROOT->LoadMacro("configBalanceFunctionAnalysis.C");
-  AliBalance *bf  = GetBalanceFunctionObject("MC");
-  AliBalance *bfs = GetBalanceFunctionObject("MC",kTRUE);
-  
+  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionPsiAnalysis.C");
+  AliBalancePsi *bf  = GetBalanceFunctionObject("MC","",0,100,kRunShuffling,bResonancesCut,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+    
   //Configure the toy model object
   AliAnalysisTaskToyModel *toyModelAnalysis = new AliAnalysisTaskToyModel();
   if(kUseDebug) toyModelAnalysis->SetDebugFlag();
   toyModelAnalysis->SetAnalysisObject(bf);
-  toyModelAnalysis->SetShufflingObject(bfs);
   toyModelAnalysis->SetTotalMultiplicity(nTotalMultiplicityMean,nTotalMultiplicitySigma);
   toyModelAnalysis->SetNetCharge(nNetChargeMean,nNetChargeSigma);
   toyModelAnalysis->SetKinematicsCutsMC(gPtMin,gPtMax,gEtaMin,gEtaMax);

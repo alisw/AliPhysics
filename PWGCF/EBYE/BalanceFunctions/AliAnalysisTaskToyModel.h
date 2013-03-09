@@ -10,7 +10,7 @@ class TH1F;
 class TH2F;
 class TF1;
 
-class AliBalance;
+class AliBalancePsi;
 
 class AliAnalysisTaskToyModel : public TObject {
  public:
@@ -24,10 +24,10 @@ class AliAnalysisTaskToyModel : public TObject {
   
   void SetDebugFlag() {fUseDebug = kTRUE;}
 
-  void SetAnalysisObject(AliBalance *const analysis) {
+  void SetAnalysisObject(AliBalancePsi *const analysis) {
     fBalance         = analysis;
   }
-  void SetShufflingObject(AliBalance *const analysisShuffled) {
+  void SetShufflingObject(AliBalancePsi *const analysisShuffled) {
     fRunShuffling = kTRUE;
     fShuffledBalance = analysisShuffled;
   }
@@ -130,9 +130,9 @@ class AliAnalysisTaskToyModel : public TObject {
  private:
   Bool_t fUseDebug; //Debug flag
 
-  AliBalance *fBalance; //BF object
+  AliBalancePsi *fBalance; //BF object
   Bool_t fRunShuffling;//run shuffling or not
-  AliBalance *fShuffledBalance; //BF object (shuffled)
+  AliBalancePsi *fShuffledBalance; //BF object (shuffled)
   TList *fList; //fList object
   TList *fListBF; //fList object
   TList *fListBFS; //fList object
@@ -142,6 +142,8 @@ class AliAnalysisTaskToyModel : public TObject {
   TH1F *fHistReactionPlane; //reaction plane angle
   TH1F *fHistEtaTotal; //pseudo-rapidity (full phase space)
   TH1F *fHistEta; //pseudo-rapidity (acceptance)
+  TH2F *fHistEtaPhiPos; //eta-phi pos
+  TH2F *fHistEtaPhiNeg; //eta-phi neg
   TH1F *fHistRapidity; //rapidity (acceptance)
   TH1F *fHistRapidityPions; //rapidity (acceptance)
   TH1F *fHistRapidityKaons; //rapidity (acceptance)
