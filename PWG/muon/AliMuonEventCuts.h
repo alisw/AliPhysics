@@ -81,7 +81,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   void BuildTriggerClasses ( const TString firedTrigClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs );
   Bool_t CheckTriggerClassPattern ( const TString& toCheck ) const;
   Bool_t CheckTriggerClassCombination ( const TObjArray* combo, const TString& firedTriggerClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs ) const;
-  void AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig );
+  void AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig, const UInt_t comboType = 0 );
   Bool_t UpdateEvent( const AliVEvent* event );
   void SetDefaultTrigClassPatterns();
   void SetDefaultTrigInputsMap();
@@ -103,7 +103,8 @@ class AliMuonEventCuts : public AliAnalysisCuts
   
   private:
   ULong64_t fEventTriggerMask; //!< Fired trigger mask in the event
-  TObjArray* fSelectedTrigClassesInEvent; //!< list of selected trigger classes in current event 
+  TObjArray* fSelectedTrigClassesInEvent; //!< list of selected trigger classes in current event
+  enum {kComboSimple, kComboFormula, kComboAND, kComboOR}; //!< Trigger combination types
   
   ClassDef(AliMuonEventCuts, 4); // Class for muon event filters
 };
