@@ -39,6 +39,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetMatching(MatchingType t, Double_t p1=1, Double_t p2=1)       { fMatching = t; fMatchingPar1 = p1; fMatchingPar2 = p2; }
   void                        SetPtHardBin(Int_t b)                                           { fSelectPtHardBin   = b         ; }
   void                        SetAreMCCollections(Bool_t f1, Bool_t f2)                       { fAreCollections1MC = f1; fAreCollections2MC = f2; }
+  void                        SetIsEmbedded(Bool_t i)                                         { fIsEmbedded        = i         ; }
+  void                        SetIsPythia(Bool_t i)                                           { fIsPythia          = i         ; }
 
  protected:
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
@@ -72,6 +74,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Float_t                     fJet2MinPhi;                    // minimum phi jet 2 acceptance
   Float_t                     fJet2MaxPhi;                    // maximum phi jet 2 acceptance  
   Int_t                       fSelectPtHardBin;               // select one pt hard bin for analysis
+  Bool_t                      fIsEmbedded;                    // trigger, embedded signal
+  Bool_t                      fIsPythia;                      // trigger, if it is a PYTHIA production
 
   AliGenPythiaEventHeader    *fPythiaHeader;                  //!event Pythia header
   Int_t                       fPtHardBin;                     //!event pt hard bin
@@ -133,12 +137,14 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistNonMatchedJets2CorrPtArea;          //!non-matched jet pt distribution
   TH2                        *fHistJet1PtvsJet2Pt;                     //!correlation jet 1 pt vs jet 2 pt
   TH2                        *fHistJet1CorrPtvsJet2CorrPt;             //!correlation jet 1 corr pt vs jet 2 corr pt
+  TH2                        *fHistJet1MCPtvsJet2Pt;                   //!correlation jet 1 MC pt vs jet 2 pt
   TH2                        *fHistMissedJets2PtArea;                  //!jets 2 not found in jet 1 collection
+
 
  private:
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 12) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 13) // Jet response matrix producing task
 };
 #endif

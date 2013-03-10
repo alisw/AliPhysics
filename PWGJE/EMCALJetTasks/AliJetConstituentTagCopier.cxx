@@ -8,6 +8,7 @@
 
 #include <TClonesArray.h>
 #include <TMath.h>
+#include <TLorentzVector.h>
 
 #include "AliNamedArrayI.h"
 #include "AliVCluster.h"
@@ -64,7 +65,7 @@ void AliJetConstituentTagCopier::ExecOnce()
   if (!fMCParticlesMap) {
     fMCParticlesMap = dynamic_cast<AliNamedArrayI*>(InputEvent()->FindListObject(fMCParticlesName + "_Map"));
     // this is needed to map the MC labels with the indexes of the MC particle collection
-      // if teh map is not given, the MC labels are assumed to be consistent with the indexes (which is not the case if AliEmcalMCTrackSelector is used)
+    // if teh map is not given, the MC labels are assumed to be consistent with the indexes (which is not the case if AliEmcalMCTrackSelector is used)
     if (!fMCParticlesMap) {
       AliWarning(Form("%s: Could not retrieve map for MC particles %s! Will assume MC labels consistent with indexes...", GetName(), fMCParticlesName.Data())); 
       fMCParticlesMap = new AliNamedArrayI("tracksMap",9999);
@@ -104,6 +105,7 @@ Bool_t AliJetConstituentTagCopier::Run()
 //________________________________________________________________________
 void AliJetConstituentTagCopier::DoClusterLoop(TClonesArray *array)
 {
+  Double_t totalEnergy = 0;
   for (Int_t i = 0; i < array->GetEntries(); i++) {
     AliVCluster *cluster = static_cast<AliVCluster*>(array->At(i));
     if (!cluster) {
@@ -114,6 +116,11 @@ void AliJetConstituentTagCopier::DoClusterLoop(TClonesArray *array)
       continue;
     Int_t mcLabel = cluster->GetLabel();
     if (mcLabel > 0) {
+      TLorentzVector vect;
+      cluster->GetMomentum(vect, fVertex);
+      AliDebug(2, Form("Cluster %d, pt = %f, eta = %f, phi = %f, label = %d",
+		       i, cluster->E(), vect.Eta(), vect.Phi(), mcLabel));
+      totalEnergy += cluster->E();
       Int_t index = -1;
       if (mcLabel < fMCParticlesMap->GetSize())
 	index = fMCParticlesMap->At(mcLabel);
@@ -123,11 +130,16 @@ void AliJetConstituentTagCopier::DoClusterLoop(TClonesArray *array)
       if (!part) {
 	AliError(Form("%s: Could not get MC particle %d", GetName(), index));
 	continue;
-      }
+      }      
+      AliDebug(2, Form("Matched with particle %d, pt = %f, eta = %f, phi = %f", 
+		       index, part->E(), part->Eta(), part->Phi()));
       UInt_t bits = (UInt_t)part->TestBits(TObject::kBitMask);
       cluster->SetBit(bits);
     }
   }
+
+  AliDebug(2, Form("Total energy of MC clusters = %f", 
+		   totalEnergy));
 }
 
 //________________________________________________________________________
@@ -153,7 +165,7 @@ void AliJetConstituentTagCopier::DoTrackLoop(TClonesArray *array)
 	AliError(Form("%s: Could not get MC particle %d", GetName(), index));
 	continue;
       }
-      AliDebug(2, Form("Track %d, pt = %f, eta = %f, phi = %f, label = %d is matched with particle %d, pt = %f, eta = %f, phi = %f", 
+      AliDebug(3, Form("Track %d, pt = %f, eta = %f, phi = %f, label = %d is matched with particle %d, pt = %f, eta = %f, phi = %f", 
 		       i, track->Pt(), track->Eta(), track->Phi(), mcLabel, index, part->Pt(), part->Eta(), part->Phi()));
       UInt_t bits = (UInt_t)part->TestBits(TObject::kBitMask);
       track->SetBit(bits);

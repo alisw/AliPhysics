@@ -46,6 +46,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistJetsParts(0),
   fHistCellsCent(0),
   fHistCellsTracks(0),
+  fHistTrNegativeLabels(0),
+  fHistTrZeroLabels(0),
   fHistTrEmcPhiEta(0),
   fHistTrPhiEtaNonProp(0),
   fHistDeltaEtaPt(0),
@@ -62,7 +64,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 
   for (Int_t i = 0; i < 4; i++) {
     for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
-    fHistTrPhiEtaPtNegLab[i] = 0;
+    fHistTrPhiEtaPtZeroLab[i] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
     fHistJetsPhiEtaPt[i] = 0;
     fHistJetsPtArea[i] = 0;
@@ -87,6 +89,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistJetsParts(0),
   fHistCellsCent(0),
   fHistCellsTracks(0),
+  fHistTrNegativeLabels(0),
+  fHistTrZeroLabels(0),
   fHistTrEmcPhiEta(0),
   fHistTrPhiEtaNonProp(0),
   fHistDeltaEtaPt(0),
@@ -103,7 +107,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
 
   for (Int_t i = 0; i < 4; i++) {
     for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
-    fHistTrPhiEtaPtNegLab[i] = 0;
+    fHistTrPhiEtaPtZeroLab[i] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
     fHistJetsPhiEtaPt[i] = 0;
     fHistJetsPtArea[i] = 0;
@@ -126,6 +130,18 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   if (!fTracksName.IsNull()) {
+    if (!fParticleLevel && fIsMC) {
+      fHistTrNegativeLabels = new TH1F("fHistTrNegativeLabels","fHistTrNegativeLabels", 500, 0, 1);
+      fHistTrNegativeLabels->GetXaxis()->SetTitle("% of negative labels");
+      fHistTrNegativeLabels->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistTrNegativeLabels);
+
+      fHistTrZeroLabels = new TH1F("fHistTrZeroLabels","fHistTrZeroLabels", 500, 0, 1);
+      fHistTrZeroLabels->GetXaxis()->SetTitle("% of negative labels");
+      fHistTrZeroLabels->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistTrZeroLabels);
+    }
+
     fHistTracksCent = new TH2F("fHistTracksCent","Tracks vs. centrality", 100, 0, 100, fNbins, 0, 4000);
     fHistTracksCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistTracksCent->GetYaxis()->SetTitle("No. of tracks");
@@ -147,12 +163,12 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 	fOutput->Add(fHistTrPhiEtaPt[i][j]);
       }
       if (!fParticleLevel && fIsMC) {
-	histname = Form("fHistTrPhiEtaPtNegLab_%d",i);
-	fHistTrPhiEtaPtNegLab[i] = new TH3F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
-	fHistTrPhiEtaPtNegLab[i]->GetXaxis()->SetTitle("#eta");
-	fHistTrPhiEtaPtNegLab[i]->GetYaxis()->SetTitle("#phi");
-	fHistTrPhiEtaPtNegLab[i]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-	fOutput->Add(fHistTrPhiEtaPtNegLab[i]);
+	histname = Form("fHistTrPhiEtaPtZeroLab_%d",i);
+	fHistTrPhiEtaPtZeroLab[i] = new TH3F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
+	fHistTrPhiEtaPtZeroLab[i]->GetXaxis()->SetTitle("#eta");
+	fHistTrPhiEtaPtZeroLab[i]->GetYaxis()->SetTitle("#phi");
+	fHistTrPhiEtaPtZeroLab[i]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
+	fOutput->Add(fHistTrPhiEtaPtZeroLab[i]);
       }
     }
 
@@ -485,9 +501,8 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
   Float_t sum = 0;
 
   Int_t ntracks = fTracks->GetEntriesFast();
-  Int_t nclusters = 0;
-  if (fCaloClusters)
-    nclusters = fCaloClusters->GetEntriesFast();
+  Int_t neg = 0;
+  Int_t zero = 0;
 
   for (Int_t i = 0; i < ntracks; i++) {
 
@@ -510,8 +525,14 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     }
     else {
       fHistTrPhiEtaPt[fCentBin][3]->Fill(track->Eta(), track->Phi(), track->Pt());
-      if (fHistTrPhiEtaPtNegLab[fCentBin] && track->GetLabel() <= 0)
-	fHistTrPhiEtaPtNegLab[fCentBin]->Fill(track->Eta(), track->Phi(), track->Pt());
+      if (track->GetLabel() == 0) {
+	zero++;
+	if (fHistTrPhiEtaPtZeroLab[fCentBin])
+	  fHistTrPhiEtaPtZeroLab[fCentBin]->Fill(track->Eta(), track->Phi(), track->Pt());
+      }
+
+      if (track->GetLabel() < 0)
+	neg++;
 
       Int_t type = 0;
 
@@ -540,7 +561,13 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     if (fHistDeltaPhiPt)
       fHistDeltaPhiPt->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
   }
-  
+
+  if (fHistTrNegativeLabels)
+    fHistTrNegativeLabels->Fill(1. * neg / ntracks);
+
+  if (fHistTrZeroLabels)
+    fHistTrZeroLabels->Fill(1. * zero / ntracks);
+
   return sum;
 }
 

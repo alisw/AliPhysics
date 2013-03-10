@@ -47,6 +47,8 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fJet2MinPhi(-999),
   fJet2MaxPhi(-999),
   fSelectPtHardBin(-999),
+  fIsEmbedded(kFALSE),
+  fIsPythia(kTRUE),
   fPythiaHeader(0),
   fPtHardBin(0),
   fNTrials(0),
@@ -103,6 +105,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistNonMatchedJets2CorrPtArea(0),
   fHistJet1PtvsJet2Pt(0),
   fHistJet1CorrPtvsJet2CorrPt(0),
+  fHistJet1MCPtvsJet2Pt(0),
   fHistMissedJets2PtArea(0)
 {
   // Default constructor.
@@ -129,6 +132,8 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fJet2MinPhi(-999),
   fJet2MaxPhi(-999),
   fSelectPtHardBin(-999),
+  fIsEmbedded(kFALSE),
+  fIsPythia(kTRUE),
   fPythiaHeader(0),
   fPtHardBin(0),
   fNTrials(0),
@@ -185,6 +190,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistNonMatchedJets2CorrPtArea(0),
   fHistJet1PtvsJet2Pt(0),
   fHistJet1CorrPtvsJet2CorrPt(0),
+  fHistJet1MCPtvsJet2Pt(0),
   fHistMissedJets2PtArea(0)
 {
   // Standard constructor.
@@ -279,6 +285,9 @@ Bool_t AliJetResponseMaker::PythiaInfoFromFile(const char* currFile, Float_t &fX
 //________________________________________________________________________
 Bool_t AliJetResponseMaker::UserNotify()
 {
+  if (!fIsPythia)
+    return kTRUE;
+
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   if (!tree) {
     AliError(Form("%s - UserNotify: No current tree!",GetName()));
@@ -612,6 +621,14 @@ void AliJetResponseMaker::UserCreateOutputObjects()
     fHistJet1CorrPtvsJet2CorrPt->GetYaxis()->SetTitle("p_{T,2}^{corr}");
     fHistJet1CorrPtvsJet2CorrPt->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistJet1CorrPtvsJet2CorrPt);
+  }
+
+  if (fIsEmbedded) {
+    fHistJet1MCPtvsJet2Pt = new TH2F("fHistJet1MCPtvsJet2Pt", "fHistJet1MCPtvsJet2Pt", fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+    fHistJet1MCPtvsJet2Pt->GetXaxis()->SetTitle("p_{T,1}^{MC}");
+    fHistJet1MCPtvsJet2Pt->GetYaxis()->SetTitle("p_{T,2}");
+    fHistJet1MCPtvsJet2Pt->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistJet1MCPtvsJet2Pt);
   }
 
   fHistMissedJets2PtArea = new TH2F("fHistMissedJets2PtArea", "fHistMissedJets2PtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
@@ -1299,6 +1316,9 @@ Bool_t AliJetResponseMaker::FillHistograms()
 	fHistJet1PtOverJet2PtvsJet1Pt->Fill(jet2->MatchedJet()->Pt(), jet2->MatchedJet()->Pt() / jet2->Pt());
 
 	fHistJet1PtvsJet2Pt->Fill(jet2->MatchedJet()->Pt(), jet2->Pt());
+
+	if (fHistJet1MCPtvsJet2Pt)
+	  fHistJet1MCPtvsJet2Pt->Fill(jet2->MatchedJet()->MCPt(), jet2->Pt());
 	
 	if (!fRhoName.IsNull() || !fRho2Name.IsNull()) {
 	  dpt -= fRhoVal * jet2->MatchedJet()->Area() - fRho2Val * jet2->Area();

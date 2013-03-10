@@ -11,6 +11,7 @@ class AliVCaloCells;
 class AliVHeader;
 class TH2;
 class TH1;
+class TLorentzVector;
 
 #include "AliJetModelBaseTask.h"
 
@@ -39,7 +40,12 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetTotalFiles(Int_t n)                            { fTotalFiles         = n     ; }
   void           SetAttempts(Int_t n)                              { fAttempts           = n     ; }
   void           SetRandomAccess(Bool_t r=kTRUE)                   { fRandomAccess       = r     ; }
-  void           SetMC(Bool_t a)                                   { fIsMC               = a     ; }
+  void           SetAODMC(Bool_t a)                                { fIsAODMC            = a     ; }
+  void           SetJetMinPt(Double_t pt)                          { fJetMinPt           = pt    ; }
+  void           SetJetEtaRange(Double_t emi, Double_t ema)        { fJetMinEta = emi; fJetMaxEta = ema; }
+  void           SetJetPhiRange(Double_t pmi, Double_t pma)        { fJetMinPhi = pmi; fJetMaxPhi = pma; }
+  void           SetJetType(Byte_t t)                              { fJetType            = t     ; }
+  void           SetJetAlgo(Byte_t t)                              { fJetAlgo            = t     ; }
 
  protected:
   Bool_t          ExecOnce()            ;// intialize task
@@ -48,6 +54,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   virtual Bool_t  OpenNextFile()        ;// open next file
   virtual Bool_t  GetNextEntry()        ;// get next entry in current tree
   virtual Bool_t  IsAODEventSelected()  ;// AOD event trigger/centrality selection
+  TLorentzVector  GetLeadingJet(TClonesArray *tracks, TClonesArray *clusters=0);  // get the leading jet
 
   TObjArray     *fFileList            ;//  List of AOD files 
   Bool_t         fRandomAccess        ;//  Random access to file number and event
@@ -62,11 +69,20 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   Double_t       fMaxCentrality       ;//  Maximum centrality
   UInt_t         fTriggerMask         ;//  Trigger selection mask
   Double_t       fZVertexCut          ;//  Z vertex cut
+  Double_t       fJetMinPt            ;//  Select events with a minimum jet pt
+  Double_t       fJetMinEta           ;//  Min eta for jets
+  Double_t       fJetMaxEta           ;//  Max eta for jets
+  Double_t       fJetMinPhi           ;//  Min phi for jets
+  Double_t       fJetMaxPhi           ;//  Max phi for jets
+  Double_t       fJetRadius           ;//  Jet radius
+  Byte_t         fJetType             ;//  Jet type (0=full, 1=charged, 2=neutral)
+  Byte_t         fJetAlgo             ;//  Jet algorithm (0=kT, 1=anti-kT)
+  Bool_t         fJetParticleLevel    ;//  Trigger, look at particle level jets
   Int_t          fAODfilterBits[2]    ;//  AOD track filter bit map
   Bool_t         fIncludeNoITS        ;//  True = includes tracks with failed ITS refit
   Bool_t         fUseNegativeLabels   ;//  Whether or not should use negative MC labels
   Double_t       fTrackEfficiency     ;//  Track efficiency
-  Bool_t         fIsMC                ;//  Whether the embedding AOD is MC or not
+  Bool_t         fIsAODMC             ;//  Whether the embedding AOD is MC or not
   Int_t          fTotalFiles          ;//  Total number of files per pt hard bin
   Int_t          fAttempts            ;//  Attempts to be tried before giving up in opening the next file
   Bool_t         fEsdTreeMode         ;//! True = embed from ESD (must be a skimmed ESD!)
@@ -91,6 +107,6 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
   AliJetEmbeddingFromAODTask &operator=(const AliJetEmbeddingFromAODTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromAODTask, 5) // Jet embedding from AOD task
+  ClassDef(AliJetEmbeddingFromAODTask, 7) // Jet embedding from AOD task
 };
 #endif

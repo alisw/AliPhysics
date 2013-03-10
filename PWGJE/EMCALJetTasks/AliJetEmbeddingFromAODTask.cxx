@@ -6,6 +6,10 @@
 
 #include "AliJetEmbeddingFromAODTask.h"
 
+// C++ standard library
+#include <vector>
+
+// ROOT
 #include <TFile.h>
 #include <TTree.h>
 #include <TClonesArray.h>
@@ -17,7 +21,9 @@
 #include <TStreamerInfo.h>
 #include <TRandom.h>
 #include <TSystem.h>
+#include <TLorentzVector.h>
 
+// AliRoot
 #include "AliVEvent.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
@@ -30,6 +36,7 @@
 #include "AliVHeader.h"
 #include "AliVVertex.h"
 #include "AliAODHeader.h"
+#include "AliFJWrapper.h"
 #include "AliLog.h"
 #include "AliInputEventHandler.h"
 
@@ -51,10 +58,19 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fMaxCentrality(10),
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
+  fJetMinPt(0),
+  fJetMinEta(-0.5),
+  fJetMaxEta(0.5),
+  fJetMinPhi(-999),
+  fJetMaxPhi(999),
+  fJetRadius(0.4),
+  fJetType(0),
+  fJetAlgo(1),
+  fJetParticleLevel(kTRUE),
   fIncludeNoITS(kTRUE),
   fUseNegativeLabels(kTRUE),
   fTrackEfficiency(1),
-  fIsMC(kFALSE),
+  fIsAODMC(kFALSE),
   fTotalFiles(2050),
   fAttempts(5),
   fEsdTreeMode(kFALSE),
@@ -104,10 +120,19 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fMaxCentrality(10),
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
+  fJetMinPt(0),
+  fJetMinEta(-0.5),
+  fJetMaxEta(0.5),
+  fJetMinPhi(-999),
+  fJetMaxPhi(999),
+  fJetRadius(0.4),
+  fJetType(0),
+  fJetAlgo(1),
+  fJetParticleLevel(kTRUE),
   fIncludeNoITS(kTRUE),
   fUseNegativeLabels(kTRUE),
   fTrackEfficiency(1),
-  fIsMC(kFALSE),
+  fIsAODMC(kFALSE),
   fTotalFiles(2050),
   fAttempts(5),
   fEsdTreeMode(kFALSE),
@@ -276,7 +301,7 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
   else
     fCurrentAODEntry = 0;
 
-  AliDebug(2,Form("Will start embedding from entry %d", fCurrentAODEntry));
+  AliDebug(3,Form("Will start embedding from entry %d", fCurrentAODEntry));
   
   if (fHistFileMatching)
     fHistFileMatching->Fill(fCurrentFileID, fCurrentAODFileID-1);
@@ -299,6 +324,11 @@ TFile* AliJetEmbeddingFromAODTask::GetNextFile()
   
   TObjString *objFileName = static_cast<TObjString*>(fFileList->At(fCurrentAODFileID));
   TString fileName(objFileName->GetString());
+
+  if (fileName.BeginsWith("alien://") && !gGrid) {
+    AliInfo("Trying to connect to AliEn ...");
+    TGrid::Connect("alien://");
+  }
 
   TString baseFileName(fileName);
   if (baseFileName.Contains(".zip#")) {
@@ -346,35 +376,68 @@ Bool_t AliJetEmbeddingFromAODTask::GetNextEntry()
 //________________________________________________________________________
 Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
 {
+  // AOD event selection.
+  
   if (!fEsdTreeMode && fAODHeader) {
     AliAODHeader *aodHeader = static_cast<AliAODHeader*>(fAODHeader);
 
+    // Trigger selection
     if (fTriggerMask != AliVEvent::kAny) {
       UInt_t offlineTrigger = aodHeader->GetOfflineTrigger();
       
       if ((offlineTrigger & fTriggerMask) == 0) {
-	AliDebug(2,Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.", offlineTrigger, fTriggerMask));
+	AliDebug(2,Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.", 
+			offlineTrigger, fTriggerMask));
 	return kFALSE;
       }
     }
     
+    // Centrality selection
     if (fMinCentrality >= 0) {
       AliCentrality *cent = aodHeader->GetCentralityP();
       Float_t centVal = cent->GetCentralityPercentile("V0M");
       if (centVal < fMinCentrality || centVal >= fMaxCentrality) {
-	AliDebug(2,Form("Event rejected due to centrality selection. Event centrality: %f, centrality range selection: %f to %f", centVal, fMinCentrality, fMaxCentrality));
+	AliDebug(2,Form("Event rejected due to centrality selection. Event centrality: %f, centrality range selection: %f to %f", 
+			centVal, fMinCentrality, fMaxCentrality));
 	return kFALSE;
       }
     }
   }
 
+  // Vertex selection
   if (fAODVertex) {
     Double_t vert[3]={0};
     ((AliVVertex*)fAODVertex->At(0))->GetXYZ(vert);
     if (TMath::Abs(vert[2]) > fZVertexCut) {
-      AliDebug(2,Form("Event rejected due to Z vertex selection. Event Z vertex: %f, Z vertex cut: %f", vert[2], fZVertexCut));
+      AliDebug(2,Form("Event rejected due to Z vertex selection. Event Z vertex: %f, Z vertex cut: %f", 
+		      vert[2], fZVertexCut));
       return kFALSE;
     }
+  }
+
+  // Jet selection
+  if (fJetMinPt > 0) {
+    TLorentzVector jet;
+
+    if (fJetParticleLevel) {
+      if (fAODMCParticles)
+	jet = GetLeadingJet(fAODMCParticles);
+      else {
+	AliWarning("Particle level jets selected, but not MC particles found. The jet event selection will be skipped.");
+	return kTRUE;
+      }
+    }
+    else {
+      if (fAODTracks || fAODClusters) 
+	jet = GetLeadingJet(fAODTracks, fAODClusters);
+      else {
+	AliWarning("Detector level jets selected, but not tracks or clusters found. The jet event selection will be skipped.");
+	return kTRUE;
+      }
+    }
+    
+    if (jet.Pt() < fJetMinPt)
+      return kFALSE;
   }
 
   return kTRUE;
@@ -401,7 +464,7 @@ void AliJetEmbeddingFromAODTask::Run()
       CopyMCParticles();
 
     if (fAODMCParticles) {
-      AliDebug(2, Form("%d MC particles will be processed for embedding.", fAODMCParticles->GetEntriesFast()));
+      AliDebug(3, Form("%d MC particles will be processed for embedding.", fAODMCParticles->GetEntriesFast()));
       for (Int_t i = 0; i < fAODMCParticles->GetEntriesFast(); i++) {
 	AliAODMCParticle *part = static_cast<AliAODMCParticle*>(fAODMCParticles->At(i));
 	if (!part) {
@@ -430,10 +493,10 @@ void AliJetEmbeddingFromAODTask::Run()
     if (fCopyArray && fTracks)
       CopyTracks();
 
-    AliDebug(2, Form("Start embedding with %d tracks.", fOutTracks->GetEntriesFast()));
+    AliDebug(3, Form("Start embedding with %d tracks.", fOutTracks->GetEntriesFast()));
 
     if (fAODTracks) {
-      AliDebug(2, Form("%d tracks will be processed for embedding.", fAODTracks->GetEntriesFast()));
+      AliDebug(3, Form("%d tracks will be processed for embedding.", fAODTracks->GetEntriesFast()));
       for (Int_t i = 0; i < fAODTracks->GetEntriesFast(); i++) {
 	AliVTrack *track = static_cast<AliVTrack*>(fAODTracks->At(i));
 	if (!track) {
@@ -496,20 +559,18 @@ void AliJetEmbeddingFromAODTask::Run()
 	  if (fTrackEfficiency < r) {
 	    AliDebug(3, "Track not embedded because of artificial inefiiciency.");
 	    continue;
-	}
+	  }
 	}
 	
 	Int_t label = 0;
-	if (fIsMC) {
+	if (fIsAODMC) {
 	  if (fUseNegativeLabels)
 	    label = track->GetLabel();
 	  else 
 	    label = TMath::Abs(track->GetLabel());
 	  
-	  if (label == 0) {
-	    AliDebug(2,Form("%s: Track %d with label==0", GetName(), i));
-	    label = 99999;
-	  }
+	  if (label == 0) 
+	    AliWarning(Form("%s: Track %d with label==0", GetName(), i));
 	}
 
 	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), isEmc, label);
@@ -539,6 +600,13 @@ void AliJetEmbeddingFromAODTask::Run()
 	    vect.Phi() < fPhiMin || vect.Phi() > fPhiMax)
 	  continue;
 
+	Int_t label = 0;
+	if (fIsAODMC) {
+	  label = clus->GetLabel();
+	  if (label <= 0) 
+	    AliDebug(3,Form("%s: Clus %d with label<=0", GetName(), i));
+	}
+
 	AddCluster(clus->E(), vect.Eta(), vect.Phi(), clus->GetLabel());
       }
     }
@@ -546,6 +614,7 @@ void AliJetEmbeddingFromAODTask::Run()
 
   if (fOutCaloCells) {
 
+    Double_t totalEnergy = 0;
     Int_t totalCells = 0;
 
     if (fCaloCells)
@@ -567,11 +636,108 @@ void AliJetEmbeddingFromAODTask::Run()
 	Double_t amp = -1;
 	
 	fAODCaloCells->GetCell(i, cellNum, amp, time, mclabel, efrac);
-	AliDebug(3,Form("Adding cell with amplitude %f, absolute ID %d, time %f", amp, cellNum, time));
+
+	if (fIsAODMC) {
+	  if (mclabel <= 0) 
+	    AliDebug(3,Form("%s: Cell %d with label<=0", GetName(), i));
+	}
+	else {
+	  mclabel = 0;
+	}
+
+	AliDebug(2,Form("Adding cell with amplitude %f, absolute ID %d, time %f, mc label %d", amp, cellNum, time, mclabel));
 	AddCell(amp, cellNum, time, mclabel);
+	totalEnergy += amp;
       }
     }
 
-    AliDebug(2,Form("Added cells = %d, total cells = %d", fAddedCells, totalCells));
+    AliDebug(2,Form("Added cells = %d (energy = %f), total cells = %d", fAddedCells, totalEnergy, totalCells));
   }
+}
+
+//________________________________________________________________________
+TLorentzVector AliJetEmbeddingFromAODTask::GetLeadingJet(TClonesArray *tracks, TClonesArray *clusters)
+{
+  TString name("kt");
+  fastjet::JetAlgorithm jalgo(fastjet::kt_algorithm);
+  if (fJetAlgo == 1) {
+    name  = "antikt";
+    jalgo = fastjet::antikt_algorithm;
+  }
+
+  // setup fj wrapper
+  AliFJWrapper fjw(name, name);
+  fjw.SetAreaType(fastjet::active_area_explicit_ghosts);
+  fjw.SetGhostArea(1);  // set a very large ghost area to speed up jet finding
+  fjw.SetR(fJetRadius);
+  fjw.SetAlgorithm(jalgo);  
+  fjw.SetMaxRap(1);
+  fjw.Clear();
+
+  if (tracks) {
+    const Int_t Ntracks = tracks->GetEntries();
+    for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
+      AliVParticle *t = static_cast<AliVParticle*>(tracks->At(iTracks));
+      if (!t)
+        continue;
+      
+      if ((fJetType == 1 && t->Charge() == 0) ||
+	  (fJetType == 2 && t->Charge() != 0))
+	continue;
+
+      // TODO: Minimum track pt
+
+      if (t->Pt() <= 0)
+	continue;
+
+      fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks + 100);  
+    }
+  }
+
+  if (clusters && fJetType != 1) {
+    Double_t vert[3]={0};
+    if (fAODVertex) 
+      ((AliVVertex*)fAODVertex->At(0))->GetXYZ(vert);
+
+    const Int_t Nclus = clusters->GetEntries();
+    for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
+      AliVCluster *c = static_cast<AliVCluster*>(clusters->At(iClus));
+      if (!c)
+	continue;
+
+      if (!c->IsEMCAL())
+	continue;
+      
+      TLorentzVector nP;
+      c->GetMomentum(nP, vert);
+
+      // TODO: Minimum cluster et
+
+      if (nP.Pt() <= 0)
+	continue;
+
+      fjw.AddInputVector(nP.Px(), nP.Py(), nP.Pz(), nP.P(), -iClus - 100);
+    }
+  }
+  
+  // run jet finder
+  fjw.Run();
+
+  std::vector<fastjet::PseudoJet> jets_incl = fjw.GetInclusiveJets();
+  AliDebug(1,Form("%d jets found", (Int_t)jets_incl.size()));
+
+  TLorentzVector jet;
+
+  Int_t njets = jets_incl.size();
+
+  if (njets > 0) {
+    std::vector<fastjet::PseudoJet> jets_incl_sorted = fastjet::sorted_by_pt(jets_incl);
+    for (Int_t i = 0; i < njets; i++) {
+      jet.SetPxPyPzE(jets_incl_sorted[i].px(), jets_incl_sorted[i].py(), jets_incl_sorted[i].pz(), jets_incl_sorted[i].E());
+      if (jet.Eta() > fJetMinEta && jet.Eta() < fJetMaxEta && jet.Phi() > fJetMinPhi && jet.Phi() < fJetMaxPhi)
+	break;
+    }
+  }
+
+  return jet;
 }
