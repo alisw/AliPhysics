@@ -12,13 +12,12 @@ TChain* CreateAODChain(
   Int_t aRuns          = 20, 
   Int_t offset         = 0, 
   Bool_t addFileName   = kFALSE, 
-  Bool_t addFriend     = kFALSE, 
   const char* check    = 0)
 {
   // creates chain of files in a given directory or file containing a list.
   // In case of directory the structure is expected as:
-  // <aDataDir>/<dir0>/AliAODs.root
-  // <aDataDir>/<dir1>/AliAODs.root
+  // <aDataDir>/<dir0>/AliAOD.root
+  // <aDataDir>/<dir1>/AliAOD.root
   // ...
   //
   // if addFileName is true the list only needs to contain the directories that contain the AliAODs.root files
@@ -36,9 +35,6 @@ TChain* CreateAODChain(
 
   TChain* chain = new TChain("aodTree");
   TChain* chainFriend = 0;
- 
-  // if (addFriend)
-  //  chainFriend = new TChain("esdFriendTree");
 
   if (flags & 2)
   {
@@ -69,7 +65,7 @@ TChain* CreateAODChain(
       presentDirName += "/";
       presentDirName += presentDir->GetName();
 
-      chain->Add(presentDirName + "/AliAODs.root/aodTree");
+      chain->Add(presentDirName + "/AliAOD.root/aodTree");
     }
   }
   else
@@ -105,34 +101,24 @@ TChain* CreateAODChain(
       TString aodFile(line);
 
       if (addFileName)
-        aodFile += "/AliAODs.root";
+        aodFile += "/AliAOD.root";
+
+      if (line.EndsWith(".zip"))
+	aodFile += "#AliAOD.root";
  
-        
       if (check)
       {
         TFile* file = TFile::Open(aodFile);
         if (!file)
           continue;
         file->Close();
-        /*
-        if (chainFriend)
-        {
-          TFile* file = TFile::Open(esdFileFriend);
-          if (!file)
-            continue;
-          file->Close();
-        }
-        */
+ 
         outfile << line.Data() << endl;
         printf("%s\n", line.Data());
       }        
         
         // add aod file
       chain->Add(aodFile);
-
-        // add file
-      // if (chainFriend)
-      // chainFriend->Add(esdFileFriend);
     }
 
     in.close();
@@ -140,9 +126,6 @@ TChain* CreateAODChain(
     if (check)
       outfile.close();
   }
-  
-  // if (chainFriend)
-  // chain->AddFriend(chainFriend);
 
   return chain;
 }
@@ -212,7 +195,10 @@ TChain* CreateChain(const char* treeName, const char* aDataDir, Int_t aRuns, Int
     in >> line;
       
     if (line.Length() == 0)
-      continue;      
+      continue;
+
+    if (line.EndsWith(".zip"))
+      line += "#AliAOD.root";
     
     if (offset > 0)
     {

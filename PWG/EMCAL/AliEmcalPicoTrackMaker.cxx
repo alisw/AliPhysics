@@ -178,7 +178,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
       }
 
       if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75 && 
-	  track->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() && 
+	  track->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() &&
 	  track->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())
 	isEmc = kTRUE;
     }
@@ -196,10 +196,8 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
       else 
 	label = TMath::Abs(track->GetLabel());
 
-      if (label == 0) {
+      if (label == 0) 
 	AliDebug(2,Form("Track %d with label==0", iTracks));
-	label = 99999;
-      }
     }
 
     /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 
