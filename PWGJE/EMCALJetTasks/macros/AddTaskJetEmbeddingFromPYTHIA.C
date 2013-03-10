@@ -20,6 +20,7 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   Double_t        minCent       = -1,
   Double_t        maxCent       = -1,
   UInt_t          mask          = AliVEvent::kAny,
+  Double_t        minJetPt      = 0,
   const Bool_t    copyArray     = kTRUE,  
   const Bool_t    makeQA        = kFALSE,
   const char     *fileTable     = "",
@@ -60,6 +61,7 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   jetEmb->SetCentralityRange(minCent, maxCent);
   jetEmb->SetTriggerMask(mask);
   jetEmb->SetCopyArray(copyArray);
+  jetEmb->SetJetMinPt(minJetPt);
   if (strcmp(fileTable, "") != 0)
     jetEmb->SetFileTable(GenerateFileTable(fileTable));
 

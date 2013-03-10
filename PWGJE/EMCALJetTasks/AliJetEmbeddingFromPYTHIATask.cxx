@@ -11,10 +11,10 @@
 #include <TString.h>
 #include <TRandom.h>
 #include <TParameter.h>
-#include <TSystem.h>
 #include <TH1I.h>
 #include <TGrid.h>
 #include <THashTable.h>
+#include <TSystem.h>
 
 #include "AliVEvent.h"
 #include "AliLog.h"
@@ -38,7 +38,7 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask() :
   SetSuffix("PYTHIAEmbedding");
   fTotalFiles = 2000;
   fRandomAccess = kTRUE;
-  SetMC(kTRUE);
+  SetAODMC(kTRUE);
 }
 
 //________________________________________________________________________
@@ -58,7 +58,7 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask(const char *name, B
   SetSuffix("PYTHIAEmbedding");
   fTotalFiles = 2000;
   fRandomAccess = kTRUE;
-  SetMC(kTRUE);
+  SetAODMC(kTRUE);
 }
 
 //________________________________________________________________________
@@ -116,7 +116,7 @@ Bool_t AliJetEmbeddingFromPYTHIATask::ExecOnce()
   fPtHardBinParam = static_cast<TParameter<int>*>(InputEvent()->FindListObject("PYTHIAPtHardBin"));
   if (!fPtHardBinParam) {
     fPtHardBinParam = new TParameter<int>("PYTHIAPtHardBin", 0);
-    AliDebug(2,"Adding pt hard bin param object to the event list...");
+    AliDebug(3,"Adding pt hard bin param object to the event list...");
     InputEvent()->AddObject(fPtHardBinParam);
   }
 
@@ -215,6 +215,17 @@ TFile* AliJetEmbeddingFromPYTHIATask::GetNextFile()
   if (fileName.BeginsWith("alien://") && !gGrid) {
     AliInfo("Trying to connect to AliEn ...");
     TGrid::Connect("alien://");
+  }
+
+  TString baseFileName(fileName);
+  if (baseFileName.Contains(".zip#")) {
+    Ssiz_t pos = baseFileName.Last('#');
+    baseFileName.Remove(pos);
+  }
+  
+  if (gSystem->AccessPathName(baseFileName)) {
+    AliDebug(3,Form("File %s does not exist!", baseFileName.Data()));
+    return 0;
   }
 
   AliDebug(3,Form("Trying to open file %s...", fileName.Data()));

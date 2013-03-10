@@ -33,6 +33,8 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void                   SetPtSpectrum(TF1 *f)                 { fPtSpectrum   = new TH1F("ptSpectrum","ptSpectrum",250,f->GetXmin(),f->GetXmax()); 
                                                                  fPtSpectrum->Add(f); }
 
+  void                   SetMC(Bool_t a)                       { fIsMC         = a   ; }
+
   void                   SetCopyArray(Bool_t copy)             { fCopyArray    = copy; }
   void                   SetTracksName(const char *n)          { fTracksName   = n;    }
   void                   SetClusName(const char *n)            { fCaloName     = n;    }
@@ -76,6 +78,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   TString                fOutCellsName;           // name of output cells collection
   TString                fMCParticlesName;        // name of MC particle collection
   TString                fOutMCParticlesName;     // name of output MC particle collection
+  Bool_t                 fIsMC;                   // whether the current event is MC or not
   TString                fSuffix;                 // suffix to add in the name of new collections
   Float_t                fEtaMin;                 // eta minimum value
   Float_t                fEtaMax;                 // eta maximum value
@@ -90,7 +93,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Int_t                  fMarkMC;                 // which MC label is to be used (default=100)
   TH1                   *fPtSpectrum;             // pt spectrum parametrization to extract random pt values
   Bool_t                 fQAhistos;               // draw QA histograms
-  Bool_t                 fIsInit;                 //=true if initialized
+  Bool_t                 fIsInit;                 //!=true if initialized
   AliEMCALGeometry      *fGeom;                   //!pointer to EMCal geometry
   TClonesArray          *fClusters;               //!cluster collection
   TClonesArray          *fOutClusters;            //!output cluster collection
@@ -111,6 +114,6 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented
   AliJetModelBaseTask &operator=(const AliJetModelBaseTask&); // not implemented
 
-  ClassDef(AliJetModelBaseTask, 7) // Jet modelling task
+  ClassDef(AliJetModelBaseTask, 8) // Jet modelling task
 };
 #endif

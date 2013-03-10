@@ -41,6 +41,7 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fOutCellsName(),
   fMCParticlesName(),
   fOutMCParticlesName(),
+  fIsMC(kFALSE),
   fSuffix(),
   fEtaMin(-1),
   fEtaMax(1),
@@ -87,6 +88,7 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fOutCellsName(""),
   fMCParticlesName(""),
   fOutMCParticlesName(""),
+  fIsMC(kFALSE),
   fSuffix("Processed"),
   fEtaMin(-1),
   fEtaMax(1),
@@ -167,7 +169,7 @@ void AliJetModelBaseTask::UserExec(Option_t *)
   
   // Clear map
   if (fOutMCParticlesMap)
-  fOutMCParticlesMap->Clear();
+    fOutMCParticlesMap->Clear();
 
   AliVCaloCells *tempCaloCells = 0;
 
@@ -375,11 +377,11 @@ Bool_t AliJetModelBaseTask::ExecOnce()
 	return kFALSE;
       }
     } else {
-	fGeom = AliEMCALGeometry::GetInstance();
-	if (!fGeom) {
-	  AliFatal("Could not get default geometry!");
-	  return kFALSE;
-	}
+      fGeom = AliEMCALGeometry::GetInstance();
+      if (!fGeom) {
+	AliFatal("Could not get default geometry!");
+	return kFALSE;
+      }
     }
   }
 
@@ -400,28 +402,6 @@ Int_t AliJetModelBaseTask::SetNumberOfOutCells(Int_t n)
   fAddedCells = 0;
 
   return n;
-}
-
-//________________________________________________________________________
-void AliJetModelBaseTask::CopyCells()
-{
-  if (!fCaloCells)
-    return;
-
-  for (Short_t i = 0; i < fCaloCells->GetNumberOfCells(); i++) {
-    Int_t mclabel = 0;
-    Double_t efrac = 0.;
-    Double_t time = -1;
-    Short_t cellNum = -1;
-    Double_t amp = -1;
-
-    fCaloCells->GetCell(i, cellNum, amp, time, mclabel, efrac);
-    fOutCaloCells->SetCell(i, cellNum, amp, time, mclabel, efrac);
-  }
-
-  fAddedCells = fCaloCells->GetNumberOfCells();
-
-  AliDebug(2, Form("%d cells from the current event", fAddedCells));
 }
 
 //________________________________________________________________________
@@ -464,15 +444,40 @@ Int_t AliJetModelBaseTask::AddCell(Double_t e, Int_t absId, Double_t time, Int_t
   else
     label += fMCLabelShift;
 
-  Bool_t r = fOutCaloCells->SetCell(fAddedCells, absId, e, time, label, 0);
+  Short_t pos = fOutCaloCells->GetCellPosition(absId);
+  Double_t efrac = 1;
+  Bool_t increaseOnSuccess = kFALSE;
 
-  if (r) {
-    fAddedCells++;
-    return fAddedCells;
+  if (pos < 0) {
+    increaseOnSuccess = kTRUE;
+    pos = fAddedCells;
   }
   else {
-    return 0;
+    Short_t cellNumber = -1;
+    Double_t old_e = 0;
+    Double_t old_time = 0;
+    Int_t old_label = 0;
+    Double_t old_efrac = 0;
+    fOutCaloCells->GetCell(pos, cellNumber, old_e, old_time, old_label, old_efrac);
+    
+    if (e / (old_e + e) < old_efrac) {
+      label = old_label;
+      time = old_time;
+    }
+    
+    efrac = (e + old_e * old_efrac) / (e + old_e);
+    e += old_e;
   }
+
+  Bool_t r = fOutCaloCells->SetCell(pos, absId, e, time, label, efrac);
+
+  if (r) {
+    if (increaseOnSuccess)
+      fAddedCells++;
+    return fAddedCells;
+  }
+  else 
+    return 0;
 }
 
 
@@ -608,6 +613,32 @@ AliAODMCParticle* AliJetModelBaseTask::AddMCParticle(AliAODMCParticle *part, Int
 }
 
 //________________________________________________________________________
+void AliJetModelBaseTask::CopyCells()
+{
+  if (!fCaloCells)
+    return;
+
+  for (Short_t i = 0; i < fCaloCells->GetNumberOfCells(); i++) {
+    Int_t mclabel = 0;
+    Double_t efrac = 0.;
+    Double_t time = -1;
+    Short_t cellNum = -1;
+    Double_t amp = -1;
+
+    fCaloCells->GetCell(i, cellNum, amp, time, mclabel, efrac);
+
+    if (!fIsMC) 
+      mclabel = 0;
+
+    fOutCaloCells->SetCell(i, cellNum, amp, time, mclabel, efrac);
+  }
+
+  fAddedCells = fCaloCells->GetNumberOfCells();
+
+  AliDebug(2, Form("%d cells from the current event", fAddedCells));
+}
+
+//________________________________________________________________________
 void AliJetModelBaseTask::CopyClusters()
 {
   // Copy all the clusters in the new collection
@@ -622,7 +653,12 @@ void AliJetModelBaseTask::CopyClusters()
       AliESDCaloCluster *esdcluster = static_cast<AliESDCaloCluster*>(fClusters->At(i));
       if (!esdcluster || !esdcluster->IsEMCAL())
 	continue;
-      new ((*fOutClusters)[nCopiedClusters]) AliESDCaloCluster(*esdcluster);
+      AliESDCaloCluster *clus = new ((*fOutClusters)[nCopiedClusters]) AliESDCaloCluster(*esdcluster);
+      if (!fIsMC) {
+	TArrayI *labels = clus->GetLabelsArray();
+	if (labels)
+	  labels->Reset();
+      }
       nCopiedClusters++;
     }
   }
@@ -631,7 +667,9 @@ void AliJetModelBaseTask::CopyClusters()
       AliAODCaloCluster *aodcluster = static_cast<AliAODCaloCluster*>(fClusters->At(i));
       if (!aodcluster || !aodcluster->IsEMCAL())
 	continue;
-      new ((*fOutClusters)[nCopiedClusters]) AliAODCaloCluster(*aodcluster);
+      AliAODCaloCluster *clus = new ((*fOutClusters)[nCopiedClusters]) AliAODCaloCluster(*aodcluster);
+      if (!fIsMC) 
+	clus->SetLabel(0,0);
       nCopiedClusters++;
     }
   }
@@ -648,10 +686,12 @@ void AliJetModelBaseTask::CopyTracks()
   const Int_t nTracks = fTracks->GetEntriesFast();
   Int_t nCopiedTracks = 0;
   for (Int_t i = 0; i < nTracks; ++i) {
-    AliPicoTrack *track = static_cast<AliPicoTrack*>(fTracks->At(i));
-    if (!track)
+    AliPicoTrack *picotrack = static_cast<AliPicoTrack*>(fTracks->At(i));
+    if (!picotrack)
       continue;
-    new ((*fOutTracks)[nCopiedTracks]) AliPicoTrack(*track);
+    AliPicoTrack *track = new ((*fOutTracks)[nCopiedTracks]) AliPicoTrack(*picotrack);
+    if (!fIsMC && track->GetLabel() != 0) 
+      track->SetLabel(0);
     nCopiedTracks++;
   }
 }
