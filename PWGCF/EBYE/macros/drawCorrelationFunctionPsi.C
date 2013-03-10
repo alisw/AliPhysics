@@ -1,6 +1,6 @@
 const Int_t numberOfCentralityBins = 12;
 //TString centralityArray[numberOfCentralityBins] = {"0-4","4-5","6-14","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+TString centralityArray[numberOfCentralityBins] = {"0-100","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
 
 const Int_t gRebin = 1;
 
@@ -1343,7 +1343,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
   newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
   newFileName += Form("%.1f",ptAssociatedMax); 
+
+  newFileName += "_"; 
+  newFileName += Form("%.1f",psiMin);
+  newFileName += "-";   
+  newFileName += Form("%.1f",psiMax);
   newFileName += ".root";
+
   TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
   gHistPN[0]->SetName("gHistPNRaw"); gHistPN[0]->Write();
   gHistNP[0]->SetName("gHistNPRaw"); gHistNP[0]->Write();
@@ -1427,7 +1433,7 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   TGaxis::SetMaxDigits(3);
 
   //Get the input file
-  TString filename = lhcPeriod; 
+  /* TString filename = lhcPeriod; 
   filename += "/Centrality"; filename += gCentralityEstimator;
   filename += "_Bit"; filename += gBit;
   filename += "_"; filename += gEventPlaneEstimator;
@@ -1435,8 +1441,9 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   filename += Form("%.1f",ptTriggerMin); filename += "To"; 
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
-  filename += Form("%.1f",ptAssociatedMax); 
-  filename += "correlationFunction.Centrality";
+  filename += Form("%.1f",ptAssociatedMax); */
+
+  TString filename = "correlationFunction.Centrality";
   filename += gCentrality; filename += ".Psi";
   if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
@@ -1447,6 +1454,11 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
   filename += Form("%.1f",ptAssociatedMax); 
+  
+  filename += "_"; 
+  filename += Form("%.1f",psiMin);
+  filename += "-";   
+  filename += Form("%.1f",psiMax);
   filename += ".root";  
 
   //Open the file
@@ -1689,7 +1701,7 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   TGaxis::SetMaxDigits(3);
 
   //Get the input file
-  TString filename = lhcPeriod; 
+  /*TString filename = lhcPeriod; 
   filename += "/Centrality"; filename += gCentralityEstimator;
   filename += "_Bit"; filename += gBit;
   filename += "_"; filename += gEventPlaneEstimator;
@@ -1697,8 +1709,9 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   filename += Form("%.1f",ptTriggerMin); filename += "To"; 
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
-  filename += Form("%.1f",ptAssociatedMax); 
-  filename += "correlationFunction.Centrality";
+  filename += Form("%.1f",ptAssociatedMax); */
+
+  TString filename = "correlationFunction.Centrality";
   filename += gCentrality; filename += ".Psi";
   if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
@@ -1709,6 +1722,11 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
   filename += Form("%.1f",ptAssociatedMax); 
+  
+  filename += "_"; 
+  filename += Form("%.1f",psiMin);
+  filename += "-";   
+  filename += Form("%.1f",psiMax);
   filename += ".root";  
 
   //Open the file
@@ -1800,7 +1818,8 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
     gHistPNprojection = new TH1D("gHistPNprojection","",gHistPN->GetNbinsY(),gHistPN->GetYaxis()->GetXmin(),gHistPN->GetYaxis()->GetXmax());
     for(Int_t iBinY = 1; iBinY <= gHistPN->GetNbinsY(); iBinY++) {
       sum = 0.; gError = 0.0; nCounter = 0;
-      for(Int_t iBinX = 1; iBinX <= gHistPN->GetNbinsX(); iBinX++) {
+      for(Int_t iBinX = binMin; iBinX <= binMax; iBinX++) {
+      //for(Int_t iBinX = 1; iBinX <= gHistPN->GetNbinsX(); iBinX++) {
 	sum += gHistPN->GetBinContent(iBinX,iBinY);
 	if(gHistPN->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
         Double_t exy = gHistPN->GetCellError(iBinX,iBinY);
@@ -1885,7 +1904,8 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
     gHistNPprojection = new TH1D("gHistNPprojection","",gHistNP->GetNbinsX(),gHistNP->GetXaxis()->GetXmin(),gHistNP->GetXaxis()->GetXmax());
     for(Int_t iBinX = 1; iBinX <= gHistNP->GetNbinsX(); iBinX++) {
       sum = 0.; gError = 0.0; nCounter = 0;
-      for(Int_t iBinY = 1; iBinY <= gHistNP->GetNbinsY(); iBinY++) {
+      for(Int_t iBinY = binMin; iBinY <= binMax; iBinY++) {
+      //for(Int_t iBinY = 1; iBinY <= gHistNP->GetNbinsY(); iBinY++) {
 	sum += gHistNP->GetBinContent(iBinX,iBinY);
 	if(gHistNP->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
         Double_t exy = gHistNP->GetCellError(iBinX,iBinY);
@@ -1909,7 +1929,8 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
     gHistNPprojection = new TH1D("gHistNPprojection","",gHistNP->GetNbinsY(),gHistNP->GetYaxis()->GetXmin(),gHistNP->GetYaxis()->GetXmax());
     for(Int_t iBinY = 1; iBinY <= gHistNP->GetNbinsY(); iBinY++) {
       sum = 0.; gError = 0.0; nCounter = 0;
-      for(Int_t iBinX = 1; iBinX <= gHistNP->GetNbinsX(); iBinX++) {
+      for(Int_t iBinX = binMin; iBinX <= binMax; iBinX++) {
+	//for(Int_t iBinX = 1; iBinX <= gHistNP->GetNbinsX(); iBinX++) {
 	sum += gHistNP->GetBinContent(iBinX,iBinY);
 	if(gHistNP->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
         Double_t exy = gHistNP->GetCellError(iBinX,iBinY);
@@ -1993,7 +2014,8 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
     gHistPPprojection = new TH1D("gHistPPprojection","",gHistPP->GetNbinsX(),gHistPP->GetXaxis()->GetXmin(),gHistPP->GetXaxis()->GetXmax());
     for(Int_t iBinX = 1; iBinX <= gHistPP->GetNbinsX(); iBinX++) {
       sum = 0.; gError = 0.0; nCounter = 0;
-      for(Int_t iBinY = 1; iBinY <= gHistPP->GetNbinsY(); iBinY++) {
+      for(Int_t iBinY = binMin; iBinY <= binMax; iBinY++) {
+	//for(Int_t iBinY = 1; iBinY <= gHistPP->GetNbinsY(); iBinY++) {
 	sum += gHistPP->GetBinContent(iBinX,iBinY);
 	if(gHistPP->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
         Double_t exy = gHistPP->GetCellError(iBinX,iBinY);
@@ -2017,7 +2039,8 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
     gHistPPprojection = new TH1D("gHistPPprojection","",gHistPP->GetNbinsY(),gHistPP->GetYaxis()->GetXmin(),gHistPP->GetYaxis()->GetXmax());
     for(Int_t iBinY = 1; iBinY <= gHistPP->GetNbinsY(); iBinY++) {
       sum = 0.; gError = 0.0; nCounter = 0;
-      for(Int_t iBinX = 1; iBinX <= gHistPP->GetNbinsX(); iBinX++) {
+      for(Int_t iBinX = binMin; iBinX <= binMax; iBinX++) {
+	//for(Int_t iBinX = 1; iBinX <= gHistPP->GetNbinsX(); iBinX++) {
 	sum += gHistPP->GetBinContent(iBinX,iBinY);
 	if(gHistPP->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
         Double_t exy = gHistPP->GetCellError(iBinX,iBinY);
@@ -2101,7 +2124,8 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
     gHistNNprojection = new TH1D("gHistNNprojection","",gHistNN->GetNbinsX(),gHistNN->GetXaxis()->GetXmin(),gHistNN->GetXaxis()->GetXmax());
     for(Int_t iBinX = 1; iBinX <= gHistNN->GetNbinsX(); iBinX++) {
       sum = 0.; gError = 0.0; nCounter = 0;
-      for(Int_t iBinY = 1; iBinY <= gHistNN->GetNbinsY(); iBinY++) {
+      for(Int_t iBinY = binMin; iBinY <= binMax; iBinY++) {
+	//for(Int_t iBinY = 1; iBinY <= gHistNN->GetNbinsY(); iBinY++) {
 	sum += gHistNN->GetBinContent(iBinX,iBinY);
 	if(gHistNN->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
         Double_t exy = gHistNN->GetCellError(iBinX,iBinY);
@@ -2125,7 +2149,8 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
     gHistNNprojection = new TH1D("gHistNNprojection","",gHistNN->GetNbinsY(),gHistNN->GetYaxis()->GetXmin(),gHistNN->GetYaxis()->GetXmax());
     for(Int_t iBinY = 1; iBinY <= gHistNN->GetNbinsY(); iBinY++) {
       sum = 0.; gError = 0.0; nCounter = 0;
-      for(Int_t iBinX = 1; iBinX <= gHistNN->GetNbinsX(); iBinX++) {
+      for(Int_t iBinX = binMin; iBinX <= binMax; iBinX++) {
+	//for(Int_t iBinX = 1; iBinX <= gHistNN->GetNbinsX(); iBinX++) {
 	sum += gHistNN->GetBinContent(iBinX,iBinY);
 	if(gHistNN->GetBinContent(iBinX,iBinY) != 0.) nCounter += 1;
         Double_t exy = gHistNN->GetCellError(iBinX,iBinY);
@@ -2319,6 +2344,12 @@ void fitCorrelationFunctions(Int_t gCentrality = 1,
   newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
   newFileName += Form("%.1f",ptAssociatedMax); 
+
+  newFileName += "_"; 
+  newFileName += Form("%.1f",psiMin);
+  newFileName += "-";   
+  newFileName += Form("%.1f",psiMax); 
+
   newFileName += ".root";
   TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
   gHist->Write();
