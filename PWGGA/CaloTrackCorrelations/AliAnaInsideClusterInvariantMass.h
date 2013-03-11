@@ -220,9 +220,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassEtaNLocMaxN[8][2] ;                //! Mass for selected around eta, N Local Maxima > 2
   TH2F       * fhMassConNLocMaxN[8][2] ;                //! Mass for selected around close to 0, N Local Maxima > 2
   
-  TH2F       * fhMassAfterCutsNLocMax1[8] ;             //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 1, not matched
-  TH2F       * fhMassAfterCutsNLocMax2[8] ;             //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 2, not matched
-  TH2F       * fhMassAfterCutsNLocMaxN[8] ;             //! Mass after M02, asymmetry cuts for pi0, N Local Maxima > 2, not matched
+  TH2F       * fhMassAfterCutsNLocMax1[8][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 1
+  TH2F       * fhMassAfterCutsNLocMax2[8][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 2
+  TH2F       * fhMassAfterCutsNLocMaxN[8][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima > 2
   
   TH2F       * fhAsyPi0NLocMax1[8][2] ;                 //! Asy for Mass around pi0, N Local Maxima = 1
   TH2F       * fhAsyEtaNLocMax1[8][2] ;                 //! Asy for Mass around eta, N Local Maxima = 1
@@ -240,9 +240,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhSplitEFractionNLocMax2[8][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2
   TH2F       * fhSplitEFractionNLocMaxN[8][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2
 
-  TH2F       * fhSplitEFractionAfterCutsNLocMax1[8] ;   //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1, after M02 and asymmetry cut
-  TH2F       * fhSplitEFractionAfterCutsNLocMax2[8] ;   //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2, after M02 and asymmetry cut
-  TH2F       * fhSplitEFractionAfterCutsNLocMaxN[8] ;   //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2, after M02 and asymmetry cut
+  TH2F       * fhSplitEFractionAfterCutsNLocMax1[8][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1, after M02 and asymmetry cut
+  TH2F       * fhSplitEFractionAfterCutsNLocMax2[8][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2, after M02 and asymmetry cut
+  TH2F       * fhSplitEFractionAfterCutsNLocMaxN[8][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2, after M02 and asymmetry cut
   
   TH2F       * fhMassSplitEFractionNLocMax1Ebin[8][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 1, 1-6 for different MC particle types, not track matched
   TH2F       * fhMassSplitEFractionNLocMax2Ebin[8][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 2, 1-6 for different MC particle types, not track matched
