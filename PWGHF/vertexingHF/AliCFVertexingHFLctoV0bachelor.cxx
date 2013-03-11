@@ -361,6 +361,10 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1)); // the bachelor
       mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0)); // the V0
     }
+    if (!mcPartDaughter0 || !mcPartDaughter1) {
+      AliDebug(2,"Problems in the MC Daughters\n");
+      return checkCD;
+    }
 
     if (mcPartDaughter1->GetNDaughters()!=2) {
       AliDebug(2, "The Lambda MC particle doesn't decay in 2 particles, skipping!!");
@@ -823,6 +827,10 @@ Bool_t AliCFVertexingHFLctoV0bachelor::FillVectorFromMCarray(AliAODMCParticle *m
     }
   }
 
+  if (!mcPartDaughterV0) {
+    AliDebug(2,"V0 particle not found in MC array");
+    return bGenValues;
+  }
 
   Double_t cTLc = Ctau(fmcPartCandidate); // by default wrt Primary Vtx
   Double_t pTbach = mcPartDaughterBachelor->Pt(); // get the bachelor pT
