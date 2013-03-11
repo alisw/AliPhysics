@@ -63,6 +63,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fPt1ResKUpg  (0),
    fPt1ResPiUpg (0),
    fRunInVertexing(kFALSE),
+   fImproveTracks(kTRUE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0), 
@@ -98,6 +99,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fPt1ResKUpg  (0),
    fPt1ResPiUpg (0),
    fRunInVertexing(isRunInVertexing),
+   fImproveTracks(kTRUE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0),
@@ -214,8 +216,11 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   // Smear all tracks
   TClonesArray *mcs=static_cast<TClonesArray*>(ev->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
   if (!mcs) return;
-  for(Int_t itrack=0;itrack<ev->GetNumberOfTracks();++itrack)
-    SmearTrack(ev->GetTrack(itrack),mcs);
+  if (fImproveTracks) {
+    for(Int_t itrack=0;itrack<ev->GetNumberOfTracks();++itrack) {
+      SmearTrack(ev->GetTrack(itrack),mcs);
+    }
+  }
 
   // TODO: recalculated primary vertex
   AliVVertex *primaryVertex=ev->GetPrimaryVertex();
@@ -363,6 +368,11 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
   if (!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)))
     return;
 
+  // Check if the track was already "improved" (this is done with a trick using layer 7 (ie the 8th))
+  if (TESTBIT(track->GetITSClusterMap(),7)) return;
+  //
+
+
   // Get reconstructed track parameters
   AliExternalTrackParam et; et.CopyFromVTrack(track);
   Double_t *param=const_cast<Double_t*>(et.GetParameter());
@@ -460,6 +470,13 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
   et.GetPxPyPz(p);
   track->SetPosition(x,kFALSE);
   track->SetP(p,kTRUE);
+
+
+  // Mark the track as "improved" with a trick (this is done with a trick using layer 7 (ie the 8th))
+  UChar_t itsClusterMap = track->GetITSClusterMap();
+  SETBIT(itsClusterMap,7);
+  track->SetITSClusterMap(itsClusterMap);
+  //
 
   // write out debug infos
   if (fDebugNtuple->GetEntries()<fNDebug) {
