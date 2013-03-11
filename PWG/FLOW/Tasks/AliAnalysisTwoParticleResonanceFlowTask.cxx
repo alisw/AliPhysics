@@ -821,6 +821,7 @@ void AliAnalysisTwoParticleResonanceFlowTask::DoAnalysisOnTheFly(TObjArray* Mixi
      if(fQA) fEventStats->Fill(0);              // event counter
      for (Int_t i = 0; i < iTracks; i++) {      // track loop. iterator i is used as unique track id (necessary later on to avoid auto-correlations)
         AliFlowTrackSimple* track = fFlowEvent->GetTrack(i);
+        if(!track) continue;
         tID = track->GetID();                    // store ID
         (tID > 0) ? charge = 1 : charge = -1 ;          // get the charge of the track
         Double_t pt(track->Pt()), phi(track->Phi()), px(pt*TMath::Cos(phi)), py(pt*TMath::Sin(phi)), pz(track->Weight()), p(TMath::Sqrt(px*px+py*py+pz*pz)); // TODO ugly, but pz is stored as weight ...
