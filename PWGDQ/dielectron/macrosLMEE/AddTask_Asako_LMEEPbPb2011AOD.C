@@ -16,7 +16,7 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t setMC
   TString configBasePath("$TRAIN_ROOT/cbaumann_dielectron/");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
 
-  if (trainRoot.IsNull()) configBasePath= "/home/tsuji/nfs/AliceAna/aniso/v15/";
+  if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
 
 
   if (getFromAlien &&
