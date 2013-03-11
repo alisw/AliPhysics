@@ -337,7 +337,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fHistRefTracks->GetXaxis()->SetBinLabel(i,gRefTrackName[i-1].Data());
   fList->Add(fHistRefTracks);
 
-  // QA histograms for HBTinspired and Conversion cuts
+  // QA histograms for different cuts
   fList->Add(fBalance->GetQAHistHBTbefore());
   fList->Add(fBalance->GetQAHistHBTafter());
   fList->Add(fBalance->GetQAHistConversionbefore());
@@ -347,6 +347,8 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fBalance->GetQAHistResonancesRho());
   fList->Add(fBalance->GetQAHistResonancesK0());
   fList->Add(fBalance->GetQAHistResonancesLambda());
+  fList->Add(fBalance->GetQAHistQbefore());
+  fList->Add(fBalance->GetQAHistQafter());
 
   // Balance function histograms
   // Initialize histograms if not done yet

@@ -67,11 +67,14 @@ AliBalancePsi::AliBalancePsi() :
   fHistResonancesRho(0),
   fHistResonancesK0(0),
   fHistResonancesLambda(0),
+  fHistQbefore(0),
+  fHistQafter(0),
   fPsiInterval(15.),
   fDeltaEtaMax(2.0),
-  fResonancesCut(kTRUE),
-  fHBTCut(kTRUE),
-  fConversionCut(kTRUE),
+  fResonancesCut(kFALSE),
+  fHBTCut(kFALSE),
+  fConversionCut(kFALSE),
+  fQCut(kFALSE),
   fVertexBinning(kFALSE),
   fEventClass("EventPlane"){
   // Default constructor
@@ -100,11 +103,14 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHistResonancesRho(balance.fHistResonancesRho),
   fHistResonancesK0(balance.fHistResonancesK0),
   fHistResonancesLambda(balance.fHistResonancesLambda),
+  fHistQbefore(balance.fHistQbefore),
+  fHistQafter(balance.fHistQafter),
   fPsiInterval(balance.fPsiInterval),
   fDeltaEtaMax(balance.fDeltaEtaMax),
   fResonancesCut(balance.fResonancesCut),
   fHBTCut(balance.fHBTCut),
   fConversionCut(balance.fConversionCut),
+  fQCut(balance.fQCut),
   fVertexBinning(balance.fVertexBinning),
   fEventClass("EventPlane"){
   //copy constructor
@@ -129,6 +135,8 @@ AliBalancePsi::~AliBalancePsi() {
   delete fHistResonancesRho;
   delete fHistResonancesK0;
   delete fHistResonancesLambda;
+  delete fHistQbefore;
+  delete fHistQafter;
     
 }
 
@@ -386,7 +394,8 @@ void AliBalancePsi::InitHistograms() {
   fHistResonancesRho    = new TH3D("fHistResonancesRho","after #rho resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistResonancesK0     = new TH3D("fHistResonancesK0","after #rho, K0 resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistResonancesLambda = new TH3D("fHistResonancesLambda","after #rho, K0, Lambda resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
-
+  fHistQbefore          = new TH3D("fHistQbefore","before momentum difference cut;#Delta#eta;#Delta#phi;q = p_{1} - p_{2} (GeV/c)",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
+  fHistQafter           = new TH3D("fHistQafter","after momentum difference cut;#Delta#eta;#Delta#phi;q = p_{1} - p_{2} (GeV/c)",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
 
   TH1::AddDirectory(oldStatus);
 
@@ -652,7 +661,25 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	  fHistConversionafter->Fill(deta,dphi);
 	}
       }//conversion cut
-      
+
+      // momentum difference cut - suppress femtoscopic effects
+      if(fQCut){ 
+
+	Double_t qMin = 0.1; //const for the time being (should be changeable later on)
+	TVector3 vDiff,v[2];
+	Double_t momentumDifference = 0.;
+
+	v[0].SetPtEtaPhi(firstPt,firstEta,firstPhi);
+	v[1].SetPtEtaPhi(secondPt[j],secondEta[j],secondPhi[j]);
+	vDiff = v[1] - v[0];
+	momentumDifference = TMath::Abs(vDiff.Mag());
+
+	fHistQbefore->Fill(trackVariablesPair[1],trackVariablesPair[2],momentumDifference);
+	if(momentumDifference < qMin) continue;
+	fHistQafter->Fill(trackVariablesPair[1],trackVariablesPair[2],momentumDifference);
+
+      }
+
       if( charge1 > 0 && charge2 < 0)  fHistPN->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]); //==========================correction
       else if( charge1 < 0 && charge2 > 0)  fHistNP->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]);//==========================correction 
       else if( charge1 > 0 && charge2 > 0)  fHistPP->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]);//==========================correction 
