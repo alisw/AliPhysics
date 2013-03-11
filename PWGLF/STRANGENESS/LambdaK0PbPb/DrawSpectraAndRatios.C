@@ -315,6 +315,7 @@ void DrawSpectraAndRatios() {
   const Int_t   marker[nCent]={22,  29, 34,  21,  23, 33, 20 };
   const Float_t masize[nCent]={1.3, 1.6, 1.3, 1.2, 1.4, 1.8,  1.3};
   const Float_t factor[nCent]={1.0, 1.0, 1.1, 1.5, 3.0,7.5,15.0}; //scale for drawing
+  const Float_t factor2[nCent]={1.0, 0.9, 0.9, 1.1, 2.0,5.5,15.0}; //scale for lin lambda drawing
   const Float_t factor1[nCent]={1.0, 1/2., 1/4., 1/8., 1/16., 1/32., 1/64.}; //scale for log drawing
   
   const Char_t *rNameL[2*nCent]={ // file name, histo name
@@ -400,7 +401,7 @@ void DrawSpectraAndRatios() {
       TH1 *linHl=(TH1*)rawHl->Clone();
       SetAttributes(linHl,tit,col,mar,siz,0.,20.,32); 
       c1lin->cd();
-      DrawHisto(linHl, option.Data(), sysEffLam, sysSigLam, factor[cent]);
+      DrawHisto(linHl, option.Data(), sysEffLam, sysSigLam, factor2[cent]);
 
       // K0s
       if (!GetHistos(rNameK+2*cent, eNameK+2*cent, raw, eff)) return;
@@ -488,15 +489,15 @@ void DrawSpectraAndRatios() {
    tex->SetNDC();
    tex->SetTextSize(0.11);
    tex->Draw();
-   /*{
-     TFile::Open("LamFitResults20120711.root");
+   {
+     TFile::Open(" BWFitResults_Lambda0_stat.root");
      const Char_t *name[nCent]={
-       "fitBWLambda010","fitBWLambda1020","fitBWLambda2040",
-       "fitBWLambda4060","fitBWLambda6080","fitBWLambda8090"
+       "BWFit_0005",
+       "BWFit_0510","BWFit_1020","BWFit_2040",
+       "BWFit_4060","BWFit_6080","BWFit_8090"
      };
-     Float_t fac[nCent]; for (Int_t i=0; i<nCent; i++) fac[i]=fdCorr*factor[i];
-     DrawFit(name, fac, nCent);
-   }*/
+     DrawFit(name, factor2, nCent);
+   }
    //Float_t offx1=0.70, offy1=0.18;
    //DrawALICELogo(offx1,offy1,offx1+sizx,offy1+sizy);
        
