@@ -70,6 +70,7 @@ AliITSURecoLayer::~AliITSURecoLayer()
   delete[] fSensors;
   delete[] fPhiLadMax;
   delete[] fPhiLadMin;
+  if (GetOwnsClusterArray()) delete fClusters;
 }
 
 //______________________________________________________

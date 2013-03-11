@@ -12,11 +12,11 @@
 
 #include "AliReconstructor.h"
 #include "AliITSURecoParam.h"
+#include "AliITSURecoDet.h"
 
 class AliTracker;
 class AliTrackleter;
 class AliITSUGeomTGeo;
-class AliITSURecoDet;
 
 class AliITSUReconstructor: public AliReconstructor {
 public:
@@ -37,9 +37,8 @@ public:
   AliITSUGeomTGeo*       GetGeom()                          const {return (AliITSUGeomTGeo*)fGeom;}
   AliITSURecoDet*        GetITSInterface();
   //
-  Int_t                  LoadClusters(TTree* treeRP);
+  Int_t                  LoadClusters(TTree* treeRP)        {return GetITSInterface()->LoadClusters(treeRP);}
   //
-
   static const AliITSURecoParam* GetRecoParam() { 
     return dynamic_cast<const AliITSURecoParam*>(AliReconstructor::GetRecoParam(0)); }
 

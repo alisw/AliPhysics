@@ -217,11 +217,11 @@ AliTracker* AliITSUReconstructor::CreateTrackleter() const
 
 }
 
+/*
 //_____________________________________________________________________________
 Int_t AliITSUReconstructor::LoadClusters(TTree* treeRP) 
 {
   // read clusters from the tree, if it is provided
-  if (!treeRP) return 0;
   for (int ilr=fGeom->GetNLayers();ilr--;) {
     if (!fClusters[ilr]) AliFatal(Form("Clusters array for layer %d is not defined",ilr)); 
     TBranch* br = treeRP->GetBranch(Form("ITSRecPoints%d",ilr));
@@ -231,6 +231,8 @@ Int_t AliITSUReconstructor::LoadClusters(TTree* treeRP)
   treeRP->GetEntry(0); // we are still in 1 ev/tree mode...
   return 1;
 }
+*/
+
 
 //_____________________________________________________________________________
 AliITSURecoDet* AliITSUReconstructor::GetITSInterface()

@@ -5,6 +5,7 @@
 #include <TObjArray.h>
 #include "AliITSURecoLayer.h"
 class AliITSUGeomTGeo;
+class TTree;
 
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //
@@ -38,6 +39,8 @@ class AliITSURecoDet : public TNamed
   void               AddLayer(const AliITSURecoLayer* lr);
   //
   void               ProcessClusters(Int_t mode=0);
+  void               CreateClusterArrays();
+  Int_t              LoadClusters(TTree* treeRP);
   //
   virtual void       Print(Option_t* option = "")  const;
   //

@@ -1,11 +1,14 @@
 #include <TGeoVolume.h>
 #include <TGeoTube.h>
 #include <TGeoManager.h>
+#include <TTree.h>
 #include "AliITSURecoDet.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliITSsegmentation.h"
 #include "AliITSUSegmentationPix.h"
+#include "AliITSUClusterPix.h"
 #include "AliITSUReconstructor.h"
+
 
 
 ClassImp(AliITSURecoDet)
@@ -188,4 +191,37 @@ Int_t AliITSURecoDet::FindFirstLayerID(Double_t r, int dir) const
     return ilr; // -1 will correspond to point below inner layer
   }
   //
+}
+
+//______________________________________________________
+void AliITSURecoDet::CreateClusterArrays()
+{
+  // create cluster arrays for active layers
+  for (int ilr=0;ilr<fNLayersActive;ilr++) {
+    AliITSURecoLayer*  lr = GetLayerActive(ilr);
+    lr->SetOwnsClusterArray(kTRUE);
+    int tpDet = fGeom->GetLayerDetTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerDetType;
+    //
+    if (tpDet == AliITSUGeomTGeo::kDetTypePix) {
+      lr->SetClusters(new TClonesArray(AliITSUClusterPix::Class()));
+    }
+    else {
+      AliFatal(Form("Unknown detector type %d",tpDet));
+    }
+    //
+  }
+  //
+}
+
+//_____________________________________________________________________________
+Int_t AliITSURecoDet::LoadClusters(TTree* treeRP) 
+{
+  // read clusters from the tree, if it is provided
+  if (!treeRP) return 0;
+  for (int ilr=fNLayersActive;ilr--;) {
+    TBranch* br = treeRP->GetBranch(Form("ITSRecPoints%d",ilr));
+    if (!br) AliFatal(Form("Provided cluster tree does not contain branch for layer %d",ilr));
+    br->SetAddress( GetLayerActive(ilr)->GetClustersAddress() );
+  }
+  return treeRP->GetEntry(0); // we are still in 1 ev/tree mode...
 }
