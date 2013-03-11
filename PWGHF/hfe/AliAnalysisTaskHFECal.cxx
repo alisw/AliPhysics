@@ -20,6 +20,7 @@
 #include "TChain.h"
 #include "TTree.h"
 #include "TH2F.h"
+#include "TF1.h"
 #include "TMath.h"
 #include "TCanvas.h"
 #include "THnSparse.h"
@@ -514,7 +515,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        Int_t label = TMath::Abs(track->GetLabel());
        mcLabel = track->GetLabel();
        
-       //if(mcLabel>-1)
+       if(mcLabel>-1)
        {
       
 	       Bool_t MChijing = fMC->IsFromBGEvent(label);
@@ -660,12 +661,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     eta = track->Eta();
     dEdx = track->GetTPCsignal();
     fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
-    if(mcLabel==-1) // nsigma mean correction
-      {
-       double mean_corr = NsigCorr(cent);
-       printf("correction %f\n",mean_corr);
-       fTPCnSigma -= mean_corr;
-      }    
 
         double ncells = -1.0;
         double m20 = -1.0;
@@ -686,6 +681,14 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
 	        double clustE = clust->E();
                 eop = clustE/fabs(mom);
+                 cout << "eop org = "<< eop << endl;
+                if(mcLabel>-1.0)
+                  {
+                   double mceopcorr = MCEopMeanCorrection(pt,cent);
+                   eop += mceopcorr;
+                  }
+                cout << "eop corr = " << eop << endl;
+
                 //double clustT = clust->GetTOF();
                 ncells = clust->GetNCells();
                 m02 = clust->GetM02();
@@ -1728,14 +1731,54 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
 }
 
 
-double AliAnalysisTaskHFECal::NsigCorr(float cent)
+double AliAnalysisTaskHFECal::MCEopMeanCorrection(double pTmc, float central)
 {
+  TF1 *fcorr0 = new TF1("fcorr0","[0]*tanh([1]+[2]*x)"); 
+  TF1 *fcorr1 = new TF1("fcorr1","[0]*tanh([1]+[2]*x)"); 
+
  double shift = 0.0;
- if(cent>=20 && cent<30)shift = 0.156;
- if(cent>=30 && cent<40)shift = 0.316;
- if(cent>=40 && cent<50)shift = 0.336;
- if(cent>=50 && cent<70)shift = 0.440;
- if(cent>=70 && cent<90)shift = 0.534;
+  
+ if(central>0 && central<=10)
+   {
+    fcorr0->SetParameters(1.045,1.288,3.18e-01); //
+    fcorr1->SetParameters(9.91e-01,3.466,2.344);
+   }
+ 
+ if(central>10 && central<=20)
+   {
+    fcorr0->SetParameters(1.029,8.254e-01,4.07e-01);
+    fcorr1->SetParameters(0.975,2.276,1.501e-01);
+   }
+ else if(central>20 && central<=30)
+   {
+    fcorr0->SetParameters(1.01,8.795e-01,3.904e-01);
+    fcorr1->SetParameters(9.675e-01,1.654,2.583e-01);
+   }
+ else if(central>30 && central<=40)
+   {
+    fcorr0->SetParameters(1.00,1.466,2.305e-1);
+    fcorr1->SetParameters(9.637e-01,1.473,2.754e-01);
+   }
+ else if(central>40 && central<=50)
+   {
+    fcorr0->SetParameters(1.00,1.422,1.518);
+    fcorr1->SetParameters(9.59e-01,1.421,2.931e-01);
+   }
+ 
+ else if(central>50 && central<=70)
+   {
+    fcorr0->SetParameters(0.989,2.495,2.167);
+    fcorr1->SetParameters(0.961e-1,1.734,1.438e-01);
+   }
+ else if(central>70 && central<=100)
+   {
+    fcorr0->SetParameters(0.981,-3.373,3.93327);
+    fcorr1->SetParameters(9.574e-01,1.698,1.58-01);
+   }
+ 
+
+ shift = fcorr0->Eval(pTmc)-fcorr1->Eval(pTmc);
+
  return shift;
 }
 
