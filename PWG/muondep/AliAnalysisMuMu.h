@@ -31,11 +31,8 @@ class TGraph;
 class TH1;
 class TMap;
 
-class AliAnalysisMuMu : public TObject
+class AliAnalysisMuMu : public TObject, public TQObject
 {
-
-  RQ_OBJECT("AliAnalysisMuMu")
-  
 
 public:
   

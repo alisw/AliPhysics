@@ -552,7 +552,7 @@ AliAnalysisTriggerScalers::GetTriggerScaler(Int_t runNumber, const char* level, 
   const AliTriggerScalersRecord* begin = (AliTriggerScalersRecord*)(scalers->First());
   const AliTriggerScalersRecord* end = (AliTriggerScalersRecord*)(scalers->Last());
 
-  time_t duration = (end->GetTimeStamp()->GetBunchCross() - begin->GetTimeStamp()->GetBunchCross())*AliTimeStamp::fNanosecPerBC*1E-9;
+  time_t duration = TMath::Nint((end->GetTimeStamp()->GetBunchCross() - begin->GetTimeStamp()->GetBunchCross())*AliTimeStamp::fNanosecPerBC*1E-9);
   
   AliTriggerClass* triggerClass = static_cast<AliTriggerClass*>(trClasses.FindObject(triggerClassName));
   if (!triggerClass)
@@ -796,12 +796,12 @@ AliAnalysisTriggerScalers::IntegratedLuminosityGraph(Int_t runNumber, const char
       continue;
     }
     
+    Double_t factor(1.0);
+    
     if ( ShouldCorrectForPileUp() && nbcx > 0 && l0b[0] > 0 )
     {
       Double_t mu = Mu(l0b[0]/timelapse,nbcx);
-      Double_t factor = mu/(1-TMath::Exp(-mu));
-      
-      l0b[0] *= factor;
+      factor = mu/(1-TMath::Exp(-mu));
     }
     
     vseconds.push_back(seconds);
@@ -813,7 +813,7 @@ AliAnalysisTriggerScalers::IntegratedLuminosityGraph(Int_t runNumber, const char
       lt = (l0a[1]*1.0)/l0b[1];
     }
 
-    counter += l0b[0]*lt;
+    counter += TMath::Nint(factor*l0b[0]*lt);
 
     vlumi.push_back( counter / lumiTriggerCrossSection );
     
@@ -991,7 +991,7 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
     const AliTriggerScalersRecord* begin = (AliTriggerScalersRecord*)(scalers->First());
     const AliTriggerScalersRecord* end = (AliTriggerScalersRecord*)(scalers->Last());
     
-    time_t duration = (end->GetTimeStamp()->GetBunchCross() - begin->GetTimeStamp()->GetBunchCross())*AliTimeStamp::fNanosecPerBC*1E-9;
+    time_t duration = TMath::Nint((end->GetTimeStamp()->GetBunchCross() - begin->GetTimeStamp()->GetBunchCross())*AliTimeStamp::fNanosecPerBC*1E-9);
 
     nextTrigger.Reset();
 
@@ -1503,7 +1503,7 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
         }
         
         vx.push_back(seconds);
-        vex.push_back(1.0);
+        vex.push_back(1);
         
         vy.push_back(value);
         
