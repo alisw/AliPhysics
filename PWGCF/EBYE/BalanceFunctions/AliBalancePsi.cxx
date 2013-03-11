@@ -1745,26 +1745,60 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(TH1D* gHist,
     // ----------------------------------------------------------------------
     // then calculate the higher moments
 
-    Double_t fDelta  = 0.;
-    Double_t fDelta2 = 0.;
-    Double_t fDelta3 = 0.;
-    Double_t fDelta4 = 0.;
+    Double_t fMu  = 0.;
+    Double_t fMu2 = 0.;
+    Double_t fMu3 = 0.;
+    Double_t fMu4 = 0.;
+    Double_t fMu5 = 0.;
+    Double_t fMu6 = 0.;
+    Double_t fMu7 = 0.;
+    Double_t fMu8 = 0.;
 
     for(Int_t i = 1; i <= fNumberOfBins; i++) {
-      fDelta  += gHist->GetBinContent(i) * (gHist->GetBinCenter(i) - mean);
-      fDelta2 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),2);
-      fDelta3 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),3);
-      fDelta4 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),4);
+      fMu  += gHist->GetBinContent(i) * (gHist->GetBinCenter(i) - mean);
+      fMu2 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),2);
+      fMu3 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),3);
+      fMu4 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),4);
+      fMu5 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),5);
+      fMu6 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),6);
+      fMu7 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),7);
+      fMu8 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),8);
     }
     
-    sigma    = TMath::Sqrt(fDelta2 / fNormalization);
-    skewness = fDelta3 / fNormalization / TMath::Power(sigma,3);
-    kurtosis = fDelta4 / fNormalization / TMath::Power(sigma,4) - 3;
+    sigma    = TMath::Sqrt(fMu2 / fNormalization);
+    skewness = fMu3 / fNormalization / TMath::Power(sigma,3);
+    kurtosis = fMu4 / fNormalization / TMath::Power(sigma,4) - 3;
 
     // ----------------------------------------------------------------------
-    // then calculate the higher moment errors?
+    // then calculate the higher moment errors
     cout<<fNormalization<<" "<<gHist->GetEffectiveEntries()<<" "<<gHist->Integral()<<endl;
-    meanError = sigma / TMath::Sqrt(fNormalization); //sigma / TMath::Sqrt(gHist->GetEffectiveEntries()) would give the "ROOT" menaError
+    cout<<gHist->GetMean()<<" "<<gHist->GetRMS()<<" "<<gHist->GetSkewness(1)<<" "<<gHist->GetKurtosis(1)<<endl;
+    cout<<gHist->GetMeanError()<<" "<<gHist->GetRMSError()<<" "<<gHist->GetSkewness(11)<<" "<<gHist->GetKurtosis(11)<<endl;
+
+    Double_t normError = gHist->GetEffectiveEntries(); //gives the "ROOT" meanError
+
+    // // assuming normal distribution (as done in ROOT)
+    // meanError     = sigma / TMath::Sqrt(normError); 
+    // sigmaError    = TMath::Sqrt(sigma*sigma/(2*normError));
+    // skewnessError = TMath::Sqrt(6./(normError));
+    // kurtosisError = TMath::Sqrt(24./(normError));
+
+    // use delta theorem paper (Luo - arXiv:1109.0593v1)
+    Double_t Lambda11 = (fMu4-1)*sigma*sigma/(4*normError);
+    Double_t Lambda22 = (9-6*fMu4+fMu3*fMu3*(35+9*fMu4)/4-3*fMu3*fMu5+fMu6)/normError;
+    Double_t Lambda33 = (-fMu4*fMu4+4*fMu4*fMu4*fMu4+16*fMu3*fMu3*(1+fMu4)-8*fMu3*fMu5-4*fMu4*fMu6+fMu8)/normError;
+    Double_t Lambda12 = -(fMu3*(5+3*fMu4)-2*fMu5)*sigma/(4*normError);
+    Double_t Lambda13 = ((-4*fMu3*fMu3+fMu4-2*fMu4*fMu4+fMu6)*sigma)/(2*normError);
+    Double_t Lambda23 = (6*fMu3*fMu3*fMu3-(3+2*fMu4)*fMu5+3*fMu3*(8+fMu4+2*fMu4*fMu4-fMu6)/2+fMu7)/normError;
+
+    cout<<Lambda11<<" "<<Lambda22<<" "<<Lambda33<<" "<<endl;
+    cout<<Lambda12<<" "<<Lambda13<<" "<<Lambda23<<" "<<endl;
+
+    meanError        = sigma / TMath::Sqrt(normError); 
+    sigmaError       = TMath::Sqrt(Lambda11);
+    skewnessError    = TMath::Sqrt(Lambda22);
+    kurtosisError    = TMath::Sqrt(Lambda33);
+
     
     success = kTRUE;    
   }
