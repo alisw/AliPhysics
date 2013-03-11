@@ -29,7 +29,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
  
-  void   SetCollidingSystems(Bool_t collidingSystems = 0) {fCollidingSystems = collidingSystems;}
+  void   SetCollidingSystems(Int_t collidingSystems = 0) {fCollidingSystems = collidingSystems;}
   void   SetAnalysisMC(Bool_t analysisMC) {fAnalysisMC = analysisMC;}
   void   SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
   void   SetUsePID(const char* usePID) {fUsePID = usePID;}
