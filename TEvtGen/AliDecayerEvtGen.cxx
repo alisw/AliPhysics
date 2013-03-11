@@ -238,6 +238,12 @@ void AliDecayerEvtGen::ForceDecay()
      case kBPsiPrimeDiElectron:
      case kBeautyUpgrade:
      case kBJpsiUndecayed: 
+     case kDiElectronEM:
+     case kElectronEM:
+     case kGammaEM:
+     case kJpsiDiMuon:
+     case kNoDecayBeauty:
+     case kPsiPrimeJpsiDiElectron:
       AliWarning(Form("Warning: case %d not implemented for this class!",(int)decay));
      break;
      }
