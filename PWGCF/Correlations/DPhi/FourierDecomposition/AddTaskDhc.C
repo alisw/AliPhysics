@@ -116,9 +116,6 @@ AliDhcTask *AddTaskDhc(
       if (hMuEff) {
         sprintf(chExtraName,"%s_corrMu",chExtraName);
       }
-      if (hHEff) {
-        sprintf(chExtraName,"%s_corrH",chExtraName);
-      }
     } else {
       Error("AddTaskDhc", Form("iAna %d not known", iAna));
     }
