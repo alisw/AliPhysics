@@ -42,7 +42,7 @@ public:
                         const AliAnalysisMuMuBinning::Range& bin);
   
   AliAnalysisMuMuResult(const AliAnalysisMuMuResult& rhs);
-  AliAnalysisMuMuResult& operator=(const AliAnalysisMuMuResult&);
+  AliAnalysisMuMuResult& operator=(const AliAnalysisMuMuResult& rhs);
   
   virtual ~AliAnalysisMuMuResult();
 
@@ -66,21 +66,17 @@ public:
   
   void Print(Option_t* opt="") const;
   
-  Bool_t AddFit(const char* fitType, Int_t rebin=1);
+  Bool_t AddFit(const char* fitType, Int_t npar=0, Double_t* par=0x0);
 
   AliAnalysisMuMuResult* CountJpsi(TH1& h);
 
-//  void FitJpsiPsiPrimeCB(TH1& h);
   AliAnalysisMuMuResult*  FitJpsi(TH1& h);
-//  void FitJpsiCBE(TH1& h);
-//  void FitJpsiECBE(TH1& h);
-//  void FitJpsiPCBE(TH1& h);
-//  void FitUpsilon(TH1& h);
 
-  AliAnalysisMuMuResult* FitJpsi2CB2VWG(const TH1& h);
-  AliAnalysisMuMuResult* FitJpsiGCBE(TH1& h);
+  AliAnalysisMuMuResult* FitJpsiNA48(const TH1& h);
+  AliAnalysisMuMuResult* FitJpsiCB2VWG(const TH1& h);
+  AliAnalysisMuMuResult* FitJpsi2CB2VWG(const TH1& h, Double_t alphaLow=-1.0, Double_t nLow=-1.0, Double_t alphaUp=-1.0, Double_t nUp=-1.0);
   
-//  SubResult* FitJpsiPsiPrimeCustom(TH1& h);
+  AliAnalysisMuMuResult* FitJpsiGCBE(TH1& h);
   
   Int_t NofRuns() const;
   
@@ -96,14 +92,10 @@ public:
 
   void SetMinv(const TH1& hminv);
 
+  AliAnalysisMuMuResult* SubResult(const char* subResultName) const;
+  
   TObjArray* SubResults() const { return fSubResults; }
   
-  static Double_t CountParticle(const TH1& hminv, const char* particle, Double_t sigma=-1);
-
-  static Double_t ErrorAB(Double_t a, Double_t aerr, Double_t b, Double_t berr);
-
-  static Double_t ErrorABC(Double_t a, Double_t aerr, Double_t b, Double_t berr, Double_t c, Double_t cerror);
-
   Long64_t Merge(TCollection* list);
 
   AliAnalysisMuMuResult* Mother() const { return fMother; }
@@ -113,6 +105,18 @@ public:
   Double_t Weight() const { return fWeight > 0  ? fWeight : fNofTriggers; }
   
   void SetWeight(Double_t w) { fWeight=w; }
+
+  static Double_t CountParticle(const TH1& hminv, const char* particle, Double_t sigma=-1.0);
+  
+  static Double_t ErrorAB(Double_t a, Double_t aerr, Double_t b, Double_t berr);
+  
+  static Double_t ErrorABC(Double_t a, Double_t aerr, Double_t b, Double_t berr, Double_t c, Double_t cerror);
+
+  static void PrintValue(const char* key, const char* opt, Double_t value, Double_t errorStat);
+
+  void SetAlias(const char* alias) { fAlias = alias; }
+  
+  TString Alias() const { if ( fAlias.Length()>0) return fAlias; else return GetName(); }
   
 private:
   
@@ -122,9 +126,7 @@ private:
     kErrorStat=1
   };
   
-
   void PrintParticle(const char* particle, const char* opt) const;
-  void PrintValue(const char* key, const char* opt, Double_t value, Double_t errorStat) const;
 
 private:
   Int_t fNofRuns; // number of runs used to get this result
@@ -136,8 +138,16 @@ private:
   AliAnalysisMuMuResult* fMother; // mother result
   mutable THashList* fKeys; //! keys we have in our internal map (or the one of our subresults)
   Double_t fWeight; // weight of this result (default 1.0)
+  Int_t fRebin; // rebin level of minv spectra
   
-  ClassDef(AliAnalysisMuMuResult,5) // a class to hold invariant mass analysis results (counts, yields, AccxEff, R_AB, etc...)
+  TString fTriggerClass; // trigger class for this result
+  TString fEventSelection; // event selection for this result
+  TString fPairSelection; // pair selection for this result
+  TString fCentralitySelection; // centrality selection for this result
+
+  TString fAlias; // alias name
+  
+  ClassDef(AliAnalysisMuMuResult,8) // a class to hold invariant mass analysis results (counts, yields, AccxEff, R_AB, etc...)
 };
 
 #endif

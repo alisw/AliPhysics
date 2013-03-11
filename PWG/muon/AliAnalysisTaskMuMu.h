@@ -19,6 +19,10 @@
 #  include "TArrayI.h"
 #endif
 
+#ifndef ROOT_TMath
+#  include "TMath.h"
+#endif
+
 class AliAnalysisMuMuBinning;
 class AliCounterCollection;
 class AliMergeableCollection;
@@ -76,12 +80,18 @@ public:
   AliAnalysisTaskMuMu(Bool_t fromESD, TList* triggerClassesToConsider, const char* beamYear=0x0, TArrayF* centralities=0x0);
   AliAnalysisTaskMuMu(Bool_t fromESD, const char* beamYear, TArrayF* centralities=0x0);
   virtual ~AliAnalysisTaskMuMu();
-  
+
   void AddBin(const char* particle, const char* type,
               Double_t xmin, Double_t xmax,
-              Double_t ymin=0.0, Double_t ymax=0.0);
+              Double_t ymin,
+              Double_t ymax,
+              const char* flavour="");
 
-  void CreateMesh(const char* particle, const char* type1, const char* type2, Bool_t remove12=kFALSE);
+  void AddBin(const char* particle, const char* type,
+              Double_t xmin, Double_t xmax,
+              const char* flavour="") { AddBin(particle,type,xmin,xmax,TMath::Limits<Double_t>::Max(),TMath::Limits<Double_t>::Max(),flavour); }
+  
+  void CreateMesh(const char* particle, const char* type1, const char* type2, const char* flavour="", Bool_t remove12=kFALSE);
   
   virtual void AddEventCut(const char* cutName, UInt_t mask);
   

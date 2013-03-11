@@ -35,7 +35,7 @@ public:
               Double_t xmax=TMath::Limits<Double_t>::Max(),
               Double_t ymin=TMath::Limits<Double_t>::Max(),
               Double_t ymax=TMath::Limits<Double_t>::Max(),
-              Bool_t warn=kTRUE);
+              const char* flavour="");
 
   TObjArray* CreateParticleArray() const;
 
@@ -45,13 +45,13 @@ public:
 
   TObjArray* CreateBinObjArray() const;
   TObjArray* CreateBinObjArray(const char* particle) const;
-  TObjArray* CreateBinObjArray(const char* particle, const char* type) const;
+  TObjArray* CreateBinObjArray(const char* particle, const char* type, const char* flavour) const;
   
-  AliAnalysisMuMuBinning* Project(const char* particle, const char* type) const;
+  AliAnalysisMuMuBinning* Project(const char* particle, const char* type, const char* flavour="") const;
   
   virtual void Print(Option_t* opt="") const;
   
-  void CreateMesh(const char* particle, const char* type1, const char* type2, Bool_t remove12=kFALSE);
+  void CreateMesh(const char* particle, const char* type1, const char* type2, const char* flavour="", Bool_t remove12=kFALSE);
 
   Long64_t Merge(TCollection* list);
 
@@ -65,7 +65,8 @@ public:
           Double_t xmin=TMath::Limits<Double_t>::Max(),
           Double_t xmax=TMath::Limits<Double_t>::Max(),
           Double_t ymin=TMath::Limits<Double_t>::Max(),
-          Double_t ymax=TMath::Limits<Double_t>::Max());
+          Double_t ymax=TMath::Limits<Double_t>::Max(),
+          const char* version="");
     
     virtual Int_t	Compare(const TObject* obj) const;
     Bool_t IsEqual(const TObject* obj) const { return Compare(obj)==0; }
@@ -100,6 +101,8 @@ public:
     
     Bool_t IsInRange(Double_t x, Double_t y=TMath::Limits<Double_t>::Max()) const;
     
+    TString Flavour() const { return fFlavour; }
+    
   private:
     TString fParticle; // particle
     TString fType; // binning type (e.g. pt, y, phi)
@@ -107,8 +110,9 @@ public:
     Double_t fXmax; // x-max of the range
     Double_t fYmin; // x-min of the range
     Double_t fYmax; // x-max of the range
+    TString fFlavour; // flavour (if any) this range, e.g. coarse, fine, etc...
     
-    ClassDef(AliAnalysisMuMuBinning::Range,1)
+    ClassDef(AliAnalysisMuMuBinning::Range,2)
   };
   
 
@@ -116,7 +120,7 @@ public:
 
   TMap* fBins; // list of bins (particle -> list of bins) = (TObjString -> TObjArray)
   
-  ClassDef(AliAnalysisMuMuBinning,1)
+  ClassDef(AliAnalysisMuMuBinning,1) // custom binning for MuMu analysis
 };
 
 #endif

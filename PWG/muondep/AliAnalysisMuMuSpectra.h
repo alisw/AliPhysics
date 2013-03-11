@@ -24,6 +24,9 @@ class AliAnalysisMuMuSpectra : public TNamed
 {
 public:
   AliAnalysisMuMuSpectra(const char* name="", const char* title="");
+  AliAnalysisMuMuSpectra(const AliAnalysisMuMuSpectra& rhs);
+  AliAnalysisMuMuSpectra& operator=(const AliAnalysisMuMuSpectra& rhs);
+  
   virtual ~AliAnalysisMuMuSpectra();
 
   void AdoptResult(const AliAnalysisMuMuBinning::Range& bin, AliAnalysisMuMuResult* result);
@@ -32,7 +35,7 @@ public:
   
   Long64_t Merge(TCollection* list);
 
-  TH1* Plot(const char* what="NofJpsi", const char* subresult="") const;
+  TH1* Plot(const char* what="NofJpsi", const char* subresult="", Bool_t divideByBinWidth=kTRUE) const;
 
   void Print(Option_t* opt="") const;
 
@@ -41,6 +44,10 @@ public:
   AliAnalysisMuMuBinning* Binning() const { return fBinning; }
   
   Bool_t Correct(const AliAnalysisMuMuSpectra& accEff, const char* particle, const char* subResultName="");
+  
+  AliAnalysisMuMuResult* GetResultForBin(const AliAnalysisMuMuBinning::Range& bin) const;
+  
+  Bool_t HasValue(const char* what="NofJpsi") const;
   
 private:
   AliAnalysisMuMuBinning* fBinning; // internal binning

@@ -1,3 +1,26 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+
+// AliAnalysisMuMuSpectra : a class to encapsulate results from MuMu analysis
+//
+// Spectra can be merged and converted into histograms
+//
+// author: L. Aphecetche (Subatech)
+//
+
 #include "AliAnalysisMuMuSpectra.h"
 
 #include "AliLog.h"
@@ -16,12 +39,74 @@ TNamed(name,title),
 fBinning(0x0),
 fBins(0x0)
 {
+  // default ctor
+}
+
+//______________________________________________________________________________
+AliAnalysisMuMuSpectra::AliAnalysisMuMuSpectra(const AliAnalysisMuMuSpectra& rhs)
+: TNamed(rhs.GetName(),rhs.GetTitle()),
+fBinning(0x0),
+fBins(0x0)
+{
+  // copy ctor
+
+  if ( rhs.fBinning )
+  {
+    fBinning = new AliAnalysisMuMuBinning(*rhs.fBinning);
+  }
+
+  TIter next(rhs.fBins);
+  AliAnalysisMuMuBinning::Range* bin;
   
+  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
+  {
+    if (!fBins)
+    {
+      fBins = new TObjArray;
+      fBins->SetOwner(kTRUE);
+    }
+    fBins->Add(bin);
+  }
+}
+
+//______________________________________________________________________________
+AliAnalysisMuMuSpectra&
+AliAnalysisMuMuSpectra::operator=(const AliAnalysisMuMuSpectra& rhs)
+{
+  // assignment operator
+  
+  if (this==&rhs) return *this;
+  
+  delete fBinning;
+  fBinning = 0x0;
+  delete fBins;
+  fBins = 0x0;
+  
+  if ( rhs.fBinning )
+  {
+    fBinning = new AliAnalysisMuMuBinning(*rhs.fBinning);
+  }
+  
+  TIter next(rhs.fBins);
+  AliAnalysisMuMuBinning::Range* bin;
+  
+  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
+  {
+    if (!fBins)
+    {
+      fBins = new TObjArray;
+      fBins->SetOwner(kTRUE);
+    }
+    fBins->Add(bin);
+  }
+  
+  return *this;
 }
 
 //______________________________________________________________________________
 AliAnalysisMuMuSpectra::~AliAnalysisMuMuSpectra()
 {
+  // dtor
   delete fBinning;
   delete fBins;
 }
@@ -30,6 +115,7 @@ AliAnalysisMuMuSpectra::~AliAnalysisMuMuSpectra()
 void AliAnalysisMuMuSpectra::AdoptResult(const AliAnalysisMuMuBinning::Range& bin,
                                          AliAnalysisMuMuResult* result)
 {
+  // adopt (i.e. we are becoming the owner) a result for a given bin
   if (!fBinning)
   {
     fBinning = new AliAnalysisMuMuBinning;
@@ -76,10 +162,10 @@ Bool_t AliAnalysisMuMuSpectra::Correct(const AliAnalysisMuMuSpectra& accEff, con
   {
     AliAnalysisMuMuResult* thisResult = static_cast<AliAnalysisMuMuResult*>(fBins->At(i));
     AliAnalysisMuMuResult* accResult = static_cast<AliAnalysisMuMuResult*>(bins->At(i));
-    AliInfoClass(Form("i=%d",i ));
-    StdoutToAliInfoClass(thisResult->Print("full");
-                         std::cout << "----" << std::endl;
-                         accResult->Print("full"));
+//    AliInfoClass(Form("i=%d",i ));
+//    StdoutToAliInfoClass(thisResult->Print("full");
+//                         std::cout << "----" << std::endl;
+//                         accResult->Print("full"));
     
     thisResult->Correct(*accResult,particle,subResultName);
   }
@@ -90,8 +176,60 @@ Bool_t AliAnalysisMuMuSpectra::Correct(const AliAnalysisMuMuSpectra& accEff, con
 }
 
 //______________________________________________________________________________
+AliAnalysisMuMuResult*
+AliAnalysisMuMuSpectra::GetResultForBin(const AliAnalysisMuMuBinning::Range& bin) const
+{
+  /// Get result for a given bin
+  /// Warning: this requires a loop on bins
+  
+  if ( IsEmpty() ) return 0x0;
+  
+  TObjArray* bins = fBinning->CreateBinObjArray();
+  
+  Int_t j(-1);
+  
+  StdoutToAliDebug(1,std::cout << "searching for "; bin.Print());
+  
+  for ( Int_t i = 0; i <= bins->GetLast() && j < 0 ; ++i )
+  {
+    AliAnalysisMuMuBinning::Range* b = static_cast<AliAnalysisMuMuBinning::Range*>(bins->At(i));
+
+    StdoutToAliDebug(1,b->Print(););
+    
+    if ( bin == *b )
+    {
+      j = i;
+    }
+  }
+  
+  delete bins;
+  
+  if (j>=0)
+  {
+    return static_cast<AliAnalysisMuMuResult*>(fBins->At(j));
+  }
+  else
+  {
+    StdoutToAliDebug(1,std::cout << "Could not find result for bin:" << std::endl; bin.Print(););
+  }
+  return 0x0;
+}
+
+//______________________________________________________________________________
+Bool_t AliAnalysisMuMuSpectra::HasValue(const char* what) const
+{
+    // whether or not our result(s) has a given property
+  if ( IsEmpty() ) return kFALSE;
+  
+  AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(fBins->First());
+  
+  return r->HasValue(what);
+}
+
+//______________________________________________________________________________
 Bool_t AliAnalysisMuMuSpectra::IsEmpty() const
 {
+  // whether this spectra is empty or not
   return ( fBins==0x0 || fBins->GetEntries()<=0 );
 }
 
@@ -155,8 +293,10 @@ Long64_t AliAnalysisMuMuSpectra::Merge(TCollection* list)
 }
 
 //_____________________________________________________________________________
-TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult) const
+TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult, Bool_t divideByBinWidth) const
 {
+  // Convert the spectra into an histogram
+  
   TString swhat(what);
   swhat.ToUpper();
   
@@ -166,26 +306,21 @@ TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult) const
   
   TH1* h(0x0);
   
-  AliDebugClass(1,Form("nbins=%d nresults=%d",binArray->GetEntries(),fBins->GetEntries()));
+  AliDebug(1,Form("nbins=%d nresults=%d",binArray->GetEntries(),fBins->GetEntries()));
   
   for ( Int_t j = 0; j < TMath::Min(binArray->GetEntries(),fBins->GetEntries()); ++j )
   {
     AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(fBins->At(j));
     
-    if ( strlen(subresult) > 0 )
+    if ( strlen(subresult) > 0 && r->SubResults() )
     {
-      TObjArray* sr = r->SubResults();
-      if (!sr) continue;
       TString sub(subresult);
       sub.ToUpper();
-      r = static_cast<AliAnalysisMuMuResult*>(sr->FindObject(sub.Data()));
+      r = r->SubResult(sub.Data());
       if (!r) continue;
     }
     
     const AliAnalysisMuMuBinning::Range& b = r->Bin();
-    
-    r->Print();
-    b.Print();
     
     if (!h)
     {
@@ -195,18 +330,19 @@ TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult) const
     
     Double_t y = r->GetValue(what);
     Double_t yerr = r->GetErrorStat(what);
-    
-//    if ( !swhat.BeginsWith("ACC") )
-      if ( swhat.Contains("NOF") )
+  
+    if ( divideByBinWidth && b.WidthX()>0 )
     {
       y /= (b.WidthX());
       yerr /= (b.WidthX());
     }
     
+    std::cout << b.AsString();
+    AliAnalysisMuMuResult::PrintValue(swhat.Data(),"",y,yerr);
+    
     h->SetBinContent(j+1,y);
     h->SetBinError(j+1,yerr);
     
-    AliInfoClass(Form("%e +- %e",y,yerr));
   }
   
   delete binArray;
@@ -219,21 +355,17 @@ TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult) const
 //______________________________________________________________________________
 void AliAnalysisMuMuSpectra::Print(Option_t* opt) const
 {
+  // printout
+  
   if (!IsEmpty())
   {
     TString sopt(opt);
-    sopt.ToUpper();
-    if ( sopt.Contains("BINNING") )
-    {
-      fBinning->Print(opt);
-    }
     Int_t nmax = sopt.Atoi();
     if ( nmax <= 0 ) nmax = fBins->GetEntries();
     for ( Int_t i = 0; i < nmax; ++i )
     {
-      AliAnalysisMuMuBinning::Range* r = static_cast<AliAnalysisMuMuBinning::Range*>(fBins->At(i));
+      AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(fBins->At(i));
       if (r) r->Print(opt);
     }
-    
   }
 }

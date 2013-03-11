@@ -257,10 +257,11 @@ AliAnalysisTaskMuMu::~AliAnalysisTaskMuMu()
 //_____________________________________________________________________________
 void AliAnalysisTaskMuMu::AddBin(const char* particle, const char* type,
                                  Double_t xmin, Double_t xmax,
-                                 Double_t ymin, Double_t ymax)
+                                 Double_t ymin, Double_t ymax,
+                                 const char* flavour)
 {
   /// Add one bin
-  fBinning->AddBin(particle,type,xmin,xmax,ymin,ymax);
+  fBinning->AddBin(particle,type,xmin,xmax,ymin,ymax,flavour);
 
   // invalidate cached bins, if any
   if (fBinArray)
@@ -414,7 +415,7 @@ void AliAnalysisTaskMuMu::ComputeTrackMask(const AliVParticle& track, Int_t trac
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskMuMu::CreateMesh(const char* particle, const char* type1, const char* type2, Bool_t remove12)
+void AliAnalysisTaskMuMu::CreateMesh(const char* particle, const char* type1, const char* type2, const char* flavour, Bool_t remove12)
 {
   /// Create a 2d binning from 2 1d binning.
   /// WARNING : not fully tested yet
@@ -424,7 +425,7 @@ void AliAnalysisTaskMuMu::CreateMesh(const char* particle, const char* type1, co
     AliError("Cannot create a mesh as I have no bin at all !");
     return;
   }
-  fBinning->CreateMesh(particle,type1,type2,remove12);
+  fBinning->CreateMesh(particle,type1,type2,flavour,remove12);
 }
 
 //_____________________________________________________________________________
@@ -440,7 +441,7 @@ AliAnalysisTaskMuMu::CreateMinvHistograms(const char* physics,
 
   Int_t nMCMinvBins = GetNbins(minvMin,minvMax,0.1);
 
-  TObjArray* bins = fBinning->CreateBinObjArray("psi","pt vs y,pt,y,phi");
+  TObjArray* bins = fBinning->CreateBinObjArray("psi","y vs pt,integrated,pt,y,phi","");
   
   CreatePairHisto(physics,triggerClassName,"Pt","#mu+#mu- Pt distribution",
                   200,0,20);
@@ -653,7 +654,7 @@ void AliAnalysisTaskMuMu::DefineCentralityClasses(TArrayF* centralities)
 void AliAnalysisTaskMuMu::DefineDefaultBinning()
 {
   fBinning = new AliAnalysisMuMuBinning("BIN");
-  fBinning->AddBin("psi","pt vs y");
+  fBinning->AddBin("psi","integrated");
 }
 
 //_____________________________________________________________________________
@@ -863,7 +864,7 @@ void AliAnalysisTaskMuMu::FillMC()
 
   if (!fBinArray)
   {
-    fBinArray = fBinning->CreateBinObjArray("psi","pt vs y,pt,y");
+    fBinArray = fBinning->CreateBinObjArray("psi","y vs pt,integrated,pt,y","");
   }
 
   TIter nextBin(fBinArray);
@@ -898,9 +899,24 @@ void AliAnalysisTaskMuMu::FillMC()
       {
         Bool_t ok(kFALSE);
         
-        if ( r->Is2D() || r->IsNullObject() )
+        if ( r->IsNullObject() )
         {
-          ok = r->IsInRange(part->Y(),part->Pt());
+          ok = kTRUE;
+        }
+        else if ( r->Is2D() )
+        {
+          if ( r->AsString().BeginsWith("PTVSY") )
+          {
+            ok = r->IsInRange(part->Y(),part->Pt());
+          }
+          else if ( r->AsString().BeginsWith("YVSPT") )
+          {
+            ok = r->IsInRange(part->Pt(),part->Y());
+          }
+          else
+          {
+            AliError(Form("Don't know how to deal with 2D bin %s",r->AsString().Data()));
+          }
         }
         else
         {
@@ -911,6 +927,10 @@ void AliAnalysisTaskMuMu::FillMC()
           else if ( r->Type() == "Y" )
           {
             ok = r->IsInRange(part->Y());
+          }
+          else if ( r->Type() == "PHI" )
+          {
+            ok = r->IsInRange(part->Phi());
           }
         }
         
@@ -978,6 +998,8 @@ void AliAnalysisTaskMuMu::FillEventHistos(const char* physics, const char* trigg
                                           const char* centrality)
 {
   // Fill event-wise histograms
+  
+//  AliCodeTimerAuto("",0);
   
   if (!IsHistogramDisabled("BCX"))
   {
@@ -1093,6 +1115,7 @@ void AliAnalysisTaskMuMu::FillEventHistos(const char* physics, const char* trigg
    */
 
 }
+
 
 //_____________________________________________________________________________
 void AliAnalysisTaskMuMu::FillHistogramCollection(const char* physics, const char* triggerClassName)
@@ -1243,6 +1266,8 @@ void AliAnalysisTaskMuMu::FillHistosForTrack(const char* physics,
 {
   /// Fill histograms for one track
   
+//  AliCodeTimerAuto("",0);
+  
   TLorentzVector p(track.Px(),track.Py(),track.Pz(),
                    TMath::Sqrt(MuonMass2()+track.P()*track.P()));
   
@@ -1353,13 +1378,15 @@ void AliAnalysisTaskMuMu::FillHistos(const char* physics, const char* triggerCla
 {
   /// Fill histograms for /physics/triggerClassName/centrality
   
+//  AliCodeTimerAuto("",0);
+
   FillEventHistos(physics,triggerClassName,centrality);
   
   // Track loop
   
   if (!fBinArray)
   {
-    fBinArray = fBinning->CreateBinObjArray("psi","pt vs y,pt,y,phi");
+    fBinArray = fBinning->CreateBinObjArray("psi","y vs pt,integrated,pt,y,phi","");
   }
   
   Int_t nMuonTracks = AliAnalysisMuonUtility::GetNTracks(Event());
@@ -1456,14 +1483,34 @@ void AliAnalysisTaskMuMu::FillHistos(const char* physics, const char* triggerCla
             
             while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) )
             {
-              AliDebug(2,Form("bin %s pt %e rad %e = %d",r->AsString().Data(),
-                              pj.Pt(),pj.Rapidity(),r->IsInRange(pj.Pt(),pj.Rapidity())));
+//              AliInfo(Form("%s y %e pt %e ok1 %d ok2 %d",
+//                           r->AsString().Data(),
+//                           pj.Rapidity(),
+//                           pj.Pt(),
+//                           r->IsInRange(pj.Rapidity(),pj.Pt()),
+//                           r->IsInRange(pj.Pt(),pj.Rapidity())));
               
+                           
               Bool_t ok(kFALSE);
               
-              if ( r->Is2D() || r->IsNullObject() )
+              if ( r->IsNullObject() )
               {
-                ok = r->IsInRange(pj.Rapidity(),pj.Pt());
+                ok = kTRUE;
+              }
+              else if ( r->Is2D() )
+              {
+                if ( r->AsString().BeginsWith("PTVSY") )
+                {
+                  ok = r->IsInRange(pj.Rapidity(),pj.Pt());                  
+                }
+                else if ( r->AsString().BeginsWith("YVSPT") )
+                {
+                  ok = r->IsInRange(pj.Pt(),pj.Rapidity());
+                }
+                else
+                {
+                  AliError(Form("Don't know how to deal with 2D bin %s",r->AsString().Data()));
+                }
               }
               else
               {
@@ -1492,10 +1539,6 @@ void AliAnalysisTaskMuMu::FillHistos(const char* physics, const char* triggerCla
                   if (!h)
                   {
                     AliError(Form("Could not get %s",hname.Data()));
-                  }
-                  else
-                  {
-                    AliDebug(1,Form("filling %s",hname.Data()));
                   }
                   h->Fill(pj.M());
                 }
@@ -1541,6 +1584,8 @@ UInt_t AliAnalysisTaskMuMu::GetEventMask() const
   kEventNOPILEUP = events with the T0 pile-up flag not present
    
    */
+  
+//  AliCodeTimerAuto("",0);
   
   UInt_t eMask = EventCuts()->GetSelectionMask(fInputHandler);
 
@@ -1620,21 +1665,21 @@ UInt_t AliAnalysisTaskMuMu::GetEventMask() const
     m |= AliAnalysisTaskMuMu::kEventZ7;
   }
   
-  AliVVZERO* vzero = Event()->GetVZEROData();
-  
-  if (vzero)
-  {
-    Float_t v0a = vzero->GetV0ATime();
-    Float_t v0c = vzero->GetV0CTime();
-    
-    Float_t x = v0a-v0c;
-    Float_t y = v0a+v0c;
-    
-    if ( ( x > 6 && x < 10 ) && y > 20 )
-    {
-      m |= AliAnalysisTaskMuMu::kEventV0UP;
-    }
-  }
+//  AliVVZERO* vzero = Event()->GetVZEROData();
+//  
+//  if (vzero)
+//  {
+//    Float_t v0a = vzero->GetV0ATime();
+//    Float_t v0c = vzero->GetV0CTime();
+//    
+//    Float_t x = v0a-v0c;
+//    Float_t y = v0a+v0c;
+//    
+//    if ( ( x > 6 && x < 10 ) && y > 20 )
+//    {
+//      m |= AliAnalysisTaskMuMu::kEventV0UP;
+//    }
+//  }
   
   Bool_t backgroundFlag(kFALSE);
   Bool_t pileupFlag(kFALSE);
@@ -2041,23 +2086,22 @@ AliAnalysisTaskMuMu::Print(Option_t* /*opt*/) const
       str->Print();
     }
   }
+
+  if ( !fEventCutNames )
+  {
+    cout << "No event cut defined yet" << endl;
+  }
+  else
+  {
+    TIter nextEventCutName(fEventCutNames);
+    TObjString* eventCutName;
+    
+    while ( ( eventCutName = static_cast<TObjString*>(nextEventCutName()) ) )
+    {
+      cout << Form("EVENT  CUT %s MASK %x",eventCutName->String().Data(),eventCutName->GetUniqueID()) << endl;
+    }
+  }
   
-//  if ( !fTriggerClasses || !fTriggerClasses->First() ) 
-//  {
-//    cout << "No trigger classes defined yet" << endl;
-//  }
-//  else
-//  {
-//    cout << "Trigger classes that will be considered:" << endl;
-//    TIter next(fTriggerClasses);
-//    TObjString* s;
-//    
-//    while ( ( s = static_cast<TObjString*>(next()) ) )
-//    {
-//      cout << s->String().Data() << endl;
-//    }
-//  }
-//  
   if ( fBinning )
   {
     cout << "Binning for Minv plots" << endl;
@@ -2131,6 +2175,8 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
 {
   /// Executed at each event
   
+//  AliCodeTimerAuto("",0);
+  
   fHasMC = (MCEvent()!=0x0);
 
   TString firedTriggerClasses(AliAnalysisMuonUtility::GetFiredTriggerClasses(Event()));
@@ -2183,8 +2229,6 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
         fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "HASMC", fCurrentRunNumber));
       }
       
-//      fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), eventType.Data(), fCurrentRunNumber));
-
       if ( firedTriggerClasses == "" )
       {
         fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "EMPTY", fCurrentRunNumber));
@@ -2208,22 +2252,11 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
       {
         fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "ATLEASTONEMBTRIGGER", fCurrentRunNumber));
       }
-
-      if ( AtLeastOneEmcalTrigger(firedTriggerClasses) )
-      {
-        fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "ATLEASTONEEMCALTRIGGER", fCurrentRunNumber));
-
-        if ( AtLeastOneMBTrigger(firedTriggerClasses) )
-        {
-          fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "ATLEASTONEEMCALORMBTRIGGER", fCurrentRunNumber));
-        }
-      }
-
     }
   }
 
   // second loop to count only the triggers we're interested in
-  
+
   TIter next(EventCuts()->GetSelectedTrigClassesInEvent(Event()));
   TObjString* tname;
   
