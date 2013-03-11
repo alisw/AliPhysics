@@ -39,8 +39,8 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp(){
   AliAnalysisTaskMultiDielectron *taskMB = new AliAnalysisTaskMultiDielectron("MultiDieMB");
   if (!hasMC) taskMB->UsePhysicsSelection();
   //taskMB->SelectCollisionCandidates(AliVEvent::kMB);
-  taskMB->SelectCollisionCandidates(AliVEvent::kINT8);
-  taskMB->SetRejectPileup();
+  taskMB->SelectCollisionCandidates(AliVEvent::kINT7 || AliVEvent::kMB);
+//  taskMB->SetRejectPileup();
 
           //Add event filter
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
