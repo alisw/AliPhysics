@@ -80,7 +80,8 @@ public:
     virtual UInt_t    GetEventType()        const  {return    0;}
     virtual ULong64_t GetTriggerMask()      const  {return    0;}
     virtual UChar_t   GetTriggerCluster()   const  {return    0;}
-    
+    virtual TString   GetFiredTriggerClasses() const {return    ("");}     
+
     virtual Double_t  GetZDCN1Energy()            const {return -999.;}
     virtual Double_t  GetZDCP1Energy()            const {return -999.;}
     virtual Double_t  GetZDCN2Energy()            const {return -999.;}
