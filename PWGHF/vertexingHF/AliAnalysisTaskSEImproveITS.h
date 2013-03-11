@@ -28,10 +28,12 @@ public:
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
-//  virtual void Init();
-//  virtual void LocalInit() {Init();}
+  //  virtual void Init();
+  //  virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
-//  virtual void Terminate(Option_t *option);
+  //  virtual void Terminate(Option_t *option);
+  void SetImproveTracks(Bool_t flag=kTRUE) { fImproveTracks=flag; return; }
+
 private:
   AliAnalysisTaskSEImproveITS(const AliAnalysisTaskSEImproveITS&);
   AliAnalysisTaskSEImproveITS& operator=(const AliAnalysisTaskSEImproveITS&); 
@@ -60,13 +62,15 @@ private:
   TGraph *fPt1ResKUpg  ; // new pt dep. 1/pt res. for kaons
   TGraph *fPt1ResPiUpg ; // new pt dep. 1/pt res. for pions
 
-  Bool_t fRunInVertexing;// flag to run hybrid task before the vertexingHF task or in standard mode
+  Bool_t fRunInVertexing; // flag to run hybrid task before the vertexingHF task or in standard mode
+  Bool_t fImproveTracks; // this is always kTRUE. kFALSE only if re-running on already improved AODs 
                            
   TList   *fDebugOutput; //! collection of debug output
   TNtuple *fDebugNtuple; //! debug send on output slot 1
   Float_t *fDebugVars;   //! variables to store as degug info 
   Int_t   fNDebug;       // Max number of debug entries into Ntuple
-  ClassDef(AliAnalysisTaskSEImproveITS,2);
+
+  ClassDef(AliAnalysisTaskSEImproveITS,3);
 };
 
 #endif
