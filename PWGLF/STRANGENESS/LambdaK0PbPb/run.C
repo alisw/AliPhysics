@@ -81,10 +81,6 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
   //taskCentrality->SetPass(2);
   if(isMC) taskCentrality->SetMCInput();
 
-  AliAnalysisCentralitySelector * centrSelector = new AliAnalysisCentralitySelector();
-  centrSelector->SetIsMC(isMC);
-  centrSelector->SetCentralityEstimator("V0M"); // Todo: add parameter to macro?
-
   // Parse option strings
   TString optionStr(option);
   
@@ -107,33 +103,10 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
   
   gROOT->ProcessLine(".L AddTaskLambdaK0PbPb.C");
   Int_t nbin = 0; // will contain the number of centrality bins
-  AliAnalysisTaskPerformanceStrange ** task = AddTaskLambdaK0PbPb("lambdak0.root", centrSelector, nbin, binMin, binMax,isMC);
-  // configure task
-  //  else if (iAODanalysis) task->SetAnalysisType("AOD");
-  // FIXME: add options to macro
-  // FIXME: put physics selection inside the task
-  cout << nbin << endl;
-  
-  for(Int_t ibin = 0; ibin < nbin; ibin++){
-    cout << "ibin " << ibin << "  "<< endl;//task[ibin] << endl;
-    
-    task[ibin]->SetAnalysisType("ESD");
-    cout << "1" << endl;
-    task[ibin]->SetAnalysisMC(isMC); // 0 or 1
-    cout << "2" << endl;
-    task[ibin]->SetCollidingSystems(2); // 0 =pp, 1=AA  2=pA
-    cout << "3" << endl;
-    task[ibin]->SetAnalysisCut("no");
-    cout << "4" << endl;
-    task[ibin]->SetQASelector(kFALSE);  // Todo -> put trees for QA
-    cout<< "5" << endl;
-    if(usePID) 
-      task[ibin]->SetUsePID("withPID"); // withPID or withoutPID
-    else
-      task[ibin]->SetUsePID("withoutPID"); // withPID or withoutPID
-    cout << "5" << endl;
-  }
+      AliAnalysisTaskPerformanceStrange ** task = AddTaskLambdaK0PbPb("lambdak0.root", nbin, binMin, binMax,isMC);
+  //  AliAnalysisTaskPerformanceStrange ** task = AddTaskLambdaK0PbPb();
 
+ cout << nbin << endl;
   // Init and run the analy
   if (!mgr->InitAnalysis()) return;
 

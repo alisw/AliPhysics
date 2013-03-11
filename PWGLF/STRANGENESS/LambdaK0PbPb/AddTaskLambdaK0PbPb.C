@@ -1,4 +1,4 @@
-AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilename, AliAnalysisCentralitySelector * centr, Int_t &nbin, Int_t binMin, Int_t binMax, Int_t iMCAnalysis = 0) {
+AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilename = "lambdak0.root", Int_t &nbin, Int_t binMin, Int_t binMax, Int_t isMCAnalysis = 0, Bool_t usePID = 1) {
 
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -19,22 +19,22 @@ AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilenam
     Printf("ERROR! This task can only run on ESDs!");
   }
 
+
+  AliAnalysisCentralitySelector * centrSelector = new AliAnalysisCentralitySelector();
+  centrSelector->SetIsMC(isMCAnalysis);
+  centrSelector->SetCentralityEstimator("V0M"); 
   // Configure analysis
   //===========================================================================
-  // Int_t nbMinTPCclusters = 80;
-  // Int_t lCollidingSystems = 1; 
-  // TString fAnalysisType = "ESD";
-    //    TString lAnalysisPidMode  = "withPID";
-    // TString lAnalysisCut      = "no";    
-    //Int_t iMCAnalysis = 0;
      
-    AliESDtrackCuts * myTracksCuts = new AliESDtrackCuts();
-     myTracksCuts->SetRequireTPCRefit(kTRUE);
-     // myTracksCuts->SetMinNClustersTPC(nbMinTPCclusters);
-     myTracksCuts->SetMinNCrossedRowsTPC(70);
-     myTracksCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  AliESDtrackCuts * myTracksCuts = new AliESDtrackCuts();
+  myTracksCuts->SetRequireTPCRefit(kTRUE);
+  //          myTracksCuts->SetRequireITSRefit(kTRUE);
+  myTracksCuts->SetRequireITSRefit(kFALSE);
+  // myTracksCuts->SetMinNClustersTPC(nbMinTPCclusters);
+  myTracksCuts->SetMinNCrossedRowsTPC(70);
+  myTracksCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
  
-     nbin = binMax - binMin + 1;
+  nbin = binMax - binMin + 1;
 
   AliAnalysisTaskPerformanceStrange ** task = new AliAnalysisTaskPerformanceStrange*[nbin];
   Int_t itask = -1;
@@ -43,12 +43,22 @@ AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilenam
 
     task[itask] = new AliAnalysisTaskPerformanceStrange("TaskLambdaK0");
     cout << "Booking " << ibin << "  "<< itask << " " << task[itask] <<endl;
- 
-    //task[itask]->SetCollidingSystems(lCollidingSystems);
-    //task[itask]->SetAnalysisType(fAnalysisType);
-    //task[itask]->SetAnalysisMC(iMCAnalysis);
-    //task[itask]->SetAnalysisCut(lAnalysisCut);
-    //  task[itask]->SetUsePID(lAnalysisPidMode);
+
+    task[ibin]->SetAnalysisType("ESD");
+    cout << "1" << endl;
+    task[ibin]->SetAnalysisMC(isMCAnalysis); // 0 or 1
+    cout << "2" << endl;
+    task[ibin]->SetCollidingSystems(2); // 0 =pp, 1=AA  2=pA
+    cout << "3" << endl;
+    task[ibin]->SetAnalysisCut("no");
+    cout << "4" << endl;
+    task[ibin]->SetQASelector(kFALSE);  // Todo -> put trees for QA
+    cout<< "5" << endl;
+    if(usePID) 
+      task[ibin]->SetUsePID("withPID"); // withPID or withoutPID
+    else
+      task[ibin]->SetUsePID("withoutPID"); // withPID or withoutPID
+    cout << "5" << endl;
     task[itask]->SetTrackCuts(myTracksCuts);
    
     mgr->AddTask(task[itask]);
@@ -62,51 +72,51 @@ AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilenam
     // task->SetTrackCuts(esdTrackCuts);
     
     // set centrality
-    AliAnalysisCentralitySelector * centrBin = (AliAnalysisCentralitySelector*) centr->Clone();
+    AliAnalysisCentralitySelector * centrBin = (AliAnalysisCentralitySelector*) centrSelector->Clone();
     //centrBin->SetCentralityBin(ibin);
     if(ibin == 0){
-    centrBin->SetCentralityBin(0,5);
-    task[itask]->SetCentralitySelector(centrBin);
+      centrBin->SetCentralityBin(0,5);
+      task[itask]->SetCentralitySelector(centrBin);
     }
     if(ibin == 1){
-    centrBin->SetCentralityBin(5,10);
-    task[itask]->SetCentralitySelector(centrBin);
+      centrBin->SetCentralityBin(5,10);
+      task[itask]->SetCentralitySelector(centrBin);
     }
     if(ibin == 2){
-    centrBin->SetCentralityBin(10,20);
-    task[itask]->SetCentralitySelector(centrBin);
+      centrBin->SetCentralityBin(10,20);
+      task[itask]->SetCentralitySelector(centrBin);
     }
     if(ibin == 3){
-    centrBin->SetCentralityBin(20,30);
-    task[itask]->SetCentralitySelector(centrBin);
+      centrBin->SetCentralityBin(20,30);
+      task[itask]->SetCentralitySelector(centrBin);
     }
     if(ibin == 4){
-    centrBin->SetCentralityBin(30,40);
-    task[itask]->SetCentralitySelector(centrBin);
+      centrBin->SetCentralityBin(30,40);
+      task[itask]->SetCentralitySelector(centrBin);
     }
     if(ibin == 5){
-    centrBin->SetCentralityBin(40,50);
-    task[itask]->SetCentralitySelector(centrBin);
+      centrBin->SetCentralityBin(40,50);
+      task[itask]->SetCentralitySelector(centrBin);
     }
     if(ibin == 6){
-    centrBin->SetCentralityBin(50,60);
-    task[itask]->SetCentralitySelector(centrBin);
+      centrBin->SetCentralityBin(50,60);
+      task[itask]->SetCentralitySelector(centrBin);
     }
     if(ibin == 7){
-    centrBin->SetCentralityBin(60,70);
-    task[itask]->SetCentralitySelector(centrBin);
+      centrBin->SetCentralityBin(60,70);
+      task[itask]->SetCentralitySelector(centrBin);
     }
     if(ibin == 8){
-    centrBin->SetCentralityBin(70,80);
-    task[itask]->SetCentralitySelector(centrBin);
+      centrBin->SetCentralityBin(70,80);
+      task[itask]->SetCentralitySelector(centrBin);
     }
     if(ibin == 9){
-    centrBin->SetCentralityBin(80,90);
-    task[itask]->SetCentralitySelector(centrBin);
+      centrBin->SetCentralityBin(80,90);
+      task[itask]->SetCentralitySelector(centrBin);
     }
     if(ibin == 10){
-    centrBin->SetCentralityBin(0,90);
-    task[itask]->SetCentralitySelector(centrBin);
+      centrBin->SetCentralityBin(0,90);
+      task[itask]->SetCentralitySelector(centrBin);
     }
     TString outfilenameCentr = outfilename;
     outfilenameCentr.ReplaceAll(".root",Form("_%2.2d.root",ibin));
