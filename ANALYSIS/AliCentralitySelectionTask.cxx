@@ -1409,9 +1409,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     // ***** MC info
     AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
     AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
-    AliStack*    stack=0;
     AliMCEvent*  mcEvent=0;
-    if (fIsMCInput && eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+    if (fIsMCInput && eventHandler && (mcEvent=eventHandler->MCEvent()) && mcEvent->Stack()) {
       AliGenHijingEventHeader* hHijing=0;
       AliGenDPMjetEventHeader* dpmHeader=0;
       
