@@ -257,14 +257,14 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers,
            !fgDefaultMuonTriggers.Contains(strigger->String().Data()) &&
            !fgDefaultDimuonTriggers.Contains(strigger->String().Data()) ) continue;
           
-      ULong64_t n = fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
-                                                    strigger->String().Data(),"ALL",srun->String().Atoi()));
+      ULong64_t n = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
+                                                    strigger->String().Data(),"ALL",srun->String().Atoi())));
 
       details += TString::Format("\n%50s %10lld",strigger->String().Data(),n);
       
 
-      ULong64_t nps = fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
-                                                      strigger->String().Data(),"PSALL",srun->String().Atoi()));
+      ULong64_t nps = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
+                                                      strigger->String().Data(),"PSALL",srun->String().Atoi())));
 
       if ( doPS )
       {
@@ -3175,11 +3175,11 @@ void AliAnalysisMuMu::GetMBR(Int_t runNumber, const char* eventSelection, Double
   error = 0.0;
   if ( strlen(eventSelection) > 0 )
   {
-    ULong64_t a = fCounterCollection->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD/event:%s/run:%d",
-                                                  eventSelection,runNumber));
+    ULong64_t a = TMath::Nint(fCounterCollection->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD/event:%s/run:%d",
+                                                  eventSelection,runNumber)));
     
-    ULong64_t b = fCounterCollection->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD&0MUL/event:%s/run:%d",
-                                                  eventSelection,runNumber));
+    ULong64_t b = TMath::Nint(fCounterCollection->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD&0MUL/event:%s/run:%d",
+                                                  eventSelection,runNumber)));
     
     value = b > 0 ? a/b : 0;
     error = value*AliAnalysisMuMuResult::ErrorAB(a,TMath::Sqrt(a),b,TMath::Sqrt(b));

@@ -519,6 +519,10 @@ fMother(0x0),
 fKeys(0x0),
 fWeight(rhs.fWeight),
 fRebin(rhs.fRebin),
+fTriggerClass(rhs.fTriggerClass),
+fEventSelection(rhs.fEventSelection),
+fPairSelection(rhs.fPairSelection),
+fCentralitySelection(rhs.fCentralitySelection),
 fAlias()
 {
   /// copy ctor
@@ -2101,7 +2105,7 @@ Long64_t AliAnalysisMuMuResult::Merge(TCollection* list)
   Double_t nofTriggers = fNofTriggers*thisWeight;
   Double_t nofRuns = fNofRuns*thisWeight;
   
-  fNofRuns *= thisWeight;
+  fNofRuns = TMath::Nint(fNofRuns*thisWeight);
   
   while ( ( currObj = next() ) )
   {
@@ -2121,8 +2125,8 @@ Long64_t AliAnalysisMuMuResult::Merge(TCollection* list)
   }
   
   thisWeight/= sumOfWeights;
-  fNofRuns = nofRuns/sumOfWeights;
-  fNofTriggers = nofTriggers/sumOfWeights;
+  fNofRuns = TMath::Nint(nofRuns/sumOfWeights);
+  fNofTriggers = TMath::Nint(nofTriggers/sumOfWeights);
   fWeight /= sumOfWeights;
   
   AliInfo(Form("thisWeight=%e sumOfWeight=%8.2f noftriggers=%e weight=%e",thisWeight,sumOfWeights,1.0*fNofTriggers,fWeight));
@@ -2448,7 +2452,7 @@ void AliAnalysisMuMuResult::SetNofInputParticles(const TH1& hminv)
     
     if ( n > 0 )
     {
-      SetNofInputParticles(particleNames[i],n);
+      SetNofInputParticles(particleNames[i],TMath::Nint(n));
     }
   }
 }
