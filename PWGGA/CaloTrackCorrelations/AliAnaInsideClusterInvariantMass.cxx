@@ -80,14 +80,6 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   // Init array of histograms
   for(Int_t i = 0; i < 8; i++)
   {
-    fhMassAfterCutsNLocMax1[i] = 0;
-    fhMassAfterCutsNLocMax2[i] = 0;
-    fhMassAfterCutsNLocMaxN[i] = 0;
-    
-    fhSplitEFractionAfterCutsNLocMax1[i] = 0 ;
-    fhSplitEFractionAfterCutsNLocMax2[i] = 0 ;
-    fhSplitEFractionAfterCutsNLocMaxN[i] = 0 ;
-    
     for(Int_t j = 0; j < 2; j++)
     {
       fhMassNLocMax1[i][j]  = 0;
@@ -168,6 +160,14 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhAsymNLocMax1 [i][j] = 0;
       fhAsymNLocMax2 [i][j] = 0;
       fhAsymNLocMaxN [i][j] = 0;
+      
+      fhMassAfterCutsNLocMax1[i][j] = 0;
+      fhMassAfterCutsNLocMax2[i][j] = 0;
+      fhMassAfterCutsNLocMaxN[i][j] = 0;
+      
+      fhSplitEFractionAfterCutsNLocMax1[i][j] = 0 ;
+      fhSplitEFractionAfterCutsNLocMax2[i][j] = 0 ;
+      fhSplitEFractionAfterCutsNLocMaxN[i][j] = 0 ;
     }
     
     for(Int_t jj = 0; jj < 4; jj++)
@@ -408,53 +408,49 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhMassNLocMaxN[i][j]->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassNLocMaxN[i][j]) ;
      
-      if(j==0)
-      {
-        fhMassAfterCutsNLocMax1[i]     = new TH2F(Form("hMassAfterCutsNLocMax1%s",pname[i].Data()),
-                                                 Form("Mass vs E, %s, for N Local max = 1, m02 and asy cut",ptype[i].Data()),
-                                                 nptbins,ptmin,ptmax,mbins,mmin,mmax);
-        fhMassAfterCutsNLocMax1[i]   ->SetYTitle("Mass (MeV/c^{2})");
-        fhMassAfterCutsNLocMax1[i]   ->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMassAfterCutsNLocMax1[i]) ;
-        
-        fhMassAfterCutsNLocMax2[i]     = new TH2F(Form("hMassAfterCutsNLocMax2%s",pname[i].Data()),
-                                                    Form("Mass vs E, %s, for N Local max = 2, asy cut",ptype[i].Data()),
-                                                    nptbins,ptmin,ptmax,mbins,mmin,mmax);
-        fhMassAfterCutsNLocMax2[i]   ->SetYTitle("Mass (MeV/c^{2})");
-        fhMassAfterCutsNLocMax2[i]   ->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMassAfterCutsNLocMax2[i]) ;
-        
-        
-        fhMassAfterCutsNLocMaxN[i]     = new TH2F(Form("hMassAfterCutsNLocMaxN%s",pname[i].Data()),
-                                                    Form("Mass vs E, %s, for N Local max > 2, asy cut",ptype[i].Data()),
-                                                    nptbins,ptmin,ptmax,mbins,mmin,mmax);
-        fhMassAfterCutsNLocMaxN[i]   ->SetYTitle("Mass (MeV/c^{2})");
-        fhMassAfterCutsNLocMaxN[i]   ->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMassAfterCutsNLocMaxN[i]) ;
-        
-        fhSplitEFractionAfterCutsNLocMax1[i]     = new TH2F(Form("hSplitEFractionAfterCutsNLocMax1%s",pname[i].Data()),
-                                                         Form("(E1+E2)/E_{cluster} vs E_{cluster} for N max  = 1, M02 and Asy cut on, %s",ptype[i].Data()),
-                                                         nptbins,ptmin,ptmax,120,0,1.2);
-        fhSplitEFractionAfterCutsNLocMax1[i]   ->SetXTitle("E_{cluster} (GeV)");
-        fhSplitEFractionAfterCutsNLocMax1[i]   ->SetYTitle("(E_{split1}+E_{split2})/E_{cluster}");
-        outputContainer->Add(fhSplitEFractionAfterCutsNLocMax1[i]) ;
-        
-        fhSplitEFractionAfterCutsNLocMax2[i]     = new TH2F(Form("hSplitEFractionAfterCutsNLocMax2%s",pname[i].Data()),
-                                                         Form("(E1+E2)/E_{cluster} vs E_{cluster} for N max  = 2, M02 and Asy cut on, %s",ptype[i].Data()),
-                                                         nptbins,ptmin,ptmax,120,0,1.2);
-        fhSplitEFractionAfterCutsNLocMax2[i]   ->SetXTitle("E_{cluster} (GeV)");
-        fhSplitEFractionAfterCutsNLocMax2[i]   ->SetYTitle("(E_{split1}+E_{split2})/E_{cluster}");
-        outputContainer->Add(fhSplitEFractionAfterCutsNLocMax2[i]) ;
-        
-        fhSplitEFractionAfterCutsNLocMaxN[i]    = new TH2F(Form("hSplitEFractionAfterCutsNLocMaxN%s",pname[i].Data()),
-                                                        Form("(E1+E2)/E_{cluster} vs E_{cluster} for N max  > 2, M02 and Asy cut on, %s",ptype[i].Data()),
-                                                        nptbins,ptmin,ptmax,120,0,1.2);
-        fhSplitEFractionAfterCutsNLocMaxN[i]   ->SetXTitle("E_{cluster} (GeV)");
-        fhSplitEFractionAfterCutsNLocMaxN[i]   ->SetYTitle("(E_{split1}+E_{split2})/E_{cluster}");
-        outputContainer->Add(fhSplitEFractionAfterCutsNLocMaxN[i]) ;
-
-        
-      }
+      fhMassAfterCutsNLocMax1[i][j]     = new TH2F(Form("hMassAfterCutsNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                   Form("Mass vs E, %s %s, for N Local max = 1, M02 and asy cut",ptype[i].Data(),sMatched[j].Data()),
+                                                   nptbins,ptmin,ptmax,mbins,mmin,mmax);
+      fhMassAfterCutsNLocMax1[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
+      fhMassAfterCutsNLocMax1[i][j]   ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhMassAfterCutsNLocMax1[i][j]) ;
+      
+      fhMassAfterCutsNLocMax2[i][j]     = new TH2F(Form("hMassAfterCutsNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                   Form("Mass vs E, %s %s, for N Local max = 2, M02 and asy cut",ptype[i].Data(),sMatched[j].Data()),
+                                                   nptbins,ptmin,ptmax,mbins,mmin,mmax);
+      fhMassAfterCutsNLocMax2[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
+      fhMassAfterCutsNLocMax2[i][j]   ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhMassAfterCutsNLocMax2[i][j]) ;
+      
+      
+      fhMassAfterCutsNLocMaxN[i][j]     = new TH2F(Form("hMassAfterCutsNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                   Form("Mass vs E, %s %s, for N Local max > 2, M02 and asy cut",ptype[i].Data(),sMatched[j].Data()),
+                                                   nptbins,ptmin,ptmax,mbins,mmin,mmax);
+      fhMassAfterCutsNLocMaxN[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
+      fhMassAfterCutsNLocMaxN[i][j]   ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhMassAfterCutsNLocMaxN[i][j]) ;
+      
+      fhSplitEFractionAfterCutsNLocMax1[i][j]     = new TH2F(Form("hSplitEFractionAfterCutsNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                             Form("(E1+E2)/E_{cluster} vs E_{cluster} for N max  = 1, M02 and Asy cut on, %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                                             nptbins,ptmin,ptmax,120,0,1.2);
+      fhSplitEFractionAfterCutsNLocMax1[i][j]   ->SetXTitle("E_{cluster} (GeV)");
+      fhSplitEFractionAfterCutsNLocMax1[i][j]   ->SetYTitle("(E_{split1}+E_{split2})/E_{cluster}");
+      outputContainer->Add(fhSplitEFractionAfterCutsNLocMax1[i][j]) ;
+      
+      fhSplitEFractionAfterCutsNLocMax2[i][j]     = new TH2F(Form("hSplitEFractionAfterCutsNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                             Form("(E1+E2)/E_{cluster} vs E_{cluster} for N max  = 2, M02 and Asy cut on, %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                                             nptbins,ptmin,ptmax,120,0,1.2);
+      fhSplitEFractionAfterCutsNLocMax2[i][j]   ->SetXTitle("E_{cluster} (GeV)");
+      fhSplitEFractionAfterCutsNLocMax2[i][j]   ->SetYTitle("(E_{split1}+E_{split2})/E_{cluster}");
+      outputContainer->Add(fhSplitEFractionAfterCutsNLocMax2[i][j]) ;
+      
+      fhSplitEFractionAfterCutsNLocMaxN[i][j]    = new TH2F(Form("hSplitEFractionAfterCutsNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                            Form("(E1+E2)/E_{cluster} vs E_{cluster} for N max  > 2, M02 and Asy cut on, %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                                            nptbins,ptmin,ptmax,120,0,1.2);
+      fhSplitEFractionAfterCutsNLocMaxN[i][j]   ->SetXTitle("E_{cluster} (GeV)");
+      fhSplitEFractionAfterCutsNLocMaxN[i][j]   ->SetYTitle("(E_{split1}+E_{split2})/E_{cluster}");
+      outputContainer->Add(fhSplitEFractionAfterCutsNLocMaxN[i][j]) ;
+      
       
       fhMassM02NLocMax1[i][j]  = new TH2F(Form("hMassM02NLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
                                           Form("Invariant mass of splitted cluster with NLM=1, #lambda_{0}^{2}, E > 12 GeV,%s %s",ptype[i].Data(),sMatched[j].Data()),
@@ -744,7 +740,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       }
       
       fhM02Pi0NLocMax1[i][j]     = new TH2F(Form("hM02Pi0NLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 1",
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] GeV/c^{2} %s, for N Local max = 1",
                                                 GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02Pi0NLocMax1[i][j]   ->SetYTitle("#lambda_{0}^{2}");
@@ -752,7 +748,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhM02Pi0NLocMax1[i][j]) ; 
       
       fhM02EtaNLocMax1[i][j]     = new TH2F(Form("hM02EtaNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 1",
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 1",
                                                 GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02EtaNLocMax1[i][j]   ->SetYTitle("#lambda_{0}^{2}");
@@ -760,7 +756,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhM02EtaNLocMax1[i][j]) ; 
       
       fhM02ConNLocMax1[i][j]    = new TH2F(Form("hM02ConNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                          Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 1",
+                                          Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 1",
                                                GetCaloPID()->GetPhotonMinMass(),GetCaloPID()->GetPhotonMaxMass(),ptype[i].Data()),
                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02ConNLocMax1[i][j]   ->SetYTitle("#lambda_{0}^{2}");
@@ -768,7 +764,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhM02ConNLocMax1[i][j]) ; 
       
       fhM02Pi0NLocMax2[i][j]     = new TH2F(Form("hM02Pi0NLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 2",
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] GeV/c^{2} %s, for N Local max = 2",
                                                 GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02Pi0NLocMax2[i][j]   ->SetYTitle("#lambda_{0}^{2}");
@@ -776,7 +772,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhM02Pi0NLocMax2[i][j]) ; 
       
       fhM02EtaNLocMax2[i][j]     = new TH2F(Form("hM02EtaNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 2",
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 2",
                                                GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02EtaNLocMax2[i][j]   ->SetYTitle("#lambda_{0}^{2}");
@@ -784,7 +780,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhM02EtaNLocMax2[i][j]) ;
       
       fhM02ConNLocMax2[i][j]    = new TH2F(Form("hM02ConNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                          Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 2",
+                                          Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 2",
                                                GetCaloPID()->GetPhotonMinMass(),GetCaloPID()->GetPhotonMaxMass(),ptype[i].Data()),
                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02ConNLocMax2[i][j]   ->SetYTitle("#lambda_{0}^{2}");
@@ -792,7 +788,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhM02ConNLocMax2[i][j]) ; 
       
       fhM02Pi0NLocMaxN[i][j]     = new TH2F(Form("hM02Pi0NLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max > 2",
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] GeV/c^{2} %s, for N Local max > 2",
                                                 GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02Pi0NLocMaxN[i][j]   ->SetYTitle("#lambda_{0}^{2}");
@@ -800,7 +796,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhM02Pi0NLocMaxN[i][j]) ; 
       
       fhM02EtaNLocMaxN[i][j]     = new TH2F(Form("hM02EtaNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max > 2", 
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max > 2",
                                                 GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02EtaNLocMaxN[i][j]   ->SetYTitle("#lambda_{0}^{2}");
@@ -817,68 +813,68 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
             
       
       fhMassPi0NLocMax1[i][j]     = new TH2F(Form("hMassPi0NLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 1",
+                                           Form("Mass vs E for mass range [%2.2f-%2.2f] GeV/c^{2} %s, for N Local max = 1",
                                                 GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,mbins,mmin,mmax); 
-      fhMassPi0NLocMax1[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassPi0NLocMax1[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
       fhMassPi0NLocMax1[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassPi0NLocMax1[i][j]) ; 
 
       
       fhMassEtaNLocMax1[i][j]     = new TH2F(Form("hMassEtaNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 1",
+                                           Form("Mass vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 1",
                                                 GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,mbins,mmin,mmax); 
-      fhMassEtaNLocMax1[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassEtaNLocMax1[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
       fhMassEtaNLocMax1[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassEtaNLocMax1[i][j]) ; 
       
       fhMassConNLocMax1[i][j]    = new TH2F(Form("hMassConNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                          Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 1",
+                                          Form("Mass vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 1",
                                                GetCaloPID()->GetPhotonMinMass(),GetCaloPID()->GetPhotonMaxMass(),ptype[i].Data()),
                                           nptbins,ptmin,ptmax,mbins,mmin,mmax); 
-      fhMassConNLocMax1[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassConNLocMax1[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
       fhMassConNLocMax1[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassConNLocMax1[i][j]) ; 
       
       fhMassPi0NLocMax2[i][j]     = new TH2F(Form("hMassPi0NLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 2",
+                                           Form("Mass vs E for mass range [%2.2f-%2.2f] GeV/c^{2} %s, for N Local max = 2",
                                                 GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,mbins,mmin,mmax); 
-      fhMassPi0NLocMax2[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassPi0NLocMax2[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
       fhMassPi0NLocMax2[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassPi0NLocMax2[i][j]) ; 
       
       
       fhMassEtaNLocMax2[i][j]     = new TH2F(Form("hMassEtaNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 2",
+                                           Form("Mass vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 2",
                                                 GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,mbins,mmin,mmax); 
-      fhMassEtaNLocMax2[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassEtaNLocMax2[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
       fhMassEtaNLocMax2[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassEtaNLocMax2[i][j]) ; 
       
       fhMassConNLocMax2[i][j]    = new TH2F(Form("hMassConNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                          Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 2",
+                                          Form("Mass vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 2",
                                                GetCaloPID()->GetPhotonMinMass(),GetCaloPID()->GetPhotonMaxMass(),ptype[i].Data()),
                                           nptbins,ptmin,ptmax,mbins,mmin,mmax); 
-      fhMassConNLocMax2[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassConNLocMax2[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
       fhMassConNLocMax2[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassConNLocMax2[i][j]) ; 
       
       fhMassPi0NLocMaxN[i][j]     = new TH2F(Form("hMassPi0NLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max > 2",
+                                           Form("Mass vs E for mass range [%2.2f-%2.2f] GeV/c^{2} %s, for N Local max > 2",
                                                 GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,mbins,mmin,mmax); 
-      fhMassPi0NLocMaxN[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassPi0NLocMaxN[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
       fhMassPi0NLocMaxN[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassPi0NLocMaxN[i][j]) ; 
       
       fhMassEtaNLocMaxN[i][j]     = new TH2F(Form("hMassEtaNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max > 2", 
+                                           Form("Mass vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max > 2", 
                                                 GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,mbins,mmin,mmax); 
-      fhMassEtaNLocMaxN[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassEtaNLocMaxN[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
       fhMassEtaNLocMaxN[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassEtaNLocMaxN[i][j]) ; 
       
@@ -886,13 +882,13 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
                                           Form("Mass vs E for mass range [%2.2f-%2.2f], %s, for N Local max > 2",
                                                GetCaloPID()->GetPhotonMinMass(),GetCaloPID()->GetPhotonMaxMass(),ptype[i].Data()),
                                           nptbins,ptmin,ptmax,mbins,mmin,mmax); 
-      fhMassConNLocMaxN[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassConNLocMaxN[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
       fhMassConNLocMaxN[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassConNLocMaxN[i][j]) ; 
       
       
       fhAsyPi0NLocMax1[i][j]     = new TH2F(Form("hAsyPi0NLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 1",
+                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] GeV/c^{2} %s, for N Local max = 1",
                                                  GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                             nptbins,ptmin,ptmax,mbins,mmin,mmax); 
       fhAsyPi0NLocMax1[i][j]   ->SetYTitle("Asymmetry");
@@ -900,7 +896,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhAsyPi0NLocMax1[i][j]) ; 
       
       fhAsyEtaNLocMax1[i][j]     = new TH2F(Form("hAsyEtaNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 1",
+                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 1",
                                                  GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                             nptbins,ptmin,ptmax,mbins,mmin,mmax); 
       fhAsyEtaNLocMax1[i][j]   ->SetYTitle("Asymmetry");
@@ -908,7 +904,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhAsyEtaNLocMax1[i][j]) ; 
       
       fhAsyConNLocMax1[i][j]    = new TH2F(Form("hAsyConNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("Asymmetry vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 1",
+                                           Form("Asymmetry vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 1",
                                                 GetCaloPID()->GetPhotonMinMass(),GetCaloPID()->GetPhotonMaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,mbins,mmin,mmax); 
       fhAsyConNLocMax1[i][j]   ->SetYTitle("Asymmetry");
@@ -916,7 +912,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhAsyConNLocMax1[i][j]) ; 
       
       fhAsyPi0NLocMax2[i][j]     = new TH2F(Form("hAsyPi0NLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 2",
+                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] GeV/c^{2} %s, for N Local max = 2",
                                                  GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                             nptbins,ptmin,ptmax,mbins,mmin,mmax); 
       fhAsyPi0NLocMax2[i][j]   ->SetYTitle("Asymmetry");
@@ -924,7 +920,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhAsyPi0NLocMax2[i][j]) ; 
       
       fhAsyEtaNLocMax2[i][j]     = new TH2F(Form("hAsyEtaNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 2",
+                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 2",
                                                  GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                             nptbins,ptmin,ptmax,mbins,mmin,mmax); 
       fhAsyEtaNLocMax2[i][j]   ->SetYTitle("Asymmetry");
@@ -932,7 +928,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhAsyEtaNLocMax2[i][j]) ; 
       
       fhAsyConNLocMax2[i][j]    = new TH2F(Form("hAsyConNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("Asymmetry vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 2",
+                                           Form("Asymmetry vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max = 2",
                                                 GetCaloPID()->GetPhotonMinMass(),GetCaloPID()->GetPhotonMaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,mbins,mmin,mmax); 
       fhAsyConNLocMax2[i][j]   ->SetYTitle("Asymmetry");
@@ -940,7 +936,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhAsyConNLocMax2[i][j]) ; 
       
       fhAsyPi0NLocMaxN[i][j]     = new TH2F(Form("hAsyPi0NLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max > 2",
+                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] GeV/c^{2} %s, for N Local max > 2",
                                                  GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                             nptbins,ptmin,ptmax,mbins,mmin,mmax); 
       fhAsyPi0NLocMaxN[i][j]   ->SetYTitle("Asymmetry");
@@ -948,7 +944,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhAsyPi0NLocMaxN[i][j]) ; 
       
       fhAsyEtaNLocMaxN[i][j]     = new TH2F(Form("hAsyEtaNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max > 2", 
+                                            Form("Asymmetry vs E for mass range [%2.2f-%2.2f] GeV/c^{2}, %s, for N Local max > 2",
                                                  GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                             nptbins,ptmin,ptmax,mbins,mmin,mmax); 
       fhAsyEtaNLocMaxN[i][j]   ->SetYTitle("Asymmetry");
@@ -1877,6 +1873,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       fhAsymNLocMax1[0][matched]->Fill(en,asym );
       
       // Effect of cuts in mass histograms
+
       if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum() && !matched)
       {
         fhMassSplitECutNLocMax1->Fill(en,mass );
@@ -1884,15 +1881,17 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhMassM02CutNLocMax1->Fill(en,mass);
           fhAsymM02CutNLocMax1->Fill(en,asym );
-          if(asyOK) fhMassAfterCutsNLocMax1[0]->Fill(en,mass);
         } // m02
       } // split frac
       
-      if(m02OK && asyOK && !matched)
+      if(m02OK && asyOK)
       {
-        fhSplitEFractionAfterCutsNLocMax1[0]->Fill(en,splitFrac);
-        if(IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
+        fhSplitEFractionAfterCutsNLocMax1[0][matched]->Fill(en,splitFrac);
+        if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum()) fhMassAfterCutsNLocMax1[0][matched]->Fill(en,mass);
+        
+        if(!matched && IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
         {
+          
           fhMCGenFracAfterCutsNLocMax1MCPi0      ->Fill(en   ,  efrac     );
           fhMCGenSplitEFracAfterCutsNLocMax1MCPi0->Fill(en   ,  efracSplit);
         }
@@ -1904,11 +1903,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if( en > ecut ) 
         fhAnglePairMassNLocMax1[matched]->Fill(mass,angle);
       }
-      
-      if(asyOK && m02OK)
-      {
-      }
-      
+            
       if     (pidTag==AliCaloPID::kPhoton) { fhM02ConNLocMax1[0][matched]->Fill(en,l0); fhMassConNLocMax1[0][matched]->Fill(en,mass);  fhAsyConNLocMax1[0][matched]->Fill(en,asym); }
       else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0NLocMax1[0][matched]->Fill(en,l0); fhMassPi0NLocMax1[0][matched]->Fill(en,mass);  fhAsyPi0NLocMax1[0][matched]->Fill(en,asym); }
       else if(pidTag==AliCaloPID::kEta)    { fhM02EtaNLocMax1[0][matched]->Fill(en,l0); fhMassEtaNLocMax1[0][matched]->Fill(en,mass);  fhAsyEtaNLocMax1[0][matched]->Fill(en,asym); }
@@ -1932,15 +1927,17 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhMassM02CutNLocMax2->Fill(en,mass);
           fhAsymM02CutNLocMax2->Fill(en,asym );
-          if(asyOK) fhMassAfterCutsNLocMax2[0]->Fill(en,mass);
         } // m02
       } // split frac
       
-      if(m02OK && asyOK && !matched)
+      if(m02OK && asyOK)
       {
-        fhSplitEFractionAfterCutsNLocMax2[0]->Fill(en,splitFrac);
-        if(IsDataMC()  && fFillMCFractionHisto && mcindex==kmcPi0)
+        fhSplitEFractionAfterCutsNLocMax2[0][matched]->Fill(en,splitFrac);
+        if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum()) fhMassAfterCutsNLocMax2[0][matched]->Fill(en,mass);
+        
+        if(!matched && IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
         {
+          
           fhMCGenFracAfterCutsNLocMax2MCPi0      ->Fill(en   ,  efrac     );
           fhMCGenSplitEFracAfterCutsNLocMax2MCPi0->Fill(en   ,  efracSplit);
         }
@@ -1976,15 +1973,17 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhMassM02CutNLocMaxN->Fill(en,mass);
           fhAsymM02CutNLocMaxN->Fill(en,asym );
-          if(asyOK) fhMassAfterCutsNLocMaxN[0]->Fill(en,mass);
         } // m02
       } // split frac
       
-      if(m02OK && asyOK && !matched)
+      if(m02OK && asyOK)
       {
-        fhSplitEFractionAfterCutsNLocMaxN[0]->Fill(en,splitFrac);
-        if(IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
+        fhSplitEFractionAfterCutsNLocMaxN[0][matched]->Fill(en,splitFrac);
+        if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum()) fhMassAfterCutsNLocMaxN[0][matched]->Fill(en,mass);
+        
+        if(!matched && IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
         {
+          
           fhMCGenFracAfterCutsNLocMaxNMCPi0      ->Fill(en   ,  efrac     );
           fhMCGenSplitEFracAfterCutsNLocMaxNMCPi0->Fill(en   ,  efracSplit);
         }
@@ -2017,11 +2016,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassNLocMax1[mcindex][matched]->Fill(en,mass);
         fhAsymNLocMax1[mcindex][matched]->Fill(en,asym);
         
-        if(asyOK && m02OK && !matched)
+        if(asyOK && m02OK)
         {
-          fhSplitEFractionAfterCutsNLocMax1[mcindex]->Fill(en,splitFrac);
+          fhSplitEFractionAfterCutsNLocMax1[mcindex][matched]->Fill(en,splitFrac);
           if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum())
-            fhMassAfterCutsNLocMax1[mcindex]->Fill(en,mass);
+            fhMassAfterCutsNLocMax1[mcindex][matched]->Fill(en,mass);
         }
 
         if     (pidTag==AliCaloPID::kPhoton) { fhM02ConNLocMax1[mcindex][matched]->Fill(en,l0); fhMassConNLocMax1[mcindex][matched]->Fill(en,mass); fhAsyConNLocMax1[mcindex][matched]->Fill(en,asym); }
@@ -2033,11 +2032,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassNLocMax2[mcindex][matched]->Fill(en,mass);
         fhAsymNLocMax2[mcindex][matched]->Fill(en,asym);
         
-        if(asyOK && m02OK && !matched)
+        if(asyOK && m02OK)
         {
-          fhSplitEFractionAfterCutsNLocMax2[mcindex]->Fill(en,splitFrac);
+          fhSplitEFractionAfterCutsNLocMax2[mcindex][matched]->Fill(en,splitFrac);
           if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum())
-            fhMassAfterCutsNLocMax2[mcindex]->Fill(en,mass);
+            fhMassAfterCutsNLocMax2[mcindex][matched]->Fill(en,mass);
         }
         
         if     (pidTag==AliCaloPID::kPhoton) { fhM02ConNLocMax2[mcindex][matched]->Fill(en,l0); fhMassConNLocMax2[mcindex][matched]->Fill(en,mass); fhAsyConNLocMax2[mcindex][matched]->Fill(en,asym); }
@@ -2050,11 +2049,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassNLocMaxN[mcindex][matched]->Fill(en,mass);
         fhAsymNLocMaxN[mcindex][matched]->Fill(en,asym);
         
-        if(asyOK && m02OK && !matched)
+        if(asyOK && m02OK)
         {
-          fhSplitEFractionAfterCutsNLocMaxN[mcindex]->Fill(en,splitFrac);
+          fhSplitEFractionAfterCutsNLocMaxN[mcindex][matched]->Fill(en,splitFrac);
           if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum())
-            fhMassAfterCutsNLocMaxN[mcindex]->Fill(en,mass);
+            fhMassAfterCutsNLocMaxN[mcindex][matched]->Fill(en,mass);
         }
         
         if     (pidTag==AliCaloPID::kPhoton) { fhM02ConNLocMaxN[mcindex][matched]->Fill(en,l0); fhMassConNLocMaxN[mcindex][matched]->Fill(en,mass); fhAsyConNLocMaxN[mcindex][matched]->Fill(en,asym); }
