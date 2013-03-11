@@ -881,34 +881,32 @@ bool AliFemtoKKTrackCut::IsKaonTOFNSigma(float mom, float nsigmaK)
 bool AliFemtoKKTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK)
 {
 
-
   if(mom<0.5)
     {
-	  if(TMath::Abs(nsigmaTPCK)<2.0)
-	   { 
-	   return true;
-	   } 
-	   else 
-	   {
-	   return false;
-	   }
+      if(TMath::Abs(nsigmaTPCK)<2.0)
+	{ 
+	  return true;
+	} 
+      else 
+	{
+	  return false;
+	}
     }
-    
-    
-   if(mom>=0.5)
+  
+  if(mom>=0.5)
     {
-         if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) 
-         {
-         return true;
-         }
-         else
-         {
-         return false;
-         }
+      if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) 
+	{
+	  return true;
+	}
+      else
+	{
+	  return false;
+	}
     }
     
 //   if(mom>1.5 || mom<0.15)return false;
-    
+  return false;
 
 }
 
