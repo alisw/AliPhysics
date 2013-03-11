@@ -44,6 +44,9 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   void         SetThreeParticleCorrelation(Bool_t threeParticleCorr) {fThreeParticleCorr = threeParticleCorr;}
   void         SetRejectCorrupted(Bool_t rejectChunks, Int_t nTPC)   {fRejectChunks = rejectChunks; fNTPC = nTPC;}
 
+    void         SetCentralityMethod(TString centralityMethod)                   {fCentralityMethod = centralityMethod;}
+    
+    
  private:
 
   Int_t ReadEventESD         (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
@@ -184,6 +187,8 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
 
   TH1F       * fDPhiEventAxis[8];           // delta phi of associate tracks to event axis
   TH2F       * fDPhi1DPhi2[8];              // dPhi1 versus dPhi2: three particle correlation test
+    
+    TString fCentralityMethod;        //centrality pA
  
   AliAnalysisTaskMinijet(const AliAnalysisTaskMinijet&); // not implemented
   AliAnalysisTaskMinijet& operator=(const AliAnalysisTaskMinijet&); // not implemented
