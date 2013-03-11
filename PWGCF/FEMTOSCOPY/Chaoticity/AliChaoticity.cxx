@@ -2654,6 +2654,7 @@ void AliChaoticity::Exec(Option_t *)
 		    //
 		    if(qinv12MC > fQLowerCut && qinv13MC > fQLowerCut && qinv23MC > fQLowerCut){
 		      // does not really matter if MC or real data triplets are used to average 1/K3...but better to use umsmeared values
+		      WInput = MCWeight3D(kTRUE, 1, 35, firstQMC, secondQMC, thirdQMC);// pure 3-pion (lambda=1)
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd1TermsSumK3->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, WInput/K3);
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd2TermsSumK3->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, WInput/K3);
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd1TermsEnK3->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, WInput);
@@ -2730,11 +2731,12 @@ void AliChaoticity::Exec(Option_t *)
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2TermsSmeared->Fill(Qsum1v2, Qsum2, Qsum3v2, WInput);
 		      //
 		      if(qinv12MC > fQLowerCut && qinv13MC > fQLowerCut && qinv23MC > fQLowerCut){
-			// does not really matter if MC or real data triplets are used to average 1/K3...but better to use umsmeared values
+			// does not really matter if MC or real data triplets are used to average 1/K2...but better to use umsmeared values
 			Float_t InteractingQ=0;
-			if(part==1) {InteractingQ=qinv12;}// 12 from SE
-			else {InteractingQ=qinv13;}// 13 from SE
+			if(part==1) {InteractingQ=qinv12MC;}// 12 from SE
+			else {InteractingQ=qinv13MC;}// 13 from SE
 			Double_t K2 = FSICorrelationTherm2(+1,+1, InteractingQ);// K2 from Therminator source
+			WInput = MCWeight3D(kTRUE, jj, 35, firstQMC, secondQMC, thirdQMC);// pure 2-pion (lambda=1)
 			Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1TermsSumK2->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, WInput/K2);
 			Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2TermsSumK2->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, WInput/K2);
 			Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1TermsEnK2->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, WInput);
@@ -3650,6 +3652,7 @@ Float_t AliChaoticity::MCWeight3D(Bool_t SameCharge, Int_t term, Int_t dampIndex
   //Float_t radius = (3. + rIndex)/0.19733;//starts at 3fm. convert to GeV
   Float_t myDamp = fDampStart + (fDampStep)*dampIndex;
   Float_t fc = sqrt(myDamp);
+  
   if(SameCharge){// all three of the same charge
     Float_t coulCorr12 = FSICorrelationTherm2(+1,+1, q12);// K2
     Float_t coulCorr13 = FSICorrelationTherm2(+1,+1, q13);// K2
