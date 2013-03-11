@@ -171,10 +171,13 @@ class AliBalancePsi : public TObject {
   TH3D *GetQAHistResonancesRho() {return fHistResonancesRho;}
   TH3D *GetQAHistResonancesK0() {return fHistResonancesK0;}
   TH3D *GetQAHistResonancesLambda() {return fHistResonancesLambda;}
+  TH3D *GetQAHistQbefore() {return fHistQbefore;}
+  TH3D *GetQAHistQafter() {return fHistQafter;}
 
   void UseResonancesCut() {fResonancesCut = kTRUE;}
   void UseHBTCut() {fHBTCut = kTRUE;}
   void UseConversionCut() {fConversionCut = kTRUE;}
+  void UseMomentumDifferenceCut() {fQCut = kTRUE;}
 
  private:
   Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign); 
@@ -204,14 +207,17 @@ class AliBalancePsi : public TObject {
   TH3D *fHistResonancesBefore; // 3D histogram (Deta,Dphi,Invmass) before resonance cuts
   TH3D *fHistResonancesRho;    // 3D histogram (Deta,Dphi,Invmass) after removing rho 
   TH3D *fHistResonancesK0;     // 3D histogram (Deta,Dphi,Invmass) after removing rho, K0 
-  TH3D *fHistResonancesLambda; // 3D histogram (Deta,Dphi,Invmass) after removing rho, K0, and Lambda 
+  TH3D *fHistResonancesLambda; // 3D histogram (Deta,Dphi,Invmass) after removing rho, K0, and Lambda
+  TH3D *fHistQbefore; // Delta Eta vs. Delta Phi before cut on momentum difference
+  TH3D *fHistQafter; // Delta Eta vs. Delta Phi after cut on momentum difference
 
   Double_t fPsiInterval;// interval in Psi-phi1
   Double_t fDeltaEtaMax;// maximum delta eta for output THnSparse
 
   Bool_t fResonancesCut;//resonances cut
-  Bool_t fHBTCut;//HBT cut
+  Bool_t fHBTCut;//cut for two-track efficiency (like HBT group)
   Bool_t fConversionCut;//conversion cut
+  Bool_t fQCut;//cut on momentum difference to suppress femtoscopic effect correlations
   Bool_t fVertexBinning;//use vertex z binning in AliTHn
 
   TString fEventClass;

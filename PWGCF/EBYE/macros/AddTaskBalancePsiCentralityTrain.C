@@ -34,6 +34,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Bool_t bResonancesCut = kFALSE,
 						       Bool_t bHBTcut = kFALSE,
 						       Bool_t bConversionCut = kFALSE,
+						       Bool_t bMomentumDifferenceCut = kFALSE,
 						       Int_t AODfilterBit = 128,
 						       Bool_t bCentralTrigger = kFALSE,
 						       TString fileNameBase="AnalysisResults",
@@ -78,19 +79,19 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   Double_t deltaEtaMax=TMath::Abs(etaMax-etaMin);
 
   if (analysisType=="ESD"){
-    bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax,bVertexBinning);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax,bVertexBinning);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+    bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+    if(gRunMixing)    bfm = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
   }
   else if (analysisType=="AOD"){
-    bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax,bVertexBinning);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax,bVertexBinning);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+    bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+    if(gRunMixing)    bfm = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
   }
   else if (analysisType=="MC"){
-    bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax,bVertexBinning);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax,bVertexBinning);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+    bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+    if(gRunMixing)    bfm = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
   }
   else{
     ::Error("AddTaskBF", "analysis type NOT known.");
