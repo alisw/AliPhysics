@@ -487,7 +487,8 @@ void AliAnalysisTaskPi0Flow::SetEnablePHOSModule(int module, Bool_t enable)
 {
   if( module < 1 || 5 < module )
     AliFatal("PHOS Module must be between 1 and 5");
-  fModuleEnabled[module-1] = enable;
+  else
+    fModuleEnabled[module-1] = enable;
 }
 
 
