@@ -1,6 +1,13 @@
 #ifndef ALIMUONACCEFFSUBMITTER_H
 #define ALIMUONACCEFFSUBMITTER_H
 
+//
+// AliMuonAccEffSubmitter : a class to help submit Acc x Eff simulations
+// anchored to real runs for J/psi, upsilon, single muons, etc...
+//
+// author: Laurent Aphecetche (Subatech)
+//
+
 #include "TObject.h"
 #include "TString.h"
 #include "Riostream.h"
@@ -11,12 +18,12 @@ class TMap;
 class AliMuonAccEffSubmitter : public TObject
 {
 public:
-  AliMuonAccEffSubmitter();
+  AliMuonAccEffSubmitter(const char* generator="GenParamCustom");
 
   virtual ~AliMuonAccEffSubmitter();
 
   Bool_t SetRemoteDir(const char* dir, Bool_t create = kTRUE);
-  void SetLocalDir(const char* LocalDir) { fLocalDir = LocalDir; }
+  void SetLocalDir(const char* localdir) { fLocalDir = localdir; }
   Bool_t SetMergedDir(const char* dir, Bool_t create = kTRUE);
 
   void UseOCDBSnapshots(Bool_t flag);
@@ -41,8 +48,8 @@ public:
   UInt_t NofRuns() const;
   
   void SetRatio(Float_t ratio) { fRatio = ratio; }
-  void SetOCDBPath(const char* ocdbPath) { fOCDBPath = ocdbPath; }
-                   
+  void SetOCDBPath(const char* ocdbPath);
+  
   void MakeNofEventsPropToTriggerCount(const char* trigger="CMUL8-S-NOPF-MUON", Float_t ratio=1.0) { fReferenceTrigger = trigger; fRatio = ratio; }
   void MakeNofEventsFixed(Int_t nevents) { fFixedNofEvents = nevents; fReferenceTrigger=""; fRatio=0.0; }
   
@@ -92,8 +99,16 @@ public:
   
   void SetOCDBSnapshotDir(const char* dir);
 
+  Bool_t SetGenerator(const char* generator);
+  
+  TObjArray* GetVariables(const char* file) const;
+  
+  Bool_t IsValid() const { return fIsValid; }
+  
 private:
 
+  TString SnapshotDir() const { return fSnapshotDir; }
+  
   TString GetRemoteDir(const char* dir, Bool_t create);
 
   std::ostream* CreateJDLFile(const char* name) const;
@@ -113,45 +128,47 @@ private:
   
   void Output(std::ostream& out, const char* key, const TObjArray& values) const;
 
-  Bool_t ReplaceVars(const char* file);
+  Bool_t ReplaceVars(const char* file) const;
 
   TObjArray* TemplateFileList() const;
 
   TObjArray* LocalFileList() const;
   
-  Bool_t IsValid() const { return fIsValid; }
-  
   Bool_t HasVars(const char* localFile) const;
 
   void UpdateLocalFileList(Bool_t clearSnapshot=kFALSE);
   
-  TString SnapshotDir() const { return fSnapshotDir; }
+  Bool_t CheckCompilation(const char* file) const;
   
 private:
-  AliAnalysisTriggerScalers* fScalers;
-  TString fRemoteDir;
-  TString fReferenceTrigger;
-  Float_t fRatio;
-  Int_t fFixedNofEvents;
-  Int_t fMaxEventsPerChunk;
-  TString fLocalDir;
-  TString fOCDBPath;
-  TString fTemplateDir;
-  TString fPackageAliroot;
-  TString fPackageGeant3;
-  TString fPackageRoot;
-  TString fPackageApi;
-  TString fMergedDir;
-  Int_t fSplitMaxInputFileNumber;
-  Int_t fCompactMode;
-  Bool_t fShouldOverwriteFiles;
-  TMap* fVars;
-  TString fExternalConfig;
-  Bool_t fUseOCDBSnapshots;
-  Bool_t fIsValid;
-  mutable TObjArray* fTemplateFileList;
-  mutable TObjArray* fLocalFileList;
-  TString fSnapshotDir;
+  AliMuonAccEffSubmitter(const AliMuonAccEffSubmitter& rhs);
+  AliMuonAccEffSubmitter& operator=(const AliMuonAccEffSubmitter& rhs);
+  
+private:
+  AliAnalysisTriggerScalers* fScalers; // helper class used to handle the runlist and the scalers
+  TString fRemoteDir; // remote directory to used in alien
+  TString fReferenceTrigger; // reference trigger (if any) to be used to get the number of events to be used per run
+  Float_t fRatio; // ratio simulated events vs real events
+  Int_t fFixedNofEvents; // fixed number of events to be used per run
+  Int_t fMaxEventsPerChunk; // max events to generate per subjob
+  TString fLocalDir; // local directory
+  TString fOCDBPath; // OCDB path
+  TString fTemplateDir; // template directory
+  TString fPackageAliroot; // which aliroot package to use
+  TString fPackageGeant3; // which geant3 package to use
+  TString fPackageRoot; // which root package to use (for valid root,geant3,aliroot combinations see http://alimonitor.cern.ch/packages/)
+  TString fPackageApi; // which API package to use
+  TString fMergedDir; // merge directory
+  Int_t fSplitMaxInputFileNumber; // used for merging jdl
+  Int_t fCompactMode; // controls which outputs are kept (0=everything, 1=only aods)
+  Bool_t fShouldOverwriteFiles; // whether any copy (of template to local) is allowed to overwrite existing files
+  TMap* fVars; // map of the variables we can replace in template files
+  TString fExternalConfig; // path to an (optional) external config file
+  Bool_t fUseOCDBSnapshots; // whether to use OCDB snapshots or not
+  Bool_t fIsValid; // whether this object is valid (i.e. properly configured)
+  mutable TObjArray* fTemplateFileList; // list of template files
+  mutable TObjArray* fLocalFileList; // list of local files
+  TString fSnapshotDir; // directory for OCDB snapshots
   
   ClassDef(AliMuonAccEffSubmitter,1) // Helper class to submit AccxEff single particle simulations
 };

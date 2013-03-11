@@ -16,6 +16,7 @@
 #include "TMath.h"
 #include "TObjArray.h"
 #include "TObjString.h"
+#include <cassert>
 
 ClassImp(AliAnalysisMuMuBinning::Range)
 ClassImp(AliAnalysisMuMuBinning)
@@ -76,14 +77,14 @@ void AliAnalysisMuMuBinning::AddBin(const AliAnalysisMuMuBinning::Range& bin)
   /// add one bin
   AddBin(bin.Particle().Data(),bin.Type().Data(),
          bin.Xmin(),bin.Xmax(),
-         bin.Ymin(),bin.Ymax());
+         bin.Ymin(),bin.Ymax(),bin.Flavour());
 }
-                                    
+
 //______________________________________________________________________________
 void AliAnalysisMuMuBinning::AddBin(const char* particle, const char* type,
                                     Double_t xmin, Double_t xmax,
                                     Double_t ymin, Double_t ymax,
-                                    Bool_t warn)
+                                    const char* flavour)
 {
   /// Add a bin
   /// Note that particle and type are not case sensitive.
@@ -107,14 +108,11 @@ void AliAnalysisMuMuBinning::AddBin(const char* particle, const char* type,
     fBins->Add(new TObjString(sparticle),b);
   }
 
-  Range* r = new Range(sparticle.Data(),stype.Data(),xmin,xmax,ymin,ymax);
+  Range* r = new Range(sparticle.Data(),stype.Data(),xmin,xmax,ymin,ymax,flavour);
   
   if ( b->FindObject(r) )
   {
-    if (warn)
-    {
-      AliWarning("Trying to add an already existing bin. Not doing it.");      
-    }
+    AliDebug(1,"Trying to add an already existing bin. Not doing it.");
     delete r;
   }
   else
@@ -234,7 +232,7 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* particle) const
 
 
 //______________________________________________________________________________
-TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* particle, const char* type) const
+TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* particle, const char* type, const char* flavour) const
 {
   /// Get the list of bins for a given particle and given type
   /// The returned array must be deleted by the user
@@ -255,6 +253,8 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* particle, const
   TString stype(type);
   stype.ToUpper();
 
+  TString sflavour(flavour);
+  
   TObjArray* types = stype.Tokenize(",");
   TObjString* onetype;
   TIter nextType(types);
@@ -264,7 +264,8 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* particle, const
     nextType.Reset();
     while ( ( onetype = static_cast<TObjString*>(nextType()) ) )
     {
-      if ( r->Type() == onetype->String() )
+      if ( r->Type() == onetype->String() &&
+          ( ( sflavour.Length() > 0 && r->Flavour() == sflavour.Data() ) || sflavour.Length()==0 ) )
       {
         a->Add(r->Clone());
       }
@@ -284,23 +285,24 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* particle, const
 //______________________________________________________________________________
 void AliAnalysisMuMuBinning::CreateMesh(const char* particle,
                                         const char* type1, const char* type2,
+                                        const char* flavour,
                                         Bool_t remove12)
 {
   /// Create 2D bins from existing 1d ones of type1 and type2
-  TObjArray* a1 = CreateBinObjArray(particle,type1);
+  TObjArray* a1 = CreateBinObjArray(particle,type1,flavour);
   if (!a1)
   {
     AliError(Form("No bin for type %s. Done nothing.",type1));
     return;
   }
-  TObjArray* a2 = CreateBinObjArray(particle,type2);
+  TObjArray* a2 = CreateBinObjArray(particle,type2,flavour);
   if (!a2)
   {
     AliError(Form("No bin for type %s. Done nothing.",type2));
     return;
   }
   
-  TString meshType(Form("%s VS %s",type1,type2));
+  TString meshType(Form("%s VS %s - %s",type1,type2,flavour));
   
   for ( Int_t i1 = 0; i1 <= a1->GetLast(); ++i1 )
   {
@@ -310,7 +312,7 @@ void AliAnalysisMuMuBinning::CreateMesh(const char* particle,
     {
       Range* r2 = static_cast<Range*>(a2->At(i2));
       
-      AddBin(particle,meshType,r2->Xmin(),r2->Xmax(),r1->Xmin(),r1->Xmax(),kFALSE);
+      AddBin(particle,meshType,r2->Xmin(),r2->Xmax(),r1->Xmin(),r1->Xmax(),Form("%s VS %s",r1->Flavour().Data(),r2->Flavour().Data()));
     }
   }
   
@@ -487,11 +489,11 @@ Long64_t AliAnalysisMuMuBinning::Merge(TCollection* list)
 
 //______________________________________________________________________________
 AliAnalysisMuMuBinning*
-AliAnalysisMuMuBinning::Project(const char* particle, const char* type) const
+AliAnalysisMuMuBinning::Project(const char* particle, const char* type, const char* flavour) const
 {
   /// Create a sub-binning object with only the bins pertaining to (particle,type)
   
-  TObjArray* bins = CreateBinObjArray(particle,type);
+  TObjArray* bins = CreateBinObjArray(particle,type,flavour);
   if (!bins) return 0x0;
   AliAnalysisMuMuBinning* p = new AliAnalysisMuMuBinning;
   TIter next(bins);
@@ -501,9 +503,9 @@ AliAnalysisMuMuBinning::Project(const char* particle, const char* type) const
   
   while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
   {
-    if  (bin->Type()==stype)
+    assert  (bin->Type()==stype && bin->Flavour()==flavour);
     {
-      p->AddBin(particle,bin->Type(),bin->Xmin(),bin->Xmax(),bin->Ymin(),bin->Ymax());
+      p->AddBin(particle,bin->Type(),bin->Xmin(),bin->Xmax(),bin->Ymin(),bin->Ymax(),bin->Flavour().Data());
     }
   }
   
@@ -550,8 +552,11 @@ void AliAnalysisMuMuBinning::Print(Option_t* /*opt*/) const
 //______________________________________________________________________________
 AliAnalysisMuMuBinning::Range::Range(const char* particle, const char* type,
                                      Double_t xmin, Double_t xmax,
-                                     Double_t ymin, Double_t ymax)
-: TObject(), fParticle(particle), fType(type), fXmin(xmin), fXmax(xmax), fYmin(ymin), fYmax(ymax)
+                                     Double_t ymin, Double_t ymax,
+                                     const char* flavour)
+: TObject(), fParticle(particle), fType(type),
+  fXmin(xmin), fXmax(xmax), fYmin(ymin), fYmax(ymax),
+  fFlavour(flavour)
 {
   /// ctor
   fParticle.ToUpper();
@@ -567,7 +572,14 @@ TString AliAnalysisMuMuBinning::Range::AsString() const
   
   TString s;
   
-  s.Form("%s_%05.2f_%05.2f",Type().Data(),Xmin(),Xmax());
+  if ( fFlavour.Length() > 0 )
+  {
+    s.Form("%s_%s_%05.2f_%05.2f",Type().Data(),Flavour().Data(),Xmin(),Xmax());
+  }
+  else
+  {
+    s.Form("%s_%05.2f_%05.2f",Type().Data(),Xmin(),Xmax());
+  }
   
   if (Is2D())
   {
@@ -595,6 +607,12 @@ Int_t	AliAnalysisMuMuBinning::Range::Compare(const TObject* obj) const
   s = strcmp(Type().Data(),other->Type().Data());
   
   if (s) return s;
+  
+  s = strcmp(Flavour().Data(),other->Flavour().Data());
+  
+  if (s) return s;
+  
+  if ( IsNullObject() ) return 0;
   
   if ( Xmin() < other->Xmin() )
   {
@@ -691,6 +709,11 @@ void AliAnalysisMuMuBinning::Range::Print(Option_t* /*opt*/) const
   if (Is2D())
   {
     std::cout << Form(" ; %5.2f : %5.2f",Ymin(),Ymax());
+  }
+  
+  if (Flavour().Length()>0)
+  {
+    std::cout << " - " << Flavour().Data();
   }
   
   std::cout << "->" << AsString().Data() << std::endl;

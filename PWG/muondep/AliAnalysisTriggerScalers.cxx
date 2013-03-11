@@ -537,14 +537,14 @@ AliAnalysisTriggerScalers::GetTriggerScaler(Int_t runNumber, const char* level, 
   AliTriggerConfiguration* tc = static_cast<AliTriggerConfiguration*>(GetOCDBObject("GRP/CTP/Config",runNumber));
   AliTriggerRunScalers* trs = static_cast<AliTriggerRunScalers*>(GetOCDBObject("GRP/CTP/Scalers",runNumber));
   AliGRPObject* grp = static_cast<AliGRPObject*>(GetOCDBObject("GRP/GRP/Data",runNumber));
+
+  if (!tc || !trs || !grp) return 0x0;
   
   TString diCurrent(Form("L3:%5.0f;DIP:%5.0f [L3:%d;DIP:%d]",
                          grp->GetL3Current((AliGRPObject::Stats)0),
                          grp->GetDipoleCurrent((AliGRPObject::Stats)0),
                          grp->GetL3Polarity(),
                          grp->GetDipolePolarity()));
-  
-  if (!tc || !trs || !grp) return 0x0;
   
   const TObjArray& trClasses = tc->GetClasses();
   
@@ -1002,6 +1002,7 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
     if (!lumiB)
     {
       AliError(Form("Did not find lumiTrigger %s for run %09d",lumiTriggerClassName.Data(),runNumber));
+      continue;
     }
         
     Float_t pacCorrection(1.0);
@@ -1260,6 +1261,7 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
   /// - mu ( = -TMath::Log( 1 - P(0) ) where P(0) is the proba to have zero collisions in a bunch crossing)
   /// - pileupfactor = mu/(1-exp(-mu)) : the factor to apply to correct the cint1b count rate
   /// - vsnb = L0B/(NumberOfInteractingBunches*11245)
+  /// - NBCX = NumberOfInteractingBunches
   
   TString swhat(what);
   swhat.ToUpper();
@@ -1389,7 +1391,12 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
         UInt_t l2a = scaler->GetL2CA() - refl2a;
         UInt_t timelapse = seconds - reft;
         
-        if ( l0b <= 2 || ( l0a <= 2 && l0a != 0 ) || timelapse <= 9 ) continue;
+        if ( removeZeros && ( l0b <= 2 || ( l0a <= 2 && l0a != 0 ) || timelapse <= 9 ) )
+        {
+          AliInfo(Form("Skipping point for %s l0b %d l0a %d timelapse %d ts %s",
+                       triggerClassName,l0b,l0a,timelapse,ts.AsString()));
+          continue;
+        }
         
         reft = seconds;
         refl0b = scaler->GetLOCB();
@@ -1460,6 +1467,11 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
           value = l0b/(11245.0*numberOfInteractingBunches);
           error = -1.0; // FIXME
         }
+        else if ( swhat.Contains("NBCX"))
+        {
+          value = numberOfInteractingBunches;
+          error = 1.0; // FIXME          
+        }
         else
         {
           value = timelapse;
@@ -1468,7 +1480,7 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
         
         if ( ! swhat.Contains("OVER") && ! swhat.Contains("RATIO") &&
             ! swhat.Contains("MU") && ! swhat.Contains("PILEUPFACTOR") &&
-            ! swhat.Contains("RAW") )
+            ! swhat.Contains("RAW") & ! swhat.Contains("NBCX") )
         {
           value /= timelapse;
         }
@@ -1584,8 +1596,11 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerRatioEvolution(const char* trigger
 {
   /// Plots the evolution of one trigger ratio
   
-  TGraph* g1 = PlotTriggerEvolution(triggerClassName1,what1,kFALSE);
-  TGraph* g2 = PlotTriggerEvolution(triggerClassName2,what2,kFALSE);
+  Bool_t draw(kFALSE);
+  Bool_t removeZeros(kFALSE);
+  
+  TGraph* g1 = PlotTriggerEvolution(triggerClassName1,what1,draw,0x0,removeZeros);
+  TGraph* g2 = PlotTriggerEvolution(triggerClassName2,what2,draw,0x0,removeZeros);
   
   if (!g1 || !g2) return 0x0;
   

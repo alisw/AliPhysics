@@ -1,3 +1,58 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//
+// AliMuonAccEffSubmitter : a class to help submit Acc x Eff simulations
+// anchored to real runs for J/psi, upsilon, single muons, etc...
+//
+// This class is dealing with 3 different directories :
+//
+// - template directory ($ALICE_ROOT/PWG/muondep/AccEffTemplates) containing the
+//   basic template files to be used for a simuation. A template can contain
+//   some variables that will be replaced during during the copy from template
+//   to local dir
+//
+// - local directory, where the files from the template directory, are copied
+//   once the class has been configured properly (i.e. using the various Set, Use,
+//   etc... methods). Some other files (e.g. JDL ones) are generated from
+//   scratch and also copied into this directory.
+//   At this point one could(should) check the files, as they are the ones
+//   to be copied to the remote directory for the production
+//
+// - remote directory, the alien directory where the files will be copied
+//   (from the local directory) before the actual submission
+//
+// ==========================================================
+//
+// Basic usage
+//
+// AliMuonAccEffSubmitter a;
+// a.UseOCDBSnapshots(kFALSE);
+// a.SetRemoteDir("/alice/cern.ch/user/l/laphecet/Analysis/LHC13d/simjpsi/pp503z0");
+// a.ShouldOverwriteFiles(true);
+// a.MakeNofEventsPropToTriggerCount("CMUL7-B-NOPF-MUON");
+// a.SetVar("VAR_GENLIB_PARNAME","\"pp 5.03\"");
+// a.SetRunList(195682);
+// a.Print();
+// a.Run("test"); // will do everything but the submit
+// a.Submit(false); // actual submission
+//
+//
+// author: Laurent Aphecetche (Subatech
+//
+
 #include "AliMuonAccEffSubmitter.h"
 
 #include "AliAnalysisTriggerScalers.h"
@@ -8,6 +63,7 @@
 #include "TMap.h"
 #include "TMath.h"
 #include "TObjString.h"
+#include "TROOT.h"
 #include "TString.h"
 #include "TSystem.h"
 #include <vector>
@@ -18,12 +74,13 @@ namespace
 }
 
 //______________________________________________________________________________
-AliMuonAccEffSubmitter::AliMuonAccEffSubmitter()
+AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator)
 : TObject(),
 fScalers(0x0),
 fRemoteDir(""),
 fReferenceTrigger(""),
 fRatio(1.0),
+fFixedNofEvents(10000),
 fMaxEventsPerChunk(5000),
 fLocalDir(gSystem->pwd()),
 fOCDBPath("raw://"),
@@ -52,13 +109,30 @@ fSnapshotDir(fLocalDir)
     fIsValid = kFALSE;
   }
 
-  SetPackages("VO_ALICE@AliRoot::v5-03-Rev-09","VO_ALICE@GEANT3::v1-14-6","VO_ALICE@ROOT::v5-34-02-1");
+  SetPackages("VO_ALICE@AliRoot::v5-03-Rev-18","VO_ALICE@GEANT3::v1-14-8","VO_ALICE@ROOT::v5-34-05-1");
   
-//  SetVar("VAR_ENERGY","5.03");
-  SetVar("VAR_GENLIB_TYPE","AliGenMUONlib::kJpsi");
-  SetVar("VAR_GENLIB_PARNAME","\"pPb 5.03\"");
   SetVar("VAR_OCDB_PATH","\"raw://\"");
+
+  SetVar("VAR_GENPARAM_GENLIB_TYPE","AliGenMUONlib::kJpsi");
+  SetVar("VAR_GENPARAM_GENLIB_PARNAME","\"pPb 5.03\"");
+
+  SetVar("VAR_GENCORRHF_QUARK","5");
+  SetVar("VAR_GENCORRHF_ENERGY","5");
+
+  SetVar("VAR_GENPARAMCUSTOM_PDGPARTICLECODE","443");
+
+  // default values below are from J/psi p+Pb (from muon_calo pass)
+  SetVar("VAR_GENPARAMCUSTOM_Y_P0","4.08E5");
+  SetVar("VAR_GENPARAMCUSTOM_Y_P1","7.1E4");
+  
+  SetVar("VAR_GENPARAMCUSTOM_PT_P0","1.13E9");
+  SetVar("VAR_GENPARAMCUSTOM_PT_P1","18.05");
+  SetVar("VAR_GENPARAMCUSTOM_PT_P2","2.05");
+  SetVar("VAR_GENPARAMCUSTOM_PT_P3","3.34");
+
   UseOCDBSnapshots(kTRUE);
+  
+  SetGenerator(generator);
 }
 
 //______________________________________________________________________________
@@ -70,6 +144,36 @@ AliMuonAccEffSubmitter::~AliMuonAccEffSubmitter()
   delete fLocalFileList;
   delete fVars;
 }
+
+//______________________________________________________________________________
+Bool_t AliMuonAccEffSubmitter::CheckCompilation(const char* file) const
+{
+  /// Check whether file can be compiled or not
+  /// FIXME: use gSystem->TempFileName for tmpfile !
+  
+  Bool_t rv(kTRUE);
+  
+  TString sfile(gSystem->BaseName(file));
+  TString tmpfile(Form("tmpfile_%s",sfile.Data()));
+  
+  gSystem->Exec(Form("cp %s %s",file,tmpfile.Data()));
+  
+  ReplaceVars(tmpfile.Data());
+  
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/EVGEN");
+
+  if (gROOT->LoadMacro(Form("%s++",tmpfile.Data())))
+  {
+    AliError(Form("macro %s can not be compiled. Please check.",file));
+    rv = kFALSE;
+  }
+  
+  gSystem->Exec(Form("rm %s",tmpfile.Data()));
+  
+  return rv;
+}
+
 
 //______________________________________________________________________________
 Bool_t AliMuonAccEffSubmitter::CheckLocal() const
@@ -124,6 +228,7 @@ void AliMuonAccEffSubmitter::CleanRemote() const
 //______________________________________________________________________________
 Bool_t AliMuonAccEffSubmitter::CopyFile(const char* localFile)
 {
+  /// copy a local file to remote destination
   TString local;
   
   if ( gSystem->IsAbsoluteFileName(localFile) )
@@ -168,6 +273,7 @@ Bool_t AliMuonAccEffSubmitter::CopyFile(const char* localFile)
   
   if ( ok )
   {
+    AliDebug(1,Form("cp %s alien://%s",local.Data(),remote.Data()));
     return TFile::Cp(local.Data(),Form("alien://%s",remote.Data()));
   }
   else
@@ -213,6 +319,8 @@ Bool_t AliMuonAccEffSubmitter::CopyLocalFilesToRemote()
   
   if (!IsValid()) return kFALSE;
   
+  AliDebug(1,"");
+  
   if ( CheckRemoteDir() )
   {
     TString sdir(gSystem->ExpandPathName(LocalDir()));
@@ -238,6 +346,8 @@ Bool_t AliMuonAccEffSubmitter::CopyTemplateFilesToLocal()
   // copy (or generate) local files from the template ones
   
   if (!IsValid()) return kFALSE;
+
+  AliDebug(1,"");
 
   TIter next(TemplateFileList());
   TObjString* file;
@@ -313,6 +423,9 @@ Bool_t AliMuonAccEffSubmitter::CopyTemplateFilesToLocal()
 //______________________________________________________________________________
 std::ostream* AliMuonAccEffSubmitter::CreateJDLFile(const char* name) const
 {
+  /// Create a JDL file
+  AliDebug(1,"");
+
   TString jdl(Form("%s/%s",fLocalDir.Data(),name));
   
   if ( !ShouldOverwriteFiles() && !gSystem->AccessPathName(jdl.Data()) )
@@ -336,6 +449,11 @@ std::ostream* AliMuonAccEffSubmitter::CreateJDLFile(const char* name) const
 ///______________________________________________________________________________
 Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name)
 {
+  /// Create the JDL for merging jobs
+  /// FIXME: not checked !
+  
+  AliDebug(1,"");
+
   std::ostream* os = CreateJDLFile(name);
   
   if (!os)
@@ -405,6 +523,8 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name)
   /// Generate (locally) the JDL to perform the simulation+reco+aod filtering
   /// (to be then copied to the grid and finally submitted)
   
+  AliDebug(1,"");
+
   std::ostream* os = CreateJDLFile(name);
   
   if (!os)
@@ -482,6 +602,9 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name)
 //______________________________________________________________________________
 Bool_t AliMuonAccEffSubmitter::GetLastStage(const char* remoteDir) const
 {
+  /// Get the last staging phase already performed
+  /// FIXME : not checked !
+  
   Int_t n = 0, lastStage = 0;
   gSystem->Exec(Form("alien_ls -F %s | grep Stage_.*/ > __stage__", remoteDir));
   ifstream f("__stage__");
@@ -491,6 +614,45 @@ Bool_t AliMuonAccEffSubmitter::GetLastStage(const char* remoteDir) const
   while (n > 0) if (gSystem->Exec(Form("grep Stage_%d/ __stage__ 2>&1 >/dev/null", ++lastStage)) == 0) n--;
   gSystem->Exec("rm -f __stage__");
   return lastStage;
+}
+
+//______________________________________________________________________________
+TObjArray* AliMuonAccEffSubmitter::GetVariables(const char* file) const
+{
+  /// Find the variables in the file
+  
+  std::ifstream in(file);
+  char line[1024];
+  TObjArray* variables(0x0);
+  
+  while ( in.getline(line,1023,'\n') )
+  {
+    TString sline(line);
+    while (sline.Contains("VAR_") && !sline.BeginsWith("//") )
+    {
+      Int_t i1 = sline.Index("VAR_");
+      Int_t i2(i1);
+      
+      while ( ( i2 < sline.Length() ) && ( isalnum(sline[i2]) || sline[i2]=='_' ) ) ++i2;
+      
+      if (!variables)
+      {
+        variables = new TObjArray;
+        variables->SetOwner(kTRUE);
+      }
+      
+      TString var = sline(i1,i2-i1);
+      if ( !variables->FindObject(var) )
+      {
+        variables->Add(new TObjString(var));
+      }
+      sline.ReplaceAll(var,"");
+    }
+  }
+  
+  in.close();
+  
+  return variables;
 }
 
 //______________________________________________________________________________
@@ -538,6 +700,8 @@ Bool_t AliMuonAccEffSubmitter::MakeOCDBSnapshots()
   
   if (!fScalers) return kFALSE;
   
+  AliDebug(1,"");
+
   const std::vector<int>& runs = fScalers->GetRunList();
 
   Bool_t ok(kTRUE);
@@ -549,10 +713,11 @@ Bool_t AliMuonAccEffSubmitter::MakeOCDBSnapshots()
     TString ocdbSim(Form("%s/OCDB/%d/OCDB_sim.root",SnapshotDir().Data(),runNumber));
     TString ocdbRec(Form("%s/OCDB/%d/OCDB_rec.root",SnapshotDir().Data(),runNumber));
 
-    if ( !gSystem->AccessPathName(ocdbSim.Data()) && 
+    if ( !gSystem->AccessPathName(ocdbSim.Data()) &&
          !gSystem->AccessPathName(ocdbRec.Data()) )
     {
       AliWarning(Form("Local OCDB snapshots already there for run %d. Will not redo them. If you want to force them, delete them by hand !",runNumber));
+      continue;
     }
     else
     {
@@ -754,6 +919,8 @@ UInt_t AliMuonAccEffSubmitter::NofRuns() const
 void AliMuonAccEffSubmitter::Output(std::ostream& out, const char* key,
                                     const TObjArray& values) const
 {
+  /// output to ostream of key,{values} pair
+  
   out << key << " = ";
   
   Int_t n = values.GetEntries();
@@ -795,6 +962,8 @@ void AliMuonAccEffSubmitter::Output(std::ostream& out, const char* key, const ch
                                     const char* v5, const char* v6, const char* v7,
                                     const char* v8, const char* v9) const
 {
+  /// output to ostream
+  
   TObjArray values;
   values.SetOwner(kTRUE);
   
@@ -815,6 +984,8 @@ void AliMuonAccEffSubmitter::Output(std::ostream& out, const char* key, const ch
 //______________________________________________________________________________
 void AliMuonAccEffSubmitter::Print(Option_t* /*opt*/) const
 {
+  /// Printout
+  
   if (!IsValid())
   {
     std::cout << std::string(80,'*') << std::endl;
@@ -822,9 +993,14 @@ void AliMuonAccEffSubmitter::Print(Option_t* /*opt*/) const
     std::cout << std::string(80,'*') << std::endl;
   }
     
-  std::cout << "Template directory = " << fTemplateDir.Data() << std::endl;
-  std::cout << "Local    directory = " << fLocalDir.Data() << std::endl;
-  std::cout << "Remote   directory = " << fRemoteDir.Data() << std::endl;
+  std::cout << "Template  directory = " << fTemplateDir.Data() << std::endl;
+  std::cout << "Local     directory = " << fLocalDir.Data() << std::endl;
+  std::cout << "Remote    directory = " << fRemoteDir.Data() << std::endl;
+  
+  if ( fSnapshotDir != fLocalDir )
+  {
+    std::cout << "Snapshots directory = " << fSnapshotDir.Data() << std::endl;
+  }
   
   std::cout << "OCDB path = " << fOCDBPath.Data() << std::endl;
   
@@ -920,8 +1096,10 @@ Bool_t AliMuonAccEffSubmitter::RemoteFileExists(const char *lfn) const
 }
 
 //______________________________________________________________________________
-Bool_t AliMuonAccEffSubmitter::ReplaceVars(const char* file)
+Bool_t AliMuonAccEffSubmitter::ReplaceVars(const char* file) const
 {
+  /// Replace the variables (i.e. things starting by VAR_) found in file
+  
   std::ifstream in(file);
   char line[1024];
   TObjArray lines;
@@ -1053,6 +1231,9 @@ void AliMuonAccEffSubmitter::SetPackages(const char* aliroot,
                                          const char* geant3,
                                          const char* api)
 {
+  /// Set the packages to be used by the jobs
+  /// Must be a valid combination, see http://alimonitor.cern.ch/packages/
+  ///
   fPackageAliroot = aliroot;
   fPackageRoot = root;
   fPackageGeant3 = geant3;
@@ -1085,8 +1266,63 @@ TString AliMuonAccEffSubmitter::GetRemoteDir(const char* dir, Bool_t create)
 }
 
 //______________________________________________________________________________
+Bool_t AliMuonAccEffSubmitter::SetGenerator(const char* generator)
+{
+  // set the variable to select the generator macro in Config.C
+  
+  gSystem->Load("libEVGEN");
+    
+  fIsValid = kFALSE;
+  
+  TString generatorFile(Form("%s/%s.C",fTemplateDir.Data(),generator));
+  
+  Int_t nofMissingVariables(0);
+  
+  // first check we indeed have such a macro
+  if (!gSystem->AccessPathName(generatorFile.Data()))
+  {
+    TObjArray* variables = GetVariables(generatorFile.Data());
+    
+    TIter next(variables);
+    TObjString* var;
+    
+    while ( ( var = static_cast<TObjString*>(next())) )
+    {
+      if ( !fVars->GetValue(var->String()) )
+      {
+        ++nofMissingVariables;
+        AliError(Form("file %s expect the variable %s to be defined, but we've not defined it !",generatorFile.Data(),var->String().Data()));
+      }
+    }
+    
+    delete variables;
+    
+    if ( !nofMissingVariables )
+    {
+      if (CheckCompilation(generatorFile.Data()))
+      {
+        fIsValid = kTRUE;
+        SetVar("VAR_GENERATOR",Form("%s",generator));        
+        TemplateFileList()->Add(new TObjString(Form("%s.C",generator)));
+        return kTRUE;
+      }
+    }
+    else
+    {
+      return kFALSE;
+    }
+  }
+  else
+  {
+    AliError(Form("Can not work with the macro %s",generatorFile.Data()));
+  }
+  return kFALSE;
+}
+
+//______________________________________________________________________________
 Bool_t AliMuonAccEffSubmitter::SetMergedDir(const char* dir, Bool_t create)
 {
+  // Set the merged directory to be used
   fMergedDir = GetRemoteDir(dir,create);
   return (fMergedDir.Length()>0);
 }
@@ -1094,6 +1330,7 @@ Bool_t AliMuonAccEffSubmitter::SetMergedDir(const char* dir, Bool_t create)
 //______________________________________________________________________________
 Bool_t AliMuonAccEffSubmitter::SetRemoteDir(const char* dir, Bool_t create)
 {
+  // Set the remote directory to be used
   fRemoteDir = GetRemoteDir(dir,create);
   return (fIsValid = (fRemoteDir.Length()>0));
 }
@@ -1130,8 +1367,44 @@ void AliMuonAccEffSubmitter::SetRunList(int runNumber)
 }
 
 //______________________________________________________________________________
+void AliMuonAccEffSubmitter::SetOCDBPath(const char* ocdbPath)
+{
+  /// Sets the OCDB path to be used
+  
+  fOCDBPath = ocdbPath;
+  
+  if (fScalers)
+  {
+    // redefine trigger scalers to use the new ocdb path
+    AliAnalysisTriggerScalers* ts = new AliAnalysisTriggerScalers(fScalers->GetRunList(),
+                                                                  fOCDBPath.Data());
+    
+    delete fScalers;
+    fScalers = ts;
+  }
+}
+
+
+//______________________________________________________________________________
+void AliMuonAccEffSubmitter::SetOCDBSnapshotDir(const char* dir)
+{
+  // change the directory used for snapshot
+  
+  if (gSystem->AccessPathName(Form("%s/OCDB",dir)))
+  {
+    AliError(Form("Snapshot top directory (%s) should contain an OCDB subdir with runnumbers in there",dir));
+  }
+  else
+  {
+    fSnapshotDir = dir;
+  }
+}
+
+//______________________________________________________________________________
 Bool_t AliMuonAccEffSubmitter::SetVar(const char* varname, const char* value)
 {
+  /// Set a variable
+  
   TString s(varname);
   s.ToUpper();
   if (!s.BeginsWith("VAR_"))
@@ -1169,6 +1442,8 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
   
   if (!IsValid()) return 0;
   
+  AliDebug(1,"");
+
   gGrid->Cd(RemoteDir());
   
   if (!RemoteFileExists(RunJDLName()))
@@ -1316,6 +1591,8 @@ TObjArray* AliMuonAccEffSubmitter::TemplateFileList() const
 //______________________________________________________________________________
 void AliMuonAccEffSubmitter::UpdateLocalFileList(Bool_t clearSnapshots)
 {
+  /// Update the list of local files
+  
   if (!fScalers) return;
   
   if ( clearSnapshots )
@@ -1360,6 +1637,11 @@ void AliMuonAccEffSubmitter::UpdateLocalFileList(Bool_t clearSnapshots)
 //______________________________________________________________________________
 void AliMuonAccEffSubmitter::UseOCDBSnapshots(Bool_t flag)
 {
+  /// Whether or not to use OCDB snapshots
+  /// Using OCDB snapshots will speed-up both the sim and reco initialization
+  /// phases on each worker node, but takes time to produce...
+  /// So using them is not always a win-win...
+  
   fUseOCDBSnapshots = flag;
   if ( flag )
   {

@@ -50,7 +50,7 @@
 #include "TParameter.h"
 #include "TPaveText.h"
 #include "TROOT.h"
-#include "TStyle.h"
+#include "TStopwatch.h"
 #include "TStyle.h"
 #include "TSystem.h"
 #include <cassert>
@@ -62,19 +62,47 @@ ClassImp(AliAnalysisMuMu)
 
 TString AliAnalysisMuMu::fgOCDBPath("raw://");
 
-TString AliAnalysisMuMu::fgDefaultDimuonTriggers("CMUL7-B-NOPF-MUON,CMUL7-S-NOPF-ALLNOTRD,CMUL7-S-NOPF-MUON,CMUL8-S-NOPF-MUON,CMUL7-B-NOPF-ALLNOTRD,CMUU7-B-NOPF-ALLNOTRD,CMUU7-B-NOPF-MUON,CPBI1MUL-B-NOPF-MUON,CMULLO-B-NOPF-MUON");
+TString AliAnalysisMuMu::fgDefaultDimuonTriggers("CMUL7-B-NOPF-MUON");
 
-TString AliAnalysisMuMu::fgDefaultMuonTriggers("CMSL7-S-NOPF-MUON,CMSL7-S-NOPF-ALLNOTRD,CMSL8-S-NOPF-MUON,CMSL8-S-NOPF-ALLNOTRD,CMSL7-B-NOPF-MUON,CMUS1-B-NOPF-MUON,CMUS7-B-NOPF-MUON,CMSNGL-B-NOPF-MUON");
+//,CMUL7-S-NOPF-ALLNOTRD,CMUL7-S-NOPF-MUON,CMUL8-S-NOPF-MUON,CMUL7-B-NOPF-ALLNOTRD,CMUU7-B-NOPF-ALLNOTRD,CMUU7-B-NOPF-MUON,CPBI1MUL-B-NOPF-MUON,CMULLO-B-NOPF-MUON");
 
-TString AliAnalysisMuMu::fgDefaultMinbiasTriggers("CINT7-B-NOPF-ALLNOTRD,CINT7-S-NOPF-ALLNOTRD,CINT8-B-NOPF-ALLNOTRD,CINT8-S-NOPF-ALLNOTRD,CINT1-B-NOPF-ALLNOTRD,CPBI2_B1-B-NOPF-ALLNOTRD");
+TString AliAnalysisMuMu::fgDefaultMuonTriggers("CMSL7-S-NOPF-MUON");
 
-TString AliAnalysisMuMu::fgDefaultEventSelectionList("PSALL");
+//,CMSL7-S-NOPF-ALLNOTRD,CMSL8-S-NOPF-MUON,CMSL8-S-NOPF-ALLNOTRD,CMSL7-B-NOPF-MUON,CMUS1-B-NOPF-MUON,CMUS7-B-NOPF-MUON,CMSNGL-B-NOPF-MUON");
+
+TString AliAnalysisMuMu::fgDefaultMinbiasTriggers("CINT7-B-NOPF-ALLNOTRD");
+
+//,CINT7-S-NOPF-ALLNOTRD,CINT8-B-NOPF-ALLNOTRD,CINT8-S-NOPF-ALLNOTRD,CINT1-B-NOPF-ALLNOTRD,CPBI2_B1-B-NOPF-ALLNOTRD");
+
+TString AliAnalysisMuMu::fgDefaultEventSelectionList("PSALL"); // for real data, for simulation see AliAnalysisMuMu ctor
 
 TString AliAnalysisMuMu::fgDefaultPairSelectionList("pMATCHLOWRABSBOTH");
 
 TString AliAnalysisMuMu::fgDefaultCentralitySelectionList("PP");
 
+//TString AliAnalysisMuMu::fgDefaultFitTypeList("PSILOW:2,PSILOWalphaLow0.984nLow5.839alphaUp1.972nUp3.444:2,PSILOWMCTAILS:2");
+TString AliAnalysisMuMu::fgDefaultFitTypeList("PSILOWalphaLow0.984nLow5.839alphaUp1.972nUp3.444:2,PSILOWMCTAILS:2");
+
+TString AliAnalysisMuMu::fgDefaultEventSelectionForSimulations("ALL");
+TString AliAnalysisMuMu::fgDefaultDimuonTriggerForSimulations("CMULLO-B-NOPF-MUON");
+
 Bool_t AliAnalysisMuMu::fgIsCompactGraphs(kFALSE);
+
+//_____________________________________________________________________________
+TString First(const TString s)
+{
+  TString rv;
+  
+  TObjArray* tokens = s.Tokenize(",");
+  
+  if (!tokens) return rv;
+  
+  rv = static_cast<TObjString*>(tokens->First())->String();
+  
+  delete tokens;
+  
+  return rv;
+}
 
 //_____________________________________________________________________________
 TString FindTrigger(const AliMergeableCollection& mc,
@@ -125,7 +153,7 @@ TString FindTrigger(const AliMergeableCollection& mc,
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMu::AliAnalysisMuMu(const char* filename) : TObject(),
+AliAnalysisMuMu::AliAnalysisMuMu(const char* filename, const char* associatedSimFileName) : TObject(),
 fFilename(filename),
 fCounterCollection(0x0),
 fDimuonTriggers(fgDefaultDimuonTriggers),
@@ -134,14 +162,28 @@ fMinbiasTriggers(fgDefaultMinbiasTriggers),
 fEventSelectionList(fgDefaultEventSelectionList),
 fPairSelectionList(fgDefaultPairSelectionList),
 fCentralitySelectionList(fgDefaultCentralitySelectionList),
+fFitTypeList(fgDefaultFitTypeList),
 fBinning(0x0),
 fMergeableCollection(0x0),
 fRunNumbers(),
-fCorrectionPerRun(0x0)
+fCorrectionPerRun(0x0),
+fAssociatedSimulation(0x0)
 {
   // ctor
   
   GetCollections(fFilename,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
+  
+  if (IsSimulation())
+  {
+    SetEventSelectionList("ALL");
+    SetDimuonTriggerList("CMULLO-B-NOPF-MUON");
+    SetFitTypeList("PSI1:1,COUNTJPSI:1");
+  }
+  
+  if ( strlen(associatedSimFileName) )
+  {
+    fAssociatedSimulation = new AliAnalysisMuMu(associatedSimFileName);
+  }
 }
 
 //_____________________________________________________________________________
@@ -152,6 +194,7 @@ AliAnalysisMuMu::~AliAnalysisMuMu()
   delete fBinning;
   delete fMergeableCollection;
   delete fCorrectionPerRun;
+  delete fAssociatedSimulation;
 }
 
 //_____________________________________________________________________________
@@ -360,6 +403,14 @@ void AliAnalysisMuMu::CentralityCheck(const char* filelist)
   
 }
 
+//_____________________________________________________________________________
+void AliAnalysisMuMu::CleanAllSpectra()
+{
+  /// Delete all the spectra we may have
+
+  MC()->RemoveByType("AliAnalysisMuMuSpectra");
+  Update();
+}
 
 //_____________________________________________________________________________
 void AliAnalysisMuMu::Compact(TGraph& g)
@@ -983,36 +1034,123 @@ void AliAnalysisMuMu::DrawMinv(const char* type,
                                const char* trigger,
                                const char* eventType,
                                const char* pairCut,
-                               const char* centrality) const
+                               const char* centrality,
+                               const char* subresultname,
+                               const char* flavour) const
 {
   /// Draw minv spectra for binning of given type
   
   if (!MC() || !BIN()) return;
   
-  TObjArray* bins = BIN()->CreateBinObjArray(particle,type);
+  TObjArray* bins = BIN()->CreateBinObjArray(particle,type,flavour);
   if (!bins)
   {
     AliError(Form("Could not get %s bins",type));
     return;
   }
   
+  Double_t xmin(-1);
+  Double_t xmax(-1);
+  
+  TString sparticle(particle);
+  if ( sparticle=="PSI" )
+  {
+    xmin = 2;
+    xmax = 6;
+  }
+  
+  Int_t nx(1);
+  Int_t ny(1);
+  
+  Int_t n = bins->GetEntries();
+  
+  if ( n == 2 )
+  {
+    nx = 2;
+  }
+  else if ( n > 2 )
+  {
+    ny = TMath::Nint(TMath::Sqrt(n));
+    nx = n/ny;
+  }
+  
+  TString stype(type);
+  stype.ToUpper();
+  
+  TString spectraName(Form("/%s/%s/%s/%s/%s-%s-%s",eventType,trigger,centrality,pairCut,particle,stype.Data(),flavour));
+  
+  AliAnalysisMuMuSpectra* spectra = static_cast<AliAnalysisMuMuSpectra*>(MC()->GetObject(spectraName.Data()));
+  
+  AliDebug(1,Form("spectraName=%s spectra=%p",spectraName.Data(),spectra));
+
+  TObjArray* spectraBins(0x0);
+  if ( spectra )
+  {
+    spectraBins = spectra->Bins();
+  }
+  
+  TCanvas* c = new TCanvas;
+  c->Divide(nx,ny);
+  c->Draw();
+  gStyle->SetOptFit(1112);
+  
+  c->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)", "AliAnalysisMuMu",
+              (void*)this, "ExecuteCanvasEvent(Int_t,Int_t,Int_t,TObject*)");
+
+  
   TIter next(bins);
   AliAnalysisMuMuBinning::Range* r;
+  Int_t ci(0);
   
   while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
   {
     TString name(Form("/%s/%s/%s/%s/MinvUS%s",eventType,trigger,centrality,pairCut,r->AsString().Data()));
 
     AliDebug(1,name.Data());
-                 
+    
+    AliAnalysisMuMuResult* spectraBin(0x0);
+    
+    if ( spectraBins )
+    {
+      AliAnalysisMuMuResult* sr = static_cast<AliAnalysisMuMuResult*>(spectraBins->At(ci));
+      
+      spectraBin = sr->SubResult(subresultname);
+      
+      AliDebug(1,Form("spectraBin(%s)=%p",subresultname,spectraBin));
+    }
+    
     TH1* h = MC()->Histo(name.Data());
+    
+    if ( spectraBin )
+    {
+      h = spectraBin->Minv();
+    }
+    
     if (h)
     {
-      TString cname(name);
-      cname.ReplaceAll("/","_");
-      TCanvas* c = new TCanvas(cname.Data(),cname.Data());
-      c->SetLogy();
-      h->Draw("histe");
+      ++ci;
+      c->cd(ci);
+      gPad->SetLogy();
+      if (xmin>0)
+      {
+        h->GetXaxis()->SetRangeUser(xmin,xmax);
+      }
+      h->Draw("histes");
+      
+      TObject* f1 = h->GetListOfFunctions()->FindObject("fitTotal");
+      if (f1)
+      {
+        f1->Draw("same");
+      }
+      
+      gPad->Modified();
+      gPad->Update();
+      
+      TObject* stats = h->FindObject("stats");
+      if (stats)
+      {
+        stats->Draw("same");
+      }
     }
   }
   
@@ -1020,7 +1158,7 @@ void AliAnalysisMuMu::DrawMinv(const char* type,
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::DrawMinv(const char* type, const char* particle) const
+void AliAnalysisMuMu::DrawMinv(const char* type, const char* particle, const char* flavour, const char* subresultname) const
 {
   /// Draw minv spectra for binning of given type
 
@@ -1028,7 +1166,63 @@ void AliAnalysisMuMu::DrawMinv(const char* type, const char* particle) const
            First(DimuonTriggerList()).Data(),
            First(EventSelectionList()).Data(),
            First(PairSelectionList()).Data(),
-           First(CentralitySelectionList()).Data());
+           First(CentralitySelectionList()).Data(),
+           subresultname,
+           flavour);
+}
+
+//___________________________________________________________________
+void AliAnalysisMuMu::ExecuteCanvasEvent(Int_t event, Int_t /*px*/, Int_t /*py*/, TObject *sel)
+{
+  // Actions in reponse to mouse button events.
+  
+  TCanvas* c = static_cast<TCanvas*>(gTQSender);
+  TPad* pad = static_cast<TPad*>(c->GetSelectedPad());
+  if (!pad) return;
+  
+//  if ((event == kButton1Down) ||
+  if (event == kButton1Double) 
+  {
+    
+//    Float_t x = pad->AbsPixeltoX(px);
+//    Float_t y = pad->AbsPixeltoY(py);
+//    x = pad->PadtoX(x);
+//    y = pad->PadtoY(y);
+
+//    std::cout << "event=" << event << " px=" << px << " py=" << py << " ";
+    
+    if ( sel && sel->InheritsFrom("TH1") )
+    {
+      TCanvas* clocal = new TCanvas;
+      clocal->SetLogy();
+      clocal->Draw();
+      sel->Draw();
+    }
+    else
+    {
+      TList* list = pad->GetListOfPrimitives();
+      TIter next(list);
+      TObject* h;
+      
+      while ( ( h = next() ) )
+      {
+        if ( h->InheritsFrom("TH1") )
+        {
+          TCanvas* clocal = new TCanvas;
+          clocal->SetLogy();
+          clocal->Draw();
+          h->Draw();
+          break;
+        }
+      }
+      
+    }
+
+//      std::cout  << std::endl;
+
+      pad->Modified();
+  }
+  
 }
 
 //_____________________________________________________________________________
@@ -1123,32 +1317,22 @@ AliAnalysisMuMu::FitParticle(const char* particle,
     return 0x0;
   }
   
-//  AliDebug(1,Form("will project fMergeableCollection=%p...",fMergeableCollection));
-//  
-//  AliMergeableCollection* hp = fMergeableCollection->Project(Form("/%s/%s/%s/%s/",eventType,trigger,centrality,pairCut));
-//  
-//  AliDebug(1,Form("projection=hp=%p",hp));
-  
-//  if (!hp)
-//  {
-//    AliError(Form("projection %s/%s/%s/%s failed",eventType,trigger,centrality,pairCut));
-//    delete bins;
-//    return 0x0;
-//  }
-  
-  binning.Print();
+//  binning.Print();
   
   AliAnalysisMuMuSpectra* spectra(0x0);
   
   AliAnalysisMuMuBinning::Range* bin;
   TIter next(bins);
-  Int_t nrebin=1;
+  
+  TObjArray* fitTypeArray = fFitTypeList.Tokenize(",");
+  TIter nextFitType(fitTypeArray);
+  TObjString* fitType;
+  TString flavour;
   
   while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
   {
     TString hname(Form("MinvUS%s",bin->AsString().Data()));
     
-//    TH1* hminv = hp->Histo(hname.Data());
     TH1* hminv = fMergeableCollection->Histo(Form("/%s/%s/%s/%s",eventType,trigger,centrality,pairCut),hname.Data());
     
     if (!hminv)
@@ -1178,24 +1362,38 @@ AliAnalysisMuMu::FitParticle(const char* particle,
     
     r->SetNofTriggers(ntrigger);
     
-//    r->AddFit("PSILOW",nrebin);
-    if (IsSimulation())
-    {
-      r->AddFit("PSI1",1);
-      r->AddFit("COUNTPSI",1);
-    }
-    else
-    {
-      r->AddFit("PSILOW",nrebin+1);
-    }
-//    r->AddFit("PSILOW",nrebin+2);
-//    r->AddFit("PSILOW",nrebin+3);
+    nextFitType.Reset();
     
-//    r->Print();
+    while ( ( fitType = static_cast<TObjString*>(nextFitType())) )
+    {
+      AliDebug(1,Form("<<<<<< fitType=%s bin=%s",fitType->String().Data(),bin->Flavour().Data()));
+      
+      if ( fitType->String().BeginsWith("PSILOWMCTAILS") )
+      {
+        std::vector<Double_t> par;
+        par = GetMCCB2Tails(*bin);
+        if (!par.empty())
+        {
+          r->AddFit(fitType->String().Data(),par.size(),&par[0]);
+        }
+      }
+      else
+      {
+        r->AddFit(fitType->String());
+      }
+    }
   
+    flavour = bin->Flavour();
+    
     if (!spectra)
     {
-      spectra = new AliAnalysisMuMuSpectra(binning.GetName());
+      TString spectraName(binning.GetName());
+      if ( flavour.Length() > 0 )
+      {
+        spectraName += "-";
+        spectraName += flavour;
+      }
+      spectra = new AliAnalysisMuMuSpectra(spectraName.Data());
     }
     
     spectra->AdoptResult(*bin,r);
@@ -1208,9 +1406,59 @@ AliAnalysisMuMu::FitParticle(const char* particle,
     
   } // loop on bins
   
+  delete fitTypeArray;
   delete bins;
   
   return spectra;
+}
+
+//_____________________________________________________________________________
+std::vector<Double_t>
+AliAnalysisMuMu::GetMCCB2Tails(const AliAnalysisMuMuBinning::Range& bin) const
+{
+  /// Get the tails from the associated simulation
+  
+  std::vector<Double_t> par;
+  
+  if (!SIM())
+  {
+    AliError("Cannot get MC tails without an associated simulation file !");
+    return par;
+  }
+
+
+  AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(SIM()->GetSpectra(bin.Type().Data(),bin.Flavour().Data()));
+  
+  if (!s)
+  {
+    AliError(Form("Could not find spectra %s,%s for associated simulation",bin.Type().Data(),bin.Flavour().Data()));
+    fAssociatedSimulation->MC()->Print("*:Ali*");
+    return par;
+  }
+  else
+  {
+    AliDebug(1,Form("AliAnalysisMuMuSpectra* s = reinterpret_cast<AliAnalysisMuMuSpectra*>(%p)",s));
+  }
+  
+  AliAnalysisMuMuResult* r = s->GetResultForBin(bin);
+  
+  if ( r )
+  {
+    AliAnalysisMuMuResult* r1 = r->SubResult("JPSI:1");
+    if  (r1)
+    {
+      TF1* func = static_cast<TF1*>(r1->Minv()->GetListOfFunctions()->FindObject("fitTotal"));
+      if (func)
+      {
+        par.push_back(func->GetParameter("alphaLow"));
+        par.push_back(func->GetParameter("nLow"));
+        par.push_back(func->GetParameter("alphaUp"));
+        par.push_back(func->GetParameter("nUp"));
+      }
+    }
+  }
+  
+  return par;
 }
 
 //_____________________________________________________________________________
@@ -1237,6 +1485,36 @@ ULong64_t AliAnalysisMuMu::GetTriggerScalerCount(const char* triggerList, Int_t 
   delete triggers;
   
   return n;
+}
+
+//_____________________________________________________________________________
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::GetSpectra(const char* what, const char* flavour) const
+{
+  /// get a given spectra
+  
+  TString swhat(what);
+  TString sflavour(flavour);
+  swhat.ToUpper();
+  sflavour.ToUpper();
+  
+  TString spectraName(Form("/PSALL/%s/PP/%s/PSI-%s",
+                           First(fgDefaultDimuonTriggers).Data(),
+                           First(fgDefaultPairSelectionList).Data(),
+                           swhat.Data()));
+
+  if (sflavour.Length()>0)
+  {
+    spectraName += "-";
+    spectraName += sflavour.Data();
+  }
+
+  if (IsSimulation())
+  {
+    spectraName.ReplaceAll("PSALL",fgDefaultEventSelectionForSimulations.Data());
+    spectraName.ReplaceAll(First(fgDefaultDimuonTriggers).Data(),fgDefaultDimuonTriggerForSimulations.Data());
+  }
+
+  return SPECTRA(spectraName.Data());
 }
 
 //_____________________________________________________________________________
@@ -1345,18 +1623,20 @@ Bool_t AliAnalysisMuMu::IsSimulation() const
 {
   // whether or not we have MC information
   
-  return ( fMergeableCollection->Histo("/INPUT/ALL/MinvUS") != 0x0 );
+  return ( fMergeableCollection->Histo(Form("/INPUT/%s/MinvUS",fgDefaultEventSelectionForSimulations.Data())) != 0x0 );
 }
 
 //_____________________________________________________________________________
 Int_t
-AliAnalysisMuMu::Jpsi(const char* what)
+AliAnalysisMuMu::Jpsi(const char* what, const char* binningFlavour)
 {
   // Fit the J/psi (and psiprime) peaks for the triggers in fDimuonTriggers list
-  // what="" => fit only fully integrated MinvUS
+  // what="integrated" => fit only fully integrated MinvUS
   // what="pt" => fit MinvUS in pt bins
   // what="y" => fit MinvUS in y bins
   // what="pt,y" => fit MinvUS in (pt,y) bins
+  
+  TStopwatch timer;
   
   if (!fMergeableCollection)
   {
@@ -1370,11 +1650,6 @@ AliAnalysisMuMu::Jpsi(const char* what)
   TObjArray* eventTypeArray = fEventSelectionList.Tokenize(",");
   TObjArray* pairCutArray = fPairSelectionList.Tokenize(",");
   TObjArray* whatArray = TString(what).Tokenize(",");
-  
-  if ( whatArray->GetEntries() <= 0 )
-  {
-    whatArray->Add(new TObjString(""));
-  }
   
   TIter nextTrigger(triggerArray);
   TIter nextEventType(eventTypeArray);
@@ -1392,7 +1667,7 @@ AliAnalysisMuMu::Jpsi(const char* what)
     
     if ( fBinning && swhat->String().Length() > 0 )
     {
-      binning = fBinning->Project("psi",swhat->String().Data());
+      binning = fBinning->Project("psi",swhat->String().Data(),binningFlavour);
     }
     else
     {
@@ -1469,13 +1744,18 @@ AliAnalysisMuMu::Jpsi(const char* what)
   delete triggerArray;
   delete eventTypeArray;
   delete pairCutArray;
-  
+
+  timer.Print();
+
   if (nfits)
   {
-    ReOpen(fFilename,"UPDATE");
-    fMergeableCollection->Write("MC",TObjArray::kOverwrite);// | TObjArray::kSingleKey);
-    ReOpen(fFilename,"READ");
+    Update();
+//    ReOpen(fFilename,"UPDATE");
+//    fMergeableCollection->Write("MC",TObjArray::kOverwrite);// | TObjArray::kSingleKey);
+//    ReOpen(fFilename,"READ");
   }
+  
+  
   return nfits;
   
 }
@@ -1853,14 +2133,8 @@ TGraph* AliAnalysisMuMu::PlotEventSelectionEvolution(const char* trigger1, const
       {
         Double_t xcorr,ycorr;
         fCorrectionPerRun->GetPoint(i,xcorr,ycorr); // note that the fact that xcorr==runNumber has been checked by the SetCorrectionPerRun method
-        if ( TMath::Abs(ycorr)  > 1E-12 )
-        {
-          y /= ycorr;
-        }
-        else
-        {
-          y = 0.0;
-        }
+        y *= ycorr;
+        // FIXME: should get the correction error here
       }
       
       if ( asRejection ) y = 100*(1.0 - y);
@@ -2078,11 +2352,10 @@ TFile* AliAnalysisMuMu::ReOpen(const char* filename, const char* mode) const
   
   if (f)
   {
-    f->Close();
     delete f;
   }
   
-  f = TFile::Open(filename,"update");
+  f = TFile::Open(filename,mode);
   
   if ( !f || !f->IsOpen() )
   {
@@ -2126,7 +2399,7 @@ void AliAnalysisMuMu::SetColorScheme()
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMu::SetCorrectionPerRun(const TGraph& corr)
+Bool_t AliAnalysisMuMu::SetCorrectionPerRun(const TGraph& corr, const char* formula)
 {
     /// Sets the graph used to correct values per run
   delete fCorrectionPerRun;
@@ -2148,8 +2421,30 @@ Bool_t AliAnalysisMuMu::SetCorrectionPerRun(const TGraph& corr)
     ++i;
   }
   
-  fCorrectionPerRun = static_cast<TGraph*>(corr.Clone());
+  fCorrectionPerRun = new TGraphErrors(corr.GetN());
 
+  TFormula* tformula(0x0);
+  if ( strlen(formula) > 0 )
+  {
+    tformula = new TFormula("SetCorrectionPerRunFormula",formula);
+  }
+
+  i = 0;
+  
+  for ( std::set<int>::const_iterator it = RunNumbers().begin(); it != RunNumbers().end(); ++it )
+  {
+    Double_t y = corr.GetY()[i];
+    
+    if ( tformula )
+    {
+      y = tformula->Eval(y);
+    }
+    fCorrectionPerRun->SetPoint(i,corr.GetX()[i],y);
+    ++i;
+  }
+
+  delete formula;
+  
   return kTRUE;
 }
 
@@ -2165,12 +2460,21 @@ void AliAnalysisMuMu::SetNofInputParticles(AliAnalysisMuMuResult& r)
   if (!hinput)
   {
     AliError(Form("Got a simulation file where I did not find histogram /INPUT/INYRANGE/%s",hname.Data()));
-  
+
   }
   else
   {
     r.SetNofInputParticles(*hinput);
   }
+}
+
+//_____________________________________________________________________________
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::SPECTRA(const char* fullpath) const
+{
+  /// Shortcut method to get to a spectra
+  if (!MC()) return 0x0;
+  
+  return static_cast<AliAnalysisMuMuSpectra*>(MC()->GetObject(fullpath));
 }
 
 //_____________________________________________________________________________
@@ -2235,11 +2539,13 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
       total += n;
       totalExpected += expected;
       
-      msg += TString::Format("%30s %9lld expected %9lld ",strigger->String().Data(),n,expected);
+      msg += TString::Format("%30s %9lld expected %9lld [%s] ",strigger->String().Data(),n,expected,
+                             (n>expected ? "!" : " "));
       
       if ( expected > 0 ) {
         msg += TString::Format("fraction %5.1f %%",n*100.0/expected);
       }
+
       if (!compact)
       {
         msg += "\n";
@@ -2267,7 +2573,8 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
   {
     ++n;
     current += it->first;
-    std::cout << Form("%10lld",it->first) << " " << it->second << " percentage of total = " << Form("%7.2f %% %3d",current*100.0/total,n ) << std::endl;
+    Double_t percent = ( total > 0.0 ? current*100.0/total : 0.0);
+    std::cout << Form("%10lld",it->first) << " " << it->second << " percentage of total = " << Form("%7.2f %% %3d",percent,n ) << std::endl;
   }
 
   std::cout << Form("--- TOTAL %lld expected %lld fraction %5.1f %%",
@@ -2285,6 +2592,18 @@ void AliAnalysisMuMu::UnsetCorrectionPerRun()
     // drop the correction factors
   delete fCorrectionPerRun;
   fCorrectionPerRun=0x0;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::Update()
+{
+  /// update the current file with memory
+ 
+  ReOpen(fFilename,"UPDATE");
+
+  MC()->Write("MC",TObject::kSingleKey);
+
+  ReOpen(fFilename,"READ");
 }
 
 //_____________________________________________________________________________
@@ -2352,42 +2671,193 @@ Bool_t AliAnalysisMuMu::Upgrade()
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectra* AliAnalysisMuMu::CorrectSpectra(const char* realFile, const char* simFile, const char* particle, const char* type)
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::CorrectSpectra(const char* type, const char* flavour)
 {
+  /// Correct one spectra
   
-  AliAnalysisMuMu real(realFile);
-    AliAnalysisMuMu sim(simFile);
-  
-  
-  AliAnalysisMuMuSpectra* realpt = static_cast<AliAnalysisMuMuSpectra*>(real.MC()->GetObject(Form("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/%s",type)));
-  AliAnalysisMuMuSpectra* simpt = static_cast<AliAnalysisMuMuSpectra*>(sim.MC()->GetObject(Form("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/%s",type)));
-  
-  if ( !realpt )
+  if (!SIM())
   {
-    AliErrorClass("could not get real spectra");
+    AliError("Cannot compute corrected yield without associated MC file !");
+    return 0x0;
+  }
+
+  const char* accEffSubResultName="COUNTJPSI:1";
+  
+  AliAnalysisMuMuSpectra* realSpectra = GetSpectra(type,flavour);
+  AliAnalysisMuMuSpectra* simSpectra = SIM()->GetSpectra(type,flavour);
+  
+  if ( !realSpectra )
+  {
+    AliError("could not get real spectra");
     return 0x0;
   }
   
-  if ( !simpt )
+  if ( !simSpectra)
+  {
+    AliError("could not get sim spectra");
+    return 0x0;
+  }
+  
+  realSpectra->Correct(*simSpectra,"Jpsi",accEffSubResultName);
+
+  Update();
+  
+  return realSpectra;
+}
+
+//_____________________________________________________________________________
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::ComputeYield(const char* type, const char* flavour)
+{
+  if (!SIM())
+  {
+    AliError("Cannot compute corrected yield without associated MC file !");
+    return 0x0;
+  }
+  
+  const char* accEffSubResultName="COUNTJPSI:1";
+  
+  AliAnalysisMuMuSpectra* realSpectra = GetSpectra(type,flavour);
+  
+  if ( !realSpectra )
+  {
+    AliError("could not get real spectra");
+    return 0x0;
+  }
+  
+  if (!realSpectra->HasValue("CoffNofJpsi"))
+  {
+    if (!CorrectSpectra(type,flavour))
+    {
+      AliError("Could not get corrected spectra");
+      return 0x0;
+    }
+  }
+  
+  AliAnalysisMuMuSpectra* simSpectra = SIM()->GetSpectra(type,flavour);
+  
+  if ( !simSpectra)
   {
     AliErrorClass("could not get sim spectra");
     return 0x0;
   }
   
-  AliInfoClass("REAL >>>");
-  realpt->Print("4");
-  AliInfoClass("SIM >>>");
-  simpt->Print("1");
+  Double_t nofCMUL7 = CC()->GetSum(Form("trigger:CMUL7-B-NOPF-MUON/event:PSALL"));
+  Double_t nofCINT7 = CC()->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD/event:PSALL"));
+  Double_t nofCINT7w0MUL = CC()->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD&0MUL/event:PSALL"));
   
-  AliInfoClass("CORRECTED >>>");
-
-  AliAnalysisMuMuSpectra* spectra = static_cast<AliAnalysisMuMuSpectra*>(realpt->Clone());
-  spectra->Correct(*simpt,particle);
+  AliAnalysisMuMuBinning* binning = realSpectra->Binning();
+  TObjArray* bins = binning->CreateBinObjArray();
+  TIter nextBin(bins);
+  AliAnalysisMuMuBinning::Range* bin;
+  Int_t i(0);
+  AliAnalysisMuMuResult* r;
   
-  spectra->Print("1");
+  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) )
+  {
+    r = static_cast<AliAnalysisMuMuResult*>(realSpectra->Bins()->At(i));
+   
+    StdoutToAliDebug(1,std::cout << "bin=";r->Print(););
+    
+    AliAnalysisMuMuResult* rsim = static_cast<AliAnalysisMuMuResult*>(simSpectra->Bins()->At(i));
+    
+    Double_t mbeq = nofCINT7w0MUL / ( nofCINT7 * nofCMUL7);
+    Double_t mbeqError = mbeq * AliAnalysisMuMuResult::ErrorABC( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
+                                                                nofCINT7,TMath::Sqrt(nofCINT7),
+                                                                nofCMUL7,TMath::Sqrt(nofCMUL7));
+    
+    r->Set("MBR",nofCINT7/nofCINT7w0MUL,(nofCINT7/nofCINT7w0MUL)*AliAnalysisMuMuResult::ErrorAB( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
+                                                                                                nofCINT7,TMath::Sqrt(nofCINT7)));
+    
+    Double_t yield =  r->GetValue("CorrNofJpsi") * mbeq;
+    
+    Double_t yieldError = yield * AliAnalysisMuMuResult::ErrorAB( r->GetValue("CorrNofJpsi"), r->GetErrorStat("CorrNofJpsi"),
+                                                                 mbeq,mbeqError);
+    
+    r->Set("YJpsi",yield,yieldError);
+    
+    r->Set("NofInputJpsi",rsim->GetValue("NofInputJpsi",accEffSubResultName),rsim->GetErrorStat("NofInputJpsi",accEffSubResultName));
+    r->Set("AccEffJpsi",rsim->GetValue("AccEffJpsi",accEffSubResultName),rsim->GetErrorStat("AccEffJpsi",accEffSubResultName));
+    
+    ++i;
+  }
   
-  return spectra;
+  delete bins;
+  
+  Update();
+  
+  return realSpectra;
 }
+
+////_____________________________________________________________________________
+//AliAnalysisMuMuSpectra* AliAnalysisMuMu::ComputeYield(const char* realFile, const char* simFile,
+//                                                      const  char* type)
+//{
+//  const char* accEffSubResultName="COUNTJPSI-1";
+//
+//  AliAnalysisMuMu real(realFile);
+//  AliAnalysisMuMu sim(simFile);
+//  
+//  
+//  AliAnalysisMuMuSpectra* realSpectra = static_cast<AliAnalysisMuMuSpectra*>(real.MC()->GetObject(Form("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-%s",type)));
+//  AliAnalysisMuMuSpectra* simSpectra = static_cast<AliAnalysisMuMuSpectra*>(sim.MC()->GetObject(Form("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-%s",type)));
+//  
+//  if ( !realSpectra )
+//  {
+//    AliErrorClass("could not get real spectra");
+//    return 0x0;
+//  }
+//  
+//  if ( !simSpectra)
+//  {
+//    AliErrorClass("could not get sim spectra");
+//    return 0x0;
+//  }
+//  
+//  AliAnalysisMuMuSpectra* corrSpectra = static_cast<AliAnalysisMuMuSpectra*>(realSpectra->Clone());
+//  corrSpectra->Correct(*simSpectra,"Jpsi",accEffSubResultName);
+//  
+//  Double_t nofCMUL7 = real.CC()->GetSum(Form("trigger:CMUL7-B-NOPF-MUON/event:PSALL"));
+//  Double_t nofCINT7 = real.CC()->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD/event:PSALL"));
+//  Double_t nofCINT7w0MUL = real.CC()->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD&0MUL/event:PSALL"));
+//  
+//  AliAnalysisMuMuBinning* binning = corrSpectra->Binning();
+//  TObjArray* bins = binning->CreateBinObjArray();
+//  TIter nextBin(bins);
+//  AliAnalysisMuMuBinning::Range* bin;
+//  Int_t i(0);
+//  AliAnalysisMuMuResult* r;
+//  
+//  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) )
+//  {
+//    r = static_cast<AliAnalysisMuMuResult*>(corrSpectra->Bins()->At(i));
+//
+//    AliAnalysisMuMuResult* rsim = static_cast<AliAnalysisMuMuResult*>(simSpectra->Bins()->At(i));
+//    
+//    Double_t mbeq = nofCINT7w0MUL / ( nofCINT7 * nofCMUL7);
+//    Double_t mbeqError = mbeq * AliAnalysisMuMuResult::ErrorABC( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
+//                                                                nofCINT7,TMath::Sqrt(nofCINT7),
+//                                                                nofCMUL7,TMath::Sqrt(nofCMUL7));
+//    
+//    r->Set("MBR",nofCINT7/nofCINT7w0MUL,(nofCINT7/nofCINT7w0MUL)*AliAnalysisMuMuResult::ErrorAB( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
+//                                                                                                nofCINT7,TMath::Sqrt(nofCINT7)));
+//    
+//    Double_t yield =  r->GetValue("CorrNofJpsi") * mbeq;
+//    
+//    Double_t yieldError = yield * AliAnalysisMuMuResult::ErrorAB( r->GetValue("CorrNofJpsi"), r->GetErrorStat("CorrNofJpsi"),
+//                                                                 mbeq,mbeqError);
+//    
+//    r->Set("YJpsi",yield,yieldError);
+//        
+//    r->Set("NofInputJpsi",rsim->GetValue("NofInputJpsi",accEffSubResultName),rsim->GetErrorStat("NofInputJpsi",accEffSubResultName));
+//    r->Set("AccEffJpsi",rsim->GetValue("AccEffJpsi",accEffSubResultName),rsim->GetErrorStat("AccEffJpsi",accEffSubResultName));
+//    
+//    ++i;
+//  }
+//
+//  delete bins;
+//  
+//  return corrSpectra;
+//}
 
 //_____________________________________________________________________________
 AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* simFile, const char* type,
@@ -2399,7 +2869,7 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* 
   const Double_t ymax=TMath::Log(sqrts*1000.0/3.096916);
   const Double_t tab = 0.093e-6; // nb^-1
   const Double_t tabError = 0.0035E-6; // nb^-1
-  const char* accEffSubResultName="COUNTJPSI-1";
+  const char* accEffSubResultName="COUNTJPSI:1";
   
   TF1 ydist("ydist","[0]*TMath::Exp(-(x*x)/(2.0*0.39*0.39))",0.,0.5);
   ydist.SetParameter(0,1.);

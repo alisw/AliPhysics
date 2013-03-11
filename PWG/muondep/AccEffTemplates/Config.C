@@ -47,7 +47,6 @@
 
 //--- Functions ---
 class AliGenPythia;
-AliGenerator* CreateGenerator();
 
 void Config()
 {
@@ -144,8 +143,15 @@ void Config()
   //=========================//
   // Generator Configuration //
   //=========================//
-  AliGenerator* gener = CreateGenerator();
 
+  //AliGenerator* gener = CreateGenerator();
+
+  std::cout << "VAR_GENERATOR settings " << std::endl;
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/EVGEN");
+  gROOT->LoadMacro("VAR_GENERATOR.C+");
+  AliGenerator* gener = VAR_GENERATOR();
+  
   gener->SetOrigin(0., 0., 0.); // Taken from OCDB
   gener->SetSigma(0., 0., 0.);      // Sigma in (X,Y,Z) (cm) on IP position, sigmaz taken from OCDB
 //  gener->SetVertexSmear(kPerEvent);
@@ -266,35 +272,4 @@ void Config()
 
         AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
-}
-
-//
-//           generators
-//
-AliGenerator* CreateGenerator()
-{
-  AliGenMC* generator = 0x0;
-  TString genType("VAR_GEN_TYPE");
-  genType.ToUpper();
-  if ( genType == "GENLIB" ) {
-    generator = new AliGenParam(1, VAR_GENLIB_TYPE,VAR_GENLIB_PARNAME);
-    generator->SetMomentumRange(0,999);
-    generator->SetPtRange(0,50.);
-    generator->SetYRange(-4.1,-2.4);
-    generator->SetPhiRange(0., 360.);
-    generator->SetChildThetaRange(0.,180.);
-    generator->SetForceDecay(kDiMuon);
-  }
-  else if ( genType == "GENCORR" ) {
-    generator = new AliGenCorrHF(1, VAR_GENCORR_QUARK, VAR_GENCORR_ENERGY);
-    generator->SetMomentumRange(0,9999);
-    generator->SetChildThetaRange(160.0,180.0);
-    generator->SetForceDecay(kSemiMuonic);
-  }
-  
-  generator->SetCutOnChild(1);
-  generator->SetChildPhiRange(0.,360.);
-  generator->SetTrackingFlag(1);
-  
-  return generator;
 }
