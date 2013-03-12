@@ -32,6 +32,8 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   // Set trackcuts according to period. Every period used should be definied here
   TString period(periodstr);
   TString clusterColName(usedClusters);
+  TString particleColName(usedMCParticles);
+
   if ( (period != "LHC11h") && (period!="LHC11a") )
   {
     Error("AddTaskJetPreparation","###################################################");
@@ -42,8 +44,10 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 
   TString dType(dataType);
 
-  if (dType == "AOD")
+  if ((dType == "AOD") && (clusterColName == "CaloClusters"))
     clusterColName = "caloClusters";
+  if ((dType == "AOD") && (particleColName == "MCParticles"))
+    particleColName = "mcparticles";
 
   if (makePicoTracks && (dType == "ESD" || dType == "AOD") )
   {
@@ -89,10 +93,10 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   }
 
   // Produce MC particles
-  if (isMC && strlen(usedMCParticles)>0)
+  if (isMC && (particleColName != ""))
   {
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
-    AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(usedMCParticles, kFALSE, kFALSE);
+    AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(particleColName.Data(), kFALSE, kFALSE);
     mcPartTask->SelectCollisionCandidates(pSel);
   }
 
