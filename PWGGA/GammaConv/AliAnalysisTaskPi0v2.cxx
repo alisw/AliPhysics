@@ -140,7 +140,7 @@ AliAnalysisTaskPi0v2::~AliAnalysisTaskPi0v2(){
     }
 
     if(fConversionSelection){
-	for(Int_t ii=0;ii<fNCuts;ii++)delete fConversionSelection;
+	for(Int_t ii=0;ii<fNCuts;ii++)delete fConversionSelection[ii];
 	delete[] fConversionSelection;
 	fConversionSelection=NULL;
     }
