@@ -177,7 +177,8 @@ Bool_t AliZDCDigitizer::Init()
      fBeamType = "A-A";
      AliInfo(" AliZDCDigitizer -> Manually setting beam type to A-A\n");
   }    
-  printf("\t  AliZDCDigitizer ->  beam type %s  - beam energy = %f GeV\n", fBeamType.Data(), fBeamEnergy);
+  printf("\n\t  AliZDCDigitizer ->  beam type %s  - beam energy = %f GeV\n", fBeamType.Data(), fBeamEnergy);
+  if(fSpectators2Track) printf("\t  AliZDCDigitizer ->  spectator signal added at digit level\n");
   
   if(fBeamEnergy>0.1){
     ReadPMTGains();
@@ -301,18 +302,17 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
       TList* listOfHeaders = ((AliGenCocktailEventHeader*) genHeader)->GetHeaders();
       if(listOfHeaders){ 
         hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("Hijing"));
+        if(!hijingHeader) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("Hijing_0"));      
         if(!hijingHeader) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("HijingpPbPb"));
         if(!hijingHeader) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("HijingpPb"));
         if(!hijingHeader) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("HijingpPb_0"));      
       }
       else{
-        AliWarning(" No list of headers from generator -> skipping event\n");
-	continue;
+        printf(" No list of headers from generator \n");
       }
     }
     if(!hijingHeader){ 
         printf(" No HIJING header found in list of headers from generator\n");
-	//continue;
     }
     
     if(fSpectators2Track==kTRUE){
@@ -572,11 +572,30 @@ void AliZDCDigitizer::CalculatePMTGains()
     for(Int_t j = 0; j < 5; j++){
        fPMGain[0][j] = 1.515831*(661.444/fBeamEnergy+0.000740671)*10000000; //ZNC (p)
        fPMGain[1][j] = 0.674234*(864.350/fBeamEnergy+0.00234375)*10000000;  //ZPC (p)
-       fPMGain[2][j] = npartScalingFactor*100000./scalGainFactor; 	   // ZEM (Pb)
+       if(j<2) fPMGain[2][j] = npartScalingFactor*100000./scalGainFactor; 	   // ZEM (Pb)
        // Npart max scales from 400 in Pb-Pb to ~8 in pPb -> *40.
        fPMGain[3][j] = npartScalingFactor*50000/(4*scalGainFactor);  // ZNA (Pb)  	     
        fPMGain[4][j] = npartScalingFactor*100000/(5*scalGainFactor); // ZPA (Pb)  
     }
+    printf("\n    AliZDCDigitizer::CalculatePMTGains -> ZDC PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
+      	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
+  }
+  else if(((fBeamType.CompareTo("A-p")) == 0) || ((fBeamType.CompareTo("A-P"))) ){
+    // PTM gains for Pb-Pb @ 1.38+1.38 A TeV on side 
+    // PTM gains rescaled to beam energy for p-p on side C
+    // WARNING! Energies are set by hand for 2011 pA RUN!!!
+    Float_t scalGainFactor = fBeamEnergy/2760.;
+    Float_t npartScalingFactor = 208./15.;
+    
+    for(Int_t j = 0; j < 5; j++){
+       fPMGain[3][j] = 1.350938*(661.444/fBeamEnergy+0.000740671)*10000000;  //ZNA (p)
+       fPMGain[4][j] = 0.678597*(864.350/fBeamEnergy+0.00234375)*10000000;   //ZPA (p)
+       // Npart max scales from 400 in Pb-Pb to ~8 in pPb -> *40.
+       fPMGain[1][j] = npartScalingFactor*50000/(4*scalGainFactor);  // ZNC (Pb)  	     
+       fPMGain[2][j] = npartScalingFactor*100000/(5*scalGainFactor); // ZPC (Pb)  
+    }
+    fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000; // ZEM (pp)
+    fPMGain[2][2] = 1.030883*(1.32312-0.000101515*fBeamEnergy)*10000000; // ZEM (pp)
     printf("\n    AliZDCDigitizer::CalculatePMTGains -> ZDC PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
       	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
   }
