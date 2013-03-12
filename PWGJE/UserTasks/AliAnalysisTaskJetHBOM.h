@@ -210,6 +210,7 @@ class AliAnalysisTaskJetHBOM : public AliAnalysisTaskSE
     TH1F*         fh1Centrality;                // ! centrality of selected events 
     TH1F*         fh1DeltapT;        // pT of random Cone - background energy
     TH1F*         fh1Rho;            //background rho
+    TH1F*         fh1RhoSigma;       //fluctuation of the background
     TH1F*         fh1PtRandCone;     //pT of random Cone
 
     TH1F*         fh1efficiencyPt;          //here efficiency is stored
