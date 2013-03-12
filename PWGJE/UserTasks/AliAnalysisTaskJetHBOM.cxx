@@ -141,6 +141,7 @@ AliAnalysisTaskJetHBOM::AliAnalysisTaskJetHBOM():
   fh1Centrality(0x0), 
   fh1DeltapT(0x0),
   fh1Rho(0x0),
+  fh1RhoSigma(0x0),
   fh1PtRandCone(0x0),
   fh1efficiencyPt(0x0),
   fh2efficiencyPhi(0x0),
@@ -215,6 +216,7 @@ AliAnalysisTaskJetHBOM::AliAnalysisTaskJetHBOM(const char* name):
   fh1Centrality(0x0), 
   fh1DeltapT(0x0),
   fh1Rho(0x0),
+  fh1RhoSigma(0x0),
   fh1PtRandCone(0x0),
   fh1efficiencyPt(0x0),
   fh2efficiencyPhi(0x0),
@@ -353,6 +355,7 @@ void AliAnalysisTaskJetHBOM::UserCreateOutputObjects()
   
   fh1DeltapT = new TH1F("fh1DeltapT","DeltapT",100,-50,50);
   fh1Rho = new TH1F("fh1Rho","Rho",100,0,200);
+  fh1RhoSigma = new TH1F("fh1RhoSigma","SigmaRho",40,0,40);
   fh1PtRandCone = new TH1F("fh1PtRandCone","pt",100,0,200);
 
   const Int_t saveLevel = 3; // large save level more histos
@@ -367,6 +370,7 @@ void AliAnalysisTaskJetHBOM::UserCreateOutputObjects()
     fHistList->Add(fh1ZPhySel);
     fHistList->Add(fh1DeltapT);
     fHistList->Add(fh1Rho);
+    fHistList->Add(fh1RhoSigma);
     fHistList->Add(fh1PtRandCone);
   }
 
@@ -596,6 +600,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
     Double_t sigma1=0.;
     Double_t meanarea1=0.;
     clustSeq.get_median_rho_and_sigma(jets2, range, true, bkg1, sigma1, meanarea1, true);
+    fh1RhoSigma->Fill(sigma1);// fluctuation of the background
     background = bkg1;//sets background variable of the task to the correct value
 
 
