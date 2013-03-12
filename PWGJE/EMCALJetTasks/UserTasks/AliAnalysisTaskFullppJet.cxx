@@ -54,7 +54,6 @@ using std::vector;
 ClassImp(AliAnalysisTaskFullppJet)
 
 const Float_t kRadius[3] = {0.4,0.2,0.3};
-const Int_t kNRadii = 3;
 const Double_t kPI = TMath::Pi();
 const Double_t kdRCut[3] = {0.25,0.1,0.15};
 
@@ -823,7 +822,7 @@ void AliAnalysisTaskFullppJet::UserCreateOutputObjects()
 	    {
 	      Int_t tmp = j;
 	      if(fPeriod.CompareTo("lhc11aJet",TString::kIgnoreCase)==0) tmp = 2;
-	      for(Int_t r=0; r<2; r++)
+	      for(Int_t r=0; r<kNRadii; r++)
 		{
 		  fhCorrTrkEffPtBin[j][r] = new TH1F(*((TH1F*)f1.Get(Form("%s_%s_NTrackPerPtBin_%1.1f",fPeriod.Data(),triggerName[tmp],kRadius[r]))));
 		  for(Int_t i=0; i<kNBins; i++)
@@ -848,9 +847,9 @@ void AliAnalysisTaskFullppJet::UserCreateOutputObjects()
 
   if(fCheckTriggerMask)
     {
-      char *name = "TriggerCurve.root";
+      TString name = "TriggerCurve.root";
       if(fAnaType==0) name = "/project/projectdirs/alice/marr/Analysis/2.76Jet/CorrectionFunctions/TriggerCurve.root";
-      TFile f (name,"read");
+      TFile f (name.Data(),"read");
       fTriggerMask = new TH2F(*((TH2F*)f.Get("lhc11a_TriggerMask")));
       if(fOfflineTrigger)
 	{
@@ -959,19 +958,17 @@ void AliAnalysisTaskFullppJet::UserExec(Option_t *)
 	}
       fStack = fMC->Stack();
       TParticle *particle = fStack->Particle(0);
-      if(particle) vtxTrueZ = particle->Vz(); // True vertex z in MC events
-      if(fVerbosity>10) printf("Generated vertex coordinate: (x,y,z) = (%4.2f, %4.2f, %4.2f)\n", particle->Vx(), particle->Vy(), particle->Vz());
+      if(particle) 
+	{
+	  vtxTrueZ = particle->Vz(); // True vertex z in MC events
+	  if(fVerbosity>10) printf("Generated vertex coordinate: (x,y,z) = (%4.2f, %4.2f, %4.2f)\n", particle->Vx(), particle->Vy(), particle->Vz());
+	}
     }
 
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) 
     {
-      fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    }
-
-  if (!fESD && !fAOD) 
-    {
-      AliError("Neither fESD nor fAOD available");
+      AliError("fESD is not available");
       return;
     }
 
@@ -984,49 +981,46 @@ void AliAnalysisTaskFullppJet::UserExec(Option_t *)
     }
 
   // Centrality, vertex, other event variables...
-  if(fESD)
+  UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if (trigger==0)  return; 
+  if(fCheckTPCOnlyVtx) CheckTPCOnlyVtx(trigger);
+  if(!fIsMC)
     {
-      UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-      if (trigger==0)  return; 
-      if(fCheckTPCOnlyVtx) CheckTPCOnlyVtx(trigger);
-      if(!fIsMC)
+      if (trigger & AliVEvent::kFastOnly) return;  // Reject fast trigger cluster
+      if(fPeriod.CompareTo("lhc11a",TString::kIgnoreCase)==0)
 	{
-	  if (trigger & AliVEvent::kFastOnly) return;  // Reject fast trigger cluster
-	  if(fPeriod.CompareTo("lhc11a",TString::kIgnoreCase)==0)
-	    {
-	      if (trigger & AliVEvent::kMB)       fTriggerType = 0;
-	      else if(trigger & AliVEvent::kEMC1) fTriggerType = 1;
-	      else fTriggerType = -1;
-	    }
-	  else if (fPeriod.CompareTo("lhc11c",TString::kIgnoreCase)==0 || fPeriod.CompareTo("lhc11d",TString::kIgnoreCase)==0)
-	    {
-	      if (trigger & AliVEvent::kINT7)     fTriggerType = 0;
-	      else if(trigger & AliVEvent::kEMC7) fTriggerType = 1;
-	      else fTriggerType = -1;
-	    }
-	  else
-	    {
-	      return;
-	    }
+	  if (trigger & AliVEvent::kMB)       fTriggerType = 0;
+	  else if(trigger & AliVEvent::kEMC1) fTriggerType = 1;
+	  else fTriggerType = -1;
+	}
+      else if (fPeriod.CompareTo("lhc11c",TString::kIgnoreCase)==0 || fPeriod.CompareTo("lhc11d",TString::kIgnoreCase)==0)
+	{
+	  if (trigger & AliVEvent::kINT7)     fTriggerType = 0;
+	  else if(trigger & AliVEvent::kEMC7) fTriggerType = 1;
+	  else fTriggerType = -1;
 	}
       else
 	{
-	  if(!fPhySelForMC) fTriggerType = 0;
-	  else if (trigger & AliVEvent::kAnyINT) fTriggerType = 0;
-	  else fTriggerType = -1;
-
-	  if(fOfflineTrigger)
-	    {
-	      RunOfflineTrigger();
-	      if(fIsEventTriggerBit) fTriggerType = 1;
-	    }
-	}
-
-      if(fTriggerType==-1)
-	{
-	  if(fVerbosity>10) printf("Error: worng trigger type %s\n",(fESD->GetFiredTriggerClasses()).Data());
 	  return;
 	}
+    }
+  else
+    {
+      if(!fPhySelForMC) fTriggerType = 0;
+      else if (trigger & AliVEvent::kAnyINT) fTriggerType = 0;
+      else fTriggerType = -1;
+      
+      if(fOfflineTrigger)
+	{
+	  RunOfflineTrigger();
+	  if(fIsEventTriggerBit) fTriggerType = 1;
+	}
+    }
+  
+  if(fTriggerType==-1)
+    {
+      if(fVerbosity>10) printf("Error: worng trigger type %s\n",(fESD->GetFiredTriggerClasses()).Data());
+      return;
     }
 
   fhJetEventCount->Fill(1.5+fTriggerType*4);
@@ -1107,43 +1101,40 @@ void AliAnalysisTaskFullppJet::UserExec(Option_t *)
   if(fClusterArray) fClusterArray->Delete();
   fMcPartArray->Reset();
 
-  if (fESD) 
-     {
-       // get the tracks and fill the input vector for the jet finders
-       GetESDTrax();
-       
-       // get EMCal clusters and fill the input vector for the jet finders
-       GetESDEMCalClusters();
 
-       for(Int_t s=0; s<3; s++)
-	 {
-	   for(Int_t a=0; a<2; a++)
-	     {
-	       for(Int_t r=0; r<kNRadii; r++)
-		 {
-		   //Detector jets
-		   if(fDetJetFinder[s][a][r]) 
-		     {
-		       FindDetJets(s,a,r);
-		       if(fJetTCA[s][a][r]) FillAODJets(fJetTCA[s][a][r], fDetJetFinder[s][a][r], 0);
-		       if(s==0 && a==0 && fNonStdBranch.Contains("Baseline",TString::kIgnoreCase))
-			 {
-			   if(fSaveQAHistos)    AnalyzeJets(fDetJetFinder[s][a][r],fTriggerType, r); // run analysis on jets
-			 }
-		     }
-		 }
-	     }
-	 }
+  // get the tracks and fill the input vector for the jet finders
+  GetESDTrax();
+  
+  // get EMCal clusters and fill the input vector for the jet finders
+  GetESDEMCalClusters();
 
-       if(fRunUE && fDetJetFinder[1][0][0]) RunAnalyzeUE(fDetJetFinder[1][0][0],fTriggerType,0); // Run analysis on underlying event
-     }
+  for(Int_t s=0; s<3; s++)
+    {
+      for(Int_t a=0; a<2; a++)
+	{
+	  for(Int_t r=0; r<kNRadii; r++)
+	    {
+	      //Detector jets
+	      if(fDetJetFinder[s][a][r]) 
+		{
+		  FindDetJets(s,a,r);
+		  if(fJetTCA[s][a][r]) FillAODJets(fJetTCA[s][a][r], fDetJetFinder[s][a][r], 0);
+		  if(s==0 && a==0 && fNonStdBranch.Contains("Baseline",TString::kIgnoreCase))
+		    {
+		      if(fSaveQAHistos)    AnalyzeJets(fDetJetFinder[s][a][r],fTriggerType, r); // run analysis on jets
+		    }
+		}
+	    }
+	}
+    }
+  if(fRunUE && fDetJetFinder[1][0][0]) RunAnalyzeUE(fDetJetFinder[1][0][0],fTriggerType,0); // Run analysis on underlying event
 
   if(fIsMC)
     {
       for(Int_t r=0; r<kNRadii; r++)
 	if(fTrueJetFinder[r]) ProcessMC(r); // find particle level jets
     }
-
+  
   // Fast Jet calls END --------------------------------------------------------
   
   PostData(1, fOutputList);
@@ -1365,6 +1356,16 @@ void AliAnalysisTaskFullppJet::FillAODJets(TClonesArray *fJetArray, AliFJWrapper
       // End of catching good high-E jets
     }
   if(fVerbosity>5) printf("%s has %d jets\n",fJetArray->GetName(), fJetArray->GetEntries());
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskFullppJet::GetParentParton(const Int_t ipart)
+{
+  // 
+  // Find the parent parton for a given MC particle by tracing back the parent
+  // DUMMY; NEED improvement
+
+  return ipart;
 }
 
 
@@ -2959,7 +2960,8 @@ void AliAnalysisTaskFullppJet::CheckExoticEvent()
   //
 
   Double_t leadingE = 0;
-  for(Int_t icl=0; icl<fESD->GetNumberOfCaloClusters(); icl++)
+  Int_t nCls = fESD->GetNumberOfCaloClusters();
+  for(Int_t icl=0; icl<nCls; icl++)
     {
       AliESDCaloCluster *cluster = fESD->GetCaloCluster(icl);
       if(!cluster) continue;
