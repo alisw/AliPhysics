@@ -1901,13 +1901,15 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
 
 //____________________________________________________________________//
 
-Bool_t AliBalancePsi::GetMomentsAnalytical(TH1D* gHist,
+Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
 					   Double_t &mean, Double_t &meanError,
 					   Double_t &sigma, Double_t &sigmaError,
 					   Double_t &skewness, Double_t &skewnessError,
 					   Double_t &kurtosis, Double_t &kurtosisError) {
   //
   // helper method to calculate the moments and errors of a TH1D anlytically
+  // fVariable = 1 for Delta eta (moments in full range)
+  //           = 2 for Delta phi (moments only on near side -pi/2 < dphi < pi/2)
   //
   
   Bool_t success = kFALSE;
@@ -1937,6 +1939,13 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(TH1D* gHist,
 
     for(Int_t i = 1; i <= fNumberOfBins; i++) {
 
+      // for Delta phi: moments only on near side -pi/2 < dphi < pi/2
+      if(fVariable == 2 && 
+	 (gHist->GetBinCenter(i) < - TMath::Pi()/2 ||
+	  gHist->GetBinCenter(i) > TMath::Pi()/2)){
+	continue;
+      }
+
       fWeightedAverage   += gHist->GetBinContent(i) * gHist->GetBinCenter(i);
       fNormalization     += gHist->GetBinContent(i);
     }  
@@ -1956,6 +1965,14 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(TH1D* gHist,
     Double_t fMu8 = 0.;
 
     for(Int_t i = 1; i <= fNumberOfBins; i++) {
+
+      // for Delta phi: moments only on near side -pi/2 < dphi < pi/2
+      if(fVariable == 2 && 
+	 (gHist->GetBinCenter(i) < - TMath::Pi()/2 ||
+	  gHist->GetBinCenter(i) > TMath::Pi()/2)){
+	continue;
+      }
+
       fMu  += gHist->GetBinContent(i) * (gHist->GetBinCenter(i) - mean);
       fMu2 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),2);
       fMu3 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),3);
@@ -1972,9 +1989,9 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(TH1D* gHist,
 
     // ----------------------------------------------------------------------
     // then calculate the higher moment errors
-    cout<<fNormalization<<" "<<gHist->GetEffectiveEntries()<<" "<<gHist->Integral()<<endl;
-    cout<<gHist->GetMean()<<" "<<gHist->GetRMS()<<" "<<gHist->GetSkewness(1)<<" "<<gHist->GetKurtosis(1)<<endl;
-    cout<<gHist->GetMeanError()<<" "<<gHist->GetRMSError()<<" "<<gHist->GetSkewness(11)<<" "<<gHist->GetKurtosis(11)<<endl;
+    // cout<<fNormalization<<" "<<gHist->GetEffectiveEntries()<<" "<<gHist->Integral()<<endl;
+    // cout<<gHist->GetMean()<<" "<<gHist->GetRMS()<<" "<<gHist->GetSkewness(1)<<" "<<gHist->GetKurtosis(1)<<endl;
+    // cout<<gHist->GetMeanError()<<" "<<gHist->GetRMSError()<<" "<<gHist->GetSkewness(11)<<" "<<gHist->GetKurtosis(11)<<endl;
 
     Double_t normError = gHist->GetEffectiveEntries(); //gives the "ROOT" meanError
 
@@ -1992,8 +2009,8 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(TH1D* gHist,
     Double_t Lambda13 = ((-4*fMu3*fMu3+fMu4-2*fMu4*fMu4+fMu6)*sigma)/(2*normError);
     Double_t Lambda23 = (6*fMu3*fMu3*fMu3-(3+2*fMu4)*fMu5+3*fMu3*(8+fMu4+2*fMu4*fMu4-fMu6)/2+fMu7)/normError;
 
-    cout<<Lambda11<<" "<<Lambda22<<" "<<Lambda33<<" "<<endl;
-    cout<<Lambda12<<" "<<Lambda13<<" "<<Lambda23<<" "<<endl;
+    // cout<<Lambda11<<" "<<Lambda22<<" "<<Lambda33<<" "<<endl;
+    // cout<<Lambda12<<" "<<Lambda13<<" "<<Lambda23<<" "<<endl;
 
     meanError        = sigma / TMath::Sqrt(normError); 
     sigmaError       = TMath::Sqrt(Lambda11);
