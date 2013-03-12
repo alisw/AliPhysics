@@ -43,7 +43,9 @@ public:
 
     static const Int_t knBinsPhi=6;
 
-    AliAnalysisTaskPi0v2(const char *name,Int_t harmonic=2);
+    AliAnalysisTaskPi0v2(const char *name="pi0v2",Int_t harmonic=2);
+    AliAnalysisTaskPi0v2(const AliAnalysisTaskPi0v2&); // not implemented
+    AliAnalysisTaskPi0v2& operator=(const AliAnalysisTaskPi0v2&); // not implemented
     virtual ~AliAnalysisTaskPi0v2();
 
     virtual void   UserCreateOutputObjects();
@@ -94,7 +96,9 @@ private:
     Bool_t GetTPCEventPlane();
 
     void GetV0EP(AliVEvent * event,Double_t &rpv0a,Double_t &rpv0c);
-    void OpenInfoCalibration(Int_t run);
+    void LoadVZEROCalibration(Int_t run);
+    void LoadTPCCalibration(Int_t run);
+    
     Double_t GetWeight(TObject* track1);
     Double_t GetPhiWeight(TObject* track1);
     TH1F* SelectPhiDist(AliVTrack *track);
@@ -133,10 +137,11 @@ private:
     // Class variables and pointer
 
     AliV0ReaderV1 *fV0Reader; // V0Reader
-    AliConversionSelection **fConversionSelection; // Selection of Particles for given Cut
+    Int_t fNCuts; // Number of Photon Cuts for v2 analysis
+    AliConversionSelection **fConversionSelection; //[fNCuts] Selection of Particles for given Cut
     TClonesArray *fConversionGammas; //Reconstructed Photons;
     Int_t fNCentralityBins; // Number of Centrality Bins
-    Double_t *fCentralityBins; // CentralityBins for Analysis
+    Double_t *fCentralityBins; //[fNCentralityBins] CentralityBins for Analysis
     Float_t fCentrality; //Event Centrality
     Int_t fCentralityBin; // Event Centrality Bin
     Int_t fNBinsPhi; // Number of Phi wrt RP bins
@@ -154,12 +159,11 @@ private:
     Double_t fRPV0ABF;// V0A event plane before flattening
     Double_t fRPV0CBF;// V0C event plane before flattening
     Double_t fRPTPCBF;// TPC event plane before flattening
-    Int_t fNCuts; // NUmber of Photon Cuts for v2 analysis
     AliConversionCuts *fConversionCuts; // Cuts used by the V0Reader
     TRandom3 *fRandomizer; // Randomizer for Event Plane Randomisation
     TList *fOutputList; // List for Output (Histograms etc.)
     EPDGCode fMesonPDGCode; // PDG Code of the processed Meson (for MC truth)
-    Double_t *fInvMassRange; // Inv Mass Range
+    Double_t fInvMassRange[2]; // Inv Mass Range
     Double_t fDeltaPsiRP; // Difference between subEventPlane angles
     Int_t fRunNumber; // current run number
     Int_t fRunIndex; // current internal run index
@@ -237,10 +241,7 @@ private:
     //THnSparse *hEPVertex;
     THnSparse *hEPQA;
 
-    AliAnalysisTaskPi0v2(const AliAnalysisTaskPi0v2&); // not implemented
-    AliAnalysisTaskPi0v2& operator=(const AliAnalysisTaskPi0v2&); // not implemented
-  
-    ClassDef(AliAnalysisTaskPi0v2, 3); // example of analysis
+    ClassDef(AliAnalysisTaskPi0v2, 4); // example of analysis
 };
 
 #endif

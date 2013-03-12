@@ -87,6 +87,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
    fPSigSmearingCte(0),
    fBrem(NULL),
    fRandom(0),
+   fElectronArraySize(500),
    fElectronLabelArray(NULL),
    fBackgroundHandler(0),
    fCutString(NULL),
@@ -104,6 +105,48 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
       fBrem->SetNpx(100000);
    }
 
+}
+
+//________________________________________________________________________
+AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref) :
+   AliAnalysisCuts(ref),
+   fHistograms(NULL),
+   fMesonKind(ref.fMesonKind),
+   fMaxR(ref.fMaxR),
+   fChi2CutMeson(ref.fChi2CutMeson),
+   fAlphaMinCutMeson(ref.fAlphaMinCutMeson),
+   fAlphaCutMeson(ref.fAlphaCutMeson),
+   fRapidityCutMeson(ref.fRapidityCutMeson),
+   fUseRotationMethodInBG(ref.fUseRotationMethodInBG),
+   fDoBG(ref.fDoBG),
+   fdoBGProbability(ref.fdoBGProbability),
+   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
+   fnDegreeRotationPMForBG(ref.fnDegreeRotationPMForBG),
+   fNumberOfBGEvents(ref. fNumberOfBGEvents),
+   fOpeningAngle(ref.fOpeningAngle),
+   fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
+   fminV0Dist(ref.fminV0Dist),
+   fDoSharedElecCut(ref.fDoSharedElecCut),
+   fUseMCPSmearing(ref.fUseMCPSmearing),
+   fPBremSmearing(ref.fPBremSmearing),
+   fPSigSmearing(ref.fPSigSmearing),
+   fPSigSmearingCte(ref.fPSigSmearingCte),
+   fBrem(NULL),
+   fRandom(ref.fRandom),
+   fElectronArraySize(ref.fElectronArraySize),
+   fElectronLabelArray(NULL),
+   fBackgroundHandler(ref.fBackgroundHandler),
+   fCutString(NULL),
+   hMesonCuts(NULL),
+   hMesonBGCuts(NULL)
+   
+{
+    // Copy Constructor
+    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
+    fCutString=new TObjString((GetCutNumber()).Data());
+    fElectronLabelArray = new Int_t[fElectronArraySize];
+    if (fBrem == NULL)fBrem = (TF1*)ref.fBrem->Clone("fBrem");
+    // Histograms are not copied, if you need them, call InitCutHistograms
 }
 
 //________________________________________________________________________

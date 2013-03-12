@@ -61,6 +61,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   void FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0);
    
   AliConversionMesonCuts(const char *name="MesonCuts", const char * title="Meson Cuts");
+  AliConversionMesonCuts(const AliConversionMesonCuts&);
+  AliConversionMesonCuts& operator=(const AliConversionMesonCuts&); // not implemented
+
   virtual ~AliConversionMesonCuts();                            //virtual destructor
 
   virtual Bool_t IsSelected(TObject* /*obj*/){return kTRUE;}
@@ -133,20 +136,14 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   Double_t fPSigSmearingCte; //
   TF1 *fBrem; //
   TRandom3 fRandom; //
-  Int_t *fElectronLabelArray; // Array with elec/pos v0 label
+  Int_t fElectronArraySize; // size of electron label array
+  Int_t *fElectronLabelArray; //[fElectronArraySize]
   Int_t fBackgroundHandler; //
   
   // Histograms
   TObjString *fCutString; // cut number used for analysis
   TH1F *hMesonCuts; // bookkeeping for meson cuts
   TH1F *hMesonBGCuts; // bookkeeping for meson bg cuts
-
-
-private:
-
-  AliConversionMesonCuts(const AliConversionMesonCuts&); // not implemented
-  AliConversionMesonCuts& operator=(const AliConversionMesonCuts&); // not implemented
-
 
   ClassDef(AliConversionMesonCuts,3)
 };

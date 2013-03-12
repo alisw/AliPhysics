@@ -96,6 +96,9 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t GetIsFromPileup(){return fRemovePileUp;}
   
   AliConversionCuts(const char *name="V0Cuts", const char * title="V0 Cuts");
+  AliConversionCuts(const AliConversionCuts &ref);
+  AliConversionCuts& operator=(const AliConversionCuts&); // not implemented
+
   virtual ~AliConversionCuts();                            //virtual destructor
 
   virtual Bool_t IsSelected(TObject* /*obj*/){return kTRUE;}
@@ -318,14 +321,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   TH1F *hVertexZ; // vertex z distribution for selected events
   TH1F *hTriggerClass; //fired offline trigger class
 
-
-private:
-
-  AliConversionCuts(const AliConversionCuts&); // not implemented
-  AliConversionCuts& operator=(const AliConversionCuts&); // not implemented
-
-
-  ClassDef(AliConversionCuts,2)
+  ClassDef(AliConversionCuts,3)
 };
 
 
