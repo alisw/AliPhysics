@@ -21,6 +21,7 @@
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliAODMCHeader.h"
 #include "AliMCEvent.h"
 #include "AliLog.h"
 #include "AliRhoParameter.h"
@@ -780,7 +781,23 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
   const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
   
   if (MCEvent())
+  {
     fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+    if (!fPythiaHeader)
+    {
+      // Check if AOD
+      AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+      if (aodMCH)
+        for(UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++)
+        {
+          fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+          if(fPythiaHeader) break;
+        }
+    }
+  }
+
+
 
   if (fPythiaHeader) {
     Double_t pthard = fPythiaHeader->GetPtHard();
