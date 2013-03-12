@@ -1055,8 +1055,10 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kPseudoProperTime] = -2e10;
   if(mother) {    // same mother
     FillVarVParticle(mother, values);
-    Double_t lxy = ((mother->Xv()- values[AliDielectronVarManager::kXvPrim]) * mother->Px() + 
-		    (mother->Yv()- values[AliDielectronVarManager::kYvPrim]) * mother->Py() )/mother->Pt();
+    Double_t vtxX, vtxY, vtxZ;
+    mc->GetPrimaryVertex(vtxX,vtxY,vtxZ);
+    Double_t lxy = ((mother->Xv()- vtxX) * mother->Px() + 
+		    (mother->Yv()- vtxY) * mother->Py() )/mother->Pt();
     values[AliDielectronVarManager::kPseudoProperTime] = lxy*(TDatabasePDG::Instance()->GetParticle(443)->Mass())/mother->Pt();
   }
   // AliVParticle part
@@ -1395,15 +1397,15 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     // values[AliDielectronVarManager::kPseudoProperTimePull] = -1e10;
     if(samemother && fgEvent) {
       if(pair->GetFirstDaughter()->GetLabel() > 0) {
-        const AliVParticle* d1 = mc->GetMCTrackFromMCEvent(pair->GetFirstDaughter()->GetLabel());
-        const AliVParticle* motherMC = mc->GetMCTrackFromMCEvent(((AliMCParticle*)d1)->GetMother());
-        const AliMCEvent *mcevent = mc->GetMCEvent();
-	const AliVVertex* mcVtx = mcevent ? mcevent->GetPrimaryVertex() : 0x0;
-	if(motherMC && mcVtx) {
+        const AliVParticle *motherMC = 0x0;
+        if(fgEvent->IsA() == AliESDEvent::Class())  motherMC = (AliMCParticle*)mc->GetMCTrackMother((AliESDtrack*)pair->GetFirstDaughter());
+        else if(fgEvent->IsA() == AliAODEvent::Class())  motherMC = (AliAODMCParticle*)mc->GetMCTrackMother((AliAODTrack*)pair->GetFirstDaughter());
+        Double_t vtxX, vtxY, vtxZ;
+	if(motherMC && mc->GetPrimaryVertex(vtxX,vtxY,vtxZ)) {
 	  Int_t motherLbl = motherMC->GetLabel();
 	  values[AliDielectronVarManager::kHasCocktailMother]=mc->CheckParticleSource(motherLbl, AliDielectronSignalMC::kDirect);
-      	  const Double_t lxyMC = ( (motherMC->Xv() - mcVtx->GetX()) * motherMC->Px() +
-                                   (motherMC->Yv() - mcVtx->GetY()) * motherMC->Py()   ) / motherMC->Pt();
+      	  const Double_t lxyMC = ( (motherMC->Xv() - vtxX) * motherMC->Px() +
+                                   (motherMC->Yv() - vtxY) * motherMC->Py()   ) / motherMC->Pt();
 	  const Double_t pseudoMC = lxyMC * (TDatabasePDG::Instance()->GetParticle(443)->Mass())/motherMC->Pt();
 	  values[AliDielectronVarManager::kPseudoProperTimeResolution] = values[AliDielectronVarManager::kPseudoProperTime] - pseudoMC;
           if (errPseudoProperTime2 > 0)
@@ -1790,12 +1792,9 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   // nanoAODs (w/o AliEventPlane branch) should have the tpc event plane angle stored in the header
   if(!header->GetEventplaneP()) {
     values[AliDielectronVarManager::kTPCrpH2uc]  = header->GetEventplane();
-    //TODO: activate after new nano production
-    /*
     values[AliDielectronVarManager::kTPCmagH2uc] = header->GetEventplaneMag();
     values[AliDielectronVarManager::kTPCxH2uc]   = TMath::Cos(header->GetEventplane())*header->GetEventplaneMag();
     values[AliDielectronVarManager::kTPCyH2uc]   = TMath::Sin(header->GetEventplane())*header->GetEventplaneMag();
-    */
   }
 
   const AliAODVertex *vtxtpc = GetVertex(event, AliAODVertex::kMainTPC);
@@ -1834,13 +1833,13 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
     TVector2 *qcorr  = const_cast<AliEventplane *>(evplane)->GetQVector();  // This is the "corrected" Q-Vector
     TVector2 *qcsub1 = const_cast<AliEventplane *>(evplane)->GetQsub1();
     TVector2 *qcsub2 = const_cast<AliEventplane *>(evplane)->GetQsub2();
-    if(qcorr && qcsub1 && qcsub2) {
-
+    if(qcorr) {
       values[AliDielectronVarManager::kTPCxH2]   = qcorr->X();
       values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();
       values[AliDielectronVarManager::kTPCmagH2] = qcorr->Mod();
       values[AliDielectronVarManager::kTPCrpH2]  = ((TMath::Abs(qcorr->X())>1.0e-10) ? TMath::ATan2(qcorr->Y(),qcorr->X())/2.0 : 0.0);
-
+    }
+    if(qcsub1 && qcsub2) {
       values[AliDielectronVarManager::kTPCsub1xH2]   = qcsub1->X();
       values[AliDielectronVarManager::kTPCsub1yH2]   = qcsub1->Y();
       values[AliDielectronVarManager::kTPCsub1rpH2]  = ((TMath::Abs(qcsub1->X())>1.0e-10) ? TMath::ATan2(qcsub1->Y(),qcsub1->X())/2.0 : 0.0);
@@ -1853,7 +1852,6 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
 									 values[AliDielectronVarManager::kTPCsub2rpH2]) );
       values[AliDielectronVarManager::kTPCsub12DiffH2Sin] = TMath::Sin( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] -
 									    values[AliDielectronVarManager::kTPCsub2rpH2]) );
-
     }
   }
 }

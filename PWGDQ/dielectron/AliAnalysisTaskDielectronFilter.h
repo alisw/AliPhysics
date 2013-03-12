@@ -61,7 +61,9 @@ public:
 
   void SetStoreLikeSignCandidates(Bool_t storeLS) { fStoreLikeSign = storeLS; }
   void SetStoreRotatedPairs(Bool_t storeTR) { fStoreRotatedPairs = storeTR; }
-  void SetStoreTrackLegs(Bool_t storeTrackRef) { fCreateNanoAOD = storeTrackRef; }
+  void SetStoreEventsWithSingleTracks(Bool_t storeSingleTrk) { fStoreEventsWithSingleTracks = storeSingleTrk; }
+  void SetCreateNanoAODs(Bool_t storeTrackRef) { fCreateNanoAOD = storeTrackRef; }
+  void SetStoreHeader(Bool_t storeHeader) { fStoreHeader = storeHeader; }
 
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
 
@@ -84,7 +86,9 @@ private:
   
   Bool_t fStoreLikeSign;        // flag to store like-sign candidates
   Bool_t fStoreRotatedPairs;    // flag to store rotation
-  Bool_t fCreateNanoAOD;       // flag to store track legs
+  Bool_t fStoreEventsWithSingleTracks;    // flag to store events with a least one reconstructed track 
+  Bool_t fCreateNanoAOD;        // flag to create nanoAODs 
+  Bool_t fStoreHeader;          // flag to store header for all events 
 
   AliAnalysisCuts *fEventFilter;     // event filter
   

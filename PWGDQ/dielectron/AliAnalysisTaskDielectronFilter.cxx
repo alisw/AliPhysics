@@ -54,7 +54,9 @@ fTriggerLogic(kAny),
 fTriggerAnalysis(0x0),
 fStoreLikeSign(kFALSE),
 fStoreRotatedPairs(kFALSE),
+fStoreEventsWithSingleTracks(kFALSE),
 fCreateNanoAOD(kFALSE),
+fStoreHeader(kFALSE),
 fEventFilter(0x0)
 {
   //
@@ -76,7 +78,9 @@ fTriggerLogic(kAny),
 fTriggerAnalysis(0x0),
 fStoreLikeSign(kFALSE),
 fStoreRotatedPairs(kFALSE),
+fStoreEventsWithSingleTracks(kFALSE),
 fCreateNanoAOD(kFALSE),
+fStoreHeader(kFALSE),
 fEventFilter(0x0)
 {
   //
@@ -256,9 +260,13 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
   else hasCand = (fDielectron->HasCandidates());
 
   if(fStoreRotatedPairs) hasCand = (hasCand || fDielectron->HasCandidatesTR());
+ 
+  if(fStoreEventsWithSingleTracks) hasCand = (hasCand || fDielectron->GetTrackArray(0) || fDielectron->GetTrackArray(1));
+
   
+  AliAODHandler *aodH=(AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+  AliAODExtension *extDielectron = aodH->GetFilteredAOD("AliAOD.Dielectron.root");
   if(hasCand){
-    AliAODHandler *aodH=(AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     AliAODEvent *aod = aodH->GetAOD();
     
     // reset bit for all tracks
@@ -285,7 +293,6 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
       }
     }
     
-    AliAODExtension *extDielectron = aodH->GetFilteredAOD("AliAOD.Dielectron.root");
     extDielectron->SelectEvent();
     Int_t ncandidates=fDielectron->GetPairArray(1)->GetEntriesFast();
     if (ncandidates==1) fEventStat->Fill((kNbinsEvent));
@@ -314,8 +321,14 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
        nanoEv->AddVertex(tmpSpd);
        nanoEv->GetVertex(0)->SetNContributors((static_cast<AliAODEvent*>(InputEvent()))->GetPrimaryVertex()->GetNContributors());
        nanoEv->GetVertex(1)->SetNContributors((static_cast<AliAODEvent*>(InputEvent()))->GetPrimaryVertexSPD()->GetNContributors());
+       // set event plane 
+       nanoEv->GetHeader()->SetEventplane((static_cast<AliAODEvent*>(InputEvent()))->GetHeader()->GetEventplaneP());
+       nanoEv->GetHeader()->ResetEventplanePointer(); 
+       // set multiplicity
+       nanoEv->GetHeader()->SetRefMultiplicity((Int_t)values[AliDielectronVarManager::kNTrk]);
+       nanoEv->GetHeader()->SetRefMultiplicityPos((Int_t)values[AliDielectronVarManager::kNacc]);
+       //nanoEv->GetHeader()->SetRefMultiplicityNeg(values[AliDielectronVarManager::kMatchEffITSTPC]);
 
- 
          for(int kj=0; kj<(fDielectron->GetTrackArray(0))->GetEntries(); kj++){
          Int_t posit = nanoEv->AddTrack((AliAODTrack*)fDielectron->GetTrackArray(0)->At(kj));
          Int_t posVtx = nanoEv->AddVertex(((AliAODTrack*)fDielectron->GetTrackArray(0)->At(kj))->GetProdVertex()); 
@@ -364,7 +377,15 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
     }
     if(isAOD) t->Fill();
   }
-  
+ 
+  if(fCreateNanoAOD && isAOD && (!hasCand) &&  fStoreHeader)  
+   {
+   // set event plane 
+   extDielectron->GetAOD()->GetHeader()->SetEventplane((static_cast<AliAODEvent*>(InputEvent()))->GetHeader()->GetEventplaneP());
+   extDielectron->GetAOD()->GetHeader()->ResetEventplanePointer();
+   extDielectron->GetTree()->Fill(); // fill header for all events without tracks
+   }
+ 
   PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));
   PostData(2,fEventStat);
   return;
