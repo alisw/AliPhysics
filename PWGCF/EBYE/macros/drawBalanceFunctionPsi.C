@@ -1,5 +1,5 @@
 const Int_t numberOfCentralityBins = 12;
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+TString centralityArray[numberOfCentralityBins] = {"0-100","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
 
 void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root", 
 			    Int_t gCentrality = 1,
@@ -7,10 +7,13 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
 			    Int_t gBit = -1,
 			    const char* gCentralityEstimator = 0x0,
 			    Double_t psiMin = -0.5, Double_t psiMax = 0.5,
+			    Double_t vertexZMin = -10.,
+			    Double_t vertexZMax = 10.,
 			    Double_t ptTriggerMin = -1.,
 			    Double_t ptTriggerMax = -1.,
 			    Double_t ptAssociatedMin = -1.,
 			    Double_t ptAssociatedMax = -1.,
+			    Bool_t kUseVzBinning = kTRUE,
 			    Bool_t k2pMethod = kFALSE,
 			    Bool_t k2pMethod2D = kFALSE,
 			    TString eventClass = "EventPlane", //Can be "EventPlane", "Centrality", "Multiplicity"
@@ -45,8 +48,8 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
     draw(listBF,listBFShuffled,listBFMixed,
 	 gCentrality,gDeltaEtaDeltaPhi,
 	 gCentralityEstimator,
-	 psiMin,psiMax,
-	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,
+	 psiMin,psiMax,vertexZMin,vertexZMax,
+	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,kUseVzBinning,
 	 k2pMethod,k2pMethod2D,eventClass,bRootMoments);  
 }
 
@@ -205,8 +208,11 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 	  Int_t gCentrality, Int_t gDeltaEtaDeltaPhi, 
 	  const char* gCentralityEstimator,
 	  Double_t psiMin, Double_t psiMax,
+	  Double_t vertexZMin,
+	  Double_t vertexZMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
+	  Bool_t kUseVzBinning,
 	  Bool_t k2pMethod = kFALSE,Bool_t k2pMethod2D = kFALSE, TString eventClass="EventPlane",Bool_t bRootMoments=kTRUE) {
   gROOT->LoadMacro("~/SetPlotStyle.C");
   SetPlotStyle();
@@ -256,6 +262,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   b->SetHistNnp(hNP);
   b->SetHistNpp(hPP);
   b->SetHistNnn(hNN);
+  if(kUseVzBinning) b->SetVertexZBinning(kTRUE);
 
   //balance function shuffling
   AliTHn *hPShuffled = NULL;
@@ -299,6 +306,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     bShuffled->SetHistNnp(hNPShuffled);
     bShuffled->SetHistNpp(hPPShuffled);
     bShuffled->SetHistNnn(hNNShuffled);
+    if(kUseVzBinning) bShuffled->SetVertexZBinning(kTRUE);
   }
 
   //balance function mixing
@@ -345,6 +353,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     bMixed->SetHistNnp(hNPMixed);
     bMixed->SetHistNpp(hPPMixed);
     bMixed->SetHistNnn(hNNMixed);
+    if(kUseVzBinning) bMixed->SetVertexZBinning(kTRUE);
   }
 
   TH1D *gHistBalanceFunction;
@@ -387,7 +396,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   //Raw balance function
   if(k2pMethod && !k2pMethod2D){ 
     if(bMixed){
-      gHistBalanceFunction = b->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+      gHistBalanceFunction = b->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     }
     else{
       cerr<<"RAW: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
@@ -397,9 +406,9 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   else if(k2pMethod && k2pMethod2D){ 
     if(bMixed){
       if(gDeltaEtaDeltaPhi==1) //Delta eta
-	gHistBalanceFunction = b->GetBalanceFunction1DFrom2D2pMethod(0,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+	gHistBalanceFunction = b->GetBalanceFunction1DFrom2D2pMethod(0,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
       else //Delta phi
-	gHistBalanceFunction = b->GetBalanceFunction1DFrom2D2pMethod(1,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+	gHistBalanceFunction = b->GetBalanceFunction1DFrom2D2pMethod(1,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     }
     else{
       cerr<<"RAW: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
@@ -407,7 +416,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     }
   }
   else
-    gHistBalanceFunction = b->GetBalanceFunctionHistogram(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistBalanceFunction = b->GetBalanceFunctionHistogram(0,gDeltaEtaDeltaPhi,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistBalanceFunction->SetMarkerStyle(20);
   gHistBalanceFunction->SetTitle(histoTitle.Data());
   gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.3);
@@ -416,7 +425,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   //Shuffled balance function
   //if(k2pMethod){ 
   //if(bMixed)
-      //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+      //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,vertexZMin,vertexZMax,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
   //else{
   //cerr<<"SHUFFLE: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
   //return;
@@ -425,9 +434,9 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   //else if(k2pMethod2D){ 
   //if(bMixed){
   //  if(gDeltaEtaDeltaPhi==1) //Delta eta
-  //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunction1DFrom2D2pMethod(0,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+  //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunction1DFrom2D2pMethod(0,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
   //  else //Delta phi
-  //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunction1DFrom2D2pMethod(1,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+  //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunction1DFrom2D2pMethod(1,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
   //}
   //else{
   //  cerr<<"SHUFFLE: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
@@ -435,14 +444,14 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   //}
   //}
   //else
-  //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram(0,gDeltaEtaDeltaPhi,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   //gHistBalanceFunctionShuffled->SetMarkerStyle(24);
   //gHistBalanceFunctionShuffled->SetName("gHistBalanceFunctionShuffled");
   
   //Mixed balance function
   if(k2pMethod && !k2pMethod2D){ 
     if(bMixed)
-      gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+      gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     else{
       cerr<<"MIXED: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
       return;
@@ -451,9 +460,9 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   else if(k2pMethod && k2pMethod2D){ 
     if(bMixed){
       if(gDeltaEtaDeltaPhi==1) //Delta eta
-	gHistBalanceFunctionMixed = bMixed->GetBalanceFunction1DFrom2D2pMethod(0,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+	gHistBalanceFunctionMixed = bMixed->GetBalanceFunction1DFrom2D2pMethod(0,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
       else //Delta phi
-	gHistBalanceFunctionMixed = bMixed->GetBalanceFunction1DFrom2D2pMethod(1,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+	gHistBalanceFunctionMixed = bMixed->GetBalanceFunction1DFrom2D2pMethod(1,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     }
     else{
       cerr<<"MIXED: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
@@ -461,7 +470,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     }
   }
   else
-    gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionHistogram(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionHistogram(0,gDeltaEtaDeltaPhi,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistBalanceFunctionMixed->SetMarkerStyle(25);
   gHistBalanceFunctionMixed->SetName("gHistBalanceFunctionMixed");
   
