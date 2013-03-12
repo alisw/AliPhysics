@@ -51,7 +51,7 @@ fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
 fhNEvents(0),                 fhNPileUpEvents(0),
 fhZVertex(0),                 
-fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
+fhPileUpClusterMult(0),       //fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
 fhCentrality(0),              fhEventPlaneAngle(0),
 fhNMergedFiles(0),            fhScaleFactor(0),
@@ -80,7 +80,7 @@ fhNEvents(maker.fhNEvents),
 fhNPileUpEvents(maker.fhNPileUpEvents),
 fhZVertex(maker.fhZVertex),    
 fhPileUpClusterMult(maker.fhPileUpClusterMult),
-fhPileUpClusterMultAndSPDPileUp(maker.fhPileUpClusterMultAndSPDPileUp),
+//fhPileUpClusterMultAndSPDPileUp(maker.fhPileUpClusterMultAndSPDPileUp),
 fhTrackMult(maker.fhTrackMult),
 fhCentrality(maker.fhCentrality),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
@@ -190,8 +190,8 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   if( fReader->IsPileUpFromNotSPDAndNotEMCal() )
     fhNPileUpEvents->Fill(7.5);
   
-  if(fReader->IsPileUpFromSPD())
-    fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
+  //if(fReader->IsPileUpFromSPD())
+  //  fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
     
   fhPileUpClusterMult ->Fill(fReader->GetNPileUpClusters  ());
   fhTrackMult         ->Fill(fReader->GetTrackMultiplicity());
@@ -339,9 +339,9 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhPileUpClusterMult->SetXTitle("# clusters");
   fOutputContainer->Add(fhPileUpClusterMult);
   
-  fhPileUpClusterMultAndSPDPileUp = new TH1F("hPileUpClusterMultAndSPDPileUp", "Number of clusters per event with large time (|t| > 20 ns, events tagged as pile-up by SPD)" , 100 , 0 , 100 ) ;
-  fhPileUpClusterMultAndSPDPileUp->SetXTitle("# clusters");
-  fOutputContainer->Add(fhPileUpClusterMultAndSPDPileUp);
+  //fhPileUpClusterMultAndSPDPileUp = new TH1F("hPileUpClusterMultAndSPDPileUp", "Number of clusters per event with large time (|t| > 20 ns, events tagged as pile-up by SPD)" , 100 , 0 , 100 ) ;
+  //fhPileUpClusterMultAndSPDPileUp->SetXTitle("# clusters");
+  //fOutputContainer->Add(fhPileUpClusterMultAndSPDPileUp);
   
   fhNPileUpVertSPD  = new TH1F ("hNPileUpVertSPD","N pile-up SPD vertex", 50,0,50);
   fhNPileUpVertSPD->SetYTitle("# vertex ");

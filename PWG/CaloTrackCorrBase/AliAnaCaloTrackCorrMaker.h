@@ -98,7 +98,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhNPileUpEvents;     //! N events pasing pile up cut
   TH1F *   fhZVertex;           //! Vertex of accepted event
   TH1F *   fhPileUpClusterMult; //! N clusters with high time
-  TH1F *   fhPileUpClusterMultAndSPDPileUp; //! N clusters with high time in events tagged as pile-up by SPD
+  //TH1F *   fhPileUpClusterMultAndSPDPileUp; //! N clusters with high time in events tagged as pile-up by SPD
   TH1F *   fhTrackMult;         //! Number of tracks per event histogram
   TH1F *   fhCentrality;        //! Histogram with centrality bins
   TH1F *   fhEventPlaneAngle;   //! Histogram with Event plane angle
@@ -115,7 +115,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,16)
+  ClassDef(AliAnaCaloTrackCorrMaker,17)
 } ;
  
 
