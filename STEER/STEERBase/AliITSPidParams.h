@@ -164,48 +164,28 @@ class AliITSPidParams : public TNamed {
     return BetheBloch(mom,mass,fSDDHadronMPVBetheParams);
   }
   Double_t GetSDDKaonLandauWidth(Double_t mom) const {
-    Double_t xlw = 0.3;
-    Double_t xup = 0.4;
-    if (mom > xlw) return fSDDKaonLandauWidth->Eval(mom);
-    else {
-      Double_t ylw =fSDDKaonLandauWidth->Eval(xlw);
-      Double_t yup =fSDDKaonLandauWidth->Eval(xup);
-      return ExtrapolateWidth(mom,xlw,ylw,xup,yup);
-   }
+    Double_t xmin = 0.2;
+    mom = (mom > xmin) ? mom : xmin;
+    return fSDDKaonLandauWidth->Eval(mom);
   }
   Double_t GetSDDKaonGaussWidth(Double_t mom) const {
-    Double_t xlw = 0.3;
-    Double_t xup = 0.4;
-    if (mom > xlw) return fSDDKaonGaussWidth->Eval(mom);
-    else {
-      Double_t ylw =fSDDKaonGaussWidth->Eval(xlw);
-      Double_t yup =fSDDKaonGaussWidth->Eval(xup);
-      return ExtrapolateWidth(mom,xlw,ylw,xup,yup);
-    }
+    Double_t xmin = 0.2;
+    mom = (mom > xmin) ? mom : xmin;
+    return fSDDKaonGaussWidth->Eval(mom);
   }
   Double_t GetSSDKaonMPV(Double_t mom) const {
     Double_t mass = AliPID::ParticleMass(AliPID::kKaon);
     return BetheBloch(mom,mass,fSSDHadronMPVBetheParams);
   }
   Double_t GetSSDKaonLandauWidth(Double_t mom) const {
-    Double_t xlw = 0.3;
-    Double_t xup = 0.4;
-    if (mom > xlw) return fSSDKaonLandauWidth->Eval(mom);
-    else {
-      Double_t ylw =fSSDKaonLandauWidth->Eval(xlw);
-      Double_t yup =fSSDKaonLandauWidth->Eval(xup);
-      return ExtrapolateWidth(mom,xlw,ylw,xup,yup);
-    }
+    Double_t xmin = 0.2;
+    mom = (mom > xmin) ? mom : xmin;
+    return fSSDKaonLandauWidth->Eval(mom);
   }
   Double_t GetSSDKaonGaussWidth(Double_t mom) const {
-    Double_t xlw = 0.3;
-    Double_t xup = 0.4;
-    if (mom > xlw) return fSSDKaonGaussWidth->Eval(mom);
-    else {
-      Double_t ylw =fSSDKaonGaussWidth->Eval(xlw);
-      Double_t yup =fSSDKaonGaussWidth->Eval(xup);
-      return ExtrapolateWidth(mom,xlw,ylw,xup,yup);
-    }
+    Double_t xmin = 0.2;
+    mom = (mom > xmin) ? mom : xmin;
+    return fSSDKaonGaussWidth->Eval(mom);
   }
 
   // proton getters
@@ -214,48 +194,28 @@ class AliITSPidParams : public TNamed {
     return BetheBloch(mom,mass,fSDDHadronMPVBetheParams);
   }
   Double_t GetSDDProtLandauWidth(Double_t mom) const {
-    Double_t xlw = 0.35;
-    Double_t xup = 0.45;
-    if (mom > xlw) return fSDDProtLandauWidth->Eval(mom);
-    else {
-      Double_t ylw =fSDDProtLandauWidth->Eval(xlw);
-      Double_t yup =fSDDProtLandauWidth->Eval(xup);
-      return ExtrapolateWidth(mom,xlw,ylw,xup,yup);
-   }
+    Double_t xmin = 0.4;
+    mom = (mom > xmin) ? mom : xmin;
+    return fSDDProtLandauWidth->Eval(mom);
   }
   Double_t GetSDDProtGaussWidth(Double_t mom) const {
-    Double_t xlw = 0.35;
-    Double_t xup = 0.45;
-    if (mom > xlw) return fSDDProtGaussWidth->Eval(mom);
-    else {
-      Double_t ylw =fSDDProtGaussWidth->Eval(xlw);
-      Double_t yup =fSDDProtGaussWidth->Eval(xup);
-      return ExtrapolateWidth(mom,xlw,ylw,xup,yup);
-   }
+    Double_t xmin = 0.4;
+    mom = (mom > xmin) ? mom : xmin;
+    return fSDDProtGaussWidth->Eval(mom);
   }
   Double_t GetSSDProtMPV(Double_t mom) const {
     Double_t mass = AliPID::ParticleMass(AliPID::kProton);
     return BetheBloch(mom,mass,fSSDHadronMPVBetheParams);
   }
   Double_t GetSSDProtLandauWidth(Double_t mom) const {
-    Double_t xlw = 0.35;
-    Double_t xup = 0.45;
-    if (mom > xlw) return fSSDProtLandauWidth->Eval(mom);
-    else {
-      Double_t ylw =fSSDProtLandauWidth->Eval(xlw);
-      Double_t yup =fSSDProtLandauWidth->Eval(xup);
-      return ExtrapolateWidth(mom,xlw,ylw,xup,yup);
-   }
+    Double_t xmin = 0.4;
+    mom = (mom > xmin) ? mom : xmin;
+    return fSSDProtLandauWidth->Eval(mom);
   }
   Double_t GetSSDProtGaussWidth(Double_t mom) const {
-    Double_t xlw = 0.35;
-    Double_t xup = 0.45;
-    if (mom > xlw) return fSSDProtGaussWidth->Eval(mom);
-    else {
-      Double_t ylw =fSSDProtGaussWidth->Eval(xlw);
-      Double_t yup =fSSDProtGaussWidth->Eval(xup);
-      return ExtrapolateWidth(mom,xlw,ylw,xup,yup);
-   }
+    Double_t xmin = 0.4;
+    mom = (mom > xmin) ? mom : xmin;
+    return fSSDProtGaussWidth->Eval(mom);
   }
 
  private:
@@ -303,3 +263,4 @@ class AliITSPidParams : public TNamed {
   ClassDef(AliITSPidParams,2);
 };
 #endif
+
