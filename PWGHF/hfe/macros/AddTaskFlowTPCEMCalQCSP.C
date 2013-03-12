@@ -12,7 +12,7 @@ class AliFlowEventSimpleCuts;
 class AliAnalysisDataContainer;
 class AliHFEextraCuts;
 
-AliAnalysisTaskFlowTPCEMCalQCSP* AddTaskFlowTPCEMCalQCSP(
+AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                               TString uniqueID = "",
                                               Float_t centrMin ,
                                               Float_t centrMax ,
@@ -29,6 +29,10 @@ AliAnalysisTaskFlowTPCEMCalQCSP* AddTaskFlowTPCEMCalQCSP(
                                               Double_t Dispersion,
                                               Int_t minTPCCluster,
                                               AliHFEextraCuts::ITSPixel_t pixel,
+                                              Bool_t purity = kTRUE,
+                                              Bool_t SideBandsFlow = kFALSE,
+                                              Bool_t Phi_minus_psi = kFALSE,
+                                              const char *Cent = "V0M",
                                               Bool_t QC = kTRUE, // use qc2 and qc4
                                               Bool_t SP_TPC = kTRUE, //use tpc sp method
                                               Bool_t VZERO_SP = kFALSE, // use vzero sp method
@@ -60,17 +64,21 @@ AliAnalysisTaskFlowTPCEMCalQCSP* AddTaskFlowTPCEMCalQCSP(
 //create a task
   AliAnalysisTaskFlowTPCEMCalQCSP *taskHFE = ConfigHFEemcalMod(kFALSE, minTPCCluster, pixel);    //kTRUE if MC
     
-  if(debug) cout << " === AliAnalysisTaskFlowTPCEMCalQCSP === " << taskHFE << endl;
+  if(debug) cout << " === AliAnalysisElectronFlow === " << taskHFE << endl;
   if(!taskHFE) {
         if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
         return 0x0;
     }
     
 // Set centrality percentiles and method V0M, FMD, TRK, TKL, CL0, CL1, V0MvsFMD, TKLvsV0M, ZEMvsZDC
-  taskHFE->SetCentralityParameters(centrMin, centrMax, "V0M");
+  taskHFE->SetCentralityParameters(centrMin, centrMax, Cent);
   taskHFE->SetInvariantMassCut(InvmassCut);
   taskHFE->SetTrigger(Trigger);
   taskHFE->SetIDCuts(minTPC, maxTPC, minEovP, maxEovP, minM20, maxM20, minM02, maxM02, Dispersion);
+  taskHFE->SetFlowSideBands(SideBandsFlow);
+  taskHFE->Setphiminuspsi(Phi_minus_psi);
+  taskHFE->SetPurity(purity);
+    
     
 //set RP cuts for flow package analysis
   cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
@@ -119,10 +127,36 @@ AliAnalysisTaskFlowTPCEMCalQCSP* AddTaskFlowTPCEMCalQCSP(
     if(VZERO_SP || QC){
         POIfilterVZERO->SetEtaMin(-0.7);
         POIfilterVZERO->SetEtaMax(0.7);
-        POIfilterVZERO->SetMassMin(263731); POIfilterLeft->SetMassMax(263733);
+        POIfilterVZERO->SetMassMin(263731); POIfilterVZERO->SetMassMax(263733);
  
     }
-    taskHFE->SetRPCuts(cutsRP);   
+ 
+    if(SideBandsFlow){
+
+    AliFlowTrackSimpleCuts *POIfilterLeftH = new AliFlowTrackSimpleCuts();
+    AliFlowTrackSimpleCuts *POIfilterRightH = new AliFlowTrackSimpleCuts();
+    if(SP_TPC){
+        POIfilterLeftH->SetEtaMin(-0.7);
+        POIfilterLeftH->SetEtaMax(0.0);
+        POIfilterLeftH->SetMassMin(2636); POIfilterLeftH->SetMassMax(2638);
+        
+        POIfilterRightH->SetEtaMin(0.0);
+        POIfilterRightH->SetEtaMax(0.7);
+        POIfilterRightH->SetMassMin(2636); POIfilterRightH->SetMassMax(2638);
+    }
+    
+    
+    AliFlowTrackSimpleCuts *POIfilterVZEROH = new AliFlowTrackSimpleCuts();
+    if(VZERO_SP || QC){
+        POIfilterVZEROH->SetEtaMin(-0.7);
+        POIfilterVZEROH->SetEtaMax(0.7);
+        POIfilterVZEROH->SetMassMin(2636); POIfilterVZEROH->SetMassMax(2638);
+        
+    }
+    
+    }
+    
+    taskHFE->SetRPCuts(cutsRP);
  
  
  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("ccontainer0_%s",uniqueID.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,fileName);
@@ -135,6 +169,13 @@ AliAnalysisTaskFlowTPCEMCalQCSP* AddTaskFlowTPCEMCalQCSP(
     AliAnalysisDataContainer *flowEvent = mgr->CreateContainer(Form("FlowContainer_%s",uniqueID.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(taskHFE, 2, flowEvent);
     if(debug) cout << "    --> Created IO containers " << flowEvent << endl;   
+    
+    if(SideBandsFlow){   
+    if(debug) cout << " === RECEIVED REQUEST FOR FLOW ANALYSIS === " << endl;
+    AliAnalysisDataContainer *flowEventCont = mgr->CreateContainer(Form("FlowContainer_Cont_%s",uniqueID.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
+    mgr->ConnectOutput(taskHFE, 3, flowEventCont);
+    if(debug) cout << "    --> Created IO containers " << flowEventCont << endl;
+    }
     
     
   mgr->AddTask(taskHFE);
@@ -156,6 +197,20 @@ AliAnalysisTaskFlowTPCEMCalQCSP* AddTaskFlowTPCEMCalQCSP(
         if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
     }
 
+    //=========================================Flow event for elctronContamination==============================================================================================
+    if(SideBandsFlow){
+    if (QC) {  // add qc tasks
+        AddQCmethod(Form("QCTPCCont_%s",uniqueID.Data()), harmonic, flowEventCont,  debug ,uniqueID, -0.7, -0.0, 0.0, 0.7,false,POIfilterVZEROH);
+        if(debug) cout << "    --> Hanging QC task ...succes! "<< endl;
+    }
+    if (SP_TPC) {  // add sp subevent tasks
+        AddSPmethod(Form("SPTPCQa_Cont_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qa", harmonic, flowEventCont, false, shrinkSP, debug,uniqueID, false, POIfilterRightH);
+        if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
+        AddSPmethod(Form("SPTPCQb_Cont_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qb", harmonic, flowEventCont,  false, shrinkSP, debug,uniqueID, false, POIfilterLeftH);
+        if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
+    }
+    }
+    //==========================================================================================================================================================================
     
     
 return taskHFE;
@@ -265,7 +320,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCuls
     //  hfecuts->SetQAOn();
     hfecuts->SetPtRange(0, 30);
     
-    AliAnalysisTaskFlowTPCEMCalQCSP *task = new AliAnalysisTaskFlowTPCEMCalQCSP("HFE_Flow");
+    AliAnalysisTaskFlowTPCEMCalQCSP *task = new AliAnalysisTaskFlowTPCEMCalQCSP("HFE_Flow_TPCEMCal");
     printf("task ------------------------ %p\n ", task);
     
     
