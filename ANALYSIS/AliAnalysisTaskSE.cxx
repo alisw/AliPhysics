@@ -609,9 +609,9 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 				Int_t nn = copycells1->GetNumberOfCells();
 				
 				while( nn-- ){ fgAODEmcalCells->SetCell(nn,copycells1->GetCellNumber(nn),copycells1->GetAmplitude(nn),
-									copycells1->GetTime(nn),copycells1->GetMCLabel(nn),0.); }
+									copycells1->GetTime(nn),copycells1->GetMCLabel(nn),copycells1->GetEFraction(nn)); }
 				
-				fgAODEmcalCells->SetCell(nc++,cn,cellsA->GetAmplitude(i),cellsA->GetTime(i), cellsA->GetMCLabel(i),0.);
+				fgAODEmcalCells->SetCell(nc++,cn,cellsA->GetAmplitude(i),cellsA->GetTime(i), cellsA->GetMCLabel(i),1.);
 				
 				delete copycells1;
 			      }
@@ -679,9 +679,9 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 				Int_t nn = copycells1->GetNumberOfCells();
 				
 				while( nn-- ){ fgAODPhosCells->SetCell(nn,copycells1->GetCellNumber(nn),copycells1->GetAmplitude(nn), 
-								       copycells1->GetTime(nn),copycells1->GetMCLabel(nn),0.); }
+								       copycells1->GetTime(nn),copycells1->GetMCLabel(nn),copycells1->GetEFraction(nn)); }
 				
-				fgAODPhosCells->SetCell(nc++,cn,cellsP->GetAmplitude(i),cellsP->GetTime(i), cellsP->GetMCLabel(i),0.);
+				fgAODPhosCells->SetCell(nc++,cn,cellsP->GetAmplitude(i),cellsP->GetTime(i), cellsP->GetMCLabel(i),1.);
 				
 				delete copycells1;
 			      }
