@@ -16,7 +16,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//  Task for Heavy Flavour Electron Flow                              //
+//  Task for Heavy Flavour Electron Flow with TPC plus EMCal          //
 //  Non-Photonic Electron identified with Invariant mass              //
 //  analysis methos in function  SelectPhotonicElectron               //
 //                                                                    // 
@@ -100,65 +100,77 @@
 #include "AliFlowTrack.h"
 #include "AliAnalysisTaskVnV0.h"
 
-using namespace std;
+
 class AliFlowTrackCuts;
 
+using namespace std;
 
 ClassImp(AliAnalysisTaskFlowTPCEMCalQCSP)
 //________________________________________________________________________
   AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP(const char *name) 
   : AliAnalysisTaskSE(name)
-  ,fDebug(0)
-  ,fAOD(0)
-  ,fGeom(0)
-  ,fOutputList(0)
-  ,fCuts(0)
-  ,fIdentifiedAsOutInz(kFALSE)
-  ,fPassTheEventCut(kFALSE)
-  ,fVz(0.0)
-  ,fCFM(0)	
-  ,fPID(0)
-  ,fPIDqa(0)
-   ,fCutsRP(0)     // track cuts for reference particles
-  ,fNullCuts(0) // dummy cuts for flow event tracks
-  ,fFlowEvent(0) //! flow events (one for each inv mass band)
-  ,fkCentralityMethod(0)
-  ,fCentrality(0)
-  ,fCentralityMin(0)
-  ,fCentralityMax(0)
-  ,fInvmassCut(0)
-  ,fTrigger(0)
-  ,fPhi(0)
-  ,fEta(0)
-  ,fVZEROA(0) 
-  ,fVZEROC(0)
-  ,fTPCM(0)
-  ,fNoEvents(0)
-  ,fTrkEovPBef(0)	 
-  ,fdEdxBef(0)
-  ,fInclusiveElecPt(0)
-  ,fTPCnsigma(0)
-  ,fTPCnsigmaAft(0)
-  ,fCentralityPass(0)
-  ,fCentralityNoPass(0)
-  ,fSparseElectron(0)
-  ,fvalueElectron(0)
-  ,fInvmassLS1(0)
-  ,fInvmassULS1(0)
-  ,fPhotoElecPt(0)
-  ,fSemiInclElecPt(0)
-  ,fULSElecPt(0)
-  ,fLSElecPt(0)
-  ,fminTPC(-1)
-  ,fmaxTPC(3)
-  ,fminEovP(0.8)
-  ,fmaxEovP(1.2)
-  ,fminM20(0.03)
-  ,fmaxM20(0.3)
-  ,fminM02(0.03)
-  ,fmaxM02(0.5)
-  ,fDispersion(1)
-
+,fDebug(0)
+,fAOD(0)
+,fGeom(0)
+,fOutputList(0)
+,fCuts(0)
+,fIdentifiedAsOutInz(kFALSE)
+,fPassTheEventCut(kFALSE)
+,fCFM(0)
+,fPID(0)
+,fPIDqa(0)
+,fCutsRP(0)     // track cuts for reference particles
+,fNullCuts(0) // dummy cuts for flow event tracks
+,fFlowEvent(0) //! flow events (one for each inv mass band)
+,fkCentralityMethod(0)
+,fCentrality(0)
+,fCentralityMin(0)
+,fCentralityMax(0)
+,fInvmassCut(0)
+,fTrigger(0)
+,fPhi(0)
+,fEta(0)
+,fVZEROA(0)
+,fVZEROC(0)
+,fTPCM(0)
+,fNoEvents(0)
+,fTrkEovPBef(0)
+//,fdEdxBef(0)
+,fInclusiveElecPt(0)
+,fTPCnsigma(0)
+,fTPCnsigmaAft(0)
+,fCentralityPass(0)
+,fCentralityNoPass(0)
+,fInvmassLS1(0)
+,fInvmassULS1(0)
+,fPhotoElecPt(0)
+,fSemiInclElecPt(0)
+,fULSElecPt(0)
+,fLSElecPt(0)
+,fminTPC(-1)
+,fmaxTPC(3)
+,fminEovP(0.8)
+,fmaxEovP(1.2)
+,fminM20(0.03)
+,fmaxM20(0.3)
+,fminM02(0.03)
+,fmaxM02(0.5)
+,fDispersion(1)
+,fMultCorAfterCuts(0)
+,fMultvsCentr(0)
+,fSubEventDPhiv2(0)
+,EPVzA(0)
+,EPVzC(0)
+,EPTPC(0)
+,fV2Phi(0)
+,fSparseElectronHadron(0)
+,fvertex(0)
+,fMultCorBeforeCuts(0)
+,fSideBandsFlow(kFALSE)
+,fPhiminusPsi(kFALSE)
+,fFlowEventCont(0) //! flow events (one for each inv mass band)
+,fpurity(kFALSE)
+,fSparseElectronpurity(0)
 {
   //Named constructor
 
@@ -171,65 +183,77 @@ ClassImp(AliAnalysisTaskFlowTPCEMCalQCSP)
   // DefineOutput(1, TH1I::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, AliFlowEventSimple::Class());
+if(fSideBandsFlow){
+    DefineOutput(3, AliFlowEventSimple::Class());
+}
  //  DefineOutput(3, TTree::Class());
-  fvalueElectron = new Double_t[8];
-
 }
 
 //________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP() 
-  : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisElectFlow")
-  ,fDebug(0)
-  ,fAOD(0)
-  ,fGeom(0)
-  ,fOutputList(0)
-  ,fCuts(0)
-  ,fIdentifiedAsOutInz(kFALSE)
-  ,fPassTheEventCut(kFALSE)
-  ,fVz(0.0)
-  ,fCFM(0)	
-  ,fPID(0)
-  ,fPIDqa(0)
-   ,fCutsRP(0)     // track cuts for reference particles
-  ,fNullCuts(0) // dummy cuts for flow event tracks
-  ,fFlowEvent(0) //! flow events (one for each inv mass band)
-  ,fkCentralityMethod(0)
-  ,fCentrality(0)
-  ,fCentralityMin(0)
-  ,fCentralityMax(0)
-  ,fInvmassCut(0)
-  ,fTrigger(0)
-  ,fPhi(0)
-  ,fEta(0)
-  ,fVZEROA(0) 
-  ,fVZEROC(0)
-  ,fTPCM(0)
-  ,fNoEvents(0)
-  ,fTrkEovPBef(0)	 
-  ,fdEdxBef(0)
-  ,fInclusiveElecPt(0)
-  ,fTPCnsigma(0)
-  ,fTPCnsigmaAft(0)
-  ,fCentralityPass(0)
-  ,fCentralityNoPass(0)
-  ,fSparseElectron(0)
-  ,fvalueElectron(0)
-  ,fInvmassLS1(0)
-  ,fInvmassULS1(0)
-  ,fPhotoElecPt(0)
-  ,fSemiInclElecPt(0)
-  ,fULSElecPt(0)
-  ,fLSElecPt(0)
-  ,fminTPC(-1)
-  ,fmaxTPC(3)
-  ,fminEovP(0.8)
-  ,fmaxEovP(1.2)
-  ,fminM20(0.03)
-  ,fmaxM20(0.3)
-  ,fminM02(0.03)
-  ,fmaxM02(0.5)
-  ,fDispersion(1)
-
+  : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskFlowTPCEMCalQCSP")
+,fDebug(0)
+,fAOD(0)
+,fGeom(0)
+,fOutputList(0)
+,fCuts(0)
+,fIdentifiedAsOutInz(kFALSE)
+,fPassTheEventCut(kFALSE)
+,fCFM(0)
+,fPID(0)
+,fPIDqa(0)
+,fCutsRP(0)     // track cuts for reference particles
+,fNullCuts(0) // dummy cuts for flow event tracks
+,fFlowEvent(0) //! flow events (one for each inv mass band)
+,fkCentralityMethod(0)
+,fCentrality(0)
+,fCentralityMin(0)
+,fCentralityMax(0)
+,fInvmassCut(0)
+,fTrigger(0)
+,fPhi(0)
+,fEta(0)
+,fVZEROA(0)
+,fVZEROC(0)
+,fTPCM(0)
+,fNoEvents(0)
+,fTrkEovPBef(0)
+//,fdEdxBef(0)
+,fInclusiveElecPt(0)
+,fTPCnsigma(0)
+,fTPCnsigmaAft(0)
+,fCentralityPass(0)
+,fCentralityNoPass(0)
+,fInvmassLS1(0)
+,fInvmassULS1(0)
+,fPhotoElecPt(0)
+,fSemiInclElecPt(0)
+,fULSElecPt(0)
+,fLSElecPt(0)
+,fminTPC(-1)
+,fmaxTPC(3)
+,fminEovP(0.8)
+,fmaxEovP(1.2)
+,fminM20(0.03)
+,fmaxM20(0.3)
+,fminM02(0.03)
+,fmaxM02(0.5)
+,fDispersion(1)
+,fMultCorAfterCuts(0)
+,fMultvsCentr(0)
+,fSubEventDPhiv2(0)
+,EPVzA(0)
+,EPVzC(0)
+,EPTPC(0)
+,fV2Phi(0)
+,fSparseElectronHadron(0)
+,fvertex(0)
+,fMultCorBeforeCuts(0)
+,fSideBandsFlow(kFALSE)
+,fPhiminusPsi(kFALSE)
+,fFlowEventCont(0) //! flow events (one for each inv mass band)
+,fpurity(kFALSE)
+,fSparseElectronpurity(0)
 {
   //Default constructor
   fPID = new AliHFEpid("hfePid");
@@ -242,8 +266,11 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
   // DefineOutput(1, TH1I::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, AliFlowEventSimple::Class());
-  fvalueElectron = new Double_t[8];	//from here adding more, when done comment filling this
-  //DefineOutput(3, TTree::Class());
+    //  DefineOutput(3, TTree::Class());
+if(fSideBandsFlow){
+    DefineOutput(3, AliFlowEventSimple::Class());
+}
+    //DefineOutput(3, TTree::Class());
 }
 //_________________________________________
 
@@ -255,11 +282,11 @@ AliAnalysisTaskFlowTPCEMCalQCSP::~AliAnalysisTaskFlowTPCEMCalQCSP()
   delete fGeom;
   delete fPID;
   delete fCFM;
-  delete fPIDqa;
-  delete fSparseElectron;
-  delete [] fvalueElectron;
+  delete fPIDqa; 
   if (fOutputList) delete fOutputList;
   if (fFlowEvent) delete fFlowEvent;
+  if (fFlowEventCont) delete fFlowEventCont;
+
 }
 //_________________________________________
 
@@ -304,31 +331,41 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
     if(fTrigger==3){
 if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) ) return;
     }
-  //---------------CENTRALITY SELECTION-----------------------    
-  Bool_t pass = kFALSE; //to select centrality
-  CheckCentrality(fAOD,pass);
-
-  if(!pass)return;
+  
     
-  Int_t fNOtrks =  fAOD->GetNumberOfTracks();
-  const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
+//---------------CENTRALITY AND EVENT SELECTION-----------------------
+   Int_t fNOtrks =  fAOD->GetNumberOfTracks();
+    Float_t vtxz = -999;
+    const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
+    if (!trkVtx || trkVtx->GetNContributors()<=0)return;
+    TString vtxTtl = trkVtx->GetTitle();
+    if (!vtxTtl.Contains("VertexerTracks"))return;
+    const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
+    if (!spdVtx || spdVtx->GetNContributors()<=0)return;
+    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5)return;
+    vtxz = trkVtx->GetZ();
+    if(TMath::Abs(vtxz)>10)return;
+    fvertex->Fill(vtxz);
 
-  Double_t pVtxZ = -999;
-  pVtxZ = pVtx->GetZ();
-
-  // Event cut
-  if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fAOD)) return;
-
-  if(fNOtrks<2) return;
-  if(TMath::Abs(pVtxZ)>10) return;
-
+// Event cut
+    if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fAOD)) return;
+    if(fNOtrks<2) return;
+    
+    Bool_t pass = kFALSE; //to select centrality
+    CheckCentrality(fAOD,pass);
+    if(!pass)return;
+    
+    
   fNoEvents->Fill(0);
   PlotVZeroMultiplcities(fAOD);
 
   SetNullCuts(fAOD);
   PrepareFlowEvent(fAOD->GetNumberOfTracks(),fFlowEvent);    //Calculate event plane Qvector and EP resolution for inclusive
 
-
+    if(fSideBandsFlow){
+  PrepareFlowEvent(fAOD->GetNumberOfTracks(),fFlowEventCont);    //Calculate event plane Qvector and EP resolution for inclusive
+    }
+    
   AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
   if(!pidResponse)
   {
@@ -356,7 +393,45 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
     }
   }
     
-  
+//=============================================V0EP from Alex======================================================================
+    Double_t qxEPa = 0, qyEPa = 0;
+    Double_t qxEPc = 0, qyEPc = 0;
+    
+    Double_t evPlAngV0A = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD, 8, 2, qxEPa, qyEPa);
+    Double_t evPlAngV0C = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD, 9, 2, qxEPc, qyEPc);
+    
+    
+    Double_t Qx2 = 0, Qy2 = 0;
+    
+    for (Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++){
+        
+        AliAODTrack* aodTrack = fAOD->GetTrack(iT);
+        
+        if (!aodTrack)
+            continue;
+        
+        if ((TMath::Abs(aodTrack->Eta()) > 0.8) || (aodTrack->Pt() < 0.2) || (aodTrack->GetTPCNcls() < 70) || (aodTrack->Pt() >= 20.0))
+            continue;
+        
+        if (!aodTrack->TestFilterBit(128))
+            continue;
+        
+        Qx2 += TMath::Cos(2*aodTrack->Phi());
+        Qy2 += TMath::Sin(2*aodTrack->Phi());
+    }
+    
+    Double_t evPlAngTPC = TMath::ATan2(Qy2, Qx2)/2.;
+    
+    EPVzA->Fill(evPlAngV0A);
+    EPVzC->Fill(evPlAngV0C);
+    EPTPC->Fill(evPlAngTPC);
+    
+    fSubEventDPhiv2->Fill(0.5, TMath::Cos(2.*(evPlAngV0A-evPlAngTPC))); // vzeroa - tpc
+    fSubEventDPhiv2->Fill(1.5, TMath::Cos(2.*(evPlAngV0A-evPlAngV0C))); // vzeroa - vzeroc
+    fSubEventDPhiv2->Fill(2.5, TMath::Cos(2.*(evPlAngV0C-evPlAngTPC))); // tpc - vzeroc
+//====================================================================================================================
+    
+    
  AliAODTrack *track = NULL;
 
 // Track loop 
@@ -370,10 +445,7 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
    }
      
    if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;  // TESTBIT FOR AOD double Counting
-   
-     
-   //----------hfe begin---------
-
+//----------hfe begin---------
    if(track->Eta()<-0.7 || track->Eta()>0.7)	continue;    //eta cuts on candidates
 
    // RecKine: ITSTPC cuts  
@@ -396,7 +468,7 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
    // HFE cuts: TPC PID cleanup
    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
      
-   Double_t fClsE = -999, p = -999, fEovP=-999, pt = -999, dEdx=-999, fTPCnSigma=0;
+   Double_t fClsE = -999, p = -999, fEovP=-999, pt = -999, fTPCnSigma=0;
    // Track extrapolation
    Int_t fClsId = track->GetEMCALcluster();
    if(fClsId < 0) continue;
@@ -407,52 +479,97 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
    if(pt<1) continue;
    fClsE = cluster->E();
    p = track->P();
-   dEdx = track->GetTPCsignal();
+  // dEdx = track->GetTPCsignal();
    fEovP = fClsE/p;
    fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
    Double_t m20 =cluster->GetM20();
    Double_t m02 =cluster->GetM02();
    Double_t disp=cluster->GetDispersion();
-
-/*
-   fvalueElectron[0] = pt;
-   fvalueElectron[1] = p;
-   fvalueElectron[2] = fTPCnSigma;
-   fvalueElectron[3] = dEdx;
-   fvalueElectron[4] = fEovP;
-   fvalueElectron[5] = m20;
-   fvalueElectron[6] = m02;
-   fvalueElectron[7] = Disp; 
-   */
- //  fSparseElectron->Fill(fvalueElectron);
-
    if(fTPCnSigma >= -1 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,fEovP);
    fTPCnsigma->Fill(p,fTPCnSigma);
-   fdEdxBef->Fill(p,dEdx);
+//   fdEdxBef->Fill(p,dEdx);
    Double_t eta = track->Eta(); 
    Double_t phi = track->Phi();
-   
-   
-   if(fTPCnSigma < fminTPC || fTPCnSigma > fmaxTPC) continue; //cuts on nsigma tpc and EoP
-   if(m20 < fminM20 || m20 > fmaxM20) continue;
-   if(m02 < fminM02 || m02 > fmaxM02) continue;
-   if(disp > fDispersion ) continue;
+//-----------------------Phiminupsi method to remove the contamination-----------------------------------------------
+//-----------------------fTPCnSigma < -3.5 hadrons will be selected from this region--------------------------
+     Float_t dPhi_aeh = TVector2::Phi_0_2pi(phi - evPlAngV0A);
+     if(dPhi_aeh > TMath::Pi()) dPhi_aeh = dPhi_aeh - TMath::Pi();
+     Float_t dPhi_ceh = TVector2::Phi_0_2pi(phi - evPlAngV0C);
+     if(dPhi_ceh > TMath::Pi()) dPhi_ceh = dPhi_ceh - TMath::Pi();
 
-     
-     fvalueElectron[0] = pt;
-     fvalueElectron[1] = p;
-     fvalueElectron[2] = fEovP;
-     fSparseElectron->Fill(fvalueElectron);
-
-   if(fEovP < fminEovP || fEovP >fmaxEovP) continue;
-
-
+     if(fPhiminusPsi){
+         Double_t valueElh[8] = {
+             pt,
+             fEovP,
+             fTPCnSigma,
+             m20,
+             m02,
+             disp,
+             dPhi_aeh,
+             dPhi_ceh};
+         fSparseElectronHadron->Fill(valueElh);
+     }
+//----------------------------------------------------------------------------------------------------------
+//---------------------------From here usual electron selection---------------------------------------------
+//----------------------------------------------------------------------------------------------------------
+if(m20 < fminM20 || m20 > fmaxM20) continue;
+if(m02 < fminM02 || m02 > fmaxM02) continue;
+if(disp > fDispersion ) continue;
+//---------------------------------for purity---------------------------------------------------------------
+     if(fpurity){
+         Double_t valuepurity[3] = {
+             pt,
+             fEovP,
+             fTPCnSigma};
+         fSparseElectronpurity->Fill(valuepurity);
+     }
+//----------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------
+if(fTPCnSigma < fminTPC || fTPCnSigma > fmaxTPC) continue; //cuts on nsigma tpc and EoP
+//===============================Flow Event for Contamination=============================================
+     if(fSideBandsFlow){
+     if(fEovP>0 && fEovP<0.6){
+         AliFlowTrack *sTrackCont = new AliFlowTrack();
+         sTrackCont->Set(track);
+         sTrackCont->SetID(track->GetID());
+         sTrackCont->SetForRPSelection(kFALSE);
+         sTrackCont->SetForPOISelection(kTRUE);
+         sTrackCont->SetMass(2637);
+         for(int iRPs=0; iRPs!=fFlowEventCont->NumberOfTracks(); ++iRPs)
+         {
+             //   cout << " no of rps " << iRPs << endl;
+             AliFlowTrack *iRPCont = dynamic_cast<AliFlowTrack*>(fFlowEventCont->GetTrack( iRPs ));
+             if (!iRPCont) continue;
+             if (!iRPCont->InRPSelection()) continue;
+             if( sTrackCont->GetID() == iRPCont->GetID())
+             {
+                 if(fDebug) printf(" was in RP set");
+                 //       cout << sTrack->GetID() <<"   ==  " << iRP->GetID() << " was in RP set" <<endl;
+                 iRPCont->SetForRPSelection(kFALSE);
+                 fFlowEventCont->SetNumberOfRPs(fFlowEventCont->GetNumberOfRPs() - 1);
+             }
+         } //end of for loop on RPs
+         fFlowEventCont->InsertTrack(((AliFlowTrack*) sTrackCont));
+     }
+     }
+//==========================================================================================================
+//===============================From here eovP cut is used fro QC, SP and EPV0=============================
+if(fEovP < fminEovP || fEovP >fmaxEovP) continue;
+//==========================================================================================================
+//============================Event Plane Method with V0====================================================
+     Double_t v2PhiV0A = TMath::Cos(2*(phi - evPlAngV0A));
+     Double_t v2PhiV0C = TMath::Cos(2*(phi - evPlAngV0C));
+     Double_t v2Phi[3] = {
+         v2PhiV0A,
+         v2PhiV0C,
+         pt};
+     fV2Phi->Fill(v2Phi);
+//=========================================================================================================
    fTPCnsigmaAft->Fill(p,fTPCnSigma);
    fInclusiveElecPt->Fill(pt); 
    fPhi->Fill(phi); 
    fEta->Fill(eta); 
-     
-   //----------------------Flow of Inclusive Electrons-----------------------------      
+//----------------------Flow of Inclusive Electrons--------------------------------------------------------
    AliFlowTrack *sTrack = new AliFlowTrack();
      sTrack->Set(track);
      sTrack->SetID(track->GetID());
@@ -486,6 +603,10 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
 
  PostData(1, fOutputList);
  PostData(2, fFlowEvent);
+    if(fSideBandsFlow){
+ PostData(3, fFlowEventCont);
+    }
+
  //----------hfe end---------
 }
 //_________________________________________
@@ -617,8 +738,8 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
   fNoEvents = new TH1F("fNoEvents","",1,0,1) ;
   fOutputList->Add(fNoEvents);
 
-      fTPCnsigma = new TH2F("fTPCnsigma", "TPC - n sigma before HFE pid",1000,0,50,200,-10,10);
-      fOutputList->Add(fTPCnsigma);
+  fTPCnsigma = new TH2F("fTPCnsigma", "TPC - n sigma before HFE pid",1000,0,50,200,-10,10);
+  fOutputList->Add(fTPCnsigma);
 
   fTPCnsigmaAft = new TH2F("fTPCnsigmaAft", "TPC - n sigma after HFE pid",1000,0,50,200,-10,10);
   fOutputList->Add(fTPCnsigmaAft);
@@ -626,8 +747,8 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
   fTrkEovPBef = new TH2F("fTrkEovPBef","track E/p before HFE pid",1000,0,50,100,0,2);
   fOutputList->Add(fTrkEovPBef);
 
-    fdEdxBef = new TH2F("fdEdxBef","track dEdx vs p before HFE pid",1000,0,50,150,0,150);
-      fOutputList->Add(fdEdxBef);
+//    fdEdxBef = new TH2F("fdEdxBef","track dEdx vs p before HFE pid",1000,0,50,150,0,150);
+ //     fOutputList->Add(fdEdxBef);
    
   fInclusiveElecPt = new TH1F("fInclElecPt", "Inclusive electron pt",1000,0,100);
   fOutputList->Add(fInclusiveElecPt);
@@ -671,19 +792,85 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
   fTPCM = new TH1F("fTPCM", "TPC multiplicity", 1000, 0, 10000);
   fOutputList->Add(fTPCM);
 
+  fvertex = new TH1D("fvertex", "vertex distribution", 300, -15,15);
+  fOutputList->Add(fvertex);
+  
+  fMultCorBeforeCuts = new TH2F("fMultCorBeforeCuts", "TPC vs Global multiplicity (Before cuts); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
+  fOutputList->Add(fMultCorBeforeCuts);
+
+  fMultCorAfterCuts = new TH2F("fMultCorAfterCuts", "TPC vs Global multiplicity (After cuts); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
+  fOutputList->Add(fMultCorAfterCuts);
+
+  fMultvsCentr = new TH2F("fMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 100, 0., 100, 100, 0, 3000);
+  fOutputList->Add(fMultvsCentr);
     
-  Int_t binsv1[3]={1000,1000,100}; //pt, p, E/p
-  Double_t xminv1[3]={0,   0,  0};
-  Double_t xmaxv1[3]={50, 50,  2};
-  fSparseElectron = new THnSparseD ("Electron","Electron",3,binsv1,xminv1,xmaxv1);
-  fOutputList->Add(fSparseElectron);
-  
-  
+//----------------------------------------------------------------------------
+    EPVzA = new TH1D("EPVzA", "EPVzA", 80, -2, 2);
+    fOutputList->Add(EPVzA);
+    EPVzC = new TH1D("EPVzC", "EPVzC", 80, -2, 2);
+    fOutputList->Add(EPVzC);
+    EPTPC = new TH1D("EPTPC", "EPTPC", 80, -2, 2);
+    fOutputList->Add(EPTPC);
+//----------------------------------------------------------------------------
+    fSubEventDPhiv2 = new TProfile("fSubEventDPhiv2", "fSubEventDPhiv2", 3, 0, 3);
+    fSubEventDPhiv2->GetXaxis()->SetBinLabel(1, "<cos(2(#Psi_{a} - #Psi_{b}))>");
+    fSubEventDPhiv2->GetXaxis()->SetBinLabel(2, "<cos(2(#Psi_{a} - #Psi_{c}>))");
+    fSubEventDPhiv2->GetXaxis()->SetBinLabel(3, "<cos(2(#Psi_{b} - #Psi_{c}>))");
+    fOutputList->Add(fSubEventDPhiv2);
+//================================Event Plane with VZERO=====================
+    const Int_t nPtBins = 10;
+    Double_t binsPt[nPtBins+1] = {0, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+    // v2A, v2C, pt
+    Int_t    bins[3] = {  50,  50, nPtBins};
+    Double_t xmin[3] = { -1., -1.,   0};
+    Double_t xmax[3] = {  1.,  1.,   8};
+    fV2Phi = new THnSparseF("fV2Phi", "v2A:v2C:pt", 3, bins, xmin, xmax);
+    // Set bin limits for axes which are not standard binned
+    fV2Phi->SetBinEdges(2, binsPt);
+    // set axes titles
+    fV2Phi->GetAxis(0)->SetTitle("v_{2} (V0A)");
+    fV2Phi->GetAxis(1)->SetTitle("v_{2} (V0C)");
+    fV2Phi->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+    fOutputList->Add(fV2Phi);
+//----------------------------------------------------------------------------
+    if(fPhiminusPsi){
+    Int_t binsvElectH[8]={ 600,  200, 200 ,100,  100,  100,   10,          10}; //pt, E/p,TPCnSigma,M20,M02,Disp Phi-psiV0A ,Phi-PsiV0C,eta (commented)
+    Double_t xminvElectH[8]={0,    0, -10 ,  0,    0,    0,    0,           0};
+    Double_t xmaxvElectH[8]={20,   2,  10 ,  2,    2,    2,  TMath::Pi(), TMath::Pi()};
+    fSparseElectronHadron = new THnSparseD("ElectronHadron","ElectronHadron",8,binsvElectH,xminvElectH,xmaxvElectH);
+    fSparseElectronHadron->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
+    fSparseElectronHadron->GetAxis(1)->SetTitle("EovP");
+    fSparseElectronHadron->GetAxis(2)->SetTitle("TPCnSigma");
+    fSparseElectronHadron->GetAxis(3)->SetTitle("M20");
+    fSparseElectronHadron->GetAxis(4)->SetTitle("M02");
+    fSparseElectronHadron->GetAxis(5)->SetTitle("Disp");
+    fSparseElectronHadron->GetAxis(6)->SetTitle("phiminuspsi V0A");
+    fSparseElectronHadron->GetAxis(7)->SetTitle("phiminuspsi V0C");
+    fOutputList->Add(fSparseElectronHadron);
+    }
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+    if(fpurity){
+    Int_t binsvpurity[3]={   600,200, 200}; //pt, E/p,TPCnSigma
+    Double_t xminvpurity[3]={0,    0, -10};
+    Double_t xmaxvpurity[3]={20,   2,  10};
+    fSparseElectronpurity = new THnSparseD("Electronpurity","Electronpurity",3,binsvpurity,xminvpurity,xmaxvpurity);
+    fSparseElectronpurity->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
+    fSparseElectronpurity->GetAxis(1)->SetTitle("EovP");
+    fSparseElectronpurity->GetAxis(2)->SetTitle("TPCnSigma");
+    fOutputList->Add(fSparseElectronpurity);
+    }
+//----------------------------------------------------------------------------
+
   PostData(1,fOutputList);
  // create and post flowevent
   fFlowEvent = new AliFlowEvent(10000);
   PostData(2, fFlowEvent);
-
+    
+    if(fSideBandsFlow){
+    fFlowEventCont = new AliFlowEvent(10000);
+    PostData(3, fFlowEventCont);
+    }
  }
 
 //________________________________________________________________________
@@ -734,29 +921,60 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
   // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
   if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
   fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
-    
- // cout << "--------------Centrality evaluated-------------------------"<<endl;
-
+//  cout << "--------------Centrality evaluated-------------------------"<<endl;
   if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
   {
     fCentralityNoPass->Fill(fCentrality);
-    //cout << "--------------Fill no pass-----"<< fCentrality <<"--------------------"<<endl;
+//    cout << "--------------Fill no pass-----"<< fCentrality <<"--------------------"<<endl;
     centralitypass = kFALSE;
   }else
   { 
-    //fCentralityPass->Fill(fCentrality);
-  //  cout << "--------------Fill pass----"<< fCentrality <<"---------------------"<<endl;
+//    cout << "--------------Fill pass----"<< fCentrality <<"---------------------"<<endl;
     centralitypass = kTRUE; 
   }
 //to remove the bias introduced by multeplicity outliers---------------------
     Float_t centTrk = event->GetCentrality()->GetCentralityPercentile("TRK");
-    if (TMath::Abs(fCentrality - centTrk) > 5.0){
+    Float_t centv0 = event->GetCentrality()->GetCentralityPercentile("V0M");
+
+    if (TMath::Abs(centv0 - centTrk) > 5.0){
         centralitypass = kFALSE;
         fCentralityNoPass->Fill(fCentrality);
-        //cout << "--------------OUTLIERS------"<< fCentrality <<"-----------------"<<endl;
-
+     }
+    const Int_t nGoodTracks = event->GetNumberOfTracks();
+    
+    Float_t multTPC(0.); // tpc mult estimate
+    Float_t multGlob(0.); // global multiplicity
+    for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
+        AliAODTrack* trackAOD = event->GetTrack(iTracks);
+        if (!trackAOD) continue;
+        if (!(trackAOD->TestFilterBit(1))) continue;
+        if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70)  || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2)) continue;
+        multTPC++;
     }
-    if(centralitypass)fCentralityPass->Fill(fCentrality);;
+    for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill global mult
+        AliAODTrack* trackAOD = event->GetTrack(iTracks);
+        if (!trackAOD) continue;
+        if (!(trackAOD->TestFilterBit(16))) continue;
+        if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
+        Double_t b[2] = {-99., -99.};
+        Double_t bCov[3] = {-99., -99., -99.};
+        if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov))) continue;
+        if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
+        multGlob++;
+    } //track loop
+    //     printf(" mult TPC %.2f, mult Glob %.2f \n", multTPC, multGlob);
+ //   if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))){  2010
+    if(! (multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob))){ 
+        centralitypass = kFALSE;
+        fCentralityNoPass->Fill(fCentrality);
+    }//2011
+    fMultCorBeforeCuts->Fill(multGlob, multTPC);
+
+    if(centralitypass){
+    fCentralityPass->Fill(fCentrality);
+    fMultCorAfterCuts->Fill(multGlob, multTPC);
+    fMultvsCentr->Fill(fCentrality, multTPC);
+    }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowTPCEMCalQCSP::SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod)

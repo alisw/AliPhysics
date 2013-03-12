@@ -1,12 +1,12 @@
-#ifndef ALIANALYSISTASKFLOWTPCEMCALQCSP_H
-#define ALIANALYSISTASKFLOWTPCEMCALQCSP_H
+#ifndef AlIANALYSISTASKFLOWTPCEMCALQCSP_H
+#define AlIANALYSISTASKFLOWTPCEMCALQCSP_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//  Task for Heavy Flavour Electron Flow                              //
+//  Task for Heavy Flavour Electron Flow TPC plus EMCal               //
 //                                                                    //
 //  Author: Andrea Dubla (Utrecht University)                         //
 //                                                                    //
@@ -38,7 +38,6 @@ class AliFlowCandidateTrack;
 class AliFlowEventSimple;
 class AliCentrality;
 #include "AliAnalysisTaskSE.h"
-//#include "AliCentrality.h"
 
 class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
 
@@ -53,6 +52,9 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Bool_t &fFlagPhotonicElec);
     void                                 SetInvariantMassCut(Double_t invmass) {fInvmassCut = invmass;};
     void                                 SetTrigger(Int_t trig) {fTrigger = trig;};
+    void                                 SetFlowSideBands(Bool_t sidebandsflow){fSideBandsFlow = sidebandsflow;}
+    void                                 Setphiminuspsi(Bool_t phipsi){fPhiminusPsi = phipsi;}
+    void                                 SetPurity(Bool_t Purityel){fpurity = Purityel;}
     template <typename T> void           PlotVZeroMultiplcities(const T* event) const;
     template <typename T> void           SetNullCuts(T* aod);
     void                                 PrepareFlowEvent(Int_t iMulti, AliFlowEvent *FlowEv) const;
@@ -78,7 +80,6 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     AliHFEcuts   		 *fCuts;                 //Cut Collection
     Bool_t 			     fIdentifiedAsOutInz;    //Out Of Range in z
     Bool_t 	   	   	     fPassTheEventCut;       //Pass The Event Cut
-    Double_t 	         fVz;                    //z position of the primary vertex
     AliCFManager 	   	 *fCFM;                  //!Correction Framework Manager
     AliHFEpid 		     *fPID;                  //PID
     AliHFEpidQAmanager   *fPIDqa;		//! PID QA manager
@@ -98,32 +99,43 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     TH1F                 *fTPCM; //! QA plot TPC multiplicity (tracks used for event plane estimation)
     TH1F		         *fNoEvents;		//no of events
     TH2F		         *fTrkEovPBef;		//track E/p before HFE pid
-    TH2F			     *fdEdxBef;		//track dEdx vs p before HFE pid
+ //   TH2F			     *fdEdxBef;		//track dEdx vs p before HFE pid
     TH1F                 *fInclusiveElecPt; // Inclusive elec pt
     TH2F			     *fTPCnsigma;		//TPC n sigma vs p
     TH2F		         *fTPCnsigmaAft;		//TPC n sigma vs p after HFE pid
     TH1F                 *fCentralityPass; // ! QA histogram of events that pass centrality cut
     TH1F                 *fCentralityNoPass; //! QA histogram of events that do not pass centrality cut
-    THnSparse            *fSparseElectron;//! Trk matching sparse for v1 clusterizer
-    Double_t             *fvalueElectron;//! 6dim sparse fill for trk matching quantities
     TH1F                 *fInvmassLS1; //LS Invmass for all rec par
     TH1F                 *fInvmassULS1;//ULS Invmass for all rec par
     TH1F			     *fPhotoElecPt;		//photonic elec pt
     TH1F			     *fSemiInclElecPt;	//Semi inclusive ele pt
     TH1F                 *fULSElecPt; //ULS elec Pt
     TH1F                 *fLSElecPt;// LS elec pt
-	
-    Double_t fminTPC;  //ID cuts tpc
-    Double_t fmaxTPC;  //ID cuts tpc
-    Double_t fminEovP;  //ID cuts eovp
-    Double_t fmaxEovP;//ID cuts eovp
-    Double_t fminM20;//ID cuts SS
-    Double_t fmaxM20;//ID cuts SS
-    Double_t fminM02;//ID cuts SS
-    Double_t fmaxM02;//ID cuts SS
-    Double_t fDispersion;//ID cuts SS
+    Double_t              fminTPC;  //ID cuts tpc
+    Double_t              fmaxTPC;  //ID cuts tpc
+    Double_t              fminEovP;  //ID cuts eovp
+    Double_t              fmaxEovP;//ID cuts eovp
+    Double_t              fminM20;//ID cuts SS
+    Double_t              fmaxM20;//ID cuts SS
+    Double_t              fminM02;//ID cuts SS
+    Double_t              fmaxM02;//ID cuts SS
+    Double_t              fDispersion;//ID cuts SS
+    TH2F                 *fMultCorAfterCuts; //! QA profile global and tpc multiplicity after outlier cut
+    TH2F                 *fMultvsCentr; //! QA profile of centralty vs multiplicity
+	TProfile			 *fSubEventDPhiv2;
+	TH1D 		         *EPVzA;//v0aep
+	TH1D 		         *EPVzC;//v0cep
+	TH1D 		         *EPTPC;//tpcep
+    THnSparseF           *fV2Phi;//! v2 analysis of EP-V0
+    THnSparseD           *fSparseElectronHadron;//! Trk matching sparse for v1 clusterizer
+    TH1D                 *fvertex;//huge ThNsparse
+    TH2F                 *fMultCorBeforeCuts; //! QA profile global and tpc multiplicity after outlier cut
+    Bool_t                fSideBandsFlow;//flow from side bands for contamination
+    Bool_t                fPhiminusPsi;//flow from phi minus psi method
+    AliFlowEvent         *fFlowEventCont; //! flow events for elect Contamination
+    Bool_t                fpurity; //for purity evaluation
+    THnSparseD           *fSparseElectronpurity;//! Trk matching sparse for v1 clusterizer
     
-	
     AliAnalysisTaskFlowTPCEMCalQCSP(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
     AliAnalysisTaskFlowTPCEMCalQCSP& operator=(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
 
