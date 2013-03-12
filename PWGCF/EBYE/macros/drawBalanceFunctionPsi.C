@@ -575,7 +575,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     Double_t skewnessAnalytical, skewnessAnalyticalError;
     Double_t kurtosisAnalytical, kurtosisAnalyticalError;
 
-    b->GetMomentsAnalytical(gHistBalanceFunctionSubtracted,meanAnalytical,meanAnalyticalError,sigmaAnalytical,sigmaAnalyticalError,skewnessAnalytical,skewnessAnalyticalError,kurtosisAnalytical,kurtosisAnalyticalError);
+    b->GetMomentsAnalytical(gDeltaEtaDeltaPhi,gHistBalanceFunctionSubtracted,meanAnalytical,meanAnalyticalError,sigmaAnalytical,sigmaAnalyticalError,skewnessAnalytical,skewnessAnalyticalError,kurtosisAnalytical,kurtosisAnalyticalError);
 
     meanLatex = "#mu = "; 
     meanLatex += Form("%.3f",meanAnalytical);

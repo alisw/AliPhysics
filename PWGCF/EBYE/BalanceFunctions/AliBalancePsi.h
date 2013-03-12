@@ -176,7 +176,7 @@ class AliBalancePsi : public TObject {
 					   Double_t ptAssociatedMax=-1.,
 					   AliBalancePsi *bfMix=NULL);
 
-  Bool_t GetMomentsAnalytical(TH1D* gHist,
+  Bool_t GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
 			      Double_t &mean, Double_t &meanError,
 			      Double_t &sigma, Double_t &sigmaError,
 			      Double_t &skewness, Double_t &skewnessError,
