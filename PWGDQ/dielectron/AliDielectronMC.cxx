@@ -30,6 +30,7 @@
 #include <AliMCEvent.h>
 #include <AliMCParticle.h>
 #include <AliAODMCParticle.h>
+#include <AliAODMCHeader.h>
 #include <AliStack.h>
 #include <AliESDEvent.h>
 #include <AliAODEvent.h>
@@ -196,10 +197,10 @@ Bool_t AliDielectronMC::ConnectMCEvent()
     if (!aodHandler) return kFALSE;
     AliAODEvent *aod=aodHandler->GetEvent();
     if (!aod) return kFALSE;
+
     fMcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!fMcArray){ /*AliError("Could not retrieve MC array!");*/ return kFALSE; }
     else fHasMC=kTRUE;
-    fMCEvent=aodHandler->MCEvent();
   }
   return kTRUE;
 }
@@ -1281,4 +1282,24 @@ Int_t AliDielectronMC::IsJpsiPrimary(const AliVParticle * particle)
      }
   }
   return 0;
+}
+
+
+Bool_t AliDielectronMC::GetPrimaryVertex(Double_t &primVtxX, Double_t &primVtxY, Double_t &primVtxZ){
+
+     if(fAnaType == kESD){
+     const AliVVertex* mcVtx =  fMCEvent->GetPrimaryVertex();
+     if(!mcVtx) return kFALSE;
+     primVtxX = mcVtx->GetX();
+     primVtxY = mcVtx->GetY();
+     primVtxZ = mcVtx->GetZ();
+     }else if(fAnaType == kAOD){
+     AliAODEvent *aod=((AliAODInputHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()))->GetEvent();
+     AliAODMCHeader *mcHead = dynamic_cast<AliAODMCHeader*>(aod->FindListObject(AliAODMCHeader::StdBranchName()));
+     primVtxX = mcHead->GetVtxX();
+     primVtxY = mcHead->GetVtxY();
+     primVtxZ = mcHead->GetVtxZ();
+     }
+
+return kTRUE;
 }

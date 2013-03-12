@@ -24,6 +24,7 @@ class AliAODTrack;
 class TParticle;
 class AliMCParticle;
 class AliAODMCParticle;
+class AliAODMCHeader;
 
 #include "AliDielectronSignalMC.h"
 #include "AliDielectronPair.h"
@@ -96,6 +97,7 @@ public:
   Int_t IsJpsiPrimary(const AliDielectronPair * pair);
   Int_t IsJpsiPrimary(const AliVParticle * pair);
   Bool_t CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const;
+  Bool_t GetPrimaryVertex(Double_t &primVtxX, Double_t &primVtxY, Double_t &primVtxZ);
 
   AliMCEvent* GetMCEvent() { return fMCEvent; }         // return the AliMCEvent
   
@@ -122,7 +124,6 @@ private:
   Bool_t ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t pdgExclusion, Bool_t checkBothCharges) const;
   Bool_t CheckIsRadiative(Int_t label) const;
   Bool_t CheckRadiativeDecision(Int_t mLabel, const AliDielectronSignalMC * const signalMC) const;
-
 
   ClassDef(AliDielectronMC, 0)
 };
