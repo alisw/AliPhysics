@@ -1561,10 +1561,10 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
       AliDebug(2,"Does not pass the centrality correlation cut");
       return;
     }
-    if(multTPC < (-36.81+1.48*multGlob) && multTPC > (63.03+1.78*multGlob)){
-      AliDebug(2,"Does not pass the multiplicity correlation cut");
-      return;
-    }
+    // if(multTPC < (-36.81+1.48*multGlob) && multTPC > (63.03+1.78*multGlob)){
+    //   AliDebug(2,"Does not pass the multiplicity correlation cut");
+    //   return;
+    // }
   }
  
   // AliVVZERO* vzeroData=fInputEvent->GetVZEROData();
