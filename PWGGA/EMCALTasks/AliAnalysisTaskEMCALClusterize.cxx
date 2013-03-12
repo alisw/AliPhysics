@@ -611,7 +611,6 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
         fCellTime[index[icell]]         = clus->GetTOF();
         fCellMatchdEta[index[icell]]    = clus->GetTrackDz();
         fCellMatchdPhi[index[icell]]    = clus->GetTrackDx();
-        //printf(" %d,", index[icell] );
       }
       nClustersOrg++;
     }
@@ -628,6 +627,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
   AliVCaloCells *cells = fEvent->GetEMCALCells();
   
   Int_t bc = InputEvent()->GetBunchCrossNumber();
+
   for (Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++)
   {
     // Get cell values, recalibrate and not include bad channels found in analysis, nor cells with too low energy, nor exotic cell
@@ -672,8 +672,15 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     
     // Create the digit, put a fake primary deposited energy to trick the clusterizer
     // when checking the most likely primary
-        
-    new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, amp);
+    
+    Float_t efrac = cells->GetEFraction(icell);
+    
+    //When checking the MC of digits, give weight to cells with embedded signal
+    if (mcLabel > 0 && efrac < 1.e-6) efrac = 1;
+    
+    //printf("******* Cell %d, id %d, e %f,  fraction %f, MC label %d, used MC label %d\n",icell,id,amp,cells->GetEFraction(icell),cells->GetMCLabel(icell),mcLabel);
+    
+    new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, amp*efrac);
     // Last parameter should be MC deposited energy, since it is not available, add just the cell amplitude so that
     // we give more weight to the MC label of the cell with highest energy in the cluster
         
@@ -988,8 +995,8 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
     
     new((*fOutputAODBranch)[i])  AliAODCaloCluster(*newCluster);
     
-    if(DebugLevel() > 1 )    
-      printf("AliAnalysisTaksEMCALClusterize::UserExec() - New cluster %d of %d, energy %f\n",newCluster->GetID(), kNumberOfCaloClusters, newCluster->E());
+    if(DebugLevel() > 1 )
+      printf("AliAnalysisTaksEMCALClusterize::UserExec() - New cluster %d of %d, energy %f, mc label %d \n",newCluster->GetID(), kNumberOfCaloClusters, newCluster->E(), newCluster->GetLabel());
     
   } // cluster loop
   
@@ -1362,13 +1369,13 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
       
       absIds[ncellsTrue] = digit->GetId();
       ratios[ncellsTrue] = recPoint->GetEnergiesList()[c]/digit->GetAmplitude();
-      
+            
       // In case of unfolding, remove digits with unfolded energy too low      
       if(fSelectCell)
       {
         if     (recPoint->GetEnergiesList()[c] < fSelectCellMinE || ratios[ncellsTrue] < fSelectCellMinFrac)  
         {
-          if(DebugLevel() > 1)  
+          if(DebugLevel() > 1)
           {
             printf("AliAnalysisTaksEMCALClusterize::RecPoints2Clusters() - Too small energy in cell of cluster: cluster cell %f, digit %f\n",
                    recPoint->GetEnergiesList()[c],digit->GetAmplitude());
@@ -1380,7 +1387,6 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
       }// Select cells
       
       //Recalculate cluster energy and number of cluster cells in case any of the cells was rejected
-      ncellsTrue++;
       clusterE  +=recPoint->GetEnergiesList()[c];
       
       // In case of embedding, fill ratio with amount of signal, 
@@ -1399,6 +1405,8 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
         //printf("\t \t ratio %f\n",ratios[ncellsTrue]);
         
       }//Embedding
+      
+      ncellsTrue++;
       
     }// cluster cell loop
     
@@ -1594,12 +1602,21 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
   // to the new cluster.
   // Only approximatedly valid  when output are V1 clusters, handle with care
     
-  TArrayI clArray(100) ; //Weird if more than a few clusters are in the origin ...
+  TArrayI clArray(300) ; //Weird if more than a few clusters are in the origin ...
   clArray.Reset();
   Int_t nClu = 0;
   Int_t nLabTotOrg = 0;
   Float_t emax = -1;
   Int_t idMax = -1;
+  
+  AliVEvent * event = fEvent;
+  
+  //In case of embedding the MC signal is in the added event
+  AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+  if(aodIH && aodIH->GetEventToMerge())  //Embedding
+    event = aodIH->GetEventToMerge(); //Get clusters directly from embedded signal
+
+  
   //Find the clusters that originally had the cells
   for ( Int_t iLoopCell = 0 ; iLoopCell < clus->GetNCells() ; iLoopCell++ )
   {
@@ -1612,6 +1629,7 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
       Bool_t set = kTRUE;
       for(Int_t icl =0; icl < nClu; icl++)
       {
+        if(((Int_t)clArray.GetAt(icl))==-1 ) continue;
         if( idCluster == ((Int_t)clArray.GetAt(icl)) ) set = kFALSE;
         //   printf("\t \t icell %d  Cluster in array %d, IdCluster %d, in array %d, set %d\n",
         //          iLoopCell,                 icl,  idCluster,((Int_t)clArray.GetAt(icl)),set);
@@ -1620,12 +1638,12 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
       {
         clArray.SetAt(idCluster,nClu++);
         //printf("******** idCluster %d \n",idCluster);
-        nLabTotOrg+=(fEvent->GetCaloCluster(idCluster))->GetNLabels();
+        nLabTotOrg+=(event->GetCaloCluster(idCluster))->GetNLabels();
 
         //printf("Cluster in array %d, IdCluster %d\n",nClu-1,  idCluster);
 
         //Search highest E cluster
-        AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+        AliVCluster * clOrg = event->GetCaloCluster(idCluster);
         //printf("\t E %f\n",clOrg->E());
         if(emax < clOrg->E())
         {
@@ -1635,14 +1653,13 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
       }
     }
   }// cell loop
-  
+
   if(nClu==0 || nLabTotOrg == 0)
   {
-    if(clus->E() > 0.25) printf("AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters() - Check: N org clusters %d, n tot labels %d, cluster E %f,  n cells %d\n",nClu,nLabTotOrg,clus->E(), clus->GetNCells());
+    //if(clus->E() > 0.25) printf("AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters() - Check: N org clusters %d, n tot labels %d, cluster E %f,  n cells %d\n",nClu,nLabTotOrg,clus->E(), clus->GetNCells());
     //for(Int_t icell = 0; icell < clus->GetNCells(); icell++) printf("\t cell %d",clus->GetCellsAbsId()[icell]);
     //printf("\n");
   }
-  
   
   // Put the first in the list the cluster with highest energy
   if(idMax != ((Int_t)clArray.GetAt(0))) // Max not at first position
@@ -1654,11 +1671,13 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
       if(idMax == ((Int_t)clArray.GetAt(iLoopCluster))) maxIndex = iLoopCluster;
     }
     
-    clArray.SetAt(idMax,0);
-    clArray.SetAt(firstCluster,maxIndex);
-    
+    if(firstCluster >=0 && idMax >=0)
+    {
+      clArray.SetAt(idMax,0);
+      clArray.SetAt(firstCluster,maxIndex);
+    }
   }
- 
+  
   // Get the labels list in the original clusters, assign all to the new cluster
   TArrayI clMCArray(nLabTotOrg) ;
   clMCArray.Reset();
@@ -1668,7 +1687,7 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
   {
     Int_t idCluster = clArray.GetAt(iLoopCluster);
     //printf("New Cluster in Array %d,  idCluster %d \n",iLoopCluster,idCluster);
-    AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+    AliVCluster * clOrg = event->GetCaloCluster(idCluster);
     Int_t nLab = clOrg->GetNLabels();
     
     for ( Int_t iLab = 0 ; iLab < nLab ; iLab++ )
