@@ -27,7 +27,11 @@ enum {kDoNotCheckforSDD=0,kwithSDD,kwithoutSDD};
 
   // Constructors
  AliSpectraBothEventCuts() : TNamed(), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject),fTrackBits(0), fIsMC(0), fCentEstimator(""), fUseCentPatchAOD049(0),fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
-fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0) {}
+fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), 
+fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fHistoCuts(0),
+fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),
+fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZveretxCut(0)
+{}
   AliSpectraBothEventCuts(const char *name);
   virtual  ~AliSpectraBothEventCuts() {}
   
@@ -48,7 +52,7 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
 
   // Methods
   Bool_t IsSelected(AliVEvent * aod,AliSpectraBothTrackCuts     *trackcuts);
-  Bool_t CheckVtxRange();
+  Bool_t CheckVtx();
   Bool_t CheckCentralityCut();
   Bool_t CheckMultiplicityCut();
   Bool_t CheckQVectorCut();
@@ -67,6 +71,7 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
   TH1I * GetHistoCuts()         {  return fHistoCuts; }
   TH1F * GetHistoVtxBefSel()         {  return fHistoVtxBefSel; }
   TH1F * GetHistoVtxAftSel()         {  return fHistoVtxAftSel; }
+  TH1F * GetHistoVtxAftSelwithoutZveretxCut()         {  return fHistoVtxAftSelwithoutZveretxCut; }
   TH1F * GetHistoEtaBefSel()         {  return fHistoEtaBefSel; }
   TH1F * GetHistoEtaAftSel()         {  return fHistoEtaAftSel; }
   TH1F * GetHistoNChAftSel()         {  return fHistoNChAftSel; }
@@ -124,7 +129,7 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
   Float_t         fMultiplicityCutMax;     // maximum multiplicity position
   Float_t	  fMaxChi2perNDFforVertex; // maximum value of Chi2perNDF of vertex 
   TH1I            *fHistoCuts;        // Cuts statistics
-  TH1F            *fHistoVtxBefSel;        // Vtx distr before event selection
+  TH1F            *fHistoVtxBefSel;        // Vtx distr before event selection 	
   TH1F            *fHistoVtxAftSel;        // Vtx distr after event selection
   TH1F            *fHistoEtaBefSel;        // Eta distr before event selection
   TH1F            *fHistoEtaAftSel;        // Eta distr after event selection
@@ -133,10 +138,13 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
   //TH1F            *fHistoQVectorNeg;        // QVectorNeg
   TH1F            *fHistoQVector;        // QVector
   TH1F            *fHistoEP;        // EP
+  TH1F 		  *fHistoVtxAftSelwithoutZveretxCut;        // Vtx distr after event selection but without z vertex cut
+	  
+
   AliSpectraBothEventCuts(const AliSpectraBothEventCuts&);
   AliSpectraBothEventCuts& operator=(const AliSpectraBothEventCuts&);
   
-  ClassDef(AliSpectraBothEventCuts, 5);
+  ClassDef(AliSpectraBothEventCuts, 6);
   
 };
 #endif

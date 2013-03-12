@@ -46,12 +46,13 @@ ClassImp(AliSpectraBothEventCuts)
 AliSpectraBothEventCuts::AliSpectraBothEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject), fTrackBits(0),fIsMC(0),fCentEstimator(""), fUseCentPatchAOD049(0), fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0),fMaxChi2perNDFforVertex(0),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
-,fHistoEP(0)
+,fHistoEP(0),fHistoVtxAftSelwithoutZveretxCut(0)
 {
   // Constructor
   fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
-  fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection",500,-15,15);
-  fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection",500,-15,15);
+  fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection",300,-15,15);
+  fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection",300,-15,15);
+  fHistoVtxAftSelwithoutZveretxCut=new TH1F("fHistoVtxAftSelwithoutZveretx cut", "Vtx distr after event selection without Z veretx cut",300,-15,15);
   fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection",500,-2,2);
   fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection",500,-2,2);
   fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection",2000,-0.5,1999.5);
@@ -132,13 +133,24 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
    const AliVVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated		 
   if(vertex)fHistoVtxBefSel->Fill(vertex->GetZ());
   fIsSelected =kFALSE;
-  if(CheckVtxRange() && CheckCentralityCut() && CheckMultiplicityCut() && CheckVtxChi2perNDF()){ //selection on vertex and Centrality
+  if(CheckVtx() && CheckCentralityCut() && CheckMultiplicityCut() && CheckVtxChi2perNDF())
+   { //selection on vertex and Centrality
+
     fIsSelected=CheckQVectorCut(); // QVector is calculated only if the centrality and vertex are correct (performance)
   }
-  if(fIsSelected){
-    fHistoCuts->Fill(kAcceptedEvents);
-    if(vertex)
-	fHistoVtxAftSel->Fill(vertex->GetZ());
+  if(fIsSelected)
+ {
+      fHistoVtxAftSelwithoutZveretxCut->Fill(vertex->GetZ());
+     if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
+     {
+      		fHistoCuts->Fill(kAcceptedEvents);
+		fIsSelected=kTRUE;
+		fHistoVtxAftSel->Fill(vertex->GetZ());
+     }
+    else	
+    {
+		fIsSelected=kFALSE;
+    }	
   }
   Int_t Nch=0;
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
@@ -162,7 +174,7 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 }
 
 //______________________________________________________
-Bool_t AliSpectraBothEventCuts::CheckVtxRange()
+Bool_t AliSpectraBothEventCuts::CheckVtx()
 {
   // reject events outside of range
   const AliVVertex * vertex = fAOD->GetPrimaryVertex();
@@ -185,12 +197,13 @@ Bool_t AliSpectraBothEventCuts::CheckVtxRange()
 	fHistoCuts->Fill(kVtxNoEvent);
       	return kFALSE;
    }				
-  if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
-    {
-      return kTRUE;
-    }
+ // if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
+   // {
+    //  return kTRUE;
+   // }
   fHistoCuts->Fill(kVtxRange);
-  return kFALSE;
+  //return kFALSE;
+   return kTRUE;
 }
 
 //______________________________________________________
