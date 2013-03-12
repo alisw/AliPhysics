@@ -120,7 +120,7 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   SetCentralityBinning(centEdges, centNMixed);
   
   for(int mod=1; mod <= 5; ++mod)
-    fModuleEnabled[mod-1] = kFALSE;
+    fModuleEnabled[mod-1] = kTRUE;
 
   for(Int_t i=0;i<kNCenBins;i++){
     for(Int_t j=0;j<2; j++)
