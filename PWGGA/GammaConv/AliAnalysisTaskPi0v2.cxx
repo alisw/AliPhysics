@@ -22,10 +22,10 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskPi0v2)
 
-
 //________________________________________________________________________
     AliAnalysisTaskPi0v2::AliAnalysisTaskPi0v2(const char *name,Int_t harmonic) : AliAnalysisTaskSE(name),
     fV0Reader(NULL),
+    fNCuts(0),
     fConversionSelection(NULL),
     fConversionGammas(NULL),
     fNCentralityBins(1),
@@ -47,12 +47,10 @@ ClassImp(AliAnalysisTaskPi0v2)
     fRPV0ABF(0),
     fRPV0CBF(0),
     fRPTPCBF(0),
-    fNCuts(0),
     fConversionCuts(NULL),
     fRandomizer(NULL),
     fOutputList(NULL),
     fMesonPDGCode(kPi0),
-    fInvMassRange(NULL),
     fDeltaPsiRP(0),
     fRunNumber(0),
     fRunIndex(0),
@@ -112,7 +110,6 @@ ClassImp(AliAnalysisTaskPi0v2)
     //hEPVertex(NULL)
     hEPQA(NULL)
 {
-    fInvMassRange=new Double_t[2];
     fInvMassRange[0]=0.05;
     fInvMassRange[1]=0.3;
 
@@ -141,13 +138,10 @@ AliAnalysisTaskPi0v2::~AliAnalysisTaskPi0v2(){
 	delete fCentralityBins;
 	fCentralityBins=NULL;
     }
-    if(fInvMassRange){
-	delete fInvMassRange;
-        fInvMassRange=NULL;
-    }
 
     if(fConversionSelection){
-	delete fConversionSelection;
+	for(Int_t ii=0;ii<fNCuts;ii++)delete fConversionSelection;
+	delete[] fConversionSelection;
 	fConversionSelection=NULL;
     }
 
@@ -358,17 +352,13 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
 	 fRPList->Add(hEPVertex);
 	 */
 
+	const Int_t nRuns=270;
 	const Int_t nepbins=4;
-        Int_t nbinsep[nepbins]={fNCentralityBins,180,140,5};
+	Int_t nbinsep[nepbins]={fNCentralityBins,180,nRuns,5};
 	Double_t minep[nepbins]={-0.5,0,0.5,-0.5};
-	Double_t maxep[nepbins]={fNCentralityBins-0.5,fPsiMax,140.5,4.5};
-
+	Double_t maxep[nepbins]={fNCentralityBins-0.5,fPsiMax,Double_t(nRuns)+0.5,4.5};
 	hEPQA=new THnSparseF("EP_QA","EP_QA",nepbins,nbinsep,minep,maxep);
 	fRPList->Add(hEPQA);
-       
-
-
-	
     }
 
     TList *fPhotonQAList=new TList();
@@ -504,9 +494,13 @@ Bool_t AliAnalysisTaskPi0v2::InitEvent(){
 	    if (fRunNumber >= 136851 && fRunNumber <= 139515){fPeriod = "LHC10h";}
 	    if (fRunNumber >= 166529 && fRunNumber <= 170593){fPeriod = "LHC11h";}
 	    fRunIndex=GetRunIndex(fRunNumber);
-	    OpenInfoCalibration(fRunNumber); // Load Calibration of V0 and TPC Event Plane
+	    LoadVZEROCalibration(fRunNumber); // Load Calibration for V0 Event Plane
+            LoadTPCCalibration(fRunNumber); // Load Calibration for TPC Event Plane
 	}
-	if(fRunIndex<0)return kFALSE;
+	if(fRunIndex<0){
+	    AliInfo("Run not selected");
+	    return kFALSE;
+	}
 
 	// TPC Event Plane
 	if(!GetTPCEventPlane())return kFALSE;
@@ -1134,153 +1128,296 @@ void AliAnalysisTaskPi0v2::SetCentralityBins(Double_t *bins,Int_t nbins)
 //________________________________________________________________________
 void AliAnalysisTaskPi0v2::SetCuts(AliConversionSelection **conversionselection,Int_t ncuts){
 
-    fConversionSelection=conversionselection;
+    if(fConversionSelection){
+	for(Int_t ii=0;ii<fNCuts;ii++)delete fConversionSelection;
+        delete[] fConversionSelection;
+        fConversionSelection=NULL;
+    }
     fNCuts=ncuts;
+    fConversionSelection=new AliConversionSelection*[fNCuts];
+    for(Int_t ii=0;ii<fNCuts;ii++)fConversionSelection[ii]=new AliConversionSelection(*conversionselection[ii]);
 }
 
 //___________________________________________________________________________
 Int_t AliAnalysisTaskPi0v2::GetRunIndex(Int_t run){
 
-   switch(run){
-  case  139517 : return 137;
-  case  139514 : return 136;
-  case  139513 : return 135; 
-  case  139511 : return 134; 
-  case  139510 : return 133; 
-  case  139507 : return 132; 
-  case  139505 : return 131; 
-  case  139504 : return 130; 
-  case  139503 : return 129; 
-  case  139470 : return 128; 
-  case  139467 : return 127; 
-  case  139466 : return 126; 
-  case  139465 : return 125; 
-  case  139440 : return 124; 
-  case  139439 : return 123; 
-  case  139438 : return 122; 
-  case  139437 : return 121; 
-  case  139360 : return 120; 
-  case  139329 : return 119; 
-  case  139328 : return 118; 
-  case  139314 : return 117; 
-  case  139311 : return 116; 
-  case  139310 : return 115; 
-  case  139309 : return 114; 
-  case  139308 : return 113; 
-  case  139173 : return 112; 
-  case  139172 : return 111; 
-  case  139110 : return 110; 
-  case  139107 : return 109; 
-  case  139105 : return 108; 
-  case  139104 : return 107; 
-  case  139042 : return 106; 
-  case  139038 : return 105; 
-  case  139037 : return 104; 
-  case  139036 : return 103; 
-  case  139029 : return 102; 
-  case  139028 : return 101; 
-  case  138983 : return 100; 
-  case  138982 : return 99; 
-  case  138980 : return 98; 
-  case  138979 : return 97; 
-  case  138978 : return 96; 
-  case  138977 : return 95; 
-  case  138976 : return 94; 
-  case  138973 : return 93; 
-  case  138972 : return 92; 
-  case  138965 : return 91; 
-  case  138924 : return 90;
-  case  138872 : return 89; 
-  case  138871 : return 88; 
-  case  138870 : return 87; 
-  case  138837 : return 86; 
-  case  138830 : return 85; 
-  case  138828 : return 84; 
-  case  138826 : return 83; 
-  case  138796 : return 82; 
-  case  138795 : return 81; 
-  case  138742 : return 80; 
-  case  138732 : return 79; 
-  case  138730 : return 78; 
-  case  138666 : return 77; 
-  case  138662 : return 76; 
-  case  138653 : return 75; 
-  case  138652 : return 74; 
-  case  138638 : return 73; 
-  case  138624 : return 72; 
-  case  138621 : return 71; 
-  case  138583 : return 70; 
-  case  138582 : return 69; 
- // case  138579 : return 68;
- // case  138578 : return 67;
-  case  138534 : return 66; 
-  case  138469 : return 65; 
-  case  138442 : return 64; 
-  case  138439 : return 63; 
-  case  138438 : return 62; 
-  case  138396 : return 61; 
-  case  138364 : return 60; 
-  case  138359 : return 59; 
-  case  138275 : return 58; 
-  case  138225 : return 57; 
-  case  138201 : return 56; 
-  case  138200 : return 55; 
-  case  138197 : return 54; 
-  case  138192 : return 53; 
-  case  138190 : return 52; 
-  case  138154 : return 51; 
-  case  138153 : return 50; 
-  case  138151 : return 49; 
-  case  138150 : return 48; 
-  case  138126 : return 47; 
-  case  138125 : return 46; 
-  case  137848 : return 45; 
-  case  137847 : return 44; 
-  case  137844 : return 43; 
-  case  137843 : return 42; 
-  case  137752 : return 41; 
-  case  137751 : return 40; 
-  case  137748 : return 39; 
-  case  137724 : return 38; 
-  case  137722 : return 37; 
-  case  137718 : return 36; 
-  case  137704 : return 35; 
-  case  137693 : return 34; 
-  case  137692 : return 33; 
-  case  137691 : return 32; 
-  case  137689 : return 31; 
-  case  137686 : return 30; 
-  case  137685 : return 29; 
-  case  137639 : return 28; 
-  case  137638 : return 27; 
-  case  137608 : return 26; 
-  case  137595 : return 25; 
-  case  137549 : return 24; 
-  case  137546 : return 23; 
-  case  137544 : return 22; 
-  case  137541 : return 21; 
-  case  137539 : return 20; 
-  case  137531 : return 19; 
-  case  137530 : return 18; 
-  case  137443 : return 17; 
-  case  137441 : return 16; 
-  case  137440 : return 15; 
-  case  137439 : return 14; 
-  case  137434 : return 13; 
-  case  137432 : return 12; 
-  case  137431 : return 11; 
-  case  137430 : return 10; 
-  case  137366 : return 9; 
-  case  137243 : return 8; 
-  case  137236 : return 7; 
-  case  137235 : return 6; 
-  case  137232 : return 5; 
-  case  137231 : return 4; 
-  case  137165 : return 3; 
-  case  137162 : return 2; 
-  case  137161 : return 1;
-  default : return -1;
-  }
+    switch(run){
+
+	//LHC11h (131 runs)
+    case 167902 : return 140;
+    case 167903 : return 141;
+    case 167909 : return 142;
+    case 167915 : return 143;
+    case 167920 : return 144;
+    case 167985 : return 145;
+    case 167986 : return 146;
+    case 167987 : return 147;
+    case 167988 : return 148;
+    case 168066 : return 149;
+    case 168068 : return 150;
+    case 168069 : return 151;
+    case 168076 : return 152;
+    case 168103 : return 153;
+    case 168104 : return 154;
+    case 168105 : return 155;
+    case 168107 : return 156;
+    case 168108 : return 157;
+    case 168115 : return 158;
+    case 168212 : return 159;
+    case 168310 : return 160;
+    case 168311 : return 161;
+    case 168322 : return 162;
+    case 168325 : return 163;
+    case 168341 : return 164;
+    case 168342 : return 165;
+    case 168361 : return 166;
+    case 168362 : return 167;
+    case 168458 : return 168;
+    case 168460 : return 169;
+    case 168461 : return 170;
+    case 168464 : return 171;
+    case 168467 : return 172;
+    case 168511 : return 173;
+    case 168512 : return 174;
+    case 168514 : return 175;
+    case 168777 : return 176;
+    case 168826 : return 177;
+    case 168984 : return 178;
+    case 168988 : return 179;
+    case 168992 : return 180;
+    case 169035 : return 181;
+    case 169040 : return 182;
+    case 169044 : return 183;
+    case 169045 : return 184;
+    case 169091 : return 185;
+    case 169094 : return 186;
+    case 169099 : return 187;
+    case 169138 : return 188;
+    case 169143 : return 189;
+    case 169144 : return 190;
+    case 169145 : return 191;
+    case 169148 : return 192;
+    case 169156 : return 193;
+    case 169160 : return 194;
+    case 169167 : return 195;
+    case 169238 : return 196;
+    case 169411 : return 197;
+    case 169415 : return 198;
+    case 169417 : return 199;
+    case 169418 : return 200;
+    case 169419 : return 201;
+    case 169420 : return 202;
+    case 169475 : return 203;
+    case 169498 : return 204;
+    case 169504 : return 205;
+    case 169506 : return 206;
+    case 169512 : return 207;
+    case 169515 : return 208;
+    case 169550 : return 209;
+    case 169553 : return 210;
+    case 169554 : return 211;
+    case 169555 : return 212;
+    case 169557 : return 213;
+    case 169584 : return 214;
+    case 169586 : return 215;
+    case 169587 : return 216;
+    case 169588 : return 217;
+    case 169590 : return 218;
+    case 169591 : return 219;
+    case 169835 : return 220;
+    case 169837 : return 221;
+    case 169838 : return 222;
+    case 169846 : return 223;
+    case 169855 : return 224;
+    case 169858 : return 225;
+    case 169859 : return 226;
+    case 169922 : return 227;
+    case 169923 : return 228;
+    case 169956 : return 229;
+    case 169965 : return 230;
+    case 169975 : return 231;
+    case 169981 : return 232;
+    case 170027 : return 233;
+    case 170036 : return 234;
+    case 170038 : return 235;
+    case 170040 : return 236;
+    case 170081 : return 237;
+    case 170083 : return 238;
+    case 170084 : return 239;
+    case 170085 : return 240;
+    case 170088 : return 241;
+    case 170089 : return 242;
+    case 170091 : return 243;
+    case 170152 : return 244;
+    case 170155 : return 245;
+    case 170159 : return 246;
+    case 170163 : return 247;
+    case 170193 : return 248;
+    case 170195 : return 249;
+    case 170203 : return 250;
+    case 170204 : return 251;
+    case 170207 : return 252;
+    case 170208 : return 253;
+    case 170228 : return 254;
+    case 170230 : return 255;
+    case 170268 : return 256;
+    case 170269 : return 257;
+    case 170270 : return 258;
+    case 170306 : return 259;
+    case 170308 : return 260;
+    case 170309 : return 261;
+    case 170311 : return 262;
+    case 170312 : return 263;
+    case 170313 : return 264;
+    case 170315 : return 265;
+    case 170387 : return 266;
+    case 170388 : return 267;
+    case 170556 : return 268;
+    case 170572 : return 269;
+    case 170593 : return 270;
+
+    //LHC10h (137 runs)
+    case  139517 : return 137;
+    case  139514 : return 136;
+    case  139513 : return 135;
+    case  139511 : return 134;
+    case  139510 : return 133;
+    case  139507 : return 132;
+    case  139505 : return 131;
+    case  139504 : return 130;
+    case  139503 : return 129;
+    case  139470 : return 128;
+    case  139467 : return 127;
+    case  139466 : return 126;
+    case  139465 : return 125;
+    case  139440 : return 124;
+    case  139439 : return 123;
+    case  139438 : return 122;
+    case  139437 : return 121;
+    case  139360 : return 120;
+    case  139329 : return 119;
+    case  139328 : return 118;
+    case  139314 : return 117;
+    case  139311 : return 116;
+    case  139310 : return 115;
+    case  139309 : return 114;
+    case  139308 : return 113;
+    case  139173 : return 112;
+    case  139172 : return 111;
+    case  139110 : return 110;
+    case  139107 : return 109;
+    case  139105 : return 108;
+    case  139104 : return 107;
+    case  139042 : return 106;
+    case  139038 : return 105;
+    case  139037 : return 104;
+    case  139036 : return 103;
+    case  139029 : return 102;
+    case  139028 : return 101;
+    case  138983 : return 100;
+    case  138982 : return 99;
+    case  138980 : return 98;
+    case  138979 : return 97;
+    case  138978 : return 96;
+    case  138977 : return 95;
+    case  138976 : return 94;
+    case  138973 : return 93;
+    case  138972 : return 92;
+    case  138965 : return 91;
+    case  138924 : return 90;
+    case  138872 : return 89;
+    case  138871 : return 88;
+    case  138870 : return 87;
+    case  138837 : return 86;
+    case  138830 : return 85;
+    case  138828 : return 84;
+    case  138826 : return 83;
+    case  138796 : return 82;
+    case  138795 : return 81;
+    case  138742 : return 80;
+    case  138732 : return 79;
+    case  138730 : return 78;
+    case  138666 : return 77;
+    case  138662 : return 76;
+    case  138653 : return 75;
+    case  138652 : return 74;
+    case  138638 : return 73;
+    case  138624 : return 72;
+    case  138621 : return 71;
+    case  138583 : return 70;
+    case  138582 : return 69;
+    // case  138579 : return 68;
+    // case  138578 : return 67;
+    case  138534 : return 66;
+    case  138469 : return 65;
+    case  138442 : return 64;
+    case  138439 : return 63;
+    case  138438 : return 62;
+    case  138396 : return 61;
+    case  138364 : return 60;
+    case  138359 : return 59;
+    case  138275 : return 58;
+    case  138225 : return 57;
+    case  138201 : return 56;
+    case  138200 : return 55;
+    case  138197 : return 54;
+    case  138192 : return 53;
+    case  138190 : return 52;
+    case  138154 : return 51;
+    case  138153 : return 50;
+    case  138151 : return 49;
+    case  138150 : return 48;
+    case  138126 : return 47;
+    case  138125 : return 46;
+    case  137848 : return 45;
+    case  137847 : return 44;
+    case  137844 : return 43;
+    case  137843 : return 42;
+    case  137752 : return 41;
+    case  137751 : return 40;
+    case  137748 : return 39;
+    case  137724 : return 38;
+    case  137722 : return 37;
+    case  137718 : return 36;
+    case  137704 : return 35;
+    case  137693 : return 34;
+    case  137692 : return 33;
+    case  137691 : return 32;
+    case  137689 : return 31;
+    case  137686 : return 30;
+    case  137685 : return 29;
+    case  137639 : return 28;
+    case  137638 : return 27;
+    case  137608 : return 26;
+    case  137595 : return 25;
+    case  137549 : return 24;
+    case  137546 : return 23;
+    case  137544 : return 22;
+    case  137541 : return 21;
+    case  137539 : return 20;
+    case  137531 : return 19;
+    case  137530 : return 18;
+    case  137443 : return 17;
+    case  137441 : return 16;
+    case  137440 : return 15;
+    case  137439 : return 14;
+    case  137434 : return 13;
+    case  137432 : return 12;
+    case  137431 : return 11;
+    case  137430 : return 10;
+    case  137366 : return 9;
+    case  137243 : return 8;
+    case  137236 : return 7;
+    case  137235 : return 6;
+    case  137232 : return 5;
+    case  137231 : return 4;
+    case  137165 : return 3;
+    case  137162 : return 2;
+    case  137161 : return 1;
+
+    // Default
+    default : return -1;
+    }
 }
 
 //____________________________________________________________________________
@@ -1350,7 +1487,7 @@ void AliAnalysisTaskPi0v2::GetV0EP(AliVEvent * event,Double_t &rpv0a,Double_t &r
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPi0v2::OpenInfoCalibration(Int_t run){
+void AliAnalysisTaskPi0v2::LoadVZEROCalibration(Int_t run){
 
     // VZERO Phi Weights and Recentering
 
@@ -1410,9 +1547,14 @@ void AliAnalysisTaskPi0v2::OpenInfoCalibration(Int_t run){
 	    }
 	}
     }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskPi0v2::LoadTPCCalibration(Int_t run){
 
     // TPC Event Plane Weights
     AliOADBContainer *fEPContainer=NULL;
+    TString oadbfilename="";
 
     if (run >= 136851 && run <= 139515){
 	// LHC10h
@@ -1673,6 +1815,9 @@ Bool_t AliAnalysisTaskPi0v2::GetTPCEventPlane(){
     fEP->SetQsub(fQsub1,fQsub2);
     fEP->SetQsubRes(fQsub1->Phi()/Double_t(fHarmonic) - fQsub2->Phi()/Double_t(fHarmonic));
 
+    Int_t ntracks=trackcounter1+trackcounter2;
+
+    if(ntracks<3)return kFALSE;// <3 -> no subevents
     return kTRUE;
 }
 

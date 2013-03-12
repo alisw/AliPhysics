@@ -17,8 +17,11 @@ class AliConversionSelection : public TObject{
 
 public:
 
-    AliConversionSelection(AliConversionCuts *convCut, AliConversionMesonCuts *mesonCut);
+    AliConversionSelection(AliConversionCuts *convCut=NULL, AliConversionMesonCuts *mesonCut=NULL);
     AliConversionSelection(TString convCut, TString mesonCut);
+    AliConversionSelection(const AliConversionSelection&);
+    AliConversionSelection& operator=(const AliConversionSelection&); // not implemented
+
     virtual ~AliConversionSelection();
 
     // Main Functions
@@ -75,18 +78,11 @@ protected:
     TClonesArray *fBGPi0s;
     TRandom3 *fRandomizer; // Randomizer for Rotation
     AliConversionAODBGHandlerRP *fBGHandler;
-    Double_t *fInvMassRange;
-    Double_t *fUnsmearedPx;
-    Double_t *fUnsmearedPy;
-    Double_t *fUnsmearedPz;
-    Double_t *fUnsmearedE;
+    Double_t fInvMassRange[2];
     Int_t fCurrentEventNumber; // Current Event Number
     Bool_t fIsOwner; // Cuts will be deleted when the destructor is called
 
-    AliConversionSelection(const AliConversionSelection&); // not implemented
-    AliConversionSelection& operator=(const AliConversionSelection&); // not implemented
-  
-    ClassDef(AliConversionSelection, 1); // example of analysis
+    ClassDef(AliConversionSelection, 2); // example of analysis
 };
 
 #endif

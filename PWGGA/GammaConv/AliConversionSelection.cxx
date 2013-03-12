@@ -24,16 +24,10 @@ AliConversionSelection::AliConversionSelection(AliConversionCuts *convCut, AliCo
     fBGPi0s(NULL),
     fRandomizer(NULL),
     fBGHandler(NULL),
-    fInvMassRange(NULL),
-    fUnsmearedPx(NULL),
-    fUnsmearedPy(NULL),
-    fUnsmearedPz(NULL),
-    fUnsmearedE(NULL),
     fCurrentEventNumber(-1),
     fIsOwner(kFALSE)
 {
     // Default Values
-    fInvMassRange=new Double_t[2];
     fInvMassRange[0]=0.05;
     fInvMassRange[1]=0.3;
 }
@@ -50,16 +44,10 @@ AliConversionSelection::AliConversionSelection(TString convCut, TString mesonCut
     fBGPi0s(NULL),
     fRandomizer(NULL),
     fBGHandler(NULL),
-    fInvMassRange(NULL),
-    fUnsmearedPx(NULL),
-    fUnsmearedPy(NULL),
-    fUnsmearedPz(NULL),
-    fUnsmearedE(NULL),
     fCurrentEventNumber(-1),
     fIsOwner(kTRUE)
 {
     // Default Values
-    fInvMassRange=new Double_t[2];
     fInvMassRange[0]=0.05;
     fInvMassRange[1]=0.3;
 
@@ -70,16 +58,37 @@ AliConversionSelection::AliConversionSelection(TString convCut, TString mesonCut
 
 }
 
+
+//________________________________________________________________________
+AliConversionSelection::AliConversionSelection(const AliConversionSelection &ref) : TObject(ref),
+    fInputEvent(NULL),
+    fMCEvent(NULL),
+    fConversionCut(NULL),
+    fMesonCut(NULL),
+    fESDTrackCuts(NULL),
+    fGoodGammas(NULL),
+    fPi0Candidates(NULL),
+    fBGPi0s(NULL),
+    fRandomizer(NULL),
+    fBGHandler(NULL),
+    fCurrentEventNumber(-1),
+    fIsOwner(kTRUE)
+{
+    // Copy Constructor
+
+    fConversionCut=new AliConversionCuts(*ref.fConversionCut);
+    fMesonCut=new AliConversionMesonCuts(*ref.fMesonCut);
+
+    fInvMassRange[0]=ref.fInvMassRange[0];
+    fInvMassRange[1]=ref.fInvMassRange[1];
+}
+
 //________________________________________________________________________
 AliConversionSelection::~AliConversionSelection(){
 
     if(fBGHandler){
 	delete fBGHandler;
 	fBGHandler=NULL;
-    }
-    if(fInvMassRange){
-	delete fInvMassRange;
-	fInvMassRange=NULL;
     }
     if(fRandomizer){
 	delete fRandomizer;
@@ -154,6 +163,11 @@ Bool_t AliConversionSelection::ProcessEvent(TClonesArray *photons,AliVEvent *inp
     }
 
     // Do MC Smearing
+    Double_t *fUnsmearedPx=NULL;
+    Double_t *fUnsmearedPy=NULL;
+    Double_t *fUnsmearedPz=NULL;
+    Double_t *fUnsmearedE=NULL;
+   
     if(fMesonCut->UseMCPSmearing() && fMCEvent){
 	fUnsmearedPx = new Double_t[fGoodGammas->GetEntries()]; // Store unsmeared Momenta
 	fUnsmearedPy = new Double_t[fGoodGammas->GetEntries()];
