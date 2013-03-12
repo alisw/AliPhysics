@@ -697,6 +697,8 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
 						 Int_t iVariablePair,
 						 Double_t psiMin, 
 						 Double_t psiMax,
+						 Double_t vertexZMin,
+						 Double_t vertexZMax,
 						 Double_t ptTriggerMin,
 						 Double_t ptTriggerMax,
 						 Double_t ptAssociatedMin,
@@ -709,6 +711,10 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
   // security checks
   if(psiMin > psiMax-0.00001){
     AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(vertexZMin > vertexZMax-0.00001){
+    AliError("vertexZMax <= vertexZMin");
     return NULL;
   }
   if(ptTriggerMin > ptTriggerMax-0.00001){
@@ -727,6 +733,16 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
   fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+
+  // Vz
+ if(fVertexBinning){
+   fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+   fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+   fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+   fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+   fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+   fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+ }
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
@@ -749,12 +765,12 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
   //Printf("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0));
 
   // Project into the wanted space (1st: analysis step, 2nd: axis)
-  TH1D* hTemp1 = (TH1D*)fHistPN->Project(0,iVariablePair);
-  TH1D* hTemp2 = (TH1D*)fHistNP->Project(0,iVariablePair);
-  TH1D* hTemp3 = (TH1D*)fHistPP->Project(0,iVariablePair);
-  TH1D* hTemp4 = (TH1D*)fHistNN->Project(0,iVariablePair);
-  TH1D* hTemp5 = (TH1D*)fHistP->Project(0,iVariableSingle);
-  TH1D* hTemp6 = (TH1D*)fHistN->Project(0,iVariableSingle);
+  TH1D* hTemp1 = (TH1D*)fHistPN->Project(0,iVariablePair); //
+  TH1D* hTemp2 = (TH1D*)fHistNP->Project(0,iVariablePair); //
+  TH1D* hTemp3 = (TH1D*)fHistPP->Project(0,iVariablePair); //
+  TH1D* hTemp4 = (TH1D*)fHistNN->Project(0,iVariablePair); //
+  TH1D* hTemp5 = (TH1D*)fHistP->Project(0,iVariableSingle); //
+  TH1D* hTemp6 = (TH1D*)fHistN->Project(0,iVariableSingle); //
 
   TH1D *gHistBalanceFunctionHistogram = 0x0;
   if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)&&(hTemp5)&&(hTemp6)) {
@@ -797,6 +813,8 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
 							 Int_t iVariablePair,
 							 Double_t psiMin, 
 							 Double_t psiMax,
+							 Double_t vertexZMin,
+							 Double_t vertexZMax,
 							 Double_t ptTriggerMin,
 							 Double_t ptTriggerMax,
 							 Double_t ptAssociatedMin,
@@ -811,6 +829,10 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
   // security checks
   if(psiMin > psiMax-0.00001){
     AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(vertexZMin > vertexZMax-0.00001){
+    AliError("vertexZMax <= vertexZMin");
     return NULL;
   }
   if(ptTriggerMin > ptTriggerMax-0.00001){
@@ -829,6 +851,16 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
   fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+
+  // Vz
+  if(fVertexBinning){
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
@@ -865,6 +897,16 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
   fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
+  // Vz
+  if(fVertexBinning){
+    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
+  
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
     fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
@@ -961,6 +1003,8 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
 //____________________________________________________________________//
 TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin, 
 							Double_t psiMax,
+							Double_t vertexZMin,
+							Double_t vertexZMax,
 							Double_t ptTriggerMin,
 							Double_t ptTriggerMax,
 							Double_t ptAssociatedMin,
@@ -974,6 +1018,10 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin,
   // security checks
   if(psiMin > psiMax-0.00001){
     AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(vertexZMin > vertexZMax-0.00001){
+    AliError("vertexZMax <= vertexZMin");
     return NULL;
   }
   if(ptTriggerMin > ptTriggerMax-0.00001){
@@ -994,6 +1042,16 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin,
   fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+
+  // Vz
+  if(fVertexBinning){
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
@@ -1052,6 +1110,8 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin,
 //____________________________________________________________________//
 TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin, 
 								Double_t psiMax,
+								Double_t vertexZMin,
+								Double_t vertexZMax,
 								Double_t ptTriggerMin,
 								Double_t ptTriggerMax,
 								Double_t ptAssociatedMin,
@@ -1075,6 +1135,10 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
     AliError("psiMax <= psiMin");
     return NULL;
   }
+  if(vertexZMin > vertexZMax-0.00001){
+    AliError("vertexZMax <= vertexZMin");
+    return NULL;
+  }
   if(ptTriggerMin > ptTriggerMax-0.00001){
     AliError("ptTriggerMax <= ptTriggerMin");
     return NULL;
@@ -1091,6 +1155,16 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
   fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+  
+  // Vz
+  if(fVertexBinning){
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
@@ -1128,6 +1202,15 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
   fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
+  // Vz
+  if(fVertexBinning){
+    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
     fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
@@ -1216,6 +1299,8 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
 TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
                                                         Double_t psiMin,
                                                         Double_t psiMax,
+							Double_t vertexZMin,
+							Double_t vertexZMax,
                                                         Double_t ptTriggerMin,
                                                         Double_t ptTriggerMax,
                                                         Double_t ptAssociatedMin,
@@ -1240,6 +1325,10 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
     AliError("psiMax <= psiMin");
     return NULL;
   }
+  if(vertexZMin > vertexZMax-0.00001){
+    AliError("vertexZMax <= vertexZMin");
+    return NULL;
+  }
   if(ptTriggerMin > ptTriggerMax-0.00001){
     AliError("ptTriggerMax <= ptTriggerMin");
     return NULL;
@@ -1256,6 +1345,16 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
   fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
   fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
   fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+
+  // Vz
+  if(fVertexBinning){
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
@@ -1293,6 +1392,16 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
   fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
   fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
 
+  // Vz
+  if(fVertexBinning){
+    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
+  
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
     fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
@@ -1403,6 +1512,8 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
 //____________________________________________________________________//
 TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin, 
 					      Double_t psiMax,
+					      Double_t vertexZMin,
+					      Double_t vertexZMax,
 					      Double_t ptTriggerMin,
 					      Double_t ptTriggerMax,
 					      Double_t ptAssociatedMin,
@@ -1412,6 +1523,10 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
   // security checks
   if(psiMin > psiMax-0.00001){
     AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(vertexZMin > vertexZMax-0.00001){
+    AliError("vertexZMax <= vertexZMin");
     return NULL;
   }
   if(ptTriggerMin > ptTriggerMax-0.00001){
@@ -1426,6 +1541,13 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
   // Psi_2: axis 0
   fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+
+  // Vz
+  if(fVertexBinning){
+    //Printf("Cutting on Vz...");
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
@@ -1478,6 +1600,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
 //____________________________________________________________________//
 TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t psiMin, 
 					      Double_t psiMax,
+					      Double_t vertexZMin,
+					      Double_t vertexZMax,
 					      Double_t ptTriggerMin,
 					      Double_t ptTriggerMax,
 					      Double_t ptAssociatedMin,
@@ -1487,6 +1611,10 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t psiMin,
   // security checks
   if(psiMin > psiMax-0.00001){
     AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(vertexZMin > vertexZMax-0.00001){
+    AliError("vertexZMax <= vertexZMin");
     return NULL;
   }
   if(ptTriggerMin > ptTriggerMax-0.00001){
@@ -1501,6 +1629,12 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t psiMin,
   // Psi_2: axis 0
   fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+
+  // Vz
+  if(fVertexBinning){
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
     
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
@@ -1533,6 +1667,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t psiMin,
 //____________________________________________________________________//
 TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t psiMin, 
 					      Double_t psiMax,
+					      Double_t vertexZMin,
+					      Double_t vertexZMax,
 					      Double_t ptTriggerMin,
 					      Double_t ptTriggerMax,
 					      Double_t ptAssociatedMin,
@@ -1542,6 +1678,10 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t psiMin,
   // security checks
   if(psiMin > psiMax-0.00001){
     AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(vertexZMin > vertexZMax-0.00001){
+    AliError("vertexZMax <= vertexZMin");
     return NULL;
   }
   if(ptTriggerMin > ptTriggerMax-0.00001){
@@ -1556,6 +1696,12 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t psiMin,
   // Psi_2: axis 0
   fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+
+  // Vz
+  if(fVertexBinning){
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
@@ -1588,6 +1734,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t psiMin,
 //____________________________________________________________________//
 TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin, 
 					      Double_t psiMax,
+					      Double_t vertexZMin,
+					      Double_t vertexZMax,
 					      Double_t ptTriggerMin,
 					      Double_t ptTriggerMax,
 					      Double_t ptAssociatedMin,
@@ -1597,6 +1745,10 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin,
   // security checks
   if(psiMin > psiMax-0.00001){
     AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(vertexZMin > vertexZMax-0.00001){
+    AliError("vertexZMax <= vertexZMin");
     return NULL;
   }
   if(ptTriggerMin > ptTriggerMax-0.00001){
@@ -1611,6 +1763,12 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin,
   // Psi_2: axis 0
   fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+
+  // Vz
+  if(fVertexBinning){
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
@@ -1643,6 +1801,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin,
 //____________________________________________________________________//
 TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin, 
 							     Double_t psiMax,
+							     Double_t vertexZMin,
+							     Double_t vertexZMax,
 							     Double_t ptTriggerMin,
 							     Double_t ptTriggerMax,
 							     Double_t ptAssociatedMin,
@@ -1652,6 +1812,10 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
   // security checks
   if(psiMin > psiMax-0.00001){
     AliError("psiMax <= psiMin");
+    return NULL;
+  }
+  if(vertexZMin > vertexZMax-0.00001){
+    AliError("vertexZMax <= vertexZMin");
     return NULL;
   }
   if(ptTriggerMin > ptTriggerMax-0.00001){
@@ -1670,6 +1834,16 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
   fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
   fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+ 
+  // Vz
+  if(fVertexBinning){
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+  }
 
   // pt trigger
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {

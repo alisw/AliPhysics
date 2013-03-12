@@ -73,26 +73,36 @@ class AliBalancePsi : public TObject {
 			Double_t vertexZ = 0);
   
   TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax,
+				   Double_t vertexZMin=-1,
+				   Double_t vertexZMax=-1,
 				   Double_t ptTriggerMin=-1.,
 				   Double_t ptTriggerMax=-1.,
 				   Double_t ptAssociatedMin=-1.,
 				   Double_t ptAssociatedMax=-1);
   TH2D   *GetCorrelationFunctionNP(Double_t psiMin, Double_t psiMax,
+				   Double_t vertexZMin=-1,
+				   Double_t vertexZMax=-1,
 				   Double_t ptTriggerMin=-1.,
 				   Double_t ptTriggerMax=-1.,
 				   Double_t ptAssociatedMin=-1.,
 				   Double_t ptAssociatedMax=-1);
   TH2D   *GetCorrelationFunctionPP(Double_t psiMin, Double_t psiMax,
+				   Double_t vertexZMin=-1,
+				   Double_t vertexZMax=-1,
 				   Double_t ptTriggerMin=-1.,
 				   Double_t ptTriggerMax=-1.,
 				   Double_t ptAssociatedMin=-1.,
 				   Double_t ptAssociatedMax=-1);
   TH2D   *GetCorrelationFunctionNN(Double_t psiMin, Double_t psiMax,
+				   Double_t vertexZMin=-1,
+				   Double_t vertexZMax=-1,
 				   Double_t ptTriggerMin=-1.,
 				   Double_t ptTriggerMax=-1.,
 				   Double_t ptAssociatedMin=-1.,
-				   Double_t ptAssociatedMax=-1);
+				   Double_t ptAssociatedMax=-1);  
   TH2D   *GetCorrelationFunctionChargeIndependent(Double_t psiMin, Double_t psiMax,
+						  Double_t vertexZMin=-1,
+						  Double_t vertexZMax=-1,
 						  Double_t ptTriggerMin=-1.,
 						  Double_t ptTriggerMax=-1.,
 						  Double_t ptAssociatedMin=-1.,
@@ -121,27 +131,35 @@ class AliBalancePsi : public TObject {
   TH1D *GetBalanceFunctionHistogram(Int_t iVariableSingle,
 				    Int_t iVariablePair,
 				    Double_t psiMin, Double_t psiMax,
+				    Double_t vertexZMin=-1,
+				    Double_t vertexZMax=-1,
 				    Double_t ptTriggerMin=-1.,
 				    Double_t ptTriggerMax=-1.,
 				    Double_t ptAssociatedMin=-1.,
-				    Double_t ptAssociatedMax=-1);
+				    Double_t ptAssociatedMax=-1);   //
 
   TH1D *GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
-				    Int_t iVariablePair,
-				    Double_t psiMin, Double_t psiMax,
-				    Double_t ptTriggerMin=-1.,
-				    Double_t ptTriggerMax=-1.,
-				    Double_t ptAssociatedMin=-1.,
-				    Double_t ptAssociatedMax=-1,
-				    AliBalancePsi *bfMix=NULL);
+					    Int_t iVariablePair,
+					    Double_t psiMin, Double_t psiMax,
+					    Double_t vertexZMin=-1,
+					    Double_t vertexZMax=-1,
+					    Double_t ptTriggerMin=-1.,
+					    Double_t ptTriggerMax=-1.,
+					    Double_t ptAssociatedMin=-1.,
+					    Double_t ptAssociatedMax=-1,
+					    AliBalancePsi *bfMix=NULL);
 
   TH2D *GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin, Double_t psiMax,
+					   Double_t vertexZMin=-1,
+					   Double_t vertexZMax=-1,
 					   Double_t ptTriggerMin=-1.,
 					   Double_t ptTriggerMax=-1.,
 					   Double_t ptAssociatedMin=-1.,
-					   Double_t ptAssociatedMax=-1);
+					   Double_t ptAssociatedMax=-1);   
   
   TH2D *GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin, Double_t psiMax,
+						   Double_t vertexZMin=-1,
+						   Double_t vertexZMax=-1,
 						   Double_t ptTriggerMin=-1.,
 						   Double_t ptTriggerMax=-1.,
 						   Double_t ptAssociatedMin=-1.,
@@ -150,6 +168,8 @@ class AliBalancePsi : public TObject {
 
   TH1D *GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
 					   Double_t psiMin, Double_t psiMax,
+					   Double_t vertexZMin=-1,
+					   Double_t vertexZMax=-1,
 					   Double_t ptTriggerMin=-1.,
 					   Double_t ptTriggerMax=-1.,
 					   Double_t ptAssociatedMin=-1.,

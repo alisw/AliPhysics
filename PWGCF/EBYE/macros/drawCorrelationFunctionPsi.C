@@ -12,11 +12,14 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
 				Bool_t kShowMixed = kTRUE, 
 				Double_t psiMin = -0.5, 
 				Double_t psiMax = 3.5,
+				Double_t vertexZMin = -10.,
+				Double_t vertexZMax = 10.,
 				Double_t ptTriggerMin = -1.,
 				Double_t ptTriggerMax = -1.,
 				Double_t ptAssociatedMin = -1.,
 				Double_t ptAssociatedMax = -1.,
 				Bool_t normToTrig = kTRUE,
+				Bool_t kUseVzBinning = kTRUE,
 				Int_t rebinEta = 1,
 				Int_t rebinPhi = 1,
 				TString eventClass = "EventPlane") //Can be "EventPlane", "Centrality", "Multiplicity"
@@ -87,8 +90,8 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
   }
   else 
     draw(list,listShuffled,listMixed,listQA,
-	 gCentralityEstimator,gCentrality,psiMin,psiMax,
-	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig,rebinEta,rebinPhi,eventClass);
+	 gCentralityEstimator,gCentrality,psiMin,psiMax,vertexZMin,vertexZMax,
+	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig,kUseVzBinning,rebinEta,rebinPhi,eventClass);
 }
 
 //______________________________________________________//
@@ -251,12 +254,16 @@ TList *GetListOfObjects(const char* filename,
 }
 
 //______________________________________________________//
-void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
+void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, 
+	  TList *listQA,
 	  const char *gCentralityEstimator,
-	  Int_t gCentrality, Double_t psiMin, Double_t psiMax,
+	  Int_t gCentrality, Double_t psiMin, Double_t psiMax, 	
+	  Double_t vertexZMin,Double_t vertexZMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
-	  Bool_t normToTrig, Int_t rebinEta, Int_t rebinPhi,TString eventClass) {
+	  Bool_t normToTrig, 				
+	  Bool_t kUseVzBinning,
+	  Int_t rebinEta, Int_t rebinPhi,TString eventClass) {
   //Draws the correlation functions for every centrality bin
   //(+-), (-+), (++), (--)  
   AliTHn *hP = NULL;
@@ -297,6 +304,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
   b->SetHistNnp(hNP);
   b->SetHistNpp(hPP);
   b->SetHistNnn(hNN);
+  if(kUseVzBinning) b->SetVertexZBinning(kTRUE);
 
   //balance function shuffling
   AliTHn *hPShuffled = NULL;
@@ -342,6 +350,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     bShuffled->SetHistNnp(hNPShuffled);
     bShuffled->SetHistNpp(hPPShuffled);
     bShuffled->SetHistNnn(hNNShuffled);
+    if(kUseVzBinning) bShuffled->SetVertexZBinning(kTRUE);
   }
 
   //balance function mixing
@@ -388,6 +397,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     bMixed->SetHistNnp(hNPMixed);
     bMixed->SetHistNpp(hPPMixed);
     bMixed->SetHistNnn(hNNMixed);
+    if(kUseVzBinning) bMixed->SetVertexZBinning(kTRUE);
   }
 
 
@@ -463,8 +473,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     else 
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
-
-  gHistPN[0] = b->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  gHistPN[0] = b->GetCorrelationFunctionPN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1){
     gHistPN[0]->Rebin2D(rebinEta,rebinPhi);
     gHistPN[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));
@@ -498,7 +507,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     else 
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
-    gHistPN[1] = bShuffled->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistPN[1] = bShuffled->GetCorrelationFunctionPN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
       gHistPN[1]->Rebin2D(rebinEta,rebinPhi);
       gHistPN[1]->Scale(1./(Double_t)(rebinEta*rebinPhi));
@@ -535,7 +544,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
-    gHistPN[2] = bMixed->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistPN[2] = bMixed->GetCorrelationFunctionPN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
       gHistPN[2]->Rebin2D(rebinEta,rebinPhi);
       gHistPN[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));
@@ -686,7 +695,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
 
-  gHistNP[0] = b->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  gHistNP[0] = b->GetCorrelationFunctionNP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1){
     gHistNP[0]->Rebin2D(rebinEta,rebinPhi);
     gHistNP[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));
@@ -721,7 +730,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     else 
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
-    gHistNP[1] = bShuffled->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistNP[1] = bShuffled->GetCorrelationFunctionNP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
       gHistNP[1]->Rebin2D(rebinEta,rebinPhi);
       gHistNP[1]->Scale(1./(Double_t)(rebinEta*rebinPhi));
@@ -758,7 +767,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
 
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
-    gHistNP[2] = bMixed->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistNP[2] = bMixed->GetCorrelationFunctionNP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
       gHistNP[2]->Rebin2D(rebinEta,rebinPhi);
       gHistNP[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));
@@ -909,7 +918,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
 
-  gHistPP[0] = b->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  gHistPP[0] = b->GetCorrelationFunctionPP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1){
     gHistPP[0]->Rebin2D(rebinEta,rebinPhi);
     gHistPP[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
@@ -944,7 +953,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     else 
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
-    gHistPP[1] = bShuffled->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistPP[1] = bShuffled->GetCorrelationFunctionPP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
       gHistPP[1]->Rebin2D(rebinEta,rebinPhi);
       gHistPP[1]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
@@ -981,7 +990,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
-    gHistPP[2] = bMixed->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistPP[2] = bMixed->GetCorrelationFunctionPP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
       gHistPP[2]->Rebin2D(rebinEta,rebinPhi);
       gHistPP[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
@@ -1130,7 +1139,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   } 
 
-  gHistNN[0] = b->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  gHistNN[0] = b->GetCorrelationFunctionNN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1){
     gHistNN[0]->Rebin2D(rebinEta,rebinPhi);
     gHistNN[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
@@ -1165,7 +1174,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     else 
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
-    gHistNN[1] = bShuffled->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistNN[1] = bShuffled->GetCorrelationFunctionNN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
       gHistNN[1]->Rebin2D(rebinEta,rebinPhi);
       gHistNN[1]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
@@ -1202,7 +1211,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
-    gHistNN[2] = bMixed->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistNN[2] = bMixed->GetCorrelationFunctionNN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
       gHistNN[2]->Rebin2D(rebinEta,rebinPhi);
       gHistNN[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
@@ -1421,6 +1430,8 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 			      const char* gEventPlaneEstimator = "VZERO",
 			      Int_t gCentrality = 1,
 			      Double_t psiMin = -0.5, Double_t psiMax = 3.5,
+			      Double_t vertexZMin = -10.,
+			      Double_t vertexZMax = 10.,
 			      Double_t ptTriggerMin = -1.,
 			      Double_t ptTriggerMax = -1.,
 			      Double_t ptAssociatedMin = -1.,
@@ -1539,7 +1550,7 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   pngName += ".PositiveNegative.png";
   cPN->SaveAs(pngName.Data());
   if(kFit)
-    fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+    fitCorrelationFunctions(gCentrality, psiMin, psiMax,vertexZMin, vertexZMax,
 			    ptTriggerMin,ptTriggerMax,
 			    ptAssociatedMin, ptAssociatedMax,gHistPN);
 
@@ -1584,7 +1595,7 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   cNP->SaveAs(pngName.Data());
 
   if(kFit)
-    fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+    fitCorrelationFunctions(gCentrality, psiMin, psiMax,vertexZMin, vertexZMax,
 			    ptTriggerMin,ptTriggerMax,
 			    ptAssociatedMin, ptAssociatedMax,gHistNP);
 
@@ -1629,7 +1640,7 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   cPP->SaveAs(pngName.Data());
 
   if(kFit)
-    fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+    fitCorrelationFunctions(gCentrality, psiMin, psiMax,vertexZMin, vertexZMax,
 			    ptTriggerMin,ptTriggerMax,
 			    ptAssociatedMin, ptAssociatedMax,gHistPP);
 
@@ -1674,7 +1685,7 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   cNN->SaveAs(pngName.Data());
 
   if(kFit)
-    fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+    fitCorrelationFunctions(gCentrality, psiMin, psiMax,vertexZMin, vertexZMax,
 			    ptTriggerMin,ptTriggerMax,
 			    ptAssociatedMin, ptAssociatedMax,gHistNN);
 }
@@ -1690,6 +1701,8 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
 		     Int_t gCentrality = 1,
 		     Double_t psiMin = -0.5, 
 		     Double_t psiMax = 3.5,
+		     Double_t vertexZMin = -10., 
+		     Double_t vertexZMax = 10.,
 		     Double_t ptTriggerMin = -1.,
 		     Double_t ptTriggerMax = -1.,
 		     Double_t ptAssociatedMin = -1.,
@@ -2223,6 +2236,7 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
 //____________________________________________________________//
 void fitCorrelationFunctions(Int_t gCentrality = 1,
 			     Double_t psiMin = -0.5, Double_t psiMax = 3.5,
+			     Double_t vertexZMin = -10.,Double_t vertexZMax = 10.,
 			     Double_t ptTriggerMin = -1.,
 			     Double_t ptTriggerMax = -1.,
 			     Double_t ptAssociatedMin = -1.,
