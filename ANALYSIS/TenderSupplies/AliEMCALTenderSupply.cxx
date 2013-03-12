@@ -1477,7 +1477,7 @@ void AliEMCALTenderSupply::FillDigitsArray()
     
     if(fSetCellMCLabelFromCluster) mcLabel = cellLabels[cellNumber];
     
-    if (mcLabel > 0 && efrac == 0) efrac = 1;
+    if (mcLabel > 0 && efrac < 1e-6) efrac = 1;
     
     new((*fDigitsArr)[idigit]) AliEMCALDigit(mcLabel, mcLabel, cellNumber,
                                              (Float_t)cellAmplitude, (Float_t)cellTime,
