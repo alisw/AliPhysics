@@ -90,11 +90,18 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 	}
 	TH1F* fHistoVtxAftSeldata=(TH1F*)ecuts_data->GetHistoVtxAftSel();
 	TH1F* fHistoVtxAftSelmc=(TH1F*)ecuts_mc->GetHistoVtxAftSel();
+	Int_t binstartx=1;	
+         while(fHistoVtxAftSeldata->GetBinContent(binstartx)<1&&binstartx<fHistoVtxAftSeldata->GetXaxis()->GetNbins())
+                binstartx++;
+        binstartx++;
 	flistcanvas->Add(plot_on_canvas("vertex",fHistoVtxAftSeldata,fHistoVtxAftSelmc));
 	TF1* fdata=new TF1("dataveretxfit","gausn");
 	TF1* fmc=new TF1("mcveretxfit","gausn");
-	fHistoVtxAftSeldata->Fit("dataveretxfit","0");
-	fHistoVtxAftSelmc->Fit("mcveretxfit","0");
+	//we strat fit a second not empty bin
+	Float_t minfit=fHistoVtxAftSeldata->GetXaxis()->GetBinCenter(binstartx);
+	cout<<"fit starts "<<minfit<<endl;
+	fHistoVtxAftSeldata->Fit("dataveretxfit","0","",minfit,-1.0*minfit);
+	fHistoVtxAftSelmc->Fit("mcveretxfit","0","",minfit,-1.0*minfit);
 	Float_t datavertexratio=fHistoVtxAftSeldata->Integral(-1,-1,"width")/fdata->GetParameter(0);
 	Float_t mcvertexratio=fHistoVtxAftSelmc->Integral(-1,-1,"width")/fmc->GetParameter(0);
 	
@@ -129,6 +136,7 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 	TF1* badchunk=new TF1("badchunkfit","pol0",10,40);
 	binzero->Fit("badchunkfit","R");
 	Float_t badchunksfraction=badchunk->GetParameter(0);
+	cout<<"Bad chunks "<<badchunksfraction<<endl;	
 	binzero->Draw("E1");
 	flistcanvas->Add(cbc);
 	
