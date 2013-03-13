@@ -4,7 +4,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCent1noRej;TPCTOFSemiCent2noRej;TPCTOFPerinoRej;TPCTOFCentRP;TPCTOFSemiCent1RP;TPCTOFSemiCent2RP;TPCTOFPeriRP;TPCTOFCentMag;TPCTOFSemiCent1Mag;TPCTOFSemiCent2Mag;TPCTOFPeriMag;TPCTOFCentnoTOF;NoPIDNoPairing");
+TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCent1noRej;TPCTOFSemiCent2noRej;TPCTOFPerinoRej;TPCTOFCentRP;TPCTOFSemiCent1RP;TPCTOFSemiCent2RP;TPCTOFPeriRP;TPCTOFCentMag;TPCTOFSemiCent1Mag;TPCTOFSemiCent2Mag;TPCTOFPeriMag;TPCTOFCentnoTOF;NoPIDNoPairing;TPCTOFwideCentnoRej");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -157,6 +157,15 @@ AliDielectron* ConfigAsakoLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFAL
 	rejectionStep = kFALSE;
 	PairCut=kFALSE;
   }
+
+  else if (cutDefinition==15) {
+    selectedPID = LMEECutLibAsako::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibAsako::kPbPb2011Central;
+    rejectionStep = kFALSE;
+    PairCut = kFALSE;
+
+
+
   else Semi{
 	cout << " =============================== " << endl;
 	cout << " ==== INVALID CONFIGURATION ==== " << endl;
@@ -191,7 +200,7 @@ AliDielectron* ConfigAsakoLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFAL
 		die->GetPairFilter().AddCuts( LMCL->GetPairCuts(selectedPairCut));
 	}
 	else { 	  
-	  die->GetPairFilter().AddCuts( LMCL->GetPairCuts3(selectedPairCut));
+	  die->GetPairFilter().AddCuts( LMCL->GetPairCutsInOut(selectedPairCut));
 	  //	  die->GetPairFilter().AddCuts( LMCL->GetPairCuts4(selectedPairMCut));
 		}
   }
@@ -286,6 +295,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 		1,0.,1.,AliDielectronVarManager::kNevents);
 	histos->UserHistogram("Event","Centrality","Centrality;Centrality [%]","0,10,20,40,80,100,101",
 		AliDielectronVarManager::kCentrality);
+	histos->UserHistogram("Event","Centrality","Centrality;Centrality [%]",100, 0, 100,
+						  AliDielectronVarManager::kCentrality);
 
 	histos->UserHistogram("Event","v0ACrpH2","VZERO-AC;v0ACrpH2",
 						  100,-2.0,2.0,
@@ -301,11 +312,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 						  100,-2.0,2.0.,100,-2.0,2.0,
 						  AliDielectronVarManager::kv0ArpH2,AliDielectronVarManager::kv0CrpH2);
 
-
-
-
-
-  //add histograms to Track classes
+	//add histograms to Track classes
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
   histos->UserHistogram("Track","Px","Px;Px [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPx);
   histos->UserHistogram("Track","Py","Py;Py [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPy);
@@ -419,13 +426,32 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	  histos->UserHistogram("Pair","InvMassHighPairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
 							500,0.3,0.5,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
 	  
-	  histos->UserHistogram("Pair","InvMassOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
-							500,0.0,5.0,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
-	  
-	  // histos->UserHistogram("Pair","InvMassAllPairPlanev0rpH2Angle","ee plane and RP  Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
-	  //					500,0.0,5.0,100,0.,1.6,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlanev0rpH2Angle);
-	  // histos->UserHistogram("Pair","InvMassAllPairplaneMagAngle","ee plane and Mag Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
-	  //					500,0.0,5.0,100,0.,1.6,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneMagAngle);
+	
+
+      histos->UserHistogram("Pair","InvMassALLPhivPair","PhivPair vs Inv. Mass;Inv. Mass [GeV]; Phiv",
+                            1000,0.0,5.0,200,0.,4,AliDielectronVarManager::kM,AliDielectronVarManager::kPhivPair);
+      histos->UserHistogram("Pair","InvMassALL2PhivPair","PhivPair vs Inv. Mass;Inv. Mass [GeV]; Phiv",
+                            100,0.0,0.50,200,0.,4,AliDielectronVarManager::kM,AliDielectronVarManager::kPhivPair);
+      histos->UserHistogram("Pair","InvMassLowPhivPair","PhivPair vs Inv. Mass;Inv. Mass [GeV]; Phiv",
+                            300,0.0,0.03,200,0.,4,AliDielectronVarManager::kM,AliDielectronVarManager::kPhivPair);
+      histos->UserHistogram("Pair","InvMassMiddlePhivPair","PhivPair vs Inv. Mass;Inv. Mass [GeV]; Phiv",
+                            180,0.12,0.3,200,0.,4,AliDielectronVarManager::kM,AliDielectronVarManager::kPhivPair);
+      histos->UserHistogram("Pair","InvMassHighPhivPair","PhivPair vs Inv. Mass;Inv. Mass [GeV]; Phiv",
+                            200,0.3,0.50,200,0.,4,AliDielectronVarManager::kM,AliDielectronVarManager::kPhivPair);
+
+      histos->UserHistogram("Pair","InvMassAllOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
+                            500,0.0,5.0,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
+      histos->UserHistogram("Pair","InvMassAll2OpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
+                            500,0.0,0.5,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
+      histos->UserHistogram("Pair","InvMassLowOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
+                            300,0.0,0.03,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
+      histos->UserHistogram("Pair","InvMassMiddleOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
+                            180,0.12,0.3,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
+      histos->UserHistogram("Pair","InvMassHighOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
+                            200,0.3,0.5,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
+
+
+
 
 	   histos->UserHistogram("Pair","InvMassAllPairplaneMagAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
 	  					500,0.0,5.0,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneMagAngle);
@@ -500,10 +526,14 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 
   //pair variables
   cf->AddVariable(AliDielectronVarManager::kP,200,0,20);
-  cf->AddVariable(AliDielectronVarManager::kM,201,-0.01,4.01); //20Mev Steps
-  cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
+  cf->AddVariable(AliDielectronVarManager::kPt,200,0,20);// added
+  //  cf->AddVariable(AliDielectronVarManager::kM,201,-0.01,4.01); //20Mev Steps
+  cf->AddVariable(AliDielectronVarManager::kM, 1000,0,5.00); //5Mev Steps 
+ cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
+  cf->AddVariable(AliDielectronVarManager::kCentrality,100, 0, 100);
 
-  cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,10.0,30.0,40.0,60.,80.,100.");
+
+  // cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,10.0,30.0,40.0,60.,80.,100.");
 
   //leg variables
   cf->AddVariable(AliDielectronVarManager::kP,200,0.,20.,kTRUE);
@@ -527,4 +557,3 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 void EnableMC() {
   MCenabled=kTRUE;
 }
-
