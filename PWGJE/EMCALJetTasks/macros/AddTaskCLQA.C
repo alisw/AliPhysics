@@ -1,10 +1,10 @@
 // $Id: AddTaskSAQA.C 60163 2013-01-03 09:37:04Z loizides $
 
 AliAnalysisTaskCLQA* AddTaskCLQA(
-  const char *ntracks            = "Tracks",
-  const char *nclusters          = "CaloClusters",
-  const char *njets              = "Jets",
-  const char *taskname           = "AliAnalysisTaskSAQA"
+  const char *ntracks            = "",
+  const char *nclusters          = "",
+  const char *njets              = "",
+  const char *taskname           = "ATCLQA"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -12,7 +12,7 @@ AliAnalysisTaskCLQA* AddTaskCLQA(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
-    ::Error("AddTaskSAQA", "No analysis manager to connect to.");
+    ::Error("AddTaskCLQA", "No analysis manager to connect to.");
     return NULL;
   }  
   
@@ -20,7 +20,7 @@ AliAnalysisTaskCLQA* AddTaskCLQA(
   //==============================================================================
   if (!mgr->GetInputEventHandler())
   {
-    ::Error("AddTaskSAQA", "This task requires an input event handler");
+    ::Error("AddTaskCLQA", "This task requires an input event handler");
     return NULL;
   }
   
@@ -61,7 +61,7 @@ AliAnalysisTaskCLQA* AddTaskCLQA(
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(contName.Data(), 
 							   TList::Class(),
 							   AliAnalysisManager::kOutputContainer,
-							   AliAnalysisManager::GetCommonFileName()));
+							   Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectInput  (qaTask, 0,  cinput );
   mgr->ConnectOutput (qaTask, 1, coutput );
 
