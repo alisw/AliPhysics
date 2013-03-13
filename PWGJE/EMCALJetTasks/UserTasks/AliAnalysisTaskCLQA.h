@@ -18,7 +18,6 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcalJet {
   virtual ~AliAnalysisTaskCLQA();
 
   void                        UserCreateOutputObjects();
-  void                        Terminate(Option_t *option);
 
  protected:
 
