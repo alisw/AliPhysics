@@ -127,6 +127,7 @@ fSelectBit(AliVEvent::kMB|AliVEvent::kUserDefined),
 fUseChargeHadrons(kFALSE),
 fParticleSpeciesTrigger(-1),
 fParticleSpeciesAssociated(-1),
+fCheckMotherPDG(kTRUE),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
 fAssociatedSelectCharge(0),
@@ -215,6 +216,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fAnalyseUE = new AliAnalyseLeadingTrackUE();
   fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fPtMin);
   fAnalyseUE->SetTrackStatus(fTrackStatus);
+  fAnalyseUE->SetCheckMotherPDG(fCheckMotherPDG);
   fAnalyseUE->SetDebug(fDebug); 
   fAnalyseUE->DefineESDCuts(fFilterBit);
   fAnalyseUE->SetEventSelection(fSelectBit);
@@ -377,6 +379,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
   settingsTree->Branch("fParticleSpeciesTrigger", &fParticleSpeciesTrigger,"ParticleSpeciesTrigger/I");
   settingsTree->Branch("fParticleSpeciesAssociated", &fParticleSpeciesAssociated,"ParticleSpeciesAssociated/I");
+  settingsTree->Branch("fCheckMotherPDG", &fCheckMotherPDG,"CheckMotherPDG/I");
   settingsTree->Branch("fSelectCharge", &fSelectCharge,"SelectCharge/I");
   settingsTree->Branch("fTriggerSelectCharge", &fTriggerSelectCharge,"TriggerSelectCharge/I");
   settingsTree->Branch("fAssociatedSelectCharge", &fAssociatedSelectCharge,"fAssociatedSelectCharge/I");

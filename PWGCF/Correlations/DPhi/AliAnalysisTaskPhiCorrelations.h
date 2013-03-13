@@ -88,6 +88,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetPtMin(Double_t val)            { fPtMin = val; }
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
     void   SetTrackStatus(UInt_t status)     { fTrackStatus = status; }
+    void   SetCheckMotherPDG(Bool_t checkpdg) { fCheckMotherPDG = checkpdg; }
     
     void   SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
     void   SetUseChargeHadrons( Bool_t val ) { fUseChargeHadrons = val; }
@@ -168,13 +169,14 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     // Track cuts
     Double_t      	fTrackEtaCut;          // Eta cut on particles
     Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
-    Double_t            fPtMin;                // Min pT to start correlations
+    Double_t           fPtMin;                // Min pT to start correlations
     UInt_t           	fFilterBit;            // Select tracks from an specific track cut 
     UInt_t         	fTrackStatus;          // if non-0, the bits set in this variable are required for each track
     UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
     Bool_t         	fUseChargeHadrons;     // Only use charge hadrons
     Int_t               fParticleSpeciesTrigger; // Select which particle to use for the trigger [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
     Int_t               fParticleSpeciesAssociated; // Select which particle to use for the associated [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
+    Bool_t             fCheckMotherPDG;     // Check the PDG code of mother for secondaries 
 
     Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
     Int_t fTriggerSelectCharge;    // select charge of trigger particle: 1: positive; -1 negative
@@ -194,7 +196,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 28); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 29); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
