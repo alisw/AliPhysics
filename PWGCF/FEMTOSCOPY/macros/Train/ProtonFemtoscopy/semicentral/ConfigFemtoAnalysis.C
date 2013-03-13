@@ -84,8 +84,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
     //  int gammacut = 1;
 
-    double shqmax = 2.0;
-    int nbinssh = 200;
+    double shqmax = 1.0;
+    int nbinssh = 100;
 
     AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
     Reader->SetFilterBit(7);
@@ -189,25 +189,22 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
                             if (ichg == 0) {
                                 dtc1etaphitpc[aniter]->SetCharge(1.0);
-                                dtc1etaphitpc[aniter]->SetPt(0.5,5.0);
                             }
                             else if (ichg == 1) {
                                 dtc1etaphitpc[aniter]->SetCharge(-1.0);
-                                dtc1etaphitpc[aniter]->SetPt(0.3,5.0);
                             }
                             else if (ichg == 2) {
                                 dtc1etaphitpc[aniter]->SetCharge(-1.0);
                                 dtc2etaphitpc[aniter]->SetCharge(1.0);
-                                dtc1etaphitpc[aniter]->SetPt(0.3,5.0);
-                                dtc2etaphitpc[aniter]->SetPt(0.5,5.0);
-
                             }
 
+                            dtc1etaphitpc[aniter]->SetPt(0.7,5.0);
                             dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
                             dtc1etaphitpc[aniter]->SetMass(ProtonMass);
                             dtc1etaphitpc[aniter]->SetMostProbableProton();
 
                             if (ichg == 2) {
+                                dtc2etaphitpc[aniter]->SetPt(0.7,5.0);
                                 dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
                                 dtc2etaphitpc[aniter]->SetMass(ProtonMass);
                                 dtc2etaphitpc[aniter]->SetMostProbableProton();
@@ -342,19 +339,19 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                             anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
 
 
-                            if (ichg == 2) {
-                                ckstartpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("ckstar%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),nbinssh,0.0,shqmax);
-                                anetaphitpc[aniter]->AddCorrFctn(ckstartpc[aniter]);
-                            }
-                            else {
+                            // if (ichg == 2) {
+                            //     ckstartpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("ckstar%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),nbinssh,0.0,shqmax);
+                            //     anetaphitpc[aniter]->AddCorrFctn(ckstartpc[aniter]);
+                            // }
+                            // else {
 
                                 cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),2*nbinssh,0.0,2*shqmax);
                                 anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
 
-                            }
+                            // }
 
-                            cylmtpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),2,nbinssh, 0.0,shqmax,runshlcms);
-                            anetaphitpc[aniter]->AddCorrFctn(cylmtpc[aniter]);
+                            // cylmtpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),2,nbinssh, 0.0,shqmax,runshlcms);
+                            // anetaphitpc[aniter]->AddCorrFctn(cylmtpc[aniter]);
 
 
                             // cqinvinnertpc[aniter] = new AliFemtoTPCInnerCorrFctn(Form("cqinvinner%stpcM", chrgs[ichg], imult),nbinssh,0.0,shqmax);
@@ -369,24 +366,24 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                                     ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
 
 
-                                    cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%ikT%i", chrgs[ichg], imult, ikt),2,nbinssh,0.0,shqmax,runshlcms);
-                                    cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
-                                    anetaphitpc[aniter]->AddCorrFctn(cylmkttpc[ktm]);
+                                    // cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%ikT%i", chrgs[ichg], imult, ikt),2,nbinssh,0.0,shqmax,runshlcms);
+                                    // cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+                                    // anetaphitpc[aniter]->AddCorrFctn(cylmkttpc[ktm]);
 
 
 
-                                    if (ichg == 2) {
-                                        ckstarkttpc[ktm] = new AliFemtoCorrFctnNonIdDR(Form("ckstar%stpcM%iPsi%ikT%i", chrgs[ichg], imult, iepvzero, ikt),nbinssh,0.0,shqmax);
-                                        ckstarkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
-                                        anetaphitpc[aniter]->AddCorrFctn(ckstarkttpc[ktm]);
+                                    // if (ichg == 2) {
+                                    //     ckstarkttpc[ktm] = new AliFemtoCorrFctnNonIdDR(Form("ckstar%stpcM%iPsi%ikT%i", chrgs[ichg], imult, iepvzero, ikt),nbinssh,0.0,shqmax);
+                                    //     ckstarkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+                                    //     anetaphitpc[aniter]->AddCorrFctn(ckstarkttpc[ktm]);
 
 
-                                    }
-                                    else {
+                                    // }
+                                    // else {
                                         cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%iPsi%ikT%i", chrgs[ichg], imult, iepvzero, ikt),2*nbinssh,0.0,2*shqmax);
                                         cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
                                         anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
-                                    }
+                                    // }
 
                                     // 	      cqinvsqtpc[ktm] = new AliFemtoShareQualityCorrFctn(Form("cqinvsq%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
                                     // 	      cqinvsqtpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
