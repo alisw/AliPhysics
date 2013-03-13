@@ -152,7 +152,13 @@ TF1 * AliPWGFunc::GetMTExp(Double_t mass, Double_t T, Double_t norm, const char 
     return GetMTExpdNdpt(mass,T,norm,name);
     break;
   case kOneOverMtdNdmt:
-    AliFatal("Not implemented");
+    return GetMTExpdNdmt(mass,T,norm,name,kOneOverMtdNdmt);
+    break;
+  case kdNdmt:
+    return GetMTExpdNdmt(mass,T,norm,name,kdNdmt);
+    break;
+  case kOneOverMtdNdmtMinusM:
+    return GetMTExpdNdmt(mass,T,norm,name,kOneOverMtdNdmtMinusM);
     break;
   default:
     AliFatal("Not implemented");
@@ -517,6 +523,13 @@ Double_t AliPWGFunc::StaticBGdNdPtTimesPt(const double * x, const double* p) {
   return x[0]*StaticBGdNdPt(x,p);
 }
 
+Double_t AliPWGFunc::StaticBGdNdMtTimesMt(const double * x, const double* p) {
+  // BGBW dNdpt implementation
+  // X0 is mt here
+  Double_t pt = TMath::Sqrt(x[0]*x[0]-p[0]*p[0]);  
+  return pt*StaticBGdNdPt(&pt,p);
+}
+
 
 TF1 * AliPWGFunc::GetBGBWdNdpt(Double_t mass, Double_t beta, Double_t temp,
 			      Double_t n, Double_t norm, const char * name){
@@ -642,7 +655,21 @@ TF1 * AliPWGFunc::GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t tem
 
 }
 
+// Boltzmann-Gibbs Blast Wave
+TF1 * AliPWGFunc::GetBGBWdNdptTimesMt(Double_t mass, Double_t beta, Double_t temp, Double_t n,
+				      Double_t norm, const char * name){
 
+  // BGBW, dNdpt
+  // 1/Mt dN/dmt
+  fLastFunc = new TF1 (name, StaticBGdNdMtTimesMt, 0.0, 10, 5);
+  fLastFunc->SetParameters(mass,beta,temp,n,norm);    
+  fLastFunc->FixParameter(0,mass);
+  fLastFunc->SetParNames("mass", "#beta", "temp", "n", "norm");
+  fLastFunc->SetLineWidth(fLineWidth);
+  return fLastFunc;
+
+
+}
 
 TF1 * AliPWGFunc::GetTsallisBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t temp, Double_t q,
 					  Double_t norm, Double_t ymax, const char * name){
@@ -922,6 +949,32 @@ TF1 * AliPWGFunc::GetMTExpdNdpt(Double_t mass, Double_t temp, Double_t norm, con
   fLastFunc->SetLineWidth(fLineWidth);
   return fLastFunc;
 }
+
+
+TF1 * AliPWGFunc::GetMTExpdNdmt(Double_t mass, Double_t temp, Double_t norm, const char * name, VarType_t var){
+
+  // Levi function, 1/mt dNdmt1/mt dNdmt, 
+  char formula[500];
+  if (var == kOneOverMtdNdmt)
+    snprintf(formula,500,"[0] * exp (-x/[1]) + %f ", mass);
+  else if (var == kdNdmt) 
+    snprintf(formula,500,"[0] * x * exp (-x/[1]) + %f ", mass);
+  if (var == kOneOverMtdNdmtMinusM)
+    snprintf(formula,500,"[0] * exp (-x/[1])", mass);
+
+  //sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + x/([1]*[2])  )^(-[1])");
+  //  sprintf(formula,"[0] * ( 1 + x/([1]*[2])  )^(-[1])");
+  fLastFunc=new TF1(name,formula,0,10);
+  fLastFunc->SetParameters(norm, temp);
+  fLastFunc->SetParLimits(1, 0.01, 10);
+  fLastFunc->SetParNames("norm", "T");
+  fLastFunc->SetLineWidth(fLineWidth);
+  return fLastFunc;
+
+
+}
+
+
 
 TF1 * AliPWGFunc::GetBoseEinsteindNdpt(Double_t mass, Double_t temp, Double_t norm, const char * name){
   // bose einstein

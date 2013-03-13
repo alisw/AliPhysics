@@ -120,6 +120,10 @@ protected:
   TF1 * GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t T, Double_t n,
 			    Double_t norm, const char * name = "fBGBWTimesPt");
 
+  TF1 * GetBGBWdNdptTimesMt(Double_t mass, Double_t beta, Double_t T, Double_t n,
+			    Double_t norm, const char * name = "fBGBWTimesMt");
+
+
   // Tsallis blast wave
   TF1 * GetTsallisBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t T, Double_t q,
 				 Double_t norm, Double_t ymax = 0.5, const char * name = "fTsallisBWTimesPt");
@@ -156,6 +160,10 @@ protected:
   // Levi
   TF1 * GetLevidNdmt(Double_t mass, Double_t T, Double_t n, Double_t norm, const char * name = "fLeviMt", VarType_t var = kOneOverMtdNdmt);
 
+  // mt exp
+  TF1 * AliPWGFunc::GetMTExpdNdmt(Double_t mass, Double_t temp, Double_t norm, const char * name, VarType_t var);
+
+
   // gereral setters
   void SetLineWidth(Width_t width) { fLineWidth = width;}
 
@@ -165,6 +173,7 @@ protected:
   // Boltzmann-Gibbs Blast Wave
   static Double_t StaticBGdNdPt(const double * x, const double* p);
   static Double_t StaticBGdNdPtTimesPt(const double * x, const double* p);
+  static Double_t StaticBGdNdMtTimesMt(const double * x, const double* p);
   // Tsallis blast wave
   static Double_t StaticTsallisdNdPt(const double * x, const double* p);
   static Double_t StaticTsallisdNdPtTimesPt(const double * x, const double* p);
