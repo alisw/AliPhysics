@@ -161,7 +161,7 @@ protected:
   TF1 * GetLevidNdmt(Double_t mass, Double_t T, Double_t n, Double_t norm, const char * name = "fLeviMt", VarType_t var = kOneOverMtdNdmt);
 
   // mt exp
-  TF1 * AliPWGFunc::GetMTExpdNdmt(Double_t mass, Double_t temp, Double_t norm, const char * name, VarType_t var);
+  TF1 * GetMTExpdNdmt(Double_t mass, Double_t temp, Double_t norm, const char * name, VarType_t var);
 
 
   // gereral setters

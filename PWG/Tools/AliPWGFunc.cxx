@@ -960,7 +960,7 @@ TF1 * AliPWGFunc::GetMTExpdNdmt(Double_t mass, Double_t temp, Double_t norm, con
   else if (var == kdNdmt) 
     snprintf(formula,500,"[0] * x * exp (-x/[1]) + %f ", mass);
   if (var == kOneOverMtdNdmtMinusM)
-    snprintf(formula,500,"[0] * exp (-x/[1])", mass);
+    snprintf(formula,500,"[0] * exp (-x/[1])");
 
   //sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + x/([1]*[2])  )^(-[1])");
   //  sprintf(formula,"[0] * ( 1 + x/([1]*[2])  )^(-[1])");
