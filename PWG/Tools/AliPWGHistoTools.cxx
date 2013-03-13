@@ -62,7 +62,7 @@ TH1 * AliPWGHistoTools::GetdNdmtFromdNdpt(const TH1 * hpt, Double_t mass) {
   hmt->SetMarkerStyle(hpt->GetMarkerStyle());
   hmt->SetMarkerColor(hpt->GetMarkerColor());
   hmt->SetLineColor(hpt->GetLineColor());
-
+  
   return hmt;
 
 }
