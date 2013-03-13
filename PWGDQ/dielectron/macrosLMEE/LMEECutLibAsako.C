@@ -53,7 +53,7 @@ public:
   AliAnalysisCuts* GetPairCuts2(Int_t cutSet,Bool_t tooglePC=kFALSE);
   AliAnalysisCuts* GetPairCuts(Int_t cutSet);  
 
-  AliAnalysisCuts* GetPairCuts3(Int_t cutSet);
+  AliAnalysisCuts* GetPairCutsInOut(Int_t cutSet);
   AliAnalysisCuts* GetPairCuts4(Int_t cutSet);
 
   AliAnalysisCuts* GetTrackCutsAna(Int_t cutSet);  
@@ -255,14 +255,17 @@ public:
 	  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCTOFeOnly);
 	  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCsignal);
 	  anaCuts = cgSecondTrackFilterPIDTPC1;
+
 	case kPbPb2011TPCandTOF :
 	  AliDielectronCutGroup* cgSecondTrackFilterPIDTPC1 = new AliDielectronCutGroup("cgPIDTPC1","cgPIDTPC1",AliDielectronCutGroup::kCompAND);
 	  cgSecondTrackFilterPIDTPC1->AddCut(pTPC);
 	  //cgSecondTrackFilterPIDTPC1->AddCut(pidTPChardTOF);
-	  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCTOFeOnly);
+	  // cgSecondTrackFilterPIDTPC1->AddCut(pidTPCTOFeOnly);
+	  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCandTOF);
 	  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCsignal);
 	  anaCuts = cgSecondTrackFilterPIDTPC1;
 	  break;
+
 	case kPbPb2011TPC :
 	  AliDielectronCutGroup* cgSecondTrackFilterPIDTPC1 = new AliDielectronCutGroup("cgPIDTPC1","cgPIDTPC1",AliDielectronCutGroup::kCompAND);
 	  cgSecondTrackFilterPIDTPC1->AddCut(pTPC);
@@ -285,6 +288,7 @@ public:
 	  cgSecondTrackFilterPIDTPC2->AddCut(pidTPCsignal);
 	  anaCuts = cgSecondTrackFilterPIDTPC2;
 	  break;
+
 	case kpp2010TPCandTOF :
 	  AliDielectronCutGroup* cgSecondTrackFilterPIDTPC = new AliDielectronCutGroup("cgPIDTPC","cgPIDTPC",AliDielectronCutGroup::kCompAND);
 	  cgSecondTrackFilterPIDTPC->AddCut(pTPC);
@@ -418,7 +422,7 @@ public:
 	return pairCuts;
   }
 
-  AliAnalysisCuts* GetPairCuts3(Int_t cutSet){
+  AliAnalysisCuts* GetPairCutsInOut(Int_t cutSet){
 	AliAnalysisCuts* pairCut=0x0;
 	switch (cutSet) {
 	case kPbPb2011RP:
