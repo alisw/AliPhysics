@@ -2745,21 +2745,18 @@ void AliAnalysisManager::AddClassDebug(const char *className, Int_t debugLevel)
       fDebugOptions->SetOwner(kTRUE);
    }
 
-   // substracting DebugOffset, beacuse of AliLog::SetClassDebugLevel()
-   debugLevel -= AliLog::kDebug-1;
-
    TNamed *debugOpt = (TNamed*)fDebugOptions->FindObject(className);
    if (!debugOpt) {
-     AliInfo(TString::Format("Adding debug level %d for class %s",debugLevel+AliLog::kDebug-1,className).Data());
+     AliInfo(TString::Format("Adding debug level %d for class %s",debugLevel,className).Data());
      fDebugOptions->Add(new TNamed(className,TString::Format("%d",debugLevel).Data()));
    } else {
       TString oldDebugStr = debugOpt->GetTitle();
       Int_t oldDebug = oldDebugStr.Atoi();
       if (debugLevel > oldDebug) {
-         AliWarning(TString::Format("Overwriting debug level to %d class %s, because it is higher then previously set (%d).",debugLevel+AliLog::kDebug-1,className,oldDebug+AliLog::kDebug-1).Data());
+         AliWarning(TString::Format("Overwriting debug level to %d class %s, because it is higher then previously set (%d).",debugLevel,className,oldDebug).Data());
          debugOpt->SetTitle(TString::Format("%d",debugLevel).Data());
       } else {
-         AliWarning(TString::Format("Ignoring debug level to %d class %s, because it is smaller then previously set (%d).",debugLevel+AliLog::kDebug-1,className,oldDebug+AliLog::kDebug-1).Data());
+         AliWarning(TString::Format("Ignoring debug level to %d class %s, because it is smaller then previously set (%d).",debugLevel,className,oldDebug).Data());
       }
    }
 }
@@ -2776,7 +2773,7 @@ void AliAnalysisManager::ApplyDebugOptions()
    TString debugLevel;
    while ((debug=dynamic_cast<TNamed*>(next()))) {
       debugLevel = debug->GetTitle();
-      AliInfo(TString::Format("ApplyDebugOptions : Class=%s debulLevel=%d",debug->GetName(),debugLevel.Atoi()+AliLog::kDebug-1).Data());
+      AliInfo(TString::Format("Class=%s debulLevel=%d",debug->GetName(),debugLevel.Atoi()).Data());
       AliLog::SetClassDebugLevel(debug->GetName(), debugLevel.Atoi());
    }
 }
