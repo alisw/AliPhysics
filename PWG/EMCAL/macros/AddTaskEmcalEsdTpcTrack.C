@@ -1,9 +1,9 @@
 // $Id$
 
 AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
-  const char *name       = "TpcSpdVertexConstrainedTracks",
-  const char *trackCuts  = "Hybrid_LHC11h",
-  Bool_t      noITS      = kTRUE
+  const char *name              = "TpcSpdVertexConstrainedTracks",
+  const char *trackCuts         = "Hybrid_LHC11h",
+  Bool_t      includeNoITS      = kFALSE
 )
 { 
   enum CutsType {
@@ -117,7 +117,7 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   }
 
   eTask->SetTracksName(name);
-  eTask->SetIncludeNoITS(noITS);
+  eTask->SetIncludeNoITS(includeNoITS);
 
   cout << " *** Track selector task configured to select " << cutsLabel  << " in dataset "<< dataSetLabel << " *** " << endl;
 
