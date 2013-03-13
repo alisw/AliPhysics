@@ -90,12 +90,13 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH2F* fHistYPtDsbyDecChannel[2]; //! histo of y vs. pt for Ds->phipi and Ds->K0*K
   TH1F* fHistOriginPrompt;    //! histo of D production point (prompt)
   TH1F* fHistOriginFeeddown;  //! histo of D production point (feeddown)
+  TH1F* fHistMotherID;        //! histo of mother ID
 
   Bool_t fSearchUpToQuark; // c/b separation using quarks
   Int_t fSystem;         // 0=pp, 1=PbPb, 2=pPb
   Bool_t fReadMC;
 
-  ClassDef(AliAnalysisTaskCheckHFMCProd,3);
+  ClassDef(AliAnalysisTaskCheckHFMCProd,4);
 };
 
 

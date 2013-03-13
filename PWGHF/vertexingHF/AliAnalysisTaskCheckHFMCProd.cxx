@@ -65,6 +65,7 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE
   fHistoNbVsNc(0),
   fHistOriginPrompt(0),
   fHistOriginFeeddown(0),
+  fHistMotherID(0),
   fSearchUpToQuark(kFALSE),
   fSystem(0),
   fReadMC(kTRUE)
@@ -146,7 +147,7 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fOutput->Add(fHistoTRKVtxZ);
 
   Int_t nBinscb=11;
-  if(fSystem==1) nBinscb=200;
+  if(fSystem==1) nBinscb=400;
   if(fSystem==2) nBinscb=21;
   Double_t maxncn=nBinscb-0.5;
   fHistoNcharmed = new TH2F("hncharmed","",100,0.,maxMult,nBinscb,-0.5,maxncn);
@@ -242,6 +243,9 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistOriginFeeddown->Sumw2();
   fHistOriginFeeddown->SetMinimum(0);
   fOutput->Add(fHistOriginFeeddown);
+  fHistMotherID=new TH1F("hMotherID","",1000,-1.5,998.5);
+  fHistMotherID->SetMinimum(0);
+  fOutput->Add(fHistMotherID);
 
   PostData(1,fOutput);
 
@@ -386,7 +390,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Double_t disty=part->Vy()-mcVert->GetY();
       Double_t distz=part->Vz()-mcVert->GetZ();
       Double_t distToVert=TMath::Sqrt(distx*distx+disty*disty+distz*distz);
-      printf("Particle %d  dist from origin=%f\n",absPdg,distToVert);
+      fHistMotherID->Fill(part->GetFirstMother());
       TParticle* runningpart=part;
       Int_t iFromB=-1;
       Int_t pdgmoth=-1;
@@ -423,7 +427,6 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 	  runningpart=mot;
 	}
       }
-      printf("   From B %d\n",iFromB);
 
       if(iFromB==0){
 	fHistYPtPromptAllDecay[iSpecies]->Fill(part->Pt(),rapid);
