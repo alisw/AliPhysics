@@ -22,7 +22,7 @@ using namespace std;
 enum {kFitExpPt, kFitLevi, fFitExpMt, kFitBoltzmann, kFitBlastWave, kFitBoseEinstein, kFitFermiDirac};
 Bool_t skipMean = 0;
 
-void FitParticle(TH1 * h, const char * partName, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliPWGFunc::kdNdpt, const char * fileOut = 0, Bool_t wait = 0) ;
+void FitParticle(TH1 * h, const char * partName, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliPWGFunc::kdNdpt, const char * fileOut = 0, Bool_t wait = 0, Float_t meanMin = 0., Float_t meanMax = 100) ;
 void FitParticle(const char * file, const char * histo, const char * partName,  const char * listname=0, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliPWGFunc::kdNdpt, const char * fileOut = 0, Bool_t wait = 0);
 
 void FitParticle(const char * file, const char * histo, const char * partName,  const char * listname, Float_t min, Float_t max, Float_t scaleHisto, Int_t fitFunc, Int_t vartype, const char * fileOut, Bool_t wait) {
@@ -78,7 +78,7 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
 
 }
 
-void FitParticle(TH1 * h, const char * partName, Float_t min , Float_t max, Float_t scaleHisto, Int_t fitFunc, Int_t vartype, const char * fileOut, Bool_t wait) { 
+void FitParticle(TH1 * h, const char * partName, Float_t min , Float_t max, Float_t scaleHisto, Int_t fitFunc, Int_t vartype, const char * fileOut, Bool_t wait, Float_t meanMin, Float_t meanMax) { 
 
 
   // get histo and draw
@@ -233,7 +233,7 @@ void FitParticle(TH1 * h, const char * partName, Float_t min , Float_t max, Floa
   Double_t mean=0, meane=0;
   // Float_t mean2=0, mean2e=0;
   //  AliPWGHistoTools::GetMean      (func, mean,  meane , 0.,100., normPar);
-  AliPWGHistoTools::GetMeanDataAndExtrapolation      (h, func, mean,  meane , 0.,100.);
+  AliPWGHistoTools::GetMeanDataAndExtrapolation      (h, func, mean,  meane , meanMin, meanMax);
   //  AliPWGHistoTools::GetMeanDataAndExtrapolation      (h, func, mean,  meane , 0.,4.5);
   // AliPWGHistoTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
   if(skipMean) table->SetNextCol("N/A");

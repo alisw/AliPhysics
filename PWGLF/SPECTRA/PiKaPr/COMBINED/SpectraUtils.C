@@ -315,7 +315,7 @@ TF1 *fBGBW[1000];
 TGraphErrors *gBW[1000];
 
 TObjArray *
-BGBlastWave_GlobalFit(TObjArray *data, Double_t *mass, Double_t profile = .7, Bool_t fixProfile = kFALSE)
+BGBlastWave_GlobalFit(TObjArray *data, Double_t *mass, Double_t profile = .9, Bool_t fixProfile = kFALSE)
 {
 
   /* get data */
@@ -351,8 +351,10 @@ BGBlastWave_GlobalFit(TObjArray *data, Double_t *mass, Double_t profile = .7, Bo
   minuit->mnexcm("SET ERR", arglist, 1, ierflg);
   for (Int_t idata = 0; idata < nBW; idata++)
     minuit->mnparm(idata, Form("norm%d", idata), 1.e6, 1., 0., 0., ierflg);
-  minuit->mnparm(nBW + 0, "<beta>", 0.65, 0.01, 0., 1., ierflg);
-  minuit->mnparm(nBW + 1, "T", 0.1, 0.01, 0., 1., ierflg);
+  // minuit->mnparm(nBW + 0, "<beta>", 0.65, 0.01, 0., 1., ierflg);
+  // minuit->mnparm(nBW + 1, "T", 0.1, 0.01, 0., 1., ierflg);
+  minuit->mnparm(nBW + 0, "<beta>", 0.55, 0.01, 0., 1., ierflg);
+  minuit->mnparm(nBW + 1, "T", 0.13, 0.01, 0., 1., ierflg);
   minuit->mnparm(nBW + 2, "n", profile, 0.1, 0., 10., ierflg);
   if (fixProfile) minuit->FixParameter(nBW + 2);
 
@@ -414,7 +416,7 @@ BGBlastWave_GlobalFit(TObjArray *data, Double_t *mass, Double_t profile = .7, Bo
   /* 1-sigma contour */
   minuit->SetErrorDef(1);
   TGraph *gCont1 = NULL;
-  gCont1 = (TGraph *) minuit->Contour(50, nBW + 0, nBW + 1);
+  //  gCont1 = (TGraph *) minuit->Contour(50, nBW + 0, nBW + 1);
   if (gCont1) gCont1->SetName("gCont1");
 
   /* 2-sigma contour */
