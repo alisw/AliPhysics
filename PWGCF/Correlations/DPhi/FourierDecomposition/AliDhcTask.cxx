@@ -2,16 +2,18 @@
 // calculate same- and mixed-event correlations, and fill THnSparse
 // output. -A. Adare, Apr 2011
 
-#include "TCanvas.h"
-#include "TChain.h"
-#include "TFormula.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TH3.h"
-#include "TAxis.h"
-#include "TProfile2D.h"
-#include "TROOT.h"
-#include "TTree.h"
+#include <TAxis.h>
+#include <TCanvas.h>
+#include <TChain.h>
+#include <TFormula.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <THn.h>
+#include <TProfile2D.h>
+#include <TROOT.h>
+#include <TTree.h>
+#include "AliAnalysisUtils.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
@@ -20,8 +22,8 @@
 #include "AliDhcTask.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
-#include "AliESDtrackCuts.h"
 #include "AliESDMuonTrack.h"
+#include "AliESDtrackCuts.h"
 #include "AliPool.h"
 #include "AliVParticle.h"
 
@@ -36,7 +38,7 @@ AliDhcTask::AliDhcTask()
 : AliAnalysisTaskSE(), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
-  fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
+  fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0), fOmitFirstEv(kTRUE),
   fDoFillSame(kFALSE), fDoMassCut(kFALSE), fClassName(),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
@@ -48,7 +50,7 @@ AliDhcTask::AliDhcTask()
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
   fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
   fMixBCent(0x0), fMixBZvtx(0x0),
-  fHEffT(0x0), fHEffA(0x0)
+  fHEffT(0x0), fHEffA(0x0), fUtils(0x0)
 {
   
 }
@@ -58,7 +60,7 @@ AliDhcTask::AliDhcTask(const char *name, Bool_t def)
 : AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
-  fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
+  fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0), fOmitFirstEv(kTRUE),
   fDoFillSame(kFALSE), fDoMassCut(kFALSE), fClassName(),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
@@ -70,7 +72,7 @@ AliDhcTask::AliDhcTask(const char *name, Bool_t def)
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
   fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
   fMixBCent(0x0), fMixBZvtx(0x0),
-  fHEffT(0x0), fHEffA(0x0)
+  fHEffT(0x0), fHEffA(0x0), fUtils(0x0)
 {
   // Constructor
 
@@ -110,10 +112,7 @@ void AliDhcTask::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(1);
 
-  fEsdTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-  //fEsdTPCOnly->SetMinNClustersTPC(70);
-  fEsdTPCOnly->SetMinNCrossedRowsTPC(70);
-  fEsdTPCOnly->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  fUtils = new AliAnalysisUtils();
 
   BookHistos();
   InitEventMixer(); 
@@ -135,7 +134,8 @@ void AliDhcTask::PrintDhcSettings()
   AliInfo(Form(" trigger eta range %f .. %f", fEtaTLo, fEtaTHi));
   AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
   AliInfo(Form(" fill same event in any case? %d", fDoFillSame));
-  AliInfo(Form(" do invariant mass cut? %d\n", fDoMassCut));
+  AliInfo(Form(" do invariant mass cut? %d", fDoMassCut));
+  AliInfo(Form(" omit first event? %d\n", fOmitFirstEv));
 }
 
 //________________________________________________________________________
@@ -368,19 +368,16 @@ void AliDhcTask::InitEventMixer()
 void AliDhcTask::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
-  static int iEvent = -1; ++iEvent;
-
-  if (fVerbosity>2) {
-    if (iEvent % 100 == 0) 
-      cout << iEvent << endl;
-  }
-
-  Int_t dType = -1;       // Will be set to kESD or kAOD.
-  MiniEvent* sTracks = new MiniEvent(0); // deleted by pool mgr.
 
   LoadBranches();
 
+  if (fOmitFirstEv) {
+    if (fUtils->IsFirstEventInChunk(InputEvent())) 
+      return;
+  }
+
   // Get event pointers, check for signs of life
+  Int_t dType = -1;       // Will be set to kESD or kAOD.
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if (fESD)
@@ -417,13 +414,13 @@ void AliDhcTask::UserExec(Option_t *)
       fCentrality = tcaTracks->GetEntries();
   } else {
     if (dType == kESD) {
-      if (!VertexOk(fESD)) {
+      const AliESDVertex* vertex = fESD->GetPrimaryVertex();
+      fZVertex = vertex->GetZ();
+      if (!VertexOk()) {
         if (fVerbosity > 1)
           AliInfo(Form("Event REJECTED (ESD vertex not OK). z = %.1f", fZVertex));
         return;
       }
-      const AliESDVertex* vertex = fESD->GetPrimaryVertex();
-      fZVertex = vertex->GetZ();
       if(fESD->GetCentrality()) {
         fCentrality = 
           fESD->GetCentrality()->GetCentralityPercentile(fCentMethod);
@@ -431,7 +428,7 @@ void AliDhcTask::UserExec(Option_t *)
     } else if (dType == kAOD) {
       const AliAODVertex* vertex = fAOD->GetPrimaryVertex();
       fZVertex = vertex->GetZ();
-      if (!VertexOk(fAOD)) {
+      if (!VertexOk()) {
         if (fVerbosity > 1)
           Info("Exec()", "Event REJECTED (AOD vertex not OK). z = %.1f", fZVertex);
         return;
@@ -451,18 +448,25 @@ void AliDhcTask::UserExec(Option_t *)
     return;
   }
 
+  // Get pool containing tracks from other events like this one
+  AliEvtPool* pool = fPoolMgr->GetEventPool(fCentrality, fZVertex);
+  if (!pool) {
+    AliWarning(Form("No pool found. Centrality %f, ZVertex %f", 
+		    fCentrality, fZVertex));
+    return;
+  }
+
   // Get array of selected tracks
+  MiniEvent* sTracks = new MiniEvent(0); // deleted by pool mgr.
   if (dType == kESD) {
     GetESDTracks(sTracks);
   } else if (dType == kAOD) {
     GetAODTracks(sTracks);
   }
 
-  // Get pool containing tracks from other events like this one
-  AliEvtPool* pool = fPoolMgr->GetEventPool(fCentrality, fZVertex);
-  if (!pool) {
-    AliWarning(Form("No pool found. Centrality %f, ZVertex %f", 
-		    fCentrality, fZVertex));
+  if (sTracks->size()==0) {
+    AliWarning(Form("Track array empty"));
+    delete sTracks;
     return;
   }
 
@@ -521,6 +525,13 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
     Int_t nSelTrax = 0;
     TObjArray arr(nTrax);
     arr.SetOwner(1);
+
+    if (!fEsdTPCOnly) {
+      fEsdTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      //fEsdTPCOnly->SetMinNClustersTPC(70);
+      fEsdTPCOnly->SetMinNCrossedRowsTPC(70);
+      fEsdTPCOnly->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    }
 
     for (Int_t i = 0; i < nTrax; ++i) {
       AliESDtrack* esdtrack = fESD->GetTrack(i);
@@ -983,28 +994,31 @@ void AliDhcTask::Terminate(Option_t *)
 }
 
 //________________________________________________________________________
-Bool_t AliDhcTask::VertexOk(TObject* obj) const
+Bool_t AliDhcTask::VertexOk() const
 {
   // Modified from AliAnalyseLeadingTrackUE::VertexSelection()
   
   Int_t nContributors  = 0;
   Double_t zVertex     = 999;
   TString name("");
-  
-  if (obj->InheritsFrom("AliESDEvent")) {
-    AliESDEvent* esdevt = (AliESDEvent*) obj;
-    const AliESDVertex* vtx = esdevt->GetPrimaryVertex();
+
+  Int_t runno = InputEvent()->GetRunNumber();
+  if (runno>=176326 && runno<=197692) { // year 12 and 13
+    if (!fUtils->IsVertexSelected2013pA(InputEvent())) 
+      return 0;
+  }
+
+  if (fESD) {
+    const AliESDVertex* vtx = fESD->GetPrimaryVertex();
     if (!vtx)
       return 0;
     nContributors = vtx->GetNContributors();
     zVertex       = vtx->GetZ();
     name          = vtx->GetName();
-  }
-  else if (obj->InheritsFrom("AliAODEvent")) { 
-    AliAODEvent* aodevt = (AliAODEvent*) obj;
-    if (aodevt->GetNumberOfVertices() < 1)
+  } else {
+    if (fAOD->GetNumberOfVertices() < 1)
       return 0;
-    const AliAODVertex* vtx = aodevt->GetPrimaryVertex();
+    const AliAODVertex* vtx = fAOD->GetPrimaryVertex();
     nContributors = vtx->GetNContributors();
     zVertex       = vtx->GetZ();
     name          = vtx->GetName();

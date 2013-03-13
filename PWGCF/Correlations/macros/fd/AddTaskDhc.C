@@ -143,7 +143,7 @@ AliDhcTask *AddTaskDhc(
   // make a unique task name
   Char_t chNewTaskName[256];
   if (chTaskName.EqualTo("")) {
-    sprintf(chNewTaskName,"Task_Dhc%s%s%s",chExtraName,centSel.Data(),chUName.Data());
+    sprintf(chNewTaskName,"Task_Dhc%s_%s_%s",chExtraName,centSel.Data(),chUName.Data());
   } else {
     sprintf(chNewTaskName,"%s",chTaskName.Data());
   }

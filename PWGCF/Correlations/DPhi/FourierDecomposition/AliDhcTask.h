@@ -7,23 +7,23 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPool.h"
-#include "THn.h"
 
 class TFormula;
 class TH1;
 class TH2;
 class TH3;
+class THn;
 class TAxis;
 class TObjArray;
 class TObject;
 class TProfile2D;
 class AliAODEvent;
-class AliESDEvent;
-class AliESDtrackCuts;
-class AliESDMuonTrack;
 class AliAODTrack;
+class AliAnalysisUtils;
+class AliESDEvent;
+class AliESDMuonTrack;
+class AliESDtrackCuts;
 class AliEvtPoolManager;
-
 
 class AliDhcTask : public AliAnalysisTaskSE {
  public:
@@ -47,6 +47,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetHEffA(THnF *h)                      { fHEffA=h;                 }
   void         SetHEffT(THnF *h)                      { fHEffT=h;                 }
   void         SetMixInEtaT(Bool_t b)                 { fMixInEtaT = b;           }
+  void         SetOmitFirstEv(Bool_t b)               { fOmitFirstEv = b;         }
   void         SetPoolSize(Int_t p)                   { fPoolSize = p;            }
   void         SetPtABins(TAxis *bins)                { fBPtA=bins;               }
   void         SetPtRange(Double_t min, Double_t max) { fPtMin=min; fPtMax=max;   }
@@ -59,6 +60,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetZVtxMixBins(TAxis *bins)            { fMixBZvtx=bins;           }
   void         SetZvtx(Double_t zvtx)                 { fZVtxMax = zvtx;          }
   void         PrintDhcSettings();
+
   enum eAnaMode       {kHH=1, kMuH, kHMu, kMuMu, kPSide, kASide};
 
  protected:
@@ -69,7 +71,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         InitEventMixer();
   void         GetESDTracks(MiniEvent*);
   void         GetAODTracks(MiniEvent*);
-  Bool_t       VertexOk(TObject* obj) const;
+  Bool_t       VertexOk() const;
   Bool_t       IsGoodMUONtrack(AliESDMuonTrack &track);
   Bool_t       IsGoodMUONtrack(AliAODTrack &track);
   Double_t     DeltaPhi(Double_t phia, Double_t phib,
@@ -98,6 +100,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   Double_t           fEtaTHi;          //  Max eta for triggers
   Double_t           fEtaALo;          //  Min eta for associated
   Double_t           fEtaAHi;          //  Max eta for associated
+  Bool_t             fOmitFirstEv;     //  if true skip first event in chunk
   Bool_t             fDoFillSame;      //  If true fill same event immediately (not waiting for pool)
   Bool_t             fDoMassCut;       //  If true cut on invariant mass
   TString            fClassName;       //  If not null only process events with given class
@@ -141,11 +144,12 @@ class AliDhcTask : public AliAnalysisTaskSE {
   TAxis             *fMixBZvtx;        //  zvtx binning for mixing
   THnF              *fHEffT;           //  efficiency for trigger particles
   THnF              *fHEffA;           //  efficiency for associate particles
+  AliAnalysisUtils  *fUtils;           //  analysis utils
 
   AliDhcTask(const AliDhcTask&);            // not implemented
   AliDhcTask &operator=(const AliDhcTask&); // not implemented
 
-  ClassDef(AliDhcTask, 7);
+  ClassDef(AliDhcTask, 8)
 };
 
 #endif
