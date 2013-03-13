@@ -76,6 +76,7 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fFilterBit(16),
   fTrackStatus(0),
   fOnlyHadrons(kFALSE),
+  fCheckMotherPDG(kTRUE),
   fTrackEtaCut(0.8),
   fTrackPtMin(0),
   fEventSelection(AliVEvent::kMB|AliVEvent::kUserDefined),
@@ -573,8 +574,9 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
         if (particleSpecies != -1) {
                 // find the primary mother
                 AliVParticle* mother = part;
-                while (!((AliAODMCParticle*)mother)->IsPhysicalPrimary())
-                {
+                if(fCheckMotherPDG) {
+		  while (!((AliAODMCParticle*)mother)->IsPhysicalPrimary())
+		  {
                   if (((AliAODMCParticle*)mother)->GetMother() < 0)
                   {
                     mother = 0;
@@ -584,8 +586,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
                   mother = (AliVParticle*) arrayMC->At(((AliAODMCParticle*)mother)->GetMother());
                   if (!mother)
                     break;
+                 }
                 }
-                
                 if (mother)
                 {
                   Int_t pdgCode = ((AliAODMCParticle*)mother)->GetPdgCode();
@@ -644,8 +646,9 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
                 // find the primary mother
                 AliMCParticle* mother = (AliMCParticle*) part;
 // 		Printf("");
-                while (!mcEvent->IsPhysicalPrimary(mother->GetLabel()))
-                {
+                if(fCheckMotherPDG) {
+		  while (!mcEvent->IsPhysicalPrimary(mother->GetLabel()))
+                  {
 // 		  Printf("pdg = %d; mother = %d", mother->PdgCode(), mother->GetMother());
                   if (mother->GetMother() < 0)
                   {
@@ -656,8 +659,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
                   mother = (AliMCParticle*) mcEvent->GetTrack(mother->GetMother());
                   if (!mother)
                     break;
+                  }
                 }
-                
                 if (mother)
                 {
                   Int_t pdgCode = mother->PdgCode();

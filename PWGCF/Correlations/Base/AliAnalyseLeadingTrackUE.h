@@ -67,6 +67,8 @@ class AliAnalyseLeadingTrackUE : public TObject {
   void 		 SetHelperPID(AliHelperPID* pid) { fHelperPID = pid; }
   void		 SetTrackStatus(UInt_t status) { fTrackStatus = status; }
   UInt_t	 GetTrackStatus() { return fTrackStatus; }
+  void		 SetCheckMotherPDG(Bool_t checkpdg) { fCheckMotherPDG = checkpdg; }
+  Bool_t	 GetCheckMotherPDG() { return fCheckMotherPDG; }
 
 protected:
   Bool_t CheckTrack(AliVParticle * part);
@@ -76,6 +78,7 @@ private:
   Int_t          fFilterBit;         // track selection cuts
   UInt_t         fTrackStatus;       // if non-0, the bits set in this variable are required for each track
   Bool_t         fOnlyHadrons;       // consider only charged Pions, Protons and Kaons 
+  Bool_t         fCheckMotherPDG;     // Check the PDG code of mother for secondaries 
   Double_t       fTrackEtaCut;       // pseudo-rapidity limit of transverse regions     
   Double_t       fTrackPtMin;        // pt limit for selecting particles
   UInt_t         fEventSelection;    // bit for physics selection
