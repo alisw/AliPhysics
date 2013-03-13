@@ -6,16 +6,15 @@
 
 #include <TClonesArray.h>
 #include <TRandom3.h>
-
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAnalysisManager.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
+#include "AliEmcalPicoTrackMaker.h"
 #include "AliLog.h"
 #include "AliPicoTrack.h"
 #include "AliVTrack.h"
-#include "AliEmcalPicoTrackMaker.h"
 
 ClassImp(AliEmcalPicoTrackMaker)
 
@@ -156,19 +155,16 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	  type = 3;
 	else /*not a good track*/
 	  continue;
-      }
-      else {
+      } else {
 	if (aodtrack->TestFilterBit(fAODfilterBits[0])) {
 	  type = 0;
-	}
-	else if (aodtrack->TestFilterBit(fAODfilterBits[1])) {
+	} else if (aodtrack->TestFilterBit(fAODfilterBits[1])) {
 	  if ((aodtrack->GetStatus()&AliESDtrack::kITSrefit)==0) {
 	    if (fIncludeNoITS)
 	      type = 2;
 	    else
 	      continue;
-	  }
-	  else {
+	  } else {
 	    type = 1;
 	  }
 	}
@@ -176,7 +172,6 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	  continue;
 	}
       }
-
       if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75 && 
 	  track->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() &&
 	  track->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())
