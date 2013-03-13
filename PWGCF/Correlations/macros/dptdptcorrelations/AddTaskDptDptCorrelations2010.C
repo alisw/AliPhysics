@@ -1,7 +1,7 @@
 //
 // Macro designed for use with the AliAnalysisTaskDptDptCorrelations task.
 //
-// Author: Claude Pruneau, Wayne State
+// Author: Claude Pruneau & Prabhat Pujahari, Wayne State
 // 
 //           system:  0: PbPb                 1: pp
 //      singlesOnly:  0: full correlations    1: singles only
