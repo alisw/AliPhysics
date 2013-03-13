@@ -22,6 +22,7 @@ ClassImp(AliJetConstituentTagCopier)
 AliJetConstituentTagCopier::AliJetConstituentTagCopier() : 
   AliAnalysisTaskEmcal("AliJetConstituentTagCopier", kFALSE),
   fMCParticlesName(),
+  fCleanBeforeCopy(kFALSE),
   fMCParticles(0),
   fMCParticlesMap(0)
 {
@@ -32,6 +33,7 @@ AliJetConstituentTagCopier::AliJetConstituentTagCopier() :
 AliJetConstituentTagCopier::AliJetConstituentTagCopier(const char *name) : 
   AliAnalysisTaskEmcal(name, kFALSE),
   fMCParticlesName("MCParticles"),
+  fCleanBeforeCopy(kFALSE),
   fMCParticles(0),
   fMCParticlesMap(0)
 {
@@ -49,7 +51,7 @@ void AliJetConstituentTagCopier::ExecOnce()
 {
   // Execute once.
 
-  if (!fMCParticles) {
+  if (!fMCParticles && !fMCParticlesName.IsNull()) {
     fMCParticles = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCParticlesName));
     if (!fMCParticles) {
       AliError(Form("%s: Could not retrieve MC particles %s!", GetName(), fMCParticlesName.Data()));
@@ -62,7 +64,7 @@ void AliJetConstituentTagCopier::ExecOnce()
     }
   }
 
-  if (!fMCParticlesMap) {
+  if (fMCParticles && !fMCParticlesMap) {
     fMCParticlesMap = dynamic_cast<AliNamedArrayI*>(InputEvent()->FindListObject(fMCParticlesName + "_Map"));
     // this is needed to map the MC labels with the indexes of the MC particle collection
     // if teh map is not given, the MC labels are assumed to be consistent with the indexes (which is not the case if AliEmcalMCTrackSelector is used)
@@ -105,6 +107,24 @@ Bool_t AliJetConstituentTagCopier::Run()
 //________________________________________________________________________
 void AliJetConstituentTagCopier::DoClusterLoop(TClonesArray *array)
 {
+  if (fCleanBeforeCopy) {
+    for (Int_t i = 0; i < array->GetEntries(); i++) {
+      AliVCluster *cluster = static_cast<AliVCluster*>(array->At(i));
+      if (!cluster) {
+	AliError(Form("%s: Could not get cluster %d", GetName(), i));
+	continue;
+      }
+      if (!AcceptCluster(cluster))
+	continue;
+      Int_t mcLabel = cluster->GetLabel();
+      if (mcLabel > 0)
+	cluster->SetBit(TObject::kBitMask, kFALSE);
+    }
+  }
+
+  if (!fMCParticles)
+    return;
+  
   Double_t totalEnergy = 0;
   for (Int_t i = 0; i < array->GetEntries(); i++) {
     AliVCluster *cluster = static_cast<AliVCluster*>(array->At(i));
@@ -145,6 +165,24 @@ void AliJetConstituentTagCopier::DoClusterLoop(TClonesArray *array)
 //________________________________________________________________________
 void AliJetConstituentTagCopier::DoTrackLoop(TClonesArray *array)
 {
+  if (fCleanBeforeCopy) {
+    for (Int_t i = 0; i < array->GetEntries(); i++) {
+      AliVParticle *track = static_cast<AliVParticle*>(array->At(i));
+      if (!track) {
+	AliError(Form("%s: Could not get track %d", GetName(), i));
+	continue;
+      }
+      if (!AcceptTrack(track))
+      continue;
+      Int_t mcLabel = TMath::Abs(track->GetLabel());
+      if (mcLabel != 0) 
+	track->SetBit(TObject::kBitMask, kFALSE);
+    }
+  }
+
+  if (!fMCParticles)
+    return;
+
   for (Int_t i = 0; i < array->GetEntries(); i++) {
     AliVParticle *track = static_cast<AliVParticle*>(array->At(i));
     if (!track) {
@@ -176,6 +214,30 @@ void AliJetConstituentTagCopier::DoTrackLoop(TClonesArray *array)
 //________________________________________________________________________
 void AliJetConstituentTagCopier::DoEmcalParticleLoop(TClonesArray *array)
 {
+  if (fCleanBeforeCopy) {
+    for (Int_t i = 0; i < array->GetEntries(); i++) {
+      AliEmcalParticle *emcpart = static_cast<AliEmcalParticle*>(array->At(i));
+      if (!emcpart) {
+	AliError(Form("%s: Could not get EmcalParticle %d", GetName(), i));
+	continue;
+      }
+      if (!AcceptEmcalPart(emcpart))
+	continue;
+      AliVCluster *cluster = emcpart->GetCluster();
+      AliVParticle *track = emcpart->GetTrack();
+      Int_t mcLabel = 0;
+      if (cluster)
+	mcLabel = cluster->GetLabel();
+      else if (track)
+	mcLabel = TMath::Abs(track->GetLabel());
+      if (mcLabel != 0) 
+	emcpart->SetBit(TObject::kBitMask, kFALSE);
+    }
+  }
+
+  if (!fMCParticles)
+    return;
+
   for (Int_t i = 0; i < array->GetEntries(); i++) {
     AliEmcalParticle *emcpart = static_cast<AliEmcalParticle*>(array->At(i));
     if (!emcpart) {
