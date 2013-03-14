@@ -55,7 +55,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	double PionMass = 0.13956995;
 	double KaonMass = 0.493677;
 	
-	int runmults[10] = {0, 0, 0, 1, 1, 1, 1, 0, 0, 0};
+	int runmults[10] = {1, 1, 1, 0, 0, 0, 0, 0, 0, 0};
 	int multbins[11] = {0, 50, 100, 200, 300, 400, 500, 700, 800, 900, 990};
 	
 	int runch[2] = {1, 1};
@@ -70,7 +70,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	
 	AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 	Reader->SetFilterBit(7);
-	Reader->SetCentralityPreSelection(180, 701);
+	Reader->SetCentralityPreSelection(0.01, 210);
 	
 	AliFemtoManager* Manager=new AliFemtoManager();
 	Manager->SetEventReader(Reader);
