@@ -137,6 +137,8 @@ AliAnalysisTaskB2* AddTaskB2( const TString& species
 	lnID->SetPriorProbabilities(prob);
 	lnID->SetPidProcedure(pidProc);
 	
+	if(!simulation) lnID->SetTPCChargeCorrection(2.3);
+	
 	task->SetPID(lnID);
 	
 	// Add task to the manager
@@ -175,6 +177,13 @@ Double_t GetMeanNtrk(const TString& period)
 	if(period =="lhc11e3a_plus_wosdd") return 3.37669;
 	if(period =="lhc11e3a_plus_wsdd")  return 3.47885;
 	
+	if(period =="lhc12a5a")            return 29.264;
+	if(period =="lhc12a5bb")           return 31.0288;
+	if(period =="lhc12a5bc")           return 30.6888;
+	if(period =="lhc12a5bd")           return 30.3528;
+	if(period =="lhc12a5be")           return 29.9859;
+	if(period =="lhc12a5c_wsdd")       return 27.5981;
+	
 	cerr << "Warning in GetMeanNtrk: no <Ntrk> for period " << period << endl;
 	
 	return 1;
@@ -200,6 +209,13 @@ Double_t GetNSDMeanNtrk(const TString& period)
 	if(period =="lhc10e21")            return 4.91967;
 	if(period =="lhc11e3a_plus_wosdd") return 3.4774;
 	if(period =="lhc11e3a_plus_wsdd")  return 3.6467;
+	
+	if(period =="lhc12a5a")            return 29.3414;
+	if(period =="lhc12a5bb")           return 31.1514;
+	if(period =="lhc12a5bc")           return 30.7877;
+	if(period =="lhc12a5bd")           return 30.4706;
+	if(period =="lhc12a5be")           return 30.1013;
+	if(period =="lhc12a5c_wsdd")       return 27.6921;
 	
 	cerr << "Warning in GetNSDMeanNtrk: no <Ntrk> for period " << period << endl;
 	
