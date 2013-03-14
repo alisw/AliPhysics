@@ -9,10 +9,11 @@
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH3F.h>
+#include <TProfile.h>
 #include <TLorentzVector.h>
 #include <TSystem.h>
 #include <TFile.h>
+#include <TChain.h>
 #include <TKey.h>
 #include <TProfile.h>
 
@@ -305,11 +306,17 @@ Bool_t AliJetResponseMaker::UserNotify()
     return kFALSE;
   }
 
+  TChain *chain = dynamic_cast<TChain*>(tree);
+  if (chain)
+    tree = chain->GetTree();
+
+  Int_t nevents = tree->GetEntriesFast();
+
   PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthard);
 
-  fHistTrials->SetBinContent(pthard + 1, fHistTrials->GetBinContent(pthard + 1) + trials);
-  fHistXsection->SetBinContent(pthard + 1, fHistXsection->GetBinContent(pthard + 1) + xsection);
-  fHistEvents->SetBinContent(pthard + 1, fHistEvents->GetBinContent(pthard + 1) + 1);
+  fHistTrials->Fill(pthard, trials);
+  fHistXsection->Fill(pthard, xsection);
+  fHistEvents->Fill(pthard, nevents);
 
   return kTRUE;
 }
@@ -336,7 +343,7 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistTrials->GetYaxis()->SetTitle("trials");
   fOutput->Add(fHistTrials);
 
-  fHistXsection = new TH1F("fHistXsection", "fHistXsection", 11, 0, 11);
+  fHistXsection = new TProfile("fHistXsection", "fHistXsection", 11, 0, 11);
   fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
   fHistXsection->GetYaxis()->SetTitle("xsection");
   fOutput->Add(fHistXsection);
