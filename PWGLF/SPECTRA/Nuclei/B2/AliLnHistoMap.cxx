@@ -19,9 +19,12 @@
 #include <Riostream.h>
 #include <TString.h>
 #include <TMap.h>
+#include <TH1.h>
+#include <TAxis.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TObjString.h>
+#include <TMath.h>
 #include "AliLnHistoMap.h"
 
 ClassImp(AliLnHistoMap)
@@ -90,7 +93,7 @@ TObject* AliLnHistoMap::Add(const TString& keyname, TObject* value)
 	return value;
 }
 
-TH1D* AliLnHistoMap::Add(const TString& name, Int_t nbins, Double_t xmin, Double_t xmax, const TString& title, const TString& xlabel, const TString& ylabel)
+TH1D* AliLnHistoMap::Add(const TString& name, Int_t nbins, Double_t xmin, Double_t xmax, const TString& title, const TString& xlabel, const TString& ylabel, Bool_t logx)
 {
 //
 // Add a TH1D histogram to the histogram map
@@ -107,13 +110,15 @@ TH1D* AliLnHistoMap::Add(const TString& name, Int_t nbins, Double_t xmin, Double
 		value->SetXTitle(xlabel.Data());
 		value->SetYTitle(ylabel.Data());
 		
+		if(logx) this->SetLogXaxis(value);
+		
 		fHistoMap->Add((TObject*)key, (TObject*)value);
 	}
 	
 	return value;
 }
 
-TH2D* AliLnHistoMap::Add(const TString& name, Int_t xbins, Double_t xmin, Double_t xmax, Int_t ybins, Double_t ymin, Double_t ymax, const TString& title, const TString& xlabel, const TString& ylabel)
+TH2D* AliLnHistoMap::Add(const TString& name, Int_t xbins, Double_t xmin, Double_t xmax, Int_t ybins, Double_t ymin, Double_t ymax, const TString& title, const TString& xlabel, const TString& ylabel, Bool_t logx, Bool_t logy)
 {
 //
 // Add a TH2D histogram to the output map
@@ -131,8 +136,63 @@ TH2D* AliLnHistoMap::Add(const TString& name, Int_t xbins, Double_t xmin, Double
 		value->SetXTitle(xlabel.Data());
 		value->SetYTitle(ylabel.Data());
 		
+		if(logx) this->SetLogXaxis(value);
+		if(logy) this->SetLogYaxis(value);
+		
 		fHistoMap->Add((TObject*)key, (TObject*)value);
 	}
 	
 	return value;
+}
+
+Bool_t AliLnHistoMap::SetLogXaxis(TH1* h)
+{
+//
+// transform linear X-axis bins to logarithmic bins
+//
+	return this->SetLogBins(h->GetXaxis());
+}
+
+Bool_t AliLnHistoMap::SetLogYaxis(TH1* h)
+{
+//
+// transform linear Y-axis bins to logarithmic bins
+//
+	return this->SetLogBins(h->GetYaxis());
+}
+
+Bool_t AliLnHistoMap::SetLogBins(TAxis* axis)
+{
+//
+// transform linear bins to logarithmic bins
+// (adapted from TPad)
+//
+	if(axis == 0) return kFALSE;
+	
+	Double_t xmin = axis->GetXmin();
+	Double_t xmax = axis->GetXmax();
+	
+	if(xmin <= 0)
+	{
+		fHistoMap->Warning("SetLogBins", "no log bins, xmin=%f is <= 0", xmin);
+		return kFALSE;
+	}
+	
+	Int_t nbins = axis->GetNbins();
+	
+	Double_t xminl = TMath::Log(xmin);
+	Double_t xmaxl = TMath::Log(xmax);
+	Double_t dx = (xmaxl-xminl)/nbins;
+	Double_t* xbins = new Double_t[nbins+1];
+	
+	xbins[0] = xmin;
+	for (Int_t i=1; i<=nbins; ++i)
+	{
+		xbins[i] = TMath::Exp(xminl+i*dx);
+	}
+	
+	axis->Set(nbins, xbins);
+	delete[] xbins;
+	
+	return kTRUE;
 }
