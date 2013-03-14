@@ -1,9 +1,9 @@
 // $Id$
 
 void AddTaskPicoTracksDhc(
-  TString chNOutTracks   = "PicoTracks"
+  TString chNOutTracks   = "PicoTracks",
   TString period         = "LHC11h",
-  Bool_t includeITSRefit = kFALSE
+  Bool_t includeNoITS    = kFALSE
 ) 
 {
   // Get the analysis manager
@@ -24,14 +24,14 @@ void AddTaskPicoTracksDhc(
     Info("AddTaskPicoTracksDhc","adding ESD track selection task ...");
     // ESD Track Cuts
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTpcTrack.C");
-    AliEmcalEsdTpcTrackTask *hybTask = AddTaskEmcalEsdTpcTrack("HybridTracks", cuts.Data(), includeITSRefit);
+    AliEmcalEsdTpcTrackTask *hybTask = AddTaskEmcalEsdTpcTrack("HybridTracks", cuts.Data(), includeNoITS);
     hybTask->SelectCollisionCandidates(AliVEvent::kAny);
     // Pico Tracks
     pTrackTask = AddTaskEmcalPicoTrackMaker(chNOutTracks.Data(), "HybridTracks", period);
     pTrackTask->SelectCollisionCandidates(AliVEvent::kAny);
   } else {
     Info("AddTaskPicoTracksDhc","AOD analysis, adding PicoTrack maker ...");
-    pTrackTask = AddTaskEmcalPicoTrackMaker(chNOutTracks.Data(),"tracks", period, includeITSRefit);
+    pTrackTask = AddTaskEmcalPicoTrackMaker(chNOutTracks.Data(),"tracks", period, includeNoITS);
     pTrackTask->SelectCollisionCandidates(AliVEvent::kAny);
   }
 }
