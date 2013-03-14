@@ -4,6 +4,13 @@ AliAnalysisTaskCLQA* AddTaskCLQA(
   const char *ntracks            = "",
   const char *nclusters          = "",
   const char *njets              = "",
+  Bool_t doCumulants             = kFALSE,
+  Double_t cumMmin               = 10,
+  Double_t cumPtMin              = 0.3,
+  Double_t cumPtMax              = 5.0,
+  Double_t cumEtaMin             = -1.0,
+  Double_t cumEtaMax             = +1.0,
+  UInt_t trigsel                 = AliVEvent::kAnyINT|AliVEvent::kHighMult|AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kINT8,
   const char *taskname           = "ATCLQA"
 )
 {  
@@ -46,6 +53,9 @@ AliAnalysisTaskCLQA* AddTaskCLQA(
   qaTask->SetTracksName(ntracks);
   qaTask->SetClusName(nclusters);
   qaTask->SetJetsName(njets);
+  qaTask->SetDoCumulants(doCumulants);
+  qaTask->SetCumParams(cumMmin,cumPtMin,cumPtMax,cumEtaMin,cumEtaMax);
+  qaTask->SelectCollisionCandidates(trigsel);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
