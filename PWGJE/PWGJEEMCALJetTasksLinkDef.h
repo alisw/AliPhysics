@@ -40,5 +40,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraMECpA;
 #pragma link C++ class AliAnalysisTaskQualityAssurancePA;
 #pragma link C++ class AliNtupCumInfo+;
+#pragma link C++ class AliAnalysisTaskRhoVnModulation+;
 
 #endif
