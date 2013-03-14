@@ -39,5 +39,6 @@
 #pragma link C++ class AliAnalysisTaskFullpAJets+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraMECpA;
 #pragma link C++ class AliAnalysisTaskQualityAssurancePA;
+#pragma link C++ class AliNtupCumInfo+;
 
 #endif
