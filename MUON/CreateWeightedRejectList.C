@@ -78,6 +78,10 @@
 #include <TObject.h>
 #include <TTree.h>
 #include <vector>
+#include "AliCounterCollection.h"
+
+#include "AliMUONTrackerDataWrapper.h"
+#include "AliMUONPainterDataRegistry.h"
 
 class RunInfo
 {
@@ -97,21 +101,129 @@ private:
 
 std::ostream& operator<<(std::ostream& out, const RunInfo& run)
 {
-  out << Form("RUN %09d NEVENTS %10d",run.Number(),run.Nevents());
+  out << Form("RUN %09d NEVENTS %lld",run.Number(),run.Nevents());
   return out;
 }
 
 AliMUONRejectList* CheckDE_BP_ManuPedestals(Int_t rejectMask, AliMUONPadStatusMaker& status);
 
-Int_t AddEventsSingleRun(Int_t index, 
-                         Int_t run_number, 
-                         AliMUONRejectList& rejectedEvents);
+Int_t AddEventsSingleRun(Int_t run_number, Long64_t nEvents,AliMUONRejectList& rejectedEvents);
 
 std::vector<RunInfo> runs;
 
 //______________________________________________________________________________
+AliMUONRejectList* CreateWeightedRejectList(AliCounterCollection& cc,
+                                            const char* ocdbPath="local:///Users/laurent/Alice/OCDBcopy2013",
+                                            const char* weigthWithTrigger="CMSL7-B-NOPF-MUON")
+{
+  // create the reject using the runs in the collection
+  //
+  // the counter collection is expected to have "trigger","event","run" rubrics
+  // and event:PSALL should be a valid one.
+  //
+  
+  if (!gGrid)
+  {
+    TGrid::Connect("alien://");
+  }
+  
+  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  
+  AliMUONRejectList* weightedRejectList = new AliMUONRejectList;
+  
+  AliMUONRejectList rejectedEvents;
+
+  TString sruns = cc.GetKeyWords("run");
+  TObjArray* truns = sruns.Tokenize(",");
+  
+  TIter next(truns);
+  TObjString* s;
+  
+  Double_t nEventsTotal(0.0);
+  
+  while ( ( s = static_cast<TObjString*>(next())) )
+  {
+    Int_t runNumber = s->String().Atoi();
+    AliSysInfo::Instance()->AddStamp(Form("RUN%d",runNumber));
+    Long64_t nEvents = cc.GetSum(Form("trigger:%s/event:PSALL/run:%d",weigthWithTrigger,runNumber));
+    if (!nEvents)
+    {
+      std::cout << "No events for run " << runNumber << " ??" << std::endl;
+      continue;
+    }
+    nEventsTotal += AddEventsSingleRun(runNumber,nEvents,rejectedEvents);
+  }
+  
+  delete truns;
+  
+  AliMpDEIterator DEiter;
+  
+  for (DEiter.First(); !DEiter.IsDone(); DEiter.Next())
+    if (DEiter.CurrentDEId() < 1100)
+    {
+      Int_t DEid = DEiter.CurrentDEId();
+      
+      Double_t nBadEventsDE = rejectedEvents.DetectionElementProbability(DEid);
+      Double_t nEventsTotalDE = static_cast<Double_t>(nEventsTotal);
+      Float_t probaDE = 0.0;
+      if (nEventsTotalDE != 0.0)
+        probaDE = nBadEventsDE / nEventsTotalDE;
+      weightedRejectList->SetDetectionElementProbability(DEid, probaDE);
+      
+      Int_t nBusPatches = DEiter.CurrentDE()->GetNofBusPatches();
+      for (Int_t ii = 0; ii < nBusPatches; ii++)
+      {
+        Int_t BPid = DEiter.CurrentDE()->GetBusPatchId(ii);
+        
+        Double_t nBadEventsBP = rejectedEvents.BusPatchProbability(BPid);
+        Double_t nEventsTotalBP = nEventsTotalDE - nBadEventsDE;
+        Float_t probaBP = 0.0;
+        if (nEventsTotalBP != 0.0)
+          probaBP = nBadEventsBP / nEventsTotalBP;
+        weightedRejectList->SetBusPatchProbability(BPid, probaBP);
+        
+        Int_t nManus = AliMpDDLStore::Instance(kFALSE)->GetBusPatch(BPid, kFALSE)->GetNofManus();
+        for (Int_t jj = 0; jj < nManus; jj++)
+	      {
+          Int_t manuId = AliMpDDLStore::Instance(kFALSE)->GetBusPatch(BPid, kFALSE)->GetManuId(jj);
+          
+          Double_t nBadEventsManu = rejectedEvents.ManuProbability(DEid, manuId);
+          Double_t nEventsTotalManu = nEventsTotalBP - nBadEventsBP;
+          Float_t probaManu = 0.0;
+          if (nEventsTotalManu != 0.0)
+            probaManu = nBadEventsManu / nEventsTotalManu;
+          weightedRejectList->SetManuProbability(DEid, manuId, probaManu);
+          
+          for (Int_t channel = 0; channel < AliMpConstants::ManuNofChannels(); channel++)
+          {
+            Double_t nBadEventsChannel = rejectedEvents.ChannelProbability(DEid, manuId, channel);
+            Double_t nEventsTotalChannel = nEventsTotalManu - nBadEventsManu;
+            Float_t probaChannel = 0.0;
+            if (nEventsTotalChannel != 0.0)
+            {
+              probaChannel = nBadEventsChannel / nEventsTotalChannel;
+            }
+            
+            weightedRejectList->SetChannelProbability(DEid, manuId, channel, probaChannel);
+          }
+	      }
+      }
+    }
+  
+  
+  AliMUONTrackerData* td = new AliMUONTrackerData("WeightedRejectList","RejectList",*weightedRejectList);
+  
+  AliMUONVTrackerDataMaker* dw = new AliMUONTrackerDataWrapper(td);
+  
+  AliMUONPainterDataRegistry::Instance()->Register(dw);
+
+  return weightedRejectList;
+}
+
+//______________________________________________________________________________
 bool CreateWeightedRejectList(const char* runlistfile="runlist.txt", 
-                              const char* rejectListPath="local://$HOME/OCDB")
+                              const char* rejectListPath="local://$HOME/OCDB",
+                              const char* author="Matthieu Lenhardt")
 {
   /// Create a weighted RejectList for the runs included in the run list
   /// The cuts are the same that the one applied in the RecoParam used to create the ESDs.
@@ -158,7 +270,8 @@ bool CreateWeightedRejectList(const char* runlistfile="runlist.txt",
   {
     Int_t runNumber = runs[ii].Number();
     AliSysInfo::Instance()->AddStamp(Form("RUN%d",runNumber));
-    nEventsTotal += AddEventsSingleRun(ii, runNumber, rejectedEvents);
+    Long64_t nEvents = runs[ii].Nevents();
+    nEventsTotal += AddEventsSingleRun(runNumber, nEvents, rejectedEvents);
   }  
   
   AliMpDEIterator DEiter;
@@ -219,7 +332,7 @@ bool CreateWeightedRejectList(const char* runlistfile="runlist.txt",
   AliMUONCDB::WriteToCDB(&weightedRejectList, "MUON/Calib/RejectList",
                          firstRun , lastRun, 
                          "Weighted reject List for MCH, for simulations only", 
-                         "Matthieu Lenhardt");
+                         author);
   
   return true;
 }
@@ -265,7 +378,7 @@ AliMUONRejectList* CheckDE_BP_ManuPedestals(Int_t rejectMask, AliMUONPadStatusMa
 
 
 //____________________________________________________________________________________________
-Int_t AddEventsSingleRun(Int_t index, Int_t runNumber, AliMUONRejectList& rejectedEvents)
+Int_t AddEventsSingleRun(Int_t runNumber, Long64_t nEvents, AliMUONRejectList& rejectedEvents)
 {
   AliCDBManager::Instance()->SetRun(runNumber);
   
@@ -278,8 +391,6 @@ Int_t AddEventsSingleRun(Int_t index, Int_t runNumber, AliMUONRejectList& reject
   AliMUONPadStatusMaker status(calibrationData);
   
   status.SetLimits(*recoParam);
-  
-  Long64_t nEvents = runs[index].Nevents();
   
   Int_t rejectMask = recoParam->PadGoodnessMask();
   
