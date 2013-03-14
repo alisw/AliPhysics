@@ -61,6 +61,8 @@ class AliLnID: public TObject
 	void SetTPCBetheBlochParams(const Double_t* param, Double_t mip=1., Double_t res=0.06);
 	void SetTPCBetheBlochParams(Double_t c0, Double_t c1, Double_t c2, Double_t c3, Double_t c4, Double_t mip=1., Double_t res=0.06);
 	
+	void SetTPCChargeCorrection(Double_t zexp) { fZexp = zexp; }
+	
 	enum { kSPECIES = 9 };
 	enum { kBayes, kMaxLikelihood, kTPC, kITSTPC, kTPCTOF };
 	
@@ -77,6 +79,7 @@ class AliLnID: public TObject
 	
 	Double_t fPrior[kSPECIES]; // prior probabilities
 	Double_t fRange; // number of sigmas to the expected values
+	Double_t fZexp; // TPC BB charge dependence
 	
 	class AliITSPIDResponse* fITSpid; // ITS likelihood
 	class AliTPCPIDResponse* fTPCpid; // TPC likelihood
