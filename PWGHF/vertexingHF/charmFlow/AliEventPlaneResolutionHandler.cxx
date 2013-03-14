@@ -45,11 +45,11 @@ AliEventPlaneResolutionHandler::AliEventPlaneResolutionHandler():TObject(),
   fCorrHistoName3(""),
   fNsubevents(2),
   fExtrapToFull(kFALSE),
-  fUseNcollWeights(kFALSE),
+  fWeight(0),
   fRootFileName("$ALICE_ROOT/PWGHF/vertexingHF/charmFlow/EventPlaneResolutionHistos.root")
 {
   // Default contructor
-  InitializeNcoll();
+  InitializeWeights();
 }
 //______________________________________________________________________
 AliEventPlaneResolutionHandler::AliEventPlaneResolutionHandler(TString filename):TObject(),
@@ -62,11 +62,11 @@ AliEventPlaneResolutionHandler::AliEventPlaneResolutionHandler(TString filename)
   fCorrHistoName3(""),
   fNsubevents(2),
   fExtrapToFull(kFALSE),
-  fUseNcollWeights(kFALSE),
+  fWeight(0),
   fRootFileName(filename.Data())
 {
   // Standard contructor
-  InitializeNcoll();
+  InitializeWeights();
 }
 //______________________________________________________________________
 Double_t AliEventPlaneResolutionHandler::GetEventPlaneResolution(Double_t minCent, Double_t maxCent){
@@ -86,41 +86,50 @@ Double_t AliEventPlaneResolutionHandler::GetEventPlaneResolution(Double_t minCen
   Int_t minCentrTimesTen=(Int_t)(minCent*10);
   Int_t maxCentrTimesTen=(Int_t)(maxCent*10);
   Int_t ncBin=minCentrTimesTen/25;
-  Bool_t useNcoll=fUseNcollWeights;
-  if(minCent>50.5 || maxCent>50.5) fUseNcollWeights=kFALSE;
-
+  Int_t whichWei=fWeight;
+  if(minCent>50.5 || maxCent>50.5) fWeight=0;
+  Double_t weight=-1.;  
+  if(fWeight==1) weight=fNcoll[ncBin];
+  else if(fWeight==2 && minCent>29.5 && maxCent<50.5)  weight=fYield24[ncBin];
+  else if(fWeight==3 && minCent>29.5 && maxCent<50.5)  weight=fYield46[ncBin];
+  else if(fWeight==4 && minCent>29.5 && maxCent<50.5)  weight=fYield612[ncBin];
   TH1F* hevpls2=0x0;
   TH1F* hevpls3=0x0;
   TH1F* hevpls1=(TH1F*)inputFile->Get(Form("%sCentr%d_%d",fCorrHistoName1.Data(),minCentrTimesTen,minCentrTimesTen+25));
   hevpls1->SetName(Form("%sCentr%d_%d",fCorrHistoName1.Data(),minCentrTimesTen,maxCentrTimesTen));
-  if(fUseNcollWeights) hevpls1->Scale(fNcoll[ncBin]);
+  if(weight>0.) hevpls1->Scale(weight);
   if(fNsubevents==3){
     hevpls2=(TH1F*)inputFile->Get(Form("%sCentr%d_%d",fCorrHistoName2.Data(),minCentrTimesTen,minCentrTimesTen+25));
     hevpls2->SetName(Form("%sCentr%d_%d",fCorrHistoName2.Data(),minCentrTimesTen,maxCentrTimesTen));
     hevpls3=(TH1F*)inputFile->Get(Form("%sCentr%d_%d",fCorrHistoName3.Data(),minCentrTimesTen,minCentrTimesTen+25));
     hevpls3->SetName(Form("%sCentr%d_%d",fCorrHistoName2.Data(),minCentrTimesTen,maxCentrTimesTen));
-    if(fUseNcollWeights){
-      hevpls2->Scale(fNcoll[ncBin]);
-      hevpls3->Scale(fNcoll[ncBin]);
+    if(weight>0.){
+      hevpls2->Scale(weight);
+      hevpls3->Scale(weight);
     }
   }
   for(Int_t iCentr=minCentrTimesTen+25; iCentr<maxCentrTimesTen; iCentr+=25){
     ncBin=iCentr/25;
+    weight=-1.;  
+    if(fWeight==1) weight=fNcoll[ncBin];
+    else if(fWeight==2 && minCent>29.5 && maxCent<50.5)  weight=fYield24[ncBin];
+    else if(fWeight==3 && minCent>29.5 && maxCent<50.5)  weight=fYield46[ncBin];
+    else if(fWeight==4 && minCent>29.5 && maxCent<50.5)  weight=fYield612[ncBin];
     TH1F* htmp1=(TH1F*)inputFile->Get(Form("%sCentr%d_%d",fCorrHistoName1.Data(),iCentr,iCentr+25));
-    if(fUseNcollWeights) htmp1->Scale(fNcoll[ncBin]);
+    if(weight>0.) htmp1->Scale(weight);
     hevpls1->Add(htmp1);
     if(fNsubevents==3){
       TH1F* htmp2=(TH1F*)inputFile->Get(Form("%sCentr%d_%d",fCorrHistoName2.Data(),iCentr,iCentr+25));
       TH1F* htmp3=(TH1F*)inputFile->Get(Form("%sCentr%d_%d",fCorrHistoName3.Data(),iCentr,iCentr+25));
-      if(fUseNcollWeights){
-	htmp2->Scale(fNcoll[ncBin]);
-	htmp3->Scale(fNcoll[ncBin]);
+      if(weight>0.){
+	htmp2->Scale(weight);
+	htmp3->Scale(weight);
       }
       hevpls2->Add(htmp2);
       hevpls3->Add(htmp3);
     }
   }
-  fUseNcollWeights=useNcoll;
+  fWeight=whichWei;
   Double_t resol=1.;
   if(fNsubevents==2){
     if(fExtrapToFull) resol=AliVertexingHFUtils::GetFullEvResol(hevpls1);
@@ -200,11 +209,26 @@ Bool_t AliEventPlaneResolutionHandler::SetHistoNames(){
   return kTRUE;
 }
 //______________________________________________________________________
-void AliEventPlaneResolutionHandler::InitializeNcoll(){
+void AliEventPlaneResolutionHandler::InitializeWeights(){
   // Ncoll values in 2.5% wide classes
   Double_t ncoll[20]={1790.77,1578.44,1394.82,1236.17,1095.08,
 		      969.86,859.571,759.959,669.648,589.588,
 		      516.039,451.409,392.853,340.493,294.426,
 		      252.385,215.484,183.284,155.101,130.963};
-  for(Int_t i=0; i<20; i++) fNcoll[i]=ncoll[i];
+  Double_t y24[20]={1,1,1,1,
+		    1,1,1,1,1,1,1,1,
+		    446,402,339,277,218,185,184,104};
+
+  Double_t y46[20]={1,1,1,1,
+		    1,1,1,1,1,1,1,1,
+		    49,150,127,105,88,71,71,53};
+  Double_t y612[20]={1,1,1,1,
+		    1,1,1,1,1,1,1,1,
+		    89,92,79,66,57,59,38,58};
+  for(Int_t i=0; i<20; i++){
+    fNcoll[i]=ncoll[i];
+    fYield24[i]=y24[i];
+    fYield46[i]=y46[i];
+    fYield612[i]=y612[i];
+  }
 }
