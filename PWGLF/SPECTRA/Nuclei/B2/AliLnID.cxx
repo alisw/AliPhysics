@@ -32,6 +32,7 @@ AliLnID::AliLnID()
 : TObject()
 , fPidProcedure(kBayes)
 , fRange(5.)
+, fZexp(2)
 , fITSpid(0)
 , fTPCpid(0)
 {
@@ -63,6 +64,7 @@ AliLnID::AliLnID(const AliLnID& other)
 : TObject(other)
 , fPidProcedure(other.fPidProcedure)
 , fRange(other.fRange)
+, fZexp(other.fZexp)
 , fITSpid(0)
 , fTPCpid(0)
 {
@@ -87,6 +89,8 @@ AliLnID& AliLnID::operator=(const AliLnID& other)
 	if(&other == this) return *this; // check for self-assignment
 	
 	fPidProcedure = other.fPidProcedure;
+	fRange = other.fRange;
+	fZexp = other.fZexp;
 	
 	// deallocate memory
 	delete fITSpid;
@@ -427,7 +431,7 @@ Bool_t AliLnID::GetTPClikelihood(Double_t pTPC, Double_t dEdx, Int_t /*nPointsTP
 	{
 		Double_t m = AliPID::ParticleMass(fSpecies[i]);
 		Double_t p = (fSpecies[i] > AliPID::kTriton) ? 2.*pTPC : pTPC; // correct by Z
-		Double_t expDedx = (fSpecies[i] > AliPID::kTriton) ? 4.*fTPCpid->Bethe(p/m) : fTPCpid->Bethe(p/m); // correct by Z^2
+		Double_t expDedx = (fSpecies[i] > AliPID::kTriton) ? TMath::Power(2.,fZexp)*fTPCpid->Bethe(p/m) : fTPCpid->Bethe(p/m); // correct by Z^X (as in AliTPCPIDResponse)
 		Double_t sigma = fTPCpid->GetRes0()*expDedx;
 		
 		if(TMath::Abs(dEdx - expDedx) > fRange*sigma)
@@ -539,7 +543,7 @@ Bool_t AliLnID::GetTPCmatch(Int_t pid, Double_t pTPC, Double_t dEdxTPC, Double_t
 //
 	Double_t m = AliPID::ParticleMass(pid);
 	Double_t p = (pid > AliPID::kTriton) ? 2.*pTPC : pTPC; // correct by Z
-	Double_t expDedx = (pid > AliPID::kTriton) ? 4.*fTPCpid->Bethe(p/m) : fTPCpid->Bethe(p/m); // correct by Z^2
+	Double_t expDedx = (pid > AliPID::kTriton) ? TMath::Power(2.,fZexp)*fTPCpid->Bethe(p/m) : fTPCpid->Bethe(p/m); // correct by Z^X (as in AliTPCPIDResponse)
 	Double_t sigma = fTPCpid->GetRes0()*expDedx;
 	
 	if(TMath::Abs(dEdxTPC-expDedx) < nSigma*sigma)
