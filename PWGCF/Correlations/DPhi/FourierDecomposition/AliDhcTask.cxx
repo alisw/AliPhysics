@@ -126,7 +126,13 @@ void AliDhcTask::PrintDhcSettings()
   AliInfo(Form(" centrality estimator %s", fCentMethod.Data()));
   AliInfo(Form(" using tracks named %s", fTracksName.Data()));
   AliInfo(Form(" efficiency correct triggers? %d", fHEffT!=0));
+  if (fHEffT!=0) {
+    AliInfo(Form(" %d dimensions (t)", fHEffT->GetNdimensions()));
+  }
   AliInfo(Form(" efficiency correct associates? %d", fHEffA!=0));
+  if (fHEffA!=0) {
+    AliInfo(Form(" %d dimensions (a)", fHEffA->GetNdimensions()));
+  }
   AliInfo(Form(" fill muons? %d", fFillMuons));
   AliInfo(Form(" use pTT > pTA criterion? %d", fPtTACrit));
   AliInfo(Form(" create all pTT, pTA hists? %d", fAllTAHists));
@@ -850,6 +856,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
     Float_t pta  = a.Pt();
     Float_t etaa = a.Eta();
     Float_t phia = a.Phi();
+    Int_t   sgna = a.Sign();
     
     // brief intermezzo in the trigger particle loop: do associated particle QA here in order to avoid double counting
     if (pairing == kSameEvt) {
@@ -882,6 +889,9 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       effBinT[3] = fHEffT->GetAxis(3)->FindBin(fZVertex);
       if (nEffDimT>4) {
         effBinT[4] = fHEffT->GetAxis(4)->FindBin(phia);
+        if (nEffDimT>5) {
+          effBinT[5] = fHEffT->GetAxis(5)->FindBin(sgna);
+        }
       }
       effWtT = fHEffT->GetBinContent(effBinT);
     }
@@ -907,6 +917,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       Float_t ptb  = b.Pt();
       Float_t etab = b.Eta();
       Float_t phib = b.Phi();
+      Int_t   sgnb = b.Sign();
       if (fPtTACrit&&(pta < ptb)) {
         continue;
       }
@@ -921,7 +932,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       Float_t dphi = DeltaPhi(phia, phib);
       Float_t deta = etaa - etab;
       Float_t mass = 2*pta*ptb*(TMath::CosH(deta)-TMath::Cos(dphi));
-      Int_t q2 = a.Sign() + b.Sign();
+      Int_t q2 = sgna + sgnb;
       if ((q2==0) && fDoMassCut) {
         if (mass>3.0 && mass<3.2)
           continue;
@@ -957,6 +968,9 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
         effBinA[3] = fHEffA->GetAxis(3)->FindBin(fZVertex);
         if (nEffDimA>4) {
           effBinA[4] = fHEffA->GetAxis(4)->FindBin(phib);
+          if (nEffDimA>5) {
+            effBinA[5] = fHEffA->GetAxis(5)->FindBin(sgnb);
+          }
         }
         weight *= fHEffA->GetBinContent(effBinA);
       }
