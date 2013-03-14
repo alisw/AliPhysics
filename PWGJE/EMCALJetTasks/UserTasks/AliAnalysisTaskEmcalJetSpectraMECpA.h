@@ -29,20 +29,20 @@ class AliAnalysisTaskEmcalJetSpectraMECpA : public AliAnalysisTaskEmcalJet {
   TH2F                  *fHistRhovsCent;  //!
   TH2F                  *fHistRhoScvsCent;  //!
   TH2F                  *fHistNjetvsCent; //!number of jets versus Centrality
-  TH2F                  *fHistJetPtvsTrackPt[6];//!
-  TH2F                  *fHistJetPtScvsTrackPt[6];//!
-  TH2F                  *fHistRawJetPtvsTrackPt[6];//!
-  TH1F                  *fHistTrackPt[6];//!
-  TH1F                  *fHistEP0[6];//!
-  TH1F                  *fHistEP0A[6];//!
-  TH1F                  *fHistEP0C[6];//!
-  TH2F                  *fHistEPAvsC[6];//!
-  TH2F                  *fHistJetPtvsdEP[6];//!
-  TH2F                  *fHistJetPtvsdEPBias[6];//!
-  TH2F                  *fHistJetPtvsEP[6];//!
-  TH2F                  *fHistJetPtvsEPBias[6];//!
-  TH2F                  *fHistRhovsEP[6]; //!
-  TH3F                  *fHistJetPtEtaPhi[6];
+  TH2F                  *fHistJetPtvsTrackPt[7];//!
+  TH2F                  *fHistJetPtScvsTrackPt[7];//!
+  TH2F                  *fHistRawJetPtvsTrackPt[7];//!
+  TH1F                  *fHistTrackPt[7];//!
+  TH1F                  *fHistEP0[7];//!
+  TH1F                  *fHistEP0A[7];//!
+  TH1F                  *fHistEP0C[7];//!
+  TH2F                  *fHistEPAvsC[7];//!
+  TH2F                  *fHistJetPtvsdEP[7];//!
+  TH2F                  *fHistJetPtvsdEPBias[7];//!
+  TH2F                  *fHistJetPtvsEP[7];//!
+  TH2F                  *fHistJetPtvsEPBias[7];//!
+  TH2F                  *fHistRhovsEP[7]; //!
+  TH3F                  *fHistJetPtEtaPhi[7];
 
 
 
@@ -50,6 +50,6 @@ class AliAnalysisTaskEmcalJetSpectraMECpA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetSpectraMECpA(const AliAnalysisTaskEmcalJetSpectraMECpA&); // not implemented
   AliAnalysisTaskEmcalJetSpectraMECpA& operator=(const AliAnalysisTaskEmcalJetSpectraMECpA&); // not implemented
   
-  ClassDef(AliAnalysisTaskEmcalJetSpectraMECpA, 3); // Emcal jet spectra task
+  ClassDef(AliAnalysisTaskEmcalJetSpectraMECpA, 4); // Emcal jet spectra task
 };
 #endif
