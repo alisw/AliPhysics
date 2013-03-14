@@ -55,14 +55,15 @@ Double_t AliGenLcLib::PtLcFlat( const Double_t *, const Double_t *)
 
 Double_t AliGenLcLib::PtLcExp( const Double_t *x, const Double_t *)
 {
-  //     EXP  pt-distribution
-  return x[0]*TMath::Exp(-x[0]/0.17);   
+  //     pt-distribution
+  //return x[0]*TMath::Exp(-x[0]/0.16); // distribution used in LHC11f1 for the anchor runs : 139441, 139510, 139511, 130513, 130514, 130517. 
+  return TMath::GammaDist(x[0],2,0,1.7); //distribution as in LHC11a10a of the prompt Lc whose daughters are in |eta|<0.9. Used for Lb as well.
 }
 
-Double_t AliGenLcLib::YLcFlat(const Double_t */*x*/,const Double_t *)
+Double_t AliGenLcLib::YLcFlat(const Double_t *,const Double_t *)
 {
   //LambdaC             y-distribution 
-  return 5;
+  return 1;
 }
 
 
