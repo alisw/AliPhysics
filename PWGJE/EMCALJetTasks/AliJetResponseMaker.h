@@ -7,6 +7,7 @@ class AliGenPythiaEventHeader;
 class TClonesArray;
 class TH1;
 class TH2;
+class TProfile;
 class AliNamedArrayI;
 
 #include "AliEmcalJet.h"
@@ -90,7 +91,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH1                        *fHistTrialsAfterSel;            //!total number of trials per pt hard bin after selection
   TH1                        *fHistEventsAfterSel;            //!total number of events per pt hard bin after selection
   TH1                        *fHistTrials;                    //!trials from pyxsec.root
-  TH1                        *fHistXsection;                  //!x section from pyxsec.root
+  TProfile                   *fHistXsection;                  //!x section from pyxsec.root
   TH1                        *fHistEvents;                    //!total number of events per pt hard bin
   // Jets 1
   TH2                        *fHistJets1PhiEta;               //!phi-eta distribution of jets 1
