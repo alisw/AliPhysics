@@ -163,7 +163,7 @@ AliDielectron* ConfigAsakoLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFAL
     selectedCentrality = LMEECutLibAsako::kPbPb2011Central;
     rejectionStep = kFALSE;
     PairCut = kFALSE;
-
+  }
 
 
   else Semi{
@@ -225,7 +225,7 @@ AliDielectron* ConfigAsakoLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFAL
 //  InitCF(die,cutDefinition);
 
   return die;
-}
+  }
 
 //______________________________________________________________________________________
 
@@ -311,7 +311,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	histos->UserHistogram("Event","Corr_v0ACrpH2","CORR VZERO-AC RP;#Psi_{2}^{V0A} (rad.);#Psi_{2}^{V0C} (rad.)",
 						  100,-2.0,2.0.,100,-2.0,2.0,
 						  AliDielectronVarManager::kv0ArpH2,AliDielectronVarManager::kv0CrpH2);
-
+	/*
 	//add histograms to Track classes
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
   histos->UserHistogram("Track","Px","Px;Px [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPx);
@@ -375,6 +375,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 	  histos->UserHistogram("Track","kNFclsTPCr_pT","nTPCr vs pt;nTPCr vs pt;#tracks",159,0.,159.,200,0.,20.,AliDielectronVarManager::kNFclsTPCr,AliDielectronVarManager::kPt);
 	  
+
+	*/
 	  //add histograms to Pair classes
 	  histos->UserHistogram("Pair","InvMassAll","Inv.Mass;Inv. Mass [GeV];#pairs",
 							500,0.0,5.00,AliDielectronVarManager::kM);
@@ -412,19 +414,23 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 							100,0,1.6,AliDielectronVarManager::kPairPlanev0rpH2Angle);
 	  histos->UserHistogram("Pair","PairPlaneMagAngle","Phi;Phi[rad];#counts",
 							100,0,1.6,AliDielectronVarManager::kPairPlaneMagAngle);
-	  //	  histos->UserHistogram("Pair","PairPlaneMagVectorAngle","Phi;Phi[rad];#counts",
-	  //					100,0,3.15,AliDielectronVarManager::kPairPlaneMagVectorAngle);
+	   histos->UserHistogram("Pair","PairPlaneMagAngle2","Phi;Phi[rad];#counts",
+	  					100,0,3.15,AliDielectronVarManager::kPairPlaneMagAngle2);
+	   histos->UserHistogram("Pair","PairPlaneMagAngle3","Phi;Phi[rad];#counts",
+	  					100,0,3.15,AliDielectronVarManager::kPairPlaneMagAngle3);
 
 	  
    //2D Histo Plot
 	  histos->UserHistogram("Pair","InvMassALLPairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
-							500,0.0,5.0,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
+							1000,0.0,5.0,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
+	  histos->UserHistogram("Pair","InvMassALL2PairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
+							100,0.0,0.5,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
 	  histos->UserHistogram("Pair","InvMassLowPairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
-							500,0.0,0.03,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
+							300,0.0,0.03,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
 	  histos->UserHistogram("Pair","InvMassMiddlePairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
-							500,0.15,0.3,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
+							180,0.12,0.3,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
 	  histos->UserHistogram("Pair","InvMassHighPairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
-							500,0.3,0.5,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
+							200,0.3,0.5,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
 	  
 	
 
@@ -472,7 +478,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	  					200,0.3,0.5,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlanev0rpH2Angle);
 	  
 	  
-
+	   
 
 	  //add histograms to Track classes
 	  histos->UserHistogram("Pre","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
@@ -511,7 +517,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Pre","YVertex ","YVertex ;YVertex[cm];#tracks",20,-20,20,AliDielectronVarManager::kYv);
 
   histos->UserHistogram("Pre","TPCnCls","Number of Clusters TPC;TPC number clusteres;#tracks",159,0.,159.,AliDielectronVarManager::kNclsTPC);
-
+	   
   //add histograms to Pair classes For Rejected Pairs:
   die->SetHistogramManager(histos);
 }

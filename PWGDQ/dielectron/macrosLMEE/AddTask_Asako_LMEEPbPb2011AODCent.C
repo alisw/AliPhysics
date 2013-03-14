@@ -107,13 +107,13 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AODCent(Bool_t runAll=kFALSE,Bool_t s
 	mgr->CreateContainer("asako_LMEEPbPb2011_tree",
 		TTree::Class(),
 		AliAnalysisManager::kExchangeContainer,
-		"LMEEoutput.root.root");
+		"LMEEoutput.root");
 
   AliAnalysisDataContainer *cOutputHist1 =
 	mgr->CreateContainer("asako_LMEEPbPb2011_out",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
-		"LMEEoutput.root.root");
+		"LMEEoutput.root");
 
   /*  AliAnalysisDataContainer *cOutputHist2 =
 	  mgr->CreateContainer("cbaumann_lowmass_CF",
@@ -131,7 +131,7 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AODCent(Bool_t runAll=kFALSE,Bool_t s
 	mgr->CreateContainer("asako_EventStatPbPb2011",
 		TH1D::Class(),
 		AliAnalysisManager::kOutputContainer,
-		"LMEEoutput.root.root");
+		"LMEEoutput.root");
 
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
