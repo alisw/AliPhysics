@@ -61,6 +61,7 @@ Float_t phibinslim[nphibins+1]={0,TMath::Pi()/4,TMath::Pi()/2,3*TMath::Pi()/4,TM
 // mass fit configuration
 Int_t rebin[nptbinsnew]={4,4,4,4};
 Int_t typeb=0;  // Background: 0=expo, 1=linear, 2=pol2
+Bool_t fixAlsoMass=kFALSE;
 Double_t minMassForFit=1.6;
 Double_t maxMassForFit=2.2;
 Float_t massRangeForCounting=0.1; // GeV
@@ -378,6 +379,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       fitter.DrawHere(cPhiInteg->cd(ipt+1),3,1);
     }
     Double_t sigma=fitter.GetSigma();
+    Double_t massFromFit=fitter.GetMean();
     for(Int_t iphi=0;iphi<nphi;iphi++){
       Int_t ipad=GetPadNumber(ipt,iphi);
       TH1F *histtofit=(TH1F*)histlist->FindObject(Form("hMass_pt%d_phi%d",ipt,iphi))->Clone();
@@ -389,6 +391,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       AliHFMassFitter fitter2(histtofit,hmin,hmax,1,typeb);
       fitter2.SetInitialGaussianMean(massD);
       fitter2.SetFixGaussianSigma(sigma);
+      if(fixAlsoMass) fitter2.SetFixGaussianMean(massFromFit);
       Bool_t ok2=fitter2.MassFitter(kFALSE);
       Double_t signal=0,esignal=0;
       if(ok2){
@@ -862,9 +865,10 @@ void DrawEventPlane(){
   Double_t error;
   Double_t resolFull=GetEventPlaneResolution(error,hevplresos[0],hevplresos[1],hevplresos[2]);
   
-  TPaveText* pvreso=new TPaveText(0.1,0.1,0.6,0.2,"NDC");
+  TPaveText* pvreso=new TPaveText(0.1,0.35,0.6,0.48,"NDC");
   pvreso->SetBorderSize(0);
   pvreso->SetFillStyle(0);
+  pvreso->AddText(Form("Number of events = %.0f\n",hevplresos[0]->GetEntries()));
   pvreso->AddText(Form("Resolution on full event = %.4f#pm%.4f\n",resolFull,error));
   pvreso->Draw();
 
