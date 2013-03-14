@@ -96,12 +96,12 @@ struct ProofHelper : public Helper
       fBasePars(false)
   {
     fOptions.Add("workers",  "N[x]", "Number of workers to use", 0);
-    fOptions.Add("dsname",   "NAME", "Make output dataset");
+    fOptions.Add("dsname",   "NAME", "Make output dataset", "");
     fOptions.Add("par",      "tasks|all", "Use par files",           "tasks");
     fOptions.Add("mode",     "default|rec|sim", "AliROOT mode",      "default");
-    fOptions.Add("storage",  "URL", "Location for external storage");    
-    fOptions.Add("wrapper",  "CMD", "Wrapper command");
-    fOptions.Add("clear",    "PKGS", "Clear packages ','-separated");
+    fOptions.Add("storage",  "URL", "Location for external storage", "");    
+    fOptions.Add("wrapper",  "CMD", "Wrapper command", "");
+    fOptions.Add("clear",    "PKGS", "Clear packages ','-separated", "");
     fOptions.Add("reset",    "soft|hard", "Reset cluster", "hard");
     if (!fUrl.GetUser() || fUrl.GetUser()[0] == '\0') 
       fUrl.SetUser(gSystem->GetUserInfo()->fUser);
