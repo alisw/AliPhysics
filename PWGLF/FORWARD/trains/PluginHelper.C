@@ -78,7 +78,7 @@ struct PluginHelper : public Helper
     fOptions.Add("root",    "VERSION", "ROOT version", "last");
     fOptions.Add("par", "Use par files");
     fOptions.Add("mode", "default|rec|sim", "AliROOT mode", "default");
-    fOptions.Add("storage", "URL", "Location for external storage");    
+    fOptions.Add("storage", "URL", "Location for external storage", "");    
     fOptions.Add("plugin", "Use AliEn handler");
 
     fExtraLibs.SetOwner();

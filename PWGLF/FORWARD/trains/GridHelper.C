@@ -86,8 +86,8 @@ struct GridHelper : public PluginHelper
     fOptions.Add("oper", "FULL|TERMINATE|SUBMIT", "Analysis operation", "FULL");
     fOptions.Add("split",  "N|max",  "Max number of files before split","max");
     fOptions.Add("merge",  "N|max",  "Max number of files for merge",   "max");
-    fOptions.Add("run",    "RUNS",   "Range, list, and/or file of runs");
-    fOptions.Add("pattern","GLOB",   "File/directory name pattern");
+    fOptions.Add("run",    "RUNS",   "Range, list, and/or file of runs", "");
+    fOptions.Add("pattern","GLOB",   "File/directory name pattern", "");
     fOptions.Add("alien",  "VERSION","Alien API version",              "V1.1x");
     fOptions.Add("concat", "Concatenate all runs");
     fOptions.Add("ttl",    "N|max",  "Time to live",                    "max");
