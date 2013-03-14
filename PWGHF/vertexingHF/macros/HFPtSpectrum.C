@@ -70,14 +70,13 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   Int_t option=3;
   if (fdMethod==kfc) option=1;
   else if (fdMethod==kNb) option=2;
-  else if (fdMethod==knone) option=0;
+  else if (fdMethod==knone) { option=0; asym=false; }
   else option=3;
 
   if (option>2) { 
     cout<< "Bad calculation option, should be <=2"<<endl;
     return;
   }
-  if (option==0) asym = false;
 
 
   //
@@ -372,17 +371,17 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   }
 
   // Get & Rename the TGraphs
+  gSigmaCorr = spectra->GetCrossSectionFromYieldSpectrum();
+  gYieldCorr = spectra->GetFeedDownCorrectedSpectrum();
   if (asym) {
-    gSigmaCorr = spectra->GetCrossSectionFromYieldSpectrum();
-    gYieldCorr = spectra->GetFeedDownCorrectedSpectrum(); 
     gSigmaCorrExtreme = spectra->GetCrossSectionFromYieldSpectrumExtreme();
-    gYieldCorrExtreme = spectra->GetFeedDownCorrectedSpectrumExtreme(); 
+    gYieldCorrExtreme = spectra->GetFeedDownCorrectedSpectrumExtreme();
     gSigmaCorrConservative = spectra->GetCrossSectionFromYieldSpectrumConservative();
-    gYieldCorrConservative = spectra->GetFeedDownCorrectedSpectrumConservative(); 
+    gYieldCorrConservative = spectra->GetFeedDownCorrectedSpectrumConservative();
   }
 
   // Get & Rename the TGraphs
-  if (option==0 && asym){
+  if (option==0){
     gYieldCorr->SetNameTitle("gYieldCorr","gYieldCorr (uncorr)");
     gSigmaCorr->SetNameTitle("gSigmaCorr","gSigmaCorr (uncorr)");
   }
@@ -811,9 +810,9 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     nSigma->Write();
   }
 
+  gYieldCorr->Write();
+  gSigmaCorr->Write();
   if(asym){
-    gYieldCorr->Write();
-    gSigmaCorr->Write();
     if(gYieldCorrExtreme) gYieldCorrExtreme->Write();
     if(gSigmaCorrExtreme) gSigmaCorrExtreme->Write();
     if(gYieldCorrConservative) gYieldCorrConservative->Write();
@@ -823,19 +822,21 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 
   if(option==1){
     histofc->Write();
-    histofcMax->Write();     histofcMin->Write(); 
+    histofcMax->Write();     histofcMin->Write();
     if(asym && gFcExtreme) gFcExtreme->Write();
   }
 
 
   TH1D * hStatUncEffcSigma = spectra->GetDirectStatEffUncOnSigma();
   TH1D * hStatUncEffbSigma = spectra->GetFeedDownStatEffUncOnSigma();
-  TH1D * hStatUncEffcFD = spectra->GetDirectStatEffUncOnFc();
-  TH1D * hStatUncEffbFD = spectra->GetFeedDownStatEffUncOnFc();
-  hStatUncEffcSigma->Write(); 
-  hStatUncEffbSigma->Write(); 
-  hStatUncEffcFD->Write(); 
-  hStatUncEffbFD->Write(); 
+  hStatUncEffcSigma->Write();
+  hStatUncEffbSigma->Write();
+  if(option!=0){
+    TH1D * hStatUncEffcFD = spectra->GetDirectStatEffUncOnFc();
+    TH1D * hStatUncEffbFD = spectra->GetFeedDownStatEffUncOnFc();
+    hStatUncEffcFD->Write();
+    hStatUncEffbFD->Write();
+  }
 
   // Draw the cross-section 
   //  spectra->DrawSpectrum(gPrediction);
