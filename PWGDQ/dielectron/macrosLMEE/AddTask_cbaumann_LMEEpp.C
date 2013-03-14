@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEpp(){
+AliAnalysisTask *AddTask_cbaumann_LMEEpp(Bool_t enablePS=kTRUE){
 
 
   //get the current analysis manager
@@ -37,9 +37,11 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp(){
 
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *taskMB = new AliAnalysisTaskMultiDielectron("MultiDieMB");
-  if (!hasMC) taskMB->UsePhysicsSelection();
+  if ((!hasMC) && enablePS) taskMB->UsePhysicsSelection();
   //taskMB->SelectCollisionCandidates(AliVEvent::kMB);
-  taskMB->SelectCollisionCandidates(AliVEvent::kINT7 || AliVEvent::kMB);
+  taskMB->SetTriggerMask(AliVEvent::kINT7+AliVEvent::kMB);
+  taskMB->SelectCollisionCandidates(AliVEvent::kAny);
+
 //  taskMB->SetRejectPileup();
 
           //Add event filter
@@ -62,28 +64,28 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp(){
   }//loop
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("tree_lowmass",
+    mgr->CreateContainer("tree_cb_lowmass",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
                          "default");
   
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("Histos_diel_lowmass",
+    mgr->CreateContainer("Histos_cbaumann_lowmass",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "cbaumann_lowmass.root");
+                         "LMEEoutput.root");
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("CF_diel_lowmass",
+    mgr->CreateContainer("CF_cbaumann_lowmass",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "cbaumann_lowmass.root");
+                         "LMEEoutput.root");
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("cbauman_lowmass_EventStat",
+    mgr->CreateContainer("cbaumann_lowmass_EventStat",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "cbaumann_lowmass.root");
+                         "LMEEoutput.root");
 
   mgr->ConnectInput(taskMB,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskMB, 0, coutput1 );
