@@ -568,6 +568,7 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
   //
   // Second: Correct for feed-down
   //
+  Int_t nbins = fhRECpt->GetNbinsX();
   if (fFeedDownOption==1) {
     // Compute the feed-down correction via fc-method
     CalculateFeedDownCorrectionFc(); 
@@ -587,6 +588,7 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
     fhYieldCorrMin = (TH1D*)fhRECpt->Clone();
     fhYieldCorrMax->SetNameTitle("fhYieldCorrMax","un-corrected yield");
     fhYieldCorrMin->SetNameTitle("fhYieldCorrMin","un-corrected yield");
+    fgYieldCorr = new TGraphAsymmErrors(nbins+1);
     fAsymUncertainties=kFALSE;
   }
   else { 
@@ -601,7 +603,6 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
   //
   // Finally: Correct from yields to cross-section
   //
-  Int_t nbins = fhRECpt->GetNbinsX();
   Double_t binwidth = fhRECpt->GetBinWidth(1);
   Double_t *limits = new Double_t[nbins+1]; 
   Double_t *binwidths = new Double_t[nbins]; 
@@ -617,9 +618,12 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
   
   // declare the output histograms
   fhSigmaCorr = new TH1D("fhSigmaCorr","corrected sigma",nbins,limits);
+  fgSigmaCorr = new TGraphAsymmErrors(nbins+1);
+
   fhSigmaCorrMax = new TH1D("fhSigmaCorrMax","max corrected sigma",nbins,limits);
   fhSigmaCorrMin = new TH1D("fhSigmaCorrMin","min corrected sigma",nbins,limits);
   fhSigmaCorrDataSyst = new TH1D("fhSigmaCorrDataSyst","data syst uncertainties on the corrected sigma",nbins,limits);
+
   if (fPbPbElossHypothesis && fFeedDownOption==1) {
     fhSigmaCorrRcb = new TH2D("fhSigmaCorrRcb","corrected sigma vs Rcb Eloss hypothesis; p_{T} [GeV/c] ; Rcb Eloss hypothesis ; #sigma",nbins,limits,800,0.,4.);
     fnSigma = new TNtuple("fnSigma"," Sigma ntuple calculation","pt:Signal:Rcb:fc:Yield:Sigma:SigmaStatUnc:SigmaMax:SigmaMin");
@@ -630,7 +634,6 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
   }
   // and the output TGraphAsymmErrors
   if (fAsymUncertainties){
-    fgSigmaCorr = new TGraphAsymmErrors(nbins+1);
     fgSigmaCorrExtreme = new TGraphAsymmErrors(nbins+1);
     fgSigmaCorrConservative = new TGraphAsymmErrors(nbins+1);
   }
@@ -721,6 +724,12 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
     fhSigmaCorr->SetBinContent(ibin,value);
     fhSigmaCorr->SetBinError(ibin,errValue);
 
+    Double_t x = fhYieldCorr->GetBinCenter(ibin);
+    fgSigmaCorr->SetPoint(ibin,x,value); // i,x,y
+    fgSigmaCorr->SetPointError(ibin,(binwidths[ibin-1]/2.),(binwidths[ibin-1]/2.),errvalueMin,errvalueMax); // i,xl,xh,yl,yh
+    fhSigmaCorrMax->SetBinContent(ibin,value+errvalueMax);
+    fhSigmaCorrMin->SetBinContent(ibin,value-errvalueMin);
+
     //
     // Fill the histos and ntuple vs the Eloss hypothesis
     //
@@ -780,11 +789,6 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
     //
     // Fill the TGraphAsymmErrors
     if (fAsymUncertainties) {
-      Double_t x = fhYieldCorr->GetBinCenter(ibin);
-      fgSigmaCorr->SetPoint(ibin,x,value); // i,x,y
-      fgSigmaCorr->SetPointError(ibin,(binwidths[ibin-1]/2.),(binwidths[ibin-1]/2.),errvalueMin,errvalueMax); // i,xl,xh,yl,yh
-      fhSigmaCorrMax->SetBinContent(ibin,value+errvalueMax);
-      fhSigmaCorrMin->SetBinContent(ibin,value-errvalueMin);
       fgSigmaCorrExtreme->SetPoint(ibin,x,value); // i,x,y
       fgSigmaCorrExtreme->SetPointError(ibin,(binwidths[ibin-1]/2.),(binwidths[ibin-1]/2.),errvalueExtremeMin,errvalueExtremeMax); // i,xl,xh,yl,yh
       fgSigmaCorrConservative->SetPoint(ibin,x,value); // i,x,y
@@ -1272,8 +1276,8 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumFc(){
   fhYieldCorrMin = new TH1D("fhYieldCorrMin","min corrected yield (by fc)",nbins,limits);  
   if(fPbPbElossHypothesis) fhYieldCorrRcb = new TH2D("fhYieldCorrRcb","corrected yield (by fc) vs Rcb Eloss hypothesis; p_{T} [GeV/c] ; Rcb Eloss hypothesis ; corrected yield",nbins,limits,800,0.,4.);
   // and the output TGraphAsymmErrors
+  fgYieldCorr = new TGraphAsymmErrors(nbins+1);
   if (fAsymUncertainties){
-    fgYieldCorr = new TGraphAsymmErrors(nbins+1);
     fgYieldCorrExtreme = new TGraphAsymmErrors(nbins+1);
     fgYieldCorrConservative = new TGraphAsymmErrors(nbins+1);
   }
@@ -1404,8 +1408,8 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     fnHypothesis = new TNtuple("fnHypothesis"," Feed-down correction vs hypothesis (Nb)","pt:Rb:fc:fcMax:fcMin");
   }
   // and the output TGraphAsymmErrors
+  fgYieldCorr = new TGraphAsymmErrors(nbins+1);
   if (fAsymUncertainties){
-    fgYieldCorr = new TGraphAsymmErrors(nbins+1);
     fgYieldCorrExtreme = new TGraphAsymmErrors(nbins+1);
     fgYieldCorrConservative = new TGraphAsymmErrors(nbins+1);
     // Define fc-conservative 
@@ -1588,20 +1592,24 @@ void AliHFPtSpectrum::ComputeSystUncertainties(AliHFSystErr *systematics, Bool_t
   //
 
   // Estimate the feed-down uncertainty in percentage
-  Int_t nentries = fgSigmaCorrConservative->GetN();
-  TGraphAsymmErrors *grErrFeeddown = new TGraphAsymmErrors(nentries);
+  Int_t nentries = 0;
+  TGraphAsymmErrors *grErrFeeddown;
   Double_t x=0., y=0., errx=0., erryl=0., erryh=0;
-  for(Int_t i=0; i<nentries; i++) {
-    x=0.; y=0.; errx=0.; erryl=0.; erryh=0.;
-    fgSigmaCorrConservative->GetPoint(i,x,y);
-    if(y>0.){
-      errx = fgSigmaCorrConservative->GetErrorXlow(i) ;
-      erryl = fgSigmaCorrConservative->GetErrorYlow(i) / y ;
-      erryh = fgSigmaCorrConservative->GetErrorYhigh(i) / y ;
+  if(fFeedDownOption!=0) {
+    nentries = fgSigmaCorrConservative->GetN();
+    grErrFeeddown = new TGraphAsymmErrors(nentries);
+    for(Int_t i=0; i<nentries; i++) {
+      x=0.; y=0.; errx=0.; erryl=0.; erryh=0.;
+      fgSigmaCorrConservative->GetPoint(i,x,y);
+      if(y>0.){
+	errx = fgSigmaCorrConservative->GetErrorXlow(i) ;
+	erryl = fgSigmaCorrConservative->GetErrorYlow(i) / y ;
+	erryh = fgSigmaCorrConservative->GetErrorYhigh(i) / y ;
+      }
+      //    cout << " x "<< x << " +- "<<errx<<" , y "<<y<<" + "<<erryh<<" - "<<erryl<<endl; 
+      grErrFeeddown->SetPoint(i,x,0.);
+      grErrFeeddown->SetPointError(i,errx,errx,erryl,erryh); //i, xl, xh, yl, yh
     }
-    //    cout << " x "<< x << " +- "<<errx<<" , y "<<y<<" + "<<erryh<<" - "<<erryl<<endl; 
-    grErrFeeddown->SetPoint(i,x,0.);
-    grErrFeeddown->SetPointError(i,errx,errx,erryl,erryh); //i, xl, xh, yl, yh
   }
 
   // Draw all the systematics independently
