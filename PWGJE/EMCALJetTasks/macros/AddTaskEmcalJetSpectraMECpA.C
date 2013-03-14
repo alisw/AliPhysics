@@ -5,6 +5,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
    UInt_t type                = AliAnalysisTaskEmcal::kTPC,
    const char *nRhosCh        = "rhoCh",
    const char *nRhosChEm      = "rhoChEm",
+   const char *nRhosEm      = "rhoEm",
    TF1 *sfunc                 = 0,
    const Double_t radius      = 0.2,
    const Double_t minPhi      = 1.8,
@@ -44,7 +45,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   const Int_t cCHARGEDJETS        = 1;
   const Int_t cNEUTRALJETS        = 2;
     
-  float AreaCut = radius*radius*TMath::Pi();
+  float AreaCut = 0.6*radius*radius*TMath::Pi();
 
   sfunc=new TF1("sfunc","[0]*x*x+[1]*x+[2]",-1,100);
   sfunc->SetParameter(0,0.0);
@@ -53,27 +54,61 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
 
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
+
+  //const char *nJets;
+  TString nJets("");
+
+  TString scaledname(Form("%s_Scaled", nRhosCh));
+
   
-  AliEmcalJetTask* jetFinderTaskChBack = AddTaskEmcalJet(usedTracks,"",cKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt);
-  
-  AliEmcalJetTask* jetFinderTaskChEmBack = AddTaskEmcalJet(usedTracks,outClusName,cKT,radius,cFULLJETS,minTrackPt, minClusterPt);
+  if(!(usedTracks=="")){
+    cout << "USEDTRACKS EXISTS" << usedTracks <<endl;
+    AliEmcalJetTask* jetFinderTaskChBack = AddTaskEmcalJet(usedTracks,"",cKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt);
+
+    AliEmcalJetTask* jetFinderTaskChEmBack = AddTaskEmcalJet(usedTracks,outClusName,cKT,radius,cFULLJETS,minTrackPt, minClusterPt);
 
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cANTIKT,radius, cFULLJETS,minTrackPt,minClusterPt);
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
-
-  AliAnalysisTaskRho *rhochtask = AddTaskRho(jetFinderTaskChBack->GetName(),usedTracks,outClusName,nRhosCh,0.2,0,0.01,0,sfunc,2,kTRUE,nRhosCh);
+  AliAnalysisTaskRho *rhochtask = AddTaskRho(jetFinderTaskChBack->GetName(),usedTracks,outClusName,nRhosCh,radius,0,0.01,0,sfunc,2,kTRUE,nRhosCh);
   rhochtask->SetCentralityEstimator(CentEst);
 
-  AliAnalysisTaskRho *rhochemtask = AddTaskRho(jetFinderTaskChEmBack->GetName(),usedTracks,outClusName,nRhosChEm,0.2,0,0.01,0,0,1,kTRUE,nRhosChEm);
+  AliAnalysisTaskRho *rhochemtask = AddTaskRho(jetFinderTaskChEmBack->GetName(),usedTracks,outClusName,nRhosChEm,radius,0,0.01,0,0,1,kTRUE,nRhosChEm);
   rhochemtask->SetCentralityEstimator(CentEst);
 
-  const char *nJets = jetFinderTask->GetName();
+  //nJets=jetFinderTask->GetName();
+  nJets+=jetFinderTask->GetName();
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskDeltaPt.C");
 
-  AliAnalysisTaskDeltaPt* deltapt = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",nRhosCh,radius,1,0.557,minTrackPt,minClusterPt,AliAnalysisTaskEmcal::kTPC,"DeltaPtTask");
+  TString deltaname(Form("DeltaPt_%s_Scaled", nRhosCh));
+  AliAnalysisTaskDeltaPt* deltapt = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",scaledname,radius,1,AreaCut,minTrackPt,minClusterPt,AliAnalysisTaskEmcal::kEMCAL,deltaname);
   deltapt->SetCentralityEstimator(CentEst);
+
+  TString emcdeltaname(Form("DeltaPt_%s", nRhosChEm));
+  AliAnalysisTaskDeltaPt* deltaptEMC = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",nRhosChEm,radius,1,AreaCut,minTrackPt,minClusterPt,AliAnalysisTaskEmcal::kEMCAL,"DeltaPtTask");
+  deltapt->SetCentralityEstimator(CentEst);
+
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskScale.C");
+
+  AliAnalysisTaskScale* scaletask = AddTaskScale(usedTracks,outClusName,0.15,0.3);
+  scaletask->SetCentralityEstimator(CentEst);
+  scaletask->SetScaleFunction(sfunc);
+  
+
+  }
+  cout << "Running non charged jet finders..." <<endl;
+  AliEmcalJetTask* jetFinderTaskEm = AddTaskEmcalJet("",outClusName,cANTIKT,radius,cNEUTRALJETS,minTrackPt,minClusterPt);
+
+  AliEmcalJetTask* jetFinderTaskEmBack = AddTaskEmcalJet("",outClusName,cKT,radius,cNEUTRALJETS,minTrackPt, minClusterPt);
+
+  cout << "Running non charged rho task..." <<endl;
+
+  AliAnalysisTaskRho *rhoemtask = AddTaskRho(jetFinderTaskEmBack->GetName(),usedTracks,outClusName,nRhosEm,radius,0,0.01,0,0,1,kTRUE,nRhosEm);
+  rhoemtask->SetCentralityEstimator(CentEst);
+
+  //if((!usedTracks=="")) nJets = jetFinderTaskEm->GetName();
+  if(usedTracks=="") nJets +=jetFinderTaskEm->GetName();
 
 
   //-------------------------------------------------------
@@ -81,13 +116,15 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   //-------------------------------------------------------
 
 
+  cout << "Ready to run my task..." << nJets <<endl;
 
-  TString name(Form("SpectraMECpA_%s", nJets));
+  TString name(Form("SpectraMECpA_%s", nJets.Data()));
   AliAnalysisTaskEmcalJetSpectraMECpA *spectratask = new AliAnalysisTaskEmcalJetSpectraMECpA(name);
-  spectratask->SetJetsName(jetFinderTask->GetName());
+  spectratask->SetJetsName(nJets.Data());
   spectratask->SetCentralityEstimator(CentEst);
   spectratask->SetAnaType(type);
-  spectratask->SetRhoName(nRhosCh);
+  if(!(usedTracks=="")) spectratask->SetRhoName(nRhosCh);
+  else spectratask->SetRhoName(nRhosEm);
   spectratask->SetJetPhiLimits(minPhi,maxPhi);
   spectratask->SetJetEtaLimits(minEta,maxEta);
   spectratask->SetJetAreaCut(AreaCut);

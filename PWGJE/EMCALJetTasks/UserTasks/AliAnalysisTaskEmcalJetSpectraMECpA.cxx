@@ -41,7 +41,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA::AliAnalysisTaskEmcalJetSpectraMECpA() :
   fHistNjetvsCent(0)
 {
   // Default constructor.
-  for (Int_t i = 0;i<6;++i){
+  for (Int_t i = 0;i<7;++i){
     fHistJetPtvsTrackPt[i]      = 0;
     fHistRawJetPtvsTrackPt[i]   = 0;
     fHistTrackPt[i]             = 0;
@@ -65,7 +65,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA::AliAnalysisTaskEmcalJetSpectraMECpA(const c
   fHistRhoScvsCent(0),
   fHistNjetvsCent(0)
  { 
-   for (Int_t i = 0;i<6;++i){
+   for (Int_t i = 0;i<7;++i){
     fHistJetPtvsTrackPt[i]      = 0;
     fHistRawJetPtvsTrackPt[i]   = 0;
     fHistTrackPt[i]             = 0;
@@ -89,12 +89,12 @@ void AliAnalysisTaskEmcalJetSpectraMECpA::UserCreateOutputObjects()
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   fHistRhovsCent             = new TH2F("RhovsCent",              "RhovsCent",             100, 0.0, 100.0, 500, 0, 500);
-  fHistRhoScvsCent             = new TH2F("RhoScvsCent",              "RhoScvsCent",             100, 0.0, 100.0, 500, 0, 500);
+  fHistRhoScvsCent             = new TH2F("RhoScvsCent",              "RhoScvsCent",       100, 0.0, 100.0, 500, 0, 500);
   fHistNjetvsCent            = new TH2F("NjetvsCent",             "NjetvsCent",            100, 0.0, 100.0, 100, 0, 100);
 
   TString name;
   TString title;
-  for (Int_t i = 0;i<6;++i){
+  for (Int_t i = 0;i<7;++i){
     name = TString(Form("JetPtvsTrackPt_%i",i));
     title = TString(Form("Jet pT vs Leading Track pT cent bin %i",i));
     fHistJetPtvsTrackPt[i] = new TH2F(name,title,1000,-500,500,100,0,100);
@@ -161,6 +161,7 @@ void AliAnalysisTaskEmcalJetSpectraMECpA::UserCreateOutputObjects()
 
   
   fOutput->Add(fHistRhovsCent);
+  fOutput->Add(fHistRhoScvsCent);
   fOutput->Add(fHistNjetvsCent);
   
    PostData(1, fOutput);
@@ -183,7 +184,7 @@ Int_t AliAnalysisTaskEmcalJetSpectraMECpA::GetCentBin(Double_t cent) const
     centbin = 3;
   else if (cent>=40 && cent<50)
     centbin = 4;
-  else if (cent>=50 && cent<90)
+  else if (cent>=50 && cent<101)
     centbin = 5;
   return centbin;
 }
@@ -212,20 +213,23 @@ Bool_t AliAnalysisTaskEmcalJetSpectraMECpA::Run()
   Int_t centbin = GetCentBin(fCent);
   //for pp analyses we will just use the first centrality bin
   if (centbin == -1)
-    centbin = 0;
+    centbin = 6;
 
-  if (!fTracks){
-    cout << "Tracks not found: " << fCent << endl;
-    return kTRUE;
-  }
+  //if (!fTracks){
+  //cout << "Tracks not found: " << fCent << endl;
+  //return kTRUE;
+  //}
   
-  const Int_t nTrack = fTracks->GetEntriesFast();
-  for (int i = 0;i<nTrack;i++){
-    AliVParticle *track = static_cast<AliVParticle*>(fTracks->At(i));
-    if (!track)
-      continue;
-    fHistTrackPt[centbin]->Fill(track->Pt());
+  if (fTracks){
+    const Int_t nTrack = fTracks->GetEntriesFast();
+    for (int i = 0;i<nTrack;i++){
+      AliVParticle *track = static_cast<AliVParticle*>(fTracks->At(i));
+      if (!track)
+	continue;
+      fHistTrackPt[centbin]->Fill(track->Pt());
+    }
   }
+
 
   fHistEP0[centbin]->Fill(fEPV0);
   fHistEP0A[centbin]->Fill(fEPV0A);
@@ -235,7 +239,6 @@ Bool_t AliAnalysisTaskEmcalJetSpectraMECpA::Run()
   fRho = GetRhoFromEvent(fRhoName);
   fRhoVal = fRho->GetVal();
   fHistRhovsCent->Fill(fCent,fRhoVal);
-  fHistRhovsCent->Fill(fCent,fRhoVal);
   fHistRhovsEP[centbin]->Fill(fRhoVal,fEPV0);
 
   
@@ -243,11 +246,10 @@ Bool_t AliAnalysisTaskEmcalJetSpectraMECpA::Run()
   fRhoScaledName.Append("_Scaled");
   Double_t fRhoScVal = 0;
   AliRhoParameter *fRhoScaled=GetRhoFromEvent(fRhoScaledName);
+
   if(fRhoScaled){
     fRhoScVal=fRhoScaled->GetVal();
-    if(fRhoScVal){
-      fHistRhoScvsCent->Fill(fCent,fRhoScVal);
-    }
+    fHistRhoScvsCent->Fill(fCent,fRhoScVal);
   }
   const Int_t Njets = fJets->GetEntriesFast();
 
@@ -269,14 +271,17 @@ Bool_t AliAnalysisTaskEmcalJetSpectraMECpA::Run()
      Double_t jetPt = -500;
      jetPt = jet->Pt()-jet->Area()*fRhoVal;    
      fHistJetPtvsTrackPt[centbin]->Fill(jetPt,jet->MaxTrackPt());
+     if(centbin<6) fHistJetPtvsTrackPt[6]->Fill(jetPt,jet->MaxTrackPt());
 
      if(fRhoScVal) {
        Double_t jetPtSc = -500;
        jetPtSc = jet->Pt()-jet->Area()*fRhoScVal;    
        fHistJetPtScvsTrackPt[centbin]->Fill(jetPtSc,jet->MaxTrackPt());
+       if(centbin<6) fHistJetPtScvsTrackPt[6]->Fill(jetPtSc,jet->MaxTrackPt());
      }
 
      fHistRawJetPtvsTrackPt[centbin]->Fill(jet->Pt(),jet->MaxTrackPt());
+     if(centbin<6) fHistRawJetPtvsTrackPt[6]->Fill(jet->Pt(),jet->MaxTrackPt());
 
      fHistJetPtEtaPhi[centbin]->Fill(jet->Pt(),jet->Eta(),jet->Phi());
 
