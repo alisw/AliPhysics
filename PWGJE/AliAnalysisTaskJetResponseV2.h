@@ -17,6 +17,7 @@ class THnSparse;
 class AliESDEvent;
 class AliAODEvent;
 class AliAODJet;
+class AliAODExtension;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliVEvent.h"
@@ -59,6 +60,7 @@ public:
 
    virtual void     SetBranchNames(const TString &branch1= "", const TString &branch2 = "", const TString &branch3 = "");
    virtual void     SetBackgroundBranch(TString &branch) { fBackgroundBranch = branch;}
+   virtual void     SetNonStdFile(char* c){fNonStdFile = c;} 
    virtual void     SetIsPbPb(Bool_t b=kTRUE) { fIsPbPb = b; }
    virtual void     SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; }
    virtual void     SetMinContribVtx(Int_t n) { fMinContribVtx = n; }
@@ -91,13 +93,15 @@ public:
 
 private:
    // ESD/AOD events
-   AliESDEvent *fESD;    //! ESD object
-   AliAODEvent *fAOD;    //! AOD event
+   AliESDEvent      *fESD;    //! ESD object
+   AliAODEvent      *fAOD;    //! AOD event
+   AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
 
    // jets to compare
    TString fJetBranchName[3]; //  name of jet branches to compare
    TList *fListJets[3];       //! jet lists
 
+   TString       fNonStdFile; // name of delta aod file to catch the extension
    TString fBackgroundBranch;  // branch of external background
 
     // event selection
@@ -155,7 +159,7 @@ private:
    AliAnalysisTaskJetResponseV2(const AliAnalysisTaskJetResponseV2&); // not implemented
    AliAnalysisTaskJetResponseV2& operator=(const AliAnalysisTaskJetResponseV2&); // not implemented
 
-   ClassDef(AliAnalysisTaskJetResponseV2, 4);
+   ClassDef(AliAnalysisTaskJetResponseV2, 5);
 };
 
 #endif

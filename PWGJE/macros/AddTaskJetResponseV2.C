@@ -113,7 +113,7 @@ AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(Bool_t emb = kTRUE, Char_t* t
 }
 
 
-AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(TString branch1 = "", TString branch2 = "", TString branch3 = "", Int_t iTask = 0, Bool_t emb = kTRUE, Int_t eventClassMin = 0, Int_t eventClassMax = 4){
+AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(TString branch1 = "", TString branch2 = "", TString branch3 = "", Int_t iTask = 0, Bool_t emb = kTRUE, Int_t eventClassMin = 0, Int_t eventClassMax = 4 ,const char* nonStdFile = AliAnalysisManager::GetGlobalStr("kJetDeltaAODName", gDebug)){
 
    Printf("adding task jet response\n");
 
@@ -156,6 +156,9 @@ AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(TString branch1 = "", TString
       task->SetJetPtFractionMin(0.01);
       task->SetNMatchJets(999);
    }
+
+   // to fetch the AOD from the AOD extension ouput 
+   if(strlen(nonStdFile)) task->SetNonStdFile(nonStdFile);
 
    mgr->AddTask(task);
 

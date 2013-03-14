@@ -45,6 +45,7 @@
 
 #include "AliAODEvent.h"
 #include "AliAODJet.h"
+#include "AliAODHandler.h"
 
 #include "AliAnalysisTaskJetResponseV2.h"
 
@@ -57,6 +58,8 @@ AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2() :
 AliAnalysisTaskSE(),
   fESD(0x0),
   fAOD(0x0),
+  fAODExtension(0x0),
+  fNonStdFile(""),
   fBackgroundBranch(""),
   fIsPbPb(kTRUE),
   fOfflineTrgMask(AliVEvent::kAny),
@@ -121,6 +124,8 @@ AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2(const char *name) :
   AliAnalysisTaskSE(name),
   fESD(0x0),
   fAOD(0x0),
+  fAODExtension(0x0),
+  fNonStdFile(""),
   fBackgroundBranch(""),
   fIsPbPb(kTRUE),
   fOfflineTrgMask(AliVEvent::kAny),
@@ -396,6 +401,15 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
     return;
   }
 
+  if(fNonStdFile.Length()!=0){
+    // case that we have an AOD extension we need can fetch the jets from the extended output
+    AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+    fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);    
+    if(!fAODExtension){
+      if(fDebug>1)Printf("AODExtension found for %s",fNonStdFile.Data());
+    }
+  }
+
   // -- event selection --
   fHistEvtSelection->Fill(1); // number of events before event selection
 
@@ -472,25 +486,33 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
   AliAODJetEventBackground* externalBackground = 0;
   if(!externalBackground&&fBackgroundBranch.Length()){
     externalBackground =  (AliAODJetEventBackground*)(fAOD->FindListObject(fBackgroundBranch.Data()));
+    if(!externalBackground && fAODExtension)  externalBackground =  (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(fBackgroundBranch.Data()));
     //if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
   }
   Float_t rho = 0;
-  if(externalBackground)rho = externalBackground->GetBackground(0);
+  if(externalBackground) rho = externalBackground->GetBackground(0);
 
 
   // fetch jets
   TClonesArray *aodJets[3];
   aodJets[0] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[0].Data())); // in general: embedded jet
+  if(!aodJets[0] && fAODExtension) aodJets[0] = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fJetBranchName[0].Data()));
   aodJets[1] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[1].Data())); // in general: embedded jet + UE version1
+  if(!aodJets[1] && fAODExtension) aodJets[1] = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fJetBranchName[1].Data()));
   if( strlen(fJetBranchName[2].Data()) ) {
     aodJets[2] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[2].Data())); // in general: embedded jet + UE version2
-    fkNbranches=3;
+    if(!aodJets[2] && fAODExtension) aodJets[2] = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fJetBranchName[2].Data()));
+    if(aodJets[2]) fkNbranches=3;
+    if(fDebug>10) printf("3rd branch: %s\n",fJetBranchName[2].Data());
   }
 
+  if(fDebug>10)  printf("fkNbranches %d\n",fkNbranches);
   for (Int_t iJetType = 0; iJetType < fkNbranches; iJetType++) {
     fListJets[iJetType]->Clear();
-    if (!aodJets[iJetType]) continue;
-      
+    if (!aodJets[iJetType]) {
+        if(fDebug) Printf("%s: no jet branch\n",fJetBranchName[iJetType].Data());
+      continue;
+    }
     if(fDebug) Printf("%s: %d jets",fJetBranchName[iJetType].Data(),aodJets[iJetType]->GetEntriesFast());
       
     for (Int_t iJet = 0; iJet < aodJets[iJetType]->GetEntriesFast(); iJet++) {
@@ -814,6 +836,7 @@ Int_t AliAnalysisTaskJetResponseV2::GetNInputTracks()
 
   if(fDebug) Printf("Multiplicity from jet branch %s", jbname.Data());
   TClonesArray *tmpAODjets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(jbname.Data()));
+  if(!tmpAODjets && fAODExtension) tmpAODjets = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(jbname.Data()));
   if(!tmpAODjets){
     Printf("Jet branch %s not found", jbname.Data());
     Printf("AliAnalysisTaskJetResponseV2::GetNInputTracks FAILED");
