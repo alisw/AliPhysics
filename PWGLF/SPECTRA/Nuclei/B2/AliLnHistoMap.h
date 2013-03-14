@@ -11,8 +11,10 @@
 #include <TMap.h>
 
 class TString;
+class TH1;
 class TH1D;
 class TH2D;
+class TAxis;
 
 class AliLnHistoMap: public TObject
 {
@@ -29,14 +31,19 @@ class AliLnHistoMap: public TObject
 	
 	TObject* Add(const TString& keyname, TObject* value);
 	
-	TH1D* Add(const TString& name, Int_t nbins, Double_t xmin, Double_t xmax, const TString& title="", const TString& xlabel="", const TString& ylabel="");
+	TH1D* Add(const TString& name, Int_t nbins, Double_t xmin, Double_t xmax, const TString& title="", const TString& xlabel="", const TString& ylabel="", Bool_t logx=0);
 	
-	TH2D* Add(const TString& name, Int_t xbins, Double_t xmin, Double_t xmax, Int_t ybins, Double_t ymin, Double_t ymax, const TString& title="", const TString& xlabel="", const TString& ylabel="");
+	TH2D* Add(const TString& name, Int_t xbins, Double_t xmin, Double_t xmax, Int_t ybins, Double_t ymin, Double_t ymax, const TString& title="", const TString& xlabel="", const TString& ylabel="", Bool_t logx=0, Bool_t logy=0);
+	
+	Bool_t SetLogXaxis(TH1* h);
+	Bool_t SetLogYaxis(TH1* h);
 	
   private:
 
 	AliLnHistoMap(const AliLnHistoMap& other);
 	AliLnHistoMap& operator=(const AliLnHistoMap& other);
+	
+	Bool_t SetLogBins(TAxis* axis);
 
   private:
  
