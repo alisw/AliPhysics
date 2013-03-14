@@ -72,6 +72,7 @@ AliAnalysisTaskB2::AliAnalysisTaskB2()
 , fMaxKNOmult(100000)
 , fMinCentrality(0)
 , fMaxCentrality(100)
+, fNch(0)
 , fNtrk(0)
 , fMeanNtrk(1)
 , fKNOmult(1)
@@ -301,6 +302,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	// --------- multiplicity and centrality ------------------
 	
 	fNtrk = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent);
+	if(fSimulation) fNch = this->GetChargedMultiplicity(0.5);
 	
 	((TH1D*)fHistoMap->Get(fSpecies + "_Event_Ntrk"))->Fill(fNtrk);
 	
@@ -460,7 +462,10 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		Double_t genPhi = iParticle->Phi();
 		Double_t genEta = iParticle->Eta();
 		
-		// --------- all events -----------
+		// ------- multiplicity and centrality -------------
+		
+		if( fHeavyIons && !fCentTrigger) continue;
+		if(!fHeavyIons && !fMultTrigger) continue;
 		
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Prim_P"))->Fill(genP);
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Prim_Pt"))->Fill(genPt);
@@ -470,17 +475,11 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		((TH2D*)fHistoMap->Get(particle + "_Gen_Prim_PtY"))->Fill(genY, genPt);
 		((TH2D*)fHistoMap->Get(particle + "_Gen_Prim_EtaY"))->Fill(genY, genEta);
 		
-		// ------- multiplicity and centrality -------------
-		
-		if( fHeavyIons && !fCentTrigger) continue;
-		if(!fHeavyIons && !fMultTrigger) continue;
-		
-		((TH1D*)fHistoMap->Get(particle + "_Gen_Mult_Prim_PtY"))->Fill(genY,genPt);
-		
 		// ------ is within phase space? ----------
 		
 		if(TMath::Abs(genY) >= fMaxY) continue;
 		
+		((TH1D*)fHistoMap->Get(particle + "_Gen_PhS_Prim_P"))->Fill(genP);
 		((TH1D*)fHistoMap->Get(particle + "_Gen_PhS_Prim_Pt"))->Fill(genPt);
 		
 		// ------- is from a triggering event? (same as rec.) --------
@@ -503,6 +502,7 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		if(!fGoodVertex) continue;
 		if(fPileUpEvent) continue;
 		
+		((TH1D*)fHistoMap->Get(particle + "_Gen_Nch"))->Fill(fNch);
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Vtx_Prim_Pt"))->Fill(genPt);
 		
 		// ------ is within the geometrical acceptance? ------------
@@ -542,8 +542,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 	
 	if(fSimulation)
 	{
-		Double_t nch = this->GetChargedMultiplicity(0.5);
-		((TH2D*)fHistoMap->Get(fSpecies + "_Ana_Event_Nch_Ntrk"))->Fill(fNtrk, nch);
+		((TH2D*)fHistoMap->Get(fSpecies + "_Ana_Event_Nch_Ntrk"))->Fill(fNtrk, fNch);
 	}
 	
 	const AliESDVertex* vtx = fESDevent->GetPrimaryVertex();
@@ -569,27 +568,6 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		if(!iTrack) continue;
 		
-		// -------- track cuts ------------------------
-		
-		Double_t theta = this->GetTheta(iTrack);
-		Double_t phi   = this->GetPhi(iTrack);
-		
-		((TH2D*)fHistoMap->Get(fSpecies + "_Before_Phi_Theta"))->Fill(theta,phi);
-		
-		if(!fESDtrackCuts->AcceptTrack(iTrack)) continue;  // with next track
-		if(fTOFmatch && !this->AcceptTOFtrack(iTrack)) continue; // with next track
-		
-		// --------------------- end track cuts -----------------------
-		
-		((TH2D*)fHistoMap->Get(fSpecies + "_After_Phi_Theta"))->Fill(theta, phi);
-		
-		++nTracks;
-		
-		// charge
-		
-		Double_t z = 1;
-		if(fPartCode>AliPID::kTriton)  z = 2;
-		
 		Float_t sign = 1;
 		TString particle = fSpecies;
 		if(iTrack->GetSign()<0 )
@@ -598,6 +576,26 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			sign = -1;
 		}
 		
+		// -------- track cuts ------------------------
+		
+		Double_t theta = this->GetTheta(iTrack);
+		Double_t phi   = this->GetPhi(iTrack);
+		
+		((TH2D*)fHistoMap->Get(particle + "_Before_Phi_Theta"))->Fill(theta,phi);
+		
+		if(!fESDtrackCuts->AcceptTrack(iTrack)) continue;  // with next track
+		if(fTOFmatch && !this->AcceptTOFtrack(iTrack)) continue; // with next track
+		
+		// --------------------- end track cuts -----------------------
+		
+		((TH2D*)fHistoMap->Get(particle + "_After_Phi_Theta"))->Fill(theta, phi);
+		
+		++nTracks;
+		
+		// charge
+		
+		Double_t z = 1;
+		if(fPartCode>AliPID::kTriton)  z = 2;
 		// impact parameters
 		
 		Float_t dcaxy, dcaz;
@@ -630,22 +628,22 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		// --------- track cuts ------------
 		
-		((TH1D*)fHistoMap->Get(fSpecies + "_TrackCuts_DCAxy"))->Fill(dcaxy);
-		((TH1D*)fHistoMap->Get(fSpecies + "_TrackCuts_DCAz"))->Fill(dcaz);
-		((TH1D*)fHistoMap->Get(fSpecies + "_TrackCuts_NSigma"))->Fill(nSigmaVtx);
+		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_DCAxy"))->Fill(dcaxy);
+		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_DCAz"))->Fill(dcaz);
+		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_NSigma"))->Fill(nSigmaVtx);
 		
-		((TH1D*)fHistoMap->Get(fSpecies + "_TrackCuts_ITSchi2PerCls"))->Fill(this->GetITSchi2PerCluster(iTrack));
+		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_ITSchi2PerCls"))->Fill(this->GetITSchi2PerCluster(iTrack));
 		
-		((TH1D*)fHistoMap->Get(fSpecies + "_TrackCuts_TPCncls"))->Fill(iTrack->GetTPCNcls());
-		((TH1D*)fHistoMap->Get(fSpecies + "_TrackCuts_TPCclsOverF"))->Fill((Double_t)iTrack->GetTPCNcls()/(Double_t)iTrack->GetTPCNclsF());
-		((TH1D*)fHistoMap->Get(fSpecies + "_TrackCuts_TPCxRows"))->Fill(iTrack->GetTPCCrossedRows());
-		((TH1D*)fHistoMap->Get(fSpecies + "_TrackCuts_TPCchi2PerCls"))->Fill(iTrack->GetTPCchi2()/iTrack->GetTPCNcls());
-		((TH1D*)fHistoMap->Get(fSpecies + "_TrackCuts_TPCchi2Global"))->Fill(iTrack->GetChi2TPCConstrainedVsGlobal(fESDevent->GetPrimaryVertex()));
+		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCncls"))->Fill(iTrack->GetTPCNcls());
+		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCclsOverF"))->Fill((Double_t)iTrack->GetTPCNcls()/(Double_t)iTrack->GetTPCNclsF());
+		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCxRows"))->Fill(iTrack->GetTPCCrossedRows());
+		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCchi2PerCls"))->Fill(iTrack->GetTPCchi2()/iTrack->GetTPCNcls());
+		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCchi2Global"))->Fill(iTrack->GetChi2TPCConstrainedVsGlobal(fESDevent->GetPrimaryVertex()));
 		
 		// -------------
 		
-		((TH2D*)fHistoMap->Get(fSpecies + "_ITS_dEdx_P"))->Fill(pITS, dEdxITS);
-		((TH2D*)fHistoMap->Get(fSpecies + "_TPC_dEdx_P"))->Fill(pTPC, dEdxTPC);
+		((TH2D*)fHistoMap->Get(particle + "_ITS_dEdx_P"))->Fill(pITS, dEdxITS);
+		((TH2D*)fHistoMap->Get(particle + "_TPC_dEdx_P"))->Fill(pTPC, dEdxTPC);
 		
 		if(this->TOFmatch(iTrack))
 		{
@@ -653,8 +651,8 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			m2   = this->GetMassSquare(iTrack);
 			mass = TMath::Sqrt(TMath::Abs(m2));
 			
-			((TH2D*)fHistoMap->Get(fSpecies + "_TOF_Beta_P"))->Fill(pTOF, beta);
-			((TH2D*)fHistoMap->Get(fSpecies + "_TOF_Mass_P"))->Fill(pTOF, mass);
+			((TH2D*)fHistoMap->Get(particle + "_TOF_Beta_P"))->Fill(pTOF, beta);
+			((TH2D*)fHistoMap->Get(particle + "_TOF_Mass_P"))->Fill(pTOF, mass);
 		}
 		
 		// -----------------------------------------------
@@ -686,6 +684,11 @@ Int_t AliAnalysisTaskB2::GetTracks()
 				if(TMath::Abs(y) < fMaxY)
 				{
 					((TH2D*)fHistoMap->Get(simparticle + "_Response_Matrix"))->Fill(pt, simPt);
+					
+					if(this->IsPhysicalPrimary(iParticle))
+					{
+						((TH1D*)fHistoMap->Get(simparticle + "_Sim_Ntrk"))->Fill(fNtrk);
+					}
 					
 					// for pid
 					if(!this->IsFakeTrack(iTrack))
@@ -781,6 +784,9 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		{
 			goodPid = ( simpid == pid );
 		}
+		
+		((TH1D*)fHistoMap->Get(particle + "_PID_Ntrk_pTPC"))->Fill(pTPC,fNtrk);
+		((TH1D*)fHistoMap->Get(particle + "_PID_Zmult_pTPC"))->Fill(pTPC,fKNOmult);
 		
 		// pid performance
 		((TH2D*)fHistoMap->Get(particle + "_PID_ITSdEdx_P"))->Fill(pITS, dEdxITS);

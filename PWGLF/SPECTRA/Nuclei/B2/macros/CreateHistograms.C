@@ -29,6 +29,8 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 	else if(species == "He3")    A = 3;
 	else if(species == "Alpha")  A = 4;
 	
+	TString particle[] = { Form("Anti%s",species.Data()), species };
+	
 	// pt
 	Int_t ptBins = 100;
 	Double_t ptMin = 0.*A;
@@ -69,6 +71,11 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 		ntrkMin  = 0;
 		ntrkMax  = 2000;
 	}
+	
+	// ITS and TPC dE/dx
+	Int_t dEdxBins = 3000;
+	Double_t mindEdx = 0.001;
+	Double_t maxdEdx = 3000.001;
 	
 	// stats
 	
@@ -131,35 +138,24 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 	hStatsPid->SetStats(0);
 	hMap->Add( species + "_Stats_PID", (TObject*)hStatsPid);
 	
-	// detector signals
-	
-	hMap->Add( species + "_ITS_dEdx_P", 1000, 0.001, 10., 1500, 0.001, 1500., "", "p/Z (GeV/c)", "dE/dx");
-	hMap->Add( species + "_TPC_dEdx_P", 1000, 0.001, 10., 1500, 0.001, 1500., "", "p/Z (GeV/c)", "dE/dx");
-	hMap->Add( species + "_TOF_Beta_P", 1000, 0.001, 10., 1200, 0.001, 1.2, "", "p/Z (GeV/c)", "#beta");
-	hMap->Add( species + "_TOF_Mass_P", 1000, 0.001, 10., 500, 0.01, 5., "", "p/Z (GeV/c)", "Mass (GeV/c^{2})");
-	
-	// TrackCuts
-	
-	hMap->Add( species + "_TrackCuts_DCAxy", 200, -4, 4, "Track cuts", "DCA_{xy} (cm)");
-	hMap->Add( species + "_TrackCuts_DCAz", 200, -6, 6, "Track cuts", "DCA_{z} (cm)");
-	hMap->Add( species + "_TrackCuts_NSigma", 200, 0, 10, "Track cuts", "N_{#sigma}");
-	
-	hMap->Add( species + "_TrackCuts_ITSchi2PerCls", 200, 0, 40, "Track cuts", "ITS #chi^{2} / Cluster");
-	
-	hMap->Add( species + "_TrackCuts_TPCncls", 200, 0, 200, "Track cuts", "TPC clusters");
-	hMap->Add( species + "_TrackCuts_TPCclsOverF", 200, 0, 2, "Track cuts", "TPC clusters/Findable");
-	hMap->Add( species + "_TrackCuts_TPCxRows", 200, 0, 200, "Track cuts", "TPC crossed rows");
-	hMap->Add( species + "_TrackCuts_TPCchi2PerCls", 200, 0, 20, "Track cuts", "TPC #chi^{2} / Cluster");
-	hMap->Add( species + "_TrackCuts_TPCchi2Global", 200, -2, 38, "Track cuts", "#chi^{2} of constrained TPC vs global track");
-	
-	hMap->Add( species + "_Before_Phi_Theta", 180, 0, TMath::Pi(), 360, 0, 2.*TMath::Pi(), "Global tracks (before track cuts)", "#theta (rad)", "#phi (rad)");
-	
-	hMap->Add( species + "_After_Phi_Theta", 180, 0, TMath::Pi(), 360, 0, 2.*TMath::Pi(), "Global tracks (after track cuts)", "#theta (rad)", "#phi (rad)");
-	
 	// multiplicity
 	
 	hMap->Add( species + "_Event_Ntrk", ntrkBins, ntrkMin, ntrkMax, "Track multiplicity (all events)", "N_{trk}", "Events");
 	hMap->Add( species + "_Ana_Event_Ntrk", ntrkBins, ntrkMin, ntrkMax, "Track multiplicity", "N_{trk}", "Events");
+	
+	for(Int_t i=0; i<2; ++i)
+	{
+		hMap->Add( particle[i] + "_PID_Ntrk_pTPC", ptBins, ptMin, ptMax, ntrkBins, ntrkMin, ntrkMax, particle[i] + " candidates", "p_{TPC}/Z (GeV/c)", "N_{trk}");
+		
+		hMap->Add( particle[i] + "_PID_Zmult_pTPC", ptBins, ptMin, ptMax, 400, 0, 20, particle[i] + " candidates", "p_{TPC}/Z (GeV/c)", "z_{mult}");
+		
+		if(simulation)
+		{
+			hMap->Add( particle[i] + "_Gen_Nch", ntrkBins, ntrkMin, ntrkMax, particle[i] + "s (Gen)", "N_{ch}");
+			
+			hMap->Add( particle[i] + "_Sim_Ntrk", ntrkBins, ntrkMin, ntrkMax, particle[i] + " s", "N_{trk}");
+		}
+	}
 	
 	if(simulation)
 	{
@@ -185,20 +181,47 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 	
 	// positive and negative
 	
-	TString particle[] = { Form("Anti%s",species.Data()), species };
+	Bool_t logx = 1;
+	Bool_t logy = 1;
 	
 	for(Int_t i=0; i<2; ++i)
 	{
+		// detector signals
+		
+		hMap->Add( particle[i] + "_ITS_dEdx_P", 1000, 0.001, 10.001, dEdxBins, mindEdx, maxdEdx, "", "p/Z (GeV/c)", "dE/dx",logx,logy);
+		hMap->Add( particle[i] + "_TPC_dEdx_P", 1000, 0.001, 10.001, dEdxBins, mindEdx, maxdEdx, "", "p_{TPC}/Z (GeV/c)", "dE/dx",logx,logy);
+		hMap->Add( particle[i] + "_TOF_Beta_P", 1000, 0.001, 10.001, 1200, 0.001, 1.2, "", "p_{TOF}/Z (GeV/c)", "#beta",logx,logy);
+		
+		hMap->Add( particle[i] + "_TOF_Mass_P", 1000, 0.001, 10.001, 500, 0.01, 5., "", "p_{TOF}/Z (GeV/c)", "Mass (GeV/c^{2})");
+		
+		// TrackCuts
+		
+		hMap->Add( particle[i] + "_TrackCuts_DCAxy", 200, -4, 4, "Track cuts", "DCA_{xy} (cm)");
+		hMap->Add( particle[i] + "_TrackCuts_DCAz", 200, -6, 6, "Track cuts", "DCA_{z} (cm)");
+		hMap->Add( particle[i] + "_TrackCuts_NSigma", 200, 0, 10, "Track cuts", "N_{#sigma}");
+		
+		hMap->Add( particle[i] + "_TrackCuts_ITSchi2PerCls", 200, 0, 40, "Track cuts", "ITS #chi^{2} / Cluster");
+		
+		hMap->Add( particle[i] + "_TrackCuts_TPCncls", 200, 0, 200, "Track cuts", "TPC clusters");
+		hMap->Add( particle[i] + "_TrackCuts_TPCclsOverF", 200, 0, 2, "Track cuts", "TPC clusters/Findable");
+		hMap->Add( particle[i] + "_TrackCuts_TPCxRows", 200, 0, 200, "Track cuts", "TPC crossed rows");
+		hMap->Add( particle[i] + "_TrackCuts_TPCchi2PerCls", 200, 0, 20, "Track cuts", "TPC #chi^{2} / Cluster");
+		hMap->Add( particle[i] + "_TrackCuts_TPCchi2Global", 200, -2, 38, "Track cuts", "#chi^{2} of constrained TPC vs global track");
+		
+		hMap->Add( particle[i] + "_Before_Phi_Theta", 180, 0, TMath::Pi(), 360, 0, 2.*TMath::Pi(), "Global tracks (before track cuts)", "#theta (rad)", "#phi (rad)");
+		
+		hMap->Add( particle[i] + "_After_Phi_Theta", 180, 0, TMath::Pi(), 360, 0, 2.*TMath::Pi(), "Global tracks (after track cuts)", "#theta (rad)", "#phi (rad)");
+		
 		// pid with TOF
 		
-		hMap->Add( particle[i] + "_PID_M2_Pt", ptBins, ptMin, ptMax, m2Bins, m2Min, m2Max, Form("%s candidate",particle[i].Data()), "p_{T} (GeV/c)", "m^{2} (GeV^{2}/c^{4})");
+		hMap->Add( particle[i] + "_PID_M2_Pt", ptBins, ptMin, ptMax, m2Bins, m2Min, m2Max, particle[i] + " candidates", "p_{T} (GeV/c)", "m^{2} (GeV^{2}/c^{4})");
 		
 		// as a function of momentum
-		hMap->Add( particle[i] + "_PID_DCAxy_Pt", ptBins, ptMin, ptMax, dcaxyBins, dcaxyMin, dcaxyMax, Form("%s candidate",particle[i].Data()), "p_{T} (GeV/c)", "sign #times DCA_{xy} (cm)");
+		hMap->Add( particle[i] + "_PID_DCAxy_Pt", ptBins, ptMin, ptMax, dcaxyBins, dcaxyMin, dcaxyMax, particle[i] + " candidates", "p_{T} (GeV/c)", "sign #times DCA_{xy} (cm)");
 		
-		hMap->Add( particle[i] + "_PID_DCAz_Pt", ptBins, ptMin, ptMax, dcazBins, dcazMin, dcazMax, Form("%s candidate",particle[i].Data()), "p_{T} (GeV/c)", "sign #times DCA_{z} (cm)");
+		hMap->Add( particle[i] + "_PID_DCAz_Pt", ptBins, ptMin, ptMax, dcazBins, dcazMin, dcazMax, particle[i] + " candidates", "p_{T} (GeV/c)", "sign #times DCA_{z} (cm)");
 		
-		hMap->Add( particle[i] + "_PID_NSigma_Pt", ptBins, ptMin, ptMax, 200, 0., 10., Form("%s candidate",particle[i].Data()), "p_{T} (GeV/c)", "N\\sigma");
+		hMap->Add( particle[i] + "_PID_NSigma_Pt", ptBins, ptMin, ptMax, 200, 0., 10., particle[i] + " candidates", "p_{T} (GeV/c)", "N\\sigma");
 		
 		if(simulation)
 		{
@@ -241,13 +264,13 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 		
 		// identification
 		
-		hMap->Add( particle[i] + "_PID_ITSdEdx_P", 1000, 1.e-3, 10., 1500, 1.e-3, 1500., Form("%s candidate",particle[i].Data()), "p (GeV/c)", "dE/dx");
+		hMap->Add( particle[i] + "_PID_ITSdEdx_P", 1000, 0.001, 10.001, 1500, mindEdx, maxdEdx, particle[i] + " candidates", "p/Z (GeV/c)", "dE/dx",logx,logy);
 		
-		hMap->Add( particle[i] + "_PID_TPCdEdx_P", 1000, 1.e-3, 10., 1500, 1.e-3, 1500., Form("%s candidate",particle[i].Data()), "p_{TPC} (GeV/c)", "dE/dx");
+		hMap->Add( particle[i] + "_PID_TPCdEdx_P", 1000, 0.001, 10.001, 1500, mindEdx, maxdEdx, particle[i] + " candidates", "p_{TPC}/Z (GeV/c)", "dE/dx",logx,logy);
 		
-		hMap->Add( particle[i] + "_PID_Beta_P", 1000, 1.e-3, 10., 1200, 1.e-3, 1.2, Form("%s candidate",particle[i].Data()), "p_{TOF} (GeV/c)", "\\beta");
+		hMap->Add( particle[i] + "_PID_Beta_P", 1000, 0.001, 10.001, 1200, 1.e-3, 1.2, particle[i] + " candidates", "p_{TOF}/Z (GeV/c)", "\\beta",logx,logy);
 		
-		hMap->Add( particle[i] + "_PID_Mass_P", 1000, 1.e-3, 10., 500, 0.01, 5., Form("%s candidate",particle[i].Data()), "p_{TOF} (GeV/c)", "m (GeV/c^{2})");
+		hMap->Add( particle[i] + "_PID_Mass_P", 1000, 0.001, 10.001, 500, 0.01, 5., particle[i] + " candidates", "p_{TOF}/Z (GeV/c)", "m (GeV/c^{2})");
 		
 		if(simulation)
 		{
@@ -256,13 +279,13 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 		
 		// results
 		
-		hMap->Add( particle[i] + "_PID_Pt_Y", etaBins, etaMin, etaMax, ptBins, ptMin, ptMax, Form("%s candidate",particle[i].Data()), "y", "p_{T} (GeV/c)");
+		hMap->Add( particle[i] + "_PID_Pt_Y", etaBins, etaMin, etaMax, ptBins, ptMin, ptMax, particle[i] + " candidates", "y", "p_{T} (GeV/c)");
 		
-		hMap->Add( particle[i] + "_PID_Pt", ptBins, ptMin, ptMax, Form("%s candidate (|y| < %0.1f, 0 < \\phi < 2\\pi)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
+		hMap->Add( particle[i] + "_PID_Pt", ptBins, ptMin, ptMax, Form("%s candidates (|y| < %0.1f, 0 < \\phi < 2\\pi)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
 		
-		hMap->Add( Form("%s_PID_Y",particle[i].Data()), etaBins, etaMin, etaMax, Form("%s candidate (p_{T} > 0, 0 < \\phi < 2\\pi)",particle[i].Data()), "y");
+		hMap->Add( Form("%s_PID_Y",particle[i].Data()), etaBins, etaMin, etaMax, Form("%s candidates (p_{T} > 0, 0 < \\phi < 2\\pi)",particle[i].Data()), "y");
 		
-		hMap->Add( particle[i] + "_PID_Phi", phiBins, phiMin, phiMax, Form("%s candidate (p_{T} > 0, |y| < %0.1f)",particle[i].Data(),maxY), "\\phi (rad)");
+		hMap->Add( particle[i] + "_PID_Phi", phiBins, phiMin, phiMax, Form("%s candidates (p_{T} > 0, |y| < %0.1f)",particle[i].Data(),maxY), "\\phi (rad)");
 		
 		if(simulation)
 		{
@@ -331,13 +354,11 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 			
 			hMap->Add( particle[i] + "_Gen_Prim_EtaY", etaBins, etaMin, etaMax, etaBins, etaMin, etaMax, Form("Primary %s", particle[i].Data()), "y", "#eta");
 			
-			// after multiplicity cut
-			
-			hMap->Add( particle[i] + "_Gen_Mult_Prim_PtY", etaBins, etaMin, etaMax, ptBins, ptMin, ptMax, Form("Primary %s", particle[i].Data()), "y", "p_{T} (GeV/c)");
-			
 			// in the phase space within the acceptance
 			
-			hMap->Add( particle[i] + "_Gen_PhS_Prim_Pt", ptBins, ptMin, ptMax, Form("Primary %s (all events, |y| < %0.1f)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Gen_PhS_Prim_P", ptBins, ptMin, ptMax, Form("Primary %s (mult. events, |y| < %0.1f)",particle[i].Data(),maxY), "p (GeV/c)");
+			
+			hMap->Add( particle[i] + "_Gen_PhS_Prim_Pt", ptBins, ptMin, ptMax, Form("Primary %s (mult. events, |y| < %0.1f)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
 			hMap->Add( particle[i] + "_Gen_Trig_Prim_Pt", ptBins, ptMin, ptMax, Form("Primary %s (triggering events, |y| < %0.1f)", particle[i].Data(), maxY), "p_{T} (GeV/c)");
 			

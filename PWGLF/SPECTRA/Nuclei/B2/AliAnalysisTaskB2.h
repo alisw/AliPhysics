@@ -131,6 +131,7 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	Double_t fMinCentrality; // minimum centrality for HI
 	Double_t fMaxCentrality; // maximum centrality for HI
 	
+	Double_t fNch; //! current charged multipicity
 	Double_t fNtrk; //! current track multipicity
 	Double_t fMeanNtrk; // average track multiplicity
 	Double_t fKNOmult; //! KNO track multiplicity scaling
