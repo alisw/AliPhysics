@@ -27,7 +27,11 @@ class AliEventPlaneResolutionHandler : public TObject{
     fMinCent=minC;
     fMaxCent=maxC;
   }
-  void SetUseNcollWeights(Bool_t opt){fUseNcollWeights=opt;}
+  void SetUseNoWeights(){fWeight=0;}
+  void SetUseNcollWeights(){fWeight=1;}
+  void SetUseLowPtDYieldWeights(){fWeight=2;}
+  void SetUseMidPtDYieldWeights(){fWeight=3;}
+  void SetUseHighPtDYieldWeights(){fWeight=4;}
   void SetEventPlane(Int_t ep){fEventPlane=ep;}
   void SetTPCFullEtaEventPlane(){fEventPlane=kTPCFullEta;}
   void SetTPCPositiveEtaEventPlane(){fEventPlane=kTPCPosEta;}
@@ -54,7 +58,7 @@ class AliEventPlaneResolutionHandler : public TObject{
 
  private:
   Bool_t SetHistoNames();
-  void InitializeNcoll();
+  void InitializeWeights();
   AliEventPlaneResolutionHandler(const AliEventPlaneResolutionHandler &source);
   AliEventPlaneResolutionHandler& operator=(const AliEventPlaneResolutionHandler& source); 
  
@@ -69,8 +73,11 @@ class AliEventPlaneResolutionHandler : public TObject{
   TString  fCorrHistoName3;  // name of 3rd histogram
   Int_t    fNsubevents;      // number of subevents to be used
   Bool_t   fExtrapToFull;    // flag for extrapolating to full event
-  Bool_t   fUseNcollWeights; // flag use/not use Ncoll to weight centrality sub-ranges
+  Int_t    fWeight; // flag use/not use Ncoll to weight centrality sub-ranges
   Double_t fNcoll[20];       // values of Ncoll in the subranges
+  Double_t fYield24[20];     // values of D0 yield 2<pt<4 in the subranges
+  Double_t fYield46[20];     // values of D0 yield 4<pt<6 in the subranges
+  Double_t fYield612[20];    // values of D0 yield 6<pt<12 in the subranges
   TString  fRootFileName;    // file with histos of correlations
 
   ClassDef(AliEventPlaneResolutionHandler,0) 
