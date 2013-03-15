@@ -312,7 +312,7 @@ Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
    fCurrentEntry = entry;
    if (!fAutoBranchHandling)
      return 123456789;
-   if (!fTree) return -1; 
+   if (!fTree || !fTree->GetTree()) return -1;
    fIOTimer->Start(kTRUE); 
    Long64_t readbytes = fTree->GetTree()->GetEntry(entry, getall);
    fIOTimer->Stop();
