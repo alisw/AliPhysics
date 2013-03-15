@@ -95,6 +95,7 @@ private:
    // ESD/AOD events
    AliESDEvent      *fESD;    //! ESD object
    AliAODEvent      *fAOD;    //! AOD event
+   AliAODEvent      *fAODOut; //! AOD event out
    AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
 
    // jets to compare
@@ -159,7 +160,7 @@ private:
    AliAnalysisTaskJetResponseV2(const AliAnalysisTaskJetResponseV2&); // not implemented
    AliAnalysisTaskJetResponseV2& operator=(const AliAnalysisTaskJetResponseV2&); // not implemented
 
-   ClassDef(AliAnalysisTaskJetResponseV2, 5);
+   ClassDef(AliAnalysisTaskJetResponseV2, 6);
 };
 
 #endif
