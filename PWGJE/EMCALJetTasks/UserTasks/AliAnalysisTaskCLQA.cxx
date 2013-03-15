@@ -120,7 +120,7 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
     Double_t pt = track->Pt();
     if (pt>ptmaxall)
       ptmaxall = pt;
-    if (pt>2) {
+    if (pt>1) {
       ptsumall2 += pt;
       ++Mall2;
     }
@@ -192,7 +192,10 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   fNtupCumInfo->fPtMaxall = ptmaxall;
   fNtupCumInfo->fMPtall   = ptsumall/Mall;
   fNtupCumInfo->fMPt2all  = pt2sumall/Mall;
-  fNtupCumInfo->fMPtall2  = ptsumall2/Mall2;
+  if (Mall2>0)
+    fNtupCumInfo->fMPtall2  = ptsumall2/Mall2;
+  else
+    fNtupCumInfo->fMPtall2  = -1;
   fNtupCumInfo->fTSall    = tsall;
   fNtupCumInfo->fM        = M;
   fNtupCumInfo->fQ2abs    = Q2abs;
