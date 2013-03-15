@@ -58,6 +58,7 @@ AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2() :
 AliAnalysisTaskSE(),
   fESD(0x0),
   fAOD(0x0),
+  fAODOut(0x0),
   fAODExtension(0x0),
   fNonStdFile(""),
   fBackgroundBranch(""),
@@ -124,6 +125,7 @@ AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2(const char *name) :
   AliAnalysisTaskSE(name),
   fESD(0x0),
   fAOD(0x0),
+  fAODOut(0x0),
   fAODExtension(0x0),
   fNonStdFile(""),
   fBackgroundBranch(""),
@@ -392,7 +394,10 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
   fESD=dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     AliError("ESD not available");
+
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    //  assume that the AOD is in the general output...
+    fAODOut  = AODEvent();
   } else {
     fAOD = dynamic_cast<AliAODEvent*>(AODEvent());
   }
@@ -486,6 +491,7 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
   AliAODJetEventBackground* externalBackground = 0;
   if(!externalBackground&&fBackgroundBranch.Length()){
     externalBackground =  (AliAODJetEventBackground*)(fAOD->FindListObject(fBackgroundBranch.Data()));
+    if(!externalBackground && fAODOut) externalBackground =  (AliAODJetEventBackground*)(fAODOut->FindListObject(fBackgroundBranch.Data()));
     if(!externalBackground && fAODExtension)  externalBackground =  (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(fBackgroundBranch.Data()));
     //if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
   }
@@ -496,11 +502,14 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
   // fetch jets
   TClonesArray *aodJets[3];
   aodJets[0] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[0].Data())); // in general: embedded jet
+  if(!aodJets[0] && fAODOut) aodJets[0] = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fJetBranchName[0].Data())); // in general: embedded jet
   if(!aodJets[0] && fAODExtension) aodJets[0] = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fJetBranchName[0].Data()));
   aodJets[1] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[1].Data())); // in general: embedded jet + UE version1
+  if(!aodJets[1] && fAODOut) aodJets[1] = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fJetBranchName[1].Data())); // in general: embedded jet
   if(!aodJets[1] && fAODExtension) aodJets[1] = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fJetBranchName[1].Data()));
   if( strlen(fJetBranchName[2].Data()) ) {
     aodJets[2] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[2].Data())); // in general: embedded jet + UE version2
+    if(!aodJets[2] && fAODOut) aodJets[2] = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fJetBranchName[2].Data())); // in general: embedded jet
     if(!aodJets[2] && fAODExtension) aodJets[2] = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fJetBranchName[2].Data()));
     if(aodJets[2]) fkNbranches=3;
     if(fDebug>10) printf("3rd branch: %s\n",fJetBranchName[2].Data());
@@ -836,6 +845,7 @@ Int_t AliAnalysisTaskJetResponseV2::GetNInputTracks()
 
   if(fDebug) Printf("Multiplicity from jet branch %s", jbname.Data());
   TClonesArray *tmpAODjets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(jbname.Data()));
+  if(!tmpAODjets && fAODOut) tmpAODjets = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(jbname.Data()));
   if(!tmpAODjets && fAODExtension) tmpAODjets = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(jbname.Data()));
   if(!tmpAODjets){
     Printf("Jet branch %s not found", jbname.Data());
