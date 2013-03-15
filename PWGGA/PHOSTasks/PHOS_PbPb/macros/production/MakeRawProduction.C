@@ -39,6 +39,9 @@ namespace RawProduction {
   double lowerMass = 0.110; double upperMass = 0.145;
   double lowerWidth = 0.001; double upperWidth = 0.012;
 
+  // Scale integral range
+  double scalarEMBSFrom = 0.2, scalarEMBSTo = 0.4;
+
   Double_t PeakPosition(Double_t pt){
     //Fit to the measured peak position
     return 4.99292e-003*exp(-pt*9.32300e-001)+1.34944e-001 ;
@@ -628,13 +631,13 @@ namespace RawProduction {
 
       canvas->cd(1);
       TH1D * hPi0MixScaled = (TH1D*)hPi0ProjMix ->Clone(Form("%sScaled", hPi0Proj->GetName())) ;
-      //hPi0MixScaled->Scale(double(pi0Entries)/mixEntries);
-      hPi0MixScaled->Scale(fbg2->Eval(0.134));
+      int fromBin = hPi0Proj->FindBin(scalarEMBSFrom);
+      int toBin = TMath::Min(hPi0Proj->FindBin(scalarEMBSTo), hPi0Proj->GetNbinsX());
+      Double_t scalar = hPi0Proj->Integral(fromBin, toBin) / hPi0ProjMix->Integral(fromBin, toBin);
+      hPi0MixScaled->Scale(scalar);
       hPi0MixScaled->SetLineColor(kRed);
       hPi0MixScaled->SetTitle(Form("%s, Scaled", hPi0Proj->GetName()));
       hPi0Proj->SetAxisRange(rangeMin, 1.);
-      //hPi0Proj->SetMaximum(TMath::Max(hPi0Proj->GetMaximum(), hPi0ProjMix->GetMaximum())*1.2);
-      hPi0Proj->SetMinimum(0);
       hPi0Proj->Draw();
       hPi0MixScaled->Draw("same");
 
