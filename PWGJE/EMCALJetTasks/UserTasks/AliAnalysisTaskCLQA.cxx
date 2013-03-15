@@ -105,8 +105,8 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
     return;
 
   const Int_t ntracks = fTracks->GetEntries();
-  Int_t Mall=0,M=0,Mall2;
-  Double_t ptmaxall=0,ptsumall=0,pt2sumall=0,ptsumall2;
+  Int_t Mall=0,M=0,Mall2=0;
+  Double_t ptmaxall=0,ptsumall=0,pt2sumall=0,ptsumall2=0;
   Double_t tsa00=0,tsa10=0,tsa11=0;
   Double_t Q2r=0,Q2i=0;
   Double_t Q4r=0,Q4i=0;
