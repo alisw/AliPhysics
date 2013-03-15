@@ -30,6 +30,8 @@
 #include "AliExternalTrackParam.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
+#include "AliAODRecoCascadeHF.h"
+#include "AliNeutralTrackParam.h"
 #include "AliAnalysisTaskSEImproveITS.h"
 
 //
@@ -287,6 +289,56 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     }
   }
 
+
+  // Dstar->Kpipi
+  TClonesArray *arrayCascade=static_cast<TClonesArray*>(ev->GetList()->FindObject("Dstar"));
+  
+  if (arrayCascade) {
+    for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
+      AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
+      //Get D0 from D*
+      AliAODRecoDecayHF2Prong* decay=(AliAODRecoDecayHF2Prong*)decayDstar->Get2Prong();
+      
+      // recalculate vertices
+      //AliVVertex *oldSecondaryVertex=decay->GetSecondaryVtx();
+
+      //soft pion
+      AliExternalTrackParam et3; et3.CopyFromVTrack(static_cast<AliAODTrack*>(decayDstar->GetBachelor()));
+       
+      //track D0
+      AliNeutralTrackParam *trackD0 = new AliNeutralTrackParam(decay);
+
+      //!!!!TODO: covariance matrix
+      
+      // update d0 
+      Double_t d0z0[2],covd0z0[3];
+      Double_t d01[2],d01err[2];
+
+      //the D*
+      et3.PropagateToDCA(primaryVertex,bz,100.,d0z0,covd0z0);
+      d01[0]=d0z0[0];
+      d01err[0] = TMath::Sqrt(covd0z0[0]); 
+      trackD0->PropagateToDCA(primaryVertex,bz,100.,d0z0,covd0z0);
+      d01[1]=d0z0[0];
+      d01err[1] = TMath::Sqrt(covd0z0[0]);  
+      decayDstar->Setd0Prongs(2,d01);
+      decayDstar->Setd0errProngs(2,d01err);
+        
+      // delete v12;
+      delete trackD0; trackD0=NULL;
+
+       // a run for D*
+      Double_t px1[2],py1[2],pz1[2];
+      for (Int_t i=0;i<2;++i) {
+	const AliAODTrack *t1=static_cast<AliAODTrack*>(decayDstar->GetDaughter(i));
+	px1[i]=t1->Px();
+	py1[i]=t1->Py();
+	pz1[i]=t1->Pz();
+      }
+      decayDstar->SetPxPyPzProngs(2,px1,py1,pz1);
+      
+     }
+  }
 
 
   // Three prong
