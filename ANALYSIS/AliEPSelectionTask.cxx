@@ -332,6 +332,7 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
       }
   
       esdEP = aod->GetHeader()->GetEventplaneP();
+      if(!esdEP) return; // protection against missing EP branch (nanoAODs)
       esdEP->Reset(); 
      
       Int_t maxID = 0;
