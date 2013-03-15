@@ -25,6 +25,7 @@
 #include <TObjString.h>
 #include "TPad.h"
 #include "TAxis.h"
+#include <../cint/cint/include/constants.h>
 
 namespace RawProduction {
 
@@ -41,6 +42,13 @@ namespace RawProduction {
 
   // Scale integral range
   double scalarEMBSFrom = 0.2, scalarEMBSTo = 0.4;
+  double AFrom = 0.125, ATo = 0.16;
+  double B1From = 0.1, B1To = 0.12;
+  double B2From = 0.2, B2To = 0.25;
+  double GetA(TH1* hist, double from=AFrom, double to=ATo);
+  double GetADiffB(TH1* hist=0, TH1* scaledMixHist=0);
+  double GetP0(TH1* hist=0);
+  double GetP1(TH1* hist=0);
 
   Double_t PeakPosition(Double_t pt){
     //Fit to the measured peak position
@@ -356,7 +364,7 @@ namespace RawProduction {
       printf("Pol1 ratio Fit, ");
       canvas->cd(2);
 
-      funcRatioFit1->SetParameters(0.001,0.136,0.0055,0.0002,-0.002) ;
+      funcRatioFit1->SetParameters(GetADiffB(hPi0Ratio), 0.136, 0.0055, GetP0(hPi0Ratio), GetP1(hPi0Ratio)) ;
       funcRatioFit1->SetParLimits(0,0.000,1.000) ;
       funcRatioFit1->SetParLimits(1,lowerMass,upperMass) ;
       funcRatioFit1->SetParLimits(2,lowerWidth,upperWidth) ;
@@ -403,7 +411,7 @@ namespace RawProduction {
       // ================================================
       printf("Pol2 ratio Fit, ");
       if( ratioFitError1 ) {
-	funcRatioFit2->SetParameters(0.001,0.136,0.0055,0.0002,-0.002, 0) ;
+	funcRatioFit2->SetParameters(GetADiffB(hPi0Ratio), 0.136, 0.0055, GetP0(hPi0Ratio),GetP1(hPi0Ratio), 0.) ;
 	funcRatioFit2->SetParLimits(0,0.000,1.000) ;
 	funcRatioFit2->SetParLimits(1,lowerMass,upperMass) ;
 	funcRatioFit2->SetParLimits(2,lowerWidth,upperWidth) ;
@@ -486,7 +494,7 @@ namespace RawProduction {
 	Int_t binPi0 = hPi0BSPol1->FindBin(funcRatioFit1->GetParameter(1));
 	Int_t nWidPi0 = 2 * (Int_t) (funcRatioFit1->GetParameter(2)/hPi0BSPol1->GetBinWidth(1));
 	Int_t integral = TMath::Abs(hPi0BSPol1->Integral(binPi0-nWidPi0,binPi0+nWidPi0));
-	fgs->SetParameters(integral/5., funcRatioFit1->GetParameter(1), funcRatioFit1->GetParameter(2)) ;
+	fgs->SetParameters(GetADiffB(hPi0BSPol1), funcRatioFit1->GetParameter(1), funcRatioFit1->GetParameter(2)) ;
 	fgs->SetParLimits(0,0.,pi0Entries) ;
 	fgs->SetParLimits(1,lowerMass,upperMass) ;
 	fgs->SetParLimits(2,lowerWidth,upperWidth) ;
@@ -566,7 +574,7 @@ namespace RawProduction {
 	Int_t binPi0 = hPi0BSPol2->FindBin(funcRatioFit2->GetParameter(1));
 	Int_t nWidPi0 = 2 * (Int_t) (funcRatioFit2->GetParameter(2)/hPi0BSPol2->GetBinWidth(1));
 	Int_t integral = TMath::Abs(hPi0BSPol2->Integral(binPi0-nWidPi0,binPi0+nWidPi0));
-	fgs->SetParameters(integral/5., funcRatioFit2->GetParameter(1), funcRatioFit2->GetParameter(2)) ;
+	fgs->SetParameters(GetADiffB(hPi0BSPol2), funcRatioFit2->GetParameter(1), funcRatioFit2->GetParameter(2)) ;
 	fgs->SetParLimits(0,0.,pi0Entries) ;
 	fgs->SetParLimits(1,lowerMass,upperMass) ;
 	fgs->SetParLimits(2,lowerWidth,upperWidth) ;
@@ -727,6 +735,54 @@ namespace RawProduction {
     //delete outputList;
     //output.Write();
     delete canvas;
+  }
+
+  double GetA(TH1* hist, double from, double to)
+  {
+    int fbin = hist->FindBin(from);
+    if( from > (hist->GetBinLowEdge(fbin)+hist->GetBinLowEdge(fbin+1)) )
+      fbin=fbin+1;
+    int tbin = hist->FindBin(to);
+    if( to < (hist->GetBinLowEdge(tbin)+hist->GetBinLowEdge(tbin+1)) )
+      tbin=tbin-1;
+    double integer = hist->Integral(fbin, tbin);
+    return integer/(tbin-fbin+1);
+  }
+
+  double GetADiffB(TH1* hist, TH1* mixHist)
+  {
+    double rawSig = GetA(hist);
+    // If we have SCALED Event Mixing Histogram
+    if(mixHist) {
+      double mixSig = GetA(mixHist);
+      double A = TMath::Abs(rawSig - mixSig );
+      return A;
+    }
+    // else, interpolate between B1 and B2.
+    double background = GetP0(hist)*(ATo-AFrom) + GetP1(hist)*(ATo*ATo-AFrom*AFrom)/2;
+    double A = GetA(hist);
+    return TMath::Abs(A-background);
+  }
+
+  double GetP0(TH1* hist)
+  {
+    double b1=GetA(hist,B1From,B1To)*(B1To-B1From);
+    double b2=GetA(hist,B2From,B2To)*(B2To-B2From);
+    double a11 = B1To - B1From;
+    double a12 = (B1To*B1To - B1From*B1From)/2;
+    double a21 = B2To - B2From;
+    double a22 = (B2To*B2To - B2From*B2From)/2;
+    return (a22*b1-a12*b2)/(a11*a22-a12*a21);
+  }
+  double GetP1(TH1* hist)
+  {
+    double b1=GetA(hist,B1From,B1To)*(B1To-B1From);
+    double b2=GetA(hist,B2From,B2To)*(B2To-B2From);
+    double a11 = B1To - B1From;
+    double a12 = (B1To*B1To - B1From*B1From)/2;
+    double a21 = B2To - B2From;
+    double a22 = (B2To*B2To - B2From*B2From)/2;
+    return (-a21*b1+a11*b2)/(a11*a22-a12*a21);
   }
 
 
