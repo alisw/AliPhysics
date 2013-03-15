@@ -181,29 +181,33 @@ void AliHFEtpcPIDqa::Initialize(){
   fHistos = new AliHFEcollection("tpcqahistos", "Collection of TPC QA histograms");
 
   // Make common binning
-  const Int_t kNdim = 5;
+  const Int_t kNdim = 6;
   const Int_t kPIDbins = AliPID::kSPECIES + 1;
   const Int_t kSteps = 2;
   const Int_t kCentralityBins = 11;
+  const Int_t kEtabins=18;
   const Double_t kMinPID = -1;
   const Double_t kMinP = 0.;
   const Double_t kMaxPID = (Double_t)AliPID::kSPECIES;
   const Double_t kMaxP = 20.;
+  const Double_t kMinEta = -0.9;
+  const Double_t kMaxEta = 0.9;
+
   // Quantities where one can switch between low and high resolution
   Int_t kPbins = fQAmanager->HasHighResolutionHistos() ? 1000 : 100;
   Int_t kDedxbins = fQAmanager->HasHighResolutionHistos() ? 400 : 200;
   Int_t kSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 240;
  
   // 1st histogram: TPC dEdx: (species, p, dEdx, step)
-  Int_t nBinsdEdx[kNdim] = {kPIDbins, kPbins, kDedxbins, kSteps, kCentralityBins};
-  Double_t mindEdx[kNdim] =  {kMinPID, kMinP, 0., 0., 0.};
-  Double_t maxdEdx[kNdim] =  {kMaxPID, kMaxP, 200, 2., 11.}; 
-  fHistos->CreateTHnSparse("tpcDedx", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality", kNdim, nBinsdEdx, mindEdx, maxdEdx);
+  Int_t nBinsdEdx[kNdim] = {kPIDbins, kPbins, kDedxbins, kSteps, kCentralityBins, kEtabins};
+  Double_t mindEdx[kNdim] =  {kMinPID, kMinP, 0., 0., 0., kMinEta};
+  Double_t maxdEdx[kNdim] =  {kMaxPID, kMaxP, 200, 2., 11., kMaxEta};
+  fHistos->CreateTHnSparse("tpcDedx", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality; Eta", kNdim, nBinsdEdx, mindEdx, maxdEdx);
   // 2nd histogram: TPC sigmas: (species, p nsigma, step)
-  Int_t nBinsSigma[kNdim] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins};
-  Double_t minSigma[kNdim] = {kMinPID, kMinP, -12., 0., 0.};
-  Double_t maxSigma[kNdim] = {kMaxPID, kMaxP, 12., 2., 11.};
-  fHistos->CreateTHnSparse("tpcnSigma", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality", kNdim, nBinsSigma, minSigma, maxSigma);
+  Int_t nBinsSigma[kNdim] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins, kEtabins};
+  Double_t minSigma[kNdim] = {kMinPID, kMinP, -12., 0., 0., kMinEta};
+  Double_t maxSigma[kNdim] = {kMaxPID, kMaxP, 12., 2., 11., kMaxEta};
+  fHistos->CreateTHnSparse("tpcnSigma", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality; Eta", kNdim, nBinsSigma, minSigma, maxSigma);
 
   // General TPC QA
 }
@@ -221,12 +225,13 @@ void AliHFEtpcPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
 
   AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
   const AliPIDResponse *pidResponse = tpcpid ? tpcpid->GetPIDResponse() : NULL;
-  Double_t contentSignal[5];
+  Double_t contentSignal[6];
   contentSignal[0] = species;
   contentSignal[1] = tpcpid ? tpcpid->GetP(track->GetRecTrack(), anatype) : 0.;
   contentSignal[2] = GetTPCsignal(track->GetRecTrack(), anatype);
   contentSignal[3] = step;
   contentSignal[4] = centrality;
+  contentSignal[5] = GetEta(track->GetRecTrack(), anatype);
   fHistos->Fill("tpcDedx", contentSignal);
 
   contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : 0.; 
@@ -247,6 +252,23 @@ Double_t AliHFEtpcPIDqa::GetTPCsignal(const AliVParticle *track, AliHFEpidObject
     tpcSignal = aodtrack->GetDetPid() ? aodtrack->GetDetPid()->GetTPCsignal() : 0.;
   }
   return tpcSignal;
+}
+
+
+//_________________________________________________________
+Double_t AliHFEtpcPIDqa::GetEta(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anatype){
+  //
+  // Get TPC signal for ESD and AOD track
+  //
+  Double_t eta = 0.;
+  if(anatype == AliHFEpidObject::kESDanalysis){
+    const AliESDtrack *esdtrack = static_cast<const AliESDtrack *>(track);
+    eta = esdtrack->Eta();
+  } else {
+    const AliAODTrack *aodtrack = static_cast<const AliAODTrack *>(track);
+    eta = aodtrack->Eta(); 
+  }
+  return eta;
 }
 
 //_________________________________________________________

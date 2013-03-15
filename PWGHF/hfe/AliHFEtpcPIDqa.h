@@ -56,6 +56,7 @@ class AliHFEtpcPIDqa : public AliHFEdetPIDqa{
 
   protected:
     Double_t GetTPCsignal(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anatype);
+    Double_t GetEta(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anatype);
 
   private:
     AliHFEcollection *fHistos;        // Container for Histograms
