@@ -30,6 +30,10 @@ set ( SRCS
   DIFFRACTIVE/example/AliAnalysisTaskCDex.cxx
   DIFFRACTIVE/example/AliCDMesonUtilsStripped.cxx
   DIFFRACTIVE/example/AliCDMesonBaseStripped.cxx
+  DIFFRACTIVE/xsAndTwoProng/AliAnalysisTaskCDMeson.cxx
+  DIFFRACTIVE/xsAndTwoProng/AliAnalysisTaskCDskimESD.cxx
+  DIFFRACTIVE/xsAndTwoProng/AliCDMesonUtils.cxx
+  DIFFRACTIVE/xsAndTwoProng/AliCDMesonBase.cxx
   DIFFRACTIVE/xsAndTwoProng/AliCDMesonTracks.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
