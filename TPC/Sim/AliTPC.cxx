@@ -78,6 +78,7 @@
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCExB.h"
+#include "AliCTPTimeParams.h"
 #include "AliRawReader.h"
 #include "AliTPCRawStreamV3.h"
 #include "TTreeStream.h"
@@ -2170,6 +2171,17 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	      "\n";
 	  }
 	}
+        if (AliTPCcalibDB::Instance()->IsTrgL0()){  
+         // Modification 14.03
+         // distinguish between the L0 and L1 trigger as it is done in the reconstruction
+         // by defualt we assume L1 trigger is used - make a correction in case of  L0
+         AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
+         if (ctp){
+           //for TPC standalone runs no ctp info
+           Double_t delay = ctp->GetDelayL1L0()*0.000000025;
+           xyz[2]+=delay/fTPCParam->GetTSample();  // adding the delay (in the AliTPCTramsform opposite sign)
+         }
+       }
 	xyz[2]+=correction;
 	xyz[2]+=fTPCParam->GetNTBinsL1();    // adding Level 1 time bin offset
 	//
