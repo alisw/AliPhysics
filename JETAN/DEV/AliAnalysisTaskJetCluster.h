@@ -328,7 +328,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 22) 
+    ClassDef(AliAnalysisTaskJetCluster, 23) 
 };
  
 #endif

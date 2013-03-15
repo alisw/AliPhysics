@@ -99,7 +99,7 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
  
     TList *fHistList; //! the histograms output list
    
-    ClassDef(AliAnalysisTaskJetBackgroundSubtract, 6) 
+    ClassDef(AliAnalysisTaskJetBackgroundSubtract, 7) 
 };
  
 #endif
