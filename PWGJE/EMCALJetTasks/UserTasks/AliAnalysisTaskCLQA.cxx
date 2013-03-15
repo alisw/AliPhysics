@@ -105,8 +105,8 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
     return;
 
   const Int_t ntracks = fTracks->GetEntries();
-  Int_t Mall=0,M=0;
-  Double_t ptmaxall=0,ptsumall=0,pt2sumall=0;
+  Int_t Mall=0,M=0,Mall2;
+  Double_t ptmaxall=0,ptsumall=0,pt2sumall=0,ptsumall2;
   Double_t tsa00=0,tsa10=0,tsa11=0;
   Double_t Q2r=0,Q2i=0;
   Double_t Q4r=0,Q4i=0;
@@ -120,6 +120,10 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
     Double_t pt = track->Pt();
     if (pt>ptmaxall)
       ptmaxall = pt;
+    if (pt>2) {
+      ptsumall2 += pt;
+      ++Mall2;
+    }
     ptsumall  +=pt;
     pt2sumall +=pt*pt;
     Double_t px = track->Px();
@@ -150,7 +154,7 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
 
   Double_t Q2abs = Q2r*Q2r+Q2i*Q2i;
   Double_t Q4abs = Q4r*Q4r+Q4i*Q4i;
-  Double_t Q42re = Q4r*Q2r*Q2r-Q4r*Q2i*Q2i+2*Q2r*Q2i;
+  Double_t Q42re = Q4r*Q2r*Q2r-Q4r*Q2i*Q2i+2*Q4i*Q2r*Q2i;
 
   Double_t tsall = -1;
   Double_t tsax = (tsa00+tsa11)*(tsa00+tsa11)-4*(tsa00*tsa11-tsa10*tsa10);
@@ -184,9 +188,11 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
                                                    5./*nSigmaDiamZ*/);
 
   fNtupCumInfo->fMall     = Mall;
+  fNtupCumInfo->fMall2    = Mall2;
   fNtupCumInfo->fPtMaxall = ptmaxall;
   fNtupCumInfo->fMPtall   = ptsumall/Mall;
   fNtupCumInfo->fMPt2all  = pt2sumall/Mall;
+  fNtupCumInfo->fMPtall2  = ptsumall2/Mall2;
   fNtupCumInfo->fTSall    = tsall;
   fNtupCumInfo->fM        = M;
   fNtupCumInfo->fQ2abs    = Q2abs;

@@ -51,10 +51,10 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcalJet {
 class AliNtupCumInfo {
  public:
     AliNtupCumInfo() : fTrig(0), fRun(0), fVz(0), fIsFEC(0), fIsVSel(0), fIsP(0),
-                       fMall(0), fPtMaxall(0), fMPtall(0), fMPt2all(0), fTSall(0),
+                       fMall(0), fMall2(0), fPtMaxall(0), fMPtall(0), 
+                       fMPt2all(0), fMPtall2(0), fTSall(0),
                        fM(0), fQ2abs(0), fQ4abs(0), fQ42re(0),
-                       fPtMax(0), fMPt(0), fMPt2(0), fTS(0), 
-                       fMV0M(0), 
+                       fPtMax(0), fMPt(0), fMPt2(0), fTS(0), fMV0M(0), 
                        fCl1(0), fV0M(0), fV0MEq(0), fV0A(0), fV0AEq(0), fZNA(0) {;}
   virtual ~AliNtupCumInfo() {;}
 
@@ -66,9 +66,11 @@ class AliNtupCumInfo {
   Bool_t        fIsVSel;       // is vertex selected
   Bool_t        fIsP;          // is SPD pileup
   Int_t         fMall;         // multiplicity (tracks in eta range)
+  Int_t         fMall2;        // multiplicity (tracks above 2 GeV/c in eta range)
   Double32_t    fPtMaxall;     //[0,0,16] maximum pT
   Double32_t    fMPtall;       //[0,0,16] mean pT
   Double32_t    fMPt2all;      //[0,0,16] mean pT2
+  Double32_t    fMPtall2;      //[0,0,16] mean pT truncated above 2 GeV/c
   Double32_t    fTSall;        //[0,0,16] transverse sphericity
   Int_t         fM;            // multiplicity (tracks in pT range)
   Double_t      fQ2abs;        // Q2 absolute
@@ -86,7 +88,7 @@ class AliNtupCumInfo {
   Double32_t    fV0AEq;        //[0,0,16] class V0A Eq
   Double32_t    fZNA;          //[0,0,16] class ZNA
  
-  ClassDef(AliNtupCumInfo,1) // Cumulant storage class
+  ClassDef(AliNtupCumInfo,2) // Cumulant storage class
 };
 
 #endif
