@@ -137,5 +137,5 @@ void AliPhysicsSelectionTask::Terminate(Option_t *)
   fout->Write();
   fout->Close();
   
-  Printf("Writting result to event_stat.root");
+  Printf("Writing result to event_stat.root");
 }
