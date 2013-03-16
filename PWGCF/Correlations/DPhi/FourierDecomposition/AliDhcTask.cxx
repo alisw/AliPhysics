@@ -32,7 +32,6 @@ using std::endl;
 
 ClassImp(AliDhcTask)
 
-
 //________________________________________________________________________
 AliDhcTask::AliDhcTask()
 : AliAnalysisTaskSE(), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
@@ -300,40 +299,40 @@ void AliDhcTask::SetAnaMode(Int_t iAna)
 {
   if (iAna==kHH) {
     SetFillMuons(kFALSE);
-    fEtaTLo = -1.0;
-    fEtaTHi = 1.0;
-    fEtaALo = -1.0;
-    fEtaAHi = 1.0;
+    fEtaTLo = -1.6;
+    fEtaTHi = +1.6;
+    fEtaALo = -1.6;
+    fEtaAHi = +1.6;
   } else if (iAna==kMuH) {
     SetFillMuons(kTRUE);
     fEtaTLo = -5.0;
-    fEtaTHi = -1.0;
-    fEtaALo = -1.0;
-    fEtaAHi = 1.0;
+    fEtaTHi = -2.0;
+    fEtaALo = -1.6;
+    fEtaAHi = +1.6;
   } else if (iAna==kHMu) {
     SetFillMuons(kTRUE);
-    fEtaTLo = -1.0;
-    fEtaTHi = 1.0;
+    fEtaTLo = -1.6;
+    fEtaTHi = +1.6;
     fEtaALo = -5.0;
-    fEtaAHi = -1.0;
+    fEtaAHi = -2.0;
   } else if (iAna==kMuMu) {
     SetFillMuons(kTRUE);
     fEtaTLo = -5.0;
-    fEtaTHi = -1.0;
+    fEtaTHi = -2.0;
     fEtaALo = -5.0;
-    fEtaAHi = -1.0;
+    fEtaAHi = -2.0;
   } else if (iAna==kPSide) {
     SetFillMuons(kFALSE);
-    fEtaTLo = -1.0;
+    fEtaTLo = -1.6;
     fEtaTHi = -0.465;
-    fEtaALo = -1.0;
-    fEtaAHi = -0.465;
+    fEtaALo = -1.6;
+    fEtaAHi = +1.6;
   } else if (iAna==kASide) {
     SetFillMuons(kFALSE);
-    fEtaTLo = -0.465;
-    fEtaTHi = 1.0;
-    fEtaALo = -0.465;
-    fEtaAHi = 1.0;
+    fEtaTLo = +0.465;
+    fEtaTHi = +1.6;
+    fEtaALo = -1.6;
+    fEtaAHi = +1.6;
   } else {
     AliInfo(Form("Unrecognized analysis option: %d", iAna));
   }
@@ -750,6 +749,8 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
       }
       Double_t pt   = vtrack->Pt();
       Double_t eta  = vtrack->Eta();
+      if (TMath::Abs(eta) > fEtaMax)
+        continue;
       Double_t phi  = vtrack->Phi();
       Int_t    sign = vtrack->Charge() > 0 ? 1 : -1;
       miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
