@@ -66,11 +66,11 @@ class AliNtupCumInfo {
   Bool_t        fIsVSel;       // is vertex selected
   Bool_t        fIsP;          // is SPD pileup
   Int_t         fMall;         // multiplicity (tracks in eta range)
-  Int_t         fMall2;        // multiplicity (tracks above 2 GeV/c in eta range)
+  Int_t         fMall2;        // multiplicity (tracks above 1 GeV/c in eta range)
   Double32_t    fPtMaxall;     //[0,0,16] maximum pT
   Double32_t    fMPtall;       //[0,0,16] mean pT
   Double32_t    fMPt2all;      //[0,0,16] mean pT2
-  Double32_t    fMPtall2;      //[0,0,16] mean pT truncated above 2 GeV/c
+  Double32_t    fMPtall2;      //[0,0,16] mean pT truncated above 1 GeV/c
   Double32_t    fTSall;        //[0,0,16] transverse sphericity
   Int_t         fM;            // multiplicity (tracks in pT range)
   Double_t      fQ2abs;        // Q2 absolute
