@@ -60,7 +60,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhPt(0),                       fhE(0),                    
     fhEEta(0),                     fhEPhi(0),                    fhEtaPhi(0),
     fhPtCentrality(),              fhPtEventPlane(0),
-    fhPtReject(0),                 fhEReject(0),                    
+    fhPtReject(0),                 fhEReject(0),
     fhEEtaReject(0),               fhEPhiReject(0),              fhEtaPhiReject(0),
     fhMass(0),                     fhAsymmetry(0), 
     fhSelectedMass(0),             fhSelectedAsymmetry(0),
@@ -77,7 +77,8 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     // MC histos
     fhMCE(),                       fhMCPt(),        
     fhMCPhi(),                     fhMCEta(),
-    fhMCEReject(),                 fhMCPtReject(),       
+    fhMCEReject(),                 fhMCPtReject(),
+    fhMCPtCentrality(),            
     fhMCPi0PtGenRecoFraction(0),   fhMCEtaPtGenRecoFraction(0),
     fhMCPi0DecayPt(0),             fhMCPi0DecayPtFraction(0),      
     fhMCEtaDecayPt(0),             fhMCEtaDecayPtFraction(0),
@@ -106,6 +107,8 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhMCPt             [i] = 0;
     fhMCPhi            [i] = 0;                   
     fhMCEta            [i] = 0;
+    fhMCPtCentrality   [i] = 0;
+    
     fhEMCLambda0       [i] = 0;
     fhEMCLambda0NoTRD  [i] = 0;
     fhEMCLambda0FracMaxCellCut[i]= 0;
@@ -1157,6 +1160,15 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhMCPt[i]->SetYTitle("N");
         fhMCPt[i]->SetXTitle("p_{T} (GeV/c)");
         outputContainer->Add(fhMCPt[i]) ; 
+        
+        fhMCPtCentrality[i]  = new TH2F
+        (Form("hPtCentrality_MC%s",pname[i].Data()),
+         Form("Identified as #pi^{0} (#eta), cluster from %s",
+              ptype[i].Data()),
+         nptbins,ptmin,ptmax, 100,0,100);
+        fhMCPtCentrality[i]->SetYTitle("centrality");
+        fhMCPtCentrality[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCPtCentrality[i]) ;
         
         if(fAnaType == kSSCalo)
         {
@@ -2236,6 +2248,8 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
       fhMCPhi[mcIndex] ->Fill(pt,phi);
       fhMCEta[mcIndex] ->Fill(pt,eta);
       
+      fhMCPtCentrality[mcIndex]->Fill(pt,cen);
+
       if((mcIndex==kmcPhoton || mcIndex==kmcPi0 || mcIndex==kmcEta) && fAnaType==kSSCalo)
       {
         Float_t efracMC = 0;

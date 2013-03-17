@@ -263,12 +263,12 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhTrackMatchedDEtaNLocMaxN[8] ;          //! Eta distance between track and cluster vs cluster E, more than 2 local maximum
   TH2F       * fhTrackMatchedDPhiNLocMaxN[8] ;          //! Phi distance between track and cluster vs cluster E, more than 2 local maximum
   
-  TH2F       * fhCentralityPi0NLocMax1 ;                //! Centrality for selected pi0, N Local Maxima = 1
-  TH2F       * fhCentralityEtaNLocMax1 ;                //! Centrality for selected eta, N Local Maxima = 1
-  TH2F       * fhCentralityPi0NLocMax2 ;                //! Centrality for selected pi0, N Local Maxima = 2
-  TH2F       * fhCentralityEtaNLocMax2 ;                //! Centrality for selected eta, N Local Maxima = 2
-  TH2F       * fhCentralityPi0NLocMaxN ;                //! Centrality for selected pi0, N Local Maxima > 2
-  TH2F       * fhCentralityEtaNLocMaxN ;                //! Centrality for selected eta, N Local Maxima > 2
+  TH2F       * fhCentralityPi0NLocMax1[8][2] ;          //! Centrality for selected pi0, N Local Maxima = 1
+  TH2F       * fhCentralityEtaNLocMax1[8][2] ;          //! Centrality for selected eta, N Local Maxima = 1
+  TH2F       * fhCentralityPi0NLocMax2[8][2] ;          //! Centrality for selected pi0, N Local Maxima = 2
+  TH2F       * fhCentralityEtaNLocMax2[8][2] ;          //! Centrality for selected eta, N Local Maxima = 2
+  TH2F       * fhCentralityPi0NLocMaxN[8][2] ;          //! Centrality for selected pi0, N Local Maxima > 2
+  TH2F       * fhCentralityEtaNLocMaxN[8][2] ;          //! Centrality for selected eta, N Local Maxima > 2
 
   TH2F       * fhEventPlanePi0NLocMax1 ;                //! Event plane for selected pi0, N Local Maxima = 1
   TH2F       * fhEventPlaneEtaNLocMax1 ;                //! Event plane for selected eta, N Local Maxima = 1
