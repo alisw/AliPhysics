@@ -257,7 +257,6 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
   meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
   Int_t nent=0;
   Int_t ok = 0;
-  Int_t okdiff=0;
   Int_t okcfd=0;
   TH1F *cfddiff = NULL; 
   TH1F *cfdtime = NULL;
