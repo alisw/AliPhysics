@@ -9,8 +9,8 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
   TString V1ClusName = "CaloClusters", 
   TString V2ClusName = "caloClusters", 
   TString trigClass  = "",
-  Bool_t IsPhosCali  = kFALSE
-  Int_t EvtType      = 4;
+  Bool_t IsPhosCali  = kFALSE,
+  Int_t EvtType      = 5 
 )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -24,17 +24,23 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
     return NULL;
   }
 
-  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-
+  TString Input;
   AliAnalysisTaskPi0V2* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task");
   if(EvtType == 1){ //central
     taskMB->SelectCollisionCandidates(AliVEvent::kCentral);
+    Input = "kCentral";
   } else if (EvtType == 2){ //SemiCentral
     taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral);
-  } else if (EvtType == 3){ //Central + SemiCentral 
+    Input = "kSemiCentral";
+  } else if (EvtType == 3){ //kMB 
+    taskMB->SelectCollisionCandidates(AliVEvent::kMB);
+    Input = "kMB";
+  } else if (EvtType == 4){ //Central + SemiCentral 
     taskMB->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral);
-  } else if (EvtType == 4){ //Central + SemiCentral + kMB
+    Input = "Central_SemiCentral";
+  } else if (EvtType == 5){ //Central + SemiCentral + kMB
     taskMB->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB);
+    Input = "ALLMB";
   }
   taskMB->SetTracksName(trackName.Data());
   taskMB->SetClusE(Ecut);
@@ -47,11 +53,11 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
   taskMB->SetIsPHOSCali(IsPhosCali);
 
   TString containerName = mgr->GetCommonFileName();
-  containerName += ":PWGGA_pi0v2CalSemiCentral";
+  containerName += ":PWGGA_EMCalpi0v2";
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(
-    Form("histv2task_Evt%d_E%1.2f_M02%1.2f", EvtType, Ecut, M02cut), 
+    Form("%s_E%1.2f_M02%1.2f", Input.Data(), Ecut, M02cut), 
     TList::Class(),
     AliAnalysisManager::kOutputContainer, 
     containerName.Data());
