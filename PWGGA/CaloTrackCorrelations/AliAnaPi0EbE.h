@@ -215,6 +215,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH1F         * fhMCEReject[6];              //! Number of rejected as pi0 vs E coming from X
   TH1F         * fhMCPtReject[6];             //! Number of rejected as pi0 vs Pt coming from X
 
+  TH2F         * fhMCPtCentrality[6] ;        //! centrality  vs pi0/eta pT  coming from X
+
+  
   TH2F         * fhMCPi0PtGenRecoFraction;    //! SS id, clusters id as pi0 (eta), coming from 2 photon, pi0 primary, pt vs E prim pi0 / E reco
   TH2F         * fhMCEtaPtGenRecoFraction;    //! SS id, clusters id as pi0 (eta), coming from 2 photon, eta primary, pt vs E prim eta / E reco  
   TH1F         * fhMCPi0DecayPt;              //! SS id, clusters id as pi0 (eta), coming from 1 photon, pi0 decay primary, pt
