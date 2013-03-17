@@ -154,7 +154,7 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 	  }
 	  GetMeanAndSigma(cfd, mean, sigma);
 	  if (sigma == 0 || sigma > 600 || cfd->GetEntries()<50 ){ //!!!
-	    AliError(Form("%s low statsitics or bad histogram", histname[i].Data()));
+	    AliError(Form("%s low statsitics or bad histogram, OCDB value is = %f", histname[i].Data(), cdbtime[i]) );
 	    return 400;
 	  }
 	  if ( sigma > 0 && sigma < 600 && cfd->GetEntries()>=50) //!!!
