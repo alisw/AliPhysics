@@ -55,7 +55,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	double PionMass = 0.13956995;
 	double KaonMass = 0.493677;
 	
-	int runmults[10] = {1, 1, 1, 0, 0, 0, 0, 0, 0, 0};
+	int runmults[10] = {0, 0, 0, 1, 1, 1, 1, 0, 0, 0};
 	int multbins[11] = {0, 50, 100, 200, 300, 400, 500, 700, 800, 900, 990};
 	
 	int runch[2] = {1, 1};
@@ -70,7 +70,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	
 	AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 	Reader->SetFilterBit(7);
-	Reader->SetCentralityPreSelection(0.01, 210);
+	Reader->SetCentralityPreSelection(190, 710);
 	
 	AliFemtoManager* Manager=new AliFemtoManager();
 	Manager->SetEventReader(Reader);
@@ -119,7 +119,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 					ana[ichg][imult]->SetEPhistname(Form("hist%i%i",ichg,imult));
 					
 					mecetaphitpc[ichg][imult] = new AliFemtoBasicEventCut();
-					mecetaphitpc[ichg][imult]->SetEventMult(0.001,100000);
+					mecetaphitpc[ichg][imult]->SetEventMult(5,100000);//was 0.001
 					mecetaphitpc[ichg][imult]->SetVertZPos(-8,8);
 					
 					cutPassEvMetaphitpc[ichg][imult] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", chrgs[ichg], imult));
@@ -149,14 +149,14 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 					dtc1etaphitpc[ichg][imult]->SetStatus(AliESDtrack::kTPCin);
 					//	    dtc1etaphitpc->SetStatus(AliESDtrack::kTPCrefit);
 					//    dtc1etaphitpc->SetStatus(AliESDtrack::kITSrefit);
-					dtc1etaphitpc[ichg][imult]->SetminTPCncls(0);
+					dtc1etaphitpc[ichg][imult]->SetminTPCncls(80);//was 0
 					dtc1etaphitpc[ichg][imult]->SetRemoveKinks(kTRUE);
 					dtc1etaphitpc[ichg][imult]->SetLabel(kFALSE);
 					//    dtc1etaphitpc->SetMaxITSChiNdof(6.0);
 					dtc1etaphitpc[ichg][imult]->SetMaxTPCChiNdof(4.0);
-					dtc1etaphitpc[ichg][imult]->SetMaxImpactXY(0.20);
+					dtc1etaphitpc[ichg][imult]->SetMaxImpactXY(2.4);//was 0.2
 					//            dtc1etaphitpc->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
-					dtc1etaphitpc[ichg][imult]->SetMaxImpactZ(0.15);
+					dtc1etaphitpc[ichg][imult]->SetMaxImpactZ(3.0);//0.15
 					//      dtc1etaphitpc->SetMaxSigmaToVertex(6.0);
 					
 					// sqpcetaphitpc = new AliFemtoPairCutAntiGamma();
