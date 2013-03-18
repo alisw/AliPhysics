@@ -68,7 +68,7 @@
 #include "iostream"
 #include "fstream"
 
-//#include "AliEventPoolManager.h"
+#include "AliEventPoolManager.h"
 
 #include "AliCentrality.h"
 #include "AliMagF.h"
@@ -95,9 +95,9 @@
 #include "TVector3.h"
 #include "TRandom2.h"
 
-ClassImp(AliAnalysisTaskElecHadronCorrel)
-//ClassImp(AliehDPhiBasicParticle)  
-//________________________________________________________________________
+  ClassImp(AliAnalysisTaskElecHadronCorrel)
+ClassImp(AliehDPhiBasicParticle)  
+  //________________________________________________________________________
   AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel(const char *name) 
   : AliAnalysisTaskSE(name)
   ,fVevent(0)  
@@ -120,12 +120,25 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
   ,fCentralityMin(0)
   ,fCentralityMax(0)
   ,fkCentralityMethod(0)  
-//  ,fPoolMgr(0x0)  
-  ,fNoEvents(0)
-//  ,fTrkpt(0)
-  ,fTrkEovPAft(0)	 
-//  ,fTrkEovPBefHad(0)	 
- // ,fdEdxBef(0)	 
+  ,fTPCnsigEleMin(-2)                                                          
+  ,fTPCnsigEleMax(2)                                                          
+  ,fTPCnsigHadMin(-10)                                                          
+  ,fTPCnsigHadMax(-3.5)                                                          
+  ,fM02CutMin(0.03)                                                              
+  ,fM02CutMax(0.5)                                                              
+  ,fM20CutMin(0.03)                                                              
+  ,fM20CutMax(0.3)
+  ,fDispCutMin(0)                                                             
+  ,fDispCutMax(1)                                                             
+  ,fEovPMin(0.8)                                                                
+  ,fEovPMax(1.2)
+  ,fTriggerCentral(kTRUE) 
+  ,fPoolMgr(0x0)  
+    ,fNoEvents(0)
+    //  ,fTrkpt(0)
+    ,fTrkEovPAft(0)	 
+    //  ,fTrkEovPBefHad(0)	 
+    // ,fdEdxBef(0)	 
   ,fSemiIncElecDphi(0) 	
   ,fSemiIncElecDphi1(0) 	
   ,fSemiIncElecDphi2(0) 	
@@ -273,25 +286,35 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
         ,fTrakPhiSPDAnd(0)
         ,fTrackHFEcutsITS(0)  
      */
-    /*  ,fNoMixedEvents(0)
-        ,fMixStat(0)       
-        ,fMixStat1(0)        
-        ,fMixedIncElecDphi(0)  
-        ,fMixedIncElecDphi1(0)  
-        ,fMixedIncElecDphi2(0)  
-        ,fMixedPhotElecDphi(0)
-        ,fMixedPhotElecDphi1(0)
-        ,fMixedPhotElecDphi2(0)
-        ,fMixedSemiIncElecDphi(0)  
-        ,fMixedSemiIncElecDphi1(0)  
-        ,fMixedSemiIncElecDphi2(0)  
-        ,fMixedDphiULSMassLow(0)  
-        ,fMixedDphiULSMassLow1(0)  
-        ,fMixedDphiULSMassLow2(0)  
-        ,fMixedDphiLSMassLow(0)  
-        ,fMixedDphiLSMassLow1(0)  
-        ,fMixedDphiLSMassLow2(0)  
-     */   
+  ,fNoMixedEvents(0)
+  ,fMixStat(0)       
+  ,fMixStat1(0)        
+  ,fMixedIncElecDphi(0)  
+  ,fMixedIncElecDphi1(0)  
+  ,fMixedIncElecDphi2(0)  
+  ,fMixedIncElecDphi3(0)  
+  ,fMixedIncElecDphi4(0)  
+  ,fMixedPhotElecDphi(0)
+  ,fMixedPhotElecDphi1(0)
+  ,fMixedPhotElecDphi2(0)
+  ,fMixedPhotElecDphi3(0)
+  ,fMixedPhotElecDphi4(0)
+  ,fMixedSemiIncElecDphi(0)  
+  ,fMixedSemiIncElecDphi1(0)  
+  ,fMixedSemiIncElecDphi2(0)  
+  ,fMixedSemiIncElecDphi3(0)  
+  ,fMixedSemiIncElecDphi4(0)  
+  ,fMixedDphiULSMassLow(0)  
+  ,fMixedDphiULSMassLow1(0)  
+  ,fMixedDphiULSMassLow2(0)  
+  ,fMixedDphiULSMassLow3(0)  
+  ,fMixedDphiULSMassLow4(0)  
+  ,fMixedDphiLSMassLow(0)  
+  ,fMixedDphiLSMassLow1(0)  
+    ,fMixedDphiLSMassLow2(0)  
+    ,fMixedDphiLSMassLow3(0)  
+    ,fMixedDphiLSMassLow4(0)  
+
   ,fHadronPt(0)  
   ,fCentralityPass(0)
   ,fCentralityNoPass(0)
@@ -330,9 +353,9 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
   ,fHadronDphiNoSSEta21(0)  
   ,fHadronDphiNoSSEta22(0)  
   ,fHadronDphiNoSSEta23(0)  
-    ,fHadronDphiNoSSEta24(0)
-    //,fSparseElectron(0)  
-    //  ,fvalueElectron(0)   
+,fHadronDphiNoSSEta24(0)
+  //,fSparseElectron(0)  
+  //  ,fvalueElectron(0)   
 {
   //Named constructor
 
@@ -371,8 +394,21 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fCentrality(0)
   ,fCentralityMin(0)
   ,fCentralityMax(0)
-    ,fkCentralityMethod(0)  
-    //  ,fPoolMgr(0x0)    
+  ,fkCentralityMethod(0)  
+  ,fTPCnsigEleMin(-2)                                                                     
+  ,fTPCnsigEleMax(2)                                                                      
+  ,fTPCnsigHadMin(-10)                                                          
+  ,fTPCnsigHadMax(-3.5)                                                                   
+  ,fM02CutMin(0.03)                                                                       
+  ,fM02CutMax(0.5)                                                                        
+  ,fM20CutMin(0.03)                                                                       
+  ,fM20CutMax(0.3)
+  ,fDispCutMin(0)                                                                         
+  ,fDispCutMax(1)                                                                         
+  ,fEovPMin(0.8)                                                                          
+  ,fEovPMax(1.2)
+  ,fTriggerCentral(kTRUE) 
+  ,fPoolMgr(0x0)    
     ,fNoEvents(0)
     //  ,fTrkpt(0)
     ,fTrkEovPAft(0)	 
@@ -525,25 +561,35 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
         ,fTrakPhiSPDAnd(0)
         ,fTrackHFEcutsITS(0)  
      */
-    /*  ,fNoMixedEvents(0)
-        ,fMixStat(0)      
-        ,fMixStat1(0)     
-        ,fMixedIncElecDphi(0)  
-        ,fMixedIncElecDphi1(0)  
-        ,fMixedIncElecDphi2(0)  
-        ,fMixedPhotElecDphi(0)
-        ,fMixedPhotElecDphi1(0)
-        ,fMixedPhotElecDphi2(0)
-        ,fMixedSemiIncElecDphi(0)
-        ,fMixedSemiIncElecDphi1(0)
-        ,fMixedSemiIncElecDphi2(0)
-        ,fMixedDphiULSMassLow(0) 
-        ,fMixedDphiULSMassLow1(0) 
-        ,fMixedDphiULSMassLow2(0) 
-        ,fMixedDphiLSMassLow(0)      
-        ,fMixedDphiLSMassLow1(0)      
-        ,fMixedDphiLSMassLow2(0)      
-     */
+  ,fNoMixedEvents(0)
+  ,fMixStat(0)      
+  ,fMixStat1(0)     
+  ,fMixedIncElecDphi(0)  
+  ,fMixedIncElecDphi1(0)  
+  ,fMixedIncElecDphi2(0)  
+  ,fMixedIncElecDphi3(0)  
+  ,fMixedIncElecDphi4(0)  
+  ,fMixedPhotElecDphi(0)
+  ,fMixedPhotElecDphi1(0)
+  ,fMixedPhotElecDphi2(0)
+  ,fMixedPhotElecDphi3(0)
+  ,fMixedPhotElecDphi4(0)
+  ,fMixedSemiIncElecDphi(0)
+  ,fMixedSemiIncElecDphi1(0)
+  ,fMixedSemiIncElecDphi2(0)
+  ,fMixedSemiIncElecDphi3(0)
+  ,fMixedSemiIncElecDphi4(0)
+  ,fMixedDphiULSMassLow(0) 
+  ,fMixedDphiULSMassLow1(0) 
+  ,fMixedDphiULSMassLow2(0) 
+  ,fMixedDphiULSMassLow3(0) 
+  ,fMixedDphiULSMassLow4(0) 
+  ,fMixedDphiLSMassLow(0)      
+  ,fMixedDphiLSMassLow1(0)      
+  ,fMixedDphiLSMassLow2(0)      
+  ,fMixedDphiLSMassLow3(0)      
+    ,fMixedDphiLSMassLow4(0)      
+
   ,fHadronPt(0)  
   ,fCentralityPass(0)
   ,fCentralityNoPass(0)
@@ -582,9 +628,9 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fHadronDphiNoSSEta21(0)  
   ,fHadronDphiNoSSEta22(0)  
   ,fHadronDphiNoSSEta23(0)  
-    ,fHadronDphiNoSSEta24(0)
-    //,fSparseElectron(0)  
-    //  ,fvalueElectron(0)  
+,fHadronDphiNoSSEta24(0)
+  //,fSparseElectron(0)  
+  //  ,fvalueElectron(0)  
 {
   //Default constructor
   fPID = new AliHFEpid("hfePid");
@@ -645,16 +691,23 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
   if(!fPID->IsInitialized()){ 
     // Initialize PID with the given run number
     AliWarning("PID not initialised, get from Run no");
- 
+
     if(IsAODanalysis())fPID->InitializePID(fAOD->GetRunNumber());
     else fPID->InitializePID(fESD->GetRunNumber());
   }
 
-  // trigger selection
-  if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral))) return;
 
+  if(fTriggerCentral){
+    // trigger selection
+    if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral))) return;
+  }
+
+  if(!fTriggerCentral){
+    // trigger selection
+    if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral))) return;
+  }
   // centrality selection 
-  SetCentralityParameters(0., 7., "V0M");
+  //  SetCentralityParameters(0., 7., "V0M");
   Bool_t pass = kFALSE; 
   CheckCentrality(fVevent,pass);
   if(!pass)return;
@@ -673,220 +726,221 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
   AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
   if(!pidResponse){
     AliDebug(1, "Using default PID Response");
-     pidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
-   }
+    pidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
+  }
 
-   fPID->SetPIDResponse(pidResponse);
+  fPID->SetPIDResponse(pidResponse);
 
-   fCFM->SetRecEventInfo(fVevent);
+  fCFM->SetRecEventInfo(fVevent);
 
-   /*
-   //Event mixing
-   AliEventPool* pool = fPoolMgr->GetEventPool(centvalue, pVtxZ); // Get the buffer associated with the current centrality and z-vtx
-   if (!pool)
-     AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centvalue, pVtxZ));     
-*/
+  AliCentrality *fCentrality2 = (AliCentrality*)fAOD->GetCentrality();
+  Double_t centvalue1 = fCentrality2->GetCentralityPercentile("V0M");
 
-   // Look for kink mother for AOD
-   Double_t *listofmotherkink =0;
-   Int_t numberofvertices = 0, numberofmotherkink = 0;
-   if(IsAODanalysis()){
-     numberofvertices = fAOD->GetNumberOfVertices();
-     listofmotherkink = new Double_t[numberofvertices];
-     for(Int_t ivertex=0; ivertex < numberofvertices; ivertex++) {
-       AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
-       if(!aodvertex) continue;
-       if(aodvertex->GetType()==AliAODVertex::kKink) {
-         AliAODTrack *mother = (AliAODTrack *) aodvertex->GetParent();
-         if(!mother) continue;
-         Int_t idmother = mother->GetID();
-         listofmotherkink[numberofmotherkink] = idmother;
-         numberofmotherkink++;
-       }
-     }
-   }
+  //Event mixing
+  AliEventPool* pool = fPoolMgr->GetEventPool(centvalue1, pVtxZ); // Get the buffer associated with the current centrality and z-vtx
+  if (!pool)
+    AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centvalue1, pVtxZ));     
 
-   // Track loop 
-   for (Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) {
-     AliVParticle* Vtrack = fVevent->GetTrack(iTracks);
-     if (!Vtrack) {
-       printf("ERROR: Could not receive track %d\n", iTracks);
-       continue;
-     }
-     AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
-     AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
-     AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
+  // Look for kink mother for AOD
+  Double_t *listofmotherkink =0;
+  Int_t numberofvertices = 0, numberofmotherkink = 0;
+  if(IsAODanalysis()){
+    numberofvertices = fAOD->GetNumberOfVertices();
+    listofmotherkink = new Double_t[numberofvertices];
+    for(Int_t ivertex=0; ivertex < numberofvertices; ivertex++) {
+      AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
+      if(!aodvertex) continue;
+      if(aodvertex->GetType()==AliAODVertex::kKink) {
+        AliAODTrack *mother = (AliAODTrack *) aodvertex->GetParent();
+        if(!mother) continue;
+        Int_t idmother = mother->GetID();
+        listofmotherkink[numberofmotherkink] = idmother;
+        numberofmotherkink++;
+      }
+    }
+  }
 
-     if(IsAODanalysis())
-       if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
+  // Track loop 
+  for (Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) {
+    AliVParticle* Vtrack = fVevent->GetTrack(iTracks);
+    if (!Vtrack) {
+      printf("ERROR: Could not receive track %d\n", iTracks);
+      continue;
+    }
+    AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
+    AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
+    AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 
-     if(track->Pt()<1) continue;
+    if(IsAODanalysis())
+      if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
 
-     // fTrackPtBefTrkCuts->Fill(track->Pt());		
+    if(track->Pt()<1) continue;
 
-     // RecKine: ITSTPC cuts  
-     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
+    // fTrackPtBefTrkCuts->Fill(track->Pt());		
 
-     // Reject kink mother
-     if(fRejectKinkMother) { // Quick and dirty fix to reject both kink mothers and daughters
-       if(IsAODanalysis()){
-         Bool_t kinkmotherpass = kTRUE;
-         for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
-           if(track->GetID() == listofmotherkink[kinkmother]) {
-             kinkmotherpass = kFALSE;
-             continue;
-           }
-         }
-         if(!kinkmotherpass) continue;
-       }
-       else{
-         if(etrack->GetKinkIndex(0) != 0) continue;
-       }
-     }
-     // RecPrim
-     //     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue; //gives warning for AOD, so not using
+    // RecKine: ITSTPC cuts  
+    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
 
-     // HFE cuts: TPC PID cleanup
-     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
-
-     // fTrackHFEcuts->Fill(track->Phi());
-
-     // HFEcuts: ITS layers cuts
-     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
-
-     //     fTrackHFEcutsITS->Fill(track->Phi());
-     //fTrackPtAftTrkCuts->Fill(track->Pt());		
-
-     Double_t fClsE = -999, p = -999, fEovP=-999, pt = -999, dEdx=-999, fTPCnSigma=0;
-     pt = track->Pt();
-     p = track->P();
-     dEdx = track->GetTPCsignal();
-     fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
-
-     //TPC electron phi
-     // if(fTPCnSigma >= -2 && fTPCnSigma <= 2){
-     //       fElecPhiTPC->Fill(track->Phi());
-     // }
-
-     //eta cut (-0.7,0.7)
-     if(track->Eta() < -0.7 || track->Eta() > 0.7) continue;
-
-     // Track extrapolation to EMCAL
-     Int_t fClsId = track->GetEMCALcluster();
-     if(fClsId <0) continue;
-     AliVCluster *cluster = fVevent->GetCaloCluster(fClsId);
-     if(!cluster->IsEMCAL()) continue;
-     if(TMath::Abs(cluster->GetTrackDx())>0.05 || TMath::Abs(cluster->GetTrackDz())>0.05) continue;    
-     //     fdEdxBef->Fill(p,dEdx);
-     //fTPCnsigma->Fill(p,fTPCnSigma);
-
-     //     fTrkpt->Fill(pt);
-     fClsE = cluster->E();
-     fEovP = fClsE/p;
-
-     //--------THnsparse---------
-     //fvalueElectron[0] = pt;
-     //fvalueElectron[1] = fTPCnSigma;
-     //fvalueElectron[2] = fEovP;
-     //fvalueElectron[3] = cluster->GetM20();
-     //fvalueElectron[4] = cluster->GetM02();
-     //fvalueElectron[5] = cluster->GetDispersion();
-
-     //fSparseElectron->Fill(fvalueElectron);
-
-     //----------------
-     //EovP distribution for Had
-     if((fTPCnSigma > -10) && (fTPCnSigma < -3.5)) fEovPHadWoSS->Fill(pt,fEovP);
-     if(((fTPCnSigma > -10) && (fTPCnSigma < -3.5)) && ((cluster->GetM20()>0.03) && (cluster->GetM20()<0.3)) &&  ((cluster->GetM02()>0.03) && (cluster->GetM02()<0.5)) && ((cluster->GetDispersion()<1))) fEovPHadWSS->Fill(pt,fEovP);
-
-     //Dphi distribution hadrons with shower shape cuts
-     if(((fTPCnSigma > -10) && (fTPCnSigma < -3.5)) && ((cluster->GetM20()>0.03) && (cluster->GetM20()<0.3)) &&  ((cluster->GetM02()>0.03) && (cluster->GetM02()<0.5)) && ((cluster->GetDispersion()<1))&&(fEovP >= 0.8 && fEovP <=1.2)){
-       ElectronHadCorrel(iTracks, track, fHadronDphi, fHadronDphi1,fHadronDphi2,fHadronDphi3,fHadronDphi4);
-       ElectronHadCorrelEtaBins(iTracks, track, fHadronDphiEta1, fHadronDphiEta11,fHadronDphiEta12,fHadronDphiEta13,fHadronDphiEta14,fHadronDphiEta2, fHadronDphiEta21,fHadronDphiEta22,fHadronDphiEta23,fHadronDphiEta24);
-       fPiPt->Fill(pt);
-     }
-
-     //Dphi distribution hadrons without shower shape cuts
-     if((fTPCnSigma > -10) && (fTPCnSigma < -3.5)&&(fEovP >= 0.8 && fEovP <=1.2)){
-       ElectronHadCorrel(iTracks, track, fHadronDphiNoSS, fHadronDphiNoSS1,fHadronDphiNoSS2,fHadronDphiNoSS3,fHadronDphiNoSS4);
-       ElectronHadCorrelEtaBins(iTracks, track, fHadronDphiNoSSEta1, fHadronDphiNoSSEta11,fHadronDphiNoSSEta12,fHadronDphiNoSSEta13,fHadronDphiNoSSEta14,fHadronDphiNoSSEta2, fHadronDphiNoSSEta21,fHadronDphiNoSSEta22,fHadronDphiNoSSEta23,fHadronDphiNoSSEta24);
-       fPiPtNoSS->Fill(pt);
-     }
-
-     //Electron id with TPC
-     if(fTPCnSigma < -2 || fTPCnSigma > 2) continue;
-     fEovPWoSS->Fill(pt,fEovP);
-     //   fElecPhiTPCEovP->Fill(track->Phi());
-
-     //Electron id with shower shape  
-     if(cluster->GetM20()<0.03 || cluster->GetM20()>0.3 || cluster->GetM02()<0.03 || cluster->GetM02()> 0.5 || cluster->GetDispersion()>1) continue;
-     fEovPWSS->Fill(pt,fEovP);
-
-     //Electron id with E/p
-     if(fEovP < 0.8 || fEovP >1.2) continue;
-
-     fTrkEovPAft->Fill(pt,fEovP);
-     fElecPhi->Fill(track->Phi());
-     fElecPhiPt->Fill(track->Phi(),track->Pt());
-     if (track->Eta() >0 && track->Eta() <0.7) fElecPhiTPChalf->Fill(track->Phi());
-
-     HadronInfo(iTracks);
-
-     Bool_t fFlagPhotonicElec = kFALSE;
-     // select photonic electron
-     SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
-
-     //Inclusive electron-hadron correlation
-     ElectronHadCorrel(iTracks, track, fInclusiveElecDphi, fInclusiveElecDphi1,fInclusiveElecDphi2,fInclusiveElecDphi3,fInclusiveElecDphi4);
-     fInclusiveElecPt->Fill(pt);
-     //       MixedEvent(track,fMixedIncElecDphi, fMixedIncElecDphi1,fMixedIncElecDphi2);
-
-     //Dphi in Eta bins
-     ElectronHadCorrelEtaBins(iTracks, track, fInclusiveElecDphiEta1, fInclusiveElecDphiEta11,fInclusiveElecDphiEta12,fInclusiveElecDphiEta13,fInclusiveElecDphiEta14,fInclusiveElecDphiEta2, fInclusiveElecDphiEta21,fInclusiveElecDphiEta22,fInclusiveElecDphiEta23,fInclusiveElecDphiEta24);
-
-     //Inclusive electron-hadron correlation far eta side
-     ElectronHadCorrelEtaFarSide(iTracks, track, fInclusiveElecDphiEtaFS, fInclusiveElecDphiEtaFS1,fInclusiveElecDphiEtaFS2,fInclusiveElecDphiEtaFS3,fInclusiveElecDphiEtaFS4);
-     //       MixedEvent(track,fMixedIncElecDphi, fMixedIncElecDphi1,fMixedIncElecDphi2);
-
-     // photonic electron
-     if(fFlagPhotonicElec){
-       //Electron hadron correlation
-       ElectronHadCorrel(iTracks, track, fPhotElecDphi,fPhotElecDphi1,fPhotElecDphi2,fPhotElecDphi3,fPhotElecDphi4);
-       fPhotoElecPt->Fill(pt);
-       //       MixedEvent(track,fMixedPhotElecDphi, fMixedPhotElecDphi1,fMixedPhotElecDphi2);
-
-       //Dphi in Eta bins
-       ElectronHadCorrelEtaBins(iTracks, track, fPhotElecDphiEta1,fPhotElecDphiEta11,fPhotElecDphiEta12,fPhotElecDphiEta13,fPhotElecDphiEta14,fPhotElecDphiEta2,fPhotElecDphiEta21,fPhotElecDphiEta22,fPhotElecDphiEta23,fPhotElecDphiEta24);
-     }
-
-     // Semi inclusive electron 
-     if(!fFlagPhotonicElec){
-       //Electron hadron correlation
-       ElectronHadCorrel(iTracks, track, fSemiIncElecDphi, fSemiIncElecDphi1,fSemiIncElecDphi2,fSemiIncElecDphi3,fSemiIncElecDphi4);
-       fSemiInclElecPt->Fill(pt);
-       //        MixedEvent(track,fMixedSemiIncElecDphi,fMixedSemiIncElecDphi1,fMixedSemiIncElecDphi2);
-
-       //Dphi in Eta bins
-       ElectronHadCorrelEtaBins(iTracks, track, fSemiIncElecDphiEta1, fSemiIncElecDphiEta11,fSemiIncElecDphiEta12,fSemiIncElecDphiEta13,fSemiIncElecDphiEta14,fSemiIncElecDphiEta2, fSemiIncElecDphiEta21,fSemiIncElecDphiEta22,fSemiIncElecDphiEta23,fSemiIncElecDphiEta24);
-     }
-   }
-   /*   //EMC clusters  
-        Int_t clsNo = fVevent->GetNumberOfCaloClusters();
-        fNClusv1->Fill(clsNo); 
-        for(Int_t iclus=0; iclus<clsNo ; iclus++){ 
-        AliVCluster* clus = fVevent->GetCaloCluster(iclus);
-        if(!clus->IsEMCAL()) continue; 
-        fNCellv1->Fill(clus->GetNCells());
-        fClsEv1->Fill(clus->E());  
+    // Reject kink mother
+    if(fRejectKinkMother) { // Quick and dirty fix to reject both kink mothers and daughters
+      if(IsAODanalysis()){
+        Bool_t kinkmotherpass = kTRUE;
+        for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
+          if(track->GetID() == listofmotherkink[kinkmother]) {
+            kinkmotherpass = kFALSE;
+            continue;
+          }
         }
-    */
-   /*
-      TObjArray* tracksClone = CloneAndReduceTrackList();
-      tracksClone->SetOwner();
-      pool->UpdatePool(tracksClone);
-    */
-   delete listofmotherkink;
-   PostData(1, fOutputList);
+        if(!kinkmotherpass) continue;
+      }
+      else{
+        if(etrack->GetKinkIndex(0) != 0) continue;
+      }
+    }
+    // RecPrim
+    //     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue; //gives warning for AOD, so not using
+
+    // HFE cuts: TPC PID cleanup
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
+
+    // fTrackHFEcuts->Fill(track->Phi());
+
+    // HFEcuts: ITS layers cuts
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
+
+    //     fTrackHFEcutsITS->Fill(track->Phi());
+    //fTrackPtAftTrkCuts->Fill(track->Pt());		
+
+    Double_t fClsE = -999, p = -999, fEovP=-999, pt = -999, dEdx=-999, fTPCnSigma=0;
+    pt = track->Pt();
+    p = track->P();
+    dEdx = track->GetTPCsignal();
+    fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
+
+    //TPC electron phi
+    // if(fTPCnSigma >= -2 && fTPCnSigma <= 2){
+    //       fElecPhiTPC->Fill(track->Phi());
+    // }
+
+    //eta cut (-0.7,0.7)
+    if(track->Eta() < -0.7 || track->Eta() > 0.7) continue;
+
+    // Track extrapolation to EMCAL
+    Int_t fClsId = track->GetEMCALcluster();
+    if(fClsId <0) continue;
+    AliVCluster *cluster = fVevent->GetCaloCluster(fClsId);
+    if(!cluster->IsEMCAL()) continue;
+    if(TMath::Abs(cluster->GetTrackDx())>0.05 || TMath::Abs(cluster->GetTrackDz())>0.05) continue;    
+    //     fdEdxBef->Fill(p,dEdx);
+    //fTPCnsigma->Fill(p,fTPCnSigma);
+
+    //     fTrkpt->Fill(pt);
+    fClsE = cluster->E();
+    fEovP = fClsE/p;
+
+    //--------THnsparse---------
+    //fvalueElectron[0] = pt;
+    //fvalueElectron[1] = fTPCnSigma;
+    //fvalueElectron[2] = fEovP;
+    //fvalueElectron[3] = cluster->GetM20();
+    //fvalueElectron[4] = cluster->GetM02();
+    //fvalueElectron[5] = cluster->GetDispersion();
+
+    //fSparseElectron->Fill(fvalueElectron);
+
+    //----------------
+    //EovP distribution for Had
+    if((fTPCnSigma > fTPCnsigHadMin) && (fTPCnSigma < fTPCnsigHadMax)) fEovPHadWoSS->Fill(pt,fEovP);
+    if(((fTPCnSigma > fTPCnsigHadMin) && (fTPCnSigma < fTPCnsigHadMax)) && ((cluster->GetM20()> fM20CutMin) && (cluster->GetM20()< fM20CutMax)) &&  ((cluster->GetM02()> fM02CutMin) && (cluster->GetM02()< fM02CutMax)) && ((cluster->GetDispersion()< fDispCutMax))) fEovPHadWSS->Fill(pt,fEovP);
+
+    //Dphi distribution hadrons with shower shape cuts
+    if(((fTPCnSigma > fTPCnsigHadMin) && (fTPCnSigma < fTPCnsigHadMax)) && ((cluster->GetM20()> fM20CutMin) && (cluster->GetM20()< fM20CutMax)) &&  ((cluster->GetM02()> fM02CutMin) && (cluster->GetM02()< fM02CutMax)) && ((cluster->GetDispersion()< fDispCutMax))&&(fEovP >= fEovPMin && fEovP <= fEovPMax)){
+      ElectronHadCorrel(iTracks, track, fHadronDphi, fHadronDphi1,fHadronDphi2,fHadronDphi3,fHadronDphi4);
+      ElectronHadCorrelEtaBins(iTracks, track, fHadronDphiEta1, fHadronDphiEta11,fHadronDphiEta12,fHadronDphiEta13,fHadronDphiEta14,fHadronDphiEta2, fHadronDphiEta21,fHadronDphiEta22,fHadronDphiEta23,fHadronDphiEta24);
+      fPiPt->Fill(pt);
+    }
+
+    //Dphi distribution hadrons without shower shape cuts
+    if((fTPCnSigma > fTPCnsigHadMin) && (fTPCnSigma < fTPCnsigHadMax)&&(fEovP >= fEovPMin && fEovP <= fEovPMax)){
+      ElectronHadCorrel(iTracks, track, fHadronDphiNoSS, fHadronDphiNoSS1,fHadronDphiNoSS2,fHadronDphiNoSS3,fHadronDphiNoSS4);
+      ElectronHadCorrelEtaBins(iTracks, track, fHadronDphiNoSSEta1, fHadronDphiNoSSEta11,fHadronDphiNoSSEta12,fHadronDphiNoSSEta13,fHadronDphiNoSSEta14,fHadronDphiNoSSEta2, fHadronDphiNoSSEta21,fHadronDphiNoSSEta22,fHadronDphiNoSSEta23,fHadronDphiNoSSEta24);
+      fPiPtNoSS->Fill(pt);
+    }
+
+    //Electron id with TPC
+    if(fTPCnSigma < fTPCnsigEleMin || fTPCnSigma > fTPCnsigEleMax) continue;
+    fEovPWoSS->Fill(pt,fEovP);
+    //   fElecPhiTPCEovP->Fill(track->Phi());
+
+    //Electron id with shower shape  
+    if(cluster->GetM20()< fM20CutMin || cluster->GetM20()> fM20CutMax || cluster->GetM02()< fM02CutMin || cluster->GetM02()> fM02CutMax || cluster->GetDispersion()> fDispCutMax) continue;
+    fEovPWSS->Fill(pt,fEovP);
+
+    //Electron id with E/p
+    if(fEovP < fEovPMin || fEovP > fEovPMax) continue;
+
+    fTrkEovPAft->Fill(pt,fEovP);
+    fElecPhi->Fill(track->Phi());
+    fElecPhiPt->Fill(track->Phi(),track->Pt());
+    if (track->Eta() >0 && track->Eta() <0.7) fElecPhiTPChalf->Fill(track->Phi());
+
+    HadronInfo(iTracks);
+
+    Bool_t fFlagPhotonicElec = kFALSE;
+    // select photonic electron
+    SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
+
+    //Inclusive electron-hadron correlation
+    ElectronHadCorrel(iTracks, track, fInclusiveElecDphi, fInclusiveElecDphi1,fInclusiveElecDphi2,fInclusiveElecDphi3,fInclusiveElecDphi4);
+    fInclusiveElecPt->Fill(pt);
+    MixedEvent(track,fMixedIncElecDphi, fMixedIncElecDphi1,fMixedIncElecDphi2, fMixedIncElecDphi3, fMixedIncElecDphi4);
+
+    //Dphi in Eta bins
+    ElectronHadCorrelEtaBins(iTracks, track, fInclusiveElecDphiEta1, fInclusiveElecDphiEta11,fInclusiveElecDphiEta12,fInclusiveElecDphiEta13,fInclusiveElecDphiEta14,fInclusiveElecDphiEta2, fInclusiveElecDphiEta21,fInclusiveElecDphiEta22,fInclusiveElecDphiEta23,fInclusiveElecDphiEta24);
+
+    //Inclusive electron-hadron correlation far eta side
+    ElectronHadCorrelEtaFarSide(iTracks, track, fInclusiveElecDphiEtaFS, fInclusiveElecDphiEtaFS1,fInclusiveElecDphiEtaFS2,fInclusiveElecDphiEtaFS3,fInclusiveElecDphiEtaFS4);
+    MixedEvent(track,fMixedIncElecDphi, fMixedIncElecDphi1,fMixedIncElecDphi2, fMixedIncElecDphi3, fMixedIncElecDphi4);
+
+    // photonic electron
+    if(fFlagPhotonicElec){
+      //Electron hadron correlation
+      ElectronHadCorrel(iTracks, track, fPhotElecDphi,fPhotElecDphi1,fPhotElecDphi2,fPhotElecDphi3,fPhotElecDphi4);
+      fPhotoElecPt->Fill(pt);
+      MixedEvent(track,fMixedPhotElecDphi, fMixedPhotElecDphi1,fMixedPhotElecDphi2, fMixedPhotElecDphi3, fMixedPhotElecDphi4);
+
+      //Dphi in Eta bins
+      ElectronHadCorrelEtaBins(iTracks, track, fPhotElecDphiEta1,fPhotElecDphiEta11,fPhotElecDphiEta12,fPhotElecDphiEta13,fPhotElecDphiEta14,fPhotElecDphiEta2,fPhotElecDphiEta21,fPhotElecDphiEta22,fPhotElecDphiEta23,fPhotElecDphiEta24);
+    }
+
+    // Semi inclusive electron 
+    if(!fFlagPhotonicElec){
+      //Electron hadron correlation
+      ElectronHadCorrel(iTracks, track, fSemiIncElecDphi, fSemiIncElecDphi1,fSemiIncElecDphi2,fSemiIncElecDphi3,fSemiIncElecDphi4);
+      fSemiInclElecPt->Fill(pt);
+      MixedEvent(track,fMixedSemiIncElecDphi,fMixedSemiIncElecDphi1,fMixedSemiIncElecDphi2, fMixedSemiIncElecDphi3, fMixedSemiIncElecDphi4);
+
+      //Dphi in Eta bins
+      ElectronHadCorrelEtaBins(iTracks, track, fSemiIncElecDphiEta1, fSemiIncElecDphiEta11,fSemiIncElecDphiEta12,fSemiIncElecDphiEta13,fSemiIncElecDphiEta14,fSemiIncElecDphiEta2, fSemiIncElecDphiEta21,fSemiIncElecDphiEta22,fSemiIncElecDphiEta23,fSemiIncElecDphiEta24);
+    }
+  }
+  /*   //EMC clusters  
+       Int_t clsNo = fVevent->GetNumberOfCaloClusters();
+       fNClusv1->Fill(clsNo); 
+       for(Int_t iclus=0; iclus<clsNo ; iclus++){ 
+       AliVCluster* clus = fVevent->GetCaloCluster(iclus);
+       if(!clus->IsEMCAL()) continue; 
+       fNCellv1->Fill(clus->GetNCells());
+       fClsEv1->Fill(clus->E());  
+       }
+   */
+
+  TObjArray* tracksClone = CloneAndReduceTrackList();
+  tracksClone->SetOwner();
+  pool->UpdatePool(tracksClone);
+
+  delete listofmotherkink;
+  PostData(1, fOutputList);
 }
 //_________________________________________
 void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
@@ -930,19 +984,53 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   if(IsAODanalysis()) fCuts->SetAOD(); 
   fCuts->Initialize(fCFM);
-  /*
+
   //Mixed event initialising
   Int_t trackDepth = 2000;
   Int_t poolsize   = 1000;
 
   Int_t nCentralityBins  = 5;
-  Double_t CentralityBins[] = {0,2,4,6,8,10};
-
   Int_t nZvtxBins  = 4;
-  Double_t vertexBins[] = {-10,-5,0,5,10};
+  Double_t CentralityBins[6];
+  Double_t CentralityBinsSC[7];
+  Double_t vertexBins[5];
+  if(fTriggerCentral)
+  {
+    CentralityBins[0] = 0;
+    CentralityBins[1] = 2;
+    CentralityBins[2] = 4;
+    CentralityBins[3] = 6;
+    CentralityBins[4] = 8;
+    CentralityBins[5] = 10;
 
-  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) CentralityBins, nZvtxBins, (Double_t*) vertexBins);
-   */
+    vertexBins[0] = -10;
+    vertexBins[1] = -5;
+    vertexBins[2] = 0;
+    vertexBins[3] = 5;
+    vertexBins[4] = 10;
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) CentralityBins, nZvtxBins, (Double_t*) vertexBins);
+  }
+
+
+  if(!fTriggerCentral)                                                                     
+  { 
+    CentralityBinsSC[0] = 20;  
+    CentralityBinsSC[1] = 25;  
+    CentralityBinsSC[2] = 30;  
+    CentralityBinsSC[3] = 35;  
+    CentralityBinsSC[4] = 40;  
+    CentralityBinsSC[5] = 45;  
+    CentralityBinsSC[6] = 50;  
+
+    vertexBins[0] = -10;
+    vertexBins[1] = -5;
+    vertexBins[2] = 0;
+    vertexBins[3] = 5;
+    vertexBins[4] = 10;
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) CentralityBinsSC, nZvtxBins, (Double_t*) vertexBins);
+  }
+
+
   //---------Output Tlist
   fOutputList = new TList();
   fOutputList->SetOwner();
@@ -1021,121 +1109,121 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
   fSemiIncElecDphi = new TH2F("fSemiIncElecDphi", "Semi Inclusive elec-had Dphi correlation",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi);
 
-  fSemiIncElecDphi1 = new TH2F("fSemiIncElecDphi1", "Semi Inclusive elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphi1 = new TH2F("fSemiIncElecDphi1", "Semi Inclusive elec-had Dphi correlation for 2<pt^{asso}<4",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi1);
 
-  fSemiIncElecDphi2 = new TH2F("fSemiIncElecDphi2", "Semi Inclusive elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphi2 = new TH2F("fSemiIncElecDphi2", "Semi Inclusive elec-had Dphi correlation for 4<pt^{asso}<6",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi2);
 
-  fSemiIncElecDphi3 = new TH2F("fSemiIncElecDphi3", "Semi Inclusive elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphi3 = new TH2F("fSemiIncElecDphi3", "Semi Inclusive elec-had Dphi correlation for 6<pt^{asso}<8",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi3);
 
-  fSemiIncElecDphi4 = new TH2F("fSemiIncElecDphi4", "Semi Inclusive elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphi4 = new TH2F("fSemiIncElecDphi4", "Semi Inclusive elec-had Dphi correlation for 4<pt^{asso}<10",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi4);
 
   fPhotElecDphi = new TH2F("fPhotElecDphi", "Photon elec-had Dphi correlation",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi);
 
-  fPhotElecDphi1 = new TH2F("fPhotElecDphi1", "Photon elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
+  fPhotElecDphi1 = new TH2F("fPhotElecDphi1", "Photon elec-had Dphi correlation for 2<pt^{asso}<4",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi1);
 
-  fPhotElecDphi2 = new TH2F("fPhotElecDphi2", "Photon elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
+  fPhotElecDphi2 = new TH2F("fPhotElecDphi2", "Photon elec-had Dphi correlation for 4<pt^{asso}<6",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi2);
 
-  fPhotElecDphi3 = new TH2F("fPhotElecDphi3", "Photon elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
+  fPhotElecDphi3 = new TH2F("fPhotElecDphi3", "Photon elec-had Dphi correlation for 6<pt^{asso}<8",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi3);
 
-  fPhotElecDphi4 = new TH2F("fPhotElecDphi4", "Photon elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
+  fPhotElecDphi4 = new TH2F("fPhotElecDphi4", "Photon elec-had Dphi correlation for 4<pt^{asso}<10",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi4);
 
   fInclusiveElecDphi = new TH2F("fInclusiveElecDphi", "Inclusive elec-had Dphi correlation",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi);
 
-  fInclusiveElecDphi1 = new TH2F("fInclusiveElecDphi1", "Inclusive elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphi1 = new TH2F("fInclusiveElecDphi1", "Inclusive elec-had Dphi correlation for 2<pt^{asso}<4",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi1);
 
-  fInclusiveElecDphi2 = new TH2F("fInclusiveElecDphi2", "Inclusive elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphi2 = new TH2F("fInclusiveElecDphi2", "Inclusive elec-had Dphi correlation for 4<pt^{asso}<6",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi2);
 
-  fInclusiveElecDphi3 = new TH2F("fInclusiveElecDphi3", "Inclusive elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphi3 = new TH2F("fInclusiveElecDphi3", "Inclusive elec-had Dphi correlation for 6<pt^{asso}<8",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi3);
 
-  fInclusiveElecDphi4 = new TH2F("fInclusiveElecDphi4", "Inclusive elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphi4 = new TH2F("fInclusiveElecDphi4", "Inclusive elec-had Dphi correlation for 4<pt^{asso}<10",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi4);
 
   fInclusiveElecDphiEtaFS = new TH2F("fInclusiveElecDphiEtaFS", "Inclusive elec-had Dphi correlation (hadron 1<eta<1.6)",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEtaFS);
 
-  fInclusiveElecDphiEtaFS1 = new TH2F("fInclusiveElecDphiEtaFS1", "Inclusive elec-had Dphi correlation for 1<pt^{asso}<3 (hadron 1<eta<1.6)",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEtaFS1 = new TH2F("fInclusiveElecDphiEtaFS1", "Inclusive elec-had Dphi correlation for 2<pt^{asso}<4 (hadron 1<eta<1.6)",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEtaFS1);
 
-  fInclusiveElecDphiEtaFS2 = new TH2F("fInclusiveElecDphiEtaFS2", "Inclusive elec-had Dphi correlation for 3<pt^{asso}<5 (hadron 1<eta<1.6)",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEtaFS2 = new TH2F("fInclusiveElecDphiEtaFS2", "Inclusive elec-had Dphi correlation for 4<pt^{asso}<6 (hadron 1<eta<1.6)",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEtaFS2);
 
-  fInclusiveElecDphiEtaFS3 = new TH2F("fInclusiveElecDphiEtaFS3", "Inclusive elec-had Dphi correlation for 5<pt^{asso}<7 (hadron 1<eta<1.6)",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEtaFS3 = new TH2F("fInclusiveElecDphiEtaFS3", "Inclusive elec-had Dphi correlation for 6<pt^{asso}<8 (hadron 1<eta<1.6)",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEtaFS3);
 
-  fInclusiveElecDphiEtaFS4 = new TH2F("fInclusiveElecDphiEtaFS4", "Inclusive elec-had Dphi correlation for 7<pt^{asso}<9 (hadron 1<eta<1.6)",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEtaFS4 = new TH2F("fInclusiveElecDphiEtaFS4", "Inclusive elec-had Dphi correlation for 4<pt^{asso}<10 (hadron 1<eta<1.6)",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEtaFS4);
 
   fDphiULSMassLow = new TH2F("fDphiULSMassLow", "e-h Dphi ULS, mass<cut",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow);
 
-  fDphiULSMassLow1 = new TH2F("fDphiULSMassLow1", "e-h Dphi ULS, mass<cut for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLow1 = new TH2F("fDphiULSMassLow1", "e-h Dphi ULS, mass<cut for 2<pt^{asso}<4",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow1);
 
-  fDphiULSMassLow2 = new TH2F("fDphiULSMassLow2", "e-h Dphi ULS, mass<cut for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLow2 = new TH2F("fDphiULSMassLow2", "e-h Dphi ULS, mass<cut for 4<pt^{asso}<6",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow2);
 
-  fDphiULSMassLow3 = new TH2F("fDphiULSMassLow3", "e-h Dphi ULS, mass<cut for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLow3 = new TH2F("fDphiULSMassLow3", "e-h Dphi ULS, mass<cut for 6<pt^{asso}<8",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow3);
 
-  fDphiULSMassLow4 = new TH2F("fDphiULSMassLow4", "e-h Dphi ULS, mass<cut for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLow4 = new TH2F("fDphiULSMassLow4", "e-h Dphi ULS, mass<cut for 4<pt^{asso}<10",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow4);
 
   fDphiLSMassLow = new TH2F("fDphiLSMassLow", "e-h Dphi LS, mass<cut",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow);
 
-  fDphiLSMassLow1 = new TH2F("fDphiLSMassLow1", "e-h Dphi LS, mass<cut for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLow1 = new TH2F("fDphiLSMassLow1", "e-h Dphi LS, mass<cut for 2<pt^{asso}<4",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow1);
 
-  fDphiLSMassLow2 = new TH2F("fDphiLSMassLow2", "e-h Dphi LS, mass<cut for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLow2 = new TH2F("fDphiLSMassLow2", "e-h Dphi LS, mass<cut for 4<pt^{asso}<6",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow2);
 
-  fDphiLSMassLow3 = new TH2F("fDphiLSMassLow3", "e-h Dphi LS, mass<cut for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLow3 = new TH2F("fDphiLSMassLow3", "e-h Dphi LS, mass<cut for 6<pt^{asso}<8",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow3);
 
-  fDphiLSMassLow4 = new TH2F("fDphiLSMassLow4", "e-h Dphi LS, mass<cut for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLow4 = new TH2F("fDphiLSMassLow4", "e-h Dphi LS, mass<cut for 8<pt^{asso}<10",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow4);
 
   fDphiULSMassLowNoPartner = new TH2F("fDphiULSMassLowNoPartner", "e-h Dphi ULS with no partner, mass<mass cut,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner);
 
-  fDphiULSMassLowNoPartner1 = new TH2F("fDphiULSMassLowNoPartner1", "e-h Dphi ULS with no partner, mass<mass cut for 1<pt^{asso}<3,",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartner1 = new TH2F("fDphiULSMassLowNoPartner1", "e-h Dphi ULS with no partner, mass<mass cut for 2<pt^{asso}<4,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner1);
 
-  fDphiULSMassLowNoPartner2 = new TH2F("fDphiULSMassLowNoPartner2", "e-h Dphi ULS with no partner, mass<mass cut for 3<pt^{asso}<5,",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartner2 = new TH2F("fDphiULSMassLowNoPartner2", "e-h Dphi ULS with no partner, mass<mass cut for 4<pt^{asso}<6,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner2);
 
-  fDphiULSMassLowNoPartner3 = new TH2F("fDphiULSMassLowNoPartner3", "e-h Dphi ULS with no partner, mass<mass cut for 5<pt^{asso}<7,",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartner3 = new TH2F("fDphiULSMassLowNoPartner3", "e-h Dphi ULS with no partner, mass<mass cut for 6<pt^{asso}<8,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner3);
 
-  fDphiULSMassLowNoPartner4 = new TH2F("fDphiULSMassLowNoPartner4", "e-h Dphi ULS with no partner, mass<mass cut for 7<pt^{asso}<9,",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartner4 = new TH2F("fDphiULSMassLowNoPartner4", "e-h Dphi ULS with no partner, mass<mass cut for 4<pt^{asso}<10,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner4);
 
   fDphiLSMassLowNoPartner = new TH2F("fDphiLSMassLowNoPartner", "e-h Dphi LS with no partner, mass<mass cut",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner);
 
-  fDphiLSMassLowNoPartner1 = new TH2F("fDphiLSMassLowNoPartner1", "e-h Dphi LS with no partner, mass<mass cut for 1<pt^{asso}<3,",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartner1 = new TH2F("fDphiLSMassLowNoPartner1", "e-h Dphi LS with no partner, mass<mass cut for 2<pt^{asso}<4,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner1);                                            
 
-  fDphiLSMassLowNoPartner2 = new TH2F("fDphiLSMassLowNoPartner2", "e-h Dphi LS with no partner, mass<mass cut for 3<pt^{asso}<5,",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartner2 = new TH2F("fDphiLSMassLowNoPartner2", "e-h Dphi LS with no partner, mass<mass cut for 4<pt^{asso}<6,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner2);
 
-  fDphiLSMassLowNoPartner3 = new TH2F("fDphiLSMassLowNoPartner3", "e-h Dphi LS with no partner, mass<mass cut for 5<pt^{asso}<7,",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartner3 = new TH2F("fDphiLSMassLowNoPartner3", "e-h Dphi LS with no partner, mass<mass cut for 6<pt^{asso}<8,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner3);
 
-  fDphiLSMassLowNoPartner4 = new TH2F("fDphiLSMassLowNoPartner4", "e-h Dphi LS with no partner, mass<mass cut for 7<pt^{asso}<9,",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartner4 = new TH2F("fDphiLSMassLowNoPartner4", "e-h Dphi LS with no partner, mass<mass cut for 4<pt^{asso}<10,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner4);
 
   fPhotoElecPt = new TH1F("fPhotoElecPt", "photonic electron pt",1000,0,100);
@@ -1153,146 +1241,146 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
   fLSElecPt = new TH1F("fLSElecPt", "LS electron pt",1000,0,100);
   fOutputList->Add(fLSElecPt);
 
-  fSemiIncElecDphiEta1 = new TH2F("fSemiIncElecDphiEta1", "Semi Inclusive elec-had Dphi correlation for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphiEta1 = new TH2F("fSemiIncElecDphiEta1", "Semi Inclusive elec-had Dphi correlation for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphiEta1);
-  fSemiIncElecDphiEta11 = new TH2F("fSemiIncElecDphiEta11", "Semi Inclusive elec-had Dphi correlation for 1<pt^{asso}<3i for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphiEta11 = new TH2F("fSemiIncElecDphiEta11", "Semi Inclusive elec-had Dphi correlation for 2<pt^{asso}<4 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphiEta11);
-  fSemiIncElecDphiEta12 = new TH2F("fSemiIncElecDphiEta12", "Semi Inclusive elec-had Dphi correlation for 3<pt^{asso}<5 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphiEta12 = new TH2F("fSemiIncElecDphiEta12", "Semi Inclusive elec-had Dphi correlation for 4<pt^{asso}<6 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphiEta12);
-  fSemiIncElecDphiEta13 = new TH2F("fSemiIncElecDphiEta13", "Semi Inclusive elec-had Dphi correlation for 5<pt^{asso}<7 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphiEta13 = new TH2F("fSemiIncElecDphiEta13", "Semi Inclusive elec-had Dphi correlation for 6<pt^{asso}<8 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphiEta13);
-  fSemiIncElecDphiEta14 = new TH2F("fSemiIncElecDphiEta14", "Semi Inclusive elec-had Dphi correlation for 7<pt^{asso}<9 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphiEta14 = new TH2F("fSemiIncElecDphiEta14", "Semi Inclusive elec-had Dphi correlation for 4<pt^{asso}<10 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphiEta14);
-  fPhotElecDphiEta1 = new TH2F("fPhotElecDphiEta1", "Photon elec-had Dphi correlation for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fPhotElecDphiEta1 = new TH2F("fPhotElecDphiEta1", "Photon elec-had Dphi correlation for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphiEta1);
-  fPhotElecDphiEta11 = new TH2F("fPhotElecDphiEta11", "Photon elec-had Dphi correlation for 1<pt^{asso}<3 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fPhotElecDphiEta11 = new TH2F("fPhotElecDphiEta11", "Photon elec-had Dphi correlation for 2<pt^{asso}<4 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphiEta11);
-  fPhotElecDphiEta12 = new TH2F("fPhotElecDphiEta12", "Photon elec-had Dphi correlation for 3<pt^{asso}<5 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fPhotElecDphiEta12 = new TH2F("fPhotElecDphiEta12", "Photon elec-had Dphi correlation for 4<pt^{asso}<6 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphiEta12);
-  fPhotElecDphiEta13 = new TH2F("fPhotElecDphiEta13", "Photon elec-had Dphi correlation for 5<pt^{asso}<7 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fPhotElecDphiEta13 = new TH2F("fPhotElecDphiEta13", "Photon elec-had Dphi correlation for 6<pt^{asso}<8 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphiEta13);
-  fPhotElecDphiEta14 = new TH2F("fPhotElecDphiEta14", "Photon elec-had Dphi correlation for 7<pt^{asso}<9 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fPhotElecDphiEta14 = new TH2F("fPhotElecDphiEta14", "Photon elec-had Dphi correlation for 4<pt^{asso}<10 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphiEta14);
-  fInclusiveElecDphiEta1 = new TH2F("fInclusiveElecDphiEta1", "Inclusive elec-had Dphi correlation for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEta1 = new TH2F("fInclusiveElecDphiEta1", "Inclusive elec-had Dphi correlation for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEta1);
-  fInclusiveElecDphiEta11 = new TH2F("fInclusiveElecDphiEta11", "Inclusive elec-had Dphi correlation for 1<pt^{asso}<3 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEta11 = new TH2F("fInclusiveElecDphiEta11", "Inclusive elec-had Dphi correlation for 2<pt^{asso}<4 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEta11);
-  fInclusiveElecDphiEta12 = new TH2F("fInclusiveElecDphiEta12", "Inclusive elec-had Dphi correlation for 3<pt^{asso}<5 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEta12 = new TH2F("fInclusiveElecDphiEta12", "Inclusive elec-had Dphi correlation for 4<pt^{asso}<6 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEta12);
-  fInclusiveElecDphiEta13 = new TH2F("fInclusiveElecDphiEta13", "Inclusive elec-had Dphi correlation for 5<pt^{asso}<7 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEta13 = new TH2F("fInclusiveElecDphiEta13", "Inclusive elec-had Dphi correlation for 6<pt^{asso}<8 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEta13);
-  fInclusiveElecDphiEta14 = new TH2F("fInclusiveElecDphiEta14", "Inclusive elec-had Dphi correlation for 7<pt^{asso}<9 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEta14 = new TH2F("fInclusiveElecDphiEta14", "Inclusive elec-had Dphi correlation for 4<pt^{asso}<10 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEta14);
-  fDphiULSMassLowEta1 = new TH2F("fDphiULSMassLowEta1", "e-h Dphi ULS, mass<cut for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowEta1 = new TH2F("fDphiULSMassLowEta1", "e-h Dphi ULS, mass<cut for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowEta1);
-  fDphiULSMassLowEta11 = new TH2F("fDphiULSMassLowEta11", "e-h Dphi ULS, mass<cut for 1<pt^{asso}<3 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowEta11 = new TH2F("fDphiULSMassLowEta11", "e-h Dphi ULS, mass<cut for 2<pt^{asso}<4 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowEta11);
-  fDphiULSMassLowEta12 = new TH2F("fDphiULSMassLowEta12", "e-h Dphi ULS, mass<cut for 3<pt^{asso}<5 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowEta12 = new TH2F("fDphiULSMassLowEta12", "e-h Dphi ULS, mass<cut for 4<pt^{asso}<6 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowEta12);
-  fDphiULSMassLowEta13 = new TH2F("fDphiULSMassLowEta13", "e-h Dphi ULS, mass<cut for 5<pt^{asso}<7 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowEta13 = new TH2F("fDphiULSMassLowEta13", "e-h Dphi ULS, mass<cut for 6<pt^{asso}<8 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowEta13);
-  fDphiULSMassLowEta14 = new TH2F("fDphiULSMassLowEta14", "e-h Dphi ULS, mass<cut for 7<pt^{asso}<9 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowEta14 = new TH2F("fDphiULSMassLowEta14", "e-h Dphi ULS, mass<cut for 4<pt^{asso}<10 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowEta14);
-  fDphiLSMassLowEta1 = new TH2F("fDphiLSMassLowEta1", "e-h Dphi LS, mass<cut for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowEta1 = new TH2F("fDphiLSMassLowEta1", "e-h Dphi LS, mass<cut for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowEta1);
-  fDphiLSMassLowEta11 = new TH2F("fDphiLSMassLowEta11", "e-h Dphi LS, mass<cut for 1<pt^{asso}<3 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowEta11 = new TH2F("fDphiLSMassLowEta11", "e-h Dphi LS, mass<cut for 2<pt^{asso}<4 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowEta11);
-  fDphiLSMassLowEta12 = new TH2F("fDphiLSMassLowEta12", "e-h Dphi LS, mass<cut for 3<pt^{asso}<5 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowEta12 = new TH2F("fDphiLSMassLowEta12", "e-h Dphi LS, mass<cut for 4<pt^{asso}<6 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowEta12);
-  fDphiLSMassLowEta13 = new TH2F("fDphiLSMassLowEta13", "e-h Dphi LS, mass<cut for 5<pt^{asso}<7 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowEta13 = new TH2F("fDphiLSMassLowEta13", "e-h Dphi LS, mass<cut for 6<pt^{asso}<8 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowEta13);
-  fDphiLSMassLowEta14 = new TH2F("fDphiLSMassLowEta14", "e-h Dphi LS, mass<cut for 7<pt^{asso}<9 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowEta14 = new TH2F("fDphiLSMassLowEta14", "e-h Dphi LS, mass<cut for 8<pt^{asso}<10 for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowEta14);
-  fDphiULSMassLowNoPartnerEta1 = new TH2F("fDphiULSMassLowNoPartnerEta1", "e-h Dphi ULS with no partner, mass<mass cut, for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartnerEta1 = new TH2F("fDphiULSMassLowNoPartnerEta1", "e-h Dphi ULS with no partner, mass<mass cut, for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartnerEta1);
-  fDphiULSMassLowNoPartnerEta11 = new TH2F("fDphiULSMassLowNoPartnerEta11", "e-h Dphi ULS with no partner, mass<mass cut for 1<pt^{asso}<3, for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartnerEta11 = new TH2F("fDphiULSMassLowNoPartnerEta11", "e-h Dphi ULS with no partner, mass<mass cut for 2<pt^{asso}<4, for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartnerEta11);
-  fDphiULSMassLowNoPartnerEta12 = new TH2F("fDphiULSMassLowNoPartnerEta12", "e-h Dphi ULS with no partner, mass<mass cut for 3<pt^{asso}<5, for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartnerEta12 = new TH2F("fDphiULSMassLowNoPartnerEta12", "e-h Dphi ULS with no partner, mass<mass cut for 4<pt^{asso}<6, for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartnerEta12);
-  fDphiULSMassLowNoPartnerEta13 = new TH2F("fDphiULSMassLowNoPartnerEta13", "e-h Dphi ULS with no partner, mass<mass cut for 5<pt^{asso}<7, for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartnerEta13 = new TH2F("fDphiULSMassLowNoPartnerEta13", "e-h Dphi ULS with no partner, mass<mass cut for 6<pt^{asso}<8, for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartnerEta13);
-  fDphiULSMassLowNoPartnerEta14 = new TH2F("fDphiULSMassLowNoPartnerEta14", "e-h Dphi ULS with no partner, mass<mass cut for 7<pt^{asso}<9, for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartnerEta14 = new TH2F("fDphiULSMassLowNoPartnerEta14", "e-h Dphi ULS with no partner, mass<mass cut for 4<pt^{asso}<10, for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartnerEta14);
-  fDphiLSMassLowNoPartnerEta1 = new TH2F("fDphiLSMassLowNoPartnerEta1", "e-h Dphi LS with no partner, mass<mass cut, for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartnerEta1 = new TH2F("fDphiLSMassLowNoPartnerEta1", "e-h Dphi LS with no partner, mass<mass cut, for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartnerEta1);
-  fDphiLSMassLowNoPartnerEta11 = new TH2F("fDphiLSMassLowNoPartnerEta11", "e-h Dphi LS with no partner, mass<mass cut for 1<pt^{asso}<3, for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartnerEta11 = new TH2F("fDphiLSMassLowNoPartnerEta11", "e-h Dphi LS with no partner, mass<mass cut for 2<pt^{asso}<4, for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartnerEta11);
-  fDphiLSMassLowNoPartnerEta12 = new TH2F("fDphiLSMassLowNoPartnerEta12", "e-h Dphi LS with no partner, mass<mass cut for 3<pt^{asso}<5, for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartnerEta12 = new TH2F("fDphiLSMassLowNoPartnerEta12", "e-h Dphi LS with no partner, mass<mass cut for 4<pt^{asso}<6, for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartnerEta12);
-  fDphiLSMassLowNoPartnerEta13 = new TH2F("fDphiLSMassLowNoPartnerEta13", "e-h Dphi LS with no partner, mass<mass cut for 5<pt^{asso}<7, for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartnerEta13 = new TH2F("fDphiLSMassLowNoPartnerEta13", "e-h Dphi LS with no partner, mass<mass cut for 6<pt^{asso}<8, for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartnerEta13);
-  fDphiLSMassLowNoPartnerEta14 = new TH2F("fDphiLSMassLowNoPartnerEta14", "e-h Dphi LS with no partner, mass<mass cut for 7<pt^{asso}<9, for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartnerEta14 = new TH2F("fDphiLSMassLowNoPartnerEta14", "e-h Dphi LS with no partner, mass<mass cut for 4<pt^{asso}<10, for |Eta < 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartnerEta14);
 
-  fSemiIncElecDphiEta2 = new TH2F("fSemiIncElecDphiEta2", "Semi Inclusive elec-had Dphi correlation for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphiEta2 = new TH2F("fSemiIncElecDphiEta2", "Semi Inclusive elec-had Dphi correlation for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphiEta2);
-  fSemiIncElecDphiEta21 = new TH2F("fSemiIncElecDphiEta21", "Semi Inclusive elec-had Dphi correlation for 1<pt^{asso}<3i for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphiEta21 = new TH2F("fSemiIncElecDphiEta21", "Semi Inclusive elec-had Dphi correlation for 2<pt^{asso}<4 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphiEta21);
-  fSemiIncElecDphiEta22 = new TH2F("fSemiIncElecDphiEta22", "Semi Inclusive elec-had Dphi correlation for 3<pt^{asso}<5 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphiEta22 = new TH2F("fSemiIncElecDphiEta22", "Semi Inclusive elec-had Dphi correlation for 4<pt^{asso}<6 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphiEta22);
-  fSemiIncElecDphiEta23 = new TH2F("fSemiIncElecDphiEta23", "Semi Inclusive elec-had Dphi correlation for 5<pt^{asso}<7 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphiEta23 = new TH2F("fSemiIncElecDphiEta23", "Semi Inclusive elec-had Dphi correlation for 6<pt^{asso}<8 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphiEta23);
-  fSemiIncElecDphiEta24 = new TH2F("fSemiIncElecDphiEta24", "Semi Inclusive elec-had Dphi correlation for 7<pt^{asso}<9 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fSemiIncElecDphiEta24 = new TH2F("fSemiIncElecDphiEta24", "Semi Inclusive elec-had Dphi correlation for 4<pt^{asso}<10 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphiEta24);
-  fPhotElecDphiEta2 = new TH2F("fPhotElecDphiEta2", "Photon elec-had Dphi correlation for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fPhotElecDphiEta2 = new TH2F("fPhotElecDphiEta2", "Photon elec-had Dphi correlation for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphiEta2);
-  fPhotElecDphiEta21 = new TH2F("fPhotElecDphiEta21", "Photon elec-had Dphi correlation for 1<pt^{asso}<3 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fPhotElecDphiEta21 = new TH2F("fPhotElecDphiEta21", "Photon elec-had Dphi correlation for 2<pt^{asso}<4 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphiEta21);
-  fPhotElecDphiEta22 = new TH2F("fPhotElecDphiEta22", "Photon elec-had Dphi correlation for 3<pt^{asso}<5 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fPhotElecDphiEta22 = new TH2F("fPhotElecDphiEta22", "Photon elec-had Dphi correlation for 4<pt^{asso}<6 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphiEta22);
-  fPhotElecDphiEta23 = new TH2F("fPhotElecDphiEta23", "Photon elec-had Dphi correlation for 5<pt^{asso}<7 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fPhotElecDphiEta23 = new TH2F("fPhotElecDphiEta23", "Photon elec-had Dphi correlation for 6<pt^{asso}<8 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphiEta23);
-  fPhotElecDphiEta24 = new TH2F("fPhotElecDphiEta24", "Photon elec-had Dphi correlation for 7<pt^{asso}<9 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fPhotElecDphiEta24 = new TH2F("fPhotElecDphiEta24", "Photon elec-had Dphi correlation for 4<pt^{asso}<10 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphiEta24);
-  fInclusiveElecDphiEta2 = new TH2F("fInclusiveElecDphiEta2", "Inclusive elec-had Dphi correlation for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEta2 = new TH2F("fInclusiveElecDphiEta2", "Inclusive elec-had Dphi correlation for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEta2);
-  fInclusiveElecDphiEta21 = new TH2F("fInclusiveElecDphiEta21", "Inclusive elec-had Dphi correlation for 1<pt^{asso}<3 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEta21 = new TH2F("fInclusiveElecDphiEta21", "Inclusive elec-had Dphi correlation for 2<pt^{asso}<4 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEta21);
-  fInclusiveElecDphiEta22 = new TH2F("fInclusiveElecDphiEta22", "Inclusive elec-had Dphi correlation for 3<pt^{asso}<5 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEta22 = new TH2F("fInclusiveElecDphiEta22", "Inclusive elec-had Dphi correlation for 4<pt^{asso}<6 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEta22);
-  fInclusiveElecDphiEta23 = new TH2F("fInclusiveElecDphiEta23", "Inclusive elec-had Dphi correlation for 5<pt^{asso}<7 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEta23 = new TH2F("fInclusiveElecDphiEta23", "Inclusive elec-had Dphi correlation for 6<pt^{asso}<8 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEta23);
-  fInclusiveElecDphiEta24 = new TH2F("fInclusiveElecDphiEta24", "Inclusive elec-had Dphi correlation for 7<pt^{asso}<9 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fInclusiveElecDphiEta24 = new TH2F("fInclusiveElecDphiEta24", "Inclusive elec-had Dphi correlation for 4<pt^{asso}<10 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphiEta24);
-  fDphiULSMassLowEta2 = new TH2F("fDphiULSMassLowEta2", "e-h Dphi ULS, mass<cut for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowEta2 = new TH2F("fDphiULSMassLowEta2", "e-h Dphi ULS, mass<cut for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowEta2);
-  fDphiULSMassLowEta21 = new TH2F("fDphiULSMassLowEta21", "e-h Dphi ULS, mass<cut for 1<pt^{asso}<3 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowEta21 = new TH2F("fDphiULSMassLowEta21", "e-h Dphi ULS, mass<cut for 2<pt^{asso}<4 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowEta21);
-  fDphiULSMassLowEta22 = new TH2F("fDphiULSMassLowEta22", "e-h Dphi ULS, mass<cut for 3<pt^{asso}<5 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowEta22 = new TH2F("fDphiULSMassLowEta22", "e-h Dphi ULS, mass<cut for 4<pt^{asso}<6 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowEta22);
-  fDphiULSMassLowEta23 = new TH2F("fDphiULSMassLowEta23", "e-h Dphi ULS, mass<cut for 5<pt^{asso}<7 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowEta23 = new TH2F("fDphiULSMassLowEta23", "e-h Dphi ULS, mass<cut for 6<pt^{asso}<8 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowEta23);
-  fDphiULSMassLowEta24 = new TH2F("fDphiULSMassLowEta24", "e-h Dphi ULS, mass<cut for 7<pt^{asso}<9 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowEta24 = new TH2F("fDphiULSMassLowEta24", "e-h Dphi ULS, mass<cut for 4<pt^{asso}<10 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowEta24);
-  fDphiLSMassLowEta2 = new TH2F("fDphiLSMassLowEta2", "e-h Dphi LS, mass<cut for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowEta2 = new TH2F("fDphiLSMassLowEta2", "e-h Dphi LS, mass<cut for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowEta2);
-  fDphiLSMassLowEta21 = new TH2F("fDphiLSMassLowEta21", "e-h Dphi LS, mass<cut for 1<pt^{asso}<3 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowEta21 = new TH2F("fDphiLSMassLowEta21", "e-h Dphi LS, mass<cut for 2<pt^{asso}<4 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowEta21);
-  fDphiLSMassLowEta22 = new TH2F("fDphiLSMassLowEta22", "e-h Dphi LS, mass<cut for 3<pt^{asso}<5 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowEta22 = new TH2F("fDphiLSMassLowEta22", "e-h Dphi LS, mass<cut for 4<pt^{asso}<6 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowEta22);
-  fDphiLSMassLowEta23 = new TH2F("fDphiLSMassLowEta23", "e-h Dphi LS, mass<cut for 5<pt^{asso}<7 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowEta23 = new TH2F("fDphiLSMassLowEta23", "e-h Dphi LS, mass<cut for 6<pt^{asso}<8 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowEta23);
-  fDphiLSMassLowEta24 = new TH2F("fDphiLSMassLowEta24", "e-h Dphi LS, mass<cut for 7<pt^{asso}<9 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowEta24 = new TH2F("fDphiLSMassLowEta24", "e-h Dphi LS, mass<cut for 4<pt^{asso}<10 for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowEta24);  
-  fDphiULSMassLowNoPartnerEta2 = new TH2F("fDphiULSMassLowNoPartnerEta2", "e-h Dphi ULS with no partner, mass<mass cut, for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartnerEta2 = new TH2F("fDphiULSMassLowNoPartnerEta2", "e-h Dphi ULS with no partner, mass<mass cut, for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartnerEta2);
-  fDphiULSMassLowNoPartnerEta21 = new TH2F("fDphiULSMassLowNoPartnerEta21", "e-h Dphi ULS with no partner, mass<mass cut for 1<pt^{asso}<3, for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartnerEta21 = new TH2F("fDphiULSMassLowNoPartnerEta21", "e-h Dphi ULS with no partner, mass<mass cut for 2<pt^{asso}<4, for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartnerEta21);
-  fDphiULSMassLowNoPartnerEta22 = new TH2F("fDphiULSMassLowNoPartnerEta22", "e-h Dphi ULS with no partner, mass<mass cut for 3<pt^{asso}<5, for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartnerEta22 = new TH2F("fDphiULSMassLowNoPartnerEta22", "e-h Dphi ULS with no partner, mass<mass cut for 4<pt^{asso}<6, for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartnerEta22);
-  fDphiULSMassLowNoPartnerEta23 = new TH2F("fDphiULSMassLowNoPartnerEta23", "e-h Dphi ULS with no partner, mass<mass cut for 5<pt^{asso}<7, for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartnerEta23 = new TH2F("fDphiULSMassLowNoPartnerEta23", "e-h Dphi ULS with no partner, mass<mass cut for 6<pt^{asso}<8, for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartnerEta23);
-  fDphiULSMassLowNoPartnerEta24 = new TH2F("fDphiULSMassLowNoPartnerEta24", "e-h Dphi ULS with no partner, mass<mass cut for 7<pt^{asso}<9, for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiULSMassLowNoPartnerEta24 = new TH2F("fDphiULSMassLowNoPartnerEta24", "e-h Dphi ULS with no partner, mass<mass cut for 4<pt^{asso}<10, for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartnerEta24);
-  fDphiLSMassLowNoPartnerEta2 = new TH2F("fDphiLSMassLowNoPartnerEta2", "e-h Dphi LS with no partner, mass<mass cut, for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartnerEta2 = new TH2F("fDphiLSMassLowNoPartnerEta2", "e-h Dphi LS with no partner, mass<mass cut, for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartnerEta2);
-  fDphiLSMassLowNoPartnerEta21 = new TH2F("fDphiLSMassLowNoPartnerEta21", "e-h Dphi LS with no partner, mass<mass cut for 1<pt^{asso}<3, for |Eta >1|",200,0,20,64,-1.57,4.71);  
+  fDphiLSMassLowNoPartnerEta21 = new TH2F("fDphiLSMassLowNoPartnerEta21", "e-h Dphi LS with no partner, mass<mass cut for 2<pt^{asso}<4, for |Eta > 0.8|",200,0,20,64,-1.57,4.71);  
   fOutputList->Add(fDphiLSMassLowNoPartnerEta21);
-  fDphiLSMassLowNoPartnerEta22 = new TH2F("fDphiLSMassLowNoPartnerEta22", "e-h Dphi LS with no partner, mass<mass cut for 3<pt^{asso}<5, for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartnerEta22 = new TH2F("fDphiLSMassLowNoPartnerEta22", "e-h Dphi LS with no partner, mass<mass cut for 4<pt^{asso}<6, for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartnerEta22);  
-  fDphiLSMassLowNoPartnerEta23 = new TH2F("fDphiLSMassLowNoPartnerEta23", "e-h Dphi LS with no partner, mass<mass cut for 5<pt^{asso}<7, for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fDphiLSMassLowNoPartnerEta23 = new TH2F("fDphiLSMassLowNoPartnerEta23", "e-h Dphi LS with no partner, mass<mass cut for 6<pt^{asso}<8, for |Eta > 0.8|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartnerEta23);
-  fDphiLSMassLowNoPartnerEta24 = new TH2F("fDphiLSMassLowNoPartnerEta24", "e-h Dphi LS with no partner, mass<mass cut for 7<pt^{asso}<9, for |Eta >1|",200,0,20,64,-1.57,4.71);  
+  fDphiLSMassLowNoPartnerEta24 = new TH2F("fDphiLSMassLowNoPartnerEta24", "e-h Dphi LS with no partner, mass<mass cut for 4<pt^{asso}<10, for |Eta > 0.8|",200,0,20,64,-1.57,4.71);  
   fOutputList->Add(fDphiLSMassLowNoPartnerEta24);
 
   /*  fNCellv1 = new TH1F("fNCellv1","Ncell in clus (v1); NCell; count",100,0,100) ;
@@ -1334,60 +1422,90 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
      fInvmassULS5 = new TH1F("fInvmassULS5", "Inv mass of ULS (e,e) for pt^{e}>4; mass(GeV/c^2); counts;", 1000,0,1.0);
      fOutputList->Add(fInvmassULS5);
    */
-  /*  fNoMixedEvents = new TH1F("fNoMixedEvents","",1,0,1) ;
-      fOutputList->Add(fNoMixedEvents);
+  fNoMixedEvents = new TH1F("fNoMixedEvents","",1,0,1) ;
+  fOutputList->Add(fNoMixedEvents);
 
-      fMixStat = new TH2F("fMixStat","no of events in pool  vs Centrality;Nevent in pool;Centrality",200,0,200,5,0,10);
-      fOutputList->Add(fMixStat);                                                             
+  fMixStat = new TH2F("fMixStat","no of events in pool  vs Centrality;Nevent in pool;Centrality",200,0,200,5,0,10);
+  fOutputList->Add(fMixStat);                                                             
 
-      fMixStat1 = new TH2F("fMixStat1","no of events in pool  vs zvtx;Nevents in pool;zvtx",200,0,200,4,-10,10);
-      fOutputList->Add(fMixStat1);
+  fMixStat1 = new TH2F("fMixStat1","no of events in pool  vs zvtx;Nevents in pool;zvtx",200,0,200,4,-10,10);
+  fOutputList->Add(fMixStat1);
 
-      fMixedIncElecDphi = new TH2F("fMixedIncElecDphi", "Mixed event - Inclusive elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedIncElecDphi);
+  fMixedIncElecDphi = new TH2F("fMixedIncElecDphi", "Mixed event - Inclusive elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedIncElecDphi);
 
-      fMixedIncElecDphi1 = new TH2F("fMixedIncElecDphi1", "Mixed event - Inclusive elec-had Dphi correlation 1<pt<3",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedIncElecDphi1);
+  fMixedIncElecDphi1 = new TH2F("fMixedIncElecDphi1", "Mixed event - Inclusive elec-had Dphi correlation 2<pt<4",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedIncElecDphi1);
 
-      fMixedIncElecDphi2 = new TH2F("fMixedIncElecDphi2", "Mixed event - Inclusive elec-had Dphi correlation 3<pt<5",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedIncElecDphi2);
+  fMixedIncElecDphi2 = new TH2F("fMixedIncElecDphi2", "Mixed event - Inclusive elec-had Dphi correlation 4<pt<6",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedIncElecDphi2);
 
-      fMixedSemiIncElecDphi = new TH2F("fMixedSemiIncElecDphi", "Mixed event - Semi Inclusive elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedSemiIncElecDphi);
+  fMixedIncElecDphi3 = new TH2F("fMixedIncElecDphi3", "Mixed event - Inclusive elec-had Dphi correlation 6<pt<8",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedIncElecDphi3);
 
-      fMixedSemiIncElecDphi1 = new TH2F("fMixedSemiIncElecDphi1", "Mixed event - Semi Inclusive elec-had Dphi correlation 1<pt<3",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedSemiIncElecDphi1);
+  fMixedIncElecDphi4 = new TH2F("fMixedIncElecDphi4", "Mixed event - Inclusive elec-had Dphi correlation 4<pt<10",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedIncElecDphi4);
 
-      fMixedSemiIncElecDphi2 = new TH2F("fMixedSemiIncElecDphi2", "Mixed event - Semi Inclusive elec-had Dphi correlation 3<pt<5",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedSemiIncElecDphi2);
+  fMixedSemiIncElecDphi = new TH2F("fMixedSemiIncElecDphi", "Mixed event - Semi Inclusive elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedSemiIncElecDphi);
 
-      fMixedPhotElecDphi = new TH2F("fMixedPhotElecDphi", "Mixed event - Photo elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedPhotElecDphi);
+  fMixedSemiIncElecDphi1 = new TH2F("fMixedSemiIncElecDphi1", "Mixed event - Semi Inclusive elec-had Dphi correlation 2<pt<4",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedSemiIncElecDphi1);
 
-      fMixedPhotElecDphi1 = new TH2F("fMixedPhotElecDphi1", "Mixed event - Photo elec-had Dphi correlation 1<pt<3",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedPhotElecDphi1);
+  fMixedSemiIncElecDphi2 = new TH2F("fMixedSemiIncElecDphi2", "Mixed event - Semi Inclusive elec-had Dphi correlation 4<pt<6",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedSemiIncElecDphi2);
 
-      fMixedPhotElecDphi2 = new TH2F("fMixedPhotElecDphi2", "Mixed event - Photo elec-had Dphi correlation 3<pt<5",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedPhotElecDphi2);
+  fMixedSemiIncElecDphi3 = new TH2F("fMixedSemiIncElecDphi3", "Mixed event - Semi Inclusive elec-had Dphi correlation 6<pt<8",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedSemiIncElecDphi3);
 
-      fMixedDphiULSMassLow = new TH2F("fMixedDphiULSMassLow", "Mixed event - ULS mass < cut elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedDphiULSMassLow);
+  fMixedSemiIncElecDphi4 = new TH2F("fMixedSemiIncElecDphi4", "Mixed event - Semi Inclusive elec-had Dphi correlation 4<pt<10",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedSemiIncElecDphi4);
 
-      fMixedDphiULSMassLow1 = new TH2F("fMixedDphiULSMassLow1", "Mixed event - ULS mass < cut elec-had Dphi correlation 1<pt<3",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedDphiULSMassLow1);
+  fMixedPhotElecDphi = new TH2F("fMixedPhotElecDphi", "Mixed event - Photo elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedPhotElecDphi);
 
-      fMixedDphiULSMassLow2 = new TH2F("fMixedDphiULSMassLow2", "Mixed event - ULS mass < cut elec-had Dphi correlation 3<pt<5",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedDphiULSMassLow2);
+  fMixedPhotElecDphi1 = new TH2F("fMixedPhotElecDphi1", "Mixed event - Photo elec-had Dphi correlation 2<pt<4",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedPhotElecDphi1);
 
-      fMixedDphiLSMassLow = new TH2F("fMixedDphiLSMassLow", "Mixed event - LS mass < cut elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedDphiLSMassLow);
+  fMixedPhotElecDphi2 = new TH2F("fMixedPhotElecDphi2", "Mixed event - Photo elec-had Dphi correlation 4<pt<6",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedPhotElecDphi2);
 
-      fMixedDphiLSMassLow1 = new TH2F("fMixedDphiLSMassLow1", "Mixed event - LS mass < cut elec-had Dphi correlation 1<pt<3",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedDphiLSMassLow1);
+  fMixedPhotElecDphi3 = new TH2F("fMixedPhotElecDphi3", "Mixed event - Photo elec-had Dphi correlation 6<pt<8",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedPhotElecDphi3);
 
-      fMixedDphiLSMassLow2 = new TH2F("fMixedDphiLSMassLow2", "Mixed event - LS mass < cut elec-had Dphi correlation 3<pt<5",200,0,20,100,-1.57,4.71);
-      fOutputList->Add(fMixedDphiLSMassLow2);
-   */
+  fMixedPhotElecDphi4 = new TH2F("fMixedPhotElecDphi4", "Mixed event - Photo elec-had Dphi correlation 4<pt<10",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedPhotElecDphi4);
+
+  fMixedDphiULSMassLow = new TH2F("fMixedDphiULSMassLow", "Mixed event - ULS mass < cut elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiULSMassLow);
+
+  fMixedDphiULSMassLow1 = new TH2F("fMixedDphiULSMassLow1", "Mixed event - ULS mass < cut elec-had Dphi correlation 2<pt<4",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiULSMassLow1);
+
+  fMixedDphiULSMassLow2 = new TH2F("fMixedDphiULSMassLow2", "Mixed event - ULS mass < cut elec-had Dphi correlation 4<pt<6",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiULSMassLow2);
+
+  fMixedDphiULSMassLow3 = new TH2F("fMixedDphiULSMassLow3", "Mixed event - ULS mass < cut elec-had Dphi correlation 6<pt<8",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiULSMassLow3);
+
+  fMixedDphiULSMassLow4 = new TH2F("fMixedDphiULSMassLow4", "Mixed event - ULS mass < cut elec-had Dphi correlation 4<pt<10",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiULSMassLow4);
+
+  fMixedDphiLSMassLow = new TH2F("fMixedDphiLSMassLow", "Mixed event - LS mass < cut elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiLSMassLow);
+
+  fMixedDphiLSMassLow1 = new TH2F("fMixedDphiLSMassLow1", "Mixed event - LS mass < cut elec-had Dphi correlation 2<pt<4",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiLSMassLow1);
+
+  fMixedDphiLSMassLow2 = new TH2F("fMixedDphiLSMassLow2", "Mixed event - LS mass < cut elec-had Dphi correlation 4<pt<6",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiLSMassLow2);
+
+  fMixedDphiLSMassLow3 = new TH2F("fMixedDphiLSMassLow3", "Mixed event - LS mass < cut elec-had Dphi correlation 6<pt<8",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiLSMassLow3);
+
+  fMixedDphiLSMassLow4 = new TH2F("fMixedDphiLSMassLow4", "Mixed event - LS mass < cut elec-had Dphi correlation 4<pt<10",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiLSMassLow4);
+
   fHadronPt = new TH1F("fHadronPt","hadron pt distribution",1000,0,100);
   fOutputList->Add(fHadronPt);
 
@@ -1400,16 +1518,16 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
   fHadronDphi = new TH2F("fHadronDphi", "Hadron-had Dphi correlation",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphi);
 
-  fHadronDphi1 = new TH2F("fHadronDphi1", "Hadron-had Dphi correlation for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
+  fHadronDphi1 = new TH2F("fHadronDphi1", "Hadron-had Dphi correlation for 2<pt^{asso}<4",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphi1);
 
-  fHadronDphi2 = new TH2F("fHadronDphi2", "Hadron-had Dphi correlation for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
+  fHadronDphi2 = new TH2F("fHadronDphi2", "Hadron-had Dphi correlation for 4<pt^{asso}<6",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphi2);
 
-  fHadronDphi3 = new TH2F("fHadronDphi3", "Hadron-had Dphi correlation for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
+  fHadronDphi3 = new TH2F("fHadronDphi3", "Hadron-had Dphi correlation for 6<pt^{asso}<8",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphi3);
 
-  fHadronDphi4 = new TH2F("fHadronDphi4", "Hadron-had Dphi correlation for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
+  fHadronDphi4 = new TH2F("fHadronDphi4", "Hadron-had Dphi correlation for 4<pt^{asso}<10",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphi4);
 
   fPiPt = new TH1F("fPiPt","Pi (-10 <TPC nsig < -3.5) pt distribution",1000,0,100);
@@ -1418,16 +1536,16 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
   fHadronDphiNoSS = new TH2F("fHadronDphiNoSS", "Hadron-had Dphi correlation (NoSS cuts)",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSS);
 
-  fHadronDphiNoSS1 = new TH2F("fHadronDphiNoSS1", "Hadron-had Dphi correlation (NoSS cuts) for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSS1 = new TH2F("fHadronDphiNoSS1", "Hadron-had Dphi correlation (NoSS cuts) for 2<pt^{asso}<4",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSS1);
 
-  fHadronDphiNoSS2 = new TH2F("fHadronDphiNoSS2", "Hadron-had Dphi correlation (NoSS cuts) for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSS2 = new TH2F("fHadronDphiNoSS2", "Hadron-had Dphi correlation (NoSS cuts) for 4<pt^{asso}<6",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSS2);
 
-  fHadronDphiNoSS3 = new TH2F("fHadronDphiNoSS3", "Hadron-had Dphi correlation (NoSS cuts) for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSS3 = new TH2F("fHadronDphiNoSS3", "Hadron-had Dphi correlation (NoSS cuts) for 6<pt^{asso}<8",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSS3);
 
-  fHadronDphiNoSS4 = new TH2F("fHadronDphiNoSS4", "Hadron-had Dphi correlation (NoSS cuts) for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSS4 = new TH2F("fHadronDphiNoSS4", "Hadron-had Dphi correlation (NoSS cuts) for 4<pt^{asso}<10",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSS4);
 
   fPiPtNoSS = new TH1F("fPiPtNoSS","Pi (-10 <TPC nsig < -3.5) (NoSS cuts) pt distribution",1000,0,100);
@@ -1447,46 +1565,46 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fHadronDphiEta1 = new TH2F("fHadronDphiEta1", "Hadron-had Dphi correlation for |Eta <1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiEta1);
-  fHadronDphiEta11 = new TH2F("fHadronDphiEta11", "Hadron-had Dphi correlation for 1<pt^{asso}<3i for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiEta11 = new TH2F("fHadronDphiEta11", "Hadron-had Dphi correlation for 2<pt^{asso}<4 for |Eta <1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiEta11);
-  fHadronDphiEta12 = new TH2F("fHadronDphiEta12", "Hadron-had Dphi correlation for 3<pt^{asso}<5 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiEta12 = new TH2F("fHadronDphiEta12", "Hadron-had Dphi correlation for 4<pt^{asso}<6 for |Eta <1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiEta12);
-  fHadronDphiEta13 = new TH2F("fHadronDphiEta13", "Hadron-had Dphi correlation for 5<pt^{asso}<7 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiEta13 = new TH2F("fHadronDphiEta13", "Hadron-had Dphi correlation for 6<pt^{asso}<8 for |Eta <1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiEta13);
-  fHadronDphiEta14 = new TH2F("fHadronDphiEta14", "Hadron-had Dphi correlation for 7<pt^{asso}<9 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiEta14 = new TH2F("fHadronDphiEta14", "Hadron-had Dphi correlation for 8<pt^{asso}<10 for |Eta <1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiEta14);
 
   fHadronDphiNoSSEta1 = new TH2F("fHadronDphiNoSSEta1", "Hadron-had DphiNoSS correlation for |Eta <1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSSEta1);
-  fHadronDphiNoSSEta11 = new TH2F("fHadronDphiNoSSEta11", "Hadron-had DphiNoSS correlation for 1<pt^{asso}<3i for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSSEta11 = new TH2F("fHadronDphiNoSSEta11", "Hadron-had DphiNoSS correlation for 2<pt^{asso}<4 for |Eta <1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSSEta11);
-  fHadronDphiNoSSEta12 = new TH2F("fHadronDphiNoSSEta12", "Hadron-had DphiNoSS correlation for 3<pt^{asso}<5 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSSEta12 = new TH2F("fHadronDphiNoSSEta12", "Hadron-had DphiNoSS correlation for 4<pt^{asso}<6 for |Eta <1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSSEta12);
-  fHadronDphiNoSSEta13 = new TH2F("fHadronDphiNoSSEta13", "Hadron-had DphiNoSS correlation for 5<pt^{asso}<7 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSSEta13 = new TH2F("fHadronDphiNoSSEta13", "Hadron-had DphiNoSS correlation for 6<pt^{asso}<8 for |Eta <1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSSEta13);
-  fHadronDphiNoSSEta14 = new TH2F("fHadronDphiNoSSEta14", "Hadron-had DphiNoSS correlation for 7<pt^{asso}<9 for |Eta <1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSSEta14 = new TH2F("fHadronDphiNoSSEta14", "Hadron-had DphiNoSS correlation for 4<pt^{asso}<10 for |Eta <1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSSEta14);
 
   fHadronDphiEta2 = new TH2F("fHadronDphiEta2", "Hadron-had Dphi correlation for |Eta >1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiEta2);
-  fHadronDphiEta21 = new TH2F("fHadronDphiEta21", "Hadron-had Dphi correlation for 1<pt^{asso}<3i for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiEta21 = new TH2F("fHadronDphiEta21", "Hadron-had Dphi correlation for 2<pt^{asso}<4 for |Eta >1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiEta21);
-  fHadronDphiEta22 = new TH2F("fHadronDphiEta22", "Hadron-had Dphi correlation for 3<pt^{asso}<5 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiEta22 = new TH2F("fHadronDphiEta22", "Hadron-had Dphi correlation for 4<pt^{asso}<6 for |Eta >1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiEta22);
-  fHadronDphiEta23 = new TH2F("fHadronDphiEta23", "Hadron-had Dphi correlation for 5<pt^{asso}<7 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiEta23 = new TH2F("fHadronDphiEta23", "Hadron-had Dphi correlation for 6<pt^{asso}<8 for |Eta >1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiEta23);
-  fHadronDphiEta24 = new TH2F("fHadronDphiEta24", "Hadron-had Dphi correlation for 7<pt^{asso}<9 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiEta24 = new TH2F("fHadronDphiEta24", "Hadron-had Dphi correlation for 4<pt^{asso}<10 for |Eta >1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiEta24);
 
   fHadronDphiNoSSEta2 = new TH2F("fHadronDphiNoSSEta2", "Hadron-had DphiNoSS correlation for |Eta >1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSSEta2);
-  fHadronDphiNoSSEta21 = new TH2F("fHadronDphiNoSSEta21", "Hadron-had DphiNoSS correlation for 1<pt^{asso}<3i for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSSEta21 = new TH2F("fHadronDphiNoSSEta21", "Hadron-had DphiNoSS correlation for 2<pt^{asso}<4 for |Eta >1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSSEta21);
-  fHadronDphiNoSSEta22 = new TH2F("fHadronDphiNoSSEta22", "Hadron-had DphiNoSS correlation for 3<pt^{asso}<5 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSSEta22 = new TH2F("fHadronDphiNoSSEta22", "Hadron-had DphiNoSS correlation for 4<pt^{asso}<6 for |Eta >1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSSEta22);
-  fHadronDphiNoSSEta23 = new TH2F("fHadronDphiNoSSEta23", "Hadron-had DphiNoSS correlation for 5<pt^{asso}<7 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSSEta23 = new TH2F("fHadronDphiNoSSEta23", "Hadron-had DphiNoSS correlation for 6<pt^{asso}<8 for |Eta >1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSSEta23);
-  fHadronDphiNoSSEta24 = new TH2F("fHadronDphiNoSSEta24", "Hadron-had DphiNoSS correlation for 7<pt^{asso}<9 for |Eta >1|",200,0,20,64,-1.57,4.71);
+  fHadronDphiNoSSEta24 = new TH2F("fHadronDphiNoSSEta24", "Hadron-had DphiNoSS correlation for 4<pt^{asso}<10 for |Eta >1|",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fHadronDphiNoSSEta24);
 
 
@@ -1590,10 +1708,10 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliVT
 
     if(fFlagLS) {
       if(track->Pt()>2)fInvmassLS1->Fill(mass);
-     // if(track->Pt()> 1) fInvmassLS2->Fill(mass);
-     // if(track->Pt()>2) fInvmassLS3->Fill(mass);
-     // if(track->Pt()>3) fInvmassLS4->Fill(mass);
-     // if(track->Pt()>4) fInvmassLS5->Fill(mass);
+      // if(track->Pt()> 1) fInvmassLS2->Fill(mass);
+      // if(track->Pt()>2) fInvmassLS3->Fill(mass);
+      // if(track->Pt()>3) fInvmassLS4->Fill(mass);
+      // if(track->Pt()>4) fInvmassLS5->Fill(mass);
     }
     if(fFlagULS) {
       if(track->Pt()>2)fInvmassULS1->Fill(mass);
@@ -1609,14 +1727,14 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliVT
         ElectronHadCorrel(itrack,track,fDphiULSMassLow, fDphiULSMassLow1,fDphiULSMassLow2,fDphiULSMassLow3,fDphiULSMassLow4);
         ElectronHadCorrelEtaBins(itrack,track,fDphiULSMassLowEta1, fDphiULSMassLowEta11,fDphiULSMassLowEta12,fDphiULSMassLowEta13,fDphiULSMassLowEta14,fDphiULSMassLowEta2, fDphiULSMassLowEta21,fDphiULSMassLowEta22,fDphiULSMassLowEta23,fDphiULSMassLowEta24);
         fULSElecPt->Fill(track->Pt());
-        //      MixedEvent(track,fMixedDphiULSMassLow,fMixedDphiULSMassLow1,fMixedDphiULSMassLow2);
+        MixedEvent(track,fMixedDphiULSMassLow,fMixedDphiULSMassLow1,fMixedDphiULSMassLow2, fMixedDphiULSMassLow3, fMixedDphiULSMassLow4);
       }
       if(fFlagLS)
       {
         ElectronHadCorrel(itrack,track,fDphiLSMassLow,fDphiLSMassLow1,fDphiLSMassLow2,fDphiLSMassLow3,fDphiLSMassLow4);
         ElectronHadCorrelEtaBins(itrack,track,fDphiLSMassLowEta1, fDphiLSMassLowEta11,fDphiLSMassLowEta12,fDphiLSMassLowEta13,fDphiLSMassLowEta14,fDphiLSMassLowEta2, fDphiLSMassLowEta21,fDphiLSMassLowEta22,fDphiLSMassLowEta23,fDphiLSMassLowEta24);
         fLSElecPt->Fill(track->Pt());
-        //     MixedEvent(track,fMixedDphiLSMassLow,fMixedDphiLSMassLow1,fMixedDphiLSMassLow2);
+        MixedEvent(track,fMixedDphiLSMassLow,fMixedDphiLSMassLow1,fMixedDphiLSMassLow2, fMixedDphiLSMassLow3, fMixedDphiLSMassLow4);
       }
       if(fFlagLS){
         ElectronHadCorrelNoPartner(itrack,jTracks,track,fDphiLSMassLowNoPartner, fDphiLSMassLowNoPartner1,fDphiLSMassLowNoPartner2,fDphiLSMassLowNoPartner3,fDphiLSMassLowNoPartner4);
@@ -1671,7 +1789,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack 
       AliESDtrack *etrackHad = dynamic_cast<AliESDtrack*>(VtrackHad); 
       if(!fTrackCuts2->AcceptTrack(etrackHad)) continue; 
     }
-    
+
     if(ktracks == itrack) continue; //do not select the same electron
 
     Double_t ptHad= -999, pHad=-999., dEdxHad = -999;
@@ -1700,7 +1818,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack 
     if(ptHad>2 && ptHad<4) DphiPt1->Fill(ptEle,Dphi);
     if(ptHad>4 && ptHad<6) DphiPt2->Fill(ptEle,Dphi);
     if(ptHad>6 && ptHad<8) DphiPt3->Fill(ptEle,Dphi);
-    if(ptHad>8 && ptHad<10) DphiPt4->Fill(ptEle,Dphi);
+    if(ptHad>4 && ptHad<10) DphiPt4->Fill(ptEle,Dphi);
 
   }
 }
@@ -1726,7 +1844,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,In
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
     }
-    
+
     AliVTrack *trackHad = dynamic_cast<AliVTrack*>(VtrackHad);
 
     if(IsAODanalysis()) {
@@ -1752,7 +1870,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,In
     pHad = trackHad->P();
     ptEle = track->Pt();
 
-//    if(ptHad <2) continue;
+    //    if(ptHad <2) continue;
     if(ptHad > ptEle) continue;
     if(trackHad->Eta()<-0.9 || trackHad->Eta()>0.9) continue;
 
@@ -1768,7 +1886,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,In
     if(ptHad>2 && ptHad<4) DphiPtNew1->Fill(ptEle,Dphi);
     if(ptHad>4 && ptHad<6) DphiPtNew2->Fill(ptEle,Dphi);
     if(ptHad>6 && ptHad<8) DphiPtNew3->Fill(ptEle,Dphi);
-    if(ptHad>8 && ptHad<10) DphiPtNew4->Fill(ptEle,Dphi);
+    if(ptHad>4 && ptHad<10) DphiPtNew4->Fill(ptEle,Dphi);
   }
 }
 //_________________________________________
@@ -1834,7 +1952,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaFarSide(Int_t itrack, 
     if(ptHad>2 && ptHad<4) DphiPt1->Fill(ptEle,Dphi);
     if(ptHad>4 && ptHad<6) DphiPt2->Fill(ptEle,Dphi);
     if(ptHad>6 && ptHad<8) DphiPt3->Fill(ptEle,Dphi);
-    if(ptHad>8 && ptHad<10) DphiPt4->Fill(ptEle,Dphi);
+    if(ptHad>4 && ptHad<10) DphiPt4->Fill(ptEle,Dphi);
 
   }
 }
@@ -1905,11 +2023,11 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaBins(Int_t itrack, Ali
     DEta = etaEle - etaHad;
 
     if(TMath::Abs(DEta)<0.8){
-    if(ptHad>2) DphiPtEta1->Fill(ptEle,Dphi);
-    if(ptHad>2 && ptHad<4) DphiPtEta11->Fill(ptEle,Dphi);
-    if(ptHad>4 && ptHad<6) DphiPtEta12->Fill(ptEle,Dphi);
-    if(ptHad>6 && ptHad<8) DphiPtEta13->Fill(ptEle,Dphi);
-    if(ptHad>8 && ptHad<10) DphiPtEta14->Fill(ptEle,Dphi);
+      if(ptHad>2) DphiPtEta1->Fill(ptEle,Dphi);
+      if(ptHad>2 && ptHad<4) DphiPtEta11->Fill(ptEle,Dphi);
+      if(ptHad>4 && ptHad<6) DphiPtEta12->Fill(ptEle,Dphi);
+      if(ptHad>6 && ptHad<8) DphiPtEta13->Fill(ptEle,Dphi);
+      if(ptHad>4 && ptHad<10) DphiPtEta14->Fill(ptEle,Dphi);
     }
 
     if(TMath::Abs(DEta)>0.8){
@@ -1917,7 +2035,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaBins(Int_t itrack, Ali
       if(ptHad>2 && ptHad<4) DphiPtEta21->Fill(ptEle,Dphi);
       if(ptHad>4 && ptHad<6) DphiPtEta22->Fill(ptEle,Dphi);
       if(ptHad>6 && ptHad<8) DphiPtEta23->Fill(ptEle,Dphi);
-      if(ptHad>8 && ptHad<10) DphiPtEta24->Fill(ptEle,Dphi);
+      if(ptHad>4 && ptHad<10) DphiPtEta24->Fill(ptEle,Dphi);
     }
   }
 }
@@ -1992,7 +2110,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaBinsNoPartner(Int_t it
       if(ptHad>2 && ptHad<4) DphiPtEta11->Fill(ptEle,Dphi);
       if(ptHad>4 && ptHad<6) DphiPtEta12->Fill(ptEle,Dphi);
       if(ptHad>6 && ptHad<8) DphiPtEta13->Fill(ptEle,Dphi);
-      if(ptHad>8 && ptHad<10) DphiPtEta14->Fill(ptEle,Dphi);
+      if(ptHad>4 && ptHad<10) DphiPtEta14->Fill(ptEle,Dphi);
     }
 
     if(TMath::Abs(DEta)>0.8){
@@ -2000,120 +2118,117 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaBinsNoPartner(Int_t it
       if(ptHad>2 && ptHad<4) DphiPtEta21->Fill(ptEle,Dphi);
       if(ptHad>4 && ptHad<6) DphiPtEta22->Fill(ptEle,Dphi);
       if(ptHad>6 && ptHad<8) DphiPtEta23->Fill(ptEle,Dphi);
-      if(ptHad>8 && ptHad<10) DphiPtEta24->Fill(ptEle,Dphi);
+      if(ptHad>4 && ptHad<10) DphiPtEta24->Fill(ptEle,Dphi);
     }
   }
 }
+
 //_________________________________________
-
-/*
-//_________________________________________
-void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliAODTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2)
+void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2, TH2F *DphiPt3, TH2F *DphiPt4)
 {
 
-const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
-Double_t zVtx;
-zVtx = pVtx->GetZ();
+  const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
+  Double_t zVtx;
+  zVtx = pVtx->GetZ();
 
+  AliCentrality *fCentrality1 = (AliCentrality*)fAOD->GetCentrality();
+  Double_t centvalue = fCentrality1->GetCentralityPercentile("V0M");
 
-AliCentrality *fCentrality = (AliCentrality*)fAOD->GetCentrality();
-Double_t centvalue = fCentrality->GetCentralityPercentile("V0M");
+  AliEventPool* pool = fPoolMgr->GetEventPool(centvalue, zVtx); // Get the buffer associated with the current centrality and z-vtx
+  if (!pool)
+    AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centvalue, zVtx));
 
-AliEventPool* pool = fPoolMgr->GetEventPool(centvalue, zVtx); // Get the buffer associated with the current centrality and z-vtx
-if (!pool)
-AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centvalue, zVtx));
+  //  pool->PrintInfo();
+  if (pool->GetCurrentNEvents() >= 5) // start mixing when 5 events are in the buffer
+  {
+    Int_t nMix = pool->GetCurrentNEvents();
+    fNoMixedEvents->Fill(0);
+    fMixStat->Fill(pool->GetCurrentNEvents(),centvalue);
+    fMixStat1->Fill(pool->GetCurrentNEvents(),zVtx);
 
-//  pool->PrintInfo();
-if (pool->GetCurrentNEvents() >= 5) // start mixing when 5 events are in the buffer
-{
-Int_t nMix = pool->GetCurrentNEvents();
-fNoMixedEvents->Fill(0);
-fMixStat->Fill(pool->GetCurrentNEvents(),centvalue);
-fMixStat1->Fill(pool->GetCurrentNEvents(),zVtx);
+    // cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
+    for (Int_t jMix=0; jMix<nMix; jMix++)  // mix with each event in the buffer
+    {
+      TObjArray* bgTracks = pool->GetEvent(jMix);
+      for (Int_t i=0;i<bgTracks->GetEntriesFast(); i++)
+      {
+        AliVParticle* mixtrk = (AliVParticle*) bgTracks->At(i);
 
-// cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
-for (Int_t jMix=0; jMix<nMix; jMix++)  // mix with each event in the buffer
-{
-TObjArray* bgTracks = pool->GetEvent(jMix);
-for (Int_t i=0;i<bgTracks->GetEntriesFast(); i++)
-{
-AliVParticle* mixtrk = (AliVParticle*) bgTracks->At(i);
+        Double_t mixtrkPhi = -999;
+        Double_t ptEle = -999;
+        Double_t phiEle = -999, Dphi = -999;
+        Double_t pi = 3.14;
+        Double_t ptmixtrk = -999;
 
-Double_t mixtrkPhi = -999;
-Double_t ptEle = -999;
-Double_t phiEle = -999, Dphi = -999;
-Double_t pi = 3.14;
-Double_t ptmixtrk = -999;
+        ptEle = track->Pt();
+        ptmixtrk = mixtrk->Pt();
+        if(ptmixtrk > ptEle) continue;
 
-ptEle = track->Pt();
-ptmixtrk = mixtrk->Pt();
-if(ptmixtrk > ptEle) continue;
+        mixtrkPhi = mixtrk->Phi();
+        phiEle = track->Phi();
+        Dphi = phiEle - mixtrkPhi;
 
-mixtrkPhi = mixtrk->Phi();
-phiEle = track->Phi();
-Dphi = phiEle - mixtrkPhi;
-
-if (Dphi > 3*pi/2)
-Dphi = Dphi - 2*pi;
-if (Dphi < -pi/2)
-Dphi = Dphi + 2*pi;
-if(ptmixtrk>2) DphiPt->Fill(ptEle,Dphi);
-if(ptmixtrk>2 && ptmixtrk<4) DphiPt1->Fill(ptEle,Dphi);
-if(ptmixtrk>4 && ptmixtrk<6) DphiPt2->Fill(ptEle,Dphi);
-}
-}
-
-}
-
+        if (Dphi > 3*pi/2)
+          Dphi = Dphi - 2*pi;
+        if (Dphi < -pi/2)
+          Dphi = Dphi + 2*pi;
+        if(ptmixtrk>2) DphiPt->Fill(ptEle,Dphi);
+        if(ptmixtrk>2 && ptmixtrk<4) DphiPt1->Fill(ptEle,Dphi);
+        if(ptmixtrk>4 && ptmixtrk<6) DphiPt2->Fill(ptEle,Dphi);
+        if(ptmixtrk>6 && ptmixtrk<8) DphiPt3->Fill(ptEle,Dphi);
+        if(ptmixtrk>4 && ptmixtrk<10) DphiPt4->Fill(ptEle,Dphi);
+      }
+    }
+  }
 }
 //___________________________________________
 TObjArray*  AliAnalysisTaskElecHadronCorrel::CloneAndReduceTrackList()
 {
-// clones a track list by using AliehDPhiBasicParticle which uses much less memory (used for event mixing)
+  // clones a track list by using AliehDPhiBasicParticle which uses much less memory (used for event mixing)
 
-fTrackCuts2->SetAcceptKinkDaughters(kFALSE);
-fTrackCuts2->SetRequireTPCRefit(kTRUE);
-fTrackCuts2->SetRequireITSRefit(kTRUE);
-fTrackCuts2->SetEtaRange(-0.9,0.9);
-fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
-fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);
-fTrackCuts2->SetMinNClustersTPC(80);
+  fTrackCuts2->SetAcceptKinkDaughters(kFALSE);
+  fTrackCuts2->SetRequireTPCRefit(kTRUE);
+  fTrackCuts2->SetRequireITSRefit(kTRUE);
+  fTrackCuts2->SetEtaRange(-0.9,0.9);
+  fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
+  fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);
+  fTrackCuts2->SetMinNClustersTPC(80);
 
-TObjArray* tracksClone = new TObjArray;
-tracksClone->SetOwner(kTRUE);
+  TObjArray* tracksClone = new TObjArray;
+  tracksClone->SetOwner(kTRUE);
 
-for(Int_t ktracks = 0; ktracks<fAOD->GetNumberOfTracks(); ktracks++){
-  AliAODTrack* track = fAOD->GetTrack(ktracks);
-  if (!track) {
-    printf("ERROR: Could not receive track %d\n", ktracks);
-    continue;
+  for(Int_t ktracks = 0; ktracks<fAOD->GetNumberOfTracks(); ktracks++){
+    AliAODTrack* track = fAOD->GetTrack(ktracks);
+    if (!track) {
+      printf("ERROR: Could not receive track %d\n", ktracks);
+      continue;
+    }
+    if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
+
+    //   if(ktracks == iTrack) continue;
+    Double_t eta=-999,ptHad= -999, pHad=-999., phi=-999.0;
+    Int_t label=-9999, id=-999;
+    eta = track->Eta();
+    ptHad = track->Pt();
+    pHad = track->P();
+    phi= track->Phi();
+    label= track->GetLabel();
+    id=track->GetID();
+
+    if(track->Eta()<-0.9 || track->Eta()>0.9) continue; 
+    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue; 
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue; 
+    if(ptHad <2) continue;
+    //    if(!fTrackCuts2->AcceptTrack(track)) continue;
+
+    AliVParticle* particle = (AliVParticle*) fAOD->GetTrack(ktracks);
+    tracksClone->Add(new AliehDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
+
   }
-  if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
 
-  //   if(ktracks == iTrack) continue;
-  Double_t eta=-999,ptHad= -999, pHad=-999., phi=-999.0;
-  Int_t label=-9999, id=-999;
-  eta = track->Eta();
-  ptHad = track->Pt();
-  pHad = track->P();
-  phi= track->Phi();
-  label= track->GetLabel();
-  id=track->GetID();
-
-  if(track->Eta()<-0.9 || track->Eta()>0.9) continue; 
-  if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue; 
-  if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue; 
-  if(ptHad <2) continue;
-  //    if(!fTrackCuts2->AcceptTrack(track)) continue;
-
-  AliVParticle* particle = (AliVParticle*) fAOD->GetTrack(ktracks);
-  tracksClone->Add(new AliehDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
-
+  return tracksClone;
 }
 
-return tracksClone;
-}
-*/
 //___________________________________________
 void AliAnalysisTaskElecHadronCorrel::HadronInfo(Int_t itrack)
 {
@@ -2151,12 +2266,12 @@ void AliAnalysisTaskElecHadronCorrel::HadronInfo(Int_t itrack)
     }
 
     if(ktracks == itrack) continue; //do not select the same electron
-    
+
     Double_t ptHad= -999;
     ptHad = trackHad->Pt();
-    
+
     if(trackHad->Eta()<-0.9 || trackHad->Eta()>0.9) continue;
-   // cout << "pt had = " << ptHad <<endl;
+    // cout << "pt had = " << ptHad <<endl;
 
     if(ptHad<2) continue;
 
@@ -2173,17 +2288,17 @@ void AliAnalysisTaskElecHadronCorrel::CheckCentrality(AliVEvent* event, Bool_t &
   // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
   if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
   fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
- // cout << "Centrality evaluated-------------------------: " << fCentrality <<endl;
+  // cout << "Centrality evaluated-------------------------: " << fCentrality <<endl;
 
   if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
   {
     fCentralityNoPass->Fill(fCentrality);
-  //  cout << "--------------Fill no pass-------------------------"<<endl;
+    //  cout << "--------------Fill no pass-------------------------"<<endl;
     centralitypass = kFALSE;
   }else
   {
     fCentralityPass->Fill(fCentrality);
-  //  cout << "--------------Fill pass-------------------------"<<endl;
+    //  cout << "--------------Fill pass-------------------------"<<endl;
     centralitypass = kTRUE;
   }
 

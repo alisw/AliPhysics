@@ -31,7 +31,7 @@ class AliHFEcuts;
 class AliHFEpid;
 class AliHFEpidQAmanager;
 class AliCFManager;
-//class AliEventPoolManager;
+class AliEventPoolManager;
 
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
@@ -58,20 +58,28 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     void ElectronHadCorrel(Int_t itrack, AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2,TH2F *DphiPt3,TH2F *DphiPt4);	
     void ElectronHadCorrelEtaFarSide(Int_t itrack, AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2,TH2F *DphiPt3,TH2F *DphiPt4);	
     void ElectronHadCorrelEtaBins(Int_t itrack, AliVTrack *track, TH2F *DphiPtEta1, TH2F *DphiPtEta11,TH2F *DphiPtEta12,TH2F *DphiPtEta13,TH2F *DphiPtEta14,TH2F *DphiPtEta2, TH2F *DphiPtEta21,TH2F *DphiPtEta22,TH2F *DphiPtEta23,TH2F *DphiPtEta24);	
-   // void ElectronHadCorrelEtaBins(Int_t itrack, AliVTrack *track, TH3F *DphiPtEta1, TH3F *DphiPtEta11,TH3F *DphiPtEta12,TH3F *DphiPtEta13,TH3F *DphiPtEta14);	
+    // void ElectronHadCorrelEtaBins(Int_t itrack, AliVTrack *track, TH3F *DphiPtEta1, TH3F *DphiPtEta11,TH3F *DphiPtEta12,TH3F *DphiPtEta13,TH3F *DphiPtEta14);	
     void ElectronHadCorrelNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH2F *DphiPtNew,TH2F *DphiPtNew1,TH2F *DphiPtNew2,TH2F *DphiPtNew3,TH2F *DphiPtNew4);	
     void ElectronHadCorrelEtaBinsNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH2F *DphiPtEta1, TH2F *DphiPtEta11,TH2F *DphiPtEta12,TH2F *DphiPtEta13,TH2F *DphiPtEta14,TH2F *DphiPtEta2, TH2F *DphiPtEta21,TH2F *DphiPtEta22,TH2F *DphiPtEta23,TH2F *DphiPtEta24);	
-   // void ElectronHadCorrelEtaBinsNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH3F *DphiPtEta1, TH3F *DphiPtEta11,TH3F *DphiPtEta12,TH3F *DphiPtEta13,TH3F *DphiPtEta14);	
+    // void ElectronHadCorrelEtaBinsNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH3F *DphiPtEta1, TH3F *DphiPtEta11,TH3F *DphiPtEta12,TH3F *DphiPtEta13,TH3F *DphiPtEta14);	
     void HadronInfo(Int_t itrack);
+    void SetTriggerSelection(Bool_t TriggerCentral) {fTriggerCentral = TriggerCentral;};
     void    SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
     void    CheckCentrality(AliVEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
 
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
-    /*    void MixedEvent(AliAODTrack *track, TH2F *DphiPt, TH2F *DphiPt1, TH2F *DphiPt2);
+
+    void SetTPCnsigmaCutsElecSelection(Double_t nsigMin, Double_t nsigMax) {fTPCnsigEleMin=nsigMin; fTPCnsigEleMax=nsigMax;};
+    void SetTPCnsigmaCutsHadSelection(Double_t nsigMin, Double_t nsigMax) {fTPCnsigHadMin=nsigMin; fTPCnsigHadMax=nsigMax;};
+    void SetShowerShapeCutsM02(Double_t M02CutMin, Double_t M02CutMax){fM02CutMin=M02CutMin; fM02CutMax=M02CutMax;};
+    void SetShowerShapeCutsM20(Double_t M20CutMin, Double_t M20CutMax){fM20CutMin=M20CutMin; fM20CutMax=M20CutMax;};
+    void SetShowerShapeCutsDisp(Double_t DispCutMin, Double_t DispCutMax){fDispCutMin=DispCutMin; fDispCutMax=DispCutMax;};
+    void SetEovPCuts(Double_t EovPMin, Double_t EovPMax){fEovPMin=EovPMin;fEovPMax=EovPMax;};
+    void MixedEvent(AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1, TH2F *DphiPt2, TH2F *DphiPt3, TH2F *DphiPt4);
     TObjArray* CloneAndReduceTrackList();
-  */
-    private:
+
+  private:
 
     enum{
       kAODanalysis = BIT(20),
@@ -101,13 +109,27 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     Double_t             fCentralityMin; // lower bound of cenrality bin
     Double_t             fCentralityMax; // upper bound of centrality bin
     const char           *fkCentralityMethod; // method used to determine centrality (V0 by default)   
-//    AliEventPoolManager*     fPoolMgr;         //! event pool manager
+    Double_t   fTPCnsigEleMin;//
+    Double_t   fTPCnsigEleMax;//
+    Double_t   fTPCnsigHadMin;//
+    Double_t   fTPCnsigHadMax;//
+    Double_t   fM02CutMin;//
+    Double_t   fM02CutMax;//
+    Double_t   fM20CutMin;//
+    Double_t   fM20CutMax;//
+    Double_t   fDispCutMin;//
+    Double_t   fDispCutMax;//
+    Double_t   fEovPMin;//
+    Double_t   fEovPMax;//
+    Bool_t     fTriggerCentral;//
+
+    AliEventPoolManager*     fPoolMgr;         //! event pool manager
 
     TH1F			*fNoEvents;		//no of events
-//    TH1F			*fTrkpt;		//track pt
+    //    TH1F			*fTrkpt;		//track pt
     TH2F			*fTrkEovPAft;		//track E/p after HFE pid
- //   TH2F			*fTrkEovPBefHad;		//track E/p before HFE pid
-//    TH2F			*fdEdxBef;		//track dEdx vs p before HFE pid
+    //   TH2F			*fTrkEovPBefHad;		//track E/p before HFE pid
+    //    TH2F			*fdEdxBef;		//track dEdx vs p before HFE pid
     TH2F			*fSemiIncElecDphi;  	//Semi Inclusive elec - had DPhi
     TH2F			*fSemiIncElecDphi1;  	//Semi Inclusive elec - had DPhi
     TH2F			*fSemiIncElecDphi2;  	//Semi Inclusive elec - had DPhi
@@ -153,7 +175,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH1F        *fInclusiveElecPt; // Inclusive elec pt
     TH1F        *fULSElecPt; //ULS elec Pt
     TH1F        *fLSElecPt;// LS elec pt 
-    //Eta bins (Deta < 1)
+    //Eta bins (Deta < 0.8)
     TH2F       *fSemiIncElecDphiEta1;   //Semi Inclusive elec - had DPhi
     TH2F       *fSemiIncElecDphiEta11;     //Semi Inclusive elec - had DPhi
     TH2F       *fSemiIncElecDphiEta12;     //Semi Inclusive elec - had DPhi
@@ -190,7 +212,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH2F       *fDphiLSMassLowNoPartnerEta13; //Dphi - LS, mass< mass cut
     TH2F       *fDphiLSMassLowNoPartnerEta14; //Dphi - LS, mass< mass cut
 
-    //Eta bins (Deta > 1)
+    //Eta bins (Deta > 0.8)
     TH2F       *fSemiIncElecDphiEta2;   //Semi Inclusive elec - had DPhi
     TH2F       *fSemiIncElecDphiEta21;     //Semi Inclusive elec - had DPhi
     TH2F       *fSemiIncElecDphiEta22;     //Semi Inclusive elec - had DPhi
@@ -259,25 +281,35 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
           TH1F        *fTrakPhiSPDAnd;//
           TH1F        *fTrackHFEcutsITS;//
      */
-    /*    TH1F        *fNoMixedEvents;//
-          TH2F        *fMixStat; //no of events in pool vs multplicity
-          TH2F        *fMixStat1; //no of events in pool vs zvtx 
-          TH2F        *fMixedIncElecDphi; //Mixed event - inclusive elec DPhi
-          TH2F        *fMixedIncElecDphi1; //Mixed event - inclusive elec DPhi
-          TH2F        *fMixedIncElecDphi2; //Mixed event - inclusive elec DPhi
-          TH2F        *fMixedPhotElecDphi; //
-          TH2F        *fMixedPhotElecDphi1; //
-          TH2F        *fMixedPhotElecDphi2; //
-          TH2F        *fMixedSemiIncElecDphi; //
-          TH2F        *fMixedSemiIncElecDphi1; //
-          TH2F        *fMixedSemiIncElecDphi2; //
-          TH2F        *fMixedDphiULSMassLow;//
-          TH2F        *fMixedDphiULSMassLow1;//
-          TH2F        *fMixedDphiULSMassLow2;//
-          TH2F        *fMixedDphiLSMassLow;//
-          TH2F        *fMixedDphiLSMassLow1;//
-          TH2F        *fMixedDphiLSMassLow2;//
-     */
+    TH1F        *fNoMixedEvents;//
+    TH2F        *fMixStat; //no of events in pool vs multplicity
+    TH2F        *fMixStat1; //no of events in pool vs zvtx 
+    TH2F        *fMixedIncElecDphi; //Mixed event - inclusive elec DPhi
+    TH2F        *fMixedIncElecDphi1; //Mixed event - inclusive elec DPhi
+    TH2F        *fMixedIncElecDphi2; //Mixed event - inclusive elec DPhi
+    TH2F        *fMixedIncElecDphi3; //Mixed event - inclusive elec DPhi
+    TH2F        *fMixedIncElecDphi4; //Mixed event - inclusive elec DPhi
+    TH2F        *fMixedPhotElecDphi; //
+    TH2F        *fMixedPhotElecDphi1; //
+    TH2F        *fMixedPhotElecDphi2; //
+    TH2F        *fMixedPhotElecDphi3; //
+    TH2F        *fMixedPhotElecDphi4; //
+    TH2F        *fMixedSemiIncElecDphi; //
+    TH2F        *fMixedSemiIncElecDphi1; //
+    TH2F        *fMixedSemiIncElecDphi2; //
+    TH2F        *fMixedSemiIncElecDphi3; //
+    TH2F        *fMixedSemiIncElecDphi4; //
+    TH2F        *fMixedDphiULSMassLow;//
+    TH2F        *fMixedDphiULSMassLow1;//
+    TH2F        *fMixedDphiULSMassLow2;//
+    TH2F        *fMixedDphiULSMassLow3;//
+    TH2F        *fMixedDphiULSMassLow4;//
+    TH2F        *fMixedDphiLSMassLow;//
+    TH2F        *fMixedDphiLSMassLow1;//
+    TH2F        *fMixedDphiLSMassLow2;//
+    TH2F        *fMixedDphiLSMassLow3;//
+    TH2F        *fMixedDphiLSMassLow4;//
+
     TH1F        *fHadronPt;//
     TH1F       *fCentralityPass; // ! QA histogram of events that pass centrality cut
     TH1F       *fCentralityNoPass; //! QA histogram of events that do not pass centrality cut
@@ -333,7 +365,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
 
     ClassDef(AliAnalysisTaskElecHadronCorrel, 2); //!example of analysis
 };
-/*
+
    class AliehDPhiBasicParticle : public AliVParticle
    {
    public:
@@ -381,7 +413,7 @@ Short_t fCharge;   // charge
 
 ClassDef( AliehDPhiBasicParticle, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
- */
+ 
 #endif
 
 
