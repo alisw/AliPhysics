@@ -614,6 +614,19 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 	       if(fabs(mcpid)==11 && mcPho)mcele= 3.; 
                //cout << "check Pho->e: " << mcele << endl; 
 
+               cout << "check PID " << endl;
+               if(fabs(mcpid)!=11)
+                 {
+                  cout << "!= 11" << endl;
+                  cout << mcpid << endl;
+                 }
+               if(mcele==-1)
+                 {
+                  cout << "mcele==-1" << endl;
+                  cout << mcele << endl;
+                  cout << mcpid << endl;
+                 }
+ 
        } // end of mcLabel>-1
 
       } // end of MC info.
@@ -1761,7 +1774,7 @@ double AliAnalysisTaskHFECal::MCEopMeanCorrection(double pTmc, float central)
    }
  else if(central>40 && central<=50)
    {
-    fcorr0->SetParameters(1.00,1.422,1.518);
+    fcorr0->SetParameters(1.00,1.422,1.518e-01);
     fcorr1->SetParameters(9.59e-01,1.421,2.931e-01);
    }
  
@@ -1773,7 +1786,7 @@ double AliAnalysisTaskHFECal::MCEopMeanCorrection(double pTmc, float central)
  else if(central>70 && central<=100)
    {
     fcorr0->SetParameters(0.981,-3.373,3.93327);
-    fcorr1->SetParameters(9.574e-01,1.698,1.58-01);
+    fcorr1->SetParameters(9.574e-01,1.698,1.58e-01);
    }
  
 
