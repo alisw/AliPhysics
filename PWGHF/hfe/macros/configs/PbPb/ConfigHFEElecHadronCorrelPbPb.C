@@ -1,5 +1,23 @@
-AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC){
-  //
+AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC,
+                                                               Bool_t TrigSelCen = kTRUE,
+                                                               Double_t CentMin = 0,
+                                                               Double_t CentMax = 7,
+                                                               Double_t TPCNsigMinE = -2,
+                                                               Double_t TPCNsigMaxE = 2,
+                                                               Double_t TPCNsigMinH = -10,
+                                                               Double_t TPCNsigMaxH = -3.5,
+                                                               Double_t SSM02Min = 0.03,  
+                                                               Double_t SSM02Max = 0.5,
+                                                               Double_t SSM20Min = 0.03,  
+                                                               Double_t SSM20Max = 0.3,
+                                                               Double_t Disp = 1,
+                                                               Double_t EovPMin = 0.8,    
+                                                               Double_t EovPMax = 1.2,    
+                                                               Double_t InvM = 0.1,
+                                                               TString ContNameExt = "Central",
+                                                               TString TaskName="hfeCorrl"){
+
+//
   // HFE standard task configuration
   //
 
@@ -25,12 +43,24 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC){
 //  hfecuts->SetQAOn();
  hfecuts->SetPtRange(0, 30);
 
-  AliAnalysisTaskElecHadronCorrel *task = new AliAnalysisTaskElecHadronCorrel("HFE-hadron correlations");
+ TString taskName = TaskName;
+
+  AliAnalysisTaskElecHadronCorrel *task = new AliAnalysisTaskElecHadronCorrel(taskName);
   printf("task ------------------------ %p\n ", task);
   task->SetHFECuts(hfecuts);
-  task->SetInvariantMassCut(0.1);
-  task->SetRejectKinkMother(kTRUE);
 //  task->SetRemovePileUp(kTRUE);
+//  task->SetInvariantMassCut(0.1);
+
+  task->SetTriggerSelection(TrigSelCen);
+  task->SetCentralityParameters(CentMin, CentMax, "V0M");
+  task->SetInvariantMassCut(InvM);
+  task->SetTPCnsigmaCutsElecSelection(TPCNsigMinE,TPCNsigMaxE);
+  task->SetTPCnsigmaCutsHadSelection(TPCNsigMinH,TPCNsigMaxH);
+  task->SetShowerShapeCutsM02(SSM02Min,SSM02Max);
+  task->SetShowerShapeCutsM20(SSM20Min,SSM20Max);
+  task->SetShowerShapeCutsDisp(0,Disp);
+  task->SetEovPCuts(EovPMin,EovPMax);
+  task->SetRejectKinkMother(kTRUE);
 
   // Define PID
   AliHFEpid *pid = task->GetPID();

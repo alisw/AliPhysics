@@ -180,7 +180,7 @@ AliAnalysisTask *RegisterTaskPID2(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, 
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisTaskHFE *task = ConfigHFEmbpPb(useMC, isAOD, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, 
 					     tpcs,tpcu,tofs,tofm,3.,kFALSE,kTRUE,kFALSE,itshitpixel,withetacorrection);
-  if()
+  if(isAOD)
     task->SetAODAnalysis();
   else
     task->SetESDAnalysis();
