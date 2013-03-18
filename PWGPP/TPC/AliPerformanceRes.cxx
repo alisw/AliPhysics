@@ -636,7 +636,7 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   mclocal[2] = px*c + py*s;
   mclocal[3] =-px*s + py*c;
 
-  Double_t xyz[3] = {ref0->X(),ref0->Y(),ref0->Z()};
+  //Double_t xyz[3] = {ref0->X(),ref0->Y(),ref0->Z()};
   // propagate track to the radius of the first track reference within TPC
   //Double_t trRadius = TMath::Sqrt(xyz[1] * xyz[1] + xyz[0] * xyz[0]);
   Double_t field[3]; track->GetBxByBz(field);
