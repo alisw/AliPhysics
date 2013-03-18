@@ -86,17 +86,24 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   deltapt->SetCentralityEstimator(CentEst);
 
   TString emcdeltaname(Form("DeltaPt_%s", nRhosChEm));
-  AliAnalysisTaskDeltaPt* deltaptEMC = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",nRhosChEm,radius,1,AreaCut,minTrackPt,minClusterPt,AliAnalysisTaskEmcal::kEMCAL,"DeltaPtTask");
+  AliAnalysisTaskDeltaPt* deltaptEMC = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",nRhosChEm,radius,1,AreaCut,minTrackPt,minClusterPt,AliAnalysisTaskEmcal::kEMCAL,emcdeltaname);
   deltapt->SetCentralityEstimator(CentEst);
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskScale.C");
 
-  AliAnalysisTaskScale* scaletask = AddTaskScale(usedTracks,outClusName,0.15,0.3);
+
+  Int_t radlabel=(Int_t)floor(radius*100+0.5);
+  Int_t mincluslabel=(Int_t)floor(minClusterPt*1000+0.5);
+  Int_t mintracklabel=(Int_t)floor(minTrackPt*1000+0.5);
+  TString scalename(Form("Scale_R0%d", radlabel));
+
+  AliAnalysisTaskScale* scaletask = AddTaskScale(usedTracks,outClusName,minTrackPt,minClusterPt,scalename);
   scaletask->SetCentralityEstimator(CentEst);
   scaletask->SetScaleFunction(sfunc);
-  
 
+  
   }
+
   cout << "Running non charged jet finders..." <<endl;
   AliEmcalJetTask* jetFinderTaskEm = AddTaskEmcalJet("",outClusName,cANTIKT,radius,cNEUTRALJETS,minTrackPt,minClusterPt);
 
