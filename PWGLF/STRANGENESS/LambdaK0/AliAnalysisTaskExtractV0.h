@@ -72,6 +72,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   void SetRunV0Vertexer ( Bool_t lRunV0Vertexer = kTRUE) { fkRunV0Vertexer = lRunV0Vertexer; }
   void SetRejectPileup ( Bool_t lRejectPileup = kTRUE) { fkRejectPileup = lRejectPileup; }
   void SetSpecialExecution ( Bool_t lSpecialExecution = kTRUE) { fkSpecialExecution = lSpecialExecution; }
+  void SetSkipTrigger ( Bool_t lSkipTrigger = kTRUE ){ fkSkipTrigger = lSkipTrigger; }
   
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters
@@ -109,6 +110,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Bool_t fkRunV0Vertexer; //if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
   Bool_t fkRejectPileup; //Reject pileup or not
   Bool_t fkSpecialExecution; //Special Debug / Exploratory mode
+  Bool_t fkSkipTrigger; //To be used with ::SetCollisionCandidates
   
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 

@@ -103,6 +103,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
   fkRunV0Vertexer ( kFALSE ),
   fkRejectPileup  ( kTRUE ),
   fkSpecialExecution( kFALSE ),
+  fkSkipTrigger   ( kFALSE ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -247,6 +248,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
   fkRunV0Vertexer ( kFALSE ),
   fkRejectPileup  ( kTRUE ),
   fkSpecialExecution( kFALSE ),
+  fkSkipTrigger   ( kFALSE ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -906,35 +908,36 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
   Bool_t isSelectedExtra = kTRUE; //extra sel, default YES
   isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
   
-  //pA triggering: CINT7
-  if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
-  
-  //Extra selection applies if with/without SDD is to be dealth with
-  if( fkFastOnly == "kFastOnly"){
-    //If not kFastOnly, isSelectedExtra will be kFALSE; procedure will reject it
-    isSelectedExtra = (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly;
+  if( fkSkipTrigger == kFALSE ){
+    //pA triggering: CINT7
+    if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+    
+    //Extra selection applies if with/without SDD is to be dealth with
+    if( fkFastOnly == "kFastOnly"){
+      //If not kFastOnly, isSelectedExtra will be kFALSE; procedure will reject it
+      isSelectedExtra = (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly;
+    }
+    if( fkFastOnly == "NotkFastOnly"){
+      //If not kFastOnly, isSelectedExtra will be kTRUE; procedure will accept it
+      isSelectedExtra = !( (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly );
+    }
+    
+    //Standard Min-Bias Selection
+    if ( !isSelected ) {
+      PostData(1, fListHistV0);
+      PostData(2, fTree);
+      return;
+    }
+    //Check if goes through extra selections
+    //isSelectedExtra will be true in case -> fkFastOnly==""
+    //isSelectedExtra will be true in case -> fkFastOnly=="kFastOnly"    && bit kFastOnly ON
+    //isSelectedExtra will be true in case -> fkFastOnly=="NotkFastOnly" && bit kFastOnly OFF
+    if ( !isSelectedExtra ) {
+      PostData(1, fListHistV0);
+      PostData(2, fTree);
+      return;
+    }
   }
-  if( fkFastOnly == "NotkFastOnly"){
-    //If not kFastOnly, isSelectedExtra will be kTRUE; procedure will accept it
-    isSelectedExtra = !( (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly );
-  }
-  
-  //Standard Min-Bias Selection
-  if ( !isSelected ) {
-    PostData(1, fListHistV0);
-    PostData(2, fTree);
-    return;
-  }
-  //Check if goes through extra selections
-  //isSelectedExtra will be true in case -> fkFastOnly==""
-  //isSelectedExtra will be true in case -> fkFastOnly=="kFastOnly"    && bit kFastOnly ON
-  //isSelectedExtra will be true in case -> fkFastOnly=="NotkFastOnly" && bit kFastOnly OFF
-  if ( !isSelectedExtra ) {
-    PostData(1, fListHistV0);
-    PostData(2, fTree);
-    return;
-  }
-  
   
 //------------------------------------------------
 // After Trigger Selection
