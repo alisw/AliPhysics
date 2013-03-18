@@ -102,6 +102,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
   fkpAVertexSelection( kFALSE ),
   fkRunV0Vertexer ( kFALSE ),
   fkRejectPileup  ( kTRUE ),
+  fkSpecialExecution( kFALSE ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -157,6 +158,19 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
 
   fTreeVariableNegTrackStatus(0),
   fTreeVariablePosTrackStatus(0),
+
+  fTreeVariableNegTPCSignal(0),
+  fTreeVariablePosTPCSignal(0),
+  fTreeVariableNegInnerP(0),
+  fTreeVariablePosInnerP(0),
+
+  fTreeVariableNegPx(0),
+  fTreeVariableNegPy(0),
+  fTreeVariableNegPz(0),
+  fTreeVariablePosPx(0),
+  fTreeVariablePosPy(0),
+  fTreeVariablePosPz(0),
+
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -232,6 +246,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
   fkpAVertexSelection( kFALSE ),
   fkRunV0Vertexer ( kFALSE ),
   fkRejectPileup  ( kTRUE ),
+  fkSpecialExecution( kFALSE ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -287,6 +302,18 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
 
   fTreeVariableNegTrackStatus(0),
   fTreeVariablePosTrackStatus(0),
+
+  fTreeVariableNegTPCSignal(0),
+  fTreeVariablePosTPCSignal(0),
+  fTreeVariableNegInnerP(0),
+  fTreeVariablePosInnerP(0),
+
+  fTreeVariableNegPx(0),
+  fTreeVariableNegPy(0),
+  fTreeVariableNegPz(0),
+  fTreeVariablePosPx(0),
+  fTreeVariablePosPy(0),
+  fTreeVariablePosPz(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -455,6 +482,19 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
   
         fTree->Branch("fTreeVariableNegTrackStatus",&fTreeVariableNegTrackStatus,"fTreeVariableNegTrackStatus/l");
         fTree->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
+  }
+  if( fkSpecialExecution == kTRUE ){
+    fTree->Branch("fTreeVariablePosTPCSignal",&fTreeVariablePosTPCSignal,"fTreeVariablePosTPCSignal/F");
+    fTree->Branch("fTreeVariableNegTPCSignal",&fTreeVariableNegTPCSignal,"fTreeVariableNegTPCSignal/F");
+    fTree->Branch("fTreeVariablePosInnerP",&fTreeVariablePosInnerP,"fTreeVariablePosInnerP/F");
+    fTree->Branch("fTreeVariableNegInnerP",&fTreeVariableNegInnerP,"fTreeVariableNegInnerP/F");
+    
+    fTree->Branch("fTreeVariablePosPx",&fTreeVariablePosPx,"fTreeVariablePosPx/F");
+    fTree->Branch("fTreeVariablePosPy",&fTreeVariablePosPy,"fTreeVariablePosPy/F");
+    fTree->Branch("fTreeVariablePosPz",&fTreeVariablePosPz,"fTreeVariablePosPz/F");
+    fTree->Branch("fTreeVariableNegPx",&fTreeVariableNegPx,"fTreeVariableNegPx/F");
+    fTree->Branch("fTreeVariableNegPy",&fTreeVariableNegPy,"fTreeVariableNegPy/F");
+    fTree->Branch("fTreeVariableNegPz",&fTreeVariableNegPz,"fTreeVariableNegPz/F");
   }
   
 //------------------------------------------------
@@ -1094,6 +1134,21 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       //Daughter Eta for Eta selection, afterwards
       fTreeVariableNegEta = nTrack->Eta();
       fTreeVariablePosEta = pTrack->Eta();
+     
+     if( fkSpecialExecution ){
+       fTreeVariableNegPx = lMomNeg[0]; fTreeVariableNegPy = lMomNeg[1]; fTreeVariableNegPz = lMomNeg[2];
+       fTreeVariablePosPx = lMomPos[0]; fTreeVariablePosPy = lMomPos[1]; fTreeVariablePosPz = lMomPos[2];
+       //Need to acquire info to do dEdx cut afterwards...
+       fTreeVariablePosTPCSignal = pTrack->GetTPCsignal();
+       fTreeVariableNegTPCSignal = nTrack->GetTPCsignal();
+       //Get Inner momentum if possible
+       fTreeVariableNegInnerP = nTrack->GetP();
+       fTreeVariablePosInnerP = pTrack->GetP();
+       const AliExternalTrackParam *innerpos=pTrack->GetInnerParam();
+       const AliExternalTrackParam *innerneg=nTrack->GetInnerParam();
+       if(innerpos) { fTreeVariablePosInnerP = innerpos->GetP(); }
+       if(innerneg) { fTreeVariableNegInnerP = innerneg->GetP(); }
+     }
 
       // Filter like-sign V0 (next: add counter and distribution)
       if ( pTrack->GetSign() == nTrack->GetSign()){
@@ -1197,41 +1252,49 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
 //------------------------------------------------
 // Fill Tree! 
 //------------------------------------------------
-
-// The conditionals are meant to decrease excessive
-// memory usage! 
-
-//First Selection: Reject OnFly
-      if( (lOnFlyStatus == 0 && fkUseOnTheFly == kFALSE) || (lOnFlyStatus != 0 && fkUseOnTheFly == kTRUE ) ){
-         //Second Selection: rough 20-sigma band, parametric. 
-         //K0Short: Enough to parametrize peak broadening with linear function.    
-         Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02)*fTreeVariablePt; 
-         Double_t lLowerLimitK0Short = (4.30006e-01) - (1.10029e-02)*fTreeVariablePt;
-         //Lambda: Linear (for higher pt) plus exponential (for low-pt broadening)
-         //[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
-         Double_t lUpperLimitLambda = (1.13688e+00) + (5.27838e-03)*fTreeVariablePt + (8.42220e-02)*TMath::Exp(-(3.80595e+00)*fTreeVariablePt); 
-         Double_t lLowerLimitLambda = (1.09501e+00) - (5.23272e-03)*fTreeVariablePt - (7.52690e-02)*TMath::Exp(-(3.46339e+00)*fTreeVariablePt);
-         //Do Selection      
-         if( (fTreeVariableInvMassLambda     < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda     ) || 
-             (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda     ) || 
-             (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short    ) ){
-             //Pre-selection in case this is AA...
-             if( fkIsNuclear == kFALSE ) fTree->Fill();
-             if( fkIsNuclear == kTRUE){ 
-             //If this is a nuclear collision___________________
-             // ... pre-filter with TPC, daughter eta selection
-               if( (fTreeVariableInvMassLambda     < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda 
-                      && TMath::Abs(fTreeVariableNSigmasPosProton) < 6.0 && TMath::Abs(fTreeVariableNSigmasNegPion) < 6.0 ) || 
-                   (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda 
-                      && TMath::Abs(fTreeVariableNSigmasNegProton) < 6.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 6.0 ) ||  
-                   (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short 
-                      && TMath::Abs(fTreeVariableNSigmasNegPion)   < 6.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 6.0 ) ){
-                  //insane test
-                  if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 ) fTree->Fill();
-               }
-             }//end nuclear_____________________________________
-         }
-      }
+     
+     // The conditionals are meant to decrease excessive
+     // memory usage!
+     
+     //First Selection: Reject OnFly
+     if( (lOnFlyStatus == 0 && fkUseOnTheFly == kFALSE) || (lOnFlyStatus != 0 && fkUseOnTheFly == kTRUE ) ){
+       //Second Selection: rough 20-sigma band, parametric.
+       //K0Short: Enough to parametrize peak broadening with linear function.
+       Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02)*fTreeVariablePt;
+       Double_t lLowerLimitK0Short = (4.30006e-01) - (1.10029e-02)*fTreeVariablePt;
+       //Lambda: Linear (for higher pt) plus exponential (for low-pt broadening)
+       //[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
+       Double_t lUpperLimitLambda = (1.13688e+00) + (5.27838e-03)*fTreeVariablePt + (8.42220e-02)*TMath::Exp(-(3.80595e+00)*fTreeVariablePt);
+       Double_t lLowerLimitLambda = (1.09501e+00) - (5.23272e-03)*fTreeVariablePt - (7.52690e-02)*TMath::Exp(-(3.46339e+00)*fTreeVariablePt);
+       //Do Selection
+       if( (fTreeVariableInvMassLambda     < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda     ) ||
+          (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda     ) ||
+          (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short    ) ){
+         //Pre-selection in case this is AA...
+         if( fkIsNuclear == kFALSE ) fTree->Fill();
+         if( fkIsNuclear == kTRUE){
+           //If this is a nuclear collision___________________
+           // ... pre-filter with TPC, daughter eta selection
+           if( (fTreeVariableInvMassLambda     < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda
+                && TMath::Abs(fTreeVariableNSigmasPosProton) < 6.0 && TMath::Abs(fTreeVariableNSigmasNegPion) < 6.0 ) ||
+              (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda
+               && TMath::Abs(fTreeVariableNSigmasNegProton) < 6.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 6.0 ) ||
+              (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short
+               && TMath::Abs(fTreeVariableNSigmasNegPion)   < 6.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 6.0 ) ){
+                //insane test
+                if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && !fkSpecialExecution) fTree->Fill();
+              }
+         }//end nuclear_____________________________________
+       }
+     }
+     
+     if(lOnFlyStatus == 0 && fkSpecialExecution){
+       if(
+          (fTreeVariableNSigmasPosProton > 6 && TMath::Abs(fTreeVariableNSigmasNegPion)< 6) ||
+          (fTreeVariableNSigmasNegProton > 6 && TMath::Abs(fTreeVariableNSigmasPosPion)< 6) ){
+         fTree->Fill();
+       }
+     }
 
 //------------------------------------------------
 // Fill tree over.

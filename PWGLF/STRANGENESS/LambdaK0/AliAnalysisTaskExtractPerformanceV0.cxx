@@ -544,6 +544,9 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
   fTreeVariableNegTrackStatus(0),
   fTreeVariablePosTrackStatus(0),
 
+  fTreeVariableNegPhysicalStatus(0),
+  fTreeVariablePosPhysicalStatus(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis

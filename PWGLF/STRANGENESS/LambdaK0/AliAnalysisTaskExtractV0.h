@@ -71,6 +71,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   void SetpAVertexSelection   (Bool_t lpAVertexSelection = kTRUE) {fkpAVertexSelection = lpAVertexSelection;  }
   void SetRunV0Vertexer ( Bool_t lRunV0Vertexer = kTRUE) { fkRunV0Vertexer = lRunV0Vertexer; }
   void SetRejectPileup ( Bool_t lRejectPileup = kTRUE) { fkRejectPileup = lRejectPileup; }
+  void SetSpecialExecution ( Bool_t lSpecialExecution = kTRUE) { fkSpecialExecution = lSpecialExecution; }
   
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters
@@ -107,6 +108,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
   Bool_t fkRunV0Vertexer; //if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
   Bool_t fkRejectPileup; //Reject pileup or not
+  Bool_t fkSpecialExecution; //Special Debug / Exploratory mode
   
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 
@@ -165,6 +167,19 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   //Decay Length issue debugging: ULong_t with track status
   ULong64_t fTreeVariableNegTrackStatus;
   ULong64_t fTreeVariablePosTrackStatus;
+  
+  //Special dEdx debug/plotting
+  Float_t fTreeVariableNegTPCSignal;
+  Float_t fTreeVariablePosTPCSignal;
+  Float_t fTreeVariableNegInnerP;
+  Float_t fTreeVariablePosInnerP;
+  
+  Float_t fTreeVariableNegPx;
+  Float_t fTreeVariableNegPy;
+  Float_t fTreeVariableNegPz;
+  Float_t fTreeVariablePosPx;
+  Float_t fTreeVariablePosPy;
+  Float_t fTreeVariablePosPz;
   
 //Note: TDistOverTotMom needs a mass hypothesis to be converted to proper decaylength.
 
