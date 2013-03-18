@@ -15,6 +15,7 @@
 #include "AliTPCPIDResponse.h"
 #include "AliTRDPIDResponse.h"
 #include "AliTOFPIDResponse.h"
+#include "AliHMPIDPIDResponse.h"
 #include "AliEMCALPIDResponse.h"
 
 
@@ -30,6 +31,7 @@ class TLinearFitter;
 class AliVEvent;
 class AliTRDPIDResponseObject;
 class AliTOFPIDParams;
+class AliHMPIDPIDParams;
 class AliOADBContainer;
 
 class AliPIDResponse : public TNamed {
@@ -90,10 +92,15 @@ public:
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
   virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type, const Float_t /*timeZeroTOF*/) const { return NumberOfSigmasTOF(track,type); }
+  virtual Float_t NumberOfSigmasHMPID(const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
 
   Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel,Double_t centrality=-1,AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
 
+  // Signal delta
+  EDetPidStatus GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const;
+  Double_t GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
+  
   // Probabilities
   EDetPidStatus ComputePIDProbability  (EDetCode  detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus ComputePIDProbability  (EDetector detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
@@ -156,10 +163,11 @@ public:
 
   
 protected:
-  AliITSPIDResponse fITSResponse;    //PID response function of the ITS
-  AliTPCPIDResponse fTPCResponse;    //PID response function of the TPC
-  AliTRDPIDResponse fTRDResponse;    //PID response function of the TRD
-  AliTOFPIDResponse fTOFResponse;    //PID response function of the TOF
+  AliITSPIDResponse   fITSResponse;    //PID response function of the ITS
+  AliTPCPIDResponse   fTPCResponse;    //PID response function of the TPC
+  AliTRDPIDResponse   fTRDResponse;    //PID response function of the TRD
+  AliTOFPIDResponse   fTOFResponse;    //PID response function of the TOF
+  AliHMPIDPIDResponse fHMPIDResponse;  //PID response function of the HMPID
   AliEMCALPIDResponse fEMCALResponse;  //PID response function of the EMCAL
 
   Float_t           fRange;          // nSigma max in likelihood
@@ -167,6 +175,8 @@ protected:
 
   //unbuffered PID calculation
   virtual Float_t GetNumberOfSigmasTOFold  (const AliVParticle */*track*/, AliPID::EParticleType /*type*/) const {return 0;}
+  virtual Float_t GetSignalDeltaTOFold(const AliVParticle */*track*/, AliPID::EParticleType /*type*/) const {return -9999.;}
+  
   EDetPidStatus GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
   EDetPidStatus GetTOFPIDStatus(const AliVTrack *track) const;
 
@@ -199,6 +209,8 @@ private:
 
   Float_t fTOFtail;                    //! TOF tail effect used in TOF probability
   AliTOFPIDParams *fTOFPIDParams;      //! TOF PID Params - period depending (OADB loaded)
+  
+  AliHMPIDPIDParams *fHMPIDPIDParams;  //! HMPID PID Params (OADB loaded)
 
   TObjArray *fEMCALPIDParams;             //! EMCAL PID Params
 
@@ -237,6 +249,10 @@ private:
   void SetTOFPidResponseMaster();
   void InitializeTOFResponse();
 
+  //HMPID
+  void SetHMPIDPidResponseMaster();
+  void InitializeHMPIDResponse();
+
   //EMCAL
   void SetEMCALPidResponseMaster();
   void InitializeEMCALResponse();
@@ -253,10 +269,17 @@ private:
   Float_t GetNumberOfSigmasITS  (const AliVParticle *track, AliPID::EParticleType type) const;
   Float_t GetNumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type) const;
   Float_t GetNumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetNumberOfSigmasHMPID(const AliVParticle *track, AliPID::EParticleType type) const;
   Float_t GetNumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
   Float_t GetNumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
 
   Float_t GetBufferedNumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
+
+  // Signal deltas
+  EDetPidStatus GetSignalDeltaITS(const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const;
+  EDetPidStatus GetSignalDeltaTPC(const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const;
+  EDetPidStatus GetSignalDeltaTOF(const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const;
+  EDetPidStatus GetSignalDeltaHMPID(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val) const;
   
   // Probabilities
   EDetPidStatus GetComputePIDProbability  (EDetector detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;

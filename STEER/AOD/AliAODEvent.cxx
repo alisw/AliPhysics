@@ -955,7 +955,7 @@ void  AliAODEvent::SetTOFHeader(const AliTOFHeader *header)
 
 }
 //------------------------------------------------------------
-AliAODHMPIDrings *AliAODEvent::GetHMPIDringForTrackID(Int_t trackID)
+AliAODHMPIDrings *AliAODEvent::GetHMPIDringForTrackID(Int_t trackID) const
 {
   //
   // Returns the HMPID object if any for a given track ID
@@ -970,7 +970,7 @@ AliAODHMPIDrings *AliAODEvent::GetHMPIDringForTrackID(Int_t trackID)
   return 0;
 }
 //------------------------------------------------------------
-Int_t AliAODEvent::GetNHMPIDrings()   
+Int_t AliAODEvent::GetNHMPIDrings() const   
 { 
   //
   // If there is a list of HMPID rings in the given AOD event, return their number
@@ -979,7 +979,7 @@ Int_t AliAODEvent::GetNHMPIDrings()
   else return -1;
 } 
 //------------------------------------------------------------
-AliAODHMPIDrings *AliAODEvent::GetHMPIDring(Int_t nRings)   
+AliAODHMPIDrings *AliAODEvent::GetHMPIDring(Int_t nRings) const
 { 
   //
   // If there is a list of HMPID rings in the given AOD event, return corresponding ring

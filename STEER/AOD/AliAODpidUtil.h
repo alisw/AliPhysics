@@ -36,6 +36,7 @@ public:
   Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const;
 
 protected:
+  virtual Float_t GetSignalDeltaTOFold(const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t GetNumberOfSigmasTOFold(const AliVParticle *vtrack, AliPID::EParticleType type) const;
   
 private:

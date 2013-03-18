@@ -284,7 +284,15 @@ class AliAODTrack : public AliVTrack {
   virtual AliTPCdEdxInfo* GetTPCdEdxInfo() const {return fDetPid?fDetPid->GetTPCdEdxInfo():0;}
   Double_t  GetTPCmomentum()     const { return fDetPid?fDetPid->GetTPCmomentum():0.;  }
   Double_t  GetTOFsignal()       const { return fDetPid?fDetPid->GetTOFsignal():0.;    }
-  Double_t  GetHMPIDsignal()     const { return 0.;  } // TODO: To be implemented properly with the new HMPID object
+  Double_t  GetHMPIDsignal()     const; 
+  Double_t  GetHMPIDoccupancy()  const;
+
+  Int_t     GetHMPIDcluIdx()     const;
+    
+  void GetHMPIDtrk(Float_t &x, Float_t &y, Float_t &th, Float_t &ph) const;  
+  void GetHMPIDmip(Float_t &x,Float_t &y,Int_t &q,Int_t &nph) const;
+  
+  Bool_t GetOuterHmpPxPyPz(Double_t *p) const;
   
   void      GetIntegratedTimes(Double_t *times) const {if (fDetPid) fDetPid->GetIntegratedTimes(times); }
   Double_t  GetTRDslice(Int_t plane, Int_t slice) const;

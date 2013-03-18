@@ -113,7 +113,12 @@ public:
                              AliPID::EParticleType species,
                              ETPCdEdxSource dedxSource = kdEdxDefault,
                              Bool_t correctEta = kFALSE) const;//TODO: In future, default kTRUE
-
+  
+  Float_t GetSignalDelta( const AliVTrack* track,
+                          AliPID::EParticleType species,
+                          ETPCdEdxSource dedxSource = kdEdxDefault,
+                          Bool_t correctEta = kFALSE) const;
+  
   void SetResponseFunction(TObject* o,
                            AliPID::EParticleType type,
                            ETPCgainScenario gainScenario);

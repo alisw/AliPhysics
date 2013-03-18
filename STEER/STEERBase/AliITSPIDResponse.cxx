@@ -22,6 +22,7 @@
 //      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
 #include "TMath.h"
+#include "AliVTrack.h"
 #include "AliITSPIDResponse.h"
 #include "AliITSPidParams.h"
 #include "AliExternalTrackParam.h"
@@ -270,6 +271,52 @@ void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Doubl
   condprobfun[AliPID::kKaon] = itsProb[1];
   condprobfun[AliPID::kProton] = itsProb[0];
   return;
+}
+
+//_________________________________________________________________________
+Double_t AliITSPIDResponse::GetNumberOfSigmas( const AliVTrack* track, AliPID::EParticleType type) const
+{
+  //
+  // number of sigmas
+  //
+  UChar_t clumap=track->GetITSClusterMap();
+  Int_t nPointsForPid=0;
+  for(Int_t i=2; i<6; i++){
+    if(clumap&(1<<i)) ++nPointsForPid;
+  }
+  Float_t mom=track->P();
+  
+  //check for ITS standalone tracks
+  Bool_t isSA=kTRUE;
+  if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
+  
+  const Float_t dEdx=track->GetITSsignal();
+  
+  //TODO: in case of the electron, use the SA parametrisation,
+  //      this needs to be changed if ITS provides a parametrisation
+  //      for electrons also for ITS+TPC tracks
+  return GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,isSA || (type==AliPID::kElectron));
+}
+
+//_________________________________________________________________________
+Double_t AliITSPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EParticleType type) const
+{
+  //
+  // Signal - expected
+  //
+  const Float_t mom=track->P();
+  const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(type),2.);
+  Bool_t isSA=kTRUE;
+  if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
+  
+  const Float_t dEdx=track->GetITSsignal();
+  
+  //TODO: in case of the electron, use the SA parametrisation,
+  //      this needs to be changed if ITS provides a parametrisation
+  //      for electrons also for ITS+TPC tracks
+  
+  Float_t bethe = Bethe(mom,AliPID::ParticleMassZ(type), isSA || (type==AliPID::kElectron))*chargeFactor;
+  return (dEdx - bethe);
 }
 
 //_________________________________________________________________________

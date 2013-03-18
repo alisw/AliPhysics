@@ -43,34 +43,36 @@ class AliAODHMPIDrings : public TObject {
   virtual ~AliAODHMPIDrings() {};
     
   //___ Getters
-  Double32_t GetHmpTrkID()                { return fHmpidAODtrkId; }
+  Double32_t GetHmpTrkID()                const { return fHmpidAODtrkId; }
   
-  Double32_t GetHmpMipCharge()            { return fHmpidAODqn%1000000; }
-  Double32_t GetHmpNumOfPhotonClusters()  { return fHmpidAODqn/1000000;}
+  Double32_t GetHmpMipCharge()            const { return fHmpidAODqn%1000000; }
+  Double32_t GetHmpNumOfPhotonClusters()  const { return fHmpidAODqn/1000000;}
  
-  Int_t      GetHmpChamber()              { return fHmpidAODcluIdx/1000000; }
+  Int_t      GetHmpChamber()              const { return fHmpidAODcluIdx/1000000; }
   
-  Double32_t GetHmpTrackTheta()           { return fHmpidAODtrkTheta;}
-  Double32_t GetHmpTrackPhi()             { return fHmpidAODtrkPhi;}
+  Int_t      GetHmpCluIdx()               const { return fHmpidAODcluIdx; }
   
-  Double32_t GetHmpSignal()               { return fHmpidAODsignal;}
-  Double32_t GetHmpOccupancy()            { return fHmpidAODocc;}
+  Double32_t GetHmpTrackTheta()           const { return fHmpidAODtrkTheta;}
+  Double32_t GetHmpTrackPhi()             const { return fHmpidAODtrkPhi;}
   
-  Double32_t GetHmpChi2()                 { return fHmpidAODchi2;}
+  Double32_t GetHmpSignal()               const { return fHmpidAODsignal;}
+  Double32_t GetHmpOccupancy()            const { return fHmpidAODocc;}
+  
+  Double32_t GetHmpChi2()                 const { return fHmpidAODchi2;}
 
-  Double32_t GetHmpTrackX()               { return fHmpidAODtrkX;}
-  Double32_t GetHmpTrackY()               { return fHmpidAODtrkY;}
+  Double32_t GetHmpTrackX()               const { return fHmpidAODtrkX;}
+  Double32_t GetHmpTrackY()               const { return fHmpidAODtrkY;}
 
-  Double32_t GetHmpMipX()                 { return fHmpidAODmipX;}
-  Double32_t GetHmpMipY()                 { return fHmpidAODmipY;}
+  Double32_t GetHmpMipX()                 const { return fHmpidAODmipX;}
+  Double32_t GetHmpMipY()                 const { return fHmpidAODmipY;}
 
-  Double32_t GetHmpDX()                   { return fHmpidAODmipX - fHmpidAODtrkX;}
-  Double32_t GetHmpDY()                   { return fHmpidAODmipY - fHmpidAODtrkY;}
-  Double32_t GetHmpDist()                 { return TMath::Sqrt((fHmpidAODmipX - fHmpidAODtrkX)*(fHmpidAODmipX - fHmpidAODtrkX) + (fHmpidAODmipY - fHmpidAODtrkY)*(fHmpidAODmipY - fHmpidAODtrkY));}
+  Double32_t GetHmpDX()                   const { return fHmpidAODmipX - fHmpidAODtrkX;}
+  Double32_t GetHmpDY()                   const { return fHmpidAODmipY - fHmpidAODtrkY;}
+  Double32_t GetHmpDist()                 const { return TMath::Sqrt((fHmpidAODmipX - fHmpidAODtrkX)*(fHmpidAODmipX - fHmpidAODtrkX) + (fHmpidAODmipY - fHmpidAODtrkY)*(fHmpidAODmipY - fHmpidAODtrkY));}
   
   
-  void GetHmpPidProbs(Double32_t *pid);   //defined in cxx
-  void GetHmpMom(Double32_t *mom);        //defined in cxx
+  void GetHmpPidProbs(Double32_t *pid) const;   //defined in cxx
+  void GetHmpMom(Double32_t *mom)      const;   //defined in cxx
   
   //___ Setters
   

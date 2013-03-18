@@ -25,9 +25,11 @@
 #include "AliLog.h"
 #include "AliExternalTrackParam.h"
 #include "AliVVertex.h"
-#include "AliAODTrack.h"
 #include "AliDetectorPID.h"
 #include "AliAODEvent.h"
+#include "AliAODHMPIDrings.h"
+
+#include "AliAODTrack.h"
 
 ClassImp(AliAODTrack)
 
@@ -794,6 +796,62 @@ void AliAODTrack::SetDetectorPID(const AliDetectorPID *pid)
   
 }
 
+//_____________________________________________________________________________
+Double_t AliAODTrack::GetHMPIDsignal() const
+{
+  if(fAODEvent->GetHMPIDringForTrackID(fID)) return fAODEvent->GetHMPIDringForTrackID(fID)->GetHmpSignal();
+  else return -999.;
+}
+
+//_____________________________________________________________________________
+Double_t AliAODTrack::GetHMPIDoccupancy() const
+{
+  if(fAODEvent->GetHMPIDringForTrackID(fID)) return fAODEvent->GetHMPIDringForTrackID(fID)->GetHmpOccupancy();
+  else return -999.;
+}
+
+//_____________________________________________________________________________
+Int_t AliAODTrack::GetHMPIDcluIdx() const
+{
+  if(fAODEvent->GetHMPIDringForTrackID(fID)) return fAODEvent->GetHMPIDringForTrackID(fID)->GetHmpCluIdx();
+  else return -999;
+}
+
+//_____________________________________________________________________________
+void AliAODTrack::GetHMPIDtrk(Float_t &x, Float_t &y, Float_t &th, Float_t &ph) const
+{
+  x = -999; y = -999.; th = -999.; ph = -999.;
+
+  const AliAODHMPIDrings *ring=fAODEvent->GetHMPIDringForTrackID(fID);
+  if(ring){
+    x  = ring->GetHmpTrackX();
+    y  = ring->GetHmpTrackY();
+    th = ring->GetHmpTrackTheta();
+    ph = ring->GetHmpTrackPhi();
+  }
+}
+
+//_____________________________________________________________________________
+void AliAODTrack::GetHMPIDmip(Float_t &x,Float_t &y,Int_t &q, Int_t &nph) const
+{
+  x = -999; y = -999.; q = -999; nph = -999;
+  
+  const AliAODHMPIDrings *ring=fAODEvent->GetHMPIDringForTrackID(fID);
+  if(ring){
+    x   = ring->GetHmpMipX();
+    y   = ring->GetHmpMipY();
+    q   = (Int_t)ring->GetHmpMipCharge();
+    nph = (Int_t)ring->GetHmpNumOfPhotonClusters();
+  }
+}
+
+//_____________________________________________________________________________
+Bool_t AliAODTrack::GetOuterHmpPxPyPz(Double_t *p) const 
+{ 
+ if(fAODEvent->GetHMPIDringForTrackID(fID)) {fAODEvent->GetHMPIDringForTrackID(fID)->GetHmpMom(p); return kTRUE;}
+ 
+ else return kFALSE;      
+}
 //_____________________________________________________________________________
 Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
 {

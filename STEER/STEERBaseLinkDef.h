@@ -99,6 +99,8 @@
 #pragma link C++ class AliTOFPIDResponse+;
 #pragma link C++ class AliTRDPIDResponse+;
 #pragma link C++ class AliEMCALPIDResponse+;
+#pragma link C++ class AliHMPIDPIDResponse+;
+#pragma link C++ class AliHMPIDPIDParams+;
 #pragma link C++ class AliPIDCombined+;
 #pragma link C++ class AliPIDValues+;
 #pragma link C++ class AliDetectorPID+;

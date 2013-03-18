@@ -95,7 +95,7 @@ Float_t AliAODpidUtil::GetTPCsignalTunedOnData(const AliVTrack *t) const {
         Double_t sigma = fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection());
         dedx = gRandom->Gaus(bethe,sigma);
         
-	    if(iS == AliPID::ParticleCode(AliPID::kHe3) || iS == AliPID::ParticleCode(AliPID::kAlpha)) dedx *= 5;
+// 	    if(iS == AliPID::ParticleCode(AliPID::kHe3) || iS == AliPID::ParticleCode(AliPID::kAlpha)) dedx *= 5;
 	}
 
     }
@@ -103,6 +103,36 @@ Float_t AliAODpidUtil::GetTPCsignalTunedOnData(const AliVTrack *t) const {
     track->SetTPCsignalTunedOnData(dedx);
     return dedx;
 }
+
+//_________________________________________________________________________
+Float_t AliAODpidUtil::GetSignalDeltaTOFold(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  //
+  // Number of sigma implementation for the TOF
+  //
+  
+  AliAODTrack *track=(AliAODTrack*)vtrack;
+  
+  AliAODPid *pidObj = track->GetDetPid();
+  if (!pidObj) return -9999.;
+  Double_t tofTime=pidObj->GetTOFsignal();
+  const Double_t expTime=fTOFResponse.GetExpectedSignal((AliVTrack*)vtrack,type);
+  Double_t sigmaTOFPid[AliPID::kSPECIES];
+  pidObj->GetTOFpidResolution(sigmaTOFPid);
+  AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
+  if (event) {  // protection if the user didn't call GetTrack, which sets the internal pointer
+    AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
+    if (tofH && (TMath::Abs(sigmaTOFPid[0]) <= 1.E-16) ) { // new AOD
+        tofTime -= fTOFResponse.GetStartTime(vtrack->P());
+    }
+  } else {
+    AliError("pointer to AliAODEvent not found, please call GetTrack to set it");
+    return -9999.;
+  }
+  
+  return tofTime - expTime;
+}
+
 //_________________________________________________________________________
 Float_t AliAODpidUtil::GetNumberOfSigmasTOFold(const AliVParticle *vtrack, AliPID::EParticleType type) const
 {
@@ -113,7 +143,7 @@ Float_t AliAODpidUtil::GetNumberOfSigmasTOFold(const AliVParticle *vtrack, AliPI
   AliAODTrack *track=(AliAODTrack*)vtrack;
 
   Bool_t oldAod=kTRUE;
-  Double_t sigTOF;
+  Double_t sigTOF=0.;
   AliAODPid *pidObj = track->GetDetPid();
   if (!pidObj) return -999.;
   Double_t tofTime=pidObj->GetTOFsignal();

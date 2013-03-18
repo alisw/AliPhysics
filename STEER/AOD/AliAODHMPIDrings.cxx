@@ -138,13 +138,13 @@ AliAODHMPIDrings& AliAODHMPIDrings::operator=(const AliAODHMPIDrings& hmpidAOD)
                                   
 }
 //________________________________________________________________________________________________________________________________________________________
-void AliAODHMPIDrings::GetHmpPidProbs(Double32_t *pid)
+void AliAODHMPIDrings::GetHmpPidProbs(Double32_t *pid) const
 {
   // Gets probabilities of each particle type (in HMPID)
   for (Int_t i=0; i<AliPID::kSPECIES; i++) pid[i]=fHmpidAODpid[i];
 }
 //________________________________________________________________________________________________________________________________________________________
-void  AliAODHMPIDrings::GetHmpMom(Double32_t *mom)
+void  AliAODHMPIDrings::GetHmpMom(Double32_t *mom) const
 {
   for( Int_t ico = 0 ; ico < 3; ico++) mom[ico] = fHMPIDmom[ico];
 }

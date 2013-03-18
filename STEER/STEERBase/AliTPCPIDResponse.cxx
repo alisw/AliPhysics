@@ -514,7 +514,7 @@ Float_t AliTPCPIDResponse::GetNumberOfSigmas(const AliVTrack* track,
   //Calculates the number of sigmas of the PID signal from the expected value
   //for a given particle species in the presence of multiple gain scenarios
   //inside the TPC
-                             
+  
   Double_t dEdx = -1;
   Int_t nPoints = -1;
   ETPCgainScenario gainScenario = kGainScenarioInvalid;
@@ -522,7 +522,7 @@ Float_t AliTPCPIDResponse::GetNumberOfSigmas(const AliVTrack* track,
   
   if (!ResponseFunctiondEdxN(track, species, dedxSource, dEdx, nPoints, gainScenario, &responseFunction))
     return -999; //TODO: Better handling!
-                             
+    
   Double_t bethe = GetExpectedSignal(track, species, dEdx, responseFunction, correctEta);
   Double_t sigma = GetExpectedSigma(track, species, gainScenario, dEdx, nPoints, responseFunction, correctEta);
   // 999 will be returned by GetExpectedSigma e.g. in case of 0 dEdx clusters
@@ -530,6 +530,29 @@ Float_t AliTPCPIDResponse::GetNumberOfSigmas(const AliVTrack* track,
     return -999;
   else
     return (dEdx-bethe)/sigma;
+}
+
+//_________________________________________________________________________
+Float_t AliTPCPIDResponse::GetSignalDelta(const AliVTrack* track,
+                                          AliPID::EParticleType species,
+                                          ETPCdEdxSource dedxSource,
+                                          Bool_t correctEta) const
+{
+  //Calculates the number of sigmas of the PID signal from the expected value
+  //for a given particle species in the presence of multiple gain scenarios
+  //inside the TPC
+
+  Double_t dEdx = -1;
+  Int_t nPoints = -1;
+  ETPCgainScenario gainScenario = kGainScenarioInvalid;
+  TSpline3* responseFunction = 0x0;
+
+  if (!ResponseFunctiondEdxN(track, species, dedxSource, dEdx, nPoints, gainScenario, &responseFunction))
+    return -9999.; //TODO: Better handling!
+
+  Double_t bethe = GetExpectedSignal(track, species, dEdx, responseFunction, correctEta);
+  // 999 will be returned by GetExpectedSigma e.g. in case of 0 dEdx clusters
+  return dEdx-bethe;
 }
 
 //_________________________________________________________________________

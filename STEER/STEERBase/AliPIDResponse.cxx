@@ -41,6 +41,7 @@
 #include <AliOADBContainer.h>
 #include <AliTRDPIDResponseObject.h>
 #include <AliTOFPIDParams.h>
+#include <AliHMPIDPIDParams.h>
 
 #include "AliPIDResponse.h"
 #include "AliDetectorPID.h"
@@ -55,6 +56,7 @@ fITSResponse(isMC),
 fTPCResponse(),
 fTRDResponse(),
 fTOFResponse(),
+fHMPIDResponse(),
 fEMCALResponse(),
 fRange(5.),
 fITSPIDmethod(kITSTruncMean),
@@ -81,6 +83,7 @@ fUseTPCEtaCorrection(kFALSE),//TODO: In future, default kTRUE
 fTRDPIDResponseObject(NULL),
 fTOFtail(1.1),
 fTOFPIDParams(NULL),
+fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
 fCurrCentrality(0.0),
@@ -113,6 +116,7 @@ fITSResponse(other.fITSResponse),
 fTPCResponse(other.fTPCResponse),
 fTRDResponse(other.fTRDResponse),
 fTOFResponse(other.fTOFResponse),
+fHMPIDResponse(other.fHMPIDResponse),
 fEMCALResponse(other.fEMCALResponse),
 fRange(other.fRange),
 fITSPIDmethod(other.fITSPIDmethod),
@@ -139,6 +143,7 @@ fUseTPCEtaCorrection(other.fUseTPCEtaCorrection),
 fTRDPIDResponseObject(NULL),
 fTOFtail(1.1),
 fTOFPIDParams(NULL),
+fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
 fCurrCentrality(0.0),
@@ -162,6 +167,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fTPCResponse=other.fTPCResponse;
     fTRDResponse=other.fTRDResponse;
     fTOFResponse=other.fTOFResponse;
+    fHMPIDResponse=other.fHMPIDResponse;
     fEMCALResponse=other.fEMCALResponse;
     fRange=other.fRange;
     fITSPIDmethod=other.fITSPIDmethod;
@@ -189,6 +195,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fEMCALPIDParams=NULL;
     fTOFtail=1.1;
     fTOFPIDParams=NULL;
+    fHMPIDPIDParams=NULL;
     fCurrentEvent=other.fCurrentEvent;
 
   }
@@ -278,6 +285,16 @@ Float_t AliPIDResponse::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EP
 }
 
 //______________________________________________________________________________
+Float_t AliPIDResponse::NumberOfSigmasHMPID(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  //
+  // Calculate the number of sigmas in the EMCAL
+  //
+  
+  return NumberOfSigmas(kHMPID, vtrack, type);
+}
+
+//______________________________________________________________________________
 Float_t AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID::EParticleType type) const
 {
   //
@@ -354,6 +371,35 @@ Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID:
     }
   }
   return -999;
+}
+
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDelta(EDetector detector, const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const
+{
+  //
+  //
+  //
+  val=-9999.;
+  switch (detector){
+    case kITS:   return GetSignalDeltaITS(track,type,val); break;
+    case kTPC:   return GetSignalDeltaTPC(track,type,val); break;
+    case kTOF:   return GetSignalDeltaTOF(track,type,val); break;
+    case kHMPID: return GetSignalDeltaHMPID(track,type,val); break;
+    default: return kDetNoSignal;
+  }
+  return kDetNoSignal;
+}
+
+//______________________________________________________________________________
+Double_t AliPIDResponse::GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const
+{
+  //
+  //
+  //
+  Double_t val=-9999.;
+  EDetPidStatus stat=GetSignalDelta(detCode, track, type, val);
+  if ( stat==kDetNoSignal ) val=-9999.;
+  return val;
 }
 
 //______________________________________________________________________________
@@ -531,6 +577,9 @@ void AliPIDResponse::ExecNewRun()
   
   SetTOFPidResponseMaster();
   InitializeTOFResponse();
+
+  SetHMPIDPidResponseMaster();
+  InitializeHMPIDResponse();
 
   if (fCurrentEvent) fTPCResponse.SetMagField(fCurrentEvent->GetMagneticField());
 }
@@ -1322,6 +1371,37 @@ void AliPIDResponse::InitializeTOFResponse(){
 
 }
 
+//______________________________________________________________________________
+void AliPIDResponse::SetHMPIDPidResponseMaster()
+{
+  //
+  // Load the HMPID pid params from the OADB
+  //
+
+  if (fHMPIDPIDParams) delete fHMPIDPIDParams;
+  fHMPIDPIDParams=NULL;
+
+  TFile *oadbf = new TFile(Form("%s/COMMON/PID/data/HMPIDPIDParams.root",fOADBPath.Data()));
+  if (oadbf && oadbf->IsOpen()) {
+    AliInfo(Form("Loading HMPID Params from %s/COMMON/PID/data/HMPIDPIDParams.root", fOADBPath.Data()));
+    AliOADBContainer *oadbc = (AliOADBContainer *)oadbf->Get("HMPoadb");
+    if (oadbc) fHMPIDPIDParams = dynamic_cast<AliHMPIDPIDParams *>(oadbc->GetObject(fRun,"HMPparams"));
+    oadbf->Close();
+    delete oadbc;
+  }
+  delete oadbf;
+
+  if (!fHMPIDPIDParams) AliFatal("HMPIDPIDParams could not be retrieved");
+}
+
+//______________________________________________________________________________
+void AliPIDResponse::InitializeHMPIDResponse(){
+  //
+  // Set PID Params to the HMPID PID response
+  //
+
+  fHMPIDResponse.SetRefIndexArray(fHMPIDPIDParams->GetHMPIDrefIndex());
+}
 
 //______________________________________________________________________________
 Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Double_t efficiencyLevel,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const {
@@ -1681,9 +1761,10 @@ Float_t AliPIDResponse::GetNumberOfSigmas(EDetector detector, const AliVParticle
   const AliVTrack *track=static_cast<const AliVTrack*>(vtrack);
   
   switch (detector){
-    case kITS:   return GetNumberOfSigmasITS(track, type); break;
-    case kTPC:   return GetNumberOfSigmasTPC(track, type); break;
-    case kTOF:   return GetNumberOfSigmasTOF(track, type); break;
+    case kITS:   return GetNumberOfSigmasITS(track, type);   break;
+    case kTPC:   return GetNumberOfSigmasTPC(track, type);   break;
+    case kTOF:   return GetNumberOfSigmasTOF(track, type);   break;
+    case kHMPID: return GetNumberOfSigmasHMPID(track, type); break;
     case kEMCAL: return GetNumberOfSigmasEMCAL(track, type); break;
     default: return -999.;
   }
@@ -1702,24 +1783,8 @@ Float_t AliPIDResponse::GetNumberOfSigmasITS(const AliVParticle *vtrack, AliPID:
 
   const EDetPidStatus pidStatus=GetITSPIDStatus(track);
   if (pidStatus!=kDetPidOk) return -999.;
-    
-  UChar_t clumap=track->GetITSClusterMap();
-  Int_t nPointsForPid=0;
-  for(Int_t i=2; i<6; i++){
-    if(clumap&(1<<i)) ++nPointsForPid;
-  }
-  Float_t mom=track->P();
-  
-  //check for ITS standalone tracks
-  Bool_t isSA=kTRUE;
-  if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
-  
-  const Float_t dEdx=track->GetITSsignal();
 
-  //TODO: in case of the electron, use the SA parametrisation,
-  //      this needs to be changed if ITS provides a parametrisation
-  //      for electrons also for ITS+TPC tracks
-  return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,isSA || (type==AliPID::kElectron));
+  return fITSResponse.GetNumberOfSigmas(track,type);
 }
 
 //______________________________________________________________________________
@@ -1734,14 +1799,7 @@ Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID:
   const EDetPidStatus pidStatus=GetTPCPIDStatus(track);
   if (pidStatus!=kDetPidOk) return -999.;
   
-  Double_t nSigma = -999.;
-  
-  if (fTuneMConData)
-    this->GetTPCsignalTunedOnData(track);
-  
-  nSigma = fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
-  
-  return nSigma;
+  return fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
 }
 
 //______________________________________________________________________________
@@ -1755,9 +1813,22 @@ Float_t AliPIDResponse::GetNumberOfSigmasTOF(const AliVParticle *vtrack, AliPID:
 
   const EDetPidStatus pidStatus=GetTOFPIDStatus(track);
   if (pidStatus!=kDetPidOk) return -999.;
-
   
   return GetNumberOfSigmasTOFold(vtrack, type);
+}
+//______________________________________________________________________________
+
+Float_t AliPIDResponse::GetNumberOfSigmasHMPID(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  //
+  // Calculate the number of sigmas in the HMPID
+  //  
+  AliVTrack *track=(AliVTrack*)vtrack;
+    
+  const EDetPidStatus pidStatus=GetHMPIDPIDStatus(track);
+  if (pidStatus!=kDetPidOk) return -999.; 
+  
+  return fHMPIDResponse.GetNumberOfSigmas(track, type);
 }
 
 //______________________________________________________________________________
@@ -1784,6 +1855,53 @@ Float_t AliPIDResponse::GetNumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPI
   return fEMCALResponse.GetNumberOfSigmas(pt,EovP,type,charge);
 }
 
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaITS(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val) const
+{
+  //
+  // Signal minus expected Signal for ITS
+  //
+  AliVTrack *track=(AliVTrack*)vtrack;
+  val=fITSResponse.GetSignalDelta(track,type);
+  
+  return GetITSPIDStatus(track);
+}
+
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTPC(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val) const
+{
+  //
+  // Signal minus expected Signal for TPC
+  //
+  AliVTrack *track=(AliVTrack*)vtrack;
+  val=fTPCResponse.GetSignalDelta(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
+  
+  return GetTPCPIDStatus(track);
+}
+
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTOF(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val) const
+{
+  //
+  // Signal minus expected Signal for TOF
+  //
+  AliVTrack *track=(AliVTrack*)vtrack;
+  val=GetSignalDeltaTOFold(track, type);
+  
+  return GetTOFPIDStatus(track);
+}
+
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaHMPID(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val) const
+{
+  //
+  // Signal minus expected Signal for HMPID
+  //
+  AliVTrack *track=(AliVTrack*)vtrack;
+  val=fHMPIDResponse.GetSignalDelta(track, type);
+  
+  return GetHMPIDPIDStatus(track);
+}
 
 //______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputePIDProbability  (EDetector detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
@@ -2016,8 +2134,8 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeHMPIDProbability(const A
   const EDetPidStatus pidStatus=GetHMPIDPIDStatus(track);
   if (pidStatus!=kDetPidOk) return pidStatus;
   
-  track->GetHMPIDpid(p);
-  
+  fHMPIDResponse.GetProbability(track,nSpecies,p);
+    
   return kDetPidOk;
 }
 
@@ -2118,13 +2236,16 @@ Float_t AliPIDResponse::GetTOFMismatchProbability(const AliVTrack *track) const
   return 0.;
 }
 
-
-
 //______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse:: GetHMPIDPIDStatus(const AliVTrack *track) const
 {
   // compute HMPID pid status
-  if((track->GetStatus()&AliVTrack::kHMPIDpid)==0) return kDetNoSignal;
+  
+  Int_t ch = track->GetHMPIDcluIdx()/1000000;
+  Double_t HMPIDsignal = track->GetHMPIDsignal(); 
+  
+  if((track->GetStatus()&AliVTrack::kHMPIDpid)==0 || ch<0 || ch>6 || HMPIDsignal<0) return kDetNoSignal;
+  
   return kDetPidOk;
 }
 

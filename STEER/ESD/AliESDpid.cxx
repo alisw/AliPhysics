@@ -126,7 +126,7 @@ Float_t AliESDpid::GetTPCsignalTunedOnData(const AliVTrack *t) const {
         Double_t bethe = fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection());
         Double_t sigma = fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection());
 		dedx = gRandom->Gaus(bethe,sigma);
-		if(iS == AliPID::ParticleCode(AliPID::kHe3) || iS == AliPID::ParticleCode(AliPID::kAlpha)) dedx *= 5;
+// 		if(iS == AliPID::ParticleCode(AliPID::kHe3) || iS == AliPID::ParticleCode(AliPID::kAlpha)) dedx *= 5;
 	    }
 	}
     }
@@ -410,6 +410,19 @@ Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
     return status;
 }
 
+//_________________________________________________________________________
+Float_t AliESDpid::GetSignalDeltaTOFold(const AliVParticle *track, AliPID::EParticleType type) const
+{
+  //
+  // TOF signal - expected
+  //
+  AliVTrack *vtrack=(AliVTrack*)track;
+  
+  Double_t expTime = fTOFResponse.GetExpectedSignal(vtrack,type);
+  return (vtrack->GetTOFsignal() - fTOFResponse.GetStartTime(vtrack->P()) - expTime);
+}
+
+//_________________________________________________________________________
 Float_t AliESDpid::GetNumberOfSigmasTOFold(const AliVParticle *track, AliPID::EParticleType type) const
 {
   //

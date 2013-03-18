@@ -215,12 +215,12 @@ class AliAODEvent : public AliVEvent {
 
   // -- HMPID objects 
   TClonesArray *GetHMPIDrings()       const {return fHMPIDrings; } 
-  Int_t         GetNHMPIDrings();
-  AliAODHMPIDrings *GetHMPIDring(Int_t nRings);
+  Int_t         GetNHMPIDrings()      const;
+  AliAODHMPIDrings *GetHMPIDring(Int_t nRings) const;
   Int_t         AddHMPIDrings(const  AliAODHMPIDrings* ring) 
   {new((*fHMPIDrings)[fHMPIDrings->GetEntriesFast()]) AliAODHMPIDrings(*ring); return fHMPIDrings->GetEntriesFast()-1;}
   
-  AliAODHMPIDrings *GetHMPIDringForTrackID(Int_t trackID);
+  AliAODHMPIDrings *GetHMPIDringForTrackID(Int_t trackID) const;
   
   
   // -- Jet
