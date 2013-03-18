@@ -768,32 +768,35 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	return 0x0;
       }
       
-      AliGenEventHeader *header = dynamic_cast<AliMCEvent*>(event)->GenEventHeader();
-      if(header){  
-	TArrayF gVertexArray;
-	header->PrimaryVertex(gVertexArray);
-	//Printf("Vertex: %lf (x) - %lf (y) - %lf (z)",
-	//gVertexArray.At(0),
-	//gVertexArray.At(1),
-	//gVertexArray.At(2));
-	fHistEventStats->Fill(3,gCentrality); //events with a proper vertex
-	if(TMath::Abs(gVertexArray.At(0)) < fVxMax) {
-	  if(TMath::Abs(gVertexArray.At(1)) < fVyMax) {
-	    if(TMath::Abs(gVertexArray.At(2)) < fVzMax) {
-	      fHistEventStats->Fill(4,gCentrality); //analayzed events
-	      fHistVx->Fill(gVertexArray.At(0));
-	      fHistVy->Fill(gVertexArray.At(1));
-	      fHistVz->Fill(gVertexArray.At(2),gCentrality);
-	      
-	      // take only events inside centrality class
-	      if((fImpactParameterMin < gCentrality) && (fImpactParameterMax > gCentrality)){
-		fHistEventStats->Fill(5,gCentrality); //events with correct centrality
-		return gCentrality;	    
-	      }//centrality class
-	    }//Vz cut
-	  }//Vy cut
-	}//Vx cut
-      }//header    
+      AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
+      if(gMCEvent) {
+	AliGenEventHeader *header = gMCEvent->GenEventHeader();
+	if(header){  
+	  TArrayF gVertexArray;
+	  header->PrimaryVertex(gVertexArray);
+	  //Printf("Vertex: %lf (x) - %lf (y) - %lf (z)",
+	  //gVertexArray.At(0),
+	  //gVertexArray.At(1),
+	  //gVertexArray.At(2));
+	  fHistEventStats->Fill(3,gCentrality); //events with a proper vertex
+	  if(TMath::Abs(gVertexArray.At(0)) < fVxMax) {
+	    if(TMath::Abs(gVertexArray.At(1)) < fVyMax) {
+	      if(TMath::Abs(gVertexArray.At(2)) < fVzMax) {
+		fHistEventStats->Fill(4,gCentrality); //analayzed events
+		fHistVx->Fill(gVertexArray.At(0));
+		fHistVy->Fill(gVertexArray.At(1));
+		fHistVz->Fill(gVertexArray.At(2),gCentrality);
+		
+		// take only events inside centrality class
+		if((fImpactParameterMin < gCentrality) && (fImpactParameterMax > gCentrality)){
+		  fHistEventStats->Fill(5,gCentrality); //events with correct centrality
+		  return gCentrality;	    
+		}//centrality class
+	      }//Vz cut
+	    }//Vy cut
+	  }//Vx cut
+	}//header    
+      }//MC event object
     }//MC
     
     // Event Vertex AOD, ESD, ESDMC
@@ -857,9 +860,9 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     }//ESD
     else if(gAnalysisLevel == "MC"){
       Double_t gImpactParameter = 0.;
-      AliMCEvent* MCEvent = dynamic_cast<AliMCEvent*>(event);
-      if(MCEvent){
-	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(MCEvent->GenEventHeader());      
+      AliMCEvent* gMCEvent = dynamic_cast<AliMCEvent*>(event);
+      if(gMCEvent){
+	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());      
 	if(headerH){
 	  gImpactParameter = headerH->ImpactParameter();
 	  gCentrality      = gImpactParameter;
@@ -871,9 +874,9 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     }
   }//End if "Centrality"
   if(fEventClass=="Multiplicity"&&gAnalysisLevel == "ESD"){
-    AliESDEvent* ESDEvent = dynamic_cast<AliESDEvent*>(event);
-    if(ESDEvent){
-      fMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(ESDEvent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
+    AliESDEvent* gESDEvent = dynamic_cast<AliESDEvent*>(event);
+    if(gESDEvent){
+      fMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(gESDEvent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
     }//AliESDevent cast
   }
   if(fEventClass=="Multiplicity"&&gAnalysisLevel != "ESD"){
@@ -908,8 +911,9 @@ Double_t AliAnalysisTaskBFPsi::GetEventPlane(AliVEvent *event){
       return 0x0;
     }
 
-    if(dynamic_cast<AliMCEvent*>(event)){
-      AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());    
+    AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
+    if(gMCEvent){
+      AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());    
       if (headerH) {
 	gReactionPlane = headerH->ReactionPlaneAngle();
 	//gReactionPlane *= TMath::RadToDeg();
@@ -1267,126 +1271,129 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       return 0x0;
     }
 
-    // Loop over tracks in event
-    for (Int_t iTracks = 0; iTracks < dynamic_cast<AliMCEvent*>(event)->GetNumberOfPrimaries(); iTracks++) {
-      AliMCParticle* track = dynamic_cast<AliMCParticle *>(event->GetTrack(iTracks));
-      if (!track) {
-	AliError(Form("Could not receive particle %d", iTracks));
-	continue;
-      }
-	    
-      //exclude non stable particles
-      if(!(dynamic_cast<AliMCEvent*>(event)->IsPhysicalPrimary(iTracks))) continue;
-
-      vEta    = track->Eta();
-      vPt     = track->Pt();
-      vY      = track->Y();
-      
-      if( vPt < fPtMin || vPt > fPtMax)      
-	continue;
-      if (!fUsePID) {
-	if( vEta < fEtaMin || vEta > fEtaMax)  continue;
-      }
-      else if (fUsePID){
-	if( vY < fEtaMin || vY > fEtaMax)  continue;
-      }
-      
-      //analyze one set of particles
-      if(fUseMCPdgCode) {
-	TParticle *particle = track->Particle();
-	if(!particle) continue;
-	
-	Int_t gPdgCode = particle->GetPdgCode();
-	if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
+    AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
+    if(gMCEvent) {
+      // Loop over tracks in event
+      for (Int_t iTracks = 0; iTracks < gMCEvent->GetNumberOfPrimaries(); iTracks++) {
+	AliMCParticle* track = dynamic_cast<AliMCParticle *>(gMCEvent->GetTrack(iTracks));
+	if (!track) {
+	  AliError(Form("Could not receive particle %d", iTracks));
 	  continue;
-      }
-      
-      //Use the acceptance parameterization
-      if(fAcceptanceParameterization) {
-	Double_t gRandomNumber = gRandom->Rndm();
-	if(gRandomNumber > fAcceptanceParameterization->Eval(track->Pt())) 
-	  continue;
-      }
-      
-      //Exclude resonances
-      if(fExcludeResonancesInMC) {
-	TParticle *particle = track->Particle();
-	if(!particle) continue;
+	}
 	
-	Bool_t kExcludeParticle = kFALSE;
-	Int_t gMotherIndex = particle->GetFirstMother();
-	if(gMotherIndex != -1) {
-	  AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
-	  if(motherTrack) {
-	    TParticle *motherParticle = motherTrack->Particle();
-	    if(motherParticle) {
-	      Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
-	      //if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
-	      if(pdgCodeOfMother == 113) {
-		kExcludeParticle = kTRUE;
+	//exclude non stable particles
+	if(!(gMCEvent->IsPhysicalPrimary(iTracks))) continue;
+	
+	vEta    = track->Eta();
+	vPt     = track->Pt();
+	vY      = track->Y();
+	
+	if( vPt < fPtMin || vPt > fPtMax)      
+	  continue;
+	if (!fUsePID) {
+	  if( vEta < fEtaMin || vEta > fEtaMax)  continue;
+	}
+	else if (fUsePID){
+	  if( vY < fEtaMin || vY > fEtaMax)  continue;
+	}
+	
+	//analyze one set of particles
+	if(fUseMCPdgCode) {
+	  TParticle *particle = track->Particle();
+	  if(!particle) continue;
+	  
+	  Int_t gPdgCode = particle->GetPdgCode();
+	  if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
+	    continue;
+	}
+	
+	//Use the acceptance parameterization
+	if(fAcceptanceParameterization) {
+	  Double_t gRandomNumber = gRandom->Rndm();
+	  if(gRandomNumber > fAcceptanceParameterization->Eval(track->Pt())) 
+	    continue;
+	}
+	
+	//Exclude resonances
+	if(fExcludeResonancesInMC) {
+	  TParticle *particle = track->Particle();
+	  if(!particle) continue;
+	  
+	  Bool_t kExcludeParticle = kFALSE;
+	  Int_t gMotherIndex = particle->GetFirstMother();
+	  if(gMotherIndex != -1) {
+	    AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
+	    if(motherTrack) {
+	      TParticle *motherParticle = motherTrack->Particle();
+	      if(motherParticle) {
+		Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
+		//if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
+		if(pdgCodeOfMother == 113) {
+		  kExcludeParticle = kTRUE;
+		}
 	      }
 	    }
 	  }
+	  
+	  //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
+	  if(kExcludeParticle) continue;
 	}
 	
-	//Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
-	if(kExcludeParticle) continue;
-      }
-      
-      vCharge = track->Charge();
-      vPhi    = track->Phi();
-      //Printf("phi (before): %lf",vPhi);
-      
-      fHistPt->Fill(vPt,gCentrality);
-      fHistEta->Fill(vEta,gCentrality);
-      fHistPhi->Fill(vPhi,gCentrality);
-      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
-      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
-      //fHistPhi->Fill(vPhi*TMath::RadToDeg(),gCentrality);
-      fHistRapidity->Fill(vY,gCentrality);
-      //if(vCharge > 0) fHistPhiPos->Fill(vPhi*TMath::RadToDeg(),gCentrality);
-      //else if(vCharge < 0) fHistPhiNeg->Fill(vPhi*TMath::RadToDeg(),gCentrality);
-      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
-      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
-      
-      //Flow after burner
-      if(fUseFlowAfterBurner) {
-	Double_t precisionPhi = 0.001;
-	Int_t maxNumberOfIterations = 100;
+	vCharge = track->Charge();
+	vPhi    = track->Phi();
+	//Printf("phi (before): %lf",vPhi);
 	
-	Double_t phi0 = vPhi;
-	Double_t gV2 = fDifferentialV2->Eval(vPt);
+	fHistPt->Fill(vPt,gCentrality);
+	fHistEta->Fill(vEta,gCentrality);
+	fHistPhi->Fill(vPhi,gCentrality);
+	if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+	else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+	//fHistPhi->Fill(vPhi*TMath::RadToDeg(),gCentrality);
+	fHistRapidity->Fill(vY,gCentrality);
+	//if(vCharge > 0) fHistPhiPos->Fill(vPhi*TMath::RadToDeg(),gCentrality);
+	//else if(vCharge < 0) fHistPhiNeg->Fill(vPhi*TMath::RadToDeg(),gCentrality);
+	if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+	else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
 	
-	for (Int_t j = 0; j < maxNumberOfIterations; j++) {
-	  Double_t phiprev = vPhi;
-	  Double_t fl = vPhi - phi0 + gV2*TMath::Sin(2.*(vPhi - gReactionPlane*TMath::DegToRad()));
-	  Double_t fp = 1.0 + 2.0*gV2*TMath::Cos(2.*(vPhi - gReactionPlane*TMath::DegToRad())); 
-	  vPhi -= fl/fp;
-	  if (TMath::AreEqualAbs(phiprev,vPhi,precisionPhi)) break;
+	//Flow after burner
+	if(fUseFlowAfterBurner) {
+	  Double_t precisionPhi = 0.001;
+	  Int_t maxNumberOfIterations = 100;
+	  
+	  Double_t phi0 = vPhi;
+	  Double_t gV2 = fDifferentialV2->Eval(vPt);
+	  
+	  for (Int_t j = 0; j < maxNumberOfIterations; j++) {
+	    Double_t phiprev = vPhi;
+	    Double_t fl = vPhi - phi0 + gV2*TMath::Sin(2.*(vPhi - gReactionPlane*TMath::DegToRad()));
+	    Double_t fp = 1.0 + 2.0*gV2*TMath::Cos(2.*(vPhi - gReactionPlane*TMath::DegToRad())); 
+	    vPhi -= fl/fp;
+	    if (TMath::AreEqualAbs(phiprev,vPhi,precisionPhi)) break;
+	  }
+	  //Printf("phi (after): %lf\n",vPhi);
+	  Double_t vDeltaphiBefore = phi0 - gReactionPlane*TMath::DegToRad();
+	  if(vDeltaphiBefore < 0) vDeltaphiBefore += 2*TMath::Pi();
+	  fHistPhiBefore->Fill(vDeltaphiBefore,gCentrality);
+	  
+	  Double_t vDeltaphiAfter = vPhi - gReactionPlane*TMath::DegToRad();
+	  if(vDeltaphiAfter < 0) vDeltaphiAfter += 2*TMath::Pi();
+	  fHistPhiAfter->Fill(vDeltaphiAfter,gCentrality);
+	  
 	}
-	//Printf("phi (after): %lf\n",vPhi);
-	Double_t vDeltaphiBefore = phi0 - gReactionPlane*TMath::DegToRad();
-	if(vDeltaphiBefore < 0) vDeltaphiBefore += 2*TMath::Pi();
-	fHistPhiBefore->Fill(vDeltaphiBefore,gCentrality);
 	
-	Double_t vDeltaphiAfter = vPhi - gReactionPlane*TMath::DegToRad();
-	if(vDeltaphiAfter < 0) vDeltaphiAfter += 2*TMath::Pi();
-	fHistPhiAfter->Fill(vDeltaphiAfter,gCentrality);
-      
-      }
-      
-      //vPhi *= TMath::RadToDeg();
+	//vPhi *= TMath::RadToDeg();
+	
+	//=======================================correction
+	Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge,gCentrality);  
 
-      //=======================================correction
-      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-      
-      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
-      
-    } //track loop
+	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
+      } //track loop
+    }//MC event object
   }//MC
   
   return tracksAccepted;  
 }
+
 //________________________________________________________________________
 TObjArray* AliAnalysisTaskBFPsi::GetShuffledTracks(TObjArray *tracks, Double_t gCentrality){
   // Clones TObjArray and returns it with tracks after shuffling the charges
