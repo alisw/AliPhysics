@@ -44,6 +44,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetJetMinPt(Double_t pt)                          { fJetMinPt           = pt    ; }
   void           SetJetEtaRange(Double_t emi, Double_t ema)        { fJetMinEta = emi; fJetMaxEta = ema; }
   void           SetJetPhiRange(Double_t pmi, Double_t pma)        { fJetMinPhi = pmi; fJetMaxPhi = pma; }
+  void           SetJetConstituentMinPt(Double_t pt)               { fJetConstituentMinPt= pt    ; }
   void           SetJetType(Byte_t t)                              { fJetType            = t     ; }
   void           SetJetAlgo(Byte_t t)                              { fJetAlgo            = t     ; }
 
@@ -74,6 +75,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   Double_t       fJetMaxEta           ;//  Max eta for jets
   Double_t       fJetMinPhi           ;//  Min phi for jets
   Double_t       fJetMaxPhi           ;//  Max phi for jets
+  Double_t       fJetConstituentMinPt ;//  Jet constituent min pt
   Double_t       fJetRadius           ;//  Jet radius
   Byte_t         fJetType             ;//  Jet type (0=full, 1=charged, 2=neutral)
   Byte_t         fJetAlgo             ;//  Jet algorithm (0=kT, 1=anti-kT)
@@ -107,6 +109,6 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
   AliJetEmbeddingFromAODTask &operator=(const AliJetEmbeddingFromAODTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromAODTask, 7) // Jet embedding from AOD task
+  ClassDef(AliJetEmbeddingFromAODTask, 8) // Jet embedding from AOD task
 };
 #endif

@@ -108,6 +108,9 @@ TChain* CreateESDChain(
 
       if (addFileName)
         esdFile += "/AliESDs.root";
+
+      if (esdFile.EndsWith(".zip"))
+	esdFile += "#AliESDs.root";
         
       TString esdFileFriend(esdFile);
       esdFileFriend.ReplaceAll("AliESDs.root", "AliESDfriends.root");
@@ -216,7 +219,7 @@ TChain* CreateChain(const char* treeName, const char* aDataDir, Int_t aRuns, Int
     in >> line;
       
     if (line.Length() == 0)
-      continue;      
+      continue;
     
     if (offset > 0)
     {
@@ -226,6 +229,9 @@ TChain* CreateChain(const char* treeName, const char* aDataDir, Int_t aRuns, Int
 
     if (count++ == aRuns)
       break;
+
+    if (line.EndsWith(".zip"))
+      line += "#AliESDs.root"; 
 
     chain->Add(line);
   }
