@@ -14,8 +14,12 @@
 
 using namespace std;
 
-// Task for NetParticle checks
-// Author: Jochen Thaeder <jochen@thaeder.de>
+/**
+ * Class for for NetParticle Distributions
+ * -- DCA distributions
+ * Authors: Jochen Thaeder <jochen@thaeder.de>
+ *          Michael Weber <m.weber@cern.ch>
+ */
 
 ClassImp(AliAnalysisNetParticleDCA)
 
