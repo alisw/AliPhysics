@@ -34,6 +34,11 @@
 #include "AliAODcascade.h"
 #include "AliAODVertex.h"
 
+#include "AliMCEvent.h"
+#include "AliMCVertex.h" 
+#include "AliAODMCHeader.h"
+#include "AliAODMCParticle.h"
+
 #include "AliAODPid.h"
 #include "AliPIDResponse.h"
 #include "AliEventPoolManager.h"
@@ -51,6 +56,7 @@ ClassImp(AliV0ChBasicParticle)
 //________________________________________________________________________
 AliAnalysisTaskV0ChCorrelations::AliAnalysisTaskV0ChCorrelations(const char *name) // All data members should be initialised here
    : AliAnalysisTaskSE(name),
+   fAnalysisMC(kTRUE),
 	 fFillMixed(kTRUE),
 	 fMixingTracks(500),
 	 fPoolMgr(0x0),
@@ -70,8 +76,12 @@ AliAnalysisTaskV0ChCorrelations::AliAnalysisTaskV0ChCorrelations(const char *nam
 	 fHistdPhidEtaMix(0),
 	 fHistTrigSib(0),
 	 fHistTrigMix(0),
+
+   fHistMCPtCent(0),
+   fHistRCPtCent(0),
 	 
-	 fHistTemp(0)// The last in the above list should not have a comma after it
+	 fHistTemp(0),
+	 fHistTemp2(0)// The last in the above list should not have a comma after it
 {
    // Constructor
    // Define input and output slots here (never in the dummy constructor)
@@ -121,6 +131,10 @@ void AliAnalysisTaskV0ChCorrelations::UserCreateOutputObjects()
    // Create general histograms 
    fHistCentVtx = new TH2F("fHistCentVtx", "Centrality vs. Z vertex", nCentralityBins, centralityBins, nZvtxBins, zvtxBins);
    fHistMultiMain = new TH1F("fHistMultiMain", "Multiplicity of main events", 2000, 0, 2000);
+
+   // Create histograms for reconstruction track efficiency
+   fHistMCPtCent = new TH2D("fHistMCPtCent", "MC Pt vs. Cent.", nPtBins, PtBins[0], PtBinsV0[9], nCentralityBins, centBins[0], centBins[9]);
+   fHistRCPtCent = new TH2D("fHistRCPtCent", "Rec Pt vs. Cent.", nPtBins, PtBins[0], PtBinsV0[9], nCentralityBins, centBins[0], centBins[9]);
 
    // defining bins for mass distributions
    Int_t nBins = 200;
@@ -175,7 +189,8 @@ void AliAnalysisTaskV0ChCorrelations::UserCreateOutputObjects()
    fHistTrigMix = new THnSparseF("fHistTrigMix","pt trigger mix", 5, corTrigBins, corTrigMin, corTrigMax); 
    
    // Histograms for debugging
-   fHistTemp = new TH1D("fHistTemp", "Temporary", 20, 0., 20.);
+   fHistTemp = new TH1D("fHistTemp", "Temporary", 100, -10., 10.);
+   fHistTemp2 = new TH1D("fHistTemp2", "Temporary2", 100, -10., 10.);
 
    fOutput->Add(fHistCentVtx);
 
@@ -188,8 +203,12 @@ void AliAnalysisTaskV0ChCorrelations::UserCreateOutputObjects()
    fOutput->Add(fHistdPhidEtaMix);
    fOutput->Add(fHistTrigSib);
    fOutput->Add(fHistTrigMix);
+
+   fOutput->Add(fHistMCPtCent);
+   fOutput->Add(fHistRCPtCent);
    
    fOutput->Add(fHistTemp);
+   fOutput->Add(fHistTemp2);
 
    PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 
@@ -218,7 +237,7 @@ void AliAnalysisTaskV0ChCorrelations::Terminate(Option_t *)
 void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    AliInputEventHandler *inEvMain = dynamic_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
+    AliInputEventHandler *inEvMain = (AliInputEventHandler*)mgr->GetInputEventHandler();
 
     // physics selection
     UInt_t maskIsSelected = inEvMain->IsEventSelected();
@@ -228,36 +247,84 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
     Bool_t isSelected = ((maskIsSelected & AliVEvent::kMB) || (maskIsSelected & AliVEvent::kCentral) || (maskIsSelected & AliVEvent::kSemiCentral));
     if (!isSelected) return;
 
-    AliAODEvent* aod = dynamic_cast<AliAODEvent*>(inEvMain->GetEvent());
+    AliAODEvent* aod = (AliAODEvent*)inEvMain->GetEvent();
     fPIDResponse = inEvMain->GetPIDResponse();
 
-    // pt intervals for trigger particles  
-    const Double_t kPi = TMath::Pi();
-	Double_t PtTrigMin = 6.0;
-	Double_t PtTrigMax = 15.0;
-	// pt interval for associated particles
-	Double_t PtAssocMin = 3.0;
-	fHistMultiMain->Fill(aod->GetNumberOfTracks());
-    
-	// Vertex cut
-	Double_t cutPrimVertex = 10.0;
-    AliAODVertex *myPrimVertex = aod->GetPrimaryVertex();
-	if (!myPrimVertex) return;
-	if ( ( TMath::Abs(myPrimVertex->GetZ()) ) >= cutPrimVertex) return ;
-	Double_t lPVx = myPrimVertex->GetX();
-	Double_t lPVy = myPrimVertex->GetY();
-	Double_t lPVz = myPrimVertex->GetZ();
+  // pt intervals for trigger particles  
+  const Double_t kPi = TMath::Pi();
+  Double_t PtTrigMin = 6.0;
+  Double_t PtTrigMax = 15.0;
+  // pt interval for associated particles
+  Double_t PtAssocMin = 3.0;
+  fHistMultiMain->Fill(aod->GetNumberOfTracks());
 
-	if (TMath::Abs(lPVx)<10e-5 && TMath::Abs(lPVy)<10e-5 && TMath::Abs(lPVz)<10e-5) return;
+  // Vertex cut
+  Double_t cutPrimVertex = 10.0;
+  AliAODVertex *myPrimVertex = aod->GetPrimaryVertex();
+  if (!myPrimVertex) return;
+  if ( ( TMath::Abs(myPrimVertex->GetZ()) ) >= cutPrimVertex) return ;
+  Double_t lPVx = myPrimVertex->GetX();
+  Double_t lPVy = myPrimVertex->GetY();
+  Double_t lPVz = myPrimVertex->GetZ();
 
-	// Centrality definition
-	Double_t lCent = 0.0;
-	AliCentrality *centralityObj = 0;
-	centralityObj = aod->GetHeader()->GetCentralityP();
-	lCent = centralityObj->GetCentralityPercentile("CL1");
+  if (TMath::Abs(lPVx)<10e-5 && TMath::Abs(lPVy)<10e-5 && TMath::Abs(lPVz)<10e-5) return;
 
-	if ((lCent < 0.)||(lCent > 90.)) return;
-	fHistCentVtx->Fill(lCent,lPVz);
+  // Centrality definition
+  Double_t lCent = 0.0;
+  AliCentrality *centralityObj = 0;
+  centralityObj = aod->GetHeader()->GetCentralityP();
+  lCent = centralityObj->GetCentralityPercentile("CL1");
+
+  if ((lCent < 0.)||(lCent > 90.)) return;
+  fHistCentVtx->Fill(lCent,lPVz);
+
+//=========== MC loop ===============================
+  if (fAnalysisMC)
+  {
+    AliAODMCHeader *aodMCheader = (AliAODMCHeader*)aod->FindListObject(AliAODMCHeader::StdBranchName());
+    Float_t vzMC = aodMCheader->GetVtxZ();
+    if (TMath::Abs(vzMC) >= 10.) return;
+    //retreive MC particles from event
+    TClonesArray *mcArray = (TClonesArray*)aod->FindListObject(AliAODMCParticle::StdBranchName());
+    if(!mcArray){
+        Printf("No MC particle branch found");
+        return;
+    }
+   
+    Int_t nMCTracks = mcArray->GetEntriesFast();
+    //cout << "number of MC tracks = " << nMCTracks << endl;
+    for (Int_t iMC = 0; iMC<nMCTracks; iMC++)
+    {
+      AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(iMC);
+        if (!mcTrack) {
+            Error("ReadEventAODMC", "Could not receive particle %d", iMC);
+            continue;
+      }
+      
+      Double_t mcTrackEta = mcTrack->Eta();
+      Double_t mcTrackPt = mcTrack->Pt();
+      if (!(mcTrack->IsPhysicalPrimary())) continue;
+      if (TMath::Abs(mcTrackEta)>0.8) continue;
+      if (mcTrackPt<PtAssocMin) continue;
+      if ((mcTrack->Charge())==0) continue;
+      fHistMCPtCent->Fill(mcTrackPt,lCent);
+    }
+    // ------- access the real data -----------
+    Int_t nRecTracks = aod->GetNumberOfTracks();
+    for (Int_t i = 0; i < nRecTracks; i++)
+    {
+      AliAODTrack* tras = aod->GetTrack(i);
+      if ((tras->Pt())<PtAssocMin) continue; 
+      if (!(IsMyGoodPrimaryTrack(tras))) continue;
+      Int_t AssocLabel = tras->GetLabel();
+      if (AssocLabel<=0) continue;
+      if(!(static_cast<AliAODMCParticle*>(mcArray->At(tras->GetLabel()))->IsPhysicalPrimary())) continue;
+      Double_t trPt = tras->Pt();
+      fHistRCPtCent->Fill(trPt,lCent);
+    }
+    // ------- end of real data access -------- 
+  }
+//============= End of MC loop ======================
 	
 	// Track selection loop
 	//--------------------------------
@@ -271,7 +338,7 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
 		if ((tr->Pt())<PtAssocMin) continue; 
 		if (!(IsMyGoodPrimaryTrack(tr))) continue;
 		selectedTracks->Add(tr);
-		if (tr->Pt()>6.) fHistTemp->Fill(tr->Pt());
+		//if (tr->Pt()>6.) fHistTemp->Fill(tr->Pt());
 	}
 	//---------------------------------
 	
@@ -290,8 +357,8 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
         }
 		if (((aodV0->Pt())<PtTrigMin)||((aodV0->Pt())>PtTrigMax)) continue;
         // get daughters
-        const AliAODTrack  *myTrackPos  = NULL;
-        const AliAODTrack  *myTrackNeg  = NULL;
+        const AliAODTrack *myTrackPos;
+        const AliAODTrack *myTrackNeg;
    	    AliAODTrack *myTrackNegTest=dynamic_cast<AliAODTrack *>(aodV0->GetDaughter(1));
         AliAODTrack *myTrackPosTest=dynamic_cast<AliAODTrack *>(aodV0->GetDaughter(0));
 
