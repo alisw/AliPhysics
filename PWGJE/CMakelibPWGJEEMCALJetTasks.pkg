@@ -26,38 +26,39 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
+ EMCALJetTasks/AliAnalysisTaskDeltaPt.cxx
  EMCALJetTasks/AliAnalysisTaskEmcalJet.cxx
  EMCALJetTasks/AliAnalysisTaskEmcalJetSample.cxx
- EMCALJetTasks/AliAnalysisTaskRhoBase.cxx
  EMCALJetTasks/AliAnalysisTaskRho.cxx
- EMCALJetTasks/AliAnalysisTaskRhoFlow.cxx
  EMCALJetTasks/AliAnalysisTaskRhoAverage.cxx
- EMCALJetTasks/AliAnalysisTaskDeltaPt.cxx
+ EMCALJetTasks/AliAnalysisTaskRhoBase.cxx
+ EMCALJetTasks/AliAnalysisTaskRhoFlow.cxx
  EMCALJetTasks/AliAnalysisTaskScale.cxx
  EMCALJetTasks/AliEmcalJet.cxx
  EMCALJetTasks/AliEmcalJetTask.cxx
  EMCALJetTasks/AliHadCorrTask.cxx
- EMCALJetTasks/AliJetEmbeddingTask.cxx
- EMCALJetTasks/AliJetEmbeddingFromGenTask.cxx
+ EMCALJetTasks/AliJetConstituentTagCopier.cxx
  EMCALJetTasks/AliJetEmbeddingFromAODTask.cxx
+ EMCALJetTasks/AliJetEmbeddingFromGenTask.cxx
  EMCALJetTasks/AliJetEmbeddingFromPYTHIATask.cxx
+ EMCALJetTasks/AliJetEmbeddingTask.cxx
  EMCALJetTasks/AliJetModelBaseTask.cxx
  EMCALJetTasks/AliJetRandomizerTask.cxx
- EMCALJetTasks/AliJetConstituentTagCopier.cxx
  EMCALJetTasks/AliJetResponseMaker.cxx
  EMCALJetTasks/AliRhoParameter.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskCLQA.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskChargedJetsPA.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskFullpAJets.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskFullpAJets.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskQualityAssurancePA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoVnModulation.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
 )
 
 set ( DHDR  PWGJEEMCALJetTasksLinkDef.h)
