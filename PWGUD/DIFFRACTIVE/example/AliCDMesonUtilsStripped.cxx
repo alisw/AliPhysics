@@ -251,7 +251,7 @@ void AliCDMesonUtilsStripped::SPDLoadGeom(Int_t run)
 
 	AliCDBEntry* obj = man->Get(AliCDBPath("GRP", "Geometry", "Data"));
 	if (!obj) {
-		printf("freidtlog failed loading geometry object\n");
+		printf("AliCDMesonUtilsStripped failed loading geometry object\n");
 		return;
 	}
 	AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
@@ -269,7 +269,7 @@ Bool_t AliCDMesonUtilsStripped::SPDLoc2Glo(Int_t id, const Double_t *loc,
 	static TGeoHMatrix mat;
 	Int_t vid = AliITSAlignMille2Module::GetVolumeIDFromIndex(id);
 	if (vid<0) {
-		printf("freidtlog Did not find module with such ID %d\n",id);
+		printf("AliCDMesonUtilsStripped Did not find module with such ID %d\n",id);
 		return kFALSE;
 	}
 	AliITSAlignMille2Module::SensVolMatrix(vid,&mat);

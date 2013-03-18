@@ -204,8 +204,8 @@ void runMeson(
 	// output filename
 	Char_t foutname[100];
 	Char_t foutnamePWA[100];
-	sprintf(foutname,"freidt_%s.root",taskname);
-	sprintf(foutnamePWA,"freidt_%sPWA.root",taskname);
+	sprintf(foutname,"cd_%s.root",taskname);
+	sprintf(foutnamePWA,"cd_%sPWA.root",taskname);
 
 	// output containers
 	// in AnalysisTaskSE, slot 0 reserved, must start from 1
@@ -215,7 +215,7 @@ void runMeson(
 	Int_t nOutputs = 0;
 
 	outlist[nOutputs] =
-		mgr->CreateContainer("freidt_Hist", TList::Class(),
+		mgr->CreateContainer("cd_Hist", TList::Class(),
 		                     AliAnalysisManager::kOutputContainer,foutname);
 	nOutputs++;
 	mgr->ConnectOutput(task, nOutputs, outlist[nOutputs-1]);
@@ -224,7 +224,7 @@ void runMeson(
 	    || ((taskConfig & AliCDMesonBase::kBitSoftTracks)
 	        && (taskConfig & AliCDMesonBase::kBitTHnMother))) {
 		outlist[nOutputs] =
-			mgr->CreateContainer("freidt_ThnMother", THnSparse::Class(),
+			mgr->CreateContainer("cd_ThnMother", THnSparse::Class(),
 			                     AliAnalysisManager::kOutputContainer,foutname);
 		nOutputs++;
 		mgr->ConnectOutput(task, nOutputs, outlist[nOutputs-1]);
@@ -232,7 +232,7 @@ void runMeson(
 
 	if (!taskConfig || (taskConfig & AliCDMesonBase::kBitSoftTracks)) {
 		outlist[nOutputs] =
-			mgr->CreateContainer("freidt_ThnMotherSoft", THnSparse::Class(),
+			mgr->CreateContainer("cd_ThnMotherSoft", THnSparse::Class(),
 			                     AliAnalysisManager::kOutputContainer,foutname);
 		nOutputs++;
 		mgr->ConnectOutput(task, nOutputs, outlist[nOutputs-1]);
@@ -240,7 +240,7 @@ void runMeson(
 
 	if (!taskConfig || (taskConfig & AliCDMesonBase::kBitMultStudy)) {
 		outlist[nOutputs] =
-			mgr->CreateContainer("freidt_ThnMultiplicity", THnSparse::Class(),
+			mgr->CreateContainer("cd_ThnMultiplicity", THnSparse::Class(),
 			                     AliAnalysisManager::kOutputContainer,foutname);
 		nOutputs++;
 		mgr->ConnectOutput(task, nOutputs, outlist[nOutputs-1]);
@@ -248,14 +248,14 @@ void runMeson(
 
 	if (!taskConfig || (taskConfig & AliCDMesonBase::kBitTHnMC)) {
 		outlist[nOutputs] =
-			mgr->CreateContainer("freidt_ThnMotherMC", THnSparse::Class(),
+			mgr->CreateContainer("cd_ThnMotherMC", THnSparse::Class(),
 			                     AliAnalysisManager::kOutputContainer,foutname);
 		nOutputs++;
 		mgr->ConnectOutput(task, nOutputs, outlist[nOutputs-1]);
 	}
 	if (!taskConfig || (taskConfig & AliCDMesonBase::kBitPWAtree)) {
 		outlist[nOutputs] =
-			mgr->CreateContainer("freidt_PWA", TTree::Class(),
+			mgr->CreateContainer("cd_PWA", TTree::Class(),
 			                     AliAnalysisManager::kOutputContainer,foutnamePWA);
 		nOutputs++;
 		mgr->ConnectOutput(task, nOutputs, outlist[nOutputs-1]);

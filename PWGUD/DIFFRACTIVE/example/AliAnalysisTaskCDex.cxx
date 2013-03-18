@@ -309,7 +309,8 @@ Bool_t AliAnalysisTaskCDex::DetermineGap()
 		aodTree->GetEvent(Entry()); // seems to be needed! (loads current event)
 		if (!fCurrentGapCondition) {
 			fCurrentGapCondition = 0xfffe;
-			puts("freidtlog - error while gap condition determination using AODs\n");
+			puts("AliAnalysisTaskCDex - ");
+			puts("error while gap condition determination using AODs\n");
 			return kFALSE;
 		}
 	}
@@ -329,7 +330,8 @@ Bool_t AliAnalysisTaskCDex::DetermineGap()
 
 		if (!fCurrentGapCondition) {
 			fCurrentGapCondition = 0xfffe;
-			puts("freidtlog - error while gap condition determination using ESDs\n");
+			puts("AliAnalysisTaskCDex - ");
+			puts("error while gap condition determination using ESDs\n");
 			return kFALSE;
 		}
 	}

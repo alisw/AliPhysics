@@ -332,9 +332,9 @@ Bool_t AliCDMesonUtils::CutEvent(const AliESDEvent *ESDEvent, TH1 *hspd,
 
 	AliTriggerAnalysis triggerAnalysis;
 	/*
-	//printf("freidtlog active triggers: %s\n",
+	//printf("AliCDMesonUtils active triggers: %s\n",
 	//       ESDEvent->GetHeader()->GetActiveTriggerInputs().Data());
-	//printf("freidtlog fired triggers: %s\n",
+	//printf("AliCDMesonUtils fired triggers: %s\n",
 	//       ESDEvent->GetHeader()->GetFiredTriggerInputs().Data());
 	//*/
 	//http://alisoft.cern.ch/viewvc/trunk/ANALYSIS/AliTriggerAnalysis.cxx?view=markup&root=AliRoot
@@ -488,16 +488,19 @@ void AliCDMesonUtils::DoVZEROStudy(const AliESDEvent *ESDEvent,
 	man->SetRun(run);
 
 	AliCDBEntry *ent1 = man->Get("VZERO/Trigger/Data");
+	if (!ent1) {
+		printf("AliCDMesonUtils failed loading VZERO trigger data from OCDB\n");
+	}
 	AliVZEROTriggerData *trigData = (AliVZEROTriggerData*)ent1->GetObject();
 	if (!trigData) {
-		printf("freidtlog failed loading VZERO trigger data from OCDB\n");
+		printf("AliCDMesonUtils failed loading VZERO trigger data from OCDB\n");
 		return;
 	}
 
 	AliCDBEntry *ent2 = man->Get("VZERO/Calib/Data");
 	AliVZEROCalibData *calData = (AliVZEROCalibData*)ent2->GetObject();
 	if (!calData) {
-		printf("freidtlog failed loading VZERO calibration data from OCDB\n");
+		printf("AliCDMesonUtils failed loading VZERO calibration data from OCDB\n");
 		return;
 	}
 
@@ -798,7 +801,7 @@ Int_t AliCDMesonUtils::GetTPC(const AliESDEvent * ESDEvent, TH2 *TPCGapDCAaSide,
 		esdtrack->GetImpactParameters(b,bCov);
 
 		if (bCov[0]<=0 || bCov[2]<=0) {
-			printf("freidtlog - Estimated b resolution lower or equal zero!\n");
+			printf("AliCDMesonUtils - Estimated b resolution lower or equal zero!\n");
 			bCov[0]=0;
 			bCov[2]=0;
 		}
@@ -926,16 +929,16 @@ void AliCDMesonUtils::SPDLoadGeom(const Int_t run)
 
 	AliCDBEntry* obj = man->Get(AliCDBPath("GRP", "Geometry", "Data"));
 	if (!obj) {
-		printf("freidtlog failed loading geometry object\n");
+		printf("AliCDMesonUtils failed loading geometry object\n");
 		return;
 	}
 	AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
-	AliGeomManager::ApplyAlignObjsFromCDB("ITS"); 
+	AliGeomManager::ApplyAlignObjsFromCDB("ITS");
 }
 
 //------------------------------------------------------------------------------
 Bool_t AliCDMesonUtils::SPDLoc2Glo(const Int_t id, const Double_t *loc,
-                                   Double_t *glo) 
+                                   Double_t *glo)
 {
 	//
 	//SPDLoc2Glo, do not touch
@@ -944,7 +947,7 @@ Bool_t AliCDMesonUtils::SPDLoc2Glo(const Int_t id, const Double_t *loc,
 	static TGeoHMatrix mat;
 	Int_t vid = AliITSAlignMille2Module::GetVolumeIDFromIndex(id);
 	if (vid<0) {
-		printf("freidtlog Did not find module with such ID %d\n",id);
+		printf("AliCDMesonUtils Did not find module with such ID %d\n",id);
 		return kFALSE;
 	}
 	AliITSAlignMille2Module::SensVolMatrix(vid,&mat);

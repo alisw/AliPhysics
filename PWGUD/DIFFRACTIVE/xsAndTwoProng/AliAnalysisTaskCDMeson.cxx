@@ -215,6 +215,11 @@ AliAnalysisTaskCDMeson::AliAnalysisTaskCDMeson(const char* name, Long_t state):
 
 	for (Int_t iGap = 0; iGap < kMax; ++iGap) {
 		fGapInformation[iGap] = 0;
+		fGapInformationWCent[iGap] = 0;
+	}
+
+	for (Int_t i = 0; i < 3; ++i) {
+		fMomentum[i] = 0.;
 	}
 
 	// reset track pair pointers
@@ -358,6 +363,15 @@ AliAnalysisTaskCDMeson::AliAnalysisTaskCDMeson():
 	//
 	// default constructor (should not be used)
 	//
+
+	for (Int_t iGap = 0; iGap < kMax; ++iGap) {
+		fGapInformation[iGap] = 0;
+		fGapInformationWCent[iGap] = 0;
+	}
+
+	for (Int_t i = 0; i < 3; ++i) {
+		fMomentum[i] = 0.;
+	}
 
 	fTrkPair[0] = 0x0;
 	fTrkPair[1] = 0x0;
@@ -954,7 +968,7 @@ void AliAnalysisTaskCDMeson::UserCreateOutputObjects()
 	}
 	//= PWA TREE =================================================================
 	if (!fAnalysisStatus || fAnalysisStatus & AliCDMesonBase::kBitPWAtree) {
-		fPWAtree = new TTree("freidt_pwa", "pwa");
+		fPWAtree = new TTree("cd_pwa", "pwa");
 		fPWAtree->Branch("theta", &fTheta);
 		fPWAtree->Branch("phi", &fPhi);
 		fPWAtree->Branch("m", &fMass);
@@ -974,7 +988,7 @@ void AliAnalysisTaskCDMeson::UserExec(Option_t *)
 {
 	//
 	// Executed for every event which passed the physics selection
-	// 
+	//
 
 	//printf("Entry: %ld\n", (Long_t)Entry()); // print current event number
 
@@ -1039,7 +1053,7 @@ void AliAnalysisTaskCDMeson::UserExec(Option_t *)
 
 	//= EVENT SELECTION ==========================================================
 	Int_t kfo =
-		(fAnalysisStatus & AliCDMesonBase::kBitFastORStudy & !fDoAOD) ? 1 : 0;
+		((fAnalysisStatus & AliCDMesonBase::kBitFastORStudy) && !fDoAOD) ? 1 : 0;
 	Int_t ninnerp=-999, nouterp=-999;
 	Bool_t eventIsValid = (fDoAOD) ?
 		AliCDMesonUtils::CutEvent(fAODEvent, fhpriv, fPriVtxX, fPriVtxY, fPriVtxZ,
@@ -1227,22 +1241,24 @@ Bool_t AliAnalysisTaskCDMeson::CheckInput()
 	fPIDResponse = (AliPIDResponse*)fInputHandler->GetPIDResponse();
 
 	if(!fESDEvent && !fAODEvent){
-		printf("freidtlog No valid event\n");
+		printf("AliAnalysisTaskCDMeson No valid event\n");
 		return kFALSE;
 	}
-	
+
 	if(!fPIDResponse){
-		printf("freidtlog No PIDd\n");
+		printf("AliAnalysisTaskCDMeson No PIDd\n");
 		// PID is fixed to unknown
 		//return kFALSE;
 	}
 
-	if(fDoAOD && fabs(fAODEvent->GetMagneticField())<1){
-		printf("freidtlog strange Bfield! %f\n", fAODEvent->GetMagneticField());
+	if(fDoAOD && fAODEvent && fabs(fAODEvent->GetMagneticField())<1){
+		printf("AliAnalysisTaskCDMeson strange Bfield! %f\n",
+		       fAODEvent->GetMagneticField());
 		return kFALSE;
 	}
-	else if((!fDoAOD) && fabs(fESDEvent->GetMagneticField())<1){
-		printf("freidtlog strange Bfield! %f\n", fESDEvent->GetMagneticField());
+	else if((!fDoAOD) && fESDEvent && fabs(fESDEvent->GetMagneticField())<1){
+		printf("AliAnalysisTaskCDMeson strange Bfield! %f\n",
+		       fESDEvent->GetMagneticField());
 		return kFALSE;
 	}
 
@@ -1280,7 +1296,7 @@ void AliAnalysisTaskCDMeson::DoEmptyEventStudy() {
 	//
 
 
-	if (!fAnalysisStatus & AliCDMesonBase::kBitEEStudy) {
+	if (!(fAnalysisStatus & AliCDMesonBase::kBitEEStudy)) {
 		// check whether empty event analysis is activated
 		return;
 	}
@@ -1350,7 +1366,7 @@ Bool_t AliAnalysisTaskCDMeson::DetermineGap()
 		}
 		if (!fCurrentGapCondition) {
 			fCurrentGapCondition = 0xfffe;
-			puts("freidtlog - error while gap condition determination using AODs\n");
+			puts("AliAnalysisTaskCDMeson - error while gap condition determination using AODs\n");
 			return kFALSE;
 		}
 		// DEBUGGING STUFF
@@ -1360,14 +1376,14 @@ Bool_t AliAnalysisTaskCDMeson::DetermineGap()
 		//aodTree->GetEvent(Entry());
 		//aodTree->Show();
 		//TBranch* branch = aodTree->GetBranch("gapCondition");
-		//printf("freidtlog - branch=x%x\n",branch);
+		//printf("AliAnalysisTaskCDMeson - branch=x%x\n",branch);
 		//if (!fCurrentGapCondition) {
 		//branch->SetAddress(&fCurrentGapCondition);
 			//}
 		//Int_t entry = Entry();
 		//printf("Entry()=%d\n", entry);
 		//branch->GetEvent(entry);
-		//printf("freidtlog - gapcondition=0x%x\n", fCurrentGapCondition);
+		//printf("AliAnalysisTaskCDMeson - gapcondition=0x%x\n", fCurrentGapCondition);
 	}
 	else {
 		if (fAnalysisStatus & AliCDMesonBase::kBitReadPreprocessedGap) {
@@ -1394,11 +1410,11 @@ Bool_t AliAnalysisTaskCDMeson::DetermineGap()
 		}
 		if (!fCurrentGapCondition) {
 			fCurrentGapCondition = 0xfffe;
-			puts("freidtlog - error while gap condition determination using ESDs\n");
+			puts("AliAnalysisTaskCDMeson - error while gap condition determination using ESDs\n");
 			return kFALSE;
 		}
 	}
-	//printf("freidtlog - Event: %ld, gapCondition: 0x%x\n", (Long_t)Entry(),
+	//printf("AliAnalysisTaskCDMeson - Event: %ld, gapCondition: 0x%x\n", (Long_t)Entry(),
 	//       fCurrentGapCondition);
 
 

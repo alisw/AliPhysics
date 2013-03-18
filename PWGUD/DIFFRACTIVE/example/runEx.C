@@ -167,12 +167,12 @@ void runEx(
 	// OUTPUT --------------------------------------------------------------------
 	// output filename
 	Char_t foutname[100];
-	sprintf(foutname,"freidt_%s.root",taskname);
+	sprintf(foutname,"diffExample_%s.root",taskname);
 
 	// output containers
 	// in AnalysisTaskSE, slot 0 reserved, must start from 1
 	AliAnalysisDataContainer* output =
-		mgr->CreateContainer("freidt_Hist", TList::Class(),
+		mgr->CreateContainer("diffExample_Hist", TList::Class(),
 		                     AliAnalysisManager::kOutputContainer,foutname);
 	task->ConnectOutput(1, output);
 

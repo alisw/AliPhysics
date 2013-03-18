@@ -117,13 +117,13 @@ Int_t AliCDMesonBase::GetAxis(TString thntit, TString name)
 		thntit = thntit(pos+1, thntit.Length()-pos);
 		counter++;
 		if(counter>=nmax-1){
-			printf("freidtlog AliCDMesonBase::GetAxis too small nmax! %d %d\n",
+			printf("AliCDMesonBase AliCDMesonBase::GetAxis too small nmax! %d %d\n",
 			       counter, nmax);
 			return -1; //exit(1); // TODO
 		}
 	}
 	tits[counter++] = thntit;
-	
+
 	//----------------
 
 	name.ToUpper();
@@ -132,11 +132,12 @@ Int_t AliCDMesonBase::GetAxis(TString thntit, TString name)
 	  if( tits[ii] == name )
 		  return ii;
 	}
-	printf("freidtlog AliCDMesonBase::GetAxis !%s! %s not found!\n", name.Data(),
-	       thntit.Data());
+	printf("AliCDMesonBase AliCDMesonBase::GetAxis !%s! %s not found!\n",
+	       name.Data(), thntit.Data());
 	for(Int_t ii=0; ii<counter; ii++){
 		printf("*************** AliCDMesonBase::GetAxis *****************\n");
-		printf("freidtlog AliCDMesonBase::GetAxis %d !%s!\n", ii, tits[ii].Data());
+		printf("AliCDMesonBase AliCDMesonBase::GetAxis %d !%s!\n", ii,
+		       tits[ii].Data());
 		printf("\n");
 	}
 	return -1; //exit(1); // TODO
