@@ -109,7 +109,7 @@ AliDhcTask *AddTaskDhc(
       Int_t nDPhiBins = 36;
       dhcTask->SetAnaMode(AliDhcTask::kMuMu);
       dhcTask->SetHEffT(hMuEff);
-      dhcTask->SetHEffA(hHEff);
+      dhcTask->SetHEffA(hMuEff);
       dhcTask->SetEtaMax(5.0);
       dhcTask->SetPtTACrit(kFALSE);
       sprintf(chExtraName,"%s_MuMu",chExtraName);
