@@ -69,7 +69,7 @@ fAODIn(0x0),
 fAODOut(0x0),
 fAODExtension(0x0),
 fJetBranchName(""),
-//fListJets(0x0),
+fListJets(0x0),
 fNonStdFile(""),
 fSystem(0), //pp=0  pPb=1
 fJetParamR(0.4),
@@ -103,10 +103,14 @@ fhDphiTriggerJet(0x0),
 fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0),
 fhCentralityAccept(0x0),
-fkAcceptance(2.0*TMath::Pi()*1.8)
+fHJetPtRaw(0x0),
+fHLeadingJetPtRaw(0x0), 
+fHDphiVsJetPtAll(0x0), 
+fHRhoFastJetVsRhoCone(0x0),
+fkAcceptance(2.0*TMath::Pi()*1.8),
+fConeArea(TMath::Pi()*0.4*0.4)
 {
    // default Constructor
-   fListJets = new TList();
 }
 
 //---------------------------------------------------------------------
@@ -118,7 +122,7 @@ fAODIn(0x0),
 fAODOut(0x0),
 fAODExtension(0x0),
 fJetBranchName(""),
-//fListJets(0x0),
+fListJets(0x0),
 fNonStdFile(""),
 fSystem(0),  //pp=0   pPb=1
 fJetParamR(0.4),
@@ -152,10 +156,14 @@ fhDphiTriggerJet(0x0),
 fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0),
 fhCentralityAccept(0x0),
-fkAcceptance(2.0*TMath::Pi()*1.8)
+fHJetPtRaw(0x0),
+fHLeadingJetPtRaw(0x0), 
+fHDphiVsJetPtAll(0x0), 
+fHRhoFastJetVsRhoCone(0x0),
+fkAcceptance(2.0*TMath::Pi()*1.8),
+fConeArea(TMath::Pi()*0.4*0.4)
 {
-   // Constructor
-   fListJets = new TList();
+// Constructor
 
    DefineOutput(1, TList::Class());
 }
@@ -202,7 +210,12 @@ fhDphiTriggerJet(a.fhDphiTriggerJet),
 fhDphiTriggerJetAccept(a.fhDphiTriggerJetAccept),
 fhCentrality(a.fhCentrality),
 fhCentralityAccept(a.fhCentralityAccept),
-fkAcceptance(a.fkAcceptance)
+fHJetPtRaw(a.fHJetPtRaw),
+fHLeadingJetPtRaw(a.fHLeadingJetPtRaw),
+fHDphiVsJetPtAll(a.fHDphiVsJetPtAll),
+fHRhoFastJetVsRhoCone(a.fHRhoFastJetVsRhoCone),
+fkAcceptance(a.fkAcceptance),
+fConeArea(a.fConeArea)
 {
    //Copy Constructor
 }
@@ -242,6 +255,8 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 
   // Create histograms
    // Called once
+   fListJets = new TList();
+ 
    OpenFile(1);
    if(!fOutputList) fOutputList = new TList();
    fOutputList->SetOwner(kTRUE);
@@ -263,14 +278,16 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
     
    fh2Ntriggers = new TH2F("fh2Ntriggers","# of triggers",
                              nBinsCentrality,0.0,100.0,50,0.0,50.0);
+   fOutputList->Add(fh2Ntriggers);
 
    //Centrality, A, pT - rho*A, pTtrigg, pT, rho*A
    const Int_t dimSpec   = 6;
-   const Int_t nBinsSpec[dimSpec]     = {nBinsCentrality, 100,  140,  50, 100,  50};
+   const Int_t nBinsSpec[dimSpec]     = {nBinsCentrality, 100,  140,  50, 100, 100};
    const Double_t lowBinSpec[dimSpec] = {0.0,             0.0,-80.0, 0.0, 0.0, 0.0};
-   const Double_t hiBinSpec[dimSpec]  = {100.0,           1.0,200.0,50.0, 200, 20.0};
-   fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum [cent,A,pT-rho*A,pTtrig]",
-                                          dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+   const Double_t hiBinSpec[dimSpec]  = {100.0,           1.0,200.0,50.0, 200, 50.0};
+   fHJetSpec = new THnSparseF("fHJetSpec",
+                   "Recoil jet spectrum [cent,A,pTjet-rho*A,pTtrig,pTjet, rho*A]",
+                   dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
    fOutputList->Add(fHJetSpec);  
 
    //------------------- HISTOS FOR DIAGNOSTIC ----------------------
@@ -286,16 +303,20 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fHJetDensityA4 =new THnSparseF("fHJetDensityA4","Jet dens vs trk mult A>0.4",
                                    dimJetDens,nBinsJetDens,lowBinJetDens,hiBinJetDens);
 
-   fOutputList->Add(fh2Ntriggers);
    fOutputList->Add(fHJetDensity);
    fOutputList->Add(fHJetDensityA4);
          
 
    //inclusive azimuthal and pseudorapidity histograms
-   fhJetPhi = new TH1D("fhJetPhi","Azim dist jets",50,-TMath::Pi(),TMath::Pi());
-   fhTriggerPhi= new TH1D("fhTriggerPhi","azim dist trig had",50,-TMath::Pi(),TMath::Pi());
-   fhJetEta = new TH1D("fhJetEta","Eta dist jets",40,-0.9,0.9);
-   fhTriggerEta = new TH1D("fhTriggerEta","Eta dist trig had",40,-0.9,0.9);
+   fhJetPhi = new TH2D("fhJetPhi","Azim dist jets vs pTjet",
+                        50, 0, 100, 50,-TMath::Pi(),TMath::Pi());
+   fhTriggerPhi= new TH2D("fhTriggerPhi","azim dist trig had vs pTtrigg",
+                        25, 0, 50, 50,-TMath::Pi(),TMath::Pi());
+   fhJetEta = new TH2D("fhJetEta","Eta dist jets vs pTjet",
+                        50,0, 100, 40,-0.9,0.9);
+   fhTriggerEta = new TH2D("fhTriggerEta","Eta dist trig had vs pTtrigg",
+                        25, 0, 50, 40,-0.9,0.9);
+
    fhVertexZ = new TH1D("fhVertexZ","z vertex",40,-20,20);  
    fhVertexZAccept = new TH1D("fhVertexZAccept","z vertex after cut",40,-20,20);  
    fhContribVtx = new TH1D("fhContribVtx","contrib to vtx",200,0,200);   
@@ -317,6 +338,48 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fOutputList->Add(fhDphiTriggerJetAccept);
    fOutputList->Add(fhCentrality); 
    fOutputList->Add(fhCentralityAccept);
+
+   // raw spectra of INCLUSIVE jets  
+   //Centrality, pTjet, pTjet - rho*A,  A
+   const Int_t dimRaw   = 4;
+   const Int_t nBinsRaw[dimRaw]     = {nBinsCentrality,  50,    75, 100};
+   const Double_t lowBinRaw[dimRaw] = {0.0,             0.0, -50.0, 0.0};
+   const Double_t hiBinRaw[dimRaw]  = {100.0,           100, 100.0, 1.0};
+   fHJetPtRaw = new THnSparseF("fHJetPtRaw",
+                                "Incl. jet spectrum [cent,pTjet,pTjet-rho*A,A]",
+                                dimRaw,nBinsRaw,lowBinRaw,hiBinRaw);
+   fOutputList->Add(fHJetPtRaw);  
+
+   // raw spectra of LEADING jets  
+   //Centrality, pTjet, pTjet - rho*A,  A
+   fHLeadingJetPtRaw = new THnSparseF("fHLeadingJetPtRaw",
+                                "Leading jet spectrum [cent,pTjet,pTjet-rho*A,A]",
+                                dimRaw,nBinsRaw,lowBinRaw,hiBinRaw);
+   fOutputList->Add(fHLeadingJetPtRaw);  
+
+   // Dphi versus pT jet 
+   //Centrality, Dphi=phiTrig-phiJet, pTjet, pTtrigg 
+   const Int_t dimDp   = 4;
+   const Int_t nBinsDp[dimDp]     = {nBinsCentrality,  50,     50,    50};
+   const Double_t lowBinDp[dimDp] = {0.0,       -TMath::Pi(),   0.0,   0.0};
+   const Double_t hiBinDp[dimDp]  = {100.0,      TMath::Pi(), 100.0, 100.0};
+   fHDphiVsJetPtAll = new THnSparseF("fHDphiVsJetPtAll",
+                                "Dphi vs jet pT [cent,Dphi,pTjet,pTtrigg]",
+                                dimDp,nBinsDp,lowBinDp,hiBinDp);
+   fOutputList->Add(fHDphiVsJetPtAll);  
+
+   // Rho Fast Jet vs Rho Cone 
+   //Centrality, Rho Fast Jet, Rho Perp Cone,   pTjet 
+   const Int_t dimRo   = 4;
+   const Int_t nBinsRo[dimRo]     = {nBinsCentrality, 100,   100,  50};
+   const Double_t lowBinRo[dimRo] = {0.0,             0.0,   0.0,   0.0};
+   const Double_t hiBinRo[dimRo]  = {100.0,         100.0, 100.0, 100.0};
+   fHRhoFastJetVsRhoCone = new THnSparseF("fHRhoFastJetVsRhoCone",
+                      "Rho FastJet vs rho PerpCone [cent,rhoFastJet,rhoCone,pTjet]",
+                           dimRo,nBinsRo,lowBinRo,hiBinRo);
+   fOutputList->Add(fHRhoFastJetVsRhoCone);  
+
+
 
 
    // =========== Switch on Sumw2 for all histos ===========
@@ -463,7 +526,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    if(fDebug) std::cout<<" ACCEPTED EVENT "<<endl;
   
    fHistEvtSelection->Fill(0); // accepted events 
- 
+   fConeArea = TMath::Pi()*fJetParamR*fJetParamR;
    // ------------------- end event selection --------------------
 
    // fetch jets
@@ -483,7 +546,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    TList particleList; //list of tracks
    Int_t indexTrigg = GetListOfTracks(&particleList); //index of trigger hadron in Particle list
    
-   if(indexTrigg<0) return; // no trigger track found 
+   if(indexTrigg<0) return; // no trigger track found above 150 MeV/c 
 
    AliVParticle *triggerHadron = (AliVParticle*) particleList.At(indexTrigg);     
    if(!triggerHadron){  
@@ -494,12 +557,9 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
 
    fh2Ntriggers->Fill(centValue,triggerHadron->Pt()); //trigger pT
 
- //  if(triggerHadron->Pt() > 10.0){}
-   if(triggerHadron->Pt() > 3.0){
       //Trigger Diagnostics---------------------------------
-      fhTriggerPhi->Fill(RelativePhi(triggerHadron->Phi(),0.0)); //phi -pi,pi
-      fhTriggerEta->Fill(triggerHadron->Eta());
-   }
+   fhTriggerPhi->Fill(triggerHadron->Pt(),RelativePhi(triggerHadron->Phi(),0.0)); //phi -pi,pi
+   fhTriggerEta->Fill(triggerHadron->Pt(),triggerHadron->Eta());
 
    //--------- Fill list of jets -------------- 
    fListJets->Clear();
@@ -516,8 +576,13 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    Double_t pTJet   = 0.0;
    Double_t areaJet = 0.0;
    Double_t phiJet  = 0.0;
-   Int_t injet4 = 0;
-   Int_t injet  = 0;  
+   Int_t injet4     = 0;
+   Int_t injet      = 0; 
+   Int_t indexLeadingJet     = -1;
+   Double_t pTLeadingJet     = -10.0; 
+   Double_t pTcorrLeadingJet = -10.0; 
+   Double_t areaLeadingJet   = -10.0;
+   Double_t rhoFastJet       = 0.0; 
    //---------- jet loop ---------
    for(Int_t ij=0; ij<fListJets->GetEntries(); ij++){
       AliAODJet* jet = (AliAODJet*)(fListJets->At(ij));
@@ -529,10 +594,14 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
      
       if((etaJet<fJetEtaMin) || (etaJet>fJetEtaMax)) continue;
       areaJet = jet->EffectiveAreaCharged();
-      
+
+      Double_t fastJetbgpT = jet->ChargedBgEnergy();  
+      if(areaJet>0) rhoFastJet = fastJetbgpT/areaJet;
+      else          rhoFastJet = 0.0;
+
       //Jet Diagnostics---------------------------------
-      fhJetPhi->Fill(RelativePhi(phiJet,0.0)); //phi -pi,pi
-      fhJetEta->Fill(etaJet);
+      fhJetPhi->Fill(pTJet,  RelativePhi(phiJet,0.0)); //phi -pi,pi
+      fhJetEta->Fill(pTJet,  etaJet);
       if(areaJet >= 0.07) injet++; 
       if(areaJet >= 0.4)  injet4++;
       //--------------------------------------------------
@@ -540,18 +609,54 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       Double_t dphi = RelativePhi(triggerHadron->Phi(), phiJet); 
    
       fhDphiTriggerJet->Fill(dphi); //Input
-      if(TMath::Abs((Double_t) dphi) < TMath::Pi()-0.6) continue;
-      fhDphiTriggerJetAccept->Fill(dphi); //Accepted
-
       //Background w.r.t. jet axis
       Double_t pTBckWrtJet = 
          GetBackgroundInPerpCone(fJetParamR, phiJet, etaJet, &particleList);
 
-      Double_t ratioOfAreas = areaJet/(TMath::Pi()*fJetParamR*fJetParamR);
+      Double_t ratioOfAreas = areaJet/fConeArea;
       Double_t rhoA = ratioOfAreas*pTBckWrtJet; //bg activity in a cone of similar size
       Double_t ptcorr = pTJet - rhoA; //Pt Jet UE subtr 
 
-  
+      //search for leading jet
+      if(pTJet > pTLeadingJet){
+         indexLeadingJet  = ij; 
+         pTLeadingJet     = pTJet; 
+         pTcorrLeadingJet = ptcorr; 
+         areaLeadingJet   = areaJet; 
+      } 
+ 
+      // raw spectra of INCLUSIVE jets  
+      //Centrality, pTjet, pTjet - rho*A,  A
+      Double_t fillraw[] = { centValue,
+                             pTJet,
+                             ptcorr,
+                             areaJet
+                           };
+      fHJetPtRaw->Fill(fillraw);
+
+      //Dphi versus jet pT   
+      //Centrality, Dphi=phiTrig-phiJet, pTjet, pTtrigg 
+      Double_t filldp[] = { centValue,
+                            dphi,
+                            pTJet,
+                            triggerHadron->Pt()
+                          };
+      fHDphiVsJetPtAll->Fill(filldp);
+
+      // Rho Fast Jet vs Rho Cone 
+      //Centrality, Rho Fast Jet, Rho Perp Cone, pTjet 
+       Double_t fillro[] = { centValue,
+                             rhoFastJet,
+                             pTBckWrtJet/fConeArea,
+                             pTJet
+                           };
+      fHRhoFastJetVsRhoCone->Fill(fillro);
+
+      // Select back to back trigger - jet pairs
+      if(TMath::Abs((Double_t) dphi) < TMath::Pi()-0.6) continue;
+      fhDphiTriggerJetAccept->Fill(dphi); //Accepted
+
+ 
       //Centrality, A, pT - rho*A, pTtrigg, pT, rho*A
       Double_t fillspec[] = { centValue,
                               areaJet,
@@ -563,7 +668,19 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       fHJetSpec->Fill(fillspec);
 	   
    }//jet loop
-   
+ 
+   if(indexLeadingJet > -1){ 
+     // raw spectra of LEADING jets  
+     //Centrality, pTjet, pTjet - rho*A,  A
+     Double_t fillleading[] = { centValue,
+                                pTLeadingJet,
+                                pTcorrLeadingJet,
+                                areaLeadingJet
+                              };
+     fHLeadingJetPtRaw->Fill(fillleading);
+   } 
+
+  
    //Fill Jet Density In the Event A>0.07
    if(injet>0){
       Double_t filldens[]={ (Double_t) particleList.GetEntries(),
@@ -631,7 +748,7 @@ Int_t  AliAnalysisTaskJetCorePP::GetListOfTracks(TList *list){
       if(trigger && TMath::Abs((Float_t) trigger->Eta())< fTriggerEtaCut){ return index;} 
       return -1;
    }else{
-     return -1;
+      return -1;
    }
 }
 
