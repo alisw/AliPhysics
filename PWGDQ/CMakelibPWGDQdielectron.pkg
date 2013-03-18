@@ -59,6 +59,7 @@ set ( SRCS
       dielectron/AliDielectronEventCuts.cxx
       dielectron/AliDielectronHelper.cxx
       dielectron/AliDielectronBtoJPSItoEleCDFfitFCN.cxx
+      dielectron/AliDielectronBtoJPSItoEleCDFfitFCNfitter.cxx
       dielectron/AliDielectronBtoJPSItoEleCDFfitHandler.cxx
       dielectron/AliDielectronBtoJPSItoEle.cxx
       dielectron/AliDielectronTRDpidCut.cxx

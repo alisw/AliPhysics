@@ -39,6 +39,7 @@
 #pragma link C++ class AliDielectronEventCuts+;
 #pragma link C++ class AliDielectronHelper+;
 #pragma link C++ class AliDielectronBtoJPSItoEleCDFfitFCN+;
+#pragma link C++ class AliDielectronBtoJPSItoEleCDFfitFCNfitter+;
 #pragma link C++ class AliDielectronBtoJPSItoEleCDFfitHandler+;
 #pragma link C++ class AliDielectronBtoJPSItoEle+;
 #pragma link C++ class AliDielectronTRDpidCut+;
