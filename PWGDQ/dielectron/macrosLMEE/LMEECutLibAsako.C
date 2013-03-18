@@ -272,7 +272,7 @@ public:
 	  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCsignalWide);
 	  anaCuts = cgSecondTrackFilterPIDTPC1;
 	  break;
-
+	  
 	case kPbPb2011TPCandTOFwide :
 	  AliDielectronCutGroup* cgSecondTrackFilterPIDTPC1 = new AliDielectronCutGroup("cgPIDTPC1","cgPIDTPC1",AliDielectronCutGroup::kCompAND);
 	  cgSecondTrackFilterPIDTPC1->AddCut(pTPC);
