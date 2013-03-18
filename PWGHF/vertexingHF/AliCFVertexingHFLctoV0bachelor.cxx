@@ -407,6 +407,10 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1)); // the bachelor
       mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0)); // the V0
     }
+    if (!mcPartDaughter0 || !mcPartDaughter1) {
+      AliDebug(2,"Problems in the MC Daughters after swapping V0 and bachelor\n");
+      return checkCD;
+    }
 
     Int_t daughter = mcPartDaughter1->GetDaughter(0);
     if (daughter<0) {
