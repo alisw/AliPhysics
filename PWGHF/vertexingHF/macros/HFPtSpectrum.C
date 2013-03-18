@@ -32,7 +32,7 @@
 //  2) reconstructed spectra file name 
 //  3) output file name
 //  4) Set the feed-down calculation option flag: knone=none, kfc=fc only, kNb=Nb only
-//  5-6) Set the luminosity: the number of events analyzed, and the cross-section of the sample [nb]
+//  5-6) Set the luminosity: the number of events analyzed, and the cross-section of the sample [pb]
 //  7) Set whether the yield is for particle + anti-particles or only one of the 'charges'
 //  8) Set the centrality class
 //  9) Flag to decide if there is need to evaluate the dependence on the energy loss
@@ -46,7 +46,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *efffilename="Efficiencies.root",
 		    const char *recofilename="Reconstructed.root", const char *recohistoname="hRawSpectrumD0",
 		    const char *outfilename="HFPtSpectrum.root",
-		    Int_t fdMethod=kNb, Double_t nevents=1.0, Double_t sigma=1.0, // sigma[nb]
+		    Int_t fdMethod=kNb, Double_t nevents=1.0, Double_t sigma=1.0, // sigma[pb]
 		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false, 
 		    Int_t isRaavsEP=kPhiIntegrated,const char *epResolfile="") {
 
