@@ -40,5 +40,6 @@
 #pragma link C++ class AliLnID+;
 #pragma link C++ class AliLnHistoMap+;
 #pragma link C++ class AliAnalysisTaskB2+;
+#pragma link C++ class AliAnalysisNucleiMass+;
 
 #endif
