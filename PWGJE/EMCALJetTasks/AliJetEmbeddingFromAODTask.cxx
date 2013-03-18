@@ -63,6 +63,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fJetMaxEta(0.5),
   fJetMinPhi(-999),
   fJetMaxPhi(999),
+  fJetConstituentMinPt(0),
   fJetRadius(0.4),
   fJetType(0),
   fJetAlgo(1),
@@ -125,6 +126,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fJetMaxEta(0.5),
   fJetMinPhi(-999),
   fJetMaxPhi(999),
+  fJetConstituentMinPt(0),
   fJetRadius(0.4),
   fJetType(0),
   fJetAlgo(1),
@@ -436,6 +438,7 @@ Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
       }
     }
     
+    AliDebug(1, Form("Leading jet pt = %f", jet.Pt()));
     if (jet.Pt() < fJetMinPt)
       return kFALSE;
   }
@@ -680,14 +683,16 @@ TLorentzVector AliJetEmbeddingFromAODTask::GetLeadingJet(TClonesArray *tracks, T
       AliVParticle *t = static_cast<AliVParticle*>(tracks->At(iTracks));
       if (!t)
         continue;
+
+      AliAODMCParticle *aodmcpart = dynamic_cast<AliAODMCParticle*>(t);
+      if (aodmcpart && !aodmcpart->IsPhysicalPrimary())
+	continue;
       
       if ((fJetType == 1 && t->Charge() == 0) ||
 	  (fJetType == 2 && t->Charge() != 0))
 	continue;
 
-      // TODO: Minimum track pt
-
-      if (t->Pt() <= 0)
+      if (t->Pt() < fJetConstituentMinPt)
 	continue;
 
       fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks + 100);  
@@ -711,9 +716,7 @@ TLorentzVector AliJetEmbeddingFromAODTask::GetLeadingJet(TClonesArray *tracks, T
       TLorentzVector nP;
       c->GetMomentum(nP, vert);
 
-      // TODO: Minimum cluster et
-
-      if (nP.Pt() <= 0)
+      if (nP.Pt() < fJetConstituentMinPt)
 	continue;
 
       fjw.AddInputVector(nP.Px(), nP.Py(), nP.Pz(), nP.P(), -iClus - 100);
@@ -731,11 +734,13 @@ TLorentzVector AliJetEmbeddingFromAODTask::GetLeadingJet(TClonesArray *tracks, T
   Int_t njets = jets_incl.size();
 
   if (njets > 0) {
-    std::vector<fastjet::PseudoJet> jets_incl_sorted = fastjet::sorted_by_pt(jets_incl);
+    //std::vector<fastjet::PseudoJet> jets_incl_sorted = fastjet::sorted_by_pt(jets_incl);
     for (Int_t i = 0; i < njets; i++) {
-      jet.SetPxPyPzE(jets_incl_sorted[i].px(), jets_incl_sorted[i].py(), jets_incl_sorted[i].pz(), jets_incl_sorted[i].E());
-      if (jet.Eta() > fJetMinEta && jet.Eta() < fJetMaxEta && jet.Phi() > fJetMinPhi && jet.Phi() < fJetMaxPhi)
-	break;
+      if (jet.Pt() >= jets_incl[i].perp())
+	continue;
+      if (jets_incl[i].eta() < fJetMinEta || jets_incl[i].eta() > fJetMaxEta || jets_incl[i].phi() < fJetMinPhi || jets_incl[i].phi() > fJetMaxPhi)
+	continue;
+      jet.SetPxPyPzE(jets_incl[i].px(), jets_incl[i].py(), jets_incl[i].pz(), jets_incl[i].E());
     }
   }
 

@@ -196,9 +196,6 @@ TChain* CreateChain(const char* treeName, const char* aDataDir, Int_t aRuns, Int
       
     if (line.Length() == 0)
       continue;
-
-    if (line.EndsWith(".zip"))
-      line += "#AliAOD.root";
     
     if (offset > 0)
     {
@@ -208,6 +205,9 @@ TChain* CreateChain(const char* treeName, const char* aDataDir, Int_t aRuns, Int
 
     if (count++ == aRuns)
       break;
+
+    if (line.EndsWith(".zip"))
+      line += "#AliAOD.root";
 
     chain->Add(line);
   }

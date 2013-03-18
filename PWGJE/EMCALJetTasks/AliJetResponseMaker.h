@@ -88,58 +88,77 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Double_t                    fRho2Val;                       //!Event rho 2 value 
   AliNamedArrayI             *fTracks2Map;                    //!MC particle map
   // General histograms
-  TH1                        *fHistTrialsAfterSel;            //!total number of trials per pt hard bin after selection
-  TH1                        *fHistEventsAfterSel;            //!total number of events per pt hard bin after selection
-  TH1                        *fHistTrials;                    //!trials from pyxsec.root
-  TProfile                   *fHistXsection;                  //!x section from pyxsec.root
-  TH1                        *fHistEvents;                    //!total number of events per pt hard bin
+  TH1                        *fHistTrialsAfterSel;                     //!total number of trials per pt hard bin after selection
+  TH1                        *fHistEventsAfterSel;                     //!total number of events per pt hard bin after selection
+  TH1                        *fHistTrials;                             //!trials from pyxsec.root
+  TProfile                   *fHistXsection;                           //!x section from pyxsec.root
+  TH1                        *fHistEvents;                             //!total number of events per pt hard bin
   // Jets 1
-  TH2                        *fHistJets1PhiEta;               //!phi-eta distribution of jets 1
-  TH2                        *fHistJets1PtArea;               //!inclusive jet pt vs area histogram 1
-  TH2                        *fHistJets1CorrPtArea;           //!inclusive jet pt vs. area histogram 1
-  TH2                        *fHistLeadingJets1PtArea;        //!leading jet pt vs area histogram 1
-  TH2                        *fHistLeadingJets1CorrPtArea;    //!leading jet pt vs. area histogram 1
-  TH2                        *fHistJets1NEFvsPt;              //!Jet neutral energy fraction vs. jet pt 1
-  TH2                        *fHistJets1CEFvsCEFPt;           //!Jet charged energy fraction vs. charged jet pt 1
-  TH2                        *fHistJets1ZvsPt;                //!Constituent Pt over Jet Pt ratio vs. jet pt 1
+  TH2                        *fHistJets1PhiEta;                        //!phi-eta distribution of jets 1
+  TH2                        *fHistJets1PtArea;                        //!inclusive jet pt vs area histogram 1
+  TH2                        *fHistJets1CorrPtArea;                    //!inclusive jet pt vs. area histogram 1
+  TH2                        *fHistLeadingJets1PtArea;                 //!leading jet pt vs area histogram 1
+  TH2                        *fHistLeadingJets1CorrPtArea;             //!leading jet pt vs. area histogram 1
+  TH2                        *fHistJets1NEFvsPt;                       //!Jet neutral energy fraction vs. jet pt 1
+  TH2                        *fHistJets1CEFvsCEFPt;                    //!Jet charged energy fraction vs. charged jet pt 1
+  TH2                        *fHistJets1ZvsPt;                         //!Constituent Pt over Jet Pt ratio vs. jet pt 1
   // Jets 2
-  TH2                        *fHistJets2PhiEta;               //!phi-eta distribution of jets 2
-  TH2                        *fHistJets2PtArea;               //!inclusive jet pt vs. area histogram 2
-  TH2                        *fHistJets2CorrPtArea;           //!inclusive jet pt vs. area histogram 2
-  TH2                        *fHistLeadingJets2PtArea;        //!leading jet pt vs. area histogram 2
-  TH2                        *fHistLeadingJets2CorrPtArea;    //!leading jet pt vs. area histogram 2
-  TH2                        *fHistJets2PhiEtaAcceptance;     //!phi-eta distribution of jets 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-  TH2                        *fHistJets2PtAreaAcceptance;     //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-  TH2                        *fHistJets2CorrPtAreaAcceptance; //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-  TH2                        *fHistLeadingJets2PtAreaAcceptance;     //!leading jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-  TH2                        *fHistLeadingJets2CorrPtAreaAcceptance; //!leading jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-  TH2                        *fHistJets2NEFvsPt;              //!Jet neutral energy fraction vs. jet pt 2
-  TH2                        *fHistJets2CEFvsCEFPt;           //!Jet charged energy fraction vs. charged jet pt 2
-  TH2                        *fHistJets2ZvsPt;                //!Constituent Pt over Jet Pt ratio vs. jet pt 2
+  TH2                        *fHistJets2PhiEta;                        //!phi-eta distribution of jets 2
+  TH2                        *fHistJets2PtArea;                        //!inclusive jet pt vs. area histogram 2
+  TH2                        *fHistJets2CorrPtArea;                    //!inclusive jet pt vs. area histogram 2
+  TH2                        *fHistLeadingJets2PtArea;                 //!leading jet pt vs. area histogram 2
+  TH2                        *fHistLeadingJets2CorrPtArea;             //!leading jet pt vs. area histogram 2
+  TH2                        *fHistJets2PhiEtaAcceptance;              //!phi-eta distribution of jets 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
+  TH2                        *fHistJets2PtAreaAcceptance;              //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
+  TH2                        *fHistJets2CorrPtAreaAcceptance;          //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
+  TH2                        *fHistLeadingJets2PtAreaAcceptance;       //!leading jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
+  TH2                        *fHistLeadingJets2CorrPtAreaAcceptance;   //!leading jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
+  TH2                        *fHistJets2NEFvsPt;                       //!Jet neutral energy fraction vs. jet pt 2
+  TH2                        *fHistJets2CEFvsCEFPt;                    //!Jet charged energy fraction vs. charged jet pt 2
+  TH2                        *fHistJets2ZvsPt;                         //!Constituent Pt over Jet Pt ratio vs. jet pt 2
   // Jet1-Jet2 matching
+  TH2                        *fHistNonMatchedJets1PtArea;              //!non-matched jet 1 pt distribution
+  TH2                        *fHistNonMatchedJets2PtArea;              //!non-matched jet 2 pt distribution
+  TH2                        *fHistNonMatchedJets1CorrPtArea;          //!non-matched jet pt distribution
+  TH2                        *fHistNonMatchedJets2CorrPtArea;          //!non-matched jet pt distribution
+  TH2                        *fHistMissedJets2PtArea;                  //!jets 2 not found in jet 1 collection
   TH2                        *fHistCommonEnergy1vsJet1Pt;              //!common energy 1 (%) vs jet 1 pt
   TH2                        *fHistCommonEnergy2vsJet2Pt;              //!common energy 2 (%) vs jet 2 pt
   TH2                        *fHistDistancevsJet1Pt;                   //!distance vs jet 1 pt
   TH2                        *fHistDistancevsJet2Pt;                   //!distance vs jet 2 pt
   TH2                        *fHistDistancevsCommonEnergy1;            //!distance vs common energy 1 (%)
   TH2                        *fHistDistancevsCommonEnergy2;            //!distance vs common energy 2 (%)
+  TH2                        *fHistCommonEnergy1vsCommonEnergy2;       //!common energy 1 (%) vs common energy 2 (%)
   TH2                        *fHistJet2PtOverJet1PtvsJet2Pt;           //!jet 2 pt over jet 1 pt vs jet 2 pt
   TH2                        *fHistJet1PtOverJet2PtvsJet1Pt;           //!jet 1 pt over jet 2 pt vs jet 1 pt
   TH2                        *fHistDeltaEtaPhi;                        //!delta eta-phi between matched jets
   TH2                        *fHistDeltaPtvsJet1Pt;                    //!delta pt between matched jets vs jet 1 pt
   TH2                        *fHistDeltaPtvsJet2Pt;                    //!delta pt between matched jets vs jet 2 pt
-  TH2                        *fHistDeltaPtvsMatchingLevel;             //!delta pt between matched jets vs matching level
+  TH2                        *fHistDeltaPtvsDistance;                  //!delta pt between matched jets vs distance
+  TH2                        *fHistDeltaPtvsCommonEnergy1;             //!delta pt between matched jets vs common energy 1 (%)
+  TH2                        *fHistDeltaPtvsCommonEnergy2;             //!delta pt between matched jets vs common energy 2 (%)
+  TH2                        *fHistDeltaPtvsArea1;                     //!delta pt between matched jets vs jet 1 area
+  TH2                        *fHistDeltaPtvsArea2;                     //!delta pt between matched jets vs jet 2 area
+  TH2                        *fHistDeltaPtvsDeltaArea;                 //!delta pt between matched jets vs delta area
+  TH2                        *fHistJet1PtvsJet2Pt;                     //!correlation jet 1 pt vs jet 2 pt
   TH2                        *fHistDeltaCorrPtvsJet1Pt;                //!delta pt corr between matched jets vs jet 1 pt
   TH2                        *fHistDeltaCorrPtvsJet2Pt;                //!delta pt corr between matched jets vs jet 2 pt
-  TH2                        *fHistDeltaCorrPtvsMatchingLevel;         //!delta pt corr between matched jets vs matching level
-  TH2                        *fHistNonMatchedJets1PtArea;              //!non-matched jet 1 pt distribution
-  TH2                        *fHistNonMatchedJets2PtArea;              //!non-matched jet 2 pt distribution
-  TH2                        *fHistNonMatchedJets1CorrPtArea;          //!non-matched jet pt distribution
-  TH2                        *fHistNonMatchedJets2CorrPtArea;          //!non-matched jet pt distribution
-  TH2                        *fHistJet1PtvsJet2Pt;                     //!correlation jet 1 pt vs jet 2 pt
+  TH2                        *fHistDeltaCorrPtvsDistance;              //!delta pt corr between matched jets vs distance
+  TH2                        *fHistDeltaCorrPtvsCommonEnergy1;         //!delta pt corr between matched jets vs common energy 1 (%)
+  TH2                        *fHistDeltaCorrPtvsCommonEnergy2;         //!delta pt corr between matched jets vs common energy 2 (%)
+  TH2                        *fHistDeltaCorrPtvsArea1;                 //!delta pt corr between matched jets vs jet 1 area
+  TH2                        *fHistDeltaCorrPtvsArea2;                 //!delta pt corr between matched jets vs jet 2 area
+  TH2                        *fHistDeltaCorrPtvsDeltaArea;             //!delta pt corr between matched jets vs delta area
   TH2                        *fHistJet1CorrPtvsJet2CorrPt;             //!correlation jet 1 corr pt vs jet 2 corr pt
+  TH2                        *fHistDeltaMCPtvsJet1Pt;                  //!jet 1 MC pt - jet2 pt vs jet 1 pt
+  TH2                        *fHistDeltaMCPtvsJet2Pt;                  //!jet 1 MC pt - jet2 pt vs jet 2 pt
+  TH2                        *fHistDeltaMCPtvsDistance;                //!jet 1 MC pt - jet2 pt vs distance
+  TH2                        *fHistDeltaMCPtvsCommonEnergy1;           //!jet 1 MC pt - jet2 pt vs common energy 1 (%)
+  TH2                        *fHistDeltaMCPtvsCommonEnergy2;           //!jet 1 MC pt - jet2 pt vs common energy 2 (%)
+  TH2                        *fHistDeltaMCPtvsArea1;                   //!jet 1 MC pt - jet2 pt vs jet 1 area
+  TH2                        *fHistDeltaMCPtvsArea2;                   //!jet 1 MC pt - jet2 pt vs jet 2 area
+  TH2                        *fHistDeltaMCPtvsDeltaArea;               //!jet 1 MC pt - jet2 pt vs delta area
   TH2                        *fHistJet1MCPtvsJet2Pt;                   //!correlation jet 1 MC pt vs jet 2 pt
-  TH2                        *fHistMissedJets2PtArea;                  //!jets 2 not found in jet 1 collection
 
 
  private:

@@ -22,15 +22,20 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
 
+  void                        SetIsEmbedded(Bool_t i)      { fIsEmbedded        = i         ; }
+
  protected:
   Bool_t                      FillHistograms()                                              ;
   Int_t                       DoJetLoop()                                                   ;
+
+  Bool_t                      fIsEmbedded;                 // trigger, embedded signal
 
   // General histograms
   TH1F                       *fHistEvents[4];              //!Events accepted/rejected
   TH3F                       *fHistLeadingJetPhiEta[4];    //!Leading jet phi-eta
   TH3F                       *fHistLeadingJetPtArea[4];    //!Leading jet pt spectrum vs. area
   TH3F                       *fHistLeadingJetCorrPtArea[4];//!Corrected leading jet pt spectrum vs. area
+  TH3F                       *fHistLeadingJetMCPtArea[4];  //!Leading jet MC pt spectrum vs. area
   TH2F                       *fHistRhoVSleadJetPt[4];      //!Area(leadjet) * rho vs. leading jet pt
   TH2F                       *fNjetsVsCent;                //!No. of jets vs. centrality
 
@@ -39,6 +44,8 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH3F                       *fHistJetsPtArea[4];          //!Jet pt vs. area
   TH3F                       *fHistJetsCorrPtArea[4];      //!Jet corr pt vs. area
   TH2F                       *fHistJetPtvsJetCorrPt[4];    //!Jet pt vs jet corr pt
+  TH3F                       *fHistJetsMCPtArea[4];        //!Jet pt vs. area
+  TH2F                       *fHistJetPtvsJetMCPt[4];      //!Jet pt vs jet corr pt
   TH3F                       *fHistJetsNEFvsPt[4];         //!Jet neutral energy fraction vs. jet pt
   TH3F                       *fHistJetsCEFvsCEFPt[4];      //!Jet charged energy fraction vs. charged jet pt
   TH3F                       *fHistJetsZvsPt[4];           //!Constituent Pt over Jet Pt ratio vs. jet pt
@@ -53,6 +60,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
   AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 14) // jet analysis task
+  ClassDef(AliAnalysisTaskSAJF, 15) // jet analysis task
 };
 #endif
