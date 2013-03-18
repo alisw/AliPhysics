@@ -245,7 +245,7 @@ void AliDielectronBtoJPSItoEleCDFfitFCN::PrintStatus()
 	printf("\n");
 }
 //_________________________________________________________________________________________________
-void AliDielectronBtoJPSItoEleCDFfitFCN::SetResolutionConstants(Double_t* resolutionConst, Int_t type) 
+void AliDielectronBtoJPSItoEleCDFfitFCN::SetResolutionConstants(const Double_t* resolutionConst, Int_t type) 
 {
 	//
 	// Resolution function is parametrized as the sum of two gaussian
