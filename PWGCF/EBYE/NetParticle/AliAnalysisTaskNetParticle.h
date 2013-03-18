@@ -6,8 +6,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
-// Task for NetParticle Distributions
-// Authors: Jochen Thaeder <jochen@thaeder.de>
+/**
+ * Class for for NetParticle Distributions
+ * -- AnalysisTask
+ * Authors: Jochen Thaeder <jochen@thaeder.de>
+ *          Michael Weber <m.weber@cern.ch>
+ */
 
 #include "AliAnalysisTaskSE.h"
 #include "TList.h"
@@ -162,31 +166,31 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
   
   // --- Flags -------------------------------------------------------------
 
-  Bool_t              fIsMC;                   //  Is MC event
-  Bool_t              fIsAOD;                  //  analysis mode            : 0 = ESDs  | 1 = AODs
-  Int_t               fESDTrackCutMode;        //  ESD track cut mode       : 0 = clean | 1 dirty
-  Int_t               fModeEffCreation ;       //  Correction creation mode : 1 = on | 0 = off
-  Int_t               fModeDCACreation;        //  DCA creation mode        : 1 = on | 0 = off
-  Int_t               fModeDistCreation;       //  Dist creation mode       : 1 = on | 0 = off
-  Int_t               fModeQACreation;         //  QA creation mode         : 1 = on | 0 = off
+  Bool_t              fIsMC;                    //  Is MC event
+  Bool_t              fIsAOD;                   //  analysis mode            : 0 = ESDs  | 1 = AODs
+  Int_t               fESDTrackCutMode;         //  ESD track cut mode       : 0 = clean | 1 = dirty
+  Int_t               fModeEffCreation ;        //  Correction creation mode : 1 = on    | 0 = off
+  Int_t               fModeDCACreation;         //  DCA creation mode        : 1 = on    | 0 = off
+  Int_t               fModeDistCreation;        //  Dist creation mode       : 1 = on    | 0 = off
+  Int_t               fModeQACreation;          //  QA creation mode         : 1 = on    | 0 = off
 
   // --- MC only -----------------------------------------------------------
 
-  AliMCEvent         *fMCEvent;                //! Ptr to MC event
-  AliStack           *fMCStack;                //! Ptr to MC stack
+  AliMCEvent         *fMCEvent;                 //! Ptr to MC event
+  AliStack           *fMCStack;                 //! Ptr to MC stack
 
   // -----------------------------------------------------------------------
 
-  THnSparseF         *fHnQA;                   //! THnSparseF : tracks for QA
+  THnSparseF         *fHnQA;                    //! THnSparseF : tracks for QA
   
   // -----------------------------------------------------------------------
 
-  Float_t             fEtaMax;                 //  Max, absolut eta 
-  Float_t             fEtaMaxEff;              //  Max, absolut eta for efficiency
-  Float_t             fPtRange[2];             //  Array of pt [min,max]
-  Float_t             fPtRangeEff[2];          //  Array of pt [min,max] for efficiency
+  Float_t             fEtaMax;                  //  Max, absolut eta 
+  Float_t             fEtaMaxEff;               //  Max, absolut eta for efficiency
+  Float_t             fPtRange[2];              //  Array of pt [min,max]
+  Float_t             fPtRangeEff[2];           //  Array of pt [min,max] for efficiency
 
-  Int_t               fAODtrackCutBit;         //  Track filter bit for AOD tracks
+  Int_t               fAODtrackCutBit;          //  Track filter bit for AOD tracks
 
   // -----------------------------------------------------------------------
   

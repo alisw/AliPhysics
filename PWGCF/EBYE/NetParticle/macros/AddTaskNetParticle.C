@@ -1,11 +1,12 @@
 /* *********************************************************************************
  * File    : AddTaskNetParticle.C  
- * Author  : Jochen Thaeder <jochen@thaeder.de>
+ * Authors : Jochen Thaeder <jochen@thaeder.de>
+ *           Michael Weber <m.weber@cern.ch>
  * *********************************************************************************
  * Configuring NetParticle Task:
  * - ARGUMENTS : 
- *     name           -> Name of the task, containing partcile type :
- *                       Currently : Proton, Pion, Kaon      
+ *     name           -> Name of the task, containing particle type :
+ *                       Currently : Proton, Pion, Kaon, Charge      
  *     isModeDist     -> Fill Distributions
  *     isModeEff      -> Fill Efficiency/Contamination ThnSparse
  *     isModeDCA      -> Fill DCA ThnSparse
@@ -97,14 +98,15 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   // ----------------------------------------------
   // -- Set particle type
   // ----------------------------------------------
-  Float_t minPt, maxPt, minPtEff, maxPtEff, minPtForTOF, nSigmaTPC, nSigmaTOF; 
+  Float_t minPt, maxPt, minPtEff, maxPtEff, minPtForTOF, etaMax, etaMaxEff, nSigmaTPC, nSigmaTOF; 
 
   if (sName.Contains("Proton")) {
     helper->SetParticleSpecies(AliPID::kProton);
-    helper->SetControlParticleSpecies(3122, kTRUE, "Lambda");
-    minPt    = 0.4;    maxPt    = 0.8;
+    minPt    = 0.4;    maxPt    = 2.2;
     minPtEff = 0.2;    maxPtEff = 2.6;
     minPtForTOF = 0.8;
+    etaMax     = 99.99;    // 0.8 ->> eta cut off for now
+    etaMaxEff  = 99.99;    // 0.9 ->> eta cut off for now
     nSigmaTPC = 2.5;   nSigmaTOF = 2.5;
     if (isCreateCSC) {
       minPtForTOF = maxPtEff;
@@ -115,6 +117,8 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
     minPt    = 0.25;   maxPt    = 0.7;
     minPtEff = 0.2;    maxPtEff = 1.2;
     minPtForTOF = 0.8;
+    etaMax     = 99.99;    // 0.8 ->> eta cut off for now
+    etaMaxEff  = 99.99;    // 0.9 ->> eta cut off for now
     nSigmaTPC = 2.5;   nSigmaTOF = 2.5;
   }
   else if (sName.Contains("Kaon")) {
@@ -122,6 +126,8 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
     minPt    = 0.5;    maxPt    = 1.4;
     minPtEff = 0.1;    maxPtEff = 2.5;
     minPtForTOF = 0.5;
+    etaMax     = 99.99;    // 0.8 ->> eta cut off for now
+    etaMaxEff  = 99.99;    // 0.9 ->> eta cut off for now
     nSigmaTPC = 2.5;   nSigmaTOF = 2.5;
   }
   else if (sName.Contains("Charge")) {
@@ -129,6 +135,8 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
     minPt    = 0.3;    maxPt    = 2.5;
     minPtEff = 0.1;    maxPtEff = 3.0;
     minPtForTOF = -1.;
+    etaMax     = 0.8; 
+    etaMaxEff  = 0.9; 
     nSigmaTPC = -1.;   nSigmaTOF = -1.;
   }
   else {
@@ -141,12 +149,12 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   // -- Configure cuts 
   // ----------------------------------------------
 
-  // -- Set cut flags ...
+  // -- Set cut flags 
   task->SetESDTrackCutMode(0);              // => 0 = clean | 1 = dirty
 
   // -- Set analysis ranges
-  task->SetEtaMax(0.8);                     // eta cut
-  task->SetEtaMaxEff(0.9);                  // eta cut for efficiency
+  task->SetEtaMax(etaMax);                  // eta cut
+  task->SetEtaMaxEff(etaMaxEff);            // eta cut for efficiency
   task->SetPtRange(minPt, maxPt);           // pt cut range for the analysis
   task->SetPtRangeEff(minPtEff, maxPtEff);  // pt cut range for the correction / efficiency / contamination creation
 
@@ -161,8 +169,9 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   // -- Set track event cuts
   helper->SetRapidityMax(0.5); 
   helper->SetMinTrackLengthMC(70.);  
-  helper->SetNSigmaMaxCdd(3.); 
-  helper->SetNSigmaMaxCzz(3.); 
+  helper->SetNSigmaMaxCdd(0.);    //  3. ||   ->> Turn off sigmaDCA cuts for now
+  helper->SetNSigmaMaxCzz(0.);    //  3. ||   ->> Turn off sigmaDCA cuts for now
+  helper->SetPhiRange(0., 4.);
 
   // -- Set pid cuts
   helper->SetNSigmaMaxTPC(nSigmaTPC);

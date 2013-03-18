@@ -32,8 +32,12 @@
 
 using namespace std;
 
-// Task for NetParticle checks
-// Author: Jochen Thaeder <jochen@thaeder.de>
+/**
+ * Class for for NetParticle Distributions
+ * -- AnalysisTask
+ * Authors: Jochen Thaeder <jochen@thaeder.de>
+ *          Michael Weber <m.weber@cern.ch>
+ */
 
 ClassImp(AliAnalysisTaskNetParticle)
 
@@ -159,7 +163,6 @@ void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   // ------------------------------------------------------------------
   // -- Get event / trigger statistics histograms
   // ------------------------------------------------------------------
-
   fOutList->Add(fHelper->GetHEventStat0());
   fOutList->Add(fHelper->GetHEventStat1());
   fOutList->Add(fHelper->GetHTriggerStat());
@@ -168,10 +171,8 @@ void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   // ------------------------------------------------------------------
   // -- Add histograms from distribution class
   // ------------------------------------------------------------------
-  if (fModeDistCreation == 1) {
+  if (fModeDistCreation == 1)
     fDist->CreateHistograms(fOutList);
-    fDist->UpdateMinPtForTOFRequired();
-  }
 
   // ------------------------------------------------------------------
   // -- Add histograms from efficiency/contamination class
@@ -179,7 +180,6 @@ void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   if ((fIsAOD||fIsMC) && fModeEffCreation == 1) {
     fOutListEff->Add(fEffCont->GetHnEff());
     fOutListCont->Add(fEffCont->GetHnCont());
-    fEffCont->UpdateMinPtForTOFRequired();
   }
 
   // ------------------------------------------------------------------
@@ -360,10 +360,7 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   // ------------------------------------------------------------------
   if (fModeDistCreation == 1) {
     fDist = new AliAnalysisNetParticleDistribution;
-    if (fHelper->GetParticleSpecies() == AliPID::kProton)
-      fDist->Initialize(fHelper, fESDTrackCuts, fIsMC, fPtRange, fEtaMax, fAODtrackCutBit, 3);
-    else
-      fDist->Initialize(fHelper, fESDTrackCuts, fIsMC, fPtRange, fEtaMax, fAODtrackCutBit, 1);
+    fDist->Initialize(fHelper, fESDTrackCuts, fIsMC, fPtRange, fEtaMax, fAODtrackCutBit);
   }
 
   // ------------------------------------------------------------------

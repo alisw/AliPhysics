@@ -5,9 +5,13 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
- 
-// Helper Class for for NetParticle Distributions
-// Authors: Jochen Thaeder <jochen@thaeder.de>
+  
+/**
+ * Class for for NetParticle Distributions
+ * -- Helper class for net particle istributions
+ * Authors: Jochen Thaeder <jochen@thaeder.de>
+ *          Michael Weber <m.weber@cern.ch>
+ */
 
 #include "THnBase.h"
 #include "THn.h"
@@ -51,13 +55,12 @@ class AliAnalysisNetParticleHelper : public TNamed {
   void SetMinTrackLengthMC(Float_t f)                {fMinTrackLengthMC    = f;}
   void SetNSigmaMaxCdd(Float_t f)                    {fNSigmaMaxCdd        = f;}
   void SetNSigmaMaxCzz(Float_t f)                    {fNSigmaMaxCzz        = f;}
+  void SetPhiRange(Float_t f1, Float_t f2) {
+    fPhiMin = f1; 
+    fPhiMax = (f1 < f2) ? f2 : f2+TMath::TwoPi();
+  }
 
   void SetParticleSpecies(AliPID::EParticleType pid);
-  void SetControlParticleSpecies(Int_t pdgCode, Bool_t isNeutral, TString name) {
-    fControlParticleCode = pdgCode;
-    fControlParticleIsNeutral = isNeutral;
-    fControlParticleName = name;
-  }
 
   void SetUsePID(Bool_t b);
   void SetNSigmaMaxTPC(Float_t f)                    {fNSigmaMaxTPC        = f;}
@@ -74,8 +77,6 @@ class AliAnalysisNetParticleHelper : public TNamed {
   TString  GetParticleName(Int_t idxPart);
   TString  GetParticleTitle(Int_t idxPart);
   TString  GetParticleTitleLatex(Int_t idxPart);
-  TString  GetControlParticleName(Int_t idxPart);
-  TString  GetControlParticleTitle(Int_t idxPart);
 
   TH1F*    GetHEventStat0()                  {return fHEventStat0;}
   TH1F*    GetHEventStat1()                  {return fHEventStat1;}
@@ -87,11 +88,10 @@ class AliAnalysisNetParticleHelper : public TNamed {
 
   Bool_t   GetUsePID()                       {return fUsePID;}
 
-  Int_t    GetControlParticleCode()          {return fControlParticleCode;}
-  Bool_t   IsControlParticleNeutral()        {return fControlParticleIsNeutral;}
-  TString& GetControlParticleName()          {return fControlParticleName;}
-
   Float_t  GetMinPtForTOFRequired()          {return fMinPtForTOFRequired;}
+  Float_t  GetRapidityMax()                  {return fRapidityMax;}
+  Float_t  GetPhiMin()                       {return fPhiMin;}
+  Float_t  GetPhiMax()                       {return fPhiMax;}
 
   /*
    * ---------------------------------------------------------------------------------
@@ -137,6 +137,10 @@ class AliAnalysisNetParticleHelper : public TNamed {
   Bool_t IsParticleAcceptedRapidity(TParticle *particle, Double_t &yP);
   Bool_t IsParticleAcceptedRapidity(AliAODMCParticle *particle, Double_t &yP);
 
+  /** Check if MC particle is accepted for Phi */
+  Bool_t IsParticleAcceptedPhi(TParticle *particle);
+  Bool_t IsParticleAcceptedPhi(AliAODMCParticle *particle);
+
   /** Check if MC particle is findable tracks */
   Bool_t IsParticleFindable(Int_t label);
     
@@ -158,6 +162,9 @@ class AliAnalysisNetParticleHelper : public TNamed {
   /** Check if track is accepted for PID */
   Bool_t IsTrackAcceptedPID(AliVTrack *track, Double_t *pid);
 
+  /** Check if trackis  accepted for Phi */
+  Bool_t IsTrackAcceptedPhi(AliVTrack *track);
+
   /*
    * ---------------------------------------------------------------------------------
    *                         Helper Methods
@@ -165,13 +172,40 @@ class AliAnalysisNetParticleHelper : public TNamed {
    */
 
   /** Update eta corrected TPC pid */
-  void  UpdateEtaCorrectedTPCPid();
-
-  /** Get efficiency correctionf of particle dependent on (eta, phi, pt, centrality) */
-  Double_t GetTrackbyTrackCorrectionFactor(Double_t *aTrack,  Int_t flag);
+  void UpdateEtaCorrectedTPCPid();
   
-  /** Method for the correct logarithmic binning of histograms */
+  /** Method for the correct logarithmic binning of histograms 
+   *  and Update MinPtForTOFRequired, using the pT log-scale 
+   */
   void BinLogAxis(const THnBase *h, Int_t axisNumber);
+
+  /*
+   * ---------------------------------------------------------------------------------
+   *                    Static Const Members - public
+   * ---------------------------------------------------------------------------------
+   */
+
+  static const Float_t fgkfHistBinWitdthRap;   // Histogram std bin width for rapidity/eta
+  static const Float_t fgkfHistBinWitdthPt;    // Histogram std bin width for pt
+
+  static const Float_t fgkfHistRangeCent[];    // Histogram range for centrality
+  static const Int_t   fgkfHistNBinsCent;      // Histogram N bins for centrality
+  static const Float_t fgkfHistRangeEta[];     // Histogram range for eta
+  static const Int_t   fgkfHistNBinsEta;       // Histogram N bins for eta
+  static const Float_t fgkfHistRangeRap[];     // Histogram range for rapidity
+  static const Int_t   fgkfHistNBinsRap;       // Histogram N bins for rapidity
+  static const Float_t fgkfHistRangePhi[];     // Histogram range for phi
+  static const Int_t   fgkfHistNBinsPhi;       // Histogram N bins for phi
+  static const Float_t fgkfHistRangePt[];      // Histogram range for pt
+  static const Int_t   fgkfHistNBinsPt;        // Histogram N bins for pt
+  static const Float_t fgkfHistRangeSign[];    // Histogram range for sign
+  static const Int_t   fgkfHistNBinsSign;      // Histogram N bins for sign
+
+  static const Char_t* fgkEventNames[];         // Event names 
+  static const Char_t* fgkCentralityMaxNames[]; // Centrality names 
+  static const Char_t* fgkTriggerNames[];       // Trigger names 
+  static const Char_t* fgkCentralityNames[];    // Centrality names 
+
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -197,9 +231,6 @@ class AliAnalysisNetParticleHelper : public TNamed {
 
   /** Initialize eta correction maps for TPC pid */
   Int_t InitializeEtaCorrection(Bool_t isMC);
-
-  /** Initialize track by track correction matrices */
-  Int_t InitializeTrackbyTrackCorrection();
 
   /*
    * ---------------------------------------------------------------------------------
@@ -232,6 +263,8 @@ class AliAnalysisNetParticleHelper : public TNamed {
   Int_t                 fCentralityBinMax;         //  Max centrality bin to be used
   Float_t               fVertexZMax;               //  VertexZ cut
   Float_t               fRapidityMax;              //  Rapidity cut
+  Float_t               fPhiMin;                   //  Phi min cut
+  Float_t               fPhiMax;                   //  Phi max cut
   Float_t               fMinTrackLengthMC;         //  Min track length for MC tracks
   Float_t               fNSigmaMaxCdd;             //  N Sigma for dcar / sqrt(cdd) - turn off with 0.
   Float_t               fNSigmaMaxCzz;             //  N Sigma for dcaz / sqrt(czz) - turn off with 0.
@@ -240,9 +273,6 @@ class AliAnalysisNetParticleHelper : public TNamed {
   TString               fPartName[2];              //  Particle name (short) - particle/antiparticle 
   TString               fPartTitle[2];             //  Particle name (long)  - particle/antiparticle 
   TString               fPartTitleLatex[2];        //  Particle name (LATEX) - particle/antiparticle 
-  Int_t                 fControlParticleCode;      //  PDG code control particle
-  Bool_t                fControlParticleIsNeutral; //  Is control particle neutral
-  TString               fControlParticleName;      //  Name of control particle
   // -----------------------------------------------------------------------
   Bool_t                fUsePID;                   //  Use PID, default is on
   Float_t               fNSigmaMaxTPC;             //  N Sigma for TPC PID
@@ -264,9 +294,7 @@ class AliAnalysisNetParticleHelper : public TNamed {
   // =======================================================================
 
   TF1                  *fEtaCorrFunc;              //! Eta correction function for TPC dE/dx  
-  THnF               ***fCorr0;                    // Correction matrices for particle / anti-particle
-  THnF               ***fCorr1;                    // Correction matrices [cross section corrected] matrices for particle / anti-particle
-  THnF               ***fCorr2;                    // Correction matrices cross section correction matrices only for particle / anti-particle
+
   // -----------------------------------------------------------------------
 
   ClassDef(AliAnalysisNetParticleHelper, 1);

@@ -6,8 +6,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
-// Efficiency and Contaminations for NetParticle Distributions
-// Authors: Jochen Thaeder <jochen@thaeder.de>
+/**
+ * Class for for NetParticle Distributions
+ * -- Efficiency and contaminations for netParticle distributions
+ * Authors: Jochen Thaeder <jochen@thaeder.de>
+ *          Michael Weber <m.weber@cern.ch>
+ */
 
 #include "THnSparse.h"
 
@@ -48,9 +52,6 @@ class AliAnalysisNetParticleEffCont : public TNamed {
 
   /** Process Event */
   void Process();
-
-  /** Update MinPtForTOFRequired, using the pT log-scale */
-  void UpdateMinPtForTOFRequired();
 
   /*
    * ---------------------------------------------------------------------------------

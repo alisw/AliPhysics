@@ -22,8 +22,12 @@
 
 using namespace std;
 
-// Task for NetParticle checks
-// Author: Jochen Thaeder <jochen@thaeder.de>
+/**
+ * Class for for NetParticle Distributions
+ * -- Helper class for net particle istributions
+ * Authors: Jochen Thaeder <jochen@thaeder.de>
+ *          Michael Weber <m.weber@cern.ch>
+ */
 
 ClassImp(AliAnalysisNetParticleHelper)
 
@@ -34,7 +38,6 @@ ClassImp(AliAnalysisNetParticleHelper)
  */
 
   // MW make fgk ... static const
-
   const Char_t* aPartNames[AliPID::kSPECIES][2]             = {
     {"ele",     "posi"},
     {"mubar",   "mu"},
@@ -59,9 +62,6 @@ ClassImp(AliAnalysisNetParticleHelper)
     {"#bar{p}", "p"}
   };
 
-  const Char_t* aControlPartNames[2]      = {"lambdabar",     "lambda"};
-  const Char_t* aControlPartTitles[2]     = {"Anti-Lambda",   "Lambda"};
-
 /*
  * ---------------------------------------------------------------------------------
  *                            Constructor / Destructor
@@ -85,14 +85,13 @@ AliAnalysisNetParticleHelper::AliAnalysisNetParticleHelper() :
   fCentralityBinMax(7),
   fVertexZMax(10.),
   fRapidityMax(0.5),
+  fPhiMin(0.),
+  fPhiMax(TMath::TwoPi()),
   fMinTrackLengthMC(70.),
   fNSigmaMaxCdd(3.),
   fNSigmaMaxCzz(3.),
 
   fParticleSpecies(AliPID::kProton),
-  fControlParticleCode(3122),
-  fControlParticleIsNeutral(kTRUE),
-  fControlParticleName("Lambda"),
 
   fUsePID(kTRUE),
   fNSigmaMaxTPC(2.5),
@@ -109,33 +108,48 @@ AliAnalysisNetParticleHelper::AliAnalysisNetParticleHelper() :
   fHCentralityStat(NULL),
   fNCentralityBins(10),
 
-  fEtaCorrFunc(NULL),
-  fCorr0(NULL),
-  fCorr1(NULL),
-  fCorr2(NULL) {
+  fEtaCorrFunc(NULL) {
   // Constructor   
   
   AliLog::SetClassDebugLevel("AliAnalysisNetParticleHelper",10);
 }
 
+const Float_t AliAnalysisNetParticleHelper::fgkfHistBinWitdthRap = 0.075;
+const Float_t AliAnalysisNetParticleHelper::fgkfHistBinWitdthPt  = 0.15;   // 150 MeV
+
+const Float_t AliAnalysisNetParticleHelper::fgkfHistRangeCent[]  = {-0.5, 8.5};
+const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsCent    = 9 ;
+
+const Float_t AliAnalysisNetParticleHelper::fgkfHistRangeEta[]   = {-0.9, 0.9};
+const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsEta     = Int_t((AliAnalysisNetParticleHelper::fgkfHistRangeEta[1] -
+									  AliAnalysisNetParticleHelper::fgkfHistRangeEta[0]) / 
+									 AliAnalysisNetParticleHelper::fgkfHistBinWitdthRap) +1;
+
+const Float_t AliAnalysisNetParticleHelper::fgkfHistRangeRap[]   = {-0.5, 0.5};
+const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsRap     = Int_t((AliAnalysisNetParticleHelper::fgkfHistRangeRap[1] -
+									  AliAnalysisNetParticleHelper::fgkfHistRangeRap[0]) / 
+									 AliAnalysisNetParticleHelper::fgkfHistBinWitdthRap) +1;
+
+const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePhi[]   = {0.0, TMath::TwoPi()};
+const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsPhi     = 42 ;
+
+const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePt[]    = {0.1, 3.0};
+const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsPt      = Int_t((AliAnalysisNetParticleHelper::fgkfHistRangePt[1] -
+									  AliAnalysisNetParticleHelper::fgkfHistRangePt[0]) / 
+									 AliAnalysisNetParticleHelper::fgkfHistBinWitdthPt); 
+
+const Float_t AliAnalysisNetParticleHelper::fgkfHistRangeSign[]  = {-1.5, 1.5};
+const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsSign    =  3;
+
+const Char_t* AliAnalysisNetParticleHelper::fgkEventNames[]         = {"All", "IsTriggered", "HasVertex", "Vz<Vz_{Max}", "Centrality [0,90]%"};
+const Char_t* AliAnalysisNetParticleHelper::fgkCentralityMaxNames[] = {"5", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"};
+const Char_t* AliAnalysisNetParticleHelper::fgkTriggerNames[]       = {"kMB", "kCentral", "kSemiCentral", "kEMCEJE", "kEMCEGA" }; 
+const Char_t* AliAnalysisNetParticleHelper::fgkCentralityNames[]    = {"0-5%", "5-10%", "10-20%", "20-30%", "30-40%", "40-50%", 
+								       "50-60%", "60-70%", "70-80%", "80-90%", "90-100%"};
+
 //________________________________________________________________________
 AliAnalysisNetParticleHelper::~AliAnalysisNetParticleHelper() {
   // Destructor
-
-  if (fModeDistCreation == 1) {
-    for (Int_t jj = 0; jj < 2; ++jj) {
-      if (fCorr0[jj]) delete[] fCorr0[jj];
-      if (fParticleSpecies == AliPID::kProton) {
-	if (fCorr1[jj]) delete[] fCorr1[jj];
-	if (fCorr2[jj]) delete[] fCorr2[jj];
-      }
-    }
-    if (fCorr0) delete[] fCorr0;
-    if (fParticleSpecies == AliPID::kProton) {
-      if (fCorr1) delete[] fCorr1;
-      if (fCorr2) delete[] fCorr2;
-    }
-  }
 
   return;
 }
@@ -224,30 +238,6 @@ TString AliAnalysisNetParticleHelper::GetParticleTitleLatex(Int_t idxPart) {
   return fPartTitleLatex[idxPart];
 }
 
-//________________________________________________________________________
-TString AliAnalysisNetParticleHelper::GetControlParticleName(Int_t idxPart) {
-  // -- Get particle Title LATEX
-
-  if( idxPart != 0 && idxPart != 1){
-    AliWarning("Particle type not known --> Set to antiparticles");
-    idxPart = 0;
-  }
-
-  return aControlPartNames[idxPart];
-}
-
-//________________________________________________________________________
-TString AliAnalysisNetParticleHelper::GetControlParticleTitle(Int_t idxPart) {
-  // -- Get particle Title LATEX
-
-  if( idxPart != 0 && idxPart != 1){
-    AliWarning("Particle type not known --> Set to antiparticles");
-    idxPart = 0;
-  }
-
-  return aControlPartTitles[idxPart];
-}
-
 /*
  * ---------------------------------------------------------------------------------
  *                                 Public Methods
@@ -272,9 +262,6 @@ Int_t AliAnalysisNetParticleHelper::Initialize(Bool_t isMC, Int_t modeDistCreati
 
   // -- Load Eta correction function 
   iResult = InitializeEtaCorrection(isMC);
-
-  // -- Load track by track correction function 
-  iResult = InitializeTrackbyTrackCorrection();
 
   return iResult;
 }
@@ -540,16 +527,12 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(AliAODMCPart
 Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(TParticle *particle, Double_t &yP) {
   // -- Check if particle is accepted
   // > in rapidity
-  // > if no pid : 
-  // >   use yP as input for the pseudo-rapdity_MAX to be checked
+  // > if no pid : return kTRUE, yP = eta
   // > return 0 if not accepted
 
   if (!fUsePID) {
-    Bool_t isAccepted = kFALSE;
-    if (TMath::Abs(particle->Eta()) < yP)
-      isAccepted = kTRUE;
     yP = particle->Eta();
-    return isAccepted;
+    return kTRUE;
   }
 
   Double_t mP = AliPID::ParticleMass(fParticleSpecies);
@@ -572,16 +555,12 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(TParticle *parti
 Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(AliAODMCParticle *particle, Double_t &yP) {
   // -- Check if AOD particle is accepted
   // > in rapidity
-  // > if no pid : 
-  // >   use yP as input for the pseudo-rapdity_MAX to be checked
+  // > if no pid : return kTRUE, yP = eta
   // > return 0 if not accepted
 
   if (!fUsePID) {
-    Bool_t isAccepted = kFALSE;
-    if (TMath::Abs(particle->Eta()) < yP)
-      isAccepted = kTRUE;
     yP = particle->Eta();
-    return isAccepted;
+    return kTRUE;
   }
 
   Double_t mP = AliPID::ParticleMass(fParticleSpecies);
@@ -598,6 +577,34 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(AliAODMCParticle
     return kFALSE;
   
   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedPhi(TParticle *particle) {
+  // -- Check if particle is accepted
+  // > in phi
+  // > return 0 if not accepted
+  
+  if (particle->Phi() > fPhiMin && particle->Phi() <= fPhiMax)
+    return kTRUE;
+  else if (particle->Phi() < fPhiMin && (particle->Phi() + TMath::TwoPi()) <= fPhiMax)
+    return kTRUE;
+  else
+    return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedPhi(AliAODMCParticle *particle) {
+  // -- Check if AOD particle is accepted
+  // > in phi
+  // > return 0 if not accepted
+  
+  if (particle->Phi() > fPhiMin && particle->Phi() <= fPhiMax)
+    return kTRUE;
+  else if (particle->Phi() < fPhiMin && (particle->Phi() + TMath::TwoPi()) <= fPhiMax)
+    return kTRUE;
+  else
+    return kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -638,6 +645,7 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedBasicCharged(AliVTrack* trac
 Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedRapidity(AliVTrack *track, Double_t &yP) {
   // -- Check if track is accepted
   // > in rapidity
+  // > if no pid : return kTRUE
   // > return 0 if not accepted
 
   if (!fUsePID) {
@@ -728,7 +736,7 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedPID(AliVTrack *track, Double
   if (isAcceptedTPC) {
 
     // Has TOF PID availible
-    if (track->GetStatus() & AliVTrack::kTOFpid) {
+    if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) {
       if (TMath::Abs(pid[1]) < fNSigmaMaxTOF) 
 	isAcceptedTOF = kTRUE;
       else 
@@ -745,6 +753,20 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedPID(AliVTrack *track, Double
   } // if (isAcceptedTPC) {
 
   return (isAcceptedTPC && isAcceptedTOF);
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedPhi(AliVTrack *track) {
+  // -- Check if track is accepted
+  // > in phi
+  // > return 0 if not accepted
+  
+  if (track->Phi() > fPhiMin && track->Phi() <= fPhiMax)
+    return kTRUE;
+  else if (track->Phi() < fPhiMin && (track->Phi() + TMath::TwoPi()) <= fPhiMax)
+    return kTRUE;
+  else
+    return kFALSE;
 }
 
 /*
@@ -773,50 +795,32 @@ void AliAnalysisNetParticleHelper::UpdateEtaCorrectedTPCPid() {
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisNetParticleHelper::GetTrackbyTrackCorrectionFactor(Double_t *aTrack,  Int_t flag) {
-  // -- Get efficiency correctionf of particle dependent on (eta, phi, pt, centrality)
-
-  Int_t idxPart = (aTrack[2] < 0) ? 0 : 1;
-  THnF* corrMatrix = NULL;
-  if (flag == 0)
-    corrMatrix = fCorr0[idxPart][fCentralityBin];
-  else if (flag == 1)
-    corrMatrix = fCorr1[idxPart][fCentralityBin];
-  else 
-    corrMatrix = fCorr2[idxPart][fCentralityBin];
-  
-  Double_t dimBin[3] = {aTrack[3], aTrack[4], aTrack[1]}; // eta, phi, pt    
-
-  Double_t corr = corrMatrix->GetBinContent(corrMatrix->GetBin(dimBin));
-  if (corr == 0.) {
-    AliError(Form("Should not happen : bin content = 0. >> eta: %.2f | phi : %.2f | pt : %.2f | cent %d", 
-		  aTrack[3], aTrack[4], aTrack[1], fCentralityBin));
-    corr = 1.;
-  }
-  
-  return corr;
-}
-
-//________________________________________________________________________
-void AliAnalysisNetParticleHelper::BinLogAxis(const THnBase *h, Int_t axisNumber) {
+void AliAnalysisNetParticleHelper::BinLogAxis(const THnBase *hn, Int_t axisNumber) {
   // -- Method for the correct logarithmic binning of histograms
-  
-  TAxis *axis = h->GetAxis(axisNumber);
-  Int_t  bins = axis->GetNbins();
+  // -- and update fMinPtForTOFRequired using the logarithmic scale
+
+  // -- Make logarithmic binning 
+  TAxis *axis = hn->GetAxis(axisNumber);
+  Int_t  nBins = axis->GetNbins();
 
   Double_t from  = axis->GetXmin();
   Double_t to    = axis->GetXmax();
-  Double_t *newBins = new Double_t[bins + 1];
+  Double_t *newBins = new Double_t[nBins + 1];
    
   newBins[0] = from;
-  Double_t factor = pow(to/from, 1./bins);
+  Double_t factor = TMath::Power(to/from, 1./nBins);
   
-  for (int i = 1; i <= bins; i++)
-   newBins[i] = factor * newBins[i-1];
+  for (int ii = 1; ii <= nBins; ii++)
+   newBins[ii] = factor * newBins[ii-1];
   
-  axis->Set(bins, newBins);
+  axis->Set(nBins, newBins);
 
   delete [] newBins;
+
+  // -- Update MinPtForTOFRequired
+  for (Int_t ii = 1; ii <= nBins; ++ii)
+    if (axis->GetBinLowEdge(ii) <= fMinPtForTOFRequired && axis->GetBinLowEdge(ii) + axis->GetBinWidth(ii) >  fMinPtForTOFRequired)
+      fMinPtForTOFRequired = axis->GetBinLowEdge(ii) + axis->GetBinWidth(ii);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -831,44 +835,37 @@ void AliAnalysisNetParticleHelper::BinLogAxis(const THnBase *h, Int_t axisNumber
 void AliAnalysisNetParticleHelper::InitializeEventStats() {
   // -- Initialize event statistics histograms
 
-  const Char_t* aEventNames[]      = {"All", "IsTriggered", "HasVertex", "Vz<Vz_{Max}", "Centrality [0,90]%"};
-  const Char_t* aCentralityMaxNames[] = {"5", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"};
-
   fHEventStat0 = new TH1F("fHEventStat0","Event cut statistics 0;Event Cuts;Events", fHEventStatMax,-0.5,fHEventStatMax-0.5);
   fHEventStat1 = new TH1F("fHEventStat1","Event cut statistics 1;Event Cuts;Events", fHEventStatMax,-0.5,fHEventStatMax-0.5);
 
   for ( Int_t ii=0; ii < fHEventStatMax-1; ii++ ) {
-    fHEventStat0->GetXaxis()->SetBinLabel(ii+1, aEventNames[ii]);
-    fHEventStat1->GetXaxis()->SetBinLabel(ii+1, aEventNames[ii]);
+    fHEventStat0->GetXaxis()->SetBinLabel(ii+1, AliAnalysisNetParticleHelper::fgkEventNames[ii]);
+    fHEventStat1->GetXaxis()->SetBinLabel(ii+1, AliAnalysisNetParticleHelper::fgkEventNames[ii]);
   }
-  fHEventStat0->GetXaxis()->SetBinLabel(fHEventStatMax, Form("Centrality [0-%s]%%", aCentralityMaxNames[fCentralityBinMax-1]));
-  fHEventStat1->GetXaxis()->SetBinLabel(fHEventStatMax, Form("Centrality [0-%s]%%", aCentralityMaxNames[fCentralityBinMax-1]));
+
+  fHEventStat0->GetXaxis()->SetBinLabel(fHEventStatMax, Form("Centrality [0-%s]%%", AliAnalysisNetParticleHelper::fgkCentralityMaxNames[fCentralityBinMax-1]));
+  fHEventStat1->GetXaxis()->SetBinLabel(fHEventStatMax, Form("Centrality [0-%s]%%", AliAnalysisNetParticleHelper::fgkCentralityMaxNames[fCentralityBinMax-1]));
 }
 
 //________________________________________________________________________
 void AliAnalysisNetParticleHelper::InitializeTriggerStats() {
   // -- Initialize trigger statistics histograms
 
-  const Char_t* aTriggerNames[] = { "kMB", "kCentral", "kSemiCentral", "kEMCEJE", "kEMCEGA" };
-
   fHTriggerStat = new TH1F("fHTriggerStat","Trigger statistics;Trigger;Events", fNTriggers,-0.5,fNTriggers-0.5);
 
   for ( Int_t ii=0; ii < fNTriggers; ii++ )
-    fHTriggerStat->GetXaxis()->SetBinLabel(ii+1, aTriggerNames[ii]);
+    fHTriggerStat->GetXaxis()->SetBinLabel(ii+1, AliAnalysisNetParticleHelper::fgkTriggerNames[ii]);
 }
 
 //________________________________________________________________________
 void AliAnalysisNetParticleHelper::InitializeCentralityStats() {
   // -- Initialize trigger statistics histograms
 
-  const Char_t* aCentralityNames[] = {"0-5%", "5-10%", "10-20%", "20-30%", "30-40%", "40-50%", 
-				      "50-60%", "60-70%", "70-80%", "80-90%", "90-100%"};
- 
   fHCentralityStat = new TH1F("fHCentralityStat","Centrality statistics;Centrality Bins;Events", 
 			      fNCentralityBins,-0.5,fNCentralityBins-0.5);
 
   for ( Int_t ii=0; ii < fNCentralityBins; ii++ )
-    fHCentralityStat->GetXaxis()->SetBinLabel(ii+1, aCentralityNames[ii]);
+    fHCentralityStat->GetXaxis()->SetBinLabel(ii+1, AliAnalysisNetParticleHelper::fgkCentralityNames[ii]);
 }
 
 //________________________________________________________________________
@@ -895,83 +892,6 @@ Int_t AliAnalysisNetParticleHelper::InitializeEtaCorrection(Bool_t isMC) {
   }
 
   return -2;
-}
-
-//________________________________________________________________________
-Int_t AliAnalysisNetParticleHelper::InitializeTrackbyTrackCorrection() {
-  // -- Initialize track by track correction matrices
-
-  if (fModeDistCreation != 1)
-    return 0;
-  
-  TFile* corrFile  = TFile::Open("/hera/alice/jthaeder/train/trunk/jthaeder_trigger/netParticle/eff/effectiveCorrection.root");
-  // JMT In future --> !!!!!!!!!!!!!!!!!!!!!!!
-  // JMT TFile* corrFile  = TFile::Open("${ALICE_ROOT}/PWGCF/EBYE/NetParticle/eff/effectiveCorrection.root");
-
-  if (!corrFile) {
-    AliError("Track-by-track correction file can not be opened!");
-    return -1;
-  }
-
-  // -- Correction - not cross section corrected
-  fCorr0    = new THnF**[2];
-  fCorr0[0] = new THnF*[fCentralityBinMax];
-  fCorr0[1] = new THnF*[fCentralityBinMax];
-
-  for (Int_t idxCent = 0; idxCent < fCentralityBinMax; ++idxCent) {
-    THnF *sp0 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr0_Cent_%d", fPartName[0].Data(), idxCent)));
-    THnF *sp1 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr0_Cent_%d", fPartName[1].Data(), idxCent)));
-
-    if (!sp0 || !sp1) {
-      AliError(Form("Effective correction objects 0 - idxCent %d can not be retrieved!", idxCent));
-      return -1;
-    }
-    
-    fCorr0[0][idxCent] = static_cast<THnF*>(sp0->Clone());
-    fCorr0[1][idxCent] = static_cast<THnF*>(sp1->Clone());
-  }
-
-  // -- From now only for protons
-  if (fParticleSpecies != AliPID::kProton)
-    return 0;
-
-  // -- Correction - cross section corrected
-  fCorr1    = new THnF**[2];
-  fCorr1[0] = new THnF*[fCentralityBinMax];
-  fCorr1[1] = new THnF*[fCentralityBinMax];
-
-  for (Int_t idxCent = 0; idxCent < fCentralityBinMax; ++idxCent) {
-    THnF *sp0 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr1_Cent_%d", fPartName[0].Data(), idxCent)));
-    THnF *sp1 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr1_Cent_%d", fPartName[1].Data(), idxCent)));
-
-    if (!sp0 || !sp1) {
-      AliError(Form("Effective correction objects 1 - idxCent %d can not be retrieved!", idxCent));
-      return -1;
-    }
-
-    fCorr1[0][idxCent] = static_cast<THnF*>(sp0->Clone());
-    fCorr1[1][idxCent] = static_cast<THnF*>(sp1->Clone());
-  }
-
-  // -- Correction - cross section correction only
-  fCorr2    = new THnF**[2];
-  fCorr2[0] = new THnF*[fCentralityBinMax];
-  fCorr2[1] = new THnF*[fCentralityBinMax];
-
-  for (Int_t idxCent = 0; idxCent < fCentralityBinMax; ++idxCent) {
-    THnF *sp0 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr2_Cent_%d", fPartName[0].Data(), idxCent)));
-    THnF *sp1 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr2_Cent_%d", fPartName[1].Data(), idxCent)));
-
-    if (!sp0 || !sp1) {
-      AliError(Form("Effective correction objects 2 - idxCent %d can not be retrieved!", idxCent));
-      return -1;
-    }
-
-    fCorr2[0][idxCent] = static_cast<THnF*>(sp0->Clone());
-    fCorr2[1][idxCent] = static_cast<THnF*>(sp1->Clone());
-  }
-
-  return 0;
 }
 
 /*

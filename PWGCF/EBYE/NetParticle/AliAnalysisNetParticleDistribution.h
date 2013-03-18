@@ -6,8 +6,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
-// Helper Class for for NetParticle Distributions
-// Authors: Jochen Thaeder <jochen@thaeder.de>
+/**
+ * Class for for NetParticle Distributions
+ * -- Create input for distributions
+ * Authors: Jochen Thaeder <jochen@thaeder.de>
+ *          Michael Weber <m.weber@cern.ch>
+ */
 
 #include "THnSparse.h"
 #include "TH1F.h"
@@ -43,7 +47,7 @@ class AliAnalysisNetParticleDistribution : public TNamed {
    */
 
   /** Initialize */
-  Int_t Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Float_t *ptRange, Float_t etaMax, Int_t trackCutBit, Int_t nCorrNp);
+  Int_t Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Float_t *ptRange, Float_t etaMax, Int_t trackCutBit);
 
   /** Add histograms to outlist */
   void CreateHistograms(TList *outList);
@@ -56,9 +60,6 @@ class AliAnalysisNetParticleDistribution : public TNamed {
 
   /** Process NetParticle Distributions */ 
   Int_t Process();
-
-  /** Update MinPtForTOFRequired, using the pT log-scale */
-  void UpdateMinPtForTOFRequired();
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -80,9 +81,6 @@ class AliAnalysisNetParticleDistribution : public TNamed {
 
   /** Process primary particles from the stack and fill histograms */
   Int_t ProcessStackParticles();
-
-  /** Process control particles from the stack and fill histograms */
-  Int_t ProcessStackControlParticles();
   
   /*
    * ---------------------------------------------------------------------------------
@@ -94,7 +92,10 @@ class AliAnalysisNetParticleDistribution : public TNamed {
   void AddHistSet(const Char_t *name, const Char_t *title);
 
   /** Fill set of histograms */
-  void FillHistSet(const Char_t *name, Float_t *np, Int_t controlIdx = -1);
+  void FillHistSet(const Char_t *name, Float_t *np);
+
+  /** Calculate ingredient for faktorial moment */
+  Double_t GetF(Int_t ii, Int_t kk, Float_t *np);
 
   /*
    * ---------------------------------------------------------------------------------
@@ -123,18 +124,15 @@ class AliAnalysisNetParticleDistribution : public TNamed {
   Float_t               fEtaMax;                //  Max, absolut eta
   Float_t              *fPtRange;               //  Array of pt [min,max]
 
+  Int_t                 fOrder;                 //  Max order of higher order distributions
+
   Int_t                 fAODtrackCutBit;        //  Track filter bit for AOD tracks
   // -----------------------------------------------------------------------
-  Float_t              *fNp;                    //  Array of particle/anti-particle counts
-
-  Int_t                 fNCorrNp;               //  N sets of arrays of corrected particle/anti-particle counts
-  Float_t             **fCorrNp;                //  Array of corrected particle/anti-particle counts
+  Int_t                 fNNp;                   //  N sets of arrays of particle/anti-particle counts
+  Float_t             **fNp;                    //  Array of particle/anti-particle counts
 
   Int_t                 fNMCNp;                 //  N sets of arrays of MC particle/anti-particle counts
   Float_t             **fMCNp;                  //  Array of MC particle/anti-particle counts
-
-  Int_t                 fNControlMCNp;          //  N sets of arrays of control MC particle/anti-particle counts
-  Float_t             **fControlMCNp;           //  Array of control MC particle/anti-particle counts
   // -----------------------------------------------------------------------
   THnSparseF           *fHnTrackUnCorr;         //  THnSparseF : uncorrected probe particles
   // -----------------------------------------------------------------------
