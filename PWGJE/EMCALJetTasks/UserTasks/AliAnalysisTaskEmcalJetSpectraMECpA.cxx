@@ -43,6 +43,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA::AliAnalysisTaskEmcalJetSpectraMECpA() :
   // Default constructor.
   for (Int_t i = 0;i<7;++i){
     fHistJetPtvsTrackPt[i]      = 0;
+    fHistJetPtScvsTrackPt[i]      = 0;
     fHistRawJetPtvsTrackPt[i]   = 0;
     fHistTrackPt[i]             = 0;
     fHistEP0[i]                 = 0;
@@ -51,6 +52,8 @@ AliAnalysisTaskEmcalJetSpectraMECpA::AliAnalysisTaskEmcalJetSpectraMECpA() :
     fHistEPAvsC[i]              = 0;
     fHistJetPtvsdEP[i]          = 0;
     fHistJetPtvsdEPBias[i]      = 0;
+    fHistJetPtvsEP[i]          = 0;
+    fHistJetPtvsEPBias[i]      = 0;
     fHistRhovsEP[i]             = 0;
     fHistJetPtEtaPhi[i]         = 0;
 
@@ -67,6 +70,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA::AliAnalysisTaskEmcalJetSpectraMECpA(const c
  { 
    for (Int_t i = 0;i<7;++i){
     fHistJetPtvsTrackPt[i]      = 0;
+    fHistJetPtScvsTrackPt[i]      = 0;
     fHistRawJetPtvsTrackPt[i]   = 0;
     fHistTrackPt[i]             = 0;
     fHistEP0[i]                 = 0;
@@ -75,6 +79,8 @@ AliAnalysisTaskEmcalJetSpectraMECpA::AliAnalysisTaskEmcalJetSpectraMECpA(const c
     fHistEPAvsC[i]              = 0;
     fHistJetPtvsdEP[i]          = 0;
     fHistJetPtvsdEPBias[i]      = 0;
+    fHistJetPtvsEP[i]          = 0;
+    fHistJetPtvsEPBias[i]      = 0;
     fHistRhovsEP[i]             = 0;
     fHistJetPtEtaPhi[i]         = 0;
    }
