@@ -110,6 +110,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
 
   Bool_t fUseMCInfo;        // use MC information
   Bool_t fUseESDfriends;        // use esd friends
+  Bool_t fReducePileUp;        // downscale the information for the pile-up TPC tracks
 
   AliFilteredTreeEventCuts      *fFilteredTreeEventCuts;      // event cuts
   AliFilteredTreeAcceptanceCuts *fFilteredTreeAcceptanceCuts; // acceptance cuts  

@@ -44,6 +44,7 @@
 #include "AliESDInputHandler.h"
 #include "AliESDVertex.h"
 #include "AliTracker.h"
+#include "AliVTrack.h"
 #include "AliGeomManager.h"
 
 #include "AliCentrality.h"
@@ -73,6 +74,7 @@ AliAnalysisTaskFilteredTree::AliAnalysisTaskFilteredTree(const char *name)
   , fPitList(0)
   , fUseMCInfo(kFALSE)
   , fUseESDfriends(kFALSE)
+  , fReducePileUp(kTRUE)
   , fFilteredTreeEventCuts(0)
   , fFilteredTreeAcceptanceCuts(0)
   , fFilteredTreeRecAcceptanceCuts(0)
@@ -493,7 +495,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
   //printf("isEventOK %d, isEventTriggered %d, status %d, vz %f \n",isEventOK, isEventTriggered, vtxESD->GetStatus(), vtxESD->GetZv());
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
-
+  Int_t ntracks = esdEvent->GetNumberOfTracks();
 
   // check event cuts
   if(isEventOK && isEventTriggered)
@@ -573,21 +575,22 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       //Double_t vtxZ=vtxESD->GetZ();
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"highPt"<<
-        "fileName.="<<&fileName<<
+        "fileName.="<<&fileName<<            
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
         "evtNumberInFile="<<evtNumberInFile<<
 	"triggerClass="<<&triggerClass<<      //  trigger
-        "Bz="<<bz<<
+        "Bz="<<bz<<                           //  magnetic field
         "vtxESD.="<<vtxESD<<
+	"ntracksESD="<<ntracks<<              // number of tracks in the ESD
       //  "vtxESDx="<<vtxX<<
       //  "vtxESDy="<<vtxY<<
       //  "vtxESDz="<<vtxZ<<
-	"IRtot="<<ir1<<
+	"IRtot="<<ir1<<                      // interaction record history info
 	"IRint2="<<ir2<<
-        "mult="<<mult<<
+        "mult="<<mult<<                      // multiplicity of tracks pointing to the primary vertex
         "esdTrack.="<<track<<
-        "centralityF="<<centralityF<<
+        "centralityF="<<centralityF<<       
         "\n";
     }
   }
@@ -1122,7 +1125,20 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       if(fUseESDfriends && isOKtrackInnerC2 && isOKouterITSc) dumpToTree = kTRUE;
       if(fUseMCInfo     && isOKtrackInnerC3) dumpToTree = kTRUE;
       TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
-
+      if (fReducePileUp){  
+	//
+	// 18.03 - Reduce pile-up chunks, done outside of the ESDTrackCuts for 2012/2013 data pile-up about 95 % of tracks
+	// Done only in case no MC info 
+	//
+	Float_t dcaTPC[2];
+	track->GetImpactParametersTPC(dcaTPC[0],dcaTPC[1]);
+	Bool_t isRoughPrimary = TMath::Abs(dcaTPC[1])<10;
+	Bool_t hasOuter=(track->IsOn(AliVTrack::kITSin))||(track->IsOn(AliVTrack::kTOFout))||(track->IsOn(AliVTrack::kTRDin));
+	Bool_t keepPileUp=gRandom->Rndm()<0.05;
+	if ( (!hasOuter) && (!isRoughPrimary) && (!keepPileUp)){
+	  dumpToTree=kFALSE;
+	}
+      }
       /////////////////
       //book keeping of created dummy objects (to avoid NULL in trees)
       Bool_t newvtxESD=kFALSE;
@@ -1186,34 +1202,36 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       AliExternalTrackParam* ptrackInnerC2 = (AliExternalTrackParam*)trackInnerC2->Clone();
       AliExternalTrackParam* pouterITSc = (AliExternalTrackParam*)outerITSc->Clone();
       AliExternalTrackParam* ptrackInnerC3 = (AliExternalTrackParam*)trackInnerC3->Clone();
-
+      Int_t ntracks = esdEvent->GetNumberOfTracks();
+      
       if(fTreeSRedirector && dumpToTree) 
       {
 
         (*fTreeSRedirector)<<"highPt"<<
-        "fileName.="<<&fileName<<
-        "runNumber="<<runNumber<<
-        "evtTimeStamp="<<evtTimeStamp<<
-        "evtNumberInFile="<<evtNumberInFile<<
-        "triggerClass="<<&triggerClass<<      //  trigger
-        "Bz="<<bz<<
-        "vtxESD.="<<pvtxESD<<
-        //"vtxESDx="<<vtxX<<
-        //"vtxESDy="<<vtxY<<
-        //"vtxESDz="<<vtxZ<<
-        "IRtot="<<ir1<<
-        "IRint2="<<ir2<<
-        "mult="<<mult<<
-        "esdTrack.="<<ptrack<<
-        "extTPCInnerC.="<<ptpcInnerC<<
-        "extInnerParamC.="<<ptrackInnerC<<
-        "extInnerParam.="<<ptrackInnerC2<<
-        "extOuterITS.="<<pouterITSc<<
-        "extInnerParamRef.="<<ptrackInnerC3<<
-        "chi2TPCInnerC="<<chi2(0,0)<<
-        "chi2InnerC="<<chi2trackC(0,0)<<
-        "chi2OuterITS="<<chi2OuterITS(0,0)<<
-        "centralityF="<<centralityF;
+	  "fileName.="<<&fileName<<                // name of the chunk file (hopefully full)
+	  "runNumber="<<runNumber<<                // runNumber
+	  "evtTimeStamp="<<evtTimeStamp<<          // time stamp of event (in seconds)
+	  "evtNumberInFile="<<evtNumberInFile<<    // event number
+	  "triggerClass="<<&triggerClass<<         // trigger class as a string
+	  "Bz="<<bz<<                              // solenoid magnetic field in the z direction (in kGaus)
+	  "vtxESD.="<<pvtxESD<<                    // vertexer ESD tracks (can be biased by TPC pileup tracks)
+	  //"vtxESDx="<<vtxX<<
+	  //"vtxESDy="<<vtxY<<
+	  //"vtxESDz="<<vtxZ<<
+	  "IRtot="<<ir1<<                         // interaction record (trigger) counters - coutner 1
+	  "IRint2="<<ir2<<                        // interaction record (trigger) coutners - counter 2
+	  "mult="<<mult<<                         // multiplicity of tracks pointing to the primary vertex
+	  "ntracks="<<ntracks<<                   // number of the esd tracks (to take into account the pileup in the TPC)
+	  "esdTrack.="<<ptrack<<                  // esdTrack as used in the physical analysis
+	  "extTPCInnerC.="<<ptpcInnerC<<          // ??? 
+	  "extInnerParamC.="<<ptrackInnerC<<      // ???
+	  "extInnerParam.="<<ptrackInnerC2<<      // ???
+	  "extOuterITS.="<<pouterITSc<<           // ???
+	  "extInnerParamRef.="<<ptrackInnerC3<<   // ???
+	  "chi2TPCInnerC="<<chi2(0,0)<<           // chi2   of tracks ???
+	  "chi2InnerC="<<chi2trackC(0,0)<<        // chi2s  of tracks TPCinner to the combined
+	  "chi2OuterITS="<<chi2OuterITS(0,0)<<    // chi2s  of tracks TPC at inner wall to the ITSout
+	  "centralityF="<<centralityF;
         if (fUseMCInfo)
         {
           (*fTreeSRedirector)<<"highPt"<<
@@ -1555,7 +1573,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsHighDeDxParticle(AliESDtrack * track) {
 void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const /*esdFriend*/)
 {
   //
-  // Select real events with V0 (K0s and Lambda) high-pT candidates
+  // Select real events with V0 (K0s and Lambda and Gamma) high-pT candidates
   //
   if(!esdEvent) {
     AliDebug(AliLog::kError, "esdEvent not available");
@@ -1942,7 +1960,13 @@ Bool_t AliAnalysisTaskFilteredTree::IsV0Downscaled(AliESDv0 *const v0)
   Double_t scalempt= TMath::Min(maxPt,10.);
   Double_t downscaleF = gRandom->Rndm();
   downscaleF *= fLowPtV0DownscaligF;
-  
+  //
+  // Special treatment of the gamma conversion pt spectra is softer - 
+  Double_t mass00=  v0->GetEffMass(0,0);
+  const Double_t cutMass=0.2;
+  if (TMath::Abs(mass00-0)<cutMass){
+    downscaleF/=10.;  // 10 times smaller downscaling for the gamma concersion candidate
+  }
   //printf("V0 TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
   if (TMath::Exp(2*scalempt)<downscaleF) return kTRUE;
   return kFALSE;
