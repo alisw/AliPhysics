@@ -97,10 +97,10 @@ private:
    //Diagnostics
    THnSparse *fHJetDensity;       //density of jet with A>0.07  //fk
    THnSparse *fHJetDensityA4;     //density of jets with A>0.4 //fk
-   TH1D *fhJetPhi;     //Azimuthal distribution of jets
-   TH1D *fhTriggerPhi; //Azimuthal distribution of trigger hadron
-   TH1D *fhJetEta;     //Pseudorapidity distribution of jets
-   TH1D *fhTriggerEta; //Pseudorapidity distribution of trigger hadron
+   TH2D *fhJetPhi;     //Azimuthal distribution of jets
+   TH2D *fhTriggerPhi; //Azimuthal distribution of trigger hadron
+   TH2D *fhJetEta;     //Pseudorapidity distribution of jets
+   TH2D *fhTriggerEta; //Pseudorapidity distribution of trigger hadron
    TH1D *fhVertexZ;    //z vertex distribution 
    TH1D *fhVertexZAccept;    //z vertex distribution after cut
    TH1D *fhContribVtx;    //contributors to vertex 
@@ -110,9 +110,15 @@ private:
    TH1D *fhCentrality;  //Deltaphi between trigger and jet 
    TH1D *fhCentralityAccept;  //Deltaphi between trigger and jet after cut
 
+   THnSparse *fHJetPtRaw;      //bg unsubtr. vs bg subtr. pT spectrum of jets vs jet area
+   THnSparse *fHLeadingJetPtRaw; //bg unsubtr. vs bg. subtr. leading jet pT vs area 
+   THnSparse *fHDphiVsJetPtAll;   //Dphitrigger-jet  versus jet pt for all jets given pTtrigg  
+   THnSparse *fHRhoFastJetVsRhoCone; //fast jet rho vs perp cone rho given pT jet
+
    const Double_t fkAcceptance; //eta times phi  Alice coverage  
+   Double_t fConeArea;      //cone area pi*R^2
   
-   ClassDef(AliAnalysisTaskJetCorePP, 1);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 2);  //has to end with number larger than 0
 };
 
 #endif
