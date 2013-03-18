@@ -32,6 +32,7 @@ public:
    virtual ~AliAnalysisTaskV0ChCorrelations();
 
    // Setting the global variables
+   void SetAnalysisMC(Bool_t AnalysisMC = kTRUE) {fAnalysisMC = AnalysisMC;}
    void SetDcaDToPV(Float_t DcaDToPV = 0.5) {fDcaDToPV = DcaDToPV;}
    void SetDcaV0D(Float_t DcaV0D = 0.1) {fDcaV0D = DcaV0D;}
 
@@ -52,6 +53,7 @@ private:
    AliAnalysisTaskV0ChCorrelations(const AliAnalysisTaskV0ChCorrelations&);            //not implemented
    AliAnalysisTaskV0ChCorrelations& operator=(const AliAnalysisTaskV0ChCorrelations&); //not implemented 
 
+   Bool_t 		   fAnalysisMC; // enable MC study
    Bool_t          fFillMixed;  // enable event mixing (default: ON)
    Int_t           fMixingTracks;      // size of track buffer for event mixing
    AliEventPoolManager*          fPoolMgr;         //! event pool manager
@@ -74,7 +76,11 @@ private:
    THnSparseF	   *fHistTrigSib;   // pt of trigger particles, same event
    THnSparseF	   *fHistTrigMix;   // pt of trigger particles involved in mixing
 
+   TH2D	           *fHistMCPtCent;   // pt vs. centrality of MC particles
+   TH2D	           *fHistRCPtCent;   // pt vs. centrality of reconstructed tracks
+   
    TH1D			   *fHistTemp;   // temporary histogram for debugging
+   TH1D			   *fHistTemp2;   // temporary histogram for debugging
 
    ClassDef(AliAnalysisTaskV0ChCorrelations, 1); // class for V0Ch correlation analysis
 };
