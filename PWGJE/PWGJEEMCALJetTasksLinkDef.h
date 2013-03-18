@@ -27,19 +27,20 @@
 #pragma link C++ class AliRhoParameter+;
 
 // user tasks
+#pragma link C++ class AliAnalysisTaskCLQA+;
+#pragma link C++ class AliAnalysisTaskChargedJetsPA;
 #pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
+#pragma link C++ class AliAnalysisTaskEmcalJetHadCorQA+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSample+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectraMECpA;
+#pragma link C++ class AliAnalysisTaskFullpAJets+;
+#pragma link C++ class AliAnalysisTaskFullppJet;
+#pragma link C++ class AliAnalysisTaskQualityAssurancePA;
+#pragma link C++ class AliAnalysisTaskRhoVnModulation+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;
-#pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
-#pragma link C++ class AliAnalysisTaskFullppJet;
-#pragma link C++ class AliAnalysisTaskChargedJetsPA;
-#pragma link C++ class AliAnalysisTaskEmcalJetSample+;
-#pragma link C++ class AliAnalysisTaskFullpAJets+;
-#pragma link C++ class AliAnalysisTaskEmcalJetSpectraMECpA;
-#pragma link C++ class AliAnalysisTaskQualityAssurancePA;
 #pragma link C++ class AliNtupCumInfo+;
-#pragma link C++ class AliAnalysisTaskRhoVnModulation+;
 
 #endif

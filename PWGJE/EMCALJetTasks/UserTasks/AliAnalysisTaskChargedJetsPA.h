@@ -8,6 +8,7 @@ class TH2F;
 class TList;
 class TClonesArray;
 class TString;
+class TRandom3;
 class AliEmcalJet;
 class AliRhoParameter;
 class AliVParticle;
