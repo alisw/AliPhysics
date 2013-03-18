@@ -47,7 +47,7 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isAOD = kFALSE){
   
   if(kTPC_Only){
     // for the moment (09.02.2013) use the same as TOF-TPC. Refine later on
-    RegisterTaskPID2(MCthere,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth);
+    RegisterTaskPID2(MCthere, isAOD, kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth);
   }
   
   //------------------------------//
@@ -150,7 +150,7 @@ AliAnalysisTask *RegisterTask(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, Int_
   task->SelectCollisionCandidates(AliVEvent::kINT7);
 
   TString containerName = mgr->GetCommonFileName();
-  containerName += ":HFEpPbcent";
+  containerName += ":HFEtask";
   containerName += appendix.Data();
   printf("container name: %s\n", containerName.Data());
  
@@ -199,12 +199,12 @@ AliAnalysisTask *RegisterTaskPID2(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, 
   Int_t ietacorr = 0;
   if(withetacorrection) ietacorr = 1;
   
-  TString appendix(TString::Format("TPCc%dTPCp%dITS%dDCAr%dz%dTPCs%dTOFs%dm%ipa%d",tpcCls,
+  TString appendix(TString::Format("mbTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%dTOFs%dm%ipa%d",tpcCls,
 				   tpcClsPID,itsCls,idcaxy,idcaz,itpcs,itofs,tofm,ipixelany));
   printf("Add macro appendix %s\n", appendix.Data());
 
   TString containerName = mgr->GetCommonFileName();
-  containerName += ":HFEpPbmb";
+  containerName += ":HFEtask";
   containerName += appendix.Data();
   printf("container name: %s\n", containerName.Data());
 
