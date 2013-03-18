@@ -2005,9 +2005,9 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
     Double_t Lambda11 = (fMu4-1)*sigma*sigma/(4*normError);
     Double_t Lambda22 = (9-6*fMu4+fMu3*fMu3*(35+9*fMu4)/4-3*fMu3*fMu5+fMu6)/normError;
     Double_t Lambda33 = (-fMu4*fMu4+4*fMu4*fMu4*fMu4+16*fMu3*fMu3*(1+fMu4)-8*fMu3*fMu5-4*fMu4*fMu6+fMu8)/normError;
-    Double_t Lambda12 = -(fMu3*(5+3*fMu4)-2*fMu5)*sigma/(4*normError);
-    Double_t Lambda13 = ((-4*fMu3*fMu3+fMu4-2*fMu4*fMu4+fMu6)*sigma)/(2*normError);
-    Double_t Lambda23 = (6*fMu3*fMu3*fMu3-(3+2*fMu4)*fMu5+3*fMu3*(8+fMu4+2*fMu4*fMu4-fMu6)/2+fMu7)/normError;
+    //Double_t Lambda12 = -(fMu3*(5+3*fMu4)-2*fMu5)*sigma/(4*normError);
+    //Double_t Lambda13 = ((-4*fMu3*fMu3+fMu4-2*fMu4*fMu4+fMu6)*sigma)/(2*normError);
+    //Double_t Lambda23 = (6*fMu3*fMu3*fMu3-(3+2*fMu4)*fMu5+3*fMu3*(8+fMu4+2*fMu4*fMu4-fMu6)/2+fMu7)/normError;
 
     // cout<<Lambda11<<" "<<Lambda22<<" "<<Lambda33<<" "<<endl;
     // cout<<Lambda12<<" "<<Lambda13<<" "<<Lambda23<<" "<<endl;
