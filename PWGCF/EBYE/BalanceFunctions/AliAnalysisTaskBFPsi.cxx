@@ -857,8 +857,9 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     }//ESD
     else if(gAnalysisLevel == "MC"){
       Double_t gImpactParameter = 0.;
-      if(dynamic_cast<AliMCEvent*>(event)){
-	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());      
+      AliMCEvent* MCEvent = dynamic_cast<AliMCEvent*>(event);
+      if(MCEvent){
+	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(MCEvent->GenEventHeader());      
 	if(headerH){
 	  gImpactParameter = headerH->ImpactParameter();
 	  gCentrality      = gImpactParameter;
@@ -870,8 +871,9 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     }
   }//End if "Centrality"
   if(fEventClass=="Multiplicity"&&gAnalysisLevel == "ESD"){
-    if(dynamic_cast<AliESDEvent*>(event)){
-      fMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(dynamic_cast<AliESDEvent*>(event), AliESDtrackCuts::kTrackletsITSTPC,0.5);
+    AliESDEvent* ESDEvent = dynamic_cast<AliESDEvent*>(event);
+    if(ESDEvent){
+      fMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(ESDEvent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
     }//AliESDevent cast
   }
   if(fEventClass=="Multiplicity"&&gAnalysisLevel != "ESD"){
