@@ -85,6 +85,9 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   void SetV0VertexerMaxRadius      ( Double_t lParameter ){ fV0Sels[6] = lParameter; }
 //---------------------------------------------------------------------------------------
   
+  void SetExtraDCAHeavyToPrimVertex ( Float_t lExtra ){ fExtraDCAHeavyToPrimVertex = lExtra; }
+  void SetExtraDCALightToPrimVertex ( Float_t lExtra ){ fExtraDCALightToPrimVertex = lExtra; }
+  
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
 				// your data member object is created on the worker nodes and streaming is not needed.
@@ -113,6 +116,10 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Bool_t fkSkipTrigger; //To be used with ::SetCollisionCandidates
   
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
+
+  //Extra selections
+  Float_t fExtraDCAHeavyToPrimVertex;
+  Float_t fExtraDCALightToPrimVertex;
 
   //Variables for Tree
 	Float_t fTreeVariableChi2V0;         //!
@@ -167,21 +174,23 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Float_t fTreeVariablePVz; //!
   
   //Decay Length issue debugging: ULong_t with track status
-  ULong64_t fTreeVariableNegTrackStatus;
-  ULong64_t fTreeVariablePosTrackStatus;
+  ULong64_t fTreeVariableNegTrackStatus; //!
+  ULong64_t fTreeVariablePosTrackStatus; //!
   
   //Special dEdx debug/plotting
-  Float_t fTreeVariableNegTPCSignal;
-  Float_t fTreeVariablePosTPCSignal;
-  Float_t fTreeVariableNegInnerP;
-  Float_t fTreeVariablePosInnerP;
+  Float_t fTreeVariableNegTPCSignal; //!
+  Float_t fTreeVariablePosTPCSignal; //!
+  Float_t fTreeVariableNegInnerP; //!
+  Float_t fTreeVariablePosInnerP; //!
   
-  Float_t fTreeVariableNegPx;
-  Float_t fTreeVariableNegPy;
-  Float_t fTreeVariableNegPz;
-  Float_t fTreeVariablePosPx;
-  Float_t fTreeVariablePosPy;
-  Float_t fTreeVariablePosPz;
+  Float_t fTreeVariableNegPx; //!
+  Float_t fTreeVariableNegPy; //!
+  Float_t fTreeVariableNegPz; //!
+  Float_t fTreeVariablePosPx; //!
+  Float_t fTreeVariablePosPy; //!
+  Float_t fTreeVariablePosPz; //!
+  
+
   
 //Note: TDistOverTotMom needs a mass hypothesis to be converted to proper decaylength.
 
@@ -243,7 +252,10 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
 	TH1F    *fHistPVyAnalysis;     					        //! multiplicity distribution
 	TH1F    *fHistPVzAnalysis;     					        //! multiplicity distribution
 	TH1F    *fHistSwappedV0Counter;     					        //! Swapped V0 Counter
-
+  
+  TH2F    *f2dHistdEdxPos; //!
+  TH2F    *f2dHistdEdxNeg; //!
+  
    AliAnalysisTaskExtractV0(const AliAnalysisTaskExtractV0&);            // not implemented
    AliAnalysisTaskExtractV0& operator=(const AliAnalysisTaskExtractV0&); // not implemented
   

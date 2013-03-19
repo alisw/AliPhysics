@@ -104,6 +104,8 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
   fkRejectPileup  ( kTRUE ),
   fkSpecialExecution( kFALSE ),
   fkSkipTrigger   ( kFALSE ),
+  fExtraDCAHeavyToPrimVertex(0),
+  fExtraDCALightToPrimVertex(0),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -229,7 +231,9 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
    fHistPVxAnalysis(0),
    fHistPVyAnalysis(0),
    fHistPVzAnalysis(0),
-   fHistSwappedV0Counter(0)
+   fHistSwappedV0Counter(0),
+  f2dHistdEdxPos(0),
+  f2dHistdEdxNeg(0)
 {
   // Dummy Constructor
   for(Int_t iV0selIdx   = 0; iV0selIdx   < 7; iV0selIdx++   ) { fV0Sels          [iV0selIdx   ] = -1.; }
@@ -249,6 +253,8 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
   fkRejectPileup  ( kTRUE ),
   fkSpecialExecution( kFALSE ),
   fkSkipTrigger   ( kFALSE ),
+  fExtraDCAHeavyToPrimVertex(0),
+  fExtraDCALightToPrimVertex(0),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -374,7 +380,9 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
    fHistPVxAnalysis(0),
    fHistPVyAnalysis(0),
    fHistPVzAnalysis(0),
-   fHistSwappedV0Counter(0)
+   fHistSwappedV0Counter(0),
+  f2dHistdEdxPos(0),
+  f2dHistdEdxNeg(0)
 {
   // Constructor
   // Set Loose cuts or not here...
@@ -803,6 +811,19 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
          2, 0, 2); 		
       fListHistV0->Add(fHistSwappedV0Counter);
    }
+  
+  //Create dE/dx histograms
+  if(! f2dHistdEdxPos ){
+    f2dHistdEdxPos = new TH2F("f2dHistdEdxPos","Pos. Daughter dE/dx;p (GeV/c);TPC Signal",
+                              200,0,10,500,0,1000);
+    if (fkSpecialExecution) fListHistV0->Add(f2dHistdEdxPos);
+  }
+  if(! f2dHistdEdxNeg ){
+    f2dHistdEdxNeg = new TH2F("f2dHistdEdxNeg","Neg. Daughter dE/dx;p (GeV/c);TPC Signal",
+                              200,0,10,500,0,1000);
+    if (fkSpecialExecution) fListHistV0->Add(f2dHistdEdxNeg);
+  }
+  
    //Regular output: Histograms
    PostData(1, fListHistV0);
    //TTree Object: Saved to base directory. Should cache to disk while saving. 
@@ -1151,6 +1172,9 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
        const AliExternalTrackParam *innerneg=nTrack->GetInnerParam();
        if(innerpos) { fTreeVariablePosInnerP = innerpos->GetP(); }
        if(innerneg) { fTreeVariableNegInnerP = innerneg->GetP(); }
+       
+       f2dHistdEdxPos->Fill( fTreeVariablePosInnerP , fTreeVariablePosdEdxSig );
+       f2dHistdEdxNeg->Fill( fTreeVariableNegInnerP , fTreeVariableNegdEdxSig );
      }
 
       // Filter like-sign V0 (next: add counter and distribution)
@@ -1293,8 +1317,10 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
      
      if(lOnFlyStatus == 0 && fkSpecialExecution){
        if(
-          (fTreeVariableNSigmasPosProton > 6 && TMath::Abs(fTreeVariableNSigmasNegPion)< 6) ||
-          (fTreeVariableNSigmasNegProton > 6 && TMath::Abs(fTreeVariableNSigmasPosPion)< 6) ){
+          (fTreeVariableNSigmasPosProton > 6 && TMath::Abs(fTreeVariableNSigmasNegPion)< 6
+           && fTreeVariableDcaPosToPrimVertex > fExtraDCAHeavyToPrimVertex && fTreeVariableDcaNegToPrimVertex > fExtraDCALightToPrimVertex ) ||
+          (fTreeVariableNSigmasNegProton > 6 && TMath::Abs(fTreeVariableNSigmasPosPion)< 6
+           && fTreeVariableDcaPosToPrimVertex > fExtraDCALightToPrimVertex && fTreeVariableDcaNegToPrimVertex > fExtraDCAHeavyToPrimVertex ) ){
          fTree->Fill();
        }
      }
