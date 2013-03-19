@@ -29,6 +29,7 @@
 #include "AliPHOSGeoUtils.h"
 #include "AliPHOSGeometry.h"
 #include "TFile.h"
+#include "TVector3.h"
 using namespace std;
 
 ClassImp(AliAnalysisEtMonteCarlo);
@@ -697,22 +698,33 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 // 	if(primCode == fgGammaCode) 
 // 	{
 	  
+	Float_t pos[3];
+        caloCluster->GetPosition(pos);
+        TVector3 cp(pos);
 	for(UInt_t i = 0; i < caloCluster->GetNLabels(); i++)
 	{
 	  Int_t pIdx = caloCluster->GetLabelAt(i);
-	  //TParticle *p = stack->Particle(pIdx);
-	  
+          
+                    
+	  TParticle *p = stack->Particle(pIdx);
 	  if(!stack->IsPhysicalPrimary(pIdx))
 	  {
-// 	    PrintFamilyTree(pIdx, stack);
+              
+            TVector3 decayVtx(p->Vx(), p->Vy(), p->Vz());
+             if((decayVtx-cp).Mag() < 30.0)
+              {
+                continue;
+              }
 	    pIdx = GetPrimMother(pIdx, stack);
 	  }
- 	  if(fSelector->PassDistanceToBadChannelCut(*caloCluster))//&&fSelector->CutGeometricalAcceptance(*(stack->Particle(primIdx))))
-	  {
-//	    std::cout << "Gamma primary: " << primIdx << std::endl;
-// 	    foundGammas.push_back(primIdx); 
-	    foundGammas.push_back(pIdx); 
-	  }
+	  if((stack->Particle(pIdx)->GetPdgCode() == fgGammaCode))
+          {
+               if(fSelector->PassDistanceToBadChannelCut(*caloCluster))//&&fSelector->CutGeometricalAcceptance(*(stack->Particle(primIdx))))
+                {
+                 // std::cout << "Gamma primary: " << primIdx << std::endl;
+                  foundGammas.push_back(pIdx); 
+                }
+          }
 	}
 	fCutFlow->Fill(cf++);
         if(!fSelector->PassDistanceToBadChannelCut(*caloCluster)) continue;
@@ -722,11 +734,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
 	
         fCutFlow->Fill(cf++);
-        Float_t pos[3];
-	//PrintFamilyTree(
-        caloCluster->GetPosition(pos);
-        TVector3 cp(pos);
-
+     
         TParticle *primPart = stack->Particle(primIdx);
         fPrimaryCode = primPart->GetPdgCode();
         fPrimaryCharge = (Int_t) primPart->GetPDG()->Charge();
