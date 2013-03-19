@@ -10,6 +10,8 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
 			      Bool_t kShowShuffled = kFALSE, 
 			      Bool_t kShowMixed = kTRUE, 
 			      Double_t psiMin = -0.5, Double_t psiMax = 0.5,
+			      Double_t vertexZMin = -10.,
+			      Double_t vertexZMax = 10.,
 			      Double_t ptTriggerMin = -1.,
 			      Double_t ptTriggerMax = -1.,
 			      Double_t ptAssociatedMin = -1.,
@@ -44,7 +46,7 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
   }
   else 
     draw(listBF,listBFShuffled,listBFMixed,gCentrality,gCentralityEstimator,
-	 psiMin,psiMax,
+	 psiMin,psiMax,vertexZMin,vertexZMax,
 	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,
 	 k2pMethod,eventClass);  
 }
@@ -206,6 +208,8 @@ TList *GetListOfObjects(const char* filename,
 void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 	  Int_t gCentrality, const char* gCentralityEstimator,
 	  Double_t psiMin, Double_t psiMax,
+	  Double_t vertexZMin,
+	  Double_t vertexZMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
 	  Bool_t k2pMethod = kFALSE, TString eventClass) {  
@@ -381,13 +385,13 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 
   if(k2pMethod) 
     if(bMixed)
-      gHistBalanceFunction = b->GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+      gHistBalanceFunction = b->GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     else{
       cerr<<"NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
       return;
     }
   else
-    gHistBalanceFunction = b->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistBalanceFunction = b->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistBalanceFunction->SetTitle(histoTitle.Data());
   gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.3);
   gHistBalanceFunction->SetName("gHistBalanceFunction");
@@ -396,13 +400,13 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     
     if(k2pMethod) 
       if(bMixed)
-	gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+	gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
       else{
 	cerr<<"NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
 	return;
       }
     else
-      gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+      gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistBalanceFunctionShuffled->SetTitle(histoTitle.Data());
     gHistBalanceFunctionShuffled->GetYaxis()->SetTitleOffset(1.3);
     gHistBalanceFunctionShuffled->SetName("gHistBalanceFunctionShuffled");
@@ -411,13 +415,13 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   if(listBFMixed) {
     if(k2pMethod) 
       if(bMixed)
-	gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+	gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
       else{
 	cerr<<"NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
 	return;
       }
     else
-      gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+      gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistBalanceFunctionMixed->SetTitle(histoTitle.Data());
     gHistBalanceFunctionMixed->GetYaxis()->SetTitleOffset(1.3);
     gHistBalanceFunctionMixed->SetName("gHistBalanceFunctionMixed");

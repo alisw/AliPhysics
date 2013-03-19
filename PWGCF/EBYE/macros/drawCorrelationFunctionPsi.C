@@ -495,17 +495,8 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   //cPN[0]->SaveAs(pngName.Data());
   
   if(listBFShuffled) {
-    histoTitle = "(+-) shuffled | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
+
+    histoTitle.ReplaceAll("(+-)","(+-) shuffled"); 
     
     gHistPN[1] = bShuffled->GetCorrelationFunctionPN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
@@ -531,17 +522,9 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   }
 
   if(listBFMixed) {
-    histoTitle = "(+-) mixed | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
+
+    if(histoTitle.Contains("shuffled")) histoTitle.ReplaceAll("(+-) shuffled","(+-) mixed"); 
+    else                                histoTitle.ReplaceAll("(+-)","(+-) mixed"); 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistPN[2] = bMixed->GetCorrelationFunctionPN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -575,8 +558,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cPN[2]->SaveAs(pngName.Data());
 
     //Correlation function (+-)
-    gHistPN[3] = dynamic_cast<TH2D *>(gHistPN[0]->Clone());
-    gHistPN[3]->Divide(gHistPN[2]);
+    gHistPN[3] = b->GetCorrelationFunction("PN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     gHistPN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistPN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -599,17 +581,9 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   }
   // if no mixing then divide by convoluted histograms
   else if(listQA){
-    histoTitle = "(+-) mixed | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
+
+    if(histoTitle.Contains("shuffled")) histoTitle.ReplaceAll("(+-) shuffled","(+-) convoluted"); 
+    else                                histoTitle.ReplaceAll("(+-)","(+-) convoluted"); 
     
     if(rebinEta > 1 || rebinPhi > 1){
       gHistPN[2]->Rebin2D(rebinEta,rebinPhi);
@@ -718,17 +692,8 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   //cNP[0]->SaveAs(pngName.Data());
 
   if(listBFShuffled) {
-    histoTitle = "(-+) shuffled | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
+
+    histoTitle.ReplaceAll("(-+)","(-+) shuffled"); 
     
     gHistNP[1] = bShuffled->GetCorrelationFunctionNP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
@@ -754,18 +719,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   }
 
   if(listBFMixed) {
-    histoTitle = "(-+) mixed | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
-
+    
+    if(histoTitle.Contains("shuffled")) histoTitle.ReplaceAll("(-+) shuffled","(-+) mixed"); 
+    else                                histoTitle.ReplaceAll("(-+)","(-+) mixed"); 
+    
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistNP[2] = bMixed->GetCorrelationFunctionNP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
@@ -797,8 +754,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cNP[2]->SaveAs(pngName.Data());
 
     //Correlation function (-+)
-    gHistNP[3] = dynamic_cast<TH2D *>(gHistNP[0]->Clone());
-    gHistNP[3]->Divide(gHistNP[2]);
+    gHistNP[3] = b->GetCorrelationFunction("NP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     gHistNP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistNP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -821,17 +777,9 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   }
   // if no mixing then divide by convoluted histograms
   else if(listQA){
-    histoTitle = "(-+) mixed | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
+
+    if(histoTitle.Contains("shuffled")) histoTitle.ReplaceAll("(-+) shuffled","(-+) convoluted"); 
+    else                                histoTitle.ReplaceAll("(-+)","(-+) convoluted"); 
 
     if(rebinEta > 1 || rebinPhi > 1){
       gHistNP[2]->Rebin2D(rebinEta,rebinPhi);
@@ -941,17 +889,8 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   //cPP[0]->SaveAs(pngName.Data());
   
   if(listBFShuffled) {
-    histoTitle = "(++) shuffled | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
+
+    histoTitle.ReplaceAll("(++)","(++) shuffled"); 
     
     gHistPP[1] = bShuffled->GetCorrelationFunctionPP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
@@ -977,17 +916,9 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   }
 
   if(listBFMixed) {
-    histoTitle = "(++) mixed | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
+ 
+    if(histoTitle.Contains("shuffled")) histoTitle.ReplaceAll("(++) shuffled","(++) mixed"); 
+    else                                histoTitle.ReplaceAll("(++)","(++) mixed"); 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistPP[2] = bMixed->GetCorrelationFunctionPP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -1020,8 +951,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cPP[2]->SaveAs(pngName.Data());
 
     //Correlation function (++)
-    gHistPP[3] = dynamic_cast<TH2D *>(gHistPP[0]->Clone());
-    gHistPP[3]->Divide(gHistPP[2]);
+    gHistPP[3] = b->GetCorrelationFunction("PP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     gHistPP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistPP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -1044,17 +974,9 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   }
   // if no mixing then divide by convoluted histograms
   else if(listQA){
-        histoTitle = "(++) mixed | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
+
+    if(histoTitle.Contains("shuffled")) histoTitle.ReplaceAll("(++) shuffled","(++) convoluted"); 
+    else                                histoTitle.ReplaceAll("(++)","(++) convoluted"); 
     
     if(rebinEta > 1 || rebinPhi > 1){
       gHistPP[2]->Rebin2D(rebinEta,rebinPhi);
@@ -1162,17 +1084,8 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   //cNN[0]->SaveAs(pngName.Data());
 
   if(listBFShuffled) {
-    histoTitle = "(--) shuffled | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
+
+    histoTitle.ReplaceAll("(--)","(--) shuffled"); 
     
     gHistNN[1] = bShuffled->GetCorrelationFunctionNN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
@@ -1198,17 +1111,9 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   }
 
   if(listBFMixed) {
-    histoTitle = "(--) mixed | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
+ 
+    if(histoTitle.Contains("shuffled")) histoTitle.ReplaceAll("(--) shuffled","(--) mixed"); 
+    else                                histoTitle.ReplaceAll("(--)","(--) mixed"); 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistNN[2] = bMixed->GetCorrelationFunctionNN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -1241,8 +1146,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cNN[2]->SaveAs(pngName.Data());
 
     //Correlation function (--)
-    gHistNN[3] = dynamic_cast<TH2D *>(gHistNN[0]->Clone());
-    gHistNN[3]->Divide(gHistNN[2]);
+    gHistNN[3] = b->GetCorrelationFunction("NN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     gHistNN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistNN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -1265,17 +1169,9 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   }
   // if no mixing then divide by convoluted histograms
   else if(listQA){
-        histoTitle = "(--) mixed | Centrality: "; 
-    histoTitle += centralityArray[gCentrality-1]; 
-    histoTitle += "%";
-    if((psiMin == -0.5)&&(psiMax == 0.5))
-      histoTitle += " (-7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o})"; 
-    else if((psiMin == 0.5)&&(psiMax == 1.5))
-      histoTitle += " (37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o})"; 
-    else if((psiMin == 1.5)&&(psiMax == 2.5))
-      histoTitle += " (82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o})"; 
-    else 
-      histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
+
+    if(histoTitle.Contains("shuffled")) histoTitle.ReplaceAll("(--) shuffled","(--) convoluted"); 
+    else                                histoTitle.ReplaceAll("(--)","(--) convoluted"); 
     
     if(rebinEta > 1 || rebinPhi > 1){
       gHistNN[2]->Rebin2D(rebinEta,rebinPhi);
