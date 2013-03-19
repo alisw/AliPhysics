@@ -100,6 +100,8 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
 
   TH1D *hM2CutDCAxy[18][nbin];      //! M^{2} IN DCA cut (in 2 sigma TPC cut)
 
+  TH1D *hDCAz[18][nbin];            //! DCAz distribution in 2 sigma TPC cut for each particle species
+
   TH1D *hM2CutGroundDCAxy[18][nbin];//! M^{2} OUT DCA cut (in 2 sigma TPC cut)
 
   TH2F *fM2vsP_NoTpcCut_DCAxyCut[3];//! M^{2} vs. P with a DCAxy cut  
