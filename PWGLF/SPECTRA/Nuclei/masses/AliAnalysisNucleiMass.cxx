@@ -269,6 +269,9 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
   Char_t nameDCAxy[18][nbin][120];
   Char_t titleDCAxy[18][nbin][120];
 
+  Char_t nameDCAz[18][nbin][120];
+  Char_t titleDCAz[18][nbin][120];
+
   Char_t nameM2CutDCAxy[18][nbin][120];
   Char_t titleM2CutDCAxy[18][nbin][120];
  
@@ -281,6 +284,9 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       snprintf(nameDCAxy[iS][j],120,"hDCAxy_%s_%s",name[iS],par_name_nbin[j]);
       snprintf(titleDCAxy[iS][j],120,"hDCAxy_%s_%s;DCA_{xy} (cm)",name[iS],par_name_nbin[j]);
     
+      snprintf(nameDCAz[iS][j],120,"hDCAz_%s_%s",name[iS],par_name_nbin[j]);
+      snprintf(titleDCAz[iS][j],120,"hDCAz_%s_%s;DCA_{xy} (cm)",name[iS],par_name_nbin[j]);
+
       snprintf(nameM2CutDCAxy[iS][j],120,"hM2_CutDCAxy_%s_%s",name[iS],par_name_nbin[j]);
       snprintf(titleM2CutDCAxy[iS][j],120,"hM2_CutDCAxy_%s_%s;M^{2}_{TOF} (GeV^{2}/c^{4})",name[iS],par_name_nbin[j]);
       
@@ -291,10 +297,10 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
  
   for(Int_t iS=0;iS<18;iS++) {
     for(Int_t j=0;j<nbin;j++) {
-      hDCAxy[iS][j] = new TH1D(nameDCAxy[iS][j],titleDCAxy[iS][j],1000,-2.5,2.5);//125 bins
+      hDCAxy[iS][j] = new TH1D(nameDCAxy[iS][j],titleDCAxy[iS][j],1200,-3.0,3.0);//125 bins
       hDCAxy[iS][j]->GetXaxis()->CenterTitle();
-      //hM2CutDCAxy[iS][j] = new TH1D(nameM2CutDCAxy[iS][j],titleM2CutDCAxy[iS][j],4000,0,10);
-      //hM2CutGroundDCAxy[iS][j] = new TH1D(nameM2CutGroundDCAxy[iS][j],titleM2CutGroundDCAxy[iS][j],4000,0,10);
+      hDCAz[iS][j] = new TH1D(nameDCAz[iS][j],titleDCAz[iS][j],1200,-3.0,3.0);//125 bins
+      hDCAz[iS][j]->GetXaxis()->CenterTitle();
     }
   }
   
@@ -372,21 +378,25 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
   for(Int_t i=0;i<3;i++) fList1->Add(fM2vsP_NoTpcCut_DCAxyCut[i]);
   for(Int_t i=0;i<18;i++) fList1->Add(fM2vsP_DCAxyCut[i]);
 
-  /*
+   /*
   for(Int_t j=0;j<nbin;j++) {//electron
     fList1->Add(hDCAxy[0][j]);
+    fList1->Add(hDCAz[0][j]);
     fList1->Add(hM2CutDCAxy[0][j]);
     fList1->Add(hM2CutGroundDCAxy[0][j]);
     fList1->Add(hDCAxy[9][j]);
+    fList1->Add(hDCAz[9][j]);
     fList1->Add(hM2CutDCAxy[9][j]);
     fList1->Add(hM2CutGroundDCAxy[9][j]);
   }
 
   for(Int_t j=0;j<nbin;j++) {//muon
     fList1->Add(hDCAxy[1][j]);
+    fList1->Add(hDCAz[1][j]);
     fList1->Add(hM2CutDCAxy[1][j]);
     fList1->Add(hM2CutGroundDCAxy[1][j]);
     fList1->Add(hDCAxy[10][j]);
+    fList1->Add(hDCAz[10][j]);
     fList1->Add(hM2CutDCAxy[10][j]);
     fList1->Add(hM2CutGroundDCAxy[10][j]);
   }
@@ -394,36 +404,44 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
   for(Int_t j=0;j<nbin;j++) {//pion
     fList1->Add(hDCAxy[2][j]);
+    fList1->Add(hDCAz[2][j]);
     fList1->Add(hM2CutDCAxy[2][j]);
     fList1->Add(hM2CutGroundDCAxy[2][j]);
     fList1->Add(hDCAxy[11][j]);
+    fList1->Add(hDCAz[11][j]);
     fList1->Add(hM2CutDCAxy[11][j]);
     fList1->Add(hM2CutGroundDCAxy[11][j]);
   }
 
   for(Int_t j=0;j<nbin;j++) {//kaon
     fList1->Add(hDCAxy[3][j]);
+    fList1->Add(hDCAz[3][j]);
     fList1->Add(hM2CutDCAxy[3][j]);
     fList1->Add(hM2CutGroundDCAxy[3][j]);
     fList1->Add(hDCAxy[12][j]);
+    fList1->Add(hDCAz[12][j]);
     fList1->Add(hM2CutDCAxy[12][j]);
     fList1->Add(hM2CutGroundDCAxy[12][j]);
   }
 
   for(Int_t j=0;j<nbin;j++) {//proton
     fList1->Add(hDCAxy[4][j]);
+    fList1->Add(hDCAz[4][j]);
     fList1->Add(hM2CutDCAxy[4][j]);
     fList1->Add(hM2CutGroundDCAxy[4][j]);
     fList1->Add(hDCAxy[13][j]);
+    fList1->Add(hDCAz[13][j]);
     fList1->Add(hM2CutDCAxy[13][j]);
     fList1->Add(hM2CutGroundDCAxy[13][j]);
   }
 
   for(Int_t j=0;j<nbin;j++) {//deuteron
     fList1->Add(hDCAxy[5][j]);
+    fList1->Add(hDCAz[5][j]);
     fList1->Add(hM2CutDCAxy[5][j]);
     fList1->Add(hM2CutGroundDCAxy[5][j]);
     fList1->Add(hDCAxy[14][j]);
+    fList1->Add(hDCAz[14][j]);
     fList1->Add(hM2CutDCAxy[14][j]);
     fList1->Add(hM2CutGroundDCAxy[14][j]);
   }
@@ -431,9 +449,11 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
   /*
   for(Int_t j=0;j<nbin;j++) {//triton
     fList1->Add(hDCAxy[6][j]);
+    fList1->Add(hDCAz[6][j]);
     fList1->Add(hM2CutDCAxy[6][j]);
     fList1->Add(hM2CutGroundDCAxy[6][j]);
     fList1->Add(hDCAxy[15][j]);
+    fList1->Add(hDCAz[15][j]);
     fList1->Add(hM2CutDCAxy[15][j]);
     fList1->Add(hM2CutGroundDCAxy[15][j]);
   }
@@ -441,9 +461,11 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
   for(Int_t j=0;j<nbin;j++) {//He3
     fList1->Add(hDCAxy[7][j]);
+    fList1->Add(hDCAz[7][j]);
     fList1->Add(hM2CutDCAxy[7][j]);
     fList1->Add(hM2CutGroundDCAxy[7][j]);
     fList1->Add(hDCAxy[16][j]);
+    fList1->Add(hDCAz[16][j]);
     fList1->Add(hM2CutDCAxy[16][j]);
     fList1->Add(hM2CutGroundDCAxy[16][j]);
   }
@@ -451,15 +473,15 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
   /*
   for(Int_t j=0;j<nbin;j++) {//4He
     fList1->Add(hDCAxy[8][j]);
+    fList1->Add(hDCAz[8][j]);
     fList1->Add(hM2CutDCAxy[8][j]);
     fList1->Add(hM2CutGroundDCAxy[8][j]);
     fList1->Add(hDCAxy[17][j]);
+    fList1->Add(hDCAz[17][j]);
     fList1->Add(hM2CutDCAxy[17][j]);
     fList1->Add(hM2CutGroundDCAxy[17][j]);
   }
   */
-
-  //fTrackFilter = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   
   // Post output data.
   PostData(1, fList1);
@@ -677,13 +699,17 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	    if(FlagPid & stdFlagPid[iS] || !kTPCcut) {
 	      if(charge>0) {
 		fM2vsP[iS]->Fill(M2,p);
+		if(TMath::Abs(DCAxy)<DCAxyCUT) {
+		  fM2vsP_DCAxyCut[iS]->Fill(M2,p);
+		}
 		for(Int_t j=0;j<nbin;j++) {
 		  if(pt>binPt[j] && pt<binPt[j+1]) {
 		    hDCAxy[iS][j]->Fill(DCAxy);
 		    hDCAxy[iS][j]->Fill(-DCAxy);
+		    hDCAz[iS][j]->Fill(DCAz);
+		    hDCAz[iS][j]->Fill(-DCAz);
 		    if(TMath::Abs(DCAxy)<DCAxyCUT) {
 		      hM2CutDCAxy[iS][j]->Fill(M2);
-		      fM2vsP_DCAxyCut[iS]->Fill(M2,p);
 		    }
 		    if(TMath::Abs(DCAxy+0.5)<DCAxyCUT) hM2CutGroundDCAxy[iS][j]->Fill(M2);
 		    break;
@@ -692,13 +718,17 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	      }
 	      else {//if(charge<0)
 		fM2vsP[iS+9]->Fill(M2,p);
+		if(TMath::Abs(DCAxy)<DCAxyCUT) {
+		  fM2vsP_DCAxyCut[iS+9]->Fill(M2,p);
+		}
 		for(Int_t j=0;j<nbin;j++) {
 		  if(pt>binPt[j] && pt<binPt[j+1]) {
 		    hDCAxy[iS+9][j]->Fill(DCAxy);
 		    hDCAxy[iS+9][j]->Fill(-DCAxy);
+		    hDCAz[iS+9][j]->Fill(DCAz);
+		    hDCAz[iS+9][j]->Fill(-DCAz);
 		    if(TMath::Abs(DCAxy)<DCAxyCUT) {
 		      hM2CutDCAxy[iS+9][j]->Fill(M2);
-		      fM2vsP_DCAxyCut[iS]->Fill(M2,p);
 		    }
 		    if(TMath::Abs(DCAxy+0.5)<DCAxyCUT) hM2CutGroundDCAxy[iS+9][j]->Fill(M2);
 		    break;
