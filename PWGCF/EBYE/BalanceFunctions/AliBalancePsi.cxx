@@ -843,26 +843,8 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
     AliError("ptAssociatedMax <= ptAssociatedMin");
     return NULL;
   }
-  
-  // Psi_2
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
 
-  // Vz
-  if(fVertexBinning){
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-  }
-
-  // pt trigger
+  // pt trigger (fixed for all vertices/psi/centralities)
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
     fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
     fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
@@ -872,7 +854,7 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
     fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
-  // pt associated
+  // pt associated (fixed for all vertices/psi/centralities)
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
     fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
@@ -889,25 +871,7 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
   AliTHn *fHistPPMix = bfMix->GetHistNpp();
   AliTHn *fHistNNMix = bfMix->GetHistNnn();
 
-  // Psi_2
-  fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-
-  // Vz
-  if(fVertexBinning){
-    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-  }
-  
-  // pt trigger
+  // pt trigger (fixed for all vertices/psi/centralities)
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
     fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
     fHistNMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
@@ -917,38 +881,153 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
     fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
-  // pt associated
+  // pt associated (fixed for all vertices/psi/centralities)
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
     fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
-  // ============================================================================================
-
-  //Printf("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0));
-
-  // Project into the wanted space (1st: analysis step, 2nd: axis)
-  TH1D* hTemp1 = (TH1D*)fHistPN->Project(0,iVariablePair);
-  TH1D* hTemp2 = (TH1D*)fHistNP->Project(0,iVariablePair);
-  TH1D* hTemp3 = (TH1D*)fHistPP->Project(0,iVariablePair);
-  TH1D* hTemp4 = (TH1D*)fHistNN->Project(0,iVariablePair);
-  TH1D* hTemp5 = (TH1D*)fHistP->Project(0,iVariableSingle);
-  TH1D* hTemp6 = (TH1D*)fHistN->Project(0,iVariableSingle);
 
   // ============================================================================================
-  // the same for event mixing
-  TH2D* hTemp1Mix = (TH2D*)fHistPNMix->Project(0,iVariablePair);
-  TH2D* hTemp2Mix = (TH2D*)fHistNPMix->Project(0,iVariablePair);
-  TH2D* hTemp3Mix = (TH2D*)fHistPPMix->Project(0,iVariablePair);
-  TH2D* hTemp4Mix = (TH2D*)fHistNNMix->Project(0,iVariablePair);
-  TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,iVariableSingle);
-  TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,iVariableSingle);
-  // ============================================================================================
+  // ranges (in bins) for vertexZ and centrality (psi)
+  Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin);
+  Int_t binPsiMax    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMax-0.00001);
+  Int_t binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
+  Int_t binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  Double_t binPsiLowEdge    = 0.;
+  Double_t binPsiUpEdge     = 0.;
+  Double_t binVertexLowEdge = 0.;
+  Double_t binVertexUpEdge  = 0.;
+
+  TH1D* h1 = NULL;
+  TH1D* h2 = NULL;
+  TH1D* h3 = NULL;
+  TH1D* h4 = NULL;
+
+  // loop over all bins
+  for(Int_t iBinPsi = binPsiMin; iBinPsi <= binPsiMax; iBinPsi++){
+    for(Int_t iBinVertex = binVertexMin; iBinVertex <= binVertexMax; iBinVertex++){
+  
+      cout<<"In the balance function (1D) loop: "<<iBinPsi<<" (psiBin), "<<iBinVertex<<" (vertexBin)  "<<endl;
+
+      // determine the bin edges for this bin
+      binPsiLowEdge    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinLowEdge(iBinPsi);
+      binPsiUpEdge     = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinUpEdge(iBinPsi);
+      binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
+      binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+      
+      // Psi_2
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+
+      // Vz
+      if(fVertexBinning){
+	fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+      }
+
+      // ============================================================================================
+      // the same for event mixing
+      
+      // Psi_2
+      fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      
+      // Vz
+      if(fVertexBinning){
+	fHistPMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistNMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+      }
+      
+      // ============================================================================================
+
+      //Printf("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0));
+      
+      // Project into the wanted space (1st: analysis step, 2nd: axis)
+      TH1D* hTemp1 = (TH1D*)fHistPN->Project(0,iVariablePair);
+      TH1D* hTemp2 = (TH1D*)fHistNP->Project(0,iVariablePair);
+      TH1D* hTemp3 = (TH1D*)fHistPP->Project(0,iVariablePair);
+      TH1D* hTemp4 = (TH1D*)fHistNN->Project(0,iVariablePair);
+      TH1D* hTemp5 = (TH1D*)fHistP->Project(0,iVariableSingle);
+      TH1D* hTemp6 = (TH1D*)fHistN->Project(0,iVariableSingle);
+      
+      // ============================================================================================
+      // the same for event mixing
+      TH1D* hTemp1Mix = (TH1D*)fHistPNMix->Project(0,iVariablePair);
+      TH1D* hTemp2Mix = (TH1D*)fHistNPMix->Project(0,iVariablePair);
+      TH1D* hTemp3Mix = (TH1D*)fHistPPMix->Project(0,iVariablePair);
+      TH1D* hTemp4Mix = (TH1D*)fHistNNMix->Project(0,iVariablePair);
+      TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,iVariableSingle);
+      TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,iVariableSingle);
+      // ============================================================================================
+      
+      hTemp1->Sumw2();
+      hTemp2->Sumw2();
+      hTemp3->Sumw2();
+      hTemp4->Sumw2();
+      hTemp1Mix->Sumw2();
+      hTemp2Mix->Sumw2();
+      hTemp3Mix->Sumw2();
+      hTemp4Mix->Sumw2();
+      
+      hTemp1->Scale(1./hTemp5->GetEntries());
+      hTemp3->Scale(1./hTemp5->GetEntries());
+      hTemp2->Scale(1./hTemp6->GetEntries());
+      hTemp4->Scale(1./hTemp6->GetEntries());
+      hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
+      hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
+      hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
+      hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
+      
+      hTemp1->Divide(hTemp1Mix);
+      hTemp2->Divide(hTemp2Mix);
+      hTemp3->Divide(hTemp3Mix);
+      hTemp4->Divide(hTemp4Mix);
+
+      // for the first: clone
+      if(iBinPsi == binPsiMin && iBinVertex == binVertexMin ){
+	h1 = (TH1D*)hTemp1->Clone();
+	h2 = (TH1D*)hTemp2->Clone();
+	h3 = (TH1D*)hTemp3->Clone();
+	h4 = (TH1D*)hTemp4->Clone();
+      }
+      else{  // otherwise: add for averaging
+	h1->Add(hTemp1);
+	h2->Add(hTemp2);
+	h3->Add(hTemp3);
+	h4->Add(hTemp4);
+      }
+
+    }
+  }
 
   TH1D *gHistBalanceFunctionHistogram = 0x0;
-  if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)&&(hTemp5)&&(hTemp6)) {
-    gHistBalanceFunctionHistogram = (TH1D*)hTemp1->Clone();
+  if((h1)&&(h2)&&(h3)&&(h4)) {
+
+    // average over number of bins nbinsVertex * nbinsPsi
+    h1->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+    h2->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+    h3->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+    h4->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+
+    gHistBalanceFunctionHistogram = (TH1D*)h1->Clone();
     gHistBalanceFunctionHistogram->Reset();
     
     switch(iVariablePair) {
@@ -964,33 +1043,10 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
       break;
     }
 
-    hTemp1->Sumw2();
-    hTemp2->Sumw2();
-    hTemp3->Sumw2();
-    hTemp4->Sumw2();
-    hTemp1Mix->Sumw2();
-    hTemp2Mix->Sumw2();
-    hTemp3Mix->Sumw2();
-    hTemp4Mix->Sumw2();
+    h1->Add(h3,-1.);
+    h2->Add(h4,-1.);
 
-    hTemp1->Scale(1./hTemp5->GetEntries());
-    hTemp3->Scale(1./hTemp5->GetEntries());
-    hTemp2->Scale(1./hTemp6->GetEntries());
-    hTemp4->Scale(1./hTemp6->GetEntries());
-    hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
-    hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
-    hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
-    hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
-
-    hTemp1->Divide(hTemp1Mix);
-    hTemp2->Divide(hTemp2Mix);
-    hTemp3->Divide(hTemp3Mix);
-    hTemp4->Divide(hTemp4Mix);
-
-    hTemp1->Add(hTemp3,-1.);
-    hTemp2->Add(hTemp4,-1.);
-
-    gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
+    gHistBalanceFunctionHistogram->Add(h1,h2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5);
 
     //normalize to bin width
@@ -1148,25 +1204,7 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
     return NULL;
   }
 
-  // Psi_2
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  
-  // Vz
-  if(fVertexBinning){
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-  }
-
-  // pt trigger
+  // pt trigger (fixed for all vertices/psi/centralities)
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
     fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
     fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
@@ -1176,14 +1214,13 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
     fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
-  // pt associated
+  // pt associated (fixed for all vertices/psi/centralities)
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
     fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
-
 
   // ============================================================================================
   // the same for event mixing
@@ -1194,24 +1231,7 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
   AliTHn *fHistPPMix = bfMix->GetHistNpp();
   AliTHn *fHistNNMix = bfMix->GetHistNnn();
 
-  // Psi_2
-  fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-  fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-
-  // Vz
-  if(fVertexBinning){
-    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-  }
-  // pt trigger
+  // pt trigger (fixed for all vertices/psi/centralities)
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
     fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
     fHistNMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
@@ -1221,77 +1241,170 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
     fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
-  // pt associated
+  // pt associated (fixed for all vertices/psi/centralities)
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
     fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
-  // ============================================================================================
-
-
-  //AliInfo(Form("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0)));
-
-  // Project into the wanted space (1st: analysis step, 2nd: axis)
-  TH2D* hTemp1 = (TH2D*)fHistPN->Project(0,1,2);
-  TH2D* hTemp2 = (TH2D*)fHistNP->Project(0,1,2);
-  TH2D* hTemp3 = (TH2D*)fHistPP->Project(0,1,2);
-  TH2D* hTemp4 = (TH2D*)fHistNN->Project(0,1,2);
-  TH1D* hTemp5 = (TH1D*)fHistP->Project(0,1);
-  TH1D* hTemp6 = (TH1D*)fHistN->Project(0,1);
 
   // ============================================================================================
-  // the same for event mixing
-  TH2D* hTemp1Mix = (TH2D*)fHistPNMix->Project(0,1,2);
-  TH2D* hTemp2Mix = (TH2D*)fHistNPMix->Project(0,1,2);
-  TH2D* hTemp3Mix = (TH2D*)fHistPPMix->Project(0,1,2);
-  TH2D* hTemp4Mix = (TH2D*)fHistNNMix->Project(0,1,2);
-  TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
-  TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
-  // ============================================================================================
+  // ranges (in bins) for vertexZ and centrality (psi)
+  Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin);
+  Int_t binPsiMax    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMax-0.00001);
+  Int_t binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
+  Int_t binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  Double_t binPsiLowEdge    = 0.;
+  Double_t binPsiUpEdge     = 0.;
+  Double_t binVertexLowEdge = 0.;
+  Double_t binVertexUpEdge  = 0.;
 
+  TH2D* h1 = NULL;
+  TH2D* h2 = NULL;
+  TH2D* h3 = NULL;
+  TH2D* h4 = NULL;
+
+  // loop over all bins
+  for(Int_t iBinPsi = binPsiMin; iBinPsi <= binPsiMax; iBinPsi++){
+    for(Int_t iBinVertex = binVertexMin; iBinVertex <= binVertexMax; iBinVertex++){
+  
+      cout<<"In the balance function (2D) loop: "<<iBinPsi<<" (psiBin), "<<iBinVertex<<" (vertexBin)  "<<endl;
+
+      // determine the bin edges for this bin
+      binPsiLowEdge    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinLowEdge(iBinPsi);
+      binPsiUpEdge     = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinUpEdge(iBinPsi);
+      binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
+      binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+
+      // Psi_2
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+  
+      // Vz
+      if(fVertexBinning){
+	fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+      }
+
+
+
+      // ============================================================================================
+      // the same for event mixing
+      
+      // Psi_2
+      fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
+      
+      // Vz
+      if(fVertexBinning){
+	fHistPMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistNMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+	fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(binVertexLowEdge,binVertexUpEdge-0.00001); 
+      }
+      
+      // ============================================================================================
+      
+      
+      //AliInfo(Form("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0)));
+
+      // Project into the wanted space (1st: analysis step, 2nd: axis)
+      TH2D* hTemp1 = (TH2D*)fHistPN->Project(0,1,2);
+      TH2D* hTemp2 = (TH2D*)fHistNP->Project(0,1,2);
+      TH2D* hTemp3 = (TH2D*)fHistPP->Project(0,1,2);
+      TH2D* hTemp4 = (TH2D*)fHistNN->Project(0,1,2);
+      TH1D* hTemp5 = (TH1D*)fHistP->Project(0,1);
+      TH1D* hTemp6 = (TH1D*)fHistN->Project(0,1);
+      
+      // ============================================================================================
+      // the same for event mixing
+      TH2D* hTemp1Mix = (TH2D*)fHistPNMix->Project(0,1,2);
+      TH2D* hTemp2Mix = (TH2D*)fHistNPMix->Project(0,1,2);
+      TH2D* hTemp3Mix = (TH2D*)fHistPPMix->Project(0,1,2);
+      TH2D* hTemp4Mix = (TH2D*)fHistNNMix->Project(0,1,2);
+      TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
+      TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
+      // ============================================================================================
+      
+      hTemp1->Sumw2();
+      hTemp2->Sumw2();
+      hTemp3->Sumw2();
+      hTemp4->Sumw2();
+      hTemp1Mix->Sumw2();
+      hTemp2Mix->Sumw2();
+      hTemp3Mix->Sumw2();
+      hTemp4Mix->Sumw2();
+      
+      hTemp1->Scale(1./hTemp5->GetEntries());
+      hTemp3->Scale(1./hTemp5->GetEntries());
+      hTemp2->Scale(1./hTemp6->GetEntries());
+      hTemp4->Scale(1./hTemp6->GetEntries());
+      hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
+      hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
+      hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
+      hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
+      
+      hTemp1->Divide(hTemp1Mix);
+      hTemp2->Divide(hTemp2Mix);
+      hTemp3->Divide(hTemp3Mix);
+      hTemp4->Divide(hTemp4Mix);
+      
+      // for the first: clone
+      if(iBinPsi == binPsiMin && iBinVertex == binVertexMin ){
+	h1 = (TH2D*)hTemp1->Clone();
+	h2 = (TH2D*)hTemp2->Clone();
+	h3 = (TH2D*)hTemp3->Clone();
+	h4 = (TH2D*)hTemp4->Clone();
+      }
+      else{  // otherwise: add for averaging
+	h1->Add(hTemp1);
+	h2->Add(hTemp2);
+	h3->Add(hTemp3);
+	h4->Add(hTemp4);
+      } 
+    }
+  }
+   
   TH2D *gHistBalanceFunctionHistogram = 0x0;
-  if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)&&(hTemp5)&&(hTemp6)) {
-    gHistBalanceFunctionHistogram = (TH2D*)hTemp1->Clone();
+  if((h1)&&(h2)&&(h3)&&(h4)) {
+
+    // average over number of bins nbinsVertex * nbinsPsi
+    h1->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+    h2->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+    h3->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+    h4->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+
+    gHistBalanceFunctionHistogram = (TH2D*)h1->Clone();
     gHistBalanceFunctionHistogram->Reset();
     gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta#eta");   
     gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("#Delta#varphi (rad)");
     gHistBalanceFunctionHistogram->GetZaxis()->SetTitle("B(#Delta#eta,#Delta#varphi)");   
+
+    h1->Add(h3,-1.);
+    h2->Add(h4,-1.);
     
-    hTemp1->Sumw2();
-    hTemp2->Sumw2();
-    hTemp3->Sumw2();
-    hTemp4->Sumw2();
-    hTemp1Mix->Sumw2();
-    hTemp2Mix->Sumw2();
-    hTemp3Mix->Sumw2();
-    hTemp4Mix->Sumw2();
-
-    hTemp1->Scale(1./hTemp5->GetEntries());
-    hTemp3->Scale(1./hTemp5->GetEntries());
-    hTemp2->Scale(1./hTemp6->GetEntries());
-    hTemp4->Scale(1./hTemp6->GetEntries());
-    hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
-    hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
-    hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
-    hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
-
-    hTemp1->Divide(hTemp1Mix);
-    hTemp2->Divide(hTemp2Mix);
-    hTemp3->Divide(hTemp3Mix);
-    hTemp4->Divide(hTemp4Mix);
-
-    hTemp1->Add(hTemp3,-1.);
-    hTemp2->Add(hTemp4,-1.);
-
-    gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
+    gHistBalanceFunctionHistogram->Add(h1,h2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5);
-  
+    
     //normalize to bin width
     gHistBalanceFunctionHistogram->Scale(1./((Double_t)gHistBalanceFunctionHistogram->GetXaxis()->GetBinWidth(1)*(Double_t)gHistBalanceFunctionHistogram->GetYaxis()->GetBinWidth(1)));
   }
-
+  
   return gHistBalanceFunctionHistogram;
 }
 
@@ -1338,25 +1451,7 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
     return NULL;
   }
 
-  // Psi_2
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-
-  // Vz
-  if(fVertexBinning){
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-  }
-
-  // pt trigger
+  // pt trigger (fixed for all vertices/psi/centralities)
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
     fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
     fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
@@ -1366,14 +1461,13 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
     fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
-  // pt associated
+  // pt associated (fixed for all vertices/psi/centralities)
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
     fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
-
 
   // ============================================================================================
   // the same for event mixing
@@ -1384,25 +1478,7 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
   AliTHn *fHistPPMix = bfMix->GetHistNpp();
   AliTHn *fHistNNMix = bfMix->GetHistNnn();
 
-  // Psi_2
-  fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-  fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-  fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-  fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-  fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-  fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
-
-  // Vz
-  if(fVertexBinning){
-    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-  }
-  
-  // pt trigger
+  // pt trigger (fixed for all vertices/psi/centralities)
   if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
     fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
     fHistNMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
@@ -1412,62 +1488,150 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
     fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
   }
 
-  // pt associated
+  // pt associated (fixed for all vertices/psi/centralities)
   if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
     fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
   }
-  // ============================================================================================
-
-
-  //AliInfo(Form("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0)));
-
-  // Project into the wanted space (1st: analysis step, 2nd: axis)
-  TH2D* hTemp1 = (TH2D*)fHistPN->Project(0,1,2);
-  TH2D* hTemp2 = (TH2D*)fHistNP->Project(0,1,2);
-  TH2D* hTemp3 = (TH2D*)fHistPP->Project(0,1,2);
-  TH2D* hTemp4 = (TH2D*)fHistNN->Project(0,1,2);
-  TH1D* hTemp5 = (TH1D*)fHistP->Project(0,1);
-  TH1D* hTemp6 = (TH1D*)fHistN->Project(0,1);
 
   // ============================================================================================
-  // the same for event mixing
-  TH2D* hTemp1Mix = (TH2D*)fHistPNMix->Project(0,1,2);
-  TH2D* hTemp2Mix = (TH2D*)fHistNPMix->Project(0,1,2);
-  TH2D* hTemp3Mix = (TH2D*)fHistPPMix->Project(0,1,2);
-  TH2D* hTemp4Mix = (TH2D*)fHistNNMix->Project(0,1,2);
-  TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
-  TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
-  // ============================================================================================
+  // ranges (in bins) for vertexZ and centrality (psi)
+  Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin);
+  Int_t binPsiMax    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMax-0.00001);
+  Int_t binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
+  Int_t binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  Double_t binPsiLowEdge    = 0.;
+  Double_t binPsiUpEdge     = 0.;
+  Double_t binVertexLowEdge = 0.;
+  Double_t binVertexUpEdge  = 0.;
+
+  TH2D* h1 = NULL;
+  TH2D* h2 = NULL;
+  TH2D* h3 = NULL;
+  TH2D* h4 = NULL;
+
+  // loop over all bins
+  for(Int_t iBinPsi = binPsiMin; iBinPsi <= binPsiMax; iBinPsi++){
+    for(Int_t iBinVertex = binVertexMin; iBinVertex <= binVertexMax; iBinVertex++){
+  
+      cout<<"In the balance function (2D->1D) loop: "<<iBinPsi<<" (psiBin), "<<iBinVertex<<" (vertexBin)  "<<endl;
+
+      // determine the bin edges for this bin
+      binPsiLowEdge    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinLowEdge(iBinPsi);
+      binPsiUpEdge     = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinUpEdge(iBinPsi);
+      binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
+      binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+
+      // Psi_2
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+      fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+      fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+      fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+      fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+  
+      // Vz
+      if(fVertexBinning){
+	fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+	fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+	fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+	fHistNP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+	fHistPP->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+	fHistNN->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      }
+
+      // ============================================================================================
+      // the same for event mixing
+      
+      // Psi_2
+      fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+      fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+      fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+      fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+      fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+      fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
+
+      // Vz
+      if(fVertexBinning){
+	fHistPMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+	fHistNMix->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+	fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+	fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+	fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+	fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(5)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      }
+      // ============================================================================================
+
+      //AliInfo(Form("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0)));
+      
+      // Project into the wanted space (1st: analysis step, 2nd: axis)
+      TH2D* hTemp1 = (TH2D*)fHistPN->Project(0,1,2);
+      TH2D* hTemp2 = (TH2D*)fHistNP->Project(0,1,2);
+      TH2D* hTemp3 = (TH2D*)fHistPP->Project(0,1,2);
+      TH2D* hTemp4 = (TH2D*)fHistNN->Project(0,1,2);
+      TH1D* hTemp5 = (TH1D*)fHistP->Project(0,1);
+      TH1D* hTemp6 = (TH1D*)fHistN->Project(0,1);
+
+      // ============================================================================================
+      // the same for event mixing
+      TH2D* hTemp1Mix = (TH2D*)fHistPNMix->Project(0,1,2);
+      TH2D* hTemp2Mix = (TH2D*)fHistNPMix->Project(0,1,2);
+      TH2D* hTemp3Mix = (TH2D*)fHistPPMix->Project(0,1,2);
+      TH2D* hTemp4Mix = (TH2D*)fHistNNMix->Project(0,1,2);
+      TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
+      TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
+      // ============================================================================================
+      
+      hTemp1->Sumw2();
+      hTemp2->Sumw2();
+      hTemp3->Sumw2();
+      hTemp4->Sumw2();
+      hTemp1Mix->Sumw2();
+      hTemp2Mix->Sumw2();
+      hTemp3Mix->Sumw2();
+      hTemp4Mix->Sumw2();
+      
+      hTemp1->Scale(1./hTemp5->GetEntries());
+      hTemp3->Scale(1./hTemp5->GetEntries());
+      hTemp2->Scale(1./hTemp6->GetEntries());
+      hTemp4->Scale(1./hTemp6->GetEntries());
+      hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
+      hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
+      hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
+      hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
+      
+      hTemp1->Divide(hTemp1Mix);
+      hTemp2->Divide(hTemp2Mix);
+      hTemp3->Divide(hTemp3Mix);
+      hTemp4->Divide(hTemp4Mix);
+
+      // for the first: clone
+      if(iBinPsi == binPsiMin && iBinVertex == binVertexMin ){
+	h1 = (TH2D*)hTemp1->Clone();
+	h2 = (TH2D*)hTemp2->Clone();
+	h3 = (TH2D*)hTemp3->Clone();
+	h4 = (TH2D*)hTemp4->Clone();
+      }
+      else{  // otherwise: add for averaging
+	h1->Add(hTemp1);
+	h2->Add(hTemp2);
+	h3->Add(hTemp3);
+	h4->Add(hTemp4);
+      }
+
+    }
+  }
 
   TH1D *gHistBalanceFunctionHistogram = 0x0;
-  if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)&&(hTemp5)&&(hTemp6)) {
+  if((h1)&&(h2)&&(h3)&&(h4)) {
 
-    hTemp1->Sumw2();
-    hTemp2->Sumw2();
-    hTemp3->Sumw2();
-    hTemp4->Sumw2();
-    hTemp1Mix->Sumw2();
-    hTemp2Mix->Sumw2();
-    hTemp3Mix->Sumw2();
-    hTemp4Mix->Sumw2();
-
-    hTemp1->Scale(1./hTemp5->GetEntries());
-    hTemp3->Scale(1./hTemp5->GetEntries());
-    hTemp2->Scale(1./hTemp6->GetEntries());
-    hTemp4->Scale(1./hTemp6->GetEntries());
-
-    hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
-    hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
-    hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
-    hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
-  
-    hTemp1->Divide(hTemp1Mix);
-    hTemp2->Divide(hTemp2Mix);
-    hTemp3->Divide(hTemp3Mix);
-    hTemp4->Divide(hTemp4Mix);
+    // average over number of bins nbinsVertex * nbinsPsi
+    h1->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+    h2->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+    h3->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+    h4->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
 
     // now only project on one axis
     TH1D *h1DTemp1 = NULL;
@@ -1475,16 +1639,16 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
     TH1D *h1DTemp3 = NULL;
     TH1D *h1DTemp4 = NULL;
     if(!bPhi){
-      h1DTemp1 = (TH1D*)hTemp1->ProjectionX(Form("%s_projX",hTemp1->GetName()));
-      h1DTemp2 = (TH1D*)hTemp2->ProjectionX(Form("%s_projX",hTemp2->GetName()));
-      h1DTemp3 = (TH1D*)hTemp3->ProjectionX(Form("%s_projX",hTemp3->GetName()));
-      h1DTemp4 = (TH1D*)hTemp4->ProjectionX(Form("%s_projX",hTemp4->GetName()));
+      h1DTemp1 = (TH1D*)h1->ProjectionX(Form("%s_projX",h1->GetName()));
+      h1DTemp2 = (TH1D*)h2->ProjectionX(Form("%s_projX",h2->GetName()));
+      h1DTemp3 = (TH1D*)h3->ProjectionX(Form("%s_projX",h3->GetName()));
+      h1DTemp4 = (TH1D*)h4->ProjectionX(Form("%s_projX",h4->GetName()));
     }
     else{
-      h1DTemp1 = (TH1D*)hTemp1->ProjectionY(Form("%s_projX",hTemp1->GetName()));
-      h1DTemp2 = (TH1D*)hTemp2->ProjectionY(Form("%s_projX",hTemp2->GetName()));
-      h1DTemp3 = (TH1D*)hTemp3->ProjectionY(Form("%s_projX",hTemp3->GetName()));
-      h1DTemp4 = (TH1D*)hTemp4->ProjectionY(Form("%s_projX",hTemp4->GetName()));
+      h1DTemp1 = (TH1D*)h1->ProjectionY(Form("%s_projY",h1->GetName()));
+      h1DTemp2 = (TH1D*)h2->ProjectionY(Form("%s_projY",h2->GetName()));
+      h1DTemp3 = (TH1D*)h3->ProjectionY(Form("%s_projY",h3->GetName()));
+      h1DTemp4 = (TH1D*)h4->ProjectionY(Form("%s_projY",h4->GetName()));
     }
 
     gHistBalanceFunctionHistogram = (TH1D*)h1DTemp1->Clone(Form("%s_clone",h1DTemp1->GetName()));
@@ -1506,6 +1670,100 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
   }
 
   return gHistBalanceFunctionHistogram;
+}
+
+
+//____________________________________________________________________//
+TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
+					    Double_t psiMin, 
+					    Double_t psiMax,
+					    Double_t vertexZMin,
+					    Double_t vertexZMax,
+					    Double_t ptTriggerMin,
+					    Double_t ptTriggerMax,
+					    Double_t ptAssociatedMin,
+					    Double_t ptAssociatedMax,
+					    AliBalancePsi *bMixed) {
+
+  // Returns the 2D correlation function for "type"(PN,NP,PP,NN) pairs,
+  // does the division by event mixing inside,
+  // and averaging over several vertexZ and centrality bins
+
+  // security checks
+  if(type != "PN" && type != "NP" && type != "PP" && type != "NN" && type != "ALL"){
+    AliError("Only types allowed: PN,NP,PP,NN,ALL");
+    return NULL;
+  }
+  if(!bMixed){
+    AliError("No Event Mixing AliTHn");
+    return NULL;
+  }
+
+  TH2D *gHist  = NULL;
+  TH2D *fSame  = NULL;
+  TH2D *fMixed = NULL;
+
+  // ranges (in bins) for vertexZ and centrality (psi)
+  Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin);
+  Int_t binPsiMax    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMax-0.00001);
+  Int_t binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
+  Int_t binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  Double_t binPsiLowEdge    = 0.;
+  Double_t binPsiUpEdge     = 0.;
+  Double_t binVertexLowEdge = 0.;
+  Double_t binVertexUpEdge  = 0.;
+
+  // loop over all bins
+  for(Int_t iBinPsi = binPsiMin; iBinPsi <= binPsiMax; iBinPsi++){
+    for(Int_t iBinVertex = binVertexMin; iBinVertex <= binVertexMax; iBinVertex++){
+
+      cout<<"In the correlation function loop: "<<iBinPsi<<" (psiBin), "<<iBinVertex<<" (vertexBin)  "<<endl;
+
+      // determine the bin edges for this bin
+      binPsiLowEdge    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinLowEdge(iBinPsi);
+      binPsiUpEdge     = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinUpEdge(iBinPsi);
+      binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
+      binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+    
+      // get the 2D histograms for the correct type
+      if(type=="PN"){
+	fSame  = GetCorrelationFunctionPN(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+	fMixed = bMixed->GetCorrelationFunctionPN(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+      }
+      else if(type=="NP"){
+	fSame  = GetCorrelationFunctionNP(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+	fMixed = bMixed->GetCorrelationFunctionNP(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+      }
+      else if(type=="PP"){
+	fSame  = GetCorrelationFunctionPP(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    fMixed = bMixed->GetCorrelationFunctionPP(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+      }
+      else if(type=="NN"){
+	fSame  = GetCorrelationFunctionNN(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+	fMixed = bMixed->GetCorrelationFunctionNN(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+      }
+      else if(type=="ALL"){
+	fSame  = GetCorrelationFunctionChargeIndependent(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+	fMixed = bMixed->GetCorrelationFunctionChargeIndependent(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+      }
+
+      // then get the correlation function (divide fSame/fmixed)
+      fSame->Divide(fMixed);
+   
+      // for the first: clone
+      if(iBinPsi == binPsiMin && iBinVertex == binVertexMin ){
+	gHist = (TH2D*)fSame->Clone();
+      }
+      else{  // otherwise: add for averaging
+	gHist->Add(fSame);
+      }
+    }
+  }
+
+  // average over number of bins nbinsVertex * nbinsPsi
+  gHist->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+  
+  return gHist;
 }
 
 

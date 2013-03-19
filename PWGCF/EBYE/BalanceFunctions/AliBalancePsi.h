@@ -72,6 +72,15 @@ class AliBalancePsi : public TObject {
 			Double_t kMultorCent = -100,
 			Double_t vertexZ = 0);
   
+  TH2D   *GetCorrelationFunction(TString type,
+				 Double_t psiMin, Double_t psiMax,
+				 Double_t vertexZMin=-1,
+				 Double_t vertexZMax=-1,
+				 Double_t ptTriggerMin=-1.,
+				 Double_t ptTriggerMax=-1.,
+				 Double_t ptAssociatedMin=-1.,
+				 Double_t ptAssociatedMax=-1,
+				 AliBalancePsi *bMixed=NULL);
   TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax,
 				   Double_t vertexZMin=-1,
 				   Double_t vertexZMax=-1,

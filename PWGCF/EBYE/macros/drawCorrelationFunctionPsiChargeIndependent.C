@@ -11,6 +11,8 @@ void drawCorrelationFunctionPsiChargeIndependent(const char* filename = "Analysi
 						 Bool_t kShowMixed = kTRUE, 
 						 Double_t psiMin = -0.5, 
 						 Double_t psiMax = 3.5,
+						 Double_t vertexZMin = -10.,
+						 Double_t vertexZMax = 10.,
 						 Double_t ptTriggerMin = -1.,
 						 Double_t ptTriggerMax = -1.,
 						 Double_t ptAssociatedMin = -1.,
@@ -46,7 +48,7 @@ void drawCorrelationFunctionPsiChargeIndependent(const char* filename = "Analysi
   }
   else 
     draw(list,listShuffled,listMixed,
-	 gCentralityEstimator,gCentrality,psiMin,psiMax,
+	 gCentralityEstimator,gCentrality,psiMin,psiMax,vertexZMin,vertexZMax,
 	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig,rebinEta,rebinPhi);
 }
 
@@ -212,6 +214,8 @@ TList *GetListOfObjects(const char* filename,
 void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, 
 	  const char *gCentralityEstimator,
 	  Int_t gCentrality, Double_t psiMin, Double_t psiMax,
+	  Double_t vertexZMin,
+	  Double_t vertexZMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
 	  Bool_t normToTrig, Int_t rebinEta, Int_t rebinPhi) {
@@ -361,7 +365,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   else 
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
 
-  gHist[0] = b->GetCorrelationFunctionChargeIndependent(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  gHist[0] = b->GetCorrelationFunctionChargeIndependent(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1){
     gHist[0]->Rebin2D(rebinEta,rebinPhi);
     gHist[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
@@ -395,7 +399,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     else 
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
-    gHist[1] = bShuffled->GetCorrelationFunctionChargeIndependent(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHist[1] = bShuffled->GetCorrelationFunctionChargeIndependent(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
       gHist[1]->Rebin2D(rebinEta,rebinPhi);
       gHist[1]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
@@ -432,7 +436,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
-    gHist[2] = bMixed->GetCorrelationFunctionChargeIndependent(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHist[2] = bMixed->GetCorrelationFunctionChargeIndependent(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1){
       gHist[2]->Rebin2D(rebinEta,rebinPhi);
       gHist[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
@@ -462,8 +466,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //c[2]->SaveAs(pngName.Data());
 
     //Correlation function (+-)
-    gHist[3] = dynamic_cast<TH2D *>(gHist[0]->Clone());
-    gHist[3]->Divide(gHist[2]);
+    gHist[3] = b->GetCorrelationFunction("ALL",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
     gHist[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     gHist[3]->GetZaxis()->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
     c[3] = new TCanvas("c3","",0,300,600,500);
