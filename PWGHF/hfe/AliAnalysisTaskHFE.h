@@ -139,6 +139,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetPIDPreselect(AliHFEpid * const cuts) { fPIDpreselect = cuts; };
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
+    void SetTRDTrigger(Bool_t activateTRDTrigger, Int_t trdtrigger) {fTRDTrigger=activateTRDTrigger; fWhichTRDTrigger=trdtrigger;};
     void SetCollisionSystem(ECollisionSystem_t system){
       fCollisionSystem.Clear();
       fCollisionSystem.SetBitNumber(system, kTRUE);
@@ -158,6 +159,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       fCollisionSystem.SetBitNumber(kpPb, kFALSE); 
       fCollisionSystem.SetBitNumber(kPbPb, kTRUE); 
     };
+    void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
     void SetPbPbUserCentralityLimit(Bool_t isPbPbUserBinning = kFALSE){fPbPbUserCentralityBinning = isPbPbUserBinning; };
     void SetPbPbUserCentralityArray(Int_t icentr, Float_t valuecentr) {fCentralityLimits[icentr] = valuecentr;};
     void SetPPMultiBinAnalysis(Bool_t isppMultiBin) { fisppMultiBin = isppMultiBin; };
@@ -175,7 +177,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void RejectionPileUpVertexRangeEventCut();  
     void SelectSpecialTrigger(const Char_t *trgclust, Int_t runMin = 0, Int_t runMax = 999999999); 
     void SetDebugStreaming() {SetBit(kTreeStream);};
-    
+    Bool_t CheckTRDTrigger(AliESDEvent *ev);
+
   private:
     enum{
       kHasMCdata = BIT(19),
@@ -218,6 +221,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliOADBContainer *fSpecialTrigger;    // Special trigger selection
     Int_t   fCentralityF;                 // Centrality bin
     Float_t fCentralityPercent;           // Centrality percentile
+    TString fCentralityEstimator;         // Centrality Estimator
     Float_t fContributors;                // Contributors
     Double_t fWeightBackGround;            // weight background function
     Double_t fVz;                         // z position of the primary vertex
@@ -245,7 +249,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliHFEtaggedTrackAnalysis *fTaggedTrackAnalysis;     //!Analyse V0-tagged tracks
     AliHFEextraCuts *fExtraCuts;          //! temporary implementation for IP QA
     AliHFENonPhotonicElectron *fBackgroundSubtraction; // Background subtraction
-
+    Bool_t fTRDTrigger;                   // Check if event is TRD triggered event
+    Int_t  fWhichTRDTrigger;               // Select type of TRD trigger
     //-----------QA and output---------------
     TList *fQA;                           //! QA histos for the cuts
     TList *fOutput;                       //! Container for Task Output

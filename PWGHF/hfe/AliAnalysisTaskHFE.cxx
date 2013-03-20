@@ -99,7 +99,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fCollisionSystem(3)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
-  , fApplyCutAOD(kTRUE)
+  , fApplyCutAOD(kFALSE)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -113,6 +113,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fSpecialTrigger(NULL)
   , fCentralityF(-1)
   , fCentralityPercent(-1)
+  , fCentralityEstimator("V0M")
   , fContributors(0.5)
   , fWeightBackGround(0.)
   , fVz(0.0)
@@ -136,6 +137,8 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fTaggedTrackAnalysis(NULL)
   , fExtraCuts(NULL)
   , fBackgroundSubtraction(NULL)
+  , fTRDTrigger(kFALSE)
+  , fWhichTRDTrigger(0)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -165,7 +168,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fCollisionSystem(3)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
-  , fApplyCutAOD(kTRUE)
+  , fApplyCutAOD(kFALSE)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -179,6 +182,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fSpecialTrigger(NULL)
   , fCentralityF(-1)
   , fCentralityPercent(-1)
+  , fCentralityEstimator("V0M")
   , fContributors(0.5)
   , fWeightBackGround(0.)
   , fVz(0.0)
@@ -202,6 +206,8 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fTaggedTrackAnalysis(NULL)
   , fExtraCuts(NULL)
   , fBackgroundSubtraction(NULL)
+  , fTRDTrigger(kFALSE)
+  , fWhichTRDTrigger(0)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -253,6 +259,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fSpecialTrigger(ref.fSpecialTrigger)
   , fCentralityF(ref.fCentralityF)
   , fCentralityPercent(ref.fCentralityPercent)
+  , fCentralityEstimator(ref.fCentralityEstimator)
   , fContributors(ref.fContributors)
   , fWeightBackGround(ref.fWeightBackGround)
   , fVz(ref.fVz)
@@ -276,6 +283,8 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fTaggedTrackAnalysis(NULL)
   , fExtraCuts(NULL)
   , fBackgroundSubtraction(NULL)
+  , fTRDTrigger(ref.fTRDTrigger)
+  , fWhichTRDTrigger(ref.fWhichTRDTrigger)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -326,6 +335,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fSpecialTrigger = fSpecialTrigger;
   target.fCentralityF = fCentralityF;
   target.fCentralityPercent = fCentralityPercent;
+  target.fCentralityEstimator = fCentralityEstimator;
   target.fContributors = fContributors;
   target.fWeightBackGround = fWeightBackGround;
   target.fVz = fVz;
@@ -349,6 +359,8 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fTaggedTrackAnalysis = fTaggedTrackAnalysis;
   target.fExtraCuts = fExtraCuts;
   target.fBackgroundSubtraction = fBackgroundSubtraction;
+  target.fTRDTrigger = fTRDTrigger;
+  target.fWhichTRDTrigger = fWhichTRDTrigger;
   target.fQA = fQA;
   target.fOutput = fOutput;
   target.fHistMCQA = fHistMCQA;
@@ -425,11 +437,8 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH1F("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
   fQACollection->CreateTH1F("nElectron", "Number of electrons", 100, 0, 100);
   fQACollection->CreateTH2F("radius", "Production Vertex", 100, 0.0, 5.0, 100, 0.0, 5.0);
-
-  if(IsAODanalysis()){
-    fQACollection->CreateTH1F("Filterorigin","AOD filter of tracks at origin", 21,-1, 20);
-    fQACollection->CreateTH1F("Filterend","AOD filter of tracks after all cuts", 21, -1, 20);
-  }
+  fQACollection->CreateTH2F("nTriggerBit2D", "Histo Trigger Bit 2d", 10, 0., 10., 10, 0., 10.,-1);
+  fQACollection->CreateTH1F("nTriggerBit", "Histo Trigger Bit", 12, 0, 12);
  
   InitHistoITScluster();
   InitContaminationQA();
@@ -602,6 +611,13 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     if(fAnalysisUtils->IsFirstEventInChunk(fInputEvent)) return;
   }
 
+  AliESDEvent *ev = dynamic_cast<AliESDEvent *>(fInputEvent);
+  if(fTRDTrigger)
+  {
+      if(!CheckTRDTrigger(ev)) return;
+  }
+
+
   if(IsESDanalysis() && HasMCData()){
     // Protect against missing MC trees
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -609,11 +625,9 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
       AliError("No MC Event Handler available");
       return;
     }
-    /*
     if(!mcH->InitOk()) return;
     if(!mcH->TreeK()) return;
     if(!mcH->TreeTR()) return;
-    */
 
     // Background subtraction-------------------------------------------------------------------
     if(GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->SetMCEvent(fMCEvent);
@@ -686,7 +700,6 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     // Check Trigger selection
     if(specialTrigger){
       AliDebug(2, Form("Special Trigger requested: %s", specialTrigger));
-      AliESDEvent *ev = dynamic_cast<AliESDEvent *>(fInputEvent);
       if(!(ev && ev->IsTriggerClassFired(specialTrigger))){
         AliDebug(2, "Event not selected"); 
         return;
@@ -758,7 +771,7 @@ void AliAnalysisTaskHFE::ProcessMC(){
         fMCQA->SetMCEvent(fMCEvent);
         fMCQA->SetGenEventHeader(fMCEvent->GenEventHeader());
         fMCQA->SetCentrality(fCentralityF);
-        fMCQA->SetPercentrality(fCentralityPercent);
+        fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
         if(IsPbPb()) { fMCQA->SetPbPb();}
         else
         {
@@ -1477,14 +1490,6 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       }
     }
 
-    fQACollection->Fill("Filterorigin", -1);  
-    for(Int_t k=0; k<20; k++) {
-      Int_t u = 1<<k;
-      if((track->TestFilterBit(u))) {
-	      fQACollection->Fill("Filterorigin", k);
-      }
-    }
-
     if(fApplyCutAOD) {
       //printf("Apply cuts\n");
       // RecKine: ITSTPC cuts  
@@ -1492,14 +1497,14 @@ void AliAnalysisTaskHFE::ProcessAOD(){
 
       // Reject kink mother
       if(fRejectKinkMother) {
-	    Bool_t kinkmotherpass = kTRUE;
-	    for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
-	      if(track->GetID() == listofmotherkink[kinkmother]) {
-	        kinkmotherpass = kFALSE;
-	        continue;
-	      }
-	    }
-	    if(!kinkmotherpass) continue;
+	Bool_t kinkmotherpass = kTRUE;
+	for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
+	  if(track->GetID() == listofmotherkink[kinkmother]) {
+	    kinkmotherpass = kFALSE;
+	    continue;
+	  }
+	}
+	if(!kinkmotherpass) continue;
       }
       
       // RecPrim
@@ -2029,7 +2034,7 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
   if(IsHeavyIon()) {
     // Centrality
     AliCentrality *centrality = fInputEvent->GetCentrality();
-    fCentralityPercent = centrality->GetCentralityPercentile("V0M");
+    fCentralityPercent = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
     //printf("centrality %f\n",fCentralityPercent);
 
     for(Int_t ibin = 0; ibin < 11; ibin++){
@@ -2172,4 +2177,122 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
  }
 
 }
+//___________________________________________________
+Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
+    // check function!
+    // pPb settings
 
+    Bool_t cint8=kFALSE;
+    Bool_t cint7=kFALSE;
+    Bool_t cint5=kFALSE;
+    Bool_t trdtrgevent=kFALSE;
+
+    if(fWhichTRDTrigger==1)
+    {
+       // if (!(AliTriggerAnalysis::TRDTrigger(ev) & 0x2)) return; // HSE
+	cint8= ev->IsTriggerClassFired("CINT8WUHSE-B-NOPF-CENT");
+	cint7= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT");
+	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
+	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 10));
+	//  printf("trdtrg condition %i \n",fWhichTRDTrigger);
+    }
+    if(fWhichTRDTrigger==2)
+    {
+	cint8= ev->IsTriggerClassFired("CINT8WUHSE-B-NOPF-CENT");
+	cint7= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT");
+	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
+	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 10));
+	//     printf("trdtrg condition %i \n",fWhichTRDTrigger);
+    }
+
+    //HQU
+    if(fWhichTRDTrigger==3)
+    {
+       // if (!(AliTriggerAnalysis::TRDTrigger(ev) & 0x4)) return; // HSE
+	cint8= ev->IsTriggerClassFired("CINT8WUHQU-B-NOPF-CENT");
+	cint7= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT");
+	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
+	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 12));
+	//  printf("trdtrg condition %i \n",fWhichTRDTrigger);
+    }
+    if(fWhichTRDTrigger==4)
+    {
+	cint8= ev->IsTriggerClassFired("CINT8WUHQU-B-NOPF-CENT");
+	cint7= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT");
+	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
+	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 12));
+	//  printf("trdtrg condition %i \n",fWhichTRDTrigger);
+    }
+
+    Int_t ntriggerbit=0;
+    fQACollection->Fill("nTriggerBit",ntriggerbit);
+    if(ev->IsTriggerClassFired("CINT7-B-NOPF-ALLNOTRD"))
+    {
+	ntriggerbit=2;
+	fQACollection->Fill("nTriggerBit2D",ntriggerbit,ntriggerbit);
+	fQACollection->Fill("nTriggerBit",ntriggerbit);
+    }
+    if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
+    {
+	ntriggerbit=3;
+	fQACollection->Fill("nTriggerBit2D",ntriggerbit,ntriggerbit);
+	fQACollection->Fill("nTriggerBit",ntriggerbit);
+    }
+    if(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-CENT"))
+    {
+	ntriggerbit=4;
+	fQACollection->Fill("nTriggerBit2D",ntriggerbit,ntriggerbit);
+	fQACollection->Fill("nTriggerBit",ntriggerbit);
+    }
+    if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
+	ntriggerbit=5;
+	fQACollection->Fill("nTriggerBit2D",ntriggerbit,ntriggerbit);
+	fQACollection->Fill("nTriggerBit",ntriggerbit);
+	if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+	    ntriggerbit=11;
+	    fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
+	    fQACollection->Fill("nTriggerBit",ntriggerbit);
+	}
+    }
+    if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+	ntriggerbit=6;
+	fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
+	fQACollection->Fill("nTriggerBit",ntriggerbit);
+	if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
+	    ntriggerbit=12;
+	    fQACollection->Fill("nTriggerBit2D",ntriggerbit,ntriggerbit);
+	    fQACollection->Fill("nTriggerBit",ntriggerbit);
+	}
+    }
+    if(ev->IsTriggerClassFired("CEMC7WUHEE-B-NOPF-CENT")) {
+	ntriggerbit=7;
+	fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
+	fQACollection->Fill("nTriggerBit",ntriggerbit);
+    }
+    if(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-FAST")){
+	ntriggerbit=8;
+	fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
+	fQACollection->Fill("nTriggerBit",ntriggerbit);
+    }
+    if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-FAST")){
+	ntriggerbit=9;
+	fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
+	fQACollection->Fill("nTriggerBit",ntriggerbit);
+    }
+    if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-FAST")){
+	ntriggerbit=10;
+	fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
+	fQACollection->Fill("nTriggerBit",ntriggerbit);
+    }
+    if(ntriggerbit==0) fQACollection->Fill("nTriggerBit",1);
+
+//   printf("triggerbit %i \n",ntriggerbit);
+
+ 
+
+    if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) trdtrgevent=kFALSE;
+    else trdtrgevent=kTRUE;
+
+    return trdtrgevent;
+
+}
