@@ -1,4 +1,4 @@
-AliAnalysisTaskSE *AddTaskNuclei(Bool_t kAOD=kFALSE,Bool_t kMC=kFALSE,Float_t *kCentrality,Int_t filterBit,Int_t nTPCminCluster,Float_t DCAzCut,Float_t DCAxyCut,Bool_t bTPCcut=kTRUE){
+AliAnalysisTaskSE *AddTaskNuclei(Bool_t kAOD=kFALSE,Bool_t kMC=kFALSE,Float_t fCentralityMin=0.0,Float_t fCentralityMax=100.0,Int_t filterBit,Int_t nTPCminCluster,Float_t DCAzCut,Float_t DCAxyCut,Bool_t bTPCcut=kTRUE){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -19,9 +19,13 @@ AliAnalysisTaskSE *AddTaskNuclei(Bool_t kAOD=kFALSE,Bool_t kMC=kFALSE,Float_t *k
   //========= Add tender to the ANALYSIS manager and set default storage =====
   char mytaskName[100];
   
-  snprintf(mytaskName,100,"AliAnalysisNucleiMass%02i%02i",kCentrality[0],kCentrality[1]);
+  snprintf(mytaskName,100,"AliAnalysisNucleiMass");
 
   AliAnalysisNucleiMass *task = new AliAnalysisNucleiMass(mytaskName);
+
+  Float_t *kCentrality = new Float_t[2];
+  kCentrality[0]=fCentralityMin;
+  kCentrality[1]=fCentralityMax;  
 
   task->SetCentrality(kCentrality);
   task->SetFilterBit(filterBit);
