@@ -9,7 +9,7 @@
 #pragma link C++ class AliHLTHOMERWriter+;
 
 
-#pragma link C++ global gROOT;
-#pragma link C++ global gEnv;
+/* #pragma link C++ global gROOT; */
+/* #pragma link C++ global gEnv; */
 
 #endif

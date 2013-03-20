@@ -1,6 +1,6 @@
 
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTHOMERLIBMANAGER_H
 #define ALIHLTHOMERLIBMANAGER_H
@@ -8,17 +8,11 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTHOMERLibManager.h
-    @author Matthias Richter
-    @date   
-    @brief  dynamic HLT HOMER reader/writer generation and destruction
+/// @file   AliHLTHOMERLibManager.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  dynamic HLT HOMER reader/writer generation and destruction
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-                                                                          */
 #include "AliHLTDataTypes.h"
 #include "TObject.h" // for ClassDef/Imp
 
@@ -140,7 +134,7 @@ class AliHLTHOMERLibManager {
   int UnloadHOMERLibrary();
 
   /** status of the loading of the HOMER library */
-  int fLibraryStatus; //!transient
+static  int fgLibraryStatus; //!transient
 
   /** entry in the HOMER library */
   void (*fFctCreateReaderFromTCPPort)(); //!transient
