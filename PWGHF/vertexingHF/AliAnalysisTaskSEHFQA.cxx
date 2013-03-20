@@ -620,12 +620,12 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     evselection->AddRubric("evnonsel","zvtx");
     evselection->Init();
 
-    TH1F* hxvtx=new TH1F("hxvtx", "Distribution of x_{VTX};x_{VTX} [cm];Entries",100,-1,1);
-    TH1F* hyvtx=new TH1F("hyvtx", "Distribution of y_{VTX};y_{VTX} [cm];Entries",100,-1,1);
-    TH1F* hzvtx=new TH1F("hzvtx", "Distribution of z_{VTX};z_{VTX} [cm];Entries",100,-30,30);
-    TH1F* hxvtxSelEv=new TH1F("hxvtxSelEv", "Distribution of x_{VTX} Selected Ev;x_{VTX} [cm];Entries",100,-1,1);
-    TH1F* hyvtxSelEv=new TH1F("hyvtxSelEv", "Distribution of y_{VTX} Selected Ev;y_{VTX} [cm];Entries",100,-1,1);
-    TH1F* hzvtxSelEv=new TH1F("hzvtxSelEv", "Distribution of z_{VTX} Selected Ev;z_{VTX} [cm];Entries",100,-30,30);
+    TH1F* hxvtx=new TH1F("hxvtx", "Distribution of x_{VTX};x_{VTX} [cm];Entries",800,-1,1);
+    TH1F* hyvtx=new TH1F("hyvtx", "Distribution of y_{VTX};y_{VTX} [cm];Entries",800,-1,1);
+    TH1F* hzvtx=new TH1F("hzvtx", "Distribution of z_{VTX};z_{VTX} [cm];Entries",800,-30,30);
+    TH1F* hxvtxSelEv=new TH1F("hxvtxSelEv", "Distribution of x_{VTX} Selected Ev;x_{VTX} [cm];Entries",800,-1,1);
+    TH1F* hyvtxSelEv=new TH1F("hyvtxSelEv", "Distribution of y_{VTX} Selected Ev;y_{VTX} [cm];Entries",800,-1,1);
+    TH1F* hzvtxSelEv=new TH1F("hzvtxSelEv", "Distribution of z_{VTX} Selected Ev;z_{VTX} [cm];Entries",800,-30,30);
     TH1F* hWhichVert=new TH1F("hWhichVert","Vertex Type",4,-1.5,2.5);
     hWhichVert->GetXaxis()->SetBinLabel(1,"Not found");
     hWhichVert->GetXaxis()->SetBinLabel(2,"Track");
