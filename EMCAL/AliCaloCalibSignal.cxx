@@ -40,6 +40,12 @@
 #include "AliRawReader.h"
 #include "AliCaloRawStreamV3.h"
 
+#include "AliCaloConstants.h"
+#include "AliCaloBunchInfo.h"
+#include "AliCaloFitResults.h"
+#include "AliCaloRawAnalyzer.h"
+#include "AliCaloRawAnalyzerFactory.h"
+
 //The include file
 #include "AliCaloCalibSignal.h"
 
@@ -65,6 +71,8 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
   fModules(0),
   fCaloString(),
   fMapping(NULL),
+  fFittingAlgorithm(0),  
+  fRawAnalyzer(0),
   fRunNumber(-1),
   fStartTime(0),
   fAmpCut(40), // min. 40 ADC counts as default
@@ -104,7 +112,7 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
   }
 
   fDetType = detectorType;
-
+  SetFittingAlgorithm(Algo::kStandard);
   ResetInfo(); // trees and counters
 } 
 
@@ -372,7 +380,7 @@ void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
       // if the key matches with something we expect, we assign the new value
       if ( (key == "fAmpCut") || (key == "fReqFractionAboveAmpCutVal") ||
 	   (key == "fAmpCutLEDRef") || (key == "fSecInAverage") || 
-	   (key == "fDownscale") ) {
+	   (key == "fFittingAlgorithm") || (key == "fDownscale") ) {
 	istringstream iss(value);
 	printf("AliCaloCalibSignal::SetParametersFromFile - key %s value %s\n", key.c_str(), value.c_str());
 
@@ -387,6 +395,10 @@ void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
 	}
 	else if (key == "fSecInAverage") { 
 	  iss >> fSecInAverage; 
+	}
+	else if (key == "fFittingAlgorithm") { 
+	  iss >> fFittingAlgorithm;
+	  SetFittingAlgorithm( fFittingAlgorithm );
 	}
 	else if (key == "fDownscale") { 
 	  iss >> fDownscale; 
@@ -410,10 +422,20 @@ void AliCaloCalibSignal::WriteParametersToFile(const char *parameterFile)
   out << "fReqFractionAboveAmpCutVal" << "::" << fReqFractionAboveAmpCutVal << endl;
   out << "fAmpCutLEDRef" << "::" << fAmpCutLEDRef << endl;
   out << "fSecInAverage" << "::" << fSecInAverage << endl;
+  out << "fFittingAlgorithm" << "::" << fFittingAlgorithm << endl;
   out << "fDownscale" << "::" << fDownscale << endl;
 
   out.close();
   return;
+}
+
+//_____________________________________________________________________
+void AliCaloCalibSignal::SetFittingAlgorithm(Int_t fitAlgo)              
+{ // select which fitting algo should be used
+  fFittingAlgorithm = fitAlgo;
+  delete fRawAnalyzer; // delete doesn't do anything if the pointer is 0x0
+  fRawAnalyzer = AliCaloRawAnalyzerFactory::CreateAnalyzer( fitAlgo );
+  fRawAnalyzer->SetIsZeroSuppressed(true); // TMP - should use stream->IsZeroSuppressed(), or altro cfg registers later
 }
 
 //_____________________________________________________________________
@@ -507,6 +529,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliRawReader *rawReader)
   if (fDetType == kEmCal) {
     rawReader->Select("EMCAL", 0, AliEMCALGeoParams::fgkLastAltroDDL) ; //select EMCAL DDL range 
   }
+
   return ProcessEvent( &rawStream, rawReader->GetTimestamp() );
 }
 
@@ -530,7 +553,6 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
   int iLEDAmpVal[fgkMaxRefs * 2]; // factor 2 is for the two gain values
   memset(iLEDAmpVal, 0, sizeof(iLEDAmpVal));
 
-  int sample = 0; // temporary value
   int gain = 0; // high or low gain
   
   // Number of Low and High gain, and LED Ref, channels for this event:
@@ -546,24 +568,11 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
   while (in->NextDDL()) {
     while (in->NextChannel()) {
 
-      // counters
-      int max = AliEMCALGeoParams::fgkSampleMin, min = AliEMCALGeoParams::fgkSampleMax; // min and max sample values
-      int nsamples = 0;
-
+      vector<AliCaloBunchInfo> bunchlist; 
       while (in->NextBunch()) {
-	const UShort_t *sig = in->GetSignals();
-	nsamples += in->GetBunchLength();
-	for (Int_t i = 0; i < in->GetBunchLength(); i++) {
-	  sample = sig[i];
-
-	  // check if it's a min or max value
-	  if (sample < min) min = sample;
-	  if (sample > max) max = sample;
-
-	} // loop over samples in bunch
-      } // loop over bunches
-
-      if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
+	bunchlist.push_back( AliCaloBunchInfo(in->GetStartTimeBin(), in->GetBunchLength(), in->GetSignals() ) );
+      } 
+      if (bunchlist.size() == 0) continue;
 
       gain = -1; // init to not valid value
       //If we're here then we're done with this tower
@@ -576,6 +585,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
       else if ( in->IsLEDMonData() ) {
 	gain = in->GetRow(); // gain coded in (in RCU/Altro mapping) as Row info for LED refs..
       }
+      else { continue; } // don't try to fit TRU..
 
       // it should be enough to check the SuperModule info for each DDL really, but let's keep it here for now
       int arrayPos = in->GetModule(); //The modules are numbered starting from 0
@@ -585,29 +595,29 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
 	return kFALSE;
       }
 
+      AliCaloFitResults res =  fRawAnalyzer->Evaluate( bunchlist, in->GetAltroCFG1(), in->GetAltroCFG2());  
       if ( in->IsHighGain() || in->IsLowGain() ) { // regular tower
 	// get tower number for AmpVal array
 	iTowerNum = GetTowerNum(arrayPos, in->GetColumn(), in->GetRow()); 
 
 	if (gain == 0) {
 	  // fill amplitude into the array	   
-	  iAmpValLowGain[iTowerNum] = max - min;
+	  iAmpValLowGain[iTowerNum] = res.GetAmp();
 	  nLowChan++;
 	} 
 	else if (gain==1) {//fill the high gain ones
 	  // fill amplitude into the array
-	  iAmpValHighGain[iTowerNum] = max - min;
+	  iAmpValHighGain[iTowerNum] = res.GetAmp();;
 	  nHighChan++;
 	}//end if gain
       } // regular tower
       else if ( in->IsLEDMonData() ) { // LED ref.; 
 	// strip # is coded is 'column' in the channel maps 
 	iRefNum = GetRefNum(arrayPos, in->GetColumn(), gain); 
-	iLEDAmpVal[iRefNum] = max - min;
+	iLEDAmpVal[iRefNum] = res.GetAmp();
 	nLEDRefChan++;
       } // end of LED ref
 
-      } // nsamples>0 check, some data found for this channel; not only trailer/header      
     } // end while over channel 
    
   }//end while over DDL's, of input stream

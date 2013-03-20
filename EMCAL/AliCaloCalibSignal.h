@@ -28,6 +28,7 @@
 class AliCaloRawStreamV3;
 class AliCaloAltroMapping;
 class AliRawReader;
+class AliCaloRawAnalyzer;
 
 class AliCaloCalibSignal : public TObject {
   
@@ -37,7 +38,7 @@ class AliCaloCalibSignal : public TObject {
   
   AliCaloCalibSignal(kDetType detectorType = kPhos); //ctor
   virtual ~AliCaloCalibSignal(); //dtor
-  
+
 private:
   //Just declare them, avoid compilation warning
   AliCaloCalibSignal(const AliCaloCalibSignal & /*sig*/); // copy ctor
@@ -53,6 +54,11 @@ public:
   // Mapping handling
   AliCaloAltroMapping **GetAltroMapping() const { return fMapping; };
   void  SetAltroMapping(AliCaloAltroMapping **mapp) { fMapping = mapp; };
+
+  // Fitter / Analyzer
+  Int_t    GetFittingAlgorithm()  const {return fFittingAlgorithm; }
+  void SetFittingAlgorithm(Int_t val) ;         
+  AliCaloRawAnalyzer *GetRawAnalyzer()  const { return fRawAnalyzer;}  
 
   // Parameter/cut handling
   void SetParametersFromFile(const char *parameterFile);
@@ -168,6 +174,8 @@ public:
   int fModules;	//The number of modules
   TString fCaloString; // id for which detector type we have 
   AliCaloAltroMapping **fMapping;    //! Altro Mapping object
+  Int_t   fFittingAlgorithm;            // select the fitting algorithm
+  AliCaloRawAnalyzer *fRawAnalyzer;     //! e.g. for sample selection for fits
   int fRunNumber; //The run number. Needs to be set by the user.
   int fStartTime;  // Time of first event
 
@@ -214,7 +222,7 @@ public:
   int fNLowGain[fgkMaxTowers]; // same, for low gain
   int fNRef[fgkMaxRefs * 2]; // same, for LED refs; *2 for both gains
   
-  ClassDef(AliCaloCalibSignal, 7) // don't forget to change version if you change class member list..
+  ClassDef(AliCaloCalibSignal, 8) // don't forget to change version if you change class member list..
     
 };
     
