@@ -90,7 +90,7 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2010PbPb2040CentScan();
   void InitDstartoD0pi2010PbPb4060CentScan();
   void InitDstartoD0pi2010PbPb6080CentScan();
-  
+
 
  private:
 
@@ -98,28 +98,29 @@ class AliHFSystErr : public TNamed
   AliHFSystErr& operator=(const AliHFSystErr& source); 
  
   void InitD0toKpi2010pp();
+  void InitD0toKpi2010ppLowEn();
+  void InitD0toKpi2011PbPb07half();
+  void InitD0toKpi2010PbPb020();
+  void InitD0toKpi2010PbPb4080();
+
   void InitDplustoKpipi2010pp();
+  void InitDplustoKpipi2010ppLowEn();
+  void InitDplustoKpipi2011PbPb07half();
+  void InitDplustoKpipi2010PbPb020();
+  void InitDplustoKpipi2010PbPb4080();
+
   void InitDstartoD0pi2010pp();
+  void InitDstartoD0pi2010ppLowEn();
+  void InitDstartoD0pi2011PbPb07half();
+  void InitDstartoD0pi2010PbPb020();
+  void InitDstartoD0pi2010PbPb2040();
+  void InitDstartoD0pi2010PbPb4080();
+
   void InitDstoKKpi2010pp();
   void InitDstoKKpi2011PbPb07half();
 
-  void InitD0toKpi2010PbPb020();
-  void InitD0toKpi2011PbPb07half();
-  void InitDplustoKpipi2010PbPb020();
-  void InitDplustoKpipi2011PbPb07half();
-  void InitDstartoD0pi2010PbPb020();
-  void InitDstartoD0pi2011PbPb07half();
+  void InitLctopKpi2010pp();
 
-  void InitD0toKpi2010PbPb4080();
-  void InitDplustoKpipi2010PbPb4080();
-  void InitDstartoD0pi2010PbPb4080();
-
-
-  void InitD0toKpi2010ppLowEn();
-  void InitDplustoKpipi2010ppLowEn();
-  void InitDstartoD0pi2010ppLowEn();
-
-  void InitDstartoD0pi2010PbPb2040();
 
   TH1F* ReflectHisto(TH1F *hin) const;
 

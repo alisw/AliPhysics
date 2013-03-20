@@ -157,6 +157,10 @@ void AliHFSystErr::Init(Int_t decay){
     }
     else AliFatal("Not yet implemented");
     break;
+  case 5: // Lc->pKpi
+    if (fCollisionType==0) InitLctopKpi2010pp();
+    else AliFatal("Not yet implemented");
+    break;
     
   default:
     printf("Invalid decay type: %d\n",decay);
@@ -1390,6 +1394,50 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb6080CentScan(){
   for(Int_t i=7;i<=12;i++) fMCPtShape->SetBinContent(i,0.045);
 }
 
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopKpi2010pp() {
+  //
+  // Lc->pKpi syst errors. Responsible: R. Romita
+  //  2010 pp sample
+  //
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",4,2,6);
+  for(Int_t i=1;i<=4;i++) fNorm->SetBinContent(i,0.035); // 4% error on sigmaV0and
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",4,2,6);
+  for(Int_t i=1;i<=4;i++) fTrackingEff->SetBinContent(i,0.12); // 12% (4% per track)
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+  fRawYield->SetBinContent(1,0.20);
+  fRawYield->SetBinContent(2,0.15);
+  fRawYield->SetBinContent(3,0.10);
+  fRawYield->SetBinContent(4,0.15);
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",4,2,6);
+  fCutsEff->SetBinContent(1,0.50);
+  fCutsEff->SetBinContent(2,0.07);
+  fCutsEff->SetBinContent(3,0.30);
+  fCutsEff->SetBinContent(4,0.40);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",4,2,4);
+  fPIDEff->SetBinContent(1,0.13); // 15%
+  fPIDEff->SetBinContent(2,0.30); // 15%
+  fPIDEff->SetBinContent(3,0.5); // 15%
+  fPIDEff->SetBinContent(4,0.30); // 15%
+
+  // MC dN/dpt 
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0,12);
+  for(Int_t i=1; i<=2; i++) fMCPtShape->SetBinContent(i,1.);
+  for(Int_t i=3; i<=4; i++) fMCPtShape->SetBinContent(i,0.03);
+  for(Int_t i=5; i<=6; i++) fMCPtShape->SetBinContent(i,0.03);
+  for(Int_t i=7; i<=8; i++) fMCPtShape->SetBinContent(i,0.02);
+  for(Int_t i=9; i<=12; i++) fMCPtShape->SetBinContent(i,0.02);
+}
 
 //--------------------------------------------------------------------------
 Double_t AliHFSystErr::GetCutsEffErr(Double_t pt) const {
