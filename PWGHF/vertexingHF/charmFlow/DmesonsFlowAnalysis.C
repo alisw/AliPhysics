@@ -69,7 +69,7 @@ Float_t massRangeForCounting=0.1; // GeV
 Bool_t gnopng=kFALSE; //don't save in png format (only root and eps)
 Int_t minPtBin[nptbinsnew]={-1,-1,-1,-1};
 Int_t maxPtBin[nptbinsnew]={-1,-1,-1,-1};
-Double_t effInOverEffOut=1.025;
+Double_t effInOverEffOut=1.03;
 Double_t massD;
 
 //methods
