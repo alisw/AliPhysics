@@ -342,15 +342,15 @@ void GenerateMergeConfigs(){
         outMerge.close();
         // Write config for Terminate
         std::ofstream outTerminate("configTerminate.txt");
-        outMerge << "aliroot " << g_aliroot_version.Data() << std::endl;
-        outMerge << "root " << g_root_version.Data() << std::endl;
-        outMerge << "sample " << g_sample.Data() << std::endl;
-        outMerge << "mode Terminate\n";
-        outMerge << "traindir " << g_train_dir.Data() << std::endl; 
-        outMerge << "runlist ";
-        for(int irun = 0; irun < g_runlist.GetSize()-1; irun++) outMerge << g_runlist[irun] << ",";
-        outMerge << g_runlist[g_runlist.GetSize()-1] << std::endl;
-        outMerge.close();
+        outTerminate << "aliroot " << g_aliroot_version.Data() << std::endl;
+        outTerminate << "root " << g_root_version.Data() << std::endl;
+        outTerminate << "sample " << g_sample.Data() << std::endl;
+        outTerminate << "mode Terminate\n";
+        outTerminate << "traindir " << g_train_dir.Data() << std::endl; 
+        outTerminate << "runlist ";
+        for(int irun = 0; irun < g_runlist.GetSize()-1; irun++) Terminate << g_runlist[irun] << ",";
+        outTerminate << g_runlist[g_runlist.GetSize()-1] << std::endl;
+        outTerminate.close();
 
         printf("Configurations for MergeViaJDL and terminate generated\n");
 }
