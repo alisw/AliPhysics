@@ -1162,7 +1162,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   multV0ACorr = AliESDUtils::GetCorrV0A(multV0A,zvtx);    
   multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);    
 
-  v0Corr = multV0A+multV0C; // Todo: C.L. not clear why here we do not use the sum of the corrected values?
+  v0Corr = multV0ACorr+multV0CCorr;
 
   multV0AOnline=esdV0->GetTriggerChargeA(); 
   multV0COnline=esdV0->GetTriggerChargeC(); 
@@ -1204,7 +1204,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 	AliError("AliAODTZERO not available");
 	return;
       }
-    Int_t trig=1;//esdT0->GetT0Trig(); //* Todo: C.L. This info is not in AOD? */
+    Int_t trig=0;//esdT0->GetT0Trig(); //* Todo: C.L. This info is not in AOD? */
     if(trig&1) kT0BB=kTRUE;
     zvtxT0=esdT0->GetT0zVertex();
   }
@@ -1399,10 +1399,15 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     AliAODZDC *aodZDC = aod->GetZDCData();
     const Double_t *ZNAtower = aodZDC->GetZNATowerEnergy(); 
     znaTower = ZNAtower[0];
+    const Double_t *ZNCtower = aodZDC->GetZNCTowerEnergy(); 
+    zncTower = ZNCtower[0];
 
     znaFired = kFALSE; // trick because info is not stored in AOD
+    zncFired = kFALSE; // trick because info is not stored in AOD
     if (esdCent->GetCentralityPercentile("ZNA") != 101)
       znaFired = kTRUE;
+    if (esdCent->GetCentralityPercentile("ZNC") != 101)
+      zncFired = kTRUE;
   }
 
   if (esd) {
@@ -1518,9 +1523,10 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       Double_t trk = esdCent->GetCentralityPercentile("TRK");
       Double_t cnd = esdCent->GetCentralityPercentile("CND");
       Double_t zna = esdCent->GetCentralityPercentile("ZNA");
-      printf("AOD: v0m %.2f %.2f (%.2f) cl1 %.2f %.2f (%.2f) trk %.2f %.2f (%.2f) cnd %.2f %.2f (%.2f) zna %.2f %.2f (%.2f)\n", 
+      Double_t znc = esdCent->GetCentralityPercentile("ZNC");
+      printf("AOD: v0m %.2f %.2f (%.2f) cl1 %.2f %.2f (%.2f) trk %.2f %.2f (%.2f) cnd %.2f %.2f (%.2f) zna %.2f %.2f (%.2f) znc %.2f %.2f (%.2f)\n", 
 	     v0m, fCentV0M, fCentV0M!=0?v0m/fCentV0M:1, cl1, fCentCL1, fCentCL1!=0?cl1/fCentCL1:1, trk, fCentTRK, 
-	     fCentTRK!=0?trk/fCentTRK:1, cnd, fCentCND, fCentCND!=0?cnd/fCentCND:1, zna, fCentZNA, fCentZNA!=0?zna/fCentZNA:1);
+	     fCentTRK!=0?trk/fCentTRK:1, cnd, fCentCND, fCentCND!=0?cnd/fCentCND:1, zna, fCentZNA, fCentZNA!=0?zna/fCentZNA:1, znc, fCentZNC, fCentZNC!=0?znc/fCentZNC:1);
     }
     esdCent->SetQuality(fQuality);
     esdCent->SetCentralityV0M(fCentV0M);
