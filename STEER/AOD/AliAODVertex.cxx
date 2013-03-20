@@ -297,7 +297,7 @@ Int_t AliAODVertex::GetNContributors() const
   Int_t cont  = 0;
 
   TString vtitle = GetTitle();
-  if (!vtitle.Contains("VertexerTracks")) {
+  if (!vtitle.Contains("VertexerTracks") || vtitle.Contains("TracksNoConstraint")) {
     cont = fNContributors;
   } else {
     for (Int_t iDaug = 0; iDaug < GetNDaughters(); iDaug++) {
