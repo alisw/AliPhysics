@@ -20,42 +20,45 @@ using namespace std;
 
 class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
 
-public:
+ public:
 
-    AliAnalysisTaskMaterial(const char *name);
-    virtual ~AliAnalysisTaskMaterial();
+   AliAnalysisTaskMaterial(const char *name);
+   virtual ~AliAnalysisTaskMaterial();
 
-    virtual void   UserCreateOutputObjects();
-    virtual void   UserExec(Option_t *option);
-    virtual void   Terminate(Option_t *);
+   virtual void   UserCreateOutputObjects();
+   virtual void   UserExec(Option_t *option);
+   virtual void   Terminate(Option_t *);
 
-    void SetV0Reader(AliV0ReaderV1 *v0Reader){fV0Reader=v0Reader;}
-    void SetConversionCuts(AliConversionCuts* conversionCuts,Bool_t IsHeavyIon ){
-       fConversionCuts=conversionCuts;
-       fIsHeavyIon = IsHeavyIon;
-    }
-    
-private:
+   void SetV0Reader(AliV0ReaderV1 *v0Reader){fV0Reader=v0Reader;}
+   void SetConversionCuts(AliConversionCuts* conversionCuts,Bool_t IsHeavyIon ){
+      fConversionCuts=conversionCuts;
+      fIsHeavyIon = IsHeavyIon;
+   }
 
-    void ProcessPhotons();
-	 void ProcessMCPhotons();
-	 void FillMCTree(Int_t stackPos);
-	 Int_t CountESDTracks14();
-	 Int_t CountESDTracks0914();
-	 Int_t CountESDTracks09();
-	 
-    AliV0ReaderV1 *fV0Reader;
-    TClonesArray *fConversionGammas; //Reconstructed Photons;
-    AliConversionCuts *fConversionCuts; // Cuts used by the V0Reader
-    TTreeSRedirector *fStreamMaterial;
-	 TTreeSRedirector *fStreamResolution;
-    Bool_t fIsHeavyIon;
-    TList *fOutputList;
-	 AliESDEvent *fESDEvent;
-	 AliMCEvent *fMCEvent;
-	
-    ClassDef(AliAnalysisTaskMaterial, 0);
+ private:
+
+   void ProcessPhotons();
+   void ProcessMCPhotons();
+   void FillMCTree(Int_t stackPos);
+   Int_t CountESDTracks14();
+   Int_t CountESDTracks0914();
+   Int_t CountESDTracks09();
+
+   AliV0ReaderV1 *fV0Reader;
+   TClonesArray *fConversionGammas; //Reconstructed Photons;
+   AliConversionCuts *fConversionCuts; // Cuts used by the V0Reader
+   TTreeSRedirector *fStreamMaterial;
+   TTreeSRedirector *fStreamResolution;
+   Bool_t fIsHeavyIon;
+   TList *fOutputList;
+   AliESDEvent *fESDEvent;
+   AliMCEvent *fMCEvent;
+
+   AliAnalysisTaskMaterial(const AliAnalysisTaskMaterial&); // not implemented
+   AliAnalysisTaskMaterial& operator=(const AliAnalysisTaskMaterial&); // not implemented
+
+
+   ClassDef(AliAnalysisTaskMaterial, 0);
 };
 
 #endif
-

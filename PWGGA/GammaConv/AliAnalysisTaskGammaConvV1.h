@@ -64,7 +64,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TList **fHeaderNameList;
    TList *fOutputContainer;
    TClonesArray *fReaderGammas;
-   TList *fGoodGammas;
+   TList *fGammaCandidates;
    TList *fCutArray;
    AliConversionCuts *fConversionCuts;
    TList *fMesonCutArray;
@@ -96,8 +96,10 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1F **hMCEtaInAccPt;
    TH2F **hESDTrueMotherInvMassPt;
    TH2F **hESDTruePi0FromEtaInvMassPt;
+   TH2F **hESDTruePrimaryMotherInvMassPt;
    TH2F **hESDTruePrimaryMotherInvMassMCPt;
    TH2F **hESDTruePrimaryPi0ESDPtMCPt;
+   TH2F **hESDTruePrimaryEtaESDPtMCPt;
    TH2F **hESDTrueSecondaryMotherInvMassPt;
    TH2F **hESDTrueSecondaryMotherFromK0sInvMassPt;
    TH1F **hESDTrueK0sWithPi0DaughterMCPt;
@@ -116,28 +118,32 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1F **hESDTrueSecondaryConvGammaPt;
    TH1F **hESDTrueSecondaryConvGammaR;
    TH1F **hESDTrueSecondaryConvGammaFromXFromK0sPt;
-   TH1F **hESDPi0Alpha;
-   TH1F **hESDBackAlpha;
-   TH1F **hESDTruePi0Alpha;
    TH1I **hNEvents;
    TH1I **hNGoodESDTracks;
+   TH1I **hNGammaCandidates;
    TH1I **hNV0Tracks;
 
    TRandom3 fRandom;
-   Int_t fnGoodGammas;
-   Double_t *fUnsmearedPx; //[fnGoodGammas]
-   Double_t *fUnsmearedPy; //[fnGoodGammas]
-   Double_t *fUnsmearedPz; //[fnGoodGammas]
-   Double_t *fUnsmearedE;  //[fnGoodGammas]
+   Int_t fnGammaCandidates;
+   Double_t *fUnsmearedPx; //[fnGammaCandidates]
+   Double_t *fUnsmearedPy; //[fnGammaCandidates]
+   Double_t *fUnsmearedPz; //[fnGammaCandidates]
+   Double_t *fUnsmearedE;  //[fnGammaCandidates]
    Int_t fnCuts;
    Int_t fiCut;
    Int_t fNumberOfESDTracks;
    Bool_t fMoveParticleAccordingToVertex;
    Bool_t fIsHeavyIon;
    Bool_t fDoMesonAnalysis;
-   Bool_t fIsFromBGEvent;
+   Bool_t fIsFromMBHeader;
 
-   ClassDef(AliAnalysisTaskGammaConvV1, 2);
+private:
+
+   AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
+   AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
+
+
+   ClassDef(AliAnalysisTaskGammaConvV1, 3);
 };
 
 #endif

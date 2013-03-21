@@ -66,7 +66,7 @@ fWeight(1)
     //Set Decay Photon Labels
     fLabel[0]=-1;
     fLabel[1]=-1;
-	 fLabel[2]=0;
+    fLabel[2]=0;
 }
 
 AliAODConversionMother::~AliAODConversionMother() {

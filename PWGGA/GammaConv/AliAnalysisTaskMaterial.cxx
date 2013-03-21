@@ -36,6 +36,7 @@ ClassImp(AliAnalysisTaskMaterial)
 
 //________________________________________________________________________
 AliAnalysisTaskMaterial::AliAnalysisTaskMaterial(const char *name) : AliAnalysisTaskSE(name),
+   fV0Reader(NULL),
    fConversionGammas(NULL),
    fConversionCuts(NULL),
    fStreamMaterial(NULL),
@@ -81,8 +82,8 @@ void AliAnalysisTaskMaterial::UserCreateOutputObjects()
    // V0 Reader Cuts
    TString cutnumber = fConversionCuts->GetCutNumber();
 
-   fStreamMaterial = new TTreeSRedirector(Form("GammaConvV1_Material_%s.root",cutnumber.Data()));
-	fStreamResolution = new TTreeSRedirector(Form("GammaConvV1_Resolution_%s.root",cutnumber.Data()));
+   fStreamMaterial = new TTreeSRedirector(Form("GammaConvV1_Material_%s.root",cutnumber.Data()),"recreate");
+	 fStreamResolution = new TTreeSRedirector(Form("GammaConvV1_Resolution_%s.root",cutnumber.Data()),"recreate");
    PostData(1, fOutputList);
 }
 
@@ -379,7 +380,7 @@ Int_t AliAnalysisTaskMaterial::CountESDTracks0914(){
 
    AliESDtrackCuts *EsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
    // Using standard function for setting Cuts ; We use TPCOnlyTracks for outer eta region
-   Bool_t selectPrimaries=kTRUE;
+   //Bool_t selectPrimaries=kTRUE;
 	 //   EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
    EsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 	 EsdTrackCuts->SetMaxDCAToVertexXY(5);

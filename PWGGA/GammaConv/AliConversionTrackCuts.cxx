@@ -68,7 +68,9 @@ AliAnalysisCuts(),
   fhPt(NULL),
   fhPhiPt(NULL),
   fhdcaxyPt(NULL),
-//  fCutAxis(),
+  fhdcazPt(NULL),
+  fhnclpt(NULL),
+  fhnclsfpt(NULL),
   fHistograms(NULL)
 {
   //Constructor
@@ -91,6 +93,7 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
   fITSminNClusters(0),
   fITSmaxChi2(1E20),
   fTPCminNClusters(0),
+  fTPCClusOverFindable(0.0),
   fTPCmaxChi2(1E20),
   fAODTestFilterBit(-1),
   fRequireTPCRefit(kFALSE),
@@ -98,6 +101,9 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
   fhPt(NULL),
   fhPhiPt(NULL),
   fhdcaxyPt(NULL),
+  fhdcazPt(NULL),
+  fhnclpt(NULL),
+  fhnclsfpt(NULL),
   fHistograms(NULL)
 {
   //Constructor

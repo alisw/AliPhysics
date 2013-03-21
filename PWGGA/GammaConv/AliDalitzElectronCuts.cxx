@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *				       					  *
@@ -59,6 +60,7 @@ const char* AliDalitzElectronCuts::fgkCutNames[AliDalitzElectronCuts::kNCuts] = 
 "PsiPair",
 "RejectSharedElecGamma",
 "BackgroundScheme",
+"NumberOfRotations",
 };
 
 //________________________________________________________________________
@@ -101,6 +103,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fUseTOFpid(kFALSE),
     fUseTrackMultiplicityForBG(kFALSE),
     fBKGMethod(0),
+    fnumberOfRotationEventsForBG(0),
     fCutString(NULL),
     hCutIndex(NULL),
     hdEdxCuts(NULL),
@@ -108,6 +111,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     hITSdEdxafter(NULL),
     hTPCdEdxbefore(NULL),
     hTPCdEdxafter(NULL),
+    hTPCdEdxSignalafter(NULL),
     hTOFbefore(NULL),
     hTOFafter(NULL)
    {
@@ -140,10 +144,18 @@ AliDalitzElectronCuts::~AliDalitzElectronCuts() {
 }
 
 //________________________________________________________________________
-void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut){
+void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TString cutNumber){
 
     // Initialize Cut Histograms for QA (only initialized and filled if function is called)
 
+     TString cutName = "";
+    
+     if( cutNumber==""){
+         cutName = GetCutNumber().Data();
+     }
+     else {
+            cutName = cutNumber.Data();
+     } 
 
     if(fHistograms != NULL){
 	delete fHistograms;
@@ -151,12 +163,12 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut){
     }
     if(fHistograms==NULL){
 	fHistograms=new TList();
-	if(name=="")fHistograms->SetName(Form("ElectronCuts_%s",GetCutNumber().Data()));
-	else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
+	if(name=="")fHistograms->SetName(Form("ElectronCuts_%s",cutName.Data()));
+	else fHistograms->SetName(Form("%s_%s",name.Data(),cutName.Data()));
     }
 
 
-    hCutIndex=new TH1F(Form("IsElectronSelected %s",GetCutNumber().Data()),"IsElectronSelected",10,-0.5,9.5);
+    hCutIndex=new TH1F(Form("IsElectronSelected %s",cutName.Data()),"IsElectronSelected",10,-0.5,9.5);
     hCutIndex->GetXaxis()->SetBinLabel(kElectronIn+1,"in");
     hCutIndex->GetXaxis()->SetBinLabel(kNoTracks+1,"no tracks");
     hCutIndex->GetXaxis()->SetBinLabel(kTrackCuts+1,"Track cuts");
@@ -167,7 +179,7 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut){
 
 
     // dEdx Cuts
-    hdEdxCuts=new TH1F(Form("dEdxCuts %s",GetCutNumber().Data()),"dEdxCuts",10,-0.5,9.5);
+    hdEdxCuts=new TH1F(Form("dEdxCuts %s",cutName.Data()),"dEdxCuts",10,-0.5,9.5);
     hdEdxCuts->GetXaxis()->SetBinLabel(1,"in");
     hdEdxCuts->GetXaxis()->SetBinLabel(2,"ITSelectron");
     hdEdxCuts->GetXaxis()->SetBinLabel(3,"TPCelectron");
@@ -189,28 +201,31 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut){
     if(preCut){
 
 
-       hITSdEdxbefore=new TH2F(Form("Electron_ITS_before %s",GetCutNumber().Data()),"ITS dEdx electron before" ,150,0.05,20,400,-10,10);
+       hITSdEdxbefore=new TH2F(Form("Electron_ITS_before %s",cutName.Data()),"ITS dEdx electron before" ,150,0.05,20,400,-10,10);
        fHistograms->Add(hITSdEdxbefore);
        AxisBeforeITS = hITSdEdxbefore->GetXaxis();
 
-       hTPCdEdxbefore=new TH2F(Form("Electron_dEdx_before %s",GetCutNumber().Data()),"dEdx electron before" ,150,0.05,20,400,-10,10);
+       hTPCdEdxbefore=new TH2F(Form("Electron_dEdx_before %s",cutName.Data()),"dEdx electron before" ,150,0.05,20,400,-10,10);
        fHistograms->Add(hTPCdEdxbefore);
        AxisBeforedEdx = hTPCdEdxbefore->GetXaxis();
 
-       hTOFbefore=new TH2F(Form("Electron_TOF_before %s",GetCutNumber().Data()),"TOF electron before" ,150,0.05,20,400,-6,10);
+       hTOFbefore=new TH2F(Form("Electron_TOF_before %s",cutName.Data()),"TOF electron before" ,150,0.05,20,400,-6,10);
        fHistograms->Add(hTOFbefore);
        AxisBeforeTOF = hTOFbefore->GetXaxis();
 
     }
 
 
-    hITSdEdxafter=new TH2F(Form("Electron_ITS_after %s",GetCutNumber().Data()),"ITS dEdx electron after" ,150,0.05,20,400, -10,10);
+    hITSdEdxafter=new TH2F(Form("Electron_ITS_after %s",cutName.Data()),"ITS dEdx electron after" ,150,0.05,20,400, -10,10);
     fHistograms->Add(hITSdEdxafter);
 
-    hTPCdEdxafter=new TH2F(Form("Electron_dEdx_after %s",GetCutNumber().Data()),"dEdx electron after" ,150,0.05,20,400, -10,10);
+    hTPCdEdxafter=new TH2F(Form("Electron_dEdx_after %s",cutName.Data()),"dEdx electron after" ,150,0.05,20,400, -10,10);
     fHistograms->Add(hTPCdEdxafter);
 
-    hTOFafter=new TH2F(Form("Electron_TOF_after %s",GetCutNumber().Data()),"TOF electron after" ,150,0.05,20,400,-6,10);
+    hTPCdEdxSignalafter=new TH2F(Form("Electron_dEdxSignal_after %s",cutName.Data()),"dEdx electron signal after" ,150,0.0,3.0,200,0.0,200);
+    fHistograms->Add(hTPCdEdxSignalafter);
+
+    hTOFafter=new TH2F(Form("Electron_TOF_after %s",cutName.Data()),"TOF electron after" ,150,0.05,20,400,-6,10);
     fHistograms->Add(hTOFafter);
 
     TAxis *AxisAfter = hTPCdEdxafter->GetXaxis(); 
@@ -224,9 +239,6 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut){
     AxisAfter->Set(bins, newBins);
     AxisAfter = hTOFafter->GetXaxis(); 
     AxisAfter->Set(bins, newBins);
-	 AxisAfter = hITSdEdxafter->GetXaxis(); 
-    AxisAfter->Set(bins, newBins);
-
     if(preCut){
        AxisBeforeITS->Set(bins, newBins);
        AxisBeforedEdx->Set(bins, newBins);
@@ -473,8 +485,8 @@ Bool_t AliDalitzElectronCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   cutIndex++;
 
    
-  if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid) && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
-     if(hTOFbefore) hTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
+  if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
+   if(hTOFbefore) hTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
      if(fUseTOFpid){
         if(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)>fTofPIDnSigmaAboveElectronLine ||
            fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)<fTofPIDnSigmaBelowElectronLine ){
@@ -488,6 +500,7 @@ Bool_t AliDalitzElectronCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 
   if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
   if(hTPCdEdxafter)hTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
+  if(hTPCdEdxSignalafter)hTPCdEdxSignalafter->Fill(fCurrentTrack->P(),TMath::Abs(fCurrentTrack->GetTPCsignal()));
 
   return kTRUE;
 }
@@ -538,8 +551,8 @@ Bool_t AliDalitzElectronCuts::RejectSharedElecGamma(TList *photons, Int_t indexE
 
    return kTRUE;
 }
-
-Double_t AliDalitzElectronCuts::GetPsiPair( const AliESDtrack* trackPos, const AliESDtrack* trackNeg ) const
+/*
+Double_t AliDalitzElectronCuts::GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg )
 {
 //
 // This angle is a measure for the contribution of the opening in polar
@@ -562,13 +575,15 @@ Double_t AliDalitzElectronCuts::GetPsiPair( const AliESDtrack* trackPos, const A
 
         Double_t deltaTheta = negDaughter.Theta() - posDaughter.Theta();
         Double_t openingAngle =  posDaughter.Angle( negDaughter );  //TMath::ACos( posDaughter.Dot(negDaughter)/(negDaughter.Mag()*posDaughter.Mag()) );
+
         if( openingAngle < 1e-20 ) return 0.;
+
         Double_t psiAngle = TMath::ASin( deltaTheta/openingAngle );
 
         return psiAngle;
-}
+}*/
 
-Bool_t AliDalitzElectronCuts::IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi ) const
+Bool_t AliDalitzElectronCuts::IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi )
 {
 //
 // Returns true if it is a gamma conversion according to psi pair value
@@ -724,6 +739,13 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
   case kBackgroundScheme:
         if( SetBackgroundScheme(value)) {
           fCuts[kBackgroundScheme] = value;
+          UpdateCutString(cutID, value);
+          return kTRUE;
+        } else return kFALSE;
+
+  case kNumberOfRotations:
+        if( SetNumberOfRotations(value)) {
+          fCuts[kNumberOfRotations] = value;
           UpdateCutString(cutID, value);
           return kTRUE;
         } else return kFALSE;
@@ -1093,17 +1115,17 @@ Bool_t AliDalitzElectronCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
         fDoKaonRejectionLowP=kTRUE;
         fDoProtonRejectionLowP=kTRUE;
         fDoPionRejectionLowP=kTRUE;
-	fPIDnSigmaAtLowPAroundKaonLine=0.;
-	fPIDnSigmaAtLowPAroundProtonLine=0.;
-	fPIDnSigmaAtLowPAroundPionLine=1;
+	fPIDnSigmaAtLowPAroundKaonLine=2.0;
+	fPIDnSigmaAtLowPAroundProtonLine=2.0;
+	fPIDnSigmaAtLowPAroundPionLine=2.0;
 	break;
     case 5:  //
         fDoKaonRejectionLowP=kTRUE;
         fDoProtonRejectionLowP=kTRUE;
         fDoPionRejectionLowP=kTRUE;
-	fPIDnSigmaAtLowPAroundKaonLine=0.;
-	fPIDnSigmaAtLowPAroundProtonLine=0.;
-	fPIDnSigmaAtLowPAroundPionLine=1.5;
+	fPIDnSigmaAtLowPAroundKaonLine=2.0;
+	fPIDnSigmaAtLowPAroundProtonLine=2.0;
+	fPIDnSigmaAtLowPAroundPionLine=2.5;
 	break;
     case 6:  //
         fDoKaonRejectionLowP=kTRUE;
@@ -1163,7 +1185,7 @@ Bool_t AliDalitzElectronCuts::SetPsiPairCut(Int_t psiCut) {
   switch(psiCut) {
   case 0:
         fDoPsiPairCut = kFALSE;
-        fPsiPairCut = 10000; //
+        fPsiPairCut = 10000.; //
         fDeltaPhiCutMin = -1000.;
         fDeltaPhiCutMax =  1000.;
         
@@ -1248,9 +1270,47 @@ Bool_t AliDalitzElectronCuts::SetBackgroundScheme(Int_t BackgroundScheme){
             fUseTrackMultiplicityForBG = kTRUE;
             fBKGMethod  = 2;
         break;
+    case 5: fUseTrackMultiplicityForBG = kTRUE;
+            fBKGMethod  = 3;
+        break;
 
     default:
         cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
+        return kFALSE;
+    }
+    return kTRUE;
+}
+
+///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::SetNumberOfRotations(Int_t NumberOfRotations)
+{   // Set Cut
+    switch(NumberOfRotations){
+    case 0:
+        fnumberOfRotationEventsForBG = 5;
+        break;
+    case 1:
+        fnumberOfRotationEventsForBG = 10;
+        break;
+    case 2:
+        fnumberOfRotationEventsForBG = 15;
+        break;
+    case 3:
+        fnumberOfRotationEventsForBG = 20;
+        break;
+    case 4:
+        fnumberOfRotationEventsForBG = 2;
+        break;
+    case 5:
+        fnumberOfRotationEventsForBG = 50;
+        break;
+    case 6:
+        fnumberOfRotationEventsForBG = 80;
+        break;
+    case 7:
+        fnumberOfRotationEventsForBG = 100;
+        break;
+    default:
+        cout<<"Warning: NumberOfRotations not defined "<<NumberOfRotations<<endl;
         return kFALSE;
     }
     return kTRUE;

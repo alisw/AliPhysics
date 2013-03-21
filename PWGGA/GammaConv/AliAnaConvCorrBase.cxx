@@ -216,10 +216,10 @@ void AliAnaConvCorrBase::PrintStatistics()  {
 }
 
 
-//_______________________________________________________________________________
-void AliAnaConvCorrBase::FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading) {
+// //_______________________________________________________________________________
+// void AliAnaConvCorrBase::FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading) {
 
-}
+// }
 
 
 //________________________________________________________________
@@ -227,7 +227,7 @@ void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle
   //Correlate particle with tracks
 
 
-  FillTriggerCounters(particle, isolated);
+   //FillTriggerCounters(particle, isolated);
 
   Int_t nDim = fAxesList.GetSize();
   Double_t dphivalues[nDim];

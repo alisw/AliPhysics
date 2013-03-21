@@ -3273,13 +3273,13 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 						
 					Int_t zbin= bgHandlerTest->GetZBinIndex(fV0Reader->GetVertexZ());
 					Int_t mbin=0;
-					Int_t multKAA=0;
+					//Int_t multKAA=0;
 					if(fUseTrackMultiplicityForBG == kTRUE){
-						multKAA=fV0Reader->CountESDTracks();
+                                           //multKAA=fV0Reader->CountESDTracks();
 						mbin = bgHandlerTest->GetMultiplicityBinIndex(fV0Reader->CountESDTracks());
 					}
 					else{// means we use #v0s for multiplicity
-						multKAA=fV0Reader->GetNGoodV0s();
+                                           //multKAA=fV0Reader->GetNGoodV0s();
 						mbin = bgHandlerTest->GetMultiplicityBinIndex(fV0Reader->GetNGoodV0s());
 					}
 					//			cout<<"Filling bin number "<<zbin<<" and "<<mbin<<endl;

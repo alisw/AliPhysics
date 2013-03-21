@@ -54,7 +54,6 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 
 	private:
 
-		void AddTaskContainers();
 		void InitBack();
 		void ProcessPhotonCandidates();
 		void ProcessTruePhotonCandidates(AliAODConversionPhoton*);
@@ -66,6 +65,8 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
                 void CalculatePi0DalitzCandidates();
                 void CalculateBackground();
                 void UpdateEventByEventData();
+                Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
+
 		
 		
 
@@ -97,12 +98,17 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH1F **hESDDalitzElectronPt;
     TH1F **hESDDalitzPositronPt;
     TH2F **hESDEposEnegPsiPairDPhi;
+    TH2F **hESDEposEnegInvMassPt;
     TH2F **hESDMotherInvMassPt;
+    TH2F **hESDPi0MotherInvMassPt;
+    TH2F **hESDPi0MotherDiffInvMassPt;
     THnSparseF **sESDMotherInvMassPtZM;
     TH2F **hESDMotherBackInvMassPt;
     THnSparseF **sESDMotherBackInvMassPtZM;
     TH1F **hMCPi0Pt;
+    TH1F **hMCPi0GGPt;
     TH1F **hMCEtaPt;
+    TH1F **hMCEtaGGPt;
     TH1F **hMCPi0InAccPt;
     TH1F **hMCEtaInAccPt;
     TH2F **hESDTrueMotherInvMassPt;
