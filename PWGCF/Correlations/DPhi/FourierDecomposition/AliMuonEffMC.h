@@ -38,6 +38,7 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
 
   void         SetMcAna(Bool_t IsMc)               { fIsMc = IsMc;               }
   void         SetIsPYTHIA(Bool_t IsPythia)        { fIsPythia = IsPythia;       }
+  void         SetIsCutStudy(Bool_t IsCutStudy)    { fIsCutStudy = IsCutStudy;   }
   void         SetMDProcess(Bool_t kMDProcess)     { fMDProcess = kMDProcess;    }
   void         SetFeynmanXProcess(Bool_t kFeynmanX){ fFeynmanX = kFeynmanX;      }
   void         SetScatFX(Bool_t kScatFX)           { fScatFX = kScatFX;          }
@@ -49,11 +50,16 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   void         SetNZvtxBins(Int_t NZvtxBins)       { fNZvtxBins = NZvtxBins;     }
   void         SetNPhiBins(Int_t NPhiBins)         { fNPhiBins = NPhiBins;       }
   void         SetNPBins(Int_t NPBins)             { fNPBins = NPBins;           }
-  void         MDProcess(Int_t motherpdg, Double_t mcpt, Double_t mcphi, Double_t mceta, Double_t trackpt, Double_t trackphi, Double_t tracketa, Double_t motherpt, Double_t motherphi, Double_t mothereta, Double_t dcavalue);
+  void         SetChiSquareNormCut(Double_t ChiCut){ fChiSquareNormCut = ChiCut; }
+  void         SetIsFPM(Bool_t kIsFPM)             { fIsFPM = kIsFPM;            }
+  void         MDProcess(Bool_t isprimary, Int_t motherpdg, Double_t mcpt, Double_t mcphi, Double_t mceta, Double_t trackpt, Double_t trackphi, Double_t tracketa, Double_t motherpt, Double_t motherphi, Double_t mothereta, Double_t dcavalue);
   Double_t     deltaphi(Double_t phi);
   Int_t        GetMotherBin(Int_t motherpdg);
   void         FeynmanX();
   void         ScatFX();
+  Int_t        GetFirstPrimaryMother(Int_t muonlabel);
+  Double_t     GetFirstPrimaryVertex(Int_t muonlabel);
+  Int_t        GetZVertexBin(Double_t zvertex);
 
  protected:
   Bool_t       VertexOk(TObject* obj) const;
@@ -79,6 +85,8 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   Bool_t       fFeynmanX;          //
   Bool_t       fScatFX;            //
   Bool_t       fZvProcess;         //
+  Bool_t       fIsCutStudy;        //
+  Bool_t       fIsFPM;             // First primary mother's distribution
 
   TString      fCentralityEstimator;//
   Int_t        fNEtaBins;          // number of eta bins
@@ -87,15 +95,19 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   Int_t        fNZvtxBins;         // number of Z-vertex bins
   Int_t        fNPhiBins;          // number of phi bins
   Int_t        fNPBins;            // number of P bins
+  Double_t     fChiSquareNormCut;  // Chi-square cut
 
   THn         *fHMuonParGen;       //! truth muon track eta, p_T, Centrality, Z-vertex, phi, charge
   THn         *fHMuonParGenSec;    //! secondary truth muon track eta, p_T, Centrality, Z-vertex, phi, charge
-  THn         *fHMuonDetGen[5];    //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi, charge
-  THn         *fHMuonDetRec[5];    //! reconstructed muon track eta, p_T, Centrality, Z-vertex, phi, charge
-  THn         *fHHadDetRec[5];     //! particle reconstructed at MUON detector, but not muon
-  THn         *fHSecDetRec[5];     //! particle reconstructed at MUON detector, but secondary muon
-
-  TH2F        *fHCutSpecies;       //!
+  THn         *fHMuonParGenFPM;
+  THn         *fHMuonParGenSecFPM; 
+  THn         *fHMuonDetGen[6];    //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi, charge
+  THn         *fHMuonDetRec[6];    //! reconstructed muon track eta, p_T, Centrality, Z-vertex, phi, charge
+  THn         *fHHadDetRec[6];     //! particle reconstructed at MUON detector, but not muon
+  THn         *fHSecDetRec[6];     //! particle reconstructed at MUON detector, but secondary muon
+  THn         *fHMuonParGenV[4];
+  THn         *fHMuonParGenSecV[4];
+  THn         *fHMuonDetRecV[4];
 
   THn         *fHMuonParGenP;      //! truth muon track eta, p_T, Centrality, Z-vertex, phi, charge
   THn         *fHMuonDetGenP;      //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi, charge
@@ -108,19 +120,30 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   TH2F        *fHMuMotherGenEta[4];//! particle-level muon eta vs. mother eta
   TH2F        *fHMuMotherRecEta[4];//! detector-level muon eta vs. mother eta
   TH1F        *fHMuDCA[4];         //! muon DCA
+  TH2F        *fHMuMotherGenPtSec[4]; //! particle-level muon p_T vs. mother p_T
+  TH2F        *fHMuMotherRecPtSec[4]; //! detector-level muon p_T vs. mother p_T
+  TH2F        *fHMuMotherGenPhiSec[4];//! particle-level muon phi vs. mother phi
+  TH2F        *fHMuMotherRecPhiSec[4];//! detector-level muon phi vs. mother phi
+  TH2F        *fHMuMotherGenEtaSec[4];//! particle-level muon eta vs. mother eta
+  TH2F        *fHMuMotherRecEtaSec[4];//! detector-level muon eta vs. mother eta
+  TH1F        *fHMuDCASec[4];         //! muon DCA
 
   TH1F        *fHMuMohterPhiDifGen[4][3]; //!
   TH1F        *fHMuMohterPhiDifRec[4][3]; //!
   TH1F        *fHMuMohterEtaDifGen[4][3]; //!
   TH1F        *fHMuMohterEtaDifRec[4][3]; //!
+  TH1F        *fHMuMohterPhiDifGenSec[4][3]; //!
+  TH1F        *fHMuMohterPhiDifRecSec[4][3]; //!
+  TH1F        *fHMuMohterEtaDifGenSec[4][3]; //!
+  TH1F        *fHMuMohterEtaDifRecSec[4][3]; //!
 
-  TH1F        *fHFXu;              //!
-  TH1F        *fHFXantiu;          //!
-  TH1F        *fHFXd;              //!
-  TH1F        *fHFXantid;          //!
-  TH1F        *fHFXg;              //!
-  TH1F        *fHFXetc;            //!
-  TH1F        *fHFXmuonP[2][3];    //!
+  TH1F        *fHFXu;              //! u quark f_x dist
+  TH1F        *fHFXantiu;          //! anti-u quark f_x dist
+  TH1F        *fHFXd;              //! d quark f_x dist
+  TH1F        *fHFXantid;          //! anti-d quark f_x dist
+  TH1F        *fHFXg;              //! gluon f_x dist
+  TH1F        *fHFXetc;            //! etc f_x dist
+  TH1F        *fHFXmuonP[2][3];    //! 
   TH1F        *fHFXmuonM[2][3];    //!
 
   TH1F        *fHaFx;              //!
@@ -136,10 +159,15 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   TH1F        *fHMuZv[4];          //! Z-vertex of muon divided into mother species
   TH1F        *fHMuRelZv[4];       //! (Z-vertex of muon - z-vertex) divided into mother species
 
+  TH2F        *fHZvRvPrim;         //! muon decay Vertex Z-R for primary muon 
+  TH2F        *fHZvRvSec;          //! muon decay Vertex Z-R for secondary muon 
+  TH2F        *fHXvYvPrim;         //! muon decay Vertex x-y for primary muon 
+  TH2F        *fHXvYvSec;         //! muon decay Vertex x-y for secondary muon 
+
   AliMuonEffMC(const AliMuonEffMC&);            // not implemented
   AliMuonEffMC &operator=(const AliMuonEffMC&); // not implemented
 
-  ClassDef(AliMuonEffMC, 8);
+  ClassDef(AliMuonEffMC, 9);
 };
 
 #endif
