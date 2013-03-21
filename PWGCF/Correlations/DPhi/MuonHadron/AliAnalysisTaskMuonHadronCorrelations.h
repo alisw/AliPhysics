@@ -93,6 +93,8 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
   TH1D *fHistCentrality; //!
   TH1D *fHistEvStat; //!
 
+  TH1D *fHistSingleMuonsTrigMatch[fNMaxBinsCentrality]; //!
+  TH1D *fHistSingleMuonsChi2[fNMaxBinsCentrality]; //!
   TH2D *fHistSingleMuonsEtaVsPt[fNMaxBinsCentrality]; //!
   TH2D *fHistSingleMuonsEtaVsRAbs[fNMaxBinsCentrality]; //!
 
