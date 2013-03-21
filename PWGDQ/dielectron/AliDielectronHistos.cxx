@@ -1145,7 +1145,7 @@ void AliDielectronHistos::FillValues(TH1 *obj, const Double_t *values)
   //  UInt_t nValues = (UInt_t) AliDielectronVarManager::kNMaxValues;
 
   UInt_t valueTypes=obj->GetUniqueID();
-  if (valueTypes==(UInt_t)kNoAutoFill) return;
+  if (valueTypes==(UInt_t)AliDielectronHistos::kNoAutoFill) return;
 
   if(obj->IsA() == TProfile::Class() || obj->IsA() == TProfile2D::Class() || obj->IsA() == TProfile3D::Class())
     bprf=kTRUE;
@@ -1183,7 +1183,7 @@ void AliDielectronHistos::FillValues(THnBase *obj, const Double_t *values)
   const Int_t dim   = obj->GetNdimensions();
 
   UInt_t valueTypes=obj->GetUniqueID();
-  if (valueTypes==(UInt_t)kNoAutoFill) return;
+  if (valueTypes==(UInt_t)AliDielectronHistos::kNoAutoFill) return;
 
   Double_t fill[dim];
   for(Int_t it=0; it<dim; it++)   fill[it] = values[obj->GetAxis(it)->GetUniqueID()];

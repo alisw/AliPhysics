@@ -241,7 +241,7 @@ TObjArray* AliDielectronHFhelper::CollectHistos()
 }
 
 //________________________________________________________________
-TH1F* AliDielectronHFhelper::GetHistogram(const char *step, TObjArray *histArr)
+TH1* AliDielectronHFhelper::GetHistogram(const char *step, TObjArray *histArr)
 {
   //
   // main function to recieve a single histogram
@@ -250,7 +250,7 @@ TH1F* AliDielectronHFhelper::GetHistogram(const char *step, TObjArray *histArr)
   AliDebug(1,Form(" Step %s selected",step));
 
   TObjArray *histos= 0x0;
-  TH1F *hist       = 0x0;
+  TH1 *hist        = 0x0;
   if(!histArr) {
     histos = (TObjArray*) fArrPairType->FindObject(step)->Clone("tmpArr");
   }
@@ -264,7 +264,7 @@ TH1F* AliDielectronHFhelper::GetHistogram(const char *step, TObjArray *histArr)
 }
 
 //________________________________________________________________
-TH1F* AliDielectronHFhelper::FindHistograms(TObjArray *histos)
+TH1* AliDielectronHFhelper::FindHistograms(TObjArray *histos)
 {
   //
   // exclude histograms
@@ -294,7 +294,7 @@ TH1F* AliDielectronHFhelper::FindHistograms(TObjArray *histos)
       if(!histos->At(i)) continue;
 
       // collect binning from histo title
-      TString title    = histos->At(i)->GetTitle();
+      TString title    = histos->At(i)->GetName();
       if(title.IsNull()) continue;
       AliDebug(10,Form(" histo title: %s",title.Data()));
 
@@ -341,13 +341,13 @@ TH1F* AliDielectronHFhelper::FindHistograms(TObjArray *histos)
   AliDebug(1,Form(" Compression: %d histograms left",histos->GetEntriesFast()));
 
   // merge histograms
-  TH1F* hist = MergeHistos(histos);
+  TH1* hist = MergeHistos(histos);
   if(hist) AliDebug(1,Form(" Merging: %e histogram entries",hist->GetEntries()));
   return hist;
 }
 
 //________________________________________________________________
-TH1F* AliDielectronHFhelper::MergeHistos(TObjArray *arr)
+TH1* AliDielectronHFhelper::MergeHistos(TObjArray *arr)
 {
   //
   // merge histos to one single histogram
@@ -355,17 +355,24 @@ TH1F* AliDielectronHFhelper::MergeHistos(TObjArray *arr)
 
   if(arr->GetEntriesFast()<1) { AliError(" No more histosgrams left!"); return 0x0; }
 
-  TH1F *final=(TH1F*) arr->At(0)->Clone();
+  TObject *final=arr->At(0)->Clone();
   if(!final) return 0x0;
 
-  final->Reset("CE");
-  final->SetTitle(""); //TODO: change in future
-  for(Int_t i=0; i<arr->GetEntriesFast(); i++) {
-    final->Add((TH1F*)arr->At(i));
-  }
-  arr->Clear();
+  TList listH;
+  TString listHargs;
+  listHargs.Form("((TCollection*)0x%lx)", (ULong_t)&listH);
+  Int_t error = 0;
 
-  return final;
+  //  final->Reset("CE");
+  //  final->SetTitle(""); //TODO: change in future
+  for(Int_t i=1; i<arr->GetEntriesFast(); i++) {
+    listH.Add(arr->At(i));
+    //    final->Add((TH1*)arr->At(i));
+  }
+  //  arr->Clear();
+
+  final->Execute("Merge", listHargs.Data(), &error);
+  return (TH1*)final;
 }
 
 //________________________________________________________________
@@ -377,8 +384,8 @@ void AliDielectronHFhelper::CheckCuts(TObjArray *arr)
 
 
   // build array with bin variable, minimum and maximum bin values
-  TString titleFIRST       = arr->First()->GetTitle();
-  TString titleLAST        = arr->Last()->GetTitle();
+  TString titleFIRST       = arr->First()->GetName();
+  TString titleLAST        = arr->Last()->GetName();
   TObjArray* binvarsF  = titleFIRST.Tokenize(":#");
   TObjArray* binvarsL  = titleLAST.Tokenize(":#");
   Double_t binmin[kMaxCuts]= {0.0};

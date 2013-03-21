@@ -33,7 +33,8 @@ public:
   AliDielectronHistos(const char* name, const char* title);
   virtual ~AliDielectronHistos();
 
-  
+  enum {kNoAutoFill=1000000000};
+
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
 		   Int_t nbinsX, Double_t xmin, Double_t xmax,
@@ -149,18 +150,18 @@ public:
 //   virtual TObject   *Remove(TObject *obj) { return 0; }
 
   Bool_t SetCutClass(const char* cutClass);
-  
+  static void StoreVariables(TObject *obj, UInt_t valType[20]);
+  static void StoreVariables(TH1 *obj, UInt_t valType[20]);
+  static void StoreVariables(THnBase *obj, UInt_t valType[20]);
+  static void AdaptNameTitle(TH1 *hist, const char* histClass);
+  static Int_t GetPrecision(Double_t value);
+  static void FillValues(TObject *obj, const Double_t *values);
+  static void FillValues(TH1 *obj, const Double_t *values);
+  static void FillValues(THnBase *obj, const Double_t *values);
+
 private:
 
-  void StoreVariables(TObject *obj, UInt_t valType[20]);
-  void StoreVariables(TH1 *obj, UInt_t valType[20]);
-  void StoreVariables(THnBase *obj, UInt_t valType[20]);
-  void AdaptNameTitle(TH1 *hist, const char* histClass);
-  Int_t GetPrecision(Double_t value);
   void FillVarArray(TObject *obj, UInt_t *valType);
-  void FillValues(TObject *obj, const Double_t *values);
-  void FillValues(TH1 *obj, const Double_t *values);
-  void FillValues(THnBase *obj, const Double_t *values);
 
   THashList fHistoList;             //-> list of histograms
   TList    *fList;                  //! List of list of histograms
@@ -174,7 +175,6 @@ private:
 
   Bool_t IsHistogramOk(const char* classTable, const char* name);
   
-  enum {kNoAutoFill=1000000000};
 
   AliDielectronHistos(const AliDielectronHistos &hist);
   AliDielectronHistos& operator = (const AliDielectronHistos &hist);

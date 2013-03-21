@@ -38,6 +38,7 @@ Detailed description
 #include "AliDielectronPair.h"
 #include "AliDielectronSignalMC.h"
 
+#include "AliDielectronHistos.h"
 #include "AliDielectronHF.h"
 
 ClassImp(AliDielectronHF)
@@ -48,10 +49,9 @@ AliDielectronHF::AliDielectronHF() :
   fPairType(kOSonly),
   fSignalsMC(0x0),
   fAxes(kMaxCuts),
-  fVarBinLimits(0x0),
-  fVar(0),
   fHasMC(kFALSE),
-  fStepGenerated(kFALSE)
+  fStepGenerated(kFALSE),
+  fRefObj(0x0)
 {
   //
   // Default Constructor
@@ -71,10 +71,9 @@ AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
   fPairType(kOSonly),
   fSignalsMC(0x0),
   fAxes(kMaxCuts),
-  fVarBinLimits(0x0),
-  fVar(0),
   fHasMC(kFALSE),
-  fStepGenerated(kFALSE)
+  fStepGenerated(kFALSE),
+  fRefObj(0x0)
 {
   //
   // Named Constructor
@@ -97,19 +96,17 @@ AliDielectronHF::~AliDielectronHF()
 }
 
 //________________________________________________________________
-void AliDielectronHF::SetVariable(AliDielectronVarManager::ValueTypes type,
-					  Int_t nbins, Double_t min, Double_t max, Bool_t log)
+void AliDielectronHF::SetRefHist(TH1 *obj, UInt_t vars[4])
 {
   //
-  // Set main variable for the histos
+  // store reference object and its varaibles
   //
 
-  fVarBinLimits=0x0;
-  if (!log) fVarBinLimits=AliDielectronHelper::MakeLinBinning(nbins,min,max);
-  else fVarBinLimits=AliDielectronHelper::MakeLogBinning(nbins,min,max);
-  if (!fVarBinLimits) return ;
- 
-  fVar=(UShort_t)type;
+  //  UInt_t val[2]={AliDielectronVarManager::kM,AliDielectronVarManager::kPt};
+  AliDielectronHistos::StoreVariables(obj,vars);
+  AliDielectronHistos::AdaptNameTitle(obj,"Pair");
+  obj->SetName("");
+  fRefObj     = obj;
 
 }
 
@@ -278,7 +275,7 @@ void AliDielectronHF::Fill(Int_t Index, Double_t * const valuesPair, Double_t * 
   // loop over all histograms
   for(Int_t ihist=0; ihist<size; ihist++) {
 
-    Int_t sizeAdd   = 1; 
+    Int_t sizeAdd   = 1;
     Bool_t selected = kTRUE;
     
     // loop over all cut variables
@@ -290,14 +287,14 @@ void AliDielectronHF::Fill(Int_t Index, Double_t * const valuesPair, Double_t * 
       Int_t nbins    = bins->GetNrows()-1;
 
       // bin limits for current ivar bin
-      Int_t ibin   = (ihist/sizeAdd)%nbins; 
+      Int_t ibin   = (ihist/sizeAdd)%nbins;
       Double_t lowEdge = (*bins)[ibin];
       Double_t upEdge  = (*bins)[ibin+1];
       switch(fBinType[ivar]) {
       case kStdBin:     upEdge=(*bins)[ibin+1];     break;
       case kBinToMax:   upEdge=(*bins)[nbins];      break;
       case kBinFromMin: lowEdge=(*bins)[0];         break;
-      case kSymBin:     upEdge=(*bins)[nbins-ibin]; 
+      case kSymBin:     upEdge=(*bins)[nbins-ibin];
 	if(ibin>=((Double_t)(nbins+1))/2) upEdge=(*bins)[nbins]; // to avoid low>up
 	break;
       }
@@ -309,30 +306,29 @@ void AliDielectronHF::Fill(Int_t Index, Double_t * const valuesPair, Double_t * 
 	  selected=kFALSE;
 	  break;
 	}
-      } 
+      }
       else { // pair and event variables
 	if( (valuesPair[fVarCuts[ivar]] < lowEdge || valuesPair[fVarCuts[ivar]] >= upEdge) ) {
 	  selected=kFALSE;
 	  break;
 	}
       }
-      
+
       sizeAdd*=nbins;
     } //end of var cut loop
-    
+
     // do not fill the histogram
     if(!selected) continue;
-    
-    // fill the histogram
-    TH1F *tmp=static_cast<TH1F*>(histArr->At(ihist));
-    TString title = tmp->GetTitle();
+
+    // fill the object with Pair and event values (TODO: this needs to be changed)
+    TH1 *tmp=static_cast<TH1*>(histArr->At(ihist));
+    TString title = tmp->GetName();
     AliDebug(10,title.Data());
-    
-    AliDebug(10,Form("Fill var %d %s value %f in %s \n",fVar,AliDielectronVarManager::GetValueName(fVar),valuesPair[fVar],tmp->GetName()));
-    tmp->Fill(valuesPair[fVar]);
-  
+
+    AliDielectronHistos::FillValues(tmp, valuesPair);
+    //    AliDebug(10,Form("Fill var %d %s value %f in %s \n",fVar,AliDielectronVarManager::GetValueName(fVar),valuesPair[fVar],tmp->GetName()));
   } //end of hist loop
-  
+
 }
 
 //______________________________________________
@@ -353,7 +349,6 @@ void AliDielectronHF::Init()
   if(fHasMC) fArrPairType.Expand(steps);
   else fArrPairType.Expand(AliDielectron::kEv1PMRot+1);
 
-  TH1F *hist  = 0x0;
   Int_t size  = GetNumberOfBins();
   AliDebug(10,Form("Creating a histo array with size %d \n",size));
 
@@ -363,11 +358,10 @@ void AliDielectronHF::Init()
   TObjArray *histArr = new TObjArray();
   histArr->Expand(size);
 
+  //  printf("fRefObj %p \n",fRefObj);
   for(Int_t ihist=0; ihist<size; ihist++) {
-    hist=new TH1F(Form("histarr%04d",ihist),"",fVarBinLimits->GetNrows()-1,fVarBinLimits->GetMatrixArray());
-    hist->SetXTitle(Form("%s",AliDielectronVarManager::GetValueName(fVar)));
-    hist->SetYTitle("#pairs");
-    histArr->AddAt(hist,ihist);
+    histArr->AddAt(fRefObj->Clone(""), ihist);
+    //histArr->AddAt(fRefObj->Clone(Form("h%04d",ihist)), ihist);
   }
 
   // loop over all cut variables
@@ -395,13 +389,13 @@ void AliDielectronHF::Init()
 	break;
       }
 
-      TH1F *tmp=static_cast<TH1F*>(histArr->At(ihist));
-      TString title = tmp->GetTitle();
+      TH1 *tmp=static_cast<TH1*>(histArr->At(ihist));
+      TString title = tmp->GetName();
       if(ivar!=0)           title+=":";
       if(fVarCutType[ivar]) title+="Leg";
       title+=AliDielectronVarManager::GetValueName(fVarCuts[ivar]);
       title+=Form("#%.2f#%.2f",lowEdge,upEdge);
-      tmp->SetNameTitle(title.Data(),title.Data());
+      tmp->SetName(title.Data());
       AliDebug(10,title.Data());
     }
     sizeAdd*=nbins;

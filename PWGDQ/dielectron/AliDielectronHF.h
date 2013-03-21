@@ -40,8 +40,7 @@ public:
   void SetSignalsMC(TObjArray* array)    {fSignalsMC = array;}
   void SetStepForMCGenerated(Bool_t switcher=kTRUE)    {fStepGenerated = switcher;}
   void SetPairTypes(EPairType ptype=kOSonly) { fPairType=ptype; }
-  void SetVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins,
-                   Double_t min, Double_t max, Bool_t log=kFALSE);
+  void SetRefHist(TH1 *obj, UInt_t vars[4]);
 
   void AddCutVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins,
 		      Double_t min, Double_t max, Bool_t log=kFALSE, Bool_t leg=kFALSE, EBinType btype=kStdBin);
@@ -60,8 +59,6 @@ public:
   const TObjArray * GetHistArray() const { return &fArrPairType; }
   Bool_t GetStepForMCGenerated() const   { return fStepGenerated; }
 
-
-  
 private:
   TObjArray fArrPairType;           //-> array of pair types
   EPairType fPairType;              // which pair combinations to include
@@ -72,16 +69,16 @@ private:
   TObjArray fAxes;                  // Axis descriptions of the cut binning
   UShort_t  fBinType[kMaxCuts];     // binning type of the axes
   
-  TVectorD *fVarBinLimits;          // binning of the main pair variable
-  UShort_t  fVar;                   // main pair variable for xaxis
   Bool_t    fHasMC;
   Bool_t    fStepGenerated;         // switcher for generated particles
+
+  TH1       *fRefObj;               // reference object
 
   AliDielectronHF(const AliDielectronHF &c);
   AliDielectronHF &operator=(const AliDielectronHF &c);
 
   
-  ClassDef(AliDielectronHF,1)         // Dielectron HF
+  ClassDef(AliDielectronHF,2)         // Dielectron HF
 };
 
 

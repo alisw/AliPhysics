@@ -71,6 +71,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TRDpidProb2D_Pions",     "P(2dim. PID_{#pi}^{TRD})",                           ""},
   {"TRDphi",                 "#phi^{TRD}",                                         ""},
   {"TRDpidEffLeg",           "#epsilon^{TRD legs}(PID)",                           ""},
+  {"TRD_signal",             "TRD d#it{E}/d#it{x} + TR",                           "(a.u.)"},
 
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
   {"ImpactParZ",             "#it{dca}_{z}",                                       "(cm)"},
