@@ -116,6 +116,7 @@ public:
     kTRDprob2DPio,           // TRD electron pid probability 2D LQ
     kTRDphi,                 // Phi angle of the track at the entrance of the TRD
     kTRDpidEffLeg,           // TRD pid efficiency from conversion electrons
+    kTRDsignal,              // TRD signal
       
     kImpactParXY,            // Impact parameter in XY plane
     kImpactParZ,             // Impact parameter in Z
@@ -155,7 +156,7 @@ public:
     kTOFsignal,              // TOF signal
     kTOFbeta,                // TOF beta
     kTOFPIDBit,              // TOF PID bit (1:set, 0:TOF not available)a
-	kTOFmismProb, 	         // and mismatchPorbability as explain in TOF-twiki
+    kTOFmismProb, 	         // and mismatchPorbability as explain in TOF-twiki
 	
     kTPCnSigmaEle,           // number of sigmas to the dE/dx electron line in the TPC
     kTPCnSigmaPio,           // number of sigmas to the dE/dx pion line in the TPC
@@ -544,6 +545,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTRDntracklets] = particle->GetTRDntracklets(); // TODO: GetTRDtracklets/GetTRDntracklets?
   values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
   values[AliDielectronVarManager::kTRDchi2]       = particle->GetTRDchi2();
+  values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
   values[AliDielectronVarManager::kTPCclsDiff]    = tpcSignalN-tpcNcls;
   values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
   const UChar_t threshold = 5;
@@ -749,6 +751,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTRDntracklets] = 0;
   values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
   values[AliDielectronVarManager::kTRDchi2]       = (particle->GetTRDntrackletsPID()!=0.?particle->GetTRDchi2():-1);
+  values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
   values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
   const UChar_t threshold = 5;
   TBits tpcClusterMap = particle->GetTPCClusterMap();
@@ -845,11 +848,11 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     
     Double_t prob[AliPID::kSPECIES];
     fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob);
-    values[AliDielectronVarManager::kTRDprobEle]    = prob[AliPID::kElectron];
-    values[AliDielectronVarManager::kTRDprobPio]    = prob[AliPID::kPion];
-    //    fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ2D);
-    values[AliDielectronVarManager::kTRDprob2DEle]    = 0.0;//prob[AliPID::kElectron];
-    values[AliDielectronVarManager::kTRDprob2DPio]    = 0.0;//prob[AliPID::kPion];
+    values[AliDielectronVarManager::kTRDprobEle]      = prob[AliPID::kElectron];
+    values[AliDielectronVarManager::kTRDprobPio]      = prob[AliPID::kPion];
+    //   fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ2D);
+    values[AliDielectronVarManager::kTRDprob2DEle]    = prob[AliPID::kElectron];
+    values[AliDielectronVarManager::kTRDprob2DPio]    = prob[AliPID::kPion];
 
     values[AliDielectronVarManager::kTOFsignal]=pid->GetTOFsignal();
     Double32_t expt[5];
@@ -1799,15 +1802,15 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
 
   const AliAODVertex *vtxtpc = GetVertex(event, AliAODVertex::kMainTPC);
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxtpc ? vtxtpc->GetNContributors() : 0);
-  //const AliAODVertex *primVtx = event->GetPrimaryVertex();
+
 }
   
 inline void AliDielectronVarManager::FillVarMCEvent(const AliMCEvent *event, Double_t * const values)
-{ 
+{
   //
   // Fill event information available for histogramming into an array
-  //   
-        
+  //
+
   // Fill common AliVEvent interface information
   //  FillVarVEvent(event, values);
   const AliVVertex* vtx = event->GetPrimaryVertex();

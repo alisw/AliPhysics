@@ -112,9 +112,10 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 
   // basic quality cut, at least one of the V0 daughters has to fullfill
   AliDielectronVarCuts dauQAcuts1;
-  dauQAcuts1.AddCut(AliDielectronVarManager::kEta,          -0.9,   0.9);
-  dauQAcuts1.AddCut(AliDielectronVarManager::kNclsTPC,      50.0, 160.0);
-  dauQAcuts1.AddCut(AliDielectronVarManager::kTPCchi2Cl,     0.0,   4.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kPt,            0.05, 100.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kEta,          -0.9,    0.9);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kNclsTPC,      50.0,  160.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kTPCchi2Cl,     0.0,    4.0);
   AliDielectronTrackCuts dauQAcuts2;
   //  dauQAcuts2.SetRequireITSRefit(kTRUE);
   dauQAcuts2.SetRequireTPCRefit(kTRUE);
@@ -147,12 +148,15 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 
       // PID default cuts
       if(fPID>=0) {
-	if( !dauPIDcuts.IsSelected(trNeg) || !dauPIDcuts.IsSelected(trPos) ) continue;
+	if( !dauPIDcuts.IsSelected(trNeg) ) continue;
+	if( !dauPIDcuts.IsSelected(trPos) ) continue;
       }
 
-      // at least one of the daughter has to pass basic QA cuts
-      if(!(dauQAcuts1.IsSelected(trNeg) && dauQAcuts2.IsSelected(trNeg)) ||
-	 !(dauQAcuts1.IsSelected(trPos) && dauQAcuts2.IsSelected(trPos))  ) continue;
+      // basic track cuts
+      if( !dauQAcuts2.IsSelected(trNeg) ) continue;
+      if( !dauQAcuts2.IsSelected(trPos) ) continue;
+      if( !dauQAcuts1.IsSelected(trNeg) ) continue;
+      if( !dauQAcuts1.IsSelected(trPos) ) continue;
 
       if(fMotherPdg==22) candidate.SetGammaTracks(trNeg, 11, trPos, 11);
       else candidate.SetTracks(trNeg, fNegPdg, trPos, fPosPdg);
@@ -190,12 +194,15 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 
       // PID default cuts
       if(fPID>=0) {
-	if( !dauPIDcuts.IsSelected(trNeg) || !dauPIDcuts.IsSelected(trPos) ) continue;
+	if( !dauPIDcuts.IsSelected(trNeg) ) continue;
+	if( !dauPIDcuts.IsSelected(trPos) ) continue;
       }
 
-      // at least one of the daughter has to pass basic QA cuts
-      if(!(dauQAcuts1.IsSelected(trNeg) && dauQAcuts2.IsSelected(trNeg)) ||
-	 !(dauQAcuts1.IsSelected(trPos) && dauQAcuts2.IsSelected(trPos))  ) continue;
+      // basic track cuts
+      if( !dauQAcuts2.IsSelected(trNeg) ) continue;
+      if( !dauQAcuts2.IsSelected(trPos) ) continue;
+      if( !dauQAcuts1.IsSelected(trNeg) ) continue;
+      if( !dauQAcuts1.IsSelected(trPos) ) continue;
 
       AliKFVertex v0vtx = *v;
       if(fMotherPdg==22) candidate.SetGammaTracks(trNeg, 11, trPos, 11);

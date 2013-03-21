@@ -38,9 +38,9 @@ public:
 
   TObjArray* CollectHistos();
 
-  TH1F* GetHistogram(const char *step, TObjArray *histArr=0x0);
-  TH1F* FindHistograms(TObjArray *histos);
-  TH1F* MergeHistos(TObjArray *arr);
+  TH1* GetHistogram(const char *step, TObjArray *histArr=0x0);
+  TH1* FindHistograms(TObjArray *histos);
+  TH1* MergeHistos(TObjArray *arr);
 
   void CheckCuts(TObjArray *arr);
   virtual void Print(const Option_t* option ="") const ;
