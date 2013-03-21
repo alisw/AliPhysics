@@ -1162,7 +1162,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   multV0ACorr = AliESDUtils::GetCorrV0A(multV0A,zvtx);    
   multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);    
 
-  v0Corr = multV0ACorr+multV0CCorr;
+  v0Corr = multV0A+multV0C; // To be checked further in case we switch to corrected values
 
   multV0AOnline=esdV0->GetTriggerChargeA(); 
   multV0COnline=esdV0->GetTriggerChargeC(); 
