@@ -1,5 +1,5 @@
 AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      = "LambdaOverK0sRatio", 
-							    Int_t    data      = 2010, 
+							    TString  data      = "PbPb2010", 
 							    Float_t  minCen    = 0.,
 							    Float_t  maxCen    = 90.,
 							    Float_t  ptMinTrig = 8.,
@@ -23,7 +23,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   
   // Create and configure the task
   AliAnalysisTaskLambdaOverK0sJets *task = new AliAnalysisTaskLambdaOverK0sJets(name.Data());
-  //task->SetDataType(data);
+  task->SetCollisionType(data);
   task->SetCentrality(minCen,maxCen);
   task->SetTriggerPt(ptMinTrig,ptMaxTrig);
   task->SetTriggerEta(etaMaxTrig);
