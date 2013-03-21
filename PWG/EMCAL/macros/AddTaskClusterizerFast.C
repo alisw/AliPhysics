@@ -11,9 +11,6 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
   Bool_t remExotic      = kFALSE,
   Bool_t fidRegion      = kFALSE,
   Bool_t updateCells    = kFALSE,
-  Double_t minE         = .045,
-  Double_t minT         = -1.,
-  Double_t maxT         = +1.,
   Bool_t trackMatch     = kFALSE
 ) 
 {
@@ -27,9 +24,6 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
 
   AliEMCALRecParam *recparam = task->GetRecParam();
   recparam->SetClusterizerFlag(clusterizer);
-  recparam->SetMinECut(minE);
-  recparam->SetTimeMax(maxT);
-  recparam->SetTimeMin(minT);
 
   AliEMCALRecoUtils *recoUtils = new AliEMCALRecoUtils();
   recoUtils->SetNonLinearityFunction(nonLinFunct);
