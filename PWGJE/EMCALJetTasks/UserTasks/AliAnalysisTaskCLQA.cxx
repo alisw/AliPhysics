@@ -114,6 +114,8 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   Double_t ts00=0,ts10=0,ts11=0;
   for (Int_t i =0; i<ntracks; ++i) {
     AliVTrack *track = dynamic_cast<AliVTrack*>(fTracks->At(i));
+    if (!track)
+      continue;
     Double_t eta = track->Eta();
     if ((eta<etamin) || (eta>etamax))
       continue;

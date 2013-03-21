@@ -21,7 +21,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   UInt_t      runMode            = AliAnalysisTaskRhoVnModulation::kGrid,
   Bool_t      fillQA             = kTRUE,
   TString     fitOpts            = "LWQIM",
-  UInt_t      fitType            = AliAnalysisTaskRhoVnModulation::kCombined
+  UInt_t      fitType            = AliAnalysisTaskRhoVnModulation::kFourierSeries
   )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
