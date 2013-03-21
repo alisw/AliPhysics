@@ -25,6 +25,7 @@
 #include "AliAODMCParticle.h"
 #include "TH1D.h"
 #include "TFile.h"
+#include "AliPIDResponse.h"
 
 
 ClassImp(AliFlowBayesianPID)
@@ -411,7 +412,26 @@ Float_t AliFlowBayesianPID::GetExpDeDx(const AliVTrack *t,Int_t iS) const{
   // tuned dE/dx (vs. eta and centrality)
   Float_t momtpc=t->GetTPCmomentum();
 
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  AliPIDResponse *PIDResponse=inputHandler->GetPIDResponse();
+
   Float_t dedxExp=0;
+
+  if(PIDResponse){ // if PID task is running use the official TPC parameterization
+    if(iS==0) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kElectron,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==1) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kMuon,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==2) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kPion,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==3) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kKaon,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==4) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kProton,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==5) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kDeuteron,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==6) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kTriton,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==7) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kHe3,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==8) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kAlpha,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+
+    return dedxExp;
+  }
+
   if(iS==0) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kElectron);
   else if(iS==1) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kMuon);
   else if(iS==2) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kPion);
@@ -464,9 +484,20 @@ Float_t AliFlowBayesianPID::GetExpDeDx(const AliVTrack *t,Float_t mass) const{
   // tuned dE/dx (vs. eta and centrality)
   Float_t momtpc=t->GetTPCmomentum();
 
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  AliPIDResponse *PIDResponse=inputHandler->GetPIDResponse();
+
+  Float_t dedxExp=0;
+
+  if(PIDResponse){ // if PID task is running use the official TPC parameterization
+    PIDResponse->GetTPCResponse().GetExpectedSignal(momtpc/mass*0.938272,AliPID::kProton);
+    return dedxExp;
+  }
+
   if(mass < 0.0001) mass =  0.0001;
 
-  Float_t dedxExp = fPIDesd->GetTPCResponse().Bethe(momtpc/mass);
+  dedxExp = fPIDesd->GetTPCResponse().Bethe(momtpc/mass);
     
   Float_t eta = t->Eta();
   Float_t etaCorr = 7.98368e-03 - 1.67208e-02 - 1.89776e-01*eta*eta  -2.90836e-02*eta*eta + 5.96093e-01*eta*eta*eta*eta + 6.06450e-02*eta*eta*eta*eta - 3.55884e-01*eta*eta*eta*eta*eta*eta;
