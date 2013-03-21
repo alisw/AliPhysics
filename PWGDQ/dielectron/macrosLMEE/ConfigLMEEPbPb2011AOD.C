@@ -64,7 +64,7 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	rejectionStep = kFALSE;
   }
   else if (cutDefinition==5) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
 	selectedCentrality = LMEECutLib::kPbPb2011SemiCentral;
 	rejectionStep = kTRUE;
   }
