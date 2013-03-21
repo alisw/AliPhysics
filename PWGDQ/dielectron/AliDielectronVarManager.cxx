@@ -180,7 +180,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"PseudoProperTimeResolution", "(#tau-#tau^{MC truth})",                         "(#mus)"},
   {"PseudoProperTimePull",   "#frac{(#tau-#tau^{MC truth})}{#tau error}",          ""},
   {"TRDpidEffPair",          "#epsilon^{TRD pair}(PID)",                           ""},
-
+  {"MomAsymDau1",            "#it{p}^{leg1}/#it{p}^{pair}",                        ""},
+  {"MomAsymDau2",            "#it{p}^{leg2}/#it{p}^{pair}",                        ""},
   //
   {"X",                      "x_{prim.vtx}",                                       "(cm)"},
   {"Y",                      "y_{prim.vtx}",                                       "(cm)"},
