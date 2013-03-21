@@ -11,7 +11,7 @@ AliAnalysisTaskMuonHadronCorrelations *AddAnalysisTaskMuonHadronCorrelations(con
   // Set analysis cuts   
   task->SetFilterBitCentralBarrel(7);  // -> 128
   task->SetMaxEtaCentralBarrel(1.0);
-  task->SetMinEtaCentralBarrel(0.0);
+  task->SetMinEtaCentralBarrel(-1.0);
   task->SetTriggerMatchLevelMuon(1);
 
   const Int_t nBinCent = 4;
@@ -21,11 +21,11 @@ AliAnalysisTaskMuonHadronCorrelations *AddAnalysisTaskMuonHadronCorrelations(con
   task->SetCentMethod(centMethod);
 
   const Int_t nBinPt = 3;
-  Double_t ptLimits[nBinPt+1] = {0., 1., 2., 4.};
+  Double_t ptLimits[nBinPt+1] = {0.5, 1., 2., 4.};
   task->SetPtBinning(nBinPt, ptLimits);
 
   const Int_t nBinEta = 3;
-  Double_t etaLimits[nBinEta+1] = {-4., -3.6, -3.2, -2.5};
+  Double_t etaLimits[nBinEta+1] = {-4., -3.5, -3.0, -2.5};
   task->SetEtaBinning(nBinEta, etaLimits);
 
   mgr->AddTask(task);

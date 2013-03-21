@@ -62,6 +62,8 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() :
     fHistSingleMuonsPtmixed[iCent]   = NULL;
     fHistSingleMuonsEtaPt[iCent]   = NULL;
     fHistSingleMuonsEtaPtmixed[iCent]   = NULL;
+    fHistSingleMuonsTrigMatch[iCent] = NULL;
+    fHistSingleMuonsChi2[iCent] = NULL;
     fHistSingleMuonsEtaVsPt[iCent]   = NULL;
     fHistSingleMuonsEtaVsRAbs[iCent] = NULL;
   }  
@@ -116,6 +118,8 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(con
     fHistSingleMuonsPtmixed[iCent]   = NULL;
     fHistSingleMuonsEtaPt[iCent]   = NULL;
     fHistSingleMuonsEtaPtmixed[iCent]   = NULL;
+    fHistSingleMuonsTrigMatch[iCent] = NULL;
+    fHistSingleMuonsChi2[iCent] = NULL;
     fHistSingleMuonsEtaVsPt[iCent]   = NULL;
     fHistSingleMuonsEtaVsRAbs[iCent] = NULL;
   }  
@@ -258,6 +262,13 @@ void AliAnalysisTaskMuonHadronCorrelations::UserCreateOutputObjects() {
 						 fEtaAxis->GetNbins(),(Double_t*)fEtaAxis->GetXbins()->GetArray());
     fOutputList -> Add(fHistSingleMuonsEtaPt[iCent]);
     fOutputList -> Add(fHistSingleMuonsEtaPtmixed[iCent]);
+
+    fHistSingleMuonsTrigMatch[iCent] = new TH1D(Form("fHistSingleMuonsTrigMatch_Cent%02d",iCent),
+						"Single muons trigger match flag",10,-0.5,9.5);
+    fOutputList -> Add(fHistSingleMuonsTrigMatch[iCent]);
+    fHistSingleMuonsChi2[iCent] = new TH1D(Form("fHistSingleMuonsChi2_Cent%02d",iCent),
+					   "Single muons Chi2",100,0.,10.);
+    fOutputList -> Add(fHistSingleMuonsChi2[iCent]);
 
     fHistSingleMuonsEtaVsPt[iCent]   = new TH2D(Form("fHistSingleMuonsEtaVsPt_Cent%02d",iCent),
 					       "#eta vs p_{T} for single muons",
@@ -475,8 +486,10 @@ TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksMuonArm(AliAO
   
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
     track = aodEvent->GetTrack(iTrack);
+    if (track->IsMuonTrack()) fHistSingleMuonsTrigMatch[centBin]->Fill(track->GetMatchTrigger());
     if (track->IsMuonTrack() && track->GetMatchTrigger()>=fTriggerMatchLevelMuon) {
-      if (track->Chi2perNDF() < 5.) {
+      fHistSingleMuonsChi2[centBin]->Fill(track->Chi2perNDF());
+      //     if (track->Chi2perNDF() < 5.) {
 	// histos
 	fHistSingleMuonsEtaVsPt[centBin]->Fill(track->Eta(),track->Pt());
 	fHistSingleMuonsEtaVsRAbs[centBin]->Fill(track->Eta(),track->GetRAtAbsorberEnd());
@@ -486,7 +499,7 @@ TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksMuonArm(AliAO
 	    tracks->Add(new AliAODTrack(*track));
 	  }
 	}
-      }
+	//      }
     }
   }
 
