@@ -233,6 +233,8 @@ public:
     kPseudoProperTimeResolution,     // resolution for pseudo proper decay time (reconstructed - MC truth)
     kPseudoProperTimePull,   // normalizd resolution for pseudo proper time = (reco - MC truth)/dReco
     kTRDpidEffPair,          // TRD pid efficieny from conversion electrons
+    kMomAsymDau1,            // momentum fraction of daughter1
+    kMomAsymDau2,            // momentum fraction of daughter2
     kPairMax,                 //
   // Event specific variables
     kXvPrim=kPairMax,        // prim vertex
@@ -1433,7 +1435,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   }//if (mc->HasMC())
 
-
+  values[AliDielectronVarManager::kMomAsymDau1] = pair->GetFirstDaughter()->P()  / values[AliDielectronVarManager::kP];
+  values[AliDielectronVarManager::kMomAsymDau2] = pair->GetSecondDaughter()->P() / values[AliDielectronVarManager::kP];
 }
 
 inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *particle, Double_t * const values)
