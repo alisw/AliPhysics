@@ -551,6 +551,26 @@ void AliDielectronPID::SetDefaults(Int_t def){
     AddCut(kTOF,AliPID::kElectron,-4.,4.,0,200,kFALSE,AliDielectronPID::kIfAvailable);
     AddCut(kTPC,AliPID::kElectron,-3.5,3.5);
   }
+  else if (def==14) {
+    // TRD 1D 90% elec eff, 4-6 tracklets
+    // TPC electron inclusion
+    // TOF electron inclusion if available
+    AddCut(AliDielectronPID::kTRDeleEff,AliPID::kElectron,.9,1.,3.5,6.,kFALSE,
+	   AliDielectronPID::kIfAvailable,AliDielectronVarManager::kTRDpidQuality);
+    AddCut(kTOF,AliPID::kElectron,-4.,4.,0,200,kFALSE,AliDielectronPID::kIfAvailable);
+    AddCut(kTPC,AliPID::kElectron,-3.5,3.5);
+  }
+  else if (def==15) {
+    // TRD 1D 90% elec eff, 4-6 tracklets, chi2 < 2
+    // TPC electron inclusion
+    // TOF electron inclusion if available
+    AddCut(AliDielectronPID::kTRDeleEff,AliPID::kElectron,.9,1.,3.5,6.,kFALSE,
+	   AliDielectronPID::kIfAvailable,AliDielectronVarManager::kTRDpidQuality);
+    AddCut(AliDielectronPID::kTRDeleEff,AliPID::kElectron,.9,1.,0.,2.,kFALSE,
+	   AliDielectronPID::kIfAvailable,AliDielectronVarManager::kTRDchi2);
+    AddCut(kTOF,AliPID::kElectron,-4.,4.,0,200,kFALSE,AliDielectronPID::kIfAvailable);
+    AddCut(kTPC,AliPID::kElectron,-3.5,3.5);
+  }
 
 }
 
