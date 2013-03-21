@@ -3262,7 +3262,6 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     Float_t dEtaMC = -100.;
  
     for(Int_t ii=0; ii<(fTriggerPartMC->GetEntriesFast()); ii++){
-      
       AliMiniParticle* trigMC = (AliMiniParticle*) fTriggerPartMC->At(ii);
       
       triggerMCPt  = trigMC->Pt();
@@ -3273,7 +3272,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       
       for(Int_t jj=0; jj<(fAssocPartMC->GetEntriesFast()); jj++){
 	
-	AliMiniParticle* assocMC = (AliMiniParticle*) fTriggerPartMC->At(ii);
+	AliMiniParticle* assocMC = (AliMiniParticle*) fAssocPartMC->At(jj);
 	if(assocMC->Pt()>triggerMCPt) continue;
 	
 	dPhiMC = dPHI(triggerMCPhi,assocMC->Phi());
