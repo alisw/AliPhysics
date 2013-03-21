@@ -128,6 +128,17 @@ private:
 	knbinsPi0
     };
 
+    enum EEventSelection{
+	kEventIn=1,
+        kEventSelV0Reader,
+	kEventCentrality,
+	kEventRun,
+	kEventNoTPCEP,
+        kEventProcessEvent,
+	kEventSelected
+    };
+
+
     static const Int_t knbinsGammaMult=3;
   
     static const Int_t kGCnYBinsSpectra = 80;
@@ -181,6 +192,7 @@ private:
     // Histograms
 
     TH1F *hNEvents;
+    TH1F *hEventSelection;
 
     // RP
     TH2F *hRPTPC;

@@ -51,6 +51,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
   void SetCreateAODs(Bool_t k=kTRUE){fCreateAOD=k;}
   void SetDeltaAODFilename(TString s){fDeltaAODFilename=s;}
   void SetDeltaAODBranchName(TString string) { fDeltaAODBranchName = string;AliInfo(Form("Set DeltaAOD BranchName to: %s",fDeltaAODBranchName.Data()));}
+  TString GetPeriodName(){return fPeriodName;}
 
 protected:
     // Reconstruct Gammas
@@ -84,13 +85,14 @@ protected:
     TString     fDeltaAODBranchName;// File where Gamma Conv AOD is located, if not in default AOD
     TString fDeltaAODFilename; // set filename for delta/satellite aod
     Bool_t fEventIsSelected;
+    TString fPeriodName;
 
 private:
     AliV0ReaderV1(AliV0ReaderV1 &original);
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1,1)
+    ClassDef(AliV0ReaderV1,2)
 };
 
 inline void AliV0ReaderV1::SetConversionCuts(const TString cut){

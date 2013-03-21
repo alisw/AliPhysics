@@ -38,7 +38,10 @@
 #include "AliAODHandler.h"
 #include "AliPIDResponse.h"
 #include "TChain.h"
+#include "TFile.h"
 #include "AliStack.h"
+#include "TString.h"
+#include "TObjArray.h"
 
 class iostream;
 
@@ -58,7 +61,8 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
     fCreateAOD(kFALSE),
     fDeltaAODBranchName("GammaConv"),
     fDeltaAODFilename("AliAODGammaConversion.root"),
-    fEventIsSelected(kFALSE)
+    fEventIsSelected(kFALSE),
+    fPeriodName("")
 {
     // Default constructor
 
@@ -162,6 +166,27 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 
 //________________________________________________________________________
 void AliV0ReaderV1::UserExec(Option_t *){
+
+   if (fPeriodName.CompareTo("") == 0){
+      AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+      if(man) {
+         AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+         if (inputHandler){
+            TTree* tree = (TTree*) inputHandler->GetTree();
+            TFile* file = (TFile*) tree->GetCurrentFile();
+            TString fileName(file->GetName());
+            TObjArray *arr = fileName.Tokenize("/");
+            for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
+               TObjString* testObjString = (TObjString*)arr->At(i);
+               if (testObjString->GetString().Contains("LHC")){
+                  fPeriodName = testObjString->GetString();
+                  i = arr->GetEntriesFast();
+               }
+            }     
+//             cout << fileName.Data() << "\t" <<fPeriodName.Data() << endl;
+         }
+      }
+   }
 
     // Check if correctly initialized
     if(!fConversionGammas)Init();
@@ -421,13 +446,70 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
     // Angle between daughter momentum plane and plane
     //
 
-    AliExternalTrackParam nt(*negativeparam);
-    AliExternalTrackParam pt(*positiveparam);
+   AliExternalTrackParam nt(*negativeparam);
+   AliExternalTrackParam pt(*positiveparam);
 
    Float_t magField = fInputEvent->GetMagneticField();
 
    Double_t xyz[3] = {0.,0.,0.};
    v0->GetXYZ(xyz[0],xyz[1],xyz[2]);
+
+   // Double_t pPlus[3]  = {pt.Px(),pt.Py(),pt.Pz()};
+   // Double_t pMinus[3] = {nt.Px(),nt.Py(),nt.Pz()};
+
+   // Double_t u[3] = {pPlus[0]+pMinus[0],pPlus[1]+pMinus[1],pPlus[2]+pMinus[2]};
+   // Double_t normu = sqrt( (u[0]*u[0]) + (u[1]*u[1]) + (u[2]*u[2]) );
+   
+   // u[0] = u[0] / normu;
+   // u[1] = u[1] / normu;
+   // u[2] = u[2] / normu;
+
+   // Double_t normpPlus = sqrt( (pPlus[0]*pPlus[0]) + (pPlus[1]*pPlus[1]) + (pPlus[2]*pPlus[2]) );
+   // Double_t normpMinus = sqrt( (pMinus[0]*pMinus[0]) + (pMinus[1]*pMinus[1]) + (pMinus[2]*pMinus[2]) );
+
+   // pPlus[0] = pPlus[0] / normpPlus;
+   // pPlus[1] = pPlus[1] / normpPlus;
+   // pPlus[2] = pPlus[2] / normpPlus;
+
+   // pMinus[0] = pMinus[0] / normpMinus;
+   // pMinus[1] = pMinus[1] / normpMinus;
+   // pMinus[2] = pMinus[2] / normpMinus;
+
+   // Double_t v[3] = {0,0,0}; // pPlus X pMinus
+   // v[0] = (pPlus[1]*pMinus[2]) - (pPlus[2]*pMinus[1]);
+   // v[1] = (pPlus[2]*pMinus[0]) - (pPlus[0]*pMinus[2]);
+   // v[2] = (pPlus[0]*pMinus[1]) - (pPlus[1]*pMinus[0]);
+   
+   // Double_t w[3] = {0,0,0}; // u X v
+   // w[0] = (u[1]*v[2]) - (u[2]*v[1]);
+   // w[1] = (u[2]*v[0]) - (u[0]*v[2]);
+   // w[2] = (u[0]*v[1]) - (u[1]*v[0]);
+
+   // Double_t z[3] = {0,0,1};
+   // Double_t wc[3] = {0,0,0}; // u X v
+   // wc[0] = (u[1]*z[2]) - (u[2]*z[1]);
+   // wc[1] = (u[2]*z[0]) - (u[0]*z[2]);
+   // wc[2] = (u[0]*z[1]) - (u[1]*z[0]);
+
+   // Double_t PhiV = TMath::ACos((w[0]*wc[0]) + (w[1]*wc[1]) + (w[2]*wc[2]));
+   //return abs(PhiV);
+
+
+   // TVector3 pPlus(pt.Px(),pt.Py(),pt.Pz());
+   // TVector3 pMinus(nt.Px(),nt.Py(),nt.Pz());
+
+   // TVector3 u = pMinus + pPlus;
+   // u = u*(1/u.Mag());
+
+   // TVector3 pHPlus = pPlus*(1/pPlus.Mag());
+   // TVector3 pHMinus = pMinus*(1/pMinus.Mag());
+
+   // TVector3 v = pHPlus.Cross(pHMinus);
+   // TVector3 w = u.Cross(v);
+   // TVector3 z(0,0,1);
+   // TVector3 wc = u.Cross(z);
+
+   // Double_t PhiV = w * wc;
 
    Double_t mn[3] = {0,0,0};
    Double_t mp[3] = {0,0,0};
@@ -436,7 +518,7 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
    v0->GetPPxPyPz(mp[0],mp[1],mp[2]);//reconstructed cartesian momentum components of positive daughter;
 
    Double_t deltat = 1.;
-   deltat = TMath::ATan(mp[2]/(TMath::Sqrt(mp[0]*mp[0] + mp[1]*mp[1])+1.e-13)) -  TMath::ATan(mn[2]/(TMath::Sqrt(mn[0]*mn[0] + mn[1]*mn[1])+1.e-13));//difference of angles of the two daughter tracks with z-axis
+   deltat = TMath::ATan(mp[2]/(TMath::Sqrt(mp[0]*mp[0] + mp[1]*mp[1])+1.e-13)) - TMath::ATan(mn[2]/(TMath::Sqrt(mn[0]*mn[0] + mn[1]*mn[1])+1.e-13));//difference of angles of the two daughter tracks with z-axis
    Double_t radiussum = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]) + 50;//radius to which tracks shall be propagated
 
    Double_t momPosProp[3] = {0,0,0};
@@ -444,7 +526,6 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
 
    Double_t psiPair = 4.;
    if(nt.PropagateTo(radiussum,magField) == 0) return psiPair; //propagate tracks to the outside -> Better Purity and Efficiency
-
    if(pt.PropagateTo(radiussum,magField) == 0) return psiPair; //propagate tracks to the outside -> Better Purity and Efficiency
 
    pt.GetPxPyPz(momPosProp);//Get momentum vectors of tracks after propagation

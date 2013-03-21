@@ -87,7 +87,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
    fPSigSmearingCte(0),
    fBrem(NULL),
    fRandom(0),
-   fElectronArraySize(500),
+   fElectronLabelArraySize(500),
    fElectronLabelArray(NULL),
    fBackgroundHandler(0),
    fCutString(NULL),
@@ -97,7 +97,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
 {
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
    fCutString=new TObjString((GetCutNumber()).Data());
-   fElectronLabelArray = new Int_t[500];
+   fElectronLabelArray = new Int_t[fElectronLabelArraySize];
    if (fBrem == NULL){
       fBrem = new TF1("fBrem","pow(-log(x),[0]/log(2.0)-1.0)/TMath::Gamma([0]/log(2.0))",0.00001,0.999999999);
       // tests done with 1.0e-14
@@ -133,7 +133,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
    fPSigSmearingCte(ref.fPSigSmearingCte),
    fBrem(NULL),
    fRandom(ref.fRandom),
-   fElectronArraySize(ref.fElectronArraySize),
+   fElectronLabelArraySize(ref.fElectronLabelArraySize),
    fElectronLabelArray(NULL),
    fBackgroundHandler(ref.fBackgroundHandler),
    fCutString(NULL),
@@ -141,13 +141,14 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
    hMesonBGCuts(NULL)
    
 {
-    // Copy Constructor
-    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
-    fCutString=new TObjString((GetCutNumber()).Data());
-    fElectronLabelArray = new Int_t[fElectronArraySize];
-    if (fBrem == NULL)fBrem = (TF1*)ref.fBrem->Clone("fBrem");
-    // Histograms are not copied, if you need them, call InitCutHistograms
+   // Copy Constructor
+   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
+   fCutString=new TObjString((GetCutNumber()).Data());
+   fElectronLabelArray = new Int_t[fElectronLabelArraySize];
+   if (fBrem == NULL)fBrem = (TF1*)ref.fBrem->Clone("fBrem");
+   // Histograms are not copied, if you need them, call InitCutHistograms
 }
+
 
 //________________________________________________________________________
 AliConversionMesonCuts::~AliConversionMesonCuts() {

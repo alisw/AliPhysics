@@ -96,10 +96,13 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t GetIsFromPileup(){return fRemovePileUp;}
   
   AliConversionCuts(const char *name="V0Cuts", const char * title="V0 Cuts");
-  AliConversionCuts(const AliConversionCuts &ref);
-  AliConversionCuts& operator=(const AliConversionCuts&); // not implemented
+  AliConversionCuts(const AliConversionCuts&);
+  AliConversionCuts& operator=(const AliConversionCuts&);
 
   virtual ~AliConversionCuts();                            //virtual destructor
+
+  static AliConversionCuts * GetStandardCuts2010PbPb();
+  static AliConversionCuts * GetStandardCuts2010pp();
 
   virtual Bool_t IsSelected(TObject* /*obj*/){return kTRUE;}
   virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
@@ -153,7 +156,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t CosinePAngleCut(const AliConversionPhotonBase * photon, AliVEvent * event) const;
   Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
   Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
-  Bool_t IsParticleFromBGEvent(Int_t index, AliStack *MCStack);
+  Int_t IsParticleFromBGEvent(Int_t index, AliStack *MCStack);
   void GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliMCEvent *MCEvent);
 
   // Event Cuts
@@ -197,12 +200,17 @@ class AliConversionCuts : public AliAnalysisCuts {
 
   Bool_t IsHeavyIon(){return fIsHeavyIon;}
   Int_t GetFirstTPCRow(Double_t radius);
+  Float_t GetWeightForMeson(TString period, Int_t index, AliStack *MCStack);
 
   Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
   Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
   Int_t GetMultiplicityMethod(){return fMultiplicityMethod;}
   Double_t GetEtaCut(){return fEtaCut;}
   Int_t GetSignalRejection(){return fRejectExtraSignals;}
+  Int_t GetNAcceptedHeaders(){return fnHeaders; }
+  TString * GetAcceptedHeaderNames(){return fGeneratorNames;}
+  Int_t * GetAcceptedHeaderStart(){return fNotRejectedStart;}
+  Int_t * GetAcceptedHeaderEnd(){return fNotRejectedEnd;}
   TList* GetAcceptedHeader(){return fHeaderList;}
 
   protected:
@@ -320,6 +328,8 @@ class AliConversionCuts : public AliAnalysisCuts {
   TH1F *hCentrality; // centrality distribution for selected events
   TH1F *hVertexZ; // vertex z distribution for selected events
   TH1F *hTriggerClass; //fired offline trigger class
+  TH1F *hTriggerClassSelected; //selected fired offline trigger class
+private:
 
   ClassDef(AliConversionCuts,3)
 };

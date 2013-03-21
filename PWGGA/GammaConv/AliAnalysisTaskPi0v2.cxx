@@ -65,6 +65,7 @@ ClassImp(AliAnalysisTaskPi0v2)
     fDoEPFlattening(kTRUE),
 
     hNEvents(NULL),
+    hEventSelection(NULL),
     hRPTPC(NULL),
     hRPV0A(NULL),
     hRPV0C(NULL),
@@ -352,7 +353,7 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
 	 fRPList->Add(hEPVertex);
 	 */
 
-	const Int_t nRuns=270;
+	const Int_t nRuns=275;
 	const Int_t nepbins=4;
 	Int_t nbinsep[nepbins]={fNCentralityBins,180,nRuns,5};
 	Double_t minep[nepbins]={-0.5,0,0.5,-0.5};
@@ -460,7 +461,15 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
     }
     hNEvents=new TH1F("NEvents","NEvents",fNCentralityBins,fCentralityBins);
     fPhotonQAList->Add(hNEvents);
-   
+    hEventSelection=new TH1F("EventSelection","EventSelection",kEventSelected,0.5,kEventSelected+0.5);
+    hEventSelection->GetXaxis()->SetBinLabel(kEventIn,"in");
+    hEventSelection->GetXaxis()->SetBinLabel(kEventSelV0Reader,"v0reader");
+    hEventSelection->GetXaxis()->SetBinLabel(kEventCentrality,"centr");
+    hEventSelection->GetXaxis()->SetBinLabel(kEventRun,"run");
+    hEventSelection->GetXaxis()->SetBinLabel(kEventNoTPCEP,"no ep");
+    hEventSelection->GetXaxis()->SetBinLabel(kEventProcessEvent,"proc ev");
+    hEventSelection->GetXaxis()->SetBinLabel(kEventSelected,"selected");
+    fPhotonQAList->Add(hEventSelection);
 
     // V0 Reader Cuts
     TList *fV0ReaderCuts=fConversionCuts->GetCutHistograms();
@@ -475,7 +484,11 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskPi0v2::InitEvent(){
 
     if(!fV0Reader){AliError("Error: No V0 Reader and Pi0 Reconstructor");return kFALSE;}
-    if(!fV0Reader->IsEventSelected())return kFALSE;
+    if(!fV0Reader->IsEventSelected()){
+	hEventSelection->Fill(kEventSelV0Reader);
+	return kFALSE;
+    }
+
     fConversionGammas=fV0Reader->GetReconstructedGammas();
 
     fIsAOD=(fInputEvent->IsA()==AliAODEvent::Class());
@@ -485,7 +498,10 @@ Bool_t AliAnalysisTaskPi0v2::InitEvent(){
 	return kFALSE;
     }
 
-    if(!SetCentrality()){return kFALSE;}
+    if(!SetCentrality()){
+	hEventSelection->Fill(kEventCentrality);
+	return kFALSE;
+    }
 
     if(fConversionCuts->IsHeavyIon()&&!fMCEvent){
 
@@ -499,13 +515,18 @@ Bool_t AliAnalysisTaskPi0v2::InitEvent(){
 	}
 	if(fRunIndex<0){
 	    AliInfo("Run not selected");
+	    hEventSelection->Fill(kEventRun);
 	    return kFALSE;
 	}
 
 	// TPC Event Plane
-	if(!GetTPCEventPlane())return kFALSE;
+	if(!GetTPCEventPlane()){
+	    hEventSelection->Fill(kEventNoTPCEP);
+	    return kFALSE;
+	}
 	//fEP=fInputEvent->GetEventplane();
-	if(!fEP)return kFALSE;
+	//if(!fEP)return kFALSE;
+
 	fRPTPCBF=GetCorrectedTPCEPAngle(NULL,NULL,kFALSE);
 	fRPTPC=GetEventPlaneAngle(kTPC);
 
@@ -529,6 +550,10 @@ Bool_t AliAnalysisTaskPi0v2::InitEvent(){
 //________________________________________________________________________
 void AliAnalysisTaskPi0v2::UserExec(Option_t *) 
 {
+    cout<<hNEvents->GetEntries()<<endl;
+    if(hNEvents->GetEntries()>5)return;
+
+    hEventSelection->Fill(kEventIn);
 
     if(!InitEvent())return;
 
@@ -553,9 +578,13 @@ void AliAnalysisTaskPi0v2::UserExec(Option_t *)
 	    // QA
 	    if(fFillQA&&iCut==0)ProcessQA();
 	}
+	else{
+	    hEventSelection->Fill(kEventProcessEvent);
+	}
     }
 
     // Fill N Events
+    hEventSelection->Fill(kEventSelected);
     hNEvents->Fill(fCentrality);
 
     // EventPlaneResolution
@@ -1416,134 +1445,147 @@ Int_t AliAnalysisTaskPi0v2::GetRunIndex(Int_t run){
     case  137161 : return 1;
 
     // Default
-    default : return -1;
+    //default : return -1;
+    default : return 275;
     }
 }
 
 //____________________________________________________________________________
 void AliAnalysisTaskPi0v2::GetV0EP(AliVEvent * event,Double_t &rpv0a,Double_t &rpv0c){
 
-    // Corrected VZERO EP (from AliAnalysisTaskPi0Flow)
+    if (fPeriod.CompareTo("LHC10h")==0){
+	// Corrected VZERO EP (from AliAnalysisTaskPi0Flow)
+	//VZERO data
+	AliESDVZERO* esdV0 = (AliESDVZERO*)event->GetVZEROData();
 
-    //VZERO data
-    AliESDVZERO* esdV0 = (AliESDVZERO*)event->GetVZEROData();
+	//reset Q vector info
+	Double_t Qxa2 = 0, Qya2 = 0;
+	Double_t Qxc2 = 0, Qyc2 = 0;
 
-    //reset Q vector info
-    Double_t Qxa2 = 0, Qya2 = 0;
-    Double_t Qxc2 = 0, Qyc2 = 0;
-
-    for (Int_t iv0 = 0; iv0 < 64; iv0++) {
-	Double_t phiV0 = TMath::PiOver4()*(0.5 + iv0 % 8);
-	Float_t multv0 = esdV0->GetMultiplicity(iv0);
-	Double_t lqx=TMath::Cos(fHarmonic*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
-	Double_t lqy=TMath::Sin(fHarmonic*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
-	if (iv0 < 32){ // V0C
-	    Qxc2 += lqx;
-	    Qyc2 += lqy;
-	} else {       // V0A
-	    Qxa2 += lqx;
-	    Qya2 += lqy;
+	for (Int_t iv0 = 0; iv0 < 64; iv0++) {
+	    Double_t phiV0 = TMath::PiOver4()*(0.5 + iv0 % 8);
+	    Float_t multv0 = esdV0->GetMultiplicity(iv0);
+	    Double_t lqx=TMath::Cos(fHarmonic*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Double_t lqy=TMath::Sin(fHarmonic*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    if (iv0 < 32){ // V0C
+		Qxc2 += lqx;
+		Qyc2 += lqy;
+	    } else {       // V0A
+		Qxa2 += lqx;
+		Qya2 += lqy;
+	    }
 	}
+
+	Int_t iC = -1;
+	// centrality bins
+	if(fCentrality < 5) iC = 0;
+	else if(fCentrality < 10) iC = 1;
+	else if(fCentrality < 20) iC = 2;
+	else if(fCentrality < 30) iC = 3;
+	else if(fCentrality < 40) iC = 4;
+	else if(fCentrality < 50) iC = 5;
+	else if(fCentrality < 60) iC = 6;
+	else if(fCentrality < 70) iC = 7;
+	else iC = 8;
+
+	//grab for each centrality the proper histo with the Qx and Qy to do the recentering
+	Double_t Qxamean2 = fMeanQ[iC][1][0];
+	Double_t Qxarms2  = fWidthQ[iC][1][0];
+	Double_t Qyamean2 = fMeanQ[iC][1][1];
+	Double_t Qyarms2  = fWidthQ[iC][1][1];
+
+	Double_t Qxcmean2 = fMeanQ[iC][0][0];
+	Double_t Qxcrms2  = fWidthQ[iC][0][0];
+	Double_t Qycmean2 = fMeanQ[iC][0][1];
+	Double_t Qycrms2  = fWidthQ[iC][0][1];
+
+	Double_t QxaCor2 = (Qxa2 - Qxamean2)/Qxarms2;
+	Double_t QyaCor2 = (Qya2 - Qyamean2)/Qyarms2;
+	Double_t QxcCor2 = (Qxc2 - Qxcmean2)/Qxcrms2;
+	Double_t QycCor2 = (Qyc2 - Qycmean2)/Qycrms2;
+	rpv0a = TMath::ATan2(QyaCor2, QxaCor2)/Double_t(fHarmonic);
+	rpv0c = TMath::ATan2(QycCor2, QxcCor2)/Double_t(fHarmonic);
+
+	//rpv0a = TMath::ATan2(Qya2, Qxa2)/Double_t(fHarmonic);
+	//rpv0c = TMath::ATan2(Qyc2, Qxc2)/Double_t(fHarmonic);
+
+	// cout<<"Compare v"<<fHarmonic<<" "<<rpv0a<<" "<<fInputEvent->GetEventplane()->GetEventplane("V0A",fInputEvent,fHarmonic)<<endl;
+
     }
+    if (fPeriod.CompareTo("LHC11h")==0){
 
-    Int_t iC = -1;
-    // centrality bins
-    if(fCentrality < 5) iC = 0;
-    else if(fCentrality < 10) iC = 1;
-    else if(fCentrality < 20) iC = 2;
-    else if(fCentrality < 30) iC = 3;
-    else if(fCentrality < 40) iC = 4;
-    else if(fCentrality < 50) iC = 5;
-    else if(fCentrality < 60) iC = 6;
-    else if(fCentrality < 70) iC = 7;
-    else iC = 8;
+	AliEventplane *eventEP=fInputEvent->GetEventplane();
 
-    //grab for each centrality the proper histo with the Qx and Qy to do the recentering
-    Double_t Qxamean2 = fMeanQ[iC][1][0];
-    Double_t Qxarms2  = fWidthQ[iC][1][0];
-    Double_t Qyamean2 = fMeanQ[iC][1][1];
-    Double_t Qyarms2  = fWidthQ[iC][1][1];
-    
-    Double_t Qxcmean2 = fMeanQ[iC][0][0];
-    Double_t Qxcrms2  = fWidthQ[iC][0][0];
-    Double_t Qycmean2 = fMeanQ[iC][0][1];
-    Double_t Qycrms2  = fWidthQ[iC][0][1];
-
-    Double_t QxaCor2 = (Qxa2 - Qxamean2)/Qxarms2;
-    Double_t QyaCor2 = (Qya2 - Qyamean2)/Qyarms2;
-    Double_t QxcCor2 = (Qxc2 - Qxcmean2)/Qxcrms2;
-    Double_t QycCor2 = (Qyc2 - Qycmean2)/Qycrms2;
-    rpv0a = TMath::ATan2(QyaCor2, QxaCor2)/Double_t(fHarmonic);
-    rpv0c = TMath::ATan2(QycCor2, QxcCor2)/Double_t(fHarmonic);
-
-    //rpv0a = TMath::ATan2(Qya2, Qxa2)/Double_t(fHarmonic);
-    //rpv0c = TMath::ATan2(Qyc2, Qxc2)/Double_t(fHarmonic);
-
-   // cout<<"Compare v"<<fHarmonic<<" "<<rpv0a<<" "<<fInputEvent->GetEventplane()->GetEventplane("V0A",fInputEvent,fHarmonic)<<endl;
+        Double_t qx,qy;
+	rpv0a=eventEP->CalculateVZEROEventPlane(fInputEvent,8,fHarmonic,qx,qy);
+        rpv0c=eventEP->CalculateVZEROEventPlane(fInputEvent,9,fHarmonic,qx,qy);
+    }
 
     rpv0a=GetPsiInRange(rpv0a);
     rpv0c=GetPsiInRange(rpv0c);
-
 }
 
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0v2::LoadVZEROCalibration(Int_t run){
 
+    cout<<fPeriod.Data()<<endl;
+
     // VZERO Phi Weights and Recentering
+    if (fPeriod.CompareTo("LHC10h")==0){
+	TString oadbfilename = "$ALICE_ROOT/OADB/PWGCF/VZERO/VZEROcalibEP.root";
+	TFile *foadb = TFile::Open(oadbfilename.Data());
 
-    TString oadbfilename = "$ALICE_ROOT/OADB/PWGCF/VZERO/VZEROcalibEP.root";
-    TFile *foadb = TFile::Open(oadbfilename.Data());
+	if(!foadb){
+	    printf("OADB file %s cannot be opened\n",oadbfilename.Data());
+	    return;
+	}
 
-    if(!foadb){
-	printf("OADB file %s cannot be opened\n",oadbfilename.Data());
-	return;
-    }
+	AliOADBContainer *cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorr");
+	if(!cont){
+	    printf("OADB object hMultV0BefCorr is not available in the file\n");
+	    return;
+	}
 
-    AliOADBContainer *cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorr");
-    if(!cont){
-	printf("OADB object hMultV0BefCorr is not available in the file\n");
-	return;
-    }
+	if(!(cont->GetObject(run))){
+	    printf("OADB object hMultV0BefCorr is not available for run %i (used run 137366)\n",run);
+	    run = 137366;
+	}
+	printf("Setting V0 calibration \n") ;
+	fMultV0 = ((TH2F *) cont->GetObject(run))->ProfileX();
 
-    if(!(cont->GetObject(run))){
-	printf("OADB object hMultV0BefCorr is not available for run %i (used run 137366)\n",run);
-	run = 137366;
-    }
-    printf("Setting V0 calibration \n") ;
-    fMultV0 = ((TH2F *) cont->GetObject(run))->ProfileX();
+	TF1 *fpol0 = new TF1("fpol0","pol0");
+	fMultV0->Fit(fpol0,"0","",0,31);
+	fV0Cpol = fpol0->GetParameter(0);
+	fMultV0->Fit(fpol0,"0","",32,64);
+	fV0Apol = fpol0->GetParameter(0);
 
-    TF1 *fpol0 = new TF1("fpol0","pol0"); 
-    fMultV0->Fit(fpol0,"0","",0,31);
-    fV0Cpol = fpol0->GetParameter(0);
-    fMultV0->Fit(fpol0,"0","",32,64);
-    fV0Apol = fpol0->GetParameter(0);
+	for(Int_t iside=0;iside<2;iside++){
+	    for(Int_t icoord=0;icoord<2;icoord++){
+		for(Int_t i=0;i  < nCentrBinV0;i++){
+		    char namecont[100];
 
-    for(Int_t iside=0;iside<2;iside++){
-	for(Int_t icoord=0;icoord<2;icoord++){
-	    for(Int_t i=0;i  < nCentrBinV0;i++){
-		char namecont[100];
+		    if(iside==0 && icoord==0)
+			snprintf(namecont,100,"hQxc%i_%i",fHarmonic,i);
+		    else if(iside==1 && icoord==0)
+			snprintf(namecont,100,"hQxa%i_%i",fHarmonic,i);
+		    else if(iside==0 && icoord==1)
+			snprintf(namecont,100,"hQyc%i_%i",fHarmonic,i);
+		    else if(iside==1 && icoord==1)
+			snprintf(namecont,100,"hQya%i_%i",fHarmonic,i);
 
-		if(iside==0 && icoord==0)
-		    snprintf(namecont,100,"hQxc%i_%i",fHarmonic,i);
-		else if(iside==1 && icoord==0)
-		    snprintf(namecont,100,"hQxa%i_%i",fHarmonic,i);
-		else if(iside==0 && icoord==1)
-		    snprintf(namecont,100,"hQyc%i_%i",fHarmonic,i);
-		else if(iside==1 && icoord==1)
-		    snprintf(namecont,100,"hQya%i_%i",fHarmonic,i);
+		    cont = (AliOADBContainer*) foadb->Get(namecont);
+		    if(!cont){
+			printf("OADB object %s is not available in the file\n",namecont);
+			return;
+		    }
 
-		cont = (AliOADBContainer*) foadb->Get(namecont);
-		if(!cont){
-		    printf("OADB object %s is not available in the file\n",namecont);
-		    return;
+		    if(!(cont->GetObject(run))){
+			printf("OADB object %s is not available for run %i (used run 137366)\n",namecont,run);
+			run = 137366;
+		    }
+		    fMeanQ[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetMean();
+		    fWidthQ[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetRMS();
 		}
-
-		if(!(cont->GetObject(run))){
-		    printf("OADB object %s is not available for run %i (used run 137366)\n",namecont,run);
-		    run = 137366;
-		}
-		fMeanQ[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetMean();
-		fWidthQ[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetRMS();
 	    }
 	}
     }
@@ -1556,7 +1598,7 @@ void AliAnalysisTaskPi0v2::LoadTPCCalibration(Int_t run){
     AliOADBContainer *fEPContainer=NULL;
     TString oadbfilename="";
 
-    if (run >= 136851 && run <= 139515){
+    if (fPeriod.CompareTo("LHC10h")==0){
 	// LHC10h
 
 	if(fIsAOD){
@@ -1600,8 +1642,8 @@ void AliAnalysisTaskPi0v2::LoadTPCCalibration(Int_t run){
 	}
     }
 
-    if (run >= 166529 && run <= 170593){
-        // LHC11h
+    if (fPeriod.CompareTo("LHC11h")==0){
+	// LHC11h
 
 	oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist2011.root", AliAnalysisManager::GetOADBPath()));
 	TFile *foadb = TFile::Open(oadbfilename);
@@ -1649,7 +1691,6 @@ void AliAnalysisTaskPi0v2::LoadTPCCalibration(Int_t run){
 	}
 	fSparseDist->GetAxis(0)->SetRange(1,2901);// reset run axis
     }
-
     if (!fPhiDist[0]) AliFatal(Form("Cannot find OADB phi distribution for run %d", run));
 
 }
@@ -2016,20 +2057,15 @@ Double_t AliAnalysisTaskPi0v2::GetPhiWeight(TObject* track1)
 TH1F* AliAnalysisTaskPi0v2::SelectPhiDist(AliVTrack *track)
 { 
   if (fPeriod.CompareTo("LHC10h")==0) return fPhiDist[0];
-  else if(fPeriod.CompareTo("LHC11h")==0)
-    {
-     if (track->Charge() < 0)
-       {
-        if(track->Eta() < 0.)       return fPhiDist[0];
-        else if (track->Eta() > 0.) return fPhiDist[2];
-       }
-      else if (track->Charge() > 0)
-       {
-        if(track->Eta() < 0.)       return fPhiDist[1];
-        else if (track->Eta() > 0.) return fPhiDist[3];
-       }
-       
-    }
+  else if(fPeriod.CompareTo("LHC11h")==0){
+      if (track->Charge() < 0){
+	  if(track->Eta() < 0.)       return fPhiDist[0];
+	  else if (track->Eta() > 0.) return fPhiDist[2];
+      }
+      else if (track->Charge() > 0){
+	  if(track->Eta() < 0.)       return fPhiDist[1];
+	  else if (track->Eta() > 0.) return fPhiDist[3];
+      }
+  }
   return 0;
 }
-

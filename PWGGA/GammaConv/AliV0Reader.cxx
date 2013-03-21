@@ -2372,9 +2372,9 @@ const AliExternalTrackParam *AliV0Reader::GetExternalTrackParam(AliESDv0 *v0,Int
 
     if(!(charge==1||charge==-1)){AliError("Charge not defined");return 0x0;}
 
-    Int_t label;
-    if(charge>0)label=0;
-    else label=1;
+    // Int_t label;
+    // if(charge>0)label=0;
+    // else label=1;
     // Check for sign flip
 
     if(v0){
@@ -2505,7 +2505,7 @@ Int_t AliV0Reader::GetNumberOfHijingPlusPythiaPrimeries(Int_t excludeHeaderType)
 
 Bool_t AliV0Reader::IsParticleFromBGEvent(Int_t index){
 
-   Bool_t particleFromBG = kFALSE;
+   //Bool_t particleFromBG = kFALSE;
   
    if(index == -1) return kFALSE;
    if(index > fNumberOfPrimerisFromHijingAndPythia && index < fMCStack->GetNprimary()){
@@ -2517,8 +2517,8 @@ Bool_t AliV0Reader::IsParticleFromBGEvent(Int_t index){
    // cout<<fMCEvent->IsFromBGEvent(index)<<endl;
    TParticle *BGParticle = fMCStack->Particle(index);
    if(BGParticle->GetMother(0) > -1) return kFALSE;
-   Int_t indexMother = fMCStack->Particle(index)->GetMother(0);
-   particleFromBG = IsParticleFromBGEvent(indexMother);
+   //Int_t indexMother = fMCStack->Particle(index)->GetMother(0);
+   //particleFromBG = IsParticleFromBGEvent(indexMother);
    
    return kFALSE;
 }
