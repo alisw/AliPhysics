@@ -528,6 +528,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       Bool_t znCBG   = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNCBG));
 
       Bool_t laserCut = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCLaserWarmUp));
+      Bool_t hvDipCut = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCHVdip));
 
       // Some "macros"
       Bool_t mb1 = (fastOROffline > 0 || v0A || v0C) && (!v0BG);
@@ -610,6 +611,9 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 
 	if (laserCut)
 	  fHistStatistics[iHistStat]->Fill(kStatLaserCut, i);
+
+	if (hvDipCut)
+	  fHistStatistics[iHistStat]->Fill(kHVdipCut, i);
 
 	//if(ntrig >= 2 && !v0BG) 
 	//  fHistStatistics[iHistStat]->Fill(kStatAny2Hits, i);
@@ -1014,8 +1018,8 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
 					   fTriggerOADB->GetZDCCutRefDeltaCorr(), 
 					   fTriggerOADB->GetZDCCutSigmaSumCorr(),
 					   fTriggerOADB->GetZDCCutSigmaDeltaCorr());
-      triggerAnalysis->SetZNCorrCutParams(fTriggerOADB->GetZDCCutZNATimeCorr(),
-					  fTriggerOADB->GetZDCCutZNCTimeCorr());
+      triggerAnalysis->SetZNCorrCutParams(fTriggerOADB->GetZDCCutZNATimeCorrMin(),fTriggerOADB->GetZDCCutZNATimeCorrMax(),
+					  fTriggerOADB->GetZDCCutZNCTimeCorrMin(),fTriggerOADB->GetZDCCutZNCTimeCorrMax());
       fTriggerAnalysis.Add(triggerAnalysis);
     }
 
@@ -1126,6 +1130,7 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   h->GetXaxis()->SetBinLabel(kStatT0BG,	         "T0BG");
   h->GetXaxis()->SetBinLabel(kStatT0PileUp,      "T0 PileUp");
   h->GetXaxis()->SetBinLabel(kStatLaserCut,      "TPC Laser Wup Cut");
+  h->GetXaxis()->SetBinLabel(kHVdipCut,          "TPC HV dip Cut");
   h->GetXaxis()->SetBinLabel(kStatV0ABG,	 "V0A BG");
   h->GetXaxis()->SetBinLabel(kStatV0CBG,	 "V0C BG");
   h->GetXaxis()->SetBinLabel(kStatZDCA,          "ZDCA");

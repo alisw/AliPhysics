@@ -28,7 +28,8 @@ class AliTriggerAnalysis : public TObject
     enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, 
 		   kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kZNA, kZNC, kZNABG, kZNCBG, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, 
 		   kSPDGFOL0, kSPDGFOL1, kZDCTDCA, kZDCTDCC, kZDCTime, kCTPV0A, kCTPV0C, kTPCLaserWarmUp, kSPDClsVsTrkBG,
-		   kCentral,kSemiCentral, kT0, kT0BG, kT0Pileup, kEMCAL,
+		   kCentral,kSemiCentral, kT0, kT0BG, kT0Pileup, kEMCAL,kTPCHVdip,
+		   kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE,
 		   kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
     enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
@@ -70,6 +71,8 @@ class AliTriggerAnalysis : public TObject
     static const char* GetTriggerName(Trigger trigger);
     
     Bool_t IsLaserWarmUpTPCEvent(const AliESDEvent* esd);
+  	Bool_t IsHVdipTPCEvent(const AliESDEvent* esd);
+    Bool_t TRDTrigger(const AliESDEvent* esd, Trigger trigger);
     
     void FillHistograms(const AliESDEvent* aEsd);
     void FillTriggerClasses(const AliESDEvent* aEsd);
@@ -84,8 +87,19 @@ class AliTriggerAnalysis : public TObject
     void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
     void SetZDCCutParams(Float_t refSum, Float_t refDelta, Float_t sigmaSum, Float_t sigmaDelta) { fZDCCutRefSum = refSum; fZDCCutRefDelta = refDelta; fZDCCutSigmaSum = sigmaSum; fZDCCutSigmaDelta = sigmaDelta; }
     void SetCorrZDCCutParams(Float_t refSum, Float_t refDelta, Float_t sigmaSum, Float_t sigmaDelta) { fZDCCutRefSumCorr = refSum; fZDCCutRefDeltaCorr = refDelta; fZDCCutSigmaSumCorr = sigmaSum; fZDCCutSigmaDeltaCorr = sigmaDelta; }
-    void SetZNCorrCutParams(Float_t znaTimeCorr, Float_t zncTimeCorr)
-    { fZDCCutZNATimeCorr = znaTimeCorr; fZDCCutZNCTimeCorr = zncTimeCorr; }
+    void SetZNCorrCutParams(Float_t znaTimeCorrMin, Float_t znaTimeCorrMax, Float_t zncTimeCorrMin, Float_t zncTimeCorrMax)
+    { fZDCCutZNATimeCorrMin = znaTimeCorrMin; fZDCCutZNATimeCorrMax = znaTimeCorrMax; 
+      fZDCCutZNCTimeCorrMin = zncTimeCorrMin; fZDCCutZNCTimeCorrMax = zncTimeCorrMax; }
+
+    void SetTRDTriggerParameters(Float_t ptHSE, UChar_t pidHSE, Float_t ptHQU, UChar_t pidHQU, Float_t ptHEE, UChar_t pidHEE, UChar_t minSectorHEE, UChar_t maxSectorHEE, Float_t ptHJT, UChar_t nHJT) {
+      fTRDptHSE = ptHSE; fTRDpidHSE = pidHSE;
+      fTRDptHQU = ptHQU; fTRDpidHQU = pidHQU;
+      fTRDptHEE = ptHEE; fTRDpidHEE = pidHEE;
+      fTRDminSectorHEE = minSectorHEE; fTRDmaxSectorHEE = maxSectorHEE;
+      fTRDptHJT = ptHJT; fTRDnHJT = nHJT;
+    }
+    void SetUseTRDMatchCut(Bool_t flag){ fUseTRDMatchCut=flag; }
+    Bool_t GetUseTRDMatchCut(){ return fUseTRDMatchCut; }
 
     Int_t GetSPDGFOThreshhold() const { return fSPDGFOThreshold; }
     Float_t GetV0TimeOffset() const { return fV0TimeOffset; }
@@ -135,13 +149,26 @@ class AliTriggerAnalysis : public TObject
     Float_t fZDCCutSigmaSumCorr;    // Corrected ZDC time cut configuration
     Float_t fZDCCutSigmaDeltaCorr;  // Corrected ZDC time cut configuration
 
-    Float_t fZDCCutZNATimeCorr;     // Corrected ZNA time cut configuration
-    Float_t fZDCCutZNCTimeCorr;     // Corrected ZNA time cut configuration
+    Float_t fZDCCutZNATimeCorrMin;  // Corrected ZNA time cut configuration
+    Float_t fZDCCutZNATimeCorrMax;  // Corrected ZNA time cut configuration
+    Float_t fZDCCutZNCTimeCorrMin;  // Corrected ZNA time cut configuration
+    Float_t fZDCCutZNCTimeCorrMax;  // Corrected ZNA time cut configuration
 
     Float_t fASPDCvsTCut; // constant for the linear cut in SPD clusters vs tracklets
     Float_t fBSPDCvsTCut; // slope for the linear cut in SPD  clusters vs tracklets
 
-
+    // Variables for the TRD triggers
+    Float_t fTRDptHSE;		// pt threshold for HSE trigger
+    UChar_t fTRDpidHSE;		// PID threshold for HSE trigger
+    Float_t fTRDptHQU;		// pt threshold for HQU trigger
+    UChar_t fTRDpidHQU;		// PID threshold for HQU trigger
+    Float_t fTRDptHEE;		// pt threshold for HEE trigger
+    UChar_t fTRDpidHEE;		// PID threshold for HEE trigger
+    UChar_t fTRDminSectorHEE;	// min sector for HEE trigger
+    UChar_t fTRDmaxSectorHEE;	// max sector for HEE trigger
+    Float_t fTRDptHJT;		// pt threshold for HJT trigger
+    UChar_t fTRDnHJT;		// no of track threshold for HJT trigger
+    Bool_t  fUseTRDMatchCut;    // flag to decide whether to use or not the matching cut
 
     Bool_t  fDoFMD;                 // If false, skips the FMD (physics selection runs much faster)
     Float_t fFMDLowCut;		    // 
@@ -168,7 +195,7 @@ class AliTriggerAnalysis : public TObject
 
     Bool_t fTPCOnly;         // flag to set whether TPC only tracks have to be used for the offline trigger 
 
-    ClassDef(AliTriggerAnalysis, 19)
+    ClassDef(AliTriggerAnalysis, 20)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
