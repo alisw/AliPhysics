@@ -64,6 +64,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetMostProbableProton();
   void SetNoMostProbable(); 
   void SetPIDMethod(ReadPIDMethodType newMethod);
+  void SetNsigmaTPCTOF(Bool_t);
   void SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req = AliESDtrackCuts::kOff);
 
   void SetMomRangeTOFpidIs(const float& minp, const float& maxp);
@@ -86,6 +87,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   bool              fLabel;              // if true label<0 will not pass throught 
   long              fStatus;             // staus flag
   ReadPIDMethodType fPIDMethod;          // which PID mehod to use. 0 - nsgima, 1 - contour 
+  Bool_t            fNsigmaTPCTOF;       // true if squared nsigma from TPC and TOF, false if separately from TPC and TOF
 
   short             fminTPCclsF;         // min number of findable clusters in the TPC
   short             fminTPCncls;         // min number of clusters in the TPC
@@ -170,4 +172,3 @@ inline void AliFemtoESDTrackCut::SetMaxImpactZ(const float& maximpz) { fMaxImpac
 
 
 #endif
-
