@@ -394,8 +394,8 @@ void AliBalancePsi::InitHistograms() {
   fHistResonancesRho    = new TH3D("fHistResonancesRho","after #rho resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistResonancesK0     = new TH3D("fHistResonancesK0","after #rho, K0 resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistResonancesLambda = new TH3D("fHistResonancesLambda","after #rho, K0, Lambda resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
-  fHistQbefore          = new TH3D("fHistQbefore","before momentum difference cut;#Delta#eta;#Delta#phi;q = p_{1} - p_{2} (GeV/c)",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
-  fHistQafter           = new TH3D("fHistQafter","after momentum difference cut;#Delta#eta;#Delta#phi;q = p_{1} - p_{2} (GeV/c)",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
+  fHistQbefore          = new TH3D("fHistQbefore","before momentum difference cut;#Delta#eta;#Delta#phi;|#Delta p_{T}| (GeV/c)",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
+  fHistQafter           = new TH3D("fHistQafter","after momentum difference cut;#Delta#eta;#Delta#phi;|#Delta p_{T}| (GeV/c)",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
 
   TH1::AddDirectory(oldStatus);
 
@@ -665,18 +665,12 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       // momentum difference cut - suppress femtoscopic effects
       if(fQCut){ 
 
-	Double_t qMin = 0.1; //const for the time being (should be changeable later on)
-	TVector3 vDiff,v[2];
-	Double_t momentumDifference = 0.;
+	Double_t ptMin        = 0.1; //const for the time being (should be changeable later on)
+	Double_t ptDifference = TMath::Abs( firstPt - secondPt[j]);
 
-	v[0].SetPtEtaPhi(firstPt,firstEta,firstPhi);
-	v[1].SetPtEtaPhi(secondPt[j],secondEta[j],secondPhi[j]);
-	vDiff = v[1] - v[0];
-	momentumDifference = TMath::Abs(vDiff.Mag());
-
-	fHistQbefore->Fill(trackVariablesPair[1],trackVariablesPair[2],momentumDifference);
-	if(momentumDifference < qMin) continue;
-	fHistQafter->Fill(trackVariablesPair[1],trackVariablesPair[2],momentumDifference);
+	fHistQbefore->Fill(trackVariablesPair[1],trackVariablesPair[2],ptDifference);
+	if(ptDifference < ptMin) continue;
+	fHistQafter->Fill(trackVariablesPair[1],trackVariablesPair[2],ptDifference);
 
       }
 
