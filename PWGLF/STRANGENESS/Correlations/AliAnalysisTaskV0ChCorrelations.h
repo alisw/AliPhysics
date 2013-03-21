@@ -32,7 +32,7 @@ public:
    virtual ~AliAnalysisTaskV0ChCorrelations();
 
    // Setting the global variables
-   void SetAnalysisMC(Bool_t AnalysisMC = kTRUE) {fAnalysisMC = AnalysisMC;}
+   void SetAnalysisMC(Bool_t AnalysisMC = kFALSE) {fAnalysisMC = AnalysisMC;}
    void SetDcaDToPV(Float_t DcaDToPV = 0.5) {fDcaDToPV = DcaDToPV;}
    void SetDcaV0D(Float_t DcaV0D = 0.1) {fDcaV0D = DcaV0D;}
 
@@ -76,8 +76,10 @@ private:
    THnSparseF	   *fHistTrigSib;   // pt of trigger particles, same event
    THnSparseF	   *fHistTrigMix;   // pt of trigger particles involved in mixing
 
-   TH2D	           *fHistMCPtCent;   // pt vs. centrality of MC particles
-   TH2D	           *fHistRCPtCent;   // pt vs. centrality of reconstructed tracks
+   THnSparseF      *fHistMCPtCentTrig;   // pt vs. centrality of MC trigger particles
+   THnSparseF      *fHistRCPtCentTrig;   // pt vs. centrality of reconstructed trigger particles
+   TH2D	           *fHistMCPtCentAs;   // pt vs. centrality of MC associated particles
+   TH2D	           *fHistRCPtCentAs;   // pt vs. centrality of reconstructed associated particles
    
    TH1D			   *fHistTemp;   // temporary histogram for debugging
    TH1D			   *fHistTemp2;   // temporary histogram for debugging
