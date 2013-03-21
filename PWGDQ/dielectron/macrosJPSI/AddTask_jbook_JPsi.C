@@ -1,5 +1,5 @@
-AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
-				    Bool_t gridconf=kFALSE,
+AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
+				    Bool_t hasMC=kFALSE,
 				    ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB) {
 
   //get the current analysis manager
@@ -10,11 +10,11 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
   }
 
   //Do we have an MC handler?
-  Bool_t hasMC = kFALSE;
   TString list = gSystem->Getenv("LIST");
-  if( list.IsNull()) list=prod;
-  if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
-  if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
+  if(!list.IsNull()) {
+    if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
+    if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
+  }
 
   //Do we have an AOD handler?
   Bool_t isAOD=(mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class() ? kTRUE : kFALSE);
@@ -80,8 +80,8 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
     gROOT->LoadMacro(configFile.Data());
 
   //add dielectron analysis with different cuts to the task
-  for (Int_t i=0; i<6; ++i) { //nDie defined in config file
-    AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,list,triggers);
+  for (Int_t i=0; i<nDie; ++i) { //nDie defined in config file
+    AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,hasMC,triggers);
     if (jpsi ) task->AddDielectron(jpsi);
     if (jpsi ) printf(" %s added\n",jpsi->GetName());
   }
