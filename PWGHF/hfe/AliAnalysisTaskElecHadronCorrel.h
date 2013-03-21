@@ -31,7 +31,7 @@ class AliHFEcuts;
 class AliHFEpid;
 class AliHFEpidQAmanager;
 class AliCFManager;
-//class AliEventPoolManager;
+class AliEventPoolManager;
 
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
@@ -76,8 +76,8 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     void SetShowerShapeCutsM20(Double_t M20CutMin, Double_t M20CutMax){fM20CutMin=M20CutMin; fM20CutMax=M20CutMax;};
     void SetShowerShapeCutsDisp(Double_t DispCutMin, Double_t DispCutMax){fDispCutMin=DispCutMin; fDispCutMax=DispCutMax;};
     void SetEovPCuts(Double_t EovPMin, Double_t EovPMax){fEovPMin=EovPMin;fEovPMax=EovPMax;};
- //   void MixedEvent(AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1, TH2F *DphiPt2, TH2F *DphiPt3, TH2F *DphiPt4);
- //   TObjArray* CloneAndReduceTrackList();
+    void MixedEvent(AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1, TH2F *DphiPt2, TH2F *DphiPt3, TH2F *DphiPt4);
+    TObjArray* CloneAndReduceTrackList();
 
   private:
 
@@ -123,7 +123,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     Double_t   fEovPMax;//
     Bool_t     fTriggerCentral;//
 
- //   AliEventPoolManager*     fPoolMgr;         //! event pool manager
+    AliEventPoolManager*     fPoolMgr;         //! event pool manager
 
     TH1F			*fNoEvents;		//no of events
     //    TH1F			*fTrkpt;		//track pt
@@ -281,7 +281,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
           TH1F        *fTrakPhiSPDAnd;//
           TH1F        *fTrackHFEcutsITS;//
      */
-/*    TH1F        *fNoMixedEvents;//
+    TH1F        *fNoMixedEvents;//
     TH2F        *fMixStat; //no of events in pool vs multplicity
     TH2F        *fMixStat1; //no of events in pool vs zvtx 
     TH2F        *fMixedIncElecDphi; //Mixed event - inclusive elec DPhi
@@ -309,7 +309,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH2F        *fMixedDphiLSMassLow2;//
     TH2F        *fMixedDphiLSMassLow3;//
     TH2F        *fMixedDphiLSMassLow4;//
-*/
+
     TH1F        *fHadronPt;//
     TH1F       *fCentralityPass; // ! QA histogram of events that pass centrality cut
     TH1F       *fCentralityNoPass; //! QA histogram of events that do not pass centrality cut
@@ -365,7 +365,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
 
     ClassDef(AliAnalysisTaskElecHadronCorrel, 2); //!example of analysis
 };
-/*
+
    class AliehDPhiBasicParticle : public AliVParticle
    {
    public:
@@ -413,7 +413,6 @@ Short_t fCharge;   // charge
 
 ClassDef( AliehDPhiBasicParticle, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
- */
 #endif
 
 

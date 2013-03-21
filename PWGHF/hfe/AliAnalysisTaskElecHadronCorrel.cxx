@@ -68,7 +68,7 @@
 #include "iostream"
 #include "fstream"
 
-//#include "AliEventPoolManager.h"
+#include "AliEventPoolManager.h"
 
 #include "AliCentrality.h"
 #include "AliMagF.h"
@@ -96,7 +96,7 @@
 #include "TRandom2.h"
 
   ClassImp(AliAnalysisTaskElecHadronCorrel)
-//ClassImp(AliehDPhiBasicParticle)  
+ClassImp(AliehDPhiBasicParticle)  
   //________________________________________________________________________
   AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel(const char *name) 
   : AliAnalysisTaskSE(name)
@@ -133,7 +133,7 @@
   ,fEovPMin(0.8)                                                                
   ,fEovPMax(1.2)
   ,fTriggerCentral(kTRUE) 
-//  ,fPoolMgr(0x0)  
+  ,fPoolMgr(0x0)  
     ,fNoEvents(0)
     //  ,fTrkpt(0)
     ,fTrkEovPAft(0)	 
@@ -286,7 +286,7 @@
         ,fTrakPhiSPDAnd(0)
         ,fTrackHFEcutsITS(0)  
      */
-/*  ,fNoMixedEvents(0)
+  ,fNoMixedEvents(0)
   ,fMixStat(0)       
   ,fMixStat1(0)        
   ,fMixedIncElecDphi(0)  
@@ -314,7 +314,6 @@
     ,fMixedDphiLSMassLow2(0)  
     ,fMixedDphiLSMassLow3(0)  
     ,fMixedDphiLSMassLow4(0)  
-*/
   ,fHadronPt(0)  
   ,fCentralityPass(0)
   ,fCentralityNoPass(0)
@@ -408,7 +407,7 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fEovPMin(0.8)                                                                          
   ,fEovPMax(1.2)
   ,fTriggerCentral(kTRUE) 
-//  ,fPoolMgr(0x0)    
+  ,fPoolMgr(0x0)    
     ,fNoEvents(0)
     //  ,fTrkpt(0)
     ,fTrkEovPAft(0)	 
@@ -561,7 +560,7 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
         ,fTrakPhiSPDAnd(0)
         ,fTrackHFEcutsITS(0)  
      */
-/*  ,fNoMixedEvents(0)
+  ,fNoMixedEvents(0)
   ,fMixStat(0)      
   ,fMixStat1(0)     
   ,fMixedIncElecDphi(0)  
@@ -589,7 +588,6 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fMixedDphiLSMassLow2(0)      
   ,fMixedDphiLSMassLow3(0)      
     ,fMixedDphiLSMassLow4(0)      
-*/
   ,fHadronPt(0)  
   ,fCentralityPass(0)
   ,fCentralityNoPass(0)
@@ -735,12 +733,12 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
   AliCentrality *fCentrality2 = (AliCentrality*)fAOD->GetCentrality();
   Double_t centvalue1 = fCentrality2->GetCentralityPercentile("V0M");
-/*
+
   //Event mixing
   AliEventPool* pool = fPoolMgr->GetEventPool(centvalue1, pVtxZ); // Get the buffer associated with the current centrality and z-vtx
   if (!pool)
     AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centvalue1, pVtxZ));     
-*/
+
   // Look for kink mother for AOD
   Double_t *listofmotherkink =0;
   Int_t numberofvertices = 0, numberofmotherkink = 0;
@@ -893,21 +891,21 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
     //Inclusive electron-hadron correlation
     ElectronHadCorrel(iTracks, track, fInclusiveElecDphi, fInclusiveElecDphi1,fInclusiveElecDphi2,fInclusiveElecDphi3,fInclusiveElecDphi4);
     fInclusiveElecPt->Fill(pt);
-    //MixedEvent(track,fMixedIncElecDphi, fMixedIncElecDphi1,fMixedIncElecDphi2, fMixedIncElecDphi3, fMixedIncElecDphi4);
+    MixedEvent(track,fMixedIncElecDphi, fMixedIncElecDphi1,fMixedIncElecDphi2, fMixedIncElecDphi3, fMixedIncElecDphi4);
 
     //Dphi in Eta bins
     ElectronHadCorrelEtaBins(iTracks, track, fInclusiveElecDphiEta1, fInclusiveElecDphiEta11,fInclusiveElecDphiEta12,fInclusiveElecDphiEta13,fInclusiveElecDphiEta14,fInclusiveElecDphiEta2, fInclusiveElecDphiEta21,fInclusiveElecDphiEta22,fInclusiveElecDphiEta23,fInclusiveElecDphiEta24);
 
     //Inclusive electron-hadron correlation far eta side
     ElectronHadCorrelEtaFarSide(iTracks, track, fInclusiveElecDphiEtaFS, fInclusiveElecDphiEtaFS1,fInclusiveElecDphiEtaFS2,fInclusiveElecDphiEtaFS3,fInclusiveElecDphiEtaFS4);
-   // MixedEvent(track,fMixedIncElecDphi, fMixedIncElecDphi1,fMixedIncElecDphi2, fMixedIncElecDphi3, fMixedIncElecDphi4);
+    MixedEvent(track,fMixedIncElecDphi, fMixedIncElecDphi1,fMixedIncElecDphi2, fMixedIncElecDphi3, fMixedIncElecDphi4);
 
     // photonic electron
     if(fFlagPhotonicElec){
       //Electron hadron correlation
       ElectronHadCorrel(iTracks, track, fPhotElecDphi,fPhotElecDphi1,fPhotElecDphi2,fPhotElecDphi3,fPhotElecDphi4);
       fPhotoElecPt->Fill(pt);
-//      MixedEvent(track,fMixedPhotElecDphi, fMixedPhotElecDphi1,fMixedPhotElecDphi2, fMixedPhotElecDphi3, fMixedPhotElecDphi4);
+      MixedEvent(track,fMixedPhotElecDphi, fMixedPhotElecDphi1,fMixedPhotElecDphi2, fMixedPhotElecDphi3, fMixedPhotElecDphi4);
 
       //Dphi in Eta bins
       ElectronHadCorrelEtaBins(iTracks, track, fPhotElecDphiEta1,fPhotElecDphiEta11,fPhotElecDphiEta12,fPhotElecDphiEta13,fPhotElecDphiEta14,fPhotElecDphiEta2,fPhotElecDphiEta21,fPhotElecDphiEta22,fPhotElecDphiEta23,fPhotElecDphiEta24);
@@ -918,7 +916,7 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
       //Electron hadron correlation
       ElectronHadCorrel(iTracks, track, fSemiIncElecDphi, fSemiIncElecDphi1,fSemiIncElecDphi2,fSemiIncElecDphi3,fSemiIncElecDphi4);
       fSemiInclElecPt->Fill(pt);
-//      MixedEvent(track,fMixedSemiIncElecDphi,fMixedSemiIncElecDphi1,fMixedSemiIncElecDphi2, fMixedSemiIncElecDphi3, fMixedSemiIncElecDphi4);
+      MixedEvent(track,fMixedSemiIncElecDphi,fMixedSemiIncElecDphi1,fMixedSemiIncElecDphi2, fMixedSemiIncElecDphi3, fMixedSemiIncElecDphi4);
 
       //Dphi in Eta bins
       ElectronHadCorrelEtaBins(iTracks, track, fSemiIncElecDphiEta1, fSemiIncElecDphiEta11,fSemiIncElecDphiEta12,fSemiIncElecDphiEta13,fSemiIncElecDphiEta14,fSemiIncElecDphiEta2, fSemiIncElecDphiEta21,fSemiIncElecDphiEta22,fSemiIncElecDphiEta23,fSemiIncElecDphiEta24);
@@ -934,11 +932,11 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
        fClsEv1->Fill(clus->E());  
        }
    */
-/*
+
   TObjArray* tracksClone = CloneAndReduceTrackList();
   tracksClone->SetOwner();
   pool->UpdatePool(tracksClone);
-*/
+
   delete listofmotherkink;
   PostData(1, fOutputList);
 }
@@ -984,7 +982,7 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   if(IsAODanalysis()) fCuts->SetAOD(); 
   fCuts->Initialize(fCFM);
-/*
+
   //Mixed event initialising
   Int_t trackDepth = 2000;
   Int_t poolsize   = 1000;
@@ -1029,7 +1027,7 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
     vertexBins[4] = 10;
     fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) CentralityBinsSC, nZvtxBins, (Double_t*) vertexBins);
   }
-*/
+
 
   //---------Output Tlist
   fOutputList = new TList();
@@ -1422,7 +1420,7 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
      fInvmassULS5 = new TH1F("fInvmassULS5", "Inv mass of ULS (e,e) for pt^{e}>4; mass(GeV/c^2); counts;", 1000,0,1.0);
      fOutputList->Add(fInvmassULS5);
    */
-/*  fNoMixedEvents = new TH1F("fNoMixedEvents","",1,0,1) ;
+  fNoMixedEvents = new TH1F("fNoMixedEvents","",1,0,1) ;
   fOutputList->Add(fNoMixedEvents);
 
   fMixStat = new TH2F("fMixStat","no of events in pool  vs Centrality;Nevent in pool;Centrality",200,0,200,5,0,10);
@@ -1505,7 +1503,7 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fMixedDphiLSMassLow4 = new TH2F("fMixedDphiLSMassLow4", "Mixed event - LS mass < cut elec-had Dphi correlation 4<pt<10",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fMixedDphiLSMassLow4);
-*/
+
   fHadronPt = new TH1F("fHadronPt","hadron pt distribution",1000,0,100);
   fOutputList->Add(fHadronPt);
 
@@ -1727,14 +1725,14 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliVT
         ElectronHadCorrel(itrack,track,fDphiULSMassLow, fDphiULSMassLow1,fDphiULSMassLow2,fDphiULSMassLow3,fDphiULSMassLow4);
         ElectronHadCorrelEtaBins(itrack,track,fDphiULSMassLowEta1, fDphiULSMassLowEta11,fDphiULSMassLowEta12,fDphiULSMassLowEta13,fDphiULSMassLowEta14,fDphiULSMassLowEta2, fDphiULSMassLowEta21,fDphiULSMassLowEta22,fDphiULSMassLowEta23,fDphiULSMassLowEta24);
         fULSElecPt->Fill(track->Pt());
-        //MixedEvent(track,fMixedDphiULSMassLow,fMixedDphiULSMassLow1,fMixedDphiULSMassLow2, fMixedDphiULSMassLow3, fMixedDphiULSMassLow4);
+        MixedEvent(track,fMixedDphiULSMassLow,fMixedDphiULSMassLow1,fMixedDphiULSMassLow2, fMixedDphiULSMassLow3, fMixedDphiULSMassLow4);
       }
       if(fFlagLS)
       {
         ElectronHadCorrel(itrack,track,fDphiLSMassLow,fDphiLSMassLow1,fDphiLSMassLow2,fDphiLSMassLow3,fDphiLSMassLow4);
         ElectronHadCorrelEtaBins(itrack,track,fDphiLSMassLowEta1, fDphiLSMassLowEta11,fDphiLSMassLowEta12,fDphiLSMassLowEta13,fDphiLSMassLowEta14,fDphiLSMassLowEta2, fDphiLSMassLowEta21,fDphiLSMassLowEta22,fDphiLSMassLowEta23,fDphiLSMassLowEta24);
         fLSElecPt->Fill(track->Pt());
-//        MixedEvent(track,fMixedDphiLSMassLow,fMixedDphiLSMassLow1,fMixedDphiLSMassLow2, fMixedDphiLSMassLow3, fMixedDphiLSMassLow4);
+        MixedEvent(track,fMixedDphiLSMassLow,fMixedDphiLSMassLow1,fMixedDphiLSMassLow2, fMixedDphiLSMassLow3, fMixedDphiLSMassLow4);
       }
       if(fFlagLS){
         ElectronHadCorrelNoPartner(itrack,jTracks,track,fDphiLSMassLowNoPartner, fDphiLSMassLowNoPartner1,fDphiLSMassLowNoPartner2,fDphiLSMassLowNoPartner3,fDphiLSMassLowNoPartner4);
@@ -2122,7 +2120,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaBinsNoPartner(Int_t it
     }
   }
 }
-/*
+
 //_________________________________________
 void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2, TH2F *DphiPt3, TH2F *DphiPt4)
 {
@@ -2181,6 +2179,7 @@ void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliVTrack *track, TH2F *DphiPt,
     }
   }
 }
+
 //___________________________________________
 TObjArray*  AliAnalysisTaskElecHadronCorrel::CloneAndReduceTrackList()
 {
@@ -2228,7 +2227,7 @@ TObjArray*  AliAnalysisTaskElecHadronCorrel::CloneAndReduceTrackList()
 
   return tracksClone;
 }
-*/
+
 //___________________________________________
 void AliAnalysisTaskElecHadronCorrel::HadronInfo(Int_t itrack)
 {
