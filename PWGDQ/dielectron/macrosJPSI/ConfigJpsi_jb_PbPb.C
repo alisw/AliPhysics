@@ -229,7 +229,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
   switch(cutDefinition) {
   case kTRD:
-    pidCuts->AddCut(AliDielectronPID::kTRDeleEff,AliPID::kElectron,.8,1.,3.5.,6.,kFALSE,
+    pidCuts->AddCut(AliDielectronPID::kTRDeleEff,AliPID::kElectron,.8,1.,3.5,6.,kFALSE,
 		    AliDielectronPID::kIfAvailable,AliDielectronVarManager::kTRDpidQuality);
   case kTOF:
     pidVarCuts->AddCut(AliDielectronVarManager::kTOFbeta,      0.2,   0.9, kTRUE);
