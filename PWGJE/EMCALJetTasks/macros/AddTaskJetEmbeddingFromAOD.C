@@ -59,6 +59,7 @@ AliJetEmbeddingFromAODTask* AddTaskJetEmbeddingFromAOD(
   jetEmb->SetCentralityRange(minCent, maxCent);
   jetEmb->SetTriggerMask(mask);
   jetEmb->SetCopyArray(copyArray);
+  jetEmb->SetNClusters(1);
 
   jetEmb->SetIncludeNoITS(includeNoITS);
   TString runPeriod(runperiod);

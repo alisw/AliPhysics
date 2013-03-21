@@ -62,6 +62,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fCentEst("V0M"),
   fTrackBitMap(0),
   fClusterBitMap(0),
+  fMCTrackBitMap(0),
+  fMCClusterBitMap(0),
   fNcentBins(4),
   fGeom(0),
   fTracks(0),
@@ -121,6 +123,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fCentEst("V0M"),
   fTrackBitMap(0),
   fClusterBitMap(0),
+  fMCTrackBitMap(0),
+  fMCClusterBitMap(0),
   fNcentBins(4),
   fGeom(0),
   fTracks(0),
@@ -244,11 +248,19 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus) const
   if (!clus)
     return kFALSE;
 
-  if (clus->GetLabel() > 0 && clus->TestBits(fClusterBitMap) != (Int_t)fClusterBitMap) {
-    AliDebug(2,"Cluster not accepted because of bit map.");
-    return kFALSE;
+  if (clus->GetLabel() > 0) {
+    if (clus->TestBits(fMCClusterBitMap) != (Int_t)fMCClusterBitMap) {
+      AliDebug(2,"MC Cluster not accepted because of bit map.");
+      return kFALSE;
+    }
   }
-
+  else {
+    if (clus->TestBits(fClusterBitMap) != (Int_t)fClusterBitMap) {
+      AliDebug(2,"Cluster not accepted because of bit map.");
+      return kFALSE;
+    }
+  }
+      
   if (!clus->IsEMCAL())
     return kFALSE;
 
@@ -272,9 +284,17 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track) const
   if (!track)
     return kFALSE;
 
-  if (track->GetLabel() != 0 && track->TestBits(fTrackBitMap) != (Int_t)fTrackBitMap) {
-    AliDebug(2,"Track not accepted because of bit map.");
-    return kFALSE;
+  if (track->GetLabel() != 0) {
+    if(track->TestBits(fMCTrackBitMap) != (Int_t)fMCTrackBitMap) {
+      AliDebug(2,"MC Track not accepted because of bit map.");
+      return kFALSE;
+    }
+  }
+  else {
+    if(track->TestBits(fTrackBitMap) != (Int_t)fTrackBitMap) {
+      AliDebug(2,"Track not accepted because of bit map.");
+      return kFALSE;
+    }
   }
 
   if (track->Pt() < fTrackPtCut)
@@ -296,8 +316,14 @@ Bool_t AliAnalysisTaskEmcal::AcceptEmcalPart(AliEmcalParticle *part) const
     return kFALSE;
 
   if (part->IsTrack()) {
-    if (part->IsMC() && part->TestBits(fTrackBitMap) != (Int_t)fTrackBitMap)
-      return kFALSE;
+    if (part->IsMC()) { 
+      if (part->TestBits(fMCTrackBitMap) != (Int_t)fMCTrackBitMap)
+	return kFALSE;
+    }
+    else {
+      if (part->TestBits(fTrackBitMap) != (Int_t)fTrackBitMap)
+	return kFALSE;
+    }
 
     if (part->Pt() < fTrackPtCut)
       return kFALSE;
@@ -308,8 +334,14 @@ Bool_t AliAnalysisTaskEmcal::AcceptEmcalPart(AliEmcalParticle *part) const
   }
 
   if (part->IsCluster()) {
-    if (part->IsMC() && part->TestBits(fClusterBitMap) != (Int_t)fClusterBitMap)
-      return kFALSE;
+    if (part->IsMC()) { 
+      if (part->TestBits(fMCClusterBitMap) != (Int_t)fMCClusterBitMap)
+	return kFALSE;
+    }
+    else {
+      if (part->TestBits(fClusterBitMap) != (Int_t)fClusterBitMap)
+	return kFALSE;
+    }
 
     if (!part->IsEMCAL())
       return kFALSE;
@@ -376,7 +408,7 @@ void AliAnalysisTaskEmcal::ExecOnce()
   if (!fCaloCellsName.IsNull() && !fCaloCells) {
     fCaloCells =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCaloCellsName));
     if (!fCaloCells) {
-      AliError(Form("%s: Could not retrieve clusters %s!", GetName(), fCaloCellsName.Data())); 
+      AliError(Form("%s: Could not retrieve cells %s!", GetName(), fCaloCellsName.Data())); 
       return;
     }
   }

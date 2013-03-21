@@ -13,12 +13,14 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
   Double_t    jetBiasTrack       = 5,
-  Double_t    jetBiasClus        = 5,
+  Double_t    jetBiasClus        = 1000,
   UInt_t      matching           = AliJetResponseMaker::kGeometrical,
   Double_t    maxDistance1       = 0.25,
   Double_t    maxDistance2       = 0.25,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
   Int_t       ptHardBin          = -999,
+  Double_t    minCent            = -999,
+  Double_t    maxCent            = -999,
   const char *taskname           = "AliJetResponseMaker",
   Bool_t      biggerMatrix       = kFALSE,
   AliJetResponseMaker* address   = 0
@@ -46,16 +48,19 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   //-------------------------------------------------------
 
   TString name(Form("%s_%s_%s_Track%d_Clus%d_",taskname,njets1,njets2,(Int_t)floor(jetBiasTrack),(Int_t)floor(jetBiasClus)));
+
   if (type == AliAnalysisTaskEmcal::kTPC)
     name += "TPC";
   else if (type == AliAnalysisTaskEmcal::kEMCAL) 
     name += "EMCAL";
   else if (type == AliAnalysisTaskEmcal::kUser) 
     name += "USER";
-  if (ptHardBin != -999) {
-    name += "_PtHard";
-    name += ptHardBin;
-  }
+
+  if (minCent != -999 && maxCent != -999) 
+    name += Form("_Cent%d_%d", (Int_t)floor(minCent), (Int_t)floor(maxCent));
+
+  if (ptHardBin != -999) 
+    name += Form("_PtHard%d", ptHardBin);
 
   AliJetResponseMaker* jetTask = address;
   if (jetTask)
@@ -80,6 +85,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetTask->SetMatching(matching, maxDistance1, maxDistance2);
   jetTask->SetVzRange(-10,10);
   jetTask->SetPtHardBin(ptHardBin);
+  jetTask->SetCentRange(minCent,maxCent);
 
   if (biggerMatrix) 
     jetTask->SetHistoBins(1000,0,500);

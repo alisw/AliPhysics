@@ -15,6 +15,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Bool_t reclusterize  = kFALSE,
   UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN,
   Bool_t trackMatch    = kFALSE,
+  Bool_t updateCellOnly= kFALSE,
   const char* pass     = 0)
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -45,7 +46,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
   AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(timeCut, distBC, recalibClus, recalibClusPos, nonLinearCorr, remExotic, 
-							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, clusterizer, trackMatch);
+							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, clusterizer, trackMatch, updateCellOnly);
   if (pass) 
     EMCALSupply->SetPass(pass);
 
