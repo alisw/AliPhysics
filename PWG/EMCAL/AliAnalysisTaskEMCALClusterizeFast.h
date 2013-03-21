@@ -13,6 +13,8 @@ class AliEMCALClusterizer;
 class AliEMCALAfterBurnerUF;
 class AliEMCALRecParam;
 class AliEMCALRecoUtils;
+class AliVCaloCells;
+class AliEMCALGeometry;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -20,6 +22,8 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
  public:
   enum InputCellType {
     kFEEData = 0,
+    kFEEDataMCOnly,
+    kFEEDataExcludeMC,
     kPattern,
     kL0FastORs,
     kL0FastORsTC,
@@ -36,7 +40,6 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   virtual void           UserExec(Option_t *option);
 
   Bool_t                 GetAttachClusters()                          const   { return fAttachClusters               ; }
-  Bool_t                 GetRecalibrateOnly()                         const   { return fRecalibOnly                  ; }
   Bool_t                 GetSubBackground()                           const   { return fSubBackground                ; }
   const TObjArray       *GetClusters()                                const   { return fClusterArr                   ; }
   const TClonesArray    *GetDigits()                                  const   { return fDigitsArr                    ; }
@@ -46,8 +49,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   AliEMCALCalibData     *GetCalibData()                               const   { return fCalibData                    ; }
   AliCaloCalibPedestal  *GetPedData()                                 const   { return fPedestalData                 ; }
   TGeoHMatrix           *GetGeometryMatrix(Int_t i)                   const   { return fGeomMatrix[i]                ; }
-  Bool_t                 GetOverwrite()                               const   { return fOverwrite                    ; }
-  const TString         &GetNewClusterArrayName()                     const   { return fNewClusterArrayName          ; }
+  const TString         &GetCaloClustersName()                        const   { return fCaloClustersName             ; }
   Int_t                  GetnPhi()                                    const   { return fNPhi                         ; }
   Int_t                  GetnEta()                                    const   { return fNEta                         ; }
   Int_t                  GetShiftPhi()                                const   { return fShiftPhi                     ; }
@@ -66,10 +68,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetLoadPed(Bool_t b)                                 { fLoadPed                     = b     ; }
   void                   SetOCDBPath(const char *path)                        { fOCDBpath                    = path  ; }
   void                   SetPedestalData(AliCaloCalibPedestal *d)             { fPedestalData                = d     ; }
-  void                   SetRecalibrateCellsOnly(Bool_t b)                    { fRecalibOnly                 = b     ; }
   void                   SetSubBackground(Bool_t b)                           { fSubBackground               = b     ; }
-  void                   SetOverwrite(Bool_t yes)                             { fOverwrite                   = yes   ; }
-  void                   SetNewClusterArrayName(const char *name)             { fNewClusterArrayName         = name  ; }
   void                   SetnPhi(Int_t n)                                     { fNPhi                        = n     ; }
   void                   SetnEta(Int_t n)                                     { fNEta                        = n     ; }
   void                   SetShiftPhi(Int_t n)                                 { fShiftPhi                    = n     ; }
@@ -77,7 +76,24 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetTRUShift(Bool_t yes)                              { fTRUShift                    = yes   ; }
   void                   SetInputCellType(InputCellType ic)                   { fInputCellType               = ic    ; }
   void                   SetTrackName(const char *n)                          { fTrackName                   = n     ; }
+  void                   SetCaloClustersName(const char *name)                { fCaloClustersName            = name  ; }
+  void                   SetCaloCellsName(const char *name)                   { fCaloCellsName               = name  ; }
+  void                   SetUpdateCells(Bool_t b)                             { fDoUpdateCells               = b     ; }
+  void                   SetClusterize(Bool_t b)                              { fDoClusterize                = b     ; }
+  void                   SetClusterBadChannelCheck(Bool_t b)                  { fClusterBadChannelCheck      = b     ; }
+  void                   SetRejectExoticClusters(Bool_t b)                    { fRejectExoticClusters        = b     ; }
+  void                   SetFiducial(Bool_t b)                                { fFiducial                    = b     ; }
+  void                   SetDoNonLinearity(Bool_t b)                          { fDoNonLinearity              = b     ; }
+  void                   SetRecalDistToBadChannels(Bool_t b)                  { fRecalDistToBadChannels      = b     ; }
 
+  // For backward compatibility
+  const TString         &GetNewClusterArrayName()                     const   { return GetCaloClustersName()         ; }
+  void                   SetNewClusterArrayName(const char *name)             { SetCaloClustersName(name)            ; }
+  void                   SetOverwrite(Bool_t b)                               { if (b) SetCaloClustersName(""); else SetCaloClustersName("newCaloClusters");}
+  void                   SetRecalibrateCellsOnly(Bool_t b)                    { if (b) { SetUpdateCells(kTRUE); SetClusterize(kFALSE);} else { SetClusterize(kTRUE); } }
+  Bool_t                 GetRecalibrateOnly()                         const   { return (Bool_t)(fDoUpdateCells && !fDoClusterize); }
+  Bool_t                 GetOverwrite()                               const   { return fCaloClustersName.IsNull()                ; }
+    
  protected:
   virtual void           Clusterize();
   virtual void           FillDigitsArray();
@@ -85,6 +101,9 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   virtual void           RecPoints2Clusters(TClonesArray *clus);
   virtual void           UpdateCells();
   virtual void           UpdateClusters();
+  virtual void           CalibrateClusters();
+  virtual void           TrackClusterMatching(AliVCluster *c, TClonesArray *tarr);
+  virtual void           CopyClusters(TClonesArray *orig, TClonesArray *dest);
 
   Int_t                  fRun;                            //!run number
   TClonesArray          *fDigitsArr;                      //!digits array
@@ -106,10 +125,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 fLoadCalib;                      // access calib object from OCDB (def=off)
   Bool_t                 fLoadPed;                        // access ped object from OCDB (def=off)
   Bool_t                 fAttachClusters;                 // attach clusters to input event (AOD or ESD)
-  Bool_t                 fRecalibOnly;                    // only recalibrate cells if true (def=off)
   Bool_t                 fSubBackground;                  // subtract background if true (def=off)
-  Bool_t                 fOverwrite;                      // overwrite existing clusters
-  TString                fNewClusterArrayName;            // if not overwriting, name of the new cluster array
   Int_t                  fNPhi;                           // nPhi (for FixedWindowsClusterizer)
   Int_t                  fNEta;                           // nEta (for FixedWinoswsClusterizer)
   Int_t                  fShiftPhi;                       // shift in phi (for FixedWindowsClusterizer)
@@ -117,12 +133,25 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 fTRUShift;                       // shifting inside a TRU (true) or through the whole calorimeter (false) (for FixedWindowsClusterizer)
   InputCellType          fInputCellType;                  // input cells type to make clusters
   TString                fTrackName;                      // if not null use track collection for track/cluster matching
-
+  TString                fCaloCellsName;                  // name of calo cells object
+  TString                fCaloClustersName;               // name of calo cluster collection
+  Bool_t                 fDoUpdateCells;                  // recalibrate cells
+  Bool_t                 fDoClusterize;                   // clusterize
+  Bool_t                 fClusterBadChannelCheck;         // cluster bad channel check
+  Bool_t                 fRejectExoticClusters;           // reject exotic cluster
+  Bool_t                 fFiducial;                       // fiducial cut
+  Bool_t                 fDoNonLinearity;                 // non linearity calib
+  Bool_t                 fRecalDistToBadChannels;         // recalculate distance to bad channel
+  AliVCaloCells         *fCaloCells;                      //!calo cells object
+  TClonesArray          *fCaloClusters;                   //!calo clusters array       
+  AliESDEvent           *fEsd;                            //!esd event
+  AliAODEvent           *fAod;                            //!aod event
+  AliEMCALGeometry      *fGeom;                           //!geometry object
 
  private:
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
   AliAnalysisTaskEMCALClusterizeFast &operator=(const AliAnalysisTaskEMCALClusterizeFast&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 8);
+  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 9);
 };
 #endif //ALIANALYSISTASKEMCALCLUSTERIZEFAST_H

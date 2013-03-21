@@ -297,8 +297,16 @@ Bool_t AliJetModelBaseTask::ExecOnce()
       fOutCaloName = fCaloName;
       if (fCopyArray) 
 	fOutCaloName += fSuffix;
+      TString className;
+      if (fClusters)
+	className = fClusters->GetClass()->GetName();
+      else if (fEsdMode)
+	className = "AliESDCaloCluster";
+      else
+	className = "AliAODCaloCluster";
+	
       if (fCopyArray || !fClusters) {
-	fOutClusters = new TClonesArray(fClusters->GetClass()->GetName(), fClusters->GetSize());
+	fOutClusters = new TClonesArray(className.Data());
 	fOutClusters->SetName(fOutCaloName);
 	if (InputEvent()->FindListObject(fOutCaloName)) {
 	  AliFatal(Form("%s: Collection %s is already present in the event!", GetName(), fOutCaloName.Data())); 
@@ -480,6 +488,50 @@ Int_t AliJetModelBaseTask::AddCell(Double_t e, Int_t absId, Double_t time, Int_t
     return 0;
 }
 
+//________________________________________________________________________
+AliVCluster* AliJetModelBaseTask::AddCluster(AliVCluster *oc)
+{
+  // Add a cluster to the event.
+
+  const Int_t nClusters = fOutClusters->GetEntriesFast();
+  AliVCluster *dc = static_cast<AliVCluster*>(fOutClusters->New(nClusters));
+  dc->SetType(AliVCluster::kEMCALClusterv1);
+  dc->SetE(oc->E());
+  Float_t pos[3] = {0};
+  oc->GetPosition(pos);
+  dc->SetPosition(pos);
+  dc->SetNCells(oc->GetNCells());
+  dc->SetCellsAbsId(oc->GetCellsAbsId());
+  dc->SetCellsAmplitudeFraction(oc->GetCellsAmplitudeFraction());
+  dc->SetID(oc->GetID());
+  dc->SetDispersion(oc->GetDispersion());
+  dc->SetEmcCpvDistance(-1);
+  dc->SetChi2(-1);
+  dc->SetTOF(oc->GetTOF());     //time-of-flight
+  dc->SetNExMax(oc->GetNExMax()); //number of local maxima
+  dc->SetM02(oc->GetM02());
+  dc->SetM20(oc->GetM20());
+  dc->SetDistanceToBadChannel(oc->GetDistanceToBadChannel()); 
+
+  //MC
+  UInt_t nlabels = oc->GetNLabels();
+  Int_t *labels = oc->GetLabels();
+
+  if (nlabels != 0 && labels) {
+    AliESDCaloCluster *esdClus = dynamic_cast<AliESDCaloCluster*>(dc);
+    if (esdClus) {
+      TArrayI parents(nlabels, labels);
+      esdClus->AddLabels(parents); 
+    }
+    else {
+      AliAODCaloCluster *aodClus = dynamic_cast<AliAODCaloCluster*>(dc);
+      if (aodClus) 
+	aodClus->SetLabel(labels, nlabels); 
+    }
+  }
+
+  return dc;
+}
 
 //________________________________________________________________________
 AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Double_t eta, Double_t phi, Int_t label)

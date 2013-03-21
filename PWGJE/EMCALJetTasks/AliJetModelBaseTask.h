@@ -55,6 +55,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Int_t                  AddCell(Double_t e, Int_t absId, Double_t time = 0, Int_t label=0);   // add a cell with given energy, position and times
   AliVCluster           *AddCluster(Double_t e = -1, Double_t eta = -999, Double_t phi = -1, Int_t label=0); // add a cluster; if values are -1 generate random parameters
   AliVCluster           *AddCluster(Double_t e, Int_t absId, Int_t label=0);                   // add a cluster with given energy and position
+  AliVCluster           *AddCluster(AliVCluster *oc);                                          // add a cluster (copy)
   AliPicoTrack          *AddTrack(Double_t pt = -1, Double_t eta = -999, Double_t phi = -1, 
 				  Byte_t type=0, Double_t etaemc=0, Double_t phiemc=0, Bool_t ise=kFALSE, Int_t label=0); // add a track; if values are -1 generate random parameters
   AliAODMCParticle      *AddMCParticle(AliAODMCParticle *part, Int_t origIndex);                // add a MC particle

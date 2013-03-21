@@ -14,7 +14,8 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
   Bool_t reclusterize  = kFALSE,
   UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN,
-  Bool_t trackMatch    = kFALSE)
+  Bool_t trackMatch    = kFALSE,
+  Bool_t updateCellOnly= kFALSE)
 {
   AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");  
   EMCALSupply->SetDebugLevel(2);
@@ -116,5 +117,10 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
     EMCALSupply->SwitchOffTrackMatch();
   }
   
+  if (updateCellOnly) 
+    EMCALSupply->SwitchOnUpdateCellOnly();
+  else
+    EMCALSupply->SwitchOffUpdateCellOnly();
+
   return EMCALSupply;
 }

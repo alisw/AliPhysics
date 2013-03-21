@@ -1498,7 +1498,7 @@ Bool_t AliJetResponseMaker::FillHistograms()
 	fHistDistancevsJet2Pt->Fill(d, jet2->Pt());
 
 	fHistDistancevsCommonEnergy1->Fill(d, ce1);
-	fHistDistancevsCommonEnergy2->Fill(d, ce1);
+	fHistDistancevsCommonEnergy2->Fill(d, ce2);
 	fHistCommonEnergy1vsCommonEnergy2->Fill(ce1, ce2);
 
 	fHistJet2PtOverJet1PtvsJet2Pt->Fill(jet2->Pt(), jet2->Pt() / jet2->MatchedJet()->Pt());

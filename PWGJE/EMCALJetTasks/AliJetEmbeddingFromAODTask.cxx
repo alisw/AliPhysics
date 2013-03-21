@@ -607,10 +607,10 @@ void AliJetEmbeddingFromAODTask::Run()
 	if (fIsAODMC) {
 	  label = clus->GetLabel();
 	  if (label <= 0) 
-	    AliDebug(3,Form("%s: Clus %d with label<=0", GetName(), i));
+	    AliWarning(Form("%s: Clus %d with label<=0", GetName(), i));
 	}
 
-	AddCluster(clus->E(), vect.Eta(), vect.Phi(), clus->GetLabel());
+	AddCluster(clus);
       }
     }
   }
@@ -642,7 +642,7 @@ void AliJetEmbeddingFromAODTask::Run()
 
 	if (fIsAODMC) {
 	  if (mclabel <= 0) 
-	    AliDebug(3,Form("%s: Cell %d with label<=0", GetName(), i));
+	    AliWarning(Form("%s: Cell %d with label<=0", GetName(), i));
 	}
 	else {
 	  mclabel = 0;

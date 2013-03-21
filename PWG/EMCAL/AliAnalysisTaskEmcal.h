@@ -63,6 +63,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTrackBitMap(UInt_t m)                              { fTrackBitMap       = m                              ; }
   void                        SetClusterBitMap(UInt_t m)                            { fClusterBitMap     = m                              ; }
   void                        SetParticleBitMap(UInt_t m)                           { fClusterBitMap     = m    ; fTrackBitMap       = m  ; }
+  void                        SetMCTrackBitMap(UInt_t m)                            { fMCTrackBitMap     = m                              ; }
+  void                        SetMCClusterBitMap(UInt_t m)                          { fMCClusterBitMap   = m                              ; }
+  void                        SetMCParticleBitMap(UInt_t m)                         { fMCClusterBitMap   = m    ; fMCTrackBitMap     = m  ; }
 
  protected:
   Bool_t                      AcceptCluster(AliVCluster        *clus)  const;
@@ -107,8 +110,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMinEventPlane;              // minimum event plane value
   Double_t                    fMaxEventPlane;              // maximum event plane value
   TString                     fCentEst;                    // name of V0 centrality estimator
-  UInt_t                      fTrackBitMap;                // bit map of accepted tracks
-  UInt_t                      fClusterBitMap;              // bit map of accepted clusters
+  UInt_t                      fTrackBitMap;                // bit map of accepted tracks (non MC)
+  UInt_t                      fClusterBitMap;              // bit map of accepted clusters (non MC)
+  UInt_t                      fMCTrackBitMap;              // bit map of accepted MC tracks
+  UInt_t                      fMCClusterBitMap;            // bit map of accepted MC clusters
   Int_t                       fNcentBins;                  //!how many centrality bins
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
@@ -132,6 +137,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 11) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 12) // EMCAL base analysis task
 };
 #endif
