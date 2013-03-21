@@ -219,6 +219,15 @@ Int_t AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod,TString mcprod="") 
     plugin->SetNrunsPerMaster(ngoodruns);
   }
 
+   // pPb data of 2013 pass2
+   if(lhcPeriod=="LHC13b") {
+      nruns=12;
+      Int_t runlist[12]={ 195483, 195482, 195481, 195480, 195479, 195478, 195391, 195390, 195389, 195351, 195346, 195344 };
+   }
+   if(lhcPeriod=="LHC13c") {
+      nruns=16;
+      Int_t runlist[16]={ 195677, 195676, 195675, 195673, 195644, 195635, 195633, 195596, 195593, 195592, 195568, 195567, 195566, 195532, 195531, 195529 };
+   }
 
   return ngoodruns;
 }
