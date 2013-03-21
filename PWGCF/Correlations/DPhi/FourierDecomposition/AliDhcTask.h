@@ -126,6 +126,8 @@ class AliDhcTask : public AliAnalysisTaskSE {
   TH1              **fHMMass;          //! Mass distributions mixed
   TH3               *fHQAT;            //! trigger particle distribution for QA
   TH3               *fHQAA;            //! associated particle distribution for QA
+  TH3               *fHQATCorr;        //! correction applied trigger distribution
+  TH3               *fHQAACorr;        //! correction applied associated distribution
   TH2               *fHPtCentT;        //! trigger pT vs centrality
   TH2               *fHPtCentA;        //! associated pT vs centrality
   TFormula          *fIndex;           //! Index for histograms

@@ -43,7 +43,7 @@ AliDhcTask::AliDhcTask()
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
   fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fHSMass(0x0), fHMMass(0x0),
-  fHQAT(0x0), fHQAA(0x0), fHPtCentT(0x0), fHPtCentA(0x0),
+  fHQAT(0x0), fHQAA(0x0), fHQATCorr(0x0), fHQAACorr(0x0), fHPtCentT(0x0), fHPtCentA(0x0),
   fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
@@ -65,7 +65,7 @@ AliDhcTask::AliDhcTask(const char *name, Bool_t def)
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
   fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fHSMass(0x0), fHMMass(0x0),
-  fHQAT(0x0), fHQAA(0x0), fHPtCentT(0x0), fHPtCentA(0x0),
+  fHQAT(0x0), fHQAA(0x0), fHQATCorr(0x0), fHQAACorr(0x0), fHPtCentT(0x0), fHPtCentA(0x0),
   fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
@@ -214,12 +214,15 @@ void AliDhcTask::BookHistos()
                    40,fEtaTLo,fEtaTHi,
                    36,0.0,TMath::TwoPi());
   fOutputList->Add(fHQAT);
-
   fHQAA = new TH3F("fHQAA","QA associated;p_{T} (GeV/c);#eta;#phi",
                    100,0.0,10.0,
                    40,fEtaALo,fEtaAHi,
                    36,0.0,TMath::TwoPi());
   fOutputList->Add(fHQAA);
+  fHQATCorr = (TH3 *) fHQAT->Clone("fHQATCorr");
+  fOutputList->Add(fHQATCorr);
+  fHQAACorr = (TH3 *) fHQAA->Clone("fHQAACorr");
+  fOutputList->Add(fHQAACorr);
 
   fHPtCentT = new TH2F("fHPtCentT",Form("trigger particles;p_{T} (GeV/c);centrality (%s)",fCentMethod.Data()),
                        100,0.0,10.0,
@@ -865,6 +868,23 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
         Int_t bbin = fHPtAss->FindBin(pta);
         if (!(fHPtAss->IsBinOverflow(bbin) || fHPtAss->IsBinUnderflow(bbin))) {
           fHQAA->Fill(pta,etaa,phia); // fill every associated particle once
+          Double_t aQAWght = 1.0;
+          if (fHEffA) {
+            const Int_t nEffDimA = fHEffA->GetNdimensions();
+            Int_t effBinA[nEffDimA];
+            effBinA[0] = fHEffA->GetAxis(0)->FindBin(etaa);
+            effBinA[1] = fHEffA->GetAxis(1)->FindBin(pta);
+            effBinA[2] = fHEffA->GetAxis(2)->FindBin(fCentrality);
+            effBinA[3] = fHEffA->GetAxis(3)->FindBin(fZVertex);
+            if (nEffDimA>4) {
+              effBinA[4] = fHEffA->GetAxis(4)->FindBin(phia);
+              if (nEffDimA>5) {
+                effBinA[5] = fHEffA->GetAxis(5)->FindBin(sgna);
+              }
+            }
+            aQAWght = fHEffA->GetBinContent(effBinA);
+          }
+          fHQAACorr->Fill(pta,etaa,phia,aQAWght); // fill every associated particle once, this time weighted
           fHPtCentA->Fill(pta,fCentrality);
         }
       }
@@ -900,6 +920,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
     if (pairing == kSameEvt) {
       fHTrk->Fill(phia,etaa);
       fHQAT->Fill(pta,etaa,phia);
+      fHQATCorr->Fill(pta,etaa,phia,effWtT);
       fHPtCentT->Fill(pta,fCentrality);
       fHPtTrg->Fill(pta);
       fHPtTrgNorm1S->Fill(pta,fCentrality,fZVertex,effWtT);
