@@ -1,24 +1,30 @@
+
+// "ESDs/pass2/AOD086/*/AliAOD.root"
+// "/alice/data/2010/LHC10h"
+
 class AliAnalysisAlien;
 
 void runGridLambdaOverK0sJets(TString  runMode    = "test", 
-			      TString  alirootVer = "v5-04-31LF-AN"/*"v5-04-14-AN"*/,
+			      TString  alirootVer = "v5-04-31LF-AN",
 			      TString  rootVer    = "v5-34-02-1",
-			      TString  dataPath   = "ESDs/pass2/AOD086/*/AliAOD.root",
-			      TString  dataDir    = "/alice/data/2010/LHC10h",
+			      TString  dataPath   = "ESDs/pass2/AOD115/*/AliAOD.root",
+			      TString  dataDir    = "/alice/data/2011/LHC11h_2",		      
 			      TString  workDir    = "test",
 			      TString  name       = "LambdaOverK0sRatio", 
-			      Int_t    data       = 2010,
+			      TString  data       = "PbPb2011",
 			      Float_t  minCen     = 0.,
 			      Float_t  maxCen     = 90.,
 			      Float_t  ptMinTrig  = 8.,
 			      Float_t  ptMaxTrig  = 20.,
-			      Float_t  etaMaxTrig = 0.75,
-			      Float_t  rapMaxV0   = 0.75,
+			      Float_t  etaMaxTrig = 0.7,
+			      Float_t  rapMaxV0   = 0.7,
 			      Bool_t   sepInjec   = kTRUE,
 			      Bool_t   isMC       = kFALSE,
 			      Bool_t   usePID     = kTRUE,
 			      Bool_t   doQA       = kFALSE,
-			      Int_t    run        = 137530/*138624*/){
+			      Int_t    run        = 169838/*137530*//*138624*/){
+
+
   
   Printf("   \nThe parameters of the programm are : \n ");
   Printf(" \t Analysis mode:\t %s\n \t Centrality:\t %.1lf - %.1lf\n \t Use MC Data?:\t %s\n \t Use PID?:\t %s\n",
