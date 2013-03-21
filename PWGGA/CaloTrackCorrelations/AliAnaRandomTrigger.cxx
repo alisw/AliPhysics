@@ -37,7 +37,7 @@ ClassImp(AliAnaRandomTrigger)
 //__________________________________________
 AliAnaRandomTrigger::AliAnaRandomTrigger() : 
     AliAnaCaloTrackCorrBaseClass(),
-    fDetector("EMCAL"), fRandom(0),
+    fDetector("EMCAL"), fRandom(0), fNRandom(0),
     fhE(0),             fhPt(0),
     fhPhi(0),           fhEta(0), 
     fhEtaPhi(0) 
@@ -142,7 +142,9 @@ TObjString *  AliAnaRandomTrigger::GetAnalysisCuts()
   
   snprintf(onePar,buffersize,"--- AliAnaRandomTrigger ---\n") ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize,"Detector: %s\n",fDetector.Data()) ;
+  snprintf(onePar,buffersize,"Detector: %s\n"    , fDetector.Data()) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"N per event = %d\n", fNRandom       ) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Min E   = %3.2f - Max E   = %3.2f\n", GetMinPt(), GetMaxPt()) ;
   parList+=onePar ;
@@ -160,7 +162,6 @@ TList *  AliAnaRandomTrigger::GetCreateOutputObjects()
   // Create histograms to be saved in output file and 
   // store them in fOutputContainer
   
-  
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("RandomTrigger") ; 
   
@@ -168,27 +169,27 @@ TList *  AliAnaRandomTrigger::GetCreateOutputObjects()
   Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
   Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();  Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();  Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();	
 
-  fhE  = new TH1F ("hE","E distribution", nptbins,ptmin,ptmax); 
+  fhE  = new TH1F ("hE","Random E distribution", nptbins,ptmin,ptmax); 
   fhE->SetXTitle("E (GeV)");
   outputContainer->Add(fhE);
   
-  fhPt  = new TH1F ("hPt","p_T distribution", nptbins,ptmin,ptmax); 
+  fhPt  = new TH1F ("hPt","Random p_{T} distribution", nptbins,ptmin,ptmax); 
   fhPt->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhPt);
   
-  fhPhi  = new TH2F ("hPhi","#phi distribution",
+  fhPhi  = new TH2F ("hPhi","Random #phi distribution",
                         nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
   fhPhi->SetYTitle("#phi (rad)");
   fhPhi->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhPhi);
   
-  fhEta  = new TH2F ("hEta","#eta distribution",
+  fhEta  = new TH2F ("hEta","Random #eta distribution",
                         nptbins,ptmin,ptmax, netabins,etamin,etamax); 
   fhEta->SetYTitle("#eta ");
   fhEta->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhEta);
   
-  fhEtaPhi  = new TH2F ("hEtaPhi","pt/eta/phi of positive charge",netabins,etamin,etamax, nphibins,phimin,phimax); 
+  fhEtaPhi  = new TH2F ("hEtaPhi","Random #eta vs #phi ",netabins,etamin,etamax, nphibins,phimin,phimax); 
   fhEtaPhi->SetXTitle("#eta ");
   fhEtaPhi->SetYTitle("#phi (rad)");  
   outputContainer->Add(fhEtaPhi);
@@ -206,6 +207,7 @@ void AliAnaRandomTrigger::InitParameters()
 
   AddToHistogramsName("AnaRandomTrigger_");
   
+  fNRandom   = 1    ;
   fPhiCut[0] = 0.   ;
   fPhiCut[1] = TMath::TwoPi() ;
   fEtaCut[0] =-1.   ;
@@ -235,37 +237,41 @@ void  AliAnaRandomTrigger::MakeAnalysisFillAOD()
 {
   // Do analysis and fill aods
   // Generate particle randomly
-    
-  // Get the random variables of the trigger
-  Float_t pt  = fRandom.Uniform(GetMinPt(), GetMaxPt());
-  Float_t eta = fRandom.Uniform(fEtaCut[0], fEtaCut[1]);
-  Float_t phi = fRandom.Uniform(fPhiCut[0], fPhiCut[1]);
-    
-  // Check if particle falls into a dead region, if inside, get new
-  Bool_t excluded =  ExcludeDeadBadRegions(eta,phi);
+  // fNRandom particles per event
   
-  // if excluded, generate a new trigger until accepted
-  while (excluded)
+  for(Int_t irandom = 0; irandom < fNRandom; irandom++)
   {
-    pt  = fRandom.Uniform(GetMinPt(), GetMaxPt());
-    eta = fRandom.Uniform(fEtaCut[0], fEtaCut[1]);
-    phi = fRandom.Uniform(fPhiCut[0], fPhiCut[1]);
+    // Get the random variables of the trigger
+    Float_t pt  = fRandom.Uniform(GetMinPt(), GetMaxPt());
+    Float_t eta = fRandom.Uniform(fEtaCut[0], fEtaCut[1]);
+    Float_t phi = fRandom.Uniform(fPhiCut[0], fPhiCut[1]);
     
-    excluded = ExcludeDeadBadRegions(eta,phi);
+    // Check if particle falls into a dead region, if inside, get new
+    Bool_t excluded =  ExcludeDeadBadRegions(eta,phi);
+    
+    // if excluded, generate a new trigger until accepted
+    while (excluded)
+    {
+      pt  = fRandom.Uniform(GetMinPt(), GetMaxPt());
+      eta = fRandom.Uniform(fEtaCut[0], fEtaCut[1]);
+      phi = fRandom.Uniform(fPhiCut[0], fPhiCut[1]);
+      
+      excluded = ExcludeDeadBadRegions(eta,phi);
+    }
+    
+    // Create the AOD trigger object
+    TLorentzVector mom;
+    mom.SetPtEtaPhiM(pt,eta,phi,0);
+    
+    AliAODPWG4Particle trigger = AliAODPWG4Particle(mom);
+    trigger.SetDetector(fDetector);
+    
+    if(GetDebug() > 1) 
+      printf("AliAnaRandomTrigger::MakeAnalysisFillAOD() -  iRandom %d, Trigger e %2.2f pt %2.2f, phi %2.2f, eta %2.2f \n",
+             irandom, trigger.E(), trigger.Pt(), trigger.Phi(), trigger.Eta());
+    
+    AddAODParticle(trigger);
   }
-  
-  // Create the AOD trigger object
-  TLorentzVector mom;
-  mom.SetPtEtaPhiM(pt,eta,phi,0);
-  
-  AliAODPWG4Particle trigger = AliAODPWG4Particle(mom);
-  trigger.SetDetector(fDetector);
-  
-  if(GetDebug() > 1) 
-    printf("AliAnaRandomTrigger::MakeAnalysisFillAOD() - Trigger e %2.2f pt %2.2f, phi %2.2f, eta %2.2f \n",
-           trigger.E(), trigger.Pt(), trigger.Phi(), trigger.Eta());
-  
-  AddAODParticle(trigger);
   
   if(GetDebug() > 0) 	
     printf("AliAnaRandomTrigger::MakeAnalysisFillAOD() - Final aod branch entries %d\n", GetOutputAODBranch()->GetEntriesFast());   
@@ -280,9 +286,10 @@ void  AliAnaRandomTrigger::MakeAnalysisFillHistograms()
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   
   if(GetDebug() > 0) 
-    printf("AliAnaRandomTrigger::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
+    printf("AliAnaRandomTrigger::MakeAnalysisFillHistograms() - aod branch entries %d, fNRandom %d\n", naod, fNRandom);
   
-  for(Int_t iaod = 0; iaod < naod ; iaod++){
+  for(Int_t iaod = 0; iaod < naod ; iaod++)
+  {
     AliAODPWG4Particle* trigger =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     
     fhPt    ->Fill(trigger->Pt());

@@ -6,7 +6,7 @@
 //_________________________________________________________________________
 // Gerenate a random trigger, input for other analysis
 // Set flat energy distribution over acceptance of EMCAL, PHOS or CTS
-// Be careful, correlate only with Min Bias events this trigger
+// Be careful, correlate only with Min Bias events this random trigger particle
 //
 //
 //-- Author: Gustavo Conesa (LPSC-Grenoble)
@@ -38,19 +38,22 @@ class AliAnaRandomTrigger : public AliAnaCaloTrackCorrBaseClass {
   
   void         Print(const Option_t * opt) const;
   
-  void         SetDetector(TString detector) { fDetector = detector ; }  
+  void         SetDetector(TString detector)       { fDetector  = detector ; }  
   
   void         SetEtaCut(Float_t min, Float_t max) { fEtaCut[0] = min ; fEtaCut[1] = max;}
   
   void         SetPhiCut(Float_t min, Float_t max) { fPhiCut[0] = min ; fPhiCut[1] = max;} // radians
+  
+  void         SetNumberOfRandomParticles(Int_t n) { fNRandom   = n   ; }
   
  private:
   
   TString    fDetector ; // Detector : EMCAL, PHOS, CTS
   Float_t    fEtaCut[2]; // Eta acceptance
   Float_t    fPhiCut[2]; // Phi acceptance, radians
-  TRandom3   fRandom;    // Random generator
-
+  TRandom3   fRandom   ; // Random generator
+  Int_t      fNRandom  ; // Number of random particles per event
+  
   //Constrol histograms 
   TH1F     * fhE;        //! E distribution
   TH1F     * fhPt;       //! pT distribution
@@ -59,10 +62,10 @@ class AliAnaRandomTrigger : public AliAnaCaloTrackCorrBaseClass {
   TH2F     * fhEtaPhi;   //! eta vs phi distribution of positive charge  
 
 
-  AliAnaRandomTrigger(              const AliAnaRandomTrigger & g) ; // cpy ctor
-  AliAnaRandomTrigger & operator = (const AliAnaRandomTrigger & g) ;//cpy assignment
+  AliAnaRandomTrigger(              const AliAnaRandomTrigger & r) ; // cpy ctor
+  AliAnaRandomTrigger & operator = (const AliAnaRandomTrigger & r) ; //cpy assignment
   
-  ClassDef(AliAnaRandomTrigger,1)
+  ClassDef(AliAnaRandomTrigger,2)
 
 } ;
 
