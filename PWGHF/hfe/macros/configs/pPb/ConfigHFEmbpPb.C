@@ -3,12 +3,12 @@ AliAnalysisTaskHFE* ConfigHFEmbpPb(Bool_t useMC, Bool_t isAOD, UChar_t TPCcl=70,
 				    Double_t TPCs=0., Double_t TPCu=3.09, Double_t TOFs=3., Int_t TOFmis=0,
 				    Double_t IpSig=3., Bool_t prodcut = kFALSE, 
 				    Bool_t ipOpp = kTRUE, Bool_t mcstr  = kFALSE, Int_t itshitpixel = 0, 
-				    Bool_t withetacorrection = kTRUE, Int_t ptbin=0){
+				    Bool_t withetacorrection = kTRUE, Int_t ptbin=0, Int_t TRDtrigger = 0){
   //
   // HFE task configuration PID2 (TOF-TPC only!)
   //
 
-  Bool_t kAnalyseTaggedTracks = kTRUE;
+  Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
   
   Int_t iDCAxy = (Int_t)(DCAxy*10.);
   Int_t iDCAz = (Int_t)(DCAz*10.);
@@ -118,15 +118,18 @@ AliAnalysisTaskHFE* ConfigHFEmbpPb(Bool_t useMC, Bool_t isAOD, UChar_t TPCcl=70,
     }
   }
 
-  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(Form("HFEanalysisPID2tc%dtp%di%dr%dz%ds%dt%db%dp%do%dt%dpa%detacorr%dptbin%d",TPCcl,TPCclPID,ITScl,iDCAxy,iDCAz,iTPCs,TOFs,iIpSig,iProdCut,iIpOpp,iMCStr,iPixelAny,iEtaCorr,ptbin));
+  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(Form("HFEanalysisPID2tc%dtp%di%dr%dz%ds%dt%db%dp%do%dt%dpa%detacorr%dptbin%dtrdtrg%d",TPCcl,TPCclPID,ITScl,iDCAxy,iDCAz,iTPCs,TOFs,iIpSig,iProdCut,iIpOpp,iMCStr,iPixelAny,iEtaCorr,ptbin,TRDtrigger));
   printf("task %p\n", task);
   task->SetHFECuts(hfecuts);
-
-  //task->SetApplypAVertexCut();
-  
-  if(!isAOD) task->SetRemoveFirstEventInChunk(); // Remove first event in chunk in case of ESD analysis
-  //task->SetRemovePileUp(kTRUE);
   task->GetPIDQAManager()->SetHighResolutionHistos();
+
+  if(!isAOD) task->SetRemoveFirstEventInChunk(); // Remove first event in chunk in case of ESD analysis
+  task->SetRemovePileUp(kFALSE);
+  //task->SetApplypAVertexCut();
+
+  Bool_t activateTRDTrigger=kFALSE;
+  if(TRDtrigger>0) activateTRDTrigger=kTRUE;
+  task->SetTRDTrigger(activateTRDTrigger,TRDtrigger);
 
   // Define Variables
   if(ptbin==1){

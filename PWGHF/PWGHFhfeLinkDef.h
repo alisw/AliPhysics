@@ -61,7 +61,7 @@
 
 #pragma link C++ class  AliHFEpidObject+;
 #pragma link C++ class  AliAnalysisTaskElecHadronCorrel+;
-#pragma link C++ class  AliAnalysisTaskElecHadronCorrel+;
+#pragma link C++ class  AliehDPhiBasicParticle+;
 #pragma link C++ class  AliAnalysisTaskFlowTPCEMCalEP+;
 #pragma link C++ class  AliAnalysisTaskHFECal+;
 

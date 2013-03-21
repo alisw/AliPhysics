@@ -1177,7 +1177,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
 	    if(itsnbcls > 0) itschi2percluster = track->GetITSchi2()/itsnbcls;
 
       Double_t itsChi2[7] = {track->Pt(),track->Eta(), track->Phi(),
-			fCentralityF,track->GetTPCsignalN(), sharebit,itschi2percluster};
+			static_cast<Double_t>(fCentralityF),static_cast<Double_t>(track->GetTPCsignalN()), static_cast<Double_t>(sharebit),itschi2percluster};
       fQACollection->Fill("fChi2perITScluster", itsChi2);
     }
     else{
@@ -1186,7 +1186,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
       Double_t itsnbcls = static_cast<Double_t>(track->GetNcls(0));
       if(itsnbcls > 0) itschi2percluster = track->GetITSchi2()/itsnbcls;
 
-      Double_t itsChi2[3] = {track->Pt(), fCentralityF, itschi2percluster};
+      Double_t itsChi2[3] = {track->Pt(), static_cast<Double_t>(fCentralityF), itschi2percluster};
       fQACollection->Fill("fChi2perITScluster", itsChi2);
     }
 

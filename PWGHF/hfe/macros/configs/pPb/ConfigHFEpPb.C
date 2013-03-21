@@ -3,9 +3,9 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
 				 UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000.,
 				 Double_t* tpcdEdxcutlow=NULL,Double_t* tpcdEdxcuthigh=NULL,
 				 Double_t TOFs=3., Int_t TOFmis=0,
-				 Int_t itshitpixel = 0){
+				 Int_t itshitpixel = 0, Int_t icent = 1){
   
-  Bool_t kAnalyseTaggedTracks = kTRUE;
+  Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
   
   //***************************************//
   //        Setting up the HFE cuts        //
@@ -59,6 +59,12 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
   task->SetRemovePileUp(kFALSE);
   task->SetHFECuts(hfecuts);
   task->GetPIDQAManager()->SetHighResolutionHistos();
+
+  // Determine the centrality estimator
+  task->SetCentralityEstimator("V0A");
+  if (icent == 2) task->SetCentralityEstimator("V0M");
+  else if (icent == 3) task->SetCentralityEstimator("CL1");
+  else if (icent == 4) task->SetCentralityEstimator("ZNA");
 
   //***************************************//
   //          Variable manager             //
