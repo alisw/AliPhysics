@@ -88,6 +88,7 @@ ClassImp(AliFemtoESDTrackCut)
     fLabel(0),
     fStatus(0),
     fPIDMethod(knSigma),
+  fNsigmaTPCTOF(kFALSE),
     fminTPCclsF(0),
     fminTPCncls(0),
     fminITScls(0),
@@ -130,6 +131,7 @@ ClassImp(AliFemtoESDTrackCut)
   fminTPCclsF=0;
   fminITScls=0;
   fPIDMethod=knSigma;
+  fNsigmaTPCTOF=kFALSE;
 }
 //------------------------------
 AliFemtoESDTrackCut::~AliFemtoESDTrackCut(){
@@ -371,8 +373,9 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	    }
   
 	  }
-	  else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting
-	    if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) // && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())
+      else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
+        if ( IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCPi())) && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCK())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFPi())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFK()))
+             // && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())
             )
 	      imost = 4;
 	  }
@@ -975,6 +978,8 @@ bool AliFemtoESDTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigm
 
 bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
+
+  if (fNsigmaTPCTOF) {
     if (mom > 0.8) {
         if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
             return true;
@@ -983,6 +988,21 @@ bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsig
         if (TMath::Abs(nsigmaTPCP) < 3.0)
             return true;
     }
+  }
+  else {
+    if (mom > 0.8 && mom < 2.5) {
+      if ( TMath::Abs(nsigmaTPCP) < 3.0 && TMath::Abs(nsigmaTOFP) < 3.0)
+        return true;
+    }
+    else if (mom > 2.5) {
+      if ( TMath::Abs(nsigmaTPCP) < 3.0 && TMath::Abs(nsigmaTOFP) < 2.0)
+        return true;
+    }
+    else {
+      if (TMath::Abs(nsigmaTPCP) < 3.0)
+        return true;
+    }
+  }
 
   return false;
 }
@@ -994,6 +1014,11 @@ void AliFemtoESDTrackCut::SetPIDMethod(ReadPIDMethodType newMethod)
 }
 
 
+void AliFemtoESDTrackCut::SetNsigmaTPCTOF(Bool_t nsigma)
+{
+  fNsigmaTPCTOF = nsigma;
+}
+ 
 void AliFemtoESDTrackCut::SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req) 
 { 
   fCutClusterRequirementITS[det] = req; 
