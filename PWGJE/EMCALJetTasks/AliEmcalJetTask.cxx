@@ -42,14 +42,14 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fMinJetClusPt(0.15),
   fPhiMin(0),
   fPhiMax(TMath::TwoPi()),
-  fEtaMin(-1),
-  fEtaMax(1),
+  fEtaMin(-0.9),
+  fEtaMax(+0.9),
   fMinJetArea(0.01),
   fMinJetPt(1.0),
   fJetPhiMin(-10),
-  fJetPhiMax(10),
+  fJetPhiMax(+10),
   fJetEtaMin(-1),
-  fJetEtaMax(1),
+  fJetEtaMax(+1),
   fGhostArea(0.01),
   fIsInit(0),
   fIsPSelSet(0),
@@ -78,14 +78,14 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fMinJetClusPt(0.15),
   fPhiMin(0),
   fPhiMax(TMath::TwoPi()),
-  fEtaMin(-1),
-  fEtaMax(1),
+  fEtaMin(-0.9),
+  fEtaMax(+0.9),
   fMinJetArea(0.01),
   fMinJetPt(1.0),
   fJetPhiMin(-10),
-  fJetPhiMax(10),
+  fJetPhiMax(+10),
   fJetEtaMin(-1),
-  fJetEtaMax(1),
+  fJetEtaMax(+1),
   fGhostArea(0.01),
   fIsInit(0),
   fIsPSelSet(0),
@@ -168,7 +168,7 @@ void AliEmcalJetTask::FindJets()
   fjw.SetGhostArea(fGhostArea);
   fjw.SetR(fRadius);
   fjw.SetAlgorithm(jalgo);  
-  fjw.SetMaxRap(1);
+  fjw.SetMaxRap(fEtaMax);
   fjw.Clear();
 
   // get primary vertex
