@@ -1683,7 +1683,7 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
   Int_t nLabTot = 0;
   for ( Int_t iLoopCluster = 0 ; iLoopCluster < nClu ; iLoopCluster++ )
   {
-    Int_t idCluster = clArray.GetAt(iLoopCluster);
+    Int_t idCluster = (Int_t) clArray.GetAt(iLoopCluster);
     //printf("New Cluster in Array %d,  idCluster %d \n",iLoopCluster,idCluster);
     AliVCluster * clOrg = event->GetCaloCluster(idCluster);
     Int_t nLab = clOrg->GetNLabels();
