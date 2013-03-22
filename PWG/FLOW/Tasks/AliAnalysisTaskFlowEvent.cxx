@@ -334,7 +334,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     //fFlowEvent = new AliFlowEvent( fCutsRP, fCutsPOI );
 
     //    if (myESD)
-      fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent()));
+    fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),mcEvent));
     if (mcEvent && mcEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(mcEvent);
   }
 

@@ -485,6 +485,7 @@ Bool_t AliFlowTrackCuts::IsSelected(TObject* obj, Int_t id)
     if (fParamType==kMUON) return PassesMuonCuts(vparticle);  // XZhang 20120604
     return PassesCuts(vparticle);                             // XZhang 20120604
   }                                                           // XZhang 20120604
+
   AliFlowTrackSimple* flowtrack = dynamic_cast<AliFlowTrackSimple*>(obj);
   if (flowtrack) return PassesCuts(flowtrack);
   AliMultiplicity* tracklets = dynamic_cast<AliMultiplicity*>(obj);

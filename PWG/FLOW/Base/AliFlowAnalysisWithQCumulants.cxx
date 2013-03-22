@@ -3595,9 +3595,11 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  Double_t dMultiplicityBin = 0.;
  if(fMultiplicityIs==AliFlowCommonConstants::kRP)
  {
-  dMultiplicityBin = fNumberOfRPsEBE+0.5;
+   //Printf("RP multiplicity: %lf",fNumberOfRPsEBE);
+   dMultiplicityBin = fNumberOfRPsEBE+0.5;
  } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
    {
+     //Printf("Reference multiplicity: %lf",fReferenceMultiplicityEBE);
     dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
    } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
      {
@@ -15820,7 +15822,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
   dMultiplicityBin = fNumberOfRPsEBE+0.5;
  } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
    {
-    dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
+     dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
    } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
      {
       dMultiplicityBin = fNumberOfPOIsEBE+0.5;

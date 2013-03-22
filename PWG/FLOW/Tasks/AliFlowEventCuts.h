@@ -14,6 +14,7 @@
 #include "TNamed.h"
 
 class AliVEvent;
+class AliMCEvent;
 class TBrowser;
 #include "TList.h"
 #include "TH1.h"
@@ -74,9 +75,9 @@ class AliFlowEventCuts : public TNamed {
   TH1* QAbefore(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(0))->At(i));}
   TH1* QAafter(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(1))->At(i));}
 
-  Int_t RefMult(AliVEvent* event);
+  Int_t RefMult(AliVEvent* event, AliMCEvent *mcEvent = 0x0);
   //Int_t GetRefMult() {return fRefMult;}
-  Int_t GetReferenceMultiplicity(AliVEvent* event) {return RefMult(event);}
+  Int_t GetReferenceMultiplicity(AliVEvent* event, AliMCEvent *mcEvent) {return RefMult(event,mcEvent);}
   const char* CentrMethName(refMultMethod method) const;
   void SetCentralityPercentileRange(Float_t min, Float_t max){ fCentralityPercentileMin=min;
                                                                fCentralityPercentileMax=max;
