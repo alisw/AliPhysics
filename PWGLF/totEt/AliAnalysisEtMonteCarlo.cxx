@@ -29,7 +29,6 @@
 #include "AliPHOSGeoUtils.h"
 #include "AliPHOSGeometry.h"
 #include "TFile.h"
-#include "TVector3.h"
 using namespace std;
 
 ClassImp(AliAnalysisEtMonteCarlo);
@@ -132,26 +131,20 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
     ,fHistMultvsNonRemovedChargedE(0)
     ,fHistMultvsNonRemovedNeutralE(0)
     ,fHistMultvsRemovedGammaE(0)
-						  ,fHistK0EDepositsVsPtForEOver000MeV(0)
-						  ,fHistK0EDepositsVsPtForEOver100MeV(0)
-						  ,fHistK0EDepositsVsPtForEOver150MeV(0)
-						  ,fHistK0EDepositsVsPtForEOver200MeV(0)
-						  ,fHistK0EDepositsVsPtForEOver250MeV(0)
-						  ,fHistK0EDepositsVsPtForEOver300MeV(0)
-						  ,fHistK0EDepositsVsPtForEOver350MeV(0)
-						  ,fHistK0EDepositsVsPtForEOver400MeV(0)
-						  ,fHistK0EDepositsVsPtForEOver450MeV(0)
-						  ,fHistK0EDepositsVsPtForEOver500MeV(0)
-						  ,fHistK0EGammaVsPtForEOver000MeV(0)
-						  ,fHistK0EGammaVsPtForEOver100MeV(0)
-						  ,fHistK0EGammaVsPtForEOver150MeV(0)
-						  ,fHistK0EGammaVsPtForEOver200MeV(0)
-						  ,fHistK0EGammaVsPtForEOver250MeV(0)
-						  ,fHistK0EGammaVsPtForEOver300MeV(0)
-						  ,fHistK0EGammaVsPtForEOver350MeV(0)
-						  ,fHistK0EGammaVsPtForEOver400MeV(0)
-						  ,fHistK0EGammaVsPtForEOver450MeV(0)
-						  ,fHistK0EGammaVsPtForEOver500MeV(0)
+						  ,fCalcForKaonCorrection(kFALSE)
+						  ,fHistK0EDepositsVsPtInAcceptance(0)
+						  ,fHistK0EGammaVsPtInAcceptance(0)
+						  ,fHistK0EDepositsVsPtOutOfAcceptance(0)
+						  ,fHistK0EGammaVsPtOutOfAcceptance(0)
+						  ,fHistSimKaonsInAcceptance(0)
+						  ,fHistSimK0SInAcceptance(0)
+						  ,fHistSimKPlusInAcceptance(0)
+						  ,fHistSimKMinusInAcceptance(0)
+						  ,fHistSimK0LInAcceptance(0)
+						  ,fHistSimKaonsOutOfAcceptance(0)
+						  ,fHistSimKaonsInAcceptanceWithDepositsPrimaries(0)
+						  ,fHistSimKaonsOutOfAcceptanceWithDepositsSecondaries(0)
+						  ,fHistSimKaonsOutOfAcceptanceWithDepositsPrimaries(0)
     ,fEtNonRemovedProtons(0)
     ,fEtNonRemovedAntiProtons(0)
     ,fEtNonRemovedPiPlus(0)
@@ -248,17 +241,25 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
     ,fEnergyGammaRemoved(0)
     ,fNClusters(0)
     ,fTotNeutralEtAfterMinEnergyCut(0)
-    ,fHistGammasFound(0)
+						  ,fCalcTrackMatchVsMult(kFALSE)
+						  ,fHistGammasFound(0)
 						  ,fHistGammasGenerated(0)
 						  ,fHistChargedTracksCut(0)
 						  ,fHistChargedTracksAccepted(0)
 						  ,fHistGammasCut(0)
 						  ,fHistGammasAccepted(0)
+						  ,fHistChargedTracksCutMult(0)
+						  ,fHistChargedTracksAcceptedMult(0)
+						  ,fHistGammasCutMult(0)
+						  ,fHistGammasAcceptedMult(0)
 						  ,fHistBadTrackMatches(0)
 						  ,fHistMatchedTracksEvspTBkgd(0)
 						  ,fHistMatchedTracksEvspTSignal(0)
 						  ,fHistMatchedTracksEvspTBkgdPeripheral(0)
 						  ,fHistMatchedTracksEvspTSignalPeripheral(0)
+						  ,fHistMatchedTracksEvspTBkgdvsMult(0)
+						  ,fHistMatchedTracksEvspTSignalvsMult(0)
+
 						  ,fHistChargedTracksCutPeripheral(0)
 						  ,fHistChargedTracksAcceptedPeripheral(0)
 						  ,fHistGammasCutPeripheral(0)
@@ -338,27 +339,20 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistMultvsNonRemovedChargedE; // enter comment here
     delete fHistMultvsNonRemovedNeutralE; // enter comment here
     delete fHistMultvsRemovedGammaE; // enter comment here
+    delete fHistK0EDepositsVsPtInAcceptance;//enter comment here
+    delete fHistK0EGammaVsPtInAcceptance;//enter comment here
+    delete fHistK0EDepositsVsPtOutOfAcceptance;
+    delete fHistK0EGammaVsPtOutOfAcceptance;
 
-    delete fHistK0EDepositsVsPtForEOver000MeV; // enter comment here
-    delete fHistK0EDepositsVsPtForEOver100MeV; // enter comment here
-    delete fHistK0EDepositsVsPtForEOver150MeV; // enter comment here
-    delete fHistK0EDepositsVsPtForEOver200MeV; // enter comment here
-    delete fHistK0EDepositsVsPtForEOver250MeV; // enter comment here
-    delete fHistK0EDepositsVsPtForEOver300MeV; // enter comment here
-    delete fHistK0EDepositsVsPtForEOver350MeV; // enter comment here
-    delete fHistK0EDepositsVsPtForEOver400MeV; // enter comment here
-    delete fHistK0EDepositsVsPtForEOver450MeV; // enter comment here
-    delete fHistK0EDepositsVsPtForEOver500MeV; // enter comment here
-    delete fHistK0EGammaVsPtForEOver000MeV; // enter comment here
-    delete fHistK0EGammaVsPtForEOver100MeV; // enter comment here
-    delete fHistK0EGammaVsPtForEOver150MeV; // enter comment here
-    delete fHistK0EGammaVsPtForEOver200MeV; // enter comment here
-    delete fHistK0EGammaVsPtForEOver250MeV; // enter comment here
-    delete fHistK0EGammaVsPtForEOver300MeV; // enter comment here
-    delete fHistK0EGammaVsPtForEOver350MeV; // enter comment here
-    delete fHistK0EGammaVsPtForEOver400MeV; // enter comment here
-    delete fHistK0EGammaVsPtForEOver450MeV; // enter comment here
-    delete fHistK0EGammaVsPtForEOver500MeV; // enter comment here
+    delete fHistSimKaonsInAcceptance;
+    delete fHistSimK0SInAcceptance;
+    delete fHistSimKPlusInAcceptance;
+    delete fHistSimKMinusInAcceptance;
+    delete fHistSimK0LInAcceptance;
+    delete fHistSimKaonsOutOfAcceptance;
+    delete fHistSimKaonsInAcceptanceWithDepositsPrimaries;
+    delete fHistSimKaonsOutOfAcceptanceWithDepositsSecondaries;
+    delete fHistSimKaonsOutOfAcceptanceWithDepositsPrimaries;
 
     delete fHistDxDzNonRemovedCharged; // enter comment here
     delete fHistDxDzRemovedCharged; // enter comment here
@@ -378,11 +372,17 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistChargedTracksAccepted;
     delete fHistGammasCut;
     delete fHistGammasAccepted;
+    delete fHistChargedTracksCutMult;
+    delete fHistChargedTracksAcceptedMult;
+    delete fHistGammasCutMult;
+    delete fHistGammasAcceptedMult;
     delete fHistBadTrackMatches;
     delete fHistMatchedTracksEvspTBkgd;
     delete fHistMatchedTracksEvspTSignal;
     delete fHistMatchedTracksEvspTBkgdPeripheral;
     delete fHistMatchedTracksEvspTSignalPeripheral;
+    delete fHistMatchedTracksEvspTBkgdvsMult;
+    delete fHistMatchedTracksEvspTSignalvsMult;
     delete fHistChargedTracksCutPeripheral;
     delete fHistChargedTracksAcceptedPeripheral;
     delete fHistGammasCutPeripheral;
@@ -698,33 +698,22 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 // 	if(primCode == fgGammaCode) 
 // 	{
 	  
-	Float_t pos[3];
-        caloCluster->GetPosition(pos);
-        TVector3 cp(pos);
 	for(UInt_t i = 0; i < caloCluster->GetNLabels(); i++)
 	{
 	  Int_t pIdx = caloCluster->GetLabelAt(i);
-          
-                    
-	  TParticle *p = stack->Particle(pIdx);
+	  //TParticle *p = stack->Particle(pIdx);
+	  
 	  if(!stack->IsPhysicalPrimary(pIdx))
 	  {
-              
-            TVector3 decayVtx(p->Vx(), p->Vy(), p->Vz());
-             if((decayVtx-cp).Mag() < 30.0)
-              {
-                continue;
-              }
+// 	    PrintFamilyTree(pIdx, stack);
 	    pIdx = GetPrimMother(pIdx, stack);
 	  }
-	  if((stack->Particle(pIdx)->GetPdgCode() == fgGammaCode))
-          {
-               if(fSelector->PassDistanceToBadChannelCut(*caloCluster))//&&fSelector->CutGeometricalAcceptance(*(stack->Particle(primIdx))))
-                {
-                 // std::cout << "Gamma primary: " << primIdx << std::endl;
-                  foundGammas.push_back(pIdx); 
-                }
-          }
+ 	  if(fSelector->PassDistanceToBadChannelCut(*caloCluster))//&&fSelector->CutGeometricalAcceptance(*(stack->Particle(primIdx))))
+	  {
+//	    std::cout << "Gamma primary: " << primIdx << std::endl;
+// 	    foundGammas.push_back(primIdx); 
+	    foundGammas.push_back(pIdx); 
+	  }
 	}
 	fCutFlow->Fill(cf++);
         if(!fSelector->PassDistanceToBadChannelCut(*caloCluster)) continue;
@@ -734,7 +723,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
 	
         fCutFlow->Fill(cf++);
-     
+        Float_t pos[3];
+	//PrintFamilyTree(
+        caloCluster->GetPosition(pos);
+        TVector3 cp(pos);
+
         TParticle *primPart = stack->Particle(primIdx);
         fPrimaryCode = primPart->GetPdgCode();
         fPrimaryCharge = (Int_t) primPart->GetPDG()->Charge();
@@ -798,9 +791,15 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      fHistRemovedOrNot->Fill(0.0, fCentClass);
 	      fHistDxDzRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
 	      fHistChargedTracksCut->Fill(fDepositedEt);
-	      if(fClusterMult<25){fHistChargedTracksCutPeripheral->Fill(fDepositedEt);}
+	      if(fCalcTrackMatchVsMult){
+		fHistChargedTracksCutMult->Fill(fDepositedEt,fClusterMult);
+		if(fClusterMult<25){fHistChargedTracksCutPeripheral->Fill(fDepositedEt);}
+	      }
 	      fHistMatchedTracksEvspTBkgd->Fill(part->Pt(),fReconstructedE);
-	      if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(part->P(),fReconstructedE);}
+	      if(fCalcTrackMatchVsMult){
+		if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(part->P(),fReconstructedE);}
+		fHistMatchedTracksEvspTBkgdvsMult->Fill(part->Pt(),fReconstructedE,fClusterMult);
+	      }
 	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(1);
 	      if(caloCluster->GetLabel()!=trackindex){
 		fHistBadTrackMatches->Fill(part->Pt(),fReconstructedE);
@@ -829,7 +828,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      fHistRemovedOrNot->Fill(2.0, fCentClass);
 	      fHistDxDzNonRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
 	      fHistChargedTracksAccepted->Fill(fDepositedEt);
-	      if(fClusterMult<25){fHistChargedTracksAcceptedPeripheral->Fill(fDepositedEt);}
+	      if(fCalcTrackMatchVsMult){
+		fHistChargedTracksAcceptedMult->Fill(fDepositedEt,fClusterMult);
+		if(fClusterMult<25){fHistChargedTracksAcceptedPeripheral->Fill(fDepositedEt);}
+	      }
 	    }
 	    else{//removed and should have been
 	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(0);
@@ -846,9 +848,15 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      fHistRemovedOrNot->Fill(0.0, fCentClass);
 	      fHistDxDzRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
 	      fHistChargedTracksCut->Fill(fDepositedEt);
-	      if(fClusterMult<25){fHistChargedTracksCutPeripheral->Fill(fDepositedEt);}
+	      if(fCalcTrackMatchVsMult){
+		fHistChargedTracksCutMult->Fill(fDepositedEt,fClusterMult);
+		if(fClusterMult<25){fHistChargedTracksCutPeripheral->Fill(fDepositedEt);}
+	      }
 	      fHistMatchedTracksEvspTBkgd->Fill(part->P(),fReconstructedE);
-	      if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(part->P(),fReconstructedE);}
+	      if(fCalcTrackMatchVsMult){
+		if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(part->P(),fReconstructedE);}
+		fHistMatchedTracksEvspTBkgdvsMult->Fill(part->Pt(),fReconstructedE,fClusterMult);
+	      }
 	    }
 	  }
 	  //K0L and any neutral particles from the decay of K+/- or K0S
@@ -864,7 +872,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      fNeutralNotRemoved--;
 	      fEnergyNeutralNotRemoved -= clEt;
 	      fHistGammasAccepted->Fill(fDepositedEt);
-	      if(fClusterMult<25){fHistGammasAcceptedPeripheral->Fill(fDepositedEt);}
+	      if(fCalcTrackMatchVsMult){
+		fHistGammasAcceptedMult->Fill(fDepositedEt,fClusterMult);
+		if(fClusterMult<25){fHistGammasAcceptedPeripheral->Fill(fDepositedEt);}
+	      }
 	    }
 	    else{//removed but shouldn't have been
 	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(1);
@@ -878,9 +889,15 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      fGammaRemoved++;
 	      fGammaRemovedEt+=clEt; 
 	      fHistGammasCut->Fill(fDepositedEt);
-	      if(fClusterMult<25){fHistGammasCutPeripheral->Fill(fDepositedEt);}
+	      if(fCalcTrackMatchVsMult){
+		fHistGammasCutMult->Fill(fDepositedEt,fClusterMult);
+		if(fClusterMult<25){fHistGammasCutPeripheral->Fill(fDepositedEt);}
+	      }
 	      fHistMatchedTracksEvspTSignal->Fill(part->P(),fReconstructedE);
-	      if(fClusterMult<25){fHistMatchedTracksEvspTSignalPeripheral->Fill(part->P(),fReconstructedE);}
+	      if(fCalcTrackMatchVsMult){
+		if(fClusterMult<25){fHistMatchedTracksEvspTSignalPeripheral->Fill(part->P(),fReconstructedE);}
+		fHistMatchedTracksEvspTSignalvsMult->Fill(part->Pt(),fReconstructedE,fClusterMult);
+	      }
 	    }
 	  }
 	  //all other cases - neutron, anti-neutron, not aware of other cases
@@ -926,122 +943,98 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	}
         
     }
-    Float_t etCuts[10] = {0.0,0.1,0.15,0.2,0.25, 0.3,0.35,0.4,0.45,0.5};
-    Int_t nEtCuts = 10;
-    //loop over simulated particles in order to find K0S
-    for (Int_t iPart = 0; iPart < stack->GetNtrack(); iPart++){
-      TParticle *part = stack->Particle(iPart);
-      if (!part){
-	//Printf("ERROR: Could not get particle %d", iPart);
-	continue;
-      }
-      TParticlePDG *pdg = part->GetPDG(0);
-      if (!pdg){
-	//Printf("ERROR: Could not get particle PDG %d", iPart);
-	continue;
-      }
-      
-      if(stack->IsPhysicalPrimary(iPart)){//if it is a K0 it might have decayed into four pions
+    if(fCalcForKaonCorrection){
+      Float_t etCuts[11] = {0.0,0.05,0.1,0.15,0.2,0.25, 0.3,0.35,0.4,0.45,0.5};
+      Int_t nEtCuts = 11;
+      //loop over simulated particles in order to find K0S
+      for (Int_t iPart = 0; iPart < stack->GetNtrack(); iPart++){
+	TParticle *part = stack->Particle(iPart);
+	if (!part){
+	  //Printf("ERROR: Could not get particle %d", iPart);
+	  continue;
+	}
+	TParticlePDG *pdg = part->GetPDG(0);
+	if (!pdg){
+	  //Printf("ERROR: Could not get particle PDG %d", iPart);
+	  continue;
+	}
+	//if(stack->IsPhysicalPrimary(iPart)){//if it is a K0 it might have decayed into four pions
 	//fgK0SCode, fgGammaCode, fgPi0Code
 	Int_t code = pdg->PdgCode();
-	if(code == fgK0SCode){//this is a K0S
-	  if(stack->Particle(iPart)->GetNDaughters()==2){//it has two daughters
-	    Int_t daughterID = stack->Particle(iPart)->GetFirstDaughter();
-	    if(stack->Particle(daughterID)->GetPDG(0)->PdgCode()==fgPi0Code){//and it decayed into a pi0
-	      //cout<<"I am a gamma from a pi0 from a K0S"<<endl;
-	      Float_t pTk0 = stack->Particle(iPart)->Pt();
-	      Int_t gammaDaughterIDs[6] = {0,0,0,0,0,0};
-	      Float_t gammaEts[4] = {0.0,0.0,0.0,0.0};
-	      Float_t totalGammaEts[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
-	      Float_t totalClusterEts[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
-	      gammaDaughterIDs[4] = stack->Particle(iPart)->GetDaughter(0);
-	      gammaDaughterIDs[5] = stack->Particle(iPart)->GetDaughter(1);
-	      if(gammaDaughterIDs[4]>0){
-		gammaDaughterIDs[0] = stack->Particle(gammaDaughterIDs[4])->GetDaughter(0);
-		gammaDaughterIDs[1] = stack->Particle(gammaDaughterIDs[4])->GetDaughter(1);
-	      }
-	      if(gammaDaughterIDs[5]>0){
-		gammaDaughterIDs[2] = stack->Particle(gammaDaughterIDs[5])->GetDaughter(0);
-		gammaDaughterIDs[3] = stack->Particle(gammaDaughterIDs[5])->GetDaughter(1);
-	      }
-	      for(int k=0;k<4;k++){
-		//if( TMath::Abs(stack->Particle(gammaDaughterIDs[k])->Eta()) <= fCuts->GetGeometryEmcalEtaAccCut() ){//only add the energy if it's within the detector acceptance
-		if(gammaDaughterIDs[k]==-1) continue;
-		if( fSelector->CutGeometricalAcceptance( * stack->Particle(gammaDaughterIDs[k]))){//only add the energy if it's within the detector acceptance
-		  //cout<<"Found a gamma "<<" K0S eta "<<stack->Particle(iPart)->Eta()<<" gamma daughter  eta "<< stack->Particle(gammaDaughterIDs[k])->Eta()<<endl;
-		  gammaEts[k] = stack->Particle(gammaDaughterIDs[4])->Energy() * TMath::Sin(stack->Particle(gammaDaughterIDs[4])->Theta() );
-		}
-		else{
-		  //cout<<"Eta rejected "<<" K0S eta "<<stack->Particle(iPart)->Eta()<<" gamma daughter  eta "<< stack->Particle(gammaDaughterIDs[k])->Eta()<<" eta cut "<<fCuts->GetGeometryEmcalEtaAccCut()<<endl;
-		}
-	      }
-	      //does not always have all of the daughters
-	      if(gammaDaughterIDs[0]==gammaDaughterIDs[1]){
-		gammaDaughterIDs[1] = -1;
-		gammaEts[1] = 0.0;
-		//cout<<"Duplicates.  This has "<<stack->Particle(gammaDaughterIDs[4])->GetNDaughters()<<" daughters"<<endl;
-	      }
-	      if(gammaDaughterIDs[2]==gammaDaughterIDs[3]){
-		gammaDaughterIDs[3] = -1;
-		gammaEts[3] = 0.0;
-		//cout<<"Duplicates.  This has "<<stack->Particle(gammaDaughterIDs[5])->GetNDaughters()<<" daughters"<<endl;
-	      }
-	      for(int l=0;l<nEtCuts;l++){//loop over cut values
-		for(int k=0;k<4;k++){//loop over gamma daughter energies
-		  if(gammaEts[k]>=etCuts[l]){
-		    totalGammaEts[l] += gammaEts[k];//if gamma et is above the cut off energy add it
-		  }
-		}
-	      }
-
-	      for (int iCluster = 0; iCluster < nCluster; iCluster++ ){//if this cluster is from any of the decay daughters of our K0S
-		AliESDCaloCluster* caloCluster = ( AliESDCaloCluster* )caloClusters->At( iCluster );
-		const UInt_t myPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
-		for(int j=0;j<6;j++){
-		  if( myPart==((UInt_t) gammaDaughterIDs[j]) ){
-		    //Double_t clEt = CorrectForReconstructionEfficiency(*caloCluster);
-		    Double_t clEt = caloCluster->E();
-		    //cout<<"Found a matching cluster!!!  Energy: "<<clEt<<endl;
-		    //cout<<" it has energy "<<clEt;
-		    for(int l=0;l<nEtCuts;l++){//loop over cut values
-		      //cout<<", cut = "<<etCuts[l];
-		      if(clEt>=etCuts[l]){
-			//cout<<", "<<clEt<<">="<<etCuts[l];
-			totalClusterEts[l] += clEt;//if cluster et is above the cut off energy add it
-		      }
-		    }
-		    //cout<<endl;
-
-		  }
-		}
-	      }
-	      //now we have the total energy measured for each case
-	      fHistK0EDepositsVsPtForEOver000MeV->Fill(pTk0,totalClusterEts[0]);
-	      fHistK0EDepositsVsPtForEOver100MeV->Fill(pTk0,totalClusterEts[1]);
-	      fHistK0EDepositsVsPtForEOver150MeV->Fill(pTk0,totalClusterEts[2]);
-	      fHistK0EDepositsVsPtForEOver200MeV->Fill(pTk0,totalClusterEts[3]);
-	      fHistK0EDepositsVsPtForEOver250MeV->Fill(pTk0,totalClusterEts[4]);
-	      fHistK0EDepositsVsPtForEOver300MeV->Fill(pTk0,totalClusterEts[5]);
-	      fHistK0EDepositsVsPtForEOver350MeV->Fill(pTk0,totalClusterEts[6]);
-	      fHistK0EDepositsVsPtForEOver400MeV->Fill(pTk0,totalClusterEts[7]);
-	      fHistK0EDepositsVsPtForEOver450MeV->Fill(pTk0,totalClusterEts[8]);
-	      fHistK0EDepositsVsPtForEOver500MeV->Fill(pTk0,totalClusterEts[9]);
-	      fHistK0EGammaVsPtForEOver000MeV->Fill(pTk0,totalGammaEts[0]);
-	      fHistK0EGammaVsPtForEOver100MeV->Fill(pTk0,totalGammaEts[1]);
-	      fHistK0EGammaVsPtForEOver150MeV->Fill(pTk0,totalGammaEts[2]);
-	      fHistK0EGammaVsPtForEOver200MeV->Fill(pTk0,totalGammaEts[3]);
-	      fHistK0EGammaVsPtForEOver250MeV->Fill(pTk0,totalGammaEts[4]);
-	      fHistK0EGammaVsPtForEOver300MeV->Fill(pTk0,totalGammaEts[5]);
-	      fHistK0EGammaVsPtForEOver350MeV->Fill(pTk0,totalGammaEts[6]);
-	      fHistK0EGammaVsPtForEOver400MeV->Fill(pTk0,totalGammaEts[7]);
-	      fHistK0EGammaVsPtForEOver450MeV->Fill(pTk0,totalGammaEts[8]);
-	      fHistK0EGammaVsPtForEOver500MeV->Fill(pTk0,totalGammaEts[9]);
+	if(code == fgK0SCode || code==fgKPlusCode || code==fgKMinusCode ||code==fgK0LCode || code==fgK0Code){//this is a kaon
+	  //cout<<"I am a kaon too! "<<stack->Particle(iPart)->GetName()<<" "<<code<<endl;
+	  Float_t pTk = stack->Particle(iPart)->Pt();
+	  if(TMath::Abs(stack->Particle(iPart)->Y())<0.5 && stack->IsPhysicalPrimary(iPart)){//these are particles which would be included in our spectra measurements
+	    fHistSimKaonsInAcceptance->Fill(pTk);
+	    if(code == fgK0SCode){fHistSimK0SInAcceptance->Fill(pTk);}
+	    if(code == fgK0LCode){fHistSimK0LInAcceptance->Fill(pTk);}
+	    if(code == fgKPlusCode){fHistSimKPlusInAcceptance->Fill(pTk);}
+	    if(code == fgKMinusCode){fHistSimKMinusInAcceptance->Fill(pTk);}
+	    if(code == fgK0Code){//Split K0's between the two
+	      fHistSimK0SInAcceptance->Fill(pTk,0.5);
+	      fHistSimK0LInAcceptance->Fill(pTk,0.5);
 	    }
 	  }
+	  else{
+	    fHistSimKaonsOutOfAcceptance->Fill(pTk);
+	    // 	    if(!stack->IsPhysicalPrimary(iPart)){
+	    // 	      PrintFamilyTree(iPart, stack);
+	    // 	    }
+	  }
+	  Float_t totalGammaEts[11] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0,  0.0};
+	  Float_t totalClusterEts[11] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0,  0.0};
+	  for (int iCluster = 0; iCluster < nCluster; iCluster++ ){//if this cluster is from any of the decay daughters of any kaon...  but there is no easy way to look at this so we loop over clusters...
+	    AliESDCaloCluster* caloCluster = ( AliESDCaloCluster* )caloClusters->At( iCluster );
+	    const UInt_t myPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
+	    //identify the primary particle which created this cluster
+	    int primIdx = myPart;
+	    if (!stack->IsPhysicalPrimary(myPart)){
+	      primIdx = GetPrimMother(iPart, stack);
+	    } // end of primary particle check
+
+	    if(primIdx==iPart && primIdx>0){//This cluster is from our primary particle and our primary particle is a kaon
+	      //cout<<"I have a particle match! prim code"<<code<<" id "<<primIdx <<endl;
+	      Float_t pos[3];
+	      caloCluster->GetPosition(pos);
+	      TVector3 cp(pos);
+	      Double_t clEt = caloCluster->E()*TMath::Sin(cp.Theta());
+	      Double_t clEtCorr = CorrectForReconstructionEfficiency(*caloCluster);
+	      for(int l=0;l<nEtCuts;l++){//loop over cut values
+		if(clEt>=etCuts[l]){
+		  //cout<<", "<<clEt<<">="<<etCuts[l];
+		  totalClusterEts[l] += clEtCorr;//if cluster et is above the cut off energy add it
+		  totalGammaEts[l] += clEt;//if cluster et is above the cut off energy add it
+		}
+	      }
+	    }
+	  }
+	  // 	  cout<<"Deposits:  pT: "<<pTk;
+	  // 	  for(int l=0;l<nEtCuts;l++){//loop over cut values
+	  // 	    cout<<" "<<totalClusterEts[l];
+	  // 	  }
+	  // 	  cout<<endl;
+	  if(TMath::Abs(stack->Particle(iPart)->Y())<0.5 && stack->IsPhysicalPrimary(iPart)){//within the acceptance of our spectra and is a primary particle
+	    if(totalClusterEts[0]>0.0){fHistSimKaonsInAcceptanceWithDepositsPrimaries->Fill(pTk);}
+	    //cout<<"I have a particle match! prim code"<<code<<" id "<<iPart <<endl;
+	    for(int l=0;l<nEtCuts;l++){
+	      fHistK0EDepositsVsPtInAcceptance->Fill(pTk,totalClusterEts[l],etCuts[l]);
+	      fHistK0EGammaVsPtInAcceptance->Fill(pTk,totalGammaEts[l],etCuts[l]);
+	    }
+	  }
+	  else{//outside the acceptance of our spectra
+	    if(totalClusterEts[0]>0.0){
+	      if(stack->IsPhysicalPrimary(iPart)){fHistSimKaonsOutOfAcceptanceWithDepositsPrimaries->Fill(pTk);}
+	      else{fHistSimKaonsOutOfAcceptanceWithDepositsSecondaries->Fill(pTk);}
+	    }
+	    for(int l=0;l<nEtCuts;l++){
+	      fHistK0EDepositsVsPtOutOfAcceptance->Fill(pTk,totalClusterEts[l],etCuts[l]);
+	      fHistK0EGammaVsPtOutOfAcceptance->Fill(pTk,totalGammaEts[l],etCuts[l]);
+	    }
+	  } 
+	  
 	}
       }
     }
-    
     FillHistograms();
     return 0;
 }
@@ -1269,26 +1262,36 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistDxDzNonRemovedNeutral = new TH2F("fHistDxDzNonRemovedNeutral", "fHistDxDzNonRemovedNeutral", 800, -200, 200, 800, -200, 200);
     fHistDxDzRemovedNeutral = new TH2F("fHistDxDzRemovedNeutral", "fHistDxDzRemovedNeutral", 800, -200, 200, 800, -200, 200);
 
-    fHistK0EDepositsVsPtForEOver000MeV = new TH2F("fHistK0EDepositsVsPtForEOver000MeV","K^{0}_{S} deposits over 0 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EDepositsVsPtForEOver100MeV = new TH2F("fHistK0EDepositsVsPtForEOver100MeV","K^{0}_{S} deposits over 100 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EDepositsVsPtForEOver150MeV = new TH2F("fHistK0EDepositsVsPtForEOver150MeV","K^{0}_{S} deposits over 150 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EDepositsVsPtForEOver200MeV = new TH2F("fHistK0EDepositsVsPtForEOver200MeV","K^{0}_{S} deposits over 200 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EDepositsVsPtForEOver250MeV = new TH2F("fHistK0EDepositsVsPtForEOver250MeV","K^{0}_{S} deposits over 250 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EDepositsVsPtForEOver300MeV = new TH2F("fHistK0EDepositsVsPtForEOver300MeV","K^{0}_{S} deposits over 300 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EDepositsVsPtForEOver350MeV = new TH2F("fHistK0EDepositsVsPtForEOver350MeV","K^{0}_{S} deposits over 350 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EDepositsVsPtForEOver400MeV = new TH2F("fHistK0EDepositsVsPtForEOver400MeV","K^{0}_{S} deposits over 400 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EDepositsVsPtForEOver450MeV = new TH2F("fHistK0EDepositsVsPtForEOver450MeV","K^{0}_{S} deposits over 450 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EDepositsVsPtForEOver500MeV = new TH2F("fHistK0EDepositsVsPtForEOver500MeV","K^{0}_{S} deposits over 500 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EGammaVsPtForEOver000MeV = new TH2F("fHistK0EGammaVsPtForEOver000MeV","K^{0}_{S} gamma over 0 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EGammaVsPtForEOver100MeV = new TH2F("fHistK0EGammaVsPtForEOver100MeV","K^{0}_{S} gamma over 100 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EGammaVsPtForEOver150MeV = new TH2F("fHistK0EGammaVsPtForEOver150MeV","K^{0}_{S} gamma over 150 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EGammaVsPtForEOver200MeV = new TH2F("fHistK0EGammaVsPtForEOver200MeV","K^{0}_{S} gamma over 200 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EGammaVsPtForEOver250MeV = new TH2F("fHistK0EGammaVsPtForEOver250MeV","K^{0}_{S} gamma over 250 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EGammaVsPtForEOver300MeV = new TH2F("fHistK0EGammaVsPtForEOver300MeV","K^{0}_{S} gamma over 300 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EGammaVsPtForEOver350MeV = new TH2F("fHistK0EGammaVsPtForEOver350MeV","K^{0}_{S} gamma over 350 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EGammaVsPtForEOver400MeV = new TH2F("fHistK0EGammaVsPtForEOver400MeV","K^{0}_{S} gamma over 400 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EGammaVsPtForEOver450MeV = new TH2F("fHistK0EGammaVsPtForEOver450MeV","K^{0}_{S} gamma over 450 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
-    fHistK0EGammaVsPtForEOver500MeV = new TH2F("fHistK0EGammaVsPtForEOver500MeV","K^{0}_{S} gamma over 500 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    if(fCalcForKaonCorrection){
+      Int_t nEtCut = 11;
+      Float_t etCutAxis[12] = {0.00,0.05,0.10,0.15,0.20,  0.25,0.30,0.35,0.40,0.45, 0.50,0.55};
+      fHistK0EDepositsVsPtInAcceptance = new TH3F("fHistK0EDepositsVsPtInAcceptance","Kaon deposits with corrections for kaons with y<0.5",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis,nEtCut,etCutAxis);
+      fHistK0EGammaVsPtInAcceptance = new TH3F("fHistK0EGammaVsPtInAcceptance","Kaon deposits without corrections for kaons with y<0.5",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis,nEtCut,etCutAxis);
+      fHistK0EDepositsVsPtOutOfAcceptance = new TH3F("fHistK0EDepositsVsPtOutOfAcceptance","Kaon deposits with corrections for kaons with y>0.5",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis,nEtCut,etCutAxis);
+      fHistK0EGammaVsPtOutOfAcceptance = new TH3F("fHistK0EGammaVsPtOutOfAcceptance","Kaon deposits without corrections for kaons with y>0.5",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis,nEtCut,etCutAxis);
+      fHistK0EDepositsVsPtInAcceptance->GetXaxis()->SetTitle("Kaon p_{T}");
+      fHistK0EGammaVsPtInAcceptance->GetXaxis()->SetTitle("Kaon p_{T}");
+      fHistK0EDepositsVsPtOutOfAcceptance->GetXaxis()->SetTitle("Kaon p_{T}");
+      fHistK0EGammaVsPtOutOfAcceptance->GetXaxis()->SetTitle("Kaon p_{T}");
+      fHistK0EDepositsVsPtInAcceptance->GetYaxis()->SetTitle("Deposited E_{T}");
+      fHistK0EGammaVsPtInAcceptance->GetYaxis()->SetTitle("Deposited E_{T}");
+      fHistK0EDepositsVsPtOutOfAcceptance->GetYaxis()->SetTitle("Deposited E_{T}");
+      fHistK0EGammaVsPtOutOfAcceptance->GetYaxis()->SetTitle("Deposited E_{T}");
+      fHistK0EDepositsVsPtInAcceptance->GetZaxis()->SetTitle("E_{T} cut");
+      fHistK0EGammaVsPtInAcceptance->GetZaxis()->SetTitle("E_{T} cut");
+      fHistK0EDepositsVsPtOutOfAcceptance->GetZaxis()->SetTitle("E_{T} cut");
+      fHistK0EGammaVsPtOutOfAcceptance->GetZaxis()->SetTitle("E_{T} cut");
+
+      fHistSimKaonsInAcceptance = new TH1F("fHistSimKaonsInAcceptance","Kaons with y<0.5",fgNumOfPtBins,fgPtAxis);
+      fHistSimK0SInAcceptance = new TH1F("fHistSimK0SInAcceptance","Kaons with y<0.5",fgNumOfPtBins,fgPtAxis);
+      fHistSimK0LInAcceptance = new TH1F("fHistSimK0LInAcceptance","Kaons with y<0.5",fgNumOfPtBins,fgPtAxis);
+      fHistSimKPlusInAcceptance = new TH1F("fHistSimKPlusInAcceptance","Kaons with y<0.5",fgNumOfPtBins,fgPtAxis);
+      fHistSimKMinusInAcceptance = new TH1F("fHistSimKMinusInAcceptance","Kaons with y<0.5",fgNumOfPtBins,fgPtAxis);
+      fHistSimKaonsOutOfAcceptance = new TH1F("fHistSimKaonsOutOfAcceptance","Kaons with y>0.5",fgNumOfPtBins,fgPtAxis);
+      fHistSimKaonsInAcceptanceWithDepositsPrimaries = new TH1F("fHistSimKaonsInAcceptanceWithDepositsPrimaries","Primary Kaons which deposited energy in calorimeter with y>0.5",fgNumOfPtBins,fgPtAxis);
+      fHistSimKaonsOutOfAcceptanceWithDepositsSecondaries = new TH1F("fHistSimKaonsOutOfAcceptanceWithDepositsSecondaries","Secondary Kaons which deposited energy in calorimeter with y>0.5",fgNumOfPtBins,fgPtAxis);
+      fHistSimKaonsOutOfAcceptanceWithDepositsPrimaries = new TH1F("fHistSimKaonsOutOfAcceptanceWithDepositsPrimaries","Primary Kaons which deposited energy in calorimeter with y>0.5",fgNumOfPtBins,fgPtAxis);
+    }
 
     fHistPiPlusMult = new TH1F("fHistPiPlusMult", "fHistPiPlusMult", 2000, -0.5, 1999.5);
     fHistPiMinusMult = new TH1F("fHistPiMinusMult", "fHistPiMinusMult", 2000, -0.5, 1999.5);
@@ -1351,15 +1354,30 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistChargedTracksAccepted = new TH1F("fHistChargedTracksAccepted", "fHistChargedTracksAccepted",100, 0, 5);
     fHistGammasCut = new TH1F("fHistGammasTracksCut", "fHistGammasTracksCut",100, 0, 5);
     fHistGammasAccepted = new TH1F("fHistGammasTracksAccepted", "fHistGammasTracksAccepted",100, 0, 5);
+
+    if(fCalcTrackMatchVsMult){
+      fHistChargedTracksCutMult = new TH2F("fHistChargedTracksCutMult", "fHistChargedTracksCutMult",100, 0, 5,10,0,100);
+      fHistChargedTracksAcceptedMult = new TH2F("fHistChargedTracksAcceptedMult", "fHistChargedTracksAcceptedMult",100, 0, 5,10,0,100);
+      fHistGammasCutMult = new TH2F("fHistGammasTracksCutMult", "fHistGammasTracksCutMult",100, 0, 5,10,0,100);
+      fHistGammasAcceptedMult = new TH2F("fHistGammasTracksAcceptedMult", "fHistGammasTracksAcceptedMult",100, 0, 5,10,0,100);
+    }
+
     fHistBadTrackMatches = new TH1F("fHistBadTrackMatches", "fHistBadTrackMatches",100, 0, 5);
     fHistMatchedTracksEvspTBkgd = new TH2F("fHistMatchedTracksEvspTBkgd", "fHistMatchedTracksEvspTBkgd",100, 0, 3,100,0,3);
     fHistMatchedTracksEvspTSignal = new TH2F("fHistMatchedTracksEvspTSignal", "fHistMatchedTracksEvspTSignal",100, 0, 3,100,0,3);
-    fHistMatchedTracksEvspTBkgdPeripheral = new TH2F("fHistMatchedTracksEvspTBkgdPeripheral", "fHistMatchedTracksEvspTBkgd",100, 0, 3,100,0,3);
-    fHistMatchedTracksEvspTSignalPeripheral = new TH2F("fHistMatchedTracksEvspTSignalPeripheral", "fHistMatchedTracksEvspTSignal",100, 0, 3,100,0,3);
-    fHistChargedTracksCutPeripheral = new TH1F("fHistChargedTracksCutPeripheral", "fHistChargedTracksCut",100, 0, 5);
-    fHistChargedTracksAcceptedPeripheral = new TH1F("fHistChargedTracksAcceptedPeripheral", "fHistChargedTracksAccepted",100, 0, 5);
-    fHistGammasCutPeripheral = new TH1F("fHistGammasTracksCutPeripheral", "fHistGammasTracksCut",100, 0, 5);
-    fHistGammasAcceptedPeripheral = new TH1F("fHistGammasTracksAcceptedPeripheral", "fHistGammasTracksAccepted",100, 0, 5);
+    if(fCalcTrackMatchVsMult){
+      fHistMatchedTracksEvspTBkgdPeripheral = new TH2F("fHistMatchedTracksEvspTBkgdPeripheral", "fHistMatchedTracksEvspTBkgd",100, 0, 3,100,0,3);
+      fHistMatchedTracksEvspTSignalPeripheral = new TH2F("fHistMatchedTracksEvspTSignalPeripheral", "fHistMatchedTracksEvspTSignal",100, 0, 3,100,0,3);
+
+      fHistMatchedTracksEvspTBkgdvsMult = new TH3F("fHistMatchedTracksEvspTBkgdMult", "fHistMatchedTracksEvspTBkgdMult",100, 0, 3,100,0,3,10,0,100);
+      fHistMatchedTracksEvspTSignalvsMult = new TH3F("fHistMatchedTracksEvspTSignalMult", "fHistMatchedTracksEvspTSignalMult",100, 0, 3,100,0,3,10,0,100);
+    
+
+      fHistChargedTracksCutPeripheral = new TH1F("fHistChargedTracksCutPeripheral", "fHistChargedTracksCut",100, 0, 5);
+      fHistChargedTracksAcceptedPeripheral = new TH1F("fHistChargedTracksAcceptedPeripheral", "fHistChargedTracksAccepted",100, 0, 5);
+      fHistGammasCutPeripheral = new TH1F("fHistGammasTracksCutPeripheral", "fHistGammasTracksCut",100, 0, 5);
+      fHistGammasAcceptedPeripheral = new TH1F("fHistGammasTracksAcceptedPeripheral", "fHistGammasTracksAccepted",100, 0, 5);
+    }
     fHistBadTrackMatchesdPhidEta = new TH2F("fHistBadTrackMatchesdPhidEta", "fHistBadTrackMatchesdPhidEta",20, -0.1, 0.1,20,-.1,0.1);
     fHistGoodTrackMatchesdPhidEta = new TH2F("fHistGoodTrackMatchesdPhidEta", "fHistGoodTrackMatchesdPhidEta",20, -0.1, 0.1,20,-.1,0.1);
 }
@@ -1448,26 +1466,21 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistDxDzNonRemovedNeutral);
     list->Add(fHistDxDzRemovedNeutral);
 
-    list->Add(fHistK0EDepositsVsPtForEOver000MeV);
-    list->Add(fHistK0EDepositsVsPtForEOver100MeV);
-    list->Add(fHistK0EDepositsVsPtForEOver150MeV);
-    list->Add(fHistK0EDepositsVsPtForEOver200MeV);
-    list->Add(fHistK0EDepositsVsPtForEOver250MeV);
-    list->Add(fHistK0EDepositsVsPtForEOver300MeV);
-    list->Add(fHistK0EDepositsVsPtForEOver350MeV);
-    list->Add(fHistK0EDepositsVsPtForEOver400MeV);
-    list->Add(fHistK0EDepositsVsPtForEOver450MeV);
-    list->Add(fHistK0EDepositsVsPtForEOver500MeV);
-    list->Add(fHistK0EGammaVsPtForEOver000MeV);
-    list->Add(fHistK0EGammaVsPtForEOver100MeV);
-    list->Add(fHistK0EGammaVsPtForEOver150MeV);
-    list->Add(fHistK0EGammaVsPtForEOver200MeV);
-    list->Add(fHistK0EGammaVsPtForEOver250MeV);
-    list->Add(fHistK0EGammaVsPtForEOver300MeV);
-    list->Add(fHistK0EGammaVsPtForEOver350MeV);
-    list->Add(fHistK0EGammaVsPtForEOver400MeV);
-    list->Add(fHistK0EGammaVsPtForEOver450MeV);
-    list->Add(fHistK0EGammaVsPtForEOver500MeV);
+    if(fCalcForKaonCorrection){
+      list->Add(fHistK0EDepositsVsPtInAcceptance);
+      list->Add(fHistK0EGammaVsPtInAcceptance);
+      list->Add(fHistK0EDepositsVsPtOutOfAcceptance);
+      list->Add(fHistK0EGammaVsPtOutOfAcceptance);
+      list->Add(fHistSimKaonsInAcceptance);
+      list->Add(fHistSimK0SInAcceptance);
+      list->Add(fHistSimK0LInAcceptance);
+      list->Add(fHistSimKPlusInAcceptance);
+      list->Add(fHistSimKMinusInAcceptance);
+      list->Add(fHistSimKaonsOutOfAcceptance);
+      list->Add(fHistSimKaonsInAcceptanceWithDepositsPrimaries);
+      list->Add(fHistSimKaonsOutOfAcceptanceWithDepositsSecondaries);
+      list->Add(fHistSimKaonsOutOfAcceptanceWithDepositsPrimaries);
+    }
 
     list->Add(fHistPiPlusMult);
     list->Add(fHistPiMinusMult);
@@ -1482,15 +1495,25 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistChargedTracksAccepted);
     list->Add(fHistGammasCut);
     list->Add(fHistGammasAccepted);
+    if(fCalcTrackMatchVsMult){
+      list->Add(fHistChargedTracksCutMult);
+      list->Add(fHistChargedTracksAcceptedMult);
+      list->Add(fHistGammasCutMult);
+      list->Add(fHistGammasAcceptedMult);
+    }
     list->Add(fHistBadTrackMatches);
     list->Add(fHistMatchedTracksEvspTBkgd);
     list->Add(fHistMatchedTracksEvspTSignal);
-    list->Add(fHistMatchedTracksEvspTBkgdPeripheral);
-    list->Add(fHistMatchedTracksEvspTSignalPeripheral);
-    list->Add(fHistChargedTracksCutPeripheral);
-    list->Add(fHistChargedTracksAcceptedPeripheral);
-    list->Add(fHistGammasCutPeripheral);
-    list->Add(fHistGammasAcceptedPeripheral);
+    if(fCalcTrackMatchVsMult){
+      list->Add(fHistMatchedTracksEvspTBkgdPeripheral);
+      list->Add(fHistMatchedTracksEvspTSignalPeripheral);
+      list->Add(fHistMatchedTracksEvspTBkgdvsMult);
+      list->Add(fHistMatchedTracksEvspTSignalvsMult);
+      list->Add(fHistChargedTracksCutPeripheral);
+      list->Add(fHistChargedTracksAcceptedPeripheral);
+      list->Add(fHistGammasCutPeripheral);
+      list->Add(fHistGammasAcceptedPeripheral);
+    }
     list->Add(fHistBadTrackMatchesdPhidEta);
     list->Add(fHistGoodTrackMatchesdPhidEta);
 
