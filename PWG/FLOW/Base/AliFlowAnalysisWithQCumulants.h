@@ -70,6 +70,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void StoreFlagsForDistributions();   
     virtual void StoreHarmonic();
     virtual void StoreMixedHarmonicsFlags();
+    virtual void StoreControlHistogramsFlags();
   // 2.) method Make() and methods called within Make():
   virtual void Make(AliFlowEventSimple *anEvent);
     // 2a.) Common:
@@ -172,6 +173,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void GetPointersForOtherDiffCorrelators(); 
     virtual void GetPointersForNestedLoopsHistograms(); 
     virtual void GetPointersForMixedHarmonicsHistograms(); 
+    virtual void GetPointersForControlHistograms(); 
     
   // 5.) other methods:   
   TProfile* MakePtProjection(TProfile2D *profilePtEta) const;
@@ -271,6 +273,12 @@ class AliFlowAnalysisWithQCumulants{
   Double_t GetPhiDistributionForOneEventSettings(Int_t const i) const {return this->fPhiDistributionForOneEventSettings[i];};
   void SetExactNoRPs(Int_t const enr) {this->fExactNoRPs = enr;};
   Int_t GetExactNoRPs() const {return this->fExactNoRPs;};
+  void SetUse2DHistograms(Bool_t const u2dh){this->fUse2DHistograms = u2dh;if(u2dh){this->fStoreControlHistograms = kTRUE;}};
+  Bool_t GetUse2DHistograms() const {return this->fUse2DHistograms;};
+  void SetFillProfilesVsMUsingWeights(Bool_t const fpvmuw){this->fFillProfilesVsMUsingWeights = fpvmuw;};
+  Bool_t GetFillProfilesVsMUsingWeights() const {return this->fFillProfilesVsMUsingWeights;};
+  void SetUseQvectorTerms(Bool_t const uqvt){this->fUseQvectorTerms = uqvt;if(uqvt){this->fStoreControlHistograms = kTRUE;}};
+  Bool_t GetUseQvectorTerms() const {return this->fUseQvectorTerms;};
 
   // Reference flow profiles:
   void SetAvMultiplicity(TProfile* const avMultiplicity) {this->fAvMultiplicity = avMultiplicity;};
@@ -391,12 +399,15 @@ class AliFlowAnalysisWithQCumulants{
   void Set2DDiffFlow(TH2D* const h2ddf, Int_t const i, Int_t const j) {this->f2DDiffFlow[i][j] = h2ddf;};
   TH2D* Get2DDiffFlow(Int_t i, Int_t j) const {return this->f2DDiffFlow[i][j];};  
   // 5.) distributions of correlations:
-  // flags:
-  void SetStoreDistributions(Bool_t const storeDistributions) {this->fStoreDistributions = storeDistributions;};
-  Bool_t GetStoreDistributions() const {return this->fStoreDistributions;};
   // profile:
   void SetDistributionsFlags(TProfile* const distributionsFlags) {this->fDistributionsFlags = distributionsFlags;};
   TProfile* GetDistributionsFlags() const {return this->fDistributionsFlags;};  
+  // flags:
+  void SetStoreDistributions(Bool_t const storeDistributions) {this->fStoreDistributions = storeDistributions;};
+  Bool_t GetStoreDistributions() const {return this->fStoreDistributions;};
+  // # of bins for correlation axis in fDistributions[4], fCorrelation2468VsMult[4] and fCorrelationProduct2468VsMult[1]:
+  void SetnBinsForCorrelations(Int_t const nb) {this->fnBinsForCorrelations = nb;};
+  Int_t GetnBinsForCorrelations() const {return this->fnBinsForCorrelations;};
   // histograms:
   void SetDistributions(TH1D* const distributions, Int_t const i) {this->fDistributions[i] = distributions;};
   TH1D* GetDistributions(Int_t i) const {return this->fDistributions[i];};  
@@ -404,8 +415,13 @@ class AliFlowAnalysisWithQCumulants{
   void SetMinValueOfCorrelation(Int_t const ci, Double_t const minValue) {this->fMinValueOfCorrelation[ci] = minValue;};
   Double_t GetMinValueOfCorrelation(Int_t ci) const {return this->fMinValueOfCorrelation[ci];};
   void SetMaxValueOfCorrelation(Int_t const ci, Double_t const maxValue) {this->fMaxValueOfCorrelation[ci] = maxValue;};
-  Double_t GetMaxValueOfCorrelation(Int_t ci) const {return this->fMaxValueOfCorrelation[ci];};
-    
+  Double_t GetMaxValueOfCorrelation(Int_t ci) const {return this->fMaxValueOfCorrelation[ci];};    
+  // min and max values of correlation products:
+  void SetMinValueOfCorrelationProduct(Int_t const cpi, Double_t const minValue) {this->fMinValueOfCorrelationProduct[cpi] = minValue;};
+  Double_t GetMinValueOfCorrelationProduct(Int_t cpi) const {return this->fMinValueOfCorrelationProduct[cpi];};
+  void SetMaxValueOfCorrelationProduct(Int_t const cpi, Double_t const maxValue) {this->fMaxValueOfCorrelationProduct[cpi] = maxValue;};
+  Double_t GetMaxValueOfCorrelationProduct(Int_t cpi) const {return this->fMaxValueOfCorrelationProduct[cpi];};
+
   // x.) debugging and cross-checking:
   void SetNestedLoopsList(TList* const nllist) {this->fNestedLoopsList = nllist;};
   TList* GetNestedLoopsList() const {return this->fNestedLoopsList;}; 
@@ -495,6 +511,10 @@ class AliFlowAnalysisWithQCumulants{
   TH2D* GetCorrelationNoRPsVsNoPOIs() const {return this->fCorrelationNoRPsVsNoPOIs;};
   void SetCorrelation2468VsMult(TH2D* const c2468vm, Int_t const ci) {this->fCorrelation2468VsMult[ci] = c2468vm;};
   TH2D* GetCorrelation2468VsMult(Int_t ci) const {return this->fCorrelation2468VsMult[ci];};
+  void SetCorrelationProduct2468VsMult(TH2D* const cp2468vm, Int_t const ci) {this->fCorrelationProduct2468VsMult[ci] = cp2468vm;};
+  TH2D* GetCorrelationProduct2468VsMult(Int_t ci) const {return this->fCorrelationProduct2468VsMult[ci];};
+  void SetQvectorTermsVsMult(TH2D* const qvtvm, Int_t const qvti) {this->fQvectorTermsVsMult[qvti] = qvtvm;};
+  TH2D* GetQvectorTermsVsMult(Int_t qvti) const {return this->fQvectorTermsVsMult[qvti];};
 
  private:
   
@@ -569,6 +589,10 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t fStorePhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
   Double_t fPhiDistributionForOneEventSettings[4]; // [v_min,v_max,refMult_min,refMult_max]
   Int_t fExactNoRPs; // when shuffled, select only this number of RPs for the analysis
+  Bool_t fUse2DHistograms; // use TH2D instead of TProfile to improve numerical stability in reference flow calculation 
+  Bool_t fFillProfilesVsMUsingWeights; // if the width of multiplicity bin is 1, weights are not needed  
+  Bool_t fUseQvectorTerms; // use TH2D with separate Q-vector terms instead of TProfile to improve numerical stability in reference flow calculation 
+
   //  3c.) event-by-event quantities:
   TMatrixD *fReQ; // fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQ; // fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
@@ -596,6 +620,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fIntFlowProductOfCorrectionTermsForNUAPro; // average product of correction terms for NUA  
   TProfile *fIntFlowCorrectionTermsForNUAPro[2]; // average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms] 
   TProfile *fIntFlowCorrectionTermsForNUAVsMPro[2][4]; // average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms][correction term index] vs multiplicity   
+
   //  3e.) histograms with final results:
   TH1D *fIntFlowCorrelationsHist; // final results for average correlations <<2>>, <<4>>, <<6>> and <<8>> (with correct errors!) 
   TH1D *fIntFlowCorrelationsVsMHist[4]; // average correlations <<2>>, <<4>>, <<6>> and <<8>> versus multiplicity (error is correct here!)
@@ -691,8 +716,11 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fDistributionsFlags; // profile to hold all flags for distributions of correlations
   Bool_t fStoreDistributions; // store or not distributions of correlations
   TH1D *fDistributions[4]; // [0=distribution of <2>,1=distribution of <4>,2=distribution of <6>,3=distribution of <8>]
+  Int_t fnBinsForCorrelations; // # of bins for correlation axis in fDistributions[4], fCorrelation2468VsMult[4] and fCorrelationProduct2468VsMult[1]
   Double_t fMinValueOfCorrelation[4]; // min values of <2>, <4>, <6> and <8>
   Double_t fMaxValueOfCorrelation[4]; // max values of <2>, <4>, <6> and <8>
+  Double_t fMinValueOfCorrelationProduct[1]; // min values of <2><4>, <2><6>, <2><8>, <4><6> etc. TBI add the other ones when needed first time
+  Double_t fMaxValueOfCorrelationProduct[1]; // max values of <2><4>, <2><6>, <2><8>, <4><6> etc. TBI add the other ones when needed first time
   
   // 7.) various:
   TList *fVariousList; // list to hold various unclassified objects (TBI: what a crazy name.... )
@@ -762,7 +790,10 @@ class AliFlowAnalysisWithQCumulants{
   TH2D *fCorrelationNoPOIsVsRefMult; // correlation between # POIs and ref. mult. determined centrally
   TH2D *fCorrelationNoRPsVsNoPOIs; // correlation between # RPs and # POIs
   TH2D *fCorrelation2468VsMult[4]; // <2>, <4>, <6> and <8> vs multiplicity (#RPs, #POIs or external)
- 
+  TH2D *fCorrelationProduct2468VsMult[1]; // <2><4>, <2><6>, <2><8>, <4><6> etc. vs multiplicity (#RPs, #POIs or external)
+                                          // TBI: added for the time being only <2><4>, the other ones will follow when needed 
+  TH2D *fQvectorTermsVsMult[4]; // |Qn|^2/M, |Q2n|^2/M, |Qn|^4/(M(2M-1)), Re[Q2nQn^*Qn^*]/M, ... vs multiplicity (#RPs, #POIs or external)
+
   ClassDef(AliFlowAnalysisWithQCumulants, 3);
 };
 

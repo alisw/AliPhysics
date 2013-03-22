@@ -130,6 +130,9 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fForgetAboutCovariances(kFALSE), 
  fStorePhiDistributionForOneEvent(kFALSE),
  fExactNoRPs(0),
+ fUse2DHistograms(kFALSE),
+ fFillProfilesVsMUsingWeights(kTRUE),
+ fUseQvectorTerms(kFALSE),
  fReQ(NULL),
  fImQ(NULL),
  fSpk(NULL),
@@ -173,6 +176,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fDistributionsList(NULL),
  fDistributionsFlags(NULL),
  fStoreDistributions(kFALSE),
+ fnBinsForCorrelations(10000),
  // 7.) various:
  fVariousList(NULL),
  fPhiDistributionForOneEvent(NULL),
@@ -267,7 +271,8 @@ void AliFlowAnalysisWithQCumulants::Init()
  // d) Store flags for integrated and differential flow;
  // e) Store flags for distributions of corelations;
  // f) Store harmonic which will be estimated;
- // g) Store flags for mixed harmonics.
+ // g) Store flags for mixed harmonics;
+ // h) Store flags for control histograms.
   
  //save old value and prevent histograms from being added to directory
  //to avoid name clashes in case multiple analaysis objects are used
@@ -301,7 +306,9 @@ void AliFlowAnalysisWithQCumulants::Init()
  this->StoreHarmonic();
  // g) Store flags for mixed harmonics:
  this->StoreMixedHarmonicsFlags();
- 
+ // h) Store flags for control histograms:
+ this->StoreControlHistogramsFlags();
+
  TH1::AddDirectory(oldHistAddStatus);
 } // end of void AliFlowAnalysisWithQCumulants::Init()
 
@@ -722,6 +729,9 @@ void AliFlowAnalysisWithQCumulants::Finish()
  fStorePhiDistributionForOneEvent = (Bool_t)fIntFlowFlags->GetBinContent(13);
  fFillMultipleControlHistograms = (Bool_t)fIntFlowFlags->GetBinContent(14); 
  fCalculateAllCorrelationsVsM = (Bool_t)fIntFlowFlags->GetBinContent(15);
+ fUse2DHistograms = (Bool_t)fIntFlowFlags->GetBinContent(18);
+ fFillProfilesVsMUsingWeights = (Bool_t)fIntFlowFlags->GetBinContent(19);
+ fUseQvectorTerms = (Bool_t)fIntFlowFlags->GetBinContent(20);
  fEvaluateIntFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(1);
  fEvaluateDiffFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(2); 
  fCrossCheckInPtBinNo = (Int_t)fEvaluateNestedLoops->GetBinContent(3);
@@ -1207,8 +1217,9 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
  // d) Get pointers for differential flow histograms;
  // e) Get pointers for 2D differential flow histograms;
  // f) Get pointers for other differential correlators;
- // g) Get pointers for nested loops' histograms;
- // h) Get pointers for mixed harmonics histograms.
+ // g) Get pointers for mixed harmonics histograms;
+ // h) Get pointers for nested loops' histograms;
+ // i) Get pointers for control histograms.
  
  if(outputListHistos)
  {	
@@ -1226,6 +1237,7 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   this->GetPointersForOtherDiffCorrelators();  
   this->GetPointersForMixedHarmonicsHistograms(); 
   this->GetPointersForNestedLoopsHistograms(); 
+  this->GetPointersForControlHistograms();
  } else 
    {
     printf("\n WARNING (QC): outputListHistos is NULL in AFAWQC::GOH() !!!!\n\n");
@@ -1650,7 +1662,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  // a) Book profile to hold all flags for integrated flow:
  TString intFlowFlagsName = "fIntFlowFlags";
  intFlowFlagsName += fAnalysisLabel->Data();
- fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",17,0.,17.);
+ fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",20,0.,20.);
  fIntFlowFlags->SetTickLength(-0.01,"Y");
  fIntFlowFlags->SetMarkerStyle(25);
  fIntFlowFlags->SetLabelSize(0.04);
@@ -1673,6 +1685,9 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowFlags->GetXaxis()->SetBinLabel(15,"Calculate all correlations vs M");
  fIntFlowFlags->GetXaxis()->SetBinLabel(16,"fMultiplicityIs");
  fIntFlowFlags->GetXaxis()->SetBinLabel(17,"fExactNoRPs");
+ fIntFlowFlags->GetXaxis()->SetBinLabel(18,"fUse2DHistograms");
+ fIntFlowFlags->GetXaxis()->SetBinLabel(19,"fFillProfilesVsMUsingWeights");
+ fIntFlowFlags->GetXaxis()->SetBinLabel(20,"fUseQvectorTerms");
  fIntFlowList->Add(fIntFlowFlags);
 
  // b) Book event-by-event quantities:
@@ -2571,15 +2586,14 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForControlHistograms()
  // a) Book profile to hold all flags for control histograms:
  TString controlHistogramsFlagsName = "fControlHistogramsFlags";
  controlHistogramsFlagsName += fAnalysisLabel->Data();
- fControlHistogramsFlags = new TProfile(controlHistogramsFlagsName.Data(),"Flags for Control Histograms",3,0,3);
+ fControlHistogramsFlags = new TProfile(controlHistogramsFlagsName.Data(),"Flags for Control Histograms",2,0,2);
  fControlHistogramsFlags->SetTickLength(-0.01,"Y");
  fControlHistogramsFlags->SetMarkerStyle(25);
  fControlHistogramsFlags->SetLabelSize(0.04);
  fControlHistogramsFlags->SetLabelOffset(0.02,"Y");
  fControlHistogramsFlags->SetStats(kFALSE);
- fControlHistogramsFlags->GetXaxis()->SetBinLabel(1,"fCorrelationNoRPsVsRefMult");
- fControlHistogramsFlags->GetXaxis()->SetBinLabel(2,"fCorrelationNoPOIsVsRefMult");
- fControlHistogramsFlags->GetXaxis()->SetBinLabel(3,"fCorrelationNoRPsVsNoPOIs");
+ fControlHistogramsFlags->GetXaxis()->SetBinLabel(1,"fStoreControlHistograms");
+ fControlHistogramsFlags->GetXaxis()->SetBinLabel(2,"fUseQvectorTerms");
  fControlHistogramsList->Add(fControlHistogramsFlags);
 
  if(!fStoreControlHistograms){return;}
@@ -2633,7 +2647,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForControlHistograms()
      }
  for(Int_t ci=0;ci<4;ci++)
  {
-  fCorrelation2468VsMult[ci] = new TH2D(Form("%s vs M",sCorrelation[ci].Data()),Form("%s vs M",sCorrelation[ci].Data()),fnBinsMult,fMinMult,fMaxMult,10000,fMinValueOfCorrelation[ci],fMaxValueOfCorrelation[ci]); // tbi -> 10000
+  fCorrelation2468VsMult[ci] = new TH2D(Form("%s vs M",sCorrelation[ci].Data()),Form("%s vs M",sCorrelation[ci].Data()),fnBinsMult,fMinMult,fMaxMult,fnBinsForCorrelations,fMinValueOfCorrelation[ci],fMaxValueOfCorrelation[ci]); 
   fCorrelation2468VsMult[ci]->SetTickLength(-0.01,"Y");
   fCorrelation2468VsMult[ci]->SetLabelSize(0.04);
   fCorrelation2468VsMult[ci]->SetLabelOffset(0.02,"Y");
@@ -2642,6 +2656,35 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForControlHistograms()
   fCorrelation2468VsMult[ci]->GetYaxis()->SetTitle(sCorrelation[ci].Data());
   fControlHistogramsList->Add(fCorrelation2468VsMult[ci]); 
  } // end of for(Int_t ci=0;ci<4;ci++)
+ // b5) <2><4>, <2><6>, <2><8>, <4><6> etc. vs multiplicity (#RPs, #POIs or external):
+ TString sCorrelationProduct[1] = {"#LT2#GT#LT4#GT"}; // TBI: add the other ones when needed first time
+ for(Int_t cpi=0;cpi<1;cpi++) // TBI: hardwired 1
+ {
+  fCorrelationProduct2468VsMult[cpi] = new TH2D(Form("%s vs M",sCorrelationProduct[cpi].Data()),Form("%s vs M",sCorrelationProduct[cpi].Data()),fnBinsMult,fMinMult,fMaxMult,fnBinsForCorrelations,fMinValueOfCorrelationProduct[cpi],fMaxValueOfCorrelationProduct[cpi]);
+  fCorrelationProduct2468VsMult[cpi]->SetTickLength(-0.01,"Y");
+  fCorrelationProduct2468VsMult[cpi]->SetLabelSize(0.04);
+  fCorrelationProduct2468VsMult[cpi]->SetLabelOffset(0.02,"Y");
+  fCorrelationProduct2468VsMult[cpi]->SetStats(kTRUE);
+  fCorrelationProduct2468VsMult[cpi]->GetXaxis()->SetTitle(sMultiplicity.Data());
+  fCorrelationProduct2468VsMult[cpi]->GetYaxis()->SetTitle(sCorrelationProduct[cpi].Data());
+  fControlHistogramsList->Add(fCorrelationProduct2468VsMult[cpi]); 
+ } // end of for(Int_t cpi=0;cpi<4;cpi++)
+ // b6) |Qn|^2/M, |Q2n|^2/M, |Qn|^4/(M(2M-1)), Re[Q2nQn^*Qn^*]/M, ... vs multiplicity (#RPs, #POIs or external)
+ if(fUseQvectorTerms)
+ {
+  TString sQvectorTerms[4] = {"#frac{|Q_{n}|^{2}}{M}","#frac{|Q_{2n}|^{2}}{M}","#frac{|Q_{n}|^{4}}{M(2M-1)}","#frac{Re[Q_{2n}Q_{n}^{*}Q_{n}^{*}]}{M^{3/2}}"}; // TBI: add the other ones when needed first time
+  for(Int_t qvti=0;qvti<4;qvti++) // TBI: hardwired 4
+  {
+   fQvectorTermsVsMult[qvti] = new TH2D(Form("%s vs M",sQvectorTerms[qvti].Data()),Form("%s vs M",sQvectorTerms[qvti].Data()),fnBinsMult,fMinMult,fMaxMult,fnBinsForCorrelations,-100.,100.); // TBI hardwired -100 and 100
+   fQvectorTermsVsMult[qvti]->SetTickLength(-0.01,"Y");
+   fQvectorTermsVsMult[qvti]->SetLabelSize(0.04);
+   fQvectorTermsVsMult[qvti]->SetLabelOffset(0.02,"Y");
+   fQvectorTermsVsMult[qvti]->SetStats(kTRUE);
+   fQvectorTermsVsMult[qvti]->GetXaxis()->SetTitle(sMultiplicity.Data());
+   fQvectorTermsVsMult[qvti]->GetYaxis()->SetTitle(sQvectorTerms[qvti].Data());
+   fControlHistogramsList->Add(fQvectorTermsVsMult[qvti]); 
+  } // end of for(Int_t qvti=0;qvti<4;qvti++)
+ } // end of if(fUseQvectorTerms)
 
 } // end of void AliFlowAnalysisWithQCumulants::BookEverythingForControlHistograms()
 
@@ -3366,6 +3409,14 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForControlHistograms()
  {
   fCorrelation2468VsMult[ci] = NULL;    
  }
+ for(Int_t cpi=0;cpi<1;cpi++) // correlation product index TBI: hardwired 1
+ {
+  fCorrelationProduct2468VsMult[cpi] = NULL;    
+ }
+ for(Int_t qwti=0;qwti<4;qwti++) // q-vector terms index TBI: hardwired 4
+ {
+  fQvectorTermsVsMult[qwti] = NULL;    
+ }
 
 } // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForControlHistograms()
 
@@ -3605,7 +3656,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
      {
       dMultiplicityBin = fNumberOfPOIsEBE+0.5;
      }
-  
+ 
  // Real parts of expressions involving various combinations of Q-vectors which appears
  // simultaneously in several equations for multiparticle correlations bellow: 
  // Re[Q_{2n}Q_{n}^*Q_{n}^*]
@@ -3809,9 +3860,16 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowSquaredCorrelationsPro->Fill(0.5,two1n1n*two1n1n,mWeight2p);
   if(fCalculateCumulantsVsM)
   {
-   fIntFlowCorrelationsVsMPro[0]->Fill(dMultiplicityBin,two1n1n,mWeight2p);
-   fIntFlowSquaredCorrelationsVsMPro[0]->Fill(dMultiplicityBin,two1n1n*two1n1n,mWeight2p);
-  } 
+   if(fFillProfilesVsMUsingWeights)  
+   {
+    fIntFlowCorrelationsVsMPro[0]->Fill(dMultiplicityBin,two1n1n,mWeight2p);
+    fIntFlowSquaredCorrelationsVsMPro[0]->Fill(dMultiplicityBin,two1n1n*two1n1n,mWeight2p);
+   } else
+     {
+      fIntFlowCorrelationsVsMPro[0]->Fill(dMultiplicityBin,two1n1n);
+      fIntFlowSquaredCorrelationsVsMPro[0]->Fill(dMultiplicityBin,two1n1n*two1n1n);
+     }
+  } // end of if(fCalculateCumulantsVsM)
   if(fCalculateAllCorrelationsVsM)
   {
    fIntFlowCorrelationsAllVsMPro[0]->Fill(dMultiplicityBin,two1n1n,mWeight2p);
@@ -3956,12 +4014,20 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowSquaredCorrelationsPro->Fill(1.5,four1n1n1n1n*four1n1n1n1n,mWeight4p);
   if(fCalculateCumulantsVsM)
   {
-   fIntFlowCorrelationsVsMPro[1]->Fill(dMultiplicityBin,four1n1n1n1n,mWeight4p);
-   fIntFlowSquaredCorrelationsVsMPro[1]->Fill(dMultiplicityBin,four1n1n1n1n*four1n1n1n1n,mWeight4p);
-  }   
+   if(fFillProfilesVsMUsingWeights)  
+   {
+    fIntFlowCorrelationsVsMPro[1]->Fill(dMultiplicityBin,four1n1n1n1n,mWeight4p);
+    fIntFlowSquaredCorrelationsVsMPro[1]->Fill(dMultiplicityBin,four1n1n1n1n*four1n1n1n1n,mWeight4p);
+   } else
+     {
+      fIntFlowCorrelationsVsMPro[1]->Fill(dMultiplicityBin,four1n1n1n1n);
+      fIntFlowSquaredCorrelationsVsMPro[1]->Fill(dMultiplicityBin,four1n1n1n1n*four1n1n1n1n);
+     }
+  } // end of if(fCalculateCumulantsVsM) 
   if(fStoreControlHistograms)
   {
    fCorrelation2468VsMult[1]->Fill(dMultiplicityBin,four1n1n1n1n);
+   fCorrelationProduct2468VsMult[0]->Fill(dMultiplicityBin,two1n1n*four1n1n1n1n);
   } 
  } // end of if(dMult>3)
 
@@ -4107,9 +4173,16 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowSquaredCorrelationsPro->Fill(2.5,six1n1n1n1n1n1n*six1n1n1n1n1n1n,mWeight6p);
   if(fCalculateCumulantsVsM)
   {
-   fIntFlowCorrelationsVsMPro[2]->Fill(dMultiplicityBin,six1n1n1n1n1n1n,mWeight6p);
-   fIntFlowSquaredCorrelationsVsMPro[2]->Fill(dMultiplicityBin,six1n1n1n1n1n1n*six1n1n1n1n1n1n,mWeight6p);
-  }
+   if(fFillProfilesVsMUsingWeights)  
+   {
+    fIntFlowCorrelationsVsMPro[2]->Fill(dMultiplicityBin,six1n1n1n1n1n1n,mWeight6p);
+    fIntFlowSquaredCorrelationsVsMPro[2]->Fill(dMultiplicityBin,six1n1n1n1n1n1n*six1n1n1n1n1n1n,mWeight6p);
+   } else
+     {
+      fIntFlowCorrelationsVsMPro[2]->Fill(dMultiplicityBin,six1n1n1n1n1n1n);
+      fIntFlowSquaredCorrelationsVsMPro[2]->Fill(dMultiplicityBin,six1n1n1n1n1n1n*six1n1n1n1n1n1n);
+     }
+  } // end of if(fCalculateCumulantsVsM)
   if(fStoreControlHistograms)
   {
    fCorrelation2468VsMult[2]->Fill(dMultiplicityBin,six1n1n1n1n1n1n);
@@ -4206,13 +4279,20 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowSquaredCorrelationsPro->Fill(3.5,eight1n1n1n1n1n1n1n1n*eight1n1n1n1n1n1n1n1n,mWeight8p);  
   if(fCalculateCumulantsVsM)
   {
-   fIntFlowCorrelationsVsMPro[3]->Fill(dMultiplicityBin,eight1n1n1n1n1n1n1n1n,mWeight8p);
-   fIntFlowSquaredCorrelationsVsMPro[3]->Fill(dMultiplicityBin,eight1n1n1n1n1n1n1n1n*eight1n1n1n1n1n1n1n1n,mWeight8p);
-  }  
+   if(fFillProfilesVsMUsingWeights)  
+   {
+    fIntFlowCorrelationsVsMPro[3]->Fill(dMultiplicityBin,eight1n1n1n1n1n1n1n1n,mWeight8p);
+    fIntFlowSquaredCorrelationsVsMPro[3]->Fill(dMultiplicityBin,eight1n1n1n1n1n1n1n1n*eight1n1n1n1n1n1n1n1n,mWeight8p);
+   } else
+     {
+      fIntFlowCorrelationsVsMPro[3]->Fill(dMultiplicityBin,eight1n1n1n1n1n1n1n1n);
+      fIntFlowSquaredCorrelationsVsMPro[3]->Fill(dMultiplicityBin,eight1n1n1n1n1n1n1n1n*eight1n1n1n1n1n1n1n1n);
+     } 
+  } // end of if(fCalculateCumulantsVsM)
   if(fStoreControlHistograms)
   {
    fCorrelation2468VsMult[3]->Fill(dMultiplicityBin,eight1n1n1n1n1n1n1n1n);
-  }   
+  } // end of if(fStoreControlHistograms)  
  } // end of if(dMult>7) 
  
  // EXTRA correlations for v3{5} study:
@@ -4610,6 +4690,19 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   }          
  } // end of if(dMult>5.)
  
+ // |Qn|^2/M, |Q2n|^2/M, |Qn|^4/(M(2M-1)), Re[Q2nQn^*Qn^*]/M, ... vs multiplicity (#RPs, #POIs or external):
+ if(fUseQvectorTerms)
+ {
+  Double_t dM = dMultiplicityBin-0.5;
+  if(dM>1.) // TBI re-think this if statement 
+  {
+   fQvectorTermsVsMult[0]->Fill(dMultiplicityBin,(pow(dReQ1n,2.)+pow(dImQ1n,2.))/dM);
+   fQvectorTermsVsMult[1]->Fill(dMultiplicityBin,(pow(dReQ2n,2.)+pow(dImQ2n,2.))/dM);
+   fQvectorTermsVsMult[2]->Fill(dMultiplicityBin,(pow(pow(dReQ1n,2.)+pow(dImQ1n,2.),2.))/(dM*(2.*dM-1.)));
+   fQvectorTermsVsMult[3]->Fill(dMultiplicityBin,reQ2nQ1nstarQ1nstar/pow(dM,1.5)); // TBI a bit of heuristic inserted here, re-think the rescaling factor 
+  } // end of if(dM>1.) // TBI re-think this if statement 
+ } // end of if(fUseQvectorTerms)
+
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
 
 //=====================================================================================================
@@ -12907,11 +13000,19 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
    // products versus multiplicity:  // [0=<<2><4>>,1=<<2><6>>,2=<<2><8>>,3=<<4><6>>,4=<<4><8>>,5=<<6><8>>]
    if(fCalculateCumulantsVsM)
    {
-    fIntFlowProductOfCorrelationsVsMPro[counter]->Fill(dMultiplicityBin, // to be improved: dMult => sum of weights ?
-                                                       fIntFlowCorrelationsEBE->GetBinContent(ci1)*
-                                                       fIntFlowCorrelationsEBE->GetBinContent(ci2),
-                                                       fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci1)*
-                                                       fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci2));
+    if(fFillProfilesVsMUsingWeights) 
+    {
+     fIntFlowProductOfCorrelationsVsMPro[counter]->Fill(dMultiplicityBin, // to be improved: dMult => sum of weights ?
+                                                        fIntFlowCorrelationsEBE->GetBinContent(ci1)*
+                                                        fIntFlowCorrelationsEBE->GetBinContent(ci2),
+                                                        fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci1)*
+                                                        fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci2));
+    } else
+      {
+       fIntFlowProductOfCorrelationsVsMPro[counter]->Fill(dMultiplicityBin, // to be improved: dMult => sum of weights ?
+                                                          fIntFlowCorrelationsEBE->GetBinContent(ci1)*
+                                                          fIntFlowCorrelationsEBE->GetBinContent(ci2));
+      }
    } // end of if(fCalculateCumulantsVsM)
    counter++;                                                                                                                        
   }
@@ -13191,7 +13292,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCovariancesIntFlow()
   {
    for(Int_t c2=c1+1;c2<4;c2++)
    {
-    productOfCorrelationsVsM[c1][c2] = fIntFlowProductOfCorrelationsVsMPro[productOfCorrelationsLabelVsM-1]->GetBinContent(b);
+    productOfCorrelationsVsM[c1][c2] = fIntFlowProductOfCorrelationsVsMPro[productOfCorrelationsLabelVsM-1]->GetBinContent(b); 
     if(TMath::Abs(fIntFlowSumOfEventWeightsVsM[c1][0]->GetBinContent(b)) > 1.e-44 && TMath::Abs(fIntFlowSumOfEventWeightsVsM[c2][0]->GetBinContent(b)) > 1.e-44)
     {
      denominatorVsM[c1][c2] = 1.-(fIntFlowSumOfProductOfEventWeightsVsM[sumOfProductOfEventWeightsLabel1VsM-1]->GetBinContent(b))
@@ -14194,33 +14295,123 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
  
  // Versus multiplicity: 
  if(!fCalculateCumulantsVsM){return;}
- Int_t nBins = fIntFlowCorrelationsVsMPro[0]->GetNbinsX(); // to be improved (hardwired 0) 
+ Int_t nBins = fIntFlowCorrelationsVsMPro[0]->GetNbinsX(); // tbi (hardwired 0) 
  Double_t value[4] = {0.}; // QCs vs M
  Double_t error[4] = {0.}; // error of QCs vs M
  Double_t dSum1[4] = {0.}; // sum value_i/(error_i)^2
  Double_t dSum2[4] = {0.}; // sum 1/(error_i)^2
+ two = 0.; // TBI can be done safer, lines below included 
+ twoError = 0.;
+ four = 0.;
+ fourError = 0.;
+ six = 0.;
+ sixError = 0.;
+ eight = 0.;
+ eightError = 0.;
+ wCov24 = 0.;
+ wCov26 = 0.; 
+ wCov28 = 0.; 
+ wCov46 = 0.; 
+ wCov48 = 0.; 
+ wCov68 = 0.; 
  for(Int_t b=1;b<=nBins;b++)
  {
   // Correlations:
-  two = fIntFlowCorrelationsVsMHist[0]->GetBinContent(b); // <<2>> 
-  four = fIntFlowCorrelationsVsMHist[1]->GetBinContent(b); // <<4>>  
-  six = fIntFlowCorrelationsVsMHist[2]->GetBinContent(b); // <<6>> 
-  eight = fIntFlowCorrelationsVsMHist[3]->GetBinContent(b); // <<8>>  
+  if(!fUse2DHistograms)
+  {
+   if(!fUseQvectorTerms)
+   {
+
+    cout<<"TProfile"<<endl;
+
+    two = fIntFlowCorrelationsVsMHist[0]->GetBinContent(b); // <<2>>  
+    four = fIntFlowCorrelationsVsMHist[1]->GetBinContent(b); // <<4>>  
+    six = fIntFlowCorrelationsVsMHist[2]->GetBinContent(b); // <<6>> 
+    eight = fIntFlowCorrelationsVsMHist[3]->GetBinContent(b); // <<8>>  
+   } // end of if(!fUseQvectorTerms) 
+  } else
+    {
+     // TH2D:
+
+     cout<<"TH2D"<<endl;
+
+     two = fCorrelation2468VsMult[0]->ProjectionY("2",b,b)->GetMean(); // <<2>>  
+     four = fCorrelation2468VsMult[1]->ProjectionY("4",b,b)->GetMean(); // <<4>>
+     six = fCorrelation2468VsMult[2]->ProjectionY("6",b,b)->GetMean(); // <<6>>
+     eight = fCorrelation2468VsMult[3]->ProjectionY("8",b,b)->GetMean(); // <<8>>
+    } 
+  if(fUseQvectorTerms)
+  {
+   Double_t dM = fIntFlowCorrelationsVsMPro[0]->GetBinLowEdge(b);
+   if(dM>3.) // TBI re-think this if statement
+   {
+
+    cout<<"Q-vector terms"<<endl;
+
+    two = (fQvectorTermsVsMult[0]->ProjectionY("qvt0a",b,b)->GetMean()-1.)/(dM-1.);    
+    Double_t dTerm1 = (dM*(2.*dM-1.))*fQvectorTermsVsMult[2]->ProjectionY("qvt2",b,b)->GetMean();
+    Double_t dTerm2 = dM*fQvectorTermsVsMult[1]->ProjectionY("qvt1",b,b)->GetMean();
+    Double_t dTerm3 = -2.*pow(dM,1.5)*fQvectorTermsVsMult[3]->ProjectionY("qvt3",b,b)->GetMean();
+    Double_t dTerm4 = -4.*(dM-2.)*dM*fQvectorTermsVsMult[0]->ProjectionY("qvt0b",b,b)->GetMean();
+    Double_t dTerm5 = 2.*dM*(dM-3.); 
+    four = (dTerm1+dTerm2+dTerm3+dTerm4+dTerm5)/(dM*(dM-1.)*(dM-2.)*(dM-3.));
+   } // end of if(dM>3.) // TBI rethink this if statement
+  } // end of else if(fUseQvectorTerms) 
   // Statistical errors of average 2-, 4-, 6- and 8-particle azimuthal correlations:
-  twoError = fIntFlowCorrelationsVsMHist[0]->GetBinError(b); // statistical error of <2>  
-  fourError = fIntFlowCorrelationsVsMHist[1]->GetBinError(b); // statistical error of <4>   
-  sixError = fIntFlowCorrelationsVsMHist[2]->GetBinError(b); // statistical error of <6> 
-  eightError = fIntFlowCorrelationsVsMHist[3]->GetBinError(b); // statistical error of <8> 
+  if(!fUse2DHistograms)
+  {
+   if(!fUseQvectorTerms)
+   {
+    twoError = fIntFlowCorrelationsVsMHist[0]->GetBinError(b); // <2> error  
+    fourError = fIntFlowCorrelationsVsMHist[1]->GetBinError(b); // <4> error    
+    sixError = fIntFlowCorrelationsVsMHist[2]->GetBinError(b); // <6> error  
+    eightError = fIntFlowCorrelationsVsMHist[3]->GetBinError(b); // <8> error  
+   }
+  } else
+    {
+     // TH2D:
+     twoError = fCorrelation2468VsMult[0]->ProjectionY("2",b,b)->GetMeanError(); // <2> error
+     fourError = fCorrelation2468VsMult[1]->ProjectionY("4",b,b)->GetMeanError(); // <4> error 
+     sixError = fCorrelation2468VsMult[2]->ProjectionY("6",b,b)->GetMeanError(); // <6> error 
+     eightError = fCorrelation2468VsMult[3]->ProjectionY("8",b,b)->GetMeanError(); // <8> error 
+    } // end of else
+  if(fUseQvectorTerms)
+  {
+   Double_t dM = fIntFlowCorrelationsVsMPro[0]->GetBinLowEdge(b);
+   if(dM>3.) // TBI re-think this if statement
+   {
+    twoError = (fQvectorTermsVsMult[0]->ProjectionY("qvt0a",b,b)->GetMeanError())/(dM-1.); 
+   }
+  } // end of if(fUseQvectorTerms)
+
   // Covariances (multiplied by prefactor depending on weights - see comments in CalculateCovariancesIntFlow()):
   if(!fForgetAboutCovariances)
   {
-   wCov24 = fIntFlowCovariancesVsM[0]->GetBinContent(b); // Cov(<2>,<4>) * prefactor(w_<2>,w_<4>)
-   wCov26 = fIntFlowCovariancesVsM[1]->GetBinContent(b); // Cov(<2>,<6>) * prefactor(w_<2>,w_<6>)
-   wCov28 = fIntFlowCovariancesVsM[2]->GetBinContent(b); // Cov(<2>,<8>) * prefactor(w_<2>,w_<8>)
-   wCov46 = fIntFlowCovariancesVsM[3]->GetBinContent(b); // Cov(<4>,<6>) * prefactor(w_<4>,w_<6>)
-   wCov48 = fIntFlowCovariancesVsM[4]->GetBinContent(b); // Cov(<4>,<8>) * prefactor(w_<4>,w_<8>)
-   wCov68 = fIntFlowCovariancesVsM[5]->GetBinContent(b); // Cov(<6>,<8>) * prefactor(w_<6>,w_<8>) 
-  }
+   if(!fUse2DHistograms)
+   {
+    if(!fUseQvectorTerms)
+    {
+     wCov24 = fIntFlowCovariancesVsM[0]->GetBinContent(b); // Cov(<2>,<4>) * prefactor(w_<2>,w_<4>)
+     wCov26 = fIntFlowCovariancesVsM[1]->GetBinContent(b); // Cov(<2>,<6>) * prefactor(w_<2>,w_<6>)
+     wCov28 = fIntFlowCovariancesVsM[2]->GetBinContent(b); // Cov(<2>,<8>) * prefactor(w_<2>,w_<8>)
+     wCov46 = fIntFlowCovariancesVsM[3]->GetBinContent(b); // Cov(<4>,<6>) * prefactor(w_<4>,w_<6>)
+     wCov48 = fIntFlowCovariancesVsM[4]->GetBinContent(b); // Cov(<4>,<8>) * prefactor(w_<4>,w_<8>)
+     wCov68 = fIntFlowCovariancesVsM[5]->GetBinContent(b); // Cov(<6>,<8>) * prefactor(w_<6>,w_<8>) 
+    }
+   } else
+     {
+      // TH2D:
+      Int_t nEntries = fCorrelationProduct2468VsMult[0]->ProjectionY("Cov(2,4)",b,b)->GetEntries();
+      if(nEntries>0.)
+      {      
+       wCov24 = (fCorrelationProduct2468VsMult[0]->ProjectionY("Cov(2,4)",b,b)->GetMean()
+              - (fCorrelation2468VsMult[0]->ProjectionY("2cov",b,b)->GetMean()) 
+              * (fCorrelation2468VsMult[1]->ProjectionY("4cov",b,b)->GetMean()))
+              / nEntries; // w*Cov(<2>,<4>)
+      } // end of if(nEntries>0. && dn2pCombinations>0. && dn4pCombinations>0.)
+      // ... TBI add other covariances as well 
+     }
+  } // end of if(!fForgetAboutCovariances)
   // Q-cumulants: 
   qc2 = 0.; // QC{2}
   qc4 = 0.; // QC{4}
@@ -14244,7 +14435,8 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
   qc2Error = twoError;                                             
   // Statistical error of QC{4}:              
   qc4ErrorSquared = 16.*pow(two,2.)*pow(twoError,2)+pow(fourError,2.)
-                  - 8.*two*wCov24;                     
+                  - 8.*two*wCov24;  
+  if(fUseQvectorTerms){qc4ErrorSquared = 0.01*pow(qc4,2.);} // TBI for the time being use bootstrap and ignore this error completely, this method needs an urgent clean-up, as the code is getting fragile here :'(                   
   if(qc4ErrorSquared>0.)
   {
    qc4Error = pow(qc4ErrorSquared,0.5);
@@ -15283,7 +15475,12 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
  fMaxValueOfCorrelation[2] = 0.0000006; // <6>_max  
  fMinValueOfCorrelation[3] = -0.000000006; // <8>_min 
  fMaxValueOfCorrelation[3] = 0.000000003; // <8>_max 
- 
+
+ // c) Initialize default min and max values of correlation products:
+ //    (Remark: The default values bellow were chosen for v2=5% and M=500)
+ fMinValueOfCorrelationProduct[0] = -0.01; // <2><4>_min 
+ fMaxValueOfCorrelationProduct[0] = 0.04; // <2><4>_max 
+
 } // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
 
 //=======================================================================================================================
@@ -15306,26 +15503,27 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDistributions()
  // a) Book profile to hold all flags for distributions of correlations;
  // b) Book all histograms to hold distributions of correlations.
  
- TString correlationIndex[4] = {"<2>","<4>","<6>","<8>"}; // to be improved (should I promote this to data members?)
+ TString correlationIndex[4] = {"#LT2#GT","#LT4#GT","#LT6#GT","#LT8#GT"}; // TBI (should I promote this to data members?)
   
  // a) Book profile to hold all flags for distributions of correlations:
  TString distributionsFlagsName = "fDistributionsFlags";
  distributionsFlagsName += fAnalysisLabel->Data();
- fDistributionsFlags = new TProfile(distributionsFlagsName.Data(),"Flags for Distributions of Correlations",9,0,9);
+ fDistributionsFlags = new TProfile(distributionsFlagsName.Data(),"Flags for Distributions of Correlations",10,0,10);
  fDistributionsFlags->SetTickLength(-0.01,"Y");
  fDistributionsFlags->SetMarkerStyle(25);
  fDistributionsFlags->SetLabelSize(0.05);
  fDistributionsFlags->SetLabelOffset(0.02,"Y");
  fDistributionsFlags->SetStats(kFALSE);
  fDistributionsFlags->GetXaxis()->SetBinLabel(1,"Store or not?");
- fDistributionsFlags->GetXaxis()->SetBinLabel(2,"<2>_{min}");
- fDistributionsFlags->GetXaxis()->SetBinLabel(3,"<2>_{max}");
- fDistributionsFlags->GetXaxis()->SetBinLabel(4,"<4>_{min}");
- fDistributionsFlags->GetXaxis()->SetBinLabel(5,"<4>_{max}");
- fDistributionsFlags->GetXaxis()->SetBinLabel(6,"<6>_{min}");
- fDistributionsFlags->GetXaxis()->SetBinLabel(7,"<6>_{max}");
- fDistributionsFlags->GetXaxis()->SetBinLabel(8,"<8>_{min}");
- fDistributionsFlags->GetXaxis()->SetBinLabel(9,"<8>_{max}");
+ fDistributionsFlags->GetXaxis()->SetBinLabel(2,"#LT2#GT_{min}");
+ fDistributionsFlags->GetXaxis()->SetBinLabel(3,"#LT2#GT_{max}");
+ fDistributionsFlags->GetXaxis()->SetBinLabel(4,"#LT4#GT_{min}");
+ fDistributionsFlags->GetXaxis()->SetBinLabel(5,"#LT4#GT_{max}");
+ fDistributionsFlags->GetXaxis()->SetBinLabel(6,"#LT6#GT_{min}");
+ fDistributionsFlags->GetXaxis()->SetBinLabel(7,"#LT6#GT_{max}");
+ fDistributionsFlags->GetXaxis()->SetBinLabel(8,"#LT8#GT_{min}");
+ fDistributionsFlags->GetXaxis()->SetBinLabel(9,"#LT8#GT_{max}");
+ fDistributionsFlags->GetXaxis()->SetBinLabel(10,"fnBinsForCorrelations");
  fDistributionsList->Add(fDistributionsFlags);
  
  // b) Book all histograms to hold distributions of correlations.
@@ -15335,7 +15533,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDistributions()
   distributionsName += fAnalysisLabel->Data();
   for(Int_t di=0;di<4;di++) // distribution index
   {
-   fDistributions[di] = new TH1D(Form("Distribution of %s",correlationIndex[di].Data()),Form("Distribution of %s",correlationIndex[di].Data()),10000,fMinValueOfCorrelation[di],fMaxValueOfCorrelation[di]); 
+   fDistributions[di] = new TH1D(Form("Distribution of %s",correlationIndex[di].Data()),Form("Distribution of %s",correlationIndex[di].Data()),fnBinsForCorrelations,fMinValueOfCorrelation[di],fMaxValueOfCorrelation[di]); 
    fDistributions[di]->SetXTitle(correlationIndex[di].Data());
    fDistributionsList->Add(fDistributions[di]);
   } // end of for(Int_t di=0;di<4;di++) // distribution index
@@ -15379,6 +15577,7 @@ void AliFlowAnalysisWithQCumulants::StoreFlagsForDistributions()
   fDistributionsFlags->Fill(1.5+2.*(Double_t)di,fMinValueOfCorrelation[di]);
   fDistributionsFlags->Fill(2.5+2.*(Double_t)di,fMaxValueOfCorrelation[di]);
  }
+ fDistributionsFlags->Fill(9.5,fnBinsForCorrelations);
      
 } // end of void AliFlowAnalysisWithQCumulants::StoreFlagsForDistributions()
 
@@ -15835,10 +16034,16 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
    fIntFlowSumOfEventWeights[p]->Fill(ci+0.5,pow(fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci+1),p+1)); 
    if(fCalculateCumulantsVsM)
    {
-    fIntFlowSumOfEventWeightsVsM[ci][p]->Fill(dMultiplicityBin,pow(fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci+1),p+1)); // to be improved: dMult => sum of weights?
-   }
-  }
- }
+    if(fFillProfilesVsMUsingWeights)
+    {
+     fIntFlowSumOfEventWeightsVsM[ci][p]->Fill(dMultiplicityBin,pow(fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci+1),p+1)); // to be improved: dMult => sum of weights?
+    } else
+      {
+       fIntFlowSumOfEventWeightsVsM[ci][p]->Fill(dMultiplicityBin); // to be improved: dMult => sum of weights?
+      }
+   } // end of if(fCalculateCumulantsVsM)
+  } // end of for(Int_t ci=0;ci<4;ci++) // correlation index
+ } // end of for(Int_t p=0;p<2;p++) // power-1
   
 } // end of void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
 
@@ -15893,13 +16098,19 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
                                             fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci2));
    if(fCalculateCumulantsVsM)
    {                                                                                    
-    fIntFlowSumOfProductOfEventWeightsVsM[counter]->Fill(dMultiplicityBin, // to be improved: dMult => sum of weights?
-                                                         fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci1)*
-                                                         fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci2));
+    if(fFillProfilesVsMUsingWeights)
+    {
+     fIntFlowSumOfProductOfEventWeightsVsM[counter]->Fill(dMultiplicityBin, // to be improved: dMult => sum of weights?
+                                                          fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci1)*
+                                                          fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci2));
+    } else
+      {
+       fIntFlowSumOfProductOfEventWeightsVsM[counter]->Fill(dMultiplicityBin);
+      }
    } // end of if(fCalculateCumulantsVsM)
    counter++;                                         
-  }
- }
+  } // end of for(Int_t ci2=ci1+1;ci2<=4;ci2++)
+ } // end of for(Int_t ci1=1;ci1<4;ci1++)
 
 } // end of void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
 
@@ -17448,6 +17659,9 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
       fIntFlowFlags->Fill(15.5,2); // 2 = # of Particles of Interest
      } 
  fIntFlowFlags->Fill(16.5,(Int_t)fExactNoRPs); 
+ fIntFlowFlags->Fill(17.5,(Int_t)fUse2DHistograms); 
+ fIntFlowFlags->Fill(18.5,(Int_t)fFillProfilesVsMUsingWeights); 
+ fIntFlowFlags->Fill(19.5,(Int_t)fUseQvectorTerms); 
 
 } // end of void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 
@@ -17501,6 +17715,23 @@ void AliFlowAnalysisWithQCumulants::StoreMixedHarmonicsFlags()
      } 
 
 } // end of void AliFlowAnalysisWithQCumulants::StoreMixedHarmonicsFlags()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::StoreControlHistogramsFlags()
+{
+ // Store all flags for control histograms in profile fControlHistogramsFlags.
+
+ if(!fControlHistogramsFlags)
+ {
+  cout<<"WARNING: fControlHistogramsFlags is NULL in AFAWQC::SCHF() !!!!"<<endl;
+  exit(0);
+ } 
+
+ fControlHistogramsFlags->Fill(0.5,(Int_t)fStoreControlHistograms);
+ fControlHistogramsFlags->Fill(1.5,(Int_t)fUseQvectorTerms);
+
+} // end of void AliFlowAnalysisWithQCumulants::StoreControlHistogramsFlags()
 
 //=======================================================================================================================
 
@@ -19921,6 +20152,99 @@ void AliFlowAnalysisWithQCumulants::GetPointersForMixedHarmonicsHistograms()
  } // end of if(mixedHarmonicsErrorPropagation) 
  
 } // end of void AliFlowAnalysisWithQCumulants::GetPointersForMixedHarmonicsHistograms()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::GetPointersForControlHistograms()
+{
+ // Get pointers to all control histograms.
+   
+ // a) Get pointer to base list for control histograms;
+ // b) Get pointer to TProfile fControlHistogramsFlags holding all flags for control histograms;
+ // c) Get pointers to TH2D *fCorrelation2468VsMult[4], TH2D *fCorrelationProduct2468VsMult[1] and TH2D *fQvectorTermsVsMult[4].
+
+ // a) Get pointer to base list for control histograms:
+ TList *controlHistogramsList = dynamic_cast<TList*>(fHistList->FindObject("Control Histograms"));
+ if(controlHistogramsList) 
+ {
+  this->SetControlHistogramsList(controlHistogramsList);
+ } else
+   {
+    cout<<"WARNING: controlHistogramsList is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+    exit(0);
+   }
+
+ // b) Get pointer to TProfile fControlHistogramsFlags holding all flags for control histograms:
+ TString controlHistogramsFlagsName = "fControlHistogramsFlags";
+ controlHistogramsFlagsName += fAnalysisLabel->Data();
+ TProfile *controlHistogramsFlags = dynamic_cast<TProfile*>
+                                 (controlHistogramsList->FindObject(controlHistogramsFlagsName.Data()));
+ if(controlHistogramsFlags)
+ {
+  this->SetControlHistogramsFlags(controlHistogramsFlags);  
+  fStoreControlHistograms = (Bool_t)controlHistogramsFlags->GetBinContent(1); 
+  fUseQvectorTerms = (Bool_t)controlHistogramsFlags->GetBinContent(2); 
+ } else 
+   {
+    cout<<"WARNING: controlHistogramsFlags is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+    exit(0);
+   }
+  
+ if(!fStoreControlHistograms){return;}
+
+ // c) Get pointers to TH2D *fCorrelation2468VsMult[4], TH2D *fCorrelationProduct2468VsMult[1] and TH2D *fQvectorTermsVsMult[4]:
+ TString sCorrelation[4] = {"#LT2#GT","#LT4#GT","#LT6#GT","#LT8#GT"};
+ TString sCorrelation2468VsMultName = "fCorrelation2468VsMult";
+ sCorrelation2468VsMultName += fAnalysisLabel->Data();
+ for(Int_t ci=0;ci<4;ci++)
+ {
+  TH2D *hCorrelation2468VsMult = dynamic_cast<TH2D*>(controlHistogramsList->FindObject(Form("%s vs M",sCorrelation[ci].Data())));
+  if(hCorrelation2468VsMult) 
+  {
+   this->SetCorrelation2468VsMult(hCorrelation2468VsMult,ci);
+  } else 
+    {
+     cout<<"WARNING: hCorrelation2468VsMult is NULL in AFAWQC::GPFCH() !!!!"<<endl; 
+     cout<<"ci = "<<ci<<endl;
+     exit(0);
+    }                                   
+ } // end of for(Int_t ci=0;ci<4;ci++)
+ TString sCorrelationProduct[1] = {"#LT2#GT#LT4#GT"}; // TBI: add the other ones when needed first time
+ TString sCorrelationProduct2468VsMultName = "fCorrelationProduct2468VsMult";
+ sCorrelationProduct2468VsMultName += fAnalysisLabel->Data();
+ for(Int_t cpi=0;cpi<1;cpi++) // TBI: hardwired 1
+ {
+  TH2D *hCorrelationProduct2468VsMult = dynamic_cast<TH2D*>(controlHistogramsList->FindObject(Form("%s vs M",sCorrelationProduct[cpi].Data())));
+  if(hCorrelationProduct2468VsMult) 
+  {
+   this->SetCorrelationProduct2468VsMult(hCorrelationProduct2468VsMult,cpi);
+  } else 
+    {
+     cout<<"WARNING: hCorrelationProduct2468VsMult is NULL in AFAWQC::GPFCH() !!!!"<<endl; 
+     cout<<"cpi = "<<cpi<<endl;
+     exit(0);
+    }  
+ } // end of for(Int_t cpi=0;cpi<1;cpi++) // TBI: hardwired 1
+
+ if(!fUseQvectorTerms){return;}
+ TString sQvectorTerms[4] = {"#frac{|Q_{n}|^{2}}{M}","#frac{|Q_{2n}|^{2}}{M}","#frac{|Q_{n}|^{4}}{M(2M-1)}","#frac{Re[Q_{2n}Q_{n}^{*}Q_{n}^{*}]}{M^{3/2}}"};
+ TString sQvectorTermsVsMultName = "fQvectorTermsVsMult";
+ sQvectorTermsVsMultName += fAnalysisLabel->Data();
+ for(Int_t qwti=0;qwti<4;qwti++) // TBI: hardwired 4
+ {
+  TH2D *hQvectorTermsVsMult = dynamic_cast<TH2D*>(controlHistogramsList->FindObject(Form("%s vs M",sQvectorTerms[qwti].Data())));
+  if(hQvectorTermsVsMult) 
+  {
+   this->SetQvectorTermsVsMult(hQvectorTermsVsMult,qwti);
+  } else 
+    {
+     cout<<"WARNING: hQvectorTermsVsMult is NULL in AFAWQC::GPFCH() !!!!"<<endl; 
+     cout<<"qwti = "<<qwti<<endl;
+     exit(0);
+    }  
+ } // end of for(Int_t qwti=0;qwti<1;qwti++) // TBI: hardwired 4
+
+} // end of void AliFlowAnalysisWithQCumulants::GetPointersForControlHistograms()
 
 //=======================================================================================================================
 

@@ -66,6 +66,9 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fForgetAboutCovariances(kFALSE),  
  fStorePhiDistributionForOneEvent(kFALSE),
  fExactNoRPs(0),
+ fUse2DHistograms(kFALSE),
+ fFillProfilesVsMUsingWeights(kTRUE),
+ fUseQvectorTerms(kFALSE),
  fnBinsMult(10000),
  fMinMult(0.),  
  fMaxMult(10000.), 
@@ -76,7 +79,8 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fUseTrackWeights(kFALSE),
  fWeightsList(NULL),
  fMultiplicityWeight(NULL),
- fMultiplicityIs(AliFlowCommonConstants::kRP)
+ fMultiplicityIs(AliFlowCommonConstants::kRP),
+ fnBinsForCorrelations(10000)
 {
  // constructor
  AliDebug(2,"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t useParticleWeights)");
@@ -111,7 +115,12 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fMinValueOfCorrelation[2] = -0.0000003; // <6>_min 
  fMaxValueOfCorrelation[2] = 0.0000006; // <6>_max  
  fMinValueOfCorrelation[3] = -0.000000006; // <8>_min 
- fMaxValueOfCorrelation[3] = 0.000000003; // <8>_max 
+ fMaxValueOfCorrelation[3] = 0.000000003; // <8>_max  
+
+ // Initialize default min and max values of correlation products:
+ //    (Remark: The default values bellow were chosen for v2=5% and M=500)
+ fMinValueOfCorrelationProduct[0] = -0.01; // <2><4>_min 
+ fMaxValueOfCorrelationProduct[0] = 0.04; // <2><4>_max 
 
 }
 
@@ -141,6 +150,9 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fForgetAboutCovariances(kFALSE), 
  fStorePhiDistributionForOneEvent(kFALSE), 
  fExactNoRPs(0),
+ fUse2DHistograms(kFALSE),
+ fFillProfilesVsMUsingWeights(kTRUE),
+ fUseQvectorTerms(kFALSE),
  fnBinsMult(0),
  fMinMult(0.),  
  fMaxMult(0.), 
@@ -151,7 +163,8 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fUseTrackWeights(kFALSE),
  fWeightsList(NULL),
  fMultiplicityWeight(NULL),
- fMultiplicityIs(AliFlowCommonConstants::kRP)
+ fMultiplicityIs(AliFlowCommonConstants::kRP),
+ fnBinsForCorrelations(0)
 {
  // Dummy constructor
   AliDebug(2,"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants()");
@@ -172,6 +185,11 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fMaxValueOfCorrelation[2] = 0.0000006; // <6>_max  
  fMinValueOfCorrelation[3] = -0.000000006; // <8>_min 
  fMaxValueOfCorrelation[3] = 0.000000003; // <8>_max 
+
+ // Initialize default min and max values of correlation products:
+ //    (Remark: The default values bellow were chosen for v2=5% and M=500)
+ fMinValueOfCorrelationProduct[0] = -0.01; // <2><4>_min 
+ fMaxValueOfCorrelationProduct[0] = 0.04; // <2><4>_max 
 
 }
 
@@ -231,6 +249,10 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  }
 
  fQC->SetMultiplicityIs(fMultiplicityIs);
+ fQC->SetnBinsForCorrelations(fnBinsForCorrelations); 
+ fQC->SetUse2DHistograms(fUse2DHistograms);
+ fQC->SetFillProfilesVsMUsingWeights(fFillProfilesVsMUsingWeights);
+ fQC->SetUseQvectorTerms(fUseQvectorTerms);
 
  // Store phi distribution for one event to illustrate flow:
  fQC->SetStorePhiDistributionForOneEvent(fStorePhiDistributionForOneEvent);
@@ -245,6 +267,13 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
   fQC->SetMinValueOfCorrelation(ci,fMinValueOfCorrelation[ci]);
   fQC->SetMaxValueOfCorrelation(ci,fMaxValueOfCorrelation[ci]);
  }  
+
+ // Initialize default min and max values of correlation products: 
+ for(Int_t cpi=0;cpi<1;cpi++) // TBI hardwired 1
+ {
+  fQC->SetMinValueOfCorrelationProduct(cpi,fMinValueOfCorrelationProduct[cpi]);
+  fQC->SetMaxValueOfCorrelationProduct(cpi,fMaxValueOfCorrelationProduct[cpi]);
+ } 
 
  fQC->Init();
  
