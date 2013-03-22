@@ -24,6 +24,7 @@
 #include "Riostream.h"
 #include "TMath.h"
 #include "TF1.h"
+#include "TH3.h"
 #include "TRandom3.h"
 #include "AliFlowEventSimpleMakerOnTheFly.h"
 #include "AliFlowEventSimple.h"
@@ -68,7 +69,13 @@ fProbability1(0.),
 fPhiMin2(0.),   
 fPhiMax2(0.),            
 fProbability2(0.),     
-fPi(TMath::Pi())
+fPi(TMath::Pi()),
+fSimulateDetectorEffects(kFALSE),
+fNumberOfInefficientSectors(0),
+fInefficiencyFactorInPhi(1.0),
+fNumberOfDeadSectors(0),
+fEfficiencyDropNearEtaEdges(kFALSE),
+fEfficiencyMatrix(0)
 {
  // Constructor.
   
@@ -127,7 +134,74 @@ void AliFlowEventSimpleMakerOnTheFly::Init()
  fPhiDistribution->SetParName(6,"Hexagonal Flow (v6)");
  fPhiDistribution->SetParameter(6,fV6);
 
+ //==============Efficiency matrix==============//
+ if(fSimulateDetectorEffects) SetupEfficiencyMatrix();
+ //==============Efficiency matrix==============//
+
 } // end of void AliFlowEventSimpleMakerOnTheFly::Init()
+
+//________________________________________________________________________
+void AliFlowEventSimpleMakerOnTheFly::SetupEfficiencyMatrix() {
+  //Setup the efficiency matrix
+  TH1F *hPt = new TH1F("hPt","",200,0.1,20.1);
+  TH1F *hEta = new TH1F("hEta","",20,-0.95,0.95);
+  TH1F *hPhi = new TH1F("hPhi","",72,0.,2.*TMath::Pi());
+  fEfficiencyMatrix = new TH3F("fEfficiencyMatrix","",
+			       hEta->GetNbinsX(),
+			       hEta->GetXaxis()->GetXmin(),
+			       hEta->GetXaxis()->GetXmax(),
+			       hPt->GetNbinsX(),
+			       hPt->GetXaxis()->GetXmin(),
+			       hPt->GetXaxis()->GetXmax(),
+			       hPhi->GetNbinsX(),
+			       hPhi->GetXaxis()->GetXmin(),
+			       hPhi->GetXaxis()->GetXmax());
+
+  //Efficiency in pt
+  Double_t epsilon[20] = {0.3,0.6,0.77,0.79,0.80,0.80,0.80,0.80,0.80,0.80,0.80,0.80,0.80,0.80,0.80,0.80,0.80,0.80,0.80,0.80};
+  for(Int_t i=1;i<=20;i++) {
+    hPt->SetBinContent(i,epsilon[i-1]);
+    hPt->SetBinError(i,0.01);
+  }
+  for(Int_t i=21;i<=200;i++) {
+    hPt->SetBinContent(i,epsilon[19]);
+    hPt->SetBinError(i,0.01);
+  }
+
+  //Efficiency in eta
+  for(Int_t i=1;i<=hEta->GetNbinsX();i++) {
+    hEta->SetBinContent(i,1.0);
+    hEta->SetBinError(i,0.01);
+  }
+  if(fEfficiencyDropNearEtaEdges) {
+    hEta->SetBinContent(1,0.7); hEta->SetBinContent(2,0.8);
+    hEta->SetBinContent(3,0.9);
+    hEta->SetBinContent(18,0.9); hEta->SetBinContent(19,0.8);
+    hEta->SetBinContent(20,0.7);
+  }
+
+  //Efficiency in phi
+  for(Int_t i=1;i<=hPhi->GetNbinsX();i++) {
+    hPhi->SetBinContent(i,1.0);
+    hPhi->SetBinError(i,0.01);
+  }
+  for(Int_t i=1;i<=fNumberOfInefficientSectors;i++)
+    hPhi->SetBinContent(hPhi->FindBin(hPhi->GetRandom()),fInefficiencyFactorInPhi);
+  for(Int_t i=1;i<=fNumberOfDeadSectors;i++)
+    hPhi->SetBinContent(hPhi->FindBin(hPhi->GetRandom()),0.0);
+  
+  //Fill the 3D efficiency map
+  for(Int_t iBinX = 1; iBinX<=fEfficiencyMatrix->GetXaxis()->GetNbins();iBinX++) {
+    //cout<<"==================================="<<endl;
+    for(Int_t iBinY = 1; iBinY<=fEfficiencyMatrix->GetYaxis()->GetNbins();iBinY++) {
+      //cout<<"==================================="<<endl;
+      for(Int_t iBinZ = 1; iBinZ<=fEfficiencyMatrix->GetZaxis()->GetNbins();iBinZ++) {
+	fEfficiencyMatrix->SetBinContent(iBinX,iBinY,iBinZ,hEta->GetBinContent(iBinX)*hPt->GetBinContent(iBinY)*hPhi->GetBinContent(iBinZ));
+	//cout<<"Eta: "<<hEta->GetBinCenter(iBinX)<<" - Pt: "<<hPt->GetBinCenter(iBinY)<<" - Phi: "<<hPhi->GetBinCenter(iBinZ)<<" - "<<hEta->GetBinContent(iBinX)<<" , "<<hPt->GetBinContent(iBinY)<<" , "<<hPhi->GetBinContent(iBinZ)<<" - Efficiency: "<<hEta->GetBinContent(iBinX)*hPt->GetBinContent(iBinY)*hPhi->GetBinContent(iBinZ)<<endl;
+      }
+    }
+  }
+}
 
 //====================================================================================================================
 
@@ -197,6 +271,12 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
   pTrack->SetCharge((gRandom->Integer(2)>0.5 ? 1 : -1));
   // Check uniform acceptance:
   if(!fUniformAcceptance && !AcceptOrNot(pTrack)){continue;}
+  //Detector effects
+  if(fSimulateDetectorEffects) {
+    Double_t randomNumber = gRandom->Rndm();
+    if(randomNumber > fEfficiencyMatrix->GetBinContent(fEfficiencyMatrix->FindBin(pTrack->Eta(),pTrack->Pt(),pTrack->Phi())))
+      continue;
+  }
   // Checking the RP cuts:  	 
   if(cutsRP->PassesCuts(pTrack))
   {

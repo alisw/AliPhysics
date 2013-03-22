@@ -635,7 +635,8 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
   if (sourceRP==sourcePOI)
   {
     //loop over tracks
-    for (Int_t i=0; i<rpCuts->GetNumberOfInputObjects(); i++)
+    Int_t numberOfInputObject = rpCuts->GetNumberOfInputObjects();
+    for (Int_t i=0; i<numberOfInputObject; i++)
     {
       //get input object (particle)
       TObject* particle = rpCuts->GetInputObject(i);
@@ -667,8 +668,9 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
     //here we have two different sources of particles, so we fill
     //them independently
     //RP
-    for (Int_t i=0; i<rpCuts->GetNumberOfInputObjects(); i++)
-    {
+    Int_t numberOfInputObject = rpCuts->GetNumberOfInputObjects();
+    for (Int_t i=0; i<numberOfInputObject; i++)
+      {
       TObject* particle = rpCuts->GetInputObject(i);
       Bool_t rp = rpCuts->IsSelected(particle,i);
       if (!rp) continue;
@@ -679,7 +681,8 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
       fNumberOfTracks++;
     }
     //POI
-    for (Int_t i=0; i<poiCuts->GetNumberOfInputObjects(); i++)
+    numberOfInputObject = poiCuts->GetNumberOfInputObjects();
+    for (Int_t i=0; i<numberOfInputObject; i++)
     {
       TObject* particle = poiCuts->GetInputObject(i);
       Bool_t poi = poiCuts->IsSelected(particle,i);
@@ -692,6 +695,7 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
     }
   }
 }
+
 //-----------------------------------------------------------------------
 void AliFlowEvent::InsertTrack(AliFlowTrack *thisTrack) {
   // adds a flow track at the end of the container
@@ -748,7 +752,8 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
   if (sourceRP==sourcePOI)
   {
     //loop over tracks
-    for (Int_t i=0; i<rpCuts->GetNumberOfInputObjects(); i++)
+    Int_t numberOfInputObject = rpCuts->GetNumberOfInputObjects();
+    for (Int_t i=0; i<numberOfInputObject; i++)
     {
       //get input object (particle)
       TObject* particle = rpCuts->GetInputObject(i);
@@ -783,7 +788,8 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
     //them independently
     AliFlowTrack* pTrack = NULL;
     //RP
-    for (Int_t i=0; i<rpCuts->GetNumberOfInputObjects(); i++)
+    Int_t numberOfInputObject = rpCuts->GetNumberOfInputObjects();
+    for (Int_t i=0; i<numberOfInputObject; i++)
     {
       TObject* particle = rpCuts->GetInputObject(i);
       Bool_t rp = rpCuts->IsSelected(particle,i);
@@ -794,7 +800,8 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
       AddTrack(pTrack);
     }
     //POI
-    for (Int_t i=0; i<poiCuts->GetNumberOfInputObjects(); i++)
+    numberOfInputObject = poiCuts->GetNumberOfInputObjects();
+    for (Int_t i=0; i<numberOfInputObject; i++)
     {
       TObject* particle = poiCuts->GetInputObject(i);
       Bool_t poi = poiCuts->IsSelected(particle,i);

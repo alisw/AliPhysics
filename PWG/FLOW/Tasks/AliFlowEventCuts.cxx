@@ -368,7 +368,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   if(fCutRefMult&&esdevent)
   {
     //reference multiplicity still to be defined
-    Double_t refMult = RefMult(event);
+    Double_t refMult = RefMult(event,0x0);
     if (refMult < fRefMultMin || refMult >= fRefMultMax )
     {
       pass=kFALSE;
@@ -461,7 +461,7 @@ AliFlowEventCuts* AliFlowEventCuts::StandardCuts()
 }
 
 //----------------------------------------------------------------------- 
-Int_t AliFlowEventCuts::RefMult(AliVEvent* event)
+Int_t AliFlowEventCuts::RefMult(AliVEvent* event, AliMCEvent *mcEvent)
 {
   //calculate the reference multiplicity, if all fails return 0
   AliESDVZERO* vzero = NULL;
@@ -501,9 +501,9 @@ Int_t AliFlowEventCuts::RefMult(AliVEvent* event)
   }
 
   Int_t refmult=0;
-  fRefMultCuts->SetEvent(event);
-  for (Int_t i=0; i<fRefMultCuts->GetNumberOfInputObjects(); i++)
-  {
+  fRefMultCuts->SetEvent(event,mcEvent);
+  Int_t numberOfInputObjects = fRefMultCuts->GetNumberOfInputObjects();
+  for (Int_t i=0; i<numberOfInputObjects; i++) {
     if (fRefMultCuts->IsSelected(fRefMultCuts->GetInputObject(i),i))
       refmult++;
   }
