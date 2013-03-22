@@ -371,9 +371,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     if(trecal)
     {
-      TString passTmp = pass;
-      if(pass!="pass1" && pass!="pass2") passTmp = "pass2"; // TEMPORARY FIX FOR LHC11a analysis
-      TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passTmp);
+      TObjArray *trecalpass=(TObjArray*)trecal->FindObject(pass);
 
       if(trecalpass)
       {
