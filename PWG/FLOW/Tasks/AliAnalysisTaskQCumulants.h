@@ -79,6 +79,12 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Double_t GetPhiDistributionForOneEventSettings(Int_t const i) const {return this->fPhiDistributionForOneEventSettings[i];};  
   void SetExactNoRPs(Int_t const enr) {this->fExactNoRPs = enr;};
   Int_t GetExactNoRPs() const {return this->fExactNoRPs;}; 
+  void SetUse2DHistograms(Bool_t const u2dh){this->fUse2DHistograms = u2dh;if(u2dh){this->fStoreControlHistograms = kTRUE;}};
+  Bool_t GetUse2DHistograms() const {return this->fUse2DHistograms;};
+  void SetFillProfilesVsMUsingWeights(Bool_t const fpvmuw){this->fFillProfilesVsMUsingWeights = fpvmuw;};
+  Bool_t GetFillProfilesVsMUsingWeights() const {return this->fFillProfilesVsMUsingWeights;};
+  void SetUseQvectorTerms(Bool_t const uqvt){this->fUseQvectorTerms = uqvt;if(uqvt){this->fStoreControlHistograms = kTRUE;}};
+  Bool_t GetUseQvectorTerms() const {return this->fUseQvectorTerms;};
  
   // Multiparticle correlations vs multiplicity:
   void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
@@ -99,11 +105,19 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   // Event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
   void SetMultiplicityIs(AliFlowCommonConstants::ERefMultSource mi) {this->fMultiplicityIs = mi;};
+  // # of bins for correlation axis in fDistributions[4], fCorrelation2468VsMult[4] and fCorrelationProduct2468VsMult[1]
+  void SetnBinsForCorrelations(Int_t const nb) {this->fnBinsForCorrelations = nb;};
+  Int_t GetnBinsForCorrelations() const {return this->fnBinsForCorrelations;};
   // Boundaries for distributions of correlations:
   void SetMinValueOfCorrelation(Int_t const ci, Double_t const minValue) {this->fMinValueOfCorrelation[ci] = minValue;};
   Double_t GetMinValueOfCorrelation(Int_t ci) const {return this->fMinValueOfCorrelation[ci];};
   void SetMaxValueOfCorrelation(Int_t const ci, Double_t const maxValue) {this->fMaxValueOfCorrelation[ci] = maxValue;};
   Double_t GetMaxValueOfCorrelation(Int_t ci) const {return this->fMaxValueOfCorrelation[ci];};
+  // min and max values of correlation products:
+  void SetMinValueOfCorrelationProduct(Int_t const cpi, Double_t const minValue) {this->fMinValueOfCorrelationProduct[cpi] = minValue;};
+  Double_t GetMinValueOfCorrelationProduct(Int_t cpi) const {return this->fMinValueOfCorrelationProduct[cpi];};
+  void SetMaxValueOfCorrelationProduct(Int_t const cpi, Double_t const maxValue) {this->fMaxValueOfCorrelationProduct[cpi] = maxValue;};
+  Double_t GetMaxValueOfCorrelationProduct(Int_t cpi) const {return this->fMaxValueOfCorrelationProduct[cpi];};
 
  private:
   AliAnalysisTaskQCumulants(const AliAnalysisTaskQCumulants& aatqc);
@@ -132,7 +146,10 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t fForgetAboutCovariances;        // when propagating error forget about the covariances  
   Bool_t fStorePhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
   Double_t fPhiDistributionForOneEventSettings[4]; // [v_min,v_max,refMult_min,refMult_max]
-  Int_t fExactNoRPs; // when shuffled, select only this number of RPs for the analysis        
+  Int_t fExactNoRPs;                     // when shuffled, select only this number of RPs for the analysis 
+  Bool_t fUse2DHistograms;               // use TH2D instead of TProfile to improve numerical stability in reference flow calculation   
+  Bool_t fFillProfilesVsMUsingWeights;   // if the width of multiplicity bin is 1, weights are not needed   
+  Bool_t fUseQvectorTerms; // use TH2D with separate Q-vector terms instead of TProfile to improve numerical stability in reference flow calculation    
   // Multiparticle correlations vs multiplicity:
   Int_t fnBinsMult;                   // number of multiplicity bins for flow analysis versus multiplicity  
   Double_t fMinMult;                  // minimal multiplicity for flow analysis versus multiplicity  
@@ -147,9 +164,12 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   // Event weights:
   TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")  
   AliFlowCommonConstants::ERefMultSource fMultiplicityIs;           // by default "#RPs", other supported options are "RefMultFromESD" = ref. mult. from ESD, and "#POIs"
+  Int_t fnBinsForCorrelations; // # of bins for correlation axis in fDistributions[4], fCorrelation2468VsMult[4] and fCorrelationProduct2468VsMult[1]
   // Boundaries for distributions of correlations:
   Double_t fMinValueOfCorrelation[4]; // min values of <2>, <4>, <6> and <8>
   Double_t fMaxValueOfCorrelation[4]; // max values of <2>, <4>, <6> and <8>
+  Double_t fMinValueOfCorrelationProduct[1]; // min values of <2><4>, <2><6>, <2><8>, <4><6> etc. TBI add the other ones when needed first time
+  Double_t fMaxValueOfCorrelationProduct[1]; // max values of <2><4>, <2><6>, <2><8>, <4><6> etc. TBI add the other ones when needed first time
   
   ClassDef(AliAnalysisTaskQCumulants, 1); 
 };
