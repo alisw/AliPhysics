@@ -36,6 +36,9 @@ public:
 
     virtual void FillHistograms();
 
+    void CalcTrackMatchVsMult(){fCalcTrackMatchVsMult = kTRUE;}
+    void CalcForKaonCorrection(){fCalcForKaonCorrection = kTRUE;}
+
 protected:
 
     virtual bool TrackHitsCalorimeter(TParticle *part, Double_t magField=0.5);
@@ -173,27 +176,20 @@ protected:
     TH2F *fHistMultvsNonRemovedNeutralE; // enter comment here
     TH2F *fHistMultvsRemovedGammaE; // enter comment here
 
-    TH2F *fHistK0EDepositsVsPtForEOver000MeV; // enter comment here
-    TH2F *fHistK0EDepositsVsPtForEOver100MeV; // enter comment here
-    TH2F *fHistK0EDepositsVsPtForEOver150MeV; // enter comment here
-    TH2F *fHistK0EDepositsVsPtForEOver200MeV; // enter comment here
-    TH2F *fHistK0EDepositsVsPtForEOver250MeV; // enter comment here
-    TH2F *fHistK0EDepositsVsPtForEOver300MeV; // enter comment here
-    TH2F *fHistK0EDepositsVsPtForEOver350MeV; // enter comment here
-    TH2F *fHistK0EDepositsVsPtForEOver400MeV; // enter comment here
-    TH2F *fHistK0EDepositsVsPtForEOver450MeV; // enter comment here
-    TH2F *fHistK0EDepositsVsPtForEOver500MeV; // enter comment here
-
-    TH2F *fHistK0EGammaVsPtForEOver000MeV; // enter comment here
-    TH2F *fHistK0EGammaVsPtForEOver100MeV; // enter comment here
-    TH2F *fHistK0EGammaVsPtForEOver150MeV; // enter comment here
-    TH2F *fHistK0EGammaVsPtForEOver200MeV; // enter comment here
-    TH2F *fHistK0EGammaVsPtForEOver250MeV; // enter comment here
-    TH2F *fHistK0EGammaVsPtForEOver300MeV; // enter comment here
-    TH2F *fHistK0EGammaVsPtForEOver350MeV; // enter comment here
-    TH2F *fHistK0EGammaVsPtForEOver400MeV; // enter comment here
-    TH2F *fHistK0EGammaVsPtForEOver450MeV; // enter comment here
-    TH2F *fHistK0EGammaVsPtForEOver500MeV; // enter comment here
+    Bool_t fCalcForKaonCorrection;//turns on and off creation of kaon correction histograms
+    TH3F *fHistK0EDepositsVsPtInAcceptance; // enter comment here
+    TH3F *fHistK0EGammaVsPtInAcceptance; // enter comment here
+    TH3F *fHistK0EDepositsVsPtOutOfAcceptance; // enter comment here
+    TH3F *fHistK0EGammaVsPtOutOfAcceptance; // enter comment here
+    TH1F *fHistSimKaonsInAcceptance;// enter comment here
+    TH1F *fHistSimK0SInAcceptance;// enter comment here
+    TH1F *fHistSimKPlusInAcceptance;// enter comment here
+    TH1F *fHistSimKMinusInAcceptance;// enter comment here
+    TH1F *fHistSimK0LInAcceptance;// enter comment here
+    TH1F *fHistSimKaonsOutOfAcceptance;// enter comment here
+    TH1F *fHistSimKaonsInAcceptanceWithDepositsPrimaries;// enter comment here
+    TH1F *fHistSimKaonsOutOfAcceptanceWithDepositsSecondaries;// enter comment here
+    TH1F *fHistSimKaonsOutOfAcceptanceWithDepositsPrimaries;// enter comment here
 
     Float_t fEtNonRemovedProtons; // enter comment here
     Float_t fEtNonRemovedAntiProtons; // enter comment here
@@ -312,17 +308,24 @@ protected:
 
     Double_t fTotNeutralEtAfterMinEnergyCut; // enter comment here
     
+    Bool_t fCalcTrackMatchVsMult;
     TH1F *fHistGammasFound;
     TH1F *fHistGammasGenerated;
     TH1F *fHistChargedTracksCut;
     TH1F *fHistChargedTracksAccepted;
     TH1F *fHistGammasCut;
     TH1F *fHistGammasAccepted;
+    TH2F *fHistChargedTracksCutMult;
+    TH2F *fHistChargedTracksAcceptedMult;
+    TH2F *fHistGammasCutMult;
+    TH2F *fHistGammasAcceptedMult;
     TH1F *fHistBadTrackMatches;
     TH2F *fHistMatchedTracksEvspTBkgd;
     TH2F *fHistMatchedTracksEvspTSignal;
     TH2F *fHistMatchedTracksEvspTBkgdPeripheral;
     TH2F *fHistMatchedTracksEvspTSignalPeripheral;
+    TH3F *fHistMatchedTracksEvspTBkgdvsMult;
+    TH3F *fHistMatchedTracksEvspTSignalvsMult;
     TH1F *fHistChargedTracksCutPeripheral;
     TH1F *fHistChargedTracksAcceptedPeripheral;
     TH1F *fHistGammasCutPeripheral;
