@@ -48,7 +48,9 @@ AliAnalysisTaskElecHadronCorrel *AddTaskHFEElecHadronCorrlPbPb(Bool_t TrigSelCen
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGHF_hfeCalPbPbeh";
   containerName += ContNameExt;
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ccontainer0",TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data());
+  TString SubcontainerName = "ccontainer0";
+  SubcontainerName += ContNameExt;
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(SubcontainerName,TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data());
 
   mgr->ConnectInput(taskHFEeh,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskHFEeh,1,coutput3);

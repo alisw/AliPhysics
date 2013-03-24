@@ -19,6 +19,7 @@
 class THnSparse;
 class TH2F;
 class TLorentzVector;
+class TGraphErrors;
 
 class AliEMCALTrack;
 class AliMagF;
@@ -60,6 +61,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   double GetMCweightEta(double mcEtapT);
   void FindTriggerClusters();
   double MCEopMeanCorrection(double pTmc, float central);
+  double NsigmaCorrection(double tmpeta, float central);
  private:
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
@@ -177,6 +179,10 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH2D                   *fgeoFake;
  TH2D                   *ftimingEle;
  
+ //<----- correction
+ TGraphErrors           *fnSigEtaCorr[7];
+
+
   AliAnalysisTaskHFECal(const AliAnalysisTaskHFECal&); // not implemented
   AliAnalysisTaskHFECal& operator=(const AliAnalysisTaskHFECal&); // not implemented
   
