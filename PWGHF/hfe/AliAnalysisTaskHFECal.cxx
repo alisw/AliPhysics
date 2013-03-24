@@ -27,6 +27,7 @@
 #include "TLorentzVector.h"
 #include "TString.h"
 #include "TFile.h"
+#include "TGraphErrors.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -185,12 +186,15 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fLabelCheck(0)
   ,fgeoFake(0)
   ,ftimingEle(0) 
+  //,fnSigEtaCorr(NULL)
 {
   //Named constructor
   
   fPID = new AliHFEpid("hfePid");
   fTrackCuts = new AliESDtrackCuts();
   
+  for(int i=0; i<7; i++)fnSigEtaCorr[i] = 0;
+
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -304,12 +308,15 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fLabelCheck(0)
   ,fgeoFake(0)
   ,ftimingEle(0)
+  //,fnSigEtaCorr(NULL)
 {
 	//Default constructor
 	fPID = new AliHFEpid("hfePid");
 
 	fTrackCuts = new AliESDtrackCuts();
 	
+       for(int i=0; i<7; i++)fnSigEtaCorr[i] = 0;
+
 	// Constructor
 	// Define input and output slots here
 	// Input slot #0 works with a TChain
@@ -614,17 +621,17 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 	       if(fabs(mcpid)==11 && mcPho)mcele= 3.; 
                //cout << "check Pho->e: " << mcele << endl; 
 
-               cout << "check PID " << endl;
+               //cout << "check PID " << endl;
                if(fabs(mcpid)!=11)
                  {
-                  cout << "!= 11" << endl;
-                  cout << mcpid << endl;
+                  //cout << "!= 11" << endl;
+                  //cout << mcpid << endl;
                  }
                if(mcele==-1)
                  {
-                  cout << "mcele==-1" << endl;
-                  cout << mcele << endl;
-                  cout << mcpid << endl;
+                  //cout << "mcele==-1" << endl;
+                  //cout << mcele << endl;
+                  //cout << mcpid << endl;
                  }
  
        } // end of mcLabel>-1
@@ -675,6 +682,16 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     dEdx = track->GetTPCsignal();
     fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
 
+    //cout << "nSigma correctoon-----" << endl;
+    //cout << "org = " << fTPCnSigma << endl; 
+    if(!fmcData) // nsigma eta correction
+       {
+        double nSigexpCorr = NsigmaCorrection(eta,cent);
+        fTPCnSigma -= nSigexpCorr;
+       }
+
+    //cout << "correction = " << fTPCnSigma << endl; 
+
         double ncells = -1.0;
         double m20 = -1.0;
         double m02 = -1.0;
@@ -694,13 +711,13 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
 	        double clustE = clust->E();
                 eop = clustE/fabs(mom);
-                 cout << "eop org = "<< eop << endl;
+                 //cout << "eop org = "<< eop << endl;
                 if(mcLabel>-1.0)
                   {
                    double mceopcorr = MCEopMeanCorrection(pt,cent);
                    eop += mceopcorr;
                   }
-                cout << "eop corr = " << eop << endl;
+                //cout << "eop corr = " << eop << endl;
 
                 //double clustT = clust->GetTOF();
                 ncells = clust->GetNCells();
@@ -823,7 +840,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
           //if(m20>0.0 && m20<0.3)fIncpTMCM20hfeCheck->Fill(cent,mcpT);    
           if(m20>0.0 && m20<0.3)
             {
-                cout << "MC label = " << mcLabel << endl;
+                //cout << "MC label = " << mcLabel << endl;
                 fIncpTMCM20hfe->Fill(cent,pt);    
                 fIncpTMCM20hfeCheck->Fill(cent,mcpT);    
                 fIncpTMCM20hfeCheck_weight->Fill(phoval);    
@@ -1252,6 +1269,28 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   ftimingEle = new TH2D("ftimingEle","electron TOF",100,0,20,100,1e-7,1e-6);
   fOutputList->Add(ftimingEle);
+
+  // eta correction
+  // note: parameters 01/31new.TPCnSigmaEtaDep
+  // 70-90 delta_eta = 0.2
+
+  double etaval[12] = {-0.55,-0.45,-0.35,-0.25,-0.15,-0.05,0.05,0.15,0.25,0.35,0.45,0.55};
+  double corr0[12]= {-0.569177,-0.528844,-0.391979,-0.165494,0.0283495,0.156171,0.266353,0.13103,-0.0250842,-0.274089,-0.45481,-0.536291}; // 0-10 (done)
+  double corr1[12]= {-0.404742,-0.278953,-0.218069,0.00139927,0.191412,0.354403,0.524594,0.341778,0.244199,-0.112146,-0.160692,-0.352832}; // 10-20 (done)
+  double corr2[12] = {-0.306007,-0.16821,-0.0248635,0.202233,0.447051,0.497197,0.712251,0.433482,0.337907,0.168426,-0.0693229,-0.0728351}; // 20-30 (done)
+  double corr3[12] = {-0.13884,-0.0503553,0.104403,0.389773,0.50697,0.539048,0.751642,0.655636,0.518563,0.308156,0.0361159,-0.0491439}; // 30-40 (done)
+  double corr4[12] = {-0.0319431,0.0808711,0.208774,0.443217,0.557762,0.61453,0.889519,0.808282,0.620394,0.267092,0.15241,-0.0458664}; // 40-50 (done)
+  double corr5[12] = {-0.130625,0.0189124,0.190344,0.467431,0.546353,0.672251,0.731541,0.802101,0.437108,0.294081,0.193682,0.159074}; // 50-70(done)
+  double corr6[12] = {0.0600197,0.0600197,0.358366,0.358366,0.973734,0.973734,0.759812,0.759812,0.667861,0.667861,0.415635,0.415635}; // 70-90(done)
+ 
+  fnSigEtaCorr[0] = new TGraphErrors(12,etaval,corr0); // 0-10
+  fnSigEtaCorr[1] = new TGraphErrors(12,etaval,corr1); // 10-20
+  fnSigEtaCorr[2] = new TGraphErrors(12,etaval,corr2); // 20-30
+  fnSigEtaCorr[3] = new TGraphErrors(12,etaval,corr3); // 30-40 
+  fnSigEtaCorr[4] = new TGraphErrors(12,etaval,corr4); // 40-50
+  fnSigEtaCorr[5] = new TGraphErrors(12,etaval,corr5); // 50-70
+  fnSigEtaCorr[6] = new TGraphErrors(12,etaval,corr6); // 70-90
+
 
   PostData(1,fOutputList);
 }
@@ -1743,7 +1782,7 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
   } // clusters
 }
 
-
+// <-------- only MC correction
 double AliAnalysisTaskHFECal::MCEopMeanCorrection(double pTmc, float central)
 {
   TF1 *fcorr0 = new TF1("fcorr0","[0]*tanh([1]+[2]*x)"); 
@@ -1756,8 +1795,7 @@ double AliAnalysisTaskHFECal::MCEopMeanCorrection(double pTmc, float central)
     fcorr0->SetParameters(1.045,1.288,3.18e-01); //
     fcorr1->SetParameters(9.91e-01,3.466,2.344);
    }
- 
- if(central>10 && central<=20)
+ else if(central>10 && central<=20)
    {
     fcorr0->SetParameters(1.029,8.254e-01,4.07e-01);
     fcorr1->SetParameters(0.975,2.276,1.501e-01);
@@ -1795,6 +1833,49 @@ double AliAnalysisTaskHFECal::MCEopMeanCorrection(double pTmc, float central)
  return shift;
 }
 
+// <-------- only Data correction
+double AliAnalysisTaskHFECal::NsigmaCorrection(double tmpeta, float central)
+{
+ int icent = 0;
 
+ if(central>=0 && central<10)
+   {
+    icent = 0;
+   }
+ else if(central>=10 && central<20)
+  {
+   icent = 1;
+  }
+ else if(central>=20 && central<30)
+  {
+   icent = 2;
+  }
+ else if(central>=30 && central<40)
+  {
+   icent = 3;
+  }
+ else if(central>=40 && central<50)
+  {
+   icent = 4;
+  }
+ else if(central>=50 && central<70)
+  {
+   icent = 5;
+  }
+ else
+  {
+   icent = 6;
+  }
+
+ double shift = fnSigEtaCorr[icent]->Eval(tmpeta);
+ 
+ //cout << "eta correction"<< endl;
+ //cout << "cent = "<< central<< endl;
+ //cout << "icent = "<< icent << endl;
+ //cout << "shift = "<< shift << endl;
+
+ return shift;
+
+}
 
 
