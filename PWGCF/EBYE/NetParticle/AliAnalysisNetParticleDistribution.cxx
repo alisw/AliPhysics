@@ -251,9 +251,9 @@ Int_t AliAnalysisNetParticleDistribution::Process() {
   else if (fAOD) 
     ProcessAODTracks();
     
-  // -- Fill MC truth particles (missing for AOD XXX)
+  // -- Fill MC truth particles (missing for AOD MW - However AliVParticle already used)
   if (fIsMC)
-    ProcessStackParticles();
+    ProcessParticles();
 
   return 0;
 }
@@ -446,13 +446,14 @@ Int_t AliAnalysisNetParticleDistribution::ProcessAODTracks() {
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisNetParticleDistribution::ProcessStackParticles() {
+Int_t AliAnalysisNetParticleDistribution::ProcessParticles() {
   // -- Process primary particles from the stack and fill histograms
 
   Int_t pdgCode    = AliPID::ParticleCode(fHelper->GetParticleSpecies());
   
   for (Int_t idxMC = 0; idxMC < fStack->GetNprimary(); ++idxMC) {
-    TParticle* particle = fStack->Particle(idxMC);
+    AliVParticle* particle = (fESD) ? fMCEvent->GetTrack(idxMC) : NULL;
+
     if (!particle) 
       continue;
 
@@ -461,7 +462,7 @@ Int_t AliAnalysisNetParticleDistribution::ProcessStackParticles() {
       continue;
     
     // -- Check if particle / anti-particle
-    if (fHelper->GetUsePID() && TMath::Abs(particle->GetPdgCode()) != pdgCode)
+    if (fHelper->GetUsePID() && TMath::Abs(particle->PdgCode()) != pdgCode)
       continue;
     
     // -- Check rapidity window -- for identfied particles
@@ -478,8 +479,7 @@ Int_t AliAnalysisNetParticleDistribution::ProcessStackParticles() {
     //  idxPart = 0 -> anti particle
     //  idxPart = 1 -> particle
 
-    Int_t idxPart = (particle->GetPdgCode() < 0) ? 0 : 1;
-
+    Int_t idxPart = (particle->PdgCode() < 0) ? 0 : 1;
 
     // -- MCrapidity for identfied particles
     //    MCeta for charged particles
