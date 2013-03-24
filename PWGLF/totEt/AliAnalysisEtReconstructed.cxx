@@ -23,6 +23,7 @@
 #include "TList.h"
 #include "AliESDpid.h"
 #include <iostream>
+#include "TH3F.h"
 #include "TH2F.h"
 #include "TH2I.h"
 #include "TH1I.h"
@@ -59,6 +60,7 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fHistChargedEnergyRemoved(0)
 	,fHistNeutralEnergyRemoved(0)
 	,fHistGammaEnergyAdded(0)
+	,fHistMatchedTracksEvspTvsMult(0)
 {
 
 }
@@ -79,7 +81,7 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fHistChargedEnergyRemoved;
     delete fHistNeutralEnergyRemoved;
     delete fHistGammaEnergyAdded;
-
+    delete fHistMatchedTracksEvspTvsMult;
 }
 
 Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
@@ -111,6 +113,9 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         fCentClass = fCentrality->GetCentralityClass10("V0M");
     }
 
+    TRefArray *caloClusters = fSelector->GetClusters();
+    Float_t fClusterMult = caloClusters->GetEntries();
+
     for (Int_t iCluster = 0; iCluster < event->GetNumberOfCaloClusters(); iCluster++)
     {
         AliESDCaloCluster* cluster = event->GetCaloCluster(iCluster);
@@ -132,13 +137,17 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
         cluster->GetPosition(pos);
         TVector3 cp(pos);
-	
-        Int_t trackMatchedIndex = cluster->GetTrackMatchedIndex();
 
-        Bool_t matched = false;
+        Bool_t matched = kTRUE;//default to no track matched
+	Int_t trackMatchedIndex = cluster->GetTrackMatchedIndex();//find the index of the matched track
+	matched = fSelector->PassTrackMatchingCut(*cluster);
+	if(!matched){
+	  if(trackMatchedIndex < 0) matched=kTRUE;
+	  AliESDtrack *track = event->GetTrack(trackMatchedIndex);
+	  //if this is a good track, accept track will return true.  The track matched is good, so not track matched is false
+	  matched = !(fEsdtrackCutsTPC->AcceptTrack(track));
+	}
 
-	
-	matched = !fSelector->PassTrackMatchingCut(*cluster);
 
         if (matched)
         {
@@ -150,6 +159,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                     AliError("Error: track does not exist");
                 }
                 else {
+		  fHistMatchedTracksEvspTvsMult->Fill(track->P(),cluster->E(),fClusterMult);
                     const Double_t *pidWeights = track->PID();
 
                     Double_t maxpidweight = 0;
@@ -333,6 +343,7 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fHistChargedEnergyRemoved);
     list->Add(fHistNeutralEnergyRemoved);
     list->Add(fHistGammaEnergyAdded);
+    list->Add(fHistMatchedTracksEvspTvsMult);
 }
 
 void AliAnalysisEtReconstructed::CreateHistograms()
@@ -405,5 +416,6 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     histname = "fHistGammaEnergyAdded" + fHistogramNameSuffix;
     fHistGammaEnergyAdded = new TH2D(histname.Data(), histname.Data(), 1000, .0, 30, 100, -0.5 , 99.5);
 
+      fHistMatchedTracksEvspTvsMult = new TH3F("fHistMatchedTracksEvspTvsMult", "fHistMatchedTracksEvspTvsMult",100, 0, 3,100,0,3,10,0,100);
 
 }
