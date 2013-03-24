@@ -10,6 +10,7 @@
 
 #include "AliAnalysisEt.h"
 class TH2F;
+class TH3F;
 class TH2D;
 class TH2I;
 class AliVParticle;
@@ -68,7 +69,8 @@ protected:
     TH2D *fHistChargedEnergyRemoved; // Charged energy removed
     TH2D *fHistNeutralEnergyRemoved; // Neutral energy removed
     TH2D *fHistGammaEnergyAdded; // gamma energy added
-    
+
+    TH3F *fHistMatchedTracksEvspTvsMult;    
 
 private:
 
