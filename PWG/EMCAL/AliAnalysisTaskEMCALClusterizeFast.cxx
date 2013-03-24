@@ -316,6 +316,7 @@ void AliAnalysisTaskEMCALClusterizeFast::Clusterize()
   }
 
   fClusterizer->Digits2Clusters("");
+ 
   if (fSubBackground) {
     if (fCalibData) {
       fClusterizer->SetInputCalibrated(kFALSE);   
@@ -345,13 +346,27 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 	Int_t cellMCLabel=-1;
 	if (fCaloCells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
 	  break;
-
-	if ((fInputCellType == kFEEDataMCOnly && cellMCLabel <= 0) ||
-	    (fInputCellType == kFEEDataExcludeMC && cellMCLabel > 0))
-	  continue;
+	
+	if (fInputCellType == kFEEDataMCOnly) {
+	  if (cellMCLabel <= 0)
+	    continue;
+	  else {
+	    cellAmplitude *= cellEFrac;
+	    cellEFrac = 1;
+	  }
+	}
+	else if (fInputCellType == kFEEDataExcludeMC) {
+	  if (cellMCLabel > 0) 
+	    continue;
+	  else 
+	    cellAmplitude *= 1 - cellEFrac;
+	}
 
 	if (cellMCLabel > 0 && cellEFrac < 1e-6) cellEFrac = 1;
-    
+
+	if (cellAmplitude < 1e-6 || cellNumber < 0)
+	  continue;
+	
 	AliEMCALDigit *digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(cellMCLabel, cellMCLabel, cellNumber,
 									(Float_t)cellAmplitude, (Float_t)cellTime,
 									AliEMCALDigit::kHG,idigit, 0, 0, cellEFrac*cellAmplitude);
@@ -362,11 +377,11 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 	  fClusterizer->Calibrate(energy,time,cellNumber);
 	  digit->SetAmplitude(energy);
 	  avgE += energy;
-	} 
+	}
 	idigit++;
       }
-      
-      fDigitsArr->Sort();
+
+      //fDigitsArr->Sort();
 
       if (fSubBackground) {
 	avgE /= fGeom->GetNumberOfSuperModules()*48*24;
@@ -631,7 +646,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
       AliError(Form("Cannot get tracks named %s", fTrackName.Data()));
     }
   }
-
+  
   const Int_t Ncls = fClusterArr->GetEntries();
   AliDebug(1, Form("total no of clusters %d", Ncls)); 
   for(Int_t i=0, nout=clus->GetEntries(); i < Ncls; ++i) {
@@ -718,7 +733,6 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
 void AliAnalysisTaskEMCALClusterizeFast::UpdateCells()
 {
   // Update cells in case re-calibration was done.
-
   if (!fCalibData&&!fSubBackground)
     return;
 
@@ -875,7 +889,7 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   fClusterArr = const_cast<TObjArray *>(fClusterizer->GetRecPoints());
 
   // Get the emcal cells
-  if (fInputCellType == kFEEData && !fCaloCells) {
+  if ((fInputCellType == kFEEData ||  fInputCellType == kFEEDataMCOnly || fInputCellType == kFEEDataExcludeMC) && !fCaloCells) {
     if (fCaloCellsName.IsNull()) {
       fCaloCells = InputEvent()->GetEMCALCells();
     }

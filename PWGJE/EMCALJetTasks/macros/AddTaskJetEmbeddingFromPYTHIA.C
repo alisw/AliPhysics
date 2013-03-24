@@ -63,6 +63,8 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   jetEmb->SetCopyArray(copyArray);
   jetEmb->SetJetMinPt(minJetPt);
   jetEmb->SetNClusters(1);
+  jetEmb->SetMarkMC(0);
+
   if (strcmp(fileTable, "") != 0)
     jetEmb->SetFileTable(GenerateFileTable(fileTable));
 

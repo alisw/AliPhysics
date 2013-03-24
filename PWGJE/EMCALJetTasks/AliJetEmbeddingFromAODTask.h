@@ -47,6 +47,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetJetConstituentMinPt(Double_t pt)               { fJetConstituentMinPt= pt    ; }
   void           SetJetType(Byte_t t)                              { fJetType            = t     ; }
   void           SetJetAlgo(Byte_t t)                              { fJetAlgo            = t     ; }
+  void           SetZVertexCut(Double_t z)                         { fZVertexCut         = z     ; }
 
  protected:
   Bool_t          ExecOnce()            ;// intialize task

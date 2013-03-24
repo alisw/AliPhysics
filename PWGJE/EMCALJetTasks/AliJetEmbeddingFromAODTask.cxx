@@ -94,7 +94,6 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
 {
   // Default constructor.
   SetSuffix("AODEmbedding");
-  SetMarkMC(0);
   fAODfilterBits[0] = -1;
   fAODfilterBits[1] = -1;
   fEtaMin = -1;
@@ -157,7 +156,6 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
 {
   // Standard constructor.
   SetSuffix("AODEmbedding");
-  SetMarkMC(0);
   fAODfilterBits[0] = -1;
   fAODfilterBits[1] = -1;
   fEtaMin = -1;
@@ -594,6 +592,10 @@ void AliJetEmbeddingFromAODTask::Run()
 	  AliError(Form("Could not find cluster %d in branch %s of tree %s!", i, fAODClusName.Data(), fAODTreeName.Data()));
 	  continue;
 	}
+
+	if (!clus->IsEMCAL())
+	  continue;
+
 	TLorentzVector vect;
 	Double_t vert[3] = {0,0,0};
 	clus->GetMomentum(vect,vert);
@@ -602,14 +604,13 @@ void AliJetEmbeddingFromAODTask::Run()
 	    vect.Eta() < fEtaMin || vect.Eta() > fEtaMax ||
 	    vect.Phi() < fPhiMin || vect.Phi() > fPhiMax)
 	  continue;
-
+	
 	Int_t label = 0;
 	if (fIsAODMC) {
 	  label = clus->GetLabel();
 	  if (label <= 0) 
 	    AliWarning(Form("%s: Clus %d with label<=0", GetName(), i));
 	}
-
 	AddCluster(clus);
       }
     }
@@ -653,7 +654,6 @@ void AliJetEmbeddingFromAODTask::Run()
 	totalEnergy += amp;
       }
     }
-
     AliDebug(2,Form("Added cells = %d (energy = %f), total cells = %d", fAddedCells, totalEnergy, totalCells));
   }
 }
