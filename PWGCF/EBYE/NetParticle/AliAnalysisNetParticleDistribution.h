@@ -80,7 +80,7 @@ class AliAnalysisNetParticleDistribution : public TNamed {
   Int_t ProcessAODTracks();
 
   /** Process primary particles from the stack and fill histograms */
-  Int_t ProcessStackParticles();
+  Int_t ProcessParticles();
   
   /*
    * ---------------------------------------------------------------------------------

@@ -15,7 +15,6 @@
 
 #include "THnBase.h"
 #include "THn.h"
-#include "TParticle.h"
 #include "TH1F.h"
 #include "TF1.h"
 
@@ -29,6 +28,7 @@ class AliAODInputHandler;
 class AliAODEvent;
 class AliAODTrack;
 class AliAODMCParticle;
+class AliMCParticle;
 
 class AliAnalysisNetParticleHelper : public TNamed {
 
@@ -123,23 +123,17 @@ class AliAnalysisNetParticleHelper : public TNamed {
    * ---------------------------------------------------------------------------------
    */
   
-  /** Check if charged MC particle is accepted for basic parameters
-      NOT possible for AODs (AliAODMCParticle NOT from TParticle) */
-  Bool_t IsParticleAcceptedBasicCharged(TParticle *particle, Int_t idxMC);
-  Bool_t IsParticleAcceptedBasicCharged(AliAODMCParticle *particle);
+  /** Check if charged MC particle is accepted for basic parameters */
+  Bool_t IsParticleAcceptedBasicCharged(AliVParticle *particle, Int_t idxMC);
 
-  /** Check if neutral MC particle is accepted for basic parameters
-      NOT possible for AODs (AliAODMCParticle NOT from TParticle) */
-  Bool_t IsParticleAcceptedBasicNeutral(TParticle *particle, Int_t idxMC);
-  Bool_t IsParticleAcceptedBasicNeutral(AliAODMCParticle *particle);
+  /** Check if neutral MC particle is accepted for basic parameters */
+  Bool_t IsParticleAcceptedBasicNeutral(AliVParticle *particle, Int_t idxMC);
  
   /** Check if MC particle is accepted for Rapidity */
-  Bool_t IsParticleAcceptedRapidity(TParticle *particle, Double_t &yP);
-  Bool_t IsParticleAcceptedRapidity(AliAODMCParticle *particle, Double_t &yP);
+  Bool_t IsParticleAcceptedRapidity(AliVParticle *particle, Double_t &yP);
 
   /** Check if MC particle is accepted for Phi */
-  Bool_t IsParticleAcceptedPhi(TParticle *particle);
-  Bool_t IsParticleAcceptedPhi(AliAODMCParticle *particle);
+  Bool_t IsParticleAcceptedPhi(AliVParticle *particle);
 
   /** Check if MC particle is findable tracks */
   Bool_t IsParticleFindable(Int_t label);

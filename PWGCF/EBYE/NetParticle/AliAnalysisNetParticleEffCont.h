@@ -86,11 +86,9 @@ class AliAnalysisNetParticleEffCont : public TNamed {
 
   /** Fill efficiency THnSparse */
   void FillMCEffHist();
-  void FillMCEffHistAOD();
 
   /** Check if particle is contamination */
   void CheckContTrack(Int_t label, Float_t sign, Int_t idxTrack);
-  void CheckContTrackAOD(Int_t label, Float_t sign, Int_t idxTrack);
       
   /*
    * ---------------------------------------------------------------------------------

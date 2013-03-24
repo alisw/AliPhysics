@@ -445,29 +445,7 @@ Bool_t AliAnalysisNetParticleHelper::IsEventRejected() {
  */
 
 //________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicCharged(TParticle *particle, Int_t idxMC) {
-  // -- Check if MC particle is accepted for basic parameters
-  
-  if (!particle) 
-    return kFALSE;
-
-  // -- check if PDF code exists
-  if (!particle->GetPDG()) 
-    return kFALSE;
-    
-  // -- check if charged
-  if (particle->GetPDG()->Charge() == 0.0) 
-    return kFALSE;
-      
-  // -- check if physical primary
-  if(!fStack->IsPhysicalPrimary(idxMC)) 
-    return kFALSE;
-        
-  return kTRUE;
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicCharged(AliAODMCParticle *particle) {
+Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicCharged(AliVParticle *particle, Int_t idxMC) {
   // -- Check if MC particle is accepted for basic parameters
   
   if (!particle) 
@@ -477,36 +455,22 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicCharged(AliAODMCPart
   if (particle->Charge() == 0.0) 
     return kFALSE;
   
-  // -- check if physical primary
-  if(!particle->IsPhysicalPrimary()) 
-    return kFALSE;
-        
-  return kTRUE;
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(TParticle *particle, Int_t idxMC) {
-  // -- Check if MC particle is accepted for basic parameters
+  // -- check if physical primary - ESD
+  if (fESD) {
+    if(!fStack->IsPhysicalPrimary(idxMC)) 
+      return kFALSE;
+  }
+  // -- check if physical primary - AOD
+  else {
+    if(!(static_cast<AliAODMCParticle*>(particle))->IsPhysicalPrimary()) 
+      return kFALSE;
+  }
   
-  if (!particle) 
-    return kFALSE;
-
-  // -- check if PDF code exists
-  if (!particle->GetPDG()) 
-    return kFALSE;
-    
-  // -- check if neutral
-  if (particle->GetPDG()->Charge() != 0.0) 
-    return kFALSE;
-      
-  // -- check if physical primary
-  if(!fStack->IsPhysicalPrimary(idxMC)) 
-    return kFALSE;
-        
   return kTRUE;
 }
+
 //________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(AliAODMCParticle *particle) {
+Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(AliVParticle *particle, Int_t idxMC) {
   // -- Check if MC particle is accepted for basic parameters
   
   if (!particle) 
@@ -516,15 +480,22 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(AliAODMCPart
   if (particle->Charge() != 0.0) 
     return kFALSE;
   
-  // -- check if physical primary
-  if(!particle->IsPhysicalPrimary()) 
-    return kFALSE;
-        
+  // -- check if physical primary - ESD
+  if (fESD) {
+    if(!fStack->IsPhysicalPrimary(idxMC)) 
+      return kFALSE;
+  }
+  // -- check if physical primary - AOD
+  else {
+    if(!(static_cast<AliAODMCParticle*>(particle))->IsPhysicalPrimary()) 
+      return kFALSE;
+  }
+  
   return kTRUE;
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(TParticle *particle, Double_t &yP) {
+Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(AliVParticle *particle, Double_t &yP) {
   // -- Check if particle is accepted
   // > in rapidity
   // > if no pid : return kTRUE, yP = eta
@@ -552,50 +523,8 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(TParticle *parti
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(AliAODMCParticle *particle, Double_t &yP) {
-  // -- Check if AOD particle is accepted
-  // > in rapidity
-  // > if no pid : return kTRUE, yP = eta
-  // > return 0 if not accepted
-
-  if (!fUsePID) {
-    yP = particle->Eta();
-    return kTRUE;
-  }
-
-  Double_t mP = AliPID::ParticleMass(fParticleSpecies);
-
-  // -- Calculate rapidities and kinematics
-  Double_t p  = particle->P();
-  Double_t pz = particle->Pz();
-
-  Double_t eP = TMath::Sqrt(p*p + mP*mP);
-  yP          = 0.5 * TMath::Log((eP + pz) / (eP - pz));  
-
-  // -- Check Rapidity window
-  if (TMath::Abs(yP) > fRapidityMax)
-    return kFALSE;
-  
-  return kTRUE;
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedPhi(TParticle *particle) {
+Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedPhi(AliVParticle *particle) {
   // -- Check if particle is accepted
-  // > in phi
-  // > return 0 if not accepted
-  
-  if (particle->Phi() > fPhiMin && particle->Phi() <= fPhiMax)
-    return kTRUE;
-  else if (particle->Phi() < fPhiMin && (particle->Phi() + TMath::TwoPi()) <= fPhiMax)
-    return kTRUE;
-  else
-    return kFALSE;
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedPhi(AliAODMCParticle *particle) {
-  // -- Check if AOD particle is accepted
   // > in phi
   // > return 0 if not accepted
   
