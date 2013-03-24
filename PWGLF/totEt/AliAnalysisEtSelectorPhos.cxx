@@ -229,6 +229,7 @@ Bool_t AliAnalysisEtSelectorPhos::PassTrackMatchingCut(const AliESDCaloCluster& 
   if(trackMatchedIndex < 0) return kTRUE;
   
   AliVParticle *track = fEvent->GetTrack(trackMatchedIndex);
+  if(track->Pt()<0.5) return kTRUE;//Track matches below about 500 MeV are mostly random.  It takes ~460 MeV to reach the EMCal
   Double_t dx = cluster.GetTrackDx();
   Double_t dz = cluster.GetTrackDz();
   Double_t pt = track->Pt();

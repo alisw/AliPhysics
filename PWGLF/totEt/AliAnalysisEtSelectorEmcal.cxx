@@ -84,6 +84,10 @@ Bool_t AliAnalysisEtSelectorEmcal::PassTrackMatchingCut(const AliESDCaloCluster&
   if(trackMatchedIndex < 0){
     return kTRUE;
   }
+  AliVParticle *track = fEvent->GetTrack(trackMatchedIndex);
+  if(track->Pt()<0.5) return kTRUE;//Track matches below about 500 MeV are mostly random.  It takes ~460 MeV to reach the EMCal
+
+  //Float_t recoE = cluster.E();
   //Float_t pos[3];
 
 //     //cluster.GetPosition(pos);
@@ -95,7 +99,6 @@ Bool_t AliAnalysisEtSelectorEmcal::PassTrackMatchingCut(const AliESDCaloCluster&
 //       //distance = CalcTrackClusterDistance(pos, &trackMatchIdx);
 //     }
 
-  //Float_t recoE = cluster->E();
 
     return kFALSE;
     //return distance > fCuts->GetEmcalTrackDistanceCut();
