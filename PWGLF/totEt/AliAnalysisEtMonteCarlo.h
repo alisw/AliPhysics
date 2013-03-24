@@ -38,6 +38,7 @@ public:
 
     void CalcTrackMatchVsMult(){fCalcTrackMatchVsMult = kTRUE;}
     void CalcForKaonCorrection(){fCalcForKaonCorrection = kTRUE;}
+    void IsData(){fIsMC = kFALSE;}
 
 protected:
 
@@ -54,6 +55,7 @@ protected:
 
 
 protected:
+    Bool_t fIsMC;//if we are running over data, we still need this object to exist but we don't want to do anything.
 
     Double_t fImpactParameter; // b(fm), for Hijing; 0 otherwise
     Int_t fNcoll; // Ncoll, for Hijing; 1 otherwise
@@ -332,6 +334,10 @@ protected:
     TH1F *fHistGammasAcceptedPeripheral;
     TH2F *fHistBadTrackMatchesdPhidEta;
     TH2F *fHistGoodTrackMatchesdPhidEta;
+    TH1F *fHistHadronDepositsAll;
+    TH1F *fHistHadronDepositsReco;
+    TH2F *fHistHadronDepositsAllMult;
+    TH2F *fHistHadronDepositsRecoMult;
 
 
 private:

@@ -29,6 +29,7 @@
 #include "AliPHOSGeoUtils.h"
 #include "AliPHOSGeometry.h"
 #include "TFile.h"
+#include "AliESDtrackCuts.h"
 using namespace std;
 
 ClassImp(AliAnalysisEtMonteCarlo);
@@ -36,6 +37,7 @@ ClassImp(AliAnalysisEtMonteCarlo);
 
 // ctor
 AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
+						  ,fIsMC(kTRUE)
     ,fImpactParameter(0)
     ,fNcoll(0)
     ,fNpart(0)
@@ -266,6 +268,10 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistGammasAcceptedPeripheral(0)
 						  ,fHistBadTrackMatchesdPhidEta(0)
 						  ,fHistGoodTrackMatchesdPhidEta(0)
+						  ,fHistHadronDepositsAll(0)
+						  ,fHistHadronDepositsReco(0)
+						  ,fHistHadronDepositsAllMult(0)
+						  ,fHistHadronDepositsRecoMult(0)
 {
 }
 
@@ -389,10 +395,15 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistGammasAcceptedPeripheral;
     delete fHistBadTrackMatchesdPhidEta;
     delete fHistGoodTrackMatchesdPhidEta;
+    delete fHistHadronDepositsAll;
+    delete fHistHadronDepositsReco;
+    delete fHistHadronDepositsAllMult;
+    delete fHistHadronDepositsRecoMult;
 }
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 {   // analyse MC event
+  if(!fIsMC) return 0;
     ResetEventValues();
 
     
@@ -612,6 +623,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 {   // analyse MC and real event info
     //if(!mcEvent || !realEvent){
+  if(!fIsMC) return 0;
     if (!ev || !ev2) {
         AliFatal("ERROR: Event does not exist");
         return 0;
@@ -769,7 +781,16 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
 	Bool_t written = kFALSE;
 
-	Bool_t nottrackmatched = fSelector->PassTrackMatchingCut(*caloCluster);
+	Bool_t nottrackmatched = kTRUE;//default to no track matched
+	nottrackmatched = fSelector->PassTrackMatchingCut(*caloCluster);
+	//by default ALL matched tracks are accepted, whether or not the match is good.  So we check to see if the track is good.
+	if(!nottrackmatched){
+	  Int_t trackMatchedIndex = caloCluster->GetTrackMatchedIndex();
+	  if(trackMatchedIndex < 0) nottrackmatched=kTRUE;
+	  AliESDtrack *track = realEvent->GetTrack(trackMatchedIndex);
+	  //if this is a good track, accept track will return true.  The track matched is good, so not track matched is false
+	  nottrackmatched = !(fEsdtrackCutsTPC->AcceptTrack(track));
+	}
 
 	if(fSecondary){//all particles from secondary interactions 
 	  written = kTRUE;
@@ -795,10 +816,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		fHistChargedTracksCutMult->Fill(fDepositedEt,fClusterMult);
 		if(fClusterMult<25){fHistChargedTracksCutPeripheral->Fill(fDepositedEt);}
 	      }
-	      fHistMatchedTracksEvspTBkgd->Fill(part->Pt(),fReconstructedE);
+	      fHistMatchedTracksEvspTBkgd->Fill(part->P(),fReconstructedE);
 	      if(fCalcTrackMatchVsMult){
 		if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(part->P(),fReconstructedE);}
-		fHistMatchedTracksEvspTBkgdvsMult->Fill(part->Pt(),fReconstructedE,fClusterMult);
+		fHistMatchedTracksEvspTBkgdvsMult->Fill(part->P(),fReconstructedE,fClusterMult);
 	      }
 	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(1);
 	      if(caloCluster->GetLabel()!=trackindex){
@@ -823,6 +844,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  if (fDepositedCharge != 0 && fDepositedCode!=fgEMinusCode && fDepositedCode!=fgEPlusCode){//if the particle hitting the calorimeter is pi/k/p/mu
 	    written = kTRUE;
 	    if(nottrackmatched){//not removed but should be
+	      fHistHadronDepositsAll->Fill(part->Pt());
+	      fHistHadronDepositsAllMult->Fill(part->Pt(),fClusterMult);
 	      fChargedNotRemoved++;
 	      fEnergyChargedNotRemoved += clEt;
 	      fHistRemovedOrNot->Fill(2.0, fCentClass);
@@ -835,6 +858,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    }
 	    else{//removed and should have been
 	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(0);
+	      fHistHadronDepositsReco->Fill(part->Pt());
+	      fHistHadronDepositsRecoMult->Fill(part->Pt(),fClusterMult);
+	      fHistHadronDepositsAll->Fill(part->Pt());
+	      fHistHadronDepositsAllMult->Fill(part->Pt(),fClusterMult);
 	      if(caloCluster->GetLabel()!=trackindex){
 		fHistBadTrackMatches->Fill(part->Pt(),fReconstructedE);
 		fHistBadTrackMatchesdPhidEta->Fill(caloCluster->GetTrackDx(),caloCluster->GetTrackDz());
@@ -855,7 +882,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      fHistMatchedTracksEvspTBkgd->Fill(part->P(),fReconstructedE);
 	      if(fCalcTrackMatchVsMult){
 		if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(part->P(),fReconstructedE);}
-		fHistMatchedTracksEvspTBkgdvsMult->Fill(part->Pt(),fReconstructedE,fClusterMult);
+		fHistMatchedTracksEvspTBkgdvsMult->Fill(part->P(),fReconstructedE,fClusterMult);
 	      }
 	    }
 	  }
@@ -896,7 +923,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      fHistMatchedTracksEvspTSignal->Fill(part->P(),fReconstructedE);
 	      if(fCalcTrackMatchVsMult){
 		if(fClusterMult<25){fHistMatchedTracksEvspTSignalPeripheral->Fill(part->P(),fReconstructedE);}
-		fHistMatchedTracksEvspTSignalvsMult->Fill(part->Pt(),fReconstructedE,fClusterMult);
+		fHistMatchedTracksEvspTSignalvsMult->Fill(part->P(),fReconstructedE,fClusterMult);
 	      }
 	    }
 	  }
@@ -1047,6 +1074,7 @@ void AliAnalysisEtMonteCarlo::Init()
 void AliAnalysisEtMonteCarlo::ResetEventValues()
 {   // reset event values
     AliAnalysisEt::ResetEventValues();
+  if(!fIsMC) return;
 
     fTotEtSecondary = 0;
     fTotEtSecondaryFromEmEtPrimary = 0;
@@ -1158,6 +1186,7 @@ void AliAnalysisEtMonteCarlo::ResetEventValues()
 void AliAnalysisEtMonteCarlo::CreateHistograms()
 {   // histogram related additions
     AliAnalysisEt::CreateHistograms();
+    if(!fIsMC) return;
     if (fEventSummaryTree) {
         fEventSummaryTree->Branch("fImpactParameter",&fImpactParameter,"fImpactParameter/D");
         fEventSummaryTree->Branch("fNcoll",&fNcoll,"fNcoll/I");
@@ -1380,12 +1409,24 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     }
     fHistBadTrackMatchesdPhidEta = new TH2F("fHistBadTrackMatchesdPhidEta", "fHistBadTrackMatchesdPhidEta",20, -0.1, 0.1,20,-.1,0.1);
     fHistGoodTrackMatchesdPhidEta = new TH2F("fHistGoodTrackMatchesdPhidEta", "fHistGoodTrackMatchesdPhidEta",20, -0.1, 0.1,20,-.1,0.1);
+
+    fHistHadronDepositsAll = new TH1F("fHistHadronDepositsAll","All Hadrons which deposited energy in calorimeter",fgNumOfPtBins,fgPtAxis);
+    fHistHadronDepositsReco = new TH1F("fHistHadronDepositsReco","Reconstructed Hadrons which deposited energy in calorimeter",fgNumOfPtBins,fgPtAxis);
+    //,10,0,100
+      Int_t nMult = 20;
+      Float_t nMultCuts[21] = { 0, 5,10,15,20, 25,30,35,40,45, 
+			       50,55,60,65,70, 75,80,85,90,95,
+				100};
+
+      fHistHadronDepositsAllMult = new TH2F("fHistHadronDepositsAllMult","All Hadrons which deposited energy in calorimeter",fgNumOfPtBins,fgPtAxis,nMult,nMultCuts);
+      fHistHadronDepositsRecoMult = new TH2F("fHistHadronDepositsRecoMult","Reconstructed Hadrons which deposited energy in calorimeter",fgNumOfPtBins,fgPtAxis,nMult,nMultCuts);
 }
 
 void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
 {   //fill the output list
     AliAnalysisEt::FillOutputList(list);
 
+  if(!fIsMC) return;
     if(fCuts->GetHistMakeTree())
     {
         list->Add(fPrimaryTree);
@@ -1516,6 +1557,10 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     }
     list->Add(fHistBadTrackMatchesdPhidEta);
     list->Add(fHistGoodTrackMatchesdPhidEta);
+    list->Add(fHistHadronDepositsAll);
+    list->Add(fHistHadronDepositsReco);
+    list->Add(fHistHadronDepositsAllMult);
+    list->Add(fHistHadronDepositsRecoMult);
 
 }
 
@@ -1539,6 +1584,7 @@ bool AliAnalysisEtMonteCarlo::TrackHitsCalorimeter(TParticle* part, Double_t mag
 void AliAnalysisEtMonteCarlo::FillHistograms()
 {   // let base class fill its histograms, and us fill the local ones
     AliAnalysisEt::FillHistograms();
+  if(!fIsMC) return;
     //std::cout << fEtNonRemovedPiPlus << " " << fCentClass << std::endl;
 
     fHistEtNonRemovedProtons->Fill(fEtNonRemovedProtons, fCentClass);
