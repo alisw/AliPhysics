@@ -93,6 +93,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH1                        *fHistTrials;                             //!trials from pyxsec.root
   TProfile                   *fHistXsection;                           //!x section from pyxsec.root
   TH1                        *fHistEvents;                             //!total number of events per pt hard bin
+  TH2                        *fMCEnergy1vsEnergy2;                     //!total MC energy jet 1 vs total energy jet 2
   // Jets 1
   TH2                        *fHistJets1PhiEta;                        //!phi-eta distribution of jets 1
   TH2                        *fHistJets1PtArea;                        //!inclusive jet pt vs area histogram 1

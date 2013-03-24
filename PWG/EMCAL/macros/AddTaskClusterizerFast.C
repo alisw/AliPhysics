@@ -32,7 +32,7 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
   task->SetAttachClusters(kTRUE);
   task->SetCaloClustersName(clusName);
   task->SetCaloCellsName(cellsName);
-  task->SetInputCellType(AliAnalysisTaskEMCALClusterizeFast::kFEEData);
+  task->SetInputCellType(inputCellType);
   task->SetUpdateCells(updateCells);
   task->SetClusterBadChannelCheck(remBC);
   task->SetRejectExoticClusters(remExotic);

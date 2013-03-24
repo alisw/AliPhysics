@@ -183,7 +183,7 @@ void AliJetModelBaseTask::UserExec(Option_t *)
 
   Run();
 
-  if (fCaloCells) {
+  if (fCaloCells && !fCopyArray) {
     delete fCaloCells;
     fCaloCells = tempCaloCells;
   }
@@ -447,12 +447,15 @@ Int_t AliJetModelBaseTask::AddCell(Double_t e, Int_t absId, Double_t time, Int_t
 {
   // Add a cell to the event.
 
-  if (label == 0)
+  if (label <= 0)
     label = fMarkMC;
   else
     label += fMCLabelShift;
 
-  Short_t pos = fOutCaloCells->GetCellPosition(absId);
+  Short_t pos = -1;
+  if (fCaloCells)  
+    pos = fCaloCells->GetCellPosition(absId);
+
   Double_t efrac = 1;
   Bool_t increaseOnSuccess = kFALSE;
 
@@ -468,12 +471,14 @@ Int_t AliJetModelBaseTask::AddCell(Double_t e, Int_t absId, Double_t time, Int_t
     Double_t old_efrac = 0;
     fOutCaloCells->GetCell(pos, cellNumber, old_e, old_time, old_label, old_efrac);
     
-    if (e / (old_e + e) < old_efrac) {
+    efrac = e / (old_e + e);
+
+    if (old_label > 0 && e < old_efrac * old_e) {
       label = old_label;
+      efrac = old_efrac;
       time = old_time;
     }
     
-    efrac = (e + old_e * old_efrac) / (e + old_e);
     e += old_e;
   }
 
@@ -517,7 +522,7 @@ AliVCluster* AliJetModelBaseTask::AddCluster(AliVCluster *oc)
   UInt_t nlabels = oc->GetNLabels();
   Int_t *labels = oc->GetLabels();
 
-  if (nlabels != 0 && labels) {
+  if (nlabels != 0 && labels && labels[0] >= 0) {
     AliESDCaloCluster *esdClus = dynamic_cast<AliESDCaloCluster*>(dc);
     if (esdClus) {
       TArrayI parents(nlabels, labels);
@@ -527,6 +532,18 @@ AliVCluster* AliJetModelBaseTask::AddCluster(AliVCluster *oc)
       AliAODCaloCluster *aodClus = dynamic_cast<AliAODCaloCluster*>(dc);
       if (aodClus) 
 	aodClus->SetLabel(labels, nlabels); 
+    }
+  }
+  else if (fMarkMC != 0) {
+    AliESDCaloCluster *esdClus = dynamic_cast<AliESDCaloCluster*>(dc);
+    if (esdClus) {
+      TArrayI parents(1, &fMarkMC);
+      esdClus->AddLabels(parents); 
+    }
+    else {
+      AliAODCaloCluster *aodClus = dynamic_cast<AliAODCaloCluster*>(dc);
+      if (aodClus) 
+	aodClus->SetLabel(&fMarkMC,1); 
     }
   }
 
@@ -670,6 +687,8 @@ void AliJetModelBaseTask::CopyCells()
   if (!fCaloCells)
     return;
 
+  fAddedCells = 0;
+  fCaloCells->Sort();
   for (Short_t i = 0; i < fCaloCells->GetNumberOfCells(); i++) {
     Int_t mclabel = 0;
     Double_t efrac = 0.;
@@ -683,9 +702,8 @@ void AliJetModelBaseTask::CopyCells()
       mclabel = 0;
 
     fOutCaloCells->SetCell(i, cellNum, amp, time, mclabel, efrac);
+    fAddedCells++;
   }
-
-  fAddedCells = fCaloCells->GetNumberOfCells();
 
   AliDebug(2, Form("%d cells from the current event", fAddedCells));
 }

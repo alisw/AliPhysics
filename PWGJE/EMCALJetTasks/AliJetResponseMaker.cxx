@@ -65,6 +65,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistTrials(0),
   fHistXsection(0),
   fHistEvents(0),
+  fMCEnergy1vsEnergy2(0),
   fHistJets1PhiEta(0),
   fHistJets1PtArea(0),
   fHistJets1CorrPtArea(0),
@@ -169,6 +170,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistTrials(0),
   fHistXsection(0),
   fHistEvents(0),
+  fMCEnergy1vsEnergy2(0),
   fHistJets1PhiEta(0),
   fHistJets1PtArea(0),
   fHistJets1CorrPtArea(0),
@@ -404,6 +406,14 @@ void AliJetResponseMaker::UserCreateOutputObjects()
       fHistXsection->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
       fHistEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
     }
+  }
+
+  if (fIsEmbedded) {
+    fMCEnergy1vsEnergy2 = new TH2F("fMCEnergy1vsEnergy2", "fMCEnergy1vsEnergy2", fNbins, fMinBinPt, fMaxBinPt*4, fNbins, fMinBinPt, fMaxBinPt*4);
+    fMCEnergy1vsEnergy2->GetXaxis()->SetTitle("#Sigmap_{T,1}^{MC}");
+    fMCEnergy1vsEnergy2->GetYaxis()->SetTitle("#Sigmap_{T,2}");
+    fMCEnergy1vsEnergy2->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fMCEnergy1vsEnergy2);
   }
 
   // Jets 1 histograms
@@ -1050,6 +1060,13 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
     }
 
     jet2->ResetMatching();
+
+
+    if (!AcceptJet(jet2))
+      continue;
+
+    if (jet2->Eta() < fJet2MinEta || jet2->Eta() > fJet2MaxEta || jet2->Phi() < fJet2MinPhi || jet2->Phi() > fJet2MaxPhi)
+      continue;
   }
     
   for (Int_t i = 0; i < nJets1; i++) {
@@ -1064,6 +1081,9 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
     jet1->ResetMatching();
 
     if (!AcceptJet(jet1))
+      continue;
+
+    if (jet1->MCPt() < 1)
       continue;
 
     if (order) {
@@ -1092,7 +1112,7 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
 	  continue;
       }
       else {
-	if (jet1->Eta() < fJet2MinEta || jet1->Eta() > fJet2MaxEta || jet1->Phi() < fJet2MinPhi || jet1->Phi() > fJet2MaxPhi)
+	if (jet2->Eta() < fJet2MinEta || jet2->Eta() > fJet2MaxEta || jet2->Phi() < fJet2MinPhi || jet2->Phi() > fJet2MaxPhi)
 	  continue;
       }
 
@@ -1392,6 +1412,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
   Int_t naccJets2 = 0;
   Int_t naccJets2Acceptance = 0;
 
+  Double_t totalPt2 = 0;
+
   for (Int_t i = 0; i < nJets2; i++) {
 
     AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(fJets2->At(indexes[i]));
@@ -1409,6 +1431,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
       
       fHistJets2PtAreaAcceptance->Fill(jet2->Area(), jet2->Pt());
       fHistJets2PhiEtaAcceptance->Fill(jet2->Eta(), jet2->Phi());
+
+      totalPt2 += jet2->Pt();
       
       if (naccJets2Acceptance < fNLeadingJets)
 	fHistLeadingJets2PtAreaAcceptance->Fill(jet2->Area(), jet2->Pt());
@@ -1566,6 +1590,7 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
   const Int_t nJets1 = fJets->GetEntriesFast();
   Int_t naccJets1 = 0;
+  Double_t totalMCPt1 = 0;
 
   for (Int_t i = 0; i < nJets1; i++) {
 
@@ -1597,6 +1622,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     fHistJets1PtArea->Fill(jet1->Area(), jet1->Pt());
     fHistJets1PhiEta->Fill(jet1->Eta(), jet1->Phi());
+
+    totalMCPt1 += jet1->MCPt();
 
     if (naccJets1 < fNLeadingJets)
       fHistLeadingJets1PtArea->Fill(jet1->Area(), jet1->Pt());
@@ -1633,6 +1660,9 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     naccJets1++;
   }
+
+  if (fIsEmbedded) 
+    fMCEnergy1vsEnergy2->Fill(totalMCPt1, totalPt2);
 
   return kTRUE;
 }

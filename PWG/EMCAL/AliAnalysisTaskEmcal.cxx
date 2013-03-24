@@ -247,6 +247,9 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus) const
 
   if (!clus)
     return kFALSE;
+      
+  if (!clus->IsEMCAL())
+    return kFALSE;
 
   if (clus->GetLabel() > 0) {
     if (clus->TestBits(fMCClusterBitMap) != (Int_t)fMCClusterBitMap) {
@@ -260,9 +263,6 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus) const
       return kFALSE;
     }
   }
-      
-  if (!clus->IsEMCAL())
-    return kFALSE;
 
   if (clus->GetTOF() > fClusTimeCutUp || clus->GetTOF() < fClusTimeCutLow)
     return kFALSE;
