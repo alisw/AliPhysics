@@ -78,6 +78,8 @@ public:
   void SetMultiplicityEstimateTracklets(const unsigned short &s);
   void SetMultiplicityEstimateITSPure(const unsigned short &s);
   void SetCentralityV0(const float &c);
+  void SetCentralityZNA(const float &c);
+  void SetCentralityCL1(const float &c);
   void SetCentralityFMD(const float &c);
   void SetCentralitySPD1(const float &c);
   void SetCentralityTrk(const float &c);
@@ -111,6 +113,8 @@ public:
   unsigned short MultiplicityEstimateITSPure() const;
 
   float CentralityV0() const;
+  float CentralityZNA() const;
+  float CentralityCL1() const;
   float CentralityFMD() const;
   float CentralitySPD1() const;
   float CentralityTrk() const;
@@ -125,6 +129,8 @@ private:
   unsigned short fEstimateTracklets;     // Official multiplicity estimate Tracklets
   unsigned short fEstimateITSPure;       // Official multiplicity estimate ITS SA
   float fCentralityV0;                   // Official centrality from V0
+  float fCentralityZNA;                   // Official centrality from ZNA
+  float fCentralityCL1;                   // Official centrality from CL1
   float fCentralityFMD;                  // Official centrality from FMD
   float fCentralitySPD1;                 // Official centrality from SPD layer 1
   float fCentralityTrk;                  // Official centrality from tracks

@@ -33,6 +33,8 @@ AliFemtoEvent::AliFemtoEvent():
   fEstimateTracklets(0),
   fEstimateITSPure(0),
   fCentralityV0(0),
+  fCentralityZNA(0),
+  fCentralityCL1(0),
   fCentralityFMD(0),
   fCentralitySPD1(0),
   fCentralityTrk(0),
@@ -82,6 +84,8 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fEstimateTracklets(0),
   fEstimateITSPure(0),
   fCentralityV0(0),
+  fCentralityZNA(0),
+  fCentralityCL1(0),
   fCentralityFMD(0),
   fCentralitySPD1(0),
   fCentralityTrk(0),
@@ -122,6 +126,8 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fEstimateTracklets = ev.fEstimateTracklets;
   fEstimateITSPure = ev.fEstimateITSPure;
   fCentralityV0 = ev.fCentralityV0; 
+  fCentralityZNA=ev.fCentralityZNA;
+  fCentralityCL1=ev.fCentralityCL1;
   fCentralityFMD = ev.fCentralityFMD;
   fCentralitySPD1 = ev.fCentralitySPD1;
   fCentralityTrk = ev.fCentralityTrk;
@@ -179,6 +185,8 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fEstimateTracklets(0),
   fEstimateITSPure(0),
   fCentralityV0(0),
+  fCentralityZNA(0),
+  fCentralityCL1(0),
   fCentralityFMD(0),
   fCentralitySPD1(0),
   fCentralityTrk(0),
@@ -217,7 +225,9 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fEstimateITSTPC = ev.fEstimateITSTPC;
   fEstimateTracklets = ev.fEstimateTracklets;
   fEstimateITSPure = ev.fEstimateITSPure;
-  fCentralityV0 = ev.fCentralityV0; 
+  fCentralityV0 = ev.fCentralityV0;
+  fCentralityZNA = ev.fCentralityZNA; 
+  fCentralityCL1 = ev.fCentralityCL1; 
   fCentralityFMD = ev.fCentralityFMD;
   fCentralitySPD1 = ev.fCentralitySPD1;
   fCentralityTrk = ev.fCentralityTrk;
@@ -274,7 +284,9 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
   fEstimateITSTPC = aEvent.fEstimateITSTPC;
   fEstimateTracklets = aEvent.fEstimateTracklets;
   fEstimateITSPure = aEvent.fEstimateITSPure;
-  fCentralityV0 = aEvent.fCentralityV0; 
+  fCentralityV0 = aEvent.fCentralityV0;
+  fCentralityZNA = aEvent.fCentralityZNA; 
+  fCentralityCL1 = aEvent.fCentralityCL1; 
   fCentralityFMD = aEvent.fCentralityFMD;
   fCentralitySPD1 = aEvent.fCentralitySPD1;
   fCentralityTrk = aEvent.fCentralityTrk;
@@ -520,6 +532,16 @@ void AliFemtoEvent::SetCentralityV0(const float &c)
   fCentralityV0 = c;
 }
 
+void AliFemtoEvent::SetCentralityZNA(const float &c)
+{
+  fCentralityZNA = c;
+}
+
+void AliFemtoEvent::SetCentralityCL1(const float &c)
+{
+  fCentralityCL1 = c;
+}
+
 void AliFemtoEvent::SetCentralityFMD(const float &c)
 {
   fCentralityFMD = c;
@@ -538,6 +560,16 @@ void AliFemtoEvent::SetCentralityTrk(const float &c)
 float AliFemtoEvent::CentralityV0() const
 {
   return fCentralityV0;
+}
+
+float AliFemtoEvent::CentralityZNA() const
+{
+  return fCentralityZNA;
+}
+
+float AliFemtoEvent::CentralityCL1() const
+{
+  return fCentralityCL1;
 }
 
 float AliFemtoEvent::CentralityFMD() const

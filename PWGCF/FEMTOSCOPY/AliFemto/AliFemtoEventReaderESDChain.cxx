@@ -687,6 +687,8 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   AliCentrality *cent = fEvent->GetCentrality();
   if (cent) {
     hbtEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
+    hbtEvent->SetCentralityZNA(cent->GetCentralityPercentile("ZNA"));
+    hbtEvent->SetCentralityCL1(cent->GetCentralityPercentile("CL1"));
     //    hbtEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
     hbtEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
     //    hbtEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
@@ -721,6 +723,30 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("V0M")));
       if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
 			     10.0*cent->GetCentralityPercentile("V0M"), lrint(10.0*cent->GetCentralityPercentile("V0M")));
+    }
+  }
+  else if (fEstEventMult == kCentralityZNA) {
+    // centrality between 0 (central) and 1 (very peripheral)
+
+    if (cent) {
+      if (cent->GetCentralityPercentile("ZNA") < 0.00001)
+	hbtEvent->SetNormalizedMult(-1);
+      else
+	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("ZNA")));
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+			     10.0*cent->GetCentralityPercentile("ZNA"), lrint(10.0*cent->GetCentralityPercentile("ZNA")));
+    }
+  }
+  else if (fEstEventMult == kCentralityCL1) {
+    // centrality between 0 (central) and 1 (very peripheral)
+
+    if (cent) {
+      if (cent->GetCentralityPercentile("CL1") < 0.00001)
+	hbtEvent->SetNormalizedMult(-1);
+      else
+	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("CL1")));
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+			     10.0*cent->GetCentralityPercentile("CL1"), lrint(10.0*cent->GetCentralityPercentile("CL1")));
     }
   }
 
