@@ -113,7 +113,8 @@ class AliVCluster : public TObject
   virtual Int_t       GetLabelAt(UInt_t) const      {return -1 ;}
   virtual Int_t      *GetLabels() const             {return 0 ; }
   virtual UInt_t      GetNLabels() const            {return 0 ; }
-  
+  virtual void        SetLabel(Int_t *, UInt_t )    { ; }
+
   virtual Int_t       GetNTracksMatched() const     {return 0 ; }
   virtual TObject    *GetTrackMatched(Int_t) const  {return 0 ; }//AODCaloCluster
   virtual Int_t       GetTrackMatchedIndex() const  {return -1; }//ESDCaloCluster
