@@ -612,7 +612,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   }
 
   AliESDEvent *ev = dynamic_cast<AliESDEvent *>(fInputEvent);
-  if(fTRDTrigger)
+  if(ev && fTRDTrigger)
   {
       if(!CheckTRDTrigger(ev)) return;
   }
