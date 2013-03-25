@@ -1,5 +1,5 @@
-AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, bool PbPbcase=kTRUE, int CentLow=0, int CentHigh=1, TString inputFileNameWeight = "alien:///alice/cern.ch/user/d/dgangadh/WeightFile.root", TString inputFileNameMomRes = "alien:///alice/cern.ch/user/d/dgangadh/MomResFile.root", TString inputFileNameFSI = "alien:///alice/cern.ch/user/d/dgangadh/KFile.root") {
- 
+AliChaoticity *AddTaskChaoticity(TString ParListName = "alien:///alice/cern.ch/user/d/dgangadh/ParListLego_def.txt") {
+  
   //===========================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -7,10 +7,66 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
     return NULL;
   }
   
+  Char_t dummy[100];
+  Bool_t lego;
+  Bool_t MCcase;
+  Bool_t PbPbcase;
+  Bool_t GenSignal;
+  Bool_t TabulatePairs;
+  Int_t CentBinLow;
+  Int_t CentBinHigh;
+  Int_t RBinMax;
+  Int_t FixedLambdaBin;
+  Char_t WeightName[500];
+  Char_t MomResName[500];
+  Char_t KName[500];
+  UInt_t FilterBit;
+  Float_t MinPairSep;
+  Float_t NsigmaTPC;
+  Float_t NsigmaTOF;
+  
+  ifstream ParList;
+  ParList.open(ParListName.Data());
+  
+  ParList >> dummy >> lego;
+  ParList >> dummy >> MCcase;
+  ParList >> dummy >> PbPbcase;
+  ParList >> dummy >> GenSignal;
+  ParList >> dummy >> TabulatePairs;
+  ParList >> dummy >> CentBinLow;
+  ParList >> dummy >> CentBinHigh;
+  ParList >> dummy >> RBinMax;
+  ParList >> dummy >> FixedLambdaBin;
+  ParList >> dummy >> WeightName;
+  ParList >> dummy >> MomResName;
+  ParList >> dummy >> KName;
+  ParList >> dummy >> FilterBit;
+  ParList >> dummy >> MinPairSep;
+  ParList >> dummy >> NsigmaTPC;
+  ParList >> dummy >> NsigmaTOF;
+  //
+  ParList.close();
+
+  TString StWeightName(WeightName);
+  TString StMomResName(MomResName);
+  TString StKName(KName);
+
   //____________________________________________//
-  // Create tasks
-  AliChaoticity *ChaoticityTask = new AliChaoticity("ChaoticityTask", MCcase, Tabulatecase, PbPbcase, CentLow, CentHigh, kTRUE);
+  // Create task
+  AliChaoticity *ChaoticityTask = new AliChaoticity("ChaoticityTask");
   if(!ChaoticityTask) return NULL;
+  ChaoticityTask->SetLEGOCase(lego);
+  ChaoticityTask->SetMCdecision(MCcase);
+  ChaoticityTask->SetPbPbCase(PbPbcase);
+  ChaoticityTask->SetGenerateSignal(GenSignal);
+  ChaoticityTask->SetTabulatePairs(TabulatePairs);
+  ChaoticityTask->SetCentBinRange(CentBinLow, CentBinHigh);
+  ChaoticityTask->SetRBinMax(RBinMax);
+  ChaoticityTask->SetFixedLambdaBin(FixedLambdaBin);
+  ChaoticityTask->SetFilterBit(FilterBit);
+  ChaoticityTask->SetPairSeparationCut(MinPairSep);
+  ChaoticityTask->SetNsigmaTPC(NsigmaTPC);
+  ChaoticityTask->SetNsigmaTOF(NsigmaTOF);
   mgr->AddTask(ChaoticityTask);
 
 
@@ -29,16 +85,19 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
   TFile *inputFileFSI = 0;
 
  
-  if(!Tabulatecase){
-    inputFileWeight = TFile::Open(inputFileNameWeight,"OLD");
+  if(!TabulatePairs){
+    inputFileWeight = TFile::Open(StWeightName,"OLD");
     if (!inputFileWeight){
       cout << "Requested file:" << inputFileWeight << " was not opened. ABORT." << endl;
       return NULL;
     }
     ////////////////////////////////////////////////////
     // C2 Weight File
-    const Int_t ktbins = 3;// ChaoticityTask->GetNumKtbins();
-    const Int_t cbins = 10;// ChaoticityTask->GetNumCentbins();
+    const Int_t ktbins_temp = ChaoticityTask->GetNumKtBins();
+    const Int_t cbins_temp = ChaoticityTask->GetNumCentBins(); 
+    const Int_t ktbins = ktbins_temp;
+    const Int_t cbins = cbins_temp;
+
     TH3F *weightHisto[ktbins][cbins];
     for(Int_t i=0; i<ktbins; i++){
       for(Int_t j=0; j<cbins; j++){
@@ -53,11 +112,11 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
     }
     ChaoticityTask->SetWeightArrays( kTRUE, weightHisto );
     ////////////////////////////////////////////////////
-  }// Tabulatecase check
+  }// TabulatePairs check
   
-  if(!MCcase && !Tabulatecase){
+  if(!MCcase && !TabulatePairs){
     
-    inputFileMomRes = TFile::Open(inputFileNameMomRes,"OLD");
+    inputFileMomRes = TFile::Open(StMomResName,"OLD");
     if (!inputFileMomRes){
       cout << "Requested file:" << inputFileMomRes << " was not opened. ABORT." << endl;
       return NULL;
@@ -68,12 +127,12 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
     momResHisto2D = (TH2D*)inputFileMomRes->Get("MomResHisto_pp");
     ChaoticityTask->SetMomResCorrections( kTRUE, momResHisto2D);
     ////////////////////////////////////////////////////
-  }// MCcase and Tabulatecase check
+  }// MCcase and TabulatePairs check
   
 
   ////////////////////////////////////////////////////
   // FSI File
-  inputFileFSI = TFile::Open(inputFileNameFSI,"OLD");
+  inputFileFSI = TFile::Open(StKName,"OLD");
   if (!inputFileFSI){
     cout << "Requested file:" << inputFileFSI << " was not opened. ABORT." << endl;
     return NULL;
