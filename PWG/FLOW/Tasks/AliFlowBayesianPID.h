@@ -119,6 +119,8 @@ class AliFlowBayesianPID : public AliPIDResponse{
 
   Float_t GetDeDx() const {return fDedx;};
 
+  void ForceOldDedx(Bool_t status=kTRUE) {fForceOldDedx=status;};
+
  private: 
   void SetPriors();
 
@@ -154,13 +156,15 @@ class AliFlowBayesianPID : public AliPIDResponse{
 
   Bool_t fIsMC; // switch for MC analysis
 
+  Bool_t fForceOldDedx;    // switch to force to use old 2010 dEdx paramterization (even if PIDResponse is available)
+
   Float_t fDedx; // dE/dx tuned for MC
 
   Bool_t fIsTOFheaderAOD; // check the TOF header in AOD
 
   static TH1D *fgHtofChannelDist; // channel distance from IP
 
-  ClassDef(AliFlowBayesianPID, 9); // example of analysis
+  ClassDef(AliFlowBayesianPID, 10); // example of analysis
 };
 
 #endif

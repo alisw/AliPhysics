@@ -36,7 +36,7 @@ TH1D* AliFlowBayesianPID::fgHtofChannelDist=NULL;
 
 //________________________________________________________________________
 AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid) 
-  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100),fPsi(999),fPsiRes(999),fIsMC(kFALSE),fDedx(0.0),fIsTOFheaderAOD(0)
+  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100),fPsi(999),fPsiRes(999),fIsMC(kFALSE),fForceOldDedx(kFALSE),fDedx(0.0),fIsTOFheaderAOD(0)
 {
   // Constructor
   Bool_t redopriors = kFALSE;
@@ -418,16 +418,16 @@ Float_t AliFlowBayesianPID::GetExpDeDx(const AliVTrack *t,Int_t iS) const{
 
   Float_t dedxExp=0;
 
-  if(PIDResponse){ // if PID task is running use the official TPC parameterization
-    if(iS==0) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kElectron,AliTPCPIDResponse::kdEdxDefault,kTRUE);
-    else if(iS==1) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kMuon,AliTPCPIDResponse::kdEdxDefault,kTRUE);
-    else if(iS==2) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kPion,AliTPCPIDResponse::kdEdxDefault,kTRUE);
-    else if(iS==3) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kKaon,AliTPCPIDResponse::kdEdxDefault,kTRUE);
-    else if(iS==4) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kProton,AliTPCPIDResponse::kdEdxDefault,kTRUE);
-    else if(iS==5) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kDeuteron,AliTPCPIDResponse::kdEdxDefault,kTRUE);
-    else if(iS==6) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kTriton,AliTPCPIDResponse::kdEdxDefault,kTRUE);
-    else if(iS==7) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kHe3,AliTPCPIDResponse::kdEdxDefault,kTRUE);
-    else if(iS==8) PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kAlpha,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+  if(PIDResponse && (!fForceOldDedx)){ // if PID task is running use the official TPC parameterization
+    if(iS==0) dedxExp=PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kElectron,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==1) dedxExp=PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kMuon,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==2) dedxExp=PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kPion,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==3) dedxExp=PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kKaon,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==4) dedxExp=PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kProton,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==5) dedxExp=PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kDeuteron,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==6) dedxExp=PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kTriton,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==7) dedxExp=PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kHe3,AliTPCPIDResponse::kdEdxDefault,kTRUE);
+    else if(iS==8) dedxExp=PIDResponse->GetTPCResponse().GetExpectedSignal(t,AliPID::kAlpha,AliTPCPIDResponse::kdEdxDefault,kTRUE);
 
     return dedxExp;
   }
@@ -490,8 +490,8 @@ Float_t AliFlowBayesianPID::GetExpDeDx(const AliVTrack *t,Float_t mass) const{
 
   Float_t dedxExp=0;
 
-  if(PIDResponse){ // if PID task is running use the official TPC parameterization
-    PIDResponse->GetTPCResponse().GetExpectedSignal(momtpc/mass*0.938272,AliPID::kProton);
+  if(PIDResponse && (!fForceOldDedx)){ // if PID task is running use the official TPC parameterization
+    dedxExp=PIDResponse->GetTPCResponse().GetExpectedSignal(momtpc/mass*0.938272,AliPID::kProton);
     return dedxExp;
   }
 
