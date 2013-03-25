@@ -50,6 +50,7 @@
 #include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliTender.h"
+#include "AliAODMCParticle.h"
 
 ClassImp(AliEMCALTenderSupply)
 
@@ -104,11 +105,14 @@ AliTenderSupply()
 ,fExoticCellFraction(-1)
 ,fExoticCellDiffTime(-1)
 ,fExoticCellMinAmplitude(-1)
-,fSetCellMCLabelFromCluster(kFALSE)
+,fSetCellMCLabelFromCluster(0)
+,fRemapMCLabelForAODs(0)
+
 {
   // Default constructor.
 
-  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t i = 0; i < 12;    i++) fEMCALMatrix[i]      = 0 ;
+  for(Int_t j = 0; j < 12672; j++) fOrgClusterCellId[j] = -1;
 }
 
 //_____________________________________________________
@@ -163,11 +167,14 @@ AliTenderSupply(name,tender)
 ,fExoticCellFraction(-1)
 ,fExoticCellDiffTime(-1)
 ,fExoticCellMinAmplitude(-1)
-,fSetCellMCLabelFromCluster(kFALSE)
+,fSetCellMCLabelFromCluster(0)
+,fRemapMCLabelForAODs(0)
+
 {
   // Named constructor
   
-  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t i = 0; i < 12;    i++) fEMCALMatrix[i]      = 0 ;
+  for(Int_t j = 0; j < 12672; j++) fOrgClusterCellId[j] = -1;
 }
 
 //_____________________________________________________
@@ -222,11 +229,13 @@ AliTenderSupply(name)
 ,fExoticCellFraction(-1)
 ,fExoticCellDiffTime(-1)
 ,fExoticCellMinAmplitude(-1)
-,fSetCellMCLabelFromCluster(kFALSE)
+,fSetCellMCLabelFromCluster(0)
+,fRemapMCLabelForAODs(0)
 {
   // Named constructor.
   
-  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t i = 0; i < 12;    i++) fEMCALMatrix[i]      = 0 ;
+  for(Int_t j = 0; j < 12672; j++) fOrgClusterCellId[j] = -1;
 }
 
 //_____________________________________________________
@@ -442,7 +451,7 @@ void AliEMCALTenderSupply::ProcessEvent()
   // Event loop.
   
   AliVEvent *event = GetEvent();
-  
+
   if (!event) {
     AliError("Event ptr = 0, returning");
     return;
@@ -1145,8 +1154,7 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
         
         Int_t absID = fEMCALGeo->GetAbsCellIdFromCellIndexes(ism, irow, icol); // original calibration factor
         factor *= rundeprecal->GetBinContent(absID) / 10000. ; // correction dependent on T
-        //printf("\t ism %d, icol %d, irow %d,absID %d, corrA %2.3f, corrB %2.3f, corrAB %2.3f\n",ism, icol, irow, absID, 
-        //      GetEMCALChannelRecalibrationFactor(ism,icol,irow) , rundeprecal->GetBinContent(absID) / 10000., factor);
+
         fEMCALRecoUtils->SetEMCALChannelRecalibrationFactor(ism,icol,irow,factor);
       } // columns
     } // rows 
@@ -1435,7 +1443,11 @@ void AliEMCALTenderSupply::FillDigitsArray()
   Int_t cellLabels[12672];
   if(fSetCellMCLabelFromCluster)
   {
-    for (Int_t i = 0; i < 12672; i++) cellLabels[i] = 0;
+    for (Int_t i = 0; i < 12672; i++)
+    {
+      cellLabels       [i] = 0 ;
+      fOrgClusterCellId[i] =-1 ;
+    }
     
     Int_t nClusters = event->GetNumberOfCaloClusters();
     for (Int_t i = 0; i < nClusters; i++)
@@ -1450,11 +1462,13 @@ void AliEMCALTenderSupply::FillDigitsArray()
       UShort_t * index = clus->GetCellsAbsId() ;
       
       for(Int_t icell=0; icell < clus->GetNCells(); icell++ )
-        cellLabels[index[icell]] = label;
-      
+      {
+        cellLabels       [index[icell]] = label;
+        fOrgClusterCellId[index[icell]] = i ; // index of the original cluster
+      }
     }// cluster loop
   }
-  
+
   fDigitsArr->Clear("C");
   AliVCaloCells *cells = event->GetEMCALCells();
   Int_t ncells = cells->GetNumberOfCells();
@@ -1475,7 +1489,8 @@ void AliEMCALTenderSupply::FillDigitsArray()
    if (fEMCALRecoUtils->IsExoticCell(cellNumber,cells,event->GetBunchCrossNumber())) 
       continue;
     
-    if(fSetCellMCLabelFromCluster) mcLabel = cellLabels[cellNumber];
+    if     ( fSetCellMCLabelFromCluster ) mcLabel = cellLabels[cellNumber];
+    else if( fRemapMCLabelForAODs       ) RemapMCLabelForAODs(mcLabel);
     
     if (mcLabel > 0 && efrac < 1e-6) efrac = 1;
     
@@ -1512,7 +1527,11 @@ void AliEMCALTenderSupply::UpdateClusters()
     AliError(" Null pointer to calo clusters array, returning");
     return;
   }
-  
+    
+  // Before destroying the orignal list, assign to the rec points the MC labels
+  // of the original clusters, if requested
+  if( fSetCellMCLabelFromCluster == 2 ) SetClustersMCLabelFromOriginalClusters() ;
+
   Int_t nents = clus->GetEntriesFast();
   for (Int_t i=0; i < nents; ++i) 
   {
@@ -1520,7 +1539,9 @@ void AliEMCALTenderSupply::UpdateClusters()
     if (!c)
       continue;
     if (c->IsEMCAL())
+    {
       delete clus->RemoveAt(i);
+    }
   }
   
   clus->Compress();
@@ -1590,26 +1611,160 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     c->SetCellsAbsId(absIds);
     c->SetCellsAmplitudeFraction(ratios);
 
-    //MC
-    AliESDCaloCluster *esdClus = dynamic_cast<AliESDCaloCluster*>(c);
-    if (esdClus) {
-      Int_t  parentMult = 0;
-      Int_t *parentList = recpoint->GetParents(parentMult);
-      if (parentMult > 0) {
-	TArrayI parents(parentMult, parentList);
-	esdClus->AddLabels(parents); 
-      }
-    }
-    else {
-      AliAODCaloCluster *aodClus = dynamic_cast<AliAODCaloCluster*>(c);
-      if (aodClus) {
-	Int_t  parentMult = 0;
-	Int_t *parentList = recpoint->GetParents(parentMult);
-	aodClus->SetLabel(parentList, parentMult); 
-      }
-    }
+    //MC labels
+    Int_t  parentMult = 0;
+    Int_t *parentList = recpoint->GetParents(parentMult);
+    if (parentMult > 0) c->SetLabel(parentList, parentMult);
+
   }
 }
+
+//___________________________________________________________
+void AliEMCALTenderSupply::RemapMCLabelForAODs(Int_t & label)
+{
+  // MC label for Cells not remapped after ESD filtering, do it here.
+  
+  if(label < 0) return ;
+  
+  AliAODEvent  * evt = dynamic_cast<AliAODEvent*> (GetEvent()) ;
+  if(!evt) return ;
+  
+  TClonesArray * arr = dynamic_cast<TClonesArray*>(evt->FindListObject("mcparticles")) ;
+  if(!arr) return ;
+  
+  if(label < arr->GetEntriesFast())
+  {
+    AliAODMCParticle * particle = dynamic_cast<AliAODMCParticle *>(arr->At(label));
+    if(!particle) return ;
+    
+    if(label == particle->Label()) return ; // label already OK
+  }
+  
+  // loop on the particles list and check if there is one with the same label
+  for(Int_t ind = 0; ind < arr->GetEntriesFast(); ind++ )
+  {
+    AliAODMCParticle * particle = dynamic_cast<AliAODMCParticle *>(arr->At(ind));
+    if(!particle) continue ;
+    
+    if(label == particle->Label())
+    {
+      label = ind;
+      return;
+    }
+  }
+  
+  label = -1;
+  
+}
+
+//_____________________________________________________________________________________________
+void AliEMCALTenderSupply::SetClustersMCLabelFromOriginalClusters()
+{
+  // Get the original clusters that contribute to the new rec point cluster,
+  // assign the labels of such clusters to the new rec point cluster.
+  // Only approximatedly valid  when output are V1 clusters, or input/output clusterizer
+  // are the same handle with care
+  // Copy from same method in AliAnalysisTaskEMCALClusterize, but here modify the recpoint and
+  // not the output calocluster
+  
+  Int_t ncls = fClusterArr->GetEntriesFast();
+  for(Int_t irp=0; irp < ncls; ++irp)
+  {
+    TArrayI clArray(300) ; //Weird if more than a few clusters are in the origin ...
+    clArray.Reset();
+    Int_t nClu = 0;
+    Int_t nLabTotOrg = 0;
+    Float_t emax = -1;
+    Int_t idMax = -1;
+    
+    AliEMCALRecPoint *clus = static_cast<AliEMCALRecPoint*>(fClusterArr->At(irp));
+    
+    //Find the clusters that originally had the cells
+    const Int_t ncells = clus->GetMultiplicity();
+    Int_t *digList     = clus->GetDigitsList();
+    
+    for ( Int_t iLoopCell = 0 ; iLoopCell < ncells ; iLoopCell++ )
+    {
+      AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(digList[iLoopCell]));
+      Int_t idCell = digit->GetId();
+
+      if(idCell>=0)
+      {
+        Int_t idCluster = fOrgClusterCellId[idCell];
+        Bool_t set = kTRUE;
+        for(Int_t icl =0; icl < nClu; icl++)
+        {
+          if(((Int_t)clArray.GetAt(icl))==-1 ) continue;
+          if( idCluster == ((Int_t)clArray.GetAt(icl)) ) set = kFALSE;
+        }
+        if( set && idCluster >= 0)
+        {
+          clArray.SetAt(idCluster,nClu++);
+          nLabTotOrg+=(GetEvent()->GetCaloCluster(idCluster))->GetNLabels();
+                    
+          //Search highest E cluster
+          AliVCluster * clOrg = GetEvent()->GetCaloCluster(idCluster);
+          if(emax < clOrg->E())
+          {
+            emax  = clOrg->E();
+            idMax = idCluster;
+          }
+        }
+      }
+    }// cell loop
+        
+    // Put the first in the list the cluster with highest energy
+    if(idMax != ((Int_t)clArray.GetAt(0))) // Max not at first position
+    {
+      Int_t maxIndex = -1;
+      Int_t firstCluster = ((Int_t)clArray.GetAt(0));
+      for ( Int_t iLoopCluster = 0 ; iLoopCluster < nClu ; iLoopCluster++ )
+      {
+        if(idMax == ((Int_t)clArray.GetAt(iLoopCluster))) maxIndex = iLoopCluster;
+      }
+      
+      if(firstCluster >=0 && idMax >=0)
+      {
+        clArray.SetAt(idMax,0);
+        clArray.SetAt(firstCluster,maxIndex);
+      }
+    }
+    
+    // Get the labels list in the original clusters, assign all to the new cluster
+    TArrayI clMCArray(nLabTotOrg) ;
+    clMCArray.Reset();
+    
+    Int_t nLabTot = 0;
+    for ( Int_t iLoopCluster = 0 ; iLoopCluster < nClu ; iLoopCluster++ )
+    {
+      Int_t idCluster = (Int_t) clArray.GetAt(iLoopCluster);
+      AliVCluster * clOrg = GetEvent()->GetCaloCluster(idCluster);
+      Int_t nLab = clOrg->GetNLabels();
+      
+      for ( Int_t iLab = 0 ; iLab < nLab ; iLab++ )
+      {
+        Int_t lab = clOrg->GetLabelAt(iLab) ;
+        if(lab>=0)
+        {
+          Bool_t set = kTRUE;
+          for(Int_t iLabTot =0; iLabTot < nLabTot; iLabTot++)
+          {
+            if( lab == ((Int_t)clMCArray.GetAt(iLabTot)) ) set = kFALSE;
+          }
+          if( set ) clMCArray.SetAt(lab,nLabTot++);
+        }
+      }
+    }// cluster loop
+    
+    // Set the final list of labels to rec point
+    
+    Int_t *labels = new Int_t[nLabTot];
+    for(Int_t il = 0; il < nLabTot; il++) labels[il] = clMCArray.GetArray()[il];
+    clus->SetParents(nLabTot,labels);
+    
+  } // rec point array
+}
+
 
 //_____________________________________________________
 void AliEMCALTenderSupply::GetPass()

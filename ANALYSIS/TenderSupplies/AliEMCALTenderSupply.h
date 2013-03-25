@@ -155,12 +155,20 @@ public:
   void     SwitchOnTrackMatch()                           { fDoTrackMatch = kTRUE            ;}
   void     SwitchOffTrackMatch()                          { fDoTrackMatch = kFALSE           ;}
 
-  void     SwitchOnUseClusterMCLabelForCell()             { fSetCellMCLabelFromCluster = kTRUE  ;}
-  void     SwitchOffUseClusterMCLabelForCell()            { fSetCellMCLabelFromCluster = kFALSE ;}
-
   void     SetPass(const char* p)                         { fFilepass = p; fGetPassFromFileName = kFALSE; }
   void     UnsetPass()                                    { fFilepass = ""; fGetPassFromFileName = kTRUE; }
-   
+  
+  //MC label methods
+  
+  void     RemapMCLabelForAODs(Int_t &label);
+  void     SwitchOnRemapMCLabelForAODs()                  { fRemapMCLabelForAODs  = kTRUE   ; }
+  void     SwitchOffRemapMCLabelForAODs()                 { fRemapMCLabelForAODs  = kFALSE  ; }
+  
+  void     SetClustersMCLabelFromOriginalClusters() ;  
+  void     SwitchOnUseClusterMCLabelForCell(Int_t opt = 2) { fSetCellMCLabelFromCluster = opt ; }
+  void     SwitchOffUseClusterMCLabelForCell()             { fSetCellMCLabelFromCluster = 0   ; }
+
+  
 private:
 
   AliVEvent* GetEvent();
@@ -232,11 +240,19 @@ private:
   Float_t                fExoticCellDiffTime;     // if time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
   Float_t                fExoticCellMinAmplitude; // check for exotic only if amplitud is larger than this value
 
-  Bool_t                 fSetCellMCLabelFromCluster; // Use cluster MC label as cell label
+  // MC labels
+  Int_t                  fOrgClusterCellId[12672]; // Array ID of cluster to wich the cell belongs in unmodified clusters
+ 
+  Int_t                  fSetCellMCLabelFromCluster; // Use cluster MC label as cell label:
+                                                     // 0 - get the MC label stored in cells
+                                                     // 1 - assign to the cell the MC lable of the cluster
+                                                     // 2 - get the original clusters id, add all the MC labels
+  TClonesArray *         fTempClusterArr      ;      //! Temporal clusters array to recover the MC of original cluster if fSetCellMCLabelFromCluster=2
+  Bool_t                 fRemapMCLabelForAODs ;      // Remap AOD cells MC label
   
-  AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
+  AliEMCALTenderSupply(            const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 14); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 15); // EMCAL tender task
 };
 #endif
