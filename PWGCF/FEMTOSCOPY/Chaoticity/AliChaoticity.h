@@ -36,7 +36,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
  public:
 
   AliChaoticity();
-  AliChaoticity(const Char_t *name, Bool_t MCdecision=kFALSE, Bool_t Tabulatedecision=kFALSE, Bool_t PbPbdecision=kTRUE, Int_t lowCentBin=0, Int_t highCentBin=1.,  Bool_t lego=kTRUE);
+  AliChaoticity(const Char_t *name);
   virtual ~AliChaoticity();
   AliChaoticity(const AliChaoticity &obj); 
   AliChaoticity &operator=(const AliChaoticity &obj);
@@ -52,30 +52,40 @@ class AliChaoticity : public AliAnalysisTaskSE {
     kMultLimitPbPb = 2000,//2000
     kMultLimitpp = 300,
     kMultBinspp = 11,//20 or 11
-    kKbinsT = 3,// Set fKstep as well !!!!
-    kKbinsY = 1,// Set fKstep as well !!!!
     kQbins = 20,
     kQbinsWeights = 40,
-    kEDbins = 1,
-    kRVALUES = 6,// 6 Gaussian radii (3-8fm)
     kNDampValues = 16,
     kDENtypes = 1,// was (kRVALUES)*kNDampValues
-    kCentBins=10,// 0-50%
     kSCLimit2 = 1,// 1, 6
-    kSCLimit3 = 1,// 1, 10
-    kMCfixedRbin = 4,// 4 normally, (Rbin=4 (R=7fm)), 5 for systematic variation
-    kMCfixedLambdabin = 5// 5 normally, (Lambdabin=5 (lambda=0.4)), 8 for systematic variation
- };
+    kSCLimit3 = 1// 1, 10
+  };
 
- 
-  Int_t GetNumKtbins() const {return AliChaoticity::kKbinsT;}
-  Int_t GetNumRValues() const {return AliChaoticity::kRVALUES;}
-  Int_t GetNumCentBins() const {return AliChaoticity::kCentBins;}
-  //void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F ***histos=0x0);
-  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[3][10]=0x0);
-  //void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliChaoticity::kKbinsT][AliChaoticity::kCentBins]=0x0);
+  static const Int_t fKbinsT   = 3;// Set fKstep as well !!!!
+  static const Int_t fKbinsY   = 1;// Set fKstep as well !!!!
+  static const Int_t fEDbins   = 1;
+  static const Int_t fCentBins = 10;// 0-50%
+  static const Int_t fRVALUES  = 8;// 8 Gaussian radii (3-10fm)
+
+
+  Int_t GetNumKtBins() const {return AliChaoticity::fKbinsT;}
+  Int_t GetNumRValues() const {return AliChaoticity::fRVALUES;}
+  Int_t GetNumCentBins() const {return AliChaoticity::fCentBins;}
+  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliChaoticity::fKbinsT][AliChaoticity::fCentBins]=0x0);
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2DGaus[2]=0x0, TH2D *temp2DTherm[6]=0x0, TH3D *temp3Dos[6]=0x0, TH3D *temp3Dss[6]=0x0);
+  //
+  void SetMCdecision(Bool_t mc) {fMCcase = mc;}
+  void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
+  void SetPbPbCase(Bool_t pbpb) {fPbPbcase = pbpb;}
+  void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
+  void SetCentBinRange(Int_t low, Int_t high) {fCentBinLowLimit = low; fCentBinHighLimit = high;}
+  void SetLEGOCase(Bool_t lego) {fLEGO = lego;}
+  void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
+  void SetPairSeparationCut(Float_t pairsep) {fMinSepPair = pairsep;}
+  void SetNsigmaTPC(Float_t nsig) {fSigmaCutTPC = nsig;}
+  void SetNsigmaTOF(Float_t nsig) {fSigmaCutTOF = nsig;}
+  void SetRBinMax(Int_t rbin) {fRBinMax = rbin;}
+  void SetFixedLambdaBin(Int_t lbin) {fFixedLambdaBin = lbin;}
   //
 
 
@@ -94,14 +104,15 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void ArrangeQs(Short_t, Short_t, Short_t, Short_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t, Short_t, Short_t, Float_t&, Float_t&, Float_t&);
   Float_t GetQinv(Short_t, Float_t[], Float_t[]);
   void GetQosl(Float_t[], Float_t[], Float_t&, Float_t&, Float_t&);
-  void GetWeight(Float_t[], Float_t[], Float_t&, Float_t&);
+  //void GetWeight(Float_t[], Float_t[], Float_t&, Float_t&);
+  void GetWeight(Float_t[], Float_t[], Float_t[], Float_t[], Float_t&, Float_t&);
   void FourVectProdTerms(Float_t [], Float_t [], Float_t [], Float_t&, Float_t&, Float_t&, Float_t&, Float_t&);
   Float_t FSICorrelationGaus2(Int_t, Int_t, Int_t, Float_t);
   Float_t FSICorrelationTherm2(Int_t, Int_t, Float_t);
   Float_t MCWeight(Int_t, Int_t, Int_t, Int_t, Float_t);
+  Float_t MCWeightOSL(Int_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t, Float_t);
   Float_t MCWeight3D(Bool_t, Int_t, Int_t, Float_t, Float_t, Float_t);
   Double_t FSICorrelationOmega0(Bool_t, Double_t, Double_t, Double_t);
-  void TestAddTask();
   //
   
   
@@ -169,7 +180,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   struct St5 {
     TH2D *fExplicit2; //!
     TH2D *fExplicit2QW; //!
-    TH3I *fExplicit2ThreeD; //!
+    TH3D *fExplicit2ThreeD; //!
     TProfile2D *fAvgP; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
@@ -185,10 +196,10 @@ class AliChaoticity : public AliAnalysisTaskSE {
     struct St6 ThreePT[5];
   };
   struct St_M {
-    struct St_EDB EDB[kEDbins];
+    struct St_EDB EDB[fEDbins];
   };
   struct St4 {
-    struct St_M MB[kCentBins];
+    struct St_M MB[fCentBins];
   };
   struct St3 {
     struct St4 SC[kSCLimit3];
@@ -206,21 +217,25 @@ class AliChaoticity : public AliAnalysisTaskSE {
   /////////////////////
   // 4D r3 denominator
   struct St_Ky {
-    struct St_M MB[kCentBins];
+    struct St_M MB[fCentBins];
   };
   struct St_Kt {
-    struct St_Ky KY[kKbinsY];
+    struct St_Ky KY[fKbinsY];
   };
-  struct St_Kt KT[kKbinsT];//!
+  struct St_Kt KT[fKbinsT];//!
   
  
   Bool_t fLEGO;
   Bool_t fMCcase;
   Bool_t fAODcase;
   Bool_t fPbPbcase;
+  Bool_t fGenerateSignal;
   Bool_t fPdensityExplicitLoop;
   Bool_t fPdensityPairCut;
   Bool_t fTabulatePairs;
+  Int_t fRBinMax;// 5 normally, (R=8fm)
+  Int_t fFixedLambdaBin;// 11 normally, (lambda=0.52)
+  UInt_t fFilterBit;
   Double_t fBfield;
   Int_t fMbin;
   Int_t fFSIbin;
@@ -240,12 +255,12 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Float_t fKupperBound;
   Float_t fQupperBound;
   Float_t fQupperBoundWeights;
-  Float_t fKstepT[kKbinsT];
-  Float_t fKstepY[kKbinsY];
-  Float_t fKmeanT[kKbinsT];
-  Float_t fKmeanY[kKbinsY];
-  Float_t fKmiddleT[kKbinsT];
-  Float_t fKmiddleY[kKbinsY];
+  Float_t fKstepT[fKbinsT];
+  Float_t fKstepY[fKbinsY];
+  Float_t fKmeanT[fKbinsT];
+  Float_t fKmeanY[fKbinsY];
+  Float_t fKmiddleT[fKbinsT];
+  Float_t fKmiddleY[fKbinsY];
   Float_t fQstep;
   Float_t fQstepWeights;
   Float_t fQmean[kQbinsWeights];
@@ -257,8 +272,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Float_t fSigmaCutTPC;
   Float_t fSigmaCutTOF;
   
-  Float_t fMinSepTPCEntrancePhi;
-  Float_t fMinSepTPCEntranceEta;
+  Float_t fMinSepPair;
   Float_t fShareQuality;
   Float_t fShareFraction;
   
