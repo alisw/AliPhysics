@@ -12,6 +12,10 @@ public:
   //
   void     GetTPCSignalRegionInfo(Double32_t signal[4], Char_t ncl[3], Char_t nrows[3]) const;
   void     SetTPCSignalRegionInfo(Double32_t signal[4], Char_t ncl[3], Char_t nrows[3]);
+  //
+  Double32_t GetTPCsignalShortPad()  const {return fTPCsignalRegion[0];}
+  Double32_t GetTPCsignalMediumPad() const {return fTPCsignalRegion[1];}
+  Double32_t GetTPCsignalLongPad()   const {return fTPCsignalRegion[2];}
   
 private:
 
