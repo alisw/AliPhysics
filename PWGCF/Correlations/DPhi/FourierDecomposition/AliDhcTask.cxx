@@ -953,7 +953,14 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
 
       Float_t dphi = DeltaPhi(phia, phib);
       Float_t deta = etaa - etab;
-      Float_t mass = 2*pta*ptb*(TMath::CosH(deta)-TMath::Cos(dphi));
+      // invariant mass under mu mu assumption
+      Float_t muMass2 = 0.1056583715*0.1056583715;
+      Float_t ea2  = muMass2 + pta*pta*TMath::CosH(etaa)*TMath::CosH(etaa);
+      Float_t eb2  = muMass2 + ptb*ptb*TMath::CosH(etab)*TMath::CosH(etab);
+      Float_t papb = pta*TMath::Cos(phia)*ptb*TMath::Cos(phib) +
+                     pta*TMath::Sin(phia)*ptb*TMath::Sin(phib) +
+                     pta*TMath::SinH(etaa)*ptb*TMath::SinH(etab);
+      Float_t mass = TMath::Sqrt(2.0*(muMass2 + TMath::Sqrt(ea2*eb2) - papb));
       Int_t q2 = sgna + sgnb;
       if ((q2==0) && fDoMassCut) {
         if (mass>3.0 && mass<3.2)
