@@ -40,6 +40,7 @@ Detailed description
 #include <AliAODPid.h>
 
 #include "AliDielectronVarManager.h"
+#include "AliDielectronVarCuts.h"
 
 #include "AliDielectronPID.h"
 
@@ -74,6 +75,7 @@ AliDielectronPID::AliDielectronPID() :
     fSigmaFunLow[icut]=0;
     fSigmaFunUp[icut]=0;
     fFunSigma[icut]=0x0;
+    fVarCuts[icut]=0x0;
   }
 }
 
@@ -101,6 +103,7 @@ AliDielectronPID::AliDielectronPID(const char* name, const char* title) :
     fSigmaFunLow[icut]=0;
     fSigmaFunUp[icut]=0;
     fFunSigma[icut]=0x0;
+    fVarCuts[icut]=0x0;
   }
 }
 
@@ -219,6 +222,42 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t 
 }
 
 //______________________________________________
+void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp,
+                              AliDielectronVarCuts *var, Bool_t exclude/*=kFALSE*/,
+                              UInt_t pidBitType/*=AliDielectronPID::kRequire*/)
+{
+  //
+  // Add a pid nsigma cut
+  // use response of detector 'det' in the ranges for variables defined in var
+  // use a sigma band between 'nSigmaLow' and 'nSigmaUp'
+  // if nSigmaUp==-99999. then nSigmaLow will be uesd as a symmetric band +- nSigmaLow
+  // specify whether to 'exclude' the given band
+  //
+  if(!var) return;
+  if (fNcuts>=kNmaxPID){
+    AliError(Form("only %d pid cut ranges allowed",kNmaxPID));
+    return;
+  }
+  if (TMath::Abs(nSigmaUp+99999.)<1e-20){
+    nSigmaUp=TMath::Abs(nSigmaLow);
+    nSigmaLow=-1.*nSigmaUp;
+  }
+  fDetType[fNcuts]=det;
+  fPartType[fNcuts]=type;
+  fNsigmaLow[fNcuts]=nSigmaLow;
+  fNsigmaUp[fNcuts]=nSigmaUp;
+  fExclude[fNcuts]=exclude;
+  fRequirePIDbit[fNcuts]=pidBitType;
+  fVarCuts[fNcuts]=var;
+
+  AliDebug(1,Form("Add PID cut %d: sigma [% .1f,% .1f] \n",
+		  fNcuts,nSigmaLow,nSigmaUp));
+  
+  ++fNcuts;
+
+}
+
+//______________________________________________
 Bool_t AliDielectronPID::IsSelected(TObject* track)
 {
   //
@@ -255,10 +294,14 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     Double_t min=fmin[icut];
     Double_t max=fmax[icut];
     Double_t val=values[fActiveCuts[icut]];
-    
-    // test var range. In case min==max do not cut
-    if ( (TMath::Abs(min-max)>1e-20) && (val<min || val>=max) ) continue;
 
+    // test var range. In case min==max do not cut
+    if ( fVarCuts[icut] ) {
+      if ( !fVarCuts[icut]->IsSelected(part) ) continue;
+    }
+    else if ( ( (TMath::Abs(min-max)>1e-20) && (val<min || val>=max) ) ) {
+	continue;
+    }
 
     // check if fFunSigma is set, then check if 'part' is in sigma range of the function
     if(fFunSigma[icut]){
