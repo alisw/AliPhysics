@@ -178,6 +178,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPhiBandTrack   ;                     //! Accumulated pT in Phi band to estimate UE in cone, only tracks
   
   TH2F *   fhConeSumPt ;                          //! Cluster and tracks Sum Pt Sum Pt in the cone
+  TH2F *   fhConeSumPtCluster ;                   //! Clusters Sum Pt Sum Pt in the cone
+  TH2F *   fhConeSumPtTrack ;                     //! Tracks Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtEtaBandUECluster;           //! Cluster Sum Pt in the eta band for clusters, before normalization
   TH2F *   fhConeSumPtPhiBandUECluster;           //! Cluster Sum Pt in the phi band for clusters, before normalization
   TH2F *   fhConeSumPtEtaBandUETrack;             //! Track Sum Pt in the eta band for tracks  , before normalization
@@ -210,6 +212,14 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhFractionClusterOutConeEtaTrigEtaPhi; //! Fraction of cone out of clusters acceptance in eta, vs trigger eta-phi
   TH2F *   fhFractionClusterOutConePhi;           //! Fraction of cone out of clusters acceptance in phi
   TH2F *   fhFractionClusterOutConePhiTrigEtaPhi; //! Fraction of cone out of clusters acceptance in phi, vs trigger eta-phi
+  
+  TH2F *   fhConeSumPtClustervsTrack ;            //! Cluster vs tracks Sum Pt Sum Pt in the cone
+  TH2F *   fhConeSumPtEtaUESubClustervsTrack ;    //! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in eta band
+  TH2F *   fhConeSumPtPhiUESubClustervsTrack ;    //! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in phi band
+  TH2F *   fhEtaBandClustervsTrack ;              //! Accumulated pT in Eta band to estimate UE in cone, clusters vs tracks
+  TH2F *   fhPhiBandClustervsTrack ;              //! Accumulated pT in Phi band to estimate UE in cone, clusters vs tracks
+  TH2F *   fhEtaBandNormClustervsTrack ;          //! Accumulated pT in Eta band to estimate UE in cone, normalized to cone size, clusters vs tracks
+  TH2F *   fhPhiBandNormClustervsTrack ;          //! Accumulated pT in Phi band to estimate UE in cone, normalized to cone size, clusters vs tracks
   
   //MC
   TH1F *   fhPtIsoPrompt;                         //! Number of isolated prompt gamma 
