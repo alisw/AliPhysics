@@ -41,7 +41,7 @@ class AliCFContainer;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
-#include "AliAnalysisTaskSE.h"
+//#include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
  public:
@@ -64,8 +64,12 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   void SetLightWeightAnalysis (Bool_t lLightWeight = kTRUE) {fkLightWeight = lLightWeight;  }
   void SetFastOnly (TString lFastOnly = "kFastOnly") {fkFastOnly = lFastOnly;  }
   void SetpAVertexSelection   (Bool_t lpAVertexSelection = kTRUE) {fkpAVertexSelection = lpAVertexSelection;  }
-  void SetRunV0Vertexer ( Bool_t lRunV0Vertexer = kTRUE) { fkRunV0Vertexer = lRunV0Vertexer; }
-  void SetRejectPileup ( Bool_t lRejectPileup = kTRUE) { fkRejectPileup = lRejectPileup; }
+  void SetRunV0Vertexer       ( Bool_t lRunV0Vertexer = kTRUE) { fkRunV0Vertexer = lRunV0Vertexer; }
+  void SetRejectPileup        ( Bool_t lRejectPileup = kTRUE) { fkRejectPileup = lRejectPileup; }
+  void SetSpecialExecution    ( Bool_t lSpecialExecution = kTRUE) { fkSpecialExecution = lSpecialExecution; }
+  void SetSaveAssociatedOnly  ( Bool_t lSaveAssocOnly = kTRUE) { fkSaveAssociatedOnly = lSaveAssocOnly; }
+  void SetSkipTrigger         ( Bool_t lSkipTrigger = kTRUE ){ fkSkipTrigger = lSkipTrigger; }
+  void SetDoNotCallTPCdEdx    ( Bool_t lDoNotCallTPCdEdx = kTRUE) { fkDoNotCallTPCdEdx = lDoNotCallTPCdEdx; }
   
   //---------------------------------------------------------------------------------------
   //Setters for the V0 Vertexer Parameters
@@ -104,6 +108,10 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
   Bool_t fkRunV0Vertexer; //if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
   Bool_t fkRejectPileup; //Reject pileup switch
+  Bool_t fkSpecialExecution; //Special Exploratory Execution
+  Bool_t fkSkipTrigger; //Skip trigger selection (use SetCollisionCandidates)
+  Bool_t fkSaveAssociatedOnly; //Save Only associated V0s for smaller output
+  Bool_t fkDoNotCallTPCdEdx; //For running on datasets that don't have BB curves... 
   
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 
