@@ -119,7 +119,7 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   TArrayI centNMixed(nbins, nMixed);
   SetCentralityBinning(centEdges, centNMixed);
   
-  for(int mod=1; mod <= 5; ++mod)
+  for(int mod=1; mod <= kNMod; ++mod)
     fModuleEnabled[mod-1] = kTRUE;
 
   for(Int_t i=0;i<kNCenBins;i++){
@@ -485,8 +485,8 @@ void AliAnalysisTaskPi0Flow::SetCentralityBinning(const TArrayD& edges, const TA
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::SetEnablePHOSModule(int module, Bool_t enable)
 {
-  if( module < 1 || 5 < module )
-    AliFatal("PHOS Module must be between 1 and 5");
+  if( module < 1 || kNMod < module )
+    AliFatal(Form("PHOS Module must be between 1 and %i", kNMod));
   else
     fModuleEnabled[module-1] = enable;
 }

@@ -135,6 +135,9 @@ private:
 
 
 private:
+    // transiant constants
+    static const Int_t kNMod = 5;
+
     // constants:
     static const Double_t kLogWeight= 4.5 ; // log weight for recalibration.
     static const Double_t kAlphaCut=0.7 ;
@@ -159,7 +162,7 @@ private:
     Period fPeriod;
     Float_t fMaxAbsVertexZ; // in cm
     Bool_t fManualV0EPCalc;
-    Bool_t fModuleEnabled[5];
+    Bool_t fModuleEnabled[kNMod]; //[kNMod]
 
 
     TList * fOutputContainer;        //final histogram container
