@@ -208,6 +208,13 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
   fTreeVariableNegPhysicalStatus(0),
   fTreeVariablePosPhysicalStatus(0),
 
+  fTreeVariableNegPx(0),
+  fTreeVariableNegPy(0),
+  fTreeVariableNegPz(0),
+  fTreeVariablePosPx(0),
+  fTreeVariablePosPy(0),
+  fTreeVariablePosPz(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -554,6 +561,13 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
 
   fTreeVariableNegPhysicalStatus(0),
   fTreeVariablePosPhysicalStatus(0),
+
+  fTreeVariableNegPx(0),
+  fTreeVariableNegPy(0),
+  fTreeVariableNegPz(0),
+  fTreeVariablePosPx(0),
+  fTreeVariablePosPy(0),
+  fTreeVariablePosPz(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -940,6 +954,14 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
     fTree->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
     fTree->Branch("fTreeVariableNegPhysicalStatus",&fTreeVariableNegPhysicalStatus,"fTreeVariableNegPhysicalStatus/I");
     fTree->Branch("fTreeVariablePosPhysicalStatus",&fTreeVariablePosPhysicalStatus,"fTreeVariablePosPhysicalStatus/I");
+  }
+  if( fkSpecialExecution == kTRUE ){ 
+    fTree->Branch("fTreeVariablePosPx",&fTreeVariablePosPx,"fTreeVariablePosPx/F");
+    fTree->Branch("fTreeVariablePosPy",&fTreeVariablePosPy,"fTreeVariablePosPy/F");
+    fTree->Branch("fTreeVariablePosPz",&fTreeVariablePosPz,"fTreeVariablePosPz/F");
+    fTree->Branch("fTreeVariableNegPx",&fTreeVariableNegPx,"fTreeVariableNegPx/F");
+    fTree->Branch("fTreeVariableNegPy",&fTreeVariableNegPy,"fTreeVariableNegPy/F");
+    fTree->Branch("fTreeVariableNegPz",&fTreeVariableNegPz,"fTreeVariableNegPz/F");
   }
   
 //------------------------------------------------
@@ -2739,6 +2761,9 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       fTreeVariableNegEta = nTrack->Eta();
       fTreeVariablePosEta = pTrack->Eta();
 
+      fTreeVariableNegPx = lMomNeg[0]; fTreeVariableNegPy = lMomNeg[1]; fTreeVariableNegPz = lMomNeg[2];
+      fTreeVariablePosPx = lMomPos[0]; fTreeVariablePosPy = lMomPos[1]; fTreeVariablePosPz = lMomPos[2];
+    
       // Filter like-sign V0 (next: add counter and distribution)
       if ( pTrack->GetSign() == nTrack->GetSign()){
          continue;

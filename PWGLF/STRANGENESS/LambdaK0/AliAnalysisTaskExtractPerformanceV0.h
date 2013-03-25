@@ -213,6 +213,13 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Int_t fTreeVariableNegPhysicalStatus;
   Int_t fTreeVariablePosPhysicalStatus;
   
+  Float_t fTreeVariableNegPx; //!
+  Float_t fTreeVariableNegPy; //!
+  Float_t fTreeVariableNegPz; //!
+  Float_t fTreeVariablePosPx; //!
+  Float_t fTreeVariablePosPy; //!
+  Float_t fTreeVariablePosPz; //!
+  
 //===========================================================================================
 //   Histograms
 //===========================================================================================
