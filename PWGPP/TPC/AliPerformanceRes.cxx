@@ -118,7 +118,7 @@ void AliPerformanceRes::Init(){
 
   // set pt bins
   Int_t nPtBins = 50;
-  Double_t ptMin = 1.e-2, ptMax = 20.;
+  Double_t ptMin = 1.e-1, ptMax = 20.;
 
   Double_t *binsPt = 0;
 
@@ -140,7 +140,9 @@ void AliPerformanceRes::Init(){
   Double_t maxResolHisto[10]={ 1., 1., 0.03, 0.03, 0.2, yMax, zMax, 2.*TMath::Pi(), 1.5, ptMax};
 
   fResolHisto = new THnSparseF("fResolHisto","res_y:res_z:res_phi:res_lambda:res_pt:y:z:phi:eta:pt",10,binsResolHisto,minResolHisto,maxResolHisto);
-  fResolHisto->SetBinEdges(9,binsPt);
+
+  //fResolHisto->SetBinEdges(9,binsPt);
+  fResolHisto->GetAxis(9)->Set(nPtBins,binsPt);
 
   fResolHisto->GetAxis(0)->SetTitle("y-y_{mc} (cm)");
   fResolHisto->GetAxis(1)->SetTitle("z-z_{mc} (cm)");
@@ -180,6 +182,8 @@ void AliPerformanceRes::Init(){
   fPullHisto->GetAxis(9)->SetTitle("p_{Tmc} (GeV/c)");
   fPullHisto->Sumw2();
   */
+
+  fPullHisto->GetAxis(9)->Set(nPtBins,binsPt);
 
   fPullHisto->GetAxis(0)->SetTitle("(y-y_{mc})/#sigma");
   fPullHisto->GetAxis(1)->SetTitle("(z-z_{mc})/#sigma");
@@ -1039,7 +1043,6 @@ void AliPerformanceRes::Analyse() {
       if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
       //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.0,0.89); // eta window
       else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
-      fResolHisto->GetAxis(9)->SetRangeUser(0.16,100.); // pt threshold
       if(GetAnalysisMode() == 3) fResolHisto->GetAxis(5)->SetRangeUser(-80.,80.); // y range
 
       h2D = (TH2F*)fResolHisto->Projection(i,j);
