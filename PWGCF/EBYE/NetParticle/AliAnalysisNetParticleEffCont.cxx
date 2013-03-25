@@ -548,5 +548,4 @@ void AliAnalysisNetParticleEffCont::FillMCEffHist() {
   } // for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
   
   return;
-  AliInfo("STOP");
 }
