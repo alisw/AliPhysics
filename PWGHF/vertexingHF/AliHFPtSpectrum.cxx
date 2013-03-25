@@ -1593,7 +1593,7 @@ void AliHFPtSpectrum::ComputeSystUncertainties(AliHFSystErr *systematics, Bool_t
 
   // Estimate the feed-down uncertainty in percentage
   Int_t nentries = 0;
-  TGraphAsymmErrors *grErrFeeddown;
+  TGraphAsymmErrors *grErrFeeddown = 0;
   Double_t x=0., y=0., errx=0., erryl=0., erryh=0;
   if(fFeedDownOption!=0) {
     nentries = fgSigmaCorrConservative->GetN();
