@@ -49,6 +49,8 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() :
     fHistEPAvsC[i]              = 0;
     fHistJetPtvsdEP[i]          = 0;
     fHistJetPtvsdEPBias[i]      = 0;
+    fHistJetPtvsEP[i]           = 0;
+    fHistJetPtvsEPBias[i]       = 0;
     fHistRhovsEP[i]             = 0;
 
   }
@@ -71,6 +73,8 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra(const char *name)
     fHistEPAvsC[i]              = 0;
     fHistJetPtvsdEP[i]          = 0;
     fHistJetPtvsdEPBias[i]      = 0;
+    fHistJetPtvsEP[i]           = 0;
+    fHistJetPtvsEPBias[i]       = 0;
     fHistRhovsEP[i]             = 0;
    }
    SetMakeGeneralHistograms(kTRUE);
