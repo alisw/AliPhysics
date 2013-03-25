@@ -32,9 +32,11 @@ ClassImp(AliAnalysisTaskEmcalJetHadCorQA)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHadCorQA::AliAnalysisTaskEmcalJetHadCorQA() : 
-  AliAnalysisTaskEmcalJet("spectra",kFALSE), 
+  AliAnalysisTaskEmcalJet("jethadcor",kFALSE), 
   fCalo2Name(),
   fCaloClusters2(),
+  fMCParticlesName(),
+  fMCParticles(),
   fHistRhovsCent(0),
   fHistNjetvsCent(0)
 {
@@ -44,9 +46,15 @@ AliAnalysisTaskEmcalJetHadCorQA::AliAnalysisTaskEmcalJetHadCorQA() :
   fHistNCMatchvsPt[i] = 0;
   fHistHadCorvsPt[i] = 0;
   fHistNEFvsPtBias[i] = 0;
+  fHistNconvsPt[i] = 0;  
+  fHistNtvsPt[i] = 0;    
+  fHistNcvsPt[i] = 0;    
   fHistNTMatchvsPtBias[i] = 0;  
   fHistNCMatchvsPtBias[i] = 0;
   fHistHadCorvsPtBias[i] = 0;
+  fHistNconvsPtBias[i] = 0;  
+  fHistNtvsPtBias[i] = 0;    
+  fHistNcvsPtBias[i] = 0;    
   }
   // Default constructor.
  
@@ -58,6 +66,8 @@ AliAnalysisTaskEmcalJetHadCorQA::AliAnalysisTaskEmcalJetHadCorQA(const char *nam
   AliAnalysisTaskEmcalJet(name,kTRUE),
   fCalo2Name(),
   fCaloClusters2(),
+  fMCParticlesName(),
+  fMCParticles(),
   fHistRhovsCent(0),
   fHistNjetvsCent(0)
  { 
@@ -67,9 +77,15 @@ AliAnalysisTaskEmcalJetHadCorQA::AliAnalysisTaskEmcalJetHadCorQA(const char *nam
   fHistNCMatchvsPt[i] = 0;
   fHistHadCorvsPt[i] = 0;
   fHistNEFvsPtBias[i] = 0;
+  fHistNconvsPt[i] = 0;  
+  fHistNtvsPt[i] = 0;    
+  fHistNcvsPt[i] = 0;    
   fHistNTMatchvsPtBias[i] = 0;  
   fHistNCMatchvsPtBias[i] = 0;
   fHistHadCorvsPtBias[i] = 0;
+  fHistNconvsPtBias[i] = 0;  
+  fHistNtvsPtBias[i] = 0;    
+  fHistNcvsPtBias[i] = 0;    
   }
    SetMakeGeneralHistograms(kTRUE);
  }
@@ -98,6 +114,15 @@ void AliAnalysisTaskEmcalJetHadCorQA::UserCreateOutputObjects()
     sprintf(name,"HadCorvsPt%i",i);
     fHistHadCorvsPt[i]      = new TH2F(name, name, 1000,0,500,500,-250,250);
     fOutput->Add(fHistHadCorvsPt[i]);
+    sprintf(name,"NconvsPt%i",i);
+    fHistNconvsPt[i]      = new TH2F(name, name, 200,0,200,500,-250,250);
+    fOutput->Add(fHistNconvsPt[i]);
+    sprintf(name,"NtvsPt%i",i);
+    fHistNtvsPt[i]      = new TH2F(name, name, 200,0,200,500,-250,250);
+    fOutput->Add(fHistNtvsPt[i]);
+    sprintf(name,"NcvsPt%i",i);
+    fHistNcvsPt[i]      = new TH2F(name, name, 200,0,200,500,-250,250);
+    fOutput->Add(fHistNcvsPt[i]);
     sprintf(name,"NEFvsPtBias%i",i);
     fHistNEFvsPtBias[i]     = new TH2F(name, name, 100,0,1,500,-250,250);
     fOutput->Add(fHistNEFvsPtBias[i]);
@@ -110,6 +135,15 @@ void AliAnalysisTaskEmcalJetHadCorQA::UserCreateOutputObjects()
     sprintf(name,"HadCorvsPtBias%i",i);
     fHistHadCorvsPtBias[i]  = new TH2F(name, name, 1000,0,500,500,-250,250);
     fOutput->Add(fHistHadCorvsPtBias[i]);
+   sprintf(name,"NconvsPtBias%i",i);
+    fHistNconvsPtBias[i]      = new TH2F(name, name, 200,0,200,500,-250,250);
+    fOutput->Add(fHistNconvsPtBias[i]);
+    sprintf(name,"NtvsPtBias%i",i);
+    fHistNtvsPtBias[i]      = new TH2F(name, name, 200,0,200,500,-250,250);
+    fOutput->Add(fHistNtvsPtBias[i]);
+    sprintf(name,"NcvsPtBias%i",i);
+    fHistNcvsPtBias[i]      = new TH2F(name, name, 200,0,200,500,-250,250);
+    fOutput->Add(fHistNcvsPtBias[i]);
   }
   fHistNTMatchvsPtvsNtack0   = new TH3F("NTMmatchvsPtvsNtrack0",  "NTMatchsvsPtvsNtrack0", 100,0,100,500,-250,250,250,0,2500);
 
@@ -174,6 +208,18 @@ void AliAnalysisTaskEmcalJetHadCorQA::ExecOnce(){
       fInitialized = kFALSE;
       return;
     }
+  }
+
+  if (!fMCParticlesName.IsNull() && !fMCParticles){
+    fMCParticles = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCParticlesName));
+    if (!fMCParticles){
+      AliError(Form("%s: Could not retrieve MC Particles %s!",GetName(),fMCParticlesName.Data()));
+      fInitialized = kFALSE;
+      return;
+    }
+  }
+    //TString             fMCParticlesName;
+    // TClonesArray       *fMCParticles;
     //  fCaloClusters2(),
  //    else if (!fJets->GetClass()->GetBaseClass("AliVCluster")){
 //       AliError(Form("%s: Collection %s does not contain AliEmcalParticle objects!",GetName(),fCalo2Name.Data()));
@@ -181,7 +227,6 @@ void AliAnalysisTaskEmcalJetHadCorQA::ExecOnce(){
 //       fInitialized = kFALSE;
 //       return;
     //  }
-  }
 }
 
 
@@ -190,20 +235,25 @@ Bool_t AliAnalysisTaskEmcalJetHadCorQA::Run()
 {  
   Int_t centbin = GetCentBin(fCent);
   //for pp analyses we will just use the first centrality bin
-  if (centbin == -1)
+  if (GetBeamType()==0)
     centbin = 0;
   if (centbin>2)
     return kTRUE;
   if (!fTracks)
     return kTRUE;
-
-  const Int_t nCluster = fCaloClusters->GetEntriesFast();
+  if (!fCaloClusters)
+    return kTRUE;
+  if (!fCaloClusters2)
+    return kTRUE;
   const Int_t nCluster2 = fCaloClusters2->GetEntriesFast();
   const Int_t nTrack = fTracks->GetEntriesFast();
+  //  const Int_t nMC = fMCParticles->GetEntriesFast();
 
   TString fRhoScaledName = fRhoName;
   fRho = GetRhoFromEvent(fRhoScaledName);
   fRhoVal = fRho->GetVal();
+  if (GetBeamType()==0)
+    fRhoVal = 0;
   fHistRhovsCent->Fill(fCent,fRhoVal);
   const Int_t Njets = fJets->GetEntriesFast();
 
@@ -245,8 +295,10 @@ Bool_t AliAnalysisTaskEmcalJetHadCorQA::Run()
        Int_t iClus = track->GetEMCALcluster();
        if (iClus<0)
 	 continue;
+       //we have the id of the matched cluster of a track constituent
+       //       cout<<"track label for matched,accepted jet track is "<<track->GetLabel()<<endl;
        bool ischecked = false;
-       for (Int_t icid = 0;i<cluster_id.size();icid++)
+       for (Int_t icid = 0;icid<cluster_id.size();icid++)
 	 if (cluster_id[icid] == iClus)
 	   ischecked = true; // we've already looked at this uncorrected cluster
        if (ischecked)
@@ -296,15 +348,22 @@ Bool_t AliAnalysisTaskEmcalJetHadCorQA::Run()
      } // end of track loop
      fHistNEFvsPt[centbin]->Fill(jet->NEF(),jetPt);
      fHistNTMatchvsPt[centbin]->Fill(TrackMatch,jetPt);
-     //        fHistNCMatchvsPtvsCent(0),
+     fHistNCMatchvsPt[centbin]->Fill(cluster_id.size(),jetPt);
      fHistHadCorvsPt[centbin]->Fill(Esub,jetPt);
+     fHistNconvsPt[centbin]->Fill(jet->GetNumberOfConstituents(),jetPt);
+     fHistNtvsPt[centbin]->Fill(jet->GetNumberOfTracks(),jetPt);   
+     fHistNcvsPt[centbin]->Fill(jet->GetNumberOfClusters(),jetPt);   
      if (jet->MaxTrackPt()<5.0)
        continue;
      fHistNEFvsPtBias[centbin]->Fill(jet->NEF(),jetPt);
      fHistNTMatchvsPtBias[centbin]->Fill(TrackMatch,jetPt);
      fHistHadCorvsPtBias[centbin]->Fill(Esub,jetPt);
+     fHistNconvsPtBias[centbin]->Fill(jet->GetNumberOfConstituents(),jetPt);
+     fHistNtvsPtBias[centbin]->Fill(jet->GetNumberOfTracks(),jetPt);   
+     fHistNcvsPtBias[centbin]->Fill(jet->GetNumberOfClusters(),jetPt);  
+     fHistNCMatchvsPt[centbin]->Fill(cluster_id.size(),jetPt); 
      if (centbin == 0)
-       fHistNTMatchvsPtvsNtack0->Fill(TrackMatch,jetPt,nTrack);
+       fHistNTMatchvsPtvsNtack0->Fill(TrackMatch,jetPt,jet->GetNumberOfTracks());
   }
   fHistNjetvsCent->Fill(fCent,NjetAcc);
   return kTRUE;
