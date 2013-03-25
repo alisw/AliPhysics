@@ -43,7 +43,7 @@ AliAnalysisTaskCLQA::AliAnalysisTaskCLQA() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskCLQA", kTRUE),
   fDoCumulants(0), 
   fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15),
-  fNtupCum(0), fNtupCumInfo(0)
+  fNtupCum(0), fNtupCumInfo(0), fNtupZdcInfo(0)
 {
   // Default constructor.
 }
@@ -53,7 +53,7 @@ AliAnalysisTaskCLQA::AliAnalysisTaskCLQA(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fDoCumulants(0), 
   fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15),
-  fNtupCum(0), fNtupCumInfo(0)
+  fNtupCum(0), fNtupCumInfo(0), fNtupZdcInfo(0)
 {
   // Standard constructor.
 }
@@ -112,11 +112,19 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   Double_t Q4r=0,Q4i=0;
   Double_t mpt=0,mpt2=0,ptmaxq=0;
   Double_t ts00=0,ts10=0,ts11=0;
+  Double_t v0ach=0, v0cch=0;
+ 
   for (Int_t i =0; i<ntracks; ++i) {
-    AliVTrack *track = dynamic_cast<AliVTrack*>(fTracks->At(i));
+    AliVParticle *track = dynamic_cast<AliVParticle*>(fTracks->At(i));
     if (!track)
       continue;
     Double_t eta = track->Eta();
+    if (track->Charge()!=0) {
+      if ((eta<5.1)&&(eta>2.8))
+        ++v0ach;
+      else if ((eta>-3.7)&&(eta<-1.7))
+        ++v0cch;
+    }
     if ((eta<etamin) || (eta>etamax))
       continue;
     Double_t pt = track->Pt();
@@ -157,7 +165,6 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   Double_t Q2abs = Q2r*Q2r+Q2i*Q2i;
   Double_t Q4abs = Q4r*Q4r+Q4i*Q4i;
   Double_t Q42re = Q4r*Q2r*Q2r-Q4r*Q2i*Q2i+2*Q4i*Q2r*Q2i;
-
   Double_t tsall = -1;
   Double_t tsax = (tsa00+tsa11)*(tsa00+tsa11)-4*(tsa00*tsa11-tsa10*tsa10);
   if (tsax>=0) {
@@ -203,12 +210,20 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   fNtupCumInfo->fQ2abs    = Q2abs;
   fNtupCumInfo->fQ4abs    = Q4abs;
   fNtupCumInfo->fQ42re    = Q42re;
+  fNtupCumInfo->fCos2phi  = Q2r;
+  fNtupCumInfo->fSin2phi  = Q2i;
   fNtupCumInfo->fPtMax    = ptmaxq;
   fNtupCumInfo->fMPt      = mpt/M;
   fNtupCumInfo->fMPt2     = mpt2/M;
   fNtupCumInfo->fTS       = ts;
-  AliVVZERO *vzero = InputEvent()->GetVZEROData();
-  fNtupCumInfo->fMV0M     = vzero->GetMTotV0A()+vzero->GetMTotV0C();
+  TString tname(fTracks->GetName());
+  if (tname.Contains("mc")) {
+    fNtupCumInfo->fMV0M     = v0ach + v0cch;
+  } else {
+    AliVVZERO *vzero = InputEvent()->GetVZEROData();
+    fNtupCumInfo->fMV0M     = vzero->GetMTotV0A()+vzero->GetMTotV0C();
+  }
+
   AliCentrality *cent = InputEvent()->GetCentrality();
   fNtupCumInfo->fCl1      = cent->GetCentralityPercentile("CL1");
   fNtupCumInfo->fV0M      = cent->GetCentralityPercentile("V0M");
@@ -216,6 +231,15 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   fNtupCumInfo->fV0A      = cent->GetCentralityPercentile("V0A");
   fNtupCumInfo->fV0AEq    = cent->GetCentralityPercentile("V0AEq");
   fNtupCumInfo->fZNA      = cent->GetCentralityPercentile("ZNA");
+
+  AliVZDC *vZDC = InputEvent()->GetZDCData();
+  const Double_t *znaTowers = vZDC->GetZNATowerEnergy(); 
+  fNtupZdcInfo->fZna0 = znaTowers[0];
+  fNtupZdcInfo->fZna1 = znaTowers[1];
+  fNtupZdcInfo->fZna2 = znaTowers[2];
+  fNtupZdcInfo->fZna3 = znaTowers[3];
+  fNtupZdcInfo->fZna4 = znaTowers[4];
+
   fNtupCum->Fill();
 }
 
@@ -253,6 +277,9 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
     }
     fNtupCumInfo = new AliNtupCumInfo;
     fNtupCum->Branch("cumulants", &fNtupCumInfo, 32*1024, 99);
+    fNtupZdcInfo = new AliNtupZdcInfo;
+    fNtupCum->Branch("zdc", &fNtupZdcInfo, 32*1024, 99);
+
     fOutput->Add(fNtupCum);
   }
 

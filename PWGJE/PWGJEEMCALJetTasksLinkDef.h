@@ -42,5 +42,6 @@
 #pragma link C++ class AliAnalysisTaskSAQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliNtupCumInfo+;
+#pragma link C++ class AliNtupZdcInfo+;
 
 #endif
