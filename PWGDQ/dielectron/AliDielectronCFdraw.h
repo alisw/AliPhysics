@@ -24,6 +24,7 @@
 #include <TNamed.h>
 #include <TVectorD.h>
 #include <AliCFContainer.h>
+#include "AliDielectronVarManager.h"
 
 class TObjArray;
 class TSeqCollection;
@@ -52,9 +53,13 @@ public:
 
   void SetRangeUser(Int_t ivar, Double_t min, Double_t max, const char* slices="");
   void SetRangeUser(const char* varname, Double_t min, Double_t max, const char* slices="");
+  void SetRangeUser(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max, const char* slices="", Bool_t leg=kFALSE);
 
   void UnsetRangeUser(Int_t ivar, const char* slices="");
   void UnsetRangeUser(const char* varname, const char* slices="");
+  void UnsetRangeUser(AliDielectronVarManager::ValueTypes type, const char* slices="", Bool_t leg=kFALSE);
+
+  TString FindSteps(const char* search="");
 
   virtual void Draw(const Option_t* varnames = "") { Draw(varnames,"");}
   virtual void Print(const Option_t*) const { if (fCfContainer) fCfContainer->Print(""); }

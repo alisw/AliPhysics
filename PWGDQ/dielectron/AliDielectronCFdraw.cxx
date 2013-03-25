@@ -54,6 +54,7 @@
 
 #include "AliDielectronCFdraw.h"
 #include "AliDielectron.h"
+#include "AliDielectronVarManager.h"
 
 ClassImp(AliDielectronCFdraw)
 
@@ -210,6 +211,18 @@ void AliDielectronCFdraw::SetRangeUser(Int_t ivar, Double_t min, Double_t max, c
 }
 
 //________________________________________________________________
+void AliDielectronCFdraw::SetRangeUser(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max, const char* slices, Bool_t leg)
+{
+  //
+  // Set range of cut steps defined in slices
+  // Steps may be separated by one the the characteres ,;:
+  //
+  SetRangeUser(Form("%s%s",(leg?"Leg1_":""),AliDielectronVarManager::GetValueName(type)), min, max, slices);
+  SetRangeUser(Form("%s%s",(leg?"Leg2_":""),AliDielectronVarManager::GetValueName(type)), min, max, slices);
+
+}
+
+//________________________________________________________________
 void AliDielectronCFdraw::SetRangeUser(const char* varname, Double_t min, Double_t max, const char* slices)
 {
   //
@@ -235,6 +248,17 @@ void AliDielectronCFdraw::UnsetRangeUser(const char* varname, const char* slices
     return;
   }
   UnsetRangeUser(ivar,slices);
+}
+
+//________________________________________________________________
+void AliDielectronCFdraw::UnsetRangeUser(AliDielectronVarManager::ValueTypes type, const char* slices, Bool_t leg)
+{
+  //
+  // Unset range of cut steps defined in slices
+  // Steps may be separated by one the the characteres ,;:
+  //
+  UnsetRangeUser(Form("%s%s",(leg?"Leg1_":""),AliDielectronVarManager::GetValueName(type)), slices);
+  UnsetRangeUser(Form("%s%s",(leg?"Leg2_":""),AliDielectronVarManager::GetValueName(type)), slices);
 }
 
 //________________________________________________________________
@@ -300,6 +324,46 @@ void AliDielectronCFdraw::Draw(const Option_t* varnames, const char* opt, const 
   delete arrVars;
 }
 
+//________________________________________________________________
+TString AliDielectronCFdraw::FindSteps(const char* search)
+{
+  //
+  // find steps/slices containg search string
+  // search strings may be separated by any of ,:;
+  //
+  TObjArray *arr=TString(search).Tokenize(",:;");
+  TIter next(arr);
+  TObjString *ostr=0x0;
+
+  TString slices="";
+  Int_t nfnd=0;
+  // loop over all steps
+  for (Int_t istep=0; istep<fCfContainer->GetNStep(); ++istep){
+    TString steptit = fCfContainer->GetStepTitle(istep);
+    Bool_t bfnd=kFALSE;
+    next.Reset();
+    // loop over all search strings
+    while ( (ostr=static_cast<TObjString*>(next())) ) {
+      if( steptit.Contains(ostr->GetName()) ) bfnd=kTRUE;
+      else {
+	bfnd=kFALSE;
+	break;
+      }
+    }
+    // append found slices string
+    if(bfnd) {
+      if(nfnd)
+	slices.Append(Form(":%d",istep));
+      else
+	slices.Append(Form("%d", istep));
+      nfnd++;
+    }
+  }
+  delete arr;
+
+  if(!nfnd) AliWarning(" No step searched for found. returning all steps!");
+  return slices;
+}
 //________________________________________________________________
 TObjArray* AliDielectronCFdraw::CollectHistosProj(const Option_t* varnames, const char* slices)
 {
