@@ -125,7 +125,7 @@ private:
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
-  ClassDef(AliDielectronPID,3)         // Dielectron PID
+  ClassDef(AliDielectronPID,4)         // Dielectron PID
 };
 
 #endif
