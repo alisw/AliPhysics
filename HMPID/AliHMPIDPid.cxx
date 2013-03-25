@@ -74,11 +74,8 @@ void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Double_t nmean,Int_t nsp,Double_t *p
     Double_t thetaCerTh = TMath::ACos(cosThetaTh);                                                                           //  theoretical Theta Cherenkov
     Double_t sigmaRing = Resolution(iPart,thetaCerTh,pTrk);
     
-    if(sigmaRing==0) {
-      for(Int_t jPart=0;jPart<nsp;jPart++) prob[jPart]=1.0/(Float_t)nsp;
-      delete pPid ; pPid=0x0; delete [] h; return;
-    } 
-    
+    if(sigmaRing==0) continue; 
+   
     if(TMath::Abs(thetaCerExp-thetaCerTh)<4*sigmaRing) desert = kFALSE;                                                                //   
     h[iPart] =TMath::Gaus(thetaCerTh,thetaCerExp,sigmaRing,kTRUE);
     hTot    +=h[iPart]; //total height of all theoretical heights for normalization
