@@ -40,6 +40,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         CalculateCaloSignalInCone  (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCluster) ;
   void         CalculateTrackSignalInCone (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumTrack  ) ;
   
+  Float_t      CalculateExcessAreaFraction(const Float_t excess, const Float_t conesize);
+  
   void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate,
                                                    const Float_t coneptsumCluster, const Float_t coneptsumTrack ) ;
   

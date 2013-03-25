@@ -390,6 +390,28 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
 
 }
 
+
+//________________________________________________________________________________________________________
+Float_t AliAnaParticleIsolation::CalculateExcessAreaFraction(const Float_t excess, const Float_t conesize)
+{
+  // Area of a circunference segment segment 1/2 R^2 (angle-sin(angle)), angle = 2*ACos((R-excess)/R)
+  
+  
+  Float_t angle   = 2*TMath::ACos( (conesize-excess) / conesize );
+  
+  Float_t coneA   = conesize*conesize*TMath::Pi(); // A = pi R^2, isolation cone area
+  
+  Float_t excessA = conesize*conesize / 2 * (angle-TMath::Sin(angle));
+  
+  if(coneA > excessA) return coneA / (coneA-excessA);
+  else
+  {
+    printf("AliAnaParticleIsolation::CalculateExcessAreaFraction() - Please Check : Excess Track %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f\n",
+           excess,coneA, excessA, angle*TMath::RadToDeg(), coneA / (coneA-excessA));
+    return  1;
+  }
+}
+
 //___________________________________________________________________________________________________________________________________
 void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate,
                                                                   const Float_t coneptsumCluster, const Float_t coneptsumTrack)
@@ -426,32 +448,27 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
   
   //printf("tracks eta fiducial acceptance %f\n",tpcEtaSize);
 
-  Float_t phiUEptsumTrackNorm   = phiUEptsumTrack*(coneA  / ((2*conesize*tpcPhiSize)-coneA)); // pi * R^2 / (2 R * 2 pi) -  trigger cone
-  Float_t etaUEptsumTrackNorm   = etaUEptsumTrack*(coneA  / ((2*conesize*tpcEtaSize)-coneA)); // pi * R^2 / (2 R * 1.6)  -  trigger cone
+  Float_t phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / ((2*conesize*tpcPhiSize)-coneA)); // pi * R^2 / (2 R * 2 pi) -  trigger cone
+  Float_t etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / ((2*conesize*tpcEtaSize)-coneA)); // pi * R^2 / (2 R * 1.6)  -  trigger cone
   
   // Need to correct coneptsumTrack by the fraction of the cone out of track cut acceptance!
   Float_t correctConeSumTrack = 1;
   if(TMath::Abs(etaTrig)+conesize > tpcEtaSize/2.)
   {
-    Float_t excess = TMath::Abs(etaTrig)+conesize - tpcEtaSize/2.;
-    // Area of a circunference segment segment 1/2 R^2 (angle-sin(angle)), angle = 2*ACos((R-excess)/R)
-    Float_t angle  = 2*TMath::ACos( (conesize-excess) / conesize );
-    Float_t excessA = conesize*conesize / 2*(angle-TMath::Sin(angle));
-    if(coneA > excessA) correctConeSumTrack = coneA / (coneA-excessA);
-    else  printf("Please Check : Excess Track %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f\n",excess,coneA, excessA, angle*TMath::RadToDeg(), correctConeSumTrack);
+    Float_t excess = TMath::Abs(etaTrig) + conesize - tpcEtaSize/2.;
+    correctConeSumTrack = CalculateExcessAreaFraction(excess,conesize);
     //printf("Excess Track   %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f\n",excess,coneA, excessA, angle*TMath::RadToDeg(), correctConeSumTrack);
   }
     
   Float_t coneptsumTrackSubPhi = coneptsumTrack*correctConeSumTrack - phiUEptsumTrackNorm;
   Float_t coneptsumTrackSubEta = coneptsumTrack*correctConeSumTrack - etaUEptsumTrackNorm;
 
-  fhConeSumPtPhiUESubTrack->Fill(ptTrig,coneptsumTrackSubPhi);
-  fhConeSumPtEtaUESubTrack->Fill(ptTrig,coneptsumTrackSubEta);
-  
-  fhConeSumPtPhiUESubTrackTrigEtaPhi->Fill(etaTrig, phiTrig, coneptsumTrackSubPhi);
-  fhConeSumPtEtaUESubTrackTrigEtaPhi->Fill(etaTrig, phiTrig, coneptsumTrackSubEta);
-  
-  fhFractionTrackOutConeEta->Fill(ptTrig, correctConeSumTrack-1);
+  fhConeSumPtPhiUESubTrack           ->Fill(ptTrig ,          coneptsumTrackSubPhi);
+  fhConeSumPtPhiUESubTrackTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumTrackSubPhi);
+  fhConeSumPtEtaUESubTrack           ->Fill(ptTrig ,          coneptsumTrackSubEta);
+  fhConeSumPtEtaUESubTrackTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumTrackSubEta);
+
+  fhFractionTrackOutConeEta          ->Fill(ptTrig ,         correctConeSumTrack-1);
   fhFractionTrackOutConeEtaTrigEtaPhi->Fill(etaTrig, phiTrig,correctConeSumTrack-1);
   
   // -------------- //
@@ -460,7 +477,7 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
   
   //Careful here if EMCal limits changed .. 2010 (4 SM) to 2011-12 (10 SM), for the moment consider 100 deg in phi
   Float_t emcEtaSize = 0.7*2;
-  Float_t emcPhiSize = TMath::DegToRad()*94; // 100 degrees but consider 2 degree gaps in between sectors
+  Float_t emcPhiSize = TMath::DegToRad()*100;
   
   Float_t phiUEptsumClusterNorm = phiUEptsumCluster*(coneA  / ((2*conesize*emcPhiSize)-coneA)); // pi * R^2 / (2 R * 2 100 deg) - trigger cone
   Float_t etaUEptsumClusterNorm = etaUEptsumCluster*(coneA  / ((2*conesize*emcEtaSize)-coneA)); // pi * R^2 / (2 R * 2*1.7)     - trigger cone
@@ -470,12 +487,8 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
   Float_t correctConeSumClusterEta = 1;
   if(TMath::Abs(etaTrig)+conesize > emcEtaSize/2.)
   {
-    Float_t excess = TMath::Abs(etaTrig)+conesize - emcEtaSize/2.;
-    // Area of a circunference segment segment 1/2 R^2 (angle-sin(angle)), angle = 2*ACos((R-excess)/R)
-    Float_t angle  = 2*TMath::ACos( (conesize-excess) / conesize );
-    Float_t excessA = conesize*conesize / 2*(angle-TMath::Sin(angle));
-    if(coneA > excessA) correctConeSumClusterEta = coneA/(coneA-excessA);
-    else  printf("Please Check : Excess EMC-Eta %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f\n",excess,coneA, excessA, angle*TMath::RadToDeg(), correctConeSumClusterEta);
+    Float_t excess = TMath::Abs(etaTrig) + conesize - emcEtaSize/2.;
+    correctConeSumClusterEta = CalculateExcessAreaFraction(excess,conesize);
     //printf("Excess EMC-Eta %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f\n",excess,coneA, excessA, angle*TMath::RadToDeg(), correctConeSumClusterEta);
   }
 
@@ -485,12 +498,10 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
      (phiTrig-conesize <  80*TMath::DegToRad()))
   {
     Float_t excess = 0;
-    if( phiTrig+conesize > 180*TMath::DegToRad() ) excess = phiTrig + conesize - 180*TMath::DegToRad();
-    else                                           excess = 80*TMath::DegToRad() - phiTrig - conesize ;
-    Float_t angle  = 2*TMath::ACos( (conesize-excess) / conesize );
-    Float_t excessA = conesize*conesize / 2*(angle-TMath::Sin(angle));
-    if(coneA > excessA) correctConeSumClusterPhi = coneA/(coneA-excessA);
-    else  printf("Please Check : Excess EMC-Phi %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f\n",excess,coneA, excessA, angle*TMath::RadToDeg(), correctConeSumClusterPhi);
+    if( phiTrig+conesize > 180*TMath::DegToRad() ) excess = conesize + phiTrig - 180*TMath::DegToRad() ;
+    else                                           excess = conesize - phiTrig +  80*TMath::DegToRad() ;
+    
+    correctConeSumClusterPhi = CalculateExcessAreaFraction(excess,conesize);
     //printf("Excess EMC-Phi %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f\n",excess,coneA, excessA, angle*TMath::RadToDeg(), correctConeSumClusterPhi);
   }
 
@@ -499,28 +510,26 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
   Float_t coneptsumClusterSubPhi = coneptsumCluster*correctConeSumClusterEta*correctConeSumClusterPhi - phiUEptsumClusterNorm;
   Float_t coneptsumClusterSubEta = coneptsumCluster*correctConeSumClusterEta*correctConeSumClusterPhi - etaUEptsumClusterNorm;
   
-  fhConeSumPtPhiUESubCluster->Fill(ptTrig,coneptsumClusterSubPhi);
-  fhConeSumPtEtaUESubCluster->Fill(ptTrig,coneptsumClusterSubEta);
+  fhConeSumPtPhiUESubCluster           ->Fill(ptTrig ,          coneptsumClusterSubPhi);
+  fhConeSumPtPhiUESubClusterTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumClusterSubPhi);
+  fhConeSumPtEtaUESubCluster           ->Fill(ptTrig ,          coneptsumClusterSubEta);
+  fhConeSumPtEtaUESubClusterTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumClusterSubEta);
   
-  fhConeSumPtPhiUESubClusterTrigEtaPhi->Fill(etaTrig, phiTrig, coneptsumClusterSubPhi - phiUEptsumClusterNorm);
-  fhConeSumPtEtaUESubClusterTrigEtaPhi->Fill(etaTrig, phiTrig, coneptsumClusterSubEta - etaUEptsumClusterNorm);
-  
-  fhFractionClusterOutConeEta->Fill(ptTrig, correctConeSumClusterEta-1);
+  fhFractionClusterOutConeEta          ->Fill(ptTrig ,          correctConeSumClusterEta-1);
   fhFractionClusterOutConeEtaTrigEtaPhi->Fill(etaTrig, phiTrig, correctConeSumClusterEta-1);
-  fhFractionClusterOutConePhi->Fill(ptTrig, correctConeSumClusterPhi-1);
+  fhFractionClusterOutConePhi          ->Fill(ptTrig ,          correctConeSumClusterPhi-1);
   fhFractionClusterOutConePhiTrigEtaPhi->Fill(etaTrig, phiTrig, correctConeSumClusterPhi-1);
   
   // --------------------------- //
-  // Tracks and clusters in cone
+  // Tracks and clusters in cone //
   // --------------------------- //
   
   Double_t sumPhiUESub = coneptsumClusterSubPhi + coneptsumTrackSubPhi;
   Double_t sumEtaUESub = coneptsumClusterSubEta + coneptsumTrackSubEta;
   
-  fhConeSumPtPhiUESub->Fill(ptTrig,sumPhiUESub);
-  fhConeSumPtEtaUESub->Fill(ptTrig,sumEtaUESub);
-  
+  fhConeSumPtPhiUESub          ->Fill(ptTrig ,          sumPhiUESub);
   fhConeSumPtPhiUESubTrigEtaPhi->Fill(etaTrig, phiTrig, sumPhiUESub);
+  fhConeSumPtEtaUESub          ->Fill(ptTrig ,          sumEtaUESub);
   fhConeSumPtEtaUESubTrigEtaPhi->Fill(etaTrig, phiTrig, sumEtaUESub);
   
 }
