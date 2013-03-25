@@ -104,6 +104,21 @@ AliDhcTask *AddTaskDhc(
       if (hHEff) {
         sprintf(chExtraName,"%s_corrH",chExtraName);
       }
+    } else if (iAna==3) { // h-mu
+      Int_t nDetaBins = 100;
+      Int_t nDPhiBins = 36;
+      dhcTask->SetAnaMode(AliDhcTask::kHMu);
+      dhcTask->SetHEffT(hHEff);
+      dhcTask->SetHEffA(hMuEff);
+      dhcTask->SetEtaMax(5.0);
+      dhcTask->SetPtTACrit(kFALSE);
+      sprintf(chExtraName,"%s_HMu",chExtraName);
+      if (hMuEff) {
+        sprintf(chExtraName,"%s_corrMu",chExtraName);
+      }
+      if (hHEff) {
+        sprintf(chExtraName,"%s_corrH",chExtraName);
+      }
     } else if (iAna==4) { // mu-mu
       Int_t nDetaBins = 60;
       Int_t nDPhiBins = 36;
