@@ -3,7 +3,8 @@
 AliEmcalMCTrackSelector* AddTaskMCTrackSelector(
   const char *outname    = "MCParticles",
   Bool_t      nk         = kFALSE,
-  Bool_t      ch         = kFALSE
+  Bool_t      ch         = kFALSE,
+  Double_t    etamax     = 1
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -32,6 +33,7 @@ AliEmcalMCTrackSelector* AddTaskMCTrackSelector(
   eTask->SetTracksOutName(outname);
   eTask->SetRejectNK(nk);
   eTask->SetChargedMC(ch);
+  eTask->SetEtaMax(etamax);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

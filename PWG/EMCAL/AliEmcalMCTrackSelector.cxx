@@ -26,8 +26,9 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() :
   fTracksOutName("PicoTracks"),
   fRejectNK(kFALSE),
   fChargedMC(kFALSE),
-  fInit(kFALSE),
   fTracksMapName(""),
+  fEtaMax(1),
+  fInit(kFALSE),
   fEsdMode(kFALSE),
   fTracksIn(0),
   fTracksOut(0),
@@ -42,8 +43,9 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) :
   fTracksOutName("PicoTracks"),
   fRejectNK(kFALSE),
   fChargedMC(kFALSE),
-  fInit(kFALSE),
   fTracksMapName(""),
+  fEtaMax(1),
+  fInit(kFALSE),
   fEsdMode(kFALSE),
   fTracksIn(0),
   fTracksOut(0),
@@ -149,7 +151,7 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
     if (!track)
       continue;
 
-    if (TMath::Abs(track->Eta()) > 1) 
+    if (TMath::Abs(track->Eta()) > fEtaMax) 
       continue;
     
     Int_t pdgCode = track->PdgCode();

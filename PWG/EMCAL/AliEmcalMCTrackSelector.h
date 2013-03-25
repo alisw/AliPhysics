@@ -19,9 +19,10 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   void UserCreateOutputObjects();
   void UserExec(Option_t *option);
 
-  void SetTracksOutName(const char *name)            { fTracksOutName    = name ; }
-  void SetRejectNK(Bool_t r = kTRUE)                 { fRejectNK         = r    ; }
   void SetChargedMC(Bool_t c = kTRUE)                { fChargedMC        = c    ; }
+  void SetEtaMax(Double_t e)                         { fEtaMax           = e    ; }
+  void SetRejectNK(Bool_t r = kTRUE)                 { fRejectNK         = r    ; }
+  void SetTracksOutName(const char *name)            { fTracksOutName    = name ; }
 
  protected:
   Int_t              GetNumberOfTracks() const;
@@ -31,8 +32,9 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   TString            fTracksOutName;        // name of output track array
   Bool_t             fRejectNK;             // true = reject k0l and neutrons
   Bool_t             fChargedMC;            // true = only charged particles
-  Bool_t             fInit;                 // true = task initialized
   TString            fTracksMapName;        // name of the track map
+  Double_t           fEtaMax;               // maximum eta to accept tracks
+  Bool_t             fInit;                 //!true = task initialized
   Bool_t             fEsdMode;              //!switch for ESD/AOD mode
   TClonesArray      *fTracksIn;             //!track array in (AOD only)
   TClonesArray      *fTracksOut;            //!track array out
