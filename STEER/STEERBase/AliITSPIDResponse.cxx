@@ -299,7 +299,7 @@ Double_t AliITSPIDResponse::GetNumberOfSigmas( const AliVTrack* track, AliPID::E
 }
 
 //_________________________________________________________________________
-Double_t AliITSPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EParticleType type) const
+Double_t AliITSPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EParticleType type, Bool_t ratio/*=kFALSE*/) const
 {
   //
   // Signal - expected
@@ -315,8 +315,13 @@ Double_t AliITSPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
   //      this needs to be changed if ITS provides a parametrisation
   //      for electrons also for ITS+TPC tracks
   
-  Float_t bethe = Bethe(mom,AliPID::ParticleMassZ(type), isSA || (type==AliPID::kElectron))*chargeFactor;
-  return (dEdx - bethe);
+  const Float_t bethe = Bethe(mom,AliPID::ParticleMassZ(type), isSA || (type==AliPID::kElectron))*chargeFactor;
+
+  Double_t delta=-9999.;
+  if (!ratio) delta=dEdx-bethe;
+  else if (bethe>1.e-20) delta=dEdx/bethe;
+  
+  return delta;
 }
 
 //_________________________________________________________________________

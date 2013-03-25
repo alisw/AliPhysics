@@ -411,15 +411,21 @@ Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
 }
 
 //_________________________________________________________________________
-Float_t AliESDpid::GetSignalDeltaTOFold(const AliVParticle *track, AliPID::EParticleType type) const
+Float_t AliESDpid::GetSignalDeltaTOFold(const AliVParticle *track, AliPID::EParticleType type, Bool_t ratio/*=kFALSE*/) const
 {
   //
   // TOF signal - expected
   //
   AliVTrack *vtrack=(AliVTrack*)track;
   
-  Double_t expTime = fTOFResponse.GetExpectedSignal(vtrack,type);
-  return (vtrack->GetTOFsignal() - fTOFResponse.GetStartTime(vtrack->P()) - expTime);
+  const Double_t expTime = fTOFResponse.GetExpectedSignal(vtrack,type);
+  const Double_t tofTime=vtrack->GetTOFsignal() - fTOFResponse.GetStartTime(vtrack->P());
+  Double_t delta=-9999.;
+
+  if (!ratio) delta=tofTime-expTime;
+  else if (expTime>1.e-20) delta=tofTime/expTime;
+  
+  return delta;
 }
 
 //_________________________________________________________________________

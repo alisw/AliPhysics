@@ -328,15 +328,19 @@ void AliHMPIDPIDResponse::GetProbability(const AliVTrack *vTrk,Int_t nSpecies,Do
   delete [] h;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDPIDResponse::GetSignalDelta(const AliVTrack *vTrk, AliPID::EParticleType specie) const {
+Double_t AliHMPIDPIDResponse::GetSignalDelta(const AliVTrack *vTrk, AliPID::EParticleType specie, Bool_t ratio/*=kFALSE*/) const {
   
   //
   // calculation of Experimental Cherenkov angle - Theoretical Cherenkov angle  
   //
-  const Double_t delta = vTrk->GetHMPIDsignal() - GetExpectedSignal(vTrk,specie);
+  const Double_t signal    = vTrk->GetHMPIDsignal();
+  const Double_t expSignal = GetExpectedSignal(vTrk,specie);
+
+  Double_t delta = -9999.;
+  if (!ratio) delta=signal-expSignal;
+  else if (expSignal>1.e-20) delta=signal/expSignal;
   
   return delta;
-  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TVector2 AliHMPIDPIDResponse::TracePhot(Double_t xRa, Double_t yRa, Double_t thRa, Double_t phRa, Double_t ckovThe,Double_t ckovPhi) const {

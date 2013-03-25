@@ -39,7 +39,7 @@ public :
     Double_t GetExpectedSigma   (const AliVTrack *vTrk, AliPID::EParticleType specie                 ) const;                                                                     //Find the sigma for a given ThetaCerTh
     Double_t GetNumberOfSigmas  (const AliVTrack *vTrk, AliPID::EParticleType specie                 ) const;                                                                     //Find the expected Cherenkov angle for a given track
     void     GetProbability     (const AliVTrack *vTrk, Int_t nSpecies,Double_t *prob                ) const;                                                                     //Find the PID probability array
-    Double_t GetSignalDelta     (const AliVTrack *vTrk, AliPID::EParticleType specie                 ) const;    
+    Double_t GetSignalDelta     (const AliVTrack *vTrk, AliPID::EParticleType specie, Bool_t ratio=kFALSE) const;    
     void     Propagate          (const TVector3  dir,   TVector3 &pos,  Double_t z                   ) const;                                                                     //propagate photon alogn the line  
     void     Refract            (TVector3 &dir,         Double_t n1,    Double_t n2                  ) const;                                                                     //refract photon on the boundary
     TVector2 TracePhot          (Double_t xRa, Double_t yRa,  Double_t thRa, Double_t phRa, Double_t ckovThe,Double_t ckovPhi) const;                                             //trace photon created by track to PC 

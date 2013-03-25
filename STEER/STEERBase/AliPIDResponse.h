@@ -11,16 +11,16 @@
 //   Origin: Jens Wiechula, Uni Tuebingen, jens.wiechula@cern.ch //
 //---------------------------------------------------------------//
 
+#include "AliVParticle.h"
+#include "AliVTrack.h"
+
 #include "AliITSPIDResponse.h"
 #include "AliTPCPIDResponse.h"
 #include "AliTRDPIDResponse.h"
 #include "AliTOFPIDResponse.h"
 #include "AliHMPIDPIDResponse.h"
 #include "AliEMCALPIDResponse.h"
-
-
-#include "AliVParticle.h"
-#include "AliVTrack.h"
+#include "AliPID.h"
 
 #include "TNamed.h"
 
@@ -98,8 +98,8 @@ public:
   Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel,Double_t centrality=-1,AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
 
   // Signal delta
-  EDetPidStatus GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const;
-  Double_t GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
+  EDetPidStatus GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
+  Double_t GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Bool_t ratio=kFALSE) const;
   
   // Probabilities
   EDetPidStatus ComputePIDProbability  (EDetCode  detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
@@ -175,7 +175,7 @@ protected:
 
   //unbuffered PID calculation
   virtual Float_t GetNumberOfSigmasTOFold  (const AliVParticle */*track*/, AliPID::EParticleType /*type*/) const {return 0;}
-  virtual Float_t GetSignalDeltaTOFold(const AliVParticle */*track*/, AliPID::EParticleType /*type*/) const {return -9999.;}
+  virtual Float_t GetSignalDeltaTOFold(const AliVParticle */*track*/, AliPID::EParticleType /*type*/, Bool_t /*ratio*/=kFALSE) const {return -9999.;}
   
   EDetPidStatus GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
   EDetPidStatus GetTOFPIDStatus(const AliVTrack *track) const;
@@ -276,10 +276,10 @@ private:
   Float_t GetBufferedNumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
 
   // Signal deltas
-  EDetPidStatus GetSignalDeltaITS(const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const;
-  EDetPidStatus GetSignalDeltaTPC(const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const;
-  EDetPidStatus GetSignalDeltaTOF(const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const;
-  EDetPidStatus GetSignalDeltaHMPID(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val) const;
+  EDetPidStatus GetSignalDeltaITS(const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
+  EDetPidStatus GetSignalDeltaTPC(const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
+  EDetPidStatus GetSignalDeltaTOF(const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
+  EDetPidStatus GetSignalDeltaHMPID(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
   
   // Probabilities
   EDetPidStatus GetComputePIDProbability  (EDetector detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;

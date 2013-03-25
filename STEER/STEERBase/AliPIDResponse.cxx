@@ -374,30 +374,30 @@ Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID:
 }
 
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDelta(EDetector detector, const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDelta(EDetector detector, const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio/*=kFALSE*/) const
 {
   //
   //
   //
   val=-9999.;
   switch (detector){
-    case kITS:   return GetSignalDeltaITS(track,type,val); break;
-    case kTPC:   return GetSignalDeltaTPC(track,type,val); break;
-    case kTOF:   return GetSignalDeltaTOF(track,type,val); break;
-    case kHMPID: return GetSignalDeltaHMPID(track,type,val); break;
+    case kITS:   return GetSignalDeltaITS(track,type,val,ratio); break;
+    case kTPC:   return GetSignalDeltaTPC(track,type,val,ratio); break;
+    case kTOF:   return GetSignalDeltaTOF(track,type,val,ratio); break;
+    case kHMPID: return GetSignalDeltaHMPID(track,type,val,ratio); break;
     default: return kDetNoSignal;
   }
   return kDetNoSignal;
 }
 
 //______________________________________________________________________________
-Double_t AliPIDResponse::GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const
+Double_t AliPIDResponse::GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Bool_t ratio/*=kFALSE*/) const
 {
   //
   //
   //
   Double_t val=-9999.;
-  EDetPidStatus stat=GetSignalDelta(detCode, track, type, val);
+  EDetPidStatus stat=GetSignalDelta(detCode, track, type, val, ratio);
   if ( stat==kDetNoSignal ) val=-9999.;
   return val;
 }
@@ -1798,6 +1798,12 @@ Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID:
 
   const EDetPidStatus pidStatus=GetTPCPIDStatus(track);
   if (pidStatus!=kDetPidOk) return -999.;
+
+  // the following call is needed in order to fill the transient data member
+  // fTPCsignalTuned which is used in the TPCPIDResponse to judge
+  // if using tuned on data
+  if (fTuneMConData)
+    this->GetTPCsignalTunedOnData(track);
   
   return fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
 }
@@ -1856,49 +1862,56 @@ Float_t AliPIDResponse::GetNumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPI
 }
 
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaITS(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaITS(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val, Bool_t ratio/*=kFALSE*/) const
 {
   //
   // Signal minus expected Signal for ITS
   //
   AliVTrack *track=(AliVTrack*)vtrack;
-  val=fITSResponse.GetSignalDelta(track,type);
+  val=fITSResponse.GetSignalDelta(track,type,ratio);
   
   return GetITSPIDStatus(track);
 }
 
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTPC(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTPC(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val, Bool_t ratio/*=kFALSE*/) const
 {
   //
   // Signal minus expected Signal for TPC
   //
   AliVTrack *track=(AliVTrack*)vtrack;
-  val=fTPCResponse.GetSignalDelta(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
+  
+  // the following call is needed in order to fill the transient data member
+  // fTPCsignalTuned which is used in the TPCPIDResponse to judge
+  // if using tuned on data
+  if (fTuneMConData)
+    this->GetTPCsignalTunedOnData(track);
+  
+  val=fTPCResponse.GetSignalDelta(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, ratio);
   
   return GetTPCPIDStatus(track);
 }
 
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTOF(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTOF(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val, Bool_t ratio/*=kFALSE*/) const
 {
   //
   // Signal minus expected Signal for TOF
   //
   AliVTrack *track=(AliVTrack*)vtrack;
-  val=GetSignalDeltaTOFold(track, type);
+  val=GetSignalDeltaTOFold(track, type, ratio);
   
   return GetTOFPIDStatus(track);
 }
 
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaHMPID(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaHMPID(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val, Bool_t ratio/*=kFALSE*/) const
 {
   //
   // Signal minus expected Signal for HMPID
   //
   AliVTrack *track=(AliVTrack*)vtrack;
-  val=fHMPIDResponse.GetSignalDelta(track, type);
+  val=fHMPIDResponse.GetSignalDelta(track, type, ratio);
   
   return GetHMPIDPIDStatus(track);
 }

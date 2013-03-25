@@ -117,7 +117,7 @@ public:
   Float_t GetSignalDelta( const AliVTrack* track,
                           AliPID::EParticleType species,
                           ETPCdEdxSource dedxSource = kdEdxDefault,
-                          Bool_t correctEta = kFALSE) const;
+                          Bool_t correctEta = kFALSE, Bool_t ratio=kFALSE) const;
   
   void SetResponseFunction(TObject* o,
                            AliPID::EParticleType type,

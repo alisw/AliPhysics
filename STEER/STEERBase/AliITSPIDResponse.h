@@ -45,7 +45,7 @@ public:
 
  Double_t GetNumberOfSigmas( const AliVTrack* track, AliPID::EParticleType species) const;
 
- Double_t GetSignalDelta( const AliVTrack* track, AliPID::EParticleType species) const;
+ Double_t GetSignalDelta( const AliVTrack* track, AliPID::EParticleType species, Bool_t ratio=kFALSE) const;
  
  Float_t GetNumberOfSigmas(Float_t mom, Float_t signal, AliPID::EParticleType type, Int_t nPtsForPid=4, Bool_t isSA=kFALSE) const {
    const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(type),2.);

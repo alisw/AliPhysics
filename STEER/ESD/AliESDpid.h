@@ -50,7 +50,7 @@ AliESDpid(const AliESDpid&a): AliPIDResponse(a), fRangeTOFMismatch(a.fRangeTOFMi
 
   void SetEventHandler(AliVEventHandler *event){fEventHandler=event;};
 protected:
-  virtual Float_t GetSignalDeltaTOFold(const AliVParticle *track, AliPID::EParticleType type) const;
+  virtual Float_t GetSignalDeltaTOFold(const AliVParticle *track, AliPID::EParticleType type, Bool_t ratio=kFALSE) const;
   virtual Float_t GetNumberOfSigmasTOFold(const AliVParticle *track, AliPID::EParticleType type) const;
 
 private:

@@ -536,7 +536,8 @@ Float_t AliTPCPIDResponse::GetNumberOfSigmas(const AliVTrack* track,
 Float_t AliTPCPIDResponse::GetSignalDelta(const AliVTrack* track,
                                           AliPID::EParticleType species,
                                           ETPCdEdxSource dedxSource,
-                                          Bool_t correctEta) const
+                                          Bool_t correctEta,
+                                          Bool_t ratio/*=kFALSE*/) const
 {
   //Calculates the number of sigmas of the PID signal from the expected value
   //for a given particle species in the presence of multiple gain scenarios
@@ -550,9 +551,13 @@ Float_t AliTPCPIDResponse::GetSignalDelta(const AliVTrack* track,
   if (!ResponseFunctiondEdxN(track, species, dedxSource, dEdx, nPoints, gainScenario, &responseFunction))
     return -9999.; //TODO: Better handling!
 
-  Double_t bethe = GetExpectedSignal(track, species, dEdx, responseFunction, correctEta);
-  // 999 will be returned by GetExpectedSigma e.g. in case of 0 dEdx clusters
-  return dEdx-bethe;
+  const Double_t bethe = GetExpectedSignal(track, species, dEdx, responseFunction, correctEta);
+
+  Double_t delta=-9999.;
+  if (!ratio) delta=dEdx-bethe;
+  else if (bethe>1.e-20) delta=dEdx/bethe;
+
+  return delta;
 }
 
 //_________________________________________________________________________

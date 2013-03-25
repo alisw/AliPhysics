@@ -105,7 +105,7 @@ Float_t AliAODpidUtil::GetTPCsignalTunedOnData(const AliVTrack *t) const {
 }
 
 //_________________________________________________________________________
-Float_t AliAODpidUtil::GetSignalDeltaTOFold(const AliVParticle *vtrack, AliPID::EParticleType type) const
+Float_t AliAODpidUtil::GetSignalDeltaTOFold(const AliVParticle *vtrack, AliPID::EParticleType type, Bool_t ratio/*=kFALSE*/) const
 {
   //
   // Number of sigma implementation for the TOF
@@ -129,8 +129,13 @@ Float_t AliAODpidUtil::GetSignalDeltaTOFold(const AliVParticle *vtrack, AliPID::
     AliError("pointer to AliAODEvent not found, please call GetTrack to set it");
     return -9999.;
   }
+
+  Double_t delta=-9999.;
+
+  if (!ratio) delta=tofTime-expTime;
+  else if (expTime>1.e-20) delta=tofTime/expTime;
   
-  return tofTime - expTime;
+  return delta;
 }
 
 //_________________________________________________________________________
