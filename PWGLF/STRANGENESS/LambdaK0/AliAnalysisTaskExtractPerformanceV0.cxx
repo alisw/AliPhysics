@@ -87,7 +87,7 @@ class AliAODv0;
 #include "AliAODcascade.h"
 #include "AliESDUtils.h"
 #include "AliGenEventHeader.h"
-
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskExtractPerformanceV0.h"
 
@@ -109,6 +109,10 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
   fkpAVertexSelection( kFALSE ),
   fkRunV0Vertexer( kFALSE ),
   fkRejectPileup ( kTRUE ),
+  fkSpecialExecution ( kFALSE),
+  fkSkipTrigger(kFALSE),
+  fkSaveAssociatedOnly (kFALSE),
+  fkDoNotCallTPCdEdx( kFALSE ),
 //------------------------------------------------
 // Tree Variables 
 
@@ -453,6 +457,10 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
   fkpAVertexSelection( kFALSE ),
   fkRunV0Vertexer( kFALSE ),
   fkRejectPileup ( kTRUE ),
+  fkSpecialExecution ( kFALSE),
+  fkSkipTrigger(kFALSE),
+  fkSaveAssociatedOnly (kFALSE),
+  fkDoNotCallTPCdEdx( kFALSE ),
 //------------------------------------------------
 // Tree Variables 
 
@@ -2360,30 +2368,32 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
   //pA triggering: CINT7
   if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
   
-  //Extra selection applies if with/without SDD is to be dealth with
-  if( fkFastOnly == "kFastOnly"){
-    //If not kFastOnly, isSelectedExtra will be kFALSE; procedure will reject it
-    isSelectedExtra = (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly;
-  }
-  if( fkFastOnly == "NotkFastOnly"){
-    //If not kFastOnly, isSelectedExtra will be kTRUE; procedure will accept it
-    isSelectedExtra = !( (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly );
-  }
-  
-  //Standard Min-Bias Selection
-  if ( ! isSelected ) {
-    PostData(1, fListHistV0);
-    PostData(2, fTree);
-    return;
-  }
-  //Check if goes through extra selections
-  //isSelectedExtra will be true in case -> fkFastOnly==""
-  //isSelectedExtra will be true in case -> fkFastOnly=="kFastOnly"    && bit kFastOnly ON
-  //isSelectedExtra will be true in case -> fkFastOnly=="NotkFastOnly" && bit kFastOnly OFF
-  if ( !isSelectedExtra ) {
-    PostData(1, fListHistV0);
-    PostData(2, fTree);
-    return;
+  if(fkSkipTrigger==kFALSE){
+    //Extra selection applies if with/without SDD is to be dealth with
+    if( fkFastOnly == "kFastOnly"){
+      //If not kFastOnly, isSelectedExtra will be kFALSE; procedure will reject it
+      isSelectedExtra = (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly;
+    }
+    if( fkFastOnly == "NotkFastOnly"){
+      //If not kFastOnly, isSelectedExtra will be kTRUE; procedure will accept it
+      isSelectedExtra = !( (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly );
+    }
+    
+    //Standard Min-Bias Selection
+    if ( ! isSelected ) {
+      PostData(1, fListHistV0);
+      PostData(2, fTree);
+      return;
+    }
+    //Check if goes through extra selections
+    //isSelectedExtra will be true in case -> fkFastOnly==""
+    //isSelectedExtra will be true in case -> fkFastOnly=="kFastOnly"    && bit kFastOnly ON
+    //isSelectedExtra will be true in case -> fkFastOnly=="NotkFastOnly" && bit kFastOnly OFF
+    if ( !isSelectedExtra ) {
+      PostData(1, fListHistV0);
+      PostData(2, fTree);
+      return;
+    }
   }
   
   f2dHistMultiplicityVsTrueForTrigEvt->Fill ( lMultiplicity , lNumberOfCharged );
@@ -2932,12 +2942,19 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       fTreeVariableAlphaV0 = lAlphaV0;
       fTreeVariablePtArmV0 = lPtArmV0;
 
-      //Official means of acquiring N-sigmas 
+    if(   fkDoNotCallTPCdEdx == kFALSE ){
+      //Official means of acquiring N-sigmas
       fTreeVariableNSigmasPosProton = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton );
       fTreeVariableNSigmasPosPion   = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kPion );
       fTreeVariableNSigmasNegProton = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton );
       fTreeVariableNSigmasNegPion   = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion );
-
+    }else{
+      fTreeVariableNSigmasPosProton = 0;
+      fTreeVariableNSigmasPosPion   = 0;
+      fTreeVariableNSigmasNegProton = 0;
+      fTreeVariableNSigmasNegPion   = 0;
+    }
+    
 //tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]
       Double_t lDistanceTravelled = TMath::Sqrt(
 						TMath::Power( tDecayVertexV0[0] - lBestPrimaryVtxPos[0] , 2) +
@@ -2984,14 +3001,22 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
              (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda     ) || 
              (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short    ) ){
              //Pre-selection in case this is AA...
-             if( fkIsNuclear == kFALSE ) fTree->Fill();
+             if( fkIsNuclear == kFALSE && fkSpecialExecution == kFALSE ) fTree->Fill();
              if( fkIsNuclear == kTRUE){ 
              //If this is a nuclear collision___________________
              // ... pre-filter with daughter eta selection only (not TPC)
-               if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 ) fTree->Fill();
+               if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSpecialExecution == kFALSE ){
+                 if( !fkSaveAssociatedOnly || (fkSaveAssociatedOnly &&( TMath::Abs(fTreeVariablePID) == 3122 || fTreeVariablePID==310 ) ))fTree->Fill();
+               }
              }//end nuclear_____________________________________
          }
       }
+    //Special Execution: hypertriton exploration
+    if( lOnFlyStatus == 0 && fkSpecialExecution == kTRUE){
+      if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 ){
+        if( !fkSaveAssociatedOnly || (fkSaveAssociatedOnly &&( TMath::Abs(fTreeVariablePID) == 1010010030 ) ) ) fTree->Fill();
+      }
+    }
 
 //------------------------------------------------
 // Fill tree over.
