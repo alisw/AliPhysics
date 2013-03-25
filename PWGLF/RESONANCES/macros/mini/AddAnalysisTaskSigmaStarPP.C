@@ -19,6 +19,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
 (
    Bool_t      isMC,
    Bool_t      isPP,
+   Float_t     cutV = 10.0,
    Int_t       aodFilterBit = 5,
    Int_t       piPIDCut = 3.0,
    Int_t       pPIDCut = 3.0,
@@ -76,7 +77,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
    // - 2nd argument --> |Vz| range
    // - 3rd argument --> minimum required number of contributors
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
-   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", cutV, 0, kFALSE);
    if (isPP) cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup
    
    // define and fill cut set for event cut
