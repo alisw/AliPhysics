@@ -308,7 +308,7 @@ void AliFemtoCutMonitorEventMult::Fill(const AliFemtoEvent* aEvent)
 void AliFemtoCutMonitorEventMult::Write()
 {
   // Write out the relevant histograms
-  // fEvMult->Write();
+  fEvMult->Write();
   fNormEvMult->Write();
   fPsiVZERO->Write();
 

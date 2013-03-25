@@ -690,7 +690,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     hbtEvent->SetCentralityZNA(cent->GetCentralityPercentile("ZNA"));
     hbtEvent->SetCentralityCL1(cent->GetCentralityPercentile("CL1"));
     //    hbtEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
-    hbtEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
+    //    hbtEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
     //    hbtEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
 
     if (Debug()>1) printf("  FemtoReader Got Event with %f %f %f %f\n", cent->GetCentralityPercentile("V0M"), 0.0, cent->GetCentralityPercentile("CL1"), 0.0);
