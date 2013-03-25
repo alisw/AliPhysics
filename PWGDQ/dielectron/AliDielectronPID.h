@@ -29,6 +29,7 @@ class AliVTrack;
 class TGraph;
 class AliPIDResponse;
 class AliDielectronVarManager;
+class AliDielectronVarCuts;
 
 class AliDielectronPID : public AliAnalysisCuts {
 public:
@@ -56,6 +57,8 @@ public:
               Double_t min=0, Double_t max=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire, 
 	      Int_t var=-1);
   void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp, Double_t min, Double_t max, Bool_t exclude, UInt_t pidBitType,              TF1 * const funSigma);
+  void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp,
+  	      AliDielectronVarCuts *varcuts, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire );
   
   void SetDefaults(Int_t def);
 
@@ -98,7 +101,7 @@ private:
   Double_t fSigmaFunLow[kNmaxPID]; // lower bound for fFunSigma
   Double_t fSigmaFunUp[kNmaxPID];  // upper bound for fFunSigma
   TF1      *fFunSigma[kNmaxPID];   // use function as cut range
-
+  AliDielectronVarCuts *fVarCuts[kNmaxPID]; // varcuts
 
   AliPIDResponse *fPIDResponse;   //! pid response object
   
@@ -109,6 +112,8 @@ private:
                                   // was called
   static TF1    *fgFunEtaCorr;    //function for eta correction of electron sigma
   static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
+
+
   
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut);
