@@ -1741,21 +1741,25 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 	fMixed = bMixed->GetCorrelationFunctionChargeIndependent(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
       }
 
-      // then get the correlation function (divide fSame/fmixed)
-      fSame->Divide(fMixed);
-   
-      // for the first: clone
-      if(iBinPsi == binPsiMin && iBinVertex == binVertexMin ){
-	gHist = (TH2D*)fSame->Clone();
-      }
-      else{  // otherwise: add for averaging
-	gHist->Add(fSame);
+      if(fSame && fMixed){
+	// then get the correlation function (divide fSame/fmixed)
+	fSame->Divide(fMixed);
+	
+	// for the first: clone
+	if(iBinPsi == binPsiMin && iBinVertex == binVertexMin ){
+	  gHist = (TH2D*)fSame->Clone();
+	}
+	else{  // otherwise: add for averaging
+	  gHist->Add(fSame);
+	}
       }
     }
   }
 
-  // average over number of bins nbinsVertex * nbinsPsi
-  gHist->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+  if(gHist){
+    // average over number of bins nbinsVertex * nbinsPsi
+    gHist->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+  }
   
   return gHist;
 }
