@@ -647,46 +647,25 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   tEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
   tEvent->SetNormalizedMult(tracksPrim);
 
+  if (cent) {
+    tEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
+    tEvent->SetCentralityZNA(cent->GetCentralityPercentile("ZNA"));
+    tEvent->SetCentralityCL1(cent->GetCentralityPercentile("CL1"));
+    //    tEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
+    //    tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
+  }
+
   if (fEstEventMult==kCentrality) {
-    //  AliCentrality *cent = fEvent->GetCentrality();
+    //AliCentrality *cent = fEvent->GetCentrality();
     //cout<<"AliFemtoEventReaderAOD:"<<lrint(10*cent->GetCentralityPercentile("V0M"))<<endl;
     if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0M")));
     //  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
-    
-    if (cent) {
-      tEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
-      tEvent->SetCentralityZNA(cent->GetCentralityPercentile("ZNA"));
-      tEvent->SetCentralityCL1(cent->GetCentralityPercentile("CL1"));
-      //    tEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
-      tEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
-      //    tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
-    }
   }
   else if (fEstEventMult==kCentralityZNA) {
-    //  AliCentrality *cent = fEvent->GetCentrality();
-    //cout<<"AliFemtoEventReaderAOD:"<<lrint(10*cent->GetCentralityPercentile("V0M"))<<endl;
     if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("ZNA")));
-    //  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
-    
-    if (cent) {
-      tEvent->SetCentralityV0(cent->GetCentralityPercentile("ZNA"));
-      //    tEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
-      tEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
-      //    tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
-    }
   }
   else if (fEstEventMult==kCentralityCL1) {
-    //  AliCentrality *cent = fEvent->GetCentrality();
-    //cout<<"AliFemtoEventReaderAOD:"<<lrint(10*cent->GetCentralityPercentile("V0M"))<<endl;
     if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("CL1")));
-    //  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
-    
-    if (cent) {
-      tEvent->SetCentralityV0(cent->GetCentralityPercentile("CL1"));
-      //    tEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
-      tEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
-      //    tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
-    }
   }
   else if(fEstEventMult==kGlobalCount){
     tEvent->SetNormalizedMult(tNormMult); //particles counted in the loop, trying to reproduce GetReferenceMultiplicity. If better (default) method appears it should be changed
