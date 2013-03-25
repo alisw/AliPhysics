@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $Id: AliAnalysisTaskLongRangeCorrelations.h 232 2012-11-28 17:27:59Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.h 233 2012-12-02 14:46:41Z cmayer $
 #ifndef _AliAnalysisTaskLongRangeCorrelations_H_
 #define _AliAnalysisTaskLongRangeCorrelations_H_
 
@@ -21,9 +21,10 @@
 ////////////////////////////////////////////////////////////////////////
 
 
+class TAxis;
+class TClonesArray;
 class TList;
 class TObjArray;
-class TClonesArray;
 
 class AliAODEvent;
 class AliAODHeader;
@@ -64,9 +65,9 @@ protected:
   // <n_1>(phi_1,eta_1)
   // <n_2>(phi_2,eta_2) 
   // <n_1, n_2>(phi_1,eta_1;phi_2,eta_2)
-  void       CalculateMoments(TString, TObjArray*, TObjArray*, Double_t); 
-  void       ComputeNXForThisEvent(TObjArray*, const char*, Double_t);
-  THnSparse* ComputeNForThisEvent(TObjArray*, const char*) const;
+  void       CalculateMoments(TString, TObjArray*, TObjArray*, Double_t, Double_t); 
+  void       ComputeNXForThisEvent(TObjArray*, const char*, Double_t, Double_t);
+  THnSparse* ComputeNForThisEvent(TObjArray*, const char*, Double_t) const;
   void       FillNEtaHist(TString, THnSparse*, Double_t);
 
   TObjArray* GetAcceptedTracks(AliAODEvent*, Double_t);
@@ -85,6 +86,7 @@ protected:
 
 private:
   TList*               fOutputList;         //! Output list
+  TAxis*               fVertexZ;            //! vertex z bins
   Bool_t               fRunMixing;          //
   AliEventPoolManager* fPoolMgr;            //! event pool manager  
   Int_t                fMixingTracks;       //
