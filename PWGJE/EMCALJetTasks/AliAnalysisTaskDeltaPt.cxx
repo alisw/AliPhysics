@@ -326,6 +326,10 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
     }
   }
 
+  delete[] binsPt;
+  delete[] binsCorrPt;
+  delete[] binsArea;
+
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 }
 
