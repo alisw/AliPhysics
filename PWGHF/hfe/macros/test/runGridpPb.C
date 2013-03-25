@@ -264,7 +264,7 @@ void SetupUtil(bool IsMC, bool isAOD){
 
         //===== ADD PID RESPONSE: ===
         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-        AddTaskPIDResponse();
+        AddTaskPIDResponse(IsMC);
 
         //===== ADD CENTRALITY: ===
         if(!isAOD){
