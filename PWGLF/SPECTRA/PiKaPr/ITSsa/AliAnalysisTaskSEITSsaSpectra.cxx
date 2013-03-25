@@ -1024,7 +1024,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     
     for(Int_t i=0;i<4;i++){
       y[i] = Eta2y(pt,pdgmass[i],track->Eta());
-      bbtheo[i]=fITSPIDResponse->Bethe(p,pdgmass[i],kTRUE);
+      //bbtheo[i]=fITSPIDResponse->Bethe(p,pdgmass[i],kTRUE); //Pure PHOBOS BB
+      bbtheo[i]=fITSPIDResponse->BetheITSsaHybrid(p,pdgmass[i]); //PHOBOS + polinomial at low pt (below beta*gamma = 0.76)
       logdiff[i]=TMath::Log(dedx) - TMath::Log(bbtheo[i]);
     }
     
