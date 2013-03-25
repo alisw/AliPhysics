@@ -350,13 +350,22 @@ namespace RawProduction {
       hPi0Ratio->SetMarkerStyle(20) ;
       hPi0Ratio->SetMarkerSize(0.7) ;
 
-      //     if(outBin.Centrality()==0) rangeMax=0.4 ;
-      //     if(ptBin==1){
-      //       rangeMin=0.06 ;
-      //       rangeMax=0.25 ;
-      //     }
-
-
+      if( ptBinEdges[ptBin] < 2.1 ) {
+	rangeMin = 0.1;
+	rangeMax = 0.2;
+      } else if( ptBinEdges[ptBin] < 3.1 ) {
+	rangeMin = 0.08;
+	rangeMax = 0.22;
+      } else if( ptBinEdges[ptBin] < 5.1 ) {
+	rangeMin = 0.08;
+	rangeMax = 0.25;
+      } else if( ptBinEdges[ptBin] < 10.1 ) {
+	rangeMin = 0.07;
+	rangeMax = 0.3;
+      } else {
+	rangeMin = 0.05;
+	rangeMax = 0.3;
+      }
 
       // ================================================
       // Fit Pol1 ratio
