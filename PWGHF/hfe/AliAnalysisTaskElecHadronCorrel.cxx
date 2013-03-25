@@ -988,6 +988,7 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
   Int_t poolsize   = 1000;
 
   Int_t nCentralityBins  = 5;
+  Int_t nCentralityBinsSC  = 6;
   Int_t nZvtxBins  = 4;
   Double_t CentralityBins[6];
   Double_t CentralityBinsSC[7];
@@ -1009,7 +1010,6 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
     fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) CentralityBins, nZvtxBins, (Double_t*) vertexBins);
   }
 
-
   if(!fTriggerCentral)                                                                     
   { 
     CentralityBinsSC[0] = 20;  
@@ -1025,7 +1025,7 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
     vertexBins[2] = 0;
     vertexBins[3] = 5;
     vertexBins[4] = 10;
-    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) CentralityBinsSC, nZvtxBins, (Double_t*) vertexBins);
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsSC, (Double_t*) CentralityBinsSC, nZvtxBins, (Double_t*) vertexBins);
   }
 
 
