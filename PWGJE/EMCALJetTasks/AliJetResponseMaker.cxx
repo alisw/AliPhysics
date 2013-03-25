@@ -1310,23 +1310,25 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
       Int_t index2 = jet2->ClusterAt(iClus2);
       for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
 	Int_t index = jet1->ClusterAt(iClus);
-	AliVCluster *clus =  static_cast<AliVCluster*>(fCaloClusters->At(index));
-	if (!clus) {
-	  AliWarning(Form("Could not find cluster %d!", index));
-	  continue;
+	if (index2 == index) { // found common particle
+	  AliVCluster *clus =  static_cast<AliVCluster*>(fCaloClusters->At(index));
+	  if (!clus) {
+	    AliWarning(Form("Could not find cluster %d!", index));
+	    continue;
+	  }
+	  AliVCluster *clus2 =  static_cast<AliVCluster*>(fCaloClusters2->At(index2));
+	  if (!clus2) {
+	    AliWarning(Form("Could not find cluster %d!", index2));
+	    continue;
+	  }
+	  TLorentzVector part, part2;
+	  clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+	  clus2->GetMomentum(part2, const_cast<Double_t*>(fVertex));
+	  
+	  d1 -= part.Pt();
+	  d2 -= part2.Pt();
+	  break;
 	}
-	AliVCluster *clus2 =  static_cast<AliVCluster*>(fCaloClusters2->At(index2));
-	if (!clus2) {
-	  AliWarning(Form("Could not find cluster %d!", index2));
-	  continue;
-	}
-	TLorentzVector part, part2;
-	clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
-	clus2->GetMomentum(part2, const_cast<Double_t*>(fVertex));
-
-	d1 -= part.Pt();
-	d2 -= part2.Pt();
-	break;
       }
     }
 

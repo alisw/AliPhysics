@@ -571,7 +571,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	    label = TMath::Abs(track->GetLabel());
 	  
 	  if (label == 0) 
-	    AliWarning(Form("%s: Track %d with label==0", GetName(), i));
+	    AliDebug(1,Form("%s: Track %d with label==0", GetName(), i));
 	}
 
 	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), isEmc, label);
@@ -609,7 +609,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	if (fIsAODMC) {
 	  label = clus->GetLabel();
 	  if (label <= 0) 
-	    AliWarning(Form("%s: Clus %d with label<=0", GetName(), i));
+	    AliDebug(1,Form("%s: Clus %d with label<=0", GetName(), i));
 	}
 	AddCluster(clus);
       }
@@ -643,7 +643,7 @@ void AliJetEmbeddingFromAODTask::Run()
 
 	if (fIsAODMC) {
 	  if (mclabel <= 0) 
-	    AliWarning(Form("%s: Cell %d with label<=0", GetName(), i));
+	    AliDebug(1,Form("%s: Cell %d with label<=0", GetName(), i));
 	}
 	else {
 	  mclabel = 0;

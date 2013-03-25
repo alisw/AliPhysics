@@ -832,7 +832,11 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   }
 
   // then setup clusterizer
-  delete fClusterizer;
+  if (fClusterizer) {
+    // avoid to delete digits array
+    fClusterizer->SetDigitsArr(0);
+    delete fClusterizer;
+  }
   if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
     fClusterizer = new AliEMCALClusterizerv1(fGeom);
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) {

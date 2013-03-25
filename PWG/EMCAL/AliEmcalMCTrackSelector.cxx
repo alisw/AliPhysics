@@ -88,7 +88,7 @@ void AliEmcalMCTrackSelector::UserCreateOutputObjects()
 
   fTracksMapName = fTracksOutName;
   fTracksMapName += "_Map";
-  fTracksMap = new AliNamedArrayI(fTracksMapName, 9999);
+  fTracksMap = new AliNamedArrayI(fTracksMapName, 99999);
 }
 
 //________________________________________________________________________
@@ -138,6 +138,9 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
 
   // loop over tracks
   for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
+
+    if (iTracks >= fTracksMap->GetSize())
+      fTracksMap->Set(iTracks*2);
 
     fTracksMap->AddAt(-1, iTracks);
 
