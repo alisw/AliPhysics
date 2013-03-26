@@ -41,7 +41,7 @@ AliESDtrackCuts* SetupESDcuts() {
   esdCuts->SetMaxDCAToVertexZ(3.);
   esdCuts->SetMinNClustersTPC(70);
   esdCuts->SetRequireITSRefit(kTRUE);
-  //esdCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  esdCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   return esdCuts;
 }
 
