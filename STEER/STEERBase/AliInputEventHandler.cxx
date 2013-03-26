@@ -33,8 +33,9 @@ ClassImp(AliInputEventHandler)
 AliInputEventHandler::AliInputEventHandler() :
     AliVEventHandler(),
     fTree(0),
-    fBranches(""),
-    fBranchesOn(""),
+    fBranches(),
+    fBranchesOn(),
+    fInputFileName(),
     fNewEvent(kTRUE),
     fEventCuts(0),
     fIsSelectedResult(0),
@@ -53,20 +54,22 @@ AliInputEventHandler::~AliInputEventHandler()
 
 //______________________________________________________________________________
 AliInputEventHandler::AliInputEventHandler(const char* name, const char* title):
-  AliVEventHandler(name, title),
-  fTree(0),
-  fBranches(""),
-  fBranchesOn(""),
-  fNewEvent(kTRUE),
-  fEventCuts(0),
-  fIsSelectedResult(0),
-  fMixingHandler(0),
-  fParentHandler(0),
-  fUserInfo(0)
+    AliVEventHandler(name, title),
+    fTree(0),
+    fBranches(),
+    fBranchesOn(),
+    fInputFileName(),
+    fNewEvent(kTRUE),
+    fEventCuts(0),
+    fIsSelectedResult(0),
+    fMixingHandler(0),
+    fParentHandler(0),
+    fUserInfo(0)
 {
 // Named constructor.
 }
 
+//______________________________________________________________________________
 void AliInputEventHandler::SwitchOffBranches() const {
   //
   // Switch of branches on user request
@@ -82,6 +85,7 @@ void AliInputEventHandler::SwitchOffBranches() const {
   delete tokens;
 }
 
+//______________________________________________________________________________
 void AliInputEventHandler::SwitchOnBranches() const {
   //
   // Switch of branches on user request
@@ -98,6 +102,7 @@ void AliInputEventHandler::SwitchOnBranches() const {
   delete tokens;
 }
 
+//______________________________________________________________________________
 TObject *AliInputEventHandler::GetStatistics(Option_t *) const
 {
 // Returns the statistics object(s) (TH2F histogram) produced by the physics
@@ -109,4 +114,17 @@ Long64_t AliInputEventHandler::GetReadEntry() const
 {
   // Get the current entry.
   return fTree->GetReadEntry();
+}
+
+//______________________________________________________________________________
+void AliInputEventHandler::SetInputFileName(const char* fname)
+{
+// Set the input file name to be analyzed. Done automatically by the manager, but
+// in case this needs to be done at an earlier stage has to be done manually.
+   if (!strlen(fname)) return;
+   if (fInputFileName.Length()) {
+      Error("SetInputFileName", "Input file name already set to: %s\n", fInputFileName.Data());
+      return;
+   }
+   fInputFileName  = fname;
 }

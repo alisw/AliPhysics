@@ -30,8 +30,10 @@ class AliInputEventHandler : public AliVEventHandler {
     AliInputEventHandler();
     AliInputEventHandler(const char* name, const char* title);
     virtual ~AliInputEventHandler();
+    virtual void         SetInputFileName(const char* fname);
+    virtual const char  *GetInputFileName() const                     {return fInputFileName;}
     virtual void         SetOutputFileName(const char* /*fname*/) {;}
-    virtual const char  *GetOutputFileName()                          {return 0;}
+    virtual const char  *GetOutputFileName() const                    {return 0;}
     virtual Bool_t       Init(Option_t* opt) {if(fMixingHandler) fMixingHandler->Init(opt);return kTRUE;}
     virtual Bool_t       Init(TTree* tree, Option_t* opt) {if(fMixingHandler) fMixingHandler->Init(tree,opt);return kTRUE;}
     virtual Bool_t       GetEntry() {if(fMixingHandler) fMixingHandler->GetEntry(); return kTRUE;}
@@ -89,13 +91,14 @@ class AliInputEventHandler : public AliVEventHandler {
     TTree          *fTree;         //! Pointer to the tree
     TString         fBranches;     //  List of branches to be switched off (separated by space)
     TString         fBranchesOn;   //  List of branches to be switched on  (separated by space)
+    TString         fInputFileName; // Name of the input file
     Bool_t          fNewEvent;     //  New event flag 
     AliVCuts*       fEventCuts;    //  Cuts on the event level
     UInt_t          fIsSelectedResult; //  Selection result
     AliInputEventHandler* fMixingHandler; // Optionla plugin for mixing
     AliInputEventHandler* fParentHandler; // optional pointer to parent handlers (used in AliMultiInputEventHandler)
     TList           *fUserInfo;     //! transient user info for current tree
-    ClassDef(AliInputEventHandler, 6);
+    ClassDef(AliInputEventHandler, 7);
 };
 
 #endif

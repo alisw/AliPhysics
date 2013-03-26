@@ -30,7 +30,7 @@ class AliAODHandler : public AliVEventHandler {
     AliAODHandler(const char* name, const char* title);
     virtual ~AliAODHandler();
     virtual void         SetOutputFileName(const char* fname);
-    virtual const char*  GetOutputFileName();
+    virtual const char*  GetOutputFileName() const;
     // Extra outputs as a string separated by commas
     virtual const char*  GetExtraOutputs() const;
     virtual Bool_t       Init(Option_t* option);

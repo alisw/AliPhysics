@@ -1690,6 +1690,25 @@ void AliAnalysisManager::RunLocalInit()
 }   
 
 //______________________________________________________________________________
+void AliAnalysisManager::InputFileFromTree(TTree * const tree, TString &fname)
+{
+// Retrieves name of the file from tree
+   fname = "";
+   if (!tree) return;
+   TFile *file = tree->GetCurrentFile();
+   TString basename;
+   if (!file) {
+      TChain *chain = dynamic_cast<TChain*>(tree);
+      if (!chain || !chain->GetNtrees()) return;
+      basename = gSystem->BaseName(chain->GetListOfFiles()->First()->GetTitle());
+   } else {   
+      basename = gSystem->BaseName(file->GetName());
+   }   
+   Int_t index = basename.Index("#");
+   fname = basename(index+1, basename.Length());
+}   
+
+//______________________________________________________________________________
 Long64_t AliAnalysisManager::StartAnalysis(const char *type, Long64_t nentries, Long64_t firstentry)
 {
 // Start analysis having a grid handler.
@@ -1730,6 +1749,11 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
    if (anaType.Contains("proof"))     fMode = kProofAnalysis;
    else if (anaType.Contains("grid")) fMode = kGridAnalysis;
    else if (anaType.Contains("mix"))  fMode = kMixingAnalysis;
+   if (fInputEventHandler) {
+      TString fname;
+      InputFileFromTree(tree, fname);
+      if (fname.Length()) fInputEventHandler->SetInputFileName(fname);
+   }
 
    if (fMode == kGridAnalysis) {
       fIsRemote = kTRUE;

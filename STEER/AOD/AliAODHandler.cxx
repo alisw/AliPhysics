@@ -705,7 +705,7 @@ void AliAODHandler::SetOutputFileName(const char* fname)
 }
 
 //______________________________________________________________________________
-const char *AliAODHandler::GetOutputFileName()
+const char *AliAODHandler::GetOutputFileName() const
 {
 // Get file name.
    return fFileName.Data();

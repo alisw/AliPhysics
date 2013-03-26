@@ -35,6 +35,7 @@
 #include "AliLog.h"
 
 #include <TTree.h>
+#include <TSystem.h>
 #include <TTreeCache.h>
 #include <TFile.h>
 #include <TList.h>
@@ -457,23 +458,14 @@ Bool_t AliMCEventHandler::Notify(const char *path)
   // The directory is taken from the 'path' argument
   // Reconnect trees
     TString fileName(path);
-    if(fileName.Contains("AliESDs.root")){
-	fileName.ReplaceAll("AliESDs.root", "");
-    }
-    else if(fileName.Contains("AliESDs_wSDD.root")){
-	fileName.ReplaceAll("AliESDs_wSDD.root", "");
-    }
-    else if(fileName.Contains("AliESDs_nob.root")){
-	fileName.ReplaceAll("AliESDs_nob.root", "");
-    }
-    else if(fileName.Contains("AliAOD.root")){
-	fileName.ReplaceAll("AliAOD.root", "");
-    }
-    else if(fileName.Contains("galice.root")){
-	// for running with galice and kinematics alone...
-	fileName.ReplaceAll("galice.root", "");
-    }
-    else if (fileName.BeginsWith("root:")) {
+    TString dirname = gSystem->DirName(fileName);
+    TString basename = gSystem->BaseName(fileName);
+    Int_t index = basename.Index("#");
+    basename = basename(0, index+1);
+    fileName = dirname;
+    fileName += "/";
+    fileName += basename;
+    if (fileName.BeginsWith("root:")) {
       fileName.Append("?ZIP=");
     }
 

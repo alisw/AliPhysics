@@ -227,6 +227,7 @@ enum EAliAnalysisFlags {
 protected:
    void                 CreateReadCache();
    void                 ImportWrappers(TList *source);
+   void                 InputFileFromTree(TTree * const tree, TString &fname);
    void                 SetEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kEventLoop,flag);}
    void                 DoLoadBranch(const char *name);
 

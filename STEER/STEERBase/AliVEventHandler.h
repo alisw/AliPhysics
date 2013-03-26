@@ -28,9 +28,12 @@ enum EEventHandlerFlags {
     virtual Option_t    *GetDataType() const { return NULL; }
     virtual void         SetFillAOD(Bool_t) {}
     virtual void         SetFillExtension(Bool_t) {}
+    // Input
+    virtual void         SetInputFileName(const char*) {}
+    virtual const char*  GetInputFileName() const {return 0;}
     // Output
     virtual void         SetOutputFileName(const char* fname)   = 0;
-    virtual const char*  GetOutputFileName()              = 0;
+    virtual const char*  GetOutputFileName() const        = 0;
     // Extra outputs as a string separated by commas
     virtual const char*  GetExtraOutputs() const {return NULL;}
     // Input

@@ -252,6 +252,7 @@ void AliAODInputHandler::ConnectFriends()
 	
 	while((obj = (TNamed*)next())) {
 	    aodFriendTreeFName = aodTreeFName;
+       if (strlen(GetInputFileName())) aodFriendTreeFName.ReplaceAll(GetInputFileName(),obj->GetName());
 	    aodFriendTreeFName.ReplaceAll("AliAOD.root",obj->GetName());
 	    aodFriendTreeFName.ReplaceAll("AliAODs.root",obj->GetName());
 	    ttree->AddFriend("aodTree", aodFriendTreeFName.Data());

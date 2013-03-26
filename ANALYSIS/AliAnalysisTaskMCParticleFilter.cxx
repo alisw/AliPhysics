@@ -35,6 +35,7 @@
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
+#include "AliESDInputHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliAODMCHeader.h"
@@ -70,7 +71,8 @@ Bool_t AliAnalysisTaskMCParticleFilter::Notify()
   // Implemented Notify() to read the cross sections
   // from pyxsec.root
   // 
-  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  TTree *tree = mgr->GetTree();
   Double_t xsection = 0;
   UInt_t   ntrials  = 0;
   if(tree){
@@ -81,7 +83,11 @@ Bool_t AliAnalysisTaskMCParticleFilter::Notify()
     }
 
     TString fileName(curfile->GetName());
-    if(fileName.Contains("AliESDs.root")){
+    TString datafile = mgr->GetInputEventHandler()->GetInputFileName();
+    if (fileName.Contains(datafile)) {
+        fileName.ReplaceAll(datafile, "pyxsec.root");
+    }
+    else if(fileName.Contains("AliESDs.root")){
         fileName.ReplaceAll("AliESDs.root", "pyxsec.root");
     }
     else if(fileName.Contains("AliAOD.root")){
