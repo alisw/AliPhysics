@@ -34,8 +34,8 @@ AliAnalysisTaskJetsTriggerTRD* AddTaskJetsTriggerTRD(const char *name = "jets_tr
   mgr->AddTask(task);
 
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer("histograms", TList::Class(), AliAnalysisManager::kOutputContainer,
-                         Form("%s:PWGJE_trg_trd", AliAnalysisManager::GetCommonFileName()));
+    mgr->CreateContainer(Form("hist_%s", name), TList::Class(), AliAnalysisManager::kOutputContainer,
+                         Form("%s:PWGJE_jets_trg_trd", AliAnalysisManager::GetCommonFileName()));
 
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
   // mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());

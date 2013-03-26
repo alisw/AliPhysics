@@ -9,6 +9,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
+#include "AliVTrdTrack.h"
 
 // MC stuff
 #include "AliMCEvent.h"
@@ -33,14 +34,13 @@
 
 #include "AliAnalysisTaskJetsTriggerTRD.h"
 
-const char * const histos[] = { "stat", "jetpt", "jetpt_emc", "jetpt_trd" };
-
 AliAnalysisTaskJetsTriggerTRD::AliAnalysisTaskJetsTriggerTRD(const char *name) :
   AliAnalysisTaskSE(name),
+  fTriggerMask(0),
   fOutputList(),
   fHist(),
   fShortTaskId("jets_trg_trd"),
-  fNoJetPtBins(40),
+  fNoJetPtBins(80),
   fJetPtBinMax(400)
 {
   // default ctor
@@ -64,14 +64,33 @@ void AliAnalysisTaskJetsTriggerTRD::UserCreateOutputObjects()
   fOutputList->SetOwner();
 
   // setup histograms
-  AddHistogram(HISTID(kHistStat), "event statistics",
-  	       10, -.5, 9.5);
-  AddHistogram(HISTID(kHistJetPt), "jet spectrum (|#eta| < 0.5);p_{T} (GeV/c);counts",
+  TH1 *histStat = AddHistogram(ID(kHistStat), "event statistics;;counts",
+                               kStatLast-1, .5, kStatLast-.5);
+  histStat->GetXaxis()->SetBinLabel(ID(kStatSeen));
+  histStat->GetXaxis()->SetBinLabel(ID(kStatUsed));
+  histStat->GetXaxis()->SetBinLabel(ID(kStatMB));
+
+  AddHistogram(ID(kHistNoJets), "number of jets;N^{jet};counts",
+               100, -.5, 99.5);
+
+  AddHistogram(ID(kHistTrackGTU), "GTU track p_{T};p_{T} (GeV/c);counts",
+               100, 0., 25.);
+
+  AddHistogram(ID(kHistJetPt), "jet spectrum (|#eta| < 0.5);p_{T} (GeV/c);counts",
   	       fNoJetPtBins, 0., fJetPtBinMax);
-  AddHistogram(HISTID(kHistJetPtEMC), "jet spectrum (|#eta| < 0.5);p_{T} (GeV/c);counts",
+  AddHistogram(ID(kHistJetPtITS), "jet spectrum (|#eta| < 0.5);p_{T} (GeV/c);counts",
   	       fNoJetPtBins, 0., fJetPtBinMax);
-  AddHistogram(HISTID(kHistJetPtTRD), "jet spectrum (|#eta| < 0.5);p_{T} (GeV/c);counts",
+  AddHistogram(ID(kHistJetPt3x3), "jet spectrum (|#eta| < 0.5);p_{T} (GeV/c);counts",
   	       fNoJetPtBins, 0., fJetPtBinMax);
+
+  AddHistogram(ID(kHistJetPtEMC), "jet spectrum (|#eta| < 0.5);p_{T} (GeV/c);counts",
+  	       fNoJetPtBins, 0., fJetPtBinMax);
+  AddHistogram(ID(kHistJetPtHJT), "jet spectrum (|#eta| < 0.5);p_{T} (GeV/c);counts",
+  	       fNoJetPtBins, 0., fJetPtBinMax);
+
+  AddHistogram(ID(kHistJetPtNoTracks3), "number of tracks above 3 GeV;p_{T}^{jet};no. of tracks",
+               fNoJetPtBins, 0., fJetPtBinMax,
+               20, -.5, 19.5);
 
   PostData(1, fOutputList);
 }
@@ -104,7 +123,7 @@ void AliAnalysisTaskJetsTriggerTRD::UserExec(Option_t * /* option */)
 
   // Int_t nTracksMC  = 0; // no. of MC tracks
   // Int_t nTracksESD = 0; // no. of global ESD tracks
-  // Int_t nTracksGTU = 0; // no. of GTU tracks
+  Int_t nTracksGTU = 0; // no. of GTU tracks
 
   // Int_t nTracks[6][90]; // tracks above lower pt threshold, counted stack-wise
   // memset(nTracks, 0, sizeof(Int_t)*6*90);
@@ -117,27 +136,21 @@ void AliAnalysisTaskJetsTriggerTRD::UserExec(Option_t * /* option */)
   // Float_t leadingJetPtMC = 0.; // leading jet energy from MC information
   Float_t leadingJetPtRec = 0.; // leading jet energy from AOD information
 
-  // number of sampled events
-  FillH1(kHistStat, 1);
-
-  // event selection
-  AliVEvent::EOfflineTriggerTypes physSel = (AliVEvent::EOfflineTriggerTypes) ((AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if (fDebug > 2)
-    printf("trg: %8s %8s %8s %8s %8s %8s (%s)\n",
-           (physSel & AliVEvent::kAnyINT)  ? "kAnyINT"  : " ",
-           (physSel & AliVEvent::kCINT5)   ? "kCINT5" : " ",
-           (physSel & AliVEvent::kINT7)    ? "kINT7" : " ",
-           (physSel & AliVEvent::kINT8)    ? "kINT8" : " ",
-           (physSel & AliVEvent::kMB)      ? "kMB"   : " ",
-           (physSel & AliVEvent::kEMC7)    ? "kEMC7" : " ",
-           esdEvent ? esdEvent->GetFiredTriggerClasses().Data() : "<no ESD event>"
-           );
-  // Int_t triggerMask = 0;
-  if (!(physSel & (AliVEvent::kAnyINT)))
+  // record number of sampled events and detect trigger contributions
+  FillH1(kHistStat, kStatSeen);
+  if (!DetectTriggers()) {
+    AliError("Failed to detect the triggers");
     return;
+  }
 
-  // store no. of sampled events
-  FillH1(kHistStat, 2);
+  if (!IsTrigger(kTrgInt))
+    return;
+  FillH1(kHistStat, kStatUsed);
+
+  for (Int_t iTrack = 0; iTrack < nTracksGTU; ++iTrack) {
+    AliVTrdTrack *trk = 0x0;
+    FillH1(kHistTrackGTU, trk->Pt());
+  }
 
   AliAODJet *leadJet = 0x0;
   AliAODJet *subleadJet = 0x0;
@@ -146,29 +159,33 @@ void AliAnalysisTaskJetsTriggerTRD::UserExec(Option_t * /* option */)
     TClonesArray *jetArray = dynamic_cast<TClonesArray*> (aodEvent->FindListObject(fJetBranchName));
     if (jetArray) {
       Int_t nJets = jetArray->GetEntriesFast();
+      FillH1(kHistNoJets, nJets);
       for (Int_t iJet = 0; iJet < nJets; ++iJet) {
         AliAODJet *jet = (AliAODJet*) (*jetArray)[iJet];
 
         // check contributing tracks
         Int_t nJetTracks = jet->GetRefTracks()->GetEntriesFast();
+        Int_t nJetTracks3 = 0;
         Int_t iLeadingTrack = -1;
         Float_t ptLeadingTrack = 0.;
         for (Int_t iTrack=0; iTrack < nJetTracks; ++iTrack) {
           AliAODTrack *track = (AliAODTrack*) jet->GetRefTracks()->At(iTrack);
+          // count tracks above 3 GeV/c
+          if (track->Pt() > 3.)
+            ++nJetTracks3;
+          // find the leading track
           if (track->Pt() > ptLeadingTrack) {
             ptLeadingTrack = track->Pt();
             iLeadingTrack = iTrack;
           }
         }
 
-        // check tracking flags for leading track
-        // discard the jet if the leading track has no ITS contribution with a hit in any SPD layer
+        // retrieve the leading track
         AliAODTrack *leadingTrack = (AliAODTrack*) jet->GetRefTracks()->At(iLeadingTrack);
-        if (!(leadingTrack->GetFlags() & AliVTrack::kITSrefit) ||
-            !(leadingTrack->HasPointOnITSLayer(0) || leadingTrack->HasPointOnITSLayer(1)))
-          continue;
 
         if (TMath::Abs(jet->Eta()) < 0.5) {
+
+          // find leading jet
           if (TMath::Abs(jet->Pt()) > leadingJetPtRec) {
             leadingJetPtRec = TMath::Abs(jet->Pt());
             subleadJet = leadJet;
@@ -176,11 +193,22 @@ void AliAnalysisTaskJetsTriggerTRD::UserExec(Option_t * /* option */)
           }
 
   	  FillH1(kHistJetPt, jet->Pt());
-          // if (esdEvent && esdEvent->IsTriggerClassFired("CEMC7WU-B-NOPF-ALL"))
-  	  //   FillH1("jetpt_emc", jet->Pt());
-          // // if (esdEvent && esdEvent->IsTriggerClassFired("CINT7WU-I-NOPF-ALL"))
-          // if (triggerMask & (1 << kMBHJT))
-  	  //   FillH1("jetpt_trd", jet->Pt());
+
+          // discard the jet if the leading track has no ITS contribution with a hit in any SPD layer
+          if (leadingTrack &&
+              (leadingTrack->GetFlags() & AliVTrack::kITSrefit) &&
+              (leadingTrack->HasPointOnITSLayer(0) || leadingTrack->HasPointOnITSLayer(1)))
+            FillH1(kHistJetPtITS, jet->Pt());
+
+          // discard the jet if it does not have 3 tracks above 3 GeV/c
+          FillH2(kHistJetPtNoTracks3, jet->Pt(), nJetTracks3);
+          if (nJetTracks3 > 2)
+            FillH1(kHistJetPt3x3, jet->Pt());
+
+          if (IsTrigger(kTrgEMC))
+            FillH1(kHistJetPtEMC, jet->Pt());
+          if (IsTrigger(kTrgHJT))
+            FillH1(kHistJetPtHJT, jet->Pt());
         }
       }
     }
@@ -196,6 +224,38 @@ void AliAnalysisTaskJetsTriggerTRD::Terminate(const Option_t * /* option */)
 {
   // actions at task termination
 
+}
+
+Bool_t AliAnalysisTaskJetsTriggerTRD::DetectTriggers()
+{
+  fTriggerMask = 0;
+
+  AliVEvent::EOfflineTriggerTypes physSel = (AliVEvent::EOfflineTriggerTypes) ((AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  TString trgClasses = InputEvent()->GetFiredTriggerClasses();
+
+  if (fDebug > 2)
+    printf("trg: %8s %8s %8s %8s %8s %8s %8s (%s)\n",
+           (physSel & AliVEvent::kAnyINT)  ? "kAnyINT"  : " ",
+           (physSel & AliVEvent::kCINT5)   ? "kCINT5" : " ",
+           (physSel & AliVEvent::kINT7)    ? "kINT7" : " ",
+           (physSel & AliVEvent::kINT8)    ? "kINT8" : " ",
+           (physSel & AliVEvent::kMB)      ? "kMB"   : " ",
+           (physSel & AliVEvent::kEMC7)    ? "kEMC7" : " ",
+           (physSel & AliVEvent::kTRD)     ? "kTRD" : " ",
+           trgClasses.Data()
+           );
+
+  // physics selection
+  if (physSel & (AliVEvent::kAnyINT))
+    MarkTrigger(kTrgInt);
+
+  // trigger classes
+  if (trgClasses.Contains("CINT7WUHJT") || trgClasses.Contains("CINT8WUHJT"))
+    MarkTrigger(kTrgHJT);
+  if (trgClasses.Contains("CEMC7WU-") || trgClasses.Contains("CEMC8WU-"))
+    MarkTrigger(kTrgEMC);
+
+  return kTRUE;
 }
 
 // ----- histogram management -----
