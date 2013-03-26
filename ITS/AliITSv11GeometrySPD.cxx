@@ -413,7 +413,6 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     //TGeoMedium *medSPDal      = 0;//SPD support cone SDD mounting bracket Al
     TGeoMedium *medSPDcf     = GetMedium("SPD C (M55J)$", mgr);
     TGeoMedium *medSPDss     = GetMedium("INOX$", mgr);
-    TGeoMedium *medSPDair    = GetMedium("AIR$", mgr);
     TGeoMedium *medSPDcoolfl = GetMedium("Freon$", mgr); //ITSspdCoolingFluid
     //
     const Double_t ksecDz           =  0.5 * 500.0 * fgkmm;
@@ -610,7 +609,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     Double_t *xp[ksecNRadii],   *xp2[ksecNRadii];
     Double_t *yp[ksecNRadii],   *yp2[ksecNRadii];
     TGeoXtru *sA0,  *sA1, *sB0, *sB1;
-    TGeoCompositeShape *sB2;
+    TGeoCompositeShape *sA2, *sB2;
     TGeoBBox *sB3;
     TGeoEltu *sTA0, *sTA1;
     TGeoTube *sTB0, *sTB1; //,*sM0;
@@ -772,7 +771,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
         } // end if GetDebug(3)
     } // end for i
     sA0 = new TGeoXtru(2);
-    sA0->SetName("ITS SPD Carbon fiber support Sector A0");
+    sA0->SetName("SectorA0");
     sA0->DefinePolygon(m, xpp, ypp);
     sA0->DefineSection(0, -ksecDz);
     sA0->DefineSection(1,  ksecDz);
@@ -832,10 +831,13 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
         } // end for k
     } // end for i
     sA1 = new TGeoXtru(2);
-    sA1->SetName("ITS SPD Carbon fiber support Sector Air A1");
+    sA1->SetName("SectorA1");
     sA1->DefinePolygon(m, xpp2, ypp2);
-    sA1->DefineSection(0, -ksecDz);
-    sA1->DefineSection(1,  ksecDz);
+    sA1->DefineSection(0, -ksecDz-ksecCthick2);
+    sA1->DefineSection(1,  ksecDz+ksecCthick2);
+
+    sA2 = new TGeoCompositeShape("ITS SPD Carbon fiber support Sector A0",
+				 "SectorA0-SectorA1");
     //
     // Error in TGeoEltu. Semi-axis X must be < Semi-axis Y (?).
     sTA0 = new TGeoEltu("ITS SPD Cooling Tube TA0", 0.5 * ksecCoolTubeFlatY,
@@ -916,7 +918,6 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     if(GetDebug(3)) {
         if(medSPDcf) medSPDcf->Dump(); else AliInfo("medSPDcf = 0");
         if(medSPDss) medSPDss->Dump(); else AliInfo("medSPDss = 0");
-        if(medSPDair) medSPDair->Dump(); else AliInfo("medSPDAir = 0");
         if(medSPDcoolfl) medSPDcoolfl->Dump();else AliInfo("medSPDcoolfl = 0");
         sA0->InspectShape();
         sA1->InspectShape();
@@ -931,19 +932,12 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     StavesInSector(vM0);
     // create other volumes with some graphical settings
     TGeoVolume *vA0 = new TGeoVolume("ITSSPDCarbonFiberSupportSectorA0",
-                                     sA0, medSPDcf);
+                                     sA2, medSPDcf);
     vA0->SetVisibility(kTRUE);
     vA0->SetLineColor(4); // Blue
     vA0->SetLineWidth(1);
     vA0->SetFillColor(vA0->GetLineColor());
     vA0->SetFillStyle(4010); // 10% transparent
-    TGeoVolume *vA1 = new TGeoVolume("ITSSPDCarbonFiberSupportSectorAirA1",
-                                     sA1, medSPDair);
-    vA1->SetVisibility(kTRUE);
-    vA1->SetLineColor(7); // light Blue
-    vA1->SetLineWidth(1);
-    vA1->SetFillColor(vA1->GetLineColor());
-    vA1->SetFillStyle(4090); // 90% transparent
     TGeoVolume *vTA0 = new TGeoVolume("ITSSPDCoolingTubeTA0", sTA0, medSPDss);
     vTA0->SetVisibility(kTRUE);
     vTA0->SetLineColor(15); // gray
@@ -1015,7 +1009,6 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
 
     // add volumes to mother container passed as argument of this method
     moth->AddNode(vM0,1,0); // Add virtual volume to mother
-    vA0->AddNode(vA1,1,0); // Put air inside carbon fiber.
     vTA0->AddNode(vTA1,1,0); // Put cooling liquid indide tube middel.
     vTB0->AddNode(vTB1,1,0); // Put cooling liquid inside tube end.
     Double_t tubeEndLocal[3]={0.0,0.0,sTA0->GetDz()};
@@ -1183,7 +1176,6 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     if(GetDebug(3)){
         vM0->PrintNodes();
         vA0->PrintNodes();
-        vA1->PrintNodes();
         vB0->PrintNodes();
         vB3->PrintNodes();
         vTA0->PrintNodes();
@@ -3171,6 +3163,7 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
     // New method to implement SPD services
     //
     // Created:      25 Jul 2012  Mario Sitta
+    // Updated:      15 Nov 2012  Mario Sitta
     //
     // Data provided by C.Gargiulo from CAD
 
@@ -3231,16 +3224,6 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
     const Double_t kSetPinHeadRmin    = fgkmm *  1.5;
     const Double_t kSetPinHeadThick   = fgkmm *  1.5;
     const Double_t kSetPinOutClipH    = fgkmm *  1.0;
-    // Cooling pipes
-    const Double_t kCoolPipeSideARin  = fgkmm *  1.5;
-    const Double_t kCoolPipeSideARout = fgkmm *  1.8;
-    const Double_t kCoolPipeSideCRin  = fgkmm *  0.5;
-    const Double_t kCoolPipeSideCRout = fgkmm *  0.85;
-    const Double_t kCoolPipeHeight[3] = {11.0, 14.0, 18.0}; // TO BE CHECKED!
-    const Double_t kCoolPipeRadius[3] = {12.0, 14.0, 15.0}; // TO BE CHECKED!
-    const Double_t kCoolPipeZSPD      = fgkcm *  8.45; // TO BE CHECKED!
-
-    Int_t kPurple = 6; // Purple (Root does not define it)
 
     // Local variables
     Double_t xprof[12], yprof[12];
@@ -3406,8 +3389,6 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
     // We have the shapes: now create the real volumes
     TGeoMedium *medInox  = GetMedium("INOX$");
     TGeoMedium *medCu    = GetMedium("COPPER$");
-    TGeoMedium *medFreon = GetMedium("Freon$");
-    TGeoMedium *medGasFr = GetMedium("GASEOUS FREON$");
     TGeoMedium *medSPDcf = GetMedium("SPD shield$");
 
     TGeoVolume *manifblk = new TGeoVolume("ITSSPDBlkManif",
@@ -3628,28 +3609,6 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
     coolmanifC->AddNode(screwoutmanif, 6, new TGeoCombiTrans( 0, ypos,-zpos,
 					  new TGeoRotation("",0,-90,0)));
 
-    // We create here the cooling pipes because it's easier to place them now
-    AliITSv11GeomCableRound *coolpipeA[6];
-    AliITSv11GeomCableRound *coolpipeC[6];
-
-    for (Int_t i = 0; i<6; i++) {
-      Char_t pipename[11];
-      snprintf(pipename,11,"coolPipeA%d",i+1);
-      coolpipeA[i] = new AliITSv11GeomCableRound(pipename,kCoolPipeSideARout);
-      snprintf(pipename,11,"coolPipeC%d",i+1);
-      coolpipeC[i] = new AliITSv11GeomCableRound(pipename,kCoolPipeSideCRout);
-
-      coolpipeA[i]->SetNLayers(2);
-      coolpipeA[i]->SetLayer(0, kCoolPipeSideARin, medGasFr, kPurple);
-      coolpipeA[i]->SetLayer(1,(kCoolPipeSideARout-kCoolPipeSideARin),
-			     medCu, kYellow);
-
-      coolpipeC[i]->SetNLayers(2);
-      coolpipeC[i]->SetLayer(0, kCoolPipeSideCRin, medFreon, kPurple);
-      coolpipeC[i]->SetLayer(1,(kCoolPipeSideCRout-kCoolPipeSideCRin),
-			     medCu, kYellow);
-    }
-
     xpos = manifblksh->GetDX() - kCoolManifCollXPos;
     ypos = manifblksh->GetDY() + manifcollcyl1sh->GetDz();
     zpos =-manifblksh->GetDZ() + kCoolManifCollZ0;
@@ -3680,51 +3639,12 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
 			  new TGeoCombiTrans(-xpos, -y, zpos,
 					     new TGeoRotation("",0,90,0)));
 
-      y += manifcollcyl2sh->GetDz();
-      Double_t coordL[3] = { xpos,-y,zpos};
-      Double_t coordR[3] = {-xpos,-y,zpos};
-      Double_t vect[3] = {0, 1, 0};
-      coolpipeA[2*i]->AddCheckPoint(coolmanifA, 0, coordL, vect);
-      coolpipeC[2*i]->AddCheckPoint(coolmanifC, 0, coordL, vect);
-      coolpipeA[2*i+1]->AddCheckPoint(coolmanifA, 0, coordR, vect);
-      coolpipeC[2*i+1]->AddCheckPoint(coolmanifC, 0, coordR, vect);
-      coordL[1] -= kCoolPipeHeight[i]*fgkmm;
-      coordR[1] = coordL[1];
-      coolpipeA[2*i]->AddCheckPoint(coolmanifA, 1, coordL, vect);
-      coolpipeC[2*i]->AddCheckPoint(coolmanifC, 1, coordL, vect);
-      coolpipeA[2*i+1]->AddCheckPoint(coolmanifA, 1, coordR, vect);
-      coolpipeC[2*i+1]->AddCheckPoint(coolmanifC, 1, coordR, vect);
-      coordL[1] -= kCoolPipeRadius[i]*fgkmm;
-      coordL[2] -= kCoolPipeRadius[i]*fgkmm;
-      coordR[1] = coordL[1];
-      coordR[2] = coordL[2];
-      vect[1] = 0;
-      vect[2] = -1;
-      coolpipeA[2*i]->AddCheckPoint(coolmanifA, 2, coordL, vect);
-      coolpipeC[2*i]->AddCheckPoint(coolmanifC, 2, coordL, vect);
-      coolpipeA[2*i+1]->AddCheckPoint(coolmanifA, 2, coordR, vect);
-      coolpipeC[2*i+1]->AddCheckPoint(coolmanifC, 2, coordR, vect);
-      coordL[2] = -kCoolPipeZSPD;
-      coordR[2] = -kCoolPipeZSPD;
-      coolpipeA[2*i]->AddCheckPoint(coolmanifA, 3, coordL, vect);
-      coolpipeC[2*i]->AddCheckPoint(coolmanifC, 3, coordL, vect);
-      coolpipeA[2*i+1]->AddCheckPoint(coolmanifA, 3, coordR, vect);
-      coolpipeC[2*i+1]->AddCheckPoint(coolmanifC, 3, coordR, vect);
-
       zpos += kCoolManifCollDZ;
     }
 
-    for (Int_t i=0; i<6; i++) {
-      coolpipeA[i]->SetInitialNode((TGeoVolume *)coolmanifA);
-      coolpipeC[i]->SetInitialNode((TGeoVolume *)coolmanifC);
-
-      coolpipeA[i]->CreateAndInsertTubeSegment(1);
-      coolpipeC[i]->CreateAndInsertTubeSegment(1);
-      coolpipeA[i]->CreateAndInsertTorusSegment(2,180);
-      coolpipeC[i]->CreateAndInsertTorusSegment(2,180);
-      coolpipeA[i]->CreateAndInsertTubeSegment(3);
-      coolpipeC[i]->CreateAndInsertTubeSegment(3);
-    }
+    // Now add the cooling tubes to the assembly
+    CreateCoolingTubes(coolmanifA, kFALSE);
+    CreateCoolingTubes(coolmanifC, kTRUE);
 
 
     // Finally put everything in the mother volume
@@ -3742,6 +3662,259 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
 					  new TGeoRotation("",90-theta,180,-90)));
     }
 
+
+}
+
+
+//______________________________________________________________________
+void AliITSv11GeometrySPD::CreateCoolingTubes(TGeoVolume *moth, Bool_t sideC) const
+{
+    //
+    // Private method to implement SPD cooling tubes
+    // going from the manifolds to the staves
+    // Since their form is quite complicate (especially on Side C
+    // where capillaries are located) a separate method is used
+    // If sideC is true, the cooling tubes on Side C are created
+    // along with the cooling loops (aka "capillaries"), otherwise
+    // the (simpler) tubes on Side A get created.
+    //
+    // In all variables:  L = Left (X > 0)   R = Right (X < 0)
+    //
+    // Created:      10 Nov 2012  Mario Sitta
+    //
+    // Data provided by C.Gargiulo from CAD
+
+    // Cooling manifolds - THESE VALUES *MUST* MATCH WITH CALLING METHOD!
+    const Double_t kCoolManifWidth    = fgkmm * 22.0;
+    const Double_t kCoolManifLength   = fgkmm * 50.0;
+    const Double_t kCoolManifThick    = fgkmm *  7.0;
+    const Double_t kCoolManifCollH1   = fgkmm *  2.5;
+    const Double_t kCoolManifCollH2   = fgkmm *  5.0;
+    // Cooling pipes
+    const Double_t kCoolPipeSideARin  = fgkmm *  1.5;
+    const Double_t kCoolPipeSideARout = fgkmm *  1.8;
+    const Double_t kCoolPipeSideCRin  = fgkmm *  0.5;
+    const Double_t kCoolPipeSideCRout = fgkmm *  0.85;
+    const Double_t kCoolPipeHeight    = fgkmm *  1.923;
+    const Double_t kCoolPipeCRadiusL[3] = {11.0, 14.0, 31.34};// TO BE CHECKED!
+    const Double_t kCoolPipeCRadiusR[3] = {12.0, 14.0, 35.54};// TO BE CHECKED!
+    const Double_t kCoolPipeARadiusL12[2] = {14.0, 30.0};
+    const Double_t kCoolPipeARadiusR12[2] = {14.0, 30.0};
+    const Double_t kCoolPipeARadiusL34[2] = {22.0, 30.0};
+    const Double_t kCoolPipeARadiusR34[2] = {22.0, 30.0};
+    const Double_t kCoolPipeARadiusL[3]= {14.0, 14.0, 31.34}; // TO BE CHECKED!
+    const Double_t kCoolPipeARadiusR[3]= {14.0, 14.0, 35.54}; // TO BE CHECKED!
+    const Double_t kCoolPipeZSPD      = fgkcm *  8.47;
+    // Cooling pipes position - THESE VALUES *MUST* MATCH WITH CALLING METHOD!
+    const Double_t kCoolManifCollXPos = fgkmm *  5.0;
+    const Double_t kCoolManifCollDZ   = fgkmm * 13.0;
+    const Double_t kCoolManifCollZ0   = fgkmm *  9.0;
+
+    Int_t kPurple = 6; // Purple (Root does not define it)
+
+    // Local variables
+    Double_t xpos, ypos, zpos;
+    Char_t pipename[11];
+
+    //
+    TGeoMedium *medPhynox  = GetMedium("PHYNOX$");
+    TGeoMedium *medFreon   = GetMedium("Freon$");
+    TGeoMedium *medGasFr   = GetMedium("GASEOUS FREON$");
+
+    // The cooling tubes are created as CableRound volumes
+    // because it's easier to compose them piece by piece
+    AliITSv11GeomCableRound *coolpipe[6];
+
+    if (sideC)
+      for (Int_t i = 0; i<6; i++) {
+	snprintf(pipename,11,"coolPipeC%d",i+1);
+	coolpipe[i] = new AliITSv11GeomCableRound(pipename,kCoolPipeSideCRout);
+	coolpipe[i]->SetNLayers(2);
+	coolpipe[i]->SetLayer(0, kCoolPipeSideCRin, medFreon, kPurple);
+	coolpipe[i]->SetLayer(1,(kCoolPipeSideCRout-kCoolPipeSideCRin),
+			      medPhynox, kYellow);
+      }
+    else
+      for (Int_t i = 0; i<6; i++) {
+	snprintf(pipename,11,"coolPipeA%d",i+1);
+	coolpipe[i] = new AliITSv11GeomCableRound(pipename,kCoolPipeSideARout);
+	coolpipe[i]->SetNLayers(2);
+	coolpipe[i]->SetLayer(0, kCoolPipeSideARin, medGasFr, kPurple);
+	coolpipe[i]->SetLayer(1,(kCoolPipeSideARout-kCoolPipeSideARin),
+			      medPhynox, kYellow);
+      }
+
+     // Now place them in the mother assembly
+     xpos = kCoolManifWidth/2  - kCoolManifCollXPos;
+     ypos = kCoolManifThick/2  + kCoolManifCollH1 + kCoolManifCollH2;
+     zpos =-kCoolManifLength/2 + kCoolManifCollZ0;
+
+     if (sideC) { // On Side C tubes are simpler and can be created in a loop
+
+       for (Int_t i=0; i<3; i++) {
+
+	 Double_t coordL[3] = { xpos,-ypos,zpos};
+	 Double_t coordR[3] = {-xpos,-ypos,zpos};
+	 Double_t vect[3] = {0, 1, 0};
+	 coolpipe[2*i]->AddCheckPoint(moth, 0, coordL, vect);
+	 coolpipe[2*i+1]->AddCheckPoint(moth, 0, coordR, vect);
+	 coordL[1] -= kCoolPipeHeight;
+	 coordR[1] = coordL[1];
+	 coolpipe[2*i]->AddCheckPoint(moth, 1, coordL, vect);
+	 coolpipe[2*i+1]->AddCheckPoint(moth, 1, coordR, vect);
+	 coordL[1] -= kCoolPipeCRadiusL[i]*fgkmm;
+	 coordL[2] -= kCoolPipeCRadiusL[i]*fgkmm;
+	 coordR[1] -= kCoolPipeCRadiusR[i]*fgkmm;
+	 coordR[2] -= kCoolPipeCRadiusR[i]*fgkmm;
+	 vect[1] = 0;
+	 vect[2] = -1;
+	 coolpipe[2*i]->AddCheckPoint(moth, 2, coordL, vect);
+	 coolpipe[2*i+1]->AddCheckPoint(moth, 2, coordR, vect);
+	 coordL[2] = -kCoolPipeZSPD;
+	 coordR[2] = -kCoolPipeZSPD;
+	 coolpipe[2*i]->AddCheckPoint(moth, 3, coordL, vect);
+	 coolpipe[2*i+1]->AddCheckPoint(moth, 3, coordR, vect);
+
+	 zpos += kCoolManifCollDZ;
+       }
+
+       for (Int_t i=0; i<6; i++) {
+	 coolpipe[i]->SetInitialNode(moth);
+	 
+	 coolpipe[i]->CreateAndInsertTubeSegment(1);
+	 coolpipe[i]->CreateAndInsertTorusSegment(2,180);
+	 coolpipe[i]->CreateAndInsertTubeSegment(3);
+       }
+
+     } else { // On Side A tubes are all different so are created one by one
+
+       Double_t coordL[3] = { xpos,-ypos,zpos};
+       Double_t coordR[3] = {-xpos,-ypos,zpos};
+       Double_t vect[3] = {0, 1, 0};
+       coolpipe[0]->AddCheckPoint(moth, 0, coordL, vect);
+       coolpipe[1]->AddCheckPoint(moth, 0, coordR, vect);
+       coordL[1] -= kCoolPipeHeight;
+       coordR[1] = coordL[1];
+       coolpipe[0]->AddCheckPoint(moth, 1, coordL, vect);
+       coolpipe[1]->AddCheckPoint(moth, 1, coordR, vect);
+       coordL[1] -=    SinD(45) *kCoolPipeARadiusL12[0]*fgkmm;
+       coordL[2] -= (1+CosD(45))*kCoolPipeARadiusL12[0]*fgkmm;
+       coordR[1] -=    SinD(45) *kCoolPipeARadiusR12[0]*fgkmm;
+       coordR[2] -= (1+CosD(45))*kCoolPipeARadiusR12[0]*fgkmm;
+       vect[1] = TMath::Sqrt(2);
+       vect[2] = -vect[1];
+       coolpipe[0]->AddCheckPoint(moth, 2, coordL, vect);
+       coolpipe[1]->AddCheckPoint(moth, 2, coordR, vect);
+       coordL[1] += (1-CosD(45))*kCoolPipeARadiusL12[1]*fgkmm;
+       coordL[2] -=    SinD(45) *kCoolPipeARadiusL12[1]*fgkmm;
+       coordR[1] += (1-CosD(45))*kCoolPipeARadiusR12[1]*fgkmm;
+       coordR[2] -=    SinD(45) *kCoolPipeARadiusR12[1]*fgkmm;
+       vect[1] = 0;
+       vect[2] = -1;
+       coolpipe[0]->AddCheckPoint(moth, 3, coordL, vect);
+       coolpipe[1]->AddCheckPoint(moth, 3, coordR, vect);
+       coordL[2] = -kCoolPipeZSPD;
+       coordR[2] = -kCoolPipeZSPD;
+       coolpipe[0]->AddCheckPoint(moth, 4, coordL, vect);
+       coolpipe[1]->AddCheckPoint(moth, 4, coordR, vect);
+
+       coolpipe[0]->SetInitialNode(moth); 
+       coolpipe[0]->CreateAndInsertTubeSegment(1);
+       coolpipe[0]->CreateAndInsertTorusSegment(2,180);
+       coolpipe[0]->CreateAndInsertTorusSegment(3,180);
+       coolpipe[0]->CreateAndInsertTubeSegment(4);
+
+       coolpipe[1]->SetInitialNode(moth); 
+       coolpipe[1]->CreateAndInsertTubeSegment(1);
+       coolpipe[1]->CreateAndInsertTorusSegment(2,180);
+       coolpipe[1]->CreateAndInsertTorusSegment(3,180);
+       coolpipe[1]->CreateAndInsertTubeSegment(4);
+
+       zpos += kCoolManifCollDZ;
+
+       coordL[0] = xpos; coordL[1] = -ypos; coordL[2] = zpos;
+       coordR[0] =-xpos; coordR[1] = -ypos; coordR[2] = zpos;
+       vect[0] = 0; vect[1] = 1; vect[2] = 0;
+
+       coolpipe[2]->AddCheckPoint(moth, 0, coordL, vect);
+       coolpipe[3]->AddCheckPoint(moth, 0, coordR, vect);
+       coordL[1] -= kCoolPipeHeight;
+       coordR[1] = coordL[1];
+       coolpipe[2]->AddCheckPoint(moth, 1, coordL, vect);
+       coolpipe[3]->AddCheckPoint(moth, 1, coordR, vect);
+       coordL[1] -=    SinD(45) *kCoolPipeARadiusL34[0]*fgkmm;
+       coordL[2] -= (1+CosD(45))*kCoolPipeARadiusL34[0]*fgkmm;
+       coordR[1] -=    SinD(45) *kCoolPipeARadiusR34[0]*fgkmm;
+       coordR[2] -= (1+CosD(45))*kCoolPipeARadiusR34[0]*fgkmm;
+       vect[1] = TMath::Sqrt(2);
+       vect[2] = -vect[1];
+       coolpipe[2]->AddCheckPoint(moth, 2, coordL, vect);
+       coolpipe[3]->AddCheckPoint(moth, 2, coordR, vect);
+       coordL[1] += (1-CosD(45))*kCoolPipeARadiusL34[1]*fgkmm;
+       coordL[2] -=    SinD(45) *kCoolPipeARadiusL34[1]*fgkmm;
+       coordR[1] += (1-CosD(45))*kCoolPipeARadiusR34[1]*fgkmm;
+       coordR[2] -=    SinD(45) *kCoolPipeARadiusR34[1]*fgkmm;
+       vect[1] = 0;
+       vect[2] = -1;
+       coolpipe[2]->AddCheckPoint(moth, 3, coordL, vect);
+       coolpipe[3]->AddCheckPoint(moth, 3, coordR, vect);
+       coordL[2] = -kCoolPipeZSPD;
+       coordR[2] = -kCoolPipeZSPD;
+       coolpipe[2]->AddCheckPoint(moth, 4, coordL, vect);
+       coolpipe[3]->AddCheckPoint(moth, 4, coordR, vect);
+
+       coolpipe[2]->SetInitialNode(moth); 
+       coolpipe[2]->CreateAndInsertTubeSegment(1);
+       coolpipe[2]->CreateAndInsertTorusSegment(2,180);
+       coolpipe[2]->CreateAndInsertTorusSegment(3,180);
+       coolpipe[2]->CreateAndInsertTubeSegment(4);
+
+       coolpipe[3]->SetInitialNode(moth); 
+       coolpipe[3]->CreateAndInsertTubeSegment(1);
+       coolpipe[3]->CreateAndInsertTorusSegment(2,180);
+       coolpipe[3]->CreateAndInsertTorusSegment(3,180);
+       coolpipe[3]->CreateAndInsertTubeSegment(4);
+
+       zpos += kCoolManifCollDZ;
+
+       coordL[0] = xpos; coordL[1] = -ypos; coordL[2] = zpos;
+       coordR[0] =-xpos; coordR[1] = -ypos; coordR[2] = zpos;
+       vect[0] = 0; vect[1] = 1; vect[2] = 0;
+
+       coolpipe[4]->AddCheckPoint(moth, 0, coordL, vect);
+       coolpipe[5]->AddCheckPoint(moth, 0, coordR, vect);
+       coordL[1] -= kCoolPipeHeight;
+       coordR[1] = coordL[1];
+       coolpipe[4]->AddCheckPoint(moth, 1, coordL, vect);
+       coolpipe[5]->AddCheckPoint(moth, 1, coordR, vect);
+       coordL[1] -= kCoolPipeARadiusL[2]*fgkmm;
+       coordL[2] -= kCoolPipeARadiusL[2]*fgkmm;
+       coordR[1] -= kCoolPipeARadiusR[2]*fgkmm;
+       coordR[2] -= kCoolPipeARadiusR[2]*fgkmm;
+       vect[1] = 0;
+       vect[2] = -1;
+       coolpipe[4]->AddCheckPoint(moth, 2, coordL, vect);
+       coolpipe[5]->AddCheckPoint(moth, 2, coordR, vect);
+       coordL[2] = -kCoolPipeZSPD;
+       coordR[2] = -kCoolPipeZSPD;
+       coolpipe[4]->AddCheckPoint(moth, 3, coordL, vect);
+       coolpipe[5]->AddCheckPoint(moth, 3, coordR, vect);
+
+       coolpipe[4]->SetInitialNode(moth);
+       coolpipe[4]->CreateAndInsertTubeSegment(1);
+       coolpipe[4]->CreateAndInsertTorusSegment(2,180);
+       coolpipe[4]->CreateAndInsertTubeSegment(3);
+
+       coolpipe[5]->SetInitialNode(moth);
+       coolpipe[5]->CreateAndInsertTubeSegment(1);
+       coolpipe[5]->CreateAndInsertTorusSegment(2,180);
+       coolpipe[5]->CreateAndInsertTubeSegment(3);
+
+     } // if (sideC)
+
+     if(GetDebug(3))
+       for (Int_t i=0; i<6; i++)
+	 coolpipe[i]->PrintCheckPoints();
 
 }
 

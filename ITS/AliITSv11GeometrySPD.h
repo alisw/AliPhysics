@@ -152,6 +152,9 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     Bool_t CFHolePoints(Double_t s,Double_t r1,Double_t r2,Double_t l,
                         Double_t &x,Double_t &y)const;
 
+    // create the cooling tubes going from the manifolds to the staves
+    void CreateCoolingTubes(TGeoVolume *moth, Bool_t sideC) const;
+
     /* Data members */
 
     static const Double_t fgkGapLadder;// thicknes of the empty (air) gap left

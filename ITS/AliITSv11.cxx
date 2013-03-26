@@ -948,6 +948,12 @@ void AliITSv11::CreateMaterials()
     Float_t wNiSn[2]  = {0.33, 0.67};
     Float_t dNiSn     = wNiSn[0]*8.908 + wNiSn[1]*7.310;
 
+    // SPD cooling capillaries (Phynox)
+    Float_t aPhynox[5] = { 55.8450, 58.9332, 51.9961, 58.6934, 95.94 };
+    Float_t zPhynox[5] = { 26.    , 27.    , 24.    , 28.    , 42.   };
+    Float_t wPhynox[5] = { 0.17   , 0.40   , 0.20   , 0.16   , 0.07  };
+    Float_t dPhynox    = 8.3;
+
     AliMaterial(1,"SI$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(1,"SI$",1,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
 
@@ -968,6 +974,9 @@ void AliITSv11::CreateMaterials()
 
     AliMixture(7,"SDD SI CHIP$",aSICHIP,zSICHIP,dSICHIP,6,wSICHIP);
     AliMedium(7,"SDD SI CHIP$",7,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
+
+    AliMixture(8,"PHYNOX$",aPhynox,zPhynox,dPhynox,5,wPhynox);
+    AliMedium(8,"PHYNOX$",8,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(9,"SDD C (M55J)$",aCM55J,zCM55J,dCM55J,4,wCM55J);
     AliMedium(9,"SDD C (M55J)$",9,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
