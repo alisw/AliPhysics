@@ -34,7 +34,7 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   enum TrackType {kGlobal=0, kTPCOnly=1, kITSOnly=2, kSPDTracklet=3};
   typedef enum TrackType ReadTrackType;
 
-  enum EventMult {kCentrality=0, kGlobalCount=1, kReferenceITSTPC=2, kReferenceITSSA=3, kReferenceTracklets=4,  kSPDLayer1=5, kVZERO=6, kCentralityZNA=7, kCentralityCL1=8};
+  enum EventMult {kCentrality=0, kGlobalCount=1, kReferenceITSTPC=2, kReferenceITSSA=3, kReferenceTracklets=4, kSPDLayer1=5, kVZERO=6, kCentralityTRK=7, kCentralityZNA=8, kCentralityCL1=9, kCentralityCND=10};
   typedef enum EventMult EstEventMult;
 
   AliFemtoEventReaderESDChain();
