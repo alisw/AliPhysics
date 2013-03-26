@@ -404,10 +404,12 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   Bool_t t0PileUp = kFALSE, spdPileUp = kFALSE, bgID = kFALSE;
   spdPileUp = fESD->IsPileupFromSPDInMultBins();
   AliPhysicsSelection *physicsSelection = (AliPhysicsSelection*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEventSelection();
-  AliTriggerAnalysis * triggerAnalysis = (AliTriggerAnalysis*)physicsSelection->GetTriggerAnalysis();
-  if ( physicsSelection && triggerAnalysis ) {
-    t0PileUp = triggerAnalysis->EvaluateTrigger(fESD, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup));
-    bgID = triggerAnalysis->EvaluateTrigger(fESD,  (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kSPDClsVsTrkBG | AliTriggerAnalysis::kOfflineFlag)); 
+  if ( physicsSelection ) {
+    AliTriggerAnalysis * triggerAnalysis = (AliTriggerAnalysis*)physicsSelection->GetTriggerAnalysis();
+    if ( triggerAnalysis ) {
+      t0PileUp = triggerAnalysis->EvaluateTrigger(fESD, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup));
+      bgID = triggerAnalysis->EvaluateTrigger(fESD,  (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kSPDClsVsTrkBG | AliTriggerAnalysis::kOfflineFlag));
+    }
   }
 
   UInt_t geomAccMask = ( AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs );
