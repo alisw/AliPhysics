@@ -30,7 +30,7 @@ enum {kDoNotCheckforSDD=0,kwithSDD,kwithoutSDD};
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), 
 fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fHistoCuts(0),
 fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),
-fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZveretxCut(0)
+fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0)
 {}
   AliSpectraBothEventCuts(const char *name);
   virtual  ~AliSpectraBothEventCuts() {}
@@ -51,7 +51,7 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZveretxCu
 
 
   // Methods
-  Bool_t IsSelected(AliVEvent * aod,AliSpectraBothTrackCuts     *trackcuts);
+  Bool_t IsSelected(AliVEvent * aod,AliSpectraBothTrackCuts     *trackcuts, Bool_t isMC=kFALSE, Double_t mcZ=-100.0);
   Bool_t CheckVtx();
   Bool_t CheckCentralityCut();
   Bool_t CheckMultiplicityCut();
@@ -71,7 +71,10 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZveretxCu
   TH1I * GetHistoCuts()         {  return fHistoCuts; }
   TH1F * GetHistoVtxBefSel()         {  return fHistoVtxBefSel; }
   TH1F * GetHistoVtxAftSel()         {  return fHistoVtxAftSel; }
-  TH1F * GetHistoVtxAftSelwithoutZveretxCut()         {  return fHistoVtxAftSelwithoutZveretxCut; }
+  TH1F * GetHistoVtxAftSelwithoutZvertexCut()         {  return fHistoVtxAftSelwithoutZvertexCut; }
+  TH1F * GetHistoVtxGenerated()         {  return fHistoVtxalltriggerEventswithMCz; }
+  TH1F * GetHistoVtxAftSelwithoutZvertexCutusingMCz()         {  return fHistoVtxAftSelwithoutZvertexCutusingMCz; }
+
   TH1F * GetHistoEtaBefSel()         {  return fHistoEtaBefSel; }
   TH1F * GetHistoEtaAftSel()         {  return fHistoEtaAftSel; }
   TH1F * GetHistoNChAftSel()         {  return fHistoNChAftSel; }
@@ -138,13 +141,15 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZveretxCu
   //TH1F            *fHistoQVectorNeg;        // QVectorNeg
   TH1F            *fHistoQVector;        // QVector
   TH1F            *fHistoEP;        // EP
-  TH1F 		  *fHistoVtxAftSelwithoutZveretxCut;        // Vtx distr after event selection but without z vertex cut
-	  
+  TH1F 		  *fHistoVtxAftSelwithoutZvertexCut;        // Vtx distr after event selection but without z vertex cut
+  TH1F 		  *fHistoVtxalltriggerEventswithMCz;        // MC z vertex ditribution of generated events
+  TH1F 		  *fHistoVtxAftSelwithoutZvertexCutusingMCz;        // Vtx distr after event selection but without z vertex cut
+
 
   AliSpectraBothEventCuts(const AliSpectraBothEventCuts&);
   AliSpectraBothEventCuts& operator=(const AliSpectraBothEventCuts&);
   
-  ClassDef(AliSpectraBothEventCuts, 6);
+  ClassDef(AliSpectraBothEventCuts, 7);
   
 };
 #endif

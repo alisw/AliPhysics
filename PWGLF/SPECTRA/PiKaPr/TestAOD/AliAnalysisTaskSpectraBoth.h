@@ -20,6 +20,8 @@ class AliSpectraBothTrackCuts;
 class AliSpectraBothEventCuts;
 class AliSpectraBothPID;
 class AliESDtrackCuts;
+class AliGenEventHeader;
+
 #include "AliSpectraBothHistoManager.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
