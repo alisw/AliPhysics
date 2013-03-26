@@ -6,7 +6,7 @@
 
 #include "AliAnalysisTaskSE.h"
 
-#define HISTID(x) x, #x
+#define ID(x) x, #x
 
 class TList;
 
@@ -30,14 +30,46 @@ public:
   void    SetJetPtBinMax(Float_t ptmax) { fJetPtBinMax = ptmax; }
   Float_t GetJetPtBinMax() const { return fJetPtBinMax; }
 
-  void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength); }
+  void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
   const char* GetJetBranchName() const { return fJetBranchName; }
 
-  // // histograms
-  enum Hist_t { kHistStat = 0, kHistJetPt, kHistJetPtEMC, kHistJetPtTRD, kHistLast };
+  // histograms
+  enum Hist_t {
+      kHistStat = 0,
+      kHistNoJets,
+      kHistTrackGTU,
+      kHistJetPt, kHistJetPtITS, kHistJetPt3x3,
+      kHistJetPtEMC, kHistJetPtHJT,
+      kHistJetPtNoTracks3,
+      kHistLast
+  };
+
+  // statistics
+  enum Stat_t {
+      kStatSeen = 1,
+      kStatUsed,
+      kStatMB,
+      kStatLast
+  };
+
+  // trigger conditions
+  enum Trigger_t { 
+      kTrgMB = 0,
+      kTrgInt,
+      kTrgInt78,
+      kTrgHJT,
+      kTrgEMC,
+      kTrgLast
+  };	   
 
 protected:
-  // // output objects
+  UInt_t fTriggerMask;		// internal representation of trigger conditions
+
+  Bool_t DetectTriggers();
+  void   MarkTrigger(Trigger_t trg) { fTriggerMask |= (1 << trg); }
+  Bool_t IsTrigger(Trigger_t trg) const { return (fTriggerMask & (1 << trg)); }
+
+  // output objects
   TList *fOutputList;		// list of output objects
 
   // histogram management
