@@ -25,7 +25,7 @@ class AliESDHandler : public AliVEventHandler {
 	AliESDHandler(const char* name, const char* title);
 	virtual ~AliESDHandler();
 	virtual void SetOutputFileName(const char* fname){fFileName = fname;}
-	virtual const char* GetOutputFileName(){return fFileName.Data();}
+	virtual const char* GetOutputFileName() const {return fFileName.Data();}
 	virtual Bool_t Init(Option_t* option);
 	virtual Bool_t Init(TTree* /*tree*/, Option_t* /*option*/)  {return kTRUE;}
 	virtual Bool_t GetEntry() {return kTRUE;}
