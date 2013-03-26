@@ -1229,13 +1229,16 @@ Bool_t AliAnalysisTaskCDMeson::CheckInput()
 	//general protection
 	//
 	if (const AliESDInputHandler *esdH =
-	    dynamic_cast<AliESDInputHandler*>(fInputHandler)){
+	    dynamic_cast<AliESDInputHandler*>(fInputHandler)) {
 		fESDEvent = esdH->GetEvent();
 	}
 	else if (const AliAODInputHandler *aodH =
-	         dynamic_cast<AliAODInputHandler*>(fInputHandler)){
+	         dynamic_cast<AliAODInputHandler*>(fInputHandler)) {
 		fAODEvent = aodH->GetEvent();
 		fDoAOD = kTRUE;
+	}
+	else {
+	  
 	}
 	fNoGapFraction = (fDoAOD) ? 1. : fNoGapFraction; // process all running on AOD
 	fPIDResponse = (AliPIDResponse*)fInputHandler->GetPIDResponse();
@@ -1263,10 +1266,10 @@ Bool_t AliAnalysisTaskCDMeson::CheckInput()
 	}
 
 	Int_t tmprun = 0;
-	if (fDoAOD) {
+	if (fDoAOD && fAODEvent) {
 		tmprun = fAODEvent->GetRunNumber();
 	}
-	else {
+	else if (fESDEvent) {
 		tmprun = fESDEvent->GetRunNumber();
 	}
 
