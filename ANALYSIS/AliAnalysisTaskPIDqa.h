@@ -54,6 +54,7 @@ private:
   TList                 *fListQAtpc;        //! List with TPC QA histograms
   TList                 *fListQAtrd;        //! List with TRD QA histograms
   TList                 *fListQAtof;        //! List with TOF QA histograms
+  TList                 *fListQAt0;         //! List with T0 QA histograms
   TList                 *fListQAemcal;      //! List with EMCAL QA histograms
   TList                 *fListQAhmpid;      //! List with EMCAL QA histograms
   TList                 *fListQAtofhmpid;   //! List with EMCAL QA histograms
@@ -69,6 +70,7 @@ private:
   void SetupTPCqa();
   void SetupTRDqa();
   void SetupTOFqa();
+  void SetupT0qa();
   void SetupEMCALqa();
   void SetupHMPIDqa();
   void SetupTOFHMPIDqa();
@@ -84,6 +86,7 @@ private:
   void FillTPCqa();
   void FillTRDqa();
   void FillTOFqa();
+  void FillT0qa();
   void FillEMCALqa();
   void FillHMPIDqa();
   void FillTOFHMPIDqa();
@@ -102,6 +105,6 @@ private:
   AliAnalysisTaskPIDqa(const AliAnalysisTaskPIDqa &other);
   AliAnalysisTaskPIDqa& operator=(const AliAnalysisTaskPIDqa &other);
   
-  ClassDef(AliAnalysisTaskPIDqa,1)  // Task to properly set the PID response functions of all detectors
+  ClassDef(AliAnalysisTaskPIDqa,2)  // Task to properly set the PID response functions of all detectors
 };
 #endif
