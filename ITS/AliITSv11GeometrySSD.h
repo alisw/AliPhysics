@@ -394,23 +394,6 @@ private:
   static const Double_t fgkSSDCentralAL3SupportLength; // SSD Central Support Length
   static const Double_t fgkSSDCentralAL3SupportWidth; // SSD Central Support Width
   /////////////////////////////////////////////////////////////////////////
-  // SSD Cables e Patch Panel
-  /////////////////////////////////////////////////////////////////////////
-  static const Double_t fgkSSDCablesLay5TubeRadiusMin; // Radius Min Cable Tube Layer 5
-  static const Double_t fgkSSDCablesLay6TubeRadiusMin; // Radius Min Cable Tube Layer 6
-  static const Double_t fgkSSDCablesLay5RightSideHeight;  // Width Lay 5 Cables to be fixed in order to reproduce material budget
-  static const Double_t fgkSSDCablesLay6RightSideHeight;  // // Width Lay 5 Cables to be fixed in order to reproduce material budget
-  static const Double_t fgkSSDCableAngle; // Angle Cable   
-  static const Double_t fgkSSDCablesLay5RightSideWaterHeight;  // Width Lay 5 Water Cables to be fixed in order to reproduce material budget
-  static const Double_t fgkSSDCablesPatchPanel2RB26Angle[2]; // Angle Position Patch Panel RB26
-  static const Double_t fgkSSDCablesPatchPanel2RB24Angle[2]; // Angle Position Patch Panel RB24
-  static const Double_t fgkSSDPatchPanel2RB26ITSDistance;    // Patch Panel RB26 Position
-  static const Double_t fgkSSDPatchPanel2RB24ITSDistance;   // Patch Panel RB24 Position 
-  static const Double_t fgkSSDPatchPanel2RB26Radius; // Patch Panel Radius 
-  static const Double_t fgkSSDPatchPanel2RB24Radius; // Patch Panel Radius
-  static const Double_t fgkSSDPatchPanelHeight; // Patch Panel Height
-  static const Double_t fgkSSDCableMaterialBudgetHeight; // SSD Cable Material Budget
-  /////////////////////////////////////////////////////////////////////////
   // Private methods for private members generation
   /////////////////////////////////////////////////////////////////////////
 
