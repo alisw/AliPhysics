@@ -289,10 +289,12 @@ void AliAnaParticleIsolation::CalculateCaloUEBand(AliAODPWG4ParticleCorrelation 
       printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Cluster not available?");
       continue;
     }
-    
+        
     //Do not count the candidate (photon or pi0) or the daughters of the candidate
     if(cluster->GetID() == pCandidate->GetCaloLabel(0) ||
        cluster->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;
+    
+    if(IsTrackMatched(cluster,GetReader()->GetInputEvent())) continue ;
     
     cluster->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
     
