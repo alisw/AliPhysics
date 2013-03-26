@@ -44,6 +44,7 @@
 #include "AliPIDResponse.h"
 #include "AliStack.h"
 #include "AliSpectraBothPID.h"
+#include "AliGenEventHeader.h"	
 #include <TMCProcess.h>
 
 #include <iostream>
@@ -116,12 +117,28 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
   	TClonesArray *arrayMC = 0;
   	Int_t npar=0;
   	AliStack* stack=0x0;
-  
+	 Double_t mcZ=-100;
+
  	if (fIsMC)
   	{
-	  
+		TArrayF mcVertex(3);
+  		mcVertex[0]=9999.; mcVertex[1]=9999.; mcVertex[2]=9999.;
+		AliMCEvent* mcEvent=(AliMCEvent*)MCEvent();
+		AliHeader* header = mcEvent->Header();
+    		if (!header) 
+		{
+      			AliDebug(AliLog::kError, "Header not available");
+      			return;
+    		}
+	
+		AliGenEventHeader* genHeader = header->GenEventHeader();
+    		if(genHeader)
+		{
+			genHeader->PrimaryVertex(mcVertex);
+  			mcZ=mcVertex[2];
+		}
 		  if(ifAODEvent==AliSpectraBothTrackCuts::kAODobject)
-		  {	
+		  {
 			  arrayMC = (TClonesArray*) fAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
 			  if (!arrayMC) 
 			  {
@@ -135,8 +152,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 				  //if(partMC->Eta() > fTrackCuts->GetEtaMin() && partMC->Eta() < fTrackCuts->GetEtaMax()){//charged hadron are filled inside the eta acceptance
 				  //Printf("%f     %f-%f",partMC->Eta(),fTrackCuts->GetEtaMin(),fTrackCuts->GetEtaMax());
 				  if(partMC->Eta() > fTrackCuts->GetEtaMin() && partMC->Eta() < fTrackCuts->GetEtaMax())
-						fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
-				  
+						fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());					 				 
 				  //rapidity cut
 				  if(partMC->Y() > fTrackCuts->GetYMax()|| partMC->Y() < fTrackCuts->GetYMin() ) 
 					continue;	
@@ -152,8 +168,8 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			  }
 		  }
 		  if(ifAODEvent==AliSpectraBothTrackCuts::kESDobject)
-		  {	
-		  	AliMCEvent* mcEvent  = (AliMCEvent*) MCEvent();
+		  {
+		  	//AliMCEvent* mcEvent  = (AliMCEvent*) MCEvent();
 			//Printf("MC particles: %d", mcEvent->GetNumberOfTracks());		
 			if (!mcEvent) 
 			{
@@ -189,9 +205,8 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			  }
 		  }
 	}
-  
 	if(!fdotheMCLoopAfterEventCuts)
-  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
+  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts,fIsMC,mcZ))return;//event selection
 
   	//main loop on tracks
 	Int_t ntracks=0;

@@ -59,7 +59,7 @@ ClassImp(AliSpectraBothTrackCuts)
 
 
 AliSpectraBothTrackCuts::AliSpectraBothTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCutMax(0),fYCutMin(0),
-  fPtCutTOFMatching(0),fAODtrack(kotherobject), fHashitinSPD1(0),
+  fPtCutTOFMatching(0),fAODtrack(kotherobject), fHashitinSPD1(0),fusedadditionalcuts(kTRUE),
 fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),fTrack(0),fCuts(0)
   
 {
@@ -175,6 +175,8 @@ Bool_t AliSpectraBothTrackCuts::CheckTrackCuts()
 {
   // Check additional track Cuts
   Bool_t PassTrackCuts=kTRUE;
+  if(!fusedadditionalcuts)
+	return PassTrackCuts;
   AliAODTrack* aodtrack=0;
   AliESDtrack* esdtrack=0;
   if(fAODtrack==kESDobject)
