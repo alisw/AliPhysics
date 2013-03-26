@@ -105,8 +105,8 @@ const Float_t AliTRDinfoGen::fgkITS = 100.; // to be checked
 const Float_t AliTRDinfoGen::fgkTPC = 290.;
 const Float_t AliTRDinfoGen::fgkTRD = 365.;
 
-const Float_t AliTRDinfoGen::fgkTrkDCAxy  = 3.;
-const Float_t AliTRDinfoGen::fgkTrkDCAz   = 10.;
+const Float_t AliTRDinfoGen::fgkTrkDCAxy  = 1.;
+const Float_t AliTRDinfoGen::fgkTrkDCAz   = 1.;
 const Int_t   AliTRDinfoGen::fgkNclTPC    = 70;
 const Float_t AliTRDinfoGen::fgkPt        = 0.2;
 const Float_t AliTRDinfoGen::fgkEta       = 0.9;
@@ -687,6 +687,18 @@ void AliTRDinfoGen::UserExec(Option_t *){
             AliDebug(3, Form("Reject TPC Trk[%3d] Ev[%4d] NclTPC[%d]", itrk, fESDev->GetEventNumberInFile(), esdTrack->GetTPCNcls()));
             selected = kFALSE;
           }
+          if(selected && !(esdTrack->GetStatus()&AliESDtrack::kITSrefit)){ //SPD refit flag (Ionut)
+            AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] ITSrefit", itrk, fESDev->GetEventNumberInFile()));
+            selected = kFALSE;
+          }
+          UChar_t itsMap = esdTrack->GetITSClusterMap();
+          Bool_t firstSPDlayerHit = (itsMap & (UChar_t(1)<<0)),
+                 secondSPDlayerHit = (itsMap & (UChar_t(1)<<1));
+          if(selected && !(firstSPDlayerHit || secondSPDlayerHit)){ // request at least 1 SPD cluster (Ionut)
+            AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] no SPD cluster", itrk, fESDev->GetEventNumberInFile()));
+            selected = kFALSE;
+          }
+
           Float_t par[2], cov[3];
           esdTrack->GetImpactParameters(par, cov);
           if(IsCollision()){ // cuts on DCA
