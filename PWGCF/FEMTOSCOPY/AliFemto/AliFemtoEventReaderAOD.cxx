@@ -652,7 +652,8 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     tEvent->SetCentralityZNA(cent->GetCentralityPercentile("ZNA"));
     tEvent->SetCentralityCL1(cent->GetCentralityPercentile("CL1"));
     //    tEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
-    //    tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
+    tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
+    tEvent->SetCentralityCND(cent->GetCentralityPercentile("CND"));
   }
 
   if (fEstEventMult==kCentrality) {
@@ -666,6 +667,12 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   }
   else if (fEstEventMult==kCentralityCL1) {
     if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("CL1")));
+  }
+  else if (fEstEventMult==kCentralityTRK) {
+    if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("TRK")));
+  }
+  else if (fEstEventMult==kCentralityCND) {
+    if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("CND")));
   }
   else if(fEstEventMult==kGlobalCount){
     tEvent->SetNormalizedMult(tNormMult); //particles counted in the loop, trying to reproduce GetReferenceMultiplicity. If better (default) method appears it should be changed

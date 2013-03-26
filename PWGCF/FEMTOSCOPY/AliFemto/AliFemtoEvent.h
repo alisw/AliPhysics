@@ -83,6 +83,7 @@ public:
   void SetCentralityFMD(const float &c);
   void SetCentralitySPD1(const float &c);
   void SetCentralityTrk(const float &c);
+  void SetCentralityCND(const float &c);
   void SetSPDMult(const int& i);
   void SetPrimVertPos(const AliFemtoThreeVector& v);
   void SetPrimVertCov(const double* v);
@@ -118,6 +119,7 @@ public:
   float CentralityFMD() const;
   float CentralitySPD1() const;
   float CentralityTrk() const;
+  float CentralityCND() const;
 
 private:
   unsigned short fEventNumber;           // Event number in file
@@ -134,6 +136,7 @@ private:
   float fCentralityFMD;                  // Official centrality from FMD
   float fCentralitySPD1;                 // Official centrality from SPD layer 1
   float fCentralityTrk;                  // Official centrality from tracks
+  float fCentralityCND;                  // N. of tracks according to the candle condition (pT>0.5 GeV and |y|<0.8)
   double fMagneticField;                 // magnetic field in Z direction
   bool fIsCollisionCandidate;            // is collision candidate
   

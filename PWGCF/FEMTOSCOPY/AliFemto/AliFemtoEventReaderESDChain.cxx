@@ -691,7 +691,8 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     hbtEvent->SetCentralityCL1(cent->GetCentralityPercentile("CL1"));
     //    hbtEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
     //    hbtEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
-    //    hbtEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
+    hbtEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
+    hbtEvent->SetCentralityCND(cent->GetCentralityPercentile("CND"));
 
     if (Debug()>1) printf("  FemtoReader Got Event with %f %f %f %f\n", cent->GetCentralityPercentile("V0M"), 0.0, cent->GetCentralityPercentile("CL1"), 0.0);
   }
@@ -749,6 +750,32 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 			     10.0*cent->GetCentralityPercentile("CL1"), lrint(10.0*cent->GetCentralityPercentile("CL1")));
     }
   }
+  else if (fEstEventMult == kCentralityTRK) {
+    // centrality between 0 (central) and 1 (very peripheral)
+
+    if (cent) {
+      if (cent->GetCentralityPercentile("TRK") < 0.00001)
+	hbtEvent->SetNormalizedMult(-1);
+      else
+	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("TRK")));
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+			     10.0*cent->GetCentralityPercentile("TRK"), lrint(10.0*cent->GetCentralityPercentile("TRK")));
+    }
+  }
+  else if (fEstEventMult == kCentralityCND) {
+    // centrality between 0 (central) and 1 (very peripheral)
+
+    if (cent) {
+      if (cent->GetCentralityPercentile("CND") < 0.00001)
+	hbtEvent->SetNormalizedMult(-1);
+      else
+	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("CND")));
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+			     10.0*cent->GetCentralityPercentile("CND"), lrint(10.0*cent->GetCentralityPercentile("CND")));
+    }
+  }
+
+
 
   if (tNormMultPos > tNormMultNeg)
     hbtEvent->SetZDCParticipants(tNormMultPos);
