@@ -7,10 +7,11 @@
 class AliAnalysisDataContainer;
 class AliFlowTrackCuts;
 
-AliAnalysisTaskJetFlow* AddTaskJetFlow( TString name = "name",
-                                        TString jets = "jets",
-                                        Bool_t debug = kTRUE  )
-
+void AddTaskJetFlow( TString name    = "name",
+                     TString jets    = "jets",
+                     Float_t ptbump  = 200,
+                     TArrayI* cent   = 0x0,
+                     Bool_t debug    = kTRUE  )
 {
     // first check the environment (common to all tasks)
     if(debug) printf("\n\n  >> AddTaskJetFlow <<\n");
@@ -26,39 +27,45 @@ AliAnalysisTaskJetFlow* AddTaskJetFlow( TString name = "name",
         if(debug) cout << " Fatal error: no imput event handler found!" << endl;
         return 0x0;
     }
- 
-   // create the task
-   AliAnalysisTaskJetFlow* task = new AliAnalysisTaskJetFlow(name.Data());   
-   if(!task) {
-        if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
-        return 0x0;
+    // check the centrality setup
+    if(!cent) {
+        Int_t c[] = {0, 20, 40, 60, 80, 100};
+        cent = new TArrayI(sizeof(c)/sizeof(c[0]), c);
+        printf(" > Setup default centrality binning with %i bins \n ", cent->GetSize());
     }
-   else printf(" > added task with name %s and jet collection %s < \n", name.Data(), jets);
-   task->SetJetCollectionName(jets.Data());
-
-   // pass specific objects to the task
-   AliFlowTrackCuts* CutsRP = new AliFlowTrackCuts("CutsRP");
-   CutsRP = CutsRP->GetStandardVZEROOnlyTrackCuts();
-   task->SetCutsRP(CutsRP);
-
-   AliFlowTrackCuts* CutsNull = new AliFlowTrackCuts("CutsNull");
-   CutsNull->SetParamType(AliFlowTrackCuts::kGlobal);
-   CutsNull->SetEtaRange(+1, -1);
-   CutsNull->SetPtRange(+1, -1);
-   task->SetCutsNull(CutsNull);
-   
-   mgr->AddTask(task);
-   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(task,1,mgr->CreateContainer("GenericOutputContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-
+    // create the cut objects
+    AliFlowTrackCuts* CutsRP = new AliFlowTrackCuts("CutsRP");
+    CutsRP = CutsRP->GetStandardVZEROOnlyTrackCuts();
+    AliFlowTrackCuts* CutsNull = new AliFlowTrackCuts("CutsNull");
+    CutsNull->SetParamType(AliFlowTrackCuts::kGlobal);
+    CutsNull->SetEtaRange(+1, -1);
+    CutsNull->SetPtRange(+1, -1);
+    // add the tasks in a loop, one task for each centrality bin
+    for(Int_t i(0); i < cent->GetSize()-1; i++) {
+        TString tempName(Form("%s_%i_%i", name.Data(), cent->At(i), cent->At(i+1)));
+        // create the task
+        AliAnalysisTaskJetFlow* task = new AliAnalysisTaskJetFlow(tempName.Data());   
+        if(!task) {
+             if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
+             return 0x0;
+        }
+        else printf(" > added task with name %s and jet collection %s < \n", tempName.Data(), jets.Data());
+        task->SetJetCollectionName(jets.Data());
+        // pass specific objects and settigns to the task
+        task->SetCutsRP(CutsRP);
+        task->SetCutsNull(CutsNull);
+        task->SetMinMaxCentrality(cent->At(i), cent->At(1+i));
+        task->SetPtBump(ptbump);
+        mgr->AddTask(task);
+        mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+        mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s_histograms", tempName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+     
    // connect flow anaysis task
-   AliAnalysisDataContainer *flowEvent = mgr->CreateContainer("flowEvent", AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
-   mgr->ConnectOutput(task, 2, flowEvent);
-   TaskJetFlow::AddSPmethod("SP_A", -0.8, -0, 0, +0.8, "Qa", 2, flowEvent);
-   TaskJetFlow::AddSPmethod("SP_B", -0.8, -0, 0, +0.8, "Qb", 2, flowEvent);
-
-   return task;
-
+        AliAnalysisDataContainer *flowEvent = mgr->CreateContainer(Form("flowEvent_%s", tempName.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
+        mgr->ConnectOutput(task, 2, flowEvent);
+        TaskJetFlow::AddSPmethod(Form("SP_A_%s", tempName.Data()), -0.8, -0, 0, +0.8, "Qa", 2, flowEvent);
+        TaskJetFlow::AddSPmethod(Form("SP_B_%s", tempName.Data()), -0.8, -0, 0, +0.8, "Qb", 2, flowEvent);
+    }
 }
 //_____________________________________________________________________________
 namespace TaskJetFlow{ // use unique namespace to avoid problems in TRAIN analysis
@@ -77,6 +84,7 @@ namespace TaskJetFlow{ // use unique namespace to avoid problems in TRAIN analys
        b->SetMassMax(999);
        TString fileName = AliAnalysisManager::GetCommonFileName();
        fileName+=":SP";
+       fileName+="name";
        AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
        AliAnalysisDataContainer *filteredFlowEvent = mgr->CreateContainer(Form("Filter_%s", name), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
        AliAnalysisTaskFilterFE *tskFilter(0x0);
