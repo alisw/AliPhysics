@@ -65,6 +65,7 @@ The names are available via the function PairClassName(Int_t i)
 #include "AliDielectronDebugTree.h"
 #include "AliDielectronSignalMC.h"
 #include "AliDielectronMixingHandler.h"
+#include "AliDielectronV0Cuts.h"
 
 #include "AliDielectron.h"
 
@@ -233,6 +234,14 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     return;
   }
 
+  // modify event numbers in MC so that we can identify new events 
+  // in AliDielectronV0Cuts (not neeeded for collision data)
+  if(GetHasMC()) {
+    ev1->SetBunchCrossNumber(1);
+    ev1->SetOrbitNumber(1);
+    ev1->SetPeriodNumber(1);
+  }
+
   // set event
   AliDielectronVarManager::SetEvent(ev1);
   if (fMixing){
@@ -308,7 +317,16 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
 
   // clear arrays
   if (!fDontClearArrays) ClearArrays();
+
+  // reset TPC EP and unique identifiers for v0 cut class 
   AliDielectronVarManager::SetTPCEventPlane(0x0);
+  if(GetHasMC()) { // only for MC needed
+    for (Int_t iCut=0; iCut<fTrackFilter.GetCuts()->GetEntries();++iCut) {
+      if ( fTrackFilter.GetCuts()->At(iCut)->IsA() == AliDielectronV0Cuts::Class() )
+	((AliDielectronV0Cuts*)fTrackFilter.GetCuts()->At(iCut))->ResetUniqueEventNumbers();
+    }
+  }
+
 }
 
 //________________________________________________________________
