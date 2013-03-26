@@ -34,6 +34,7 @@ public:
   virtual ~AliTRDCalTrkAttach();
 
   Double_t  CookLikelihood(Bool_t chg, Int_t ly, Float_t pt, Float_t phi, Int_t ncl, Double_t dy, Double_t dphi, Double_t sr) const;
+  void      Draw(Option_t* option = "0y");
   void      GetNsgmDy(Int_t &n0, Int_t &n1) const {n0 = fNsgmDy[0]; n1 = fNsgmDy[1];}
   void      GetLikeMinRelDecrease(Float_t &p0, Float_t &p1) const {p0 = fLikeMinRelDecrease[0]; p1 = fLikeMinRelDecrease[1];}
   Float_t   GetRClikeLimit() const { return fRClikeLimit;}
@@ -45,6 +46,8 @@ public:
   void      SetScaleCov(Float_t sc) { fScaleCov = sc;}
 
 private:
+  void      Help();
+
   Int_t     fNsgmDy[2];             //
   Float_t   fLikeMinRelDecrease[2]; //
   Float_t   fRClikeLimit;           //

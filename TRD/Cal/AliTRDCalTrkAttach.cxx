@@ -29,6 +29,7 @@
 #include <TFile.h>
 #include <TROOT.h>
 #include <TMath.h>
+#include "TH1.h"
 #include "TGraphErrors.h"
 #include "TObjArray.h"
 
@@ -173,6 +174,78 @@ Double_t AliTRDCalTrkAttach::CookLikelihood(Bool_t chg, Int_t ly, Float_t pt, Fl
     dyr, f[0], dphi, f[1], n, f[2], sr, f[3]));
 
   return length;
+}
+
+//______________________________________________________________________________
+void AliTRDCalTrkAttach::Help()
+{
+// Display help message
+  printf(
+    "Draw likelihood distribution. Possible options are of the form \"lt\"\n" 
+    "where \"l\" is the layer number [0-5] and\n"
+    "      \"t\" is the type. This is one of the following\n"
+    "            \"y\" - r-phi roads\n"
+    "            \"p\" - angular (deflection) roads\n"
+    "            \"n\" - number of clusters\n"
+    "            \"s\" - cluster spread\n");
+}
+
+//______________________________________________________________________________
+void AliTRDCalTrkAttach::Draw(Option_t* opt)
+{
+// Draw likelihood distribution. Possible options are of the form "lt" 
+// where "l" is the layer number [0-5] and
+//       "t" is the type. This is one of the following
+//             "y" - r-phi roads
+//             "p" - angular (deflection) roads
+//             "n" - number of clusters
+//             "s" - cluster spread
+  if (!fLike || fLike->GetEntries() != AliTRDgeometry::kNlayer*kNcharge*kNcalib) {
+    AliError("No likelihood distributions stored");
+    return;
+  }
+  if(!opt){
+    Help();
+    return;
+  }
+  Int_t ly(-1); Char_t cly[] = {'0','1','2','3','4','5'}; 
+  for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
+    if(opt[0] == cly[ily]){
+      ly = ily; break;
+    }
+  }
+  if(ly<0){
+    Help();
+    return;
+  }
+  Int_t typ(-1); const Char_t ctyp[] = {'y', 'p', 's', 'n'};
+  for(Int_t it(0); it<kNcalib; it++){
+    if(opt[1] == ctyp[it]){
+      typ = it; break;
+    }
+  }
+  if(typ<0){
+    Help();
+    return;
+  }
+  Int_t offset(ly*kNcalib*kNcharge+typ*kNcharge); // offset for layer and type
+  TGraphErrors *g[2]={(TGraphErrors*)fLike->At(offset), (TGraphErrors*)fLike->At(offset+1)};
+  if(!g[0] || !g[1]){
+    AliError(Form("Failed retrieving graphs for Ly[%d] Typ[%c]", ly, ctyp[typ]));
+    return;
+  }
+
+  // draw !!
+  const Char_t *ttyp[] = {"#Deltay [cm]", "#Delta#phi [deg]", "#Delta#sigma/<#sigma>", "n_{cl}^{tracklet}"};
+  g[0]->Draw("apl"); g[0]->SetLineColor(kBlue); g[0]->SetMarkerColor(kBlue);
+  g[1]->Draw("pl");  g[1]->SetLineColor(kRed); g[1]->SetMarkerColor(kRed);
+  TH1 *h=g[0]->GetHistogram();
+  h->GetYaxis()->SetTitle(ttyp[typ]);
+  h->GetYaxis()->SetLabelFont(52);
+  h->GetYaxis()->SetTitleFont(62);
+  h->GetXaxis()->SetTitle("p_{t} [GeV/c]");
+  h->GetXaxis()->SetLabelFont(52);
+  h->GetXaxis()->SetTitleFont(62);
 }
 
 //______________________________________________________________________________
