@@ -104,9 +104,6 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   if(!IsNewEvent(ev)) return;
   //  printf(" Build V0 candidates according to the applied cuts \n");
 
-  // TODO think about MCevent
-  //  Print();
-
   // rest booleans
   fV0TrackArr.ResetAllBits();
 
@@ -122,7 +119,8 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   AliDielectronPID dauPIDcuts;
   if(fPID>=0) dauPIDcuts.SetDefaults(fPID);
 
-  Int_t nV0s = 0;
+  Int_t nV0s      = 0;
+  Int_t nV0stored = 0;
   AliDielectronPair candidate;
   candidate.SetPdgCode(fMotherPdg);
 
@@ -177,7 +175,6 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   else if(ev->IsA() == AliAODEvent::Class()) {
     const AliAODEvent *aodEv = static_cast<const AliAODEvent*>(ev);
 
-    //    Int_t nV0stored = 0;
     // loop over vertices
     for (Int_t ivertex=0; ivertex<aodEv->GetNumberOfVertices(); ++ivertex){
       AliAODVertex *v=aodEv->GetVertex(ivertex);
@@ -190,7 +187,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 	printf("Error: Couldn't get V0 daughter: %p - %p\n",trNeg,trPos);
 	continue;
       }
-      //nV0stored++;
+      nV0stored++;
 
       // PID default cuts
       if(fPID>=0) {
@@ -221,7 +218,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   else
     return;
 
-  //  printf(" Number of V0s candiates found %d \n",nV0s);
+  //  printf(" Number of V0s candiates found %d/%d \n",nV0s,nV0stored);
 
 }
 //________________________________________________________________________

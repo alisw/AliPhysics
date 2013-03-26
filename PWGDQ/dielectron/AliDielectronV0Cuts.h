@@ -43,6 +43,7 @@ public:
   void SetPdgCodes(Int_t mother, Int_t negDaughter, Int_t posDaughter) {fMotherPdg=mother; fNegPdg=negDaughter; fPosPdg=posDaughter;}
   void SetExcludeTracks(Bool_t exclude) {fExcludeTracks=exclude;}
   void SetDefaultPID(Int_t def) {fPID=def;}
+  void ResetUniqueEventNumbers() { fOrbit=0; fPeriod=0; fBunchCross=0; }
 
 private:
 
