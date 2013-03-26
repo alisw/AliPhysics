@@ -489,7 +489,8 @@ void AliCDMesonUtils::DoVZEROStudy(const AliESDEvent *ESDEvent,
 
 	AliCDBEntry *ent1 = man->Get("VZERO/Trigger/Data");
 	if (!ent1) {
-		printf("AliCDMesonUtils failed loading VZERO trigger data from OCDB\n");
+		printf("AliCDMesonUtils failed loading VZERO trigger entry from OCDB\n");
+		return;
 	}
 	AliVZEROTriggerData *trigData = (AliVZEROTriggerData*)ent1->GetObject();
 	if (!trigData) {
@@ -498,6 +499,10 @@ void AliCDMesonUtils::DoVZEROStudy(const AliESDEvent *ESDEvent,
 	}
 
 	AliCDBEntry *ent2 = man->Get("VZERO/Calib/Data");
+	if (!ent2) {
+		printf("AliCDMesonUtils failed loading VZERO calib entry from OCDB\n");
+		return;
+	}
 	AliVZEROCalibData *calData = (AliVZEROCalibData*)ent2->GetObject();
 	if (!calData) {
 		printf("AliCDMesonUtils failed loading VZERO calibration data from OCDB\n");
