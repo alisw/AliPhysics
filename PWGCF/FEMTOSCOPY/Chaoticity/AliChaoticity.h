@@ -70,6 +70,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Int_t GetNumKtBins() const {return AliChaoticity::fKbinsT;}
   Int_t GetNumRValues() const {return AliChaoticity::fRVALUES;}
   Int_t GetNumCentBins() const {return AliChaoticity::fCentBins;}
+  Int_t GetNumEDBins() const {return AliChaoticity::fEDbins;}
   void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliChaoticity::fKbinsT][AliChaoticity::fCentBins]=0x0);
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2DGaus[2]=0x0, TH2D *temp2DTherm[6]=0x0, TH3D *temp3Dos[6]=0x0, TH3D *temp3Dss[6]=0x0);
@@ -86,6 +87,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void SetNsigmaTOF(Float_t nsig) {fSigmaCutTOF = nsig;}
   void SetRBinMax(Int_t rbin) {fRBinMax = rbin;}
   void SetFixedLambdaBin(Int_t lbin) {fFixedLambdaBin = lbin;}
+  
   //
 
 

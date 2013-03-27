@@ -212,7 +212,7 @@ AliChaoticity::AliChaoticity(const Char_t *name)
   fEvt(0x0),
   fTempStruct(0x0),
   fRandomNumber(0x0),
-  fLEGO(kFALSE),
+  fLEGO(kTRUE),
   fMCcase(kFALSE),
   fAODcase(kTRUE),
   fPbPbcase(kTRUE),
@@ -685,7 +685,8 @@ AliChaoticity::~AliChaoticity()
 void AliChaoticity::ParInit()
 {
   cout<<"AliChaoticity MyInit() call"<<endl;
-  
+  cout<<"lego:"<<fLEGO<<"  MCcase:"<<fMCcase<<"  PbPbcase:"<<fPbPbcase<<"  TabulatePairs:"<<fTabulatePairs<<"  GenSignal:"<<fGenerateSignal<<"  CentLow:"<<fCentBinLowLimit<<"  CentHigh:"<<fCentBinHighLimit<<"  RBinMax:"<<fRBinMax<<"  LambdaBin:"<<fFixedLambdaBin<<"  FB:"<<fFilterBit<<"  MinPairSep:"<<fMinSepPair<<"  NsigTPC:"<<fSigmaCutTPC<<"  NsigTOF:"<<fSigmaCutTOF<<endl;
+
   fRandomNumber = new TRandom3();
   fRandomNumber->SetSeed(0);
     
@@ -714,11 +715,11 @@ void AliChaoticity::ParInit()
   if(fPbPbcase) {// PbPb
     fMultLimit=kMultLimitPbPb; 
     fMbins=fCentBins; 
-    fQcut[0]=0.1;
-    fQcut[1]=0.1;
-    fQcut[2]=0.6;
-    fNormQcutLow[0] = 0.15;//1.06 (test also at 0.15)
-    fNormQcutHigh[0] = 0.175;//1.1 (test also at 0.175)
+    fQcut[0]=0.1;//pi-pi, pi-k, pi-p
+    fQcut[1]=0.1;//k-k
+    fQcut[2]=0.6;//the rest
+    fNormQcutLow[0] = 0.15;//0.15
+    fNormQcutHigh[0] = 0.175;//0.175
     fNormQcutLow[1] = 1.34;//1.34
     fNormQcutHigh[1] = 1.4;//1.4
     fNormQcutLow[2] = 1.1;//1.1
@@ -741,34 +742,29 @@ void AliChaoticity::ParInit()
   fQLowerCut = 0.005;// was 0.005
   fKupperBound = 1.0;
   //
-  // 4x1 (Kt: 0-0.2, 0.2-0.4, 0.4-0.6, 0.6-1.0)
-  //fKstepT[0] = 0.2; fKstepT[1] = 0.2; fKstepT[2] = 0.2; fKstepT[3] = 0.4;
-  //fKstepY[0] = 1.6;// -0.8 to +0.8
-  //fKmeanT[0] = 0.1; fKmeanT[1] = 0.3; fKmeanT[2] = 0.5; fKmeanT[3] = 0.8;
-  //fKmeanY[0] = 0;// central y
-  //fKmiddleT[0] = 0.1; fKmiddleT[1] = 0.3; fKmiddleT[2] = 0.5; fKmiddleT[3] = 0.8;
-  //fKmiddleY[0] = 0;
-  // 3x1 (Kt: 0-0.3, 0.3-0.45, 0.45-1.0)
-  fKstepT[0] = 0.3; fKstepT[1] = 0.15; fKstepT[2] = 0.55;
-  fKstepY[0] = 1.6;// -0.8 to +0.8
-  fKmeanT[0] = 0.241; fKmeanT[1] = 0.369; fKmeanT[2] = 0.573;
+  fKstepY[0] = 1.6;
   fKmeanY[0] = 0;// central y
-  fKmiddleT[0] = 0.15; fKmiddleT[1] = 0.375; fKmiddleT[2] = 0.725;
   fKmiddleY[0] = 0;
-  // 2x1 (Kt: 0-0.4, 0.4-1.0)
-  //fKstepT[0] = 0.4; fKstepT[1] = 0.6;
-  //fKstepY[0] = 1.6;// -0.8 to +0.8
-  //fKmeanT[0] = 0.255; fKmeanT[1] = 0.505;
-  //fKmiddleT[0] = 0.2; fKmiddleT[1] = 0.7;
-  //fKmeanY[0] = 0;// central y
-  //fKmiddleY[0] = 0;
-  // 1x1 (Kt: 0-1.0)
-  //fKstepT[0] = 1.0;
-  //fKstepY[0] = 1.6;// -0.8 to +0.8
-  //fKmeanT[0] = 0.306;
-  //fKmiddleT[0] = 0.5;
-  //fKmeanY[0] = 0;// central y
-  //fKmiddleY[0] = 0;
+
+  // 4x1 (Kt: 0-0.25, 0.25-0.35, 0.35-0.45, 0.45-1.0)
+  if(fKbinsT==4){
+    fKstepT[0] = 0.25; fKstepT[1] = 0.1; fKstepT[2] = 0.1; fKstepT[3] = 0.55;
+    fKmeanT[0] = 0.212; fKmeanT[1] = 0.299; fKmeanT[2] = 0.398; fKmeanT[3] = 0.576;
+    fKmiddleT[0] = 0.125; fKmiddleT[1] = 0.3; fKmiddleT[2] = 0.4; fKmiddleT[3] = 0.725;
+  }
+  // 3x1 (Kt: 0-0.3, 0.3-0.45, 0.45-1.0)
+  if(fKbinsT==3){
+    fKstepT[0] = 0.3; fKstepT[1] = 0.15; fKstepT[2] = 0.55;
+    fKmeanT[0] = 0.240; fKmeanT[1] = 0.369; fKmeanT[2] = 0.576;
+    fKmiddleT[0] = 0.15; fKmiddleT[1] = 0.375; fKmiddleT[2] = 0.725;
+  }
+  // 2x1 (Kt: 0-0.35, 0.35-1.0)
+  if(fKbinsT==2){
+    fKstepT[0] = 0.35; fKstepT[1] = 0.65;
+    fKmeanT[0] = 0.264; fKmeanT[1] = 0.500;
+    fKmiddleT[0] = 0.175; fKmiddleT[1] = 0.675;
+  }
+ 
   //
   fQupperBoundWeights = 0.2;
   fQupperBound = 0.1;
@@ -834,14 +830,12 @@ void AliChaoticity::ParInit()
   if(!fLEGO) {
     SetFSICorrelations(fLEGO);// Read in 2-particle and 3-particle FSI correlations
     if(!fTabulatePairs) SetWeightArrays(fLEGO);// Set Weight Array
-    //if(!fMCcase && !fTabulatePairs) SetMomResCorrections(fLEGO);// Read Momentum resolution file
-    if(!fTabulatePairs) SetMomResCorrections(fLEGO);// Read Momentum resolution file
+    if(!fMCcase && !fTabulatePairs) SetMomResCorrections(fLEGO);// Read Momentum resolution file
+    //if(!fTabulatePairs) SetMomResCorrections(fLEGO);// Read Momentum resolution file
   }
   
   /////////////////////////////////////////////
-  // AddTaskChaoticity function call testing
-  //TestAddTask();
-  ////////////////////////////////////////////////
+  /////////////////////////////////////////////
   
 }
 //________________________________________________________________________
@@ -931,8 +925,10 @@ void AliChaoticity::UserCreateOutputObjects()
   fOutputList->Add(fTPNRejects5);
 
 
-  TH2D *fKt3Dist = new TH2D("fKt3Dist","",fMbins,.5,fMbins+.5, 10,0,1);
-  fOutputList->Add(fKt3Dist);
+  TH3D *fKt3DistTerm1 = new TH3D("fKt3DistTerm1","",fMbins,.5,fMbins+.5, 20,0,1, 20,0,0.2);
+  TH3D *fKt3DistTerm5 = new TH3D("fKt3DistTerm5","",fMbins,.5,fMbins+.5, 20,0,1, 20,0,0.2);
+  fOutputList->Add(fKt3DistTerm1);
+  fOutputList->Add(fKt3DistTerm5);
 
   
   if(fPdensityExplicitLoop || fPdensityPairCut){
@@ -2518,18 +2514,24 @@ void AliChaoticity::Exec(Option_t *)
 	  qinv12 = (fEvt)->fPairsME[p1].fQinv;
 	}
 
-	if(fGenerateSignal){
-	  Float_t Qflattened = 0.005 + 0.1*gRandom->Rndm();
-	  Float_t theta12 = PI*gRandom->Rndm();
-	  Float_t phi12 = 2*PI*gRandom->Rndm();
-	  pVect2Flat[1] = pVect1[1] + Qflattened*sin(theta12)*cos(phi12);
-	  pVect2Flat[2] = pVect1[2] + Qflattened*sin(theta12)*sin(phi12);
-	  pVect2Flat[3] = pVect1[3] + Qflattened*cos(theta12);
-	  pVect2Flat[0] = sqrt(pow(pVect2Flat[1],2)+pow(pVect2Flat[2],2)+pow(pVect2Flat[3],2)+pow(fTrueMassPi,2));
-	  
-	  qinv12 = GetQinv(0, pVect1, pVect2Flat);
-	}
-
+	/*if(fGenerateSignal){
+	  Bool_t goodFlattenedPair=kFALSE;
+	  while(!goodFlattenedPair){
+	    Float_t Qflattened = fQLowerCut + (fQcut[0]-fQLowerCut)*gRandom->Rndm();
+	    Float_t theta12 = PI*gRandom->Rndm();
+	    Float_t phi12 = 2*PI*gRandom->Rndm();
+	    pVect2Flat[1] = pVect1[1] + Qflattened*sin(theta12)*cos(phi12);
+	    pVect2Flat[2] = pVect1[2] + Qflattened*sin(theta12)*sin(phi12);
+	    pVect2Flat[3] = pVect1[3] + Qflattened*cos(theta12);
+	    pVect2Flat[0] = sqrt(pow(pVect2Flat[1],2)+pow(pVect2Flat[2],2)+pow(pVect2Flat[3],2)+pow(fTrueMassPi,2));
+	    //
+	    //pVect2Flat[0]=pVect2[0]; pVect2Flat[1]=pVect2[1]; pVect2Flat[2]=pVect2[2]; pVect2Flat[3]=pVect2[3];
+	    //
+	    qinv12 = GetQinv(0, pVect1, pVect2Flat);
+	    if(qinv12 < fQcut[0] && qinv12>fQLowerCut) goodFlattenedPair=kTRUE;
+	  }
+	  }*/
+	
 	// en2 buffer
 	for(Int_t en2=0; en2<3; en2++){
 	  //////////////////////////////////////
@@ -2651,18 +2653,28 @@ void AliChaoticity::Exec(Option_t *)
 	    if(qinv13 > fQcut[qCutBin13]) continue;
 	    if(qinv23 > fQcut[qCutBin23]) continue;
 
-	    if(fGenerateSignal){
-	      Float_t Qflattened = 0.005 + 0.1*gRandom->Rndm();
-	      Float_t theta13 = PI*gRandom->Rndm();
-	      Float_t phi13 = 2*PI*gRandom->Rndm();
-	      pVect3Flat[1] = pVect1[1] + Qflattened*sin(theta13)*cos(phi13);
-	      pVect3Flat[2] = pVect1[2] + Qflattened*sin(theta13)*sin(phi13);
-	      pVect3Flat[3] = pVect1[3] + Qflattened*cos(theta13);
-	      pVect3Flat[0] = sqrt(pow(pVect3Flat[1],2)+pow(pVect3Flat[2],2)+pow(pVect3Flat[3],2)+pow(fTrueMassPi,2));
-	      
-	      qinv13 = GetQinv(0, pVect1, pVect3Flat);
-	      qinv23 = GetQinv(0, pVect2Flat, pVect3Flat);
-	    }
+	    /*if(fGenerateSignal){
+	      Bool_t goodFlattenedTriplet=kFALSE;
+	      while(!goodFlattenedTriplet){
+		Float_t Qflattened = fQLowerCut + (fQcut[0]-fQLowerCut)*gRandom->Rndm();
+		Float_t theta13 = PI*gRandom->Rndm();
+		Float_t phi13 = 2*PI*gRandom->Rndm();
+		pVect3Flat[1] = pVect1[1] + Qflattened*sin(theta13)*cos(phi13);
+		pVect3Flat[2] = pVect1[2] + Qflattened*sin(theta13)*sin(phi13);
+		pVect3Flat[3] = pVect1[3] + Qflattened*cos(theta13);
+		pVect3Flat[0] = sqrt(pow(pVect3Flat[1],2)+pow(pVect3Flat[2],2)+pow(pVect3Flat[3],2)+pow(fTrueMassPi,2));
+		//
+		pVect3Flat[0]=pVect3[0]; pVect3Flat[1]=pVect3[1]; pVect3Flat[2]=pVect3[2]; pVect3Flat[3]=pVect3[3];
+		//
+		qinv13 = GetQinv(0, pVect1, pVect3Flat);
+		qinv23 = GetQinv(0, pVect2Flat, pVect3Flat);
+		if(qinv13 < fQcut[qCutBin13] && qinv23 < fQcut[qCutBin23]) {
+		  if(qinv13>fQLowerCut && qinv23>fQLowerCut) goodFlattenedTriplet=kTRUE;
+		}
+	      }
+	      }*/
+	    
+	    
 	    if(fMCcase){
 	      pVect3MC[1] = (fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[k].fLabel)].fPx;
 	      pVect3MC[2] = (fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[k].fLabel)].fPy;
@@ -2672,15 +2684,15 @@ void AliChaoticity::Exec(Option_t *)
 	      qinv13MC = GetQinv(0, pVect1MC, pVect3MC);
 	      qinv23MC = GetQinv(0, pVect2MC, pVect3MC);
 	    }
-	    	   
-	  
 	    
+	  
 	    // if all three pair cuts are the same then the case (config=2 && term=2) never reaches here.
 	    
 	    q3 = sqrt(pow(qinv12,2) + pow(qinv13,2) + pow(qinv23,2));
 	    transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
 	    Float_t firstQ=0, secondQ=0, thirdQ=0;
 	    Float_t firstQMC=0, secondQMC=0, thirdQMC=0;
+	    
 	    //
 	    
 	    //	    
@@ -2696,12 +2708,12 @@ void AliChaoticity::Exec(Option_t *)
 		
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fTerms3->Fill(firstQ, secondQ, thirdQ, WInput);
 		////
-		((TH2F*)fOutputList->FindObject("fKt3Dist"))->Fill(fMbin+1, transK3);
 		//
 		if(fillIndex3==0 && ch1==ch2 && ch1==ch3 && fMCcase==kFALSE){
 		  FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd1Terms->Fill(Qsum1v1, Qsum2, Qsum3v1);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd2Terms->Fill(Qsum1v2, Qsum2, Qsum3v2);
+		  ((TH3D*)fOutputList->FindObject("fKt3DistTerm1"))->Fill(fMbin+1, transK3, q3);
 		}		
 		//////////////////////////////////////
 		// Momentum resolution and <K3> calculation
@@ -2850,7 +2862,10 @@ void AliChaoticity::Exec(Option_t *)
 	      
 	      SetFillBins3(fillIndex3, key1, key2, key3, ch1, ch2, ch3, 3, bin1, bin2, bin3, fDummyB, fDummyB, fDummyB);
 	      
-	      if(ch1==ch2 && ch1==ch3 && fillIndex3==0) FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
+	      if(ch1==ch2 && ch1==ch3 && fillIndex3==0) {
+		FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
+		if(fMCcase==kFALSE) ((TH3D*)fOutputList->FindObject("fKt3DistTerm5"))->Fill(fMbin+1, transK3, q3);
+	      }	      
 	      if(fMCcase && ch1==ch2 && ch1==ch3 && fillIndex3==0) FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);
 	      
 	      if(fillIndex3 <= 2){
@@ -3638,8 +3653,8 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t track3
   qLong = fabs(qLong);
   //
   
-  if(kt < fKmeanT[0]) {fKtIndexL=0; fKtIndexH=0;}
-  else if(kt >= fKmeanT[fKbinsT-1]) {fKtIndexL=fKbinsT-1; fKtIndexH=fKbinsT-1;}
+  if(kt < fKmeanT[0]) {fKtIndexL=0; fKtIndexH=1;}// fKtIndexL=0; fKtIndexH=0; no extrapolation
+  else if(kt >= fKmeanT[fKbinsT-1]) {fKtIndexL=fKbinsT-2; fKtIndexH=fKbinsT-1;}// fKtIndexL=fKbinsT-1; fKtIndexH=fKbinsT-1; no extrapolation
   else {
     for(Int_t i=0; i<fKbinsT-1; i++){
       if((kt >= fKmeanT[i]) && (kt < fKmeanT[i+1])) {fKtIndexL=i; fKtIndexH=i+1; break;}
