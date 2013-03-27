@@ -371,30 +371,37 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVect
   Double_t dphiV0C  = phi-EPV0C;
   Double_t dphiTPC  = phi-EPTPC;
 
+  Double_t cos2phiV0A = TMath::Cos(2.*(dphiV0A));
+  Double_t cos2phiV0C = TMath::Cos(2.*(dphiV0C));
+  Double_t cos2phiTPC = TMath::Cos(2.*(dphiTPC));
+
   dphiV0A = TVector2::Phi_0_2pi(dphiV0A); if(dphiV0A >TMath::Pi())  dphiV0A -= TMath::Pi();
   dphiV0C = TVector2::Phi_0_2pi(dphiV0C); if(dphiV0C >TMath::Pi())  dphiV0C -= TMath::Pi();
   dphiTPC = TVector2::Phi_0_2pi(dphiTPC); if(dphiTPC >TMath::Pi())  dphiTPC -= TMath::Pi();
 
-  Double_t xV0A[4]; // Match ndims in fH V0A EP
+  Double_t xV0A[5]; // Match ndims in fH V0A EP
   xV0A[0]       = mass;
   xV0A[1]       = pt;
   xV0A[2]       = fCentrality;
   xV0A[3]       = dphiV0A;
+  xV0A[4]       = cos2phiV0A;
   fHEPV0A->Fill(xV0A);
 
-  Double_t xV0C[4]; // Match ndims in fH V0C EP
+  Double_t xV0C[5]; // Match ndims in fH V0C EP
   xV0C[0]       = mass;
   xV0C[1]       = pt;
   xV0C[2]       = fCentrality;
   xV0C[3]       = dphiV0C;
+  xV0C[4]       = cos2phiV0C;
   fHEPV0C->Fill(xV0C);
 
   if (fEPTPC!=-999.){
-    Double_t xTPC[4]; // Match ndims in fH TPC EP
+    Double_t xTPC[5]; // Match ndims in fH TPC EP
     xTPC[0]       = mass;
     xTPC[1]       = pt;
     xTPC[2]       = fCentrality;
     xTPC[3]       = dphiTPC;
+    xTPC[4]       = cos2phiTPC;
     fHEPTPC->Fill(xTPC);
   }
 }
@@ -618,11 +625,11 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
   fOutput->Add(hClusDxDZB);
     
   if (!isV1Clus) {
-    const Int_t ndims = 4;
-    Int_t nMgg=500, nPt=40, nCent=20, nDeltaPhi=315;
-    Int_t binsv1[ndims] = {nMgg, nPt, nCent, nDeltaPhi};
-    Double_t xmin[ndims] = { 0,   0.,  0,   0.};
-    Double_t xmax[ndims] = { 0.5, 20., 100, 3.15};
+    const Int_t ndims = 5;
+    Int_t nMgg=500, nPt=40, nCent=20, nDeltaPhi=315, ncos2phi=500;
+    Int_t binsv1[ndims] = {nMgg, nPt, nCent, nDeltaPhi, ncos2phi};
+    Double_t xmin[ndims] = { 0,   0.,  0,    0.,        -1.};
+    Double_t xmax[ndims] = { 0.5, 20., 100,  3.15,      1.};
     fHEPV0A = new THnSparseF("fHEPV0A",   "Flow histogram EPV0A", ndims, binsv1, xmin, xmax);
     fHEPV0C = new THnSparseF("fHEPV0C",   "Flow histogram EPV0C", ndims, binsv1, xmin, xmax);
     fHEPTPC = new THnSparseF("fHEPTPC",   "Flow histogram EPTPC", ndims, binsv1, xmin, xmax);
@@ -630,14 +637,17 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fHEPV0A->GetAxis(1)->SetTitle("p_{T}[GeV]"); 
     fHEPV0A->GetAxis(2)->SetTitle("centrality");
     fHEPV0A->GetAxis(3)->SetTitle("#delta #phi");
+    fHEPV0A->GetAxis(4)->SetTitle("cos(2*#delta #phi)");
     fHEPV0C->GetAxis(0)->SetTitle("m_{#gamma#gamma} "); 
     fHEPV0C->GetAxis(1)->SetTitle("p_{T}[GeV]"); 
     fHEPV0C->GetAxis(2)->SetTitle("centrality");
     fHEPV0C->GetAxis(3)->SetTitle("#delta #phi");
+    fHEPV0C->GetAxis(4)->SetTitle("cos(2*#delta #phi)");
     fHEPTPC->GetAxis(0)->SetTitle("m_{#gamma#gamma} "); 
     fHEPTPC->GetAxis(1)->SetTitle("p_{T}[GeV]"); 
     fHEPTPC->GetAxis(2)->SetTitle("centrality");
     fHEPTPC->GetAxis(3)->SetTitle("#delta #phi");
+    fHEPTPC->GetAxis(4)->SetTitle("cos(2*#delta #phi)");
     fOutput->Add(fHEPV0A);
     fOutput->Add(fHEPV0C);
     fOutput->Add(fHEPTPC);

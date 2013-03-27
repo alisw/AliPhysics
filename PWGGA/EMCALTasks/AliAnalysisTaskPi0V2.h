@@ -171,10 +171,10 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     THnSparse		        *fClusterPbV0C;         //!
     THnSparse			*fClusterPbTPC;         //!
 
-    THnSparse                   *fHEPV0r;	        //! Flow 4-D Histo
-    THnSparse                   *fHEPV0A;	        //! Flow 4-D Histo
-    THnSparse                   *fHEPV0C;	        //! Flow 4-D Histo
-    THnSparse                   *fHEPTPC;	        //! Flow 4-D Histo
+    THnSparse                   *fHEPV0r;	        //! Flow 5-D Histo
+    THnSparse                   *fHEPV0A;	        //! Flow 5-D Histo
+    THnSparse                   *fHEPV0C;	        //! Flow 5-D Histo
+    THnSparse                   *fHEPTPC;	        //! Flow 5-D Histo
     
     AliAnalysisTaskPi0V2(const AliAnalysisTaskPi0V2&); // not implemented
     AliAnalysisTaskPi0V2& operator=(const AliAnalysisTaskPi0V2&); // not implemented
