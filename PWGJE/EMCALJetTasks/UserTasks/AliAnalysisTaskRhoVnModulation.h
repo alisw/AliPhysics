@@ -71,12 +71,11 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetModulationFitType(fitModulationType type)    {fFitModulationType = type; }
         void                    SetModulationFitOptions(TString opt)            {fFitModulationOptions = opt; }
         void                    SetModulationFitDetector(detectorType type)     {fDetectorType = type; }
+        void                    SetUsePtWeight(Bool_t w)                        {fUsePtWeight = w; }
         void                    SetRunModeType(runModeType type)                {fRunModeType = type; }
         void                    SetAbsVertexZ(Float_t v)                        {fAbsVertexZ = v; }
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
         void                    SetRandomConeRadius(Float_t r)                  {fRandomConeRadius = r; }
-        // getters
-        /* FIXME implement getters */
         // 'trivial' helper calculations
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneTPC(Double_t* tpc) const;
@@ -86,10 +85,12 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         // event and track selection
         /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
             if(!track) return kFALSE;
-            return kTRUE; }
+            return (track->Pt() < fTrackPtCut || track->Eta() < fTrackMinEta || track->Eta() > fTrackMaxEta || track->Phi() < fTrackMinPhi || track->Phi() > fTrackMaxPhi) ? kFALSE : kTRUE; }
+        /* inline */    Bool_t PassesCuts(const AliEmcalJet* jet) const {
+            if(!jet || fJetRadius <= 0) return kFALSE;
+            return (jet->Pt() < fJetPtCut || jet->Area()/(fJetRadius*fJetRadius*TMath::Pi()) < fPercAreaCut || jet->Eta() < fJetMinEta || jet->Eta() > fJetMaxEta || jet->Phi() < fJetMinPhi || jet->Phi() > fJetMaxPhi) ? kFALSE : kTRUE; }
         Bool_t                  PassesCuts(AliVEvent* event);
         Bool_t                  PassesCuts(const AliVCluster* track) const;
-        Bool_t                  PassesCuts(const AliEmcalJet* jet) const;
         // filling histograms
         void                    FillHistogramsAfterSubtraction(Double_t vzero[2][2], Double_t* tpc) const;
         void                    FillTrackHistograms() const;
@@ -111,6 +112,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TArrayI*                fCentralityClasses;     //-> centrality classes (maximum 10)
         // members
         fitModulationType       fFitModulationType;     // fit modulation type
+        Bool_t                  fUsePtWeight;           // use dptdphi instead of dndphi
         detectorType            fDetectorType;          // type of detector used for modulation fit
         TString                 fFitModulationOptions;  // fit options for modulation fit
         runModeType             fRunModeType;           // run mode type 
@@ -149,7 +151,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         /* TH1F*                   fHistClusterPt[10];      //! pt uncorrected emcal clusters */
         /* TH1F*                   fHistClusterPhi[10];     //! phi uncorrected emcal clusters */
         /* TH1F*                   fHistClusterEta[10];     //! eta uncorrected emcal clusters */
-        //// qa histograms for accepted emcal clusters aftehadronic correction
+        // qa histograms for accepted emcal clusters aftehadronic correction
         /* TH1F*                   fHistClusterCorrPt[10];  //! pt corrected emcal clusters */
         /* TH1F*                   fHistClusterCorrPhi[10]; //! phi corrected emcal clusters */
         /* TH1F*                   fHistClusterCorrEta[10]; //! eta corrected emcal clusters */
@@ -185,6 +187,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH2F*                   fHistJetEtaPhi[10];             //! eta and phi correlation
         TH2F*                   fHistJetPtArea[10];             //! jet pt versus area
         TH2F*                   fHistJetPtConstituents[10];     //! jet pt versus number of constituents
+        TH2F*                   fHistJetEtaRho[10];             //! jet eta versus jet rho
         // in plane, out of plane jet spectra
         TH2F*                   fHistJetPsiTPCPt[10];            //! psi tpc versus pt
         TH2F*                   fHistJetPsiVZEROAPt[10];         //! psi vzeroa versus pt
@@ -197,7 +200,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 2);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 3);
 };
 
 #endif
