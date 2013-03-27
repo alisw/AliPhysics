@@ -251,7 +251,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
 
     //   TH1F			*fTrackPtBefTrkCuts;	//Track pt before track cuts	
     //   TH1F			*fTrackPtAftTrkCuts;	//Track pt after track cuts
-    //   TH2F			*fTPCnsigma;		//TPC n sigma vs p	
+    TH2F			*fTPCnsigma;		//TPC n sigma vs p	
     //   TH1F			*fNCellv1;		//No of cells in cluster, all EMCAL cluster
     //   TH1F			*fClsEv1;		//Cluster energy, all EMCAL cluster
     //   TH1F			*fNClusv1;		//No of clusters in event, all EMCAL cluster
