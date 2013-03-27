@@ -66,6 +66,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMCTrackBitMap(UInt_t m)                            { fMCTrackBitMap     = m                              ; }
   void                        SetMCClusterBitMap(UInt_t m)                          { fMCClusterBitMap   = m                              ; }
   void                        SetMCParticleBitMap(UInt_t m)                         { fMCClusterBitMap   = m    ; fMCTrackBitMap     = m  ; }
+  void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
 
  protected:
   Bool_t                      AcceptCluster(AliVCluster        *clus)  const;
@@ -114,6 +115,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   UInt_t                      fClusterBitMap;              // bit map of accepted clusters (non MC)
   UInt_t                      fMCTrackBitMap;              // bit map of accepted MC tracks
   UInt_t                      fMCClusterBitMap;            // bit map of accepted MC clusters
+  Int_t                       fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fNcentBins;                  //!how many centrality bins
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
@@ -137,6 +139,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 12) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 13) // EMCAL base analysis task
 };
 #endif

@@ -660,7 +660,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     for (Int_t c = 0; c < ncells; ++c) {
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(dlist[c]));
       absIds[ncells_true] = digit->GetId();
-      ratios[ncells_true] = elist[c]/digit->GetAmplitude();
+      ratios[ncells_true] = elist[c]/recpoint->GetEnergy();
       ++ncells_true;
     }
     

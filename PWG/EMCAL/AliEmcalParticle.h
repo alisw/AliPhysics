@@ -4,6 +4,7 @@
 // $Id$
 
 #include <TLorentzVector.h>
+#include <TMath.h>
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
@@ -52,8 +53,8 @@ class AliEmcalParticle: public AliVParticle {
                                                    if (fTrack)   return fTrack->IsEMCAL(); 
                                                    return kFALSE; }
   Bool_t            IsTrack()              const { return (Bool_t) fTrack   != 0                                    ; }
-  Bool_t            IsMC()                 const { if (fTrack) return (fTrack->GetLabel() != 0); 
-                                                   return (fCluster->GetLabel() > 0); }
+  Bool_t            IsMC(Int_t minLabel=0) const { if (fTrack) return (TMath::Abs(fTrack->GetLabel()) > minLabel); 
+                                                   return (fCluster->GetLabel() > minLabel); }
 
   void              AddMatchedObj(Int_t id, Double_t d);
   void              ResetMatchedObjects();
