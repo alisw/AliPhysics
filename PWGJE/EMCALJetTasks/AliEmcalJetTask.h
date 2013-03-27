@@ -28,8 +28,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
     kR040Jet=1<<7,
     kRX1Jet=1<<8,  // user defined radii, use SetRadius(Double_t)
     kRX2Jet=1<<9,
-    kRX3Jet=1<<10,
-    kAllJets=kKT|kAKT|kFullJet|kChargedJet|kNeutralJet|kR020Jet|kR030Jet|kR040Jet|kRX1Jet|kRX2Jet|kRX3Jet
+    kRX3Jet=1<<10
   };
 
 

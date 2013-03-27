@@ -242,9 +242,6 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
     trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
 
     trackCuts->SetMaxFractionSharedTPCClusters(0.4);
-
-    trackCuts->SetEtaRange(-0.9,0.9);
-    trackCuts->SetPtRange(0.15, 1E+15.);
  
     tag = "Global tracks 2011 with NCrossedRows cut";
 
