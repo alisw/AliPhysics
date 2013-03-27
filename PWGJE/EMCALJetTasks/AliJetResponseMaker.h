@@ -42,6 +42,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetAreMCCollections(Bool_t f1, Bool_t f2)                       { fAreCollections1MC = f1; fAreCollections2MC = f2; }
   void                        SetIsEmbedded(Bool_t i)                                         { fIsEmbedded        = i         ; }
   void                        SetIsPythia(Bool_t i)                                           { fIsPythia          = i         ; }
+  void                        SetMCLabelShift(Int_t s)                                        { fMCLabelShift      = s         ; }
+  void                        SetUseCellsToMatch(Bool_t i)                                    { fUseCellsToMatch   = i         ; }
 
  protected:
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
@@ -77,6 +79,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Int_t                       fSelectPtHardBin;               // select one pt hard bin for analysis
   Bool_t                      fIsEmbedded;                    // trigger, embedded signal
   Bool_t                      fIsPythia;                      // trigger, if it is a PYTHIA production
+  Int_t                       fMCLabelShift;                  // if MC label > fMCLabelShift, MC label -= fMCLabelShift
+  Bool_t                      fUseCellsToMatch;               // use cells instead of clusters to match jets (slower but sometimes needed)
 
   AliGenPythiaEventHeader    *fPythiaHeader;                  //!event Pythia header
   Int_t                       fPtHardBin;                     //!event pt hard bin
@@ -166,6 +170,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 13) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 15) // Jet response matrix producing task
 };
 #endif

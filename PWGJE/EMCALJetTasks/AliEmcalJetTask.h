@@ -61,6 +61,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetJetEtaRange(Double_t emi, Double_t ema) {fJetEtaMin = emi; fJetEtaMax = ema; }
   void                   SetJetPhiRange(Double_t pmi, Double_t pma) {fJetPhiMin = pmi; fJetPhiMax = pma; }
   void                   SetGhostArea(Double_t gharea)    { fGhostArea      = gharea;  }
+  void                   SetMinMCLabel(Int_t s)           { fMinMCLabel     = s     ;  }
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) 
   {
     if(!fIsPSelSet)
@@ -103,6 +104,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Double_t               fJetEtaMin;              // minimum eta to keep jet in output
   Double_t               fJetEtaMax;              // maximum eta to keep jet in output
   Double_t               fGhostArea;              // ghost area
+  Int_t                  fMinMCLabel;             // minimum MC label value for the tracks/clusters being considered MC particles
   Bool_t                 fIsInit;                 //!=true if already initialized
   Bool_t                 fIsPSelSet;              //!=true if physics selection was set
   Bool_t                 fIsMcPart;               //!=true if MC particles are given as input
@@ -116,6 +118,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 8) // Jet producing task
+  ClassDef(AliEmcalJetTask, 9) // Jet producing task
 };
 #endif

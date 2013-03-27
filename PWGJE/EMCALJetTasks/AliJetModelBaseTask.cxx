@@ -338,8 +338,8 @@ Bool_t AliJetModelBaseTask::ExecOnce()
 
       if (!fMCParticlesMap) {
 	AliWarning(Form("%s: Could not retrieve map for MC particles %s! Will assume MC labels consistent with indexes...", GetName(), fMCParticlesName.Data())); 
-	fMCParticlesMap = new AliNamedArrayI(fMCParticlesName + "_Map", 9999);
-	for (Int_t i = 0; i < 9999; i++) {
+	fMCParticlesMap = new AliNamedArrayI(fMCParticlesName + "_Map", 99999);
+	for (Int_t i = 0; i < 99999; i++) {
 	  fMCParticlesMap->AddAt(i,i);
 	}
       }
@@ -361,7 +361,7 @@ Bool_t AliJetModelBaseTask::ExecOnce()
 	  InputEvent()->AddObject(fOutMCParticles);
 	}
 
-	fOutMCParticlesMap = new AliNamedArrayI(fOutMCParticlesName + "_Map",9999);
+	fOutMCParticlesMap = new AliNamedArrayI(fOutMCParticlesName + "_Map",99999);
 	if (InputEvent()->FindListObject(fOutMCParticlesName + "_Map")) {
 	  AliFatal(Form("%s: Map %s_Map is already present in the event!", GetName(), fOutMCParticlesName.Data())); 
 	  return kFALSE;
@@ -447,10 +447,10 @@ Int_t AliJetModelBaseTask::AddCell(Double_t e, Int_t absId, Double_t time, Int_t
 {
   // Add a cell to the event.
 
-  if (label <= 0)
-    label = fMarkMC;
-  else
-    label += fMCLabelShift;
+  if (label < 0)
+    label = 0;
+
+  label += fMarkMC + fMCLabelShift;
 
   Short_t pos = -1;
   if (fCaloCells)  
@@ -521,30 +521,29 @@ AliVCluster* AliJetModelBaseTask::AddCluster(AliVCluster *oc)
   //MC
   UInt_t nlabels = oc->GetNLabels();
   Int_t *labels = oc->GetLabels();
+  TArrayI parents;
+  if (nlabels != 0 && labels) 
+    parents.Set(nlabels, labels);
+  else {
+    nlabels = 1;
+    parents.Set(1);
+    parents[0] = 0;
+  }
 
-  if (nlabels != 0 && labels && labels[0] >= 0) {
-    AliESDCaloCluster *esdClus = dynamic_cast<AliESDCaloCluster*>(dc);
-    if (esdClus) {
-      TArrayI parents(nlabels, labels);
-      esdClus->AddLabels(parents); 
-    }
-    else {
-      AliAODCaloCluster *aodClus = dynamic_cast<AliAODCaloCluster*>(dc);
-      if (aodClus) 
-	aodClus->SetLabel(labels, nlabels); 
+  if (fMarkMC+fMCLabelShift != 0) {
+    for (UInt_t i = 0; i < nlabels; i++) {
+      parents[i] += fMarkMC+fMCLabelShift;
     }
   }
-  else if (fMarkMC != 0) {
-    AliESDCaloCluster *esdClus = dynamic_cast<AliESDCaloCluster*>(dc);
-    if (esdClus) {
-      TArrayI parents(1, &fMarkMC);
-      esdClus->AddLabels(parents); 
-    }
-    else {
-      AliAODCaloCluster *aodClus = dynamic_cast<AliAODCaloCluster*>(dc);
-      if (aodClus) 
-	aodClus->SetLabel(&fMarkMC,1); 
-    }
+
+  AliESDCaloCluster *esdClus = dynamic_cast<AliESDCaloCluster*>(dc);
+  if (esdClus) {
+    esdClus->AddLabels(parents); 
+  }
+  else {
+    AliAODCaloCluster *aodClus = dynamic_cast<AliAODCaloCluster*>(dc);
+    if (aodClus) 
+      aodClus->SetLabel(parents.GetArray(), nlabels); 
   }
 
   return dc;
@@ -617,10 +616,10 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId, Int_t labe
   cluster->SetEmcCpvDistance(-1);
 
   //MC label
-  if (label == 0)
-    label = fMarkMC;
-  else
-    label += fMCLabelShift;
+  if (label < 0)
+    label = 0;
+ 
+  label += fMarkMC+fMCLabelShift;
 
   if (fEsdMode) {
     AliESDCaloCluster *esdClus = static_cast<AliESDCaloCluster*>(cluster);
@@ -649,10 +648,10 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
   if (phi < 0) 
     phi = GetRandomPhi();
 
-  if (label == 0)
-    label = fMarkMC;
-  else
-    label += fMCLabelShift;
+  if (label >= 0)
+    label += fMarkMC+fMCLabelShift;
+  else if (label < 0)
+    label -= fMarkMC+fMCLabelShift;
 
   AliPicoTrack *track = new ((*fOutTracks)[nTracks]) AliPicoTrack(pt, 
 								  eta, 
@@ -673,6 +672,9 @@ AliAODMCParticle* AliJetModelBaseTask::AddMCParticle(AliAODMCParticle *part, Int
   const Int_t nPart = fOutMCParticles->GetEntriesFast();
 
   AliAODMCParticle *aodpart = new ((*fOutMCParticles)[nPart]) AliAODMCParticle(*part);
+
+  if (origIndex + fMCLabelShift >= fOutMCParticlesMap->GetSize())
+    fOutMCParticlesMap->Set((origIndex + fMCLabelShift)*2);
 
   fOutMCParticlesMap->AddAt(nPart, origIndex + fMCLabelShift);
   AliDebug(2, Form("Setting bin %d to %d (fMCLabelShift=%d, origIndex=%d)", 
@@ -785,8 +787,11 @@ void AliJetModelBaseTask::CopyMCParticles()
     nCopiedPart++;
   }
 
-  if (!fMCParticlesMap)
+  if (!fMCParticlesMap || !fOutMCParticlesMap)
     return;
+
+  if (fOutMCParticlesMap->GetSize() < fMCParticlesMap->GetSize())
+    fOutMCParticlesMap->Set(fMCParticlesMap->GetSize() * 2);
 
   for (Int_t i = 0; i < fMCParticlesMap->GetSize(); i++) {
     fOutMCParticlesMap->AddAt(fMCParticlesMap->At(i), i);
