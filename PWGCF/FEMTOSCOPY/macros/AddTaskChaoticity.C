@@ -1,4 +1,21 @@
-AliChaoticity *AddTaskChaoticity(TString ParListName = "alien:///alice/cern.ch/user/d/dgangadh/ParListLego_def.txt") {
+AliChaoticity *AddTaskChaoticity(
+				 Bool_t LEGO=kTRUE, 
+				 Bool_t MCcase=kFALSE, 
+				 Bool_t PbPbcase=kTRUE, 
+				 Bool_t GenerateSignal=kFALSE, 
+				 Bool_t TabulatePairs=kFALSE, 
+				 Int_t CentBinLowLimit=0, 
+				 Int_t CentBinHighLimit=1,
+				 Int_t RBinMax=5,
+				 Int_t FixedLambdaBin=11,
+				 UInt_t FilterBit=7,
+				 Float_t MinSepPair=0.035,
+				 Float_t SigmaCutTPC=2.0,
+				 Float_t SigmaCutTOF=2.0,
+				 TString StWeightName="alien:///alice/cern.ch/user/d/dgangadh/WeightFile.root",
+				 TString StMomResName="alien:///alice/cern.ch/user/d/dgangadh/MomResFile.root",
+				 TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile.root"
+				 ) {
   
   //===========================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -6,67 +23,24 @@ AliChaoticity *AddTaskChaoticity(TString ParListName = "alien:///alice/cern.ch/u
     ::Error("AddTaskBF", "No analysis manager to connect to.");
     return NULL;
   }
-  
-  Char_t dummy[100];
-  Bool_t lego;
-  Bool_t MCcase;
-  Bool_t PbPbcase;
-  Bool_t GenSignal;
-  Bool_t TabulatePairs;
-  Int_t CentBinLow;
-  Int_t CentBinHigh;
-  Int_t RBinMax;
-  Int_t FixedLambdaBin;
-  Char_t WeightName[500];
-  Char_t MomResName[500];
-  Char_t KName[500];
-  UInt_t FilterBit;
-  Float_t MinPairSep;
-  Float_t NsigmaTPC;
-  Float_t NsigmaTOF;
-  
-  ifstream ParList;
-  ParList.open(ParListName.Data());
-  
-  ParList >> dummy >> lego;
-  ParList >> dummy >> MCcase;
-  ParList >> dummy >> PbPbcase;
-  ParList >> dummy >> GenSignal;
-  ParList >> dummy >> TabulatePairs;
-  ParList >> dummy >> CentBinLow;
-  ParList >> dummy >> CentBinHigh;
-  ParList >> dummy >> RBinMax;
-  ParList >> dummy >> FixedLambdaBin;
-  ParList >> dummy >> WeightName;
-  ParList >> dummy >> MomResName;
-  ParList >> dummy >> KName;
-  ParList >> dummy >> FilterBit;
-  ParList >> dummy >> MinPairSep;
-  ParList >> dummy >> NsigmaTPC;
-  ParList >> dummy >> NsigmaTOF;
-  //
-  ParList.close();
-
-  TString StWeightName(WeightName);
-  TString StMomResName(MomResName);
-  TString StKName(KName);
+ 
 
   //____________________________________________//
   // Create task
   AliChaoticity *ChaoticityTask = new AliChaoticity("ChaoticityTask");
   if(!ChaoticityTask) return NULL;
-  ChaoticityTask->SetLEGOCase(lego);
+  ChaoticityTask->SetLEGOCase(LEGO);
   ChaoticityTask->SetMCdecision(MCcase);
   ChaoticityTask->SetPbPbCase(PbPbcase);
-  ChaoticityTask->SetGenerateSignal(GenSignal);
+  ChaoticityTask->SetGenerateSignal(GenerateSignal);
   ChaoticityTask->SetTabulatePairs(TabulatePairs);
-  ChaoticityTask->SetCentBinRange(CentBinLow, CentBinHigh);
+  ChaoticityTask->SetCentBinRange(CentBinLowLimit, CentBinHighLimit);
   ChaoticityTask->SetRBinMax(RBinMax);
   ChaoticityTask->SetFixedLambdaBin(FixedLambdaBin);
   ChaoticityTask->SetFilterBit(FilterBit);
-  ChaoticityTask->SetPairSeparationCut(MinPairSep);
-  ChaoticityTask->SetNsigmaTPC(NsigmaTPC);
-  ChaoticityTask->SetNsigmaTOF(NsigmaTOF);
+  ChaoticityTask->SetPairSeparationCut(MinSepPair);
+  ChaoticityTask->SetNsigmaTPC(SigmaCutTPC);
+  ChaoticityTask->SetNsigmaTOF(SigmaCutTOF);
   mgr->AddTask(ChaoticityTask);
 
 
