@@ -7,7 +7,7 @@
 void runCaloEt(bool submit = false, // true or false 
 	       const char *dataType="simPbPb", // "sim" or "real" etc.
 	       const char *pluginRunMode="full", // "test" or "full" or "terminate"
-	       const char *det = "EMCAL") // "PHOS" or "EMCAL" or EMCalDetail
+	       const char *det = "EMCal",int production = 1, Bool_t withtender = kTRUE) // "PHOS" or "EMCAL" or EMCalDetail
 {
   TStopwatch timer;
   timer.Start();
@@ -97,8 +97,18 @@ void runCaloEt(bool submit = false, // true or false
   TString taskName = "TaskTotEt" + detStr;
   TString dataStrName(dataType);
   dataStrName.ReplaceAll("/",".");
+  Bool_t isPb = kFALSE;
+  if ( dataStr.Contains("PbPb") ) { isPb = kTRUE;}
+  TString suffix = "";
+  if(!withtender){
+    suffix = "WithoutTender";
+  }
+  if(!isPb){
+    suffix = "pp"+suffix;
+  }
   TString outputName = "Et.ESD." + dataStrName + "." + detStr + ".root";
-  TString outputDir = "totEt" + dataStr + detStr;
+  TString outputDir = "totEt" + dataStr + detStr+suffix;
+
 
   cout << " taskName " << taskName
        << " outputName " << outputName 
@@ -107,7 +117,7 @@ void runCaloEt(bool submit = false, // true or false
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("out1", TList::Class(), AliAnalysisManager::kOutputContainer, outputName);
   if (submit) {
     gROOT->LoadMacro("CreateAlienHandlerCaloEtSim.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandlerCaloEtSim(outputDir, outputName, pluginRunMode);  
+    AliAnalysisGrid *alienHandler = CreateAlienHandlerCaloEtSim(outputDir, outputName, pluginRunMode, production,detStr.Contains("PHOS"),!isPb,dataStr.Contains("real"));  
     if (!alienHandler) return;
     mgr->SetGridHandler(alienHandler);
   }
@@ -116,15 +126,16 @@ void runCaloEt(bool submit = false, // true or false
   mgr->SetInputEventHandler(esdH);
   AliMCEventHandler* handler = new AliMCEventHandler;
   Bool_t isMc = kTRUE;
-  Bool_t isPb = kFALSE;
-  if ( dataStr.Contains("PbPb") ) { isPb = kTRUE;}
   if ( dataStr.Contains("sim") ) {
     cout << " MC " << endl;
     if ( dataStr.Contains("PbPb") ) { // a la: simPbPb/LHC10e18a
       cout << " PbPb " << endl;
       TString fileLocation = "/data/LHC10h8/137161/999/AliESDs.root";//"/home/dsilverm/data/E_T/" + dataStr + "/dir/AliESDs.root";
       cout << "fileLocation " << fileLocation.Data() << endl; 
-      chain->Add(fileLocation.Data()); // link to local test file
+//       chain->Add(fileLocation.Data()); // link to local test file
+      chain->Add("/data/LHC10h8/137161/999/AliESDs.root");//Hijing Pb+Pb
+       chain->Add("/data/LHC10h8/137161/111/AliESDs.root");//Hijing Pb+Pb
+       chain->Add("/data/LHC10h8/137161/222/AliESDs.root");//Hijing Pb+Pb
     }
     else { // pp
       cout<<"adding pp simulation file"<<endl;
@@ -136,8 +147,14 @@ void runCaloEt(bool submit = false, // true or false
     mgr->SetMCtruthEventHandler(handler);
   }
   else { // real data
+    cout<<"Hello there!  I am data."<<endl;
     isMc = kFALSE;
-    chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
+      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.860/AliESDs.root");
+      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.870/AliESDs.root");
+      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.880/AliESDs.root");
+      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.890/AliESDs.root");
+      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.900/AliESDs.root");
+//     chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
     //chain->Add("/home/dsilverm/data/E_T/data/2010/LHC10b/000117222/ESDs/pass2/10000117222021.30/AliESDs.root"); // link to local test file
     cout << " not MC " << endl;
   }
@@ -195,6 +212,13 @@ void runCaloEt(bool submit = false, // true or false
     gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
     //gROOT->ProcessLine(".L AliCentralitySelectionTask.cxx++g");
     AliCentralitySelectionTask *centTask = AddTaskCentrality();
+    if(isMc){
+     cout<<"Setting up centrality for MC"<<endl;
+     centTask->SetMCInput();
+   }
+    else{
+     cout<<"Setting up centrality for data"<<endl;
+   }
   }
 
 
