@@ -12,16 +12,18 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   const char *nclusters          = "",
   const char *njets              = "Jets",
   const char *nrho               = "Rho",
-  Double_t    jetradius          = 0.2,
-  Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.557,
-  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
-  Int_t       leadhadtype        = 0,
+  Double_t   jetradius          = 0.2,
+  Double_t   jetptcut           = 1,
+  Double_t   jetareacut         = 0.557,
+  UInt_t     type               = AliAnalysisTaskEmcal::kTPC,
+  Int_t      leadhadtype        = 0,
   const char *taskname           = "AliAnalysisTaskRhoVnModulation",
-  UInt_t      runMode            = AliAnalysisTaskRhoVnModulation::kGrid,
-  Bool_t      fillQA             = kTRUE,
-  TString     fitOpts            = "LWQIM",
-  UInt_t      fitType            = AliAnalysisTaskRhoVnModulation::kFourierSeries
+  UInt_t     runMode            = AliAnalysisTaskRhoVnModulation::kGrid,
+  Bool_t     fillQA             = kTRUE,
+  TString    fitOpts            = "LWQIM",
+  UInt_t     fitType            = AliAnalysisTaskRhoVnModulation::kFourierSeries,
+  TArrayI    *centralities      = 0x0,
+  TRandom3   *randomizer        = 0x0
   )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -77,6 +79,16 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   jetTask->SetDebugMode(-1);
   jetTask->SetModulationFitType(fitType);
   jetTask->SetModulationFitOptions(fitOpts);
+  // if centralities haven't been specified use defaults
+  if(!centralities) {
+     Int_t c[] = {0, 20, 40, 60, 80, 100};
+     jetTask->SetCentralityClasses(new TArrayI(sizeof(c)/sizeof(c[0]), c));
+  }
+  // if a randomized hasn't specified use a safe default 
+  if(!randomizer) jetTask->SetRandomSeed(new TRandom3(0));
+
+
+
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
