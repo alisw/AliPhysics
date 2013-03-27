@@ -899,6 +899,7 @@ void AliTPCv4::CreateGeometry()
   TGeoMedium *m7=gGeoManager->GetMedium("TPC_Cu");
   TGeoMedium *m10 =  gGeoManager->GetMedium("TPC_Alumina");
   TGeoMedium *m11 =  gGeoManager->GetMedium("TPC_Peek");
+  TGeoMedium *m14 =  gGeoManager->GetMedium("TPC_Alumina1");
 
    TGeoMedium *m13 = gGeoManager->GetMedium("TPC_Brass");
   // 
@@ -1171,7 +1172,7 @@ ctr1->RegisterYourself();
  }
  //resistors
  TGeoTube *res = new TGeoTube(0.,0.15,0.5);
- TGeoVolume *resv = new TGeoVolume("TPC_RES",res,m10);
+ TGeoVolume *resv = new TGeoVolume("TPC_RES",res,m14);
  TGeoVolumeAssembly *ress = new TGeoVolumeAssembly("TPC_RES_CH");
  ress->AddNode(resv,1,new TGeoTranslation(0.2,0.,0.));
  ress->AddNode(resv,2,new TGeoTranslation(-0.2,0.,0.));
@@ -1704,7 +1705,7 @@ TGeoVolume *tpcmmh = new TGeoVolumeAssembly("TPC_MMH");
 
  TGeoTube *gres1 = new TGeoTube(0.,0.375,125.);// inside ifc
  //
- TGeoVolume *vgres1 = new TGeoVolume("TPC_GRES1",gres1,m10);
+ TGeoVolume *vgres1 = new TGeoVolume("TPC_GRES1",gres1,m14);
 
  //
  Double_t xrc,yrc;

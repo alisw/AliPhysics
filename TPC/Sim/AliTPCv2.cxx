@@ -556,11 +556,11 @@ void AliTPCv2::CreateGeometry()
   //
   TGeoVolume *cflv = new TGeoVolume("TPC_CDR",cfl,m3);
   // sandwich
-  TGeoTubeSeg *cd1 = new TGeoTubeSeg(60.6224,61.19,71.1,0.2,119.8);
-  TGeoTubeSeg *cd2 = new TGeoTubeSeg(60.6262,61.1862,71.1,0.2,119.8);
-  TGeoTubeSeg *cd3 = new TGeoTubeSeg(60.6462,61.1662,71.1,0.2,119.8);
-  TGeoTubeSeg *cd4 = new TGeoTubeSeg(60.6562,61.1562,71.1,0.2,119.8);
-  TGeoTubeSeg *tepox4 = new TGeoTubeSeg(60.6224,61.19,71.1,359.8,0.2);
+  TGeoTubeSeg *cd1 = new TGeoTubeSeg(60.6224,61.19,71.1,0.2,119.2);
+  TGeoTubeSeg *cd2 = new TGeoTubeSeg(60.6262,61.1862,71.1,0.2,119.2);
+  TGeoTubeSeg *cd3 = new TGeoTubeSeg(60.6462,61.1662,71.1,0.2,119.2);
+  TGeoTubeSeg *cd4 = new TGeoTubeSeg(60.6562,61.1562,71.1,0.2,119.2);
+  TGeoTubeSeg *tepox4 = new TGeoTubeSeg(60.6224,61.19,71.1,359.8,0.8);
   //
   TGeoMedium *sm6 = gGeoManager->GetMedium("TPC_Prepreg1");
   TGeoMedium *sm8 = gGeoManager->GetMedium("TPC_Epoxyfm");
@@ -1051,13 +1051,14 @@ void AliTPCv2::CreateGeometry()
   TGeoMedium *m10 =  gGeoManager->GetMedium("TPC_Alumina");
   TGeoMedium *m11 =  gGeoManager->GetMedium("TPC_Peek");;
   TGeoMedium *m13 = gGeoManager->GetMedium("TPC_Brass");
+  TGeoMedium *m14 = gGeoManager->GetMedium("TPC_Alimina1");
   // 
   // tpc rod is an assembly of 10 long parts and 2 short parts
   // connected with alu rings and plagged on both sides.
   //
   //
-// tpc rod long
-//
+  // tpc rod long
+  //
   TGeoPcon *rod = new TGeoPcon("rod",0.,360.,6);
  rod->DefineSection(0,-10.43,1.92,2.08);
  rod->DefineSection(1,-9.75,1.92,2.08);
@@ -1321,7 +1322,7 @@ ctr1->RegisterYourself();
  }
  //resistors
  TGeoTube *res = new TGeoTube(0.,0.15,0.5);
- TGeoVolume *resv = new TGeoVolume("TPC_RES",res,m10);
+ TGeoVolume *resv = new TGeoVolume("TPC_RES",res,m14);
  TGeoVolumeAssembly *ress = new TGeoVolumeAssembly("TPC_RES_CH");
  ress->AddNode(resv,1,new TGeoTranslation(0.2,0.,0.));
  ress->AddNode(resv,2,new TGeoTranslation(-0.2,0.,0.));
@@ -1854,7 +1855,7 @@ TGeoVolume *tpcmmh = new TGeoVolumeAssembly("TPC_MMH");
 
  TGeoTube *gres1 = new TGeoTube(0.,0.375,125.);// inside ifc
  //
- TGeoVolume *vgres1 = new TGeoVolume("TPC_GRES1",gres1,m10);
+ TGeoVolume *vgres1 = new TGeoVolume("TPC_GRES1",gres1,m14);
 
  //
  Double_t xrc,yrc;
