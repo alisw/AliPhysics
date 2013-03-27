@@ -34,8 +34,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
   fJetType(kNone),
-  fConstSel(kAllJets),
-  fMCConstSel(kAllJets),
+  fConstSel(0),
+  fMCConstSel(0),
   fMarkConst(kFALSE),
   fRadius(0.4),
   fMinJetTrackPt(0.15),
@@ -71,8 +71,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
   fJetType(kAKT|kFullJet|kRX1Jet),
-  fConstSel(kAllJets),
-  fMCConstSel(kAllJets),
+  fConstSel(0),
+  fMCConstSel(0),
   fMarkConst(kFALSE),
   fRadius(0.4),
   fMinJetTrackPt(0.15),
@@ -196,33 +196,21 @@ void AliEmcalJetTask::FindJets()
 	}
       }
       if (fIsMcPart || TMath::Abs(t->GetLabel()) > fMinMCLabel) {
-	if (fMCConstSel == kNone) {
-	  AliDebug(2,Form("Skipping track %d because bit mask is 0.", iTracks));
+	if (t->TestBits(fMCConstSel) != (Int_t)fMCConstSel) {
+	  AliDebug(2,Form("Skipping track %d because it does not match the bit mask (%d, %d)", iTracks, fMCConstSel, t->TestBits(TObject::kBitMask)));
 	  continue;
 	}
-	if (fMCConstSel != kAllJets) {
-	  if (t->TestBits(fMCConstSel) != (Int_t)fMCConstSel) {
-	    AliDebug(2,Form("Skipping track %d because it does not match the bit mask (%d, %d)", iTracks, fMCConstSel, t->TestBits(TObject::kBitMask)));
-	    continue;
-	  }
-	  else {
-	    AliDebug(2,Form("Track %d matches the bit mask (%d, %d)", iTracks, fMCConstSel, t->TestBits(TObject::kBitMask)));
-	  }
+	else {
+	  AliDebug(2,Form("Track %d matches the bit mask (%d, %d)", iTracks, fMCConstSel, t->TestBits(TObject::kBitMask)));
 	}
       }
       else {
-	if (fConstSel == kNone) {
-	  AliDebug(2,Form("Skipping track %d because bit mask is 0.", iTracks));
+	if (t->TestBits(fConstSel) != (Int_t)fConstSel) {
+	  AliDebug(2,Form("Skipping track %d because it does not match the bit mask (%d, %d)", iTracks, fConstSel, t->TestBits(TObject::kBitMask)));
 	  continue;
 	}
-	if (fConstSel != kAllJets) {
-	  if (t->TestBits(fConstSel) != (Int_t)fConstSel) {
-	    AliDebug(2,Form("Skipping track %d because it does not match the bit mask (%d, %d)", iTracks, fConstSel, t->TestBits(TObject::kBitMask)));
-	    continue;
-	  }
-	  else {
-	    AliDebug(2,Form("Track %d matches the bit mask (%d, %d)", iTracks, fConstSel, t->TestBits(TObject::kBitMask)));	    
-	  }
+	else {
+	  AliDebug(2,Form("Track %d matches the bit mask (%d, %d)", iTracks, fConstSel, t->TestBits(TObject::kBitMask)));	    
 	}
       }	    
       if (t->Pt() < fMinJetTrackPt) 
@@ -255,33 +243,21 @@ void AliEmcalJetTask::FindJets()
 	  continue;
 
 	if (c->GetLabel() > fMinMCLabel) {
-	  if (fMCConstSel == kNone) {
-	    AliDebug(2,Form("Skipping cluster %d because bit mask is 0.", iClus));
+	  if (ep->TestBits(fMCConstSel) != (Int_t)fMCConstSel) {
+	    AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fMCConstSel, ep->TestBits(TObject::kBitMask)));
 	    continue;
 	  }
-	  if (fMCConstSel != kAllJets) {
-	    if (ep->TestBits(fMCConstSel) != (Int_t)fMCConstSel) {
-	      AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fMCConstSel, ep->TestBits(TObject::kBitMask)));
-	      continue;
-	    }
-	    else {
-	      AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fMCConstSel, ep->TestBits(TObject::kBitMask)));
-	    }
+	  else {
+	    AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fMCConstSel, ep->TestBits(TObject::kBitMask)));
 	  }
 	}
 	else {
-	  if (fConstSel == kNone) {
-	    AliDebug(2,Form("Skipping cluster %d because bit mask is 0.", iClus));
+	  if (ep->TestBits(fConstSel) != (Int_t)fConstSel) {
+	    AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fConstSel, ep->TestBits(TObject::kBitMask)));
 	    continue;
 	  }
-	  if (fConstSel != kAllJets) {
-	    if (ep->TestBits(fConstSel) != (Int_t)fConstSel) {
-	      AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fConstSel, ep->TestBits(TObject::kBitMask)));
-	      continue;
-	    }
-	    else {
-	      AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fConstSel, ep->TestBits(TObject::kBitMask)));	    
-	    }
+	  else {
+	    AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fConstSel, ep->TestBits(TObject::kBitMask)));	    
 	  }
 	}
 
@@ -297,33 +273,21 @@ void AliEmcalJetTask::FindJets()
 	  continue;
 
 	if (c->GetLabel() > fMinMCLabel) {
-	  if (fMCConstSel == kNone) {
-	    AliDebug(2,Form("Skipping cluster %d because bit mask is 0.", iClus));
+	  if (c->TestBits(fMCConstSel) != (Int_t)fMCConstSel) {
+	    AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fMCConstSel, c->TestBits(TObject::kBitMask)));
 	    continue;
 	  }
-	  if (fMCConstSel != kAllJets) {
-	    if (c->TestBits(fMCConstSel) != (Int_t)fMCConstSel) {
-	      AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fMCConstSel, c->TestBits(TObject::kBitMask)));
-	      continue;
-	    }
-	    else {
-	      AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fMCConstSel, c->TestBits(TObject::kBitMask)));
-	    }
+	  else {
+	    AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fMCConstSel, c->TestBits(TObject::kBitMask)));
 	  }
 	}
 	else {
-	  if (fConstSel == kNone) {
-	    AliDebug(2,Form("Skipping cluster %d because bit mask is 0.", iClus));
+	  if (c->TestBits(fConstSel) != (Int_t)fConstSel) {
+	    AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fConstSel, c->TestBits(TObject::kBitMask)));
 	    continue;
 	  }
-	  if (fConstSel != kAllJets) {
-	    if (c->TestBits(fConstSel) != (Int_t)fConstSel) {
-	      AliDebug(2,Form("Skipping cluster %d because it does not match the bit mask (%d, %d)", iClus, fConstSel, c->TestBits(TObject::kBitMask)));
-	      continue;
-	    }
-	    else {
-	      AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fConstSel, c->TestBits(TObject::kBitMask)));	    
-	    }
+	  else {
+	    AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fConstSel, c->TestBits(TObject::kBitMask)));	    
 	  }
 	}
 
