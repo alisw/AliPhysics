@@ -34,9 +34,9 @@ class AliVZEROEPSelectionTask : public AliAnalysisTaskSE {
   
   void SetUserParams(const char* inFileName, const char* listName);
   void UseVZEROCentrality() {fUseVZEROCentrality = kTRUE;}
-  
+  void SetEventplaneParams(AliEventplane *esdEP,Float_t percentile);  
  private:
-  void SetEventplaneParams(AliEventplane *esdEP,Float_t percentile);
+
   void SetHistograms(TList *list);
   void SetParamsFromOADB();
    

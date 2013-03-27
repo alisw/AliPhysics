@@ -126,7 +126,7 @@ void AliVZEROEPSelectionTask::UserExec(Option_t */*option*/)
   AliCentrality *centrality = event->GetCentrality();
   Float_t percentile = (fUseVZEROCentrality) ? centrality->GetCentralityPercentile("V0M") : centrality->GetCentralityPercentile("CL1");
   AliEventplane *esdEP = event->GetEventplane();
-  SetEventplaneParams(esdEP,percentile);
+  if(esdEP) SetEventplaneParams(esdEP,percentile);
 }
 
 //________________________________________________________________________
