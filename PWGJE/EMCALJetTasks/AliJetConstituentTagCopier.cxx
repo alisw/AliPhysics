@@ -23,6 +23,7 @@ AliJetConstituentTagCopier::AliJetConstituentTagCopier() :
   AliAnalysisTaskEmcal("AliJetConstituentTagCopier", kFALSE),
   fMCParticlesName(),
   fCleanBeforeCopy(kFALSE),
+  fMCLabelShift(0),
   fMCParticles(0),
   fMCParticlesMap(0)
 {
@@ -34,6 +35,7 @@ AliJetConstituentTagCopier::AliJetConstituentTagCopier(const char *name) :
   AliAnalysisTaskEmcal(name, kFALSE),
   fMCParticlesName("MCParticles"),
   fCleanBeforeCopy(kFALSE),
+  fMCLabelShift(0),
   fMCParticles(0),
   fMCParticlesMap(0)
 {
@@ -135,6 +137,8 @@ void AliJetConstituentTagCopier::DoClusterLoop(TClonesArray *array)
     if (!AcceptCluster(cluster))
       continue;
     Int_t mcLabel = cluster->GetLabel();
+    if (mcLabel > fMCLabelShift)
+      mcLabel -= fMCLabelShift;
     if (mcLabel > 0) {
       TLorentzVector vect;
       cluster->GetMomentum(vect, fVertex);
@@ -192,7 +196,9 @@ void AliJetConstituentTagCopier::DoTrackLoop(TClonesArray *array)
     if (!AcceptTrack(track))
       continue;
     Int_t mcLabel = TMath::Abs(track->GetLabel());
-    if (mcLabel != 0) {
+    if (mcLabel > fMCLabelShift)
+      mcLabel -= fMCLabelShift;
+    if (mcLabel > 0) {
       Int_t index = -1;
       if (mcLabel < fMCParticlesMap->GetSize())
 	index = fMCParticlesMap->At(mcLabel);
@@ -253,7 +259,9 @@ void AliJetConstituentTagCopier::DoEmcalParticleLoop(TClonesArray *array)
       mcLabel = cluster->GetLabel();
     else if (track)
       mcLabel = TMath::Abs(track->GetLabel());
-    if (mcLabel != 0) {
+    if (mcLabel > fMCLabelShift)
+      mcLabel -= fMCLabelShift;
+    if (mcLabel > 0) {
       Int_t index = -1;
       if (mcLabel < fMCParticlesMap->GetSize())
 	index = fMCParticlesMap->At(mcLabel);

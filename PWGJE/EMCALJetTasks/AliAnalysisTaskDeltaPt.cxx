@@ -546,7 +546,7 @@ void AliAnalysisTaskDeltaPt::DoEmbTrackLoop()
     if (vtrack && !AcceptTrack(vtrack)) 
       continue;
 
-    if (TMath::Abs(track->GetLabel()) > 0) {
+    if (TMath::Abs(track->GetLabel()) > fMinMCLabel) {
       if (fEmbeddedTrackNIds >= 999) {
 	AliWarning("The number of embedded tracks exceds 999!");
 	break;
@@ -579,7 +579,7 @@ void AliAnalysisTaskDeltaPt::DoEmbClusterLoop()
     if (!AcceptCluster(cluster)) 
       continue;
 
-    if (cluster->GetLabel() > 0) { 
+    if (cluster->GetLabel() > fMinMCLabel) {
       if (fEmbeddedClusterNIds >= 999) {
 	AliWarning("The number of embedded clusters exceds 999!");
 	break;

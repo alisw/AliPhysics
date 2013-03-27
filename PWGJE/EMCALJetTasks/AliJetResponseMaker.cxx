@@ -51,6 +51,8 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fSelectPtHardBin(-999),
   fIsEmbedded(kFALSE),
   fIsPythia(kTRUE),
+  fMCLabelShift(0),
+  fUseCellsToMatch(kFALSE),
   fPythiaHeader(0),
   fPtHardBin(0),
   fNTrials(0),
@@ -156,6 +158,8 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fSelectPtHardBin(-999),
   fIsEmbedded(kFALSE),
   fIsPythia(kTRUE),
+  fMCLabelShift(0),
+  fUseCellsToMatch(kFALSE),
   fPythiaHeader(0),
   fPtHardBin(0),
   fNTrials(0),
@@ -1148,6 +1152,8 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 	continue;
       }
       Int_t MClabel = TMath::Abs(track->GetLabel());
+      if (MClabel > fMCLabelShift)
+	MClabel -= fMCLabelShift;
       Int_t index = -1;
 	  
       if (MClabel == 0) {// this is not a MC particle; remove it completely
@@ -1184,12 +1190,14 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
       TLorentzVector part;
       clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
 	  
-      if (fCaloCells) { // if the cell colection is available, look for cells with a matched MC particle
+      if (fUseCellsToMatch && fCaloCells) { // if the cell colection is available, look for cells with a matched MC particle
 	for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++) {
 	  Int_t cellId = clus->GetCellAbsId(iCell);
 	  Double_t cellFrac = clus->GetCellAmplitudeFraction(iCell);
 
 	  Int_t MClabel = TMath::Abs(fCaloCells->GetCellMCLabel(cellId));
+	  if (MClabel > fMCLabelShift)
+	    MClabel -= fMCLabelShift;
 	  Int_t index = -1;
 	  
 	  if (MClabel == 0) {// this is not a MC particle; remove it completely
@@ -1221,6 +1229,8 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
       }
       else { //otherwise look for the first contributor to the cluster, and if matched to a MC label remove it
 	Int_t MClabel = TMath::Abs(clus->GetLabel());
+	if (MClabel > fMCLabelShift)
+	  MClabel -= fMCLabelShift;
 	Int_t index = -1;
 	    
 	if (MClabel == 0) {// this is not a MC particle; remove it completely
@@ -1306,32 +1316,107 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
 
   if (fCaloClusters && fCaloClusters2) {
 
-    for (Int_t iClus2 = 0; iClus2 < jet2->GetNumberOfClusters(); iClus2++) {
-      Int_t index2 = jet2->ClusterAt(iClus2);
-      for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
-	Int_t index = jet1->ClusterAt(iClus);
-	if (index2 == index) { // found common particle
-	  AliVCluster *clus =  static_cast<AliVCluster*>(fCaloClusters->At(index));
-	  if (!clus) {
-	    AliWarning(Form("Could not find cluster %d!", index));
-	    continue;
-	  }
-	  AliVCluster *clus2 =  static_cast<AliVCluster*>(fCaloClusters2->At(index2));
-	  if (!clus2) {
-	    AliWarning(Form("Could not find cluster %d!", index2));
-	    continue;
-	  }
-	  TLorentzVector part, part2;
-	  clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
-	  clus2->GetMomentum(part2, const_cast<Double_t*>(fVertex));
+    if (fUseCellsToMatch) {
+      const Int_t nClus1 = jet1->GetNumberOfClusters();
+
+      Int_t ncells1[nClus1];
+      UShort_t *cellsId1[nClus1];
+      Double_t *cellsFrac1[nClus1];
+      Int_t *sortedIndexes1[nClus1];
+      Double_t ptClus1[nClus1];
+      for (Int_t iClus1 = 0; iClus1 < nClus1; iClus1++) {
+	Int_t index1 = jet1->ClusterAt(iClus1);
+	AliVCluster *clus1 =  static_cast<AliVCluster*>(fCaloClusters->At(index1));
+	if (!clus1) {
+	  AliWarning(Form("Could not find cluster %d!", index1));
+	  continue;
+	}
+	ncells1[iClus1] = clus1->GetNCells();
+	cellsId1[iClus1] = clus1->GetCellsAbsId();
+	cellsFrac1[iClus1] = clus1->GetCellsAmplitudeFraction();
+	sortedIndexes1[iClus1] = new Int_t[ncells1[iClus1]];
+
+	TLorentzVector part1;
+	clus1->GetMomentum(part1, const_cast<Double_t*>(fVertex));
+	ptClus1[iClus1] = part1.Pt();
+
+	TMath::Sort(ncells1[iClus1], cellsId1[iClus1], sortedIndexes1[iClus1], kFALSE);
+      }
+      
+      const Int_t nClus2 = jet2->GetNumberOfClusters();
+
+      const Int_t maxNcells2 = 11520;
+      Int_t sortedIndexes2[maxNcells2];
+      for (Int_t iClus2 = 0; iClus2 < nClus2; iClus2++) {
+	Int_t index2 = jet2->ClusterAt(iClus2);
+	AliVCluster *clus2 =  static_cast<AliVCluster*>(fCaloClusters2->At(index2));
+	if (!clus2) {
+	  AliWarning(Form("Could not find cluster %d!", index2));
+	  continue;
+	}
+	Int_t ncells2 = clus2->GetNCells();
+	if (ncells2 > maxNcells2) {
+	  AliError(Form("Number of cells in the cluster %d > %d",ncells2,maxNcells2));
+	  continue;
+	}
+	UShort_t *cellsId2 = clus2->GetCellsAbsId();
+	Double_t *cellsFrac2 = clus2->GetCellsAmplitudeFraction();
+
+	TLorentzVector part2;
+	clus2->GetMomentum(part2, const_cast<Double_t*>(fVertex));
+	Double_t ptClus2 = part2.Pt();
+
+	TMath::Sort(ncells2, cellsId2, sortedIndexes2, kFALSE);
+
+	for (Int_t iClus1 = 0; iClus1 < nClus1; iClus1++) {
 	  
-	  d1 -= part.Pt();
-	  d2 -= part2.Pt();
-	  break;
+	  Int_t iCell1 = 0, iCell2 = 0;
+	  Bool_t common=kFALSE;
+	  while (iCell1 < ncells1[iClus1] && iCell2 < ncells2) {
+	    if (cellsId1[iClus1][sortedIndexes1[iClus1][iCell1]] == cellsId2[sortedIndexes2[iCell2]]) { // found a common cell
+	      d1 -= cellsFrac1[iClus1][sortedIndexes1[iClus1][iCell1]] * ptClus1[iClus1];
+	      d2 -= cellsFrac2[sortedIndexes2[iCell2]] * ptClus2;
+	      iCell1++;
+	      iCell2++;
+	      common = kTRUE;
+	    }
+	    else if (cellsId1[iClus1][sortedIndexes1[iClus1][iCell1]] > cellsId2[sortedIndexes2[iCell2]]) { 
+	      iCell2++;
+	    }
+	    else {
+	      iCell1++;
+	    }
+	  }
 	}
       }
     }
-
+    else {
+      for (Int_t iClus2 = 0; iClus2 < jet2->GetNumberOfClusters(); iClus2++) {
+	Int_t index2 = jet2->ClusterAt(iClus2);
+	for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
+	  Int_t index = jet1->ClusterAt(iClus);
+	  if (index2 == index) { // found common particle
+	    AliVCluster *clus =  static_cast<AliVCluster*>(fCaloClusters->At(index));
+	    if (!clus) {
+	      AliWarning(Form("Could not find cluster %d!", index));
+	      continue;
+	    }
+	    AliVCluster *clus2 =  static_cast<AliVCluster*>(fCaloClusters2->At(index2));
+	    if (!clus2) {
+	      AliWarning(Form("Could not find cluster %d!", index2));
+	      continue;
+	    }
+	    TLorentzVector part, part2;
+	    clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+	    clus2->GetMomentum(part2, const_cast<Double_t*>(fVertex));
+	    
+	    d1 -= part.Pt();
+	    d2 -= part2.Pt();
+	    break;
+	  }
+	}
+      }
+    }
   }
 
   if (d1 < 0)

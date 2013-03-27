@@ -51,6 +51,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMin(-1),
   fJetEtaMax(+1),
   fGhostArea(0.005),
+  fMinMCLabel(0),
   fIsInit(0),
   fIsPSelSet(0),
   fIsMcPart(0),
@@ -87,6 +88,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMin(-1),
   fJetEtaMax(+1),
   fGhostArea(0.005),
+  fMinMCLabel(0),
   fIsInit(0),
   fIsPSelSet(0),
   fIsMcPart(0),
@@ -193,7 +195,7 @@ void AliEmcalJetTask::FindJets()
 	  continue;
 	}
       }
-      if (fIsMcPart || t->GetLabel() != 0) {
+      if (fIsMcPart || TMath::Abs(t->GetLabel()) > fMinMCLabel) {
 	if (fMCConstSel == kNone) {
 	  AliDebug(2,Form("Skipping track %d because bit mask is 0.", iTracks));
 	  continue;
@@ -252,7 +254,7 @@ void AliEmcalJetTask::FindJets()
 	if (!c)
 	  continue;
 
-	if (c->GetLabel() > 0) {
+	if (c->GetLabel() > fMinMCLabel) {
 	  if (fMCConstSel == kNone) {
 	    AliDebug(2,Form("Skipping cluster %d because bit mask is 0.", iClus));
 	    continue;
@@ -294,7 +296,7 @@ void AliEmcalJetTask::FindJets()
 	if (!c)
 	  continue;
 
-	if (c->GetLabel() > 0) {
+	if (c->GetLabel() > fMinMCLabel) {
 	  if (fMCConstSel == kNone) {
 	    AliDebug(2,Form("Skipping cluster %d because bit mask is 0.", iClus));
 	    continue;
@@ -435,7 +437,7 @@ void AliEmcalJetTask::FindJets()
           if (cPt > maxCh)
             maxCh = cPt;
         }
-        if (fIsMcPart || t->GetLabel() != 0) // check if MC particle
+        if (fIsMcPart || TMath::Abs(t->GetLabel()) > fMinMCLabel) // check if MC particle
           mcpt += cPt;
 
         if (cPhi<0) 
@@ -484,7 +486,7 @@ void AliEmcalJetTask::FindJets()
         if (cPt > maxNe)
           maxNe = cPt;
 
-        if (c->GetLabel() > 0) // MC particle
+        if (c->GetLabel() > fMinMCLabel) // MC particle
           mcpt += cPt;
 
         if (cPhi<0) 
