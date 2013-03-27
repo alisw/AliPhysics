@@ -30,6 +30,8 @@ public:
   
   void UseExternalConfig(const char* externalConfigFullFilePath) { fExternalConfig = externalConfigFullFilePath; }
   
+  void UseAODMerging(Bool_t flag);
+  
   Bool_t CheckLocal() const;
   Bool_t CheckRemote() const;
   
@@ -169,8 +171,9 @@ private:
   mutable TObjArray* fTemplateFileList; // list of template files
   mutable TObjArray* fLocalFileList; // list of local files
   TString fSnapshotDir; // directory for OCDB snapshots
+  Bool_t fUseAODMerging; // whether or not to perform (aod) merging
   
-  ClassDef(AliMuonAccEffSubmitter,1) // Helper class to submit AccxEff single particle simulations
+  ClassDef(AliMuonAccEffSubmitter,2) // Helper class to submit AccxEff single particle simulations
 };
 
 #endif

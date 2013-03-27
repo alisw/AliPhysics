@@ -99,7 +99,8 @@ fUseOCDBSnapshots(kTRUE),
 fIsValid(kFALSE),
 fTemplateFileList(0x0),
 fLocalFileList(0x0),
-fSnapshotDir(fLocalDir)
+fSnapshotDir(fLocalDir),
+fUseAODMerging(kFALSE)
 {
   // ctor
   
@@ -119,6 +120,7 @@ fSnapshotDir(fLocalDir)
   SetVar("VAR_GENCORRHF_QUARK","5");
   SetVar("VAR_GENCORRHF_ENERGY","5");
 
+  // some default values for J/psi
   SetVar("VAR_GENPARAMCUSTOM_PDGPARTICLECODE","443");
 
   // default values below are from J/psi p+Pb (from muon_calo pass)
@@ -129,6 +131,19 @@ fSnapshotDir(fLocalDir)
   SetVar("VAR_GENPARAMCUSTOM_PT_P1","18.05");
   SetVar("VAR_GENPARAMCUSTOM_PT_P2","2.05");
   SetVar("VAR_GENPARAMCUSTOM_PT_P3","3.34");
+
+  // some default values for single muons
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_PTMIN","0.35");
+  
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P0","4.05962");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P1","1.0");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P2","2.46187");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P3","2.08644");
+
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P0","0.729545");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P1","0.53837");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P2","0.141776");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P3","0.0130173");
 
   UseOCDBSnapshots(kTRUE);
   
@@ -570,7 +585,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name)
   if ( CompactMode() == 0 )
   {
     // store everything
-    Output(*os,"OutputArchive",  "log_archive.zip:stderr,stdout,aod.log,checkaod.log,checkesd.log,rec.log,recwatch.log,sim.log,simwatch.log@disk=1",
+    Output(*os,"OutputArchive",  "log_archive.zip:stderr,stdout,aod.log,checkaod.log,checkesd.log,rec.log,sim.log@disk=1",
            "root_archive.zip:galice*.root,Kinematics*.root,TrackRefs*.root,AliESDs.root,AliAOD.root,AliAOD.Muons.root,Merged.QA.Data.root,Run*.root@disk=2");
   }
   else if ( CompactMode() == 1 )
@@ -1579,10 +1594,13 @@ TObjArray* AliMuonAccEffSubmitter::TemplateFileList() const
     fTemplateFileList->Add(new TObjString("sim.C"));
     fTemplateFileList->Add(new TObjString("simrun.C"));
     fTemplateFileList->Add(new TObjString(RunJDLName().Data()));
-    fTemplateFileList->Add(new TObjString(MergeJDLName(kFALSE).Data()));
-    fTemplateFileList->Add(new TObjString(MergeJDLName(kTRUE).Data()));
-    fTemplateFileList->Add(new TObjString("AOD_merge.sh"));
-    fTemplateFileList->Add(new TObjString("validation_merge.sh"));
+    if ( fUseAODMerging )
+    {
+      fTemplateFileList->Add(new TObjString(MergeJDLName(kFALSE).Data()));
+      fTemplateFileList->Add(new TObjString(MergeJDLName(kTRUE).Data()));
+      fTemplateFileList->Add(new TObjString("AOD_merge.sh"));
+      fTemplateFileList->Add(new TObjString("validation_merge.sh"));
+    }
   }
   
   return fTemplateFileList;
@@ -1631,7 +1649,6 @@ void AliMuonAccEffSubmitter::UpdateLocalFileList(Bool_t clearSnapshots)
       }
     }
   }
-  
 }
 
 //______________________________________________________________________________
@@ -1655,3 +1672,11 @@ void AliMuonAccEffSubmitter::UseOCDBSnapshots(Bool_t flag)
   UpdateLocalFileList();
 }
 
+//______________________________________________________________________________
+void AliMuonAccEffSubmitter::UseAODMerging(Bool_t flag)
+{
+  /// whether or not we should generate JDL for merging AODs
+  
+  fUseAODMerging = flag;
+  // FIXME: here should update the TemplateFileList() (and LocalFileList as well ?)
+}
