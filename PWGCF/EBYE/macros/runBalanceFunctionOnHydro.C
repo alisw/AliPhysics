@@ -16,7 +16,8 @@ struct StructEvent {
 
 //========================================================//
 //Particle structure
-//Primordial particles: fatherid==-1
+//Primordial particles: fathereid==-1 ==> 
+//pid==fatherpid==rootpid
 struct StructParticle {
   Float_t mass;//the mass of the particle (in GeV)
   Float_t t;//the time coordinate of the particle in fm/c
@@ -146,29 +147,8 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
     Int_t trackDepth = 50000;
     Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
     
-    // centrality bins
-    Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-    Double_t* centbins        = centralityBins;
-    Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
-    
-    // Zvtx bins
-    Double_t vertexBins[] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-    Double_t* vtxbins     = vertexBins;
-    Int_t nVertexBins     = sizeof(vertexBins) / sizeof(Double_t) - 1;
-    
-    // Event plane angle (Psi) bins
-    Double_t psiBins[] = {0.,45.,135.,215.,305.,360.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-    Double_t* psibins     = psiBins;
-    Int_t nPsiBins     = sizeof(psiBins) / sizeof(Double_t) - 1;
-
     AliEventPoolManager *fPoolMgr = 0x0;
-    // run the event mixing also in bins of event plane (statistics!)
-    if(gRunMixingEventPlane){
-      fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins, nPsiBins, psibins);
-    }
-    else{
-      fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
-    }
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth);
   }
   //========================================================//
 
@@ -203,15 +183,15 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
   //Event stats.
   TString gCutName[5] = {"Total","Offline trigger",
                          "Vertex","Analyzed","sel. Centrality"};
-  TH2F *fHistEventStats = new TH2F("fHistEventStats",
-				   "Event statistics;;Centrality percentile;N_{events}",
-				   5,0.5,5.5,220,-5,105);
+  TH1F *fHistEventStats = new TH1F("fHistEventStats",
+				   "Event statistics;;N_{events}",
+				   5,0.5,5.5);
   for(Int_t i = 1; i <= 5; i++)
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
 
   //Number of accepted particles
-  TH2F *fHistNumberOfAcceptedTracks = new TH2F("fHistNumberOfAcceptedTracks",";N_{acc.};Centrality percentile;Entries",4001,-0.5,4000.5,220,-5,105);
+  TH1F *fHistNumberOfAcceptedTracks = new TH1F("fHistNumberOfAcceptedTracks",";N_{acc.};Entries",4001,-0.5,4000.5);
   fList->Add(fHistNumberOfAcceptedTracks);
   //========================================================//
 
@@ -225,34 +205,112 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
   Int_t nTotalParticles = 0;
   
   //for(Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-  for(Int_t  // for local changed BF configuration
-  //gROOT->LoadMacro("./configBalanceFunctionPsiAnalysis.C");
- iEvent = 0; iEvent < 1; iEvent++) {
+  for(Int_t iEvent = 0; iEvent < 1; iEvent++) {
     eventChain->GetEntry(iEvent);
 
-    Int_t nParticles = tStructEvents.entries;
-    cout<<"Event: "<<iEvent+1<<" - ID: "<<tStructEvents.eventID<<" - Entries: "<<tStructEvents.entries<<" - Entries(prev.): "<<tStructEvents.entriesprev<<endl;
+    //========================================================//
+    //Create the TObjArray object to store the particles
+    TObjArray* tracksAccepted = new TObjArray;
+    tracksAccepted->SetOwner(kTRUE);
+    //========================================================//
 
+    Int_t nParticles = tStructEvents.entries;
+    if(((iEvent+1)%100)==0)
+      cout<<"Event: "<<iEvent+1<<" - ID: "<<tStructEvents.eventID<<" - Entries: "<<tStructEvents.entries<<endl;
+
+    //========================================================//
+    //Filling event level histos
+    fHistEventStats->Fill(1);
+    fHistEventStats->Fill(2);
+    fHistEventStats->Fill(3);
+    fHistEventStats->Fill(4);
+    fHistEventStats->Fill(5);
+
+    Int_t gNumberOfAcceptedParticles = 0;
+    Double_t gReactionPlane = 0.;
     //========================================================//
     //loop over particles
     for(Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
       particleChain->GetEntry(nTotalParticles+iParticle);
       
-      Double_t gPt = TMath::Sqrt(TMath::Power(tStructParticles.px,2) + TMath::Power(tStructParticles.py,2));
-      hPt->Fill(gPt);
-      	
+      //========================================================//
+      //consider only primordial particles
+      if(tStructParticles.fathereid != -1) continue;
+
+      //========================================================//
+      //Calculate kinematic variables
+      Double_t gPt = TMath::Sqrt(TMath::Power(tStructParticles.px,2) + 
+				 TMath::Power(tStructParticles.py,2));
+      Double_t gP = TMath::Sqrt(TMath::Power(tStructParticles.px,2) + 
+				TMath::Power(tStructParticles.py,2) + 
+				TMath::Power(tStructParticles.pz,2) );
+      Double_t gEta = -100.;
+      if(gP != tStructParticles.pz)
+	gEta = 0.5*TMath::Log((gP + tStructParticles.pz)/(gP - tStructParticles.pz));
+      Double_t gPhi = 0.;
+      Double_t gCharge = 0.;
+      
+      //========================================================//
+      //Apply cuts
+      if((gEta > gEtaMax)||(gEta < gEtaMin)) continue;
+      if((gPt > gPtMax)||(gPt < gPtMin)) continue;
+      
+      tracksAccepted->Add(new AliBFBasicParticle(gEta,gPhi,gPt,gCharge, 1.));
+      gNumberOfAcceptedParticles += 1;
+      
       iParticleCounter += 1;
-      cout<<"\t Particle counter: "<<iParticleCounter<<" - Particle in the event: "<<iParticle+1<<" - eventID: "<<tStructParticles.eventid<<" - pid: "<<tStructParticles.pid<<" - fatherpid: "<<tStructParticles.fatherpid<<" - rootpid: "<<tStructParticles.rootpid<<" - fathereid: "<<tStructParticles.fathereid<<" - eid: "<<tStructParticles.eid<<endl;
+      //cout<<"\t Particle counter: "<<iParticleCounter<<" - Particle in the event: "<<iParticle+1<<" - eventID: "<<tStructParticles.eventid<<" - pid: "<<tStructParticles.pid<<" - fatherpid: "<<tStructParticles.fatherpid<<" - rootpid: "<<tStructParticles.rootpid<<" - fathereid: "<<tStructParticles.fathereid<<" - eid: "<<tStructParticles.eid<<endl;
     }//particle loop
+    
+    //========================================================//
+    // Event mixing (borrowed code from the task) 
+    /*if (gRunMixing) {
+      AliEventPool* pool = fPoolMgr->GetEventPool(gCentrality, eventMain->GetPrimaryVertex()->GetZ(),gReactionPlane);
+      
+      if (!pool) {
+      AliFatal(Form("No pool found for centrality = %f, zVtx = %f, psi = %f", gCentrality, eventMain->GetPrimaryVertex()->GetZ(),gReactionPlane));
+      }
+      else {
+      //pool->SetDebug(1);
+      if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5){ 
+      
+      Int_t nMix = pool->GetCurrentNEvents();
+      //cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
+      
+      //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
+      //((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
+      //if (pool->IsReady())
+      //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
+      
+      // Fill mixed-event histos here  
+      for (Int_t jMix=0; jMix<nMix; jMix++) {
+      TObjArray* tracksMixed = pool->GetEvent(jMix);
+      fMixedBalance->CalculateBalance(gReactionPlane,tracksMain,tracksMixed,bSign,lMultiplicityVar,eventMain->GetPrimaryVertex()->GetZ());
+      }
+      }
+      
+      // Update the Event pool
+      pool->UpdatePool(tracksMain);
+      //pool->PrintInfo();
+      
+      }//pool NULL check  
+      }*///run mixing
+      //========================================================//
+
+    //========================================================//
+    // calculate balance function
+    //fBalance->CalculateBalance(gReactionPlane,tracksMain,NULL,bSign,lMultiplicityVar,eventMain->GetPrimaryVertex()->GetZ());
+
+    fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedParticles);
     nTotalParticles += nParticles;
   }
 
   //========================================================//
   //Output file
-  TFile *f = TFile::Open("therminator.root","recreate");
-  hPdgCode->Write();
-  hEta->Write();
-  hPt->Write();
+  TFile *f = TFile::Open("AnalysisResults.root","recreate");
+  fList->Write();
+  fListBF->Write();
+  if(gRunMixing) fListBFM->Write();
   f->Close();  
   //========================================================//
 
