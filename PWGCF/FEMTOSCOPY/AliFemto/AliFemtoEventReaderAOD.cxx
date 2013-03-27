@@ -649,9 +649,16 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
   if (cent) {
     tEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
+    tEvent->SetCentralityV0A(cent->GetCentralityPercentile("V0A"));
+    tEvent->SetCentralityV0C(cent->GetCentralityPercentile("V0C"));
     tEvent->SetCentralityZNA(cent->GetCentralityPercentile("ZNA"));
+    tEvent->SetCentralityZNC(cent->GetCentralityPercentile("ZNC"));
     tEvent->SetCentralityCL1(cent->GetCentralityPercentile("CL1"));
-    //    tEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
+    tEvent->SetCentralityCL0(cent->GetCentralityPercentile("CL0"));
+    tEvent->SetCentralityTKL(cent->GetCentralityPercentile("TKL"));
+    tEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
+    tEvent->SetCentralityFMD(cent->GetCentralityPercentile("NPA"));
+    //    tEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
     tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
     tEvent->SetCentralityCND(cent->GetCentralityPercentile("CND"));
   }
@@ -662,17 +669,38 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0M")));
     //  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
   }
+  else if (fEstEventMult==kCentralityV0A) {
+    if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0A")));
+  }
+  else if (fEstEventMult==kCentralityV0C) {
+    if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0C")));
+  }
   else if (fEstEventMult==kCentralityZNA) {
     if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("ZNA")));
+  }
+ else if (fEstEventMult==kCentralityZNC) {
+    if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("ZNC")));
   }
   else if (fEstEventMult==kCentralityCL1) {
     if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("CL1")));
   }
+  else if (fEstEventMult==kCentralityCL0) {
+    if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("CL0")));
+  }
   else if (fEstEventMult==kCentralityTRK) {
     if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("TRK")));
   }
+  else if (fEstEventMult==kCentralityTKL) {
+    if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("TKL")));
+  }
   else if (fEstEventMult==kCentralityCND) {
     if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("CND")));
+  }
+  else if (fEstEventMult==kCentralityNPA) {
+    if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("NPA")));
+  }
+ else if (fEstEventMult==kCentralityFMD) {
+    if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("FMD")));
   }
   else if(fEstEventMult==kGlobalCount){
     tEvent->SetNormalizedMult(tNormMult); //particles counted in the loop, trying to reproduce GetReferenceMultiplicity. If better (default) method appears it should be changed
