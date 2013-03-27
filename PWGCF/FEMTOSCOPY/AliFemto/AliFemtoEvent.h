@@ -77,13 +77,23 @@ public:
   void SetMultiplicityEstimateITSTPC(const unsigned short &s);
   void SetMultiplicityEstimateTracklets(const unsigned short &s);
   void SetMultiplicityEstimateITSPure(const unsigned short &s);
+
+
   void SetCentralityV0(const float &c);
+  void SetCentralityV0A(const float &c);
+  void SetCentralityV0C(const float &c);
   void SetCentralityZNA(const float &c);
+  void SetCentralityZNC(const float &c);
   void SetCentralityCL1(const float &c);
+  void SetCentralityCL0(const float &c);
+  void SetCentralityTKL(const float &c);
   void SetCentralityFMD(const float &c);
-  void SetCentralitySPD1(const float &c);
   void SetCentralityTrk(const float &c);
   void SetCentralityCND(const float &c);
+  void SetCentralityNPA(const float &c);
+  void SetCentralitySPD1(const float &c);
+
+
   void SetSPDMult(const int& i);
   void SetPrimVertPos(const AliFemtoThreeVector& v);
   void SetPrimVertCov(const double* v);
@@ -113,13 +123,20 @@ public:
   unsigned short MultiplicityEstimateTracklets() const;
   unsigned short MultiplicityEstimateITSPure() const;
 
-  float CentralityV0() const;
+
+  float CentralityV0() const; 
+  float CentralityV0A() const;
+  float CentralityV0C() const;
   float CentralityZNA() const;
+  float CentralityZNC() const;
   float CentralityCL1() const;
+  float CentralityCL0() const;
+  float CentralityTKL() const;
   float CentralityFMD() const;
-  float CentralitySPD1() const;
   float CentralityTrk() const;
   float CentralityCND() const;
+  float CentralityNPA() const;
+  float CentralitySPD1() const;
 
 private:
   unsigned short fEventNumber;           // Event number in file
@@ -130,13 +147,22 @@ private:
   unsigned short fEstimateITSTPC;        // Official multiplicity estimate ITS+TPC
   unsigned short fEstimateTracklets;     // Official multiplicity estimate Tracklets
   unsigned short fEstimateITSPure;       // Official multiplicity estimate ITS SA
-  float fCentralityV0;                   // Official centrality from V0
-  float fCentralityZNA;                   // Official centrality from ZNA
-  float fCentralityCL1;                   // Official centrality from CL1
-  float fCentralityFMD;                  // Official centrality from FMD
-  float fCentralitySPD1;                 // Official centrality from SPD layer 1
-  float fCentralityTrk;                  // Official centrality from tracks
-  float fCentralityCND;                  // N. of tracks according to the candle condition (pT>0.5 GeV and |y|<0.8)
+
+
+  float fCentralityV0; 
+  float fCentralityV0A;
+  float fCentralityV0C;
+  float fCentralityZNA;
+  float fCentralityZNC;
+  float fCentralityCL1;
+  float fCentralityCL0;
+  float fCentralityTKL;
+  float fCentralityFMD;
+  float fCentralityTrk;
+  float fCentralityCND;
+  float fCentralityNPA;
+  float fCentralitySPD1;
+
   double fMagneticField;                 // magnetic field in Z direction
   bool fIsCollisionCandidate;            // is collision candidate
   
