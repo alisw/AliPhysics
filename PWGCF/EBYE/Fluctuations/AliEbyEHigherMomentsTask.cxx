@@ -729,10 +729,10 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
   Double_t fContainerCh[3] = { fCentrality, nPlusCharge, nMinusCharge};//Reco. values ch. hadrons
   Double_t fContainerPid[3] = { fCentrality, nParticle, nAntiParticle};//Reco. values pid.
 
-  fTHnCentNplusNminusCh->Fill(fContainerCh);//Fill the ch. particles---
+  fTHnCentNplusNminusCh->Fill(fContainerCh);//Fill the rec. ch. particles---
   if( fUsePid ){
     gPid = (Int_t)fParticleSpecies;
-    fTHnCentNplusNminusPid[gPid]->Fill(fContainerPid);//Fill the pid
+    fTHnCentNplusNminusPid[gPid]->Fill(fContainerPid);//Fill the rec. pid tracks
   }
   
 
@@ -787,36 +787,36 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
       for( Int_t iRec = 0; iRec < nTracks; iRec++ ){
 	
 	if( iMC == fLabel[0][iRec] ){
+	  chrgRecStatus = 1;
+	  if(fUsePid){
+	    
+	    if( iMC == fLabel[1][iRec] ){
+	      pidRecStatus = 1;
+	      
+	    }
+	  }//fUsePid--
 	  
 	  AliAODTrack* aodTrack = NULL;
 	  if(fAOD)
 	    aodTrack = fAOD->GetTrack(iRec);
 	  if(aodTrack){
-	    
-	    chrgRecStatus = 1;
-	    
-	    if(fUsePid){
-	      
-	      if( iMC == fLabel[1][iRec] ){
-		pidRecStatus = 1;
-		ptRec = aodTrack->Pt();
-		etaRec = aodTrack->Eta();
-		phiRec = aodTrack->Phi();
-	      }
-	    }//fUsePid--
+
+	    ptRec = aodTrack->Pt();
+	    etaRec = aodTrack->Eta();
+	    phiRec = aodTrack->Phi();
 	    
 	  }//aodTrack
 	  
 	  break;
 	  
-	}
+	}//Check the rec.
 	
-      }//Reconstd track--
+      }//loop over all Reconstd track--
       
       Double_t effContainer[10] = { fCentrality, chargeState,  chrgRecStatus, pidRecStatus, partMC->Pt(), partMC->Eta(), partMC->Phi(), ptRec, etaRec, phiRec }; 
       
       fTHnEfficiencyHisto->Fill(effContainer);     
-    } 
+    }//if( fCheckEff ){...
     
   }//MC-Truth Track loop--
   
