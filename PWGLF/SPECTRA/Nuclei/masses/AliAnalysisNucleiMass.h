@@ -34,7 +34,7 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   void SetCentrality(Float_t *fCt) {fCentrality[0]=fCt[0];fCentrality[1]=fCt[1];};
   void SetFilterBit(Int_t TestFilterBit) {FilterBit=TestFilterBit;}
   void SetNTPCcluster(Int_t nTPCcluster) {NminTPCcluster=nTPCcluster;}
-  void SetDCAzCut(Float_t fDCAzCut) {DCAzCUT=fDCAzCut;}
+  void SetDCAzCut(Float_t fDCAzCut) {DCAzCUT =fDCAzCut;}
   void SetDCAxyCut(Float_t fDCAxyCut) {DCAxyCUT=fDCAxyCut;}
   void SetkTPCcut(Bool_t isTPCcut) {kTPCcut=isTPCcut;}
   
@@ -60,6 +60,8 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   Bool_t kTPC;                      //! is > NminTPCcluster 
   Bool_t kTOF;                      //! kTOFout and kTIME required
 
+  Int_t iBconf;                      //! if Magnetic Configuration is down or up 
+
   AliAODEvent* fAOD;                //! AOD object
   
   AliESDEvent* fESD;                //! ESD object
@@ -68,45 +70,49 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
  
   AliPIDResponse *fPIDResponse;     //! pointer to PID response
 
-  TList *fList1;                    //! list for slot 1
+  TList *fList1[2];                    //! lists for slot
 
-  TH1F *hNevent;                    //! Event counter
+  TH1F *hNeventSelected[2];            //! selected Event counter  
 
-  TH1F *hZvertex;                   //! z-vertex distribution
-
-  TH2F *fdEdxVSp[3];                //! dedx vs p plots
-
-  TH2F *fBetaTofVSp;                //! beta vs p plots
-
-  TH1F *hTOFSignalPion;             //! pion  TOF signal
-
-  TH2F *fM2vsP_NoTpcCut[3];         //! M2 vs. P
+  TH1F *hNevent[2];                    //! analyzed Event counter
   
-  TH2F *fNsigmaTPC[9];              //! NsigmaTPC vs. pT
-  
-  TH2F *fNsigmaTOF[9];              //! NsigmaTOF vs. pT
+  TH1F *hZvertex[2];                   //! z-vertex distribution
 
-  TH2F *fNsigmaTPCvsP_kTOFtrue[18]; //! NsigmaTPC vs. p with kTOFout && kTIME for provide TPC different cuts effect
+  TH2F *fdEdxVSp[2][3];                //! dedx vs p plots
+
+  TH2F *fBetaTofVSp[2];                //! beta vs p plots
+
+  TH1F *hTOFSignalPion[2];             //! pion  TOF signal
+
+  TH2F *fM2vsP_NoTpcCut[2][3];         //! M2 vs. P
+  
+  TH2F *fNsigmaTPC[2][9];              //! NsigmaTPC vs. pT
+  
+  TH2F *fNsigmaTOF[2][9];              //! NsigmaTOF vs. pT
+
+  TH2F *fNsigmaTPCvsP_kTOFtrue[2][18]; //! NsigmaTPC vs. p with kTOFout && kTIME for provide TPC different cuts effect
  
-  TProfile *hDeDxExp[9];            //! TPC spline used
+  TProfile *hDeDxExp[2][9];            //! TPC spline used
 
-  TProfile *hBetaExp[9];            //! TOF expected beta
+  TProfile *hBetaExp[2][9];            //! TOF expected beta
   
-  TH2F *fM2vsZ[10];                 //! M2 vs. Z in different pT range
+  TH2F *fM2vsZ[2][15];                 //! M2 vs. Z in different pT range
 
-  TH2F *fM2vsP[18];                 //! M2 vs. P with 2 sigma TPC cut for each particle species
+  TH2F *fM2vsZwithTPC[2][15];          //! M2 vs. Z in different pT range with 2sigmaTPC cut
 
-  TH1D *hDCAxy[18][nbin];           //! DCA distribution in 2 sigma TPC cut for each particle species
+  TH2F *fM2vsP[2][18];                 //! M2 vs. P with 2 sigma TPC cut for each particle species
 
-  TH1D *hM2CutDCAxy[18][nbin];      //! M^{2} IN DCA cut (in 2 sigma TPC cut)
+  TH1D *hDCAxy[2][18][nbin];           //! DCA distribution in 2 sigma TPC cut for each particle species
 
-  TH1D *hDCAz[18][nbin];            //! DCAz distribution in 2 sigma TPC cut for each particle species
+  TH1D *hM2CutDCAxy[2][18][nbin];      //! M^{2} IN DCA cut (in 2 sigma TPC cut)
 
-  TH1D *hM2CutGroundDCAxy[18][nbin];//! M^{2} OUT DCA cut (in 2 sigma TPC cut)
+  TH1D *hDCAz[2][18][nbin];            //! DCAz distribution in 2 sigma TPC cut for each particle species
 
-  TH2F *fM2vsP_NoTpcCut_DCAxyCut[3];//! M^{2} vs. P with a DCAxy cut  
+  TH1D *hM2CutGroundDCAxy[2][18][nbin];//! M^{2} OUT DCA cut (in 2 sigma TPC cut)
 
-  TH2F *fM2vsP_DCAxyCut[18];        //! M^{2} vs. P with a DCAxy cut (2sigma TPC cut)
+  TH2F *fM2vsP_NoTpcCut_DCAxyCut[2][3];//! M^{2} vs. P with a DCAxy cut  
+
+  TH2F *fM2vsP_DCAxyCut[2][18];        //! M^{2} vs. P with a DCAxy cut (2sigma TPC cut)
   
    
   ClassDef(AliAnalysisNucleiMass, 1);
