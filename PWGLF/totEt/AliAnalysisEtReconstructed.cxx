@@ -34,6 +34,7 @@
 #include "AliCentrality.h"
 #include "AliPHOSGeoUtils.h"
 #include "AliPHOSGeometry.h"
+#include "AliAnalysisEtRecEffCorrection.h"
 
 
 using namespace std;
@@ -61,6 +62,12 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fHistNeutralEnergyRemoved(0)
 	,fHistGammaEnergyAdded(0)
 	,fHistMatchedTracksEvspTvsMult(0)
+	,fHistMatchedTracksEvspTvsMultEffCorr(0)
+	,fHistNominalRawEt(0)
+	,fHistNominalNonLinHighEt(0)
+	,fHistNominalNonLinLowEt(0)
+	,fHistNominalEffHighEt(0)
+	,fHistNominalEffLowEt(0)
 {
 
 }
@@ -82,6 +89,12 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fHistNeutralEnergyRemoved;
     delete fHistGammaEnergyAdded;
     delete fHistMatchedTracksEvspTvsMult;
+    delete fHistMatchedTracksEvspTvsMultEffCorr;
+    delete fHistNominalRawEt;
+    delete fHistNominalNonLinHighEt;
+    delete fHistNominalNonLinLowEt;
+    delete fHistNominalEffHighEt;
+    delete fHistNominalEffLowEt;
 }
 
 Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
@@ -107,14 +120,22 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fSelector->SetEvent(event);
     
     Int_t cent = -1;
+    fCentrality = event->GetCentrality();
     if (fCentrality && cent)
     {
-        cent = fCentrality->GetCentralityClass10("V0M");
-        fCentClass = fCentrality->GetCentralityClass10("V0M");
+        cent = fCentrality->GetCentralityClass5("V0M");
+        fCentClass = fCentrality->GetCentralityClass5("V0M");
     }
 
     TRefArray *caloClusters = fSelector->GetClusters();
     Float_t fClusterMult = caloClusters->GetEntries();
+
+    Float_t nominalRawEt = 0;
+    Float_t nonlinHighRawEt = 0;
+    Float_t nonlinLowRawEt = 0;
+    Float_t effHighRawEt = 0;
+    Float_t effLowRawEt = 0;
+
 
     for (Int_t iCluster = 0; iCluster < event->GetNumberOfCaloClusters(); iCluster++)
     {
@@ -160,6 +181,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                 }
                 else {
 		  fHistMatchedTracksEvspTvsMult->Fill(track->P(),cluster->E(),fClusterMult);
+		  fHistMatchedTracksEvspTvsMultEffCorr->Fill(track->P(),CorrectForReconstructionEfficiency(*cluster),fClusterMult);
                     const Double_t *pidWeights = track->PID();
 
                     Double_t maxpidweight = 0;
@@ -230,7 +252,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             //continue;
         } // distance
         else
-        {
+	  {//these are clusters which were not track matched
 	  fCutFlow->Fill(x++);
 	  //std::cout << x++ << std::endl;
 
@@ -244,7 +266,13 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    fClusterEnergy->Fill(cluster->E());
 	    fClusterEt->Fill(TMath::Sin(p2.Theta())*cluster->E());
 
-	    fTotNeutralEt += CorrectForReconstructionEfficiency(*cluster);
+	    Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster);
+	    fTotNeutralEt += effCorrEt;
+	    nominalRawEt += effCorrEt;
+	    nonlinHighRawEt += effCorrEt*GetCorrectionModification(*cluster,1,0);
+	    nonlinLowRawEt += effCorrEt*GetCorrectionModification(*cluster,-1,0);
+	    effHighRawEt += effCorrEt*GetCorrectionModification(*cluster,0,1);
+	    effLowRawEt += effCorrEt*GetCorrectionModification(*cluster,0,-1);
             fNeutralMultiplicity++;
         }
         fMultiplicity++;
@@ -266,6 +294,13 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 // Fill the histograms...0
     FillHistograms();
     //std::cout << "fTotNeutralEt: " << fTotNeutralEt << ", Contribution from non-removed charged: " << GetChargedContribution(fNeutralMultiplicity) << ", neutral: " << GetNeutralContribution(fNeutralMultiplicity) << ", gammas: " << GetGammaContribution(fNeutralMultiplicity) << ", multiplicity: " << fNeutralMultiplicity<< std::endl;
+    //cout<<"cent "<<cent<<" cluster mult "<<fClusterMult<<" fTotNeutralEt "<<fTotNeutralEt<<" nominalRawEt "<<nominalRawEt<<endl;
+    fHistNominalRawEt->Fill(nominalRawEt,cent);
+    fHistNominalNonLinHighEt->Fill(nonlinHighRawEt,cent);
+    fHistNominalNonLinLowEt->Fill(nonlinLowRawEt,cent);
+    fHistNominalEffHighEt->Fill(effHighRawEt,cent);
+    fHistNominalEffLowEt->Fill(effLowRawEt,cent);
+
     return 0;
 }
 
@@ -344,6 +379,12 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fHistNeutralEnergyRemoved);
     list->Add(fHistGammaEnergyAdded);
     list->Add(fHistMatchedTracksEvspTvsMult);
+    list->Add(fHistMatchedTracksEvspTvsMultEffCorr);
+    list->Add(fHistNominalRawEt);
+    list->Add(fHistNominalNonLinHighEt);
+    list->Add(fHistNominalNonLinLowEt);
+    list->Add(fHistNominalEffHighEt);
+    list->Add(fHistNominalEffLowEt);
 }
 
 void AliAnalysisEtReconstructed::CreateHistograms()
@@ -416,6 +457,41 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     histname = "fHistGammaEnergyAdded" + fHistogramNameSuffix;
     fHistGammaEnergyAdded = new TH2D(histname.Data(), histname.Data(), 1000, .0, 30, 100, -0.5 , 99.5);
 
-      fHistMatchedTracksEvspTvsMult = new TH3F("fHistMatchedTracksEvspTvsMult", "fHistMatchedTracksEvspTvsMult",100, 0, 3,100,0,3,10,0,100);
+    fHistMatchedTracksEvspTvsMult = new TH3F("fHistMatchedTracksEvspTvsMult", "fHistMatchedTracksEvspTvsMult",100, 0, 3,100,0,3,10,0,100);
+    fHistMatchedTracksEvspTvsMultEffCorr = new TH3F("fHistMatchedTracksEvspTvsMultEffCorr", "fHistMatchedTracksEvspTvsMultEffCorr",100, 0, 3,100,0,3,10,0,100);
+    
+    maxEt = 100;
+    histname = "fHistNominalRawEt" + fHistogramNameSuffix;
+    fHistNominalRawEt = new TH2D(histname.Data(), histname.Data(),nbinsEt,minEt,maxEt,20,-0.5,19.5);
+    histname = "fHistNominalNonLinHighEt" + fHistogramNameSuffix;
+    fHistNominalNonLinHighEt = new TH2D(histname.Data(), histname.Data(),nbinsEt,minEt,maxEt,20,-0.5,19.5);
+    histname = "fHistNominalNonLinLowEt" + fHistogramNameSuffix;
+    fHistNominalNonLinLowEt = new TH2D(histname.Data(), histname.Data(),nbinsEt,minEt,maxEt,20,-0.5,19.5);
+    histname = "fHistNominalEffHighEt" + fHistogramNameSuffix;
+    fHistNominalEffHighEt = new TH2D(histname.Data(), histname.Data(),nbinsEt,minEt,maxEt,20,-0.5,19.5);
+    histname = "fHistNominalEffLowEt" + fHistogramNameSuffix;
+    fHistNominalEffLowEt = new TH2D(histname.Data(), histname.Data(),nbinsEt,minEt,maxEt,20,-0.5,19.5);
 
+}
+Double_t AliAnalysisEtReconstructed::ApplyModifiedCorrections(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr)
+{
+  Float_t pos[3];
+  cluster.GetPosition(pos);
+  TVector3 cp(pos);
+  Double_t corrEnergy = fReCorrections->CorrectedEnergy(cluster.E());
+  
+  Double_t factorNonLin = GetCorrectionModification(cluster, nonLinCorr,effCorr);
+
+  //std::cout << "Original energy: " << cluster.E() << ", corrected energy: " << corrEnergy << std::endl;
+  return TMath::Sin(cp.Theta())*corrEnergy*factorNonLin;
+}
+
+Double_t AliAnalysisEtReconstructed::GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr){//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+  if(nonLinCorr==0){
+    cout<<"Warning:  This function should not get called!"<<endl;//this statement is basically here to avoid a compilation warning
+  }
+  if(effCorr==0){
+    cout<<"Warning:  This function should not get called!"<<endl;//this statement is basically here to avoid a compilation warning
+  }
+  return cluster.E();
 }

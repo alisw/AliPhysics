@@ -45,6 +45,8 @@ protected:
     bool CheckGoodVertex(AliVParticle *track);
     virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
 
+    virtual Double_t GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+
     AliAnalysisHadEtCorrections *fCorrections;//corrections needed for hadronic et
 
     Double_t fPidCut; // cut on the pid probability
@@ -70,7 +72,15 @@ protected:
     TH2D *fHistNeutralEnergyRemoved; // Neutral energy removed
     TH2D *fHistGammaEnergyAdded; // gamma energy added
 
-    TH3F *fHistMatchedTracksEvspTvsMult;    
+    TH3F *fHistMatchedTracksEvspTvsMult;   //For measuring hadron deposits
+    TH3F *fHistMatchedTracksEvspTvsMultEffCorr;   //For measuring hadron deposits
+    TH2D *fHistNominalRawEt;//Total ET from clusters with nominal reconstruction efficiency and nonlinearity correction vs centrality
+    TH2D *fHistNominalNonLinHighEt;//Total ET from clusters with nominal reconstruction efficiency and high bound of nonlinearity correction vs centrality
+    TH2D *fHistNominalNonLinLowEt;//Total ET from clusters with nominal reconstruction efficiency and low bound of nonlinearity correction vs centrality
+    TH2D *fHistNominalEffHighEt;//Total ET from clusters with high bound on reconstruction efficiency and nominal nonlinearity correction vs centrality
+    TH2D *fHistNominalEffLowEt;//Total ET from clusters with low bound on reconstruction efficiency and nominal nonlinearity correction vs centrality
+
+    Double_t ApplyModifiedCorrections(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
 
 private:
 
