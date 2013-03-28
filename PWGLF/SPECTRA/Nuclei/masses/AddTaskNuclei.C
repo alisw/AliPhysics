@@ -50,10 +50,13 @@ AliAnalysisTaskSE *AddTaskNuclei(Bool_t kAOD=kFALSE,Bool_t kMC=kFALSE,Float_t fC
   
   //sprintf(name,"Results_CC%02i%02i",kCentrality[0],kCentrality[1]);
   
-  sprintf(name,"Results_CC%02i%02i_FilterBit=%02i_NminTPCclusters=%03i_DCAzCUT=%.1f_DCAxyCUT=%.1f_kTPCcut=%i",kCentrality[0],kCentrality[1],filterBit,nTPCminCluster,DCAzCut,DCAxyCut,bTPCcut);
-
+  sprintf(name,"ResultsBmm_CC%02i%02i_FilterBit=%02i_NminTPCclusters=%03i_DCAzCUT=%.1f_DCAxyCUT=%.1f_kTPCcut=%i",kCentrality[0],kCentrality[1],filterBit,nTPCminCluster,DCAzCut,DCAxyCut,bTPCcut);
   AliAnalysisDataContainer *cOutputL= mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
   mgr->ConnectOutput(task, 1, cOutputL);
+
+  sprintf(name,"ResultsBpp_%02i%02i_FilterBit=%02i_NminTPCclusters=%03i_DCAzCUT=%.1f_DCAxyCUT=%.1f_kTPCcut=%i",kCentrality[0],kCentrality[1],filterBit,nTPCminCluster,DCAzCut,DCAxyCut,bTPCcut);
+  AliAnalysisDataContainer *cOutputL2= mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
+  mgr->ConnectOutput(task, 2, cOutputL2);
 
   return task;
 }
