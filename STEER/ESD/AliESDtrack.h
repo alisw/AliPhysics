@@ -325,6 +325,8 @@ public:
   Int_t   GetTOFcluster() const {return fTOFindex;}
   void    SetTOFcluster(Int_t index) {fTOFindex=index;}
   void    SetTOFCalChannel(Int_t index) {fTOFCalChannel=index;}
+  void    SetTOFsignalTunedOnData(Double_t signal){fTOFsignalTuned=signal;}
+  Double_t GetTOFsignalTunedOnData() const {return fTOFsignalTuned;}
 
 // HMPID methodes +++++++++++++++++++++++++++++++++ (kir)
   void    SetHMPIDsignal(Double_t theta) {fHMPIDsignal=theta;}
@@ -498,6 +500,7 @@ protected:
   Double32_t fTRDBudget;      // trd material budget
 
   Double32_t fTOFsignal;      // detector's PID signal
+  Double32_t fTOFsignalTuned; //! detector's PID signal tuned on data when using MC
   Double32_t fTOFsignalToT;   // detector's ToT signal
   Double32_t fTOFsignalRaw;   // detector's uncorrected time signal
   Double32_t fTOFsignalDz;    // local z  of track's impact on the TOF pad 
@@ -550,7 +553,7 @@ protected:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,66)  //ESDtrack 
+  ClassDef(AliESDtrack,67)  //ESDtrack 
 };
 
 

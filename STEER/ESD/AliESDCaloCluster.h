@@ -92,10 +92,16 @@ class AliESDCaloCluster : public AliVCluster
     else *fTracksMatched = array;
   }
   void AddLabels(TArrayI & array)         { 
-    if(!fLabels)fLabels = new TArrayI(array) ; 
+    if(!fLabels)fLabels = new TArrayI(array) ;
     else *fLabels = array;
   }
   
+  void SetLabel(Int_t *array, UInt_t size)
+  {
+    if(fLabels) delete fLabels ;
+    fLabels = new TArrayI(size,array);
+  }
+
   TArrayI * GetTracksMatched() const  {return  fTracksMatched;}
   TArrayI * GetLabelsArray() const    {return  fLabels;}
   Int_t   * GetLabels() const         {if (fLabels) return  fLabels->GetArray(); else return 0;}

@@ -386,6 +386,7 @@ void AliAODHandler::StoreMCParticles(){
 
   // AODTracks
   TClonesArray* tracks = fAODEvent->GetTracks();
+  Int_t tofLabel[3];
   if(tracks){
     for(int it = 0; it < fAODEvent->GetNTracks();++it){
       AliAODTrack *track = fAODEvent->GetTrack(it);
@@ -396,7 +397,7 @@ void AliAODHandler::StoreMCParticles(){
 	label *= -1;
 	sign  = -1;
       }
-
+      
       if (label >= AliMCEvent::BgLabelOffset()) label =  mcEvent->BgLabelToIndex(label);
       if(label > np || track->GetLabel() == 0){
 	AliWarning(Form("Wrong ESD track label %5d (%5d)",track->GetLabel(), label));
@@ -405,6 +406,23 @@ void AliAODHandler::StoreMCParticles(){
 	AliWarning(Form("New label not found for %5d (%5d)",track->GetLabel(), label));
       }
       track->SetLabel(sign*fMCEventH->GetNewLabel(label));
+      
+      track->GetTOFLabel(tofLabel);
+      
+      for (Int_t i =0; i < 3; i++) {
+	label  = tofLabel[i]; // esd label
+	Int_t nlabel = label; // new label
+	if (label < 0) continue;
+	if (label >= AliMCEvent::BgLabelOffset()) nlabel =  mcEvent->BgLabelToIndex(label);
+	if(nlabel > np || label == 0) {
+	  AliWarning(Form("Wrong TOF label %5d (%5d)", label, nlabel));
+	}
+	if(fMCEventH->GetNewLabel(label) == 0){
+	  AliWarning(Form("New TOF label not found for %5d",label ));
+	}
+	tofLabel[i] = fMCEventH->GetNewLabel(label);
+      } 
+      track->SetTOFLabel(tofLabel);
     }
   }
   

@@ -47,6 +47,7 @@ AliESDpid(const AliESDpid&a): AliPIDResponse(a), fRangeTOFMismatch(a.fRangeTOFMi
   Float_t GetNMaxSigmaTOFTPCMismatch() const {return fRangeTOFMismatch;}
 
   Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const;
+  Float_t GetTOFsignalTunedOnData(const AliVTrack *t) const;
 
   void SetEventHandler(AliVEventHandler *event){fEventHandler=event;};
 protected:

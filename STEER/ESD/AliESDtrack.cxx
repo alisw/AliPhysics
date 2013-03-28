@@ -208,6 +208,7 @@ AliESDtrack::AliESDtrack() :
   fTRDQuality(0),
   fTRDBudget(0),
   fTOFsignal(99999),
+  fTOFsignalTuned(99999),
   fTOFsignalToT(99999),
   fTOFsignalRaw(99999),
   fTOFsignalDz(999),
@@ -324,6 +325,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTRDQuality(track.fTRDQuality),
   fTRDBudget(track.fTRDBudget),
   fTOFsignal(track.fTOFsignal),
+  fTOFsignalTuned(track.fTOFsignalTuned),
   fTOFsignalToT(track.fTOFsignalToT),
   fTOFsignalRaw(track.fTOFsignalRaw),
   fTOFsignalDz(track.fTOFsignalDz),
@@ -453,6 +455,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTRDQuality(0),
   fTRDBudget(0),
   fTOFsignal(99999),
+  fTOFsignalTuned(99999),
   fTOFsignalToT(99999),
   fTOFsignalRaw(99999),
   fTOFsignalDz(999),
@@ -642,6 +645,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTRDQuality(0),
   fTRDBudget(0),
   fTOFsignal(99999),
+  fTOFsignalTuned(99999),
   fTOFsignalToT(99999),
   fTOFsignalRaw(99999),
   fTOFsignalDz(999),
@@ -993,6 +997,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fTRDQuality =   source.fTRDQuality;     
   fTRDBudget  =   source.fTRDBudget;      
   fTOFsignal  =   source.fTOFsignal;     
+  fTOFsignalTuned  = source.fTOFsignalTuned;
   fTOFsignalToT = source.fTOFsignalToT;   
   fTOFsignalRaw = source.fTOFsignalRaw;  
   fTOFsignalDz  = source.fTOFsignalDz;      

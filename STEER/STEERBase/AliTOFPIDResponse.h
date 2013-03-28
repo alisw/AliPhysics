@@ -15,6 +15,7 @@
 #include "AliVTrack.h"
 
 class AliTOFPIDParams;
+class TF1;
 
 class AliTOFPIDResponse : public TObject {
 public:
@@ -35,6 +36,8 @@ public:
   Double_t GetExpectedSignal(const AliVTrack *track, AliPID::EParticleType type) const;
 
   Double_t GetMismatchProbability(Double_t p,Double_t mass) const;
+
+  Double_t GetTailRandomValue() const; // generate a random value to add a tail to TOF time (for MC analyses)
 
   void     SetT0event(Float_t *t0event){for(Int_t i=0;i < fNmomBins;i++) fT0event[i] = t0event[i];};
   void     SetT0resolution(Float_t *t0resolution){for(Int_t i=0;i < fNmomBins;i++) fT0resolution[i] = t0resolution[i];};
@@ -76,7 +79,9 @@ public:
   Int_t fMaskT0[fNmomBins]; // mask withthe T0 used (0x1=T0-TOF,0x2=T0A,0x3=TOC) for p bins
   Float_t fPar[4]; // parameter for expected times resolution
 
-  ClassDef(AliTOFPIDResponse,4)   // TOF PID class
+  static TF1 *fTOFtailResponse; // function to generate a TOF tail
+
+  ClassDef(AliTOFPIDResponse,5)   // TOF PID class
 };
 
 #endif

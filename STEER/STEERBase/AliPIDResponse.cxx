@@ -87,7 +87,8 @@ fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
 fCurrCentrality(0.0),
-fTuneMConData(kFALSE)
+fTuneMConData(kFALSE),
+fTuneMConDataMask(kDetTOF|kDetTPC)
 {
   //
   // default ctor
@@ -147,7 +148,8 @@ fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
 fCurrCentrality(0.0),
-fTuneMConData(kFALSE)
+fTuneMConData(kFALSE),
+fTuneMConDataMask(kDetTOF|kDetTPC)
 {
   //
   // copy ctor
@@ -891,7 +893,7 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   }
 
   Int_t recopass = fRecoPass;
-  if (fTuneMConData)
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) )
     recopass = fRecoPassUser;
   
   TString defaultObj = Form("Default_%s_pass%d", dataType.Data(), recopass);
@@ -1097,7 +1099,7 @@ void AliPIDResponse::SetTPCParametrisation()
   if (fIsMC && !fTuneMConData) period=fMCperiodTPC;
 
   Int_t recopass = fRecoPass;
-  if(fTuneMConData) recopass = fRecoPassUser;
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) ) recopass = fRecoPassUser;
     
   AliInfo(Form("Searching splines for: %s %s PASS%d %s",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
   Bool_t found=kFALSE;
@@ -1802,8 +1804,7 @@ Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID:
   // the following call is needed in order to fill the transient data member
   // fTPCsignalTuned which is used in the TPCPIDResponse to judge
   // if using tuned on data
-  if (fTuneMConData)
-    this->GetTPCsignalTunedOnData(track);
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) ) this->GetTPCsignalTunedOnData(track);
   
   return fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
 }
@@ -1884,7 +1885,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTPC(const AliVPartic
   // the following call is needed in order to fill the transient data member
   // fTPCsignalTuned which is used in the TPCPIDResponse to judge
   // if using tuned on data
-  if (fTuneMConData)
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) ) 
     this->GetTPCsignalTunedOnData(track);
   
   val=fTPCResponse.GetSignalDelta(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, ratio);
@@ -1900,7 +1901,6 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTOF(const AliVPartic
   //
   AliVTrack *track=(AliVTrack*)vtrack;
   val=GetSignalDeltaTOFold(track, type, ratio);
-  
   return GetTOFPIDStatus(track);
 }
 
@@ -2004,7 +2004,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
   Double_t dedx=track->GetTPCsignal();
   Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
   
-  if(fTuneMConData) dedx = this->GetTPCsignalTunedOnData(track);
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) ) dedx = this->GetTPCsignalTunedOnData(track);
   
   Double_t bethe = 0.;
   Double_t sigma = 0.;

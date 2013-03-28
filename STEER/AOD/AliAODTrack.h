@@ -127,12 +127,20 @@ class AliAODTrack : public AliVTrack {
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
 
   Double_t Chi2perNDF()  const { return fChi2perNDF; }
-  UShort_t GetTPCNcls()  const { 
-    UShort_t cl = fTPCFitMap.CountBits();
-    if(cl==0)cl = fTPCClusterMap.CountBits();// backward compatibility
+
+  UShort_t GetTPCnclsS(Int_t i0=0,Int_t i1=159)  const { 
+    UShort_t cl = fTPCSharedMap.CountBits(i0)-fTPCSharedMap.CountBits(i1);
     return cl;
   }
   
+  UShort_t GetTPCncls(Int_t i0=0,Int_t i1=159)  const { 
+    UShort_t cl = fTPCFitMap.CountBits(i0)-fTPCFitMap.CountBits(i1);
+    if(cl==0)cl = fTPCClusterMap.CountBits(i0)-fTPCClusterMap.CountBits(i1);// backward compatibility
+    return cl;
+  }
+  
+  UShort_t GetTPCNcls()  const { return GetTPCncls(); }
+
   virtual Double_t M() const { return M(GetMostProbablePID()); }
   Double_t M(AODTrkPID_t pid) const;
   virtual Double_t E() const { return E(GetMostProbablePID()); }
@@ -168,6 +176,9 @@ class AliAODTrack : public AliVTrack {
 
   Int_t   GetID() const { return (Int_t)fID; }
   Int_t   GetLabel() const { return fLabel; } 
+  void    GetTOFLabel(Int_t *p) const;
+
+
   Char_t  GetType() const { return fType;}
   Bool_t  IsPrimaryCandidate() const;
   Bool_t  GetUsedForVtxFit() const { return TestBit(kUsedForVtxFit); }
@@ -284,6 +295,8 @@ class AliAODTrack : public AliVTrack {
   virtual AliTPCdEdxInfo* GetTPCdEdxInfo() const {return fDetPid?fDetPid->GetTPCdEdxInfo():0;}
   Double_t  GetTPCmomentum()     const { return fDetPid?fDetPid->GetTPCmomentum():0.;  }
   Double_t  GetTOFsignal()       const { return fDetPid?fDetPid->GetTOFsignal():0.;    }
+  Double_t  GetTOFsignalTunedOnData() const { return fTOFsignalTuned;}
+  void      SetTOFsignalTunedOnData(Double_t signal) {fTOFsignalTuned = signal;}
   Double_t  GetHMPIDsignal()     const; 
   Double_t  GetHMPIDoccupancy()  const;
 
@@ -321,7 +334,7 @@ class AliAODTrack : public AliVTrack {
 
   void SetID(Short_t id) { fID = id; }
   void SetLabel(Int_t label) { fLabel = label; }
-
+  void SetTOFLabel(const Int_t* p);
   template <typename T> void SetPosition(const T *x, Bool_t isDCA = kFALSE);
   void SetDCA(Double_t d, Double_t z);
   void SetUsedForVtxFit(Bool_t used = kTRUE) { used ? SetBit(kUsedForVtxFit) : ResetBit(kUsedForVtxFit); }
@@ -406,7 +419,7 @@ class AliAODTrack : public AliVTrack {
 
   ULong_t       fFlags;             // reconstruction status flags 
   Int_t         fLabel;             // track label, points back to MC track
-  
+  Int_t         fTOFLabel[3];       // TOF label   
   UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer
                                     // (ITS: bit 1-8, muon trigger: bit 9-16, muon tracker: bit 17-26, muon match trigger: bit 31-32) 
   UInt_t        fMUONtrigHitsMapTrg; // Muon trigger hits map from trigger
@@ -437,10 +450,11 @@ class AliAODTrack : public AliVTrack {
   Double_t      fTrackEtaOnEMCal;   // eta of track after being propagated to 430cm
 
   Double_t      fTPCsignalTuned;    //! TPC signal tuned on data when using MC
+  Double_t      fTOFsignalTuned;    //! TOF signal tuned on data when using MC
 
   const AliAODEvent* fAODEvent;     //! 
 
-  ClassDef(AliAODTrack, 19);
+  ClassDef(AliAODTrack, 20);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

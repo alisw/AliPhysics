@@ -91,6 +91,7 @@ public:
   virtual UShort_t  GetTPCsignalN()      const {return 0 ;}
   virtual Double_t  GetTPCmomentum()     const {return 0.;}
   virtual Double_t  GetTOFsignal()       const {return 0.;}
+  virtual Double_t  GetTOFsignalTunedOnData() const {return 0.;}
   virtual Double_t  GetHMPIDsignal()     const {return 0.;}
   virtual Double_t  GetTRDsignal()       const {return 0.;}
 

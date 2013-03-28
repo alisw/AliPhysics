@@ -41,6 +41,7 @@ AliAODTrack::AliAODTrack() :
   fChi2MatchTrigger(0.),
   fFlags(0),
   fLabel(-999),
+  fTOFLabel(),
   fITSMuonClusterMap(0),
   fMUONtrigHitsMapTrg(0),
   fMUONtrigHitsMapTrk(0),
@@ -61,6 +62,7 @@ AliAODTrack::AliAODTrack() :
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
   fTPCsignalTuned(0),
+  fTOFsignalTuned(99999),
   fAODEvent(NULL)
 {
   // default constructor
@@ -70,6 +72,7 @@ AliAODTrack::AliAODTrack() :
   SetXYAtDCA(-999., -999.);
   SetPxPyPzAtDCA(-999., -999., -999.);
   SetPID((Float_t*)NULL);
+  for (Int_t i = 0; i < 3; i++) {fTOFLabel[i] = -1;}
 }
 
 //______________________________________________________________________________
@@ -95,6 +98,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fChi2MatchTrigger(0.),
   fFlags(0),
   fLabel(label),
+  fTOFLabel(),
   fITSMuonClusterMap(0),
   fMUONtrigHitsMapTrg(0),
   fMUONtrigHitsMapTrk(0),
@@ -115,6 +119,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
   fTPCsignalTuned(0),
+  fTOFsignalTuned(99999),
   fAODEvent(NULL)
 {
   // constructor
@@ -128,6 +133,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
   SetITSClusterMap(itsClusMap);
+  for (Int_t i=0;i<3;i++) {fTOFLabel[i]=-1;}
 }
 
 //______________________________________________________________________________
@@ -153,6 +159,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fChi2MatchTrigger(0.),
   fFlags(0),
   fLabel(label),
+  fTOFLabel(),
   fITSMuonClusterMap(0),
   fMUONtrigHitsMapTrg(0),
   fMUONtrigHitsMapTrk(0),
@@ -173,6 +180,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
   fTPCsignalTuned(0),
+  fTOFsignalTuned(99999),
   fAODEvent(NULL)
 {
   // constructor
@@ -186,6 +194,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
   SetITSClusterMap(itsClusMap);
+  for (Int_t i=0;i<3;i++) {fTOFLabel[i]=-1;}
 }
 
 //______________________________________________________________________________
@@ -206,6 +215,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fChi2MatchTrigger(trk.fChi2MatchTrigger),
   fFlags(trk.fFlags),
   fLabel(trk.fLabel),
+  fTOFLabel(),
   fITSMuonClusterMap(trk.fITSMuonClusterMap),
   fMUONtrigHitsMapTrg(trk.fMUONtrigHitsMapTrg),
   fMUONtrigHitsMapTrk(trk.fMUONtrigHitsMapTrk),
@@ -226,6 +236,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fTrackPhiOnEMCal(trk.fTrackPhiOnEMCal),
   fTrackEtaOnEMCal(trk.fTrackEtaOnEMCal),
   fTPCsignalTuned(trk.fTPCsignalTuned),
+  fTOFsignalTuned(trk.fTOFsignalTuned),
   fAODEvent(trk.fAODEvent)
 {
   // Copy constructor
@@ -240,6 +251,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   if(trk.fDetPid) fDetPid=new AliAODPid(*trk.fDetPid);
   SetPID(trk.fPID);
   if (trk.fDetectorPID) fDetectorPID = new AliDetectorPID(*trk.fDetectorPID);
+  for (Int_t i = 0; i < 3; i++) {fTOFLabel[i] = trk.fTOFLabel[i];}  
 }
 
 //______________________________________________________________________________
@@ -276,6 +288,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fTrackPhiOnEMCal   = trk.fTrackPhiOnEMCal;
     fTrackEtaOnEMCal   = trk.fTrackEtaOnEMCal;
     fTPCsignalTuned    = trk.fTPCsignalTuned;
+    fTOFsignalTuned    = trk.fTOFsignalTuned;
 
     delete fCovMatrix;
     if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<6>(*trk.fCovMatrix);
@@ -295,6 +308,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     delete fDetectorPID;
     fDetectorPID=0x0;
     if (trk.fDetectorPID) fDetectorPID = new AliDetectorPID(*trk.fDetectorPID);
+    for (Int_t i = 0; i < 3; i++) {fTOFLabel[i] = trk.fTOFLabel[i];}  
   }
 
   return *this;
@@ -400,6 +414,17 @@ Double_t AliAODTrack::Y(Double_t m) const
   } else { // pid unknown
     return -999.;
   }
+}
+
+void AliAODTrack::SetTOFLabel(const Int_t *p) {  
+  // Sets  (in TOF)
+  for (Int_t i = 0; i < 3; i++) fTOFLabel[i]=p[i];
+}
+
+//_______________________________________________________________________
+void AliAODTrack::GetTOFLabel(Int_t *p) const {
+  // Gets (in TOF)
+  for (Int_t i=0; i<3; i++) p[i]=fTOFLabel[i];
 }
 
 //______________________________________________________________________________

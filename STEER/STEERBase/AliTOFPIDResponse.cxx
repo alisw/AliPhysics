@@ -22,10 +22,13 @@
 
 #include "TMath.h"
 #include "AliLog.h"
+#include "TF1.h"
 
 #include "AliTOFPIDResponse.h"
 
 ClassImp(AliTOFPIDResponse)
+
+TF1 *AliTOFPIDResponse::fTOFtailResponse = NULL; // function to generate a TOF tail
 
 //_________________________________________________________________________
 AliTOFPIDResponse::AliTOFPIDResponse(): 
@@ -37,6 +40,16 @@ AliTOFPIDResponse::AliTOFPIDResponse():
   fPar[1] = 0.008;
   fPar[2] = 0.002;
   fPar[3] = 40.0;
+
+  if(!fTOFtailResponse){
+    fTOFtailResponse = new TF1("fTOFtail","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2] * 0.0111)*0.01818",-1000,1000);
+    fTOFtailResponse->SetParameter(0,1);
+    fTOFtailResponse->SetParameter(1,-25);
+    fTOFtailResponse->SetParameter(2,1);
+    fTOFtailResponse->SetParameter(3,1.1);
+    fTOFtailResponse->SetNpx(10000);
+  }
+    
 
   // Reset T0 info
   ResetT0info();
@@ -193,4 +206,12 @@ Int_t AliTOFPIDResponse::GetStartTimeMask(Float_t mom) const {
   Int_t ibin = GetMomBin(mom);
   return GetT0binMask(ibin);
 
+}
+//_________________________________________________________________________
+Double_t AliTOFPIDResponse::GetTailRandomValue() const // generate a random value to add a tail to TOF time (for MC analyses)
+{
+  if(fTOFtailResponse)
+    return fTOFtailResponse->GetRandom();
+  else
+    return 0.0;
 }

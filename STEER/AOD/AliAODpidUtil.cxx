@@ -103,6 +103,17 @@ Float_t AliAODpidUtil::GetTPCsignalTunedOnData(const AliVTrack *t) const {
     track->SetTPCsignalTunedOnData(dedx);
     return dedx;
 }
+//_________________________________________________________________________
+Float_t AliAODpidUtil::GetTOFsignalTunedOnData(const AliVTrack *t) const {
+    AliAODTrack *track = (AliAODTrack *) t;
+    Double_t tofSignal = track->GetTOFsignalTunedOnData();
+
+    if(tofSignal <  99999) return (Float_t)tofSignal; // it has been already set
+    AliAODPid *pidObj = track->GetDetPid();
+    tofSignal = pidObj->GetTOFsignal() + fTOFResponse.GetTailRandomValue();
+    track->SetTOFsignalTunedOnData(tofSignal);
+    return (Float_t)tofSignal;
+}
 
 //_________________________________________________________________________
 Float_t AliAODpidUtil::GetSignalDeltaTOFold(const AliVParticle *vtrack, AliPID::EParticleType type, Bool_t ratio/*=kFALSE*/) const
@@ -112,10 +123,11 @@ Float_t AliAODpidUtil::GetSignalDeltaTOFold(const AliVParticle *vtrack, AliPID::
   //
   
   AliAODTrack *track=(AliAODTrack*)vtrack;
-  
   AliAODPid *pidObj = track->GetDetPid();
   if (!pidObj) return -9999.;
-  Double_t tofTime=pidObj->GetTOFsignal();
+  Double_t tofTime = 99999;
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTOF) == kDetTOF) ) tofTime = (Double_t)this->GetTOFsignalTunedOnData((AliVTrack*)vtrack);
+  else tofTime=pidObj->GetTOFsignal();
   const Double_t expTime=fTOFResponse.GetExpectedSignal((AliVTrack*)vtrack,type);
   Double_t sigmaTOFPid[AliPID::kSPECIES];
   pidObj->GetTOFpidResolution(sigmaTOFPid);
@@ -151,7 +163,9 @@ Float_t AliAODpidUtil::GetNumberOfSigmasTOFold(const AliVParticle *vtrack, AliPI
   Double_t sigTOF=0.;
   AliAODPid *pidObj = track->GetDetPid();
   if (!pidObj) return -999.;
-  Double_t tofTime=pidObj->GetTOFsignal();
+  Double_t tofTime = 99999;
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTOF) == kDetTOF) ) tofTime = (Double_t)this->GetTOFsignalTunedOnData((AliVTrack*)vtrack);
+  else tofTime=pidObj->GetTOFsignal();
   Double_t expTime=fTOFResponse.GetExpectedSignal((AliVTrack*)vtrack,type);
   Double_t sigmaTOFPid[AliPID::kSPECIES];
   pidObj->GetTOFpidResolution(sigmaTOFPid);

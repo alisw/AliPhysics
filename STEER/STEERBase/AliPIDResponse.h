@@ -155,8 +155,11 @@ public:
   void SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option);
 
   virtual Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const {return t->GetTPCsignal();};
+  virtual Float_t GetTOFsignalTunedOnData(const AliVTrack *t) const {return t->GetTOFsignal();};
   Bool_t IsTunedOnData() const {return fTuneMConData;};
   void SetTunedOnData(Bool_t flag=kTRUE,Int_t recoPass=0){fTuneMConData = flag; if(recoPass>0) fRecoPassUser = recoPass;};
+  Int_t GetTunedOnDataMask() const {return fTuneMConDataMask;};
+  void SetTunedOnDataMask(Int_t detMask) {fTuneMConDataMask = detMask;}
 
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);
@@ -179,6 +182,10 @@ protected:
   
   EDetPidStatus GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
   EDetPidStatus GetTOFPIDStatus(const AliVTrack *track) const;
+
+  Bool_t fTuneMConData;                // switch to force the MC to be similar to data
+  Int_t fTuneMConDataMask;             // select for which detectors enable MC tuning on data
+
 
 private:
   Bool_t fIsMC;                        //  If we run on MC data
@@ -218,7 +225,6 @@ private:
 
   Float_t fCurrCentrality;             //! current centrality
   
-  Bool_t fTuneMConData;                // switch to force the MC to be similar to data (dE/dx)
   
   void ExecNewRun();
   
