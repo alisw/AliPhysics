@@ -102,3 +102,25 @@ void AliAnalysisEtReconstructedPhos::CreateHistograms()
   }
   AliAnalysisEtReconstructed::CreateHistograms();
 }
+
+Double_t AliAnalysisEtReconstructedPhos::GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr){//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+  Double_t factor = 1.0;
+  //Double_t E = fReCorrections->CorrectedEnergy(cluster.E());
+  if(nonLinCorr!=0){
+    if(nonLinCorr==1){//high bound on nonlinearity
+      factor *=1.05;
+    }
+    else{//nonLinCorr==-1
+      factor *=0.95;
+    }
+  }
+  if(effCorr!=0){
+    if(effCorr==1){//high bound
+      factor *=1.05;
+    }
+    else{//low bound
+      factor *=0.95;
+    }
+  }
+  return factor;
+}

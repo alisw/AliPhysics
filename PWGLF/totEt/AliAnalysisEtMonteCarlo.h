@@ -328,6 +328,8 @@ protected:
     TH2F *fHistMatchedTracksEvspTSignalPeripheral;
     TH3F *fHistMatchedTracksEvspTBkgdvsMult;
     TH3F *fHistMatchedTracksEvspTSignalvsMult;
+    TH3F *fHistMatchedTracksEvspTBkgdvsMultEffCorr;
+    TH3F *fHistMatchedTracksEvspTSignalvsMultEffCorr;
     TH1F *fHistChargedTracksCutPeripheral;
     TH1F *fHistChargedTracksAcceptedPeripheral;
     TH1F *fHistGammasCutPeripheral;
@@ -338,6 +340,7 @@ protected:
     TH1F *fHistHadronDepositsReco;
     TH2F *fHistHadronDepositsAllMult;
     TH2F *fHistHadronDepositsRecoMult;
+    TH3F *fHistMultChVsSignalVsMult;
 
 
 private:
