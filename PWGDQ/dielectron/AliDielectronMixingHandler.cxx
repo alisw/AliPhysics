@@ -140,15 +140,11 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
   //check if there are tracks available
   if (diele->GetTrackArray(0)->GetEntriesFast()==0 && diele->GetTrackArray(1)->GetEntriesFast()==0) return;
 
-  //find mixing bin
-  Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
-  AliDielectronVarManager::Fill(ev,values);
-
   TString dim;
-  Int_t bin=FindBin(values,&dim);
+  Int_t bin=FindBin(AliDielectronVarManager::GetData(),&dim);
 
   //add mixing bin to event data
-  values[AliDielectronVarManager::kMixingBin] = bin;
+  AliDielectronVarManager::SetValue(AliDielectronVarManager::kMixingBin,bin);
 
   if (bin<0){
     AliDebug(5,Form("Bin outside range: %s",dim.Data()));
@@ -170,7 +166,7 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
 
   event->SetProcessID(fPID);
   event->SetTracks(*diele->GetTrackArray(0), *diele->GetTrackArray(1), *diele->GetPairArray(1));
-  event->SetEventData(values);
+  event->SetEventData(AliDielectronVarManager::GetData());
 
   // check if pool depth is reached.
   if (pool.GetEntriesFast()<fDepth) return;
