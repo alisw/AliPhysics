@@ -1214,6 +1214,39 @@ TString  TStatToolkit::MakeFitString(const TString &input, const TVectorD &param
   return result;
 }
 
+TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, const char * cut,  Int_t mstyle, Int_t mcolor, Float_t msize, Float_t offset){
+  //
+  // Query a graph errors
+  // return TGraphErrors specified by expr and cut 
+  // Example  usage TStatToolkit::MakeGraphError(tree,"Y:X:ErrY","X>0", 25,2,0.4)
+  // tree   - tree with variable
+  // expr   - examp 
+  const Int_t entries =  tree->Draw(expr,cut,"goff");
+  if (entries<=0) {
+    TStatToolkit t;
+    t.Error("TStatToolkit::MakeGraphError",Form("Empty or Not valid expression (%s) or cut *%s)", expr,cut));
+    return 0;
+  }
+  if (  tree->GetV2()==0){
+    TStatToolkit t;
+    t.Error("TStatToolkit::MakeGraphError",Form("Not valid expression (%s) ", expr));
+    return 0;
+  }
+  TGraphErrors * graph=0;
+  if ( tree->GetV3()!=0){
+    graph = new TGraphErrors (entries, tree->GetV2(),tree->GetV1(),0,tree->GetV3());
+  }else{
+    graph = new TGraphErrors (entries, tree->GetV2(),tree->GetV1(),0,0);
+  }
+  graph->SetMarkerStyle(mstyle); 
+  graph->SetMarkerColor(mcolor);
+  graph->SetLineColor(mcolor);
+  if (msize>0) graph->SetMarkerSize(msize);
+  for(Int_t i=0;i<graph->GetN();i++) graph->GetX()[i]+=offset;
+  return graph;
+  
+}
+
 
 TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const char * cut, Int_t mstyle, Int_t mcolor, Float_t msize, Float_t offset){
   //

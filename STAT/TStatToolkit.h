@@ -22,6 +22,7 @@ class TGraph;
 class TGraph2D;
 class TCanvas;
 class TMultiGraph; 
+class TGraphErrors; 
 
 class TStatToolkit : public TObject
 {
@@ -49,6 +50,8 @@ class TStatToolkit : public TObject
   // Graph tools
   //
   static TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0);
+  static TGraphErrors * MakeGraphErrors(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0);
+
   //
   // Fitting function
   //
