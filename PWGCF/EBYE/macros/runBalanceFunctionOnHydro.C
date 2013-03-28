@@ -41,7 +41,7 @@ struct StructParticle {
 //========================================================//
 //Balance function analysis variables
 Bool_t gRunShuffling=kFALSE;
-Bool_t gRunMixing=kFALSE;
+Bool_t gRunMixing=kTRUE;
 Bool_t gRunMixingWithEventPlane=kFALSE;
 
 Double_t gEtaMin = -0.8;
@@ -111,7 +111,13 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
   TList *fListBF = new TList();
   fListBF->SetName("listBF");
   fListBF->SetOwner();
-  
+  fListBF->Add(bf->GetHistNp());
+  fListBF->Add(bf->GetHistNn());
+  fListBF->Add(bf->GetHistNpn());
+  fListBF->Add(bf->GetHistNnn());
+  fListBF->Add(bf->GetHistNpp());
+  fListBF->Add(bf->GetHistNnp());
+ 
   //Balance function list: shuffling
   TList *fListBFS = 0x0;
   if(gRunShuffling) {
@@ -146,9 +152,19 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
   if(gRunMixing){
     Int_t trackDepth = 50000;
     Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+        
+    // centrality bins
+    Double_t centralityBins[] = {0.,100.};
+    Double_t* centbins        = centralityBins;
+    Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
+    
+    // Zvtx bins
+    Double_t vertexBins[] = {-10., 10.}; 
+    Double_t* vtxbins     = vertexBins;
+    Int_t nVertexBins     = sizeof(vertexBins) / sizeof(Double_t) - 1;
     
     AliEventPoolManager *fPoolMgr = 0x0;
-    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth);
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
   }
   //========================================================//
 
@@ -179,7 +195,7 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
   //========================================================//
  
   //========================================================//
-  //Histograms
+  //QA histograms
   //Event stats.
   TString gCutName[5] = {"Total","Offline trigger",
                          "Vertex","Analyzed","sel. Centrality"};
@@ -193,6 +209,18 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
   //Number of accepted particles
   TH1F *fHistNumberOfAcceptedTracks = new TH1F("fHistNumberOfAcceptedTracks",";N_{acc.};Entries",4001,-0.5,4000.5);
   fList->Add(fHistNumberOfAcceptedTracks);
+
+  //Particle level: eta-phi
+  TH2F *fHistEtaPhiPositive  = new TH2F("fHistEtaPhiPositive",";#eta;#varphi (rad)",80,gEtaMin,gEtaMax,72,0.0,2.*TMath::Pi());
+  fList->Add(fHistEtaPhiPositive);
+  TH2F *fHistEtaPhiNegative  = new TH2F("fHistEtaPhiNegative",";#eta;#varphi (rad)",80,gEtaMin,gEtaMax,72,0.0,2.*TMath::Pi());
+  fList->Add(fHistEtaPhiNegative);
+
+  //Particle level: pt
+  TH1F *fHistPtPositive  = new TH1F("fHistPtPositive",";p_{T} (GeV/c)",100,0.01,30.01);
+  fList->Add(fHistPtPositive);
+  TH1F *fHistPtNegative  = new TH1F("fHistPtNegative",";p_{T} (GeV/c)",100,0.01,30.01);
+  fList->Add(fHistPtNegative);
   //========================================================//
 
   //========================================================//
@@ -204,8 +232,8 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
   Int_t iParticleCounter = 0;
   Int_t nTotalParticles = 0;
   
-  //for(Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-  for(Int_t iEvent = 0; iEvent < 1; iEvent++) {
+  for(Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+    //for(Int_t iEvent = 0; iEvent < 1; iEvent++) {
     eventChain->GetEntry(iEvent);
 
     //========================================================//
@@ -228,6 +256,7 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
 
     Int_t gNumberOfAcceptedParticles = 0;
     Double_t gReactionPlane = 0.;
+    Double_t gCharge = 0.;
     //========================================================//
     //loop over particles
     for(Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
@@ -235,7 +264,9 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
       
       //========================================================//
       //consider only primordial particles
-      if(tStructParticles.fathereid != -1) continue;
+      if(!IsPhysicalPrimary(tStructParticles.pid,
+			    tStructParticles.fathereid,
+			    gCharge)) continue;
 
       //========================================================//
       //Calculate kinematic variables
@@ -247,9 +278,20 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
       Double_t gEta = -100.;
       if(gP != tStructParticles.pz)
 	gEta = 0.5*TMath::Log((gP + tStructParticles.pz)/(gP - tStructParticles.pz));
-      Double_t gPhi = 0.;
-      Double_t gCharge = 0.;
-      
+      Double_t gPhi = TMath::Pi()+TMath::ATan2(-tStructParticles.py,-tStructParticles.px);
+
+      //========================================================//
+      //Fill QA
+      if(gCharge > 0) {
+	fHistEtaPhiPositive->Fill(gEta,gPhi);
+	fHistPtPositive->Fill(gPt);
+      }
+      else if(gCharge < 0) {
+	fHistEtaPhiNegative->Fill(gEta,gPhi);
+	fHistPtNegative->Fill(gPt);
+      }
+      //========================================================//
+
       //========================================================//
       //Apply cuts
       if((gEta > gEtaMax)||(gEta < gEtaMin)) continue;
@@ -264,42 +306,38 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
     
     //========================================================//
     // Event mixing (borrowed code from the task) 
-    /*if (gRunMixing) {
-      AliEventPool* pool = fPoolMgr->GetEventPool(gCentrality, eventMain->GetPrimaryVertex()->GetZ(),gReactionPlane);
+    if (gRunMixing) {
+      Int_t fMixingTracks = 50000;
+      AliEventPool* pool = fPoolMgr->GetEventPool(1.,0.,0.);
       
       if (!pool) {
-      AliFatal(Form("No pool found for centrality = %f, zVtx = %f, psi = %f", gCentrality, eventMain->GetPrimaryVertex()->GetZ(),gReactionPlane));
+	AliFatal(Form("No pool found"));
       }
       else {
-      //pool->SetDebug(1);
-      if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5){ 
+	//pool->SetDebug(1);
+	if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5){ 
+	  
+	  Int_t nMix = pool->GetCurrentNEvents();
+	  //cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
+	  	  
+	  // Fill mixed-event histos here  
+	  for (Int_t jMix=0; jMix<nMix; jMix++) {
+	    TObjArray* tracksMixed = pool->GetEvent(jMix);
+	    bfm->CalculateBalance(gReactionPlane,tracksAccepted,tracksMixed,1.,0.);
+	  }
+	}
       
-      Int_t nMix = pool->GetCurrentNEvents();
-      //cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
-      
-      //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
-      //((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
-      //if (pool->IsReady())
-      //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
-      
-      // Fill mixed-event histos here  
-      for (Int_t jMix=0; jMix<nMix; jMix++) {
-      TObjArray* tracksMixed = pool->GetEvent(jMix);
-      fMixedBalance->CalculateBalance(gReactionPlane,tracksMain,tracksMixed,bSign,lMultiplicityVar,eventMain->GetPrimaryVertex()->GetZ());
-      }
-      }
-      
-      // Update the Event pool
-      pool->UpdatePool(tracksMain);
-      //pool->PrintInfo();
-      
+	// Update the Event pool
+	pool->UpdatePool(tracksAccepted);
+	//pool->PrintInfo();
+	
       }//pool NULL check  
-      }*///run mixing
+    }//run mixing
       //========================================================//
 
     //========================================================//
     // calculate balance function
-    //fBalance->CalculateBalance(gReactionPlane,tracksMain,NULL,bSign,lMultiplicityVar,eventMain->GetPrimaryVertex()->GetZ());
+    bf->CalculateBalance(gReactionPlane,tracksAccepted,NULL,1.,0.);
 
     fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedParticles);
     nTotalParticles += nParticles;
@@ -308,13 +346,44 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
   //========================================================//
   //Output file
   TFile *f = TFile::Open("AnalysisResults.root","recreate");
-  fList->Write();
-  fListBF->Write();
-  if(gRunMixing) fListBFM->Write();
+  fList->Write("listQA",TObject::kSingleKey);
+  fListBF->Write("listBF",TObject::kSingleKey);
+  if(gRunMixing) fListBFM->Write("listBFMixed",TObject::kSingleKey);
   f->Close();  
   //========================================================//
 
   // Print real and CPU time used for analysis:  
   timer.Stop();
   timer.Print();
+}
+
+//______________________________________________________________//
+Bool_t IsPhysicalPrimary(Int_t gPDGCode,
+			 Int_t gFathereid,
+			 Double_t &gCharge) {
+  //Check whether the primordial particle belongs to the list 
+  //of known particles
+  Bool_t kStatus = kFALSE;
+  if(gFathereid != -1) 
+    return kStatus;
+
+  //List of stable particles
+  const Int_t kNstable = 3;
+  Int_t pdgStable[kNstable] = {
+    211,         // Pion
+    321,         // Kaon
+    2212,        // Proton 
+  };
+  
+  if(gPDGCode < 0) gCharge = -1;
+  else if(gPDGCode > 0) gCharge = 1;
+
+  for(Int_t iParticle = 0; iParticle < kNstable; iParticle++) {
+    if((TMath::Abs(gPDGCode) == pdgStable[iParticle])) {
+      kStatus = kTRUE;
+      return kStatus;
+    }
+  }
+
+  return kFALSE;
 }
