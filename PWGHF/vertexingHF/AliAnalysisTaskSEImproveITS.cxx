@@ -64,6 +64,24 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fPt1ResPUpg  (0),
    fPt1ResKUpg  (0),
    fPt1ResPiUpg (0),
+   fD0ZResPCurSA  (0),
+   fD0ZResKCurSA  (0),
+   fD0ZResPiCurSA (0),
+   fD0RPResPCurSA (0),
+   fD0RPResKCurSA (0),
+   fD0RPResPiCurSA(0),
+   fPt1ResPCurSA  (0),
+   fPt1ResKCurSA  (0),
+   fPt1ResPiCurSA (0),
+   fD0ZResPUpgSA  (0),
+   fD0ZResKUpgSA  (0),
+   fD0ZResPiUpgSA (0),
+   fD0RPResPUpgSA (0),
+   fD0RPResKUpgSA (0),
+   fD0RPResPiUpgSA(0),
+   fPt1ResPUpgSA  (0),
+   fPt1ResKUpgSA  (0),
+   fPt1ResPiUpgSA (0),
    fRunInVertexing(kFALSE),
    fImproveTracks(kTRUE),
    fDebugOutput (0),
@@ -100,6 +118,24 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fPt1ResPUpg  (0),
    fPt1ResKUpg  (0),
    fPt1ResPiUpg (0),
+   fD0ZResPCurSA  (0),
+   fD0ZResKCurSA  (0),
+   fD0ZResPiCurSA (0),
+   fD0RPResPCurSA (0),
+   fD0RPResKCurSA (0),
+   fD0RPResPiCurSA(0),
+   fPt1ResPCurSA  (0),
+   fPt1ResKCurSA  (0),
+   fPt1ResPiCurSA (0),
+   fD0ZResPUpgSA  (0),
+   fD0ZResKUpgSA  (0),
+   fD0ZResPiUpgSA (0),
+   fD0RPResPUpgSA (0),
+   fD0RPResKUpgSA (0),
+   fD0RPResPiUpgSA(0),
+   fPt1ResPUpgSA  (0),
+   fPt1ResKUpgSA  (0),
+   fPt1ResPiUpgSA (0),
    fRunInVertexing(isRunInVertexing),
    fImproveTracks(kTRUE),
    fDebugOutput (0),
@@ -134,6 +170,24 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
   fPt1ResPCur  ->SetName("Pt1ResPCur"  );
   fPt1ResKCur  ->SetName("Pt1ResKCur"  );
   fPt1ResPiCur ->SetName("Pt1ResPiCur" );
+  fD0RPResPCurSA =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPSA" )));
+  fD0RPResKCurSA =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResKSA" )));
+  fD0RPResPiCurSA=new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPiSA")));
+  fD0ZResPCurSA  =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0ZResPSA"  )));
+  fD0ZResKCurSA  =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0ZResKSA"  )));
+  fD0ZResPiCurSA =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0ZResPiSA" )));
+  fPt1ResPCurSA  =new TGraph(*static_cast<TGraph*>(resfileCur->Get("Pt1ResPSA"  )));
+  fPt1ResKCurSA  =new TGraph(*static_cast<TGraph*>(resfileCur->Get("Pt1ResKSA"  )));
+  fPt1ResPiCurSA =new TGraph(*static_cast<TGraph*>(resfileCur->Get("Pt1ResPiSA" )));
+  fD0RPResPCurSA ->SetName("D0RPResPCurSA" );
+  fD0RPResKCurSA ->SetName("D0RPResKCurSA" );
+  fD0RPResPiCurSA->SetName("D0RPResPiCurSA");
+  fD0ZResPCurSA  ->SetName("D0ZResPCurSA"  ); 
+  fD0ZResKCurSA  ->SetName("D0ZResKCurSA"  );
+  fD0ZResPiCurSA ->SetName("D0ZResPiCurSA" );
+  fPt1ResPCurSA  ->SetName("Pt1ResPCurSA"  );
+  fPt1ResKCurSA  ->SetName("Pt1ResKCurSA"  );
+  fPt1ResPiCurSA ->SetName("Pt1ResPiCurSA" );
   delete resfileCur;
   TFile *resfileUpg=TFile::Open(resfileUpgURI );
   fD0RPResPUpg =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResP" )));
@@ -154,6 +208,24 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
   fPt1ResPUpg  ->SetName("Pt1ResPUpg"  );
   fPt1ResKUpg  ->SetName("Pt1ResKUpg"  );
   fPt1ResPiUpg ->SetName("Pt1ResPiUpg" );
+  fD0RPResPUpgSA =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResPSA" )));
+  fD0RPResKUpgSA =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResKSA" )));
+  fD0RPResPiUpgSA=new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResPiSA")));
+  fD0ZResPUpgSA  =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0ZResPSA"  )));
+  fD0ZResKUpgSA  =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0ZResKSA"  )));
+  fD0ZResPiUpgSA =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0ZResPiSA" )));
+  fPt1ResPUpgSA  =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("Pt1ResPSA"  )));
+  fPt1ResKUpgSA  =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("Pt1ResKSA"  )));
+  fPt1ResPiUpgSA =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("Pt1ResPiSA" )));
+  fD0RPResPUpgSA ->SetName("D0RPResPUpgSA" );
+  fD0RPResKUpgSA ->SetName("D0RPResKUpgSA" );
+  fD0RPResPiUpgSA->SetName("D0RPResPiUpgSA");
+  fD0ZResPUpgSA  ->SetName("D0ZResPUpgSA"  );
+  fD0ZResKUpgSA  ->SetName("D0ZResKUpgSA"  );
+  fD0ZResPiUpgSA ->SetName("D0ZResPiUpgSA" );
+  fPt1ResPUpgSA  ->SetName("Pt1ResPUpgSA"  );
+  fPt1ResKUpgSA  ->SetName("Pt1ResKUpgSA"  );
+  fPt1ResPiUpgSA ->SetName("Pt1ResPiUpgSA" );
   delete resfileUpg;
 
   DefineOutput(1,TNtuple::Class());
@@ -462,28 +534,28 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
   Double_t spt1o =0.;
   switch (mc->GetPdgCode()) {
   case 2212: case -2212:
-    sd0rpo=EvalGraph(fD0RPResPCur,ptmc);
-    sd0zo =EvalGraph(fD0ZResPCur ,ptmc);
-    spt1o =EvalGraph(fPt1ResPCur ,ptmc);
-    sd0rpn=EvalGraph(fD0RPResPUpg,ptmc);
-    sd0zn =EvalGraph(fD0ZResPUpg ,ptmc);
-    spt1n =EvalGraph(fPt1ResPUpg ,ptmc);
+    sd0rpo=EvalGraph(ptmc,fD0RPResPCur,fD0RPResPCurSA);
+    sd0zo =EvalGraph(ptmc,fD0ZResPCur,fD0ZResPCurSA);
+    spt1o =EvalGraph(ptmc,fPt1ResPCur,fPt1ResPCurSA);
+    sd0rpn=EvalGraph(ptmc,fD0RPResPUpg,fD0RPResPUpgSA);
+    sd0zn =EvalGraph(ptmc,fD0ZResPUpg,fD0ZResPUpgSA);
+    spt1n =EvalGraph(ptmc,fPt1ResPUpg,fPt1ResPUpgSA);
     break;
   case 321: case -321:
-    sd0rpo=EvalGraph(fD0RPResKCur,ptmc); 
-    sd0zo =EvalGraph(fD0ZResKCur ,ptmc);
-    spt1o =EvalGraph(fPt1ResKCur ,ptmc);
-    sd0rpn=EvalGraph(fD0RPResKUpg,ptmc);
-    sd0zn =EvalGraph(fD0ZResKUpg ,ptmc);
-    spt1n =EvalGraph(fPt1ResKUpg ,ptmc);
+    sd0rpo=EvalGraph(ptmc,fD0RPResKCur,fD0RPResKCurSA);
+    sd0zo =EvalGraph(ptmc,fD0ZResKCur,fD0ZResKCurSA);
+    spt1o =EvalGraph(ptmc,fPt1ResKCur,fPt1ResKCurSA);
+    sd0rpn=EvalGraph(ptmc,fD0RPResKUpg,fD0RPResKUpgSA);
+    sd0zn =EvalGraph(ptmc,fD0ZResKUpg,fD0ZResKUpgSA);
+    spt1n =EvalGraph(ptmc,fPt1ResKUpg,fPt1ResKUpgSA);
     break;
   case 211: case -211:
-    sd0rpo=EvalGraph(fD0RPResPiCur,ptmc); 
-    sd0zo =EvalGraph(fD0ZResPiCur ,ptmc);
-    spt1o =EvalGraph(fPt1ResPiCur ,ptmc);
-    sd0rpn=EvalGraph(fD0RPResPiUpg,ptmc);
-    sd0zn =EvalGraph(fD0ZResPiUpg ,ptmc);
-    spt1n =EvalGraph(fPt1ResPiUpg ,ptmc);
+    sd0rpo=EvalGraph(ptmc,fD0RPResPiCur,fD0RPResPiCurSA);
+    sd0zo =EvalGraph(ptmc,fD0ZResPiCur,fD0ZResPiCurSA);
+    spt1o =EvalGraph(ptmc,fPt1ResPiCur,fPt1ResPiCurSA);
+    sd0rpn=EvalGraph(ptmc,fD0RPResPiUpg,fD0RPResPiUpgSA);
+    sd0zn =EvalGraph(ptmc,fD0ZResPiUpg,fD0ZResPiUpgSA);
+    spt1n =EvalGraph(ptmc,fPt1ResPiUpg,fPt1ResPiUpgSA);
     break;
   default:
     return;
@@ -567,7 +639,7 @@ AliESDVertex* AliAnalysisTaskSEImproveITS::RecalculateVertex(const AliVVertex *o
   return vertex;
 }
 
-Double_t AliAnalysisTaskSEImproveITS::EvalGraph(const TGraph *graph,Double_t x) const {
+Double_t AliAnalysisTaskSEImproveITS::EvalGraph(Double_t x,const TGraph *graph,const TGraph *graphSA) const {
   //
   // Evaluates a TGraph without linear extrapolation. Instead the last
   // valid point of the graph is used when out of range.
@@ -578,7 +650,12 @@ Double_t AliAnalysisTaskSEImproveITS::EvalGraph(const TGraph *graph,Double_t x) 
   Int_t    n   =graph->GetN();
   Double_t xmin=graph->GetX()[0  ];
   Double_t xmax=graph->GetX()[n-1];
-  if (x<xmin) return graph->Eval(xmin);
+  if (x<xmin) {
+    if(!graphSA) return graph->Eval(xmin);
+    Double_t xminSA=graphSA->GetX()[0];
+    if(x<xminSA) return graphSA->Eval(xminSA);
+    return graphSA->Eval(x);
+  }
   if (x>xmax) return graph->Eval(xmax);
   return graph->Eval(x);
 }
