@@ -2119,9 +2119,10 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   pngName += ".NegativeNegative.png";
   cNN->SaveAs(pngName.Data());
 
-  TFile *fProjection = TFile::Open("ProjectionCorrelationFunction.root",
-					  "recreate");
-  
+  TString outFileName = filename;
+  if(kProjectInEta) outFileName.ReplaceAll(".root","_DeltaEtaProjection.root");
+  else              outFileName.ReplaceAll(".root","_DeltaPhiProjection.root");
+  TFile *fProjection = TFile::Open(outFileName.Data(),"recreate");    
   gHistNPprojection->Write();
   gHistPNprojection->Write();
   gHistNNprojection->Write();

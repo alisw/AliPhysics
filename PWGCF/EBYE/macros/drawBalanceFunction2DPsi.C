@@ -890,3 +890,270 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
     latexInfo1->DrawLatex(0.64,0.70,ptaLatex.Data());
   }
 }
+
+//____________________________________________________________//
+void drawProjections(const char* lhcPeriod = "LHC10h",
+		     const char* gCentralityEstimator = "V0M",
+		     Int_t gBit = 128,
+		     const char* gEventPlaneEstimator = "VZERO",
+		     Bool_t kProjectInEta = kFALSE,
+		     Int_t binMin = 1,
+		     Int_t binMax = 80,
+		     Int_t gCentrality = 1,
+		     Double_t psiMin = -0.5, 
+		     Double_t psiMax = 3.5,
+		     Double_t vertexZMin = -10., 
+		     Double_t vertexZMax = 10.,
+		     Double_t ptTriggerMin = -1.,
+		     Double_t ptTriggerMax = -1.,
+		     Double_t ptAssociatedMin = -1.,
+		     Double_t ptAssociatedMax = -1.,
+		     Bool_t kUseZYAM = kFALSE,
+		     Bool_t k2pMethod = kTRUE,
+		     TString eventClass = "Centrality",
+		     Bool_t bRootMoments = kFALSE) {
+  //Macro that draws the charge dependent correlation functions PROJECTIONS 
+  //for each centrality bin for the different pT of trigger and 
+  //associated particles
+  TGaxis::SetMaxDigits(3);
+
+  //first we need some libraries
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libEventMixing.so");
+  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libPWGTools.so");
+  gSystem->Load("libPWGCFebye.so");
+
+  //Get the input file
+  TString filename = "balanceFunction2D."; 
+  if(eventClass == "Centrality"){
+    filename += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+    filename += ".PsiAll.PttFrom";
+  }
+  else if(eventClass == "Multiplicity"){
+    filename += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+    filename += ".PsiAll.PttFrom";
+  }
+  else{ // "EventPlane" (default)
+    filename += "Centrality";
+    filename += gCentrality; filename += ".Psi";
+    if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
+    else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
+    else if((psiMin == 1.5)&&(psiMax == 2.5)) filename += "OutOfPlane.Ptt";
+    else if((psiMin == 2.5)&&(psiMax == 3.5)) filename += "Rest.PttFrom";
+    else filename += "All.PttFrom";
+  }  
+  filename += Form("%.1f",ptTriggerMin); filename += "To"; 
+  filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
+  filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
+  filename += Form("%.1f",ptAssociatedMax); 
+  if(k2pMethod) filename += "_2pMethod";
+  filename += ".root";
+
+  //Open the file
+  TFile *f = TFile::Open(filename.Data());
+  if((!f)||(!f->IsOpen())) {
+    Printf("The file %s is not found. Aborting...",filename);
+    return listBF;
+  }
+  //f->ls();
+  
+  //Latex
+  TString centralityLatex = "Centrality: ";
+  centralityLatex += centralityArray[gCentrality-1]; 
+  centralityLatex += "%";
+
+  TString psiLatex;
+  if((psiMin == -0.5)&&(psiMax == 0.5))
+    psiLatex = " -7.5^{o} < #varphi^{t} - #Psi_{2} < 7.5^{o}"; 
+  else if((psiMin == 0.5)&&(psiMax == 1.5))
+    psiLatex = " 37.5^{o} < #varphi^{t} - #Psi_{2} < 52.5^{o}"; 
+  else if((psiMin == 1.5)&&(psiMax == 2.5))
+    psiLatex = " 82.5^{o} < #varphi^{t} - #Psi_{2} < 97.5^{o}"; 
+  else 
+    psiLatex = " 0^{o} < #varphi^{t} - #Psi_{2} < 180^{o}"; 
+ 
+  TString pttLatex = Form("%.1f",ptTriggerMin);
+  pttLatex += " < p_{T,trig} < "; pttLatex += Form("%.1f",ptTriggerMax);
+  pttLatex += " GeV/c";
+
+  TString ptaLatex = Form("%.1f",ptAssociatedMin);
+  ptaLatex += " < p_{T,assoc} < "; ptaLatex += Form("%.1f",ptAssociatedMax);
+  ptaLatex += " GeV/c";
+
+  TLatex *latexInfo1 = new TLatex();
+  latexInfo1->SetNDC();
+  latexInfo1->SetTextSize(0.045);
+  latexInfo1->SetTextColor(1);
+
+  TString pngName;
+
+  //============================================================//
+  //Get subtracted and mixed balance function
+
+  TH2D *gHistBalanceFunctionSubtracted2D = (TH2D*)f->Get("gHistBalanceFunctionSubtracted");
+  TH2D *gHistBalanceFunctionMixed2D      = (TH2D*)f->Get("gHistBalanceFunctionMixed");
+
+  TH1D *gHistBalanceFunctionSubtracted = NULL;
+  TH1D *gHistBalanceFunctionMixed      = NULL;
+
+  if(kProjectInEta){
+    gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionX());
+    gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionX());
+    gHistBalanceFunctionSubtracted->SetTitle("B(#Delta#eta)");
+    gHistBalanceFunctionMixed->SetTitle("B_{mix}(#Delta#eta)");  
+  }
+  else{
+    gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionY());
+    gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionY());
+    gHistBalanceFunctionSubtracted->SetTitle("B(#Delta#varphi)");
+    gHistBalanceFunctionMixed->SetTitle("B_{mix}(#Delta#varphi)");  
+  }
+
+  gHistBalanceFunctionSubtracted->SetMarkerStyle(20);
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionSubtracted->SetName("gHistBalanceFunctionSubtracted");
+
+  gHistBalanceFunctionMixed->SetMarkerStyle(25);
+  gHistBalanceFunctionMixed->SetName("gHistBalanceFunctionMixed");
+
+  TCanvas *c1 = new TCanvas("c1","",0,0,600,500);
+  c1->SetFillColor(10); 
+  c1->SetHighLightColor(10);
+  c1->SetLeftMargin(0.15);
+  gHistBalanceFunctionSubtracted->DrawCopy("E");
+  gHistBalanceFunctionMixed->DrawCopy("E, SAME");
+  
+  legend = new TLegend(0.18,0.62,0.45,0.82,"","brNDC");
+  legend->SetTextSize(0.045); 
+  legend->SetTextFont(42); 
+  legend->SetBorderSize(0);
+  legend->SetFillStyle(0); 
+  legend->SetFillColor(10);
+  legend->SetMargin(0.25); 
+  legend->SetShadowColor(10);
+  legend->AddEntry(gHistBalanceFunctionSubtracted,"Data","lp");
+  legend->AddEntry(gHistBalanceFunctionMixed,"Mixed data","lp");
+  legend->Draw();
+  
+  pngName = "BalanceFunction."; 
+  if(eventClass == "Centrality"){
+    pngName += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+    if(kProjectInEta) pngName += ".InDeltaEta.PsiAll.PttFrom";
+    else pngName += ".InDeltaPhi.PsiAll.PttFrom";
+  }
+  else if(eventClass == "Multiplicity"){
+    pngName += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+    if(kProjectInEta) pngName += ".InDeltaEta.PsiAll.PttFrom";
+    else pngName += ".InDeltaPhi.PsiAll.PttFrom";  
+  }
+  else{ // "EventPlane" (default)
+    pngName += "Centrality";
+    pngName += gCentrality; 
+    if(kProjectInEta) pngName += ".InDeltaEta.Psi";
+    else pngName += ".InDeltaPhi.Psi";
+    if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
+    else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
+    else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
+    else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.PttFrom";
+    else pngName += "All.PttFrom";
+  }  
+  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
+  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
+  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
+  pngName += Form("%.1f",ptAssociatedMax); 
+  if(k2pMethod) pngName += "_2pMethod";
+  pngName += ".png";
+
+  c1->SaveAs(pngName.Data());
+    
+  TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
+
+  if(bRootMoments){
+    meanLatex = "#mu = "; 
+    meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMean());
+    meanLatex += " #pm "; 
+    meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMeanError());
+    
+    rmsLatex = "#sigma = "; 
+    rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMS());
+    rmsLatex += " #pm "; 
+    rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMSError());
+    
+    skewnessLatex = "S = "; 
+    skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(1));
+    skewnessLatex += " #pm "; 
+    skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(11));
+    
+    kurtosisLatex = "K = "; 
+    kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(1));
+    kurtosisLatex += " #pm "; 
+    kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(11));
+    Printf("Mean: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetMean(),gHistBalanceFunctionSubtracted->GetMeanError());
+    Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
+    Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
+    Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
+  }
+  // calculate the moments by hand
+  else{
+
+    Double_t meanAnalytical, meanAnalyticalError;
+    Double_t sigmaAnalytical, sigmaAnalyticalError;
+    Double_t skewnessAnalytical, skewnessAnalyticalError;
+    Double_t kurtosisAnalytical, kurtosisAnalyticalError;
+
+    Int_t gDeltaEtaPhi = 2;
+    if(kProjectInEta) gDeltaEtaPhi = 1;
+
+    AliBalancePsi *bHelper = new AliBalancePsi;
+    bHelper->GetMomentsAnalytical(gDeltaEtaPhi,gHistBalanceFunctionSubtracted,meanAnalytical,meanAnalyticalError,sigmaAnalytical,sigmaAnalyticalError,skewnessAnalytical,skewnessAnalyticalError,kurtosisAnalytical,kurtosisAnalyticalError);
+
+    meanLatex = "#mu = "; 
+    meanLatex += Form("%.3f",meanAnalytical);
+    meanLatex += " #pm "; 
+    meanLatex += Form("%.3f",meanAnalyticalError);
+    
+    rmsLatex = "#sigma = "; 
+    rmsLatex += Form("%.3f",sigmaAnalytical);
+    rmsLatex += " #pm "; 
+    rmsLatex += Form("%.3f",sigmaAnalyticalError);
+    
+    skewnessLatex = "S = "; 
+    skewnessLatex += Form("%.3f",skewnessAnalytical);
+    skewnessLatex += " #pm "; 
+    skewnessLatex += Form("%.3f",skewnessAnalyticalError);
+    
+    kurtosisLatex = "K = "; 
+    kurtosisLatex += Form("%.3f",kurtosisAnalytical);
+    kurtosisLatex += " #pm "; 
+    kurtosisLatex += Form("%.3f",kurtosisAnalyticalError);
+    Printf("Mean: %lf - Error: %lf",meanAnalytical, meanAnalyticalError);
+    Printf("Sigma: %lf - Error: %lf",sigmaAnalytical, sigmaAnalyticalError);
+    Printf("Skeweness: %lf - Error: %lf",skewnessAnalytical, skewnessAnalyticalError);
+    Printf("Kurtosis: %lf - Error: %lf",kurtosisAnalytical, kurtosisAnalyticalError);
+  }
+
+  TCanvas *c2 = new TCanvas("c2","",600,0,600,500);
+  c2->SetFillColor(10); 
+  c2->SetHighLightColor(10);
+  c2->SetLeftMargin(0.15);
+  gHistBalanceFunctionSubtracted->DrawCopy("E");
+  
+  TLatex *latex = new TLatex();
+  latex->SetNDC();
+  latex->SetTextSize(0.035);
+  latex->SetTextColor(1);
+  latex->DrawLatex(0.64,0.85,meanLatex.Data());
+  latex->DrawLatex(0.64,0.81,rmsLatex.Data());
+  latex->DrawLatex(0.64,0.77,skewnessLatex.Data());
+  latex->DrawLatex(0.64,0.73,kurtosisLatex.Data());
+
+  TString outFileName = filename;
+  if(kProjectInEta) outFileName.ReplaceAll(".root","_DeltaEtaProjection.root");
+  else              outFileName.ReplaceAll(".root","_DeltaPhiProjection.root");
+  TFile *fProjection = TFile::Open(outFileName.Data(),"recreate");  
+  gHistBalanceFunctionSubtracted->Write();
+  gHistBalanceFunctionMixed->Write();
+  fProjection->Close();
+}
