@@ -11,6 +11,9 @@
 #include <TGeoManager.h>
 #include <TString.h>
 #include <TInterpreter.h>
+#include "iostream"
+#include "fstream"
+using namespace std;
 #endif
 
 Bool_t DiffGeometry(const char* recipient, const char* cdbUri="local://$ALICE_ROOT/OCDB", const char* cfgFile="$ALICE_ROOT/macros/Config.C"){
@@ -109,8 +112,9 @@ Bool_t DiffGeometry(const char* recipient, const char* cdbUri="local://$ALICE_RO
 		mailBody.close();
 
 		Printf("Sending mail to \"%s\"",recipients.Data());
+		TString mailCommand("");
                 if(recipients.CountChar(',')==0){
-                        TString mailCommand = Form("mail -s \"%s\" %s < %s",
+                        mailCommand = Form("mail -s \"%s\" %s < %s",
                                         subject.Data(),
                                         recipients.Data(),
                                         bodyFileName.Data());
@@ -118,7 +122,7 @@ Bool_t DiffGeometry(const char* recipient, const char* cdbUri="local://$ALICE_RO
                         TString cc(recipients);
                         recipients.Remove(recipients.First(','));
                         cc.Replace(0,cc.First(',')+1,"");
-                        TString mailCommand = Form("mail -s \"%s\" -c %s %s < %s",
+                        mailCommand = Form("mail -s \"%s\" -c %s %s < %s",
                                         subject.Data(),
                                         cc.Data(),
                                         recipients.Data(),
@@ -126,8 +130,10 @@ Bool_t DiffGeometry(const char* recipient, const char* cdbUri="local://$ALICE_RO
                 }
 
                 Bool_t result = gSystem->Exec(mailCommand.Data());
+		return result;
         }else{
                 Printf("There are no changes between the geometry generated with current code and the one in the current OCDB.");
         }
+	return kTRUE;
 }
 
