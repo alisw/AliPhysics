@@ -1238,17 +1238,16 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           dcaXY = -999999;
           dcaZ  = -999999;
           }
-        //cout << "1 dcaZ:" << dcaZ << " _dcaZMin:" << _dcaZMin << " _dcaZMax:" << _dcaZMax << endl;
-        //cout << "1 dcaXY:" << dcaXY << " _dcaXYMin:" << _dcaXYMin << " _dcaXYMax:" << _dcaXYMax << endl;
 
         // skip track if DCA too large
-        if (dcaZ     >=  _dcaZMin && 
-            dcaZ     <   _dcaZMax && 
-            dcaXY    >=  _dcaXYMin && 
-            dcaXY    <   _dcaXYMax)
+        if (dcaZ     <  _dcaZMin && 
+            dcaZ     >  _dcaZMax && 
+            dcaXY    <  _dcaXYMin && 
+            dcaXY    >  _dcaXYMax)
           continue; //track does not have a valid DCA
         //cout << "keep track:" << endl;
      
+
         iPhi   = int( phi/_width_phi_1);
         ////cout << " AliAnalysisTaskDptDptCorrelations::analyze(Event * event) -1- iTrack:" << iTrack<< endl<< "pt:" << pt << " phi:" <<  phi << " eta:" << eta << endl;
         if (iPhi<0 || iPhi>=_nBins_phi_1 ) 
@@ -1338,18 +1337,16 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           dcaXY = -999999;
           dcaZ  = -999999;
           }
-        //cout << "2 dcaZ:" << dcaZ << " _dcaZMin:" << _dcaZMin << " _dcaZMax:" << _dcaZMax << endl;
-        //cout << "2 dcaXY:" << dcaXY << " _dcaXYMin:" << _dcaXYMin << " _dcaXYMax:" << _dcaXYMax << endl;
+
        // skip track if DCA too large
-        if (dcaZ     >=  _dcaZMin && 
-            dcaZ     <   _dcaZMax && 
-            dcaXY    >=  _dcaXYMin && 
-            dcaXY    <   _dcaXYMax)
+        if (dcaZ     <  _dcaZMin && 
+            dcaZ     >  _dcaZMax && 
+            dcaXY    <  _dcaXYMin && 
+            dcaXY    >  _dcaXYMax)
           continue; //track does not have a valid DCA
         
         iPhi   = int( phi/_width_phi_2);
-        //cout << " AliAnalysisTaskDptDptCorrelations::analyze(Event * event) -1- iTrack:" << iTrack  << endl
-        //<< "pt:" << pt << " phi:" <<  phi << " eta:" << eta << endl;
+        
         if (iPhi<0 || iPhi>=_nBins_phi_2 ) 
           {
           AliWarning("AliAnalysisTaskDptDptCorrelations::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
@@ -1376,21 +1373,16 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           AliWarning("AliAnalysisTaskDptDptCorrelations::analyze(AliceEvent * event) iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_2");
           continue;
           }
-        
-        //cout << " iEtaPhi:" << iEtaPhi << "  _nBins_etaPhi_1: "<< _nBins_etaPhi_1<< "  _nBins_etaPhi_2: "<< _nBins_etaPhi_2<< endl;
-        //if (_useEbyECorrections)  corr = (charge>0) ? _correction_2p[iEtaPhi] : _correction_2m[iEtaPhi];      else 	
-        //cout << "_correctionWeight_2:" << _correctionWeight_2 << endl;
+                
         if (_correctionWeight_2)
           corr = _correctionWeight_2[iZEtaPhiPt];
         else
           corr = 1;
-        //dpt = pt - (charge>0) ? _avgPt_vsEtaPhi_2p[iEtaPhi] : _avgPt_vsEtaPhi_2m[iEtaPhi];       
-
+        
         if (_singlesOnly)
           {
-          //_dedxVsP_2->Fill(p*q,dedx);
-          __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
-          __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
+	    __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
+	    __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
           }
         else
           {
