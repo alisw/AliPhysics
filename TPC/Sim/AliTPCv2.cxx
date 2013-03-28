@@ -1051,7 +1051,7 @@ void AliTPCv2::CreateGeometry()
   TGeoMedium *m10 =  gGeoManager->GetMedium("TPC_Alumina");
   TGeoMedium *m11 =  gGeoManager->GetMedium("TPC_Peek");;
   TGeoMedium *m13 = gGeoManager->GetMedium("TPC_Brass");
-  TGeoMedium *m14 = gGeoManager->GetMedium("TPC_Alimina1");
+  TGeoMedium *m14 = gGeoManager->GetMedium("TPC_Alumina1");
   // 
   // tpc rod is an assembly of 10 long parts and 2 short parts
   // connected with alu rings and plagged on both sides.
