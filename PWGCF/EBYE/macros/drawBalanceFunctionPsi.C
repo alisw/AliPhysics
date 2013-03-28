@@ -212,7 +212,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 	  Double_t vertexZMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
-	  Bool_t kUseVzBinning,
+	  Bool_t kUseVzBinning=kFALSE,
 	  Bool_t k2pMethod = kFALSE,Bool_t k2pMethod2D = kFALSE, TString eventClass="EventPlane",Bool_t bRootMoments=kTRUE) {
   gROOT->LoadMacro("~/SetPlotStyle.C");
   SetPlotStyle();

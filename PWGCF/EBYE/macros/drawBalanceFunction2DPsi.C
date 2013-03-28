@@ -16,7 +16,8 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
 			      Double_t ptTriggerMax = -1.,
 			      Double_t ptAssociatedMin = -1.,
 			      Double_t ptAssociatedMax = -1.,
-			      Bool_t k2pMethod = kFALSE,
+			      Bool_t kUseVzBinning = kTRUE,
+			      Bool_t k2pMethod = kTRUE,
 			      TString eventClass = "EventPlane") //Can be "EventPlane", "Centrality", "Multiplicity"
 {
   //Macro that draws the BF distributions for each centrality bin
@@ -48,7 +49,7 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
     draw(listBF,listBFShuffled,listBFMixed,gCentrality,gCentralityEstimator,
 	 psiMin,psiMax,vertexZMin,vertexZMax,
 	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,
-	 k2pMethod,eventClass);  
+	 kUseVzBinning,k2pMethod,eventClass);  
 }
 
 //______________________________________________________//
@@ -212,6 +213,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 	  Double_t vertexZMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
+	  Bool_t kUseVzBinning=kFALSE,
 	  Bool_t k2pMethod = kFALSE, TString eventClass) {  
   //balance function
   AliTHn *hP = NULL;
@@ -255,6 +257,8 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   b->SetHistNnp(hNP);
   b->SetHistNpp(hPP);
   b->SetHistNnn(hNN);
+  if(kUseVzBinning) b->SetVertexZBinning(kTRUE);
+
 
   //balance function shuffling
   AliTHn *hPShuffled = NULL;
@@ -298,6 +302,8 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     bShuffled->SetHistNnp(hNPShuffled);
     bShuffled->SetHistNpp(hPPShuffled);
     bShuffled->SetHistNnn(hNNShuffled);
+  if(kUseVzBinning) bShuffled->SetVertexZBinning(kTRUE);
+
   }
 
   //balance function mixing
@@ -345,6 +351,8 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     bMixed->SetHistNnp(hNPMixed);
     bMixed->SetHistNpp(hPPMixed);
     bMixed->SetHistNnn(hNNMixed);
+    if(kUseVzBinning) bMixed->SetVertexZBinning(kTRUE);
+  
   }
 
   TH2D *gHistBalanceFunction;
