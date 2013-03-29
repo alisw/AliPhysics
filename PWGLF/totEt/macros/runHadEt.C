@@ -4,8 +4,7 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Bool_t test = kTRUE, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE
-) {
+void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Bool_t test = kFALSE, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE, int simflag = 0) {
     TStopwatch timer;
     timer.Start();
     gSystem->Load("libTree.so");
@@ -83,7 +82,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Boo
   if(submit){
 
     gROOT->LoadMacro("CreateAlienHandlerHadEt.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEt(dataset,data,test,material,altV0Scale,runCompiledVersion);//integer dataset, boolean isData, bool submit-in-test-mode, bool use alternatve V0 scaling
+    AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEt(dataset,data,test,material,altV0Scale,runCompiledVersion,simflag);//integer dataset, boolean isData, bool submit-in-test-mode, bool use alternatve V0 scaling
       if (!alienHandler) return;
       mgr->SetGridHandler(alienHandler);
   }
@@ -102,6 +101,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Boo
   if(!physSelTask) { Printf("no physSelTask"); return; }
   AliPhysicsSelection *physSel = physSelTask->GetPhysicsSelection();
   //physSel->AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL");// #3119 #769");
+  //physSelTask->AddCollisionTriggerClass("kMB");// #3119 #769");
 
 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
@@ -151,7 +151,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Boo
    if(!data) task2->SetMcData();
    //Add thing here to select collision type!!
    //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
-   if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
+   //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
    mgr->AddTask(task2);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
