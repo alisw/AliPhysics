@@ -1,4 +1,4 @@
-AliFemtoK0Analysis *AddTaskK0Femto(bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE){
+AliFemtoK0Analysis *AddTaskK0Femto(bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, float MinDL = 0.0){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -6,7 +6,7 @@ AliFemtoK0Analysis *AddTaskK0Femto(bool FieldPositive = kTRUE, bool OnlineCase =
     return NULL;
   }
 
-  AliFemtoK0Analysis *K0Task = new AliFemtoK0Analysis("K0Task", FieldPositive, OnlineCase, MeritCase);
+  AliFemtoK0Analysis *K0Task = new AliFemtoK0Analysis("K0Task", FieldPositive, OnlineCase, MeritCase, MinDL);
   if(!K0Task) exit(-1);
   mgr->AddTask(K0Task);
 
