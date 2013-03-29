@@ -203,7 +203,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  FillHisto2D(Form("dEdxAll%s",cutName->Data()),track->P(),dEdx,1.0);
 
 	  UInt_t label = (UInt_t)TMath::Abs(track->GetLabel());
-	  TParticle  *simPart  = stack->Particle(label);
+	    TParticle  *simPart  = stack->Particle(label);
 	  if(!simPart) {
 	    Printf("no MC particle\n"); 	 	
 	    continue; 	 	
@@ -706,7 +706,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      if(isProton) myrecoEt = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
 	      if(isKaon) myrecoEt = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
 	      if (TMath::Abs(simPart->Eta()) < fHadEtReco->GetCorrections()->GetEtaCut()){
-		TParticle *mom = stack->Particle(simPart->GetFirstMother());
+		TParticle *mom = NULL;
+		if(simPart->GetFirstMother()>=0) mom= stack->Particle(simPart->GetFirstMother());
 		if(mom){
 		  TParticlePDG *pc = mom->GetPDG(0);
 		  if(pc){
@@ -832,7 +833,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    }
 
 		    if(mom->GetFirstMother()>0){
-		      TParticle *grandma = stack->Particle(mom->GetFirstMother());
+		      TParticle *grandma = NULL;
+		      if(mom->GetFirstMother()>=0) stack->Particle(mom->GetFirstMother());
 		      if(grandma){
 			Int_t pdgCodeMom =  mom->GetPDG(0)->PdgCode();
 			if(pdgCodeMom==fgPiPlusCode || pdgCodeMom==fgPiMinusCode || pdgCodeMom==fgProtonCode ||pdgCodeMom==fgAntiProtonCode || pdgCodeMom==fgKPlusCode || pdgCode==fgKMinusCode){
@@ -1591,7 +1593,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      Int_t pdgCodeMom = -99999999;
 	      float momEta = -30;
 	      float mompT = -5;
-	      if(part->GetFirstMother()){
+	      if(part->GetFirstMother()>=0){
 		mom = stack->Particle(part->GetFirstMother());
 		pdgCodeMom =  mom->GetPDG(0)->PdgCode();
 		momEta = mom->Eta();
