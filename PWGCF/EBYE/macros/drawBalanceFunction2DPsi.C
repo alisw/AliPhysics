@@ -31,8 +31,8 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
   gSystem->Load("libPWGTools.so");
   gSystem->Load("libPWGCFebye.so");
 
-  gROOT->LoadMacro("~/SetPlotStyle.C");
-  SetPlotStyle();
+  //gROOT->LoadMacro("~/SetPlotStyle.C");
+  //SetPlotStyle();
   gStyle->SetPalette(1,0);
 
   //Prepare the objects and return them
