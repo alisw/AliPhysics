@@ -30,7 +30,7 @@ class AliESDpid;
 class AliFemtoK0Analysis : public AliAnalysisTaskSE {
  public:
   AliFemtoK0Analysis();
-  AliFemtoK0Analysis(const char *name, bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE);
+  AliFemtoK0Analysis(const char *name, bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, float MinDL = 0.0);
   virtual ~AliFemtoK0Analysis();
   AliFemtoK0Analysis(const AliFemtoK0Analysis&);
   AliFemtoK0Analysis& operator=(const AliFemtoK0Analysis&);
@@ -58,6 +58,7 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
   bool fFieldPos;
   bool fOnlineCase;
   bool fMeritCase;
+  double fMinDecayLength;
   int fEventCount;
 
   AliFemtoK0EventCollection ***fEC; //!
@@ -68,9 +69,7 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
   const char     *fName;
   AliAODEvent    *fAOD; //!    // AOD object
   TList          *fOutputList; //! Compact Output list
-  AliAODpidUtil  *fPidAOD; //!
-  //AliPIDResponse *fPidAOD; //!
-  AliESDpid      *fPidESD; //!
+  AliPIDResponse *fPidAOD; //!
   AliESDtrack    *fPosDaughter1;//!
   AliESDtrack    *fPosDaughter2;//!
   AliESDtrack    *fNegDaughter1;//!

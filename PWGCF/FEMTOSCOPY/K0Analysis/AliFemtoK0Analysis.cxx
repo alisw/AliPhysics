@@ -19,8 +19,18 @@
 //  are reconstructed using the AliAODv0 class.  
 //
 //  authors: Matthew Steinpreis (matthew.steinpreis@cern.ch)
+//   
+//  Major changes:
+//	- TOF mismatch function calls changed (3/28/13)
+//	- added minimum decay length cut (3/28/13)
 //
+//  Minor changes:
+//	- K0 multiplicity histogram now filled with "unskippedCount" instead
+//	  of k0Count (which included skipped k0s with shared daughters) (3/25/13)
+//	- added hists for 3D mom. in LF and PRF (3/28/13) 
+//	- changed calling of PIDResponse (should be same actions) (3/28/13)
 ////////////////////////////////////////////////////////////////////////////////
+
 
 
 #include <iostream>
@@ -66,6 +76,7 @@ AliAnalysisTaskSE(),
   fFieldPos(kTRUE),
   fOnlineCase(kTRUE),
   fMeritCase(kTRUE),
+  fMinDecayLength(0.0),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -74,7 +85,6 @@ AliAnalysisTaskSE(),
   fAOD(0x0),
   fOutputList(0x0),
   fPidAOD(0x0),
-  fPidESD(0x0),
   fPosDaughter1(0x0),  
   fPosDaughter2(0x0),
   fNegDaughter1(0x0),
@@ -82,11 +92,12 @@ AliAnalysisTaskSE(),
 {
 }
 //________________________________________________________________________
-AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive, bool OnlineCase, bool MeritCase) 
+AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive, bool OnlineCase, bool MeritCase, float MinDL) 
 : AliAnalysisTaskSE(name), 
   fFieldPos(FieldPositive),
   fOnlineCase(OnlineCase),
   fMeritCase(MeritCase),
+  fMinDecayLength(MinDL),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -95,7 +106,6 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive, boo
   fAOD(0x0),
   fOutputList(0x0),
   fPidAOD(0x0),
-  fPidESD(0x0),
   fPosDaughter1(0x0),  
   fPosDaughter2(0x0),
   fNegDaughter1(0x0),
@@ -105,6 +115,8 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive, boo
   fFieldPos 	= FieldPositive;
   fOnlineCase 	= OnlineCase;
   fMeritCase 	= MeritCase;
+  fMinDecayLength = MinDL;
+
   // Define output slots here 
   // Output slot #1
   DefineOutput(1, TList::Class());
@@ -116,6 +128,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const AliFemtoK0Analysis &obj)
   fFieldPos(obj.fFieldPos),
   fOnlineCase(obj.fOnlineCase),
   fMeritCase(obj.fMeritCase),
+  fMinDecayLength(obj.fMinDecayLength),
   fEventCount(obj.fEventCount),
   fEC(obj.fEC),
   fEvt(obj.fEvt),
@@ -124,7 +137,6 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const AliFemtoK0Analysis &obj)
   fAOD(obj.fAOD),
   fOutputList(obj.fOutputList),
   fPidAOD(obj.fPidAOD),
-  fPidESD(obj.fPidESD),
   fPosDaughter1(obj.fPosDaughter1),  
   fPosDaughter2(obj.fPosDaughter2),
   fNegDaughter1(obj.fNegDaughter1),
@@ -140,6 +152,7 @@ AliFemtoK0Analysis &AliFemtoK0Analysis::operator=(const AliFemtoK0Analysis &obj)
  fFieldPos 	= obj.fFieldPos;
  fOnlineCase 	= obj.fOnlineCase;
  fMeritCase 	= obj.fMeritCase;
+ fMinDecayLength= obj.fMinDecayLength;
  fEventCount 	= obj.fEventCount;
  fEC 		= obj.fEC;
  fEvt 		= obj.fEvt;
@@ -148,7 +161,6 @@ AliFemtoK0Analysis &AliFemtoK0Analysis::operator=(const AliFemtoK0Analysis &obj)
  fAOD 		= obj.fAOD;
  fOutputList 	= obj.fOutputList;
  fPidAOD 	= obj.fPidAOD;
- fPidESD 	= obj.fPidESD;
  fPosDaughter1 	= obj.fPosDaughter1;  
  fPosDaughter2 	= obj.fPosDaughter2;
  fNegDaughter1 	= obj.fNegDaughter1;
@@ -167,7 +179,6 @@ AliFemtoK0Analysis::~AliFemtoK0Analysis()
   if(fAOD) delete fAOD;
   if(fOutputList) delete fOutputList;
   if(fPidAOD) delete fPidAOD;
-  if(fPidESD) delete fPidESD;
   if(fPosDaughter1) delete fPosDaughter1;
   if(fPosDaughter2) delete fPosDaughter2;
   if(fNegDaughter1) delete fNegDaughter1;
@@ -191,11 +202,8 @@ void AliFemtoK0Analysis::MyInit()
     }
   }
 
-  //fPidAOD = new AliAODpidUtil();
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  fPidAOD = aodH->GetAODpidUtil();
-  //fPidAOD = aodH->GetPIDResponse();
-  fPidESD = new AliESDpid();
+  fPidAOD = aodH->GetPIDResponse();
 
   fPosDaughter1 = new AliESDtrack();
   fPosDaughter2 = new AliESDtrack();
@@ -299,6 +307,21 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
   TH2F* fHistSepDPCBkg = new TH2F("fHistSepDPCBkg","",200,-1,1,50,0,10);
   fOutputList->Add(fHistSepDPC);
   fOutputList->Add(fHistSepDPCBkg);
+
+  TH1F* fHistPx = new TH1F("fHistPx","",200,0,2);
+  TH1F* fHistPy = new TH1F("fHistPy","",200,0,2);
+  TH1F* fHistPz = new TH1F("fHistPz","",200,0,2);
+  TH1F* fHistPxCM = new TH1F("fHistPxCM","",200,0,2);
+  TH1F* fHistPyCM = new TH1F("fHistPyCM","",200,0,2);
+  TH1F* fHistPzCM = new TH1F("fHistPzCM","",200,0,2);
+  TH1F* fHistKsCM = new TH1F("fHistKsCM","",200,0,2);
+  fOutputList->Add(fHistPx);
+  fOutputList->Add(fHistPy);
+  fOutputList->Add(fHistPz);
+  fOutputList->Add(fHistPxCM);
+  fOutputList->Add(fHistPyCM);
+  fOutputList->Add(fHistPzCM);
+  fOutputList->Add(fHistKsCM);
 
 /////////Signal Distributions///////////////////
 
@@ -492,6 +515,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   const float kMaxDCADaughtersK0 = 0.3;            //maximum dca of pions to each other - 3D
   const float kMaxDCAK0 = 0.3;                     //maximum dca of K0 to primary
   const float kMaxDLK0 = 30.0;                     //maximum decay length of K0
+  const float kMinDLK0 = fMinDecayLength;	   //minimum decay length of K0
   const float kEtaCut = 0.8;                       //maximum |pseudorapidity|
   const float kMinCosAngle = 0.99;                 //minimum cosine of K0 pointing angle     
   
@@ -571,24 +595,37 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     if(fabs(fPidAOD->NumberOfSigmasTPC(prongTrackNeg,AliPID::kPion)) < kMaxTPCSigmaPion) goodPiMinus = kTRUE;
    
     //Positive daughter identification TOF
+    //float probMis;
+    //AliPIDResponse::EDetPidStatus statusPosTOF = fPidAOD->CheckPIDStatus(AliPIDResponse::kTOF, prongTrackPos);
     double Ppos = v0->PProng(pos0or1);
     if(Ppos > kTOFLow) //PiPlus
     {
      if( (statusPos&AliESDtrack::kTOFpid)!=0 && (statusPos&AliESDtrack::kTIME)!=0 && (statusPos&AliESDtrack::kTOFout)!=0 && (statusPos&AliESDtrack::kTOFmismatch)<=0)
+     //if(AliPIDResponse::kDetPidOk == statusPosTOF)
      {
-      if(fabs(fPidAOD->NumberOfSigmasTOF(prongTrackPos,AliPID::kPion)) < kMaxTOFSigmaPion) goodPiPlus = kTRUE;
-      else goodPiPlus = kFALSE;
-     }  
+      //probMis = fPidAOD->GetTOFMismatchProbability(prongTrackPos);
+      //if(probMis < 0.01) //avoid TOF-TPC mismatch
+      //{
+       if(fabs(fPidAOD->NumberOfSigmasTOF(prongTrackPos,AliPID::kPion)) < kMaxTOFSigmaPion) goodPiPlus = kTRUE;
+       else goodPiPlus = kFALSE;
+      //}  
+     }
     }
     //Negative daughter identification TOF
+    //AliPIDResponse::EDetPidStatus statusNegTOF = fPidAOD->CheckPIDStatus(AliPIDResponse::kTOF, prongTrackNeg);
     double Pneg = v0->PProng(neg0or1);
     if(Pneg > kTOFLow) //PiMinus
     {
      if( (statusNeg&AliESDtrack::kTOFpid)!=0 && (statusNeg&AliESDtrack::kTIME)!=0 && (statusNeg&AliESDtrack::kTOFout)!=0 && (statusNeg&AliESDtrack::kTOFmismatch)<=0)
+     //if(AliPIDResponse::kDetPidOk == statusNegTOF)
      {
-      if(fabs(fPidAOD->NumberOfSigmasTOF(prongTrackNeg,AliPID::kPion)) < kMaxTOFSigmaPion) goodPiMinus = kTRUE;
-      else goodPiMinus = kFALSE;
-      }
+      //probMis = fPidAOD->GetTOFMismatchProbability(prongTrackPos);
+      //if(probMis < 0.01) //avoid TOF-TPC mismatch
+      //{
+       if(fabs(fPidAOD->NumberOfSigmasTOF(prongTrackNeg,AliPID::kPion)) < kMaxTOFSigmaPion) goodPiMinus = kTRUE;
+       else goodPiMinus = kFALSE;
+      //}
+     }
     }
     
     //K0 cuts
@@ -598,6 +635,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     if(v0->DcaNegToPrimVertex() < kMinDCAPrimaryPion)      continue;
     if(v0->DcaPosToPrimVertex() < kMinDCAPrimaryPion)      continue;  
     if(v0->DecayLength(primaryVertex) > kMaxDLK0)          continue;
+    if(v0->DecayLength(primaryVertex) < kMinDLK0)	   continue;
     if(v0->DcaV0Daughters() > kMaxDCADaughtersK0)          continue;
     double v0Dca = v0->DcaV0ToPrimVertex();
     if(v0Dca > kMaxDCAK0) 		                   continue;        
@@ -649,13 +687,13 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     {
 	tempK0[v0Count].fK0 = kTRUE;
         //else tempK0[v0Count].fK0 = kFALSE;  //in case I include v0s that arent "good" K0s 
-        k0Count++;		
+        k0Count++; //same as v0count right now (continue if not in mass range, above)
 
         //if(v0->MassK0Short() > .45 && v0->MassK0Short() < .48) tempK0[v0Count].fSideLeft = kTRUE;
         //else tempK0[v0Count].fSideLeft = kFALSE;
         //if(v0->MassK0Short() > .515 && v0->MassK0Short() < .545) tempK0[v0Count].fSideRight = kTRUE;
         //else tempK0[v0Count].fSideRight = kFALSE;
-	if(!goodK0) continue; //no sides, speed up analysis 
+	if(!goodK0) continue; //no sides, speed up analysis (REDUNDANT RIGHT NOW)
 
         tempK0[v0Count].fDaughterID1    = prongTrackPos->GetID();
         tempK0[v0Count].fDaughterID2    = prongTrackNeg->GetID();
@@ -721,7 +759,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   //Printf("Number of K0s: %d", k0Count);
   tempK0->~AliFemtoK0Particle();
 
-  ((TH1F*)fOutputList->FindObject("fHistMultK0"))->Fill(k0Count);
+  ((TH1F*)fOutputList->FindObject("fHistMultK0"))->Fill(unskippedCount);	// changed 3/25, used to be "k0Count"
 
   //Printf("Reconstruction Finished. Starting pair studies.");
 
@@ -735,20 +773,25 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   float qinv, q0, qx, qy, qz, qLong, qSide, qOut;      	//pair q values
   float qLength, thetaSH, thetaSHCos, phiSH;            //Spherical Harmonics values
   //float pt1, pt2;					//single kaon pt
+  float am12, epm, h1, p12, p112, ppx, ppy, ppz, ks;	//PRF
 
   for(int i=0; i<(fEvt)->fNumV0s; i++) // Current event V0
   {
     //single particle histograms (done here to avoid "skipped" v0s
-     ((TH1F*)fOutputList->FindObject("fHistDCADaughters"))->Fill((fEvt)->fK0Particle[i].fDDDca);
-     ((TH1F*)fOutputList->FindObject("fHistDecayLengthK0"))->Fill((fEvt)->fK0Particle[i].fDecayLength);
-     ((TH1F*)fOutputList->FindObject("fHistDCAK0"))->Fill((fEvt)->fK0Particle[i].fV0Dca);
-     ((TH1F*)fOutputList->FindObject("fHistDCAPiMinus"))->Fill((fEvt)->fK0Particle[i].fNegDca);
-     ((TH1F*)fOutputList->FindObject("fHistDCAPiPlus"))->Fill((fEvt)->fK0Particle[i].fPosDca);
-     ((TH2F*)fOutputList->FindObject("fHistPtK0"))->Fill(centBin+1, (fEvt)->fK0Particle[i].fPt);
-     ((TH2F*)fOutputList->FindObject("fHistK0PiPlusPt"))->Fill(centBin+1, (fEvt)->fK0Particle[i].fPosPt);
-     ((TH2F*)fOutputList->FindObject("fHistK0PiMinusPt"))->Fill(centBin+1, (fEvt)->fK0Particle[i].fNegPt);
-     ((TH1F*)fOutputList->FindObject("fHistDaughterPhi"))->Fill((fEvt)->fK0Particle[i].fPosPhi);
-     ((TH1F*)fOutputList->FindObject("fHistDaughterPhi"))->Fill((fEvt)->fK0Particle[i].fNegPhi);
+     ((TH1F*)fOutputList->FindObject("fHistDCADaughters"))	->Fill((fEvt)->fK0Particle[i].fDDDca);
+     ((TH1F*)fOutputList->FindObject("fHistDecayLengthK0"))	->Fill((fEvt)->fK0Particle[i].fDecayLength);
+     ((TH1F*)fOutputList->FindObject("fHistDCAK0"))		->Fill((fEvt)->fK0Particle[i].fV0Dca);
+     ((TH1F*)fOutputList->FindObject("fHistDCAPiMinus"))	->Fill((fEvt)->fK0Particle[i].fNegDca);
+     ((TH1F*)fOutputList->FindObject("fHistDCAPiPlus"))		->Fill((fEvt)->fK0Particle[i].fPosDca);
+     ((TH2F*)fOutputList->FindObject("fHistPtK0"))		->Fill(centBin+1, (fEvt)->fK0Particle[i].fPt);
+     ((TH2F*)fOutputList->FindObject("fHistK0PiPlusPt"))	->Fill(centBin+1, (fEvt)->fK0Particle[i].fPosPt);
+     ((TH2F*)fOutputList->FindObject("fHistK0PiMinusPt"))	->Fill(centBin+1, (fEvt)->fK0Particle[i].fNegPt);
+     ((TH1F*)fOutputList->FindObject("fHistDaughterPhi"))	->Fill((fEvt)->fK0Particle[i].fPosPhi);
+     ((TH1F*)fOutputList->FindObject("fHistDaughterPhi"))	->Fill((fEvt)->fK0Particle[i].fNegPhi);
+     
+     ((TH1F*)fOutputList->FindObject("fHistPx"))		->Fill((fEvt)->fK0Particle[i].fMomentum[0]);
+     ((TH1F*)fOutputList->FindObject("fHistPy"))		->Fill((fEvt)->fK0Particle[i].fMomentum[1]);
+     ((TH1F*)fOutputList->FindObject("fHistPz"))		->Fill((fEvt)->fK0Particle[i].fMomentum[2]);
 
     for(int evnum=0; evnum<kEventsToMix+1; evnum++)// Event buffer loop: evnum=0 is the current event, all other evnum's are past events
     {
@@ -785,6 +828,22 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         
         qinv = sqrt(pow(px1-px2,2) + pow(py1-py2,2) + pow(pz1-pz2,2) - pow(en1-en2,2));
        
+	//PRF
+        p12 = sqrt(pow(pairPx,2)+pow(pairPy,2)+pow(pairPz,2));		//pair momentum length
+        am12 = sqrt(pow(en1+en2,2)-p12*p12);				//sqrt(s), |p1+p2| (4vec)
+        epm = en1+en2+am12;						//"energy plus mass"
+        p112 = px1*pairPx+py1*pairPy+pz1*pairPz;			//proj. of p1 on pairP
+        h1 = (p112/epm - en1)/am12;
+        ppx = px1+pairPx*h1;						//px in PRF
+        ppy = py1+pairPy*h1;						//py in PRF	
+        ppz = pz1+pairPz*h1;						//pz in PRF
+        ks = sqrt(ppx*ppx+ppy*ppy+ppz*ppz);				//k*
+        ((TH1F*)fOutputList->FindObject("fHistPxCM"))->Fill(ppx);
+        ((TH1F*)fOutputList->FindObject("fHistPyCM"))->Fill(ppy);
+        ((TH1F*)fOutputList->FindObject("fHistPzCM"))->Fill(ppz);
+        ((TH1F*)fOutputList->FindObject("fHistKsCM"))->Fill(ks);
+        
+
         //out-side-long
         pairP0 = en1 + en2;
         q0 = en1 - en2;
