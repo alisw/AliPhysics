@@ -86,8 +86,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void SetNsigmaTPC(Float_t nsig) {fSigmaCutTPC = nsig;}
   void SetNsigmaTOF(Float_t nsig) {fSigmaCutTOF = nsig;}
   void SetRBinMax(Int_t rbin) {fRBinMax = rbin;}
-  void SetFixedLambdaBin(Int_t lbin) {fFixedLambdaBin = lbin;}
-  
+  void SetFixedLambdaBinMomRes(Int_t lbin) {fFixedLambdaBinMomRes = lbin;}
+  void SetFixedLambdaBinr3(Int_t lbin) {fFixedLambdaBinr3 = lbin;}
   //
 
 
@@ -235,8 +235,9 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Bool_t fPdensityExplicitLoop;
   Bool_t fPdensityPairCut;
   Bool_t fTabulatePairs;
-  Int_t fRBinMax;// 5 normally, (R=8fm)
-  Int_t fFixedLambdaBin;// 11 normally, (lambda=0.52)
+  Int_t fRBinMax;
+  Int_t fFixedLambdaBinMomRes;
+  Int_t fFixedLambdaBinr3;
   UInt_t fFilterBit;
   Double_t fBfield;
   Int_t fMbin;
@@ -305,12 +306,12 @@ class AliChaoticity : public AliAnalysisTaskSE {
   AliChaoticityNormPairStruct *fNormPairs[3];//!
   
  public:
-  TH2D *fFSI2SS[2];
-  TH2D *fFSI2OS[2];
-  TH3D *fFSIOmega0SS[6];
-  TH3D *fFSIOmega0OS[6];
-  TH2D *fMomResC2;
-  TH3F *fNormWeight[3][10];
+  TH2D *fFSI2SS[2];//!
+  TH2D *fFSI2OS[2];//!
+  TH3D *fFSIOmega0SS[6];//!
+  TH3D *fFSIOmega0OS[6];//!
+  TH2D *fMomResC2;//!
+  TH3F *fNormWeight[3][10];//!
     
 
   ClassDef(AliChaoticity, 1); 
