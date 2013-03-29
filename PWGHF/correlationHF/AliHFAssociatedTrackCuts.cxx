@@ -26,6 +26,7 @@
 #include "AliAODPidHF.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
+#include "AliESDVertex.h"
 #include "AliAODv0.h"
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
@@ -43,7 +44,7 @@ AliHFAssociatedTrackCuts::AliHFAssociatedTrackCuts():
 AliAnalysisCuts(),
 fESDTrackCuts(0),
 fPidObj(0),
-
+  fEffWeights(0),
 fPoolMaxNEvents(0), 
 fPoolMinNTracks(0), 
 fMinEventsToMix(0),
@@ -63,7 +64,7 @@ fTrackCutsNames(0),
 fNvZeroCuts(0),
 fAODvZeroCuts(0),
 fvZeroCutsNames(0),
-fBit(0),
+fBit(-1),
 fCharge(0),
 fDescription("")
 
@@ -82,7 +83,7 @@ AliHFAssociatedTrackCuts::AliHFAssociatedTrackCuts(const char* name, const char*
 AliAnalysisCuts(name,title),
 fESDTrackCuts(0),
 fPidObj(0),
-
+fEffWeights(0),
 fPoolMaxNEvents(0), 
 fPoolMinNTracks(0), 
 fMinEventsToMix(0),
@@ -102,7 +103,7 @@ fTrackCutsNames(0),
 fNvZeroCuts(0),
 fAODvZeroCuts(0),
 fvZeroCutsNames(0),
-fBit(0),
+fBit(-1),
 fCharge(0),
 fDescription("")
 
@@ -117,7 +118,7 @@ AliHFAssociatedTrackCuts::AliHFAssociatedTrackCuts(const AliHFAssociatedTrackCut
 AliAnalysisCuts(source),
 fESDTrackCuts(source.fESDTrackCuts),
 fPidObj(source.fPidObj),
-
+fEffWeights(source.fEffWeights),
 fPoolMaxNEvents(source.fPoolMaxNEvents), 
 fPoolMinNTracks(source.fPoolMinNTracks), 
 fMinEventsToMix(source.fMinEventsToMix),
@@ -151,6 +152,7 @@ fDescription(source.fDescription)
 	if(source.fAODTrackCuts) SetAODTrackCuts(source.fAODTrackCuts);
 	if(source.fAODvZeroCuts) SetAODvZeroCuts(source.fAODvZeroCuts);
 	if(source.fPidObj) SetPidHF(source.fPidObj);
+	if(source.fEffWeights) SetEfficiencyWeightMap(source.fEffWeights);
 }
 //--------------------------------------------------------------------------
 AliHFAssociatedTrackCuts &AliHFAssociatedTrackCuts::operator=(const AliHFAssociatedTrackCuts &source)
@@ -163,6 +165,7 @@ AliHFAssociatedTrackCuts &AliHFAssociatedTrackCuts::operator=(const AliHFAssocia
 	AliAnalysisCuts::operator=(source);
 	fESDTrackCuts=source.fESDTrackCuts;
 	fPidObj=source.fPidObj;
+	fEffWeights=source.fEffWeights;
 	fNTrackCuts=source.fNTrackCuts;
 	fAODTrackCuts=source.fAODTrackCuts;
 	fTrackCutsNames=source.fTrackCutsNames;
@@ -182,6 +185,7 @@ AliHFAssociatedTrackCuts::~AliHFAssociatedTrackCuts()
 {
 	if(fESDTrackCuts) {delete fESDTrackCuts; fESDTrackCuts = 0;}
 	if(fPidObj) {delete fPidObj; fPidObj = 0;}
+	if(fEffWeights){delete fEffWeights;fEffWeights=0;}
 	if(fZvtxBins) {delete[] fZvtxBins; fZvtxBins=0;} 
 	if(fCentBins) {delete[] fCentBins; fCentBins=0;}
 	if(fAODTrackCuts) {delete[] fAODTrackCuts; fAODTrackCuts=0;}
@@ -198,14 +202,24 @@ Bool_t AliHFAssociatedTrackCuts::IsInAcceptance()
 	return kFALSE;
 }
 //--------------------------------------------------------------------------
-Bool_t AliHFAssociatedTrackCuts::IsHadronSelected(AliAODTrack * track)
+Bool_t AliHFAssociatedTrackCuts::IsHadronSelected(AliAODTrack * track,const AliESDVertex *primary,const Double_t magfield)
 {
-	AliESDtrack esdtrack(track);
-	if(!fESDTrackCuts->IsSelected(&esdtrack)) return kFALSE;
-	
-	if(fBit && !track->TestFilterBit(fBit)) return kFALSE; // check the filter bit
- 
-	return kTRUE;
+  
+  AliESDtrack esdtrack(track);
+  if(primary){// needed to calculate impact parameters
+    // needed to calculate the impact parameters
+    esdtrack.RelateToVertex(primary,magfield,3.); 
+  }
+  // set the TPC cluster info
+  esdtrack.SetTPCClusterMap(track->GetTPCClusterMap());
+  esdtrack.SetTPCSharedMap(track->GetTPCSharedMap());
+  esdtrack.SetTPCPointsF(track->GetTPCNclsF());
+  
+  if(!fESDTrackCuts->IsSelected(&esdtrack)) return kFALSE;
+  
+  if(fBit>-1 && !track->TestFilterBit(fBit)) return kFALSE; // check the filter bit
+  
+  return kTRUE;
 	
 }
 
@@ -558,7 +572,14 @@ void AliHFAssociatedTrackCuts::PrintPoolParameters() const
 	
 	
 }
+Double_t AliHFAssociatedTrackCuts::GetTrackWeight(Double_t pt, Double_t eta,Double_t zvtx){
+  if(!fEffWeights)return 1.;
+  
+  Int_t bin=fEffWeights->FindBin(pt,eta,zvtx);
+  if(fEffWeights->IsBinUnderflow(bin)||fEffWeights->IsBinOverflow(bin))return 1.;
+  return fEffWeights->GetBinContent(bin);
 
+}
 //--------------------------------------------------------------------------
 void AliHFAssociatedTrackCuts::PrintSelectedMCevents() const
 {

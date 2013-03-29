@@ -27,11 +27,12 @@
 #include <TString.h>
 #include "AliAnalysisCuts.h"
 #include "AliESDtrackCuts.h"
+#include "AliESDVertex.h"
 #include "AliAODPidHF.h"
 #include "AliAODEvent.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include <TClonesArray.h>
-
+#include <TH3D.h>
 
 
 class AliAODTrack;
@@ -53,7 +54,7 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Bool_t IsSelected(TList*  list) {if(list) return kTRUE; return kFALSE;};
 	Bool_t IsSelected(TObject*  obj) {if(obj) return kTRUE; return kFALSE;};
 	Bool_t IsInAcceptance();
-	Bool_t IsHadronSelected(AliAODTrack * track);
+	Bool_t IsHadronSelected(AliAODTrack * track,const AliESDVertex *primary=0x0,const Double_t magfield=0);
 	Bool_t CheckHadronKinematic(Double_t pt, Double_t d0); 
 	Bool_t Charge(Short_t charge, AliAODTrack* track);
 	Bool_t CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray, Int_t method=1);
@@ -118,6 +119,8 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	void SetPidHF(AliAODPidHF* pid) {fPidObj = pid; return;}
 	void SetCharge(Short_t charge) {fCharge = charge;}
 	void SetFilterBit(Int_t bit) {fBit = bit;}
+	void SetEfficiencyWeightMap(TH3D *hMap){if(fEffWeights)delete fEffWeights;fEffWeights=(TH3D*)hMap->Clone();}
+	Double_t GetTrackWeight(Double_t pt, Double_t eta,Double_t zvtx);
 	void Print(Option_t *option) const;
 	virtual void PrintAll() const;
 	virtual void PrintPoolParameters() const;
@@ -134,7 +137,7 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 private:
 	AliESDtrackCuts *fESDTrackCuts; // track cut object
 	AliAODPidHF * fPidObj;     /// PID object
-	
+	TH3D *fEffWeights;     // weight map (pt,eta,zvtx) to account for single track efficiency  
 	Int_t fPoolMaxNEvents; // set maximum number of events in the pool
 	Int_t fPoolMinNTracks; // se minimum number of tracks in the pool
 	Int_t fMinEventsToMix; // set the minimum number of events you wanna mix
@@ -162,7 +165,7 @@ private:
 	TString fDescription; // additional description to the cuts
 	
 	
-	ClassDef(AliHFAssociatedTrackCuts,4);
+	ClassDef(AliHFAssociatedTrackCuts,5);
 };
 
 
