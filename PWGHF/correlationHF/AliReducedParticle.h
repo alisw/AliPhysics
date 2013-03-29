@@ -1,4 +1,3 @@
-
 #ifndef AliReducedParticle_H
 #define AliReducedParticle_H
 
@@ -43,6 +42,7 @@ class AliReducedParticle : public AliVParticle
 public:
     AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi);
     AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi, Short_t charge);
+    AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi, Short_t charge,Double_t weight);
     AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel);
     AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, int charge, int orginmother); 
     AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Double_t invmass, int ptbin, int orginmother=0);
@@ -61,7 +61,9 @@ public:
     virtual Double_t GetInvMass() const {return fInvMass;}
     virtual int GetPtBin() const  {return fPtBin;}
     virtual int GetOriginMother() const {return fOriginMother;}
-	
+    void SetWeight(Double_t weight){fWeight=weight;}
+    Double_t GetWeight(){return fWeight;}
+    
 	// kinematics
     virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
     virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
@@ -104,6 +106,7 @@ private:
     Bool_t fCheckSoftPi; // check if the track is compatible with a softpion from D*
     Short_t fCharge;     // charge of the associated track
     Double_t fInvMass;   // Invariant mass of Dmeson
+    Double_t fWeight;   // track weight (e.g. 1/efficiency)
     int fPtBin;          // Ptbin of Dmesons
     int fOriginMother;   //  Holds the origin motherquark (process)
 

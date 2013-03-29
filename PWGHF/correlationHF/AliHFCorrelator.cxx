@@ -251,7 +251,7 @@ Bool_t AliHFCorrelator::ProcessAssociatedTracks(Int_t EventLoopIndex, const TObj
   // not straightforward as in the case of event mixing the pointer
   // will be an external array which must not be deleted.
 	fAssociatedTracks = new TObjArray();
-	
+
 	if(!fmixing){ // analysis on Single Event
 		
 		
@@ -328,80 +328,92 @@ Double_t AliHFCorrelator::SetCorrectPhiRange(Double_t phi){
 
 //_____________________________________________________
 TObjArray*  AliHFCorrelator::AcceptAndReduceTracks(AliAODEvent* inputEvent){
+
+  Double_t weight=1.;
+  Int_t nTracks = inputEvent->GetNTracks();
+  AliAODVertex * vtx = inputEvent->GetPrimaryVertex();
+  Double_t pos[3],cov[6];
+  vtx->GetXYZ(pos);
+  vtx->GetCovarianceMatrix(cov);
+  const AliESDVertex vESD(pos,cov,100.,100);
+  
+  Double_t Bz = inputEvent->GetMagneticField();
 	
-	Int_t nTracks = inputEvent->GetNTracks();
-	AliAODVertex * vtx = inputEvent->GetPrimaryVertex();
-	Double_t Bz = inputEvent->GetMagneticField();
+  
+  TObjArray* tracksClone = new TObjArray;
+  tracksClone->SetOwner(kTRUE);
+  
+  //*******************************************************
+  // use reconstruction
+  if(fUseReco){
+    for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) {
+      AliAODTrack* track = inputEvent->GetTrack(iTrack);
+      if (!track) continue;
+      if(!fhadcuts->IsHadronSelected(track,&vESD,Bz)) continue; // apply ESD level selections
+      if(!fhadcuts->Charge(fDCharge,track)) continue; // apply selection on charge, if required
+
+      Double_t pT = track->Pt();
+      
+      //compute impact parameter
+      Double_t d0z0[2],covd0z0[3];
+      Double_t d0=-999999.;
+      if(fUseImpactParameter) track->PropagateToDCA(vtx,Bz,100,d0z0,covd0z0);
+      else d0z0[0] = 1. ; // random number - be careful with the cuts you applied
+      
+      if(fUseImpactParameter==1) d0 = TMath::Abs(d0z0[0]); // use impact parameter
+      if(fUseImpactParameter==2) { // use impact parameter over resolution
+	if(TMath::Abs(covd0z0[0])>0.00000001) d0 = TMath::Abs(d0z0[0])/TMath::Sqrt(covd0z0[0]); 
+	else d0 = -1.; // if the resoultion is Zero, rejects the track - to be on the safe side
 	
-	
-	TObjArray* tracksClone = new TObjArray;
-	tracksClone->SetOwner(kTRUE);
-	
-	//*******************************************************
-    // use reconstruction
-	if(fUseReco){
-		for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) {
-			AliAODTrack* track = inputEvent->GetTrack(iTrack);
-			if (!track) continue;
-			if(!fhadcuts->IsHadronSelected(track)) continue; // apply ESD level selections
-			if(!fhadcuts->Charge(fDCharge,track)) continue; // apply selection on charge, if required
-		
-			Double_t pT = track->Pt();
-		
-		//compute impact parameter
-			Double_t d0z0[2],covd0z0[3];
-			Double_t d0=-999999.;
-			if(fUseImpactParameter) track->PropagateToDCA(vtx,Bz,100,d0z0,covd0z0);
-			else d0z0[0] = 1. ; // random number - be careful with the cuts you applied
-		
-			if(fUseImpactParameter==1) d0 = TMath::Abs(d0z0[0]); // use impact parameter
-			if(fUseImpactParameter==2) { // use impact parameter over resolution
-		  if(TMath::Abs(covd0z0[0])>0.00000001) d0 = TMath::Abs(d0z0[0])/TMath::Sqrt(covd0z0[0]); 
-		  else d0 = -1.; // if the resoultion is Zero, rejects the track - to be on the safe side
-			
-		}
-		
-			
-		if(!fhadcuts->CheckHadronKinematic(pT,d0)) continue; // apply kinematic cuts
-			Bool_t rejectsoftpi = kFALSE;
-			if(fD0cand) rejectsoftpi = fhadcuts->InvMassDstarRejection(fD0cand,track,fhypD0);
-		
-			
-			if(fselect ==kKaon){	
-				if(!fhadcuts->CheckKaonCompatibility(track,fmontecarlo,fmcArray,fPIDmode)) continue; // check if it is a Kaon - data and MC
-			}
-		
-		tracksClone->Add(new AliReducedParticle(track->Eta(), track->Phi(), pT,track->GetLabel(),track->GetID(),d0,rejectsoftpi,track->Charge()));
-		} // end loop on tracks
-	} // end if use reconstruction kTRUE
-	
-	//*******************************************************
-	
-	//use MC truth
-	if(fmontecarlo && !fUseReco){
-		
-		for (Int_t iPart=0; iPart<fmcArray->GetEntriesFast(); iPart++) { 
-			AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iPart));
-			if (!mcPart) {
-				AliWarning("MC Particle not found in tree, skipping"); 
-				continue;
-			}
-			if(!mcPart->Charge()) continue; // consider only charged tracks
-			
-			Int_t PDG =TMath::Abs(mcPart->PdgCode()); 
-			if(!((PDG==321)||(PDG==211)||(PDG==2212)||(PDG==13)||(PDG==11))) continue; // select only if kaon, pion, proton, muon or electron
-		
-			Double_t pT = mcPart->Pt();
-            Double_t d0 =1; // set 1 fot the moment - no displacement calculation implemented yet
-			if(!fhadcuts->CheckHadronKinematic(pT,d0)) continue; // apply kinematic cuts
-			
-			tracksClone->Add(new AliReducedParticle(mcPart->Eta(), mcPart->Phi(), pT,mcPart->GetLabel(),-1,d0,kFALSE,mcPart->Charge()));
-		}
-		
-	} // end if use  MC truth
-	
-	
-	return tracksClone;
+      }
+      
+      if(fmontecarlo) {// THIS TO BE CHECKED
+        Int_t hadLabel = track->GetLabel();
+	if(hadLabel < 0) continue;	
+      }
+      
+      if(!fhadcuts->CheckHadronKinematic(pT,d0)) continue; // apply kinematic cuts
+      Bool_t rejectsoftpi = kTRUE;// TO BE CHECKED: DO WE WANT IT TO kTRUE AS A DEFAULT?
+      if(fD0cand && !fmixing) rejectsoftpi = fhadcuts->InvMassDstarRejection(fD0cand,track,fhypD0); // TO BE CHECKED: WHY NOT FOR EM?
+      
+      
+      if(fselect ==kKaon){	
+	if(!fhadcuts->CheckKaonCompatibility(track,fmontecarlo,fmcArray,fPIDmode)) continue; // check if it is a Kaon - data and MC
+      }
+      weight=fhadcuts->GetTrackWeight(pT,track->Eta(),pos[2]);
+      tracksClone->Add(new AliReducedParticle(track->Eta(), track->Phi(), pT,track->GetLabel(),track->GetID(),d0,rejectsoftpi,track->Charge(),weight));
+    } // end loop on tracks
+  } // end if use reconstruction kTRUE
+  
+  //*******************************************************
+  
+  //use MC truth
+  if(fmontecarlo && !fUseReco){
+    
+    for (Int_t iPart=0; iPart<fmcArray->GetEntriesFast(); iPart++) { 
+      AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iPart));
+      if (!mcPart) {
+	AliWarning("MC Particle not found in tree, skipping"); 
+	continue;
+      }
+      if(!mcPart->Charge()) continue; // consider only charged tracks
+      
+      Int_t PDG =TMath::Abs(mcPart->PdgCode()); 
+if(fselect ==kHadron) {if(!((PDG==321)||(PDG==211)||(PDG==2212)||(PDG==13)||(PDG==11))) continue;} // select only if kaon, pion, proton, muon or electron
+      else if(fselect ==kKaon) {if(!(PDG==321)) continue;} // select only if kaon
+      else if(fselect ==kElectron) {if(!(PDG==11)) continue;} // select only if electron
+
+      Double_t pT = mcPart->Pt();
+      Double_t d0 =1; // set 1 fot the moment - no displacement calculation implemented yet
+      if(!fhadcuts->CheckHadronKinematic(pT,d0)) continue; // apply kinematic cuts
+      
+      tracksClone->Add(new AliReducedParticle(mcPart->Eta(), mcPart->Phi(), pT,iPart,-1,d0,kFALSE,mcPart->Charge()));
+    }
+    
+  } // end if use  MC truth
+  
+  
+  return tracksClone;
 }
 
 //_____________________________________________________
@@ -410,6 +422,9 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceKZero(AliAODEvent* inputEvent){
 	Int_t nOfVZeros = inputEvent->GetNumberOfV0s();
 	TObjArray* KZeroClone = new TObjArray;
 	AliAODVertex *vertex1 = (AliAODVertex*)inputEvent->GetPrimaryVertex();
+
+ // use reconstruction	 	
+     if(fUseReco){
 	Int_t v0label = -1;
 	Int_t pdgDgK0toPipi[2] = {211,211};
 	Double_t mPDGK0=0.497614;//TDatabasePDG::Instance()->GetParticle(310)->Mass();
@@ -419,10 +434,10 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceKZero(AliAODEvent* inputEvent){
 	for(Int_t iv0 =0; iv0< nOfVZeros; iv0++){// loop on all v0 candidates
 		AliAODv0 *v0 = (static_cast<AliAODEvent*> (inputEvent))->GetV0(iv0);
 		if(!v0) {
-      AliInfo(Form("is not a v0 at step, %d", iv0)) ;
-        //cout << "is not a v0 at step " << iv0 << endl;
-      continue;
-    }
+		  AliInfo(Form("is not a v0 at step, %d", iv0)) ;
+		  //cout << "is not a v0 at step " << iv0 << endl;
+		  continue;
+		}
 		
 		if(!fhadcuts->IsKZeroSelected(v0,vertex1)) continue; // check if it is a k0
 	    
@@ -466,6 +481,34 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceKZero(AliAODEvent* inputEvent){
 		KZeroClone->Add(new AliReducedParticle(k0eta,k0Phi,k0pt,v0label));
 		
 	}
+     } // end if use reconstruction kTRUE
 	
+
+
+//*********************************************************************//
+     //use MC truth
+     if(fmontecarlo && !fUseReco){
+		
+		for (Int_t iPart=0; iPart<fmcArray->GetEntriesFast(); iPart++) { 
+			AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iPart));
+			if (!mcPart) {
+				AliWarning("MC Particle not found in tree, skipping"); 
+				continue;
+			}
+			
+			Int_t PDG =TMath::Abs(mcPart->PdgCode()); 
+			if(!(PDG==310)) continue; // select only if k0 short
+		
+			Double_t pT = mcPart->Pt();
+            Double_t d0 =1; // set 1 fot the moment - no displacement calculation implemented yet
+			if(!fhadcuts->CheckHadronKinematic(pT,d0)) continue; // apply kinematic cuts
+			
+			KZeroClone->Add(new AliReducedParticle(mcPart->Eta(), mcPart->Phi(), pT,iPart,-1,d0,kTRUE,mcPart->Charge()));
+		}
+		
+	} // end if use  MC truth
+
+
+
 	return KZeroClone;
 }
