@@ -779,7 +779,8 @@ void AliChaoticity::ParInit()
   fDampStart = 0.3;
   fDampStep = 0.02;
   
-   
+  //
+
   
   fEC = new AliChaoticityEventCollection **[fZvertexBins];
   for(UShort_t i=0; i<fZvertexBins; i++){
@@ -1693,11 +1694,11 @@ void AliChaoticity::Exec(Option_t *)
   else if(fMbin<=7) fFSIbin = 4;//30-40%
   else fFSIbin = 5;//40-50%
 
-  Int_t rIndexForTPN = fRBinMax;
-  if(fMbin<=1) {rIndexForTPN=fRBinMax;}
-  else if(fMbin<=3) {rIndexForTPN=fRBinMax-1;}
-  else if(fMbin<=5) {rIndexForTPN=fRBinMax-2;}
-  else {rIndexForTPN=fRBinMax-3;}
+  Int_t rIndexForTPNMomRes = fRBinMax;
+  if(fMbin<=1) {rIndexForTPNMomRes=fRBinMax;}
+  else if(fMbin<=3) {rIndexForTPNMomRes=fRBinMax-1;}
+  else if(fMbin<=5) {rIndexForTPNMomRes=fRBinMax-2;}
+  else {rIndexForTPNMomRes=fRBinMax-3;}
 
   //////////////////////////////////////////////////
   fEDbin=0;// Extra Dimension bin (Kt, (Kt-Psi),....)
@@ -2927,7 +2928,7 @@ void AliChaoticity::Exec(Option_t *)
 	      
 	      Float_t myDamp = fDampStart + (fDampStep)*fFixedLambdaBinr3;// lambdabin=0.52 for v1 draft, 0.7 is more realistic
 	      Int_t denIndex = 0;
-	      Int_t momResIndex = rIndexForTPN*kNDampValues + fFixedLambdaBinMomRes;// lambdabin=0.52 for v1 draft, 0.4 is more realistic
+	      Int_t momResIndex = rIndexForTPNMomRes*kNDampValues + fFixedLambdaBinMomRes;// lambdabin=0.52 for v1 draft, 0.4 is more realistic
 
 	      Float_t coulCorr12 = FSICorrelationTherm2(+1,+1, qinv12);
 	      Float_t coulCorr13 = FSICorrelationTherm2(+1,+1, qinv13);
@@ -3759,11 +3760,12 @@ Float_t AliChaoticity::MCWeightOSL(Int_t charge1, Int_t charge2, Int_t rIndex, I
 Float_t AliChaoticity::MCWeight3D(Bool_t SameCharge, Int_t term, Int_t dampIndex, Float_t q12, Float_t q13, Float_t q23){
   if(term==5) return 1.0;
   
-  Float_t radius=fRBinMax;
-  if(fMbin<=1) {radius = fRBinMax;}
-  else if(fMbin<=3) {radius = fRBinMax-1;}
-  else if(fMbin<=5) {radius = fRBinMax-2;}
-  else {radius = fRBinMax-3;}
+  Float_t radius=(fRBinMax+3);// RBin=0 corresponds to R=3 fm
+  //if(fMbin<=1) {}
+  //else if(fMbin<=3) {radius = radius-1;}
+  //else if(fMbin<=5) {radius = radius-2;}
+  //else {radius = radius-3;}
+  
   radius /= 0.19733;
 
   Float_t myDamp = fDampStart + (fDampStep)*dampIndex;
