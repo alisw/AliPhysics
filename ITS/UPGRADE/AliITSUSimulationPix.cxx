@@ -170,8 +170,8 @@ void AliITSUSimulationPix::SDigitiseModule()
 {
   //  This function begins the work of creating S-Digits.
     
-  AliDebug(10,Form("In event %d module %d there are %d hits returning.", fEvent, fModule->GetIndex(),fModule->GetNHits()));       
-      
+  AliDebug(10,Form("In event %d module %d there are %d hits", fEvent, fModule->GetIndex(),fModule->GetNHits()));       
+  //      
   if (fModule->GetNHits()) Hits2SDigitsFast();
   //
   if (fSimuParam->GetPixAddNoisyFlag())   AddNoisyPixels();
@@ -255,9 +255,7 @@ void AliITSUSimulationPix::Hits2SDigits()
 	el  = dt * de / fSimuParam->GetGeVToCharge();
 	//
 	if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
-        // Check if the hit is inside readout window
-	if ( !(((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof) ) continue;
-	SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
+	SpreadCharge2D(x,z,y,ix,iz,el,tof,idtrack,h);
       } // end for t
     } else { // st == 0.0 deposit it at this point
       x   = x0;
@@ -266,9 +264,7 @@ void AliITSUSimulationPix::Hits2SDigits()
       if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
       el  = de / fSimuParam->GetGeVToCharge();
       if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
-      // Check if the hit is inside readout window
-      if ( !(((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof) ) continue;
-      SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
+      SpreadCharge2D(x,z,y,ix,iz,el,tof,idtrack,h);
     } // end if st>0.0    
   } // Loop over all hits h
   //
@@ -337,9 +333,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
 	if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
 	el  = fGlobalChargeScale * dstep * de/fSimuParam->GetGeVToCharge();
 	if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
-        // Check if the hit is inside readout window
-	if ( !(((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof) ) continue;
-	SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
+	SpreadCharge2D(x,z,y,ix,iz,el,tof,idtrack,h);
       } // end for i // End Integrate over t
     }
     else { // st == 0.0 deposit it at this point
@@ -349,9 +343,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
       if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
       el  = de / fSimuParam->GetGeVToCharge();
       if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
-      // Check if the hit is inside readout window
-      if ( !(((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof) ) continue;
-      SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
+      SpreadCharge2D(x,z,y,ix,iz,el,tof,idtrack,h);
     } // end if st>0.0
     
   } // Loop over all hits h
@@ -381,7 +373,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
 
 //______________________________________________________________________
 void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, Int_t ix0,Int_t iz0,
-					  Double_t el, Int_t tID, Int_t hID)
+					  Double_t el, Double_t tof, Int_t tID, Int_t hID)
 {
   // Spreads the charge over neighboring cells. Assume charge is distributed
   // as charge(x,z) = (el/2*pi*sigx*sigz)*exp(-arg)
@@ -421,6 +413,10 @@ void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, 
   ize = Min( nz+iz0,fSeg->Npz()-1);
   for (ix=ixs;ix<=ixe;ix++) 
     for (iz=izs;iz<=ize;iz++) {
+      //
+      // Check if the hit is inside readout window
+      if ( !(((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof) ) continue;
+      //
       fSeg->DetToLocal(ix,iz,x,z); // pixel center
       xdioshift = zdioshift = 0;
       CalcDiodeShiftInPixel(ix,iz,xdioshift,zdioshift);    // Check and apply diode shift if needed
