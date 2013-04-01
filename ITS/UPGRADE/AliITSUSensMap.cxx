@@ -38,8 +38,9 @@
 ClassImp(AliITSUSensMap)
 //______________________________________________________________________
 AliITSUSensMap::AliITSUSensMap() 
-:  fDim0(0)
-  ,fDim1(0)
+:  fDimCol(0)
+  ,fDimRow(0)
+  ,fDimCycle(0)
   ,fItems(0)
   ,fBTree(0)
 {
@@ -47,9 +48,10 @@ AliITSUSensMap::AliITSUSensMap()
 }
 
 //______________________________________________________________________
-AliITSUSensMap::AliITSUSensMap(const char* className, UInt_t dim0,UInt_t dim1)
-  :fDim0(dim0)
-  ,fDim1(dim1)
+AliITSUSensMap::AliITSUSensMap(const char* className, UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle)
+  :fDimCol(dimCol)
+  ,fDimRow(dimRow)
+  ,fDimCycle(dimCycle)
   ,fItems(new TClonesArray(className,100))
   ,fBTree(new TBtree())
 {
@@ -68,8 +70,9 @@ AliITSUSensMap::~AliITSUSensMap()
 //______________________________________________________________________
 AliITSUSensMap::AliITSUSensMap(const AliITSUSensMap &source)
   :TObject(source)
-  ,fDim0(source.fDim0)
-  ,fDim1(source.fDim1)
+  ,fDimCol(source.fDimCol)
+  ,fDimRow(source.fDimRow)
+  ,fDimCycle(source.fDimCycle)
   ,fItems( source.fItems ? new TClonesArray(*source.fItems) : 0)
   ,fBTree( 0 )
 {
@@ -105,10 +108,10 @@ void AliITSUSensMap::Clear(Option_t*)
 }
 
 //______________________________________________________________________
-void AliITSUSensMap::DeleteItem(UInt_t i,UInt_t j)
+void AliITSUSensMap::DeleteItem(UInt_t col,UInt_t row)
 {
   // Delete a particular AliITSUSensMapItems.
-  SetUniqueID( GetIndex(i,j) );
+  SetUniqueID( GetIndex(col,row) );
   TObject* fnd = fBTree->FindObject(this);
   if (!fnd) return;
   Disable(fnd);
@@ -126,22 +129,36 @@ void AliITSUSensMap::DeleteItem(TObject* obj)
 }
 
 //______________________________________________________________________
-void AliITSUSensMap::GetCell(UInt_t index,UInt_t &i,UInt_t &j) const 
+void AliITSUSensMap::GetCell(UInt_t index,UInt_t &i,UInt_t &j,UInt_t &cycle) const 
 {
   // returns the i,j index numbers from the linearized index computed
   // with GetIndex
-  if(index>=fDim0*fDim1){
-    Warning("GetCell","Index out of range 0<=index=%d<%d",index,fDim0*fDim1);
-    i=-1;j=-1;
+  if(index>=fDimCol*fDimRow*fDimCycle){
+    Warning("GetCell","Index out of range 0<=index=%d<%d",index,fDimCol*fDimRow*fDimCycle);
+    i=-1;j=-1,cycle=-1;
     return;
   } // end if
+  cycle = index/(fDimCol*fDimRow);
+  index %= (fDimCol*fDimRow);
+  //
 #ifdef _ROWWISE_SORT_
-  i = index%fDim0;   // sorted in row, then in column
-  j = index/fDim0;
+  i = index%fDimCol;   // sorted in row, then in column
+  j = index/fDimCol;
 #else
-  i = index/fDim1;   // sorted in column, then in row
-  j = index%fDim1;
+  i = index/fDimRow;   // sorted in column, then in row
+  j = index%fDimRow;
 #endif  
   //
   return;
+}
+
+//______________________________________________________________________
+void  AliITSUSensMap::SetDimensions(UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle) 
+{
+  // set dimensions for current sensor
+  const UInt_t kMaxPackDim = 0xffffffff;
+  fDimCol = dimCol; 
+  fDimRow = dimRow; 
+  fDimCycle=dimCycle;
+  if (fDimCol*fDimRow*fDimCycle>kMaxPackDim) AliFatal(Form("Dimension %dx%dx%d cannot be packed to UInt_t",fDimCol,fDimRow,fDimCycle));
 }

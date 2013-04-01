@@ -415,7 +415,8 @@ void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, 
     for (iz=izs;iz<=ize;iz++) {
       //
       // Check if the hit is inside readout window
-      if ( !(((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof) ) continue;
+      int cycleRO = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof);
+      if (Abs(cycleRO)>kMaxROCycleAccept) continue;
       //
       fSeg->DetToLocal(ix,iz,x,z); // pixel center
       xdioshift = zdioshift = 0;
@@ -429,7 +430,7 @@ void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, 
       z2  = z1 + dzi; // Upper
       z1 -= dzi;      // Lower
       s   = el* (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fSpreadFun)(dtIn);
-      if (s>fSimuParam->GetPixMinElToAdd()) UpdateMapSignal(iz,ix,tID,hID,s);
+      if (s>fSimuParam->GetPixMinElToAdd()) UpdateMapSignal(iz,ix,tID,hID,s,cycleRO);
     } // end for ix, iz
   //
 }
@@ -510,7 +511,7 @@ void AliITSUSimulationPix::RemoveDeadPixels()
   //
   // remove single bad pixels one by one
   int nsingle = calObj->GetNrBadSingle();
-  UInt_t col,row;
+  UInt_t col,row,cycle;
   for (int i=nsingle;i--;) {
     calObj->GetBadPixelSingle(i,row,col);
     fSensMap->DeleteItem(col,row);
@@ -519,7 +520,7 @@ void AliITSUSimulationPix::RemoveDeadPixels()
   for (int isd=nsd;isd--;) {
     AliITSUSDigit* sd = (AliITSUSDigit*)fSensMap->AtUnsorted(isd);
     if (fSensMap->IsDisabled(sd)) continue;
-    fSensMap->GetMapIndex(sd->GetUniqueID(),col,row);
+    fSensMap->GetMapIndex(sd->GetUniqueID(),col,row,cycle);
     int chip = fSeg->GetChipFromChannel(0,col);
     //    if (calObj->IsChipMarkedBad(chip)) fSensMap->Disable(sd); // this will simple mark the hit as bad
     if (calObj->IsChipMarkedBad(chip)) fSensMap->DeleteItem(sd); // this will suppress hit in the sorted list
@@ -545,7 +546,7 @@ void AliITSUSimulationPix::FrompListToDigits()
   // add noise and electronics, perform the zero suppression and add the
   // digit to the list
   static AliITSU *aliITS = (AliITSU*)gAlice->GetModule("ITS");
-  UInt_t ix,iz;
+  UInt_t ix,iz,iCycle;
   Double_t sig;
   const Int_t    knmaxtrk=AliITSdigit::GetNTracks();
   static AliITSUDigitPix dig;
@@ -589,9 +590,10 @@ void AliITSUSimulationPix::FrompListToDigits()
       //PH This apparently is a problem which needs investigation
       AliWarning(Form("Too big or too small signal value %f",sig));
     }
-    fSensMap->GetMapIndex(sd->GetUniqueID(),iz,ix);
+    fSensMap->GetMapIndex(sd->GetUniqueID(),iz,ix,iCycle);
     dig.SetCoord1(iz);
     dig.SetCoord2(ix);
+    dig.SetROCycle(int(iCycle) - kMaxROCycleAccept);
     dig.SetSignal((Int_t)sig);
     dig.SetSignalPix((Int_t)sig);
     int ntr = sd->GetNTracks();
@@ -616,12 +618,12 @@ void AliITSUSimulationPix::FrompListToDigits()
 
 //______________________________________________________________________
 Int_t AliITSUSimulationPix::CreateNoisyDigits(Int_t minID,Int_t maxID,double probNoisy, double noise, double base)
-{//RS PAYATT2
+{
   // create random noisy digits above threshold within id range [minID,maxID[
   // see FrompListToDigits for details
   //
   static AliITSU *aliITS = (AliITSU*)gAlice->GetModule("ITS");
-  UInt_t ix,iz;
+  UInt_t ix,iz,iCycle;
   static AliITSUDigitPix dig;
   static TArrayI ordSampleInd(100),ordSample(100); //RS!!! static is not thread-safe!!!
   const Int_t    knmaxtrk=AliITSdigit::GetNTracks();
@@ -633,9 +635,10 @@ Int_t AliITSUSimulationPix::CreateNoisyDigits(Int_t minID,Int_t maxID,double pro
   int* ordV = ordSample.GetArray();
   int* ordI = ordSampleInd.GetArray();
   for (int j=0;j<ncand;j++) {
-    fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],iz,ix);   // create noisy digit
+    fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],iz,ix,iCycle);   // create noisy digit
     dig.SetCoord1(iz);
     dig.SetCoord2(ix);
+    dig.SetROCycle(int(iCycle) - kMaxROCycleAccept);
     dig.SetSignal(1);
     dig.SetSignalPix((Int_t)AliITSUSimuParam::GenerateNoiseQFunction(probNoisy,base,noise));
     for (int k=knmaxtrk;k--;) {
@@ -672,12 +675,13 @@ void AliITSUSimulationPix::SetCoupling(AliITSUSDigit* old, Int_t ntrack, Int_t i
   // old                  existing AliITSUSDigit
   // Int_t ntrack         track incex number
   // Int_t idhit          hit index number
-  UInt_t col,row;
+  UInt_t col,row,iCycle;
   Double_t pulse1,pulse2;
   Double_t couplR=0.0,couplC=0.0;
   Double_t xr=0.;
   //
-  fSensMap->GetMapIndex(old->GetUniqueID(),col,row);
+  fSensMap->GetMapIndex(old->GetUniqueID(),col,row,iCycle);
+  int cycle = int(iCycle)-kMaxROCycleAccept;
   fSimuParam->GetPixCouplingParam(couplC,couplR);
   if (GetDebug(2)) AliInfo(Form("(col=%d,row=%d,ntrack=%d,idhit=%d)  couplC=%e couplR=%e",
 				col,row,ntrack,idhit,couplC,couplR));
@@ -688,12 +692,12 @@ void AliITSUSimulationPix::SetCoupling(AliITSUSDigit* old, Int_t ntrack, Int_t i
     // loop in col direction
     int j1 = int(col) + isign;
     xr = gRandom->Rndm();
-    if ( !((j1<0) || (j1>fSeg->Npz()-1) || (xr>couplC)) ) UpdateMapSignal(UInt_t(j1),row,ntrack,idhit,pulse1);
+    if ( !((j1<0) || (j1>fSeg->Npz()-1) || (xr>couplC)) ) UpdateMapSignal(UInt_t(j1),row,ntrack,idhit,pulse1,cycle);
     //
     // loop in row direction
     int j2 = int(row) + isign;
     xr = gRandom->Rndm();
-    if ( !((j2<0) || (j2>fSeg->Npx()-1) || (xr>couplR)) ) UpdateMapSignal(col,UInt_t(j2),ntrack,idhit,pulse2);
+    if ( !((j2<0) || (j2>fSeg->Npx()-1) || (xr>couplR)) ) UpdateMapSignal(col,UInt_t(j2),ntrack,idhit,pulse2,cycle);
   } 
   //
 }
@@ -722,15 +726,16 @@ void AliITSUSimulationPix::SetCouplingOld(AliITSUSDigit* old, Int_t ntrack,Int_t
   // idhit          hit index number
   // module         module number
   //
-  UInt_t col,row;
+  UInt_t col,row,iCycle;
   Int_t modId = fModule->GetIndex();
   Double_t pulse1,pulse2;
   Double_t couplR=0.0,couplC=0.0;
   //
-  fSensMap->GetMapIndex(old->GetUniqueID(),col,row);
+  fSensMap->GetMapIndex(old->GetUniqueID(),col,row,iCycle);
+  int cycle = int(iCycle)-kMaxROCycleAccept;  
   fSimuParam->GetPixCouplingParam(couplC,couplR);
-  if (GetDebug(3)) AliInfo(Form("(col=%d,row=%d,ntrack=%d,idhit=%d)  couplC=%e couplR=%e",
-				col,row,ntrack,idhit,couplC,couplR));
+  if (GetDebug(3)) AliInfo(Form("(col=%d,row=%d,roCycle=%d,ntrack=%d,idhit=%d)  couplC=%e couplR=%e",
+				col,row,iCycle,ntrack,idhit,couplC,couplR));
  //
  if (old->GetSignal()<fSimuParam->GetPixMinElToAdd()) return; // too small signal
  for (Int_t isign=-1;isign<=1;isign+=2) {// loop in col direction
@@ -739,13 +744,13 @@ void AliITSUSimulationPix::SetCouplingOld(AliITSUSDigit* old, Int_t ntrack,Int_t
    int j1 = int(col)+isign;
    pulse1 *= couplC;    
    if ((j1<0)||(j1>fSeg->Npz()-1)||(pulse1<fSimuParam->GetPixThreshold(modId))) pulse1 = old->GetSignal();
-   else UpdateMapSignal(UInt_t(j1),row,ntrack,idhit,pulse1);
+   else UpdateMapSignal(UInt_t(j1),row,ntrack,idhit,pulse1,cycle);
    
    // loop in row direction
    int j2 = int(row) + isign;
    pulse2 *= couplR;
    if ((j2<0)||(j2>(fSeg->Npx()-1))||(pulse2<fSimuParam->GetPixThreshold(modId))) pulse2 = old->GetSignal();
-   else UpdateMapSignal(col,UInt_t(j2),ntrack,idhit,pulse2);
+   else UpdateMapSignal(col,UInt_t(j2),ntrack,idhit,pulse2,cycle);
  } // for isign
 }
 
@@ -794,10 +799,10 @@ void AliITSUSimulationPix::SetResponseParam(AliITSUParamList* resp)
   int readoutType = Nint(fResponseParam->GetParameter(kReadOutSchemeType));
   switch (readoutType) {
   case kReadOutStrobe: 
-    fROTimeFun = &AliITSUSimulationPix::IsHitInReadOutWindow;
+    fROTimeFun = &AliITSUSimulationPix::GetReadOutCycle;
     break;
   case kReadOutRollingShutter: 
-    fROTimeFun = &AliITSUSimulationPix::IsHitInReadOutWindowRollingShutter;
+    fROTimeFun = &AliITSUSimulationPix::GetReadOutCycleRollingShutter;
     break;
   default: AliFatal(Form("Did not find requested readout time type id=%d",readoutType));
   }
@@ -837,24 +842,24 @@ void AliITSUSimulationPix::SetResponseParam(AliITSUParamList* resp)
 }
 
 //______________________________________________________________________
-Bool_t AliITSUSimulationPix::IsHitInReadOutWindowRollingShutter(Int_t row, Int_t col, Double_t hitTime)
+Int_t AliITSUSimulationPix::GetReadOutCycleRollingShutter(Int_t row, Int_t col, Double_t hitTime)
 {
   //
-  // Check whether the hit is in the read out window of the given column/row of the sensor
+  // Get the read-out cycle of the hit in the given column/row of the sensor.
   // hitTime is the time of the subhit (hit is divided to nstep charge deposit) in seconds
   // globalPhaseShift gives the start of the RO for the cycle in pixel wrt the LHC clock
   // GetRollingShutterWindow give the with of the rolling shutter read out window
   //
-  double timePerRow = fReadOutCycleLength / fSeg->Npx();
-  double tmax = fReadOutCycleOffset + timePerRow*(row+1);
-  double tmin = tmax - fReadOutCycleLength;
-  AliDebug(3,Form("Rolling shutter at row%d/col%d: particle time: %e, tmin: %e : %e",row,col,hitTime,tmin,tmax));
-  return (hitTime<tmin || hitTime>tmax) ? kFALSE : kTRUE;
+  double tmin = fReadOutCycleOffset + fReadOutCycleLength*(double(row)/fSeg->Npx()-1.);
+  int cycle = Nint( (hitTime-tmin)/fReadOutCycleLength - 0.5 );
+  AliDebug(3,Form("Rolling shutter at row%d/col%d: particle time: %e, tmin: %e : tmax %e -> cycle:%d",row,col,hitTime,tmin,
+		  tmin+fReadOutCycleLength,cycle));
+  return cycle;
   //  
 }
 
 //______________________________________________________________________
-Bool_t AliITSUSimulationPix::IsHitInReadOutWindow(Int_t row, Int_t col, Double_t hitTime)
+Int_t AliITSUSimulationPix::GetReadOutCycle(Int_t row, Int_t col, Double_t hitTime)
 {
   //
   // Check whether the hit is in the read out window of the given column/row of the sensor
@@ -862,7 +867,7 @@ Bool_t AliITSUSimulationPix::IsHitInReadOutWindow(Int_t row, Int_t col, Double_t
   AliDebug(3,Form("Strobe readout: row%d/col%d: particle time: %e, tmin: %e, tmax %e",
 		  row,col,hitTime,fReadOutCycleOffset,fReadOutCycleOffset+fReadOutCycleLength));
   hitTime -= fReadOutCycleOffset+0.5*fReadOutCycleLength;
-  return (hitTime<0 || hitTime>fReadOutCycleLength) ? kFALSE : kTRUE;
+  return (hitTime<0 || hitTime>fReadOutCycleLength) ? kMaxROCycleAccept+1 : 0;
   //  
 }
 

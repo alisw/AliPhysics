@@ -18,9 +18,11 @@ class AliITSUDigitPix: public AliITSdigit {
     virtual ~AliITSUDigitPix(){/*destructor*/}
     // returns the signal in electrons
     Int_t GetSignalPix() const {return fSignalPix;}
+    Int_t GetROCycle()   const {return fROCycle;}
     virtual Int_t GetListOfTracks(TArrayI &t);
     // set signal in electrons
     void SetSignalPix(Int_t sig) {fSignalPix = sig;}
+    void SetROCycle(Int_t cycle) {fROCycle = cycle;}
     virtual void Print(ostream *os); // Class ascii print function
     virtual void Print(Option_t *option="") const {TObject::Print(option);}
     virtual void Read(istream *os);  // Class ascii read function
@@ -29,7 +31,7 @@ class AliITSUDigitPix: public AliITSdigit {
  protected:
     
     Int_t fSignalPix;   // Signal in electrons
-
+    Int_t fROCycle;     // readout cycle
     ClassDef(AliITSUDigitPix,1)   // Simulated digit object for Pixels
 
 };

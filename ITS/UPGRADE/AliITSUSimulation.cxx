@@ -131,22 +131,23 @@ Bool_t AliITSUSimulation::AddSDigitsToModule(TSeqCollection *pItemArr,Int_t mask
 }
 
 //______________________________________________________________________
-void AliITSUSimulation::UpdateMapSignal(UInt_t dim0,UInt_t dim1,Int_t trk,Int_t ht,Double_t signal) 
+void AliITSUSimulation::UpdateMapSignal(UInt_t col,UInt_t row,Int_t trk,Int_t ht,Double_t signal, Int_t roCycle) 
 {
   // update map with new hit
-  UInt_t ind = fSensMap->GetIndex(dim0,dim1);
+  // Note: roCycle can be anything between -kMaxROCycleAccept : kMaxROCycleAccept, but the index should be built with pos.number
+  UInt_t ind = fSensMap->GetIndex(col,row,roCycle+kMaxROCycleAccept);
   AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);
-  if (!oldItem) fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(trk,ht,fModule->GetIndex(),ind,signal) );
+  if (!oldItem) fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(trk,ht,fModule->GetIndex(),ind,signal,roCycle) );
   else oldItem->AddSignal(trk,ht,signal);
 }
 
 //______________________________________________________________________
-void AliITSUSimulation::UpdateMapNoise(UInt_t dim0,UInt_t dim1,Double_t noise) 
+void AliITSUSimulation::UpdateMapNoise(UInt_t col,UInt_t row,Double_t noise, Int_t roCycle) 
 {
   // update map with new hit
-  UInt_t ind = fSensMap->GetIndex(dim0,dim1);
+  UInt_t ind = fSensMap->GetIndex(col,row,roCycle);
   AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);
-  if (!oldItem) fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(fModule->GetIndex(),ind,noise) );
+  if (!oldItem) fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(fModule->GetIndex(),ind,noise,roCycle) );
   else oldItem->AddNoise(noise);
 }
 

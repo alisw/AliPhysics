@@ -27,8 +27,11 @@
 ClassImp(AliITSUDigitPix)
 
 //______________________________________________________________________
-AliITSUDigitPix::AliITSUDigitPix():AliITSdigit(),
-fSignalPix(0){
+AliITSUDigitPix::AliITSUDigitPix()
+:  AliITSdigit()
+  ,fSignalPix(0)
+  ,fROCycle(0)
+{
     // default constructor, zero coordinates and set array
     // elements to clearly unphysical values. A value of 0 may
     // be a valide track of hit number.
@@ -39,8 +42,9 @@ fSignalPix(0){
 }
 
 //______________________________________________________________________
-AliITSUDigitPix::AliITSUDigitPix(const Int_t *digits):
-  fSignalPix(digits[2])
+AliITSUDigitPix::AliITSUDigitPix(const Int_t *digits)
+  :fSignalPix(digits[2])
+  ,fROCycle(digits[3])
 {
     // Creates a pixel digit object
     Int_t i;
@@ -53,9 +57,9 @@ AliITSUDigitPix::AliITSUDigitPix(const Int_t *digits):
 }
 
 //______________________________________________________________________
-AliITSUDigitPix::AliITSUDigitPix(const Int_t *digits,const Int_t *tracks,
-			       const Int_t *hits):
-fSignalPix(digits[2])
+AliITSUDigitPix::AliITSUDigitPix(const Int_t *digits,const Int_t *tracks,const Int_t *hits)
+: fSignalPix(digits[2])
+, fROCycle(digits[3])
 {
     // Creates a simulated pixel digit object
 
@@ -111,6 +115,7 @@ void AliITSUDigitPix::Print(ostream *os)
     for(i=0;i<fgkSize;i++) *os <<","<< fTracks[i];
     for(i=0;i<fgkSize;i++) *os <<","<< fHits[i];
     *os << "," << fSignalPix;
+    *os << "," << fROCycle;
 }
 
 //______________________________________________________________________
@@ -123,6 +128,7 @@ void AliITSUDigitPix::Read(istream *os)
     for(i=0;i<fgkSize;i++) *os >> fTracks[i];
     for(i=0;i<fgkSize;i++) *os >> fHits[i];
     *os >> fSignalPix;
+    *os >> fROCycle;
 }
 
 //______________________________________________________________________

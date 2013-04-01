@@ -25,37 +25,38 @@ public:
   enum {kCellX1,kCellX2,kCellZ1,kCellZ2,kCellYDepth,kNDtSpread}; // data used for ch. spread integral calc.
   //
   // charge spread functions defined
-  enum {kSpreadFunGauss2D,                  // single gaussian in 2D, SpreadFunGauss2D
-	kSpreadFunDoubleGauss2D,            // double gaussian in 2D, SpreadFunDoubleGauss2D
-	kSpreadFunHisto,                    // use 2D histo from the object stored in fResponseParam
-	kNSpreadFuns
+  enum {kSpreadFunGauss2D                   // single gaussian in 2D, SpreadFunGauss2D
+	,kSpreadFunDoubleGauss2D            // double gaussian in 2D, SpreadFunDoubleGauss2D
+	,kSpreadFunHisto                    // use 2D histo from the object stored in fResponseParam
+	,kNSpreadFuns
   };
   // These are enums for interpretation of the entries in the AliITSUParamList*fResponseParam : 
   // object to holding the sensor-specific response data 
   // fist kParamStart entries of spread fun params are reserved for common parameters
-  enum {kChargeSpreadType,                  // charge spread function type, one of kNSpreadFuns types
-	kSpreadFunParamNXoffs,               // number of pixels to consider +- from injection point (in X)
-	kSpreadFunParamNZoffs,               // number of pixels to consider +- from injection point (in Z)
-	kSpreadFunMinSteps,                  // the single hit charge is divided into kSpreadFunMinSteps (minimum is 3)
-        kReadOutSchemeType,                  // readout type strobe, rolling shutter etc
-	kReadOutCycleLength,                 // full readout cycle window
-        kSpreadFunGlobalQScale,              // Global charge scaling factor to match tes beam results to simu (Geant3)
-        kPixSNDisrcCut,                      // S/N cut applied at discrimination level
-        kPixMinElToAdd,                      // Min number of electrons to add to sdig
-        kPixNoiseIsOn,                       // Turn Pixel Noise on
-        kPixNoiseInAllMod,                   // To apply pixel noise in all modules, if not only on ones where there is a hit
-        kPixNoiseMPV,                        // Pixel noise MPV
-        kPixNoiseSigma,                      // Pixel noise sigma
-        kPixFakeRate,                        // Pixel fake rate	
+  enum {kChargeSpreadType                  // charge spread function type, one of kNSpreadFuns types
+	,kSpreadFunParamNXoffs               // number of pixels to consider +- from injection point (in X)
+	,kSpreadFunParamNZoffs               // number of pixels to consider +- from injection point (in Z)
+	,kSpreadFunMinSteps                  // the single hit charge is divided into kSpreadFunMinSteps (minimum is 3)
+        ,kReadOutSchemeType                  // readout type strobe, rolling shutter etc
+	,kReadOutCycleLength                 // full readout cycle window
+        ,kSpreadFunGlobalQScale              // Global charge scaling factor to match tes beam results to simu (Geant3)
+        ,kPixSNDisrcCut                      // S/N cut applied at discrimination level
+        ,kPixMinElToAdd                      // Min number of electrons to add to sdig
+        ,kPixNoiseIsOn                       // Turn Pixel Noise on
+        ,kPixNoiseInAllMod                   // To apply pixel noise in all modules, if not only on ones where there is a hit
+	,kPixNoiseMPV                        // Pixel noise MPV
+        ,kPixNoiseSigma                      // Pixel noise sigma
+        ,kPixFakeRate                        // Pixel fake rate	
 	// 
-	kNReservedParams=20,                 // some reserved slots
-	kParamStart = kNReservedParams       // user parameters must start from this slot
+	,kNReservedParams=20                 // some reserved slots
+	,kParamStart = kNReservedParams       // user parameters must start from this slot
   };
   //
   // defined readout types:
-  enum {kReadOutStrobe,                     // hits in static time window fReadOutCycleLength wrt offset fReadOOutCycleOffset (global for sensor) are seen
-	kReadOutRollingShutter,             // hits in rolling (row-wise) window are seen (see IsHitInReadOutWindowRollingShutter)
-	kNReadOutTypes}; 
+  enum {kReadOutStrobe                      // hits in static time window fReadOutCycleLength wrt offset fReadOOutCycleOffset (global for sensor) are seen
+	,kReadOutRollingShutter             // hits in rolling (row-wise) window are seen (see GetReadOutCycleRollingShutter)
+	,kNReadOutTypes
+  }; 
   // elements of the SpreadFunGauss2D parameterization (offsetted by kParamStart)
   enum {kG1MeanX=kParamStart,kG1SigX,kG1MeanZ,kG1SigZ,kNG1Par};
   // elements of the SpreadFunDoubleGauss2D parameterization (offsetted by kParamStart)
@@ -93,8 +94,8 @@ public:
   //
   virtual void SetResponseParam(AliITSUParamList* resp);
   //
-  Bool_t IsHitInReadOutWindow(Int_t row, Int_t col, Double_t hitTime);
-  Bool_t IsHitInReadOutWindowRollingShutter(Int_t row, Int_t col, Double_t hitTime);
+  Int_t GetReadOutCycle(Int_t row, Int_t col, Double_t hitTime);
+  Int_t GetReadOutCycleRollingShutter(Int_t row, Int_t col, Double_t hitTime);
   //
   void CalcDiodeShiftInPixel(Int_t xlin, Int_t zcol, Float_t &x, Float_t &z);
   //
@@ -113,7 +114,7 @@ public:
    //   
    TH2*          fSpread2DHisto;           //! optional 2D histo for charge spread parameterization
    Double_t (AliITSUSimulationPix::*fSpreadFun)(const Double_t *dtIn); //! pointer on current spread function
-   Bool_t   (AliITSUSimulationPix::*fROTimeFun)(Int_t row,Int_t col, Double_t hitTime); //! pointer on current R/O time check function
+   Int_t    (AliITSUSimulationPix::*fROTimeFun)(Int_t row,Int_t col, Double_t hitTime); //! pointer on current R/O time check function
 
    ClassDef(AliITSUSimulationPix,1)  // Simulation of pixel clusters
  };

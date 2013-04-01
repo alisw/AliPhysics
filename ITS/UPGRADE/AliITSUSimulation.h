@@ -38,6 +38,8 @@ class AliITSUParamList;
 class AliITSUSimulation : public TObject 
 {
  public:
+  enum {kMaxROCycleAccept=126};             // flag for read-out cycle to discard
+  //
   AliITSUSimulation();
   AliITSUSimulation(AliITSUSimuParam* sim, AliITSUSensMap* map);
   virtual ~AliITSUSimulation() {} 
@@ -45,8 +47,8 @@ class AliITSUSimulation : public TObject
   AliITSUSimulation& operator=(const AliITSUSimulation &source);
   virtual void Init() = 0;
   //
-  void UpdateMapSignal(UInt_t dim0,UInt_t dim1, Int_t trk,Int_t ht,Double_t signal);
-  void UpdateMapNoise(UInt_t dim0,UInt_t dim1, Double_t noise);
+  void UpdateMapSignal(UInt_t col,UInt_t row, Int_t trk,Int_t ht,Double_t signal, Int_t roCycle=0);
+  void UpdateMapNoise(UInt_t col,UInt_t row, Double_t noise, Int_t roCycle=0);
   virtual void InitSimulationModule(AliITSUModule* mod, Int_t ev, AliITSsegmentation* seg, AliITSUParamList* resp);
   //
   // Hits -> SDigits
@@ -74,7 +76,7 @@ class AliITSUSimulation : public TObject
   //
   void SetCalibDead(AliITSCalibration *calib)              {fCalibDead = calib;}
   void SetCalibNoisy(AliITSCalibration *calib)             {fCalibNoisy = calib;}
-  void SetSegmentation(AliITSsegmentation *seg)            {fSeg = seg; if (seg&&fSensMap) fSensMap->SetDimensions(seg->Npz(),seg->Npx());}
+  void SetSegmentation(AliITSsegmentation *seg)            {fSeg = seg; if (seg&&fSensMap) fSensMap->SetDimensions(seg->Npz(),seg->Npx(),2*kMaxROCycleAccept);}
   void SetSimuParam(AliITSUSimuParam *sp)                  {fSimuParam = sp;}
   virtual void SetResponseParam(AliITSUParamList* resp)    {fResponseParam = resp;}
   void SetMap(AliITSUSensMap *p)                           {fSensMap = p;}
