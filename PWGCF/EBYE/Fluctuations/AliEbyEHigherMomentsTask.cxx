@@ -212,6 +212,7 @@ void AliEbyEHigherMomentsTask::UserCreateOutputObjects() {
       Double_t effBinH[10] = { 99.5, 1.5, 1.5, 1.5, 5.0, 0.9, 6.8, 5.0, 0.9, 6.8 };
     
       fTHnEfficiencyHisto = new THnSparseD("fTHnEfficiencyHisto","Cent-charge-pid-pt-eta-phi", 10, effBin, effBinL, effBinH);
+      fTHnEfficiencyHisto->Sumw2();
       fTHnEfficiencyHisto->GetAxis(0)->SetTitle("Centrality");
       fTHnEfficiencyHisto->GetAxis(1)->SetTitle("Charge");
       fTHnEfficiencyHisto->GetAxis(2)->SetTitle("RecStatus");
@@ -223,7 +224,7 @@ void AliEbyEHigherMomentsTask::UserCreateOutputObjects() {
       fTHnEfficiencyHisto->GetAxis(8)->SetTitle("#eta_{Rec}");
       fTHnEfficiencyHisto->GetAxis(9)->SetTitle("#phi_{Rec}");
       fListOfHistos->Add(fTHnEfficiencyHisto);
-    }//Efficiency Sparese---
+    }//Efficiency Sparse---
     
   }//MCAOD---
   
