@@ -140,26 +140,26 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 	
 	// multiplicity
 	
-	hMap->Add( species + "_Event_Ntrk", ntrkBins, ntrkMin, ntrkMax, "Track multiplicity (all events)", "N_{trk}", "Events");
-	hMap->Add( species + "_Ana_Event_Ntrk", ntrkBins, ntrkMin, ntrkMax, "Track multiplicity", "N_{trk}", "Events");
+	hMap->Add( species + "_Event_Ntrk", ntrkBins, ntrkMin, ntrkMax, Form("Track multiplicity (all events, |#eta|< %.1f)",maxEta), "N_{trk}", "Events");
+	hMap->Add( species + "_Ana_Event_Ntrk", ntrkBins, ntrkMin, ntrkMax, Form("Track multiplicity (|#eta|< %.1f)", maxEta), "N_{trk}", "Events");
 	
 	for(Int_t i=0; i<2; ++i)
 	{
-		hMap->Add( particle[i] + "_PID_Ntrk_pTPC", ptBins, ptMin, ptMax, ntrkBins, ntrkMin, ntrkMax, particle[i] + " candidates", "p_{TPC}/Z (GeV/c)", "N_{trk}");
+		hMap->Add( particle[i] + "_PID_Ntrk_pTPC", ptBins, ptMin, ptMax, ntrkBins, ntrkMin, ntrkMax, particle[i] + " candidates " + Form("(|#eta|< %.1f)", maxEta), "p_{TPC}/Z (GeV/c)", "N_{trk}");
 		
-		hMap->Add( particle[i] + "_PID_Zmult_pTPC", ptBins, ptMin, ptMax, 400, 0, 20, particle[i] + " candidates", "p_{TPC}/Z (GeV/c)", "z_{mult}");
+		hMap->Add( particle[i] + "_PID_Zmult_pTPC", ptBins, ptMin, ptMax, 400, 0, 20, particle[i] + " candidates " + Form("(|#eta|< %.1f)", maxEta), "p_{TPC}/Z (GeV/c)", "z_{mult}");
 		
 		if(simulation)
 		{
-			hMap->Add( particle[i] + "_Gen_Nch", ntrkBins, ntrkMin, ntrkMax, particle[i] + "s (Gen)", "N_{ch}");
+			hMap->Add( particle[i] + "_Gen_Nch", ntrkBins, ntrkMin, ntrkMax, Form("Primary %ss (|#eta|< %.1f)", particle[i].Data(), maxEta), "N_{ch}");
 			
-			hMap->Add( particle[i] + "_Sim_Ntrk", ntrkBins, ntrkMin, ntrkMax, particle[i] + " s", "N_{trk}");
+			hMap->Add( particle[i] + "_Sim_Ntrk", ntrkBins, ntrkMin, ntrkMax, particle[i] + Form("s (|#eta|< %.1f)", maxEta), "N_{trk}");
 		}
 	}
 	
 	if(simulation)
 	{
-		hMap->Add( species + "_Ana_Event_Nch_Ntrk", 200, 0., 200., 200, 0., 200., "Track multiplicity", "N_{trk}", "N_{ch}");
+		hMap->Add( species + "_Ana_Event_Nch_Ntrk", 200, 0., 200., 200, 0., 200., Form("Track multiplicity (|#eta|< %.1f)", maxEta), "N_{trk}", "N_{ch}");
 	}
 	
 	hMap->Add( species + "_Vertex_XZ", 500, -50., 50., 800, -1., 1., "Primary Vertex", "Z (cm)", "X (cm)");

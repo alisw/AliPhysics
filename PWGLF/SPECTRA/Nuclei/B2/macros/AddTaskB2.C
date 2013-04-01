@@ -19,18 +19,21 @@
 Double_t GetMeanNtrk(const TString& period);
 Double_t GetNSDMeanNtrk(const TString& period);
 
-AliAnalysisTaskB2* AddTaskB2( const TString& species
-                             , const TString& outputfile
+AliAnalysisTaskB2* AddTaskB2(  const TString& species
+                             , const TString& containername
                              , const TString& trksel
                              , Int_t pidProc
                              , const TString& periodname
-                             , Bool_t simulation         = kFALSE
-                             , Bool_t heavyIons          = kFALSE
+                             , Bool_t   simulation       = kFALSE
+                             , Bool_t   heavyIons        = kFALSE
                              , Double_t maxDCAxy         = 1
                              , Double_t maxDCAz          = 2
+                             , Double_t maxEta           = 0.8
+                             , Double_t maxY             = 0.5
                              , Double_t minKNOmult       = -10
                              , Double_t maxKNOmult       = 10000
-                             , Bool_t V0AND              = kFALSE
+                             , Bool_t   V0AND            = kFALSE
+                             , Double_t maxVz            = 10
                              , Double_t minCentrality    = 0
                              , Double_t maxCentrality    = 20
                              , Double_t minM2            = 2.
@@ -45,10 +48,7 @@ AliAnalysisTaskB2* AddTaskB2( const TString& species
 	
 	const Double_t kMaxVx     = 1.;
 	const Double_t kMaxVy     = 1.;
-	const Double_t kMaxVz     = 10.;
 	
-	const Double_t kMaxY      = 0.5;
-	const Double_t kMaxEta    = 0.8;
 	const Double_t kMaxNSigma = 3.;
 	
 	const Int_t kMaxNSigmaITS = 3;
@@ -76,7 +76,7 @@ AliAnalysisTaskB2* AddTaskB2( const TString& species
 	
 	// Create and configure the task
 	
-	AliAnalysisTaskB2* task = new AliAnalysisTaskB2(Form("B2_%s",species.Data()));
+	AliAnalysisTaskB2* task = new AliAnalysisTaskB2(Form("B2.%s",containername.Data()));
 	
 	task->SetParticleSpecies(species);
 	task->SetSimulation(simulation);
@@ -93,7 +93,7 @@ AliAnalysisTaskB2* AddTaskB2( const TString& species
 	task->SetKNOmultInterval(minKNOmult, maxKNOmult);
 	task->SetVertexXInterval(-kMaxVx, kMaxVx);
 	task->SetVertexYInterval(-kMaxVy, kMaxVy);
-	task->SetVertexZInterval(-kMaxVz, kMaxVz);
+	task->SetVertexZInterval(-maxVz, maxVz);
 	
 	task->SetM2Interval(minM2, maxM2);
 	
@@ -108,7 +108,7 @@ AliAnalysisTaskB2* AddTaskB2( const TString& species
 	
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/CreateHistograms.C");
 	
-	AliLnHistoMap* hMap = CreateHistograms(species, simulation, maxDCAxy, kMaxEta, kMaxY, heavyIons);
+	AliLnHistoMap* hMap = CreateHistograms(species, simulation, maxDCAxy, maxEta, maxY, heavyIons);
 	
 	task->SetHistogramMap(hMap);
 	
@@ -116,7 +116,7 @@ AliAnalysisTaskB2* AddTaskB2( const TString& species
 	
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/TrackCuts.C");
 	
-	AliESDtrackCuts* trkCuts = TrackCuts(task, trksel, maxDCAxy, maxDCAz, kMaxNSigma, kMinTPCnCls, kMaxEta);
+	AliESDtrackCuts* trkCuts = TrackCuts(task, trksel, maxDCAxy, maxDCAz, kMaxNSigma, kMinTPCnCls, maxEta);
 	task->SetESDtrackCuts(trkCuts);
 	
 	// PID
@@ -147,7 +147,7 @@ AliAnalysisTaskB2* AddTaskB2( const TString& species
 	
 	// input and output containers
 	
-	AliAnalysisDataContainer* output = mgr->CreateContainer(outputfile.Data(), AliLnHistoMap::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+	AliAnalysisDataContainer* output = mgr->CreateContainer(containername.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:AliAnalysisTaskB2", AliAnalysisManager::GetCommonFileName()));
 	
 	mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 	mgr->ConnectOutput(task, 0, output);

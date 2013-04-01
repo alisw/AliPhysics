@@ -28,6 +28,9 @@ class AliLnHistoMap: public TObject
 	
 	TObject* Get(const TString& keyname) const { return fHistoMap->GetValue(keyname.Data()); }
 	TObject* Get(const char* keyname) const { return fHistoMap->GetValue(keyname); }
+	TObject* Get(const TObjString* key) const { return fHistoMap->GetValue(key); }
+	
+	TMap* GetMap() const { return fHistoMap; }
 	
 	TObject* Add(const TString& keyname, TObject* value);
 	

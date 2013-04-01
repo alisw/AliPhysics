@@ -48,6 +48,7 @@
 
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TList.h>
 
 #include "AliLnID.h"
 #include "AliLnHistoMap.h"
@@ -93,6 +94,7 @@ AliAnalysisTaskB2::AliAnalysisTaskB2()
 , fMaxY(0.5)
 , fMCevent(0)
 , fESDevent(0)
+, fOutputContainer(0)
 , fHistoMap(0)
 , fESDtrackCuts(0)
 , fLnID(0)
@@ -154,6 +156,7 @@ AliAnalysisTaskB2::AliAnalysisTaskB2(const char* name)
 , fMaxY(0.5)
 , fMCevent(0)
 , fESDevent(0)
+, fOutputContainer(0)
 , fHistoMap(0)
 , fESDtrackCuts(0)
 , fLnID(0)
@@ -173,7 +176,7 @@ AliAnalysisTaskB2::AliAnalysisTaskB2(const char* name)
 // Constructor
 //
 	DefineInput(0, TChain::Class());
-	DefineOutput(0, AliLnHistoMap::Class());
+	DefineOutput(0, TList::Class());
 	
 	//kFatal, kError, kWarning, kInfo, kDebug, kMaxType
 	AliLog::SetGlobalLogLevel(AliLog::kFatal);
@@ -245,7 +248,14 @@ void AliAnalysisTaskB2::CreateOutputObjects()
 //
 	if(fHistoMap == 0) exit(1); // should be created somewhere else
 	
-	PostData(0, fHistoMap);
+	fOutputContainer = new TList();
+	fOutputContainer->SetOwner(kFALSE);
+	
+	TObjString* key;
+	TIter iter(fHistoMap->GetMap());
+	while((key = (TObjString*)iter.Next())) fOutputContainer->Add((TH1*)fHistoMap->Get(key));
+	
+	PostData(0, fOutputContainer);
 }
 
 AliAnalysisTaskB2::~AliAnalysisTaskB2()
@@ -254,6 +264,7 @@ AliAnalysisTaskB2::~AliAnalysisTaskB2()
 // Default destructor
 //
 	delete fHistoMap;
+	delete fOutputContainer;
 	delete fESDtrackCuts;
 	delete fLnID;
 	
@@ -302,8 +313,8 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	
 	// --------- multiplicity and centrality ------------------
 	
-	fNtrk = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent);
-	if(fSimulation) fNch = this->GetChargedMultiplicity(0.5);
+	fNtrk = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent, AliESDtrackCuts::kTrackletsITSTPC, fMaxEta);
+	if(fSimulation) fNch = this->GetChargedMultiplicity(fMaxEta);
 	
 	((TH1D*)fHistoMap->Get(fSpecies + "_Event_Ntrk"))->Fill(fNtrk);
 	
@@ -423,7 +434,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	this->GetTracks();
 	
 	// Post the data (input/output slots #0 already used by the base class)
-	PostData(0, fHistoMap);
+	PostData(0, fOutputContainer);
 }
 
 Int_t AliAnalysisTaskB2::GetParticles()
