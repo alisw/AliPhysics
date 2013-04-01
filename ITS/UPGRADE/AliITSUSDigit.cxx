@@ -27,6 +27,7 @@ using namespace TMath;
 AliITSUSDigit::AliITSUSDigit() 
 : fModule(0)
   ,fNTracks(0)
+  ,fROCycle(0)
   ,fTsignal(0.0)
   ,fNoise(0.0)
   ,fSignalAfterElect(0.0)
@@ -40,9 +41,10 @@ AliITSUSDigit::AliITSUSDigit()
 }
 
 //______________________________________________________________________
-AliITSUSDigit::AliITSUSDigit(UInt_t module,UInt_t index,Double_t noise) 
+AliITSUSDigit::AliITSUSDigit(UInt_t module,UInt_t index,Double_t noise,Int_t roCycle) 
   :fModule(module)
   ,fNTracks(0)
+  ,fROCycle(roCycle)
   ,fTsignal(0.0)
   ,fNoise(noise)
   ,fSignalAfterElect(0.0)
@@ -57,9 +59,10 @@ AliITSUSDigit::AliITSUSDigit(UInt_t module,UInt_t index,Double_t noise)
 }
 
 //______________________________________________________________________
-AliITSUSDigit::AliITSUSDigit(Int_t track,Int_t hit,UInt_t module,UInt_t index,Double_t signal)
+AliITSUSDigit::AliITSUSDigit(Int_t track,Int_t hit,UInt_t module,UInt_t index,Double_t signal,Int_t roCycle)
   :fModule(module)
   ,fNTracks(1)
+  ,fROCycle(roCycle)
   ,fTsignal(signal)
   ,fNoise(0.0)
   ,fSignalAfterElect(0.0)
@@ -71,6 +74,7 @@ AliITSUSDigit::AliITSUSDigit(Int_t track,Int_t hit,UInt_t module,UInt_t index,Do
   //    Int_t module    The module where this signal occurred
   //    Int_t index     The cell index where this signal occurred
   //    Double_t signal The value of the signal (ionization)
+  //    Int_t roCycle   Read-Out cycle
   SetUniqueID(index);
   fTrack[0]  = track;
   fHits[0]   = hit;
@@ -99,6 +103,7 @@ AliITSUSDigit::AliITSUSDigit(const AliITSUSDigit &source)
   :TObject(source)
   ,fModule(source.fModule)
   ,fNTracks(source.fNTracks)
+  ,fROCycle(source.fROCycle)
   ,fTsignal(source.fTsignal)
   ,fNoise(source.fNoise)
   ,fSignalAfterElect(source.fSignalAfterElect)
@@ -234,7 +239,7 @@ Int_t AliITSUSDigit::Compare(const TObject* obj) const
 void AliITSUSDigit::Print(Option_t*) const 
 {
   // print itself
-  printf("Mod: %4d Index:%7d Ntr:%2d | TotSignal:%.2e Noise:%.2e |",
-	 fModule,GetUniqueID(),fNTracks,fTsignal,fNoise);
+  printf("Mod: %4d Index:%7d Ntr:%2d | TotSignal:%.2e Noise:%.2e ROCycle: %d|",
+	 fModule,GetUniqueID(),fNTracks,fTsignal,fNoise,fROCycle);
   for (int i=0;i<fNTracks;i++) printf("%d(%.2e) |",fTrack[i],fSignal[i]); printf("\n");
 }
