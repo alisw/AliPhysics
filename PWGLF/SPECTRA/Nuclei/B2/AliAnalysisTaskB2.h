@@ -18,6 +18,7 @@ class AliESDtrackCuts;
 class AliLnHistoMap;
 class AliLnID;
 class TParticle;
+class TList;
 
 class AliAnalysisTaskB2: public AliAnalysisTask
 {
@@ -157,6 +158,7 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	AliMCEvent* fMCevent;   //! monte carlo event
 	AliESDEvent* fESDevent; //! ESD event
 	
+	TList* fOutputContainer; // output container
 	AliLnHistoMap*  fHistoMap; // histogram map (defined somewhere else)
 	AliESDtrackCuts* fESDtrackCuts; // track cuts (defined somewhere else)
 	AliLnID* fLnID; // PID for light nuclei (defined somewhere else)
