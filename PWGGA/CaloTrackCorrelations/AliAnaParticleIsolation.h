@@ -32,18 +32,21 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   // Main general methods
     
-  void         CalculateCaloUEBand (AliAODPWG4ParticleCorrelation * pCandidate,
-                                    Float_t & etaBand, Float_t & phiBand) ;
-  void         CalculateTrackUEBand(AliAODPWG4ParticleCorrelation * pCandidate,
-                                    Float_t & etaBand, Float_t & phiBand) ;
+  void         CalculateCaloUEBand    (AliAODPWG4ParticleCorrelation * pCandidate,
+                                       Float_t & etaBand, Float_t & phiBand) ;
+  void         CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelation * pCandidate,
+                                       Float_t & etaBand, Float_t & phiBand) ;
+  void         CalculateTrackUEBand   (AliAODPWG4ParticleCorrelation * pCandidate,
+                                       Float_t & etaBand, Float_t & phiBand) ;
   
-  void         CalculateCaloSignalInCone  (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCluster) ;
-  void         CalculateTrackSignalInCone (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumTrack  ) ;
+  void         CalculateCaloSignalInCone    (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCluster) ;
+  void         CalculateCaloCellSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCell) ;
+  void         CalculateTrackSignalInCone   (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumTrack  ) ;
   
   Float_t      CalculateExcessAreaFraction(const Float_t excess, const Float_t conesize);
   
   void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate,
-                                                   const Float_t coneptsumCluster, const Float_t coneptsumTrack ) ;
+                                                   const Float_t coneptsumCluster,const Float_t coneptsumCell, const Float_t coneptsumTrack ) ;
   
   TObjString * GetAnalysisCuts() ;
   
@@ -161,6 +164,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   TH2F *   fhPtInCone ;                           //! Cluster/track Pt in the cone
   TH2F *   fhPtClusterInCone ;                    //! Cluster Pt in the cone
+  TH2F *   fhPtCellInCone ;                       //! Cell amplitude in the cone
   TH2F *   fhPtTrackInCone ;                      //! Track Pt in the cone
   TH2F *   fhPtTrackInConeOtherBC ;               //! Track Pt in the cone, tracks out of main BC Time window
   TH2F *   fhPtTrackInConeOtherBCPileUpSPD ;      //! Track Pt in the cone, tracks out of main BC Time window
@@ -176,31 +180,50 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPhiBandCluster ;                     //! Accumulated pT in Phi band to estimate UE in cone, only clusters
   TH2F *   fhEtaBandTrack   ;                     //! Accumulated pT in Eta band to estimate UE in cone, only tracks
   TH2F *   fhPhiBandTrack   ;                     //! Accumulated pT in Phi band to estimate UE in cone, only tracks
-  
+  TH2F *   fhEtaBandCell ;                        //! Accumulated pT in Eta band to estimate UE in cone, only cells
+  TH2F *   fhPhiBandCell ;                        //! Accumulated pT in Phi band to estimate UE in cone, only cells
+
   TH2F *   fhConeSumPt ;                          //! Cluster and tracks Sum Pt Sum Pt in the cone
+  TH2F *   fhConeSumPtCellTrack ;                 //! Cells and tracks Sum Pt Sum Pt in the cone
+  TH2F *   fhConeSumPtCell ;                      //! Cells Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtCluster ;                   //! Clusters Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtTrack ;                     //! Tracks Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtEtaBandUECluster;           //! Cluster Sum Pt in the eta band for clusters, before normalization
   TH2F *   fhConeSumPtPhiBandUECluster;           //! Cluster Sum Pt in the phi band for clusters, before normalization
   TH2F *   fhConeSumPtEtaBandUETrack;             //! Track Sum Pt in the eta band for tracks  , before normalization
   TH2F *   fhConeSumPtPhiBandUETrack;             //! Track Sum Pt in the phi badn for tracks  , before normalization
-  
+  TH2F *   fhConeSumPtEtaBandUECell;              //! Cell Sum amplitude in the eta band for cells, before normalization
+  TH2F *   fhConeSumPtPhiBandUECell;              //! Cell Sum amplitude in the phi band for cells, before normalization
+
   TH2F *   fhConeSumPtTrigEtaPhi ;                //! Cluster and tracks Sum Pt Sum Pt in the cone, per eta-phi bin of trigger,
+  TH2F *   fhConeSumPtCellTrackTrigEtaPhi ;       //! Cell and tracks Sum Pt Sum Pt in the cone, per eta-phi bin of trigger,
   TH2F *   fhConeSumPtEtaBandUEClusterTrigEtaPhi; //! Cluster Sum Pt in the eta band for clusters, per eta-phi bin of trigger,before normalization
   TH2F *   fhConeSumPtPhiBandUEClusterTrigEtaPhi; //! Cluster Sum Pt in the phi band for clusters, per eta-phi bin of trigger, before normalization
   TH2F *   fhConeSumPtEtaBandUETrackTrigEtaPhi;   //! Track Sum Pt in the eta band for tracks  , per eta-phi bin of trigger, before normalization
   TH2F *   fhConeSumPtPhiBandUETrackTrigEtaPhi;   //! Track Sum Pt in the phi badn for tracks  , per eta-phi bin of trigger, before normalization
-
+  TH2F *   fhConeSumPtEtaBandUECellTrigEtaPhi;    //! Cluster Sum amplitude in the eta band for cells, per eta-phi bin of trigger, before normalization
+  TH2F *   fhConeSumPtPhiBandUECellTrigEtaPhi;    //! Cluster Sum amplitude in the phi band for cells, per eta-phi bin of trigger, before normalization
+  
   TH2F *   fhConeSumPtEtaUESub;                   //! Cluster and tracks Sum Pt in the cone after bkg subtraction, vs pT trigger
   TH2F *   fhConeSumPtPhiUESub;                   //! Cluster and tracks Sum Pt in the cone after bkg subtraction, vs pT trigger
   TH2F *   fhConeSumPtEtaUESubTrigEtaPhi;         //! Cluster and tracks Sum Pt in the cone after bkg subtraction, vs eta-phi trigger
   TH2F *   fhConeSumPtPhiUESubTrigEtaPhi;         //! Cluster and tracks Sum Pt in the cone after bkg subtraction, vs eta-phi trigger
-    
+  
+  TH2F *   fhConeSumPtEtaUESubTrackCell;          //! Cluster and tracks Sum Pt in the cone after bkg subtraction, vs pT trigger
+  TH2F *   fhConeSumPtPhiUESubTrackCell;          //! Cluster and tracks Sum Pt in the cone after bkg subtraction, vs pT trigger
+  TH2F *   fhConeSumPtEtaUESubTrackCellTrigEtaPhi;//! Cluster and tracks Sum Pt in the cone after bkg subtraction, vs eta-phi trigger
+  TH2F *   fhConeSumPtPhiUESubTrackCellTrigEtaPhi;//! Cluster and tracks Sum Pt in the cone after bkg subtraction, vs eta-phi trigger
+  
   TH2F *   fhConeSumPtEtaUESubCluster;            //! Cluster Sum Pt in the cone after bkg subtraction, vs pT trigger
   TH2F *   fhConeSumPtPhiUESubCluster;            //! Cluster Sum Pt in the cone after bkg subtraction, vs pT trigger
   TH2F *   fhConeSumPtEtaUESubClusterTrigEtaPhi;  //! Cluster Sum Pt in the cone after bkg subtraction, vs eta-phi trigger
   TH2F *   fhConeSumPtPhiUESubClusterTrigEtaPhi;  //! Cluster Sum Pt in the cone after bkg subtraction, vs eta-phi trigger
 
+  TH2F *   fhConeSumPtEtaUESubCell;               //! Cell Sum amplitude in the cone after bkg subtraction, vs pT trigger
+  TH2F *   fhConeSumPtPhiUESubCell;               //! Cell Sum amplitude in the cone after bkg subtraction, vs pT trigger
+  TH2F *   fhConeSumPtEtaUESubCellTrigEtaPhi;     //! Cell Sum amplitude in the cone after bkg subtraction, vs eta-phi trigger
+  TH2F *   fhConeSumPtPhiUESubCellTrigEtaPhi;     //! Cell Sum amplitude in the cone after bkg subtraction, vs eta-phi trigger
+  
   TH2F *   fhConeSumPtEtaUESubTrack;              //! Track Sum Pt in the cone after bkg subtraction, vs pT trigger
   TH2F *   fhConeSumPtPhiUESubTrack;              //! Track Sum Pt in the cone after bkg subtraction, vs pT trigger
   TH2F *   fhConeSumPtEtaUESubTrackTrigEtaPhi;    //! Track Sum Pt in the cone after bkg subtraction, vs eta-phi trigger
@@ -213,13 +236,27 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhFractionClusterOutConePhi;           //! Fraction of cone out of clusters acceptance in phi
   TH2F *   fhFractionClusterOutConePhiTrigEtaPhi; //! Fraction of cone out of clusters acceptance in phi, vs trigger eta-phi
   
+  TH2F *   fhFractionCellOutConeEta;              //! Fraction of cone out of cells acceptance in eta
+  TH2F *   fhFractionCellOutConeEtaTrigEtaPhi;    //! Fraction of cone out of cells acceptance in eta, vs trigger eta-phi
+  TH2F *   fhFractionCellOutConePhi;              //! Fraction of cone out of cells acceptance in phi
+  TH2F *   fhFractionCellOutConePhiTrigEtaPhi;    //! Fraction of cone out of cells acceptance in phi, vs trigger eta-phi
+  
   TH2F *   fhConeSumPtClustervsTrack ;            //! Cluster vs tracks Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtEtaUESubClustervsTrack ;    //! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in eta band
   TH2F *   fhConeSumPtPhiUESubClustervsTrack ;    //! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in phi band
+  TH2F *   fhConeSumPtCellvsTrack;                //! Cell vs tracks Sum Pt Sum Pt in the cone
+  TH2F *   fhConeSumPtEtaUESubCellvsTrack ;       //! Cell vs tracks Sum Pt Sum Pt in the cone, after subtraction in eta band
+  TH2F *   fhConeSumPtPhiUESubCellvsTrack ;       //! Cell vs tracks Sum Pt Sum Pt in the cone, after subtraction in phi band
+
   TH2F *   fhEtaBandClustervsTrack ;              //! Accumulated pT in Eta band to estimate UE in cone, clusters vs tracks
   TH2F *   fhPhiBandClustervsTrack ;              //! Accumulated pT in Phi band to estimate UE in cone, clusters vs tracks
   TH2F *   fhEtaBandNormClustervsTrack ;          //! Accumulated pT in Eta band to estimate UE in cone, normalized to cone size, clusters vs tracks
   TH2F *   fhPhiBandNormClustervsTrack ;          //! Accumulated pT in Phi band to estimate UE in cone, normalized to cone size, clusters vs tracks
+  TH2F *   fhEtaBandCellvsTrack ;              //! Accumulated pT in Eta band to estimate UE in cone, cells vs tracks
+  TH2F *   fhPhiBandCellvsTrack ;              //! Accumulated pT in Phi band to estimate UE in cone, cells vs tracks
+  TH2F *   fhEtaBandNormCellvsTrack ;          //! Accumulated pT cell in Eta band to estimate UE in cone, normalized to cone size, clusters vs tracks
+  TH2F *   fhPhiBandNormCellvsTrack ;          //! Accumulated pT cell in Phi band to estimate UE in cone, normalized to cone
+
   
   //MC
   TH1F *   fhPtIsoPrompt;                         //! Number of isolated prompt gamma 
