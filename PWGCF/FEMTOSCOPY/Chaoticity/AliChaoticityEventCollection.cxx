@@ -321,14 +321,16 @@ AliChaoticityEventCollection::AliChaoticityEventCollection():
   fFIFO(0),
   fLimit(0),
   fPairLimit(0),
+  fMCLimit(0),
   fEvtStr(0)
 {
   // Default constructor
 }
-AliChaoticityEventCollection::AliChaoticityEventCollection(Short_t a, Int_t lim, Int_t plimit, Bool_t MCcase):
+AliChaoticityEventCollection::AliChaoticityEventCollection(Short_t a, Int_t lim, Int_t plimit, Int_t mcarraylimit, Bool_t MCcase):
   fFIFO(0),
   fLimit(0),
   fPairLimit(0),
+  fMCLimit(0),
   fEvtStr(0)
 {
   
@@ -338,6 +340,7 @@ AliChaoticityEventCollection::AliChaoticityEventCollection(Short_t a, Int_t lim,
   fEvtStr = new AliChaoticityEventStruct[fFIFO];  //allocate pointer array of type particle_event
   fLimit = lim;
   fPairLimit = plimit;
+  fMCLimit = mcarraylimit;
 
   for(Int_t ii = 0; ii < fFIFO; ii++){   //Initialize particle table pointers to NULL
     (fEvtStr + ii)->fNtracks = 0;
@@ -352,7 +355,7 @@ AliChaoticityEventCollection::AliChaoticityEventCollection(Short_t a, Int_t lim,
     (fEvtStr + ii)->fPairsSE = new AliChaoticityPairStruct[fPairLimit];
     (fEvtStr + ii)->fPairsME = NULL;
     (fEvtStr + ii)->fPairsME = new AliChaoticityPairStruct[Int_t(2*fPairLimit)];
-    if(MCcase) (fEvtStr + ii)->fMCtracks = new AliChaoticityMCStruct[110000];
+    if(MCcase) (fEvtStr + ii)->fMCtracks = new AliChaoticityMCStruct[fMCLimit];
     
   }
 }
@@ -360,6 +363,7 @@ AliChaoticityEventCollection::AliChaoticityEventCollection(const AliChaoticityEv
   : fFIFO(obj.fFIFO),
     fLimit(obj.fLimit),
     fPairLimit(obj.fPairLimit),
+    fMCLimit(obj.fMCLimit),
     fEvtStr(obj.fEvtStr)
 {
   // copy constructor
@@ -373,6 +377,7 @@ AliChaoticityEventCollection &AliChaoticityEventCollection::operator=(const AliC
   fFIFO = obj.fFIFO;
   fLimit = obj.fLimit;
   fPairLimit = obj.fPairLimit;
+  fMCLimit = obj.fMCLimit;
   fEvtStr = obj.fEvtStr;
   
   return (*this);

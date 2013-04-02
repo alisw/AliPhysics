@@ -141,7 +141,7 @@ class AliChaoticityEventCollection {
   
   public:
     AliChaoticityEventCollection();
-    AliChaoticityEventCollection(Short_t,Int_t,Int_t,Bool_t);
+    AliChaoticityEventCollection(Short_t,Int_t,Int_t,Int_t,Bool_t);
     virtual ~AliChaoticityEventCollection();
     AliChaoticityEventCollection(const AliChaoticityEventCollection &obj); 
     AliChaoticityEventCollection &operator=(const AliChaoticityEventCollection &obj);
@@ -152,8 +152,8 @@ class AliChaoticityEventCollection {
     Short_t fFIFO; //Size of the Event Storage buffer.
     Int_t fLimit; //Max number of tracks
     Int_t fPairLimit; //Max number of lowQ pairs
-
-   AliChaoticityEventStruct *fEvtStr;
+    Int_t fMCLimit; //Max number of MC tracks
+    AliChaoticityEventStruct *fEvtStr;
 
    ClassDef(AliChaoticityEventCollection, 1);
 };

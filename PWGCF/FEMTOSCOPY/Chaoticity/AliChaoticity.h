@@ -52,6 +52,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
     kMultLimitPbPb = 2000,//2000
     kMultLimitpp = 300,
     kMultBinspp = 11,//20 or 11
+    kMCarrayLimit = 110000,
     kQbins = 20,
     kQbinsWeights = 40,
     kNDampValues = 16,
@@ -65,6 +66,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   static const Int_t fEDbins   = 1;
   static const Int_t fCentBins = 10;// 0-50%
   static const Int_t fRVALUES  = 8;// 8 Gaussian radii (3-10fm)
+  
 
 
   Int_t GetNumKtBins() const {return AliChaoticity::fKbinsT;}
@@ -311,8 +313,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   TH3D *fFSIOmega0SS[6];
   TH3D *fFSIOmega0OS[6];
   TH2D *fMomResC2;
-  TH3F *fNormWeight[3][10];
-    
+  TH3F *fNormWeight[fKbinsT][fCentBins];
+  
 
   ClassDef(AliChaoticity, 1); 
 };
