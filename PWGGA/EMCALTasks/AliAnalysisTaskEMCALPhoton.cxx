@@ -269,7 +269,8 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   if(fIsMC){
     isSelected = kTRUE;  
   }
-
+  if(!isSelected)
+    return;
 
   // Post output data.
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -364,11 +365,14 @@ void AliAnalysisTaskEMCALPhoton::FindConversions()
     return;
   Int_t iconv = 0;
   Int_t nV0Orig = fESD->GetNumberOfV0s();
+  Int_t nV0s = nV0Orig;
   Int_t ntracks = fESD->GetNumberOfTracks();
-  fESD->ResetV0s();
-  AliV0vertexer lV0vtxer;
-  lV0vtxer.Tracks2V0vertices(fESD);
-  Int_t nV0s = fESD->GetNumberOfV0s();
+  if(!fPeriod.Contains("11h") && !fPeriod.Contains("10h")){
+    fESD->ResetV0s();
+    AliV0vertexer lV0vtxer;
+    lV0vtxer.Tracks2V0vertices(fESD);
+    nV0s = fESD->GetNumberOfV0s();
+  }
   fNV0sBefAndAftRerun->Fill(nV0Orig, nV0s);
   for(Int_t iv0=0; iv0<nV0s; iv0++){
     AliESDv0 * v0 = fESD->GetV0(iv0);
