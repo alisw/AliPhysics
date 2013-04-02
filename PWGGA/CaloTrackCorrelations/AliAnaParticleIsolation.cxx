@@ -86,6 +86,7 @@ fhConeSumPtTrigEtaPhi(0),
 fhConeSumPtCellTrackTrigEtaPhi(0),
 fhConeSumPtEtaBandUEClusterTrigEtaPhi(0),   fhConeSumPtPhiBandUEClusterTrigEtaPhi(0),
 fhConeSumPtEtaBandUETrackTrigEtaPhi(0),     fhConeSumPtPhiBandUETrackTrigEtaPhi(0),
+fhConeSumPtEtaBandUECellTrigEtaPhi(0),      fhConeSumPtPhiBandUECellTrigEtaPhi(0),
 fhConeSumPtEtaUESub(0),                     fhConeSumPtPhiUESub(0),
 fhConeSumPtEtaUESubTrigEtaPhi(0),           fhConeSumPtPhiUESubTrigEtaPhi(0),
 fhConeSumPtEtaUESubTrackCell(0),            fhConeSumPtPhiUESubTrackCell(0),
@@ -354,10 +355,11 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelat
   
   Float_t phiTrig = pCandidate->Phi();
   Float_t etaTrig = pCandidate->Eta();
-  Double_t etamin = etaTrig-conesize;
-  Double_t etamax = etaTrig+conesize;
-  Double_t phimin = phiTrig-conesize;
-  Double_t phimax = phiTrig+conesize;
+  //Wrong, to see
+  Int_t etamin    = TMath::Nint(etaTrig-conesize);
+  Int_t etamax    = TMath::Nint(etaTrig+conesize);
+  Int_t phimin    = TMath::Nint(phiTrig-conesize);
+  Int_t phimax    = TMath::Nint(phiTrig+conesize);
   
   AliEMCALGeometry * eGeom = GetEMCALGeometry();
   AliVCaloCells    * cells = GetEMCALCells();
@@ -788,10 +790,11 @@ void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliAODPWG4ParticleCo
   Float_t  phiTrig = aodParticle->Phi();
   Float_t  etaTrig = aodParticle->Eta();
   
-  Double_t etamin  = etaTrig-conesize;
-  Double_t etamax  = etaTrig+conesize;
-  Double_t phimin  = phiTrig-conesize;
-  Double_t phimax  = phiTrig+conesize;
+  //Wrong, to see
+  Int_t etamin  = TMath::Nint(etaTrig-conesize);
+  Int_t etamax  = TMath::Nint(etaTrig+conesize);
+  Int_t phimin  = TMath::Nint(phiTrig-conesize);
+  Int_t phimax  = TMath::Nint(phiTrig+conesize);
   
   AliEMCALGeometry * eGeom = GetEMCALGeometry();
   AliVCaloCells    * cells = GetEMCALCells();
