@@ -532,11 +532,11 @@ namespace RawProduction {
 	  ((TH1D*) output.GetHistogram("sr1_error", outBin))->SetBinContent(ptBin,TMath::Abs(fgs->GetParameter(2))) ;
 	  ((TH1D*) output.GetHistogram("sr1_error", outBin))->SetBinError  (ptBin,fgs->GetParError(2) ) ;
 
-	  ((TH1D*) output.GetHistogram("yr1_error", outBin))->SetBinContent(ptBin,y/dpt) ;
-	  ((TH1D*) output.GetHistogram("yr1_error", outBin))->SetBinError(ptBin,ey/dpt) ;
+	  ((TH1D*) output.GetHistogram("yr1_error", outBin))->SetBinContent(ptBin,y/dpt/pt) ;
+	  ((TH1D*) output.GetHistogram("yr1_error", outBin))->SetBinError(ptBin,ey/dpt/pt) ;
 	  if(npiInt>0.){
-	    ((TH1D*) output.GetHistogram("yr1int_error", outBin))->SetBinContent(ptBin,npiInt/dpt) ;
-	    ((TH1D*) output.GetHistogram("yr1int_error", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt) ;
+	    ((TH1D*) output.GetHistogram("yr1int_error", outBin))->SetBinContent(ptBin,npiInt/dpt/pt) ;
+	    ((TH1D*) output.GetHistogram("yr1int_error", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt/pt) ;
 	  }
 	}
 	if( !bs1FitError || ignoreErrors ) {
@@ -546,11 +546,11 @@ namespace RawProduction {
 	  ((TH1D*) output.GetHistogram("sr1", outBin))->SetBinContent(ptBin,TMath::Abs(fgs->GetParameter(2))) ;
 	  ((TH1D*) output.GetHistogram("sr1", outBin))->SetBinError  (ptBin,fgs->GetParError(2) ) ;
 
-	  ((TH1D*) output.GetHistogram("yr1", outBin))->SetBinContent(ptBin,y/dpt) ;
-	  ((TH1D*) output.GetHistogram("yr1", outBin))->SetBinError(ptBin,ey/dpt) ;
+	  ((TH1D*) output.GetHistogram("yr1", outBin))->SetBinContent(ptBin,y/dpt/pt) ;
+	  ((TH1D*) output.GetHistogram("yr1", outBin))->SetBinError(ptBin,ey/dpt/pt) ;
 	  if(npiInt>0.){
-	    ((TH1D*) output.GetHistogram("yr1int", outBin))->SetBinContent(ptBin,npiInt/dpt) ;
-	    ((TH1D*) output.GetHistogram("yr1int", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt) ;
+	    ((TH1D*) output.GetHistogram("yr1int", outBin))->SetBinContent(ptBin,npiInt/dpt/pt) ;
+	    ((TH1D*) output.GetHistogram("yr1int", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt/pt) ;
 	    // maybe we should use TH1::IntegralAndError
 	  }
 	}
@@ -612,11 +612,11 @@ namespace RawProduction {
 	  ((TH1D*) output.GetHistogram("sr2_error", outBin))->SetBinContent(ptBin,TMath::Abs(fgs->GetParameter(2))) ;
 	  ((TH1D*) output.GetHistogram("sr2_error", outBin))->SetBinError  (ptBin,fgs->GetParError(2) ) ;
 
-	  ((TH1D*) output.GetHistogram("yr2_error", outBin))->SetBinContent(ptBin,y/dpt) ;
-	  ((TH1D*) output.GetHistogram("yr2_error", outBin))->SetBinError(ptBin,ey/dpt) ;
+	  ((TH1D*) output.GetHistogram("yr2_error", outBin))->SetBinContent(ptBin,y/dpt/pt) ;
+	  ((TH1D*) output.GetHistogram("yr2_error", outBin))->SetBinError(ptBin,ey/dpt/pt) ;
 	  if(npiInt>0.){
-	    ((TH1D*) output.GetHistogram("yr2int_error", outBin))->SetBinContent(ptBin,npiInt/dpt) ;
-	    ((TH1D*) output.GetHistogram("yr2int_error", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt) ;
+	    ((TH1D*) output.GetHistogram("yr2int_error", outBin))->SetBinContent(ptBin,npiInt/dpt/pt) ;
+	    ((TH1D*) output.GetHistogram("yr2int_error", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt/pt) ;
 	    // maybe we should use TH1::IntegralAndError
 	    }
 	}
@@ -627,11 +627,11 @@ namespace RawProduction {
 	  ((TH1D*) output.GetHistogram("sr2", outBin))->SetBinContent(ptBin,TMath::Abs(fgs->GetParameter(2))) ;
 	  ((TH1D*) output.GetHistogram("sr2", outBin))->SetBinError  (ptBin,fgs->GetParError(2) ) ;
 
-	  ((TH1D*) output.GetHistogram("yr2", outBin))->SetBinContent(ptBin,y/dpt) ;
-	  ((TH1D*) output.GetHistogram("yr2", outBin))->SetBinError(ptBin,ey/dpt) ;
+	  ((TH1D*) output.GetHistogram("yr2", outBin))->SetBinContent(ptBin,y/dpt/pt) ;
+	  ((TH1D*) output.GetHistogram("yr2", outBin))->SetBinError(ptBin,ey/dpt/pt) ;
 	  if(npiInt>0.){
-	    ((TH1D*) output.GetHistogram("yr2int", outBin))->SetBinContent(ptBin,npiInt/dpt) ;
-	    ((TH1D*) output.GetHistogram("yr2int", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt) ;
+	    ((TH1D*) output.GetHistogram("yr2int", outBin))->SetBinContent(ptBin,npiInt/dpt/pt) ;
+	    ((TH1D*) output.GetHistogram("yr2int", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt/pt) ;
 	    // maybe we should use TH1::IntegralAndError
 	    }
 	}
@@ -716,15 +716,11 @@ namespace RawProduction {
 
     Double_t nevents = hCentralityX->Integral(cMin,cMax);
     if ( nevents > 0.9 ) {
-      ((TH1D*) output.GetHistogram("yr1", outBin)) ->Scale(1./nevents) ;
-      ((TH1D*) output.GetHistogram("yr1int", outBin)) ->Scale(1./nevents) ;
-      ((TH1D*) output.GetHistogram("yr2", outBin)) ->Scale(1./nevents) ;
-      ((TH1D*) output.GetHistogram("yr2int", outBin)) ->Scale(1./nevents) ;
-
-      ((TH1D*) output.GetHistogram("yr1_error", outBin)) ->Scale(1./nevents) ;
-      ((TH1D*) output.GetHistogram("yr1int_error", outBin)) ->Scale(1./nevents) ;
-      ((TH1D*) output.GetHistogram("yr2_error", outBin)) ->Scale(1./nevents) ;
-      ((TH1D*) output.GetHistogram("yr2int_error", outBin)) ->Scale(1./nevents) ;
+      TStringToken yhists("yr1 yr1int yr2 yr2int yr1_error yr1int_error yr2_error yr2int_error", " ");
+      while( yhists.NextToken() ) {
+	((TH1D*) output.GetHistogram(yhists.Data(), outBin))->Scale(1./nevents) ;
+	((TH1D*) output.GetHistogram(yhists.Data(), outBin))->GetYaxis()->SetTitle("#frac{dN^{RAW}_{#pi^{0}}}{p_{T}dp_{T} N_{ev}}");
+      }
     } else {
       Printf("WARNING: non positive nEvents in centrality range, cMin:%d, cMax:%d, nEvents:%f", cMin, cMax, nevents );
 
