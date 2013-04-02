@@ -54,6 +54,16 @@ AliFlowEventSimple::AliFlowEventSimple():
   fNumberOfTracks(0),
   fNumberOfRPs(0),
   fNumberOfPOIs(0),
+  fUseGlauberMCSymmetryPlanes(kFALSE),
+  fUseExternalSymmetryPlanes(kFALSE),
+  fPsi1(0.),
+  fPsi2(0.),
+  fPsi3(0.),
+  fPsi4(0.),
+  fPsi5(0.),
+  fPsi1Psi3(0x0),
+  fPsi2Psi4(0x0),
+  fPsi3Psi5(0x0),
   fMCReactionPlaneAngle(0.),
   fMCReactionPlaneAngleIsSet(kFALSE),
   fAfterBurnerPrecision(0.001),
@@ -81,6 +91,16 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   fNumberOfTracks(0),
   fNumberOfRPs(0),
   fNumberOfPOIs(0),
+  fUseGlauberMCSymmetryPlanes(kFALSE),
+  fUseExternalSymmetryPlanes(kFALSE),
+  fPsi1(0.),
+  fPsi2(0.),
+  fPsi3(0.),
+  fPsi4(0.),
+  fPsi5(0.),
+  fPsi1Psi3(0x0),
+  fPsi2Psi4(0x0),
+  fPsi3Psi5(0x0),
   fMCReactionPlaneAngle(0.),
   fMCReactionPlaneAngleIsSet(kFALSE),
   fAfterBurnerPrecision(0.001),
@@ -109,6 +129,16 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fNumberOfTracks(anEvent.fNumberOfTracks),
   fNumberOfRPs(anEvent.fNumberOfRPs),
   fNumberOfPOIs(anEvent.fNumberOfPOIs),
+  fUseGlauberMCSymmetryPlanes(anEvent.fUseGlauberMCSymmetryPlanes),
+  fUseExternalSymmetryPlanes(anEvent.fUseExternalSymmetryPlanes),
+  fPsi1(anEvent.fPsi1),
+  fPsi2(anEvent.fPsi2),
+  fPsi3(anEvent.fPsi3),
+  fPsi4(anEvent.fPsi4),
+  fPsi5(anEvent.fPsi5),
+  fPsi1Psi3(anEvent.fPsi1Psi3),
+  fPsi2Psi4(anEvent.fPsi2Psi4),
+  fPsi3Psi5(anEvent.fPsi3Psi5),
   fMCReactionPlaneAngle(anEvent.fMCReactionPlaneAngle),
   fMCReactionPlaneAngleIsSet(anEvent.fMCReactionPlaneAngleIsSet),
   fAfterBurnerPrecision(anEvent.fAfterBurnerPrecision),
@@ -135,6 +165,16 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fNumberOfTracks = anEvent.fNumberOfTracks;
   fNumberOfRPs = anEvent.fNumberOfRPs;
   fNumberOfPOIs = anEvent.fNumberOfPOIs;
+  fUseGlauberMCSymmetryPlanes = anEvent.fUseGlauberMCSymmetryPlanes;
+  fUseExternalSymmetryPlanes = anEvent.fUseExternalSymmetryPlanes;
+  fPsi1 = anEvent.fPsi1;
+  fPsi2 = anEvent.fPsi2;
+  fPsi3 = anEvent.fPsi3;
+  fPsi4 = anEvent.fPsi4;
+  fPsi5 = anEvent.fPsi5;
+  fPsi1Psi3 = anEvent.fPsi1Psi3;
+  fPsi2Psi4 = anEvent.fPsi2Psi4;
+  fPsi3Psi5 = anEvent.fPsi3Psi5;
   fMCReactionPlaneAngle = anEvent.fMCReactionPlaneAngle;
   fMCReactionPlaneAngleIsSet = anEvent.fMCReactionPlaneAngleIsSet;
   fAfterBurnerPrecision = anEvent.fAfterBurnerPrecision;
@@ -162,6 +202,38 @@ AliFlowEventSimple::~AliFlowEventSimple()
 }
 
 //-----------------------------------------------------------------------
+void AliFlowEventSimple::SetUseExternalSymmetryPlanes(TF1 *gPsi1Psi3,
+						      TF1 *gPsi2Psi4,
+						      TF1 *gPsi3Psi5) {
+  //Use symmetry planes, setup correlations between different Psi_n
+  fUseExternalSymmetryPlanes = kTRUE; 
+    
+  //Correlations between Psi_1 and Psi_3
+  if(gPsi1Psi3) fPsi1Psi3 = gPsi1Psi3;
+  else {
+    fPsi1Psi3 = new TF1("fPsi1Psi3","[0]*x+[1]",0.,2.*TMath::Pi());
+    fPsi1Psi3->SetParameter(0,1.);
+    fPsi1Psi3->SetParameter(1,0.);
+  }
+
+  //Correlations between Psi_2 and Psi_4
+  if(gPsi2Psi4) fPsi2Psi4 = gPsi2Psi4;
+  else {
+    fPsi2Psi4 = new TF1("fPsi2Psi4","[0]*x+[1]",0.,2.*TMath::Pi());
+    fPsi2Psi4->SetParameter(0,1.);
+    fPsi2Psi4->SetParameter(1,0.);
+  }
+
+  //Correlations between Psi_3 and Psi_5
+  if(gPsi3Psi5) fPsi3Psi5 = gPsi3Psi5;
+  else {
+    fPsi3Psi5 = new TF1("fPsi3Psi5","[0]*x+[1]",0.,2.*TMath::Pi());
+    fPsi3Psi5->SetParameter(0,1.);
+    fPsi3Psi5->SetParameter(1,0.);
+  }
+}
+
+//-----------------------------------------------------------------------
 void AliFlowEventSimple::Generate(Int_t nParticles,
                                   TF1* ptDist,
                                   Double_t phiMin,
@@ -186,8 +258,35 @@ void AliFlowEventSimple::Generate(Int_t nParticles,
     track->SetCharge( (gRandom->Uniform()-0.5<0)?-1:1 );
     AddTrack(track);
   }
-  fMCReactionPlaneAngle=gRandom->Uniform(0.0,TMath::TwoPi());
-  fMCReactionPlaneAngleIsSet=kTRUE;
+  if(fUseExternalSymmetryPlanes) {
+    Double_t betaParameter = gRandom->Gaus(0.,1.3);
+    fPsi1Psi3->SetParameter(1,betaParameter);
+    
+    betaParameter = gRandom->Gaus(0.,0.9);
+    fPsi2Psi4->SetParameter(1,betaParameter);
+
+    betaParameter = gRandom->Gaus(0.,1.5);
+    fPsi3Psi5->SetParameter(1,betaParameter);
+
+    fPsi1 = gRandom->Uniform(2.*TMath::Pi());
+    fPsi2 = gRandom->Uniform(2.*TMath::Pi());
+    fPsi3 = fPsi1Psi3->Eval(fPsi1);
+    if(fPsi3 < 0) fPsi3 += 2.*TMath::Pi();
+    else if(fPsi3 > 2.*TMath::Pi()) fPsi3 -= 2.*TMath::Pi();
+    fPsi4 = fPsi2Psi4->Eval(fPsi2);
+    if(fPsi4 < 0) fPsi4 += 2.*TMath::Pi();
+    else if(fPsi4 > 2.*TMath::Pi()) fPsi4 -= 2.*TMath::Pi();
+    fPsi5 = fPsi3Psi5->Eval(fPsi3);
+    if(fPsi5 < 0) fPsi5 += 2.*TMath::Pi();
+    else if(fPsi5 > 2.*TMath::Pi()) fPsi5 -= 2.*TMath::Pi();
+
+    fMCReactionPlaneAngle=fPsi2;
+    fMCReactionPlaneAngleIsSet=kTRUE;
+  }
+  else {
+    fMCReactionPlaneAngle=gRandom->Uniform(0.0,TMath::TwoPi());
+    fMCReactionPlaneAngleIsSet=kTRUE;
+  }
   SetUserModified();
 }
 
@@ -556,6 +655,16 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fNumberOfTracks(0),
   fNumberOfRPs(0),
   fNumberOfPOIs(0),
+  fUseGlauberMCSymmetryPlanes(kFALSE),
+  fUseExternalSymmetryPlanes(kFALSE),
+  fPsi1(0.),
+  fPsi2(0.),
+  fPsi3(0.),
+  fPsi4(0.),
+  fPsi5(0.),
+  fPsi1Psi3(0x0),
+  fPsi2Psi4(0x0),
+  fPsi3Psi5(0x0),
   fMCReactionPlaneAngle(0.),
   fMCReactionPlaneAngleIsSet(kFALSE),
   fAfterBurnerPrecision(0.001),
@@ -682,7 +791,12 @@ void AliFlowEventSimple::AddV1( Double_t v1 )
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
-    if (track) track->AddV1(v1, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    if (track) {
+      if((fUseExternalSymmetryPlanes)||(fUseGlauberMCSymmetryPlanes))
+	track->AddV1(v1, fPsi1, fAfterBurnerPrecision);
+      else
+	track->AddV1(v1, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    }
   }
   SetUserModified();
 }
@@ -694,7 +808,12 @@ void AliFlowEventSimple::AddV2( Double_t v2 )
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
-    if (track) track->AddV2(v2, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    if (track) {
+      if((fUseExternalSymmetryPlanes)||(fUseGlauberMCSymmetryPlanes))
+	track->AddV2(v2, fPsi2, fAfterBurnerPrecision);
+      else
+	track->AddV2(v2, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    }
   }
   SetUserModified();
 }
@@ -706,7 +825,12 @@ void AliFlowEventSimple::AddV3( Double_t v3 )
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
-    if (track) track->AddV3(v3, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    if(track) {
+      if((fUseExternalSymmetryPlanes)||(fUseGlauberMCSymmetryPlanes))
+	track->AddV3(v3, fPsi3, fAfterBurnerPrecision);
+      else
+	track->AddV3(v3, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    }
   }
   SetUserModified();
 }
@@ -718,7 +842,12 @@ void AliFlowEventSimple::AddV4( Double_t v4 )
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
-    if (track) track->AddV4(v4, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    if(track) {
+      if((fUseExternalSymmetryPlanes)||(fUseGlauberMCSymmetryPlanes))
+	track->AddV4(v4, fPsi4, fAfterBurnerPrecision);
+      else
+	track->AddV4(v4, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    }
   }
   SetUserModified();
 }
@@ -730,7 +859,12 @@ void AliFlowEventSimple::AddV5( Double_t v5 )
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
-    if (track) track->AddV5(v5, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    if(track) {
+      if((fUseExternalSymmetryPlanes)||(fUseGlauberMCSymmetryPlanes))
+	track->AddV5(v5, fPsi5, fAfterBurnerPrecision);
+      else
+	track->AddV5(v5, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    }  
   }
   SetUserModified();
 }
