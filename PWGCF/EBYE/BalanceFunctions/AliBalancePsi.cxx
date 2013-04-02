@@ -1746,7 +1746,7 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 	fSame->Divide(fMixed);
 	
 	// for the first: clone
-	if(iBinPsi == binPsiMin && iBinVertex == binVertexMin ){
+	if( (iBinPsi == binPsiMin && iBinVertex == binVertexMin) || !gHist ){
 	  gHist = (TH2D*)fSame->Clone();
 	}
 	else{  // otherwise: add for averaging
