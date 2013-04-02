@@ -285,8 +285,8 @@ void SetupHandlers(bool isMC, bool isAOD){
                 macroname += "AddESDHandler.C";
         gROOT->Macro(macroname.Data());
 
-        if(isMC){
-                // Add MC truth event handler
+        if(isMC && !isAOD){
+                // Add MC truth event handler, only in case of ESDs
                 gROOT->LoadMacro(Form("%s/AddMCHandler.C", macrobase.Data()));
                 AddMCHandler();
         }
@@ -294,7 +294,7 @@ void SetupHandlers(bool isMC, bool isAOD){
 
 void SetupHFEtask(bool isMC, bool isAOD){
         gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEpPb.C");
-        AddTaskHFEpPb(isAOD);
+        AddTaskHFEpPb(isMC, isAOD);
         if(!isAOD){
                 gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEnpepPb.C");
                 AddTaskHFEnpepPb();
