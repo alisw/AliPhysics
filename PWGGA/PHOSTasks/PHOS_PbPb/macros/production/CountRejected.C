@@ -21,7 +21,7 @@ void CountReject(RawProduction::Output& output, const char* trigger, int cent, c
 void CountRejected()
 {
   gROOT->LoadMacro("MakeRawProduction.C+g");
-  RawProduction::Output output("RawProduction21.root");
+  RawProduction::Output output("RawProduction.root");
   gStyle->SetOptStat(0);
   
   TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou CPV CPVcore CPV2 Both Bothcore", " ");
