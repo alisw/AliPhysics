@@ -33,7 +33,7 @@
 //
 const char* analysisName="PHOSPi0Flow";
 const char* includePath="-I$ALICE_ROOT/include -I$ALICE_ROOT/PHOS -I$ALICE_ROOT/PWGGA/PHOSTasks/PHOS_PbPb";
-const char* libraryDependencies="libCore.so libTree.so libGeom.so libVMC.so libPhysics.so libMinuit.so libGui.so libXMLParser.so libMinuit2.so libProof.so libSTEERBase.so libESD.so libAOD.so libOADB.so libANALYSIS.so libANALYSISalice.so libCDB.so libRAWDatabase.so libSTEER.so libCORRFW.so libPHOSUtils.so libPHOSbase.so libPHOSpi0Calib.so libPHOSrec.so libPHOSshuttle.so libPHOSsim.so libPWGGAPHOSTasks.so libTENDER.so libTRDbase.so libVZERObase.so libVZEROrec.so libTENDERSupplies.so";
+const char* libraryDependencies="libCore.so libTree.so libGeom.so libVMC.so libPhysics.so libMinuit.so libGui.so libXMLParser.so libMinuit2.so libProof.so libSTEERBase.so libESD.so libAOD.so libOADB.so libANALYSIS.so libANALYSISalice.so libCDB.so libRAWDatabase.so libSTEER.so libCORRFW.so libPHOSUtils.so libPHOSbase.so libPHOSpi0Calib.so libPHOSrec.so libPHOSshuttle.so libPHOSsim.so libPWGGAPHOSTasks.so libTENDER.so libTRDbase.so libVZERObase.so libVZEROrec.so libTENDERSupplies.so libPWGGAUtils.so";
 
 void setupPi0Flow(const char* localAodDirectory, int nFiles, const char* lhcPeriod, const char* mcProd="")
 {
