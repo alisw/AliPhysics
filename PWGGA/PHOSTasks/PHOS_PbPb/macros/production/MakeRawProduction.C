@@ -64,9 +64,9 @@ namespace RawProduction {
   const char* GetCentString(int centrality);
 
   // Pt bin parameters
-  Int_t nPtBins=0;
-  Double_t ptBinEdges[1000] = {0};
-  int fool;
+  Int_t nPtBins=20;
+  Double_t ptBinEdges[21] =  {0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,3.0,3.5,4.0,5.0,6.0,8.0,10.,12.,15.};
+  //Double_t ptBinEdges[1000] = {0};
   double GetPtBin(int bin);
   void MakePtBins();
 
@@ -139,7 +139,7 @@ namespace RawProduction {
   void MakePi0FitTCP(Input& input, const TriCenPidBin& outBin, Output& output);
 
   void MakePi0Fit(Input& input, const TriggerBin& outBin, Output& output) {
-    MakePtBins();
+    //MakePtBins();
     Printf("\nMakePi0Fit(%s)", outBin.Key().Data());
     output.SetDir(outBin);
 
@@ -215,7 +215,7 @@ namespace RawProduction {
     }
   }
   void MakePi0FitTCP(Input& input, const TriCenPidBin& outBin, Output& output) {
-    MakePtBins();
+    //MakePtBins();
     Printf("\nMakePi0Fit(%s)", outBin.Key().Data());
     output.SetDir(outBin);
 
