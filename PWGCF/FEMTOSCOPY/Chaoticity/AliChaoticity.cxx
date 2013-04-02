@@ -789,7 +789,7 @@ void AliChaoticity::ParInit()
 
     for(UShort_t j=0; j<fMbins; j++){
       
-      fEC[i][j] = new AliChaoticityEventCollection(fEventsToMix+1, fMultLimit, kPairLimit, fMCcase);
+      fEC[i][j] = new AliChaoticityEventCollection(fEventsToMix+1, fMultLimit, kPairLimit, kMCarrayLimit, fMCcase);
     }
   }
   
@@ -1096,11 +1096,11 @@ void AliChaoticity::UserCreateOutputObjects()
 		      Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3 = new TH3D(name3DQ->Data(),"", kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
 		      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3);
 		      //
-		      /*
+		      
 		      const int NEdgesPos=16;
 		      double lowEdges4vectPos[NEdgesPos]={0};
 		      lowEdges4vectPos[0]=0.0;
-		      lowEdges4vectPos[1]=0.0001;// best resolution at low Q^2
+		      lowEdges4vectPos[1]=0.00005;// best resolution at low Q^2
 		      for(int edge=2; edge<NEdgesPos; edge++){
 			lowEdges4vectPos[edge] = lowEdges4vectPos[edge-1] + lowEdges4vectPos[1]*(edge);
 		      }
@@ -1110,12 +1110,14 @@ void AliChaoticity::UserCreateOutputObjects()
 			if(edge<NEdgesPos-1) lowEdges4vect[edge] = -lowEdges4vectPos[NEdgesPos-1-edge];
 			else if(edge==NEdgesPos-1) lowEdges4vect[edge] = 0;
 			else lowEdges4vect[edge] = lowEdges4vectPos[edge-NEdgesPos+1];
+			//if(c1==c2 && c1==c3) cout<<lowEdges4vect[edge]<<endl;
 		      }
-		      */
+		      
+		      /*
 		      const int NEdgesPos=16;
 		      double lowEdges4vectPos[NEdgesPos]={0};
 		      lowEdges4vectPos[0]=0.0;
-		      lowEdges4vectPos[1]=0.0002;// was 0.0005
+		      lowEdges4vectPos[1]=0.0002;// was 0.0005, then 0.0002
 		      for(int edge=2; edge<NEdgesPos; edge++){
 			lowEdges4vectPos[edge] = lowEdges4vectPos[edge-1] + lowEdges4vectPos[1];
 		      }
@@ -1126,7 +1128,7 @@ void AliChaoticity::UserCreateOutputObjects()
 			else if(edge==NEdgesPos-1) lowEdges4vect[edge] = 0;
 			else lowEdges4vect[edge] = lowEdges4vectPos[edge-NEdgesPos+1];
 		      }
-
+		      */
 		      if(c1==c2 && c1==c3 && sc==0 && fMCcase==kFALSE){
 			TString *name4vect1=new TString(namePC3->Data());
 			TString *name4vect2=new TString(namePC3->Data());
@@ -1397,7 +1399,7 @@ void AliChaoticity::Exec(Option_t *)
   if(fMCcase){
     if(fAODcase){ 
       mcArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
-      if(!mcArray || mcArray->GetEntriesFast() >= 200000){
+      if(!mcArray || mcArray->GetEntriesFast() >= kMCarrayLimit){
 	cout<<"No MC particle branch found or Array too large!!"<<endl;
 	return;
       }
