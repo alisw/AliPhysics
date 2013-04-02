@@ -156,14 +156,14 @@ AliFlowEventSimple* AliFlowOnTheFlyEventGenerator::GenerateOnTheFlyEvent(TClones
     Int_t totalMultiplicity(totalRPMultiplicity+totalPOIMultiplicity);
     // generate the particles of interest. if requested, a vn boost is given to the primary particles
     for(int i(0); i < nSpecies; i++) {
-        if(fluc) GenerateOnTheFlyTracks(gRandom->Uniform(mult[i]-TMath::Sqrt(mult[i]), mult[i]+TMath::Sqrt(mult[i])), species[i], event, fluc_poi);
+      if(fluc) GenerateOnTheFlyTracks((Int_t)(gRandom->Uniform(mult[i]-TMath::Sqrt(mult[i]), mult[i]+TMath::Sqrt(mult[i]))), species[i], event, fluc_poi);
         else GenerateOnTheFlyTracks(mult[i], species[i], event, fluc_poi);
     }
     // generate reference particles. if requested, a vn boost is given to the primary particles
     for(int i(0); i < 3; i++) {
         if(fluc) {
-            GenerateOnTheFlyTracks(gRandom->Uniform(multPiKPr[i]-TMath::Sqrt(multPiKPr[i]), multPiKPr[i]+TMath::Sqrt(mult[i])), fPDGPiKPr[i], event, fluc_rp);
-            GenerateOnTheFlyTracks(gRandom->Uniform(multPiKPr[i]-TMath::Sqrt(multPiKPr[i]), multPiKPr[i]+TMath::Sqrt(mult[i])), -1*fPDGPiKPr[i], event, fluc_rp);
+	  GenerateOnTheFlyTracks((Int_t)(gRandom->Uniform(multPiKPr[i]-TMath::Sqrt(multPiKPr[i]), multPiKPr[i]+TMath::Sqrt(mult[i]))), fPDGPiKPr[i], event, fluc_rp);
+	  GenerateOnTheFlyTracks((Int_t)(gRandom->Uniform(multPiKPr[i]-TMath::Sqrt(multPiKPr[i]), multPiKPr[i]+TMath::Sqrt(mult[i]))), -1*fPDGPiKPr[i], event, fluc_rp);
         }
         else {
             GenerateOnTheFlyTracks(multPiKPr[i], fPDGPiKPr[i], event, fluc_rp);

@@ -58,6 +58,22 @@ class AliFlowEventSimple: public TObject {
   void     SetNumberOfRPs( Int_t nr )               { fNumberOfRPs=nr; }
   Int_t    GetNumberOfPOIs() const                  { return fNumberOfPOIs; }
   void     SetNumberOfPOIs( Int_t np )              { fNumberOfPOIs=np; }
+
+  void     SetUseGlauberMCSymmetryPlanes()          { fUseGlauberMCSymmetryPlanes = kTRUE; }
+  void     SetUseExternalSymmetryPlanes(TF1 *gPsi1Psi3 = 0x0,
+					TF1 *gPsi2Psi4 = 0x0,
+					TF1 *gPsi3Psi5 = 0x0);
+  void     SetPsi1(Double_t gPsi1)                  { fPsi1 = gPsi1; }
+  void     SetPsi2(Double_t gPsi2)                  { fPsi2 = gPsi2; }
+  void     SetPsi3(Double_t gPsi3)                  { fPsi3 = gPsi3; }
+  void     SetPsi4(Double_t gPsi4)                  { fPsi4 = gPsi4; }
+  void     SetPsi5(Double_t gPsi5)                  { fPsi5 = gPsi5; }
+  Double_t GetPsi1() const                          { return fPsi1; }
+  Double_t GetPsi2() const                          { return fPsi2; }
+  Double_t GetPsi3() const                          { return fPsi3; }
+  Double_t GetPsi4() const                          { return fPsi4; }
+  Double_t GetPsi5() const                          { return fPsi5; }
+
   Double_t GetMCReactionPlaneAngle() const          { return fMCReactionPlaneAngle; }
   void     SetMCReactionPlaneAngle(Double_t fPhiRP) { fMCReactionPlaneAngle=fPhiRP; fMCReactionPlaneAngleIsSet=kTRUE; }
   Bool_t   IsSetMCReactionPlaneAngle() const        { return fMCReactionPlaneAngleIsSet; }
@@ -111,6 +127,16 @@ class AliFlowEventSimple: public TObject {
   Int_t                   fNumberOfTracks;            // number of tracks
   Int_t                   fNumberOfRPs;               // number of tracks that have passed the RP selection
   Int_t                   fNumberOfPOIs;              // number of tracks that have passed the POI selection
+  Bool_t                  fUseGlauberMCSymmetryPlanes;// Use symmetry planes (Glauber MC)
+  Bool_t                  fUseExternalSymmetryPlanes; // Use symmetry planes (external)
+  Double_t                fPsi1;                      // Psi_1
+  Double_t                fPsi2;                      // Psi_2
+  Double_t                fPsi3;                      // Psi_3
+  Double_t                fPsi4;                      // Psi_4
+  Double_t                fPsi5;                      // Psi_5
+  TF1*                    fPsi1Psi3;                  // Correlation between Psi_1 and Psi_3
+  TF1*                    fPsi2Psi4;                  // Correlation between Psi_2 and Psi_4
+  TF1*                    fPsi3Psi5;                  // Correlation between Psi_3 and Psi_5
   Double_t                fMCReactionPlaneAngle;      // the angle of the reaction plane from the MC truth
   Bool_t                  fMCReactionPlaneAngleIsSet; // did we set it from MC?
   Double_t                fAfterBurnerPrecision;      // iteration precision in afterburner

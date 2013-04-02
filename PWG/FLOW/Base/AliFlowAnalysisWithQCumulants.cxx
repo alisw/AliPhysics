@@ -353,7 +353,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   
  // c) Fill the common control histograms and call the method to fill fAvMultiplicity:
  this->FillCommonControlHistograms(anEvent);                                                               
- this->FillAverageMultiplicities(fNumberOfRPsEBE); 
+ this->FillAverageMultiplicities((Int_t)(fNumberOfRPsEBE)); 
  if(fStoreControlHistograms){this->FillControlHistograms(anEvent);}                                                              
                                                                                                                                                                                                                                                                                         
  // d) Loop over data and calculate e-b-e quantities Q_{n,k}, S_{p,k} and s_{p,k}:
@@ -14322,7 +14322,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
    if(!fUseQvectorTerms)
    {
 
-    cout<<"TProfile"<<endl;
+     //cout<<"TProfile"<<endl;
 
     two = fIntFlowCorrelationsVsMHist[0]->GetBinContent(b); // <<2>>  
     four = fIntFlowCorrelationsVsMHist[1]->GetBinContent(b); // <<4>>  
@@ -14401,7 +14401,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
    } else
      {
       // TH2D:
-      Int_t nEntries = fCorrelationProduct2468VsMult[0]->ProjectionY("Cov(2,4)",b,b)->GetEntries();
+       Int_t nEntries = (Int_t)(fCorrelationProduct2468VsMult[0]->ProjectionY("Cov(2,4)",b,b)->GetEntries());
       if(nEntries>0.)
       {      
        wCov24 = (fCorrelationProduct2468VsMult[0]->ProjectionY("Cov(2,4)",b,b)->GetMean()
