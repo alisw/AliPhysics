@@ -367,7 +367,8 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelat
   // Bande eta, cone R
   for(Int_t ieta=etamin; ieta<etamax; ieta++)
   {
-    for(Int_t iphi=100*TMath::DegToRad(); iphi<180*TMath::DegToRad(); iphi++)
+    //    for(Int_t iphi=100*TMath::DegToRad(); iphi<180*TMath::DegToRad(); iphi++)
+    for(Int_t iphi=0; iphi<24; iphi++)
     {
       Int_t absId = -999;
       eGeom->GetAbsCellIdFromEtaPhi(ieta,iphi,absId);
@@ -383,8 +384,9 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelat
   // Bande phi, cone R
   for(Int_t iphi=phimin; iphi<phimax; iphi++)
   {
-    for(Int_t ieta=-0.7; ieta<0.7; ieta++)
-    {      
+    //    for(Int_t ieta=-0.7; ieta<0.7; ieta++) // WRONG
+    for(Int_t ieta=0; ieta<48; ieta++) // WRONG
+    {
       Int_t absId = -999;
       eGeom->GetAbsCellIdFromEtaPhi(ieta,iphi,absId);
       
