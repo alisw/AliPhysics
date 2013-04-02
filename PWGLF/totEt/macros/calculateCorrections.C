@@ -42,9 +42,10 @@ int createDummy(Double_t p0 = 1.0, Double_t p1 = 0.0, char *det = "Phos")
 //determined from fit of efficiency from track matching, 0.366 from simulations, fit as a function of energy
 //p0 is the constant
 //p1 is linear term
-int calculateCorrections(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPbPb.EMCAL.LHC11a4_bis.root", Double_t p0 = 0.366, Double_t p1 = 0.0, char *det = "Emcal")
+int calculateCorrections(TString filename="rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal.LHC11a10a_bis.Run139465.root", Double_t p0 = 0.366, Double_t p1 = 0.0, char *det = "Emcal", Bool_t isSim = kFALSE)
 {
   TString detector = det;
+  TString emcal = "Emcal";
   c1 = new TCanvas;
   
   TFile *f = TFile::Open(filename, "READ");
@@ -71,11 +72,18 @@ int calculateCorrections(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPbPb.
   mcTree->SetBranchAddress("fGammaRemoved", &nGammaRemoved);
   mcTree->SetBranchAddress("fSecondaryNotRemoved", &nSecNotRemoved);
   
-  TH2I *hChargedVsClusterMult = new TH2I("hChVsMult", "hChVsMult", 100, -0.5, 99.5, 100, -0.5, 99.5);
-  TH2I *hNeutralVsClusterMult = new TH2I("hNeutVsMult", "hNeutVsMult", 100, -0.5, 99.5, 100, -0.5, 99.5);
-  TH2I *hGammaVsClusterMult = new TH2I("hGammaVsMult", "hGammaVsMult", 100, -0.5, 99.5, 100, -0.5, 99.5);
-  TH2I *hSecVsClusterMult = new TH2I("hSecVsMult", "hSecVsMult", 100, -0.5, 99.5, 100, -0.5, 99.5);
-  
+  Float_t maxMult = 99.5;
+  Int_t nbins = 100;
+//   if(detector==emcal){
+//     //100 seems to be sufficient...
+//     maxMult = 299.5;
+//     nbins = 300;
+//  }
+  TH2I *hChargedVsClusterMult = new TH2I("hChVsMult", "hChVsMult", nbins, -0.5, maxMult, nbins, -0.5, maxMult);
+  TH2I *hNeutralVsClusterMult = new TH2I("hNeutVsMult", "hNeutVsMult", nbins, -0.5, maxMult, nbins, -0.5, maxMult);
+  TH2I *hGammaVsClusterMult = new TH2I("hGammaVsMult", "hGammaVsMult", nbins, -0.5, maxMult, nbins, -0.5, maxMult);
+  TH2I *hSecVsClusterMult = new TH2I("hSecVsMult", "hSecVsMult", nbins, -0.5, maxMult, nbins, -0.5, maxMult);
+
   Int_t nEvents = mcTree->GetEntriesFast();
     for(Int_t i = 0; i < nEvents; i++)
     {
@@ -101,7 +109,7 @@ int calculateCorrections(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPbPb.
   chProf->SetStats(0);
   chProf->Draw("SAME");
   //TF1 fitcharged("fitcharged","([0] + [1]*x)*(0.48/([2] + [3]*[2]))", 0, 100);
-  TF1 fitcharged("fitcharged","pol1", 0, 100);//fit of number of charged tracks vs detector multiplicity
+  TF1 fitcharged("fitcharged","pol2", 0, 100);//fit of number of charged tracks vs detector multiplicity
   //if straight line track matching roughly not dependent on centrality
 //   fitcharged.FixParameter(2, p0);
 //   fitcharged.FixParameter(3, p1);
@@ -126,7 +134,7 @@ int calculateCorrections(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPbPb.
   TProfile *neuProf = hNeutralVsClusterMult->ProfileX();
   neuProf->SetStats(0);
   neuProf->Draw("SAME");
-  TF1 fitneutral("fitneutral","pol1", 0, 100);//fit of number of neutral particles in calo that we call background in calo vs detector multiplicity
+  TF1 fitneutral("fitneutral","pol2", 0, 100);//fit of number of neutral particles in calo that we call background in calo vs detector multiplicity
   //may include K0S
   TFitResultPtr neuRes = neuProf->Fit(&fitneutral,"S");
   TArrayD neu;
@@ -150,7 +158,7 @@ int calculateCorrections(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPbPb.
   TProfile *gamProf = hGammaVsClusterMult->ProfileX();
   gamProf->SetStats(0);
   gamProf->Draw("SAME");
-  TF1 fitgamma("fitgamma","pol1", 0, 100);//fit of number of gammas removed erroneously vs detector multiplicity
+  TF1 fitgamma("fitgamma","pol2", 0, 100);//fit of number of gammas removed erroneously vs detector multiplicity
   TFitResultPtr gammaRes = gamProf->Fit(&fitgamma,"S");
   TArrayD gamma;
   if(!gammaRes)
@@ -174,7 +182,7 @@ int calculateCorrections(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPbPb.
   TProfile *secProf = hSecVsClusterMult->ProfileX();
   secProf->SetStats(0);
   secProf->Draw("SAME");
-  TF1 fitsecondary("fitsecondary","pol1", 0, 100);//fit of number of secondary particles that leave deposits in calo vs detector multiplicity
+  TF1 fitsecondary("fitsecondary","pol2", 0, 100);//fit of number of secondary particles that leave deposits in calo vs detector multiplicity
   TFitResultPtr secRes = secProf->Fit(&fitsecondary,"S");
   TArrayD sec;
   if(!secRes)
