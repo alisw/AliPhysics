@@ -8,6 +8,11 @@ ClassImp(AliBlastwaveFitSpectra);
 
 
 TF1 *AliBlastwaveFitSpectra::fgFuncIntYield = NULL;
+const char *AliBlastwaveFitSpectra::fgParName[5] = {"T_{FO}","mean #rho","#gamma","mass","norm"};
+Float_t AliBlastwaveFitSpectra::fgStartValues[3] = {0.1,1.2,1.1};
+const Float_t AliBlastwaveFitSpectra::fgStepValues[3] = {0.001,0.001,0.001};
+const Float_t AliBlastwaveFitSpectra::fgMinValues[3] = {0.0001,0.01,0.5};
+const Float_t AliBlastwaveFitSpectra::fgMaxValues[3] = {1.0,10.0,5};
 
 AliBlastwaveFitSpectra::AliBlastwaveFitSpectra(const char *name,Double_t mass) :
   AliBlastwaveFit(name,mass)

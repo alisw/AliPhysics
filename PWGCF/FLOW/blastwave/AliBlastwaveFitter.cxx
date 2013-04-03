@@ -9,6 +9,14 @@
 
 ClassImp(AliBlastwaveFitter);
 
+Int_t AliBlastwaveFitter::fgNparReal = 0;
+Int_t AliBlastwaveFitter::fgNDGF = 0;
+Int_t AliBlastwaveFitter::fgNfunctionCurrent=0;
+AliBlastwaveFit *AliBlastwaveFitter::fgFuncC[50];
+Int_t AliBlastwaveFitter::fgSpectraFlagC[50];
+Int_t AliBlastwaveFitter::fgV2FlagC[50];
+Double_t AliBlastwaveFitter::fgChi2 = 0;
+
 AliBlastwaveFitter::AliBlastwaveFitter(const char *name) :
     TNamed(name,name),
     fNfunction(0),

@@ -77,12 +77,6 @@ class AliBlastwaveFit2D : public AliBlastwaveFit
   ClassDef(AliBlastwaveFit2D,1)  // blast wave fit 2D
 };
 
-const char *AliBlastwaveFit2D::fgParName[7] = {"T_{FO}","s_{2}","mean #rho_{0}","#rho_{2}","#gamma","mass","norm"};
-Float_t AliBlastwaveFit2D::fgStartValues[5] = {0.1,0.057,1.2,0.025,1.1};
-const Float_t AliBlastwaveFit2D::fgStepValues[5] = {0.001,0.001,0.001,0.001,0.001};
-const Float_t AliBlastwaveFit2D::fgMinValues[5] = {0.0001,-0.45,0.01,-0.45,0.1};
-const Float_t AliBlastwaveFit2D::fgMaxValues[5] = {1.0,0.45,10.0,0.45,5};
-
 #endif
 
 
