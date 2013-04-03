@@ -101,10 +101,10 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   THn         *fHMuonParGenSec;    //! secondary truth muon track eta, p_T, Centrality, Z-vertex, phi, charge
   THn         *fHMuonParGenFPM;
   THn         *fHMuonParGenSecFPM; 
-  THn         *fHMuonDetGen[6];    //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi, charge
-  THn         *fHMuonDetRec[6];    //! reconstructed muon track eta, p_T, Centrality, Z-vertex, phi, charge
-  THn         *fHHadDetRec[6];     //! particle reconstructed at MUON detector, but not muon
-  THn         *fHSecDetRec[6];     //! particle reconstructed at MUON detector, but secondary muon
+  THn         *fHMuonDetGen[5];    //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi, charge
+  THn         *fHMuonDetRec[5];    //! reconstructed muon track eta, p_T, Centrality, Z-vertex, phi, charge
+  THn         *fHHadDetRec[5];     //! particle reconstructed at MUON detector, but not muon
+  THn         *fHSecDetRec[5];     //! particle reconstructed at MUON detector, but secondary muon
   THn         *fHMuonParGenV[4];
   THn         *fHMuonParGenSecV[4];
   THn         *fHMuonDetRecV[4];
@@ -113,6 +113,7 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   THn         *fHMuonDetGenP;      //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi, charge
   THn         *fHMuonDetRecP;      //! reconstructed muon track eta, p_T, Centrality, Z-vertex, phi, charge
 
+  TH2F        *fHMuFrag[4];        //! rec muon p_T vs. x_frag
   TH2F        *fHMuMotherGenPt[4]; //! particle-level muon p_T vs. mother p_T
   TH2F        *fHMuMotherRecPt[4]; //! detector-level muon p_T vs. mother p_T
   TH2F        *fHMuMotherGenPhi[4];//! particle-level muon phi vs. mother phi
@@ -167,7 +168,7 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   AliMuonEffMC(const AliMuonEffMC&);            // not implemented
   AliMuonEffMC &operator=(const AliMuonEffMC&); // not implemented
 
-  ClassDef(AliMuonEffMC, 9);
+  ClassDef(AliMuonEffMC, 10);
 };
 
 #endif

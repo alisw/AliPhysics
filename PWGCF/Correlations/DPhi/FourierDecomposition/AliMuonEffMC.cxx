@@ -59,6 +59,7 @@ AliMuonEffMC::AliMuonEffMC() :
     fHMuonParGenV[i] = NULL;
     fHMuonParGenSecV[i] = NULL;
     fHMuonDetRecV[i] = NULL;
+    fHMuFrag[i] = NULL;
     fHMuMotherGenPt[i] = NULL;
     fHMuMotherRecPt[i] = NULL;
     fHMuMotherGenPhi[i] = NULL;
@@ -127,6 +128,7 @@ AliMuonEffMC::AliMuonEffMC(const char *name) :
     fHMuonParGenV[i] = NULL;
     fHMuonParGenSecV[i] = NULL;
     fHMuonDetRecV[i] = NULL;
+    fHMuFrag[i] = NULL;
     fHMuMotherGenPt[i] = NULL;
     fHMuMotherRecPt[i] = NULL;
     fHMuMotherGenPhi[i] = NULL;
@@ -295,7 +297,7 @@ void AliMuonEffMC::UserCreateOutputObjects()
   trackAxisTitle[5] = "charge";
   trackAxisTitleP[5] = "charge";
 
-  const char *cutlabel[6] = {"NoCut", "Muon", "Trigger", "eta", "ThetaAbs", "ChiS"};
+  const char *cutlabel[5] = {"NoCut", "Muon", "Trigger", "eta", "ThetaAbs"};
   if(fIsMc)
   {
     // THn for tracking efficiency
@@ -323,7 +325,7 @@ void AliMuonEffMC::UserCreateOutputObjects()
     }
     if(fIsCutStudy)
     {
-      for(Int_t i=0; i<6; i++)
+      for(Int_t i=0; i<5; i++)
       {
 	fHMuonDetGen[i] = (THnF*)fHMuonParGen->Clone(Form("fHMuonDetGen_%s",cutlabel[i]));
 	fHMuonDetGen[i]->Sumw2();
@@ -410,6 +412,8 @@ void AliMuonEffMC::UserCreateOutputObjects()
     {
       for(Int_t i=0; i<4; i++)
       {
+	fHMuFrag[i] = new TH2F(Form("fHMuFrag_%s",MotherSpecies[i]),";p_{T,muon}^{rec} (GeV/c);x_{frag};",200, 0, 20, 800, 0, 800);
+	fOutputList->Add(fHMuFrag[i]);
 	fHMuMotherGenPt[i] = new TH2F(Form("fHMuMotherGenPt_%s",MotherSpecies[i]),";p_{T,muon}^{gen} (GeV/c);p_{T,mother}^{Truth} (GeV/c);",500, 0, 50, 500, 0, 50);
 	fOutputList->Add(fHMuMotherGenPt[i]);
 	fHMuMotherRecPt[i] = new TH2F(Form("fHMuMotherRecPt_%s",MotherSpecies[i]),";p_{T,muon}^{rec} (GeV/c);p_{T,mother}^{Truth} (GeV/c);",500, 0, 50, 500, 0, 50);
@@ -550,7 +554,7 @@ void AliMuonEffMC::UserCreateOutputObjects()
     fHMuonDetRec[0]->Sumw2();
     fOutputList->Add(fHMuonDetRec[0]);
 
-    for(Int_t i=1; i<6; i++)
+    for(Int_t i=1; i<5; i++)
     {
       
       fHMuonDetRec[i] = (THnF*) fHMuonDetRec[0]->Clone(Form("fHMuonDetRec_%s",cutlabel[i]));
@@ -687,7 +691,7 @@ void AliMuonEffMC::UserExec(Option_t *)
 	  FirstPrimZvtx = GetFirstPrimaryVertex(ipart);
 	  Zvtxbin = GetZVertexBin(FirstPrimZvtx);
 
-	  Double_t fillArrayParGen[6] = { AodMcParticle->Eta(), AodMcParticle->Pt(), fCentrality, fZVertex, AodMcParticle->Phi(), AodMcParticle->Charge() };
+	  Double_t fillArrayParGen[6] = { AodMcParticle->Eta(), AodMcParticle->Pt(), fCentrality, fZVertex, AodMcParticle->Phi(), (Double_t)AodMcParticle->Charge() };
 	  if(AodMcParticle->IsPrimary()) 
 	  {
 	    fHMuonParGen->Fill(fillArrayParGen);
@@ -698,7 +702,7 @@ void AliMuonEffMC::UserExec(Option_t *)
 	    fHMuonParGenSec->Fill(fillArrayParGen);
 	    fHMuonParGenSecV[Zvtxbin]->Fill(fillArrayParGen);
 	  }
-	  Double_t fillArrayParGenP[6] = { AodMcParticle->Eta(), AodMcParticle->P(), fCentrality, fZVertex, AodMcParticle->Phi(), AodMcParticle->Charge() };
+	  Double_t fillArrayParGenP[6] = { AodMcParticle->Eta(), AodMcParticle->P(), fCentrality, fZVertex, AodMcParticle->Phi(), (Double_t)AodMcParticle->Charge() };
 	  if(AodMcParticle->IsPrimary()) fHMuonParGenP->Fill(fillArrayParGenP);
 	}
       }
@@ -713,9 +717,9 @@ void AliMuonEffMC::UserExec(Option_t *)
 	  FirstPrimZvtx = GetFirstPrimaryVertex(ipart);
 	  Zvtxbin = GetZVertexBin(FirstPrimZvtx);
 
-	  Double_t fillArrayParGen[6] = { McParticle->Eta(), McParticle->Pt(), fCentrality, fZVertex, McParticle->Phi(), McParticle->Charge() };
+	  Double_t fillArrayParGen[6] = { McParticle->Eta(), McParticle->Pt(), fCentrality, fZVertex, McParticle->Phi(), (Double_t)McParticle->Charge() };
 	  AliMCParticle *FPrimaryMother  = (AliMCParticle*)fMC->GetTrack(FirstPrimMother);
-	  Double_t fillArrayParGenFPM[6] = { FPrimaryMother->Eta(), FPrimaryMother->Pt(), fCentrality, fZVertex, FPrimaryMother->Phi(), FPrimaryMother->Charge() };
+	  Double_t fillArrayParGenFPM[6] = { FPrimaryMother->Eta(), FPrimaryMother->Pt(), fCentrality, fZVertex, FPrimaryMother->Phi(), (Double_t)FPrimaryMother->Charge() };
 	  
 	  if(McParticle->GetMother()< fStack->GetNprimary()) 
 	  {
@@ -729,7 +733,7 @@ void AliMuonEffMC::UserExec(Option_t *)
 	    fHMuonParGenSecV[Zvtxbin]->Fill(fillArrayParGen);
 	    if(fIsFPM) fHMuonParGenSecFPM->Fill(fillArrayParGenFPM);
 	  }
-	  Double_t fillArrayParGenP[6] = { McParticle->Eta(), McParticle->P(), fCentrality, fZVertex, McParticle->Phi(), McParticle->Charge() };
+	  Double_t fillArrayParGenP[6] = { McParticle->Eta(), McParticle->P(), fCentrality, fZVertex, McParticle->Phi(), (Double_t)McParticle->Charge() };
 	  if(McParticle->GetMother()< fStack->GetNprimary()) fHMuonParGenP->Fill(fillArrayParGenP);
 	}
       }
@@ -765,6 +769,7 @@ void AliMuonEffMC::UserExec(Option_t *)
     Double_t motherXv = 0;
     Double_t motherYv = 0;
     Double_t motherZv = 0;
+    Double_t motherY = 0;
 
     if(fAOD)
     {
@@ -803,8 +808,8 @@ void AliMuonEffMC::UserExec(Option_t *)
     Double_t fillArrayDetRec[6] = { tracketa, trackpt, fCentrality, fZVertex, trackphi, trackcharge }; 
     Double_t fillArrayDetRecP[6] = { tracketa, trackp, fCentrality, fZVertex, trackphi, trackcharge };
     if(fIsCutStudy) { for(Int_t icut = 0; icut <= cutNum; icut++) { fHMuonDetRec[icut]->Fill(fillArrayDetRec); }}
-    else { if(cutNum==5) fHMuonDetRec[0]->Fill(fillArrayDetRec); }
-    if(cutNum==5) fHMuonDetRecP->Fill(fillArrayDetRecP);
+    else { if(cutNum==4) fHMuonDetRec[0]->Fill(fillArrayDetRec); }
+    if(cutNum==4) fHMuonDetRecP->Fill(fillArrayDetRecP);
 
     if(fIsMc)
     {
@@ -815,12 +820,12 @@ void AliMuonEffMC::UserExec(Option_t *)
 	if(TMath::Abs(aodMcParticle->PdgCode()) != 13) 
 	{ 
 	  if(fIsCutStudy){ for(Int_t icut=0; icut<=cutNum; icut++) fHHadDetRec[icut]->Fill(fillArrayDetRec); }
-	  else { if(cutNum==5) fHHadDetRec[0]->Fill(fillArrayDetRec); }
+	  else { if(cutNum==4) fHHadDetRec[0]->Fill(fillArrayDetRec); }
 	}
 	else if(!isprimary) 
 	{ 
 	  if(fIsCutStudy){ for(Int_t icut=0; icut<=cutNum; icut++) fHSecDetRec[icut]->Fill(fillArrayDetRec); }
-	  else { if(cutNum==5) fHSecDetRec[0]->Fill(fillArrayDetRec); }
+	  else { if(cutNum==4) fHSecDetRec[0]->Fill(fillArrayDetRec); }
 	}
 	mcpt = aodMcParticle->Pt();
 	mceta = aodMcParticle->Eta();
@@ -837,12 +842,12 @@ void AliMuonEffMC::UserExec(Option_t *)
 	if(TMath::Abs(McParticle->PdgCode())!=13) 
 	{ 
 	  if(fIsCutStudy) { for(Int_t icut=0; icut<=cutNum; icut++) fHHadDetRec[icut]->Fill(fillArrayDetRec); }
-	  else{ if(cutNum==5) fHHadDetRec[0]->Fill(fillArrayDetRec); }
+	  else{ if(cutNum==4) fHHadDetRec[0]->Fill(fillArrayDetRec); }
 	}
 	if(!isprimary) 
 	{ 
 	  if(fIsCutStudy) { for(Int_t icut=0; icut<=cutNum; icut++) fHSecDetRec[icut]->Fill(fillArrayDetRec); }
-	  else{ if(cutNum==5)  fHSecDetRec[0]->Fill(fillArrayDetRec); }
+	  else{ if(cutNum==4)  fHSecDetRec[0]->Fill(fillArrayDetRec); }
 	}
 	mcpt = McParticle->Pt();
 	mceta = McParticle->Eta();
@@ -854,7 +859,7 @@ void AliMuonEffMC::UserExec(Option_t *)
 	motherlabel = GetFirstPrimaryMother(label);
 	Double_t primzvtx = GetFirstPrimaryVertex(label);
 	Int_t reczvtxbin = GetZVertexBin(primzvtx);
-	if(cutNum==5) fHMuonDetRecV[reczvtxbin]->Fill(fillArrayDetRec);
+	if(cutNum==4) fHMuonDetRecV[reczvtxbin]->Fill(fillArrayDetRec);
 
 	if(motherlabel > -1)
 	{
@@ -863,6 +868,7 @@ void AliMuonEffMC::UserExec(Option_t *)
 	  motherpt = FPrimaryMother->Pt();
 	  mothereta = FPrimaryMother->Eta();
 	  motherphi = FPrimaryMother->Phi();
+	  motherY = FPrimaryMother->Y();
 	  AliMCParticle *DaughtParticle  = (AliMCParticle*)fMC->GetTrack(FPrimaryMother->GetFirstDaughter());
 	  motherXv = DaughtParticle->Xv();
 	  motherYv = DaughtParticle->Yv();
@@ -871,21 +877,22 @@ void AliMuonEffMC::UserExec(Option_t *)
       }
       Double_t fillArrayDetGen[6] = { mceta, mcpt, fCentrality, fZVertex, mcphi, mccharge };
       if(fIsCutStudy){ for(Int_t icut=0; icut <= cutNum; icut++) fHMuonDetGen[icut]->Fill(fillArrayDetGen); }
-      else {if(cutNum==5) fHMuonDetGen[0]->Fill(fillArrayDetGen); }
+      else {if(cutNum==4) fHMuonDetGen[0]->Fill(fillArrayDetGen); }
       
       Double_t fillArrayDetGenP[6] = { mceta, mcp, fCentrality, fZVertex, mcphi, mccharge };
-      if(cutNum==5)fHMuonDetGenP->Fill(fillArrayDetGenP);
+      if(cutNum==4)fHMuonDetGenP->Fill(fillArrayDetGenP);
     
       Int_t motherbin = GetMotherBin(motherpdg);
       // muon Z-Vertex process
-      if(fZvProcess && cutNum==5)
+      if(fZvProcess && cutNum==4)
       {
 	fHMuZv[motherbin]->Fill(mcZv);
 	fHMuRelZv[motherbin]->Fill(TMath::Abs(mcZv-fZVertex));
       }
       // mother-daughter kinematic relation
-      if(fMDProcess && cutNum==5 && motherlabel>0)
+      if(fMDProcess && cutNum==4 && motherlabel>0)
       {
+	fHMuFrag[motherbin]->Fill(trackpt, motherpt*TMath::Exp(-1*motherY));
 	if(isprimary) 
 	{
 	  fHZvRvPrim->Fill(motherZv, TMath::Sqrt(motherXv*motherXv + motherYv*motherYv));
@@ -979,10 +986,6 @@ Int_t AliMuonEffMC::IsGoodMUONtrack(AliESDMuonTrack &track)
   if(thetaTrackAbsEnd > 2. && thetaTrackAbsEnd < 10.) cutnum = 4;
   else return cutnum;
 
-  // Chi-square cut
-  if(track.GetNormalizedChi2() < fChiSquareNormCut) cutnum = 5;
-  else return cutnum; 
-
   return cutnum;
 }
 
@@ -1005,10 +1008,6 @@ Int_t AliMuonEffMC::IsGoodMUONtrack(AliAODTrack &track)
 
   // Theta cut at absorber end
   if(thetaTrackAbsEnd > 2. && thetaTrackAbsEnd < 10.) cutnum = 4;
-  else return cutnum;
-
-  // Chi-square cut
-  if(track.Chi2perNDF() < fChiSquareNormCut) cutnum = 5;
   else return cutnum;
 
   return cutnum;
