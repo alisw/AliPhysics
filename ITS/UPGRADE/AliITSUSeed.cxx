@@ -248,7 +248,7 @@ Int_t AliITSUSeed::GetClusterIndex(Int_t ind) const
   int ncl = 0;
   const AliITSUSeed* seed = this;
   while(seed) {
-    if ( HasCluster() && (ncl++==ind) ) return seed->GetLrClusterID();//GetClusterID();
+    if ( seed->HasCluster() && (ncl++==ind) ) return seed->GetLrClusterID();//GetClusterID();
     seed = (AliITSUSeed*)seed->GetParent();
   }
   return -1;
