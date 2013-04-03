@@ -1,4 +1,6 @@
-void AddTask_dNdPtPbPb2011()
+void AddTask_dNdPtPbPb2011(
+    char * centEst = "V0M"
+    )
 {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -12,7 +14,9 @@ void AddTask_dNdPtPbPb2011()
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   
   cout << "HasMC: " << hasMC << endl;
-  
+ 
+  cout << "Using Centrality Estimator: " << centEst << endl;
+
   // Switch off all AliInfo (too much output!!!)
   AliLog::SetGlobalLogLevel(AliLog::kError);
   mgr->SetDebugLevel(0);
@@ -129,7 +133,7 @@ void AddTask_dNdPtPbPb2011()
      fdNdPtAnalysisPbPb->SetAnalysisMode(analysisMode);
      fdNdPtAnalysisPbPb->SetParticleMode(particleMode); 
      //      fdNdPtAnalysisPbPb->SetCentralityEstimator("ZNA");
-     fdNdPtAnalysisPbPb->SetCentralityEstimator("V0A");
+     fdNdPtAnalysisPbPb->SetCentralityEstimator(centEst);
      fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kMB);
 //      fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kCINT5);
      //fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kEMC1);
