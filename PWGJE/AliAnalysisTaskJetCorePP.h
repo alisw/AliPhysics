@@ -15,7 +15,9 @@ class TH1D;
 class TH1I;
 class TH2F;
 class TH3F;
+class TList;
 class THnSparse;
+class TArrayI; 
 class AliESDEvent;
 class AliAODExtension;
 class AliAODEvent;
@@ -37,6 +39,7 @@ public:
    virtual void  Terminate(const Option_t*);
  
    virtual void  SetBranchName(const TString &name){ fJetBranchName = name; } 
+   virtual void  SetBranchNameMC(const TString &name){ fJetBranchNameMC = name; } 
    virtual void  SetNonStdFile(char* c){fNonStdFile = c;} 
    virtual void  SetSystem(Int_t sys) { fSystem = sys; } 
    virtual void  SetJetR(Float_t jR) { fJetParamR = jR; }
@@ -58,8 +61,10 @@ public:
 private:
    //private member functions
    Int_t   GetListOfTracks(TList *list); //returns index of trig and track list 
-   Double_t GetBackgroundInPerpCone(Float_t jetR, Double_t jetPhi, Double_t jetEta, TList* trkList); //sums pT in the cone perp in phi to jet
- 
+   //Double_t GetBackgroundInPerpCone(Float_t jetR, Double_t jetPhi, Double_t jetEta, TList* trkList); //sums pT in the cone perp in phi to jet
+   Bool_t SelectMCGenTracks(AliVParticle *trk, TList *trkList, Double_t &ptLeading, Int_t &index, Int_t counter);
+   void FillEffHistos(TList *recList, TList *genList);
+
    //private member objects
    AliESDEvent *fESD;    //! ESD object
    AliAODEvent *fAODIn;  //! AOD event for AOD input tracks
@@ -68,7 +73,9 @@ private:
 
    // jets to compare
    TString fJetBranchName; //  name of jet branch 
-   TList  *fListJets;      //! jet lists  
+   TString fJetBranchNameMC; //  name of jet branch 
+   TList  *fListJets;      //! jet list reconstructed level
+   TList  *fListJetsGen;   //! jet list generator level  
 
    TString fNonStdFile;    // name of delta aod file to catch the extension
 
@@ -113,12 +120,23 @@ private:
    THnSparse *fHJetPtRaw;      //bg unsubtr. vs bg subtr. pT spectrum of jets vs jet area
    THnSparse *fHLeadingJetPtRaw; //bg unsubtr. vs bg. subtr. leading jet pT vs area 
    THnSparse *fHDphiVsJetPtAll;   //Dphitrigger-jet  versus jet pt for all jets given pTtrigg  
-   THnSparse *fHRhoFastJetVsRhoCone; //fast jet rho vs perp cone rho given pT jet
 
+   //MC generator level
+   TH2D      *fhJetPtGenVsJetPtRec; //jet respose matrix  
+   TH1D      *fhJetPtGen;           //generated pT spectrum of jets  
+   TH2F      *fh2NtriggersGen; //trigger pT versus centrality in generator level
+   THnSparse *fHJetSpecGen;    //Recoil jet spectrum in generator level 
+   TH2D      *fhPtTrkTruePrimRec; // pt spectrum of true reconstructed primary tracks    
+   TH2D      *fhPtTrkTruePrimGen; // pt spectrum of true generated primary track    
+   TH2D      *fhPtTrkSecOrFakeRec; // pt spectrum of reconstructed fake or secondary tracks    
+   
+   Bool_t fIsMC;   //flag analysis on MC data with true and on the real data false
+   TArrayI faGenIndex;   // labels of particles on MC generator level  
+   TArrayI faRecIndex;   // labels of particles on reconstructed track level
    const Double_t fkAcceptance; //eta times phi  Alice coverage  
-   Double_t fConeArea;      //cone area pi*R^2
+   const Double_t fkDeltaPhiCut; //Delta phi cut on  trigger-jet distance in azimuth
   
-   ClassDef(AliAnalysisTaskJetCorePP, 2);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 3);  //has to end with number larger than 0
 };
 
 #endif
