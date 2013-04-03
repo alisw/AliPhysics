@@ -67,12 +67,6 @@ private:
   ClassDef(AliBlastwaveFitSpectra2,1)  // blast wave fit Spectra beta parameterization
 };
 
-const char *AliBlastwaveFitSpectra2::fgParName[5] = {"T_{FO}","#beta","#gamma","mass","norm"};
-Float_t AliBlastwaveFitSpectra2::fgStartValues[3] = {0.1,0.4,1.1};
-const Float_t AliBlastwaveFitSpectra2::fgStepValues[3] = {0.001,0.001,0.001};
-const Float_t AliBlastwaveFitSpectra2::fgMinValues[3] = {0.0001,0.01,0.1};
-const Float_t AliBlastwaveFitSpectra2::fgMaxValues[3] = {1.0,1.0,5};
-
 #endif
 
 

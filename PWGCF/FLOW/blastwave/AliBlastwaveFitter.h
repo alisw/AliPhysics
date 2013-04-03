@@ -52,6 +52,9 @@ public:
     TGraph* ConvertContourFromBoostToBeta(TGraph *g,Int_t iBoostOrBeta,Int_t iT);
 
 private:
+    AliBlastwaveFitter(const AliBlastwaveFitter & old); 
+    AliBlastwaveFitter& operator=(const AliBlastwaveFitter & source); // ass. op. 
+
     static const Int_t fgNmaxFunction = 20;   // max number of function allowed
     Int_t fNfunction;                         // number of functions to be fitted
     AliBlastwaveFit *fFunc[fgNmaxFunction];   // functions to be fitted
@@ -75,13 +78,6 @@ private:
   ClassDef(AliBlastwaveFitter,1)  // fitter bases on minuit for blastwave
 };
 
-Int_t AliBlastwaveFitter::fgNparReal = 0;
-Int_t AliBlastwaveFitter::fgNDGF = 0;
-Int_t AliBlastwaveFitter::fgNfunctionCurrent=0;
-AliBlastwaveFit *AliBlastwaveFitter::fgFuncC[50];
-Int_t AliBlastwaveFitter::fgSpectraFlagC[50];
-Int_t AliBlastwaveFitter::fgV2FlagC[50];
-Double_t AliBlastwaveFitter::fgChi2 = 0;
 #endif
 
 

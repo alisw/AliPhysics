@@ -68,10 +68,7 @@ public:
     void Terminate(){if(fFunctionYield) fFunctionYield->SetRange(fXmin,fXmax); if(fFunctionV2) fFunctionV2->SetRange(fXmin,fXmax);};
 
 
-private:
-    AliBlastwaveFit(const AliBlastwaveFit & old);
-    AliBlastwaveFit& operator=(const AliBlastwaveFit &/*source*/); // ass. op.
-
+protected:
     Double_t fMass; // mass value
     
     TF1 *fFunctionYield;  //! function to describe the yield behaviuor for a fixed fMass
@@ -84,6 +81,10 @@ private:
 
     Float_t fXmin; // mininimum pt for the fit
     Float_t fXmax; // maximum pt for the fit 
+
+ private:
+    AliBlastwaveFit(const AliBlastwaveFit & old); 
+    AliBlastwaveFit& operator=(const AliBlastwaveFit & source); // ass. op. 
     
     ClassDef(AliBlastwaveFit,1)  // blastwave base class
 };
