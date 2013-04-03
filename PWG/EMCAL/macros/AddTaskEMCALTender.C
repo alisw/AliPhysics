@@ -13,6 +13,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Bool_t calibTime     = kTRUE,
   Bool_t remBC         = kTRUE,
   Bool_t reclusterize  = kFALSE,
+  Float_t seedthresh   = 0.1,  // 100 MeV 
+  Float_t cellthresh   = 0.05, // 50 MeV  
   UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN,
   Bool_t trackMatch    = kFALSE,
   Bool_t updateCellOnly= kFALSE,
@@ -46,7 +48,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
   AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(timeCut, distBC, recalibClus, recalibClusPos, nonLinearCorr, remExotic, 
-							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, clusterizer, trackMatch, updateCellOnly);
+							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
+							      cellthresh, clusterizer, trackMatch, updateCellOnly);
   if (pass) 
     EMCALSupply->SetPass(pass);
 

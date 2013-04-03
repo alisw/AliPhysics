@@ -13,6 +13,8 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   Bool_t remBC         = kTRUE,
   UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
   Bool_t reclusterize  = kFALSE,
+  Float_t seedthresh   = 0.1, // 100 MeV
+  Float_t cellthresh   = 0.05, // 50 MeV 
   UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN,
   Bool_t trackMatch    = kFALSE,
   Bool_t updateCellOnly= kFALSE)
@@ -21,8 +23,8 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   EMCALSupply->SetDebugLevel(2);
 
   AliEMCALRecParam *params = new AliEMCALRecParam();
-  params->SetClusteringThreshold(0.1); // 100 MeV
-  params->SetMinECut(0.05);            // 50 MeV  
+  params->SetClusteringThreshold(seedthresh); 
+  params->SetMinECut(cellthresh);             
   params->SetW0(4.5);
   if (reclusterize) {
     params->SetClusterizerFlag(clusterizer);
