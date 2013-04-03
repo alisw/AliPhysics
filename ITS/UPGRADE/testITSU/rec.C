@@ -45,13 +45,13 @@ void rec() {
 
   TStopwatch timer;
   timer.Start();
+  //
+  //  AliLog::SetClassDebugLevel("AliITSUTrackerGlo",3);
+  //
   rec.Run();
   timer.Stop();
   timer.Print();
 
   printf("\n\n\n TDatime \n");
-
-  t.Print();
-  t.Set();
   t.Print();
 }

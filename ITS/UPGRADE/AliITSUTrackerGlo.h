@@ -127,7 +127,6 @@ inline void AliITSUTrackerGlo::AddProlongationHypothesis(AliITSUSeed* seed, Int_
 {
   // add new seed prolongation hypothesis 
   fCurrHyp->AddSeed(seed,lr);
-  printf("*** Adding: "); seed->Print();
 }
 
 //________________________________________

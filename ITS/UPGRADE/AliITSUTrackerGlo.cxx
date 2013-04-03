@@ -123,12 +123,6 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   ResetSeedsPool();
   int nTrESD = esdEv->GetNumberOfTracks();
   AliInfo(Form("Will try to find prolongations for %d tracks",nTrESD));
-  AliITSUReconstructor::GetRecoParam()->Print();
-  fHypStore.Delete();
-  if (fHypStore.GetSize()<nTrESD) fHypStore.Expand(nTrESD+100);
-  //
-  fITS->ProcessClusters();
-  //
   int nTrackCond = AliITSUReconstructor::GetRecoParam()->GetNTrackingConditions();
   if (nTrackCond<1) {
     if (!fDefTrackConds.GetEntriesFast()) {
@@ -140,18 +134,30 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   } 
   else trackConds = AliITSUReconstructor::GetRecoParam()->GetTrackingConditions();
   //
+  static Bool_t first = kTRUE;
+  if (first) {
+    AliITSUReconstructor::GetRecoParam()->Print();
+    first = kFALSE;
+  }
+  fHypStore.Delete();
+  if (fHypStore.GetSize()<nTrESD) fHypStore.Expand(nTrESD+100);
+  //
+  fITS->ProcessClusters();
+  //
   for (int icnd=0;icnd<nTrackCond;icnd++) {
     fCurrTrackCond = (AliITSUTrackCond*)trackConds->UncheckedAt(icnd);
     // select ESD tracks to propagate
     for (int itr=0;itr<nTrESD;itr++) {
       AliESDtrack *esdTr = esdEv->GetTrack(itr);
-      AliInfo(Form("Processing track %d | MCLabel: %d",itr,esdTr->GetTPCLabel()));
+      AliDebug(1,Form("Processing track %d | MCLabel: %d",itr,esdTr->GetTPCLabel()));
       if (!NeedToProlong(esdTr)) continue;  // are we interested in this track?
       FindTrack(esdTr, itr);
     }   
     //
-    AliInfo(Form("SeedsPool: %d, BookedUpTo: %d, free: %d",fSeedsPool.GetSize(),fSeedsPool.GetEntriesFast(),fNFreeSeeds));
-    fHypStore.Print();
+    if (AliDebugLevelClass()>0) {
+      AliInfo(Form("SeedsPool: %d, BookedUpTo: %d, free: %d",fSeedsPool.GetSize(),fSeedsPool.GetEntriesFast(),fNFreeSeeds));
+      fHypStore.Print();
+    }
     FinalizeHypotheses();
   }
   //
@@ -166,7 +172,7 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
   //
   SetTrackingPhase(kPropBack);
   int nTrESD = esdEv->GetNumberOfTracks();
-  AliInfo(Form("Will propagate back %d tracks",nTrESD));
+  AliDebug(1,Form("Will propagate back %d tracks",nTrESD));
   //
   double bz0 = GetBz();
   Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
@@ -215,13 +221,13 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
     currTr = GetTrackHyp(itr);
     currTr->StartTimeIntegral();
     currTr->AddTimeStep(dst);
-    printf("Before resetCov: "); currTr->AliExternalTrackParam::Print();
+    //    printf("Before resetCov: "); currTr->AliExternalTrackParam::Print();
     currTr->ResetCovariance(10000);
     if (RefitTrack(currTr,fITS->GetRMax())) { // propagate to exit from the ITS/TPC screen
       UpdateESDTrack(currTr,AliESDtrack::kITSout);
     }
     else {
-      AliInfo(Form("Refit Failed for track %d",itr));
+      AliDebug(1,Form("Refit Failed for track %d",itr));
     }
     //
   }
@@ -237,7 +243,7 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
   //
   SetTrackingPhase(kRefitInw);
   Int_t nTrESD = esdEv->GetNumberOfTracks();
-  AliInfo(Form("Will refit inward %d tracks",nTrESD));
+  AliDebug(1,Form("Will refit inward %d tracks",nTrESD));
   AliITSUTrackHyp *currTr=0;
   //
   for (int itr=0;itr<nTrESD;itr++) {
@@ -254,7 +260,7 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
       UpdateESDTrack(currTr,AliESDtrack::kITSrefit);
     }
     else {
-      AliInfo(Form("Refit Failed for track %d",itr));
+      AliDebug(1,Form("Refit Failed for track %d",itr));
     }
   }    
   //
@@ -346,10 +352,10 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
       }
       seedUC.ResetFMatrix();                    // reset the matrix for propagation to next layer
       // go till next active layer
-      AliInfo(Form("working on Lr:%d Seed:%d of %d",ila,isd,nSeedsUp));
+      AliDebug(2,Form("working on Lr:%d Seed:%d of %d",ila,isd,nSeedsUp));
       if (!TransportToLayer(&seedUC, fITS->GetLrIDActive(ilaUp), fITS->GetLrIDActive(ila)) ) {
 	//
-	AliInfo("Transport failed");
+	AliDebug(2,"Transport failed");
 	// Check if the seed satisfies to track definition
 	if (NeedToKill(&seedUC,kTransportFailed) && seedU) KillSeed(seedU,kTRUE);
 	continue; // RS TODO: decide what to do with tracks stopped on higher layers w/o killing
@@ -360,7 +366,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 	continue;
       }
       int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track
-      AliInfo(Form("Will check %d sensors on lr:%d ",nsens,ila));
+      AliDebug(2,Form("Will check %d sensors on lr:%d ",nsens,ila));
       //
       double bz = GetBz();
       for (int isn=nsens;isn--;) {
@@ -396,11 +402,13 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
       }
     }
     ((TObjArray*)fCurrHyp->GetLayerSeeds(ila))->Sort();
-    printf(">>> All hypotheses on lr %d: \n",ila);
+    if (AliDebugLevelClass()>2) {
+      printf(">>> All hypotheses on lr %d: \n",ila);
+      for (int ih=0;ih<fCurrHyp->GetNSeeds(ila);ih++) {printf(" #%3d ",ih); fCurrHyp->GetSeed(ila,ih)->Print();}
+    }
+    //
+    /*
     for (int ih=0;ih<fCurrHyp->GetNSeeds(ila);ih++) {
-      printf(" #%3d ",ih); fCurrHyp->GetSeed(ila,ih)->Print();
-      //
-      /*
       if (ila!=0) continue;
       double vecL[5] = {0};
       double matL[15] = {0};
@@ -411,7 +419,6 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 	sp = (AliITSUSeed*)sp->GetParent();
       }
       */
-    }
   }
   //
   SaveCurrentTrackHypotheses();
@@ -501,7 +508,7 @@ Bool_t AliITSUTrackerGlo::GoToExitFromLayer(AliITSUSeed* seed, AliITSURecoLayer*
   double xToGo = lr->GetR(dir);
   if (check) { // do we need to track till the surface of the current layer ?
     double curR2 = seed->GetX()*seed->GetX() + seed->GetY()*seed->GetY(); // current radius
-    //    AliInfo(Form(" dir:%d Cur: %e Tgt: %e",dir,Sqrt(curR2),xToGo));
+    AliDebug(3,Form(" dir:%d Cur: %e Tgt: %e",dir,Sqrt(curR2),xToGo));
     if      (dir>0) { if (curR2-xToGo*xToGo>fgkToler) return kTRUE; } // on the surface or outside of the layer
     else if (dir<0) { if (xToGo*xToGo-curR2>fgkToler) return kTRUE; } // on the surface or outside of the layer
   }
@@ -615,7 +622,7 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
 void AliITSUTrackerGlo::ResetSeedsPool()
 {
   // mark all seeds in the pool as unused
-  AliInfo(Form("CurrentSize: %d, BookedUpTo: %d, free: %d",fSeedsPool.GetSize(),fSeedsPool.GetEntriesFast(),fNFreeSeeds));
+  AliDebug(1,Form("CurrentSize: %d, BookedUpTo: %d, free: %d",fSeedsPool.GetSize(),fSeedsPool.GetEntriesFast(),fNFreeSeeds));
   fNFreeSeeds = 0;
   fSeedsPool.Clear(); // seeds don't allocate memory
 }
@@ -658,7 +665,10 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   //
   if (TMath::Abs(cl->GetX())>kTolerX) { // if due to the misalingment X is large, propagate track only
     if (!track->PropagateParamOnlyTo(track->GetX()+cl->GetX(),GetBz())) {
-      if (goodCl) {printf("Loose good cl: Failed propagation. |"); cl->Print();}
+      if (goodCl && AliDebugLevelClass()>2) {
+	printf("Loose good cl: Failed propagation. |"); 
+	cl->Print();
+      }
       return kStopSearchOnSensor; // propagation failed, seedT is intact
     }
   }
@@ -669,7 +679,10 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   double tol2 = (track->GetSigmaY2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(lr))*
     AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY(); // RS TOOPTIMIZE
   if (dy2>tol2) {                          // the clusters are sorted in Z(col) then in Y(row). 
-    if (goodCl) {printf("Loose good cl: dy2=%e > tol2=%e |",dy2,tol2); cl->Print();}
+    if (goodCl && AliDebugLevelClass()>2) {    
+      printf("Loose good cl: dy2=%e > tol2=%e |",dy2,tol2); 
+      cl->Print();
+    }
     if (dy>0) return kStopSearchOnSensor;  // No chance that other cluster of this sensor will match (all Y's will be even larger)
     else      return kClusterNotMatching;   // Other clusters may match
   }
@@ -677,7 +690,10 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   tol2 = (track->GetSigmaZ2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(lr))*
     AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ(); // RS TOOPTIMIZE
   if (dz2>tol2) {
-    if (goodCl) {printf("Loose good cl: dz2=%e > tol2=%e |",dz2,tol2); cl->Print();}
+    if (goodCl && AliDebugLevelClass()>2) {
+      printf("Loose good cl: dz2=%e > tol2=%e |",dz2,tol2); 
+      cl->Print();
+    }
     return kClusterNotMatching; // Other clusters may match
   }
   //
@@ -686,7 +702,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   Double_t cov[3]={cl->GetSigmaY2(), cl->GetSigmaYZ(), cl->GetSigmaZ2()};
   double chi2 = track->GetPredictedChi2(p,cov);
   if (chi2>AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr)) {
-    if (goodCl) {
+    if (goodCl && AliDebugLevelClass()>2) {
       printf("Loose good cl: Chi2=%e > Chi2Max=%e |dy: %+.3e dz: %+.3e\n",
 	     chi2,AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr),dy,dz); 
       track->Print("etp");
@@ -707,7 +723,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   //
   track->SetFake(!goodCl);
   //
-  AliInfo(Form("AddCl(%d) Cl%d lr:%d: dY:%+8.4f dZ:%+8.4f (MC: %5d %5d %5d) |Chi2=%f(%c)",
+  AliDebug(2,Form("AddCl(%d) Cl%d lr:%d: dY:%+8.4f dZ:%+8.4f (MC: %5d %5d %5d) |Chi2=%f(%c)",
 	       goodCl,clID,lr,dy,dz2,cl->GetLabel(0),cl->GetLabel(1),cl->GetLabel(2), chi2, track->IsFake() ? '-':'+'));
   //
   AddProlongationHypothesis(track,lr);
@@ -829,7 +845,7 @@ void AliITSUTrackerGlo::SaveCurrentTrackHypotheses()
 void AliITSUTrackerGlo::FinalizeHypotheses()
 {
   // select winner for each hypothesis, remove cl. sharing conflicts
-  AliInfo("TODO");
+  AliDebug(2,"TODO");
   //
   int nh = fHypStore.GetEntriesFast();
   for (int ih=0;ih<nh;ih++) {
@@ -884,8 +900,10 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
   dir = rCurr<rDest ? 1 : -1;
   lrStart = fITS->FindFirstLayerID(rCurr,dir);
   lrStop  = fITS->FindLastLayerID(rDest,dir);
-  printf("Refit %d: Lr:%d (%f) -> Lr:%d (%f)\n",dir,lrStart,rCurr, lrStop,rDest);
-  printf("Before refit: "); trc->AliExternalTrackParam::Print();
+  if (AliDebugLevelClass()>2) {
+    printf("Refit %d: Lr:%d (%f) -> Lr:%d (%f)\n",dir,lrStart,rCurr, lrStop,rDest);
+    printf("Before refit: "); trc->AliExternalTrackParam::Print();
+  }
   if (lrStop<0 || lrStart<0) AliFatal(Form("Failed to find start(%d) or last(%d) layers. Track from %.3f to %.3f",lrStart,lrStop,rCurr,rDest));
   //
   int ncl = trc->FetchClusterInfo(fClInfo);
@@ -902,7 +920,7 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
     if (!lr->IsActive() || fClInfo[ilrA2=(ilrA<<1)]<0) continue; 
     //
     if (ilr!=lrStart && !TransportToLayer(&tmpTr,lrStart,ilr)) {
-      AliInfo(Form("Failed to transport %d -> %d\n",lrStart,ilr));
+      AliDebug(2,Form("Failed to transport %d -> %d\n",lrStart,ilr));
       return kFALSE; // go to the entrance to the layer
     }
     lrStart = ilr;
@@ -922,16 +940,16 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
       AliITSUClusterPix* clus =  (AliITSUClusterPix*)lr->GetCluster(iclLr[icl]);
       AliITSURecoSens* sens = lr->GetSensorFromID(clus->GetVolumeId());
       if (!tmpTr.Rotate(sens->GetPhiTF())) {
-	AliInfo(Form("Failed on rotate to %f",sens->GetPhiTF()));
+	AliDebug(3,Form("Failed on rotate to %f",sens->GetPhiTF()));
 	return kFALSE;
       }
       //printf("Refit cl:%d on lr %d Need to go %.4f -> %.4f\n",icl,ilrA,tmpTr.GetX(),sens->GetXTF()+clus->GetX());
       if (!PropagateSeed(&tmpTr,sens->GetXTF()+clus->GetX(),fCurrMass)) {
-	AliInfo(Form("Failed on propagate to %f",sens->GetXTF()+clus->GetX()));	
+	AliDebug(3,Form("Failed on propagate to %f",sens->GetXTF()+clus->GetX()));	
 	return kFALSE;
       }
       if (!tmpTr.Update(clus)) {
-	AliInfo(Form("Failed on Update"));		
+	AliDebug(3,Form("Failed on Update"));		
 	return kFALSE;
       }
       //printf("AfterRefit: "); tmpTr.AliExternalTrackParam::Print();
@@ -945,7 +963,7 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
   if (lrStart!=lrStop) {
     //printf("Going to last layer %d -> %d\n",lrStart,lrStop);
     if (!TransportToLayer(&tmpTr,lrStart,lrStop)) {
-      AliInfo(Form("Failed on TransportToLayer %d->%d",lrStart,lrStop));		
+      AliDebug(3,Form("Failed on TransportToLayer %d->%d",lrStart,lrStop));		
       return kTRUE;
     }    
     if (!GoToExitFromLayer(&tmpTr,fITS->GetLayer(lrStop),dir)) {
@@ -954,13 +972,15 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
     }
     //
     //printf("On exit from last layer\n");
-    tmpTr.AliExternalTrackParam::Print();
+    //tmpTr.AliExternalTrackParam::Print();
     // go to the destination radius
     if (!tmpTr.GetXatLabR(rDest,rDest,GetBz(),dir)) return kTRUE;
     if (!PropagateSeed(&tmpTr,rDest,fCurrMass, 100, kFALSE)) return kTRUE;
   }
   trc->AliKalmanTrack::operator=(tmpTr);
-  printf("After refit (now at lr %d): ",lrStart); trc->AliExternalTrackParam::Print();
+  if (AliDebugLevelClass()>2) {
+    printf("After refit (now at lr %d): ",lrStart); trc->AliExternalTrackParam::Print();
+  }
   return kTRUE;
 }
 
