@@ -535,7 +535,7 @@ TH1F *AliCentralityGlauberFit::NBDhist(Double_t mu, Double_t k)
 }
 
 //--------------------------------------------------------------------------------------------------
-void AliCentralityGlauberFit::MinuitFcnNBD(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+void AliCentralityGlauberFit::MinuitFcnNBD(Int_t &/*npar*/, Double_t */*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
 {
   // FCN for minuit.
 
@@ -543,11 +543,6 @@ void AliCentralityGlauberFit::MinuitFcnNBD(Int_t &npar, Double_t *gin, Double_t 
   Double_t mu    = par[1];
   Double_t k     = par[2];
 
-  // if (0) { //avoid warning
-  //   gin=gin;
-  //   npar=npar;
-  //   iflag=iflag;
-  // }
   AliCentralityGlauberFit * obj = (AliCentralityGlauberFit *) gMinuit->GetObjectFit();
   TH1F * thistGlau = obj->GlauberHisto(mu,k,alpha,obj->GetTempHist(),kFALSE);
   f = obj->CalculateChi2(obj->GetTempHist(),thistGlau);
