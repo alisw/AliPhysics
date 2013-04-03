@@ -34,6 +34,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
   fIncludeNoITS(kTRUE),
   fUseNegativeLabels(kTRUE),
   fIsMC(kFALSE),
+  fCutMaxFractionSharedTPCClusters(0.4),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -59,6 +60,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
   fIncludeNoITS(kTRUE),
   fUseNegativeLabels(kTRUE),
   fIsMC(kFALSE),
+  fCutMaxFractionSharedTPCClusters(0.4),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -171,6 +173,11 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	else {/*not a good track*/
 	  continue;
 	}
+      }
+      if (fCutMaxFractionSharedTPCClusters > 0) {
+	Double_t frac = Double_t(aodtrack->GetTPCnclsS()) / Double_t(aodtrack->GetTPCncls());
+	if (frac > fCutMaxFractionSharedTPCClusters) 
+	  continue;
       }
       if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75 && 
 	  track->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() &&

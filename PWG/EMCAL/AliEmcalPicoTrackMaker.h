@@ -30,6 +30,7 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   void SetIncludeNoITS(Bool_t f)                         { fIncludeNoITS     = f   ; }
   void SetUseNegativeLabels(Bool_t f)                    { fUseNegativeLabels= f   ; }
   void SetMC(Bool_t a)                                   { fIsMC             = a   ; }
+  void SetCutMaxFractionSharedTPCClusters(Double_t c = 0.4)        { fCutMaxFractionSharedTPCClusters  = c ; }
 
  protected:
   Int_t              fAODfilterBits[2];     // AOD track filter bit map
@@ -46,6 +47,7 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   Bool_t             fIncludeNoITS;         // includes tracks with failed ITS refit
   Bool_t             fUseNegativeLabels;    // whether or not should use negative MC labels
   Bool_t             fIsMC;                 // whether it is a MC event or not
+  Double_t           fCutMaxFractionSharedTPCClusters;  // max fraction of shared TPC clusters
   TClonesArray      *fTracksIn;             //!track array in
   TClonesArray      *fTracksOut;            //!track array out
 
