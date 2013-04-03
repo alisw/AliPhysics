@@ -17,7 +17,8 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    Float_t centMax = 100.0,
    Float_t triggerEtaCut = 0.9,
    Float_t trackEtaCut = 0.9,
-   const Char_t* nonStdFile=""
+   const Char_t* nonStdFile="",
+   const Char_t* mcflag=""  // real="", MC2 = charged jets, MC = all jets    
   ){ 
 
    Printf("adding task jet response\n");
@@ -38,20 +39,34 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    TString analBranch(branchPrefix);
    TString stJetAlgo(jetAlgo);
    stJetAlgo.ToUpper();
-   analBranch = analBranch + "_" + stJetAlgo + Form("%02d",(Int_t) (10*jetParameterR));
-   analBranch = analBranch + Form("_B%d",(Int_t) bgMode);
-   analBranch = analBranch + Form("_Filter%05d",(UInt_t) trkFilterMask);
-   analBranch = analBranch + Form("_Cut%05d",(Int_t) (1000*trackLowPtCut));
+
+ 
+   TString tail;
+   tail = tail + "_" + stJetAlgo + Form("%02d",(Int_t) (10*jetParameterR));
+   tail = tail + Form("_B%d",(Int_t) bgMode);
+   tail = tail + Form("_Filter%05d",(UInt_t) trkFilterMask);
+   tail = tail + Form("_Cut%05d",(Int_t) (1000*trackLowPtCut));
+
    if(analBranch.BeginsWith("clustersAOD"))
-      analBranch = analBranch + Form("_Skip%02d",(Int_t) skipJet);
+      tail = tail + Form("_Skip%02d",(Int_t) skipJet);
+   
+   analBranch = analBranch + tail; 
    //clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip00   
    //Skip00 none of the most energetic jets is ommited
    //Cut00150  pT min cut on track
    //Filter00272
-  
-   AliAnalysisTaskJetCorePP *task = new AliAnalysisTaskJetCorePP(Form("JetCorePP_%s_%d",analBranch.Data(),offlineTriggerMask));
+
+   TString mcSuffix(mcflag);  //MC2= charged jets,  MC = all jets
+   TString analBranchMC="";
+   if(mcSuffix.Length()>0 && mcSuffix.Contains("MC")){
+      analBranchMC = branchPrefix + mcSuffix + tail; 
+   }
+
+ 
+   AliAnalysisTaskJetCorePP *task = new AliAnalysisTaskJetCorePP(Form("JetCorePP_%s_%s_%d",analBranch.Data(), mcSuffix.Data(), offlineTriggerMask));
 
    task->SetBranchName(analBranch.Data());
+   task->SetBranchNameMC(analBranchMC.Data());
    task->SetNonStdFile(nonStdFile);
    task->SetSystem(collisionSystem); 
    task->SetJetR(jetParameterR);
@@ -71,10 +86,10 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    mgr->AddTask(task);
 
    AliAnalysisDataContainer *coutputJetCorePP = mgr->CreateContainer(
-      Form("pwgjejetcorepp_%s_%d",analBranch.Data(),offlineTriggerMask), 
+      Form("pwgjejetcorepp_%s_%s_%d",analBranch.Data(),mcSuffix.Data(),offlineTriggerMask), 
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      Form("%s:PWGJE_jetcorepp_%s_%d",AliAnalysisManager::GetCommonFileName(),analBranch.Data(),offlineTriggerMask)
+      Form("%s:PWGJE_jetcorepp_%s_%s_%d",AliAnalysisManager::GetCommonFileName(),analBranch.Data(),mcSuffix.Data() ,offlineTriggerMask)
    );
 
    mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
