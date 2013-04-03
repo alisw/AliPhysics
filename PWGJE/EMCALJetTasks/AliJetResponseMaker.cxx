@@ -1578,7 +1578,10 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     if (jet2->MatchedJet()) {
 
-      if (!AcceptBiasJet(jet2->MatchedJet()) || 
+      if (!AcceptJet(jet2->MatchedJet()) ||
+	  jet2->MatchedJet()->Eta() < fJetMinEta || jet2->MatchedJet()->Eta() > fJetMaxEta || 
+	  jet2->MatchedJet()->Phi() < fJetMinPhi || jet2->MatchedJet()->Phi() > fJetMaxPhi ||
+	  !AcceptBiasJet(jet2->MatchedJet()) || 
 	  jet2->MatchedJet()->MaxTrackPt() > fMaxTrackPt || jet2->MatchedJet()->MaxClusterPt() > fMaxClusterPt) {
 	fHistMissedJets2PtArea->Fill(jet2->Area(), jet2->Pt());
       }
