@@ -36,6 +36,7 @@ Bool_t ConfigSigmaStar
    // integrated pion cut
    AliRsnCutDaughterSigmaStar2010PP *cutPi = new AliRsnCutDaughterSigmaStar2010PP("cutPionForSigmaStar", AliPID::kPion);
    cutPi->SetPIDCut(piPIDCut);
+   cutPi->SetMinTPCcluster(NTPCcluster);
    AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi->CutQuality();
    cutQuality->SetAODTestFilterBit(aodFilterBit);
    cutQuality->SetDCARmax(piDCAcut);	         
@@ -57,13 +58,13 @@ Bool_t ConfigSigmaStar
    esdTrackCuts->SetRequireTPCRefit();
    
    // cut lambda
-   //AliRsnCutV0 *cutLambda = new AliRsnCutV0("cutLambda", kLambda0);
    AliRsnCutV0 *cutLambda = new AliRsnCutV0("cutLambda", kLambda0, AliPID::kProton, AliPID::kPion);
    cutLambda->SetESDtrackCuts(esdTrackCuts);
    cutLambda->SetTolerance(massTol);
    cutLambda->SetMaxDCAVertex(lambdaDCA);
    cutLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
    cutLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
+   cutLambda->SetMinTPCcluster(NTPCcluster);
    cutLambda->SetMaxRapidity(0.8);
    cutLambda->SetAODTestFilterBit(aodFilterBit);
    cutLambda->SetPIDCut1(pPIDCut);
@@ -79,13 +80,13 @@ Bool_t ConfigSigmaStar
    Int_t iCutLambda = task->AddTrackCuts(cutSetLambda);
    
    // cut anti-AntiLambda
-   //AliRsnCutV0 *cutAntiLambda = new AliRsnCutV0("cutAntiLambda", kLambda0Bar);
    AliRsnCutV0 *cutAntiLambda = new AliRsnCutV0("cutAntiLambda", kLambda0Bar, AliPID::kProton, AliPID::kPion);
    cutAntiLambda->SetESDtrackCuts(esdTrackCuts);
    cutAntiLambda->SetTolerance(massTol);
    cutAntiLambda->SetMaxDCAVertex(lambdaDCA);
    cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
    cutAntiLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
+   cutAntiLambda->SetMinTPCcluster(NTPCcluster);
    cutAntiLambda->SetMaxRapidity(0.8);
    cutAntiLambda->SetAODTestFilterBit(aodFilterBit);
    cutAntiLambda->SetPIDCut1(pPIDCut);
