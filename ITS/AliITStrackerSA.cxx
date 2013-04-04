@@ -776,11 +776,18 @@ Int_t AliITStrackerSA::FindEquation(Double_t x1, Double_t y1, Double_t x2, Doubl
 
    //given (x,y) of three recpoints (in global coordinates) 
    //returns the parameters a,b,c of circonference x*x + y*y +a*x + b*y +c
-
-   Double_t den = (x3-x1)*(y2-y1)-(x2-x1)*(y3-y1);
+   double dx31=x3-x1,dy31=y3-y1,dx21=x2-x1,dy21=y2-y1;
+   Double_t den = dx31*dy21-dx21*dy31;
    if(den==0) return 0;
-   a = ((y3-y1)*(x2*x2+y2*y2-x1*x1-y1*y1)-(y2-y1)*(x3*x3+y3*y3-x1*x1-y1*y1))/den;
-   b = -(x2*x2-x1*x1+y2*y2-y1*y1+a*(x2-x1))/(y2-y1);
+   else den = 1./den;
+   //
+   double r31 = -dx31*(x1+x3) - dy31*(y1+y3);
+   double r21 = -dx21*(x1+x2) - dy21*(y1+y2);
+   //
+   double da = r31*dy21 - r21*dy31;
+   double db = r21*dx31 - r31*dx21;
+   a = da*den;
+   b = db*den;
    c = -x1*x1-y1*y1-a*x1-b*y1;
    return 1;
  }
