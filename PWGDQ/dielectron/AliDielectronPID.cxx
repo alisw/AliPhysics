@@ -50,6 +50,8 @@ TGraph *AliDielectronPID::fgFitCorr=0x0;
 Double_t AliDielectronPID::fgCorr=0.0;
 Double_t AliDielectronPID::fgCorrdEdx=1.0;
 TF1 *AliDielectronPID::fgFunEtaCorr=0x0;
+TF1 *AliDielectronPID::fgFunCntrdCorr=0x0;
+TF1 *AliDielectronPID::fgFunWdthCorr=0x0;
 TGraph *AliDielectronPID::fgdEdxRunCorr=0x0;
 
 AliDielectronPID::AliDielectronPID() :
@@ -396,6 +398,8 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut)
 
   if (fPartType[icut]==AliPID::kElectron){
     numberOfSigmas-=fgCorr;
+    numberOfSigmas-=GetCntrdCorr(part);
+    numberOfSigmas/=GetWdthCorr(part);
   }
   
   // test if we are supposed to use a function for the cut
@@ -647,4 +651,42 @@ Double_t AliDielectronPID::GetEtaCorr(const AliVTrack *track)
   //
   if (!fgFunEtaCorr) return 1;
   return fgFunEtaCorr->Eval(track->Eta());
+}
+
+//______________________________________________
+void AliDielectronPID::SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
+  fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
+  fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
+  fgFunCntrdCorr=fun;
+}
+//______________________________________________
+void AliDielectronPID::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
+  fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
+  fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
+  fgFunWdthCorr=fun;
+}
+
+//______________________________________________
+Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TF1 *fun)
+{
+  //
+  // return correction value
+  //
+
+  //Fill only event and vparticle values (otherwise we end up in a circle)
+  Double_t values[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::FillVarVParticle(track,values);
+
+  Int_t dim=fun->GetNdim();
+  Double_t var[3] = {0.,0.,0.};
+  if(dim>0) var[0] = values[fun->GetHistogram()->GetXaxis()->GetUniqueID()];
+  if(dim>1) var[1] = values[fun->GetHistogram()->GetYaxis()->GetUniqueID()];
+  if(dim>2) var[2] = values[fun->GetHistogram()->GetZaxis()->GetUniqueID()];
+  Double_t corr = fun->Eval(var[0],var[1],var[2]);
+  // printf(" %d-dim CORR value: %f (track %p) \n",dim,corr,track);
+  return corr;
 }

@@ -79,9 +79,15 @@ public:
   static TGraph *GetCorrGraphdEdx()  { return fgdEdxRunCorr; }
 
   static void SetEtaCorrFunction(TF1 *fun) {fgFunEtaCorr=fun;}
+  static void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  static void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   static TF1* GetEtaCorrFunction() { return fgFunEtaCorr; }
+  static TF1* GetCentroidCorrFunction() { return fgFunCntrdCorr; }
+  static TF1* GetWidthCorrFunction() { return fgFunWdthCorr; }
 
   static Double_t GetEtaCorr(const AliVTrack *track);
+  static Double_t GetCntrdCorr(const AliVTrack *track) { return (fgFunCntrdCorr ? GetPIDCorr(track,fgFunCntrdCorr) : 0.0); }
+  static Double_t GetWdthCorr(const AliVTrack *track)  { return (fgFunWdthCorr  ? GetPIDCorr(track,fgFunWdthCorr)  : 1.0); }
 
 private:
   enum {kNmaxPID=30};
@@ -111,9 +117,11 @@ private:
   static Double_t fgCorrdEdx;     //!dEdx correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
                                   // was called
   static TF1    *fgFunEtaCorr;    //function for eta correction of electron sigma
+  static TF1    *fgFunCntrdCorr;  //function for correction of electron sigma (centroid)
+  static TF1    *fgFunWdthCorr;   //function for correction of electron sigma (width)
   static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
 
-
+  static Double_t GetPIDCorr(const AliVTrack *track, TF1 *fun);
   
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut);
@@ -125,7 +133,7 @@ private:
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
-  ClassDef(AliDielectronPID,4)         // Dielectron PID
+  ClassDef(AliDielectronPID,5)         // Dielectron PID
 };
 
 #endif

@@ -381,6 +381,7 @@ public:
   virtual ~AliDielectronVarManager();
   static void Fill(const TObject* particle, Double_t * const values);
   static void FillVarMCParticle2(const AliVParticle *p1, const AliVParticle *p2, Double_t * const values);
+  static void FillVarVParticle(const AliVParticle *particle,         Double_t * const values);
 
   static void InitESDpid(Int_t type=0);
   static void InitAODpidUtil(Int_t type=0);
@@ -417,7 +418,7 @@ private:
 
   static const char* fgkParticleNames[kNMaxValues][3];  //variable names
 
-  static void FillVarVParticle(const AliVParticle *particle,         Double_t * const values);
+
   static void FillVarESDtrack(const AliESDtrack *particle,           Double_t * const values);
   static void FillVarAODTrack(const AliAODTrack *particle,           Double_t * const values);
   static void FillVarMCParticle(const AliMCParticle *particle,       Double_t * const values);
@@ -689,8 +690,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   // nsigma to Electron band
   // TODO: for the moment we set the bethe bloch parameters manually
   //       this should be changed in future!
-  
-  values[AliDielectronVarManager::kTPCnSigmaEle]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron)-AliDielectronPID::GetCorrVal();
+  values[AliDielectronVarManager::kTPCnSigmaEle]=(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron)-AliDielectronPID::GetCorrVal()-AliDielectronPID::GetCntrdCorr(particle)) / AliDielectronPID::GetWdthCorr(particle);
   values[AliDielectronVarManager::kTPCnSigmaPio]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion);
   values[AliDielectronVarManager::kTPCnSigmaMuo]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon);
   values[AliDielectronVarManager::kTPCnSigmaKao]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon);
@@ -836,7 +836,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     values[AliDielectronVarManager::kTPCsignalN]     = tpcSignalN;
     values[AliDielectronVarManager::kTPCsignalNfrac] = tpcNcls>0?tpcSignalN/tpcNcls:0;
     values[AliDielectronVarManager::kTPCclsDiff]     = tpcSignalN-tpcNcls;
-    Double_t tpcNsigmaEle=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron);
+    Double_t tpcNsigmaEle=(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron)-AliDielectronPID::GetCntrdCorr(particle))/AliDielectronPID::GetWdthCorr(particle);
     Double_t tpcNsigmaPio=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion);
     Double_t tpcNsigmaMuo=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon);
     Double_t tpcNsigmaKao=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon);
@@ -891,9 +891,9 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     values[AliDielectronVarManager::kTOFnSigmaKao]=tofNsigmaKao;
     values[AliDielectronVarManager::kTOFnSigmaPro]=tofNsigmaPro;
 
-	values[AliDielectronVarManager::kTOFmismProb] = fgPIDResponse->GetTOFMismatchProbability(particle);
+    values[AliDielectronVarManager::kTOFmismProb] = fgPIDResponse->GetTOFMismatchProbability(particle);
   
-	pid->SetTPCsignal(origdEdx);
+    pid->SetTPCsignal(origdEdx);
   }
 
   //EMCAL PID information
@@ -1803,6 +1803,10 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
     values[AliDielectronVarManager::kCentrality] = header->GetCentrality();
   // nanoAODs (w/o AliEventPlane branch) should have the tpc event plane angle stored in the header
   if(!header->GetEventplaneP()) {
+
+    values[AliDielectronVarManager::kNTrk] = header->GetRefMultiplicity();    // overwritten datamembers in "our" nanoAODs
+    values[AliDielectronVarManager::kNacc] = header->GetRefMultiplicityPos(); // overwritten datamembers in "our" nanoAODs
+
     // TPC
     values[AliDielectronVarManager::kTPCrpH2uc]  = header->GetEventplane();
     values[AliDielectronVarManager::kTPCmagH2uc] = header->GetEventplaneMag();
