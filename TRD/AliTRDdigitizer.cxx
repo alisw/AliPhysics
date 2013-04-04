@@ -625,24 +625,25 @@ Bool_t AliTRDdigitizer::MakeDigits()
   }
   else {
     // Get the OCDB values
-    Int_t NTB=calibration->GetNumberOfTimeBinsDCS();
-    if (NTB < 0) { // Currently -1 gets returned for "undefined" and "mixed",
+    Int_t nTB = calibration->GetNumberOfTimeBinsDCS();
+    if (nTB < 0) { // Currently -1 gets returned for "undefined" and "mixed",
                    // one might go back to -1 undefined and -2 mixed?
       AliError("No useful DCS information available for this run! Using standard values.");
-      // We fall back to the standard OCDB object, 
-      // cache the current run number..
-      Long64_t run = calibration->GetRun();
-      calibration->SetRun(0);
-      NTB=calibration->GetNumberOfTimeBinsDCS();
-      // ..to set it again
-      calibration->SetRun(run);
-      // If there's no standard OCDB object, we can still fail
-      if(NTB < 0){
-	AliFatal("No standard object found in the OCDB!");
-      }
+      // // We fall back to the standard OCDB object, 
+      // // cache the current run number..
+      // Long64_t run = calibration->GetRun();
+      // calibration->SetRun(0);
+      // nTB = calibration->GetNumberOfTimeBinsDCS();
+      // // ..to set it again
+      // calibration->SetRun(run);
+      // // If there's no standard OCDB object, we can still fail
+      // if (nTB < 0) {
+      // 	AliFatal("No standard object found in the OCDB!");
+      // }
+      nTB = AliTRDSimParam::Instance()->GetNTimeBins();
     }
     // Save the values for the raw data headers
-    fDigitsManager->GetDigitsParam()->SetNTimeBinsAll(NTB);
+    fDigitsManager->GetDigitsParam()->SetNTimeBinsAll(nTB);
   }
 
   // Save the values for the raw data headers
