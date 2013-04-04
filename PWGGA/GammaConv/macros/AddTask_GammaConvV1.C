@@ -26,12 +26,17 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       return 0;
    }
       
-   Bool_t IsHeavyIon=collisionSystem.Contains("Pb");
+   Int_t IsHeavyIon=0;
+   if (trainConfig.Contains("PbPb")) IsHeavyIon=1;
+   else if (trainConfig.Contains("pPb")) IsHeavyIon=2;
 
+   
 
    TString cutnumber = "";
-   if(IsHeavyIon){
+   if(IsHeavyIon == 1){
       cutnumber = "1000000002084001001500000";
+    } else if (IsHeavyIon==2){
+     cutnumber = "8000000002084001001500000";   
    } else{
       cutnumber = "0000000002084000002200000";
    }
@@ -40,7 +45,7 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
    if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
       AddTaskPIDResponse();
-  
+   }
       
    //========= Add V0 Reader to  ANALYSIS manager =====
    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
@@ -113,7 +118,7 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
 
    }
    else if(trainConfig.Contains("pPb")){ //pA needs thighter rapidity cut y < 0.5
-      cutarray[0] = "1000000042092172023290000"; mesonCutArray[0] = "01024045000";  //standard cut Pi0 pPb 00-100
+      cutarray[ 0] = "8000000042092172023290000"; mesonCutArray[0] = "01024045000";  //standard cut Pi0 PbPb 00-100
    } else {
       cutarray[ 0] = "0000011002093663003800000"; mesonCutArray[0] = "01631031009";
    }

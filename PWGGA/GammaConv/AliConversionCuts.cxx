@@ -141,7 +141,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fDoPhotonAsymmetryCut(kTRUE),
    fMinPPhotonAsymmetryCut(100.),
    fMinPhotonAsymmetry(0.),
-   fIsHeavyIon(kFALSE),
+   fIsHeavyIon(0),
    fDetectorCentrality(0),
    fModCentralityClass(0),
    fMaxVertexZ(10),
@@ -173,6 +173,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fNotRejectedEnd(NULL),
    fGeneratorNames(NULL),
    fCutString(NULL),
+   fUtils(NULL),
    hdEdxCuts(NULL),
    hTPCdEdxbefore(NULL),
    hTPCdEdxafter(NULL),
@@ -200,7 +201,11 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fCutString=new TObjString((GetCutNumber()).Data());
 
    fElectronLabelArray = new Int_t[fElectronArraySize];
+   fUtils = new AliAnalysisUtils();
+   //if you do not want to apply the cut on the distance between the SPD and TRK vertex:
+   //fUtils->SetCutOnZVertexSPD(kFALSE); 
 
+   
 }
 
 //________________________________________________________________________
@@ -258,7 +263,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fNSigmaMass(ref.fNSigmaMass),
    fUseEtaMinCut(ref.fUseEtaMinCut),
    fUseOnFlyV0Finder(ref.fUseOnFlyV0Finder),
-   fDoPhotonAsymmetryCut(fDoPhotonAsymmetryCut),
+   fDoPhotonAsymmetryCut(ref.fDoPhotonAsymmetryCut),
    fMinPPhotonAsymmetryCut(ref.fMinPPhotonAsymmetryCut),
    fMinPhotonAsymmetry(ref.fMinPhotonAsymmetry),
    fIsHeavyIon(ref.fIsHeavyIon),
@@ -293,6 +298,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fNotRejectedEnd(NULL),
    fGeneratorNames(ref.fGeneratorNames),
    fCutString(NULL),
+   fUtils(NULL),
    hdEdxCuts(NULL),
    hTPCdEdxbefore(NULL),
    hTPCdEdxafter(NULL),
@@ -319,6 +325,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
    fCutString=new TObjString((GetCutNumber()).Data());
    fElectronLabelArray = new Int_t[fElectronArraySize];
+   fUtils = new AliAnalysisUtils();
    // dont copy histograms (if you like histograms, call InitCutHistograms())
 }
 
@@ -350,6 +357,11 @@ AliConversionCuts::~AliConversionCuts() {
       delete[] fGeneratorNames;
       fGeneratorNames = NULL;
    }
+   if(fUtils){
+     delete fUtils;
+     fUtils = NULL;
+   }
+
 }
 
 //________________________________________________________________________
@@ -892,6 +904,19 @@ Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliV
    //Selection of Reconstructed Photons
 
    FillPhotonCutIndex(kPhotonIn);
+   
+   if(event->IsA()==AliESDEvent::Class()) {
+      if(!SelectV0Finder( ( ((AliESDEvent*)event)->GetV0(photon->GetV0Index())) ) ){
+         FillPhotonCutIndex(kOnFly);
+         return kFALSE;
+      }
+   }
+   // else if(event->IsA()==AliAODEvent::Class()) {
+   //    if(!SelectV0Finder( ( ((AliAODEvent*)event)->GetV0(photon->GetV0Index())) ) ){
+   //       FillPhotonCutIndex(kOnFly);
+   //       return kFALSE;
+   //    }
+   // }
 
    // Get Tracks
    AliVTrack * negTrack = GetTrack(event, photon->GetTrackLabelNegative());
@@ -1690,12 +1715,21 @@ Bool_t AliConversionCuts::SetIsHeavyIon(Int_t isHeavyIon)
       fDetectorCentrality=0;
       fModCentralityClass=5;
       break;
+   case 8:
+      fIsHeavyIon=2;
+      fDetectorCentrality=0;
+      break;
+   case 9:
+      fIsHeavyIon=2;
+      fDetectorCentrality=1;
+      break;         
    default:
       AliError(Form("SetHeavyIon not defined %d",isHeavyIon));
       return kFALSE;
    }
    return kTRUE;
 }
+
 //___________________________________________________________________
 Bool_t AliConversionCuts::SetCentralityMin(Int_t minCentrality)
 {
@@ -2578,7 +2612,12 @@ Double_t AliConversionCuts::GetCentrality(AliVEvent *event)
       AliCentrality *fESDCentrality=(AliCentrality*)esdEvent->GetCentrality();
 
       if(fDetectorCentrality==0){
-         return fESDCentrality->GetCentralityPercentile("V0M"); // default
+	if (fIsHeavyIon==2){
+	  return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
+	}
+	else{         
+	  return fESDCentrality->GetCentralityPercentile("V0M"); // default
+	}
       }
       if(fDetectorCentrality==1){
          return fESDCentrality->GetCentralityPercentile("CL1");
@@ -2680,6 +2719,13 @@ Bool_t AliConversionCuts::VertexZCut(AliVEvent *event){
    Double_t fVertexZ=event->GetPrimaryVertex()->GetZ();
 
    if(abs(fVertexZ)>fMaxVertexZ)return kFALSE;
+   
+   if (fIsHeavyIon == 2){
+     if(fUtils->IsFirstEventInChunk(event)) return kFALSE;
+     if(!fUtils->IsVertexSelected2013pA(event)) return kFALSE;
+
+   }
+   
    return kTRUE;
 }
 ///________________________________________________________________________
@@ -2733,7 +2779,8 @@ Bool_t AliConversionCuts::IsTriggerSelected()
    AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
    UInt_t isSelected = AliVEvent::kAny;
-   if( fInputHandler && fInputHandler->GetEventSelection()) {
+   if (fInputHandler==NULL) return kFALSE;
+   if( fInputHandler->GetEventSelection()) {
       // Get the actual offline trigger mask for the event and AND it with the
       // requested mask. If no mask requested select by default the event.
       if (fOfflineTriggerMask)
@@ -3052,7 +3099,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
       fnHeaders = 1;
       fNotRejectedStart[0] = 0;
       fNotRejectedEnd[0] = MCEvent->Stack()->GetNprimary()-1;
-//       if(rejection == 2){
+      //       if(rejection == 2){
       fGeneratorNames = new TString[1];
       fGeneratorNames[0] = "NoCocktailGeneratorFound";
 //       }
@@ -3147,12 +3194,6 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
    
    Double_t mesonPt = ((TParticle*)MCStack->Particle(index))->Pt();
    
-//   Double_t mesonY = 10.;
-//   if(((TParticle*)MCStack->Particle(index))->Energy() - ((TParticle*)MCStack->Particle(index))->Pz() == 0 || ((TParticle*)MCStack->Particle(index))->Energy() + ((TParticle*)MCStack->Particle(index))->Pz() == 0){
-//      mesonY=10.;
-//   } else{
-//      mesonY = 0.5*(TMath::Log((((TParticle*)MCStack->Particle(index))->Energy()+((TParticle*)MCStack->Particle(index))->Pz()) / (((TParticle*)MCStack->Particle(index))->Energy()-((TParticle*)MCStack->Particle(index))->Pz())));
-//   }
    Double_t mesonMass = ((TParticle*)MCStack->Particle(index))->GetCalcMass();
    Float_t functionResult = 1.;
    if (kCaseGen == 1){

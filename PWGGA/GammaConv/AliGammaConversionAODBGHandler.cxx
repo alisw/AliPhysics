@@ -23,7 +23,6 @@
 #include "AliKFParticle.h"
 #include "AliAODConversionPhoton.h"
 #include "AliAODConversionMother.h"
-#include "AliAnalysisTaskGammaConversion.h"
 
 using namespace std;
 

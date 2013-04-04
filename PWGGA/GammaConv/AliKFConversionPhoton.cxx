@@ -1,5 +1,5 @@
 #include "AliKFConversionPhoton.h"
-#include "AliV0Reader.h"
+// #include "AliV0Reader.h"
 #include "AliESDtrack.h"
 #include "AliESDpid.h"
 #include <iostream>
@@ -25,33 +25,33 @@ AliConversionPhotonBase()
 
 }
 
-AliKFConversionPhoton::AliKFConversionPhoton(AliV0Reader *fV0Reader) ://,AliESDEvent *fESDEvent) :
-AliKFParticle(*fV0Reader->GetMotherCandidateKFCombination()),
-AliConversionPhotonBase()
-
-{
-
-    fV0Index=fV0Reader->GetCurrentV0IndexNumber()-1;   //?? Checked and its correct
-
-   //Default constructor
-   fLabel[0] = fV0Reader->GetCurrentV0()->GetPindex();
-   fLabel[1] = fV0Reader->GetCurrentV0()->GetNindex();
-
-  SetArmenterosQtAlpha(fArmenteros,*fV0Reader->GetNegativeKFParticle(),*fV0Reader->GetPositiveKFParticle());
-
-  fConversionPoint[0]=fV0Reader->GetX();
-  fConversionPoint[1]=fV0Reader->GetY();
-  fConversionPoint[2]=fV0Reader->GetZ();
-
-  //Chi2
-
-  Double_t ndf=fV0Reader->GetMotherCandidateNDF();
-  if(ndf>0)fChi2perNDF=fV0Reader->GetMotherCandidateChi2()/ndf;
-
-
-  SetPsiPair(fV0Reader->GetPsiPair(fV0Reader->GetCurrentV0()));
-
-}
+// AliKFConversionPhoton::AliKFConversionPhoton(AliV0Reader *fV0Reader) ://,AliESDEvent *fESDEvent) :
+// AliKFParticle(*fV0Reader->GetMotherCandidateKFCombination()),
+// AliConversionPhotonBase()
+// 
+// {
+// 
+//     fV0Index=fV0Reader->GetCurrentV0IndexNumber()-1;   //?? Checked and its correct
+// 
+//    //Default constructor
+//    fLabel[0] = fV0Reader->GetCurrentV0()->GetPindex();
+//    fLabel[1] = fV0Reader->GetCurrentV0()->GetNindex();
+// 
+//   SetArmenterosQtAlpha(fArmenteros,*fV0Reader->GetNegativeKFParticle(),*fV0Reader->GetPositiveKFParticle());
+// 
+//   fConversionPoint[0]=fV0Reader->GetX();
+//   fConversionPoint[1]=fV0Reader->GetY();
+//   fConversionPoint[2]=fV0Reader->GetZ();
+// 
+//   //Chi2
+// 
+//   Double_t ndf=fV0Reader->GetMotherCandidateNDF();
+//   if(ndf>0)fChi2perNDF=fV0Reader->GetMotherCandidateChi2()/ndf;
+// 
+// 
+//   SetPsiPair(fV0Reader->GetPsiPair(fV0Reader->GetCurrentV0()));
+// 
+// }
                                                                
 AliKFConversionPhoton::AliKFConversionPhoton(const AliKFParticle &fCurrentNegativeKFParticle,const AliKFParticle &fCurrentPositiveKFParticle) :
 AliKFParticle(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle),

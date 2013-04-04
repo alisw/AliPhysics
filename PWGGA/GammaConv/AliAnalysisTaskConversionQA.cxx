@@ -265,6 +265,7 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
 
    for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
       AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
+      if (gamma==NULL) continue;
       if(fMCEvent && fConversionCuts->GetSignalRejection() != 0){
          if(!fConversionCuts->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCStack))
             continue;
@@ -494,10 +495,9 @@ void AliAnalysisTaskConversionQA::ProcessTrueQA(AliAODConversionPhoton *TruePhot
 //________________________________________________________________________
 void AliAnalysisTaskConversionQA::CountESDTracks(){
 
-   AliESDtrackCuts *EsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
    // Using standard function for setting Cuts
    Bool_t selectPrimaries=kTRUE;
-   EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+   AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
    EsdTrackCuts->SetMaxDCAToVertexZ(2);
    EsdTrackCuts->SetEtaRange(-0.8, 0.8);
    EsdTrackCuts->SetPtRange(0.15);

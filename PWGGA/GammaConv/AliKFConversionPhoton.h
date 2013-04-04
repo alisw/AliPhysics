@@ -14,11 +14,13 @@
 #include "TMath.h"
 #include "AliConversionPhotonBase.h"
 #include "AliKFParticle.h"
-#include "AliV0Reader.h"
+// #include "AliV0Reader.h"
 #include "AliESDEvent.h"
 #include "AliPID.h"
 #include "AliStack.h"
 #include "TParticle.h"
+#include "TF1.h"
+#include "TRandom3.h"
 
 class AliConversionPhotonBase;
 
@@ -29,7 +31,7 @@ class AliKFConversionPhoton : public AliKFParticle, public AliConversionPhotonBa
   //Constructors
   AliKFConversionPhoton();    
   AliKFConversionPhoton(AliKFParticle &kfparticle);
-  AliKFConversionPhoton(AliV0Reader *fV0Reader);
+//   AliKFConversionPhoton(AliV0Reader *fV0Reader);
   AliKFConversionPhoton(const AliKFParticle &fCurrentNegativeKFParticle,const AliKFParticle &fCurrentPositiveKFParticle);
 
   //Copy Constructor

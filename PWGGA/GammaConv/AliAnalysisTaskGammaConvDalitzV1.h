@@ -99,6 +99,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH1F **hESDDalitzPositronPt;
     TH2F **hESDEposEnegPsiPairDPhi;
     TH2F **hESDEposEnegInvMassPt;
+    TH2F **hESDEposEnegLikeSignBackInvMassPt;
     TH2F **hESDMotherInvMassPt;
     TH2F **hESDPi0MotherInvMassPt;
     TH2F **hESDPi0MotherDiffInvMassPt;

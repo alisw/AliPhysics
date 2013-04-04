@@ -14,6 +14,8 @@
 #include "AliStack.h"
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
+#include "AliAnalysisUtils.h"
+
 
 class AliESDEvent;
 class AliAODEvent;
@@ -198,7 +200,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t SetRejectExtraSignalsCut(Int_t extraSignal);
   // Request Flags
 
-  Bool_t IsHeavyIon(){return fIsHeavyIon;}
+  Int_t IsHeavyIon(){return fIsHeavyIon;}
   Int_t GetFirstTPCRow(Double_t radius);
   Float_t GetWeightForMeson(TString period, Int_t index, AliStack *MCStack);
 
@@ -272,7 +274,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t   fDoPhotonAsymmetryCut; // flag to use the PhotonAsymetryCut
   Double_t fMinPPhotonAsymmetryCut; // Min Momentum for Asymmetry Cut
   Double_t fMinPhotonAsymmetry;  // Asymmetry Cut
-  Bool_t fIsHeavyIon;               // flag for heavy ion
+  Int_t  fIsHeavyIon;               // flag for heavy ion
   Int_t fDetectorCentrality;	// centrality detecotor V0M or CL1
   Int_t fModCentralityClass; // allows to select smaller centrality classes
   Double_t fMaxVertexZ;    // max z offset of vertex
@@ -303,11 +305,10 @@ class AliConversionCuts : public AliAnalysisCuts {
   Int_t *fNotRejectedStart; //[fnHeaders]
   Int_t *fNotRejectedEnd; //[fnHeaders]
   TString *fGeneratorNames; //[fnHeaders]
-
-
+  TObjString *fCutString; // cut number used for analysis
+  AliAnalysisUtils *fUtils;
 
   // Histograms
-  TObjString *fCutString; // cut number used for analysis
   TH1F *hdEdxCuts;  // bookkeeping for dEdx cuts
   TH2F *hTPCdEdxbefore; // TPC dEdx before cuts
   TH2F *hTPCdEdxafter; // TPC dEdx after cuts

@@ -23,8 +23,16 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    virtual void   Terminate(const Option_t*);
    void InitBack();
 
-   void SetIsHeavyIon(Bool_t flag){fIsHeavyIon = flag;}
+   void SetIsHeavyIon(Int_t flag){
+      if (flag == 1 || flag ==2 ){
+         fIsHeavyIon = 1;    
+      } else {
+         fIsHeavyIon = 0;    
+      }
+   }
    void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
+   void SetDoMesonQA(Bool_t flag){fDoMesonQA = flag;}
+   void SetDoPhotonQA(Bool_t flag){fDoPhotonQA = flag;}
    void ProcessPhotonCandidates();
    void CalculatePi0Candidates();
    void CalculateBackground();
@@ -59,7 +67,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TList **fESDList;
    TList **fBackList;
    TList **fMotherList;
+   TList **fMotherRapList;
    TList **fTrueList;
+   TList **fTrueMotherRapList;
    TList **fMCList;
    TList **fHeaderNameList;
    TList *fOutputContainer;
@@ -73,6 +83,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1F **hESDConvGammaR;
    TH2F **hESDMotherInvMassPt;
    THnSparseF **sESDMotherInvMassPtZM;
+   THnSparseF **sESDMotherInvMassPtY;
    TH2F **hESDMotherBackInvMassPt;
    THnSparseF **sESDMotherBackInvMassPtZM;
    TH2F **hESDMotherInvMassEalpha;
@@ -94,12 +105,13 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1F **hMCEtaPt;
    TH1F **hMCPi0InAccPt;
    TH1F **hMCEtaInAccPt;
+   TH2F **hMCPi0PtY;
+   TH2F **hMCEtaPtY;
    TH2F **hESDTrueMotherInvMassPt;
-   TH2F **hESDTruePi0FromEtaInvMassPt;
    TH2F **hESDTruePrimaryMotherInvMassPt;
-   TH2F **hESDTruePrimaryMotherInvMassMCPt;
-   TH2F **hESDTruePrimaryPi0ESDPtMCPt;
-   TH2F **hESDTruePrimaryEtaESDPtMCPt;
+   TH2F **hESDTruePrimaryPi0MCPtResolPt;
+   TH2F **hESDTruePrimaryEtaMCPtResolPt;
+   THnSparseF **sESDTruePrimaryMotherInvMassPtY;
    TH2F **hESDTrueSecondaryMotherInvMassPt;
    TH2F **hESDTrueSecondaryMotherFromK0sInvMassPt;
    TH1F **hESDTrueK0sWithPi0DaughterMCPt;
@@ -135,6 +147,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    Bool_t fMoveParticleAccordingToVertex;
    Bool_t fIsHeavyIon;
    Bool_t fDoMesonAnalysis;
+   Bool_t fDoMesonQA;
+   Bool_t fDoPhotonQA;
    Bool_t fIsFromMBHeader;
 
 private:
@@ -143,7 +157,7 @@ private:
    AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
 
 
-   ClassDef(AliAnalysisTaskGammaConvV1, 3);
+   ClassDef(AliAnalysisTaskGammaConvV1, 4);
 };
 
 #endif
