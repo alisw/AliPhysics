@@ -63,19 +63,31 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Bool_t InvMassDstarRejection(AliAODRecoDecayHF2Prong* d, AliAODTrack *track, Int_t hypD0) const;
 	void SetPidAssociated();	
 	
-	//getters
-	Int_t GetMaxNEventsInPool() {return fPoolMaxNEvents;}
-	Int_t GetMinNTracksInPool() {return fPoolMinNTracks;}
-	Int_t GetMinEventsToMix(){return fMinEventsToMix;}
-	Int_t GetNZvtxPoolBins() {return fNzVtxBins;}
-	Double_t *GetZvtxPoolBins(){return fZvtxBins;}
-	Int_t GetNCentPoolBins() {return fNCentBins;}
-	Double_t *GetCentPoolBins(){return fCentBins;}
+	// getters
+	AliESDtrackCuts * GetESDTrackCuts() const {return fESDTrackCuts;}
+	AliAODPidHF * GetPIDObject() const {return fPidObj;}
+	TH3D * GetEfficiencyWeight() const {return fEffWeights;}
 	
-	Int_t GetNofMCEventType(){return fNofMCEventType;}	
-	Int_t *GetMCEventType(){return fMCEventType;}
-	TString GetDescription(){return fDescription;}
-	Int_t GetNVarsTrack(){return fNTrackCuts;}
+	Int_t GetMaxNEventsInPool() const {return fPoolMaxNEvents;}
+	Int_t GetMinNTracksInPool() const {return fPoolMinNTracks;}
+	Int_t GetMinEventsToMix() const {return fMinEventsToMix;}
+	Int_t GetNZvtxPoolBins() const {return fNzVtxBins;}
+	Double_t *GetZvtxPoolBins() const {return fZvtxBins;}
+	Int_t GetNCentPoolBins() const {return fNCentBins;}
+	Double_t *GetCentPoolBins() const {return fCentBins;}
+	
+	Int_t GetNofMCEventType() const {return fNofMCEventType;}
+	Int_t *GetMCEventType() const {return fMCEventType;}
+	
+	Int_t GetNTrackCuts() const {return fNTrackCuts;}
+	Float_t* GetAODTrackCuts() const {return fAODTrackCuts;}
+	TString * GetTrackCutNames() const {return fTrackCutsNames;}
+	Int_t GetNvZeroCuts() const {return fNvZeroCuts;}
+	Float_t * GetAODvZeroCuts() const {return fAODvZeroCuts;}
+	TString * GetvZeroCutNames() const {return fvZeroCutsNames;}
+	Int_t GetFilterBit() const {return fBit;}
+	Short_t GetCharge() const {return fCharge;}
+	TString GetDescription() const {return fDescription;}
 	
 	
 	
