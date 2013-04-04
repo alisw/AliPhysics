@@ -60,6 +60,8 @@ fHMPIDResponse(),
 fEMCALResponse(),
 fRange(5.),
 fITSPIDmethod(kITSTruncMean),
+fTuneMConData(kFALSE),
+fTuneMConDataMask(kDetTOF|kDetTPC),
 fIsMC(isMC),
 fCachePID(kTRUE),
 fOADBPath(),
@@ -71,7 +73,7 @@ fMCperiodUser(),
 fCurrentFile(),
 fRecoPass(0),
 fRecoPassUser(-1),
-fRun(0),
+fRun(-1),
 fOldRun(0),
 fResT0A(75.),
 fResT0C(65.),
@@ -86,9 +88,7 @@ fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
-fCurrCentrality(0.0),
-fTuneMConData(kFALSE),
-fTuneMConDataMask(kDetTOF|kDetTPC)
+fCurrCentrality(0.0)
 {
   //
   // default ctor
@@ -121,6 +121,8 @@ fHMPIDResponse(other.fHMPIDResponse),
 fEMCALResponse(other.fEMCALResponse),
 fRange(other.fRange),
 fITSPIDmethod(other.fITSPIDmethod),
+fTuneMConData(other.fTuneMConData),
+fTuneMConDataMask(other.fTuneMConDataMask),
 fIsMC(other.fIsMC),
 fCachePID(other.fCachePID),
 fOADBPath(other.fOADBPath),
@@ -132,7 +134,7 @@ fMCperiodUser(other.fMCperiodUser),
 fCurrentFile(),
 fRecoPass(0),
 fRecoPassUser(other.fRecoPassUser),
-fRun(0),
+fRun(-1),
 fOldRun(0),
 fResT0A(75.),
 fResT0C(65.),
@@ -147,9 +149,7 @@ fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
-fCurrCentrality(0.0),
-fTuneMConData(kFALSE),
-fTuneMConDataMask(kDetTOF|kDetTPC)
+fCurrCentrality(0.0)
 {
   //
   // copy ctor
@@ -175,6 +175,8 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fITSPIDmethod=other.fITSPIDmethod;
     fOADBPath=other.fOADBPath;
     fCustomTPCpidResponse=other.fCustomTPCpidResponse;
+    fTuneMConData=other.fTuneMConData;
+    fTuneMConDataMask=other.fTuneMConDataMask;
     fIsMC=other.fIsMC;
     fCachePID=other.fCachePID;
     fBeamType="PP";
@@ -184,7 +186,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fCurrentFile="";
     fRecoPass=0;
     fRecoPassUser=other.fRecoPassUser;
-    fRun=0;
+    fRun=-1;
     fOldRun=0;
     fResT0A=75.;
     fResT0C=65.;
@@ -192,14 +194,13 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fArrPidResponseMaster=NULL;
     fResolutionCorrection=NULL;
     fOADBvoltageMaps=NULL;
-	fUseTPCEtaCorrection=other.fUseTPCEtaCorrection;
+    fUseTPCEtaCorrection=other.fUseTPCEtaCorrection;
     fTRDPIDResponseObject=NULL;
     fEMCALPIDParams=NULL;
     fTOFtail=1.1;
     fTOFPIDParams=NULL;
     fHMPIDPIDParams=NULL;
     fCurrentEvent=other.fCurrentEvent;
-
   }
   return *this;
 }
