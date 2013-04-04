@@ -1,9 +1,14 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *								          *
- * Authors: Svein Lindal, Daniel Lohner					  *
- * Version 1.0								  *
- *									  *
+ *								                                                   * 
+ * Authors: Svein Lindal, Daniel Lohner	                     				  *
+ * Version 1.0								                                        *
+ *	                                                								  *
+ *                                                                         *
+ * based on: on older version (see aliroot up to v5-04-42-AN)              *
+ *           AliV0Reader.cxx                                               *
+ *           Authors: Kathrin Koch, Kenneth Aamodt, Ana Marin              *
+ *                                                                         *
  * Permission to use, copy, modify and distribute this software and its	  *
  * documentation strictly for non-commercial purposes is hereby granted	  *
  * without fee, provided that the above copyright notice appears in all	  *
@@ -25,7 +30,15 @@
 #include "AliESDv0.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
-#include "AliKFParticle.h"
+#include "AliPID.h"
+#include "AliMCEvent.h"
+#include "AliStack.h"
+#include "AliMCEventHandler.h"
+#include "AliESDpid.h"
+#include "AliESDtrackCuts.h"
+#include "TRandom3.h"
+#include "AliGenCocktailEventHeader.h"
+#include "TList.h"
 #include "AliKFConversionPhoton.h"
 #include "AliAODConversionPhoton.h"
 #include "AliConversionPhotonBase.h"
@@ -39,7 +52,6 @@
 #include "AliPIDResponse.h"
 #include "TChain.h"
 #include "TFile.h"
-#include "AliStack.h"
 #include "TString.h"
 #include "TObjArray.h"
 

@@ -6,6 +6,22 @@
 #include "AliStack.h"
 #include "AliLog.h"
 #include "TObject.h"
+#include "AliMCEvent.h"   
+#include "AliESDEvent.h"
+#include "AliKFParticle.h"
+#include "TParticle.h"
+#include <vector>
+#include "AliESDpid.h"
+#include "TF1.h"
+#include "TRandom3.h"
+#include "AliPID.h"
+#include "AliESDtrack.h"
+#include "AliKFVertex.h"
+#include "AliMCEventHandler.h"
+#include "AliESDtrackCuts.h"
+#include "AliGenCocktailEventHeader.h"
+#include "TList.h"
+
 
 using namespace std;
 

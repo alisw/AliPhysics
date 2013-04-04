@@ -97,6 +97,7 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
       return;
    }
    fESDEvent = (AliESDEvent*) InputEvent();
+   if (fESDEvent==NULL) return;
    if(fIsHeavyIon && !fConversionCuts->IsCentralitySelected(fESDEvent)) return;
 	Int_t nESDtracksEta09 = CountESDTracks09(); // Estimate Event Multiplicity
 	Int_t nESDtracksEta0914 = CountESDTracks0914(); // Estimate Event Multiplicity
@@ -213,6 +214,7 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 	// Fill Histograms for QA and MC
    for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
       AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
+      if (gamma ==NULL) continue;
       if(!fConversionCuts->PhotonIsSelected(gamma,fESDEvent)) continue;
 // 		cout << "i=  " <<firstGammaIndex << " of "<< fConversionGammas->GetEntriesFast() << endl;
       Float_t gammaPt = gamma->GetPhotonPt();
@@ -355,11 +357,10 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 
 //________________________________________________________________________
 Int_t AliAnalysisTaskMaterial::CountESDTracks09(){
-
-   AliESDtrackCuts *EsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+   
    // Using standard function for setting Cuts
    Bool_t selectPrimaries=kTRUE;
-   EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+   AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
    EsdTrackCuts->SetMaxDCAToVertexZ(2);
    EsdTrackCuts->SetEtaRange(-0.9, 0.9);
    EsdTrackCuts->SetPtRange(0.15);
@@ -378,11 +379,10 @@ Int_t AliAnalysisTaskMaterial::CountESDTracks09(){
 
 Int_t AliAnalysisTaskMaterial::CountESDTracks0914(){
 
-   AliESDtrackCuts *EsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
    // Using standard function for setting Cuts ; We use TPCOnlyTracks for outer eta region
    //Bool_t selectPrimaries=kTRUE;
 	 //   EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
-   EsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+   AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 	 EsdTrackCuts->SetMaxDCAToVertexXY(5);
 	 //	 EsdTrackCuts->SetMaxDCAToVertexXYPtDep("sqrt(0.15^2+(0.4/pt)^2");
    EsdTrackCuts->SetEtaRange(0.9, 1.4);
@@ -408,10 +408,9 @@ Int_t AliAnalysisTaskMaterial::CountESDTracks0914(){
 
 Int_t AliAnalysisTaskMaterial::CountESDTracks14(){
 
-   AliESDtrackCuts *EsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
    // Using standard function for setting Cuts
    Bool_t selectPrimaries=kTRUE;
-   EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+   AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
    EsdTrackCuts->SetMaxDCAToVertexZ(2);
    EsdTrackCuts->SetEtaRange(-1.4, 1.4);
    EsdTrackCuts->SetPtRange(0.15);
@@ -432,10 +431,10 @@ Int_t AliAnalysisTaskMaterial::CountESDTracks14(){
 //________________________________________________________________________
 void AliAnalysisTaskMaterial::Terminate(Option_t *)
 {
-   if (fStreamMaterial){
-      fStreamMaterial->GetFile()->Write();
-   }
-   if (fStreamResolution){
-      fStreamResolution->GetFile()->Write();
-   }
+//    if (fStreamMaterial){
+//       fStreamMaterial->GetFile()->Write();
+//    }
+//    if (fStreamResolution){
+//       fStreamResolution->GetFile()->Write();
+//    }
 }

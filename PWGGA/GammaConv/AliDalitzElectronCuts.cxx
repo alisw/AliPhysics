@@ -55,6 +55,7 @@ const char* AliDalitzElectronCuts::fgkCutNames[AliDalitzElectronCuts::kNCuts] = 
 "piMaxMomdedxSigmaTPCCut",
 "LowPRejectionSigmaCut",
 "kTOFelectronPID",
+"clsITSCut",
 "clsTPCCut",
 "EtaCut",
 "PsiPair",
@@ -67,7 +68,7 @@ const char* AliDalitzElectronCuts::fgkCutNames[AliDalitzElectronCuts::kNCuts] = 
 AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title) : AliAnalysisCuts(name,title),
     fHistograms(NULL),
     fPIDResponse(NULL),
-    fesdTrackCuts(0),
+    fesdTrackCuts(NULL),
     fEtaCut(0.9),
     fRadiusCut(1000.0),
     fPsiPairCut(0.45),
@@ -101,6 +102,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fPIDMinPPionRejectionLowP(0.5),
     fUseCorrectedTPCClsInfo(kFALSE),
     fUseTOFpid(kFALSE),
+    fRequireTOF(kFALSE),
     fUseTrackMultiplicityForBG(kFALSE),
     fBKGMethod(0),
     fnumberOfRotationEventsForBG(0),
@@ -120,7 +122,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fCutString=new TObjString((GetCutNumber()).Data());
 
 
-    fesdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+    //fesdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
 
    // Using standard function for setting Cuts
     Bool_t selectPrimaries=kTRUE;
@@ -239,6 +241,8 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     AxisAfter->Set(bins, newBins);
     AxisAfter = hTOFafter->GetXaxis(); 
     AxisAfter->Set(bins, newBins);
+    AxisAfter = hITSdEdxafter->GetXaxis();
+    AxisAfter->Set(bins,newBins); 
     if(preCut){
        AxisBeforeITS->Set(bins, newBins);
        AxisBeforedEdx->Set(bins, newBins);
@@ -276,22 +280,14 @@ Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliESDtrack* lTrack)
 
     if(hCutIndex)hCutIndex->Fill(kElectronIn);
 
-
-    if ( ! lTrack->GetConstrainedParam() ){
-        
+    if (lTrack == NULL){
+      if(hCutIndex)hCutIndex->Fill(kNoTracks);
+         return kFALSE;  
+    }   
        
-
+    if ( ! lTrack->GetConstrainedParam() ){
         return kFALSE;
-
     }
-
-
-
-    if( ! lTrack ) {
-         if(hCutIndex)hCutIndex->Fill(kNoTracks);
-         return kFALSE;
-    }
-
     AliVTrack * track = dynamic_cast<AliVTrack*>(lTrack);
 
 
@@ -496,6 +492,11 @@ Bool_t AliDalitzElectronCuts::dEdxCuts(AliVTrack *fCurrentTrack){
      }
      if(hTOFafter)hTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
   }
+  else if ( fRequireTOF == kTRUE ) {
+
+            if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+            return kFALSE;
+  }
      cutIndex++;
 
   if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
@@ -556,7 +557,7 @@ Double_t AliDalitzElectronCuts::GetPsiPair( const AliESDtrack *trackPos, const A
 {
 //
 // This angle is a measure for the contribution of the opening in polar
-// direction Δ0 to the opening angle ξ Pair
+// direction ??0 to the opening angle ?? Pair
 //
 // Ref. Measurement of photons via conversion pairs with the PHENIX experiment at RHIC
 //      Master Thesis. Thorsten Dahms. 2005
@@ -708,7 +709,12 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
           UpdateCutString(cutID, value);
           return kTRUE;
         } else return kFALSE;
-
+  case kclsITSCut:
+	if( SetITSClusterCut(value) ) {
+	  fCuts[kclsITSCut] = value;
+	  UpdateCutString(cutID, value);
+	  return kTRUE;		 	
+        } else return kFALSE;
   case kclsTPCCut:
 	if( SetTPCClusterCut(value)) {
 	  fCuts[kclsTPCCut] = value;
@@ -977,6 +983,39 @@ Bool_t AliDalitzElectronCuts::SetMinMomPiondEdxTPCCut(Int_t piMomdedxSigmaCut)
     }
     return kTRUE;
 }
+///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::SetITSClusterCut(Int_t clsITSCut){
+
+    
+      if( !fesdTrackCuts ) {
+
+         cout<<"Warning: AliESDtrackCut is not initialized "<<endl;
+	 return kFALSE;
+      }
+
+      switch(clsITSCut){
+
+	case 0: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+		break;
+        case 1: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+		break;  //1 hit first layer of SPD
+        case 2: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+		break; //1 hit in any layer of SPD
+	case 3: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+		fesdTrackCuts->SetMinNClustersITS(4);
+                // 4 hits in total in the ITS. At least 1 hit in the first layer of SPD  
+                break;
+        case 4: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+                fesdTrackCuts->SetMinNClustersITS(3);
+                // 3 hits in total in the ITS. At least 1 hit in any layer of SPD
+                break;
+	default:
+        cout<<"Warning: clsITSCut not defined "<<clsITSCut<<endl;
+        return kFALSE;
+    }
+
+return kTRUE;
+}
 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
@@ -1135,6 +1174,22 @@ Bool_t AliDalitzElectronCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
 	fPIDnSigmaAtLowPAroundProtonLine=0.;
 	fPIDnSigmaAtLowPAroundPionLine=2.;
 	break;
+    case 7: //
+        fDoKaonRejectionLowP=kFALSE;
+        fDoProtonRejectionLowP=kFALSE;
+        fDoPionRejectionLowP=kTRUE;
+        fPIDnSigmaAtLowPAroundKaonLine=0.0;
+        fPIDnSigmaAtLowPAroundProtonLine=0.0;
+        fPIDnSigmaAtLowPAroundPionLine=1.0;
+        break;
+    case 8:
+        fDoKaonRejectionLowP=kFALSE;
+        fDoProtonRejectionLowP=kFALSE;
+        fDoPionRejectionLowP=kTRUE;
+        fPIDnSigmaAtLowPAroundKaonLine=0.;
+        fPIDnSigmaAtLowPAroundProtonLine=0.;
+        fPIDnSigmaAtLowPAroundPionLine=0.5; 
+        break;	
     default:
         cout<<"Warning: LowPRejectionSigmaCut not defined "<<LowPRejectionSigmaCut<<endl;
 	return kFALSE;
@@ -1171,6 +1226,12 @@ Bool_t AliDalitzElectronCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
 	fTofPIDnSigmaBelowElectronLine=-2;
 	fTofPIDnSigmaAboveElectronLine=3;
 	break;
+    case 5: // -3, 3 TOF mandatory
+        fRequireTOF = kTRUE;
+        fUseTOFpid  = kTRUE;
+        fTofPIDnSigmaBelowElectronLine= -3;
+        fTofPIDnSigmaAboveElectronLine=  3;
+        break;
     default:
         cout<<"Warning: TOFElectronCut not defined "<<TOFelectronPID<<endl;
 	return kFALSE;

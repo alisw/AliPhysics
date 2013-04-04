@@ -6,6 +6,16 @@
 #include "AliESDv0.h"
 #include "AliConversionCuts.h"
 #include "AliExternalTrackParam.h"
+#include "TObject.h" 
+#include "AliMCEvent.h"   // for CF
+#include "AliESDEvent.h"
+#include "AliKFParticle.h"
+#include "TParticle.h"
+#include <vector>
+#include "AliESDpid.h"
+#include "TF1.h"
+#include "TRandom3.h"
+
 
 class AliConversionPhotonBase;
 class TRandom3;

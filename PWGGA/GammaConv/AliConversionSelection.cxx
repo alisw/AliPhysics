@@ -241,13 +241,13 @@ void AliConversionSelection::CalculatePi0Candidates(){
 	for(Int_t firstGammaIndex=0;firstGammaIndex<fGoodGammas->GetEntriesFast()-1;firstGammaIndex++){
 
 	    AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(firstGammaIndex));
-
+      if (gamma0==NULL) continue;
 	    // Combine Photons
 
 	    for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fGoodGammas->GetEntriesFast();secondGammaIndex++){
 
 		AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(secondGammaIndex));
-
+      if (gamma1==NULL) continue;
 		//Check for same Electron ID
 		if(gamma0->GetTrackLabelPositive()==gamma1->GetTrackLabelPositive()||gamma0->GetTrackLabelNegative()==gamma1->GetTrackLabelNegative()
 		   ||gamma0->GetTrackLabelNegative()==gamma1->GetTrackLabelPositive()||gamma0->GetTrackLabelPositive()==gamma1->GetTrackLabelNegative())continue;
@@ -319,9 +319,10 @@ void AliConversionSelection::CalculateBackground(){
 	for(Int_t firstGammaIndex=0;firstGammaIndex<fGoodGammas->GetEntriesFast();firstGammaIndex++){
 
 	    AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(firstGammaIndex));
-
+       if (gamma0 ==NULL) continue;
 	    for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fGoodGammas->GetEntriesFast();secondGammaIndex++){
 		AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(secondGammaIndex));
+      if (gamma1==NULL) continue;
 		if(!fConversionCut->PhotonIsSelected(gamma1,fInputEvent))continue;
 		for(Int_t nRandom=0;nRandom<fMesonCut->GetNumberOfBGEvents();nRandom++){
 
@@ -333,7 +334,7 @@ void AliConversionSelection::CalculateBackground(){
 			if(MesonInMassWindow(&BGcandidate)){
 
 			    new((*fBGPi0s)[fBGPi0s->GetEntriesFast()]) AliAODConversionMother(BGcandidate);
-
+             
 			    dynamic_cast<AliAODConversionMother*>(fBGPi0s->At(fBGPi0s->GetEntriesFast()-1))->SetWeight(weight);
 			}
 		    }
@@ -428,6 +429,7 @@ Int_t AliConversionSelection::GetNumberOfChargedTracks(AliVEvent *inputEvent){
     } else {
 	for(Int_t ii=0; ii<inputEvent->GetNumberOfTracks(); ii++) {
 	    AliVTrack * track = dynamic_cast<AliVTrack*>(inputEvent->GetTrack(ii));
+       if (track==NULL) continue;
 	    if(TMath::Abs(track->Eta())>fConversionCut->GetEtaCut())continue;
 	    if(track)ntracks++;
 	}

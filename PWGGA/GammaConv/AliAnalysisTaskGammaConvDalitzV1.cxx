@@ -25,7 +25,11 @@
 #include "TList.h"
 #include "TChain.h"
 #include "TDirectory.h"
-
+#include "TTree.h"
+#include "TH1.h"
+#include "TH1F.h"
+#include "THnSparse.h"
+#include "TH2F.h"
 #include "AliStack.h"
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
@@ -48,9 +52,7 @@
 #include "AliCentrality.h"
 #include "AliMultiplicity.h"
 #include "AliAnalysisTaskGammaConvDalitzV1.h"
-#include "TH1.h"
-#include "TH2F.h"
-#include "THnSparse.h"
+
 
 ClassImp( AliAnalysisTaskGammaConvDalitzV1 )
 
@@ -85,6 +87,7 @@ fV0Reader(NULL),
    hESDDalitzPositronPt(NULL),
    hESDEposEnegPsiPairDPhi(NULL),
    hESDEposEnegInvMassPt(NULL),
+   hESDEposEnegLikeSignBackInvMassPt(NULL),
    hESDMotherInvMassPt(NULL),
    hESDPi0MotherInvMassPt(NULL),
    hESDPi0MotherDiffInvMassPt(NULL),
@@ -156,6 +159,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
    hESDDalitzPositronPt(NULL),
    hESDEposEnegPsiPairDPhi(NULL),
    hESDEposEnegInvMassPt(NULL),
+   hESDEposEnegLikeSignBackInvMassPt(NULL),
    hESDMotherInvMassPt(NULL),
    hESDPi0MotherInvMassPt(NULL),
    hESDPi0MotherDiffInvMassPt(NULL),
@@ -232,7 +236,7 @@ AliAnalysisTaskGammaConvDalitzV1::~AliAnalysisTaskGammaConvDalitzV1()
 //___________________________________________________________
 void AliAnalysisTaskGammaConvDalitzV1::InitBack(){
 
-   Double_t *zBinLimitsArray = new Double_t[9];
+   Double_t *zBinLimitsArray= new Double_t[9];
    zBinLimitsArray[0] = -50.00;
    zBinLimitsArray[1] = -3.375;
    zBinLimitsArray[2] = -1.605;
@@ -243,7 +247,7 @@ void AliAnalysisTaskGammaConvDalitzV1::InitBack(){
    zBinLimitsArray[7] = 50.00;
    zBinLimitsArray[8] = 1000.00;
 
-   Double_t *multiplicityBinLimitsArrayTracks = new Double_t[6];
+   Double_t *multiplicityBinLimitsArrayTracks= new Double_t[6];
    multiplicityBinLimitsArrayTracks[0] = 0;
    multiplicityBinLimitsArrayTracks[1] = 8.5;
    multiplicityBinLimitsArrayTracks[2] = 16.5;
@@ -260,7 +264,7 @@ void AliAnalysisTaskGammaConvDalitzV1::InitBack(){
       multiplicityBinLimitsArrayTracks[5] = 5000.;
    }
 
-   Double_t *multiplicityBinLimitsArrayV0s = new Double_t[5];
+   Double_t *multiplicityBinLimitsArrayV0s= new Double_t[5];
 
    multiplicityBinLimitsArrayV0s[0] = 2;
    multiplicityBinLimitsArrayV0s[1] = 3;
@@ -361,6 +365,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
    hESDDalitzPositronPt            = new TH1F*[fnCuts];
    hESDEposEnegPsiPairDPhi         = new TH2F*[fnCuts];
    hESDEposEnegInvMassPt           = new TH2F*[fnCuts];
+   hESDEposEnegLikeSignBackInvMassPt = new TH2F*[fnCuts];
    hESDMotherInvMassPt             = new TH2F*[fnCuts];
    hESDPi0MotherInvMassPt          = new TH2F*[fnCuts];
    hESDPi0MotherDiffInvMassPt      = new TH2F*[fnCuts];
@@ -419,6 +424,9 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 
       hESDEposEnegInvMassPt[iCut] = new TH2F("ESD_EposEneg_InvMassPt","ESD_EposEneg_InvMassPt",5000,0.,5.,100,0.,10.);
       fESDList[iCut]->Add(hESDEposEnegInvMassPt[iCut]);
+      
+      hESDEposEnegLikeSignBackInvMassPt[iCut]  = new TH2F("ESD_EposEneg_LikeSignBack_InvMassPt","ESD_EposEneg_LikeSignBack_InvMassPt",5000,0.,5.,100,0.,10.);
+      fESDList[iCut]->Add(hESDEposEnegLikeSignBackInvMassPt[iCut]);
 
 
       hESDMotherInvMassPt[iCut] = new TH2F("ESD_DalitzMother_InvMass_Pt","ESD_DalitzMother_InvMass_Pt",1000,0,1,250,0,25);
@@ -892,6 +900,77 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
          fGoodVirtualGammas->Add(  vphoton );
       }
    }
+   
+   
+   //Computing mixing event
+
+   for(UInt_t i = 0; i < lGoodElectronIndex.size(); i++){
+         
+         if( lElectronPsiIndex[i] == kFALSE ) continue;
+         
+          AliESDtrack *electronCandidate1 = fESDEvent->GetTrack(lGoodElectronIndex[i]);
+
+          AliKFParticle electronCandidate1KF( *electronCandidate1->GetConstrainedParam(), ::kElectron );
+         
+        
+          for(UInt_t j = i+1; j < lGoodElectronIndex.size(); j++){
+	    
+	       if( lElectronPsiIndex[j] == kFALSE ) continue;
+	       
+	       
+	        AliESDtrack *electronCandidate2 = fESDEvent->GetTrack(lGoodElectronIndex[j]);
+
+                AliKFParticle electronCandidate2KF( *electronCandidate2->GetConstrainedParam(), ::kElectron );
+	       
+	        AliKFConversionPhoton* virtualPhoton = new AliKFConversionPhoton(electronCandidate1KF,electronCandidate2KF);
+		
+		AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+		primaryVertexImproved+=*virtualPhoton;
+		virtualPhoton->SetProductionVertex(primaryVertexImproved);
+
+		    
+		AliAODConversionPhoton *vphoton = new AliAODConversionPhoton(virtualPhoton); 
+		hESDEposEnegLikeSignBackInvMassPt[fiCut]->Fill(vphoton->GetMass(),vphoton->Pt());
+		delete vphoton;
+		delete virtualPhoton;
+		            
+	   
+	  }
+   }   
+   
+   
+   for(UInt_t i = 0; i < lGoodPositronIndex.size(); i++){
+         
+         if( lPositronPsiIndex[i] == kFALSE ) continue;
+         
+          AliESDtrack *positronCandidate1 = fESDEvent->GetTrack(lGoodPositronIndex[i]);
+
+          AliKFParticle positronCandidate1KF( *positronCandidate1->GetConstrainedParam(), ::kPositron );
+         
+        
+          for(UInt_t j = i+1; j < lGoodPositronIndex.size(); j++){
+	    
+	       if( lPositronPsiIndex[j] == kFALSE ) continue;
+	       
+	        AliESDtrack *positronCandidate2 = fESDEvent->GetTrack(lGoodPositronIndex[j]);
+
+                AliKFParticle positronCandidate2KF( *positronCandidate2->GetConstrainedParam(), ::kPositron );
+	       
+	        AliKFConversionPhoton* virtualPhoton = new AliKFConversionPhoton(positronCandidate1KF,positronCandidate2KF);
+		AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+		primaryVertexImproved+=*virtualPhoton;
+		virtualPhoton->SetProductionVertex(primaryVertexImproved);
+	       
+    		AliAODConversionPhoton *vphoton = new AliAODConversionPhoton(virtualPhoton); 
+		hESDEposEnegLikeSignBackInvMassPt[fiCut]->Fill(vphoton->GetMass(),vphoton->Pt());
+		
+		
+		delete vphoton;
+		delete virtualPhoton;        
+	   
+	  }
+   }   
+
 
 }
 
@@ -909,10 +988,11 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
       for(Int_t GammaIndex=0; GammaIndex<fGoodGammas->GetEntries(); GammaIndex++){
 
          AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(GammaIndex));
-
+         if (gamma==NULL) continue;
          for(Int_t virtualGammaIndex=0;virtualGammaIndex<fGoodVirtualGammas->GetEntries();virtualGammaIndex++){
 
             AliAODConversionPhoton *Vgamma=dynamic_cast<AliAODConversionPhoton*>(fGoodVirtualGammas->At(virtualGammaIndex));
+            if (Vgamma==NULL) continue;
             //Check for same Electron ID
             if(gamma->GetTrackLabelPositive() == Vgamma->GetTrackLabelPositive() ||
                gamma->GetTrackLabelNegative() == Vgamma->GetTrackLabelNegative() ||
@@ -1239,10 +1319,9 @@ void AliAnalysisTaskGammaConvDalitzV1::MoveParticleAccordingToVertex(AliAODConve
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvDalitzV1::CountESDTracks(){
 
-   AliESDtrackCuts *EsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
    // Using standard function for setting Cuts
    Bool_t selectPrimaries=kTRUE;
-   EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+   AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
    EsdTrackCuts->SetMaxDCAToVertexZ(2);
    EsdTrackCuts->SetEtaRange(-0.8, 0.8);
    EsdTrackCuts->SetPtRange(0.15);

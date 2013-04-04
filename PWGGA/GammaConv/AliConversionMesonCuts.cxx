@@ -47,17 +47,17 @@ ClassImp(AliConversionMesonCuts)
 
 
 const char* AliConversionMesonCuts::fgkCutNames[AliConversionMesonCuts::kNCuts] = {
-   "MesonKind",
-   "BackgroundScheme",
-   "NumberOfBGEvents",
-   "DegreesForRotationMethod",
-   "RapidityMesonCut",
-   "RCut",
-   "AlphaMesonCut",
-   "Chi2MesonCut",
-   "SharedElectronCuts",
-   "RejectToCloseV0s",
-   "UseMCPSmearing",
+   "MesonKind", //0
+   "BackgroundScheme", //1
+   "NumberOfBGEvents", //2
+   "DegreesForRotationMethod", //3
+   "RapidityMesonCut", //4
+   "RCut", //5
+   "AlphaMesonCut", //6
+   "Chi2MesonCut", //7
+   "SharedElectronCuts", //8
+   "RejectToCloseV0s", //9
+   "UseMCPSmearing", //10
 };
 
 
@@ -957,6 +957,8 @@ Bool_t AliConversionMesonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon, 
 ///________________________________________________________________________
 void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
 {
+   
+   if (photon==NULL) return;
    Double_t facPBrem = 1.;
    Double_t facPSig = 0.;
 

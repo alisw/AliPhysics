@@ -48,6 +48,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
         kpiMaxMomdedxSigmaTPCCut,
         kLowPRejectionSigmaCut,
         kTOFelectronPID,
+        kclsITSCut,
         kclsTPCCut,
 	ketaCut,
         kPsiPair,
@@ -121,6 +122,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetITSdEdxCutElectronLine(Int_t ededxSigmaCut);
   Bool_t SetMinMomPiondEdxTPCCut(Int_t piMomdedxSigmaCut);
   Bool_t SetMaxMomPiondEdxTPCCut(Int_t piMomdedxSigmaCut);
+  Bool_t SetITSClusterCut(Int_t clsITSCut);
   Bool_t SetTPCClusterCut(Int_t clsTPCCut);
   Bool_t SetEtaCut(Int_t etaCut);
   Bool_t SetMinMomPiondEdxCut(Int_t piMinMomdedxSigmaCut);
@@ -184,6 +186,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
   Bool_t   fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
   Bool_t   fUseTOFpid; // flag to use tof pid
+  Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
   Bool_t   fUseTrackMultiplicityForBG; // use multiplicity
   Int_t    fBKGMethod;
   Int_t    fnumberOfRotationEventsForBG;
