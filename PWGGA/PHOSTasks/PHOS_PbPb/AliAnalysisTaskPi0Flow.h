@@ -31,7 +31,7 @@ class AliEPFlattener;
 
 class AliAnalysisTaskPi0Flow : public AliAnalysisTaskSE {
 public:
-    enum Period { kUndefinedPeriod, kLHC10h, kLHC11h };
+    enum Period { kUndefinedPeriod, kLHC10h, kLHC11h, kLHC13 };
 
 public:
     AliAnalysisTaskPi0Flow(const char *name = "AliAnalysisTaskPi0Flow", Period period = kUndefinedPeriod);

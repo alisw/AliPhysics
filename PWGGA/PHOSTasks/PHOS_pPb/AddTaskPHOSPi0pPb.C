@@ -28,6 +28,9 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0pPb (const char* name = "PHOSPi0pPb",
     TArrayI tNMixed(nbins, nMixed);
     task->SetCentralityBinning(tbin, tNMixed);
   }
+  if( TString(options).Contains("LHC13") )
+    task->SetPeriod( AliAnalysisTaskPi0Flow::kLHC13 );
+
 
   task->SetEventMixingRPBinning(1);
   task->SelectCollisionCandidates(offlineTriggerMask);
