@@ -98,7 +98,8 @@ Bool_t ConfigSigmaStarPbPb
    cutSetAntiLambda->AddCut(cutAntiLambda);
    cutSetAntiLambda->SetCutScheme(cutAntiLambda->GetName());
    // add to task
-   Int_t iCutAntiLambda = task->AddTrackCuts(cutSetAntiLambda);   
+   Int_t iCutAntiLambda = task->AddTrackCuts(cutSetAntiLambda); 
+   
    
    //######################################################################################################  
     
@@ -160,6 +161,7 @@ Bool_t ConfigSigmaStarPbPb
       if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
       
     } 
+    
    
    if (isMC) {
    
