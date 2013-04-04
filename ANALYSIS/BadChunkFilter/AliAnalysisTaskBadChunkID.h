@@ -27,16 +27,7 @@
 
 class TList;
 class TH1F;
-class TH2F;
-class TH3F;
-class TVector3;
-class THnSparse;
-
-class AliESDpid;
-class AliESDtrackCuts;
 class AliESDEvent;
-class AliPhysicsSelection;
-class AliCFContainer;
 
 #include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -52,27 +43,27 @@ class AliAnalysisTaskBadChunkID : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   
- private:
-        // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
-        // your data member object is created on the worker nodes and streaming is not needed.
-        // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
-
+private:
+  // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
+  // your data member object is created on the worker nodes and streaming is not needed.
+  // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
+  
   TList  *fList;  //! List of Control plots
   TTree  *fTree;  //! Output Tree
-
+  
   TH1F      *fHistNEvents;    //! Keeping track of N(events)
-
+  
   Int_t fRunNumber;       //! Run Number
   TString fFileName;      //! Chunk Number
   Int_t fNGlobalTracks;   //! Number of kITSrefit tracks
   Int_t fNTracks;         //! Number of tracks
-
-  //Objects Controlling Task Behaviour 
-
-   AliAnalysisTaskBadChunkID(const AliAnalysisTaskBadChunkID&);            // not implemented
-   AliAnalysisTaskBadChunkID& operator=(const AliAnalysisTaskBadChunkID&); // not implemented
-   
-   ClassDef(AliAnalysisTaskBadChunkID, 11);
+  
+  //Objects Controlling Task Behaviour
+  
+  AliAnalysisTaskBadChunkID(const AliAnalysisTaskBadChunkID&);            // not implemented
+  AliAnalysisTaskBadChunkID& operator=(const AliAnalysisTaskBadChunkID&); // not implemented
+  
+  ClassDef(AliAnalysisTaskBadChunkID, 11);
 };
 
 #endif

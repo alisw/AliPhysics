@@ -28,52 +28,20 @@
 
 class TTree;
 class TParticle;
-class TVector3;
-
-//class AliMCEventHandler;
-//class AliMCEvent;
-//class AliStack;
-
-class AliESDVertex;
-class AliAODVertex;
-class AliESDv0;
-class AliAODv0;
 
 #include <Riostream.h>
 #include "TList.h"
 #include "TH1.h"
-#include "TH2.h"
-#include "TH3.h"
 #include "TFile.h"
-#include "THnSparse.h"
-#include "TVector3.h"
-#include "TCanvas.h"
-#include "TMath.h"
-#include "TLegend.h"
 #include "TString.h"
 #include "AliLog.h"
-
 #include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliV0vertexer.h"
-#include "AliCascadeVertexer.h"
-#include "AliESDpid.h"
 #include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
-#include "AliMCEventHandler.h"
-#include "AliMCEvent.h"
-#include "AliStack.h"
-
-#include "AliCFContainer.h"
-#include "AliMultiplicity.h"
-#include "AliAODMCParticle.h"
-#include "AliESDcascade.h"
-#include "AliAODcascade.h"
-#include "AliESDUtils.h"
-#include "AliGenEventHeader.h"
-
+//#include "AliMCEventHandler.h"
+//#include "AliMCEvent.h"
+//#include "AliStack.h"
 #include "AliAnalysisTaskBadChunkID.h"
 
 using std::cout;
@@ -90,8 +58,6 @@ AliAnalysisTaskBadChunkID::AliAnalysisTaskBadChunkID()
   fNTracks(0)
 {
   // Dummy Constructor
-
-  
 
 }
 
@@ -179,8 +145,8 @@ void AliAnalysisTaskBadChunkID::UserExec(Option_t *)
   // Called for each event
 
    AliESDEvent *lESDevent = 0x0;
-   AliMCEvent  *lMCevent  = 0x0; 
-   AliStack    *lMCstack  = 0x0; 
+   //AliMCEvent  *lMCevent  = 0x0;
+   //AliStack    *lMCstack  = 0x0;
 
   // Connect to the InputEvent   
   // After these lines, we should have an ESD/AOD event
@@ -193,6 +159,8 @@ void AliAnalysisTaskBadChunkID::UserExec(Option_t *)
       return;
    }
 
+/* Anyhow not needed for cross-check
+ 
    lMCevent = MCEvent();
    if (!lMCevent) {
       Printf("ERROR: Could not retrieve MC event \n");
@@ -206,7 +174,8 @@ void AliAnalysisTaskBadChunkID::UserExec(Option_t *)
       cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
       return;
    }
-   
+ 
+*/
 //------------------------------------------------
 // Track Multiplicity Information Acquistion
 //------------------------------------------------
