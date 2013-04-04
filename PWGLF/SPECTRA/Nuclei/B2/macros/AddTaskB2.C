@@ -150,7 +150,7 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 	AliAnalysisDataContainer* output = mgr->CreateContainer(containername.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:AliAnalysisTaskB2", AliAnalysisManager::GetCommonFileName()));
 	
 	mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-	mgr->ConnectOutput(task, 0, output);
+	mgr->ConnectOutput(task, 1, output);
 	
 	return task;
 }

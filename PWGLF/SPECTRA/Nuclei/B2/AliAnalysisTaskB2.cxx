@@ -176,7 +176,8 @@ AliAnalysisTaskB2::AliAnalysisTaskB2(const char* name)
 // Constructor
 //
 	DefineInput(0, TChain::Class());
-	DefineOutput(0, TList::Class());
+	DefineOutput(0, TTree::Class());
+	DefineOutput(1, TList::Class());
 	
 	//kFatal, kError, kWarning, kInfo, kDebug, kMaxType
 	AliLog::SetGlobalLogLevel(AliLog::kFatal);
@@ -255,7 +256,7 @@ void AliAnalysisTaskB2::CreateOutputObjects()
 	TIter iter(fHistoMap->GetMap());
 	while((key = (TObjString*)iter.Next())) fOutputContainer->Add((TH1*)fHistoMap->Get(key));
 	
-	PostData(0, fOutputContainer);
+	PostData(1, fOutputContainer);
 }
 
 AliAnalysisTaskB2::~AliAnalysisTaskB2()
@@ -434,7 +435,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	this->GetTracks();
 	
 	// Post the data (input/output slots #0 already used by the base class)
-	PostData(0, fOutputContainer);
+	PostData(1, fOutputContainer);
 }
 
 Int_t AliAnalysisTaskB2::GetParticles()
