@@ -1841,7 +1841,8 @@ void AliChaoticity::Exec(Option_t *)
 	qinv12 = GetQinv(fillIndex2, pVect1, pVect2);
 	GetQosl(pVect1, pVect2, qout, qside, qlong);
 	transK12 = sqrt(pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.;
-	
+
+
 	if(fGenerateSignal){// Flatten the Q-dist to increase pair population at low-q (testing purposes only)
 	  /*Float_t Qflattened = 0.005 + 0.2*gRandom->Rndm();
 	  Float_t theta12 = PI*gRandom->Rndm();
@@ -1911,7 +1912,9 @@ void AliChaoticity::Exec(Option_t *)
 	      ((TH1D*)fOutputList->FindObject("fQDist"))->Fill(qinv12-qinv12MC);
 	    }
 	    
-	    
+	    //if(transK12 <= 0.35) fEDbin=0;
+	    //else fEDbin=1;
+
 	    for(Int_t rIter=0; rIter<fRVALUES; rIter++){// 3fm to 8fm + 1 Therminator setting
 	      for(Int_t myDampIt=0; myDampIt<kNDampValues; myDampIt++){
 		Int_t denIndex = rIter*kNDampValues + myDampIt;
@@ -1922,7 +1925,8 @@ void AliChaoticity::Exec(Option_t *)
 		Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[1].fSmeared->Fill(denIndex, qinv12);
 	      }
 	    }
-	    
+	    //fEDbin=0;
+
 	    mcParticle1 = (AliAODMCParticle*)mcArray->At(abs((fEvt)->fTracks[i].fLabel));
 	    mcParticle2 = (AliAODMCParticle*)mcArray->At(abs((fEvt+en2)->fTracks[j].fLabel));
 	    
@@ -2110,7 +2114,9 @@ void AliChaoticity::Exec(Option_t *)
 	qinv12 = GetQinv(fillIndex2, pVect1, pVect2);
 	GetQosl(pVect1, pVect2, qout, qside, qlong);
 	transK12 = sqrt(pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.;
-	
+	//if(transK12 <= 0.35) fEDbin=0;
+	//else fEDbin=1;
+
 	if(fGenerateSignal){// Flatten the Q-dist to increase pair population at low-q (testing purposes only)
 	  /*Float_t Qflattened = 0.005 + 0.2*gRandom->Rndm();
 	  Float_t theta12 = PI*gRandom->Rndm();
@@ -2697,6 +2703,8 @@ void AliChaoticity::Exec(Option_t *)
 	    
 	    q3 = sqrt(pow(qinv12,2) + pow(qinv13,2) + pow(qinv23,2));
 	    transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
+	    //if(transK3<0.35) fEDbin=0;
+	    //else fEDbin=1;
 	    Float_t firstQ=0, secondQ=0, thirdQ=0;
 	    Float_t firstQMC=0, secondQMC=0, thirdQMC=0;
 	    
@@ -3658,6 +3666,7 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t track3
   qOut = fabs(qOut);
   qSide = fabs(qSide);
   qLong = fabs(qLong);
+  Float_t wd=0, xd=0, yd=0, zd=0;
   //
   
   if(kt < fKmeanT[0]) {fKtIndexL=0; fKtIndexH=1;}// fKtIndexL=0; fKtIndexH=0; no extrapolation
@@ -3669,35 +3678,38 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t track3
   }
   //
   /////////
-  if(qOut < fQmean[0]) {fQoIndexL=0; fQoIndexH=0;}
-  else if(qOut >= fQmean[kQbinsWeights-1]) {fQoIndexL=kQbinsWeights-1; fQoIndexH=kQbinsWeights-1;}
+  if(qOut < fQmean[0]) {fQoIndexL=0; fQoIndexH=0; xd=0;}
+  else if(qOut >= fQmean[kQbinsWeights-1]) {fQoIndexL=kQbinsWeights-1; fQoIndexH=kQbinsWeights-1; xd=0;}
   else {
-        for(Int_t i=0; i<kQbinsWeights-1; i++){
+    for(Int_t i=0; i<kQbinsWeights-1; i++){
       if((qOut >= fQmean[i]) && (qOut < fQmean[i+1])) {fQoIndexL=i; fQoIndexH=i+1; break;}
     }
+    xd = (qOut-fQmean[fQoIndexL])/(fQmean[fQoIndexH]-fQmean[fQoIndexL]);
   }
   //
-  if(qSide < fQmean[0]) {fQsIndexL=0; fQsIndexH=0;}
-  else if(qSide >= fQmean[kQbinsWeights-1]) {fQsIndexL=kQbinsWeights-1; fQsIndexH=kQbinsWeights-1;}
+  if(qSide < fQmean[0]) {fQsIndexL=0; fQsIndexH=0; yd=0;}
+  else if(qSide >= fQmean[kQbinsWeights-1]) {fQsIndexL=kQbinsWeights-1; fQsIndexH=kQbinsWeights-1; yd=0;}
   else {
     for(Int_t i=0; i<kQbinsWeights-1; i++){
       if((qSide >= fQmean[i]) && (qSide < fQmean[i+1])) {fQsIndexL=i; fQsIndexH=i+1; break;}
     }
+    yd = (qSide-fQmean[fQsIndexL])/(fQmean[fQsIndexH]-fQmean[fQsIndexL]);
   }
   //
-  if(qLong < fQmean[0]) {fQlIndexL=0; fQlIndexH=0;}
-  else if(qLong >= fQmean[kQbinsWeights-1]) {fQlIndexL=kQbinsWeights-1; fQlIndexH=kQbinsWeights-1;}
+  if(qLong < fQmean[0]) {fQlIndexL=0; fQlIndexH=0; zd=0;}
+  else if(qLong >= fQmean[kQbinsWeights-1]) {fQlIndexL=kQbinsWeights-1; fQlIndexH=kQbinsWeights-1; zd=0;}
   else {
     for(Int_t i=0; i<kQbinsWeights-1; i++){
       if((qLong >= fQmean[i]) && (qLong < fQmean[i+1])) {fQlIndexL=i; fQlIndexH=i+1; break;}
     }
+    zd = (qLong-fQmean[fQlIndexL])/(fQmean[fQlIndexH]-fQmean[fQlIndexL]);
   }
   //
 
   
-  Float_t min = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
+  //Float_t min = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
   Float_t minErr = fNormWeight[fKtIndexL][fMbin]->GetBinError(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
-  
+  /*
   Float_t deltaW=0;
   // kt
   deltaW += (fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1) - min)*(kt-fKmeanT[fKtIndexL])/((fKstepT[fKtIndexL]+fKstepT[fKtIndexH])/2.);
@@ -3709,12 +3721,35 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t track3
   deltaW += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1) - min)*(qLong-fQmean[fQlIndexL])/fQstepWeights;
   //
   wgt = min + deltaW;
+  */
   
+ 
+  //
+  // w interpolation (kt)
+  Float_t c000 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*wd;
+  Float_t c100 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*wd;
+  Float_t c010 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*wd;
+  Float_t c001 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*wd;
+  Float_t c110 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*wd;
+  Float_t c101 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*wd;
+  Float_t c011 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*wd;
+  Float_t c111 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*wd;
+  // x interpolation (qOut)
+  Float_t c00 = c000*(1-xd) + c100*xd;
+  Float_t c10 = c010*(1-xd) + c110*xd;
+  Float_t c01 = c001*(1-xd) + c101*xd;
+  Float_t c11 = c011*(1-xd) + c111*xd;
+  // y interpolation (qSide)
+  Float_t c0 = c00*(1-yd) + c10*yd;
+  Float_t c1 = c01*(1-yd) + c11*yd;
+  // z interpolation (qLong)
+  wgt = (c0*(1-zd) + c1*zd);
   
+
   ////
   
   // Denominator errors negligible compared to numerator so do not waste cpu time below.  
-  Float_t deltaWErr=0;
+  //Float_t deltaWErr=0;
   // Kt
   /*
   deltaWErr += (fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1) - minErr)*(kt-fKmeanT[fKtIndexL])/((fKstepT[fKtIndexL]+fKstepT[fKtIndexH])/2.);
@@ -3725,7 +3760,7 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t track3
   // Ql
   deltaWErr += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1) - minErr)*(qLong-fQmean[fQlIndexL])/fQstepWeights;
   */
-  wgtErr = minErr + deltaWErr;
+  wgtErr = minErr;
   
  
 }
