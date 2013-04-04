@@ -269,6 +269,11 @@ Float_t ComputePiV2int(Int_t ic=2){
 
   TF1 *fitSP = bwPi->GetSpectraFit();
   TF1 *fitV2 = bwPi2->GetV2Fit();
+ 
+  // Print some outputs
+  printf("Chi2 = %f\n",fitter->GetChi2());
+  printf("N.D.G.F. = %f\n",fitter->GetNDGF());
+  printf("<beta> = %f\n",bwPi->GetMeanBeta());
 
   // Draw fit
   csp->cd();
@@ -282,30 +287,62 @@ Float_t ComputePiV2int(Int_t ic=2){
   Float_t num = 0;
   Float_t den = 0;
 
+  Float_t num1 = 0;
+  Float_t den1 = 0;
+
+  Float_t num2 = 0;
+  Float_t den2 = 0;
+
+
   for(Int_t i=0;i<10;i++){ // form 0 to 0.2
     Float_t x1 = i*0.02;
     Float_t x2 = (i+1)*0.02;
-    
-    den += fitSP->Integral(x1,x2);
-    num += fitSP->Integral(x1,x2) * fitV2->Eval((x1+x2)*0.5);
+    Float_t xm = (x1+x2)*0.5;
+
+    Float_t yield = fitSP->Integral(x1,x2);
+    Float_t v2 = fitV2->Eval(xm);
+
+    den += yield;
+    num += yield * v2;
+
+    den1 += yield*(1 + 0.0202/xm + 0.03 * xm);
+    num1 += yield*(1 + 0.0202/xm + 0.03 * xm) * v2 * (1 - 0.05);
+
+    den2 += yield*(1 - 0.0202/xm - 0.03 * xm);
+    num2 += yield*(1 - 0.0202/xm - 0.03 * xm) * v2 * (1 + 0.05);
   }
 
   for(Int_t i=0; i < gpiv2->GetN();i++){
     Float_t x = gpiv2->GetX()[i];
+
+    Float_t frSyst = 1 - 2*(x-0.2)/(3-0.2);
 
     if(x > 0.2){
       Float_t binwidth = 0.05;
       if(x < 3) binwidth = 0.05;
       else if(x < 4) binwidth = 0.1;
       else binwidth = 0.2;
-      den += fitSP->Integral(x-binwidth,x+binwidth);
-      num += fitSP->Integral(x-binwidth,x+binwidth) * gpiv2->GetY()[i];
+
+      Float_t yield = fitSP->Integral(x-binwidth,x+binwidth);
+      Float_t v2 = gpiv2->GetY()[i];
+      Float_t v2err1 = gpiv2->GetEYlow()[i];
+      Float_t v2err2 = gpiv2->GetEYhigh()[i];
+
+      den += yield;
+      num += yield * v2;
+
+      den1 += yield*(1 + frSyst*(0.0202/x + 0.03 * x));
+      num1 += yield*(1 + frSyst*(0.0202/x + 0.03 * x)) * v2 * (1 - v2err1);
+
+      den2 += yield*(1 - frSyst*(0.0202/x + 0.03 * x));
+      num2 += yield*(1 - frSyst*(0.0202/x + 0.03 * x)) * v2 * (1 + v2err2);
 
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
   }
 
   printf("Integrated flow for pions (0 < p_T < 6 GeV/c) = %f\n",num/den);
+  printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
 }
 
 Float_t ComputeKaV2int(Int_t ic=2){
@@ -360,6 +397,11 @@ Float_t ComputeKaV2int(Int_t ic=2){
   TF1 *fitSP = bwKa->GetSpectraFit();
   TF1 *fitV2 = bwKa2->GetV2Fit();
 
+  // Print some outputs
+  printf("Chi2 = %f\n",fitter->GetChi2());
+  printf("N.D.G.F. = %f\n",fitter->GetNDGF());
+  printf("<beta> = %f\n",bwKa->GetMeanBeta());
+
   // Draw fit
   csp->cd();
   fitSP->Draw("SAME");
@@ -372,30 +414,60 @@ Float_t ComputeKaV2int(Int_t ic=2){
   Float_t num = 0;
   Float_t den = 0;
 
+  Float_t num1 = 0;
+  Float_t den1 = 0;
+
+  Float_t num2 = 0;
+  Float_t den2 = 0;
+
   for(Int_t i=0;i<10;i++){ // form 0 to 0.2
     Float_t x1 = i*0.025;
     Float_t x2 = (i+1)*0.025;
-    
-    den += fitSP->Integral(x1,x2);
-    num += fitSP->Integral(x1,x2) * fitV2->Eval((x1+x2)*0.5);
+    Float_t xm = (x1+x2)*0.5;
+
+    Float_t yield = fitSP->Integral(x1,x2);
+    Float_t v2 = fitV2->Eval(xm);
+
+    den += yield;
+    num += yield * v2;
+
+    den1 += yield*(1 + 0.0215/xm + 0.05 * xm);
+    num1 += yield*(1 + 0.0215/xm + 0.05 * xm) * v2 * (1 - 0.1);
+
+    den2 += yield*(1 - 0.0215/xm - 0.05 * xm);
+    num2 += yield*(1 - 0.0215/xm - 0.05 * xm) * v2 * (1 + 0.1);    
   }
 
   for(Int_t i=0; i < gkav2->GetN();i++){
     Float_t x = gkav2->GetX()[i];
+    Float_t frSyst = 1 - 2*(x-0.25)/(3-0.25);
 
     if(x > 0.25){
       Float_t binwidth = 0.05;
       if(x < 3) binwidth = 0.05;
       else if(x < 4) binwidth = 0.1;
       else binwidth = 0.2;
-      den += fitSP->Integral(x-binwidth,x+binwidth);
-      num += fitSP->Integral(x-binwidth,x+binwidth) * gkav2->GetY()[i];
+
+      Float_t yield = fitSP->Integral(x-binwidth,x+binwidth);
+      Float_t v2 = gkav2->GetY()[i];
+      Float_t v2err1 = gkav2->GetEYlow()[i];
+      Float_t v2err2 = gkav2->GetEYhigh()[i];
+
+      den += yield;
+      num += yield * v2;
+
+      den1 += yield*(1 + frSyst*(0.0215/x + 0.05 * x));
+      num1 += yield*(1 + frSyst*(0.0215/x + 0.05 * x)) * v2 * (1 - v2err1);
+
+      den2 += yield*(1 - frSyst*(0.0215/x + 0.05 * x));
+      num2 += yield*(1 - frSyst*(0.0215/x + 0.05 * x)) * v2 * (1 + v2err2);
 
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
   }
 
   printf("Integrated flow for kaons (0 < p_T < 6 GeV/c) = %f\n",num/den);
+  printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
 }
 
 Float_t ComputePrV2int(Int_t ic=2){
@@ -450,6 +522,11 @@ Float_t ComputePrV2int(Int_t ic=2){
   TF1 *fitSP = bwPr->GetSpectraFit();
   TF1 *fitV2 = bwPr2->GetV2Fit();
 
+  // Print some outputs
+  printf("Chi2 = %f\n",fitter->GetChi2());
+  printf("N.D.G.F. = %f\n",fitter->GetNDGF());
+  printf("<beta> = %f\n",bwPr->GetMeanBeta());
+
   // Draw fit
   csp->cd();
   fitSP->Draw("SAME");
@@ -462,28 +539,58 @@ Float_t ComputePrV2int(Int_t ic=2){
   Float_t num = 0;
   Float_t den = 0;
 
+  Float_t num1 = 0;
+  Float_t den1 = 0;
+
+  Float_t num2 = 0;
+  Float_t den2 = 0;
+
   for(Int_t i=0;i<10;i++){ // form 0 to 0.2
     Float_t x1 = i*0.03;
     Float_t x2 = (i+1)*0.03;
-    
-    den += fitSP->Integral(x1,x2);
-    num += fitSP->Integral(x1,x2) * fitV2->Eval((x1+x2)*0.5);
+    Float_t xm = (x1+x2)*0.5;
+
+    Float_t yield = fitSP->Integral(x1,x2);
+    Float_t v2 = fitV2->Eval(xm);
+
+    den += yield;
+    num += yield * v2;
+
+    den1 += yield*(1 + 0.064/xm + 0.0083 * xm * xm);
+    num1 += yield*(1 + 0.064/xm + 0.0083 * xm * xm) * v2 * (1 - 0.2);
+
+    den2 += yield*(1 - 0.064/xm - 0.0083 * xm * xm);
+    num2 += yield*(1 - 0.064/xm - 0.0083 * xm * xm) * v2 * (1 + 0.2);
   }
 
   for(Int_t i=0; i < gprv2->GetN();i++){
     Float_t x = gprv2->GetX()[i];
+    Float_t frSyst = 1 - 2*(x-0.3)/(4.5-0.3);
 
     if(x > 0.3){
       Float_t binwidth = 0.05;
       if(x < 3) binwidth = 0.05;
       else if(x < 4) binwidth = 0.1;
       else binwidth = 0.2;
-      den += fitSP->Integral(x-binwidth,x+binwidth);
-      num += fitSP->Integral(x-binwidth,x+binwidth) * gprv2->GetY()[i];
+
+      Float_t yield = fitSP->Integral(x-binwidth,x+binwidth);
+      Float_t v2 = gprv2->GetY()[i];
+      Float_t v2err1 = gprv2->GetEYlow()[i];
+      Float_t v2err2 = gprv2->GetEYhigh()[i];
+
+      den += yield;
+      num += yield * v2;
+
+      den1 += yield*(1 + frSyst*(0.064/x + 0.0083 * x * x));
+      num1 += yield*(1 + frSyst*(0.064/x + 0.0083 * x * x)) * v2 * (1 - v2err1);
+
+      den2 += yield*(1 - frSyst*(0.064/x + 0.0083 * x * x));
+      num2 += yield*(1 - frSyst*(0.064/x + 0.0083 * x * x)) * v2 * (1 + v2err2);
 
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
   }
 
   printf("Integrated flow for antiprotons (0 < p_T < 6 GeV/c) = %f\n",num/den);
+  printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
 }
