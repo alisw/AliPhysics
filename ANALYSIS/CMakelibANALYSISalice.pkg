@@ -63,6 +63,7 @@ set ( SRCS
     AliAnalysisTaskPIDCombined.cxx
     AliUnfolding.cxx
     AliAnalysisUtils.cxx
+    BadChunkFilter/AliAnalysisTaskBadChunkID.cxx
     )
 
 if( ROOTHASALIEN STREQUAL "yes")
@@ -85,6 +86,6 @@ set ( DHDR  ANALYSISaliceLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS/Aliengui STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE ANALYSIS/Aliengui STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS/BadChunkFilter)
 
 set ( ELIBS "OADB" )
