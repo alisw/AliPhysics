@@ -107,7 +107,8 @@ public:
   virtual void      GetIntegratedTimes(Double_t */*times*/) const { return; }
   virtual Double_t  GetTRDmomentum(Int_t /*plane*/, Double_t */*sp*/=0x0) const {return 0.;}
   virtual void      GetHMPIDpid(Double_t */*p*/) const {;}
-    
+  virtual Double_t  GetIntegratedLength() const { return 0.;}
+  
   virtual ULong_t  GetStatus() const = 0;
   virtual Bool_t   GetXYZ(Double_t *p) const = 0;
   virtual Bool_t   GetXYZAt(Double_t /*x*/, Double_t /*b*/, Double_t* /*r*/ ) const {return kFALSE;}

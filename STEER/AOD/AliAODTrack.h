@@ -295,6 +295,8 @@ class AliAODTrack : public AliVTrack {
   virtual AliTPCdEdxInfo* GetTPCdEdxInfo() const {return fDetPid?fDetPid->GetTPCdEdxInfo():0;}
   Double_t  GetTPCmomentum()     const { return fDetPid?fDetPid->GetTPCmomentum():0.;  }
   Double_t  GetTOFsignal()       const { return fDetPid?fDetPid->GetTOFsignal():0.;    }
+  Double_t  GetIntegratedLength() const { return fTrackLength;}
+  void      SetIntegratedLength(Double_t l) {fTrackLength = l;}
   Double_t  GetTOFsignalTunedOnData() const { return fTOFsignalTuned;}
   void      SetTOFsignalTunedOnData(Double_t signal) {fTOFsignalTuned = signal;}
   Double_t  GetHMPIDsignal()     const; 
@@ -419,7 +421,8 @@ class AliAODTrack : public AliVTrack {
 
   ULong_t       fFlags;             // reconstruction status flags 
   Int_t         fLabel;             // track label, points back to MC track
-  Int_t         fTOFLabel[3];       // TOF label   
+  Int_t         fTOFLabel[3];       // TOF label
+  Double32_t    fTrackLength;       // Track length
   UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer
                                     // (ITS: bit 1-8, muon trigger: bit 9-16, muon tracker: bit 17-26, muon match trigger: bit 31-32) 
   UInt_t        fMUONtrigHitsMapTrg; // Muon trigger hits map from trigger
@@ -454,7 +457,7 @@ class AliAODTrack : public AliVTrack {
 
   const AliAODEvent* fAODEvent;     //! 
 
-  ClassDef(AliAODTrack, 20);
+  ClassDef(AliAODTrack, 21);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const
