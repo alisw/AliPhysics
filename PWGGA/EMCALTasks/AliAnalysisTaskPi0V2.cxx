@@ -65,7 +65,8 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) :
   hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), 
   fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"), fTPCFlat(0x0), fV0AFlat(0x0),  fV0CFlat(0x0),
   fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0),    
-  fHEPV0r(0x0), fHEPV0A(0x0), fHEPV0C(0x0), fHEPTPC(0x0)
+  fHEPV0A(0x0), fHEPV0C(0x0), fHEPTPC(0x0),
+  fHEPV0AM2(0x0), fHEPV0CM2(0x0), fHEPTPCM2(0x0)
 {
   // Dummy constructor ALWAYS needed for I/O.
   DefineInput(0, TChain::Class());
@@ -100,7 +101,8 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() :
   hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), 
   fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"), fTPCFlat(0x0), fV0AFlat(0x0),  fV0CFlat(0x0),
   fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0),    
-  fHEPV0r(0x0), fHEPV0A(0x0), fHEPV0C(0x0), fHEPTPC(0x0)
+  fHEPV0A(0x0), fHEPV0C(0x0), fHEPTPC(0x0),
+  fHEPV0AM2(0x0), fHEPV0CM2(0x0), fHEPTPCM2(0x0)
 {
   // Constructor
   // Define input and output slots here (never in the dummy constructor)
@@ -379,30 +381,52 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVect
   dphiV0C = TVector2::Phi_0_2pi(dphiV0C); if(dphiV0C >TMath::Pi())  dphiV0C -= TMath::Pi();
   dphiTPC = TVector2::Phi_0_2pi(dphiTPC); if(dphiTPC >TMath::Pi())  dphiTPC -= TMath::Pi();
 
-  Double_t xV0A[5]; // Match ndims in fH V0A EP
+  Double_t xV0A[4]; // Match ndims in fH V0A EP for method 1
   xV0A[0]       = mass;
   xV0A[1]       = pt;
   xV0A[2]       = fCentrality;
   xV0A[3]       = dphiV0A;
-  xV0A[4]       = cos2phiV0A;
   fHEPV0A->Fill(xV0A);
 
-  Double_t xV0C[5]; // Match ndims in fH V0C EP
+
+  Double_t xV0AM2[4]; // Match ndims in fH V0A EP for method 2
+  xV0AM2[0]       = mass;
+  xV0AM2[1]       = pt;
+  xV0AM2[2]       = fCentrality;
+  xV0AM2[3]       = cos2phiV0A;
+  fHEPV0AM2->Fill(xV0AM2);
+
+
+  Double_t xV0C[4]; // Match ndims in fH V0C EP for method 1
   xV0C[0]       = mass;
   xV0C[1]       = pt;
   xV0C[2]       = fCentrality;
   xV0C[3]       = dphiV0C;
-  xV0C[4]       = cos2phiV0C;
   fHEPV0C->Fill(xV0C);
 
+  Double_t xV0CM2[4]; // Match ndims in fH V0C EP for method 2
+  xV0CM2[0]       = mass;
+  xV0CM2[1]       = pt;
+  xV0CM2[2]       = fCentrality;
+  xV0CM2[3]       = cos2phiV0C;
+  fHEPV0CM2->Fill(xV0CM2);
+
+
   if (fEPTPC!=-999.){
-    Double_t xTPC[5]; // Match ndims in fH TPC EP
+    Double_t xTPC[4]; // Match ndims in fH TPC EP for method 1
     xTPC[0]       = mass;
     xTPC[1]       = pt;
     xTPC[2]       = fCentrality;
-    xTPC[3]       = dphiTPC;
-    xTPC[4]       = cos2phiTPC;
+    xTPC[3]       = cos2phiTPC;
     fHEPTPC->Fill(xTPC);
+
+    Double_t xTPCM2[4]; // Match ndims in fH TPC EP
+    xTPCM2[0]       = mass;
+    xTPCM2[1]       = pt;
+    xTPCM2[2]       = fCentrality;
+    xTPCM2[3]       = cos2phiTPC;
+    fHEPTPCM2->Fill(xTPCM2);
+
   }
 }
 
@@ -625,11 +649,11 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
   fOutput->Add(hClusDxDZB);
     
   if (!isV1Clus) {
-    const Int_t ndims = 5;
+    const Int_t ndims = 4;
     Int_t nMgg=500, nPt=40, nCent=20, nDeltaPhi=315, ncos2phi=500;
-    Int_t binsv1[ndims] = {nMgg, nPt, nCent, nDeltaPhi, ncos2phi};
-    Double_t xmin[ndims] = { 0,   0.,  0,    0.,        -1.};
-    Double_t xmax[ndims] = { 0.5, 20., 100,  3.15,      1.};
+    Int_t binsv1[ndims] = {nMgg, nPt, nCent, nDeltaPhi};
+    Double_t xmin[ndims] = { 0,   0.,  0,    0.,      };
+    Double_t xmax[ndims] = { 0.5, 20., 100,  3.15,    };
     fHEPV0A = new THnSparseF("fHEPV0A",   "Flow histogram EPV0A", ndims, binsv1, xmin, xmax);
     fHEPV0C = new THnSparseF("fHEPV0C",   "Flow histogram EPV0C", ndims, binsv1, xmin, xmax);
     fHEPTPC = new THnSparseF("fHEPTPC",   "Flow histogram EPTPC", ndims, binsv1, xmin, xmax);
@@ -637,20 +661,40 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fHEPV0A->GetAxis(1)->SetTitle("p_{T}[GeV]"); 
     fHEPV0A->GetAxis(2)->SetTitle("centrality");
     fHEPV0A->GetAxis(3)->SetTitle("#delta #phi");
-    fHEPV0A->GetAxis(4)->SetTitle("cos(2*#delta #phi)");
     fHEPV0C->GetAxis(0)->SetTitle("m_{#gamma#gamma} "); 
     fHEPV0C->GetAxis(1)->SetTitle("p_{T}[GeV]"); 
     fHEPV0C->GetAxis(2)->SetTitle("centrality");
     fHEPV0C->GetAxis(3)->SetTitle("#delta #phi");
-    fHEPV0C->GetAxis(4)->SetTitle("cos(2*#delta #phi)");
     fHEPTPC->GetAxis(0)->SetTitle("m_{#gamma#gamma} "); 
     fHEPTPC->GetAxis(1)->SetTitle("p_{T}[GeV]"); 
     fHEPTPC->GetAxis(2)->SetTitle("centrality");
     fHEPTPC->GetAxis(3)->SetTitle("#delta #phi");
-    fHEPTPC->GetAxis(4)->SetTitle("cos(2*#delta #phi)");
     fOutput->Add(fHEPV0A);
     fOutput->Add(fHEPV0C);
     fOutput->Add(fHEPTPC);
+
+    Int_t binsv2[ndims] = {nMgg, nPt, nCent, ncos2phi};
+    Double_t xmin2[ndims] = { 0,   0.,  0,    -1.};
+    Double_t xmax2[ndims] = { 0.5, 20., 100,   1.};
+    fHEPV0AM2 = new THnSparseF("fHEPV0AM2",   "Flow histogram EPV0A M2", ndims, binsv2, xmin2, xmax2);
+    fHEPV0CM2 = new THnSparseF("fHEPV0CM2",   "Flow histogram EPV0C M2", ndims, binsv2, xmin2, xmax2);
+    fHEPTPCM2 = new THnSparseF("fHEPTPCM2",   "Flow histogram EPTPC M2", ndims, binsv2, xmin2, xmax2);
+    fHEPV0AM2->GetAxis(0)->SetTitle("m_{#gamma#gamma} ");
+    fHEPV0AM2->GetAxis(1)->SetTitle("p_{T}[GeV]");
+    fHEPV0AM2->GetAxis(2)->SetTitle("centrality");
+    fHEPV0AM2->GetAxis(3)->SetTitle("cos(2*#delta #phi)");
+    fHEPV0CM2->GetAxis(0)->SetTitle("m_{#gamma#gamma} ");
+    fHEPV0CM2->GetAxis(1)->SetTitle("p_{T}[GeV]");
+    fHEPV0CM2->GetAxis(2)->SetTitle("centrality");
+    fHEPV0CM2->GetAxis(3)->SetTitle("cos(2*#delta #phi)");
+    fHEPTPCM2->GetAxis(0)->SetTitle("m_{#gamma#gamma} ");
+    fHEPTPCM2->GetAxis(1)->SetTitle("p_{T}[GeV]");
+    fHEPTPCM2->GetAxis(2)->SetTitle("centrality");
+    fHEPTPCM2->GetAxis(3)->SetTitle("cos(2*#delta #phi)");
+    fOutput->Add(fHEPV0AM2);
+    fOutput->Add(fHEPV0CM2);
+    fOutput->Add(fHEPTPCM2);
+
   }
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 }
