@@ -204,7 +204,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
        if((deltaDip>0.005)&&(deltaDipMaxPt>0.005)) task->SetMaxDeltaDipAngleAndPt(deltaDip, deltaDipMaxPt);
        else cout << " --> Disabled Delta-Dip exclusion. <-- " << endl;
        task->SetCandidateEtaAndPt(POIEtaMin, POIEtaMax, 0., 15.);
-       task->SetCentralityParameters(centrMin, centrMax, "TRK", "V0M", kTRUE);
+       task->SetCentralityParameters(centrMin, centrMax, "TRK", "V0M", kTRUE, kFALSE);
        task->SetVertexZ(vertexZ);
        if(debug) cout << "    --> Set pair cuts and event cuts" << endl;
        // specify the PID procedure which will be used
