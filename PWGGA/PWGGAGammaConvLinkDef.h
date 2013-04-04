@@ -21,7 +21,6 @@
 #pragma link C++ class AliDalitzElectronSelector+;
 
 // User tasks
-#pragma link C++ class AliAnalysisTaskGammaConvDalitz+;
 #pragma link C++ class AliAnalysisTaskPi0v2+;
 #pragma link C++ class AliGammaConversionAODBGHandler+;
 #pragma link C++ class AliAnalysisTaskGammaConvV1+;
@@ -36,11 +35,7 @@
 #pragma link C++ class AliAnalysisTaskdPhi+;
 
 // Old tasks
-#pragma link C++ class AliAnalysisTaskGammaConversion+;
 #pragma link C++ class AliAnalysisTaskCaloConv+;
-#pragma link C++ class AliV0Reader+;
-#pragma link C++ class AliGammaConversionHistograms+;
-#pragma link C++ class AliGammaConversionBGHandler+;
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;
 
 #endif
