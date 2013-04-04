@@ -227,7 +227,7 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
       UpdateESDTrack(currTr,AliESDtrack::kITSout);
     }
     else {
-      AliDebug(1,Form("Refit Failed for track %d",itr));
+      AliDebug(-2,Form("Refit Failed for track %d",itr));
     }
     //
   }
@@ -260,7 +260,7 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
       UpdateESDTrack(currTr,AliESDtrack::kITSrefit);
     }
     else {
-      AliDebug(1,Form("Refit Failed for track %d",itr));
+      AliDebug(-2,Form("Refit Failed for track %d",itr));
     }
   }    
   //
@@ -355,7 +355,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
       AliDebug(2,Form("working on Lr:%d Seed:%d of %d",ila,isd,nSeedsUp));
       if (!TransportToLayer(&seedUC, fITS->GetLrIDActive(ilaUp), fITS->GetLrIDActive(ila)) ) {
 	//
-	AliDebug(2,"Transport failed");
+	AliDebug(-2,"Transport failed");
 	// Check if the seed satisfies to track definition
 	if (NeedToKill(&seedUC,kTransportFailed) && seedU) KillSeed(seedU,kTRUE);
 	continue; // RS TODO: decide what to do with tracks stopped on higher layers w/o killing
@@ -394,7 +394,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
       // cluster search is done. Do we need ta have a version of this seed skipping current layer
       seedT.SetLr(ila);
       if (!NeedToKill(&seedT,kMissingCluster)) {
-	AliITSUSeed* seedSkp = NewSeedFromPool(&seedT);
+	AliITSUSeed* seedSkp = NewSeedFromPool(&seedUC);
 	double penalty = -AliITSUReconstructor::GetRecoParam()->GetMissPenalty(ila);
 	// to do: make penalty to account for probability to miss the cluster for good reason
 	seedSkp->SetChi2Cl(penalty);
@@ -459,7 +459,10 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t
   Bool_t checkFirst = kTRUE;
   while(lFrom!=lTo) {
     if (lrFr) {
-      if (!GoToExitFromLayer(seed,lrFr,dir,checkFirst)) return kFALSE; // go till the end of current layer
+      if (!GoToExitFromLayer(seed,lrFr,dir,checkFirst)) {
+	printf("FailHere0\n");
+	return kFALSE; // go till the end of current layer
+      }
       checkFirst = kFALSE;
     }
     AliITSURecoLayer* lrTo =  fITS->GetLayer( (lFrom+=dir) );
@@ -467,8 +470,17 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t
     //
     // go the entrance of the layer, assuming no materials in between
     double xToGo = lrTo->GetR(-dir);
-    if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
-    if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) return kFALSE;
+    double xts = xToGo;
+    if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) {
+      //      printf("FailHere1: %f %f %d\n",xts,xToGo,dir);
+      seed->Print("etp");
+      return kFALSE;
+    }
+    if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) {
+      printf("FailHere2: %f %f %d\n",xts,xToGo,dir);
+      seed->Print("etp");
+      return kFALSE;
+    }
     lrFr = lrTo;
   }
   return kTRUE;
@@ -665,7 +677,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   //
   if (TMath::Abs(cl->GetX())>kTolerX) { // if due to the misalingment X is large, propagate track only
     if (!track->PropagateParamOnlyTo(track->GetX()+cl->GetX(),GetBz())) {
-      if (goodCl && AliDebugLevelClass()>2) {
+      if (goodCl && AliDebugLevelClass()>-2) {
 	printf("Loose good cl: Failed propagation. |"); 
 	cl->Print();
       }
@@ -761,7 +773,10 @@ Bool_t AliITSUTrackerGlo::PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Doubl
     Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
     Double_t x    = xpos+step;
     Double_t bz=GetBz();   // getting the local Bz
-    if (!seed->PropagateToX(x,bz))  return kFALSE;
+    if (!seed->PropagateToX(x,bz))  {
+      AliInfo("Fail1"); seed->Print("etp"); 
+      return kFALSE;
+    }
     double ds = 0;
     if (matCorr || updTime) {
       xyz0[0]=xyz1[0]; // global pos at the beginning of step
@@ -772,7 +787,7 @@ Bool_t AliITSUTrackerGlo::PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Doubl
 	MeanMaterialBudget(xyz0,xyz1,param);	
 	Double_t xrho=param[0]*param[4], xx0=param[1];
 	if (dir>0) xrho = -xrho; // outward should be negative
-	if (!seed->ApplyMaterialCorrection(xx0,xrho,mass,kFALSE)) return kFALSE;
+	if (!seed->ApplyMaterialCorrection(xx0,xrho,mass,kFALSE)) {AliInfo("Fail2"); seed->Print("etp"); return kFALSE;}
 	ds = param[4];
       }
        else { // matCorr is not requested but time integral is
@@ -920,7 +935,7 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
     if (!lr->IsActive() || fClInfo[ilrA2=(ilrA<<1)]<0) continue; 
     //
     if (ilr!=lrStart && !TransportToLayer(&tmpTr,lrStart,ilr)) {
-      AliDebug(2,Form("Failed to transport %d -> %d\n",lrStart,ilr));
+      AliDebug(-2,Form("Failed to transport %d -> %d\n",lrStart,ilr));
       return kFALSE; // go to the entrance to the layer
     }
     lrStart = ilr;
@@ -940,16 +955,16 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
       AliITSUClusterPix* clus =  (AliITSUClusterPix*)lr->GetCluster(iclLr[icl]);
       AliITSURecoSens* sens = lr->GetSensorFromID(clus->GetVolumeId());
       if (!tmpTr.Rotate(sens->GetPhiTF())) {
-	AliDebug(3,Form("Failed on rotate to %f",sens->GetPhiTF()));
+	AliDebug(-2,Form("Failed on rotate to %f",sens->GetPhiTF()));
 	return kFALSE;
       }
       //printf("Refit cl:%d on lr %d Need to go %.4f -> %.4f\n",icl,ilrA,tmpTr.GetX(),sens->GetXTF()+clus->GetX());
       if (!PropagateSeed(&tmpTr,sens->GetXTF()+clus->GetX(),fCurrMass)) {
-	AliDebug(3,Form("Failed on propagate to %f",sens->GetXTF()+clus->GetX()));	
+	AliDebug(-2,Form("Failed on propagate to %f",sens->GetXTF()+clus->GetX()));	
 	return kFALSE;
       }
       if (!tmpTr.Update(clus)) {
-	AliDebug(3,Form("Failed on Update"));		
+	AliDebug(-2,Form("Failed on Update"));		
 	return kFALSE;
       }
       //printf("AfterRefit: "); tmpTr.AliExternalTrackParam::Print();
@@ -963,7 +978,7 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
   if (lrStart!=lrStop) {
     //printf("Going to last layer %d -> %d\n",lrStart,lrStop);
     if (!TransportToLayer(&tmpTr,lrStart,lrStop)) {
-      AliDebug(3,Form("Failed on TransportToLayer %d->%d",lrStart,lrStop));		
+      AliDebug(-2,Form("Failed on TransportToLayer %d->%d",lrStart,lrStop));		
       return kTRUE;
     }    
     if (!GoToExitFromLayer(&tmpTr,fITS->GetLayer(lrStop),dir)) {
