@@ -315,7 +315,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
         printf(" No HIJING header found in list of headers from generator\n");
     }
     
-    if(fSpectators2Track==kTRUE){
+    if(hijingHeader && fSpectators2Track==kTRUE){
       impPar = hijingHeader->ImpactParameter();
       specNProj = hijingHeader->ProjSpectatorsn();
       specPProj = hijingHeader->ProjSpectatorsp();
