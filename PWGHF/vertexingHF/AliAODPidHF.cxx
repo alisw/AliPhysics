@@ -969,13 +969,13 @@ Int_t AliAODPidHF::GetnSigmaITS(AliAODTrack *track,Int_t species, Double_t &nsig
 
     AliITSPIDResponse itsResponse;
     AliPID::EParticleType type=AliPID::EParticleType(species);
-    nsigmaITS = TMath::Abs(itsResponse.GetNumberOfSigmas(mom,dedx,type));
+    nsigmaITS = itsResponse.GetNumberOfSigmas(mom,dedx,type);
 
   } // old pid
   else { // new pid
 
     AliPID::EParticleType type=AliPID::EParticleType(species);
-    nsigmaITS = TMath::Abs(fPidResponse->NumberOfSigmasITS(track,type));
+    nsigmaITS = fPidResponse->NumberOfSigmasITS(track,type);
 
   } //new pid
 
