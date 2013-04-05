@@ -51,7 +51,9 @@ const Double_t etamax =  0.9;
 
 AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "./LctoV0bachelorCuts.root",
 							 Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB = kTRUE,
-							 Bool_t isKeepDfromBOnly = kFALSE, Int_t pdgCode = 4122, Char_t isSign = 0, TString usercomment = "username")
+							 Bool_t isKeepDfromBOnly = kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,
+							 Char_t lcToV0bachelorDecayMode = 0,
+							 TString usercomment = "username")
 {
 
 
@@ -69,26 +71,21 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
 	       
   gSystem->Sleep(2000);
 
-  // isSign = 0 --> K0S only
-  // isSign = 1 --> Lambda only
-  // isSign = 2 --> LambdaBar only
-  // isSign = 3 --> K0S and Lambda and LambdaBar
+  // isSign = 0 --> Lc+ only
+  // isSign = 1 --> Lc- only
+  // isSign = 2 --> Lc+ and Lc-
 
   TString expected;
   if (isSign == 0 && pdgCode < 0){
-    AliError(Form("Error setting PDG code (%d) and sign (0 --> K0S only): they are not compatible, returning"));
+    AliError(Form("Error setting PDG code (%d) and sign (0 --> Lc+ only): they are not compatible, returning",pdgCode));
     return 0x0;
   }
-  else if (isSign == 1 && pdgCode < 0){
-    AliError(Form("Error setting PDG code (%d) and sign (1 --> Lambda only): they are not compatible, returning"));
+  else if (isSign == 1 && pdgCode > 0){
+    AliError(Form("Error setting PDG code (%d) and sign (1 --> Lc- only): they are not compatible, returning",pdgCode));
     return 0x0;
   }
-  else if (isSign == 2 && pdgCode > 0){
-    AliError(Form("Error setting PDG code (%d) and sign (2 --> LambdaBar only): they are not compatible, returning"));
-    return 0x0;
-  }
-  else if (isSign > 3 || isSign < 0){
-    AliError(Form("Sign not valid (%d, possible values are 0, 1, 2, 3), returning"));
+  else if (isSign > 2 || isSign < 0){
+    AliError(Form("Sign not valid (%d, possible values are 0, 1, 2), returning",isSign));
     return 0x0;
   }
 
@@ -101,10 +98,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
 
   Double_t massV0min = 0.47;
   Double_t massV0max = 1.14;
-  if (isSign==0) {
+  if (lcToV0bachelorDecayMode==0) {
     massV0min = 0.47 ;
     massV0max = 0.53 ;
-  } else if (isSign==1 || isSign==2) {
+  } else if (lcToV0bachelorDecayMode==1) {
     massV0min = 1.09;
     massV0max = 1.14;
   }
@@ -114,8 +111,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
 
   const Int_t nbinpt          =  8; //bins in pt from 0 to 12 GeV
   const Int_t nbiny           = 24; //bins in y
-  Int_t nbininvMassV0         = 60; //bins in invMassV0
-  if (isSign==3) nbininvMassV0=134; //bins in invMassV0
+  const Int_t nbininvMassV0   = 60; //bins in invMassV0
   const Int_t nbinpointingV0  = 12; //bins in cosPointingAngleV0
   const Int_t nbinonFly       =  2; //bins in onFlyStatus x V0
 
@@ -488,7 +484,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   //Particle-Level cuts:  
   AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts","MC particle generation cuts");
   Bool_t useAbsolute = kTRUE;
-  if (isSign != 3 && isSign!=0) {
+  if (isSign != 2) {
     useAbsolute = kFALSE;
   }
   mcGenCuts->SetRequirePdgCode(pdgCode, useAbsolute);  // kTRUE set in order to include Lc-
@@ -555,6 +551,14 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   task->SetFillFromGenerated(kFALSE);
   task->SetCFManager(man); //here is set the CF manager
   task->SetDecayChannel(22);//kLctoV0bachelor
+  switch (lcToV0bachelorDecayMode) {
+  case 0:
+    task->SetCountLctoK0Sp();
+    break;
+  case 1:
+    task->SetCountLctoLambdapi();
+    break;
+  }
   task->SetUseWeight(kFALSE);
   task->SetSign(isSign);
   task->SetCentralitySelection(kFALSE);

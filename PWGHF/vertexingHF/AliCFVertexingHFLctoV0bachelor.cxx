@@ -98,9 +98,65 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetRecoCandidateParam(AliAODRecoDecayHF *
   
   if (fRecoCandidate->GetPrimaryVtx()) AliDebug(4,"fReco Candidate has a pointer to PrimVtx\n");
   
-  AliAODRecoCascadeHF* lcV0bachelor = (AliAODRecoCascadeHF*)fRecoCandidate;
-  if ( !(lcV0bachelor->Getv0()) ) {
-    AliDebug(1,"It is not a Lc->V0+bachelor candidate");
+  AliAODRecoCascadeHF* lcV0bachelor = dynamic_cast<AliAODRecoCascadeHF*>(fRecoCandidate);
+  if (!lcV0bachelor) {
+    AliDebug(2,"cascade doesn't exist, skipped!");
+    return bSignAssoc;
+  }
+
+  if (!lcV0bachelor->GetSecondaryVtx()) {
+    AliDebug(2,"No secondary vertex for cascade");
+    return bSignAssoc;
+  }
+
+  if (lcV0bachelor->GetNDaughters()!=2) {
+    AliDebug(2,Form("No 2 daughters for current cascade (nDaughters=%d)",lcV0bachelor->GetNDaughters()));
+    return bSignAssoc;
+  }
+
+  AliVTrack *cascTrk0 = dynamic_cast<AliVTrack*>(lcV0bachelor->GetDaughter(0));
+  AliVTrack *cascTrk1 = dynamic_cast<AliVTrack*>(lcV0bachelor->GetDaughter(1));
+  if (!cascTrk0 || !cascTrk1) {
+    AliDebug(2,"At least one of V0daughters doesn't exist");
+    return bSignAssoc;
+  }
+
+  AliAODv0 * v0part = dynamic_cast<AliAODv0*>(lcV0bachelor->Getv0());
+  AliAODTrack * bachPart = dynamic_cast<AliAODTrack*>(lcV0bachelor->GetBachelor());
+  if (!v0part || !bachPart) {
+    AliDebug(2,"No V0 or no bachelor for current cascade");
+    return bSignAssoc;
+  }
+
+  if (bachPart->GetID()<0) {
+    AliDebug(2,Form("Bachelor has negative ID %d",bachPart->GetID()));
+    return bSignAssoc;
+  }
+
+  if (!v0part->GetSecondaryVtx()) {
+    AliDebug(2,"No secondary vertex for V0 by cascade");
+    return bSignAssoc;
+  }
+
+  if (v0part->GetNDaughters()!=2) {
+    AliDebug(2,Form("No 2 daughters for V0 of current cascade (onTheFly=%d, nDaughters=%d)",v0part->GetOnFlyStatus(),v0part->GetNDaughters()));
+    return bSignAssoc;
+  }
+
+  AliVTrack *trk0 = dynamic_cast<AliVTrack*>(v0part->GetDaughter(0));
+  AliVTrack *trk1 = dynamic_cast<AliVTrack*>(v0part->GetDaughter(1));
+  if (!trk0 || !trk1) {
+    AliDebug(2,"At least one of V0daughters doesn't exist");
+    return bSignAssoc;
+  }
+
+  if (trk0->GetLabel()<0 || trk1->GetLabel()<0) {
+    AliDebug(2,Form("At least one of V0daughters has label negative (%d %d)",trk0->GetLabel(),trk1->GetLabel()));
+    return bSignAssoc;
+  }
+
+ if (trk0->GetID()<0 || trk1->GetID()<0) {
+    AliDebug(2,Form("At least one of V0 daughters has negative ID %d %d",trk0->GetID(),trk1->GetID()));
     return bSignAssoc;
   }
 
@@ -122,11 +178,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetRecoCandidateParam(AliAODRecoDecayHF *
   if (mcLabelK0S!=-1 && mcLabelLambda!=-1)
     AliDebug(2,"Strange: current Lc->V0+bachelor candidate has two MC different labels!");
 
-  if (fGenLcOption==kCountAllLctoV0) {
-    if (mcLabelK0S!=-1) mcLabel=mcLabelK0S;
-    if (mcLabelLambda!=-1) mcLabel=mcLabelLambda;
-  }
-  else if (fGenLcOption==kCountK0Sp) {
+  if (fGenLcOption==kCountK0Sp) {
     if (mcLabelK0S!=-1) mcLabel=mcLabelK0S;
     if (mcLabelLambda!=-1) {
       mcLabel=-1;
@@ -187,7 +239,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::GetGeneratedValuesFromMCParticle(Double_t
 
   Int_t daughter0lc = fmcPartCandidate->GetDaughter(0);
   Int_t daughter1lc = fmcPartCandidate->GetDaughter(1);
-  if (daughter0lc<0 || daughter1lc<0) {
+  if (daughter0lc<=0 || daughter1lc<=0) {
     AliDebug(2,"Lc daughters are not in MC array");
     return bGenValues;
   }
@@ -236,18 +288,51 @@ Bool_t AliCFVertexingHFLctoV0bachelor::GetRecoValuesFromCandidate(Double_t *vect
   Bool_t bFillRecoValues = kFALSE;
 
   //Get the Lc and the V0 from Lc
-  AliAODRecoCascadeHF* lcV0bachelor = (AliAODRecoCascadeHF*)fRecoCandidate;
+  AliAODRecoCascadeHF* lcV0bachelor = dynamic_cast<AliAODRecoCascadeHF*>(fRecoCandidate);
 
-  AliAODTrack* bachelor = (AliAODTrack*)lcV0bachelor->GetBachelor();
-  AliAODv0* v0toDaughters = (AliAODv0*)lcV0bachelor->Getv0();
-  if (!lcV0bachelor || !bachelor || !v0toDaughters) {
+  if (!lcV0bachelor) {
+    AliDebug(2,"Current cascade doesn't exist, skipped");
+    return bFillRecoValues;
+  }
+
+  if (!lcV0bachelor->GetSecondaryVtx()) {
+    AliDebug(2,"No secondary vertex for cascade");
+    return bFillRecoValues;
+  }
+
+  if (lcV0bachelor->GetNDaughters()!=2) {
+    AliDebug(2,Form("No 2 daughters for current cascade (nDaughters=%d)",lcV0bachelor->GetNDaughters()));
+    return bFillRecoValues;
+  }
+
+  AliAODTrack* bachelor = dynamic_cast<AliAODTrack*>(lcV0bachelor->GetBachelor());
+  AliAODv0* v0toDaughters = dynamic_cast<AliAODv0*>(lcV0bachelor->Getv0());
+  if (!bachelor || !v0toDaughters) {
     AliDebug(2,"No V0 or bachelor in this reco candidate, skipping!");
     return bFillRecoValues;
   }
 
+  if (!v0toDaughters->GetSecondaryVtx()) {
+    AliDebug(2,"No secondary vertex for V0 by cascade");
+    return bFillRecoValues;
+  }
+
+  if (v0toDaughters->GetNDaughters()!=2) {
+    AliDebug(2,Form("current V0 has not 2 daughters (onTheFly=%d, nDaughters=%d)",v0toDaughters->GetOnFlyStatus(),v0toDaughters->GetNDaughters()));
+    return bFillRecoValues;
+  }
+
   Bool_t onTheFlyStatus = v0toDaughters->GetOnFlyStatus();
-  AliAODTrack* v0positiveTrack = (AliAODTrack*)lcV0bachelor->Getv0PositiveTrack();
-  AliAODTrack* v0negativeTrack = (AliAODTrack*)lcV0bachelor->Getv0NegativeTrack();
+  AliAODTrack* v0positiveTrack;
+  AliAODTrack* v0negativeTrack;
+  if (onTheFlyStatus) {
+    v0positiveTrack = dynamic_cast<AliAODTrack*>(lcV0bachelor->Getv0NegativeTrack());
+    v0negativeTrack = dynamic_cast<AliAODTrack*>(lcV0bachelor->Getv0PositiveTrack());
+  } else {
+    v0positiveTrack = dynamic_cast<AliAODTrack*>(lcV0bachelor->Getv0PositiveTrack());
+    v0negativeTrack = dynamic_cast<AliAODTrack*>(lcV0bachelor->Getv0NegativeTrack());
+  }
+
   if (!v0positiveTrack || !v0negativeTrack) {
     AliDebug(2,"No V0daughters in this reco candidate, skipping!");
     return bFillRecoValues;
@@ -335,7 +420,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
 
   Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
   Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
-  if (daughter0<0 || daughter1<0){
+  if (daughter0<=0 || daughter1<=0){
     AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
     return checkCD;
   }
@@ -373,7 +458,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
 
     Int_t daughter1D0 = mcPartDaughter1->GetDaughter(0);
     Int_t daughter1D1 = mcPartDaughter1->GetDaughter(1);
-    if (daughter1D0<0 || daughter1D1<0) {
+    if (daughter1D0<=0 || daughter1D1<=0) {
       AliDebug(2, Form("The Lambda MC particle doesn't have correct daughters, skipping!!"));
       return checkCD;
     }
@@ -413,7 +498,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
     }
 
     Int_t daughter = mcPartDaughter1->GetDaughter(0);
-    if (daughter<0) {
+    if (daughter<=0) {
       AliDebug(2, Form("The K0/K0bar MC particle doesn't have correct daughter, skipping!!"));
       return checkCD;
     }
@@ -436,7 +521,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
 
     Int_t daughterD0 = mcPartDaughter->GetDaughter(0);
     Int_t daughterD1 = mcPartDaughter->GetDaughter(1);
-    if (daughterD0<0 || daughterD1<0) {
+    if (daughterD0<=0 || daughterD1<=0) {
       AliDebug(2, Form("The K0S MC particle doesn't have correct daughters, skipping!!"));
       return checkCD;
     }
@@ -537,13 +622,13 @@ Double_t AliCFVertexingHFLctoV0bachelor::Ctau(AliAODMCParticle *mcPartCandidate)
 
   Int_t daughterD0 = mcPartCandidate->GetDaughter(0);
   Int_t daughterD1 = mcPartCandidate->GetDaughter(1);
-  if (daughterD0<0 || daughterD1<0) {
+  if (daughterD0<=0 || daughterD1<=0) {
     AliDebug(2, Form("The Lc MC particle doesn't have correct daughters, skipping!!"));
     return cTau;
   }
 
-  AliAODMCParticle *mcPartDaughter0 = (AliAODMCParticle*)fmcArray->At(mcPartCandidate->GetDaughter(0));
-  AliAODMCParticle *mcPartDaughter1 = (AliAODMCParticle*)fmcArray->At(mcPartCandidate->GetDaughter(1));
+  AliAODMCParticle *mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughterD0));
+  AliAODMCParticle *mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughterD1));
   if (!mcPartDaughter0 || !mcPartDaughter1) {
     AliDebug(2,"The candidate daughter particles not found in MC array");
     return cTau;
@@ -591,13 +676,14 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
   Bool_t checkCD = kFALSE;
   
   if (fmcPartCandidate->GetNDaughters()!=2) {
-    AliDebug(2, Form("The MC particle doesn't have 2 daughters, skipping!!"));
+    AliDebug(2, Form("The MC particle have %d daughters (not 2), skipping!!",fmcPartCandidate->GetNDaughters()));
+    fmcPartCandidate->Print();
     return checkCD;
   }
 
   Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
   Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
-  if (daughter0<0 || daughter1<0){
+  if (daughter0<=0 || daughter1<=0){
     AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
     return checkCD;
   }
@@ -642,7 +728,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
 
     Int_t daughter1D0 = mcPartDaughter1->GetDaughter(0);
     Int_t daughter1D1 = mcPartDaughter1->GetDaughter(1);
-    if (daughter1D0<0 || daughter1D1<0) {
+    if (daughter1D0<=0 || daughter1D1<=0) {
       AliDebug(2, Form("The Lambda MC particle doesn't have correct daughters, skipping!!"));
       delete [] fLabelArray;
       fLabelArray = 0x0;
@@ -714,8 +800,15 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
       daughter1 = daughterTemp; // the V0 label
     }
 
+    if (mcPartDaughter1->GetNDaughters()!=1) {
+      AliDebug(2, "The K0/K0bar MC particle doesn't decay in 1 particles, skipping!!");
+      delete [] fLabelArray;
+      fLabelArray = 0x0;
+      return checkCD;
+    }
+
     Int_t daughter = mcPartDaughter1->GetDaughter(0);
-    if (daughter<0) {
+    if (daughter<=0) {
       AliDebug(2, Form("The K0/K0bar MC particle doesn't have correct daughter, skipping!!"));
       delete [] fLabelArray;
       fLabelArray = 0x0;
@@ -746,7 +839,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
 
     Int_t daughterD0 = mcPartDaughter->GetDaughter(0);
     Int_t daughterD1 = mcPartDaughter->GetDaughter(1);
-    if (daughterD0<0 || daughterD1<0) {
+    if (daughterD0<=0 || daughterD1<=0) {
       AliDebug(2, Form("The K0S MC particle doesn't have correct daughters, skipping!!"));
       delete [] fLabelArray;
       fLabelArray = 0x0;
@@ -810,7 +903,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::FillVectorFromMCarray(AliAODMCParticle *m
 
   if (TMath::Abs(mcPartDaughterK0->GetPdgCode())==311) {
     Int_t daughterK0 = mcPartDaughterK0->GetDaughter(0);
-    if (daughterK0<0) {
+    if (daughterK0<=0) {
       AliDebug(2, Form("The K0/K0bar particle doesn't have correct daughter, skipping!!"));
       return bGenValues;
     }

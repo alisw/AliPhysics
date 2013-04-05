@@ -335,7 +335,7 @@ Int_t AliCFVertexingHF::CheckOrigin() const
 	Int_t abspdgGranma =0;
 	Bool_t isFromB=kFALSE;
 	Bool_t isQuarkFound=kFALSE;
-	while (mother >0 ){
+	while (mother >=0 ){
 		istep++;
 		AliDebug(2,Form("mother at step %d = %d", istep, mother));
 		AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(fmcArray->At(mother));

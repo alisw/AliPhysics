@@ -88,8 +88,11 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
                   TClonesArray *mcArray, Bool_t isV0=kFALSE) const;
 
   Double_t CosV0PointingAngle() const;
+  Double_t CosV0PointingAngleXY() const;
   Double_t DecayLengthV0() const;
   Double_t DecayLengthXYV0() const;
+  Double_t NormalizedV0DecayLength() const;
+  Double_t NormalizedV0DecayLengthXY() const;
 
  protected:
 

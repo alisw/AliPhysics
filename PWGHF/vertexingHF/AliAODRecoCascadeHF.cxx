@@ -133,7 +133,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     AliAODRecoDecayHF2Prong *the2Prong = Get2Prong();
     lab2Prong = the2Prong->MatchToMC(pdgabs2prong,mcArray,2,pdgDg2prong);
   } else {
-    AliAODv0 *theV0 = Getv0();
+    AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(Getv0());
     lab2Prong = theV0->MatchToMC(pdgabs2prong,mcArray,2,pdgDg2prong);
   }
 
@@ -143,7 +143,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
 
   // loop on daughters and write labels
   for(Int_t i=0; i<ndg; i++) {
-    AliVTrack *trk = (AliVTrack*)GetDaughter(i);
+    AliVTrack *trk = dynamic_cast<AliVTrack*>(GetDaughter(i));
     Int_t lab = trk->GetLabel();
     if(lab==-1) { // this daughter is the 2prong
       lab=lab2Prong;
@@ -157,7 +157,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     // debug printouts for Lc->V0 bachelor case
 
     if ( isV0 && (dgLabels[0]!=-1 && dgLabels[1]!=-1) ) {
-      AliAODv0 *theV0 = Getv0();
+      AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(Getv0());
       Bool_t onTheFly = theV0->GetOnFlyStatus();
       
       if ( (pdgDg[1]==2212 && pdgDg[0]==310) ||
@@ -168,9 +168,9 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
       }
 
       if (pdgDg[0]==2212 && pdgDg[1]==310) {
-	AliAODMCParticle*k0s = (AliAODMCParticle*)mcArray->At(lab2Prong);
+	AliAODMCParticle*k0s = dynamic_cast<AliAODMCParticle*>(mcArray->At(lab2Prong));
 	Int_t labK0 = k0s->GetMother();
-	AliAODMCParticle*k0bar = (AliAODMCParticle*)mcArray->At(labK0);
+	AliAODMCParticle*k0bar = dynamic_cast<AliAODMCParticle*>(mcArray->At(labK0));
 	AliDebug(1,Form(" (onTheFly=%1d) LabelV0=%d (%d) -> LabelK0S=%d (%d -> %d %d)",onTheFly,labK0,k0bar->GetPdgCode(),lab2Prong,pdgabs2prong,pdgDg2prong[0],pdgDg2prong[1]));
 	AliDebug(1,Form(" LabelLc=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
 			finalLabel,pdgabs,
@@ -435,5 +435,58 @@ Double_t AliAODRecoCascadeHF::CosV0PointingAngle() const
   Double_t posVtx[3] = {0.,0.,0.};
   vtxPrimary->GetXYZ(posVtx);
   return v0->CosPointingAngle(posVtx);
+
+}
+//-----------------------------------------------------------------------------
+Double_t AliAODRecoCascadeHF::CosV0PointingAngleXY() const 
+{
+  //
+  // Returns XY cosine of V0 pointing angle wrt primary vertex
+  //
+
+  AliAODv0 *v0 = (AliAODv0*)Getv0();
+
+  if (!v0) 
+    return -999.;
+
+  AliAODVertex *vtxPrimary = GetPrimaryVtx();
+  Double_t posVtx[3] = {0.,0.,0.};
+  vtxPrimary->GetXYZ(posVtx);
+  return v0->CosPointingAngleXY(posVtx);
+
+}
+//-----------------------------------------------------------------------------
+Double_t AliAODRecoCascadeHF::NormalizedV0DecayLength() const
+{
+  //
+  // Returns V0 normalized decay length wrt primary vertex
+  //
+
+  AliAODv0 *v0 = (AliAODv0*)Getv0();
+
+  if (!v0) 
+    return -1.;
+  //AliAODVertex *vtxPrimary = GetPrimaryVtx();
+  //Double_t posVtx[3] = {0.,0.,0.};
+  //vtxPrimary->GetXYZ(posVtx);
+  //return v0->NormalizedDecayLength(posVtx);
+  return v0->NormalizedDecayLength(GetPrimaryVtx());
+
+}
+//-----------------------------------------------------------------------------
+Double_t AliAODRecoCascadeHF::NormalizedV0DecayLengthXY() const
+{
+  //
+  // Returns transverse V0 normalized decay length wrt primary vertex
+  //
+  AliAODv0 *v0 = (AliAODv0*)Getv0();
+
+  if (!v0) 
+    return -1.;
+  //AliAODVertex *vtxPrimary = GetPrimaryVtx();
+  //Double_t posVtx[3] = {0.,0.,0.};
+  //vtxPrimary->GetXYZ(posVtx);
+  //return v0->NormalizedDecayLengthXY(posVtx);
+  return v0->NormalizedDecayLengthXY(GetPrimaryVtx());
 
 }
