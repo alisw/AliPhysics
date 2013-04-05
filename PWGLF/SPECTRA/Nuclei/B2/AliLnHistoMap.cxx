@@ -37,7 +37,7 @@ AliLnHistoMap::AliLnHistoMap()
 // Default constructor
 //
 	fHistoMap = new TMap();
-	fHistoMap->SetOwner(kTRUE);
+	fHistoMap->SetOwner(kFALSE);
 }
 
 AliLnHistoMap::~AliLnHistoMap()
@@ -49,6 +49,7 @@ AliLnHistoMap::~AliLnHistoMap()
 	
 }
 
+/*
 Int_t AliLnHistoMap::Write(const char *name, Int_t option, Int_t bsize) const
 {
 //
@@ -75,6 +76,7 @@ Int_t AliLnHistoMap::Write(const char *name, Int_t option, Int_t bsize)
 //
 	return ((const AliLnHistoMap*)this)->Write(name,option,bsize);
 }
+*/
 
 TObject* AliLnHistoMap::Add(const TString& keyname, TObject* value)
 {
