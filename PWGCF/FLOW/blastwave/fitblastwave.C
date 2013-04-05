@@ -467,7 +467,7 @@ Float_t ComputeKaV2int(Int_t ic=2){
     Float_t x2 = (i+1)*0.025;
     Float_t xm = (x1+x2)*0.5;
 
-    Float_t yield = fitSP->Integral(x1,x2);
+    Float_t yield = hkaplus->Interpolate(xm) * 0.025;//fitSP->Integral(x1,x2);
     Float_t v2 = fitV2->Eval(xm);
 
     if(xm > 0.2){
