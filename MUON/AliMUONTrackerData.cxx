@@ -846,7 +846,7 @@ AliMUONTrackerData::AddCalibParams(const AliMUONVCalibParam& src, AliMUONVCalibP
   {
     for ( Int_t j = 0; j < src.Dimension(); ++j )
     {
-      dest.SetValueAsFloat(i,j,src.ValueAsFloat(i,j));
+      dest.SetValueAsFloat(i,j,dest.ValueAsFloat(i,j)+src.ValueAsFloat(i,j));
     }
   }
 }
