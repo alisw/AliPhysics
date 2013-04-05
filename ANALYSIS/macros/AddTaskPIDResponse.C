@@ -43,7 +43,12 @@ AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
   AliAnalysisTaskPIDResponse *pidTask = new AliAnalysisTaskPIDResponse("PIDResponseTask");
 //   pidTask->SelectCollisionCandidates(AliVEvent::kMB);
   pidTask->SetIsMC(isMC);
-  if(isMC&&tuneOnData) pidTask->SetTuneOnData(kTRUE,recoPass);
+  if(isMC&&tuneOnData) {
+    pidTask->SetTuneOnData(kTRUE,recoPass);
+    // tuning on MC is by default active on TPC and TOF, to enable it only on one of them use:
+    // pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTPC);   
+    // pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTOF);   
+  }
   pidTask->SetCachePID(cachePID);
   pidTask->SetSpecialDetectorResponse(detResponse);
   pidTask->SetUseTPCEtaCorrection(useTPCEtaCorrection);
