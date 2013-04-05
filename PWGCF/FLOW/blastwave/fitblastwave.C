@@ -238,7 +238,7 @@ Float_t ComputePiV2int(Int_t ic=2){
   hpiplus->Draw();
 
   // Get v2
-  sprintf(name,"v2/v2SP_pion_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  sprintf(name,"v2/v2QC4_pion_%02i_%02i.txt",cmin[ic],cmax[ic]);
   gpiv2 = GetGraph(name);
   if(! gpiv2) return 0.0;
   
@@ -249,39 +249,59 @@ Float_t ComputePiV2int(Int_t ic=2){
   // initialize fitter
   AliBlastwaveFit2D *bwPi = new AliBlastwaveFit2D("pionsSp",mPi);
   bwPi->SetMinPt(0.1);
-  bwPi->SetMaxPt(3.0);
+  bwPi->SetMaxPt(2.0);
 
   AliBlastwaveFit2D *bwPi2 = new AliBlastwaveFit2D("pionsV2",mPi);
   bwPi2->SetMinPt(0.2);
   bwPi2->SetMaxPt(1.0);
 
+  AliBlastwaveFitSpectra *bwPi3 = new AliBlastwaveFitSpectra("pionsSpHP",mPi); // use only spectra function to avoid overwriting of other fit (parameters are static memebers)
+  bwPr3->SetMinPt(2.5);
+  bwPi3->SetMinPt(1.5);
+  bwPi3->SetMaxPt(3.0);
+
   bwPi->SetSpectrumObj(hpiplus);
 
   bwPi2->SetV2Obj(gpiv2);
+
+  bwPi3->SetSpectrumObj(hpiplus);
 
   AliBlastwaveFitter *fitter = new AliBlastwaveFitter("fitterPion");
   fitter->AddFitFunction(bwPi);
   fitter->AddFitFunction(bwPi2);
 
+  AliBlastwaveFitter *fitter2 = new AliBlastwaveFitter("fitterPion2");
+  fitter2->AddFitFunction(bwPi3);
+
   // go to fit
   fitter->PrepareToFit(); // initialize the fitter object
   fitter->Fit();          // perform the fit (it will take some time)
-
-  TF1 *fitSP = bwPi->GetSpectraFit();
-  TF1 *fitV2 = bwPi2->GetV2Fit();
  
   // Print some outputs
   printf("Chi2 = %f\n",fitter->GetChi2());
   printf("N.D.G.F. = %f\n",fitter->GetNDGF());
   printf("<beta> = %f\n",bwPi->GetMeanBeta());
 
+  fitter2->PrepareToFit(); // initialize the fitter object
+  fitter2->Fit();          // perform the fit (it will take some time)
+
+  TF1 *fitSP = bwPi->GetSpectraFit();
+  TF1 *fitV2 = bwPi2->GetV2Fit();
+  TF1 *fitSP2 = bwPi3->GetSpectraFit();
+
+  printf("2)Chi2 = %f\n",fitter2->GetChi2());
+  printf("2)N.D.G.F. = %f\n",fitter2->GetNDGF());
+  printf("2)<beta> = %f\n",bwPi3->GetMeanBeta());
+
   // Draw fit
   csp->cd();
   fitSP->Draw("SAME");
+  fitSP2->Draw("SAME");
   cv2->cd();
   fitV2->Draw("SAME");
 
-  fitSP->SetRange(0.0001,6);
+  fitSP->SetRange(0.0001,1.3);
+  fitSP2->SetRange(1.5,6);
   fitV2->SetRange(0.0001,1);
   
   Float_t num = 0;
@@ -293,7 +313,6 @@ Float_t ComputePiV2int(Int_t ic=2){
   Float_t num2 = 0;
   Float_t den2 = 0;
 
-
   for(Int_t i=0;i<10;i++){ // form 0 to 0.2
     Float_t x1 = i*0.02;
     Float_t x2 = (i+1)*0.02;
@@ -302,14 +321,16 @@ Float_t ComputePiV2int(Int_t ic=2){
     Float_t yield = fitSP->Integral(x1,x2);
     Float_t v2 = fitV2->Eval(xm);
 
-    den += yield;
-    num += yield * v2;
-
-    den1 += yield*(1 + 0.0202/xm + 0.03 * xm);
-    num1 += yield*(1 + 0.0202/xm + 0.03 * xm) * v2 * (1 - 0.05);
-
-    den2 += yield*(1 - 0.0202/xm - 0.03 * xm);
-    num2 += yield*(1 - 0.0202/xm - 0.03 * xm) * v2 * (1 + 0.05);
+    if(xm > 0.2){
+      den += yield;
+      num += yield * v2;
+      
+      den1 += yield*(1 + 0.0202/xm + 0.03 * xm);
+      num1 += yield*(1 + 0.0202/xm + 0.03 * xm) * v2 * (1 - 0.05);
+      
+      den2 += yield*(1 - 0.0202/xm - 0.03 * xm);
+      num2 += yield*(1 - 0.0202/xm - 0.03 * xm) * v2 * (1 + 0.05);
+    }
   }
 
   for(Int_t i=0; i < gpiv2->GetN();i++){
@@ -317,13 +338,14 @@ Float_t ComputePiV2int(Int_t ic=2){
 
     Float_t frSyst = 1 - 2*(x-0.2)/(3-0.2);
 
-    if(x > 0.2){
+    if(x > 0.2 && x < 5){
       Float_t binwidth = 0.05;
       if(x < 3) binwidth = 0.05;
       else if(x < 4) binwidth = 0.1;
       else binwidth = 0.2;
 
-      Float_t yield = fitSP->Integral(x-binwidth,x+binwidth);
+      Float_t yield = hpiplus->Interpolate(x) * 2 * binwidth;
+      if(x>3) yield = fitSP2->Integral(x-binwidth,x+binwidth);
       Float_t v2 = gpiv2->GetY()[i];
       Float_t v2err1 = gpiv2->GetEYlow()[i];
       Float_t v2err2 = gpiv2->GetEYhigh()[i];
@@ -343,6 +365,7 @@ Float_t ComputePiV2int(Int_t ic=2){
 
   printf("Integrated flow for pions (0 < p_T < 6 GeV/c) = %f\n",num/den);
   printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
+  printf("Yield = %f\n",den);
 }
 
 Float_t ComputeKaV2int(Int_t ic=2){
@@ -365,7 +388,7 @@ Float_t ComputeKaV2int(Int_t ic=2){
   hkaplus->Draw();
 
   // Get v2
-  sprintf(name,"v2/v2SP_kaon_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  sprintf(name,"v2/v2QC4_kaon_%02i_%02i.txt",cmin[ic],cmax[ic]);
   gkav2 = GetGraph(name);
   if(! gkav2) return 0.0;
   
@@ -376,39 +399,59 @@ Float_t ComputeKaV2int(Int_t ic=2){
   // initialize fitter
   AliBlastwaveFit2D *bwKa = new AliBlastwaveFit2D("kaonsSp",mKa);
   bwKa->SetMinPt(0.2);
-  bwKa->SetMaxPt(3.0);
+  bwKa->SetMaxPt(1.3);
 
   AliBlastwaveFit2D *bwKa2 = new AliBlastwaveFit2D("kaonsV2",mKa);
   bwKa2->SetMinPt(0.25);
   bwKa2->SetMaxPt(1.0);
 
+
+  AliBlastwaveFitSpectra *bwKa3 = new AliBlastwaveFitSpectra("kaonsSpHP",mKa); // use only spectra function to avoid overwriting of other fit (parameters are static memebers)
+  bwKa3->SetMinPt(1.5);
+  bwKa3->SetMaxPt(3.0);
+
   bwKa->SetSpectrumObj(hkaplus);
 
   bwKa2->SetV2Obj(gkav2);
+
+  bwKa3->SetSpectrumObj(hkaplus);
 
   AliBlastwaveFitter *fitter = new AliBlastwaveFitter("fitterKaon");
   fitter->AddFitFunction(bwKa);
   fitter->AddFitFunction(bwKa2);
 
+  AliBlastwaveFitter *fitter2 = new AliBlastwaveFitter("fitterKaon2");
+  fitter2->AddFitFunction(bwKa3);
+
   // go to fit
   fitter->PrepareToFit(); // initialize the fitter object
   fitter->Fit();          // perform the fit (it will take some time)
-
-  TF1 *fitSP = bwKa->GetSpectraFit();
-  TF1 *fitV2 = bwKa2->GetV2Fit();
 
   // Print some outputs
   printf("Chi2 = %f\n",fitter->GetChi2());
   printf("N.D.G.F. = %f\n",fitter->GetNDGF());
   printf("<beta> = %f\n",bwKa->GetMeanBeta());
 
+  fitter2->PrepareToFit(); // initialize the fitter object
+  fitter2->Fit();          // perform the fit (it will take some time)
+
+  TF1 *fitSP = bwKa->GetSpectraFit();
+  TF1 *fitV2 = bwKa2->GetV2Fit();
+  TF1 *fitSP2 = bwKa3->GetSpectraFit();
+
+  printf("2)Chi2 = %f\n",fitter2->GetChi2());
+  printf("2)N.D.G.F. = %f\n",fitter2->GetNDGF());
+  printf("2)<beta> = %f\n",bwKa3->GetMeanBeta());
+
   // Draw fit
   csp->cd();
   fitSP->Draw("SAME");
+  fitSP2->Draw("SAME");
   cv2->cd();
   fitV2->Draw("SAME");
 
-  fitSP->SetRange(0.0001,6);
+  fitSP->SetRange(0.0001,1.3);
+  fitSP2->SetRange(1.5,6);
   fitV2->SetRange(0.0001,1);
   
   Float_t num = 0;
@@ -428,27 +471,30 @@ Float_t ComputeKaV2int(Int_t ic=2){
     Float_t yield = fitSP->Integral(x1,x2);
     Float_t v2 = fitV2->Eval(xm);
 
-    den += yield;
-    num += yield * v2;
-
-    den1 += yield*(1 + 0.0215/xm + 0.05 * xm);
-    num1 += yield*(1 + 0.0215/xm + 0.05 * xm) * v2 * (1 - 0.1);
-
-    den2 += yield*(1 - 0.0215/xm - 0.05 * xm);
-    num2 += yield*(1 - 0.0215/xm - 0.05 * xm) * v2 * (1 + 0.1);    
+    if(xm > 0.2){
+      den += yield;
+      num += yield * v2;
+      
+      den1 += yield*(1 + 0.0215/xm + 0.05 * xm);
+      num1 += yield*(1 + 0.0215/xm + 0.05 * xm) * v2 * (1 - 0.1);
+      
+      den2 += yield*(1 - 0.0215/xm - 0.05 * xm);
+      num2 += yield*(1 - 0.0215/xm - 0.05 * xm) * v2 * (1 + 0.1);    
+    }
   }
 
   for(Int_t i=0; i < gkav2->GetN();i++){
     Float_t x = gkav2->GetX()[i];
     Float_t frSyst = 1 - 2*(x-0.25)/(3-0.25);
 
-    if(x > 0.25){
+    if(x > 0.25 && x < 5){
       Float_t binwidth = 0.05;
       if(x < 3) binwidth = 0.05;
       else if(x < 4) binwidth = 0.1;
       else binwidth = 0.2;
 
-      Float_t yield = fitSP->Integral(x-binwidth,x+binwidth);
+      Float_t yield = hkaplus->Interpolate(x) * 2 * binwidth;
+      if(x>3) yield = fitSP2->Integral(x-binwidth,x+binwidth);
       Float_t v2 = gkav2->GetY()[i];
       Float_t v2err1 = gkav2->GetEYlow()[i];
       Float_t v2err2 = gkav2->GetEYhigh()[i];
@@ -468,6 +514,7 @@ Float_t ComputeKaV2int(Int_t ic=2){
 
   printf("Integrated flow for kaons (0 < p_T < 6 GeV/c) = %f\n",num/den);
   printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
+  printf("Yield = %f\n",den);
 }
 
 Float_t ComputePrV2int(Int_t ic=2){
@@ -490,7 +537,7 @@ Float_t ComputePrV2int(Int_t ic=2){
   hprplus->Draw();
 
   // Get v2
-  sprintf(name,"v2/v2SP_antipr_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  sprintf(name,"v2/v2QC4_antipr_%02i_%02i.txt",cmin[ic],cmax[ic]);
   gprv2 = GetGraph(name);
   if(! gprv2) return 0.0;
   
@@ -501,40 +548,59 @@ Float_t ComputePrV2int(Int_t ic=2){
   // initialize fitter
   AliBlastwaveFit2D *bwPr = new AliBlastwaveFit2D("antiprotonsSp",mPr);
   bwPr->SetMinPt(0.3);
-  bwPr->SetMaxPt(4.5);
+  bwPr->SetMaxPt(1.2);
 
   AliBlastwaveFit2D *bwPr2 = new AliBlastwaveFit2D("antiprotonsV2",mPr);
   bwPr2->SetMinPt(0.3);
   bwPr2->SetMaxPt(2.0);
 
+  AliBlastwaveFitSpectra *bwPr3 = new AliBlastwaveFitSpectra("antiprotonsSpHP",mPr); // use only spectra function to avoid overwriting of other fit (parameters are static memebers)
+  bwPr3->SetMinPt(2.5);
+  bwPr3->SetMaxPt(4.5);
+
   bwPr->SetSpectrumObj(hprplus);
 
   bwPr2->SetV2Obj(gprv2);
+
+  bwPr3->SetSpectrumObj(hprplus);
 
   AliBlastwaveFitter *fitter = new AliBlastwaveFitter("fitterProton");
   fitter->AddFitFunction(bwPr);
   fitter->AddFitFunction(bwPr2);
 
+  AliBlastwaveFitter *fitter2 = new AliBlastwaveFitter("fitterProton2");
+  fitter2->AddFitFunction(bwPr3);
+
   // go to fit
   fitter->PrepareToFit(); // initialize the fitter object
   fitter->Fit();          // perform the fit (it will take some time)
-
-  TF1 *fitSP = bwPr->GetSpectraFit();
-  TF1 *fitV2 = bwPr2->GetV2Fit();
 
   // Print some outputs
   printf("Chi2 = %f\n",fitter->GetChi2());
   printf("N.D.G.F. = %f\n",fitter->GetNDGF());
   printf("<beta> = %f\n",bwPr->GetMeanBeta());
 
+  fitter2->PrepareToFit(); // initialize the fitter object
+  fitter2->Fit();          // perform the fit (it will take some time)
+
+  TF1 *fitSP = bwPr->GetSpectraFit();
+  TF1 *fitV2 = bwPr2->GetV2Fit();
+  TF1 *fitSP2 = bwPr3->GetSpectraFit();
+
+  printf("2)Chi2 = %f\n",fitter2->GetChi2());
+  printf("2)N.D.G.F. = %f\n",fitter2->GetNDGF());
+  printf("2)<beta> = %f\n",bwPr3->GetMeanBeta());
+
   // Draw fit
   csp->cd();
   fitSP->Draw("SAME");
+  fitSP2->Draw("SAME");
   cv2->cd();
   fitV2->Draw("SAME");
 
-  fitSP->SetRange(0.0001,6);
-  fitV2->SetRange(0.0001,1);
+  fitSP->SetRange(0.0001,1.2);
+  fitSP2->SetRange(2.5,6);
+  fitV2->SetRange(0.0001,2);
   
   Float_t num = 0;
   Float_t den = 0;
@@ -553,27 +619,30 @@ Float_t ComputePrV2int(Int_t ic=2){
     Float_t yield = fitSP->Integral(x1,x2);
     Float_t v2 = fitV2->Eval(xm);
 
-    den += yield;
-    num += yield * v2;
-
-    den1 += yield*(1 + 0.064/xm + 0.0083 * xm * xm);
-    num1 += yield*(1 + 0.064/xm + 0.0083 * xm * xm) * v2 * (1 - 0.2);
-
-    den2 += yield*(1 - 0.064/xm - 0.0083 * xm * xm);
-    num2 += yield*(1 - 0.064/xm - 0.0083 * xm * xm) * v2 * (1 + 0.2);
+    if(xm > 0.2){
+      den += yield;
+      num += yield * v2;
+      
+      den1 += yield*(1 + 0.064/xm + 0.0083 * xm * xm);
+      num1 += yield*(1 + 0.064/xm + 0.0083 * xm * xm) * v2 * (1 - 0.2);
+      
+      den2 += yield*(1 - 0.064/xm - 0.0083 * xm * xm);
+      num2 += yield*(1 - 0.064/xm - 0.0083 * xm * xm) * v2 * (1 + 0.2);
+    }
   }
 
   for(Int_t i=0; i < gprv2->GetN();i++){
     Float_t x = gprv2->GetX()[i];
     Float_t frSyst = 1 - 2*(x-0.3)/(4.5-0.3);
 
-    if(x > 0.3){
+    if(x > 0.3 && x < 5){
       Float_t binwidth = 0.05;
       if(x < 3) binwidth = 0.05;
       else if(x < 4) binwidth = 0.1;
       else binwidth = 0.2;
 
-      Float_t yield = fitSP->Integral(x-binwidth,x+binwidth);
+      Float_t yield = hprplus->Interpolate(x) * 2 * binwidth;
+      if(x>4.5) yield = fitSP2->Integral(x-binwidth,x+binwidth);
       Float_t v2 = gprv2->GetY()[i];
       Float_t v2err1 = gprv2->GetEYlow()[i];
       Float_t v2err2 = gprv2->GetEYhigh()[i];
@@ -593,4 +662,5 @@ Float_t ComputePrV2int(Int_t ic=2){
 
   printf("Integrated flow for antiprotons (0 < p_T < 6 GeV/c) = %f\n",num/den);
   printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
+  printf("Yield = %f\n",den);
 }
