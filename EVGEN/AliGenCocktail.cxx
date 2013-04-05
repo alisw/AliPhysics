@@ -64,7 +64,7 @@ AliGenCocktail::~AliGenCocktail()
 }
 
 void AliGenCocktail::
-AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormula* formula)
+AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormula* formula, Int_t ntimes)
 {
 //
 // Add a generator to the list 
@@ -102,7 +102,8 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 
     AliGenCocktailEntry *entry = 
 	new AliGenCocktailEntry(Generator, Name, RateExp);
-    if (formula) entry->SetFormula(formula);    
+    if (formula) entry->SetFormula(formula);  
+    entry->SetNTimes(ntimes);
      fEntries->Add(entry);
      fNGenerators++;
      flnk1 = 0;
@@ -186,7 +187,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 	// Loop over generators and generate events
 	Int_t igen   = 0;
 	while((entry = (AliGenCocktailEntry*)next())) {
-          Int_t ntimes = 1;
+          Int_t ntimes = entry->NTimes();
 	  if (fUsePerEventRate && (gRandom->Rndm() > entry->Rate())) continue;
 	  
 	  igen++;

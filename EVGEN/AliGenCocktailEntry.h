@@ -25,11 +25,13 @@ class AliGenCocktailEntry : public TNamed
     AliGenerator* Generator() {return fGenerator;}
     void SetGenerator(AliGenerator* generator){fGenerator=generator;}
     void SetFormula(TFormula* formula) {fFormula = formula;}
+    void SetNTimes(Int_t ntimes) {fNTimes = ntimes;}
     void SetFirst(Int_t first) {fFirst=first;}
     void SetLast (Int_t last ) {fLast =last;}
     Int_t GetFirst() const {return fFirst;}
     Int_t GetLast () const {return fLast;}
     Float_t Rate()   const {return fRate;}
+    Int_t NTimes()   const {return fNTimes;}
     Int_t   Bin()    const {return Int_t(fRate);}
     void  PrintInfo() const;
     TFormula* Formula() const {return fFormula;}
@@ -40,12 +42,13 @@ class AliGenCocktailEntry : public TNamed
     Int_t fFirst;               // First index in list of primaries
     Int_t fLast;                // Last index in list of primaries
     Float_t fRate;              // Rate per event
+    Int_t   fNTimes;            // Generate is called N times
     Float_t fKineBias;          // Bias due to kinematic selecion
     Float_t fBias;              // Bias
     TFormula* fFormula;         // Formula to calculate number of signals per event    
     void Copy(TObject&) const;
  private:
-    ClassDef(AliGenCocktailEntry, 2) // Generator entry of AliGenCocktail
+    ClassDef(AliGenCocktailEntry, 3) // Generator entry of AliGenCocktail
 };
 #endif
 

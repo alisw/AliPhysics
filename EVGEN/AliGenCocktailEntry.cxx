@@ -35,6 +35,7 @@ AliGenCocktailEntry::AliGenCocktailEntry():
     fFirst(-1),
     fLast(-1),
     fRate(0),
+    fNTimes(1),
     fKineBias(1),
     fBias(1),
     fFormula(0)
@@ -51,6 +52,7 @@ AliGenCocktailEntry:: AliGenCocktailEntry
   fFirst(-1),
   fLast(-1),
   fRate(RateExp),
+  fNTimes(1),
   fKineBias(1),
   fBias(1),
   fFormula(0)
@@ -65,6 +67,7 @@ AliGenCocktailEntry::AliGenCocktailEntry(const AliGenCocktailEntry &entry):
     fFirst(-1),
     fLast(-1),
     fRate(0),
+    fNTimes(1),
     fKineBias(1),
     fBias(1),
     fFormula(0)
