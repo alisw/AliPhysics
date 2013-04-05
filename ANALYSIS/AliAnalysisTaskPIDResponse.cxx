@@ -44,6 +44,7 @@ fRun(-1),
 fOldRun(0),
 fRecoPass(0),
 fIsTunedOnData(kFALSE),
+fTunedOnDataMask(0),
 fRecoPassTuned(0),
 fUseTPCEtaCorrection(kFALSE)//TODO: In future, default kTRUE  
 {
@@ -64,6 +65,7 @@ fRun(-1),
 fOldRun(0),
 fRecoPass(0),
 fIsTunedOnData(kFALSE),
+fTunedOnDataMask(0),
 fRecoPassTuned(0),
 fUseTPCEtaCorrection(kFALSE)//TODO: In future, default kTRUE
 {
@@ -105,6 +107,7 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
   if (!fOADBPath.IsNull()) fPIDResponse->SetOADBPath(fOADBPath.Data());
 
   if(fIsTunedOnData) fPIDResponse->SetTunedOnData(kTRUE,fRecoPassTuned);
+  if(fTunedOnDataMask != 0) fPIDResponse->SetTunedOnDataMask(fTunedOnDataMask);
 
   if (!fSpecialDetResponse.IsNull()){
     TObjArray *arr=fSpecialDetResponse.Tokenize("; ");
