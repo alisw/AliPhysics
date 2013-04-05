@@ -7,7 +7,7 @@
  *
  */
 
-AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
+TEST_AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "",
   const char *njets              = "Jets",
@@ -17,11 +17,11 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   Double_t   jetareacut         = 0.557,
   UInt_t     type               = AliAnalysisTaskEmcal::kTPC,
   Int_t      leadhadtype        = 0,
-  const char *taskname           = "AliAnalysisTaskRhoVnModulation",
-  UInt_t     runMode            = AliAnalysisTaskRhoVnModulation::kGrid,
+  const char *taskname           = "TEST_AliAnalysisTaskRhoVnModulation",
+  UInt_t     runMode            = TEST_AliAnalysisTaskRhoVnModulation::kGrid,
   Bool_t     fillQA             = kTRUE,
   TString    fitOpts            = "LWQIM",
-  UInt_t     fitType            = AliAnalysisTaskRhoVnModulation::kFourierSeries,
+  UInt_t     fitType            = TEST_AliAnalysisTaskRhoVnModulation::kFourierSeries,
   TArrayI    *centralities      = 0x0,
   TRandom3   *randomizer        = 0x0
   )
@@ -63,7 +63,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   else if (type == AliAnalysisTaskEmcal::kUser) 
     name += "_USER";
 
-  AliAnalysisTaskRhoVnModulation* jetTask = new AliAnalysisTaskRhoVnModulation(name, runMode);
+  TEST_AliAnalysisTaskRhoVnModulation* jetTask = new TEST_AliAnalysisTaskRhoVnModulation(name, runMode);
   // inherited setters
   jetTask->SetAnaType(type);
   jetTask->SetTracksName(ntracks);
@@ -107,12 +107,12 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   mgr->ConnectOutput (jetTask, 1, coutput1 );
 
   switch (runMode) {
-      case AliAnalysisTaskRhoVnModulation::kLocal : {
+      case TEST_AliAnalysisTaskRhoVnModulation::kLocal : {
           gStyle->SetOptFit(1);
-          AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("good_fits", 
+          AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("good_fits_%s", name.Data()), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
-          AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("bad_fits", 
+          AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("bad_fits_%s", name.Data()),
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							     Form("%s", AliAnalysisManager::GetCommonFileName()));
           mgr->ConnectOutput (jetTask, 2, coutput2);

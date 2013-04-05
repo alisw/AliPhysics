@@ -26,7 +26,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kUser, kFourierSeries }; // fit type
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
-        enum detectorType       { kTPC, kVZEROA, kVZEROC };             // detector that was used
+        enum detectorType       { kTPC, kTPCSUB, kVZEROA, kVZEROC };    // detector that was used
         // constructors, destructor
                                 AliAnalysisTaskRhoVnModulation();
                                 AliAnalysisTaskRhoVnModulation(const char *name, runModeType type);
@@ -48,7 +48,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
             return -999; }
         /* inline */    Double_t RhoVal() const { return (fRho) ? fRho->GetVal(): -999.;}                 
         /* inline */    Double_t RhoVal(Double_t phi, Double_t r, Double_t n) const {
-            if(!fFitModulation) return -999; // coverity
+            if(!fFitModulation) return RhoVal(); // coverity
             switch (fFitModulationType) {
                 case kNoFit : return RhoVal();
                 default : {
@@ -70,18 +70,19 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetModulationFitMinimumPvalue(Float_t p)        {fMinPvalue = p;}
         void                    SetModulationFitType(fitModulationType type)    {fFitModulationType = type; }
         void                    SetModulationFitOptions(TString opt)            {fFitModulationOptions = opt; }
-        void                    SetModulationFitDetector(detectorType type)     {fDetectorType = type; }
+        void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
         void                    SetUsePtWeight(Bool_t w)                        {fUsePtWeight = w; }
         void                    SetRunModeType(runModeType type)                {fRunModeType = type; }
         void                    SetAbsVertexZ(Float_t v)                        {fAbsVertexZ = v; }
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
         void                    SetRandomConeRadius(Float_t r)                  {fRandomConeRadius = r; }
+        void                    SetForceAbsVnHarmonics(Bool_t f)                {fAbsVnHarmonics = f; }
         // 'trivial' helper calculations
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneTPC(Double_t* tpc) const;
         void                    CalculateRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, AliEmcalJet* jet = 0x0, Bool_t randomize = 0) const;
         // analysis details
-        void                    CorrectRho(Double_t* params, Double_t psi2, Double_t psi3) const;
+        void                    CorrectRho(Double_t* params, Double_t psi2, Double_t psi3, Double_t psi2b, Double_t psi3b) const;
         // event and track selection
         /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
             if(!track) return kFALSE;
@@ -135,6 +136,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         // general settings
         Float_t                 fMinDisanceRCtoLJ;      //! min distance between rc and leading jet
         Float_t                 fRandomConeRadius;      //! radius of random cone
+        Bool_t                  fAbsVnHarmonics;        //! force postive local rho
         // transient object pointers
         TList*                  fOutputList;            //! output list
         TList*                  fOutputListGood;        //! output list for local analysis
@@ -172,15 +174,18 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH2F*                   fHistRCPhiEta[10];              //! random cone eta and phi
         TH2F*                   fHistRhoVsRCPt[10];             //! rho * A vs rcpt
         TH1F*                   fHistRCPt[10];                  //! rcpt
-        TH2F*                   fHistDeltaPtDeltaPhi[10];       //! dpt vs dphi
+        TH2F*                   fHistDeltaPtDeltaPhi2[10];      //! dpt vs dphi
+        TH2F*                   fHistDeltaPtDeltaPhi3[10];
         TH2F*                   fHistRCPhiEtaExLJ[10];          //! random cone eta and phi, excl leading jet
         TH2F*                   fHistRhoVsRCPtExLJ[10];         //! rho * A vs rcpt, excl leading jet
         TH1F*                   fHistRCPtExLJ[10];              //! rcpt, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhiExLJ[10];   //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi2ExLJ[10];  //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi3ExLJ[10];  //! dpt vs dphi, excl leading jet
         TH2F*                   fHistRCPhiEtaRand[10];          //! random cone eta and phi, randomized
         TH2F*                   fHistRhoVsRCPtRand[10];         //! rho * A vs rcpt, randomized
         TH1F*                   fHistRCPtRand[10];              //! rcpt, randomized
-        TH2F*                   fHistDeltaPtDeltaPhiRand[10];   //! dpt vs dphi, randomized
+        TH2F*                   fHistDeltaPtDeltaPhi2Rand[10];  //! dpt vs dphi, randomized
+        TH2F*                   fHistDeltaPtDeltaPhi3Rand[10];  //! dpt vs dphi, randomized
         // jet histograms (after kinematic cuts)
         TH1F*                   fHistJetPtRaw[10];              //! jet pt - no background subtraction
         TH1F*                   fHistJetPt[10];                 //! pt of found jets (background subtracted)
@@ -193,14 +198,17 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH2F*                   fHistJetPsiVZEROAPt[10];         //! psi vzeroa versus pt
         TH2F*                   fHistJetPsiVZEROCPt[10];         //! psi vzeroc versus pt
         // phi minus psi 
-        TH1F*                   fHistDeltaPhiVZEROA[10]; //! phi minus psi_A
-        TH1F*                   fHistDeltaPhiVZEROC[10]; //! phi minus psi_C
-        TH1F*                   fHistDeltaPhiTPC[10];    //! phi minus psi_TPC
+        TH1F*                   fHistDeltaPhi2VZEROA[10];       //! phi minus psi_A
+        TH1F*                   fHistDeltaPhi2VZEROC[10];       //! phi minus psi_C
+        TH1F*                   fHistDeltaPhi2TPC[10];          //! phi minus psi_TPC
+        TH1F*                   fHistDeltaPhi3VZEROA[10];       //! phi minus psi_A
+        TH1F*                   fHistDeltaPhi3VZEROC[10];       //! phi minus psi_C
+        TH1F*                   fHistDeltaPhi3TPC[10];          //! phi minus psi_TPC
 
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 3);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 4);
 };
 
 #endif
