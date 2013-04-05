@@ -256,7 +256,6 @@ Float_t ComputePiV2int(Int_t ic=2){
   bwPi2->SetMaxPt(1.0);
 
   AliBlastwaveFitSpectra *bwPi3 = new AliBlastwaveFitSpectra("pionsSpHP",mPi); // use only spectra function to avoid overwriting of other fit (parameters are static memebers)
-  bwPr3->SetMinPt(2.5);
   bwPi3->SetMinPt(1.5);
   bwPi3->SetMaxPt(3.0);
 
