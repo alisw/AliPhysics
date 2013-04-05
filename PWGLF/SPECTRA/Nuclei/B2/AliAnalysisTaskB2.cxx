@@ -250,7 +250,7 @@ void AliAnalysisTaskB2::CreateOutputObjects()
 	if(fHistoMap == 0) exit(1); // should be created somewhere else
 	
 	fOutputContainer = new TList();
-	fOutputContainer->SetOwner(kFALSE);
+	fOutputContainer->SetOwner(kTRUE);
 	
 	TObjString* key;
 	TIter iter(fHistoMap->GetMap());

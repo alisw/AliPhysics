@@ -23,8 +23,8 @@ class AliLnHistoMap: public TObject
 	
 	virtual ~AliLnHistoMap();
 	
-	virtual Int_t Write(const char* name = 0, Int_t option = 0, Int_t bufsize = 0);
-	virtual Int_t Write(const char* name = 0, Int_t option = 0, Int_t bufsize = 0) const;
+	//virtual Int_t Write(const char* name = 0, Int_t option = 0, Int_t bufsize = 0);
+	//virtual Int_t Write(const char* name = 0, Int_t option = 0, Int_t bufsize = 0) const;
 	
 	TObject* Get(const TString& keyname) const { return fHistoMap->GetValue(keyname.Data()); }
 	TObject* Get(const char* keyname) const { return fHistoMap->GetValue(keyname); }
