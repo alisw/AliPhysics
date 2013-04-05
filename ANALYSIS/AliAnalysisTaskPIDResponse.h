@@ -43,6 +43,7 @@ public:
   void SetOADBPath(const char* path) {fOADBPath=path;}
   const char* GetOADBPath() const { return fOADBPath.Data(); }
   void SetTuneOnData(Bool_t flag,Int_t recopass){fIsTunedOnData=flag;fRecoPassTuned=recopass;};
+  void SetTuneOnDataMask(Int_t mask){fTunedOnDataMask=mask;};
   
   void SetUseTPCEtaCorrection(Bool_t useTPCEtaCorrection) { fUseTPCEtaCorrection = useTPCEtaCorrection; };
   Bool_t UseTPCEtaCorrection() const { return fUseTPCEtaCorrection; };
@@ -61,6 +62,7 @@ private:
   Int_t   fRecoPass;                   //! reconstruction pass
 
   Bool_t  fIsTunedOnData;              // flag to tune MC on data (dE/dx)
+  Int_t   fTunedOnDataMask;            // mask to activate tuning on data on specific detectors
   Int_t   fRecoPassTuned;              // Reco pass tuned on data for MC
   
   Bool_t  fUseTPCEtaCorrection;        // Use TPC eta correction
@@ -71,6 +73,6 @@ private:
   AliAnalysisTaskPIDResponse(const AliAnalysisTaskPIDResponse &other);
   AliAnalysisTaskPIDResponse& operator=(const AliAnalysisTaskPIDResponse &other);
   
-  ClassDef(AliAnalysisTaskPIDResponse,5)  // Task to properly set the PID response functions of all detectors
+  ClassDef(AliAnalysisTaskPIDResponse,6)  // Task to properly set the PID response functions of all detectors
 };
 #endif
