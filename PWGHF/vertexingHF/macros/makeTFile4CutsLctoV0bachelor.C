@@ -26,6 +26,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   AliESDtrackCuts* esdTrackCutsProd=new AliESDtrackCuts();
   RDHFLctoV0Prod->AddTrackCuts(esdTrackCutsProd);
   RDHFLctoV0Prod->AddTrackCutsV0daughters(esdTrackCutsProd);
+  RDHFLctoV0Prod->SetUseTrackSelectionWithFilterBits(kFALSE);
   RDHFLctoV0Prod->SetPidSelectionFlag(2); // 0 -> TOF AND TPC
                                           // 1 -> if (TOF) TOF else TPC w veto
                                           // 2 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
@@ -42,7 +43,8 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   //	 				   AliESDtrackCuts::kAny); 
   // default is kBoth, otherwise kAny
   esdTrackCuts->SetMinDCAToVertexXY(0.);
-  esdTrackCuts->SetPtRange(0.3,1.e10);
+  //esdTrackCuts->SetPtRange(0.3,1.e10);
+  esdTrackCuts->SetPtRange(0.,1.e10);
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
 
@@ -70,12 +72,16 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   RDHFLctoV0An->SetTitle("Analysis cuts for Lc analysis");
   RDHFLctoV0An->AddTrackCuts(esdTrackCuts);
   RDHFLctoV0An->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
+  RDHFLctoV0An->SetUseTrackSelectionWithFilterBits(kFALSE);
   RDHFLctoV0An->SetPidSelectionFlag(2); // 0 -> TOF AND TPC
                                         // 1 -> if (TOF) TOF else TPC w veto
                                         // 2 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
                                         // 3 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else if (2.5<=p<3) {if (TOF) -2s<TOF<3s AND TPC@3s} else (p>=3) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
 
   const Int_t nptbins=9;
+  RDHFLctoV0Prod->SetNPtBins(nptbins);
+  RDHFLctoV0An->SetNPtBins(nptbins);
+
   Float_t* ptbins;
   ptbins=new Float_t[nptbins+1];
   ptbins[0]= 0.;

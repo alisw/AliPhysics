@@ -42,8 +42,7 @@ class AliCFVertexingHFLctoV0bachelor : public AliCFVertexingHF{
 
   enum ELctoV0Sel {
     kCountK0Sp=0,
-    kCountLambdapi=1,
-    kCountAllLctoV0=2
+    kCountLambdapi=1
   };
 
   AliCFVertexingHFLctoV0bachelor();

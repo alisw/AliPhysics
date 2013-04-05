@@ -366,31 +366,68 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     return 0;
   }
 
-  // Get the bachelor track
-  AliAODTrack *bachelorTrack = (AliAODTrack*)d->GetBachelor();
-  if (!bachelorTrack) {
-    AliDebug(2,"No bachelor object");
+  if (!d->GetSecondaryVtx()) {
+    AliDebug(2,"No secondary vertex for cascade");
     return 0;
   }
 
-  // not used
-  //if ( fUseTrackSelectionWithFilterBits &&
-  //!(bachelorTrack->TestFilterMask(BIT(4))) ) return 0;
-
-  // Get V0
-  AliAODv0 *v0 = (AliAODv0*)d->Getv0();
-  if (!v0) {
-    AliDebug(2,"No v0 object");
+  if (d->GetNDaughters()!=2) {
+    AliDebug(2,Form("No 2 daughters for current cascade (nDaughters=%d)",d->GetNDaughters()));
     return 0;
   }
+
+  AliVTrack *cascTrk0 = dynamic_cast<AliVTrack*>(d->GetDaughter(0));
+  AliVTrack *cascTrk1 = dynamic_cast<AliVTrack*>(d->GetDaughter(1));
+  if (!cascTrk0 || !cascTrk1) {
+    AliDebug(2,"At least one of V0daughters doesn't exist");
+    return 0;
+  }
+
+  AliAODv0 * v0 = dynamic_cast<AliAODv0*>(d->Getv0());
+  AliAODTrack * bachelorTrack = dynamic_cast<AliAODTrack*>(d->GetBachelor());
+  if (!v0 || !bachelorTrack) {
+    AliDebug(2,"No V0 or no bachelor for current cascade");
+    return 0;
+  }
+
+  if (bachelorTrack->GetID()<0) {
+    AliDebug(2,Form("Bachelor has negative ID %d",bachelorTrack->GetID()));
+    return 0;
+  }
+
+  if (!v0->GetSecondaryVtx()) {
+    AliDebug(2,"No secondary vertex for V0 by cascade");
+    return 0;
+  }
+
+  if (v0->GetNDaughters()!=2) {
+    AliDebug(2,Form("No 2 daughters for V0 of current cascade (onTheFly=%d, nDaughters=%d)",v0->GetOnFlyStatus(),v0->GetNDaughters()));
+    return 0;
+  }
+
 
   // Get the V0 daughter tracks
-  AliAODTrack *v0positiveTrack = (AliAODTrack*)d->Getv0PositiveTrack();
-  AliAODTrack *v0negativeTrack = (AliAODTrack*)d->Getv0NegativeTrack();
+  AliAODTrack *v0positiveTrack = dynamic_cast<AliAODTrack*>(d->Getv0PositiveTrack());
+  AliAODTrack *v0negativeTrack = dynamic_cast<AliAODTrack*>(d->Getv0NegativeTrack());
+  //AliVTrack *trk0 = dynamic_cast<AliVTrack*>(v0->GetDaughter(0));
+  //AliVTrack *trk1 = dynamic_cast<AliVTrack*>(v0->GetDaughter(1));
   if (!v0positiveTrack || !v0negativeTrack ) {
     AliDebug(2,"No V0 daughters' objects");
     return 0;
   }
+
+  if (v0positiveTrack->GetLabel()<0 || v0negativeTrack->GetLabel()<0) {
+    AliDebug(2,Form("At least one of V0daughters has label negative (%d %d)",v0positiveTrack->GetLabel(),v0negativeTrack->GetLabel()));
+    return 0;
+  }
+
+  if (v0positiveTrack->GetID()<0 || v0negativeTrack->GetID()<0) {
+    AliDebug(2,Form("At least one of V0 daughters has negative ID %d %d",v0positiveTrack->GetID(),v0negativeTrack->GetID()));
+    return 0;
+  }
+
+
+  //if(fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) return 0;
 
   // selection on daughter tracks
   if (selectionLevel==AliRDHFCuts::kAll ||
@@ -408,7 +445,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
 	   !(IsDaughterSelected(v0negativeTrack,&vESD,fV0daughtersCuts)) ||
 	   !(IsDaughterSelected(v0positiveTrack,&vESD,fV0daughtersCuts)) ) return 0;
     }
-    //if (!AreDaughtersSelected(d)) return 0;
+
   }
 
   Bool_t okLck0sp=kTRUE, okLcLpi=kTRUE, okLcLBarpi=kTRUE;
@@ -820,30 +857,68 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
     return 0;
   }
 
-  // Get the v0 and all daughter tracks
-  AliAODTrack *bachelorTrack = (AliAODTrack*)d->GetBachelor();
-  if (!bachelorTrack) {
-    AliDebug(2,"No bachelor object");
+  if (!d->GetSecondaryVtx()) {
+    AliDebug(2,"No secondary vertex for cascade");
     return 0;
   }
 
-  // not used
-  //if ( fUseTrackSelectionWithFilterBits &&
-  //!(bachelorTrack->TestFilterMask(BIT(4))) ) return 0;
-
-  AliAODv0 *v0 = (AliAODv0*)d->Getv0();
-  if (!v0) {
-    AliDebug(2,"No v0 object");
+  if (d->GetNDaughters()!=2) {
+    AliDebug(2,Form("No 2 daughters for current cascade (nDaughters=%d)",d->GetNDaughters()));
     return 0;
   }
+
+  AliVTrack *cascTrk0 = dynamic_cast<AliVTrack*>(d->GetDaughter(0));
+  AliVTrack *cascTrk1 = dynamic_cast<AliVTrack*>(d->GetDaughter(1));
+  if (!cascTrk0 || !cascTrk1) {
+    AliDebug(2,"At least one of V0daughters doesn't exist");
+    return 0;
+  }
+
+  AliAODv0 * v0 = dynamic_cast<AliAODv0*>(d->Getv0());
+  AliAODTrack * bachelorTrack = dynamic_cast<AliAODTrack*>(d->GetBachelor());
+  if (!v0 || !bachelorTrack) {
+    AliDebug(2,"No V0 or no bachelor for current cascade");
+    return 0;
+  }
+
+  if (bachelorTrack->GetID()<0) {
+    AliDebug(2,Form("Bachelor has negative ID %d",bachelorTrack->GetID()));
+    return 0;
+  }
+
+  if (!v0->GetSecondaryVtx()) {
+    AliDebug(2,"No secondary vertex for V0 by cascade");
+    return 0;
+  }
+
+  if (v0->GetNDaughters()!=2) {
+    AliDebug(2,Form("No 2 daughters for V0 of current cascade (onTheFly=%d, nDaughters=%d)",v0->GetOnFlyStatus(),v0->GetNDaughters()));
+    return 0;
+  }
+
 
   // Get the V0 daughter tracks
-  AliAODTrack *v0positiveTrack = (AliAODTrack*)d->Getv0PositiveTrack();
-  AliAODTrack *v0negativeTrack = (AliAODTrack*)d->Getv0NegativeTrack();
+  AliAODTrack *v0positiveTrack = dynamic_cast<AliAODTrack*>(d->Getv0PositiveTrack());
+  AliAODTrack *v0negativeTrack = dynamic_cast<AliAODTrack*>(d->Getv0NegativeTrack());
+  //AliVTrack *trk0 = dynamic_cast<AliVTrack*>(v0->GetDaughter(0));
+  //AliVTrack *trk1 = dynamic_cast<AliVTrack*>(v0->GetDaughter(1));
   if (!v0positiveTrack || !v0negativeTrack ) {
     AliDebug(2,"No V0 daughters' objects");
     return 0;
   }
+
+  if (v0positiveTrack->GetLabel()<0 || v0negativeTrack->GetLabel()<0) {
+    AliDebug(2,Form("At least one of V0daughters has label negative (%d %d)",v0positiveTrack->GetLabel(),v0negativeTrack->GetLabel()));
+    return 0;
+  }
+
+  if (v0positiveTrack->GetID()<0 || v0negativeTrack->GetID()<0) {
+    AliDebug(2,Form("At least one of V0 daughters has negative ID %d %d",v0positiveTrack->GetID(),v0negativeTrack->GetID()));
+    return 0;
+  }
+
+
+  //if(fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) return 0;
 
   // selection on daughter tracks
   if (selectionLevel==AliRDHFCuts::kAll ||
@@ -1131,7 +1206,7 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
 
   SetUsePID(kFALSE);//(kTRUE);
 
-  PrintAll();
+  //PrintAll();
 
  for(Int_t iiv=0;iiv<nvars;iiv++){
   delete [] prodcutsval[iiv];
@@ -1207,6 +1282,7 @@ void AliRDHFCutsLctoV0::PrintAll() const {
   printf("Recompute primary vertex %d\n",(Int_t)fRecomputePrimVertex);
   printf("Physics selection: %s\n",fUsePhysicsSelection ? "Yes" : "No");
   printf("Pileup rejection: %s\n",(fOptPileup > 0) ? "Yes" : "No");
+  printf("UseTrackSelectionWithFilterBits: %s\n",fUseTrackSelectionWithFilterBits ? "Yes" : "No");
   if(fOptPileup==1) printf(" -- Reject pileup event");
   if(fOptPileup==2) printf(" -- Reject tracks from pileup vtx");
   if(fUseCentrality>0) {
@@ -1218,7 +1294,7 @@ void AliRDHFCutsLctoV0::PrintAll() const {
     printf("Centrality class considered: %.1f-%.1f, estimated with %s",fMinCentrality,fMaxCentrality,estimator.Data());
   }
   if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
-
+  /*
   if(fVarNames){
     cout<<"Array of variables"<<endl;
     for(Int_t iv=0;iv<fnVars;iv++){
@@ -1257,7 +1333,10 @@ void AliRDHFCutsLctoV0::PrintAll() const {
    }
    cout<<endl;
   }
+  */
+
   return;
+
 }
 
 //-------------------------

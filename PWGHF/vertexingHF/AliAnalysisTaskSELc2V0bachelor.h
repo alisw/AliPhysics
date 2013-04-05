@@ -55,21 +55,12 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 			   TClonesArray *mcArray);
 
   void DefineHistograms();
-  Int_t CheckOrigin(TClonesArray *arrayMC, AliAODMCParticle *mcPartCandidate) const;
 
   void MakeAnalysisForLc2prK0S(TClonesArray *arrayLctopK0s,
 			       TClonesArray *mcArray,
 			       Int_t &nSelectedProd, AliRDHFCutsLctoV0 *cutsProd,
 			       Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal);
  
-  Int_t MatchToMC(AliAODRecoCascadeHF *lc2bacV0,
-		  Int_t *pdgDgLc2bacV0, Int_t *pdgDgV0,
-		  TClonesArray *mcArray);
-
-  void SearchLcDaughter(TClonesArray *arrayMC);
-
-  void DefineK0SHistos();
-
   // set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
@@ -84,6 +75,14 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 
  private:
   
+  Int_t MatchToMC(AliAODRecoCascadeHF *lc2bacV0,
+		  Int_t *pdgDgLc2bacV0, Int_t *pdgDgV0,
+		  TClonesArray *mcArray);
+
+  Int_t SearchLcDaughter(TClonesArray *arrayMC, Int_t iii);
+
+  void DefineK0SHistos();
+
   AliAnalysisTaskSELc2V0bachelor(const AliAnalysisTaskSELc2V0bachelor &source);
   AliAnalysisTaskSELc2V0bachelor& operator=(const AliAnalysisTaskSELc2V0bachelor& source); 
   

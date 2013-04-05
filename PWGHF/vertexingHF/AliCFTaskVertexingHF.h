@@ -169,9 +169,8 @@ public:
 	void SetKeepLctoLambdapi() {fLctoV0bachelorOption=4;}
 	void SetKeepLctoV0bachelor() {fLctoV0bachelorOption=7;}
 
-	void SetCountAllLctoBachelor(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountAllLctoV0;}
 	void SetCountLctoK0Sp(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountK0Sp;}
-	void SetCountLambdaBarpi(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountLambdapi;}
+	void SetCountLctoLambdapi(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountLambdapi;}
     
 	void SetUseSelectionBit(Bool_t flag) { fUseSelectionBit=flag; }
 	Bool_t GetUseSelectionBit() const { return fUseSelectionBit; }
