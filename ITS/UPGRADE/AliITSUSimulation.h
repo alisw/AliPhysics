@@ -77,7 +77,7 @@ class AliITSUSimulation : public TObject
   //
   void SetCalibDead(AliITSCalibration *calib)              {fCalibDead = calib;}
   void SetCalibNoisy(AliITSCalibration *calib)             {fCalibNoisy = calib;}
-  void SetSegmentation(AliITSsegmentation *seg)            {fSeg = seg; if (seg&&fSensMap) fSensMap->SetDimensions(seg->Npz(),seg->Npx(),2*kMaxROCycleAccept);}
+  void SetSegmentation(AliITSsegmentation *seg)            {fSeg = seg; if (seg&&fSensMap) fSensMap->SetDimensions(seg->Npz(),seg->Npx(),kMaxROCycleAccept);}
   void SetSimuParam(AliITSUSimuParam *sp)                  {fSimuParam = sp;}
   virtual void SetResponseParam(AliITSUParamList* resp)    {fResponseParam = resp;}
   void SetMap(AliITSUSensMap *p)                           {fSensMap = p;}
