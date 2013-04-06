@@ -48,6 +48,12 @@ class AliITSUTrackerGlo : public AliTracker {
   virtual Int_t          LoadClusters(TTree * treeRP=0);
   virtual void           UnloadClusters();
   virtual AliCluster*    GetCluster(Int_t index) const;
+  //
+  Int_t                  GetCountPronlongationTrials() const {return fCountProlongationTrials;}
+  Int_t                  GetCountITSin()               const {return fCountITSin;}
+  Int_t                  GetCountITSout()              const {return fCountITSout;}
+  Int_t                  GetCountITSrefit()            const {return fCountITSrefit;}
+
   //------------------------------------
   AliITSURecoDet*        GetITSInterface()       const {return fITS;}
   //
@@ -100,8 +106,14 @@ class AliITSUTrackerGlo : public AliTracker {
   AliITSUReconstructor*           fReconstructor;  // ITS global reconstructor 
   AliITSURecoDet*                 fITS;            // interface to ITS, borrowed from reconstructor
   AliESDtrack*                    fCurrESDtrack;   // current esd track in processing
+  Int_t                           fCurrESDtrMClb;  // its eventual mc label
   Double_t                        fCurrMass;       // current track mass
   Double_t                        fTrImpData[kNTrImpData];  // data on track impact on the layer
+  //
+  Int_t                           fCountProlongationTrials;   // number of TPC seeds
+  Int_t                           fCountITSin;     // number of successful ITSin 
+  Int_t                           fCountITSout;    // number of successful ITSout
+  Int_t                           fCountITSrefit;  // number of successful ITSrefit 
   //
   // the seeds management to be optimized
   TObjArray                       fHypStore;       // storage for tracks hypotheses
