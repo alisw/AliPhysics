@@ -108,10 +108,10 @@ void AliITSUSensMap::Clear(Option_t*)
 }
 
 //______________________________________________________________________
-void AliITSUSensMap::DeleteItem(UInt_t col,UInt_t row)
+void AliITSUSensMap::DeleteItem(UInt_t col,UInt_t row,Int_t cycle)
 {
   // Delete a particular AliITSUSensMapItems.
-  SetUniqueID( GetIndex(col,row) );
+  SetUniqueID( GetIndex(col,row,cycle) );
   TObject* fnd = fBTree->FindObject(this);
   if (!fnd) return;
   Disable(fnd);
@@ -129,30 +129,6 @@ void AliITSUSensMap::DeleteItem(TObject* obj)
 }
 
 //______________________________________________________________________
-void AliITSUSensMap::GetCell(UInt_t index,UInt_t &i,UInt_t &j,UInt_t &cycle) const 
-{
-  // returns the i,j index numbers from the linearized index computed
-  // with GetIndex
-  if(index>=fDimCol*fDimRow*fDimCycle){
-    Warning("GetCell","Index out of range 0<=index=%d<%d",index,fDimCol*fDimRow*fDimCycle);
-    i=-1;j=-1,cycle=-1;
-    return;
-  } // end if
-  cycle = index/(fDimCol*fDimRow);
-  index %= (fDimCol*fDimRow);
-  //
-#ifdef _ROWWISE_SORT_
-  i = index%fDimCol;   // sorted in row, then in column
-  j = index/fDimCol;
-#else
-  i = index/fDimRow;   // sorted in column, then in row
-  j = index%fDimRow;
-#endif  
-  //
-  return;
-}
-
-//______________________________________________________________________
 void  AliITSUSensMap::SetDimensions(UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle) 
 {
   // set dimensions for current sensor
@@ -162,3 +138,4 @@ void  AliITSUSensMap::SetDimensions(UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle)
   fDimCycle=dimCycle;
   if (fDimCol*fDimRow*fDimCycle>kMaxPackDim) AliFatal(Form("Dimension %dx%dx%d cannot be packed to UInt_t",fDimCol,fDimRow,fDimCycle));
 }
+

@@ -99,6 +99,7 @@ void AliITSUSimulation::InitSimulationModule(AliITSUModule* mod, Int_t event, Al
   SetSegmentation(seg);
   SetResponseParam(resp);
   ClearMap();
+  memset(fCyclesID,0,2*kMaxROCycleAccept*sizeof(Bool_t));
   //
   if (event != fEvent) GenerateReadOutCycleOffset(); 
   SetEvent(event);
@@ -134,10 +135,13 @@ Bool_t AliITSUSimulation::AddSDigitsToModule(TSeqCollection *pItemArr,Int_t mask
 void AliITSUSimulation::UpdateMapSignal(UInt_t col,UInt_t row,Int_t trk,Int_t ht,Double_t signal, Int_t roCycle) 
 {
   // update map with new hit
-  // Note: roCycle can be anything between -kMaxROCycleAccept : kMaxROCycleAccept, but the index should be built with pos.number
-  UInt_t ind = fSensMap->GetIndex(col,row,roCycle+kMaxROCycleAccept);
+  // Note: roCycle can be anything between -kMaxROCycleAccept : kMaxROCycleAccept
+  UInt_t ind = fSensMap->GetIndex(col,row,roCycle);
   AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);
-  if (!oldItem) fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(trk,ht,fModule->GetIndex(),ind,signal,roCycle) );
+  if (!oldItem) {
+    fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(trk,ht,fModule->GetIndex(),ind,signal,roCycle) );
+    fCyclesID[roCycle+kMaxROCycleAccept] = kTRUE;
+  }
   else oldItem->AddSignal(trk,ht,signal);
 }
 
@@ -147,7 +151,10 @@ void AliITSUSimulation::UpdateMapNoise(UInt_t col,UInt_t row,Double_t noise, Int
   // update map with new hit
   UInt_t ind = fSensMap->GetIndex(col,row,roCycle);
   AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);
-  if (!oldItem) fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(fModule->GetIndex(),ind,noise,roCycle) );
+  if (!oldItem) {
+    fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(fModule->GetIndex(),ind,noise,roCycle) );
+    fCyclesID[roCycle+kMaxROCycleAccept] = kTRUE;
+  }
   else oldItem->AddNoise(noise);
 }
 

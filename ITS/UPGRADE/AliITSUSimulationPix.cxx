@@ -124,6 +124,7 @@ AliITSUSimulationPix& AliITSUSimulationPix::operator=(const AliITSUSimulationPix
   fReadOutCycleLength = s.fReadOutCycleLength;
   fReadOutCycleOffset = s.fReadOutCycleOffset;
   fSpread2DHisto = s.fSpread2DHisto;
+  //
   fGlobalChargeScale = s.fGlobalChargeScale;
   fSpreadFun    = s.fSpreadFun;
   fROTimeFun    = s.fROTimeFun;
@@ -175,8 +176,8 @@ void AliITSUSimulationPix::SDigitiseModule()
   if (fModule->GetNHits()) Hits2SDigitsFast();
   //
   if (fSimuParam->GetPixAddNoisyFlag())   AddNoisyPixels();
-  if (fSimuParam->GetPixRemoveDeadFlag()) RemoveDeadPixels(); 
   if (!fSensMap->GetEntries()) return;
+  if (fSimuParam->GetPixRemoveDeadFlag()) RemoveDeadPixels(); 
   WriteSDigits();
   ClearMap();
   //
@@ -216,6 +217,7 @@ void AliITSUSimulationPix::DigitiseModule()
   Hits2SDigitsFast();
   //
   if (fSimuParam->GetPixAddNoisyFlag())   AddNoisyPixels();
+  if (!fSensMap->GetEntries()) return;
   if (fSimuParam->GetPixRemoveDeadFlag()) RemoveDeadPixels();
   FrompListToDigits();
   ClearMap();
@@ -509,12 +511,18 @@ void AliITSUSimulationPix::RemoveDeadPixels()
   //
   if (calObj->IsBad()) {ClearMap(); return;} // whole module is masked
   //
+  // prepare the list of r/o cycles seen
+  Char_t cyclesSeen[2*kMaxROCycleAccept];
+  int ncycles = 0;
+  for (int i=2*kMaxROCycleAccept;i--;) if (fCyclesID[i]) cyclesSeen[ncycles++]=i-kMaxROCycleAccept;
+  
   // remove single bad pixels one by one
   int nsingle = calObj->GetNrBadSingle();
-  UInt_t col,row,cycle;
+  UInt_t col,row;
+  Int_t cycle;
   for (int i=nsingle;i--;) {
     calObj->GetBadPixelSingle(i,row,col);
-    fSensMap->DeleteItem(col,row);
+    for (int icl=ncycles;icl--;) fSensMap->DeleteItem(col,row,cyclesSeen[icl]);
   }
   int nsd = fSensMap->GetEntriesUnsorted();
   for (int isd=nsd;isd--;) {
@@ -546,7 +554,8 @@ void AliITSUSimulationPix::FrompListToDigits()
   // add noise and electronics, perform the zero suppression and add the
   // digit to the list
   static AliITSU *aliITS = (AliITSU*)gAlice->GetModule("ITS");
-  UInt_t ix,iz,iCycle;
+  UInt_t row,col;
+  Int_t iCycle;
   Double_t sig;
   const Int_t    knmaxtrk=AliITSdigit::GetNTracks();
   static AliITSUDigitPix dig;
@@ -590,10 +599,10 @@ void AliITSUSimulationPix::FrompListToDigits()
       //PH This apparently is a problem which needs investigation
       AliWarning(Form("Too big or too small signal value %f",sig));
     }
-    fSensMap->GetMapIndex(sd->GetUniqueID(),iz,ix,iCycle);
-    dig.SetCoord1(iz);
-    dig.SetCoord2(ix);
-    dig.SetROCycle(int(iCycle) - kMaxROCycleAccept);
+    fSensMap->GetMapIndex(sd->GetUniqueID(),col,row,iCycle);
+    dig.SetCoord1(col);
+    dig.SetCoord2(row);
+    dig.SetROCycle(iCycle);
     dig.SetSignal((Int_t)sig);
     dig.SetSignalPix((Int_t)sig);
     int ntr = sd->GetNTracks();
@@ -623,7 +632,8 @@ Int_t AliITSUSimulationPix::CreateNoisyDigits(Int_t minID,Int_t maxID,double pro
   // see FrompListToDigits for details
   //
   static AliITSU *aliITS = (AliITSU*)gAlice->GetModule("ITS");
-  UInt_t ix,iz,iCycle;
+  UInt_t row,col;
+  Int_t iCycle;
   static AliITSUDigitPix dig;
   static TArrayI ordSampleInd(100),ordSample(100); //RS!!! static is not thread-safe!!!
   const Int_t    knmaxtrk=AliITSdigit::GetNTracks();
@@ -635,10 +645,10 @@ Int_t AliITSUSimulationPix::CreateNoisyDigits(Int_t minID,Int_t maxID,double pro
   int* ordV = ordSample.GetArray();
   int* ordI = ordSampleInd.GetArray();
   for (int j=0;j<ncand;j++) {
-    fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],iz,ix,iCycle);   // create noisy digit
-    dig.SetCoord1(iz);
-    dig.SetCoord2(ix);
-    dig.SetROCycle(int(iCycle) - kMaxROCycleAccept);
+    fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
+    dig.SetCoord1(col);
+    dig.SetCoord2(row);
+    dig.SetROCycle(iCycle);
     dig.SetSignal(1);
     dig.SetSignalPix((Int_t)AliITSUSimuParam::GenerateNoiseQFunction(probNoisy,base,noise));
     for (int k=knmaxtrk;k--;) {
@@ -646,7 +656,7 @@ Int_t AliITSUSimulationPix::CreateNoisyDigits(Int_t minID,Int_t maxID,double pro
       dig.SetHit(k,-1);
     }
     aliITS->AddSimDigit(AliITSUGeomTGeo::kDetTypePix,&dig);
-    AliDebug(10,Form("Add noisy pixel %d(%d/%d) Noise=%d",ordV[ordI[j]],iz,ix,dig.GetSignalPix()));
+    AliDebug(10,Form("Add noisy pixel %d(%d/%d) Noise=%d",ordV[ordI[j]],col,row,dig.GetSignalPix()));
   }
   return ncand;
 }
@@ -675,13 +685,14 @@ void AliITSUSimulationPix::SetCoupling(AliITSUSDigit* old, Int_t ntrack, Int_t i
   // old                  existing AliITSUSDigit
   // Int_t ntrack         track incex number
   // Int_t idhit          hit index number
-  UInt_t col,row,iCycle;
+  UInt_t col,row;
+  Int_t iCycle;
   Double_t pulse1,pulse2;
   Double_t couplR=0.0,couplC=0.0;
   Double_t xr=0.;
   //
   fSensMap->GetMapIndex(old->GetUniqueID(),col,row,iCycle);
-  int cycle = int(iCycle)-kMaxROCycleAccept;
+  int cycle = iCycle;
   fSimuParam->GetPixCouplingParam(couplC,couplR);
   if (GetDebug(2)) AliInfo(Form("(col=%d,row=%d,ntrack=%d,idhit=%d)  couplC=%e couplR=%e",
 				col,row,ntrack,idhit,couplC,couplR));
@@ -726,16 +737,16 @@ void AliITSUSimulationPix::SetCouplingOld(AliITSUSDigit* old, Int_t ntrack,Int_t
   // idhit          hit index number
   // module         module number
   //
-  UInt_t col,row,iCycle;
+  UInt_t col,row;
+  Int_t cycle;
   Int_t modId = fModule->GetIndex();
   Double_t pulse1,pulse2;
   Double_t couplR=0.0,couplC=0.0;
   //
-  fSensMap->GetMapIndex(old->GetUniqueID(),col,row,iCycle);
-  int cycle = int(iCycle)-kMaxROCycleAccept;  
+  fSensMap->GetMapIndex(old->GetUniqueID(),col,row,cycle);
   fSimuParam->GetPixCouplingParam(couplC,couplR);
   if (GetDebug(3)) AliInfo(Form("(col=%d,row=%d,roCycle=%d,ntrack=%d,idhit=%d)  couplC=%e couplR=%e",
-				col,row,iCycle,ntrack,idhit,couplC,couplR));
+				col,row,cycle,ntrack,idhit,couplC,couplR));
  //
  if (old->GetSignal()<fSimuParam->GetPixMinElToAdd()) return; // too small signal
  for (Int_t isign=-1;isign<=1;isign+=2) {// loop in col direction

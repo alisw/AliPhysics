@@ -19,6 +19,7 @@
 #include "AliITSUSensMap.h"
 #include "AliITSsegmentation.h"
 #include "AliMathBase.h"
+#include <TArrayS.h>
 
 class AliITSCalibration;
 class AliITSUSimuParam;
@@ -102,6 +103,7 @@ class AliITSUSimulation : public TObject
   AliITSUModule       *fModule;         //! module being processed
   Int_t                fEvent;          //! event number being processed
   Int_t                fDebug;          //!  debug flag
+  Bool_t               fCyclesID[2*kMaxROCycleAccept]; //! status of RO cycles
 
   ClassDef(AliITSUSimulation,1)       // Simulation base class 
     
