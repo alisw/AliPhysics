@@ -20,7 +20,7 @@ class AliITSUParamList;
 class AliITSUSimuParam : public TObject {
 
  public:
-  enum {kOldCouplingPix,kNewCouplingPix,kMaxCouplingOptPix};
+  enum {kNoCouplingPix,kOldCouplingPix,kNewCouplingPix,kMaxCouplingOptPix};
   //
   AliITSUSimuParam();
   AliITSUSimuParam(UInt_t nPix);

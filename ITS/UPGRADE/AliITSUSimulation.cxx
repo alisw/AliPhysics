@@ -143,6 +143,7 @@ void AliITSUSimulation::UpdateMapSignal(UInt_t col,UInt_t row,Int_t trk,Int_t ht
     fCyclesID[roCycle+kMaxROCycleAccept] = kTRUE;
   }
   else oldItem->AddSignal(trk,ht,signal);
+  //
 }
 
 //______________________________________________________________________

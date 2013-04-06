@@ -103,8 +103,8 @@ public:
   void SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, Int_t ix0,Int_t iz0,
 		      Double_t el, Double_t tof, Int_t tID, Int_t hID);
   //
-  void SetCoupling(AliITSUSDigit* old,Int_t ntrack,Int_t idhit);     // "New" coupling routine  Tiziano Virgili
-  void SetCouplingOld(AliITSUSDigit* old,Int_t ntrack,Int_t idhit);  // "Old" coupling routine  Rocco Caliandro
+  void SetCoupling(AliITSUSDigit* old);     // "New" coupling routine  Tiziano Virgili
+  void SetCouplingOld(AliITSUSDigit* old);  // "Old" coupling routine  Rocco Caliandro
   //   
  protected:
    Double_t      fTanLorAng;               //! Tangent of the Lorentz Angle (weighted average for hole and electrons)

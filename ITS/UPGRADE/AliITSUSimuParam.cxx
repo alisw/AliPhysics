@@ -61,7 +61,7 @@ const Double_t  AliITSUSimuParam::fgkPixBiasVoltageDefault = 18.182;
 const Double_t  AliITSUSimuParam::fgkPixThreshDefault = 20.;
 const Double_t  AliITSUSimuParam::fgkPixThrSigmaDefault = 5.;
 const Double_t  AliITSUSimuParam::fgkPixMinElToAddDefault = 1.;
-const UInt_t    AliITSUSimuParam::fgkPixCouplingOptDefault = AliITSUSimuParam::kOldCouplingPix;
+const UInt_t    AliITSUSimuParam::fgkPixCouplingOptDefault = AliITSUSimuParam::kNoCouplingPix;
 const Double_t  AliITSUSimuParam::fgkPixCouplColDefault = 0.;
 const Double_t  AliITSUSimuParam::fgkPixCouplRowDefault = 0.055;
 const Double_t  AliITSUSimuParam::fgkPixEccDiffDefault = 0.85;
@@ -84,7 +84,7 @@ AliITSUSimuParam::AliITSUSimuParam()
   ,fT(fgkTDefault)
   //
   ,fNPix(0)
-  ,fPixCouplOpt(kOldCouplingPix)
+  ,fPixCouplOpt(kNoCouplingPix)
   ,fPixCouplCol(fgkPixCouplColDefault)
   ,fPixCouplRow(fgkPixCouplRowDefault)
   ,fPixLorentzDrift(kTRUE)
@@ -120,7 +120,7 @@ AliITSUSimuParam::AliITSUSimuParam(UInt_t nPix)
   ,fT(fgkTDefault)
     //
   ,fNPix(nPix)
-  ,fPixCouplOpt(kOldCouplingPix)
+  ,fPixCouplOpt(kNoCouplingPix)
   ,fPixCouplCol(fgkPixCouplColDefault)
   ,fPixCouplRow(fgkPixCouplRowDefault)
   ,fPixLorentzDrift(kTRUE)
