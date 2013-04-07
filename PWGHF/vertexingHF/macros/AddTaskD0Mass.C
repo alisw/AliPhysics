@@ -4,7 +4,8 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
 				       Float_t minC=0, Float_t maxC=0,
 				       TString finDirname="Loose",
 				       TString finname="",TString finObjname="D0toKpiCuts", Bool_t flagAOD049=kFALSE,
-				       Bool_t FillMassPt=false, Bool_t FillImpPar=false)
+				       Bool_t FillMassPt=false, Bool_t FillImpPar=false,
+					   Bool_t DrawDetSignal=false, Bool_t PIDCheck=false)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -22,7 +23,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     return NULL;
   }   
 
-  TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",out7name="",inname="";
+  TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",out7name="",out8name="", inname="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_";
   if(flag==0){
@@ -64,6 +65,16 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     if(flagD0D0bar==2)out6name+="D0bar";
 
     out7name ="coutputVarTree";
+
+   //detector signal hists
+
+    out8name="detectorSignals";
+    if(cutOnDistr) out8name+="C"; 
+    if(flagD0D0bar==1)out8name+="D0";
+    if(flagD0D0bar==2)out8name+="D0bar";
+
+    
+
 
     inname="cinputmassD0_0";
     if(cutOnDistr) inname+="C"; 
@@ -109,6 +120,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   out5name += finDirname.Data(); 
   out6name += finDirname.Data();
   out7name += finDirname.Data();
+  out8name += finDirname.Data();
   inname += finDirname.Data();
 
    //setting my cut values
@@ -172,6 +184,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   out5name+=centr;
   out6name+=centr;
   out7name+=centr;
+  out8name+=centr;
   inname+=centr;
 
   // Aanalysis task    
@@ -190,7 +203,8 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
 
   massD0Task->SetFillPtHistos(FillMassPt);
   massD0Task->SetFillImpactParameterHistos(FillImpPar);
-  
+  massD0Task->SetDrawDetSignal(DrawDetSignal);
+  massD0Task->SetPIDCheck(PIDCheck);
   //  massD0Task->SetRejectSDDClusters(kTRUE);
 
   //   massD0Task->SetWriteVariableTree(kTRUE);
@@ -209,6 +223,9 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //counter
   AliAnalysisDataContainer *coutputmassD06 = mgr->CreateContainer(out6name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //mass vs pt vs impt par
   AliAnalysisDataContainer *coutputmassD07 = mgr->CreateContainer(out7name,TTree::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //mass vs pt vs impt par
+  AliAnalysisDataContainer *coutputmassD08 = mgr->CreateContainer(out8name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //dedx
+  
+
   
   mgr->ConnectInput(massD0Task,0,mgr->GetCommonInputContainer());
 
@@ -219,6 +236,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   mgr->ConnectOutput(massD0Task,5,coutputmassD05);
   mgr->ConnectOutput(massD0Task,6,coutputmassD06);
   mgr->ConnectOutput(massD0Task,7,coutputmassD07);
+  mgr->ConnectOutput(massD0Task,8,coutputmassD08);
 
 
   return massD0Task;

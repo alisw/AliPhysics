@@ -23,7 +23,7 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
 
   AliRDHFCutsD0toKpi(const char* name="CutsD0toKpi");
   
-  virtual ~AliRDHFCutsD0toKpi(){}
+  virtual ~AliRDHFCutsD0toKpi();
 
   AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi& source);
   AliRDHFCutsD0toKpi& operator=(const AliRDHFCutsD0toKpi& source); 
@@ -38,6 +38,10 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) 
                          {return IsSelected(obj,selectionLevel,0);}
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod);
+
+  virtual Int_t IsSelectedCombPID(AliAODRecoDecayHF* d); 
+  virtual Int_t IsSelectedSimpleBayesianPID(AliAODRecoDecayHF* d);
+  virtual void CalculateBayesianWeights(AliAODRecoDecayHF* d);
 
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
@@ -63,6 +67,31 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Double_t GetPtForPIDtight()const {return fPtLowPID;}
   void SetUseKF(Bool_t useKF);
   Bool_t GetIsUsedKF() const {return fUseKF;}
+  void SetWeightsPositive(Double_t* weights){
+     for (Int_t i = 0; i<AliPID::kSPECIES; i++) {
+         fWeightsPositive[i] = weights[i];
+     }
+}
+  Double_t *GetWeightsPositive() const {return fWeightsPositive;}
+  void SetWeightsNegative(Double_t* weights){
+     for (Int_t i = 0; i<AliPID::kSPECIES; i++) {
+         fWeightsNegative[i] = weights[i];
+     }
+     }
+  Double_t *GetWeightsNegative() const {return fWeightsNegative;}
+  void SetBayesianStrategy(Int_t strat) {fBayesianStrategy=strat;}
+  Int_t GetBayesianStrategy() const {return fBayesianStrategy;}
+  
+  enum EBayesianStrategy {
+     kBayesMomentum,
+     kBayesWeight,
+     kBayesWeightNoFilter,
+     kBayesSimple
+  };
+  
+  void SetCombPID(Bool_t CombPID){fCombPID=CombPID;}
+  Bool_t GetCombPID() const {return fCombPID;}
+  
 
  
  protected:
@@ -71,13 +100,21 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Bool_t fUseSpecialCuts;  // flag to switch on/off special cuts
   Bool_t fLowPt;           // flag to switch on/off different pid for low pt D0
   Bool_t fDefaultPID;      // flag to switch on/off the default pid
+  
   Bool_t fUseKF;           // flag to switch on/off D0 selection via KF 
   Double_t fPtLowPID;      // transverse momentum below which the strong PID is applied
   Double_t fPtMaxSpecialCuts; // transverse momentum below which the special cuts are applied
+  
                               //  if set to zero, used for all pt
   Double_t  fmaxPtrackForPID; // max momentum for applying PID
 
-  ClassDef(AliRDHFCutsD0toKpi,8);  // class for cuts on AOD reconstructed D0->Kpi
+  Bool_t fCombPID;		//switch for Bayesian
+  
+  Double_t* fWeightsPositive;	//Bayesian weights for positive track
+  Double_t* fWeightsNegative;	//Bayesian weights for negative track
+  Int_t fBayesianStrategy;
+
+  ClassDef(AliRDHFCutsD0toKpi,9);  // class for cuts on AOD reconstructed D0->Kpi
 };
 
 #endif
