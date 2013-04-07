@@ -58,6 +58,9 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetRejectSDDClusters(Bool_t flag) { fIsRejectSDDClusters=flag; }
   void SetUseSelectionBit(Bool_t flag) { fUseSelectionBit=flag; }
   void SetWriteVariableTree(Bool_t flag) { fWriteVariableTree=flag; }
+  void SetDrawDetSignal(Bool_t flag) { fDrawDetSignal=flag; }
+  void SetPIDCheck(Bool_t flag) { fPIDCheck=flag; }
+
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
   Bool_t GetUsePid4Distr() const {return fUsePid4Distr;}
@@ -69,11 +72,15 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t GetRejectSDDClusters() const { return fIsRejectSDDClusters; }
   Bool_t GetUseSelectionBit() const { return fUseSelectionBit; }
   Bool_t GetWriteVariableTree() const {return fWriteVariableTree;}
+  Bool_t GetDrawDetSignal() const {return fDrawDetSignal;}
+  Bool_t GetPIDCheck() const {return fPIDCheck;}
 
  private:
 
   AliAnalysisTaskSED0Mass(const AliAnalysisTaskSED0Mass &source);
   AliAnalysisTaskSED0Mass& operator=(const AliAnalysisTaskSED0Mass& source); 
+  void	   DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList *ListDetSignal);
+
   void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts, TList *listout);
   void     FillVarHists(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
   AliAODVertex* GetPrimaryVtxSkipped(AliAODEvent *aodev);
@@ -107,9 +114,11 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fWriteVariableTree;       // flag to decide whether to write the candidate variables on a tree variables
   TTree    *fVariablesTree;           //! tree of the candidate variables after track selection on output slot 7
   Double_t *fCandidateVariables;      //!  variables to be written to the tree
+  Bool_t	fPIDCheck;			// flag to decide whether to fill "PID = x" bins in fNentrie
+  Bool_t    fDrawDetSignal;		// flag to decide whether to draw the TPC dE/dx and TOF signal before/after PID
+  TList	   *fDetSignal;		//!Detector signal histograms (on output slot 8)
 
-
-  ClassDef(AliAnalysisTaskSED0Mass,17); // AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,18); // AliAnalysisTaskSE for D0->Kpi
 };
 
 #endif

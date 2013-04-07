@@ -23,6 +23,7 @@
 // Authors: A.Dainese, andrea.dainese@lnl.infn.it
 // Chiara Bianchin, chiara.bianchin@pd.infn.it (invariant mass)
 // Carmelo Di Giglio, carmelo.digiglio@ba.infn.it (like sign)
+// Jeremy Wilkinson, jwilkinson@physi.uni-heidelberg.de (weighted Bayesian)
 /////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
@@ -85,7 +86,10 @@ AliAnalysisTaskSE(),
   fUseSelectionBit(kTRUE),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
-  fCandidateVariables()
+  fCandidateVariables(),
+  fPIDCheck(kFALSE),
+  fDrawDetSignal(kFALSE),
+  fDetSignal(0)
 {
   // Default constructor
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
@@ -118,7 +122,10 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fUseSelectionBit(kTRUE),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
-  fCandidateVariables()
+  fCandidateVariables(),
+  fPIDCheck(kFALSE),
+  fDrawDetSignal(kFALSE),
+  fDetSignal(0)
 {
   // Default constructor
 
@@ -141,6 +148,8 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   DefineOutput(6,TList::Class());  //My private output
   // Output slot #7 keeps a tree of the candidate variables after track selection
   DefineOutput(7,TTree::Class());  //My private outpu
+  // Output slot #8 writes into a TList container (Detector signals)
+  DefineOutput(8, TList::Class()); //My private output
 }
 
 //________________________________________________________________________
@@ -176,6 +185,10 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
   if(fVariablesTree){
     delete fVariablesTree;
     fVariablesTree = 0;
+  }
+  if (fDetSignal) {
+    delete fDetSignal;
+    fDetSignal = 0;
   }
  
 }  
@@ -218,6 +231,10 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fDistr = new TList();
   fDistr->SetOwner();
   fDistr->SetName("distributionslist");
+
+  fDetSignal = new TList();
+  fDetSignal->SetOwner();
+  fDetSignal->SetName("detectorsignals");
 
   TString nameMass=" ",nameSgn27=" ",nameSgn=" ", nameBkg=" ", nameRfl=" ",nameMassNocutsS =" ",nameMassNocutsB =" ", namedistr=" ";
   TString nameMassPt="", nameSgnPt="", nameBkgPt="", nameRflPt="";
@@ -708,7 +725,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(5,"ptbin = -1");
   fNentries->GetXaxis()->SetBinLabel(6,"no daughter");
   if(fSys==0) fNentries->GetXaxis()->SetBinLabel(7,"nCandSel(Tr)");
-  if(fFillVarHists){
+  if(fFillVarHists || fPIDCheck){
     fNentries->GetXaxis()->SetBinLabel(8,"PID=0");
     fNentries->GetXaxis()->SetBinLabel(9,"PID=1");
     fNentries->GetXaxis()->SetBinLabel(10,"PID=2");
@@ -736,14 +753,40 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   Int_t nVar = 15;
   fCandidateVariables = new Double_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
-  fCandidateVariableNames[0]="massD0"; fCandidateVariableNames[1]="massD0bar"; fCandidateVariableNames[2]="pt";
-  fCandidateVariableNames[3]="dca"; fCandidateVariableNames[4]="costhsD0"; fCandidateVariableNames[5]="costhsD0bar";
-  fCandidateVariableNames[6]="ptk"; fCandidateVariableNames[7]="ptpi";
-  fCandidateVariableNames[8]="d0k"; fCandidateVariableNames[9]="d0pi"; fCandidateVariableNames[10]="d0xd0";
-  fCandidateVariableNames[11]="costhp"; fCandidateVariableNames[12]="costhpxy"; 
-  fCandidateVariableNames[13]="lxy";  fCandidateVariableNames[14]="specialcuts";
+  fCandidateVariableNames[0] = "massD0";
+  fCandidateVariableNames[1] = "massD0bar";
+  fCandidateVariableNames[2] = "pt";
+  fCandidateVariableNames[3] = "dca";
+  fCandidateVariableNames[4] = "costhsD0";
+  fCandidateVariableNames[5] = "costhsD0bar";
+  fCandidateVariableNames[6] = "ptk";
+  fCandidateVariableNames[7] = "ptpi";
+  fCandidateVariableNames[8] = "d0k";
+  fCandidateVariableNames[9] = "d0pi";
+  fCandidateVariableNames[10] = "d0xd0";
+  fCandidateVariableNames[11] = "costhp";
+  fCandidateVariableNames[12] = "costhpxy";
+  fCandidateVariableNames[13] = "lxy";
+  fCandidateVariableNames[14] = "specialcuts";
   for(Int_t ivar=0; ivar<nVar; ivar++){
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/d",fCandidateVariableNames[ivar].Data()));
+  }
+
+  //
+  // Output slot 8 : List for detector response histograms
+  //
+  fDetSignal = new TList();
+  if (fDrawDetSignal) {
+    TH2F *TOFSigBefPID = new TH2F("TOFSigBefPID", "TOF signal of daughters before PID;p(daught)(GeV/c);Signal", 500, 0, 10, 5000, 0, 50e3);
+    TH2F *TOFSigAftPID = new TH2F("TOFSigAftPID", "TOF signal after PID;p(daught)(GeV/c);Signal", 500, 0, 10, 5000, 0, 50e3);
+
+    TH2F *TPCSigBefPID = new TH2F("TPCSigBefPID", "TPC dE/dx before PID;p(daught)(GeV/c);dE/dx (arb. units)", 1000, 0, 10, 1000, 0, 500);
+    TH2F *TPCSigAftPID = new TH2F("TPCSigAftPID", "TPC dE/dx after PID;p(daught)(GeV/c);dE/dx (arb. units)", 1000, 0, 10, 1000, 0, 500);
+
+    fDetSignal->Add(TOFSigBefPID);
+    fDetSignal->Add(TOFSigAftPID);
+    fDetSignal->Add(TPCSigBefPID);
+    fDetSignal->Add(TPCSigAftPID);
   }
 
   // Post the data
@@ -753,6 +796,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   PostData(5,fCounter);  
   PostData(6,fOutputMassPt);
   PostData(7,fVariablesTree);
+  PostData(8, fDetSignal);
 
   return;
 }
@@ -934,7 +978,21 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	FillVarHists(aod,d,mcArray,fCuts,fDistr);
       }
 
+      if (fDrawDetSignal) {
+	DrawDetSignal(d, fDetSignal);
+      }
+
       FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
+      if (fPIDCheck) {
+	Int_t isSelectedPIDfill = 3;
+	if (!fReadMC || (fReadMC && fUsePid4Distr)) isSelectedPIDfill = fCuts->IsSelectedPID(d); //0 rejected,1 D0,2 Dobar, 3 both
+
+	if (isSelectedPIDfill == 0)fNentries->Fill(7);
+	if (isSelectedPIDfill == 1)fNentries->Fill(8);
+	if (isSelectedPIDfill == 2)fNentries->Fill(9);
+	if (isSelectedPIDfill == 3)fNentries->Fill(10);
+      }
+
     }
   
     fDaughterTracks.Clear();
@@ -949,6 +1007,45 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   PostData(5,fCounter);
   PostData(6,fOutputMassPt);
   PostData(7,fVariablesTree);
+  PostData(8, fDetSignal);
+
+  return;
+}
+
+//____________________________________________________________________________
+void AliAnalysisTaskSED0Mass::DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList *ListDetSignal)
+{
+  //
+  // Function called in UserExec for drawing detector signal histograms:
+  //
+  fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(0), 0);
+  fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(1), 1);
+
+  AliESDtrack *esdtrack1 = new AliESDtrack((AliVTrack*)fDaughterTracks.UncheckedAt(0));
+  AliESDtrack *esdtrack2 = new AliESDtrack((AliVTrack*)fDaughterTracks.UncheckedAt(1));
+
+
+  //For filling detector histograms
+  Int_t isSelectedPIDfill = 3;
+  if (!fReadMC || (fReadMC && fUsePid4Distr)) isSelectedPIDfill = fCuts->IsSelectedPID(part); //0 rejected,1 D0,2 Dobar, 3 both
+
+
+  //fill "before PID" histos with every daughter
+  ((TH2F*)ListDetSignal->FindObject("TOFSigBefPID"))->Fill(esdtrack1->P(), esdtrack1->GetTOFsignal());
+  ((TH2F*)ListDetSignal->FindObject("TOFSigBefPID"))->Fill(esdtrack2->P(), esdtrack2->GetTOFsignal());
+  ((TH2F*)ListDetSignal->FindObject("TPCSigBefPID"))->Fill(esdtrack1->P(), esdtrack1->GetTPCsignal());
+  ((TH2F*)ListDetSignal->FindObject("TPCSigBefPID"))->Fill(esdtrack2->P(), esdtrack2->GetTPCsignal());
+
+  if (isSelectedPIDfill != 0)  { //fill "After PID" with everything that's not rejected
+    ((TH2F*)ListDetSignal->FindObject("TOFSigAftPID"))->Fill(esdtrack1->P(), esdtrack1->GetTOFsignal());
+    ((TH2F*)ListDetSignal->FindObject("TOFSigAftPID"))->Fill(esdtrack2->P(), esdtrack2->GetTOFsignal());
+    ((TH2F*)ListDetSignal->FindObject("TPCSigAftPID"))->Fill(esdtrack1->P(), esdtrack1->GetTPCsignal());
+    ((TH2F*)ListDetSignal->FindObject("TPCSigAftPID"))->Fill(esdtrack2->P(), esdtrack2->GetTPCsignal());
+
+  }
+
+  delete esdtrack1;
+  delete esdtrack2;
 
   return;
 }
@@ -966,11 +1063,13 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
   //Double_t pt = d->Pt(); //mother pt
   Int_t isSelectedPID=3;
   if(!fReadMC || (fReadMC && fUsePid4Distr)) isSelectedPID=cuts->IsSelectedPID(part); //0 rejected,1 D0,2 Dobar, 3 both
-  if (isSelectedPID==0)fNentries->Fill(7);
-  if (isSelectedPID==1)fNentries->Fill(8);
-  if (isSelectedPID==2)fNentries->Fill(9);
-  if (isSelectedPID==3)fNentries->Fill(10);
-  //fNentries->Fill(8+isSelectedPID);
+  if (!fPIDCheck) {  //if fPIDCheck, this is already filled elsewhere
+    if (isSelectedPID==0)fNentries->Fill(7);
+    if (isSelectedPID==1)fNentries->Fill(8);
+    if (isSelectedPID==2)fNentries->Fill(9);
+    if (isSelectedPID==3)fNentries->Fill(10);
+    //fNentries->Fill(8+isSelectedPID);
+  }
 
   if(fCutOnDistr && !fIsSelectedCandidate) return; 
   //printf("\nif no cuts or cuts passed\n");
@@ -1575,6 +1674,15 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   Bool_t isPrimary=kTRUE;
   if (fReadMC) labD0 = part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
 
+  //Define weights for Bayesian (if appropriate)
+
+  Double_t weigD0=1.;
+  Double_t weigD0bar=1.;
+  if (fCuts->GetCombPID() && (fCuts->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeight || fCuts->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeightNoFilter)) {
+    weigD0=fCuts->GetWeightsNegative()[AliPID::kKaon] * fCuts->GetWeightsPositive()[AliPID::kPion];
+    weigD0bar=fCuts->GetWeightsPositive()[AliPID::kKaon] * fCuts->GetWeightsNegative()[AliPID::kPion];
+  }
+  
   //count candidates selected by cuts
   fNentries->Fill(1);
   //count true D0 selected by cuts
@@ -1601,17 +1709,17 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	  //	  cout<<"Fill S with D0"<<endl;
 	  fillthis="histSgn_";
 	  fillthis+=ptbin;
-	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,weigD0);
 
 	  if(fFillPtHist){ 
 	    fillthismasspt="histSgnPt";
-	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt);
+	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt,weigD0);
 	  }
 	  if(fFillImpParHist){ 
-	    if(isPrimary) fHistMassPtImpParTC[1]->Fill(arrayForSparse);
+	    if(isPrimary) fHistMassPtImpParTC[1]->Fill(arrayForSparse,weigD0);
 	    else {
-	      fHistMassPtImpParTC[2]->Fill(arrayForSparse);
-	      fHistMassPtImpParTC[3]->Fill(arrayForSparseTrue);
+	      fHistMassPtImpParTC[2]->Fill(arrayForSparse,weigD0);
+	      fHistMassPtImpParTC[3]->Fill(arrayForSparseTrue,weigD0);
 	    }
 	  }
 
@@ -1619,32 +1727,32 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	    if(TMath::Abs(invmassD0 - mPDG) < 0.027 && fFillVarHists){
 	      fillthis="histSgn27_";
 	      fillthis+=ptbin;
-	      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+	      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,weigD0);
 	    }
 	  }
 	} else{ //it was a D0bar
 	  fillthis="histRfl_";
 	  fillthis+=ptbin;
-	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,weigD0);
 
 	  if(fFillPtHist){ 
 	    fillthismasspt="histRflPt";
 	    //	    cout << " Filling "<<fillthismasspt<<" D0bar"<<endl;	    
-	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt);
+	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt,weigD0);
 	  }
 
 	}
       } else {//background
 	fillthis="histBkg_";
 	fillthis+=ptbin;
-	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,weigD0);
 
 	if(fFillPtHist){ 
 	  fillthismasspt="histBkgPt";
 	  //	  cout << " Filling "<<fillthismasspt<<" D0bar"<<endl;
-	  ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt);
+	  ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt,weigD0);
 	}
-	if(fFillImpParHist) fHistMassPtImpParTC[4]->Fill(arrayForSparse);
+	if(fFillImpParHist) fHistMassPtImpParTC[4]->Fill(arrayForSparse,weigD0);
 
       }
 
@@ -1654,16 +1762,17 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
       //      cout<<"Filling "<<fillthis<<endl;
 
       //      printf("Fill mass with D0");
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,weigD0);
+      
 
       if(fFillPtHist){ 
 	fillthismasspt="histMassPt";
 	//	cout<<"Filling "<<fillthismasspt<<endl;
-	((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt);
+	((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt,weigD0);
       }
       if(fFillImpParHist) {
 	//	cout << "Filling fHistMassPtImpParTC[0]"<<endl;
-	fHistMassPtImpParTC[0]->Fill(arrayForSparse);
+	fHistMassPtImpParTC[0]->Fill(arrayForSparse,weigD0);
       }
 
     }
@@ -1688,7 +1797,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	if (pdgD0==-421){ //D0bar
 	  fillthis="histSgn_";
 	  fillthis+=ptbin;
-	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
+	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,weigD0bar);
 	  // if (TMath::Abs(invmassD0bar - mPDG) < 0.027){
 	  //   fillthis="histSgn27_";
 	  //   fillthis+=ptbin;
@@ -1698,52 +1807,54 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	  if(fFillPtHist){ 
 	    fillthismasspt="histSgnPt";
 	    //	    cout<<" Filling "<< fillthismasspt << endl;
-	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt);
+	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt,weigD0bar);
 	  }
 	  if(fFillImpParHist){ 
 	    //	    cout << " Filling impact parameter thnsparse"<<endl;
-	    if(isPrimary) fHistMassPtImpParTC[1]->Fill(arrayForSparse);
+	    if(isPrimary) fHistMassPtImpParTC[1]->Fill(arrayForSparse,weigD0bar);
 	    else {
-	      fHistMassPtImpParTC[2]->Fill(arrayForSparse);
-	      fHistMassPtImpParTC[3]->Fill(arrayForSparseTrue);
+	      fHistMassPtImpParTC[2]->Fill(arrayForSparse,weigD0bar);
+	      fHistMassPtImpParTC[3]->Fill(arrayForSparseTrue,weigD0bar);
 	    }
 	  }
 	  
 	} else{
 	  fillthis="histRfl_";
 	  fillthis+=ptbin;
-	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
+	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,weigD0bar);
 	  if(fFillPtHist){ 
 	    fillthismasspt="histRflPt";
 	    //	    cout << " Filling "<<fillthismasspt<<endl;
-	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt);
+	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt,weigD0bar);
 	  }
 	}
       } else {//background or LS
 	fillthis="histBkg_";
 	fillthis+=ptbin;
-	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
+	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,weigD0bar);
 
 	if(fFillPtHist){ 
 	  fillthismasspt="histBkgPt";
 	  //	  cout<<" Filling "<< fillthismasspt << endl;
-	  ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt);
+	  ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt,weigD0bar);
 	}
-	if(fFillImpParHist) fHistMassPtImpParTC[4]->Fill(arrayForSparse);
+	if(fFillImpParHist) fHistMassPtImpParTC[4]->Fill(arrayForSparse,weigD0bar);
 
       }
     }else{
       fillthis="histMass_";
       fillthis+=ptbin;
       //      printf("Fill mass with D0bar");
-      ((TH1F*)listout->FindObject(fillthis))->Fill(invmassD0bar);
+
+	((TH1F*)listout->FindObject(fillthis))->Fill(invmassD0bar,weigD0bar);
+      
 
       if(fFillPtHist){ 
 	fillthismasspt="histMassPt";
 	//	cout<<" Filling "<< fillthismasspt << endl;
-	((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt);
+	((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt,weigD0bar);
       }
-      if(fFillImpParHist) fHistMassPtImpParTC[0]->Fill(arrayForSparse);
+      if(fFillImpParHist) fHistMassPtImpParTC[0]->Fill(arrayForSparse,weigD0bar);
 
     }
   }
@@ -1843,6 +1954,13 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
   if (!fCounter) {
     printf("ERROR: fCounter not available\n");
     return;
+  }
+  if (fDrawDetSignal) {
+    fDetSignal = dynamic_cast<TList*>(GetOutputData(8));
+    if (!fDetSignal) {
+      printf("ERROR: fDetSignal not available\n");
+      return;
+    }
   }
   Int_t nptbins=fCuts->GetNPtBins();
   for(Int_t ipt=0;ipt<nptbins;ipt++){ 

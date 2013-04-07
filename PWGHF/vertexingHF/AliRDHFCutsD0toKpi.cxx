@@ -49,7 +49,11 @@ fDefaultPID(kFALSE),
 fUseKF(kFALSE),
 fPtLowPID(2.),
 fPtMaxSpecialCuts(9999.),
-fmaxPtrackForPID(9999)
+fmaxPtrackForPID(9999),
+fCombPID(kFALSE),
+fWeightsPositive(new Double_t[AliPID::kSPECIES]),
+fWeightsNegative(new Double_t[AliPID::kSPECIES]),
+fBayesianStrategy(0)
 {
   //
   // Default Constructor
@@ -104,7 +108,11 @@ AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi &source) :
   fUseKF(source.fUseKF),
   fPtLowPID(source.fPtLowPID),
   fPtMaxSpecialCuts(source.fPtMaxSpecialCuts),
-  fmaxPtrackForPID(source.fmaxPtrackForPID)
+  fmaxPtrackForPID(source.fmaxPtrackForPID),
+  fCombPID(source.fCombPID),
+  fWeightsPositive(source.fWeightsPositive),
+  fWeightsNegative(source.fWeightsNegative),
+  fBayesianStrategy(source.fBayesianStrategy)
 {
   //
   // Copy constructor
@@ -127,9 +135,30 @@ AliRDHFCutsD0toKpi &AliRDHFCutsD0toKpi::operator=(const AliRDHFCutsD0toKpi &sour
   fPtLowPID=source.fPtLowPID;
   fPtMaxSpecialCuts=source.fPtMaxSpecialCuts;
   fmaxPtrackForPID=source.fmaxPtrackForPID;
+  fCombPID = source.fCombPID;
+  fWeightsPositive = source.fWeightsPositive;
+  fWeightsNegative = source.fWeightsNegative;
+  fBayesianStrategy = source.fBayesianStrategy;
   return *this;
 }
 
+
+
+//---------------------------------------------------------------------------
+AliRDHFCutsD0toKpi::~AliRDHFCutsD0toKpi()
+{
+//
+// Destructor
+//
+  if (fWeightsNegative) {
+    delete[] fWeightsNegative;
+    fWeightsNegative = 0;
+  }
+  if (fWeightsPositive) {
+    delete[] fWeightsNegative;
+    fWeightsNegative = 0;
+  }
+}
 
 //---------------------------------------------------------------------------
 void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod) {
@@ -371,10 +400,37 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kCandidate ||
      selectionLevel==AliRDHFCuts::kPID) {
-    returnvaluePID = IsSelectedPID(d);
-    fIsSelectedPID=returnvaluePID;
-    if(!returnvaluePID) return 0;
+    if (!fCombPID) {
+      returnvaluePID = IsSelectedPID(d);
+      fIsSelectedPID=returnvaluePID;
+      if(!returnvaluePID) return 0;
+   } else {
+      switch (fBayesianStrategy) {
+      case kBayesSimple: {
+	returnvaluePID = IsSelectedSimpleBayesianPID(d);
+	break;
+      }
+      case kBayesWeightNoFilter: {
+	CalculateBayesianWeights(d);
+	returnvaluePID = 3;
+	break;
+      }
+      case(kBayesWeight): {
+	returnvaluePID = IsSelectedCombPID(d);
+	break;
+      }
+      case(kBayesMomentum): {
+	returnvaluePID = IsSelectedCombPID(d);
+	break;
+      }
+      default: {
+	returnvaluePID = IsSelectedCombPID(d);
+	break;
+      }
+      }
+    }
   }
+
 
   Int_t returnvalueComb=CombineSelectionLevels(3,returnvalueCuts,returnvaluePID);
 
@@ -682,6 +738,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
 
   if(!fUsePID) return 3;
   if(fDefaultPID) return IsSelectedPIDdefault(d);
+  if (fCombPID) return IsSelectedCombPID(d); //to use Bayesian method if applicable
   fWhyRejection=0;
   Int_t isD0D0barPID[2]={1,2};
   Int_t combinedPID[2][2];// CONVENTION: [daught][isK,IsPi]; [0][0]=(prong 1, isK)=value [0][1]=(prong 1, isPi)=value; 
@@ -1147,6 +1204,7 @@ void AliRDHFCutsD0toKpi::SetUseKF(Bool_t useKF)
 }
 
 
+//---------------------------------------------------------------------------
 void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
   //
   //STANDARD CUTS USED FOR 2010 pp analysis 
@@ -1272,6 +1330,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
 }
 
 
+//---------------------------------------------------------------------------
 void AliRDHFCutsD0toKpi::SetStandardCutsPP2011_276TeV() {
   //
   // STANDARD CUTS USED FOR 2011 pp analysis at 2.76TeV
@@ -1397,6 +1456,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2011_276TeV() {
 }
 
 
+//---------------------------------------------------------------------------
 void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   //
   // Final CUTS USED FOR 2010 PbPb analysis of central events
@@ -1537,6 +1597,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
 
 }
 
+//---------------------------------------------------------------------------
 void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010Peripherals() {
   // CUTS USED FOR D0 RAA for the CENTRALITY RANGE 20-80%
 
@@ -1673,6 +1734,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010Peripherals() {
 }
 
 
+//---------------------------------------------------------------------------
 void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2011() {
   
   // Default 2010 PbPb cut object
@@ -1690,3 +1752,319 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2011() {
   EnableSemiCentralTrigger();
 
 }
+
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
+{
+  // ############################################################
+  //
+  // Apply Bayesian PID selection
+  // Implementation of Bayesian PID: Jeremy Wilkinson
+  //
+  // ############################################################
+
+  if (!fUsePID || !d) return 3;
+
+  switch (fBayesianStrategy) {
+
+  case kBayesWeightNoFilter: {
+    CalculateBayesianWeights(d);   //If weighted, no filtering: Calculate weights, return as unidentified
+    return 3;
+    break;
+  }
+  case kBayesSimple: {
+    return IsSelectedSimpleBayesianPID(d);   // If simple, go to simple method
+    break;
+  }
+  case(kBayesWeight): {
+    break;
+  }
+  case(kBayesMomentum): {
+    break;  //If weighted or momentum method, stay in this function
+  }
+
+  }
+
+  //  Int_t isD0D0barPID[2]={1,2};
+
+
+
+
+  Int_t isD0 = 0;
+  Int_t isD0bar = 0;
+  Int_t returnvalue = 0;
+
+  Int_t isPosKaon = 0, isNegKaon = 0;
+  //   Int_t combinedPID[2][2];// CONVENTION: [daught][isK,IsPi]; [0][0]=(prong 1, isK)=value [0][1]=(prong 1, isPi)=value;
+  //                                                                                                 same for prong 2
+  //                                               values convention  0 = not identified (but compatible) || No PID (->hasPID flag)
+  //                                                                  1 = identified
+  // PID search:   pion (TPC) or not K (TOF), Kaon hypothesis for both
+  // Initial hypothesis: unknown (but compatible)
+
+
+  //   combinedPID[0][0] = 0; // First daughter, kaon
+  //   combinedPID[0][1] = 0; // First daughter, pion
+  //   combinedPID[1][0] = 0; // Second daughter, kaon
+  //   combinedPID[1][1] = 0; // Second daughter, pion
+
+  Bool_t checkPIDInfo[2] = {kTRUE, kTRUE};
+  AliAODTrack *aodtrack[2] = {(AliAODTrack*)d->GetDaughter(0), (AliAODTrack*)d->GetDaughter(1)};
+
+  if ((aodtrack[0]->Charge()*aodtrack[1]->Charge()) != -1) {
+    return 0;  //reject if charges not opposite
+  }
+  for (Int_t daught = 0; daught < 2; daught++) {
+    //Loop over prongs
+
+    if (!(fPidHF->CheckStatus(aodtrack[daught], "TPC")) && !(fPidHF->CheckStatus(aodtrack[daught], "TOF"))) {
+      checkPIDInfo[daught] = kFALSE;
+      continue;
+    }
+    CalculateBayesianWeights(d);
+    //      Double_t prob0[AliPID::kSPECIES];
+    //      fPidHF->GetPidCombined()->ComputeProbabilities(aodtrack[daught], fPidHF->GetPidResponse(), prob0);
+    ///Three possible Bayesian methods: Pick one (only first implemented so far. TODO: implement other two methods)
+    ///A: Standard max. probability method   
+    if (TMath::MaxElement(AliPID::kSPECIES, fWeightsPositive) == fWeightsPositive[AliPID::kKaon]) { //If highest probability lies with kaon
+      isPosKaon = 1;  //flag [daught] as a kaon
+    }
+
+    if (TMath::MaxElement(AliPID::kSPECIES, fWeightsNegative) == fWeightsNegative[AliPID::kKaon]) { //If highest probability lies with kaon
+      isNegKaon = 1;  //flag [daught] as a kaon
+    }
+    ///B: Method based on probability greater than prior
+    /* Double_t kaonpriorprob;
+       TH1D *kaonprior = fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon);
+       kaonpriorprob =   kaonprior->GetBinContent(kaonprior->FindBin(aodtrack[daught]->P()));
+
+       if (prob0[AliPID::kKaon] > kaonpriorprob){combinedPID[daught][0] = 1;}
+
+    */
+    ///C: Probability threshold (TODO: Add necessary threshold variables; currently unused)
+    /*
+      if(prob0[AliPID::kKaon] >= fMinProbKaon) {combinedPID[daught][0] = 1;}
+
+    */
+
+  }
+   
+   
+  //Loop over daughters ends here
+
+  if (!checkPIDInfo[0] && !checkPIDInfo[1]) {
+    return 0;      //Reject if both daughters lack both TPC and TOF info
+  }
+  //Momentum-based selection
+
+
+  if (isNegKaon && isPosKaon) { // If both are kaons, reject
+    isD0 = 0;
+    isD0bar = 0;
+  } else if (isNegKaon) {       //If negative kaon present, D0
+    isD0 = 1;
+  } else if (isPosKaon) {       //If positive kaon present, D0bar
+    isD0bar = 1;
+  } else {                      //If neither ID'd as kaon, subject to extra tests
+    isD0 = 1;
+    isD0bar = 1;
+    if (aodtrack[0]->P() < 1.5 && (fPidHF->CheckStatus(aodtrack[0], "TOF"))) { //If it's low momentum and not ID'd as a kaon, we assume it must be a pion
+      if (aodtrack[0]->Charge() == -1) {
+	isD0 = 0;  //Check charge and reject based on pion hypothesis
+      }
+      if (aodtrack[0]->Charge() == 1) {
+	isD0bar = 0;
+      }
+    }
+    if (aodtrack[1]->P() < 1.5 && (fPidHF->CheckStatus(aodtrack[1], "TOF"))) {
+      if (aodtrack[1]->Charge() == -1) {
+	isD0 = 0;
+      }
+      if (aodtrack[1]->Charge() == 1) {
+	isD0bar = 0;
+      }
+    }
+  }
+
+   
+
+  if (isD0 && isD0bar) {
+    returnvalue = 3;
+  }
+  if (isD0 && !isD0bar) {
+    returnvalue = 1;
+  }
+  if (!isD0 && isD0bar) {
+    returnvalue = 2;
+  }
+  if (!isD0 && !isD0bar) {
+    returnvalue = 0;
+  }
+
+  return returnvalue;
+
+
+
+  /*
+
+  //OLD CODE
+  if (combinedPID[0][0] == 1 && combinedPID[1][1] == 1) {          //First track is kaon, second is pion
+  if (aodtrack[0]->Charge() == -1) isD0 = 1;            //Kaon negative: particle is D0
+  else isD0bar = 1;                        //Kaon positive: particle is anti
+  } else if (combinedPID[1][0] == 1 && combinedPID[0][1] == 1) {         //First track is pion, second is kaon
+  if (aodtrack[1]->Charge() == -1) isD0 = 1;              //Kaon negative: particle is D0
+  else isD0bar = 1;                        //Kaon positive: particle is anti
+  }
+
+  else if (combinedPID[0][0] == 1 && combinedPID[1][0] == 1) {
+  isD0 = 1;   //If both are kaons, leave to top. cuts
+  isD0bar = 1;
+  }
+
+
+  else {
+  isD0 = 1;
+  isD0bar = 1;
+  if (combinedPID[0][0] == 0 && aodtrack[0]->P() < 1.5 && (fPidHF->CheckStatus(aodtrack[0], "TOF"))) { //If it's low momentum and not ID'd as a kaon, we assume it must be a pion
+  if (aodtrack[0]->Charge() == -1) {
+  isD0 = 0;  //Check charge and reject depending on pion hypothesis
+  }
+  if (aodtrack[0]->Charge() == 1) {
+  isD0bar = 0;
+  }
+  }
+  if (combinedPID[1][0] == 0 && aodtrack[1]->P() < 1.5 && (fPidHF->CheckStatus(aodtrack[1], "TOF"))) {
+  if (aodtrack[1]->Charge() == -1) {
+  isD0 = 0;
+  }
+  if (aodtrack[1]->Charge() == 1) {
+  isD0bar = 0;
+  }
+  }
+  }*/
+  /*    if(combinedPID[0][1] == 1 && combinedPID[1][1] == 1) {         //If both are ID'd as pions:
+	if ((aodtrack[0]->P()) <1.0 && (aodtrack[1]->P() < 1.0)) {     //Check both momenta. If both low, we require one kaon.
+	isD0 == 0; isD0bar == 0;}              //Both pions, both low momenta: reject
+	else {isD0 == 1; isD0bar == 1;}              //Both pions, both high momenta: Allow as both (filter with topological cuts)
+	}
+  */
+
+
+}
+
+
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpi::IsSelectedSimpleBayesianPID(AliAODRecoDecayHF* d)
+
+{
+  //Apply Bayesian PID selection; "simple" method.
+  //Looks for a kaon via max. probability. If neither daughter is a kaon, candidate is rejected.
+
+  Int_t isPosKaon = 0, isNegKaon = 0;
+  Int_t returnvalue;          //0 = rejected, 1 = D0, 2 = D0bar. This version will not output 3 (both).
+  Bool_t checkPIDInfo[2] = {kTRUE, kTRUE};
+
+  AliAODTrack *aodtrack[2] = {(AliAODTrack*)d->GetDaughter(0), (AliAODTrack*)d->GetDaughter(1)};
+  if ((aodtrack[0]->Charge() * aodtrack[1]->Charge()) != -1) {
+    return 0;  //Reject if charges do not oppose
+  }
+  for (Int_t daught = 0; daught < 2; daught++) {
+    //Loop over prongs to check PID information
+
+    if (!(fPidHF->CheckStatus(aodtrack[daught], "TPC")) && !(fPidHF->CheckStatus(aodtrack[daught], "TOF"))) {
+      checkPIDInfo[daught] = kFALSE;
+    }
+
+  }
+  //Loop over daughters ends here.
+
+  if (!checkPIDInfo[0] && !checkPIDInfo[1]) {
+    return 0;
+  }
+
+  CalculateBayesianWeights(d);
+
+   
+  // identify kaon
+  ///Three possible Bayesian methods: Pick one (only first implemented so far. TODO: implement other two methods)
+  ///A: Standard max. probability method
+
+   
+  if (TMath::MaxElement(AliPID::kSPECIES, fWeightsPositive) == fWeightsPositive[AliPID::kKaon]) { //If highest probability lies with kaon
+    isPosKaon = 1;  //flag [daught] as a kaon
+  }
+
+  if (TMath::MaxElement(AliPID::kSPECIES, fWeightsNegative) == fWeightsNegative[AliPID::kKaon]) { //If highest probability lies with kaon
+    isNegKaon = 1;  //flag [daught] as a kaon
+  }
+
+
+  ///B: Method based on probability greater than prior
+  /* Double_t kaonpriorprob;
+     TH1D *kaonprior = fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon);
+     kaonpriorprob =   kaonprior->GetBinContent(kaonprior->FindBin(aodtrack[daught]->P()));
+
+     if (prob0[AliPID::kKaon] > kaonpriorprob){combinedPID[daught][0] = 1;}
+
+  */
+  ///C: Probability threshold (TODO: Add necessary threshold variables; currently unused)
+  /*
+    if(prob0[AliPID::kKaon] >= fMinProbKaon) {combinedPID[daught][0] = 1;}
+
+  */
+
+
+
+
+  if (isPosKaon && isNegKaon)   {  //If both are ID'd as kaons, reject
+    returnvalue = 0;
+  } else if (isNegKaon)   {     //If negative kaon, D0
+    returnvalue = 1;
+  } else if (isPosKaon)   {     //If positive kaon, D0-bar
+    returnvalue = 2;
+  } else {
+    returnvalue = 0;  //If neither kaon, reject
+  }
+
+  return returnvalue;
+}
+
+
+
+
+//---------------------------------------------------------------------------
+void AliRDHFCutsD0toKpi::CalculateBayesianWeights(AliAODRecoDecayHF* d)
+
+{
+  //Function to compute weights for Bayesian method
+  Double_t *prob0;
+  prob0 = new Double_t[AliPID::kSPECIES];
+
+
+  AliAODTrack *aodtrack[2] = {(AliAODTrack*)d->GetDaughter(0), (AliAODTrack*)d->GetDaughter(1)};
+  if ((aodtrack[0]->Charge() * aodtrack[1]->Charge()) != -1) {
+    return;  //Reject if charges do not oppose
+  }
+  for (Int_t daught = 0; daught < 2; daught++) {
+    //Loop over prongs
+
+    if (!(fPidHF->CheckStatus(aodtrack[daught], "TPC")) && !(fPidHF->CheckStatus(aodtrack[daught], "TOF"))) {
+      continue;
+    }
+
+
+    // identify kaon
+    fPidHF->GetPidCombined()->ComputeProbabilities(aodtrack[daught], fPidHF->GetPidResponse(), prob0);
+
+    if (aodtrack[daught]->Charge() == +1) {
+      SetWeightsPositive(prob0);
+    }
+    if (aodtrack[daught]->Charge() == -1) {
+      SetWeightsNegative(prob0);
+    }
+
+  }
+}
+
+
+
