@@ -131,6 +131,8 @@ AliDhcTask *AddTaskDhc(
       if (hMuEff) {
         sprintf(chExtraName,"%s_corrMu",chExtraName);
       }
+      dhcTask->SetTrackDepth(100);
+      dhcTask->SetDoFillSame(kTRUE);
     } else {
       Error("AddTaskDhc", Form("iAna %d not known", iAna));
     }

@@ -43,7 +43,9 @@ AliDhcTask::AliDhcTask()
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
   fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fHSMass(0x0), fHMMass(0x0),
-  fHQAT(0x0), fHQAA(0x0), fHQATCorr(0x0), fHQAACorr(0x0), fHPtCentT(0x0), fHPtCentA(0x0),
+  fHQATp(0x0), fHQAAp(0x0), fHQATpCorr(0x0), fHQAApCorr(0x0),
+  fHQATm(0x0), fHQAAm(0x0), fHQATmCorr(0x0), fHQAAmCorr(0x0),
+  fHPtCentT(0x0), fHPtCentA(0x0),
   fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
@@ -65,7 +67,9 @@ AliDhcTask::AliDhcTask(const char *name, Bool_t def)
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
   fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fHSMass(0x0), fHMMass(0x0),
-  fHQAT(0x0), fHQAA(0x0), fHQATCorr(0x0), fHQAACorr(0x0), fHPtCentT(0x0), fHPtCentA(0x0),
+  fHQATp(0x0), fHQAAp(0x0), fHQATpCorr(0x0), fHQAApCorr(0x0),
+  fHQATm(0x0), fHQAAm(0x0), fHQATmCorr(0x0), fHQAAmCorr(0x0),
+  fHPtCentT(0x0), fHPtCentA(0x0),
   fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
@@ -209,20 +213,28 @@ void AliDhcTask::BookHistos()
   fHZvtx = new TH1F("fHZvtx","Zvertex;bins",nZvtx,zvtx);
   fOutputList->Add(fHZvtx);
   
-  fHQAT = new TH3F("fHQAT","QA trigger;p_{T} (GeV/c);#eta;#phi",
-                   100,0.0,10.0,
-                   40,fEtaTLo,fEtaTHi,
-                   36,0.0,TMath::TwoPi());
-  fOutputList->Add(fHQAT);
-  fHQAA = new TH3F("fHQAA","QA associated;p_{T} (GeV/c);#eta;#phi",
-                   100,0.0,10.0,
-                   40,fEtaALo,fEtaAHi,
-                   36,0.0,TMath::TwoPi());
-  fOutputList->Add(fHQAA);
-  fHQATCorr = (TH3 *) fHQAT->Clone("fHQATCorr");
-  fOutputList->Add(fHQATCorr);
-  fHQAACorr = (TH3 *) fHQAA->Clone("fHQAACorr");
-  fOutputList->Add(fHQAACorr);
+  fHQATp = new TH3F("fHQATp","QA trigger;p_{T} (GeV/c);#eta;#phi",
+                    100,0.0,10.0,
+                    40,fEtaTLo,fEtaTHi,
+                    36,0.0,TMath::TwoPi());
+  fOutputList->Add(fHQATp);
+  fHQAAp = new TH3F("fHQAAp","QA associated;p_{T} (GeV/c);#eta;#phi",
+                    100,0.0,10.0,
+                    40,fEtaALo,fEtaAHi,
+                    36,0.0,TMath::TwoPi());
+  fOutputList->Add(fHQAAp);
+  fHQATpCorr = (TH3 *) fHQATp->Clone("fHQATpCorr");
+  fOutputList->Add(fHQATpCorr);
+  fHQAApCorr = (TH3 *) fHQAAp->Clone("fHQAApCorr");
+  fOutputList->Add(fHQAApCorr);
+  fHQATm = (TH3 *) fHQATp->Clone("fHQATm");
+  fOutputList->Add(fHQATm);
+  fHQAAm = (TH3 *) fHQAAp->Clone("fHQAAm");
+  fOutputList->Add(fHQAAm);
+  fHQATmCorr = (TH3 *) fHQATm->Clone("fHQATmCorr");
+  fOutputList->Add(fHQATmCorr);
+  fHQAAmCorr = (TH3 *) fHQAAm->Clone("fHQAAmCorr");
+  fOutputList->Add(fHQAAmCorr);
 
   fHPtCentT = new TH2F("fHPtCentT",Form("trigger particles;p_{T} (GeV/c);centrality (%s)",fCentMethod.Data()),
                        100,0.0,10.0,
@@ -867,7 +879,6 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       if (etaa>fEtaALo && etaa<fEtaAHi) {
         Int_t bbin = fHPtAss->FindBin(pta);
         if (!(fHPtAss->IsBinOverflow(bbin) || fHPtAss->IsBinUnderflow(bbin))) {
-          fHQAA->Fill(pta,etaa,phia); // fill every associated particle once
           Double_t aQAWght = 1.0;
           if (fHEffA) {
             const Int_t nEffDimA = fHEffA->GetNdimensions();
@@ -884,7 +895,14 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
             }
             aQAWght = fHEffA->GetBinContent(effBinA);
           }
-          fHQAACorr->Fill(pta,etaa,phia,aQAWght); // fill every associated particle once, this time weighted
+          // fill every associated particle once unweighted, once weighted
+          if (sgna>0.0) {
+            fHQAAp->Fill(pta,etaa,phia);
+            fHQAApCorr->Fill(pta,etaa,phia,aQAWght);
+          } else {
+            fHQAAm->Fill(pta,etaa,phia);
+            fHQAAmCorr->Fill(pta,etaa,phia,aQAWght);
+          }
           fHPtCentA->Fill(pta,fCentrality);
         }
       }
@@ -919,8 +937,13 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
     
     if (pairing == kSameEvt) {
       fHTrk->Fill(phia,etaa);
-      fHQAT->Fill(pta,etaa,phia);
-      fHQATCorr->Fill(pta,etaa,phia,effWtT);
+      if (sgna>0.0) {
+        fHQATp->Fill(pta,etaa,phia);
+        fHQATpCorr->Fill(pta,etaa,phia,effWtT);
+      } else {
+        fHQATm->Fill(pta,etaa,phia);
+        fHQATmCorr->Fill(pta,etaa,phia,effWtT);
+      }
       fHPtCentT->Fill(pta,fCentrality);
       fHPtTrg->Fill(pta);
       fHPtTrgNorm1S->Fill(pta,fCentrality,fZVertex,effWtT);
