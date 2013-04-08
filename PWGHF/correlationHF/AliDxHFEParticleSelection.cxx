@@ -35,6 +35,7 @@
 #include "THnSparse.h"
 #include "AliReducedParticle.h"
 #include "TFile.h"
+#include "TPRegexp.h" // for TStringToken
 #include <iostream>
 #include <cerrno>
 #include <memory>
@@ -55,6 +56,7 @@ AliDxHFEParticleSelection::AliDxHFEParticleSelection(const char* name, const cha
   , fVerbosity(0)
   , fDimThn(-1)
   , fParticleProperties(NULL)
+  , fSystem(0)
 {
   // constructor
   // 
@@ -129,13 +131,17 @@ int AliDxHFEParticleSelection::InitControlObjects()
 TH1* AliDxHFEParticleSelection::CreateControlHistogram(const char* name,
 						       const char* title,
 						       int nBins,
+						       double min,
+						       double max,
 						       const char** binLabels) const
 {
   /// create control histogram
-  std::auto_ptr<TH1> h(new TH1D(name, title, nBins, -0.5, nBins-0.5));
+  std::auto_ptr<TH1> h(new TH1D(name, title, nBins, min, max));
   if (!h.get()) return NULL;
+  if (binLabels) {
   for (int iLabel=0; iLabel<nBins; iLabel++) {
     h->GetXaxis()->SetBinLabel(iLabel+1, binLabels[iLabel]);    
+  }
   }
   
   return h.release();
@@ -301,7 +307,7 @@ TObjArray* AliDxHFEParticleSelection::Select(TObjArray* pParticles, const AliVEv
   if (!pParticles) return NULL;
   TObjArray* selectedTracks=new TObjArray;
   if (!selectedTracks) return NULL;
-  selectedTracks->SetOwner(); // creating new track objects below
+  selectedTracks->SetOwner(kFALSE); // creating new track objects below
   TIter next(pParticles);
   TObject* pObj=NULL;
   while ((pObj=next())) {
@@ -400,4 +406,32 @@ AliVParticle *AliDxHFEParticleSelection::CreateParticle(AliVParticle* track)
 
   return part;
 
+}
+
+int AliDxHFEParticleSelection::ParseArguments(const char* arguments)
+{
+  // parse arguments and set internal flags
+  const char* key=NULL;
+  const TString delimiter(" ");
+  TStringToken token(arguments, delimiter);
+  while (token.NextToken()) {
+    TString argument=token;
+    key="system=";
+    if (argument.BeginsWith(key)) {
+      argument.ReplaceAll(key, "");
+      if (argument.CompareTo("pp")==0) fSystem=0;
+      else if (argument.CompareTo("Pb-Pb")==0) fSystem=1;
+      else if (argument.CompareTo("p-Pb")==0) fSystem=2;
+      else {
+	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
+	// TODO: check what makes sense
+	fSystem=0;
+      }
+      continue;
+    }
+
+    AliWarning(Form("unknown argument '%s'", argument.Data()));
+  }
+  
+  return 0;
 }

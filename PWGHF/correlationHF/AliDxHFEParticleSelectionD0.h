@@ -68,17 +68,24 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   virtual int IsSelected(AliVParticle* p, const AliVEvent *pEvent=NULL);
   /// overloaded from AliDxHFEParticleSelection: set cuts
   virtual void SetCuts(TObject* /*cuts*/, int level=0);
+  void SetInvMass(Double_t mass){fD0InvMass=mass;}
+  void SetPtBin(Int_t ptbin){fPtBin=ptbin;}
 
   //AliRDHFCutsD0toKpi GetCuts()const {return fCuts;}
   Int_t  GetFillOnlyD0D0bar() const {return fFillOnlyD0D0bar;}
   Int_t GetPtBin() const {return fPtBin;}
   Double_t GetInvMass() const {return fD0InvMass;}
+  AliRDHFCuts *GetHFCuts() const {return fCuts;}
+
 
  protected:
   /// overloaded from AliDxHFEParticleSelection: histogram particle properties
   virtual int HistogramParticleProperties(AliVParticle* p, int selected=1);
 
  private:
+
+  int ParseArguments(const char* arguments);
+
   /// copy contructor prohibited
   AliDxHFEParticleSelectionD0(const AliDxHFEParticleSelectionD0&);
   /// assignment operator prohibited

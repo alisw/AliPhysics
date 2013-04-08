@@ -78,7 +78,6 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fElectrons(NULL)
   , fCutsD0(NULL)
   , fCuts(NULL)
-  , fFillOnlyD0D0bar(0)
   , fUseMC(kFALSE)
   , fUseEventMixing(kFALSE)
   , fSystem(0)
@@ -86,6 +85,9 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fSelectedElectrons(NULL)
   , fListHFE(NULL)
   , fTriggerParticle(AliDxHFECorrelation::kD)
+  , fUseKine(kFALSE)
+  , fMCArray(NULL)
+  , fCorrelationArguments("")
 {
   // constructor
   //
@@ -134,6 +136,8 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   fSelectedD0s=NULL;
   if(fListHFE) delete fListHFE;
   fListHFE=NULL;
+  if(fMCArray) delete fMCArray;
+  fMCArray=NULL;
 
 
 }
@@ -142,6 +146,8 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
 {
   // create result objects and add to output list
   int iResult=0;
+  // ParseArguments will also define the strings that are used as input
+  // for the particle selection classes and the correlation class
 
   ParseArguments(fOption.Data());
 
@@ -149,15 +155,8 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   fOutput->SetOwner();
 
   // D0s ===============================================
-  TString selectionD0Options;
-  switch (fFillOnlyD0D0bar) {
-  case 1: selectionD0Options+="FillOnlyD0 "; break;
-  case 2: selectionD0Options+="FillOnlyD0bar "; break;
-  default: selectionD0Options+="FillD0D0bar ";
-  }
-
-  if(fUseMC) fD0s=new AliDxHFEParticleSelectionMCD0(selectionD0Options);
-  else fD0s=new AliDxHFEParticleSelectionD0(selectionD0Options);
+  if(fUseMC) fD0s=new AliDxHFEParticleSelectionMCD0(fOption);
+  else fD0s=new AliDxHFEParticleSelectionD0(fOption);
   fD0s->SetCuts(fCutsD0,AliDxHFEParticleSelectionD0::kCutD0);
   iResult=fD0s->Init();
   if (iResult<0) {
@@ -165,9 +164,9 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   }
 
   //Electrons ============================================
-  fListHFE->SetOwner(); // NOt sure if needed
-  if(fUseMC) fElectrons=new AliDxHFEParticleSelectionMCEl;
-  else fElectrons=new AliDxHFEParticleSelectionEl;
+  fListHFE->SetOwner(); // Not sure if needed
+  if(fUseMC) fElectrons=new AliDxHFEParticleSelectionMCEl(fOption);
+  else fElectrons=new AliDxHFEParticleSelectionEl(fOption);
   fElectrons->SetCuts(fListHFE, AliDxHFEParticleSelectionEl::kCutList);
   iResult=fElectrons->Init();
   if (iResult<0) {
@@ -178,16 +177,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   if(fUseMC) fCorrelation=new AliDxHFECorrelationMC;
   else fCorrelation=new AliDxHFECorrelation;
   fCorrelation->SetCuts(fCuts);
-  // TODO: check if we can get rid of the mc flag in the correlation analysis class
-  // at the moment this is needed to pass on info to AliHFCorrelator
-  TString arguments;
-  if (fUseMC)          arguments+=" use-mc";
-  if (fUseEventMixing) arguments+=" event-mixing";
-  if (fSystem==0)         arguments+=" system=pp";
-  else if (fSystem==1)       arguments+=" system=Pb-Pb";
-  if(fTriggerParticle==AliDxHFECorrelation::kD) arguments+=" trigger=D";
-  if(fTriggerParticle==AliDxHFECorrelation::kElectron) arguments+=" trigger=electron";
-  iResult=fCorrelation->Init(arguments);
+  iResult=fCorrelation->Init(fOption);
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
   }
@@ -286,6 +276,17 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     return;
   }
 
+  if(fSystem==1){
+    // Not really used anywhere, just as a test of centralityselection
+    // (Could also be used in histo, so have not removed it)
+    AliCentrality *centralityObj = 0;
+    Double_t MultipOrCent = -1;
+    AliAODEvent* aodEvent=dynamic_cast<AliAODEvent*>(pEvent);
+    centralityObj = aodEvent->GetHeader()->GetCentralityP();
+    MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
+    AliInfo(Form("Centrality is %f", MultipOrCent));
+  }
+
   // Gets the PID response from the analysis manager
   AliPIDResponse *pidResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetPIDResponse();
   if(!pidResponse){
@@ -323,6 +324,13 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     }
     Int_t eventType = mcHeader->GetEventType();
     fCorrelation->SetEventType(eventType);
+    if(fUseKine){
+      fMCArray = dynamic_cast<TObjArray*>(pEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if(fUseMC && !fMCArray){
+	AliError("Array of MC particles not found");
+	return;
+      }
+    }
   }
 
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
@@ -334,7 +342,9 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   if(fTriggerParticle==AliDxHFECorrelation::kElectron){
 
     if (fSelectedElectrons) delete fSelectedElectrons;
-    fSelectedElectrons=(fElectrons->Select(pEvent));
+    // If run on kinematical level, send in MCarray instead of reconstructed tracks
+    if(fUseKine) fSelectedElectrons=(fElectrons->Select(fMCArray, pEvent));
+    else fSelectedElectrons=(fElectrons->Select(pEvent));
   
     if(! fSelectedElectrons) {
       return;
@@ -355,7 +365,8 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
 
   // D0 selection 
   if(fSelectedD0s) delete fSelectedD0s;
-  fSelectedD0s=(fD0s->Select(inputArray,pEvent));
+  if(fUseKine)  fSelectedD0s=(fD0s->Select(fMCArray,pEvent));
+  else fSelectedD0s=(fD0s->Select(inputArray,pEvent));
   
   if(! fSelectedD0s) {
     return;
@@ -375,8 +386,10 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     if(nD0Selected>0) fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsTriggered);
 
     if (fSelectedElectrons) delete fSelectedElectrons;
-    fSelectedElectrons=(fElectrons->Select(pEvent));
-  
+
+    // If run on kinematical level, send in MCarray instead of reconstructed tracks
+    if(fUseKine) fSelectedElectrons=(fElectrons->Select(fMCArray, pEvent));
+    else fSelectedElectrons=(fElectrons->Select(pEvent));
     if(! fSelectedElectrons) {
       return;
     }
@@ -421,7 +434,7 @@ int AliAnalysisTaskDxHFECorrelation::ParseArguments(const char* arguments)
   TString strArguments(arguments);
   auto_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
   if (!tokens.get()) return 0;
-
+  AliInfo(strArguments);
   TIter next(tokens.get());
   TObject* token;
   while ((token=next())) {
@@ -438,25 +451,20 @@ int AliAnalysisTaskDxHFECorrelation::ParseArguments(const char* arguments)
       AliInfo("Running on MC data");
       continue;
     }
+    if (argument.BeginsWith("usekine") || argument.BeginsWith("kine")) {
+      fUseKine=true;
+      AliInfo("Running on MC stack");
+      continue;
+    }
     if (argument.BeginsWith("system=")) {
       argument.ReplaceAll("system=", "");
-      if (argument.CompareTo("pp")==0)fSystem=0;
-      else if (argument.CompareTo("Pb-Pb")==0) fSystem=1;
+      if (argument.CompareTo("pp")==0) {fSystem=0;}
+      else if (argument.CompareTo("Pb-Pb")==0){ fSystem=1;}
+      else if (argument.CompareTo("p-Pb")==0){ fSystem=2;}
       else {
 	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
 	// TODO: check what makes sense
 	fSystem=0;
-      }
-      continue;
-    }
-    if (argument.BeginsWith("fillD0scheme=")){
-      argument.ReplaceAll("fillD0scheme=", "");
-      if (argument.CompareTo("both")==0){ fFillOnlyD0D0bar=0; AliInfo("Filling both D0 and D0bar ");}
-      else if (argument.CompareTo("D0")==0){ fFillOnlyD0D0bar=1; AliInfo("Filling only D0 ");}
-      else if (argument.CompareTo("D0bar")==0){ fFillOnlyD0D0bar=2; AliInfo("Filling only D0bar"); }
-      else {
-	AliWarning(Form("can not set D0 filling scheme, unknown parameter '%s'", argument.Data()));
-	fFillOnlyD0D0bar=0;
       }
       continue;
     }
@@ -467,7 +475,6 @@ int AliAnalysisTaskDxHFECorrelation::ParseArguments(const char* arguments)
       else if (argument.CompareTo("electron")==0) { fTriggerParticle=AliDxHFECorrelation::kElectron; AliInfo("CorrTask: trigger on electron");}
       continue;
     }
-    
     AliWarning(Form("unknown argument '%s'", argument.Data()));
       
   }

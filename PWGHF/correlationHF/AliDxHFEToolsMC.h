@@ -155,6 +155,9 @@ class AliDxHFEToolsMC {
   // Tests if particle have been marked as HF quark 
   Bool_t TestIfHFquark(int origin);
 
+  //Tests of pdg corresponds to HF meson
+  Bool_t TestMotherHFMeson(int pdg);
+
   // Setting MC label from outside
   void SetMClabel(int mclab){fMClabel=mclab;}
 
@@ -165,6 +168,7 @@ class AliDxHFEToolsMC {
   bool RejectByPDG(int pdg, const vector<int> &list) const;
 
   int GetNrMCParticles() const {return fNrMCParticles;}
+  int CheckMCParticle(AliVParticle* p);
 
   /// mapping of pdg code to enum
   int MapPDGLabel(int pdg) const;
@@ -198,7 +202,8 @@ class AliDxHFEToolsMC {
   int fOriginMother;       //  Holds the origin motherquark (process)
   int fMClabel;            //  MClabel passed from outside (default =-1)
   int fNrMCParticles;      //  number of MC particles 
+  bool fUseKine;           //  For looping over stack directly
 
-  ClassDef(AliDxHFEToolsMC, 2);
+  ClassDef(AliDxHFEToolsMC, 3);
 };
 #endif

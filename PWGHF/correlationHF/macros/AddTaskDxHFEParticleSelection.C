@@ -31,8 +31,37 @@ AliAnalysisCuts* createDefaultPoolConfig();
 /// @date   2013-02-12
 /// @brief  Add the ParticleSelection task to the manager
 ///
-int AddTaskDxHFEParticleSelection(AliHFEpid *fPID=NULL, TString extraName="", TString analysisName="PWGHFCJParticleSelection")
+int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName="PWGHFCJParticleSelection")
 {
+
+  //First check to see if user wants to see help
+  if (configuration.BeginsWith("help") || 
+      configuration.BeginsWith("--help") || 
+      configuration.BeginsWith("-h") || 
+      configuration.BeginsWith("options") ) {
+    cout <<"\n\n============================================" << endl;
+    cout << "Keywords for AddTaskDxHFEParticleSelection.C:\n"
+	 << "file=                         - Filename to store output in\n"
+	 << "name=                         - Name of analysis, will correspond to directory inside the file \n"
+	 << "cutname=                      - Filename where information on event pool for event-mixing is stored (if use external file)\n"
+	 << "runD0MassReference            - If you also want to include D2H task for D0selection (for comparison purposes)\n"
+	 << "mc                            - Run on MC\n"
+	 << "PbPb                          - Run on PbPbn"
+	 << "usekine                       - To run on kinematical level \n"
+	 << "particle=D0/electron          - Which particle to run analysis on \n"
+	 << "\nD0 settings: \n"
+	 << "fillD0scheme=both/D0/D0bar    - Which fillsheme to use for D0\n"
+	 << "\nelectron settings: \n"
+	 << "useinvmasscut                 - If you want to use invariant mass cut (default is 100MeV/c)\n" 
+	 << "invmasscut=                   - If you want to specify a different invariant mass cut \n"
+	 << "extraname=                    - extraname for directory and list if you run several tasks at once\n"
+	 << "tpcclusters=                  - How many TPC clusters to use on single track cuts for electrons (default=120)\n"
+	 << "itsclusters=                  - How many itsclusters to be used in single track cuts for electrons (default=4) \n"
+	 << "itsreq=                       - (kFirst,kAny,kNone) Which ITSpixel requirement you want to impose\n"
+	 << "elmcreco=                     - (aftertrackcuts/aftertofpid/afterfullpid) Where you want to stop in track selection to look for electrons for mc \n\n";
+    return;
+  } 
+
   AliAnalysisManager *pManager = AliAnalysisManager::GetAnalysisManager();
   if (!pManager) {
     ::Error("AddTaskDxHFEParticleSelection", "No analysis manager to connect to.");
@@ -43,14 +72,29 @@ int AddTaskDxHFEParticleSelection(AliHFEpid *fPID=NULL, TString extraName="", TS
   TString ofilename;
   Int_t system=0;
   TString taskOptions;
+  Bool_t bUseKine=kFALSE;
+  Bool_t bUseMCReco=kFALSE;
+  Int_t NrTPCclusters=120; // quick fix for problems sending track cut objects in some instances to task
+  Int_t NrITSclusters=4; // quick fix for problem sending hfe track cut object to addtask
+  Int_t ITSreq=AliHFEextraCuts::kFirst;
   Int_t Particle=AliAnalysisTaskDxHFEParticleSelection::kD0;
+  TString extraname="";
 
   // look for configuration arguments
-  if (gDirectory) {
+  cout << endl << "===============================================" << endl;
+  cout << "Setting up Particle Selection task: " << configuration << endl;
+
+  // look for configuration arguments if nothing specified
+  // in the function call
+  if (configuration.IsNull() && gDirectory) {
     const char* confObjectName="run_single_task_configuration";
     TObject* confObject=gDirectory->FindObject(confObjectName);
     if (confObject) {
-      TString configuration=confObject->GetTitle();
+      configuration=confObject->GetTitle();
+    }
+  }
+  {// deprecated, but keep for formatting
+    {// deprecated, but keep for formatting
       TObjArray* tokens=configuration.Tokenize(" ");
       if (tokens) {
 	TIter next(tokens);
@@ -62,7 +106,7 @@ int AddTaskDxHFEParticleSelection(AliHFEpid *fPID=NULL, TString extraName="", TS
 	    ofilename=argument;
 	  } else if (argument.BeginsWith("name=")) {
 	    argument.ReplaceAll("name=", "");
-	    analysisName=argument+"PartSel";
+	    analysisName=" "+argument+"PartSel";
 	  }
 	  if (argument.BeginsWith("mc")) {
 	    bUseMC=kTRUE;
@@ -72,9 +116,22 @@ int AddTaskDxHFEParticleSelection(AliHFEpid *fPID=NULL, TString extraName="", TS
 	    system=1;
 	    taskOptions+=" system=PbPb";
 	  }
+	  if(argument.BeginsWith("tpcclusters=")){
+	    argument.ReplaceAll("tpcclusters=", "");
+	    NrTPCclusters=argument.Atoi();
+	    ::Info("AddTaskDxHFEParticleSelection",Form("Setting nr TPC clusters to %d",NrTPCclusters));
+	  }
 	  if (argument.BeginsWith("fillD0scheme=")){
 	    argument.ReplaceAll("fillD0scheme=","");
 	    taskOptions+=" fillD0scheme="+argument;
+	  }
+	  if(argument.BeginsWith("elmcreco")){
+	    bUseMCReco=kTRUE;
+	    taskOptions+=" "+argument;
+	  }
+	  if (argument.BeginsWith("usekine") ||argument.BeginsWith("kine")) {
+	    bUseKine=kTRUE;
+	    taskOptions+=" usekine";
 	  }
 	  if (argument.BeginsWith("particle=")) {
 	    taskOptions+=" "+argument;
@@ -84,14 +141,36 @@ int AddTaskDxHFEParticleSelection(AliHFEpid *fPID=NULL, TString extraName="", TS
 	    }
 	    else if (argument.CompareTo("electron")==0){ 
 	      Particle=AliAnalysisTaskDxHFEParticleSelection::kElectron; 
-	    }
-	    
+	    }	    
+	  }
+	  if(argument.BeginsWith("useinvmasscut"))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("invmasscut="))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("itsclusters=")){
+	    argument.ReplaceAll("itsclusters=", "");
+	    NrITSclusters=argument.Atoi();
+	  }
+	  if(argument.BeginsWith("itsreq=")){
+	    argument.ReplaceAll("itsreq=", "");
+	    if(argument.CompareTo("kFirst")==0) ITSreq=AliHFEextraCuts::kFirst;
+	    else if(argument.CompareTo("kAny")==0) ITSreq=AliHFEextraCuts::kAny;
+	    else if(argument.CompareTo("kNone")==0) ITSreq=AliHFEextraCuts::kNone;
+	  }
+	  if(argument.BeginsWith("extraname=")){
+	    argument.ReplaceAll("extraname=", "");
+	    extraname=argument;
 	  }
 	}
 	    
       }
       delete tokens;
     }
+  }
+
+  if(bUseMCReco && bUseKine) {
+    ::Fatal("AddTaskDxHFECorrelation","CAN'T SET BOTH usekine AND elmcreco AT THE SAME TIME");
+    return;
   }
 
   // check for existence of PID task and add if not available
@@ -129,16 +208,16 @@ int AddTaskDxHFEParticleSelection(AliHFEpid *fPID=NULL, TString extraName="", TS
   hfecuts->CreateStandardCuts();
 
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound,AliHFEextraCuts::kFoundOverFindable);
-  hfecuts->SetMinNClustersTPC(120);	//Default = 80
+  hfecuts->SetMinNClustersTPC(NrTPCclusters);	//Default = 80
   hfecuts->SetMinNClustersTPCPID(80);	//Default = 80
   hfecuts->SetMinRatioTPCclusters(0.6); 	//Default = 0.6
 	
   ///ITS
-  //hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny); 	//Cut on SPD
+  hfecuts->SetCutITSpixel(ITSreq); 	//Cut on SPD
   //hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 	//Cut on SDD
   //hfecuts->SetCheckITSLayerStatus(kFALSE);
-  hfecuts->SetMinNClustersITS(4); 					//Default = 4
-	
+  hfecuts->SetMinNClustersITS(NrITSclusters);		//Default = 4
+    
   ///TOF
   hfecuts->SetTOFPIDStep(kTRUE);
 		
@@ -159,21 +238,20 @@ int AddTaskDxHFEParticleSelection(AliHFEpid *fPID=NULL, TString extraName="", TS
   
   // PID object for TPC and TOF combined
   // Check if PID is set from outside (passed as argument)
-  if(!fPID){
-    ::Info("AddTaskDxHFEParticleSelection",Form("Setting up new combined PID object"));
-    fPID = new AliHFEpid("hfePid");
-    if(!fPID->GetNumberOfPIDdetectors()) { 
-      fPID->AddDetector("TOF",0);
-      fPID->AddDetector("TPC",1);
-    }
-    //Add settings for asymmetric cut on nSigma TPC
-    const int paramSize=4;
-    Double_t params[paramSize];
-    memset(params, 0, sizeof(Double_t)*paramSize);
-    params[0]=-1.;
-    fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
-    fPID->InitializePID();
+  ::Info("AddTaskDxHFEParticleSelection",Form("Setting up new combined PID object"));
+  AliHFEpid* fPID = new AliHFEpid("hfePid");
+  if(!fPID->GetNumberOfPIDdetectors()) { 
+    fPID->AddDetector("TOF",0);
+    fPID->AddDetector("TPC",1);
   }
+  //Add settings for asymmetric cut on nSigma TPC
+  const int paramSize=4;
+  Double_t params[paramSize];
+  memset(params, 0, sizeof(Double_t)*paramSize);
+  params[0]=-1.;
+  fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
+  fPID->InitializePID();
+ 
 
   //=========================================================
   //Create TList of cut (and pid) objects for D0 or electron

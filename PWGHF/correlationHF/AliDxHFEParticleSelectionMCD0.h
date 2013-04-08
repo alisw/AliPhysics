@@ -33,6 +33,7 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
 
   /// overloaded from AliDxHFEParticleSelection: check particle
   virtual int IsSelected(AliVParticle* p, const AliVEvent *pEvent=NULL);
+  virtual int InitControlObjects();
 
   virtual THnSparse* DefineTHnSparse();
   virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
@@ -48,6 +49,7 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   virtual void Clear(const char* option="");
 
  protected:
+  virtual int HistogramParticleProperties(AliVParticle* p, int selected=1);
 
  private:
   /// copy contructor prohibited
@@ -60,8 +62,9 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   int fResultMC;             // Result on MC check
   int fOriginMother;         // Holds info on the original mother particle
   bool fUseKine;             // Whether to run over MC particles (true) or Reco (false)
+  THnSparse* fD0PropertiesKine; //the particle properties of selected particles
 
-  ClassDef(AliDxHFEParticleSelectionMCD0, 2);
+  ClassDef(AliDxHFEParticleSelectionMCD0, 3);
 };
 
 #endif
