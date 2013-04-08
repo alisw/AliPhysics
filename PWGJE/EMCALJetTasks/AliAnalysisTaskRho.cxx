@@ -21,6 +21,7 @@ ClassImp(AliAnalysisTaskRho)
 //________________________________________________________________________
 AliAnalysisTaskRho::AliAnalysisTaskRho() : 
   AliAnalysisTaskRhoBase("AliAnalysisTaskRho"),
+  fHistOccCorrvsCent(0),
   fNExclLeadJets(0)
 {
   // Constructor.
@@ -29,9 +30,22 @@ AliAnalysisTaskRho::AliAnalysisTaskRho() :
 //________________________________________________________________________
 AliAnalysisTaskRho::AliAnalysisTaskRho(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoBase(name, histo),
+  fHistOccCorrvsCent(0),
   fNExclLeadJets(0)
 {
   // Constructor.
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskRho::UserCreateOutputObjects()
+{
+  if (!fCreateHisto)
+    return;
+
+  AliAnalysisTaskRhoBase::UserCreateOutputObjects();
+  
+  fHistOccCorrvsCent = new TH2F("OccCorrvsCent", "OccCorrvsCent", 101, -1, 100, 2000, 0 , 2);
+  fOutput->Add(fHistOccCorrvsCent);
 }
 
 //________________________________________________________________________
@@ -80,6 +94,8 @@ Bool_t AliAnalysisTaskRho::Run()
 
   static Double_t rhovec[999];
   Int_t NjetAcc = 0;
+  Double_t TotaljetArea=0;
+  Double_t TotaljetAreaPhys=0;
 
   // push all jets within selected acceptance into stack
   for (Int_t iJets = 0; iJets < Njets; ++iJets) {
@@ -94,12 +110,31 @@ Bool_t AliAnalysisTaskRho::Run()
       continue;
     } 
 
+    //cout << "jetpt: " << jet->Pt() << " jetArea: " << jet->Area() <<endl;
+
     if (!AcceptJet(jet))
       continue;
 
-    rhovec[NjetAcc] = jet->Pt() / jet->Area();
+
+    if(jet->Pt()>0.01) rhovec[NjetAcc] = jet->Pt() / jet->Area();
+    //cout << "ACCEPTED: jetpt: " << jet->Pt() << " jetArea: " << jet->Area() << " jetRho: " << rhovec[NjetAcc] <<endl;
+    if(jet->Pt()>0.01) TotaljetAreaPhys+=jet->Area();
+    TotaljetArea+=jet->Area();
     ++NjetAcc;
   }
+
+  const Double_t TpcMaxPhi = TMath::Pi()*2.;
+
+  const Double_t TpcArea = TpcMaxPhi * 2.*(0.7);
+  Double_t OccCorr=0.0;
+  //cout << "Area Physical: " << TotaljetAreaPhys << " total: " << TotaljetArea <<endl;
+  //if(TotaljetArea>0) OccCorr=TotaljetAreaPhys/TotaljetArea;
+  if(TpcArea>0) OccCorr=TotaljetAreaPhys/TpcArea;
+ 
+  fHistOccCorrvsCent->Fill(fCent, OccCorr);
+
+  //cout << "Accepted " << NjetAcc << " of " << Njets <<endl;
+  //if (fOccCorr)fOccCorr->SetVal(OccCorr);
 
   if (NjetAcc > 0) {
     //find median value
@@ -107,7 +142,9 @@ Bool_t AliAnalysisTaskRho::Run()
     fRho->SetVal(rho);
 
     if (fRhoScaled) {
-      Double_t rhoScaled = rho * GetScaleFactor(fCent);
+      //Double_t rhoScaled = rho * GetScaleFactor(fCent);
+      Double_t rhoScaled = rho * OccCorr;
+      //cout << "OCC_CORR " << OccCorr <<endl;
       fRhoScaled->SetVal(rhoScaled);
     }
   }
