@@ -13,7 +13,7 @@ AliAnalysisTask *AddTask_mkoehler_CCbar(Bool_t hasMC_aod = kFALSE){
   //Do we have an MC handler?
   Bool_t hasMC=(mgr->GetMCtruthEventHandler()!=0x0);
   
-  TString configFile("ConfigCCbar_mk_pp.C");
+  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/ConfigCCbar_mk_pp.C");
   if (hasMC) configFile="$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigJpsi2eeEff.C";//check later
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
