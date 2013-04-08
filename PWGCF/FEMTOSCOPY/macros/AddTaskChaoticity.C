@@ -6,9 +6,9 @@ AliChaoticity *AddTaskChaoticity(
 				 Bool_t TabulatePairs=kFALSE, 
 				 Int_t CentBinLowLimit=0, 
 				 Int_t CentBinHighLimit=1,
-				 Int_t RBinMax=5,
-				 Int_t FixedLambdaBinMomRes=5,
-				 Int_t FixedLambdaBinr3=20,
+				 Int_t RMax=11,
+				 Int_t FixedLambdaBinMomRes=9,
+				 Int_t FixedLambdaBinr3=10,
 				 UInt_t FilterBit=7,
 				 Float_t MinSepPair=0.035,
 				 Float_t SigmaCutTPC=2.0,
@@ -36,7 +36,7 @@ AliChaoticity *AddTaskChaoticity(
   ChaoticityTask->SetGenerateSignal(GenerateSignal);
   ChaoticityTask->SetTabulatePairs(TabulatePairs);
   ChaoticityTask->SetCentBinRange(CentBinLowLimit, CentBinHighLimit);
-  ChaoticityTask->SetRBinMax(RBinMax);
+  ChaoticityTask->SetRMax(RMax);
   ChaoticityTask->SetFixedLambdaBinMomRes(FixedLambdaBinMomRes);
   ChaoticityTask->SetFixedLambdaBinr3(FixedLambdaBinr3);
   ChaoticityTask->SetFilterBit(FilterBit);
