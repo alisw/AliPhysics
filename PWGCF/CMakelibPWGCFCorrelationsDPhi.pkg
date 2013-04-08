@@ -34,7 +34,11 @@ set ( SRCS
     Correlations/DPhi/AliAnalysisTaskLeadingTrackUE.cxx 
     Correlations/DPhi/AliAnalysisTaskMinijet.cxx
     Correlations/DPhi/AliAnalysisTaskDiHadron.cxx
-    Correlations/DPhi/AliAnalysisTaskDiHadronPID.cxx 
+    Correlations/DPhi/DiHadronPID/AliTrackDiHadronPID.cxx
+    Correlations/DPhi/DiHadronPID/AliAODTrackCutsDiHadronPID.cxx
+    Correlations/DPhi/DiHadronPID/AliAODEventCutsDiHadronPID.cxx
+    Correlations/DPhi/DiHadronPID/AliHistToolsDiHadronPID.cxx
+    Correlations/DPhi/DiHadronPID/AliAnalysisTaskDiHadronPID.cxx 
     Correlations/DPhi/FourierDecomposition/AliPool.cxx
     Correlations/DPhi/FourierDecomposition/AliDhcTask.cxx
     Correlations/DPhi/FourierDecomposition/AliMuonEffMC.cxx
