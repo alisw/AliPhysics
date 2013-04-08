@@ -29,6 +29,8 @@
 #include "TDirectory.h"
 #include "AliCFUnfolding.h"
 #include "AliFragmentationFunctionCorrections.h"
+#include <iostream> // OB TEST!!!
+#include <fstream>
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -78,6 +80,22 @@ AliFragmentationFunctionCorrections::AliFragmentationFunctionCorrections()
    ,fh1EffBgrPt(0)
    ,fh1EffBgrZ(0)
    ,fh1EffBgrXi(0)
+   ,fh1BbBCorrSinglePt(0) 
+   ,fh1BbBPt(0)
+   ,fh1BbBZ(0)
+   ,fh1BbBXi(0)
+   ,fh1BbBBgrPt(0)
+   ,fh1BbBBgrZ(0)
+   ,fh1BbBBgrXi(0)
+   ,fh1FoldingCorrPt(0)
+   ,fh1FoldingCorrZ(0)
+   ,fh1FoldingCorrXi(0)
+   ,fh1SecCorrPt(0)
+   ,fh1SecCorrZ(0)
+   ,fh1SecCorrXi(0)
+   ,fh1SecCorrBgrPt(0)
+   ,fh1SecCorrBgrZ(0)
+   ,fh1SecCorrBgrXi(0)
    ,fh1FFTrackPtBackFolded(0)   
    ,fh1FFZBackFolded(0)
    ,fh1FFXiBackFolded(0)        
@@ -132,6 +150,22 @@ AliFragmentationFunctionCorrections::AliFragmentationFunctionCorrections(const  
   ,fh1EffBgrPt(copy.fh1EffBgrPt)                   
   ,fh1EffBgrZ(copy.fh1EffBgrZ)                    
   ,fh1EffBgrXi(copy.fh1EffBgrXi)
+  ,fh1BbBCorrSinglePt(copy.fh1BbBCorrSinglePt) 
+  ,fh1BbBPt(copy.fh1BbBPt)
+  ,fh1BbBZ(copy.fh1BbBZ)
+  ,fh1BbBXi(copy.fh1BbBXi)
+  ,fh1BbBBgrPt(copy.fh1BbBBgrPt)
+  ,fh1BbBBgrZ(copy.fh1BbBBgrZ)
+  ,fh1BbBBgrXi(copy.fh1BbBBgrXi)
+  ,fh1FoldingCorrPt(copy.fh1FoldingCorrPt)
+  ,fh1FoldingCorrZ(copy.fh1FoldingCorrZ)
+  ,fh1FoldingCorrXi(copy.fh1FoldingCorrXi)
+  ,fh1SecCorrPt(copy.fh1SecCorrPt)
+  ,fh1SecCorrZ(copy.fh1SecCorrZ)
+  ,fh1SecCorrXi(copy.fh1SecCorrXi)
+  ,fh1SecCorrBgrPt(copy.fh1SecCorrBgrPt)
+  ,fh1SecCorrBgrZ(copy.fh1SecCorrBgrZ) 
+  ,fh1SecCorrBgrXi(copy.fh1SecCorrBgrXi)
   ,fh1FFTrackPtBackFolded(copy.fh1FFTrackPtBackFolded)        
   ,fh1FFZBackFolded(copy.fh1FFZBackFolded)              
   ,fh1FFXiBackFolded(copy.fh1FFXiBackFolded)             
@@ -191,6 +225,22 @@ AliFragmentationFunctionCorrections& AliFragmentationFunctionCorrections::operat
     fh1EffBgrPt                     = o.fh1EffBgrPt;                   
     fh1EffBgrZ                      = o.fh1EffBgrZ;                    
     fh1EffBgrXi                     = o.fh1EffBgrXi;                   
+    fh1BbBCorrSinglePt              = o.fh1BbBCorrSinglePt; 
+    fh1BbBPt                        = o.fh1BbBPt;
+    fh1BbBZ                         = o.fh1BbBZ;
+    fh1BbBXi                        = o.fh1BbBXi;
+    fh1BbBBgrPt                     = o.fh1BbBBgrPt;
+    fh1BbBBgrZ                      = o.fh1BbBBgrZ;
+    fh1BbBBgrXi                     = o.fh1BbBBgrXi;
+    fh1FoldingCorrPt                = o.fh1FoldingCorrPt;
+    fh1FoldingCorrZ                 = o.fh1FoldingCorrZ;
+    fh1FoldingCorrXi                = o.fh1FoldingCorrXi;
+    fh1SecCorrPt                    = o.fh1SecCorrPt;
+    fh1SecCorrZ                     = o.fh1SecCorrZ;
+    fh1SecCorrXi                    = o.fh1SecCorrXi;
+    fh1SecCorrBgrPt                 = o.fh1SecCorrBgrPt;
+    fh1SecCorrBgrZ                  = o.fh1SecCorrBgrZ;
+    fh1SecCorrBgrXi                 = o.fh1SecCorrBgrXi;
     fh1FFTrackPtBackFolded          = o.fh1FFTrackPtBackFolded;        
     fh1FFZBackFolded                = o.fh1FFZBackFolded;              
     fh1FFXiBackFolded               = o.fh1FFXiBackFolded;             
@@ -235,6 +285,28 @@ AliFragmentationFunctionCorrections::~AliFragmentationFunctionCorrections()
   DeleteHistoArray(fh1EffBgrXi);
   DeleteHistoArray(fh1EffBgrZ);
 
+  // BbB
+  DeleteHistoArray(fh1BbBPt);
+  DeleteHistoArray(fh1BbBXi);
+  DeleteHistoArray(fh1BbBZ);
+
+  DeleteHistoArray(fh1BbBBgrPt);
+  DeleteHistoArray(fh1BbBBgrXi);
+  DeleteHistoArray(fh1BbBBgrZ);
+
+  DeleteHistoArray(fh1FoldingCorrPt);
+  DeleteHistoArray(fh1FoldingCorrXi);
+  DeleteHistoArray(fh1FoldingCorrZ);
+
+  // sec corr
+  DeleteHistoArray(fh1SecCorrPt);
+  DeleteHistoArray(fh1SecCorrXi);
+  DeleteHistoArray(fh1SecCorrZ);
+
+  DeleteHistoArray(fh1SecCorrBgrPt);
+  DeleteHistoArray(fh1SecCorrBgrXi);
+  DeleteHistoArray(fh1SecCorrBgrZ);
+
   // unfolding
 
   DeleteHistoArray(fh1FFTrackPtBackFolded);
@@ -256,7 +328,6 @@ AliFragmentationFunctionCorrections::~AliFragmentationFunctionCorrections()
   DeleteHistoArray(fh1FFTrackPtPrior);
   DeleteHistoArray(fh1FFZPrior);
   DeleteHistoArray(fh1FFXiPrior);
-
 
   // clean up corrected FF 
   
@@ -688,6 +759,30 @@ void AliFragmentationFunctionCorrections::SetJetPtSlices(Float_t* bins, const In
   fh1EffBgrZ  = BookHistoArray();
 
 
+  // BbB
+
+  fh1BbBPt = BookHistoArray();
+  fh1BbBXi = BookHistoArray();
+  fh1BbBZ  = BookHistoArray();
+
+  fh1BbBBgrPt = BookHistoArray();
+  fh1BbBBgrXi = BookHistoArray();
+  fh1BbBBgrZ  = BookHistoArray();
+
+  fh1FoldingCorrPt = BookHistoArray();
+  fh1FoldingCorrXi = BookHistoArray();
+  fh1FoldingCorrZ  = BookHistoArray();
+
+  // SecCorr
+
+  fh1SecCorrPt = BookHistoArray();
+  fh1SecCorrXi = BookHistoArray();
+  fh1SecCorrZ  = BookHistoArray();
+
+  fh1SecCorrBgrPt = BookHistoArray();
+  fh1SecCorrBgrXi = BookHistoArray();
+  fh1SecCorrBgrZ  = BookHistoArray();
+
   // unfolding
 
   fh1FFTrackPtBackFolded = BookHistoArray();
@@ -711,7 +806,6 @@ void AliFragmentationFunctionCorrections::SetJetPtSlices(Float_t* bins, const In
   fh1FFTrackPtPrior =  BookHistoArray();
   fh1FFZPrior       =  BookHistoArray();
   fh1FFXiPrior      =  BookHistoArray();
-
 
   // histos bins 
 
@@ -794,15 +888,18 @@ void AliFragmentationFunctionCorrections::SetHistoBins(const Int_t jetPtSlice, c
   Int_t nBins = 0; 
   binsArray.SetAt(binLimitMin,nBins++);
 
-  while(binLimit<binLimitMax && nBins<sizeUpperLim){
+  while(binLimit<0.999999*binLimitMax && nBins<sizeUpperLim){ // 0.999 numerical safety factor
 
     Int_t currentSlice = -1;
     for(Int_t i=0; i<nBinsLimits; i++){
-      if(binLimit >= 0.999*binsLimits[i]) currentSlice = i; // 0.999 numerical saftey factor 
+      if(binLimit >= 0.999999*binsLimits[i]) currentSlice = i;  
     }
     
     Double_t currentBinWidth = binsWidth[currentSlice];
     binLimit += currentBinWidth;
+
+    // if(type == kFlagZ) std::cout<<" SetHistoBins: nBins "<<nBins<<" binLimit "<<binLimit<<" binLimitMax "<<binLimitMax
+    // 				<<" currentSlice "<<currentSlice<<std::endl;
 
     binsArray.SetAt(binLimit,nBins++);
   }
@@ -810,6 +907,38 @@ void AliFragmentationFunctionCorrections::SetHistoBins(const Int_t jetPtSlice, c
   Double_t* bins = binsArray.GetArray();
 
   SetHistoBins(jetPtSlice,nBins,bins,type); 
+}
+
+//_____________________________________________________________________________________________________________________________________
+TArrayD* AliFragmentationFunctionCorrections::GetHistoBins(const Int_t jetPtSlice,  const Int_t type)
+{ 
+  // set histo bins for jet pt slice
+  // if binning undefined for any slice, original binning will be used
+
+  if(!fNJetPtSlices){
+    Printf("%s:%d -- jetPtSlices not defined", (char*)__FILE__,__LINE__);
+    return 0;
+  }
+  
+  if(jetPtSlice>=fNJetPtSlices){
+    Printf("%s:%d -- jetPtSlice %d exceeds max",(char*)__FILE__,__LINE__,jetPtSlice);
+    return 0;
+  }
+  
+  if(type == kFlagPt){
+    return fHistoBinsPt[jetPtSlice]; 
+  }
+  else if(type==kFlagZ){
+    return fHistoBinsZ[jetPtSlice]; 
+  }
+  
+  else if(type==kFlagXi){
+    return fHistoBinsXi[jetPtSlice]; 
+  }
+  else{ 
+    Printf("%s%d unknown type",(char*)__FILE__,__LINE__);
+    return 0;
+  }
 }
 
 //__________________________________________________________________________________________________
@@ -952,15 +1081,17 @@ void AliFragmentationFunctionCorrections::ReadRawFF(TString strfile, TString str
     return;
   }
 
-  if(fDebug>0) Printf("%s:%d -- read FF from file %s ",(char*)__FILE__,__LINE__,strfile.Data());
+  if(fDebug>0) Printf("%s:%d -- read FF from file %s, dir %s ",(char*)__FILE__,__LINE__,strfile.Data(), strdir.Data());
 
   gDirectory->cd(strdir);
 
   TList* list = 0;
   
-  if(!(list = (TList*) gDirectory->Get(strlist))){ 
-    Printf("%s:%d -- error retrieving list %s from directory %s", (char*)__FILE__,__LINE__,strlist.Data(),strdir.Data());
-    return;
+  if(strlist && strlist.Length()){
+    if(!(list = (TList*) gDirectory->Get(strlist))){ 
+      Printf("%s:%d -- error retrieving list %s from directory %s", (char*)__FILE__,__LINE__,strlist.Data(),strdir.Data());
+      return;
+    }
   }
 
   TString hnameJetPt(Form("fh1FFJetPt%s",strFFID.Data()));
@@ -968,10 +1099,24 @@ void AliFragmentationFunctionCorrections::ReadRawFF(TString strfile, TString str
   TString hnameZ(Form("fh2FFZ%s",strFFID.Data()));
   TString hnameXi(Form("fh2FFXi%s",strFFID.Data()));
 
-  TH1F* fh1FFJetPt   = (TH1F*) list->FindObject(hnameJetPt);
-  TH2F* fh2FFTrackPt = (TH2F*) list->FindObject(hnameTrackPt);
-  TH2F* fh2FFZ       = (TH2F*) list->FindObject(hnameZ);  
-  TH2F* fh2FFXi      = (TH2F*) list->FindObject(hnameXi); 
+  TH1F* fh1FFJetPt   = 0;
+  TH2F* fh2FFTrackPt = 0;
+  TH2F* fh2FFZ       = 0;
+  TH2F* fh2FFXi      = 0;
+  
+  if(list){
+    fh1FFJetPt   = (TH1F*) list->FindObject(hnameJetPt);
+    fh2FFTrackPt = (TH2F*) list->FindObject(hnameTrackPt);
+    fh2FFZ       = (TH2F*) list->FindObject(hnameZ);  
+    fh2FFXi      = (TH2F*) list->FindObject(hnameXi); 
+  }
+  else{
+    fh1FFJetPt   = (TH1F*) gDirectory->Get(hnameJetPt);
+    fh2FFTrackPt = (TH2F*) gDirectory->Get(hnameTrackPt);
+    fh2FFZ       = (TH2F*) gDirectory->Get(hnameZ);  
+    fh2FFXi      = (TH2F*) gDirectory->Get(hnameXi);
+  }
+
 
   if(!fh1FFJetPt)  { Printf("%s:%d -- histo %s not found",(char*)__FILE__,__LINE__,hnameJetPt.Data());   return; }
   if(!fh2FFTrackPt){ Printf("%s:%d -- histo %s not found",(char*)__FILE__,__LINE__,hnameTrackPt.Data()); return; }
@@ -1037,7 +1182,13 @@ void AliFragmentationFunctionCorrections::ReadRawFF(TString strfile, TString str
 
     // raw FF = corr level 0
     fCorrFF[0]->AddCorrHistos(i,projPt,projZ,projXi);
-  }  
+  }
+
+
+  delete fh1FFJetPt;
+  delete fh2FFTrackPt;
+  delete fh2FFZ;  
+  delete fh2FFXi; 
 }
 
 //_____________________________________________________________________________________________________________________
@@ -1068,15 +1219,17 @@ void AliFragmentationFunctionCorrections::ReadRawBgr(TString strfile, TString st
     return;
   }
 
-  if(fDebug>0) Printf("%s:%d -- read Bgr %s from file %s ",(char*)__FILE__,__LINE__,strBgrID.Data(),strfile.Data());
+  if(fDebug>0) Printf("%s:%d -- read Bgr %s from file %s, dir %s ",(char*)__FILE__,__LINE__,strBgrID.Data(),strfile.Data(),strdir.Data());
 
   gDirectory->cd(strdir);
 
   TList* list = 0;
   
-  if(!(list = (TList*) gDirectory->Get(strlist))){
-    Printf("%s:%d -- error retrieving list %s from directory %s", (char*)__FILE__,__LINE__,strlist.Data(),strdir.Data());
-    return;
+  if(strlist && strlist.Length()){
+    if(!(list = (TList*) gDirectory->Get(strlist))){
+      Printf("%s:%d -- error retrieving list %s from directory %s", (char*)__FILE__,__LINE__,strlist.Data(),strdir.Data());
+      return;
+    }
   }
 
   TString hnameNJets = "fh1nRecJetsCuts"; 
@@ -1085,23 +1238,39 @@ void AliFragmentationFunctionCorrections::ReadRawBgr(TString strfile, TString st
   TString hnameBgrZ(Form("fh2FFZ%s",strID.Data()));
   TString hnameBgrXi(Form("fh2FFXi%s",strID.Data()));
 
-  TH1F* fh1NJets        = (TH1F*) list->FindObject(hnameNJets); // needed for normalization of bgr out of 2 jets
-  TH1F* fh1FFJetPtBgr   = (TH1F*) list->FindObject(hnameJetPt);
-  TH2F* fh2FFTrackPtBgr = (TH2F*) list->FindObject(hnameBgrTrackPt);
-  TH2F* fh2FFZBgr       = (TH2F*) list->FindObject(hnameBgrZ);  
-  TH2F* fh2FFXiBgr      = (TH2F*) list->FindObject(hnameBgrXi); 
+  TH1F* fh1NJets;
+  TH1F* fh1FFJetPtBgr;  
+  TH2F* fh2FFTrackPtBgr;
+  TH2F* fh2FFZBgr;
+  TH2F* fh2FFXiBgr;     
+  
+  if(list){
+    fh1NJets        = (TH1F*) list->FindObject(hnameNJets); // needed for normalization of bgr out of 2 jets
+    fh1FFJetPtBgr   = (TH1F*) list->FindObject(hnameJetPt);
+    fh2FFTrackPtBgr = (TH2F*) list->FindObject(hnameBgrTrackPt);
+    fh2FFZBgr       = (TH2F*) list->FindObject(hnameBgrZ);  
+    fh2FFXiBgr      = (TH2F*) list->FindObject(hnameBgrXi); 
+  }
+  else{
+    fh1NJets        = (TH1F*) gDirectory->Get(hnameNJets); // needed for normalization of bgr out of 2 jets
+    fh1FFJetPtBgr   = (TH1F*) gDirectory->Get(hnameJetPt);
+    fh2FFTrackPtBgr = (TH2F*) gDirectory->Get(hnameBgrTrackPt);
+    fh2FFZBgr       = (TH2F*) gDirectory->Get(hnameBgrZ);  
+    fh2FFXiBgr      = (TH2F*) gDirectory->Get(hnameBgrXi);  
+  }
+
 
   if(!fh1FFJetPtBgr)  { Printf("%s:%d -- histo %s not found",(char*)__FILE__,__LINE__,hnameJetPt.Data());      return; }
-  if(!fh1NJets)       { Printf("%s:%d -- histo %s not found",(char*)__FILE__,__LINE__,hnameNJets.Data());      return; }
+  if(!fh1NJets)       { Printf("%s:%d -- histo %s not found",(char*)__FILE__,__LINE__,hnameNJets.Data());              }
   if(!fh2FFTrackPtBgr){ Printf("%s:%d -- histo %s not found",(char*)__FILE__,__LINE__,hnameBgrTrackPt.Data()); return; }
   if(!fh2FFZBgr)      { Printf("%s:%d -- histo %s not found",(char*)__FILE__,__LINE__,hnameBgrZ.Data());       return; }
   if(!fh2FFXiBgr)     { Printf("%s:%d -- histo %s not found",(char*)__FILE__,__LINE__,hnameBgrXi.Data());      return; }
 
   fh1FFJetPtBgr->SetDirectory(0);
-  fh1NJets->SetDirectory(0);
   fh2FFTrackPtBgr->SetDirectory(0);
   fh2FFZBgr->SetDirectory(0);  
   fh2FFXiBgr->SetDirectory(0); 
+  if(fh1NJets) fh1NJets->SetDirectory(0);
 
   f.Close();  
 
@@ -1123,11 +1292,18 @@ void AliFragmentationFunctionCorrections::ReadRawBgr(TString strfile, TString st
     //  / fh1NJets->Integral(fh1NJets->FindBin(1),fh1NJets->GetNbinsX());}
 
 
-    if(strBgrID.Contains("OutAllJets")){  // scale by ratio >3 jets events / all events
-      scaleF = fh1NJets->Integral(fh1NJets->FindBin(4),fh1NJets->GetNbinsX()) 
-	/ fh1NJets->Integral(fh1NJets->FindBin(1),fh1NJets->GetNbinsX());
+    if(strBgrID.Contains("OutAllJets") ){  // scale by ratio >3 jets events / all events
+
+      if(fh1NJets){
+	scaleF = fh1NJets->Integral(fh1NJets->FindBin(4),fh1NJets->GetNbinsX()) 
+	  / fh1NJets->Integral(fh1NJets->FindBin(1),fh1NJets->GetNbinsX());
+      }
+      else{
+	Printf("%s:%d -- use bgr OutAllJets, but histo fhn1NJets not found",(char*)__FILE__,__LINE__);    
+      }
     }
-  
+    
+ 
     fNJetsBgr->SetAt(nJetsBin*scaleF,i); 
 
     if(fDebug>0) Printf("bgr jet pt %d to %d: nJets %f, scaleF %.2f",
@@ -1169,7 +1345,13 @@ void AliFragmentationFunctionCorrections::ReadRawBgr(TString strfile, TString st
     
     // raw bgr = corr level 0
     fCorrBgr[0]->AddCorrHistos(i,projPt,projZ,projXi);
-  }  
+  }
+
+  delete fh1FFJetPtBgr;
+  if(fh1NJets) delete fh1NJets;
+  delete fh2FFTrackPtBgr;
+  delete fh2FFZBgr;  
+  delete fh2FFXiBgr; 
 }
 
 //_____________________________________________________________________________________________________________________
@@ -1291,7 +1473,13 @@ void AliFragmentationFunctionCorrections::ReadRawBgrEmbedding(TString strfile, T
     
     // raw bgr = corr level 0
     fCorrBgr[0]->AddCorrHistos(i,projPt,projZ,projXi);
-  }  
+  }
+
+  delete fh1FFJetPtBgr;
+  delete fh1NJets;
+  delete fh2FFTrackPtBgr;
+  delete fh2FFZBgr;  
+  delete fh2FFXiBgr; 
 }
 
 
@@ -1344,6 +1532,9 @@ void AliFragmentationFunctionCorrections::WriteOutput(TString strfile, TString s
     if(fh1FFRatioZBackFolded[i] && fh1FFRatioZBackFolded[i]->GetEntries())             fh1FFRatioZBackFolded[i]->Write();
     if(fh1FFRatioXiBackFolded[i] &&fh1FFRatioXiBackFolded[i]->GetEntries())            fh1FFRatioXiBackFolded[i]->Write();
 
+    if(fh1FoldingCorrPt[i] && fh1FoldingCorrPt[i]->GetEntries()) fh1FoldingCorrPt[i]->Write(); // TEST!!!
+    if(fh1FoldingCorrZ[i] && fh1FoldingCorrZ[i]->GetEntries())     fh1FoldingCorrZ[i]->Write();  // TEST!!!
+    if(fh1FoldingCorrXi[i] && fh1FoldingCorrXi[i]->GetEntries()) fh1FoldingCorrXi[i]->Write(); // TEST!!!
   }
   
   // inclusive track pt
@@ -1352,6 +1543,9 @@ void AliFragmentationFunctionCorrections::WriteOutput(TString strfile, TString s
   if(fh1SingleTrackPtBackFolded)      fh1SingleTrackPtBackFolded->Write();  
   if(fh1RatioSingleTrackPtFolded)     fh1RatioSingleTrackPtFolded->Write();  
   if(fh1RatioSingleTrackPtBackFolded) fh1RatioSingleTrackPtBackFolded->Write();  
+
+  
+
 
   f.Close();  
 }
@@ -1414,8 +1608,8 @@ THnSparse* AliFragmentationFunctionCorrections::TH1toSparse(const TH1F* hist, TS
 }
 
 //______________________________________________________________________________________________________________________________________________
-THnSparse* AliFragmentationFunctionCorrections::Unfold(THnSparse* hnHist, const THnSparse* hnResponse, const THnSparse* hnEff, const Int_t nIter,
-						       const Bool_t useCorrelatedErrors, const THnSparse* hnPrior)
+TH1F* AliFragmentationFunctionCorrections::Unfold(THnSparse* hnHist, const THnSparse* hnResponse, const THnSparse* hnEff, const Int_t nIter,
+						  const Bool_t useCorrelatedErrors, const THnSparse* hnPrior)
 {
   // unfold input histo 
 
@@ -1432,8 +1626,11 @@ THnSparse* AliFragmentationFunctionCorrections::Unfold(THnSparse* hnHist, const 
   TString hnameUnf = hnHist->GetName();
   hnameUnf.Append("_unf");
   unfolded->SetNameTitle(hnameUnf,hnHist->GetTitle());
-
-  return unfolded;
+  
+  TH1F* h1Unfolded = (TH1F*) unfolded->Projection(0); 
+  h1Unfolded->SetNameTitle(hnHist->GetName(),hnHist->GetTitle());
+  
+  return h1Unfolded;
 }
 
 //___________________________________________________________________________________________________________________________
@@ -1503,12 +1700,43 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
     THnSparse* hnPrior          = 0;
     if(hPrior) hnPrior = TH1toSparse(hPrior,priorNameTHn,hPrior->GetTitle());
     
-    THnSparse* hnUnfolded 
+    //THnSparse* hnUnfolded 
+    //  = Unfold(hnHist,hnResponse,hnFlatEfficiency,nIter,useCorrelatedErrors,hnPrior);  
+     
+    //TH1F* hUnfolded = (TH1F*) hnUnfolded->Projection(0); 
+    //hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
+    
+    TH1F* hUnfolded 
       = Unfold(hnHist,hnResponse,hnFlatEfficiency,nIter,useCorrelatedErrors,hnPrior);  
      
-    TH1F* hUnfolded = (TH1F*) hnUnfolded->Projection(0); 
-    hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
+    //TH1F* hUnfolded = (TH1F*) hnUnfolded->Projection(0); 
+    //hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
+
+    // errors
+    for(Int_t bin=1; bin<=hist->GetNbinsX(); bin++){
+      
+      Double_t contOrg = hist->GetBinContent(bin);
+      Double_t errOrg  = hist->GetBinError(bin);
+      
+      Double_t contUnf = hUnfolded->GetBinContent(bin);
+      //Double_t errUnf  = hUnfolded->GetBinError(bin);
+
+      Double_t relErrOrg = 0;
+      if(contOrg) relErrOrg = errOrg/contOrg;
+      
+      //       std::cout<<" cont original "<<contOrg<<" err original "<<errOrg<<std::endl;
+      //       std::cout<<" cont unf "<<contUnf<<" errUnf"<<errUnf<<std::endl;
+      //       std::cout<<" err/cont original "<<relErrOrg<<std::endl;
+      //       if(contUnf)  std::cout<<" err/conf unf "<<errUnf/contUnf<<std::endl;
+      
+      hUnfolded->SetBinError(bin,relErrOrg*contUnf);
+      
+      //       if(hUnfolded->GetBinContent(bin)){
+      // 	std::cout<<" modified err unfolded "<<hUnfolded->GetBinError(bin)/hUnfolded->GetBinContent(bin)<<std::endl; 
+      //       }
+    }
     
+
     if(type == kFlagPt) fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,hUnfolded,0,0);
     if(type == kFlagZ)  fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,0,hUnfolded,0);
     if(type == kFlagXi) fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,0,0,hUnfolded);
@@ -1542,7 +1770,6 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
     
     delete hnHist;
     delete hnFlatEfficiency;
-
  }
 }
 
@@ -1570,6 +1797,7 @@ void AliFragmentationFunctionCorrections::UnfoldXi(const Int_t nIter, const Bool
   UnfoldHistos(nIter, useCorrelatedErrors, type);
 }
 
+
 //______________________________________________________________________________________________
 TH1F* AliFragmentationFunctionCorrections::ApplyResponse(const TH1F* hist, THnSparse* hnResponse)
 {
@@ -1588,7 +1816,7 @@ TH1F* AliFragmentationFunctionCorrections::ApplyResponse(const TH1F* hist, THnSp
   // do it in this function and not when reading response, since for 'proper' normalization errors are difficult to assign
   // so for unfolding proper we leave it to CORRFW ...
 
-  Double_t normFacResponse[nBinsT];
+  Double_t normFacResponse[nBinsT+1];
 
   for(Int_t iT=1; iT<=nBinsT; iT++){
 
@@ -1928,6 +2156,17 @@ void AliFragmentationFunctionCorrections::XiShift(const Int_t corrLevel)
     jetPtCorr[i]   = ptCorr;   
   }
 
+  // ---
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+
+    std::cout<<" jet pt bin "<<i<<" from "<<fJetPtSlices->At(i)<<" to "<<fJetPtSlices->At(i+1)
+	     <<" jetPtUncorr "<<jetPtUncorr[i]<<" corrLevel "<<corrLevel<<" jet pt corr "<<jetPtCorr[i]<<" ratio "
+	     <<jetPtCorr[i]/jetPtUncorr[i]<<std::endl;
+  } 
+
+  return; // for TEST!!!
+
   // calc dXi from dN/dpt distribution : 
   // sum over track pt for raw and corrected FF is equivalent to raw/corrected jet pt 
 
@@ -2005,14 +2244,22 @@ void AliFragmentationFunctionCorrections::XiShift(const Int_t corrLevel)
 }
 
 //_____________________________________________________
-void AliFragmentationFunctionCorrections::SubtractBgr()
+void AliFragmentationFunctionCorrections::SubtractBgr(Double_t sysErr)
 {
   // subtract bgr distribution from FF
   // the current corr level is used for both 
   
   AddCorrectionLevel("bgrSub");
 
-  for(Int_t i=0; i<fNJetPtSlices; i++){
+  fstream ascii_out_pt;
+  fstream ascii_out_z;
+  fstream ascii_out_xi;
+
+  if(sysErr) ascii_out_pt.open("sysErrUE_pt.txt",std::ios::out);
+  if(sysErr) ascii_out_z.open("sysErrUE_z.txt",std::ios::out);
+  if(sysErr) ascii_out_xi.open("sysErrUE_xi.txt",std::ios::out);
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){ // jet slices
 
     TH1F* histPt = fCorrFF[fNCorrectionLevels-2]->GetTrackPt(i);
     TH1F* histZ  = fCorrFF[fNCorrectionLevels-2]->GetZ(i);
@@ -2037,7 +2284,62 @@ void AliFragmentationFunctionCorrections::SubtractBgr()
     hFFXiBgrSub->Add(histXiBgr,-1);
 
     fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,hFFTrackPtBgrSub,hFFZBgrSub,hFFXiBgrSub);
+
+    if(sysErr){
+
+      for(Int_t bin=1; bin<=histPt->GetNbinsX(); bin++){
+
+	//Double_t sigPlBgr = histPt->GetBinContent(bin);
+	Double_t sig      = hFFTrackPtBgrSub->GetBinContent(bin);
+	Double_t bgr      = histPtBgr->GetBinContent(bin);
+	
+	Double_t relErr = 0; 
+	if(sig>0)  relErr = sysErr*bgr/sig;
+
+// 	std::cout<<" pt bin "<<bin<<" mean "<<histPt->GetBinCenter(bin)
+// 		 <<" sigPlBgr "<<sigPlBgr<<" sig "<<sig<<" bgr "<<bgr<<" relErr "<<relErr<<std::endl;
+	
+	ascii_out_pt<<i<<" "<<bin<<" "<<relErr<<std::endl;
+      }
+
+
+      for(Int_t bin=1; bin<=histZ->GetNbinsX(); bin++){
+	
+	//Double_t sigPlBgr = histZ->GetBinContent(bin);
+	Double_t sig      = hFFZBgrSub->GetBinContent(bin);
+	Double_t bgr      = histZBgr->GetBinContent(bin);
+	
+	Double_t relErr = 0; 
+	if(sig>0)  relErr = sysErr*bgr/sig;
+	
+ 	std::cout<<" z bin "<<bin<<" mean "<<histZ->GetBinCenter(bin)
+ 		 <<" sigPlBgr "<<histZ->GetBinContent(bin)<<" sig "<<sig<<" bgr "<<bgr<<" relErr "<<relErr<<std::endl;
+	
+	ascii_out_z<<i<<" "<<bin<<" "<<relErr<<std::endl;
+      }
+
+
+      for(Int_t bin=1; bin<=histXi->GetNbinsX(); bin++){
+	
+	//Double_t sigPlBgr = histXi->GetBinContent(bin);
+	Double_t sig      = hFFXiBgrSub->GetBinContent(bin);
+	Double_t bgr      = histXiBgr->GetBinContent(bin);
+	
+	Double_t relErr = 0; 
+	if(sig>0)  relErr = sysErr*bgr/sig;
+	
+ 	std::cout<<" xi bin "<<bin<<" mean "<<histXi->GetBinCenter(bin)
+ 		 <<" sigPlBgr "<<histXi->GetBinContent(bin)<<" sig "<<sig<<" bgr "<<bgr<<" relErr "<<relErr<<std::endl;
+	
+	ascii_out_xi<<i<<" "<<bin<<" "<<relErr<<std::endl;
+      }
+    }
   }
+
+  if(sysErr) ascii_out_pt.close(); 
+  if(sysErr) ascii_out_xi.close(); 
+
+
 }
 
 //________________________________________________________________________________________________________________
@@ -2193,6 +2495,11 @@ void AliFragmentationFunctionCorrections::WriteSingleTrackEff(TString strInfile,
   hSingleTrackEffPhi->Write();
   
   out.Close();
+
+  delete hdNdptTracksMCPrimGen;
+  delete hdNdetadphiTracksMCPrimGen;
+  delete hdNdptTracksMCPrimRec;
+  delete hdNdetadphiTracksMCPrimRec;
 }
 
 //________________________________________________________________________________________________________________
@@ -2218,8 +2525,11 @@ void AliFragmentationFunctionCorrections::WriteSingleTrackSecCorr(TString strInf
   TH1D* hdNdptTracksMCPrimRec;
   TH2D* hdNdetadphiTracksMCPrimRec;
   
-  TH1D* hdNdptTracksMCSecRec;
-  TH2D* hdNdetadphiTracksMCSecRec;
+  TH1D* hdNdptTracksMCSecRecNS;
+  TH2D* hdNdetadphiTracksMCSecRecNS;
+
+  TH1D* hdNdptTracksMCSecRecSsc;
+  TH2D* hdNdetadphiTracksMCSecRecSsc;
 
   TFile f(strInfile,"READ");
 
@@ -2244,62 +2554,81 @@ void AliFragmentationFunctionCorrections::WriteSingleTrackSecCorr(TString strInf
 
 
   if(list){
-    hdNdptTracksMCPrimRec       = (TH1D*) list->FindObject("fh1TrackQAPtRecEffGen");
-    hdNdetadphiTracksMCPrimRec  = (TH2D*) list->FindObject("fh2TrackQAEtaPhiRecEffGen");
+    hdNdptTracksMCPrimRec        = (TH1D*) list->FindObject("fh1TrackQAPtRecEffGen");
+    hdNdetadphiTracksMCPrimRec   = (TH2D*) list->FindObject("fh2TrackQAEtaPhiRecEffGen");
     
-    hdNdptTracksMCSecRec       = (TH1D*) list->FindObject("fh1TrackQAPtSecRec");
-    hdNdetadphiTracksMCSecRec  = (TH2D*) list->FindObject("fh2TrackQAEtaPhiSecRec");
+    hdNdptTracksMCSecRecNS       = (TH1D*) list->FindObject("fh1TrackQAPtSecRecNS");
+    hdNdetadphiTracksMCSecRecNS  = (TH2D*) list->FindObject("fh2TrackQAEtaPhiSecRecNS");
+
+    hdNdptTracksMCSecRecSsc      = (TH1D*) list->FindObject("fh1TrackQAPtSecRecSsc");
+    hdNdetadphiTracksMCSecRecSsc = (TH2D*) list->FindObject("fh2TrackQAEtaPhiSecRecSsc");
+
   }
   else{
-    hdNdptTracksMCPrimRec       = (TH1D*) gDirectory->Get("fh1TrackQAPtRecEffGen");
-    hdNdetadphiTracksMCPrimRec  = (TH2D*) gDirectory->Get("fh2TrackQAEtaPhiRecEffGen");
+    hdNdptTracksMCPrimRec        = (TH1D*) gDirectory->Get("fh1TrackQAPtRecEffGen");
+    hdNdetadphiTracksMCPrimRec   = (TH2D*) gDirectory->Get("fh2TrackQAEtaPhiRecEffGen");
 
-    hdNdptTracksMCSecRec       = (TH1D*) gDirectory->Get("fh1TrackQAPtSecRec");
-    hdNdetadphiTracksMCSecRec  = (TH2D*) gDirectory->Get("fh2TrackQAEtaPhiSecRec");
+    hdNdptTracksMCSecRecNS       = (TH1D*) gDirectory->Get("fh1TrackQAPtSecRecNS");
+    hdNdetadphiTracksMCSecRecNS  = (TH2D*) gDirectory->Get("fh2TrackQAEtaPhiSecRecNS");
+
+    hdNdptTracksMCSecRecSsc      = (TH1D*) gDirectory->Get("fh1TrackQAPtSecRecSsc");
+    hdNdetadphiTracksMCSecRecSsc = (TH2D*) gDirectory->Get("fh2TrackQAEtaPhiSecRecSsc");
   }
   
   hdNdptTracksMCPrimRec->SetDirectory(0);
   hdNdetadphiTracksMCPrimRec->SetDirectory(0);
-  hdNdptTracksMCSecRec->SetDirectory(0);
-  hdNdetadphiTracksMCSecRec->SetDirectory(0);
+
+  hdNdptTracksMCSecRecNS->SetDirectory(0);
+  hdNdetadphiTracksMCSecRecNS->SetDirectory(0);
+
+  hdNdptTracksMCSecRecSsc->SetDirectory(0);
+  hdNdetadphiTracksMCSecRecSsc->SetDirectory(0);
   
   f.Close();
 
   // projections: dN/deta, dN/dphi 
 
-  TH1D* hdNdetaTracksMCPrimRec = (TH1D*) hdNdetadphiTracksMCPrimRec->ProjectionX("hdNdetaTracksMcPrimRec");
-  TH1D* hdNdphiTracksMCPrimRec = (TH1D*) hdNdetadphiTracksMCPrimRec->ProjectionY("hdNdphiTracksMcPrimRec");
+  TH1D* hdNdetaTracksMCPrimRec   = (TH1D*) hdNdetadphiTracksMCPrimRec->ProjectionX("hdNdetaTracksMcPrimRec");
+  TH1D* hdNdphiTracksMCPrimRec   = (TH1D*) hdNdetadphiTracksMCPrimRec->ProjectionY("hdNdphiTracksMcPrimRec");
  
-  TH1D* hdNdetaTracksMCSecRec = (TH1D*) hdNdetadphiTracksMCSecRec->ProjectionX("hdNdetaTracksMcSecRec");
-  TH1D* hdNdphiTracksMCSecRec = (TH1D*) hdNdetadphiTracksMCSecRec->ProjectionY("hdNdphiTracksMcSecRec");
+  TH1D* hdNdetaTracksMCSecRecNS  = (TH1D*) hdNdetadphiTracksMCSecRecNS->ProjectionX("hdNdetaTracksMcSecRecNS");
+  TH1D* hdNdphiTracksMCSecRecNS  = (TH1D*) hdNdetadphiTracksMCSecRecNS->ProjectionY("hdNdphiTracksMcSecRecNS");
 
+  TH1D* hdNdetaTracksMCSecRecSsc = (TH1D*) hdNdetadphiTracksMCSecRecSsc->ProjectionX("hdNdetaTracksMcSecRecSsc");
+  TH1D* hdNdphiTracksMCSecRecSsc = (TH1D*) hdNdetadphiTracksMCSecRecSsc->ProjectionY("hdNdphiTracksMcSecRecSsc");
  
   // rebin
 
   TString strNamePtPrim = "hTrackPtPrim";
   TString strNamePtSec  = "hTrackPtSec";
 
-  if(fNHistoBinsSinglePt) hdNdptTracksMCPrimRec = (TH1D*) hdNdptTracksMCPrimRec->Rebin(fNHistoBinsSinglePt,strNamePtPrim,fHistoBinsSinglePt->GetArray());
-  if(fNHistoBinsSinglePt) hdNdptTracksMCSecRec  = (TH1D*) hdNdptTracksMCSecRec->Rebin(fNHistoBinsSinglePt,strNamePtSec,fHistoBinsSinglePt->GetArray());
+  if(fNHistoBinsSinglePt) hdNdptTracksMCPrimRec   = (TH1D*) hdNdptTracksMCPrimRec->Rebin(fNHistoBinsSinglePt,strNamePtPrim,fHistoBinsSinglePt->GetArray());
+  if(fNHistoBinsSinglePt) hdNdptTracksMCSecRecNS  = (TH1D*) hdNdptTracksMCSecRecNS->Rebin(fNHistoBinsSinglePt,strNamePtSec,fHistoBinsSinglePt->GetArray());
+  if(fNHistoBinsSinglePt) hdNdptTracksMCSecRecSsc = (TH1D*) hdNdptTracksMCSecRecSsc->Rebin(fNHistoBinsSinglePt,strNamePtSec,fHistoBinsSinglePt->GetArray());
 
 
   // secondary correction factor: divide prim/(prim+sec)
 
-  TH1F* hSingleTrackSecCorrPt = (TH1F*) hdNdptTracksMCSecRec->Clone("hSingleTrackSecCorrPt");
-  TH1F* hSumPrimSecPt = (TH1F*) hdNdptTracksMCSecRec->Clone("hSumPrimSecPt");
-  hSumPrimSecPt->Add(hdNdptTracksMCPrimRec);
+  TH1F* hSingleTrackSecCorrPt = (TH1F*) hdNdptTracksMCPrimRec->Clone("hSingleTrackSecCorrPt");
+  TH1F* hSumPrimSecPt = (TH1F*) hdNdptTracksMCPrimRec->Clone("hSumPrimSecPt");
+  hSumPrimSecPt->Add(hdNdptTracksMCSecRecNS);
+  hSumPrimSecPt->Add(hdNdptTracksMCSecRecSsc);
   hSingleTrackSecCorrPt->Divide(hdNdptTracksMCPrimRec,hSumPrimSecPt,1,1,"B"); // binominal errors
 
-  TH1F* hSingleTrackSecCorrEta = (TH1F*) hdNdetaTracksMCSecRec->Clone("hSingleTrackSecCorrEta");
-  TH1F* hSumPrimSecEta = (TH1F*) hdNdetaTracksMCSecRec->Clone("hSumPrimSecEta");
-  hSumPrimSecEta->Add(hdNdetaTracksMCPrimRec);
+
+  TH1F* hSingleTrackSecCorrEta = (TH1F*) hdNdetaTracksMCPrimRec->Clone("hSingleTrackSecCorrEta");
+  TH1F* hSumPrimSecEta = (TH1F*) hdNdetaTracksMCPrimRec->Clone("hSumPrimSecEta");
+  hSumPrimSecEta->Add(hdNdetaTracksMCSecRecNS);
+  hSumPrimSecEta->Add(hdNdetaTracksMCSecRecSsc);
   hSingleTrackSecCorrEta->Divide(hdNdetaTracksMCPrimRec,hSumPrimSecEta,1,1,"B"); // binominal errors
 
-  TH1F* hSingleTrackSecCorrPhi = (TH1F*) hdNdphiTracksMCSecRec->Clone("hSingleTrackSecCorrPhi");
-  TH1F* hSumPrimSecPhi = (TH1F*) hdNdphiTracksMCSecRec->Clone("hSumPrimSecPhi");
-  hSumPrimSecPhi->Add(hdNdphiTracksMCPrimRec);
+  TH1F* hSingleTrackSecCorrPhi = (TH1F*) hdNdphiTracksMCPrimRec->Clone("hSingleTrackSecCorrPhi");
+  TH1F* hSumPrimSecPhi = (TH1F*) hdNdphiTracksMCPrimRec->Clone("hSumPrimSecPhi");
+  hSumPrimSecPhi->Add(hdNdphiTracksMCSecRecNS);
+  hSumPrimSecPhi->Add(hdNdphiTracksMCSecRecSsc);
   hSingleTrackSecCorrPhi->Divide(hdNdphiTracksMCPrimRec,hSumPrimSecPhi,1,1,"B"); // binominal errors
-  
+
+  // 
   
   TString outfileOption = "RECREATE";
   if(updateOutfile)  outfileOption = "UPDATE";
@@ -2323,15 +2652,26 @@ void AliFragmentationFunctionCorrections::WriteSingleTrackSecCorr(TString strInf
     } 
   } 
 
-  hdNdptTracksMCSecRec->Write();
-  hdNdetaTracksMCSecRec->Write();
-  hdNdphiTracksMCSecRec->Write();
+  hdNdptTracksMCSecRecNS->Write();
+  hdNdetaTracksMCSecRecNS->Write();
+  hdNdphiTracksMCSecRecNS->Write();
+
+  hdNdptTracksMCSecRecSsc->Write();
+  hdNdetaTracksMCSecRecSsc->Write();
+  hdNdphiTracksMCSecRecSsc->Write();
 
   hSingleTrackSecCorrPt->Write();
   hSingleTrackSecCorrEta->Write();
   hSingleTrackSecCorrPhi->Write();
   
   out.Close();
+
+  delete hdNdptTracksMCPrimRec;       
+  delete hdNdetadphiTracksMCPrimRec;  
+  delete hdNdptTracksMCSecRecNS;
+  delete hdNdetadphiTracksMCSecRecNS;
+  delete hdNdptTracksMCSecRecSsc;
+  delete hdNdetadphiTracksMCSecRecSsc;
 }
 
 //________________________________________________________________________________________________________________
@@ -2503,15 +2843,15 @@ void AliFragmentationFunctionCorrections::WriteJetTrackEff(TString strInfile, TS
     fh2FFXiRecEffRec       = (TH2F*) list->FindObject("fh2FFXiRecEffRec");
   }
   else{
-    fh1FFJetPtRecEffGen    = (TH1F*) gDirectory->FindObject("fh1FFJetPtRecEffGen");
+    fh1FFJetPtRecEffGen    = (TH1F*) gDirectory->Get("fh1FFJetPtRecEffGen");
 
-    fh2FFTrackPtRecEffGen  = (TH2F*) gDirectory->FindObject("fh2FFTrackPtRecEffGen");
-    fh2FFZRecEffGen        = (TH2F*) gDirectory->FindObject("fh2FFZRecEffGen");
-    fh2FFXiRecEffGen       = (TH2F*) gDirectory->FindObject("fh2FFXiRecEffGen");
+    fh2FFTrackPtRecEffGen  = (TH2F*) gDirectory->Get("fh2FFTrackPtRecEffGen");
+    fh2FFZRecEffGen        = (TH2F*) gDirectory->Get("fh2FFZRecEffGen");
+    fh2FFXiRecEffGen       = (TH2F*) gDirectory->Get("fh2FFXiRecEffGen");
     
-    fh2FFTrackPtRecEffRec  = (TH2F*) gDirectory->FindObject("fh2FFTrackPtRecEffRec");
-    fh2FFZRecEffRec        = (TH2F*) gDirectory->FindObject("fh2FFZRecEffRec");
-    fh2FFXiRecEffRec       = (TH2F*) gDirectory->FindObject("fh2FFXiRecEffRec");
+    fh2FFTrackPtRecEffRec  = (TH2F*) gDirectory->Get("fh2FFTrackPtRecEffRec");
+    fh2FFZRecEffRec        = (TH2F*) gDirectory->Get("fh2FFZRecEffRec");
+    fh2FFXiRecEffRec       = (TH2F*) gDirectory->Get("fh2FFXiRecEffRec");
   }
   
   fh1FFJetPtRecEffGen->SetDirectory(0); 
@@ -2643,23 +2983,47 @@ void AliFragmentationFunctionCorrections::WriteJetTrackEff(TString strInfile, TS
 
   out.Close();
 
+ 
+  delete fh1FFJetPtRecEffGen; 
+
+  delete fh2FFTrackPtRecEffGen;
+  delete fh2FFZRecEffGen;
+  delete fh2FFXiRecEffGen;
+  
+  delete fh2FFTrackPtRecEffRec;
+  delete fh2FFZRecEffRec;
+  delete fh2FFXiRecEffRec;
 }
 
 //________________________________________________________________________________________________________________
 void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TString strID, TString strOutfile, 
-							   Bool_t updateOutfile)
+							  Bool_t updateOutfile, TString strOutDir)
 { 
   // read task ouput from MC and write secondary correction - standard dir/list 
      
   TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
-  WriteJetSecCorr(strInfile,strdir,strlist,strOutfile,updateOutfile);
+  WriteJetSecCorr(strInfile,strdir,strlist,strOutfile,updateOutfile, strOutDir,kFALSE,"");
 }
+
+//________________________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::WriteBgrJetSecCorr(TString strInfile, TString strBgrID, TString strID, TString strOutfile, 
+							     Bool_t updateOutfile, TString strOutDir)
+{ 
+  // read task ouput from MC and write secondary correction - standard dir/list 
+     
+  TString strdir  = "PWGJE_FragmentationFunction_" + strID;
+  TString strlist = "fracfunc_" + strID;
+    
+  WriteJetSecCorr(strInfile,strdir,strlist,strOutfile,updateOutfile, strOutDir,kTRUE,strBgrID);
+}
+
 
 //___________________________________________________________________________________________________________________________________
 void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TString strdir, TString strlist, 
-							   TString strOutfile, Bool_t updateOutfile)
+							  TString strOutfile, Bool_t updateOutfile, TString strOutDir,
+							  Bool_t writeBgr, TString strBgrID)
 {
   // read task output from MC and write secondary correction in jet pt slices as function of pt, z, xi
   // argument strlist optional - read from directory strdir if not specified
@@ -2669,23 +3033,48 @@ void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TSt
   TH1F* hSecCorrXi[fNJetPtSlices];
   TH1F* hSecCorrZ[fNJetPtSlices];
 
+  // corr factors using naive Pythia strangeness - for sys uncertainties
+  TH1F* hSecCorrPt_nonSc[fNJetPtSlices];
+  TH1F* hSecCorrXi_nonSc[fNJetPtSlices];
+  TH1F* hSecCorrZ_nonSc[fNJetPtSlices];
+
   TH1F* hdNdptTracksMCPrimRec[fNJetPtSlices];
   TH1F* hdNdxiMCPrimRec[fNJetPtSlices];
   TH1F* hdNdzMCPrimRec[fNJetPtSlices];
     
-  TH1F* hdNdptTracksMCSecRec[fNJetPtSlices];
-  TH1F* hdNdxiMCSecRec[fNJetPtSlices];
-  TH1F* hdNdzMCSecRec[fNJetPtSlices];
+  TH1F* hdNdptTracksMCSecRecNS[fNJetPtSlices];
+  TH1F* hdNdxiMCSecRecNS[fNJetPtSlices];
+  TH1F* hdNdzMCSecRecNS[fNJetPtSlices];
 
-  TH1F* fh1FFJetPtRecEffGen;
+  TH1F* hdNdptTracksMCSecRecS[fNJetPtSlices];
+  TH1F* hdNdxiMCSecRecS[fNJetPtSlices];
+  TH1F* hdNdzMCSecRecS[fNJetPtSlices];
+
+  TH1F* hdNdptTracksMCSecRecSsc[fNJetPtSlices];
+  TH1F* hdNdxiMCSecRecSsc[fNJetPtSlices];
+  TH1F* hdNdzMCSecRecSsc[fNJetPtSlices];
+  
+  // ---
+
+  TH1F* fh1FFJetPtRecEffRec;
 
   TH2F* fh2FFTrackPtRecEffRec;
   TH2F* fh2FFZRecEffRec;
   TH2F* fh2FFXiRecEffRec;
   
-  TH2F* fh2FFTrackPtSecRec;
-  TH2F* fh2FFZSecRec;
-  TH2F* fh2FFXiSecRec;
+  TH2F* fh2FFTrackPtSecRecNS;
+  TH2F* fh2FFZSecRecNS;
+  TH2F* fh2FFXiSecRecNS;
+
+  TH2F* fh2FFTrackPtSecRecS;
+  TH2F* fh2FFZSecRecS;
+  TH2F* fh2FFXiSecRecS;
+
+  TH2F* fh2FFTrackPtSecRecSsc;
+  TH2F* fh2FFZSecRecSsc;
+  TH2F* fh2FFXiSecRecSsc;
+  
+  // ---
 
   TFile f(strInfile,"READ");
 
@@ -2694,7 +3083,7 @@ void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TSt
     return;
   }
   
-  if(fDebug>0) Printf("%s:%d -- writeJetTrackEff: open task ouput file %s",(char*)__FILE__,__LINE__,strInfile.Data());
+  if(fDebug>0) Printf("%s:%d -- writeJetTrackSecCorr: open task ouput file %s",(char*)__FILE__,__LINE__,strInfile.Data());
  
   if(strdir && strdir.Length()) gDirectory->cd(strdir);
 
@@ -2709,38 +3098,100 @@ void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TSt
   }
 
   if(list){
-    fh1FFJetPtRecEffGen    = (TH1F*) list->FindObject("fh1FFJetPtRecEffGen");
+    fh1FFJetPtRecEffRec    = (TH1F*) list->FindObject("fh1FFJetPtRecEffRec");
 
-    fh2FFTrackPtRecEffRec  = (TH2F*) list->FindObject("fh2FFTrackPtRecEffRec");
-    fh2FFZRecEffRec        = (TH2F*) list->FindObject("fh2FFZRecEffRec");
-    fh2FFXiRecEffRec       = (TH2F*) list->FindObject("fh2FFXiRecEffRec");
-    
-    fh2FFTrackPtSecRec  = (TH2F*) list->FindObject("fh2FFTrackPtSecRec");
-    fh2FFZSecRec        = (TH2F*) list->FindObject("fh2FFZSecRec");
-    fh2FFXiSecRec       = (TH2F*) list->FindObject("fh2FFXiSecRec");
+    if(writeBgr){ 
+      fh2FFTrackPtRecEffRec  = (TH2F*) list->FindObject(Form("fh2FFTrackPt%sRecEffRec",strBgrID.Data()));
+      fh2FFZRecEffRec        = (TH2F*) list->FindObject(Form("fh2FFZ%sRecEffRec",strBgrID.Data()));
+      fh2FFXiRecEffRec       = (TH2F*) list->FindObject(Form("fh2FFXi%sRecEffRec",strBgrID.Data())); 
+
+      fh2FFTrackPtSecRecNS   = (TH2F*) list->FindObject(Form("fh2FFTrackPt%sSecRecNS",strBgrID.Data()));
+      fh2FFZSecRecNS         = (TH2F*) list->FindObject(Form("fh2FFZ%sSecRecNS",strBgrID.Data()));
+      fh2FFXiSecRecNS        = (TH2F*) list->FindObject(Form("fh2FFXi%sSecRecNS",strBgrID.Data()));
+
+      fh2FFTrackPtSecRecS    = (TH2F*) list->FindObject(Form("fh2FFTrackPt%sSecRecS",strBgrID.Data()));
+      fh2FFZSecRecS          = (TH2F*) list->FindObject(Form("fh2FFZ%sSecRecS",strBgrID.Data()));
+      fh2FFXiSecRecS         = (TH2F*) list->FindObject(Form("fh2FFXi%sSecRecS",strBgrID.Data()));
+      
+      fh2FFTrackPtSecRecSsc  = (TH2F*) list->FindObject(Form("fh2FFTrackPt%sSecRecSsc",strBgrID.Data()));
+      fh2FFZSecRecSsc        = (TH2F*) list->FindObject(Form("fh2FFZ%sSecRecSsc",strBgrID.Data()));
+      fh2FFXiSecRecSsc       = (TH2F*) list->FindObject(Form("fh2FFXi%sSecRecSsc",strBgrID.Data()));
+    }
+    else{
+      fh2FFTrackPtRecEffRec  = (TH2F*) list->FindObject("fh2FFTrackPtRecEffRec");
+      fh2FFZRecEffRec        = (TH2F*) list->FindObject("fh2FFZRecEffRec");
+      fh2FFXiRecEffRec       = (TH2F*) list->FindObject("fh2FFXiRecEffRec");
+      
+      fh2FFTrackPtSecRecNS   = (TH2F*) list->FindObject("fh2FFTrackPtSecRecNS");
+      fh2FFZSecRecNS         = (TH2F*) list->FindObject("fh2FFZSecRecNS");
+      fh2FFXiSecRecNS        = (TH2F*) list->FindObject("fh2FFXiSecRecNS");
+      
+      fh2FFTrackPtSecRecS    = (TH2F*) list->FindObject("fh2FFTrackPtSecRecS");
+      fh2FFZSecRecS          = (TH2F*) list->FindObject("fh2FFZSecRecS");
+      fh2FFXiSecRecS         = (TH2F*) list->FindObject("fh2FFXiSecRecS");
+      
+      fh2FFTrackPtSecRecSsc  = (TH2F*) list->FindObject("fh2FFTrackPtSecRecSsc");
+      fh2FFZSecRecSsc        = (TH2F*) list->FindObject("fh2FFZSecRecSsc");
+      fh2FFXiSecRecSsc       = (TH2F*) list->FindObject("fh2FFXiSecRecSsc");
+    }
   }
   else{
-    fh1FFJetPtRecEffGen    = (TH1F*) gDirectory->FindObject("fh1FFJetPtRecEffGen");
+    fh1FFJetPtRecEffRec    = (TH1F*) gDirectory->Get("fh1FFJetPtRecEffRec");
 
-    fh2FFTrackPtRecEffRec  = (TH2F*) gDirectory->FindObject("fh2FFTrackPtRecEffRec");
-    fh2FFZRecEffRec        = (TH2F*) gDirectory->FindObject("fh2FFZRecEffRec");
-    fh2FFXiRecEffRec       = (TH2F*) gDirectory->FindObject("fh2FFXiRecEffRec");
+    if(writeBgr){
+      fh2FFTrackPtRecEffRec  = (TH2F*) gDirectory->Get(Form("fh2FFTrackPt%sRecEffRec",strBgrID.Data()));
+      fh2FFZRecEffRec        = (TH2F*) gDirectory->Get(Form("fh2FFZ%sRecEffRec",strBgrID.Data()));
+      fh2FFXiRecEffRec       = (TH2F*) gDirectory->Get(Form("fh2FFXi%sRecEffRec",strBgrID.Data())); 
+
+      fh2FFTrackPtSecRecNS   = (TH2F*) gDirectory->Get(Form("fh2FFTrackPt%sSecRecNS",strBgrID.Data()));
+      fh2FFZSecRecNS         = (TH2F*) gDirectory->Get(Form("fh2FFZ%sSecRecNS",strBgrID.Data()));
+      fh2FFXiSecRecNS        = (TH2F*) gDirectory->Get(Form("fh2FFXi%sSecRecNS",strBgrID.Data()));
+
+      fh2FFTrackPtSecRecS    = (TH2F*) gDirectory->Get(Form("fh2FFTrackPt%sSecRecS",strBgrID.Data()));
+      fh2FFZSecRecS          = (TH2F*) gDirectory->Get(Form("fh2FFZ%sSecRecS",strBgrID.Data()));
+      fh2FFXiSecRecS         = (TH2F*) gDirectory->Get(Form("fh2FFXi%sSecRecS",strBgrID.Data()));
+      
+      fh2FFTrackPtSecRecSsc  = (TH2F*) gDirectory->Get(Form("fh2FFTrackPt%sSecRecSsc",strBgrID.Data()));
+      fh2FFZSecRecSsc        = (TH2F*) gDirectory->Get(Form("fh2FFZ%sSecRecSsc",strBgrID.Data()));
+      fh2FFXiSecRecSsc       = (TH2F*) gDirectory->Get(Form("fh2FFXi%sSecRecSsc",strBgrID.Data()));
+    }
+    else{
+      fh2FFTrackPtRecEffRec  = (TH2F*) gDirectory->Get("fh2FFTrackPtRecEffRec");
+      fh2FFZRecEffRec        = (TH2F*) gDirectory->Get("fh2FFZRecEffRec");
+      fh2FFXiRecEffRec       = (TH2F*) gDirectory->Get("fh2FFXiRecEffRec");
     
-    fh2FFTrackPtSecRec  = (TH2F*) gDirectory->FindObject("fh2FFTrackPtSecRec");
-    fh2FFZSecRec        = (TH2F*) gDirectory->FindObject("fh2FFZSecRec");
-    fh2FFXiSecRec       = (TH2F*) gDirectory->FindObject("fh2FFXiSecRec");
+      fh2FFTrackPtSecRecNS   = (TH2F*) gDirectory->Get("fh2FFTrackPtSecRecNS");
+      fh2FFZSecRecNS         = (TH2F*) gDirectory->Get("fh2FFZSecRecNS");
+      fh2FFXiSecRecNS        = (TH2F*) gDirectory->Get("fh2FFXiSecRecNS");
+      
+      fh2FFTrackPtSecRecS    = (TH2F*) gDirectory->Get("fh2FFTrackPtSecRecS");
+      fh2FFZSecRecS          = (TH2F*) gDirectory->Get("fh2FFZSecRecS");
+      fh2FFXiSecRecS         = (TH2F*) gDirectory->Get("fh2FFXiSecRecS");
+      
+      fh2FFTrackPtSecRecSsc  = (TH2F*) gDirectory->Get("fh2FFTrackPtSecRecSsc");
+      fh2FFZSecRecSsc        = (TH2F*) gDirectory->Get("fh2FFZSecRecSsc");
+      fh2FFXiSecRecSsc       = (TH2F*) gDirectory->Get("fh2FFXiSecRecSsc");
+    }
   }
   
-  fh1FFJetPtRecEffGen->SetDirectory(0); 
-
+  fh1FFJetPtRecEffRec->SetDirectory(0); 
+   
   fh2FFTrackPtRecEffRec->SetDirectory(0);
   fh2FFZRecEffRec->SetDirectory(0);
   fh2FFXiRecEffRec->SetDirectory(0);
   
-  fh2FFTrackPtSecRec->SetDirectory(0);
-  fh2FFZSecRec->SetDirectory(0);
-  fh2FFXiSecRec->SetDirectory(0);
+  fh2FFTrackPtSecRecNS->SetDirectory(0);
+  fh2FFZSecRecNS->SetDirectory(0);
+  fh2FFXiSecRecNS->SetDirectory(0);
   
+  fh2FFTrackPtSecRecS->SetDirectory(0);
+  fh2FFZSecRecS->SetDirectory(0);
+  fh2FFXiSecRecS->SetDirectory(0);
+  
+  fh2FFTrackPtSecRecSsc->SetDirectory(0);
+  fh2FFZSecRecSsc->SetDirectory(0);
+  fh2FFXiSecRecSsc->SetDirectory(0);
+
   f.Close();
 
 
@@ -2763,9 +3214,35 @@ void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TSt
     TString strNameFFZPrimRec(Form("fh1FFZRecPrim_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
     TString strNameFFXiPrimRec(Form("fh1FFXiRecPrim_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
     
-    TString strNameFFPtSecRec(Form("fh1FFTrackPtRecSec_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
-    TString strNameFFZSecRec(Form("fh1FFZRecSec_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
-    TString strNameFFXiSecRec(Form("fh1FFXiRecSec_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    TString strNameFFPtSecRecNS(Form("fh1FFTrackPtRecSecNS_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    TString strNameFFZSecRecNS(Form("fh1FFZRecSecNS_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    TString strNameFFXiSecRecNS(Form("fh1FFXiRecSecNS_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+     
+    TString strNameFFPtSecRecS(Form("fh1FFTrackPtRecSecS_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    TString strNameFFZSecRecS(Form("fh1FFZRecSecS_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    TString strNameFFXiSecRecS(Form("fh1FFXiRecSecS_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+     
+    TString strNameFFPtSecRecSsc(Form("fh1FFTrackPtRecSecSsc_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    TString strNameFFZSecRecSsc(Form("fh1FFZRecSecSsc_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    TString strNameFFXiSecRecSsc(Form("fh1FFXiRecSecSsc_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+
+    if(writeBgr){
+      strNameFFPtPrimRec.Form("fh1BgrTrackPt%sRecPrim_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+      strNameFFZPrimRec.Form("fh1BgrZ%sRecPrim_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+      strNameFFXiPrimRec.Form("fh1BgrXi%sRecPrim_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+      
+      strNameFFPtSecRecNS.Form("fh1BgrTrackPt%sRecSecNS_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+      strNameFFZSecRecNS.Form("fh1BgrZ%sRecSecNS_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+      strNameFFXiSecRecNS.Form("fh1BgrXi%sRecSecNS_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+      
+      strNameFFPtSecRecS.Form("fh1BgrTrackPt%sRecSecS_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+      strNameFFZSecRecS.Form("fh1BgrZ%sRecSecS_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+      strNameFFXiSecRecS.Form("fh1BgrXi%sRecSecS_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+      
+      strNameFFPtSecRecSsc.Form("fh1BgrTrackPt%sRecSecSsc_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+      strNameFFZSecRecSsc.Form("fh1BgrZ%sRecSecSsc_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+      strNameFFXiSecRecSsc.Form("fh1BgrXi%sRecSecSsc_%02d_%02d",strBgrID.Data(),static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim));
+    }
     
     // project 
     // appendix 'unbinned' to avoid histos with same name after rebinning
@@ -2774,60 +3251,130 @@ void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TSt
     hdNdzMCPrimRec[i]        = (TH1F*) fh2FFZRecEffRec->ProjectionY(strNameFFZPrimRec+"_unBinned",binLo,binUp,"o");
     hdNdxiMCPrimRec[i]       = (TH1F*) fh2FFXiRecEffRec->ProjectionY(strNameFFXiPrimRec+"_unBinned",binLo,binUp,"o");
     
-    hdNdptTracksMCSecRec[i]  = (TH1F*) fh2FFTrackPtSecRec->ProjectionY(strNameFFPtSecRec+"_unBinned",binLo,binUp,"o"); // option "o": original axis range 
-    hdNdzMCSecRec[i]         = (TH1F*) fh2FFZSecRec->ProjectionY(strNameFFZSecRec+"_unBinned",binLo,binUp,"o");
-    hdNdxiMCSecRec[i]        = (TH1F*) fh2FFXiSecRec->ProjectionY(strNameFFXiSecRec+"_unBinned",binLo,binUp,"o");
+    hdNdptTracksMCSecRecNS[i]  = (TH1F*) fh2FFTrackPtSecRecNS->ProjectionY(strNameFFPtSecRecNS+"_unBinned",binLo,binUp,"o"); // option "o": original axis range 
+    hdNdzMCSecRecNS[i]         = (TH1F*) fh2FFZSecRecNS->ProjectionY(strNameFFZSecRecNS+"_unBinned",binLo,binUp,"o");
+    hdNdxiMCSecRecNS[i]        = (TH1F*) fh2FFXiSecRecNS->ProjectionY(strNameFFXiSecRecNS+"_unBinned",binLo,binUp,"o");
     
-    // rebin
+    hdNdptTracksMCSecRecS[i]  = (TH1F*) fh2FFTrackPtSecRecS->ProjectionY(strNameFFPtSecRecS+"_unBinned",binLo,binUp,"o"); // option "o": original axis range 
+    hdNdzMCSecRecS[i]         = (TH1F*) fh2FFZSecRecS->ProjectionY(strNameFFZSecRecS+"_unBinned",binLo,binUp,"o");
+    hdNdxiMCSecRecS[i]        = (TH1F*) fh2FFXiSecRecS->ProjectionY(strNameFFXiSecRecS+"_unBinned",binLo,binUp,"o");
 
+    hdNdptTracksMCSecRecSsc[i]  = (TH1F*) fh2FFTrackPtSecRecSsc->ProjectionY(strNameFFPtSecRecSsc+"_unBinned",binLo,binUp,"o"); // option "o": original axis range 
+    hdNdzMCSecRecSsc[i]         = (TH1F*) fh2FFZSecRecSsc->ProjectionY(strNameFFZSecRecSsc+"_unBinned",binLo,binUp,"o");
+    hdNdxiMCSecRecSsc[i]        = (TH1F*) fh2FFXiSecRecSsc->ProjectionY(strNameFFXiSecRecSsc+"_unBinned",binLo,binUp,"o");
+
+
+    // rebin
     if(fNHistoBinsPt[i]) hdNdptTracksMCPrimRec[i] = (TH1F*) hdNdptTracksMCPrimRec[i]->Rebin(fNHistoBinsPt[i],strNameFFPtPrimRec,fHistoBinsPt[i]->GetArray());
     if(fNHistoBinsZ[i])  hdNdzMCPrimRec[i]        = (TH1F*) hdNdzMCPrimRec[i]->Rebin(fNHistoBinsZ[i],strNameFFZPrimRec,fHistoBinsZ[i]->GetArray());
     if(fNHistoBinsXi[i]) hdNdxiMCPrimRec[i]       = (TH1F*) hdNdxiMCPrimRec[i]->Rebin(fNHistoBinsXi[i],strNameFFXiPrimRec,fHistoBinsXi[i]->GetArray());
 
-    if(fNHistoBinsPt[i]) hdNdptTracksMCSecRec[i] = (TH1F*) hdNdptTracksMCSecRec[i]->Rebin(fNHistoBinsPt[i],strNameFFPtSecRec,fHistoBinsPt[i]->GetArray());
-    if(fNHistoBinsZ[i])  hdNdzMCSecRec[i]        = (TH1F*) hdNdzMCSecRec[i]->Rebin(fNHistoBinsZ[i],strNameFFZSecRec,fHistoBinsZ[i]->GetArray());
-    if(fNHistoBinsXi[i]) hdNdxiMCSecRec[i]       = (TH1F*) hdNdxiMCSecRec[i]->Rebin(fNHistoBinsXi[i],strNameFFXiSecRec,fHistoBinsXi[i]->GetArray());
+    if(fNHistoBinsPt[i]) hdNdptTracksMCSecRecNS[i] = (TH1F*) hdNdptTracksMCSecRecNS[i]->Rebin(fNHistoBinsPt[i],strNameFFPtSecRecNS,fHistoBinsPt[i]->GetArray());
+    if(fNHistoBinsZ[i])  hdNdzMCSecRecNS[i]        = (TH1F*) hdNdzMCSecRecNS[i]->Rebin(fNHistoBinsZ[i],strNameFFZSecRecNS,fHistoBinsZ[i]->GetArray());
+    if(fNHistoBinsXi[i]) hdNdxiMCSecRecNS[i]       = (TH1F*) hdNdxiMCSecRecNS[i]->Rebin(fNHistoBinsXi[i],strNameFFXiSecRecNS,fHistoBinsXi[i]->GetArray());
+
+    if(fNHistoBinsPt[i]) hdNdptTracksMCSecRecS[i] = (TH1F*) hdNdptTracksMCSecRecS[i]->Rebin(fNHistoBinsPt[i],strNameFFPtSecRecS,fHistoBinsPt[i]->GetArray());
+    if(fNHistoBinsZ[i])  hdNdzMCSecRecS[i]        = (TH1F*) hdNdzMCSecRecS[i]->Rebin(fNHistoBinsZ[i],strNameFFZSecRecS,fHistoBinsZ[i]->GetArray());
+    if(fNHistoBinsXi[i]) hdNdxiMCSecRecS[i]       = (TH1F*) hdNdxiMCSecRecS[i]->Rebin(fNHistoBinsXi[i],strNameFFXiSecRecS,fHistoBinsXi[i]->GetArray());
+
+    if(fNHistoBinsPt[i]) hdNdptTracksMCSecRecSsc[i] = (TH1F*) hdNdptTracksMCSecRecSsc[i]->Rebin(fNHistoBinsPt[i],strNameFFPtSecRecSsc,fHistoBinsPt[i]->GetArray());
+    if(fNHistoBinsZ[i])  hdNdzMCSecRecSsc[i]        = (TH1F*) hdNdzMCSecRecSsc[i]->Rebin(fNHistoBinsZ[i],strNameFFZSecRecSsc,fHistoBinsZ[i]->GetArray());
+    if(fNHistoBinsXi[i]) hdNdxiMCSecRecSsc[i]       = (TH1F*) hdNdxiMCSecRecSsc[i]->Rebin(fNHistoBinsXi[i],strNameFFXiSecRecSsc,fHistoBinsXi[i]->GetArray());
+
 
     hdNdptTracksMCPrimRec[i]->SetNameTitle(strNameFFPtPrimRec,"");
     hdNdzMCPrimRec[i]->SetNameTitle(strNameFFZPrimRec,"");
     hdNdxiMCPrimRec[i]->SetNameTitle(strNameFFXiPrimRec,"");
     
-    hdNdptTracksMCSecRec[i]->SetNameTitle(strNameFFPtSecRec,"");
-    hdNdzMCSecRec[i]->SetNameTitle(strNameFFZSecRec,"");
-    hdNdxiMCSecRec[i]->SetNameTitle(strNameFFXiSecRec,"");
+    hdNdptTracksMCSecRecNS[i]->SetNameTitle(strNameFFPtSecRecNS,"");
+    hdNdzMCSecRecNS[i]->SetNameTitle(strNameFFZSecRecNS,"");
+    hdNdxiMCSecRecNS[i]->SetNameTitle(strNameFFXiSecRecNS,"");
+    
+    hdNdptTracksMCSecRecS[i]->SetNameTitle(strNameFFPtSecRecS,"");
+    hdNdzMCSecRecS[i]->SetNameTitle(strNameFFZSecRecS,"");
+    hdNdxiMCSecRecS[i]->SetNameTitle(strNameFFXiSecRecS,"");
+
+    hdNdptTracksMCSecRecSsc[i]->SetNameTitle(strNameFFPtSecRecSsc,"");
+    hdNdzMCSecRecSsc[i]->SetNameTitle(strNameFFZSecRecSsc,"");
+    hdNdxiMCSecRecSsc[i]->SetNameTitle(strNameFFXiSecRecSsc,"");
     
     // normalize
-    
-    Double_t nJetsBin = fh1FFJetPtRecEffGen->Integral(binLo,binUp);
+    Double_t nJetsBin = fh1FFJetPtRecEffRec->Integral(binLo,binUp);
 
     NormalizeTH1(hdNdptTracksMCPrimRec[i],nJetsBin); 
     NormalizeTH1(hdNdzMCPrimRec[i],nJetsBin); 
     NormalizeTH1(hdNdxiMCPrimRec[i],nJetsBin); 
 
-    NormalizeTH1(hdNdptTracksMCSecRec[i],nJetsBin); 
-    NormalizeTH1(hdNdzMCSecRec[i],nJetsBin); 
-    NormalizeTH1(hdNdxiMCSecRec[i],nJetsBin); 
-    
-    // divide rec/gen : efficiency
+    NormalizeTH1(hdNdptTracksMCSecRecNS[i],nJetsBin); 
+    NormalizeTH1(hdNdzMCSecRecNS[i],nJetsBin); 
+    NormalizeTH1(hdNdxiMCSecRecNS[i],nJetsBin); 
 
+    NormalizeTH1(hdNdptTracksMCSecRecS[i],nJetsBin); 
+    NormalizeTH1(hdNdzMCSecRecS[i],nJetsBin); 
+    NormalizeTH1(hdNdxiMCSecRecS[i],nJetsBin); 
+
+    NormalizeTH1(hdNdptTracksMCSecRecSsc[i],nJetsBin); 
+    NormalizeTH1(hdNdzMCSecRecSsc[i],nJetsBin); 
+    NormalizeTH1(hdNdxiMCSecRecSsc[i],nJetsBin); 
+
+    
+    // divide prim / (prim+sec) : corr factor
     TString strNameSecCorrPt(Form("hSecCorrPt_%02d_%02d",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim)));
     TString strNameSecCorrZ(Form("hSecCorrZ_%02d_%02d",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim)));
     TString strNameSecCorrXi(Form("hSecCorrXi_%02d_%02d",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim)));
- 
-    hSecCorrPt[i] = (TH1F*) hdNdptTracksMCSecRec[i]->Clone(strNameSecCorrPt);
-    TH1F* hSumPrimSecPt = (TH1F*) hdNdptTracksMCSecRec[i]->Clone("hSumPrimSecPt");
-    hSumPrimSecPt->Add(hdNdptTracksMCPrimRec[i]);
+    
+    if(writeBgr){
+      strNameSecCorrPt.Form("hSecCorrBgrPt_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+      strNameSecCorrZ.Form("hSecCorrBgrZ_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+      strNameSecCorrXi.Form("hSecCorrBgrXi_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+    }
+     
+    hSecCorrPt[i] = (TH1F*) hdNdptTracksMCPrimRec[i]->Clone(strNameSecCorrPt);
+    TH1F* hSumPrimSecPt = (TH1F*) hdNdptTracksMCPrimRec[i]->Clone("hSumPrimSecPt");
+    hSumPrimSecPt->Add(hdNdptTracksMCSecRecNS[i]);
+    hSumPrimSecPt->Add(hdNdptTracksMCSecRecSsc[i]);
     hSecCorrPt[i]->Divide(hdNdptTracksMCPrimRec[i],hSumPrimSecPt,1,1,"B"); // binominal errors
 
-    hSecCorrXi[i] = (TH1F*) hdNdxiMCSecRec[i]->Clone(strNameSecCorrXi);
-    TH1F* hSumPrimSecXi = (TH1F*) hdNdxiMCSecRec[i]->Clone("hSumPrimSecXi");
-    hSumPrimSecXi->Add(hdNdxiMCPrimRec[i]);
+    hSecCorrXi[i] = (TH1F*) hdNdxiMCPrimRec[i]->Clone(strNameSecCorrXi);
+    TH1F* hSumPrimSecXi = (TH1F*) hdNdxiMCPrimRec[i]->Clone("hSumPrimSecXi");
+    hSumPrimSecXi->Add(hdNdxiMCSecRecNS[i]);
+    hSumPrimSecXi->Add(hdNdxiMCSecRecSsc[i]);
     hSecCorrXi[i]->Divide(hdNdxiMCPrimRec[i],hSumPrimSecXi,1,1,"B"); // binominal errors
 
-    hSecCorrZ[i] = (TH1F*) hdNdzMCSecRec[i]->Clone(strNameSecCorrZ);
-    TH1F* hSumPrimSecZ = (TH1F*) hdNdzMCSecRec[i]->Clone("hSumPrimSecZ");
-    hSumPrimSecZ->Add(hdNdzMCPrimRec[i]);
+    hSecCorrZ[i] = (TH1F*) hdNdzMCPrimRec[i]->Clone(strNameSecCorrZ);
+    TH1F* hSumPrimSecZ = (TH1F*) hdNdzMCPrimRec[i]->Clone("hSumPrimSecZ");
+    hSumPrimSecZ->Add(hdNdzMCSecRecNS[i]);
+    hSumPrimSecZ->Add(hdNdzMCSecRecSsc[i]);
     hSecCorrZ[i]->Divide(hdNdzMCPrimRec[i],hSumPrimSecZ,1,1,"B"); // binominal errors
+
+    // the same using unscaled strangeness
+    TString strNameSecCorrPt_nonSc(Form("hSecCorrPt_nonSc_%02d_%02d",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim)));
+    TString strNameSecCorrZ_nonSc(Form("hSecCorrZ_nonSc_%02d_%02d",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim)));
+    TString strNameSecCorrXi_nonSc(Form("hSecCorrXi_nonSc_%02d_%02d",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim)));
+
+    if(writeBgr){
+      strNameSecCorrPt_nonSc.Form("hSecCorrBgrPt_nonSc_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+      strNameSecCorrZ_nonSc.Form("hSecCorrBgrZ_nonSc_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+      strNameSecCorrXi_nonSc.Form("hSecCorrBgrXi_nonSc_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+    }
+
+    hSecCorrPt_nonSc[i] = (TH1F*) hdNdptTracksMCPrimRec[i]->Clone(strNameSecCorrPt_nonSc);
+    TH1F* hSumPrimSecPt_nonSc = (TH1F*) hdNdptTracksMCPrimRec[i]->Clone("hSumPrimSecPt_nonSc");
+    hSumPrimSecPt_nonSc->Add(hdNdptTracksMCSecRecNS[i]);
+    hSumPrimSecPt_nonSc->Add(hdNdptTracksMCSecRecS[i]); // non-scaled secondaries from strangeness
+    hSecCorrPt_nonSc[i]->Divide(hdNdptTracksMCPrimRec[i],hSumPrimSecPt_nonSc,1,1,"B"); // binominal errors
+    
+    hSecCorrZ_nonSc[i] = (TH1F*) hdNdzMCPrimRec[i]->Clone(strNameSecCorrZ_nonSc);
+    TH1F* hSumPrimSecZ_nonSc = (TH1F*) hdNdzMCPrimRec[i]->Clone("hSumPrimSecZ_nonSc");
+    hSumPrimSecZ_nonSc->Add(hdNdzMCSecRecNS[i]);
+    hSumPrimSecZ_nonSc->Add(hdNdzMCSecRecS[i]); // non-scaled secondaries from strangeness
+    hSecCorrZ_nonSc[i]->Divide(hdNdzMCPrimRec[i],hSumPrimSecZ_nonSc,1,1,"B"); // binominal errors
+    
+    hSecCorrXi_nonSc[i] = (TH1F*) hdNdxiMCPrimRec[i]->Clone(strNameSecCorrXi_nonSc);
+    TH1F* hSumPrimSecXi_nonSc = (TH1F*) hdNdxiMCPrimRec[i]->Clone("hSumPrimSecXi_nonSc");
+    hSumPrimSecXi_nonSc->Add(hdNdxiMCSecRecNS[i]);
+    hSumPrimSecXi_nonSc->Add(hdNdxiMCSecRecS[i]); // non-scaled secondaries from strangeness
+    hSecCorrXi_nonSc[i]->Divide(hdNdxiMCPrimRec[i],hSumPrimSecXi_nonSc,1,1,"B"); // binominal errors
   } 
   
   // write 
@@ -2838,41 +3385,95 @@ void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TSt
   TFile out(strOutfile,outfileOption);
   
   if(!out.IsOpen()){
-    Printf("%s:%d -- error opening efficiency output file %s", (char*)__FILE__,__LINE__,strOutfile.Data());
+    Printf("%s:%d -- error opening sec corr output file %s", (char*)__FILE__,__LINE__,strOutfile.Data());
     return;
   }
   
-  if(fDebug>0) Printf("%s:%d -- write efficiency to file %s ",(char*)__FILE__,__LINE__,strOutfile.Data());
+  if(fDebug>0) Printf("%s:%d -- write jet sec corr to file %s ",(char*)__FILE__,__LINE__,strOutfile.Data());
+
+  if(strOutDir && strOutDir.Length()){  
+
+    TDirectory* dir;
+    if((dir = ((TDirectory*)  gDirectory->Get(strOutDir)))) dir->cd(); 
+    else{
+      dir = out.mkdir(strOutDir);
+      dir->cd(); 
+    } 
+  }
+  
 
   for(Int_t i=0; i<fNJetPtSlices; i++){
-
-    //  hdNdptTracksMCSecRec[i]->Write();
-    //  hdNdxiMCSecRec[i]->Write();
-    //  hdNdzMCSecRec[i]->Write();
   
     hSecCorrPt[i]->Write();
     hSecCorrXi[i]->Write();
     hSecCorrZ[i]->Write();
+  
+    hSecCorrPt_nonSc[i]->Write();
+    hSecCorrXi_nonSc[i]->Write();
+    hSecCorrZ_nonSc[i]->Write();
+  }
+
+  TString strSpectraDir      = "spectraSecCorr";
+  if(writeBgr) strSpectraDir = "spectraBgrSecCorr";
+  
+  TDirectory *dOut  = gDirectory->mkdir(strSpectraDir);
+  dOut->cd();
+  
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+    
+    hdNdptTracksMCPrimRec[i]->Write(); 
+    hdNdzMCPrimRec[i]->Write(); 
+    hdNdxiMCPrimRec[i]->Write(); 
+    
+    hdNdptTracksMCSecRecNS[i]->Write(); 
+    hdNdzMCSecRecNS[i]->Write(); 
+    hdNdxiMCSecRecNS[i]->Write(); 
+    
+    hdNdptTracksMCSecRecS[i]->Write(); 
+    hdNdzMCSecRecS[i]->Write(); 
+    hdNdxiMCSecRecS[i]->Write(); 
+    
+    hdNdptTracksMCSecRecSsc[i]->Write(); 
+    hdNdzMCSecRecSsc[i]->Write(); 
+    hdNdxiMCSecRecSsc[i]->Write();  
   }
 
   out.Close();
+  
+  delete fh1FFJetPtRecEffRec; 
+
+  delete fh2FFTrackPtRecEffRec;
+  delete fh2FFZRecEffRec;
+  delete fh2FFXiRecEffRec;
+  
+  delete fh2FFTrackPtSecRecNS;
+  delete fh2FFZSecRecNS;
+  delete fh2FFXiSecRecNS;
+  
+  delete fh2FFTrackPtSecRecS;
+  delete fh2FFZSecRecS;
+  delete fh2FFXiSecRecS;
+  
+  delete fh2FFTrackPtSecRecSsc;
+  delete fh2FFZSecRecSsc;
+  delete fh2FFXiSecRecSsc;
 }
 
 //________________________________________________________________________________________________________________
 void AliFragmentationFunctionCorrections::WriteJetResponse(TString strInfile, TString strID, TString strOutfile, 
-							   Bool_t updateOutfile)
+							   Bool_t updateOutfile, TString strOutDir )
 { 
   // read task ouput from MC and write single track eff - standard dir/list 
      
   TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
-  WriteJetResponse(strInfile,strdir,strlist,strOutfile,updateOutfile);
+  WriteJetResponse(strInfile,strdir,strlist,strOutfile,updateOutfile, strOutDir);
 }
 
 //_____________________________________________________________________________________________________________________________________
 void AliFragmentationFunctionCorrections::WriteJetResponse(TString strInfile, TString strdir, TString strlist,
-							   TString strOutfile, Bool_t updateOutfile)
+							   TString strOutfile, Bool_t updateOutfile, TString strOutDir)
 {
   // read 3d THnSparse response matrices in pt,z,xi vs jet pt from file
   // project THnSparse + TH2 in jet pt slices 
@@ -3120,7 +3721,7 @@ void AliFragmentationFunctionCorrections::WriteJetResponse(TString strInfile, TS
     h1RatioXi[i]->Reset();
     h1RatioXi[i]->Divide(h1FFXiRec[i],h1FFXiGen[i],1,1,"B");
   }
-  
+   
   
   // write 
 
@@ -3136,10 +3737,16 @@ void AliFragmentationFunctionCorrections::WriteJetResponse(TString strInfile, TS
 
   if(fDebug>0) Printf("%s:%d -- write response matrices to file %s ",(char*)__FILE__,__LINE__,strOutfile.Data());
 
-  //if(strdir && strdir.Length()){ 
-  //  TDirectory* dir = out.mkdir(strdir);
-  //  dir->cd(); 
-  //}
+  if(strOutDir && strOutDir.Length()){  
+    
+    TDirectory* dir;
+    if((dir = ((TDirectory*) gDirectory->Get(strOutDir)))) dir->cd(); 
+    else{
+      dir = out.mkdir(strOutDir);
+      dir->cd(); 
+    } 
+  }
+
 
   for(Int_t i=0; i<fNJetPtSlices; i++){
 
@@ -3317,6 +3924,7 @@ void AliFragmentationFunctionCorrections::ReadPriors(TString strfile,const Int_t
     if(hist[i] && type == kFlagXi) new(fh1FFXiPrior[i])      TH1F(*hist[i]); 
   }
 }
+
 
 //_____________________________________________________
 // void AliFragmentationFunctionCorrections::RatioRecGen()
@@ -3533,7 +4141,7 @@ void AliFragmentationFunctionCorrections::ProjectJetResponseMatrices(TString str
 }
 
 // ____________________________________________________________________________________________________________________________
-void AliFragmentationFunctionCorrections::ProjectSingleResponseMatrix(TString strOutfile, Bool_t updateOutfile, TString strOutDir )
+void AliFragmentationFunctionCorrections::ProjectSingleResponseMatrix(TString strOutfile, Bool_t updateOutfile, TString strOutDir)
 { 
   // project response matrix on both axes: 
   // pt spec for rec primaries, in terms of generated and reconstructed momentum
@@ -3851,7 +4459,6 @@ void AliFragmentationFunctionCorrections::ReadRawPtSpec(TString strfile, TString
 {
   // get raw pt spectra from file 
 
-
   // book histos
   fNCorrectionLevelsSinglePt = 0; 
   fCorrSinglePt = new AliFragFuncCorrHistos*[fgMaxNCorrectionLevels];
@@ -3885,21 +4492,16 @@ void AliFragmentationFunctionCorrections::ReadRawPtSpec(TString strfile, TString
 
   if(!fh1TrackPt){ Printf("%s:%d -- histo %s not found",(char*)__FILE__,__LINE__,hnameTrackPt.Data()); return; }
   if(!fh1EvtSel) { Printf("%s:%d -- histo %s not found",(char*)__FILE__,__LINE__,hnameEvtSel.Data()); return; }
- 
+   
+  Float_t nEvents = fh1EvtSel->GetBinContent(fh1EvtSel->FindBin(0));
   
-  //Float_t nEvents = fh1EvtSel->GetBinContent(fh1EvtSel->FindBin(0));
-
-  // evts after physics selection
-  Float_t nEvents = fh1EvtSel->GetEntries() 
-    - fh1EvtSel->GetBinContent(fh1EvtSel->FindBin(1))   // evts rejected by trigger selection ( = PhysicsSelection
-    - fh1EvtSel->GetBinContent(fh1EvtSel->FindBin(2));   // evts with wrong centrality class
-  
-
   fh1TrackPt->SetDirectory(0);
   
   f.Close();  
-
   
+  // rebin + normalize
+  if(fNHistoBinsSinglePt) fh1TrackPt = (TH1F*) fh1TrackPt->Rebin(fNHistoBinsSinglePt,"",fHistoBinsSinglePt->GetArray());
+
   NormalizeTH1(fh1TrackPt,nEvents);
 
   // raw FF = corr level 0
@@ -4012,11 +4614,11 @@ void AliFragmentationFunctionCorrections::UnfoldSinglePt(const Int_t nIter, cons
   THnSparse* hnHist           = TH1toSparse(hist,histNameTHn,hist->GetTitle());
   THnSparse* hnFlatEfficiency = TH1toSparse(hist,"fhnEfficiency","eff",kTRUE); // could optionally also use real eff 
   
-  THnSparse* hnUnfolded 
+  TH1F* hUnfolded 
     = Unfold(hnHist,hnResponse,hnFlatEfficiency,nIter,useCorrelatedErrors);  
   
-  TH1F* hUnfolded = (TH1F*) hnUnfolded->Projection(0); 
-  hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
+  //TH1F* hUnfolded = (TH1F*) hnUnfolded->Projection(0); 
+  //hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
   
   fCorrSinglePt[fNCorrectionLevelsSinglePt-1]->AddCorrHistos(0,hUnfolded);
   
@@ -4066,3 +4668,1158 @@ void AliFragmentationFunctionCorrections::SecCorrSinglePt()
   
   fCorrSinglePt[fNCorrectionLevelsSinglePt-1]->AddCorrHistos(0,hTrackPtSecCorr);
 }
+
+//___________________________________________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::dNdz2dNdxi()
+{
+  // transform dN/dz distribution into dN/dxi
+  // for current corr level, all jet pt slices
+  
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+
+    TH1F* histZ = fCorrFF[fNCorrectionLevels-1]->GetZ(i);
+    Int_t nBins = histZ->GetNbinsX();
+
+    Double_t* binLims = new Double_t[nBins+1];
+    
+    for(Int_t bin = 0; bin<nBins; bin++){
+      
+      Int_t binZ = nBins-bin;
+
+      Double_t zLo = histZ->GetXaxis()->GetBinLowEdge(binZ);
+      Double_t zUp = histZ->GetXaxis()->GetBinUpEdge(binZ);
+      
+      Double_t xiLo = TMath::Log(1/zUp);    
+      Double_t xiUp = TMath::Log(1/zLo);
+
+      if(bin == 0) binLims[0] = xiLo;
+      binLims[bin+1] = xiUp;   
+    }
+
+    // for(Int_t bin = 0; bin<=nBins; bin++) std::cout<<" bin "<<bin<<" binLims "<<binLims[bin]<<std::endl;
+
+    TString strTitle = histZ->GetTitle();
+    TString strName  = histZ->GetName();
+
+    strName.ReplaceAll("Z","XiNew");
+    strTitle.ReplaceAll("Z","XiNew");
+    
+
+    TH1F* histXiNew = new TH1F("histXiNew","",nBins,binLims);
+    histXiNew->SetNameTitle(strName,strTitle);
+    
+
+    for(Int_t binZ = 1; binZ<=nBins; binZ++){
+      
+      Double_t meanZ  = histZ->GetBinCenter(binZ); 
+      Double_t cont   = histZ->GetBinContent(binZ); 
+      Double_t err    = histZ->GetBinError(binZ); 
+
+      Double_t meanXi = TMath::Log(1/meanZ);   
+      Int_t binXi = histXiNew->FindBin(meanXi);
+      
+      histXiNew->SetBinContent(binXi,cont);
+      histXiNew->SetBinError(binXi,err);
+      
+      //std::cout<<" binZ "<<binZ<<" meanZ "<<meanZ<<" binXi "<<binXi<<" meanXi "<<meanXi<<" cont "<<cont<<" err "<<err<<std::endl;
+    }
+    
+    fCorrFF[fNCorrectionLevels-1]->ReplaceCorrHistos(i,0,0,histXiNew);
+
+    delete histXiNew;
+    delete[] binLims;
+  }
+}
+
+//________________________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::WriteBinShiftCorr(TString strInfile, TString strIDGen,  TString strIDRec,  
+							    TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim, 
+							    TString strOutDir)
+{ 
+  TString strdirGen  = "PWGJE_FragmentationFunction_" + strIDGen;
+  TString strlistGen = "fracfunc_" + strIDGen;
+  
+  TString strdirRec  = "PWGJE_FragmentationFunction_" + strIDRec;
+  TString strlistRec = "fracfunc_" + strIDRec;
+  
+  WriteBinShiftCorr(strInfile,strdirGen,strlistGen,strdirRec,strlistRec,strOutfile,updateOutfile,useRecPrim, strOutDir, kFALSE, "");
+}
+
+//________________________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::WriteBgrBinShiftCorr(TString strInfile, TString strBgrID, TString strIDGen,  TString strIDRec,  
+							       TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim, 
+							       TString strOutDir)
+{ 
+  TString strdirGen  = "PWGJE_FragmentationFunction_" + strIDGen;
+  TString strlistGen = "fracfunc_" + strIDGen;
+  
+  TString strdirRec  = "PWGJE_FragmentationFunction_" + strIDRec;
+  TString strlistRec = "fracfunc_" + strIDRec;
+  
+  WriteBinShiftCorr(strInfile,strdirGen,strlistGen,strdirRec,strlistRec,strOutfile,updateOutfile,useRecPrim, strOutDir, kTRUE, strBgrID);
+}
+
+//___________________________________________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::WriteBinShiftCorr(TString strInfile, TString strdirGen, TString strlistGen, 
+							    TString strdirRec, TString strlistRec, 
+							    TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim, 
+							    TString strOutDir,  Bool_t writeBgr, TString strBgrID)
+{
+ 
+  if((writeBgr && strBgrID.Length() == 0) || (!writeBgr && strBgrID.Length()>0) ){
+    Printf("%s:%d -- inconsistent arguments to WriteBinShiftCorr FF/UE", (char*)__FILE__,__LINE__);
+    return; 
+  }
+
+  TH1F* hCorrPt[fNJetPtSlices];
+  TH1F* hCorrXi[fNJetPtSlices];
+  TH1F* hCorrZ[fNJetPtSlices];
+
+  TH1F* hdNdptTracksMCGen[fNJetPtSlices];
+  TH1F* hdNdxiMCGen[fNJetPtSlices];
+  TH1F* hdNdzMCGen[fNJetPtSlices];
+    
+  TH1F* hdNdptTracksMCRec[fNJetPtSlices];
+  TH1F* hdNdxiMCRec[fNJetPtSlices];
+  TH1F* hdNdzMCRec[fNJetPtSlices];
+
+  TH1F* fh1FFJetPtMCGen = 0;
+  TH1F* fh1FFJetPtMCRec = 0;
+
+  TH2F* fh2FFTrackPtMCGen = 0;
+  TH2F* fh2FFZMCGen       = 0;
+  TH2F* fh2FFXiMCGen      = 0;
+  
+  TH2F* fh2FFTrackPtMCRec = 0;
+  TH2F* fh2FFZMCRec       = 0;
+  TH2F* fh2FFXiMCRec      = 0;
+ 
+  // gen level FF
+
+  TFile f(strInfile,"READ");
+
+  if(!f.IsOpen()){
+    Printf("%s:%d -- error opening raw data file %s", (char*)__FILE__,__LINE__,strInfile.Data());
+    return;
+  }
+  
+  if(fDebug>0) Printf("%s:%d -- writeBinShiftCorr: open task ouput file %s",(char*)__FILE__,__LINE__,strInfile.Data());
+ 
+  if(strdirGen && strdirGen.Length()) gDirectory->cd(strdirGen);
+
+  TList* listGen = 0;
+
+  if(strlistGen && strlistGen.Length()){
+
+    if(!(listGen = (TList*) gDirectory->Get(strlistGen))){ 
+      Printf("%s:%d -- error retrieving listGen %s from directory %s", (char*)__FILE__,__LINE__,strlistGen.Data(),strdirGen.Data());
+      return;
+    }
+  }
+ 
+  if(listGen){ 
+
+    fh1FFJetPtMCGen    = (TH1F*) listGen->FindObject("fh1FFJetPtGen");
+    
+    if(writeBgr){
+      fh2FFTrackPtMCGen  = (TH2F*) listGen->FindObject(Form("fh2FFTrackPt%sGen",strBgrID.Data()));
+      fh2FFZMCGen        = (TH2F*) listGen->FindObject(Form("fh2FFZ%sGen",strBgrID.Data()));
+      fh2FFXiMCGen       = (TH2F*) listGen->FindObject(Form("fh2FFXi%sGen",strBgrID.Data()));  
+    }
+    else{
+      fh2FFTrackPtMCGen  = (TH2F*) listGen->FindObject("fh2FFTrackPtGen");
+      fh2FFZMCGen        = (TH2F*) listGen->FindObject("fh2FFZGen");
+      fh2FFXiMCGen       = (TH2F*) listGen->FindObject("fh2FFXiGen"); 
+    }
+  }
+  else{
+    fh1FFJetPtMCGen    = (TH1F*) gDirectory->Get("fh1FFJetPtGen");
+    if(writeBgr){
+      fh2FFTrackPtMCGen  = (TH2F*) gDirectory->Get(Form("fh2FFTrackPt%sGen",strBgrID.Data()));
+      fh2FFZMCGen        = (TH2F*) gDirectory->Get(Form("fh2FFZ%sGen",strBgrID.Data()));
+      fh2FFXiMCGen       = (TH2F*) gDirectory->Get(Form("fh2FFXi%sGen",strBgrID.Data())); 
+    }
+    else{
+      fh2FFTrackPtMCGen  = (TH2F*) gDirectory->Get("fh2FFTrackPtGen");
+      fh2FFZMCGen        = (TH2F*) gDirectory->Get("fh2FFZGen");
+      fh2FFXiMCGen       = (TH2F*) gDirectory->Get("fh2FFXiGen"); 
+    }
+  }
+  
+  fh1FFJetPtMCGen->SetDirectory(0); 
+  fh2FFTrackPtMCGen->SetDirectory(0);
+  fh2FFZMCGen->SetDirectory(0);
+  fh2FFXiMCGen->SetDirectory(0);
+
+  f.Close();
+
+  // rec level FF
+
+  TFile g(strInfile,"READ");
+
+  if(!g.IsOpen()){
+    Printf("%s:%d -- error opening raw data file %s", (char*)__FILE__,__LINE__,strInfile.Data());
+    return;
+  }
+  
+  if(fDebug>0) Printf("%s:%d -- writeBinShiftCorr: open task ouput file %s",(char*)__FILE__,__LINE__,strInfile.Data());
+ 
+  if(strdirRec && strdirRec.Length()) gDirectory->cd(strdirRec);
+
+  TList* listRec = 0;
+
+  if(strlistRec && strlistRec.Length()){
+
+    if(!(listRec = (TList*) gDirectory->Get(strlistRec))){ 
+      Printf("%s:%d -- error retrieving listRec %s from directory %s", (char*)__FILE__,__LINE__,strlistRec.Data(),strdirRec.Data());
+      return;
+    }
+  }
+ 
+  if(useRecPrim){
+    if(listRec){ 
+      fh1FFJetPtMCRec    = (TH1F*) listRec->FindObject("fh1FFJetPtRecEffRec");
+
+      if(writeBgr){
+	fh2FFTrackPtMCRec  = (TH2F*) listRec->FindObject(Form("fh2FFTrackPt%sRecEffRec",strBgrID.Data()));
+	fh2FFZMCRec        = (TH2F*) listRec->FindObject(Form("fh2FFZ%sRecEffRec",strBgrID.Data()));
+	fh2FFXiMCRec       = (TH2F*) listRec->FindObject(Form("fh2FFXi%sRecEffRec",strBgrID.Data())); 
+      }
+      else{
+	fh2FFTrackPtMCRec  = (TH2F*) listRec->FindObject("fh2FFTrackPtRecEffRec");
+	fh2FFZMCRec        = (TH2F*) listRec->FindObject("fh2FFZRecEffRec");
+	fh2FFXiMCRec       = (TH2F*) listRec->FindObject("fh2FFXiRecEffRec"); 
+      }
+    }
+    else{
+      fh1FFJetPtMCRec    = (TH1F*) gDirectory->Get("fh1FFJetPtRecEffRec");
+      if(writeBgr){
+	fh2FFTrackPtMCRec  = (TH2F*) gDirectory->Get(Form("fh2FFTrackPt%sRecEffRec",strBgrID.Data()));
+	fh2FFZMCRec        = (TH2F*) gDirectory->Get(Form("fh2FFZ%sRecEffRec",strBgrID.Data()));
+	fh2FFXiMCRec       = (TH2F*) gDirectory->Get(Form("fh2FFXi%sRecEffRec",strBgrID.Data())); 
+      }
+      else{
+	fh2FFTrackPtMCRec  = (TH2F*) gDirectory->Get("fh2FFTrackPtRecEffRec");
+	fh2FFZMCRec        = (TH2F*) gDirectory->Get("fh2FFZRecEffRec");
+	fh2FFXiMCRec       = (TH2F*) gDirectory->Get("fh2FFXiRecEffRec"); 
+      }
+    }
+  }
+  else{
+    if(listRec){ 
+      fh1FFJetPtMCRec    = (TH1F*) listRec->FindObject("fh1FFJetPtRecCuts");
+      if(writeBgr){
+	fh2FFTrackPtMCRec  = (TH2F*) listRec->FindObject(Form("fh2FFTrackPt%sRecCuts",strBgrID.Data()));
+	fh2FFZMCRec        = (TH2F*) listRec->FindObject(Form("fh2FFZ%sRecCuts",strBgrID.Data()));
+	fh2FFXiMCRec       = (TH2F*) listRec->FindObject(Form("fh2FFXi%sRecCuts",strBgrID.Data())); 
+      }
+      else{
+	fh2FFTrackPtMCRec  = (TH2F*) listRec->FindObject("fh2FFTrackPtRecCuts");
+	fh2FFZMCRec        = (TH2F*) listRec->FindObject("fh2FFZRecCuts");
+	fh2FFXiMCRec       = (TH2F*) listRec->FindObject("fh2FFXiRecCuts");
+      }
+    }
+    else{
+      fh1FFJetPtMCRec    = (TH1F*) gDirectory->Get("fh1FFJetPtRecCuts");
+      if(writeBgr){
+	fh2FFTrackPtMCRec  = (TH2F*) gDirectory->Get(Form("fh2FFTrackPt%sRecCuts",strBgrID.Data()));
+	fh2FFZMCRec        = (TH2F*) gDirectory->Get(Form("fh2FFZ%sRecCuts",strBgrID.Data()));
+	fh2FFXiMCRec       = (TH2F*) gDirectory->Get(Form("fh2FFXi%sRecCuts",strBgrID.Data()));  
+      }
+      else{
+	fh2FFTrackPtMCRec  = (TH2F*) gDirectory->Get("fh2FFTrackPtRecCuts");
+	fh2FFZMCRec        = (TH2F*) gDirectory->Get("fh2FFZRecCuts");
+	fh2FFXiMCRec       = (TH2F*) gDirectory->Get("fh2FFXiRecCuts"); 
+      }
+    }
+  }
+  
+
+  fh1FFJetPtMCRec->SetDirectory(0); 
+  fh2FFTrackPtMCRec->SetDirectory(0);
+  fh2FFZMCRec->SetDirectory(0);
+  fh2FFXiMCRec->SetDirectory(0);  
+
+  g.Close();
+
+  // projections: FF for generated and reconstructed  
+  
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+    
+    Float_t jetPtLoLim = fJetPtSlices->At(i);
+    Float_t jetPtUpLim = fJetPtSlices->At(i+1);
+    
+    Int_t binLo = static_cast<Int_t>(fh2FFTrackPtMCGen->GetXaxis()->FindBin(jetPtLoLim));
+    Int_t binUp = static_cast<Int_t>(fh2FFTrackPtMCGen->GetXaxis()->FindBin(jetPtUpLim))-1;
+
+    if(binUp > fh2FFTrackPtMCGen->GetNbinsX()){
+      Printf("%s:%d -- jet pt range %0.3f exceeds histo limits",(char*)__FILE__,__LINE__,jetPtUpLim); 
+      return; 
+    }
+    
+    TString strNameFFPtGen(Form("fh1FFTrackPtGenBinShift_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    TString strNameFFZGen(Form("fh1FFZGenBinShift_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    TString strNameFFXiGen(Form("fh1FFXiGenBinShift_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    
+    TString strNameFFPtRec(Form("fh1FFTrackPtRecBinShift_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    TString strNameFFZRec(Form("fh1FFZRecBinShift_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+    TString strNameFFXiRec(Form("fh1FFXiRecBinShift_%02d_%02d",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim)));
+
+    if(writeBgr){
+      strNameFFPtGen.Form("fh1TrackPtGenBinShiftBgr_%02d_%02d_%s",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim),strBgrID.Data());
+      strNameFFZGen.Form("fh1ZGenBinShiftBgr_%02d_%02d_%s",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim),strBgrID.Data());
+      strNameFFXiGen.Form("fh1XiGenBinShiftBgr_%02d_%02d_%s",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim),strBgrID.Data());
+      
+      strNameFFPtRec.Form("fh1TrackPtRecBinShiftBgr_%02d_%02d_%s",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim),strBgrID.Data());
+      strNameFFZRec.Form("fh1ZRecBinShiftBgr_%02d_%02d_%s",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim),strBgrID.Data());
+      strNameFFXiRec.Form("fh1XiRecBinShiftBgr_%02d_%02d_%s",static_cast<Int_t> (jetPtLoLim),static_cast<Int_t> (jetPtUpLim),strBgrID.Data());
+    }
+    
+    // project 
+    // appendix 'unbinned' to avoid histos with same name after rebinning
+
+    hdNdptTracksMCGen[i] = (TH1F*) fh2FFTrackPtMCGen->ProjectionY(strNameFFPtGen+"_unBinned",binLo,binUp,"o"); // option "o": original axis range 
+    hdNdzMCGen[i]        = (TH1F*) fh2FFZMCGen->ProjectionY(strNameFFZGen+"_unBinned",binLo,binUp,"o");
+    hdNdxiMCGen[i]       = (TH1F*) fh2FFXiMCGen->ProjectionY(strNameFFXiGen+"_unBinned",binLo,binUp,"o");
+    
+    hdNdptTracksMCRec[i] = (TH1F*) fh2FFTrackPtMCRec->ProjectionY(strNameFFPtRec+"_unBinned",binLo,binUp,"o"); // option "o": original axis range 
+    hdNdzMCRec[i]        = (TH1F*) fh2FFZMCRec->ProjectionY(strNameFFZRec+"_unBinned",binLo,binUp,"o");
+    hdNdxiMCRec[i]       = (TH1F*) fh2FFXiMCRec->ProjectionY(strNameFFXiRec+"_unBinned",binLo,binUp,"o");
+    
+
+    // rebin
+
+    if(fNHistoBinsPt[i]) hdNdptTracksMCGen[i] = (TH1F*) hdNdptTracksMCGen[i]->Rebin(fNHistoBinsPt[i],strNameFFPtGen,fHistoBinsPt[i]->GetArray());
+    if(fNHistoBinsZ[i])  hdNdzMCGen[i]  = (TH1F*) hdNdzMCGen[i]->Rebin(fNHistoBinsZ[i],strNameFFZGen,fHistoBinsZ[i]->GetArray());
+    if(fNHistoBinsXi[i]) hdNdxiMCGen[i] = (TH1F*) hdNdxiMCGen[i]->Rebin(fNHistoBinsXi[i],strNameFFXiGen,fHistoBinsXi[i]->GetArray());
+
+    if(fNHistoBinsPt[i]) hdNdptTracksMCRec[i] = (TH1F*) hdNdptTracksMCRec[i]->Rebin(fNHistoBinsPt[i],strNameFFPtRec,fHistoBinsPt[i]->GetArray());
+    if(fNHistoBinsZ[i])  hdNdzMCRec[i]  = (TH1F*) hdNdzMCRec[i]->Rebin(fNHistoBinsZ[i],strNameFFZRec,fHistoBinsZ[i]->GetArray());
+    if(fNHistoBinsXi[i]) hdNdxiMCRec[i] = (TH1F*) hdNdxiMCRec[i]->Rebin(fNHistoBinsXi[i],strNameFFXiRec,fHistoBinsXi[i]->GetArray());
+
+
+    hdNdptTracksMCGen[i]->SetNameTitle(strNameFFPtGen,"");
+    hdNdzMCGen[i]->SetNameTitle(strNameFFZGen,"");
+    hdNdxiMCGen[i]->SetNameTitle(strNameFFXiGen,"");
+    
+    hdNdptTracksMCRec[i]->SetNameTitle(strNameFFPtRec,"");
+    hdNdzMCRec[i]->SetNameTitle(strNameFFZRec,"");
+    hdNdxiMCRec[i]->SetNameTitle(strNameFFXiRec,"");
+    
+     // normalize
+    
+    Double_t nJetsBinGen = fh1FFJetPtMCGen->Integral(binLo,binUp);
+    Double_t nJetsBinRec = fh1FFJetPtMCRec->Integral(binLo,binUp);
+
+    NormalizeTH1(hdNdptTracksMCGen[i],nJetsBinGen); 
+    NormalizeTH1(hdNdzMCGen[i],nJetsBinGen); 
+    NormalizeTH1(hdNdxiMCGen[i],nJetsBinGen); 
+
+    NormalizeTH1(hdNdptTracksMCRec[i],nJetsBinRec); 
+    NormalizeTH1(hdNdzMCRec[i],nJetsBinRec); 
+    NormalizeTH1(hdNdxiMCRec[i],nJetsBinRec); 
+
+    // divide gen/rec : corr factor
+
+    TString strNameCorrPt(Form("hBbBCorrPt_%02d_%02d",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim)));
+    TString strNameCorrZ(Form("hBbBCorrZ_%02d_%02d",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim)));
+    TString strNameCorrXi(Form("hBbBCorrXi_%02d_%02d",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim)));
+
+    if(writeBgr){
+      strNameCorrPt.Form("hBbBCorrBgrPt_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+      strNameCorrZ.Form("hBbBCorrBgrZ_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+      strNameCorrXi.Form("hBbBCorrBgrXi_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+    }
+
+    hCorrPt[i] = (TH1F*) hdNdptTracksMCGen[i]->Clone(strNameCorrPt);
+    hCorrPt[i]->Divide(hdNdptTracksMCGen[i],hdNdptTracksMCRec[i],1,1,"B"); // binominal errors
+    
+    hCorrXi[i] = (TH1F*) hdNdxiMCGen[i]->Clone(strNameCorrXi);
+    hCorrXi[i]->Divide(hdNdxiMCGen[i],hdNdxiMCRec[i],1,1,"B"); // binominal errors
+    
+    hCorrZ[i] = (TH1F*) hdNdzMCGen[i]->Clone(strNameCorrZ);
+    hCorrZ[i]->Divide(hdNdzMCGen[i],hdNdzMCRec[i],1,1,"B"); // binominal errors
+  } 
+  
+  // write 
+
+  TString outfileOption = "RECREATE";
+  if(updateOutfile)  outfileOption = "UPDATE";
+
+  TFile out(strOutfile,outfileOption);
+  
+  if(!out.IsOpen()){
+    Printf("%s:%d -- error opening efficiency output file %s", (char*)__FILE__,__LINE__,strOutfile.Data());
+    return;
+  }
+
+  if(fDebug>0) Printf("%s:%d -- write bin shift correction to file %s ",(char*)__FILE__,__LINE__,strOutfile.Data());
+
+  if(strOutDir && strOutDir.Length()){  
+    
+    TDirectory* dir;
+    if((dir = ((TDirectory*) gDirectory->Get(strOutDir)))) dir->cd(); 
+    else{
+      dir = out.mkdir(strOutDir);
+      dir->cd(); 
+    } 
+  }
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+
+    hdNdptTracksMCGen[i]->Write();
+    hdNdxiMCGen[i]->Write();
+    hdNdzMCGen[i]->Write();
+    
+    hdNdptTracksMCRec[i]->Write();
+    hdNdxiMCRec[i]->Write();
+    hdNdzMCRec[i]->Write();
+  
+    hCorrPt[i]->Write();
+    hCorrXi[i]->Write();
+    hCorrZ[i]->Write();
+  }
+
+  // out.Close();
+ 
+  delete fh1FFJetPtMCGen; 
+  delete fh1FFJetPtMCRec; 
+
+  delete fh2FFTrackPtMCGen;
+  delete fh2FFZMCGen;
+  delete fh2FFXiMCGen;
+  
+  delete fh2FFTrackPtMCRec;
+  delete fh2FFZMCRec;
+  delete fh2FFXiMCRec;
+}
+
+//________________________________________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::ReadBgrBinShiftCorr(TString strfile, TString strBgrID, TString strdir, TString strlist)
+{
+
+  ReadBinShiftCorr(strfile, strdir, strlist, kTRUE, strBgrID);
+}
+
+//___________________________________________________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::ReadBinShiftCorr(TString strfile, TString strdir, TString strlist, Bool_t readBgr, TString strBgrID)
+{
+
+  if((readBgr && strBgrID.Length() == 0) || (!readBgr && strBgrID.Length()>0) ){
+    Printf("%s:%d -- inconsistent arguments to ReadBinShiftCorr FF/UE", (char*)__FILE__,__LINE__);
+    return; 
+  }
+
+  // temporary histos to hold histos from file
+  TH1F* hCorrPt[fNJetPtSlices]; 
+  TH1F* hCorrZ[fNJetPtSlices];
+  TH1F* hCorrXi[fNJetPtSlices];
+  
+  for(Int_t i=0; i<fNJetPtSlices; i++) hCorrPt[i] = 0;
+  for(Int_t i=0; i<fNJetPtSlices; i++) hCorrZ[i]  = 0;
+  for(Int_t i=0; i<fNJetPtSlices; i++) hCorrXi[i] = 0;
+
+  TFile f(strfile,"READ");
+
+  if(!f.IsOpen()){
+    Printf("%s:%d -- error opening raw data file %s", (char*)__FILE__,__LINE__,strfile.Data());
+    return;
+  }
+
+  if(fDebug>0) Printf("%s:%d -- read FF / UE bin shift correction from file %s ",(char*)__FILE__,__LINE__,strfile.Data());
+ 
+  if(strdir && strdir.Length()) gDirectory->cd(strdir);
+
+  TList* list = 0;
+
+  if(strlist && strlist.Length()){
+   
+    if(!(list = (TList*) gDirectory->Get(strlist))){ 
+      Printf("%s:%d -- error retrieving list %s from directory %s", (char*)__FILE__,__LINE__,strlist.Data(),strdir.Data());
+      return;
+    }
+  }  
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+    
+    Int_t jetPtLoLim = static_cast<Int_t> (fJetPtSlices->At(i));
+    Int_t jetPtUpLim = static_cast<Int_t> (fJetPtSlices->At(i+1));
+    
+    TString strNameCorrPt(Form("hBbBCorrPt_%02d_%02d",jetPtLoLim,jetPtUpLim));
+    TString strNameCorrZ(Form("hBbBCorrZ_%02d_%02d",jetPtLoLim,jetPtUpLim));
+    TString strNameCorrXi(Form("hBbBCorrXi_%02d_%02d",jetPtLoLim,jetPtUpLim));
+
+    if(readBgr){
+      strNameCorrPt.Form("hBbBCorrBgrPt_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+      strNameCorrZ.Form("hBbBCorrBgrZ_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+      strNameCorrXi.Form("hBbBCorrBgrXi_%02d_%02d_%s",static_cast<Int_t>(jetPtLoLim),static_cast<Int_t>(jetPtUpLim),strBgrID.Data());
+    }
+
+   
+    if(list){
+      hCorrPt[i] = (TH1F*) list->FindObject(strNameCorrPt); 
+      hCorrZ[i]  = (TH1F*) list->FindObject(strNameCorrZ); 
+      hCorrXi[i] = (TH1F*) list->FindObject(strNameCorrXi); 
+    }
+    else{
+      hCorrPt[i] = (TH1F*) gDirectory->Get(strNameCorrPt); 
+      hCorrZ[i]  = (TH1F*) gDirectory->Get(strNameCorrZ); 
+      hCorrXi[i] = (TH1F*) gDirectory->Get(strNameCorrXi); 
+    }
+    
+    if(!hCorrPt[i]){
+      Printf("%s:%d -- error retrieving bin by bin correction %s", (char*)__FILE__,__LINE__,strNameCorrPt.Data());
+    }
+  
+    if(!hCorrZ[i]){
+      Printf("%s:%d -- error retrieving bin by bin correction %s", (char*)__FILE__,__LINE__,strNameCorrZ.Data());
+    }    
+
+    if(!hCorrXi[i]){
+      Printf("%s:%d -- error retrieving bin by bin correction %s", (char*)__FILE__,__LINE__,strNameCorrXi.Data());
+    }
+
+
+    if(fNHistoBinsPt[i]) hCorrPt[i] = (TH1F*) hCorrPt[i]->Rebin(fNHistoBinsPt[i],strNameCorrPt+"_rebin",fHistoBinsPt[i]->GetArray());
+    if(fNHistoBinsZ[i])  hCorrZ[i]  = (TH1F*) hCorrZ[i]->Rebin(fNHistoBinsZ[i],strNameCorrZ+"_rebin",fHistoBinsZ[i]->GetArray());
+    if(fNHistoBinsXi[i]) hCorrXi[i] = (TH1F*) hCorrXi[i]->Rebin(fNHistoBinsXi[i],strNameCorrXi+"_rebin",fHistoBinsXi[i]->GetArray());
+
+    if(hCorrPt[i]) hCorrPt[i]->SetDirectory(0); 
+    if(hCorrZ[i])  hCorrZ[i]->SetDirectory(0); 
+    if(hCorrXi[i]) hCorrXi[i]->SetDirectory(0); 
+
+  } // jet slices loop
+
+  f.Close();
+
+  if(readBgr){
+    for(Int_t i=0; i<fNJetPtSlices; i++){ // 2nd loop: need to close input file before placing histos
+      if(hCorrPt[i]) new(fh1BbBBgrPt[i]) TH1F(*hCorrPt[i]);
+      if(hCorrZ[i])  new(fh1BbBBgrZ[i])  TH1F(*hCorrZ[i]);
+      if(hCorrXi[i]) new(fh1BbBBgrXi[i]) TH1F(*hCorrXi[i]);
+    }
+  }
+  else{
+    for(Int_t i=0; i<fNJetPtSlices; i++){ // 2nd loop: need to close input file before placing histos
+      if(hCorrPt[i]) new(fh1BbBPt[i]) TH1F(*hCorrPt[i]);
+      if(hCorrZ[i])  new(fh1BbBZ[i])  TH1F(*hCorrZ[i]);
+      if(hCorrXi[i]) new(fh1BbBXi[i]) TH1F(*hCorrXi[i]);
+    }
+  }
+}
+
+// ________________________________________________
+void AliFragmentationFunctionCorrections::BbBCorr()
+{
+  // apply bin-by-bin correction
+
+  AddCorrectionLevel("BbB");
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+
+    TH1F* histPt = fCorrFF[fNCorrectionLevels-2]->GetTrackPt(i);
+    TH1F* histZ  = fCorrFF[fNCorrectionLevels-2]->GetZ(i);
+    TH1F* histXi = fCorrFF[fNCorrectionLevels-2]->GetXi(i);
+
+    TString histNamePt = histPt->GetName();
+    TString histNameZ  = histZ->GetName();
+    TString histNameXi = histXi->GetName();
+    
+    TH1F* hFFTrackPtBbBCorr = (TH1F*) histPt->Clone(histNamePt);
+    hFFTrackPtBbBCorr->Multiply(histPt,fh1BbBPt[i],1,1,"");
+    
+    TH1F* hFFZBbBCorr = (TH1F*) histZ->Clone(histNameZ);
+    hFFZBbBCorr->Multiply(histZ,fh1BbBZ[i],1,1,"");
+    
+    TH1F* hFFXiBbBCorr = (TH1F*) histXi->Clone(histNameXi);
+    hFFXiBbBCorr->Multiply(histXi,fh1BbBXi[i],1,1,"");
+    
+    fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,hFFTrackPtBbBCorr,hFFZBbBCorr,hFFXiBbBCorr);
+  }
+}
+
+// ___________________________________________________
+void AliFragmentationFunctionCorrections::BbBCorrBgr()
+{
+  // apply bin-by-bin correction
+
+  AddCorrectionLevelBgr("BbB");
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+
+    TH1F* histPt = fCorrBgr[fNCorrectionLevelsBgr-2]->GetTrackPt(i);
+    TH1F* histZ  = fCorrBgr[fNCorrectionLevelsBgr-2]->GetZ(i);
+    TH1F* histXi = fCorrBgr[fNCorrectionLevelsBgr-2]->GetXi(i);
+
+    TString histNamePt = histPt->GetName();
+    TString histNameZ  = histZ->GetName();
+    TString histNameXi = histXi->GetName();
+    
+    TH1F* hBgrTrackPtBbBCorr = (TH1F*) histPt->Clone(histNamePt);
+    hBgrTrackPtBbBCorr->Multiply(histPt,fh1BbBBgrPt[i],1,1,"");
+    
+    TH1F* hBgrZBbBCorr = (TH1F*) histZ->Clone(histNameZ);
+    hBgrZBbBCorr->Multiply(histZ,fh1BbBBgrZ[i],1,1,"");
+    
+    TH1F* hBgrXiBbBCorr = (TH1F*) histXi->Clone(histNameXi);
+    hBgrXiBbBCorr->Multiply(histXi,fh1BbBBgrXi[i],1,1,"");
+    
+    fCorrBgr[fNCorrectionLevelsBgr-1]->AddCorrHistos(i,hBgrTrackPtBbBCorr,hBgrZBbBCorr,hBgrXiBbBCorr);
+  }
+}
+
+//_______________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::ReadFoldingCorr(TString strfile, TString strdir, TString strlist)
+{
+
+  // temporary histos to hold histos from file
+  TH1F* hCorrPt[fNJetPtSlices]; 
+  TH1F* hCorrZ[fNJetPtSlices];
+  TH1F* hCorrXi[fNJetPtSlices];
+  
+  for(Int_t i=0; i<fNJetPtSlices; i++) hCorrPt[i] = 0;
+  for(Int_t i=0; i<fNJetPtSlices; i++) hCorrZ[i]  = 0;
+  for(Int_t i=0; i<fNJetPtSlices; i++) hCorrXi[i] = 0;
+
+  TFile f(strfile,"READ");
+
+  if(!f.IsOpen()){
+    Printf("%s:%d -- error opening raw data file %s", (char*)__FILE__,__LINE__,strfile.Data());
+    return;
+  }
+
+  if(fDebug>0) Printf("%s:%d -- read bin shift correction from file %s ",(char*)__FILE__,__LINE__,strfile.Data());
+ 
+  if(strdir && strdir.Length()) gDirectory->cd(strdir);
+
+  TList* list = 0;
+
+  if(strlist && strlist.Length()){
+   
+    if(!(list = (TList*) gDirectory->Get(strlist))){ 
+      Printf("%s:%d -- error retrieving list %s from directory %s", (char*)__FILE__,__LINE__,strlist.Data(),strdir.Data());
+      return;
+    }
+  }  
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+    
+    Int_t jetPtLoLim = static_cast<Int_t> (fJetPtSlices->At(i));
+    Int_t jetPtUpLim = static_cast<Int_t> (fJetPtSlices->At(i+1));
+    
+    TString strNameCorrPt(Form("hCorrFoldingPt_%02d_%02d",jetPtLoLim,jetPtUpLim));
+    TString strNameCorrZ(Form("hCorrFoldingZ_%02d_%02d",jetPtLoLim,jetPtUpLim));
+    TString strNameCorrXi(Form("hCorrFoldingXi_%02d_%02d",jetPtLoLim,jetPtUpLim));
+     
+   
+    if(list){
+      hCorrPt[i] = (TH1F*) list->FindObject(strNameCorrPt); 
+      hCorrZ[i]  = (TH1F*) list->FindObject(strNameCorrZ); 
+      hCorrXi[i] = (TH1F*) list->FindObject(strNameCorrXi); 
+    }
+    else{
+      hCorrPt[i] = (TH1F*) gDirectory->Get(strNameCorrPt); 
+      hCorrZ[i]  = (TH1F*) gDirectory->Get(strNameCorrZ); 
+      hCorrXi[i] = (TH1F*) gDirectory->Get(strNameCorrXi); 
+    }
+    
+    if(!hCorrPt[i]){
+      //Printf("%s:%d -- error retrieving folding correction %s", (char*)__FILE__,__LINE__,strNameCorrPt.Data());
+    }
+  
+    if(!hCorrZ[i]){
+      //Printf("%s:%d -- error retrieving folding correction %s", (char*)__FILE__,__LINE__,strNameCorrZ.Data());
+    }    
+
+    if(!hCorrXi[i]){
+      Printf("%s:%d -- error retrieving folding correction %s", (char*)__FILE__,__LINE__,strNameCorrXi.Data());
+    }
+
+    if(hCorrPt[i]) hCorrPt[i]->SetDirectory(0); 
+    if(hCorrZ[i])  hCorrZ[i]->SetDirectory(0); 
+    if(hCorrXi[i]) hCorrXi[i]->SetDirectory(0); 
+
+  } // jet slices loop
+
+  f.Close();
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){ // 2nd loop: need to close input file before placing histos
+    if(hCorrPt[i]) new(fh1FoldingCorrPt[i]) TH1F(*hCorrPt[i]);
+    if(hCorrZ[i])  new(fh1FoldingCorrZ[i])  TH1F(*hCorrZ[i]);
+    if(hCorrXi[i]) new(fh1FoldingCorrXi[i]) TH1F(*hCorrXi[i]);
+  }
+}
+
+// ___________________________________________________
+void AliFragmentationFunctionCorrections::FoldingCorr()
+{
+  // apply bin-by-bin correction
+
+  AddCorrectionLevel("FoldingCorr");
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+
+    TH1F* histPt = fCorrFF[fNCorrectionLevels-2]->GetTrackPt(i);
+    TH1F* histZ  = fCorrFF[fNCorrectionLevels-2]->GetZ(i);
+    TH1F* histXi = fCorrFF[fNCorrectionLevels-2]->GetXi(i);
+
+    TString histNamePt = histPt->GetName();
+    TString histNameZ  = histZ->GetName();
+    TString histNameXi = histXi->GetName();
+        
+    std::cout<<" foldingCorr: i "<<i<<" corr pt "<<fh1FoldingCorrPt[i]<<" z "<<fh1FoldingCorrZ[i]<<" xi "
+	     <<fh1FoldingCorrXi[i]<<std::endl;
+
+    std::cout<<" foldingCorr: i "<<i<<" mean corr pt "<<fh1FoldingCorrPt[i]->GetMean()<<" z "<<fh1FoldingCorrZ[i]->GetMean()<<" xi "
+	     <<fh1FoldingCorrXi[i]->GetMean()<<std::endl;
+
+    
+
+    TH1F* hFFTrackPtFoldingCorr = (TH1F*) histPt->Clone(histNamePt);
+    if(fh1FoldingCorrPt[i] && fh1FoldingCorrPt[i]->GetMean()>0) hFFTrackPtFoldingCorr->Multiply(histPt,fh1FoldingCorrPt[i],1,1,"");
+    else hFFTrackPtFoldingCorr->Reset();
+
+    TH1F* hFFZFoldingCorr = (TH1F*) histZ->Clone(histNameZ);
+    if(fh1FoldingCorrZ[i] && fh1FoldingCorrZ[i]->GetMean()>0) hFFZFoldingCorr->Multiply(histZ,fh1FoldingCorrZ[i],1,1,"");
+    else hFFZFoldingCorr->Reset();
+    
+    TH1F* hFFXiFoldingCorr = (TH1F*) histXi->Clone(histNameXi);
+    if(fh1FoldingCorrXi[i]&& fh1FoldingCorrXi[i]->GetMean()>0) hFFXiFoldingCorr->Multiply(histXi,fh1FoldingCorrXi[i],1,1,"");
+    else hFFXiFoldingCorr->Reset();
+    
+    fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,hFFTrackPtFoldingCorr,hFFZFoldingCorr,hFFXiFoldingCorr);
+  }
+}
+
+//________________________________________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::ReadBgrJetSecCorr(TString strfile, TString strBgrID, TString strdir, TString strlist, 
+							    Bool_t useScaledStrangeness)
+{
+
+  ReadJetSecCorr(strfile, strdir, strlist, useScaledStrangeness, kTRUE, strBgrID);
+}
+
+//_______________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::ReadJetSecCorr(TString strfile, TString strdir, TString strlist, Bool_t useScaledStrangeness, 
+							 Bool_t readBgr, TString strBgrID){
+
+  // read reconstruction efficiency from file
+  // argument strlist optional - read from directory strdir if not specified
+
+  // temporary histos to hold histos from file
+  TH1F* hCorrPt[fNJetPtSlices]; 
+  TH1F* hCorrZ[fNJetPtSlices];
+  TH1F* hCorrXi[fNJetPtSlices];
+  
+  for(Int_t i=0; i<fNJetPtSlices; i++) hCorrPt[i] = 0;
+  for(Int_t i=0; i<fNJetPtSlices; i++) hCorrZ[i]  = 0;
+  for(Int_t i=0; i<fNJetPtSlices; i++) hCorrXi[i] = 0;
+
+  TFile f(strfile,"READ");
+
+  if(!f.IsOpen()){
+    Printf("%s:%d -- error opening raw data file %s", (char*)__FILE__,__LINE__,strfile.Data());
+    return;
+  }
+
+  if(fDebug>0) Printf("%s:%d -- read secondary correction from file %s ",(char*)__FILE__,__LINE__,strfile.Data());
+ 
+  if(strdir && strdir.Length()) gDirectory->cd(strdir);
+
+  TList* list = 0;
+
+  if(strlist && strlist.Length()){
+   
+    if(!(list = (TList*) gDirectory->Get(strlist))){ 
+      Printf("%s:%d -- error retrieving list %s from directory %s", (char*)__FILE__,__LINE__,strlist.Data(),strdir.Data());
+      return;
+    }
+  }  
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+    
+    Int_t jetPtLoLim = static_cast<Int_t> (fJetPtSlices->At(i));
+    Int_t jetPtUpLim = static_cast<Int_t> (fJetPtSlices->At(i+1));
+
+    TString strNameCorrPt("");
+    TString strNameCorrZ("");
+    TString strNameCorrXi("");
+    
+    if(readBgr){
+      strNameCorrPt.Form("hSecCorrBgrPt_%02d_%02d_%s",jetPtLoLim,jetPtUpLim,strBgrID.Data());
+      strNameCorrZ.Form("hSecCorrBgrZ_%02d_%02d_%s",jetPtLoLim,jetPtUpLim,strBgrID.Data());
+      strNameCorrXi.Form("hSecCorrBgrXi_%02d_%02d_%s",jetPtLoLim,jetPtUpLim,strBgrID.Data());
+      
+      if(!useScaledStrangeness){
+	Printf("%s:%d -- readJetSecCorr bgr: using naive Pythia strangenss ", (char*)__FILE__,__LINE__);
+	strNameCorrPt.Form("hSecCorrBgrPt_nonSc_%02d_%02d_%s",jetPtLoLim,jetPtUpLim,strBgrID.Data());
+	strNameCorrZ.Form("hSecCorrBgrZ_nonSc_%02d_%02d_%s",jetPtLoLim,jetPtUpLim,strBgrID.Data());
+	strNameCorrXi.Form("hSecCorrBgrXi_nonSc_%02d_%02d_%s",jetPtLoLim,jetPtUpLim,strBgrID.Data());
+      }
+    }
+    else{
+      strNameCorrPt.Form("hSecCorrPt_%02d_%02d",jetPtLoLim,jetPtUpLim);
+      strNameCorrZ.Form("hSecCorrZ_%02d_%02d",jetPtLoLim,jetPtUpLim);
+      strNameCorrXi.Form("hSecCorrXi_%02d_%02d",jetPtLoLim,jetPtUpLim);
+      
+      if(!useScaledStrangeness){
+	Printf("%s:%d -- readJetSecCorr: using naive Pythia strangenss ", (char*)__FILE__,__LINE__);
+	strNameCorrPt.Form("hSecCorrPt_nonSc_%02d_%02d",jetPtLoLim,jetPtUpLim);
+	strNameCorrZ.Form("hSecCorrZ_nonSc_%02d_%02d",jetPtLoLim,jetPtUpLim);
+	strNameCorrXi.Form("hSecCorrXi_nonSc_%02d_%02d",jetPtLoLim,jetPtUpLim);
+      }
+    }
+   
+    if(list){
+      hCorrPt[i] = (TH1F*) list->FindObject(strNameCorrPt); 
+      hCorrZ[i]  = (TH1F*) list->FindObject(strNameCorrZ); 
+      hCorrXi[i] = (TH1F*) list->FindObject(strNameCorrXi); 
+    }
+    else{
+      hCorrPt[i] = (TH1F*) gDirectory->Get(strNameCorrPt); 
+      hCorrZ[i]  = (TH1F*) gDirectory->Get(strNameCorrZ); 
+      hCorrXi[i] = (TH1F*) gDirectory->Get(strNameCorrXi); 
+    }
+    
+    if(!hCorrPt[i]){
+      Printf("%s:%d -- error retrieving secondaries correction %s", (char*)__FILE__,__LINE__,strNameCorrPt.Data());
+    }
+  
+    if(!hCorrZ[i]){
+      Printf("%s:%d -- error retrieving secondaries correction %s", (char*)__FILE__,__LINE__,strNameCorrZ.Data());
+    }    
+
+    if(!hCorrXi[i]){
+      Printf("%s:%d -- error retrieving secondaries correction %s", (char*)__FILE__,__LINE__,strNameCorrXi.Data());
+    }
+
+    if(fNHistoBinsPt[i]) hCorrPt[i] = (TH1F*) hCorrPt[i]->Rebin(fNHistoBinsPt[i],strNameCorrPt+"_rebin",fHistoBinsPt[i]->GetArray());
+    if(fNHistoBinsZ[i])  hCorrZ[i]  = (TH1F*) hCorrZ[i]->Rebin(fNHistoBinsZ[i],strNameCorrZ+"_rebin",fHistoBinsZ[i]->GetArray());
+    if(fNHistoBinsXi[i]) hCorrXi[i] = (TH1F*) hCorrXi[i]->Rebin(fNHistoBinsXi[i],strNameCorrXi+"_rebin",fHistoBinsXi[i]->GetArray());
+
+    if(hCorrPt[i]) hCorrPt[i]->SetDirectory(0); 
+    if(hCorrZ[i])  hCorrZ[i]->SetDirectory(0); 
+    if(hCorrXi[i]) hCorrXi[i]->SetDirectory(0); 
+
+  } // jet slices loop
+
+  f.Close();
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){ // 2nd loop: need to close input file before placing histos
+
+    if(readBgr){
+      if(hCorrPt[i]) new(fh1SecCorrBgrPt[i]) TH1F(*hCorrPt[i]);
+      if(hCorrZ[i])  new(fh1SecCorrBgrZ[i])  TH1F(*hCorrZ[i]);
+      if(hCorrXi[i]) new(fh1SecCorrBgrXi[i]) TH1F(*hCorrXi[i]);
+    }
+    else{
+      if(hCorrPt[i]) new(fh1SecCorrPt[i]) TH1F(*hCorrPt[i]);
+      if(hCorrZ[i])  new(fh1SecCorrZ[i])  TH1F(*hCorrZ[i]);
+      if(hCorrXi[i]) new(fh1SecCorrXi[i]) TH1F(*hCorrXi[i]);
+    }
+  }
+}
+
+// ___________________________________________________
+void AliFragmentationFunctionCorrections::JetSecCorr()
+{
+  // apply secondaries correction
+
+  AddCorrectionLevel("SecCorr");
+
+  Printf("%s:%d -- apply jet secondaries correction", (char*)__FILE__,__LINE__);
+
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+
+    TH1F* histPt = fCorrFF[fNCorrectionLevels-2]->GetTrackPt(i);
+    TH1F* histZ  = fCorrFF[fNCorrectionLevels-2]->GetZ(i);
+    TH1F* histXi = fCorrFF[fNCorrectionLevels-2]->GetXi(i);
+
+    TString histNamePt = histPt->GetName();
+    TString histNameZ  = histZ->GetName();
+    TString histNameXi = histXi->GetName();
+    
+    TH1F* hFFTrackPtSecCorr = (TH1F*) histPt->Clone(histNamePt);
+    hFFTrackPtSecCorr->Multiply(histPt,fh1SecCorrPt[i],1,1,"");
+    
+    TH1F* hFFZSecCorr = (TH1F*) histZ->Clone(histNameZ);
+    hFFZSecCorr->Multiply(histZ,fh1SecCorrZ[i],1,1,"");
+    
+    TH1F* hFFXiSecCorr = (TH1F*) histXi->Clone(histNameXi);
+    hFFXiSecCorr->Multiply(histXi,fh1SecCorrXi[i],1,1,"");
+    
+    fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,hFFTrackPtSecCorr,hFFZSecCorr,hFFXiSecCorr);
+  }
+}
+
+
+
+// ___________________________________________________
+void AliFragmentationFunctionCorrections::JetSecCorrBgr()
+{
+  // apply secondaries correction to UE
+  
+  AddCorrectionLevelBgr("SecCorr"); 
+
+  Printf("%s:%d -- apply jet secondaries correction", (char*)__FILE__,__LINE__);
+  
+  for(Int_t i=0; i<fNJetPtSlices; i++){
+    
+    TH1F* histPt = fCorrBgr[fNCorrectionLevelsBgr-2]->GetTrackPt(i);
+    TH1F* histZ  = fCorrBgr[fNCorrectionLevelsBgr-2]->GetZ(i);
+    TH1F* histXi = fCorrBgr[fNCorrectionLevelsBgr-2]->GetXi(i);
+
+    TString histNamePt = histPt->GetName();
+    TString histNameZ  = histZ->GetName();
+    TString histNameXi = histXi->GetName();
+    
+    TH1F* hFFTrackPtSecCorr = (TH1F*) histPt->Clone(histNamePt);
+    hFFTrackPtSecCorr->Multiply(histPt,fh1SecCorrBgrPt[i],1,1,"");
+    
+    TH1F* hFFZSecCorr = (TH1F*) histZ->Clone(histNameZ);
+    hFFZSecCorr->Multiply(histZ,fh1SecCorrBgrZ[i],1,1,"");
+    
+    TH1F* hFFXiSecCorr = (TH1F*) histXi->Clone(histNameXi);
+    hFFXiSecCorr->Multiply(histXi,fh1SecCorrBgrXi[i],1,1,"");
+    
+    fCorrBgr[fNCorrectionLevelsBgr-1]->AddCorrHistos(i,hFFTrackPtSecCorr,hFFZSecCorr,hFFXiSecCorr);
+  }
+}
+
+
+//________________________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::WriteBinShiftCorrSinglePt(TString strInfile, TString strIDGen,  TString strIDRec,  
+								    TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim, 
+								    TString strOutDir)
+{ 
+  TString strdirGen  = "PWGJE_FragmentationFunction_" + strIDGen;
+  TString strlistGen = "fracfunc_" + strIDGen;
+  
+  TString strdirRec  = "PWGJE_FragmentationFunction_" + strIDRec;
+  TString strlistRec = "fracfunc_" + strIDRec;
+  
+  WriteBinShiftCorrSinglePt(strInfile,strdirGen,strlistGen,strdirRec,strlistRec,strOutfile,updateOutfile,useRecPrim,strOutDir);
+}
+
+//___________________________________________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::WriteBinShiftCorrSinglePt(TString strInfile, TString strdirGen, TString strlistGen, 
+								    TString strdirRec, TString strlistRec, 
+								    TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim, 
+								    TString strOutDir){
+ 
+  
+  TH1F* hCorrPt           = 0;
+  TH1F* hdNdptTracksMCGen = 0;
+  TH1F* hdNdptTracksMCRec = 0;
+ 
+  // gen level FF
+
+  TFile f(strInfile,"READ");
+
+  if(!f.IsOpen()){
+    Printf("%s:%d -- error opening raw data file %s", (char*)__FILE__,__LINE__,strInfile.Data());
+    return;
+  }
+  
+  if(fDebug>0) Printf("%s:%d -- writeBinShiftCorrSinglePt: open task ouput file %s",(char*)__FILE__,__LINE__,strInfile.Data());
+ 
+  if(strdirGen && strdirGen.Length()) gDirectory->cd(strdirGen);
+
+  TList* listGen = 0;
+
+  if(strlistGen && strlistGen.Length()){
+
+    if(!(listGen = (TList*) gDirectory->Get(strlistGen))){ 
+      Printf("%s:%d -- error retrieving listGen %s from directory %s", (char*)__FILE__,__LINE__,strlistGen.Data(),strdirGen.Data());
+      return;
+    }
+  }
+ 
+  if(listGen){
+    hdNdptTracksMCGen  = (TH1F*) listGen->FindObject("fh1TrackQAPtGen");
+  }
+  else{
+    hdNdptTracksMCGen  = (TH1F*) gDirectory->Get("fh1TrackQAPtGen");
+  }
+
+  hdNdptTracksMCGen->SetDirectory(0);
+  
+  f.Close();
+
+  // rec level FF
+
+  TFile g(strInfile,"READ");
+
+  if(!g.IsOpen()){
+    Printf("%s:%d -- error opening raw data file %s", (char*)__FILE__,__LINE__,strInfile.Data());
+    return;
+  }
+  
+  if(fDebug>0) Printf("%s:%d -- writeBinShiftCorrSinglePt: open task ouput file %s",(char*)__FILE__,__LINE__,strInfile.Data());
+ 
+  if(strdirRec && strdirRec.Length()) gDirectory->cd(strdirRec);
+
+  TList* listRec = 0;
+
+  if(strlistRec && strlistRec.Length()){
+
+    if(!(listRec = (TList*) gDirectory->Get(strlistRec))){ 
+      Printf("%s:%d -- error retrieving listRec %s from directory %s", (char*)__FILE__,__LINE__,strlistRec.Data(),strdirRec.Data());
+      return;
+    }
+  }
+ 
+
+  if(useRecPrim){
+    if(listRec){ 
+      hdNdptTracksMCRec = (TH1F*) listRec->FindObject("fh1TrackQAPtRecEffRec");
+    }
+    else{
+      hdNdptTracksMCRec = (TH1F*) gDirectory->Get("fh1TrackQAPtRecEffRec");
+    }
+  }
+  else{
+    if(listRec){
+      hdNdptTracksMCRec  = (TH1F*) listRec->FindObject("fh1TrackQAPtRecCuts");
+    } 
+    else{
+      hdNdptTracksMCRec  = (TH1F*) gDirectory->Get("fh1TrackQAPtRecCuts");
+    }
+  }
+  
+  hdNdptTracksMCRec->SetDirectory(0);
+  
+  g.Close();
+    
+  TString strNamePtGen = "fh1SinglePtGenBbB";
+  TString strNamePtRec = "fh1SinglePtRecBbB";
+
+  // rebin
+  if(fNHistoBinsSinglePt) hdNdptTracksMCGen = (TH1F*) hdNdptTracksMCGen->Rebin(fNHistoBinsSinglePt,strNamePtGen+"_rebin",fHistoBinsSinglePt->GetArray());
+  if(fNHistoBinsSinglePt) hdNdptTracksMCRec = (TH1F*) hdNdptTracksMCRec->Rebin(fNHistoBinsSinglePt,strNamePtRec+"_rebin",fHistoBinsSinglePt->GetArray());
+  
+  hdNdptTracksMCGen->SetNameTitle(strNamePtGen,"");
+  hdNdptTracksMCRec->SetNameTitle(strNamePtRec,"");
+  
+  // corr fac
+  TString strTitCorr        = "hBbBCorrSinglePt";
+  if(useRecPrim) strTitCorr = "hBbBCorrRecPrimSinglePt";
+
+  hCorrPt = (TH1F*) hdNdptTracksMCGen->Clone(strTitCorr);
+  hCorrPt->Divide(hdNdptTracksMCGen,hdNdptTracksMCRec,1,1,"B"); // binominal errors
+  
+  // write 
+
+  TString outfileOption = "RECREATE";
+  if(updateOutfile)  outfileOption = "UPDATE";
+
+  TFile out(strOutfile,outfileOption);
+  
+  if(!out.IsOpen()){
+    Printf("%s:%d -- error opening efficiency output file %s", (char*)__FILE__,__LINE__,strOutfile.Data());
+    return;
+  }
+
+  if(fDebug>0) Printf("%s:%d -- write bin shift correction to file %s ",(char*)__FILE__,__LINE__,strOutfile.Data());
+
+  if(strOutDir && strOutDir.Length()){  
+    
+    TDirectory* dir;
+    if((dir = ((TDirectory*) gDirectory->Get(strOutDir)))) dir->cd(); 
+    else{
+      dir = out.mkdir(strOutDir);
+      dir->cd(); 
+    } 
+  }
+  
+  
+  hdNdptTracksMCGen->Write();
+  hdNdptTracksMCRec->Write();
+  hCorrPt->Write();
+  
+  out.Close();
+ 
+  delete hdNdptTracksMCGen; 
+  delete hdNdptTracksMCRec;  
+  delete hCorrPt; 
+}
+
+//___________________________________________________________________________________________________________________________________
+void AliFragmentationFunctionCorrections::ReadBinShiftCorrSinglePt(TString strfile, TString strdir, TString strlist, Bool_t useRecPrim)
+{
+  // read reconstruction efficiency from file
+  // argument strlist optional - read from directory strdir if not specified
+
+  // temporary histos to hold histos from file
+  TH1F* hBbBCorrPt = 0; 
+  
+  TFile f(strfile,"READ");
+
+  if(!f.IsOpen()){
+    Printf("%s:%d -- error opening raw data file %s", (char*)__FILE__,__LINE__,strfile.Data());
+    return;
+  }
+
+  if(fDebug>0) Printf("%s:%d -- read BbB corr from file %s ",(char*)__FILE__,__LINE__,strfile.Data());
+ 
+  if(strdir && strdir.Length()) gDirectory->cd(strdir);
+
+  TList* list = 0;
+
+  if(strlist && strlist.Length()){
+   
+    if(!(list = (TList*) gDirectory->Get(strlist))){ 
+      Printf("%s:%d -- error retrieving list %s from directory %s", (char*)__FILE__,__LINE__,strlist.Data(),strdir.Data());
+      return;
+    }
+  }  
+
+    
+  TString strNameBbBCorrPt = "hBbBCorrSinglePt";
+  if(useRecPrim) strNameBbBCorrPt = "hBbBCorrRecPrimSinglePt";     
+
+  if(list){
+    hBbBCorrPt = (TH1F*)  list->FindObject(strNameBbBCorrPt); 
+  }
+  else{
+    hBbBCorrPt = (TH1F*)  gDirectory->Get(strNameBbBCorrPt); 
+  }
+    
+  if(!hBbBCorrPt){
+    Printf("%s:%d -- error retrieving BbB corr single pt %s", (char*)__FILE__,__LINE__,strNameBbBCorrPt.Data());
+  }
+ 
+
+  if(fNHistoBinsPt) hBbBCorrPt = (TH1F*) hBbBCorrPt->Rebin(fNHistoBinsSinglePt,strNameBbBCorrPt+"_rebin",fHistoBinsSinglePt->GetArray());
+
+  if(hBbBCorrPt) hBbBCorrPt->SetDirectory(0); 
+ 
+  f.Close();
+
+  fh1BbBCorrSinglePt = hBbBCorrPt;
+}
+
+// ------------------------------------------------------------------
+
+void AliFragmentationFunctionCorrections::BbBCorrSinglePt()
+{
+  // apply efficiency correction to inclusive track pt spec
+
+  AddCorrectionLevelSinglePt("BbB");
+
+  TH1F* histPt = fCorrSinglePt[fNCorrectionLevelsSinglePt-2]->GetTrackPt(0);
+  
+  if(histPt->GetNbinsX() != fh1BbBCorrSinglePt->GetNbinsX()){
+    Printf("%s:%d: inconsistency pt spec and BbB corr binning ", (char*)__FILE__,__LINE__);
+    return; 
+  }
+
+  TString histNamePt    = histPt->GetName();
+  TH1F* hTrackPtBbBCorr = (TH1F*) histPt->Clone(histNamePt);
+  
+  hTrackPtBbBCorr->Multiply(histPt,fh1BbBCorrSinglePt,1,1,"");
+  
+  fCorrSinglePt[fNCorrectionLevelsSinglePt-1]->AddCorrHistos(0,hTrackPtBbBCorr);
+}
+

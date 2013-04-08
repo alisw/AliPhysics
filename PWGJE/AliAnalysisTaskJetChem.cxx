@@ -861,9 +861,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       Bool_t isBadJet     = kFALSE;
       
       if(GetFFRadius()<=0){
- 	GetJetTracksTrackrefs(jettracklist, jet, GetFFMaxTrackPt(), isBadJet);
+ 	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
       } else {
- 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMaxTrackPt(), isBadJet);
+ 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt,  GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
       }
 
       if(GetFFMinNTracks()>0 && jettracklist->GetSize() <= GetFFMinNTracks()) isBadJet = kTRUE;
@@ -923,7 +923,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       Double_t sumPtK0     = 0.;
       Bool_t isBadJetK0    = kFALSE; // dummy, do not use
 
-      GetJetTracksPointing(fListK0s, jetConeK0list, jet, GetFFRadius(), sumPtK0, GetFFMaxTrackPt(), isBadJetK0);
+      GetJetTracksPointing(fListK0s, jetConeK0list, jet, GetFFRadius(), sumPtK0, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0);
 
 
       if(fDebug>2)Printf("%s:%d nK0s total: %d, in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nK0s,jetConeK0list->GetEntries(),GetFFRadius());

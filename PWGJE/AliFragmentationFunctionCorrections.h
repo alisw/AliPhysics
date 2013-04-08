@@ -70,6 +70,8 @@ class AliFragmentationFunctionCorrections : public TObject {
 
   void SetHistoBins(const Int_t jetPtSlice, const Int_t sizeBins, Double_t* bins,Int_t type);
   void SetHistoBins(const Int_t jetPtSlice, const Int_t nBinsLimits, Double_t* binsLimits, Double_t* binsWidth,Int_t type);
+  TArrayD* GetHistoBins(const Int_t jetPtSlice,  const Int_t type);
+
   void SetHistoBinsSinglePt(const Int_t sizeBins, Double_t* bins);
   void SetHistoBinsSinglePt(const Int_t nBinsLimits, Double_t* binsLimits, Double_t* binsWidth);
 
@@ -89,8 +91,8 @@ class AliFragmentationFunctionCorrections : public TObject {
 
   THnSparse* TH1toSparse(const TH1F* hist, TString strName, TString strTit, const Bool_t fillConst = kFALSE);
 
-  THnSparse* Unfold(THnSparse* hnHist, const THnSparse* hnResponse, const THnSparse* hnEff, const Int_t nIter, 
-		    const Bool_t useCorrelatedErrors = kTRUE, const THnSparse* hnPrior = 0x0);
+  TH1F* Unfold(THnSparse* hnHist, const THnSparse* hnResponse, const THnSparse* hnEff, const Int_t nIter, 
+	       const Bool_t useCorrelatedErrors = kTRUE, const THnSparse* hnPrior = 0x0);
 
   void UnfoldHistos(const Int_t nIter, const Bool_t useCorrelatedErrors, const Int_t type);
 
@@ -108,7 +110,7 @@ class AliFragmentationFunctionCorrections : public TObject {
 
   void XiShift(const Int_t corrLevel); 
 
-  void SubtractBgr();
+  void SubtractBgr(Double_t sysErr = 0);
 
   void WriteSingleTrackEff(TString strInfile, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE, TString strOutDir = "", TString strPostfix = "");
   void WriteSingleTrackEff(TString strInfile, TString strdir, TString strlist, TString strOutfile, Bool_t updateOutfile = kTRUE, TString strOutDir = "", 
@@ -123,11 +125,14 @@ class AliFragmentationFunctionCorrections : public TObject {
   void WriteJetTrackEff(TString strInfile, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE);
   void WriteJetTrackEff(TString strInfile, TString strdir, TString strlist, TString strOutfile, Bool_t updateOutfile = kTRUE);
 
-  void WriteJetSecCorr(TString strInfile, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE);
-  void WriteJetSecCorr(TString strInfile, TString strdir, TString strlist, TString strOutfile, Bool_t updateOutfile = kTRUE);
+  void WriteJetSecCorr(TString strInfile, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE, TString strOutDir = "");
+  void WriteBgrJetSecCorr(TString strInfile, TString strBgrID, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE, TString strOutDir = "");
+
+  void WriteJetSecCorr(TString strInfile, TString strdir, TString strlist, TString strOutfile, Bool_t updateOutfile = kTRUE, 
+		       TString strOutDir = "",Bool_t writeBgr=kFALSE,TString strBgrID="");
  
-  void WriteJetResponse(TString strInfile, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE);
-  void WriteJetResponse(TString strInfile, TString strdir, TString strlist,TString strOutfile, Bool_t updateOutfile);
+  void WriteJetResponse(TString strInfile, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE, TString strOutDir = "");
+  void WriteJetResponse(TString strInfile, TString strdir, TString strlist,TString strOutfile, Bool_t updateOutfile, TString strOutDir = "");
 
   void ReadResponse(TString strfile, TString strdir="", TString strlist="");
   void ReadPriors(TString strfile,const Int_t type); 
@@ -150,6 +155,49 @@ class AliFragmentationFunctionCorrections : public TObject {
   void EffCorrSinglePt();
   void UnfoldSinglePt(const Int_t nIter, const Bool_t useCorrelatedErrors);
   void SecCorrSinglePt();
+  void dNdz2dNdxi();
+
+  void WriteBinShiftCorr(TString strInfile, TString strIDGen,  TString strIDRec,  
+			 TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim = kTRUE,  
+			 TString strOutDir = "");
+
+  void WriteBgrBinShiftCorr(TString strInfile, TString strBgrID, TString strIDGen,  TString strIDRec,  
+			    TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim = kTRUE,  
+			    TString strOutDir = "");
+
+  void WriteBinShiftCorr(TString strInfile, TString strdirGen, TString strlistGen, 
+			 TString strdirRec, TString strlistRec, 
+			 TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim = kTRUE, 
+			 TString strOutDir = "",Bool_t writeBgr = kFALSE, TString strBgrID = "");
+
+  void ReadBgrBinShiftCorr(TString strfile,  TString strBgrID, TString strdir="", TString strlist="");
+  void ReadBinShiftCorr(TString strfile, TString strdir="", TString strlist="", Bool_t readBgr = kFALSE, TString strBgrID="");
+
+  void ReadFoldingCorr(TString strfile, TString strdir="", TString strlist="");
+
+  void BbBCorr();
+  void BbBCorrBgr();
+
+  void FoldingCorr();
+
+  void ReadBgrJetSecCorr(TString strfile, TString strBgrID, TString strdir="", TString strlist="", Bool_t useScaledStrangeness=kTRUE);
+  void ReadJetSecCorr(TString strfile, TString strdir="", TString strlist="", Bool_t useScaledStrangeness = kTRUE, 
+		      Bool_t readBgr=kFALSE, TString strBgrID="");
+
+  void JetSecCorr();
+  void JetSecCorrBgr();
+
+
+  void WriteBinShiftCorrSinglePt(TString strInfile, TString strIDGen,  TString strIDRec,  
+				 TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim, TString strOutDir);
+
+  void WriteBinShiftCorrSinglePt(TString strInfile, TString strdirGen, TString strlistGen, 
+				 TString strdirRec, TString strlistRec, 
+				 TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim, TString strOutDir = "");
+  
+  void ReadBinShiftCorrSinglePt(TString strfile, TString strdir = "", TString strlist = "", Bool_t useRecPrim = kTRUE);
+
+  void BbBCorrSinglePt();
 
 
   enum {kFlagPt=0,kFlagZ,kFlagXi,kFlagSinglePt};
@@ -203,6 +251,30 @@ class AliFragmentationFunctionCorrections : public TObject {
   TH1F** fh1EffBgrZ;  	       //! reconstruction efficiency bgr z
   TH1F** fh1EffBgrXi;	       //! reconstruction efficiency bgr xi
 
+  // bin-by-bin correction
+  TH1F*  fh1BbBCorrSinglePt;   //!  BbB corr track pt 
+
+  TH1F** fh1BbBPt;             //! bin-by-bin correction track pt
+  TH1F** fh1BbBZ;              //! bin-by-bin correction z
+  TH1F** fh1BbBXi;             //! bin-by-bin correction xi
+
+  TH1F** fh1BbBBgrPt;          //! bin-by-bin correction UE track pt
+  TH1F** fh1BbBBgrZ;           //! bin-by-bin correction UE z
+  TH1F** fh1BbBBgrXi;          //! bin-by-bin correction UE xi
+
+  TH1F** fh1FoldingCorrPt;   //! corr factor rec/folded 
+  TH1F** fh1FoldingCorrZ;    //! corr factor rec/folded 
+  TH1F** fh1FoldingCorrXi;   //! corr factor rec/folded 
+
+
+  // secondaries correction
+  TH1F** fh1SecCorrPt;             //! secondaries correction track pt
+  TH1F** fh1SecCorrZ;              //! secondaries correction z
+  TH1F** fh1SecCorrXi;             //! secondaries correction xi
+
+  TH1F** fh1SecCorrBgrPt;          //! secondaries correction track pt
+  TH1F** fh1SecCorrBgrZ;           //! secondaries correction z
+  TH1F** fh1SecCorrBgrXi;          //! reconstruction efficiency xi
 
   // unfolding
 
@@ -231,9 +303,9 @@ class AliFragmentationFunctionCorrections : public TObject {
   TH1F** fh1FFZPrior;        //! FF: track z  prior
   TH1F** fh1FFXiPrior;       //! FF: track xi prior
 
+
   // secondaries 
   TH1F*  fh1SecCorrSinglePt;       //!  secondaries correction all tracks
-  
 
 
   ClassDef(AliFragmentationFunctionCorrections, 1);
