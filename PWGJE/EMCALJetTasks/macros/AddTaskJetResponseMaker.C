@@ -5,11 +5,12 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   const char *nclusters1         = "CaloClusters",
   const char *njets1             = "Jets",
   const char *nrho1              = "Rho",
+  Double_t    jetradius1         = 0.2,
   const char *ntracks2           = "MCParticles",
   const char *nclusters2         = "",
   const char *njets2             = "MCJets",
   const char *nrho2              = "",
-  Double_t    jetradius          = 0.2,
+  Double_t    jetradius2         = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
   Double_t    jetBiasTrack       = 5,
@@ -73,11 +74,12 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetTask->SetClusName(nclusters1);
   jetTask->SetJetsName(njets1);
   jetTask->SetRhoName(nrho1);
+  jetTask->SetJetRadius(jetradius1);
   jetTask->SetTracks2Name(ntracks2);
   jetTask->SetClus2Name(nclusters2);
   jetTask->SetJets2Name(njets2);
   jetTask->SetRho2Name(nrho2);
-  jetTask->SetJetRadius(jetradius);
+  jetTask->SetJet2Radius(jetradius2);
   jetTask->SetJetPtCut(jetptcut);
   jetTask->SetPercAreaCut(jetareacut);
   jetTask->SetPtBiasJetTrack(jetBiasTrack);
