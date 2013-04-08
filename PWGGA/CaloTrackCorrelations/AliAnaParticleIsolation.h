@@ -252,10 +252,23 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPhiBandClustervsTrack ;              //! Accumulated pT in Phi band to estimate UE in cone, clusters vs tracks
   TH2F *   fhEtaBandNormClustervsTrack ;          //! Accumulated pT in Eta band to estimate UE in cone, normalized to cone size, clusters vs tracks
   TH2F *   fhPhiBandNormClustervsTrack ;          //! Accumulated pT in Phi band to estimate UE in cone, normalized to cone size, clusters vs tracks
-  TH2F *   fhEtaBandCellvsTrack ;              //! Accumulated pT in Eta band to estimate UE in cone, cells vs tracks
-  TH2F *   fhPhiBandCellvsTrack ;              //! Accumulated pT in Phi band to estimate UE in cone, cells vs tracks
-  TH2F *   fhEtaBandNormCellvsTrack ;          //! Accumulated pT cell in Eta band to estimate UE in cone, normalized to cone size, clusters vs tracks
-  TH2F *   fhPhiBandNormCellvsTrack ;          //! Accumulated pT cell in Phi band to estimate UE in cone, normalized to cone
+  TH2F *   fhEtaBandCellvsTrack ;                 //! Accumulated pT in Eta band to estimate UE in cone, cells vs tracks
+  TH2F *   fhPhiBandCellvsTrack ;                 //! Accumulated pT in Phi band to estimate UE in cone, cells vs tracks
+  TH2F *   fhEtaBandNormCellvsTrack ;             //! Accumulated pT cell in Eta band to estimate UE in cone, normalized to cone size, clusters vs tracks
+  TH2F *   fhPhiBandNormCellvsTrack ;             //! Accumulated pT cell in Phi band to estimate UE in cone, normalized to cone
+
+  TH2F *   fhConeSumPtSubvsConeSumPtTotPhiTrack;  //! Tracks, phi band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubNormvsConeSumPtTotPhiTrack; //! Tracks, phi band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubvsConeSumPtTotEtaTrack;  //! Tracks, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubNormvsConeSumPtTotEtaTrack; //! Tracks, eta band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubvsConeSumPtTotPhiCluster;  //! Clusters, phi band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubNormvsConeSumPtTotPhiCluster; //! Clusters, phi band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubvsConeSumPtTotEtaCluster;  //! Clusters, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubNormvsConeSumPtTotEtaCluster; //! Clusters, eta band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubvsConeSumPtTotPhiCell;  //! Cells, phi band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubNormvsConeSumPtTotPhiCell; //! Cells, phi band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubvsConeSumPtTotEtaCell;  //! Cells, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubNormvsConeSumPtTotEtaCell; //! Cells, eta band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
 
   
   //MC
