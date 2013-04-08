@@ -400,9 +400,14 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
     
     // centrality bins
-    Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,7.,10.,20.,30.,40.,50.,60.,70.,80.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
     Double_t* centbins        = centralityBins;
     Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
+
+    // multiplicity bins
+    Double_t multiplicityBins[] = {0,10,20,30,40,50,60,70,80,100,100000}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    Double_t* multbins        = multiplicityBins;
+    Int_t nMultiplicityBins     = sizeof(multiplicityBins) / sizeof(Double_t) - 1;
     
     // Zvtx bins
     Double_t vertexBins[] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
@@ -416,10 +421,20 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     
     // run the event mixing also in bins of event plane (statistics!)
     if(fRunMixingEventPlane){
-      fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins, nPsiBins, psibins);
+      if(fEventClass=="Multiplicity"){
+	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nMultiplicityBins, multbins, nVertexBins, vtxbins, nPsiBins, psibins);
+      }
+      else{
+	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins, nPsiBins, psibins);
+      }
     }
     else{
-      fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
+      if(fEventClass=="Multiplicity"){
+	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nMultiplicityBins, multbins, nVertexBins, vtxbins);
+      }
+      else{
+	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
+      }
     }
   }
 
@@ -590,17 +605,17 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 
   // get the reaction plane
   gReactionPlane = GetEventPlane(eventMain);
-  fHistEventPlane->Fill(gReactionPlane,gCentrality);
+  fHistEventPlane->Fill(gReactionPlane,lMultiplicityVar);
   if(gReactionPlane < 0){
     return;
   }
   
   // get the accepted tracks in main event
-  TObjArray *tracksMain = GetAcceptedTracks(eventMain,gCentrality,gReactionPlane);
+  TObjArray *tracksMain = GetAcceptedTracks(eventMain,lMultiplicityVar,gReactionPlane);
   gNumberOfAcceptedTracks = tracksMain->GetEntriesFast();
 
   //multiplicity cut (used in pp)
-  fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks,gCentrality);
+  fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks,lMultiplicityVar);
   if(fUseMultiplicity) {
     if((gNumberOfAcceptedTracks < fNumberOfAcceptedTracksMin)||(gNumberOfAcceptedTracks > fNumberOfAcceptedTracksMax))
       return;
@@ -609,7 +624,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   // store charges of all accepted tracks, shuffle and reassign (two extra loops!)
   TObjArray* tracksShuffled = NULL;
   if(fRunShuffling){
-    tracksShuffled = GetShuffledTracks(tracksMain,gCentrality);
+    tracksShuffled = GetShuffledTracks(tracksMain,lMultiplicityVar);
   }
   
   // Event mixing 
@@ -631,10 +646,10 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
       //    FillCorrelations(). Also nMix should be passed in, so a weight
       //    of 1./nMix can be applied.
       
-      AliEventPool* pool = fPoolMgr->GetEventPool(gCentrality, eventMain->GetPrimaryVertex()->GetZ(),gReactionPlane);
+      AliEventPool* pool = fPoolMgr->GetEventPool(lMultiplicityVar, eventMain->GetPrimaryVertex()->GetZ(),gReactionPlane);
       
       if (!pool){
-	AliFatal(Form("No pool found for centrality = %f, zVtx = %f, psi = %f", gCentrality, eventMain->GetPrimaryVertex()->GetZ(),gReactionPlane));
+	AliFatal(Form("No pool found for centrality = %f, zVtx = %f, psi = %f", lMultiplicityVar, eventMain->GetPrimaryVertex()->GetZ(),gReactionPlane));
       }
       else{
 	
