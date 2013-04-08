@@ -56,6 +56,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
     kQbins = 20,
     kQbinsWeights = 40,
     kNDampValues = 16,
+    kRmin = 5,// EW min radii 5 fm
     kDENtypes = 1,// was (kRVALUES)*kNDampValues
     kSCLimit2 = 1,// 1, 6
     kSCLimit3 = 1// 1, 10
@@ -65,8 +66,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   static const Int_t fKbinsY   = 1;// Set fKstep as well !!!!
   static const Int_t fEDbins   = 1;
   static const Int_t fCentBins = 10;// 0-50%
-  static const Int_t fRVALUES  = 8;// 8 Gaussian radii (3-10fm)
-  
+  static const Int_t fRVALUES  = 7;// 7 EW radii (5-11) , was 8 Gaussian radii (3-10fm)
 
 
   Int_t GetNumKtBins() const {return AliChaoticity::fKbinsT;}
@@ -87,7 +87,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void SetPairSeparationCut(Float_t pairsep) {fMinSepPair = pairsep;}
   void SetNsigmaTPC(Float_t nsig) {fSigmaCutTPC = nsig;}
   void SetNsigmaTOF(Float_t nsig) {fSigmaCutTOF = nsig;}
-  void SetRBinMax(Int_t rbin) {fRBinMax = rbin;}
+  void SetRMax(Int_t rbin) {fRMax = rbin;}
   void SetFixedLambdaBinMomRes(Int_t lbin) {fFixedLambdaBinMomRes = lbin;}
   void SetFixedLambdaBinr3(Int_t lbin) {fFixedLambdaBinr3 = lbin;}
   //
@@ -237,7 +237,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Bool_t fPdensityExplicitLoop;
   Bool_t fPdensityPairCut;
   Bool_t fTabulatePairs;
-  Int_t fRBinMax;
+  Int_t fRMax;
   Int_t fFixedLambdaBinMomRes;
   Int_t fFixedLambdaBinr3;
   UInt_t fFilterBit;
