@@ -72,9 +72,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   TString GetCutNumber();
 
   // Cut Selection
-  Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE);
-  Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack);
-  Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack);
+  Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE, Double_t fRapidityShift=0.);
+  Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift=0.);
+  Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift=0.);
   void PrintCuts();
 
   void InitCutHistograms(TString name="");

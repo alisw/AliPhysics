@@ -15,7 +15,7 @@
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
 #include "AliAnalysisUtils.h"
-
+#include "AliAnalysisManager.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -110,9 +110,9 @@ class AliConversionCuts : public AliAnalysisCuts {
   virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   TString GetCutNumber();
-
+  
   void GetCentralityRange(Double_t range[2]){range[0]=10*fCentralityMin;range[1]=10*fCentralityMax;};
-
+  
   // Cut Selection
   Bool_t EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent);
   Int_t IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Bool_t isHeavyIon);
@@ -135,6 +135,21 @@ class AliConversionCuts : public AliAnalysisCuts {
   void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
   TList *GetCutHistograms(){return fHistograms;}
   void FillPhotonCutIndex(Int_t photoncut){if(hCutIndex)hCutIndex->Fill(photoncut);}
+  void SetEtaShift(Double_t etaShift) {
+     fEtaShift = etaShift;
+     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut + etaShift)));
+     if(fEtaCutMin > -0.1)
+        fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin + etaShift)));
+     fDoEtaShift = kTRUE;
+  }
+  Double_t GetEtaShift() {return fEtaShift;}
+  Bool_t GetDoEtaShift(){return fDoEtaShift;}
+  void DoEtaShift(Bool_t doEtaShift){fDoEtaShift = doEtaShift;}
+  void ForceEtaShift(Int_t forcedShift){
+     fForceEtaShift = forcedShift;
+     if(forcedShift>0)fDoEtaShift = kTRUE;
+  }
+  Int_t IsEtaShiftForced() {return fForceEtaShift;}
 
   static AliVTrack * GetTrack(AliVEvent * event, Int_t label);
   static AliESDtrack *GetESDTrack(AliESDEvent * event, Int_t label);
@@ -198,6 +213,8 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t SetSharedElectronCut(Int_t sharedElec);
   Bool_t SetToCloseV0sCut(Int_t toClose);
   Bool_t SetRejectExtraSignalsCut(Int_t extraSignal);
+
+
   // Request Flags
 
   Int_t IsHeavyIon(){return fIsHeavyIon;}
@@ -214,7 +231,8 @@ class AliConversionCuts : public AliAnalysisCuts {
   Int_t * GetAcceptedHeaderStart(){return fNotRejectedStart;}
   Int_t * GetAcceptedHeaderEnd(){return fNotRejectedEnd;}
   TList* GetAcceptedHeader(){return fHeaderList;}
-
+  
+  
   protected:
   TList *fHistograms;
   TList *fHeaderList;
@@ -307,6 +325,9 @@ class AliConversionCuts : public AliAnalysisCuts {
   TString *fGeneratorNames; //[fnHeaders]
   TObjString *fCutString; // cut number used for analysis
   AliAnalysisUtils *fUtils;
+  Double_t fEtaShift;
+  Bool_t fDoEtaShift;
+  Int_t  fForceEtaShift;
 
   // Histograms
   TH1F *hdEdxCuts;  // bookkeeping for dEdx cuts

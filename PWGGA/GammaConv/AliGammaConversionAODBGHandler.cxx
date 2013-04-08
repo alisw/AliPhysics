@@ -62,6 +62,259 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(UInt_t binsZ,UInt
   // constructor
 }
 
+
+AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(UInt_t collisionSystem,UInt_t centMin,UInt_t centMax,UInt_t nEvents, Bool_t useTrackMult) :
+  TObject(),
+  fNEvents(nEvents),
+  fBGEventCounter(NULL),
+  fBGEventENegCounter(NULL),
+  fBGProbability(NULL),
+  fBGEventVertex(NULL),
+  fNBinsZ(8),
+  fNBinsMultiplicity(5),
+  fBinLimitsArrayZ(NULL),
+  fBinLimitsArrayMultiplicity(NULL),
+  fBGEvents(fNBinsZ,AliGammaConversionMultipicityVector(fNBinsMultiplicity,AliGammaConversionBGEventVector(nEvents))),
+  fBGEventsENeg(fNBinsZ,AliGammaConversionMultipicityVector(fNBinsMultiplicity,AliGammaConversionBGEventVector(nEvents)))
+{
+  // constructor
+   
+   fBinLimitsArrayZ= new Double_t[8] ;
+   if(collisionSystem > 0 && collisionSystem < 8){ // PbPb
+      fBinLimitsArrayZ[0] = -50.00;
+      fBinLimitsArrayZ[1] = -5.5;
+      fBinLimitsArrayZ[2] = -2.9;
+      fBinLimitsArrayZ[3] = -0.65;
+      fBinLimitsArrayZ[4] = 1.45;
+      fBinLimitsArrayZ[5] = 3.65;
+      fBinLimitsArrayZ[6] = 6.15;
+      fBinLimitsArrayZ[7] = 50;
+   }
+   else if(collisionSystem == 0){
+      fBinLimitsArrayZ[0] = -50.00;
+      fBinLimitsArrayZ[1] = -3.375;
+      fBinLimitsArrayZ[2] = -1.605;
+      fBinLimitsArrayZ[3] = -0.225;
+      fBinLimitsArrayZ[4] = 1.065;
+      fBinLimitsArrayZ[5] = 2.445;
+      fBinLimitsArrayZ[6] = 4.245;
+      fBinLimitsArrayZ[7] = 50.00;
+   }
+   else{ 
+      fBinLimitsArrayZ[0] = -50.00;
+      fBinLimitsArrayZ[1] = -5.85;
+      fBinLimitsArrayZ[2] = -3.35;
+      fBinLimitsArrayZ[3] = -1.15;
+      fBinLimitsArrayZ[4] = 0.85;
+      fBinLimitsArrayZ[5] = 2.95;
+      fBinLimitsArrayZ[6] = 5.55;
+      fBinLimitsArrayZ[7] = 50.00;
+   }
+
+
+
+   fBinLimitsArrayMultiplicity= new Double_t[5];
+   if(useTrackMult){ // pp
+      fBinLimitsArrayMultiplicity[0] = 0;
+      fBinLimitsArrayMultiplicity[1] = 8.5;
+      fBinLimitsArrayMultiplicity[2] = 16.5;
+      fBinLimitsArrayMultiplicity[3] = 27.5;
+      fBinLimitsArrayMultiplicity[4] = 200.;
+      if(collisionSystem > 0 && collisionSystem < 8){ // PbPb
+         if(centMin == 0 && centMax == 5){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 1540.;
+            fBinLimitsArrayMultiplicity[2] = 1665.;
+            fBinLimitsArrayMultiplicity[3] = 1780.;
+            fBinLimitsArrayMultiplicity[4] = 5000.;
+         }
+         else if(centMin == 0 && centMax == 10){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 1360.;
+            fBinLimitsArrayMultiplicity[2] = 1520.;
+            fBinLimitsArrayMultiplicity[3] = 1685.;
+            fBinLimitsArrayMultiplicity[4] = 5000.;
+         }
+         else if(centMin == 0 && centMax == 20){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 1110.;
+            fBinLimitsArrayMultiplicity[2] = 1360.;
+            fBinLimitsArrayMultiplicity[3] = 1600.;
+            fBinLimitsArrayMultiplicity[4] = 5000.;
+         }
+         else if(centMin == 0 && centMax == 80){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 890.;
+            fBinLimitsArrayMultiplicity[2] = 1240.;
+            fBinLimitsArrayMultiplicity[3] = 1540.;
+            fBinLimitsArrayMultiplicity[4] = 5000.;
+         }
+         else if(centMin == 5 && centMax == 10){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 1250.;
+            fBinLimitsArrayMultiplicity[2] = 1345.;
+            fBinLimitsArrayMultiplicity[3] = 1445.;
+            fBinLimitsArrayMultiplicity[4] = 5000.;
+         }
+         else if(centMin == 10 && centMax == 20){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 915.;
+            fBinLimitsArrayMultiplicity[2] = 1020.;
+            fBinLimitsArrayMultiplicity[3] = 1130.;
+            fBinLimitsArrayMultiplicity[4] = 5000.;
+         }
+         else if(centMin == 20 && centMax == 40){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 510.;
+            fBinLimitsArrayMultiplicity[2] = 625.;
+            fBinLimitsArrayMultiplicity[3] = 730.;
+            fBinLimitsArrayMultiplicity[4] = 5000.;
+         }
+         else if(centMin == 40 && centMax == 80){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 185.;
+            fBinLimitsArrayMultiplicity[2] = 250.;
+            fBinLimitsArrayMultiplicity[3] = 300.;
+            fBinLimitsArrayMultiplicity[4] = 5000.;
+         }
+         else if(centMin == 60 && centMax == 80){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 55.;
+            fBinLimitsArrayMultiplicity[2] = 80.;
+            fBinLimitsArrayMultiplicity[3] = 100.;
+            fBinLimitsArrayMultiplicity[4] = 5000.;
+         }
+         else{ // Std 20-40
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 510.;
+            fBinLimitsArrayMultiplicity[2] = 625.;
+            fBinLimitsArrayMultiplicity[3] = 730.;
+            fBinLimitsArrayMultiplicity[4] = 5000.;
+         }
+      }
+
+      else if(collisionSystem == 8 || collisionSystem == 9){ //pPb
+
+	fBinLimitsArrayMultiplicity[0] = 0.;
+	fBinLimitsArrayMultiplicity[1] = 7.5;
+	fBinLimitsArrayMultiplicity[2] = 16.5;
+	fBinLimitsArrayMultiplicity[3] = 29.5;
+	fBinLimitsArrayMultiplicity[4] = 500.;	
+	
+	if(centMin == 0 && centMax == 20){
+	  fBinLimitsArrayMultiplicity[0] = 0.;
+	  fBinLimitsArrayMultiplicity[1] = 31.5;
+	  fBinLimitsArrayMultiplicity[2] = 40.5;
+	  fBinLimitsArrayMultiplicity[3] = 50.5;
+	  fBinLimitsArrayMultiplicity[4] = 500.;
+         }	
+	else if(centMin == 20 && centMax == 40){
+	  fBinLimitsArrayMultiplicity[0] = 0.;
+	  fBinLimitsArrayMultiplicity[1] = 19.5;
+	  fBinLimitsArrayMultiplicity[2] = 25.5;
+	  fBinLimitsArrayMultiplicity[3] = 32.5;
+	  fBinLimitsArrayMultiplicity[4] = 500.;
+         }	
+	else if(centMin == 40 && centMax == 60){
+	  fBinLimitsArrayMultiplicity[0] = 0.;
+	  fBinLimitsArrayMultiplicity[1] = 12.5;
+	  fBinLimitsArrayMultiplicity[2] = 16.5;
+	  fBinLimitsArrayMultiplicity[3] = 22.5;
+	  fBinLimitsArrayMultiplicity[4] = 500.;
+         }	
+	else if(centMin == 60 && centMax == 80){
+	  fBinLimitsArrayMultiplicity[0] = 0.;
+	  fBinLimitsArrayMultiplicity[1] = 5.5;
+	  fBinLimitsArrayMultiplicity[2] = 9.5;
+	  fBinLimitsArrayMultiplicity[3] = 13.5;
+	  fBinLimitsArrayMultiplicity[4] = 500.;
+         }	
+      }
+   }
+   else{// pp or pPb V0 Mult
+      fBinLimitsArrayMultiplicity[0] = 2;
+      fBinLimitsArrayMultiplicity[1] = 3;
+      fBinLimitsArrayMultiplicity[2] = 4;
+      fBinLimitsArrayMultiplicity[3] = 5;
+      fBinLimitsArrayMultiplicity[4] = 9999;
+      if(collisionSystem > 0 && collisionSystem < 8){ // PbPb
+         if(centMin == 0 && centMax == 5){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 27.;
+            fBinLimitsArrayMultiplicity[2] = 31.;
+            fBinLimitsArrayMultiplicity[3] = 36.;
+            fBinLimitsArrayMultiplicity[4] = 100.;
+         }
+         else if(centMin == 0 && centMax == 10){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 25.;
+            fBinLimitsArrayMultiplicity[2] = 30.;
+            fBinLimitsArrayMultiplicity[3] = 36.;
+            fBinLimitsArrayMultiplicity[4] = 100.;
+         }
+         else if(centMin == 0 && centMax == 20){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 22.;
+            fBinLimitsArrayMultiplicity[2] = 27.;
+            fBinLimitsArrayMultiplicity[3] = 33.;
+            fBinLimitsArrayMultiplicity[4] = 100.;
+         }
+         else if(centMin == 0 && centMax == 80){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 18.;
+            fBinLimitsArrayMultiplicity[2] = 25.;
+            fBinLimitsArrayMultiplicity[3] = 32.;
+            fBinLimitsArrayMultiplicity[4] = 100.;
+         }
+         else if(centMin == 5 && centMax == 10){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 23.;
+            fBinLimitsArrayMultiplicity[2] = 27.;
+            fBinLimitsArrayMultiplicity[3] = 32.;
+            fBinLimitsArrayMultiplicity[4] = 100.;
+         }
+         else if(centMin == 10 && centMax == 20){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 18.;
+            fBinLimitsArrayMultiplicity[2] = 22.;
+            fBinLimitsArrayMultiplicity[3] = 27.;
+            fBinLimitsArrayMultiplicity[4] = 100.;
+         }
+         else if(centMin == 20 && centMax == 40){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 11.;
+            fBinLimitsArrayMultiplicity[2] = 14.;
+            fBinLimitsArrayMultiplicity[3] = 18.;
+            fBinLimitsArrayMultiplicity[4] = 100.;
+         }
+         else if(centMin == 40 && centMax == 80){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 5.;
+            fBinLimitsArrayMultiplicity[2] = 7.;
+            fBinLimitsArrayMultiplicity[3] = 11.;
+            fBinLimitsArrayMultiplicity[4] = 100.;
+         }
+         else if(centMin == 60 && centMax == 80){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 2.;
+            fBinLimitsArrayMultiplicity[2] = 3.;
+            fBinLimitsArrayMultiplicity[3] = 5.;
+            fBinLimitsArrayMultiplicity[4] = 100.;
+         }
+         else{ // Std 20-40
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 11.;
+            fBinLimitsArrayMultiplicity[2] = 14.;
+            fBinLimitsArrayMultiplicity[3] = 18.;
+            fBinLimitsArrayMultiplicity[4] = 100.;
+         }
+      }
+   }
+   
+   Initialize(fBinLimitsArrayZ,fBinLimitsArrayMultiplicity);
+
+}
+
 AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(const AliGammaConversionAODBGHandler & original) :
   TObject(original),
   fNEvents(original.fNEvents),

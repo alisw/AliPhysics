@@ -8,6 +8,7 @@
 #include "AliGammaConversionAODBGHandler.h"
 #include "AliConversionAODBGHandlerRP.h"
 #include "AliConversionMesonCuts.h"
+#include "AliAnalysisManager.h"
 #include "TH3.h"
 #include "TH3F.h"
 
@@ -19,6 +20,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    virtual ~AliAnalysisTaskGammaConvV1();
 
    virtual void   UserCreateOutputObjects();
+   virtual Bool_t Notify();
    virtual void   UserExec(Option_t *);
    virtual void   Terminate(const Option_t*);
    void InitBack();
@@ -134,7 +136,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1I **hNGoodESDTracks;
    TH1I **hNGammaCandidates;
    TH1I **hNV0Tracks;
-
+   
    TRandom3 fRandom;
    Int_t fnGammaCandidates;
    Double_t *fUnsmearedPx; //[fnGammaCandidates]

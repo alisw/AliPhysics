@@ -114,25 +114,23 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
    // Cut Numbers to use in Analysis
    Int_t numberOfCuts = 2;
    if(trainConfig.Contains("PbPb")) numberOfCuts = 3;
-   else if(trainConfig.Contains("pPb")) numberOfCuts = 4;
+   else if(trainConfig.Contains("pPb")) numberOfCuts = 2;
    else numberOfCuts = 3;
 
    TString *cutarray = new TString[numberOfCuts];
    TString *mesonCutArray = new TString[numberOfCuts];
 
    if(trainConfig.Contains("PbPb")){
-      cutarray[ 0] = "1010001042092970023220000"; mesonCutArray[ 0] = "01522045000"; // Standard cut 0-10
-      cutarray[ 1] = "3120001042092970023220000"; mesonCutArray[ 1] = "01522045000"; // Standard cut 5-10
-      cutarray[ 2] = "1120001042092970023220000"; mesonCutArray[ 2] = "01522045000"; // Standard cut 10-20
+      cutarray[ 0] = "1000003042092970723220000"; mesonCutArray[ 0] = "01022045000";  // all centralities
+      cutarray[ 1] = "3010003042092970723220000"; mesonCutArray[ 1] = "01022045000";  // most central
+      cutarray[ 2] = "1680003042092970723220000"; mesonCutArray[ 2] = "01022065000";  // peripheral
    } else if(trainConfig.Contains("pPb")){ //pA needs thighter rapidity cut y < 0.5
-     cutarray[ 0] = "8020000082093172023290000"; mesonCutArray[0] = "01629045000";  //standard cut Pi0 Pb 00-20 shifted Eta 0.4
-     cutarray[ 1] = "8240000082093172023290000"; mesonCutArray[1] = "01629045000";  //standard cut Pi0 Pb 20-40 shifted Eta 0.4
-     cutarray[ 2] = "8460000082093172023290000"; mesonCutArray[2] = "01629045000";  //standard cut Pi0 Pb 40-60 shifted Eta 0.4
-     cutarray[ 3] = "8680000082093172023290000"; mesonCutArray[3] = "01629045000";  //standard cut Pi0 Pb 60-80 shifted Eta 0.4
+      cutarray[ 0] = "8000000082093172023290000"; mesonCutArray[0] = "01629045000";  //standard cut Pi0 Pb 00-100 shifted Eta 0.4
+      cutarray[ 1] = "8000000072093172023290000"; mesonCutArray[1] = "01627045000";  //standard cut Pi0 Pb 00-100 wo shifted Eta 0.3
    } else {
-      cutarray[ 0] = "0000012002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD , only boxes
-      cutarray[ 1] = "0001012002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
-      cutarray[ 2] = "0000012002093260003800000"; mesonCutArray[2] = "01631031009"; //standard cut Gamma pp 2-76TeV , only boxes
+      cutarray[ 0] = "0000011002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
+      cutarray[ 1] = "0001011002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
+      cutarray[ 2] = "0000011002093260003800000"; mesonCutArray[2] = "01631031009"; //standard cut Gamma pp 2-76TeV
 
    }
 
@@ -161,7 +159,7 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       if (trainConfig.Contains("pPb")){
          analysisCuts[i]->SelectCollisionCandidates(AliVEvent::kINT7);
-         if (i<4) analysisCuts[i]->DoEtaShift(1);
+         if (i<1) analysisCuts[i]->DoEtaShift(1);
       }
       ConvCutList->Add(analysisCuts[i]);
 
@@ -178,8 +176,8 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
    task->SetMesonCutList(numberOfCuts,MesonCutList);
    task->SetMoveParticleAccordingToVertex(kTRUE);
    task->SetDoMesonAnalysis(kTRUE);
-//    if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
-//    if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
+   if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
+   if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
 
    //connect containers
    AliAnalysisDataContainer *coutput =
