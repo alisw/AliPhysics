@@ -12,6 +12,10 @@
 #pragma link C++ class AliAnalysisTaskLeadingTrackUE+;
 #pragma link C++ class AliAnalysisTaskMinijet+;
 #pragma link C++ class AliAnalysisTaskDiHadron+;
+#pragma link C++ class AliTrackDiHadronPID+;
+#pragma link C++ class AliAODTrackCutsDiHadronPID+;
+#pragma link C++ class AliAODEventCutsDiHadronPID+;
+#pragma link C++ class AliHistToolsDiHadronPID+;
 #pragma link C++ class AliAnalysisTaskDiHadronPID+;
 #pragma link C++ class AliEvtPoolManager+;
 #pragma link C++ class AliEvtPool+;
