@@ -44,6 +44,7 @@ AliAnalysisTaskRho* AddTaskRho(
   else if (type == AliAnalysisTaskEmcal::kUser) 
     name += "USER";
   AliAnalysisTaskRho *rhotask = new AliAnalysisTaskRho(name, histo);
+  rhotask->SetHistoBins(1000,-0.1,9.9);
   rhotask->SetAnaType(type);
   rhotask->SetScaleFunction(sfunc);
   rhotask->SetJetsName(nJets);

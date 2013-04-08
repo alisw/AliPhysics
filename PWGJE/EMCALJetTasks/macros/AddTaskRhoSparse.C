@@ -1,7 +1,8 @@
-// $Id: AddTaskRhoSparse.C 58584 2012-09-13 10:37:42Z loizides $
+// $Id: AddTaskRho_pA.C 58584 2012-09-13 10:37:42Z loizides $
 
 AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
-   const char    *nJets       = "Jets",
+   const char    *nJetsBkg    = "JetsBkg",
+   const char    *nJetsSig    = "JetsSig",
    const char    *nTracks     = "PicoTracks",
    const char    *nClusters   = "CaloClusters",  
    const char    *nRho        = "Rho",
@@ -38,7 +39,7 @@ AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("%s_%s_", taskname, nJets));
+  TString name(Form("%s_%s_", taskname, nJetsBkg));
   if (type == AliAnalysisTaskEmcal::kTPC) 
     name += "TPC";
   else if (type == AliAnalysisTaskEmcal::kEMCAL) 
@@ -49,7 +50,8 @@ AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
   rhotask->SetHistoBins(1000,-0.1,9.9);
   rhotask->SetAnaType(type);
   rhotask->SetScaleFunction(sfunc);
-  rhotask->SetJetsName(nJets);
+  rhotask->SetJetsName(nJetsBkg);
+  rhotask->SetSigJetsName(nJetsSig);
   rhotask->SetTracksName(nTracks);
   rhotask->SetClusName(nClusters);
   rhotask->SetRhoName(nRho);
