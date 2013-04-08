@@ -117,10 +117,8 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       fOutputList->SetOwner(kTRUE);
    }
    
-
    if(ffillHistograms){
-      TH1::SetDefaultSumw2(kTRUE);
-      
+         
       fESDList = new TList();
       fESDList->SetOwner(kTRUE);
       fESDList->SetName("ESD QA");
@@ -143,7 +141,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       fESDList->Add(hGammaPt);
       hGammaPhi = new TH1F("Gamma_Phi","Gamma_Phi",360,0,2*TMath::Pi());
       fESDList->Add(hGammaPhi);
-      hGammaEta = new TH1F("Gamma_Eta","Gamma_Eta",400,-1.2,1.2);
+      hGammaEta = new TH1F("Gamma_Eta","Gamma_Eta",600,-1.5,1.5);
       fESDList->Add(hGammaEta);
       hGammaChi2perNDF = new TH1F("Gamma_Chi2perNDF","Gamma_Chi2perNDF",500,0,100);
       fESDList->Add(hGammaChi2perNDF);
@@ -160,7 +158,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
 
       hElecPt = new TH2F("Electron_Positron_Pt","Electron_Positron_Pt",250,0,25,250,0,25);
       fESDList->Add(hElecPt);
-      hElecEta = new TH2F("Electron_Positron_Eta","Electron_Positron_Eta",400,-1.2,1.2,400,-1.2,1.2);
+      hElecEta = new TH2F("Electron_Positron_Eta","Electron_Positron_Eta",600,-1.5,1.5,600,-1.5,1.5);
       fESDList->Add(hElecEta);
       hElecPhi = new TH2F("Electron_Positron_Phi","Electron_Positron_Phi",360,0,2*TMath::Pi(),360,0,2*TMath::Pi());
       fESDList->Add(hElecPhi);
@@ -186,7 +184,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
          fTrueList->Add(hTrueGammaPt);
          hTrueGammaPhi = new TH1F("True_Gamma_Phi","True_Gamma_Phi",360,0,2*TMath::Pi());
          fTrueList->Add(hTrueGammaPhi);
-         hTrueGammaEta = new TH1F("True_Gamma_Eta","True_Gamma_Eta",400,-1.2,1.2);
+         hTrueGammaEta = new TH1F("True_Gamma_Eta","True_Gamma_Eta",600,-1.5,1.5);
          fTrueList->Add(hTrueGammaEta);
          hTrueGammaMass = new TH1F("True_Gamma_Mass","True_Gamma_Mass",1000,0,0.3);
          fTrueList->Add(hTrueGammaMass);
@@ -205,7 +203,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
 
          hTrueElecPt = new TH2F("True_Electron_Positron_Pt","True_Electron_Positron_Pt",250,0,25,250,0,25);
          fTrueList->Add(hTrueElecPt);
-         hTrueElecEta = new TH2F("True_Electron_Positron_Eta","True_Electron_Positron_Eta",400,-1.2,1.2,400,-1.2,1.2);
+         hTrueElecEta = new TH2F("True_Electron_Positron_Eta","True_Electron_Positron_Eta",600,-1.5,1.5,600,-1.5,1.5);
          fTrueList->Add(hTrueElecEta);
          hTrueElecPhi = new TH2F("True_Electron_Positron_Phi","True_Electron_Positron_Phi",360,0,2*TMath::Pi(),360,0,2*TMath::Pi());
          fTrueList->Add(hTrueElecPhi);
@@ -217,7 +215,6 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       if(fConversionCuts->GetCutHistograms()){
          fOutputList->Add(fConversionCuts->GetCutHistograms());
       }
-      TH1::SetDefaultSumw2(kFALSE);
    }
    
    if(ffillTree){
@@ -225,13 +222,23 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       fStreamQA = new TTreeSRedirector(Form("GammaConvV1_QATree_%s.root",cutnumber.Data()),"recreate");
    }
 
+   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+   
    PostData(1, fOutputList);
 }
-
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskConversionQA::Notify()
+{
+   if(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetDoEtaShift()){
+      if(fConversionCuts->GetDoEtaShift())
+      fConversionCuts->SetEtaShift(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetEtaShift());
+   }
+   return kTRUE;
+}
 //________________________________________________________________________
 void AliAnalysisTaskConversionQA::UserExec(Option_t *){
 
-   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+
 
    Int_t eventQuality = ((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetEventQuality();
    if(eventQuality != 0){// Event Not Accepted

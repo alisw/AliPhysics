@@ -207,7 +207,7 @@ void AliConversionMesonCuts::InitCutHistograms(TString name){
 
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift){
    // Returns true for all pions within acceptance cuts for decay into 2 photons
    // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
    
@@ -218,9 +218,9 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *
       
       Double_t rapidity = 10.;
       if(fMCMother->Energy() - fMCMother->Pz() == 0 || fMCMother->Energy() + fMCMother->Pz() == 0){
-         rapidity=8.;
+         rapidity=8.-fRapidityShift;
       } else{
-         rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())));
+         rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())))-fRapidityShift;
       }	
       
       // Rapidity Cut
@@ -244,7 +244,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift){
    // Returns true for all pions within acceptance cuts for decay into 2 photons
    // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
 
@@ -256,10 +256,10 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
 
       Double_t rapidity = 10.;
       if(fMCMother->Energy() - fMCMother->Pz() == 0 || fMCMother->Energy() + fMCMother->Pz() == 0){
-         rapidity=8.;
+         rapidity=8.-fRapidityShift;
       }
       else{
-         rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())));
+         rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())))-fRapidityShift;
       }	
 		
       // Rapidity Cut
@@ -296,7 +296,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
 
 
 ///________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal)
+Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift)
 {
    // Selection of reconstructed Meson candidates
    // Use flag IsSignal in order to fill Fill different
@@ -320,7 +320,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
    else{
       // PseudoRapidity Cut --> But we cut on Rapidity !!!
       cutIndex++;
-      if(abs(pi0->Rapidity())>fRapidityCutMeson){
+      if(abs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
          if(hist)hist->Fill(cutIndex);
          return kFALSE;
       }
@@ -361,13 +361,10 @@ Bool_t AliConversionMesonCuts::UpdateCutString() {
    ///Update the cut string (if it has been created yet)
 
    if(fCutString && fCutString->GetString().Length() == kNCuts) {
-      //         cout << "Updating cut id in spot number " << cutID << " to " << value << endl;
       fCutString->SetString(GetCutNumber());
    } else {
-      //         cout << "fCutString not yet initialized, will not be updated" << endl;
       return kFALSE;
    }
-   //   cout << fCutString->GetString().Data() << endl;
    return kTRUE;
 }
 
@@ -651,7 +648,15 @@ Bool_t AliConversionMesonCuts::SetRapidityMesonCut(Int_t RapidityMesonCut){
    case 6:  //
       fRapidityCutMeson   = 0.75;
       break;
-
+   case 7:  //
+      fRapidityCutMeson   = 0.3;
+      break;
+   case 8:  //
+      fRapidityCutMeson   = 0.35;
+      break;
+   case 9:  //
+      fRapidityCutMeson   = 0.4;
+      break;
    default:
       cout<<"Warning: RapidityMesonCut not defined "<<RapidityMesonCut<<endl;
       return kFALSE;

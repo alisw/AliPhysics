@@ -1,14 +1,14 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *								                                                   * 
- * Authors: Svein Lindal, Daniel Lohner	                     				  *
- * Version 1.0								                                        *
- *	                                                								  *
- *                                                                         *
- * based on: on older version (see aliroot up to v5-04-42-AN)              *
- *           AliV0Reader.cxx                                               *
- *           Authors: Kathrin Koch, Kenneth Aamodt, Ana Marin              *
- *                                                                         *
+ *								          *
+ * Authors: Svein Lindal, Daniel Lohner	                     		  *
+ * Version 1.0								  *
+ *	                                                		  *
+ *                                                                        *
+ * based on: on older version (see aliroot up to v5-04-42-AN)             *
+ *           AliV0Reader.cxx                                              *
+ *           Authors: Kathrin Koch, Kenneth Aamodt, Ana Marin             *
+ *                                                                        *
  * Permission to use, copy, modify and distribute this software and its	  *
  * documentation strictly for non-commercial purposes is hereby granted	  *
  * without fee, provided that the above copyright notice appears in all	  *
@@ -154,7 +154,6 @@ void AliV0ReaderV1::Init()
 	    fConversionGammas = new TClonesArray("AliKFConversionPhoton",100);}
     }
     fConversionGammas->Delete();//Reset the TClonesArray
-
 }
 
 //________________________________________________________________________
@@ -175,10 +174,9 @@ void AliV0ReaderV1::UserCreateOutputObjects()
     }
 
 }
-
 //________________________________________________________________________
-void AliV0ReaderV1::UserExec(Option_t *){
-
+Bool_t AliV0ReaderV1::Notify()
+{
    if (fPeriodName.CompareTo("") == 0){
       AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
       if(man) {
@@ -194,11 +192,65 @@ void AliV0ReaderV1::UserExec(Option_t *){
                   fPeriodName = testObjString->GetString();
                   i = arr->GetEntriesFast();
                }
-            }     
-//             cout << fileName.Data() << "\t" <<fPeriodName.Data() << endl;
+            }
          }
       }
+
+      if(fConversionCuts->GetDoEtaShift()){
+         if(fPeriodName.CompareTo("LHC12g") == 0 || //pilot run 2012
+            fPeriodName.CompareTo("LHC13b") == 0 || //mainly minimum bias
+            fPeriodName.CompareTo("LHC13c") == 0 || //mainly minimum bias
+            fPeriodName.CompareTo("LHC13d") == 0 || //mainly triggered
+            fPeriodName.CompareTo("LHC13e") == 0 || //mainly triggered
+            fPeriodName.CompareTo("LHC13c3") == 0 || //MC Starlight, anchor LHC13d+e
+            fPeriodName.CompareTo("LHC13c2") == 0 || //MC Starlight, coherent J/Psi, UPC muon anchor LHC13d+e
+            fPeriodName.CompareTo("LHC13b4") == 0 || //MC Pythia 6 (Jet-Jet), anchor LHC13b
+            fPeriodName.CompareTo("LHC13b2_fix_1") == 0 || //MC DPMJET, anchr LHC13b+c
+            fPeriodName.CompareTo("LHC13b3") == 0 || //MC HIJING, weighted to number of events per run, anchor LHC13b
+            fPeriodName.CompareTo("LHC13b2") == 0 ||  // MC DPMJET, wrong energy, anchor LHC13b
+            fPeriodName.CompareTo("LHC13b2_plus") == 0 || // MC DPMJET, weighted to number event per run, anchor LHC13b
+            fPeriodName.CompareTo("LHC13c1_bis") == 0 || // MC AMPT fast generation, pT hardbin, anchor ?
+            fPeriodName.CompareTo("LHC13c1") == 0 || // MC AMPT fast generation, anchor ?
+            fPeriodName.CompareTo("LHC13b1") == 0 || // MC DPMJET, fragments, with fixed label 0, anchor LHC12g
+            fPeriodName.CompareTo("LHC12g4b_fix") == 0 || // MC DPMJET, with fixed label 0, anchor LHC12g
+            fPeriodName.CompareTo("LHC12g1_fix") == 0 || // MC ?, with fixed label 0, anchor LHC12g
+            fPeriodName.CompareTo("LHC12g4c") == 0 || // MC DPMJET, shifted vertex runs, anchor LHC12g
+            fPeriodName.CompareTo("LHC12h6") == 0 || // MC muon cocktail, anchor LHC12g
+            fPeriodName.CompareTo("LHC12g4b") == 0 || // MC DPMJET 3rd iteration, anchor LHC12g
+            fPeriodName.CompareTo("LHC12g4a") == 0 || // MC DPMJET improved, anchor LHC12g
+            fPeriodName.CompareTo("LHC12g4") == 0 || // MC DPMJET, anchor LHC12g
+            fPeriodName.CompareTo("LHC12g5") == 0 || // MC PHOJET, anchor LHC12g
+            fPeriodName.CompareTo("LHC12g2") == 0 || // MC Starlight background, anchor LHC12g
+            fPeriodName.CompareTo("LHC12g1") == 0  // MC ?, anchor LHC12g
+            ){
+            cout<<"AliV0ReaderV1 --> pPb Run!!! Eta Shift of "<<-0.465<<endl;
+            fConversionCuts->SetEtaShift(-0.465);
+         }
+         else if(fPeriodName.CompareTo("LHC13f") == 0 ||
+                  fPeriodName.CompareTo("LHC13c6b") == 0 ||// MC Jpsi -> mumu, anchor LHC13f
+                  fPeriodName.CompareTo("LHC13c5") == 0 || //MC Starlight, gamma gamma UPC muon, anchor LHC13f
+                  fPeriodName.CompareTo("LHC13c4") == 0 //MC Starlight, coherent JPsi, UPC muon, anchor LHC13f
+                 ){
+            cout<<"AliV0ReaderV1 --> Pbp Run!!! Eta Shift of +"<<0.465<<endl;
+            fConversionCuts->SetEtaShift(+0.465);
+         }
+         else cout<<"AliV0ReaderV1 --> Eta Shift Requested but Period not Known"<<endl;
+      }
+      if(fConversionCuts->IsEtaShiftForced() == 1){
+         cout<<"AliV0ReaderV1 --> Force Eta Shift for non Pbp or pPb Run!!! Eta Shift of "<<-0.465<<endl;
+         fConversionCuts->SetEtaShift(-0.465);
+      }
+      else if(fConversionCuts->IsEtaShiftForced() == 2){
+         cout<<"AliV0ReaderV1 --> Force Eta Shift for non Pbp or pPb Run!!! Eta Shift of +"<<0.465<<endl;
+         fConversionCuts->SetEtaShift(0.465);
+      }
    }
+   
+   return kTRUE;
+}
+//________________________________________________________________________
+void AliV0ReaderV1::UserExec(Option_t *option){
+
 
     // Check if correctly initialized
     if(!fConversionGammas)Init();
@@ -471,7 +523,7 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
 
    // Double_t u[3] = {pPlus[0]+pMinus[0],pPlus[1]+pMinus[1],pPlus[2]+pMinus[2]};
    // Double_t normu = sqrt( (u[0]*u[0]) + (u[1]*u[1]) + (u[2]*u[2]) );
-   
+
    // u[0] = u[0] / normu;
    // u[1] = u[1] / normu;
    // u[2] = u[2] / normu;
@@ -491,7 +543,7 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
    // v[0] = (pPlus[1]*pMinus[2]) - (pPlus[2]*pMinus[1]);
    // v[1] = (pPlus[2]*pMinus[0]) - (pPlus[0]*pMinus[2]);
    // v[2] = (pPlus[0]*pMinus[1]) - (pPlus[1]*pMinus[0]);
-   
+
    // Double_t w[3] = {0,0,0}; // u X v
    // w[0] = (u[1]*v[2]) - (u[2]*v[1]);
    // w[1] = (u[2]*v[0]) - (u[0]*v[2]);

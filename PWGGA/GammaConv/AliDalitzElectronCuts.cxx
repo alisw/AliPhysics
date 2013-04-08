@@ -598,10 +598,10 @@ Bool_t AliDalitzElectronCuts::UpdateCutString(cutIds cutID, Int_t value) {
 ///Update the cut string (if it has been created yet)
 
   if(fCutString && fCutString->GetString().Length() == kNCuts) {
-        cout << "Updating cut id in spot number " << cutID << " to " << value << endl;
+//         cout << "Updating cut id in spot number " << cutID << " to " << value << endl;
 	fCutString->SetString(GetCutNumber());
   } else {
-        cout << "fCutString not yet initialized, will not be updated" << endl;
+//         cout << "fCutString not yet initialized, will not be updated" << endl;
 	return kFALSE;
   }
  // cout << fCutString->GetString().Data() << endl;
@@ -612,7 +612,7 @@ Bool_t AliDalitzElectronCuts::UpdateCutString(cutIds cutID, Int_t value) {
 Bool_t AliDalitzElectronCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
    // Initialize Cuts from a given Cut string
 
-  cout<<"Set Cut Number: "<<analysisCutSelection.Data()<<endl;
+//   out<<"Set Cut Number: "<<analysisCutSelection.Data()<<endl;
   if(analysisCutSelection.Length()!=kNCuts) {
 	AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
 	return kFALSE;

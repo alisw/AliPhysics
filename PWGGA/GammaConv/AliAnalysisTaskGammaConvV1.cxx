@@ -266,51 +266,10 @@ AliAnalysisTaskGammaConvV1::~AliAnalysisTaskGammaConvV1()
 //___________________________________________________________
 void AliAnalysisTaskGammaConvV1::InitBack(){
 
-   Double_t *zBinLimitsArray= new Double_t[9] ;
-   zBinLimitsArray[0] = -50.00;
-   zBinLimitsArray[1] = -3.375;
-   zBinLimitsArray[2] = -1.605;
-   zBinLimitsArray[3] = -0.225;
-   zBinLimitsArray[4] = 1.065;
-   zBinLimitsArray[5] = 2.445;
-   zBinLimitsArray[6] = 4.245;
-   zBinLimitsArray[7] = 50.00;
-   zBinLimitsArray[8] = 1000.00;
-
-   Double_t *multiplicityBinLimitsArrayTracks= new Double_t[6];
-   multiplicityBinLimitsArrayTracks[0] = 0;
-   multiplicityBinLimitsArrayTracks[1] = 8.5;
-   multiplicityBinLimitsArrayTracks[2] = 16.5;
-   multiplicityBinLimitsArrayTracks[3] = 27.5;
-   multiplicityBinLimitsArrayTracks[4] = 41.5;
-   multiplicityBinLimitsArrayTracks[5] = 200.;
-   if(fIsHeavyIon){
-      multiplicityBinLimitsArrayTracks[0] = 0;
-      multiplicityBinLimitsArrayTracks[1] = 200.;
-      multiplicityBinLimitsArrayTracks[2] = 500.;
-      multiplicityBinLimitsArrayTracks[3] = 1000.;
-      multiplicityBinLimitsArrayTracks[4] = 1500.;
-      multiplicityBinLimitsArrayTracks[5] = 5000.;
-   }
-
-   Double_t *multiplicityBinLimitsArrayV0s= new Double_t[5];
-   multiplicityBinLimitsArrayV0s[0] = 2;
-   multiplicityBinLimitsArrayV0s[1] = 3;
-   multiplicityBinLimitsArrayV0s[2] = 4;
-   multiplicityBinLimitsArrayV0s[3] = 5;
-   multiplicityBinLimitsArrayV0s[4] = 9999;
-   if(fIsHeavyIon){
-      multiplicityBinLimitsArrayV0s[0] = 2;
-      multiplicityBinLimitsArrayV0s[1] = 10;
-      multiplicityBinLimitsArrayV0s[2] = 30;
-      multiplicityBinLimitsArrayV0s[3] = 50;
-      multiplicityBinLimitsArrayV0s[4] = 9999;
-   }
-
    const Int_t nDim = 4;
-   Int_t nBins[nDim] = {800,250,8,5};
+   Int_t nBins[nDim] = {800,250,7,4};
    Double_t xMin[nDim] = {0,0, 0,0};
-   Double_t xMax[nDim] = {0.8,25,8,5};
+   Double_t xMax[nDim] = {0.8,25,7,4};
 
    sESDMotherInvMassPtZM = new THnSparseF*[fnCuts];
    sESDMotherBackInvMassPtZM = new THnSparseF*[fnCuts];
@@ -321,6 +280,26 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
       if (((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation()){
          TString cutstring = ((AliConversionCuts*)fCutArray->At(iCut))->GetCutNumber();
          TString cutstringMeson = ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
+         
+         Int_t collisionSystem = atoi((TString)(((AliConversionCuts*)fCutArray->At(iCut))->GetCutNumber())(0,1));
+         Int_t centMin = atoi((TString)(((AliConversionCuts*)fCutArray->At(iCut))->GetCutNumber())(1,1));
+         Int_t centMax = atoi((TString)(((AliConversionCuts*)fCutArray->At(iCut))->GetCutNumber())(2,1));
+         
+         if(collisionSystem == 1 || collisionSystem == 2 ||
+            collisionSystem == 5 || collisionSystem == 8 ||
+            collisionSystem == 9){
+            centMin = centMin*10;
+            centMax = centMax*10; 
+         }
+         else if(collisionSystem == 3 || collisionSystem == 6){
+            centMin = centMin*5;
+            centMax = centMax*5;
+         }
+         else if(collisionSystem == 4 || collisionSystem == 7){
+            centMin = ((centMin*5)+45);
+            centMax = ((centMax*5)+45);
+         }
+         
          fBackList[iCut] = new TList();
          fBackList[iCut]->SetName(Form("%s_%s Back histograms",cutstring.Data(),cutstringMeson.Data()));
          fBackList[iCut]->SetOwner(kTRUE);
@@ -338,16 +317,11 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
          fMotherList[iCut]->Add(sESDMotherInvMassPtZM[iCut]);
 
          if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0){
-            if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity()){
-               fBGHandler[iCut] = new AliGammaConversionAODBGHandler(9,6,((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents());
-               fBGHandler[iCut]->Initialize(zBinLimitsArray, multiplicityBinLimitsArrayTracks);
-               fBGHandlerRP[iCut] = NULL;
-            }
-            else{
-               fBGHandler[iCut] = new AliGammaConversionAODBGHandler(9,5,((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents());
-               fBGHandler[iCut]->Initialize(zBinLimitsArray, multiplicityBinLimitsArrayV0s);
-               fBGHandlerRP[iCut] = NULL;
-            }
+            fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
+                                                                  collisionSystem,centMin,centMax,
+                                                                  ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
+                                                                  ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity());
+            fBGHandlerRP[iCut] = NULL;
          }
          else{
             fBGHandlerRP[iCut] = new AliConversionAODBGHandlerRP(
@@ -692,8 +666,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
       }
    }
 
-
-
    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
    if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
@@ -715,7 +687,18 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
 
    PostData(1, fOutputContainer);
 }
-
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskGammaConvV1::Notify()
+{
+   if(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetDoEtaShift()){
+      for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+//          cout << iCut << "\t eta shift \t" <<((AliConversionCuts*)fCutArray->At(iCut))->GetDoEtaShift()<< endl;
+         if(!((AliConversionCuts*)fCutArray->At(iCut))->GetDoEtaShift()) continue;
+         ((AliConversionCuts*)fCutArray->At(iCut))->SetEtaShift(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetEtaShift());
+      }
+   }
+   return kTRUE;
+}
 //_____________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 {
@@ -1090,7 +1073,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
          }
       } // Converted MC Gamma
       if(fDoMesonAnalysis){
-         if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedMC(particle,fMCStack)){
+         if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedMC(particle,fMCStack,((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift())){
             TParticle* daughter0 = (TParticle*)fMCStack->Particle(particle->GetFirstDaughter());
             TParticle* daughter1 = (TParticle*)fMCStack->Particle(particle->GetLastDaughter());
 
@@ -1102,9 +1085,9 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
             }
             Double_t mesonY = 10.;
             if(particle->Energy() - particle->Pz() == 0 || particle->Energy() + particle->Pz() == 0){
-               mesonY=10.;
+               mesonY=10.-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift();
             } else{
-               mesonY = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())));
+               mesonY = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift();
             }
 
             if(particle->GetPdgCode() == 111){
@@ -1149,13 +1132,12 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
             pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
 
-            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE))){
+            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()))){
                hESDMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
-
                if(pi0cand->GetAlpha()<0.1)
                   hESDMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
                if (fDoMesonQA){
-                  Double_t sparesFill2[3] = {pi0cand->M(),pi0cand->Pt(),pi0cand->Rapidity()};
+                  Double_t sparesFill2[3] = {pi0cand->M(),pi0cand->Pt(),pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()};
                   sESDMotherInvMassPtY[fiCut]->Fill(sparesFill2,1);
                }
                if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){
@@ -1163,7 +1145,6 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
                   Int_t mbin = 0;
 
                   if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->BackgroundHandlerType() == 0){
-
                      zbin = fBGHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
                      if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
                         mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fNumberOfESDTracks);
@@ -1279,7 +1260,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
                hESDTruePrimaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted);
 
                if (fDoMesonQA){
-                  Double_t sparesFill[3] = {Pi0Candidate->M(),Pi0Candidate->Pt(),Pi0Candidate->Rapidity()};
+                  Double_t sparesFill[3] = {Pi0Candidate->M(),Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()};
                   sESDTruePrimaryMotherInvMassPtY[fiCut]->Fill(sparesFill,1);
                   if(isTruePi0){ // Only primary pi0 for resolution
                      hESDTruePrimaryPi0MCPtResolPt[fiCut]->Fill(((TParticle*)MCStack->Particle(gamma1MotherLabel))->Pt(),(Pi0Candidate->Pt()-((TParticle*)MCStack->Particle(gamma1MotherLabel))->Pt())/((TParticle*)MCStack->Particle(gamma1MotherLabel))->Pt(),weighted);
@@ -1340,7 +1321,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 
                RotateParticle(&currentEventGoodV02);
                AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&currentEventGoodV02);
-               if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE))){
+               if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()))){
                   hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
                   Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
                   sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
@@ -1369,7 +1350,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
                   }
 
                   AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
-                  if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE))){
+                  if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()))){
                      hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
                      Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
                      sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
@@ -1399,7 +1380,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 
                      AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
 
-                     if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE))){
+                     if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()))){
                         hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
                         Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
                         sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
@@ -1445,7 +1426,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
 
                AliAODConversionMother backgroundCandidate(gamma0,gamma1);
 
-               if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&backgroundCandidate,kFALSE)){
+               if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift())){
                   hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt());
                   Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
                   sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);
@@ -1479,7 +1460,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
 
                   AliAODConversionMother backgroundCandidate(gamma0,gamma1);
 
-                  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&backgroundCandidate,kFALSE)){
+                  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift())){
                      hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt());
                      Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
                      sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);
