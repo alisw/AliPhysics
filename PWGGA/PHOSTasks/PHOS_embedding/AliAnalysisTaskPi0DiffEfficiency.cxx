@@ -40,7 +40,8 @@
 
 Double_t Scale(Double_t x){
 
-  return 1./1.015/1.015*(1.+0.017/(1.+x*x/2./2.)) ;
+//  return 1./1.008/1.015*(1.+0.017/(1.+x*x/2./2.)+0.03/(1.+x*x/0.6/0.6)) ;
+  return 1./1.015/1.015*(1.+0.017/(1.+x*x/2./2.)+0.03/(1.+x*x/0.6/0.6)) ;
 
 
 }
@@ -99,37 +100,6 @@ AliAnalysisTaskPi0DiffEfficiency::AliAnalysisTaskPi0DiffEfficiency(const char *n
 
 
 }
-//________________________________________________________________________
-AliAnalysisTaskPi0DiffEfficiency::AliAnalysisTaskPi0DiffEfficiency(const AliAnalysisTaskPi0DiffEfficiency& a)
-: AliAnalysisTaskSE(a),
-  fStack(0),
-  fOutputContainer(0),
-  fPHOSEvent(0),
-  fPHOSEvent1(0),
-  fPHOSEvent2(0),
-  fPHOSCalibData(0),
-  fNonLinCorr(0),
-  fRPfull(0),
-  fRPA(0),
-  fRPC(0),
-  fRPFar(0),
-  fRPAFar(0),
-  fRPCFar(0),
-  fCentrality(0),
-  fCenBin(0),
-  fPHOSGeo(0),
-  fEventCounter(0)
-{
-   AliError("Copy constructor not implemented!") ;
-} 
-//________________________________________________________________________
-  AliAnalysisTaskPi0DiffEfficiency& AliAnalysisTaskPi0DiffEfficiency::operator=(const AliAnalysisTaskPi0DiffEfficiency& )
-{
-  AliError("Operator = not implemented!") ;
-  
-  return *this;
-  
-} // not implemented
 
 //________________________________________________________________________
 void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
@@ -161,12 +131,12 @@ void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
   Int_t nM       = 500;
   Double_t mMin  = 0.0;
   Double_t mMax  = 1.0;
-  Int_t nPt      = 200;
+  Int_t nPt      = 250;
   Double_t ptMin = 0;
-  Double_t ptMax = 20;
+  Double_t ptMax = 25;
   
-  Int_t nPtf      = 20;
-  Double_t xPt[21]={0.6,1.,1.5,2.,2.5,3.,3.5,4.,4.5,5.,5.5,6.,7.,8.,9.,10.,12.,14.,16.,18.,20.} ;
+  Int_t nPtf      = 23;
+  Double_t xPt[24]={0.6,1.,1.5,2.,2.5,3.,3.5,4.,4.5,5.,5.5,6.,7.,8.,9.,10.,12.,14.,16.,18.,20.,22.,24.,25.} ;
   Int_t nPhi=10 ;
   Double_t xPhi[11] ;
   for(Int_t i=0;i<=10;i++)xPhi[i]=i*0.1*TMath::Pi() ;
@@ -761,6 +731,8 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
     }
     fEventCounter++ ;
   }
+  
+  TClonesArray *mcArray = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());  
 
   ProcessMC() ;
 
@@ -777,7 +749,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
   AliAODCaloCells * cellsEmb = (AliAODCaloCells *)event->FindListObject("EmbeddedPHOScells") ;
   TClonesArray * clustersOld = event->GetCaloClusters() ;
   AliAODCaloCells * cellsOld = event->GetPHOSCells() ;
-  TClonesArray *mcArray = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());
+//  TClonesArray *mcArray = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());
 
   
   TVector3 vertex(vtx0);
@@ -1997,6 +1969,10 @@ Bool_t AliAnalysisTaskPi0DiffEfficiency::IsGoodChannel(const char * det, Int_t m
 Double_t AliAnalysisTaskPi0DiffEfficiency::PrimaryWeight(Double_t x){
   
    Double_t w=1 ;
+   
+   
+   //Parameterization of LHC10h data from Jan 2013 (pi0 spectrum)
+   //Should be consistend with spectrum parameterization used in simulation 
    if(fCenBin==0) //0-5
      w = (0.561741+0.332841*x-0.007082*x*x)/(1.-0.447804*x+0.157830*x*x)+0.080394*x ;
    if(fCenBin==1) //5-10
@@ -2009,7 +1985,22 @@ Double_t AliAnalysisTaskPi0DiffEfficiency::PrimaryWeight(Double_t x){
      w = (0.467895-0.001113*x+0.029610*x*x)/(1.-0.266502*x+0.065105*x*x)+0.025431*x ; 
    if(fCenBin==5) //60-80
      w = (0.465204-0.139362*x+0.043500*x*x)/(1.-0.371689*x+0.067606*x*x)+0.006519*x ;
-  
+
+/*
+  //Parameterization of photon spectrum 25.02
+  if(fCenBin==0) //0-5
+     w=(0.870487-0.494032*x+0.076334*x*x+0.001065*x*x*x)/(1.-0.646014*x+0.113839*x*x); 
+  if(fCenBin==1) //5-10
+     w=(-8.310403+15.767226*x-2.167756*x*x+0.184356*x*x*x)/(1.+4.556793*x+0.980941*x*x); 
+  if(fCenBin==2) //10-20
+     w=(-5.281594+7.477165*x-0.688609*x*x+0.097601*x*x*x)/(1.+1.102693*x+0.882454*x*x); 
+  if(fCenBin==3) //20-40
+     w=(0.789472-4.750155*x+4.381545*x*x-0.029239*x*x*x)/(1.-3.738304*x+3.328318*x*x); 
+  if(fCenBin==4) //40-60
+     w=(0.876792-0.491379*x+0.130872*x*x-0.001390*x*x*x)/(1.+-0.511934*x+0.112705*x*x); 
+  if(fCenBin==5) //60-80
+     w=(0.719912-0.167292*x+0.017196*x*x+0.000861*x*x*x)/(1.-0.336146*x+0.037731*x*x); 
+*/
   return TMath::Max(0.,w) ;  
 }
 
