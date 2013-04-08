@@ -23,7 +23,8 @@ AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse() :
   AliAnalysisTaskRhoBase("AliAnalysisTaskRhoSparse"),
   fHistOccCorrvsCent(0),
   fNExclLeadJets(0),
-  fRhoCMS(0)
+  fRhoCMS(0),
+  fSigJetsName("SJets")
 {
   // Constructor.
 }
@@ -33,7 +34,8 @@ AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse(const char *name, Bool_t hist
   AliAnalysisTaskRhoBase(name, histo),
   fHistOccCorrvsCent(0),
   fNExclLeadJets(0),
-  fRhoCMS(0)
+  fRhoCMS(0),
+  fSigJetsName("SJets")
 {
   // Constructor.
 }
@@ -51,6 +53,33 @@ void AliAnalysisTaskRhoSparse::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
+Bool_t AliAnalysisTaskRhoSparse::IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2)
+{
+  for (Int_t i = 0; i < jet1->GetNumberOfTracks(); ++i)
+  {
+    Int_t jet1Track = jet1->TrackAt(i);
+    for (Int_t j = 0; j < jet2->GetNumberOfTracks(); ++j)
+    {
+      Int_t jet2Track = jet2->TrackAt(j);
+      if (jet1Track == jet2Track)
+        return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskRhoSparse::IsJetSignal(AliEmcalJet* jet)
+{
+  if(jet->Pt()>5){
+      return kTRUE;
+  }else{
+    return kFALSE;
+  }
+}
+
+
+//________________________________________________________________________
 Bool_t AliAnalysisTaskRhoSparse::Run() 
 {
   // Run the analysis.
@@ -63,6 +92,13 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
     return kFALSE;
 
   const Int_t Njets   = fJets->GetEntries();
+
+  TClonesArray *sigjets = 0;
+  sigjets= dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fSigJetsName));
+
+  Int_t NjetsSig = 0;
+  if(sigjets) NjetsSig = sigjets->GetEntries();
+ 
 
   Int_t maxJetIds[]   = {-1, -1};
   Float_t maxJetPts[] = { 0,  0};
@@ -112,17 +148,37 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
       continue;
     } 
 
-    //cout << "jetpt: " << jet->Pt() << " jetArea: " << jet->Area() <<endl;
-
     if (!AcceptJet(jet))
       continue;
 
+   // Search for overlap with signal jets
+    Bool_t isOverlapping = kFALSE;
+    if(sigjets){
+      for(Int_t j=0;j<NjetsSig;j++)
+	{
+	  AliEmcalJet* signalJet = static_cast<AliEmcalJet*>(sigjets->At(j));
+	  if(!AcceptJet(signalJet))
+	    continue;
+	  if(!IsJetSignal(signalJet))     
+	    continue;
+	  
+	  if(IsJetOverlapping(signalJet, jet))
+	    {
+	      isOverlapping = kTRUE;
+	      break;
+	    }
+	}
+    }
 
-    if(jet->Pt()>0.01) rhovec[NjetAcc] = jet->Pt() / jet->Area();
-    //cout << "ACCEPTED: jetpt: " << jet->Pt() << " jetArea: " << jet->Area() << " jetRho: " << rhovec[NjetAcc] <<endl;
-    if(jet->Pt()>0.01) TotaljetAreaPhys+=jet->Area();
+    if(isOverlapping) 
+      continue;
+
+    rhovec[NjetAcc] = jet->Pt() / jet->Area();
+
+    TotaljetAreaPhys+=jet->Area();
     TotaljetArea+=jet->Area();
     ++NjetAcc;
+
   }
 
   const Double_t TpcMaxPhi = TMath::Pi()*2.;

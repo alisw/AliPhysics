@@ -122,7 +122,6 @@ void AliEmcalJetTask::UserCreateOutputObjects()
 void AliEmcalJetTask::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
-
   if (!fIsInit) {
     if (!DoInit())
       return;
@@ -142,9 +141,11 @@ void AliEmcalJetTask::Terminate(Option_t *)
 void AliEmcalJetTask::FindJets()
 {
   // Find jets.
-
-  if (!fTracks && !fClus)
+  if (!fTracks && !fClus){
+    cout << "WARNING NO TRACKS OR CLUSTERS:"  <<endl;
     return;
+  }
+
 
   TString name("kt");
   fastjet::JetAlgorithm jalgo(fastjet::kt_algorithm);
