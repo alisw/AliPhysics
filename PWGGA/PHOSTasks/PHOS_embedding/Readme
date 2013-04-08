@@ -18,10 +18,18 @@ These are tasks to perform PHOS embedding. Steps are following:
    - Embedded CaloClusters, embedded CaloCells with final calibration
 5. Run analysis with
    - AliAnalysisTaskPi0Efficiency: Signal (nominator in efficiency calculation) is any cluster with 
-     contribution from simulated pi0s. Only for cross-check, this appoach is not quite correct at high accupancy.
+     contribution from simulated pi0s. Only for cross-check, this appoach is not quite correct at high occupancy.
    - AliAnalysisTaskPi0DiffEfficiency: correct approach, Signal (nominator in efficiency calculation) is
      difference between Real inv. mass distribution after and before embedding.
 
 Note that to perform MC simulation one needs either access to official OCDB (Why do I need TPC drift velocity to simulate PHOS????)
-or local copy of OCDB. Also histograms with new/old calibrations should be provided if necessary.
+or local copy of OCDB. 
+
+One can have improved calibration produced after official reconstruction.
+In usual analysis this is hidden in PHOSTenderSupply, but here it can not be used.
+So we use complicated apporach: first return from ESDCaloCells to PHOSDigits with calibration
+used in official reconstruction and then use final calibration in reconstruction of step 3. 
+Note, that in this case simulation should also be done with final calibration.
+As a result histograms with new/old calibrations should be provided for PHOSEmbedding and special settings in simulations and 
+reconstruction of simulated digits should be used.
 

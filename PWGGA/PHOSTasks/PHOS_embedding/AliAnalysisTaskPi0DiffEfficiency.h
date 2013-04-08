@@ -29,8 +29,8 @@ public:
   }
 
   protected:
-  AliAnalysisTaskPi0DiffEfficiency(const AliAnalysisTaskPi0DiffEfficiency& a) ; // not implemented
-  AliAnalysisTaskPi0DiffEfficiency& operator=(const AliAnalysisTaskPi0DiffEfficiency& a ) ; // not implemented
+  AliAnalysisTaskPi0DiffEfficiency(const AliAnalysisTaskPi0DiffEfficiency& a):AliAnalysisTaskSE(a){} // not implemented
+  AliAnalysisTaskPi0DiffEfficiency& operator=(const AliAnalysisTaskPi0DiffEfficiency& ){return *this;} // not implemented
   Bool_t IsGoodChannel(const char * det, Int_t mod,Int_t ix, Int_t iz); //Use addisional bad map for PHOS
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
