@@ -38,4 +38,5 @@
 #pragma link C++ class AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeTool+;
 #pragma link C++ class AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM+;
 #pragma link C++ class AliAnalysisTaskJetsTriggerTRD+;
+#pragma link C++ class AliAnalysisTaskJetProtonCorr+;
 #endif
