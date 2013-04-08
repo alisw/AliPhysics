@@ -73,8 +73,9 @@ AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(const char* hostname, unsig
   // Open Reader instance for host
   if (fgLibraryStatus<0) return NULL;
 
-  if (fgLibraryStatus==0) {
-    fgLibraryStatus=LoadHOMERLibrary();
+  fgLibraryStatus=LoadHOMERLibrary();
+  if (fgLibraryStatus <= 0) {
+	return NULL;
   }
   
   AliHLTHOMERReader* pReader=NULL;
@@ -90,8 +91,9 @@ AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(unsigned int tcpCnt, const 
   // Open Reader instance for a list of hosts
   if (fgLibraryStatus<0) return NULL;
 
-  if (fgLibraryStatus==0) {
-    fgLibraryStatus=LoadHOMERLibrary();
+  fgLibraryStatus=LoadHOMERLibrary();
+  if (fgLibraryStatus <= 0) {
+  	return NULL;
   }
   
   AliHLTHOMERReader* pReader=NULL;
@@ -108,8 +110,9 @@ AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReaderBuffer(const AliHLTUInt8_t* 
   // Open Reader instance for a data buffer
   if (fgLibraryStatus<0) return NULL;
 
-  if (fgLibraryStatus==0) {
-    fgLibraryStatus=LoadHOMERLibrary();
+  fgLibraryStatus=LoadHOMERLibrary();
+  if (fgLibraryStatus <= 0) {
+	return NULL;
   }
   
   AliHLTHOMERReader* pReader=NULL;
@@ -127,8 +130,9 @@ int AliHLTHOMERLibManager::DeleteReader(AliHLTHOMERReader* pReader)
   // the actual deletion function is inside the HOMER library
   if (fgLibraryStatus<0) return fgLibraryStatus;
 
-  if (fgLibraryStatus==0) {
-    fgLibraryStatus=LoadHOMERLibrary();
+  fgLibraryStatus=LoadHOMERLibrary();
+  if (fgLibraryStatus <= 0) {
+  	return fgLibraryStatus;
   }
   
   if (fFctDeleteReader!=NULL) {
@@ -143,8 +147,9 @@ AliHLTHOMERWriter* AliHLTHOMERLibManager::OpenWriter()
   // open a Writer instance
   if (fgLibraryStatus<0) return NULL;
 
-  if (fgLibraryStatus==0) {
-    fgLibraryStatus=LoadHOMERLibrary();
+  fgLibraryStatus=LoadHOMERLibrary();
+  if (fgLibraryStatus <= 0) {
+	return NULL;
   }
   
   AliHLTHOMERWriter* pWriter=NULL;
@@ -160,8 +165,9 @@ int AliHLTHOMERLibManager::DeleteWriter(AliHLTHOMERWriter* pWriter)
   // see header file for class documentation
   if (fgLibraryStatus<0) return fgLibraryStatus;
 
-  if (fgLibraryStatus==0) {
-    fgLibraryStatus=LoadHOMERLibrary();
+  fgLibraryStatus=LoadHOMERLibrary();
+  if (fgLibraryStatus <= 0) {
+	return fgLibraryStatus;
   }
   
   if (fFctDeleteWriter!=NULL) {
