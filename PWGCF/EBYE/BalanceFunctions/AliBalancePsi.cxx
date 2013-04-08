@@ -177,16 +177,16 @@ void AliBalancePsi::InitHistograms() {
   ***********************************************************/
    
   //--- Multiplicity Bins ------------------------------------
-    const Int_t kMultBins = 8;
+    const Int_t kMultBins = 10;
     //A first rough attempt at four bins
-    Double_t kMultBinLimits[kMultBins+1]={0,10,20,30,40,50,60,70,80};
+    Double_t kMultBinLimits[kMultBins+1]={0,10,20,30,40,50,60,70,80,100,100000};
   //----------------------------------------------------------
     
   //--- Centrality Bins --------------------------------------
     const Int_t kNCentralityBins       = 9;
-    const Int_t kNCentralityBinsVertex = 26;
+    const Int_t kNCentralityBinsVertex = 15;
     Double_t centralityBins[kNCentralityBins+1]             = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
-    Double_t centralityBinsVertex[kNCentralityBinsVertex+1] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.};
+    Double_t centralityBinsVertex[kNCentralityBinsVertex+1] = {0.,1.,2.,3.,4.,5.,7.,10.,20.,30.,40.,50.,60.,70.,80.,100.};
   //----------------------------------------------------------
     
   //--- Event Plane Bins -------------------------------------
@@ -266,9 +266,9 @@ void AliBalancePsi::InitHistograms() {
 
   // pt(trigger-associated)
   const Int_t kNPtBins       = 16;
-  const Int_t kNPtBinsVertex = 5;
+  const Int_t kNPtBinsVertex = 6;
   Double_t ptBins[kNPtBins+1]             = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
-  Double_t ptBinsVertex[kNPtBinsVertex+1] = {0.2,1.0,2.0,3.0,4.0,8.0};
+  Double_t ptBinsVertex[kNPtBinsVertex+1] = {0.2,1.0,2.0,3.0,4.0,8.0,15.0};
 
   // coarse binning in case of vertex Z binning
   if(fVertexBinning){
@@ -796,7 +796,7 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
     gHistBalanceFunctionHistogram->Scale(0.5);
 
     //normalize to bin width
-    gHistBalanceFunctionHistogram->Scale(1./((Double_t)gHistBalanceFunctionHistogram->GetXaxis()->GetBinWidth(1)*(Double_t)gHistBalanceFunctionHistogram->GetYaxis()->GetBinWidth(1)));
+    gHistBalanceFunctionHistogram->Scale(1./((Double_t)gHistBalanceFunctionHistogram->GetXaxis()->GetBinWidth(1)));
   }
 
   return gHistBalanceFunctionHistogram;
@@ -1044,7 +1044,7 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
     gHistBalanceFunctionHistogram->Scale(0.5);
 
     //normalize to bin width
-    gHistBalanceFunctionHistogram->Scale(1./((Double_t)gHistBalanceFunctionHistogram->GetXaxis()->GetBinWidth(1)*(Double_t)gHistBalanceFunctionHistogram->GetYaxis()->GetBinWidth(1)));
+    gHistBalanceFunctionHistogram->Scale(1./((Double_t)gHistBalanceFunctionHistogram->GetXaxis()->GetBinWidth(1)));
   }
 
   return gHistBalanceFunctionHistogram;
@@ -1661,6 +1661,9 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
 
     gHistBalanceFunctionHistogram->Add(h1DTemp1,h1DTemp2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5);
+
+    //normalize to bin width
+    gHistBalanceFunctionHistogram->Scale(1./((Double_t)gHistBalanceFunctionHistogram->GetXaxis()->GetBinWidth(1)));
   }
 
   return gHistBalanceFunctionHistogram;
@@ -2258,9 +2261,9 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
     // kurtosisError = TMath::Sqrt(24./(normError));
 
     // use delta theorem paper (Luo - arXiv:1109.0593v1)
-    Double_t Lambda11 = (fMu4-1)*sigma*sigma/(4*normError);
-    Double_t Lambda22 = (9-6*fMu4+fMu3*fMu3*(35+9*fMu4)/4-3*fMu3*fMu5+fMu6)/normError;
-    Double_t Lambda33 = (-fMu4*fMu4+4*fMu4*fMu4*fMu4+16*fMu3*fMu3*(1+fMu4)-8*fMu3*fMu5-4*fMu4*fMu6+fMu8)/normError;
+    Double_t Lambda11 = TMath::Abs((fMu4-1)*sigma*sigma/(4*normError));
+    Double_t Lambda22 = TMath::Abs((9-6*fMu4+fMu3*fMu3*(35+9*fMu4)/4-3*fMu3*fMu5+fMu6)/normError);
+    Double_t Lambda33 = TMath::Abs((-fMu4*fMu4+4*fMu4*fMu4*fMu4+16*fMu3*fMu3*(1+fMu4)-8*fMu3*fMu5-4*fMu4*fMu6+fMu8)/normError);
     //Double_t Lambda12 = -(fMu3*(5+3*fMu4)-2*fMu5)*sigma/(4*normError);
     //Double_t Lambda13 = ((-4*fMu3*fMu3+fMu4-2*fMu4*fMu4+fMu6)*sigma)/(2*normError);
     //Double_t Lambda23 = (6*fMu3*fMu3*fMu3-(3+2*fMu4)*fMu5+3*fMu3*(8+fMu4+2*fMu4*fMu4-fMu6)/2+fMu7)/normError;
@@ -2268,11 +2271,14 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
     // cout<<Lambda11<<" "<<Lambda22<<" "<<Lambda33<<" "<<endl;
     // cout<<Lambda12<<" "<<Lambda13<<" "<<Lambda23<<" "<<endl;
 
-    meanError        = sigma / TMath::Sqrt(normError); 
+    if (TMath::Sqrt(normError) != 0){
+      meanError        = sigma / TMath::Sqrt(normError); 
+    }
+    else return -999;
     sigmaError       = TMath::Sqrt(Lambda11);
     skewnessError    = TMath::Sqrt(Lambda22);
     kurtosisError    = TMath::Sqrt(Lambda33);
-
+    
     
     success = kTRUE;    
   }

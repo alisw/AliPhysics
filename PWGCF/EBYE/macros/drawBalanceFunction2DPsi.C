@@ -1,5 +1,5 @@
 const Int_t numberOfCentralityBins = 12;
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+TString centralityArray[numberOfCentralityBins] = {"0-100","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
 
 
 const Int_t gRebin = 1;
@@ -530,7 +530,12 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
   newFileName += Form("%.1f",ptAssociatedMax); 
   if(k2pMethod) newFileName += "_2pMethod";
-  newFileName += ".root";
+
+  // newFileName += "_";
+  // newFileName += Form("%.1f",psiMin); 
+  // newFileName += "-"; 
+  // newFileName += Form("%.1f",psiMax); 
+  // newFileName += ".root";
 
   TFile *fOutput = new TFile(newFileName.Data(),"recreate");
   fOutput->cd();
@@ -650,7 +655,13 @@ void fitbalanceFunction(Int_t gCentrality = 1,
   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
   newFileName += Form("%.1f",ptAssociatedMax); 
   if(k2pMethod) newFileName += "_2pMethod";
+
+  newFileName += "_";
+  newFileName += Form("%.1f",psiMin); 
+  newFileName += "-"; 
+  newFileName += Form("%.1f",psiMax); 
   newFileName += ".root";
+
   TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
   gHist->Write();
   gHistResidual->Write();
@@ -699,6 +710,11 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
   filename += Form("%.1f",ptAssociatedMax);  
   if(k2pMethod) filename += "_2pMethod";
+
+  filename += "_";
+  filename += Form("%.1f",psiMin); 
+  filename += "-"; 
+  filename += Form("%.1f",psiMax); 
   filename += ".root";  
 
   //Open the file
@@ -918,6 +934,16 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   TGaxis::SetMaxDigits(3);
 
   //first we need some libraries
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libXMLIO");
+  gSystem->Load("libPhysics");
+
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libEventMixing.so");
@@ -949,6 +975,11 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
   filename += Form("%.1f",ptAssociatedMax); 
   if(k2pMethod) filename += "_2pMethod";
+
+  // filename += "_";
+  // filename += Form("%.1f",psiMin); 
+  // filename += "-"; 
+  // filename += Form("%.1f",psiMax);
   filename += ".root";
 
   //Open the file
@@ -998,15 +1029,22 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   TH1D *gHistBalanceFunctionSubtracted = NULL;
   TH1D *gHistBalanceFunctionMixed      = NULL;
 
+  TH1D *gHistBalanceFunctionSubtracted_scale = NULL;
+  TH1D *gHistBalanceFunctionMixed_scale      = NULL;
+
   if(kProjectInEta){
     gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionX());
+    gHistBalanceFunctionSubtracted->Scale(gHistBalanceFunctionSubtracted2D->GetYaxis()->GetBinWidth(1));   // to remove normalization to phi bin width
     gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionX());
+    gHistBalanceFunctionMixed->Scale(gHistBalanceFunctionMixed2D->GetYaxis()->GetBinWidth(1));   // to remove normalization to phi bin width
     gHistBalanceFunctionSubtracted->SetTitle("B(#Delta#eta)");
     gHistBalanceFunctionMixed->SetTitle("B_{mix}(#Delta#eta)");  
   }
   else{
     gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionY());
+    gHistBalanceFunctionSubtracted->Scale(gHistBalanceFunctionSubtracted2D->GetXaxis()->GetBinWidth(1));   // to remove normalization to eta bin width
     gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionY());
+    gHistBalanceFunctionMixed->Scale(gHistBalanceFunctionMixed2D->GetXaxis()->GetBinWidth(1));   // to remove normalization to eta bin width
     gHistBalanceFunctionSubtracted->SetTitle("B(#Delta#varphi)");
     gHistBalanceFunctionMixed->SetTitle("B_{mix}(#Delta#varphi)");  
   }
@@ -1023,7 +1061,7 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   c1->SetHighLightColor(10);
   c1->SetLeftMargin(0.15);
   gHistBalanceFunctionSubtracted->DrawCopy("E");
-  gHistBalanceFunctionMixed->DrawCopy("E, SAME");
+  gHistBalanceFunctionMixed->DrawCopy("ESAME");
   
   legend = new TLegend(0.18,0.62,0.45,0.82,"","brNDC");
   legend->SetTextSize(0.045); 
@@ -1064,6 +1102,10 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
   pngName += Form("%.1f",ptAssociatedMax); 
   if(k2pMethod) pngName += "_2pMethod";
+  
+  pngName += "_"; 
+  pngName += Form("%.1f",psiMin); pngName += "-"; 
+  pngName += Form("%.1f",psiMax);
   pngName += ".png";
 
   c1->SaveAs(pngName.Data());
