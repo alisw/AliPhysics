@@ -5,11 +5,12 @@ AliJetResponseMaker* AddTaskJetRespPtHard(
   const char *nclusters1         = "CaloClusters",
   const char *njets1             = "Jets",
   const char *nrho1              = "Rho",
+  Double_t    jetradius1         = 0.2,
   const char *ntracks2           = "MCParticles",
   const char *nclusters2         = "",
   const char *njets2             = "MCJets",
   const char *nrho2              = "",
-  Double_t    jetradius          = 0.2,
+  Double_t    jetradius2         = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
   Double_t    jetBiasTrack       = 5,
@@ -51,23 +52,23 @@ AliJetResponseMaker* AddTaskJetRespPtHard(
   for (Int_t i = minPtHardBin; i <= maxPtHardBin; i++) {
     for (Int_t j = 0; j < ncent; j++) {
       Printf("Adding AliJetResponseMaker n. %d", itask);
-      AddTaskJetResponseMaker(ntracks1, nclusters1, njets1, nrho1, ntracks2, nclusters2, njets2, nrho2,
-			      jetradius, jetptcut, jetareacut, 0, 0,
+      AddTaskJetResponseMaker(ntracks1, nclusters1, njets1, nrho1, jetradius1, ntracks2, nclusters2, njets2, nrho2, jetradius2,
+			      jetptcut, jetareacut, 0, 0,
 			      matching, maxDistance1, maxDistance2, type, i, centRanges[j], centRanges[j+1], taskname, biggerMatrix, jetTask + itask);
       itask++;
 
       if (jetBiasTrack > 5) {
 	Printf("Adding AliJetResponseMaker n. %d", itask);
-	AddTaskJetResponseMaker(ntracks1, nclusters1, njets1, nrho1, ntracks2, nclusters2, njets2, nrho2,
-				jetradius, jetptcut, jetareacut, 5, 1000,
+	AddTaskJetResponseMaker(ntracks1, nclusters1, njets1, nrho1, jetradius1, ntracks2, nclusters2, njets2, nrho2, jetradius2,
+				jetptcut, jetareacut, 5, 1000,
 				0, 1, 1, type, i, centRanges[j], centRanges[j+1], taskname, biggerMatrix, jetTask + itask);
 	itask++;
       }
 
       if (jetBiasTrack > 0) {
 	Printf("Adding AliJetResponseMaker n. %d", itask);
-	AddTaskJetResponseMaker(ntracks1, nclusters1, njets1, nrho1, ntracks2, nclusters2, njets2, nrho2,
-				jetradius, jetptcut, jetareacut, jetBiasTrack, 1000,
+	AddTaskJetResponseMaker(ntracks1, nclusters1, njets1, nrho1, jetradius1, ntracks2, nclusters2, njets2, nrho2, jetradius2,
+				jetptcut, jetareacut, jetBiasTrack, 1000,
 				0, 1, 1, type, i, centRanges[j], centRanges[j+1], taskname, biggerMatrix, jetTask + itask);
 	itask++;
       }
