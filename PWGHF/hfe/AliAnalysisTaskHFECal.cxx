@@ -1393,7 +1393,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     
     //printf("fFlagLS = %d\n",fFlagLS);
     //printf("fFlagULS = %d\n",fFlagULS);
-    //printf("\n");
+    printf("\n");
 
     AliKFParticle ge1(*track, fPDGe1);
     AliKFParticle ge2(*trackAsso, fPDGe2);
@@ -1408,7 +1408,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     primV += recg;
     recg.SetProductionVertex(primV);
     
-    recg.SetMassConstraint(0,0.0001);
+    //recg.SetMassConstraint(0,0.0001);
     
     openingAngle = ge1.GetAngle(ge2);
     if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);

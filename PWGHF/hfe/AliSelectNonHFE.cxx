@@ -29,13 +29,15 @@
 #include "TH1F.h"
 #include "TMath.h"
 #include "TLorentzVector.h"
-
-#include "AliESDEvent.h"
-#include "AliESDtrackCuts.h"
+#include "AliAODTrack.h"
 #include "AliESDtrack.h"
+#include "AliVEvent.h"
+#include "AliESDtrackCuts.h"
+#include "AliVTrack.h"
+#include "AliVParticle.h"
 #include "AliPIDResponse.h"
 #include "AliPID.h"
-
+#include "AliExternalTrackParam.h"
 #include "AliSelectNonHFE.h"
 #include "AliKFParticle.h"
 #include "AliLog.h"
@@ -48,17 +50,16 @@ ClassImp(AliSelectNonHFE)
 AliSelectNonHFE::AliSelectNonHFE(const char *name, const Char_t *title) 
 : TNamed(name, title)
   ,fTrackCuts(0)
-  ,fAlgorithm("MA")
+  ,fAlgorithm("DCA")
   ,fAngleCut(999)
   ,fdcaCut(999)
   ,fTPCnSigmaMin(-3)
   ,fTPCnSigmaMax(3)
-  ,fTOFnSigmaMin(-3)
-  ,fTOFnSigmaMax(3)
   ,fMassCut(0.5)
   ,fChi2OverNDFCut(999)
   ,fIsLS(kFALSE)
   ,fIsULS(kFALSE)
+  ,fIsAOD(kFALSE)
   ,fNLS(0)
   ,fNULS(0)
   ,fLSPartner(0)
@@ -92,17 +93,16 @@ AliSelectNonHFE::AliSelectNonHFE(const char *name, const Char_t *title)
 AliSelectNonHFE::AliSelectNonHFE() 
   : TNamed()
   ,fTrackCuts(0)
-  ,fAlgorithm("MA")
+  ,fAlgorithm("DCA")
   ,fAngleCut(999)
   ,fdcaCut(999)
   ,fTPCnSigmaMin(-3)
   ,fTPCnSigmaMax(3)
-  ,fTOFnSigmaMin(-3)
-  ,fTOFnSigmaMax(3)
   ,fMassCut(0.5)
   ,fChi2OverNDFCut(999)
   ,fIsLS(kFALSE)
   ,fIsULS(kFALSE)
+  ,fIsAOD(kFALSE)
   ,fNLS(0)
   ,fNULS(0)
   ,fLSPartner(0)
@@ -147,15 +147,23 @@ AliSelectNonHFE::~AliSelectNonHFE()
 }
 
 //__________________________________________
-void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliESDtrack *track1, AliESDEvent *fESD)
+void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent *fVevent)
 {	
+  AliVTrack *track1 = dynamic_cast<AliVTrack*>(Vtrack1);
+  AliESDtrack *etrack1 = dynamic_cast<AliESDtrack*>(Vtrack1); 
+  AliExternalTrackParam *extTrackParam1; 
+  AliExternalTrackParam *extTrackParam2;
+  if(fAlgorithm=="DCA")
+  {
+	extTrackParam1 = new AliExternalTrackParam();
+    extTrackParam1->CopyFromVTrack(track1);
+	}
   //
   // Find non HFE electrons
   //
 
-
   //Magnetic Field
-  Double_t bfield = fESD->GetMagneticField();
+  Double_t bfield = fVevent->GetMagneticField();
   
   //Second Track loop
   
@@ -169,39 +177,77 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliESDtrack *track1, AliESDEvent
   fLSPartner = new int [100]; 	//store the partners index
   fULSPartner = new int [100];	//store the partners index
   
-  for(Int_t iTrack2 = 0; iTrack2 < fESD->GetNumberOfTracks(); iTrack2++) 
+  for(Int_t iTrack2 = 0; iTrack2 < fVevent->GetNumberOfTracks(); iTrack2++) 
     {
-		if(iTrack1==iTrack2) continue;
+      if(iTrack1==iTrack2) continue;
 		
-      AliESDtrack* track2 = fESD->GetTrack(iTrack2);
-      if (!track2) 
+      AliVParticle* Vtrack2 = fVevent->GetTrack(iTrack2);
+      if (!Vtrack2) 
 	{
 	  printf("ERROR: Could not receive track %d\n", iTrack2);
 	  continue;
 	}
-      
+     
+      AliVTrack *track2 = dynamic_cast<AliVTrack*>(Vtrack2);
+      AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(Vtrack2);
+      AliESDtrack *etrack2 = dynamic_cast<AliESDtrack*>(Vtrack2);
+		
+      if(fAlgorithm=="DCA")	
+      {
+		  extTrackParam2 = new AliExternalTrackParam();
+			extTrackParam2->CopyFromVTrack(track2); 
+		}
+		
       //Second track cuts
-      Double_t tpcNsigma2 = fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kElectron);
-      Double_t tofNsigma2 = fPIDResponse->NumberOfSigmasTOF(track2,AliPID::kElectron);
-      if(tpcNsigma2<fTPCnSigmaMin || tpcNsigma2>fTPCnSigmaMax) continue;
-      if(tofNsigma2<fTOFnSigmaMin || tofNsigma2>fTOFnSigmaMax) continue;
-      if(!fTrackCuts->AcceptTrack(track2)) continue;
+      if(fIsAOD) 
+	{
+	  if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+	  if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+	  if(atrack2->GetTPCNcls() < 80) continue; 
+	}
+      else
+	{   
+	  if(!fTrackCuts->AcceptTrack(etrack2)) continue;
+	}
       
-      if(fAlgorithm=="MA")
+      //Second track pid
+      Double_t tpcNsigma2 = fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kElectron);
+      if(tpcNsigma2<fTPCnSigmaMin || tpcNsigma2>fTPCnSigmaMax) continue;
+      
+      
+      if(fAlgorithm=="DCA")
 	{
 	  //Variables
 	  Double_t p1[3];
 	  Double_t p2[3];
 	  Double_t xt1; //radial position track 1 at the DCA point
 	  Double_t xt2; //radial position track 2 at the DCA point
-	  //DCA track1-track2
-	  Double_t dca12 = track2->GetDCA(track1,bfield,xt2,xt1);
+	  Double_t dca12; //DCA 1-2
+	  Bool_t hasdcaT1;
+	  Bool_t hasdcaT2;
 	  
-	  //Momento of the track extrapolated to DCA track-track	
-	  //Track1
-	  Bool_t hasdcaT1 = track1->GetPxPyPzAt(xt1,bfield,p1);
-	  //Track2
-	  Bool_t hasdcaT2 = track2->GetPxPyPzAt(xt2,bfield,p2);
+	  if(fIsAOD)
+	  {
+		  //DCA track1-track2
+		  dca12 = extTrackParam2->GetDCA(extTrackParam1,bfield,xt2,xt1);
+		  
+		  //Momento of the track extrapolated to DCA track-track	
+		  //Track1
+		  hasdcaT1 = extTrackParam1->GetPxPyPzAt(xt1,bfield,p1);
+		  //Track2
+		  hasdcaT2 = extTrackParam2->GetPxPyPzAt(xt2,bfield,p2);
+	  }
+	  else
+	  {
+		  //DCA track1-track2
+		  dca12 = etrack2->GetDCA(etrack1,bfield,xt2,xt1);
+		  
+		  //Momento of the track extrapolated to DCA track-track	
+		  //Track1
+		  hasdcaT1 = etrack1->GetPxPyPzAt(xt1,bfield,p1);
+		  //Track2
+		  hasdcaT2 = etrack2->GetPxPyPzAt(xt2,bfield,p2);
+	  }
 	  
 	  if(!hasdcaT1 || !hasdcaT2) AliWarning("It could be a problem in the extrapolation");
 	  
@@ -310,8 +356,11 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliESDtrack *track1, AliESDEvent
 	  AliError( Form("Error: %s is not a valid algorithm option.",(const char*)fAlgorithm));
 	  return;
 	}
-      
+      delete extTrackParam2;
     }
+
+    
+  delete extTrackParam1;
   
   return;
 }
