@@ -71,12 +71,15 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   jetEmb->SetIncludeNoITS(includeNoITS);
   TString runPeriod(runperiod);
   runPeriod.ToLower();
-  if (runPeriod == "lhc12a15a" || runPeriod == "lhc12a15e") {
+  if (runPeriod == "lhc12a15e") {
+    jetEmb->SetAODfilterBits(256,512);
+  }
+  else if (runPeriod == "lhc12a15a") {
     jetEmb->SetAODfilterBits(256,16);
   }
   else {
-    if (runPeriod.IsNull())
-      ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.");
+    if (!runPeriod.IsNull())
+      ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
   }
 
   jetEmb->SetPYTHIAPath(simpath);
