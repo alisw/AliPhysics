@@ -178,8 +178,8 @@ int AliDxHFECorrelation::Init(const char* arguments)
   // ============================= EVENT MIXING CHECKS ======================================
   // TODO: Not sure if all 4 histos are needed. Keep for now..	
   // TODO: Set them up more nicely
-  Int_t MaxNofEvents = cuts->GetMaxNEventsInPool();
-  Int_t MinNofTracks = cuts->GetMinNTracksInPool();
+  Double_t MaxNofEvents = cuts->GetMaxNEventsInPool();
+  Double_t MinNofTracks = cuts->GetMinNTracksInPool();
   Int_t NofCentBins = cuts->GetNCentPoolBins();
   const Double_t * CentBins = cuts->GetCentPoolBins();
   const Double_t defaultCentBins[] = {0,100};
@@ -214,8 +214,8 @@ int AliDxHFECorrelation::Init(const char* arguments)
   EventsPerPoolBin->GetZaxis()->SetTitle("Number of events in pool bin");
   if(fUseEventMixing) AddControlObject(EventsPerPoolBin);
 
-  Int_t MaxNofTracks = (MaxNofEvents+1)*MinNofTracks;
-  Int_t Diff = MaxNofTracks-MinNofTracks;
+  Double_t MaxNofTracks = (MaxNofEvents+1)*MinNofTracks;
+  Double_t Diff = MaxNofTracks-MinNofTracks;
 
   Double_t Ntracks[]={MinNofTracks,MinNofTracks+Diff/5,MinNofTracks+2*Diff/5,MinNofTracks+3*Diff/5,MinNofTracks+4*Diff/5,MaxNofTracks};
   Double_t  * trackN = Ntracks;
@@ -257,7 +257,8 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
       continue;
     }
       
-    if (argument.BeginsWith("use-mc")) {
+    if (argument.BeginsWith("mc") ||
+	argument.BeginsWith("use-mc")) {
       fUseMC=true;
       continue;
     }

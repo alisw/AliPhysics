@@ -61,12 +61,7 @@ AliDxHFEParticleSelectionD0::AliDxHFEParticleSelectionD0(const char* opt)
   // 
   // 
   // 
-  TString strOption(opt);
-  // TODO: one might need a proper argument parsing including
-  // chopping whole string into individual arguments
-  if (strOption.Contains("FillD0D0bar")) fFillOnlyD0D0bar=0;
-  else if (strOption.Contains("FillOnlyD0")) fFillOnlyD0D0bar=1;
-  else if (strOption.Contains("FillOnlyD0bar")) fFillOnlyD0D0bar=2;
+  ParseArguments(opt);
 }
 
 AliDxHFEParticleSelectionD0::~AliDxHFEParticleSelectionD0()
@@ -243,8 +238,8 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
   fPtBin=fCuts->PtBin(part->Pt());
   
   // TODO: avoid repeated allocation of the arrays
-  Double_t KProperties[]={prongneg->Pt(),prongneg->Phi(),fPtBin, fD0InvMass,prongneg->Eta()};
-  Double_t piProperties[]={prongpos->Pt(),prongpos->Phi(),fPtBin,fD0InvMass,prongpos->Eta()};
+  Double_t KProperties[]={prongneg->Pt(),prongneg->Phi(),(Double_t)fPtBin, fD0InvMass,prongneg->Eta()};
+  Double_t piProperties[]={prongpos->Pt(),prongpos->Phi(),(Double_t)fPtBin,fD0InvMass,prongpos->Eta()};
 
 
   // Fills only for D0 or both.. 
@@ -283,7 +278,7 @@ TObjArray* AliDxHFEParticleSelectionD0::Select(TObjArray* pTracks, const AliVEve
   if (!pTracks) return NULL;
   TObjArray* selectedTracks=new TObjArray;
   if (!selectedTracks) return NULL;
-  selectedTracks->SetOwner();
+  selectedTracks->SetOwner(kFALSE);
   TIter itrack(pTracks);
   TObject* pObj=NULL;
   while ((pObj=itrack())!=NULL) {
@@ -409,6 +404,37 @@ void AliDxHFEParticleSelectionD0::SetCuts(TObject* cuts, int level)
     return;
   }
   return;
+}
+
+int AliDxHFEParticleSelectionD0::ParseArguments(const char* arguments)
+{
+  // parse arguments and set internal flags
+  TString strArguments(arguments);
+  auto_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
+  if (!tokens.get()) return 0;
+
+  AliInfo(strArguments);
+  TIter next(tokens.get());
+  TObject* token;
+  while ((token=next())) {
+    TString argument=token->GetName();
+    if (argument.BeginsWith("fillD0scheme=")){
+      argument.ReplaceAll("fillD0scheme=", "");
+      if (argument.CompareTo("both")==0){ fFillOnlyD0D0bar=0;}
+      else if (argument.CompareTo("D0")==0){ fFillOnlyD0D0bar=1;}
+      else if (argument.CompareTo("D0bar")==0){ fFillOnlyD0D0bar=2;}
+      else {
+	AliWarning(Form("can not set D0 filling scheme, unknown parameter '%s'", argument.Data()));
+	fFillOnlyD0D0bar=0;
+      }
+      continue;
+    }
+    // forwarding of single argument works, unless key-option pairs separated
+    // by blanks are introduced
+    AliDxHFEParticleSelection::ParseArguments(argument);
+  }
+  
+  return 0;
 }
 
 AliVParticle *AliDxHFEParticleSelectionD0::CreateParticle(AliVParticle* track)

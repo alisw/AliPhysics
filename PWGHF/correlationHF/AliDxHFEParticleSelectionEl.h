@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id$
+// // $Id$
 
 //* This file is property of and copyright by the ALICE Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                     *
@@ -15,7 +15,6 @@
 #define ALIDXHFEPARTICLESELECTIONEL_H
 
 #include "AliDxHFEParticleSelection.h"
-
 
 // 2012-09-17: there has been a problem in the dictionary generation for par file
 // compilation, so we have to include the header files indicated below
@@ -54,20 +53,21 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   
   enum {
     kCutHFE = 0,
-    kCutPID = 1,
+    kCutPIDTOFTPC = 1,
     kCutPIDTOF = 2,
     kCutList=3,
     kNCuts
   };
 
   enum {
+    kNoCuts=-1,
     kRecKineITSTPC=0,
     kRecPrim,
     kHFEcutsITS,
     kHFEcutsTOF,
     kHFEcutsTPC,
     kPIDTOF,
-    kPID,
+    kPIDTOFTPC,
     kSelected,
     kNCutLabels
   };
@@ -80,6 +80,9 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   virtual THnSparse* DefineTHnSparse();
 
   /// overloaded from AliDxHFEParticleSelection: check particle
+  virtual TObjArray* Select(const AliVEvent* pEvent);
+  using AliDxHFEParticleSelection::Select;
+
   virtual int IsSelected(AliVParticle* p, const AliVEvent* pEvent);
 
   virtual int HistogramParticleProperties(AliVParticle* p, int selected);
@@ -88,6 +91,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
 
   /// set cuts object: a type cast check is implemented in the method
   virtual void SetCuts(TObject* /*cuts*/, int /*level*/=0);
+  virtual void SetFinalCutStep(int cutstep){fFinalCutStep=cutstep;}
  
   virtual void SetPIDResponse(const AliPIDResponse* const pidresp){fPIDResponse=(AliPIDResponse*)(pidresp);}
 
@@ -102,8 +106,11 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
  
   /// check cut of specified step, e.g.
   bool ProcessCutStep(Int_t cutStep, AliVParticle *track);
+  int ParseArguments(const char* arguments);
 
-  AliHFEpid*    fPID;                //! the PID object
+  virtual void InvMassFilter(TList* elList, Bool_t* selIndx);
+
+  AliHFEpid*    fPIDTOFTPC;          //! the PID object
   AliHFEpid*    fPIDTOF;             //! the PID TOF object
   THnSparse*    fElectronProperties; // the particle properties of selected particles
   TList*        fHistoList;          // list of histograms
@@ -111,10 +118,13 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   AliPIDResponse* fPIDResponse;      // fPIDResponse
   AliHFEcuts*   fCuts;               //! Cuts for HF electrons
   AliCFManager* fCFM;                //! Correction Framework Manager
+  Int_t         fFinalCutStep;       // Holds the final cutstep
+  Double_t      fInvMassLow;         // lower inv-mass cut
+  Bool_t        fUseInvMassCut;      // whether to use inv mass cut
 
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
 
-  ClassDef(AliDxHFEParticleSelectionEl, 4); 
+  ClassDef(AliDxHFEParticleSelectionEl, 5); 
 };
 
 #endif

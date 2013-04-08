@@ -81,11 +81,14 @@ class AliAnalysisTaskDxHFEParticleSelection : public AliAnalysisTaskSE {
   bool fUseMC;                          // use MC info
   Int_t     fFillOnlyD0D0bar;           // flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
   TObjArray *fSelectedTracks;           // Array for selected Tracks
+  TObjArray *fMCArray;                  // MC array
   Int_t fParticleType;                   // Holds which particle to run on
   Int_t fSystem;                        // holds collisions system (0=pp, 1=PbPb(,2=pPb))
+  TString fSelectionParticleOptions;    // String to hold options for the particle selection
+  Bool_t fUseKine;                      // Whether or not to run on MC stack
 
 
-  ClassDef(AliAnalysisTaskDxHFEParticleSelection, 3);
+  ClassDef(AliAnalysisTaskDxHFEParticleSelection, 4);
 };
 
 #endif

@@ -26,8 +26,10 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliRDHFCuts.h"
 #include "AliVParticle.h"
 #include "AliReducedParticle.h"
+#include "THnSparse.h"
 #include "TH1F.h"
 #include <iostream>
 #include <cerrno>
@@ -44,23 +46,52 @@ AliDxHFEParticleSelectionMCD0::AliDxHFEParticleSelectionMCD0(const char* opt)
   , fPDGnotMCD0(NULL)
   , fResultMC(0)
   , fOriginMother(0)
-  , fUseKine(kFALSE)
+  , fUseKine(kFALSE)  
+  , fD0PropertiesKine(NULL)
 {
   // constructor
   // 
   // 
   // 
-  // 
+  // TODO: Could implement ParseArgument if need more arguments for MC
+  TString strOption(opt);
+  AliInfo(strOption.Data());
+  if (strOption.Contains("usekine")) fUseKine=kTRUE;
 
   // TODO: argument scan, pass only relevant arguments to tools
   fMCTools.~AliDxHFEToolsMC();
   TString toolopt("pdg=421 mc-last");
+  if(fUseKine) toolopt+=" usekine";  
   new (&fMCTools) AliDxHFEToolsMC(toolopt);
 }
 
 AliDxHFEParticleSelectionMCD0::~AliDxHFEParticleSelectionMCD0()
 {
   // destructor
+  if (fD0PropertiesKine) {
+    delete fD0PropertiesKine;
+    fD0PropertiesKine=NULL;
+  }
+  if(fPDGnotMCD0){
+    delete fPDGnotMCD0;
+    fPDGnotMCD0=NULL;
+  }
+}
+
+int AliDxHFEParticleSelectionMCD0::InitControlObjects()
+{
+  /// init the control objects, can be overloaded by childs which should
+  /// call AliDxHFEParticleSelection::InitControlObjects() explicitly
+  AliInfo("Setting up control objects");
+
+  if(fUseKine) {
+    fD0PropertiesKine=DefineTHnSparse();
+    AddControlObject(fD0PropertiesKine);
+    return AliDxHFEParticleSelection::InitControlObjects();
+  }
+  else{
+    return AliDxHFEParticleSelectionD0::InitControlObjects();
+  }
 }
 
 THnSparse* AliDxHFEParticleSelectionMCD0::DefineTHnSparse()
@@ -90,10 +121,62 @@ THnSparse* AliDxHFEParticleSelectionMCD0::DefineTHnSparse()
   };
 
   // Add Histo displaying pdg of D0 candidates not passing MatchToMC()
+  // TODO: Add it to the TList of D0 main class
   fPDGnotMCD0= new TH1F("fPDGnotMCD0","PDG of track not MC truth D0",1002,-2.5,999.5);
   AddControlObject(fPDGnotMCD0);
 
   return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
+}
+
+int AliDxHFEParticleSelectionMCD0::HistogramParticleProperties(AliVParticle* p, int selectionCode)
+{
+
+  // When looping on kinematical level, need a different HistogramParticleProperties than on reconstructed tracks
+  if(fUseKine){
+    /// histogram particle properties
+    if (!p) return -EINVAL;
+
+    // fill the common histograms
+    AliDxHFEParticleSelection::HistogramParticleProperties(p, selectionCode);
+
+    // no daughters to fill if 0 (= no candidate)
+    if (selectionCode==0){
+      return 0;
+    }
+    AliAODMCParticle* partMC=dynamic_cast<AliAODMCParticle*>(p);
+
+    if(!partMC) {
+      return 0;
+    }
+
+    SetInvMass(partMC->GetCalcMass());
+    AliRDHFCuts *cuts=GetHFCuts();
+    int ptbin=cuts->PtBin(partMC->Pt());
+    SetPtBin(ptbin);
+
+    // Fills only for D0 or both.. 
+    if ((selectionCode==1 || selectionCode==3) && GetFillOnlyD0D0bar()<2) {
+      if(fD0PropertiesKine && ParticleProperties()) {
+	memset(ParticleProperties(), 0, GetDimTHnSparse()*sizeof(ParticleProperties()[0]));
+	FillParticleProperties(p, ParticleProperties(), GetDimTHnSparse());
+	fD0PropertiesKine->Fill(ParticleProperties());
+      }
+    }
+
+    // Fills for D0bar or both
+    if ((selectionCode==1 || selectionCode==2) && (GetFillOnlyD0D0bar()==0 || GetFillOnlyD0D0bar()==2)) {
+      if(fD0PropertiesKine && ParticleProperties()) {
+	memset(ParticleProperties(), 0, GetDimTHnSparse()*sizeof(ParticleProperties()[0]));
+	FillParticleProperties(p, ParticleProperties(), GetDimTHnSparse());
+	fD0PropertiesKine->Fill(ParticleProperties());
+      }
+
+    }
+    return 0;
+  }
+  else {
+    return AliDxHFEParticleSelectionD0::HistogramParticleProperties(p,selectionCode);
+  }
 }
 
 int AliDxHFEParticleSelectionMCD0::FillParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
@@ -128,7 +211,20 @@ int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* 
 
   int iResult=0;
   fOriginMother=-1;
+  if(fUseKine){
+    // Will here loop on all tracks in the stack, and checks whether they are D0s (through CheckMCParticle())
+    if (!fMCTools.IsInitialized() && (iResult=fMCTools.InitMCParticles(pEvent))<0) {
+      return 0; // no meaningful filtering on mc possible
+    }
 
+    Int_t result = fMCTools.CheckMCParticle(p);
+    if(result==1) return 0;
+    fMCTools.FindMotherPDG(p);
+    fOriginMother=fMCTools.GetOriginMother();
+    //TODO: Should also return whether D0 or D0bar... at the moment only care of absolute value of D0
+    return 1;
+  }
+  else{
   // step 1:
   // MC selection
   if (fMCTools.MCFirst() && (iResult=CheckMC(p, pEvent))==0) {
@@ -150,6 +246,9 @@ int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* 
   fResultMC=CheckMC(p, pEvent);
 
   return iResult;
+  }
+
+  return 0;
 }
 
 int AliDxHFEParticleSelectionMCD0::CheckMC(AliVParticle* p, const AliVEvent* pEvent)

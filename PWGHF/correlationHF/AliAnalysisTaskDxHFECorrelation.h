@@ -58,7 +58,6 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   // TODO: Some of them are not in use, as the members are set by parsing arguments.
   // Keep it for now.
   void SetOption(const char* opt) { fOption = opt; }
-  void SetFillOnlyD0D0bar(Int_t flagfill){fFillOnlyD0D0bar=flagfill;}
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
   virtual void SetCutsD0(AliAnalysisCuts* cuts){fCutsD0=cuts;}
   virtual void SetCutsHFE(TList* cuts){fListHFE=cuts;}
@@ -70,7 +69,6 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
 
   /// overloaded from TObject: get option
   virtual Option_t* GetOption() const { return fOption;}
-  Int_t  GetFillOnlyD0D0bar() const {return fFillOnlyD0D0bar;}
   Bool_t GetUseMC() const {return fUseMC;}
 
  protected:
@@ -91,7 +89,6 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   AliDxHFEParticleSelection* fElectrons; //  selection of electrons
   AliAnalysisCuts *fCutsD0;              //  Cuts D0 
   AliAnalysisCuts *fCuts;                // Cuts which holds info for AliHFCorrelator 
-  Int_t     fFillOnlyD0D0bar;            // flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
   Bool_t fUseMC;                         // use MC info
   Bool_t fUseEventMixing;                // Run Event Mixing analysis
   Int_t fSystem;                         // Which system pp/PbPb
@@ -99,8 +96,11 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   TObjArray *fSelectedElectrons;         // Array for selected Electrons
   TList* fListHFE;                       // List containing cut and pid objects for HFE
   Int_t fTriggerParticle;                // Which particle to trigger on 
+  Bool_t fUseKine;                       // To run over MC or reconstructed data
+  TObjArray* fMCArray;                   // Array to hold MCarray
+  TString fCorrelationArguments;         // String argument for correlation
 
-  ClassDef(AliAnalysisTaskDxHFECorrelation, 5);
+  ClassDef(AliAnalysisTaskDxHFECorrelation, 6);
 };
 
 #endif

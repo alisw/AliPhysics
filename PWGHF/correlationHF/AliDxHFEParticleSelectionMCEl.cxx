@@ -48,6 +48,10 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   , fPDGnotMCElectron(NULL)
   , fOriginMother(0)
   , fResultMC(0)
+  , fUseKine(kFALSE)
+  , fMotherPDGs(0)
+  , fUseMCReco(kFALSE)
+  , fSelectionStep(AliDxHFEParticleSelectionEl::kNoCuts)
 {
   // constructor
   // 
@@ -57,9 +61,15 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
 
   fMCTools.~AliDxHFEToolsMC();
 
+  ParseArguments(opt);
+
+  // This is also checked in AddTasks, but just for safety! 
+  if(fUseMCReco && fUseKine) AliFatal("CAN'T SET BOTH usekine AND elmcreco AT THE SAME TIME");
+
   // TODO: argument scan, build tool options accordingly
   // e.g. set mc mode first/last, skip control histograms
   TString toolopt("pdg=11 mc-last");
+  if(fUseKine) toolopt+=" usekine";
   new (&fMCTools) AliDxHFEToolsMC(toolopt);
 }
 
@@ -109,14 +119,20 @@ int AliDxHFEParticleSelectionMCEl::Init()
   //
   // init function
   // 
+
+  // Particles considered HFE background. can be expanded
+  fMotherPDGs.push_back(AliDxHFEToolsMC::kPDGpi0); 
+  fMotherPDGs.push_back(AliDxHFEToolsMC::kPDGeta);
+  fMotherPDGs.push_back(AliDxHFEToolsMC::kPDGgamma);
+  fMotherPDGs.push_back(AliDxHFEToolsMC::kPDGJpsi);
+
   int iResult=0;
   iResult=AliDxHFEParticleSelectionEl::Init();
   if (iResult<0) return iResult;
 
   // Histo containing PDG of track which was not MC truth electron
-  fPDGnotMCElectron= new TH1F("fPDGnotMCElectron","PDG of track not MC truth electron",AliDxHFEToolsMC::kNofPDGLabels,-0.5,AliDxHFEToolsMC::kNofPDGLabels-0.5);
-  for (int iLabel=0; iLabel<AliDxHFEToolsMC::kNofPDGLabels; iLabel++)
-    fPDGnotMCElectron->GetXaxis()->SetBinLabel(iLabel+1, fgkPDGBinLabels[iLabel]);
+  // TODO: Add to list in baseclass
+  fPDGnotMCElectron=CreateControlHistogram("fPDGnotMCElectron","PDG of track not MC truth electron",AliDxHFEToolsMC::kNofPDGLabels,fgkPDGBinLabels);  
   AddControlObject(fPDGnotMCElectron);
   return 0;
 }
@@ -134,9 +150,9 @@ THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
 
   //     		       0    1      2     3     
   // 	 	               Pt   Phi   Eta   mother 
-  int    thnBins[thnSize] = { 1000,  200, 500,    14  };
+  int    thnBins[thnSize] = { 1000,  200, 500,    15  };
   double thnMin [thnSize] = {    0,    0, -1.,  -1.5  };
-  double thnMax [thnSize] = {  100, 2*Pi,  1.,  12.5  };
+  double thnMax [thnSize] = {  100, 2*Pi,  1.,  13.5  };
   const char* thnNames[thnSize]={
     "Pt",
     "Phi",
@@ -179,6 +195,9 @@ int AliDxHFEParticleSelectionMCEl::IsSelected(AliVParticle* p, const AliVEvent* 
   if (!p || !pEvent){
     return -EINVAL;
   }
+  fOriginMother=-1;
+
+  if(!fUseKine && !fUseMCReco){
   // step 1:
   // optional MC selection before the particle selection
   if (fMCTools.MCFirst() && (iResult=CheckMC(p, pEvent))==0) {
@@ -191,15 +210,31 @@ int AliDxHFEParticleSelectionMCEl::IsSelected(AliVParticle* p, const AliVEvent* 
   iResult=AliDxHFEParticleSelectionEl::IsSelected(p, pEvent);
   if (fMCTools.MCFirst() || iResult==0) return iResult;
 
+
+  }
+
   // step 2, only executed if MC check is last
   // optional MC selection after the particle selection
   // result stored to be filled into THnSparse
   // TODO: strictly speaken the particles should be rejected
   // if not mc selected, however skip this for the moment, because of
   // the logic outside
+  // This line will run always when running directly over the stack or over MC reconstructed tracks
+  // For MC reconstructed tracks, should consider adding more constrictions on the tracks,
+  // maybe do the track selection first (which means could call AliDxHFEParticleSelectionEl::IsSelected()
+  // and don't do PID
+  
+  if(fUseMCReco && ( fSelectionStep > AliDxHFEParticleSelectionEl::kNoCuts )){
+    iResult=AliDxHFEParticleSelectionEl::IsSelected(p, pEvent);
+    if(iResult ==0) return iResult;
+  }
   fResultMC=CheckMC(p, pEvent);
+  
+  if(fUseKine || fUseMCReco)
+    return fResultMC;
 
   return iResult;
+   
 }
 
 int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEvent)
@@ -208,16 +243,28 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
   if (!p || !pEvent){
     return -EINVAL;
   }
-  fOriginMother=-1;
   int iResult=0;
 
   if (!fMCTools.IsInitialized() && (iResult=fMCTools.InitMCParticles(pEvent))<0) {
     // TODO: message? but has to be filtered in order to avoid message flood
     return 0; // no meaningful filtering on mc possible
   }
- 
+
+  if(fUseKine){
+    // If run on kinematical level, check if particle is electron (only ones who are relevant) 
+    // and if pass IsPhysicalPrimary()
+    Int_t test = fMCTools.CheckMCParticle(p);
+    if(test==1) return 0;
+    // Add additional contraints on the electrons? 
+    // remove delta e? also remove E<300MeV?
+    // Should also mark dalitz decay and gamma conversion..
+    AliAODMCParticle *mcp=dynamic_cast<AliAODMCParticle*>(p);
+    if(!mcp->IsPhysicalPrimary()) return 0; 
+
+  }
+
   int pdgParticle=-1;
-  if (fMCTools.RejectByPDG(p,false, &pdgParticle)) {
+  if (!fUseKine && fMCTools.RejectByPDG(p,false, &pdgParticle)) {
     // rejected by pdg
     // TODO: Move this to fMCTools???? Can this be part of the statistics in the MC class?
     fPDGnotMCElectron->Fill(fMCTools.MapPDGLabel(pdgParticle));
@@ -225,23 +272,15 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
   }
 
   int pdgMother=0;
+  // Find PDG of first mother
   pdgMother=fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetFirstMother);
 
-  // Particles considered HFE background. can be expanded
-  // Should be created only once 
-  // TODO: that needs to be configured once to avoid performance penalty
-  vector<int> motherPDGs;
-  motherPDGs.push_back(AliDxHFEToolsMC::kPDGpi0); 
-  motherPDGs.push_back(AliDxHFEToolsMC::kPDGeta);
-  motherPDGs.push_back(AliDxHFEToolsMC::kPDGgamma);
-  motherPDGs.push_back(AliDxHFEToolsMC::kPDGJpsi);
+  // Check if first mother is counted as background
+  Bool_t isNotBackground=fMCTools.RejectByPDG(pdgMother,fMotherPDGs);
 
-  if(fMCTools.RejectByPDG(pdgMother,motherPDGs)){
-    pdgMother=fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetOriginMother);
-    fOriginMother=fMCTools.GetOriginMother();
-  }
-  else{
-    //TODO: Could this be done in a more elegant way?
+  if(!isNotBackground){
+    // Set fOriginMother if mother is counted as background
+    // TODO: Could this be done in a more elegant way?
     switch(pdgMother){
     case(AliDxHFEToolsMC::kPDGpi0): fOriginMother=AliDxHFEToolsMC::kNrOrginMother; break;
     case(AliDxHFEToolsMC::kPDGeta): fOriginMother=AliDxHFEToolsMC::kNrOrginMother+1; break;
@@ -249,14 +288,22 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     case(AliDxHFEToolsMC::kPDGJpsi): fOriginMother=AliDxHFEToolsMC::kNrOrginMother+3;break;
     }
   }
+  else{
+    // If loop over Stack, also checks if First mother is a HF meson
+    Bool_t isHFmeson =fMCTools.TestMotherHFMeson(TMath::Abs(pdgMother));
 
-  /*if (fMCTools.RejectByMotherPDG(p)) {
-    // rejected by pdg of original mother
-    // H: want pdg of origin process to be stored in THnSparse
-    // Not sure if this is needed... Need to check, using AliDxHFEToolsMC, who
-    // first mother are, and also what origin is. Use this info here. 
-    return 0;
-    }*/
+    if(isHFmeson){
+      // If first mother is a HF meson, loops back to find 
+      // original quark + if there was a gluon. Result is 
+      // stored in fOriginMother
+      pdgMother=fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetOriginMother);
+      fOriginMother=fMCTools.GetOriginMother();
+    }
+    else{
+      fOriginMother=AliDxHFEToolsMC::kNrOrginMother+4;
+    }
+
+  }
 
   return 1;
 }
@@ -274,4 +321,41 @@ AliVParticle *AliDxHFEParticleSelectionMCEl::CreateParticle(AliVParticle* track)
 
   return part;
 
+}
+
+int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
+{
+  // parse arguments and set internal flags
+  TString strArguments(arguments);
+  auto_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
+  if (!tokens.get()) return 0;
+
+  AliInfo(strArguments);
+  TIter next(tokens.get());
+  TObject* token;
+  while ((token=next())) {
+    TString argument=token->GetName();
+    if (argument.BeginsWith("usekine") ){
+      fUseKine=kTRUE;
+      continue;
+    }
+    if (argument.BeginsWith("elmcreco")){
+      fUseMCReco=kTRUE;
+      if(argument.BeginsWith("elmcreco=")){
+	argument.ReplaceAll("elmcreco=", "");
+	if(argument.CompareTo("aftertrackcuts")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsTPC;
+	if(argument.CompareTo("aftertofpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOF;
+	if(argument.CompareTo("afterfullpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOFTPC;
+
+	AliDxHFEParticleSelectionEl::SetFinalCutStep(fSelectionStep);
+    
+      }
+      continue;
+    }
+    // forwarding of single argument works, unless key-option pairs separated
+    // by blanks are introduced
+    AliDxHFEParticleSelection::ParseArguments(argument);
+  }
+  
+  return 0;
 }

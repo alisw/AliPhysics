@@ -49,6 +49,7 @@ AliDxHFEToolsMC::AliDxHFEToolsMC(const char* option)
   , fOriginMother(kOriginNone)
   , fMClabel(-1)
   , fNrMCParticles(-1)
+  , fUseKine(kFALSE)
 {
   // constructor
   // 
@@ -134,6 +135,11 @@ int AliDxHFEToolsMC::Init(const char* option)
       key="mc-last";
       if (arg.BeginsWith(key)) {
 	fSequence=kMCLast;	
+      }
+      key="usekine";
+      if(arg.BeginsWith(key)) {
+	printf("AliDxHFEToolsMC::Init()  Using Kinematical\n");
+	fUseKine=kTRUE;
       }
     }
   }
@@ -246,7 +252,6 @@ int AliDxHFEToolsMC::FindMotherPDG(AliVParticle* p, bool bReturnFirstMother)
   return motherpdg;
 }
 
-
 TH1* AliDxHFEToolsMC::CreateControlHistogram(const char* name,
 					     const char* title,
 					     int nBins,
@@ -326,7 +331,11 @@ int AliDxHFEToolsMC::FindPdgOriginMother(AliVParticle* p, bool bReturnFirstMothe
 
   // try different classes, unfortunately there is no common base class
   AliAODMCParticle* aodmcp=0;
-  aodmcp=dynamic_cast<AliAODMCParticle*>(fMCParticles->At(MClabel));
+  if(fUseKine)
+    aodmcp=dynamic_cast<AliAODMCParticle*>(p);
+  else
+    aodmcp=dynamic_cast<AliAODMCParticle*>(fMCParticles->At(MClabel));
+
   if (!aodmcp) {
     return kPDGnone;
   }
@@ -421,6 +430,26 @@ Bool_t AliDxHFEToolsMC::TestIfHFquark(int origin)
   return test; 
 }
 
+Bool_t AliDxHFEToolsMC::TestMotherHFMeson(int pdg)
+{
+
+  // Checking if the pdg corresponds to a HF meson (D or B meson)
+
+  Bool_t isD = kFALSE;
+  Bool_t isB = kFALSE;
+  if((pdg>=400 && pdg <500) || (pdg>=4000 && pdg<5000 )) 
+    isD = kTRUE;
+  if((pdg>=500 && pdg <600) || (pdg>=5000 && pdg<6000 )) 
+    {isD = kFALSE; isB = kTRUE;}
+
+  if(isD || isB) return kTRUE;
+  else return kFALSE;
+
+}
+
+
+
+
 void AliDxHFEToolsMC::Clear(const char* /*option*/)
 {
   // clear internal memory
@@ -428,3 +457,20 @@ void AliDxHFEToolsMC::Clear(const char* /*option*/)
   fNrMCParticles=-1;
 }
 
+
+int AliDxHFEToolsMC::CheckMCParticle(AliVParticle* p){
+
+  // Checks if MC particle is desired particle
+
+  AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(p);
+  if (!mcPart) {
+    AliInfoClass("MC Particle not found in tree, skipping"); 
+    return -1;
+  }
+			
+  Int_t PDG =TMath::Abs(mcPart->PdgCode()); 
+  int bReject=RejectByPDG(PDG, fPDGs);
+
+  return bReject;
+
+}

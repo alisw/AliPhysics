@@ -136,7 +136,17 @@ class AliDxHFEParticleSelection : public TNamed {
   TH1* CreateControlHistogram(const char* name,
 			      const char* title,
 			      int nBins,
-			      const char** binLabels) const;
+			      double min,
+			      double max,
+			      const char** binLabels=NULL) const;
+
+  /// create control histogram
+  TH1* CreateControlHistogram(const char* name,
+			      const char* title,
+			      int nBins,
+			      const char** binLabels=NULL) const {
+    return CreateControlHistogram(name, title, nBins, -0.5, nBins-0.5, binLabels);
+  }
   
   /// create control THnSparse
   THnSparse* CreateControlTHnSparse(const char* name,
@@ -149,6 +159,8 @@ class AliDxHFEParticleSelection : public TNamed {
   // define and create the THnSparse object
   // initializes also the dimension to be used further
   virtual THnSparse* DefineTHnSparse();
+  
+  Int_t GetSystem() const {return fSystem;}
 
  protected:
   /// add control object to list, the base class becomes owner of the object
@@ -165,6 +177,8 @@ class AliDxHFEParticleSelection : public TNamed {
   }
 
   inline Double_t* ParticleProperties() const {return fParticleProperties;}
+
+  virtual int ParseArguments(const char* arguments);
 
  private:
   /// copy contructor prohibited
@@ -183,11 +197,12 @@ class AliDxHFEParticleSelection : public TNamed {
   int fVerbosity;      //! verbosity
   int fDimThn;         //  dim of thnsparse
   Double_t* fParticleProperties;  //! filling array for THnSparse
+  Int_t     fSystem;            // whether running on pp(0,default), PbPb(1) or pPb(2, not used yet) 
 
   static const char* fgkEventControlBinNames[]; //! bin labels for event control histogram
   static const char* fgkTrackControlBinNames[]; //! bin labels for track control histogram
 
-  ClassDef(AliDxHFEParticleSelection, 3);
+  ClassDef(AliDxHFEParticleSelection, 4);
 
 };
 

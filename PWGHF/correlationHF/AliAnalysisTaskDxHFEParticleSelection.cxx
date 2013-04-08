@@ -41,6 +41,7 @@
 #include "TChain.h"
 #include "TSystem.h"
 #include "TObjArray.h"
+#include "AliAODMCParticle.h"
 #include "TFile.h"
 #include "TList.h"
 #include "TObjArray.h"
@@ -61,8 +62,11 @@ AliAnalysisTaskDxHFEParticleSelection::AliAnalysisTaskDxHFEParticleSelection(con
   , fUseMC(kFALSE)
   , fFillOnlyD0D0bar(0)
   , fSelectedTracks(NULL)
+  , fMCArray(NULL)
   , fParticleType(kD0)
   , fSystem(0)
+  , fSelectionParticleOptions()
+  , fUseKine(kFALSE)
 {
   // constructor
   //
@@ -103,6 +107,8 @@ AliAnalysisTaskDxHFEParticleSelection::~AliAnalysisTaskDxHFEParticleSelection()
     delete fSelectedTracks;
     fSelectedTracks=NULL;
   }
+  if(fMCArray) delete fMCArray;
+  fMCArray=NULL;
   // external object, do not delete
   fCutsD0=NULL;
 
@@ -125,20 +131,13 @@ void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
   // this class
   fCutList->SetOwner(); // NOt sure if needed
 
-
   // setting up for D0s
   if(fParticleType==kD0){
 
-    TString selectionD0Options;
-    switch (fFillOnlyD0D0bar) {
-    case 1: selectionD0Options+="FillOnlyD0 "; break;
-    case 2: selectionD0Options+="FillOnlyD0bar "; break;
-    default: selectionD0Options+="FillD0D0bar ";
-    }
-
-    if(fUseMC) fSelector=new AliDxHFEParticleSelectionMCD0(selectionD0Options);
-    else fSelector=new AliDxHFEParticleSelectionD0(selectionD0Options);
+    if(fUseMC) fSelector=new AliDxHFEParticleSelectionMCD0(fOption);
+    else fSelector=new AliDxHFEParticleSelectionD0(fOption);
     fSelector->SetCuts(fCutList,AliDxHFEParticleSelectionD0::kCutList);
+    iResult=fSelector->Init();
 
     TObject *obj=NULL;
     TIter iter(fCutList);
@@ -153,10 +152,11 @@ void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
 
   // Setting up for electrons
   if(fParticleType==kElectron){
-    if(fUseMC) fSelector=new AliDxHFEParticleSelectionMCEl;
-    else fSelector=new AliDxHFEParticleSelectionEl;
+    if(fUseMC) fSelector=new AliDxHFEParticleSelectionMCEl(fOption);
+    else fSelector=new AliDxHFEParticleSelectionEl(fOption);
     fSelector->SetCuts(fCutList, AliDxHFEParticleSelectionEl::kCutList);
-    
+    iResult=fSelector->Init();
+
     // If running on electrons, for now use RDHFCuts for event selection. 
     // Set up default cut object:
     AliRDHFCutsD0toKpi* cuts=new AliRDHFCutsD0toKpi();
@@ -164,7 +164,6 @@ void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
     fCutsD0=cuts;
   }
 
-  iResult=fSelector->Init();
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fElectrons failed with error %d", iResult));
   }
@@ -243,6 +242,16 @@ void AliAnalysisTaskDxHFEParticleSelection::UserExec(Option_t* /*option*/)
 
   fSelector->HistogramEventProperties(AliDxHFEParticleSelection::kEventsSel);
 
+  if(fUseMC && fUseKine){
+    fMCArray = dynamic_cast<TObjArray*>(pEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(!fMCArray){
+      AliError("Array of MC particles not found");
+      return;
+    }
+  }
+
+  if (fSelectedTracks) delete fSelectedTracks;
+
   if(fParticleType==kElectron){
     // Gets the PID response from the analysis manager
     AliPIDResponse *pidResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetPIDResponse();
@@ -270,14 +279,13 @@ void AliAnalysisTaskDxHFEParticleSelection::UserExec(Option_t* /*option*/)
     // Also sends the pidresponse to the particle selection class for electron
     fSelector->SetPIDResponse(pidResponse); 
 
+    if(fUseKine) fSelectedTracks=(fSelector->Select(fMCArray, pEvent));
+    else fSelectedTracks=(fSelector->Select(pEvent));
   }
-
-  if (fSelectedTracks) delete fSelectedTracks;
-
-  if(fParticleType==kElectron)
-    fSelectedTracks=fSelector->Select(pEvent);
-  else
-    fSelectedTracks=fSelector->Select(inputArray,pEvent);
+  else{
+    if(fUseKine)  fSelectedTracks=(fSelector->Select(fMCArray,pEvent));
+    else fSelectedTracks=(fSelector->Select(inputArray,pEvent));
+  }
 
   Int_t nSelected = fSelectedTracks->GetEntriesFast();
   if(nSelected>0)
@@ -304,8 +312,9 @@ int AliAnalysisTaskDxHFEParticleSelection::ParseArguments(const char* arguments)
     }
     if (argument.BeginsWith("system=")) {
       argument.ReplaceAll("system=", "");
-      if (argument.CompareTo("pp")==0)fSystem=0;
-      else if (argument.CompareTo("Pb-Pb")==0) fSystem=1;
+      if (argument.CompareTo("pp")==0) {fSystem=0; }
+      else if (argument.CompareTo("Pb-Pb")==0){ fSystem=1;}
+      else if (argument.CompareTo("p-Pb")==0){ fSystem=2;}
       else {
 	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
 	// TODO: check what makes sense
@@ -313,11 +322,16 @@ int AliAnalysisTaskDxHFEParticleSelection::ParseArguments(const char* arguments)
       }
       continue;
     }
+    if (argument.BeginsWith("usekine") || argument.BeginsWith("kine")) {
+      fUseKine=true;
+      AliInfo("Running on MC stack");
+      continue;
+    }
     if (argument.BeginsWith("fillD0scheme=")){
       argument.ReplaceAll("fillD0scheme=", "");
-      if (argument.CompareTo("both")==0){ fFillOnlyD0D0bar=0; AliInfo("Filling both D0 and D0bar ");}
-      else if (argument.CompareTo("D0")==0){ fFillOnlyD0D0bar=1; AliInfo("Filling only D0 ");}
-      else if (argument.CompareTo("D0bar")==0){ fFillOnlyD0D0bar=2; AliInfo("Filling only D0bar"); }
+      if (argument.CompareTo("both")==0){ fFillOnlyD0D0bar=0;}
+      else if (argument.CompareTo("D0")==0){ fFillOnlyD0D0bar=1;}
+      else if (argument.CompareTo("D0bar")==0){ fFillOnlyD0D0bar=2;}
       else {
 	AliWarning(Form("can not set D0 filling scheme, unknown parameter '%s'", argument.Data()));
 	fFillOnlyD0D0bar=0;
@@ -333,7 +347,6 @@ int AliAnalysisTaskDxHFEParticleSelection::ParseArguments(const char* arguments)
 	fParticleType=kD0;
       }
       continue;
-
     }
     AliWarning(Form("unknown argument '%s'", argument.Data()));
       
