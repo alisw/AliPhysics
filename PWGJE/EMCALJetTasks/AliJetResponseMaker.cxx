@@ -37,6 +37,8 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fCalo2Name(""),
   fJets2Name(""),
   fRho2Name(""),
+  fJet2Radius(0.4),
+  fJet2AreaCut(-1),
   fPtBiasJet2Track(0),
   fPtBiasJet2Clus(0),
   fAreCollections1MC(kFALSE),  
@@ -53,6 +55,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fIsPythia(kTRUE),
   fMCLabelShift(0),
   fUseCellsToMatch(kFALSE),
+  fMinJetMCPt(1),
   fPythiaHeader(0),
   fPtHardBin(0),
   fNTrials(0),
@@ -144,6 +147,8 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fCalo2Name(""),
   fJets2Name("MCJets"),
   fRho2Name(""),
+  fJet2Radius(0.4),
+  fJet2AreaCut(-1),
   fPtBiasJet2Track(0),
   fPtBiasJet2Clus(0),
   fAreCollections1MC(kFALSE),  
@@ -160,6 +165,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fIsPythia(kTRUE),
   fMCLabelShift(0),
   fUseCellsToMatch(kFALSE),
+  fMinJetMCPt(1),
   fPythiaHeader(0),
   fPtHardBin(0),
   fNTrials(0),
@@ -925,6 +931,14 @@ void AliJetResponseMaker::ExecOnce()
     }
   }
 
+  if (fPercAreaCut >= 0) {
+    if (fJet2AreaCut >= 0)
+      AliInfo(Form("%s: jet 2 area cut will be calculated as a percentage of the average area, given value will be overwritten", GetName()));
+    fJet2AreaCut = fPercAreaCut * fJet2Radius * fJet2Radius * TMath::Pi();
+  }
+  if (fJet2AreaCut < 0)
+    fJet2AreaCut = 0;
+
   if (fJet2MinEta == -999)
     fJet2MinEta = fJetMinEta - fJetRadius;
   if (fJet2MaxEta == -999)
@@ -1025,9 +1039,12 @@ Bool_t AliJetResponseMaker::DoJetMatching()
       continue;
 
     if (jet1->ClosestJet() && jet1->ClosestJet()->ClosestJet() == jet1 && 
-        jet1->ClosestJetDistance() < fMatchingPar1 && jet1->ClosestJet()->ClosestJetDistance() < fMatchingPar2) {    // Matched jet found
+	jet1->ClosestJetDistance() < fMatchingPar1 && jet1->ClosestJet()->ClosestJetDistance() < fMatchingPar2) {    // Matched jet found
       jet1->SetMatchedToClosest(fMatching);
       jet1->ClosestJet()->SetMatchedToClosest(fMatching);
+      AliDebug(2,Form("Found matching: jet1 pt = %f, eta = %f, phi = %f, jet2 pt = %f, eta = %f, phi = %f", 
+		      jet1->Pt(), jet1->Eta(), jet1->Phi(), 
+		      jet1->MatchedJet()->Pt(), jet1->MatchedJet()->Eta(), jet1->MatchedJet()->Phi()));
     }
   }
 
@@ -1087,7 +1104,7 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
     if (!AcceptJet(jet1))
       continue;
 
-    if (jet1->MCPt() < 1)
+    if (jet1->MCPt() < fMinJetMCPt)
       continue;
 
     if (order) {
@@ -1107,7 +1124,6 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
 	AliError(Form("Could not receive jet %d", j));
 	continue;
       }
-      
       if (!AcceptJet(jet2))
 	continue;
 

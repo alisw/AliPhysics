@@ -65,15 +65,15 @@ AliJetEmbeddingFromAODTask* AddTaskJetEmbeddingFromAOD(
   jetEmb->SetIncludeNoITS(includeNoITS);
   TString runPeriod(runperiod);
   runPeriod.ToLower();
-  if (runPeriod == "lhc11h") {
-    jetEmb->SetAODfilterBits(256,512); // hybrid tracks for LHC11h
+  if (runPeriod == "lhc11h" || runPeriod == "lhc12a15e") {
+    jetEmb->SetAODfilterBits(256,512); // hybrid tracks for LHC11h and LHC12a15e
   }
-  else if (runPeriod == "lhc11a" || runPeriod == "lhc12a15a" || runPeriod == "lhc12a15e") {
-    jetEmb->SetAODfilterBits(256,16); // hybrid tracks for LHC11a, LHC12a15a and LHC12a15e
+  else if (runPeriod == "lhc11a" || runPeriod == "lhc12a15a") {
+    jetEmb->SetAODfilterBits(256,16); // hybrid tracks for LHC11a and LHC12a15a
   }
   else {
-    if (runPeriod.IsNull())
-      ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.");
+    if (!runPeriod.IsNull())
+      ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
   }
 
   //-------------------------------------------------------

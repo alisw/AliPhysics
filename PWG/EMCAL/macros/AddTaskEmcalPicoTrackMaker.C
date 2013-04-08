@@ -66,8 +66,8 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
     eTask->SetAODfilterBits(arg1.Atoi(),arg2.Atoi());
     delete arr;
   } else {
-    if (runPeriod.IsNull())
-      ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.");
+    if (!runPeriod.IsNull())
+      ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
   }
   eTask->SetESDtrackCuts(cuts);
 

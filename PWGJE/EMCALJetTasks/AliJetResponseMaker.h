@@ -34,6 +34,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetClus2Name(const char *n)                                     { fCalo2Name         = n         ; }
   void                        SetJet2EtaLimits(Float_t min=-999, Float_t max=-999)            { fJet2MinEta = min, fJet2MaxEta = max ; }
   void                        SetJet2PhiLimits(Float_t min=-999, Float_t max=-999)            { fJet2MinPhi = min, fJet2MaxPhi = max ; }
+  void                        SetJet2Radius(Float_t r)                                        { fJet2Radius        = r         ; }
+  void                        SetJet2AreaCut(Float_t cut)                                     { fJet2AreaCut       = cut       ; }
   void                        SetRho2Name(const char *n)                                      { fRho2Name          = n         ; }
   void                        SetPtBiasJet2Clus(Float_t b)                                    { fPtBiasJet2Clus    = b         ; }
   void                        SetPtBiasJet2Track(Float_t b)                                   { fPtBiasJet2Track   = b         ; }
@@ -65,6 +67,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TString                     fCalo2Name;                     // name of second cluster collection
   TString                     fJets2Name;                     // name of second jet collection
   TString                     fRho2Name;                      // name of second jet collection
+  Float_t                     fJet2Radius;                    // jet radius of second jet collection
+  Float_t                     fJet2AreaCut;                   // cut on jet area (second jet collection)
   Float_t                     fPtBiasJet2Track;               // select jets 2 with a minimum pt track
   Float_t                     fPtBiasJet2Clus;                // select jets 2 with a minimum pt cluster
   Bool_t                      fAreCollections1MC;             // collections 1 MC
@@ -81,6 +85,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Bool_t                      fIsPythia;                      // trigger, if it is a PYTHIA production
   Int_t                       fMCLabelShift;                  // if MC label > fMCLabelShift, MC label -= fMCLabelShift
   Bool_t                      fUseCellsToMatch;               // use cells instead of clusters to match jets (slower but sometimes needed)
+  Double_t                    fMinJetMCPt;                    // minimum jet MC pt
 
   AliGenPythiaEventHeader    *fPythiaHeader;                  //!event Pythia header
   Int_t                       fPtHardBin;                     //!event pt hard bin
@@ -165,11 +170,10 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistDeltaMCPtvsDeltaArea;               //!jet 1 MC pt - jet2 pt vs delta area
   TH2                        *fHistJet1MCPtvsJet2Pt;                   //!correlation jet 1 MC pt vs jet 2 pt
 
-
  private:
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 15) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 16) // Jet response matrix producing task
 };
 #endif
