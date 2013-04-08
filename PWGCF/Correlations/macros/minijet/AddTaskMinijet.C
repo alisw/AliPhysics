@@ -17,7 +17,8 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
 				       Bool_t  corrStrange = true,
 				       Bool_t  threePart   = false,
 				       Bool_t  rejectChunk = false,
-				       Int_t   nTPC        = 5)
+				       Int_t   nTPC        = 5,
+				       const char *foldername = "MiniJets")
 {
   
   // Get the pointer to the existing analysis manager via the static access method
@@ -96,7 +97,7 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
   AliAnalysisDataContainer *outputHM = 0x0;
 
   if(runNumber>0){ 
-    outputMB  =  mgr->CreateContainer("MiniJets",TList::Class(),
+    outputMB  =  mgr->CreateContainer(foldername,TList::Class(),
 				      AliAnalysisManager::kOutputContainer, 
 				      Form("run%d.root",runNumber));
     if(useHighMult){
@@ -106,7 +107,7 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
     }
   }
   else{
-    outputMB  = mgr->CreateContainer("MiniJets",TList::Class(),
+    outputMB  = mgr->CreateContainer(foldername,TList::Class(),
 				     AliAnalysisManager::kOutputContainer, 
 				     Form("%s:PWG4_MiniJets",
 					  AliAnalysisManager::GetCommonFileName()));
