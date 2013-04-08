@@ -35,6 +35,9 @@
 #include "THnSparse.h"
 #include "TCanvas.h"
 #include "TArrayI.h" 
+#include "TProfile.h"
+#include "TFile.h"
+#include "TKey.h"
 
 #include "AliLog.h"
 
@@ -49,6 +52,7 @@
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliInputEventHandler.h"
 #include "AliAODJetEventBackground.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
 #include "AliAODEvent.h"
@@ -122,7 +126,14 @@ fIsMC(0),
 faGenIndex(0),
 faRecIndex(0),
 fkAcceptance(2.0*TMath::Pi()*1.8),
-fkDeltaPhiCut(TMath::Pi()-0.6)
+fkDeltaPhiCut(TMath::Pi()-0.6),
+fh1Xsec(0x0),
+fh1Trials(0x0),
+fh1AvgTrials(0x0),
+fh1PtHard(0x0),
+fh1PtHardNoW(0x0),  
+fh1PtHardTrials(0x0),
+fAvgTrials(1)
 {
    // default Constructor
 }
@@ -186,7 +197,14 @@ fIsMC(0),
 faGenIndex(0),
 faRecIndex(0),
 fkAcceptance(2.0*TMath::Pi()*1.8),
-fkDeltaPhiCut(TMath::Pi()-0.6)
+fkDeltaPhiCut(TMath::Pi()-0.6),
+fh1Xsec(0x0),
+fh1Trials(0x0), 
+fh1AvgTrials(0x0),
+fh1PtHard(0x0),
+fh1PtHardNoW(0x0),  
+fh1PtHardTrials(0x0),
+fAvgTrials(1)
 {
 // Constructor
 
@@ -251,7 +269,14 @@ fIsMC(a.fIsMC),
 faGenIndex(a.faGenIndex),
 faRecIndex(a.faRecIndex),
 fkAcceptance(a.fkAcceptance),
-fkDeltaPhiCut(a.fkDeltaPhiCut)
+fkDeltaPhiCut(a.fkDeltaPhiCut),
+fh1Xsec(a.fh1Xsec),
+fh1Trials(a.fh1Trials),
+fh1AvgTrials(a.fh1AvgTrials),
+fh1PtHard(a.fh1PtHard),
+fh1PtHardNoW(a.fh1PtHardNoW),  
+fh1PtHardTrials(a.fh1PtHardTrials),
+fAvgTrials(a.fAvgTrials)
 {
    //Copy Constructor
 }
@@ -275,6 +300,61 @@ AliAnalysisTaskJetCorePP::~AliAnalysisTaskJetCorePP()
 
 //--------------------------------------------------------------
 
+
+Bool_t AliAnalysisTaskJetCorePP::Notify()
+{
+   //Implemented Notify() to read the cross sections
+   //and number of trials from pyxsec.root
+   //inspired by AliAnalysisTaskJetSpectrum2::Notify()
+   if(!fIsMC) return kFALSE; 
+
+   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+   if(!fESD){
+      if(fDebug>1) AliError("ESD not available");
+      fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
+   } 
+ 
+   fAODOut = dynamic_cast<AliAODEvent*>(AODEvent());
+
+
+   if(fNonStdFile.Length()!=0){
+      // case that we have an AOD extension we can fetch the jets from the extended output
+      AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+      fAODExtension = aodH ? aodH->GetExtension(fNonStdFile.Data()) : 0;
+      if(!fAODExtension){
+         if(fDebug>1) Printf("AODExtension found for %s",fNonStdFile.Data());
+      } 
+   }
+ 
+   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+   Float_t xsection = 0;
+   Float_t ftrials  = 1;
+
+   fAvgTrials = 1;
+   if(tree){
+      TFile *curfile = tree->GetCurrentFile();
+      if(!curfile) {
+         Error("Notify","No current file");
+         return kFALSE;
+      }
+      if(!fh1Xsec || !fh1Trials){
+         Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+         return kFALSE;
+      }
+      AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,ftrials);
+      fh1Xsec->Fill("<#sigma>",xsection);
+      // construct a poor man average trials
+      Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
+      if(ftrials>=nEntries && nEntries>0.) fAvgTrials = ftrials/nEntries;
+      fh1Trials->Fill("#sum{ntrials}",ftrials);
+   }  
+
+   if(fDebug)Printf("Reading File %s",fInputHandler->GetTree()->GetCurrentFile()->GetName());
+
+   return kTRUE;
+}
+//--------------------------------------------------------------
+
 void AliAnalysisTaskJetCorePP::Init()
 {
    // check for jet branches
@@ -288,7 +368,6 @@ void AliAnalysisTaskJetCorePP::Init()
 
 void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 {
-
 
   // Create histograms
    // Called once
@@ -438,6 +517,34 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
       fhPtTrkSecOrFakeRec->SetTitle("PtTrkSecOrFakeRec");    
       fOutputList->Add(fhPtTrkSecOrFakeRec);
    }
+   //-------------------------------------
+   //     pythia histograms
+   const Int_t nBinPt = 150;
+   Double_t binLimitsPt[nBinPt+1];
+   for(Int_t iPt = 0;iPt <= nBinPt;iPt++){
+      if(iPt == 0){
+         binLimitsPt[iPt] = -50.0;
+      }else{// 1.0
+         binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.;
+      }
+   }
+   
+   fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
+   fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+   fOutputList->Add(fh1Xsec);
+   fh1Trials = new TH1F("fh1Trials","trials root file",1,0,1);
+   fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+   fOutputList->Add(fh1Trials);
+   fh1AvgTrials = new TH1F("fh1AvgTrials","trials root file",1,0,1);
+   fh1AvgTrials->GetXaxis()->SetBinLabel(1,"#sum{avg ntrials}");
+   fOutputList->Add(fh1AvgTrials);
+   fh1PtHard = new TH1F("fh1PtHard","PYTHIA Pt hard;p_{T,hard}",nBinPt,binLimitsPt);
+   fOutputList->Add(fh1PtHard);
+   fh1PtHardNoW = new TH1F("fh1PtHardNoW","PYTHIA Pt hard no weight;p_{T,hard}",nBinPt,binLimitsPt);
+   fOutputList->Add(fh1PtHardNoW);
+   fh1PtHardTrials = new TH1F("fh1PtHardTrials","PYTHIA Pt hard weight with trials;p_{T,hard}",nBinPt,binLimitsPt);
+   fOutputList->Add(fh1PtHardTrials);      
+   
 
    // =========== Switch on Sumw2 for all histos ===========
    for(Int_t i=0; i<fOutputList->GetEntries(); i++){
@@ -460,8 +567,11 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 
 void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
 {
-
    //Event loop
+   Double_t eventW  = 1.0;
+   Double_t ptHard  = 0.0;
+   Double_t nTrials = 1.0; // Trials for MC trigger
+   if(fIsMC) fh1AvgTrials->Fill("#sum{avg ntrials}",fAvgTrials); 
 
    if(TMath::Abs((Float_t) fJetParamR)<0.00001){
       AliError("Cone radius is set to zero.");  
@@ -583,6 +693,11 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    if(fDebug) std::cout<<" ACCEPTED EVENT "<<endl;
   
    fHistEvtSelection->Fill(0); // accepted events 
+
+
+   
+
+
    // ------------------- end event selection --------------------
    
 
@@ -645,7 +760,17 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
          if(!mcEvent){
             PostData(1, fOutputList);
             return;
-         } 
+         }
+         
+         AliGenPythiaEventHeader *pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
+         if(pythiaGenHeader){
+            nTrials = pythiaGenHeader->Trials();
+            ptHard  = pythiaGenHeader->GetPtHard();
+            fh1PtHard->Fill(ptHard,eventW);
+            fh1PtHardNoW->Fill(ptHard,1);
+            fh1PtHardTrials->Fill(ptHard,nTrials);
+         }
+
          for(Int_t it = 0; it < mcEvent->GetNumberOfTracks(); it++){
             if(!mcEvent->IsPhysicalPrimary(it)) continue;
             AliMCParticle* part = (AliMCParticle*) mcEvent->GetTrack(it);
