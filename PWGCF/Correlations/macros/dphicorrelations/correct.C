@@ -2239,6 +2239,19 @@ void MergeList(const char* prefix = "")
   m.Merge();
 }
 
+void Merge2(const char* file1, const char* file2)
+{
+  loadlibs();
+  TFileMerger m(0);
+
+  m.AddFile(file1);
+  m.AddFile(file2);
+  
+  m.SetFastMethod();
+  m.OutputFile("merged.root");
+  m.Merge();
+}
+
 void MergeList2(const char* listFile, const char* dir, Bool_t onlyPrintEvents = kFALSE, const char* targetDir = "PWG4_LeadingTrackUE")
 {
   loadlibs();
@@ -7602,13 +7615,21 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 8.0, 15.0, 20.0 };
     Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
   }
-  else if (1)
+  else if (0)
   {
     //pA
+    maxLeadingPt = 5;
+    maxAssocPt = 6;
+    Float_t leadingPtArr[] = { 0.5, 1.0, 2.0, 3.0,  4.0, 8.0, 15.0, 20.0 };
+    Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 8.0, 10.0, 12.0 };
+  }
+  else if (1)
+  {
+    //pA 2012
     maxLeadingPt = 3;
     maxAssocPt = 4;
     Float_t leadingPtArr[] = { 0.5, 1.0, 2.0, 4.0, 8.0, 15.0, 20.0 };
-    Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
+    Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 4.0, 8.0, 10.0, 12.0 };
   }
   else if (0)
   {
@@ -12595,9 +12616,10 @@ void PlotCorrections(const char* fileName, const char* tag = "")
 /*  c->cd(9);
   h->GetUEHist(2)->GetTrackingContamination()->Draw("COLZ");*/
   
-  proj = h->GetUEHist(2)->GetTrackingEfficiency(1);
+  proj2 = h->GetUEHist(2)->GetTrackingEfficiency(1);
+//   proj2 = h->GetUEHist(2)->GetTrackEfficiency(AliUEHist::kCFStepAnaTopology, (AliUEHist::CFStep) (AliUEHist::kCFStepTrackedOnlyPrim+2), 1);
   new TCanvas;
-  proj->Draw();
+  proj2->Draw();
   
   return;
   
@@ -12607,13 +12629,13 @@ void PlotCorrections(const char* fileName, const char* tag = "")
 //     hist->Draw("COLZ");
 }
 
-void SaveEfficiencyCorrection(const char* fileName, const char* tag = "")
+void SaveEfficiencyCorrection(const char* fileName, const char* tag = "", Bool_t condenseCentrality = kTRUE, Bool_t extrapolateHighpT = kFALSE)
 {
   loadlibs();
   
   AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName, 0, kFALSE, tag);
 
-  Int_t dimensions[] = { 0, 1, 3, 4 };
+  Int_t dimensions[] = { 0, 1, 3, 4 }; // eta, pT, centrality, vertex
   THnBase* generated = h->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(0)->GetGrid()->ProjectionND(4, dimensions);
   THnBase* measured = h->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(2)->GetGrid()->ProjectionND(4, dimensions);
   
@@ -12622,13 +12644,26 @@ void SaveEfficiencyCorrection(const char* fileName, const char* tag = "")
   Printf("%f %f", generated->GetEntries(), measured->GetEntries());
  
   Int_t nBins[] = { generated->GetAxis(0)->GetNbins(), generated->GetAxis(1)->GetNbins(), 1, generated->GetAxis(3)->GetNbins() };
-  Double_t centrAxis[] = { 0, 101 };
+  
+  if (condenseCentrality)
+  {
+    Double_t centrAxis[] = { 0, 101 };
+  }
+  else
+  {
+    Double_t centrAxis[] = { 0, 10, 20, 40, 60, 80, 101 };
+    nBins[2] = 6;
+  }
+  
   generated_new = new THnF("generated_new", "", 4, nBins, 0, 0);
   
-  generated_new->SetBinEdges(0, generated->GetAxis(0)->GetXbins()->GetArray());
-  generated_new->SetBinEdges(1, generated->GetAxis(1)->GetXbins()->GetArray());
-  generated_new->SetBinEdges(2, centrAxis);
-  generated_new->SetBinEdges(3, generated->GetAxis(3)->GetXbins()->GetArray());
+  generated_new->SetBinEdges(0, generated->GetAxis(0)->GetXbins()->GetArray()); //eta
+  generated_new->SetBinEdges(1, generated->GetAxis(1)->GetXbins()->GetArray()); //pT
+  generated_new->SetBinEdges(2, centrAxis); //centrality
+  generated_new->SetBinEdges(3, generated->GetAxis(3)->GetXbins()->GetArray()); //vertex
+  
+  for (Int_t i=0; i<4; i++)
+    generated_new->GetAxis(i)->SetTitle(generated->GetAxis(i)->GetTitle());
   
   measured_new = (THnF*) generated_new->Clone("measured_new");
   effCorr = (THnF*) generated_new->Clone("correction");
@@ -12655,15 +12690,78 @@ void SaveEfficiencyCorrection(const char* fileName, const char* tag = "")
 	  nBins[2] = bin2;
 	  nBins[3] = bin3;
 	  
-	  //Printf("%d %d %d %d %.2f %.2f %.2f %.2f is %f", bin0, bin1, bin2, bin3, effCorr->GetAxis(0)->GetBinCenter(bin0), effCorr->GetAxis(1)->GetBinCenter(bin1), effCorr->GetAxis(2)->GetBinCenter(bin2), effCorr->GetAxis(3)->GetBinCenter(bin3), effCorr->GetBinContent(nBins));
+// 	  Printf("%d %d %d %d %.2f %.2f %.2f %.2f is %f", bin0, bin1, bin2, bin3, effCorr->GetAxis(0)->GetBinCenter(bin0), effCorr->GetAxis(1)->GetBinCenter(bin1), effCorr->GetAxis(2)->GetBinCenter(bin2), effCorr->GetAxis(3)->GetBinCenter(bin3), effCorr->GetBinContent(nBins));
 
-	  if (effCorr->GetBinContent(nBins) > 0 && effCorr->GetBinContent(nBins) > 5)
+	  if (effCorr->GetBinContent(nBins) > 5)
 	  {
 	    Printf("Nulling %d %d %d %d %.2f %.2f %.2f %.2f which was %f", bin0, bin1, bin2, bin3, effCorr->GetAxis(0)->GetBinCenter(bin0), effCorr->GetAxis(1)->GetBinCenter(bin1), effCorr->GetAxis(2)->GetBinCenter(bin2), effCorr->GetAxis(3)->GetBinCenter(bin3), effCorr->GetBinContent(nBins));
 	    effCorr->SetBinContent(nBins, 0);
 	  }
 	}
 
+  const Float_t fitRangeBegin = 5.01;
+  const Float_t fitRangeEnd = 14.99;
+  const Float_t extendRangeBegin = 5.01;
+  Bool_t verbose = kTRUE;
+
+  if (extrapolateHighpT)
+  {
+    Printf("Extrapolating high pT...");
+    
+    for (Int_t bin0 = 1; bin0<=effCorr->GetAxis(0)->GetNbins(); bin0++)
+      for (Int_t bin2 = 1; bin2<=effCorr->GetAxis(2)->GetNbins(); bin2++)
+	for (Int_t bin3 = 1; bin3<=effCorr->GetAxis(3)->GetNbins(); bin3++)
+	{
+	  effCorr->GetAxis(0)->SetRange(bin0, bin0);
+	  effCorr->GetAxis(2)->SetRange(bin2, bin2);
+	  effCorr->GetAxis(3)->SetRange(bin3, bin3);
+	  
+// 	  if (gRandom->Uniform() < 0.02) verbose = kTRUE;
+	  
+	  proj = effCorr->Projection(1);
+	  
+	  if (proj->Integral(proj->FindBin(fitRangeBegin), proj->FindBin(fitRangeEnd)) <= 0)
+	    continue;
+	  
+// 	  Printf("%d %d %d %d %f", bin0, bin1, bin2, bin3, proj->Integral(proj->FindBin(fitRangeBegin), proj->FindBin(fitRangeEnd)));
+	  
+	  if (verbose)
+	  {
+	    new TCanvas; 
+	    proj->Draw();
+	  }
+	  
+	  proj->Fit("pol0", (verbose) ? "+" : "Q0+", "SAME", fitRangeBegin, fitRangeEnd);
+	  
+	  if (!proj->GetFunction("pol0"))
+	    continue;
+	  
+	  Float_t trackingEff = proj->GetFunction("pol0")->GetParameter(0);	  
+	  
+	  for (Int_t bin1 = 1; bin1<=effCorr->GetAxis(1)->GetNbins(); bin1++)
+	  {
+	    if (effCorr->GetAxis(1)->GetBinCenter(bin1) < extendRangeBegin)
+	      continue;
+	      
+	    nBins[0] = bin0;
+	    nBins[1] = bin1;
+	    nBins[2] = bin2;
+	    nBins[3] = bin3;
+	    
+// 	    Printf("Setting %d %d %d %d %.2f %.2f %.2f %.2f to %f which was %f", bin0, bin1, bin2, bin3, effCorr->GetAxis(0)->GetBinCenter(bin0), effCorr->GetAxis(1)->GetBinCenter(bin1), effCorr->GetAxis(2)->GetBinCenter(bin2), effCorr->GetAxis(3)->GetBinCenter(bin3), trackingEff, effCorr->GetBinContent(nBins));
+	    effCorr->SetBinContent(nBins, trackingEff);
+	  }
+	  
+	  if (verbose)
+	    verbose = kFALSE;
+	}
+
+    effCorr->GetAxis(0)->UnZoom();
+    effCorr->GetAxis(1)->UnZoom();
+    effCorr->GetAxis(2)->UnZoom();
+    effCorr->GetAxis(3)->UnZoom();
+  }
+  
   Printf("%f", effCorr->GetEntries());
   
   TObjString tag2(Form("corrections from file %s", fileName));
