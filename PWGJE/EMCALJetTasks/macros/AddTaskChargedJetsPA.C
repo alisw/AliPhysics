@@ -2,6 +2,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Double_t            jetRadius               = 0.4,
   Int_t               trigger                 = AliVEvent::kINT7,
   Bool_t              isMC                    = kFALSE,
+  Int_t               ptHardBin               = -1,
   Double_t            randomConeR             = 0.4,
   Double_t            trackBgrdConeR          = 0.6,
   const char*         usedTracks              = "PicoTracks",
@@ -10,11 +11,13 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Double_t            vertexWindow            = 10.0,
   Double_t            vertexMaxR              = 1.0,
   Double_t            minJetPt                = 5.0, // signal jet min pt
+  Double_t            minBackgroundJetPt      = 0.0, // background jet min pt
   Double_t            dijetLeadingMinPt       = 10.0,
   Double_t            dijetMaxAngleDev        = 10.0,
   Int_t               numberOfPtHardBins      = 0,
   const char*         fileEtaCorrectionFactors= "alien:///alice/cern.ch/user/r/rhaake/pA/EtaCorrectionFactors.root",
-  const char*         externalMacro           = NULL
+  const char*         externalMacro           = NULL,
+  Bool_t              isEMCalTrain            = kTRUE
 )
 {
   // #### Detect the demanded trigger with its readable name
@@ -40,17 +43,22 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
     ::Error("AddTaskChargedJetsPA", "No analysis manager to connect to.");
     return NULL;
   }
+
+  TString stringPtHard("");
+  if (ptHardBin!=-1)
+    stringPtHard = Form("_PtHard_%d",ptHardBin);
   TString myContName("");
   if(isMC)
-    myContName = Form("AnalysisR0%2.0f_%s_MC",jetRadius*100,triggerName.Data());
+    myContName = Form("AnalysisR0%2.0f_%s_MC%s",jetRadius*100,triggerName.Data(), stringPtHard.Data());
   else
-    myContName = Form("AnalysisR0%2.0f_%s",jetRadius*100,triggerName.Data());
+    myContName = Form("AnalysisR0%2.0f_%s%s",jetRadius*100,triggerName.Data(), stringPtHard.Data());
 
   // #### Add necessary jet finder tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300); // anti-kt
   AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,jetRadius,1,0.150,0.300); // kt
 
+  jetFinderTaskKT->SetMinJetPt(minBackgroundJetPt);
   // #### Define analysis task
   AliAnalysisTaskChargedJetsPA *task = NULL;
   contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChargedJetsPA", AliAnalysisManager::GetCommonFileName()));
@@ -58,14 +66,21 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
 
   // #### Task preferences
   task->SetAcceptanceWindows(trackEtaWindow, vertexWindow, vertexMaxR, jetRadius, jetRadius);
+  task->SetAnalyzeQA(kTRUE);
+  task->SetAnalyzeBackground(kTRUE);
+  task->SetAnalyzeDeprecatedBackgrounds(kTRUE);
+  
   task->SetSignalJetMinPt(minJetPt);
   task->SetSignalJetMinArea(0.6*jetRadius*jetRadius*TMath::Pi());
   task->SetDijetLeadingMinPt(dijetLeadingMinPt);
   task->SetDijetMaxAngleDeviation(dijetMaxAngleDev);
   task->SetRandConeRadius(randomConeR);
+  task->SetBackgroundJetMinPt(minBackgroundJetPt);
   task->SetTRBackgroundConeRadius(trackBgrdConeR);
   task->SelectCollisionCandidates(trigger);
   task->SetCentralityType(centralityType);
+  task->SetUsePtHardBin(ptHardBin);
+
   if(numberOfPtHardBins)
     task->SetNumberOfPtHardBins(numberOfPtHardBins);
 
@@ -74,10 +89,12 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   manager->ConnectInput(task, 0, manager->GetCommonInputContainer());
   manager->ConnectOutput(task, 1, contHistos);
 
+  if(isEMCalTrain)
+    RequestMemory(task,200*1024);
+
   // #### Do some nasty piggybacking on demand
   if (externalMacro)
     gROOT->Macro(externalMacro);
-
 
   return task;
 }

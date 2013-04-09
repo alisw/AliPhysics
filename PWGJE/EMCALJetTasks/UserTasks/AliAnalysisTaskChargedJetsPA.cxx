@@ -7,6 +7,7 @@
 #include <TTree.h>
 #include <TKey.h>
 #include <TProfile.h>
+#include <TProfile2D.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TCanvas.h>
@@ -30,9 +31,11 @@
 
 #include <TRandom3.h>
 #include "AliGenPythiaEventHeader.h"
+#include "AliAODMCHeader.h"
 #include "AliMCEvent.h"
 #include "AliLog.h"
 #include <AliEmcalJet.h>
+#include <AliPicoTrack.h>
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
 #include "AliAnalysisUtils.h"
@@ -57,28 +60,19 @@ void AliAnalysisTaskChargedJetsPA::Init()
   if (fAnalyzeJets)
   {
     // ######## Jet spectra
-    AddHistogram2D<TH2D>("hJetPt", "Jets p_{T} distribution", "", 500, -50., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedRC", "Jets p_{T} distribution, RC background subtracted", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKT", "Jets p_{T} distribution, KT background subtracted", "", 500, -50., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedTR", "Jets p_{T} distribution, TR background subtracted", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedRCPosEta", "Jets p_{T} distribution, RC background subtracted, #eta > 0.2", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTPosEta", "Jets p_{T} distribution, KT background subtracted, #eta > 0.2", "", 500, -50., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedTRPosEta", "Jets p_{T} distribution, TR background subtracted, #eta > 0.2", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedRCNegEta", "Jets p_{T} distribution, RC background subtracted, #eta < -0.2", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTNegEta", "Jets p_{T} distribution, KT background subtracted, #eta < -0.2", "", 500, -50., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedTRNegEta", "Jets p_{T} distribution, TR background subtracted, #eta < -0.2", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetPt", "Jets p_{T} distribution", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS", "Jets p_{T} distribution, KT background (Improved CMS) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
 
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedRCEtaWindow", "Jets p_{T} distribution, RC background (in #eta window around jet) subtracted", "", 500, -50., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTEtaWindow", "Jets p_{T} distribution, KT background (in #eta window around jet) subtracted", "", 500, -50., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedTREtaWindow", "Jets p_{T} distribution, TR background (in #eta window around jet) subtracted", "", 500, -50., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedRC0Excl", "Jets p_{T} distribution, RC background subtracted (0 leading jets excluded)", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKT0Excl", "Jets p_{T} distribution, KT background subtracted (0 leading jets excluded)", "", 500, -50., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedTR0Excl", "Jets p_{T} distribution, TR background subtracted (0 leading jets excluded)", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedRC1Excl", "Jets p_{T} distribution, RC background subtracted (1 leading jets excluded)", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKT1Excl", "Jets p_{T} distribution, KT background subtracted (1 leading jets excluded)", "", 500, -50., 200., 5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedTR1Excl", "Jets p_{T} distribution, TR background subtracted (1 leading jets excluded)", "", 500, -50., 200.,5, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-
+    if(fAnalyzeDeprecatedBackgrounds)
+    {
+      AddHistogram2D<TH2D>("hJetPtBgrdSubtractedTR", "Jets p_{T} distribution, TR background (Cone R=0.6 around jets excluded) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+      AddHistogram2D<TH2D>("hJetPtBgrdSubtractedRC", "Jets p_{T} distribution, RC background subtracted", "", 500, -50., 200.,fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+      AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTPbPb", "Jets p_{T} distribution, KT background (PbPb w/o ghosts) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+      AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTPbPbWithGhosts", "Jets p_{T} distribution, KT background (PbPb w/ ghosts) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+      AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTCMS", "Jets p_{T} distribution, KT background (CMS) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
+      AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTMean", "Jets p_{T} distribution, KT background (Mean) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
+      AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTTrackLike", "Jets p_{T} distribution, KT background (track-like) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    }
 
     // ######## Jet stuff
     AddHistogram1D<TH1D>("hJetCountAll", "Number of Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
@@ -97,52 +91,91 @@ void AliAnalysisTaskChargedJetsPA::Init()
   // NOTE: Jet background histograms
   if (fAnalyzeBackground)
   {
-    // ########## Different background estimates
-    AddHistogram2D<TH2D>("hRCBackground", "RC background density (2 leading jets excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
-    AddHistogram2D<TH2D>("hKTBackground", "KT background density (2 leading jets excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
-    AddHistogram2D<TH2D>("hKTBackgroundSignalJetsExcluded", "KT background density (2 leading signal jets excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
-    AddHistogram2D<TH2D>("hTRBackground", "TR background density (2 leading jets excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+    // ########## Default background estimates
+    AddHistogram2D<TH2D>("hKTBackgroundImprovedCMS", "KT background density (Improved CMS approach)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+    AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMS", "Background fluctuations #delta p_{T} (KT, Improved CMS-like)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TH2D>("hDeltaPtNoBackground", "Background fluctuations #delta p_{T} (No background)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TH2D>("hDeltaPtNoBackgroundNoEmptyCones", "Background fluctuations #delta p_{T} (No background, no empty cones)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
 
-    // ########## Delta Pt
-    AddHistogram2D<TH2D>("hDeltaPtKT", "Background fluctuations #delta p_{T} (KT)", "", 600, -40., 80., 5, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtRC", "Background fluctuations #delta p_{T} (RC)", "", 600, -40., 80., 5, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtTR", "Background fluctuations #delta p_{T} (TR)", "", 600, -40., 80., 5, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TProfile2D>("hJetPtSubtractedRhoKTImprovedCMS", "Mean subtracted KT (CMS w/o signal) background from jets", "COLZ", 600, 0, 150, fNumberOfCentralityBins, 0, 100, "Jet p_{T}", "Centrality", "#rho mean");
+    AddHistogram1D<TProfile>("hKTMeanBackgroundImprovedCMS", "KT background mean (Improved CMS approach)", "", 100, 0, 100, "Centrality", "#rho mean");
 
-    AddHistogram2D<TH2D>("hDeltaPtNoBackground", "Background fluctuations #delta p_{T} (No background)", "", 600, -40., 80., 5, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-   
-    AddHistogram2D<TH2D>("hDeltaPtKTNoExcl", "Background fluctuations #delta p_{T} (KT, no leading jet correction)", "", 600, -40., 80., 5, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtRCNoExcl", "Background fluctuations #delta p_{T} (RC, no leading jet correction)", "", 600, -40., 80., 5, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtTRNoExcl", "Background fluctuations #delta p_{T} (TR, no leading jet correction)", "", 600, -40., 80., 5, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtNoBackgroundNoExcl", "Background fluctuations #delta p_{T} (No background, no leading jet correction)", "", 600, -40., 80., 5, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TH2D>("hDijetBackground", "Background density (dijets excluded)", "", 200, 0., 20., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+    AddHistogram2D<TH2D>("hDijetBackgroundPerpendicular", "Background density (dijets excluded)", "", 200, 0., 20., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
 
-    AddHistogram2D<TH2D>("hDeltaPtKT0Excl", "Background fluctuations #delta p_{T} (for KT 0 excl.)", "", 600, -40., 80., 5, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtRC0Excl", "Background fluctuations #delta p_{T} (for RC 0 excl.)", "", 600, -40., 80., 5, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtTR0Excl", "Background fluctuations #delta p_{T} (for TR 0 excl.)", "", 600, -40., 80., 5, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtKT1Excl", "Background fluctuations #delta p_{T} (for KT 1 excl.)", "", 600, -40., 80., 5, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtRC1Excl", "Background fluctuations #delta p_{T} (for RC 1 excl.)", "", 600, -40., 80., 5, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtTR1Excl", "Background fluctuations #delta p_{T} (for TR 1 excl.)", "", 600, -40., 80., 5, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    if(fAnalyzeDeprecatedBackgrounds)
+    {
+      // ########## Different background estimates
+      AddHistogram2D<TH2D>("hRCBackground", "RC background density (Signal jets excluded)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+      AddHistogram2D<TH2D>("hKTBackgroundPbPb", "KT background density (PbPb approach, no ghosts)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+      AddHistogram2D<TH2D>("hKTBackgroundPbPbWithGhosts", "KT background density (PbPb approach w/ ghosts)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+      AddHistogram2D<TH2D>("hKTBackgroundCMS", "KT background density (CMS approach)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+      AddHistogram2D<TH2D>("hKTBackgroundMean", "KT background density (Mean approach)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+      AddHistogram2D<TH2D>("hKTBackgroundTrackLike", "KT background density (Track-like approach)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
 
-    // ########## Min bias background in eta bins
-    AddHistogram2D<TH2D>("hRCBackgroundEtaBins", "RC background density (2 leading jets excluded)", "LEGO2", 400, 0., 40., 5, -0.5, +0.5, "#rho (GeV/c)","#eta", "dN^{Events}/d#rho d#eta");
-    AddHistogram2D<TH2D>("hKTBackgroundEtaBins", "KT background density (2 leading jets excluded)", "LEGO2", 400, 0., 40., 5, -0.5, +0.5, "#rho (GeV/c)","#eta", "dN^{Events}/d#rho d#eta");
-    AddHistogram2D<TH2D>("hTRBackgroundEtaBins", "TR background density (2 leading jets excluded)", "LEGO2", 400, 0., 40., 5, -0.5, +0.5, "#rho (GeV/c)","#eta", "dN^{Events}/d#rho d#eta");
+      AddHistogram2D<TH2D>("hTRBackgroundNoExcl", "TR background density (No signal excluded)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+      AddHistogram2D<TH2D>("hTRBackgroundCone02", "TR background density (Cones R=0.2 around signal jets excluded)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+      AddHistogram2D<TH2D>("hTRBackgroundCone04", "TR background density (Cones R=0.4 around signal jets excluded)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+      AddHistogram2D<TH2D>("hTRBackgroundCone06", "TR background density (Cones R=0.6 around signal jets excluded)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+      AddHistogram2D<TH2D>("hTRBackgroundCone08", "TR background density (Cones R=0.8 around signal jets excluded)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+      AddHistogram2D<TH2D>("hTRBackgroundExact",  "TR background density (signal jets exactly excluded)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
 
-    // ########## Min bias background in sliding eta bins
-    AddHistogram2D<TH2D>("hRCBackgroundEtaWindow", "RC background density (2 leading jets excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho d#eta");
-    AddHistogram2D<TH2D>("hKTBackgroundEtaWindow", "KT background density (2 leading jets excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho d#eta");
-    AddHistogram2D<TH2D>("hTRBackgroundEtaWindow", "TR background density (2 leading jets excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho d#eta");
+      // ########## Delta Pt
+      AddHistogram2D<TH2D>("hDeltaPtKTPbPb", "Background fluctuations #delta p_{T} (KT, PbPb w/o ghosts)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtKTPbPbWithGhosts", "Background fluctuations #delta p_{T} (KT, PbPb w/ ghosts)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtKTCMS", "Background fluctuations #delta p_{T} (KT, CMS-like)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtKTMean", "Background fluctuations #delta p_{T} (KT, Mean)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtKTTrackLike", "Background fluctuations #delta p_{T} (KT, track-like)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtTR", "Background fluctuations #delta p_{T} (TR, cone R=0.6)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtRC", "Background fluctuations #delta p_{T} (RC)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
 
-    AddHistogram2D<TH2D>("hDijetBackground", "Background density (dijets excluded)", "", 200, 0., 20., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
-    AddHistogram2D<TH2D>("hDijetBackgroundPerpendicular", "Background density (dijets excluded)", "", 200, 0., 20., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
 
-    // ########## Different background estimates to show effect of jet exclusion
-    AddHistogram2D<TH2D>("hRCBackground1Excl", "RC background density (1 leading jet excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
-    AddHistogram2D<TH2D>("hKTBackground1Excl", "KT background density (1 leading jet excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
-    AddHistogram2D<TH2D>("hTRBackground1Excl", "TR background density (1 leading jet excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
-    AddHistogram2D<TH2D>("hRCBackground0Excl", "RC background density (0 leading jets excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
-    AddHistogram2D<TH2D>("hKTBackground0Excl", "KT background density (0 leading jets excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
-    AddHistogram2D<TH2D>("hTRBackground0Excl", "TR background density (0 leading jets excluded)", "LEGO2", 400, 0., 40., 5, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+      // ########## Profiles for background means vs. centrality
+      AddHistogram1D<TProfile>("hKTMeanBackgroundPbPb", "KT background mean (PbPb approach w/o ghosts)", "", 100, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hKTMeanBackgroundPbPbWithGhosts", "KT background mean (PbPb approach)", "", 100, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hKTMeanBackgroundCMS", "KT background mean (CMS approach)", "", 100, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hKTMeanBackgroundMean", "KT background mean (Mean approach)", "",  100, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hKTMeanBackgroundTPC", "KT background mean (Track-like approach)", "", 100, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hTRMeanBackground", "TR background mean", "", 100, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hRCMeanBackground", "RC background mean", "", 100, 0, 100, "Centrality", "#rho mean");
+    }
   }
+
+
+  // NOTE: Track & Cluster & QA histograms
+  if (fAnalyzeQA)
+  {
+    AddHistogram1D<TH1D>("hNumberEvents", "Number of events (0 = before, 1 = after vertex cuts)", "", 2, 0, 2, "#Delta z(cm)","N^{Events}/cut");
+    AddHistogram1D<TH1D>("hVertexX", "X distribution of the vertex", "", 2000, -1., 1., "#Delta x(cm)","dN^{Events}/dx");
+    AddHistogram1D<TH1D>("hVertexY", "Y distribution of the vertex", "", 2000, -1., 1., "#Delta y(cm)","dN^{Events}/dy");
+    AddHistogram2D<TH2D>("hVertexXY", "XY distribution of the vertex", "COLZ", 500, -1., 1., 500, -1., 1.,"#Delta x(cm)", "#Delta y(cm)","dN^{Events}/dxdy");
+    AddHistogram1D<TH1D>("hVertexZ", "Z distribution of the vertex", "", 100, -10., 10., "#Delta z(cm)","dN^{Events}/dz");
+    AddHistogram1D<TH1D>("hVertexR", "R distribution of the vertex", "", 100, 0., 1., "#Delta r(cm)","dN^{Events}/dr");
+    AddHistogram1D<TH1D>("hCentralityV0M", "Centrality distribution V0M", "", 100, 0., 100., "Centrality","dN^{Events}");
+    AddHistogram1D<TH1D>("hCentralityV0A", "Centrality distribution V0A", "", 100, 0., 100., "Centrality","dN^{Events}");
+    AddHistogram1D<TH1D>("hCentralityV0C", "Centrality distribution V0C", "", 100, 0., 100., "Centrality","dN^{Events}");
+
+    AddHistogram2D<TH2D>("hTrackCountAcc", "Number of tracks in acceptance vs. centrality", "LEGO2", 750, 0., 750., 100, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
+    AddHistogram1D<TH1D>("hTrackPt", "Tracks p_{T} distribution", "", 1000, 0., 250., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");
+    AddHistogram1D<TH1D>("hTrackPtNegEta", "Tracks p_{T} distribution (negative #eta)", "", 1000, 0., 250., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");
+    AddHistogram1D<TH1D>("hTrackPtPosEta", "Tracks p_{T} distribution (positive #eta)", "", 1000, 0., 250., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");      
+    AddHistogram1D<TH1D>("hTrackCharge", "Charge", "", 11, -5, 5, "Charge (e)","dN^{Tracks}/dq");
+    AddHistogram1D<TH1D>("hTrackPhi", "Track #phi distribution", "", 360, 0, TMath::TwoPi(), "#phi","dN^{Tracks}/d#phi");
+    AddHistogram2D<TH2D>("hTrackPhiEta", "Track angular distribution", "LEGO2", 100, 0., 2*TMath::Pi(),100, -2.5, 2.5, "#phi","#eta","dN^{Tracks}/(d#phi d#eta)");
+
+    AddHistogram2D<TH2D>("hTrackPhiPtCut", "Track #phi distribution for different pT cuts", "LEGO2", 360, 0, TMath::TwoPi(), 20, 0, 20, "#phi", "p_{T} lower cut", "dN^{Tracks}/d#phi dp_{T}");      
+    AddHistogram2D<TH2D>("hTrackPhiLabel", "Track #phi distribution in different labels", "LEGO2", 360, 0, TMath::TwoPi(), 3, 0, 3, "#phi", "Label", "dN^{Tracks}/d#phi");
+    AddHistogram1D<TH1D>("hTrackEta", "Track #eta distribution", "", 180, -fTrackEtaWindow, +fTrackEtaWindow, "#eta","dN^{Tracks}/d#eta");
+    if (fAnalyzeJets)
+    {
+      // ######## Jet QA
+      AddHistogram1D<TH1D>("hJetArea", "Jets area distribution", "", 200, 0., 2., "Area","dN^{Jets}/dA");
+      AddHistogram2D<TH2D>("hJetAreaVsPt", "Jets area vs. p_{T} distribution", "COLZ", 100, 0., 2., 200, 0., 200., "Area", "p_{T}", "dN^{Jets}/dA dp_{T}");
+      AddHistogram2D<TH2D>("hJetPhiEta", "Jets angular distribution", "LEGO2", 360, 0., 2*TMath::Pi(),100, -0.6, 0.6, "#phi","#eta","dN^{Jets}/(d#phi d#eta)");
+      AddHistogram2D<TH2D>("hJetPtVsConstituentCount", "Jets number of constituents vs. jet p_{T}", "COLZ", 400, 0., 200., 100, 0., 100., "p_{T}","N^{Tracks}","dN^{Jets}/(dp_{T} dN^{tracks})");
+    }
+  }
+
 
   // NOTE: Pythia histograms
   if (fAnalyzePythia)
@@ -163,7 +196,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName) : AliAnalysisTaskSE(name), fOutputList(0), fAnalyzeJets(1), fAnalyzeBackground(1), fAnalyzePythia(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.4), fNumberRandCones(8), fNumberExcludedJets(2), fDijetMaxAngleDeviation(10.0), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinJetPt(1.0), fMinJetArea(0.4), fMinBackgroundJetPt(0.15), fMinDijetLeadingPt(10.0), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0)
+AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName) : AliAnalysisTaskSE(name), fOutputList(0), fAnalyzeJets(1), fAnalyzeQA(1), fAnalyzeBackground(1), fAnalyzeDeprecatedBackgrounds(1), fAnalyzePythia(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fUsePtHardBin(-1), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.6), fNumberRandCones(8), fNumberExcludedJets(-1), fDijetMaxAngleDeviation(10.0), fPhysicalJetRadius(0.6), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinJetPt(1.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinDijetLeadingPt(10.0), fNumberOfCentralityBins(100), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0), fIsDEBUG(0)
 {
   #ifdef DEBUGMODE
     AliInfo("Calling constructor.");
@@ -175,7 +208,7 @@ AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, con
   instance++;
 
   fTrackArrayName = new TString(trackArrayName);
-  if (fTrackArrayName->Contains("MCParticles")) //TODO: Not working for now
+  if (fTrackArrayName->Contains("MCParticles") || fTrackArrayName->Contains("mcparticles")) //TODO: Not working for now
     fIsMC = kTRUE;
 
   fJetArrayName = new TString(jetArrayName);
@@ -193,6 +226,9 @@ AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, con
   DefineOutput(1, TList::Class());
  
   fHistList = new TList();
+
+  for(Int_t i=0;i<1024;i++)
+    fSignalJets[i] = NULL;
 
   #ifdef DEBUGMODE
     AliInfo("Constructor done.");
@@ -227,7 +263,20 @@ inline Double_t AliAnalysisTaskChargedJetsPA::GetPtHard()
   {
     AliGenPythiaEventHeader* pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
     if (!pythiaHeader)
-      AliError("Pythia Header not accessible!");
+    {
+      // Check if AOD
+      AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+      for(UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++)
+      {
+        pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+        if(pythiaHeader) break;
+      }
+      if(!pythiaHeader)
+        AliError("Pythia Header not accessible!");
+      else
+        tmpPtHard = pythiaHeader->GetPtHard();
+    }
     else
       tmpPtHard = pythiaHeader->GetPtHard();
   }
@@ -283,6 +332,35 @@ inline Bool_t AliAnalysisTaskChargedJetsPA::IsTrackInAcceptance(AliVParticle* tr
 }
 
 //________________________________________________________________________
+inline Bool_t AliAnalysisTaskChargedJetsPA::IsTrackInJet(AliEmcalJet* jet, Int_t trackIndex)
+{
+  for (Int_t i = 0; i < jet->GetNumberOfTracks(); ++i)
+  {
+    Int_t jetTrack = jet->TrackAt(i);
+    if (jetTrack == trackIndex)
+      return kTRUE;
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________
+inline Bool_t AliAnalysisTaskChargedJetsPA::IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2)
+{
+  for (Int_t i = 0; i < jet1->GetNumberOfTracks(); ++i)
+  {
+    Int_t jet1Track = jet1->TrackAt(i);
+    for (Int_t j = 0; j < jet2->GetNumberOfTracks(); ++j)
+    {
+      Int_t jet2Track = jet2->TrackAt(j);
+      if (jet1Track == jet2Track)
+        return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
+
+//________________________________________________________________________
 inline Bool_t AliAnalysisTaskChargedJetsPA::IsBackgroundJetInAcceptance(AliEmcalJet *jet)
 {   
   if (jet != 0)
@@ -301,7 +379,6 @@ inline Bool_t AliAnalysisTaskChargedJetsPA::IsSignalJetInAcceptance(AliEmcalJet 
       if (jet->Pt() >= fMinJetPt)
         if (jet->Area() >= fMinJetArea)
           return kTRUE;
-
   return kFALSE;
 }
 
@@ -419,12 +496,8 @@ void AliAnalysisTaskChargedJetsPA::GetSignalJets()
   fSecondLeadingJet = NULL;
   fNumberSignalJets = 0;
 
-  Float_t maxJetPts[] = {0, 0};
-  Int_t jetIDArray[]   = {-1, -1};
-  Int_t jetCount = fJetArray->GetEntries();
-
-  // Go through all jets and save signal jets and the two leading ones
-  for (Int_t i = 0; i < jetCount; i++)
+  TList tmpJets;
+  for (Int_t i = 0; i < fJetArray->GetEntries(); i++)
   {
     AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJetArray->At(i));
     if (!jet)
@@ -432,29 +505,38 @@ void AliAnalysisTaskChargedJetsPA::GetSignalJets()
       AliError(Form("%s: Could not receive jet %d", GetName(), i));
       continue;
     }
+    if (!IsSignalJetInAcceptance(jet))
+      continue;
 
-    if (!IsSignalJetInAcceptance(jet)) continue;
-    
-    if (jet->Pt() > maxJetPts[0]) 
+    for (Int_t j = 0; j <= tmpJets.GetEntries(); j++)
     {
-      maxJetPts[1] = maxJetPts[0];
-      jetIDArray[1] = jetIDArray[0];
-      maxJetPts[0] = jet->Pt();
-      jetIDArray[0] = i;
+      if (j>tmpJets.GetEntries()-1) // When passed last item add the jet at the end
+      {
+        tmpJets.Add(jet);
+        break;
+      }
+
+      AliEmcalJet* listJet = static_cast<AliEmcalJet*>(tmpJets.At(j));
+     
+      if(jet->Pt() < listJet->Pt()) // Insert jet before that one in list if pt smaller
+      {
+        tmpJets.AddAt(jet, j);
+        break;
+      }
     }
-    else if (jet->Pt() > maxJetPts[1]) 
-    {
-      maxJetPts[1] = jet->Pt();
-      jetIDArray[1] = i;
-    }
+  }
+
+  for (Int_t i = 0; i < tmpJets.GetEntries(); i++)
+  {
+    AliEmcalJet* jet = static_cast<AliEmcalJet*>(tmpJets.At(i));
     fSignalJets[fNumberSignalJets] = jet;
     fNumberSignalJets++;
   }
   
   if (fNumberSignalJets > 0)
-    fFirstLeadingJet  = static_cast<AliEmcalJet*>(fJetArray->At(jetIDArray[0]));
+    fFirstLeadingJet  = static_cast<AliEmcalJet*>(tmpJets.At(0));
   if (fNumberSignalJets > 1)
-    fSecondLeadingJet = static_cast<AliEmcalJet*>(fJetArray->At(jetIDArray[1]));
+    fSecondLeadingJet = static_cast<AliEmcalJet*>(tmpJets.At(1));
 
 }
 
@@ -600,105 +682,137 @@ void AliAnalysisTaskChargedJetsPA::GetDeltaPt(Double_t& deltaPt, Double_t rho, B
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMedian, Double_t& areaMean, Double_t etaMin, Double_t etaMax, Bool_t excludeSignalJets)
+void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoPbPb, Double_t& rhoPbPbWithGhosts, Double_t& rhoCMS, Double_t& rhoImprovedCMS, Double_t& rhoMean, Double_t& rhoTrackLike)
 {
   #ifdef DEBUGMODE
     AliInfo("Getting KT background density.");
   #endif
 
-  // static declaration. Advantage: more speed. Disadvantage: Problematic for events with more than 1024 jets :)
-  static Double_t tmpRhos[1024];
-  static Double_t tmpAreas[1024];
-  Int_t maxJetIds[]   = {-1, -1}; // Indices for excludes jets (up to two)
+  static Double_t tmpRhoPbPb[1024];
+  static Double_t tmpRhoPbPbWithGhosts[1024];
+  static Double_t tmpRhoMean[1024];
+  static Double_t tmpRhoCMS[1024];
+  static Double_t tmpRhoImprovedCMS[1024];
+  Double_t tmpCoveredArea = 0.0;
+  Double_t tmpSummedArea = 0.0;
+  Double_t tmpPtTrackLike = 0.0;
+  Double_t tmpAreaTrackLike = 0.0;
 
   // Setting invalid values
-  rhoMedian = -1.0;
-  areaMean= -1.0;
+  rhoPbPb = 0.0;
+  rhoPbPbWithGhosts = 0.0;
+  rhoCMS = 0.0;
+  rhoImprovedCMS = 0.0;
+  rhoMean = 0.0;
+  rhoTrackLike = 0.0;
 
-  GetLeadingJets(fBackgroundJetArray, &maxJetIds[0], kFALSE);
+  Int_t rhoPbPbJetCount = 0;
+  Int_t rhoPbPbWithGhostsJetCount = 0;
+  Int_t rhoCMSJetCount = 0;
+  Int_t rhoImprovedCMSJetCount = 0;
+  Int_t rhoMeanJetCount = 0;
+
+
+  // Find 2 leading KT jets for the original PbPb approach
+  Int_t leadingKTJets[]   = {-1, -1};
+  GetLeadingJets(fBackgroundJetArray, &leadingKTJets[0], kFALSE);
+
   // Exclude UP TO numberExcludeLeadingJets
-  if (fNumberSignalJets < 2)
+  if(numberExcludeLeadingJets==-1)
+    numberExcludeLeadingJets = fNumberSignalJets;
+  if (fNumberSignalJets < numberExcludeLeadingJets)
     numberExcludeLeadingJets = fNumberSignalJets;
 
-  // Check if etaMin/etaMax is given correctly
-  if(etaMin < -fBackgroundJetEtaWindow)
-    etaMin = -fBackgroundJetEtaWindow;
-  if(etaMax > fBackgroundJetEtaWindow)
-    etaMax = fBackgroundJetEtaWindow;
-
-  if ((etaMin == 0) && (etaMax == 0))
-  {
-    etaMin = -fBackgroundJetEtaWindow;
-    etaMax = +fBackgroundJetEtaWindow;
-  }
-
-  Int_t jetCountAccepted = 0;
   for (Int_t i = 0; i < fBackgroundJetArray->GetEntries(); i++)
   {
     AliEmcalJet* backgroundJet = static_cast<AliEmcalJet*>(fBackgroundJetArray->At(i));
+
     if (!backgroundJet)
     {
       AliError(Form("%s: Could not receive jet %d", GetName(), i));
       continue;
     } 
 
-    // Exclude signal jets
-    if (excludeSignalJets)
+    // Search for overlap with signal jets
+    Bool_t isOverlapping = kFALSE;
+    for(Int_t j=0;j<numberExcludeLeadingJets;j++)
     {
-      Bool_t isOverlapping = kFALSE;
-      for(Int_t j=0;j<numberExcludeLeadingJets;j++)
+      AliEmcalJet* signalJet = fSignalJets[j];
+     
+      if(IsJetOverlapping(signalJet, backgroundJet))
       {
-        AliEmcalJet* signalJet = NULL;
-
-        if (j==0)
-          signalJet = fFirstLeadingJet;
-        else if (j==1)
-          signalJet = fSecondLeadingJet;
-        else
-          AliFatal("Trying to exclude more than 2 signal jets in KT background -- not implemented.");
-
-
-        Double_t tmpDeltaPhi = GetDeltaPhi(backgroundJet->Phi(), signalJet->Phi());
-        
-        if ( tmpDeltaPhi*tmpDeltaPhi + TMath::Abs(signalJet->Eta()-backgroundJet->Eta())*TMath::Abs(signalJet->Eta()-backgroundJet->Eta()) <= fSignalJetRadius*fSignalJetRadius)
-        {
-          isOverlapping = kTRUE;
-          break;
-        }
+        isOverlapping = kTRUE;
+        break;
       }
-      if(isOverlapping)
-        continue;
     }
-    else  // exclude leading background jets
-    {
-      if (numberExcludeLeadingJets > 0)
-        if (i == maxJetIds[0])
-          continue;
-      if (numberExcludeLeadingJets > 1)
-        if (i == maxJetIds[1])
-          continue;
-    }      
+
+    tmpSummedArea += backgroundJet->Area();
+    if(backgroundJet->Pt() > 0.150)
+      tmpCoveredArea += backgroundJet->Area();
 
     if (!IsBackgroundJetInAcceptance(backgroundJet))
       continue;
-    if (!((backgroundJet->Eta() >= etaMin) && (backgroundJet->Eta() < etaMax)))
-      continue;
 
-    
-    tmpRhos[jetCountAccepted] = backgroundJet->Pt() / backgroundJet->Area();
-    tmpAreas[jetCountAccepted] = backgroundJet->Area();
-    jetCountAccepted++;
+    // PbPb approach (take ghosts into account)
+    if ((i != leadingKTJets[0]) && (i != leadingKTJets[1]))
+    {
+      tmpRhoPbPbWithGhosts[rhoPbPbWithGhostsJetCount] = backgroundJet->Pt() / backgroundJet->Area();
+      rhoPbPbWithGhostsJetCount++;
+    }
+
+    if(backgroundJet->Pt() > 0.150)
+    {
+      // CMS approach: don't take ghosts into acount
+      tmpRhoCMS[rhoCMSJetCount] = backgroundJet->Pt() / backgroundJet->Area();
+      rhoCMSJetCount++;
+
+      // Improved CMS approach: like CMS but excluding signal
+      if(!isOverlapping)
+      {
+        tmpRhoImprovedCMS[rhoImprovedCMSJetCount] = backgroundJet->Pt() / backgroundJet->Area();
+        rhoImprovedCMSJetCount++;
+      }
+
+      // PbPb w/o ghosts approach (just neglect ghosts)
+      if ((i != leadingKTJets[0]) && (i != leadingKTJets[1]))
+      {  
+        tmpRhoPbPb[rhoPbPbJetCount] = backgroundJet->Pt() / backgroundJet->Area();
+        rhoPbPbJetCount++;
+      }
+    }
+
+    // (no overlap with signal jets)
+    if(!isOverlapping)
+    {
+      // Mean approach
+      tmpRhoMean[rhoMeanJetCount] = backgroundJet->Pt() / backgroundJet->Area();
+      rhoMeanJetCount++;
+      
+      // Track like approach approach
+      tmpPtTrackLike += backgroundJet->Pt();
+      tmpAreaTrackLike += backgroundJet->Area();
+    }
+
   }
 
-  if (jetCountAccepted > 0)
-  {
-    rhoMedian = TMath::Median(jetCountAccepted, tmpRhos);
-    areaMean   = TMath::Mean(jetCountAccepted, tmpAreas);
-  }
+  if (tmpAreaTrackLike > 0)
+    rhoTrackLike = tmpPtTrackLike/tmpAreaTrackLike;
+  if (rhoPbPbJetCount > 0)
+    rhoPbPb = TMath::Median(rhoPbPbJetCount, tmpRhoPbPb);
+  if (rhoPbPbWithGhostsJetCount > 0)
+    rhoPbPbWithGhosts = TMath::Median(rhoPbPbWithGhostsJetCount, tmpRhoPbPbWithGhosts);
+  if (rhoCMSJetCount > 0)
+    rhoCMS = TMath::Median(rhoCMSJetCount, tmpRhoCMS) * tmpCoveredArea/tmpSummedArea;
+  if (rhoImprovedCMSJetCount > 0)
+    rhoImprovedCMS = TMath::Median(rhoImprovedCMSJetCount, tmpRhoImprovedCMS) * tmpCoveredArea/tmpSummedArea;
+  if (rhoMeanJetCount > 0)
+    rhoMean = TMath::Mean(rhoMeanJetCount, tmpRhoMean);
+
   #ifdef DEBUGMODE
     AliInfo("Got KT background density.");
   #endif
 }
+
 
 
 //________________________________________________________________________
@@ -714,11 +828,13 @@ Int_t AliAnalysisTaskChargedJetsPA::GetRCBackgroundDensity(Int_t numberExcludeLe
   std::vector<AliEmcalJet> tmpCones(numberRandCones);
 
   // Setting invalid values
-  rhoMean = -1.0;
-  rhoMedian = -1.0;
+  rhoMean = 0.0;
+  rhoMedian = 0.0;
 
   // Exclude UP TO numberExcludeLeadingJets
-  if (fNumberSignalJets < 2)
+  if(numberExcludeLeadingJets==-1)
+    numberExcludeLeadingJets = fNumberSignalJets;
+  if (fNumberSignalJets < numberExcludeLeadingJets)
     numberExcludeLeadingJets = fNumberSignalJets;
 
   // Search given amount of RCs
@@ -727,11 +843,8 @@ Int_t AliAnalysisTaskChargedJetsPA::GetRCBackgroundDensity(Int_t numberExcludeLe
   {
     Double_t tmpRandConeEta = 0.0;
     Double_t tmpRandConePhi = 0.0;
-    Double_t excludedJetEta = 0.0;
-    Double_t excludedJetPhi = 0.0;
 
     // Search random cone in acceptance with no overlap with already excluded jets (leading jets and random cones)
-    Bool_t coneValid = kTRUE;
 
     // Check if etaMin/etaMax is given correctly
     if(etaMin < -fSignalJetEtaWindow)
@@ -747,24 +860,15 @@ Int_t AliAnalysisTaskChargedJetsPA::GetRCBackgroundDensity(Int_t numberExcludeLe
 
     tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
 
-    // Go through all excluded leading jets and check if there's an overlap
-     
+    // Exclude signal jets
+    Bool_t coneValid = kFALSE;
     for(Int_t j=0;j<numberExcludeLeadingJets;j++)
     {
-      AliEmcalJet* tmpJet = NULL;
+      AliEmcalJet* signalJet = fSignalJets[j];
 
-      if (j==0)
-        tmpJet = fFirstLeadingJet;
-      else if (j==1)
-        tmpJet = fSecondLeadingJet;
-      else
-        AliFatal("Trying to exclude more than 2 jets in RC background -- not implemented.");
-
-      excludedJetPhi = tmpJet->Phi();
-      excludedJetEta = tmpJet->Eta();
-      Double_t tmpDeltaPhi = GetDeltaPhi(tmpRandConePhi, excludedJetPhi);
+      Double_t tmpDeltaPhi = GetDeltaPhi(tmpRandConePhi, signalJet->Phi());
       
-      if ( tmpDeltaPhi*tmpDeltaPhi + TMath::Abs(tmpRandConeEta-excludedJetEta)*TMath::Abs(tmpRandConeEta-excludedJetEta) <= fRandConeRadius*fRandConeRadius)
+      if ( tmpDeltaPhi*tmpDeltaPhi + TMath::Abs(signalJet->Eta()-tmpRandConeEta)*TMath::Abs(signalJet->Eta()-tmpRandConeEta) <= (fRandConeRadius+fPhysicalJetRadius)*(fRandConeRadius+fPhysicalJetRadius))
       {
         coneValid = kFALSE;
         break;
@@ -798,83 +902,131 @@ Int_t AliAnalysisTaskChargedJetsPA::GetRCBackgroundDensity(Int_t numberExcludeLe
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskChargedJetsPA::GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& area, Double_t etaMin, Double_t etaMax)
+void AliAnalysisTaskChargedJetsPA::GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoNoExclusion, Double_t& rhoConeExclusion02, Double_t& rhoConeExclusion04, Double_t& rhoConeExclusion06, Double_t& rhoConeExclusion08, Double_t& rhoExactExclusion)
 {
   #ifdef DEBUGMODE
     AliInfo("Getting TR background density.");
   #endif
 
+  Double_t summedTracksPtCone02 = 0.0;
+  Double_t summedTracksPtCone04 = 0.0;
+  Double_t summedTracksPtCone06 = 0.0;
+  Double_t summedTracksPtCone08 = 0.0;
+  Double_t summedTracksPtWithinJets = 0.0;
   Double_t summedTracksPt = 0.0;
-
-  // Check if etaMin/etaMax is given correctly
-  if(etaMin < -fTrackEtaWindow)
-    etaMin = -fTrackEtaWindow;
-  if(etaMax > fTrackEtaWindow)
-    etaMax = fTrackEtaWindow;
-
-  if ((etaMin == 0) && (etaMax == 0))
-  {
-    etaMin = -fTrackEtaWindow;
-    etaMax = +fTrackEtaWindow;
-  }
-
+  
   // Setting invalid values
-  rhoMean = -1.0;
-  area = -1.0;
+  rhoNoExclusion = 0.0;
+  rhoConeExclusion02 = 0.0;
+  rhoConeExclusion04 = 0.0;
+  rhoConeExclusion06 = 0.0;
+  rhoConeExclusion08 = 0.0; 
+  rhoExactExclusion  = 0.0;
+
   // Exclude UP TO numberExcludeLeadingJets
-  if (fNumberSignalJets < 2)
+  if(numberExcludeLeadingJets==-1)
+    numberExcludeLeadingJets = fNumberSignalJets;
+  if (fNumberSignalJets < numberExcludeLeadingJets)
     numberExcludeLeadingJets = fNumberSignalJets;
 
-
-  Int_t   trackCount = fTrackArray->GetEntries();
-  Int_t   trackCountAccepted = 0;
-  for (Int_t i = 0; i < trackCount; i++)
+  for (Int_t i = 0; i < fTrackArray->GetEntries(); i++)
   {
-    Bool_t  trackValid = kTRUE;
     AliVTrack* tmpTrack = static_cast<AliVTrack*>(fTrackArray->At(i));
-    if (IsTrackInAcceptance(tmpTrack))
-      if ((tmpTrack->Eta() >= etaMin) && (tmpTrack->Eta() < etaMax))
-      {
-        for (Int_t j = 0; j < numberExcludeLeadingJets; j++)
-        {
-          AliEmcalJet* tmpJet = NULL;
-          if (j==0)
-            tmpJet = fFirstLeadingJet;
-          else if (j==1)
-            tmpJet = fSecondLeadingJet;
-          else
-            AliFatal("Trying to exclude more than 2 jets in track background -- not implemented.");
+    Bool_t trackWithinJet = kFALSE; Bool_t trackWithin02Cone = kFALSE; Bool_t trackWithin04Cone = kFALSE; Bool_t trackWithin06Cone = kFALSE; Bool_t trackWithin08Cone = kFALSE;
 
-          if (IsTrackInCone(tmpTrack, tmpJet->Eta(), tmpJet->Phi(), fTRBackgroundConeRadius))
-          {
-            trackValid = kFALSE;
-            break;
-          }
-        }
-        if (trackValid)
+    if (IsTrackInAcceptance(tmpTrack))
+    {
+      // Check if tracks overlaps with jet
+      for(Int_t j=0;j<numberExcludeLeadingJets;j++)
+      {
+        AliEmcalJet* signalJet = fSignalJets[j];
+
+        // Exact jet exclusion
+        if (IsTrackInJet(signalJet, i))
+          trackWithinJet = kTRUE;
+
+        // Cone exclusions
+        if (IsTrackInCone(tmpTrack, signalJet->Eta(), signalJet->Phi(), 0.2))
         {
-          // Add track pt to array
-          summedTracksPt = summedTracksPt + tmpTrack->Pt();
-          trackCountAccepted++;
+          trackWithin02Cone = kTRUE;
+          trackWithin04Cone = kTRUE;
+          trackWithin06Cone = kTRUE;
+          trackWithin08Cone = kTRUE;
+          break;
+        }
+        else if (IsTrackInCone(tmpTrack, signalJet->Eta(), signalJet->Phi(), 0.4))
+        {
+          trackWithin04Cone = kTRUE;
+          trackWithin06Cone = kTRUE;
+          trackWithin08Cone = kTRUE;
+        }
+        else if (IsTrackInCone(tmpTrack, signalJet->Eta(), signalJet->Phi(), 0.6))
+        {
+          trackWithin06Cone = kTRUE;
+          trackWithin08Cone = kTRUE;
+        }
+        else if (IsTrackInCone(tmpTrack, signalJet->Eta(), signalJet->Phi(), 0.8))
+        {
+          trackWithin08Cone = kTRUE;
         }
       }
+
+      if(!trackWithin08Cone)
+      {
+        summedTracksPtCone08 += tmpTrack->Pt();
+      }
+      if(!trackWithin06Cone)
+      {
+        summedTracksPtCone06 += tmpTrack->Pt();
+      }
+      if(!trackWithin04Cone)
+      {
+        summedTracksPtCone04 += tmpTrack->Pt();
+      }
+      if(!trackWithin02Cone)
+      {
+        summedTracksPtCone02 += tmpTrack->Pt();
+      }
+      if(!trackWithinJet)
+      {
+        summedTracksPtWithinJets += tmpTrack->Pt();
+      }
+      summedTracksPt += tmpTrack->Pt();
+
+    }
   }
 
-  if (trackCountAccepted > 0)
+  // Calculate the correct area where the tracks were taking from
+
+  Double_t tmpFullTPCArea = (2.0*fTrackEtaWindow) * TMath::TwoPi();
+  Double_t tmpAreaCone02     = tmpFullTPCArea;
+  Double_t tmpAreaCone04     = tmpFullTPCArea;
+  Double_t tmpAreaCone06     = tmpFullTPCArea;
+  Double_t tmpAreaCone08     = tmpFullTPCArea;
+  Double_t tmpAreaWithinJets = tmpFullTPCArea;
+  std::vector<Double_t> tmpEtas(numberExcludeLeadingJets);
+  std::vector<Double_t> tmpPhis(numberExcludeLeadingJets);
+
+  for(Int_t i=0;i<numberExcludeLeadingJets;i++)
   {
-    Double_t tmpArea = 0.0;
-
-    tmpArea = (2.0*fTrackEtaWindow) * TMath::TwoPi() * (etaMax-etaMin)/(2.0*fTrackEtaWindow); // area of the used eta strip
-    
-    // Now: exclude the part of the leading jet that is in the strip
-    if (numberExcludeLeadingJets == 2)
-      tmpArea = tmpArea*(1.0-MCGetOverlapCircleRectancle(fFirstLeadingJet->Eta(), fFirstLeadingJet->Phi(), fTRBackgroundConeRadius, etaMin, etaMax, 0., TMath::TwoPi()) -MCGetOverlapCircleRectancle(fSecondLeadingJet->Eta(), fSecondLeadingJet->Phi(), fTRBackgroundConeRadius, etaMin, etaMax, 0., TMath::TwoPi()));
-    else if (numberExcludeLeadingJets == 1)
-      tmpArea = tmpArea*(1.0-MCGetOverlapCircleRectancle(fFirstLeadingJet->Eta(), fFirstLeadingJet->Phi(), fTRBackgroundConeRadius, etaMin, etaMax, 0., TMath::TwoPi()));
-   
-    rhoMean = summedTracksPt/tmpArea;
-    area  = tmpArea;
+    AliEmcalJet* tmpJet = fSignalJets[i];
+    tmpEtas[i] = tmpJet->Eta();
+    tmpPhis[i] = tmpJet->Phi();
+    tmpAreaWithinJets -= tmpJet->Area();
   }
+
+  tmpAreaCone02 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(numberExcludeLeadingJets, tmpEtas, tmpPhis, 0.2, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
+  tmpAreaCone04 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(numberExcludeLeadingJets, tmpEtas, tmpPhis, 0.4, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
+  tmpAreaCone06 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(numberExcludeLeadingJets, tmpEtas, tmpPhis, 0.6, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
+  tmpAreaCone08 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(numberExcludeLeadingJets, tmpEtas, tmpPhis, 0.8, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
+ 
+  rhoConeExclusion02 = summedTracksPtCone02/tmpAreaCone02;
+  rhoConeExclusion04 = summedTracksPtCone04/tmpAreaCone04;
+  rhoConeExclusion06 = summedTracksPtCone06/tmpAreaCone06;
+  rhoConeExclusion08 = summedTracksPtCone08/tmpAreaCone08;
+  rhoExactExclusion  = summedTracksPtWithinJets/tmpAreaWithinJets;
+  rhoNoExclusion     = summedTracksPt/tmpFullTPCArea;
+
 
   #ifdef DEBUGMODE
     AliInfo("Got TR background density.");
@@ -890,14 +1042,14 @@ void AliAnalysisTaskChargedJetsPA::GetTRBackgroundDensity(Int_t numberExcludeLea
 
   // Setting invalid values
   Double_t summedTracksPt = 0.0;
-  rhoMean = -1.0;
+  rhoMean = 0.0;
   area = -1.0;
 
   Double_t tmpRadius = 0.0;
   if (doSearchPerpendicular)
-    tmpRadius = 0.5*TMath::Pi(); // exclude 90 degrees around jets
+    tmpRadius = 0.4*TMath::Pi(); // exclude 90 degrees around jets
   else
-    tmpRadius = fSignalJetRadius;
+    tmpRadius = 0.8;
     
   numberExcludeLeadingJets = 2; // dijet is excluded here in any case
 
@@ -949,12 +1101,18 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   #endif
   ////////////////////// NOTE: initialization & casting
 
+  // Check, if analysis should be done in pt hard bins
+  if(fUsePtHardBin != -1)
+    if(GetPtHardBin() != fUsePtHardBin)
+      return;
+
+
   // Additional cuts
   FillHistogram("hNumberEvents", 0.5); // number of events before manual cuts
 
   if(!fHelperClass->IsVertexSelected2013pA(event))
     return;
-
+ 
   FillHistogram("hNumberEvents", 1.5); // number of events after manual cuts
 
   #ifdef DEBUGMODE
@@ -967,48 +1125,101 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   AliCentrality* tmpCentrality = NULL;
   tmpCentrality = event->GetCentrality();
   Double_t centralityPercentile = 0.0;
+  Double_t centralityPercentileV0A = 0.0;
+  Double_t centralityPercentileV0C = 0.0;
+  Double_t centralityPercentileV0M = 0.0;
   if (tmpCentrality != NULL)
+  {
     centralityPercentile = tmpCentrality->GetCentralityPercentile(fCentralityType.Data());
+    centralityPercentileV0A = tmpCentrality->GetCentralityPercentile("V0A");
+    centralityPercentileV0C = tmpCentrality->GetCentralityPercentile("V0C");
+    centralityPercentileV0M = tmpCentrality->GetCentralityPercentile("V0M");
+  }
 
+  if((centralityPercentile < 0.0) || (centralityPercentile > 100.0))
+  {
+    AliWarning(Form("Centrality value not valid (c=%E), setting to failsafe c=1.0.",centralityPercentile)); 
+    centralityPercentile = 1.0;
+  }
   // Get jets
   if (fAnalyzeBackground || fAnalyzeJets)
     GetSignalJets();
 
   // Get background estimates
-  Double_t              backgroundKTMedian = -1.0;
-  Double_t              backgroundKTMedianSignalExcluded = -1.0;
-  Double_t              backgroundRCMean = -1.0;
-  Double_t              backgroundRCMedian = -1.0;
-  Double_t              backgroundTRMean = -1.0;
-  Double_t              backgroundKTAreaMean = -1.0;
-  Double_t              backgroundTRAreaMean = -1.0;
-  Double_t              dijetBackground = -1.0;
-  Double_t              dijetBackgroundPerpendicular = -1.0;
+  Double_t              backgroundKTImprovedCMS = -1.0;
+  Double_t              backgroundDijet = -1.0;
+  Double_t              backgroundDijetPerpendicular = -1.0;
+
+  Double_t              backgroundKTPbPb = -1.0;
+  Double_t              backgroundKTPbPbWithGhosts = -1.0;
+  Double_t              backgroundKTCMS = -1.0;
+  Double_t              backgroundKTMean = -1.0;
+  Double_t              backgroundKTTrackLike = -1.0;
+  Double_t              backgroundTRNoExcl = -1.0;
+  Double_t              backgroundTRCone02 = -1.0;
+  Double_t              backgroundTRCone04 = -1.0;
+  Double_t              backgroundTRCone06 = -1.0;
+  Double_t              backgroundTRCone08 = -1.0;
+  Double_t              backgroundTRExact  = -1.0;
+  Double_t              backgroundRC = -1.0;
+
   // Calculate background for different jet exclusions
-  Double_t              backgroundKTMedian0Excl = -1.0;
-  Double_t              backgroundRCMean0Excl = -1.0;
-  Double_t              backgroundTRMean0Excl = -1.0;
-  Double_t              backgroundKTMedian1Excl = -1.0;
-  Double_t              backgroundRCMean1Excl = -1.0;
-  Double_t              backgroundTRMean1Excl = -1.0;
 
   if (fAnalyzeBackground)
   {
     Double_t dummy = 0.0;
-    GetRCBackgroundDensity    (fNumberExcludedJets, backgroundRCMean, backgroundRCMedian);
-    GetTRBackgroundDensity    (fNumberExcludedJets, backgroundTRMean, backgroundTRAreaMean);
-    GetKTBackgroundDensity    (fNumberExcludedJets, backgroundKTMedian, backgroundKTAreaMean);
-    GetKTBackgroundDensity    (fNumberExcludedJets, backgroundKTMedianSignalExcluded, dummy, 0,0, kTRUE);    
-    GetRCBackgroundDensity    (0, backgroundRCMean0Excl, dummy);
-    GetTRBackgroundDensity    (0, backgroundTRMean0Excl, dummy);
-    GetKTBackgroundDensity    (0, backgroundKTMedian0Excl, dummy);
-    GetRCBackgroundDensity    (1, backgroundRCMean1Excl, dummy);
-    GetTRBackgroundDensity    (1, backgroundTRMean1Excl, dummy);
-    GetKTBackgroundDensity    (1, backgroundKTMedian1Excl, dummy);
+
+    GetKTBackgroundDensity    (fNumberExcludedJets, backgroundKTPbPb, backgroundKTPbPbWithGhosts, backgroundKTCMS, backgroundKTImprovedCMS, backgroundKTMean, backgroundKTTrackLike);
+//    cout << "My task brings rho= " << backgroundKTImprovedCMS << endl; // DEBUG
+    GetRCBackgroundDensity    (fNumberExcludedJets, backgroundRC, dummy);
+    GetTRBackgroundDensity    (fNumberExcludedJets, backgroundTRNoExcl, backgroundTRCone02, backgroundTRCone04, backgroundTRCone06, backgroundTRCone08, backgroundTRExact);
   }
 
   #ifdef DEBUGMODE
     AliInfo("Calculate()::Centrality&SignalJets&Background-Calculation done.");
+  #endif
+
+  if (fAnalyzeQA)
+  {
+    FillHistogram("hVertexX",event->GetPrimaryVertex()->GetX());
+    FillHistogram("hVertexY",event->GetPrimaryVertex()->GetY());
+    FillHistogram("hVertexXY",event->GetPrimaryVertex()->GetX(), event->GetPrimaryVertex()->GetY());
+    FillHistogram("hVertexZ",event->GetPrimaryVertex()->GetZ());
+    FillHistogram("hVertexR",TMath::Sqrt(event->GetPrimaryVertex()->GetX()*event->GetPrimaryVertex()->GetX() + event->GetPrimaryVertex()->GetY()*event->GetPrimaryVertex()->GetY()));
+    FillHistogram("hCentralityV0M",centralityPercentileV0M);
+    FillHistogram("hCentralityV0A",centralityPercentileV0A);
+    FillHistogram("hCentralityV0C",centralityPercentileV0C);
+
+    Int_t trackCountAcc = 0;
+    Int_t nTracks = fTrackArray->GetEntries();
+    for (Int_t i = 0; i < nTracks; i++)
+    {
+      AliVTrack* track = static_cast<AliVTrack*>(fTrackArray->At(i));
+      if (IsTrackInAcceptance(track))
+      {
+        FillHistogram("hTrackPhiEta", track->Phi(),track->Eta(), 1);
+        FillHistogram("hTrackPt", track->Pt());
+        if(track->Eta() >= 0)
+          FillHistogram("hTrackPtPosEta", track->Pt());
+        else
+          FillHistogram("hTrackPtNegEta", track->Pt());        
+                
+        FillHistogram("hTrackEta", track->Eta());
+        FillHistogram("hTrackPhi", track->Phi());
+        FillHistogram("hTrackPhiLabel", track->Phi(), (static_cast<AliPicoTrack*>(track))->GetTrackType());
+        for(Int_t j=0;j<20;j++)
+          if(track->Pt() > j)
+            FillHistogram("hTrackPhiPtCut", track->Phi(), track->Pt());
+
+        FillHistogram("hTrackCharge", track->Charge());
+        trackCountAcc++;
+      }
+    }
+    FillHistogram("hTrackCountAcc", trackCountAcc, centralityPercentileV0M);
+
+  }
+  #ifdef DEBUGMODE
+    AliInfo("Calculate()::QA done.");
   #endif
 
   ////////////////////// NOTE: Jet analysis and calculations
@@ -1022,57 +1233,31 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
 
       // Jet spectra
       FillHistogram("hJetPt", tmpJet->Pt(), centralityPercentile);
-      FillHistogram("hJetPtBgrdSubtractedRC", GetCorrectedJetPt(tmpJet, backgroundRCMean), centralityPercentile);
-      FillHistogram("hJetPtBgrdSubtractedKT", GetCorrectedJetPt(tmpJet, backgroundKTMedian), centralityPercentile);
-      FillHistogram("hJetPtBgrdSubtractedTR", GetCorrectedJetPt(tmpJet, backgroundTRMean), centralityPercentile);
-
-      // Jet spectra (less leading jets excluded)
-      FillHistogram("hJetPtBgrdSubtractedRC0Excl", GetCorrectedJetPt(tmpJet, backgroundRCMean0Excl), centralityPercentile);
-      FillHistogram("hJetPtBgrdSubtractedKT0Excl", GetCorrectedJetPt(tmpJet, backgroundKTMedian0Excl), centralityPercentile);
-      FillHistogram("hJetPtBgrdSubtractedTR0Excl", GetCorrectedJetPt(tmpJet, backgroundTRMean0Excl), centralityPercentile);
-      FillHistogram("hJetPtBgrdSubtractedRC1Excl", GetCorrectedJetPt(tmpJet, backgroundRCMean1Excl), centralityPercentile);
-      FillHistogram("hJetPtBgrdSubtractedKT1Excl", GetCorrectedJetPt(tmpJet, backgroundKTMedian1Excl), centralityPercentile);
-      FillHistogram("hJetPtBgrdSubtractedTR1Excl", GetCorrectedJetPt(tmpJet, backgroundTRMean1Excl), centralityPercentile);
-
-      // Jet spectra  (pos+neg eta)
-      if(tmpJet->Eta() > 0.2)
+      FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
+      FillHistogram("hJetPtSubtractedRhoKTImprovedCMS", tmpJet->Pt(), centralityPercentile, backgroundKTImprovedCMS);
+      
+      if(fAnalyzeDeprecatedBackgrounds)
       {
-        FillHistogram("hJetPtBgrdSubtractedRCPosEta", GetCorrectedJetPt(tmpJet, backgroundRCMean), centralityPercentile);
-        FillHistogram("hJetPtBgrdSubtractedKTPosEta", GetCorrectedJetPt(tmpJet, backgroundKTMedian), centralityPercentile);
-        FillHistogram("hJetPtBgrdSubtractedTRPosEta", GetCorrectedJetPt(tmpJet, backgroundTRMean), centralityPercentile);
-      }
-      else if(tmpJet->Eta() < -0.2)
-      {
-        FillHistogram("hJetPtBgrdSubtractedRCNegEta", GetCorrectedJetPt(tmpJet, backgroundRCMean), centralityPercentile);
-        FillHistogram("hJetPtBgrdSubtractedKTNegEta", GetCorrectedJetPt(tmpJet, backgroundKTMedian), centralityPercentile);
-        FillHistogram("hJetPtBgrdSubtractedTRNegEta", GetCorrectedJetPt(tmpJet, backgroundTRMean), centralityPercentile);
+        FillHistogram("hJetPtBgrdSubtractedTR", GetCorrectedJetPt(tmpJet, backgroundTRCone06), centralityPercentile);
+        FillHistogram("hJetPtBgrdSubtractedRC", GetCorrectedJetPt(tmpJet, backgroundRC), centralityPercentile);
+        FillHistogram("hJetPtBgrdSubtractedKTPbPb", GetCorrectedJetPt(tmpJet, backgroundKTPbPb), centralityPercentile);
+        FillHistogram("hJetPtBgrdSubtractedKTPbPbWithGhosts", GetCorrectedJetPt(tmpJet, backgroundKTPbPbWithGhosts), centralityPercentile);
+        FillHistogram("hJetPtBgrdSubtractedKTCMS", GetCorrectedJetPt(tmpJet, backgroundKTCMS), centralityPercentile);
+        FillHistogram("hJetPtBgrdSubtractedKTMean", GetCorrectedJetPt(tmpJet, backgroundKTMean), centralityPercentile);
+        FillHistogram("hJetPtBgrdSubtractedKTTrackLike", GetCorrectedJetPt(tmpJet, backgroundKTTrackLike), centralityPercentile);
       }
 
-      // Correct EVERY jet with suitable background
-      Double_t tmpKTRho = 0.0;
-      Double_t tmpRCRho = 0.0;
-      Double_t tmpTRRho = 0.0;
-      Double_t dummy = 0.0;
-      // Calculate backgrounds
-      GetKTBackgroundDensity (fNumberExcludedJets, tmpKTRho, dummy, tmpJet->Eta()-0.1, tmpJet->Eta()+0.1, kTRUE);
-      GetRCBackgroundDensity (fNumberExcludedJets, tmpRCRho, dummy, tmpJet->Eta()-0.1, tmpJet->Eta()+0.1);
-      GetTRBackgroundDensity (fNumberExcludedJets, tmpTRRho, dummy, tmpJet->Eta()-0.1, tmpJet->Eta()+0.1);
-
-      if(fAnalyzeBackground)
+      if(fAnalyzeQA)
       {
-        FillHistogram("hKTBackgroundEtaWindow", tmpKTRho, centralityPercentile);
-        FillHistogram("hRCBackgroundEtaWindow", tmpRCRho, centralityPercentile);
-        FillHistogram("hTRBackgroundEtaWindow", tmpTRRho, centralityPercentile);
+        FillHistogram("hJetArea", tmpJet->Area());
+        FillHistogram("hJetAreaVsPt", tmpJet->Area(), tmpJet->Pt());
+        FillHistogram("hJetPtVsConstituentCount", tmpJet->Pt(),tmpJet->GetNumberOfTracks());
+        FillHistogram("hJetPhiEta", tmpJet->Phi(),tmpJet->Eta());
       }
-
-      FillHistogram("hJetPtBgrdSubtractedKTEtaWindow", GetCorrectedJetPt(tmpJet, tmpKTRho), centralityPercentile);
-      FillHistogram("hJetPtBgrdSubtractedRCEtaWindow", GetCorrectedJetPt(tmpJet, tmpRCRho), centralityPercentile);
-      FillHistogram("hJetPtBgrdSubtractedTREtaWindow", GetCorrectedJetPt(tmpJet, tmpTRRho), centralityPercentile);
-
-
       // Signal jet vs. signal jet - "Combinatorial"
       for (Int_t j = i+1; j<fNumberSignalJets; j++)
         FillHistogram("hJetDeltaPhi", GetDeltaPhi(tmpJet->Phi(), fSignalJets[j]->Phi()));
+
     }
 
     // ### DIJETS
@@ -1088,8 +1273,8 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         FillHistogram("hDijetLeadingJetPt", fFirstLeadingJet->Pt());
         FillHistogram("hDijetPtCorrelation", fFirstLeadingJet->Pt(), fSecondLeadingJet->Pt());
         Double_t dummyArea = 0;
-        GetTRBackgroundDensity (2, dijetBackground, dummyArea, fFirstLeadingJet, fSecondLeadingJet, kFALSE);
-        GetTRBackgroundDensity (2, dijetBackgroundPerpendicular, dummyArea, fFirstLeadingJet, fSecondLeadingJet, kTRUE);
+        GetTRBackgroundDensity (2, backgroundDijet, dummyArea, fFirstLeadingJet, fSecondLeadingJet, kFALSE);
+        GetTRBackgroundDensity (2, backgroundDijetPerpendicular, dummyArea, fFirstLeadingJet, fSecondLeadingJet, kTRUE);
       }
     }
 
@@ -1111,112 +1296,94 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   if (fAnalyzeBackground)
   {
     // Calculate background in centrality classes
-    FillHistogram("hRCBackground", backgroundRCMean, centralityPercentile);
-    FillHistogram("hTRBackground", backgroundTRMean, centralityPercentile);
-    FillHistogram("hKTBackground", backgroundKTMedian, centralityPercentile);
-    // (here with different jet exclusions)
-    FillHistogram("hRCBackground0Excl", backgroundRCMean0Excl, centralityPercentile);
-    FillHistogram("hTRBackground0Excl", backgroundTRMean0Excl, centralityPercentile);
-    FillHistogram("hKTBackground0Excl", backgroundKTMedian0Excl, centralityPercentile);
-    FillHistogram("hRCBackground1Excl", backgroundRCMean1Excl, centralityPercentile);
-    FillHistogram("hTRBackground1Excl", backgroundTRMean1Excl, centralityPercentile);
-    FillHistogram("hKTBackground1Excl", backgroundKTMedian1Excl, centralityPercentile);
-
-    FillHistogram("hKTBackgroundSignalJetsExcluded", backgroundKTMedianSignalExcluded, centralityPercentile);
-    // Calculate backgrounds in eta bins
-    for(Int_t i=0;i<5;i++)
-    {
-      Double_t dummy = 0.0;
-      Double_t tmpKTRho = 0.0;
-      Double_t tmpRCRho = 0.0;
-      Double_t tmpTRRho = 0.0;
-
-      Double_t etaMin = -(fTrackEtaWindow-fSignalJetRadius) + 2*(fTrackEtaWindow-fSignalJetRadius)/5 *  i;
-      Double_t etaMax = -(fTrackEtaWindow-fSignalJetRadius) + 2*(fTrackEtaWindow-fSignalJetRadius)/5 * (i+1);
-
-      // Calculate backgrounds
-      GetKTBackgroundDensity    (fNumberExcludedJets, tmpKTRho, dummy, etaMin, etaMax);
-      GetTRBackgroundDensity    (fNumberExcludedJets, tmpTRRho, dummy, etaMin, etaMax);
-      GetRCBackgroundDensity    (fNumberExcludedJets, tmpRCRho, dummy, etaMin, etaMax);
-
-      FillHistogram("hRCBackgroundEtaBins", tmpRCRho, (etaMin+etaMax)/2.0);
-      FillHistogram("hTRBackgroundEtaBins", tmpTRRho, (etaMin+etaMax)/2.0);
-      FillHistogram("hKTBackgroundEtaBins", tmpKTRho, (etaMin+etaMax)/2.0);
-    }
+    FillHistogram("hKTBackgroundImprovedCMS", backgroundKTImprovedCMS, centralityPercentile);
+    FillHistogram("hKTMeanBackgroundImprovedCMS", centralityPercentile, backgroundKTImprovedCMS);
 
     // In case of dijets -> look at the background
-    if (dijetBackground >= 0)
-      FillHistogram("hDijetBackground", dijetBackground, centralityPercentile); 
-    if (dijetBackgroundPerpendicular >= 0)
-      FillHistogram("hDijetBackgroundPerpendicular", dijetBackgroundPerpendicular, centralityPercentile); 
+    if (backgroundDijet >= 0)
+      FillHistogram("hDijetBackground", backgroundDijet, centralityPercentile); 
+    if (backgroundDijetPerpendicular >= 0)
+      FillHistogram("hDijetBackgroundPerpendicular", backgroundDijetPerpendicular, centralityPercentile); 
+    
+    if(fAnalyzeDeprecatedBackgrounds)
+    {
+      FillHistogram("hKTBackgroundPbPb", backgroundKTPbPb, centralityPercentile);
+      FillHistogram("hKTBackgroundPbPbWithGhosts", backgroundKTPbPbWithGhosts, centralityPercentile);
+      FillHistogram("hKTBackgroundCMS", backgroundKTCMS, centralityPercentile);
+      FillHistogram("hKTBackgroundMean", backgroundKTMean, centralityPercentile);
+      FillHistogram("hKTBackgroundTrackLike", backgroundKTTrackLike, centralityPercentile);
+
+      FillHistogram("hTRBackgroundNoExcl", backgroundTRNoExcl, centralityPercentile);
+      FillHistogram("hTRBackgroundCone02", backgroundTRCone02, centralityPercentile);
+      FillHistogram("hTRBackgroundCone04", backgroundTRCone04, centralityPercentile);
+      FillHistogram("hTRBackgroundCone06", backgroundTRCone06, centralityPercentile);
+      FillHistogram("hTRBackgroundCone08", backgroundTRCone08, centralityPercentile);
+      FillHistogram("hTRBackgroundExact", backgroundTRExact, centralityPercentile);
+
+      FillHistogram("hRCBackground", backgroundRC, centralityPercentile);
+
+      // Calculate background profiles in terms of centrality
+      FillHistogram("hKTMeanBackgroundPbPb", centralityPercentile,  backgroundKTPbPb);
+      FillHistogram("hKTMeanBackgroundPbPbWithGhosts", centralityPercentile,  backgroundKTPbPbWithGhosts);
+      FillHistogram("hKTMeanBackgroundCMS", centralityPercentile, backgroundKTCMS);
+      FillHistogram("hKTMeanBackgroundMean", centralityPercentile, backgroundKTMean);
+      FillHistogram("hKTMeanBackgroundTPC", centralityPercentile, backgroundKTTrackLike);
+      FillHistogram("hTRMeanBackground", centralityPercentile,  backgroundTRCone06);
+    }
 
 
     // Calculate the delta pt
 
     Double_t tmpDeltaPtNoBackground = 0.0;
-    Double_t tmpDeltaPtKT = 0.0;
+    Double_t tmpDeltaPtKTImprovedCMS = 0.0;
+
+    Double_t tmpDeltaPtKTPbPb = 0.0;
+    Double_t tmpDeltaPtKTPbPbWithGhosts = 0.0;
+    Double_t tmpDeltaPtKTCMS = 0.0;
+    Double_t tmpDeltaPtKTMean = 0.0;
+    Double_t tmpDeltaPtKTTrackLike = 0.0;
     Double_t tmpDeltaPtRC = 0.0;
     Double_t tmpDeltaPtTR = 0.0;
-    Double_t tmpDeltaPtKT0Excl = 0.0;
-    Double_t tmpDeltaPtRC0Excl = 0.0;
-    Double_t tmpDeltaPtTR0Excl = 0.0;
-    Double_t tmpDeltaPtKT1Excl = 0.0;
-    Double_t tmpDeltaPtRC1Excl = 0.0;
-    Double_t tmpDeltaPtTR1Excl = 0.0;
 
-    Double_t tmpDeltaPtNoBackgroundNoExcl = 0.0;
-    Double_t tmpDeltaPtKTNoExcl = 0.0;
-    Double_t tmpDeltaPtRCNoExcl = 0.0;
-    Double_t tmpDeltaPtTRNoExcl = 0.0;
     GetDeltaPt(tmpDeltaPtNoBackground, 0.0);
-    GetDeltaPt(tmpDeltaPtKT, backgroundKTMedian);
-    GetDeltaPt(tmpDeltaPtRC, backgroundRCMean);
-    GetDeltaPt(tmpDeltaPtTR, backgroundTRMean);
-    GetDeltaPt(tmpDeltaPtKT0Excl, backgroundKTMedian0Excl);
-    GetDeltaPt(tmpDeltaPtRC0Excl, backgroundRCMean0Excl);
-    GetDeltaPt(tmpDeltaPtTR0Excl, backgroundTRMean0Excl);
-    GetDeltaPt(tmpDeltaPtKT1Excl, backgroundKTMedian1Excl);
-    GetDeltaPt(tmpDeltaPtRC1Excl, backgroundRCMean1Excl);
-    GetDeltaPt(tmpDeltaPtTR1Excl, backgroundTRMean1Excl);
+    GetDeltaPt(tmpDeltaPtKTImprovedCMS, backgroundKTImprovedCMS);
 
-    GetDeltaPt(tmpDeltaPtNoBackgroundNoExcl, 0.0, kFALSE);
-    GetDeltaPt(tmpDeltaPtKTNoExcl, backgroundKTMedian, kFALSE);
-    GetDeltaPt(tmpDeltaPtRCNoExcl, backgroundRCMean, kFALSE);
-    GetDeltaPt(tmpDeltaPtTRNoExcl, backgroundTRMean, kFALSE);
+    GetDeltaPt(tmpDeltaPtKTPbPb, backgroundKTPbPb);
+    GetDeltaPt(tmpDeltaPtKTPbPbWithGhosts, backgroundKTPbPbWithGhosts);
+    GetDeltaPt(tmpDeltaPtKTCMS, backgroundKTCMS);
+    GetDeltaPt(tmpDeltaPtKTMean, backgroundKTMean);
+    GetDeltaPt(tmpDeltaPtKTTrackLike, backgroundKTTrackLike);
+    GetDeltaPt(tmpDeltaPtRC, backgroundRC);
+    GetDeltaPt(tmpDeltaPtTR, backgroundTRCone06);
+
 
     // If valid, fill the delta pt histograms
+
+    if(tmpDeltaPtKTImprovedCMS > -10000.0)
+      FillHistogram("hDeltaPtKTImprovedCMS", tmpDeltaPtKTImprovedCMS, centralityPercentile);
     if(tmpDeltaPtNoBackground > -10000.0)
       FillHistogram("hDeltaPtNoBackground", tmpDeltaPtNoBackground, centralityPercentile);
-    if(tmpDeltaPtKT > -10000.0)
-      FillHistogram("hDeltaPtKT", tmpDeltaPtKT, centralityPercentile);
-    if(tmpDeltaPtRC > -10000.0)
-      FillHistogram("hDeltaPtRC", tmpDeltaPtRC, centralityPercentile);
-    if(tmpDeltaPtTR > -10000.0)
-      FillHistogram("hDeltaPtTR", tmpDeltaPtTR, centralityPercentile);
+    if(tmpDeltaPtNoBackground > 0.000001)
+      FillHistogram("hDeltaPtNoBackgroundNoEmptyCones", tmpDeltaPtNoBackground, centralityPercentile);
 
-    if(tmpDeltaPtKT0Excl > -10000.0)
-      FillHistogram("hDeltaPtKT0Excl", tmpDeltaPtKT0Excl, centralityPercentile);
-    if(tmpDeltaPtRC0Excl > -10000.0)
-      FillHistogram("hDeltaPtRC0Excl", tmpDeltaPtRC0Excl, centralityPercentile);
-    if(tmpDeltaPtTR0Excl > -10000.0)
-      FillHistogram("hDeltaPtTR0Excl", tmpDeltaPtTR0Excl, centralityPercentile);
-    if(tmpDeltaPtKT1Excl > -10000.0)
-      FillHistogram("hDeltaPtKT1Excl", tmpDeltaPtKT1Excl, centralityPercentile);
-    if(tmpDeltaPtRC1Excl > -10000.0)
-      FillHistogram("hDeltaPtRC1Excl", tmpDeltaPtRC1Excl, centralityPercentile);
-    if(tmpDeltaPtTR1Excl > -10000.0)
-      FillHistogram("hDeltaPtTR1Excl", tmpDeltaPtTR1Excl, centralityPercentile);
+    if(fAnalyzeDeprecatedBackgrounds)
+    {
+      if(tmpDeltaPtKTPbPb > -10000.0)
+        FillHistogram("hDeltaPtKTPbPb", tmpDeltaPtKTPbPb, centralityPercentile);
+      if(tmpDeltaPtKTPbPbWithGhosts > -10000.0)
+        FillHistogram("hDeltaPtKTPbPbWithGhosts", tmpDeltaPtKTPbPbWithGhosts, centralityPercentile);
+      if(tmpDeltaPtKTCMS > -10000.0)
+        FillHistogram("hDeltaPtKTCMS", tmpDeltaPtKTCMS, centralityPercentile);
+      if(tmpDeltaPtKTMean > -10000.0)
+        FillHistogram("hDeltaPtKTMean", tmpDeltaPtKTMean, centralityPercentile);
+      if(tmpDeltaPtKTTrackLike > -10000.0)
+        FillHistogram("hDeltaPtKTTrackLike", tmpDeltaPtKTTrackLike, centralityPercentile);
 
-
-    if(tmpDeltaPtNoBackgroundNoExcl > -10000.0)
-      FillHistogram("hDeltaPtNoBackgroundNoExcl", tmpDeltaPtNoBackgroundNoExcl, centralityPercentile);
-    if(tmpDeltaPtKTNoExcl > -10000.0)
-      FillHistogram("hDeltaPtKTNoExcl", tmpDeltaPtKTNoExcl, centralityPercentile);
-    if(tmpDeltaPtRCNoExcl > -10000.0)
-      FillHistogram("hDeltaPtRCNoExcl", tmpDeltaPtRCNoExcl, centralityPercentile);
-    if(tmpDeltaPtTRNoExcl > -10000.0)
-      FillHistogram("hDeltaPtTRNoExcl", tmpDeltaPtTRNoExcl, centralityPercentile);
-
+      if(tmpDeltaPtRC > -10000.0)
+        FillHistogram("hDeltaPtRC", tmpDeltaPtRC, centralityPercentile);
+      if(tmpDeltaPtTR > -10000.0)
+        FillHistogram("hDeltaPtTR", tmpDeltaPtTR, centralityPercentile);
+    }
   }
   
   #ifdef DEBUGMODE
@@ -1352,6 +1519,38 @@ Double_t AliAnalysisTaskChargedJetsPA::MCGetOverlapCircleRectancle(Double_t cPos
 
   // return ratio
   return (static_cast<Double_t>(hits)/static_cast<Double_t>(kTests));
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskChargedJetsPA::MCGetOverlapMultipleCirclesRectancle(Int_t numCircles, std::vector<Double_t> cPosX, std::vector<Double_t> cPosY, Double_t cRadius, Double_t rPosXmin, Double_t rPosXmax, Double_t rPosYmin, Double_t rPosYmax)
+{
+
+  const Int_t kTests = 1000;
+  Int_t hits = 0;
+  TRandom3 randomGen(0);
+ 
+  // Loop over kTests-many tests
+  for (Int_t i=0; i<kTests; i++)
+  {
+    //Choose random position in rectangle for the tester
+    Double_t tmpTestX = randomGen.Uniform(rPosXmin, rPosXmax);
+    Double_t tmpTestY = randomGen.Uniform(rPosYmin, rPosYmax);
+
+    //Check, if tester is in one of the circles. If yes, increment circle counter.
+    for(Int_t j=0; j<numCircles; j++)
+    {
+      Double_t tmpDistance = TMath::Sqrt( (tmpTestX - cPosX[j])*(tmpTestX - cPosX[j]) + (tmpTestY - cPosY[j])*(tmpTestY - cPosY[j]) );
+      if(tmpDistance < cRadius)
+      {
+        hits++;
+        break;
+      }
+    }
+  }
+
+  // return ratio
+  return (static_cast<Double_t>(hits)/static_cast<Double_t>(kTests));
+
 }
 
 //________________________________________________________________________
