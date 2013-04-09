@@ -87,8 +87,13 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   const char* trackAxisTitle[6];
   
   // eta
-  trackBins[0] = GetBinning(binning, "eta", iTrackBin[0]);
-  trackAxisTitle[0] = "#eta";
+  Int_t nEtaBins = -1;
+  Double_t* etaBins = GetBinning(binning, "eta", nEtaBins);
+  const char* etaTitle = "#eta";
+  
+  iTrackBin[0] = nEtaBins;
+  trackBins[0] = etaBins;
+  trackAxisTitle[0] = etaTitle;
   
   // delta eta
   Int_t nDeltaEtaBins = -1;
@@ -257,13 +262,14 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
 
   SetStepNames(fEventHist);
   
+  iTrackBin[0] = nEtaBins;
   iTrackBin[1] = npTBinsFine;
   iTrackBin[2] = kNSpeciesBins;
   iTrackBin[4] = nVertexBinsEff;
 
   fTrackHistEfficiency = new AliCFContainer("fTrackHistEfficiency", "Tracking efficiency", 6, 5, iTrackBin);
-  fTrackHistEfficiency->SetBinLimits(0, trackBins[0]);
-  fTrackHistEfficiency->SetVarTitle(0, trackAxisTitle[0]);
+  fTrackHistEfficiency->SetBinLimits(0, etaBins);
+  fTrackHistEfficiency->SetVarTitle(0, etaTitle);
   fTrackHistEfficiency->SetBinLimits(1, pTBinsFine);
   fTrackHistEfficiency->SetVarTitle(1, trackAxisTitle[1]);
   fTrackHistEfficiency->SetBinLimits(2, speciesBins);

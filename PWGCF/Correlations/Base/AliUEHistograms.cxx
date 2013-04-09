@@ -134,7 +134,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   {
     TString line(lines->At(i)->GetName());
     TString tag = line(0, line.Index(":")+1);
-    if (!customBinning.Contains(tag))
+    if (!customBinning.BeginsWith(tag) && !customBinning.Contains(TString("\n") + tag))
       binningStr += line + "\n";
     else
       Printf("Using custom binning for %s", tag.Data());
