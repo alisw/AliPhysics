@@ -81,10 +81,8 @@ AliPHOSHijingEfficiency::AliPHOSHijingEfficiency(const char *name)
   DefineOutput(1,TList::Class());
 
   // Set bad channel map
-  char key[55] ;
   for(Int_t i=0; i<6; i++){
-    sprintf(key,"PHOS_BadMap_mod%d",i) ;
-    fPHOSBadMap[i]=new TH2I(key,"Bad Modules map",64,0.,64.,56,0.,56.) ;
+    fPHOSBadMap[i]=new TH2I(Form("PHOS_BadMap_mod%d",i),"Bad Modules map",64,0.,64.,56,0.,56.) ;
   }
 
 
@@ -438,7 +436,7 @@ void AliPHOSHijingEfficiency::UserCreateOutputObjects()
    snprintf(partTypes[23],55,"hGammaPipmn") ; //
  
    const Int_t nPID=12 ;
-   char cPID[25][12] ;
+   char cPID[12][25] ;
    snprintf(cPID[0],25,"All") ;
    snprintf(cPID[1],25,"Allcore") ;
    snprintf(cPID[2],25,"CPV") ;
@@ -492,7 +490,6 @@ void AliPHOSHijingEfficiency::UserExec(Option_t *)
   FillHistogram("hTotSelEvents",0.5) ;
   
   // Get PHOS rotation matrices from ESD and set them to the PHOS geometry
-  char skey[55] ;
   if(fEventCounter == 0) {
     // Initialize the PHOS geometry
     fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
@@ -675,11 +672,9 @@ void AliPHOSHijingEfficiency::UserExec(Option_t *)
     
     Double_t ecore=CoreEnergy(&cluPHOS1) ; 
     
-    sprintf(skey,"hCluLowM%d",mod) ;
-    FillHistogram(skey,cellX,cellZ,1.);
+    FillHistogram(Form("hCluLowM%d",mod),cellX,cellZ,1.);
     if(cluPHOS1.E()>1.5){
-      sprintf(skey,"hCluHighM%d",mod) ;
-      FillHistogram(skey,cellX,cellZ,1.);
+      FillHistogram(Form("hCluHighM%d",mod),cellX,cellZ,1.);
     }
     
     if(inPHOS>=fPHOSEvent->GetSize()){
@@ -706,8 +701,7 @@ void AliPHOSHijingEfficiency::UserExec(Option_t *)
           FillHistogram(Form("hPhotAll_DistBad6_cen%d",fCenBin),ph->Pt()) ;
     
     if(ph->IsDispOK()){
-      sprintf(skey,"hCluDispM%d",mod) ;
-      FillHistogram(skey,cellX,cellZ,1.);
+      FillHistogram(Form("hCluDispM%d",mod),cellX,cellZ,1.);
     }
     //Track matching
     Double_t dx=clu->GetTrackDx() ;
@@ -731,8 +725,7 @@ void AliPHOSHijingEfficiency::UserExec(Option_t *)
     ph->SetCPVBit(cpvBit) ;
     ph->SetCPV2Bit(cpvBit2) ;
     if(cpvBit){
-      sprintf(skey,"hCluVetoM%d",mod) ;
-      FillHistogram(skey,cellX,cellZ,1.);
+      FillHistogram(Form("hCluVetoM%d",mod),cellX,cellZ,1.);
     }
     ph->SetEMCx(float(cellX)) ;
     ph->SetEMCz(float(cellZ)) ;
@@ -802,7 +795,10 @@ void AliPHOSHijingEfficiency::UserExec(Option_t *)
     for (Int_t i2=i1+1; i2<inPHOS; i2++) {
       AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
       Double_t w2=ph2->GetWeight() ;
-      Double_t w = TMath::Sqrt(w1*w2) ;
+      Double_t w = w1*w2 ;
+      if(FindCommonParent(ph1->GetPrimary(),ph2->GetPrimary())!=-1)
+	w=w1 ;     
+      
       TLorentzVector p12  = *ph1  + *ph2;
       TLorentzVector pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
             
@@ -812,10 +808,10 @@ void AliPHOSHijingEfficiency::UserExec(Option_t *)
       Double_t mv = p12.M() ;
       Double_t ptv = p12.Pt() ;
 
-      FillHistogram(Form("hPi0All_cen%d",fCenBin),pt,m,w) ;
-      FillHistogram(Form("hPi0Allcore_cen%d",fCenBin),ptv,mv,w) ;
+      FillHistogram(Form("hPi0All_cen%d",fCenBin),m,pt,w) ;
+      FillHistogram(Form("hPi0Allcore_cen%d",fCenBin),mv,ptv,w) ;
       if(ph1->IsntUnfolded() && ph2->IsntUnfolded()){
-        FillHistogram(Form("hPi0Allwou_cen%d",fCenBin),pt,m,w) ;
+        FillHistogram(Form("hPi0Allwou_cen%d",fCenBin),m,pt,w) ;
       }
       
       
@@ -823,112 +819,112 @@ void AliPHOSHijingEfficiency::UserExec(Option_t *)
       Double_t ptv1 = ph1->GetMomV2()->Pt() ;      
       Double_t pt2 = ph2->Pt() ;      
       Double_t ptv2 = ph2->GetMomV2()->Pt() ;      
-      FillHistogram(Form("hSingleAll_cen%d",fCenBin),m,pt1,w1) ;
-      FillHistogram(Form("hSingleAll_cen%d",fCenBin),m,pt2,w2) ;
-      FillHistogram(Form("hSingleAllcore_cen%d",fCenBin),mv,ptv1,w1) ;
-      FillHistogram(Form("hSingleAllcore_cen%d",fCenBin),mv,ptv2,w2) ;
+      FillHistogram(Form("hSingleAll_cen%d",fCenBin),m,pt1,w) ;
+      FillHistogram(Form("hSingleAll_cen%d",fCenBin),m,pt2,w) ;
+      FillHistogram(Form("hSingleAllcore_cen%d",fCenBin),mv,ptv1,w) ;
+      FillHistogram(Form("hSingleAllcore_cen%d",fCenBin),mv,ptv2,w) ;
       if(ph1->IsntUnfolded())
-        FillHistogram(Form("hSingleAllwou_cen%d",fCenBin),m,pt1,w1) ;
+        FillHistogram(Form("hSingleAllwou_cen%d",fCenBin),m,pt1,w) ;
       if(ph2->IsntUnfolded())
-        FillHistogram(Form("hSingleAllwou_cen%d",fCenBin),m,pt2,w2) ;
+        FillHistogram(Form("hSingleAllwou_cen%d",fCenBin),m,pt2,w) ;
       if(ph1->IsCPVOK()){
-        FillHistogram(Form("hSingleCPV_cen%d",fCenBin),m,pt1,w1) ;
-        FillHistogram(Form("hSingleCPVcore_cen%d",fCenBin),mv,ptv1,w1) ;
+        FillHistogram(Form("hSingleCPV_cen%d",fCenBin),m,pt1,w) ;
+        FillHistogram(Form("hSingleCPVcore_cen%d",fCenBin),mv,ptv1,w) ;
       }
       if(ph2->IsCPVOK()){
-        FillHistogram(Form("hSingleCPV_cen%d",fCenBin),m,pt2,w2) ;
-        FillHistogram(Form("hSingleCPVcore_cen%d",fCenBin),mv,ptv2,w2) ;
+        FillHistogram(Form("hSingleCPV_cen%d",fCenBin),m,pt2,w) ;
+        FillHistogram(Form("hSingleCPVcore_cen%d",fCenBin),mv,ptv2,w) ;
       }
       if(ph1->IsCPV2OK()){
-        FillHistogram(Form("hSingleCPV2_cen%d",fCenBin),m,pt1,w1) ;
+        FillHistogram(Form("hSingleCPV2_cen%d",fCenBin),m,pt1,w) ;
       }
       if(ph2->IsCPV2OK()){
-        FillHistogram(Form("hSingleCPV2_cen%d",fCenBin),m,pt2,w2) ;
+        FillHistogram(Form("hSingleCPV2_cen%d",fCenBin),m,pt2,w) ;
       }      
       if(ph1->IsDispOK()){
-        FillHistogram(Form("hSingleDisp_cen%d",fCenBin),m,pt1,w1) ;
+        FillHistogram(Form("hSingleDisp_cen%d",fCenBin),m,pt1,w) ;
         if(ph1->IsntUnfolded()){
-          FillHistogram(Form("hSingleDispwou_cen%d",fCenBin),m,pt1,w1) ;
+          FillHistogram(Form("hSingleDispwou_cen%d",fCenBin),m,pt1,w) ;
 	}
-        FillHistogram(Form("hSingleDispcore_cen%d",fCenBin),mv,ptv1,w1) ;
+        FillHistogram(Form("hSingleDispcore_cen%d",fCenBin),mv,ptv1,w) ;
       }
       if(ph2->IsDispOK()){
-        FillHistogram(Form("hSingleDisp_cen%d",fCenBin),m,pt2,w2) ;
+        FillHistogram(Form("hSingleDisp_cen%d",fCenBin),m,pt2,w) ;
         if(ph1->IsntUnfolded()){
-          FillHistogram(Form("hSingleDispwou_cen%d",fCenBin),m,pt2,w2) ;
+          FillHistogram(Form("hSingleDispwou_cen%d",fCenBin),m,pt2,w) ;
 	}
-        FillHistogram(Form("hSingleDispcore_cen%d",fCenBin),mv,ptv2,w2) ;
+        FillHistogram(Form("hSingleDispcore_cen%d",fCenBin),mv,ptv2,w) ;
       }
       if(ph1->IsDisp2OK()){
-        FillHistogram(Form("hSingleDisp2_cen%d",fCenBin),m,pt1,w1) ;
-        FillHistogram(Form("hSingleDisp2core_cen%d",fCenBin),mv,ptv1,w1) ;
+        FillHistogram(Form("hSingleDisp2_cen%d",fCenBin),m,pt1,w) ;
+        FillHistogram(Form("hSingleDisp2core_cen%d",fCenBin),mv,ptv1,w) ;
       }
       if(ph2->IsDisp2OK()){
-        FillHistogram(Form("hSingleDisp2_cen%d",fCenBin),m,pt2,w2) ;
-        FillHistogram(Form("hSingleDisp2core_cen%d",fCenBin),mv,ptv2,w2) ;
+        FillHistogram(Form("hSingleDisp2_cen%d",fCenBin),m,pt2,w) ;
+        FillHistogram(Form("hSingleDisp2core_cen%d",fCenBin),mv,ptv2,w) ;
       }
       if(ph1->IsDispOK() && ph1->IsCPVOK()){
-        FillHistogram(Form("hSingleBoth_cen%d",fCenBin),m,pt1,w1) ;
-        FillHistogram(Form("hSingleBothcore_cen%d",fCenBin),mv,ptv1,w1) ;
+        FillHistogram(Form("hSingleBoth_cen%d",fCenBin),m,pt1,w) ;
+        FillHistogram(Form("hSingleBothcore_cen%d",fCenBin),mv,ptv1,w) ;
       }
       if(ph2->IsDispOK() && ph2->IsCPVOK()){
-        FillHistogram(Form("hSingleBoth_cen%d",fCenBin),m,pt2,w2) ;
-        FillHistogram(Form("hSingleBothcore_cen%d",fCenBin),mv,ptv2,w2) ;
+        FillHistogram(Form("hSingleBoth_cen%d",fCenBin),m,pt2,w) ;
+        FillHistogram(Form("hSingleBothcore_cen%d",fCenBin),mv,ptv2,w) ;
       }            
       if(ph1->IsDisp2OK() && ph1->IsCPVOK()){
-        FillHistogram(Form("hSingleBoth2_cen%d",fCenBin),m,pt1,w1) ;
-        FillHistogram(Form("hSingleBoth2core_cen%d",fCenBin),mv,ptv1,w1) ;
+        FillHistogram(Form("hSingleBoth2_cen%d",fCenBin),m,pt1,w) ;
+        FillHistogram(Form("hSingleBoth2core_cen%d",fCenBin),mv,ptv1,w) ;
       }
       if(ph2->IsDisp2OK() && ph2->IsCPVOK()){
-        FillHistogram(Form("hSingleBoth2_cen%d",fCenBin),m,pt2,w2) ;
-        FillHistogram(Form("hSingleBoth2core_cen%d",fCenBin),mv,ptv2,w2) ;
+        FillHistogram(Form("hSingleBoth2_cen%d",fCenBin),m,pt2,w) ;
+        FillHistogram(Form("hSingleBoth2core_cen%d",fCenBin),mv,ptv2,w) ;
       }            
       
       
       if(a<alphaCut){
-        FillHistogram(Form("hPi0All_a07_cen%d",fCenBin),pt,m,w) ;
+        FillHistogram(Form("hPi0All_a07_cen%d",fCenBin),m,pt,w) ;
       }
 
       if(ph1->IsCPVOK() && ph2->IsCPVOK()){ //pi0 CPV	
-	FillHistogram(Form("hPi0CPV_cen%d",fCenBin),pt,m,w) ;
-	FillHistogram(Form("hPi0CPVcore_cen%d",fCenBin),ptv,mv,w) ;
+	FillHistogram(Form("hPi0CPV_cen%d",fCenBin),m,pt,w) ;
+	FillHistogram(Form("hPi0CPVcore_cen%d",fCenBin),mv,ptv,w) ;
 		
         if(a<alphaCut){
-          FillHistogram(Form("hPi0CPV_a07_cen%d",fCenBin),pt,m,w) ;
+          FillHistogram(Form("hPi0CPV_a07_cen%d",fCenBin),m,pt,w) ;
         }
       } 
       if(ph1->IsCPV2OK() && ph2->IsCPV2OK()){
 	FillHistogram(Form("hPi0CPV2_cen%d",fCenBin),p12.M(),p12.Pt(),w) ;
         if(a<alphaCut){
-          FillHistogram(Form("hPi0CPV2_a07_cen%d",fCenBin),pt,m,w) ;
+          FillHistogram(Form("hPi0CPV2_a07_cen%d",fCenBin),m,pt,w) ;
         }
       } 
       if(ph1->IsDisp2OK() && ph2->IsDisp2OK()){
-	FillHistogram(Form("hPi0Disp2_cen%d",fCenBin),pt,m,w) ;
-	FillHistogram(Form("hPi0Disp2core_cen%d",fCenBin),ptv,mv,w) ;
+	FillHistogram(Form("hPi0Disp2_cen%d",fCenBin),m,pt,w) ;
+	FillHistogram(Form("hPi0Disp2core_cen%d",fCenBin),mv,ptv,w) ;
 	if(ph1->IsCPVOK() && ph2->IsCPVOK()){ //pi0 Both
-	  FillHistogram(Form("hPi0Both2_cen%d",fCenBin),pt,m,w) ;
-	  FillHistogram(Form("hPi0Both2core_cen%d",fCenBin),ptv,mv,w) ;
+	  FillHistogram(Form("hPi0Both2_cen%d",fCenBin),m,pt,w) ;
+	  FillHistogram(Form("hPi0Both2core_cen%d",fCenBin),mv,ptv,w) ;
           if(a<alphaCut){
-            FillHistogram(Form("hPi0Both2_a07_cen%d",fCenBin),pt,m,w) ;
+            FillHistogram(Form("hPi0Both2_a07_cen%d",fCenBin),m,pt,w) ;
           }
  	}
       }
       
       
       if(ph1->IsDispOK() && ph2->IsDispOK()){ //pi0 Disp	
-	FillHistogram(Form("hPi0Disp_cen%d",fCenBin),pt,m,w) ;
-	FillHistogram(Form("hPi0Dispcore_cen%d",fCenBin),ptv,mv,w) ;		
+	FillHistogram(Form("hPi0Disp_cen%d",fCenBin),m,pt,w) ;
+	FillHistogram(Form("hPi0Dispcore_cen%d",fCenBin),mv,ptv,w) ;		
         if(a<alphaCut){
-          FillHistogram(Form("hPi0Disp_a07_cen%d",fCenBin),pt,m,w) ;
+          FillHistogram(Form("hPi0Disp_a07_cen%d",fCenBin),m,pt,w) ;
         }
 	
 	if(ph1->IsCPVOK() && ph2->IsCPVOK()){ //pi0 Both	  
-	  FillHistogram(Form("hPi0Both_cen%d",fCenBin),pt,m,w) ;
-	  FillHistogram(Form("hPi0Bothcore_cen%d",fCenBin),ptv,mv,w) ;
+	  FillHistogram(Form("hPi0Both_cen%d",fCenBin),m,pt,w) ;
+	  FillHistogram(Form("hPi0Bothcore_cen%d",fCenBin),mv,ptv,w) ;
 	  
           if(a<alphaCut){
-            FillHistogram(Form("hPi0Both_a07_cen%d",fCenBin),pt,m,w) ;
+            FillHistogram(Form("hPi0Both_a07_cen%d",fCenBin),m,pt,w) ;
           }
         }
       }
@@ -938,10 +934,12 @@ void AliPHOSHijingEfficiency::UserExec(Option_t *)
   //now mixed
   for (Int_t i1=0; i1<inPHOS; i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
+    Double_t w1=ph1->GetWeight() ;
     for(Int_t ev=0; ev<prevPHOS->GetSize();ev++){
       TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
       for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
 	AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
+        Double_t w2=ph2->GetWeight() ;
 	TLorentzVector p12  = *ph1  + *ph2;
 	TLorentzVector pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());	
 	
@@ -950,123 +948,124 @@ void AliPHOSHijingEfficiency::UserExec(Option_t *)
         Double_t pt = p12.Pt() ;
         Double_t mv = p12.M() ;
         Double_t ptv = p12.Pt() ;
+	Double_t w=w1*w2 ;
 	
-	FillHistogram(Form("hMiPi0All_cen%d",fCenBin),pt,m) ;
-	FillHistogram(Form("hMiPi0Allcore_cen%d",fCenBin),ptv,mv) ;
+	FillHistogram(Form("hMiPi0All_cen%d",fCenBin),m,pt,w) ;
+	FillHistogram(Form("hMiPi0Allcore_cen%d",fCenBin),mv,ptv,w) ;
 	if(ph1->IsntUnfolded() && ph2->IsntUnfolded()){
-	  FillHistogram(Form("hMiPi0Allwou_cen%d",fCenBin),pt,m) ;
+	  FillHistogram(Form("hMiPi0Allwou_cen%d",fCenBin),m,pt,w) ;
 	}
 
         Double_t pt1 = ph1->Pt() ;      
         Double_t ptv1 = ph1->GetMomV2()->Pt() ;      
         Double_t pt2 = ph2->Pt() ;      
         Double_t ptv2 = ph2->GetMomV2()->Pt() ;      
-        FillHistogram(Form("hMiSingleAll_cen%d",fCenBin),m,pt1) ;
-        FillHistogram(Form("hMiSingleAll_cen%d",fCenBin),m,pt2) ;
-        FillHistogram(Form("hMiSingleAllcore_cen%d",fCenBin),mv,ptv1) ;
-        FillHistogram(Form("hMiSingleAllcore_cen%d",fCenBin),mv,ptv2) ;
+        FillHistogram(Form("hMiSingleAll_cen%d",fCenBin),m,pt1,w) ;
+        FillHistogram(Form("hMiSingleAll_cen%d",fCenBin),m,pt2,w) ;
+        FillHistogram(Form("hMiSingleAllcore_cen%d",fCenBin),mv,ptv1,w) ;
+        FillHistogram(Form("hMiSingleAllcore_cen%d",fCenBin),mv,ptv2,w) ;
         if(ph1->IsntUnfolded())
-          FillHistogram(Form("hMiSingleAllwou_cen%d",fCenBin),m,pt1) ;
+          FillHistogram(Form("hMiSingleAllwou_cen%d",fCenBin),m,pt1,w) ;
         if(ph2->IsntUnfolded())
-          FillHistogram(Form("hMiSingleAllwou_cen%d",fCenBin),m,pt2) ;
+          FillHistogram(Form("hMiSingleAllwou_cen%d",fCenBin),m,pt2,w) ;
         if(ph1->IsCPVOK()){
-          FillHistogram(Form("hMiSingleCPV_cen%d",fCenBin),m,pt1) ;
-          FillHistogram(Form("hMiSingleCPVcore_cen%d",fCenBin),mv,ptv1) ;
+          FillHistogram(Form("hMiSingleCPV_cen%d",fCenBin),m,pt1,w) ;
+          FillHistogram(Form("hMiSingleCPVcore_cen%d",fCenBin),mv,ptv1,w) ;
         }
         if(ph2->IsCPVOK()){
-          FillHistogram(Form("hMiSingleCPV_cen%d",fCenBin),m,pt2) ;
-          FillHistogram(Form("hMiSingleCPVcore_cen%d",fCenBin),mv,ptv2) ;
+          FillHistogram(Form("hMiSingleCPV_cen%d",fCenBin),m,pt2,w) ;
+          FillHistogram(Form("hMiSingleCPVcore_cen%d",fCenBin),mv,ptv2,w) ;
         }
         if(ph1->IsCPV2OK()){
-          FillHistogram(Form("hMiSingleCPV2_cen%d",fCenBin),m,pt1) ;
+          FillHistogram(Form("hMiSingleCPV2_cen%d",fCenBin),m,pt1,w) ;
         }
         if(ph2->IsCPV2OK()){
-          FillHistogram(Form("hMiSingleCPV2_cen%d",fCenBin),m,pt2) ;
+          FillHistogram(Form("hMiSingleCPV2_cen%d",fCenBin),m,pt2,w) ;
         }      
         if(ph1->IsDispOK()){
-          FillHistogram(Form("hMiSingleDisp_cen%d",fCenBin),m,pt1) ;
+          FillHistogram(Form("hMiSingleDisp_cen%d",fCenBin),m,pt1,w) ;
           if(ph1->IsntUnfolded()){
-            FillHistogram(Form("hMiSingleDispwou_cen%d",fCenBin),m,pt1) ;
+            FillHistogram(Form("hMiSingleDispwou_cen%d",fCenBin),m,pt1,w) ;
 	  }
-          FillHistogram(Form("hMiSingleDispcore_cen%d",fCenBin),mv,ptv1) ;
+          FillHistogram(Form("hMiSingleDispcore_cen%d",fCenBin),mv,ptv1,w) ;
         }
         if(ph2->IsDispOK()){
-          FillHistogram(Form("hMiSingleDisp_cen%d",fCenBin),m,pt2) ;
+          FillHistogram(Form("hMiSingleDisp_cen%d",fCenBin),m,pt2,w) ;
           if(ph1->IsntUnfolded()){
-            FillHistogram(Form("hMiSingleDispwou_cen%d",fCenBin),m,pt2) ;
+            FillHistogram(Form("hMiSingleDispwou_cen%d",fCenBin),m,pt2,w) ;
 	  }
-          FillHistogram(Form("hMiSingleDispcore_cen%d",fCenBin),mv,ptv2) ;
+          FillHistogram(Form("hMiSingleDispcore_cen%d",fCenBin),mv,ptv2,w) ;
         }
         if(ph1->IsDisp2OK()){
-          FillHistogram(Form("hMiSingleDisp2_cen%d",fCenBin),m,pt1) ;
-          FillHistogram(Form("hMiSingleDisp2core_cen%d",fCenBin),mv,ptv1) ;
+          FillHistogram(Form("hMiSingleDisp2_cen%d",fCenBin),m,pt1,w) ;
+          FillHistogram(Form("hMiSingleDisp2core_cen%d",fCenBin),mv,ptv1,w) ;
         } 
         if(ph2->IsDisp2OK()){
-          FillHistogram(Form("hMiSingleDisp2_cen%d",fCenBin),m,pt2) ;
-          FillHistogram(Form("hMiSingleDisp2core_cen%d",fCenBin),mv,ptv2) ;
+          FillHistogram(Form("hMiSingleDisp2_cen%d",fCenBin),m,pt2,w) ;
+          FillHistogram(Form("hMiSingleDisp2core_cen%d",fCenBin),mv,ptv2,w) ;
         }
         if(ph1->IsDispOK() && ph1->IsCPVOK()){
-          FillHistogram(Form("hMiSingleBoth_cen%d",fCenBin),m,pt1) ;
-          FillHistogram(Form("hMiSingleBothcore_cen%d",fCenBin),mv,ptv1) ;
+          FillHistogram(Form("hMiSingleBoth_cen%d",fCenBin),m,pt1,w) ;
+          FillHistogram(Form("hMiSingleBothcore_cen%d",fCenBin),mv,ptv1,w) ;
         }
         if(ph2->IsDispOK() && ph2->IsCPVOK()){
-          FillHistogram(Form("hMiSingleBoth_cen%d",fCenBin),m,pt2) ;
-          FillHistogram(Form("hMiSingleBothcore_cen%d",fCenBin),mv,ptv2) ;
+          FillHistogram(Form("hMiSingleBoth_cen%d",fCenBin),m,pt2,w) ;
+          FillHistogram(Form("hMiSingleBothcore_cen%d",fCenBin),mv,ptv2,w) ;
         }            
         if(ph1->IsDisp2OK() && ph1->IsCPVOK()){
-          FillHistogram(Form("hMiSingleBoth2_cen%d",fCenBin),m,pt1) ;
-          FillHistogram(Form("hMiSingleBoth2core_cen%d",fCenBin),mv,ptv1) ;
+          FillHistogram(Form("hMiSingleBoth2_cen%d",fCenBin),m,pt1,w) ;
+          FillHistogram(Form("hMiSingleBoth2core_cen%d",fCenBin),mv,ptv1,w) ;
         }
         if(ph2->IsDisp2OK() && ph2->IsCPVOK()){
-          FillHistogram(Form("hMiSingleBoth2_cen%d",fCenBin),m,pt2) ;
-          FillHistogram(Form("hMiSingleBoth2core_cen%d",fCenBin),mv,ptv2) ;
+          FillHistogram(Form("hMiSingleBoth2_cen%d",fCenBin),m,pt2,w) ;
+          FillHistogram(Form("hMiSingleBoth2core_cen%d",fCenBin),mv,ptv2,w) ;
         }            
 	
 	
 	
         if(a<alphaCut){
-          FillHistogram(Form("hMiPi0All_a07_cen%d",fCenBin),pt,m) ;
+          FillHistogram(Form("hMiPi0All_a07_cen%d",fCenBin),m,pt,w) ;
         }
 	if(ph1->IsCPVOK() && ph2->IsCPVOK()){	  
-	  FillHistogram(Form("hMiPi0CPV_cen%d",fCenBin),p12.M(), p12.Pt()) ;
-	  FillHistogram(Form("hMiPi0CPVcore_cen%d",fCenBin),ptv,mv) ;
+	  FillHistogram(Form("hMiPi0CPV_cen%d",fCenBin),m,pt,w) ;
+	  FillHistogram(Form("hMiPi0CPVcore_cen%d",fCenBin),mv,ptv,w) ;
 
 	  if(a<alphaCut){
-            FillHistogram(Form("hMiPi0CPV_a07_cen%d",fCenBin),pt,m) ;
+            FillHistogram(Form("hMiPi0CPV_a07_cen%d",fCenBin),m,pt,w) ;
           }
 	}
 	if(ph1->IsCPV2OK() && ph2->IsCPV2OK()){
-	  FillHistogram(Form("hMiPi0CPV2_cen%d",fCenBin),pt,m) ;
+	  FillHistogram(Form("hMiPi0CPV2_cen%d",fCenBin),m,pt,w) ;
 
 	  if(a<alphaCut){
-            FillHistogram(Form("hMiPi0CPV2_a07_cen%d",fCenBin),pt,m) ;
+            FillHistogram(Form("hMiPi0CPV2_a07_cen%d",fCenBin),m,pt,w) ;
           }
 	}
 	if(ph1->IsDisp2OK() && ph2->IsDisp2OK()){
-	  FillHistogram(Form("hMiPi0Disp2_cen%d",fCenBin),pt,m) ;
-	  FillHistogram(Form("hMiPi0Disp2core_cen%d",fCenBin),ptv,mv) ;
+	  FillHistogram(Form("hMiPi0Disp2_cen%d",fCenBin),m,pt,w) ;
+	  FillHistogram(Form("hMiPi0Disp2core_cen%d",fCenBin),mv,ptv,w) ;
 	  if(ph1->IsCPVOK() && ph2->IsCPVOK()){
-	    FillHistogram(Form("hMiPi0Both2_cen%d",fCenBin),pt,m) ;
-	    FillHistogram(Form("hMiPi0Both2core_cen%d",fCenBin),pv12.M(),pv12.Pt()) ;	    
+	    FillHistogram(Form("hMiPi0Both2_cen%d",fCenBin),m,pt,w) ;
+	    FillHistogram(Form("hMiPi0Both2core_cen%d",fCenBin),mv,ptv,w) ;	    
 	  }
 	}	    
 	if(ph1->IsDispOK() && ph2->IsDispOK()){
 	  
-	  FillHistogram(Form("hMiPi0Disp_cen%d",fCenBin),pt,m) ;
-	  FillHistogram(Form("hMiPi0Dispcore_cen%d",fCenBin),pv12.M(),pv12.Pt()) ;
+	  FillHistogram(Form("hMiPi0Disp_cen%d",fCenBin),m,pt,w) ;
+	  FillHistogram(Form("hMiPi0Dispcore_cen%d",fCenBin),mv,ptv,w) ;
           if(ph1->IsntUnfolded() && ph2->IsntUnfolded()){
-	    FillHistogram(Form("hMiPi0Dispwou_cen%d",fCenBin),p12.M(),p12.Pt()) ;
+	    FillHistogram(Form("hMiPi0Dispwou_cen%d",fCenBin),m,pt,w) ;
 	  }
 	  
 	  if(a<alphaCut){
-            FillHistogram(Form("hMiPi0Disp_a07_cen%d",fCenBin),pt,m) ;
+            FillHistogram(Form("hMiPi0Disp_a07_cen%d",fCenBin),m,pt,w) ;
           }	  
 	  if(ph1->IsCPVOK() && ph2->IsCPVOK()){	    	    	    
-	    FillHistogram(Form("hMiPi0Both_cen%d",fCenBin),pt,m) ;
-	    FillHistogram(Form("hMiPi0Bothcore_cen%d",fCenBin),pv12.M(),pv12.Pt()) ;
+	    FillHistogram(Form("hMiPi0Both_cen%d",fCenBin),m,pt,w) ;
+	    FillHistogram(Form("hMiPi0Bothcore_cen%d",fCenBin),mv,ptv,w) ;
 
 	    if(a<alphaCut){
-              FillHistogram(Form("hMiPi0Both_a07_cen%d",fCenBin),pt,m) ;
+              FillHistogram(Form("hMiPi0Both_a07_cen%d",fCenBin),m,pt,w) ;
             }
 	  }
 	}
@@ -1701,6 +1700,8 @@ Double_t AliPHOSHijingEfficiency::TestCPV(Double_t dx, Double_t dz, Double_t pt,
               6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
   Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
   AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
+  if(!event) //not possible, but required by Coverity
+    return 999.; 
   Double_t mf = event->GetMagneticField(); //Positive for ++ and negative for --
 
   if(mf<0.){ //field --
@@ -2036,7 +2037,7 @@ Int_t AliPHOSHijingEfficiency::FindPrimary(AliESDCaloCluster*clu,  Bool_t&sure){
     sure=kFALSE;
   else
     sure=kTRUE;
-  delete  Ekin;
+  delete[]  Ekin;
   return  clu->GetLabelAt(iMax) ;
 }
 //___________________________________________________________________________
