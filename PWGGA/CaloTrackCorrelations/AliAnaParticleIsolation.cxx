@@ -410,11 +410,11 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelat
               icolLoc  = icol-AliEMCALGeoParams::fgkEMCALCols;
             }
             
-            Int_t irowLoc  = irow + AliEMCALGeoParams::fgkEMCALRows*inSector ;
+            Int_t irowLoc  = irow - AliEMCALGeoParams::fgkEMCALRows*inSector ;
 
             // Exclude cells in cone
-            if(TMath::Abs(icolLoc-colTrig) < sqrSize) continue ;
-            if(TMath::Abs(irowLoc-rowTrig) < sqrSize) continue ;
+            if(TMath::Abs(icol-colTrig) < sqrSize) continue ;
+            if(TMath::Abs(irow-rowTrig) < sqrSize) continue ;
             
             Int_t iabsId = eGeom->GetAbsCellIdFromCellIndexes(inSupMod,irowLoc,icolLoc);
             if(!eGeom->CheckAbsCellId(iabsId)) continue;
@@ -441,11 +441,11 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelat
               icolLoc  = icol-AliEMCALGeoParams::fgkEMCALCols;
             }
             
-            Int_t irowLoc  = irow + AliEMCALGeoParams::fgkEMCALRows*inSector ;
+            Int_t irowLoc  = irow - AliEMCALGeoParams::fgkEMCALRows*inSector ;
 
             // Exclude cells in cone
-            if(TMath::Abs(icolLoc-colTrig) < sqrSize) continue ;
-            if(TMath::Abs(irow   -rowTrig) < sqrSize) continue ;
+            if(TMath::Abs(icol-colTrig) < sqrSize) continue ;
+            if(TMath::Abs(irow-rowTrig) < sqrSize) continue ;
             
             Int_t iabsId = eGeom->GetAbsCellIdFromCellIndexes(inSupMod,irowLoc,icolLoc);
             if(!eGeom->CheckAbsCellId(iabsId)) continue;
@@ -949,7 +949,7 @@ void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliAODPWG4ParticleCo
               icolLoc  = icol-AliEMCALGeoParams::fgkEMCALCols;
             }
             
-            Int_t irowLoc  = irow + AliEMCALGeoParams::fgkEMCALRows*inSector ;
+            Int_t irowLoc  = irow - AliEMCALGeoParams::fgkEMCALRows*inSector ;
             
             Int_t iabsId = eGeom->GetAbsCellIdFromCellIndexes(inSupMod,irowLoc,icolLoc);
             if(!eGeom->CheckAbsCellId(iabsId)) continue;
