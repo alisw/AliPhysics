@@ -13,6 +13,7 @@
 // calculate invarint mass distr for pi0
 // and for tagging and isolation analysis
 
+class AliVCluster;
 
 #include "TLorentzVector.h"
 
@@ -85,6 +86,9 @@ class AliCaloPhoton :public TLorentzVector{
    void SetUnfolded(Bool_t wasNotUnfolded){fUnfolded=wasNotUnfolded;} 
    void SetWeight(Double_t w){fWeight=w;}
 
+   void SetCluster(AliVCluster* cluster) { fCluster = cluster; }
+   AliVCluster* GetCluster() { return fCluster; }
+
    void SetLambdas(Double_t l1,Double_t l2){fLambda0=l1; fLambda1=l2;}
    Double_t GetLambda1(void){return fLambda0;}
    Double_t GetLambda2(void){return fLambda1;}
@@ -120,8 +124,9 @@ private:
   Double_t  fPartnerPt;
   Double_t  fWeight ;   //Weight of parent particle
   Int_t     fPrimary;   //Primary label
+  AliVCluster* fCluster; //! Originating Cluster the Photon Candidate is based on
 
-  ClassDef(AliCaloPhoton,3)
+  ClassDef(AliCaloPhoton,4);
 
 };
 
