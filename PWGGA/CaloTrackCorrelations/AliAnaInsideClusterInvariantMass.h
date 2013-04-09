@@ -277,11 +277,20 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhEventPlanePi0NLocMaxN ;                //! Event plane for selected pi0, N Local Maxima > 2
   TH2F       * fhEventPlaneEtaNLocMaxN ;                //! Event plane for selected eta, N Local Maxima > 2
 
-  
+  TH2F       * fhClusterEtaPhiNLocMax1 ;                //! Eta vs Phi of clusters with N Local Maxima = 1, E > 8 GeV
+  TH2F       * fhClusterEtaPhiNLocMax2 ;                //! Eta vs Phi of clusters with N Local Maxima = 2, E > 8 GeV
+  TH2F       * fhClusterEtaPhiNLocMaxN ;                //! Eta vs Phi of clusters with N Local Maxima > 2, E > 8 GeV
+  TH2F       * fhPi0EtaPhiNLocMax1 ;                    //! Eta vs Phi of pi0's with N Local Maxima = 1, E > 8 GeV
+  TH2F       * fhPi0EtaPhiNLocMax2 ;                    //! Eta vs Phi of pi0's with N Local Maxima = 2, E > 8 GeV
+  TH2F       * fhPi0EtaPhiNLocMaxN ;                    //! Eta vs Phi of pi0's with N Local Maxima > N, E > 8 GeV
+  TH2F       * fhEtaEtaPhiNLocMax1 ;                    //! Eta vs Phi of eta's with N Local Maxima = 1, E > 8 GeV
+  TH2F       * fhEtaEtaPhiNLocMax2 ;                    //! Eta vs Phi of eta's with N Local Maxima = 2, E > 8 GeV
+  TH2F       * fhEtaEtaPhiNLocMaxN ;                    //! Eta vs Phi of eta's with N Local Maxima > N, E > 8 GeV
+
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,19)
+  ClassDef(AliAnaInsideClusterInvariantMass,20)
   
 } ;
 
