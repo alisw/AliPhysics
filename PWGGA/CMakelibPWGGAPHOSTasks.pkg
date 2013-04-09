@@ -30,6 +30,7 @@ set ( SRCS
  PHOSTasks/PHOS_pp_pi0/AliCaloPhoton.cxx
  PHOSTasks/PHOS_pp_pi0/AliAnalysisTaskPi0.cxx
  PHOSTasks/PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
+ PHOSTasks/PHOS_PbPb/AliAnalysisTaskPi0FlowMC.cxx
  PHOSTasks/PHOS_PbPb/AliPHOSTenderTask.cxx
  PHOSTasks/PHOS_PbPb_MC/AliPHOSHijingEfficiency.cxx
  PHOSTasks/PHOS_embedding/AliPHOSEmbedding.cxx
