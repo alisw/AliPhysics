@@ -53,13 +53,15 @@ public:
     //Where to read AODB object with EP calibration if not default
     void SetEPcalibFileName(const TString filename) {fEPcalibFileName = filename; }   
 
-private:
+
+protected:
     AliAnalysisTaskPi0Flow(const AliAnalysisTaskPi0Flow&); // not implemented
     AliAnalysisTaskPi0Flow& operator=(const AliAnalysisTaskPi0Flow&); // not implemented
 
+    virtual void MakeMCHistograms();
+
     // Step 0:
     AliVEvent* GetEvent();
-    AliStack* GetMCStack();
 
     // Step 1:
     void SetGeometry();
@@ -94,7 +96,10 @@ private:
     // Step 10; Mixing
     void ConsiderPi0sMix();
 
-    // Step 11: Update lists
+    // Step 11: MC
+    virtual void DoMC();
+
+    // Step 12: Update lists
     void UpdateLists();
 
     Bool_t AreNeibors(Int_t id1,Int_t id2) ;
@@ -134,7 +139,7 @@ private:
 
 
 
-private:
+protected:
     // transiant constants
     static const Int_t kNMod = 5;
 
@@ -178,7 +183,6 @@ private:
     AliVEvent* fEvent; //! Current event
     AliESDEvent* fEventESD; //! Current event, if ESD.
     AliAODEvent* fEventAOD; //! Current event, if AOD.
-    AliStack * fMCStack ;
 
     // Step 1: Run Number, Misalignment Matrix, and Calibration
     Int_t fRunNumber; // run number
@@ -215,11 +219,11 @@ private:
     // Step 8: Event Photons (PHOS Clusters) selection
     TObjArray * fCaloPhotonsPHOS ;      //PHOS photons in current event
 
-    // Step 11: Update lists for mixing.
+    // Step 12: Update lists for mixing.
     TObjArray* fCaloPhotonsPHOSLists; //! array of TList, Containers for events with PHOS photons
 
 
-    ClassDef(AliAnalysisTaskPi0Flow, 1); // PHOS analysis task
+    ClassDef(AliAnalysisTaskPi0Flow, 2); // PHOS analysis task
 };
 
 #endif

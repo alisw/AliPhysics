@@ -88,7 +88,6 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fEvent(0x0),
   fEventESD(0x0),
   fEventAOD(0x0),
-  fMCStack(0x0),
   fRunNumber(-999),
   fInternalRunNumber(0),
   fPHOSGeo(0),
@@ -342,6 +341,8 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
   }
   
+  this->MakeMCHistograms();
+  
   // Setup photon lists
   Int_t kapacity = kNVtxZBins * GetNumberOfCentralityBins() * fNEMRPBins;
   fCaloPhotonsPHOSLists = new TObjArray(kapacity);
@@ -349,6 +350,17 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
   
   PostData(1, fOutputContainer);
 }
+
+void AliAnalysisTaskPi0Flow::MakeMCHistograms()
+{
+  //empty, MC extensions should override
+}
+
+void AliAnalysisTaskPi0Flow::DoMC()
+{
+  //empty, MC extensions should override
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
@@ -361,7 +373,6 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
   fEvent = GetEvent();
   fEventESD = dynamic_cast<AliESDEvent*> (fEvent);
   fEventAOD = dynamic_cast<AliAODEvent*> (fEvent);
-  fMCStack = GetMCStack();
   LogProgress(0);
 
 
@@ -450,7 +461,10 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
   ConsiderPi0sMix();
   LogProgress(10);
   
-  // Step 11: Update lists
+  // Step 11: MC
+  this->DoMC();
+
+  // Step 12: Update lists
   UpdateLists();
   LogProgress(11);
 
@@ -1444,17 +1458,17 @@ AliVEvent* AliAnalysisTaskPi0Flow::GetEvent()
 
 
 //___________________________________________________________________________
-AliStack* AliAnalysisTaskPi0Flow::GetMCStack()
-{
-  fMCStack = 0;
-  AliVEventHandler* eventHandler = AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
-  if(eventHandler){
-    AliMCEventHandler* mcEventHandler = dynamic_cast<AliMCEventHandler*> (eventHandler);
-    if( mcEventHandler)
-      fMCStack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
-  }
-  return fMCStack;
-}
+// AliStack* AliAnalysisTaskPi0Flow::GetMCStack()
+// {
+//   fMCStack = 0;
+//   AliVEventHandler* eventHandler = AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
+//   if(eventHandler){
+//     AliMCEventHandler* mcEventHandler = dynamic_cast<AliMCEventHandler*> (eventHandler);
+//     if( mcEventHandler)
+//       fMCStack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
+//   }
+//   return fMCStack;
+// }
 
 //___________________________________________________________________________
 Int_t AliAnalysisTaskPi0Flow::GetCentralityBin(Float_t centralityV0M)
