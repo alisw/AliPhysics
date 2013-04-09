@@ -68,10 +68,12 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fhMCGenSplitEFracAfterCutsNLocMax1MCPi0(0),
   fhMCGenSplitEFracAfterCutsNLocMax2MCPi0(0),
   fhMCGenSplitEFracAfterCutsNLocMaxNMCPi0(0),
-
   fhEventPlanePi0NLocMax1(0), fhEventPlaneEtaNLocMax1(0),
   fhEventPlanePi0NLocMax2(0), fhEventPlaneEtaNLocMax2(0),
-  fhEventPlanePi0NLocMaxN(0), fhEventPlaneEtaNLocMaxN(0)
+  fhEventPlanePi0NLocMaxN(0), fhEventPlaneEtaNLocMaxN(0),
+  fhClusterEtaPhiNLocMax1(0), fhClusterEtaPhiNLocMax2(0),  fhClusterEtaPhiNLocMaxN(0),
+  fhPi0EtaPhiNLocMax1(0),     fhPi0EtaPhiNLocMax2(0),      fhPi0EtaPhiNLocMaxN(0),
+  fhEtaEtaPhiNLocMax1(0),     fhEtaEtaPhiNLocMax2(0),      fhEtaEtaPhiNLocMaxN(0)
 {
   //default ctor
   
@@ -292,6 +294,8 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   Int_t ssbins   = GetHistogramRanges()->GetHistoShowerShapeBins();  Float_t ssmax  = GetHistogramRanges()->GetHistoShowerShapeMax();  Float_t ssmin  = GetHistogramRanges()->GetHistoShowerShapeMin();
   Int_t mbins    = GetHistogramRanges()->GetHistoMassBins();         Float_t mmax   = GetHistogramRanges()->GetHistoMassMax();         Float_t mmin   = GetHistogramRanges()->GetHistoMassMin();
   Int_t ncbins   = GetHistogramRanges()->GetHistoNClusterCellBins(); Int_t   ncmax  = GetHistogramRanges()->GetHistoNClusterCellMax(); Int_t   ncmin  = GetHistogramRanges()->GetHistoNClusterCellMin(); 
+  Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins();          Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();          Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();
+  Int_t netabins = GetHistogramRanges()->GetHistoEtaBins();          Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();          Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();
 
   Int_t   nresetabins = GetHistogramRanges()->GetHistoTrackResidualEtaBins();          
   Float_t resetamax   = GetHistogramRanges()->GetHistoTrackResidualEtaMax();          
@@ -1449,7 +1453,62 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     fhSplitEFractionvsAsyNLocMaxN[j]   ->SetYTitle("(E_{split1}+E_{split2})/E_{cluster}");
     outputContainer->Add(fhSplitEFractionvsAsyNLocMaxN[j]) ; 
   }
-   
+  
+  
+  fhClusterEtaPhiNLocMax1  = new TH2F
+  ("hClusterEtaPhiNLocMax1","Neutral Clusters with E > 8 GeV, NLM = 1: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhClusterEtaPhiNLocMax1->SetYTitle("#phi (rad)");
+  fhClusterEtaPhiNLocMax1->SetXTitle("#eta");
+  outputContainer->Add(fhClusterEtaPhiNLocMax1) ;
+
+  fhClusterEtaPhiNLocMax2  = new TH2F
+  ("hClusterEtaPhiNLocMax2","Neutral Clusters with E > 8 GeV, NLM = 2: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhClusterEtaPhiNLocMax2->SetYTitle("#phi (rad)");
+  fhClusterEtaPhiNLocMax2->SetXTitle("#eta");
+  outputContainer->Add(fhClusterEtaPhiNLocMax2) ;
+  
+  fhClusterEtaPhiNLocMaxN  = new TH2F
+  ("hClusterEtaPhiNLocMaxN","Neutral Clusters with E > 8 GeV, NLM > 2: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhClusterEtaPhiNLocMaxN->SetYTitle("#phi (rad)");
+  fhClusterEtaPhiNLocMaxN->SetXTitle("#eta");
+  outputContainer->Add(fhClusterEtaPhiNLocMaxN) ;
+  
+  fhPi0EtaPhiNLocMax1  = new TH2F
+  ("hPi0EtaPhiNLocMax1","Selected #pi^{0}'s with E > 8 GeV, NLM = 1: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhPi0EtaPhiNLocMax1->SetYTitle("#phi (rad)");
+  fhPi0EtaPhiNLocMax1->SetXTitle("#eta");
+  outputContainer->Add(fhPi0EtaPhiNLocMax1) ;
+  
+  fhPi0EtaPhiNLocMax2  = new TH2F
+  ("hPi0EtaPhiNLocMax2","Selected #pi^{0}'s with E > 8 GeV, NLM = 2: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhPi0EtaPhiNLocMax2->SetYTitle("#phi (rad)");
+  fhPi0EtaPhiNLocMax2->SetXTitle("#eta");
+  outputContainer->Add(fhPi0EtaPhiNLocMax2) ;
+  
+  fhPi0EtaPhiNLocMaxN  = new TH2F
+  ("hPi0EtaPhiNLocMaxN","Selected #pi^{0}'s with E > 8 GeV, NLM > 2: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhPi0EtaPhiNLocMaxN->SetYTitle("#phi (rad)");
+  fhPi0EtaPhiNLocMaxN->SetXTitle("#eta");
+  outputContainer->Add(fhPi0EtaPhiNLocMaxN) ;
+
+  fhEtaEtaPhiNLocMax1  = new TH2F
+  ("hEtaEtaPhiNLocMax1","Selected #eta's with E > 8 GeV, NLM = 1: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaEtaPhiNLocMax1->SetYTitle("#phi (rad)");
+  fhEtaEtaPhiNLocMax1->SetXTitle("#eta");
+  outputContainer->Add(fhEtaEtaPhiNLocMax1) ;
+  
+  fhEtaEtaPhiNLocMax2  = new TH2F
+  ("hEtaEtaPhiNLocMax2","Selected #eta's with E > 8 GeV, NLM = 2: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaEtaPhiNLocMax2->SetYTitle("#phi (rad)");
+  fhEtaEtaPhiNLocMax2->SetXTitle("#eta");
+  outputContainer->Add(fhEtaEtaPhiNLocMax2) ;
+  
+  fhEtaEtaPhiNLocMaxN  = new TH2F
+  ("hEtaEtaPhiNLocMaxN","Selected #eta's with E > 8 GeV, NLM > 2: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaEtaPhiNLocMaxN->SetYTitle("#phi (rad)");
+  fhEtaEtaPhiNLocMaxN->SetXTitle("#eta");
+  outputContainer->Add(fhEtaEtaPhiNLocMaxN) ;
+
   
   return outputContainer ;
   
@@ -1541,6 +1600,12 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     //If too small or big E or low number of cells, or close to a bad channel skip it
     if( en < GetMinEnergy() || en > GetMaxEnergy() || nc < fMinNCells || bd < fMinBadDist) continue ; 
     
+    TLorentzVector lv;
+    cluster->GetMomentum(lv, GetVertex(0));
+    Float_t eta = lv.Eta();
+    Float_t phi = lv.Phi();
+    if(phi<0) phi=+TMath::TwoPi();
+    
     //printf("en %2.2f, GetMinEnergy() %2.2f, GetMaxEnergy() %2.2f, nc %d, fMinNCells %d,  bd %2.2f, fMinBadDist %2.2f\n",
     //       en,GetMinEnergy(), GetMaxEnergy(), nc, fMinNCells, bd, fMinBadDist);
     
@@ -1580,21 +1645,33 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     { 
       fhM02NLocMax1[0][matched]->Fill(en,l0) ; 
       fhSplitEFractionNLocMax1[0][matched]->Fill(en,splitFrac) ; 
-      if(en > ecut) fhSplitEFractionvsAsyNLocMax1[matched]->Fill(asym,splitFrac) ; 
+      if(en > ecut)
+      {
+        fhSplitEFractionvsAsyNLocMax1[matched]->Fill(asym,splitFrac) ;
+        if(!matched)fhClusterEtaPhiNLocMax1->Fill(eta,phi);
+      }
       if(fFillSSExtraHisto) fhNCellNLocMax1[0][matched]->Fill(en,nc) ; 
     }
     else if( nMax == 2  ) 
     { 
       fhM02NLocMax2[0][matched]->Fill(en,l0) ; 
       fhSplitEFractionNLocMax2[0][matched]->Fill(en,splitFrac) ; 
-      if(en > ecut) fhSplitEFractionvsAsyNLocMax2[matched]->Fill(asym,splitFrac) ; 
+      if(en > ecut)
+      {
+        fhSplitEFractionvsAsyNLocMax2[matched]->Fill(asym,splitFrac) ;
+        if(!matched)fhClusterEtaPhiNLocMax2->Fill(eta,phi);
+      }
       if(fFillSSExtraHisto) fhNCellNLocMax2[0][matched]->Fill(en,nc) ; }
     else if( nMax >= 3  ) 
     { 
       fhM02NLocMaxN[0][matched]->Fill(en,l0) ; 
       fhSplitEFractionNLocMaxN[0][matched]->Fill(en,splitFrac) ; 
-      if(en > ecut) fhSplitEFractionvsAsyNLocMaxN[matched]->Fill(asym,splitFrac) ; 
-      if(fFillSSExtraHisto) fhNCellNLocMaxN[0][matched]->Fill(en,nc) ; 
+      if(en > ecut)
+      {
+        fhSplitEFractionvsAsyNLocMaxN[matched]->Fill(asym,splitFrac) ;
+        if(!matched)fhClusterEtaPhiNLocMaxN->Fill(eta,phi);
+      }
+      if(fFillSSExtraHisto) fhNCellNLocMaxN[0][matched]->Fill(en,nc) ;
     }
     else printf("N max smaller than 1 -> %d \n",nMax);
     
@@ -1919,11 +1996,26 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       }
             
       if     (pidTag==AliCaloPID::kPhoton) { fhM02ConNLocMax1[0][matched]->Fill(en,l0); fhMassConNLocMax1[0][matched]->Fill(en,mass);  fhAsyConNLocMax1[0][matched]->Fill(en,asym); }
-      else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0NLocMax1[0][matched]->Fill(en,l0); fhMassPi0NLocMax1[0][matched]->Fill(en,mass);  fhAsyPi0NLocMax1[0][matched]->Fill(en,asym); }
-      else if(pidTag==AliCaloPID::kEta)    { fhM02EtaNLocMax1[0][matched]->Fill(en,l0); fhMassEtaNLocMax1[0][matched]->Fill(en,mass);  fhAsyEtaNLocMax1[0][matched]->Fill(en,asym); }
-      
-      if     (pidTag==AliCaloPID::kPi0) { fhCentralityPi0NLocMax1[0][matched]->Fill(en,cent) ; if(!matched)fhEventPlanePi0NLocMax1->Fill(en,evp) ; }
-      else if(pidTag==AliCaloPID::kEta) { fhCentralityEtaNLocMax1[0][matched]->Fill(en,cent) ; if(!matched)fhEventPlaneEtaNLocMax1->Fill(en,evp) ; }
+      else if(pidTag==AliCaloPID::kPi0   )
+      {
+        fhM02Pi0NLocMax1[0][matched]->Fill(en,l0); fhMassPi0NLocMax1[0][matched]->Fill(en,mass);  fhAsyPi0NLocMax1[0][matched]->Fill(en,asym);
+        fhCentralityPi0NLocMax1[0][matched]->Fill(en,cent) ;
+        if(!matched)
+        {
+          fhEventPlanePi0NLocMax1->Fill(en,evp) ;
+          if(en > ecut)fhPi0EtaPhiNLocMax1->Fill(eta,phi);
+        }
+      }
+      else if(pidTag==AliCaloPID::kEta)
+      {
+        fhM02EtaNLocMax1[0][matched]->Fill(en,l0); fhMassEtaNLocMax1[0][matched]->Fill(en,mass);  fhAsyEtaNLocMax1[0][matched]->Fill(en,asym);
+        fhCentralityEtaNLocMax1[0][matched]->Fill(en,cent) ;
+        if(!matched)
+        {
+          fhEventPlaneEtaNLocMax1->Fill(en,evp) ;
+          if(en > ecut)fhEtaEtaPhiNLocMax1->Fill(eta,phi);
+        }
+      }
       
     }
     else if(nMax==2) 
@@ -1961,13 +2053,29 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         if( en > ecut ) 
           fhAnglePairMassNLocMax2[matched]->Fill(mass,angle);
       }
-            
-      if     (pidTag==AliCaloPID::kPhoton) { fhM02ConNLocMax2[0][matched]->Fill(en,l0); fhMassConNLocMax2[0][matched]->Fill(en,mass);  fhAsyConNLocMax2[0][matched]->Fill(en,asym); }
-      else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0NLocMax2[0][matched]->Fill(en,l0); fhMassPi0NLocMax2[0][matched]->Fill(en,mass);  fhAsyPi0NLocMax2[0][matched]->Fill(en,asym); }        
-      else if(pidTag==AliCaloPID::kEta)    { fhM02EtaNLocMax2[0][matched]->Fill(en,l0); fhMassEtaNLocMax2[0][matched]->Fill(en,mass);  fhAsyEtaNLocMax2[0][matched]->Fill(en,asym); }
       
-      if     (pidTag==AliCaloPID::kPi0) { fhCentralityPi0NLocMax2[0][matched]->Fill(en,cent) ; if(!matched)fhEventPlanePi0NLocMax2->Fill(en,evp) ; }
-      else if(pidTag==AliCaloPID::kEta) { fhCentralityEtaNLocMax2[0][matched]->Fill(en,cent) ; if(!matched)fhEventPlaneEtaNLocMax2->Fill(en,evp) ; }
+      if     (pidTag==AliCaloPID::kPhoton) { fhM02ConNLocMax2[0][matched]->Fill(en,l0); fhMassConNLocMax2[0][matched]->Fill(en,mass);  fhAsyConNLocMax2[0][matched]->Fill(en,asym); }
+      else if(pidTag==AliCaloPID::kPi0   )
+      {
+        fhM02Pi0NLocMax2[0][matched]->Fill(en,l0); fhMassPi0NLocMax2[0][matched]->Fill(en,mass);  fhAsyPi0NLocMax2[0][matched]->Fill(en,asym);
+        fhCentralityPi0NLocMax2[0][matched]->Fill(en,cent) ;
+        if(!matched)
+        {
+          fhEventPlanePi0NLocMax2->Fill(en,evp) ;
+          if(en > ecut)fhPi0EtaPhiNLocMax2->Fill(eta,phi);
+        }
+      }
+      else if(pidTag==AliCaloPID::kEta)
+      {
+        fhM02EtaNLocMax2[0][matched]->Fill(en,l0); fhMassEtaNLocMax2[0][matched]->Fill(en,mass);  fhAsyEtaNLocMax2[0][matched]->Fill(en,asym);
+        fhCentralityEtaNLocMax2[0][matched]->Fill(en,cent) ;
+        if(!matched)
+        {
+          fhEventPlaneEtaNLocMax2->Fill(en,evp) ;
+          if(en > ecut)fhEtaEtaPhiNLocMax2->Fill(eta,phi);
+        }
+      }
+      
     }
     else if(nMax >2) 
     {
@@ -2006,11 +2114,26 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       }
             
       if     (pidTag==AliCaloPID::kPhoton) { fhM02ConNLocMaxN[0][matched]->Fill(en,l0); fhMassConNLocMaxN[0][matched]->Fill(en,mass);  fhAsyConNLocMaxN[0][matched]->Fill(en,asym); }
-      else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0NLocMaxN[0][matched]->Fill(en,l0); fhMassPi0NLocMaxN[0][matched]->Fill(en,mass);  fhAsyPi0NLocMaxN[0][matched]->Fill(en,asym); }
-      else if(pidTag==AliCaloPID::kEta)    { fhM02EtaNLocMaxN[0][matched]->Fill(en,l0); fhMassEtaNLocMaxN[0][matched]->Fill(en,mass);  fhAsyEtaNLocMaxN[0][matched]->Fill(en,asym); }
-      
-      if     (pidTag==AliCaloPID::kPi0) { fhCentralityPi0NLocMaxN[0][matched]->Fill(en,cent) ; if(!matched)fhEventPlanePi0NLocMaxN->Fill(en,evp) ; }
-      else if(pidTag==AliCaloPID::kEta) { fhCentralityEtaNLocMaxN[0][matched]->Fill(en,cent) ; if(!matched)fhEventPlaneEtaNLocMaxN->Fill(en,evp) ; }
+      else if(pidTag==AliCaloPID::kPi0   )
+      {
+        fhM02Pi0NLocMaxN[0][matched]->Fill(en,l0); fhMassPi0NLocMaxN[0][matched]->Fill(en,mass);  fhAsyPi0NLocMaxN[0][matched]->Fill(en,asym);
+        fhCentralityPi0NLocMaxN[0][matched]->Fill(en,cent) ;
+        if(!matched)
+        {
+          fhEventPlanePi0NLocMaxN->Fill(en,evp) ;
+          if(en > ecut)fhPi0EtaPhiNLocMaxN->Fill(eta,phi);
+        }
+      }
+      else if(pidTag==AliCaloPID::kEta)
+      {
+        fhM02EtaNLocMaxN[0][matched]->Fill(en,l0); fhMassEtaNLocMaxN[0][matched]->Fill(en,mass);  fhAsyEtaNLocMaxN[0][matched]->Fill(en,asym);
+        fhCentralityEtaNLocMaxN[0][matched]->Fill(en,cent) ;
+        if(!matched)
+        {
+          fhEventPlaneEtaNLocMaxN->Fill(en,evp) ;
+          if(en > ecut)fhEtaEtaPhiNLocMaxN->Fill(eta,phi);
+        }
+      }
       
     }
     
