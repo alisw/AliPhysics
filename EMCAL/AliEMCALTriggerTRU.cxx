@@ -30,6 +30,8 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include <TClonesArray.h>
 #include <TSystem.h>
 #include <Riostream.h>
+#include <TFile.h>
+#include <TROOT.h>
 
 namespace
 {
@@ -155,29 +157,23 @@ Int_t AliEMCALTriggerTRU::L0()
 	}
 	
 	AliDebug(999,Form("=== TRU PF: %x",fDCSConfig->GetSELPF()));
-	
+ 
 	UInt_t ma = fDCSConfig->GetSELPF() & 0xffff;
 	
-//	int nb = 0;
-//	for (int i = 0; i < 7; i++) {
-//		UInt_t bit = ma & (1 << i);
-//		if (bit) nb++;
-//	}
-	
+  // Set default peak finder if null
+  if (!ma) ma = 0x1e1f;
+  
 	int nb = ma & 0x7f;
 	
 	ma = (ma >> 8) & 0x7f;
 	
 	AliDebug(999,Form("=== TRU fw version %x ===",fDCSConfig->GetFw()));
-	
- 	if (fDCSConfig->IsA()->GetClassVersion() >= 3) {
-		if (fDCSConfig->GetFw() < 0x4d) {
-			return L0v0(nb, ma);
-		} else {
-			return L0v1(nb, ma);
-		}
-	} else
-		return L0v0(nb, ma);
+    
+  if (fDCSConfig->GetFw() < 0x4d) {
+      return L0v0(nb, ma);
+    } else {
+      return L0v1(nb, ma);
+    }
 }
 
 //________________
@@ -292,7 +288,7 @@ Int_t AliEMCALTriggerTRU::L0v0(int mask, int pattern)
 							
 							idx[index] = fMap[int(j * fSubRegionSize->X()) + l][int(k * fSubRegionSize->Y()) + m];
 							
-							if ((patt[j + l][k + m] & mask) == pattern) {
+              if ((patt[j + l][k + m] & mask) == (pattern & mask)) {
 //								cout << "setting peak at " << l << " " << m << endl;
 								p->SetPeak(l, m, sizeX, sizeY);
 							}
@@ -416,7 +412,7 @@ Int_t AliEMCALTriggerTRU::L0v1(int mask, int pattern)
 				
 				buff[j][k] = sum;
 				
-				if (othr[j][k] && (patt[j][k] & mask) == pattern) {
+        if (othr[j][k] && ((patt[j][k] & mask) == (pattern & mask))) {
 					
 					new((*fPatches)[fPatches->GetEntriesFast()]) AliEMCALTriggerPatch(j, k, othr[j][k], i);
 					
