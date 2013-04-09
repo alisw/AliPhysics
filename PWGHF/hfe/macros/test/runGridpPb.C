@@ -240,7 +240,7 @@ bool CreateTrainDir(AliAnalysisAlien *plugin, const TMap &lookup){
         return true;
 }
 
-void SetupUtil(bool IsMC, bool isAOD){
+void SetupUtil(bool isMC, bool isAOD){
         //
         // Setup utility packages
         //
@@ -258,13 +258,13 @@ void SetupUtil(bool IsMC, bool isAOD){
 
         //==== Add tender ====
         if(!isAOD){
-                gROOT->LoadMacro("AddTaskTender.C");
+                gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
                 AddTaskTender();
         }
 
         //===== ADD PID RESPONSE: ===
         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-        AddTaskPIDResponse(IsMC);
+        AddTaskPIDResponse(isMC);
 
         //===== ADD CENTRALITY: ===
         if(!isAOD){
