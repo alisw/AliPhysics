@@ -39,6 +39,7 @@ class AliITSUTrackerGlo : public AliTracker {
   enum {kStopSearchOnSensor,kClusterNotMatching,kClusterMatching}; // flags for track-to-cluster checks
   //
   enum {kDummyLabel=-3141593};
+  //
   AliITSUTrackerGlo(AliITSUReconstructor* rec);
   virtual ~AliITSUTrackerGlo();
 
@@ -80,6 +81,9 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 GetRoadWidth(AliITSUSeed* seed, int ilrA);
   Int_t                  CheckCluster(AliITSUSeed* seed, Int_t lr, Int_t clID);
   void                   AddProlongationHypothesis(AliITSUSeed* seed, Int_t lr);
+  Bool_t                 AddSeedBranch(AliITSUSeed* seed);
+  void                   ValidateAllowedBranches(Int_t accMax);
+  void                   ValidateAllowedCandidates(Int_t ilr, Int_t accMax);
   //
   AliITSUSeed*           NewSeedFromPool(const AliITSUSeed* src=0);
   void                   ResetSeedsPool();
@@ -117,6 +121,9 @@ class AliITSUTrackerGlo : public AliTracker {
   //
   // the seeds management to be optimized
   TObjArray                       fHypStore;       // storage for tracks hypotheses
+  AliITSUSeed*                    fLayerCandidates[AliITSUTrackCond::kMaxCandidates]; // array for branches of current track prolongation
+  Int_t                           fNBranchesAdded; // number of branches created for current seed in prolongation
+  Int_t                           fNCandidatesAdded; // number of candidates added for current seed in prolongation
   AliITSUTrackHyp*                fCurrHyp;        // hypotheses container for current track
   TClonesArray                    fSeedsPool;      //! pool for seeds
   TArrayI                         fFreeSeedsID;    //! array of ID's of freed seeds
@@ -133,13 +140,6 @@ class AliITSUTrackerGlo : public AliTracker {
   ClassDef(AliITSUTrackerGlo,1)   //ITS upgrade tracker
     
 };
-
-//_________________________________________________________________________
-inline void AliITSUTrackerGlo::AddProlongationHypothesis(AliITSUSeed* seed, Int_t lr)
-{
-  // add new seed prolongation hypothesis 
-  fCurrHyp->AddSeed(seed,lr);
-}
 
 //________________________________________
 inline TObject *&AliITSUTrackerGlo::NextFreeSeed()
@@ -167,6 +167,13 @@ inline void AliITSUTrackerGlo::KillSeed(AliITSUSeed* seed, Bool_t branch)
   seed->Kill();
   seed = (AliITSUSeed*)seed->GetParent();
   if (seed && !seed->DecChildren() && branch) KillSeed(seed,branch);
+}
+
+//_________________________________________________________________________
+inline void AliITSUTrackerGlo::AddProlongationHypothesis(AliITSUSeed* seed, Int_t lr)
+{
+  // add new seed prolongation hypothesis 
+  fCurrHyp->AddSeed(seed,lr);
 }
 
 #endif

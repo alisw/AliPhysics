@@ -60,6 +60,8 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fCountITSout(0)
   ,fCountITSrefit(0)
   ,fHypStore(100)
+  ,fNBranchesAdded(0)
+  ,fNCandidatesAdded(0)
   ,fCurrHyp(0)
   ,fSeedsPool("AliITSUSeed",0)
   ,fFreeSeedsID(0)
@@ -162,11 +164,11 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
       fCurrESDtrMClb = fCurrESDtrack->GetLabel();
       //
       if (!NeedToProlong(fCurrESDtrack)) continue;  // are we interested in this track?
-      AliDebug(1,Form("Processing track %d | M=%.3f Pt=%.3f | MCLabel: %d",itr,fCurrESDtrack->GetMass(kTRUE),fCurrESDtrack->Pt(),fCurrESDtrMClb));
+      AliDebug(+1,Form("Processing track %d | M=%.3f Pt=%.3f | MCLabel: %d",itr,fCurrESDtrack->GetMass(kTRUE),fCurrESDtrack->Pt(),fCurrESDtrMClb));//RS
       FindTrack(fCurrESDtrack, itr);
     }   
     //
-    if (AliDebugLevelClass()>-2) {
+    if (AliDebugLevelClass()>+2) {
       AliInfo(Form("SeedsPool: %d, BookedUpTo: %d, free: %d",fSeedsPool.GetSize(),fSeedsPool.GetEntriesFast(),fNFreeSeeds));
       fHypStore.Print();
     }
@@ -363,6 +365,8 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
     //
     // for the outermost layer the seed is created from the ESD track
     int nSeedsUp = (ilaUp==nLrActive) ? 1 : fCurrHyp->GetNSeeds(ilaUp);
+    int maxNBranches   = fCurrTrackCond->GetMaxBranches(ila);
+    int maxNCandidates = fCurrTrackCond->GetMaxCandidates(ila);
     //
     for (int isd=0;isd<nSeedsUp;isd++) {
       AliITSUSeed* seedU;
@@ -393,10 +397,14 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
       int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track
       AliDebug(2,Form("Will check %d sensors on lr:%d | esdID=%d (MClb:%d)",nsens,ila,esdID,fCurrESDtrMClb));
       //
+      seedUC.SetLr(ila);
+      //
       double bz = GetBz();
       for (int isn=nsens;isn--;) {
-	seedT = seedUC;
 	AliITSURecoSens* sens = hitSens[isn];
+	int ncl = sens->GetNClusters();
+	if (!ncl) continue;
+	seedT = seedUC;
 	//
 	// We need to propagate the seed to sensor on lrA staying the frame of the sensor from prev.layer,
 	// since the transport matrix should be defined in this frame.
@@ -408,7 +416,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 	if (!seedT.RotateToAlpha(sens->GetPhiTF())) continue;
 	//
 	int clID0 = sens->GetFirstClusterId();
-	for (int icl=sens->GetNClusters();icl--;) {
+	for (int icl=ncl;icl--;) {
 	  int res = CheckCluster(&seedT,ila,clID0+icl);
 	  //
 	  if (res==kStopSearchOnSensor) break;     // stop looking on this sensor
@@ -416,18 +424,21 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 	  // cluster is matching and it was added to the hypotheses tree
 	}
       }
-      // cluster search is done. Do we need ta have a version of this seed skipping current layer
-      seedT.SetLr(ila);
-      if (!NeedToKill(&seedT,kMissingCluster)) {
+      // cluster search is done. Do we need to have a version of this seed skipping current layer
+      if (!NeedToKill(&seedUC,kMissingCluster)) {
 	AliITSUSeed* seedSkp = NewSeedFromPool(&seedUC);
 	double penalty = -AliITSUReconstructor::GetRecoParam()->GetMissPenalty(ila);
 	// to do: make penalty to account for probability to miss the cluster for good reason
 	seedSkp->SetChi2Cl(penalty);
 	AddProlongationHypothesis(seedSkp,ila);      
       }
+      // transfer the new branches of the seed to the hypothesis container
+      if (fNBranchesAdded) ValidateAllowedBranches(maxNBranches);
+      //
     }
-    ((TObjArray*)fCurrHyp->GetLayerSeeds(ila))->Sort();
-    if (AliDebugLevelClass()>2) {
+    if (fNCandidatesAdded) ValidateAllowedCandidates(ila,maxNCandidates);
+    //    ((TObjArray*)fCurrHyp->GetLayerSeeds(ila))->Sort();
+    if (AliDebugLevelClass()>2) { //RS
       printf(">>> All hypotheses on lr %d: \n",ila);
       for (int ih=0;ih<fCurrHyp->GetNSeeds(ila);ih++) {printf(" #%3d ",ih); fCurrHyp->GetSeed(ila,ih)->Print();}
     }
@@ -766,7 +777,12 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   //
   track = NewSeedFromPool(track);  // input track will be reused, use its clone for updates
   if (!track->Update()) {
-    if (goodCl) {printf("Loose good cl: Failed update |"); cl->Print();}
+    if (goodCl && AliDebugLevelClass()>2) {
+      AliDebug(2,"Lost good cluster: failed to update");
+      track->Print("etp");
+      cl->Print("");
+      printf("Loose good cl: Failed update |"); 
+    }
     MarkSeedFree(track);
     return kClusterNotMatching;
   }
@@ -779,7 +795,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   AliDebug(2,Form("AddCl(%d) Cl%d lr:%d: dY:%+8.4f dZ:%+8.4f (MC: %5d %5d %5d) |Chi2=%f(%c)| ",
 	       goodCl,clID,lr,dy,dz2,cl->GetLabel(0),cl->GetLabel(1),cl->GetLabel(2), chi2, track->IsFake() ? '-':'+'));
   //
-  AddProlongationHypothesis(track,lr);
+  AddSeedBranch(track);
   //
   return kClusterMatching;
 }
@@ -889,6 +905,7 @@ Bool_t AliITSUTrackerGlo::PropagateSeed(AliExternalTrackParam *seed, Double_t xT
 void AliITSUTrackerGlo::SaveCurrentTrackHypotheses()
 {
   // RS: shall we clean up killed seeds?
+  ((TObjArray*)fCurrHyp->GetLayerSeeds(0))->Sort();
   fCurrHyp = 0;
   // TODO
   
@@ -1094,3 +1111,78 @@ void AliITSUTrackerGlo::CookMCLabel(AliITSUTrackHyp* hyp)
   hyp->SetLabel( kDummyLabel );
   hyp->SetITSLabel( kDummyLabel );
 }
+
+//__________________________________________________________________
+Bool_t AliITSUTrackerGlo::AddSeedBranch(AliITSUSeed* seed)
+{
+  // add new prolongation branch for the seed to temporary array. The seeds are sorted according to Compare f-n
+  if (fNCandidatesAdded+fNBranchesAdded>=AliITSUTrackCond::kMaxCandidates ) {
+    AliError(Form("Number of candidates for current seed reached limit of AliITSUTrackCond::kMaxCandidates=%d, increase it",AliITSUTrackCond::kMaxCandidates));
+    return kFALSE;
+  }
+  AliITSUSeed** branches = &fLayerCandidates[fNCandidatesAdded]; // note: fNCandidatesAdded is incremented after adding all branches of current seed
+  int slot=fNBranchesAdded++;
+  for (int slotF=slot;slotF--;) { // slotF is always slot-1
+    AliITSUSeed* si = branches[slotF];
+    if (si->Compare(seed)<0) break; // found the last seed with better quality
+    // otherwise, shift the worse seed to the next slot
+    branches[slot] = si;
+    slot = slotF; // slot should be slotF+1
+  }
+  // if needed, move worse seeds
+  branches[slot] = seed;
+  return kTRUE;
+  //
+}
+
+//__________________________________________________________________
+void AliITSUTrackerGlo::ValidateAllowedBranches(Int_t acceptMax)
+{
+  // keep allowed number of branches for current seed and disable extras
+  int nb = Min(fNBranchesAdded,acceptMax);
+  //  if (nb<fNBranchesAdded) printf("ValidateAllowedBranches: %d of %d (%d) on lr %d\n",nb,fNBranchesAdded,fNCandidatesAdded,ilr);
+  // disable unused branches
+  AliITSUSeed** branches = &fLayerCandidates[fNCandidatesAdded];
+  for (int ib=nb;ib<fNBranchesAdded;ib++) {
+    /*
+    if (!branches[ib]->ContainsFake()) {
+      printf("Suppress good branch as %d of %d |",ib,fNBranchesAdded); branches[ib]->Print();
+      printf("Survivors : \n");
+      for (int j=0;j<nb;j++) branches[j]->Print();
+    }
+    */
+    MarkSeedFree(branches[ib]);
+  }
+  fNCandidatesAdded += nb; // update total candidates counter
+  fNBranchesAdded = 0; // reset branches counter
+  //
+}
+
+//__________________________________________________________________
+void AliITSUTrackerGlo::ValidateAllowedCandidates(Int_t ilr, Int_t acceptMax)
+{
+  // transfer allowed number of branches to hypothesis container
+  //
+  // sort candidates in increasing order of chi2
+  Int_t index[AliITSUTrackCond::kMaxCandidates];
+  Float_t chi2[AliITSUTrackCond::kMaxCandidates];
+  for (int i=fNCandidatesAdded;i--;) chi2[i] = fLayerCandidates[i]->GetChi2GloNrm();
+  Sort(fNCandidatesAdded,chi2,index,kFALSE);
+  //
+  int nb = Min(fNCandidatesAdded,acceptMax);
+  //  if (nb<fNCandidatesAdded) printf("ValidateAllowedCandidates: %d of %d on lr %d\n",nb,fNCandidatesAdded,ilr);
+  //
+  for (int ib=0;ib<nb;ib++) AddProlongationHypothesis(fLayerCandidates[index[ib]],ilr);
+  // disable unused candidates
+  for (int ib=nb;ib<fNCandidatesAdded;ib++) {
+    /*
+    if (!fLayerCandidates[index[ib]]->ContainsFake()) {
+      printf("Suppress good candidate as %d of %d |",index[ib],fNCandidatesAdded); fLayerCandidates[index[ib]]->Print();
+    }
+    */
+    MarkSeedFree(fLayerCandidates[index[ib]]);    
+  }
+  fNCandidatesAdded = 0; // reset candidates counter
+  //
+}
+

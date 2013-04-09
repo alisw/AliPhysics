@@ -47,6 +47,7 @@ class AliITSUSeed: public AliExternalTrackParam
   Float_t         GetChi2GloNrm()                  const;
   Bool_t          IsKilled()                       const {return TestBit(kKilled);}
   Bool_t          IsFake()                         const {return TestBit(kFake);}
+  Bool_t          ContainsFake()                   const;
   //
   Int_t           GetPoolID()                      const {return int(GetUniqueID())-1;}
   void            SetPoolID(Int_t id)                    {SetUniqueID(id+1);}

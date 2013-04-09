@@ -630,6 +630,18 @@ Double_t* AliITSUSeed::ProdABA(const double a[15],const double b[15]) const
   return &aba[0];
 }
 
+//____________________________________________________________________
+Bool_t AliITSUSeed::ContainsFake() const
+{
+  // check if the full branch containes a fake cluster
+  const AliITSUSeed* seed = this;
+  while(seed) {
+    if ( seed->IsFake() ) return kTRUE;
+    seed = (AliITSUSeed*)seed->GetParent();
+  }  
+  return kFALSE;
+}
+
 /*
 //____________________________________________________________________
 Bool_t AliITSUSeed::Smooth(Double_t vecL[5],Double_t matL[15]) 

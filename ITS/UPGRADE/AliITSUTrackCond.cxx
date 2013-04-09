@@ -6,23 +6,36 @@ using namespace AliITSUAux;
 
 //______________________________________________________________
 AliITSUTrackCond::AliITSUTrackCond(int nLayers)
-  :fNLayers(nLayers)
+  :fNLayers(0)
+  ,fMaxBranches(0)
+  ,fMaxCandidates(0)
   ,fNConditions(0)
   ,fConditions(0)
   ,fAuxData(0)
 {
   // def c-tor
+  if (nLayers) SetNLayers(nLayers);
 }
 
 //______________________________________________________________
 AliITSUTrackCond::AliITSUTrackCond(const AliITSUTrackCond& src)
   :TObject(src),
    fNLayers(src.fNLayers)
+  ,fMaxBranches(0)
+  ,fMaxCandidates(0)
   ,fNConditions(src.fNConditions)
   ,fConditions(src.fConditions)
   ,fAuxData(src.fAuxData)
 {
   // copy c-tor
+  if (fNLayers>0) {
+    fMaxBranches = new Short_t[fNLayers];
+    fMaxCandidates = new Short_t[fNLayers];
+    for (int i=fNLayers;i--;) {
+      SetMaxBranches(i,src.GetMaxBranches(i));
+      SetMaxCandidates(i,src.GetMaxCandidates(i));
+    }
+  }
 }
 
 //______________________________________________________________
@@ -33,9 +46,34 @@ AliITSUTrackCond& AliITSUTrackCond::operator=(const AliITSUTrackCond& src)
     fNLayers = src.fNLayers;
     fNConditions = src.fNConditions;
     fConditions  = src.fConditions;
+    if (fNLayers) {
+      delete fMaxBranches;
+      delete fMaxCandidates;
+      fMaxBranches = new Short_t[fNLayers];
+      fMaxCandidates = new Short_t[fNLayers];
+      for (int i=fNLayers;i--;) {
+	SetMaxBranches(i,src.GetMaxBranches(i));
+	SetMaxCandidates(i,src.GetMaxCandidates(i));
+      }
+    }
     fAuxData = src.fAuxData;
   }
   return *this;
+}
+
+//______________________________________________________________
+void AliITSUTrackCond::SetNLayers(int nLayers)
+{
+  // set number of layers
+  fNLayers = nLayers;
+  if (fNLayers>0) {
+    fMaxBranches = new Short_t[fNLayers];
+    fMaxCandidates = new Short_t[fNLayers];
+    for (int i=fNLayers;i--;) {
+      SetMaxBranches(i,kMaxBranches);
+      SetMaxCandidates(i,kMaxCandidates);
+    }
+  }
 }
 
 //______________________________________________________________
@@ -101,4 +139,6 @@ void AliITSUTrackCond::Print(Option_t*) const
     printf("\n");
     cntCond += kNAuxSz;
   }
+  printf("Max allowed branches/candidates per seed: ");
+  for (int i=0;i<fNLayers;i++) printf("L%d: %d/%d ",i,fMaxBranches[i],fMaxCandidates[i]); printf("\n");
 }

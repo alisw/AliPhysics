@@ -36,6 +36,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   //
   {
     AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetLowFluxParam();
+    int nBranch[7] = {3,3,3,3,3,3,3}; // max branching for the seed on layer
+    int nCands[7]  = {250,200,150,100,60,40,20}; // max branching for the TPC seed
     //
     itsRecoParam->SetNLayers(nLr);
     //
@@ -47,6 +49,11 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
     trCond->SetNLayers(nLr); 
+    // each seed propagated to given layer can produce max nBranch branches
+    for (int i=0;i<nLr;i++) trCond->SetMaxBranches(i,nBranch[i]);
+    // each tpc track may have at most nCands prolongations
+    for (int i=0;i<nLr;i++) trCond->SetMaxCandidates(i,nCands[i]);
+    //
     trCond->AddNewCondition(5); // min hits
     trCond->AddGroupPattern( kBit0|kBit1 );
     trCond->AddGroupPattern( kBit3|kBit4 );
@@ -67,6 +74,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   }
   {
     AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetHighFluxParam();
+    for (int i=0;i<nLr;i++) trCond->SetMaxBranches(i,nBranch[i]);
+    for (int i=0;i<nLr;i++) trCond->SetMaxCandidates(i,nCands[i]);
     //
     itsRecoParam->SetNLayers(nLr);
     //
@@ -78,6 +87,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
     trCond->SetNLayers(nLr); 
+    for (int i=0;i<nLr;i++) trCond->SetMaxBranches(i,nBranch[i]);
+    for (int i=0;i<nLr;i++) trCond->SetMaxCandidates(i,nCands[i]);
     trCond->AddNewCondition(5); // min hits
     trCond->AddGroupPattern( kBit0|kBit1 );
     trCond->AddGroupPattern( kBit3|kBit4 );
