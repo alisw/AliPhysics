@@ -63,7 +63,6 @@
 
 ClassImp(AliAnalysisTPCTOFpA)
 
-
 //________________________________________________________________________
 AliAnalysisTPCTOFpA::AliAnalysisTPCTOFpA() 
   : AliAnalysisTaskSE("TaskChargedHadron"), fESD(0), fListHist(0), fESDtrackCuts(0),fESDTrackCutsMult(0),fESDpid(0),
@@ -76,6 +75,12 @@ AliAnalysisTPCTOFpA::AliAnalysisTPCTOFpA()
   fIspA(0),
   fRapCMS(0),
   fCentEst(0),
+  fTOFmisMatch(0),
+  fTRDinReject(0),
+  fTOFwindow(0),
+  fDCAzCut(0),
+  fCrossedRows(0),
+  fRatioRowsClusters(0),
   fTPCnSigmaCutLow(0),
   fTPCnSigmaCutHigh(0),
   fRapidityCutLow(0),
@@ -86,7 +91,8 @@ AliAnalysisTPCTOFpA::AliAnalysisTPCTOFpA()
   fHistMCparticles(0),
   fHistPidQA(0),
   fHistMult(0),
-  fHistCentrality(0)
+  fHistCentrality(0),
+  fHistTOFwindow(0)
 {
   // default Constructor
   /* fast compilation test
@@ -109,6 +115,12 @@ AliAnalysisTPCTOFpA::AliAnalysisTPCTOFpA(const char *name)
     fIspA(0),
     fRapCMS(0),
     fCentEst(0),
+    fTOFmisMatch(0),
+    fTRDinReject(0),
+    fTOFwindow(0),
+    fDCAzCut(0),
+    fCrossedRows(0),
+    fRatioRowsClusters(0),
     fTPCnSigmaCutLow(0),
     fTPCnSigmaCutHigh(0),
     fRapidityCutLow(0),
@@ -119,7 +131,8 @@ AliAnalysisTPCTOFpA::AliAnalysisTPCTOFpA(const char *name)
     fHistMCparticles(0),
     fHistPidQA(0),
     fHistMult(0),
-    fHistCentrality(0)
+    fHistCentrality(0),
+    fHistTOFwindow(0)
     {
   //
   // standard constructur which should be used
@@ -134,17 +147,24 @@ AliAnalysisTPCTOFpA::AliAnalysisTPCTOFpA(const char *name)
 
   fUseTPConlyTracks =kFALSE;
   fSaveMotherPDG = kFALSE;
-  fSmallTHnSparse = kFALSE;
+  fSmallTHnSparse = kTRUE;
   fTPCnSigmaCutLow = -3.;
   fTPCnSigmaCutHigh = 3.;
-  fRapidityCutLow = -0.5;
+  fRapidityCutLow = 0.;
   fRapidityCutHigh = 0.5;
   fEvenDCAbinning = kFALSE;
   fIspA = kTRUE;
-  fRapCMS = kFALSE;
-  fCentEst = "V0M";
+  fRapCMS = kTRUE;
+  fCentEst = "V0A";
   fEvenDCAbinning = kFALSE;
-  
+  fTOFmisMatch = 2;
+  fTRDinReject = kFALSE;
+  fTOFwindow = 10.;
+  fDCAzCut = 2.;
+  fCrossedRows = 70;
+  fRatioRowsClusters = 0.8;
+
+
 
   /* real */
   fAlephParameters[0] = 0.0283086;
@@ -217,6 +237,13 @@ void AliAnalysisTPCTOFpA::Initialize()
 
 	  fESDtrackCuts->SetEtaRange(-0.9,0.9);
   }
+
+
+  //change DCA z cut here with flags set before:
+  fESDtrackCuts->SetMaxDCAToVertexZ(fDCAzCut);
+  fESDtrackCuts->SetMinNCrossedRowsTPC(fCrossedRows);
+  fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fRatioRowsClusters);
+
   //
   //
   //
@@ -273,14 +300,14 @@ void AliAnalysisTPCTOFpA::UserCreateOutputObjects()
   //dimensions of standard THnSparse
   //                              0,           1,           2,  3,       4,    5,     6,   7,     8
   Int_t    binsHistReal[9] = {   3,   kMultBins,     kPtBins,  2,       20,    50,    2,  16,    kDcaBins};
-  Double_t xminHistReal[9] = {-0.5,        -0.5,           0, -2,      -1.0,   -5, -0.5,  -8,       -3};
-  Double_t xmaxHistReal[9] = { 2.5,        10.5,           3,  2,       1.0,    5,  1.5,   8,        3};
+  Double_t xminHistReal[9] = {-0.5,        -1.5,           0, -2,      -1.0,   -5, -0.5,  -8,       -3};
+  Double_t xmaxHistReal[9] = { 2.5,         9.5,           3,  2,       1.0,    5,  1.5,   8,        3};
 
   //dimensions of small THnSparse
   //                              0,           1,           2,  3,                        4,   5,       6
-  Int_t    binsHistRealSm[7] = {   3,   kMultBins,     kPtBins,  2,  /*    10,   50,*/    2,  16, kDcaBins};
-  Double_t xminHistRealSm[7] = {-0.5,        -0.5,           0, -2,  /*  -0.5,   -5,*/ -0.5,  -8,       -3};
-  Double_t xmaxHistRealSm[7] = { 2.5,        10.5,           3,  2,  /*   0.5,    5,*/  1.5,   8,        3};
+  Int_t    binsHistRealSm[7] = {   3,   kMultBins,     kPtBins,  2,  /*    10,   50,*/    2,  80, kDcaBins};
+  Double_t xminHistRealSm[7] = {-0.5,        -1.5,           0, -2,  /*  -0.5,   -5,*/ -0.5,  -8,       -3};
+  Double_t xmaxHistRealSm[7] = { 2.5,         9.5,           3,  2,  /*   0.5,    5,*/  1.5,   8,        3};
 
   if (!fSmallTHnSparse) fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",9,binsHistReal,xminHistReal,xmaxHistReal);
   else                  fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",7,binsHistRealSm,xminHistRealSm,xmaxHistRealSm);
@@ -310,14 +337,14 @@ void AliAnalysisTPCTOFpA::UserCreateOutputObjects()
   // dimensions of standard THnSparse
   //                            0,            1,           2,  3,      4,   5,    6,   7,       8.,    9.
   Int_t    binsHistMC[10] = {   3,    kMultBins,     kPtBins,  2,     20,  50,    2,  16, kDcaBins,    6};
-  Double_t xminHistMC[10] = {-0.5,         -0.5,           0, -2,   -1.0,  -5, -0.5,  -8,       -3, -0.5};
-  Double_t xmaxHistMC[10] = { 2.5,         10.5,           3,  2,    1.0,   5,  1.5,   8,        3,  5.5};
+  Double_t xminHistMC[10] = {-0.5,         -1.5,           0, -2,   -1.0,  -5, -0.5,  -8,       -3, -0.5};
+  Double_t xmaxHistMC[10] = { 2.5,          9.5,           3,  2,    1.0,   5,  1.5,   8,        3,  5.5};
 
   //dimensions of small THnSparse
   //                              0,           1,           2,  3,                     4,   5,       6.,    7.
-  Int_t    binsHistMCSm[8] = {   3,    kMultBins,     kPtBins,  2,  /*   10,  50,*/    2,  16, kDcaBins,    6};
-  Double_t xminHistMCSm[8] = {-0.5,         -0.5,           0, -2,  /* -0.5,  -5,*/ -0.5,  -8,       -3, -0.5};
-  Double_t xmaxHistMCSm[8] = { 2.5,         10.5,           3,  2,  /*  0.5,   5,*/  1.5,   8,        3,  5.5};
+  Int_t    binsHistMCSm[8] = {   3,    kMultBins,     kPtBins,  2,  /*   10,  50,*/    2,  80, kDcaBins,    6};
+  Double_t xminHistMCSm[8] = {-0.5,         -1.5,           0, -2,  /* -0.5,  -5,*/ -0.5,  -8,       -3, -0.5};
+  Double_t xmaxHistMCSm[8] = { 2.5,          9.5,           3,  2,  /*  0.5,   5,*/  1.5,   8,        3,  5.5};
 
   //different binning for CODE axis, if we want to save motherPDG
   if (fSaveMotherPDG) {
@@ -357,9 +384,13 @@ void AliAnalysisTPCTOFpA::UserCreateOutputObjects()
   //
   fHistMult = new TH2D("fHistMult", "control histogram to count number of events", 502, -2.5, 499.5,4,-0.5,3.5);
   fHistCentrality = new TH1D("fHistCentrality", "control histogram to count number of events", 22, -1.5, 20.5);
+  fHistTOFwindow = new TH2D("fHistTOFwindow", "control hisogram for TOF window",160,-10.,10.,160,-10.,10.);
+  fHistTOFwindow->GetXaxis()->SetTitle("dx");
+  fHistTOFwindow->GetYaxis()->SetTitle("dz");
   fListHist->Add(fHistMult);
   fListHist->Add(fHistCentrality);
-  
+  fListHist->Add(fHistTOFwindow);
+
   PostData(1, fListHist);
 
 }
@@ -418,11 +449,15 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
   //
   // monitor vertex position
   //
+  Bool_t isVertexOk = kTRUE;
   const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
   if(vertex->GetNContributors()<1) {
     // SPD vertex
     vertex = fESD->GetPrimaryVertexSPD();
-    if(vertex->GetNContributors()<1) vertex = 0x0;
+    /* quality checks on SPD-vertex */ 
+    TString vertexType = vertex->GetTitle();
+    if (vertexType.Contains("vertexer: Z") && (vertex->GetDispersion() > 0.04 || vertex->GetZRes() > 0.25))  isVertexOk = kFALSE; //vertex = 0x0; //
+    if (vertex->GetNContributors()<1)  isVertexOk = kFALSE; //vertex = 0x0; //
   }  
   //
   // small track loop to determine trigger Pt, multiplicity or centrality
@@ -502,7 +537,8 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
   if (fIspA) {
     AliCentrality *esdCentrality = fESD->GetCentrality();
     Float_t pApercentile = esdCentrality->GetCentralityPercentile(fCentEst.Data()); // centrality percentile determined with V0M
-    if (pApercentile >=  0. && pApercentile < 10.) centrality = 0; 
+    if (pApercentile >=  0. && pApercentile <  5.) centrality = -1; 
+    if (pApercentile >=  5. && pApercentile < 10.) centrality = 0; 
     if (pApercentile >= 10. && pApercentile < 20.) centrality = 1;
     if (pApercentile >= 20. && pApercentile < 30.) centrality = 2;
     if (pApercentile >= 30. && pApercentile < 40.) centrality = 3;
@@ -512,6 +548,7 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
     if (pApercentile >= 70. && pApercentile < 80.) centrality = 7;
     if (pApercentile >= 80. && pApercentile < 90.) centrality = 8;
     if (pApercentile >= 90. && pApercentile <= 100.) centrality = 9;
+
     /*
     cout << "*****************ispA switch works***************************" << endl;
     cout << "centrality estimator  is:  " << fCentEst.Data() << endl; 
@@ -534,7 +571,7 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
   //
 
   
-  if (!vertex) {
+  if (!vertex || !isVertexOk) {
     fHistMult->Fill(-1, processCode);
     PostData(1, fListHist);
     return;
@@ -616,7 +653,7 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
     return;
   }
   //
-  if (!vertex) {
+  if (!vertex || !isVertexOk) {
     fHistMult->Fill(-1, processCode);
     PostData(1, fListHist);
     return;
@@ -683,13 +720,40 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
     Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
     Bool_t hasTOFtime = status&AliESDtrack::kTIME;
     Bool_t hasTOFpid  = status&AliESDtrack::kTOFpid;
+    Bool_t hasTOFmismatch  = status&AliESDtrack::kTOFmismatch;
     Bool_t hasTOF     = kFALSE;
     if (hasTOFout && hasTOFtime && hasTOFpid) hasTOF = kTRUE;
-	Float_t length = 0.;
+
+
+    //check if TRD contributed to tracking and throw track away if  fTRDinReject flag is set
+    Bool_t hasTRDin = status&AliESDtrack::kTRDin; 
+    if (hasTRDin && fTRDinReject) {
+      //hasTOF = kFALSE;
+      if (fUseTPConlyTracks) {delete track; track = 0;} //need to delete tpconlytrack
+      continue;
+    }
+
+
+    //check TOF window
+    Float_t dxTOF = track->GetTOFsignalDx();
+    Float_t dzTOF = track->GetTOFsignalDz();
+
+    if (hasTOF) fHistTOFwindow->Fill(dxTOF,dzTOF);
+
+    //******************************************
+    //*******NEEDS PROPER CUT SETTER************
+    //******************************************
+    //cut on TOF window here
+    if (TMath::Abs(dxTOF) > fTOFwindow || TMath::Abs(dzTOF) > fTOFwindow) hasTOF = kFALSE;
+
+    
+
+    Float_t length = 0.;
     if (!fUseTPConlyTracks) length = track->GetIntegratedLength(); 
     else length = trackForTOF->GetIntegratedLength();
 
     if (length < 350.) hasTOF = kFALSE;
+
     //
     // calculate rapidities and kinematics
     // 
@@ -746,7 +810,10 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
 			    fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon),
 			    fESDpid->NumberOfSigmasTPC(track,AliPID::kProton),
 			    0}; // ASK FOR PUTTING THE DEUTERON TO AliPID !!!!!!!!!!!!!!
-    Float_t time0 = fESDpid->GetTOFResponse().GetTimeZero();
+
+
+    Float_t time0 = fESDpid->GetTOFResponse().GetStartTime(track->P());
+    //Float_t time0 = fESDpid->GetTOFResponse().GetTimeZero(); //old way of getting time0
     //fESDpid->GetTOFResponse().SetTimeResolution(130.);
     Double_t pullsTOF[4] ={0.,0.,0.,0.};
     if (!fUseTPConlyTracks) {
@@ -837,8 +904,28 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
 	Int_t tofLabel[3];
 	if (!fUseTPConlyTracks) track->GetTOFLabel(tofLabel);
 	else trackForTOF->GetTOFLabel(tofLabel);
-	if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0]) || tofLabel[1] > 0) hasTOF = kFALSE;
-	//
+
+
+	//three options:
+	//0: do NOT check at all
+	//1: do check
+	//2: in case of decays, check if mother label matches --> if yes, assign hasTOF = kTRUE
+
+	if (fTOFmisMatch == 0) {
+	  //if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0]) || tofLabel[1] > 0) hasTOF = kFALSE;
+	}
+	if (fTOFmisMatch == 1) {
+	  if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0]) || tofLabel[1] > 0) hasTOF = kFALSE;
+	}
+	if (fTOFmisMatch == 2) {
+	  if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0]) || tofLabel[1] > 0) hasTOF = kFALSE;
+ 	  TParticle *matchedTrack = stack->Particle(TMath::Abs(tofLabel[0]));
+	  if (TMath::Abs(matchedTrack->GetFirstMother()) == TMath::Abs(track->GetLabel())) hasTOF = kTRUE;
+	}
+
+	  
+
+	  //
 	// IMPORTANT BIG PROBLEM HERE THE PROBABLILITY TO HAVE A PID SIGNAL MUST BE IN !!!!!!!!!!!!
 	//
 	if (!fSmallTHnSparse){

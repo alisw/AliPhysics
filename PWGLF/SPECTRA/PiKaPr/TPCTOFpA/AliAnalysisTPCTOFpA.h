@@ -44,11 +44,17 @@ class AliAnalysisTPCTOFpA : public AliAnalysisTaskSE {
   void           SetSaveMotherPDG(Bool_t saveMotherPDG =kTRUE){fSaveMotherPDG = saveMotherPDG;};
   void           SetSmallTHnSparse(Bool_t smallTHnSparse = kTRUE) {fSmallTHnSparse = smallTHnSparse;};
   void           SetTPCnSigmaCuts(Double_t nSigmaTPCLow = -3., Double_t nSigmaTPCHigh = 3.){fTPCnSigmaCutLow = nSigmaTPCLow; fTPCnSigmaCutHigh = nSigmaTPCHigh;};
-  void           SetRapidityCuts(Double_t rapidityLow = -0.5, Double_t rapidityHigh = 0.5){fRapidityCutLow = rapidityLow; fRapidityCutHigh = rapidityHigh;};
+  void           SetRapidityCuts(Double_t rapidityLow = 0., Double_t rapidityHigh = 0.5){fRapidityCutLow = rapidityLow; fRapidityCutHigh = rapidityHigh;};
   void           SetEvenDCAbinning(Bool_t EvenDCAbinning = kTRUE) {fEvenDCAbinning = EvenDCAbinning;};
   void           SetIspA(Bool_t ispA = kTRUE) {fIspA = ispA;};
   void           SetRapCMS(Bool_t rapCMS = kTRUE) {fRapCMS = rapCMS;};
   void           SetCentEst(TString centEst = "V0M") {fCentEst = centEst.Data();};
+  void           SetTOFmisMatch(Int_t TOFmisMatch = 2) {fTOFmisMatch = TOFmisMatch;};
+  void           SetTOFwindow(Double_t TOFwindow = 10.) {fTOFwindow = TOFwindow;};
+  void           SetCrossedRows(Double_t crossedRows = 70.) {fCrossedRows = crossedRows;};
+  void           SetRatioRowsClusters(Double_t ratioRowsClusters = 0.8) {fRatioRowsClusters = ratioRowsClusters;};
+  void           SetTRDinReject(Bool_t TRDinReject = kFALSE) {fTRDinReject = TRDinReject;};
+  void           SetDCAzCut(Double_t dcaZcut = 2.){fDCAzCut = dcaZcut;};
   void           Initialize();
   //
   
@@ -72,6 +78,12 @@ class AliAnalysisTPCTOFpA : public AliAnalysisTaskSE {
   Bool_t        fIspA;                 // flag for pA analysis                                                               
   Bool_t        fRapCMS;               // flag if rapitidy should be shifted by 0.465 do have rap in CMS of pPb
   TString       fCentEst;              // string which contains the string for the centrality estimator
+  Int_t         fTOFmisMatch;          // switch for how tof mismatch should be handled. possible options 0,1,2
+  Bool_t        fTRDinReject;          // flag to reject all tracks with TRDin flag set
+  Double_t      fTOFwindow;            // set cut on dx and dz TOF window
+  Double_t      fDCAzCut;              // set cut on DCA z -standard is 2cm
+  Double_t      fCrossedRows;          // min. number of crossed rows for track cuts
+  Double_t      fRatioRowsClusters;    // ratio of findable clusters over crossed rows
   Double_t      fTPCnSigmaCutLow;      // low border for TPC n-sigma cut
   Double_t      fTPCnSigmaCutHigh;     // high border for TPC n-sigma cut
   Double_t      fRapidityCutLow;       // low border for rapidity cut
@@ -88,6 +100,7 @@ class AliAnalysisTPCTOFpA : public AliAnalysisTaskSE {
   TH3D       * fHistPidQA;             //! histogram for the QA of the PID
   TH2D       * fHistMult;              //! control histogram for multiplicity
   TH1D       * fHistCentrality;        //! control histogram for centrality
+  TH2D       * fHistTOFwindow;         //! control histogram for TOF window
   //
   AliAnalysisTPCTOFpA(const AliAnalysisTPCTOFpA&); 
   AliAnalysisTPCTOFpA& operator=(const AliAnalysisTPCTOFpA&); 
