@@ -96,6 +96,9 @@ class AliCaloPhoton :public TLorentzVector{
    Int_t GetPrimary(){return fPrimary;}
    Double_t GetPartnerPt(){return fPartnerPt;}  
 private:
+  AliCaloPhoton(const AliCaloPhoton&); // not implemented
+  AliCaloPhoton& operator=(const AliCaloPhoton&);
+  
   TLorentzVector fMomV2 ; //Alternative momentum
   Bool_t    fDisp ;   //Dispersion bit
   Bool_t    fDisp2 ;  //Strict Dispersion bit

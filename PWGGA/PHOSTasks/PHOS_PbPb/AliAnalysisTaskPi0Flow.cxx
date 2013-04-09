@@ -690,6 +690,7 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
 
     fCaloPhotonsPHOS->Add(new  AliCaloPhoton(lorentzMomentum.X(),lorentzMomentum.Py(),lorentzMomentum.Z(),lorentzMomentum.E()) );
     AliCaloPhoton * ph = (AliCaloPhoton*) fCaloPhotonsPHOS->At( fCaloPhotonsPHOS->GetLast() );
+    ph->SetCluster(clu);
 
     ph->SetModule(mod) ;
     lorentzMomentum*= ecore/lorentzMomentum.E() ;
