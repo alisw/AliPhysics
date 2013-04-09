@@ -107,11 +107,11 @@ void AliITSUSegmentationPix::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z) c
 //_____________________________________________________________________________RS
 Float_t AliITSUSegmentationPix::Z2Col(Float_t z) const 
 {
-  // get column number (from 0) from local Z
+  // get column number (from 0) from local Z (wrt bottom left corner of the active matrix)
   int chip = int(z/fChipDZ);
   float col = chip*fNColPerChip;
   z -= chip*fChipDZ;
-  if (z>fPitchZLftCol) col += (z-fPitchZLftCol)/fPitchZ;
+  if (z>fPitchZLftCol) col += 1+(z-fPitchZLftCol)/fPitchZ;
   return col;
 }
 
