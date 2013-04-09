@@ -117,6 +117,7 @@ protected:
     void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
     void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
     void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
+    void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z, Double_t w) const ; //Fill 3D histogram witn name key
 
     TVector3 GetVertexVector(const AliVVertex* vertex);
     Int_t GetCentralityBin(Float_t centralityV0M);

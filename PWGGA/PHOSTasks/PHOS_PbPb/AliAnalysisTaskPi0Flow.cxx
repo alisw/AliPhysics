@@ -1446,6 +1446,20 @@ void AliAnalysisTaskPi0Flow::FillHistogram(const char * key,Double_t x,Double_t 
   AliError(Form("can not find histogram (of instance TH2) <%s> ",key)) ;
 }
 
+void AliAnalysisTaskPi0Flow::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z, Double_t w) const{
+  //Fills 1D histograms with key
+  TObject * obj = fOutputContainer->FindObject(key);
+  
+  TH3 * th3 = dynamic_cast<TH3*> (obj);
+  if(th3) {
+    th3->Fill(x, y, z, w) ;
+    return;
+  }
+  
+  AliError(Form("can not find histogram (of instance TH3) <%s> ",key)) ;
+}
+
+
 //_____________________________________________________________________________
 AliVEvent* AliAnalysisTaskPi0Flow::GetEvent()
 {
