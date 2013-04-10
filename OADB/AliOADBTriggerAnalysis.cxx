@@ -18,20 +18,23 @@ AliOADBTriggerAnalysis::AliOADBTriggerAnalysis() : TNamed("AliOADBTriggerAnalysi
   fZDCCutRefDeltaCorr(-2.1),
   fZDCCutSigmaSumCorr(6.0),
   fZDCCutSigmaDeltaCorr(1.2),
-  fZDCCutZNATimeCorr(2.0),
-  fZDCCutZNCTimeCorr(5.0)
+  fZDCCutZNATimeCorrMin(2.0),
+  fZDCCutZNATimeCorrMax(100.0),
+  fZDCCutZNCTimeCorrMin(5.0),
+  fZDCCutZNCTimeCorrMax(100.0)
 {
   // default ctor
-
-  
 }
+
 AliOADBTriggerAnalysis::AliOADBTriggerAnalysis(char* name) : TNamed(name, "OADB object storing trigger analysis settings"), 
   fZDCCutRefSumCorr(-65.5),
   fZDCCutRefDeltaCorr(-2.1),
   fZDCCutSigmaSumCorr(6.0),
   fZDCCutSigmaDeltaCorr(1.2),
-  fZDCCutZNATimeCorr(2.0),
-  fZDCCutZNCTimeCorr(5.0)
+  fZDCCutZNATimeCorrMin(2.0),
+  fZDCCutZNATimeCorrMax(100.0),
+  fZDCCutZNCTimeCorrMin(5.0),
+  fZDCCutZNCTimeCorrMax(100.0)
 {
   // ctor
   // Init();
@@ -60,22 +63,28 @@ void AliOADBTriggerAnalysis::Browse(TBrowser *b)
   static TObjString * strZDCCutRefDeltaCorr   =0;  
   static TObjString * strZDCCutSigmaSumCorr   =0;  
   static TObjString * strZDCCutSigmaDeltaCorr =0;
-  static TObjString * strZDCCutZNATimeCorr    =0;
-  static TObjString * strZDCCutZNCTimeCorr    =0;
+  static TObjString * strZDCCutZNATimeCorrMin =0;
+  static TObjString * strZDCCutZNATimeCorrMax =0;
+  static TObjString * strZDCCutZNCTimeCorrMin =0;
+  static TObjString * strZDCCutZNCTimeCorrMax =0;
 
   if(strZDCCutRefSumCorr     ) delete strZDCCutRefSumCorr     ;
   if(strZDCCutRefDeltaCorr   ) delete strZDCCutRefDeltaCorr   ;
   if(strZDCCutSigmaSumCorr   ) delete strZDCCutSigmaSumCorr   ;
   if(strZDCCutSigmaDeltaCorr ) delete strZDCCutSigmaDeltaCorr ;
-  if(strZDCCutZNATimeCorr    ) delete strZDCCutZNATimeCorr    ;
-  if(strZDCCutZNCTimeCorr    ) delete strZDCCutZNCTimeCorr    ;
+  if(strZDCCutZNATimeCorrMin ) delete strZDCCutZNATimeCorrMin ;
+  if(strZDCCutZNATimeCorrMax ) delete strZDCCutZNATimeCorrMax ;
+  if(strZDCCutZNCTimeCorrMin ) delete strZDCCutZNCTimeCorrMin ;
+  if(strZDCCutZNCTimeCorrMax ) delete strZDCCutZNCTimeCorrMax ;
   
   strZDCCutRefSumCorr     = new TObjString(Form("ZDCCutRefSumCorr     %f", fZDCCutRefSumCorr    )); 
   strZDCCutRefDeltaCorr   = new TObjString(Form("ZDCCutRefDeltaCorr   %f", fZDCCutRefDeltaCorr  )); 
   strZDCCutSigmaSumCorr   = new TObjString(Form("ZDCCutSigmaSumCorr   %f", fZDCCutSigmaSumCorr  )); 
   strZDCCutSigmaDeltaCorr = new TObjString(Form("ZDCCutSigmaDeltaCorr %f", fZDCCutSigmaDeltaCorr)); 
-  strZDCCutZNATimeCorr    = new TObjString(Form("ZDCCutZNATimeCorr    %f", fZDCCutZNATimeCorr   ));
-  strZDCCutZNCTimeCorr    = new TObjString(Form("ZDCCutZNCTimeCorr    %f", fZDCCutZNCTimeCorr   ));
+  strZDCCutZNATimeCorrMin = new TObjString(Form("ZDCCutZNATimeCorrMin %f", fZDCCutZNATimeCorrMin));
+  strZDCCutZNATimeCorrMax = new TObjString(Form("ZDCCutZNATimeCorrMax %f", fZDCCutZNATimeCorrMax));
+  strZDCCutZNCTimeCorrMin = new TObjString(Form("ZDCCutZNCTimeCorrMin %f", fZDCCutZNCTimeCorrMin));
+  strZDCCutZNCTimeCorrMax = new TObjString(Form("ZDCCutZNCTimeCorrMax %f", fZDCCutZNCTimeCorrMax));
 
   if (b) {
     // Creates a folder for each beam type containing the list of corresponding bx ids
@@ -83,8 +92,10 @@ void AliOADBTriggerAnalysis::Browse(TBrowser *b)
     b->Add(strZDCCutRefDeltaCorr  );
     b->Add(strZDCCutSigmaSumCorr  );
     b->Add(strZDCCutSigmaDeltaCorr);
-    b->Add(strZDCCutZNATimeCorr   );
-    b->Add(strZDCCutZNCTimeCorr   );
+    b->Add(strZDCCutZNATimeCorrMin);
+    b->Add(strZDCCutZNATimeCorrMax);
+    b->Add(strZDCCutZNCTimeCorrMin);
+    b->Add(strZDCCutZNCTimeCorrMax);
   }     
   else
     TObject::Browse(b);
@@ -98,8 +109,10 @@ void AliOADBTriggerAnalysis::Print(Option_t* option) const {
   cout << " - ZDCCutRefDeltaCorr   "<< fZDCCutRefDeltaCorr   << endl;
   cout << " - ZDCCutSigmaSumCorr   "<< fZDCCutSigmaSumCorr   << endl;
   cout << " - ZDCCutSigmaDeltaCorr "<< fZDCCutSigmaDeltaCorr << endl;
-  cout << " - ZDCCutZNATimeCorr    "<< fZDCCutZNATimeCorr    << endl;
-  cout << " - ZDCCutZNCTimeCorr    "<< fZDCCutZNCTimeCorr    << endl;
+  cout << " - ZDCCutZNATimeCorrMin "<< fZDCCutZNATimeCorrMin << endl;
+  cout << " - ZDCCutZNATimeCorrMax "<< fZDCCutZNATimeCorrMax << endl;
+  cout << " - ZDCCutZNCTimeCorrMin "<< fZDCCutZNCTimeCorrMin << endl;
+  cout << " - ZDCCutZNCTimeCorrMax "<< fZDCCutZNCTimeCorrMax << endl;
   cout << option << endl;
 
 }
