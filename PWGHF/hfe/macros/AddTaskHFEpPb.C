@@ -4,7 +4,8 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
                                Bool_t kTPC_Only = kFALSE,
                                Bool_t kTPCTOF_Cent = kFALSE,
                                Bool_t kTPCTOF_Sys = kFALSE,
-                               Bool_t kTPCTOFTRD_Ref = kFALSE
+			       Bool_t kTPCTOFTRD_Ref = kFALSE,
+                               int TRDtrigger = 0
   ){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -28,7 +29,8 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
   const double kDefTPCs = 0;
   const double kDefTPCu = 3;   
   const double kDefTOFs = 3.;
-  const int TRDtrigger = 1; // trd trigger type
+  //const int TRDtrigger = 1; // trd trigger type
+  if(!kTPCTOFTRD_Ref) TRDtrigger = 0;
   
   Double_t dEdxlm[12] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};  //  50%
   Double_t dEdxhm[12] = {3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};
@@ -157,7 +159,7 @@ AliAnalysisTask *RegisterTask(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, Int_
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisTaskHFE *task = ConfigHFEpPb(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, 
 					  tpcdEdxcutlow,tpcdEdxcuthigh,
-					  tofs,tofm,itshitpixel,icent);
+					  tofs,tofm,itshitpixel);
 
   if(isAOD)
     task->SetAODAnalysis();
@@ -211,7 +213,9 @@ AliAnalysisTask *RegisterTaskPID2(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, 
   else{
     task->SetHasMCData(kFALSE);
   }
-  task->SelectCollisionCandidates(AliVEvent::kINT7);
+
+  if(TRDtrigger==0) task->SelectCollisionCandidates(AliVEvent::kINT7);
+  else task->SelectCollisionCandidates(AliVEvent::kTRD);
  
   Int_t idcaxy = (Int_t)(dcaxy*10.);
   Int_t idcaz = (Int_t)(dcaz*10.);
