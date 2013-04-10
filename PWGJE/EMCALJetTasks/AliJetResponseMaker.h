@@ -46,6 +46,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetIsPythia(Bool_t i)                                           { fIsPythia          = i         ; }
   void                        SetMCLabelShift(Int_t s)                                        { fMCLabelShift      = s         ; }
   void                        SetUseCellsToMatch(Bool_t i)                                    { fUseCellsToMatch   = i         ; }
+  void                        SetMinJetMCPt(Float_t pt)                                       { fMinJetMCPt        = pt        ; }
 
  protected:
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
