@@ -79,12 +79,13 @@ public:
    // setters
    void                                 SetPtBins(Float_t bin[19], Int_t n) { for(Int_t i = 0; i < n+1; i++) fPtBins[i] = bin[i]; fNPtBins = n; }
    void                                 SetdPhiBins(Float_t bin[19], Int_t n) { for(Int_t i = 0; i < n+1; i++) fdPhiBins[i] = bin[i]; fNdPhiBins = n;}
-   void                                 SetCentralityParameters(Double_t min, Double_t max, const char* a, const char* b, Bool_t c) { 
+   void                                 SetCentralityParameters(Double_t min, Double_t max, const char* a, const char* b, Bool_t c, Bool_t d) { 
                                                                                           fCentralityMin = min; 
                                                                                           fCentralityMax = max; 
                                                                                           fkCentralityMethodA = a; 
                                                                                           fkCentralityMethodB = b;
-                                                                                          fCentralityCut = c; }
+                                                                                          fCentralityCut2010 = c; 
+											  fCentralityCut2011 = d; }
    void                                 SetPOICuts(AliFlowTrackCuts *cutsPOI) { fPOICuts = cutsPOI; }
    void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
    void                                 SetPIDConfiguration(Float_t prob[7]) { for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = prob[i]; }
@@ -220,7 +221,8 @@ private:
    Float_t              fCentralityMax; // upper bound of centrality bin
    const char           *fkCentralityMethodA; // centrality determiantion (primary method)
    const char           *fkCentralityMethodB; // centrality determination fallback
-   Bool_t               fCentralityCut; // 3 sigma cut for multiplicity outliers 
+   Bool_t               fCentralityCut2010; // 3 sigma cut for multiplicity outliers 
+   Bool_t               fCentralityCut2011; // 3 sigma cut for multiplicity outliers 
    AliFlowTrackCuts     *fPOICuts; // cuts for particles of interest (flow package)
    Float_t              fVertexRange; // absolute value of maximum distance of vertex along the z-axis
    TH1F                 *fPhi; //! QA plot of azimuthal distribution of POI daughters
