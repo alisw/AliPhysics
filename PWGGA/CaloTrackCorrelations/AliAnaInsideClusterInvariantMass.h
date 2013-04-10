@@ -33,7 +33,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TObjString * GetAnalysisCuts();
   
   TList      * GetCreateOutputObjects();
-    
+  
+  void         FillSSWeightHistograms(AliVCluster *clus, Int_t nlm);
+  
   void         Init();
   
   void         InitParameters();
@@ -62,6 +64,12 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnMCFractionHistograms()            { fFillMCFractionHisto = kTRUE  ; }
   void         SwitchOffMCFractionHistograms()           { fFillMCFractionHisto = kFALSE ; }
 
+  void         SwitchOnFillSSWeightHistograms()           { fFillSSWeightHisto   = kTRUE  ; }
+  void         SwitchOffFillSSWeightHistograms()          { fFillSSWeightHisto   = kFALSE ; }
+  
+  void         SetNWeightForShowerShape(Int_t n)         { fSSWeightN = n ; }
+  void         SetWeightForShowerShape(Int_t i, Float_t v) { if (i < 10) fSSWeight[i] = v ; }
+
   
   //For histograms
   enum mcTypes { kmcPhoton = 1, kmcConversion = 2, kmcPi0    = 3,  
@@ -79,7 +87,11 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillTMResidualHisto ;  // Fill track matching histos, residuals
   Bool_t       fFillSSExtraHisto ;     // Fill shower shape extra histos
   Bool_t       fFillMCFractionHisto ;  // Fill MC energy fraction histos
+  Bool_t       fFillSSWeightHisto ;    // Fill weigth histograms
 
+  Float_t      fSSWeight[10];          // List of weights to test
+  Float_t      fSSWeightN;             // Total number of weights to test
+  
   //Histograms
   
   TH2F       * fhMassNLocMax1[8][2]  ;                  //! Mass of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
@@ -287,6 +299,12 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhEtaEtaPhiNLocMax2 ;                    //! Eta vs Phi of eta's with N Local Maxima = 2, E > 8 GeV
   TH2F       * fhEtaEtaPhiNLocMaxN ;                    //! Eta vs Phi of eta's with N Local Maxima > N, E > 8 GeV
 
+  TH2F       * fhPi0CellE[3] ;                          //! pi0's energy vs cluster cell energy with NLM = 1, = 2, > 2 
+  TH2F       * fhPi0CellEFrac[3] ;                      //! pi0's energy vs cluster cell energy fraction with NLM = 1, = 2, > 2 
+  TH2F       * fhPi0CellLogEFrac[3] ;                   //! pi0's energy vs cluster log cell energy fraction with NLM = 1, = 2, > 2
+  TH2F       * fhM02WeightPi0[3][10] ;                  //! M02 for selected pi0 with different weight, with NLM = 1, = 2, > 2
+
+  
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   

@@ -59,6 +59,8 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fFillTMResidualHisto(kFALSE),
   fFillSSExtraHisto(kFALSE),
   fFillMCFractionHisto(kFALSE),
+  fFillSSWeightHisto(kFALSE),
+  fSSWeightN(0),
   fhMassM02CutNLocMax1(0),    fhMassM02CutNLocMax2(0),    fhMassM02CutNLocMaxN(0),
   fhAsymM02CutNLocMax1(0),    fhAsymM02CutNLocMax2(0),    fhAsymM02CutNLocMaxN(0),
   fhMassSplitECutNLocMax1(0), fhMassSplitECutNLocMax2(0), fhMassSplitECutNLocMaxN(0),
@@ -250,9 +252,92 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
     fhMCAsymM02NLocMaxNMCPi0Ebin[i] = 0 ;
   }
   
+  
+  for(Int_t nlm = 0; nlm < 3; nlm++)
+  {
+    fhPi0CellE       [nlm] = 0 ;
+    fhPi0CellEFrac   [nlm] = 0 ;
+    fhPi0CellLogEFrac[nlm] = 0 ;
+    
+    for(Int_t i = 0; i < 10; i++)
+      fhM02WeightPi0[nlm][i] = 0;
+  }
+  
   InitParameters();
   
 }
+
+//_______________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus, Int_t nlm)
+{
+  // Calculate weights and fill histograms
+  
+  if(!fFillSSWeightHisto) return;
+  
+  AliVCaloCells* cells = 0;
+  if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
+  else                        cells = GetPHOSCells();
+  
+  // First recalculate energy in case non linearity was applied
+  Float_t  energy = 0;
+  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++)
+  {
+    
+    Int_t id       = clus->GetCellsAbsId()[ipos];
+    
+    //Recalibrate cell energy if needed
+    Float_t amp = cells->GetCellAmplitude(id);
+    GetCaloUtils()->RecalibrateCellAmplitude(amp,fCalorimeter, id);
+    
+    energy    += amp;
+      
+  } // energy loop
+  
+  if(energy <=0 )
+  {
+    printf("AliAnaInsideClusterInvatiantMass::WeightHistograms()- Wrong calculated energy %f\n",energy);
+    return;
+  }
+  
+   
+  //Get the ratio and log ratio to all cells in cluster
+  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++)
+  {
+    Int_t id       = clus->GetCellsAbsId()[ipos];
+    
+    //Recalibrate cell energy if needed
+    Float_t amp = cells->GetCellAmplitude(id);
+    GetCaloUtils()->RecalibrateCellAmplitude(amp,fCalorimeter, id);
+    
+    fhPi0CellE       [nlm]->Fill(energy,amp);
+    fhPi0CellEFrac   [nlm]->Fill(energy,amp/energy);
+    fhPi0CellLogEFrac[nlm]->Fill(energy,TMath::Log(amp/energy));
+  }
+  
+  //Recalculate shower shape for different W0
+  if(fCalorimeter=="EMCAL")
+  {
+    Float_t l0org = clus->GetM02();
+    Float_t l1org = clus->GetM20();
+    Float_t dorg  = clus->GetDispersion();
+    
+    for(Int_t iw = 0; iw < fSSWeightN; iw++)
+    {
+      GetCaloUtils()->GetEMCALRecoUtils()->SetW0(fSSWeight[iw]);
+      GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), cells, clus);
+      
+      fhM02WeightPi0[nlm][iw]->Fill(energy,clus->GetM02());
+      
+    } // w0 loop
+    
+    // Set the original values back
+    clus->SetM02(l0org);
+    clus->SetM20(l1org);
+    clus->SetDispersion(dorg);
+    
+  }// EMCAL
+}
+
 
 //_______________________________________________________________
 TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
@@ -1510,6 +1595,45 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   outputContainer->Add(fhEtaEtaPhiNLocMaxN) ;
 
   
+  if(fFillSSWeightHisto)
+  {
+    TString snlm[] = {"1","2","N"};
+    for(Int_t nlm = 0; nlm < 3; nlm++)
+    {
+      fhPi0CellE[nlm]  = new TH2F(Form("hPi0CellENLocMax%s",snlm[nlm].Data()),
+                                  Form("Selected #pi^{0}'s, NLM = %s: cluster E vs cell E",snlm[nlm].Data()),
+                                  nptbins,ptmin,ptmax, nptbins,ptmin,ptmax);
+      fhPi0CellE[nlm]->SetYTitle("E_{cell}");
+      fhPi0CellE[nlm]->SetXTitle("E_{cluster}");
+      outputContainer->Add(fhPi0CellE[nlm]) ;
+      
+      fhPi0CellEFrac[nlm]  = new TH2F(Form("hPi0CellEFracNLocMax%s",snlm[nlm].Data()),
+                                      Form("Selected #pi^{0}'s, NLM = %s: cluster E vs cell E / cluster E",snlm[nlm].Data()),
+                                      nptbins,ptmin,ptmax, 100,0,1);
+      fhPi0CellEFrac[nlm]->SetYTitle("E_{cell} / E_{cluster}");
+      fhPi0CellEFrac[nlm]->SetXTitle("E_{cluster}");
+      outputContainer->Add(fhPi0CellEFrac[nlm]) ;
+      
+      fhPi0CellLogEFrac[nlm]  = new TH2F(Form("hPi0CellLogEFracNLocMax%s",snlm[nlm].Data()),
+                                      Form("Selected #pi^{0}'s, NLM = %s: cluster E vs Log(cell E / cluster E)",snlm[nlm].Data()),
+                                      nptbins,ptmin,ptmax, 100,-10,0);
+      fhPi0CellLogEFrac[nlm]->SetYTitle("Log(E_{cell} / E_{cluster})");
+      fhPi0CellLogEFrac[nlm]->SetXTitle("E_{cluster}");
+      outputContainer->Add(fhPi0CellLogEFrac[nlm]) ;
+
+      
+      for(Int_t i = 0; i < fSSWeightN; i++)
+      {
+        fhM02WeightPi0[nlm][i]     = new TH2F(Form("hM02Pi0NLocMax%s_W%d",snlm[nlm].Data(),i),
+                                              Form("#lambda_{0}^{2} vs E, with W0 = %2.2f, for N Local max = %s", fSSWeight[i], snlm[nlm].Data()),
+                                              nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhM02WeightPi0[nlm][i]   ->SetYTitle("#lambda_{0}^{2}");
+        fhM02WeightPi0[nlm][i]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhM02WeightPi0[nlm][i]) ;
+      }
+    }
+  }
+  
   return outputContainer ;
   
 }
@@ -1552,7 +1676,10 @@ void AliAnaInsideClusterInvariantMass::InitParameters()
   
   fMinNCells   = 4 ;
   fMinBadDist  = 2 ;
-    
+  
+  fSSWeightN   = 5;
+  fSSWeight[0] = 4.6;  fSSWeight[1] = 4.7; fSSWeight[2] = 4.8; fSSWeight[3] = 4.9; fSSWeight[4] = 5.0;
+  fSSWeight[5] = 5.1;  fSSWeight[6] = 5.2; fSSWeight[7] = 5.3; fSSWeight[8] = 5.4; fSSWeight[9] = 5.5;
 }
 
 
@@ -2004,6 +2131,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhEventPlanePi0NLocMax1->Fill(en,evp) ;
           if(en > ecut)fhPi0EtaPhiNLocMax1->Fill(eta,phi);
+          FillSSWeightHistograms(cluster, 0);
         }
       }
       else if(pidTag==AliCaloPID::kEta)
@@ -2063,6 +2191,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhEventPlanePi0NLocMax2->Fill(en,evp) ;
           if(en > ecut)fhPi0EtaPhiNLocMax2->Fill(eta,phi);
+          FillSSWeightHistograms(cluster, 1);
         }
       }
       else if(pidTag==AliCaloPID::kEta)
@@ -2122,6 +2251,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhEventPlanePi0NLocMaxN->Fill(en,evp) ;
           if(en > ecut)fhPi0EtaPhiNLocMaxN->Fill(eta,phi);
+          FillSSWeightHistograms(cluster, 2);
         }
       }
       else if(pidTag==AliCaloPID::kEta)
