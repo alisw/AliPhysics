@@ -163,7 +163,8 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	lout->Add(alleff);
 	lout->Add(allrecdata);
 	lout->Add(spectraall);
-	lout->Add(contall);	
+	lout->Add(contall);
+	
 	for (int i=0;i<6;i++)
 	{
 	
@@ -245,9 +246,11 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		lout->Add(contfit[i]);
 		lout->Add(contWDfit[i]);
 		lout->Add(contMatfit[i]);
+ 		lout->Add(primaryfit[i]);	
 		lout->Add(contfit[i+6]);
 		lout->Add(contWDfit[i+6]);
 		lout->Add(contMatfit[i+6]);
+		lout->Add(primaryfit[i+6]);	
 		lout->Add(spectra[i]);
 		lout->Add(spectraLeonardo[i]);
 		lout->Add(confinal[i]);
@@ -668,7 +671,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						hconMat[index+6*isample]->SetBinContent(ibin_data,v3*normalizationmc31);
 						hconMat[index+6*isample]->SetBinError(ibin_data,ev3*normalizationmc31);
 						hprimary[index+6*isample]->SetBinContent(ibin_data,v1*normalizationmc11);
-						hprimary[index+6*isample]->SetBinContent(ibin_data,v1*normalizationmc11);
+						hprimary[index+6*isample]->SetBinError(ibin_data,ev1*normalizationmc11);
 						if(useMaterial)
 						{
 							hcon[index+6*isample]->SetBinContent(ibin_data,v2*normalizationmc21+v3*normalizationmc31);

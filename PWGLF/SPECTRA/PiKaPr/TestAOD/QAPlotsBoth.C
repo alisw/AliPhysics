@@ -75,10 +75,11 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 
 					nsig_mc_Proj1->GetXaxis()->SetRange(0,nsig_mc_Proj1->GetXaxis()->GetNbins());
 
-
-					nsig_data_Proj1->Scale(1.0/neventsdata);
-					 nsig_mc_Proj1->Scale(1.0/neventsmc);
-
+					if(neventsdata>0.0&&neventsmc>0.0)
+					{
+						nsig_data_Proj1->Scale(1.0/neventsdata);
+					 	nsig_mc_Proj1->Scale(1.0/neventsmc);
+					}
 					
 					flistqa->Add(nsig_data_Proj1);
 					flistqa->Add(nsig_mc_Proj1);
@@ -155,8 +156,11 @@ TCanvas* plot_on_canvas(TString name, TH1* h1,TH1* h2)
 	lvtr->SetLineColor(kWhite);
 	lvtr->AddEntry(h1,"data","l");
 	lvtr->AddEntry(h2,"MC","l");
-	h1->Scale(1.0/h1->GetBinContent(h1->GetXaxis()->FindBin(0.0)));
-	h2->Scale(1.0/h2->GetBinContent(h2->GetXaxis()->FindBin(0.0)));
+	if(h1->GetBinContent(h1->GetXaxis()->FindBin(0.0))>0.0&&h2->GetBinContent(h2->GetXaxis()->FindBin(0.0))>0.0)
+	{
+		h1->Scale(1.0/h1->GetBinContent(h1->GetXaxis()->FindBin(0.0)));
+		h2->Scale(1.0/h2->GetBinContent(h2->GetXaxis()->FindBin(0.0)));
+        }
 	h1->DrawCopy("L");
 	h2->DrawCopy("Lsame");
 	lvtr->Draw();
