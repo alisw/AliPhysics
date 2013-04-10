@@ -44,7 +44,7 @@
 #include "AliVCluster.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliEMCALGeometry.h"
+#include "AliEMCALGeometry.h"                    
 
 ClassImp(AliAnaParticleIsolation)
 
@@ -389,7 +389,7 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelat
         
         AliVCaloCells * cells = GetEMCALCells();
         
-        Int_t nTotalRows = AliEMCALGeoParams::fgkEMCALRows*int(10+2./3.) ; // 10 SM + 2 third SM
+        Int_t nTotalRows = AliEMCALGeoParams::fgkEMCALRows*16./3 ; // 5 full-size Sectors (2 SM) + 1 one-third Sector (2 SM)
         
         // Loop on cells in eta band
         for(Int_t irow = rowTrig-sqrSize; irow < rowTrig+sqrSize; irow++)
@@ -401,12 +401,12 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelat
             Int_t icolLoc  = -1;
             if(icol < AliEMCALGeoParams::fgkEMCALCols)
             {
-              inSupMod = inSector + 1;
+              inSupMod = 2*inSector + 1;
               icolLoc  = icol;
             }
             else if(icol > AliEMCALGeoParams::fgkEMCALCols - 1)
             {
-              inSupMod = inSector;
+              inSupMod = 2*inSector;
               icolLoc  = icol-AliEMCALGeoParams::fgkEMCALCols;
             }
             
@@ -414,6 +414,7 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelat
 
             // Exclude cells in cone
             if(TMath::Abs(icol-colTrig) < sqrSize) continue ;
+
             if(TMath::Abs(irow-rowTrig) < sqrSize) continue ;
             
             Int_t iabsId = eGeom->GetAbsCellIdFromCellIndexes(inSupMod,irowLoc,icolLoc);
@@ -432,19 +433,19 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelat
             Int_t icolLoc  = -1;
             if(icol < AliEMCALGeoParams::fgkEMCALCols)
             {
-              inSupMod = inSector + 1;
+              inSupMod = 2*inSector + 1;
               icolLoc  = icol;
             }
             else if(icol > AliEMCALGeoParams::fgkEMCALCols - 1)
             {
-              inSupMod = inSector;
+              inSupMod = 2*inSector;
               icolLoc  = icol-AliEMCALGeoParams::fgkEMCALCols;
             }
             
-            Int_t irowLoc  = irow - AliEMCALGeoParams::fgkEMCALRows*inSector ;
+            Int_t irowLoc  = irow - AliEMCALGeoParams::fgkEMCALRows*inSector ;   // Stesso problema di sopra //
 
             // Exclude cells in cone
-            if(TMath::Abs(icol-colTrig) < sqrSize) continue ;
+            if(TMath::Abs(icol-colTrig) < sqrSize) continue ;      
             if(TMath::Abs(irow-rowTrig) < sqrSize) continue ;
             
             Int_t iabsId = eGeom->GetAbsCellIdFromCellIndexes(inSupMod,irowLoc,icolLoc);
@@ -669,10 +670,6 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
     Float_t emcEtaSize = 0.7*2;
     Float_t emcPhiSize = TMath::DegToRad()*100;
 
-    // !!!!!!!!!!!!!
-    // !! WARNING !! -> If fiducial cut is applied, we need to change properly the EMCal limits !!!!!!!!!!!!!
-    // !!!!!!!!!!!!!
-    
     // -------------- //
     // EMCal clusters //
     // -------------- //
@@ -940,12 +937,12 @@ void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliAODPWG4ParticleCo
             Int_t icolLoc  = -1;
             if(icol < AliEMCALGeoParams::fgkEMCALCols)
             {
-              inSupMod = inSector + 1;
+              inSupMod = 2*inSector + 1;
               icolLoc  = icol;
             }
             else if(icol > AliEMCALGeoParams::fgkEMCALCols - 1)
             {
-              inSupMod = inSector;
+              inSupMod = 2*inSector;
               icolLoc  = icol-AliEMCALGeoParams::fgkEMCALCols;
             }
             
