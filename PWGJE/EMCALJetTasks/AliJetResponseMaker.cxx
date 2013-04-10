@@ -283,8 +283,10 @@ Bool_t AliJetResponseMaker::PythiaInfoFromFile(const char* currFile, Float_t &fX
 
   // Get the pt hard bin
   TString strPthard(file);
+
   strPthard.Remove(strPthard.Last('/'));
   strPthard.Remove(strPthard.Last('/'));
+  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));    
   strPthard.Remove(0,strPthard.Last('/')+1);
   if (strPthard.IsDec()) 
     pthard = strPthard.Atoi();
