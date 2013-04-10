@@ -389,7 +389,7 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelat
         
         AliVCaloCells * cells = GetEMCALCells();
         
-        Int_t nTotalRows = AliEMCALGeoParams::fgkEMCALRows*16./3 ; // 5 full-size Sectors (2 SM) + 1 one-third Sector (2 SM)
+        Int_t nTotalRows = AliEMCALGeoParams::fgkEMCALRows*16/3 ; // 5 full-size Sectors (2 SM) + 1 one-third Sector (2 SM)
         
         // Loop on cells in eta band
         for(Int_t irow = rowTrig-sqrSize; irow < rowTrig+sqrSize; irow++)
