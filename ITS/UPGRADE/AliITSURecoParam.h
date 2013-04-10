@@ -36,6 +36,7 @@ class AliITSURecoParam : public AliDetectorRecoParam
   Double_t    GetSigmaZ2(Int_t lr)               const;
   Double_t    GetMaxTr2ClChi2(Int_t lr)          const;
   Double_t    GetMissPenalty(Int_t lr)           const;
+  Bool_t      GetAllowDiagonalClusterization(Int_t lr) const;
   //
   Double_t    GetNSigmaRoadY()                   const {return fNSigmaRoadY;}
   Double_t    GetNSigmaRoadZ()                   const {return fNSigmaRoadZ;}
@@ -54,6 +55,7 @@ class AliITSURecoParam : public AliDetectorRecoParam
   void        SetSigmaZ2(Int_t lr, Double_t v);
   void        SetMaxTr2ClChi2(Int_t lr, Double_t v);
   void        SetMissPenalty(Int_t lr, Double_t v);
+  void        SetAllowDiagonalClusterization(Int_t lr, Bool_t v);
   //
   void        SetMaxDforV0dghtrForProlongation(Double_t v)            {fMaxDforV0dghtrForProlongation = v;}
   void        SetMaxDForProlongation(Double_t v)                      {fMaxDForProlongation = v;}
@@ -85,6 +87,7 @@ class AliITSURecoParam : public AliDetectorRecoParam
   Double_t       fTPCITSWallZSpanH;     // half Z span
   Double_t       fTPCITSWallMaxStep;    // max tracking step
   //
+  Bool_t*        fAllowDiagonalClusterization; //[fNLayers] allow clusters of pixels with common corners only
   Double_t*      fTanLorentzAngle;  //[fNLayers] Optional Lorentz angle for each layer
   Double_t*      fSigmaY2;          //[fNLayers] addition to road width^2
   Double_t*      fSigmaZ2;          //[fNLayers] addition to road width^2
@@ -112,11 +115,14 @@ class AliITSURecoParam : public AliDetectorRecoParam
   static const Double_t fgkTPCITSWallZSpanH;                   // half Z span
   static const Double_t fgkTPCITSWallMaxStep;                  // max tracking step
   //
+  // clusterization options
+  static const Bool_t   fgkAllowDiagonalClusterization;        // clusters of pixels with common corners
+  //
  private:
   AliITSURecoParam(const AliITSURecoParam & param);
   AliITSURecoParam & operator=(const AliITSURecoParam &param);
 
-  ClassDef(AliITSURecoParam,1) // ITS reco parameters
+  ClassDef(AliITSURecoParam,2) // ITS reco parameters
 };
 
 //_____________________________________________________________________________
@@ -152,6 +158,13 @@ inline Double_t AliITSURecoParam::GetMissPenalty(Int_t lr) const
 {
   // get penalty for missing hit
   return (lr<fNLayers)&&fMissPenalty ? fMissPenalty[lr]:fgkMissPenalty; //0;
+}
+
+//_____________________________________________________________________________
+inline Bool_t AliITSURecoParam::GetAllowDiagonalClusterization(Int_t lr) const
+{
+  // are diagonal clusters permitted
+  return (lr<fNLayers)&&fAllowDiagonalClusterization ? fAllowDiagonalClusterization[lr]:fgkAllowDiagonalClusterization;
 }
 
 #endif

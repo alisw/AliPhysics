@@ -163,7 +163,7 @@ void Config()
   if (generatorFlag==0) {
     // Fast generator with parametrized pi,kaon,proton distributions
     
-    int     nParticles = 30;//14022;
+    int  nParticles = 100;//14022;
     AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
     gener->SetMomentumRange(0.1, 10.);
     gener->SetPhiRange(0., 360.);
@@ -292,6 +292,11 @@ void Config()
     {
       //=================== ITS parameters ============================
       //
+      const int kDiodShift_NCol_M32terP31 = 2;
+      const int kDiodShift_NRow_M32terP31 = 1;
+
+      const double kDiodShiftM32terP31X[ kDiodShift_NCol_M32terP31 ][ kDiodShift_NRow_M32terP31 ] = {0.30,-0.19};
+      const double kDiodShiftM32terP31Z[ kDiodShift_NCol_M32terP31 ][ kDiodShift_NRow_M32terP31 ] = {0.0 , 0.0 };
       // create segmentations:
       AliITSUSegmentationPix* seg0 = new AliITSUSegmentationPix(0,    // segID (0:9)
 								5,    // chips per module
@@ -301,6 +306,7 @@ void Config()
 								20.e-4,  // default col pitch in cm
 								18.e-4  // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
+      seg0->SetDiodShiftMatrix(kDiodShift_NRow_M32terP31,kDiodShift_NCol_M32terP31, &kDiodShiftM32terP31X[0][0], &kDiodShiftM32terP31Z[0][0]);
       seg0->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       AliITSUSegmentationPix* seg1 = new AliITSUSegmentationPix(1,    // segID (0:9)
 								5*2,    // chips per module
@@ -310,6 +316,7 @@ void Config()
 								20.e-4,  // default col pitch in cm
 								18.e-4  // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
+      seg1->SetDiodShiftMatrix(kDiodShift_NRow_M32terP31,kDiodShift_NCol_M32terP31, &kDiodShiftM32terP31X[0][0], &kDiodShiftM32terP31Z[0][0]);
       seg1->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       AliITSUSegmentationPix* seg2 = new AliITSUSegmentationPix(2,    // segID (0:9)
 								5*2,    // chips per module
@@ -319,6 +326,7 @@ void Config()
 								20.e-4,  // default col pitch in cm
 								18.e-4   // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
+      seg2->SetDiodShiftMatrix(kDiodShift_NRow_M32terP31,kDiodShift_NCol_M32terP31, &kDiodShiftM32terP31X[0][0], &kDiodShiftM32terP31Z[0][0]);
       seg2->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       //
       int nmod,nlad; // modules per ladded, n ladders

@@ -37,6 +37,7 @@ const Double_t AliITSURecoParam::fgkSigmaRoadZ                    = 1.;//1000e-4
 const Double_t AliITSURecoParam::fgkMaxTr2ClChi2                  = 15.;
 const Double_t AliITSURecoParam::fgkTanLorentzAngle               = 0;
 const Double_t AliITSURecoParam::fgkMissPenalty                   = 2.0;
+const Bool_t   AliITSURecoParam::fgkAllowDiagonalClusterization   = kFALSE;
 //
 // hardwired params for TPC-ITS border layer
 const Double_t AliITSURecoParam::fgkTPCITSWallRMin                = 50.;
@@ -61,6 +62,7 @@ AliITSURecoParam::AliITSURecoParam()
   ,fTPCITSWallZSpanH(fgkTPCITSWallZSpanH)
   ,fTPCITSWallMaxStep(fgkTPCITSWallMaxStep)
      //
+  ,fAllowDiagonalClusterization(0)
   ,fTanLorentzAngle(0)
   ,fSigmaY2(0)
   ,fSigmaZ2(0)
@@ -88,6 +90,7 @@ AliITSURecoParam::AliITSURecoParam(Int_t nLr)
   ,fTPCITSWallZSpanH(fgkTPCITSWallZSpanH)
   ,fTPCITSWallMaxStep(fgkTPCITSWallMaxStep)
      //
+  ,fAllowDiagonalClusterization(0)
   ,fTanLorentzAngle(0)
   ,fSigmaY2(0)
   ,fSigmaZ2(0)
@@ -110,6 +113,7 @@ AliITSURecoParam::~AliITSURecoParam()
   delete[] fSigmaZ2;
   delete[] fMaxTr2ClChi2;
   delete[] fMissPenalty;
+  delete[] fAllowDiagonalClusterization;
   fTrackingConditions.Delete();
 }
 
@@ -153,8 +157,10 @@ void  AliITSURecoParam::SetNLayers(Int_t n)
   fSigmaZ2 = new Double_t[n];
   fMaxTr2ClChi2 = new Double_t[n];
   fMissPenalty  = new Double_t[n];
+  fAllowDiagonalClusterization = new Bool_t[n];
   //
   for (int i=n;i--;) {
+    fAllowDiagonalClusterization[i] = fgkAllowDiagonalClusterization;
     fTanLorentzAngle[i] = fgkTanLorentzAngle;
     fSigmaY2[i] = fgkSigmaRoadY*fgkSigmaRoadY;
     fSigmaZ2[i] = fgkSigmaRoadZ*fgkSigmaRoadZ;
@@ -194,6 +200,22 @@ void  AliITSURecoParam::SetMaxTr2ClChi2(Int_t lr, Double_t v)
   // set Lorentz angle value
   if (lr>=fNLayers) AliFatal(Form("Number of defined layers is %d",fNLayers));
   fMaxTr2ClChi2[lr] = v;
+}
+
+//_____________________________________________________________________________
+void  AliITSURecoParam::SetMissPenalty(Int_t lr, Double_t v)
+{
+  // set Lorentz angle value
+  if (lr>=fNLayers) AliFatal(Form("Number of defined layers is %d",fNLayers));
+  fMissPenalty[lr] = v;
+}
+
+//_____________________________________________________________________________
+void  AliITSURecoParam::SetAllowDiagonalClusterization(Int_t lr, Bool_t v)
+{
+  // set Lorentz angle value
+  if (lr>=fNLayers) AliFatal(Form("Number of defined layers is %d",fNLayers));
+  fAllowDiagonalClusterization[lr] = v;
 }
 
 //========================================================================

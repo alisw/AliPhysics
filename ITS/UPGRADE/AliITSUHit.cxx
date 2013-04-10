@@ -125,3 +125,12 @@ Int_t AliITSUHit::GetDetector() const
   if (!gm) AliFatal("NULL pointer to the geometry!");
   return gm->GetModIdInLadder(fModule);
 }  
+
+//______________________________________________________________________
+void AliITSUHit::Print(Option_t *option) const 
+{
+  // print itself
+  printf("Mod%4d Tr:%5d DE:%.2e TOF: %.3e| P:%.3f %.3f %.3f |>%.4f %.4f %.4f >%.4f %.4f %.4f\n",
+	 fModule,fTrack,fDestep,fTof,fPx,fPy,fPz, fx0,fy0,fz0,fX,fY,fZ);
+
+}

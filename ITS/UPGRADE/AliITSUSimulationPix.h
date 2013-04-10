@@ -97,7 +97,7 @@ public:
   Int_t GetReadOutCycle(Int_t row, Int_t col, Double_t hitTime);
   Int_t GetReadOutCycleRollingShutter(Int_t row, Int_t col, Double_t hitTime);
   //
-  void CalcDiodeShiftInPixel(Int_t xlin, Int_t zcol, Float_t &x, Float_t &z);
+  void CalcDiodeShiftInPixel(Int_t xrow, Int_t zcol, Float_t &x, Float_t &z);
   //
  private:
   void SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, Int_t ix0,Int_t iz0,

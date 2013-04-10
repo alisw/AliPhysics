@@ -33,7 +33,8 @@ class AliITSUHit : public AliITShit {
   virtual void  GetPositionL(Double_t &x,Double_t &y,Double_t &z,Double_t &t) {Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;t=tf;}
   virtual void  GetPositionL(Double_t &x,Double_t &y,Double_t &z) {Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;}
   virtual void  GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &t);
-  
+  //
+  virtual void Print(Option_t *option="") const;
   //
  protected:
 

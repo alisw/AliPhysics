@@ -25,6 +25,7 @@ class AliITSUClusterizer : public TObject
   void SetLayerID(Int_t id)                            {fLayerID = id;}
   void SetVolID(Int_t id)                              {fVolID = id;}
   void SetNRow(Int_t nrow);
+  void SetAllowDiagonalClusterization(Bool_t v)        {fAllowDiagonalClusterization = v;}
   void PrepareLorentzAngleCorrection(Double_t bz);
   //
   // interface methods
@@ -81,6 +82,8 @@ class AliITSUClusterizer : public TObject
   AliCluster*                     NextCluster() {return (AliCluster*)fOutputClusters->New(fOutputClusters->GetEntriesFast());}
   
   // modifiers
+  void SetAllowDiagonalClusterization();
+
   void AttachDigitToCand(AliITSUClusterizerClusterCand *cand,AliITSUClusterizerClusterDigit *digit);
   void AttachPartToCand(AliITSUClusterizerClusterCand *cand,AliITSUClusterizerClusterPart *part);
   void DetachPartFromCand(AliITSUClusterizerClusterCand *cand,AliITSUClusterizerClusterPart *part);
@@ -94,6 +97,7 @@ class AliITSUClusterizer : public TObject
  protected:
   //
   Int_t fVolID;                             // Volume id (module index)
+  Bool_t fAllowDiagonalClusterization;      // allow clusters with pixels having common corners only
   const AliITSUSegmentationPix* fSegm;      // Segmentation or local coord calc.
   const AliITSURecoParam*       fRecoParam; // reco params
   //

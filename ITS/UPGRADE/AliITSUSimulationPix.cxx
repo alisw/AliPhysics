@@ -426,9 +426,14 @@ void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, 
       //
       fSeg->DetToLocal(ix,iz,x,z); // pixel center
       xdioshift = zdioshift = 0;
+      double dxi = fSeg->Dpx(ix);
+      double dzi = fSeg->Dpz(iz);
       CalcDiodeShiftInPixel(ix,iz,xdioshift,zdioshift);    // Check and apply diode shift if needed
-      double dxi = 0.5*fSeg->Dpx(ix);
-      double dzi = 0.5*fSeg->Dpz(iz);
+      xdioshift *= dxi;
+      zdioshift *= dzi;
+      dxi *= 0.5;
+      dzi *= 0.5;
+      //      printf("DShift: %d %d -> %.4f %.4f\n",ix,iz,xdioshift,zdioshift);
       x1  = (x + xdioshift) - x0;   // calculate distance of cell boundaries from injection center
       z1  = (z + zdioshift) - z0;
       x2  = x1 + dxi; // Upper
@@ -860,7 +865,7 @@ Int_t AliITSUSimulationPix::GetReadOutCycle(Int_t row, Int_t col, Double_t hitTi
 }
 
 //_______________________________________________________________________
-void AliITSUSimulationPix::CalcDiodeShiftInPixel(Int_t xlin, Int_t zcol, Float_t &x, Float_t &)
+void AliITSUSimulationPix::CalcDiodeShiftInPixel(Int_t xrow, Int_t zcol, Float_t &x, Float_t &z)
 {
   //
   // Calculates the shift of the diode wrt the geometric center of the pixel.
@@ -868,16 +873,7 @@ void AliITSUSimulationPix::CalcDiodeShiftInPixel(Int_t xlin, Int_t zcol, Float_t
   // The shift can depend on the column or line or both...
   // The x and z are passed in cm 
   //
-  
-  TString parTitle = fResponseParam->GetTitle();
-  
-  // M32terP31 is staggered the diode shift within pixel depends on the column
-  if ( parTitle.Contains("M32terP31") ) 
-  {
-    if ( zcol%2 == 0 )    x += 0.30 * fSeg->Dpx(xlin);
-    else                  x -= 0.19 * fSeg->Dpx(xlin);
-  }
-  
- 
+  ((AliITSUSegmentationPix*)fSeg)->GetDiodShift(xrow,zcol,x,z);  
+  //
 }
 //_______________________________________________________________________

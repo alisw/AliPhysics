@@ -34,10 +34,11 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     recoParamArray->AddLast(itsRecoParam);
   }
   //
+  int nBranch[7] = {3,3,3,3,3,3,3}; // max branching for the seed on layer
+  int nCands[7]  = {250,200,150,100,60,40,20}; // max branching for the TPC seed
+  //
   {
     AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetLowFluxParam();
-    int nBranch[7] = {3,3,3,3,3,3,3}; // max branching for the seed on layer
-    int nCands[7]  = {250,200,150,100,60,40,20}; // max branching for the TPC seed
     //
     itsRecoParam->SetNLayers(nLr);
     //
@@ -46,6 +47,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     itsRecoParam->SetTitle("LowMult");
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
+    for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kTRUE);
+    //  
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
     trCond->SetNLayers(nLr); 
@@ -70,12 +73,10 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     trCond->AddGroupPattern( kBit5|kBit6 );
     //    
     itsRecoParam->AddTrackingCondition(trCond);
-    // Add tracking conditions >>>
+    // Add tracking conditions <<<
   }
   {
     AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetHighFluxParam();
-    for (int i=0;i<nLr;i++) trCond->SetMaxBranches(i,nBranch[i]);
-    for (int i=0;i<nLr;i++) trCond->SetMaxCandidates(i,nCands[i]);
     //
     itsRecoParam->SetNLayers(nLr);
     //
@@ -84,6 +85,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     itsRecoParam->SetTitle("HighMult");
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
+    for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kTRUE);
+    //
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
     trCond->SetNLayers(nLr); 
@@ -105,7 +108,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     trCond->AddGroupPattern( kBit5|kBit6 );
     //    
     itsRecoParam->AddTrackingCondition(trCond);
-    // Add tracking conditions >>>
+    // Add tracking conditions <<<
     //
   }
   //

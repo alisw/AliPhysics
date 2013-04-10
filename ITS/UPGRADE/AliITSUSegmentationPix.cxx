@@ -59,6 +59,11 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,in
   ,fNColPerChip(nchips>0 ? ncol/nchips:0)
   ,fNRow(nrow)
   ,fNCol(ncol)
+  ,fDiodShiftMatNCol(0)
+  ,fDiodShiftMatNRow(0)
+  ,fDiodShiftMatDim(0)
+  ,fDiodShidtMatX(0)
+  ,fDiodShidtMatZ(0)
 {
   // Default constructor, sizes in cm
   if (nchips) SetUniqueID( AliITSUGeomTGeo::ComposeDetTypeID(id) );
@@ -152,6 +157,20 @@ AliITSUSegmentationPix& AliITSUSegmentationPix::operator=(const AliITSUSegmentat
   fGuardRgt = src.fGuardRgt;
   fGuardLft = src.fGuardLft;
   //
+  fDiodShiftMatNCol = src.fDiodShiftMatNCol;
+  fDiodShiftMatNRow = src.fDiodShiftMatNRow;
+  fDiodShiftMatDim  = src.fDiodShiftMatDim;
+  delete fDiodShidtMatX; fDiodShidtMatX = 0;
+  delete fDiodShidtMatZ; fDiodShidtMatZ = 0;
+  if (fDiodShiftMatDim) {
+    fDiodShidtMatX = new Double32_t[fDiodShiftMatDim];
+    fDiodShidtMatZ = new Double32_t[fDiodShiftMatDim];
+    for (int i=fDiodShiftMatDim;i--;) {
+      fDiodShidtMatX[i] = src.fDiodShidtMatX[i];
+      fDiodShidtMatZ[i] = src.fDiodShidtMatZ[i];
+    }
+  }
+  //
   return *this;
 }
 
@@ -171,7 +190,21 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(const AliITSUSegmentationPix &src
   ,fNColPerChip(src.fNColPerChip)
   ,fNRow(src.fNRow)
   ,fNCol(src.fNCol)  
+  ,fDiodShiftMatNCol(src.fDiodShiftMatNCol)
+  ,fDiodShiftMatNRow(src.fDiodShiftMatNRow)
+  ,fDiodShiftMatDim(src.fDiodShiftMatDim)
+  ,fDiodShidtMatX(0)
+  ,fDiodShidtMatZ(0)
 {
+  // copy constructor
+  if (fDiodShiftMatDim) {
+    fDiodShidtMatX = new Double32_t[fDiodShiftMatDim];
+    fDiodShidtMatZ = new Double32_t[fDiodShiftMatDim];
+    for (int i=fDiodShiftMatDim;i--;) {
+      fDiodShidtMatX[i] = src.fDiodShidtMatX[i];
+      fDiodShidtMatZ[i] = src.fDiodShidtMatZ[i];
+    }
+  }
 }
 
 //____________________________________________________________________________RS
@@ -448,5 +481,68 @@ void AliITSUSegmentationPix::LoadSegmentations(TObjArray* dest, const char* inpf
   finp->Close();
   delete finp;
   delete arr;
+  //
+}
+
+//______________________________________________________________________
+void AliITSUSegmentationPix::SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Double_t *shiftX, const Double_t *shiftZ)
+{
+  // set matrix of periodic shifts of diod center. provided arrays must be in the format shift[nrow][ncol]
+  if (fDiodShiftMatDim) {
+    delete fDiodShidtMatX;
+    delete fDiodShidtMatZ;
+    fDiodShidtMatX = fDiodShidtMatZ = 0;
+  }
+  //
+  fDiodShiftMatNCol = ncol;
+  fDiodShiftMatNRow = nrow;
+  fDiodShiftMatDim = fDiodShiftMatNCol*fDiodShiftMatNRow;
+  if (fDiodShiftMatDim) {
+    fDiodShidtMatX = new Double32_t[fDiodShiftMatDim];
+    fDiodShidtMatZ = new Double32_t[fDiodShiftMatDim];    
+    for (int ir=0;ir<fDiodShiftMatNRow;ir++) {
+      for (int ic=0;ic<fDiodShiftMatNCol;ic++) {
+	int cnt = ic+ir*fDiodShiftMatNCol;
+	fDiodShidtMatX[cnt] = shiftX ? shiftX[cnt] : 0.;
+	fDiodShidtMatZ[cnt] = shiftZ ? shiftZ[cnt] : 0.;
+      }
+    }
+  }
+  
+}
+
+//______________________________________________________________________
+void AliITSUSegmentationPix::Print(Option_t* option) const
+{
+  // print itself
+  const double kmc=1e4;
+  printf("Segmentation %d: Size: DX: %.1f DZ: %.1f DY: %.1f | Pitch: X:%.1f Z:%.1f\n",
+	 GetUniqueID(),kmc*Dx(),kmc*Dy(),kmc*Dz(),kmc*Dpx(1),kmc*Dpz(1));
+  printf("%d chips along Z: chip Ncol=%d Nrow=%d\n",fNChips, fNColPerChip,fNRow);
+  if (Abs(fPitchZLftCol-fPitchZ)>1e-5) printf("Special left  column pitch: %.1f\n",fPitchZLftCol*kmc);
+  if (Abs(fPitchZRgtCol-fPitchZ)>1e-5) printf("Special right column pitch: %.1f\n",fPitchZRgtCol*kmc);
+  printf("Guard-rings: Left: %.1f Right: %.1f Top: %.1f Bottom: %.1f\n",kmc*fGuardLft,kmc*fGuardRgt,kmc*fGuardTop,kmc*fGuardBot);
+  //
+  if (fDiodShiftMatDim) {
+    double dx,dz=0;
+    printf("Diod shift periodicity pattern (X,Z[row][col])\n");
+    for (int irow=0;irow<fDiodShiftMatNRow;irow++) {
+      for (int icol=0;icol<fDiodShiftMatNCol;icol++) {	
+	GetDiodShift(irow,icol,dx,dz);
+	printf("%.1f/%.1f |",kmc*dx,kmc*dz);
+      }
+      printf("\n");
+    }
+  }
+}
+
+//______________________________________________________________________
+void AliITSUSegmentationPix::GetDiodShift(Int_t row,Int_t col, Float_t &dx,Float_t &dz) const
+{
+  // obtain optional diod shift
+  if (!fDiodShiftMatDim) {dx=dz=0; return;}
+  int cnt = (col%fDiodShiftMatNCol) + (row%fDiodShiftMatNRow)*fDiodShiftMatNCol;
+  dx = fDiodShidtMatX[cnt];
+  dz = fDiodShidtMatZ[cnt];  
   //
 }

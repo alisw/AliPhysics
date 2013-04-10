@@ -54,8 +54,13 @@ public AliITSsegmentation {
   virtual void Neighbours(Int_t iX,Int_t iZ,Int_t* Nlist,Int_t Xlist[10],Int_t Zlist[10]) const;
   //
   virtual void PrintDefaultParameters() const {AliWarning("No def. parameters defined as const static data members");}
+  virtual void Print(Option_t* option = "") const;
   //
   virtual Int_t                    GetDetTypeID()              const {return GetUniqueID();}
+  //
+  void         SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Double_t *shiftX, const Double_t *shiftZ);
+  void         GetDiodShift(Int_t row,Int_t col, Float_t &dx,Float_t &dz) const;
+  void         GetDiodShift(Int_t row,Int_t col, Double_t &dx,Double_t &dz) const {float dxf,dzf; GetDiodShift(row,col,dxf,dzf); dx=dxf; dz=dzf; }
   //
   Bool_t                           Store(const char* outf);
   static AliITSUSegmentationPix*   LoadWithID(UInt_t id, const char* inpf);
@@ -80,9 +85,15 @@ public AliITSsegmentation {
     Int_t    fNRow;            // number of rows
     Int_t    fNCol;            // number of columns (total)
     //
+    Int_t    fDiodShiftMatNCol; // periodicity of diod shift in columns
+    Int_t    fDiodShiftMatNRow; // periodicity of diod shift in rows
+    Int_t    fDiodShiftMatDim;  // dimension of diod shift matrix
+    Double32_t* fDiodShidtMatX; //[fDiodShiftMatDim] diod shift in X (along column), in fraction of X pitch
+    Double32_t* fDiodShidtMatZ; //[fDiodShiftMatDim] diod shift in Z (along row), in fraction of Z pitch
+    //
     static const char* fgkSegmListName; // pattern for segmentations list name
     //
-  ClassDef(AliITSUSegmentationPix,1) //Segmentation class upgrade pixels 
+  ClassDef(AliITSUSegmentationPix,2) //Segmentation class upgrade pixels 
 
 };
 

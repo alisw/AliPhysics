@@ -143,6 +143,7 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
   double bz = 0;
   if (field == 0) AliError("Cannot get magnetic field from TGeoGlobalMagField");
   else bz = field->SolenoidField();
+  const AliITSURecoParam* recPar = GetRecoParam();
   //
   for (int ilr=0;ilr<fGeom->GetNLayers();ilr++) {
     //
@@ -151,7 +152,8 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
     clFinder->SetSegmentation((AliITSUSegmentationPix*)fGeom->GetSegmentation(ilr));
     clFinder->SetLayerID(ilr);
     clFinder->SetClusters(fClusters[ilr]);
-    clFinder->SetRecoParam(GetRecoParam()); // RS: Do we need to set it for every event?
+    clFinder->SetRecoParam(recPar); // RS: Do we need to set it for every event?
+    clFinder->SetAllowDiagonalClusterization(recPar->GetAllowDiagonalClusterization(ilr));
     clFinder->PrepareLorentzAngleCorrection(bz);
     //
     int modF=fGeom->GetFirstModIndex(ilr);
