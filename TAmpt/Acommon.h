@@ -126,11 +126,11 @@ typedef struct {
 COMMON_BLOCK_DEF(AnimCommon,ANIM);
 
 typedef struct {
-  Float_t xmp; 
-  Float_t xmu; 
-  Float_t alpha;
-  Float_t rscut2;
-  Float_t cutof2;
+  Double_t xmp; 
+  Double_t xmu; 
+  Double_t alpha;
+  Double_t rscut2;
+  Double_t cutof2;
 } Para2Common;
 #define PARA2 COMMON_BLOCK(PARA2,para2)
 COMMON_BLOCK_DEF(Para2Common,PARA2);
