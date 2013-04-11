@@ -1681,6 +1681,8 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   if (fCuts->GetCombPID() && (fCuts->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeight || fCuts->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeightNoFilter)) {
     weigD0=fCuts->GetWeightsNegative()[AliPID::kKaon] * fCuts->GetWeightsPositive()[AliPID::kPion];
     weigD0bar=fCuts->GetWeightsPositive()[AliPID::kKaon] * fCuts->GetWeightsNegative()[AliPID::kPion];
+    if (weigD0 > 1.0 || weigD0 < 0.) {weigD0 = 0.;}    
+    if (weigD0bar > 1.0 || weigD0bar < 0.) {weigD0bar = 0.;} //Prevents filling with weight > 1, or < 0
   }
   
   //count candidates selected by cuts
