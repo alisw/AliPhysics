@@ -486,8 +486,6 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 void AliAnalysisTaskPi0Flow::SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed)
 {
   // Define centrality bins by their edges
-  if( edges.At(0) < 0.) AliFatal("lower edge less then 0");
-  if( 90. < edges.At(edges.GetSize()-1)  ) AliFatal("upper edge larger then 90.");
   for(int i=0; i<edges.GetSize()-1; ++i)
     if(edges.At(i) > edges.At(i+1)) AliFatal("edges are not sorted");
   if( edges.GetSize() != nMixed.GetSize()+1) AliFatal("edges and nMixed don't have appropriate relative sizes");
