@@ -7,7 +7,7 @@
  *
  */
 
-TEST_AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
+AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "",
   const char *njets              = "Jets",
@@ -17,11 +17,11 @@ TEST_AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   Double_t   jetareacut         = 0.557,
   UInt_t     type               = AliAnalysisTaskEmcal::kTPC,
   Int_t      leadhadtype        = 0,
-  const char *taskname           = "TEST_AliAnalysisTaskRhoVnModulation",
-  UInt_t     runMode            = TEST_AliAnalysisTaskRhoVnModulation::kGrid,
+  const char *taskname           = "AliAnalysisTaskRhoVnModulation",
+  UInt_t     runMode            = AliAnalysisTaskRhoVnModulation::kGrid,
   Bool_t     fillQA             = kTRUE,
   TString    fitOpts            = "LWQIM",
-  UInt_t     fitType            = TEST_AliAnalysisTaskRhoVnModulation::kFourierSeries,
+  UInt_t     fitType            = AliAnalysisTaskRhoVnModulation::kFourierSeries,
   TArrayI    *centralities      = 0x0,
   TRandom3   *randomizer        = 0x0
   )
@@ -63,7 +63,7 @@ TEST_AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   else if (type == AliAnalysisTaskEmcal::kUser) 
     name += "_USER";
 
-  TEST_AliAnalysisTaskRhoVnModulation* jetTask = new TEST_AliAnalysisTaskRhoVnModulation(name, runMode);
+  AliAnalysisTaskRhoVnModulation* jetTask = new AliAnalysisTaskRhoVnModulation(name, runMode);
   // inherited setters
   jetTask->SetAnaType(type);
   jetTask->SetTracksName(ntracks);
@@ -79,6 +79,7 @@ TEST_AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   jetTask->SetDebugMode(-1);
   jetTask->SetModulationFitType(fitType);
   jetTask->SetModulationFitOptions(fitOpts);
+  jetTask->SetModulationFitMinMaxP(.05, 1);
   // if centralities haven't been specified use defaults
   if(!centralities) {
      Int_t c[] = {0, 20, 40, 60, 80, 100};
@@ -107,7 +108,7 @@ TEST_AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   mgr->ConnectOutput (jetTask, 1, coutput1 );
 
   switch (runMode) {
-      case TEST_AliAnalysisTaskRhoVnModulation::kLocal : {
+      case AliAnalysisTaskRhoVnModulation::kLocal : {
           gStyle->SetOptFit(1);
           AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("good_fits_%s", name.Data()), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
