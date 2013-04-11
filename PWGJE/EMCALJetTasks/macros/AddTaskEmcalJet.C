@@ -6,7 +6,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const char *nClusters      = "CaloClusters",
   const Double_t minTrPt     = 0.15,
   const Double_t minClPt     = 0.30,
-  const Double_t ghostArea   = 0.01,
+  const Double_t ghostArea   = 0.005,
   const Double_t radius      = 0.4,
   const char *tag            = "Jet"
 )
