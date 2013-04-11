@@ -117,7 +117,7 @@ void AliHFEsignalCuts::SetMCAODInfo(TClonesArray *mcarray){
 }
 
 //____________________________________________________________
-Bool_t AliHFEsignalCuts::IsSelected(TObject *o) {
+Bool_t AliHFEsignalCuts::IsSelected(TObject *o){
   //
   // Define signal as electron coming from charm or beauty
   // @TODO: Implement setter so that also either of them can be defined

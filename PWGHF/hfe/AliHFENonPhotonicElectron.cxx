@@ -70,19 +70,19 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const char *name, const Cha
   ,fFilter(-1)
   ,fChi2OverNDFCut(3.0)
   ,fMaxDCA(3.0)
-  ,fMaxOpeningTheta(0.02)
-  ,fMaxOpeningPhi(0.1)
+//  ,fMaxOpeningTheta(0.02)
+//  ,fMaxOpeningPhi(0.1)
   ,fMaxOpening3D(TMath::Pi())
   ,fMaxInvMass(0.6)
   ,fSetMassConstraint(kFALSE)
   ,fArraytrack(NULL)
   ,fCounterPoolBackground(0)
   ,fListOutput(NULL)
-  ,fMCSourceee(NULL)
-  ,fUSignee(NULL)
-  ,fLSignee(NULL)
-  ,fUSignAngle(NULL)
-  ,fLSignAngle(NULL)
+  ,fMCSource(NULL)
+  ,fUSign(NULL)
+  ,fLSign(NULL)
+//  ,fUSignAngle(NULL)
+//  ,fLSignAngle(NULL)
 {
   //
   // Constructor
@@ -94,7 +94,7 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const char *name, const Cha
 //________________________________________________________________________
 AliHFENonPhotonicElectron::AliHFENonPhotonicElectron()
   :TNamed()
-  ,fMCEvent(0)
+  ,fMCEvent(NULL)
   ,fAODArrayMCInfo(NULL)
   ,fHFEBackgroundCuts(NULL)
   ,fPIDBackground(0x0)
@@ -104,19 +104,19 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron()
   ,fFilter(-1)
   ,fChi2OverNDFCut(3.0)
   ,fMaxDCA(3.0)
-  ,fMaxOpeningTheta(0.02)
-  ,fMaxOpeningPhi(0.1)
-  ,fMaxOpening3D(TMath::TwoPi())
+//  ,fMaxOpeningTheta(0.02)
+//  ,fMaxOpeningPhi(0.1)
+  ,fMaxOpening3D(TMath::Pi())
   ,fMaxInvMass(0.6)
   ,fSetMassConstraint(kFALSE)
   ,fArraytrack(NULL)
   ,fCounterPoolBackground(0)
   ,fListOutput(NULL)
-  ,fMCSourceee(NULL)
-  ,fUSignee(NULL)
-  ,fLSignee(NULL)
-  ,fUSignAngle(NULL)
-  ,fLSignAngle(NULL)
+  ,fMCSource(NULL)
+  ,fUSign(NULL)
+  ,fLSign(NULL)
+//  ,fUSignAngle(NULL)
+//  ,fLSignAngle(NULL)
 {
   //
   // Constructor
@@ -138,19 +138,19 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const AliHFENonPhotonicElec
   ,fFilter(ref.fFilter)
   ,fChi2OverNDFCut(ref.fChi2OverNDFCut)
   ,fMaxDCA(ref.fMaxDCA)
-  ,fMaxOpeningTheta(ref.fMaxOpeningTheta)
-  ,fMaxOpeningPhi(ref.fMaxOpeningPhi)
+//  ,fMaxOpeningTheta(ref.fMaxOpeningTheta)
+//  ,fMaxOpeningPhi(ref.fMaxOpeningPhi)
   ,fMaxOpening3D(ref.fMaxOpening3D)
   ,fMaxInvMass(ref.fMaxInvMass)
   ,fSetMassConstraint(ref.fSetMassConstraint)
   ,fArraytrack(NULL)
   ,fCounterPoolBackground(0)
   ,fListOutput(ref.fListOutput)
-  ,fMCSourceee(ref.fMCSourceee)
-  ,fUSignee(ref.fUSignee)
-  ,fLSignee(ref.fLSignee)
-  ,fUSignAngle(ref.fUSignAngle)
-  ,fLSignAngle(ref.fLSignAngle)
+  ,fMCSource(ref.fMCSource)
+  ,fUSign(ref.fUSign)
+  ,fLSign(ref.fLSign)
+//  ,fUSignAngle(ref.fUSignAngle)
+//  ,fLSignAngle(ref.fLSignAngle)
 {
   //
   // Copy Constructor
@@ -243,54 +243,40 @@ void AliHFENonPhotonicElectron::Init()
 
   const Int_t nDimMCSource=3;
   Int_t nBinMCSource[nDimMCSource] = {nBinsC,nBinsPt,nBinsSource};
-  fMCSourceee = new THnSparseF("fMCSourceee","fMCSourceee",nDimMCSource,nBinMCSource);
-  fMCSourceee->SetBinEdges(0,binLimC);
-  fMCSourceee->SetBinEdges(1,binLimPt);
-  fMCSourceee->SetBinEdges(2,binLimSource);
-/*  fMCSourceee->GetAxis(0)->SetTitle("Multiplicity (arb.unit)");
-  fMCSourceee->GetAxis(1)->SetTitle("#it{p}_{mc,T} (GeV/c)");
-  fMCSourceee->GetAxis(2)->SetTitle("MC");*/
-  fMCSourceee->Sumw2();
-  AliDebug(2,"AliHFENonPhotonicElectron: fMCSourceee");
+  fMCSource = new THnSparseF("fMCSource","fMCSource",nDimMCSource,nBinMCSource);
+  fMCSource->SetBinEdges(0,binLimC);
+  fMCSource->SetBinEdges(1,binLimPt);
+  fMCSource->SetBinEdges(2,binLimSource);
+  fMCSource->Sumw2();
+  AliDebug(2,"AliHFENonPhotonicElectron: fMCSource");
 
   // ee invariant mass Unlike Sign
   const Int_t nDimUSign=6;
   Int_t nBinUSign[nDimUSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource,nBinsAngle};
-  fUSignee = new THnSparseF("fUSignee","fUSignee",nDimUSign,nBinUSign);
-  fUSignee->SetBinEdges(0,binLimPhi);
-  fUSignee->SetBinEdges(1,binLimC);
-  fUSignee->SetBinEdges(2,binLimPt);
-  fUSignee->SetBinEdges(3,binLimInvMass);
-  fUSignee->SetBinEdges(4,binLimSource);
-  fUSignee->SetBinEdges(5,binLimAngle);
-/*  fUSignee->GetAxis(0)->SetTitle("#Delta #phi");
-  fUSignee->GetAxis(1)->SetTitle("Multiplicity (arb.unit)");
-  fUSignee->GetAxis(2)->SetTitle("#it{p}_{T} (GeV/c)");
-  fUSignee->GetAxis(3)->SetTitle("m_{e^{#pm}e^{#mp}}} (GeV/#it{c}^{2}");
-  fUSignee->GetAxis(4)->SetTitle("MC");
-  fUSignee->GetAxis(5)->SetTitle("#alpha");*/
-  fUSignee->Sumw2();
-  AliDebug(2,"AliHFENonPhotonicElectron: fUSignee");
+  fUSign = new THnSparseF("fUSign","fUSign",nDimUSign,nBinUSign);
+  fUSign->SetBinEdges(0,binLimPhi);
+  fUSign->SetBinEdges(1,binLimC);
+  fUSign->SetBinEdges(2,binLimPt);
+  fUSign->SetBinEdges(3,binLimInvMass);
+  fUSign->SetBinEdges(4,binLimSource);
+  fUSign->SetBinEdges(5,binLimAngle);
+  fUSign->Sumw2();
+  AliDebug(2,"AliHFENonPhotonicElectron: fUSign");
 
   // ee invariant mass Like Sign
   const Int_t nDimLSign=6;
   Int_t nBinLSign[nDimLSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource,nBinsAngle};
-  fLSignee = new THnSparseF("fLSignee","fLSignee",nDimLSign,nBinLSign);
-  fLSignee->SetBinEdges(0,binLimPhi);
-  fLSignee->SetBinEdges(1,binLimC);
-  fLSignee->SetBinEdges(2,binLimPt);
-  fLSignee->SetBinEdges(3,binLimInvMass);
-  fLSignee->SetBinEdges(4,binLimSource);
-  fLSignee->SetBinEdges(5,binLimAngle);
-/*  fLSignee->GetAxis(0)->SetTitle("#Delta #phi");
-  fLSignee->GetAxis(1)->SetTitle("Multiplicity (arb.unit)");
-  fLSignee->GetAxis(2)->SetTitle("#it{p}_{T} (GeV/c)");
-  fLSignee->GetAxis(3)->SetTitle("m_{e^{#pm}e^{#pm}}} (GeV/#it{c}^{2}");
-  fLSignee->GetAxis(4)->SetTitle("MC");
-  fLSignee->GetAxis(5)->SetTitle("#alpha");*/
-  fLSignee->Sumw2();
-  AliDebug(2,"AliHFENonPhotonicElectron: fLSignee");
+  fLSign = new THnSparseF("fLSign","fLSign",nDimLSign,nBinLSign);
+  fLSign->SetBinEdges(0,binLimPhi);
+  fLSign->SetBinEdges(1,binLimC);
+  fLSign->SetBinEdges(2,binLimPt);
+  fLSign->SetBinEdges(3,binLimInvMass);
+  fLSign->SetBinEdges(4,binLimSource);
+  fLSign->SetBinEdges(5,binLimAngle);
+  fLSign->Sumw2();
+  AliDebug(2,"AliHFENonPhotonicElectron: fLSign");
 
+/*
   // ee angle Unlike Sign
   const Int_t nDimUSignAngle=3;
   Int_t nBinUSignAngle[nDimUSignAngle] = {nBinsAngle,nBinsC,nBinsSource};
@@ -298,9 +284,6 @@ void AliHFENonPhotonicElectron::Init()
   fUSignAngle->SetBinEdges(0,binLimAngle);
   fUSignAngle->SetBinEdges(1,binLimC);
   fUSignAngle->SetBinEdges(2,binLimSource);
-/*  fUSignAngle->GetAxis(0)->SetTitle("#alpha");
-  fUSignAngle->GetAxis(1)->SetTitle("Multiplicity (arb.unit)");
-  fUSignAngle->GetAxis(2)->SetTitle("MC");*/
   fUSignAngle->Sumw2();
   AliDebug(2,"AliHFENonPhotonicElectron: fUSignAngle");
 
@@ -311,18 +294,15 @@ void AliHFENonPhotonicElectron::Init()
   fLSignAngle->SetBinEdges(0,binLimAngle);
   fLSignAngle->SetBinEdges(1,binLimC);
   fLSignAngle->SetBinEdges(2,binLimSource);
-/*  fLSignAngle->GetAxis(0)->SetTitle("#alpha");
-  fLSignAngle->GetAxis(1)->SetTitle("Multiplicity (arb.unit)");
-  fLSignAngle->GetAxis(2)->SetTitle("MC");*/
   fLSignAngle->Sumw2();
   AliDebug(2,"AliHFENonPhotonicElectron: fLSignAngle");
+*/
 
-
-  fListOutput->Add(fMCSourceee);
-  fListOutput->Add(fUSignee);
-  fListOutput->Add(fLSignee);
-  fListOutput->Add(fUSignAngle);
-  fListOutput->Add(fLSignAngle);
+  fListOutput->Add(fMCSource);
+  fListOutput->Add(fUSign);
+  fListOutput->Add(fLSign);
+//  fListOutput->Add(fUSignAngle);
+//  fListOutput->Add(fLSignAngle);
 
 }
 
@@ -385,7 +365,10 @@ Int_t AliHFENonPhotonicElectron::FillPoolAssociatedTracks(AliVEvent *inputEvent,
 
     if(aodeventu)
     {
-      // AOD
+      /**				**
+       *	AOD Analysis		 *
+       **				**/
+
       AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
       if(aodtrack)
       {
@@ -421,7 +404,10 @@ Int_t AliHFENonPhotonicElectron::FillPoolAssociatedTracks(AliVEvent *inputEvent,
     }
     else
     {
-      // ESD
+      /**				**
+       *	ESD Analysis		 *
+       **				**/
+
       AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
       if(esdtrack)
       {
@@ -435,8 +421,8 @@ Int_t AliHFENonPhotonicElectron::FillPoolAssociatedTracks(AliVEvent *inputEvent,
       // PID track cuts
       AliHFEpidObject hfetrack2;
 
-      if(!aodeventu) hfetrack2.SetAnalysisType(AliHFEpidObject::kESDanalysis);
-      else hfetrack2.SetAnalysisType(AliHFEpidObject::kAODanalysis);
+      if(!aodeventu)	hfetrack2.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+      else 		hfetrack2.SetAnalysisType(AliHFEpidObject::kAODanalysis);
 
       hfetrack2.SetRecTrack(track);
       if(binct>-1)
@@ -494,12 +480,12 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   AliDebug(2,Form("process track %d",iTrack1));
 
   //Set Fill-Arrays for THnSparse
-  Double_t value_MCSource[3] = { binct, track1->Pt(), source};		//Centrality	Pt		Source
-  Double_t valueee[6] = { deltaphi, binct, track1->Pt(), -1, source,-1};	//DeltaPhi	Centrality	Pt	InvariantMass	Source
-  Double_t valueAngle[3] = {	-1,	binct,		source};		//Angle		Centrality	Source
+  Double_t valueMCSource[3]	= { -1, -1, source};						//Centrality	Pt		Source
+  Double_t valueSign[6]		= { deltaphi, binct, track1->Pt(), -1, source, -1};		//DeltaPhi	Centrality	Pt	InvariantMass	Source
+//  Double_t valueAngle[3]	= { -1, binct, source};						//Angle		Centrality	Source
 
-  Bool_t USignPhotonic = kFALSE;
-  Bool_t LSignPhotonic = kFALSE;
+  Bool_t uSignPhotonic = kFALSE;
+  Bool_t lSignPhotonic = kFALSE;
   Bool_t hasdcaT1 = kFALSE;
   Bool_t hasdcaT2 = kFALSE;
 
@@ -542,8 +528,10 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   AliKFParticle *ktrack2;
   AliKFVertex primV(*(vEvent->GetPrimaryVertex()));
 
-  // FILL MCsource TODO: correct?
-  fMCSourceee->Fill(&value_MCSource[0],weight);
+  //! FILL MCsource TODO: Use MC information!!!
+  /**	if(fAODArrayMCInfo)	valueMCSource[3] = {fAODArrayMCInfo};
+	if(fMCEvent)		valueMCSource[3] = {fMCEvent};		*/
+  fMCSource->Fill(&valueMCSource[0],weight);
 
 
   for(Int_t idex = 0; idex < fCounterPoolBackground; idex++)
@@ -565,8 +553,8 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
     fCharge2 = track2->Charge();		//Charge from track2
 
     // Reset the MC info
-    valueAngle[2] = source;
-    valueee[4] = source;
+    //valueAngle[2] = source;
+    valueSign[4] = source;
 
     // track cuts and PID already done
 
@@ -582,21 +570,21 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
 	{
 	  if(source == kElectronfromconversion)
 	  {
-	    valueAngle[2] = kElectronfromconversionboth;
-	    valueee[4] = kElectronfromconversionboth;
+	    //valueAngle[2] = kElectronfromconversionboth;
+	    valueSign[4] = kElectronfromconversionboth;
 	    numberfound++;
 	  }
 
 	  if(source == kElectronfrompi0)
 	  {
-	    valueAngle[2] = kElectronfrompi0both;
-	    valueee[4] = kElectronfrompi0both;
+	    //valueAngle[2] = kElectronfrompi0both;
+	    valueSign[4] = kElectronfrompi0both;
 	  }
 
 	  if(source == kElectronfrometa)
 	  {
-	    valueAngle[2] = kElectronfrometaboth;
-	    valueee[4] = kElectronfrometaboth;
+	    //valueAngle[2] = kElectronfrometaboth;
+	    valueSign[4] = kElectronfrometaboth;
 	  }
 	}
       }
@@ -628,27 +616,27 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
       invmassESD  = mother.M();
       angleESD    = TVector2::Phi_0_2pi(electron1.Angle(electron2.Vect()));
 
-      valueAngle[0] = angleESD;
-      valueee[5] = angleESD;
+      //valueAngle[0] = angleESD;
+      valueSign[5] = angleESD;
 
-      if((fCharge1*fCharge2)>0.0)	fLSignAngle->Fill(&valueAngle[0],weight);
-      else				fUSignAngle->Fill(&valueAngle[0],weight);
+      //if((fCharge1*fCharge2)>0.0)	fLSignAngle->Fill(&valueAngle[0],weight);
+      //else				fUSignAngle->Fill(&valueAngle[0],weight);
 
       if(angleESD > fMaxOpening3D) continue;				 //! Cut on Opening Angle
-      valueee[3] = invmassESD;
+      valueSign[3] = invmassESD;
 
-      if((fCharge1*fCharge2)>0.0)	fLSignee->Fill(&valueee[0],weight);
-      else				fUSignee->Fill(&valueee[0],weight);
+      if((fCharge1*fCharge2)>0.0)	fLSign->Fill(&valueSign[0],weight);
+      else				fUSign->Fill(&valueSign[0],weight);
 
       if(invmassESD > fMaxInvMass) continue;				//! Cut on Invariant Mass
 
-      if((fCharge1*fCharge2)>0.0)	LSignPhotonic=kTRUE;
-      else				USignPhotonic=kTRUE;
+      if((fCharge1*fCharge2)>0.0)	lSignPhotonic=kTRUE;
+      else				uSignPhotonic=kTRUE;
     }
     else
     {
       /**				*
-       *	AliKF-Analysis		*
+       *	AOD-AliKF-Analysis	*
        **				*/
 
       fPDGtrack1 = 11;
@@ -683,29 +671,29 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
       recoGamma.GetMass(invmassAOD,width);
       angleAOD = ktrack1->GetAngle(*ktrack2);
 
-      valueAngle[0] = angleAOD;
-      valueee[5] = angleAOD;
+      //valueAngle[0] = angleAOD;
+      valueSign[5] = angleAOD;
 
-      if((fCharge1*fCharge2)>0.0)	fLSignAngle->Fill(&valueAngle[0],weight);
-      else				fUSignAngle->Fill(&valueAngle[0],weight);
+      //if((fCharge1*fCharge2)>0.0)	fLSignAngle->Fill(&valueAngle[0],weight);
+      //else				fUSignAngle->Fill(&valueAngle[0],weight);
 
       if(angleAOD > fMaxOpening3D) continue;				//! Cut on Opening Angle
 
-      valueee[3] = invmassAOD;
+      valueSign[3] = invmassAOD;
 
-      if((fCharge1*fCharge2)>0.0)	fLSignee->Fill(&valueee[0],weight);
-      else				fUSignee->Fill(&valueee[0],weight);
+      if((fCharge1*fCharge2)>0.0)	fLSign->Fill(&valueSign[0],weight);
+      else				fUSign->Fill(&valueSign[0],weight);
 
       if(invmassAOD > fMaxInvMass) continue;				//! Cut on Invariant Mass
 
-      if((fCharge1*fCharge2)>0.0)	LSignPhotonic=kTRUE;
-      else				USignPhotonic=kTRUE;
+      if((fCharge1*fCharge2)>0.0)	lSignPhotonic=kTRUE;
+      else				uSignPhotonic=kTRUE;
     }
   }
 
-  if( USignPhotonic &&  LSignPhotonic) taggedphotonic = 6;
-  if(!USignPhotonic &&  LSignPhotonic) taggedphotonic = 4;
-  if( USignPhotonic && !LSignPhotonic) taggedphotonic = 2;
+  if( uSignPhotonic &&  lSignPhotonic) taggedphotonic = 6;
+  if(!uSignPhotonic &&  lSignPhotonic) taggedphotonic = 4;
+  if( uSignPhotonic && !lSignPhotonic) taggedphotonic = 2;
 
   return taggedphotonic;
 }

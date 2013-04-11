@@ -390,7 +390,10 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
         ptcorrelation->Draw("colz");
       }
     }
-    if(fWriteToFile) ccontaminationspectrum->SaveAs("contaminationspectrum.eps");
+    if(fWriteToFile){ 
+      ccontaminationspectrum->SaveAs("contaminationspectrum.eps");
+      ccorrelation->SaveAs("correlationMatrix.eps");
+    }
   }
 
   TFile *file = TFile::Open("tests.root","recreate");

@@ -29,7 +29,6 @@ class AliAODMCHeader;
 class TClonesArray;
 class AliHFEsignalCuts;
 class AliHFEextraCuts;
-class TTree;
 
 class AliHFEdebugTreeTaskAOD : public AliAnalysisTaskSE{
   public:
@@ -46,7 +45,6 @@ class AliHFEdebugTreeTaskAOD : public AliAnalysisTaskSE{
     void SetMinNclustersTPC(Int_t mincl) { fNclustersTPC = mincl; };
     void SetMinNclustersTPCPID(Int_t mincl) { fNclustersTPCPID = mincl; };
     void SetMinNclustersITS(Int_t mincl) { fNclustersITS = mincl; };
-    void SetDebugStream(Bool_t on) { fDebugstream = on; };
     AliHFEpidTPC *GetTPCResponse() { return fTPCpid; }
     
   private:
@@ -64,40 +62,9 @@ class AliHFEdebugTreeTaskAOD : public AliAnalysisTaskSE{
     Int_t fNclustersTPCPID;           // Min Number of clusters for TPC PID
     Int_t fNclustersITS;              // Min Number of clusters in ITS
     TString fFilename;                // file name for the debug tree
-    Bool_t  fDebugstream;             // to choose the way
     TTreeSRedirector *fDebugTree;     // Debug Tree
-    TTree *fDebugTreee;               // Debug Tree
-
-    Float_t fCentrality;              // variable
-    Int_t   fRun;                     // run
-    Int_t   fDoublec;                 // double counted
-    Float_t fMomentum;                // Momentum
-    Float_t fMomentumTPC;             // Momentum TPC
-    Float_t fTransverseMomentum;      // Transverse Momentum
-    Float_t fEta;                     // Eta
-    Float_t fPhi;                     // Phi
-    Int_t   fCharge;                  // charge
-    Int_t   fNClustersTPCall;         // Nb of TPC clusters TPC all
-    Int_t   fNClustersTPCPID;         // Nb of TPC clusters TPC PID
-    Int_t   fNClustersTPCshared;      // Nb of TPC clusters shared
-    Int_t   fNCrossedRowsTPC;         // Nb of cross row TPC
-    Float_t fClusterRatioTPCall;      // cls ratio TPC all
-    Int_t   fNClustersITS;            // Nb of ITS clusters
-    Int_t   fStatusL0;                // status L0
-    Int_t   fStatusL1;                // status L1
-    Float_t fSigmaTOF;                // Sigma TOF
-    Float_t fSigmaTPC;                // Sigma TPC
-    Float_t fDcaxy;                   // Dcaxy
-    Float_t fDcaz;                    // Dcaz
-    Int_t   fFilter2;                 // filter2
-    Int_t   fFilter4;                 // filter4
-    Int_t   fSource;                  // source
-    Float_t fEr;                      // er
-    Float_t fSignal;                  // signal
-
-    
   
-    ClassDef(AliHFEdebugTreeTaskAOD, 2)
+    ClassDef(AliHFEdebugTreeTaskAOD, 1)
 };
 #endif
 

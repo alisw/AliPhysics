@@ -194,6 +194,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                 << "Centrality="              << centrality
                 << "VertexZ="                 << vtx[2]
                 << "NumberOfContributors="    << ncontrib
+                << "run="                     << run
                 << "\n";
 
   // Common variables

@@ -1939,7 +1939,7 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
     // J/spi
     //
     Int_t jLabel = partMother->GetMother();
-    if ((jLabel<0) || (jLabel>=fMCArray->GetEntriesFast())){
+    if ((jLabel>=0) && (jLabel<fMCArray->GetEntriesFast())){
       if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))){
 	Int_t grandMaPDG = mctrack->GetPdgCode();
 	if((int(abs(grandMaPDG)/100.)%10) == kBeauty || (int(abs(grandMaPDG)/1000.)%10) == kBeauty) {

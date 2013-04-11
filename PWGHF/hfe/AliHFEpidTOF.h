@@ -30,7 +30,7 @@ class AliHFEpidTOF : public AliHFEpidBase{
     virtual Int_t     IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *piqa) const;
   
     void SetTOFnSigma(Float_t nSigma) { fNsigmaTOF = nSigma; };
-    void SetTOFnSigmaBand(Float_t lower, Float_t upper) { fSigmaBordersTOFLower[0] = lower; fSigmaBordersTOFUpper[0] = upper; SetBit(kSigmaBand, kTRUE); }
+    void SetTOFnSigmaBand(Float_t lower, Float_t upper);
     void SetTOFnSigmaBandCentrality(Float_t lower, Float_t upper, Int_t centralityBin); 
 
   protected:

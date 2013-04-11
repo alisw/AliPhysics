@@ -416,9 +416,9 @@ Double_t AliHFEpidTRD::GetChargeLayer(const AliVParticle *track, UInt_t layer, A
     AliAODPid *aoddetpid = aodtrack ? aodtrack->GetDetPid() : NULL;
     if(aoddetpid){
       if(fTotalChargeInSlice0)
-        charge = aoddetpid->GetTRDsignal()[layer * aoddetpid->GetTRDnSlices()];
+        charge = aoddetpid->GetTRDslices()[layer * aoddetpid->GetTRDnSlices()];
       else
-       for(Int_t islice = 0; islice < aoddetpid->GetTRDnSlices(); islice++) charge += aoddetpid->GetTRDsignal()[layer * aoddetpid->GetTRDnSlices() + islice];
+       for(Int_t islice = 0; islice < aoddetpid->GetTRDnSlices(); islice++) charge += aoddetpid->GetTRDslices()[layer * aoddetpid->GetTRDnSlices() + islice];
     }
   }
   return charge;
