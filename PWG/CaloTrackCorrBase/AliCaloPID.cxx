@@ -86,7 +86,7 @@ fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
 fMassPhoMin(0),           fMassPhoMax(0),
-fSplitEFracMin(0),        fSplitWidthSigma(0)
+fSplitWidthSigma(0)
 {
   //Ctor
   
@@ -120,7 +120,7 @@ fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
 fMassPhoMin(0),           fMassPhoMax(0),
-fSplitEFracMin(0),        fSplitWidthSigma(0)
+fSplitWidthSigma(0)
 {
   //Ctor
 	
@@ -156,7 +156,7 @@ fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
 fMassPhoMin(0),           fMassPhoMax(0),
-fSplitEFracMin(0),        fSplitWidthSigma(0)
+fSplitWidthSigma(0)
 
 {
   //Ctor
@@ -303,7 +303,10 @@ void AliCaloPID::InitParameters()
 //  fAsyMinParam[1][3] = 0.0000377; // pol3 param2 for NLM>2 , E < 25 GeV, PbPb
 
   
-  fSplitEFracMin   = 0. ; // no effect
+  fSplitEFracMin[0]   = 0.0 ; // 0.96
+  fSplitEFracMin[1]   = 0.0 ; // 0.96
+  fSplitEFracMin[2]   = 0.0 ; // 0.7
+
   fSplitWidthSigma = 3. ;
   
 }
@@ -649,7 +652,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   Float_t m02    = cluster->GetM02();
   const Int_t nc = cluster->GetNCells();
   Int_t   absIdList[nc]; 
-  Float_t maxEList [nc]; 
+  Float_t maxEList [nc];
   
   mass  = -1.;
   angle = -1.;
@@ -756,7 +759,10 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   e2    = cluster2.E();
     
   // Consider clusters with splitted energy not too different to original cluster energy
-  if((e1+e2)/eClus < fSplitEFracMin) return kNeutralUnknown ;
+  Float_t splitFracCut = 0;
+  if(nMax < 3)  splitFracCut = fSplitEFracMin[nMax-1];
+  else          splitFracCut = fSplitEFracMin[2];
+  if((e1+e2)/eClus < splitFracCut) return kNeutralUnknown ;
   
   if(fDebug > 0) printf("\t pass Split E frac cut\n");
     

@@ -1647,6 +1647,10 @@ void AliAnaPi0EbE::InitParameters()
   fMinDist2 = 4.;
   fMinDist3 = 5.;
   
+  fNLMECutMin[0] = 10.;
+  fNLMECutMin[1] = 6. ;
+  fNLMECutMin[2] = 6. ;
+
 }
 
 //__________________________________________________________________
@@ -2103,6 +2107,10 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       FillRejectedClusterHistograms(mom,tag);
       continue ;
     }
+    
+    if(nMaxima == 1 && fNLMECutMin[0] > mom.E()) continue;
+    if(nMaxima == 2 && fNLMECutMin[1] > mom.E()) continue;
+    if(nMaxima >  2 && fNLMECutMin[2] > mom.E()) continue;
     
     if(GetDebug() > 1)
       printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - NLM %d accepted \n",nMaxima);
