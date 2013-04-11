@@ -1,14 +1,18 @@
 /***************************************************************************
-              fbellini@cern.ch - last modified on 06/08/2012
+              fbellini@cern.ch - last modified on 09/04/2013
 
  Macro to add monitoring histograms for track and PID cuts to the rsn task 
  Tuned for monitoring TOF KStar analysis of PbPb 2010 data
-/***************************************************************************/
 
+Options ("opt" argument):
+- NoTOFSIGMA  --> disable the nsigma_TOF vs p histos
+- NoTPCSIGMA  --> disable the nsigma_TPC vs p_TPC histos
+- NoSIGN --> disable splitting for single track charge
+- NoTrackQ  --> disable track quality monitoring (DCA, nCls) histos
+/***************************************************************************/
 
 void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 {
-  
   // Multiplicity/centrality
   AliRsnValueEvent *multi = new AliRsnValueEvent("multi",AliRsnValueEvent::kMult);
   multi->SetBins(0.0, 400.0, 1);
@@ -41,7 +45,15 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   //DCA z
   AliRsnValueDaughter *axisDCAz = new AliRsnValueDaughter("DCAz", AliRsnValueDaughter::kDCAZ);
   axisDCAz->SetBins(-10.0, 10.0, 0.1);
-
+  //Charge
+  AliRsnValueDaughter *axisCharge = new AliRsnValueDaughter("charge",AliRsnValueDaughter::kCharge);
+  axisCharge->SetBins(-1.5, 1.5, 1.0);
+  //Phi
+  AliRsnValueDaughter *axisPhi = new AliRsnValueDaughter("phi", AliRsnValueDaughter::kPhi);
+  axisPhi->SetBins(0.0, 360.0, 1.0);
+  AliRsnValueDaughter *axisPhiOuterTPC = new AliRsnValueDaughter("phiOuterTPC", AliRsnValueDaughter::kPhiOuterTPC);
+  axisPhiOuterTPC->SetBins(0.0, 360.0, 1.0);
+  
   /* dEdx tpc */
   AliRsnValueDaughter *axisSigTPC = new AliRsnValueDaughter("sTPC", AliRsnValueDaughter::kTPCsignal);
   axisSigTPC->SetBins(0.0, 500.0, 2.0);
@@ -84,127 +96,158 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   // output: TH1D for momentum
   AliRsnListOutput *outMonitorP = new AliRsnListOutput("P", AliRsnListOutput::kHistoDefault);
   outMonitorP->AddValue(axisMomP);
+  if (!opt.Contains("NoSIGN")) {
+    outMonitorP->AddValue(axisCharge);
+  }
   if (mon) mon->Add(outMonitorP);
   if (lm) lm->AddOutput(outMonitorP);
-
+  
   // output:  TH1D for pt
   AliRsnListOutput *outMonitorPt = new AliRsnListOutput("Pt", AliRsnListOutput::kHistoDefault);
   outMonitorPt->AddValue(axisMomPt);
+  if (!opt.Contains("NoSIGN")) {
+    outMonitorPt->AddValue(axisCharge);
+  }
   if (mon) mon->Add(outMonitorPt);
   if (lm) lm->AddOutput(outMonitorPt);
-
+  
   // output: TH1D for pseudorapidity
   AliRsnListOutput *outMonitorEta = new AliRsnListOutput("Eta", AliRsnListOutput::kHistoDefault);
   outMonitorEta->AddValue(axisMomEta);
+  if (!opt.Contains("NoSIGN")) {
+    outMonitorEta->AddValue(axisCharge);
+  }
   if (mon) mon->Add(outMonitorEta);
   if (lm) lm->AddOutput(outMonitorEta);
+
+  // output:  TH2D for phi vs pt
+  AliRsnListOutput *outMonitorPhi = new AliRsnListOutput("Phi", AliRsnListOutput::kHistoDefault);
+  //outMonitorPhi->AddValue(axisMomPt);
+  outMonitorPhi->AddValue(axisPhi);
+  if (!opt.Contains("NoSIGN")) {
+    outMonitorPhi->AddValue(axisCharge);
+  }
+  if (mon) mon->Add(outMonitorPhi);
+  if (lm) lm->AddOutput(outMonitorPhi);
+  
+  // output:  TH2D for phiOuterTPC vs pt
+  AliRsnListOutput *outMonitorPhiOuterTPC = new AliRsnListOutput("PhiOuterTPC", AliRsnListOutput::kHistoDefault);
+  //outMonitorPhiOuterTPC->AddValue(axisMomPt);
+  outMonitorPhiOuterTPC->AddValue(axisPhiOuterTPC);
+  if (!opt.Contains("NoSIGN")) {
+    outMonitorPhiOuterTPC->AddValue(axisCharge);
+  }
+  if (mon) mon->Add(outMonitorPhiOuterTPC);
+  if (lm) lm->AddOutput(outMonitorPhiOuterTPC);
 
   /****************************************************************/
   /***************      MONITOR TRACK QUALITY  ********************/
   /****************************************************************/
-  // output: 2D histogram of DCAxy vs pt
-  AliRsnListOutput *outMonitorDCAxy = new AliRsnListOutput("DCAxyVsPt", AliRsnListOutput::kHistoDefault);
-  outMonitorDCAxy->AddValue(axisMomPt);
-  outMonitorDCAxy->AddValue(axisDCAxy);
-  if (mon) mon->Add(outMonitorDCAxy);
-  if (lm) lm->AddOutput(outMonitorDCAxy);
+  if (!opt.Contains("NoTrackQ")) {
+    // output: 2D histogram of DCAxy vs pt
+    AliRsnListOutput *outMonitorDCAxy = new AliRsnListOutput("DCAxyVsPt", AliRsnListOutput::kHistoDefault);
+    outMonitorDCAxy->AddValue(axisMomPt);
+    outMonitorDCAxy->AddValue(axisDCAxy);
+    if (mon) mon->Add(outMonitorDCAxy);
+    if (lm) lm->AddOutput(outMonitorDCAxy);
 
-  // output: 2D histogram of DCAz vs P
-  AliRsnListOutput *outMonitorDCAz = new AliRsnListOutput("DCAzVsP", AliRsnListOutput::kHistoDefault);
-  outMonitorDCAz->AddValue(axisMomP);
-  outMonitorDCAz->AddValue(axisDCAz);
-  if (mon) mon->Add(outMonitorDCAz);
-  if (lm) lm->AddOutput(outMonitorDCAz);
+    // output: 2D histogram of DCAz vs P
+    AliRsnListOutput *outMonitorDCAz = new AliRsnListOutput("DCAzVsP", AliRsnListOutput::kHistoDefault);
+    outMonitorDCAz->AddValue(axisMomP);
+    outMonitorDCAz->AddValue(axisDCAz);
+    if (mon) mon->Add(outMonitorDCAz);
+    if (lm) lm->AddOutput(outMonitorDCAz);
 
-  // output: 2D histogram of ITS cls vs pt
-  AliRsnListOutput *outMonitorITScls = new AliRsnListOutput("ITSclsVsPt", AliRsnListOutput::kHistoDefault);
-  outMonitorITScls->AddValue(axisMomPt);
-  outMonitorITScls->AddValue(axisITScls);
-  if (mon) mon->Add(outMonitorITScls);
-  if (lm) lm->AddOutput(outMonitorITScls);
+    // output: 2D histogram of ITS cls vs pt
+    AliRsnListOutput *outMonitorITScls = new AliRsnListOutput("ITSclsVsPt", AliRsnListOutput::kHistoDefault);
+    outMonitorITScls->AddValue(axisMomPt);
+    outMonitorITScls->AddValue(axisITScls);
+    if (mon) mon->Add(outMonitorITScls);
+    if (lm) lm->AddOutput(outMonitorITScls);
 
-  // output: 2D histogram of TPC cls vs. pt
-  AliRsnListOutput *outMonitorTPCcls = new AliRsnListOutput("TPCclsVsPt", AliRsnListOutput::kHistoDefault);
-  outMonitorTPCcls->AddValue(axisMomPt);
-  outMonitorTPCcls->AddValue(axisTPCcls);
-  if (mon) mon->Add(outMonitorTPCcls);
-  if (lm) lm->AddOutput(outMonitorTPCcls);
+    // output: 2D histogram of TPC cls vs. pt
+    AliRsnListOutput *outMonitorTPCcls = new AliRsnListOutput("TPCclsVsPt", AliRsnListOutput::kHistoDefault);
+    outMonitorTPCcls->AddValue(axisMomPt);
+    outMonitorTPCcls->AddValue(axisTPCcls);
+    if (mon) mon->Add(outMonitorTPCcls);
+    if (lm) lm->AddOutput(outMonitorTPCcls);
 
-// output: 2D histogram of TPC cls vs. TPC momentum
-  AliRsnListOutput *outMonitorTPCclsVsPtpc = new AliRsnListOutput("TPCclsVsPtpc", AliRsnListOutput::kHistoDefault);
-  outMonitorTPCclsVsPtpc->AddValue(axisMomTPC);
-  outMonitorTPCclsVsPtpc->AddValue(axisTPCcls);
-  if (mon) mon->Add(outMonitorTPCclsVsPtpc);
-  if (lm) lm->AddOutput(outMonitorTPCclsVsPtpc);
+    // output: 2D histogram of TPC cls vs. TPC momentum
+    AliRsnListOutput *outMonitorTPCclsVsPtpc = new AliRsnListOutput("TPCclsVsPtpc", AliRsnListOutput::kHistoDefault);
+    outMonitorTPCclsVsPtpc->AddValue(axisMomTPC);
+    outMonitorTPCclsVsPtpc->AddValue(axisTPCcls);
+    if (mon) mon->Add(outMonitorTPCclsVsPtpc);
+    if (lm) lm->AddOutput(outMonitorTPCclsVsPtpc);
 
- // output: 2D histogram of ITS chi2 vs pt
-  AliRsnListOutput *outMonitorITSchi2 = new AliRsnListOutput("ITSchi2VsPt", AliRsnListOutput::kHistoDefault);
-  outMonitorITSchi2->AddValue(axisMomPt);
-  outMonitorITSchi2->AddValue(axisITSchi2);
-  if (mon) mon->Add(outMonitorITSchi2);
-  if (lm) lm->AddOutput(outMonitorITSchi2);
+    // output: 2D histogram of ITS chi2 vs pt
+    AliRsnListOutput *outMonitorITSchi2 = new AliRsnListOutput("ITSchi2VsPt", AliRsnListOutput::kHistoDefault);
+    outMonitorITSchi2->AddValue(axisMomPt);
+    outMonitorITSchi2->AddValue(axisITSchi2);
+    if (mon) mon->Add(outMonitorITSchi2);
+    if (lm) lm->AddOutput(outMonitorITSchi2);
 
-  // output: 2D histogram of TPC chi2 vs. pt
-  AliRsnListOutput *outMonitorTPCchi2 = new AliRsnListOutput("TPCchi2VsPt", AliRsnListOutput::kHistoDefault);
-  outMonitorTPCchi2->AddValue(axisMomPt);
-  outMonitorTPCchi2->AddValue(axisTPCchi2);
-  if (mon) mon->Add(outMonitorTPCchi2);
-  if (lm) lm->AddOutput(outMonitorTPCchi2);
+    // output: 2D histogram of TPC chi2 vs. pt
+    AliRsnListOutput *outMonitorTPCchi2 = new AliRsnListOutput("TPCchi2VsPt", AliRsnListOutput::kHistoDefault);
+    outMonitorTPCchi2->AddValue(axisMomPt);
+    outMonitorTPCchi2->AddValue(axisTPCchi2);
+    if (mon) mon->Add(outMonitorTPCchi2);
+    if (lm) lm->AddOutput(outMonitorTPCchi2);
 
-// output: 2D histogram of TPC chi2 vs. TPC momentum
-  AliRsnListOutput *outMonitorTPCchi2VsPtpc = new AliRsnListOutput("TPCchi2VsPtpc", AliRsnListOutput::kHistoDefault);
-  outMonitorTPCchi2VsPtpc->AddValue(axisMomTPC);
-  outMonitorTPCchi2VsPtpc->AddValue(axisTPCchi2);
-  if (mon) mon->Add(outMonitorTPCchi2VsPtpc);
-  if (lm) lm->AddOutput(outMonitorTPCchi2VsPtpc);
-
+    // output: 2D histogram of TPC chi2 vs. TPC momentum
+    AliRsnListOutput *outMonitorTPCchi2VsPtpc = new AliRsnListOutput("TPCchi2VsPtpc", AliRsnListOutput::kHistoDefault);
+    outMonitorTPCchi2VsPtpc->AddValue(axisMomTPC);
+    outMonitorTPCchi2VsPtpc->AddValue(axisTPCchi2);
+    if (mon) mon->Add(outMonitorTPCchi2VsPtpc);
+    if (lm) lm->AddOutput(outMonitorTPCchi2VsPtpc);
+  }
   /****************************************************************/
   /***************       MONITOR TPC           ********************/
   /****************************************************************/
-  // output: 2D histogram of TPC signal vs. TPC momentum
-  AliRsnListOutput *outMonitordEdxTPC = new AliRsnListOutput("dEdx_VsPtpc", AliRsnListOutput::kHistoDefault);
-  outMonitordEdxTPC->AddValue(axisMomTPC);
-  outMonitordEdxTPC->AddValue(axisSigTPC);
-  if (mon) mon->Add(outMonitordEdxTPC);
-  if (lm) lm->AddOutput(outMonitordEdxTPC);
+  if (!opt.Contains("NoTPCSIGMA")) {
+    // output: 2D histogram of TPC signal vs. TPC momentum
+    AliRsnListOutput *outMonitordEdxTPC = new AliRsnListOutput("dEdx_VsPtpc", AliRsnListOutput::kHistoDefault);
+    outMonitordEdxTPC->AddValue(axisMomTPC);
+    outMonitordEdxTPC->AddValue(axisSigTPC);
+    if (mon) mon->Add(outMonitordEdxTPC);
+    if (lm) lm->AddOutput(outMonitordEdxTPC);
 
-  // output: 2D histogram of TPC nsigma pi vs. TPC momentum
-  AliRsnListOutput *outMonitorTPCnsigmaPi = new AliRsnListOutput("TPC_nsigmaPi_VsPtpc", AliRsnListOutput::kHistoDefault);
-  outMonitorTPCnsigmaPi->AddValue(axisMomTPC);
-  outMonitorTPCnsigmaPi->AddValue(axisTPCnsigmaPi);
-  if (mon) mon->Add(outMonitorTPCnsigmaPi);
-  if (lm) lm->AddOutput(outMonitorTPCnsigmaPi);
+    // output: 2D histogram of TPC nsigma pi vs. TPC momentum
+    AliRsnListOutput *outMonitorTPCnsigmaPi = new AliRsnListOutput("TPC_nsigmaPi_VsPtpc", AliRsnListOutput::kHistoDefault);
+    outMonitorTPCnsigmaPi->AddValue(axisMomTPC);
+    outMonitorTPCnsigmaPi->AddValue(axisTPCnsigmaPi);
+    if (mon) mon->Add(outMonitorTPCnsigmaPi);
+    if (lm) lm->AddOutput(outMonitorTPCnsigmaPi);
 
-  // output: 2D histogram of TPC nsigma K vs. TPC momentum
-  AliRsnListOutput *outMonitorTPCnsigmaK = new AliRsnListOutput("TPC_nsigmaK_VsPtpc", AliRsnListOutput::kHistoDefault);
-  outMonitorTPCnsigmaK->AddValue(axisMomTPC);
-  outMonitorTPCnsigmaK->AddValue(axisTPCnsigmaK);
-  if (mon) mon->Add(outMonitorTPCnsigmaK);
-  if (lm) lm->AddOutput(outMonitorTPCnsigmaK);
+    // output: 2D histogram of TPC nsigma K vs. TPC momentum
+    AliRsnListOutput *outMonitorTPCnsigmaK = new AliRsnListOutput("TPC_nsigmaK_VsPtpc", AliRsnListOutput::kHistoDefault);
+    outMonitorTPCnsigmaK->AddValue(axisMomTPC);
+    outMonitorTPCnsigmaK->AddValue(axisTPCnsigmaK);
+    if (mon) mon->Add(outMonitorTPCnsigmaK);
+    if (lm) lm->AddOutput(outMonitorTPCnsigmaK);
 
-  // output: 2D histogram of TPC nsigma pro vs. TPC momentum
-  AliRsnListOutput *outMonitorTPCnsigmaP = new AliRsnListOutput("TPC_nsigmaPro_VsPtpc", AliRsnListOutput::kHistoDefault);
-  outMonitorTPCnsigmaP->AddValue(axisMomTPC);
-  outMonitorTPCnsigmaP->AddValue(axisTPCnsigmaP);
-  if (mon) mon->Add(outMonitorTPCnsigmaP);
-  if (lm) lm->AddOutput(outMonitorTPCnsigmaP);
-
+    // output: 2D histogram of TPC nsigma pro vs. TPC momentum
+    AliRsnListOutput *outMonitorTPCnsigmaP = new AliRsnListOutput("TPC_nsigmaPro_VsPtpc", AliRsnListOutput::kHistoDefault);
+    outMonitorTPCnsigmaP->AddValue(axisMomTPC);
+    outMonitorTPCnsigmaP->AddValue(axisTPCnsigmaP);
+    if (mon) mon->Add(outMonitorTPCnsigmaP);
+    if (lm) lm->AddOutput(outMonitorTPCnsigmaP);
+  }
   /****************************************************************/
   /***************       MONITOR TOF           ********************/
   /****************************************************************/
-  // output: 2D histogram of TOF signal vs. momentum
-  AliRsnListOutput *outMonitorTimeTOF = new AliRsnListOutput("time_VsP", AliRsnListOutput::kHistoDefault);
-  outMonitorTimeTOF->AddValue(axisMomP);
-  outMonitorTimeTOF->AddValue(axisSigTOF);
-  if (mon) mon->Add(outMonitorTimeTOF);
-  if (lm) lm->AddOutput(outMonitorTimeTOF);
+  // // output: 2D histogram of TOF signal vs. momentum
+  // AliRsnListOutput *outMonitorTimeTOF = new AliRsnListOutput("time_VsP", AliRsnListOutput::kHistoDefault);
+  // outMonitorTimeTOF->AddValue(axisMomP);
+  // outMonitorTimeTOF->AddValue(axisSigTOF);
+  // if (mon) mon->Add(outMonitorTimeTOF);
+  // if (lm) lm->AddOutput(outMonitorTimeTOF);
 
-  // output: 2D histogram of TOF signal vs. pt
-  AliRsnListOutput *outMonitorTimeTOFPt = new AliRsnListOutput("time_VsPt", AliRsnListOutput::kHistoDefault);
-  outMonitorTimeTOFPt->AddValue(axisMomPt);
-  outMonitorTimeTOFPt->AddValue(axisSigTOF);
-  if (mon) mon->Add(outMonitorTimeTOFPt);
-  if (lm) lm->AddOutput(outMonitorTimeTOFPt);
+  // // output: 2D histogram of TOF signal vs. pt
+  // AliRsnListOutput *outMonitorTimeTOFPt = new AliRsnListOutput("time_VsPt", AliRsnListOutput::kHistoDefault);
+  // outMonitorTimeTOFPt->AddValue(axisMomPt);
+  // outMonitorTimeTOFPt->AddValue(axisSigTOF);
+  // if (mon) mon->Add(outMonitorTimeTOFPt);
+  // if (lm) lm->AddOutput(outMonitorTimeTOFPt);
 
   if (!opt.Contains("NoTOFSIGMA")) {
     // output: 2D histogram of TOF Nsigma pi vs. TPC momentum

@@ -26,7 +26,8 @@ Bool_t ConfigTOFanalysisKStar
     Bool_t                 enableMonitor = kTRUE,
     Bool_t                 IsMcTrueOnly = kFALSE,
     Bool_t                 useMixLS = 0,
-    Int_t                  signedPdg = 313
+    Int_t                  signedPdg = 313,
+    TString                monitorOpt = ""
 )
 {
   // manage suffix
@@ -37,22 +38,26 @@ Bool_t ConfigTOFanalysisKStar
   AliRsnCutSetDaughterParticle * cutSetPi;
   AliRsnCutSetDaughterParticle * cutSetK;
 
-  cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0, aodFilterBit);
-  cutSetPi = new AliRsnCutSetDaughterParticle(Form("cutPionTOFPbPb2010_%2.1fsigma",nsigmaPi), cutPiCandidate, AliPID::kPion, nsigmaPi, aodFilterBit);
-  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaonTOFPbPb2010_%2.1fsigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
+  cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0, aodFilterBit);
+  cutSetPi = new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutPiCandidate, nsigmaPi), cutPiCandidate, AliPID::kPion, nsigmaPi, aodFilterBit);
+  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutPiCandidate, nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
 
   Int_t iCutQ = task->AddTrackCuts(cutSetQ);
   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
   Int_t iCutK = task->AddTrackCuts(cutSetK);
   
   if(enableMonitor){
-    Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
+    Printf("======== Cut monitoring enabled");
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
-    AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput());
-    AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput());
-    AddMonitorOutput(isMC, cutSetK->GetMonitorOutput());
+    AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
+    AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
+    AddMonitorOutput(isMC, cutSetK->GetMonitorOutput()), monitorOpt.Data();
   }  
   
+  if (monitorOpt.Contains("MonOnly")) {
+    Printf("======== Cut monitoring only");   
+    return kTRUE;
+  }
   // -- Values ------------------------------------------------------------------------------------
   /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
   /* IM resolution    */ Int_t resID  = task->CreateValue(AliRsnMiniValue::kInvMassRes, kTRUE);
