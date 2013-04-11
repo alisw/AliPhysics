@@ -11,6 +11,8 @@
 #include <AliPID.h>
 
 class TParticle;
+class AliITSPIDResponse;
+class AliTPCPIDResponse;
 
 class AliLnID: public TObject
 {
@@ -64,7 +66,7 @@ class AliLnID: public TObject
 	void SetTPCChargeCorrection(Double_t zexp) { fZexp = zexp; }
 	
 	enum { kSPECIES = 9 };
-	enum { kBayes, kMaxLikelihood, kTPC, kITSTPC, kTPCTOF };
+	enum { kBayes=0, kMaxLikelihood, kTPC, kITSTPC, kTPCTOF };
 	
   private:
  
@@ -81,8 +83,8 @@ class AliLnID: public TObject
 	Double_t fRange; // number of sigmas to the expected values
 	Double_t fZexp; // TPC BB charge dependence
 	
-	class AliITSPIDResponse* fITSpid; // ITS likelihood
-	class AliTPCPIDResponse* fTPCpid; // TPC likelihood
+	AliITSPIDResponse* fITSpid; // ITS likelihood
+	AliTPCPIDResponse* fTPCpid; // TPC likelihood
 	
 	ClassDef(AliLnID, 1)
 };

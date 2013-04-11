@@ -15,6 +15,7 @@ class TH1;
 class TH1D;
 class TH2D;
 class TAxis;
+class TObjString;
 
 class AliLnHistoMap: public TObject
 {
@@ -28,7 +29,7 @@ class AliLnHistoMap: public TObject
 	
 	TObject* Get(const TString& keyname) const { return fHistoMap->GetValue(keyname.Data()); }
 	TObject* Get(const char* keyname) const { return fHistoMap->GetValue(keyname); }
-	TObject* Get(const TObjString* key) const { return fHistoMap->GetValue(key); }
+	TObject* Get(const TObjString* key) const { return fHistoMap->GetValue((TObject*)key); }
 	
 	TMap* GetMap() const { return fHistoMap; }
 	

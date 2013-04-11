@@ -208,9 +208,9 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 		hMap->Add( particle[i] + "_TrackCuts_TPCchi2PerCls", 200, 0, 20, "Track cuts", "TPC #chi^{2} / Cluster");
 		hMap->Add( particle[i] + "_TrackCuts_TPCchi2Global", 200, -2, 38, "Track cuts", "#chi^{2} of constrained TPC vs global track");
 		
-		hMap->Add( particle[i] + "_Before_Phi_Theta", 180, 0, TMath::Pi(), 360, 0, 2.*TMath::Pi(), "Global tracks (before track cuts)", "#theta (rad)", "#phi (rad)");
+		hMap->Add( particle[i] + "_Before_Phi_Eta", 400, -2, 2, 360, 0, 2.*TMath::Pi(), "Global tracks (before track cuts)", "#eta", "#phi (rad)");
 		
-		hMap->Add( particle[i] + "_After_Phi_Theta", 180, 0, TMath::Pi(), 360, 0, 2.*TMath::Pi(), "Global tracks (after track cuts)", "#theta (rad)", "#phi (rad)");
+		hMap->Add( particle[i] + "_After_Phi_Eta", 400, -2, 2, 360, 0, 2.*TMath::Pi(), "Global tracks (after track cuts)", "#eta", "#phi (rad)");
 		
 		// pid with TOF
 		
@@ -292,6 +292,8 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 			hMap->Add( particle[i] + "_Sim_Pt", ptBins, ptMin, ptMax, Form("%s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
 			hMap->Add( particle[i] + "_Sim_Prim_Pt", ptBins, ptMin, ptMax, Form("Primary %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			
+			hMap->Add( particle[i] + "_Sim_Prim_Rec_Pt", ptBins, ptMin, ptMax, Form("Primary %s (|y| < %0.1f, 0 < \\phi < 2\\pi, rec. pt)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
 			hMap->Add( particle[i] + "_Sim_Prim_Phi", phiBins, phiMin, phiMax, Form("Primary %s (p_{T} > 0, |y| < %0.1f)",particle[i].Data(),maxY), "\\phi (rad)");
 			

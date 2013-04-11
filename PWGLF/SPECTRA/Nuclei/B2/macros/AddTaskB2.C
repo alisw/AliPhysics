@@ -95,6 +95,8 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 	task->SetVertexYInterval(-kMaxVy, kMaxVy);
 	task->SetVertexZInterval(-maxVz, maxVz);
 	
+	task->SetEtaInterval(-maxEta, maxEta);
+	task->SetRapidityInterval(-maxY, maxY);
 	task->SetM2Interval(minM2, maxM2);
 	
 	task->SetCentralityInterval(minCentrality, maxCentrality);
