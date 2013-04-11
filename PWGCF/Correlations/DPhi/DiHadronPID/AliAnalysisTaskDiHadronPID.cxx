@@ -68,6 +68,8 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 	fMinNEventsForMixing(5),
 	fPoolTrackDepth(2000),
 	fPoolSize(1000),
+	fMixEvents(kTRUE),
+	fMixTriggers(kFALSE),
 	fCalculateTOFmismatch(kTRUE),
 	fT0Fill(0x0),
 	fLvsEta(0x0),
@@ -113,6 +115,8 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char* name):
 	fMinNEventsForMixing(5),
 	fPoolTrackDepth(2000),
 	fPoolSize(1000),
+	fMixEvents(kTRUE),	
+	fMixTriggers(kFALSE),
 	fCalculateTOFmismatch(kTRUE),
 	fT0Fill(0x0),
 	fLvsEta(0x0),
@@ -125,8 +129,7 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char* name):
 	// Named Constructor.
 	//
 
-	if (fDebug > 0) {AliInfo("AliAnalysisTaskDiHadronPID Named Constructor.");}	
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
 			for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
@@ -147,8 +150,7 @@ AliAnalysisTaskDiHadronPID::~AliAnalysisTaskDiHadronPID() {;
 	// Destructor.
 	//
 
-	if (fDebug > 0) {AliInfo("AliAnalysisTaskDiHadronPID Destructor.");}
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 }
 
@@ -159,8 +161,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 	// Create Output objects.
 	//
 
-	if (fDebug > 0) {AliInfo("UserCreateOutputObjects()");}
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	// --- BEGIN: Initialization on the worker nodes ---
 	AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
@@ -194,7 +195,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 	fOutputList->Add(fTrackCutsAssociated);
 
 	// Get the pT axis for the PID histograms.
-	Float_t* ptaxis = fTrackCutsAssociated->GetPtAxisPID();
+	Double_t* ptaxis = fTrackCutsAssociated->GetPtAxisPID();
 	Int_t nptbins = fTrackCutsAssociated->GetNPtBinsPID();
 
 	// Create Pt spectrum histogram.
@@ -263,8 +264,7 @@ void AliAnalysisTaskDiHadronPID::LocalInit() {
 	// Initialize on the client. (or on my computer?? - I think so...)
 	//
 
-	if (fDebug > 0) {AliInfo("LocalInit()");}
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
  	
 }
 
@@ -275,8 +275,7 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 	// Main Loop.
 	//
 
-	if (fDebug > 0) {AliInfo("UserExec()");}
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	// Input Current Event.
 	fCurrentAODEvent = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -364,36 +363,63 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 	AliAODVertex* currentprimaryvertex = fCurrentAODEvent->GetPrimaryVertex();
 	Double_t vtxz = currentprimaryvertex->GetZ();
 
-	// Obtain event pool for current centrality/ vtxz.
 	AliEventPool* poolin = fPoolMgr->GetEventPool(percentile, vtxz); 
 	if (!poolin) {AliFatal(Form("No pool found for centrality = %f, vtxz = %f", percentile, vtxz));}
 	// TObjArray* fGlobalTracksArray; 
 
-	// Mix events if there are enough events in the pool. (TODO: should be a data member.)
+	// Give a print out of the pool manager's contents.
+	PrintPoolManagerContents();
+
+	// Mix events if there are enough events in the pool.
 	if (poolin->GetCurrentNEvents() >= fMinNEventsForMixing) {
-		if (fDebug) {AliInfo("Mixing Events.");}
+		{cout << "Mixing Events." << endl;}
 
-		// Loop over all triggers in this event.
-		for (Int_t iTrigger = 0; iTrigger < fTriggerTracks->GetEntriesFast(); iTrigger++) {
-			AliTrackDiHadronPID* triggertrack = (AliTrackDiHadronPID*)fTriggerTracks->At(iTrigger);
+		// Loop over all events in the event pool.
+		for (Int_t iMixEvent = 0; iMixEvent < poolin->GetCurrentNEvents(); iMixEvent++) {
+	    	TObjArray* mixtracks = poolin->GetEvent(iMixEvent);
 
-			// Loop over all events in the event pool.
-			for (Int_t iMixEvent = 0; iMixEvent < poolin->GetCurrentNEvents(); iMixEvent++) {
-	    		TObjArray* mixtracks = poolin->GetEvent(iMixEvent);
+	    	// Mix either the triggers or the associateds.
+	    	if (fMixTriggers) {
 
-	    		// Loop over all mixed tracks.
-	    		for (Int_t iMixTrack = 0; iMixTrack < mixtracks->GetEntriesFast(); iMixTrack++) {
-	    			AliTrackDiHadronPID* mixtrack = (AliTrackDiHadronPID*)mixtracks->At(iMixTrack);
-						
-					Double_t DPhi = triggertrack->Phi() - mixtrack->Phi();
-					if (DPhi < -TMath::Pi()/2.) {DPhi += 2.*TMath::Pi();}
-					if (DPhi > 3.*TMath::Pi()/2.) {DPhi -= 2.*TMath::Pi();}
+				// Loop over all associateds in this event.
+				for (Int_t iAssociated = 0; iAssociated < fAssociatedTracks->GetEntriesFast(); iAssociated++) {
+					AliTrackDiHadronPID* associatedtrack = (AliTrackDiHadronPID*)fAssociatedTracks->At(iAssociated);
 
-					Double_t DEta = triggertrack->Eta() - mixtrack->Eta();
-					fMixedEvents->Fill(DPhi,DEta,mixtrack->Pt());
+		    		// Loop over all mixed tracks.
+		    		for (Int_t iMixTrack = 0; iMixTrack < mixtracks->GetEntriesFast(); iMixTrack++) {
+		    			AliTrackDiHadronPID* mixtrack = (AliTrackDiHadronPID*)mixtracks->At(iMixTrack);
+							
+						Double_t DPhi = mixtrack->Phi() - associatedtrack->Phi();
+						if (DPhi < -TMath::Pi()/2.) {DPhi += 2.*TMath::Pi();}
+						if (DPhi > 3.*TMath::Pi()/2.) {DPhi -= 2.*TMath::Pi();}
 
-	    		}
-	   		}
+						Double_t DEta = mixtrack->Eta() - associatedtrack->Eta();
+						fMixedEvents->Fill(DPhi,DEta,associatedtrack->Pt());
+
+		    		}
+		   		}
+
+		   	} else {
+
+				// Loop over all triggers in this event.
+				for (Int_t iTrigger = 0; iTrigger < fTriggerTracks->GetEntriesFast(); iTrigger++) {
+					AliTrackDiHadronPID* triggertrack = (AliTrackDiHadronPID*)fTriggerTracks->At(iTrigger);
+
+		    		// Loop over all mixed tracks.
+		    		for (Int_t iMixTrack = 0; iMixTrack < mixtracks->GetEntriesFast(); iMixTrack++) {
+		    			AliTrackDiHadronPID* mixtrack = (AliTrackDiHadronPID*)mixtracks->At(iMixTrack);
+							
+						Double_t DPhi = triggertrack->Phi() - mixtrack->Phi();
+						if (DPhi < -TMath::Pi()/2.) {DPhi += 2.*TMath::Pi();}
+						if (DPhi > 3.*TMath::Pi()/2.) {DPhi -= 2.*TMath::Pi();}
+
+						Double_t DEta = triggertrack->Eta() - mixtrack->Eta();
+						fMixedEvents->Fill(DPhi,DEta,mixtrack->Pt());
+
+		    		}
+		   		}
+
+		   	} // End if  	
 	   	}
 	}	
 
@@ -402,12 +428,17 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 	if (!poolout) AliFatal(Form("No pool found for centrality = %f, vtx_z = %f", percentile, vtxz));
 
 	// Q: is it a problem that the fAssociatedTracks array can be bigger than the number of tracks inside?
-	poolout->UpdatePool(fAssociatedTracks);
+	if (fMixTriggers) {
+		poolout->UpdatePool(fTriggerTracks);
+		fAssociatedTracks->Delete();
+		delete fAssociatedTracks;
+	}
+	else {
+		poolout->UpdatePool(fAssociatedTracks);
+		fTriggerTracks->Delete();
+		delete fTriggerTracks;
+	}
 
-	// Delete trigger array and its contents. Set pointer to zero.
-	// Don't delete the associated array, since ownership has been transferred to the pool manager. Set pointer to zero.
-	fTriggerTracks->Delete();
-	delete fTriggerTracks;
 	fTriggerTracks = 0x0;
 	fAssociatedTracks = 0x0;
 
@@ -427,7 +458,7 @@ Bool_t AliAnalysisTaskDiHadronPID::LoadExtMismatchHistos() {
 	// to generate random TOF hits.
  	//
 
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	// Opening external TOF file.
 	if (fDebug > 0) cout<<"Trying to open TOFmismatchHistos.root ..."<<endl;
@@ -484,7 +515,7 @@ Double_t AliAnalysisTaskDiHadronPID::GenerateRandomHit(Double_t eta) {
 	// Returns a random TOF time.
 	//
 
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	// Default (error) value:
 	Double_t rndhittime = -1.e21;
@@ -524,14 +555,53 @@ Double_t AliAnalysisTaskDiHadronPID::GenerateRandomHit(Double_t eta) {
 }
 
 // -------------------------------------------------------------------------
+void AliAnalysisTaskDiHadronPID::PrintPoolManagerContents() {
+
+	//
+	// Prints out the current contents of the event pool manager.
+	//
+
+	// Determine the number of pools in the pool manager.
+	AliEventPool* poolin = fPoolMgr->GetEventPool(0,0);
+	Int_t NPoolsCentrality = 0;
+	while (poolin) {
+		NPoolsCentrality++;
+		poolin = fPoolMgr->GetEventPool(NPoolsCentrality,0);
+	} 
+
+	poolin = fPoolMgr->GetEventPool(0,0);
+	Int_t NPoolsVtxZ = 0;	
+	while (poolin) {
+		NPoolsVtxZ++;
+		poolin = fPoolMgr->GetEventPool(0,NPoolsVtxZ);
+	} 
+
+	// Loop over all Pools in the matrix of the pool manager.
+	cout<<" Pool manager contents: (Nevt,NTrack)"<<endl;
+	for (Int_t iCentrality = 0; iCentrality < NPoolsCentrality; iCentrality++) {
+		cout<<Form("Centrality Bin: %2i --> ", iCentrality);
+
+		for (Int_t iVtxZ = 0; iVtxZ < NPoolsVtxZ; iVtxZ++) {
+
+			poolin = fPoolMgr->GetEventPool(iCentrality, iVtxZ);
+
+			cout<<Form("(%2i,%4i) ",poolin->GetCurrentNEvents(), poolin->NTracksInPool());
+
+		}
+
+		cout<<endl;
+	}
+
+}
+
+// -------------------------------------------------------------------------
 void AliAnalysisTaskDiHadronPID::Terminate(Option_t*) {;
 
 	//
 	// Called when task is done.
 	//
 
-	if (fDebug > 0) {AliInfo("Terminate()");}
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	delete fT0Fill;
 	fT0Fill = 0x0;

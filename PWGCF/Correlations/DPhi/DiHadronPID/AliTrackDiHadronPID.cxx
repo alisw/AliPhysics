@@ -70,7 +70,7 @@ AliTrackDiHadronPID::AliTrackDiHadronPID():
 	// Default Constructor.
 	//
 
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 		fTOFsignalMinusExpected[iSpecies] = -999.;
@@ -130,7 +130,7 @@ AliTrackDiHadronPID::AliTrackDiHadronPID(AliAODTrack* track, AliAODTrack* global
 	// Constructor.
 	//
 
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 		fTOFsignalMinusExpected[iSpecies] = -999.;
@@ -194,7 +194,7 @@ Bool_t AliTrackDiHadronPID::CopyBasicTrackInfo() {
 	// Copies everything available in every AOD track.
 	//
 
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
  	fPt = fAODTrack->Pt();
 	fEta = fAODTrack->Eta();
@@ -224,7 +224,7 @@ Bool_t AliTrackDiHadronPID::CopyFlags() {
 	// Copies Flags (properly stored in global track)
 	//
 
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	// Copy Flags
 	fFlags = fAODGlobalTrack->GetFlags();
@@ -248,7 +248,7 @@ Bool_t AliTrackDiHadronPID::CopyDCAInfo() {
 	// Copies DCA info. (only stored in a global track)
 	//
 
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	// Propagate track to DCA.
 	Double_t PosAtDCA[2] = {-999,-999};
@@ -275,7 +275,7 @@ Bool_t AliTrackDiHadronPID::CopyITSInfo() {
 	// Copies ITS info.
 	//
 
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
     // Get the ITS clustermap
     fITSClusterMap = fAODGlobalTrack->GetITSClusterMap();
@@ -297,7 +297,7 @@ Bool_t AliTrackDiHadronPID::CopyTPCInfo() {
 	// Copies TPC info. (needs global track and pid response)
 	//
 
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
 
     // Get TPC signal.
     fTPCsignal = fAODGlobalTrack->GetTPCsignal();
@@ -326,7 +326,7 @@ Bool_t AliTrackDiHadronPID::CopyTOFInfo() {
 	// Copies TOF info. (needs global track)
 	//
 
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
     // Get TOF signal.
     fTOFsignal = fAODGlobalTrack->GetTOFsignal();
@@ -357,7 +357,7 @@ Bool_t AliTrackDiHadronPID::CopyMCInfo() {
 	// negative. This means that the quality of this track is not awesome,
 	// but that it does correspond to the MC particle.
 
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 	
 	/*
 	if (fAODMCParticle->Label() != TMath::Abs(fAODTrack->GetLabel())) {

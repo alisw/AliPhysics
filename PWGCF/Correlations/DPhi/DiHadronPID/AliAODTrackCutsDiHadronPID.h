@@ -71,9 +71,9 @@ public:
 
 // Returns the Pt axis for PID and other histograms.
 	Double_t* GetPtAxis() {return fPtAxis;}
-	Float_t* GetPtAxisPID() const {
+	Double_t* GetPtAxisPID() const {
 		const Int_t nptbinspid = GetNPtBinsPID();
-		Float_t* ptaxis = new Float_t[nptbinspid];
+		Double_t* ptaxis = new Double_t[nptbinspid + 1];
 		for (Int_t iPtBin = 0; iPtBin < nptbinspid; iPtBin++) {
 			ptaxis[iPtBin] = GetPtMinPID(iPtBin + 1); 
 		}
@@ -319,6 +319,7 @@ private:
 	void InitializeDefaultHistoNamesAndAxes();
 
 	TH1F* InitializePtSpectrum(const char* name, Int_t histoclass);
+	TH3F* InitializePhiEtaPt(const char* name, Int_t histoclass);
 	TH1F* InitializeNTracksHisto(const char* name, Int_t histoclass);
 	TH1F* InitializeDCAxyHisto(const char* name, Int_t histoclass);
 	TH1F* InitializeDCAzHisto(const char* name, Int_t histoclass);
@@ -365,6 +366,7 @@ private:
 // QA histograms for Data.
 	TList*					fDataTrackQAHistos;				// 
 	TH1F*					fHistDataPt[3];					//! Pt distribution of tracks passing this cut.
+	TH3F*					fHistDataPhiEtaPt[3];			//! Pt, Eta, Phi distribution.
 	TH1F*					fHistDataNTracks[3];			//! Number of tracks passing the cut per event (filling by EventIsDone()).
 	TH1F*					fHistDataDCAxy[3];				//! DCA_{xy} distribution.
 	TH1F*					fHistDataDCAz[3];				//! DCA_{z} distribution
@@ -395,8 +397,10 @@ private:
 	TH1F*					fHistSecGenMCPt[12];			//! Pt distribution of generated MC particles passing this cut.
 
 // Binning of all the histograms.
-	Double_t				fPtAxis[47];					// Pt axis used in all histograms, except PID and Mismatch histograms.
+	Double_t				fPtAxis[57];					// Pt axis used in all histograms, except PID and Mismatch histograms.
 	Int_t					fNPtBins;						// Number of bins in the pt-axis.
+	Int_t					fNEtaBins;						// 
+	Int_t					fNPhiBins;						//
 
 	Double_t				fPtBoundaryPID[6];				// There are five different PID histo's. This array gives the pT range of these histograms.
 	Int_t					fNPtBinsPID[5];					// This array gives the number of pT bins for each of these histograms.
