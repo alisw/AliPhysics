@@ -28,6 +28,9 @@ Float_t etaMax[numberOfSyst] = {0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,1.0,0.6,
 Bool_t kUsePID = kFALSE;
 Bool_t kUseHBTCut = kFALSE;
 Bool_t kUseConversionCut = kFALSE;
+Bool_t kUseResonanceCut = kFALSE;
+Bool_t kUseMomentumDifferenceCut = kFALSE;
+Int_t  kAODbit = 128;
 
 //______________________________________________________________________________
 void runBalanceFunctionPsi(
@@ -101,8 +104,8 @@ void runBalanceFunctionPsi(
       }
       else if((bAOD)&&(!bMCtruth)) {
 	chain = new TChain("aodTree");
-	for(Int_t i = 0; i < 4; i++) {
-	  filename = "/project/alice/pchrist/Data/2011/Set";
+	for(Int_t i = 1; i < 21; i++) {
+	  filename = "/glusterfs/alice1/alice2/pchrist/pp/LHC10c/7TeV/Data/Set";
 	  filename += i; filename += "/AliAOD.root";
 	  chain->Add(filename.Data());
 	}
@@ -197,8 +200,8 @@ void runBalanceFunctionPsi(
     AliVZEROEPSelectionTask* epSelTask = AddTaskVZEROEPSelection();
 
     //Add the BF task (all centralities)
-    gROOT->LoadMacro("AddTaskBalancePsiCentralityTrain.C"); 
-    AliAnalysisTaskBFPsi *task = AddTaskBalancePsiCentralityTrain(0,100,1,"V0M",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1,kUseHBTCut,kUseConversionCut,kUsePID);
+    gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/AddTaskBalancePsiCentralityTrain.C"); 
+    AliAnalysisTaskBFPsi *task = AddTaskBalancePsiCentralityTrain(0,100,kFALSE,kTRUE,kFALSE,"",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1,kUsePID,kUseResonanceCut,kUseHBTCut,kUseConversionCut,kUseMomentumDifferenceCut,kAODbit,kFALSE,"AnalysisResults","Multiplicity");
     
     // enable debug printouts
     //mgr->SetDebugLevel(2);
