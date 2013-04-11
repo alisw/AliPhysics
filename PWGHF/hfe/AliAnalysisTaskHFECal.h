@@ -177,6 +177,8 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH2D                   *fMomDtoE; 
  TH2D                   *fLabelCheck;
  TH2D                   *fgeoFake;
+ TH2D                   *fFakeTrk0;
+ TH2D                   *fFakeTrk1;
  TH2D                   *ftimingEle;
  
  //<----- correction

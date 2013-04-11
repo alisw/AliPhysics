@@ -185,6 +185,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fMomDtoE(0) 
   ,fLabelCheck(0)
   ,fgeoFake(0)
+  ,fFakeTrk0(0)
+  ,fFakeTrk1(0)
   ,ftimingEle(0) 
   //,fnSigEtaCorr(NULL)
 {
@@ -307,6 +309,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fMomDtoE(0)
   ,fLabelCheck(0)
   ,fgeoFake(0)
+  ,fFakeTrk0(0)
+  ,fFakeTrk1(0)
   ,ftimingEle(0)
   //,fnSigEtaCorr(NULL)
 {
@@ -743,7 +747,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		  valdedx[0] = pt; valdedx[1] = nITS; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
 		  //valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nTPCclF; valdedx[9] = m20; valdedx[10] = mcpT;
 		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nmatch; valdedx[9] = m20; valdedx[10] = mcpT;
-		  valdedx[11] = cent; valdedx[12] = charge; valdedx[13] = oppstatus; valdedx[14] = nTPCcl;
+		  valdedx[11] = cent; valdedx[12] = dEdx; valdedx[13] = oppstatus; valdedx[14] = nTPCcl;
                   valdedx[15] = mcele;
                   if(fqahist==1)fEleInfo->Fill(valdedx);
                  
@@ -772,7 +776,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     phoval[3] = iHijing;
     phoval[4] = mcMompT;
    
-    if((fTPCnSigma >= -1.0 && fTPCnSigma <= 3) && mcele>0 && mcPho && mcOrgPi0)
+    if((fTPCnSigma >= -1.0 && fTPCnSigma <= 3) && mcele>-1 && mcPho && mcOrgPi0)
       {
         if(iHijing==1)mcWeight = 1.0; 
         fIncpTMCpho_pi0e_TPC->Fill(phoval,mcWeight);    
@@ -827,11 +831,17 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     fLabelCheck->Fill(pt,idlabel);
     if(mcLabel==0)fgeoFake->Fill(phi,eta);
 
-    if(mcele>0) // select MC electrons
+    if(mcLabel<0 && m20>0.0 && m20<0.3 && fTPCnSigma>-1 && fTPCnSigma<3)
+       {
+        fFakeTrk0->Fill(cent,pt);
+       }
+
+    if(mcele>-1) // select MC electrons
       {
 
           fIncpTMChfeAll->Fill(cent,pt);    
           if(m20>0.0 && m20<0.3)fIncpTMCM20hfeAll->Fill(cent,pt);    
+          if(m20>0.0 && m20<0.3 && fTPCnSigma>-1 && fTPCnSigma<3)fFakeTrk1->Fill(cent,pt);
 
        if(mcBtoE || mcDtoE) // select B->e & D->e
          {
@@ -1091,14 +1101,14 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
  
   // Make common binning
   const Double_t kMinP = 0.;
-  const Double_t kMaxP = 50.;
+  const Double_t kMaxP = 20.;
   //const Double_t kTPCSigMim = 40.;
   //const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, cell, M02, M20, Disp, Centrality, select)
-  Int_t nBins[16] =  {  250,    10,   60,    20,   100,  300,  50,   40,   200, 200,  250, 200,    3,    5, 100,    8};
-  Double_t min[16] = {kMinP,  -0.5, 1.0,  -1.0,  -6.0,    0,   0,    0,   0.0, 0.0,  0.0,   0, -1.5, -0.5,  80, -1.5};
-  Double_t max[16] = {kMaxP,   9.5, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   200, 2.0, 50.0, 100,  1.5,  4.5, 180,  6.5};
+  Int_t nBins[16] =  {  100,     7,  60,    20,    90,  250,   25,   40,   10, 200,  100, 100,  500,    5, 100,    8};
+  Double_t min[16] = {kMinP,  -0.5, 1.0,  -1.0,  -5.0,    0,    0,    0,  0.0, 0.0,  0.0,   0,    0, -0.5,  80, -1.5};
+  Double_t max[16] = {kMaxP,   6.5, 4.0,   1.0,   4.0,  2.5, 0.05,   40,   10, 2.0, 20.0, 100,  100,  4.5, 180,  6.5};
   fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;clsF;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
   if(fqahist==1)fOutputList->Add(fEleInfo);
 
@@ -1267,6 +1277,12 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fgeoFake = new TH2D("fgeoFake","Label==0 eta and phi",628,0,6.28,200,-1,1);
   fOutputList->Add(fgeoFake);
 
+  fFakeTrk0 = new TH2D("fFakeTrk0","fake trakcs",10,0,100,20,0,20);
+  fOutputList->Add(fFakeTrk0);
+
+  fFakeTrk1 = new TH2D("fFakeTrk1","true all e a.f. eID",10,0,100,20,0,20);
+  fOutputList->Add(fFakeTrk1);
+
   ftimingEle = new TH2D("ftimingEle","electron TOF",100,0,20,100,1e-7,1e-6);
   fOutputList->Add(ftimingEle);
 
@@ -1399,16 +1415,18 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     AliKFParticle ge2(*trackAsso, fPDGe2);
     AliKFParticle recg(ge1, ge2);
     
-    if(recg.GetNDF()<1) continue;
-    Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
-    if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
-    
-    //  for v5-03-70-AN comment
+    // vertex 
     AliKFVertex primV(*pVtx);
     primV += recg;
     recg.SetProductionVertex(primV);
     
-    //recg.SetMassConstraint(0,0.0001);
+    // mass const.
+    recg.SetMassConstraint(0,0.0001);
+
+    // check chi2
+    if(recg.GetNDF()<1) continue;
+    Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
+    if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
     
     openingAngle = ge1.GetAngle(ge2);
     if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
