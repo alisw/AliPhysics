@@ -88,7 +88,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Int_t          GetNLMCutMin()                        const { return fNLMCutMin               ; }
   Int_t          GetNLMCutMax()                        const { return fNLMCutMax               ; }	
   
-  void           SetTimeCut(Double_t min, Double_t max)      { fTimeCutMin = min; 
+  void           SetNLMMinEnergy(Int_t i, Float_t min)       { if (i < 3 && i >=0 ) fNLMECutMin[i]  = min   ; }
+  Float_t        GetNLMMinEnergy(Int_t i) const              { if( i < 3 && i >=0 ) return fNLMECutMin[i]   ;  else return 0 ; }
+
+  void           SetTimeCut(Double_t min, Double_t max)      { fTimeCutMin = min;
                                                                fTimeCutMax = max               ; }
   Double_t       GetTimeCutMin()                       const { return fTimeCutMin              ; }
   Double_t       GetTimeCutMax()                       const { return fTimeCutMax              ; }
@@ -109,6 +112,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           SwitchOffOnlySimpleHistoFill()              { fFillOnlySimpleSSHisto = kFALSE ; }
 
   
+  
   //For histograms
   enum mcTypes   { kmcPhoton = 0, kmcConversion = 1, kmcPi0    = 2,  
                    kmcEta    = 3, kmcElectron   = 4, kmcHadron = 5 };
@@ -124,6 +128,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Float_t        fMinDist3;                // One more cut on distance used for acceptance-efficiency study
   Int_t          fNLMCutMin  ;             // Remove clusters/cells with number of local maxima smaller than this value
   Int_t          fNLMCutMax  ;             // Remove clusters/cells with number of local maxima larger than this value
+  Bool_t         fNLMECutMin[3] ;          // Minimum energy of the cluster, depending on nlm.
+
   Double_t       fTimeCutMin  ;            // Remove clusters/cells with time smaller than this value, in ns
   Double_t       fTimeCutMax  ;            // Remove clusters/cells with time larger than this value, in ns
   
@@ -133,6 +139,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Bool_t         fFillSelectClHisto;       // Fill selected cluster histograms
   Bool_t         fFillOnlySimpleSSHisto;   // Fill selected cluster histograms, selected SS histograms
 
+  
   //Only for combination of calorimeter and conversion photons, kIMCaloTracks
   TString        fInputAODGammaConvName;   //  Name of AOD branch with conversion photons
   
@@ -277,7 +284,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,23)
+  ClassDef(AliAnaPi0EbE,24)
 } ;
 
 

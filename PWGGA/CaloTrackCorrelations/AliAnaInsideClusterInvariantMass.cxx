@@ -1768,6 +1768,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     fhNLocMax[0][matched]->Fill(en,nMax);
     
+    Int_t inlm = -1;
+    if     (nMax == 1) inlm = 0;
+    else if(nMax == 2) inlm = 1;
+    else if(nMax > 2 ) inlm = 2;
+    
     if     ( nMax == 1  ) 
     { 
       fhM02NLocMax1[0][matched]->Fill(en,l0) ; 
@@ -2084,7 +2089,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     fhNLocMaxM02Cut[0][matched]->Fill(en,nMax);
     if(IsDataMC()) fhNLocMaxM02Cut[mcindex][matched]->Fill(en,nMax);
-        
+    
+    Float_t splitFracMin = GetCaloPID()->GetSplitEnergyFractionMinimum(inlm) ;
+    
     if     (nMax==1) 
     { 
       fhMassNLocMax1[0][matched]->Fill(en,mass ); 
@@ -2092,20 +2099,20 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       
       // Effect of cuts in mass histograms
 
-      if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum() && !matched)
+      if(!matched)
       {
-        fhMassSplitECutNLocMax1->Fill(en,mass );
         if(m02OK)
         {
           fhMassM02CutNLocMax1->Fill(en,mass);
           fhAsymM02CutNLocMax1->Fill(en,asym );
+          if(splitFrac > splitFracMin) fhMassSplitECutNLocMax1->Fill(en,mass );
         } // m02
       } // split frac
       
       if(m02OK && asyOK)
       {
         fhSplitEFractionAfterCutsNLocMax1[0][matched]->Fill(en,splitFrac);
-        if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum()) fhMassAfterCutsNLocMax1[0][matched]->Fill(en,mass);
+        if(splitFrac > splitFracMin) fhMassAfterCutsNLocMax1[0][matched]->Fill(en,mass);
         
         if(!matched && IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
         {
@@ -2152,20 +2159,20 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       fhAsymNLocMax2[0][matched]->Fill(en,asym );
       
       // Effect of cuts in mass histograms
-      if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum() && !matched)
+      if(!matched)
       {
-        fhMassSplitECutNLocMax2->Fill(en,mass );
         if(m02OK)
         {
           fhMassM02CutNLocMax2->Fill(en,mass);
           fhAsymM02CutNLocMax2->Fill(en,asym );
+          if(splitFrac > splitFracMin) fhMassSplitECutNLocMax2->Fill(en,mass );
         } // m02
       } // split frac
       
       if(m02OK && asyOK)
       {
         fhSplitEFractionAfterCutsNLocMax2[0][matched]->Fill(en,splitFrac);
-        if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum()) fhMassAfterCutsNLocMax2[0][matched]->Fill(en,mass);
+        if(splitFrac >splitFracMin) fhMassAfterCutsNLocMax2[0][matched]->Fill(en,mass);
         
         if(!matched && IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
         {
@@ -2212,20 +2219,20 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       fhAsymNLocMaxN[0][matched]->Fill(en,asym);
       
       // Effect of cuts in mass histograms
-      if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum() && !matched)
+      if(!matched)
       {
-        fhMassSplitECutNLocMaxN->Fill(en,mass );
         if(m02OK)
         {
           fhMassM02CutNLocMaxN->Fill(en,mass);
           fhAsymM02CutNLocMaxN->Fill(en,asym );
+          if(splitFrac > splitFracMin)fhMassSplitECutNLocMaxN->Fill(en,mass );
         } // m02
       } // split frac
       
       if(m02OK && asyOK)
       {
         fhSplitEFractionAfterCutsNLocMaxN[0][matched]->Fill(en,splitFrac);
-        if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum()) fhMassAfterCutsNLocMaxN[0][matched]->Fill(en,mass);
+        if(splitFrac > splitFracMin) fhMassAfterCutsNLocMaxN[0][matched]->Fill(en,mass);
         
         if(!matched && IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
         {
@@ -2278,7 +2285,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         if(asyOK && m02OK)
         {
           fhSplitEFractionAfterCutsNLocMax1[mcindex][matched]->Fill(en,splitFrac);
-          if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum())
+          if(splitFrac > splitFracMin)
             fhMassAfterCutsNLocMax1[mcindex][matched]->Fill(en,mass);
         }
 
@@ -2297,7 +2304,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         if(asyOK && m02OK)
         {
           fhSplitEFractionAfterCutsNLocMax2[mcindex][matched]->Fill(en,splitFrac);
-          if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum())
+          if(splitFrac >splitFracMin)
             fhMassAfterCutsNLocMax2[mcindex][matched]->Fill(en,mass);
         }
         
@@ -2317,7 +2324,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         if(asyOK && m02OK)
         {
           fhSplitEFractionAfterCutsNLocMaxN[mcindex][matched]->Fill(en,splitFrac);
-          if(splitFrac > GetCaloPID()->GetSplitEnergyFractionMinimum())
+          if(splitFrac > splitFracMin )
             fhMassAfterCutsNLocMaxN[mcindex][matched]->Fill(en,mass);
         }
         
