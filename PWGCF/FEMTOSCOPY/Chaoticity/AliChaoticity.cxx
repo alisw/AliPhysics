@@ -1774,6 +1774,8 @@ void AliChaoticity::Exec(Option_t *)
   Float_t qout=0, qside=0, qlong=0;
   Float_t qoutFlat=0, qsideFlat=0, qlongFlat=0;
   Float_t qoutMC=0, qsideMC=0, qlongMC=0;
+  Float_t firstQ=0, secondQ=0, thirdQ=0;
+  Float_t firstQMC=0, secondQMC=0, thirdQMC=0;
   Float_t transK12=0, rapK12=0, transK3=0;
   Int_t transKbin=0, rapKbin=0;
   Float_t q3=0, q3MC=0;
@@ -1951,7 +1953,7 @@ void AliChaoticity::Exec(Option_t *)
 	    //if(transK12 <= 0.35) fEDbin=0;
 	    //else fEDbin=1;
 
-	    for(Int_t rIter=0; rIter<fRVALUES; rIter++){// 3fm to 8fm + 1 Therminator setting
+	    /*for(Int_t rIter=0; rIter<fRVALUES; rIter++){// 3fm to 8fm + 1 Therminator setting
 	      for(Int_t myDampIt=0; myDampIt<kNDampValues; myDampIt++){
 		Int_t denIndex = rIter*kNDampValues + myDampIt;
 		Float_t WInput = MCWeight(ch1,ch2, rIter+kRmin, myDampIt, qinv12MC);
@@ -1960,7 +1962,7 @@ void AliChaoticity::Exec(Option_t *)
 		Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[0].fSmeared->Fill(denIndex, qinv12, WInput);
 		Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[1].fSmeared->Fill(denIndex, qinv12);
 	      }
-	    }
+	      }*/
 	    //fEDbin=0;
 
 	    mcParticle1 = (AliAODMCParticle*)mcArray->At(abs((fEvt)->fTracks[i].fLabel));
@@ -2168,30 +2170,212 @@ void AliChaoticity::Exec(Option_t *)
 	  GetQosl(pVect1, pVect2Flat, qoutFlat, qsideFlat, qlongFlat);
 	}
 
-	if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting cut)
 	
 	///////////////////////////////
 	ch1 = Int_t(((fEvt)->fTracks[i].fCharge + 1)/2.);
 	ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
 	SetFillBins2(fillIndex2, key1, key2, ch1, ch2, bin1, bin2);
 	
-	if(fMCcase && ch1==ch2 && fMbin==0){
-	  for(Int_t rstep=0; rstep<10; rstep++){
-	    Float_t coeff = (rstep)*0.2*(0.18/1.2);
-	    // propagate through B field to r=1.2m
-	    Float_t phi1 = (fEvt)->fTracks[i].fPhi - asin((fEvt)->fTracks[i].fCharge*(0.1*fBfield)*coeff/(fEvt)->fTracks[i].fPt);
-	    if(phi1 > 2*PI) phi1 -= 2*PI;
-	    if(phi1 < 0) phi1 += 2*PI;
-	    Float_t phi2 = (fEvt+en2)->fTracks[j].fPhi - asin((fEvt+en2)->fTracks[j].fCharge*(0.1*fBfield)*coeff/(fEvt+en2)->fTracks[j].fPt);
-	    if(phi2 > 2*PI) phi2 -= 2*PI;
-	    if(phi2 < 0) phi2 += 2*PI;
-	    Float_t deltaphi = phi1 - phi2;
-	    if(deltaphi > PI) deltaphi -= PI;
-	    if(deltaphi < -PI) deltaphi += PI;
-	    ((TH3F*)fOutputList->FindObject("fPairsDetaDPhiDen"))->Fill(rstep, (fEvt)->fTracks[i].fEta-(fEvt+en2)->fTracks[j].fEta, deltaphi);
-	  }
-	}
+	if(fMCcase){
+	  if((fEvt)->fTracks[i].fLabel < (fEvt)->fMCarraySize && (fEvt+en2)->fTracks[j].fLabel < (fEvt+en2)->fMCarraySize){
+	    pVect1MC[0]=sqrt(pow((fEvt)->fMCtracks[abs((fEvt)->fTracks[i].fLabel)].fPtot,2)+pow(fTrueMassPi,2)); 
+	    pVect2MC[0]=sqrt(pow((fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[j].fLabel)].fPtot,2)+pow(fTrueMassPi,2));
+	    pVect1MC[1]=(fEvt)->fMCtracks[abs((fEvt)->fTracks[i].fLabel)].fPx; pVect2MC[1]=(fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[j].fLabel)].fPx;
+	    pVect1MC[2]=(fEvt)->fMCtracks[abs((fEvt)->fTracks[i].fLabel)].fPy; pVect2MC[2]=(fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[j].fLabel)].fPy;
+	    pVect1MC[3]=(fEvt)->fMCtracks[abs((fEvt)->fTracks[i].fLabel)].fPz; pVect2MC[3]=(fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[j].fLabel)].fPz;
+	    qinv12MC = GetQinv(fillIndex2, pVect1MC, pVect2MC);
+	    //
+	    for(Int_t rIter=0; rIter<fRVALUES; rIter++){
+	      for(Int_t myDampIt=0; myDampIt<kNDampValues; myDampIt++){
+		Int_t denIndex = rIter*kNDampValues + myDampIt;
+		Float_t WInput = MCWeight(ch1,ch2, rIter+kRmin, myDampIt, qinv12MC);
+		Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[0].fIdeal->Fill(denIndex, qinv12MC, WInput);
+		Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[1].fIdeal->Fill(denIndex, qinv12MC);
+		Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[0].fSmeared->Fill(denIndex, qinv12, WInput);
+		Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[1].fSmeared->Fill(denIndex, qinv12);
+	      }
+	    }
+	    if(qinv12 > fQcut[qCutBin]) continue;
+	    
+	    /////////////////////////////////////////////////////
+	    // 3-particle MRC
+	    Short_t fillIndex3 = 0;
+	    key1=1; key2=1; key3=1;
+	    Int_t en3 = 2;
 
+	    for (Int_t k=0; k<(fEvt+en3)->fNtracks; k++) {
+	      if((fEvt+en3)->fTracks[k].fLabel < (fEvt+en3)->fMCarraySize){
+		ch3 = Int_t(((fEvt+en3)->fTracks[k].fCharge + 1)/2.);
+		pVect3[0]=(fEvt+en3)->fTracks[k].fEaccepted;
+		pVect3[1]=(fEvt+en3)->fTracks[k].fP[0];
+		pVect3[2]=(fEvt+en3)->fTracks[k].fP[1];
+		pVect3[3]=(fEvt+en3)->fTracks[k].fP[2];
+		qinv13 = GetQinv(0, pVect1, pVect3);
+		qinv23 = GetQinv(0, pVect2, pVect3);
+
+		if(qinv13 > fQcut[qCutBin] || qinv23 > fQcut[qCutBin]) continue;
+
+		
+		pVect3MC[0]=sqrt(pow((fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPtot,2)+pow(fTrueMassPi,2)); 
+		pVect3MC[1]=(fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPx;
+		pVect3MC[2]=(fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPy;
+		pVect3MC[3]=(fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPz;
+		qinv13MC = GetQinv(0, pVect1MC, pVect3MC);
+		qinv23MC = GetQinv(0, pVect2MC, pVect3MC);
+		
+		
+		q3MC = sqrt(pow(qinv12MC,2)+pow(qinv13MC,2)+pow(qinv23MC,2));
+
+		//
+		// The below call to SetFillBins3 will work for all 3-particle terms since all are for fully mixed events. part is set to 1, but only matters for terms 2-4.
+		Bool_t fill2=kFALSE, fill3=kFALSE, fill4=kFALSE;
+		SetFillBins3(fillIndex3, key1, key2, key3, ch1, ch2, ch3, 1, bin1, bin2, bin3, fill2, fill3, fill4);
+	  
+	
+		for(Int_t jj=1; jj<=5; jj++){// term loop
+		  
+		  if(jj==2) {if(!fill2) continue;}//12
+		  if(jj==3) {if(!fill3) continue;}//13
+		  if(jj==4) {if(!fill4) continue;}//23
+		
+		  Float_t WInput=1.0;
+		  Double_t K3=1.0;
+		  ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, 1, jj, firstQ, secondQ, thirdQ);
+		  ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12MC, qinv13MC, qinv23MC, 1, jj, firstQMC, secondQMC, thirdQMC);
+
+		  if(ch1==ch2 && ch1==ch3){// same charge
+		    WInput = MCWeight3D(kTRUE, jj, fFixedLambdaBinMomRes, firstQMC, secondQMC, thirdQMC);
+		    if(jj==1) {
+		      K3 = FSICorrelationTherm2(+1,+1, firstQMC)*FSICorrelationTherm2(+1,+1, secondQMC)*FSICorrelationTherm2(+1,+1, thirdQMC);// GRS
+		      ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm1SC"))->Fill(q3MC, WInput);
+		      ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm1SCden"))->Fill(q3MC);
+		    }else if(jj!=5){
+		      ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm2SC"))->Fill(q3MC, WInput);
+		      ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm2SCden"))->Fill(q3MC);
+		    }
+		  }else {// mixed charge
+		    if(bin1==bin2) {
+		      WInput = MCWeight3D(kFALSE, jj, fFixedLambdaBinMomRes, firstQMC, secondQMC, thirdQMC);
+		      if(jj==1) K3 = FSICorrelationTherm2(+1,+1, firstQMC)*FSICorrelationTherm2(+1,-1, secondQMC)*FSICorrelationTherm2(+1,-1, thirdQMC);// GRS
+		    }else {
+		      if(jj==1 || jj==5) WInput = MCWeight3D(kFALSE, jj, fFixedLambdaBinMomRes, thirdQMC, secondQMC, firstQMC);// thirdQMC is ss
+		      else WInput = MCWeight3D(kFALSE, 6-jj, fFixedLambdaBinMomRes, thirdQMC, secondQMC, firstQMC);
+		    
+		      if(jj==1) K3 = FSICorrelationTherm2(+1,+1, thirdQMC)*FSICorrelationTherm2(+1,-1, secondQMC)*FSICorrelationTherm2(+1,-1, firstQMC);// GRS
+		    }
+		    if(jj==1){
+		      ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm1MC"))->Fill(q3MC, WInput);
+		      ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm1MCden"))->Fill(q3MC);
+		    }else{
+		      if(bin1==bin2){
+			if(jj==2){
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm2MC"))->Fill(q3MC, WInput);
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm2MCden"))->Fill(q3MC);
+			}else if(jj==3){
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm3MC"))->Fill(q3MC, WInput);
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm3MCden"))->Fill(q3MC);
+			}else if(jj==4){
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm4MC"))->Fill(q3MC, WInput);
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm4MCden"))->Fill(q3MC);
+			}else{}
+		      }else{
+			if(jj==2){
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm4MC"))->Fill(q3MC, WInput);
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm4MCden"))->Fill(q3MC);
+			}else if(jj==3){
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm3MC"))->Fill(q3MC, WInput);
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm3MCden"))->Fill(q3MC);
+			}else if(jj==4){
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm2MC"))->Fill(q3MC, WInput);
+			  ((TH1D*)fOutputList->FindObject("fMCWeight3DTerm2MCden"))->Fill(q3MC);
+			}else{}
+		      }
+		      
+		    }
+		  }
+		  
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fIdeal->Fill(firstQMC, secondQMC, thirdQMC, WInput);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fSmeared->Fill(firstQ, secondQ, thirdQ, WInput);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fQW12->Fill(firstQMC, secondQMC, thirdQMC, WInput*firstQMC);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fQW13->Fill(firstQMC, secondQMC, thirdQMC, WInput*secondQMC);
+		  if(jj==1){
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fSumK3->Fill(firstQMC, secondQMC, thirdQMC, WInput/K3);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fEnK3->Fill(firstQMC, secondQMC, thirdQMC, WInput);
+		  }
+		  
+		  if(ch1==ch2 && ch1==ch3){
+		    if(jj==1){
+		      FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
+		      FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
+		    }else if(jj==2) {
+		      FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
+		      FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
+		    }else if(jj==3){ 
+		      FourVectProdTerms(pVect1, pVect3, pVect2, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
+		      FourVectProdTerms(pVect1MC, pVect3MC, pVect2MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
+		    }else if(jj==4) {
+		      FourVectProdTerms(pVect3, pVect1, pVect2, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
+		      FourVectProdTerms(pVect3MC, pVect1MC, pVect2MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
+		    }else {
+		      FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
+		      FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
+		    }
+		    
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1TermsIdeal->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, WInput);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1TermsSmeared->Fill(Qsum1v1, Qsum2, Qsum3v1, WInput);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2TermsIdeal->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, WInput);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2TermsSmeared->Fill(Qsum1v2, Qsum2, Qsum3v2, WInput);
+		    if(jj==1){
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1Q3W->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, WInput*q3);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2Q3W->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, WInput*q3);
+		    }
+		    //
+		    if(qinv12MC > fQLowerCut && qinv13MC > fQLowerCut && qinv23MC > fQLowerCut){
+		      // does not really matter if MC or real data triplets are used to average 1/K3...but better to use umsmeared values
+		      if(jj==1){
+			WInput = MCWeight3D(kTRUE, 1, 25, firstQMC, secondQMC, thirdQMC);// pure 3-pion (lambda=1)
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1TermsSumK3->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, WInput/K3);
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2TermsSumK3->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, WInput/K3);
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1TermsEnK3->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, WInput);
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2TermsEnK3->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, WInput);
+		      }if(jj>1 && jj<=4){
+			Float_t InteractingQ=qinv12MC;
+			Double_t K2 = FSICorrelationTherm2(+1,+1, InteractingQ);// K2 from Therminator source
+			WInput = MCWeight3D(kTRUE, jj, 25, firstQMC, secondQMC, thirdQMC);// pure 2-pion (lambda=1)
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1TermsSumK2->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, WInput/K2);
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2TermsSumK2->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, WInput/K2);
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1TermsEnK2->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, WInput);
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2TermsEnK2->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, WInput);
+		      }
+		    }
+
+		  }// same charges
+		
+		}// jj
+	      }// MCarray check
+	    }// 3rd particle
+	  }// MCarray check
+	    
+	  if(ch1==ch2 && fMbin==0){
+	    for(Int_t rstep=0; rstep<10; rstep++){
+	      Float_t coeff = (rstep)*0.2*(0.18/1.2);
+	      // propagate through B field to r=1.2m
+	      Float_t phi1 = (fEvt)->fTracks[i].fPhi - asin((fEvt)->fTracks[i].fCharge*(0.1*fBfield)*coeff/(fEvt)->fTracks[i].fPt);
+	      if(phi1 > 2*PI) phi1 -= 2*PI;
+	      if(phi1 < 0) phi1 += 2*PI;
+	      Float_t phi2 = (fEvt+en2)->fTracks[j].fPhi - asin((fEvt+en2)->fTracks[j].fCharge*(0.1*fBfield)*coeff/(fEvt+en2)->fTracks[j].fPt);
+	      if(phi2 > 2*PI) phi2 -= 2*PI;
+	      if(phi2 < 0) phi2 += 2*PI;
+	      Float_t deltaphi = phi1 - phi2;
+	      if(deltaphi > PI) deltaphi -= PI;
+	      if(deltaphi < -PI) deltaphi += PI;
+	      ((TH3F*)fOutputList->FindObject("fPairsDetaDPhiDen"))->Fill(rstep, (fEvt)->fTracks[i].fEta-(fEvt+en2)->fTracks[j].fEta, deltaphi);
+	    }
+	  }
+	  
+	}// fMCcase
+	
+	if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting cut)
 	if(ch1 == ch2){
 	  if(!AcceptPair((fEvt)->fTracks[i], (fEvt+en2)->fTracks[j])) {
 	    fPairSplitCut[1][i]->AddAt('1',j);
@@ -2537,12 +2721,12 @@ void AliChaoticity::Exec(Option_t *)
 	  pVect1[3] = (fEvt)->fPairsSE[p1].fP1[2]; pVect2[3] = (fEvt)->fPairsSE[p1].fP2[2];
 	  index1 = (fEvt)->fPairsSE[p1].fIndex1; index2 = (fEvt)->fPairsSE[p1].fIndex2;
 	  key1 = (fEvt)->fPairsSE[p1].fKey1; key2 = (fEvt)->fPairsSE[p1].fKey2;
-	  pVect1MC[1] = (fEvt)->fPairsSE[p1].fP1MC[0]; pVect2MC[1] = (fEvt)->fPairsSE[p1].fP2MC[0]; 
+	  /*pVect1MC[1] = (fEvt)->fPairsSE[p1].fP1MC[0]; pVect2MC[1] = (fEvt)->fPairsSE[p1].fP2MC[0]; 
 	  pVect1MC[2] = (fEvt)->fPairsSE[p1].fP1MC[1]; pVect2MC[2] = (fEvt)->fPairsSE[p1].fP2MC[1];
 	  pVect1MC[3] = (fEvt)->fPairsSE[p1].fP1MC[2]; pVect2MC[3] = (fEvt)->fPairsSE[p1].fP2MC[2];
 	  pVect1MC[0] = sqrt(pow(pVect1MC[1],2)+pow(pVect1MC[2],2)+pow(pVect1MC[3],2)+pow(fTrueMassPi,2));
 	  pVect2MC[0] = sqrt(pow(pVect2MC[1],2)+pow(pVect2MC[2],2)+pow(pVect2MC[3],2)+pow(fTrueMassPi,2));
-	  	    
+	  */
 	  qinv12 = (fEvt)->fPairsSE[p1].fQinv;
 	}
 	if(en1case==1){
@@ -2554,12 +2738,12 @@ void AliChaoticity::Exec(Option_t *)
 	  pVect1[3] = (fEvt)->fPairsME[p1].fP1[2]; pVect2[3] = (fEvt)->fPairsME[p1].fP2[2];
 	  index1 = (fEvt)->fPairsME[p1].fIndex1; index2 = (fEvt)->fPairsME[p1].fIndex2;
 	  key1 = (fEvt)->fPairsME[p1].fKey1; key2 = (fEvt)->fPairsME[p1].fKey2;
-	  pVect1MC[1] = (fEvt)->fPairsME[p1].fP1MC[0]; pVect2MC[1] = (fEvt)->fPairsME[p1].fP2MC[0]; 
+	  /*pVect1MC[1] = (fEvt)->fPairsME[p1].fP1MC[0]; pVect2MC[1] = (fEvt)->fPairsME[p1].fP2MC[0]; 
 	  pVect1MC[2] = (fEvt)->fPairsME[p1].fP1MC[1]; pVect2MC[2] = (fEvt)->fPairsME[p1].fP2MC[1];
 	  pVect1MC[3] = (fEvt)->fPairsME[p1].fP1MC[2]; pVect2MC[3] = (fEvt)->fPairsME[p1].fP2MC[2];
 	  pVect1MC[0] = sqrt(pow(pVect1MC[1],2)+pow(pVect1MC[2],2)+pow(pVect1MC[3],2)+pow(fTrueMassPi,2));
 	  pVect2MC[0] = sqrt(pow(pVect2MC[1],2)+pow(pVect2MC[2],2)+pow(pVect2MC[3],2)+pow(fTrueMassPi,2));
-
+	  */
 	  qinv12 = (fEvt)->fPairsME[p1].fQinv;
 	}
 
@@ -2724,7 +2908,7 @@ void AliChaoticity::Exec(Option_t *)
 	      }*/
 	    
 	    
-	    if(fMCcase){
+	    /*if(fMCcase){
 	      pVect3MC[1] = (fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[k].fLabel)].fPx;
 	      pVect3MC[2] = (fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[k].fLabel)].fPy;
 	      pVect3MC[3] = (fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[k].fLabel)].fPz;
@@ -2733,7 +2917,7 @@ void AliChaoticity::Exec(Option_t *)
 	      qinv13MC = GetQinv(0, pVect1MC, pVect3MC);
 	      qinv23MC = GetQinv(0, pVect2MC, pVect3MC);
 	      q3MC = sqrt(pow(qinv12MC,2) + pow(qinv13MC,2) + pow(qinv23MC,2));
-	    }
+	      }*/
 	    
 	  
 	    // if all three pair cuts are the same then the case (config=2 && term=2) never reaches here.
@@ -2742,8 +2926,8 @@ void AliChaoticity::Exec(Option_t *)
 	    transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
 	    //if(transK3<0.35) fEDbin=0;
 	    //else fEDbin=1;
-	    Float_t firstQ=0, secondQ=0, thirdQ=0;
-	    Float_t firstQMC=0, secondQMC=0, thirdQMC=0;
+	    firstQ=0; secondQ=0; thirdQ=0;
+	    //firstQMC=0; secondQMC=0; thirdQMC=0;
 	    
 	    //
 	    
@@ -2753,7 +2937,7 @@ void AliChaoticity::Exec(Option_t *)
 	      
 	      if(fillIndex3 <= 2){
 		ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, 0, 1, firstQ, secondQ, thirdQ);
-		if(fillIndex3==0 && fMCcase) ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12MC, qinv13MC, qinv23MC, 0, 1, firstQMC, secondQMC, thirdQMC);
+		//if(fillIndex3==0 && fMCcase) ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12MC, qinv13MC, qinv23MC, 0, 1, firstQMC, secondQMC, thirdQMC);
 		Float_t WInput = 1.0;
 		if(fGenerateSignal && ch1==ch2 && ch1==ch3) WInput = MCWeight3D(kTRUE, 1, fFixedLambdaBinMomRes, firstQ, secondQ, thirdQ);
 		////
@@ -2769,7 +2953,7 @@ void AliChaoticity::Exec(Option_t *)
 		}		
 		//////////////////////////////////////
 		// Momentum resolution and <K3> calculation
-		if(fillIndex3==0 && fMCcase){
+		/*if(fillIndex3==0 && fMCcase){
 		 
 		  WInput = 1.0;
 		  Double_t K3=1.0;
@@ -2819,7 +3003,7 @@ void AliChaoticity::Exec(Option_t *)
 		    }
 		  }
 		}// fMCcase
-		
+		*/
 	      }
 	      
 	    }else if(config==2){// 12, 13, 23
@@ -2835,7 +3019,7 @@ void AliChaoticity::Exec(Option_t *)
 	
 		if(fillIndex3 <= 2){
 		  ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, part, jj, firstQ, secondQ, thirdQ);
-		  if(fillIndex3==0 && fMCcase) ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12MC, qinv13MC, qinv23MC, part, jj, firstQMC, secondQMC, thirdQMC);
+		  //if(fillIndex3==0 && fMCcase) ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12MC, qinv13MC, qinv23MC, part, jj, firstQMC, secondQMC, thirdQMC);
 		  Float_t WInput = 1.0;
 		  if(fGenerateSignal && ch1==ch2 && ch1==ch3) WInput = MCWeight3D(kTRUE, jj, fFixedLambdaBinMomRes, firstQ, secondQ, thirdQ);
 		  ////
@@ -2845,24 +3029,24 @@ void AliChaoticity::Exec(Option_t *)
 		    if(part==1){// P11T2
 		      if(jj==2) {
 			FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
-			if(fMCcase) FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
+			//if(fMCcase) FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
 		      }if(jj==3){ 
 			FourVectProdTerms(pVect1, pVect3, pVect2, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
-			if(fMCcase) FourVectProdTerms(pVect1MC, pVect3MC, pVect2MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
+			//if(fMCcase) FourVectProdTerms(pVect1MC, pVect3MC, pVect2MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
 		      }if(jj==4) {
 			FourVectProdTerms(pVect3, pVect1, pVect2, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
-			if(fMCcase) FourVectProdTerms(pVect3MC, pVect1MC, pVect2MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
+			//if(fMCcase) FourVectProdTerms(pVect3MC, pVect1MC, pVect2MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
 		      }		    
 		    }else{// P12T1
 		      if(jj==2) {
 			FourVectProdTerms(pVect1, pVect3, pVect2, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
-			if(fMCcase) FourVectProdTerms(pVect1MC, pVect3MC, pVect2MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
+			//if(fMCcase) FourVectProdTerms(pVect1MC, pVect3MC, pVect2MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
 		      }if(jj==3) {
 			FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
-			if(fMCcase) FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
+			//if(fMCcase) FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
 		      }if(jj==4) {
 			FourVectProdTerms(pVect2, pVect1, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
-			if(fMCcase) FourVectProdTerms(pVect2MC, pVect1MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
+			//if(fMCcase) FourVectProdTerms(pVect2MC, pVect1MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
 		      }		    
 		    }
 		    if(!fMCcase){
@@ -2872,7 +3056,7 @@ void AliChaoticity::Exec(Option_t *)
 		  }
 		  //////////////////////////////////////
 		  // Momentum resolution calculation
-		  if(fillIndex3==0 && fMCcase){
+		  /*if(fillIndex3==0 && fMCcase){
 		    WInput = 1.0;
 		    if(ch1==ch2 && ch1==ch3){// same charge
 		      WInput = MCWeight3D(kTRUE, jj, fFixedLambdaBinMomRes, firstQMC, secondQMC, thirdQMC);
@@ -2919,7 +3103,7 @@ void AliChaoticity::Exec(Option_t *)
 		      }
 		    }
 		  }// fMCcase
-		  
+		  */
 		}
 	      }
 	      
@@ -2938,9 +3122,9 @@ void AliChaoticity::Exec(Option_t *)
 	      
 	      if(ch1==ch2 && ch1==ch3 && fillIndex3==0) {
 		FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
-		if(fMCcase==kFALSE) ((TH3D*)fOutputList->FindObject("fKt3DistTerm5"))->Fill(fMbin+1, transK3, q3);
+		if(!fMCcase) ((TH3D*)fOutputList->FindObject("fKt3DistTerm5"))->Fill(fMbin+1, transK3, q3);
 	      }	      
-	      if(fMCcase && ch1==ch2 && ch1==ch3 && fillIndex3==0) FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);
+	      //if(fMCcase && ch1==ch2 && ch1==ch3 && fillIndex3==0) FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);
 	      
 	      if(fillIndex3 <= 2){
 		ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, part, 5, firstQ, secondQ, thirdQ);
@@ -2951,7 +3135,7 @@ void AliChaoticity::Exec(Option_t *)
 		}
 		//////////////////////////////////////
 		// Momentum resolution calculation
-		if(fillIndex3==0 && fMCcase){
+		/*if(fillIndex3==0 && fMCcase){
 		  ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12MC, qinv13MC, qinv23MC, part, 5, firstQMC, secondQMC, thirdQMC);
 		  
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fIdeal->Fill(firstQMC, secondQMC, thirdQMC);
@@ -2964,7 +3148,7 @@ void AliChaoticity::Exec(Option_t *)
 		    
 		  }
 		}// fMCcase
-		
+		*/
 	      }
 	     
 	      if(fillIndex3 !=0) continue;// only calculate TPN for pi-pi-pi
@@ -3052,12 +3236,12 @@ void AliChaoticity::Exec(Option_t *)
 	      
 	      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNorm->Fill(Qsum1v1, Qsum2, Qsum3v1, weightTotal);
 	      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNorm->Fill(Qsum1v2, Qsum2, Qsum3v2, weightTotal);
-	      if(fMCcase){
+	      /*if(fMCcase){
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNormIdeal->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, weightTotal);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNormSmeared->Fill(Qsum1v1, Qsum2, Qsum3v1, weightTotal);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNormIdeal->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, weightTotal);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNormSmeared->Fill(Qsum1v2, Qsum2, Qsum3v2, weightTotal);
-	      }
+		}*/
 		  
 		  
 	      // Save cpu time and memory by skipping r3 denominator calculation below.  den errors are negligible compared to num errors.
@@ -3405,6 +3589,7 @@ void AliChaoticity::SetFillBins3(Short_t fi, Short_t key1, Short_t key2, Short_t
   
   
   // seSS, seSK, SE_keysum only used to determine which terms to fill (only used for terms 2-4)
+  // part only matters for terms 2-4
   Bool_t seSS=kFALSE;
   Bool_t seSK=kFALSE;
   Short_t seKeySum=0;// only used for pi-k-p case
