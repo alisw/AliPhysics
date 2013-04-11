@@ -25,6 +25,7 @@
 #include <TTree.h>
 #include <Riostream.h> 
 #include <TMath.h>
+#include <TFile.h>
 
 #include "AliITSUTrackerGlo.h"
 #include "AliESDEvent.h"
@@ -39,7 +40,15 @@
 using namespace AliITSUAux;
 using namespace TMath;
 
+#define _FILL_CONTROL_HISTOS_
 
+#ifdef  _FILL_CONTROL_HISTOS_
+//
+TObjArray* cHistoArr;
+enum {kHResY=0,kHResYP=10,kHResZ=20,kHResZP=30,kHChi2Cl=40};
+enum {kHistosPhase=100};
+//
+#endif
 
 //----------------- tmp stuff -----------------
 
@@ -83,6 +92,20 @@ AliITSUTrackerGlo::~AliITSUTrackerGlo()
  //  
   delete[] fClInfo;
   //
+#ifdef  _FILL_CONTROL_HISTOS_
+  if (cHistoArr) {
+    TFile* ctrOut = TFile::Open("itsuControlHistos.root","recreate");
+    ctrOut->cd();
+    AliInfo("Storing control histos");
+    cHistoArr->Print();
+    //    ctrOut->WriteObject(cHistoArr,"controlH","kSingleKey");
+    cHistoArr->Write();
+    ctrOut->Close();
+    delete ctrOut;
+    cHistoArr = 0;
+  }
+#endif 
+  //
 }
 
 //_________________________________________________________________________
@@ -124,6 +147,58 @@ void AliITSUTrackerGlo::CreateDefaultTrackCond()
 Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
 {
   //
+  SetTrackingPhase(kClus2Tracks);
+  //
+#ifdef  _FILL_CONTROL_HISTOS_
+  //
+  if (!cHistoArr) { // create control histos
+    const int kNResDef=7;
+    const double kResDef[kNResDef]={0.05,0.05,0.3, 0.05,1,0.5,1.5};
+    cHistoArr = new TObjArray();
+    cHistoArr->SetOwner(kTRUE);
+    const double ptMax=10;
+    const double plMax=10;
+    const double chiMax=100;
+    const int nptbins=50;
+    const int nresbins=400;
+    const int nplbins=50;
+    const int nchbins=200;
+    int nblr = fITS->GetNLayersActive();
+    TString ttl;
+    for (int stp=0;stp<kNTrackingPhases;stp++) {
+      for (int ilr=0;ilr<nblr;ilr++) {
+	int hoffs = stp*kHistosPhase + ilr;
+	double mxdf = ilr>=kNResDef ? kResDef[kNResDef-1] : kResDef[ilr];
+	ttl = Form("S%d_residY%d",stp,ilr);
+	TH2F* hdy = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
+	cHistoArr->AddAtAndExpand(hdy,hoffs + kHResY);
+	hdy->SetDirectory(0);
+	//
+	ttl = Form("S%d_residYPull%d",stp,ilr);	
+	TH2F* hdyp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
+	cHistoArr->AddAtAndExpand(hdyp,hoffs + kHResYP);
+	hdyp->SetDirectory(0);
+	//
+	ttl = Form("S%d_residZ%d",stp,ilr);	
+	TH2F* hdz = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
+	cHistoArr->AddAtAndExpand(hdz,hoffs + kHResZ);
+	hdz->SetDirectory(0);
+	//
+	ttl = Form("S%d_residZPull%d",stp,ilr);		
+	TH2F* hdzp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
+	hdzp->SetDirectory(0);
+	cHistoArr->AddAtAndExpand(hdzp,hoffs + kHResZP);
+	//
+	ttl = Form("S%d_chi2Cl%d",stp,ilr);		
+	TH2F* hchi = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
+	hchi->SetDirectory(0);
+	cHistoArr->AddAtAndExpand(hchi,hoffs + kHChi2Cl);
+      }
+    }
+  }
+  //
+#endif
+
   TObjArray *trackConds = 0;
   //
   fCountProlongationTrials = 0;
@@ -131,7 +206,6 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   fCountITSout = 0;
   fCountITSrefit = 0;
   //
-  SetTrackingPhase(kClus2Tracks);
   ResetSeedsPool();
   int nTrESD = esdEv->GetNumberOfTracks();
   AliInfo(Form("Will try to find prolongations for %d tracks",nTrESD));
@@ -739,6 +813,20 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   double dy = cl->GetY()-track->GetY();
   double dz = cl->GetZ()-track->GetZ();
   //
+#ifdef  _FILL_CONTROL_HISTOS_
+  int hcOffs = fTrackPhase*kHistosPhase + lr;
+  double htrPt=-1;
+  if (goodCl && cHistoArr && track->GetChi2Penalty()<1e-5 && !track->ContainsFake()/* && track->Charge()>0*/) {
+    htrPt = track->Pt();
+    ((TH2*)cHistoArr->At(kHResY+hcOffs))->Fill(htrPt,dy);
+    ((TH2*)cHistoArr->At(kHResZ+hcOffs))->Fill(htrPt,dz);
+    double errY = track->GetSigmaY2();
+    double errZ = track->GetSigmaZ2();
+    if (errY>0) ((TH2*)cHistoArr->At(kHResYP+hcOffs))->Fill(htrPt,dy/Sqrt(errY));
+    if (errZ>0) ((TH2*)cHistoArr->At(kHResZP+hcOffs))->Fill(htrPt,dz/Sqrt(errZ));
+  }
+#endif  
+  //
   double dy2 = dy*dy;
   double tol2 = (track->GetSigmaY2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(lr))*
     AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY(); // RS TOOPTIMIZE
@@ -765,6 +853,13 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   Double_t p[2]={cl->GetY(), cl->GetZ()};
   Double_t cov[3]={cl->GetSigmaY2(), cl->GetSigmaYZ(), cl->GetSigmaZ2()};
   double chi2 = track->GetPredictedChi2(p,cov);
+  //
+#ifdef  _FILL_CONTROL_HISTOS_
+  if (htrPt>0) {
+    ((TH2*)cHistoArr->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2);
+  }
+#endif
+  //
   if (chi2>AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr)) {
     if (goodCl && AliDebugLevelClass()>2) {
       AliDebug(2,Form("Lost good cl: Chi2=%e > Chi2Max=%e |dy: %+.3e dz: %+.3e |ESDtrack#%d (MClb:%d)\n",
@@ -1024,10 +1119,33 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
 	//trc->GetWinner()->Print("etp");
 	return kFALSE;
       }
-      if (!tmpTr.Update(clus)) {
+      //
+#ifdef  _FILL_CONTROL_HISTOS_
+      int hcOffs = fTrackPhase*kHistosPhase + ilrA;
+      double htrPt=-1;
+      if (cHistoArr && trc->GetLabel()>=0/* && trc->Charge()>0*/) {
+	htrPt = tmpTr.Pt();
+	double dy = clus->GetY()-tmpTr.GetY();
+	double dz = clus->GetZ()-tmpTr.GetZ();
+	((TH2*)cHistoArr->At(kHResY+hcOffs))->Fill(htrPt,dy);
+	((TH2*)cHistoArr->At(kHResZ+hcOffs))->Fill(htrPt,dz);
+	double errY = tmpTr.GetSigmaY2();
+	double errZ = tmpTr.GetSigmaZ2();
+	if (errY>0) ((TH2*)cHistoArr->At(kHResYP+hcOffs))->Fill(htrPt,dy/Sqrt(errY));
+	if (errZ>0) ((TH2*)cHistoArr->At(kHResZP+hcOffs))->Fill(htrPt,dz/Sqrt(errZ));
+      }
+#endif  
+      //
+      double chi2;
+      if ( (chi2=tmpTr.Update(clus))<0 ) {
 	AliDebug(2,Form("Failed on Update | ESDtrack#%d (MClb:%d)",fCurrESDtrack->GetID(),fCurrESDtrMClb));		
 	return kFALSE;
       }
+#ifdef  _FILL_CONTROL_HISTOS_
+      if (htrPt>0) {
+	((TH2*)cHistoArr->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2);
+      }
+#endif 
       //printf("AfterRefit: "); tmpTr.AliExternalTrackParam::Print();
       if (stopAtLastCl && ++clCount==ncl) return kTRUE; // it was requested to not propagate after last update
     }

@@ -25,7 +25,7 @@ class TTree;
 class AliITSUTrackerGlo : public AliTracker {
 
   public:
-  enum {kClus2Tracks,kPropBack,kRefitInw};   // tracking phases
+  enum {kClus2Tracks,kPropBack,kRefitInw,kNTrackingPhases};   // tracking phases
   enum { // info from track extrapolation to layer for cluster check
     kTrXIn ,kTrYIn ,kTrZIn ,kTrPhiIn , // entrance (outer) point on the layer from above 
     kTrXOut,kTrYOut,kTrZOut,kTrPhiOut, // exit (inner) point on the layer

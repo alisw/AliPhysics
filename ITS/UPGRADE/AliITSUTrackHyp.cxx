@@ -111,15 +111,15 @@ Bool_t AliITSUTrackHyp::Update(const AliCluster* /*c*/, Double_t /*chi2*/, Int_t
 }
 
 //__________________________________________________________________
-Bool_t AliITSUTrackHyp::Update(const AliCluster* cl)
+Double_t AliITSUTrackHyp::Update(const AliCluster* cl)
 {
   // update with cluster
   Double_t p[2]={cl->GetY(), cl->GetZ()};
   Double_t cov[3]={cl->GetSigmaY2(), cl->GetSigmaYZ(), cl->GetSigmaZ2()};
   double chi2 = AliExternalTrackParam::GetPredictedChi2(p,cov);
-  if (!AliExternalTrackParam::Update(p,cov)) return kFALSE;
+  if (!AliExternalTrackParam::Update(p,cov)) return -1;
   SetChi2(GetChi2()+chi2);
-  return kTRUE;
+  return chi2;
 }
 
 //__________________________________________________________________
