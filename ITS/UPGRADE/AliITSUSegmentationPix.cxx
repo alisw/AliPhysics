@@ -525,11 +525,11 @@ void AliITSUSegmentationPix::Print(Option_t* option) const
   //
   if (fDiodShiftMatDim) {
     double dx,dz=0;
-    printf("Diod shift periodicity pattern (X,Z[row][col])\n");
+    printf("Diod shift (fraction of pitch) periodicity pattern (X,Z[row][col])\n");
     for (int irow=0;irow<fDiodShiftMatNRow;irow++) {
       for (int icol=0;icol<fDiodShiftMatNCol;icol++) {	
 	GetDiodShift(irow,icol,dx,dz);
-	printf("%.1f/%.1f |",kmc*dx,kmc*dz);
+	printf("%.1f/%.1f |",dx,dz);
       }
       printf("\n");
     }
