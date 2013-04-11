@@ -614,46 +614,66 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
       Double_t eta  = esdtrack->Eta();
       Double_t phi  = esdtrack->Phi();
       Int_t    sign = esdtrack->Charge() > 0 ? 1 : -1;
-      miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
+      if (IsTrigger(eta,pt)||IsAssociated(eta,pt))
+        miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
     }
   } else {
     TList *list = InputEvent()->GetList();
     TClonesArray *tcaTracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracksName));
 
-    if(!tcaTracks){
+    if (!tcaTracks){
       AliError("Ptr to tcaTracks zero");
       return;
     }
 
     const Int_t ntracks = tcaTracks->GetEntries();
+    Int_t nGoodTracks = 0;
+    // count good tracks
+    for (Int_t itrack = 0; itrack < ntracks; itrack++) {
+      AliVTrack *vtrack = static_cast<AliVTrack*>(tcaTracks->At(itrack));
+      if (!vtrack) {
+        AliError(Form("ERROR: Could not retrieve vtrack %d",itrack));
+        continue;
+      }
+      Double_t pt   = vtrack->Pt();
+      Double_t eta  = vtrack->Eta();
+      if (IsTrigger(eta,pt)||IsAssociated(eta,pt))
+        nGoodTracks++;
+    }
     if (miniEvt)
-      miniEvt->reserve(ntracks);
+      miniEvt->reserve(nGoodTracks);
     else {
       AliError("Ptr to miniEvt zero");
       return;
     }
-
+    // fill good tracks into minievent
     for (Int_t itrack = 0; itrack < ntracks; itrack++) {
       AliVTrack *vtrack = static_cast<AliVTrack*>(tcaTracks->At(itrack));
       if (!vtrack) {
-        AliError(Form("ERROR: Could not retrieve track %d",itrack));
+        AliError(Form("ERROR: Could not retrieve vtrack %d",itrack));
         continue;
       }
       Double_t pt   = vtrack->Pt();
       Double_t eta  = vtrack->Eta();
       Double_t phi  = vtrack->Phi();
       Int_t    sign = vtrack->Charge() > 0 ? 1 : -1;
-      miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
+      if (IsTrigger(eta,pt)||IsAssociated(eta,pt))
+        miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
     }
   }
-
+  
   if (fFillMuons) {
     // count good muons
     Int_t nGoodMuons = 0;
     for (Int_t iMu = 0; iMu<fESD->GetNumberOfMuonTracks(); iMu++) {
       AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iMu);
       if (muonTrack) {
-          if (IsGoodMUONtrack(*muonTrack)) nGoodMuons++;
+        if (!IsGoodMUONtrack(*muonTrack))
+          continue;
+        Double_t ptMu   = muonTrack->Pt();
+        Double_t etaMu  = muonTrack->Eta();
+        if ((IsTrigger(etaMu,ptMu)||IsAssociated(etaMu,ptMu)) && (IsGoodMUONtrack(*muonTrack)))
+          nGoodMuons++;
       }
     }
     miniEvt->reserve(miniEvt->size()+nGoodMuons);
@@ -667,7 +687,8 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
         Double_t etaMu  = muonTrack->Eta();
         Double_t phiMu  = muonTrack->Phi();
         Int_t    signMu = muonTrack->Charge() > 0 ? 1 : -1;
-        miniEvt->push_back(AliMiniTrack(ptMu, etaMu, phiMu, signMu));
+        if (IsTrigger(etaMu,ptMu)||IsAssociated(etaMu,ptMu))
+          miniEvt->push_back(AliMiniTrack(ptMu, etaMu, phiMu, signMu));
       }
     }
   }
@@ -698,13 +719,9 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
       if (!trkOK)
         continue;
       Double_t pt = aodtrack->Pt();
-      Bool_t ptOK = pt >= fPtMin && pt < fPtMax;
-      if (!ptOK)
-        continue;
       Double_t eta = aodtrack->Eta();
-      if (TMath::Abs(eta) > fEtaMax)
-        continue;
-      nSelTrax++;
+      if (IsTrigger(eta,pt)||IsAssociated(eta,pt))
+        nSelTrax++;
     }
 
     if (miniEvt)
@@ -728,16 +745,11 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
       if (!trkOK)
         continue;
       Double_t pt = aodtrack->Pt();
-      Bool_t ptOK = pt >= fPtMin && pt < fPtMax;
-      if (!ptOK)
-        continue;
       Double_t eta  = aodtrack->Eta();
-      if (TMath::Abs(eta) > fEtaMax)
-        continue;
-      
       Double_t phi  = aodtrack->Phi();
       Int_t    sign = aodtrack->Charge() > 0 ? 1 : -1;
-      miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
+      if (IsTrigger(eta,pt)||IsAssociated(eta,pt))
+        miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
     }
   } else {
     TList *list = InputEvent()->GetList();
@@ -749,13 +761,8 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
     }
 
     const Int_t ntracks = tcaTracks->GetEntries();
-    if (miniEvt)
-      miniEvt->reserve(ntracks);
-    else {
-      AliError("Ptr to miniEvt zero");
-      return;
-    }
-
+    Int_t nGoodTracks = 0;
+    // count good tracks
     for (Int_t itrack = 0; itrack < ntracks; itrack++) {
       AliVTrack *vtrack = static_cast<AliVTrack*>(tcaTracks->At(itrack));
       if (!vtrack) {
@@ -764,11 +771,28 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
       }
       Double_t pt   = vtrack->Pt();
       Double_t eta  = vtrack->Eta();
-      if (TMath::Abs(eta) > fEtaMax)
+      if (IsTrigger(eta,pt)||IsAssociated(eta,pt))
+        nGoodTracks++;
+    }
+    if (miniEvt)
+      miniEvt->reserve(nGoodTracks);
+    else {
+      AliError("Ptr to miniEvt zero");
+      return;
+    }
+    // fill good tracks into minievent
+    for (Int_t itrack = 0; itrack < ntracks; itrack++) {
+      AliVTrack *vtrack = static_cast<AliVTrack*>(tcaTracks->At(itrack));
+      if (!vtrack) {
+        AliError(Form("ERROR: Could not retrieve vtrack %d",itrack));
         continue;
+      }
+      Double_t pt   = vtrack->Pt();
+      Double_t eta  = vtrack->Eta();
       Double_t phi  = vtrack->Phi();
       Int_t    sign = vtrack->Charge() > 0 ? 1 : -1;
-      miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
+      if (IsTrigger(eta,pt)||IsAssociated(eta,pt))
+        miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
     }
   }
 
@@ -777,8 +801,12 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
     Int_t nGoodMuons = 0;
     for (Int_t iMu = 0; iMu<fAOD->GetNumberOfTracks(); iMu++) {
       AliAODTrack* muonTrack = fAOD->GetTrack(iMu);
-      if(muonTrack) {
-        if (IsGoodMUONtrack(*muonTrack)) 
+      if (muonTrack) {
+        if (!IsGoodMUONtrack(*muonTrack))
+          continue;
+        Double_t ptMu   = muonTrack->Pt();
+        Double_t etaMu  = muonTrack->Eta();
+        if ((IsTrigger(etaMu,ptMu)||IsAssociated(etaMu,ptMu)) && (IsGoodMUONtrack(*muonTrack)))
           nGoodMuons++;
       }
     }
@@ -793,7 +821,8 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
         Double_t etaMu  = muonTrack->Eta();
         Double_t phiMu  = muonTrack->Phi();
         Int_t    signMu = muonTrack->Charge() > 0 ? 1 : -1;
-        miniEvt->push_back(AliMiniTrack(ptMu, etaMu, phiMu, signMu));
+        if (IsTrigger(etaMu,ptMu)||IsAssociated(etaMu,ptMu))
+          miniEvt->push_back(AliMiniTrack(ptMu, etaMu, phiMu, signMu));
       }
     }
   }
@@ -876,45 +905,40 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
     
     // brief intermezzo in the trigger particle loop: do associated particle QA here in order to avoid double counting
     if (pairing == kSameEvt) {
-      if (etaa>fEtaALo && etaa<fEtaAHi) {
-        Int_t bbin = fHPtAss->FindBin(pta);
-        if (!(fHPtAss->IsBinOverflow(bbin) || fHPtAss->IsBinUnderflow(bbin))) {
-          Double_t aQAWght = 1.0;
-          if (fHEffA) {
-            const Int_t nEffDimA = fHEffA->GetNdimensions();
-            Int_t effBinA[nEffDimA];
-            effBinA[0] = fHEffA->GetAxis(0)->FindBin(etaa);
-            effBinA[1] = fHEffA->GetAxis(1)->FindBin(pta);
-            effBinA[2] = fHEffA->GetAxis(2)->FindBin(fCentrality);
-            effBinA[3] = fHEffA->GetAxis(3)->FindBin(fZVertex);
-            if (nEffDimA>4) {
-              effBinA[4] = fHEffA->GetAxis(4)->FindBin(phia);
-              if (nEffDimA>5) {
-                effBinA[5] = fHEffA->GetAxis(5)->FindBin(sgna);
-              }
+      if (IsAssociated(etaa,pta)) {
+        Double_t aQAWght = 1.0;
+        if (fHEffA) {
+          const Int_t nEffDimA = fHEffA->GetNdimensions();
+          Int_t effBinA[nEffDimA];
+          effBinA[0] = fHEffA->GetAxis(0)->FindBin(etaa);
+          effBinA[1] = fHEffA->GetAxis(1)->FindBin(pta);
+          effBinA[2] = fHEffA->GetAxis(2)->FindBin(fCentrality);
+          effBinA[3] = fHEffA->GetAxis(3)->FindBin(fZVertex);
+          if (nEffDimA>4) {
+            effBinA[4] = fHEffA->GetAxis(4)->FindBin(phia);
+            if (nEffDimA>5) {
+              effBinA[5] = fHEffA->GetAxis(5)->FindBin(sgna);
             }
-            aQAWght = fHEffA->GetBinContent(effBinA);
           }
-          // fill every associated particle once unweighted, once weighted
-          if (sgna>0.0) {
-            fHQAAp->Fill(pta,etaa,phia);
-            fHQAApCorr->Fill(pta,etaa,phia,aQAWght);
-          } else {
-            fHQAAm->Fill(pta,etaa,phia);
-            fHQAAmCorr->Fill(pta,etaa,phia,aQAWght);
-          }
-          fHPtCentA->Fill(pta,fCentrality);
+          aQAWght = fHEffA->GetBinContent(effBinA);
         }
+        // fill every associated particle once unweighted, once weighted
+        if (sgna>0.0) {
+          fHQAAp->Fill(pta,etaa,phia);
+          fHQAApCorr->Fill(pta,etaa,phia,aQAWght);
+        } else {
+          fHQAAm->Fill(pta,etaa,phia);
+          fHQAAmCorr->Fill(pta,etaa,phia,aQAWght);
+        }
+        fHPtCentA->Fill(pta,fCentrality);
       }
     }
-
+    
     // back to triggers
-    Int_t abin = fHPtTrg->FindBin(pta);
-    if (fHPtTrg->IsBinOverflow(abin) || fHPtTrg->IsBinUnderflow(abin))
+    if (!IsTrigger(etaa,pta))
       continue;
 
-    if (etaa<fEtaTLo || etaa>fEtaTHi)
-      continue;
+    Int_t abin = fHPtAss->FindBin(pta);
 
     // efficiency weighting
     Double_t effWtT = 1.0;
@@ -967,12 +991,10 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
         continue;
       }
 
-      Int_t bbin = fHPtAss->FindBin(ptb);
-      if (fHPtAss->IsBinOverflow(bbin) || fHPtAss->IsBinUnderflow(bbin))
+      if (!IsAssociated(etab,ptb))
         continue;
 
-      if (etab<fEtaALo || etab>fEtaAHi)
-        continue;
+      Int_t bbin = fHPtAss->FindBin(ptb);
 
       Float_t dphi = DeltaPhi(phia, phib);
       Float_t deta = etaa - etab;
@@ -1137,6 +1159,34 @@ Bool_t AliDhcTask::IsGoodMUONtrack(AliAODTrack &track)
     return kFALSE;
   if (track.GetMatchTrigger()<0.5) 
     return kFALSE;
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliDhcTask::IsTrigger(Double_t eta, Double_t pt)
+{
+  // is in trigger eta,pt range?
+  Int_t bin = fHPtTrg->FindBin(pt);
+  if (fHPtTrg->IsBinOverflow(bin) || fHPtTrg->IsBinUnderflow(bin))
+    return kFALSE;
+  
+  if (eta<fEtaTLo || eta>fEtaTHi)
+    return kFALSE;
+  
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliDhcTask::IsAssociated(Double_t eta, Double_t pt)
+{
+  // is in associated eta,pt range?
+  Int_t bin = fHPtAss->FindBin(pt);
+  if (fHPtAss->IsBinOverflow(bin) || fHPtAss->IsBinUnderflow(bin))
+    return kFALSE;
+  
+  if (eta<fEtaALo || eta>fEtaAHi)
+    return kFALSE;
+  
   return kTRUE;
 }
 

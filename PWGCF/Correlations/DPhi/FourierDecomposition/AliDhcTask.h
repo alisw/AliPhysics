@@ -74,6 +74,8 @@ class AliDhcTask : public AliAnalysisTaskSE {
   Bool_t       VertexOk() const;
   Bool_t       IsGoodMUONtrack(AliESDMuonTrack &track);
   Bool_t       IsGoodMUONtrack(AliAODTrack &track);
+  Bool_t       IsTrigger(Double_t eta, Double_t pt);
+  Bool_t       IsAssociated(Double_t eta, Double_t pt);
   Double_t     DeltaPhi(Double_t phia, Double_t phib,
 			Double_t rangeMin = -TMath::Pi()/2, 
 			Double_t rangeMax = 3*TMath::Pi()/2) const;
