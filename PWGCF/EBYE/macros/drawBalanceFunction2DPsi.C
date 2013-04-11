@@ -908,27 +908,20 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
 }
 
 //____________________________________________________________//
-void drawProjections(const char* lhcPeriod = "LHC10h",
-		     const char* gCentralityEstimator = "V0M",
-		     Int_t gBit = 128,
-		     const char* gEventPlaneEstimator = "VZERO",
-		     Bool_t kProjectInEta = kFALSE,
+void drawProjections(Bool_t kProjectInEta = kFALSE,
 		     Int_t binMin = 1,
 		     Int_t binMax = 80,
 		     Int_t gCentrality = 1,
 		     Double_t psiMin = -0.5, 
 		     Double_t psiMax = 3.5,
-		     Double_t vertexZMin = -10., 
-		     Double_t vertexZMax = 10.,
 		     Double_t ptTriggerMin = -1.,
 		     Double_t ptTriggerMax = -1.,
 		     Double_t ptAssociatedMin = -1.,
 		     Double_t ptAssociatedMax = -1.,
-		     Bool_t kUseZYAM = kFALSE,
 		     Bool_t k2pMethod = kTRUE,
 		     TString eventClass = "Centrality",
 		     Bool_t bRootMoments = kFALSE) {
-  //Macro that draws the charge dependent correlation functions PROJECTIONS 
+  //Macro that draws the balance functions PROJECTIONS 
   //for each centrality bin for the different pT of trigger and 
   //associated particles
   TGaxis::SetMaxDigits(3);
@@ -950,6 +943,8 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWGTools.so");
   gSystem->Load("libPWGCFebye.so");
+
+  gStyle->SetOptStat(0);
 
   //Get the input file
   TString filename = "balanceFunction2D."; 
@@ -1018,7 +1013,6 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   latexInfo1->SetTextSize(0.045);
   latexInfo1->SetTextColor(1);
 
-  TString pngName;
 
   //============================================================//
   //Get subtracted and mixed balance function
@@ -1075,41 +1069,7 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   legend->AddEntry(gHistBalanceFunctionMixed,"Mixed data","lp");
   legend->Draw();
   
-  pngName = "BalanceFunction."; 
-  if(eventClass == "Centrality"){
-    pngName += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
-    if(kProjectInEta) pngName += ".InDeltaEta.PsiAll.PttFrom";
-    else pngName += ".InDeltaPhi.PsiAll.PttFrom";
-  }
-  else if(eventClass == "Multiplicity"){
-    pngName += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
-    if(kProjectInEta) pngName += ".InDeltaEta.PsiAll.PttFrom";
-    else pngName += ".InDeltaPhi.PsiAll.PttFrom";  
-  }
-  else{ // "EventPlane" (default)
-    pngName += "Centrality";
-    pngName += gCentrality; 
-    if(kProjectInEta) pngName += ".InDeltaEta.Psi";
-    else pngName += ".InDeltaPhi.Psi";
-    if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
-    else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
-    else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
-    else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.PttFrom";
-    else pngName += "All.PttFrom";
-  }  
-  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
-  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
-  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
-  pngName += Form("%.1f",ptAssociatedMax); 
-  if(k2pMethod) pngName += "_2pMethod";
-  
-  pngName += "_"; 
-  pngName += Form("%.1f",psiMin); pngName += "-"; 
-  pngName += Form("%.1f",psiMax);
-  pngName += ".png";
 
-  c1->SaveAs(pngName.Data());
-    
   TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
 
   if(bRootMoments){
@@ -1136,6 +1096,38 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
     Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
     Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
     Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
+
+
+    // store in txt files
+
+    TString meanFileName = filename;
+    if(kProjectInEta) meanFileName.ReplaceAll(".root","_DeltaEtaProjection_Mean.txt");
+    else              meanFileName.ReplaceAll(".root","_DeltaPhiProjection_Mean.txt");
+    ofstream fileMean(meanFileName.Data(),ios::out);
+    fileMean << " " << gHistBalanceFunctionSubtracted->GetMean() << " " <<gHistBalanceFunctionSubtracted->GetMeanError()<<endl;
+    fileMean.close();
+
+    TString rmsFileName = filename;
+    if(kProjectInEta) rmsFileName.ReplaceAll(".root","_DeltaEtaProjection_Rms.txt");
+    else              rmsFileName.ReplaceAll(".root","_DeltaPhiProjection_Rms.txt");
+    ofstream fileRms(rmsFileName.Data(),ios::out);
+    fileRms << " " << gHistBalanceFunctionSubtracted->GetRMS() << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;
+    fileRms.close();
+
+    TString skewnessFileName = filename;
+    if(kProjectInEta) skewnessFileName.ReplaceAll(".root","_DeltaEtaProjection_Skewness.txt");
+    else              skewnessFileName.ReplaceAll(".root","_DeltaPhiProjection_Skewness.txt");
+    ofstream fileSkewness(skewnessFileName.Data(),ios::out);
+    fileSkewness << " " << gHistBalanceFunctionSubtracted->GetSkewness(1) << " " <<gHistBalanceFunctionSubtracted->GetSkewness(11)<<endl;
+    fileSkewness.close();
+
+    TString kurtosisFileName = filename;
+    if(kProjectInEta) kurtosisFileName.ReplaceAll(".root","_DeltaEtaProjection_Kurtosis.txt");
+    else              kurtosisFileName.ReplaceAll(".root","_DeltaPhiProjection_Kurtosis.txt");
+    ofstream fileKurtosis(kurtosisFileName.Data(),ios::out);
+    fileKurtosis << " " << gHistBalanceFunctionSubtracted->GetKurtosis(1) << " " <<gHistBalanceFunctionSubtracted->GetKurtosis(11)<<endl;
+    fileKurtosis.close();
+
   }
   // calculate the moments by hand
   else{
@@ -1174,14 +1166,45 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
     Printf("Sigma: %lf - Error: %lf",sigmaAnalytical, sigmaAnalyticalError);
     Printf("Skeweness: %lf - Error: %lf",skewnessAnalytical, skewnessAnalyticalError);
     Printf("Kurtosis: %lf - Error: %lf",kurtosisAnalytical, kurtosisAnalyticalError);
+
+    // store in txt files
+    TString meanFileName = filename;
+    if(kProjectInEta) meanFileName.ReplaceAll(".root","_DeltaEtaProjection_Mean.txt");
+    else              meanFileName.ReplaceAll(".root","_DeltaPhiProjection_Mean.txt");
+    ofstream fileMean(meanFileName.Data(),ios::out);
+    fileMean << " " << meanAnalytical << " " <<meanAnalyticalError<<endl;
+    fileMean.close();
+
+    TString rmsFileName = filename;
+    if(kProjectInEta) rmsFileName.ReplaceAll(".root","_DeltaEtaProjection_Rms.txt");
+    else              rmsFileName.ReplaceAll(".root","_DeltaPhiProjection_Rms.txt");
+    ofstream fileRms(rmsFileName.Data(),ios::out);
+    fileRms << " " << sigmaAnalytical << " " <<sigmaAnalyticalError<<endl;
+    fileRms.close();
+
+    TString skewnessFileName = filename;
+    if(kProjectInEta) skewnessFileName.ReplaceAll(".root","_DeltaEtaProjection_Skewness.txt");
+    else              skewnessFileName.ReplaceAll(".root","_DeltaPhiProjection_Skewness.txt");
+    ofstream fileSkewness(skewnessFileName.Data(),ios::out);
+    fileSkewness << " " << skewnessAnalytical << " " <<skewnessAnalyticalError<<endl;
+    fileSkewness.close();
+
+    TString kurtosisFileName = filename;
+    if(kProjectInEta) kurtosisFileName.ReplaceAll(".root","_DeltaEtaProjection_Kurtosis.txt");
+    else              kurtosisFileName.ReplaceAll(".root","_DeltaPhiProjection_Kurtosis.txt");
+    ofstream fileKurtosis(kurtosisFileName.Data(),ios::out);
+    fileKurtosis << " " << kurtosisAnalytical << " " <<kurtosisAnalyticalError<<endl;
+    fileKurtosis.close();
   }
+
+
 
   TCanvas *c2 = new TCanvas("c2","",600,0,600,500);
   c2->SetFillColor(10); 
   c2->SetHighLightColor(10);
   c2->SetLeftMargin(0.15);
   gHistBalanceFunctionSubtracted->DrawCopy("E");
-  
+ 
   TLatex *latex = new TLatex();
   latex->SetNDC();
   latex->SetTextSize(0.035);
@@ -1190,6 +1213,12 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   latex->DrawLatex(0.64,0.81,rmsLatex.Data());
   latex->DrawLatex(0.64,0.77,skewnessLatex.Data());
   latex->DrawLatex(0.64,0.73,kurtosisLatex.Data());
+
+  TString pngName = filename;
+  if(kProjectInEta) pngName.ReplaceAll(".root","_DeltaEtaProjection.png");
+  else              pngName.ReplaceAll(".root","_DeltaPhiProjection.png");
+
+  c2->SaveAs(pngName.Data());
 
   TString outFileName = filename;
   if(kProjectInEta) outFileName.ReplaceAll(".root","_DeltaEtaProjection.root");
