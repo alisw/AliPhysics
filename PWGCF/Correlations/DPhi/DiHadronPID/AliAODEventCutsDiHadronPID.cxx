@@ -53,7 +53,7 @@ AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID():
 	//
 
 	cout<<"AliAODEventCutsDiHadronPID Default Constructor Called."<<endl;
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 }
 
@@ -88,7 +88,7 @@ AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID(const char* name):
 	//
 
 	cout<<"AliAODEventCutsDiHadronPID Named Constructor Called."<<endl;
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 }
 
@@ -117,7 +117,7 @@ AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID(const AliAODEventCutsDiHa
 	//
 
 	cout<<"AliAODEventCutsDiHadronPID Copy Constructor Called."<<endl;
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	//if (source.fSelectedEventQAHistos) fSelectedEventQAHistos = (TList*)source.fHistTrigger->Clone();
 	//if (source.fHistTrigger) fHistTrigger = (TH1F*)source.fHistTrigger->Clone();
@@ -135,7 +135,7 @@ AliAODEventCutsDiHadronPID::~AliAODEventCutsDiHadronPID() {
 	//
 
 	cout<<"AliAODEventCutsDiHadronPID Destructor Called."<<endl;
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	if (fSelectedEventQAHistos) delete fSelectedEventQAHistos;
 	fSelectedEventQAHistos = 0x0;
@@ -152,7 +152,7 @@ Long64_t AliAODEventCutsDiHadronPID::Merge(TCollection* list) {
 	// 
 
 	cout<<"AliAODEventCutsDiHadronPID Merger Called."<<endl;
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	if (!list) return 0;
 	if (list->IsEmpty()) return 1;
@@ -204,7 +204,7 @@ Long64_t AliAODEventCutsDiHadronPID::Merge(TCollection* list) {
 void AliAODEventCutsDiHadronPID::CreateHistos() {
 
 	cout<<"AliAODEventCutsDiHadronPID - Creating histograms"<<endl;
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	// Create list of Event related QA histograms (selected events).
 	fSelectedEventQAHistos = new TList();
@@ -263,7 +263,7 @@ void AliAODEventCutsDiHadronPID::CreateHistos() {
 // -------------------------------------------------------------------------
 Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 	
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	if (!event) return kFALSE;
 
@@ -354,7 +354,7 @@ Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 void AliAODEventCutsDiHadronPID::PrintCuts() {
 
 	// NOT IMPLEMENTED.
-	if (fDebug) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	return;
 

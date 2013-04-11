@@ -2,6 +2,10 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
 	Int_t NDEtaBins = 32,
 	Int_t NDPhiBins = 32,
 	Int_t MinEventsForMixing = 5,
+	Int_t PoolTrackDepth = 2000,
+	Int_t PoolSize = 1000,
+	Bool_t MixEvents = kTRUE,
+	Bool_t MixTriggers = kFALSE,
 	Double_t MinCentrality = 5.,
 	Double_t MaxCentrality = 0.,
 	const char* CentralityEstimator = "V0M",
@@ -36,6 +40,10 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
     DiHadronPIDTask->SetNDEtaBins(NDEtaBins);
     DiHadronPIDTask->SetNDPhiBins(NDPhiBins);
     DiHadronPIDTask->SetMinEventsForMixing(MinEventsForMixing);
+    DiHadronPIDTask->SetPoolTrackDepth(PoolTrackDepth);
+    DiHadronPIDTask->SetPoolSize(PoolSize);
+    DiHadronPIDTask->SetMixEvents(MixEvents);
+    DiHadronPIDTask->SetMixTriggers(MixTriggers);
     DiHadronPIDTask->SetDebugLevel(DebugLevel);
 
     // Configure and add Event Cuts.

@@ -26,7 +26,6 @@ public:
 	Bool_t ReadyToStart() const {return (fEventCuts && fTrackCutsTrigger && fTrackCutsAssociated);}
 
 	// Setters.
-	void SetDebugLevel(Int_t debuglevel) {fDebug = debuglevel;}
     void SetEventCuts(AliAODEventCutsDiHadronPID* eventcuts) {fEventCuts = eventcuts;}
     void SetTrackCutsTrigger(AliAODTrackCutsDiHadronPID* trackcuts) {fTrackCutsTrigger = trackcuts;}
     void SetTrackCutsAssociated(AliAODTrackCutsDiHadronPID* trackcuts) {fTrackCutsAssociated = trackcuts;} 
@@ -36,6 +35,9 @@ public:
     void SetMinEventsForMixing(Int_t nevents) {fMinNEventsForMixing = nevents;}
     void SetPoolTrackDepth(Int_t trackdepth) {fPoolTrackDepth = trackdepth;}
     void SetPoolSize(Int_t poolsize) {fPoolSize = poolsize;}
+    void SetMixEvents(Bool_t mixevents = kTRUE) {fMixEvents = mixevents;}
+    void SetMixTriggers(Bool_t mixtriggers = kTRUE) {fMixTriggers = mixtriggers;}
+	void SetDebugLevel(Int_t debuglevel) {fDebug = debuglevel;}
 
 	// Getters.
 	Int_t GetNDEtaBins() const {return fNDEtaBins;}
@@ -43,12 +45,15 @@ public:
 	Int_t GetMinEventsForMixing() const {return fMinNEventsForMixing;}
 	Int_t GetPoolTrackDepth() const {return fPoolTrackDepth;}
 	Int_t GetPoolSize() const {return fPoolSize;}
+	Bool_t GetMixEvents() const {return fMixEvents;}
+	Bool_t GetMixTriggers() const {return fMixTriggers;}
 	Int_t GetDebugLevel() const {return fDebug;}	
 
 private:
 	//void FillGlobalTracksArray();
 	Bool_t LoadExtMismatchHistos();
 	Double_t GenerateRandomHit(Double_t eta);
+	void PrintPoolManagerContents();
 
 private:
 
@@ -91,6 +96,8 @@ private:
 	Int_t							fMinNEventsForMixing;		// Pool needs at least this many events for mixing.
 	Int_t							fPoolTrackDepth;			// For the pool.
 	Int_t							fPoolSize;					// 
+	Bool_t							fMixEvents;					// NOT YET IMPLEMENTED.
+	Bool_t							fMixTriggers;				// If true, triggers are mixed, if not true, associateds are mixed.
 	Bool_t							fCalculateTOFmismatch;		//
 
 	// TOF mismatch stuff.
