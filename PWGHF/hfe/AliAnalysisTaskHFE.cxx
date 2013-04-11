@@ -437,8 +437,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH1F("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
   fQACollection->CreateTH1F("nElectron", "Number of electrons", 100, 0, 100);
   fQACollection->CreateTH2F("radius", "Production Vertex", 100, 0.0, 5.0, 100, 0.0, 5.0);
-  fQACollection->CreateTH2F("nTriggerBit2D", "Histo Trigger Bit 2d", 10, 0., 10., 10, 0., 10.,-1);
-  fQACollection->CreateTH1F("nTriggerBit", "Histo Trigger Bit", 12, 0, 12);
+  fQACollection->CreateTH1F("nTriggerBit", "Histo Trigger Bit", 22, 0, 22);
  
   InitHistoITScluster();
   InitContaminationQA();
@@ -958,7 +957,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
     AliDebug(4, "New ESD track");
     track = fESD->GetTrack(itrack);
     track->SetESDEvent(fESD);
-
+    
     // fill counts of v0-identified particles
     Int_t v0pid = -1;
     if(track->TestBit(BIT(14))) v0pid = AliPID::kElectron;
@@ -2177,24 +2176,46 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
  }
 
 }
+
 //___________________________________________________
 Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
-    // check function!
-    // pPb settings
-
+//
+// Check TRD trigger; pPb settings
+//
     Bool_t cint8=kFALSE;
     Bool_t cint7=kFALSE;
     Bool_t cint5=kFALSE;
     Bool_t trdtrgevent=kFALSE;
 
+
     if(fWhichTRDTrigger==1)
     {
-       // if (!(AliTriggerAnalysis::TRDTrigger(ev) & 0x2)) return; // HSE
+       // DrawTRDTrigger(ev);
+
+     //  if (!(fAliTrigger->TRDTrigger(ev,AliTriggerAnalysis::kTRDHSE))) return kFALSE; // HSE
+     //  else
+	//  {
+
+     //      DrawTRDTrigger(ev);
+     //      return kTRUE;
+    //   }
+      //  if (!(AliTriggerAnalysis::TRDTrigger(ev) & 0x2)) return; // HSE
+      //  cint8= ev->IsTriggerClassFired("CINT8WUHSE-B-NOPF-CENT");
+      //  cint7= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT");
+      //  cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
+      //      (ev->GetHeader()->GetL1TriggerInputs() & (1 << 10));
+	//  printf("trdtrg condition %i \n",whichTRDTrigger);
 	cint8= ev->IsTriggerClassFired("CINT8WUHSE-B-NOPF-CENT");
 	cint7= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT");
 	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
 	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 10));
-	//  printf("trdtrg condition %i \n",fWhichTRDTrigger);
+	//     printf("trdtrg condition %i \n",whichTRDTrigger);
+	if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) return kFALSE;
+	else
+	{
+	    DrawTRDTrigger(ev);
+	    return kTRUE;
+	}
     }
     if(fWhichTRDTrigger==2)
     {
@@ -2202,18 +2223,45 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
 	cint7= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT");
 	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
 	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 10));
-	//     printf("trdtrg condition %i \n",fWhichTRDTrigger);
+	//     printf("trdtrg condition %i \n",whichTRDTrigger);
+	if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) return kFALSE;
+	else
+	{
+	    DrawTRDTrigger(ev);
+	    return kTRUE;
+	}
     }
 
     //HQU
     if(fWhichTRDTrigger==3)
     {
-       // if (!(AliTriggerAnalysis::TRDTrigger(ev) & 0x4)) return; // HSE
+        /*
+	if (!(fAliTrigger->TRDTrigger(ev,AliTriggerAnalysis::kTRDHQU))) return kFALSE; // HQU
+	else
+	{
+	    DrawTRDTrigger(ev);
+	    return kTRUE;
+	}*/
+
 	cint8= ev->IsTriggerClassFired("CINT8WUHQU-B-NOPF-CENT");
 	cint7= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT");
 	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
 	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 12));
-	//  printf("trdtrg condition %i \n",fWhichTRDTrigger);
+	//  printf("trdtrg condition %i \n",whichTRDTrigger);
+	if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) return kFALSE;
+	else
+	{
+	    DrawTRDTrigger(ev);
+	    return kTRUE;
+	}
+
+
+     //   if (!(AliTriggerAnalysis::TRDTrigger(ev) & 0x4)) return; // HQU
+     //   cint8= ev->IsTriggerClassFired("CINT8WUHQU-B-NOPF-CENT");
+     //   cint7= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT");
+     //   cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
+     //       (ev->GetHeader()->GetL1TriggerInputs() & (1 << 12));
+	//  printf("trdtrg condition %i \n",whichTRDTrigger);
     }
     if(fWhichTRDTrigger==4)
     {
@@ -2221,78 +2269,133 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
 	cint7= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT");
 	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
 	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 12));
-	//  printf("trdtrg condition %i \n",fWhichTRDTrigger);
+	//  printf("trdtrg condition %i \n",whichTRDTrigger);
+	if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) return kFALSE;
+	else
+	{
+	    DrawTRDTrigger(ev);
+	    return kTRUE;
+	}
     }
+
+  //  if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) trdtrgevent=kFALSE;
+  //  else trdtrgevent=kTRUE;
+  //   printf("in check fct %i \n",(Int_t)trdtrgevent);
+    return trdtrgevent;
+
+}
+
+void AliAnalysisTaskHFE::DrawTRDTrigger(AliESDEvent *ev) {
 
     Int_t ntriggerbit=0;
     fQACollection->Fill("nTriggerBit",ntriggerbit);
     if(ev->IsTriggerClassFired("CINT7-B-NOPF-ALLNOTRD"))
     {
 	ntriggerbit=2;
-	fQACollection->Fill("nTriggerBit2D",ntriggerbit,ntriggerbit);
 	fQACollection->Fill("nTriggerBit",ntriggerbit);
     }
     if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
     {
 	ntriggerbit=3;
-	fQACollection->Fill("nTriggerBit2D",ntriggerbit,ntriggerbit);
 	fQACollection->Fill("nTriggerBit",ntriggerbit);
+	if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+	    ntriggerbit=18;
+	    fQACollection->Fill("nTriggerBit",ntriggerbit);
+	}
+	if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
+	    ntriggerbit=19;
+	    fQACollection->Fill("nTriggerBit",ntriggerbit);
+	}
     }
     if(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-CENT"))
     {
 	ntriggerbit=4;
-	fQACollection->Fill("nTriggerBit2D",ntriggerbit,ntriggerbit);
 	fQACollection->Fill("nTriggerBit",ntriggerbit);
+
+	if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+	    ntriggerbit=13;
+	    fQACollection->Fill("nTriggerBit",ntriggerbit);
+	}
+	if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
+	    ntriggerbit=14;
+	    fQACollection->Fill("nTriggerBit",ntriggerbit);
+	    if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+		ntriggerbit=17;
+		fQACollection->Fill("nTriggerBit",ntriggerbit);
+	    }
+	}
     }
-    if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
+    if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT"))
+    {
 	ntriggerbit=5;
-	fQACollection->Fill("nTriggerBit2D",ntriggerbit,ntriggerbit);
 	fQACollection->Fill("nTriggerBit",ntriggerbit);
 	if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
 	    ntriggerbit=11;
-	    fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
 	    fQACollection->Fill("nTriggerBit",ntriggerbit);
 	}
+	if((!(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")))&&(!(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-CENT")))) {
+	    ntriggerbit=21;
+	    fQACollection->Fill("nTriggerBit",ntriggerbit);
+
+            /*
+	    Int_t nTrdTracks = ev->GetNumberOfTrdTracks();
+	    for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
+		AliESDTrdTrack* trdTrack = ev->GetTrdTrack(iTrack);
+		printf("GTU track %3i: pt = %5.1f, PID = %3i\n", iTrack, trdTrack->Pt(), trdTrack->GetPID());
+	    }*/
+
+
+	}
+
     }
-    if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+    if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT"))
+    {
 	ntriggerbit=6;
-	fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
 	fQACollection->Fill("nTriggerBit",ntriggerbit);
 	if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
 	    ntriggerbit=12;
-	    fQACollection->Fill("nTriggerBit2D",ntriggerbit,ntriggerbit);
 	    fQACollection->Fill("nTriggerBit",ntriggerbit);
 	}
+	if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-FAST")){
+	    ntriggerbit=15;
+	    fQACollection->Fill("nTriggerBit",ntriggerbit);
+
+	    if((!(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")))&&(!(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-CENT")))) {
+		ntriggerbit=20;
+		fQACollection->Fill("nTriggerBit",ntriggerbit);
+		/*
+		 Int_t nTrdTracks = ev->GetNumberOfTrdTracks();
+		 for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
+		 AliESDTrdTrack* trdTrack = ev->GetTrdTrack(iTrack);
+		 printf("HSE GTU track %3i: pt = %5.1f, PID = %3i\n", iTrack, trdTrack->Pt(), trdTrack->GetPID());
+		 }                          */
+
+	    }
+
+	}
+
     }
     if(ev->IsTriggerClassFired("CEMC7WUHEE-B-NOPF-CENT")) {
 	ntriggerbit=7;
-	fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
 	fQACollection->Fill("nTriggerBit",ntriggerbit);
     }
     if(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-FAST")){
 	ntriggerbit=8;
-	fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
 	fQACollection->Fill("nTriggerBit",ntriggerbit);
     }
     if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-FAST")){
 	ntriggerbit=9;
-	fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
 	fQACollection->Fill("nTriggerBit",ntriggerbit);
     }
     if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-FAST")){
 	ntriggerbit=10;
-	fQACollection->Fill("nTriggerBit2D", ntriggerbit,ntriggerbit);
 	fQACollection->Fill("nTriggerBit",ntriggerbit);
+	if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+	    ntriggerbit=16;
+	    fQACollection->Fill("nTriggerBit",ntriggerbit);
+	}
     }
     if(ntriggerbit==0) fQACollection->Fill("nTriggerBit",1);
 
-//   printf("triggerbit %i \n",ntriggerbit);
-
- 
-
-    if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) trdtrgevent=kFALSE;
-    else trdtrgevent=kTRUE;
-
-    return trdtrgevent;
-
 }
+
