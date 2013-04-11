@@ -98,6 +98,11 @@ fBayesianStrategy(0)
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
 
+  for (Int_t i = 0; i<AliPID::kSPECIES; i++) {
+    fWeightsPositive[i] = 0.;
+    fWeightsNegative[i] = 0.;
+  }
+ 
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi &source) :
