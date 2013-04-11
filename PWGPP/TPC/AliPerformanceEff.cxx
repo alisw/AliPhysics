@@ -949,7 +949,7 @@ void AliPerformanceEff::Analyse()
   if(GetAnalysisMode() != 5) {
 
   fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.89); // eta range
-  //fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.);   // pt range  // FIXME maybe remove since range is defined in THnSparse 
+  fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.);   // pt range  // FIXME maybe remove since range is defined in THnSparse 
 
   // rec efficiency vs pt
   fEffHisto->GetAxis(3)->SetRangeUser(0.,3.99);  // reconstructed 
@@ -1022,7 +1022,7 @@ void AliPerformanceEff::Analyse()
   //
 
   fEffHisto->GetAxis(0)->SetRangeUser(-1.5,1.5); // eta range
-  //fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.); // pt range
+  fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.); // pt range
   fEffHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
 
   // rec efficiency vs eta
@@ -1097,7 +1097,7 @@ void AliPerformanceEff::Analyse()
   //
 
   fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.9); // eta range
-  //fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.); // pt range
+  fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.); // pt range
   fEffHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
 
   // rec efficiency vs phi
@@ -1180,7 +1180,7 @@ void AliPerformanceEff::Analyse()
 
   //
   fEffSecHisto->GetAxis(0)->SetRangeUser(minEta,maxEta);
-  //fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
+  fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
 
   // rec efficiency vs pt
 
@@ -1214,7 +1214,7 @@ void AliPerformanceEff::Analyse()
   //
   // efficiency vs eta
   //
-  //fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
+  fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.);   // all
   fEffSecHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
 
@@ -1249,7 +1249,7 @@ void AliPerformanceEff::Analyse()
   //
 
   fEffSecHisto->GetAxis(0)->SetRangeUser(minEta,maxEta);
-  //fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
+  fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.);   // all
   fEffSecHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
