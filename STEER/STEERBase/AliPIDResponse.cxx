@@ -74,7 +74,7 @@ fCurrentFile(),
 fRecoPass(0),
 fRecoPassUser(-1),
 fRun(-1),
-fOldRun(0),
+fOldRun(-1),
 fResT0A(75.),
 fResT0C(65.),
 fResT0AC(55.),
@@ -135,7 +135,7 @@ fCurrentFile(),
 fRecoPass(0),
 fRecoPassUser(other.fRecoPassUser),
 fRun(-1),
-fOldRun(0),
+fOldRun(-1),
 fResT0A(75.),
 fResT0C(65.),
 fResT0AC(55.),
@@ -187,7 +187,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fRecoPass=0;
     fRecoPassUser=other.fRecoPassUser;
     fRun=-1;
-    fOldRun=0;
+    fOldRun=-1;
     fResT0A=75.;
     fResT0C=65.;
     fResT0AC=55.;
