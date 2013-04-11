@@ -124,7 +124,7 @@ void AliPerformanceEff::Init()
   if (IsHptGenerator())  { 
         ptMax = 100.;
   } 
-   binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
+  binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
 
   /*
   Int_t nPtBins = 31;
@@ -949,7 +949,7 @@ void AliPerformanceEff::Analyse()
   if(GetAnalysisMode() != 5) {
 
   fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.89); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.1,10.);   // pt range
+  //fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.);   // pt range  // FIXME maybe remove since range is defined in THnSparse 
 
   // rec efficiency vs pt
   fEffHisto->GetAxis(3)->SetRangeUser(0.,3.99);  // reconstructed 
@@ -966,7 +966,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(2, "ptRecEffPos", "rec. efficiency pos.", 0));
 
   // rec efficiency vs pid vs pt
-  fEffHisto->GetAxis(3)->SetRangeUser(2.,2.);    // pions
+  fEffHisto->GetAxis(3)->SetRange(3,3);    // pions
   
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(2, "ptRecEffPi", "rec. efficiency (pions)", 0));
@@ -978,7 +978,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(2, "ptRecEffPiPos", "rec. efficiency (pions) pos.", 0));
 
 
-  fEffHisto->GetAxis(3)->SetRangeUser(3.,3.);    // kaons
+  fEffHisto->GetAxis(3)->SetRange(4,4);    // kaons
   
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(2, "ptRecEffK", "rec. efficiency (kaons)", 0));
@@ -990,7 +990,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(2, "ptRecEffKPos", "rec. efficiency (kaons) pos.", 0));
  
   
-  fEffHisto->GetAxis(3)->SetRangeUser(4.,4.);    // protons
+  fEffHisto->GetAxis(3)->SetRange(5,5);    // protons
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(2, "ptRecEffP", "rec. efficiency (protons)", 0));
@@ -1003,7 +1003,7 @@ void AliPerformanceEff::Analyse()
 
   // findable efficiency vs pt
   fEffHisto->GetAxis(3)->SetRangeUser(0.,4.); 
-  fEffHisto->GetAxis(5)->SetRangeUser(1.,1.); // findable
+  fEffHisto->GetAxis(5)->SetRange(2,2); // findable
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(2, "ptRecEffF", "rec. efficiency (findable)", 0));
@@ -1022,7 +1022,7 @@ void AliPerformanceEff::Analyse()
   //
 
   fEffHisto->GetAxis(0)->SetRangeUser(-1.5,1.5); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.2,10.); // pt range
+  //fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.); // pt range
   fEffHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
 
   // rec efficiency vs eta
@@ -1041,7 +1041,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(0, "etaRecEffPos", "rec. efficiency pos.", 0));
 
   // rec efficiency vs pid vs eta
-  fEffHisto->GetAxis(3)->SetRangeUser(2.,2.);    // pions
+  fEffHisto->GetAxis(3)->SetRange(3,3);    // pions
   
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(0, "etaRecEffPi", "rec. efficiency (pions)", 0));
@@ -1053,7 +1053,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(0, "etaRecEffPiPos", "rec. efficiency (pions) pos.", 0));
 
 
-  fEffHisto->GetAxis(3)->SetRangeUser(3.,3.);    // kaons
+  fEffHisto->GetAxis(3)->SetRange(4,4);    // kaons
   
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(0, "etaRecEffK", "rec. efficiency (kaons)", 0));
@@ -1065,7 +1065,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(0, "etaRecEffKPos", "rec. efficiency (kaons) pos.", 0));
   
   
-  fEffHisto->GetAxis(3)->SetRangeUser(4.,4.);    // protons
+  fEffHisto->GetAxis(3)->SetRange(5,5);    // protons
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(0, "etaRecEffP", "rec. efficiency (protons)", 0));
@@ -1078,7 +1078,7 @@ void AliPerformanceEff::Analyse()
 
   // findable efficiency vs eta
   fEffHisto->GetAxis(3)->SetRangeUser(0.,4.); 
-  fEffHisto->GetAxis(5)->SetRangeUser(1.,1.); // findable
+  fEffHisto->GetAxis(5)->SetRange(2,2); // findable
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(0, "etaRecEffF", "rec. efficiency (findable)", 0));
@@ -1097,7 +1097,7 @@ void AliPerformanceEff::Analyse()
   //
 
   fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.9); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.2,10.); // pt range
+  //fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.); // pt range
   fEffHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
 
   // rec efficiency vs phi
@@ -1115,7 +1115,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(1, "phiRecEffPos", "rec. efficiency pos.", 0));
 
   // rec efficiency vs pid vs phi
-  fEffHisto->GetAxis(3)->SetRangeUser(2.,2.);    // pions
+  fEffHisto->GetAxis(3)->SetRange(3,3);    // pions
   
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(1, "phiRecEffPi", "rec. efficiency (pions)", 0));
@@ -1127,7 +1127,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(1, "phiRecEffPiPos", "rec. efficiency (pions) pos.", 0));
 
 
-  fEffHisto->GetAxis(3)->SetRangeUser(3.,3.);    // kaons
+  fEffHisto->GetAxis(3)->SetRange(4,4);    // kaons
   
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(1, "phiRecEffK", "rec. efficiency (kaons)", 0));
@@ -1139,7 +1139,7 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(1, "phiRecEffKPos", "rec. efficiency (kaons) pos.", 0));
  
   
-  fEffHisto->GetAxis(3)->SetRangeUser(4.,4.);    // protons
+  fEffHisto->GetAxis(3)->SetRange(5,5);    // protons
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(1, "phiRecEffP", "rec. efficiency (protons)", 0));
@@ -1152,7 +1152,7 @@ void AliPerformanceEff::Analyse()
 
   // findable efficiency vs phi
   fEffHisto->GetAxis(3)->SetRangeUser(0.,4.); 
-  fEffHisto->GetAxis(5)->SetRangeUser(1.,1.); // findable
+  fEffHisto->GetAxis(5)->SetRange(2,2); // findable
 
   fEffHisto->GetAxis(6)->SetRangeUser(-2.,2.);   // charge all
   aFolderObj->Add(AddHistoEff(1, "phiRecEffF", "rec. efficiency (findable)", 0));
@@ -1170,7 +1170,7 @@ void AliPerformanceEff::Analyse()
   // 
   Float_t minEta=-1.5, maxEta=1.5;
   Float_t minR=0.0, maxR=150.0;
-  Float_t minPt=0.15, maxPt=100.0;
+  Float_t minPt=0.10, maxPt=20.0;
 
   // mother eta range
   fEffSecHisto->GetAxis(8)->SetRangeUser(minEta,maxEta);
@@ -1180,7 +1180,7 @@ void AliPerformanceEff::Analyse()
 
   //
   fEffSecHisto->GetAxis(0)->SetRangeUser(minEta,maxEta);
-  fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
+  //fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
 
   // rec efficiency vs pt
 
@@ -1190,23 +1190,23 @@ void AliPerformanceEff::Analyse()
 
   // rec efficiency vs pid vs pt
   
-  fEffSecHisto->GetAxis(3)->SetRangeUser(0.,0.); // electrons
+  fEffSecHisto->GetAxis(3)->SetRange(1,1); // electrons
   aFolderObj->Add(AddHistoEff(2, "ptRecEffEle", "rec. efficiency (electrons)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(2.,2.); // pions
+  fEffSecHisto->GetAxis(3)->SetRange(3,3); // pions
   aFolderObj->Add(AddHistoEff(2, "ptRecEffPi", "rec. efficiency (pions)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
+  fEffSecHisto->GetAxis(3)->SetRange(4,4); // kaons
   aFolderObj->Add(AddHistoEff(2, "ptRecEffK", "rec. efficiency (kaons)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
+  fEffSecHisto->GetAxis(3)->SetRange(5,5); // protons
   aFolderObj->Add(AddHistoEff(2, "ptRecEffP", "rec. efficiency (protons)", 0, 1));
 
   fEffSecHisto->GetAxis(3)->SetRangeUser(0.,4.); 
 
   // findable efficiency vs pt
 
-  fEffSecHisto->GetAxis(5)->SetRangeUser(1.,1.); // findable
+  fEffSecHisto->GetAxis(5)->SetRange(2,2); // findable
   aFolderObj->Add(AddHistoEff(2, "ptRecEffF", "rec. efficiency (findable)", 0, 1));
   aFolderObj->Add(AddHistoEff(2, "ptCloneF", "clone rate (findable)", 1, 1));
   aFolderObj->Add(AddHistoEff(2, "ptFakeF", "fake rate (findable)", 2, 1));
@@ -1214,7 +1214,7 @@ void AliPerformanceEff::Analyse()
   //
   // efficiency vs eta
   //
-  fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
+  //fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.);   // all
   fEffSecHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
 
@@ -1223,23 +1223,23 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(0, "etaFake", "fake rate", 2, 1));
 
   // rec efficiency vs pid vs eta
-  fEffSecHisto->GetAxis(3)->SetRangeUser(0.,0.); // electrons
+  fEffSecHisto->GetAxis(3)->SetRange(1,1); // electrons
   aFolderObj->Add(AddHistoEff(0, "etaRecEffEle", "rec. efficiency (electrons)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(2.,2.); // pions
+  fEffSecHisto->GetAxis(3)->SetRange(3,3); // pions
   aFolderObj->Add(AddHistoEff(0, "etaRecEffPi", "rec. efficiency (pions)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
+  fEffSecHisto->GetAxis(3)->SetRange(4,4); // kaons
   aFolderObj->Add(AddHistoEff(0, "etaRecEffK", "rec. efficiency (kaons)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
+  fEffSecHisto->GetAxis(3)->SetRange(5,5); // protons
   aFolderObj->Add(AddHistoEff(0, "etaRecEffP", "rec. efficiency (protons)", 0, 1));
 
   fEffSecHisto->GetAxis(3)->SetRangeUser(0.,4.); 
 
   // findable efficiency vs eta
 
-  fEffSecHisto->GetAxis(5)->SetRangeUser(1.,1.); // findable
+  fEffSecHisto->GetAxis(5)->SetRange(2,2); // findable
   aFolderObj->Add(AddHistoEff(0, "etaRecEffF", "rec. efficiency (findable)", 0, 1));
   aFolderObj->Add(AddHistoEff(0, "etaCloneF", "clone rate (findable)", 1, 1));
   aFolderObj->Add(AddHistoEff(0, "etaFakeF", "fake rate (findable)", 2, 1));
@@ -1249,7 +1249,7 @@ void AliPerformanceEff::Analyse()
   //
 
   fEffSecHisto->GetAxis(0)->SetRangeUser(minEta,maxEta);
-  fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
+  //fEffSecHisto->GetAxis(2)->SetRangeUser(minPt,maxPt);
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.);   // all
   fEffSecHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
@@ -1259,23 +1259,23 @@ void AliPerformanceEff::Analyse()
   aFolderObj->Add(AddHistoEff(1, "phiFake", "fake rate", 2, 1));
 
   // rec efficiency vs pid vs phi
-  fEffSecHisto->GetAxis(3)->SetRangeUser(0.,0.);
+  fEffSecHisto->GetAxis(3)->SetRange(1,1);
   aFolderObj->Add(AddHistoEff(1, "phiRecEffEle", "rec. efficiency (electrons)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(2.,2.); // pions
+  fEffSecHisto->GetAxis(3)->SetRange(3,3); // pions
   aFolderObj->Add(AddHistoEff(1, "phiRecEffPi", "rec. efficiency (pions)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
+  fEffSecHisto->GetAxis(3)->SetRange(4,4); // kaons
   aFolderObj->Add(AddHistoEff(1, "phiRecEffK", "rec. efficiency (kaons)", 0, 1));
 
-  fEffSecHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
+  fEffSecHisto->GetAxis(3)->SetRange(5,5); // protons
   aFolderObj->Add(AddHistoEff(1, "phiRecEffP", "rec. efficiency (protons)", 0, 1));
 
   fEffSecHisto->GetAxis(3)->SetRangeUser(0.,4.); 
 
   // findable efficiency vs phi
 
-  fEffSecHisto->GetAxis(5)->SetRangeUser(1.,1.); // findable
+  fEffSecHisto->GetAxis(5)->SetRange(2,2); // findable
   aFolderObj->Add(AddHistoEff(1, "phiRecEffF", "rec. efficiency (findable)", 0, 1));
   aFolderObj->Add(AddHistoEff(1, "phiCloneF", "clone rate (findable)", 1, 1));
   aFolderObj->Add(AddHistoEff(1, "phiFakeF", "fake rate (findable)", 2, 1));
@@ -1379,10 +1379,10 @@ TH1D* AliPerformanceEff::AddHistoEff(Int_t axis, const Char_t *name, const Char_
 
   if (type == 0) // Efficiency
   {
-      EffHisto->GetAxis(4)->SetRangeUser(0.,1.);    // all
+      EffHisto->GetAxis(4)->SetRange(1.,2.);    // all
       TH1D *all = EffHisto->Projection(axis);
 
-      EffHisto->GetAxis(4)->SetRangeUser(1.,1.);    // reconstructed 
+      EffHisto->GetAxis(4)->SetRange(2.,2.);    // reconstructed 
       TH1D *rec = EffHisto->Projection(axis);
       recc = (TH1D*)rec->Clone();
 
@@ -1394,10 +1394,10 @@ TH1D* AliPerformanceEff::AddHistoEff(Int_t axis, const Char_t *name, const Char_
   }
   else if (type == 1) // Clone Rate
   {
-      EffHisto->GetAxis(4)->SetRangeUser(1.,1.);    // reconstructed
+      EffHisto->GetAxis(4)->SetRange(2.,2.);    // reconstructed
       TH1D *all = WeightedProjection(EffHisto, axis, 3, axis_all);
 
-      EffHisto->GetAxis(4)->SetRangeUser(1.,1.);    // reconstructed
+      EffHisto->GetAxis(4)->SetRange(2.,2.);    // reconstructed
       TH1D *clone = WeightedProjection(EffHisto, axis, 1, &axis_clone);
       recc = (TH1D*) clone->Clone();
 
@@ -1409,10 +1409,10 @@ TH1D* AliPerformanceEff::AddHistoEff(Int_t axis, const Char_t *name, const Char_
   }
   else if (type == 2) // Fake Rate
   {
-      EffHisto->GetAxis(4)->SetRangeUser(1.,1.);    // reconstructed
+      EffHisto->GetAxis(4)->SetRange(2.,2.);    // reconstructed
       TH1D *all = WeightedProjection(EffHisto, axis, 3, axis_all);
 
-      EffHisto->GetAxis(4)->SetRangeUser(1.,1.);    // reconstructed 
+      EffHisto->GetAxis(4)->SetRange(2.,2.);    // reconstructed 
       TH1D *fake = WeightedProjection(EffHisto, axis, 1, &axis_fake);
       recc = (TH1D*) fake->Clone();
 
