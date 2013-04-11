@@ -591,17 +591,17 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		// -------- track cuts ------------------------
 		
-		Double_t theta = this->GetTheta(iTrack);
-		Double_t phi   = this->GetPhi(iTrack);
+		Double_t eta = iTrack->Eta();
+		Double_t phi = this->GetPhi(iTrack);
 		
-		((TH2D*)fHistoMap->Get(particle + "_Before_Phi_Theta"))->Fill(theta,phi);
+		((TH2D*)fHistoMap->Get(particle + "_Before_Phi_Eta"))->Fill(eta,phi);
 		
 		if(!fESDtrackCuts->AcceptTrack(iTrack)) continue;  // with next track
 		if(fTOFmatch && !this->AcceptTOFtrack(iTrack)) continue; // with next track
 		
 		// --------------------- end track cuts -----------------------
 		
-		((TH2D*)fHistoMap->Get(particle + "_After_Phi_Theta"))->Fill(theta, phi);
+		((TH2D*)fHistoMap->Get(particle + "_After_Phi_Eta"))->Fill(eta, phi);
 		
 		++nTracks;
 		
@@ -713,6 +713,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 							((TH1D*)fHistoMap->Get(simparticle + "_Sim_Prim_Pt"))->Fill(simPt);
 							((TH1D*)fHistoMap->Get(simparticle + "_Sim_Prim_Y"))->Fill(simY);
 							((TH1D*)fHistoMap->Get(simparticle + "_Sim_Prim_Phi"))->Fill(simPhi);
+							((TH1D*)fHistoMap->Get(simparticle + "_Sim_Prim_Rec_Pt"))->Fill(pt);
 							
 							((TH2D*)fHistoMap->Get(simparticle + "_Sim_Prim_DCAxy_Pt"))->Fill(simPt,dcaxy);
 						
