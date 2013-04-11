@@ -1,5 +1,5 @@
 
-void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
+void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
 
    gSystem->Load("libCore.so");  
    gSystem->Load("libTree.so");
