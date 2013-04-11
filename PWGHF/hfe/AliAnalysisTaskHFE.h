@@ -178,6 +178,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SelectSpecialTrigger(const Char_t *trgclust, Int_t runMin = 0, Int_t runMax = 999999999); 
     void SetDebugStreaming() {SetBit(kTreeStream);};
     Bool_t CheckTRDTrigger(AliESDEvent *ev);
+    void DrawTRDTrigger(AliESDEvent *ev);
 
   private:
     enum{
