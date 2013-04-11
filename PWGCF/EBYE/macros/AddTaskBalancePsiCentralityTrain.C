@@ -34,6 +34,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Bool_t bResonancesCut = kFALSE,
 						       Bool_t bHBTcut = kFALSE,
 						       Bool_t bConversionCut = kFALSE,
+						       
 						       Bool_t bMomentumDifferenceCut = kFALSE,
 						       Int_t AODfilterBit = 128,
 						       Bool_t bCentralTrigger = kFALSE,
@@ -104,6 +105,10 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   
   //Event characteristics scheme
   taskBF->SetEventClass(fArgEventClass);
+  if(fArgEventClass = "Multiplicity")
+    taskBF->SetMultiplicityRange(centrMin,centrMax);
+  else 
+    taskBF->SetCentralityPercentileRange(centrMin,centrMax);
   
   taskBF->SetAnalysisObject(bf);
   if(gRunShuffling) taskBF->SetShufflingObject(bfs);
@@ -115,7 +120,6 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     }
   }
 
-  taskBF->SetCentralityPercentileRange(centrMin,centrMax);
   if(analysisType == "ESD") {
     AliESDtrackCuts *trackCuts = GetTrackCutsObject(ptMin,ptMax,etaMin,etaMax,maxTPCchi2,DCAxy,DCAz,minNClustersTPC);
     taskBF->SetAnalysisCutObject(trackCuts);
