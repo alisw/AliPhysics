@@ -604,10 +604,12 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   Double_t lMultiplicityVar = GetRefMultiOrCentrality( eventMain );
 
   // get the reaction plane
-  gReactionPlane = GetEventPlane(eventMain);
-  fHistEventPlane->Fill(gReactionPlane,lMultiplicityVar);
-  if(gReactionPlane < 0){
-    return;
+  if(fEventClass != "Multiplicity") {
+    gReactionPlane = GetEventPlane(eventMain);
+    fHistEventPlane->Fill(gReactionPlane,lMultiplicityVar);
+    if(gReactionPlane < 0){
+      return;
+    }
   }
   
   // get the accepted tracks in main event
@@ -616,12 +618,8 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 
   //multiplicity cut (used in pp)
   fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks,lMultiplicityVar);
-  if(fUseMultiplicity) {
-    if((gNumberOfAcceptedTracks < fNumberOfAcceptedTracksMin)||(gNumberOfAcceptedTracks > fNumberOfAcceptedTracksMax))
-      return;
-  }
 
-  // store charges of all accepted tracks, shuffle and reassign (two extra loops!)
+  // store charges of all accepted tracks,shuffle and reassign(two extra loops)
   TObjArray* tracksShuffled = NULL;
   if(fRunShuffling){
     tracksShuffled = GetShuffledTracks(tracksMain,lMultiplicityVar);
@@ -697,6 +695,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   
   Bool_t isSelectedMain = kTRUE;
   Float_t gCentrality = -1.;
+  Float_t gRefMultiplicity = -1.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
   fHistEventStats->Fill(1,gCentrality); //all events
@@ -775,6 +774,10 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	gCentrality = -1.;
       }
     }
+
+    //Multiplicity stuff 
+    if(fUseMultiplicity) 
+      gRefMultiplicity = GetRefMultiOrCentrality(event);
     
     // Event Vertex MC
     if(gAnalysisLevel == "MC"){
@@ -793,20 +796,35 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	  //gVertexArray.At(0),
 	  //gVertexArray.At(1),
 	  //gVertexArray.At(2));
-	  fHistEventStats->Fill(3,gCentrality); //events with a proper vertex
+	  if(fUseMultiplicity) 
+	    fHistEventStats->Fill(3,gRefMultiplicity); //events with a proper vertex
+	  else 
+	    fHistEventStats->Fill(3,gCentrality); //events with a proper vertex
 	  if(TMath::Abs(gVertexArray.At(0)) < fVxMax) {
 	    if(TMath::Abs(gVertexArray.At(1)) < fVyMax) {
 	      if(TMath::Abs(gVertexArray.At(2)) < fVzMax) {
-		fHistEventStats->Fill(4,gCentrality); //analayzed events
+		if(fUseMultiplicity) 
+		  fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
+		else 
+		  fHistEventStats->Fill(4,gCentrality); //analyzed events
 		fHistVx->Fill(gVertexArray.At(0));
 		fHistVy->Fill(gVertexArray.At(1));
 		fHistVz->Fill(gVertexArray.At(2),gCentrality);
 		
 		// take only events inside centrality class
-		if((fImpactParameterMin < gCentrality) && (fImpactParameterMax > gCentrality)){
-		  fHistEventStats->Fill(5,gCentrality); //events with correct centrality
-		  return gCentrality;	    
-		}//centrality class
+		if(fUseCentrality) {
+		  if((fImpactParameterMin < gCentrality) && (fImpactParameterMax > gCentrality)){
+		    fHistEventStats->Fill(5,gCentrality); //events with correct centrality
+		    return gCentrality;	    
+		  }//centrality class
+		}
+		// take events only within the same multiplicity class
+		else if(fUseMultiplicity) {
+		  if((gRefMultiplicity > fNumberOfAcceptedTracksMin)||(gRefMultiplicity < fNumberOfAcceptedTracksMax)) {
+		    fHistEventStats->Fill(5,gRefMultiplicity); //events with correct multiplicity
+		    return gRefMultiplicity;
+		  }
+		}//multiplicity range
 	      }//Vz cut
 	    }//Vy cut
 	  }//Vx cut
@@ -823,20 +841,35 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	vertex->GetCovarianceMatrix(fCov);
 	if(vertex->GetNContributors() > 0) {
 	  if(fCov[5] != 0) {
-	    fHistEventStats->Fill(3,gCentrality); //events with a proper vertex
+	    if(fUseMultiplicity) 
+	      fHistEventStats->Fill(3,gRefMultiplicity); //proper vertex
+	    else 
+	      fHistEventStats->Fill(3,gCentrality); //proper vertex
 	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
 	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
 		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
-		  fHistEventStats->Fill(4,gCentrality); //analyzed events
+		  if(fUseMultiplicity) 
+		    fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
+		  else 
+		    fHistEventStats->Fill(4,gCentrality); //analyzed events
 		  fHistVx->Fill(vertex->GetX());
 		  fHistVy->Fill(vertex->GetY());
 		  fHistVz->Fill(vertex->GetZ(),gCentrality);
 		  
 		  // take only events inside centrality class
-		  if((gCentrality > fCentralityPercentileMin) && (gCentrality < fCentralityPercentileMax)){
-		    fHistEventStats->Fill(5,gCentrality); //events with correct centrality
-		    return gCentrality;		
-		  }//centrality class
+		  if(fUseCentrality) {
+		    if((gCentrality > fCentralityPercentileMin) && (gCentrality < fCentralityPercentileMax)){
+		      fHistEventStats->Fill(5,gCentrality); //events with correct centrality
+		      return gCentrality;		
+		    }//centrality class
+		  }
+		  // take events only within the same multiplicity class
+		  else if(fUseMultiplicity) {
+		    if((gRefMultiplicity > fNumberOfAcceptedTracksMin)||(gRefMultiplicity < fNumberOfAcceptedTracksMax)) {
+		      fHistEventStats->Fill(5,gRefMultiplicity); //events with correct multiplicity
+		      return gRefMultiplicity;
+		    }
+		  }//multiplicity range
 		}//Vz cut
 	      }//Vy cut
 	    }//Vx cut
@@ -859,9 +892,8 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
   Float_t gCentrality = -1.;
   Double_t fMultiplicity = -100.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
-  if(fEventClass == "Centrality"){
-    
 
+  if(fEventClass == "Centrality"){
     if(gAnalysisLevel == "AOD") { //centrality in AOD header
       AliAODHeader *header = (AliAODHeader*) event->GetHeader();
       if(header){
@@ -894,12 +926,17 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       fMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(gESDEvent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
     }//AliESDevent cast
   }
-  if(fEventClass=="Multiplicity"&&gAnalysisLevel != "ESD"){
+  else if(fEventClass=="Multiplicity"&&gAnalysisLevel == "AOD"){
     AliAODHeader *header = (AliAODHeader*) event->GetHeader();
     if(header){
       fMultiplicity = header->GetRefMultiplicity();
     }//AOD header
   }
+  else if(fEventClass=="Multiplicity"&&gAnalysisLevel == "MC") {
+    AliMCEvent* gMCEvent = dynamic_cast<AliMCEvent*>(event);
+    fMultiplicity = gMCEvent->GetNumberOfPrimaries();
+  }
+
   Double_t lReturnVal = -100;
   if(fEventClass=="Multiplicity"){
     lReturnVal = fMultiplicity;

@@ -115,7 +115,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   }
 
   //multiplicity
-  void SetMultiplicityRange(Int_t min, Int_t max) {
+  void SetMultiplicityRange(Double_t min, Double_t max) {
     fUseMultiplicity = kTRUE;
     fNumberOfAcceptedTracksMin = min;
     fNumberOfAcceptedTracksMax = max;}
@@ -242,8 +242,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fImpactParameterMax;//impact parameter max (used for MC)
 
   Bool_t fUseMultiplicity;//use the multiplicity cuts
-  Int_t fNumberOfAcceptedTracksMin;//min. number of number of accepted tracks (used for the multiplicity dependence study - pp)
-  Int_t fNumberOfAcceptedTracksMax;//max. number of number of accepted tracks (used for the multiplicity dependence study - pp)
+  Double_t fNumberOfAcceptedTracksMin;//min. number of number of accepted tracks (used for the multiplicity dependence study - pp)
+  Double_t fNumberOfAcceptedTracksMax;//max. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   TH2F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
 
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection

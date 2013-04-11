@@ -1,4 +1,4 @@
- #ifndef ALIBALANCEPSI_H
+#ifndef ALIBALANCEPSI_H
 #define ALIBALANCEPSI_H
 /*  See cxx source for full Copyright notice */
 
