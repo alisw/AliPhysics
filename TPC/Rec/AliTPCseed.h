@@ -16,6 +16,7 @@
 #include <TError.h>
 #include <TBits.h>
 
+#include <TVectorFfwd.h>
 #include "AliTPCtrack.h"
 #include "AliComplexCluster.h"
 #include "AliPID.h"
@@ -137,7 +138,7 @@ class AliTPCseed : public AliTPCtrack {
 
   Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, Bool_t shapeNorm=kTRUE, Int_t posNorm=0, Int_t padNorm=0,Int_t returnVal=0);
 
-  Float_t  CookdEdxAnalytical(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, Int_t returnVal=0, Int_t rowThres = 2, Int_t mode=0);
+  Float_t  CookdEdxAnalytical(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, Int_t returnVal=0, Int_t rowThres = 2, Int_t mode=0, TVectorT<float> *returnVec = NULL);
 
  static   void GetError(AliTPCclusterMI* cluster, AliExternalTrackParam * param, 
 			 Double_t& erry, Double_t &errz);
@@ -146,7 +147,7 @@ class AliTPCseed : public AliTPCtrack {
   static   Double_t GetQCorrGeom(Float_t ty, Float_t tz);
   static   Double_t GetQCorrShape(Int_t ipad, Int_t type,Float_t z, Float_t ty, Float_t tz, Float_t q, Float_t thr);
   //
-  Float_t GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, Int_t row1);
+  // Float_t GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, Int_t row1, TVectorT<float> *returnVec);
   void    SetPoolID(Int_t id) {fPoolID = id;}
   Int_t   GetPoolID()  const {return fPoolID;}
   Int_t   GetNumberOfClustersIndices();  // Should be in AliTPCtrack

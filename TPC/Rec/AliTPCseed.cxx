@@ -22,6 +22,7 @@
 //        This class is used by the AliTPCtracker class
 //      Origin: Marian Ivanov, CERN, Marian.Ivanov@cern.ch
 //-----------------------------------------------------------------
+#include <TVectorF.h>
 #include "TClonesArray.h"
 #include "TGraphErrors.h"
 #include "AliTPCseed.h"
@@ -606,27 +607,38 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
   if (recoParam) useTot = (recoParam->GetUseTotCharge())? 0:1;
   //
   //
+  TVectorF i1i2;
+  TVectorF  iro;
+  TVectorF oro1;
+  TVectorF oro2;
+  TVectorF foro;
+
+  CookdEdxAnalytical(low,up,useTot ,i1  ,i2,   0, 2, 0, &i1i2);
+  CookdEdxAnalytical(low,up,useTot ,0   ,row0, 0, 2, 0, &iro);
+  CookdEdxAnalytical(low,up,useTot ,row0,row1, 0, 2, 0, &oro1);
+  CookdEdxAnalytical(low,up,useTot ,row1,row2, 0, 2, 0, &oro2);
+  CookdEdxAnalytical(low,up,useTot ,row0,row2, 0, 2, 0, &foro); // full OROC truncated mean
+
+  fDEDX[0]      = i1i2(0);
+  fDEDX[1]      =  iro(0);
+  fDEDX[2]      = oro1(0);
+  fDEDX[3]      = oro2(0);
+  fDEDX[4]      = foro(0); // full OROC truncated mean
   //
-  fDEDX[0]      = CookdEdxAnalytical(low,up,useTot ,i1  ,i2,   0);
-  fDEDX[1]      = CookdEdxAnalytical(low,up,useTot ,0   ,row0, 0);
-  fDEDX[2]      = CookdEdxAnalytical(low,up,useTot ,row0,row1, 0);
-  fDEDX[3]      = CookdEdxAnalytical(low,up,useTot ,row1,row2, 0);
-  fDEDX[4]      = CookdEdxAnalytical(low,up,useTot ,row0,row2, 0); // full OROC truncated mean
+  fSDEDX[0]     = i1i2(1);
+  fSDEDX[1]     =  iro(1);
+  fSDEDX[2]     = oro1(1);
+  fSDEDX[3]     = oro2(1);
   //
-  fSDEDX[0]     = CookdEdxAnalytical(low,up,useTot ,i1  ,i2,   1);
-  fSDEDX[1]     = CookdEdxAnalytical(low,up,useTot ,0   ,row0, 1);
-  fSDEDX[2]     = CookdEdxAnalytical(low,up,useTot ,row0,row1, 1);
-  fSDEDX[3]     = CookdEdxAnalytical(low,up,useTot ,row1,row2, 1);
+  fNCDEDX[0]    = TMath::Nint(i1i2(2));
+  fNCDEDX[1]    = TMath::Nint( iro(2));
+  fNCDEDX[2]    = TMath::Nint(oro1(2));
+  fNCDEDX[3]    = TMath::Nint(oro2(2));
   //
-  fNCDEDX[0]    = TMath::Nint(GetTPCClustInfo(2, 1, i1  , i2));
-  fNCDEDX[1]    = TMath::Nint(GetTPCClustInfo(2, 1, 0   , row0));
-  fNCDEDX[2]    = TMath::Nint(GetTPCClustInfo(2, 1, row0, row1));
-  fNCDEDX[3]    = TMath::Nint(GetTPCClustInfo(2, 1, row1, row2));
-  //
-  fNCDEDXInclThres[0]    = TMath::Nint(GetTPCClustInfo(2, 2, i1  , i2));
-  fNCDEDXInclThres[1]    = TMath::Nint(GetTPCClustInfo(2, 2, 0   , row0));
-  fNCDEDXInclThres[2]    = TMath::Nint(GetTPCClustInfo(2, 2, row0, row1));
-  fNCDEDXInclThres[3]    = TMath::Nint(GetTPCClustInfo(2, 2, row1, row2));
+  fNCDEDXInclThres[0]    = TMath::Nint(i1i2(2)+i1i2(9));
+  fNCDEDXInclThres[1]    = TMath::Nint( iro(2)+ iro(9));
+  fNCDEDXInclThres[2]    = TMath::Nint(oro1(2)+oro1(9));
+  fNCDEDXInclThres[3]    = TMath::Nint(oro2(2)+oro2(9));
   //
   SetdEdx(fDEDX[0]);
   return fDEDX[0];
@@ -1106,7 +1118,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   return mean;
 }
 
-Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Int_t returnVal, Int_t rowThres, Int_t mode){
+Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Int_t returnVal, Int_t rowThres, Int_t mode, TVectorT<float> *returnVec){
  
   //
   // calculates dedx using the cluster
@@ -1129,6 +1141,8 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   //           
   // normalization parametrization taken from AliTPCClusterParam
   //
+  if (returnVec) returnVec->ResizeTo(10);
+
   AliTPCClusterParam * parcl = AliTPCcalibDB::Instance()->GetClusterParam();
   AliTPCParam * param = AliTPCcalibDB::Instance()->GetParameters();
   if (!parcl)  return 0;
@@ -1377,10 +1391,23 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   if (mode==1) meanL=TMath::Exp(meanL);  // upper truncation
   if (mode==1) meanD=TMath::Exp(meanD);  // lower truncation
   //
-  delete [] ampWithBelow;
+  delete [] ampWithBelow; //return?
   
 
   //
+  if(returnVec){
+      (*returnVec)(0) = mean;
+      (*returnVec)(1) = rms;
+      (*returnVec)(2) = ncl;
+      (*returnVec)(3) = Double_t(nclBelowThr)/Double_t(nclBelowThr+ncl);
+      (*returnVec)(4) = meanL;
+      (*returnVec)(5) = meanD;
+      (*returnVec)(6) = mean2;
+      (*returnVec)(7) = mean3;
+      (*returnVec)(8) = meanS;
+      (*returnVec)(9) = nclBelowThr;
+  }
+
   if (returnVal==1) return rms;
   if (returnVal==2) return ncl;
   if (returnVal==3) return Double_t(nclBelowThr)/Double_t(nclBelowThr+ncl);
@@ -1389,6 +1416,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   if (returnVal==6) return mean2;
   if (returnVal==7) return mean3;
   if (returnVal==8) return meanS;
+  if (returnVal==9) return nclBelowThr;
   return mean;
 }
 
@@ -1665,8 +1693,9 @@ Double_t AliTPCseed::GetQCorrShape(Int_t ipad, Int_t type,Float_t z, Float_t ty,
 }
 
 
+/*
 //_______________________________________________________________________
-Float_t AliTPCseed::GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, Int_t row1)
+Float_t AliTPCseed::GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, Int_t row1, TVectorT<float> *returnVec)
 {
   //
   // TPC cluster information
@@ -1714,18 +1743,26 @@ Float_t AliTPCseed::GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, I
     if (cluster->IsUsed(11)) continue; // remove shared clusters for PbPb
     ncl++;
   }
+  if(returnVec->GetNoElements != 3){
+      returnVec->ResizeTo(3);
+  }
+  Float_t nclAll = nclBelowThr+ncl;
+  returnVec(0) = nclAll>0?ncl/nclAll:0;
+  returnVec(1) = ncl;
+  returnVec(2) = nclAll;
 
   if(ncl<10)
     return 0;
   if(type==0) 
-    if(nclBelowThr+ncl>0)
-      return ncl/(nclBelowThr+ncl);
+    if(nclAll>0)
+      return ncl/nclAll;
   if(type==1)
     return ncl;
   if(type==2)
-    return ncl+nclBelowThr;
+    return nclAll;
   return 0;
 }
+*/
 //_______________________________________________________________________
 Int_t AliTPCseed::GetNumberOfClustersIndices() {
   Int_t ncls = 0;
@@ -1744,7 +1781,7 @@ void AliTPCseed::Clear(Option_t*)
   if (fClusterOwner) for (int i=160;i--;) {delete fClusterPointer[i]; fClusterPointer[i] = 0;}
 }
 
-TObject* AliTPCseed::Clone(const char* newname) const
+TObject* AliTPCseed::Clone(const char* /*newname*/) const
 {
   // temporary override TObject::Clone to avoid crashes in reco
   AliTPCseed* src = (AliTPCseed*)this;
