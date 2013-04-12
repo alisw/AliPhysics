@@ -188,6 +188,7 @@ LoadLib(){
   kLoaded = kTRUE;
 
   gROOT->LoadMacro("v2All.C");
+  kStat=0;
 }
 
 
@@ -208,8 +209,8 @@ TGraphAsymmErrors *GetGraph(const char *filename){
     pt[np] = x;
     pterr[np] = 0;
     v2[np] = y;
-    v2errLow[np] = TMath::Sqrt(statLow*statLow + systLow*systLow);
-    v2errHigh[np] = TMath::Sqrt(statHigh*statHigh + systHigh*systHigh);
+    v2errLow[np] = TMath::Sqrt(/*statLow*statLow +*/ systLow*systLow);
+    v2errHigh[np] = TMath::Sqrt(/*statHigh*statHigh +*/ systHigh*systHigh);
     np++;
   }
   fclose(f);
@@ -326,6 +327,18 @@ Float_t ComputePiV2int(Int_t ic=2){
   Float_t num2 = 0;
   Float_t den2 = 0;
 
+  Float_t num3 = 0;
+  Float_t den3 = 0;
+
+  Float_t num4 = 0;
+  Float_t den4 = 0;
+
+  Float_t num5 = 0;
+  Float_t den5 = 0;
+
+  Float_t num6 = 0;
+  Float_t den6 = 0;
+
   for(Int_t i=0;i<10;i++){ // form 0 to 0.2
     Float_t x1 = i*0.02;
     Float_t x2 = (i+1)*0.02;
@@ -343,6 +356,18 @@ Float_t ComputePiV2int(Int_t ic=2){
       
       den2 += yield*(1 - 0.0202/0.2 - 0.03 * 0.2);
       num2 += yield*(1 - 0.0202/0.2 - 0.03 * 0.2) * v2 * (1 + 0.05);
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - 0.05);
+      
+      den4 += yield;
+      num4 += yield* v2 * (1 + 0.05);
+
+      den5 += yield*(1 + 0.0202/0.2 + 0.03 * 0.2);
+      num5 += yield*(1 + 0.0202/0.2 + 0.03 * 0.2) * v2;
+      
+      den6 += yield*(1 - 0.0202/0.2 - 0.03 * 0.2);
+      num6 += yield*(1 - 0.0202/0.2 - 0.03 * 0.2) * v2;
     }
   }
   
@@ -371,6 +396,18 @@ Float_t ComputePiV2int(Int_t ic=2){
 
       den2 += yield*(1 - frSyst*(0.0202/x + 0.03 * x));
       num2 += yield*(1 - frSyst*(0.0202/x + 0.03 * x)) * v2 * (1 + v2err2/v2);
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*(0.0202/x + 0.03 * x));
+      num5 += yield*(1 + frSyst*(0.0202/x + 0.03 * x)) * v2;
+
+      den6 += yield*(1 - frSyst*(0.0202/x + 0.03 * x));
+      num6 += yield*(1 - frSyst*(0.0202/x + 0.03 * x)) * v2;
 
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
@@ -403,6 +440,18 @@ Float_t ComputePiV2int(Int_t ic=2){
       den2 += yield*(1 - frSyst*(0.0202/6 + 0.03 * 6));
       num2 += yield*(1 - frSyst*(0.0202/6 + 0.03 * 6)) * v2 * (1 + v2err2/v2);
 
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*(0.0202/6 + 0.03 * 6));
+      num5 += yield*(1 + frSyst*(0.0202/6 + 0.03 * 6)) * v2;
+
+      den6 += yield*(1 - frSyst*(0.0202/6 + 0.03 * 6));
+      num6 += yield*(1 - frSyst*(0.0202/6 + 0.03 * 6)) * v2;
+
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
   }
@@ -411,6 +460,11 @@ Float_t ComputePiV2int(Int_t ic=2){
   printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
   printf("Syst. High = %f\n",(num2/den2 - num/den));
   printf("Syst. Low = %f\n",(num/den - num1/den1));
+  Float_t systV2 = (num4/den4 - num3/den3)/2;
+  printf("Syst. Only v2 = %f\n",systV2);
+  Float_t systSp = (num6/den6 - num5/den5)/2;
+  printf("Syst. Only spectra = %f\n",systSp);
+  printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
   printf("Yield = %f\n",den);
 }
 
@@ -521,6 +575,18 @@ Float_t ComputeKaV2int(Int_t ic=2){
   Float_t num2 = 0;
   Float_t den2 = 0;
 
+  Float_t num3 = 0;
+  Float_t den3 = 0;
+
+  Float_t num4 = 0;
+  Float_t den4 = 0;
+
+  Float_t num5 = 0;
+  Float_t den5 = 0;
+
+  Float_t num6 = 0;
+  Float_t den6 = 0;
+
   Float_t errHP=0;
 
   for(Int_t i=0;i<10;i++){ // form 0 to 0.2
@@ -540,6 +606,18 @@ Float_t ComputeKaV2int(Int_t ic=2){
       
       den2 += yield*(1 - 0.0215/0.25 - 0.05 * 0.25);
       num2 += yield*(1 - 0.0215/0.25 - 0.05 * 0.25) * v2 * (1 + 0.1);    
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - 0.1);
+      
+      den4 += yield;
+      num4 += yield* v2 * (1 + 0.1);    
+
+      den5 += yield*(1 + 0.0215/0.25 + 0.05 * 0.25);
+      num5 += yield*(1 + 0.0215/0.25 + 0.05 * 0.25) * v2;
+      
+      den6 += yield*(1 - 0.0215/0.25 - 0.05 * 0.25);
+      num6 += yield*(1 - 0.0215/0.25 - 0.05 * 0.25) * v2;    
     }
   }
 
@@ -569,6 +647,18 @@ Float_t ComputeKaV2int(Int_t ic=2){
 
       den2 += yield*(1 - frSyst*(0.0215/x + 0.05 * x));
       num2 += yield*(1 - frSyst*(0.0215/x + 0.05 * x)) * v2 * (1 + v2err2/v2);
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*(0.0215/x + 0.05 * x));
+      num5 += yield*(1 + frSyst*(0.0215/x + 0.05 * x)) * v2;
+
+      den6 += yield*(1 - frSyst*(0.0215/x + 0.05 * x));
+      num6 += yield*(1 - frSyst*(0.0215/x + 0.05 * x)) * v2;
 
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
@@ -601,6 +691,18 @@ Float_t ComputeKaV2int(Int_t ic=2){
       den2 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6));
       num2 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2 * (1 + v2err2/v2);
 
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6));
+      num5 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2;
+
+      den6 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6));
+      num6 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2;
+
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
   }
@@ -609,6 +711,11 @@ Float_t ComputeKaV2int(Int_t ic=2){
   printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
   printf("Syst. High = %f\n",(num2/den2 - num/den));
   printf("Syst. Low = %f\n",(num/den - num1/den1));
+  Float_t systV2 = (num4/den4 - num3/den3)/2;
+  printf("Syst. Only v2 = %f\n",systV2);
+  Float_t systSp = (num6/den6 - num5/den5)/2;
+  printf("Syst. Only spectra = %f\n",systSp);
+  printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
   printf("Yield = %f\n",den);
 }
 
@@ -717,6 +824,18 @@ Float_t ComputePrV2int(Int_t ic=2){
   Float_t num2 = 0;
   Float_t den2 = 0;
 
+  Float_t num3 = 0;
+  Float_t den3 = 0;
+
+  Float_t num4 = 0;
+  Float_t den4 = 0;
+
+  Float_t num5 = 0;
+  Float_t den5 = 0;
+
+  Float_t num6 = 0;
+  Float_t den6 = 0;
+
   for(Int_t i=0;i<10;i++){ // form 0 to 0.2
     Float_t x1 = i*0.03;
     Float_t x2 = (i+1)*0.03;
@@ -734,8 +853,23 @@ Float_t ComputePrV2int(Int_t ic=2){
       
       den2 += yield*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3);
       num2 += yield*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3) * v2 * (1 + 0.2);
+
+      den3 += yield;
+      num3 += yield * v2 * (1 - 0.2);
+      
+      den4 += yield;
+      num4 += yield * v2 * (1 + 0.2);
+
+      den5 += yield*(1 + 0.064/0.3 + 0.0083 * 0.3 * 0.3);
+      num5 += yield*(1 + 0.064/0.3 + 0.0083 * 0.3 * 0.3) * v2;
+      
+      den6 += yield*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3);
+      num6 += yield*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3) * v2;
+
     }
   }
+
+  printf("yieldMinExtrapolatedLowPt = %f -- yieldMaxExtrapolatedLowPt = %f\n",den1,den2);
 
   for(Int_t i=0; i < gprv2->GetN();i++){
     Float_t x = gprv2->GetX()[i];
@@ -762,7 +896,19 @@ Float_t ComputePrV2int(Int_t ic=2){
       den2 += yield*(1 - frSyst*(0.064/x + 0.0083 * x * x));
       num2 += yield*(1 - frSyst*(0.064/x + 0.0083 * x * x)) * v2 * (1 + v2err2/v2);
 
-      printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*(0.064/x + 0.0083 * x * x));
+      num5 += yield*(1 + frSyst*(0.064/x + 0.0083 * x * x)) * v2;
+
+      den6 += yield*(1 - frSyst*(0.064/x + 0.0083 * x * x));
+      num6 += yield*(1 - frSyst*(0.064/x + 0.0083 * x * x)) * v2;
+
+      printf("pt<%f) v2int = %f (DeltaV2 = %f, yield = %f)\n",x+binwidth,num/den,(num2/den2 - num1/den1),den);
     }
   }
 
@@ -793,6 +939,18 @@ Float_t ComputePrV2int(Int_t ic=2){
       den2 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6));
       num2 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2 * (1 + v2err2/v2);
 
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6));
+      num5 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2;
+
+      den6 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6));
+      num6 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2;
+
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
   }
@@ -801,6 +959,11 @@ Float_t ComputePrV2int(Int_t ic=2){
   printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
   printf("Syst. High = %f\n",(num2/den2 - num/den));
   printf("Syst. Low = %f\n",(num/den - num1/den1));
+  Float_t systV2 = (num4/den4 - num3/den3)/2;
+  printf("Syst. Only v2 = %f\n",systV2);
+  Float_t systSp = (num6/den6 - num5/den5)/2;
+  printf("Syst. Only spectra = %f\n",systSp);
+  printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
   printf("Yield = %f\n",den);
 }
 
