@@ -564,8 +564,9 @@ void AliTPCcalibDB::UpdateNonRec(){
   entry          = GetCDBEntry("TPC/Calib/Raw");
   if (entry){
     entry->SetOwner(kTRUE);
-    TObjArray *arr=(TObjArray*)(entry->GetObject());
+    TObjArray *arr=dynamic_cast<TObjArray*>(entry->GetObject());
     if (arr) fCalibRaw=(AliTPCCalibRaw*)arr->At(0);
+    else fCalibRaw = (AliTPCCalibRaw*)(entry->GetObject());
   }
   //QA calibration data
   entry          = GetCDBEntry("TPC/Calib/QA");
