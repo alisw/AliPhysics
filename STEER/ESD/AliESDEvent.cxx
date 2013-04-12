@@ -406,6 +406,7 @@ void AliESDEvent::Reset()
 
   // Reset the standard contents
   ResetStdContent(); 
+  fDetectorStatus = 0xFFFFFFFF;
 
   //  reset for the old data without AliESDEvent...
   if(fESDOld)fESDOld->Reset();
@@ -1606,6 +1607,7 @@ void AliESDEvent::WriteToTree(TTree* tree) const {
       tree->Bronch(branchname, obj->ClassName(), fESDObjects->GetObjectRef(obj),kBufsize, splitLevel);
     }
   }
+  tree->Branch("fDetectorStatus",(void*)&fDetectorStatus,"fDetectorStatus/l");
 }
 
 
@@ -1705,6 +1707,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
       // If connected use the connected list if objects
       fESDObjects->Delete();
       fESDObjects = connectedList;
+      tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus); //PH probably redundant
       GetStdContent(); 
       fOldMuonStructure = fESDObjects->TestBit(BIT(23));
       fConnected = true;
@@ -1768,6 +1771,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
 	}
       }
     }
+    tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus);
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
@@ -1803,6 +1807,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
 	}
       }
     }
+    tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus);
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it

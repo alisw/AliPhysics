@@ -560,9 +560,9 @@ protected:
   AliCentrality *fCentrality; //! Centrality for AA collision
   AliEventplane *fEventplane; //! Event plane for AA collision
 
-  ULong_t fDetectorStatus; // set detector event status bit for good event selection
+  ULong64_t fDetectorStatus; // set detector event status bit for good event selection
 
-  ClassDef(AliESDEvent,17)  //ESDEvent class 
+  ClassDef(AliESDEvent,18)  //ESDEvent class 
 };
 #endif 
 
