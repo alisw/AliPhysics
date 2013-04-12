@@ -54,6 +54,7 @@ set ( SRCS
     EBYE/MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx 
     EBYE/MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
     EBYE/PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx	 
+    EBYE/PIDFluctuation/task/AliEbyEParticleRatioFluctuationTask.cxx	 
     EBYE/NetParticle/AliAnalysisNetParticleDCA.cxx
     EBYE/NetParticle/AliAnalysisNetParticleDistribution.cxx
     EBYE/NetParticle/AliAnalysisNetParticleEffCont.cxx
