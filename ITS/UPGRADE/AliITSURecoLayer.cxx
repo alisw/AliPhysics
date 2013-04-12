@@ -87,6 +87,7 @@ void AliITSURecoLayer::Print(Option_t* opt) const
 void AliITSURecoLayer::Build()
 {
   // build internal structures
+  const double kSafeR = 0.05; // safety margin for Rmin,Rmax of the layer
   if (fActiveID<0) return;
   fNLadders = fITSGeom->GetNLadders(fActiveID);
   fNSensInLadder = fITSGeom->GetNDetectors(fActiveID);
@@ -115,7 +116,7 @@ void AliITSURecoLayer::Build()
       fSensors[ild*fNSensInLadder+idt] = sens;
       //
       double phiMin=1e9,phiMax=-1e9,zMin=1e9,zMax=-1e9;
-      mmod = *fITSGeom->GetMatrix(fActiveID,ild,idt);
+      mmod = *fITSGeom->GetMatrixSens(fActiveID,ild,idt);
       for (int ix=0;ix<2;ix++) {
 	loc[0] = (ix-0.5)*kSegm->Dx(); // +-DX/2
 	for (int iy=0;iy<2;iy++) {
@@ -164,6 +165,8 @@ void AliITSURecoLayer::Build()
   fRMin = Sqrt(fRMin);
   fRMax = Sqrt(fRMax);
   fR = 0.5*(fRMin+fRMax);
+  fRMin -= kSafeR;
+  fRMax += kSafeR;
   double dz = fNSensInLadder>0 ? fSensDZInv/(fNSensInLadder-1)/fNLadders : fZMax-fZMin;
   fSensDZInv = 1./dz;
 

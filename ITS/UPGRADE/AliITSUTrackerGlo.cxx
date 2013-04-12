@@ -339,6 +339,8 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
   //
   SetTrackingPhase(kRefitInw);
   Int_t nTrESD = esdEv->GetNumberOfTracks();
+  //  AliLog::SetClassDebugLevel("AliITSUTrackerGlo",10);
+
   AliDebug(1,Form("Will refit inward %d tracks",nTrESD));
   AliITSUTrackHyp *currTr=0;
   //
@@ -365,6 +367,7 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
   AliInfo(Form("%d ITSrefit in %d ITSout in %d ITSin tracks for %d tried TPC seeds out of %d ESD tracks\n",
 	       fCountITSrefit,fCountITSout,fCountITSin,fCountProlongationTrials,nTrESD));
   //
+  //  AliLog::SetClassDebugLevel("AliITSUTrackerGlo",0);
   return 0;
 }
 
@@ -590,6 +593,7 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t
       
       return kFALSE;
     }
+    AliDebug(2,Form("go in dir=%d to R=%.4f(X:%.4f)",dir,lrTo->GetR(-dir), xToGo));
     if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) {
       //printf("FailHere2: %f %f %d\n",xts,xToGo,dir);
       //seed->Print("etp");
@@ -627,6 +631,48 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliExternalTrackParam* seed, Int_t lF
       //      seed->Print("etp");
       return kFALSE;
     }
+    AliDebug(2,Form("go in dir=%d to R=%.4f(X:%.4f)",dir,lrTo->GetR(-dir), xToGo));
+    if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) {
+      //printf("FailHere2: %f %f %d\n",xts,xToGo,dir);
+      //seed->Print("etp");
+      return kFALSE;
+    }
+    lrFr = lrTo;
+  }
+  return kTRUE;
+  //
+}
+
+//_________________________________________________________________________
+Bool_t AliITSUTrackerGlo::TransportToLayerX(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo, Double_t xStop)
+{
+  // transport track from layerFrom to the entrance of layerTo but do not pass control parameter X
+  //  
+  if (lTo==lFrom) AliFatal(Form("was called with lFrom=%d lTo=%d",lFrom,lTo));
+  //
+  int dir = lTo > lFrom ? 1:-1;
+  AliITSURecoLayer* lrFr = fITS->GetLayer(lFrom); // this can be 0 when extrapolation from TPC to ITS is requested
+  Bool_t checkFirst = kTRUE;
+  while(lFrom!=lTo) {
+    if (lrFr) {
+      if (!GoToExitFromLayer(seed,lrFr,dir,checkFirst)) return kFALSE; // go till the end of current layer
+      checkFirst = kFALSE;
+    }
+    AliITSURecoLayer* lrTo =  fITS->GetLayer( (lFrom+=dir) );
+    if (!lrTo) AliFatal(Form("Layer %d does not exist",lFrom));
+    //
+    // go the entrance of the layer, assuming no materials in between
+    double xToGo = lrTo->GetR(-dir); // R of the entrance to layer
+    //
+    //    double xts = xToGo;
+    if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) {
+      //      printf("FailHere1: %f %f %d\n",xts,xToGo,dir);
+      //      seed->Print("etp");
+      return kFALSE;
+    }
+    if ( (dir>0&&xToGo>xStop) || (dir<0&&xToGo<xStop) ) xToGo = xStop;
+    //
+    AliDebug(2,Form("go in dir=%d to R=%.4f(X:%.4f)",dir,lrTo->GetR(-dir), xToGo));
     if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) {
       //printf("FailHere2: %f %f %d\n",xts,xToGo,dir);
       //seed->Print("etp");
@@ -669,6 +715,7 @@ Bool_t AliITSUTrackerGlo::GoToExitFromLayer(AliExternalTrackParam* seed, AliITSU
     if      (dir>0) { if (curR2-xToGo*xToGo>-fgkToler) return kTRUE; } // on the surface or outside of the layer
     else if (dir<0) { if (xToGo*xToGo-curR2>-fgkToler) return kTRUE; } // on the surface or outside of the layer
   }
+  AliDebug(2,Form(" dir=%d : from R=%.4f -> R=%.4f",dir,Sqrt(seed->GetX()*seed->GetX() + seed->GetY()*seed->GetY()), xToGo));
   if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
   // go via layer to its boundary, applying material correction.
   if (!PropagateSeed(seed,xToGo,fCurrMass, lr->GetMaxStep())) return kFALSE;
@@ -961,6 +1008,10 @@ Bool_t AliITSUTrackerGlo::PropagateSeed(AliExternalTrackParam *seed, Double_t xT
   Int_t dir         = (xpos<xToGo) ? 1:-1;
   Double_t xyz0[3],xyz1[3],param[7];
   //
+  if (AliDebugLevelClass()>1) {
+    AliDebug(2,Form("Before Propagate to X=%f with M=%.3f MaxStep=%.4f MatCorr=%d",xToGo,mass,maxStep,matCorr));
+    seed->AliExternalTrackParam::Print();
+  }
   Bool_t updTime = dir>0 && seed->IsStartedTimeIntegral();
   if (matCorr || updTime) seed->GetXYZ(xyz1);   //starting global position
   while ( (xToGo-xpos)*dir > kEpsilon){
@@ -992,6 +1043,10 @@ Bool_t AliITSUTrackerGlo::PropagateSeed(AliExternalTrackParam *seed, Double_t xT
     if (updTime) seed->AddTimeStep(ds);
     //
     xpos = seed->GetX();
+  }
+  if (AliDebugLevelClass()>1) {
+    AliDebug(2,Form("After Propagate to X=%f",xToGo));
+    seed->AliExternalTrackParam::Print();
   }
   return kTRUE;
 }
@@ -1086,14 +1141,6 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
     // passive layer or active w/o hits will be traversed on the way to next cluster
     if (!lr->IsActive() || fClInfo[ilrA2=(ilrA<<1)]<0) continue; 
     //
-    if (ilr!=lrStart && !TransportToLayer(&tmpTr,lrStart,ilr)) {
-      AliDebug(2,Form("Failed to transport %d -> %d | ESDtrack#%d (MClb:%d)\n",lrStart,ilr,fCurrESDtrack->GetID(),fCurrESDtrMClb));
-      //tmpTr.AliExternalTrackParam::Print();
-      //trc->GetWinner()->Print("etp");
-      return kFALSE; // go to the entrance to the layer
-    }
-    lrStart = ilr;
-    //
     // select the order in which possible 2 clusters (in case of the overlap) will be traversed and fitted
     nclLr=0;
     if (dir>0) { // clusters are stored in increasing radius order
@@ -1105,6 +1152,7 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
       iclLr[nclLr++]=fClInfo[ilrA2];
     }
     //
+    Bool_t transportedToLayer = kFALSE;
     for (int icl=0;icl<nclLr;icl++) {
       AliITSUClusterPix* clus =  (AliITSUClusterPix*)lr->GetCluster(iclLr[icl]);
       AliITSURecoSens* sens = lr->GetSensorFromID(clus->GetVolumeId());
@@ -1112,11 +1160,26 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
 	AliDebug(2,Form("Failed on rotate to %f | ESDtrack#%d (MClb:%d)",sens->GetPhiTF(),fCurrESDtrack->GetID(),fCurrESDtrMClb));
 	return kFALSE;
       }
-      //printf("Refit cl:%d on lr %d Need to go %.4f -> %.4f\n",icl,ilrA,tmpTr.GetX(),sens->GetXTF()+clus->GetX());
-      if (!PropagateSeed(&tmpTr,sens->GetXTF()+clus->GetX(),fCurrMass)) {
-	AliDebug(2,Form("Failed on propagate to %f (dir=%d) | ESDtrack#%d (MClb:%d)",sens->GetXTF()+clus->GetX(),dir,fCurrESDtrack->GetID(),fCurrESDtrMClb));
-	//tmpTr.AliExternalTrackParam::Print("");
-	//trc->GetWinner()->Print("etp");
+      //
+      double xClus = sens->GetXTF()+clus->GetX();
+      if (!transportedToLayer) {
+	if (ilr!=lrStart && !TransportToLayerX(&tmpTr,lrStart,ilr,xClus)) {
+	  AliDebug(2,Form("Failed to transport %d -> %d | ESDtrack#%d (MClb:%d)\n",lrStart,ilr,fCurrESDtrack->GetID(),fCurrESDtrMClb));
+	  //tmpTr.AliExternalTrackParam::Print(); trc->GetWinner()->Print("etp");
+	  return kFALSE; // go to the entrance to the layer
+	}
+	lrStart = ilr;
+	transportedToLayer = kTRUE;
+      }
+      //
+      if (AliDebugLevelClass()>1) {
+	AliDebug(2,Form("Propagate to cl:%d on lr %d Need to go %.4f -> %.4f",icl,ilrA,tmpTr.GetX(),xClus));
+	//	printf("Before: "); tmpTr.AliExternalTrackParam::Print();
+      }
+      //
+      if (!PropagateSeed(&tmpTr,xClus,fCurrMass)) {
+	AliDebug(2,Form("Failed on propagate to %f (dir=%d) | ESDtrack#%d (MClb:%d)",xClus,dir,fCurrESDtrack->GetID(),fCurrESDtrMClb));
+	//tmpTr.AliExternalTrackParam::Print(""); trc->GetWinner()->Print("etp");
 	return kFALSE;
       }
       //
@@ -1146,7 +1209,9 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
 	((TH2*)cHistoArr->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2);
       }
 #endif 
-      //printf("AfterRefit: "); tmpTr.AliExternalTrackParam::Print();
+      if (AliDebugLevelClass()>1) {
+	printf("AfterRefit: "); tmpTr.AliExternalTrackParam::Print();
+      }
       if (stopAtLastCl && ++clCount==ncl) return kTRUE; // it was requested to not propagate after last update
     }
     //
@@ -1175,7 +1240,7 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
   }
   trc->AliKalmanTrack::operator=(tmpTr);
   if (AliDebugLevelClass()>2) {
-    printf("After refit (now at lr %d): ",lrStart); trc->AliExternalTrackParam::Print();
+    printf("After refit (now at lr %d): ",lrStop); trc->AliExternalTrackParam::Print();
   }
   return kTRUE;
 }
