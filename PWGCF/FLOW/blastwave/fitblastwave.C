@@ -47,6 +47,158 @@ Float_t ptMaxPr = 3.0;
 
 Bool_t kLoaded = kFALSE;
 
+drawBWfit(Int_t ic=2,Float_t Tfo=0.1,Float_t s2=0.057,Float_t meanRho=0.8,Float_t rho_2=0.025,Float_t gamma=1.1){
+  if(! kLoaded) LoadLib();
+  char name[200];
+  TFile *f = new TFile("SPECTRA_COMB_20120809_default.root");
+  if(f){
+    sprintf(name,"cent%i_pion_plus",ic);
+    hpiplus = (TH1D *) f->Get(name);
+    
+    if(! hpiplus) kPiPlusSpectra = kFALSE; 
+    
+    sprintf(name,"cent%i_kaon_plus",ic);
+    hkaplus = (TH1D *) f->Get(name);
+    
+    if(! hkaplus) kKaPlusSpectra = kFALSE; 
+    
+    sprintf(name,"cent%i_proton_plus",ic);
+    hprplus = (TH1D *) f->Get(name);
+ 
+    if(! hprplus) kPrPlusSpectra = kFALSE; 
+  }
+
+  TCanvas *csp = new TCanvas("cspectra","cspectra");
+  csp->cd()->SetLogy();
+  const char *optdraw = "P";
+  if(hpiplus){ hpiplus->Draw(optdraw); optdraw="P,SAME";}
+  if(hkaplus){ hkaplus->Draw(optdraw); optdraw="P,SAME";}
+  if(hprplus){ hprplus->Draw(optdraw); optdraw="P,SAME";}
+  
+  if(hpiplus){
+    hpiplus->GetXaxis()->SetRange(1,40);
+    hpiplus->SetMarkerStyle(20);
+    hpiplus->SetMarkerColor(4);
+    hpiplus->SetLineColor(4);
+  }
+  if(hkaplus){
+    hkaplus->SetMarkerStyle(21);
+    hkaplus->SetMarkerColor(1);
+    hkaplus->SetLineColor(1);
+  }
+  if(hprplus){
+    hprplus->SetMarkerStyle(22);
+    hprplus->SetMarkerColor(2);
+    hprplus->SetLineColor(2);
+  }
+
+  // Get v2
+  sprintf(name,"v2/v2SP_pion_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gpiv2 = GetGraphWithStat(name);
+  if(! gpiv2) kPiV2 = kFALSE;
+  sprintf(name,"v2/v2SP_kaon_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gkav2 = GetGraphWithStat(name);
+  if(! gkav2) kKaV2 = kFALSE;
+  sprintf(name,"v2/v2SP_antipr_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gprv2 = GetGraphWithStat(name);
+  if(! gprv2) kPrV2 = kFALSE;
+
+  TCanvas *cv2 = new TCanvas("cv2","cv2");
+  optdraw = "AP";
+  if(gpiv2){ gpiv2->Draw(optdraw); optdraw="P";}
+  if(gkav2){ gkav2->Draw(optdraw); optdraw="P";}
+  if(gprv2){ gprv2->Draw(optdraw); optdraw="P";}
+
+  if(gpiv2){
+    gpiv2->GetXaxis()->SetRange(1,40);
+    gpiv2->SetMarkerStyle(20);
+    gpiv2->SetMarkerColor(4);
+    gpiv2->SetLineColor(4);
+    gpiv2->SetMaximum(0.2);
+    gpiv2->SetMinimum(0.);
+  }
+  if(gkav2){
+    gkav2->SetMarkerStyle(21);
+    gkav2->SetMarkerColor(1);
+    gkav2->SetLineColor(1);
+    gkav2->SetMaximum(0.2);
+    gkav2->SetMinimum(0.);
+  }
+  if(gprv2){
+    gprv2->SetMarkerStyle(22);
+    gprv2->SetMarkerColor(2);
+    gprv2->SetLineColor(2);
+    gprv2->SetMaximum(0.2);
+    gprv2->SetMinimum(0.);
+  }
+
+  // initialize fitter
+  AliBlastwaveFit2D *bw[3];
+  bw[0] = new AliBlastwaveFit2D("pions",mPi);
+  bw[0]->SetMinPt(ptMinPi);
+  bw[0]->SetMaxPt(ptMaxPi);
+
+  bw[1] = new AliBlastwaveFit2D("kaons",mKa);
+  bw[1]->SetMinPt(ptMinKa);
+  bw[1]->SetMaxPt(ptMaxKa);
+
+  bw[2] = new AliBlastwaveFit2D("protons",mPr);
+  bw[2]->SetMinPt(ptMinPr);
+  bw[2]->SetMaxPt(ptMaxPr);
+
+  if(kPiPlusSpectra) bw[0]->SetSpectrumObj(hpiplus);
+  if(kPiV2) bw[0]->SetV2Obj(gpiv2);
+  if(kKaPlusSpectra) bw[1]->SetSpectrumObj(hkaplus);
+  if(kKaV2) bw[1]->SetV2Obj(gkav2);
+  if(kPrPlusSpectra) bw[2]->SetSpectrumObj(hprplus);
+  if(kPrV2) bw[2]->SetV2Obj(gprv2);
+  for(Int_t i=0;i < 3;i++){
+    bw[i]->SetParameter(0,Tfo);
+    bw[i]->SetParameter(1,s2);
+    bw[i]->SetParameter(2,meanRho);
+    bw[i]->SetParameter(3,rho_2);
+    bw[i]->SetParameter(4,gamma);
+  }
+  csp->cd();
+  if(hpiplus){
+    bw[0]->SetNormalization();
+    bw[0]->GetSpectraFit()->SetRange(ptMinPi,ptMaxPi);
+    bw[0]->GetSpectraFit()->Draw("SAME");
+    bw[0]->GetSpectraFit()->SetLineColor(4);
+  }
+  if(hkaplus){
+    bw[1]->SetNormalization();
+    bw[1]->GetSpectraFit()->SetRange(ptMinKa,ptMaxKa);
+    bw[1]->GetSpectraFit()->Draw("SAME");
+    bw[1]->GetSpectraFit()->SetLineColor(1);
+  }
+  if(hprplus){
+    bw[2]->SetNormalization();
+    bw[2]->GetSpectraFit()->SetRange(ptMinPr,ptMaxPr);
+    bw[2]->GetSpectraFit()->Draw("SAME");
+    bw[2]->GetSpectraFit()->SetLineColor(2);
+  }
+  cv2->cd();
+  if(gpiv2){
+    if(! hpiplus) bw[0]->SetNormalization();
+    bw[0]->GetV2Fit()->SetRange(ptMinPi,ptMaxPi);
+    bw[0]->GetV2Fit()->Draw("SAME");
+    bw[0]->GetV2Fit()->SetLineColor(4);
+  }
+  if(gkav2){
+    if(! hkaplus) bw[1]->SetNormalization();
+    bw[1]->GetV2Fit()->SetRange(ptMinKa,ptMaxKa);
+    bw[1]->GetV2Fit()->Draw("SAME");
+    bw[1]->GetV2Fit()->SetLineColor(1);
+  }
+  if(gprv2){
+    if(! hprplus) bw[0]->SetNormalization();
+    bw[2]->GetV2Fit()->SetRange(ptMinPr,ptMaxPr);
+    bw[2]->GetV2Fit()->Draw("SAME");
+    bw[2]->GetV2Fit()->SetLineColor(2);
+  }
+}
+
 fitblastwave(Int_t ic=2){
 
   if(! kLoaded) LoadLib();
@@ -211,6 +363,34 @@ TGraphAsymmErrors *GetGraph(const char *filename){
     v2[np] = y;
     v2errLow[np] = TMath::Sqrt(/*statLow*statLow +*/ systLow*systLow);
     v2errHigh[np] = TMath::Sqrt(/*statHigh*statHigh +*/ systHigh*systHigh);
+    if(x > 0.2 && x < 6.0) np++;
+  }
+  fclose(f);
+
+  TGraphAsymmErrors *g = new TGraphAsymmErrors(np,pt,v2,pterr,pterr,v2errLow,v2errHigh);
+
+  return g;
+}
+
+TGraphAsymmErrors *GetGraphWithStat(const char *filename){
+  char name[200];
+
+  sprintf(name,"cat %s|grep -v BinCenter >/tmp/tempov2",filename);
+
+  system(name);
+
+  Float_t x,y,statLow,statHigh,systLow,systHigh;
+
+  Int_t np=0;
+  Double_t pt[100],pterr[100],v2[100],v2errLow[100],v2errHigh[100];
+
+  FILE *f = fopen("/tmp/tempov2","r");
+  while(fscanf(f,"%f %f %f %f %f %f",&x,&y,&statHigh,&statLow,&systHigh,&systLow) == 6){
+    pt[np] = x;
+    pterr[np] = 0;
+    v2[np] = y;
+    v2errLow[np] = TMath::Sqrt(statLow*statLow + systLow*systLow);
+    v2errHigh[np] = TMath::Sqrt(statHigh*statHigh + systHigh*systHigh);
     if(x > 0.2 && x < 6.0) np++;
   }
   fclose(f);
