@@ -339,6 +339,12 @@ Float_t ComputePiV2int(Int_t ic=2){
   Float_t num6 = 0;
   Float_t den6 = 0;
 
+  Float_t xpt[500];
+  Float_t ypt[500];
+  Float_t ypt1[500];
+  Float_t ypt2[500];
+  Int_t npt=0;
+
   for(Int_t i=0;i<10;i++){ // form 0 to 0.2
     Float_t x1 = i*0.02;
     Float_t x2 = (i+1)*0.02;
@@ -348,6 +354,12 @@ Float_t ComputePiV2int(Int_t ic=2){
     Float_t v2 = fitV2->Eval(xm);
     
     if(xm > 0.){
+      xpt[npt] = xm;
+      ypt[npt] = fitSP->Eval(xm);
+      ypt1[npt] = ypt[npt]*(1 + 0.0202/0.2 + 0.03 * 0.2);
+      ypt2[npt] = ypt[npt]*(1 - 0.0202/0.2 - 0.03 * 0.2);
+      npt++;
+
       den += yield;
       num += yield * v2;
       
@@ -376,26 +388,32 @@ Float_t ComputePiV2int(Int_t ic=2){
 
     Float_t frSyst = 1 - 2*hpiplus->Integral(1,hpiplus->FindBin(x))/hpiplus->Integral();
 
-    if(x > 0.2 && x < 20){
+    if(x > 0.2 && x < 6){
       Float_t binwidth = 0.05;
       if(x < 3) binwidth = 0.05;
       else if(x < 4) binwidth = 0.1;
       else binwidth = 0.2;
 
       Float_t yield = hpiplus->Interpolate(x) * 2 * binwidth;
-      if(x>20) yield = fitSP2->Integral(x-binwidth,x+binwidth);
+      Float_t yielderr = hpiplus->GetBinError(hpiplus->FindBin(x)) / hpiplus->GetBinContent(hpiplus->FindBin(x));
       Float_t v2 = gpiv2->GetY()[i];
       Float_t v2err1 = gpiv2->GetEYlow()[i];
       Float_t v2err2 = gpiv2->GetEYhigh()[i];
 
+      xpt[npt] = x;
+      ypt[npt] = hpiplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
+
       den += yield;
       num += yield * v2;
 
-      den1 += yield*(1 + frSyst*(0.0202/x + 0.03 * x));
-      num1 += yield*(1 + frSyst*(0.0202/x + 0.03 * x)) * v2 * (1 - v2err1/v2);
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
 
-      den2 += yield*(1 - frSyst*(0.0202/x + 0.03 * x));
-      num2 += yield*(1 - frSyst*(0.0202/x + 0.03 * x)) * v2 * (1 + v2err2/v2);
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
 
       den3 += yield;
       num3 += yield* v2 * (1 - v2err1/v2);
@@ -403,11 +421,11 @@ Float_t ComputePiV2int(Int_t ic=2){
       den4 += yield;
       num4 += yield* v2 * (1 + v2err2/v2);
 
-      den5 += yield*(1 + frSyst*(0.0202/x + 0.03 * x));
-      num5 += yield*(1 + frSyst*(0.0202/x + 0.03 * x)) * v2;
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
 
-      den6 += yield*(1 - frSyst*(0.0202/x + 0.03 * x));
-      num6 += yield*(1 - frSyst*(0.0202/x + 0.03 * x)) * v2;
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
 
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
@@ -426,19 +444,25 @@ Float_t ComputePiV2int(Int_t ic=2){
       else binwidth = 2;
 
       Float_t yield = hpiplus->Interpolate(x) * 2 * binwidth;
-      if(x< 6) yield = fitSP2->Integral(x-binwidth,x+binwidth);
+      Float_t yielderr = hpiplus->GetBinError(hpiplus->FindBin(x)) / hpiplus->GetBinContent(hpiplus->FindBin(x));
       Float_t v2 = gpiv2->GetY()[i];
       Float_t v2err1 = gpiv2->GetEYlow()[i];
       Float_t v2err2 = gpiv2->GetEYhigh()[i];
 
+      xpt[npt] = x;
+      ypt[npt] = hpiplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
+
       den += yield;
       num += yield * v2;
 
-      den1 += yield*(1 + frSyst*(0.0202/6 + 0.03 * 6));
-      num1 += yield*(1 + frSyst*(0.0202/6 + 0.03 * 6)) * v2 * (1 - v2err1/v2);
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
 
-      den2 += yield*(1 - frSyst*(0.0202/6 + 0.03 * 6));
-      num2 += yield*(1 - frSyst*(0.0202/6 + 0.03 * 6)) * v2 * (1 + v2err2/v2);
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
 
       den3 += yield;
       num3 += yield* v2 * (1 - v2err1/v2);
@@ -446,11 +470,11 @@ Float_t ComputePiV2int(Int_t ic=2){
       den4 += yield;
       num4 += yield* v2 * (1 + v2err2/v2);
 
-      den5 += yield*(1 + frSyst*(0.0202/6 + 0.03 * 6));
-      num5 += yield*(1 + frSyst*(0.0202/6 + 0.03 * 6)) * v2;
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
 
-      den6 += yield*(1 - frSyst*(0.0202/6 + 0.03 * 6));
-      num6 += yield*(1 - frSyst*(0.0202/6 + 0.03 * 6)) * v2;
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
 
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
@@ -466,6 +490,24 @@ Float_t ComputePiV2int(Int_t ic=2){
   printf("Syst. Only spectra = %f\n",systSp);
   printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
   printf("Yield = %f\n",den);
+
+  new TCanvas("cSpectraComp","cSpectraComp");
+  TGraph *gpiSp = new TGraph(npt,xpt,ypt);
+  TGraph *gpiSp1 = new TGraph(npt,xpt,ypt1);
+  TGraph *gpiSp2 = new TGraph(npt,xpt,ypt2);
+
+  gpiSp->SetMarkerStyle(20);
+  gpiSp1->SetMarkerStyle(20);
+  gpiSp2->SetMarkerStyle(20);
+  gpiSp1->SetMarkerColor(2);
+  gpiSp2->SetMarkerColor(4);
+  gpiSp1->SetLineColor(2);
+  gpiSp2->SetLineColor(4);
+  gpiSp->Draw("AP");
+  gpiSp1->Draw("P");
+  gpiSp2->Draw("P");
+  hpiplus->Draw("SAME");
+
 }
 
 Float_t ComputeKaV2int(Int_t ic=2){
@@ -587,6 +629,12 @@ Float_t ComputeKaV2int(Int_t ic=2){
   Float_t num6 = 0;
   Float_t den6 = 0;
 
+  Float_t xpt[500];
+  Float_t ypt[500];
+  Float_t ypt1[500];
+  Float_t ypt2[500];
+  Int_t npt=0;
+
   Float_t errHP=0;
 
   for(Int_t i=0;i<10;i++){ // form 0 to 0.2
@@ -598,6 +646,12 @@ Float_t ComputeKaV2int(Int_t ic=2){
     Float_t v2 = fitV2->Eval(xm);
 
     if(xm > 0.){
+      xpt[npt] = xm;
+      ypt[npt] = fitSP->Eval(xm);
+      ypt1[npt] = ypt[npt]*(1 + 0.0215/0.25 + 0.05 * 0.25);
+      ypt2[npt] = ypt[npt]*(1 - 0.0215/0.25 - 0.05 * 0.25);
+      npt++;
+
       den += yield;
       num += yield * v2;
       
@@ -623,8 +677,8 @@ Float_t ComputeKaV2int(Int_t ic=2){
 
   for(Int_t i=0; i < gkav2->GetN();i++){
     Float_t x = gkav2->GetX()[i];
-    Float_t frSyst = 1 - 2*(x-0.25)/(3-0.25);
-
+    Float_t frSyst = 1 - 2*hkaplus->Integral(1,hkaplus->FindBin(x))/hkaplus->Integral();
+  
     if(x > 0.25 && x < 6){
       Float_t binwidth = 0.05;
       if(x < 3) binwidth = 0.05;
@@ -632,21 +686,27 @@ Float_t ComputeKaV2int(Int_t ic=2){
       else binwidth = 0.2;
 
       Float_t yield = hkaplus->Interpolate(x) * 2 * binwidth;
-      if(x>6) yield = fitSP2->Integral(x-binwidth,x+binwidth);
+      Float_t yielderr = hkaplus->GetBinError(hkaplus->FindBin(x)) / hkaplus->GetBinContent(hkaplus->FindBin(x));
       Float_t v2 = gkav2->GetY()[i];
       Float_t v2err1 = gkav2->GetEYlow()[i];
       Float_t v2err2 = gkav2->GetEYhigh()[i];
+
+      xpt[npt] = x;
+      ypt[npt] = hkaplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
 
       errHP = v2;
 
       den += yield;
       num += yield * v2;
 
-      den1 += yield*(1 + frSyst*(0.0215/x + 0.05 * x));
-      num1 += yield*(1 + frSyst*(0.0215/x + 0.05 * x)) * v2 * (1 - v2err1/v2);
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
 
-      den2 += yield*(1 - frSyst*(0.0215/x + 0.05 * x));
-      num2 += yield*(1 - frSyst*(0.0215/x + 0.05 * x)) * v2 * (1 + v2err2/v2);
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
 
       den3 += yield;
       num3 += yield* v2 * (1 - v2err1/v2);
@@ -654,11 +714,11 @@ Float_t ComputeKaV2int(Int_t ic=2){
       den4 += yield;
       num4 += yield* v2 * (1 + v2err2/v2);
 
-      den5 += yield*(1 + frSyst*(0.0215/x + 0.05 * x));
-      num5 += yield*(1 + frSyst*(0.0215/x + 0.05 * x)) * v2;
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
 
-      den6 += yield*(1 - frSyst*(0.0215/x + 0.05 * x));
-      num6 += yield*(1 - frSyst*(0.0215/x + 0.05 * x)) * v2;
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
 
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
@@ -677,19 +737,25 @@ Float_t ComputeKaV2int(Int_t ic=2){
       else binwidth = 2;
 
       Float_t yield = hkaplus->Interpolate(x) * 2 * binwidth;
-      if(x< 6) yield = fitSP2->Integral(x-binwidth,x+binwidth);
+      Float_t yielderr = hkaplus->GetBinError(hkaplus->FindBin(x)) / hkaplus->GetBinContent(hkaplus->FindBin(x));
       Float_t v2 = errHP/2;//gkav2->GetY()[i];
       Float_t v2err1 = 0;//gkav2->GetEYlow()[i];
       Float_t v2err2 = errHP;//gkav2->GetEYhigh()[i];
 
+      xpt[npt] = x;
+      ypt[npt] = hkaplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
+
       den += yield;
       num += yield * 0.0;
 
-      den1 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6));
-      num1 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2 * (1 - v2err1/v2);
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
 
-      den2 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6));
-      num2 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2 * (1 + v2err2/v2);
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
 
       den3 += yield;
       num3 += yield* v2 * (1 - v2err1/v2);
@@ -697,17 +763,17 @@ Float_t ComputeKaV2int(Int_t ic=2){
       den4 += yield;
       num4 += yield* v2 * (1 + v2err2/v2);
 
-      den5 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6));
-      num5 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2;
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
 
-      den6 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6));
-      num6 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2;
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
 
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
   }
 
-  printf("Integrated flow for kaons (0 < p_T < 6 GeV/c) = %f\n",num/den);
+  printf("Integrated flow for kaons (0 < p_T < 20 GeV/c) = %f\n",num/den);
   printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
   printf("Syst. High = %f\n",(num2/den2 - num/den));
   printf("Syst. Low = %f\n",(num/den - num1/den1));
@@ -717,6 +783,23 @@ Float_t ComputeKaV2int(Int_t ic=2){
   printf("Syst. Only spectra = %f\n",systSp);
   printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
   printf("Yield = %f\n",den);
+
+  new TCanvas("cSpectraComp","cSpectraComp");
+  TGraph *gkaSp = new TGraph(npt,xpt,ypt);
+  TGraph *gkaSp1 = new TGraph(npt,xpt,ypt1);
+  TGraph *gkaSp2 = new TGraph(npt,xpt,ypt2);
+
+  gkaSp->SetMarkerStyle(20);
+  gkaSp1->SetMarkerStyle(20);
+  gkaSp2->SetMarkerStyle(20);
+  gkaSp1->SetMarkerColor(2);
+  gkaSp2->SetMarkerColor(4);
+  gkaSp1->SetLineColor(2);
+  gkaSp2->SetLineColor(4);
+  gkaSp->Draw("AP");
+  gkaSp1->Draw("P");
+  gkaSp2->Draw("P");
+  hkaplus->Draw("SAME");
 }
 
 Float_t ComputePrV2int(Int_t ic=2){
@@ -836,6 +919,12 @@ Float_t ComputePrV2int(Int_t ic=2){
   Float_t num6 = 0;
   Float_t den6 = 0;
 
+  Float_t xpt[500];
+  Float_t ypt[500];
+  Float_t ypt1[500];
+  Float_t ypt2[500];
+  Int_t npt=0;
+
   for(Int_t i=0;i<10;i++){ // form 0 to 0.2
     Float_t x1 = i*0.03;
     Float_t x2 = (i+1)*0.03;
@@ -845,6 +934,12 @@ Float_t ComputePrV2int(Int_t ic=2){
     Float_t v2 = fitV2->Eval(xm);
 
     if(xm > 0.){
+      xpt[npt] = xm;
+      ypt[npt] = fitSP->Eval(xm);
+      ypt1[npt] = ypt[npt]*(1 + 0.064/0.3 + 0.0083 * 0.3 * 0.3);
+      ypt2[npt] = ypt[npt]*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3);
+      npt++;
+
       den += yield;
       num += yield * v2;
       
@@ -882,19 +977,25 @@ Float_t ComputePrV2int(Int_t ic=2){
       else binwidth = 0.2;
 
       Float_t yield = hprplus->Interpolate(x) * 2 * binwidth;
-      if(x>6) yield = fitSP2->Integral(x-binwidth,x+binwidth);
+      Float_t yielderr = hprplus->GetBinError(hprplus->FindBin(x)) / hprplus->GetBinContent(hprplus->FindBin(x));
       Float_t v2 = gprv2->GetY()[i];
       Float_t v2err1 = gprv2->GetEYlow()[i];
       Float_t v2err2 = gprv2->GetEYhigh()[i];
 
+      xpt[npt] = x;
+      ypt[npt] = hprplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
+
       den += yield;
       num += yield * v2;
 
-      den1 += yield*(1 + frSyst*(0.064/x + 0.0083 * x * x));
-      num1 += yield*(1 + frSyst*(0.064/x + 0.0083 * x * x)) * v2 * (1 - v2err1/v2);
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
 
-      den2 += yield*(1 - frSyst*(0.064/x + 0.0083 * x * x));
-      num2 += yield*(1 - frSyst*(0.064/x + 0.0083 * x * x)) * v2 * (1 + v2err2/v2);
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
 
       den3 += yield;
       num3 += yield* v2 * (1 - v2err1/v2);
@@ -902,11 +1003,11 @@ Float_t ComputePrV2int(Int_t ic=2){
       den4 += yield;
       num4 += yield* v2 * (1 + v2err2/v2);
 
-      den5 += yield*(1 + frSyst*(0.064/x + 0.0083 * x * x));
-      num5 += yield*(1 + frSyst*(0.064/x + 0.0083 * x * x)) * v2;
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
 
-      den6 += yield*(1 - frSyst*(0.064/x + 0.0083 * x * x));
-      num6 += yield*(1 - frSyst*(0.064/x + 0.0083 * x * x)) * v2;
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
 
       printf("pt<%f) v2int = %f (DeltaV2 = %f, yield = %f)\n",x+binwidth,num/den,(num2/den2 - num1/den1),den);
     }
@@ -925,19 +1026,25 @@ Float_t ComputePrV2int(Int_t ic=2){
       else binwidth = 2;
 
       Float_t yield = hprplus->Interpolate(x) * 2 * binwidth;
-      if(x< 6) yield = fitSP2->Integral(x-binwidth,x+binwidth);
+      Float_t yielderr = hprplus->GetBinError(hprplus->FindBin(x)) / hprplus->GetBinContent(hprplus->FindBin(x));
       Float_t v2 = gprv2->GetY()[i];
       Float_t v2err1 = gprv2->GetEYlow()[i];
       Float_t v2err2 = gprv2->GetEYhigh()[i];
 
+      xpt[npt] = x;
+      ypt[npt] = hprplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
+
       den += yield;
       num += yield * v2;
 
-      den1 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6));
-      num1 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2 * (1 - v2err1/v2);
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
 
-      den2 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6));
-      num2 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2 * (1 + v2err2/v2);
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
 
       den3 += yield;
       num3 += yield* v2 * (1 - v2err1/v2);
@@ -945,17 +1052,17 @@ Float_t ComputePrV2int(Int_t ic=2){
       den4 += yield;
       num4 += yield* v2 * (1 + v2err2/v2);
 
-      den5 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6));
-      num5 += yield*(1 + frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2;
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
 
-      den6 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6));
-      num6 += yield*(1 - frSyst*(0.064/6 + 0.0083 * 6 * 6)) * v2;
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
 
       printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
     }
   }
 
-  printf("Integrated flow for antiprotons (0 < p_T < 6 GeV/c) = %f\n",num/den);
+  printf("Integrated flow for antiprotons (0 < p_T < 20 GeV/c) = %f\n",num/den);
   printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
   printf("Syst. High = %f\n",(num2/den2 - num/den));
   printf("Syst. Low = %f\n",(num/den - num1/den1));
@@ -965,5 +1072,22 @@ Float_t ComputePrV2int(Int_t ic=2){
   printf("Syst. Only spectra = %f\n",systSp);
   printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
   printf("Yield = %f\n",den);
+
+  new TCanvas("cSpectraComp","cSpectraComp");
+  TGraph *gprSp = new TGraph(npt,xpt,ypt);
+  TGraph *gprSp1 = new TGraph(npt,xpt,ypt1);
+  TGraph *gprSp2 = new TGraph(npt,xpt,ypt2);
+
+  gprSp->SetMarkerStyle(20);
+  gprSp1->SetMarkerStyle(20);
+  gprSp2->SetMarkerStyle(20);
+  gprSp1->SetMarkerColor(2);
+  gprSp2->SetMarkerColor(4);
+  gprSp1->SetLineColor(2);
+  gprSp2->SetLineColor(4);
+  gprSp->Draw("AP");
+  gprSp1->Draw("P");
+  gprSp2->Draw("P");
+  hprplus->Draw("SAME");
 }
 
