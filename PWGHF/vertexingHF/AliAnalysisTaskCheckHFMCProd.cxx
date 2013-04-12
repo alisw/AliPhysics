@@ -52,6 +52,7 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE
   fHistoTracks(0),
   fHistoSelTracks(0),
   fHistoTracklets(0),
+  fHistoPtPhysPrim(0),
   fHistoSPD3DVtxX(0),
   fHistoSPD3DVtxY(0),
   fHistoSPD3DVtxZ(0),
@@ -66,6 +67,8 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE
   fHistOriginPrompt(0),
   fHistOriginFeeddown(0),
   fHistMotherID(0),
+  fHistDSpecies(0),
+  fHistBSpecies(0),
   fSearchUpToQuark(kFALSE),
   fSystem(0),
   fReadMC(kTRUE)
@@ -114,6 +117,9 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistoTracklets = new TH1F("hTracklets","",100,0.,maxMult);
   fHistoTracklets->Sumw2();
   fOutput->Add(fHistoTracklets);
+  fHistoPtPhysPrim = new TH1F("hPtPhysPrim","",100,0.,20.);
+  fHistoPtPhysPrim->Sumw2();
+  fOutput->Add(fHistoPtPhysPrim);
 
   fHistoSPD3DVtxX = new TH1F("hSPD3DvX","",100,-1.,1.);
   fHistoSPD3DVtxX->Sumw2();
@@ -147,7 +153,7 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fOutput->Add(fHistoTRKVtxZ);
 
   Int_t nBinscb=11;
-  if(fSystem==1) nBinscb=400;
+  if(fSystem==1) nBinscb=200;
   if(fSystem==2) nBinscb=21;
   Double_t maxncn=nBinscb-0.5;
   fHistoNcharmed = new TH2F("hncharmed","",100,0.,maxMult,nBinscb,-0.5,maxncn);
@@ -246,7 +252,32 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistMotherID=new TH1F("hMotherID","",1000,-1.5,998.5);
   fHistMotherID->SetMinimum(0);
   fOutput->Add(fHistMotherID);
-
+  fHistDSpecies=new TH1F("hDSpecies","",10,-0.5,9.5);
+  fHistDSpecies->GetXaxis()->SetBinLabel(1,"D0");
+  fHistDSpecies->GetXaxis()->SetBinLabel(2,"D0bar");
+  fHistDSpecies->GetXaxis()->SetBinLabel(3,"D+");
+  fHistDSpecies->GetXaxis()->SetBinLabel(4,"D-");
+  fHistDSpecies->GetXaxis()->SetBinLabel(5,"D*+");
+  fHistDSpecies->GetXaxis()->SetBinLabel(6,"D*-");
+  fHistDSpecies->GetXaxis()->SetBinLabel(7,"Ds+");
+  fHistDSpecies->GetXaxis()->SetBinLabel(8,"Ds-");
+  fHistDSpecies->GetXaxis()->SetBinLabel(9,"Lc+");
+  fHistDSpecies->GetXaxis()->SetBinLabel(10,"Lc-");
+  fHistDSpecies->SetMinimum(0);
+  fOutput->Add(fHistDSpecies);
+  fHistBSpecies=new TH1F("hBSpecies","",10,-0.5,9.5);
+  fHistBSpecies->GetXaxis()->SetBinLabel(1,"B0");
+  fHistBSpecies->GetXaxis()->SetBinLabel(2,"B0bar");
+  fHistBSpecies->GetXaxis()->SetBinLabel(3,"B+");
+  fHistBSpecies->GetXaxis()->SetBinLabel(4,"B-");
+  fHistBSpecies->GetXaxis()->SetBinLabel(5,"B*+");
+  fHistBSpecies->GetXaxis()->SetBinLabel(6,"B*-");
+  fHistBSpecies->GetXaxis()->SetBinLabel(7,"Bs+");
+  fHistBSpecies->GetXaxis()->SetBinLabel(8,"Bs-");
+  fHistBSpecies->GetXaxis()->SetBinLabel(9,"Lb+");
+  fHistBSpecies->GetXaxis()->SetBinLabel(10,"Lb-");
+  fHistBSpecies->SetMinimum(0);
+  fOutput->Add(fHistBSpecies);
   PostData(1,fOutput);
 
 }
@@ -332,6 +363,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
     for (Int_t i=0;i<nParticles;i++){
       TParticle* part = (TParticle*)stack->Particle(i);
       Int_t absPdg=TMath::Abs(part->GetPdgCode());
+      Int_t pdg=part->GetPdgCode();
       if(absPdg==4) nc++;
       if(absPdg==5) nb++;
       if(stack->IsPhysicalPrimary(i)){
@@ -339,6 +371,9 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 	if(TMath::Abs(eta)<0.5){
 	  dNchdy+=0.6666;   // 2/3 for the ratio charged/all
 	  nPhysPrim++;
+	}
+	if(TMath::Abs(eta)<0.9){
+	  fHistoPtPhysPrim->Fill(part->Pt());
 	}
       }
       Float_t rapid=-999.;
@@ -384,7 +419,29 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       else if(absPdg==531) fHistBYPtAllDecay[3]->Fill(part->Pt(),rapid);
       else if(absPdg==5122) fHistBYPtAllDecay[4]->Fill(part->Pt(),rapid);
 
-      if(iSpecies<0) continue; // not a charm meson
+      if(pdg==511) fHistBSpecies->Fill(0);
+      else if(pdg==-511) fHistBSpecies->Fill(1);
+      else if(pdg==521) fHistBSpecies->Fill(2);
+      else if(pdg==-521) fHistBSpecies->Fill(3);
+      else if(pdg==513) fHistBSpecies->Fill(4);
+      else if(pdg==-513) fHistBSpecies->Fill(5);
+      else if(pdg==531) fHistBSpecies->Fill(6);
+      else if(pdg==-531) fHistBSpecies->Fill(7);
+      else if(pdg==5122) fHistBSpecies->Fill(8);
+      else if(pdg==-5122) fHistBSpecies->Fill(9);
+
+     if(iSpecies<0) continue; // not a charm meson
+
+      if(pdg==421) fHistDSpecies->Fill(0);
+      else if(pdg==-421) fHistDSpecies->Fill(1);
+      else if(pdg==411) fHistDSpecies->Fill(2);
+      else if(pdg==-411) fHistDSpecies->Fill(3);
+      else if(pdg==413) fHistDSpecies->Fill(4);
+      else if(pdg==-413) fHistDSpecies->Fill(5);
+      else if(pdg==431) fHistDSpecies->Fill(6);
+      else if(pdg==-431) fHistDSpecies->Fill(7);
+      else if(pdg==4122) fHistDSpecies->Fill(8);
+      else if(pdg==-4122) fHistDSpecies->Fill(9);
 
       Double_t distx=part->Vx()-mcVert->GetX();
       Double_t disty=part->Vy()-mcVert->GetY();
