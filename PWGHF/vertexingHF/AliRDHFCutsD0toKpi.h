@@ -21,6 +21,7 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
 {
  public:
 
+
   AliRDHFCutsD0toKpi(const char* name="CutsD0toKpi");
   
   virtual ~AliRDHFCutsD0toKpi();
@@ -88,13 +89,12 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
      kBayesWeightNoFilter,
      kBayesSimple
   };
-  
+
   void SetCombPID(Bool_t CombPID){fCombPID=CombPID;}
   Bool_t GetCombPID() const {return fCombPID;}
-  
 
- 
  protected:
+  
   Int_t IsSelectedKF(AliAODRecoDecayHF2Prong* d,AliAODEvent* aod) const;
 
   Bool_t fUseSpecialCuts;  // flag to switch on/off special cuts
@@ -109,12 +109,12 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Double_t  fmaxPtrackForPID; // max momentum for applying PID
 
   Bool_t fCombPID;		//switch for Bayesian
-  
-  Double_t* fWeightsPositive;	//Bayesian weights for positive track
-  Double_t* fWeightsNegative;	//Bayesian weights for negative track
+  Int_t fnSpecies;   //number of species (used only for array declaration)
+  Double_t* fWeightsPositive; //[fnSpecies] Bayesian weights for positive track
+  Double_t* fWeightsNegative; //[fnSpecies] Bayesian weights for negative track
   Int_t fBayesianStrategy;
 
-  ClassDef(AliRDHFCutsD0toKpi,9);  // class for cuts on AOD reconstructed D0->Kpi
+  ClassDef(AliRDHFCutsD0toKpi,10);  // class for cuts on AOD reconstructed D0->Kpi
 };
 
 #endif
