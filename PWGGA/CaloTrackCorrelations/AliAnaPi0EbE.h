@@ -128,7 +128,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Float_t        fMinDist3;                // One more cut on distance used for acceptance-efficiency study
   Int_t          fNLMCutMin  ;             // Remove clusters/cells with number of local maxima smaller than this value
   Int_t          fNLMCutMax  ;             // Remove clusters/cells with number of local maxima larger than this value
-  Bool_t         fNLMECutMin[3] ;          // Minimum energy of the cluster, depending on nlm.
+  Float_t        fNLMECutMin[3] ;          // Minimum energy of the cluster, depending on nlm.
 
   Double_t       fTimeCutMin  ;            // Remove clusters/cells with time smaller than this value, in ns
   Double_t       fTimeCutMax  ;            // Remove clusters/cells with time larger than this value, in ns
