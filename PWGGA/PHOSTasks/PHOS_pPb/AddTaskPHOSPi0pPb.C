@@ -22,7 +22,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0pPb (const char* name = "PHOSPi0pPb",
   // MB or PHOS Trigger:
   if( AliVEvent::kINT7 == offlineTriggerMask || AliVEvent::kPHI7 == offlineTriggerMask ) {
     const int nbins = 5;
-    Double_t cbin[nbins+1] = {0., 20., 40., 60., 80., 90.};
+    Double_t cbin[nbins+1] = {0., 20., 40., 60., 80., 100.};
     TArrayD tbin(nbins+1, cbin);
     Int_t    nMixed[nbins] = {40, 40, 40, 40, 40};
     TArrayI tNMixed(nbins, nMixed);
