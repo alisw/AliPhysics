@@ -166,7 +166,7 @@ protected:
   Double32_t        fAngle[3];   //[-2*pi,2*pi,16]three angles CKBrev
   Double32_t        fPointAngleFi; //[-1,1,16]point angle fi CKBrev
   Double32_t        fPointAngleTh; //[-1,1,16]point angle theta CKBrev
-  Double32_t        fPointAngle;   //[-1,1,16] cosine of the pointing angle
+  Double32_t        fPointAngle;   //[-1,1,32] cosine of the pointing angle
 
 
   Int_t fPdgCode;             // reconstructed V0's type (PDG code)
@@ -189,7 +189,7 @@ protected:
 
 private:
 
-  ClassDef(AliESDv0,5)      // ESD V0 vertex
+  ClassDef(AliESDv0,6)      // ESD V0 vertex
 };
 
 inline 
