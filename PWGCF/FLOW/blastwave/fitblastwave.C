@@ -211,7 +211,7 @@ TGraphAsymmErrors *GetGraph(const char *filename){
     v2[np] = y;
     v2errLow[np] = TMath::Sqrt(/*statLow*statLow +*/ systLow*systLow);
     v2errHigh[np] = TMath::Sqrt(/*statHigh*statHigh +*/ systHigh*systHigh);
-    np++;
+    if(x > 0.2 && x < 6.0) np++;
   }
   fclose(f);
 
