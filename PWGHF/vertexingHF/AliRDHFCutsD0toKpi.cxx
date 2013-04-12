@@ -51,8 +51,9 @@ fPtLowPID(2.),
 fPtMaxSpecialCuts(9999.),
 fmaxPtrackForPID(9999),
 fCombPID(kFALSE),
-fWeightsPositive(new Double_t[AliPID::kSPECIES]),
-fWeightsNegative(new Double_t[AliPID::kSPECIES]),
+fnSpecies(AliPID::kSPECIES),
+fWeightsPositive(0),
+fWeightsNegative(0),
 fBayesianStrategy(0)
 {
   //
@@ -98,6 +99,9 @@ fBayesianStrategy(0)
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
 
+  fWeightsNegative = new Double_t[AliPID::kSPECIES];
+  fWeightsPositive = new Double_t[AliPID::kSPECIES];
+  
   for (Int_t i = 0; i<AliPID::kSPECIES; i++) {
     fWeightsPositive[i] = 0.;
     fWeightsNegative[i] = 0.;
@@ -115,6 +119,7 @@ AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi &source) :
   fPtMaxSpecialCuts(source.fPtMaxSpecialCuts),
   fmaxPtrackForPID(source.fmaxPtrackForPID),
   fCombPID(source.fCombPID),
+  fnSpecies(source.fnSpecies),
   fWeightsPositive(source.fWeightsPositive),
   fWeightsNegative(source.fWeightsNegative),
   fBayesianStrategy(source.fBayesianStrategy)
@@ -141,6 +146,7 @@ AliRDHFCutsD0toKpi &AliRDHFCutsD0toKpi::operator=(const AliRDHFCutsD0toKpi &sour
   fPtMaxSpecialCuts=source.fPtMaxSpecialCuts;
   fmaxPtrackForPID=source.fmaxPtrackForPID;
   fCombPID = source.fCombPID;
+  fnSpecies = source.fnSpecies;
   fWeightsPositive = source.fWeightsPositive;
   fWeightsNegative = source.fWeightsNegative;
   fBayesianStrategy = source.fBayesianStrategy;
@@ -2042,9 +2048,6 @@ void AliRDHFCutsD0toKpi::CalculateBayesianWeights(AliAODRecoDecayHF* d)
 
 {
   //Function to compute weights for Bayesian method
-  Double_t *prob0;
-  prob0 = new Double_t[AliPID::kSPECIES];
-
 
   AliAODTrack *aodtrack[2] = {(AliAODTrack*)d->GetDaughter(0), (AliAODTrack*)d->GetDaughter(1)};
   if ((aodtrack[0]->Charge() * aodtrack[1]->Charge()) != -1) {
@@ -2058,16 +2061,14 @@ void AliRDHFCutsD0toKpi::CalculateBayesianWeights(AliAODRecoDecayHF* d)
     }
 
 
-    // identify kaon
-    fPidHF->GetPidCombined()->ComputeProbabilities(aodtrack[daught], fPidHF->GetPidResponse(), prob0);
-
+    // identify kaon, define weights
     if (aodtrack[daught]->Charge() == +1) {
-      SetWeightsPositive(prob0);
+    fPidHF->GetPidCombined()->ComputeProbabilities(aodtrack[daught], fPidHF->GetPidResponse(), fWeightsPositive);
     }
+    
     if (aodtrack[daught]->Charge() == -1) {
-      SetWeightsNegative(prob0);
+    fPidHF->GetPidCombined()->ComputeProbabilities(aodtrack[daught], fPidHF->GetPidResponse(), fWeightsNegative);
     }
-
   }
 }
 
