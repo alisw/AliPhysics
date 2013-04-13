@@ -1587,23 +1587,18 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 }
 
 //____________________________________________________________//
-void drawProjections(const char* lhcPeriod = "LHC10h",
-		     const char* gCentralityEstimator = "V0M",
-		     Int_t gBit = 128,
-		     const char* gEventPlaneEstimator = "VZERO",
-		     Bool_t kProjectInEta = kFALSE,
+void drawProjections(Bool_t kProjectInEta = kFALSE,
 		     Int_t binMin = 1,
 		     Int_t binMax = 80,
 		     Int_t gCentrality = 1,
 		     Double_t psiMin = -0.5, 
 		     Double_t psiMax = 3.5,
-		     Double_t vertexZMin = -10., 
-		     Double_t vertexZMax = 10.,
 		     Double_t ptTriggerMin = -1.,
 		     Double_t ptTriggerMax = -1.,
 		     Double_t ptAssociatedMin = -1.,
 		     Double_t ptAssociatedMax = -1.,
-		     Bool_t kUseZYAM = kFALSE) {
+		     Bool_t kUseZYAM = kFALSE,
+		     TString eventClass = "Centrality") {
   //Macro that draws the charge dependent correlation functions PROJECTIONS 
   //for each centrality bin for the different pT of trigger and 
   //associated particles
@@ -1620,22 +1615,35 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
   filename += Form("%.1f",ptAssociatedMax); */
 
-  TString filename = "correlationFunction.Centrality";
-  filename += gCentrality; filename += ".Psi";
-  if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
-  else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
-  else if((psiMin == 1.5)&&(psiMax == 2.5)) filename += "OutOfPlane.Ptt";
-  else if((psiMin == 2.5)&&(psiMax == 3.5)) filename += "Rest.Ptt";
-  else filename += "All.PttFrom";
+  TString filename = "correlationFunction.";
+  if(eventClass == "Centrality"){
+    filename += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+    filename += ".PsiAll.PttFrom";
+  }
+  else if(eventClass == "Multiplicity"){
+    filename += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+    filename += ".PsiAll.PttFrom";
+  }
+  else{ // "EventPlane" (default)
+    filename += "Centrality";
+    filename += gCentrality; filename += ".Psi";
+    if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
+    else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
+    else if((psiMin == 1.5)&&(psiMax == 2.5)) filename += "OutOfPlane.Ptt";
+    else if((psiMin == 2.5)&&(psiMax == 3.5)) filename += "Rest.PttFrom";
+    else filename += "All.PttFrom";
+  }  
   filename += Form("%.1f",ptTriggerMin); filename += "To"; 
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
   filename += Form("%.1f",ptAssociatedMax); 
+  //if(k2pMethod) filename += "_2pMethod";
   
   filename += "_"; 
   filename += Form("%.1f",psiMin);
   filename += "-";   
   filename += Form("%.1f",psiMax);
+
   filename += ".root";  
 
   //Open the file
@@ -1648,8 +1656,11 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   
   //Latex
   TString centralityLatex = "Centrality: ";
-  centralityLatex += centralityArray[gCentrality-1]; 
-  centralityLatex += "%";
+  if(eventClass == "Centrality")
+    centralityLatex += Form("%.0f - %.0f",psiMin,psiMax);
+  else
+    centralityLatex += centralityArray[gCentrality-1]; 
+  centralityLatex += " %";
 
   TString psiLatex;
   if((psiMin == -0.5)&&(psiMax == 0.5))
@@ -1770,22 +1781,9 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
   latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
-  pngName = "Projection.CorrelationFunction.Centrality"; 
-  pngName += centralityArray[gCentrality-1]; 
-  pngName += ".Psi"; 
-  if(kProjectInEta)
-    pngName += ".ETAprojection.";
-  else
-    pngName += ".PHIprojection.";
-  if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
-  else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
-  else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
-  else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.Ptt";
-  else pngName += "All.PttFrom";
-  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
-  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
-  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
-  pngName += Form("%.1f",ptAssociatedMax); 
+  pngName = filename;
+  if(kProjectInEta) pngName.ReplaceAll(".root","_DeltaEtaProjection");
+  else              pngName.ReplaceAll(".root","_DeltaPhiProjection"); 
   pngName += ".PositiveNegative.png";
   cPN->SaveAs(pngName.Data());
   
@@ -1880,22 +1878,9 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
   latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
-  pngName = "Projection.CorrelationFunction.Centrality"; 
-  pngName += centralityArray[gCentrality-1]; 
-  pngName += ".Psi"; 
-  if(kProjectInEta)
-    pngName += ".ETAprojection.";
-  else
-    pngName += ".PHIprojection.";
-  if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
-  else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
-  else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
-  else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.Ptt";
-  else pngName += "All.PttFrom";
-  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
-  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
-  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
-  pngName += Form("%.1f",ptAssociatedMax); 
+  pngName = filename;
+  if(kProjectInEta) pngName.ReplaceAll(".root","_DeltaEtaProjection");
+  else              pngName.ReplaceAll(".root","_DeltaPhiProjection"); 
   pngName += ".NegativePositive.png";
   cNP->SaveAs(pngName.Data());
 
@@ -1990,22 +1975,9 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
   latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
-  pngName = "Projection.CorrelationFunction.Centrality"; 
-  pngName += centralityArray[gCentrality-1]; 
-  pngName += ".Psi"; 
-  if(kProjectInEta) 
-    pngName += ".ETAprojection.";
-  else
-    pngName += ".PHIprojection.";
-  if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
-  else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
-  else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
-  else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.Ptt";
-  else pngName += "All.PttFrom";
-  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
-  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
-  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
-  pngName += Form("%.1f",ptAssociatedMax); 
+  pngName = filename;
+  if(kProjectInEta) pngName.ReplaceAll(".root","_DeltaEtaProjection");
+  else              pngName.ReplaceAll(".root","_DeltaPhiProjection"); 
   pngName += ".PositivePositive.png";
   cPP->SaveAs(pngName.Data());
 
@@ -2100,22 +2072,9 @@ void drawProjections(const char* lhcPeriod = "LHC10h",
   latexInfo1->DrawLatex(0.6,0.83,pttLatex.Data());
   latexInfo1->DrawLatex(0.6,0.77,ptaLatex.Data());
 
-  pngName = "Projection.CorrelationFunction.Centrality"; 
-  pngName += centralityArray[gCentrality-1]; 
-  pngName += ".Psi"; 
-  if(kProjectInEta) 
-    pngName += ".ETAprojection.";
-  else
-    pngName += ".PHIprojection.";
-  if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
-  else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
-  else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
-  else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.Ptt";
-  else pngName += "All.PttFrom";
-  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
-  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
-  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
-  pngName += Form("%.1f",ptAssociatedMax); 
+  pngName = filename;
+  if(kProjectInEta) pngName.ReplaceAll(".root","_DeltaEtaProjection");
+  else              pngName.ReplaceAll(".root","_DeltaPhiProjection"); 
   pngName += ".NegativeNegative.png";
   cNN->SaveAs(pngName.Data());
 
