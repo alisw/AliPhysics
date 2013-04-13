@@ -13,6 +13,7 @@ AliDhcTask *AddTaskDhc(
   TString chNTracks   = "PicoTracks",
   TString centSel     = "V0M",
   TString className   = "",
+  Bool_t  doTrigMatch = kFALSE,
   Bool_t  doMassCut   = kFALSE,
   Bool_t  doFillSame  = kFALSE,
   UInt_t  trigsel     = AliVEvent::kINT7
@@ -97,6 +98,7 @@ AliDhcTask *AddTaskDhc(
       dhcTask->SetHEffA(hHEff);
       dhcTask->SetEtaMax(5.0);
       dhcTask->SetPtTACrit(kFALSE);
+      dhcTask->SetTriggerMatch(doTrigMatch);
       sprintf(chExtraName,"%s_MuH",chExtraName);
       if (hMuEff) {
         sprintf(chExtraName,"%s_corrMu",chExtraName);
@@ -112,6 +114,7 @@ AliDhcTask *AddTaskDhc(
       dhcTask->SetHEffA(hMuEff);
       dhcTask->SetEtaMax(5.0);
       dhcTask->SetPtTACrit(kFALSE);
+      dhcTask->SetTriggerMatch(doTrigMatch);
       sprintf(chExtraName,"%s_HMu",chExtraName);
       if (hMuEff) {
         sprintf(chExtraName,"%s_corrMu",chExtraName);
@@ -127,6 +130,7 @@ AliDhcTask *AddTaskDhc(
       dhcTask->SetHEffA(hMuEff);
       dhcTask->SetEtaMax(5.0);
       dhcTask->SetPtTACrit(kFALSE);
+      dhcTask->SetTriggerMatch(doTrigMatch);
       sprintf(chExtraName,"%s_MuMu",chExtraName);
       if (hMuEff) {
         sprintf(chExtraName,"%s_corrMu",chExtraName);

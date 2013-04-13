@@ -55,6 +55,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetPtTBins(TAxis *bins)                { fBPtT=bins;               }
   void         SetTrackDepth(Int_t t)                 { fTrackDepth = t;          }
   void         SetTracksName(const char *n)           { fTracksName = n;          }
+  void         SetTriggerMatch(Bool_t b)              { fTriggerMatch = b;        }
   void         SetVerbosity(Int_t v)                  { fVerbosity = v;           }
   void         SetZVtxBins(TAxis *bins)               { fBZvtx=bins;              }
   void         SetZVtxMixBins(TAxis *bins)            { fMixBZvtx=bins;           }
@@ -106,6 +107,18 @@ class AliDhcTask : public AliAnalysisTaskSE {
   Bool_t             fDoFillSame;      //  If true fill same event immediately (not waiting for pool)
   Bool_t             fDoMassCut;       //  If true cut on invariant mass
   TString            fClassName;       //  If not null only process events with given class
+  TString            fCentMethod;      //  centrality selection method
+  Int_t              fNBdeta;          //  no. deta bins
+  Int_t              fNBdphi;          //  no. dphi bins
+  Bool_t             fTriggerMatch;    //  muon trigger match 
+  TAxis             *fBPtT;            //  ptt binning
+  TAxis             *fBPtA;            //  pta binning
+  TAxis             *fBCent;           //  centrality binning
+  TAxis             *fBZvtx;           //  zvtx binning
+  TAxis             *fMixBCent;        //  centrality binning for mixing
+  TAxis             *fMixBZvtx;        //  zvtx binning for mixing
+  THnF              *fHEffT;           //  efficiency for trigger particles
+  THnF              *fHEffA;           //  efficiency for associate particles
   AliESDEvent       *fESD;             //! ESD object
   AliAODEvent       *fAOD;             //! AOD object
   TList             *fOutputList;      //! Output list
@@ -136,28 +149,17 @@ class AliDhcTask : public AliAnalysisTaskSE {
   TH3               *fHQAAmCorr;       //!
   TH2               *fHPtCentT;        //! trigger pT vs centrality
   TH2               *fHPtCentA;        //! associated pT vs centrality
-  TFormula          *fIndex;           //! Index for histograms
-  Double_t           fCentrality;      //! V0M for now
-  Double_t           fZVertex;         //! Of current event
-  AliESDtrackCuts   *fEsdTPCOnly;      //! Track cuts
-  AliEvtPoolManager *fPoolMgr;         //! Event mixer
-  TString            fCentMethod;      //  centrality selection method
-  Int_t              fNBdeta;          //  no. deta bins
-  Int_t              fNBdphi;          //  no. dphi bins
-  TAxis             *fBPtT;            //  ptt binning
-  TAxis             *fBPtA;            //  pta binning
-  TAxis             *fBCent;           //  centrality binning
-  TAxis             *fBZvtx;           //  zvtx binning
-  TAxis             *fMixBCent;        //  centrality binning for mixing
-  TAxis             *fMixBZvtx;        //  zvtx binning for mixing
-  THnF              *fHEffT;           //  efficiency for trigger particles
-  THnF              *fHEffA;           //  efficiency for associate particles
-  AliAnalysisUtils  *fUtils;           //  analysis utils
+  TFormula          *fIndex;           //! index for histograms
+  Double_t           fCentrality;      //! centrality of current event
+  Double_t           fZVertex;         //! z vertex of current event
+  AliESDtrackCuts   *fEsdTPCOnly;      //! track cuts
+  AliEvtPoolManager *fPoolMgr;         //! event mixer
+  AliAnalysisUtils  *fUtils;           //! analysis utils
 
   AliDhcTask(const AliDhcTask&);            // not implemented
   AliDhcTask &operator=(const AliDhcTask&); // not implemented
 
-  ClassDef(AliDhcTask, 8)
+  ClassDef(AliDhcTask, 9)
 };
 
 #endif
