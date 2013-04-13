@@ -39,21 +39,20 @@ AliDhcTask::AliDhcTask()
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0), fOmitFirstEv(kTRUE),
   fDoFillSame(kFALSE), fDoMassCut(kFALSE), fClassName(),
+  fCentMethod("V0M"), fNBdeta(20), fNBdphi(36), fTriggerMatch(kTRUE),
+  fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
+  fMixBCent(0x0), fMixBZvtx(0x0), fHEffT(0x0), fHEffA(0x0),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
   fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fHSMass(0x0), fHMMass(0x0),
   fHQATp(0x0), fHQAAp(0x0), fHQATpCorr(0x0), fHQAApCorr(0x0),
   fHQATm(0x0), fHQAAm(0x0), fHQATmCorr(0x0), fHQAAmCorr(0x0),
-  fHPtCentT(0x0), fHPtCentA(0x0),
-  fIndex(0x0),
+  fHPtCentT(0x0), fHPtCentA(0x0), fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
-  fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
-  fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
-  fMixBCent(0x0), fMixBZvtx(0x0),
-  fHEffT(0x0), fHEffA(0x0), fUtils(0x0)
+  fUtils(0x0)
 {
-  
+  // Constructor
 }
 
 //________________________________________________________________________
@@ -63,19 +62,18 @@ AliDhcTask::AliDhcTask(const char *name, Bool_t def)
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0), fOmitFirstEv(kTRUE),
   fDoFillSame(kFALSE), fDoMassCut(kFALSE), fClassName(),
+  fCentMethod("V0M"), fNBdeta(20), fNBdphi(36), fTriggerMatch(kTRUE),
+  fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
+  fMixBCent(0x0), fMixBZvtx(0x0), fHEffT(0x0), fHEffA(0x0),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
   fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fHSMass(0x0), fHMMass(0x0),
   fHQATp(0x0), fHQAAp(0x0), fHQATpCorr(0x0), fHQAApCorr(0x0),
   fHQATm(0x0), fHQAAm(0x0), fHQATmCorr(0x0), fHQAAmCorr(0x0),
-  fHPtCentT(0x0), fHPtCentA(0x0),
-  fIndex(0x0),
+  fHPtCentT(0x0), fHPtCentA(0x0), fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
-  fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
-  fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
-  fMixBCent(0x0), fMixBZvtx(0x0),
-  fHEffT(0x0), fHEffA(0x0), fUtils(0x0)
+  fUtils(0x0)
 {
   // Constructor
 
@@ -1131,16 +1129,18 @@ Bool_t AliDhcTask::IsGoodMUONtrack(AliESDMuonTrack &track)
 
   if (!track.ContainTrackerData()) 
     return kFALSE;
-  if (!track.ContainTriggerData()) 
-    return kFALSE;
   Double_t thetaTrackAbsEnd = TMath::ATan(track.GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
   if ((thetaTrackAbsEnd < 2.) || (thetaTrackAbsEnd > 10.)) 
     return kFALSE;
   Double_t eta = track.Eta();
   if ((eta < -4.) || (eta > -2.5))
     return kFALSE;
-  if (track.GetMatchTrigger() < 0.5) 
-    return kFALSE;
+  if (fTriggerMatch) {
+    if (!track.ContainTriggerData()) 
+      return kFALSE;
+    if (track.GetMatchTrigger() < 0.5) 
+      return kFALSE;
+  }
   return kTRUE;
 }
 
@@ -1157,8 +1157,10 @@ Bool_t AliDhcTask::IsGoodMUONtrack(AliAODTrack &track)
   Double_t dEta = track.Eta();
   if ((dEta<-4.) || (dEta>-2.5)) 
     return kFALSE;
-  if (track.GetMatchTrigger()<0.5) 
-    return kFALSE;
+  if (fTriggerMatch) {
+    if (track.GetMatchTrigger()<0.5) 
+      return kFALSE;
+  }
   return kTRUE;
 }
 
