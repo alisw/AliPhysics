@@ -103,7 +103,7 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
   
   gROOT->ProcessLine(".L AddTaskLambdaK0PbPb.C");
   Int_t nbin = 0; // will contain the number of centrality bins
-      AliAnalysisTaskPerformanceStrange ** task = AddTaskLambdaK0PbPb("lambdak0.root", nbin, binMin, binMax,isMC);
+  AliAnalysisTaskPerformanceStrange ** task = AddTaskLambdaK0PbPb("lambdak0.root", nbin, binMin, binMax,isMC,1);
   //  AliAnalysisTaskPerformanceStrange ** task = AddTaskLambdaK0PbPb();
 
  cout << nbin << endl;
@@ -199,11 +199,11 @@ void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
     
       gEnv->SetValue("XSec.GSI.DelegProxy", "2");
       Char_t* alienuser = gSystem->Getenv("alien_API_USER");
-      TProof * p = TProof::Open(alienuser!=0 ? Form("%s@alice-caf.cern.ch",alienuser) : "alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
-      //TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
-      //p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE); // avoid submerging
-             gProof->EnablePackage("VO_ALICE@AliRoot::v5-04-11-AN");
-            gProof->GetManager()->SetROOTVersion("VO_ALICE@ROOT::v5-34-02");
+       TProof * p = TProof::Open(alienuser!=0 ? Form("%s@alice-caf.cern.ch",alienuser) : "alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
+      // TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
+      p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE); // avoid submerging
+             gProof->EnablePackage("VO_ALICE@AliRoot::v5-04-40-AN");
+            gProof->GetManager()->SetROOTVersion("VO_ALICE@ROOT::v5-34-05");
       // gProof->EnablePackage("VO_ALICE@AliRoot::v5-02-04-AN");
 
 
