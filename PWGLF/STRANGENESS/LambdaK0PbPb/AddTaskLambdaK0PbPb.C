@@ -1,4 +1,4 @@
-AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilename = "lambdak0.root", Int_t &nbin, Int_t binMin, Int_t binMax, Int_t isMCAnalysis = 0, Bool_t usePID = 1) {
+AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilename = "lambdak0.root", Int_t &nbin=11, Int_t binMin=0, Int_t binMax=10, Int_t isMCAnalysis = 0, Bool_t usePID = 1) {
 
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -44,22 +44,25 @@ AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilenam
     task[itask] = new AliAnalysisTaskPerformanceStrange("TaskLambdaK0");
     cout << "Booking " << ibin << "  "<< itask << " " << task[itask] <<endl;
 
-    task[ibin]->SetAnalysisType("ESD");
+    task[itask]->SetAnalysisType("ESD");
     cout << "1" << endl;
-    task[ibin]->SetAnalysisMC(isMCAnalysis); // 0 or 1
+    task[itask]->SetAnalysisMC(isMCAnalysis); // 0 or 1
     cout << "2" << endl;
-    task[ibin]->SetCollidingSystems(2); // 0 =pp, 1=AA  2=pA
+    task[itask]->SetCollidingSystems(2); // 0 =pp, 1=AA  2=pA
     cout << "3" << endl;
-    task[ibin]->SetAnalysisCut("no");
+    task[itask]->SetAnalysisCut("no");
     cout << "4" << endl;
-    task[ibin]->SetQASelector(kFALSE);  // Todo -> put trees for QA
+    task[itask]->SetQASelector(kFALSE);  // Todo -> put trees for QA
     cout<< "5" << endl;
     if(usePID) 
-      task[ibin]->SetUsePID("withPID"); // withPID or withoutPID
+      task[itask]->SetUsePID("withPID"); // withPID or withoutPID
     else
-      task[ibin]->SetUsePID("withoutPID"); // withPID or withoutPID
+      task[itask]->SetUsePID("withoutPID"); // withPID or withoutPID
     cout << "5" << endl;
     task[itask]->SetTrackCuts(myTracksCuts);
+    //    task[itask]->SetCollisionCandidates(AliVEvent::kMB | AliVEvent::kMUON);
+    //   task[itask]->SelectCollisionCandidates(AliVEvent::kMB);
+    task[itask]->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kMB);
    
     mgr->AddTask(task[itask]);
   
