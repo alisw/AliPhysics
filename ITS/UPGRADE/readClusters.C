@@ -1,4 +1,5 @@
-void readClusters(){
+void readClusters(int nev=-1,int evStart=0)
+{
 
   gSystem->Load("libITSUpgradeBase");
   gSystem->Load("libITSUpgradeRec");
@@ -26,14 +27,21 @@ void readClusters(){
   xyGlob->SetMarkerStyle(7); 
   TH1F *zGlob  = new TH1F("zGlob", " Z Global coordinates ",200, -50,50 );
   zGlob->SetXTitle("cm"); 
-
+  //
+  TH1F* rGlob = new TH1F("rGlob","R global", 5000, 0,50.);
 
   TTree * cluTree = 0x0;
   TObjArray layerClus;
-
-  printf("N Events : %i \n",(Int_t)runLoader->GetNumberOfEvents());
-
-  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+  
+  int nevTot = (Int_t)runLoader->GetNumberOfEvents();
+  printf("N Events : %i \n",nevTot);
+  evStart = evStart<nevTot ? evStart : nevTot-1;
+  if (evStart<0) evStart = 0;
+  //
+  int lastEv = nev<0 ? nevTot : evStart+nev;
+  if (lastEv > nevTot) lastEv = nevTot;
+  //
+  for (Int_t iEvent = evStart; iEvent < lastEv; iEvent++) {
     printf("\n Event %i \n",iEvent);
     runLoader->GetEvent(iEvent);
     //   AliStack *stack = runLoader->Stack();
@@ -62,11 +70,11 @@ void readClusters(){
 	Double_t loc[3]={cl->GetX(),cl->GetY(),cl->GetZ()}; 
 	Double_t glob[3]; 
 	gm->LocalToGlobal(cl->GetVolumeId(),loc,glob);
-	//	printf("%d: mod %d: loc(%.4lf,%.4lf,%.4lf); glob(%.4lf,%.4lf,%.4lf); \n",icl,cl->GetVolumeId(),
-	//	       loc[0],loc[1],loc[2],glob[0],glob[1],glob[2]);
+	//printf("%d: mod %d: loc(%.4lf,%.4lf,%.4lf); glob(%.4lf,%.4lf,%.4lf); \n",icl,cl->GetVolumeId(),
+	//       loc[0],loc[1],loc[2],glob[0],glob[1],glob[2]);
 	xyGlob->Fill(glob[0],glob[1]);
 	zGlob->Fill(glob[2]);
- 
+	rGlob->Fill(TMath::Sqrt(glob[0]*glob[0]+glob[1]*glob[1]));
       }
     }
     layerClus.Clear();
@@ -81,5 +89,9 @@ void readClusters(){
   TCanvas *zCanv =  new TCanvas("zCanvClus","RecPoint Z Positions",size+20,10,size,size);
   zCanv->cd();
   zGlob->Draw();
+
+  TCanvas *rCanv =  new TCanvas("rCanvClus","RecPoint R Positions",size+20,10,size,size);
+  rCanv->cd();
+  rGlob->Draw();
 
 }

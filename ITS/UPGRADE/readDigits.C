@@ -1,4 +1,5 @@
-void readDigits(){
+void readDigits(int nev=-1,int evStart=0)
+{
 
   gSystem->Load("libITSUpgradeBase");
   gSystem->Load("libITSUpgradeSim");
@@ -45,9 +46,17 @@ void readDigits(){
   TTree * digTree = 0x0;
   TClonesArray *digArr= new TClonesArray("AliITSUDigitPix");
 
-  printf("N Events : %i \n",(Int_t)runLoader->GetNumberOfEvents());
+  int nevTot = (Int_t)runLoader->GetNumberOfEvents();
+  printf("N Events : %i \n",nevTot);
+  evStart = evStart<nevTot ? evStart : nevTot-1;
+  if (evStart<0) evStart = 0;
+  //
+  int lastEv = nev<0 ? nevTot : evStart+nev;
+  if (lastEv > nevTot) lastEv = nevTot;
+  //
+  printf("N Events : %i \n",(Int_t)nevTot);
 
-  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+  for (Int_t iEvent = evStart; iEvent < lastEv; iEvent++) {
     printf("\n Event %i \n",iEvent);
     runLoader->GetEvent(iEvent);
     AliStack *stack = runLoader->Stack();
