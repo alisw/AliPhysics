@@ -775,7 +775,6 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   //
   // Output slot 8 : List for detector response histograms
   //
-  fDetSignal = new TList();
   if (fDrawDetSignal) {
     TH2F *TOFSigBefPID = new TH2F("TOFSigBefPID", "TOF signal of daughters before PID;p(daught)(GeV/c);Signal", 500, 0, 10, 5000, 0, 50e3);
     TH2F *TOFSigAftPID = new TH2F("TOFSigAftPID", "TOF signal after PID;p(daught)(GeV/c);Signal", 500, 0, 10, 5000, 0, 50e3);
