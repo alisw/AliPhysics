@@ -51,6 +51,8 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   fTriggerMask(AliVEvent::kMB),
   fExcludeTriggerMask(0),
   fTriggerOnV0AND(kFALSE),
+  fFiredTrigger(""),
+  fFiredExclude(kFALSE),
   fRejectPileup(kFALSE),
   fBeamEnergy(-1.),
   fTriggerLogic(kAny),
@@ -73,6 +75,8 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   fTriggerMask(AliVEvent::kMB),
   fExcludeTriggerMask(0),
   fTriggerOnV0AND(kFALSE),
+  fFiredTrigger(""),
+  fFiredExclude(kFALSE),
   fRejectPileup(kFALSE),
   fBeamEnergy(-1.),
   fTriggerLogic(kAny),
@@ -195,6 +199,9 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
       if (fExcludeTriggerMask && (isSelected&fExcludeTriggerMask)) isRejected=kTRUE;
       if (fTriggerLogic==kAny) isSelected&=fTriggerMask;
       else if (fTriggerLogic==kExact) isSelected=((isSelected&fTriggerMask)==fTriggerMask);
+   
+      TString firedTriggerClasses=InputEvent()->GetFiredTriggerClasses();
+      if(!fFiredTrigger.IsNull()) isSelected=(firedTriggerClasses.Contains(fFiredTrigger))^fFiredExclude;
     }
    }
  
