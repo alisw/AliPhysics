@@ -2198,21 +2198,22 @@ void AliChaoticity::Exec(Option_t *)
 	    if(qinv12 > fQcut[qCutBin]) continue;
 	    
 	    /////////////////////////////////////////////////////
-	    // 3-particle MRC
-	    Short_t fillIndex3 = 0;
-	    key1=1; key2=1; key3=1;
-	    Int_t en3 = 2;
-
-	    for (Int_t k=0; k<(fEvt+en3)->fNtracks; k++) {
-	      if((fEvt+en3)->fTracks[k].fLabel < (fEvt+en3)->fMCarraySize){
-		ch3 = Int_t(((fEvt+en3)->fTracks[k].fCharge + 1)/2.);
-		pVect3[0]=(fEvt+en3)->fTracks[k].fEaccepted;
-		pVect3[1]=(fEvt+en3)->fTracks[k].fP[0];
-		pVect3[2]=(fEvt+en3)->fTracks[k].fP[1];
-		pVect3[3]=(fEvt+en3)->fTracks[k].fP[2];
-		qinv13 = GetQinv(0, pVect1, pVect3);
-		qinv23 = GetQinv(0, pVect2, pVect3);
-
+	    if(!fTabulatePairs) {
+	      // 3-particle MRC
+	      Short_t fillIndex3 = 0;
+	      key1=1; key2=1; key3=1;
+	      Int_t en3 = 2;
+	      
+	      for (Int_t k=0; k<(fEvt+en3)->fNtracks; k++) {
+		if((fEvt+en3)->fTracks[k].fLabel < (fEvt+en3)->fMCarraySize){
+		  ch3 = Int_t(((fEvt+en3)->fTracks[k].fCharge + 1)/2.);
+		  pVect3[0]=(fEvt+en3)->fTracks[k].fEaccepted;
+		  pVect3[1]=(fEvt+en3)->fTracks[k].fP[0];
+		  pVect3[2]=(fEvt+en3)->fTracks[k].fP[1];
+		  pVect3[3]=(fEvt+en3)->fTracks[k].fP[2];
+		  qinv13 = GetQinv(0, pVect1, pVect3);
+		  qinv23 = GetQinv(0, pVect2, pVect3);
+		  
 		if(qinv13 > fQcut[qCutBin] || qinv23 > fQcut[qCutBin]) continue;
 
 		
@@ -2353,9 +2354,10 @@ void AliChaoticity::Exec(Option_t *)
 		
 		}// jj
 	      }// MCarray check
-	    }// 3rd particle
+	      }// 3rd particle
+	    }// TabulatePairs Check
 	  }// MCarray check
-	    
+	  
 	  if(ch1==ch2 && fMbin==0){
 	    for(Int_t rstep=0; rstep<10; rstep++){
 	      Float_t coeff = (rstep)*0.2*(0.18/1.2);
