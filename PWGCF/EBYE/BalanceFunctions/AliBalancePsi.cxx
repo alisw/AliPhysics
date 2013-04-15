@@ -2241,10 +2241,20 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
       fMu7 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),7);
       fMu8 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),8);
     }
-    
-    sigma    = TMath::Sqrt(fMu2 / fNormalization);
-    skewness = fMu3 / fNormalization / TMath::Power(sigma,3);
-    kurtosis = fMu4 / fNormalization / TMath::Power(sigma,4) - 3;
+
+    // normalize to bin entries!
+    fMu  /= fNormalization;    
+    fMu2 /= fNormalization;    
+    fMu3 /= fNormalization;    
+    fMu4 /= fNormalization;    
+    fMu5 /= fNormalization;    
+    fMu6 /= fNormalization;    
+    fMu7 /= fNormalization;    
+    fMu8 /= fNormalization;    
+
+    sigma    = TMath::Sqrt(fMu2);
+    skewness = fMu3 / TMath::Power(sigma,3);
+    kurtosis = fMu4 / TMath::Power(sigma,4) - 3;
 
     // ----------------------------------------------------------------------
     // then calculate the higher moment errors
