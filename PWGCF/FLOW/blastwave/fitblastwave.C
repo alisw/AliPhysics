@@ -18,7 +18,7 @@ Bool_t kPiV2=kTRUE;          // request fit to pion v2
 Bool_t kKaV2=kTRUE;          // request fit to kaon v2
 Bool_t kPrV2=kTRUE;          // request fit to antiproton v2
 
-Bool_t kCont = kTRUE;       // request the contour at the end (it needs time)
+Bool_t kCont = kFALSE;       // request the contour at the end (it needs time)
 
 TH1D *hpiplus;
 TH1D *hkaplus;
@@ -41,9 +41,9 @@ Int_t cmax[] = {5,10,20,30,40,50,60,70,80,100};
 Float_t ptMinPi = 0.5;
 Float_t ptMaxPi = 1.0;
 Float_t ptMinKa = 0.2;
-Float_t ptMaxKa = 1.5;
+Float_t ptMaxKa = 1.2; // 1.5 in spectra group
 Float_t ptMinPr = 0.3;
-Float_t ptMaxPr = 3.0;
+Float_t ptMaxPr = 1.7; // 3.0 in spectra group
 
 Bool_t kLoaded = kFALSE;
 
@@ -146,18 +146,46 @@ drawBWfit(Int_t ic=2,Float_t Tfo=0.1,Float_t s2=0.057,Float_t meanRho=0.8,Float_
   bw[2]->SetMinPt(ptMinPr);
   bw[2]->SetMaxPt(ptMaxPr);
 
+  AliBlastwaveFit2D *bwExt[3];
+  bwExt[0] = new AliBlastwaveFit2D("pions",mPi);
+  bwExt[0]->SetMinPt(ptMinPi);
+  bwExt[0]->SetMaxPt(ptMaxPi);
+
+  bwExt[1] = new AliBlastwaveFit2D("kaons",mKa);
+  bwExt[1]->SetMinPt(ptMinKa);
+  bwExt[1]->SetMaxPt(ptMaxKa);
+
+  bwExt[2] = new AliBlastwaveFit2D("protons",mPr);
+  bwExt[2]->SetMinPt(ptMinPr);
+  bwExt[2]->SetMaxPt(ptMaxPr);
+
+
   if(kPiPlusSpectra) bw[0]->SetSpectrumObj(hpiplus);
   if(kPiV2) bw[0]->SetV2Obj(gpiv2);
   if(kKaPlusSpectra) bw[1]->SetSpectrumObj(hkaplus);
   if(kKaV2) bw[1]->SetV2Obj(gkav2);
   if(kPrPlusSpectra) bw[2]->SetSpectrumObj(hprplus);
   if(kPrV2) bw[2]->SetV2Obj(gprv2);
+
+  if(kPiPlusSpectra) bwExt[0]->SetSpectrumObj(hpiplus);
+  if(kPiV2) bwExt[0]->SetV2Obj(gpiv2);
+  if(kKaPlusSpectra) bwExt[1]->SetSpectrumObj(hkaplus);
+  if(kKaV2) bwExt[1]->SetV2Obj(gkav2);
+  if(kPrPlusSpectra) bwExt[2]->SetSpectrumObj(hprplus);
+  if(kPrV2) bwExt[2]->SetV2Obj(gprv2);
+
   for(Int_t i=0;i < 3;i++){
     bw[i]->SetParameter(0,Tfo);
     bw[i]->SetParameter(1,s2);
     bw[i]->SetParameter(2,meanRho);
     bw[i]->SetParameter(3,rho_2);
     bw[i]->SetParameter(4,gamma);
+
+    bwExt[i]->SetParameter(0,Tfo);
+    bwExt[i]->SetParameter(1,s2);
+    bwExt[i]->SetParameter(2,meanRho);
+    bwExt[i]->SetParameter(3,rho_2);
+    bwExt[i]->SetParameter(4,gamma);
   }
   csp->cd();
   if(hpiplus){
@@ -165,18 +193,36 @@ drawBWfit(Int_t ic=2,Float_t Tfo=0.1,Float_t s2=0.057,Float_t meanRho=0.8,Float_
     bw[0]->GetSpectraFit()->SetRange(ptMinPi,ptMaxPi);
     bw[0]->GetSpectraFit()->Draw("SAME");
     bw[0]->GetSpectraFit()->SetLineColor(4);
+
+    bwExt[0]->SetNormalization();
+    bwExt[0]->GetSpectraFit()->SetRange(0,3);
+    bwExt[0]->GetSpectraFit()->Draw("SAME");
+    bwExt[0]->GetSpectraFit()->SetLineColor(4);
+    bwExt[0]->GetSpectraFit()->SetLineStyle(2);
   }
   if(hkaplus){
     bw[1]->SetNormalization();
     bw[1]->GetSpectraFit()->SetRange(ptMinKa,ptMaxKa);
     bw[1]->GetSpectraFit()->Draw("SAME");
     bw[1]->GetSpectraFit()->SetLineColor(1);
+
+    bwExt[1]->SetNormalization();
+    bwExt[1]->GetSpectraFit()->SetRange(0,3);
+    bwExt[1]->GetSpectraFit()->Draw("SAME");
+    bwExt[1]->GetSpectraFit()->SetLineColor(1);
+    bwExt[1]->GetSpectraFit()->SetLineStyle(2);
   }
   if(hprplus){
     bw[2]->SetNormalization();
     bw[2]->GetSpectraFit()->SetRange(ptMinPr,ptMaxPr);
     bw[2]->GetSpectraFit()->Draw("SAME");
     bw[2]->GetSpectraFit()->SetLineColor(2);
+
+    bwExt[2]->SetNormalization();
+    bwExt[2]->GetSpectraFit()->SetRange(0,3);
+    bwExt[2]->GetSpectraFit()->Draw("SAME");
+    bwExt[2]->GetSpectraFit()->SetLineColor(2);
+    bwExt[2]->GetSpectraFit()->SetLineStyle(2);
   }
   cv2->cd();
   if(gpiv2){
@@ -184,18 +230,36 @@ drawBWfit(Int_t ic=2,Float_t Tfo=0.1,Float_t s2=0.057,Float_t meanRho=0.8,Float_
     bw[0]->GetV2Fit()->SetRange(ptMinPi,ptMaxPi);
     bw[0]->GetV2Fit()->Draw("SAME");
     bw[0]->GetV2Fit()->SetLineColor(4);
+
+    if(! hpiplus) bwExt[0]->SetNormalization();
+    bwExt[0]->GetV2Fit()->SetRange(0,3);
+    bwExt[0]->GetV2Fit()->Draw("SAME");
+    bwExt[0]->GetV2Fit()->SetLineColor(4);
+    bwExt[0]->GetV2Fit()->SetLineStyle(2);
   }
   if(gkav2){
     if(! hkaplus) bw[1]->SetNormalization();
     bw[1]->GetV2Fit()->SetRange(ptMinKa,ptMaxKa);
     bw[1]->GetV2Fit()->Draw("SAME");
     bw[1]->GetV2Fit()->SetLineColor(1);
+
+    if(! hkaplus) bwExt[1]->SetNormalization();
+    bwExt[1]->GetV2Fit()->SetRange(0,3);
+    bwExt[1]->GetV2Fit()->Draw("SAME");
+    bwExt[1]->GetV2Fit()->SetLineColor(1);
+    bwExt[1]->GetV2Fit()->SetLineStyle(2);
   }
   if(gprv2){
     if(! hprplus) bw[0]->SetNormalization();
     bw[2]->GetV2Fit()->SetRange(ptMinPr,ptMaxPr);
     bw[2]->GetV2Fit()->Draw("SAME");
     bw[2]->GetV2Fit()->SetLineColor(2);
+
+    if(! hprplus) bwExt[0]->SetNormalization();
+    bwExt[2]->GetV2Fit()->SetRange(0,3);
+    bwExt[2]->GetV2Fit()->Draw("SAME");
+    bwExt[2]->GetV2Fit()->SetLineColor(2);
+    bwExt[2]->GetV2Fit()->SetLineStyle(2);
   }
 }
 
