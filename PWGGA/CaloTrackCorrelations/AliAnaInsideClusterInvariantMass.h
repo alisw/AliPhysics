@@ -34,7 +34,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   TList      * GetCreateOutputObjects();
   
-  void         FillSSWeightHistograms(AliVCluster *clus, Int_t nlm);
+  void         FillSSWeightHistograms(AliVCluster *clus, const Int_t nlm, const Int_t absId1, const Int_t absId2);
   
   void         Init();
   
@@ -64,11 +64,23 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnMCFractionHistograms()            { fFillMCFractionHisto = kTRUE  ; }
   void         SwitchOffMCFractionHistograms()           { fFillMCFractionHisto = kFALSE ; }
 
-  void         SwitchOnFillSSWeightHistograms()           { fFillSSWeightHisto   = kTRUE  ; }
-  void         SwitchOffFillSSWeightHistograms()          { fFillSSWeightHisto   = kFALSE ; }
+  void         SwitchOnFillSSWeightHistograms()          { fFillSSWeightHisto   = kTRUE  ; }
+  void         SwitchOffFillSSWeightHistograms()         { fFillSSWeightHisto   = kFALSE ; }
+
+  void         SwitchOnFillEbinHistograms()              { fFillEbinHisto       = kTRUE  ; }
+  void         SwitchOffFillEbinHistograms()             { fFillEbinHisto       = kFALSE ; }
   
-  void         SetNWeightForShowerShape(Int_t n)         { fSSWeightN = n ; }
+  void         SetNWeightForShowerShape(Int_t n)           { fSSWeightN = n ; }
   void         SetWeightForShowerShape(Int_t i, Float_t v) { if (i < 10) fSSWeight[i] = v ; }
+
+  void         SetNECellCutForShowerShape(Int_t n)           { fSSECellCutN = n ; }
+  void         SetECellCutForShowerShape(Int_t i, Float_t v) { if (i < 10) fSSECellCut[i] = v ; }
+
+  
+  void         RecalculateClusterShowerShapeParametersWithCellCut(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster,
+                                                   Float_t & l0,   Float_t & l1,
+                                                   Float_t & disp, Float_t & dEta, Float_t & dPhi,
+                                                   Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi,Float_t eCellMin = 0.);
 
   
   //For histograms
@@ -88,9 +100,13 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillSSExtraHisto ;     // Fill shower shape extra histos
   Bool_t       fFillMCFractionHisto ;  // Fill MC energy fraction histos
   Bool_t       fFillSSWeightHisto ;    // Fill weigth histograms
-
+  Bool_t       fFillEbinHisto ;        // Fill E bin histograms
+  
   Float_t      fSSWeight[10];          // List of weights to test
-  Float_t      fSSWeightN;             // Total number of weights to test
+  Int_t        fSSWeightN;             // Total number of weights to test
+  
+  Float_t      fSSECellCut[10];        // List of cell min energy cuts to test
+  Int_t        fSSECellCutN;           // Total number of cell min energy cuts to test
   
   //Histograms
   
@@ -302,7 +318,14 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhPi0CellE[3] ;                          //! pi0's energy vs cluster cell energy with NLM = 1, = 2, > 2 
   TH2F       * fhPi0CellEFrac[3] ;                      //! pi0's energy vs cluster cell energy fraction with NLM = 1, = 2, > 2 
   TH2F       * fhPi0CellLogEFrac[3] ;                   //! pi0's energy vs cluster log cell energy fraction with NLM = 1, = 2, > 2
+  TH2F       * fhPi0CellEMaxEMax2Frac   [3];            //! pi0's energy vs fraction of 2 main maxima energy with NLM = 1, = 2, > 2
+  TH2F       * fhPi0CellEMaxClusterFrac [3];            //! pi0's energy vs energy fraction of main   LM and cluster energy with NLM = 1, = 2, > 2
+  TH2F       * fhPi0CellEMax2ClusterFrac[3];            //! pi0's energy vs energy fraction of second LM and cluster energy with NLM = 1, = 2, > 2
+  TH2F       * fhPi0CellEMaxFrac [3];                   //! pi0's energy vs energy fraction of main LM and cluster cell energy with NLM = 1, = 2, > 2
+  TH2F       * fhPi0CellEMax2Frac [3];                  //! pi0's energy vs energy fraction of second LM and cluster cell energy with NLM = 1, = 2, > 2
+  
   TH2F       * fhM02WeightPi0[3][10] ;                  //! M02 for selected pi0 with different weight, with NLM = 1, = 2, > 2
+  TH2F       * fhM02ECellCutPi0[3][10] ;                //! M02 for selected pi0 with different cut on cell energy, with NLM = 1, = 2, > 2
 
   
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
