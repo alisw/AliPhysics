@@ -2094,9 +2094,11 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Int_t    nMaxima = 0 ; 
     Double_t mass    = 0 , angle = 0;
     Double_t e1      = 0 , e2    = 0;
+    Int_t    absId1 = -1; Int_t absId2 = -1;
+
     Int_t idPartType = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(calo,cells,GetCaloUtils(),
                                                                                    GetVertex(evtIndex),nMaxima,
-                                                                                   mass,angle,e1,e2) ;   
+                                                                                   mass,angle,e1,e2,absId1,absId2) ;
     
     if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",idPartType);
   

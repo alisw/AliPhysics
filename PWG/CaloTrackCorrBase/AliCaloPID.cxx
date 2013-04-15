@@ -641,13 +641,13 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
                                                                 AliCalorimeterUtils * caloutils,
                                                                 Double_t   vertex[3],
                                                                 Int_t    & nMax,
-                                                                Double_t & mass, Double_t & angle,
-                                                                Double_t & e1  , Double_t & e2    ) 
+                                                                Double_t & mass,   Double_t & angle,
+                                                                Double_t & e1  ,   Double_t & e2,
+                                                                Int_t    & absId1, Int_t    & absId2 )
 {
   // Split the cluster in 2, do invariant mass, get the mass and decide 
   // if this is a photon, pi0, eta, ...
   
-  Int_t   absId1 = -1; Int_t absId2 = -1;
   Float_t eClus  = cluster->E();
   Float_t m02    = cluster->GetM02();
   const Int_t nc = cluster->GetNCells();
@@ -672,10 +672,24 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   // Get the 2 max indeces and do inv mass
   //---------------------------------------------------------------------
   
-  if     ( nMax == 2 ) 
+  TString  calorimeter = "EMCAL";
+  if(cluster->IsPHOS()) calorimeter = "PHOS";
+
+  if     ( nMax == 2 )
   {
     absId1 = absIdList[0];
     absId2 = absIdList[1];
+    
+    //Order in energy
+    Float_t en1 = cells->GetCellAmplitude(absId1);
+    caloutils->RecalibrateCellAmplitude(en1,calorimeter,absId1);
+    Float_t en2 = cells->GetCellAmplitude(absId2);
+    caloutils->RecalibrateCellAmplitude(en2,calorimeter,absId2);
+    if(en1 < en2)
+    {
+      absId2 = absIdList[0];
+      absId1 = absIdList[1];
+    }
   }
   else if( nMax == 1 )
   {
@@ -684,8 +698,6 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
     
     //Find second highest energy cell
     
-    TString  calorimeter = "EMCAL";
-    if(cluster->IsPHOS()) calorimeter = "PHOS";
     Float_t enmax = 0 ;
     for(Int_t iDigit = 0 ; iDigit < cluster->GetNCells() ; iDigit++)
     {
