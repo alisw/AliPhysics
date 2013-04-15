@@ -7,6 +7,26 @@ TCanvas* DrawNP(int np, TObjArray* harr=0, TCanvas* cnv=0);
 TH1* GetHistoClSize(int npix,int id,TObjArray* harr=0);
 void DrawReport(const char* psname, TObjArray* harr=0);
 
+
+typedef struct {
+  Int_t evID;
+  Int_t volID;
+  Int_t lrID;
+  Int_t clID;
+  Int_t nPix;
+  Int_t nX;
+  Int_t nZ;
+  Float_t pt;
+  Float_t eta;
+  Float_t xyz[3];
+  Float_t dX;
+  Float_t dZ;  
+  Bool_t split;  
+  Bool_t prim;
+  Int_t  pdg;
+  Int_t  ntr;
+} clSumm;
+
 void compClusHits(int nev=-1)
 {
   const int kSplit=0x1<<22;
@@ -55,12 +75,32 @@ void compClusHits(int nev=-1)
   int ntotev = (Int_t)runLoader->GetNumberOfEvents();
   printf("N Events : %i \n",ntotev);
   if (nev>0) ntotev = TMath::Min(nev,ntotev);
-  
+  //
+  // output tree
+  TFile* flOut = TFile::Open("clInfo.root","recreate");
+  TTree* trOut = new TTree("clitsu","clitsu");
+  clSumm cSum;
+  trOut->Branch("evID", &cSum.evID ,"evID/I");
+  trOut->Branch("volID",&cSum.volID,"volID/I");
+  trOut->Branch("lrID", &cSum.lrID ,"lrID/I");  
+  trOut->Branch("clID", &cSum.clID ,"clID/I");  
+  trOut->Branch("nPix", &cSum.nPix ,"nPix/I");
+  trOut->Branch("nX"  , &cSum.nX   ,"nX/I");
+  trOut->Branch("nZ"  , &cSum.nZ   ,"nZ/I");
+  trOut->Branch("pt"  , &cSum.pt   ,"pt/F");  
+  trOut->Branch("eta"  ,&cSum.eta  ,"eta/F");  
+  trOut->Branch("xyz",   cSum.xyz,  "xyz[3]/F");  
+  trOut->Branch("dX"  , &cSum.dX   ,"dX/F");
+  trOut->Branch("dZ"  , &cSum.dZ   ,"dZ/F");  
+  trOut->Branch("split",&cSum.split,"split/O");
+  trOut->Branch("prim", &cSum.prim, "prim/O");
+  trOut->Branch("pdg",  &cSum.pdg,  "pdg/I");
+  trOut->Branch("ntr",  &cSum.ntr,  "ntr/I");
   //
   for (Int_t iEvent = 0; iEvent < ntotev; iEvent++) {
     printf("\n Event %i \n",iEvent);
     runLoader->GetEvent(iEvent);
-    //   AliStack *stack = runLoader->Stack();
+    AliStack *stack = runLoader->Stack();
     cluTree=dl->TreeR();
     hitTree=dl->TreeH();
     hitTree->SetBranchAddress("ITS",&hitList);
@@ -191,6 +231,30 @@ void compClusHits(int nev=-1)
 	  else       GetHistoClSize(clsize,kDTXeven,&histoArr)->Fill((txyzH[0]-xyzClTr[0])*1e4);
 	  GetHistoClSize(clsize,kDTZ,&histoArr)->Fill((txyzH[2]-xyzClTr[2])*1e4);
 	  GetHistoClSize(0,kNPixAll,&histoArr)->Fill(clsize);
+	  //
+	  cSum.evID = iEvent;
+	  cSum.volID = cl->GetVolumeId();
+	  cSum.lrID = ilr;
+	  cSum.clID = icl;
+	  cSum.nPix = cl->GetNPix();
+	  cSum.nX   = cl->GetNx();
+	  cSum.nZ   = cl->GetNz();
+	  cSum.split = cl->TestBit(kSplit);
+	  cSum.dX = (txyzH[0]-xyzClTr[0])*1e4;
+	  cSum.dZ = (txyzH[2]-xyzClTr[2])*1e4;
+	  int label = cl->GetLabel(0);
+	  TParticle* part = 0;
+	  if (label>=0 && (part=stack->Particle(label)) ) {
+	    cSum.pdg = part->GetPdgCode();
+	    cSum.eta = part->Eta();
+	    cSum.pt  = part->Pt();
+	    cSum.prim = stack->IsPhysicalPrimary(label);
+	  }
+	  cSum.ntr = 0;
+	  for (int ilb=0;ilb<3;ilb++) if (cl->GetLabel(ilb)>=0) cSum.ntr++;
+	  for (int i=0;i<3;i++) cSum.xyz[i] = xyzClGloF[i];
+	  //
+	  trOut->Fill();
 	  /*
 	  if (clsize==5) {
 	    printf("\nL%d(%c) Mod%d, Cl:%d | %+5.1f %+5.1f (%d/%d)|H:%e %e %e | C:%e %e %e\n",ilr,cl->TestBit(kSplit) ? 'S':'N',
@@ -218,6 +282,11 @@ void compClusHits(int nev=-1)
     arrMCTracks.Delete();
   }//event loop
   //
+  flOut->cd();
+  trOut->Write();
+  delete trOut;
+  flOut->Close();
+  flOut->Delete();
   DrawReport("clinfo.ps",&histoArr);
   //
 }
