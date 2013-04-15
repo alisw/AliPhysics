@@ -399,8 +399,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
                 // sqpcetaphitpc[aniter]->SetMagneticFieldSign(-1); // field1 -1, field3 +1
                 // sqpcetaphitpc[aniter]->SetMinimumRadius(0.8); // biggest inefficiency for R=1.1 m (checked on small sample)
-                sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.012); // 0.012 - pions, 0.017 - kaons, 0.018
-                sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.015); // 0.017 - pions, 0.015 - kaons
+                sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045); // 0.012 - pions, 0.017 - kaons, 0.018
+                sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.01); // 0.017 - pions, 0.015 - kaons
 
               }
 
