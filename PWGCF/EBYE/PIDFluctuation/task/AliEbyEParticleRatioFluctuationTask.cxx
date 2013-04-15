@@ -21,7 +21,8 @@
 //
 //             V0.1 2013/03/25 Using THnSparse
 //             V0.2 2013/04/03 Cleanup
-//             V1.0 2013/04/10 Reduce Bins for Less Memory
+//             V1.0 2013/04/10 Cleanup Bins for Less Memory
+//             V1.1 2013/04/15 Bins Added 
 //   Todo: pp and pA, Mix Events
 //=========================================================================//
 
@@ -62,7 +63,6 @@ AliEbyEParticleRatioFluctuationTask::~AliEbyEParticleRatioFluctuationTask() {
   if (fHelperPID) delete fThnList;
 }
 
-
 //---------------------------------------------------------------------------------
 void AliEbyEParticleRatioFluctuationTask::UserCreateOutputObjects() {
   fThnList = new TList();
@@ -88,29 +88,15 @@ void AliEbyEParticleRatioFluctuationTask::UserCreateOutputObjects() {
   fHistQA[12] = new TH1D("fHistQAPt","p_{T} distribution Selected",1000,0,10);
   fHistQA[13] = new TH1D("fHistQAEta","#eta distribution Selected",240,-1.2,1.2);
   
-  if (isQA) {  
-    for(Int_t i = 0; i < 14; i++) fThnList->Add(fHistQA[i]);
-  }
- 
-  Int_t fgSparseDataBins[kNSparseData]   = {100, 5000, 2500, 2500, 1500, 1500, 500, 500, 250, 250};
-  Double_t fgSparseDataMin[kNSparseData] = {0.,  0.,   0.,   0.,   0.,   0.,   0.,  0.,  0.,  0.};
-  Double_t fgSparseDataMax[kNSparseData] = {100.,5000.,2500.,2500.,1500.,1500.,500.,500.,250.,250.};
+  if (isQA) for(Int_t i = 0; i < 14; i++) fThnList->Add(fHistQA[i]);
   
-  const Char_t *fgkSparseDataTitle[] = {
-    "centrality",
-    "RefMult",
-    "N_{+}",
-    "N_{-}",
-    "N_{#pi^{+}}",
-    "N_{#pi^{-}}",
-    "N_{K^{+}}",
-    "N_{K^{-}}",
-    "N_{p}",
-    "N_{#bar{p}}"
-  };
+  Int_t fgSparseDataBins[kNSparseData]   = {100, 5000, 5000, 2500, 2500, 3000, 1500, 1500, 1000, 500, 500, 500, 250, 250};
+  Double_t fgSparseDataMin[kNSparseData] = {0.,  0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,  0.,  0.,  0.,  0.};
+  Double_t fgSparseDataMax[kNSparseData] = {100.,5000.,5000.,2500.,2500.,3000.,1500.,1500.,1000.,500.,500.,500.,250.,250.};
   
-  
-  fHistoCorrelation = new THnSparseI("fThnCorr", "", 10, fgSparseDataBins, fgSparseDataMin, fgSparseDataMax);
+  const Char_t *fgkSparseDataTitle[] = {"centrality","RefMult","N_{ch}", "N_{+}","N_{-}","N_{#pi}", "N_{#pi^{+}}","N_{#pi^{-}}","N_{K}","N_{K^{+}}", "N_{K^{-}}","N_{p}","N_{p}","N_{#bar{p}}"};
+    
+  fHistoCorrelation = new THnSparseI("fThnCorr", "", kNSparseData, fgSparseDataBins, fgSparseDataMin, fgSparseDataMax);
   for (Int_t iaxis = 0; iaxis < kNSparseData; iaxis++)
     fHistoCorrelation->GetAxis(iaxis)->SetTitle(fgkSparseDataTitle[iaxis]);
   
@@ -121,7 +107,6 @@ void AliEbyEParticleRatioFluctuationTask::UserCreateOutputObjects() {
   
   PostData(1, fThnList);
 }
-
 
 //----------------------------------------------------------------------------------
 void AliEbyEParticleRatioFluctuationTask::UserExec( Option_t * ){
@@ -210,16 +195,20 @@ void AliEbyEParticleRatioFluctuationTask::UserExec( Option_t * ){
     }
     else { 
       Double_t vsparse[kNSparseData];
-      vsparse[0]  = gCent;
-      vsparse[1]  = gRefMul;
-      vsparse[2]  = gCharge[0];
-      vsparse[3]  = gCharge[1];
-      vsparse[4]  = gPid[0][0];
-      vsparse[5]  = gPid[0][1];
-      vsparse[6]  = gPid[1][0];
-      vsparse[7]  = gPid[1][1];
-      vsparse[8]  = gPid[2][0];
-      vsparse[9]  = gPid[2][1];
+      vsparse[0]   = gCent;
+      vsparse[1]   = gRefMul;
+      vsparse[2]   = gCharge[0] + gCharge[1];
+      vsparse[3]   = gCharge[0];
+      vsparse[4]   = gCharge[1];
+      vsparse[5]   = gPid[0][0] + gPid[0][1];
+      vsparse[6]   = gPid[0][0];
+      vsparse[7]   = gPid[0][1];
+      vsparse[8]   = gPid[1][0] + gPid[1][0];
+      vsparse[9]   = gPid[1][0];
+      vsparse[10]  = gPid[1][1];
+      vsparse[11]  = gPid[2][0] + gPid[2][1];
+      vsparse[12]  = gPid[2][0];
+      vsparse[13]  = gPid[2][1];
       fHistoCorrelation->Fill(vsparse);
     }
   }
@@ -233,15 +222,11 @@ void AliEbyEParticleRatioFluctuationTask::UserExec( Option_t * ){
 			     gPid[0][0], gPid[0][1],  gPid[1][0], 
 			     gPid[1][1],  gPid[2][0], gPid[2][1]);
   
-
   PostData(1, fThnList);
-  
 }
 
 void AliEbyEParticleRatioFluctuationTask::Terminate( Option_t * ){
-
   Info("AliEbyEParticleRatioFluctuationTask"," Task Successfully finished");
-  
 }
 
 //___________________________________________________________
