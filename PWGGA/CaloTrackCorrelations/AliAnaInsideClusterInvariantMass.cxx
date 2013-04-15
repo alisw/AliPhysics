@@ -373,18 +373,15 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
       Float_t l0   = 0., l1   = 0.;
       Float_t disp = 0., dEta = 0., dPhi    = 0.;
       Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
-//      GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), cells, clus,l0,l1,disp,
-//                                                                                   dEta, dPhi, sEta, sPhi, sEtaPhi,fSSECellCut[iec]);
       
-     RecalculateClusterShowerShapeParametersWithCellCut(GetEMCALGeometry(), cells, clus,l0,l1,disp,
-                                                        dEta, dPhi, sEta, sPhi, sEtaPhi,fSSECellCut[iec]);
-
+      RecalculateClusterShowerShapeParametersWithCellCut(GetEMCALGeometry(), cells, clus,l0,l1,disp,
+                                                         dEta, dPhi, sEta, sPhi, sEtaPhi,fSSECellCut[iec]);
+      
       
       fhM02ECellCutPi0[nlm][iec]->Fill(energy,l0);
       
     } // w0 loop
-    
-    
+  
   }// EMCAL
 }
 
@@ -2519,34 +2516,37 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
   Double_t w       = 0.;
   Double_t etaMean = 0.;
   Double_t phiMean = 0.;
-  
-  Float_t energy = cluster->E();
-  
+    
   //Loop on cells, calculate the cluster energy, in case a cut on cell energy is added
-  if(eCellMin > 0)
+  // and to check if the cluster is between 2 SM in eta
+  Int_t   iSM0   = -1;
+  Bool_t  shared = kFALSE;
+  Float_t energy = 0;
+
+  for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
   {
-    energy = 0 ;
-    for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
+    //Get from the absid the supermodule, tower and eta/phi numbers
+    geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta);
+    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
+    
+    //Check if there are cells of different SM
+    if     (iDigit == 0   ) iSM0 = iSupMod;
+    else if(iSupMod!= iSM0) shared = kTRUE;
+    
+    //Get the cell energy, if recalibration is on, apply factors
+    fraction  = cluster->GetCellAmplitudeFraction(iDigit);
+    if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
+    
+    if(GetCaloUtils()->GetEMCALRecoUtils()->IsRecalibrationOn())
     {
-      //Get from the absid the supermodule, tower and eta/phi numbers
-      geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta);
-      geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
-      
-      //Get the cell energy, if recalibration is on, apply factors
-      fraction  = cluster->GetCellAmplitudeFraction(iDigit);
-      if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
-      
-        if(GetCaloUtils()->GetEMCALRecoUtils()->IsRecalibrationOn())
-        {
-          recalFactor = GetCaloUtils()->GetEMCALRecoUtils()->GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
-        }
-      
-      eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
-      
-      if(eCell > eCellMin) energy += eCell;
-      
-    }//cell loop
-  }
+      recalFactor = GetCaloUtils()->GetEMCALRecoUtils()->GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    }
+    
+    eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
+    
+    if(eCell > eCellMin) energy += eCell;
+    
+  }//cell loop
   
   //Loop on cells, get weighted parameters
   for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
@@ -2559,12 +2559,16 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     fraction  = cluster->GetCellAmplitudeFraction(iDigit);
     if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
     
-      if(GetCaloUtils()->GetEMCALRecoUtils()->IsRecalibrationOn())
-      {
-        recalFactor = GetCaloUtils()->GetEMCALRecoUtils()->GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
-      }
+    if(GetCaloUtils()->GetEMCALRecoUtils()->IsRecalibrationOn())
+    {
+      recalFactor = GetCaloUtils()->GetEMCALRecoUtils()->GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    }
     
     eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
+    
+    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
+    // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
+    if(shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
     
     if(energy > 0 && eCell > eCellMin)
     {
@@ -2612,7 +2616,12 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     {
       recalFactor = GetCaloUtils()->GetEMCALRecoUtils()->GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
     }
+    
     eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
+    
+    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
+    // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
+    if(shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
     
     if(energy > 0 && eCell > eCellMin)
     {
