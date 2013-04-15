@@ -74,6 +74,7 @@ fhPtTrackInConeBC0(0),            fhPtTrackInConeVtxBC0(0),
 fhPtTrackInConeBC0PileUpSPD(0),
 fhPtInConePileUp(),               fhPtInConeCent(0),
 fhPerpConeSumPt(0),               fhPtInPerpCone(0),
+fhEtaPhiInConeCluster(0),fhEtaPhiCluster(0),fhEtaPhiInConeTrack(0),fhEtaPhiTrack(0),
 fhEtaBandCluster(0),              fhPhiBandCluster(0),
 fhEtaBandTrack(0),                fhPhiBandTrack(0),
 fhEtaBandCell(0),                 fhPhiBandCell(0),
@@ -324,14 +325,21 @@ void AliAnaParticleIsolation::CalculateCaloUEBand(AliAODPWG4ParticleCorrelation 
     
     //exclude particles in cone
     Float_t rad = GetIsolationCut()->Radius(etaTrig, phiTrig, mom.Eta(), mom.Phi());
-    if(rad < conesize) continue ;
     
+    // histo of eta and phi for all clusters
+    fhEtaPhiCluster->Fill(mom.Eta(), mom.Phi());
+    if(rad < conesize) {
+    	// histos for all clusters in cone
+     fhEtaPhiInConeCluster->Fill(mom.Eta(), mom.Phi());
+    continue ;
+    }
     //fill histogram for UE in phi band in EMCal acceptance
     if(mom.Eta() > (etaTrig-conesize) && mom.Eta()  < (etaTrig+conesize))
     {
       phiBandPtSum+=mom.Pt();
       fhPhiBandCluster->Fill(mom.Eta(),mom.Phi());
-    }
+      
+}
     
     //fill histogram for UE in eta band in EMCal acceptance
     if(mom.Phi() > (phiTrig-conesize) && mom.Phi() < (phiTrig+conesize))
@@ -422,10 +430,9 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelat
             Int_t irowLoc  = irow - AliEMCALGeoParams::fgkEMCALRows*inSector ;
 
             // Exclude cells in cone
-            if(TMath::Abs(icol-colTrig) < sqrSize) continue ;
-
-            if(TMath::Abs(irow-rowTrig) < sqrSize) continue ;
-            
+            if(TMath::Abs(icol-colTrig) < sqrSize || TMath::Abs(irow-rowTrig) < sqrSize){
+		 continue ;
+            }
             Int_t iabsId = eGeom->GetAbsCellIdFromCellIndexes(inSupMod,irowLoc,icolLoc);
             if(!eGeom->CheckAbsCellId(iabsId)) continue;
             etaBandPtSumCells += cells->GetCellAmplitude(iabsId);
@@ -521,10 +528,17 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
     //Do not count the candidate (pion, conversion photon) or the daughters of the candidate
     if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) ||
        track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3)   ) continue ;
-    
+   
+   // histo of eta:phi for all tracks 
+    fhEtaPhiTrack->Fill(track->Eta(),track->Phi());
+   
     //exclude particles in cone
     Float_t rad = GetIsolationCut()->Radius(etaTrig, phiTrig, track->Eta(), track->Phi());
-    if(rad < conesize) continue ;
+    if(rad < conesize) {
+    	// histo of eta:phi for all tracks in cone
+   	fhEtaPhiInConeTrack->Fill(track->Eta(),track->Phi());
+      continue ;
+    }
     
     //fill histogram for UE in phi band
     if(track->Eta() > (etaTrig-conesize) && track->Eta()  < (etaTrig+conesize))
@@ -606,8 +620,8 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
   
   // Sum the pT in the phi or eta band for clusters or tracks
   
-  CalculateTrackUEBand   (pCandidate,etaUEptsumTrack  ,phiUEptsumTrack  );
-  CalculateCaloUEBand    (pCandidate,etaUEptsumCluster,phiUEptsumCluster);
+  CalculateTrackUEBand   (pCandidate,etaUEptsumTrack  ,phiUEptsumTrack  );// rajouter ici l'histo eta phi 
+  CalculateCaloUEBand    (pCandidate,etaUEptsumCluster,phiUEptsumCluster);// rajouter ici l'histo eta phi
   CalculateCaloCellUEBand(pCandidate,etaUEptsumCell   ,phiUEptsumCell   );
 
   // Do the normalization
@@ -1608,7 +1622,35 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPhiBandCluster->SetYTitle("#phi");
       outputContainer->Add(fhPhiBandCluster) ;
       
-      fhPtCellInCone  = new TH2F("hPtCellInCone",
+	fhEtaPhiInConeCluster= new TH2F("hEtaPhiInConeCluster",
+                                   Form("#eta vs #phi of clusters in cone for R = %2.2f",r),
+                                   netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiInConeCluster->SetXTitle("#eta");
+      fhEtaPhiInConeCluster->SetYTitle("#phi");
+      outputContainer->Add(fhEtaPhiInConeCluster) ;
+	
+	fhEtaPhiCluster= new TH2F("hEtaPhiCluster",
+                                   Form("#eta vs #phi of all clusters"),
+                                   netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiCluster->SetXTitle("#eta");
+      fhEtaPhiCluster->SetYTitle("#phi");
+      outputContainer->Add(fhEtaPhiCluster) ;
+
+  	fhEtaPhiInConeTrack= new TH2F("hEtaPhiInConeTrack",
+                                   Form("#eta vs #phi of Tracks in cone for R = %2.2f",r),
+                                   netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiInConeTrack->SetXTitle("#eta");
+      fhEtaPhiInConeTrack->SetYTitle("#phi");
+      outputContainer->Add(fhEtaPhiInConeTrack) ;
+	
+	fhEtaPhiTrack= new TH2F("hEtaPhiTrack",
+                                   Form("#eta vs #phi of all Tracks"),
+                                   netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiTrack->SetXTitle("#eta");
+      fhEtaPhiTrack->SetYTitle("#phi");
+      outputContainer->Add(fhEtaPhiTrack) ;
+
+    fhPtCellInCone  = new TH2F("hPtCellInCone",
                                  Form("p_{T} of cells in isolation cone for R = %2.2f",r),
                                  nptbins,ptmin,ptmax,1000,0,50);
       fhPtCellInCone->SetYTitle("p_{T in cone} (GeV/c)");
@@ -2047,8 +2089,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPhiBandNormClustervsTrack->SetYTitle("#Sigma p_{T} track");
       outputContainer->Add(fhPhiBandNormClustervsTrack) ;
       
-      
-      
+            
       fhConeSumPtCellTrack = new TH2F("hConePtSumCellTrack",
                                       Form("Track and Cell #Sigma p_{T} in isolation cone for R = %2.2f",r),
                                       nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
@@ -3327,11 +3368,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         fhConeSumPtCellvsTrack        ->Fill(coneptsumCell,   coneptsumTrack);
         fhConeSumPtCellTrack          ->Fill(pt,     coneptsumTrack+coneptsumCell);
         fhConeSumPtCellTrackTrigEtaPhi->Fill(eta,phi,coneptsumTrack+coneptsumCell);
-      }
+      }  
       
       fhConeSumPt              ->Fill(pt,     coneptsumTrack+coneptsumCluster);
       fhConeSumPtTrigEtaPhi    ->Fill(eta,phi,coneptsumTrack+coneptsumCluster);
-      
+     
       if(GetDebug() > 1)
         printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d Energy Sum in Isolation Cone %2.2f\n", iaod, coneptsumTrack+coneptsumCluster);
 

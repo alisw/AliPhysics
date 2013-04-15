@@ -176,6 +176,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPerpConeSumPt ;                      //! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90)
   TH2F *   fhPtInPerpCone ;                       //! Particle Pt  in cone at the perpendicular phi region to trigger axis  (phi +90)
   
+  TH2F *   fhEtaPhiInConeCluster ;                //! Eta vs. phi of clusters in cone
+  TH2F *   fhEtaPhiCluster ;                      //! Eta vs. phi of all clusters
+  TH2F *   fhEtaPhiInConeTrack ;                  //! Eta vs. phi of tracks in cone
+  TH2F *   fhEtaPhiTrack ;                        //! Eta vs. phi of all tracks
+  
   TH2F *   fhEtaBandCluster ;                     //! Accumulated pT in Eta band to estimate UE in cone, only clusters
   TH2F *   fhPhiBandCluster ;                     //! Accumulated pT in Phi band to estimate UE in cone, only clusters
   TH2F *   fhEtaBandTrack   ;                     //! Accumulated pT in Eta band to estimate UE in cone, only tracks
