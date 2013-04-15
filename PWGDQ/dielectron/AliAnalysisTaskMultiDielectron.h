@@ -48,6 +48,7 @@ public:
   UInt_t GetExcludeTriggerMask() const { return fExcludeTriggerMask; }
   void SetTriggerLogic(ETriggerLogig log) {fTriggerLogic=log;}
   ETriggerLogig GetTriggerLogic() const {return fTriggerLogic;}
+  void SetFiredTriggerName(const char* select, Bool_t exclude=kFALSE) {fFiredTrigger=select; fFiredExclude=exclude;}
 
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
   void SetTriggerOnV0AND(Bool_t v0and=kTRUE)    { fTriggerOnV0AND=v0and;    }
@@ -65,6 +66,8 @@ protected:
   UInt_t fTriggerMask;               // Event trigger mask
   UInt_t fExcludeTriggerMask;        // Triggers to exclude from the analysis
   Bool_t fTriggerOnV0AND;            // if to trigger on V0and
+  TString fFiredTrigger;             // online trigger class name
+  Bool_t fFiredExclude;              // cut logic: select(default) or exclude
   Bool_t fRejectPileup;              // pileup rejection wanted
   Double_t fBeamEnergy;              // beam energy in GeV (set by hand)
 
