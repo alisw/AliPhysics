@@ -93,7 +93,6 @@ AliEbyEHigherMomentsTask::AliEbyEHigherMomentsTask( const char *name )
   fChi2perNDF(4.),
   fAODtrackCutBit(128),
   fUsePid(kFALSE),
-  fCheckEff(kFALSE),
   fEventCounter(0),
   fHistDCA(0),
   fTPCSig(0),
