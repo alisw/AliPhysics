@@ -828,9 +828,25 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		((TH1D*)fHistoMap->Get(particle + "_PID_Pt"))->Fill(pt);
 		((TH1D*)fHistoMap->Get(particle + "_PID_Phi"))->Fill(phi);
 		
+		if(iTrack->IsOn(AliESDtrack::kTRDin))
+		{
+			((TH1D*)fHistoMap->Get(particle + "_PID_TRDin_Pt"))->Fill(pt);
+			
+			if(iTrack->IsOn(AliESDtrack::kTRDout)) ((TH1D*)fHistoMap->Get(particle + "_PID_TRDin_TRDout_Pt"))->Fill(pt);
+			if(iTrack->IsOn(AliESDtrack::kTOFout)) ((TH1D*)fHistoMap->Get(particle + "_PID_TRDin_TOFout_Pt"))->Fill(pt);
+		}
+		
+		if(iTrack->IsOn(AliESDtrack::kTOFin))
+		{
+			((TH1D*)fHistoMap->Get(particle + "_PID_TOFin_Pt"))->Fill(pt);
+			
+			if(iTrack->IsOn(AliESDtrack::kTOFout)) ((TH1D*)fHistoMap->Get(particle + "_PID_TOFin_TOFout_Pt"))->Fill(pt);
+		}
+		
 		if( this->TOFmatch(iTrack) )
 		{
 			((TH2D*)fHistoMap->Get(particle + "_PID_M2_Pt"))->Fill(pt, m2);
+			((TH1D*)fHistoMap->Get(particle + "_PID_TOFmatch_Pt"))->Fill(pt);
 		}
 		
 		// secondaries
