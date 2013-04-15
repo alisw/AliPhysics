@@ -212,6 +212,19 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 		
 		hMap->Add( particle[i] + "_After_Phi_Eta", 400, -2, 2, 360, 0, 2.*TMath::Pi(), "Global tracks (after track cuts)", "#eta", "#phi (rad)");
 		
+		// TRD and TOF absorption
+		
+		hMap->Add( particle[i] + "_PID_TRDin_Pt", ptBins, ptMin, ptMax, Form("%s candidates (TRDin)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
+		
+		hMap->Add( particle[i] + "_PID_TOFin_Pt", ptBins, ptMin, ptMax, Form("%s candidates (TOFin)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
+		
+		hMap->Add( particle[i] + "_PID_TRDin_TRDout_Pt", ptBins, ptMin, ptMax, Form("%s candidates (TRDin-TRDout)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
+		
+		hMap->Add( particle[i] + "_PID_TRDin_TOFout_Pt", ptBins, ptMin, ptMax, Form("%s candidates (TRDin-TOFout)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
+		
+		hMap->Add( particle[i] + "_PID_TOFin_TOFout_Pt", ptBins, ptMin, ptMax, Form("%s candidates (TOFin-TOFout)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
+		
+		
 		// pid with TOF
 		
 		hMap->Add( particle[i] + "_PID_M2_Pt", ptBins, ptMin, ptMax, m2Bins, m2Min, m2Max, particle[i] + " candidates", "p_{T} (GeV/c)", "m^{2} (GeV^{2}/c^{4})");
@@ -282,6 +295,8 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 		hMap->Add( particle[i] + "_PID_Pt_Y", etaBins, etaMin, etaMax, ptBins, ptMin, ptMax, particle[i] + " candidates", "y", "p_{T} (GeV/c)");
 		
 		hMap->Add( particle[i] + "_PID_Pt", ptBins, ptMin, ptMax, Form("%s candidates (|y| < %0.1f, 0 < \\phi < 2\\pi)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
+		
+		hMap->Add( particle[i] + "_PID_TOFmatch_Pt", ptBins, ptMin, ptMax, Form("%s candidates (|y| < %0.1f, TOFmatch)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
 		
 		hMap->Add( Form("%s_PID_Y",particle[i].Data()), etaBins, etaMin, etaMax, Form("%s candidates (p_{T} > 0, 0 < \\phi < 2\\pi)",particle[i].Data()), "y");
 		

@@ -32,7 +32,7 @@ void SetParameters(Double_t* prob, Double_t c0, Double_t c1, Double_t c2, Double
 	prob[8] = c8;
 }
 
-Bool_t PriorProbabilities(Double_t* prob, const TString& periodname, const TString& tracksel)
+Bool_t PriorProbabilities(Double_t* prob, const TString& periodname, const TString& tracksel, const TString& ztag="")
 {
 //
 // Prior probabilities for the different samples and track selection criteria.
@@ -83,11 +83,65 @@ Bool_t PriorProbabilities(Double_t* prob, const TString& periodname, const TStri
 		}
 		else if(trksel=="its_tpc_dca_spd")
 		{
-			SetParameters(prob, 0.00883871, 0.00306025, 0.877528, 0.0646921, 0.0457766, 0.000102032, 2.23315e-06, 3.71013e-08, 0);
+			if(ztag=="ntrk0002")
+			{
+				SetParameters(prob, 0.00572332, 0.00235974, 0.888793, 0.060643, 0.0424185, 6.09002e-05, 1.29575e-06, 0, 0);
+			}
+			else if(ztag=="ntrk0204")
+			{
+				SetParameters(prob, 0.00605528, 0.00176134, 0.888974, 0.0614645, 0.0416846, 5.91396e-05, 1.27997e-06, 0, 0);
+			}
+			else if(ztag=="ntrk0408")
+			{
+				SetParameters(prob, 0.00679582, 0.00129216, 0.883082, 0.0641175, 0.044637, 7.44268e-05, 9.96841e-07, 4.80405e-08, 0);
+			}
+			else if(ztag=="ntrk0811")
+			{
+				SetParameters(prob, 0.00741765, 0.00105688, 0.87915, 0.0661869, 0.046099, 8.77512e-05, 1.61561e-06, 9.07646e-08, 0);
+			}
+			else if(ztag=="ntrk1120")
+			{
+				SetParameters(prob, 0.00806164, 0.000955738, 0.877048, 0.0674902, 0.0463403, 0.00010188, 1.96668e-06, 7.13305e-08, 0);
+			}
+			else if(ztag=="ntrk20xx")
+			{
+				SetParameters(prob, 0.00899995, 0.000887649, 0.876102, 0.0681763, 0.0457112, 0.00011968, 2.87651e-06, 1.16222e-07, 0);
+			}
+			else // MB
+			{
+				SetParameters(prob, 0.00883871, 0.00306025, 0.877528, 0.0646921, 0.0457766, 0.000102032, 2.23315e-06, 3.71013e-08, 0);
+			}
 		}
 		else if(trksel=="its_tpc_tof_dca" || trksel == "its_tpc_tof_dca_spd")
 		{
-			SetParameters(prob, 0.0155752, 0.0130319, 0.813626, 0.0808387, 0.0767456, 0.000177436, 4.32771e-06, 3.93428e-07, 0);
+			if(ztag=="ntrk0002")
+			{
+				SetParameters(prob, 0.00354158, 0.0163535, 0.853117, 0.0703677, 0.0565492, 6.95016e-05, 1.68052e-06, 0, 0);
+			}
+			else if(ztag=="ntrk0204")
+			{
+				SetParameters(prob, 0.00383418, 0.0106071, 0.853307, 0.0739765, 0.0582004, 7.27388e-05, 1.58847e-06, 0, 0);
+			}
+			else if(ztag=="ntrk0408")
+			{
+				SetParameters(prob, 0.00457824, 0.00613158, 0.846351, 0.0795435, 0.0632952, 9.89517e-05, 1.19219e-06, 8.72334e-08, 0);
+			}
+			else if(ztag=="ntrk0811")
+			{
+				SetParameters(prob, 0.00517035, 0.00408579, 0.841406, 0.0833815, 0.0658357, 0.000118306, 2.28488e-06, 2.11563e-07, 0);
+			}
+			else if(ztag=="ntrk1120")
+			{
+				SetParameters(prob, 0.00577945, 0.00321126, 0.838286, 0.0861044, 0.0664752, 0.000140696, 3.25918e-06, 1.37712e-07, 0);
+			}
+			else if(ztag=="ntrk20xx")
+			{
+				SetParameters(prob, 0.00666829, 0.00269162, 0.836384, 0.0883033, 0.0657773, 0.000170996, 4.77082e-06, 1.88322e-07, 0);
+			}
+			else // MB
+			{
+				SetParameters(prob, 0.0155752, 0.0130319, 0.813626, 0.0808387, 0.0767456, 0.000177436, 4.32771e-06, 3.93428e-07, 0);
+			}
 		}
 		else // its_tpc_nsigma
 		{
