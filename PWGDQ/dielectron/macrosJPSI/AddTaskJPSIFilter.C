@@ -19,7 +19,8 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kTRUE, Bool_t hasMC_aod = kF
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
   //gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigBJpsi_ff_PbPbFilter.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPbFilter.C");
+  //  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPbFilter.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_nano_PbPb.C");
   AliDielectron *jpsi=ConfigBJpsi_ff_PbPbFilter(0,hasMC);
   
   if(isAOD) {
@@ -49,14 +50,14 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kTRUE, Bool_t hasMC_aod = kF
   task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);  
   if (!hasMC) task->UsePhysicsSelection();
 
-  //Add event filter
-  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-  if(!hasMC) eventCuts->SetRequireVertex();
-  if (isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-  eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,10.);
-  eventCuts->SetCentralityRange(0.0,80.0);
-  task->SetEventFilter(eventCuts);
+  //   //Add event filter
+  //   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
+  //   if(!hasMC) eventCuts->SetRequireVertex();
+  //   if (isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
+  //   eventCuts->SetMinVtxContributors(1);
+  //   eventCuts->SetVertexZ(-10.,10.);
+  //   eventCuts->SetCentralityRange(0.0,90.0);
+  //   task->SetEventFilter(eventCuts);
 
   task->SetDielectron(jpsi);
   if(storeLS) task->SetStoreLikeSignCandidates(storeLS);
