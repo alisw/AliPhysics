@@ -24,15 +24,13 @@ AliAnalysisTask*  AddAliEbyEHigherMomentsTaskCentrality(Double_t vx,
 				  const char* centralityEstimator,
 				  Bool_t trigger = kFALSE,
 				  Bool_t usepid,
-				  Bool_t checkEff,
 				  TString  analysis,
 				  const char* taskss) {
   
   
-  TString taskname = "HMQA";
+  
+  TString taskname = "HM";
   taskname.Append(taskss);
-  TString taskname1 = "HM";
-  taskname1.Append(taskss);
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -58,8 +56,7 @@ AliAnalysisTask*  AddAliEbyEHigherMomentsTaskCentrality(Double_t vx,
   taskHM->SetAODtrackCutBit(AODfilterBit);
   taskHM->SetKinematicsCutsAOD(ptl,pth,eta);
   taskHM->SetUsePid(usepid);
-  taskHM->SetEfficencyJob(checkEff);
-
+ 
   if(trigger) taskHM->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
   else taskHM->SelectCollisionCandidates(AliVEvent::kMB);
   
@@ -73,16 +70,12 @@ AliAnalysisTask*  AddAliEbyEHigherMomentsTaskCentrality(Double_t vx,
   // cout << " Check analysis type " << analysisType << endl;
   
   mgr->AddTask(taskHM);
-  
-  AliAnalysisDataContainer *coutQA = mgr->CreateContainer(taskname.Data(), 
-							  TList::Class(),
-							  AliAnalysisManager::kOutputContainer,fileNameBase.Data());
-  AliAnalysisDataContainer *coutFA = mgr->CreateContainer(taskname1.Data(), 
+ 
+  AliAnalysisDataContainer *coutFA = mgr->CreateContainer(taskname.Data(), 
 							  TList::Class(),
 							  AliAnalysisManager::kOutputContainer,fileNameBase.Data());
   mgr->ConnectInput(taskHM, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskHM, 1, coutQA);
-  mgr->ConnectOutput(taskHM, 2, coutFA);
+  mgr->ConnectOutput(taskHM, 1, coutFA);
   
   return taskHM;
 }

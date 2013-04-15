@@ -14,7 +14,6 @@ class TH1D;
 class TH2D;
 class TH3D;
 class THnSparse;
-class AliPIDResponse;
 class TString;
 class AliAODEvent;
 class AliPIDResponse;
@@ -40,7 +39,7 @@ class AliEbyEHigherMomentsTask: public AliAnalysisTaskSE {
   void SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
   void SetDCA(Double_t xy, Double_t z) { fDCAxy = xy; fDCAz = z; }
   void SetPtRange(Double_t ptl, Double_t pth){fPtLowerLimit = ptl; fPtHigherLimit = pth;}
-  void SetEta(Double_t eta){fEtaLowerLimit= -1*eta; fEtaHigherLimit=eta;}
+  void SetEta(Double_t eta){fEtaLowerLimit= -1.*eta; fEtaHigherLimit=eta;}
   void SetRapidityCut(Double_t rapidity){ fRapidityCut = rapidity;}
   void SetNSigmaCut(Double_t nsigma){ fNSigmaCut = nsigma;}
   void SetParticleSpecies(AliPID::EParticleType pid) {fParticleSpecies = pid;}
@@ -48,12 +47,11 @@ class AliEbyEHigherMomentsTask: public AliAnalysisTaskSE {
   void SetChi2PerNDF( Double_t chi2ndf ) { fChi2perNDF = chi2ndf;}
   void SetAODtrackCutBit(Int_t bit){ fAODtrackCutBit = bit;}
   void SetUsePid( Bool_t usepid ){ fUsePid = usepid;}
-  void SetEfficencyJob( Bool_t efficiency ){ fCheckEff = efficiency;}
   void SetKinematicsCutsAOD(Double_t ptl, Double_t pth, Double_t eta){
     
     fPtLowerLimit = ptl;
     fPtHigherLimit = pth;
-    fEtaLowerLimit = -1*eta;
+    fEtaLowerLimit = -1.*eta;
     fEtaHigherLimit = eta;
     
   }
@@ -61,7 +59,6 @@ class AliEbyEHigherMomentsTask: public AliAnalysisTaskSE {
   
  private:
   
-  TList *fListOfHistosQA;
   TList *fListOfHistos;
   AliAODEvent           *fAOD;
   TClonesArray          *fArrayMC;
@@ -87,9 +84,7 @@ class AliEbyEHigherMomentsTask: public AliAnalysisTaskSE {
   Int_t fTPCNClus;
   Double_t fChi2perNDF;
   Int_t fAODtrackCutBit;//track cut bit from track selection (only used for AODs)
-  Int_t **fLabel;
   Bool_t fUsePid;
-  Bool_t fCheckEff;
   TH1D *fEventCounter;
   
   TH1D *fHistQA[13];
@@ -101,7 +96,6 @@ class AliEbyEHigherMomentsTask: public AliAnalysisTaskSE {
   THnSparse *fTHnCentNplusNminusCh;
   THnSparse *fTHnCentNplusNminusChTruth;
   THnSparse *fTHnCentNplusNminus;
-  THnSparse *fTHnEfficiencyHisto;
   THnSparse *fTHnCentNplusNminusPid[5];
   THnSparse *fTHnCentNplusNminusPidTruth[5];
   

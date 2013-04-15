@@ -70,7 +70,6 @@ ClassImp(AliEbyEHigherMomentsTask)
 //-----------------------------------------------------------------------
 AliEbyEHigherMomentsTask::AliEbyEHigherMomentsTask( const char *name )
 : AliAnalysisTaskSE( name ),
-  fListOfHistosQA(0),
   fListOfHistos(0),
   fAOD(0),
   fArrayMC(0),
@@ -93,7 +92,6 @@ AliEbyEHigherMomentsTask::AliEbyEHigherMomentsTask( const char *name )
   fTPCNClus(80),
   fChi2perNDF(4.),
   fAODtrackCutBit(128),
-  fLabel(NULL),
   fUsePid(kFALSE),
   fCheckEff(kFALSE),
   fEventCounter(0),
@@ -102,8 +100,7 @@ AliEbyEHigherMomentsTask::AliEbyEHigherMomentsTask( const char *name )
   fTPCSigA(0),
   fTHnCentNplusNminusCh(0),
   fTHnCentNplusNminusChTruth(0),
-  fTHnCentNplusNminus(0),
-  fTHnEfficiencyHisto(0)
+  fTHnCentNplusNminus(0)
 { 
   
   for ( Int_t i = 0; i < 13; i++) { 
@@ -116,21 +113,20 @@ AliEbyEHigherMomentsTask::AliEbyEHigherMomentsTask( const char *name )
   }
   
   DefineOutput(1, TList::Class()); // Outpput....
-  DefineOutput(2, TList::Class()); 
+  //DefineOutput(2, TList::Class()); 
 }
 
 AliEbyEHigherMomentsTask::~AliEbyEHigherMomentsTask() {
-  if(fListOfHistosQA) delete fListOfHistosQA;
+  //if(fListOfHistosQA) delete fListOfHistosQA;
   if(fListOfHistos) delete fListOfHistos;
-  if(fLabel[0] ) delete [] (fLabel[0]);
-  if(fLabel[1] ) delete [] (fLabel[1]);
+ 
 }
 
 //---------------------------------------------------------------------------------
 void AliEbyEHigherMomentsTask::UserCreateOutputObjects() {
   
-  fListOfHistosQA = new TList();
-  fListOfHistosQA->SetOwner(kTRUE);
+  // fListOfHistosQA = new TList();
+  //fListOfHistosQA->SetOwner(kTRUE);
   fListOfHistos = new TList();
   fListOfHistos->SetOwner(kTRUE);
   
@@ -141,7 +137,7 @@ void AliEbyEHigherMomentsTask::UserCreateOutputObjects() {
   fEventCounter->GetXaxis()->SetBinLabel(6,"After vertex Cut");
   fEventCounter->GetXaxis()->SetBinLabel(7,"Event Analyzed");
   fEventCounter->GetXaxis()->SetBinLabel(8,"Event Analysis finished");
-  fListOfHistosQA->Add(fEventCounter);
+  fListOfHistos->Add(fEventCounter);
   
   //For QA-Histograms
   fHistQA[0] = new TH1D("fHistQAvx", "Histo Vx After Cut", 400, -4., 4.);
@@ -159,16 +155,16 @@ void AliEbyEHigherMomentsTask::UserCreateOutputObjects() {
   fHistQA[12] = new TH1D("fHistQAChi2","Chi2 per NDF",100,0,10);
   for(Int_t i = 0; i < 13; i++)
     {
-      fListOfHistosQA->Add(fHistQA[i]);
+      fListOfHistos->Add(fHistQA[i]);
     }
   
   fHistDCA = new TH2D("fHistDCA","DCAxy Vs DCAz", 500, -5., 5., 500, -5., 5.);
   fTPCSig = new TH2D("fTPCSig","TPC signal",200, 0.0, 10. ,1000,0.,1000);
   fTPCSig->SetMarkerColor(kRed);
   fTPCSigA = new TH2D("fTPCSigA","TPC signal all ",200, 0.0, 10. ,1000,0.,1000);
-  fListOfHistosQA->Add(fHistDCA);
-  fListOfHistosQA->Add(fTPCSig);
-  fListOfHistosQA->Add(fTPCSigA);
+  fListOfHistos->Add(fHistDCA);
+  fListOfHistos->Add(fTPCSig);
+  fListOfHistos->Add(fTPCSigA);
  
   const Int_t nDim = 3;
   const Int_t nPid = 5;
@@ -205,27 +201,7 @@ void AliEbyEHigherMomentsTask::UserCreateOutputObjects() {
     fTHnCentNplusNminusChTruth->GetAxis(2)->SetTitle("Nminus");
     fListOfHistos->Add(fTHnCentNplusNminusChTruth);
     
-    if(fCheckEff){
-      
-      Int_t effBin[10] = { 100, 3, 2, 2, 49, 180, 100, 49, 180, 100};
-      Double_t effBinL[10] = { -0.5, -1.5, -0.5, -0.5, 0.1, -0.9, 0., 0.1, -0.9, 0.};
-      Double_t effBinH[10] = { 99.5, 1.5, 1.5, 1.5, 5.0, 0.9, 6.8, 5.0, 0.9, 6.8 };
-    
-      fTHnEfficiencyHisto = new THnSparseD("fTHnEfficiencyHisto","Cent-charge-pid-pt-eta-phi", 10, effBin, effBinL, effBinH);
-      fTHnEfficiencyHisto->Sumw2();
-      fTHnEfficiencyHisto->GetAxis(0)->SetTitle("Centrality");
-      fTHnEfficiencyHisto->GetAxis(1)->SetTitle("Charge");
-      fTHnEfficiencyHisto->GetAxis(2)->SetTitle("RecStatus");
-      fTHnEfficiencyHisto->GetAxis(3)->SetTitle("PidRecStatus");
-      fTHnEfficiencyHisto->GetAxis(4)->SetTitle("P_{T}MC");
-      fTHnEfficiencyHisto->GetAxis(5)->SetTitle("#eta_{MC}");
-      fTHnEfficiencyHisto->GetAxis(6)->SetTitle("#phi_{MC}");
-      fTHnEfficiencyHisto->GetAxis(7)->SetTitle("P_{T}Rec");
-      fTHnEfficiencyHisto->GetAxis(8)->SetTitle("#eta_{Rec}");
-      fTHnEfficiencyHisto->GetAxis(9)->SetTitle("#phi_{Rec}");
-      fListOfHistos->Add(fTHnEfficiencyHisto);
-    }//Efficiency Sparse---
-    
+   
   }//MCAOD---
   
   TString hname1, hname11;
@@ -291,8 +267,8 @@ void AliEbyEHigherMomentsTask::UserCreateOutputObjects() {
     
   }//fUsePid-------
   
-  PostData(1, fListOfHistosQA);
-  PostData(2, fListOfHistos);   
+  //PostData(1, fListOfHistosQA);
+  PostData(1, fListOfHistos);   
   
   
 }
@@ -319,18 +295,16 @@ void AliEbyEHigherMomentsTask::UserExec( Option_t * ){
   
   fEventCounter->Fill(8);
   
-  PostData(1, fListOfHistosQA);
-  PostData(2, fListOfHistos);
   
 }
 
 //--------------------------------------------------------------------------------------
 void AliEbyEHigherMomentsTask::doAODEvent(){
   
-  Double_t nPlusCharge = 0.;
-  Double_t nMinusCharge = 0.;
-  Double_t nParticle = 0.;
-  Double_t nAntiParticle = 0.;
+  Double_t positiveSum = 0.;
+  Double_t negativeSum = 0.;
+  Double_t posPidSum = 0.;
+  Double_t negPidSum = 0.;
   Int_t gPid = 0;
   
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
@@ -451,8 +425,8 @@ void AliEbyEHigherMomentsTask::doAODEvent(){
       
       Short_t gCharge = aodTrack1->Charge();
       
-      if(gCharge > 0) nPlusCharge += 1.;
-      if(gCharge < 0) nMinusCharge += 1.;
+      if(gCharge > 0) positiveSum += 1.;
+      if(gCharge < 0) negativeSum += 1.;
       
       if( fUsePid ) {
 	
@@ -476,8 +450,8 @@ void AliEbyEHigherMomentsTask::doAODEvent(){
 	
 	if ( nsigmaTPCPID < fNSigmaCut  ){
 	  
-	  if (gCharge > 0) nParticle +=1.;
-	  if( gCharge < 0 ) nAntiParticle +=1.;
+	  if (gCharge > 0) posPidSum +=1.;
+	  if( gCharge < 0 ) negPidSum +=1.;
 	  
 	}
       }//fUsepid-----
@@ -488,19 +462,20 @@ void AliEbyEHigherMomentsTask::doAODEvent(){
   //cout << fCentrality <<" "<< nPlusCharge << " " << nMinusCharge << endl;
   //cout << fCentrality <<" "<< nParticle << " " << nAntiParticle << endl;
 
-  Double_t fContainerCh[3] = { fCentrality, nPlusCharge, nMinusCharge};
-  Double_t fContainerPid[3] = { fCentrality, nParticle, nAntiParticle};
+  Double_t fContainerCh[3] = { fCentrality, positiveSum, negativeSum};
+  
   
   
   fTHnCentNplusNminusCh->Fill(fContainerCh);
   
   if( fUsePid ){
     gPid = (Int_t)fParticleSpecies; 
+    Double_t fContainerPid[3] = { fCentrality, posPidSum, negPidSum};
     fTHnCentNplusNminusPid[gPid]->Fill(fContainerPid);  
   }
   
   fEventCounter->Fill(7);
-  
+  PostData(1, fListOfHistos);
   return;
   
 }
@@ -510,18 +485,15 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
   
   
   //---------
-  Double_t nPlusCharge = 0.;
-  Double_t nMinusCharge = 0.;
-  
-  Double_t nPlusChargeTruth = 0.;
-  Double_t nMinusChargeTruth = 0.;
- 
-  
-  Double_t nParticle = 0.;
-  Double_t nAntiParticle = 0.;
-  Double_t nParticleTruth = 0.;
-  Double_t nAntiParticleTruth = 0.;
- 
+  Double_t positiveSumMCRec = 0.;
+  Double_t negativeSumMCRec = 0.;
+  Double_t posPidSumMCRec = 0.;
+  Double_t negPidSumMCRec = 0.;
+
+  Double_t positiveSumMCTruth = 0.;
+  Double_t negativeSumMCTruth = 0.;
+  Double_t posPidSumMCTruth = 0.;
+  Double_t negPidSumMCTruth = 0.;
   
   Int_t gPid = 0;
   Int_t gPdgCode = AliPID::ParticleCode(fParticleSpecies);
@@ -584,27 +556,6 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
   if(!ProperVertex()) return;   
   
   Int_t nTracks = fAOD->GetNumberOfTracks();
-  
-  fLabel = new Int_t*[2];
-  fLabel[0] = new Int_t[nTracks]; //All charged hadrons----
-  fLabel[1] = new Int_t[nTracks]; //For Pid-----------
-  //Initialize labels----
-  
-  if(!fLabel[0]){
-    AliError("Can't Get fLabel[0] ");
-    return;
-  }
-  if(!fLabel[1]){
-    AliError("Can't Get fLabel[1] "); 
-    return; 
-  }
-  
-  for(Int_t i=0; i < 2; i++){
-    for(Int_t j=0; j < nTracks; j++){
-      fLabel[i][j] = 0;
-    }
-  }   
-  
   
   TExMap *trackMap = new TExMap();//Mapping matrix----
   
@@ -688,17 +639,9 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
     Short_t gCharge = aodTrack1->Charge();
     
     if( gCharge == 0 ) continue;
-    
-    //Check the labels----------
-    Int_t label  = TMath::Abs(aodTrack1->GetLabel());
-    //fill the labels--------
-    fLabel[0][j] = label;//charged particle---
-    
-    AliAODMCParticle* particle = (AliAODMCParticle*)fArrayMC->At(label);
-    if (!particle) return;
-   
-    if(gCharge > 0) nPlusCharge += 1.;
-    if(gCharge < 0) nMinusCharge += 1.;    
+     
+    if(gCharge > 0) positiveSumMCRec += 1.;
+    if(gCharge < 0) negativeSumMCRec += 1.;    
     
     if( fUsePid ) {
       
@@ -718,21 +661,21 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
       nsigmaTOFPID = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,fParticleSpecies));
       
       if( nsigmaTPCPID < fNSigmaCut  ){
-	fLabel[1][j] = label;//pid labels----
-	if (gCharge > 0) nParticle +=1;
-	if( gCharge < 0 ) nAntiParticle +=1.;
+
+	if (gCharge > 0) posPidSumMCRec +=1;
+	if( gCharge < 0 ) negPidSumMCRec +=1.;
       }//nSigmaCut-----
     }//fUsepid-----
     
   }//--------- Track Loop to select with filterbit
   
   
-  Double_t fContainerCh[3] = { fCentrality, nPlusCharge, nMinusCharge};//Reco. values ch. hadrons
-  Double_t fContainerPid[3] = { fCentrality, nParticle, nAntiParticle};//Reco. values pid.
-
+  Double_t fContainerCh[3] = { fCentrality, positiveSumMCRec, negativeSumMCRec};//Reco. values ch. hadrons
   fTHnCentNplusNminusCh->Fill(fContainerCh);//Fill the rec. ch. particles---
+
   if( fUsePid ){
     gPid = (Int_t)fParticleSpecies;
+    Double_t fContainerPid[3] = { fCentrality, posPidSumMCRec, negPidSumMCRec};//Reco. values pid.
     fTHnCentNplusNminusPid[gPid]->Fill(fContainerPid);//Fill the rec. pid tracks
   }
   
@@ -762,8 +705,8 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
     
     Short_t gCharge = partMC->Charge();
     Int_t chargeState = ( gCharge < 0)?  -1 : 1 ; 
-    if(gCharge > 0) nPlusChargeTruth += 1.;
-    if(gCharge < 0) nMinusChargeTruth += 1.;
+    if(gCharge > 0) positiveSumMCTruth += 1.;
+    if(gCharge < 0) negativeSumMCTruth += 1.;
     
     if(fUsePid){
       
@@ -771,68 +714,25 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
       if( fabs(rap ) > fRapidityCut ) continue;//Rapidity cut
       if(TMath::Abs(partMC->GetPdgCode()) != gPdgCode) continue;
       
-      if(gCharge > 0) nParticleTruth += 1.;
-      if(gCharge < 0) nAntiParticleTruth += 1.;
+      if(gCharge > 0) posPidSumMCTruth += 1.;
+      if(gCharge < 0) negPidSumMCTruth += 1.;
       
     }//if(fUsePid) ----
     
-    if( fCheckEff ){
-      
-      Int_t chrgRecStatus = 0;
-      Int_t pidRecStatus = 0;
-      
-      Double_t ptRec = 0.;
-      Double_t etaRec = 0.;
-      Double_t phiRec = 0.;
-      
-      for( Int_t iRec = 0; iRec < nTracks; iRec++ ){
-	
-	if( iMC == fLabel[0][iRec] ){
-	  chrgRecStatus = 1;
-	  if(fUsePid){
-	    
-	    if( iMC == fLabel[1][iRec] ){
-	      pidRecStatus = 1;
-	      
-	    }
-	  }//fUsePid--
-	  
-	  AliAODTrack* aodTrack = NULL;
-	  if(fAOD)
-	    aodTrack = fAOD->GetTrack(iRec);
-	  if(aodTrack){
-
-	    ptRec = aodTrack->Pt();
-	    etaRec = aodTrack->Eta();
-	    phiRec = aodTrack->Phi();
-	    
-	  }//aodTrack
-	  
-	  break;
-	  
-	}//Check the rec.
-	
-      }//loop over all Reconstd track--
-      
-      Double_t effContainer[10] = { fCentrality, chargeState,  chrgRecStatus, pidRecStatus, partMC->Pt(), partMC->Eta(), partMC->Phi(), ptRec, etaRec, phiRec }; 
-      
-      fTHnEfficiencyHisto->Fill(effContainer);     
-    }//if( fCheckEff ){...
-    
+   
   }//MC-Truth Track loop--
   
-  Double_t fContainerChTruth[3] = { fCentrality, nPlusChargeTruth, nMinusChargeTruth };
-  Double_t fContainerPidTruth[3] = { fCentrality, nParticleTruth, nAntiParticleTruth };
-  
+  Double_t fContainerChTruth[3] = { fCentrality, positiveSumMCTruth, negativeSumMCTruth }; 
   fTHnCentNplusNminusChTruth->Fill(fContainerChTruth);//MC -Truth ch. particles
   
   if( fUsePid ){
     gPid = (Int_t)fParticleSpecies;
+    Double_t fContainerPidTruth[3] = { fCentrality, posPidSumMCTruth, negPidSumMCTruth};
     fTHnCentNplusNminusPidTruth[gPid]->Fill(fContainerPidTruth);//MC-Truth pid
   }
   
   fEventCounter->Fill(7);
-  
+  PostData(1, fListOfHistos);
   return;
   
 }
