@@ -29,10 +29,10 @@ AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0FlowMC (const char* name = "PHOSPi0FlowM
   // task->SetCentralityBinning(tbin, tNMixed);
 
   // Binning
-  const int nbins = 5;
-  Double_t cbin[nbins+1] = {0., 10., 20., 40., 60., 80.};
+  const int nbins = 6;
+  Double_t cbin[nbins+1] = {0., 5., 10., 20., 40., 60., 80.};
   TArrayD tbin(nbins+1, cbin);
-  Int_t    nMixed[nbins] = {6, 40, 40, 40, 80};
+  Int_t    nMixed[nbins] = {6, 6, 40, 40, 40, 80};
   TArrayI tNMixed(nbins, nMixed);
   task->SetCentralityBinning(tbin, tNMixed);
 

@@ -203,7 +203,7 @@ void AliAnalysisTaskPi0FlowMC::MakeMCHistograms()
    snprintf(partTypes[23],55,"hGammaPipmn") ; //
  
    const Int_t nPID=12 ;
-   char cPID[25][12] ;
+   char cPID[12][25] ;
    snprintf(cPID[0],25,"All") ;
    snprintf(cPID[1],25,"Allcore") ;
    snprintf(cPID[2],25,"CPV") ;
@@ -630,8 +630,7 @@ Double_t AliAnalysisTaskPi0FlowMC::PrimaryWeight(Int_t primary){
 }
 //________________________________________________________________________
 Double_t AliAnalysisTaskPi0FlowMC::PrimaryParticleWeight(TParticle * particle){
-  return 1.; //TODO: use weight.
-  
+
   Int_t pdg = particle->GetPdgCode() ;
   Int_t type=0 ;
   if(pdg == 111 || TMath::Abs(pdg)==211){
