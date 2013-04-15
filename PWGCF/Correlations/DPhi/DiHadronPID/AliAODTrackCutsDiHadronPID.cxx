@@ -46,6 +46,7 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
 	fPtDeptDCAxyCutFormula(0x0),
 	fDCAzCut(999.),
 	fIsMC(kFALSE),
+	fTestPt(kFALSE),
 	fTestFilterMask(kFALSE),
 	fTestMaxEta(kFALSE),
 	fTestMaxRapidity(kFALSE),
@@ -57,6 +58,7 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
 	fPrimGenMCTrackQAHistos(0x0),
 	fSecRecMCTrackQAHistos(0x0),
 	fSecGenMCTrackQAHistos(0x0),
+	fNPtBins(0),	
 	fNEtaBins(32),
 	fNPhiBins(32),
 	fDebug(0)
@@ -137,6 +139,7 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID(const char* name):
 	fPtDeptDCAxyCutFormula(0x0),
 	fDCAzCut(999.),
 	fIsMC(kFALSE),
+	fTestPt(kFALSE),	
 	fTestFilterMask(kFALSE),
 	fTestMaxEta(kFALSE),
 	fTestMaxRapidity(kFALSE),
@@ -148,6 +151,7 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID(const char* name):
 	fPrimGenMCTrackQAHistos(0x0),
 	fSecRecMCTrackQAHistos(0x0),
 	fSecGenMCTrackQAHistos(0x0),
+	fNPtBins(0),
 	fNEtaBins(32),
 	fNPhiBins(32),	
 	fDebug(0)

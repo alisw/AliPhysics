@@ -16,6 +16,11 @@ public:
 	AliAnalysisTaskDiHadronPID(const char* name);
 	virtual ~AliAnalysisTaskDiHadronPID();
 
+private:
+	AliAnalysisTaskDiHadronPID(const AliAnalysisTaskDiHadronPID&);
+	AliAnalysisTaskDiHadronPID& operator=(const AliAnalysisTaskDiHadronPID&);
+
+public:
 	// Methods from AliAnalysisTaskSE.
 	void UserCreateOutputObjects();
 	void LocalInit();
