@@ -1398,6 +1398,7 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALG
   Bool_t shared = kFALSE;
 
   Float_t clEnergy = clu->E(); //Energy already recalibrated previously.
+  
   if (clEnergy <= 0)
     return;
   GetMaxEnergyCell(geom, cells, clu, absId,  iSupModMax, ieta, iphi,shared);
@@ -1599,7 +1600,38 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
   Double_t w       = 0.;
   Double_t etaMean = 0.;
   Double_t phiMean = 0.;
+  
+  //Loop on cells, calculate the cluster energy, in case a cut on cell energy is added
+  // and to check if the cluster is between 2 SM in eta
+  Int_t   iSM0   = -1;
+  Bool_t  shared = kFALSE;
+  Float_t energy = 0;
+  
+  for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
+  {
+    //Get from the absid the supermodule, tower and eta/phi numbers
+    geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta);
+    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
     
+    //Check if there are cells of different SM
+    if     (iDigit == 0   ) iSM0 = iSupMod;
+    else if(iSupMod!= iSM0) shared = kTRUE;
+    
+    //Get the cell energy, if recalibration is on, apply factors
+    fraction  = cluster->GetCellAmplitudeFraction(iDigit);
+    if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
+    
+    if(IsRecalibrationOn())
+    {
+      recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    }
+    
+    eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
+    
+    energy += eCell;
+    
+  }//cell loop
+  
   //Loop on cells
   for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++) 
   {
@@ -1620,6 +1652,10 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
     }
     
     eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
+    
+    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
+    // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
+    if(shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
     
     if(cluster->E() > 0 && eCell > 0)
     {
@@ -1668,6 +1704,10 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
       recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
     }
     eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
+    
+    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
+    // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
+    if(shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
     
     if(cluster->E() > 0 && eCell > 0)
     {
