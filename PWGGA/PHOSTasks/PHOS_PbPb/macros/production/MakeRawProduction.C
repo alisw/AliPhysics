@@ -25,12 +25,15 @@
 #include <TObjString.h>
 #include "TPad.h"
 #include "TAxis.h"
-#include <../cint/cint/include/constants.h>
+#include <TArrayD.h>
+#include <TMath.h>
+#include <TMathBase.h>
 
 namespace RawProduction {
 
   bool ignoreErrors = false;
-  const int centBinVersion = 2;
+  enum CentBinVersion { PbPb1, PbPb2, pPb1 };
+  CentBinVersion centBinVersion = PbPb2; // default
 
   // Fit range
   Double_t rangeMin=0.05 ;
@@ -61,12 +64,12 @@ namespace RawProduction {
     return TMath::Sqrt(a*a+b*b/pt/pt+c*c*pt*pt) ;
   }
 
-  const char* GetCentString(int centrality);
-
   // Pt bin parameters
-  Int_t nPtBins=20;
+  Int_t nPtBins=20; //Z PWGGA commenly agreed upon binnings
   Double_t ptBinEdges[21] =  {0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,3.0,3.5,4.0,5.0,6.0,8.0,10.,12.,15.};
+  
   //Double_t ptBinEdges[1000] = {0};
+  // old:
   double GetPtBin(int bin);
   void MakePtBins();
 
@@ -76,8 +79,8 @@ namespace RawProduction {
 
   class Input;
 
-  TH1* GetHistogram_cent(Input& input, const TString& name, int centrality);
-  TH1* MergeHistogram_cent(Input& input, const TString& name, int newCentIndex, int fromCentIndex, int toCentIndex);
+  TH1* GetHistogram_cent(Input& input, const TString& name, int fromCent, int toCent);
+  TH1* MergeHistogram_cent(Input& input, const TString& name, int fromCent, int toCent, int fromCentIndex, int toCentIndex);
   int kNCentralityBins = 3;
 
   Double_t CGausPol1(Double_t * x, Double_t * par);
@@ -115,11 +118,13 @@ namespace RawProduction {
   // Output Bin
   class TriCenPidBin : public TriggerBin {
   public:
-    TriCenPidBin(Int_t centrality, const TString& pid, const TString& trigger);
-    Int_t Centrality() const {return fCentrality;}
+    TriCenPidBin(Int_t centFrom, Int_t centTo, const TString& pid, const TString& trigger);
+    Int_t FromCent() const {return fCentFrom; }
+    Int_t ToCent() const { return fCentTo; }
     const TString& PID() const {return fPID;}
   private:
-    Int_t fCentrality;
+    Int_t fCentFrom;
+    Int_t fCentTo;
     TString fPID;
   };
   // Object describing the output of the macros
@@ -216,14 +221,14 @@ namespace RawProduction {
   }
   void MakePi0FitTCP(Input& input, const TriCenPidBin& outBin, Output& output) {
     //MakePtBins();
-    Printf("\nMakePi0Fit(%s)", outBin.Key().Data());
+    Printf("\MakePi0FitTCP(%s)", outBin.Key().Data());
     output.SetDir(outBin);
 
     TH1F * hTotSelEvents          = (TH1F*) input.GetHistogram("hTotSelEvents");
     TH2F * hCentrality  = (TH2F*) input.GetHistogram("hCenPHOSCells");
     TH1D * hCentralityX = hCentrality->ProjectionX();
-    TH2F *hPi0 =    (TH2F*)GetHistogram_cent(input, Form("hPi0%s", outBin.PID().Data()), outBin.Centrality());
-    TH2F *hPi0Mix = (TH2F*)GetHistogram_cent(input, Form("hMiPi0%s", outBin.PID().Data()), outBin.Centrality());
+    TH2F *hPi0 =    (TH2F*)GetHistogram_cent(input, Form("hPi0%s", outBin.PID().Data()), outBin.FromCent(), outBin.ToCent());
+    TH2F *hPi0Mix = (TH2F*)GetHistogram_cent(input, Form("hMiPi0%s", outBin.PID().Data()), outBin.FromCent(), outBin.ToCent());
 
     printf("TotSelEvents (4): %.0f \n", hTotSelEvents->GetBinContent(4)) ;
     printf("Centrality:   %.0f \n",     hCentralityX->Integral()) ;
@@ -500,9 +505,9 @@ namespace RawProduction {
 	hPi0MixScaledPol1 ->Multiply(fbg1) ;
 	hPi0BSPol1->Add(hPi0MixScaledPol1 ,-1.) ;
 
-	Int_t binPi0 = hPi0BSPol1->FindBin(funcRatioFit1->GetParameter(1));
-	Int_t nWidPi0 = 2 * (Int_t) (funcRatioFit1->GetParameter(2)/hPi0BSPol1->GetBinWidth(1));
-	Int_t integral = TMath::Abs(hPi0BSPol1->Integral(binPi0-nWidPi0,binPi0+nWidPi0));
+	//Int_t binPi0 = hPi0BSPol1->FindBin(funcRatioFit1->GetParameter(1));
+	//Int_t nWidPi0 = 2 * (Int_t) (funcRatioFit1->GetParameter(2)/hPi0BSPol1->GetBinWidth(1));
+	//Int_t integral = TMath::Abs(hPi0BSPol1->Integral(binPi0-nWidPi0,binPi0+nWidPi0));
 	fgs->SetParameters(GetADiffB(hPi0BSPol1), funcRatioFit1->GetParameter(1), funcRatioFit1->GetParameter(2)) ;
 	fgs->SetParLimits(0,0.,pi0Entries) ;
 	fgs->SetParLimits(1,lowerMass,upperMass) ;
@@ -580,9 +585,9 @@ namespace RawProduction {
 	hPi0BSPol2 ->Add(hPi0MixScaledPol2,-1.) ;
 	hPi0BSPol2->SetOption();
 
-	Int_t binPi0 = hPi0BSPol2->FindBin(funcRatioFit2->GetParameter(1));
-	Int_t nWidPi0 = 2 * (Int_t) (funcRatioFit2->GetParameter(2)/hPi0BSPol2->GetBinWidth(1));
-	Int_t integral = TMath::Abs(hPi0BSPol2->Integral(binPi0-nWidPi0,binPi0+nWidPi0));
+// 	Int_t binPi0 = hPi0BSPol2->FindBin(funcRatioFit2->GetParameter(1));
+// 	Int_t nWidPi0 = 2 * (Int_t) (funcRatioFit2->GetParameter(2)/hPi0BSPol2->GetBinWidth(1));
+// 	Int_t integral = TMath::Abs(hPi0BSPol2->Integral(binPi0-nWidPi0,binPi0+nWidPi0));
 	fgs->SetParameters(GetADiffB(hPi0BSPol2), funcRatioFit2->GetParameter(1), funcRatioFit2->GetParameter(2)) ;
 	fgs->SetParLimits(0,0.,pi0Entries) ;
 	fgs->SetParLimits(1,lowerMass,upperMass) ;
@@ -668,53 +673,10 @@ namespace RawProduction {
 
 
     //Normalize by the number of events
-    Int_t cMin=0, cMax=0;
-    if( input.Bin().Trigger().EqualTo("kCentral") )
-      switch(outBin.Centrality()) {
-//       case 0: cMin = 1; cMax = 5; break;
-//       case 1: cMin = 6; cMax = 10; break;
-      case -1: cMin = 1; cMax = 10; break;
-      default: Printf("ERROR: cent bin %d not defined for trigger kCentral", outBin.Centrality());
-      }
-    else if( input.Bin().Trigger().EqualTo("kSemiCentral") )
-      switch(outBin.Centrality()) {
-//       case 0: cMin = 11; cMax = 20; break;
-//       case 1: cMin = 21; cMax = 30; break;
-//       case 2: cMin = 31; cMax = 40; break;
-//       case 3: cMin = 41; cMax = 50; break;
-      case -2: cMin = 11; cMax = 20; break;
-      case -3: cMin = 21; cMax = 30; break;
-      case -4: cMin = 31; cMax = 40; break;
-      case -5: cMin = 41; cMax = 50; break;
-      case -11: cMin = 11; cMax = 50; break;
-      default: Printf("ERROR: cent bin %d not defined for trigger kSemiCentral", outBin.Centrality());
-      }
-    else if ( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") )
-      switch(outBin.Centrality()) {
-//       case 0: cMin = 1; cMax = 5; break;
-//       case 1: cMin = 6; cMax = 10; break;
-//       case 2: cMin = 11; cMax = 20; break;
-//       case 3: cMin = 21; cMax = 30; break;
-//       case 4: cMin = 31; cMax = 40; break;
-//       case 5: cMin = 41; cMax = 50; break;
-//       case 6: cMin = 51; cMax = 80; break;
-      case -10: cMin=1; cMax = 80; break;
-      case -11: cMin = 11; cMax = 50; break;
-      case -1: cMin = 1; cMax = 10; break;
-      case -2: cMin = 11; cMax = 20; break;
-      case -3: cMin = 21; cMax = 30; break;
-      case -4: cMin = 31; cMax = 40; break;
-      case -5: cMin = 41; cMax = 50; break;
-      case -6: cMin = 51; cMax = 80; break;
-      case -7: cMin = 51; cMax = 60; break;
-      case -8: cMin = 61; cMax = 70; break;
-      case -9: cMin = 71; cMax = 80; break;
-      default: Printf("ERROR: cent bin %d not defined for trigger %s", outBin.Centrality(), input.Bin().Trigger().Data());
-      }
-    else
-      Printf("ERROR: cent bins not defined for trigger, %s", input.Bin().Trigger().Data());
-
+    Int_t cMin=outBin.FromCent();
+    Int_t cMax=outBin.ToCent();
     Double_t nevents = hCentralityX->Integral(cMin,cMax);
+    
     if ( nevents > 0.9 ) {
       TStringToken yhists("yr1 yr1int yr2 yr2int yr1_error yr1int_error yr2_error yr2int_error", " ");
       while( yhists.NextToken() ) {
@@ -923,11 +885,11 @@ namespace RawProduction {
   : fTrigger(trigger), fDir(trigger), fKey(trigger)
   { }
 
-  TriCenPidBin::TriCenPidBin(Int_t centrality, const TString& pid, const TString& trigger)
-  : TriggerBin(trigger), fCentrality(centrality), fPID(pid)
+  TriCenPidBin::TriCenPidBin(Int_t centFrom, Int_t centTo, const TString& pid, const TString& trigger)
+  : TriggerBin(trigger), fCentFrom(centFrom), fCentTo(centTo), fPID(pid)
   {
-    fDir.Form("%s/c%03i/%s", trigger.Data(), centrality, pid.Data());
-    fKey.Form("%s_c%03i_%s", trigger.Data(), centrality, pid.Data());
+    fDir.Form("%s/c%02i-%02i/%s", trigger.Data(), centFrom, fCentTo, pid.Data());
+    fKey.Form("%s_c%02i-%02i_%s", trigger.Data(), centFrom, fCentTo, pid.Data());
   }
 
   Output::Output(const TString& fileName, const char* options)
@@ -988,129 +950,82 @@ namespace RawProduction {
     fFile->Write();
   }
 
-
-
-
-  TH1* GetHistogram_cent(Input& input, const TString& name, int centrality)
+  const TArrayD& GetBinEdges( const TString& trigger )
   {
-    // Getter (and merger) for histograms following the naming patern of %s_cen%i
-    //
-    // For certain negeative values, function is defined to merge centrality bins.
-    // -1   0-10%
-    // -2  10-20%
-    // -3  20-30%
-    // -4  30-40%
-    // -5  40-50%
-    // -6   50-80%
-    // -7  50-60%
-    // -8  60-70%
-    // -9  70-80%
-    // -10  0-80%
-    // -11 10-50%
-    if( centrality >= 0 ) {
-      char cname[256] = "";
-      sprintf(cname, "%s_cen%i", name.Data(), centrality);
-      input.GetHistogram(cname);
-    }
+    static TArrayD binEdges;
 
-    TH1* hist = 0x0;
-    if( 1 == centBinVersion ) {
-      if( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") ) {
-	switch(centrality) {
-	case -10: hist = MergeHistogram_cent(input, name, centrality, 0, 7); break;
-	case -1:  hist = MergeHistogram_cent(input, name, centrality, 0, 2); break;
-	case -2:  hist = MergeHistogram_cent(input, name, centrality, 2, 3); break;
-	case -3:  hist = MergeHistogram_cent(input, name, centrality, 3, 4); break;
-	case -4:  hist = MergeHistogram_cent(input, name, centrality, 4, 5); break;
-	case -5:  hist = MergeHistogram_cent(input, name, centrality, 5, 6); break;
-	case -6:  hist = MergeHistogram_cent(input, name, centrality, 6, 7); break;
-	}
-      } else if ( input.Bin().Trigger().EqualTo("kCentral") ) {
-	switch( centrality ) {
-	case -1: return MergeHistogram_cent(input, name, centrality, 0, 2); break;
-	}
-      } else if ( input.Bin().Trigger().EqualTo("kSemiCentral") ) {
-	switch( centrality ) {
-	case -2: return MergeHistogram_cent(input, name, centrality, 0, 1); break;
-	case -3: return MergeHistogram_cent(input, name, centrality, 1, 2); break;
-	case -4: return MergeHistogram_cent(input, name, centrality, 2, 3); break;
-	case -5: return MergeHistogram_cent(input, name, centrality, 3, 4); break;
-	}
-      }
-    } 
-    else if ( 2 == centBinVersion ) {
-      if( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") ) {
-	switch(centrality) {
-	case -10: hist = MergeHistogram_cent(input, name, centrality, 0, 8); break;
-	case -11: hist = MergeHistogram_cent(input, name, centrality, 1, 5); break;
-	case -1:  hist = MergeHistogram_cent(input, name, centrality, 0, 1); break;
-	case -2:  hist = MergeHistogram_cent(input, name, centrality, 1, 2); break;
-	case -3:  hist = MergeHistogram_cent(input, name, centrality, 2, 3); break;
-	case -4:  hist = MergeHistogram_cent(input, name, centrality, 3, 4); break;
-	case -5:  hist = MergeHistogram_cent(input, name, centrality, 4, 5); break;
-	case -6:  hist = MergeHistogram_cent(input, name, centrality, 5, 8); break;
-	case -7:  hist = MergeHistogram_cent(input, name, centrality, 5, 6); break;
-	case -8:  hist = MergeHistogram_cent(input, name, centrality, 6, 7); break;
-	case -9:  hist = MergeHistogram_cent(input, name, centrality, 7, 8); break;
-	}
-      } else if ( input.Bin().Trigger().EqualTo("kCentral") ) {
-	switch( centrality ) {
-	case -1: hist = MergeHistogram_cent(input, name, centrality, 0, 4); break;
-	}
-      } else if ( input.Bin().Trigger().EqualTo("kSemiCentral") ) {
-	switch( centrality ) {
-	case -11:hist = MergeHistogram_cent(input, name, centrality, 0, 8); break;
-	case -2: hist = MergeHistogram_cent(input, name, centrality, 0, 5); break;
-	case -3: hist = MergeHistogram_cent(input, name, centrality, 5, 6); break;
-	case -4: hist = MergeHistogram_cent(input, name, centrality, 6, 7); break;
-	case -5: hist = MergeHistogram_cent(input, name, centrality, 7, 8); break;
-	}
-      }
-      
+    if( pPb1 == centBinVersion ) {
+      const int nbins = 5;
+      Double_t cbin[nbins+1] = {0., 20., 40., 60., 80., 100.};
+      binEdges = TArrayD(nbins+1, cbin);
     }
-    // in case not defined above
+    if( PbPb2 == centBinVersion ) {
+      if ( trigger.EqualTo("kCentral") ) {
+	const int nbins = 4;
+	Double_t cbin[nbins+1] = {0., 5., 8., 9., 10.};
+	binEdges = TArrayD(nbins+1, cbin);
+      } 
+      else if ( trigger.EqualTo("kSemiCentral") ) {
+	const int nbins = 8;
+	Double_t cbin[nbins+1] = {10., 11., 12., 13., 15., 20., 30., 40., 50.};
+	binEdges = TArrayD(nbins+1, cbin);
+      }
+      else if( trigger.EqualTo("kMB") || trigger.EqualTo("kPHOSPb") ) {
+        const int nbins = 8;
+        Double_t cbin[nbins+1] = {0., 10., 20., 30., 40., 50., 60., 70., 80.};
+	binEdges = TArrayD(nbins+1, cbin);
+      } 
+    }
+    if ( PbPb1 == centBinVersion ) {
+      Printf("ERROR:GetBinEdges PbPb1 no longer in use!");
+    }
+    
+    return binEdges;
+  }
+ 
+
+  TH1* GetHistogram_cent(Input& input, const TString& name, int fromCent, int toCent)
+  {
+    // Gets Histogram of name with centrality selection [fromCent,toCent)
+    
+    TH1* hist = 0x0;
+
+    // Bin edges such as in LEGO Train
+    TArrayD binEdges = GetBinEdges(input.Bin().Trigger());
+    
+    // from bin edges and [fromCent,toCent): determine [fromBin,toBin]
+    int fromBin = -1;
+    int toBin = -1;
+    for(int idx = 0; idx < binEdges.GetSize()-1; ++idx) {
+      if(fromCent == binEdges[idx])
+	fromBin = idx;
+      if( toCent == binEdges[idx+1])
+	toBin = idx;
+    }
+    // if found, Merge:
+    if( fromBin >= 0 && toBin >= fromBin )
+      hist = MergeHistogram_cent(input, name, fromCent, toCent, fromBin, toBin);
+    
     if( ! hist ) {
-      Printf("ERROR:GetHistogram_cent: %i not possible for %s trigger", centrality, input.Bin().Trigger().Data());
+      Printf("ERROR:GetHistogram_cent: %02i-%02i not possible for %s trigger", fromCent, toCent, input.Bin().Trigger().Data());
       return 0x0;
     }
 
-    hist->SetTitle(Form("%s, %s cent.", hist->GetTitle(), GetCentString(centrality)));
-    switch(centrality) {
-    }
+    hist->SetTitle(Form("%s, %02i-%02i%%", hist->GetTitle(), fromCent, toCent));
     return hist;
   }
 
-  const char* GetCentString(int centrality)
+  TH1* MergeHistogram_cent(Input& input, const TString& name, int fromCent, int toCent, int fromCentIndex, int toCentIndex)
   {
-    switch(centrality) {
-      case -10: return "0-80%";
-      case -11: return "10-50%";
-      case -1: return "0-10%";
-      case -2: return "10-20%";
-      case -3: return "20-30%";
-      case -4: return "30-40%";
-      case -5: return "40-50%";
-      case -6: return "50-80%";
-      case -7: return "50-60%";
-      case -8: return "60-70%";
-      case -9: return "70-80%";
-      default:
-	static char cstr[64] ="";
-	sprintf(cstr, "centBin:%i", centrality);
-	return cstr;
-    }
-  }
-
-  TH1* MergeHistogram_cent(Input& input, const TString& name, int newCentIndex, int fromCentIndex, int toCentIndex)
-  {
-    // Merger (All cent) for histograms following the naming patern of %s_cen%i, from including to excluding
+    // Merger (All cent) for histograms following the naming patern of %s_cen%i, 
     //
-    // Merges centralites bins into one histogram, from including to excluding, and names the histogram using the patern above.
+    // Merges centralites bins into one histogram, from including to including, and names the histogram using the patern above.
     // If an histogram with that name Allready exist in the current directory (gDirectory), then no merge
     // occurs and this hist. is simply returned.
+    // take note that toCent is assumed exclusive, and toCentIndex is inclusive.
 
     char mergeHistName[256] = "";
-    sprintf(mergeHistName, "%s_cen%i", name.Data(), newCentIndex);
+    sprintf(mergeHistName, "%s_cen%02i-%02i", name.Data(), fromCent, toCent);
 
     // Check if histogram allready exists in current directory.
     TH1* mergeHist = dynamic_cast<TH1*>( gDirectory->FindObject(mergeHistName) );
@@ -1121,11 +1036,12 @@ namespace RawProduction {
     char cname[256] = "";
     sprintf(cname, "%s_cen%i", name.Data(), fromCentIndex);
     TH1* hist0 = input.GetHistogram(cname);
-    sprintf(cname, "%s_cen%i", name.Data(), newCentIndex);
-    TH1 * histMerged = (TH1*) hist0->Clone(cname);
+    TH1 * histMerged = (TH1*) hist0->Clone(mergeHistName);
 
+    Printf(cname);
     for(int cent=fromCentIndex+1; cent < toCentIndex; ++cent) {
       sprintf(cname, "%s_cen%i", name.Data(), cent);
+      Printf(cname);
       TH1* nextHist = input.GetHistogram(cname);
       if( ! nextHist ) {Printf("ERROR: Merge of histograms failed"); delete histMerged; return 0x0; }
       histMerged->Add(nextHist);
@@ -1197,26 +1113,6 @@ namespace RawProduction {
 }
 
 
-void MakeRawProduction()
-{
-  RawProduction::Output output;
-
-
-  //TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
-  TStringToken triggers("kMB kPHOSPb", " ");
-  while(triggers.NextToken()) {
-    RawProduction::TriggerBin inBin(triggers);
-    RawProduction::Input input("AnalysisResults.root", inBin);
-    TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou CPV CPVcore CPV2 Both Bothcore", " ");
-    //TStringToken pids("Bothcore", " ");
-    while(pids.NextToken()) {
-      RawProduction::TriCenPidBin outBin(-10, pids, inBin.Trigger());
-      RawProduction::MakePi0Fit(input, outBin, output);
-    }
-  }
-  output.Write();
-
-}
 
 void MakeRawProductionAll()
 {
@@ -1224,84 +1120,116 @@ void MakeRawProductionAll()
   gStyle->SetOptFit(1);
 
   RawProduction::Output output;
+  
+  TArrayD tbin;
 
-  TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
+  TStringToken triggers("kCentral kMB  kSemiCentral kPHOSPb", " ");
+  //TStringToken triggers("kCentral", " ");
+  while(triggers.NextToken()) {
+    RawProduction::TriggerBin triggerBin(triggers);
+    RawProduction::Input input("AnalysisResults.root", triggerBin);
+
+    //RawProduction::MakePi0Fit(input, triggerBin, output);
+    
+    TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Disp2core Dispwou CPV CPVcore CPV2 CPV2core Both Bothcore Both2 Both2core", " ");
+    while(pids.NextToken()) {
+      if(triggers.EqualTo("kMB") || triggers.EqualTo("kPHOSPb")) {
+	RawProduction::TriCenPidBin tcpBin(0, 10, pids, triggerBin.Trigger());
+	RawProduction::MakePi0FitTCP(input, tcpBin, output);
+      }
+      if(triggers.EqualTo("kCentral") ) {
+	RawProduction::TriCenPidBin tcpBin2(5, 10, pids, triggerBin.Trigger());
+	RawProduction::MakePi0FitTCP(input, tcpBin2, output);
+	RawProduction::TriCenPidBin tcpBin(0, 5, pids, triggerBin.Trigger());
+	RawProduction::MakePi0FitTCP(input, tcpBin, output);
+      }
+      if(triggers.EqualTo("kSemiCentral") ) {
+	RawProduction::TriCenPidBin tcpBin(10, 50, pids, triggerBin.Trigger());
+	RawProduction::MakePi0FitTCP(input, tcpBin, output);
+      }
+    } // pid
+  } // trigger
+  output.Write();
+}
+
+void MakeRawProductionAllpPb()
+{
+  RawProduction::centBinVersion = RawProduction::pPb1;
+  RawProduction::Output output;
+  
+  TArrayD tbin;
+
+  TStringToken triggers("kINT7 kPHI7", " ");
   //TStringToken triggers("kCentral", " ");
   while(triggers.NextToken()) {
     RawProduction::TriggerBin triggerBin(triggers);
     RawProduction::Input input("AnalysisResults.root", triggerBin);
 
     RawProduction::MakePi0Fit(input, triggerBin, output);
-
-    //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou CPV CPVcore CPV2 Both Bothcore", " ");
-    //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou", " ");
-    //TStringToken pids("All", " ");
+    
     TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Disp2core Dispwou CPV CPVcore CPV2 CPV2core Both Bothcore Both2 Both2core", " ");
     while(pids.NextToken()) {
-      for(int cent = -11; cent < 0; ++cent) {
-	RawProduction::TriCenPidBin tcpBin(cent, pids, triggerBin.Trigger());
-	if(triggers.EqualTo("kMB") || triggers.EqualTo("kPHOSPb")) {
-	  if( -1 == cent || -11 == cent || -10 == cent || -6 == cent )
-	    RawProduction::MakePi0FitTCP(input, tcpBin, output);
-	}
-	if(triggers.EqualTo("kCentral") ) {
-	  if( -1 == cent )
-	    RawProduction::MakePi0FitTCP(input, tcpBin, output);
-	}
-	if(triggers.EqualTo("kSemiCentral") ) {
-	  if( -11 == cent )
-	    RawProduction::MakePi0FitTCP(input, tcpBin, output);
-	}
-      } // cent
+      if(triggers.EqualTo("kINT7") || triggers.EqualTo("kPHI7")) {
+	RawProduction::TriCenPidBin tcpBin(0, 20, pids, triggerBin.Trigger());
+	RawProduction::MakePi0FitTCP(input, tcpBin, output);
+	RawProduction::TriCenPidBin tcpBin2(20, 40, pids, triggerBin.Trigger());
+	RawProduction::MakePi0FitTCP(input, tcpBin2, output);
+	RawProduction::TriCenPidBin tcpBin3(40, 60, pids, triggerBin.Trigger());
+	RawProduction::MakePi0FitTCP(input, tcpBin3, output);
+	RawProduction::TriCenPidBin tcpBin4(60, 80, pids, triggerBin.Trigger());
+	RawProduction::MakePi0FitTCP(input, tcpBin4, output);
+	RawProduction::TriCenPidBin tcpBin5(80, 100, pids, triggerBin.Trigger());
+	RawProduction::MakePi0FitTCP(input, tcpBin4, output);
+      }
     } // pid
   } // trigger
   output.Write();
+  
 }
 
-
-void MakeRawProductionRanges()
-{
-  //gStyle->SetOptStat(0);
-  gStyle->SetOptFit(1);
-
-  float fromRanges[4] = {0.04, 0.05, 0.07, 0.1};
-  float toRanges[4] = {0.2, 0.25, 0.3, 0.4};
-
-  TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
-  while(triggers.NextToken()) {
-    RawProduction::TriggerBin triggerBin(triggers);
-    RawProduction::Input input("AnalysisResults.root", triggerBin);
-    for(int fidx=0; fidx<4; fidx++) {
-      for(int tidx=0; tidx<4; tidx++) {
-	RawProduction::rangeMin = fromRanges[fidx];
-	RawProduction::rangeMax = toRanges[tidx];
-
-	Printf(" RawProduction_%.2f_%.2f.root", RawProduction::rangeMin, RawProduction::rangeMax);
-	RawProduction::Output output(Form("RawProduction_%.2f_%.2f.root", RawProduction::rangeMin, RawProduction::rangeMax));
-
-
-	RawProduction::MakePi0Fit(input, triggerBin, output);
-
-	TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Disp2core Dispwou CPV CPVcore CPV2 CPV2core Both Bothcore Both2 Both2core", " ");
-	while(pids.NextToken()) {
-	  for(int cent = -11; cent < 0; ++cent) {
-	    RawProduction::TriCenPidBin tcpBin(cent, pids, triggerBin.Trigger());
-	    if(triggers.EqualTo("kMB") || triggers.EqualTo("kPHOSPb")) {
-	      if( -1 == cent || -11 == cent || -10 == cent || -6 == cent )
-		RawProduction::MakePi0FitTCP(input, tcpBin, output);
-	    }
-	    if(triggers.EqualTo("kCentral") ) {
-	      if( -1 == cent )
-		RawProduction::MakePi0FitTCP(input, tcpBin, output);
-	    }
-	    if(triggers.EqualTo("kSemiCentral") ) {
-	      if( -11 == cent )
-		RawProduction::MakePi0FitTCP(input, tcpBin, output);
-	    }
-	  } // cent
-	} // pid
-	output.Write();
-      }
-    }
-  }// trigger
-}
+// void MakeRawProductionRanges()
+// {
+//   //gStyle->SetOptStat(0);
+//   gStyle->SetOptFit(1);
+// 
+//   float fromRanges[4] = {0.04, 0.05, 0.07, 0.1};
+//   float toRanges[4] = {0.2, 0.25, 0.3, 0.4};
+// 
+//   TStringToken triggers("kMB kCentral kSemiCentral kPHOSPb", " ");
+//   while(triggers.NextToken()) {
+//     RawProduction::TriggerBin triggerBin(triggers);
+//     RawProduction::Input input("AnalysisResults.root", triggerBin);
+//     for(int fidx=0; fidx<4; fidx++) {
+//       for(int tidx=0; tidx<4; tidx++) {
+// 	RawProduction::rangeMin = fromRanges[fidx];
+// 	RawProduction::rangeMax = toRanges[tidx];
+// 
+// 	Printf(" RawProduction_%.2f_%.2f.root", RawProduction::rangeMin, RawProduction::rangeMax);
+// 	RawProduction::Output output(Form("RawProduction_%.2f_%.2f.root", RawProduction::rangeMin, RawProduction::rangeMax));
+// 
+// 
+// 	RawProduction::MakePi0Fit(input, triggerBin, output);
+// 
+// 	TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Disp2core Dispwou CPV CPVcore CPV2 CPV2core Both Bothcore Both2 Both2core", " ");
+// 	while(pids.NextToken()) {
+// 	  for(int cent = -11; cent < 0; ++cent) {
+// 	    RawProduction::TriCenPidBin tcpBin(cent, pids, triggerBin.Trigger());
+// 	    if(triggers.EqualTo("kMB") || triggers.EqualTo("kPHOSPb")) {
+// 	      if( -1 == cent || -11 == cent || -10 == cent || -6 == cent )
+// 		RawProduction::MakePi0FitTCP(input, tcpBin, output);
+// 	    }
+// 	    if(triggers.EqualTo("kCentral") ) {
+// 	      if( -1 == cent )
+// 		RawProduction::MakePi0FitTCP(input, tcpBin, output);
+// 	    }
+// 	    if(triggers.EqualTo("kSemiCentral") ) {
+// 	      if( -11 == cent )
+// 		RawProduction::MakePi0FitTCP(input, tcpBin, output);
+// 	    }
+// 	  } // cent
+// 	} // pid
+// 	output.Write();
+//       }
+//     }
+//   }// trigger
+// }
