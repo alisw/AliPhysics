@@ -16,6 +16,7 @@
 #include "AliRsnCutTrackQuality.h"
 #include "AliRsnCutPIDNSigma.h"
 #include "AliRsnCutTOFMatch.h"
+#include "AliRsnCutPhi.h"
 
 class AliRsnCutSetDaughterParticle : public AliRsnCutSet {
 
@@ -31,6 +32,11 @@ public:
       kTPCTOFpidKstarPP2010,
       kTOFpidKstarPbPb2010,
       kTOFTPCmismatchKstarPbPb2010,
+      kTOFMatchTRD2010,
+      kTOFMatchNoTRD2010,
+      kTOFpidKstarPbPbTRD2010,
+      kTOFpidKstarPbPbNoTRD2010,
+      kTOFMatchTPCpidNsigma,      
       kNDaughterCuts
    };
 
