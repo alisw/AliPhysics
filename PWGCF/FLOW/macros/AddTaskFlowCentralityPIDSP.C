@@ -118,6 +118,7 @@ void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
 
   // POI TRACK CUTS:
   AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("TPConlyPOI");
+  cutsPOI->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
   cutsPOI->SetPtRange(0.0,10.);
