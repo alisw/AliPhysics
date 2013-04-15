@@ -220,7 +220,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 	fTOFhistos = new TObjArray(15);
 	fTOFhistos->SetName("CorrelationsTOF");
 
-	Int_t nbins[4] = {fNDPhiBins,fNDEtaBins,0.,0.};
+	Int_t nbins[4] = {fNDPhiBins,fNDEtaBins,0,0};
 	Double_t min[4] = {-TMath::Pi()/2.,-1.6,0.,0.};
 	Double_t max[4] = {3.*TMath::Pi()/2.,1.6,0.,0.};
 
@@ -368,7 +368,7 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 	// TObjArray* fGlobalTracksArray; 
 
 	// Give a print out of the pool manager's contents.
-	PrintPoolManagerContents();
+	if (fDebug > 0) PrintPoolManagerContents();
 
 	// Mix events if there are enough events in the pool.
 	if (poolin->GetCurrentNEvents() >= fMinNEventsForMixing) {

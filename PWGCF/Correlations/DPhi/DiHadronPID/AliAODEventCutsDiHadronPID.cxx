@@ -93,41 +93,6 @@ AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID(const char* name):
 }
 
 // -------------------------------------------------------------------------
-AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID(const AliAODEventCutsDiHadronPID &source):
-	TNamed(source),
-	fTrigger(source.fTrigger),
-	fMinCentrality(source.fMinCentrality),
-	fMaxCentrality(source.fMaxCentrality),
-	fCentralityEstimator(source.fCentralityEstimator),
-	fMaxVertexZ(source.fMaxVertexZ),
-	fTestTrigger(source.fTestTrigger),
-	fTestCentrality(source.fTestCentrality),
-	fTestVertexZ(source.fTestVertexZ),
-	fSelectedEventQAHistos(0x0),
-	fAllEventQAHistos(0x0),
-	fHistTrigger(0x0),
-	fHistRefMultiplicity(0x0),
-	fHistCentrality(0x0),
-	fHistVertexZ(0x0)
-
-{
-
-	//
-	// Copy Constructor
-	//
-
-	cout<<"AliAODEventCutsDiHadronPID Copy Constructor Called."<<endl;
-	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
-	//if (source.fSelectedEventQAHistos) fSelectedEventQAHistos = (TList*)source.fHistTrigger->Clone();
-	//if (source.fHistTrigger) fHistTrigger = (TH1F*)source.fHistTrigger->Clone();
-	//if (source.fHistRefMultiplicity) fHistRefMultiplicity = (TH1F*)source.fHistRefMultiplicity->Clone();
-	//if (source.fHistCentrality) fHistCentrality = (TH1F*)source.fHistCentrality->Clone();
-	//if (source.fHistVertexZ) fHistVertexZ = (TH1F*)source.fHistVertexZ->Clone();
-
-}
-
-// -------------------------------------------------------------------------
 AliAODEventCutsDiHadronPID::~AliAODEventCutsDiHadronPID() {
 
 	//

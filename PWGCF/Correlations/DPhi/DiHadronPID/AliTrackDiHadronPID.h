@@ -14,7 +14,11 @@ class AliTrackDiHadronPID : public TObject {
 public:
 	AliTrackDiHadronPID();
 	AliTrackDiHadronPID(AliAODTrack* track, AliAODTrack* globaltrack = 0x0, AliAODMCParticle* mcparticle = 0x0, AliPIDResponse* pidresponse = 0x0);
-	//virtual ~AliTrackDiHadronPID();
+	virtual ~AliTrackDiHadronPID() {}
+
+private:
+	AliTrackDiHadronPID(const AliTrackDiHadronPID&);
+	AliTrackDiHadronPID& operator=(const AliTrackDiHadronPID&);
 
 // Internal copy functions.
 private:

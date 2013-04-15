@@ -12,13 +12,15 @@ class AliAODEventCutsDiHadronPID : public TNamed
 public:
 	AliAODEventCutsDiHadronPID();								// Default Constructor
 	AliAODEventCutsDiHadronPID(const char* name);				// Named Constructor
-	AliAODEventCutsDiHadronPID(const AliAODEventCutsDiHadronPID &source);	// Copy Constructor
 	virtual ~AliAODEventCutsDiHadronPID();						// Destructor
 	virtual Long64_t Merge(TCollection* list);					// Merger
 
-	void CreateHistos();					// Create QA histograms
+private:
+	AliAODEventCutsDiHadronPID(const AliAODEventCutsDiHadronPID&);
+	AliAODEventCutsDiHadronPID& operator=(const AliAODEventCutsDiHadronPID&);
 
 public:
+	void CreateHistos();					// Create QA histograms
 	Bool_t IsSelected(AliAODEvent* event);
 	void PrintCuts();
 
@@ -80,7 +82,7 @@ public:
 	TObject* GetHistAllEvents(const char* name) {return fAllEventQAHistos->FindObject(name);}
 
 	// Cannot be made const because GetHistSelectedEvents() isn't safe.
-	Int_t GetNAcceptedEvents() {return ((TH1F*)GetHistSelectedEvents("fHistTriggerSelected"))->GetEntries();}
+	Int_t GetNAcceptedEvents() {return (Int_t)((TH1F*)GetHistSelectedEvents("fHistTriggerSelected"))->GetEntries();}
 
 	Int_t GetDebugLevel() const {return fDebug;}
 

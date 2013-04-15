@@ -23,6 +23,10 @@ public:
 	virtual ~AliAODTrackCutsDiHadronPID();			// Destructor
 	virtual Long64_t Merge(TCollection* list);		// Merger
 
+private:
+	AliAODTrackCutsDiHadronPID(const AliAODTrackCutsDiHadronPID&);
+	AliAODTrackCutsDiHadronPID& operator=(const AliAODTrackCutsDiHadronPID&);
+
 // -------------------------------------------------------------------------
 //  Interface, methods used to get information about the track cuts, and to
 //  retrieve filled histograms. 
