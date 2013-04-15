@@ -53,6 +53,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
   ULong64_t triggerSets[]={AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB,
 			   AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB};
   const char* triggerNames[]={"Central","SemiCentral","MB","MB+Cent+SemiCent"};
+  const char* onlineRejection[]={"","CCENT","",""};
 
   // find out the configured triggers
   Int_t j=0;
@@ -69,7 +70,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
   task = new AliAnalysisTaskMultiDielectron((Form("MultiDieJB_%s",triggerNames[j])));
   task->SetBeamEnergy(1380.);
   task->SetTriggerMask(triggers);
-  //task->SetTriggerMask(AliVEvent::kMB);
+  if(strlen(onlineRejection[j])) task->SetFiredTriggerName(onlineRejection[j],kTRUE);
 
   if (!hasMC) task->UsePhysicsSelection();
   mgr->AddTask(task);
