@@ -123,8 +123,10 @@ Float_t AliESDpid::GetTPCsignalTunedOnData(const AliVTrack *t) const {
 
 	    if(kGood){
         //TODO maybe introduce different dEdxSources?
-        Double_t bethe = fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection());
-        Double_t sigma = fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection());
+        Double_t bethe = fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection(),
+                                                        this->UseTPCMultiplicityCorrection());
+        Double_t sigma = fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection(),
+                                                       this->UseTPCMultiplicityCorrection());
 		dedx = gRandom->Gaus(bethe,sigma);
 // 		if(iS == AliPID::ParticleCode(AliPID::kHe3) || iS == AliPID::ParticleCode(AliPID::kAlpha)) dedx *= 5;
 	    }

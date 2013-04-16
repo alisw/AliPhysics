@@ -46,7 +46,8 @@ fRecoPass(0),
 fIsTunedOnData(kFALSE),
 fTunedOnDataMask(0),
 fRecoPassTuned(0),
-fUseTPCEtaCorrection(kFALSE)//TODO: In future, default kTRUE  
+fUseTPCEtaCorrection(kFALSE),//TODO: In future, default kTRUE 
+fUseTPCMultiplicityCorrection(kFALSE)//TODO: In future, default kTRUE  
 {
   //
   // Dummy constructor
@@ -67,7 +68,8 @@ fRecoPass(0),
 fIsTunedOnData(kFALSE),
 fTunedOnDataMask(0),
 fRecoPassTuned(0),
-fUseTPCEtaCorrection(kFALSE)//TODO: In future, default kTRUE
+fUseTPCEtaCorrection(kFALSE),//TODO: In future, default kTRUE
+fUseTPCMultiplicityCorrection(kFALSE)//TODO: In future, default kTRUE  
 {
   //
   // Default constructor
@@ -120,7 +122,7 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
       }
     }
     delete arr;
-  }
+  }  
 }
 
 //______________________________________________________________________________
@@ -135,9 +137,11 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
   if (fRun!=fOldRun){
     SetRecoInfo();
     fOldRun=fRun;
+    
+    fPIDResponse->SetUseTPCEtaCorrection(fUseTPCEtaCorrection);
+    fPIDResponse->SetUseTPCMultiplicityCorrection(fUseTPCMultiplicityCorrection);
   }
 
-  fPIDResponse->SetUseTPCEtaCorrection(fUseTPCEtaCorrection);
   fPIDResponse->InitialiseEvent(event,fRecoPass);
   AliESDpid *pidresp = dynamic_cast<AliESDpid*>(fPIDResponse);
   if(pidresp && AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
@@ -178,6 +182,8 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
     fPIDResponse->SetCurrentFile(fileName.Data());
   }
 
+  fPIDResponse->SetCurrentAliRootRev(prodInfo.GetAlirootSvnVersion());
+  
   if (prodInfo.IsMC() == kTRUE) fIsMC=kTRUE;         // protection if user didn't use macro switch
   if ( (prodInfo.IsMC() == kFALSE) && (fIsMC == kFALSE) ) {      // reco pass is needed only for data
     fRecoPass = prodInfo.GetRecoPass();

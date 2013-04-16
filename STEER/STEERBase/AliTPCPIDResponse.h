@@ -20,6 +20,7 @@
 #include <TNamed.h>
 #include <TVectorF.h>
 #include <TObjArray.h>
+#include <TF1.h>
 
 #include "AliPID.h"
 #include "AliVTrack.h"
@@ -89,8 +90,10 @@ public:
   const TH2D* GetEtaCorrMap() const { return fhEtaCorr; };
   Bool_t SetEtaCorrMap(TH2D* hMap);
   
-  Double_t GetEtaCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
+  Double_t GetTrackTanTheta(const AliVTrack *track) const;
   
+  Double_t GetEtaCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
+    
   Double_t GetEtaCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
 
   const TH2D* GetSigmaPar1Map() const { return fhEtaSigmaPar1; };
@@ -99,25 +102,56 @@ public:
   
   Double_t GetSigmaPar1(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
 
+  
+  const TF1* GetMultiplicityCorrectionFunction() const  { return fCorrFuncMultiplicity; };
+  void SetParameterMultiplicityCorrection(Int_t parIndex, Double_t parValue)  
+      { if (fCorrFuncMultiplicity) fCorrFuncMultiplicity->SetParameter(parIndex, parValue); };
+  
+  const TF1* GetMultiplicityCorrectionFunctionTanTheta() const  { return fCorrFuncMultiplicityTanTheta; };
+  void SetParameterMultiplicityCorrectionTanTheta(Int_t parIndex, Double_t parValue)  
+      { if (fCorrFuncMultiplicityTanTheta) fCorrFuncMultiplicityTanTheta->SetParameter(parIndex, parValue); };
+
+  const TF1* GetMultiplicitySigmaCorrectionFunction() const  { return fCorrFuncSigmaMultiplicity; };
+  void SetParameterMultiplicitySigmaCorrection(Int_t parIndex, Double_t parValue)  
+      { if (fCorrFuncSigmaMultiplicity) fCorrFuncSigmaMultiplicity->SetParameter(parIndex, parValue); };
+  
+  void ResetMultiplicityCorrectionFunctions(); 
+  
+  void SetCurrentEventMultiplicity(Int_t value) { fCurrentEventMultiplicity = value;  };
+  Int_t GetCurrentEventMultiplicity() const { return fCurrentEventMultiplicity; };
+
+  Double_t GetMultiplicityCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource) const;
+  
+  Double_t GetMultiplicitySigmaCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource) const;
+
+  Double_t GetMultiplicityCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
+  
+  Double_t GetEtaAndMultiplicityCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species,
+                                                   ETPCdEdxSource dedxSource = kdEdxDefault) const;
   //NEW
   void SetSigma(Float_t res0, Float_t resN2, ETPCgainScenario gainScenario );
   Double_t GetExpectedSignal( const AliVTrack* track,
                               AliPID::EParticleType species,
                               ETPCdEdxSource dedxSource = kdEdxDefault,
-                              Bool_t correctEta = kFALSE) const;//TODO: In future, default kTRUE
+                              Bool_t correctEta = kFALSE,
+                              Bool_t correctMultiplicity = kFALSE) const;
   Double_t GetExpectedSigma( const AliVTrack* track, 
                              AliPID::EParticleType species,
                              ETPCdEdxSource dedxSource = kdEdxDefault,
-                             Bool_t correctEta = kFALSE) const;//TODO: In future, default kTRUE
+                             Bool_t correctEta = kFALSE,
+                             Bool_t correctMultiplicity = kFALSE) const;
   Float_t GetNumberOfSigmas( const AliVTrack* track,
                              AliPID::EParticleType species,
                              ETPCdEdxSource dedxSource = kdEdxDefault,
-                             Bool_t correctEta = kFALSE) const;//TODO: In future, default kTRUE
+                             Bool_t correctEta = kFALSE,
+                             Bool_t correctMultiplicity = kFALSE) const;
   
   Float_t GetSignalDelta( const AliVTrack* track,
                           AliPID::EParticleType species,
                           ETPCdEdxSource dedxSource = kdEdxDefault,
-                          Bool_t correctEta = kFALSE, Bool_t ratio=kFALSE) const;
+                          Bool_t correctEta = kFALSE,
+                          Bool_t correctMultiplicity = kFALSE,
+                          Bool_t ratio = kFALSE) const;
   
   void SetResponseFunction(TObject* o,
                            AliPID::EParticleType type,
@@ -155,7 +189,8 @@ public:
                              AliPID::EParticleType n=AliPID::kKaon) const {
     //
     // Deprecated function (for backward compatibility). Please use 
-    // GetNumberOfSigmas(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource )
+    // GetNumberOfSigmas(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource,
+    // Bool_t correctEta, Bool_t correctMultiplicity)
     // instead!TODO
     //
     
@@ -175,7 +210,8 @@ protected:
                              AliPID::EParticleType species,
                              Double_t dEdx,
                              const TSpline3* responseFunction,
-                             Bool_t correctEta) const; 
+                             Bool_t correctEta,
+                             Bool_t correctMultiplicity) const; 
   
   Double_t GetExpectedSigma(const AliVTrack* track, 
                             AliPID::EParticleType species,
@@ -183,9 +219,14 @@ protected:
                             Double_t dEdx,
                             Int_t nPoints,
                             const TSpline3* responseFunction,
-                            Bool_t correctEta) const;
+                            Bool_t correctEta,
+                            Bool_t correctMultiplicity) const;
                              
   Double_t GetEtaCorrection(const AliVTrack *track, Double_t dEdxSplines) const;
+  
+  Double_t GetMultiplicityCorrection(const AliVTrack *track, const Double_t dEdxExpected, const Int_t multiplicity) const;
+  
+  Double_t GetMultiplicitySigmaCorrection(const Double_t dEdxExpected, const Int_t multiplicity) const;
   
   Double_t GetSigmaPar1(const AliVTrack *track, AliPID::EParticleType species,
                         Double_t dEdx, const TSpline3* responseFunction) const;
@@ -221,8 +262,13 @@ private:
   TH2D* fhEtaSigmaPar1; //! Map for parameter 1 of the dEdx sigma parametrisation
   
   Double_t fSigmaPar0; // Parameter 0 of the dEdx sigma parametrisation
+  
+  Int_t fCurrentEventMultiplicity; // Multiplicity of the current event
+  TF1* fCorrFuncMultiplicity; //! Function to correct for the multiplicity dependence of the TPC dEdx
+  TF1* fCorrFuncMultiplicityTanTheta; //! Function to correct the additional tanTheta dependence of the multiplicity dependence of the TPC dEdx
+  TF1* fCorrFuncSigmaMultiplicity; //! Function to correct for the multiplicity dependence of the TPC dEdx resolution
 
-  ClassDef(AliTPCPIDResponse,5)   // TPC PID class
+  ClassDef(AliTPCPIDResponse,6)   // TPC PID class
 };
 
 #endif

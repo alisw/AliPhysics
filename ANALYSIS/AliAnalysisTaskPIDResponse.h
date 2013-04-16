@@ -47,6 +47,9 @@ public:
   
   void SetUseTPCEtaCorrection(Bool_t useTPCEtaCorrection) { fUseTPCEtaCorrection = useTPCEtaCorrection; };
   Bool_t UseTPCEtaCorrection() const { return fUseTPCEtaCorrection; };
+  
+  void SetUseTPCMultiplicityCorrection(Bool_t useMultiplicityCorrection = kTRUE) { fUseTPCMultiplicityCorrection = useMultiplicityCorrection; };
+  Bool_t UseTPCMultiplicityCorrection() const { return fUseTPCMultiplicityCorrection; };
 
   void SetSpecialDetectorResponse(const char* det) { fSpecialDetResponse=det; }
 
@@ -65,7 +68,8 @@ private:
   Int_t   fTunedOnDataMask;            // mask to activate tuning on data on specific detectors
   Int_t   fRecoPassTuned;              // Reco pass tuned on data for MC
   
-  Bool_t  fUseTPCEtaCorrection;        // Use TPC eta correction
+  Bool_t fUseTPCEtaCorrection;          // Use TPC eta correction
+  Bool_t fUseTPCMultiplicityCorrection; // Use TPC multiplicity correction
   
   //
   void SetRecoInfo();

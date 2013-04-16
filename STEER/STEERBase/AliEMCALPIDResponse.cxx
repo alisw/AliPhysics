@@ -61,6 +61,7 @@ ClassImp(AliEMCALPIDResponse)
 AliEMCALPIDResponse::AliEMCALPIDResponse():
   TObject(),
   fNorm(NULL),
+  fCurrCentrality(-1.),
   fkPIDParams(NULL)
 {
   //
@@ -74,6 +75,7 @@ AliEMCALPIDResponse::AliEMCALPIDResponse():
 AliEMCALPIDResponse::AliEMCALPIDResponse(const AliEMCALPIDResponse &other):
   TObject(other),
   fNorm(other.fNorm),
+  fCurrCentrality(other.fCurrCentrality),
   fkPIDParams(other.fkPIDParams)
 {
   //
@@ -93,6 +95,7 @@ AliEMCALPIDResponse & AliEMCALPIDResponse::operator=( const AliEMCALPIDResponse&
   // Make copy
   TObject::operator=(other);
   fNorm = other.fNorm;
+  fCurrCentrality = other.fCurrCentrality;
   fkPIDParams = other.fkPIDParams;
 
  
@@ -264,6 +267,12 @@ const TVectorD* AliEMCALPIDResponse::GetParams(Int_t nParticle, Float_t fPt, Int
   // 6 = probLow  (not used for electrons)
   // 7 = probHigh (not used for electrons)
   //
+  // for PbPb the parametrization is done centrality dependent (marked by TString "Centrality")
+  // so first the correct centrality bin has to be found
+
+  // **** Centrality bins (hard coded for the moment)
+  const Int_t nCent = 7;
+  Int_t centBins[nCent+1] = {0,10,20,30,40,50,70,90};
 
   if(nParticle > AliPID::kSPECIES || nParticle <0) return NULL;
   if(nParticle == AliPID::kProton && charge == -1) nParticle = AliPID::kSPECIES; // special case for antiprotons
@@ -271,19 +280,53 @@ const TVectorD* AliEMCALPIDResponse::GetParams(Int_t nParticle, Float_t fPt, Int
   TObjArray * particlePar = dynamic_cast<TObjArray *>(fkPIDParams->At(nParticle));
   if(!particlePar) return NULL;
 
-  TIter parIter(particlePar);
   const TVectorD *parameters = NULL;
   Double_t momMin = 0.;
   Double_t momMax = 0.;
 
-  while((parameters = static_cast<const TVectorD *>(parIter()))){
+  // is the centrality dependent parametrization used
+  TString arrayName = particlePar->GetName();
 
-    momMin = (*parameters)[0];
-    momMax = (*parameters)[1];
+  // centrality dependent parametrization
+  if(arrayName.Contains("Centrality")){
+    
+    for(Int_t iCent = 0; iCent < nCent; iCent++){
 
-    if( fPt > momMin && fPt < momMax ) return parameters;
+      if( fCurrCentrality > centBins[iCent] && fCurrCentrality < centBins[iCent+1] ){
+	
+	TObjArray * centPar = dynamic_cast<TObjArray *>(particlePar->At(iCent));
+	if(!centPar) return NULL;
+	
+	TIter centIter(centPar);
+	parameters = NULL;
+	momMin = 0.;
+	momMax = 0.;
+	
+	while((parameters = static_cast<const TVectorD *>(centIter()))){
+	  
+	  momMin = (*parameters)[0];
+	  momMax = (*parameters)[1];
+	  
+	  if( fPt > momMin && fPt < momMax ) return parameters;
+	 
+	} 
+      }
+    }
+  }
 
-  }  
+  // NO centrality dependent parametrization
+  else{
+
+    TIter parIter(particlePar);
+    while((parameters = static_cast<const TVectorD *>(parIter()))){
+      
+      momMin = (*parameters)[0];
+      momMax = (*parameters)[1];
+      
+      if( fPt > momMin && fPt < momMax ) return parameters;
+      
+    }  
+  }
   AliDebug(2, Form("NO params for particle %d and momentum %f \n", nParticle, fPt));
 
   return parameters;

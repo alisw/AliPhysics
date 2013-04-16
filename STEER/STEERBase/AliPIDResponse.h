@@ -130,6 +130,9 @@ public:
   
   void InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run=-1);
   void SetCurrentFile(const char* file) { fCurrentFile=file; }
+  
+  void SetCurrentAliRootRev(Int_t alirootRev) { fCurrentAliRootRev = alirootRev; }
+  Int_t GetCurrentAliRootRev() const { return fCurrentAliRootRev; }
 
   // cache PID in the track
   void SetCachePID(Bool_t cache)    { fCachePID=cache;  }
@@ -149,6 +152,9 @@ public:
   // TPC setting
   void SetUseTPCEtaCorrection(Bool_t useEtaCorrection = kTRUE) { fUseTPCEtaCorrection = useEtaCorrection; };
   Bool_t UseTPCEtaCorrection() const { return fUseTPCEtaCorrection; };
+  
+  void SetUseTPCMultiplicityCorrection(Bool_t useMultiplicityCorrection = kTRUE) { fUseTPCMultiplicityCorrection = useMultiplicityCorrection; };
+  Bool_t UseTPCMultiplicityCorrection() const { return fUseTPCMultiplicityCorrection; };
   
   // TOF setting
   void SetTOFtail(Float_t tail=1.1){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
@@ -199,6 +205,7 @@ private:
   TString fMCperiodTPC;                //! corresponding MC period to use for the TPC splines
   TString fMCperiodUser;               //  MC prodution requested by the user
   TString fCurrentFile;                //! name of currently processed file
+  Int_t   fCurrentAliRootRev;          //! Aliroot rev. used to reconstruct the data
   Int_t   fRecoPass;                   //! reconstruction pass
   Int_t   fRecoPassUser;               //  reconstruction pass explicitly set by the user
   Int_t   fRun;                        //! current run number
@@ -207,10 +214,11 @@ private:
   Float_t fResT0C;                     //! T0C resolution in current run
   Float_t fResT0AC;                    //! T0A.and.T0C resolution in current run
   
-  TObjArray *fArrPidResponseMaster;    //!  TPC pid splines
-  TF1       *fResolutionCorrection;    //! TPC resolution correction
-  AliOADBContainer* fOADBvoltageMaps;  //! container with the voltage maps
-  Bool_t fUseTPCEtaCorrection;         // Use TPC eta correction
+  TObjArray *fArrPidResponseMaster;     //!  TPC pid splines
+  TF1       *fResolutionCorrection;     //! TPC resolution correction
+  AliOADBContainer* fOADBvoltageMaps;   //! container with the voltage maps
+  Bool_t fUseTPCEtaCorrection;          // Use TPC eta correction
+  Bool_t fUseTPCMultiplicityCorrection; // Use TPC multiplicity correction
 
   AliTRDPIDResponseObject *fTRDPIDResponseObject; //! TRD PID Response Object
 
@@ -305,7 +313,7 @@ private:
   EDetPidStatus GetPHOSPIDStatus(const AliVTrack *track) const;
   EDetPidStatus GetEMCALPIDStatus(const AliVTrack *track) const;
 
-  ClassDef(AliPIDResponse, 11);  //PID response handling
+  ClassDef(AliPIDResponse, 12);  //PID response handling
 };
 
 #endif

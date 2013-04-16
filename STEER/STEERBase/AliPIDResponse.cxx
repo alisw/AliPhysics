@@ -71,6 +71,7 @@ fLHCperiod(),
 fMCperiodTPC(),
 fMCperiodUser(),
 fCurrentFile(),
+fCurrentAliRootRev(-1),
 fRecoPass(0),
 fRecoPassUser(-1),
 fRun(-1),
@@ -81,7 +82,8 @@ fResT0AC(55.),
 fArrPidResponseMaster(NULL),
 fResolutionCorrection(NULL),
 fOADBvoltageMaps(NULL),
-fUseTPCEtaCorrection(kFALSE),//TODO: In future, default kTRUE
+fUseTPCEtaCorrection(kFALSE),
+fUseTPCMultiplicityCorrection(kFALSE),
 fTRDPIDResponseObject(NULL),
 fTOFtail(1.1),
 fTOFPIDParams(NULL),
@@ -132,6 +134,7 @@ fLHCperiod(),
 fMCperiodTPC(),
 fMCperiodUser(other.fMCperiodUser),
 fCurrentFile(),
+fCurrentAliRootRev(other.fCurrentAliRootRev),
 fRecoPass(0),
 fRecoPassUser(other.fRecoPassUser),
 fRun(-1),
@@ -143,6 +146,7 @@ fArrPidResponseMaster(NULL),
 fResolutionCorrection(NULL),
 fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(other.fUseTPCEtaCorrection),
+fUseTPCMultiplicityCorrection(other.fUseTPCMultiplicityCorrection),
 fTRDPIDResponseObject(NULL),
 fTOFtail(1.1),
 fTOFPIDParams(NULL),
@@ -184,6 +188,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fMCperiodTPC="";
     fMCperiodUser=other.fMCperiodUser;
     fCurrentFile="";
+    fCurrentAliRootRev=other.fCurrentAliRootRev;
     fRecoPass=0;
     fRecoPassUser=other.fRecoPassUser;
     fRun=-1;
@@ -195,12 +200,14 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fResolutionCorrection=NULL;
     fOADBvoltageMaps=NULL;
     fUseTPCEtaCorrection=other.fUseTPCEtaCorrection;
+    fUseTPCMultiplicityCorrection=other.fUseTPCMultiplicityCorrection;
     fTRDPIDResponseObject=NULL;
     fEMCALPIDParams=NULL;
     fTOFtail=1.1;
     fTOFPIDParams=NULL;
     fHMPIDPIDParams=NULL;
     fCurrentEvent=other.fCurrentEvent;
+
   }
   return *this;
 }
@@ -271,8 +278,7 @@ Float_t AliPIDResponse::NumberOfSigmasTPC( const AliVParticle *vtrack,
   //get number of sigmas according the selected TPC gain configuration scenario
   const AliVTrack *track=static_cast<const AliVTrack*>(vtrack);
 
-//   return 0.;
-  Float_t nSigma=fTPCResponse.GetNumberOfSigmas(track, type, dedxSource, fUseTPCEtaCorrection);
+  Float_t nSigma=fTPCResponse.GetNumberOfSigmas(track, type, dedxSource, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
 
   return nSigma;
 }
@@ -544,6 +550,20 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
     fTPCResponse.SetSigma(3.79301e-03*corrSigma, 2.21280e+04);
   }
   
+  // Set up TPC multiplicity for PbPb
+  //TODO Will NOT give the desired number for AODs -> Needs new variable/function in future.
+  // Fatal, if AOD event and correction enabled
+  //printf("DETECTED class: %s (%d)\n\n\n\n", event->IsA()->GetName(), fUseTPCMultiplicityCorrection);//TODO
+  if (fUseTPCMultiplicityCorrection && strcmp(event->IsA()->GetName(), "AliESDEvent") != 0) {
+    AliFatal("TPC multiplicity correction is enabled, but will NOT work for AOD events, only for ESD => Disabled multiplicity correction!");
+    fUseTPCMultiplicityCorrection = kFALSE;
+  }
+  
+  if (fUseTPCMultiplicityCorrection)
+    fTPCResponse.SetCurrentEventMultiplicity(event->GetNumberOfTracks());
+  else
+    fTPCResponse.SetCurrentEventMultiplicity(0);
+  
   //TOF resolution
   SetTOFResponse(event, (AliPIDResponse::EStartTimeType_t)fTOFPIDParams->GetStartTimeMethod());
 
@@ -556,6 +576,10 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
   else{
     fCurrCentrality = -1;
   }
+
+  // Set centrality percentile for EMCAL
+  fEMCALResponse.SetCentrality(fCurrCentrality);
+
 }
 
 //______________________________________________________________________________
@@ -661,8 +685,18 @@ void AliPIDResponse::SetRecoInfo()
 //   if (fRun >= 188167 && fRun <= 188355 ) { fLHCperiod="LHC12G"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
 //   if (fRun >= 188356 && fRun <= 188503 ) { fLHCperiod="LHC12G"; fBeamType="PPB"; /*fMCperiodTPC="";*/ }
 // for the moment use 12g parametrisation for all full gain runs (LHC12f+)
-  if (fRun >= 186636  && fRun < 194480) { fLHCperiod="LHC12G"; fBeamType="PPB"; fMCperiodTPC="LHC12G"; }
-  if (fRun >= 194480) { fLHCperiod="LHC13B"; fBeamType="PPB"; fMCperiodTPC="LHC12G"; }
+  if (fRun >= 186636 && fRun < 194480) { fLHCperiod="LHC12G"; fBeamType="PPB"; fMCperiodTPC="LHC12G"; }
+
+  // New parametrisation for 2013 pPb runs
+  if (fRun >= 194480) { 
+    fLHCperiod="LHC13B"; 
+    fBeamType="PPB";
+  
+    if (fCurrentAliRootRev >= 61605)
+      fMCperiodTPC="LHC13B2_FIX";
+    else
+      fMCperiodTPC="LHC12G";
+  }
 
   //exception new pp MC productions from 2011
   if (fBeamType=="PP" && reg.MatchB(fCurrentFile)) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
@@ -881,13 +915,13 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   TString period = fLHCperiod.IsNull() ? "No period information" : fLHCperiod;
   
   if (fIsMC)  {
-    if (!fTuneMConData) {
+    if (!(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))) {
       period=fMCperiodTPC;
       dataType="MC";
     }
     fRecoPass = 1;
     
-    if (!fTuneMConData && fMCperiodTPC.IsNull()) {
+    if (!(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC)) && fMCperiodTPC.IsNull()) {
       AliFatal("MC detected, but no MC period set -> Not changing eta maps!");
       return;
     }
@@ -912,13 +946,14 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
                                               Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass));
   if (statusCont) {
     AliError("Failed initializing TPC eta correction maps from OADB -> Disabled eta correction");
+    fUseTPCEtaCorrection = kFALSE;
   }
   else {
     AliInfo(Form("Loading TPC eta correction map from %s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()));
     
     TH2D* etaMap = 0x0;
     
-    if (fIsMC && !fTuneMConData) {
+    if (fIsMC && !(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))) {
       TString searchMap = Form("TPCetaMaps_%s_%s_pass%d", dataType.Data(), period.Data(), recopass);
       etaMap = dynamic_cast<TH2D *>(etaMapsCont.GetDefaultObject(searchMap.Data()));
       if (!etaMap) {
@@ -933,6 +968,7 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
         
     if (!etaMap) {
       AliError(Form("TPC eta correction map not found for run %d and also no default map found -> Disabled eta correction!!!", fRun));
+      fUseTPCEtaCorrection = kFALSE;
     }
     else {
       TH2D* etaMapRefined = RefineHistoViaLinearInterpolation(etaMap, refineFactorMapX, refineFactorMapY);
@@ -941,6 +977,7 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
         if (!fTPCResponse.SetEtaCorrMap(etaMapRefined)) {
           AliError(Form("Failed to set TPC eta correction map for run %d -> Disabled eta correction!!!", fRun));
           fTPCResponse.SetEtaCorrMap(0x0);
+          fUseTPCEtaCorrection = kFALSE;
         }
         else {
           AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s", 
@@ -951,8 +988,15 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
       }
       else {
         AliError(Form("Failed to set TPC eta correction map for run %d (map was loaded, but couldn't be refined) -> Disabled eta correction!!!", fRun));
+        fUseTPCEtaCorrection = kFALSE;
       }
     }
+  }
+  
+  // If there was some problem loading the eta maps, it makes no sense to load the sigma maps (that require eta corrected data)
+  if (fUseTPCEtaCorrection == kFALSE) {
+    AliError("Failed to load TPC eta correction map required by sigma maps -> Using old parametrisation for sigma"); 
+    return;
   }
   
   // Load the sigma parametrisation (1/dEdx vs tanTheta_local (~eta))
@@ -968,7 +1012,7 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
     
     TObjArray* etaSigmaPars = 0x0;
     
-    if (fIsMC && !fTuneMConData) {
+    if (fIsMC && !(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))) {
       TString searchMap = Form("TPCetaSigmaMaps_%s_%s_pass%d", dataType.Data(), period.Data(), recopass);
       etaSigmaPars = dynamic_cast<TObjArray *>(etaSigmaMapsCont.GetDefaultObject(searchMap.Data()));
       if (!etaSigmaPars) {
@@ -1091,16 +1135,16 @@ void AliPIDResponse::SetTPCParametrisation()
   TString datatype="DATA";
   //in case of mc fRecoPass is per default 1
   if (fIsMC) {
-      if(!fTuneMConData) datatype="MC";
+      if(!(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))) datatype="MC";
       fRecoPass=1;
   }
 
   // period
   TString period=fLHCperiod;
-  if (fIsMC && !fTuneMConData) period=fMCperiodTPC;
+  if (fIsMC && !(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))) period=fMCperiodTPC;
 
   Int_t recopass = fRecoPass;
-  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) ) recopass = fRecoPassUser;
+  if(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC)) recopass = fRecoPassUser;
     
   AliInfo(Form("Searching splines for: %s %s PASS%d %s",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
   Bool_t found=kFALSE;
@@ -1223,8 +1267,86 @@ void AliPIDResponse::SetTPCParametrisation()
     AliError(Form("No splines found for: %s %s PASS%d %s",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
   }
 
+
   //
-  // Setup resolution parametrisation
+  // Setup multiplicity correction
+  //
+  if (fUseTPCMultiplicityCorrection && (fBeamType.CompareTo("PBPB") == 0 || fBeamType.CompareTo("AA") == 0)) {
+    AliInfo("Multiplicity correction enabled!");
+    
+    //TODO After testing, load parameters from outside       
+    if (period.Contains("LHC11A10"))  {//LHC11A10A
+      AliInfo("Using multiplicity correction parameters for 11a10!");
+      fTPCResponse.SetParameterMultiplicityCorrection(0, 6.90133e-06);
+      fTPCResponse.SetParameterMultiplicityCorrection(1, -1.22123e-03);
+      fTPCResponse.SetParameterMultiplicityCorrection(2, 1.80220e-02);
+      fTPCResponse.SetParameterMultiplicityCorrection(3, 0.1);
+      fTPCResponse.SetParameterMultiplicityCorrection(4, 6.45306e-03);
+      
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(0, -2.85505e-07);
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(1, -1.31911e-06);
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(2, -0.5);
+
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(0, -4.29665e-05);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(1, 1.37023e-02);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, -6.36337e-01);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.13479e-02);
+    }
+    else if (period.Contains("LHC10H") && recopass == 2) {    
+      AliInfo("Using multiplicity correction parameters for 10h.pass2!");
+      fTPCResponse.SetParameterMultiplicityCorrection(0, 3.21636e-07);
+      fTPCResponse.SetParameterMultiplicityCorrection(1, -6.65876e-04);
+      fTPCResponse.SetParameterMultiplicityCorrection(2, 1.28786e-03);
+      fTPCResponse.SetParameterMultiplicityCorrection(3, 1.47677e-02);
+      fTPCResponse.SetParameterMultiplicityCorrection(4, 0);
+      
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(0, 7.23591e-08);
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(1, 2.7469e-06);
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(2, -0.5);
+      
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(0, -1.22590e-05);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(1, 6.88888e-03);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, -3.20788e-01);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.07345e-02);
+    }
+    else {
+      AliError(Form("Multiplicity correction is enabled, but no multiplicity correction parameters have been found for period %s.pass%d -> Mulitplicity correction DISABLED!", period.Data(), recopass));
+      fUseTPCMultiplicityCorrection = kFALSE;
+      fTPCResponse.ResetMultiplicityCorrectionFunctions();
+    }
+  }
+  else {
+    // Just set parameters such that overall correction factor is 1, i.e. no correction.
+    // This is just a reasonable choice for the parameters for safety reasons. Disabling
+    // the multiplicity correction will anyhow skip the calculation of the corresponding
+    // correction factor inside THIS class. Nevertheless, experts can access the TPCPIDResponse
+    // directly and use it for calculations - which should still give valid results, even if
+    // the multiplicity correction is explicitely enabled in such expert calls.
+    
+    AliInfo(Form("Multiplicity correction %sdisabled (%s)!", fUseTPCMultiplicityCorrection ? "automatically " : "",
+                 fUseTPCMultiplicityCorrection ? "no PbPb or AA" : "requested by user"));
+    
+    fUseTPCMultiplicityCorrection = kFALSE;
+    fTPCResponse.ResetMultiplicityCorrectionFunctions();
+  }
+  
+  /*
+  //TODO NOW start
+  for (Int_t i = 0; i <= 4 + 1; i++) {
+    printf("parMultCorr: %d, %e\n", i, fTPCResponse.GetMultiplicityCorrectionFunction()->GetParameter(i));
+  }
+  for (Int_t j = 0; j <= 2 + 1; j++) {
+    printf("parMultCorrTanTheta: %d, %e\n", j, fTPCResponse.GetMultiplicityCorrectionFunctionTanTheta()->GetParameter(j));
+  }
+  for (Int_t j = 0; j <= 3 + 1; j++) {
+    printf("parMultSigmaCorr: %d, %e\n", j, fTPCResponse.GetMultiplicitySigmaCorrectionFunction()->GetParameter(j));
+  }
+  
+  //TODO NOW end
+  */
+  
+  //
+  // Setup old resolution parametrisation
   //
   
   //default
@@ -1805,9 +1927,10 @@ Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID:
   // the following call is needed in order to fill the transient data member
   // fTPCsignalTuned which is used in the TPCPIDResponse to judge
   // if using tuned on data
-  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) ) this->GetTPCsignalTunedOnData(track);
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))
+    this->GetTPCsignalTunedOnData(track);
   
-  return fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
+  return fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
 }
 
 //______________________________________________________________________________
@@ -1886,10 +2009,10 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTPC(const AliVPartic
   // the following call is needed in order to fill the transient data member
   // fTPCsignalTuned which is used in the TPCPIDResponse to judge
   // if using tuned on data
-  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) ) 
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))
     this->GetTPCsignalTunedOnData(track);
   
-  val=fTPCResponse.GetSignalDelta(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, ratio);
+  val=fTPCResponse.GetSignalDelta(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, ratio);
   
   return GetTPCPIDStatus(track);
 }
@@ -1902,6 +2025,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTOF(const AliVPartic
   //
   AliVTrack *track=(AliVTrack*)vtrack;
   val=GetSignalDeltaTOFold(track, type, ratio);
+  
   return GetTOFPIDStatus(track);
 }
 
@@ -2005,7 +2129,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
   Double_t dedx=track->GetTPCsignal();
   Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
   
-  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) ) dedx = this->GetTPCsignalTunedOnData(track);
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC)) dedx = this->GetTPCsignalTunedOnData(track);
   
   Double_t bethe = 0.;
   Double_t sigma = 0.;
@@ -2013,8 +2137,8 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
   for (Int_t j=0; j<nSpecies; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
     
-    bethe=fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
-    sigma=fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
+    bethe=fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
+    sigma=fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
     
     if (TMath::Abs(dedx-bethe) > fRange*sigma) {
       p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;

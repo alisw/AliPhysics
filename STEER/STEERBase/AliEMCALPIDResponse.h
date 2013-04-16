@@ -35,6 +35,7 @@ public :
   
     //Setters
     void   SetPIDParams(const TObjArray * params) { fkPIDParams = params; }
+    void   SetCentrality(Float_t currentCentrality) { fCurrCentrality = currentCentrality;}
     
 
     // EMCAL probability
@@ -46,11 +47,13 @@ private:
 
   TF1 *fNorm;                            // Gauss function for normalizing NON electron probabilities 
 
+  Double_t fCurrCentrality;              // current (in the current event) centrality percentile 
+
   const TObjArray *fkPIDParams;               // PID Params
 
   const TVectorD* GetParams(Int_t nParticle, Float_t fPt, Int_t charge) const; 
 
-  ClassDef(AliEMCALPIDResponse, 1)
+  ClassDef(AliEMCALPIDResponse, 2)
 };
 
 #endif // #ifdef AliEMCALPIDResponse_cxx
