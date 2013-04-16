@@ -703,7 +703,7 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
     if (partMC->Pt() < fPtLowerLimit ||  partMC->Pt() > fPtHigherLimit) continue;
     
     Short_t gCharge = partMC->Charge();
-    Int_t chargeState = ( gCharge < 0)?  -1 : 1 ; 
+    
     if(gCharge > 0) positiveSumMCTruth += 1.;
     if(gCharge < 0) negativeSumMCTruth += 1.;
     
