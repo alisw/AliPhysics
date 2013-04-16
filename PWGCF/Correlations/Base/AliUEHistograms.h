@@ -13,7 +13,6 @@
 #include "TMath.h"
 #include "THn.h" // in cxx file causes .../THn.h:257: error: conflicting declaration ‘typedef class THnT<float> THnF’
 
-
 class AliVParticle;
 
 class TList;
@@ -105,7 +104,8 @@ protected:
   void FillRegion(AliUEHist::Region region, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* list, Int_t multiplicity);
   Int_t CountParticles(TList* list, Float_t ptMin);
   void DeleteContainers();
-  Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2);
+  inline Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2);
+  inline Float_t GetInvMassSquaredCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2);
   inline Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
   
   static const Int_t fgkUEHists; // number of histograms
@@ -178,6 +178,85 @@ Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1,
     dphistar = kPi * 2 - dphistar;
   
   return dphistar;
+}
+
+Float_t AliUEHistograms::GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2)
+{
+  // calculate inv mass squared
+  // same can be achieved, but with more computing time with
+  /*TLorentzVector photon, p1, p2;
+  p1.SetPtEtaPhiM(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), 0.510e-3);
+  p2.SetPtEtaPhiM(particle->Pt(), eta[j], particle->Phi(), 0.510e-3);
+  photon = p1+p2;
+  photon.M()*/
+  
+  Float_t tantheta1 = 1e10;
+  
+  if (eta1 < -1e-10 || eta1 > 1e-10)
+  {
+    Float_t expTmp = TMath::Exp(-eta1);
+    tantheta1 = 2.0 * expTmp / ( 1.0 - expTmp*expTmp);
+  }
+  
+  Float_t tantheta2 = 1e10;
+  if (eta2 < -1e-10 || eta2 > 1e-10)
+  {
+    Float_t expTmp = TMath::Exp(-eta2);
+    tantheta2 = 2.0 * expTmp / ( 1.0 - expTmp*expTmp);
+  }
+  
+  Float_t e1squ = m0_1 * m0_1 + pt1 * pt1 * (1.0 + 1.0 / tantheta1 / tantheta1);
+  Float_t e2squ = m0_2 * m0_2 + pt2 * pt2 * (1.0 + 1.0 / tantheta2 / tantheta2);
+  
+  Float_t mass2 = m0_1 * m0_1 + m0_2 * m0_2 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( pt1 * pt2 * ( TMath::Cos(phi1 - phi2) + 1.0 / tantheta1 / tantheta2 ) ) );
+  
+//   Printf(Form("%f %f %f %f %f %f %f %f %f", pt1, eta1, phi1, pt2, eta2, phi2, m0_1, m0_2, mass2));
+  
+  return mass2;
+}
+
+Float_t AliUEHistograms::GetInvMassSquaredCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2)
+{
+  // calculate inv mass squared approximately
+  
+  Float_t tantheta1 = 1e10;
+  
+  if (eta1 < -1e-10 || eta1 > 1e-10)
+  {
+    Float_t expTmp = 1.0-eta1+eta1*eta1/2-eta1*eta1*eta1/6+eta1*eta1*eta1*eta1/24;
+    tantheta1 = 2.0 * expTmp / ( 1.0 - expTmp*expTmp);
+  }
+  
+  Float_t tantheta2 = 1e10;
+  if (eta2 < -1e-10 || eta2 > 1e-10)
+  {
+    Float_t expTmp = 1.0-eta2+eta2*eta2/2-eta2*eta2*eta2/6+eta2*eta2*eta2*eta2/24;
+    tantheta2 = 2.0 * expTmp / ( 1.0 - expTmp*expTmp);
+  }
+  
+  Float_t e1squ = m0_1 * m0_1 + pt1 * pt1 * (1.0 + 1.0 / tantheta1 / tantheta1);
+  Float_t e2squ = m0_2 * m0_2 + pt2 * pt2 * (1.0 + 1.0 / tantheta2 / tantheta2);
+  
+  // fold onto 0...pi
+  Float_t deltaPhi = TMath::Abs(phi1 - phi2);
+  while (deltaPhi > TMath::TwoPi())
+    deltaPhi -= TMath::TwoPi();
+  if (deltaPhi > TMath::Pi())
+    deltaPhi = TMath::TwoPi() - deltaPhi;
+  
+  Float_t cosDeltaPhi = 0;
+  if (deltaPhi < TMath::Pi()/3)
+    cosDeltaPhi = 1.0 - deltaPhi*deltaPhi/2 + deltaPhi*deltaPhi*deltaPhi*deltaPhi/24;
+  else if (deltaPhi < 2*TMath::Pi()/3)
+    cosDeltaPhi = -(deltaPhi - TMath::Pi()/2) + 1.0/6 * TMath::Power((deltaPhi - TMath::Pi()/2), 3);
+  else
+    cosDeltaPhi = -1.0 + 1.0/2.0*(deltaPhi - TMath::Pi())*(deltaPhi - TMath::Pi()) - 1.0/24.0 * TMath::Power(deltaPhi - TMath::Pi(), 4);
+  
+  Float_t mass2 = m0_1 * m0_1 + m0_2 * m0_2 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( pt1 * pt2 * ( cosDeltaPhi + 1.0 / tantheta1 / tantheta2 ) ) );
+  
+//   Printf(Form("%f %f %f %f %f %f %f %f %f", pt1, eta1, phi1, pt2, eta2, phi2, m0_1, m0_2, mass2));
+  
+  return mass2;
 }
 
 #endif

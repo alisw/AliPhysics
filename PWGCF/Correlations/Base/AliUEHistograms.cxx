@@ -554,7 +554,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
   TObjArray* input = (mixed) ? mixed : particles;
   TArrayF eta(input->GetEntriesFast());
   for (Int_t i=0; i<input->GetEntriesFast(); i++)
-    eta[i] = ((AliVParticle*) input->At(i))->Eta();
+    eta[i] = ((AliVParticle*) input->UncheckedAt(i))->Eta();
   
   // if particles is not set, just fill event statistics
   if (particles)
@@ -571,7 +571,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
     
       for (Int_t i=0; i<particles->GetEntriesFast(); i++)
       {
-	AliVParticle* triggerParticle = (AliVParticle*) particles->At(i);
+	AliVParticle* triggerParticle = (AliVParticle*) particles->UncheckedAt(i);
 	
 	// some optimization
 	Float_t triggerEta = triggerParticle->Eta();
@@ -596,7 +596,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
     
     for (Int_t i=0; i<particles->GetEntriesFast(); i++)
     {
-      AliVParticle* triggerParticle = (AliVParticle*) particles->At(i);
+      AliVParticle* triggerParticle = (AliVParticle*) particles->UncheckedAt(i);
       
       // some optimization
       Float_t triggerEta = triggerParticle->Eta();
@@ -621,9 +621,9 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
       
         AliVParticle* particle = 0;
         if (!mixed)
-          particle = (AliVParticle*) particles->At(j);
+          particle = (AliVParticle*) particles->UncheckedAt(j);
         else
-          particle = (AliVParticle*) mixed->At(j);
+          particle = (AliVParticle*) mixed->UncheckedAt(j);
         
         // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event for cross-checks)
         if (mixed && triggerParticle == particle)
@@ -658,41 +658,63 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         // conversions
 	if (fCutConversions && particle->Charge() * triggerParticle->Charge() < 0)
 	{
-	  Float_t mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
+	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
 	  
-	  fControlConvResoncances->Fill(0.0, mass);
+	  if (mass < 0.1)
+	  {
+	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
+	    
+	    fControlConvResoncances->Fill(0.0, mass);
 
-	  if (mass < 0.04*0.04) 
-	    continue;
+	    if (mass < 0.04*0.04) 
+	      continue;
+	  }
 	}
 	
 	// K0s
 	if (fCutResonances && particle->Charge() * triggerParticle->Charge() < 0)
 	{
-	  Float_t mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
+	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
 	  
 	  const Float_t kK0smass = 0.4976;
 	  
-	  fControlConvResoncances->Fill(1, mass - kK0smass*kK0smass);
+	  if (TMath::Abs(mass - kK0smass*kK0smass) < 0.1)
+	  {
+	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
+	    
+	    fControlConvResoncances->Fill(1, mass - kK0smass*kK0smass);
 
-	  if (mass > (kK0smass-0.02)*(kK0smass-0.02) && mass < (kK0smass+0.02)*(kK0smass+0.02))
-	    continue;
+	    if (mass > (kK0smass-0.02)*(kK0smass-0.02) && mass < (kK0smass+0.02)*(kK0smass+0.02))
+	      continue;
+	  }
 	}
 	
 	// Lambda
 	if (fCutResonances && particle->Charge() * triggerParticle->Charge() < 0)
 	{
-	  Float_t mass1 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.9383);
-	  Float_t mass2 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.9383, 0.1396);
+	  Float_t mass1 = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.9383);
+	  Float_t mass2 = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.9383, 0.1396);
 	  
 	  const Float_t kLambdaMass = 1.115;
 
-	  fControlConvResoncances->Fill(2, mass1 - kLambdaMass*kLambdaMass);
-	  fControlConvResoncances->Fill(2, mass2 - kLambdaMass*kLambdaMass);
+	  if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < 0.1)
+	  {
+	    mass1 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.9383);
 
-	  if ((mass1 > (kLambdaMass-0.02)*(kLambdaMass-0.02) && mass1 < (kLambdaMass+0.02)*(kLambdaMass+0.02)) || 
-	      (mass2 > (kLambdaMass-0.02)*(kLambdaMass-0.02) && mass2 < (kLambdaMass+0.02)*(kLambdaMass+0.02)))
-	    continue;
+	    fControlConvResoncances->Fill(2, mass1 - kLambdaMass*kLambdaMass);
+	    
+	    if (mass1 > (kLambdaMass-0.02)*(kLambdaMass-0.02) && mass1 < (kLambdaMass+0.02)*(kLambdaMass+0.02))
+	      continue;
+	  }
+	  if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < 0.1)
+	  {
+	    mass2 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.9383, 0.1396);
+
+	    fControlConvResoncances->Fill(2, mass2 - kLambdaMass*kLambdaMass);
+
+	    if (mass2 > (kLambdaMass-0.02)*(kLambdaMass-0.02) && mass2 < (kLambdaMass+0.02)*(kLambdaMass+0.02))
+	      continue;
+	  }
 	}
 
 	if (twoTrackEfficiencyCut)
@@ -889,7 +911,7 @@ void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim,
 
     for (Int_t i=0; i<list->GetEntriesFast(); i++)
     {
-      AliVParticle* particle = (AliVParticle*) list->At(i);
+      AliVParticle* particle = (AliVParticle*) list->UncheckedAt(i);
       Double_t vars[5];
       vars[0] = particle->Eta();
       vars[1] = particle->Pt();
@@ -1294,31 +1316,4 @@ void AliUEHistograms::Reset()
   for (Int_t i=0; i<fgkUEHists; i++)
     if (GetUEHist(i))
       GetUEHist(i)->Reset();
-}
-
-Float_t AliUEHistograms::GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2)
-{
-  // calculate inv mass squared
-  // same can be achieved, but with more computing time with
-  /*TLorentzVector photon, p1, p2;
-  p1.SetPtEtaPhiM(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), 0.510e-3);
-  p2.SetPtEtaPhiM(particle->Pt(), eta[j], particle->Phi(), 0.510e-3);
-  photon = p1+p2;
-  photon.M()*/
-  
-  Float_t tantheta1 = 1e10;
-  
-  if (eta1 < -1e-10 || eta1 > 1e-10)
-    tantheta1 = 2 * TMath::Exp(-eta1) / ( 1 - TMath::Exp(-2*eta1));
-  
-  Float_t tantheta2 = 1e10;
-  if (eta2 < -1e-10 || eta2 > 1e-10)
-    tantheta2 = 2 * TMath::Exp(-eta2) / ( 1 - TMath::Exp(-2*eta2));
-  
-  Float_t e1squ = m0_1 * m0_1 + pt1 * pt1 * (1.0 + 1.0 / tantheta1 / tantheta1);
-  Float_t e2squ = m0_2 * m0_2 + pt2 * pt2 * (1.0 + 1.0 / tantheta2 / tantheta2);
-  
-  Float_t mass2 = m0_1 * m0_1 + m0_2 * m0_2 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( pt1 * pt2 * ( TMath::Cos(phi1 - phi2) + 1.0 / tantheta1 / tantheta2 ) ) );
-  
-  return mass2;
 }

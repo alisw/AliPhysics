@@ -43,7 +43,10 @@ AliTHn::AliTHn() :
   fNSteps(0),
   fValues(0),
   fSumw2(0),
-  axisCache(0)
+  axisCache(0),
+  fNbinsCache(0),
+  fLastVars(0),
+  fLastBins(0)
 {
   // Constructor
 }
@@ -55,7 +58,10 @@ AliTHn::AliTHn(const Char_t* name, const Char_t* title,const Int_t nSelStep, con
   fNSteps(nSelStep),
   fValues(0),
   fSumw2(0),
-  axisCache(0)
+  axisCache(0),
+  fNbinsCache(0),
+  fLastVars(0),
+  fLastBins(0)
 {
   // Constructor
 
@@ -87,7 +93,10 @@ AliTHn::AliTHn(const AliTHn &c) :
   fNSteps(c.fNSteps),
   fValues(new TArrayF*[c.fNSteps]),
   fSumw2(new TArrayF*[c.fNSteps]),
-  axisCache(0)
+  axisCache(0),
+  fNbinsCache(0),
+  fLastVars(0),
+  fLastBins(0)
 {
   //
   // AliTHn copy constructor
@@ -112,7 +121,9 @@ AliTHn::~AliTHn()
   delete[] fValues;
   delete[] fSumw2;
   delete[] axisCache;
-
+  delete[] fNbinsCache;
+  delete[] fLastVars;
+  delete[] fLastBins;
 }
 
 void AliTHn::DeleteContainers()
@@ -263,20 +274,43 @@ void AliTHn::Fill(const Double_t *var, Int_t istep, Double_t weight)
   if (!axisCache)
   {
     axisCache = new TAxis*[fNVars];
+    fNbinsCache = new Int_t[fNVars];
     for (Int_t i=0; i<fNVars; i++)
+    {
       axisCache[i] = GetAxis(i, 0);
+      fNbinsCache[i] = axisCache[i]->GetNbins();
+    }
+    
+    fLastVars = new Double_t[fNVars];
+    fLastBins = new Int_t[fNVars];
+    
+    // initial values to prevent checking for 0 below
+    for (Int_t i=0; i<fNVars; i++)
+    {
+      fLastBins[i] = axisCache[i]->FindBin(var[i]);
+      fLastVars[i] = var[i];
+    }
   }
-
+  
   // calculate global bin index
   Long64_t bin = 0;
   for (Int_t i=0; i<fNVars; i++)
   {
-    bin *= axisCache[i]->GetNbins();
+    bin *= fNbinsCache[i];
     
-    Int_t tmpBin = axisCache[i]->FindBin(var[i]);
-//     Printf("%d", tmpBin);
+    Int_t tmpBin = 0;
+    if (fLastVars[i] == var[i])
+      tmpBin = fLastBins[i];
+    else
+    {
+      tmpBin = axisCache[i]->FindBin(var[i]);
+      fLastBins[i] = tmpBin;
+      fLastVars[i] = var[i];
+    }
+    //Printf("%d", tmpBin);
+
     // under/overflow not supported
-    if (tmpBin < 1 || tmpBin > axisCache[i]->GetNbins())
+    if (tmpBin < 1 || tmpBin > fNbinsCache[i])
       return;
     
     // bins start from 0 here
