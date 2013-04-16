@@ -153,7 +153,7 @@ void SetupV0Cuts(AliDielectron *die, Int_t cutDefinition)
 
   AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("IsGamma","IsGamma");
   gammaV0Cuts->SetPdgCodes(22,11,11);
-  gammaV0Cuts->SetDefaultPID(10);
+  gammaV0Cuts->SetDefaultPID(16);
   gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0, kFALSE);
   gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0, kFALSE);
   gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
