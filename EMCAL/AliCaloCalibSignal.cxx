@@ -602,19 +602,19 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
 
 	if (gain == 0) {
 	  // fill amplitude into the array	   
-	  iAmpValLowGain[iTowerNum] = res.GetAmp();
+	  iAmpValLowGain[iTowerNum]  = (int) res.GetAmp();
 	  nLowChan++;
 	} 
 	else if (gain==1) {//fill the high gain ones
 	  // fill amplitude into the array
-	  iAmpValHighGain[iTowerNum] = res.GetAmp();;
+	  iAmpValHighGain[iTowerNum] = (int) res.GetAmp();
 	  nHighChan++;
 	}//end if gain
       } // regular tower
       else if ( in->IsLEDMonData() ) { // LED ref.; 
 	// strip # is coded is 'column' in the channel maps 
 	iRefNum = GetRefNum(arrayPos, in->GetColumn(), gain); 
-	iLEDAmpVal[iRefNum] = res.GetAmp();
+	iLEDAmpVal[iRefNum] = (int) res.GetAmp();
 	nLEDRefChan++;
       } // end of LED ref
 
