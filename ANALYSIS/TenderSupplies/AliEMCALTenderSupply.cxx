@@ -106,6 +106,7 @@ AliTenderSupply()
 ,fExoticCellDiffTime(-1)
 ,fExoticCellMinAmplitude(-1)
 ,fSetCellMCLabelFromCluster(0)
+,fTempClusterArr(0)
 ,fRemapMCLabelForAODs(0)
 
 {
@@ -168,6 +169,7 @@ AliTenderSupply(name,tender)
 ,fExoticCellDiffTime(-1)
 ,fExoticCellMinAmplitude(-1)
 ,fSetCellMCLabelFromCluster(0)
+,fTempClusterArr(0)
 ,fRemapMCLabelForAODs(0)
 
 {
@@ -230,6 +232,7 @@ AliTenderSupply(name)
 ,fExoticCellDiffTime(-1)
 ,fExoticCellMinAmplitude(-1)
 ,fSetCellMCLabelFromCluster(0)
+,fTempClusterArr(0)
 ,fRemapMCLabelForAODs(0)
 {
   // Named constructor.
