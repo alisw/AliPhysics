@@ -467,6 +467,17 @@ TGraphAsymmErrors *GetGraphWithStat(const char *filename){
 
 Float_t ComputePiV2int(Int_t ic=2){
 
+  Float_t v2Av = 0.02;
+  
+  if(ic==1) v2Av = 0.035;
+  else if(ic==2) v2Av = 0.048464;
+  else if(ic==3) v2Av = 0.06;
+  else if(ic==4) v2Av = 0.07;
+  else if(ic==5) v2Av = 0.07;
+  else if(ic==6) v2Av = 0.07;
+  else if(ic==7) v2Av = 0.06;
+  else if(ic==8) v2Av = 0.05;
+
   if(! kLoaded) LoadLib();
 
   char name[200];
@@ -508,7 +519,7 @@ Float_t ComputePiV2int(Int_t ic=2){
   // initialize fitter
   AliBlastwaveFit2D *bwPi = new AliBlastwaveFit2D("pionsSp",mPi);
   bwPi->SetMinPt(0.1);
-  bwPi->SetMaxPt(2.0);
+  bwPi->SetMaxPt(1.5);
 
   AliBlastwaveFit2D *bwPi2 = new AliBlastwaveFit2D("pionsV2",mPi);
   bwPi2->SetMinPt(0.2);
@@ -564,6 +575,7 @@ Float_t ComputePiV2int(Int_t ic=2){
   
   Float_t num = 0;
   Float_t den = 0;
+  Float_t errSp = 0;
 
   Float_t num1 = 0;
   Float_t den1 = 0;
@@ -606,6 +618,8 @@ Float_t ComputePiV2int(Int_t ic=2){
 
       den += yield;
       num += yield * v2;
+
+      errSp +=  (0.0202/0.2 + 0.03 * 0.2) * yield * TMath::Abs(v2 - v2Av);
       
       den1 += yield*(1 + 0.0202/0.2 + 0.03 * 0.2);
       num1 += yield*(1 + 0.0202/0.2 + 0.03 * 0.2) * v2 * (1 - 0.05);
@@ -652,6 +666,8 @@ Float_t ComputePiV2int(Int_t ic=2){
 
       den += yield;
       num += yield * v2;
+
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
 
       den1 += yield*(1 + frSyst*yielderr);
       num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
@@ -702,6 +718,8 @@ Float_t ComputePiV2int(Int_t ic=2){
       den += yield;
       num += yield * v2;
 
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
+      
       den1 += yield*(1 + frSyst*yielderr);
       num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
 
@@ -732,6 +750,7 @@ Float_t ComputePiV2int(Int_t ic=2){
   printf("Syst. Only v2 = %f\n",systV2);
   Float_t systSp = (num6/den6 - num5/den5)/2;
   printf("Syst. Only spectra = %f\n",systSp);
+  printf("Syst. Only spectra (2nd estimate) = %f\n",errSp/den);
   printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
   printf("Yield = %f\n",den);
 
@@ -755,6 +774,16 @@ Float_t ComputePiV2int(Int_t ic=2){
 }
 
 Float_t ComputeKaV2int(Int_t ic=2){
+  Float_t v2Av = 0.025;
+  
+  if(ic==1) v2Av = 0.045;
+  else if(ic==2) v2Av = 0.06;
+  else if(ic==3) v2Av = 0.083;
+  else if(ic==4) v2Av = 0.095;
+  else if(ic==5) v2Av = 0.095;
+  else if(ic==6) v2Av = 0.095;
+  else if(ic==7) v2Av = 0.09;
+  else if(ic==8) v2Av = 0.075;
 
   if(! kLoaded) LoadLib();
 
@@ -854,6 +883,7 @@ Float_t ComputeKaV2int(Int_t ic=2){
   
   Float_t num = 0;
   Float_t den = 0;
+  Float_t errSp = 0;
 
   Float_t num1 = 0;
   Float_t den1 = 0;
@@ -898,6 +928,8 @@ Float_t ComputeKaV2int(Int_t ic=2){
 
       den += yield;
       num += yield * v2;
+      
+      errSp +=  (0.0215/0.25 + 0.05 * 0.25) * yield * TMath::Abs(v2 - v2Av);
       
       den1 += yield*(1 + 0.0215/0.25 + 0.05 * 0.25);
       num1 += yield*(1 + 0.0215/0.25 + 0.05 * 0.25) * v2 * (1 - 0.1);
@@ -945,6 +977,8 @@ Float_t ComputeKaV2int(Int_t ic=2){
 
       den += yield;
       num += yield * v2;
+
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
 
       den1 += yield*(1 + frSyst*yielderr);
       num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
@@ -995,6 +1029,8 @@ Float_t ComputeKaV2int(Int_t ic=2){
       den += yield;
       num += yield * 0.0;
 
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
+
       den1 += yield*(1 + frSyst*yielderr);
       num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
 
@@ -1025,6 +1061,7 @@ Float_t ComputeKaV2int(Int_t ic=2){
   printf("Syst. Only v2 = %f\n",systV2);
   Float_t systSp = (num6/den6 - num5/den5)/2;
   printf("Syst. Only spectra = %f\n",systSp);
+  printf("Syst. Only spectra (2nd estimate) = %f\n",errSp/den);
   printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
   printf("Yield = %f\n",den);
 
@@ -1047,6 +1084,16 @@ Float_t ComputeKaV2int(Int_t ic=2){
 }
 
 Float_t ComputePrV2int(Int_t ic=2){
+  Float_t v2Av = 0.025;
+  
+  if(ic==1) v2Av = 0.045;
+  else if(ic==2) v2Av = 0.07;
+  else if(ic==3) v2Av = 0.09;
+  else if(ic==4) v2Av = 0.1;
+  else if(ic==5) v2Av = 0.11;
+  else if(ic==6) v2Av = 0.11;
+  else if(ic==7) v2Av = 0.1;
+  else if(ic==8) v2Av = 0.09;
 
   if(! kLoaded) LoadLib();
 
@@ -1144,6 +1191,7 @@ Float_t ComputePrV2int(Int_t ic=2){
   
   Float_t num = 0;
   Float_t den = 0;
+  Float_t errSp = 0;
 
   Float_t num1 = 0;
   Float_t den1 = 0;
@@ -1187,6 +1235,9 @@ Float_t ComputePrV2int(Int_t ic=2){
       den += yield;
       num += yield * v2;
       
+      errSp +=  (0.064/0.3 + 0.0083 * 0.3 * 0.3) * yield * TMath::Abs(v2 - v2Av);
+
+
       den1 += yield*(1 + 0.064/0.3 + 0.0083 * 0.3 * 0.3);
       num1 += yield*(1 + 0.064/0.3 + 0.0083 * 0.3 * 0.3) * v2 * (1 - 0.2);
       
@@ -1204,6 +1255,8 @@ Float_t ComputePrV2int(Int_t ic=2){
       
       den6 += yield*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3);
       num6 += yield*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3) * v2;
+
+      printf("pt<%f) v2int = %f (DeltaV2 = %f, yield = %f) (err=%f)\n",x2,num/den,(num2/den2 - num1/den1),den,errSp/den);
 
     }
   }
@@ -1235,6 +1288,8 @@ Float_t ComputePrV2int(Int_t ic=2){
       den += yield;
       num += yield * v2;
 
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
+
       den1 += yield*(1 + frSyst*yielderr);
       num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
 
@@ -1253,7 +1308,7 @@ Float_t ComputePrV2int(Int_t ic=2){
       den6 += yield*(1 - frSyst*yielderr);
       num6 += yield*(1 - frSyst*yielderr) * v2;
 
-      printf("pt<%f) v2int = %f (DeltaV2 = %f, yield = %f)\n",x+binwidth,num/den,(num2/den2 - num1/den1),den);
+      printf("pt<%f) v2int = %f (DeltaV2 = %f, yield = %f) (err=%f)\n",x+binwidth,num/den,(num2/den2 - num1/den1),den,errSp/den);
     }
   }
 
@@ -1284,6 +1339,8 @@ Float_t ComputePrV2int(Int_t ic=2){
       den += yield;
       num += yield * v2;
 
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
+
       den1 += yield*(1 + frSyst*yielderr);
       num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
 
@@ -1302,7 +1359,7 @@ Float_t ComputePrV2int(Int_t ic=2){
       den6 += yield*(1 - frSyst*yielderr);
       num6 += yield*(1 - frSyst*yielderr) * v2;
 
-      printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
+      printf("pt<%f) v2int = %f (%f)\n",x+binwidth,num/den,errSp/den);
     }
   }
 
@@ -1314,6 +1371,7 @@ Float_t ComputePrV2int(Int_t ic=2){
   printf("Syst. Only v2 = %f\n",systV2);
   Float_t systSp = (num6/den6 - num5/den5)/2;
   printf("Syst. Only spectra = %f\n",systSp);
+  printf("Syst. Only spectra (2nd estimate) = %f\n",errSp/den);
   printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
   printf("Yield = %f\n",den);
 
