@@ -46,9 +46,13 @@ protected:
   Int_t    fNSteps;  // number of selection steps
   TArrayF **fValues; //[fNSteps] data container
   TArrayF **fSumw2;  //[fNSteps] data container
-  TAxis** axisCache; //! cache axis pointers (about 50% of the time in Fill is spent in GetAxis otherwise)
   
-  ClassDef(AliTHn, 3) // THn like container
+  TAxis** axisCache; //! cache axis pointers (about 50% of the time in Fill is spent in GetAxis otherwise)
+  Int_t* fNbinsCache; //! cache Nbins per axis
+  Double_t* fLastVars; //! caching of last used bins (in many loops some vars are the same for a while)
+  Int_t* fLastBins; //! caching of last used bins (in many loops some vars are the same for a while)
+  
+  ClassDef(AliTHn, 4) // THn like container
 };
 
 #endif
