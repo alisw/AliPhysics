@@ -99,7 +99,7 @@ void AliITSUSimulation::InitSimulationModule(AliITSUModule* mod, Int_t event, Al
   SetSegmentation(seg);
   SetResponseParam(resp);
   ClearMap();
-  memset(fCyclesID,0,2*kMaxROCycleAccept*sizeof(Bool_t));
+  memset(fCyclesID,0,(1+2*kMaxROCycleAccept)*sizeof(Bool_t));
   //
   if (event != fEvent) GenerateReadOutCycleOffset(); 
   SetEvent(event);
@@ -136,9 +136,13 @@ void AliITSUSimulation::UpdateMapSignal(UInt_t col,UInt_t row,Int_t trk,Int_t ht
 {
   // update map with new hit
   // Note: roCycle can be anything between -kMaxROCycleAccept : kMaxROCycleAccept
+  if (Abs(roCycle)>kMaxROCycleAccept) {
+    AliError(Form("CycleID %d is outside of allowed +-%d range",roCycle,kMaxROCycleAccept));
+    return;
+  }
   UInt_t ind = fSensMap->GetIndex(col,row,roCycle);
-  AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);
-  if (!oldItem) {
+  AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);  
+  if (!oldItem) {    
     fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(trk,ht,fModule->GetIndex(),ind,signal,roCycle) );
     fCyclesID[roCycle+kMaxROCycleAccept] = kTRUE;
   }
@@ -150,6 +154,10 @@ void AliITSUSimulation::UpdateMapSignal(UInt_t col,UInt_t row,Int_t trk,Int_t ht
 void AliITSUSimulation::UpdateMapNoise(UInt_t col,UInt_t row,Double_t noise, Int_t roCycle) 
 {
   // update map with new hit
+  if (Abs(roCycle)>kMaxROCycleAccept) {
+    AliError(Form("CycleID %d is outside of allowed +-%d range",roCycle,kMaxROCycleAccept));
+    return;
+  }
   UInt_t ind = fSensMap->GetIndex(col,row,roCycle);
   AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);
   if (!oldItem) {
