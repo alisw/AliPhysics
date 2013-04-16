@@ -1018,7 +1018,8 @@ Bool_t lIsPosProtonForTPC = kFALSE;
     if (!myPrimaryVertex) return;
   }
     ///  pPb analysis
-    if(fCollidingSystems == 2){  //twiky https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PAVertexSelectionStudies 
+    //    if(fCollidingSystems == 2){  //twiky https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PAVertexSelectionStudies 
+    if(1){  //twiky https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PAVertexSelectionStudies 
       const AliESDVertex* trkVtx = ((AliESDEvent*)fESD)->GetPrimaryVertex();
       if (!trkVtx || trkVtx->GetNContributors()<=0) return;
       TString vtxTtl = trkVtx->GetTitle();
