@@ -79,6 +79,7 @@ void AliITSUClusterPix::Print(Option_t* option) const
   }
   printf(" MClb:");
   for (int i=0;i<3;i++) printf(" %5d",GetLabel(i));
+  if (TestBit(kSplit)) printf(" Spl");
   printf("\n");
   //
 }
@@ -304,5 +305,20 @@ Bool_t AliITSUClusterPix::IsEqual(const TObject* obj)  const
     return (Abs(xyz[1]-xyz1[1])<kTol && Abs(xyz[2]-xyz1[2])<kTol) ? kTRUE : kFALSE;
   }
   AliFatal(Form("Unknown modr for sorting: %d",fgMode));
+  return kFALSE;
+}
+
+//______________________________________________________________________________
+Bool_t AliITSUClusterPix::HasCommonTrack(const AliCluster* cl) const
+{
+  // check if clusters have common tracks
+  int lbi,lbj;
+  for (int i=0;i<3;i++) {
+    if ((lbi=GetLabel(i))<0) break;
+    for (int j=0;j<3;j++) {
+      if ((lbj=cl->GetLabel(j))<0) break;
+      if (lbi==lbj) return kTRUE;
+    }
+  }
   return kFALSE;
 }

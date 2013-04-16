@@ -3,6 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#define _FILL_CONTROL_HISTOS_
+
 //-------------------------------------------------------------------------
 //                ITS upgrade tracker base class
 //-------------------------------------------------------------------------
@@ -49,6 +51,9 @@ class AliITSUTrackerGlo : public AliTracker {
   virtual Int_t          LoadClusters(TTree * treeRP=0);
   virtual void           UnloadClusters();
   virtual AliCluster*    GetCluster(Int_t index) const;
+  void                   FlagSplitClusters();
+  Bool_t                 ContainsSplitCluster(const AliITSUSeed* seed, Int_t maxSize=99999);
+  void                   PrintSeedClusters(const AliITSUSeed* seed, Option_t* option="");
   //
   Int_t                  GetCountPronlongationTrials() const {return fCountProlongationTrials;}
   Int_t                  GetCountITSin()               const {return fCountITSin;}
@@ -138,6 +143,15 @@ class AliITSUTrackerGlo : public AliTracker {
   //
   static const Double_t           fgkToler;        // tracking tolerance
   //
+#ifdef  _FILL_CONTROL_HISTOS_
+  // this code is only for special histos needed to extract some control parameters
+  void BookControlHistos();
+  TObjArray* fCHistoArr;
+  enum {kHResY=0,kHResYP=10,kHResZ=20,kHResZP=30,kHChi2Cl=40};
+  enum {kHistosPhase=100};
+  //
+#endif
+
   ClassDef(AliITSUTrackerGlo,1)   //ITS upgrade tracker
     
 };

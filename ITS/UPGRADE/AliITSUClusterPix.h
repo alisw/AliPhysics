@@ -15,6 +15,7 @@ class AliITSUClusterPix : public AliCluster
     ,kFrameTrk = BIT(17)
     ,kFrameGlo = BIT(18)
     ,kFrameBits = kFrameLoc|kFrameTrk|kFrameGlo
+    ,kSplit    = BIT(19)
   };
   //
   enum SortMode_t { // various modes
@@ -32,10 +33,15 @@ class AliITSUClusterPix : public AliCluster
   Bool_t  IsFrameLoc()         const {return TestBit(kFrameLoc);}
   Bool_t  IsFrameGlo()         const {return TestBit(kFrameGlo);}
   Bool_t  IsFrameTrk()         const {return TestBit(kFrameTrk);}
+  //
+  Bool_t  IsSplit()            const {return TestBit(kSplit);}
+  //
   void    SetFrameLoc()              {ResetBit(kFrameBits); SetBit(kFrameLoc);}
   void    SetFrameGlo()              {ResetBit(kFrameBits); SetBit(kFrameGlo);}
   void    SetFrameTrk()              {ResetBit(kFrameTrk);  SetBit(kFrameTrk);}
-   //
+  //
+  void    SetSplit(Bool_t v=kTRUE)   {SetBit(kSplit,v);}
+  //
   void    GoToFrameGlo();
   void    GoToFrameLoc();
   void    GoToFrameTrk();
@@ -60,6 +66,8 @@ class AliITSUClusterPix : public AliCluster
   virtual Bool_t               IsSortable()                 const {return kTRUE;}
   virtual Bool_t               IsEqual(const TObject* obj)  const;
   virtual Int_t	               Compare(const TObject* obj)  const;
+  //
+  Bool_t  HasCommonTrack(const AliCluster* cl)          const;
   //
   static  void                 SetGeom(AliITSUGeomTGeo* gm) {fgGeom = gm;}
   static  void                 SetSortMode(SortMode_t md)   {fgMode &= ~kSortBits; fgMode |= md;}

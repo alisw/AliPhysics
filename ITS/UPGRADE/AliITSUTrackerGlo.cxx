@@ -40,16 +40,6 @@
 using namespace AliITSUAux;
 using namespace TMath;
 
-#define _FILL_CONTROL_HISTOS_
-
-#ifdef  _FILL_CONTROL_HISTOS_
-//
-TObjArray* cHistoArr;
-enum {kHResY=0,kHResYP=10,kHResZ=20,kHResZP=30,kHChi2Cl=40};
-enum {kHistosPhase=100};
-//
-#endif
-
 //----------------- tmp stuff -----------------
 
 ClassImp(AliITSUTrackerGlo)
@@ -80,6 +70,9 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fCurrTrackCond(0)
   ,fTrackPhase(-1)
   ,fClInfo(0)
+#ifdef  _FILL_CONTROL_HISTOS_
+  ,fCHistoArr(0)
+#endif
 {
   // Default constructor
   if (rec) Init(rec);
@@ -93,16 +86,16 @@ AliITSUTrackerGlo::~AliITSUTrackerGlo()
   delete[] fClInfo;
   //
 #ifdef  _FILL_CONTROL_HISTOS_
-  if (cHistoArr) {
+  if (fCHistoArr) {
     TFile* ctrOut = TFile::Open("itsuControlHistos.root","recreate");
     ctrOut->cd();
     AliInfo("Storing control histos");
-    cHistoArr->Print();
-    //    ctrOut->WriteObject(cHistoArr,"controlH","kSingleKey");
-    cHistoArr->Write();
+    fCHistoArr->Print();
+    //    ctrOut->WriteObject(fCHistoArr,"controlH","kSingleKey");
+    fCHistoArr->Write();
     ctrOut->Close();
     delete ctrOut;
-    cHistoArr = 0;
+    fCHistoArr = 0;
   }
 #endif 
   //
@@ -150,53 +143,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   SetTrackingPhase(kClus2Tracks);
   //
 #ifdef  _FILL_CONTROL_HISTOS_
-  //
-  if (!cHistoArr) { // create control histos
-    const int kNResDef=7;
-    const double kResDef[kNResDef]={0.05,0.05,0.3, 0.05,1,0.5,1.5};
-    cHistoArr = new TObjArray();
-    cHistoArr->SetOwner(kTRUE);
-    const double ptMax=10;
-    const double plMax=10;
-    const double chiMax=100;
-    const int nptbins=50;
-    const int nresbins=400;
-    const int nplbins=50;
-    const int nchbins=200;
-    int nblr = fITS->GetNLayersActive();
-    TString ttl;
-    for (int stp=0;stp<kNTrackingPhases;stp++) {
-      for (int ilr=0;ilr<nblr;ilr++) {
-	int hoffs = stp*kHistosPhase + ilr;
-	double mxdf = ilr>=kNResDef ? kResDef[kNResDef-1] : kResDef[ilr];
-	ttl = Form("S%d_residY%d",stp,ilr);
-	TH2F* hdy = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
-	cHistoArr->AddAtAndExpand(hdy,hoffs + kHResY);
-	hdy->SetDirectory(0);
-	//
-	ttl = Form("S%d_residYPull%d",stp,ilr);	
-	TH2F* hdyp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
-	cHistoArr->AddAtAndExpand(hdyp,hoffs + kHResYP);
-	hdyp->SetDirectory(0);
-	//
-	ttl = Form("S%d_residZ%d",stp,ilr);	
-	TH2F* hdz = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
-	cHistoArr->AddAtAndExpand(hdz,hoffs + kHResZ);
-	hdz->SetDirectory(0);
-	//
-	ttl = Form("S%d_residZPull%d",stp,ilr);		
-	TH2F* hdzp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
-	hdzp->SetDirectory(0);
-	cHistoArr->AddAtAndExpand(hdzp,hoffs + kHResZP);
-	//
-	ttl = Form("S%d_chi2Cl%d",stp,ilr);		
-	TH2F* hchi = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
-	hchi->SetDirectory(0);
-	cHistoArr->AddAtAndExpand(hchi,hoffs + kHChi2Cl);
-      }
-    }
-  }
-  //
+  if (!fCHistoArr) BookControlHistos();
 #endif
 
   TObjArray *trackConds = 0;
@@ -229,6 +176,8 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   if (fHypStore.GetSize()<nTrESD) fHypStore.Expand(nTrESD+100);
   //
   fITS->ProcessClusters();
+  //
+  FlagSplitClusters(); // tmp RS
   //
   for (int icnd=0;icnd<nTrackCond;icnd++) {
     fCurrTrackCond = (AliITSUTrackCond*)trackConds->UncheckedAt(icnd);
@@ -483,18 +432,38 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 	if (!ncl) continue;
 	seedT = seedUC;
 	//
-	// We need to propagate the seed to sensor on lrA staying the frame of the sensor from prev.layer,
+	// We need to propagate the seed to sensor on lrA staying in the frame of the sensor from prev.layer,
 	// since the transport matrix should be defined in this frame.
 	double xs; // X in the TF of current seed, corresponding to intersection with sensor plane
-	if (!seedT.GetTrackingXAtXAlpha(sens->GetXTF(),sens->GetPhiTF(),bz, xs)) continue;
-	if (!PropagateSeed(&seedT,xs,fCurrMass)) continue;
+	if (!seedT.GetTrackingXAtXAlpha(sens->GetXTF(),sens->GetPhiTF(),bz, xs)) {
+	  if (AliDebugLevelClass()>2) {
+	    printf("Failed on GetTrackingXAtXAlpha: X=%.4f alp=%.3f\n",sens->GetXTF(),sens->GetPhiTF());
+	    seedT.Print("etp");
+	  }
+	  continue;
+	}
+	if (xs<seedT.GetX()) {
+	  if (!PropagateSeed(&seedT,xs,fCurrMass)) continue;
+	}
+	else { // some low precision tracks may hit the sensor plane outside of the layer radius
+	  if (AliDebugLevelClass()>2) {
+	    if (!seedT.ContainsFake()) {
+	      printf("WRONG PROP on L%d, sens%d of %d: %.4f > %.4f\n",ila,isn,nsens,xs,seedT.GetX());
+	      sens->Print();
+	      seedT.Print("etp");	    
+	    }
+	  }
+	  if (!seedT.PropagateParamOnlyTo(xs,bz)) continue;
+	}
 	//	if (!seedT.PropagateToX(xs,bz)) continue;
 	//	if (!seedT.Rotate(sens->GetPhiTF())) continue;
 	if (!seedT.RotateToAlpha(sens->GetPhiTF())) continue;
 	//
 	int clID0 = sens->GetFirstClusterId();
 	for (int icl=ncl;icl--;) {
+	  //	  AliLog::SetClassDebugLevel("AliITSUTrackerGlo",10);
 	  int res = CheckCluster(&seedT,ila,clID0+icl);
+	  //	  AliLog::SetClassDebugLevel("AliITSUTrackerGlo", 0);
 	  //
 	  if (res==kStopSearchOnSensor) break;     // stop looking on this sensor
 	  if (res==kClusterNotMatching) continue;  // cluster does not match
@@ -769,7 +738,7 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
   double bz = GetBz();
   AliITSURecoLayer* lrA = fITS->GetLayerActive(ilrA);
   seed->GetXYZ(&fTrImpData[kTrXIn]);    // lab position at the entrance from above
-  static AliExternalTrackParam sc;   // seed copy for manipalitions
+  static AliExternalTrackParam sc;   // seed copy for manipulations
   sc = *seed;
   //
   fTrImpData[kTrPhiIn] = ATan2(fTrImpData[kTrYIn],fTrImpData[kTrXIn]);
@@ -846,12 +815,13 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   if (cl->GetLabel(0)>=0) {
     for (int i=0;i<3;i++) if (cl->GetLabel(i)>=0 && cl->GetLabel(i)==currLabel) {goodCl = kTRUE; break;}
   }
-  else goodCl = kTRUE;
+  Bool_t goodSeed = !track->ContainsFake();
   //
   if (TMath::Abs(cl->GetX())>kTolerX) { // if due to the misalingment X is large, propagate track only
     if (!track->PropagateParamOnlyTo(track->GetX()+cl->GetX(),GetBz())) {
-      if (goodCl && AliDebugLevelClass()>2) {
-	AliDebug(2,Form("Lost good cl: Failed propagation. |ESDtrack#%d (MClb:%d)",fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
+      if (goodCl&&goodSeed && AliDebugLevelClass()>2 ) {
+	AliDebug(2,Form("Lost good cl on L:%d failed propagation. |ESDtrack#%d (MClb:%d)",lr,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
+	track->Print("etp");
 	cl->Print();
       }
       return kStopSearchOnSensor; // propagation failed, seedT is intact
@@ -863,14 +833,14 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
 #ifdef  _FILL_CONTROL_HISTOS_
   int hcOffs = fTrackPhase*kHistosPhase + lr;
   double htrPt=-1;
-  if (goodCl && cHistoArr && track->GetChi2Penalty()<1e-5 && !track->ContainsFake()/* && track->Charge()>0*/) {
+  if (goodCl&&goodSeed && fCHistoArr /*&& track->GetChi2Penalty()<1e-5*/) {
     htrPt = track->Pt();
-    ((TH2*)cHistoArr->At(kHResY+hcOffs))->Fill(htrPt,dy);
-    ((TH2*)cHistoArr->At(kHResZ+hcOffs))->Fill(htrPt,dz);
+    ((TH2*)fCHistoArr->At(kHResY+hcOffs))->Fill(htrPt,dy);
+    ((TH2*)fCHistoArr->At(kHResZ+hcOffs))->Fill(htrPt,dz);
     double errY = track->GetSigmaY2();
     double errZ = track->GetSigmaZ2();
-    if (errY>0) ((TH2*)cHistoArr->At(kHResYP+hcOffs))->Fill(htrPt,dy/Sqrt(errY));
-    if (errZ>0) ((TH2*)cHistoArr->At(kHResZP+hcOffs))->Fill(htrPt,dz/Sqrt(errZ));
+    if (errY>0) ((TH2*)fCHistoArr->At(kHResYP+hcOffs))->Fill(htrPt,dy/Sqrt(errY));
+    if (errZ>0) ((TH2*)fCHistoArr->At(kHResZP+hcOffs))->Fill(htrPt,dz/Sqrt(errZ));
   }
 #endif  
   //
@@ -878,9 +848,11 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   double tol2 = (track->GetSigmaY2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(lr))*
     AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY(); // RS TOOPTIMIZE
   if (dy2>tol2) {                          // the clusters are sorted in Z(col) then in Y(row). 
-    if (goodCl && AliDebugLevelClass()>2) {    
-      AliDebug(2,Form("Loose good cl: dy2=%e > tol2=%e |ESDtrack#%d (MClb:%d)",dy2,tol2,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
+    if (goodCl&&goodSeed && AliDebugLevelClass()>2) {    
+      AliDebug(2,Form("Lost good cl: dy2=%e > tol2=%e |ESDtrack#%d (MClb:%d)",dy2,tol2,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
+      track->Print("etp");
       cl->Print();
+      PrintSeedClusters(track);
     }
     if (dy>0) return kStopSearchOnSensor;  // No chance that other cluster of this sensor will match (all Y's will be even larger)
     else      return kClusterNotMatching;   // Other clusters may match
@@ -889,9 +861,11 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   tol2 = (track->GetSigmaZ2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(lr))*
     AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ(); // RS TOOPTIMIZE
   if (dz2>tol2) {
-    if (goodCl && AliDebugLevelClass()>2) {
-      AliDebug(2,Form("Lost good cl: dz2=%e > tol2=%e |ESDtrack#%d (MClb:%d)",dz2,tol2,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
+    if (goodCl&&goodSeed && AliDebugLevelClass()>2) {
+      AliDebug(2,Form("Lost good cl on L:%d : dz2=%e > tol2=%e |ESDtrack#%d (MClb:%d)",lr,dz2,tol2,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
+      track->Print("etp");
       cl->Print();
+      PrintSeedClusters(track);
     }
     return kClusterNotMatching; // Other clusters may match
   }
@@ -903,27 +877,28 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   //
 #ifdef  _FILL_CONTROL_HISTOS_
   if (htrPt>0) {
-    ((TH2*)cHistoArr->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2);
+    ((TH2*)fCHistoArr->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2);
   }
 #endif
   //
   if (chi2>AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr)) {
-    if (goodCl && AliDebugLevelClass()>2) {
-      AliDebug(2,Form("Lost good cl: Chi2=%e > Chi2Max=%e |dy: %+.3e dz: %+.3e |ESDtrack#%d (MClb:%d)\n",
-		      chi2,AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr),dy,dz,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
+    if (goodCl&&goodSeed && AliDebugLevelClass()>2) {
+      AliDebug(2,Form("Lost good cl on L:%d : Chi2=%e > Chi2Max=%e |dy: %+.3e dz: %+.3e |ESDtrack#%d (MClb:%d)\n",
+		      lr,chi2,AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr),dy,dz,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
       track->Print("etp");
       cl->Print("");
+      PrintSeedClusters(track);
     }
     return kClusterNotMatching;
   }
   //
   track = NewSeedFromPool(track);  // input track will be reused, use its clone for updates
   if (!track->Update()) {
-    if (goodCl && AliDebugLevelClass()>2) {
-      AliDebug(2,"Lost good cluster: failed to update");
+    if (goodCl&&goodSeed && AliDebugLevelClass()>2) {
+      AliDebug(2,Form("Lost good cluster on L:%d : failed to update",lr));
       track->Print("etp");
       cl->Print("");
-      printf("Loose good cl: Failed update |"); 
+      PrintSeedClusters(track);
     }
     MarkSeedFree(track);
     return kClusterNotMatching;
@@ -1186,16 +1161,16 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
 #ifdef  _FILL_CONTROL_HISTOS_
       int hcOffs = fTrackPhase*kHistosPhase + ilrA;
       double htrPt=-1;
-      if (cHistoArr && trc->GetLabel()>=0/* && trc->Charge()>0*/) {
+      if (fCHistoArr && trc->GetLabel()>=0/* && trc->Charge()>0*/) {
 	htrPt = tmpTr.Pt();
 	double dy = clus->GetY()-tmpTr.GetY();
 	double dz = clus->GetZ()-tmpTr.GetZ();
-	((TH2*)cHistoArr->At(kHResY+hcOffs))->Fill(htrPt,dy);
-	((TH2*)cHistoArr->At(kHResZ+hcOffs))->Fill(htrPt,dz);
+	((TH2*)fCHistoArr->At(kHResY+hcOffs))->Fill(htrPt,dy);
+	((TH2*)fCHistoArr->At(kHResZ+hcOffs))->Fill(htrPt,dz);
 	double errY = tmpTr.GetSigmaY2();
 	double errZ = tmpTr.GetSigmaZ2();
-	if (errY>0) ((TH2*)cHistoArr->At(kHResYP+hcOffs))->Fill(htrPt,dy/Sqrt(errY));
-	if (errZ>0) ((TH2*)cHistoArr->At(kHResZP+hcOffs))->Fill(htrPt,dz/Sqrt(errZ));
+	if (errY>0) ((TH2*)fCHistoArr->At(kHResYP+hcOffs))->Fill(htrPt,dy/Sqrt(errY));
+	if (errZ>0) ((TH2*)fCHistoArr->At(kHResZP+hcOffs))->Fill(htrPt,dz/Sqrt(errZ));
       }
 #endif  
       //
@@ -1206,7 +1181,7 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
       }
 #ifdef  _FILL_CONTROL_HISTOS_
       if (htrPt>0) {
-	((TH2*)cHistoArr->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2);
+	((TH2*)fCHistoArr->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2);
       }
 #endif 
       if (AliDebugLevelClass()>1) {
@@ -1369,3 +1344,112 @@ void AliITSUTrackerGlo::ValidateAllowedCandidates(Int_t ilr, Int_t acceptMax)
   //
 }
 
+//__________________________________________________________________
+void AliITSUTrackerGlo::FlagSplitClusters()
+{
+  // set special bit on split clusters using MC info
+  for (int ilr=fITS->GetNLayersActive();ilr--;) {
+    int nsplit=0;
+    AliITSURecoLayer* lr = fITS->GetLayerActive(ilr);
+    for (int isn=lr->GetNSensors();isn--;) {
+      AliITSURecoSens* sens = lr->GetSensor(isn);
+      int nCl = sens->GetNClusters();
+      if (!nCl) continue;
+      int cl0 = sens->GetFirstClusterId();
+      for (int icl=nCl;icl--;) {
+	AliITSUClusterPix *cl = (AliITSUClusterPix*)lr->GetCluster(cl0+icl);
+	for (int icl1=icl;icl1--;) {
+	  AliITSUClusterPix *cl1 = (AliITSUClusterPix*)lr->GetCluster(cl0+icl1);
+	  if (cl->HasCommonTrack(cl1)) {
+	    if (!cl->IsSplit())  nsplit++;
+	    if (!cl1->IsSplit()) nsplit++;
+	    cl->SetSplit();
+	    cl1->SetSplit();
+	  }
+	}
+      }
+    }
+    AliInfo(Form("%4d out of %4d clusters are split",nsplit,lr->GetNClusters()));
+  }
+  //
+}
+
+//__________________________________________________________________
+Bool_t AliITSUTrackerGlo::ContainsSplitCluster(const AliITSUSeed* seed, Int_t maxSize)
+{
+  // check if the seed contains split cluster with size < maxSize
+  int lrID,clID;
+  if ( (clID=seed->GetLrCluster(lrID))>=0 ) {
+    AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
+    if (cl->IsSplit() && cl->GetNPix()<maxSize ) return kTRUE;
+  }
+  return seed->GetParent() ? ContainsSplitCluster((AliITSUSeed*)seed->GetParent(),maxSize) : kFALSE;
+  //
+}
+
+//__________________________________________________________________
+void AliITSUTrackerGlo::PrintSeedClusters(const AliITSUSeed* seed, Option_t* option)
+{
+  // print seeds clusters
+  int lrID,clID;
+  if ( (clID=seed->GetLrCluster(lrID))>=0 ) {
+    AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
+    cl->Print(option);
+  }
+  if (seed->GetParent()) PrintSeedClusters((AliITSUSeed*)seed->GetParent(), option);
+  //
+}
+
+#ifdef  _FILL_CONTROL_HISTOS_
+//__________________________________________________________________
+void AliITSUTrackerGlo::BookControlHistos()
+{
+  // book special control histos
+  if (!fCHistoArr) { // create control histos
+    const int kNResDef=7;
+    const double kResDef[kNResDef]={0.05,0.05,0.3, 0.05,1,0.5,1.5};
+    fCHistoArr = new TObjArray();
+    fCHistoArr->SetOwner(kTRUE);
+    const double ptMax=10;
+    const double plMax=10;
+    const double chiMax=100;
+    const int nptbins=50;
+    const int nresbins=400;
+    const int nplbins=50;
+    const int nchbins=200;
+    int nblr = fITS->GetNLayersActive();
+    TString ttl;
+    for (int stp=0;stp<kNTrackingPhases;stp++) {
+      for (int ilr=0;ilr<nblr;ilr++) {
+	int hoffs = stp*kHistosPhase + ilr;
+	double mxdf = ilr>=kNResDef ? kResDef[kNResDef-1] : kResDef[ilr];
+	ttl = Form("S%d_residY%d",stp,ilr);
+	TH2F* hdy = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
+	fCHistoArr->AddAtAndExpand(hdy,hoffs + kHResY);
+	hdy->SetDirectory(0);
+	//
+	ttl = Form("S%d_residYPull%d",stp,ilr);	
+	TH2F* hdyp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
+	fCHistoArr->AddAtAndExpand(hdyp,hoffs + kHResYP);
+	hdyp->SetDirectory(0);
+	//
+	ttl = Form("S%d_residZ%d",stp,ilr);	
+	TH2F* hdz = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
+	fCHistoArr->AddAtAndExpand(hdz,hoffs + kHResZ);
+	hdz->SetDirectory(0);
+	//
+	ttl = Form("S%d_residZPull%d",stp,ilr);		
+	TH2F* hdzp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
+	hdzp->SetDirectory(0);
+	fCHistoArr->AddAtAndExpand(hdzp,hoffs + kHResZP);
+	//
+	ttl = Form("S%d_chi2Cl%d",stp,ilr);		
+	TH2F* hchi = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
+	hchi->SetDirectory(0);
+	fCHistoArr->AddAtAndExpand(hchi,hoffs + kHChi2Cl);
+      }
+    }
+  }
+  //  
+}
+#endif
