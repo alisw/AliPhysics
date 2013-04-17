@@ -118,6 +118,18 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Double_t GetMinValueOfCorrelationProduct(Int_t cpi) const {return this->fMinValueOfCorrelationProduct[cpi];};
   void SetMaxValueOfCorrelationProduct(Int_t const cpi, Double_t const maxValue) {this->fMaxValueOfCorrelationProduct[cpi] = maxValue;};
   Double_t GetMaxValueOfCorrelationProduct(Int_t cpi) const {return this->fMaxValueOfCorrelationProduct[cpi];};
+  // min and max values of QvectorTerms:
+  void SetMinValueOfQvectorTerms(Int_t const qvti, Double_t const minValue) {this->fMinValueOfQvectorTerms[qvti] = minValue;};
+  Double_t GetMinValueOfQvectorTerms(Int_t qvti) const {return this->fMinValueOfQvectorTerms[qvti];};
+  void SetMaxValueOfQvectorTerms(Int_t const qvti, Double_t const maxValue) {this->fMaxValueOfQvectorTerms[qvti] = maxValue;};
+  Double_t GetMaxValueOfQvectorTerms(Int_t qvti) const {return this->fMaxValueOfQvectorTerms[qvti];};
+  // bootstrap:
+  void SetUseBootstrap(Bool_t const ub) {this->fUseBootstrap = ub;};
+  Bool_t GetUseBootstrap() const {return this->fUseBootstrap;};
+  void SetUseBootstrapVsM(Bool_t const ubVsM) {this->fUseBootstrapVsM = ubVsM;};
+  Bool_t GetUseBootstrapVsM() const {return this->fUseBootstrapVsM;};
+  void SetnSubsamples(Int_t const ns) {this->fnSubsamples = ns;};
+  Int_t GetnSubsamples() const {return this->fnSubsamples;};
 
  private:
   AliAnalysisTaskQCumulants(const AliAnalysisTaskQCumulants& aatqc);
@@ -170,8 +182,14 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Double_t fMaxValueOfCorrelation[4]; // max values of <2>, <4>, <6> and <8>
   Double_t fMinValueOfCorrelationProduct[1]; // min values of <2><4>, <2><6>, <2><8>, <4><6> etc. TBI add the other ones when needed first time
   Double_t fMaxValueOfCorrelationProduct[1]; // max values of <2><4>, <2><6>, <2><8>, <4><6> etc. TBI add the other ones when needed first time
+  Double_t fMinValueOfQvectorTerms[4]; // min value of Q-vector terms
+  Double_t fMaxValueOfQvectorTerms[4]; // max value of Q-vector terms
+  // Bootstrap:
+  Bool_t fUseBootstrap; // use bootstrap to estimate statistical spread
+  Bool_t fUseBootstrapVsM; // use bootstrap to estimate statistical spread for results vs M
+  Int_t fnSubsamples; // number of subsamples (SS), by default 10
   
-  ClassDef(AliAnalysisTaskQCumulants, 1); 
+  ClassDef(AliAnalysisTaskQCumulants, 2); 
 };
 
 //================================================================================================================

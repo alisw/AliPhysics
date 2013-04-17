@@ -16,7 +16,7 @@
 
 #include "TMatrixD.h"
 #include "TH2D.h"
-#include "TBits.h"
+#include "TRandom3.h"
 #include "AliFlowCommonConstants.h"
 
 class TObjArray;
@@ -49,6 +49,7 @@ class AliFlowAnalysisWithQCumulants{
   virtual void InitializeArraysForNestedLoops();
   virtual void InitializeArraysForMixedHarmonics();
   virtual void InitializeArraysForControlHistograms();
+  virtual void InitializeArraysForBootstrap();
   // 1.) method Init() and methods called within Init():
   virtual void Init();
     virtual void CrossCheckSettings();
@@ -65,12 +66,14 @@ class AliFlowAnalysisWithQCumulants{
     virtual void BookEverythingForNestedLoops();   
     virtual void BookEverythingForMixedHarmonics();
     virtual void BookEverythingForControlHistograms();
+    virtual void BookEverythingForBootstrap();
     virtual void StoreIntFlowFlags();
     virtual void StoreDiffFlowFlags();
     virtual void StoreFlagsForDistributions();   
     virtual void StoreHarmonic();
     virtual void StoreMixedHarmonicsFlags();
     virtual void StoreControlHistogramsFlags();
+    virtual void StoreBootstrapFlags();
   // 2.) method Make() and methods called within Make():
   virtual void Make(AliFlowEventSimple *anEvent);
     // 2a.) Common:
@@ -162,6 +165,8 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CrossCheckOtherDiffCorrelators(TString type, TString ptOrEta);
     // 3e.) Mixed harmonics:
     virtual void CalculateCumulantsMixedHarmonics(); 
+    // 3f.) Bootstrap:
+    virtual void CalculateCumulantsForBootstrap();
     
   // 4.)  method GetOutputHistograms() and methods called within GetOutputHistograms(): 
   virtual void GetOutputHistograms(TList *outputListHistos);
@@ -174,6 +179,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void GetPointersForNestedLoopsHistograms(); 
     virtual void GetPointersForMixedHarmonicsHistograms(); 
     virtual void GetPointersForControlHistograms(); 
+    virtual void GetPointersForBootstrap(); 
     
   // 5.) other methods:   
   TProfile* MakePtProjection(TProfile2D *profilePtEta) const;
@@ -421,6 +427,11 @@ class AliFlowAnalysisWithQCumulants{
   Double_t GetMinValueOfCorrelationProduct(Int_t cpi) const {return this->fMinValueOfCorrelationProduct[cpi];};
   void SetMaxValueOfCorrelationProduct(Int_t const cpi, Double_t const maxValue) {this->fMaxValueOfCorrelationProduct[cpi] = maxValue;};
   Double_t GetMaxValueOfCorrelationProduct(Int_t cpi) const {return this->fMaxValueOfCorrelationProduct[cpi];};
+  // min and max values of QvectorTerms:
+  void SetMinValueOfQvectorTerms(Int_t const qvti, Double_t const minValue) {this->fMinValueOfQvectorTerms[qvti] = minValue;};
+  Double_t GetMinValueOfQvectorTerms(Int_t qvti) const {return this->fMinValueOfQvectorTerms[qvti];};
+  void SetMaxValueOfQvectorTerms(Int_t const qvti, Double_t const maxValue) {this->fMaxValueOfQvectorTerms[qvti] = maxValue;};
+  Double_t GetMaxValueOfQvectorTerms(Int_t qvti) const {return this->fMaxValueOfQvectorTerms[qvti];};
 
   // x.) debugging and cross-checking:
   void SetNestedLoopsList(TList* const nllist) {this->fNestedLoopsList = nllist;};
@@ -515,6 +526,27 @@ class AliFlowAnalysisWithQCumulants{
   TH2D* GetCorrelationProduct2468VsMult(Int_t ci) const {return this->fCorrelationProduct2468VsMult[ci];};
   void SetQvectorTermsVsMult(TH2D* const qvtvm, Int_t const qvti) {this->fQvectorTermsVsMult[qvti] = qvtvm;};
   TH2D* GetQvectorTermsVsMult(Int_t qvti) const {return this->fQvectorTermsVsMult[qvti];};
+
+  // 11.) Bootstrap:
+  void SetBootstrapList(TList* const bl) {this->fBootstrapList = bl;};
+  void SetBootstrapProfilesList(TList* const bpl) {this->fBootstrapProfilesList = bpl;};
+  void SetBootstrapResultsList(TList* const brl) {this->fBootstrapResultsList = brl;};
+  void SetBootstrapFlags(TProfile* const bf) {this->fBootstrapFlags = bf;};
+  TProfile* GetBootstrapFlags() const {return this->fBootstrapFlags;}; 
+  void SetUseBootstrap(Bool_t const ub) {this->fUseBootstrap = ub;};
+  Bool_t GetUseBootstrap() const {return this->fUseBootstrap;};
+  void SetUseBootstrapVsM(Bool_t const ubVsM) {this->fUseBootstrapVsM = ubVsM;};
+  Bool_t GetUseBootstrapVsM() const {return this->fUseBootstrapVsM;};
+  void SetnSubsamples(Int_t const ns) {this->fnSubsamples = ns;};
+  Int_t GetnSubsamples() const {return this->fnSubsamples;};
+  void SetBootstrapCorrelations(TProfile2D* const bcp) {this->fBootstrapCorrelations = bcp;};
+  TProfile2D* GetBootstrapCorrelations() const {return this->fBootstrapCorrelations;}; 
+  void SetBootstrapCorrelationsVsM(TProfile2D* const bcpVsM, Int_t const qvti) {this->fBootstrapCorrelationsVsM[qvti] = bcpVsM;};
+  TProfile2D* GetBootstrapCorrelationsVsM(Int_t qvti) const {return this->fBootstrapCorrelationsVsM[qvti];};
+  void SetBootstrapCumulants(TH2D* const bc) {this->fBootstrapCumulants = bc;};
+  TH2D* GetBootstrapCumulants() const {return this->fBootstrapCumulants;}; 
+  void SetBootstrapCumulantsVsM(TH2D* const bcpVsM, Int_t const qvti) {this->fBootstrapCumulantsVsM[qvti] = bcpVsM;};
+  TH2D* GetBootstrapCumulantsVsM(Int_t qvti) const {return this->fBootstrapCumulantsVsM[qvti];};
 
  private:
   
@@ -721,6 +753,8 @@ class AliFlowAnalysisWithQCumulants{
   Double_t fMaxValueOfCorrelation[4]; // max values of <2>, <4>, <6> and <8>
   Double_t fMinValueOfCorrelationProduct[1]; // min values of <2><4>, <2><6>, <2><8>, <4><6> etc. TBI add the other ones when needed first time
   Double_t fMaxValueOfCorrelationProduct[1]; // max values of <2><4>, <2><6>, <2><8>, <4><6> etc. TBI add the other ones when needed first time
+  Double_t fMinValueOfQvectorTerms[4]; // MinValueOfQvectorTerms
+  Double_t fMaxValueOfQvectorTerms[4]; // MaxValueOfQvectorTerms
   
   // 7.) various:
   TList *fVariousList; // list to hold various unclassified objects (TBI: what a crazy name.... )
@@ -778,7 +812,6 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fMixedHarmonicEventWeights[2]; // sum of linear and quadratic event weights for mixed harmonics => [0=linear 1,1=quadratic]    
   TH2D *fMixedHarmonicProductOfEventWeights; // sum of products of event weights for mixed harmonics
   TProfile2D *fMixedHarmonicProductOfCorrelations; // averages of products of mixed harmonics correlations
-
   // 10.) Control histograms:
   //  10a.) list:
   TList *fControlHistogramsList; // list to hold all control histograms 
@@ -793,8 +826,26 @@ class AliFlowAnalysisWithQCumulants{
   TH2D *fCorrelationProduct2468VsMult[1]; // <2><4>, <2><6>, <2><8>, <4><6> etc. vs multiplicity (#RPs, #POIs or external)
                                           // TBI: added for the time being only <2><4>, the other ones will follow when needed 
   TH2D *fQvectorTermsVsMult[4]; // |Qn|^2/M, |Q2n|^2/M, |Qn|^4/(M(2M-1)), Re[Q2nQn^*Qn^*]/M, ... vs multiplicity (#RPs, #POIs or external)
+  // 11.) Bootstrap:
+  //  11a) lists:
+  TList *fBootstrapList; // list to hold all output objects for bootstrap 
+  TList *fBootstrapProfilesList; // list to hold all profiles for bootstrap
+  TList *fBootstrapResultsList; // list to hold all histograms for bootstrap 
+  //  11b) flags:
+  TProfile *fBootstrapFlags; // profile to hold all flags for mixed harmonics
+  Bool_t fUseBootstrap; // use bootstrap to estimate statistical spread
+  Bool_t fUseBootstrapVsM; // use bootstrap to estimate statistical spread for results vs M
+  Int_t fnSubsamples; // number of subsamples (SS), by default 10
+  TRandom3 *fRandom; // local random generator
+  //  11c) profiles: 
+  TProfile2D *fBootstrapCorrelations; // x-axis => <2>, <4>, <6>, <8>; y-axis => subsample # 
+  TProfile2D *fBootstrapCorrelationsVsM[4]; // index => <2>, <4>, <6>, <8>; x-axis => multiplicity; y-axis => subsample # 
+  //  11d) histograms:  
+  TH2D *fBootstrapCumulants; // x-axis => QC{2}, QC{4}, QC{6}, QC{8}; y-axis => subsample # 
+  TH2D *fBootstrapCumulantsVsM[4]; // index => QC{2}, QC{4}, QC{6}, QC{8}; x-axis => multiplicity; y-axis => subsample # 
 
-  ClassDef(AliFlowAnalysisWithQCumulants, 3);
+  ClassDef(AliFlowAnalysisWithQCumulants, 4);
+
 };
 
 //================================================================================================================

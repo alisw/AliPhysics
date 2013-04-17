@@ -13,16 +13,16 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
-/**************************************
- * analysis task for Q-cumulants      * 
- *                                    * 
- * authors: Naomi van der Kolk        *
- *           (kolk@nikhef.nl)         *  
- *          Raimond Snellings         *
- *           (snelling@nikhef.nl)     * 
- *          Ante Bilandzic            *
- *           (anteb@nikhef.nl)        * 
- * ***********************************/
+/***************************************
+ * analysis task for Q-cumulants       * 
+ *                                     * 
+ * authors: Naomi van der Kolk         *
+ *           (kolk@nikhef.nl)          *  
+ *          Raimond Snellings          *
+ *           (snelling@nikhef.nl)      * 
+ *          Ante Bilandzic             *
+ *           (abilandzic@gmail.com.nl) * 
+ * *************************************/
  
 class TFile;
 class TString;
@@ -80,7 +80,10 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fWeightsList(NULL),
  fMultiplicityWeight(NULL),
  fMultiplicityIs(AliFlowCommonConstants::kRP),
- fnBinsForCorrelations(10000)
+ fnBinsForCorrelations(10000),
+ fUseBootstrap(kFALSE),
+ fUseBootstrapVsM(kFALSE),
+ fnSubsamples(10)
 {
  // constructor
  AliDebug(2,"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t useParticleWeights)");
@@ -106,21 +109,31 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
   fPhiDistributionForOneEventSettings[p] = 0.;
  } 
 
- // Initialize default min and max values of correlations:
+ // b) Initialize default min and max values of correlations:
  //    (Remark: The default values bellow were chosen for v2=5% and M=500)
- fMinValueOfCorrelation[0] = -0.01; // <2>_min 
- fMaxValueOfCorrelation[0] = 0.04; // <2>_max 
- fMinValueOfCorrelation[1] = -0.00002; // <4>_min 
- fMaxValueOfCorrelation[1] = 0.00015; // <4>_max  
- fMinValueOfCorrelation[2] = -0.0000003; // <6>_min 
- fMaxValueOfCorrelation[2] = 0.0000006; // <6>_max  
- fMinValueOfCorrelation[3] = -0.000000006; // <8>_min 
- fMaxValueOfCorrelation[3] = 0.000000003; // <8>_max  
+ fMinValueOfCorrelation[0] = -0.015; // <2>_min 
+ fMaxValueOfCorrelation[0] = 0.03; // <2>_max 
+ fMinValueOfCorrelation[1] = -0.6e-3; // <4>_min 
+ fMaxValueOfCorrelation[1] = 0.07; // <4>_max  
+ fMinValueOfCorrelation[2] = -0.08e-3; // <6>_min 
+ fMaxValueOfCorrelation[2] = 0.015; // <6>_max  
+ fMinValueOfCorrelation[3] = -20.e-6; // <8>_min 
+ fMaxValueOfCorrelation[3] = 0.003; // <8>_max 
 
- // Initialize default min and max values of correlation products:
+ // c) Initialize default min and max values of correlation products:
  //    (Remark: The default values bellow were chosen for v2=5% and M=500)
- fMinValueOfCorrelationProduct[0] = -0.01; // <2><4>_min 
- fMaxValueOfCorrelationProduct[0] = 0.04; // <2><4>_max 
+ fMinValueOfCorrelationProduct[0] = -15.e-6; // <2><4>_min 
+ fMaxValueOfCorrelationProduct[0] = 0.02; // <2><4>_max 
+
+ // d) Initialize default min and max values of q-vector terms:
+ fMinValueOfQvectorTerms[0] = 0.;
+ fMaxValueOfQvectorTerms[0] = 30.;
+ fMinValueOfQvectorTerms[1] = 0.;
+ fMaxValueOfQvectorTerms[1] = 20.;
+ fMinValueOfQvectorTerms[2] = 0.;
+ fMaxValueOfQvectorTerms[2] = 200.;
+ fMinValueOfQvectorTerms[3] = -30.;
+ fMaxValueOfQvectorTerms[3] = 80.;
 
 }
 
@@ -164,7 +177,11 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fWeightsList(NULL),
  fMultiplicityWeight(NULL),
  fMultiplicityIs(AliFlowCommonConstants::kRP),
- fnBinsForCorrelations(0)
+ fnBinsForCorrelations(0), 
+ fUseBootstrap(kFALSE),
+ fUseBootstrapVsM(kFALSE),
+ fnSubsamples(10)
+
 {
  // Dummy constructor
   AliDebug(2,"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants()");
@@ -175,21 +192,31 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
   fPhiDistributionForOneEventSettings[p] = 0.;
  } 
  
- // Initialize default min and max values of correlations:
+ // b) Initialize default min and max values of correlations:
  //    (Remark: The default values bellow were chosen for v2=5% and M=500)
- fMinValueOfCorrelation[0] = -0.01; // <2>_min 
- fMaxValueOfCorrelation[0] = 0.04; // <2>_max 
- fMinValueOfCorrelation[1] = -0.00002; // <4>_min 
- fMaxValueOfCorrelation[1] = 0.00015; // <4>_max  
- fMinValueOfCorrelation[2] = -0.0000003; // <6>_min 
- fMaxValueOfCorrelation[2] = 0.0000006; // <6>_max  
- fMinValueOfCorrelation[3] = -0.000000006; // <8>_min 
- fMaxValueOfCorrelation[3] = 0.000000003; // <8>_max 
+ fMinValueOfCorrelation[0] = -0.015; // <2>_min 
+ fMaxValueOfCorrelation[0] = 0.03; // <2>_max 
+ fMinValueOfCorrelation[1] = -0.6e-3; // <4>_min 
+ fMaxValueOfCorrelation[1] = 0.07; // <4>_max  
+ fMinValueOfCorrelation[2] = -0.08e-3; // <6>_min 
+ fMaxValueOfCorrelation[2] = 0.015; // <6>_max  
+ fMinValueOfCorrelation[3] = -20.e-6; // <8>_min 
+ fMaxValueOfCorrelation[3] = 0.003; // <8>_max 
 
- // Initialize default min and max values of correlation products:
+ // c) Initialize default min and max values of correlation products:
  //    (Remark: The default values bellow were chosen for v2=5% and M=500)
- fMinValueOfCorrelationProduct[0] = -0.01; // <2><4>_min 
- fMaxValueOfCorrelationProduct[0] = 0.04; // <2><4>_max 
+ fMinValueOfCorrelationProduct[0] = -15.e-6; // <2><4>_min 
+ fMaxValueOfCorrelationProduct[0] = 0.02; // <2><4>_max 
+
+ // d) Initialize default min and max values of q-vector terms:
+ fMinValueOfQvectorTerms[0] = 0.;
+ fMaxValueOfQvectorTerms[0] = 30.;
+ fMinValueOfQvectorTerms[1] = 0.;
+ fMaxValueOfQvectorTerms[1] = 20.;
+ fMinValueOfQvectorTerms[2] = 0.;
+ fMaxValueOfQvectorTerms[2] = 200.;
+ fMinValueOfQvectorTerms[3] = -30.;
+ fMaxValueOfQvectorTerms[3] = 80.;
 
 }
 
@@ -274,6 +301,18 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
   fQC->SetMinValueOfCorrelationProduct(cpi,fMinValueOfCorrelationProduct[cpi]);
   fQC->SetMaxValueOfCorrelationProduct(cpi,fMaxValueOfCorrelationProduct[cpi]);
  } 
+
+ // Initialize default min and max values of Q-vector terms: 
+ for(Int_t ci=0;ci<4;ci++)
+ {
+  fQC->SetMinValueOfQvectorTerms(ci,fMinValueOfQvectorTerms[ci]);
+  fQC->SetMaxValueOfQvectorTerms(ci,fMaxValueOfQvectorTerms[ci]);
+ }  
+
+ // Bootstrap:
+ fQC->SetUseBootstrap(fUseBootstrap);
+ fQC->SetUseBootstrapVsM(fUseBootstrapVsM);
+ fQC->SetnSubsamples(fnSubsamples);
 
  fQC->Init();
  
