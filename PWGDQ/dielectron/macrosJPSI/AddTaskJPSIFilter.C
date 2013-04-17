@@ -21,7 +21,7 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kTRUE, Bool_t hasMC_aod = kF
   //gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigBJpsi_ff_PbPbFilter.C");
   //  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPbFilter.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_nano_PbPb.C");
-  AliDielectron *jpsi=ConfigBJpsi_ff_PbPbFilter(0,hasMC);
+  AliDielectron *jpsi=ConfigJpsi_nano_PbPb(0,hasMC);
   
   if(isAOD) {
     //add options to AliAODHandler to duplicate input event
