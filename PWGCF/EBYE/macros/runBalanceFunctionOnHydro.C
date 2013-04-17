@@ -51,7 +51,8 @@ Double_t gPtMax = 20.0;
 //========================================================//
 
 
-void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pchrist/Therminator/pA/ChargeBalancing/Centrality1/lhyquid3v-LHCpPb5020s3.1Ti319t0.20Tf150e001/", Int_t aEventFiles = 2) {
+void runBalanceFunctionOnHydro(TString aEventDir = ".", 
+			       Int_t aEventFiles = 9) {
   //Macro that reads the themrinator events
   //Author: Panos.Christakoglou@nikhef.nl
   // Time:
@@ -184,7 +185,7 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
 
   //========================================================//
   //Fill the TChain with the files in the directory
-  for(Int_t iFile = 1; iFile <= 9; iFile++) {
+  for(Int_t iFile = 1; iFile <= aEventFiles; iFile++) {
     TString filename = aEventDir.Data();
     filename += "/event00"; filename += iFile;
     filename += ".root";
@@ -346,9 +347,23 @@ void runBalanceFunctionOnHydro(TString aEventDir = "/glusterfs/alice1/alice2/pch
   //========================================================//
   //Output file
   TFile *f = TFile::Open("AnalysisResults.root","recreate");
-  fList->Write("listQA",TObject::kSingleKey);
-  fListBF->Write("listBF",TObject::kSingleKey);
-  if(gRunMixing) fListBFM->Write("listBFMixed",TObject::kSingleKey);
+   TDirectoryFile *dir = new TDirectoryFile("PWGCFEbyE.outputBalanceFunctionPsiAnalysis","PWGCFEbyE.outputBalanceFunctionPsiAnalysis");
+  
+  fList->SetName("listQA");
+  fList->SetOwner(kTRUE);
+  dir->Add(fList);
+
+  fListBF->SetName("listBF");
+  fListBF->SetOwner(kTRUE);
+  dir->Add(fListBF);
+
+  if(gRunMixing) {
+    fListBFM->SetName("listBFMixed");
+    fListBFM->SetOwner(kTRUE);
+    dir->Add(fListBFM);
+  }
+  
+  dir->Write(dir->GetName(),TObject::kSingleKey);
   f->Close();  
   //========================================================//
 

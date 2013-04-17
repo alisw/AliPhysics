@@ -19,7 +19,7 @@ Double_t gProtonTemperature = 0.2; //in GeV
 
 //==============Flow values==============//
 Double_t gDirectedFlow = 0.0;
-Double_t gEllipticFlow = 0.07;
+Double_t gEllipticFlow = 0.2;
 Double_t gTriangularFlow = 0.0;
 Double_t gQuandrangularFlow = 0.0;
 Double_t gPentangularFlow = 0.0;
