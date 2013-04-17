@@ -949,7 +949,7 @@ void AliPerformanceEff::Analyse()
   if(GetAnalysisMode() != 5) {
 
   fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.89); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.);   // pt range  // FIXME maybe remove since range is defined in THnSparse 
+  fEffHisto->GetAxis(2)->SetRangeUser(0.1,19.99);   // pt range  // FIXME maybe remove since range is defined in THnSparse 
 
   // rec efficiency vs pt
   fEffHisto->GetAxis(3)->SetRangeUser(0.,3.99);  // reconstructed 
@@ -1021,9 +1021,9 @@ void AliPerformanceEff::Analyse()
   // efficiency vs eta
   //
 
-  fEffHisto->GetAxis(0)->SetRangeUser(-1.5,1.5); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.); // pt range
-  fEffHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
+  fEffHisto->GetAxis(0)->SetRangeUser(-1.5,1.49); // eta range
+  fEffHisto->GetAxis(2)->SetRangeUser(0.1,19.99); // pt range
+  fEffHisto->GetAxis(5)->SetRangeUser(0.,1.0);   // all
 
   // rec efficiency vs eta
   fEffHisto->GetAxis(3)->SetRangeUser(0.,4.);  // reconstructed 
@@ -1096,8 +1096,8 @@ void AliPerformanceEff::Analyse()
   // efficiency vs phi
   //
 
-  fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.9); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.1,20.); // pt range
+  fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.89); // eta range
+  fEffHisto->GetAxis(2)->SetRangeUser(0.1,19.99); // pt range
   fEffHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
 
   // rec efficiency vs phi
@@ -1168,9 +1168,9 @@ void AliPerformanceEff::Analyse()
   }
   else {
   // 
-  Float_t minEta=-1.5, maxEta=1.5;
+  Float_t minEta=-1.5, maxEta=1.49;
   Float_t minR=0.0, maxR=150.0;
-  Float_t minPt=0.10, maxPt=20.0;
+  Float_t minPt=0.10, maxPt=19.99;
 
   // mother eta range
   fEffSecHisto->GetAxis(8)->SetRangeUser(minEta,maxEta);
