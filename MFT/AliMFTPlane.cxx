@@ -64,7 +64,8 @@ AliMFTPlane::AliMFTPlane():
   fActiveElements(0),
   fReadoutElements(0),
   fSupportElements(0),
-  fHasPixelRectangularPatternAlongY(kFALSE)
+  fHasPixelRectangularPatternAlongY(kFALSE),
+  fPlaneIsOdd(kFALSE)
 {
 
   // default constructor
@@ -93,7 +94,8 @@ AliMFTPlane::AliMFTPlane(const Char_t *name, const Char_t *title):
   fActiveElements(0),
   fReadoutElements(0),
   fSupportElements(0),
-  fHasPixelRectangularPatternAlongY(kFALSE)
+  fHasPixelRectangularPatternAlongY(kFALSE),
+  fPlaneIsOdd(kFALSE)
 {
 
   // constructor
@@ -125,10 +127,11 @@ AliMFTPlane::AliMFTPlane(const AliMFTPlane& plane):
   fEquivalentSilicon(plane.fEquivalentSilicon),
   fEquivalentSiliconBeforeFront(plane.fEquivalentSiliconBeforeFront),
   fEquivalentSiliconBeforeBack(plane.fEquivalentSiliconBeforeBack),
-fActiveElements(0),
-fReadoutElements(0),
-fSupportElements(0),
-fHasPixelRectangularPatternAlongY(plane.fHasPixelRectangularPatternAlongY)
+  fActiveElements(0),
+  fReadoutElements(0),
+  fSupportElements(0),
+  fHasPixelRectangularPatternAlongY(plane.fHasPixelRectangularPatternAlongY),
+  fPlaneIsOdd(plane.fPlaneIsOdd)
 {
 
   // copy constructor
@@ -207,6 +210,7 @@ AliMFTPlane& AliMFTPlane::operator=(const AliMFTPlane& plane) {
     fSupportElements = new TClonesArray(*(plane.fSupportElements));
     fSupportElements -> SetOwner(kTRUE);
     fHasPixelRectangularPatternAlongY = plane.fHasPixelRectangularPatternAlongY;
+    fPlaneIsOdd                       = plane.fPlaneIsOdd;
 
   }
   
@@ -250,12 +254,16 @@ Bool_t AliMFTPlane::Init(Int_t    planeNumber,
 //   }
   
   if (fRMax < fRMinSupport+fHeightActive) fRMax = fRMinSupport + fHeightActive;
-  
+
+  Int_t nLaddersWithinPipe = Int_t(fRMinSupport/(fHeightActive-fActiveSuperposition));
+  if (fRMinSupport-nLaddersWithinPipe*(fHeightActive-fActiveSuperposition) > 0.5*(fHeightActive-2*fActiveSuperposition)) fPlaneIsOdd = kTRUE;
+  else fPlaneIsOdd = kFALSE;
+
   fRMax = fRMinSupport + (fHeightActive-fActiveSuperposition) * 
     (Int_t((fRMax-fRMinSupport-fHeightActive)/(fHeightActive-fActiveSuperposition))+1) + fHeightActive;
-  
+
   fRMaxSupport = TMath::Sqrt(fHeightActive*(2.*rMax-fHeightActive) + fRMax*fRMax) + fSupportExtMargin;
- 
+   
   return kTRUE;
  
 }
@@ -266,6 +274,211 @@ Bool_t AliMFTPlane::CreateStructure() {
 
   Int_t nBins[3]={0};
   Double_t minPosition[3]={0}, maxPosition[3]={0};
+  
+  // ------------------- det elements: active + readout ----------------------------------
+
+  // 1st Section : below and above the beam pipe
+
+  Double_t lowEdgeActive = -1.*fRMax;
+  Double_t supEdgeActive = lowEdgeActive + fHeightActive;
+  Double_t zMinFront = fZCenter - 0.5*fThicknessSupport - fThicknessActive;
+  Double_t zMinBack  = fZCenter + 0.5*fThicknessSupport;
+  Double_t zMin = 0.;
+  Bool_t isFront = kTRUE;
+  
+  while (lowEdgeActive < 0) {
+    
+    Double_t extLimitAtLowEdgeActive = TMath::Sqrt((fRMax-TMath::Abs(lowEdgeActive)) * TMath::Abs(2*fRMax - (fRMax-TMath::Abs(lowEdgeActive))));
+    Double_t extLimitAtSupEdgeActive = TMath::Sqrt((fRMax-TMath::Abs(supEdgeActive)) * TMath::Abs(2*fRMax - (fRMax-TMath::Abs(supEdgeActive))));
+
+    // creating new det element: active + readout
+    
+    Double_t extLimitDetElem = TMath::Max(extLimitAtLowEdgeActive, extLimitAtSupEdgeActive);
+    
+    if (supEdgeActive<-1.*fRMinSupport+0.01 || lowEdgeActive>1.*fRMinSupport-0.01) {     // single element covering the row
+      
+      nBins[0] = TMath::Nint(2.*extLimitDetElem/fPixelSizeX);
+      nBins[1] = TMath::Nint(fHeightActive/fPixelSizeY);
+      nBins[2] = 1;
+
+      // element below the pipe
+      
+      if (isFront) zMin = zMinFront;
+      else         zMin = zMinBack;
+
+      minPosition[0] = -1.*extLimitDetElem;
+      minPosition[1] = lowEdgeActive;
+      minPosition[2] = zMin;
+      
+      maxPosition[0] = +1.*extLimitDetElem;
+      maxPosition[1] = supEdgeActive;
+      maxPosition[2] = zMin+fThicknessActive; 
+      
+      new ((*fActiveElements)[fActiveElements->GetEntries()]) THnSparseC(Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									 Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									 3, nBins, minPosition, maxPosition);
+
+      minPosition[1] = lowEdgeActive-fHeightReadout;
+      maxPosition[1] = lowEdgeActive;
+      
+      new ((*fReadoutElements)[fReadoutElements->GetEntries()]) THnSparseC(Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									   Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									   3, nBins, minPosition, maxPosition);
+
+      // specular element above the pipe
+
+      if (fPlaneIsOdd) {
+	if (isFront) zMin = zMinBack;
+	else         zMin = zMinFront;
+      }
+
+      minPosition[0] = -1.*extLimitDetElem;
+      minPosition[1] = -1.*supEdgeActive;
+      minPosition[2] = zMin;
+      
+      maxPosition[0] = +1.*extLimitDetElem;
+      maxPosition[1] = -1.*lowEdgeActive;
+      maxPosition[2] = zMin+fThicknessActive; 
+      
+      new ((*fActiveElements)[fActiveElements->GetEntries()]) THnSparseC(Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									 Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									 3, nBins, minPosition, maxPosition);
+
+      minPosition[1] = -1.*lowEdgeActive;
+      maxPosition[1] = -1.*(lowEdgeActive-fHeightReadout);
+
+      new ((*fReadoutElements)[fReadoutElements->GetEntries()]) THnSparseC(Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									   Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									   3, nBins, minPosition, maxPosition);
+
+    }
+    
+    else {     // two elements covering the row
+      
+      Double_t intLimitAtLowEdge = 0., intLimitAtSupEdge = 0.;
+      if (fRMinSupport-TMath::Abs(lowEdgeActive)>0.) intLimitAtLowEdge = TMath::Sqrt((fRMinSupport-TMath::Abs(lowEdgeActive)) * TMath::Abs(2*fRMinSupport - (fRMinSupport-TMath::Abs(lowEdgeActive))));
+      if (fRMinSupport-TMath::Abs(supEdgeActive)>0.) intLimitAtSupEdge = TMath::Sqrt((fRMinSupport-TMath::Abs(supEdgeActive)) * TMath::Abs(2*fRMinSupport - (fRMinSupport-TMath::Abs(supEdgeActive))));
+      Double_t intLimitDetElem = TMath::Max(intLimitAtLowEdge, intLimitAtSupEdge);
+      
+      nBins[0] = TMath::Nint((extLimitDetElem-intLimitDetElem)/fPixelSizeX);
+      nBins[1] = TMath::Nint(fHeightActive/fPixelSizeY);
+      nBins[2] = 1;
+      
+      // left element: below the beam pipe
+      
+      if (isFront) zMin = zMinFront;
+      else         zMin = zMinBack;
+
+      minPosition[0] = -1.*extLimitDetElem;
+      minPosition[1] = lowEdgeActive;
+      minPosition[2] = zMin;
+      
+      maxPosition[0] = -1.*intLimitDetElem;
+      maxPosition[1] = supEdgeActive;
+      maxPosition[2] = zMin+fThicknessActive; 
+      
+      new ((*fActiveElements)[fActiveElements->GetEntries()]) THnSparseC(Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									 Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									 3, nBins, minPosition, maxPosition);	
+      
+      minPosition[1] = lowEdgeActive-fHeightReadout;
+      maxPosition[1] = lowEdgeActive;
+      
+      new ((*fReadoutElements)[fReadoutElements->GetEntries()]) THnSparseC(Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									   Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									   3, nBins, minPosition, maxPosition);
+
+      // left element: above the beam pipe
+      
+      if (supEdgeActive < 0.5*fHeightActive) {
+	
+	if (fPlaneIsOdd) {
+	  if (isFront) zMin = zMinBack;
+	  else         zMin = zMinFront;
+	}
+	
+	minPosition[0] = -1.*extLimitDetElem;
+	minPosition[1] = -1.*supEdgeActive;
+	minPosition[2] = zMin;
+	
+	maxPosition[0] = -1.*intLimitDetElem;
+	maxPosition[1] = -1.*lowEdgeActive;
+	maxPosition[2] = zMin+fThicknessActive; 
+	
+	new ((*fActiveElements)[fActiveElements->GetEntries()]) THnSparseC(Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									   Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									   3, nBins, minPosition, maxPosition);	
+	
+	minPosition[1] = -1.*lowEdgeActive;
+	maxPosition[1] = -1.*(lowEdgeActive-fHeightReadout);
+	
+	new ((*fReadoutElements)[fReadoutElements->GetEntries()]) THnSparseC(Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									     Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									     3, nBins, minPosition, maxPosition);
+      
+      }
+
+      // right element: below the beam pipe
+      
+      if (isFront) zMin = zMinFront;
+      else         zMin = zMinBack;
+
+      minPosition[0] = +1.*intLimitDetElem;
+      minPosition[1] = lowEdgeActive;
+      minPosition[2] = zMin;
+      
+      maxPosition[0] = +1.*extLimitDetElem;
+      maxPosition[1] = supEdgeActive;
+      maxPosition[2] = zMin+fThicknessActive; 
+      
+      new ((*fActiveElements)[fActiveElements->GetEntries()]) THnSparseC(Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									 Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									 3, nBins, minPosition, maxPosition);	
+      
+      minPosition[1] = lowEdgeActive-fHeightReadout;
+      maxPosition[1] = lowEdgeActive;
+
+      new ((*fReadoutElements)[fReadoutElements->GetEntries()]) THnSparseC(Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									   Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									   3, nBins, minPosition, maxPosition);
+
+      // right element: above the beam pipe
+      
+      if (supEdgeActive < 0.5*fHeightActive) {
+
+	if (fPlaneIsOdd) {
+	  if (isFront) zMin = zMinBack;
+	  else         zMin = zMinFront;
+	}
+	
+	minPosition[0] = +1.*intLimitDetElem;
+	minPosition[1] = -1.*supEdgeActive;
+	minPosition[2] = zMin;
+	
+	maxPosition[0] = +1.*extLimitDetElem;
+	maxPosition[1] = -1.*lowEdgeActive;
+	maxPosition[2] = zMin+fThicknessActive; 
+	
+	new ((*fActiveElements)[fActiveElements->GetEntries()]) THnSparseC(Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									   Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
+									   3, nBins, minPosition, maxPosition);	
+	
+	minPosition[1] = -1.*lowEdgeActive;
+	maxPosition[1] = -1.*(lowEdgeActive-fHeightReadout);
+	
+	new ((*fReadoutElements)[fReadoutElements->GetEntries()]) THnSparseC(Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									     Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
+									     3, nBins, minPosition, maxPosition);
+
+      }
+      
+    }
+    
+    lowEdgeActive += fHeightActive - fActiveSuperposition;
+    supEdgeActive = lowEdgeActive + fHeightActive;
+    isFront = !isFront;
+    
+  }
   
   // ------------------- support element -------------------------------------------------
   
@@ -285,131 +498,8 @@ Bool_t AliMFTPlane::CreateStructure() {
 								       Form("MFTSupportElemHist_%02d%03d", fPlaneNumber, fSupportElements->GetEntries()), 
 								       3, nBins, minPosition, maxPosition);
 
-  // ------------------- det elements: active + readout ----------------------------------
-  
-  Double_t lowEdgeActive = -1.*fRMax;
-  Double_t supEdgeActive = lowEdgeActive + fHeightActive;
-  Double_t zMin = 0.;
-  Bool_t isFront = kTRUE;
-  
-  while (supEdgeActive < fRMax+0.01) {
-    
-    if (isFront) zMin = fZCenter - 0.5*fThicknessSupport - fThicknessActive;
-    else         zMin = fZCenter + 0.5*fThicknessSupport;
-    
-    Double_t extLimitAtLowEdgeActive = TMath::Sqrt((fRMax-TMath::Abs(lowEdgeActive)) * TMath::Abs(2*fRMax - (fRMax-TMath::Abs(lowEdgeActive))));
-    Double_t extLimitAtSupEdgeActive = TMath::Sqrt((fRMax-TMath::Abs(supEdgeActive)) * TMath::Abs(2*fRMax - (fRMax-TMath::Abs(supEdgeActive))));
-    
-    // creating new det element: active + readout
-    
-    Double_t extLimitDetElem = TMath::Max(extLimitAtLowEdgeActive, extLimitAtSupEdgeActive);
-    
-    if (supEdgeActive<-1.*fRMinSupport+0.01 || lowEdgeActive>1.*fRMinSupport-0.01) {     // single element covering the row
-      
-      nBins[0] = TMath::Nint(2.*extLimitDetElem/fPixelSizeX);
-      nBins[1] = TMath::Nint(fHeightActive/fPixelSizeY);
-      nBins[2] = 1;
-      
-      minPosition[0] = -1.*extLimitDetElem;
-      minPosition[1] = lowEdgeActive;
-      minPosition[2] = zMin;
-      
-      maxPosition[0] = +1.*extLimitDetElem;
-      maxPosition[1] = supEdgeActive;
-      maxPosition[2] = zMin+fThicknessActive; 
-      
-      new ((*fActiveElements)[fActiveElements->GetEntries()]) THnSparseC(Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
-									 Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
-									 3, nBins, minPosition, maxPosition);
-      
-      if (supEdgeActive>0.) {
-	minPosition[1] = supEdgeActive;
-	maxPosition[1] = supEdgeActive+fHeightReadout;
-      }
-      else {
-	minPosition[1] = lowEdgeActive-fHeightReadout;
-	maxPosition[1] = lowEdgeActive;
-      }
-      
-      new ((*fReadoutElements)[fReadoutElements->GetEntries()]) THnSparseC(Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
-									   Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
-									   3, nBins, minPosition, maxPosition);
-      
-    }
-    
-    else {     // two elements covering the row
-      
-      Double_t intLimitAtLowEdge = 0., intLimitAtSupEdge = 0.;
-      if (fRMinSupport-TMath::Abs(lowEdgeActive)>0.) intLimitAtLowEdge = TMath::Sqrt((fRMinSupport-TMath::Abs(lowEdgeActive)) * TMath::Abs(2*fRMinSupport - (fRMinSupport-TMath::Abs(lowEdgeActive))));
-      if (fRMinSupport-TMath::Abs(supEdgeActive)>0.) intLimitAtSupEdge = TMath::Sqrt((fRMinSupport-TMath::Abs(supEdgeActive)) * TMath::Abs(2*fRMinSupport - (fRMinSupport-TMath::Abs(supEdgeActive))));
-      Double_t intLimitDetElem = TMath::Max(intLimitAtLowEdge, intLimitAtSupEdge);
-      
-      nBins[0] = TMath::Nint((extLimitDetElem-intLimitDetElem)/fPixelSizeX);
-      nBins[1] = TMath::Nint(fHeightActive/fPixelSizeY);
-      nBins[2] = 1;
-      
-      // left element
-      
-      minPosition[0] = -1.*extLimitDetElem;
-      minPosition[1] = lowEdgeActive;
-      minPosition[2] = zMin;
-      
-      maxPosition[0] = -1.*intLimitDetElem;
-      maxPosition[1] = supEdgeActive;
-      maxPosition[2] = zMin+fThicknessActive; 
-      
-      new ((*fActiveElements)[fActiveElements->GetEntries()]) THnSparseC(Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
-									 Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
-									 3, nBins, minPosition, maxPosition);	
-      
-      if (supEdgeActive>0.) {
-	minPosition[1] = supEdgeActive;
-	maxPosition[1] = supEdgeActive+fHeightReadout;
-      }
-      else {
-	minPosition[1] = lowEdgeActive-fHeightReadout;
-	maxPosition[1] = lowEdgeActive;
-      }
-      
-      new ((*fReadoutElements)[fReadoutElements->GetEntries()]) THnSparseC(Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
-									   Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
-									   3, nBins, minPosition, maxPosition);
-      
-      // right element
-      
-      minPosition[0] = +1.*intLimitDetElem;
-      minPosition[1] = lowEdgeActive;
-      minPosition[2] = zMin;
-      
-      maxPosition[0] = +1.*extLimitDetElem;
-      maxPosition[1] = supEdgeActive;
-      maxPosition[2] = zMin+fThicknessActive; 
-      
-      new ((*fActiveElements)[fActiveElements->GetEntries()]) THnSparseC(Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
-									 Form("MFTActiveElemHist_%02d%03d", fPlaneNumber, fActiveElements->GetEntries()), 
-									 3, nBins, minPosition, maxPosition);	
-      
-      if (supEdgeActive>0.) {
-	minPosition[1] = supEdgeActive;
-	maxPosition[1] = supEdgeActive+fHeightReadout;
-      }
-      else {
-	minPosition[1] = lowEdgeActive-fHeightReadout;
-	maxPosition[1] = lowEdgeActive;
-      }
-      
-      new ((*fReadoutElements)[fReadoutElements->GetEntries()]) THnSparseC(Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
-									   Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
-									   3, nBins, minPosition, maxPosition);
-      
-    }
-    
-    lowEdgeActive += fHeightActive - fActiveSuperposition;
-    supEdgeActive = lowEdgeActive + fHeightActive;
-    isFront = !isFront;
-    
-  }
-  
+  // --------------------------------------------------------------------------------------
+
   AliDebug(1, Form("Structure completed for MFT plane %s", GetName()));
 
   return kTRUE;

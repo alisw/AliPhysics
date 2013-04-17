@@ -104,7 +104,7 @@ private:
 
   TClonesArray *fActiveElements, *fReadoutElements, *fSupportElements;
 
-  Bool_t fHasPixelRectangularPatternAlongY;
+  Bool_t fHasPixelRectangularPatternAlongY, fPlaneIsOdd;
 
   ClassDef(AliMFTPlane, 1)
 

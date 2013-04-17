@@ -54,13 +54,7 @@ public:
  
 protected:
 
-  static const Int_t fNMaxPlanes = AliMFTConstants::fNMaxPlanes;                // max number of MFT planes
-  static const Double_t fRadiusMin;             // minimum radial distance of the MFT sensors. To be carefully coordinated with fDetElemSuperposition
-  static const Double_t fDetElemSuperposition;  // superposition between bands tasselling the MFT planes, for having a full acceptance coverage
-                                                // even in case of 10 degrees inclined tracks
-  static const Double_t fHeightDetElem;         // height of the active volume bands composing the planes
-  static const Double_t fSupportExtMargin;      // minimum border size between the end of the support plane and the sensors
-
+  static const Int_t fNMaxPlanes          = AliMFTConstants::fNMaxPlanes;                // max number of MFT planes
   static const Int_t fNMaxDetElemPerPlane = AliMFTConstants::fNMaxDetElemPerPlane;
 
   TClonesArray *fMFTPlanes;
