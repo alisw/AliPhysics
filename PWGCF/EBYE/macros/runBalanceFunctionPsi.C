@@ -30,7 +30,7 @@ Bool_t kUseHBTCut = kFALSE;
 Bool_t kUseConversionCut = kFALSE;
 Bool_t kUseResonanceCut = kFALSE;
 Bool_t kUseMomentumDifferenceCut = kFALSE;
-Int_t  kAODbit = 128;
+Int_t  kAODbit = 272;
 
 //______________________________________________________________________________
 void runBalanceFunctionPsi(
@@ -104,7 +104,7 @@ void runBalanceFunctionPsi(
       }
       else if((bAOD)&&(!bMCtruth)) {
 	chain = new TChain("aodTree");
-	for(Int_t i = 1; i < 21; i++) {
+	for(Int_t i = 1; i < 4; i++) {
 	  filename = "/glusterfs/alice1/alice2/pchrist/pp/LHC10c/7TeV/Data/Set";
 	  filename += i; filename += "/AliAOD.root";
 	  chain->Add(filename.Data());

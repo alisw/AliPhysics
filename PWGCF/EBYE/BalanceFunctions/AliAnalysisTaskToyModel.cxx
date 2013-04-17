@@ -35,7 +35,8 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fUseDebug(kFALSE),
   fBalance(0),
   fRunShuffling(kFALSE), fShuffledBalance(0),
-  fList(0), fListBF(0), fListBFS(0),
+  fRunMixing(kFALSE), fMixedBalance(0),
+  fList(0), fListBF(0), fListBFS(0), fListBFM(0),
   fHistEventStats(0),
   fHistNumberOfAcceptedParticles(0),
   fHistReactionPlane(0),
@@ -266,13 +267,17 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
   if(!fBalance) {
     fBalance = new AliBalancePsi();
     fBalance->SetDeltaEtaMax(2.0);
-    //fBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
   }
   if(fRunShuffling) {
     if(!fShuffledBalance) {
       fShuffledBalance = new AliBalancePsi();
       fShuffledBalance->SetDeltaEtaMax(2.0);
-      //fShuffledBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
+    }
+  }
+  if(fRunMixing) {
+    if(!fMixedBalance) {
+      fMixedBalance = new AliBalancePsi();
+      fMixedBalance->SetDeltaEtaMax(2.0);
     }
   }
 
@@ -290,6 +295,12 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
     fListBFS = new TList();
     fListBFS->SetName("listBFShuffled");
     fListBFS->SetOwner();
+  }
+
+  if(fRunMixing) {
+    fListBFM = new TList();
+    fListBFM->SetName("listBFMixed");
+    fListBFM->SetOwner();
   }
 
   //==============QA================//
@@ -316,9 +327,9 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
   fHistEta = new TH1F("fHistEta","Pseudo-rapidity (acceptance);#eta;Entries",1000,-1.5,1.5); 
   fList->Add(fHistEta);
 
-  fHistEtaPhiPos = new TH2F("fHistEtaPhiPos","#eta-#phi distribution (+);#eta;#varphi (rad)",80,-2.,2.,72,0.,2.*TMath::Pi());
+  fHistEtaPhiPos = new TH2F("fHistEtaPhiPos","#eta-#phi distribution (+);#eta;#varphi (rad)",80,-2.,2.,72,-TMath::Pi()/2.,3.*TMath::Pi()/2.);
   fList->Add(fHistEtaPhiPos);
-  fHistEtaPhiNeg = new TH2F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#varphi (rad)",80,-2.,2.,72,0.,2.*TMath::Pi());
+  fHistEtaPhiNeg = new TH2F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#varphi (rad)",80,-2.,2.,72,-TMath::Pi()/2.,3.*TMath::Pi()/2.);
   fList->Add(fHistEtaPhiNeg);
 
   //Rapidity
@@ -341,7 +352,6 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
   fList->Add(fHistPhiKaons);
   fHistPhiProtons = new TH1F("fHistPhiProtons","Phi (acceptance - protons);#phi (rad);Entries",1000,0.,2*TMath::Pi());
   fList->Add(fHistPhiProtons);
-
 
   //Pt
   fHistPt = new TH1F("fHistPt","Pt (acceptance);p_{t} (GeV/c);Entries",1000,0.,10.);
@@ -388,13 +398,16 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
     fListBFS->Add(fShuffledBalance->GetHistNnp());
   }
 
-  // Post output data.
-  //PostData(1, fList);
-  //PostData(2, fListBF);
-  //if(fRunShuffling) PostData(3, fListBFS);
+  if(fRunMixing) {
+    fListBFM->Add(fMixedBalance->GetHistNp());
+    fListBFM->Add(fMixedBalance->GetHistNn());
+    fListBFM->Add(fMixedBalance->GetHistNpn());
+    fListBFM->Add(fMixedBalance->GetHistNnn());
+    fListBFM->Add(fMixedBalance->GetHistNpp());
+    fListBFM->Add(fMixedBalance->GetHistNnp());
+  }
 
   TH1::AddDirectory(oldStatus);
-
 }
 
 //________________________________________________________________________
@@ -451,6 +464,11 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
   //TObjArray for the accepted particles
   TObjArray *tracksMain = new TObjArray();
   tracksMain->SetOwner(kTRUE);
+  TObjArray *tracksMixing = 0x0;
+  if(fRunMixing) {
+    tracksMixing = new TObjArray();
+    tracksMixing->SetOwner(kTRUE);
+  }
 
   for(Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     // vector holding the charges/kinematics of all tracks (charge,y,eta,phi,p0,p1,p2,pt,E)
@@ -461,6 +479,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     //chargeVector[i]        = new vector<Double_t>;
     //}
     tracksMain->Clear();
+    if(fRunMixing) tracksMixing->Clear();
     
     fHistEventStats->Fill(1);
     fHistEventStats->Fill(2);
@@ -577,11 +596,17 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       //Fill QA histograms (acceptance);
       if(vCharge > 0) {
 	gNumberOfAcceptedPositiveParticles += 1;
-	fHistEtaPhiPos->Fill(vEta,vPhi);
+	if(vPhi > 3.*TMath::Pi()/2.)
+	  fHistEtaPhiPos->Fill(vEta,vPhi-2.*TMath::Pi());
+	else
+	  fHistEtaPhiPos->Fill(vEta,vPhi);
       }
       else {
 	gNumberOfAcceptedNegativeParticles += 1;
-	fHistEtaPhiNeg->Fill(vEta,vPhi);
+	if(vPhi > 3.*TMath::Pi()/2.)
+	  fHistEtaPhiNeg->Fill(vEta,vPhi-2.*TMath::Pi());
+	else
+	  fHistEtaPhiNeg->Fill(vEta,vPhi);
       }
 
       fHistEta->Fill(vEta);
@@ -607,6 +632,8 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 
       // add the track to the TObjArray
       tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
+      if(fRunMixing) 
+	tracksMixing->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
     }//generated positive particle loop
     
     //Dynamical correlations
@@ -772,13 +799,9 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     fHistReactionPlane->Fill(fReactionPlane);
 
     //Calculate the balance function
-    //fBalance->CalculateBalance(gNumberOfAcceptedParticles,chargeVector);
     fBalance->CalculateBalance(fReactionPlane,tracksMain,NULL,1,1.,0.);
-    /*if(fRunShuffling) {
-      // shuffle charges
-      random_shuffle( chargeVectorShuffle[0]->begin(), chargeVectorShuffle[0]->end() );
-      fShuffledBalance->CalculateBalance(gNumberOfAcceptedParticles,chargeVectorShuffle);
-      }*/
+    if(fRunMixing)
+      fBalance->CalculateBalance(fReactionPlane,tracksMixing,NULL,1,1.,0.);
   }//event loop
 }      
 
@@ -787,21 +810,30 @@ void  AliAnalysisTaskToyModel::FinishOutput() {
   //Printf("END BF");
 
   TFile *gOutput = TFile::Open("outputToyModel.root","recreate");
-  fList->Write();
+  fList->Write("listQA",TObject::kSingleKey);
 
   if (!fBalance) {
     Printf("ERROR: fBalance not available");
     return;
   }  
-  fListBF->Write();
+  fListBF->Write("listBF",TObject::kSingleKey);
 
   if(fRunShuffling) {
     if (!fShuffledBalance) {
       Printf("ERROR: fShuffledBalance not available");
       return;
     }
-    fListBFS->Write();
+    fListBFS->Write("listBFShuffled",TObject::kSingleKey);
   }
+
+  if(fRunMixing) {
+    if (!fMixedBalance) {
+      Printf("ERROR: fMixedBalance not available");
+      return;
+    }
+    fListBFM->Write("listBFMixed",TObject::kSingleKey);
+  }
+
   gOutput->Close();
 }
 

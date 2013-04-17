@@ -786,9 +786,8 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	return 0x0;
       }
       
-      AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
-      if(gMCEvent) {
-	AliGenEventHeader *header = gMCEvent->GenEventHeader();
+      if(dynamic_cast<AliMCEvent*>(event)){
+	AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
 	if(header){  
 	  TArrayF gVertexArray;
 	  header->PrimaryVertex(gVertexArray);
@@ -907,9 +906,8 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     }//ESD
     else if(gAnalysisLevel == "MC"){
       Double_t gImpactParameter = 0.;
-      AliMCEvent* gMCEvent = dynamic_cast<AliMCEvent*>(event);
-      if(gMCEvent){
-	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());      
+      if(dynamic_cast<AliMCEvent*>(event)){
+	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());      
 	if(headerH){
 	  gImpactParameter = headerH->ImpactParameter();
 	  gCentrality      = gImpactParameter;
