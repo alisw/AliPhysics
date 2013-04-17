@@ -194,6 +194,7 @@ class AliAODHeader : public AliVHeader {
   TBits  GetIRInt2InteractionMap() { return fIRInt2InteractionsMap; }
   TBits  GetIRInt1InteractionMap() { return fIRInt1InteractionsMap; }
   Int_t  GetIRInt2ClosestInteractionMap();
+  Int_t  GetIRInt1ClosestInteractionMap(Int_t gap = 3);
   Int_t  GetIRInt2LastInteractionMap();
   
  private :

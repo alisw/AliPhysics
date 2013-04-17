@@ -547,6 +547,38 @@ Int_t AliAODHeader::GetIRInt2ClosestInteractionMap()
 }
 
 //__________________________________________________________________________
+Int_t AliAODHeader::GetIRInt1ClosestInteractionMap(Int_t gap)
+{
+  //
+  // Calculation of the closest interaction
+  // In case of VZERO (Int1) one has to introduce a gap
+  // in order to avoid false positivies from after-pulses
+
+  Int_t firstNegative=100;
+  for(Int_t item=-1; item>=-90; item--) {
+    Int_t bin = FindIRIntInteractionsBXMap(item);
+    Bool_t isFired = fIRInt1InteractionsMap.TestBitNumber(bin);
+    if(isFired) {
+      firstNegative = item;
+      break;
+    }
+  }
+  Int_t firstPositive=100;
+  for(Int_t item=1+gap; item<=90; item++) {
+    Int_t bin = FindIRIntInteractionsBXMap(item);
+    Bool_t isFired = fIRInt1InteractionsMap.TestBitNumber(bin);
+    if(isFired) {
+      firstPositive = item;
+      break;
+    }
+  }
+
+  Int_t closest = firstPositive < TMath::Abs(firstNegative) ? firstPositive : TMath::Abs(firstNegative);
+  if(firstPositive==100 && firstNegative==100) closest=0;
+  return closest;
+}
+
+//__________________________________________________________________________
 Int_t AliAODHeader::GetIRInt2LastInteractionMap()
 {
   //
