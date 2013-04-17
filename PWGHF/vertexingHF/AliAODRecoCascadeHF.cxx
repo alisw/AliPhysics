@@ -144,6 +144,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
   // loop on daughters and write labels
   for(Int_t i=0; i<ndg; i++) {
     AliVTrack *trk = dynamic_cast<AliVTrack*>(GetDaughter(i));
+    if(!trk) continue;
     Int_t lab = trk->GetLabel();
     if(lab==-1) { // this daughter is the 2prong
       lab=lab2Prong;
@@ -169,12 +170,16 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
 
       if (pdgDg[0]==2212 && pdgDg[1]==310) {
 	AliAODMCParticle*k0s = dynamic_cast<AliAODMCParticle*>(mcArray->At(lab2Prong));
-	Int_t labK0 = k0s->GetMother();
-	AliAODMCParticle*k0bar = dynamic_cast<AliAODMCParticle*>(mcArray->At(labK0));
-	AliDebug(1,Form(" (onTheFly=%1d) LabelV0=%d (%d) -> LabelK0S=%d (%d -> %d %d)",onTheFly,labK0,k0bar->GetPdgCode(),lab2Prong,pdgabs2prong,pdgDg2prong[0],pdgDg2prong[1]));
-	AliDebug(1,Form(" LabelLc=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
-			finalLabel,pdgabs,
-			dgLabels[0],pdgDg[0],dgLabels[1],pdgDg[1]));
+	if(k0s){
+	  Int_t labK0 = k0s->GetMother();	
+	  AliAODMCParticle*k0bar = dynamic_cast<AliAODMCParticle*>(mcArray->At(labK0));
+	  if(k0bar){
+	    AliDebug(1,Form(" (onTheFly=%1d) LabelV0=%d (%d) -> LabelK0S=%d (%d -> %d %d)",onTheFly,labK0,k0bar->GetPdgCode(),lab2Prong,pdgabs2prong,pdgDg2prong[0],pdgDg2prong[1]));
+	    AliDebug(1,Form(" LabelLc=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
+			    finalLabel,pdgabs,
+			    dgLabels[0],pdgDg[0],dgLabels[1],pdgDg[1]));
+	  }
+	}
       } else if (pdgDg[0]==211 && pdgDg[1]==3122) {
 	AliDebug(1,Form(" (onTheFly=%1d) LabelV0=%d (%d -> %d %d)",onTheFly,lab2Prong,pdgabs2prong,pdgDg2prong[0],pdgDg2prong[1]));
 	AliDebug(1,Form(" LabelLc=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
