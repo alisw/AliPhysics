@@ -222,7 +222,18 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fStoreControlHistograms(kFALSE),
  fCorrelationNoRPsVsRefMult(NULL), 
  fCorrelationNoPOIsVsRefMult(NULL),
- fCorrelationNoRPsVsNoPOIs(NULL)
+ fCorrelationNoRPsVsNoPOIs(NULL),
+ // 11.) Bootstrap:
+ fBootstrapList(NULL),
+ fBootstrapProfilesList(NULL),
+ fBootstrapResultsList(NULL),
+ fBootstrapFlags(NULL),
+ fUseBootstrap(kFALSE),
+ fUseBootstrapVsM(kFALSE),
+ fnSubsamples(10),
+ fRandom(NULL),
+ fBootstrapCorrelations(NULL),
+ fBootstrapCumulants(NULL)
  {
   // constructor  
   
@@ -248,6 +259,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
   this->InitializeArraysForNestedLoops();
   this->InitializeArraysForMixedHarmonics();
   this->InitializeArraysForControlHistograms();
+  this->InitializeArraysForBootstrap();
   
  } // end of constructor
  
@@ -272,7 +284,8 @@ void AliFlowAnalysisWithQCumulants::Init()
  // e) Store flags for distributions of corelations;
  // f) Store harmonic which will be estimated;
  // g) Store flags for mixed harmonics;
- // h) Store flags for control histograms.
+ // h) Store flags for control histograms;
+ // i) Store bootstrap flags.
   
  //save old value and prevent histograms from being added to directory
  //to avoid name clashes in case multiple analaysis objects are used
@@ -296,6 +309,7 @@ void AliFlowAnalysisWithQCumulants::Init()
  this->BookEverythingForNestedLoops();
  this->BookEverythingForMixedHarmonics();
  this->BookEverythingForControlHistograms();
+ this->BookEverythingForBootstrap();
 
  // d) Store flags for integrated and differential flow:
  this->StoreIntFlowFlags();
@@ -308,8 +322,11 @@ void AliFlowAnalysisWithQCumulants::Init()
  this->StoreMixedHarmonicsFlags();
  // h) Store flags for control histograms:
  this->StoreControlHistogramsFlags();
+ // i) Store bootstrap flags:
+ this->StoreBootstrapFlags();
 
  TH1::AddDirectory(oldHistAddStatus);
+
 } // end of void AliFlowAnalysisWithQCumulants::Init()
 
 //================================================================================================================
@@ -332,7 +349,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  // l) Cross-check with nested loops correlators for reference flow;
  // m) Cross-check with nested loops correlators for differential flow;
  // n) Reset all event-by-event quantities (very important !!!!). 
- 
+
  // a) Check all pointers used in this method:
  this->CheckPointersUsedInMake();
  
@@ -684,7 +701,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 void AliFlowAnalysisWithQCumulants::Finish()
 {
  // Calculate the final results.
- 
+
  // a) Check all pointers used in this method;
  // b) Access the constants;
  // c) Access the flags;
@@ -698,7 +715,8 @@ void AliFlowAnalysisWithQCumulants::Finish()
  // k) Store results for differential flow in AliFlowCommonHistResults;
  // l) Print the final results for integrated flow (RP/POI) on the screen; 
  // m) Cross-checking: Results from Q-vectors vs results from nested loops;
- // i) Calculate cumulants for mixed harmonics.
+ // i) Calculate cumulants for mixed harmonics;
+ // j) Calculate cumulants for bootstrap.
 
  // a) Check all pointers used in this method:
  this->CheckPointersUsedInFinish();
@@ -711,7 +729,7 @@ void AliFlowAnalysisWithQCumulants::Finish()
   fHarmonic = (Int_t)(fCommonHists->GetHarmonic())->GetBinContent(1);
  } 
  
- // c) Access the flags: // to be improved (implement a method for this? should I store again the flags because they can get modified with redoFinish?)
+ // c) Access the flags: // tbi (implement a method for this? should I store again the flags because they can get modified with redoFinish?)
  fUsePhiWeights = (Bool_t)fUseParticleWeights->GetBinContent(1); 
  fUsePtWeights = (Bool_t)fUseParticleWeights->GetBinContent(2); 
  fUseEtaWeights = (Bool_t)fUseParticleWeights->GetBinContent(3);  
@@ -739,6 +757,9 @@ void AliFlowAnalysisWithQCumulants::Finish()
  fCalculateMixedHarmonics = (Bool_t)fMixedHarmonicsFlags->GetBinContent(1);
  //fHarmonic = (Int_t)fMixedHarmonicsFlags->GetBinContent(2); // TBI should I add inpdependent generic harmonic here?
  fCalculateMixedHarmonicsVsM = (Bool_t)fMixedHarmonicsFlags->GetBinContent(3);
+ fUseBootstrap = (Bool_t)fBootstrapFlags->GetBinContent(1); 
+ fUseBootstrapVsM = (Bool_t)fBootstrapFlags->GetBinContent(2); 
+ fnSubsamples = (Int_t)fBootstrapFlags->GetBinContent(3); 
 
  // d) Calculate reference cumulants (not corrected for detector effects):
  this->FinalizeCorrelationsIntFlow();
@@ -858,6 +879,9 @@ void AliFlowAnalysisWithQCumulants::Finish()
                                                                                 
  // i) Calculate cumulants for mixed harmonics: 
  if(fCalculateMixedHarmonics){this->CalculateCumulantsMixedHarmonics();} 
+
+ // j) Calculate cumulants for bootstrap:
+ if(fUseBootstrap||fUseBootstrapVsM){this->CalculateCumulantsForBootstrap();} 
 
 } // end of AliFlowAnalysisWithQCumulants::Finish()
 
@@ -1219,7 +1243,8 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
  // f) Get pointers for other differential correlators;
  // g) Get pointers for mixed harmonics histograms;
  // h) Get pointers for nested loops' histograms;
- // i) Get pointers for control histograms.
+ // i) Get pointers for control histograms;
+ // j) Get pointers for bootstrap.
  
  if(outputListHistos)
  {	
@@ -1238,6 +1263,7 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   this->GetPointersForMixedHarmonicsHistograms(); 
   this->GetPointersForNestedLoopsHistograms(); 
   this->GetPointersForControlHistograms();
+  this->GetPointersForBootstrap();
  } else 
    {
     printf("\n WARNING (QC): outputListHistos is NULL in AFAWQC::GOH() !!!!\n\n");
@@ -2675,7 +2701,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForControlHistograms()
   TString sQvectorTerms[4] = {"#frac{|Q_{n}|^{2}}{M}","#frac{|Q_{2n}|^{2}}{M}","#frac{|Q_{n}|^{4}}{M(2M-1)}","#frac{Re[Q_{2n}Q_{n}^{*}Q_{n}^{*}]}{M^{3/2}}"}; // TBI: add the other ones when needed first time
   for(Int_t qvti=0;qvti<4;qvti++) // TBI: hardwired 4
   {
-   fQvectorTermsVsMult[qvti] = new TH2D(Form("%s vs M",sQvectorTerms[qvti].Data()),Form("%s vs M",sQvectorTerms[qvti].Data()),fnBinsMult,fMinMult,fMaxMult,fnBinsForCorrelations,-100.,100.); // TBI hardwired -100 and 100
+   fQvectorTermsVsMult[qvti] = new TH2D(Form("%s vs M",sQvectorTerms[qvti].Data()),Form("%s vs M",sQvectorTerms[qvti].Data()),fnBinsMult,fMinMult,fMaxMult,fnBinsForCorrelations,fMinValueOfQvectorTerms[qvti],fMaxValueOfQvectorTerms[qvti]); 
    fQvectorTermsVsMult[qvti]->SetTickLength(-0.01,"Y");
    fQvectorTermsVsMult[qvti]->SetLabelSize(0.04);
    fQvectorTermsVsMult[qvti]->SetLabelOffset(0.02,"Y");
@@ -2687,6 +2713,122 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForControlHistograms()
  } // end of if(fUseQvectorTerms)
 
 } // end of void AliFlowAnalysisWithQCumulants::BookEverythingForControlHistograms()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::BookEverythingForBootstrap()
+{
+ // Book all objects needed for bootstrap. 
+
+ // a) Book profile to hold all flags for bootstrap;
+ // b) Book local random generator;
+ // c) Book all bootstrap objects;
+ // d) Book all bootstrap objects 'vs M'.
+
+ // a) Book profile to hold all flags for bootstrap;
+ TString bootstrapFlagsName = "fBootstrapFlags";
+ bootstrapFlagsName += fAnalysisLabel->Data();
+ fBootstrapFlags = new TProfile(bootstrapFlagsName.Data(),"Flags for bootstrap",3,0,3);
+ fBootstrapFlags->SetTickLength(-0.01,"Y");
+ fBootstrapFlags->SetMarkerStyle(25);
+ fBootstrapFlags->SetLabelSize(0.04);
+ fBootstrapFlags->SetLabelOffset(0.02,"Y");
+ fBootstrapFlags->SetStats(kFALSE);
+ fBootstrapFlags->GetXaxis()->SetBinLabel(1,"fUseBootstrap");
+ fBootstrapFlags->GetXaxis()->SetBinLabel(2,"fUseBootstrapVsM");
+ fBootstrapFlags->GetXaxis()->SetBinLabel(3,"fnSubsamples");
+ fBootstrapList->Add(fBootstrapFlags);
+
+ // b) Book local random generator:
+ if(fUseBootstrap||fUseBootstrapVsM)
+ { 
+  fRandom = new TRandom3(0); // if uiSeed is 0, the seed is determined uniquely in space and time via TUUID
+ }
+
+ // c) Book all bootstrap objects:
+ TString correlationFlag[4] = {"#LT#LT2#GT#GT","#LT#LT4#GT#GT","#LT#LT6#GT#GT","#LT#LT8#GT#GT"};
+ TString cumulantFlag[4] = {"QC{2}","QC{4}","QC{6}","QC{8}"};
+ if(fUseBootstrap)
+ {
+  // ....
+  TString bootstrapCorrelationsName = "fBootstrapCorrelations";
+  bootstrapCorrelationsName += fAnalysisLabel->Data();
+  fBootstrapCorrelations = new TProfile2D(bootstrapCorrelationsName.Data(),"Bootstrap Correlations",4,0.,4.,fnSubsamples,0,fnSubsamples); // x-axis => <2>, <4>, <6>, <8>; y-axis => subsample # 
+  fBootstrapCorrelations->SetStats(kFALSE);
+  for(Int_t ci=0;ci<4;ci++) // correlation index
+  {
+   fBootstrapCorrelations->GetXaxis()->SetBinLabel(ci+1,correlationFlag[ci].Data());
+  } // end of for(Int_t ci=0;ci<4;ci++) // correlation index
+  for(Int_t ss=0;ss<fnSubsamples;ss++)
+  {
+   fBootstrapCorrelations->GetYaxis()->SetBinLabel(ss+1,Form("#%d",ss));
+  } // end of for(Int_t ss=0;ss<fnSubsamples;ss++)
+  fBootstrapProfilesList->Add(fBootstrapCorrelations);
+  // ....
+  TString bootstrapCumulantsName = "fBootstrapCumulants";
+  bootstrapCumulantsName += fAnalysisLabel->Data();
+  fBootstrapCumulants = new TH2D(bootstrapCumulantsName.Data(),"Bootstrap Cumulants",4,0.,4.,fnSubsamples,0,fnSubsamples); // x-axis => QC{2}, QC{4}, QC{6}, QC{8}; y-axis => subsample # 
+  fBootstrapCumulants->SetStats(kFALSE);
+  for(Int_t co=0;co<4;co++) // cumulant order
+  {
+   fBootstrapCumulants->GetXaxis()->SetBinLabel(co+1,cumulantFlag[co].Data());
+  } // end of for(Int_t co=0;co<4;co++) // cumulant order
+  for(Int_t ss=0;ss<fnSubsamples;ss++)
+  {
+   fBootstrapCumulants->GetYaxis()->SetBinLabel(ss+1,Form("#%d",ss));
+  } // end of for(Int_t ss=0;ss<fnSubsamples;ss++)
+  fBootstrapResultsList->Add(fBootstrapCumulants);
+ } // end of if(fUseBootstrap)
+
+ // d) Book all bootstrap objects 'vs M':
+ TString sMultiplicity = "";
+ if(fMultiplicityIs==AliFlowCommonConstants::kRP)
+ {
+  sMultiplicity = "# RPs"; 
+ } else if(fMultiplicityIs==AliFlowCommonConstants::kExternal)
+   {
+    sMultiplicity = "Reference multiplicity (from ESD)";
+   } else if(fMultiplicityIs==AliFlowCommonConstants::kPOI)
+     {
+      sMultiplicity = "# POIs";
+     }
+ if(fUseBootstrapVsM)
+ {
+  // ....
+  TString bootstrapCorrelationsVsMName = "fBootstrapCorrelationsVsM";
+  bootstrapCorrelationsVsMName += fAnalysisLabel->Data();
+  for(Int_t ci=0;ci<4;ci++) // correlation index
+  {
+   fBootstrapCorrelationsVsM[ci] = new TProfile2D(Form("%s, %s",bootstrapCorrelationsVsMName.Data(),correlationFlag[ci].Data()),
+                                       Form("Bootstrap Correlations Vs. M, %s",correlationFlag[ci].Data()),
+                                       fnBinsMult,fMinMult,fMaxMult,fnSubsamples,0,fnSubsamples); // index => <2>, <4>, <6>, <8>; x-axis => multiplicity; y-axis => subsample # 
+   fBootstrapCorrelationsVsM[ci]->SetStats(kFALSE);
+   fBootstrapCorrelationsVsM[ci]->GetXaxis()->SetTitle(sMultiplicity.Data());
+   for(Int_t ss=0;ss<fnSubsamples;ss++)
+   {
+    fBootstrapCorrelationsVsM[ci]->GetYaxis()->SetBinLabel(ss+1,Form("#%d",ss));
+   } // end of for(Int_t ss=0;ss<fnSubsamples;ss++)
+   fBootstrapProfilesList->Add(fBootstrapCorrelationsVsM[ci]);
+  } // end of for(Int_t ci=0;ci<4;ci++) // correlation index 
+  // ....
+  TString bootstrapCumulantsVsMName = "fBootstrapCumulantsVsM";
+  bootstrapCumulantsVsMName += fAnalysisLabel->Data();
+  for(Int_t co=0;co<4;co++) // cumulant order
+  {
+   fBootstrapCumulantsVsM[co] = new TH2D(Form("%s, %s",bootstrapCumulantsVsMName.Data(),cumulantFlag[co].Data()),
+                                       Form("Bootstrap Cumulants Vs. M, %s",cumulantFlag[co].Data()),
+                                       fnBinsMult,fMinMult,fMaxMult,fnSubsamples,0,fnSubsamples); // index => <2>, <4>, <6>, <8>; x-axis => multiplicity; y-axis => subsample # 
+   fBootstrapCumulantsVsM[co]->SetStats(kFALSE);
+   fBootstrapCumulantsVsM[co]->GetXaxis()->SetTitle(sMultiplicity.Data());
+   for(Int_t ss=0;ss<fnSubsamples;ss++)
+   {
+    fBootstrapCumulantsVsM[co]->GetYaxis()->SetBinLabel(ss+1,Form("#%d",ss));
+   } // end of for(Int_t ss=0;ss<fnSubsamples;ss++)
+   fBootstrapResultsList->Add(fBootstrapCumulantsVsM[co]);
+  } // end of for(Int_t co=0;co<4;co++) // correlation index 
+ } // end of if(fUseBootstrapVsM)
+
+} // end of void AliFlowAnalysisWithQCumulants::BookEverythingForBootstrap()
 
 //=======================================================================================================================
 
@@ -3420,6 +3562,21 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForControlHistograms()
 
 } // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForControlHistograms()
 
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::InitializeArraysForBootstrap()
+{
+ // Initialize arrays of all objects relevant for control histograms.
+
+ for(Int_t ci=0;ci<4;ci++) // correlation index 
+ {
+  fBootstrapCorrelationsVsM[ci] = NULL;    
+  fBootstrapCumulantsVsM[ci] = NULL;
+ }
+
+} // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForBootstrap()
+
 //=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookEverythingForNestedLoops()
@@ -3825,6 +3982,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  Double_t two2n2n = 0.; // <cos(2n(phi1-phi2))>
  Double_t two3n3n = 0.; // <cos(3n(phi1-phi2))>
  Double_t two4n4n = 0.; // <cos(4n(phi1-phi2))>
+ Double_t mWeight2p = 0.; // multiplicity weight for 2-p correlations
  if(dMult>1)
  {
   two1n1n = (pow(dReQ1n,2.)+pow(dImQ1n,2.)-dMult)/(dMult*(dMult-1.)); 
@@ -3844,7 +4002,6 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // Store separetately <2>:
   fIntFlowCorrelationsEBE->SetBinContent(1,two1n1n); // <2>  
   // Testing other multiplicity weights:
-  Double_t mWeight2p = 0.;
   if(fMultiplicityWeight->Contains("combinations"))
   {
    mWeight2p = dMult*(dMult-1.);
@@ -3932,6 +4089,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  Double_t four4n2n1n1n = 0.; // <cos(n(4*phi1-2*phi2-phi3-phi4))> 
  Double_t four3n1n2n2n = 0.; // <cos(n(3*phi1+phi2-2*phi3-2*phi4))> 
  Double_t four3n1n3n1n = 0.; // <cos(n(3*phi1+phi2-3*phi3-phi4))>    
+ Double_t mWeight4p = 0.; // multiplicity weight for 4-p correlations
  if(dMult>3)
  {
   four1n1n1n1n = (2.*dMult*(dMult-3.)+pow((pow(dReQ1n,2.)+pow(dImQ1n,2.)),2.)-4.*(dMult-2.)*(pow(dReQ1n,2.)
@@ -3998,7 +4156,6 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // Store separetately <4>:
   fIntFlowCorrelationsEBE->SetBinContent(2,four1n1n1n1n); // <4>
   // Testing other multiplicity weights:
-  Double_t mWeight4p = 0.;
   if(fMultiplicityWeight->Contains("combinations"))
   {
    mWeight4p = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.);
@@ -4095,6 +4252,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  Double_t six2n2n1n1n1n1n = 0.; // <cos(n(2*phi1+2*phi2-phi3-phi4-phi5-phi6))>
  Double_t six3n1n1n1n1n1n = 0.; // <cos(n(3*phi1+phi2-phi3-phi4-phi5-phi6))>
  Double_t six2n1n1n2n1n1n = 0.; // <cos(n(2*phi1+phi2+phi3-2*phi4-phi5-phi6))>
+ Double_t mWeight6p = 0.; // multiplicity weight for 6-p correlations
  if(dMult>5)
  {
   six1n1n1n1n1n1n = (pow(pow(dReQ1n,2.)+pow(dImQ1n,2.),3.)-6.*reQ2nQ1nQ1nstarQ1nstarQ1nstar
@@ -4157,7 +4315,6 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // Store separetately <6>:
   fIntFlowCorrelationsEBE->SetBinContent(3,six1n1n1n1n1n1n); // <6>
   // Testing other multiplicity weights:
-  Double_t mWeight6p = 0.;
   if(fMultiplicityWeight->Contains("combinations"))
   {
    mWeight6p = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.);
@@ -4226,6 +4383,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  
  // 8-particle:
  Double_t eight1n1n1n1n1n1n1n1n = 0.; // <cos(n(phi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8))>
+ Double_t mWeight8p = 0.; // multiplicity weight for 8-p correlations
  if(dMult>7)
  {  
   eight1n1n1n1n1n1n1n1n = (pow(pow(dReQ1n,2.)+pow(dImQ1n,2.),4.)-12.*reQ2nQ1nQ1nQ1nstarQ1nstarQ1nstarQ1nstar
@@ -4263,7 +4421,6 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // Store separetately <8>:
   fIntFlowCorrelationsEBE->SetBinContent(4,eight1n1n1n1n1n1n1n1n); // <8>
   // Testing other multiplicity weights:
-  Double_t mWeight8p = 0.;
   if(fMultiplicityWeight->Contains("combinations"))
   {
    mWeight8p = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.)*(dMult-7.);
@@ -4702,6 +4859,28 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
    fQvectorTermsVsMult[3]->Fill(dMultiplicityBin,reQ2nQ1nstarQ1nstar/pow(dM,1.5)); // TBI a bit of heuristic inserted here, re-think the rescaling factor 
   } // end of if(dM>1.) // TBI re-think this if statement 
  } // end of if(fUseQvectorTerms)
+
+ // Bootstrap:
+ if(fUseBootstrap||fUseBootstrapVsM)
+ {
+  Double_t nSampleNo = 1.*fRandom->Integer(fnSubsamples) + 0.5;
+  if(fUseBootstrap)
+  {
+   fBootstrapCorrelations->Fill(0.5,nSampleNo,two1n1n,mWeight2p); 
+   fBootstrapCorrelations->Fill(1.5,nSampleNo,four1n1n1n1n,mWeight4p);
+   fBootstrapCorrelations->Fill(2.5,nSampleNo,six1n1n1n1n1n1n,mWeight6p); 
+   fBootstrapCorrelations->Fill(3.5,nSampleNo,eight1n1n1n1n1n1n1n1n,mWeight8p); 
+  } // end of if(fUseBootstrap)
+  if(fUseBootstrapVsM)
+  {
+   fBootstrapCorrelationsVsM[0]->Fill(dMultiplicityBin,nSampleNo,two1n1n,mWeight2p); 
+   fBootstrapCorrelationsVsM[1]->Fill(dMultiplicityBin,nSampleNo,four1n1n1n1n,mWeight4p); 
+   fBootstrapCorrelationsVsM[2]->Fill(dMultiplicityBin,nSampleNo,six1n1n1n1n1n1n,mWeight6p); 
+   fBootstrapCorrelationsVsM[3]->Fill(dMultiplicityBin,nSampleNo,eight1n1n1n1n1n1n1n1n,mWeight8p); 
+  } // end of if(fUseBootstrapVsM) 
+ } // end of if(fUseBootstrap||fUseBootstrapVsM)
+
+ return;
 
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
 
@@ -14333,7 +14512,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
     {
      // TH2D:
 
-     cout<<"TH2D"<<endl;
+     //cout<<"TH2D"<<endl;
 
      two = fCorrelation2468VsMult[0]->ProjectionY("2",b,b)->GetMean(); // <<2>>  
      four = fCorrelation2468VsMult[1]->ProjectionY("4",b,b)->GetMean(); // <<4>>
@@ -14346,7 +14525,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
    if(dM>3.) // TBI re-think this if statement
    {
 
-    cout<<"Q-vector terms"<<endl;
+    //cout<<"Q-vector terms"<<endl;
 
     two = (fQvectorTermsVsMult[0]->ProjectionY("qvt0a",b,b)->GetMean()-1.)/(dM-1.);    
     Double_t dTerm1 = (dM*(2.*dM-1.))*fQvectorTermsVsMult[2]->ProjectionY("qvt2",b,b)->GetMean();
@@ -14520,7 +14699,89 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
   }
  } // end of for(Int_t co=0;co<4;co++)
  
-} // end of AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
+} // end of void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
+
+//================================================================================================================================ 
+
+void AliFlowAnalysisWithQCumulants::CalculateCumulantsForBootstrap()
+{
+ // Calculate cumulants for bootstrap.
+
+ if(fUseBootstrap)
+ {
+  for(Int_t ss=0;ss<fnSubsamples;ss++)
+  {
+   // Correlations:
+   Double_t two = fBootstrapCorrelations->GetBinContent(fBootstrapCorrelations->GetBin(1,ss+1)); 
+   Double_t four = fBootstrapCorrelations->GetBinContent(fBootstrapCorrelations->GetBin(2,ss+1)); 
+   Double_t six = fBootstrapCorrelations->GetBinContent(fBootstrapCorrelations->GetBin(3,ss+1)); 
+   Double_t eight = fBootstrapCorrelations->GetBinContent(fBootstrapCorrelations->GetBin(4,ss+1)); 
+   // Q-cumulants:
+   Double_t qc2 = 0.; // QC{2}
+   Double_t qc4 = 0.; // QC{4}
+   Double_t qc6 = 0.; // QC{6}
+   Double_t qc8 = 0.; // QC{8}
+   if(TMath::Abs(two) > 0.){qc2 = two;} 
+   if(TMath::Abs(four) > 0.){qc4 = four-2.*pow(two,2.);} 
+   if(TMath::Abs(six) > 0.){qc6 = six-9.*two*four+12.*pow(two,3.);} 
+   if(TMath::Abs(eight) > 0.){qc8 = eight-16.*two*six-18.*pow(four,2.)+144.*pow(two,2.)*four-144.*pow(two,4.);}  
+   fBootstrapCumulants->SetBinContent(fBootstrapCumulants->GetBin(1,ss+1),qc2); 
+   fBootstrapCumulants->SetBinContent(fBootstrapCumulants->GetBin(2,ss+1),qc4); 
+   fBootstrapCumulants->SetBinContent(fBootstrapCumulants->GetBin(3,ss+1),qc6); 
+   fBootstrapCumulants->SetBinContent(fBootstrapCumulants->GetBin(4,ss+1),qc8); 
+   /*
+   if(qc2>=0.){fBootstrapCumulants->SetBinContent(fBootstrapCumulants->GetBin(1,ss+1),pow(qc2,0.5));}
+   if(qc4<=0.){fBootstrapCumulants->SetBinContent(fBootstrapCumulants->GetBin(2,ss+1),pow(-1.*qc4,1./4.));} 
+   if(qc6>=0.){fBootstrapCumulants->SetBinContent(fBootstrapCumulants->GetBin(3,ss+1),pow((1./4.)*qc6,1./6.));}
+   if(qc8<=0.){fBootstrapCumulants->SetBinContent(fBootstrapCumulants->GetBin(4,ss+1),pow((-1./33.)*qc8,1./8.));}  
+   cout<<"Subsample #"<<ss<<":"<<endl;   
+   cout<<"v2{2} = "<<pow(qc2,0.5)<<endl;
+   cout<<"v2{4} = "<<pow(-1.*qc4,1./4.)<<endl;
+   cout<<"v2{6} = "<<pow((1./4.)*qc6,1./6.)<<endl;
+   cout<<"v2{8} = "<<pow((-1./33.)*qc8,1./8.)<<endl;
+   cout<<endl;
+   */
+  } // end of for(Int_t ss=0;ss<fnSubsamples;ss++)
+ } // end of if(fUseBootstrap)
+
+ if(fUseBootstrapVsM)  
+ {
+  for(Int_t mb=1;mb<=fnBinsMult;mb++)
+  {
+   for(Int_t ss=0;ss<fnSubsamples;ss++) 
+   {
+    // Correlations:
+    Double_t two = fBootstrapCorrelationsVsM[0]->GetBinContent(fBootstrapCorrelationsVsM[0]->GetBin(mb,ss+1)); 
+    Double_t four = fBootstrapCorrelationsVsM[1]->GetBinContent(fBootstrapCorrelationsVsM[1]->GetBin(mb,ss+1)); 
+    Double_t six = fBootstrapCorrelationsVsM[2]->GetBinContent(fBootstrapCorrelationsVsM[2]->GetBin(mb,ss+1)); 
+    Double_t eight = fBootstrapCorrelationsVsM[3]->GetBinContent(fBootstrapCorrelationsVsM[3]->GetBin(mb,ss+1)); 
+    // Q-cumulants:
+    Double_t qc2 = 0.; // QC{2}
+    Double_t qc4 = 0.; // QC{4}
+    Double_t qc6 = 0.; // QC{6}
+    Double_t qc8 = 0.; // QC{8}
+    if(TMath::Abs(two) > 0.){qc2 = two;} 
+    if(TMath::Abs(four) > 0.){qc4 = four-2.*pow(two,2.);} 
+    if(TMath::Abs(six) > 0.){qc6 = six-9.*two*four+12.*pow(two,3.);} 
+    if(TMath::Abs(eight) > 0.){qc8 = eight-16.*two*six-18.*pow(four,2.)+144.*pow(two,2.)*four-144.*pow(two,4.);}  
+    fBootstrapCumulantsVsM[0]->SetBinContent(fBootstrapCumulantsVsM[0]->GetBin(mb,ss+1),qc2); 
+    fBootstrapCumulantsVsM[1]->SetBinContent(fBootstrapCumulantsVsM[1]->GetBin(mb,ss+1),qc4); 
+    fBootstrapCumulantsVsM[2]->SetBinContent(fBootstrapCumulantsVsM[2]->GetBin(mb,ss+1),qc6); 
+    fBootstrapCumulantsVsM[3]->SetBinContent(fBootstrapCumulantsVsM[3]->GetBin(mb,ss+1),qc8);     
+    /*
+    if(qc2>=0.){fBootstrapCumulantsVsM[0]->SetBinContent(fBootstrapCumulantsVsM[0]->GetBin(mb,ss+1),pow(qc2,0.5));}
+    if(qc4<=0.){fBootstrapCumulantsVsM[1]->SetBinContent(fBootstrapCumulantsVsM[1]->GetBin(mb,ss+1),pow(-1.*qc4,1./4.));} 
+    if(qc6>=0.){fBootstrapCumulantsVsM[2]->SetBinContent(fBootstrapCumulantsVsM[2]->GetBin(mb,ss+1),pow((1./4.)*qc6,1./6.));}
+    if(qc8<=0.){fBootstrapCumulantsVsM[3]->SetBinContent(fBootstrapCumulantsVsM[3]->GetBin(mb,ss+1),pow((-1./33.)*qc8,1./8.));}  
+    */    
+   } // end of for(Int_t ss=0;ss<fnSubsamples;ss++)
+  } // end of for(Int_t mb=1;mb<=fnBinsMult;mb++)
+ } // end of if(fUseBootstrapVsM) 
+
+
+ return;
+
+} // end of void AliFlowAnalysisWithQCumulants::CalculateCumulantsForBootstrap()
 
 //================================================================================================================================ 
 
@@ -15457,7 +15718,9 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
  // Initialize all arrays used for distributions.
  
  // a) Initialize arrays of histograms used to hold distributions of correlations; 
- // b) Initialize array to hold min and max values of correlations.
+ // b) Initialize array to hold min and max values of correlations;
+ // c) Initialize default min and max values of correlation products;
+ // d) Initialize default min and max values of q-vector terms.
  
  // a) Initialize arrays of histograms used to hold distributions of correlations:
  for(Int_t di=0;di<4;di++) // distribution index
@@ -15480,6 +15743,16 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
  //    (Remark: The default values bellow were chosen for v2=5% and M=500)
  fMinValueOfCorrelationProduct[0] = -0.01; // <2><4>_min 
  fMaxValueOfCorrelationProduct[0] = 0.04; // <2><4>_max 
+
+ // d) Initialize default min and max values of q-vector terms:
+ fMinValueOfQvectorTerms[0] = 0.;
+ fMaxValueOfQvectorTerms[0] = 30.;
+ fMinValueOfQvectorTerms[1] = 0.;
+ fMaxValueOfQvectorTerms[1] = 20.;
+ fMinValueOfQvectorTerms[2] = 0.;
+ fMaxValueOfQvectorTerms[2] = 200.;
+ fMinValueOfQvectorTerms[3] = -30.;
+ fMaxValueOfQvectorTerms[3] = 80.;
 
 } // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
 
@@ -15622,8 +15895,9 @@ void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
  //  f) Book and nest list for other differential correlators;
  //  g) Book and nest list for nested loops;
  //  h) Book and nest lists for mixed harmonics;
- //  i) Book and nest lists for control histograms. 
- 
+ //  i) Book and nest lists for control histograms;
+ //  j) Book and nest lists for bootstrap.
+
  // a) Book and nest all lists for integrated flow:
  //  Base list for integrated flow:
  fIntFlowList = new TList();
@@ -15712,6 +15986,22 @@ void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
  fControlHistogramsList->SetName("Control Histograms");
  fControlHistogramsList->SetOwner(kTRUE);
  fHistList->Add(fControlHistogramsList);
+
+ // j) Book and nest lists for bootstrap:
+ fBootstrapList = new TList();
+ fBootstrapList->SetName("Bootstrap");
+ fBootstrapList->SetOwner(kTRUE);
+ fHistList->Add(fBootstrapList);
+ //  List holding profiles: 
+ fBootstrapProfilesList = new TList();
+ fBootstrapProfilesList->SetName("Profiles");
+ fBootstrapProfilesList->SetOwner(kTRUE);
+ if(fUseBootstrap||fUseBootstrapVsM){fBootstrapList->Add(fBootstrapProfilesList);}
+ //  List holding histograms with results:
+ fBootstrapResultsList = new TList();
+ fBootstrapResultsList->SetName("Results");
+ fBootstrapResultsList->SetOwner(kTRUE);
+ if(fUseBootstrap||fUseBootstrapVsM){fBootstrapList->Add(fBootstrapResultsList);}
 
 } // end of void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
 
@@ -17732,6 +18022,24 @@ void AliFlowAnalysisWithQCumulants::StoreControlHistogramsFlags()
  fControlHistogramsFlags->Fill(1.5,(Int_t)fUseQvectorTerms);
 
 } // end of void AliFlowAnalysisWithQCumulants::StoreControlHistogramsFlags()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::StoreBootstrapFlags()
+{
+ // Store all flags for bootstrap in TProfile fBootstrapFlags.
+
+ if(!fBootstrapFlags)
+ {
+  cout<<"WARNING: fBootstrapFlags is NULL in AFAWQC::SBF() !!!!"<<endl;
+  exit(0);
+ } 
+
+ fBootstrapFlags->Fill(0.5,(Int_t)fUseBootstrap);
+ fBootstrapFlags->Fill(1.5,(Int_t)fUseBootstrapVsM);
+ fBootstrapFlags->Fill(2.5,(Int_t)fnSubsamples);
+
+} // end of void AliFlowAnalysisWithQCumulants::StoreBootstrapFlags()
 
 //=======================================================================================================================
 
@@ -20245,6 +20553,132 @@ void AliFlowAnalysisWithQCumulants::GetPointersForControlHistograms()
  } // end of for(Int_t qwti=0;qwti<1;qwti++) // TBI: hardwired 4
 
 } // end of void AliFlowAnalysisWithQCumulants::GetPointersForControlHistograms()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::GetPointersForBootstrap()
+{
+ // Get pointers to all bootstrap histograms.
+   
+ // a) Get pointer to base list for bootstrap histograms;
+ // b) Get pointers to all other lists;
+ // c) Get pointer to TProfile fBootstrapFlags holding all flags for bootstrap histograms;
+ // d) Get pointers to remaining bootstrap profiles and histograms;
+ // e) Get pointers to remaining bootstrap profiles and histograms 'vs M'.
+
+ // a) Get pointer to base list for bootstrap histograms:
+ TList *bootstrapList = dynamic_cast<TList*>(fHistList->FindObject("Bootstrap"));
+ if(bootstrapList) 
+ {
+  this->SetBootstrapList(bootstrapList);
+ } else
+   {
+    cout<<"WARNING: bootstrapList is NULL in AFAWQC::GPFB() !!!!"<<endl;
+    exit(0);
+   }
+
+ // b) Get pointers to all other lists:
+ TList *bootstrapProfilesList = dynamic_cast<TList*>(fBootstrapList->FindObject("Profiles"));
+ if(bootstrapProfilesList) 
+ {
+  this->SetBootstrapProfilesList(bootstrapProfilesList);
+ } else
+   {
+    cout<<"WARNING: bootstrapProfilesList is NULL in AFAWQC::GPFB() !!!!"<<endl;
+    exit(0);
+   }
+ TList *bootstrapResultsList = dynamic_cast<TList*>(fBootstrapList->FindObject("Results"));
+ if(bootstrapResultsList) 
+ {
+  this->SetBootstrapResultsList(bootstrapResultsList);
+ } else
+   {
+    cout<<"WARNING: bootstrapResultsList is NULL in AFAWQC::GPFB() !!!!"<<endl;
+    exit(0);
+   }
+
+ // c) Get pointer to TProfile fBootstrapFlags holding all flags for bootstrap histograms:
+ TString bootstrapFlagsName = "fBootstrapFlags";
+ bootstrapFlagsName += fAnalysisLabel->Data();
+ TProfile *bootstrapFlags = dynamic_cast<TProfile*>
+                                 (fBootstrapList->FindObject(bootstrapFlagsName.Data()));
+ if(bootstrapFlags)
+ {
+  this->SetBootstrapFlags(bootstrapFlags);  
+  fUseBootstrap = (Bool_t)fBootstrapFlags->GetBinContent(1); 
+  fUseBootstrapVsM = (Bool_t)fBootstrapFlags->GetBinContent(2); 
+  fnSubsamples = (Int_t)fBootstrapFlags->GetBinContent(3); 
+ } else 
+   {
+    cout<<"WARNING: bootstrapFlags is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+    exit(0);
+   }
+
+ // d) Get pointers to remaining bootstrap profiles and histograms:
+ TString correlationFlag[4] = {"#LT#LT2#GT#GT","#LT#LT4#GT#GT","#LT#LT6#GT#GT","#LT#LT8#GT#GT"};
+ TString cumulantFlag[4] = {"QC{2}","QC{4}","QC{6}","QC{8}"};
+ if(fUseBootstrap)
+ { 
+  TString bootstrapCorrelationsName = "fBootstrapCorrelations";
+  bootstrapCorrelationsName += fAnalysisLabel->Data();
+  TProfile2D *pBootstrapCorrelations = dynamic_cast<TProfile2D*>(fBootstrapProfilesList->FindObject(bootstrapCorrelationsName.Data()));
+  if(pBootstrapCorrelations) 
+  {
+   this->SetBootstrapCorrelations(pBootstrapCorrelations);
+  } else 
+    {
+     cout<<"WARNING: pBootstrapCorrelations is NULL in AFAWQC::GPFB() !!!!"<<endl; 
+     exit(0);
+    }                                   
+  TString bootstrapCumulantsName = "fBootstrapCumulants";
+  bootstrapCumulantsName += fAnalysisLabel->Data();
+  TH2D *pBootstrapCumulants = dynamic_cast<TH2D*>(fBootstrapResultsList->FindObject(bootstrapCumulantsName.Data()));
+  if(pBootstrapCumulants) 
+  {
+   this->SetBootstrapCumulants(pBootstrapCumulants);
+  } else 
+    {
+     cout<<"WARNING: pBootstrapCumulants is NULL in AFAWQC::GPFB() !!!!"<<endl; 
+     exit(0);
+    }                                   
+ } // end of if(fUseBootstrap)
+
+ // e) Get pointers to remaining bootstrap profiles and histograms 'vs M':
+ if(fUseBootstrapVsM)
+ { 
+  TString bootstrapCorrelationsVsMName = "fBootstrapCorrelationsVsM";
+  bootstrapCorrelationsVsMName += fAnalysisLabel->Data();
+  for(Int_t ci=0;ci<4;ci++) // correlation index
+  {
+   TProfile2D *pBootstrapCorrelationsVsM = dynamic_cast<TProfile2D*>(fBootstrapProfilesList->FindObject(Form("%s, %s",bootstrapCorrelationsVsMName.Data(),correlationFlag[ci].Data())));
+   if(pBootstrapCorrelationsVsM)
+   {
+    this->SetBootstrapCorrelationsVsM(pBootstrapCorrelationsVsM,ci);
+   } else 
+     {
+      cout<<"WARNING: pBootstrapCorrelationsVsM is NULL in AFAWQC::GPFB() !!!!"<<endl; 
+      cout<<"ci = "<<ci<<endl;
+      exit(0);
+     }                                   
+  } // end of for(Int_t ci=0;ci<4;ci++)
+  TString bootstrapCumulantsVsMName = "fBootstrapCumulantsVsM";
+  bootstrapCumulantsVsMName += fAnalysisLabel->Data();
+  for(Int_t co=0;co<4;co++) // correlation index
+  {
+   TH2D *pBootstrapCumulantsVsM = dynamic_cast<TH2D*>(fBootstrapResultsList->FindObject(Form("%s, %s",bootstrapCumulantsVsMName.Data(),cumulantFlag[co].Data())));
+   if(pBootstrapCumulantsVsM)
+   {
+    this->SetBootstrapCumulantsVsM(pBootstrapCumulantsVsM,co);
+   } else 
+     {
+      cout<<"WARNING: pBootstrapCumulantsVsM is NULL in AFAWQC::GPFB() !!!!"<<endl; 
+      cout<<"co = "<<co<<endl;
+      exit(0);
+     }                                   
+  } // end of for(Int_t co=0;co<4;co++)
+ } // end of if(fUseBootstrapVsM)
+
+} // end of void AliFlowAnalysisWithQCumulants::GetPointersForBootstrap()
 
 //=======================================================================================================================
 
