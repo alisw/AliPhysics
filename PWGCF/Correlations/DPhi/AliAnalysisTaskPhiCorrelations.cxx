@@ -531,9 +531,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   TObjArray* tracksCorrelateMC = tracksMC;
   if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
   {
-    // TODO for MC this uses to PDG of the mother of the particle
-    tracksCorrelateMC = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
-    CleanUp(tracksCorrelateMC, mc, skipParticlesAbove);
+    // TODO for MC this uses the PDG of the mother of the particle
+    tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
+    CleanUp(tmpList, mc, skipParticlesAbove);
+    tracksCorrelateMC = CloneAndReduceTrackList(tmpList);
+    delete tmpList;
   }
   
   /*
@@ -646,14 +648,19 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get MC primaries that match reconstructed track
       // triggers
-      TObjArray* tracksRecoMatchedPrim = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesTrigger, kTRUE);
-      CleanUp(tracksRecoMatchedPrim, mc, skipParticlesAbove);
+      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesTrigger, kTRUE);
+      CleanUp(tmpList, mc, skipParticlesAbove);
+      TObjArray* tracksRecoMatchedPrim = CloneAndReduceTrackList(tmpList);
+      delete tmpList;
+      
       // associated
       TObjArray* tracksCorrelateRecoMatchedPrim = tracksRecoMatchedPrim;
       if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
       {
-	tracksCorrelateRecoMatchedPrim = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesAssociated, kTRUE);
-	CleanUp(tracksCorrelateRecoMatchedPrim, mc, skipParticlesAbove);
+	tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesAssociated, kTRUE);
+	CleanUp(tmpList, mc, skipParticlesAbove);
+	tracksCorrelateRecoMatchedPrim = CloneAndReduceTrackList(tmpList);
+	delete tmpList;
       }
 
       // (RECO-matched (quantities from MC particle) primary particles)
@@ -672,14 +679,19 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get MC primaries + secondaries that match reconstructed track
       // triggers
-      TObjArray* tracksRecoMatchedAll = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesTrigger, kTRUE);
-      CleanUp(tracksRecoMatchedAll, mc, skipParticlesAbove);
+      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesTrigger, kTRUE);
+      CleanUp(tmpList, mc, skipParticlesAbove);
+      TObjArray* tracksRecoMatchedAll = CloneAndReduceTrackList(tmpList);
+      delete tmpList;
+      
       // associated
       TObjArray* tracksCorrelateRecoMatchedAll = tracksRecoMatchedAll;
       if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
       {
-	tracksCorrelateRecoMatchedAll = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesAssociated, kTRUE);
-	CleanUp(tracksCorrelateRecoMatchedAll, mc, skipParticlesAbove);
+	tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesAssociated, kTRUE);
+	CleanUp(tmpList, mc, skipParticlesAbove);
+	tracksCorrelateRecoMatchedAll = CloneAndReduceTrackList(tmpList);
+	delete tmpList;
       }
       
       // (RECO-matched (quantities from MC particle) all particles)
@@ -698,14 +710,19 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get RECO tracks
       // triggers
-      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
-      CleanUp(tracks, mc, skipParticlesAbove);
+      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
+      CleanUp(tmpList, mc, skipParticlesAbove);
+      TObjArray* tracks = CloneAndReduceTrackList(tmpList);
+      delete tmpList;
+      
       // associated
       TObjArray* tracksCorrelate = tracks;
       if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
       {
-	tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
-	CleanUp(tracksCorrelate, mc, skipParticlesAbove);
+	tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
+	CleanUp(tmpList, mc, skipParticlesAbove);
+	tracksCorrelate = CloneAndReduceTrackList(tmpList);
+	delete tmpList;
       }
      
       // (RECO all tracks)
