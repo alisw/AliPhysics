@@ -531,11 +531,11 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   newFileName += Form("%.1f",ptAssociatedMax); 
   if(k2pMethod) newFileName += "_2pMethod";
 
-  // newFileName += "_";
-  // newFileName += Form("%.1f",psiMin); 
-  // newFileName += "-"; 
-  // newFileName += Form("%.1f",psiMax); 
-  // newFileName += ".root";
+  newFileName += "_";
+  newFileName += Form("%.1f",psiMin); 
+  newFileName += "-"; 
+  newFileName += Form("%.1f",psiMax); 
+  newFileName += ".root";
 
   TFile *fOutput = new TFile(newFileName.Data(),"recreate");
   fOutput->cd();
@@ -971,10 +971,10 @@ void drawProjections(Bool_t kProjectInEta = kFALSE,
   filename += Form("%.1f",ptAssociatedMax); 
   if(k2pMethod) filename += "_2pMethod";
 
-  // filename += "_";
-  // filename += Form("%.1f",psiMin); 
-  // filename += "-"; 
-  // filename += Form("%.1f",psiMax);
+  filename += "_";
+  filename += Form("%.1f",psiMin); 
+  filename += "-"; 
+  filename += Form("%.1f",psiMax);
   filename += ".root";
 
   //Open the file
@@ -1027,17 +1027,17 @@ void drawProjections(Bool_t kProjectInEta = kFALSE,
   TH1D *gHistBalanceFunctionMixed_scale      = NULL;
 
   if(kProjectInEta){
-    gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionX());
+    gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionX("gHistBalanceFunctionSubtracted1D",binMin,binMax));
     gHistBalanceFunctionSubtracted->Scale(gHistBalanceFunctionSubtracted2D->GetYaxis()->GetBinWidth(1));   // to remove normalization to phi bin width
-    gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionX());
+    gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionX("gHistBalanceFunctionMixed1D",binMin,binMax));
     gHistBalanceFunctionMixed->Scale(gHistBalanceFunctionMixed2D->GetYaxis()->GetBinWidth(1));   // to remove normalization to phi bin width
     gHistBalanceFunctionSubtracted->SetTitle("B(#Delta#eta)");
     gHistBalanceFunctionMixed->SetTitle("B_{mix}(#Delta#eta)");  
   }
   else{
-    gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionY());
+    gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionY("gHistBalanceFunctionSubtracted1D",binMin,binMax));
     gHistBalanceFunctionSubtracted->Scale(gHistBalanceFunctionSubtracted2D->GetXaxis()->GetBinWidth(1));   // to remove normalization to eta bin width
-    gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionY());
+    gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionY("gHistBalanceFunctionMixed1D",binMin,binMax));
     gHistBalanceFunctionMixed->Scale(gHistBalanceFunctionMixed2D->GetXaxis()->GetBinWidth(1));   // to remove normalization to eta bin width
     gHistBalanceFunctionSubtracted->SetTitle("B(#Delta#varphi)");
     gHistBalanceFunctionMixed->SetTitle("B_{mix}(#Delta#varphi)");  
@@ -1045,10 +1045,8 @@ void drawProjections(Bool_t kProjectInEta = kFALSE,
 
   gHistBalanceFunctionSubtracted->SetMarkerStyle(20);
   gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionSubtracted->SetName("gHistBalanceFunctionSubtracted");
 
   gHistBalanceFunctionMixed->SetMarkerStyle(25);
-  gHistBalanceFunctionMixed->SetName("gHistBalanceFunctionMixed");
 
   TCanvas *c1 = new TCanvas("c1","",0,0,600,500);
   c1->SetFillColor(10); 
@@ -1092,6 +1090,7 @@ void drawProjections(Bool_t kProjectInEta = kFALSE,
     kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(1));
     kurtosisLatex += " #pm "; 
     kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(11));
+    
     Printf("Mean: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetMean(),gHistBalanceFunctionSubtracted->GetMeanError());
     Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
     Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
@@ -1127,7 +1126,7 @@ void drawProjections(Bool_t kProjectInEta = kFALSE,
     ofstream fileKurtosis(kurtosisFileName.Data(),ios::out);
     fileKurtosis << " " << gHistBalanceFunctionSubtracted->GetKurtosis(1) << " " <<gHistBalanceFunctionSubtracted->GetKurtosis(11)<<endl;
     fileKurtosis.close();
-
+   
   }
   // calculate the moments by hand
   else{
