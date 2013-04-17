@@ -1744,12 +1744,12 @@ void AliAnalysisTaskMinijet::Analyse(const vector<Float_t> &pt,
                 if(ntracksCharged<-1 || ntracksCharged>1500) AliInfo("particles out of range ncharge");
                 if(TMath::Abs(dEta)>2*fEtaCut) {
                     AliInfo("particles out of range dEta");
-                    AliInfo("eta1=%f, eta2=%f", etaOthers, etaEventAxis);
-                    AliInfo("step=%d",step);
+                    AliInfo(Form("eta1=%f, eta2=%f", etaOthers, etaEventAxis));
+                    AliInfo(Form("step=%d",step));
                 }
                 if(dPhi<-0.5*TMath::Pi() || dPhi>1.5*TMath::Pi()){
-                    AliInfo("particles out of range dPhi");
-                    AliInfo("phi1=%f, phi2=%f", phiOthers, phiEventAxis);
+                    AliInfo(Form("particles out of range dPhi"));
+                    AliInfo(Form("phi1=%f, phi2=%f", phiOthers, phiEventAxis));
                 }
                 
                 Bool_t isLikeSign = CheckLikeSign(chargeEventAxis, chargeOthers);
