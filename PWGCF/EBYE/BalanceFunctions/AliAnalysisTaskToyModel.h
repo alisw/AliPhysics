@@ -32,6 +32,10 @@ class AliAnalysisTaskToyModel : public TObject {
     fRunShuffling = kTRUE;
     fShuffledBalance = analysisShuffled;
   }
+  void SetMixingObject(AliBalancePsi *const analysisMixed) {
+    fRunMixing = kTRUE;
+    fMixedBalance = analysisMixed;
+  }
 
   //============Toy model: List of setters============//
   void SetTotalMultiplicity(Double_t mean, Double_t sigma) {
@@ -148,9 +152,12 @@ class AliAnalysisTaskToyModel : public TObject {
   AliBalancePsi *fBalance; //BF object
   Bool_t fRunShuffling;//run shuffling or not
   AliBalancePsi *fShuffledBalance; //BF object (shuffled)
+  Bool_t fRunMixing;//run mixing or not
+  AliBalancePsi *fMixedBalance; //BF object (mixed)
   TList *fList; //fList object
   TList *fListBF; //fList object
-  TList *fListBFS; //fList object
+  TList *fListBFS; //fList object (shuffling)
+  TList *fListBFM; //fList object (mixing)
 
   TH1F *fHistEventStats; //event stats
   TH1F *fHistNumberOfAcceptedParticles; //number of accepted particles

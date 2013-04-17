@@ -52,9 +52,11 @@ Double_t gDynamicalCorrelationsPercentage = 0.1;
 
 //=========bf object configuration=========//
 Bool_t kRunShuffling = kFALSE;
+Bool_t kRunMixing = kTRUE;
 Bool_t bResonancesCut = kFALSE;
 Bool_t bHBTcut = kFALSE;
 Bool_t bConversionCut = kFALSE;
+Bool_t bMomentumDifferenceCut = kFALSE;
 TString fArgEventClass = "EventPlane";
 Double_t deltaEtaMax = TMath::Abs(gEtaMax-gEtaMin);
 Bool_t bVertexBinning = kFALSE;
@@ -89,15 +91,20 @@ void runBalanceFunctionToyModel(Int_t nEvents = 10,
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
   gSystem->Load("libPWGCFebye");
-  
+
   //configure the bf objects
   gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionPsiAnalysis.C");
-  AliBalancePsi *bf  = GetBalanceFunctionObject("MC","",0,100,kRunShuffling,bResonancesCut,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax,bVertexBinning);
-    
+  AliBalancePsi *bf  = GetBalanceFunctionObject("MC","",0,100,kRunShuffling,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+  AliBalancePsi *bfm = 0x0;
+  if(kRunMixing) 
+    bfm = GetBalanceFunctionObject("MC","",0,100,kRunShuffling,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
+  
   //Configure the toy model object
   AliAnalysisTaskToyModel *toyModelAnalysis = new AliAnalysisTaskToyModel();
   if(kUseDebug) toyModelAnalysis->SetDebugFlag();
   toyModelAnalysis->SetAnalysisObject(bf);
+  if(kRunMixing)
+    toyModelAnalysis->SetMixingObject(bfm);
   toyModelAnalysis->SetTotalMultiplicity(nTotalMultiplicityMean,nTotalMultiplicitySigma);
   toyModelAnalysis->SetNetCharge(nNetChargeMean,nNetChargeSigma);
   toyModelAnalysis->SetKinematicsCutsMC(gPtMin,gPtMax,gEtaMin,gEtaMax);
