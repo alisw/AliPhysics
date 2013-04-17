@@ -985,11 +985,15 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
       hTemp3->Scale(1./hTemp5->GetEntries());
       hTemp2->Scale(1./hTemp6->GetEntries());
       hTemp4->Scale(1./hTemp6->GetEntries());
+
+      // normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
+      // does not work here, so normalize also to trigger particles 
+      // --> careful: gives different integrals then as with full 2D method 
       hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
       hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
       hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
       hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
-      
+
       hTemp1->Divide(hTemp1Mix);
       hTemp2->Divide(hTemp2Mix);
       hTemp3->Divide(hTemp3Mix);
@@ -1348,10 +1352,20 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
       hTemp3->Scale(1./hTemp5->GetEntries());
       hTemp2->Scale(1./hTemp6->GetEntries());
       hTemp4->Scale(1./hTemp6->GetEntries());
-      hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
-      hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
-      hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
-      hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
+
+      // normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
+      Double_t mixedNorm1 = hTemp1Mix->Integral(hTemp1Mix->GetXaxis()->FindBin(0-10e-5),hTemp1Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp1Mix->GetNbinsX());
+      mixedNorm1 /= hTemp1Mix->GetNbinsY()*(hTemp1Mix->GetXaxis()->FindBin(0.01) - hTemp1Mix->GetXaxis()->FindBin(-0.01) + 1);
+      hTemp1Mix->Scale(1./mixedNorm1);
+      Double_t mixedNorm2 = hTemp2Mix->Integral(hTemp2Mix->GetXaxis()->FindBin(0-10e-5),hTemp2Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp2Mix->GetNbinsX());
+      mixedNorm2 /= hTemp2Mix->GetNbinsY()*(hTemp2Mix->GetXaxis()->FindBin(0.01) - hTemp2Mix->GetXaxis()->FindBin(-0.01) + 1);
+      hTemp2Mix->Scale(1./mixedNorm2);
+      Double_t mixedNorm3 = hTemp3Mix->Integral(hTemp3Mix->GetXaxis()->FindBin(0-10e-5),hTemp3Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp3Mix->GetNbinsX());
+      mixedNorm3 /= hTemp3Mix->GetNbinsY()*(hTemp3Mix->GetXaxis()->FindBin(0.01) - hTemp3Mix->GetXaxis()->FindBin(-0.01) + 1);
+      hTemp3Mix->Scale(1./mixedNorm3);
+      Double_t mixedNorm4 = hTemp4Mix->Integral(hTemp4Mix->GetXaxis()->FindBin(0-10e-5),hTemp4Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp4Mix->GetNbinsX());
+      mixedNorm4 /= hTemp4Mix->GetNbinsY()*(hTemp4Mix->GetXaxis()->FindBin(0.01) - hTemp4Mix->GetXaxis()->FindBin(-0.01) + 1);
+      hTemp4Mix->Scale(1./mixedNorm4);
       
       hTemp1->Divide(hTemp1Mix);
       hTemp2->Divide(hTemp2Mix);
@@ -1591,11 +1605,21 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
       hTemp3->Scale(1./hTemp5->GetEntries());
       hTemp2->Scale(1./hTemp6->GetEntries());
       hTemp4->Scale(1./hTemp6->GetEntries());
-      hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
-      hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
-      hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
-      hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
-      
+
+      // normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
+      Double_t mixedNorm1 = hTemp1Mix->Integral(hTemp1Mix->GetXaxis()->FindBin(0-10e-5),hTemp1Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp1Mix->GetNbinsX());
+      mixedNorm1 /= hTemp1Mix->GetNbinsY()*(hTemp1Mix->GetXaxis()->FindBin(0.01) - hTemp1Mix->GetXaxis()->FindBin(-0.01) + 1);
+      hTemp1Mix->Scale(1./mixedNorm1);
+      Double_t mixedNorm2 = hTemp2Mix->Integral(hTemp2Mix->GetXaxis()->FindBin(0-10e-5),hTemp2Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp2Mix->GetNbinsX());
+      mixedNorm2 /= hTemp2Mix->GetNbinsY()*(hTemp2Mix->GetXaxis()->FindBin(0.01) - hTemp2Mix->GetXaxis()->FindBin(-0.01) + 1);
+      hTemp2Mix->Scale(1./mixedNorm2);
+      Double_t mixedNorm3 = hTemp3Mix->Integral(hTemp3Mix->GetXaxis()->FindBin(0-10e-5),hTemp3Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp3Mix->GetNbinsX());
+      mixedNorm3 /= hTemp3Mix->GetNbinsY()*(hTemp3Mix->GetXaxis()->FindBin(0.01) - hTemp3Mix->GetXaxis()->FindBin(-0.01) + 1);
+      hTemp3Mix->Scale(1./mixedNorm3);
+      Double_t mixedNorm4 = hTemp4Mix->Integral(hTemp4Mix->GetXaxis()->FindBin(0-10e-5),hTemp4Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp4Mix->GetNbinsX());
+      mixedNorm4 /= hTemp4Mix->GetNbinsY()*(hTemp4Mix->GetXaxis()->FindBin(0.01) - hTemp4Mix->GetXaxis()->FindBin(-0.01) + 1);
+      hTemp4Mix->Scale(1./mixedNorm4);
+
       hTemp1->Divide(hTemp1Mix);
       hTemp2->Divide(hTemp2Mix);
       hTemp3->Divide(hTemp3Mix);
