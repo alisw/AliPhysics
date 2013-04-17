@@ -628,7 +628,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                 // read tracks
                 if(fESDEvent)     ntracks = ReadEventESD(pt, eta, phi, charge,strangenessWeight, nTracksTracklets, 5);
                 else if(fAODEvent)ntracks = ReadEventAOD(pt, eta, phi, charge,strangenessWeight, nTracksTracklets, 5);
-                else Printf("Fatal Error");
+                else AliInfo("Fatal Error");
                 
                 if (fCentralityMethod.Length() > 0)
                     ntracks = TMath::Nint(centrality);
@@ -645,7 +645,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                     // read tracks
                     if(fESDEvent)     ntracks = ReadEventESD(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 7);//stagness version not yet implemented
                     else if(fAODEvent)ntracks = ReadEventAOD(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 7);
-                    else Printf("Fatal Error");
+                    else AliInfo("Fatal Error");
                     
                     // analyse
                     if(pt.size()){ //(internally ntracks=fNRecAccept)
@@ -659,7 +659,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                     // read tracks
                     if(fESDEvent)       ntracks = ReadEventESDRecMcProp(pt, eta, phi, charge,strangenessWeight, nTracksTracklets, 4);
                     else if(fAODEvent)  ntracks = ReadEventAODRecMcProp(pt, eta, phi, charge,strangenessWeight, nTracksTracklets, 4);
-                    else Printf("Fatal Error");
+                    else AliInfo("Fatal Error");
                     
                     //analyse
                     if(pt.size()){//(internally ntracks=fNRecAccept)
@@ -673,7 +673,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                         // read tracks
                         if(fESDEvent)       ntracks = ReadEventESDRecMcProp(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 6);//stagness version not yet implemented
                         else if(fAODEvent)  ntracks = ReadEventAODRecMcProp(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 6);
-                        else Printf("Fatal Error");
+                        else AliInfo("Fatal Error");
                         
                         //analyse
                         if(pt.size()){//(internally ntracks=fNRecAccept)
@@ -685,7 +685,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                     // read tracks
                     if(fESDEvent)       ntracks = ReadEventESDMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 3);
                     else if(fAODEvent)  ntracks = ReadEventAODMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 3);
-                    else Printf("Fatal Error");
+                    else AliInfo("Fatal Error");
                     
                     // analyse
                     if(pt.size()){
@@ -709,7 +709,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
             if(CheckEvent(false)){// all events, with and without reconstucted vertex
                 if(fESDEvent) ntracks       = ReadEventESDMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 1);//read tracks
                 else if(fAODEvent) ntracks  = ReadEventAODMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 1);//read tracks
-                else Printf("Fatal Error");
+                else AliInfo("Fatal Error");
                 
                 // analyse
                 if(pt.size()){
@@ -730,7 +730,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                 //read tracks
                 if(fESDEvent)	   ntracks  = ReadEventESDMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 0);
                 else if(fAODEvent) ntracks  = ReadEventAODMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 0);
-                else Printf("Fatal Error");
+                else AliInfo("Fatal Error");
                 
                 //analyse
                 if(pt.size()){
@@ -1306,7 +1306,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  
     TClonesArray *mcArray = (TClonesArray*)fAODEvent->
     FindListObject(AliAODMCParticle::StdBranchName());
     if(!mcArray){
-        Printf("No MC particle branch found");
+        AliInfo("No MC particle branch found");
         return kFALSE;
     }
     
@@ -1440,7 +1440,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODMC( vector<Float_t> &ptArray,  vector<
     TClonesArray *mcArray = (TClonesArray*)fAODEvent->
     FindListObject(AliAODMCParticle::StdBranchName());
     if(!mcArray){
-        Printf("No MC particle branch found");
+        AliInfo("No MC particle branch found");
         return kFALSE;
     }
     
@@ -1740,16 +1740,16 @@ void AliAnalysisTaskMinijet::Analyse(const vector<Float_t> &pt,
                 fDPhiEventAxis[step]->Fill(dPhi, strangeWeightEventAxis*strangeWeightOthers);
                 
                 //check outliers
-                if(ptEventAxis< 0.4 || ptEventAxis > 100) Printf("particles out of range pt");
-                if(ntracksCharged<0 || ntracksCharged>150) Printf("particles out of range ncharge");
+                if(ptEventAxis< 0.4 || ptEventAxis > 100) AliInfo("particles out of range pt");
+                if(ntracksCharged<-1 || ntracksCharged>1500) AliInfo("particles out of range ncharge");
                 if(TMath::Abs(dEta)>2*fEtaCut) {
-                    Printf("particles out of range dEta");
-                    Printf("eta1=%f, eta2=%f", etaOthers, etaEventAxis);
-                    Printf("step=%d",step);
+                    AliInfo("particles out of range dEta");
+                    AliInfo("eta1=%f, eta2=%f", etaOthers, etaEventAxis);
+                    AliInfo("step=%d",step);
                 }
                 if(dPhi<-0.5*TMath::Pi() || dPhi>1.5*TMath::Pi()){
-                    Printf("particles out of range dPhi");
-                    Printf("phi1=%f, phi2=%f", phiOthers, phiEventAxis);
+                    AliInfo("particles out of range dPhi");
+                    AliInfo("phi1=%f, phi2=%f", phiOthers, phiEventAxis);
                 }
                 
                 Bool_t isLikeSign = CheckLikeSign(chargeEventAxis, chargeOthers);
@@ -1846,7 +1846,7 @@ Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(const Short_t charge, c
     }
     
     else{
-        Printf("Error: wrong selection of charged/pi0/k0");
+        AliInfo("Error: wrong selection of charged/pi0/k0");
         return 0;
     }
     
@@ -1955,7 +1955,7 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
             TClonesArray *mcArray = (TClonesArray*)fAODEvent->
             FindListObject(AliAODMCParticle::StdBranchName());
             if(!mcArray){
-                Printf("No MC particle branch found");
+                AliInfo("No MC particle branch found");
                 return false;
             }
             
@@ -2090,11 +2090,11 @@ Bool_t AliAnalysisTaskMinijet::CheckLikeSign(const Short_t chargeEventAxis,
     }
     
     else{
-        Printf("Error: Charge not lower nor higher as zero");
+        AliInfo("Error: Charge not lower nor higher as zero");
         return false;
     }
     
-    Printf("Error: Check values of Charge");
+    AliInfo("Error: Check values of Charge");
     return false;
 }
 
