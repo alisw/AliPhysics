@@ -744,7 +744,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   //Event selection
   Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
   Float_t ntracks=aod->GetNTracks();
-  Float_t evCentr=fRDCutsAnalysis->GetCentrality(aod);
+  Float_t evCentr=0;
+  if(fRDCutsAnalysis->GetUseCentrality()>0) evCentr=fRDCutsAnalysis->GetCentrality(aod);
   fHistCentrality[0]->Fill(ntracks,evCentr);
   if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(2);
   if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(3); 
