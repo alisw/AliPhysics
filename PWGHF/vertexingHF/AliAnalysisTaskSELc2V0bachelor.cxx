@@ -1568,6 +1568,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
   fillthis="histMcStatLc";
 
   AliAODMCParticle *searchLc = dynamic_cast<AliAODMCParticle*>(arrayMC->At(iii));
+  if(!searchLc) return -999;
   if (TMath::Abs(searchLc->GetPdgCode()) != pdgLc) return -999;
 
   ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(0);
@@ -1610,6 +1611,8 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
   }
   daugh1 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(index1));
   daugh2 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(index2));
+  if (!daugh1 || !daugh2) return -999;
+
   daughPdg1=TMath::Abs(daugh1->GetPdgCode());
   daughPdg2=TMath::Abs(daugh2->GetPdgCode());
 
