@@ -9,6 +9,7 @@
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TProfile.h"
 #include "TCanvas.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -359,7 +360,15 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   TH2F* hTOFmatchedDzVsStrip = new TH2F("hTOFmatchedDzVsStrip", "Dz vs strip; strip (#eta); Dz [cm]; hits", 92,0.,92.,200, -10., 10.) ; 
   hTOFmatchedDzVsStrip->Sumw2();
   fHlist->AddLast(hTOFmatchedDzVsStrip) ; 
- 
+
+  //16
+  TProfile *hTOFmatchedDxVsCh = new TProfile("hTOFmatchedDxVsCh","Dx vs channel; channel ID; Dx [cm]", 157248., 0.,157248.);
+  fHlist->AddLast(hTOFmatchedDxVsCh);
+
+  //17
+  TProfile *hTOFmatchedDzVsCh = new TProfile("hTOFmatchedDzVsCh","Dz vs channel; channel ID; Dz [cm]", 157248., 0.,157248.);
+  fHlist->AddLast(hTOFmatchedDzVsCh);
+
  //----------------------------------------------timeZero QA plots
   //TimeZero 0
   TH1D* hEventT0DetAND = new TH1D("hEventT0DetAND", "Event timeZero from T0AC detector ; t0 [ps]; events", 1000, -25000., 25000. ) ; 
@@ -1465,7 +1474,8 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
 	((TH2F*)fHlist->FindObject("hTOFmatchedDxVsPtPos"))->Fill(pT,track->GetTOFsignalDx());
       else ((TH2F*)fHlist->FindObject("hTOFmatchedDxVsPtNeg"))->Fill(pT,track->GetTOFsignalDx());
       ((TH2F*)fHlist->FindObject("hTOFmatchedDzVsStrip"))->Fill((Int_t)GetStripIndex(volId),track->GetTOFsignalDz());
-   
+      ((TProfile*)fHlist->FindObject("hTOFmatchedDxVsCh"))->Fill(channel,track->GetTOFsignalDx());
+      ((TProfile*)fHlist->FindObject("hTOFmatchedDzVsCh"))->Fill(channel,track->GetTOFsignalDz());
       //evaluate sign
       if (fEnableAdvancedCheck){
         if (track->GetSign()>0){
