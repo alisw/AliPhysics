@@ -17,6 +17,7 @@ Bool_t bApplyCorrectionForNUA = kFALSE; // apply correction for non-uniform acce
 Bool_t bApplyCorrectionForNUAVsM = kFALSE; // apply correction for non-uniform acceptance in each multiplicity bin independently
 Bool_t bPropagateErrorAlsoFromNIT = kFALSE; // propagate error also from non-isotropic terms
 Bool_t bMinimumBiasReferenceFlow = kTRUE; // store in CRH for reference flow the result obtained wihout rebinning in multiplicity (kTRUE)
+Bool_t checkForCommonHistResults = kTRUE; // check explicitely if the TList AliFlowCommonHistResults is available in the output
 
 void redoFinish()
 {
@@ -61,7 +62,7 @@ void redoFinish()
     {
       TList* list = dynamic_cast<TList*>(directory->Get(listTemp->At(icent)->GetName()));
       if (!list) continue;
-
+      if(checkForCommonHistResults && (!CheckForCommonHistResults(list))) continue;
       ////////////////////
       if(TString(list->GetName()).Contains("MCEP"))
       {
@@ -223,4 +224,8 @@ void LoadLibraries()
   gSystem->Load("libPWGflowTasks");
 } // end of void LoadLibrariesRF(const libModes mode)
 
-
+Bool_t CheckForCommonHistResults(TList* list) {
+    // check for common hist results. Redmer Alexander Bertens, r.a.bertens@cern.ch
+    for(Int_t i(0); i < list->GetEntries(); i++) if(((list->At(i))->IsA())->GetBaseClass("AliFlowCommonHistResults")) return kTRUE;
+    return kFALSE;
+}
