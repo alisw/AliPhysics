@@ -261,6 +261,33 @@ drawBWfit(Int_t ic=2,Float_t Tfo=0.1,Float_t s2=0.057,Float_t meanRho=0.8,Float_
     bwExt[2]->GetV2Fit()->SetLineColor(2);
     bwExt[2]->GetV2Fit()->SetLineStyle(2);
   }
+
+  Float_t numPi=0;
+  Float_t denPi=0;
+  Float_t numKa=0;
+  Float_t denKa=0;
+  Float_t numPr=0;
+  Float_t denPr=0;
+
+  for(Int_t i=0;i < 100;i++){
+    Float_t x = 0.1*(i+0.5);
+    if(hpiplus && gpiv2){
+      numPi += bwExt[0]->GetV2Fit()->Eval(x) * bwExt[0]->GetSpectraFit()->Eval(x);
+      denPi += bwExt[0]->GetSpectraFit()->Eval(x);
+    }
+    if(hkaplus && gkav2){
+      numKa += bwExt[1]->GetV2Fit()->Eval(x) * bwExt[1]->GetSpectraFit()->Eval(x);
+      denKa += bwExt[1]->GetSpectraFit()->Eval(x);
+    }
+    if(hprplus && gprv2){
+      numPr += bwExt[2]->GetV2Fit()->Eval(x) * bwExt[2]->GetSpectraFit()->Eval(x);
+      denPr += bwExt[2]->GetSpectraFit()->Eval(x);
+    }
+  }
+
+  if(denPi) printf("v2 integrated Pi = %f\n",numPi/denPi);
+  if(denKa) printf("v2 integrated Ka = %f\n",numKa/denKa);
+  if(denPr) printf("v2 integrated Pr = %f\n",numPr/denPr);
 }
 
 fitblastwave(Int_t ic=2){
