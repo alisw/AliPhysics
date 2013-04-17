@@ -32,7 +32,7 @@ public:
   virtual void   Terminate(const Option_t *option);
 
   // task configuration
-  void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength); }
+  void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
   const char* GetJetBranchName() const { return fJetBranchName; }
 
   void SetPtThrPart(Float_t minPt, Float_t maxPt) { fTrgPartPtMin = minPt; fTrgPartPtMax = maxPt; }
