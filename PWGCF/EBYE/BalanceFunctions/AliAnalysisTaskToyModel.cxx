@@ -801,7 +801,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     //Calculate the balance function
     fBalance->CalculateBalance(fReactionPlane,tracksMain,NULL,1,1.,0.);
     if(fRunMixing)
-      fBalance->CalculateBalance(fReactionPlane,tracksMixing,NULL,1,1.,0.);
+      fMixedBalance->CalculateBalance(fReactionPlane,tracksMixing,NULL,1,1.,0.);
   }//event loop
 }      
 
@@ -810,20 +810,31 @@ void  AliAnalysisTaskToyModel::FinishOutput() {
   //Printf("END BF");
 
   TFile *gOutput = TFile::Open("outputToyModel.root","recreate");
-  fList->Write("listQA",TObject::kSingleKey);
+  TDirectoryFile *dir = new TDirectoryFile("PWGCFEbyE.outputBalanceFunctionPsiAnalysis","PWGCFEbyE.outputBalanceFunctionPsiAnalysis");
+  
+  fList->SetName("listQA");
+  fList->SetOwner(kTRUE);
+  dir->Add(fList);
+  //fList->Write("listQA",TObject::kSingleKey);
 
   if (!fBalance) {
     Printf("ERROR: fBalance not available");
     return;
   }  
-  fListBF->Write("listBF",TObject::kSingleKey);
+  fListBF->SetName("listBF");
+  fListBF->SetOwner(kTRUE);
+  dir->Add(fListBF);
+  //fListBF->Write("listBF",TObject::kSingleKey);
 
   if(fRunShuffling) {
     if (!fShuffledBalance) {
       Printf("ERROR: fShuffledBalance not available");
       return;
     }
-    fListBFS->Write("listBFShuffled",TObject::kSingleKey);
+    fListBFS->SetName("listBFShuffled");
+    fListBFS->SetOwner(kTRUE);
+    dir->Add(fListBFS);
+    //fListBFS->Write("listBFShuffled",TObject::kSingleKey);
   }
 
   if(fRunMixing) {
@@ -831,9 +842,13 @@ void  AliAnalysisTaskToyModel::FinishOutput() {
       Printf("ERROR: fMixedBalance not available");
       return;
     }
-    fListBFM->Write("listBFMixed",TObject::kSingleKey);
+    fListBFM->SetName("listBFMixed");
+    fListBFM->SetOwner(kTRUE);
+    dir->Add(fListBFM);
+    //fListBFM->Write("listBFMixed",TObject::kSingleKey);
   }
 
+  dir->Write(dir->GetName(),TObject::kSingleKey);
   gOutput->Close();
 }
 
