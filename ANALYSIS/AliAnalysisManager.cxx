@@ -295,7 +295,7 @@ void AliAnalysisManager::CreateReadCache()
    }
 //   gEnv->SetValue("TFile.AsyncPrefetching",(Int_t)fAsyncReading);
 //   if (fAsyncReading) gEnv->SetValue("Cache.Directory",Form("file://%s/cache", gSystem->WorkingDirectory()));
-   if (fAsyncReading) gEnv->SetValue("TFile.AsyncReading",1);
+//   if (fAsyncReading) gEnv->SetValue("TFile.AsyncReading",1);
    fTree->SetCacheSize(fCacheSize);
    TTreeCache::SetLearnEntries(1);  //<<< we can take the decision after 1 entry
    fTree->AddBranchToCache("*",kTRUE);    //<<< add all branches to the cache
@@ -980,9 +980,11 @@ void AliAnalysisManager::UnpackOutput(TList *source)
             // If task is active, execute it
             if (task->IsPostEventLoop() && task->IsActive()) {
                if (fDebug > 1) printf("== Executing post event loop task %s\n", task->GetName());
+               if (fStatistics) fStatistics->StartTimer(GetTaskIndex(task), task->GetName(), task->ClassName());
                task->ExecuteTask();
             }   
          }
+         if (fStatistics) fStatistics->StopTimer();
       }   
    }
    fIOTimer->Stop();
@@ -1353,6 +1355,14 @@ AliAnalysisTask *AliAnalysisManager::GetTask(const char *name) const
    if (!fTasks) return NULL;
    return (AliAnalysisTask*)fTasks->FindObject(name);
 }
+
+//______________________________________________________________________________
+Int_t AliAnalysisManager::GetTaskIndex(const AliAnalysisTask *task) const
+{
+// Returns task inded in the manager's list, -1 if not registered.
+   if (!fTasks) return -1;
+   return fTasks->IndexOf(task);
+}  
 
 //______________________________________________________________________________
 AliAnalysisDataContainer *AliAnalysisManager::CreateContainer(const char *name, 
@@ -2233,8 +2243,10 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       while ((task=(AliAnalysisTask*)next1())) {
          if (fDebug >1) {
             cout << "    Executing task " << task->GetName() << endl;
-         }   	 
+         }
+         if (fStatistics) fStatistics->StartTimer(GetTaskIndex(task), task->GetName(), task->ClassName());
          task->ExecuteTask(option);
+         if (fStatistics) fStatistics->StopTimer();
          gROOT->cd();
          if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
             AliSysInfo::AddStamp(task->ClassName(), fNcalls, itask, 1);
@@ -2275,7 +2287,9 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (fDebug > 1) {
          cout << "    Executing task " << task->GetName() << endl;
       }   
+      if (fStatistics) fStatistics->StartTimer(GetTaskIndex(task), task->GetName(), task->ClassName());
       task->ExecuteTask(option);
+      if (fStatistics) fStatistics->StopTimer();
       gROOT->cd();
    }   
    fCPUTimer->Stop();

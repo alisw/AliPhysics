@@ -177,6 +177,7 @@ enum EAliAnalysisFlags {
    // Including tasks and getting them
    void                 AddTask(AliAnalysisTask *task);
    AliAnalysisTask     *GetTask(const char *name) const;
+   Int_t                GetTaskIndex(const AliAnalysisTask *task) const;
    
    // Connecting data containers to task inputs/outputs
    Bool_t               ConnectInput(AliAnalysisTask *task, Int_t islot,

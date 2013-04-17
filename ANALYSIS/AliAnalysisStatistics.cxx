@@ -26,7 +26,8 @@
 #include "AliAnalysisStatistics.h"
 
 #include "Riostream.h"
-#include "TCollection.h"
+#include "TObjArray.h"
+#include "TStopwatch.h"
 
 #include "AliVEvent.h"
 
@@ -41,9 +42,27 @@ AliAnalysisStatistics::AliAnalysisStatistics(const AliAnalysisStatistics &other)
        fNprocessed(other.fNprocessed),
        fNfailed(other.fNfailed),
        fNaccepted(other.fNaccepted),
-       fOfflineMask(other.fOfflineMask)
+       fOfflineMask(other.fOfflineMask),
+       fMaxTasks(other.fMaxTasks),
+       fNtasks(other.fNtasks),
+       fCurrentTask(other.fCurrentTask),
+       fTaskTimeReal(0),
+       fTaskTimeCPU(0),
+       fTaskNames(0),
+       fTaskTimer(0)
 {
 // Copy constructor.
+  if (fNtasks) {
+    fTaskTimer = new TStopwatch();
+    fTaskTimeReal = new Double_t[fMaxTasks];
+    memset(fTaskTimeReal, 0, fMaxTasks*sizeof(Double_t));
+    memcpy(fTaskTimeReal, other.fTaskTimeReal, fNtasks*sizeof(Double_t));
+    fTaskTimeCPU = new Double_t[fMaxTasks];
+    memset(fTaskTimeCPU, 0, fMaxTasks*sizeof(Double_t));
+    memcpy(fTaskTimeCPU, other.fTaskTimeCPU, fNtasks*sizeof(Double_t));
+    fTaskNames = new TObjArray(fMaxTasks);
+    for (Int_t i=0; i<fNtasks; i++) fTaskNames->AddAt(new TObjString(other.GetTaskName(i)), i);
+  }
 }
 
 //______________________________________________________________________________
@@ -51,13 +70,89 @@ AliAnalysisStatistics &AliAnalysisStatistics::operator=(const AliAnalysisStatist
 {
 // Assignment.
   if (&other == this) return *this;
-  fNinput     = other.fNinput;
-  fNprocessed = other.fNprocessed;
-  fNfailed    = other.fNfailed;
-  fNaccepted  = other.fNaccepted;
-  fOfflineMask = other.fOfflineMask;
+  fNinput       = other.fNinput;
+  fNprocessed   = other.fNprocessed;
+  fNfailed      = other.fNfailed;
+  fNaccepted    = other.fNaccepted;
+  fOfflineMask  = other.fOfflineMask;
+  fMaxTasks     = other.fMaxTasks;
+  fNtasks       = other.fNtasks;
+  fCurrentTask  = other.fCurrentTask;
+  fTaskTimeReal = 0;
+  fTaskTimeCPU  = 0;
+  fTaskNames    = 0;
+  fTaskTimer   = 0;
+  if (fNtasks) {
+    fTaskTimer = new TStopwatch();
+    fTaskTimeReal = new Double_t[fMaxTasks];
+    memset(fTaskTimeReal, 0, fMaxTasks*sizeof(Double_t));
+    memcpy(fTaskTimeReal, other.fTaskTimeReal, fNtasks*sizeof(Double_t));
+    fTaskTimeCPU = new Double_t[fMaxTasks];
+    memset(fTaskTimeCPU, 0, fMaxTasks*sizeof(Double_t));
+    memcpy(fTaskTimeCPU, other.fTaskTimeCPU, fNtasks*sizeof(Double_t));
+    fTaskNames = new TObjArray(fMaxTasks);
+    for (Int_t i=0; i<fNtasks; i++) fTaskNames->AddAt(new TObjString(other.GetTaskName(i)), i);
+  }  
   return *this;
 }
+
+//______________________________________________________________________________
+void AliAnalysisStatistics::StartTimer(Int_t itask, const char *name, const char *classname)
+{
+// Measure the CPU time done by this task in the interval
+  if (!fTaskTimer) {
+    // Create the arrays with timings with the initial size
+    if (!fMaxTasks) fMaxTasks = 100;
+    fTaskTimer = new TStopwatch();
+    fTaskTimeReal = new Double_t[fMaxTasks];
+    memset(fTaskTimeReal, 0, fMaxTasks*sizeof(Double_t));
+    fTaskTimeCPU = new Double_t[fMaxTasks];
+    memset(fTaskTimeCPU, 0, fMaxTasks*sizeof(Double_t));
+    fTaskNames = new TObjArray(fMaxTasks);
+  } else {
+  // Stop the timer if it was timing some task
+    StopTimer();
+  }  
+  
+  if (fNtasks<itask+1) {
+  // Double the array size
+    if (itask>=fMaxTasks) {
+      Int_t newsize = TMath::Max(2*fMaxTasks, itask+1);
+      Double_t *taskTimeReal = new Double_t[newsize];
+      memset(taskTimeReal, 0, newsize*sizeof(Double_t));
+      memcpy(taskTimeReal, fTaskTimeReal, fMaxTasks*sizeof(Double_t));
+      delete [] fTaskTimeReal;
+      fTaskTimeReal = taskTimeReal;
+      Double_t *taskTimeCPU = new Double_t[newsize];
+      memset(taskTimeCPU, 0, newsize*sizeof(Double_t));
+      memcpy(taskTimeCPU, fTaskTimeCPU, fMaxTasks*sizeof(Double_t));
+      delete [] fTaskTimeCPU;
+      fTaskTimeCPU = taskTimeCPU;
+      fMaxTasks = newsize;
+    }  
+    fNtasks = itask+1;
+  }
+  // Start the timer for the new task
+  fCurrentTask = itask;
+  if (!fTaskNames->At(fCurrentTask)) {
+    TString sname = name;
+    if (strlen(classname)) sname += Form("(%s)", classname);
+    fTaskNames->AddAt(new TObjString(sname), fCurrentTask);
+  }  
+  fTaskTimer->Start(kTRUE);  
+}   
+
+//______________________________________________________________________________
+void AliAnalysisStatistics::StopTimer()
+{
+// Stop the current task timing.
+  if (fCurrentTask>=0) {
+    fTaskTimer->Stop();
+    fTaskTimeReal[fCurrentTask] += fTaskTimer->RealTime();
+    fTaskTimeCPU[fCurrentTask]  += fTaskTimer->CpuTime();
+    fCurrentTask = -1;
+  }
+}  
 
 //______________________________________________________________________________
 Long64_t AliAnalysisStatistics::Merge(TCollection* list)
@@ -71,7 +166,10 @@ Long64_t AliAnalysisStatistics::Merge(TCollection* list)
     fNprocessed += current->GetNprocessed();
     fNfailed    += current->GetNfailed();
     fNaccepted  += current->GetNaccepted();
-    current++;
+    for (Int_t i=0; i<fNtasks; i++) {
+      fTaskTimeReal[i] += current->GetRealTime(i);
+      fTaskTimeCPU[i] += current->GetCPUTime(i);
+    }   
   }
   return count;
 }
@@ -84,6 +182,14 @@ void AliAnalysisStatistics::Print(const Option_t *) const
   cout << "### Processed events w/o errors  : " << fNprocessed << endl;
   cout << "### Failed events                : " << fNfailed << endl;
   cout << "### Accepted events for mask: " << GetMaskAsString(fOfflineMask) << ": " << fNaccepted << endl;
+  if (fNtasks) {
+    cout << "Timing per task:" <<endl;
+    TString s;
+    for (Int_t i=0; i<fNtasks; i++) {
+      s = Form("%03d:  real: %9.2f   cpu: %9.2f   => %s", i,fTaskTimeReal[i], fTaskTimeCPU[i], GetTaskName(i));
+      cout << s << endl;
+    }
+  }  
 }
 
 //______________________________________________________________________________
@@ -110,4 +216,12 @@ const char *AliAnalysisStatistics::GetMaskAsString(UInt_t mask)
    if (mask ==  AliVEvent::kAny) smask = "ANY";
    return smask.Data();
 }
-   
+
+//______________________________________________________________________________
+const char *AliAnalysisStatistics::GetTaskName(Int_t itask) const
+{
+// Returns task name
+  if (!fTaskNames || !fTaskNames->At(itask)) return 0;
+  return fTaskNames->At(itask)->GetName();
+}
+  
