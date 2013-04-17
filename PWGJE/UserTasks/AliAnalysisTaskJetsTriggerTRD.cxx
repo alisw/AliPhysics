@@ -123,7 +123,7 @@ void AliAnalysisTaskJetsTriggerTRD::UserExec(Option_t * /* option */)
 
   // Int_t nTracksMC  = 0; // no. of MC tracks
   // Int_t nTracksESD = 0; // no. of global ESD tracks
-  Int_t nTracksGTU = 0; // no. of GTU tracks
+  Int_t nTracksGTU = esdEvent ? esdEvent->GetNumberOfTrdTracks() : 0; // no. of GTU tracks
 
   // Int_t nTracks[6][90]; // tracks above lower pt threshold, counted stack-wise
   // memset(nTracks, 0, sizeof(Int_t)*6*90);
@@ -148,7 +148,7 @@ void AliAnalysisTaskJetsTriggerTRD::UserExec(Option_t * /* option */)
   FillH1(kHistStat, kStatUsed);
 
   for (Int_t iTrack = 0; iTrack < nTracksGTU; ++iTrack) {
-    AliVTrdTrack *trk = 0x0;
+    AliVTrdTrack *trk = esdEvent->GetTrdTrack(iTrack);
     FillH1(kHistTrackGTU, trk->Pt());
   }
 
