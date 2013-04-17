@@ -999,24 +999,50 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
 
    f2dHistMultiplicityVsVertexZForTrigEvt->Fill( lMultiplicity, tPrimaryVtxPosition[2] );
 
-//------------------------------------------------
-// Primary Vertex Z position: SKIP
-//------------------------------------------------
-
-  if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0 && fkpAVertexSelection==kFALSE) {
-    AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
+  //------------------------------------------------
+  // Primary Vertex Requirements Section:
+  //  ---> pp and PbPb: Only requires |z|<10cm
+  //  ---> pPb: all requirements checked at this stage
+  //------------------------------------------------
+  
+  //Roberto's PV selection criteria, implemented 17th April 2013
+  
+  /* vertex selection */
+  Bool_t fHasVertex = kFALSE;
+  
+  const AliESDVertex *vertex = lESDevent->GetPrimaryVertexTracks();
+  if (vertex->GetNContributors() < 1) {
+    vertex = lESDevent->GetPrimaryVertexSPD();
+    if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
+    else fHasVertex = kTRUE;
+    TString vtxTyp = vertex->GetTitle();
+    Double_t cov[6]={0};
+    vertex->GetCovarianceMatrix(cov);
+    Double_t zRes = TMath::Sqrt(cov[5]);
+    if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fHasVertex = kFALSE;
+  }
+  else fHasVertex = kTRUE;
+  
+  //Is First event in chunk rejection: Still present!
+  if(fkpAVertexSelection==kTRUE && fHasVertex == kFALSE) {
+    AliWarning("Pb / | PV does not satisfy selection criteria!");
     PostData(1, fListHistV0);
     PostData(2, fTree);
     return;
   }
+  
+  //Is First event in chunk rejection: Still present!
   if(fkpAVertexSelection==kTRUE && fUtils->IsFirstEventInChunk(lESDevent)) {
     AliWarning("Pb / | This is the first event in the chunk!");
     PostData(1, fListHistV0);
     PostData(2, fTree);
     return;
   }
-  if(fkpAVertexSelection==kTRUE && !fUtils->IsVertexSelected2013pA(lESDevent)) {
-    AliWarning("Pb / | Vertex not selected by 2013 pA criteria!");
+  
+  //17 April Fix: Always do primary vertex Z selection, after pA vertex selection from Roberto
+  if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0) {
+    if( !fkpAVertexSelection ) AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
+    if( fkpAVertexSelection )  AliWarning("Pb / | pPb case | Z position of Best Prim Vtx | > 10.0 cm ... return !");
     PostData(1, fListHistV0);
     PostData(2, fTree);
     return;
