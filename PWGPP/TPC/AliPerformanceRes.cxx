@@ -163,9 +163,12 @@ void AliPerformanceRes::Init(){
   //fPullHisto = new THnSparseF("fPullHisto","pull_y:pull_z:pull_phi:pull_lambda:pull_1pt:y:z:eta:phi:pt",10,binsPullHisto,minPullHisto,maxPullHisto);
 
   //pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt
-  Int_t binsPullHisto[10]={100,100,100,100,100,50,50,50,50,nPtBins};
-  Double_t minPullHisto[10]={-5.,-5.,-5.,-5.,-5.,yMin, zMin,-1., -2.0, ptMin};
-  Double_t maxPullHisto[10]={ 5., 5., 5., 5., 5., yMax, zMax, 1., 2.0, ptMax};
+  //Int_t binsPullHisto[10]={100,100,100,100,100,50,50,50,50,nPtBins};
+  //Double_t minPullHisto[10]={-5.,-5.,-5.,-5.,-5.,yMin, zMin,-1., -2.0, ptMin};
+  //Double_t maxPullHisto[10]={ 5., 5., 5., 5., 5., yMax, zMax, 1., 2.0, ptMax};
+  Int_t binsPullHisto[10]={100,100,100,100,100,50,50,50,50,20};
+  Double_t minPullHisto[10]={-5.,-5.,-5.,-5.,-5.,yMin, zMin,-1., -2.0, 0.};
+  Double_t maxPullHisto[10]={ 5., 5., 5., 5., 5., yMax, zMax, 1., 2.0, 10.};
   fPullHisto = new THnSparseF("fPullHisto","pull_y:pull_z:pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt",10,binsPullHisto,minPullHisto,maxPullHisto);
 
   /*
@@ -1043,7 +1046,7 @@ void AliPerformanceRes::Analyse() {
       if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
       //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.0,0.89); // eta window
       else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
-      if(GetAnalysisMode() == 3) fResolHisto->GetAxis(5)->SetRangeUser(-80.,80.); // y range
+      if(GetAnalysisMode() == 3) fResolHisto->GetAxis(5)->SetRangeUser(-80.,79.99); // y range
 
       h2D = (TH2F*)fResolHisto->Projection(i,j);
 
@@ -1076,14 +1079,14 @@ void AliPerformanceRes::Analyse() {
       aFolderObj->Add(h);
 
       fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.5);
-      fResolHisto->GetAxis(9)->SetRangeUser(0.0,10.);
+      fResolHisto->GetAxis(9)->SetRangeUser(0.1,20.);
 
       //
-      //if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
-      if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(0.0,0.89);    // eta window
+      if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
+      //if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(0.0,0.89);    // eta window
       else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);      // eta window
-      fPullHisto->GetAxis(9)->SetRangeUser(0.16,100.);            // pt threshold
-      if(GetAnalysisMode() == 3) fPullHisto->GetAxis(5)->SetRangeUser(-80.,80.); // y range
+      fPullHisto->GetAxis(9)->SetRangeUser(0.,9.99);            // 1./pt threshold
+      if(GetAnalysisMode() == 3) fPullHisto->GetAxis(5)->SetRangeUser(-80.,79.99); // y range
 
       h2D = (TH2F*)fPullHisto->Projection(i,j);
 
