@@ -387,7 +387,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
       RecalculateClusterShowerShapeParametersWithCellCut(GetEMCALGeometry(), cells, clus,l0,l1,disp,
                                                          dEta, dPhi, sEta, sPhi, sEtaPhi,fSSECellCut[iec]);
       
-      printf("E %f, l0 org %f, l0 new %f, slope %f\n",clus->E(),l0org,l0,fSSECellCut[iec]);
+      //printf("E %f, l0 org %f, l0 new %f, slope %f\n",clus->E(),l0org,l0,fSSECellCut[iec]);
       fhM02ECellCutPi0[nlm][iec]->Fill(energy,l0);
       
     } // w0 loop
