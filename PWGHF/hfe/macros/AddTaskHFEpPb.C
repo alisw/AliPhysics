@@ -4,7 +4,7 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
                                Bool_t kTPC_Only = kFALSE,
                                Bool_t kTPCTOF_Cent = kFALSE,
                                Bool_t kTPCTOF_Sys = kFALSE,
-			       Bool_t kTPCTOFTRD_Ref = kFALSE,
+			                         Bool_t kTPCTOFTRD_Ref = kFALSE,
                                int TRDtrigger = 0
   ){
   //get the current analysis manager
@@ -58,10 +58,6 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
     // Reference task
     // with centrality V0A
     RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth); // 50%
-    
-    // One cross-check without centrality, also 50%
-    RegisterTaskPID2(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,kDefTOFs,0,AliHFEextraCuts::kBoth);
-    
   }
 
   if (kTPCTOF_Cent){
@@ -113,7 +109,6 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
    if(kTPCTOFTRD_Ref){
 
       RegisterTaskPID2(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,kDefTOFs,0,AliHFEextraCuts::kBoth,kFALSE,TRDtrigger);
-
   }
  
   
