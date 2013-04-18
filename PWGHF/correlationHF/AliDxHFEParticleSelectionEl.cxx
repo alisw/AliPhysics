@@ -303,6 +303,7 @@ TObjArray* AliDxHFEParticleSelectionEl::Select(const AliVEvent* pEvent)
   if(selectedTracks->GetSize()>0)
     {
       Bool_t* selTrackIndex=new Bool_t[selectedTracks->GetSize()];
+      if (selTrackIndex) {
       InvMassFilter(selectedTracks, selTrackIndex);
 
       //Only remove electrons if fUseInvMassCut is set
@@ -319,6 +320,8 @@ TObjArray* AliDxHFEParticleSelectionEl::Select(const AliVEvent* pEvent)
 	      }
 	    HistogramParticleProperties(trackIM, selectionCode);
 	  }
+      }
+      delete [] selTrackIndex;
       }
       
     }

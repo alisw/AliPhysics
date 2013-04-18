@@ -259,7 +259,7 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     // remove delta e? also remove E<300MeV?
     // Should also mark dalitz decay and gamma conversion..
     AliAODMCParticle *mcp=dynamic_cast<AliAODMCParticle*>(p);
-    if(!mcp->IsPhysicalPrimary()) return 0; 
+    if(!mcp || !mcp->IsPhysicalPrimary()) return 0; 
 
   }
 
