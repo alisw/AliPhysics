@@ -62,11 +62,12 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   TH2F                  *fHistNClusMatchCent;        //!output histograms
   TH1F                  *fHistEsubPch[8];            //!output histograms
   TH2F                  *fHistEsubPchRat[8];         //!output histograms
+  TH2F                  *fHistEsubPchRatAll[8];         //!output histograms
 
  private:
   AliHadCorrTask(const AliHadCorrTask&);            // not implemented
   AliHadCorrTask &operator=(const AliHadCorrTask&); // not implemented
 
-  ClassDef(AliHadCorrTask, 10) // Hadronic correction task
+  ClassDef(AliHadCorrTask, 11) // Hadronic correction task
 };
 #endif
