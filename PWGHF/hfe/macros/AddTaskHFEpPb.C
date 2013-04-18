@@ -19,7 +19,7 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
   //@@ 0 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   
   // Default settings 
-  const int kDefITScl = 3;
+  const int kDefITScl = 4;
   const int kDefTPCcl = 110;
   const int kDefTPCclPID = 80;
   const double kDefDCAr = 1.;
