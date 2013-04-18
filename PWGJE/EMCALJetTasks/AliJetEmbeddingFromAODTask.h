@@ -35,6 +35,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetTriggerMask(UInt_t mask)                       { fTriggerMask        = mask  ; }
   void           SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)      { fAODfilterBits[0]   = b0    ; fAODfilterBits[1] = b1  ; }
   void           SetIncludeNoITS(Bool_t f)                         { fIncludeNoITS       = f     ; }
+  void           SetCutMaxFractionSharedTPCClusters(Double_t c = 0.4) { fCutMaxFractionSharedTPCClusters  = c ; }
   void           SetUseNegativeLabels(Bool_t f)                    { fUseNegativeLabels  = f     ; }
   void           SetTrackEfficiency(Double_t eff = 0.95)           { fTrackEfficiency    = eff   ; }
   void           SetTotalFiles(Int_t n)                            { fTotalFiles         = n     ; }
@@ -83,6 +84,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   Bool_t         fJetParticleLevel    ;//  Trigger, look at particle level jets
   Int_t          fAODfilterBits[2]    ;//  AOD track filter bit map
   Bool_t         fIncludeNoITS        ;//  True = includes tracks with failed ITS refit
+  Double_t       fCutMaxFractionSharedTPCClusters;  // max fraction of shared TPC clusters
   Bool_t         fUseNegativeLabels   ;//  Whether or not should use negative MC labels
   Double_t       fTrackEfficiency     ;//  Track efficiency
   Bool_t         fIsAODMC             ;//  Whether the embedding AOD is MC or not
@@ -110,6 +112,6 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
   AliJetEmbeddingFromAODTask &operator=(const AliJetEmbeddingFromAODTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromAODTask, 8) // Jet embedding from AOD task
+  ClassDef(AliJetEmbeddingFromAODTask, 9) // Jet embedding from AOD task
 };
 #endif

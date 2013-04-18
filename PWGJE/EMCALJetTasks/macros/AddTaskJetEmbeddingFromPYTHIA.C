@@ -16,7 +16,7 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   const char     *aodCellsName  = "emcalCells",
   const char     *aodMCPartName = "mcparticles",
   const char     *runperiod     = "lhc12a15e",
-  Bool_t          includeNoITS  = kTRUE,
+  Bool_t          includeNoITS  = kFALSE,
   Double_t        minCent       = -1,
   Double_t        maxCent       = -1,
   UInt_t          mask          = AliVEvent::kAny,

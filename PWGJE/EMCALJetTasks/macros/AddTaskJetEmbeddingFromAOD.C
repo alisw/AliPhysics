@@ -14,7 +14,7 @@ AliJetEmbeddingFromAODTask* AddTaskJetEmbeddingFromAOD(
   const char     *aodCellsName  = "emcalCells",
   const char     *aodMCPartName = "",
   const char     *runperiod     = "lhc11h",
-  Bool_t          includeNoITS  = kTRUE,
+  Bool_t          includeNoITS  = kFALSE,
   Double_t        minCent       = 0,
   Double_t        maxCent       = 10,
   UInt_t          mask          = AliVEvent::kAny,
