@@ -40,8 +40,34 @@ public:
   void SetSignalsMC(TObjArray* array)    {fSignalsMC = array;}
   void SetStepForMCGenerated(Bool_t switcher=kTRUE)    {fStepGenerated = switcher;}
   void SetPairTypes(EPairType ptype=kOSonly) { fPairType=ptype; }
-  void AddRefHist(TH1 *obj, UInt_t vars[4]);
 
+  // functions to add 1-dimensional objects
+  void UserProfile(const char* histClass, UInt_t valTypeP,
+		   const TVectorD * const binsX, UInt_t valTypeX, TString option="");
+  void UserHistogram(const char* histClass,
+		     const TVectorD * const binsX, UInt_t valTypeX)
+  { UserProfile(histClass,999,binsX,valTypeX); }
+
+  // functions to add 2-dimensional objects
+  void UserProfile(const char* histClass, UInt_t valTypeP,
+		   const TVectorD * const binsX, const TVectorD * const binsY,
+		   UInt_t valTypeX, UInt_t valTypeY, TString option="");
+  void UserHistogram(const char* histClass,
+                     const TVectorD * const binsX, const TVectorD * const binsY,
+		     UInt_t valTypeX, UInt_t valTypeY)
+  { UserProfile(histClass,999,binsX,binsY,valTypeX,valTypeY); }
+
+  // functions to add 3-dimensional objects
+  void UserProfile(const char* histClass, UInt_t valTypeP,
+		   const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
+		   UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ, TString option="");
+  void UserHistogram(const char* histClass,
+                     const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
+                     UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ)
+  { UserProfile(histClass,999,binsX,binsY,binsZ,valTypeX,valTypeY,valTypeZ); }
+
+
+  // functions to define the grid
   void AddCutVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins,
 		      Double_t min, Double_t max, Bool_t log=kFALSE, Bool_t leg=kFALSE, EBinType btype=kStdBin);
   void AddCutVariable(AliDielectronVarManager::ValueTypes type, 
