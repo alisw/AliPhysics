@@ -165,7 +165,12 @@ Double_t GetMeanNtrk(const TString& period, Double_t eta)
 //
 	if(TMath::Abs(eta) > 0.51) // |eta|<0.8
 	{
+		if(period =="lhc10b")       return 9.68887; // pass3
 		if(period =="lhc10d")       return 9.47466; // pass2
+		if(period =="lhc10e")       return 9.55678; // pass2
+		
+		// MC
+		if(period =="lhc10e21")            return 7.69483;
 	}
 	else // |eta|<0.5
 	{
@@ -207,7 +212,12 @@ Double_t GetNSDMeanNtrk(const TString& period, Double_t eta)
 //
 	if(TMath::Abs(eta) > 0.51) // |eta|<0.8
 	{
+		if(period =="lhc10b")       return 10.0630; // pass3
 		if(period =="lhc10d")       return 9.77129; // pass2
+		if(period =="lhc10e")       return 9.90511; // pass2
+		
+		// MC
+		if(period =="lhc10e21")            return 7.91423;
 	}
 	else // |eta|<0.5
 	{
