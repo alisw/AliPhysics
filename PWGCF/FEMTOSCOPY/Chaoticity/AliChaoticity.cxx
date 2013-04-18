@@ -2195,10 +2195,11 @@ void AliChaoticity::Exec(Option_t *)
 		Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[1].fSmeared->Fill(denIndex, qinv12);
 	      }
 	    }
-	    if(qinv12 > fQcut[qCutBin]) continue;
+	    
 	    
 	    /////////////////////////////////////////////////////
-	    if(!fTabulatePairs) {
+	    if(!fTabulatePairs && qinv12 <= fQcut[qCutBin]) {// 3-particle MRC
+	      
 	      // 3-particle MRC
 	      Short_t fillIndex3 = 0;
 	      key1=1; key2=1; key3=1;
