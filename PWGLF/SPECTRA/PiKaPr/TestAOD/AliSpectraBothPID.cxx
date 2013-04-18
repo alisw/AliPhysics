@@ -171,7 +171,6 @@ Int_t AliSpectraBothPID::GetParticleSpecie(AliSpectraBothHistoManager * hman,Ali
   // Get PID response object, if needed
 
 	  // guess the particle based on the smaller nsigma
-  
   	rec[kSpPion]=false;
  	 rec[kSpKaon]=false;
   	rec[kSpProton]=false;
