@@ -2409,13 +2409,13 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 			     fFFBckgHisto1RecCuts,fQABckgHisto1RecCuts, fh1BckgMult1);
 	    if(fBckgType[2]!=kBckgNone)
 	      FillBckgHistos(fBckgType[2], fTracksRecCuts, fJetsRecCuts, jet, 
-			     fFFBckgHisto2RecCuts,fQABckgHisto2RecCuts, fh1BckgMult1);
+			     fFFBckgHisto2RecCuts,fQABckgHisto2RecCuts, fh1BckgMult2);
 	    if(fBckgType[3]!=kBckgNone)
 	      FillBckgHistos(fBckgType[3], fTracksRecCuts, fJetsRecCuts, jet, 
-			     fFFBckgHisto3RecCuts,fQABckgHisto3RecCuts, fh1BckgMult2);
+			     fFFBckgHisto3RecCuts,fQABckgHisto3RecCuts, fh1BckgMult3);
 	    if(fBckgType[4]!=kBckgNone)
 	      FillBckgHistos(fBckgType[4], fTracksRecCuts, fJetsRecCuts, jet, 
-			     fFFBckgHisto4RecCuts,fQABckgHisto4RecCuts, fh1BckgMult3);
+			     fFFBckgHisto4RecCuts,fQABckgHisto4RecCuts, fh1BckgMult4);
 	  } // end if(fBckgMode)
 	 
 
@@ -2882,12 +2882,12 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfTracks(TList *list, Int_t t
 	  Int_t iMother = part->GetMother();
 	  if(iMother >= 0){
 	    AliAODMCParticle *partM = dynamic_cast<AliAODMCParticle*>(tca->At(iMother));
-	    Int_t codeM = -1;
-	    if(partM) codeM = TMath::Abs(partM->GetPdgCode());
+	    if(!partM) continue;
+
+	    Int_t codeM =  TMath::Abs(partM->GetPdgCode());
 	    Int_t mfl = Int_t (codeM/ TMath::Power(10, Int_t(TMath::Log10(codeM))));
 	    if  (mfl == 3 && codeM != 3) isFromStrange = kTRUE;
 	    
-
 	    // if(mfl ==3){
 	    //   cout<<" mfl "<<mfl<<" codeM "<<partM->GetPdgCode()<<" code this track "<<part->GetPdgCode()<<endl; 
 	    //   cout<<" index this track "<<it<<" index daughter 0 "<<partM->GetDaughter(0)<<" 1 "<<partM->GetDaughter(1)<<endl; 
@@ -3454,6 +3454,8 @@ void  AliAnalysisTaskFragmentationFunction::FillJetTrackHistosRec(AliFragFuncHis
     if(isRec){
       
       AliAODTrack* rectrack = dynamic_cast<AliAODTrack*> (tracksRec->At(iRec));
+      if(!rectrack) continue;
+
       ptRec = rectrack->Pt();	
       
       if(jetTrackListTR){ 
