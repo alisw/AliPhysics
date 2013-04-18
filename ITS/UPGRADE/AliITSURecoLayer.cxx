@@ -226,6 +226,7 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *senso
 {
   // find sensors having intersection with track
   // impPar contains: lab phi of track, dphi, labZ, dz
+  //
   double z = impPar[2];
   if (z>fZMax+impPar[3]) return 0; // outside of Z coverage
   z -= fZMin;
@@ -241,6 +242,7 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *senso
   //
   AliITSURecoSens* sensN,*sens = GetSensor(ladID*fNSensInLadder+sensInLad);
   sensors[nsens++] = sens;
+  //
   // check neighbours
   double zMn=impPar[2]-impPar[3], zMx=impPar[2]+impPar[3], phiMn=impPar[0]-impPar[1], phiMx=impPar[0]+impPar[1];
   BringTo02Pi(phiMn);
@@ -273,6 +275,105 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *senso
   return nsens;
 }
 
+/*
+Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *sensors[AliITSURecoSens::kNNeighbors],int mcLab)
+{
+  // find sensors having intersection with track
+  // impPar contains: lab phi of track, dphi, labZ, dz
+
+  //tmp>>>
+  int nFnd = 0;
+  int fndSens[50];
+  if (mcLab>=0) { // find correct sensors from MC info
+    int ncl = GetNClusters();
+    for (int icl=ncl;icl--;) {
+      AliCluster* cl = GetCluster(icl);
+      for (int ilb=0;ilb<3;ilb++) {
+	if (cl->GetLabel(ilb)<0) break;
+	if (cl->GetLabel(ilb)==mcLab) {fndSens[nFnd++] = cl->GetVolumeId(); break;}
+      }
+    }
+    if (nFnd>0) {
+      Int_t layS,ladS,sensS;
+      for (int is=0;is<nFnd;is++) {
+	fITSGeom->GetModuleId(fndSens[is],layS,ladS,sensS);
+	printf("SNMC#%d(%d): %d %d %d | ",is,mcLab,layS,ladS,sensS); GetSensorFromID(fndSens[is])->Print();
+      }
+    }
+  }
+
+  //tmp<<<
+
+  double z = impPar[2];
+  if (z>fZMax+impPar[3]) {
+    if (nFnd>0) printf("MissedSens!!!\n");
+    return 0; // outside of Z coverage
+  }
+  z -= fZMin;
+  if (z<-impPar[3]) {
+    if (nFnd>0) printf("MissedSens!!!\n");
+    return 0; // outside of Z coverage
+  }
+  int sensInLad = int(z*fSensDZInv);
+  if      (sensInLad<0) sensInLad = 0;
+  else if (sensInLad>=fNSensInLadder) sensInLad = fNSensInLadder-1;
+  //
+  double phi = impPar[0] - fPhiOffs;
+  BringTo02Pi(phi);
+  int ladID = int(phi*fDPhiLadInv);  // ladder id
+  int nsens = 0;
+  //
+  AliITSURecoSens* sensN,*sens = GetSensor(ladID*fNSensInLadder+sensInLad);
+  sensors[nsens++] = sens;
+  //
+  // check neighbours
+  double zMn=impPar[2]-impPar[3], zMx=impPar[2]+impPar[3], phiMn=impPar[0]-impPar[1], phiMx=impPar[0]+impPar[1];
+  BringTo02Pi(phiMn);
+  BringTo02Pi(phiMx);
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbR)); // neighbor on the right (smaller phi)
+  if (sensN && OKforPhiMin(phiMn,sensN->GetPhiMax())) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbTR)); // neighbor on the top right (smaller phi, larger Z)
+  if (sensN && OKforPhiMin(phiMn,sensN->GetPhiMax()) && sensN->GetZMin()<zMx) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbT)); // neighbor on the top (larger Z)
+  if (sensN && sensN->GetZMin()<zMx) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbTL)); // neighbor on the top left (larger Z, larger phi)
+  if (sensN && OKforPhiMax(phiMx,sensN->GetPhiMin()) && sensN->GetZMin()<zMx) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbL)); // neighbor on the left (larger phi)
+  if (sensN && OKforPhiMax(phiMx,sensN->GetPhiMin())) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbBL)); // neighbor on the bottom left (smaller Z, larger phi)
+  if (sensN && OKforPhiMax(phiMx,sensN->GetPhiMin()) && sensN->GetZMax()>zMn) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbB));  // neighbor on the bottom (smaller Z)
+  if (sensN && sensN->GetZMax()>zMn) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbBR)); // neighbor on the bottom right (smaller Z, smaller phi)
+  if (sensN && OKforPhiMin(phiMn,sensN->GetPhiMax()) && sensN->GetZMax()>zMn) sensors[nsens++] = sensN;
+  //
+  if (mcLab>=0) {
+    Int_t layS,ladS,sensS;
+    printf("Found %d sensors for phi %.3f : %.3f | Z %.4f %.4f\n", nsens,phiMn,phiMx,zMn,zMx); 
+    for (int is=0;is<nsens;is++) {
+      fITSGeom->GetModuleId(sensors[is]->GetID()+fITSGeom->GetFirstModIndex(fActiveID),layS,ladS,sensS);
+      printf("*SNF#%d: %d %d %d | ",is,layS,ladS,sensS); sensors[is]->Print();
+    }
+    for (int ism=0;ism<nFnd;ism++) {
+      AliITSURecoSens* snMC = GetSensorFromID(fndSens[ism]);
+      Bool_t ok=kFALSE;
+      for (int isf=0;isf<nsens;isf++) {
+	if (snMC==sensors[isf]) {ok=kTRUE;break;}
+      }
+      if (!ok) printf("MissedSens %d!!!\n",ism);
+    }
+  }
+  return nsens;
+}
+*/
 //______________________________________________________
 void AliITSURecoLayer::ProcessClusters(Int_t mode)
 {

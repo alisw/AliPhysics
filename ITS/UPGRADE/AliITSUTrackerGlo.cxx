@@ -420,6 +420,17 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 	if (NeedToKill(&seedUC,kRWCheckFailed) && seedU) KillSeed(seedU,kTRUE);
 	continue;
       }
+      /*
+      //RS toremove
+      int mcquest = -1;
+      if (!seedUC.ContainsFake()) {
+	mcquest = fCurrESDtrMClb;
+	seedUC.Print("etp");
+	printf("FSParams: "); for (int ip=0;ip<kNTrImpData;ip++) printf("%+e ",fTrImpData[ip]); printf("\n");
+      }
+      //
+      int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens, mcquest);  // find detectors which may be hit by the track
+      */
       int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track
       AliDebug(2,Form("Will check %d sensors on lr:%d | esdID=%d (MClb:%d)",nsens,ila,esdID,fCurrESDtrMClb));
       //
@@ -764,9 +775,17 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
   double sgz = sc.GetSigmaZ2() + dr*dr*sc.GetSigmaTgl2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(ilrA);
   sgy = Sqrt(sgy)*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY();
   sgz = Sqrt(sgz)*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ();
-  fTrImpData[kTrPhi0] = 0.5*(fTrImpData[kTrPhiOut]+fTrImpData[kTrPhiIn]);
+  double dphi0 = 0.5*Abs(fTrImpData[kTrPhiOut]-fTrImpData[kTrPhiIn]);
+  double phi0  = 0.5*(fTrImpData[kTrPhiOut]+fTrImpData[kTrPhiIn]);
+  if ( dphi0>(0.5*Pi()) ) {
+    // special case of angles around pi 
+    dphi0 = Abs(phi0);    
+    phi0  += Pi();
+  }
+
+  fTrImpData[kTrPhi0] = phi0;
   fTrImpData[kTrZ0]   = 0.5*(fTrImpData[kTrZOut]+fTrImpData[kTrZIn]);
-  fTrImpData[kTrDPhi] = 0.5*Abs(fTrImpData[kTrPhiOut]-fTrImpData[kTrPhiIn]) + sgy/lrA->GetR();
+  fTrImpData[kTrDPhi] = dphi0 + sgy/lrA->GetR();
   fTrImpData[kTrDZ]   = 0.5*Abs(fTrImpData[kTrZOut]-fTrImpData[kTrZIn])   + sgz;
   //  
   return kTRUE;
@@ -1250,10 +1269,10 @@ void AliITSUTrackerGlo::CookMCLabel(AliITSUTrackHyp* hyp)
     seed = (AliITSUSeed*)seed->GetParent();
   } // loop over clusters
   // 
+  AliESDtrack* esdTr = hyp->GetESDTrack();
+  int tpcLab = esdTr ? Abs(esdTr->GetTPCLabel()) : -kDummyLabel;
   if (nCl && nLab) {
     int maxLab=0,nTPCok=0;
-    AliESDtrack* esdTr = hyp->GetESDTrack();
-    int tpcLab = esdTr ? Abs(esdTr->GetTPCLabel()) : -kDummyLabel;
     for (int ilb=nLab;ilb--;) {
       int st = lbStat[ilb];
       if (lbStat[maxLab]<st) maxLab=ilb;
@@ -1266,7 +1285,7 @@ void AliITSUTrackerGlo::CookMCLabel(AliITSUTrackHyp* hyp)
   }
   //
   hyp->SetFakeRatio(-1.);
-  hyp->SetLabel( kDummyLabel );
+  hyp->SetLabel( -tpcLab );
   hyp->SetITSLabel( kDummyLabel );
 }
 

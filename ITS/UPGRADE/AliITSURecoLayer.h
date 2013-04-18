@@ -69,6 +69,7 @@ class AliITSURecoLayer : public TNamed
   AliCluster*        GetCluster(Int_t icl)         const {return (AliCluster*)fClusters->UncheckedAt(icl);}
   void               SetClusters(TClonesArray* cl)       {fClusters = cl;}
   //
+  //  Int_t              FindSensors(const double* impPar, AliITSURecoSens *sensors[AliITSURecoSens::kNNeighbors], int mcLab=-1);
   Int_t              FindSensors(const double* impPar, AliITSURecoSens *sensors[AliITSURecoSens::kNNeighbors]);
   //
   virtual void       Print(Option_t* option = "")  const;
