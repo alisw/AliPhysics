@@ -20561,8 +20561,8 @@ void AliFlowAnalysisWithQCumulants::GetPointersForBootstrap()
  // Get pointers to all bootstrap histograms.
    
  // a) Get pointer to base list for bootstrap histograms;
- // b) Get pointers to all other lists;
- // c) Get pointer to TProfile fBootstrapFlags holding all flags for bootstrap histograms;
+ // b) Get pointer to TProfile fBootstrapFlags holding all flags for bootstrap histograms;
+ // c) Get pointers to all other lists;
  // d) Get pointers to remaining bootstrap profiles and histograms;
  // e) Get pointers to remaining bootstrap profiles and histograms 'vs M'.
 
@@ -20577,27 +20577,7 @@ void AliFlowAnalysisWithQCumulants::GetPointersForBootstrap()
     exit(0);
    }
 
- // b) Get pointers to all other lists:
- TList *bootstrapProfilesList = dynamic_cast<TList*>(fBootstrapList->FindObject("Profiles"));
- if(bootstrapProfilesList) 
- {
-  this->SetBootstrapProfilesList(bootstrapProfilesList);
- } else
-   {
-    cout<<"WARNING: bootstrapProfilesList is NULL in AFAWQC::GPFB() !!!!"<<endl;
-    exit(0);
-   }
- TList *bootstrapResultsList = dynamic_cast<TList*>(fBootstrapList->FindObject("Results"));
- if(bootstrapResultsList) 
- {
-  this->SetBootstrapResultsList(bootstrapResultsList);
- } else
-   {
-    cout<<"WARNING: bootstrapResultsList is NULL in AFAWQC::GPFB() !!!!"<<endl;
-    exit(0);
-   }
-
- // c) Get pointer to TProfile fBootstrapFlags holding all flags for bootstrap histograms:
+ // b) Get pointer to TProfile fBootstrapFlags holding all flags for bootstrap histograms:
  TString bootstrapFlagsName = "fBootstrapFlags";
  bootstrapFlagsName += fAnalysisLabel->Data();
  TProfile *bootstrapFlags = dynamic_cast<TProfile*>
@@ -20613,6 +20593,30 @@ void AliFlowAnalysisWithQCumulants::GetPointersForBootstrap()
     cout<<"WARNING: bootstrapFlags is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
     exit(0);
    }
+
+ // c) Get pointers to all other lists:
+ if(fUseBootstrap || fUseBootstrapVsM)
+ {
+  TList *bootstrapProfilesList = dynamic_cast<TList*>(fBootstrapList->FindObject("Profiles"));
+  if(bootstrapProfilesList) 
+  {
+   this->SetBootstrapProfilesList(bootstrapProfilesList);
+  } else
+    {
+     cout<<"WARNING: bootstrapProfilesList is NULL in AFAWQC::GPFB() !!!!"<<endl;
+     exit(0);
+    }
+  TList *bootstrapResultsList = dynamic_cast<TList*>(fBootstrapList->FindObject("Results"));
+  if(bootstrapResultsList) 
+  {
+   this->SetBootstrapResultsList(bootstrapResultsList);
+  } else
+    {
+     cout<<"WARNING: bootstrapResultsList is NULL in AFAWQC::GPFB() !!!!"<<endl;
+     exit(0);
+    }
+ } // end of if(fUseBootstrap || fUseBootstrapVsM)
+
 
  // d) Get pointers to remaining bootstrap profiles and histograms:
  TString correlationFlag[4] = {"#LT#LT2#GT#GT","#LT#LT4#GT#GT","#LT#LT6#GT#GT","#LT#LT8#GT#GT"};
