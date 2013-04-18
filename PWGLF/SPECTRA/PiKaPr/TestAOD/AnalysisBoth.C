@@ -28,7 +28,8 @@ enum {
  kgeantflukaProton=0x4,
  knormalizationtoeventspassingPhySel=0x8,
  kveretxcorrectionandbadchunkscorr=0x10,
- kmcisusedasdata=0x20	
+ kmcisusedasdata=0x20,
+ kdonotusedcacuts=0x40		
 };	
 
 Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag,Bool_t mcasdata=false);
@@ -56,11 +57,15 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	mass[1]   = TDatabasePDG::Instance()->GetParticle("K+")->Mass();
 	mass[2] = TDatabasePDG::Instance()->GetParticle("proton")->Mass();
 
-	AliESDtrackCuts* esdtrackcuts= AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
-	TString formulastring(esdtrackcuts->GetMaxDCAToVertexXYPtDep());
-	formulastring.ReplaceAll("pt","x");
-	TFormula* dcacutxy=new TFormula("dcacutxy",formulastring.Data());
-
+	TFormula* dcacutxy=0x0;
+	if(!(options&kdonotusedcacuts))
+	{
+	
+		AliESDtrackCuts* esdtrackcuts= AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
+		TString formulastring(esdtrackcuts->GetMaxDCAToVertexXYPtDep());
+		formulastring.ReplaceAll("pt","x");
+		dcacutxy=new TFormula("dcacutxy",formulastring.Data());
+	}
 	TList* lout=new TList();
 
 
@@ -483,7 +488,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 {
   printf("\n\n-> DCA Correction");  
   Double_t FitRange[2]={-2.0,2.0};
-  Double_t CutRange[2]={-1.0,1.0};
+  Double_t CutRange[2]={-3.0,3.0};
   Double_t minptformaterial[6]={0.0,100.0,0.0,0.0,100.0,0.0};
   Double_t maxptformaterial[6]={0.0,-100.0,1.3,0.0,-100.0,0.0};
   Bool_t usefit[3]={true,false,true};
@@ -512,9 +517,12 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						
 					Double_t lowedge=hcon[index]->GetBinLowEdge(ibin_data);
 					Double_t binwidth=hcon[index]->GetBinWidth(ibin_data);
-					debug<<"NEW "<<Particle[ipart].Data()<<" "<<Sign[icharge].Data()<<" "<<lowedge<<endl;						
-					CutRange[1]=fun->Eval(lowedge);
-					CutRange[0]=-1.0*CutRange[1];
+					debug<<"NEW "<<Particle[ipart].Data()<<" "<<Sign[icharge].Data()<<" "<<lowedge<<endl;
+					if(fun)
+					{						
+						CutRange[1]=fun->Eval(lowedge);
+						CutRange[0]=-1.0*CutRange[1];
+					}	
 					debug<<"cut  "<<CutRange[1]<<" "<<CutRange[0]<<endl;		
 					Bool_t useMaterial=kFALSE;
 					cout<<"try to fit "<<lowedge<<" "<<maxbinforfit[index]<<endl;
@@ -640,6 +648,36 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						debug<<"After Nor"<<endl;
 						debug<<v1*normalizationmc1<<" "<<ev1*normalizationmc1<<" "<<v2*normalizationmc2<<" "<<ev2*normalizationmc2<<" "<<v3*normalizationmc3<<" "<<ev3*normalizationmc3<<" "<<endl;
 						debug<<1.0-v1*normalizationmc1<<" "<<ev1*normalizationmc1<<" "<<v2*normalizationmc2+v3*normalizationmc3<<" "<<TMath::Sqrt(ev2*ev2*normalizationmc2*normalizationmc2+ev3*ev3*normalizationmc3*normalizationmc3+cov*normalizationmc3*normalizationmc2)<<endl;
+						debug<<"addtional info"<<endl;
+						Float_t normalizationmc1b=(hmc1->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/hmc1->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1])))/normalizationdata;
+
+						debug<<normalizationmc1<<" "<<normalizationmc1b<<endl;
+						debug<<hmc1->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/hmc1->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<" "<<secStMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/secStMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<endl;
+						//debug<<hmc1->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<" "<<secStMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<endl;
+						debug<<hmc2->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/hmc2->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<" "<<PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<endl;
+						//debug<<hmc2->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<" "<<PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<endl;
+						if(PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))>0.0)
+						{
+						if(useMaterial)
+						{
+							debug<<" ITSsa "<<endl;
+							debug<<PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/(PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))+secStMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))+secMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1])))<<endl;
+						}			
+						else
+						{
+							debug<<" ITSsa "<<endl;
+							debug<<PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/(PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))+secStMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1])))<<endl;
+		
+						}
+						}
+						else 
+						{
+							debug<<" ITSsa "<<endl;
+							debug<<" NO "<<endl;
+						}
+
+
+
 						Float_t normalizationdata1=result->Integral(result->GetXaxis()->FindBin(CutRange[0]),result->GetXaxis()->FindBin(CutRange[1]))/result->Integral(result->GetXaxis()->FindBin(FitRange[0]),result->GetXaxis()->FindBin(FitRange[1]));
 						
 

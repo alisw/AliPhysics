@@ -124,6 +124,10 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		TArrayF mcVertex(3);
   		mcVertex[0]=9999.; mcVertex[1]=9999.; mcVertex[2]=9999.;
 		AliMCEvent* mcEvent=(AliMCEvent*)MCEvent();
+		if (!mcEvent) 
+		{
+			AliFatal("Error: MC particles branch not found!\n");
+		}
 		AliHeader* header = mcEvent->Header();
     		if (!header) 
 		{
@@ -169,12 +173,6 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		  }
 		  if(ifAODEvent==AliSpectraBothTrackCuts::kESDobject)
 		  {
-		  	//AliMCEvent* mcEvent  = (AliMCEvent*) MCEvent();
-			//Printf("MC particles: %d", mcEvent->GetNumberOfTracks());		
-			if (!mcEvent) 
-			{
-				AliFatal("Error: MC particles branch not found!\n");
-			}
 			stack = mcEvent->Stack();
 			Int_t nMC = stack->GetNtrack();
 			for (Int_t iMC = 0; iMC < nMC; iMC++)
@@ -238,8 +236,8 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			continue;
     		ntracks++;
     		fPID->FillQAHistos(fHistMan, track, fTrackCuts);
-    
-    		//calculate DCA for AOD track
+    		
+		//calculate DCA for AOD track
     		if(dca==-999.)
 		{// track->DCA() does not work in old AOD production
      	 		Double_t d[2], covd[3];
