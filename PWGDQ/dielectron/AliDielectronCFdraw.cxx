@@ -192,6 +192,19 @@ void AliDielectronCFdraw::SetRangeUser(Int_t ivar, Double_t min, Double_t max, c
   if (ivar==-1) return;
   TObjArray *arr=TString(slices).Tokenize(",:;");
 
+  //Changes in root TAxis r48279
+  //it doesn't work any longer to give the same min and max in SetRangeUser
+  //the lines below fix this
+
+  TAxis *a = fCfContainer->GetAxis(ivar,0);
+  if (a) {
+    const Int_t bin=a->FindBin(min);
+    const Double_t binw=a->GetBinWidth(bin);
+    if (TMath::Abs(max-min)<binw*0.001){
+      max+=binw*0.001;
+    }
+  }
+
   if (arr->GetEntriesFast()==0){
     // all slices in case of 0 entries
     for (Int_t istep=0; istep<fCfContainer->GetNStep(); ++istep){
@@ -365,6 +378,42 @@ TString AliDielectronCFdraw::FindSteps(const char* search)
   return slices;
 }
 //________________________________________________________________
+Int_t AliDielectronCFdraw::FindStep(const char* search)
+{
+  //
+  // find first step/slice containg search string
+  // search strings may be separated by any of ,:;
+  //
+  TObjArray *arr=TString(search).Tokenize(",:;");
+  TIter next(arr);
+  TObjString *ostr=0x0;
+
+  // loop over all steps
+  for (Int_t istep=0; istep<fCfContainer->GetNStep(); ++istep){
+    TString steptit = fCfContainer->GetStepTitle(istep);
+    Bool_t bfnd=kFALSE;
+    next.Reset();
+    // loop over all search strings
+    while ( (ostr=static_cast<TObjString*>(next())) ) {
+      if( steptit.Contains(ostr->GetName()) ) bfnd=kTRUE;
+      else {
+	bfnd=kFALSE;
+	break;
+      }
+    }
+    // return found slice/step
+    if(bfnd) {
+      delete arr;
+      return istep;
+    }
+  }
+
+  AliError(" No step searched for found. returning -1!");
+  delete arr;
+  return -1;
+
+}
+//________________________________________________________________
 TObjArray* AliDielectronCFdraw::CollectHistosProj(const Option_t* varnames, const char* slices)
 {
   //
@@ -485,7 +534,7 @@ TObjArray* AliDielectronCFdraw::CollectMinvProj(Int_t slice, ECollectType collec
   //
   // Collect invariant mass spectra of step 'slice' for pair types
   //
-  
+
   TObjArray *arr = new TObjArray();
   arr->SetOwner();
   for (Int_t iType = 0; iType <= AliDielectron::kEv1PMRot; iType++) {
