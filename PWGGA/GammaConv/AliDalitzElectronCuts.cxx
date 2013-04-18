@@ -113,6 +113,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     hITSdEdxafter(NULL),
     hTPCdEdxbefore(NULL),
     hTPCdEdxafter(NULL),
+    hTPCdEdxSignalbefore(NULL),
     hTPCdEdxSignalafter(NULL),
     hTOFbefore(NULL),
     hTOFafter(NULL)
@@ -121,9 +122,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
     fCutString=new TObjString((GetCutNumber()).Data());
 
-
-    //fesdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
-
+   //fesdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
    // Using standard function for setting Cuts
     Bool_t selectPrimaries=kTRUE;
     fesdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
@@ -196,9 +195,10 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     
 
 
-    TAxis *AxisBeforeITS = NULL;
+    TAxis *AxisBeforeITS  = NULL;
     TAxis *AxisBeforedEdx = NULL;
-    TAxis *AxisBeforeTOF = NULL;
+    TAxis *AxisBeforeTOF  = NULL;
+    TAxis *AxisBeforedEdxSignal = NULL;
 
     if(preCut){
 
@@ -210,6 +210,11 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
        hTPCdEdxbefore=new TH2F(Form("Electron_dEdx_before %s",cutName.Data()),"dEdx electron before" ,150,0.05,20,400,-10,10);
        fHistograms->Add(hTPCdEdxbefore);
        AxisBeforedEdx = hTPCdEdxbefore->GetXaxis();
+
+       hTPCdEdxSignalbefore=new TH2F(Form("Electron_dEdxSignal_before %s",cutName.Data()),"dEdx electron signal before" ,150,0.05,20.0,800,0.0,200);
+       fHistograms->Add(hTPCdEdxSignalbefore);
+       AxisBeforedEdxSignal = hTPCdEdxSignalbefore->GetXaxis();
+
 
        hTOFbefore=new TH2F(Form("Electron_TOF_before %s",cutName.Data()),"TOF electron before" ,150,0.05,20,400,-6,10);
        fHistograms->Add(hTOFbefore);
@@ -224,7 +229,7 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     hTPCdEdxafter=new TH2F(Form("Electron_dEdx_after %s",cutName.Data()),"dEdx electron after" ,150,0.05,20,400, -10,10);
     fHistograms->Add(hTPCdEdxafter);
 
-    hTPCdEdxSignalafter=new TH2F(Form("Electron_dEdxSignal_after %s",cutName.Data()),"dEdx electron signal after" ,150,0.0,3.0,200,0.0,200);
+    hTPCdEdxSignalafter=new TH2F(Form("Electron_dEdxSignal_after %s",cutName.Data()),"dEdx electron signal after" ,150,0.05,20.0,800,0.0,200);
     fHistograms->Add(hTPCdEdxSignalafter);
 
     hTOFafter=new TH2F(Form("Electron_TOF_after %s",cutName.Data()),"TOF electron after" ,150,0.05,20,400,-6,10);
@@ -243,10 +248,15 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     AxisAfter->Set(bins, newBins);
     AxisAfter = hITSdEdxafter->GetXaxis();
     AxisAfter->Set(bins,newBins); 
+    AxisAfter = hTPCdEdxSignalafter->GetXaxis();
+    AxisAfter->Set(bins,newBins);
+    
     if(preCut){
        AxisBeforeITS->Set(bins, newBins);
        AxisBeforedEdx->Set(bins, newBins);
+       AxisBeforedEdxSignal->Set(bins,newBins);
        AxisBeforeTOF->Set(bins, newBins);
+       
     }
     delete [] newBins;
 
@@ -272,6 +282,20 @@ Bool_t AliDalitzElectronCuts::InitPIDResponse(){
 
   return kFALSE;
 }
+///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliStack *fMCStack)
+{   
+        if( labelParticle < 0 ) return kFALSE;
+        if( fMCStack->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;
+
+        TParticle* particle = fMCStack->Particle(labelParticle);
+
+        if( TMath::Abs( particle->GetPdgCode() ) != 11)  return kFALSE;
+        if( TMath::Abs( particle->Eta() ) > fEtaCut   )  return kFALSE;
+
+return kTRUE;
+}
+
 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliESDtrack* lTrack)
@@ -379,6 +403,7 @@ Bool_t AliDalitzElectronCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
     if(hITSdEdxbefore)hITSdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
     if(hTPCdEdxbefore)hTPCdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
+    if(hTPCdEdxSignalbefore)hTPCdEdxSignalbefore->Fill(fCurrentTrack->P(),TMath::Abs(fCurrentTrack->GetTPCsignal()));
 
 
     cutIndex++;
@@ -784,114 +809,114 @@ Bool_t AliDalitzElectronCuts::SetITSdEdxCutElectronLine(Int_t ededxSigmaCut)
 
 	switch(ededxSigmaCut){
 
-                case 0: 
-                        fDodEdxSigmaITSCut = kFALSE;
-                        fPIDnSigmaBelowElectronLineITS=-100;
-                        fPIDnSigmaAboveElectronLineITS= 100;
-                        break;
-		case 1: // -10,10
-                        fDodEdxSigmaITSCut = kTRUE;
-			fPIDnSigmaBelowElectronLineITS=-10;
-			fPIDnSigmaAboveElectronLineITS=10;
-			break;
-		case 2: // -6,7
-                        fDodEdxSigmaITSCut = kTRUE;
-			fPIDnSigmaBelowElectronLineITS=-6;
-			fPIDnSigmaAboveElectronLineITS=7;
-			break;
-		case 3: // -5,5
-                        fDodEdxSigmaITSCut = kTRUE;
-			fPIDnSigmaBelowElectronLineITS=-5;
-			fPIDnSigmaAboveElectronLineITS=5;
-			break;
-		case 4: // -4,5
-                        fDodEdxSigmaITSCut = kTRUE;
-			fPIDnSigmaBelowElectronLineITS=-4;
-			fPIDnSigmaAboveElectronLineITS=5;
-			break;
-		case 5: // -3,5
-                        fDodEdxSigmaITSCut = kTRUE;
-			fPIDnSigmaBelowElectronLineITS=-3;
-			fPIDnSigmaAboveElectronLineITS=5;
-			break;
-		case 6: // -4,4
-                        fDodEdxSigmaITSCut = kTRUE;
-			fPIDnSigmaBelowElectronLineITS=-4;
-			fPIDnSigmaAboveElectronLineITS=4;
-			break;
-		case 7: // -2.5,4
-                        fDodEdxSigmaITSCut = kTRUE;
-			fPIDnSigmaBelowElectronLineITS=-2.5;
-			fPIDnSigmaAboveElectronLineITS=4;
-			break;
-		case 8: // -2,3.5
-                        fDodEdxSigmaITSCut = kTRUE;
-			fPIDnSigmaBelowElectronLineITS=-2;
-			fPIDnSigmaAboveElectronLineITS=3.5;
-			break;
-		default:
-			cout<<"Warning: ITSdEdxCutElectronLine not defined"<<ededxSigmaCut<<endl;
-			return kFALSE;
-        
-    }
-    return kTRUE;
+	case 0: 
+		fDodEdxSigmaITSCut = kFALSE;
+		fPIDnSigmaBelowElectronLineITS=-100;
+		fPIDnSigmaAboveElectronLineITS= 100;
+		break;
+	case 1: // -10,10
+		fDodEdxSigmaITSCut = kTRUE;
+		fPIDnSigmaBelowElectronLineITS=-10;
+		fPIDnSigmaAboveElectronLineITS=10;
+		break;
+	case 2: // -6,7
+		fDodEdxSigmaITSCut = kTRUE;
+		fPIDnSigmaBelowElectronLineITS=-6;
+		fPIDnSigmaAboveElectronLineITS=7;
+		break;
+	case 3: // -5,5
+		fDodEdxSigmaITSCut = kTRUE;
+		fPIDnSigmaBelowElectronLineITS=-5;
+		fPIDnSigmaAboveElectronLineITS=5;
+		break;
+	case 4: // -4,5
+		fDodEdxSigmaITSCut = kTRUE;
+		fPIDnSigmaBelowElectronLineITS=-4;
+		fPIDnSigmaAboveElectronLineITS=5;
+		break;
+	case 5: // -3,5
+		fDodEdxSigmaITSCut = kTRUE;
+		fPIDnSigmaBelowElectronLineITS=-3;
+		fPIDnSigmaAboveElectronLineITS=5;
+		break;
+	case 6: // -4,4
+		fDodEdxSigmaITSCut = kTRUE;
+		fPIDnSigmaBelowElectronLineITS=-4;
+		fPIDnSigmaAboveElectronLineITS=4;
+		break;
+	case 7: // -2.5,4
+		fDodEdxSigmaITSCut = kTRUE;
+		fPIDnSigmaBelowElectronLineITS=-2.5;
+		fPIDnSigmaAboveElectronLineITS=4;
+		break;
+	case 8: // -2,3.5
+		fDodEdxSigmaITSCut = kTRUE;
+		fPIDnSigmaBelowElectronLineITS=-2;
+		fPIDnSigmaAboveElectronLineITS=3.5;
+		break;
+	default:
+		cout<<"Warning: ITSdEdxCutElectronLine not defined"<<ededxSigmaCut<<endl;
+		return kFALSE;
+    
+	}
+	return kTRUE;
 }
 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut)
 {   // Set Cut
-		switch(ededxSigmaCut){
+	switch(ededxSigmaCut){
 
-                case 0: fDodEdxSigmaTPCCut = kFALSE;
-                        fPIDnSigmaBelowElectronLineTPC=-10;
-                        fPIDnSigmaAboveElectronLineTPC=10;
-                        break;
-        	case 1: // -10,10
-                        fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowElectronLineTPC=-10;
-			fPIDnSigmaAboveElectronLineTPC=10;
-			break;
-		case 2: // -6,7
-                        fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowElectronLineTPC=-6;
-			fPIDnSigmaAboveElectronLineTPC=7;
-			break;
-		case 3: // -5,5
-                        fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowElectronLineTPC=-5;
-			fPIDnSigmaAboveElectronLineTPC=5;
-			break;
-		case 4: // -4,5
-                        fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowElectronLineTPC=-4;
-			fPIDnSigmaAboveElectronLineTPC=5;
-			break;	
-		case 5: // -3,5
-                        fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowElectronLineTPC=-3;
-			fPIDnSigmaAboveElectronLineTPC=5;
-			break;
-		case 6: // -4,4
-                        fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowElectronLineTPC=-4;
-			fPIDnSigmaAboveElectronLineTPC=4;
-			break;
-		case 7: // -2.5,4
-                        fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowElectronLineTPC=-2.5;
-			fPIDnSigmaAboveElectronLineTPC=4;
-			break;
-		case 8: // -2,3.5
-                        fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowElectronLineTPC=-2;
-			fPIDnSigmaAboveElectronLineTPC=3.5;
-			break;
-		default:
-			cout<<"Warning: TPCdEdxCutElectronLine not defined"<<ededxSigmaCut<<endl;
-			return kFALSE;
-        
-    }
-    return kTRUE;
+	case 0: fDodEdxSigmaTPCCut = kFALSE;
+		fPIDnSigmaBelowElectronLineTPC=-10;
+		fPIDnSigmaAboveElectronLineTPC=10;
+		break;
+	case 1: // -10,10
+		fDodEdxSigmaTPCCut = kTRUE;
+		fPIDnSigmaBelowElectronLineTPC=-10;
+		fPIDnSigmaAboveElectronLineTPC=10;
+		break;
+	case 2: // -6,7
+		fDodEdxSigmaTPCCut = kTRUE;
+		fPIDnSigmaBelowElectronLineTPC=-6;
+		fPIDnSigmaAboveElectronLineTPC=7;
+		break;
+	case 3: // -5,5
+		fDodEdxSigmaTPCCut = kTRUE;
+		fPIDnSigmaBelowElectronLineTPC=-5;
+		fPIDnSigmaAboveElectronLineTPC=5;
+		break;
+	case 4: // -4,5
+		fDodEdxSigmaTPCCut = kTRUE;
+		fPIDnSigmaBelowElectronLineTPC=-4;
+		fPIDnSigmaAboveElectronLineTPC=5;
+		break;	
+	case 5: // -3,5
+		fDodEdxSigmaTPCCut = kTRUE;
+		fPIDnSigmaBelowElectronLineTPC=-3;
+		fPIDnSigmaAboveElectronLineTPC=5;
+		break;
+	case 6: // -4,4
+		fDodEdxSigmaTPCCut = kTRUE;
+		fPIDnSigmaBelowElectronLineTPC=-4;
+		fPIDnSigmaAboveElectronLineTPC=4;
+		break;
+	case 7: // -2.5,4
+		fDodEdxSigmaTPCCut = kTRUE;
+		fPIDnSigmaBelowElectronLineTPC=-2.5;
+		fPIDnSigmaAboveElectronLineTPC=4;
+		break;
+	case 8: // -2,3.5
+		fDodEdxSigmaTPCCut = kTRUE;
+		fPIDnSigmaBelowElectronLineTPC=-2;
+		fPIDnSigmaAboveElectronLineTPC=3.5;
+		break;
+	default:
+		cout<<"Warning: TPCdEdxCutElectronLine not defined"<<ededxSigmaCut<<endl;
+		return kFALSE;
+    
+	}
+	return kTRUE;
 }
 
 ///________________________________________________________________________
@@ -900,48 +925,48 @@ Bool_t AliDalitzElectronCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut)
 
 	switch(pidedxSigmaCut){
                 
-                case 0: fPIDnSigmaAbovePionLineTPC= 0;
-                        fPIDnSigmaAbovePionLineTPCHighPt=-100;
-                        break;
-		case 1:  // -10
-			fPIDnSigmaAbovePionLineTPC=-10;
-			fPIDnSigmaAbovePionLineTPCHighPt=-10;
-		        break;
-		case 2:  // 1
-			fPIDnSigmaAbovePionLineTPC=-1;
-			fPIDnSigmaAbovePionLineTPCHighPt=-10;
-			break;
-		case 3:   // 0
-			fPIDnSigmaAbovePionLineTPC=0;
-			fPIDnSigmaAbovePionLineTPCHighPt=-10;
-			break;
-		case 4:  // 1
-			fPIDnSigmaAbovePionLineTPC=1;
-			fPIDnSigmaAbovePionLineTPCHighPt=-10;
-			break;
-		case 5:  // 1
-			fPIDnSigmaAbovePionLineTPC=2.;
-			fPIDnSigmaAbovePionLineTPCHighPt=-10;
-			break;
-		case 6:  // 1
-			fPIDnSigmaAbovePionLineTPC=2.5;
-			fPIDnSigmaAbovePionLineTPCHighPt=-10;
-			break;
-		case 7:
-			fPIDnSigmaAbovePionLineTPC=3.0; // We need a bit less tight cut on dE/dx
-			fPIDnSigmaAbovePionLineTPCHighPt=-10;
-			break;
-		case 8:  // 1
-			fPIDnSigmaAbovePionLineTPC=3.5;
-			fPIDnSigmaAbovePionLineTPCHighPt=-10;
-			break;
-		case 9:  // 1
-			fPIDnSigmaAbovePionLineTPC=1.5;
-			fPIDnSigmaAbovePionLineTPCHighPt=-1.0;
-			break;
-		default:
-			cout<<"Warning: pidedxSigmaCut not defined "<<pidedxSigmaCut<<endl;
-			return kFALSE;
+	case 0: fPIDnSigmaAbovePionLineTPC= 0;
+		fPIDnSigmaAbovePionLineTPCHighPt=-100;
+		break;
+	case 1:  // -10
+		fPIDnSigmaAbovePionLineTPC=-10;
+		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		break;
+	case 2:  // 1
+		fPIDnSigmaAbovePionLineTPC=-1;
+		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		break;
+	case 3:   // 0
+		fPIDnSigmaAbovePionLineTPC=0;
+		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		break;
+	case 4:  // 1
+		fPIDnSigmaAbovePionLineTPC=1;
+		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		break;
+	case 5:  // 1
+		fPIDnSigmaAbovePionLineTPC=2.;
+		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		break;
+	case 6:  // 1
+		fPIDnSigmaAbovePionLineTPC=2.5;
+		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		break;
+	case 7:
+		fPIDnSigmaAbovePionLineTPC=3.0; // We need a bit less tight cut on dE/dx
+		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		break;
+	case 8:  // 1
+		fPIDnSigmaAbovePionLineTPC=3.5;
+		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		break;
+	case 9:  // 1
+		fPIDnSigmaAbovePionLineTPC=1.5;
+		fPIDnSigmaAbovePionLineTPCHighPt=-1.0;
+		break;
+	default:
+		cout<<"Warning: pidedxSigmaCut not defined "<<pidedxSigmaCut<<endl;
+		return kFALSE;
 	}
 	return kTRUE;
 }
@@ -951,109 +976,109 @@ Bool_t AliDalitzElectronCuts::SetMinMomPiondEdxTPCCut(Int_t piMomdedxSigmaCut)
 {   // Set Cut
 	switch(piMomdedxSigmaCut){
                 
-                case 0: fPIDMinPnSigmaAbovePionLineTPC=0.;
-                        break;
-		case 1:  // 50.0 GeV
-			fPIDMinPnSigmaAbovePionLineTPC=50.;
-			break;
-		case 2:  // 20.0 GeV
-			fPIDMinPnSigmaAbovePionLineTPC=20.;
-			break;
-		case 3:  // 1.5 GeV
-			fPIDMinPnSigmaAbovePionLineTPC=1.5;
-			break;
-		case 4:  // 1. GeV
-			fPIDMinPnSigmaAbovePionLineTPC=1.;
-			break;	
-		case 5:  // 0.5 GeV
-			fPIDMinPnSigmaAbovePionLineTPC=0.5;
-			break;
-		case 6:  // 0.4 GeV
-			fPIDMinPnSigmaAbovePionLineTPC=0.4;
-			break;    
-		case 7:  // 0.3 GeV
-			fPIDMinPnSigmaAbovePionLineTPC=0.3;
-			break;
-		case 8:  // 0.25 GeV
-			fPIDMinPnSigmaAbovePionLineTPC=0.25;
-			break;
-		default:
-			cout<<"Warning: piMomdedxSigmaCut not defined "<<piMomdedxSigmaCut<<endl;
-			return kFALSE;
-    }
-    return kTRUE;
+	case 0: fPIDMinPnSigmaAbovePionLineTPC=0.;
+		break;
+	case 1:  // 50.0 GeV
+		fPIDMinPnSigmaAbovePionLineTPC=50.;
+		break;
+	case 2:  // 20.0 GeV
+		fPIDMinPnSigmaAbovePionLineTPC=20.;
+		break;
+	case 3:  // 1.5 GeV
+		fPIDMinPnSigmaAbovePionLineTPC=1.5;
+		break;
+	case 4:  // 1. GeV
+		fPIDMinPnSigmaAbovePionLineTPC=1.;
+		break;	
+	case 5:  // 0.5 GeV
+		fPIDMinPnSigmaAbovePionLineTPC=0.5;
+		break;
+	case 6:  // 0.4 GeV
+		fPIDMinPnSigmaAbovePionLineTPC=0.4;
+		break;    
+	case 7:  // 0.3 GeV
+		fPIDMinPnSigmaAbovePionLineTPC=0.3;
+		break;
+	case 8:  // 0.25 GeV
+		fPIDMinPnSigmaAbovePionLineTPC=0.25;
+		break;
+	default:
+		cout<<"Warning: piMomdedxSigmaCut not defined "<<piMomdedxSigmaCut<<endl;
+		return kFALSE;
+	}
+	return kTRUE;
 }
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetITSClusterCut(Int_t clsITSCut){
 
     
-      if( !fesdTrackCuts ) {
+	if( !fesdTrackCuts ) {
 
-         cout<<"Warning: AliESDtrackCut is not initialized "<<endl;
-	 return kFALSE;
-      }
+		cout<<"Warning: AliESDtrackCut is not initialized "<<endl;
+		return kFALSE;
+	}
 
-      switch(clsITSCut){
+	switch(clsITSCut){
 
 	case 0: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
 		break;
-        case 1: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+	case 1: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
 		break;  //1 hit first layer of SPD
-        case 2: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+	case 2: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 		break; //1 hit in any layer of SPD
 	case 3: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
 		fesdTrackCuts->SetMinNClustersITS(4);
-                // 4 hits in total in the ITS. At least 1 hit in the first layer of SPD  
-                break;
-        case 4: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-                fesdTrackCuts->SetMinNClustersITS(3);
-                // 3 hits in total in the ITS. At least 1 hit in any layer of SPD
-                break;
+		// 4 hits in total in the ITS. At least 1 hit in the first layer of SPD  
+		break;
+	case 4: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+		fesdTrackCuts->SetMinNClustersITS(3);
+		// 3 hits in total in the ITS. At least 1 hit in any layer of SPD
+		break;
 	default:
-        cout<<"Warning: clsITSCut not defined "<<clsITSCut<<endl;
-        return kFALSE;
-    }
-
+		cout<<"Warning: clsITSCut not defined "<<clsITSCut<<endl;
+		return kFALSE;
+	}
+	
 return kTRUE;
 }
 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
 {   // Set Cut
-    switch(clsTPCCut){
-    case 0: // 0
-	fMinClsTPC= 0.;
-	break;
-    case 1:  // 70
-	fMinClsTPC= 70.;
-	break;
-    case 2:  // 80
-	fMinClsTPC= 80.;
-	break;
-    case 3:  // 100
-	fMinClsTPC= 100.;
-	break;
-    case 4:  // 0% of findable clusters
-	fMinClsTPCToF= 0.0;
-	fUseCorrectedTPCClsInfo=0;
-	break;
-    case 5:  // 35% of findable clusters
-	fMinClsTPCToF= 0.35;
-	fUseCorrectedTPCClsInfo=0;
-	break;
-    case 6:  // 60% of findable clusters
-	fMinClsTPCToF= 0.6;
-	fUseCorrectedTPCClsInfo=0;
-	break;
-    case 7:  // 70% of findable clusters
-	fMinClsTPCToF= 0.7;
-	fUseCorrectedTPCClsInfo=0;
-	break;
-    default:
-	cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
-	return kFALSE;
-    }
-    return kTRUE;
+	switch(clsTPCCut){
+	case 0: // 0
+		fMinClsTPC= 0.;
+		break;
+	case 1:  // 70
+		fMinClsTPC= 70.;
+		break;
+	case 2:  // 80
+		fMinClsTPC= 80.;
+		break;
+	case 3:  // 100
+		fMinClsTPC= 100.;
+		break;
+	case 4:  // 0% of findable clusters
+		fMinClsTPCToF= 0.0;
+		fUseCorrectedTPCClsInfo=0;
+		break;
+	case 5:  // 35% of findable clusters
+		fMinClsTPCToF= 0.35;
+		fUseCorrectedTPCClsInfo=0;
+		break;
+	case 6:  // 60% of findable clusters
+		fMinClsTPCToF= 0.6;
+		fUseCorrectedTPCClsInfo=0;
+		break;
+	case 7:  // 70% of findable clusters
+		fMinClsTPCToF= 0.7;
+		fUseCorrectedTPCClsInfo=0;
+		break;
+	default:
+		cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
+		return kFALSE;
+	}
+	return kTRUE;
 }
 
 ///________________________________________________________________________
@@ -1090,149 +1115,155 @@ Bool_t AliDalitzElectronCuts::SetMaxMomPiondEdxTPCCut(Int_t piMaxMomdedxSigmaCut
 {   // Set Cut
    switch(piMaxMomdedxSigmaCut){
 
-                case 0: fPIDMinPnSigmaAbovePionLineTPC=0.;
-                        break;
-		case 1:  // 100. GeV
-			fPIDMaxPnSigmaAbovePionLineTPC=100.;
+	 case 0: 
+		 fPIDMaxPnSigmaAbovePionLineTPC=0.;
+		 break;
+	 case 1:  // 100. GeV
+		 fPIDMaxPnSigmaAbovePionLineTPC=100.;
+		 break;
+	 case 2:  // 5. GeV
+		 fPIDMaxPnSigmaAbovePionLineTPC=5.;
 			break;
-		case 2:  // 5. GeV
-			fPIDMaxPnSigmaAbovePionLineTPC=5.;
-			break;
-		case 3:  // 4. GeV
-			fPIDMaxPnSigmaAbovePionLineTPC=4.;
-			break;
-		case 4:  // 3.5 GeV
-			fPIDMaxPnSigmaAbovePionLineTPC=3.5;
-			break;
-		case 5:  // 3. GeV
-			fPIDMaxPnSigmaAbovePionLineTPC=3.;
-			break;
-		default:
-			cout<<"Warning: piMaxMomdedxSigmaCut not defined "<<piMaxMomdedxSigmaCut<<endl;
-			return kFALSE;
-    }
-    return kTRUE;
+	 case 3:  // 4. GeV
+		 fPIDMaxPnSigmaAbovePionLineTPC=4.;
+		 break;
+	 case 4:  // 3.5 GeV
+		 fPIDMaxPnSigmaAbovePionLineTPC=3.5;
+		 break;
+	 case 5:  // 3. GeV
+		 fPIDMaxPnSigmaAbovePionLineTPC=3.;
+		 break;
+	 default:
+		 cout<<"Warning: piMaxMomdedxSigmaCut not defined "<<piMaxMomdedxSigmaCut<<endl;
+		 return kFALSE;
+	 }
+	 return kTRUE;
 }
 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
 {   // Set Cut
-    switch(LowPRejectionSigmaCut){
+	switch(LowPRejectionSigmaCut){
 	case 0:  //
-        fDoKaonRejectionLowP=kFALSE;
-        fDoProtonRejectionLowP=kFALSE;
-        fDoPionRejectionLowP=kFALSE;
-	fPIDnSigmaAtLowPAroundKaonLine=0;
-	fPIDnSigmaAtLowPAroundProtonLine=0;
-	fPIDnSigmaAtLowPAroundPionLine=0;
-	break;
-    case 1:  //
-        fDoKaonRejectionLowP=kTRUE;
-        fDoProtonRejectionLowP=kTRUE;
-        fDoPionRejectionLowP=kTRUE;
-	fPIDnSigmaAtLowPAroundKaonLine=0.5;
-	fPIDnSigmaAtLowPAroundProtonLine=0.5;
-	fPIDnSigmaAtLowPAroundPionLine=0.5;
-	break;
-    case 2:  //
-        fDoKaonRejectionLowP=kTRUE;
-        fDoProtonRejectionLowP=kTRUE;
-        fDoPionRejectionLowP=kTRUE;
-	fPIDnSigmaAtLowPAroundKaonLine=1;
-	fPIDnSigmaAtLowPAroundProtonLine=1;
-	fPIDnSigmaAtLowPAroundPionLine=1;
-	break;
-    case 3:  //
-        fDoKaonRejectionLowP=kTRUE;
-        fDoProtonRejectionLowP=kTRUE;
-        fDoPionRejectionLowP=kTRUE;
-	fPIDnSigmaAtLowPAroundKaonLine=1.5;
-	fPIDnSigmaAtLowPAroundProtonLine=1.5;
-	fPIDnSigmaAtLowPAroundPionLine=1.5;
-	break;
-    case 4:  //
-        fDoKaonRejectionLowP=kTRUE;
-        fDoProtonRejectionLowP=kTRUE;
-        fDoPionRejectionLowP=kTRUE;
-	fPIDnSigmaAtLowPAroundKaonLine=2.0;
-	fPIDnSigmaAtLowPAroundProtonLine=2.0;
-	fPIDnSigmaAtLowPAroundPionLine=2.0;
-	break;
-    case 5:  //
-        fDoKaonRejectionLowP=kTRUE;
-        fDoProtonRejectionLowP=kTRUE;
-        fDoPionRejectionLowP=kTRUE;
-	fPIDnSigmaAtLowPAroundKaonLine=2.0;
-	fPIDnSigmaAtLowPAroundProtonLine=2.0;
-	fPIDnSigmaAtLowPAroundPionLine=2.5;
-	break;
-    case 6:  //
-        fDoKaonRejectionLowP=kTRUE;
-        fDoProtonRejectionLowP=kTRUE;
-        fDoPionRejectionLowP=kTRUE;
-	fPIDnSigmaAtLowPAroundKaonLine=0.;
-	fPIDnSigmaAtLowPAroundProtonLine=0.;
-	fPIDnSigmaAtLowPAroundPionLine=2.;
-	break;
-    case 7: //
-        fDoKaonRejectionLowP=kFALSE;
-        fDoProtonRejectionLowP=kFALSE;
-        fDoPionRejectionLowP=kTRUE;
-        fPIDnSigmaAtLowPAroundKaonLine=0.0;
-        fPIDnSigmaAtLowPAroundProtonLine=0.0;
-        fPIDnSigmaAtLowPAroundPionLine=1.0;
-        break;
-    case 8:
-        fDoKaonRejectionLowP=kFALSE;
-        fDoProtonRejectionLowP=kFALSE;
-        fDoPionRejectionLowP=kTRUE;
-        fPIDnSigmaAtLowPAroundKaonLine=0.;
-        fPIDnSigmaAtLowPAroundProtonLine=0.;
-        fPIDnSigmaAtLowPAroundPionLine=0.5; 
-        break;	
-    default:
-        cout<<"Warning: LowPRejectionSigmaCut not defined "<<LowPRejectionSigmaCut<<endl;
-	return kFALSE;
-    }
-    return kTRUE;
+		fDoKaonRejectionLowP=kFALSE;
+		fDoProtonRejectionLowP=kFALSE;
+		fDoPionRejectionLowP=kFALSE;
+		fPIDnSigmaAtLowPAroundKaonLine=0;
+		fPIDnSigmaAtLowPAroundProtonLine=0;
+		fPIDnSigmaAtLowPAroundPionLine=0;
+		break;
+	case 1:  //
+		fDoKaonRejectionLowP=kTRUE;
+		fDoProtonRejectionLowP=kTRUE;
+		fDoPionRejectionLowP=kTRUE;
+		fPIDnSigmaAtLowPAroundKaonLine=0.5;
+		fPIDnSigmaAtLowPAroundProtonLine=0.5;
+		fPIDnSigmaAtLowPAroundPionLine=0.5;
+		break;
+	case 2:  //
+		fDoKaonRejectionLowP=kTRUE;
+		fDoProtonRejectionLowP=kTRUE;
+		fDoPionRejectionLowP=kTRUE;
+		fPIDnSigmaAtLowPAroundKaonLine=1;
+		fPIDnSigmaAtLowPAroundProtonLine=1;
+		fPIDnSigmaAtLowPAroundPionLine=1;
+		break;
+	case 3:  //
+		fDoKaonRejectionLowP=kTRUE;
+		fDoProtonRejectionLowP=kTRUE;
+		fDoPionRejectionLowP=kTRUE;
+		fPIDnSigmaAtLowPAroundKaonLine=1.5;
+		fPIDnSigmaAtLowPAroundProtonLine=1.5;
+		fPIDnSigmaAtLowPAroundPionLine=1.5;
+		break;
+	case 4:  //
+		fDoKaonRejectionLowP=kTRUE;
+		fDoProtonRejectionLowP=kTRUE;
+		fDoPionRejectionLowP=kTRUE;
+		fPIDnSigmaAtLowPAroundKaonLine=2.0;
+		fPIDnSigmaAtLowPAroundProtonLine=2.0;
+		fPIDnSigmaAtLowPAroundPionLine=2.0;
+		break;
+	case 5:  //
+		fDoKaonRejectionLowP=kTRUE;
+		fDoProtonRejectionLowP=kTRUE;
+		fDoPionRejectionLowP=kTRUE;
+		fPIDnSigmaAtLowPAroundKaonLine=2.0;
+		fPIDnSigmaAtLowPAroundProtonLine=2.0;
+		fPIDnSigmaAtLowPAroundPionLine=2.5;
+		break;
+	case 6:  //
+		fDoKaonRejectionLowP=kTRUE;
+		fDoProtonRejectionLowP=kTRUE;
+		fDoPionRejectionLowP=kTRUE;
+		fPIDnSigmaAtLowPAroundKaonLine=0.;
+		fPIDnSigmaAtLowPAroundProtonLine=0.;
+		fPIDnSigmaAtLowPAroundPionLine=2.;
+		break;
+	case 7: //
+		fDoKaonRejectionLowP=kFALSE;
+		fDoProtonRejectionLowP=kFALSE;
+		fDoPionRejectionLowP=kTRUE;
+		fPIDnSigmaAtLowPAroundKaonLine=0.0;
+		fPIDnSigmaAtLowPAroundProtonLine=0.0;
+		fPIDnSigmaAtLowPAroundPionLine=1.0;
+		break;
+	case 8:
+		fDoKaonRejectionLowP=kFALSE;
+		fDoProtonRejectionLowP=kFALSE;
+		fDoPionRejectionLowP=kTRUE;
+		fPIDnSigmaAtLowPAroundKaonLine=0.;
+		fPIDnSigmaAtLowPAroundProtonLine=0.;
+		fPIDnSigmaAtLowPAroundPionLine=0.5; 
+		break;	
+	default:
+		cout<<"Warning: LowPRejectionSigmaCut not defined "<<LowPRejectionSigmaCut<<endl;
+		return kFALSE;
+	}
+	return kTRUE;
 }
 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
     // Set Cut
-    switch(TOFelectronPID){ // RRnewTOF start //////////////////////////////////////////////////////////////////////////
-    case 0: // no cut
-	fUseTOFpid = kFALSE;
-	fTofPIDnSigmaBelowElectronLine=-100;
-	fTofPIDnSigmaAboveElectronLine=100;
-	break;
-    case 1: // -7,7
-	fUseTOFpid = kTRUE;
-	fTofPIDnSigmaBelowElectronLine=-7;
-	fTofPIDnSigmaAboveElectronLine=7;
-	break;
-    case 2: // -5,5
-	fUseTOFpid = kTRUE;
-	fTofPIDnSigmaBelowElectronLine=-5;
-	fTofPIDnSigmaAboveElectronLine=5;
-	break;
-    case 3: // -3,5
-	fUseTOFpid = kTRUE;
-	fTofPIDnSigmaBelowElectronLine=-3;
-	fTofPIDnSigmaAboveElectronLine=5;
-	break;
-    case 4: // -2,3
-	fUseTOFpid = kTRUE;
-	fTofPIDnSigmaBelowElectronLine=-2;
-	fTofPIDnSigmaAboveElectronLine=3;
-	break;
-    case 5: // -3, 3 TOF mandatory
-        fRequireTOF = kTRUE;
-        fUseTOFpid  = kTRUE;
-        fTofPIDnSigmaBelowElectronLine= -3;
-        fTofPIDnSigmaAboveElectronLine=  3;
-        break;
-    default:
+	switch(TOFelectronPID){ // RRnewTOF start //////////////////////////////////////////////////////////////////////////
+	case 0: // no cut
+		fRequireTOF = kFALSE;
+		fUseTOFpid = kFALSE;
+		fTofPIDnSigmaBelowElectronLine=-100;
+		fTofPIDnSigmaAboveElectronLine=100;
+		break;
+	case 1: // -7,7
+		fRequireTOF = kFALSE;
+		fUseTOFpid = kTRUE;
+		fTofPIDnSigmaBelowElectronLine=-7;
+		fTofPIDnSigmaAboveElectronLine=7;
+		break;
+	case 2: // -5,5
+		fRequireTOF = kFALSE;
+		fUseTOFpid = kTRUE;
+		fTofPIDnSigmaBelowElectronLine=-5;
+		fTofPIDnSigmaAboveElectronLine=5;
+		break;
+	case 3: // -3,5
+		fRequireTOF = kFALSE;
+		fUseTOFpid = kTRUE;
+		fTofPIDnSigmaBelowElectronLine=-3;
+		fTofPIDnSigmaAboveElectronLine=5;
+		break;
+	case 4: // -2,3
+		fRequireTOF = kFALSE;
+		fUseTOFpid = kTRUE;
+		fTofPIDnSigmaBelowElectronLine=-2;
+		fTofPIDnSigmaAboveElectronLine=3;
+		break;
+	case 5: // -3, 3 TOF mandatory
+		fRequireTOF = kTRUE;
+		fUseTOFpid  = kTRUE;
+		fTofPIDnSigmaBelowElectronLine= -3;
+		fTofPIDnSigmaAboveElectronLine=  3;
+		break;
+	default:
         cout<<"Warning: TOFElectronCut not defined "<<TOFelectronPID<<endl;
 	return kFALSE;
     } //////////////////////// RRnewTOF end //////////////////////////////////////////////////////////////////////////

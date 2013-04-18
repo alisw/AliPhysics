@@ -135,7 +135,6 @@ AliV0ReaderV1 &AliV0ReaderV1::operator=(const AliV0ReaderV1 &ref){
 void AliV0ReaderV1::Init()
 {
     // Initialize function to be called once before analysis
-
     if(fConversionCuts==NULL){
 	if(fConversionCuts==NULL)AliError("No Cut Selection initialized");
     }
@@ -195,62 +194,23 @@ Bool_t AliV0ReaderV1::Notify()
             }
          }
       }
-
-      if(fConversionCuts->GetDoEtaShift()){
-         if(fPeriodName.CompareTo("LHC12g") == 0 || //pilot run 2012
-            fPeriodName.CompareTo("LHC13b") == 0 || //mainly minimum bias
-            fPeriodName.CompareTo("LHC13c") == 0 || //mainly minimum bias
-            fPeriodName.CompareTo("LHC13d") == 0 || //mainly triggered
-            fPeriodName.CompareTo("LHC13e") == 0 || //mainly triggered
-            fPeriodName.CompareTo("LHC13c3") == 0 || //MC Starlight, anchor LHC13d+e
-            fPeriodName.CompareTo("LHC13c2") == 0 || //MC Starlight, coherent J/Psi, UPC muon anchor LHC13d+e
-            fPeriodName.CompareTo("LHC13b4") == 0 || //MC Pythia 6 (Jet-Jet), anchor LHC13b
-            fPeriodName.CompareTo("LHC13b2_fix_1") == 0 || //MC DPMJET, anchr LHC13b+c
-            fPeriodName.CompareTo("LHC13b3") == 0 || //MC HIJING, weighted to number of events per run, anchor LHC13b
-            fPeriodName.CompareTo("LHC13b2") == 0 ||  // MC DPMJET, wrong energy, anchor LHC13b
-            fPeriodName.CompareTo("LHC13b2_plus") == 0 || // MC DPMJET, weighted to number event per run, anchor LHC13b
-            fPeriodName.CompareTo("LHC13c1_bis") == 0 || // MC AMPT fast generation, pT hardbin, anchor ?
-            fPeriodName.CompareTo("LHC13c1") == 0 || // MC AMPT fast generation, anchor ?
-            fPeriodName.CompareTo("LHC13b1") == 0 || // MC DPMJET, fragments, with fixed label 0, anchor LHC12g
-            fPeriodName.CompareTo("LHC12g4b_fix") == 0 || // MC DPMJET, with fixed label 0, anchor LHC12g
-            fPeriodName.CompareTo("LHC12g1_fix") == 0 || // MC ?, with fixed label 0, anchor LHC12g
-            fPeriodName.CompareTo("LHC12g4c") == 0 || // MC DPMJET, shifted vertex runs, anchor LHC12g
-            fPeriodName.CompareTo("LHC12h6") == 0 || // MC muon cocktail, anchor LHC12g
-            fPeriodName.CompareTo("LHC12g4b") == 0 || // MC DPMJET 3rd iteration, anchor LHC12g
-            fPeriodName.CompareTo("LHC12g4a") == 0 || // MC DPMJET improved, anchor LHC12g
-            fPeriodName.CompareTo("LHC12g4") == 0 || // MC DPMJET, anchor LHC12g
-            fPeriodName.CompareTo("LHC12g5") == 0 || // MC PHOJET, anchor LHC12g
-            fPeriodName.CompareTo("LHC12g2") == 0 || // MC Starlight background, anchor LHC12g
-            fPeriodName.CompareTo("LHC12g1") == 0  // MC ?, anchor LHC12g
-            ){
-            cout<<"AliV0ReaderV1 --> pPb Run!!! Eta Shift of "<<-0.465<<endl;
-            fConversionCuts->SetEtaShift(-0.465);
-         }
-         else if(fPeriodName.CompareTo("LHC13f") == 0 ||
-                  fPeriodName.CompareTo("LHC13c6b") == 0 ||// MC Jpsi -> mumu, anchor LHC13f
-                  fPeriodName.CompareTo("LHC13c5") == 0 || //MC Starlight, gamma gamma UPC muon, anchor LHC13f
-                  fPeriodName.CompareTo("LHC13c4") == 0 //MC Starlight, coherent JPsi, UPC muon, anchor LHC13f
-                 ){
-            cout<<"AliV0ReaderV1 --> Pbp Run!!! Eta Shift of +"<<0.465<<endl;
-            fConversionCuts->SetEtaShift(+0.465);
-         }
-         else cout<<"AliV0ReaderV1 --> Eta Shift Requested but Period not Known"<<endl;
+      if(!fConversionCuts->GetDoEtaShift()) return kTRUE; // No Eta Shift requested, continue
+      if(fConversionCuts->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
+         fConversionCuts->GetCorrectEtaShiftFromPeriod(fPeriodName);
+         fConversionCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
+         return kTRUE;
       }
-      if(fConversionCuts->IsEtaShiftForced() == 1){
-         cout<<"AliV0ReaderV1 --> Force Eta Shift for non Pbp or pPb Run!!! Eta Shift of "<<-0.465<<endl;
-         fConversionCuts->SetEtaShift(-0.465);
-      }
-      else if(fConversionCuts->IsEtaShiftForced() == 2){
-         cout<<"AliV0ReaderV1 --> Force Eta Shift for non Pbp or pPb Run!!! Eta Shift of +"<<0.465<<endl;
-         fConversionCuts->SetEtaShift(0.465);
+      else{
+         printf(" Gamma Conversion Reader %s :: Eta Shift Manually Set to %f \n\n",
+                (fConversionCuts->GetCutNumber()).Data(),fConversionCuts->GetEtaShift());
+         fConversionCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once   
       }
    }
-   
+
    return kTRUE;
 }
 //________________________________________________________________________
 void AliV0ReaderV1::UserExec(Option_t *option){
-
 
     // Check if correctly initialized
     if(!fConversionGammas)Init();
@@ -262,6 +222,7 @@ void AliV0ReaderV1::UserExec(Option_t *option){
 //________________________________________________________________________
 Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 {
+
     //Reset the TClonesArray
     fConversionGammas->Delete();
 
@@ -336,7 +297,6 @@ const AliExternalTrackParam *AliV0ReaderV1::GetExternalTrackParam(AliESDv0 *fCur
 Bool_t AliV0ReaderV1::ProcessESDV0s()
 {
     // Process ESD V0s for conversion photon reconstruction
-
     AliESDEvent *fESDEvent=dynamic_cast<AliESDEvent*>(fInputEvent);
 
     AliKFConversionPhoton *fCurrentMotherKFCandidate=NULL;
@@ -347,7 +307,8 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
 	    AliESDv0 *fCurrentV0=(AliESDv0*)(fESDEvent->GetV0(currentV0Index));
 	    if(!fCurrentV0){
 		printf("Requested V0 does not exist");
-		continue;}
+		continue;
+            }
 
 	    fCurrentMotherKFCandidate=ReconstructV0(fCurrentV0,currentV0Index);
 
@@ -797,8 +758,6 @@ void AliV0ReaderV1::FindDeltaAODBranchName(){
 	}
     }
 }
-
-
 //________________________________________________________________________
 void AliV0ReaderV1::Terminate(Option_t *)
 {

@@ -87,6 +87,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   TString GetCutNumber();
 
     // Cut Selection
+  Bool_t ElectronIsSelectedMC(Int_t labelParticle,AliStack *fMCStack);
   Bool_t TrackIsSelected(AliESDtrack* lTrack);
   Bool_t ElectronIsSelected(AliESDtrack* lTrack);
   void InitAODpidUtil(Int_t type);
@@ -200,7 +201,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   TH2F *hITSdEdxafter;
   TH2F *hTPCdEdxbefore; // TPC dEdx before cuts
   TH2F *hTPCdEdxafter; // TPC dEdx after cuts
-  TH2F *hTPCdEdxSignalafter; //TPC dEdx signal
+  TH2F *hTPCdEdxSignalbefore; //TPC dEdx signal before
+  TH2F *hTPCdEdxSignalafter; //TPC dEdx signal  after
   TH2F *hTOFbefore; // TOF after cuts
   TH2F *hTOFafter; // TOF after cuts
   

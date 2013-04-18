@@ -66,7 +66,8 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
                 void CalculateBackground();
                 void UpdateEventByEventData();
                 Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
-
+		Bool_t IsDalitz(TParticle *fMCMother,Int_t &labelgamma, Int_t &labelelectron,Int_t &labelpositron);
+                Bool_t IsPi0DalitzDaughter( Int_t label ) const;
 		
 		
 
@@ -106,12 +107,21 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     THnSparseF **sESDMotherInvMassPtZM;
     TH2F **hESDMotherBackInvMassPt;
     THnSparseF **sESDMotherBackInvMassPtZM;
+    TH1F **hMCAllGammaPt;
+    TH1F **hMCAllPositronsPt;
+    TH1F **hMCAllElectronsPt;
+    TH1F **hMCPi0DalitzGammaPt;
+    TH1F **hMCPi0DalitzElectronPt;
+    TH1F **hMCPi0DalitzPositronPt;
     TH1F **hMCPi0Pt;
     TH1F **hMCPi0GGPt;
     TH1F **hMCEtaPt;
     TH1F **hMCEtaGGPt;
     TH1F **hMCPi0InAccPt;
     TH1F **hMCEtaInAccPt;
+    TH2F **hESDEposEnegTruePi0DalitzInvMassPt;
+    TH2F **hESDEposEnegTrueEtaDalitzInvMassPt;
+    TH2F **hESDEposEnegTruePhotonInvMassPt;
     TH2F **hESDTrueMotherInvMassPt;
     TH2F **hESDTrueMotherPi0GGInvMassPt;
     TH2F **hESDTruePrimaryMotherInvMassMCPt;
@@ -122,6 +132,14 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH2F **hESDTrueBckContInvMassPt;
     TH2F **hESDTrueMotherGGInvMassPt;
     TH1F **hESDTrueConvGammaPt;
+    TH1F **hESDTruePositronPt;
+    TH1F **hESDTrueElectronPt;
+    TH1F **hESDTruePi0DalitzConvGammaPt;
+    TH1F **hESDTruePi0DalitzPositronPt;
+    TH1F **hESDTruePi0DalitzElectronPt;
+      //if(fDoMesonAnalysis){
+
+
     TH1I **hNEvents;
     TH1I **hNGoodESDTracks;
         

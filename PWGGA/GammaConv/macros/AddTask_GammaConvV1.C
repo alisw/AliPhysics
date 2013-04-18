@@ -38,8 +38,8 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
    if(IsHeavyIon == 1){
       cutnumber = "1000000002084001001500000";
     } else if (IsHeavyIon==2){
-     cutnumber = "8000000062084001001500000";
-     doEtaShift = kTRUE;
+      cutnumber = "8000000062084001001500000";
+      doEtaShift = kFALSE; // Only needed if Eta Range is small, but default is now +- 5.0
    } else{
       cutnumber = "0000000002084000002200000";
    }
@@ -161,7 +161,10 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       if (trainConfig.Contains("pPb")){
          analysisCuts[i]->SelectCollisionCandidates(AliVEvent::kINT7);
-         if (i<4) analysisCuts[i]->DoEtaShift(1);
+         if (i<4){
+            analysisCuts[i]->DoEtaShift(kTRUE);
+            analysisCuts[i]->SetEtaShift("Pbp");
+         }
       }
       ConvCutList->Add(analysisCuts[i]);
 
@@ -172,7 +175,6 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       analysisMesonCuts[i]->SetFillCutHistograms("");
       analysisCuts[i]->SetAcceptedHeader(HeaderList);
    }
-
 
    task->SetConversionCutList(numberOfCuts,ConvCutList);
    task->SetMesonCutList(numberOfCuts,MesonCutList);
