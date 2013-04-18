@@ -79,7 +79,7 @@ public:
   void AddNoisyPixels();   
   void RemoveDeadPixels();
   void FrompListToDigits();
-  Int_t CreateNoisyDigits(Int_t minID,Int_t maxID,double probNoisy, double noise, double base);
+  Int_t AddRandomNoisePixels(Double_t tof=0);
   Bool_t SetTanLorAngle(Double_t WeightHole=1.0);
   Double_t GetTanLorAngle() const {return fTanLorAng;};
   //

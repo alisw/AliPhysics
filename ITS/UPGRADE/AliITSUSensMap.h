@@ -36,7 +36,7 @@ class AliITSUSensMap: public TObject
   //
   void  SetDimensions(UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle=1);
   void  GetMaxIndex(UInt_t &col,UInt_t &row,UInt_t &cycle) const {col=fDimCol; row=fDimRow; cycle=fDimCycle;}
-  Int_t GetMaxIndex()                      const {return fDimCol*fDimRow*fDimCycle*2;}
+  Int_t GetMaxIndex()                      const {return fDimCol*fDimRow*(fDimCycle*2+1);}
   Int_t GetEntries()                       const {return fBTree->GetEntries();}
   Int_t GetEntriesUnsorted()               const {return fItems->GetEntriesFast();}
   void  GetMapIndex(UInt_t index,UInt_t &col,UInt_t &row,Int_t &cycle) const {return GetCell(index,fDimCol,fDimRow,fDimCycle,col,row,cycle);}

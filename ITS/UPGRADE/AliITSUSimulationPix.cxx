@@ -1,8 +1,3 @@
-/*
- questions to experts: why RemoveDeadPixels should be called before FrompListToDigits ? 
-
- 
-*/
 
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -172,12 +167,8 @@ void AliITSUSimulationPix::SDigitiseModule()
   //  This function begins the work of creating S-Digits.
     
   AliDebug(10,Form("In event %d module %d there are %d hits", fEvent, fModule->GetIndex(),fModule->GetNHits()));       
-  //      
   if (fModule->GetNHits()) Hits2SDigitsFast();
-  //
-  if (fSimuParam->GetPixAddNoisyFlag())   AddNoisyPixels();
   if (!fSensMap->GetEntries()) return;
-  if (fSimuParam->GetPixRemoveDeadFlag()) RemoveDeadPixels(); 
   WriteSDigits();
   ClearMap();
   //
@@ -215,12 +206,7 @@ void AliITSUSimulationPix::DigitiseModule()
   //
   // pick charge spread function
   Hits2SDigitsFast();
-  //
-  if (fSimuParam->GetPixAddNoisyFlag())   AddNoisyPixels();
-  if (!fSensMap->GetEntries()) return;
-  if (fSimuParam->GetPixRemoveDeadFlag()) RemoveDeadPixels();
-  FrompListToDigits();
-  ClearMap();
+  FinishSDigitiseModule();
 }
 
 //______________________________________________________________________
@@ -513,7 +499,7 @@ Double_t AliITSUSimulationPix::SpreadFunGauss2D(const Double_t *dtIn)
 void AliITSUSimulationPix::RemoveDeadPixels() 
 {
   // Removes dead pixels on each module (ladder)
-  // This should be called before going from sdigits to digits (FrompListToDigits)
+  // This should be called before going from sdigits to digits (i.e. from FrompListToDigits)
   
   AliITSUCalibrationPix* calObj = (AliITSUCalibrationPix*) GetCalibDead();
   if (!calObj) return;
@@ -549,7 +535,7 @@ void AliITSUSimulationPix::RemoveDeadPixels()
 void AliITSUSimulationPix::AddNoisyPixels() 
 {
   // Adds noisy pixels on each module (ladder)
-  // This should be called before going from sdigits to digits (FrompListToDigits)
+  // This should be called before going from sdigits to digits (i.e. FrompListToDigits)
   AliITSUCalibrationPix* calObj = (AliITSUCalibrationPix*) GetCalibNoisy();
   if (!calObj) { AliDebug(10,Form("  No Calib Object for Noise!!! ")); return;}
   for (Int_t i=calObj->GetNrBad(); i--;) UpdateMapNoise(calObj->GetBadColAt(i), calObj->GetBadRowAt(i), 
@@ -560,47 +546,38 @@ void AliITSUSimulationPix::AddNoisyPixels()
 //______________________________________________________________________
 void AliITSUSimulationPix::FrompListToDigits() 
 {
-  // add noise and electronics, perform the zero suppression and add the
-  // digit to the list
-  static AliITSU *aliITS = (AliITSU*)gAlice->GetModule("ITS");
-  UInt_t row,col;
-  Int_t iCycle;
-  Double_t sig;
-  const Int_t    knmaxtrk=AliITSdigit::GetNTracks();
-  static AliITSUDigitPix dig;
-  // RS: in principle:
-  // 1) for every pixel w/o hit we have to generate a noise and activate the pixel if the noise exceeds the threshold. 
-  // 2) for every pixel with hit we should add random noise and check if the total signal exceeds the threshold
-  // With many channels this will be too time consuming, hence I do the following
-  // 1) Precalculate the probability that the nois alone will exceed the threshold (probnoisy). 
-  // 2) Chose randomly empty pixels according to fakes rate
-  // 3) For pixels having a hits apply the usual noise and compare with threshold
+  // add noise and electronics, perform the zero suppression and add the digits to the list
   //
   // RS may use for ordered random sample generation dl.acm.org/ft_gateway.cfm?id=356313&type=pdf
   //
-  int maxInd = fSensMap->GetMaxIndex();
-  int modId = fModule->GetIndex();
+  int nsd = fSensMap->GetEntriesUnsorted();  // sdigits added from the signal
   //
-  int nsd = fSensMap->GetEntries();
-  Int_t prevID=0,curID=0;
-  TArrayI ordSampleInd(100),ordSample(100);
+  // add different kinds of noise.
+  Bool_t addNoisy = fSimuParam->GetPixAddNoisyFlag() && (nsd>0 || fSimuParam->GetPixNoiseInAllMod()); // do we generate noise?
+  if (addNoisy) {
+    AddNoisyPixels();       // constantly noisy channels
+    AddRandomNoisePixels(0.0); // random noise: at the moment generate noise only for instance 0
+    nsd = fSensMap->GetEntriesUnsorted();
+  }
   //
-  double probNoisy,noiseSig,noiseMean,thresh = fSimuParam->GetPixThreshold(modId);
-  fSimuParam->GetPixNoise(modId, noiseSig, noiseMean);
-  probNoisy = AliITSUSimuParam::CalcProbNoiseOverThreshold(noiseMean,noiseSig,thresh); // prob. to have noise above threshold
+  if (nsd && fSimuParam->GetPixRemoveDeadFlag()) {
+    RemoveDeadPixels(); 
+    // note that here we shall use GetEntries instead of GetEntriesUnsorted since the 
+    // later operates on the array where the elements are not removed by flagged
+    nsd = fSensMap->GetEntries(); 
+  }
+  if (!nsd) return; // nothing to digitize
+  //
+  UInt_t row,col;
+  Int_t iCycle,modId = fModule->GetIndex();
+  Double_t sig;
+  const Int_t    knmaxtrk=AliITSdigit::GetNTracks();
+  static AliITSU *aliITS = (AliITSU*)gAlice->GetModule("ITS");
+  static AliITSUDigitPix dig;
   //
   for (int i=0;i<nsd;i++) {
     AliITSUSDigit* sd = (AliITSUSDigit*)fSensMap->At(i); // ordered in index
     if (fSensMap->IsDisabled(sd)) continue;
-    curID = (int)sd->GetUniqueID();
-    //
-    if ( fSimuParam->GetPixAddNoisyFlag() ) { 
-      CreateNoisyDigits(prevID,curID,probNoisy, noiseSig, noiseMean);
-      prevID = curID+1;
-      //
-      // add noise also to sdigit with signal
-      sd->AddNoise(AliITSUSimuParam::GenerateNoiseQFunction(0,noiseMean,noiseSig));
-    }
     //
     if ((sig=sd->GetSumSignal())<=fSimuParam->GetPixThreshold(modId)) continue;
     if (Abs(sig)>2147483647.0) { //RS?
@@ -625,50 +602,38 @@ void AliITSUSimulationPix::FrompListToDigits()
     }
     aliITS->AddSimDigit(AliITSUGeomTGeo::kDetTypePix, &dig);
   }
-  // if needed, add noisy pixels with id from last real hit to maxID
-  if (fSimuParam->GetPixAddNoisyFlag() && 
-      (nsd>0  || ( nsd==0 && fSimuParam->GetPixNoiseInAllMod()) )) {
-    AliDebug(10,Form("CreateNoisyDigits2( %d ,%d) module %d",prevID,maxInd,modId));
-    CreateNoisyDigits(prevID,maxInd,probNoisy, noiseSig, noiseMean);
-  }
   // 
 }
 
 //______________________________________________________________________
-Int_t AliITSUSimulationPix::CreateNoisyDigits(Int_t minID,Int_t maxID,double probNoisy, double noise, double base)
+Int_t AliITSUSimulationPix::AddRandomNoisePixels(Double_t tof) 
 {
-  // create random noisy digits above threshold within id range [minID,maxID[
-  // see FrompListToDigits for details
+  // create random noisy sdigits above threshold 
   //
-  static AliITSU *aliITS = (AliITSU*)gAlice->GetModule("ITS");
+  int modId = fModule->GetIndex();
+  int npix = fSeg->GetNPads();
+  int ncand = gRandom->Poisson( npix*fSimuParam->GetPixFakeRate() );
+  if (ncand<1) return 0;
+  //
+  double probNoisy,noiseSig,noiseMean,thresh = fSimuParam->GetPixThreshold(modId);
+  fSimuParam->GetPixNoise(modId, noiseSig, noiseMean);
+  probNoisy = AliITSUSimuParam::CalcProbNoiseOverThreshold(noiseMean,noiseSig,thresh); // prob. to have noise above threshold
   UInt_t row,col;
   Int_t iCycle;
-  static AliITSUDigitPix dig;
   static TArrayI ordSampleInd(100),ordSample(100); //RS!!! static is not thread-safe!!!
-  const Int_t    knmaxtrk=AliITSdigit::GetNTracks();
   //
-  Int_t ncand = 0;
-  int npix = maxID-minID;
-  if (npix<1 || (ncand=gRandom->Poisson(npix * fSimuParam->GetPixFakeRate() ))<1) return ncand; // decide how many noisy pixels will be added
   ncand = GenOrderedSample(npix,ncand,ordSample,ordSampleInd); 
   int* ordV = ordSample.GetArray();
   int* ordI = ordSampleInd.GetArray();
   for (int j=0;j<ncand;j++) {
     fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
-    dig.SetCoord1(col);
-    dig.SetCoord2(row);
-    dig.SetROCycle(iCycle);
-    dig.SetSignal(1);
-    dig.SetSignalPix((Int_t)AliITSUSimuParam::GenerateNoiseQFunction(probNoisy,base,noise));
-    for (int k=knmaxtrk;k--;) {
-      dig.SetTrack(k,-3);
-      dig.SetHit(k,-1);
-    }
-    aliITS->AddSimDigit(AliITSUGeomTGeo::kDetTypePix,&dig);
-    AliDebug(10,Form("Add noisy pixel %d(%d/%d) Noise=%d",ordV[ordI[j]],col,row,dig.GetSignalPix()));
+    iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
+    UpdateMapNoise(col,row,AliITSUSimuParam::GenerateNoiseQFunction(probNoisy,noiseMean,noiseSig),  iCycle);
   }
+  printf("added %d\n",ncand);
   return ncand;
 }
+
 
 //______________________________________________________________________
 void AliITSUSimulationPix::SetCoupling(AliITSUSDigit* old) 
