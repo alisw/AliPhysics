@@ -149,17 +149,29 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TH2F			*hClusDxDZA;		//! 2-D histo clus Dx vs Dz before
     TH2F			*hClusDxDZB;		//! 2-D histo clus Dx vs Dz after
 
-    TH3F			*hdifEMC_EPV0;		//! 3-D histo dif phi in EMC with EPV0
     TH3F			*hdifEMC_EPV0A;		//! 3-D histo dif phi in EMC with EPV0A
     TH3F			*hdifEMC_EPV0C;		//! 3-D histo dif phi in EMC with EPV0C
 
-    TH3F			*hdifful_EPV0;		//! 3-D histo dif phi in full with EPV0
     TH3F			*hdifful_EPV0A;		//! 3-D histo dif phi in full with EPV0A
     TH3F			*hdifful_EPV0C;		//! 3-D histo dif phi in full with EPV0C
 
-    TH3F			*hdifout_EPV0;		//! 3-D histo dif phi out EMC with EPV0
     TH3F			*hdifout_EPV0A;		//! 3-D histo dif phi out EMC with EPV0A
     TH3F			*hdifout_EPV0C;		//! 3-D histo dif phi out EMC with EPV0C
+
+    TH3F			*hCv2EMC_EPV0A;		//! 3-D histo for raw charged v2 in EMC with EPV0A
+    TH3F			*hCv2EMC_EPV0C;		//! 3-D histo for raw charged v2 in EMC with EPV0C
+
+    TH3F			*hCv2ful_EPV0A;		//! 3-D histo for raw charged v2 in full with EPV0A
+    TH3F			*hCv2ful_EPV0C;		//! 3-D histo for raw charged v2 in full with EPV0A
+
+    TH3F			*hCv2out_EPV0A;		//! 3-D histo for raw charged v2 in out with EPV0A
+    TH3F			*hCv2out_EPV0C;		//! 3-D histo for raw charged v2 in out with EPV0A
+
+    TH3F			*hclusDif_EPV0A;	//! 3-D histo for dif phi with EPV0A
+    TH3F			*hclusDif_EPV0C;	//! 3-D histo for dif phi with EPV0A
+
+    TH3F			*hclusv2_EPV0A;		//! 3-D histo for raw cluster v2 in out with EPV0A
+    TH3F			*hclusv2_EPV0C;		//! 3-D histo for raw cluster v2 in out with EPV0C
 
     TString                      fEPcalibFileName;      // Name for calibration
     AliEPFlattener              *fTPCFlat;		//! Object for flattening of TPC
