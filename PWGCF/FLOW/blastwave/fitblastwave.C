@@ -431,7 +431,7 @@ LoadLib(){
   kLoaded = kTRUE;
 
   gROOT->LoadMacro("v2All.C");
-  kStat=0;
+//   kStat=0;
 }
 
 
@@ -492,7 +492,7 @@ TGraphAsymmErrors *GetGraphWithStat(const char *filename){
 }
 
 
-Float_t ComputePiV2int(Int_t ic=2){
+Float_t ComputePiV2int(Int_t ic=2,Float_t xmin=0,Float_t xmax=20){
 
   Float_t v2Av = 0.02;
   
@@ -569,33 +569,35 @@ Float_t ComputePiV2int(Int_t ic=2){
   AliBlastwaveFitter *fitter2 = new AliBlastwaveFitter("fitterPion2");
   fitter2->AddFitFunction(bwPi3);
 
+  TF1 *fitSP, *fitV2, *fitSP2;
+
   // go to fit
-  fitter->PrepareToFit(); // initialize the fitter object
-  fitter->Fit();          // perform the fit (it will take some time)
+  if(xmin < 0.2){
+    fitter->PrepareToFit(); // initialize the fitter object
+    fitter->Fit();          // perform the fit (it will take some time)
  
   // Print some outputs
-  printf("Chi2 = %f\n",fitter->GetChi2());
-  printf("N.D.G.F. = %f\n",fitter->GetNDGF());
-  printf("<beta> = %f\n",bwPi->GetMeanBeta());
+    printf("Chi2 = %f\n",fitter->GetChi2());
+    printf("N.D.G.F. = %f\n",fitter->GetNDGF());
+    printf("<beta> = %f\n",bwPi->GetMeanBeta());
   
   //  fitter2->PrepareToFit(); // initialize the fitter object
   //   fitter2->Fit();          // perform the fit (it will take some time)
-
-  TF1 *fitSP = bwPi->GetSpectraFit();
-  TF1 *fitV2 = bwPi2->GetV2Fit();
-  TF1 *fitSP2 = NULL;//bwPi3->GetSpectraFit();
+    fitSP = bwPi->GetSpectraFit();
+    fitV2 = bwPi2->GetV2Fit();
+    fitSP2 = NULL;//bwPi3->GetSpectraFit();
 
 //   printf("2)Chi2 = %f\n",fitter2->GetChi2());
 //   printf("2)N.D.G.F. = %f\n",fitter2->GetNDGF());
 //   printf("2)<beta> = %f\n",bwPi3->GetMeanBeta());
 
   // Draw fit
-  csp->cd();
-  fitSP->Draw("SAME");
-//   fitSP2->Draw("SAME");
-  cv2->cd();
-  fitV2->Draw("SAME");
-
+    csp->cd();
+    fitSP->Draw("SAME");
+    //   fitSP2->Draw("SAME");
+    cv2->cd();
+    fitV2->Draw("SAME");
+  }
 //   fitSP->SetRange(0.0001,1.3);
 //   fitSP2->SetRange(1.5,6);
 //   fitV2->SetRange(0.0001,1);
@@ -633,10 +635,10 @@ Float_t ComputePiV2int(Int_t ic=2){
     Float_t x2 = (i+1)*0.02;
     Float_t xm = (x1+x2)*0.5;
     
-    Float_t yield = fitSP->Integral(x1,x2);
-    Float_t v2 = fitV2->Eval(xm);
+    if(xm > xmin){
+      Float_t yield = fitSP->Integral(x1,x2);
+      Float_t v2 = fitV2->Eval(xm);
     
-    if(xm > 0.){
       xpt[npt] = xm;
       ypt[npt] = fitSP->Eval(xm);
       ypt1[npt] = ypt[npt]*(1 + 0.0202/0.2 + 0.03 * 0.2);
@@ -673,7 +675,7 @@ Float_t ComputePiV2int(Int_t ic=2){
 
     Float_t frSyst = 1 - 2*hpiplus->Integral(1,hpiplus->FindBin(x))/hpiplus->Integral();
 
-    if(x > 0.2 && x < 6){
+    if(x > TMath::Max(0.2,xmin) && x < TMath::Min(xmax,6.0)){
       Float_t binwidth = 0.05;
       if(x < 3) binwidth = 0.05;
       else if(x < 4) binwidth = 0.1;
@@ -724,7 +726,7 @@ Float_t ComputePiV2int(Int_t ic=2){
 
     Float_t frSyst = 1 - 2*hpiplus->Integral(1,hpiplus->FindBin(x))/hpiplus->Integral();
 
-    if(x > 6 && x < 20){
+    if(x > TMath::Max(6.0,xmin) && x < xmax){
       Float_t binwidth = 0.05;
       if(x < 8) binwidth = 0.5;
       else if(x < 13) binwidth = 1;
@@ -800,7 +802,7 @@ Float_t ComputePiV2int(Int_t ic=2){
 
 }
 
-Float_t ComputeKaV2int(Int_t ic=2){
+Float_t ComputeKaV2int(Int_t ic=2,Float_t xmin=0,Float_t xmax=20){
   Float_t v2Av = 0.025;
   
   if(ic==1) v2Av = 0.045;
@@ -877,37 +879,40 @@ Float_t ComputeKaV2int(Int_t ic=2){
   AliBlastwaveFitter *fitter2 = new AliBlastwaveFitter("fitterKaon2");
   fitter2->AddFitFunction(bwKa3);
 
+  TF1 *fitSP, *fitV2, *fitSP2;
   // go to fit
-  fitter->PrepareToFit(); // initialize the fitter object
-  fitter->Fit();          // perform the fit (it will take some time)
-
+  if(xmin < 0.25){
+    fitter->PrepareToFit(); // initialize the fitter object
+    fitter->Fit();          // perform the fit (it will take some time)
+    
   // Print some outputs
-  printf("Chi2 = %f\n",fitter->GetChi2());
-  printf("N.D.G.F. = %f\n",fitter->GetNDGF());
-  printf("<beta> = %f\n",bwKa->GetMeanBeta());
+    printf("Chi2 = %f\n",fitter->GetChi2());
+    printf("N.D.G.F. = %f\n",fitter->GetNDGF());
+    printf("<beta> = %f\n",bwKa->GetMeanBeta());
 
 //   fitter2->PrepareToFit(); // initialize the fitter object
 //   fitter2->Fit();          // perform the fit (it will take some time)
 
-  TF1 *fitSP = bwKa->GetSpectraFit();
-  TF1 *fitV2 = bwKa2->GetV2Fit();
-  TF1 *fitSP2 = bwKa3->GetSpectraFit();
+    TF1 *fitSP = bwKa->GetSpectraFit();
+    TF1 *fitV2 = bwKa2->GetV2Fit();
+    TF1 *fitSP2 = bwKa3->GetSpectraFit();
 
-  printf("2)Chi2 = %f\n",fitter2->GetChi2());
-  printf("2)N.D.G.F. = %f\n",fitter2->GetNDGF());
-  printf("2)<beta> = %f\n",bwKa3->GetMeanBeta());
+    printf("2)Chi2 = %f\n",fitter2->GetChi2());
+    printf("2)N.D.G.F. = %f\n",fitter2->GetNDGF());
+    printf("2)<beta> = %f\n",bwKa3->GetMeanBeta());
+    
+    // Draw fit
+    csp->cd();
+    fitSP->Draw("SAME");
+    fitSP2->Draw("SAME");
+    cv2->cd();
+    fitV2->Draw("SAME");
+    
+    fitSP->SetRange(0.0001,1.3);
+    fitSP2->SetRange(1.5,6);
+    fitV2->SetRange(0.0001,1);
+  }
 
-  // Draw fit
-  csp->cd();
-  fitSP->Draw("SAME");
-  fitSP2->Draw("SAME");
-  cv2->cd();
-  fitV2->Draw("SAME");
-
-  fitSP->SetRange(0.0001,1.3);
-  fitSP2->SetRange(1.5,6);
-  fitV2->SetRange(0.0001,1);
-  
   Float_t num = 0;
   Float_t den = 0;
   Float_t errSp = 0;
@@ -943,10 +948,10 @@ Float_t ComputeKaV2int(Int_t ic=2){
     Float_t x2 = (i+1)*0.025;
     Float_t xm = (x1+x2)*0.5;
 
-    Float_t yield = hkaplus->Interpolate(xm) * 0.025;//fitSP->Integral(x1,x2);
-    Float_t v2 = fitV2->Eval(xm);
+    if(xm > xmin){
+      Float_t yield = hkaplus->Interpolate(xm) * 0.025;//fitSP->Integral(x1,x2);
+      Float_t v2 = fitV2->Eval(xm);
 
-    if(xm > 0.){
       xpt[npt] = xm;
       ypt[npt] = fitSP->Eval(xm);
       ypt1[npt] = ypt[npt]*(1 + 0.0215/0.25 + 0.05 * 0.25);
@@ -982,7 +987,7 @@ Float_t ComputeKaV2int(Int_t ic=2){
     Float_t x = gkav2->GetX()[i];
     Float_t frSyst = 1 - 2*hkaplus->Integral(1,hkaplus->FindBin(x))/hkaplus->Integral();
   
-    if(x > 0.25 && x < 6){
+    if(x > TMath::Max(0.25,xmin) && x < TMath::Min(xmax,6.0)){
       Float_t binwidth = 0.05;
       if(x < 3) binwidth = 0.05;
       else if(x < 4) binwidth = 0.1;
@@ -1035,7 +1040,7 @@ Float_t ComputeKaV2int(Int_t ic=2){
 
     Float_t frSyst = 1 - 2*hkaplus->Integral(1,hkaplus->FindBin(x))/hkaplus->Integral();
 
-    if(x > 6 && x < 20){
+    if(x > TMath::Max(6.0,xmin) && x < xmax){
       Float_t binwidth = 0.05;
       if(x < 8) binwidth = 0.5;
       else if(x < 13) binwidth = 1;
@@ -1110,7 +1115,7 @@ Float_t ComputeKaV2int(Int_t ic=2){
   hkaplus->Draw("SAME");
 }
 
-Float_t ComputePrV2int(Int_t ic=2){
+Float_t ComputePrV2int(Int_t ic=2,Float_t xmin=0,Float_t xmax=20){
   Float_t v2Av = 0.025;
   
   if(ic==1) v2Av = 0.045;
@@ -1185,37 +1190,41 @@ Float_t ComputePrV2int(Int_t ic=2){
   AliBlastwaveFitter *fitter2 = new AliBlastwaveFitter("fitterProton2");
   fitter2->AddFitFunction(bwPr3);
 
+  TF1 *fitSP, *fitV2,*fitSP2;
+
   // go to fit
-  fitter->PrepareToFit(); // initialize the fitter object
-  fitter->Fit();          // perform the fit (it will take some time)
+  if(xmin < 0.3){
+    fitter->PrepareToFit(); // initialize the fitter object
+    fitter->Fit();          // perform the fit (it will take some time)
+    
+    // Print some outputs
+    printf("Chi2 = %f\n",fitter->GetChi2());
+    printf("N.D.G.F. = %f\n",fitter->GetNDGF());
+    printf("<beta> = %f\n",bwPr->GetMeanBeta());
+    
+    //   fitter2->PrepareToFit(); // initialize the fitter object
+    //   fitter2->Fit();          // perform the fit (it will take some time)
+    
+    fitSP = bwPr->GetSpectraFit();
+    fitV2 = bwPr2->GetV2Fit();
+    fitSP2 = bwPr3->GetSpectraFit();
 
-  // Print some outputs
-  printf("Chi2 = %f\n",fitter->GetChi2());
-  printf("N.D.G.F. = %f\n",fitter->GetNDGF());
-  printf("<beta> = %f\n",bwPr->GetMeanBeta());
+    printf("2)Chi2 = %f\n",fitter2->GetChi2());
+    printf("2)N.D.G.F. = %f\n",fitter2->GetNDGF());
+    printf("2)<beta> = %f\n",bwPr3->GetMeanBeta());
 
-//   fitter2->PrepareToFit(); // initialize the fitter object
-//   fitter2->Fit();          // perform the fit (it will take some time)
+    // Draw fit
+    csp->cd();
+    fitSP->Draw("SAME");
+    fitSP2->Draw("SAME");
+    cv2->cd();
+    fitV2->Draw("SAME");
+    
+    fitSP->SetRange(0.0001,1.2);
+    fitSP2->SetRange(2.5,6);
+    fitV2->SetRange(0.0001,2);
+  }
 
-  TF1 *fitSP = bwPr->GetSpectraFit();
-  TF1 *fitV2 = bwPr2->GetV2Fit();
-  TF1 *fitSP2 = bwPr3->GetSpectraFit();
-
-  printf("2)Chi2 = %f\n",fitter2->GetChi2());
-  printf("2)N.D.G.F. = %f\n",fitter2->GetNDGF());
-  printf("2)<beta> = %f\n",bwPr3->GetMeanBeta());
-
-  // Draw fit
-  csp->cd();
-  fitSP->Draw("SAME");
-  fitSP2->Draw("SAME");
-  cv2->cd();
-  fitV2->Draw("SAME");
-
-  fitSP->SetRange(0.0001,1.2);
-  fitSP2->SetRange(2.5,6);
-  fitV2->SetRange(0.0001,2);
-  
   Float_t num = 0;
   Float_t den = 0;
   Float_t errSp = 0;
@@ -1249,10 +1258,10 @@ Float_t ComputePrV2int(Int_t ic=2){
     Float_t x2 = (i+1)*0.03;
     Float_t xm = (x1+x2)*0.5;
 
-    Float_t yield = fitSP->Integral(x1,x2);
-    Float_t v2 = fitV2->Eval(xm);
+    if(xm > xmin){
+      Float_t yield = fitSP->Integral(x1,x2);
+      Float_t v2 = fitV2->Eval(xm);
 
-    if(xm > 0.){
       xpt[npt] = xm;
       ypt[npt] = fitSP->Eval(xm);
       ypt1[npt] = ypt[npt]*(1 + 0.064/0.3 + 0.0083 * 0.3 * 0.3);
@@ -1294,7 +1303,7 @@ Float_t ComputePrV2int(Int_t ic=2){
     Float_t x = gprv2->GetX()[i];
     Float_t frSyst = 1 - 2*hprplus->Integral(1,hprplus->FindBin(x))/hprplus->Integral();
 
-    if(x > 0.3 && x < 6){
+    if(x > TMath::Max(0.3,xmin) && x < TMath::Min(xmax,6.0)){
       Float_t binwidth = 0.05;
       if(x < 3) binwidth = 0.05;
       else if(x < 4) binwidth = 0.1;
@@ -1345,7 +1354,7 @@ Float_t ComputePrV2int(Int_t ic=2){
 
     Float_t frSyst = 1 - 2*hprplus->Integral(1,hprplus->FindBin(x))/hprplus->Integral();
 
-    if(x > 6 && x < 20){
+    if(x > TMath::Max(6.0,xmin) && x < xmax){
       Float_t binwidth = 0.05;
       if(x < 8) binwidth = 0.5;
       else if(x < 13) binwidth = 1;
