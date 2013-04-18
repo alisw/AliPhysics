@@ -5,7 +5,11 @@ AliITSUSimuParam*  MakeITSUSimuParam_M32P26Map();
 AliITSUSimuParam*  MakeITSUSimuParam_M32terP31Map();
 void SetPSFParams(TString pixType, AliITSUParamList* parData);
 
-const char* inpPSFName = "$ALICE_ROOT/ITS/UPGRADE/testITSU/ITSU_pixel_response_PSFs.root";
+// To turn noise generation ON set these values to 1
+const int kAddNoise = -1;
+const int kAddNoiseInAllMod = -1;
+
+const char* inpPSFName = "$ALICE_ROOT/ITS/UPGRADE/misc/ITSU_pixel_response_PSFs.root";
 
 void MakeITSUSimuParam(const char* cdbURI="local://") {
   //========================================================================
@@ -70,12 +74,12 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Func()
   parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
   parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,1.0,"globQscale");
   parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");  
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,-1,"pixNoiseIsOnInAllMod");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
 
   parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,5,"pixSNDisrcCut");
   parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
   // Noise
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,-1,"pixNoiseIsOn");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");  
  // and readout timing scheme
@@ -115,8 +119,8 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Func()
   parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,5,"pixSNDisrcCut");
   parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
   // Noise
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,-1,"pixNoiseIsOn");
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,-1,"pixNoiseIsOnInAllMod");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
 
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");  
@@ -157,8 +161,8 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Func()
   parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,5,"pixSNDisrcCut");
   parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
   // Noise
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,-1,"pixNoiseIsOn");
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,-1,"pixNoiseIsOnInAllMod");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
 
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");  
@@ -211,8 +215,8 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map()
   parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,5,"pixSNDisrcCut");
   parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
   // Noise
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,-1,"pixNoiseIsOn");
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,-1,"pixNoiseIsOnInAllMod");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
 
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");  
@@ -239,8 +243,8 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map()
   parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,5,"pixSNDisrcCut");
   parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
   // Noise
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,-1,"pixNoiseIsOn");
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,-1,"pixNoiseIsOnInAllMod");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
 
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");  
@@ -267,8 +271,8 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map()
   parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,5,"pixSNDisrcCut");
   parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
   // Noise
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,-1,"pixNoiseIsOn");
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,-1,"pixNoiseIsOnInAllMod");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
 
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");  
@@ -305,12 +309,12 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map()
   parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
   parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,1.0,"globQscale");
   parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");  
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,-1,"pixNoiseIsOnInAllMod");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
 
   parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,5,"pixSNDisrcCut");
   parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
   // Noise
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,-1,"pixNoiseIsOn");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,20.62,"pixNoiseMPV");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.55,"pixNoiseSigma");  
   // and readout timing scheme
@@ -335,12 +339,12 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map()
   parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
   parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,1.0,"globQscale");
   parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,-1,"pixNoiseIsOnInAllMod");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
 
   parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,5,"pixSNDisrcCut");
   parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
    // Noise
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,-1,"pixNoiseIsOn");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,20.62,"pixNoiseMPV");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.55,"pixNoiseSigma");  
   // and readout timing scheme
@@ -368,8 +372,8 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map()
   parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,5,"pixSNDisrcCut");
   parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
    // Noise
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,-1,"pixNoiseIsOn");
-  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,-1,"pixNoiseIsOnInAllMod");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+  parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,20.62,"pixNoiseMPV");
   parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.55,"pixNoiseSigma");  
 // and readout timing scheme
