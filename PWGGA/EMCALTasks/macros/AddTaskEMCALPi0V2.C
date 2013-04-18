@@ -55,6 +55,9 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGGA_EMCalpi0v2";
 
+  if(IsPhosCali) 
+    Input += "EPCaliON";
+
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(
     Form("%s_E%1.2f_M02%1.2f", Input.Data(), Ecut, M02cut), 
