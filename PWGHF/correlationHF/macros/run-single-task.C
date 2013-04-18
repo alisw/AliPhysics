@@ -10,7 +10,7 @@
 /// Usage:
 /// aliroot -b -q -l run-single-task.C'("mode", "input", "tasks", "name", "options", events, "path", "pattern", "friendPattern", "outputDir", "user")'
 ///  arguments
-///   mode:    local, full, test
+///   mode:    local, full, test, compile, merge, collect
 ///   input:   In grid mode a list of run numbers. 
 ///            In local mode:
 ///             - ESD file AliESDs.root
@@ -18,7 +18,7 @@
 ///             - AOD file AliAOD.root
 ///             - AODs with predefined list/AODs in same folder, specifiy as "AOD"
 ///
-///   tasks:   list of class names/source or header files of task, or AddTask-Macro
+///   tasks:   list of class names/source or header files of tasks, or AddTask-macros
 ///
 ///  optional arguments
 ///   name:    analysis name (default 'myanalysis')
@@ -40,6 +40,10 @@
 /// aliroot -b -q -l run-single-task.C'("local", "AOD", "AddTaskSample.C")'
 ///
 /// aliroot -b -q -l run-single-task.C'("full", "146860", "AliAnalysisTaskSample", "correlation3p_LHC11a", 0, -1, "/alice/data/2011/LHC11a", "*/pass2_without_SDD/AOD*/*/AliAOD.root")'
+///
+/// aliroot -b -q -l run-single-task.C'("merge", "gridwork/mydir", "AliAnalysisTaskSample", "myanalysis_LHC11a")'
+///
+/// aliroot -b -q -l run-single-task.C'("collect", "gridwork/mydir", "AliAnalysisTaskSample", "myanalysis_LHC11a")'
 ///
 /// Data input:
 /// depending on the format of the search pattern either the ESD or AOD input handler is used.
@@ -93,6 +97,15 @@
 /// --merge=        merging mode 'local', 'grid', 'collect' (default Grid)
 ///
 /// Merging of output:
+/// The result of Grid analysis is merged remotely by using the ability of AliAnalysisAlien
+/// to create stages of merging jobs. Being in the directory where analysis was originally
+/// launched, the macro can be run in mode 'merge' with the remote working directory,
+/// tasknames and the analysis name as arguments. Final result can be collected in mode
+/// 'collect' with the same arguments, see examples.
+/// Optionally, within the 'options' argument a list of output directories in the
+/// remote grid directory can be specified, e.g. "000 002".
+///
+/// Merging of output in mode 'terminate':
 /// The output files can be merged locally by using the argument '--merge=local'. In that
 /// case all files are downloaded to the local machine and merged. The merging on grid
 /// requires to launch the analysis with argument '--merge=grid'. After the jobs are done
@@ -125,6 +138,8 @@ const char* libraryDependencies=
   "libANALYSISalice.so "
   ;
 
+TString BuildJDLName(const char* analysisName);
+AliAnalysisManager* LoadAnalysisManager(const char* filename);
 TString GetIncludeHeaders(const char* filename, TString& headers, TString& libs, bool loadClass=true);
 TObject* BuildCodeTree(const char* filename, TObject* pTree);
 int  ProcessCodeTree(TObject* tree, TString& sources, TString& headers, TString& libs);
@@ -132,7 +147,7 @@ void ErrorConfigurationFile(const char* fileName);
 
 void run_single_task(const char* mode,
 		     const char* input,
-		     const char* tasknames,
+		     const char* tasknames=NULL,
 		     const char* analysisName=defaultAnalysisName,
 		     const char* arguments="",
 		     int nevents=-1,
@@ -162,48 +177,22 @@ void run_single_task(const char* mode,
   }
 
   bool bRunLocal=strcmp(mode, "local")==0;
-  const char* gridConfigFile="grid-config.C";
-  TString strGridConfigFile=gridConfigFile;
-  if (gSystem->AccessPathName(strGridConfigFile)!=0) {
-    strGridConfigFile.Prepend("/");
-    strGridConfigFile.Prepend(gSystem->Getenv("HOME"));
-    if (gSystem->AccessPathName(strGridConfigFile)!=0) {
-      if (!bRunLocal) {
-	ErrorConfigurationFile(gridConfigFile);
-	return;
-      }
-      strGridConfigFile="";
+  bool bCompileOnly=strcmp(mode, "compile")==0;
+  if (bCompileOnly) {
+    bRunLocal=true;
+    if (tasknames==NULL) {
+      // short form with tasknames as the second argument
+      tasknames=input;
     }
   }
-
-  if (strGridConfigFile.IsNull()==0 && !bRunLocal) {
-    cout << "loading grid configuration from file '" << strGridConfigFile << "':" << endl;
-    gROOT->LoadMacro(strGridConfigFile);
-    cout << " alienAPIVersion          =" << alienAPIVersion     << endl;
-    cout << " alienROOTVersion         =" << alienROOTVersion    << endl;
-    cout << " alienAliROOTVersion      =" << alienAliROOTVersion << endl;
-    cout << " defaultGridDataDir       =" << defaultGridDataDir  << endl;
-    cout << " defaultDataPattern       =" << defaultDataPattern  << endl;
-    cout << " defaultFriendDataPattern =" << defaultFriendDataPattern  << endl;
-
-    if (gridDataDir==NULL) gridDataDir=defaultGridDataDir;
-    if (dataPattern==NULL) dataPattern=defaultDataPattern;
-    if (friendDataPattern==NULL) friendDataPattern=defaultFriendDataPattern;
-  } else if (bRunLocal) {
-    if (dataPattern==NULL) {
-      // thats a very crude logic, I guess it can fail in some special cases
-      TString strin=input;
-      if (strin.Contains("AOD"))
-	dataPattern="AOD";
-      else if (strin.Contains("ESD"))
-	dataPattern="ESD";
-    }
+  int mergeMode=0;
+  if ((strcmp(mode, "merge")==0 && (mergeMode=1)>0) ||
+      (strcmp(mode, "collect")==0 && (mergeMode=2)>0)) {
+    mode="terminate";
+    odir=input;
+    input="0";
   }
 
-  if(!bRunLocal) {
-    // Connect to AliEn
-    TGrid::Connect("alien://");
-  }
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -212,10 +201,12 @@ void run_single_task(const char* mode,
   //
   bool bRunAnalysis=true;
   bool bDefaultOutput=true;
-  bool bMergeOnGrid=true;
+  bool bMergeOnGrid=mergeMode==2?false:true; // default true in all cases but 'collect'
   bool mcData=false;
   int nTestFiles=10;
+  int nMaxInputFiles=100;
   TString strArguments(arguments);
+  TString mergeDirs;
   TObjArray* tokens=strArguments.Tokenize(" ");
   if (tokens) {
     for (int iToken=0; iToken<tokens->GetEntriesFast(); iToken++) {
@@ -224,6 +215,14 @@ void run_single_task(const char* mode,
       TString arg=token->GetName();
       const char* key=NULL;
 
+      if (arg.CompareTo("--help")==0 ||
+          arg.CompareTo("-h")==0 ||
+          arg.CompareTo("help")==0 ||
+          arg.CompareTo("options")==0) {
+	// printing help when called without arguments
+	run_single_task();
+	return;
+      }
       key="--mcData";
       if (arg.CompareTo(key)==0) {
 	// this is an argument to the macro, don't propagate it further to tasks
@@ -232,6 +231,7 @@ void run_single_task(const char* mode,
 	// NOTE: not to be confused with option 'mc' which is propagated to tasks
 	// and switches processing and output modes inside tasks
 	mcData=true;
+	continue;
       }
       key="--merge=";
       if (arg.BeginsWith(key)) {
@@ -251,6 +251,7 @@ void run_single_task(const char* mode,
 	  // must be provided
 	  bMergeOnGrid=true;
 	}
+	continue;
       }
       key="--nTestFiles=";
       if (arg.BeginsWith(key)) {
@@ -258,51 +259,39 @@ void run_single_task(const char* mode,
 	strArguments.ReplaceAll(arg, "");
 	arg.ReplaceAll(key, "");
 	nTestFiles=arg.Atoi();
+	continue;
       }
       key="--noDefaultOutput";
       if (arg.CompareTo(key)==0) {
 	// this is an argument to the macro, don't propagate it further to tasks
 	strArguments.ReplaceAll(arg, "");
 	bDefaultOutput=false;
+	continue;
       }
       key="--stopBeforeRunning";
       if (arg.CompareTo(key)==0) {
 	// this is an argument to the macro, don't propagate it further to tasks
 	strArguments.ReplaceAll(arg, "");
 	bRunAnalysis=false;
+	continue;
+      }
+      key="--maxInputFiles=";
+      if (arg.BeginsWith(key)) {
+	// this is an argument to the macro, don't propagate it further to tasks
+	strArguments.ReplaceAll(arg, "");
+	arg.ReplaceAll(key, "");
+	nMaxInputFiles=arg.Atoi();
+	continue;
+      }
+      if (!arg.BeginsWith("-") && mergeMode>0) {
+	// treat as subdirectories in the remote grid dir
+	mergeDirs+=" "; mergeDirs+=arg;
+	// this is an argument to the macro, don't propagate it further to tasks
+	strArguments.ReplaceAll(arg, "");
       }
     }
     delete tokens;
   }
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
-  //
-  // make the analysis manager
-  //
-  AliAnalysisManager *pManager  = new AliAnalysisManager("AnalysisManager");
-  if (!pManager) {
-    cerr << "failed to created AnalysisManager" << endl;
-    return;
-  }
-  AliInputEventHandler *pInputHandler = NULL;
-  TString strDataPattern(dataPattern);
-  if (strDataPattern.Contains("AOD")) pInputHandler=new AliAODInputHandler;
-  else if (strDataPattern.Contains("ESD")) pInputHandler=new AliESDInputHandler;
-  else {
-    cerr << "can not determine input type from data pattern '" << dataPattern << "'" << endl;
-    return;
-  }
-  if (!pInputHandler) {
-    cerr << "failed to created input handler" << endl;
-    return;
-  }
-  //pInputHandler->SetReadFriends(kFALSE);
-  pManager->SetInputEventHandler(pInputHandler);  
-  pManager->SetNSysInfo(1000);
-
-  TString ofile=Form("%s.root", analysisName);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -403,6 +392,7 @@ void run_single_task(const char* mode,
     }
   }
   ProcessCodeTree(pCodeTree, dependencySource, dependencyHeader, libraries);
+  if (bCompileOnly) return;
 
   cout << "Tasks: " << taskClasses << endl;
   cout << "Task files: " << taskSources << addTaskMacros << taskHeaders << endl;
@@ -410,6 +400,84 @@ void run_single_task(const char* mode,
   cout << "Dependency headers: " << dependencyHeader << endl;
   cout << "Dependency libraries: " << libraries << endl;
   cout << "Packages: " << parPackages << endl;
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // grid defaults
+  //
+  const char* gridConfigFile="grid-config.C";
+  TString strGridConfigFile=gridConfigFile;
+  if (gSystem->AccessPathName(strGridConfigFile)!=0) {
+    strGridConfigFile.Prepend("/");
+    strGridConfigFile.Prepend(gSystem->Getenv("HOME"));
+    if (gSystem->AccessPathName(strGridConfigFile)!=0) {
+      if (!bRunLocal) {
+	ErrorConfigurationFile(gridConfigFile);
+	return;
+      }
+      strGridConfigFile="";
+    }
+  }
+
+  if (strGridConfigFile.IsNull()==0 && !bRunLocal) {
+    cout << "loading grid configuration from file '" << strGridConfigFile << "':" << endl;
+    gROOT->LoadMacro(strGridConfigFile);
+    cout << " alienAPIVersion          =" << alienAPIVersion     << endl;
+    cout << " alienROOTVersion         =" << alienROOTVersion    << endl;
+    cout << " alienAliROOTVersion      =" << alienAliROOTVersion << endl;
+    cout << " defaultGridDataDir       =" << defaultGridDataDir  << endl;
+    cout << " defaultDataPattern       =" << defaultDataPattern  << endl;
+    cout << " defaultFriendDataPattern =" << defaultFriendDataPattern  << endl;
+
+    if (gridDataDir==NULL) gridDataDir=defaultGridDataDir;
+    if (dataPattern==NULL) dataPattern=defaultDataPattern;
+    if (friendDataPattern==NULL) friendDataPattern=defaultFriendDataPattern;
+  } else if (bRunLocal) {
+    if (dataPattern==NULL) {
+      // thats a very crude logic, I guess it can fail in some special cases
+      TString strin=input;
+      if (strin.Contains("AOD"))
+	dataPattern="AOD";
+      else if (strin.Contains("ESD"))
+	dataPattern="ESD";
+    }
+  }
+
+  if(!bRunLocal) {
+    // Connect to AliEn
+    TGrid::Connect("alien://");
+  }
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // make the analysis manager
+  //
+  AliAnalysisManager *pManager=NULL;
+  pManager=new AliAnalysisManager("AnalysisManager");
+  if (!pManager) {
+    cerr << "failed to create AnalysisManager" << endl;
+    return;
+  }
+  AliInputEventHandler *pInputHandler = NULL;
+  TString strDataPattern(dataPattern);
+  if (strDataPattern.Contains("AOD")) pInputHandler=new AliAODInputHandler;
+  else if (strDataPattern.Contains("ESD")) pInputHandler=new AliESDInputHandler;
+  else {
+    cerr << "can not determine input type from data pattern '" << dataPattern << "'" << endl;
+    return;
+  }
+  if (!pInputHandler) {
+    cerr << "failed to created input handler" << endl;
+    return;
+  }
+  //pInputHandler->SetReadFriends(kFALSE);
+  pManager->SetInputEventHandler(pInputHandler);  
+  pManager->SetNSysInfo(1000);
+
+  TString ofile=Form("%s.root", analysisName);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -557,6 +625,20 @@ void run_single_task(const char* mode,
       alienHandler->AddRunNumber(input);
     }
 
+    if (mergeMode>0) {
+      // the merge and collect modes have been added to simplify merging on grid
+      // the treatment of arguments are a bit different in order to reduce list
+      // of required arguments
+      TString delimiter(" ");
+      if (mergeDirs.IsNull()) mergeDirs="000";
+      TStringToken dir(mergeDirs, delimiter);
+      while (dir.NextToken()) {
+	alienHandler->AddDataFile(dir->Data());
+      }
+      // use the specified directory names rather than a counter
+      alienHandler->SetOutputToRunNo();
+    }
+
     // define working and output directories
     TDatime dt;
     if(odir.IsNull())
@@ -592,10 +674,10 @@ void run_single_task(const char* mode,
     //alienHandler->SetExecutable("comparison.sh");
     alienHandler->SetExecutable(Form("run_%s.sh",analysisName));
 
-    alienHandler->SetSplitMaxInputFileNumber(100);
+    alienHandler->SetSplitMaxInputFileNumber(nMaxInputFiles);
   
     // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
-    alienHandler->SetMaxInitFailed(10);
+    //    alienHandler->SetMaxInitFailed(10);
   
     // Optionally resubmit threshold.
     alienHandler->SetMasterResubmitThreshold(90); // in %
@@ -606,7 +688,7 @@ void run_single_task(const char* mode,
     alienHandler->SetInputFormat("xml-single");
  
     // Optionally modify the name of the generated JDL (default analysis.jdl)
-    alienHandler->SetJDLName(Form("run_%s.jdl",analysisName));
+    alienHandler->SetJDLName(BuildJDLName(analysisName));
  
     // Optionally modify job price (default 1)
     alienHandler->SetPrice(1);
@@ -709,6 +791,60 @@ void run_single_task(const char* mode,
   } else {
     pManager->StartAnalysis("grid", nevents);
   }
+}
+
+void run_single_task()
+{
+  // Print help
+  cout << "\nrun-single-task.C: Helper macro to run a single task either locally or on Grid"
+       << "\nUsage:"
+       << "\naliroot -b -q -l run-single-task.C'(\"mode\", \"input\", \"tasks\", \"name\", \"options\", events, \"path\", \"pattern\", \"friendPattern\", \"outputDir\", \"user\")' "
+       << "\n arguments"
+       << "\n  mode:    local, full, test, compile, merge, collect"
+       << "\n  input:   In grid mode a list of run numbers. "
+       << "\n           In local mode:"
+       << "\n            - ESD file AliESDs.root"
+       << "\n            - a list of ESD files in a text file <choose-file-name>.txt"
+       << "\n            - AOD file AliAOD.root"
+       << "\n            - AODs with predefined list/AODs in same folder, specifiy as \"AOD\""
+       << "\n"
+       << "\n  tasks:   list of class names/source or header files of tasks, or AddTask-macros"
+       << "\n"
+       << "\n optional arguments"
+       << "\n  name:    analysis name (default 'myanalysis')"
+       << "\n  options: optional arguments passed onto the task, e.g. 'mc', 'event-mixing'"
+       << "\n           options of run-single-task:"
+       << "\n             'mcData' -> the run numbers indicate MC Data, no '000' prepended"
+       << "\n  events:  number of events to be processed (default -1 -> all)"
+       << "\n  path:    data search path for grid analysis (default from configuration file)"
+       << "\n  pattern: data search pattern (default from configuration file)"
+       << "\n  friend pattern: friend file search pattern (default from configuration file)"
+       << "\n  output dir: output directory in Grid home (default gridwork/yyyy-mm-dd_hh-mm)"
+       << "\n  user:    default NULL, using user of active token"
+       << "\n" << endl;
+  cout << "Examples:"
+       << "\naliroot -b -q -l run-single-task.C'(\"full\", \"146860\", \"AliAnalysisTaskSample\", \"myanalysis_LHC11a\")'"
+       << "\n"
+       << "\naliroot -b -q -l run-single-task.C'(\"local\", \"$ALICE_ROOT/test/ppbench/AliESDs.root\", \"AliAnalysisTaskSample\")'"
+       << "\n"
+       << "\naliroot -b -q -l run-single-task.C'(\"local\", \"AOD\", \"AddTaskSample.C\")'"
+       << "\n"
+       << "\naliroot -b -q -l run-single-task.C'(\"full\", \"146860\", \"AliAnalysisTaskSample\", \"correlation3p_LHC11a\", 0, -1, \"/alice/data/2011/LHC11a\", \"*/pass2_without_SDD/AOD*/*/AliAOD.root\")'"
+       << "\n"
+       << "\naliroot -b -q -l run-single-task.C'(\"merge\", \"gridwork/mydir\", \"AliAnalysisTaskSample\", \"myanalysis_LHC11a\")'"
+       << "\n"
+       << "\naliroot -b -q -l run-single-task.C'(\"collect\", \"gridwork/mydir\", \"AliAnalysisTaskSample\", \"myanalysis_LHC11a\")'"
+       << "\n" << endl;
+
+  cout << "Further options: \n" 
+       << "--merge=local/grid/collect (merge option when running in mode 'terminate', simplified by runniing modes 'merge' and 'collect')\n"
+       << "                           (if you want to merge files on grid, run with --merge=grid and --merge=collect to fetch files)\n"
+       << "--mcData                   (needed if running on MC)\n"
+       << "--nTestFiles=              (number of test files to use from grid, default=10)\n"
+       << "--maxInputFiles=           (number of files in each subjob on grid, default=100)\n"
+       << "--noDefaultOutput \n"
+       << "--stopBeforeRunning        (Testmode for run-single-task, will stop right before starting the analysis)\n\n"
+       << "To get the keywords to send to the AddTask-macros, run them individually with argument help\n\n";
 }
 
 // method for backward compatibility
@@ -837,6 +973,37 @@ TString GetIncludeHeaders(const char* filename, TString& headers, TString& libs,
   }
 
   return headers;
+}
+
+TString BuildJDLName(const char* analysisName)
+{
+  TString jdlname(Form("run_%s.jdl",(analysisName!=NULL?analysisName:"analysis")));
+  return jdlname;
+}
+
+AliAnalysisManager* LoadAnalysisManager(const char* filename)
+{
+  // open file and loop through objects to find AnalysisManager
+  TFile* file=TFile::Open(infilename);
+  if (!file || file->IsZombie()) {
+    return;
+  }
+
+  TList* keys=file->GetListOfKeys();
+  if (!keys || keys->GetEntries()==0) {
+    cerr << "can not find any keys in file " << infilename << endl;
+    return;
+  }
+
+  TObject* pObj=NULL;
+  TObject* pKey=NULL;
+  TList output;
+  TIter nextkey(keys);
+  while (pKey=nextkey()) {
+    file->GetObject(pKey->GetName(), pObj);
+    if (pObj && pObj->IsA()!=AliAnalysisManager::Class())
+      return dynamic_cast<AliAnalysisManager*>(pObj);
+  }
 }
 
 void ErrorConfigurationFile(const char* fileName) {
