@@ -68,7 +68,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fJetType(0),
   fJetAlgo(1),
   fJetParticleLevel(kTRUE),
-  fIncludeNoITS(kTRUE),
+  fIncludeNoITS(kFALSE),
+  fCutMaxFractionSharedTPCClusters(0.4),
   fUseNegativeLabels(kTRUE),
   fTrackEfficiency(1),
   fIsAODMC(kFALSE),
@@ -130,7 +131,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fJetType(0),
   fJetAlgo(1),
   fJetParticleLevel(kTRUE),
-  fIncludeNoITS(kTRUE),
+  fIncludeNoITS(kFALSE),
+  fCutMaxFractionSharedTPCClusters(0.4),
   fUseNegativeLabels(kTRUE),
   fTrackEfficiency(1),
   fIsAODMC(kFALSE),
@@ -531,7 +533,11 @@ void AliJetEmbeddingFromAODTask::Run()
 	    AliDebug(3, "Track not embedded because not an hybrid track.");
 	    continue;
 	  }
-
+	  if (fCutMaxFractionSharedTPCClusters > 0) {
+	    Double_t frac = Double_t(aodtrack->GetTPCnclsS()) / Double_t(aodtrack->GetTPCncls());
+	    if (frac > fCutMaxFractionSharedTPCClusters) 
+	      continue;
+	  }
 	  if (TMath::Abs(aodtrack->GetTrackEtaOnEMCal()) < 0.75 && 
 	      aodtrack->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() && 
 	      aodtrack->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())

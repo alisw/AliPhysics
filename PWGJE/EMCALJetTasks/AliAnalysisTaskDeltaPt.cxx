@@ -171,7 +171,7 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
 
   Float_t *binsPt       = GenerateFixedBinArray(fNbins, fMinBinPt, fMaxBinPt);
   Float_t *binsCorrPt   = GenerateFixedBinArray(fNbins*2, -fMaxBinPt, fMaxBinPt);
-  Float_t *binsArea     = GenerateFixedBinArray(40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+  Float_t *binsArea     = GenerateFixedBinArray(50, 0, 2);
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     if (!fTracksName.IsNull() || !fCaloName.IsNull()) {
@@ -232,14 +232,14 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
     if (!fEmbJetsName.IsNull()) {
       histname = "fHistEmbJetsPtArea_";
       histname += i;
-      fHistEmbJetsPtArea[i] = new TH3F(histname.Data(), histname.Data(), 40, binsArea, fNbins, binsPt, nbinsZ, binsZ);
+      fHistEmbJetsPtArea[i] = new TH3F(histname.Data(), histname.Data(), 50, binsArea, fNbins, binsPt, nbinsZ, binsZ);
       fHistEmbJetsPtArea[i]->GetXaxis()->SetTitle("area");
       fHistEmbJetsPtArea[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb,raw} (GeV/#it{c})");
       fOutput->Add(fHistEmbJetsPtArea[i]);
 
       histname = "fHistEmbJetsCorrPtArea_";
       histname += i;
-      fHistEmbJetsCorrPtArea[i] = new TH3F(histname.Data(), histname.Data(), 40, binsArea, fNbins * 2, binsCorrPt, nbinsZ, binsZ);
+      fHistEmbJetsCorrPtArea[i] = new TH3F(histname.Data(), histname.Data(), 50, binsArea, fNbins * 2, binsCorrPt, nbinsZ, binsZ);
       fHistEmbJetsCorrPtArea[i]->GetXaxis()->SetTitle("area");
       fHistEmbJetsCorrPtArea[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb,corr} (GeV/#it{c})");
       fOutput->Add(fHistEmbJetsCorrPtArea[i]);
@@ -254,7 +254,8 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
 
       histname = "fHistEmbPartPtvsJetCorrPt_";
       histname += i;
-      fHistEmbPartPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
+      fHistEmbPartPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), 
+					      fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
       fHistEmbPartPtvsJetCorrPt[i]->GetXaxis()->SetTitle("#sum#it{p}_{T,const}^{emb} (GeV/#it{c})");
       fHistEmbPartPtvsJetCorrPt[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} - A#rho (GeV/#it{c})");
       fHistEmbPartPtvsJetCorrPt[i]->GetZaxis()->SetTitle("counts");
@@ -262,7 +263,8 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
 
       histname = "fHistJetPtvsJetCorrPt_";
       histname += i;
-      fHistJetPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
+      fHistJetPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), 
+					  fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
       fHistJetPtvsJetCorrPt[i]->GetXaxis()->SetTitle("#it{p}_{T,jet}^{emb} (GeV/#it{c})");
       fHistJetPtvsJetCorrPt[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} - A#rho (GeV/#it{c})");
       fHistJetPtvsJetCorrPt[i]->GetZaxis()->SetTitle("counts");
@@ -298,14 +300,14 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
 
       histname = "fHistEmbRejectedJetsPtArea_";
       histname += i;
-      fHistEmbRejectedJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbRejectedJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), 50, 0, 2, fNbins, fMinBinPt, fMaxBinPt);
       fHistEmbRejectedJetsPtArea[i]->GetXaxis()->SetTitle("area");
       fHistEmbRejectedJetsPtArea[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb,raw} (GeV/#it{c})");
       fOutput->Add(fHistEmbRejectedJetsPtArea[i]);
 
       histname = "fHistEmbBkgArea_";
       histname += i;
-      fHistEmbBkgArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbBkgArea[i] = new TH2F(histname.Data(), histname.Data(), 50, 0, 2, fNbins, fMinBinPt, fMaxBinPt);
       fHistEmbBkgArea[i]->GetXaxis()->SetTitle("area");
       fHistEmbBkgArea[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} - #sum#it{p}_{T,const}^{emb} (GeV/#it{c})");
       fOutput->Add(fHistEmbBkgArea[i]);
@@ -319,7 +321,8 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       
       histname = "fHistDeltaPtEmbArea_";
       histname += i;
-      fHistDeltaPtEmbArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins * 2, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaPtEmbArea[i] = new TH2F(histname.Data(), histname.Data(), 
+					50, 0, 2, fNbins * 2, -fMaxBinPt, fMaxBinPt);
       fHistDeltaPtEmbArea[i]->GetXaxis()->SetTitle("area");
       fHistDeltaPtEmbArea[i]->GetYaxis()->SetTitle("#delta#it{p}_{T}^{emb} (GeV/#it{c})");
       fOutput->Add(fHistDeltaPtEmbArea[i]);
