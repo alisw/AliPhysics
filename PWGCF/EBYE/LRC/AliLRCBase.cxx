@@ -15,7 +15,7 @@
 //    This class is abstact (interface) base class for different classes 
 //    used for track-by-track data analysis in AliAnalysisTaskLRC
 //    Origin: Andrey Ivanov (SPbSU-CERN) anivanov@cern.ch, 
-//    Igor Altsebeev (SPbSU-CERN) 
+//    Igor Altsybeev (SPbSU-CERN) 
 //-------------------------------------------------------------------------
 
 #include "AliLRCBase.h"
