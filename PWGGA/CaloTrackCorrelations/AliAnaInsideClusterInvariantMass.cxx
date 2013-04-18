@@ -56,12 +56,14 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fM02MaxCut(0),    fM02MinCut(0),       
   fMinNCells(0),    fMinBadDist(0),
   fFillAngleHisto(kFALSE),
+  fFillTMHisto(kFALSE),
   fFillTMResidualHisto(kFALSE),
   fFillSSExtraHisto(kFALSE),
   fFillMCFractionHisto(kFALSE),
   fFillSSWeightHisto(kFALSE),
   fFillEbinHisto(0),
   fSSWeightN(0),              fSSECellCutN(0),
+  fWSimu(0),
   fhMassM02CutNLocMax1(0),    fhMassM02CutNLocMax2(0),    fhMassM02CutNLocMaxN(0),
   fhAsymM02CutNLocMax1(0),    fhAsymM02CutNLocMax2(0),    fhAsymM02CutNLocMaxN(0),
   fhMassSplitECutNLocMax1(0), fhMassSplitECutNLocMax2(0), fhMassSplitECutNLocMaxN(0),
@@ -356,7 +358,15 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
     for(Int_t iw = 0; iw < fSSWeightN; iw++)
     {
       GetCaloUtils()->GetEMCALRecoUtils()->SetW0(fSSWeight[iw]);
-      GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), cells, clus);
+      //GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), cells, clus);
+      
+      Float_t l0   = 0., l1   = 0.;
+      Float_t disp = 0., dEta = 0., dPhi    = 0.;
+      Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
+      
+      RecalculateClusterShowerShapeParametersWithCellCut(GetEMCALGeometry(), cells, clus,l0,l1,disp,
+                                                         dEta, dPhi, sEta, sPhi, sEtaPhi,0);
+
       
       fhM02WeightPi0[nlm][iw]->Fill(energy,clus->GetM02());
       
@@ -377,7 +387,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
       RecalculateClusterShowerShapeParametersWithCellCut(GetEMCALGeometry(), cells, clus,l0,l1,disp,
                                                          dEta, dPhi, sEta, sPhi, sEtaPhi,fSSECellCut[iec]);
       
-      
+      printf("E %f, l0 org %f, l0 new %f, slope %f\n",clus->E(),l0org,l0,fSSECellCut[iec]);
       fhM02ECellCutPi0[nlm][iec]->Fill(energy,l0);
       
     } // w0 loop
@@ -452,9 +462,11 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   
   TString sMatched[] = {"","Matched"};
   
+  Int_t nMatched = 2;
+  if(!fFillTMHisto) nMatched = 1;
   for(Int_t i = 0; i < n; i++)
   {
-    for(Int_t j = 0; j < 2; j++)
+    for(Int_t j = 0; j < nMatched; j++)
     {
       
       fhMassNLocMax1[i][j]  = new TH2F(Form("hMassNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
@@ -1464,7 +1476,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     
   }
   
-  if(fFillTMResidualHisto)
+  if(fFillTMResidualHisto && fFillTMHisto)
   {
     for(Int_t i = 0; i < n; i++)
     {  
@@ -1524,7 +1536,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   
   if(fFillAngleHisto)
   {
-    for(Int_t j = 0; j < 2; j++)
+    for(Int_t j = 0; j < nMatched; j++)
     {  
       
       fhAnglePairNLocMax1[j]  = new TH2F(Form("hAnglePairNLocMax1%s",sMatched[j].Data()),
@@ -1572,7 +1584,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     }
   }
   
-  for(Int_t j = 0; j < 2; j++)
+  for(Int_t j = 0; j < nMatched; j++)
   {
     fhSplitEFractionvsAsyNLocMax1[j]     = new TH2F(Form("hSplitEFractionvsAsyNLocMax1%s",sMatched[j].Data()),
                                                     Form("(E1+E2)/E_{cluster} vs (E_{split1}-E_{split2})/(E_{split1}+E_{split2}) for N max  = 1, E>12, %s",sMatched[j].Data()),
@@ -1703,7 +1715,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhPi0CellEMaxFrac[nlm]  = new TH2F(Form("hPi0CellEMaxFracNLocMax%s",snlm[nlm].Data()),
                                                 Form("Selected #pi^{0}'s, NLM = %s: cluster E vs 1st loc. max. E / E cell i",snlm[nlm].Data()),
                                                 nptbins,ptmin,ptmax, 100,0,1);
-      fhPi0CellEMaxFrac[nlm]->SetYTitle("E_{Loc Max 1} / E_{cell 1}");
+      fhPi0CellEMaxFrac[nlm]->SetYTitle("E_{Loc Max 1} / E_{cell i}");
       fhPi0CellEMaxFrac[nlm]->SetXTitle("E_{cluster}");
       outputContainer->Add(fhPi0CellEMaxFrac[nlm]) ;
       
@@ -1826,15 +1838,17 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
   {
     AliVCluster * cluster = (AliVCluster*) (pl->At(icluster));	
 
+    Bool_t  matched   = IsTrackMatched(cluster,GetReader()->GetInputEvent());
+    if(!fFillTMHisto) continue ;
+    
     // Study clusters with large shape parameter
     Float_t en = cluster->E();
     Float_t l0 = cluster->GetM02();
     Int_t   nc = cluster->GetNCells();
     Float_t bd = cluster->GetDistanceToBadChannel() ; 
-
     
     //If too small or big E or low number of cells, or close to a bad channel skip it
-    if( en < GetMinEnergy() || en > GetMaxEnergy() || nc < fMinNCells || bd < fMinBadDist) continue ; 
+    if( en < GetMinEnergy() || en > GetMaxEnergy() || nc < fMinNCells || bd < fMinBadDist) continue ;
     
     TLorentzVector lv;
     cluster->GetMomentum(lv, GetVertex(0));
@@ -1875,9 +1889,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     Float_t splitFrac = (e1+e2)/en;
     Float_t asym = -10;
     if(e1+e2>0) asym = (e1-e2)/(e1+e2);
-    
-    Bool_t  matched   = IsTrackMatched(cluster,GetReader()->GetInputEvent());
-    
+        
     fhNLocMax[0][matched]->Fill(en,nMax);
     
     Int_t inlm = -1;
@@ -2573,7 +2585,10 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     if(energy > 0 && eCell > eCellMin)
     {
       w  = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell,energy);
-      
+
+      //correct weight, ONLY in simulation
+      w *= (1 - fWSimu * w );
+     
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;
       
@@ -2627,6 +2642,9 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     {
       w  = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell,energy);
       
+      //correct weight, ONLY in simulation
+      w *= (1 - fWSimu * w );
+
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;
       if(w > 0.0)

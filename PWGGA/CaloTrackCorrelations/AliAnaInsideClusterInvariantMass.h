@@ -52,12 +52,17 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
   void         SetMinBadChannelDistance(Float_t cut)     { fMinBadDist  = cut ; }
 
+  void         SetWCorrectionParameter(Float_t p = 0.07) { fWSimu       = p   ; }
+  
   void         SwitchOnFillAngleHistograms()             { fFillAngleHisto      = kTRUE  ; }
   void         SwitchOffFillAngleHistograms()            { fFillAngleHisto      = kFALSE ; }
   
   void         SwitchOnFillExtraSSHistograms()           { fFillSSExtraHisto    = kTRUE  ; }
   void         SwitchOffFillExtraSSHistograms()          { fFillSSExtraHisto    = kFALSE ; }
 
+  void         SwitchOnFillTMHistograms()                { fFillTMHisto         = kTRUE  ; }
+  void         SwitchOffFillTMHistograms()               { fFillTMHisto         = kFALSE ; }
+  
   void         SwitchOnFillTMResidualHistograms()        { fFillTMResidualHisto = kTRUE  ; }
   void         SwitchOffFillTMResidualHistograms()       { fFillTMResidualHisto = kFALSE ; }
   
@@ -96,17 +101,21 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fMinBadDist  ;          // Minimal distance to bad channel to accept cluster
   
   Bool_t       fFillAngleHisto;        // Fill splitted clusters angle histograms
+  Bool_t       fFillTMHisto ;          // Fill track matching histos,
   Bool_t       fFillTMResidualHisto ;  // Fill track matching histos, residuals
   Bool_t       fFillSSExtraHisto ;     // Fill shower shape extra histos
   Bool_t       fFillMCFractionHisto ;  // Fill MC energy fraction histos
   Bool_t       fFillSSWeightHisto ;    // Fill weigth histograms
   Bool_t       fFillEbinHisto ;        // Fill E bin histograms
-  
+
   Float_t      fSSWeight[10];          // List of weights to test
   Int_t        fSSWeightN;             // Total number of weights to test
   
   Float_t      fSSECellCut[10];        // List of cell min energy cuts to test
   Int_t        fSSECellCutN;           // Total number of cell min energy cuts to test
+  
+  Float_t      fWSimu;                 // Slope of the linear correction factor for the shower
+                                       // shape weight in simulation, about 0.07
   
   //Histograms
   
