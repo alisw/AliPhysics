@@ -44,6 +44,9 @@ public:
   void SetManuProbability(Int_t detElemId, Int_t manuId, Float_t proba=1.0);
   void SetChannelProbability(Int_t detElemId, Int_t manuId, Int_t manuChannel, Float_t proba=1.0);
   
+  void SetPCBProbability(Int_t detElemId, Int_t pcbNumber, Float_t proba=1.0);
+  void SetHVProbability(const char* dcsName, Float_t proba=1.0);
+  
   void Print(Option_t* opt="") const;
   
 private:

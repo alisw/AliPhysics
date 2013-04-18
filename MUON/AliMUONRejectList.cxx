@@ -21,7 +21,9 @@
 /// Object to hold the probability to reject elements during reconstruction.
 ///
 /// Those elements are either channels, manus, 
-/// bus patches, detection elements, or all the four.
+/// bus patches, detection elements, pcbs (for slats) and HV channels,
+/// or all of them.
+///
 /// (we do not consider the next level, chamber, because if a full
 /// chamber is missing, we assume we'll remove that run from the
 /// list of usable runs anyway).
@@ -40,7 +42,18 @@
 
 #include "AliMUONRejectList.h"
 
+#include "AliLog.h"
+#include "AliMpArea.h"
 #include "AliMpConstants.h"
+#include "AliMpDCSNamer.h"
+#include "AliMpDDLStore.h"
+#include "AliMpDEStore.h"
+#include "AliMpDetElement.h"
+#include "AliMpMotifPosition.h"
+#include "AliMpPCB.h"
+#include "AliMpSegmentation.h"
+#include "AliMpSlat.h"
+#include "AliMpVSegmentation.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamNF.h"
 #include "Riostream.h"
@@ -382,6 +395,60 @@ void AliMUONRejectList::SetChannelProbability(Int_t detElemId, Int_t manuId, Int
   }
   param->SetValueAsFloat(manuChannel,0,proba);
   ZeroOrOne(proba);
+}
+
+//_____________________________________________________________________________
+void AliMUONRejectList::SetPCBProbability(Int_t detElemId, Int_t pcbNumber, Float_t proba)
+{
+  /// Set the probability to reject all the manus of a given (slat) PCB
+  AliMpSegmentation* seg = AliMpSegmentation::Instance();
+  AliMp::CathodType ct[] = { AliMp::kCath0, AliMp::kCath1 };
+  
+  for ( Int_t i = 0; i < 2; ++i )
+  {
+    const AliMpVSegmentation* vseg = seg->GetMpSegmentation(detElemId,ct[i]);
+    if (!vseg)
+    {
+      AliError(Form("Could not get segmentation of DE %d",detElemId));
+      continue;
+    }
+    const AliMpSlat* slat = seg->GetSlat(vseg);
+    if (!slat)
+    {
+      AliError(Form("Could not get slat from DE %d",detElemId));
+      continue;      
+    }
+    AliMpPCB* pcb = slat->GetPCB(pcbNumber);
+    for ( Int_t j = 0; j < pcb->GetSize(); ++j )
+    {
+      AliMpMotifPosition* mp = pcb->GetMotifPosition(j);
+      SetManuProbability(detElemId,mp->GetID(),proba);
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void AliMUONRejectList::SetHVProbability(const char* dcsName, Float_t proba)
+{
+  /// Set the probability to reject all the manus of a given HV part
+  /// Caution : the dcs string is a dcs NAME, _not_ an alias
+  
+  AliMpDCSNamer hv("TRACKER");
+
+  TString alias = hv.DCSAliasFromName(dcsName);
+
+  Int_t detElemId = hv.DetElemIdFromDCSAlias(alias.Data());
+  Int_t index = hv.DCSIndexFromDCSAlias(alias.Data());
+
+  AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+
+  const AliMpArrayI* manus = de->ManusForHV(index);
+
+  for ( Int_t i = 0; i < manus->GetSize(); ++ i )
+  {
+    Int_t manuId = manus->GetValue(i);
+    SetManuProbability(detElemId,manuId,proba);
+  }
 }
 
 //_____________________________________________________________________________
