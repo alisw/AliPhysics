@@ -1,13 +1,14 @@
 // $Id$
 
 AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
-			       Bool_t MDProcess = kTRUE,
+			       Bool_t MDProcess = kFALSE,
 			       Bool_t IsPythia = kFALSE,
 			       Bool_t FeynmanXProcess = kFALSE,
 			       Bool_t ScatFXProcess = kFALSE,
 			       Bool_t ZvProcess = kFALSE,
 			       Bool_t IsCutStudy = kFALSE,
-			       Bool_t IsFPM = kTRUE,
+			       Bool_t IsFPM = kFALSE,
+			       Bool_t ZvClass = kFALSE,
 			       TString centralityEstimator = "V0M",
 			       const Int_t NEtaBins = 15,
 			       const Int_t NpTBins = 50,
@@ -18,7 +19,6 @@ AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
 			       const Int_t ChiSquareNormCut = 5.0,
 			       const char* outputFileName = 0,
 			       const char* folderName = "Muon_TrkEff")
-)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -51,6 +51,7 @@ AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
   MuonEff->SetScatFX(ScatFXProcess);
   MuonEff->SetZvProcess(ZvProcess);
   MuonEff->SetIsFPM(IsFPM);
+  MuonEff->SetZvClass(ZvClass);
   MuonEff->SetCentEstimator(centralityEstimator);
   MuonEff->SetNEtaBins(NEtaBins);
   MuonEff->SetNpTBins(NpTBins);
