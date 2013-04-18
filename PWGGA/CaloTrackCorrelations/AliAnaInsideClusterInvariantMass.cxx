@@ -464,6 +464,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   
   Int_t nMatched = 2;
   if(!fFillTMHisto) nMatched = 1;
+  
   for(Int_t i = 0; i < n; i++)
   {
     for(Int_t j = 0; j < nMatched; j++)
@@ -490,6 +491,46 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhMassNLocMaxN[i][j]->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassNLocMaxN[i][j]) ;
      
+      if(i==0 && j==0)
+      {
+        fhMassSplitECutNLocMax1  = new TH2F("hMassSplitECutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, (E1+E2)/E cut, no TM",
+                                            nptbins,ptmin,ptmax,mbins,mmin,mmax);
+        fhMassSplitECutNLocMax1->SetYTitle("M (GeV/c^{2})");
+        fhMassSplitECutNLocMax1->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMassSplitECutNLocMax1) ;
+        
+        fhMassSplitECutNLocMax2  = new TH2F("hMassSplitECutNLocMax2","Invariant mass of splitted cluster with NLM=2 vs E, (E1+E2)/E cut, no TM",
+                                            nptbins,ptmin,ptmax,mbins,mmin,mmax);
+        fhMassSplitECutNLocMax2->SetYTitle("M (GeV/c^{2})");
+        fhMassSplitECutNLocMax2->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMassSplitECutNLocMax2) ;
+        
+        fhMassSplitECutNLocMaxN  = new TH2F("hMassSplitECutNLocMaxN","Invariant mass of splitted cluster with NLM>2 vs E, (E1+E2)/E cut, no TM",
+                                            nptbins,ptmin,ptmax,mbins,mmin,mmax);
+        fhMassSplitECutNLocMaxN->SetYTitle("M (GeV/c^{2})");
+        fhMassSplitECutNLocMaxN->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMassSplitECutNLocMaxN) ;
+        
+        fhMassM02CutNLocMax1  = new TH2F("hMassM02CutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, M02 cut, no TM",
+                                         nptbins,ptmin,ptmax,mbins,mmin,mmax);
+        fhMassM02CutNLocMax1->SetYTitle("M (GeV/c^{2})");
+        fhMassM02CutNLocMax1->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMassM02CutNLocMax1) ;
+        
+        fhMassM02CutNLocMax2  = new TH2F("hMassM02CutNLocMax2","Invariant mass of splitted cluster with NLM=2 vs E, M02 cut, no TM",
+                                         nptbins,ptmin,ptmax,mbins,mmin,mmax);
+        fhMassM02CutNLocMax2->SetYTitle("M (GeV/c^{2})");
+        fhMassM02CutNLocMax2->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMassM02CutNLocMax2) ;
+        
+        fhMassM02CutNLocMaxN  = new TH2F("hMassM02CutNLocMaxN","Invariant mass of splitted cluster with NLM>2 vs E, M02 cut, no TM",
+                                         nptbins,ptmin,ptmax,mbins,mmin,mmax);
+        fhMassM02CutNLocMaxN->SetYTitle("M (GeV/c^{2})");
+        fhMassM02CutNLocMaxN->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMassM02CutNLocMaxN) ;
+        
+      }
+      
       fhMassAfterCutsNLocMax1[i][j]     = new TH2F(Form("hMassAfterCutsNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
                                                    Form("Mass vs E, %s %s, for N Local max = 1, M02 and asy cut",ptype[i].Data(),sMatched[j].Data()),
                                                    nptbins,ptmin,ptmax,mbins,mmin,mmax);
@@ -511,7 +552,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhMassAfterCutsNLocMaxN[i][j]   ->SetYTitle("Mass (GeV/c^{2})");
       fhMassAfterCutsNLocMaxN[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassAfterCutsNLocMaxN[i][j]) ;
-      
+            
       fhSplitEFractionAfterCutsNLocMax1[i][j]     = new TH2F(Form("hSplitEFractionAfterCutsNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
                                                              Form("(E1+E2)/E_{cluster} vs E_{cluster} for N max  = 1, M02 and Asy cut on, %s %s",ptype[i].Data(),sMatched[j].Data()),
                                                              nptbins,ptmin,ptmax,120,0,1.2);
@@ -577,6 +618,23 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhAsymNLocMaxN[i][j]->SetXTitle("E (GeV)");
       outputContainer->Add(fhAsymNLocMaxN[i][j]) ;   
       
+      if(i==0 && j==0)
+      {
+        fhAsymM02CutNLocMax1  = new TH2F("hAsymM02CutNLocMax1","Asymmetry of NLM=1  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
+        fhAsymM02CutNLocMax1->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+        fhAsymM02CutNLocMax1->SetXTitle("E (GeV)");
+        outputContainer->Add(fhAsymM02CutNLocMax1) ;
+        
+        fhAsymM02CutNLocMax2  = new TH2F("hAsymM02CutNLocMax2","Asymmetry of NLM=2  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
+        fhAsymM02CutNLocMax2->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+        fhAsymM02CutNLocMax2->SetXTitle("E (GeV)");
+        outputContainer->Add(fhAsymM02CutNLocMax2) ;
+        
+        fhAsymM02CutNLocMaxN  = new TH2F("hAsymM02CutNLocMaxN","Asymmetry of NLM>2  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
+        fhAsymM02CutNLocMaxN->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+        fhAsymM02CutNLocMaxN->SetXTitle("E (GeV)");
+        outputContainer->Add(fhAsymM02CutNLocMaxN) ;
+      }
       
       if(fFillSSExtraHisto)
       {
@@ -1376,58 +1434,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       }
     }
   }
-  
-  fhMassSplitECutNLocMax1  = new TH2F("hMassSplitECutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, (E1+E2)/E cut",
-                                      nptbins,ptmin,ptmax,mbins,mmin,mmax);
-  fhMassSplitECutNLocMax1->SetYTitle("M (GeV/c^{2})");
-  fhMassSplitECutNLocMax1->SetXTitle("E (GeV)");
-  outputContainer->Add(fhMassSplitECutNLocMax1) ;
-  
-  fhMassSplitECutNLocMax2  = new TH2F("hMassSplitECutNLocMax2","Invariant mass of splitted cluster with NLM=2 vs E, (E1+E2)/E cut",
-                                      nptbins,ptmin,ptmax,mbins,mmin,mmax);
-  fhMassSplitECutNLocMax2->SetYTitle("M (GeV/c^{2})");
-  fhMassSplitECutNLocMax2->SetXTitle("E (GeV)");
-  outputContainer->Add(fhMassSplitECutNLocMax2) ;
-  
-  fhMassSplitECutNLocMaxN  = new TH2F("hMassSplitECutNLocMaxN","Invariant mass of splitted cluster with NLM>2 vs E, (E1+E2)/E cut",
-                                      nptbins,ptmin,ptmax,mbins,mmin,mmax);
-  fhMassSplitECutNLocMaxN->SetYTitle("M (GeV/c^{2})");
-  fhMassSplitECutNLocMaxN->SetXTitle("E (GeV)");
-  outputContainer->Add(fhMassSplitECutNLocMaxN) ;
-  
-  fhMassM02CutNLocMax1  = new TH2F("hMassM02CutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, M02 cut",
-                                   nptbins,ptmin,ptmax,mbins,mmin,mmax);
-  fhMassM02CutNLocMax1->SetYTitle("M (GeV/c^{2})");
-  fhMassM02CutNLocMax1->SetXTitle("E (GeV)");
-  outputContainer->Add(fhMassM02CutNLocMax1) ;
-  
-  fhMassM02CutNLocMax2  = new TH2F("hMassM02CutNLocMax2","Invariant mass of splitted cluster with NLM=2 vs E, M02 cut",
-                                   nptbins,ptmin,ptmax,mbins,mmin,mmax);
-  fhMassM02CutNLocMax2->SetYTitle("M (GeV/c^{2})");
-  fhMassM02CutNLocMax2->SetXTitle("E (GeV)");
-  outputContainer->Add(fhMassM02CutNLocMax2) ;
-  
-  fhMassM02CutNLocMaxN  = new TH2F("hMassM02CutNLocMaxN","Invariant mass of splitted cluster with NLM>2 vs E, M02 cut",
-                                   nptbins,ptmin,ptmax,mbins,mmin,mmax);
-  fhMassM02CutNLocMaxN->SetYTitle("M (GeV/c^{2})");
-  fhMassM02CutNLocMaxN->SetXTitle("E (GeV)");
-  outputContainer->Add(fhMassM02CutNLocMaxN) ;
-  
-  fhAsymM02CutNLocMax1  = new TH2F("hAsymM02CutNLocMax1","Asymmetry of NLM=1  vs cluster Energy, M02Cut", nptbins,ptmin,ptmax,200,-1,1);
-  fhAsymM02CutNLocMax1->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-  fhAsymM02CutNLocMax1->SetXTitle("E (GeV)");
-  outputContainer->Add(fhAsymM02CutNLocMax1) ;
-  
-  fhAsymM02CutNLocMax2  = new TH2F("hAsymM02CutNLocMax2","Asymmetry of NLM=2  vs cluster Energy, M02Cut", nptbins,ptmin,ptmax,200,-1,1);
-  fhAsymM02CutNLocMax2->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-  fhAsymM02CutNLocMax2->SetXTitle("E (GeV)");
-  outputContainer->Add(fhAsymM02CutNLocMax2) ;
-  
-  fhAsymM02CutNLocMaxN  = new TH2F("hAsymM02CutNLocMaxN","Asymmetry of NLM>2  vs cluster Energy, M02Cut", nptbins,ptmin,ptmax,200,-1,1);
-  fhAsymM02CutNLocMaxN->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-  fhAsymM02CutNLocMaxN->SetXTitle("E (GeV)");
-  outputContainer->Add(fhAsymM02CutNLocMaxN) ;
-  
+    
   if(IsDataMC() && fFillMCFractionHisto)
   {
     fhMCGenSplitEFracAfterCutsNLocMax1MCPi0     = new TH2F("hMCGenSplitEFracAfterCutsNLocMax1MCPi0",
@@ -1839,7 +1846,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     AliVCluster * cluster = (AliVCluster*) (pl->At(icluster));	
 
     Bool_t  matched   = IsTrackMatched(cluster,GetReader()->GetInputEvent());
-    if(!fFillTMHisto) continue ;
+    if(!fFillTMHisto && matched) continue ;
     
     // Study clusters with large shape parameter
     Float_t en = cluster->E();
@@ -2556,7 +2563,8 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     
     eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
     
-    if(eCell > eCellMin) energy += eCell;
+    //if(eCell > eCellMin)
+      energy += eCell;
     
   }//cell loop
   
@@ -2582,13 +2590,14 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
     if(shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
     
-    if(energy > 0 && eCell > eCellMin)
+    if(energy > 0)// && eCell > eCellMin)
     {
       w  = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell,energy);
 
       //correct weight, ONLY in simulation
-      w *= (1 - fWSimu * w );
-     
+      //w *= (1 - fWSimu * w );
+      w *= (1 - eCellMin * w );
+
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;
       
@@ -2604,7 +2613,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
         sEtaPhi  += w * etai * phii ;
       }
     }
-    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
+    //else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
     
   }//cell loop
   
@@ -2638,12 +2647,13 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
     if(shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
     
-    if(energy > 0 && eCell > eCellMin)
+    if(energy > 0)// && eCell > eCellMin)
     {
       w  = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell,energy);
       
       //correct weight, ONLY in simulation
-      w *= (1 - fWSimu * w );
+      //w *= (1 - fWSimu * w );
+      w *= (1 - eCellMin * w );
 
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;
@@ -2654,7 +2664,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
         dPhi +=  w * (phii-phiMean)*(phii-phiMean) ;
       }
     }
-    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
+    //else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
   }// cell loop
   
   //Normalize to the weigth and set shower shape parameters
