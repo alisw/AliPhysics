@@ -34,7 +34,7 @@ using namespace std;
 class AliConversionCuts : public AliAnalysisCuts {
 	
  public: 
-
+   
 
   enum cutIds {
 	kisHeavyIon,                  
@@ -140,17 +140,22 @@ class AliConversionCuts : public AliAnalysisCuts {
      fLineCutZRSlope = tan(2*atan(exp(-fEtaCut + etaShift)));
      if(fEtaCutMin > -0.1)
         fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin + etaShift)));
-     fDoEtaShift = kTRUE;
+  }
+  void SetEtaShift(TString pPbOrPbp) {
+     Double_t etaShift = 0.0;
+     if(!pPbOrPbp.CompareTo("pPb"))      etaShift = -0.465;
+     else if(!pPbOrPbp.CompareTo("Pbp")) etaShift =  0.465;
+     
+     fEtaShift = etaShift;
+     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut + etaShift)));
+     if(fEtaCutMin > -0.1)
+        fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin + etaShift)));
   }
   Double_t GetEtaShift() {return fEtaShift;}
   Bool_t GetDoEtaShift(){return fDoEtaShift;}
   void DoEtaShift(Bool_t doEtaShift){fDoEtaShift = doEtaShift;}
-  void ForceEtaShift(Int_t forcedShift){
-     fForceEtaShift = forcedShift;
-     if(forcedShift>0)fDoEtaShift = kTRUE;
-  }
-  Int_t IsEtaShiftForced() {return fForceEtaShift;}
-
+  void GetCorrectEtaShiftFromPeriod(TString periodName);
+  
   static AliVTrack * GetTrack(AliVEvent * event, Int_t label);
   static AliESDtrack *GetESDTrack(AliESDEvent * event, Int_t label);
   
@@ -327,7 +332,6 @@ class AliConversionCuts : public AliAnalysisCuts {
   AliAnalysisUtils *fUtils;
   Double_t fEtaShift;
   Bool_t fDoEtaShift;
-  Int_t  fForceEtaShift;
 
   // Histograms
   TH1F *hdEdxCuts;  // bookkeeping for dEdx cuts

@@ -229,10 +229,19 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskConversionQA::Notify()
 {
-   if(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetDoEtaShift()){
-      if(fConversionCuts->GetDoEtaShift())
-      fConversionCuts->SetEtaShift(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetEtaShift());
+   if(!fConversionCuts->GetDoEtaShift()) return kTRUE;; // No Eta Shift requested, continue
+      
+   if(fConversionCuts->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
+      fConversionCuts->GetCorrectEtaShiftFromPeriod(fV0Reader->GetPeriodName());
+      fConversionCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
+      return kTRUE;
    }
+   else{
+      printf(" Gamma Conversion QA Task %s :: Eta Shift Manually Set to %f \n\n",
+             (fConversionCuts->GetCutNumber()).Data(),fConversionCuts->GetEtaShift());
+      fConversionCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
+   }
+   
    return kTRUE;
 }
 //________________________________________________________________________
@@ -310,7 +319,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    conversionPoint(0) = gamma->GetConversionX();
    conversionPoint(1) = gamma->GetConversionY();
    conversionPoint(2) = gamma->GetConversionZ();
-   TVectorF daughterProp(18);
+   TVectorF daughterProp(20);
    AliESDtrack * negTrack = fConversionCuts->GetESDTrack(event, gamma->GetTrackLabelNegative());
    AliESDtrack * posTrack = fConversionCuts->GetESDTrack(event, gamma->GetTrackLabelPositive());
 
@@ -379,9 +388,9 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    }
 
    daughterProp(6) = (Float_t)posTrack->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(gamma->GetConversionRadius()));
-   //posTrack->GetNcls(1)/(Float_t)posTrack->GetTPCNclsF();
+   daughterProp(18) = posTrack->GetNcls(1);
    daughterProp(13) = (Float_t)negTrack->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(gamma->GetConversionRadius()));
-   //negTrack->GetNcls(1)/(Float_t)negTrack->GetTPCNclsF();
+   daughterProp(19) = negTrack->GetNcls(1);
 
    if (fStreamQA){
       if(fMCEvent){

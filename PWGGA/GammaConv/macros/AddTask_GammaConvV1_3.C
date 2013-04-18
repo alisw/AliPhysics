@@ -38,8 +38,8 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
    if(IsHeavyIon == 1){
       cutnumber = "1000000002084001001500000";
     } else if (IsHeavyIon==2){
-     cutnumber = "8000000062084001001500000";
-     doEtaShift = kTRUE;
+      cutnumber = "8000000062084001001500000";
+      doEtaShift = kFALSE; // Only needed if Eta Range is small, but default is now +- 5.0
    } else{
       cutnumber = "0000000002084000002200000";
    }
@@ -122,7 +122,8 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
 
    if(trainConfig.Contains("PbPb")){
       cutarray[ 0] = "1460001042092970023220000"; mesonCutArray[ 0] = "01522065000"; // Standard cut 40-60
-      cutarray[ 1] = "1020003042092370023750000"; mesonCutArray[ 1] = "01522045009";// Standard cut gamma 0-20%
+      cutarray[ 1] = "1020003042092370023750000"; mesonCutArray[ 1] = "01522045009";
+// Standard cut gamma 0-20%
       cutarray[ 2] = "1480003042092370023750000"; mesonCutArray[ 2] = "01522065009"; // Standard cut gamma 40-80
    } else if(trainConfig.Contains("pPb")){ //pA needs thighter rapidity cut y < 0.5
      cutarray[ 0] = "8020000072093172023290000"; mesonCutArray[0] = "01627045000";  //standard cut Pi0 Pb 00-20  wo shifted Eta 0.3
@@ -161,7 +162,6 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       if (trainConfig.Contains("pPb")){
          analysisCuts[i]->SelectCollisionCandidates(AliVEvent::kINT7);
-//          if (i<4) analysisCuts[i]->DoEtaShift(1);
       }
       ConvCutList->Add(analysisCuts[i]);
 

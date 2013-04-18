@@ -172,13 +172,15 @@ AliConversionMesonCuts::~AliConversionMesonCuts() {
 void AliConversionMesonCuts::InitCutHistograms(TString name){
 
    // Initialize Cut Histograms for QA (only initialized and filled if function is called)
-
+   TH1::AddDirectory(kFALSE);
+   
    if(fHistograms != NULL){
       delete fHistograms;
       fHistograms=NULL;
    }
    if(fHistograms==NULL){
       fHistograms=new TList();
+      fHistograms->SetOwner(kTRUE);
       if(name=="")fHistograms->SetName(Form("ConvMesonCuts_%s",GetCutNumber().Data()));
       else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
    }
@@ -203,8 +205,9 @@ void AliConversionMesonCuts::InitCutHistograms(TString name){
    hMesonBGCuts->GetXaxis()->SetBinLabel(6,"alpha min");
    hMesonBGCuts->GetXaxis()->SetBinLabel(7,"out");
    fHistograms->Add(hMesonBGCuts);
+   
+   TH1::AddDirectory(kTRUE);
 }
-
 
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift){

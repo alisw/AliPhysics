@@ -690,13 +690,21 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskGammaConvV1::Notify()
 {
-   if(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetDoEtaShift()){
-      for(Int_t iCut = 0; iCut<fnCuts;iCut++){
-//          cout << iCut << "\t eta shift \t" <<((AliConversionCuts*)fCutArray->At(iCut))->GetDoEtaShift()<< endl;
-         if(!((AliConversionCuts*)fCutArray->At(iCut))->GetDoEtaShift()) continue;
-         ((AliConversionCuts*)fCutArray->At(iCut))->SetEtaShift(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetEtaShift());
+   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+      if(!((AliConversionCuts*)fCutArray->At(iCut))->GetDoEtaShift()) continue; // No Eta Shift requested, continue
+      
+      if(((AliConversionCuts*)fCutArray->At(iCut))->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
+         ((AliConversionCuts*)fCutArray->At(iCut))->GetCorrectEtaShiftFromPeriod(fV0Reader->GetPeriodName());
+         ((AliConversionCuts*)fCutArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once   
+         continue;
+      }
+      else{
+         printf(" Gamma Conversion Task %s :: Eta Shift Manually Set to %f \n\n",
+                (((AliConversionCuts*)fCutArray->At(iCut))->GetCutNumber()).Data(),((AliConversionCuts*)fCutArray->At(iCut))->GetEtaShift());
+         ((AliConversionCuts*)fCutArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once   
       }
    }
+   
    return kTRUE;
 }
 //_____________________________________________________________________________
@@ -731,20 +739,21 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
          ((AliConversionCuts*)fCutArray->At(iCut))
          ->IsEventAcceptedByConversionCut(fV0Reader->GetConversionCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
       if(eventNotAccepted){
-         // 			cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
+         // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
          hNEvents[iCut]->Fill(eventNotAccepted); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
          continue;
       }
 
       if(eventQuality != 0){// Event Not Accepted
-         //          cout << "event rejected due to: " <<eventQuality << endl;
+         // cout << "event rejected due to: " <<eventQuality << endl;
          hNEvents[iCut]->Fill(eventQuality);
          continue;
       }
 
       hNEvents[iCut]->Fill(eventQuality); // Should be 0 here
       hNGoodESDTracks[iCut]->Fill(fNumberOfESDTracks);
-      hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
+      if(((AliConversionCuts*)fCutArray->At(iCut))->IsHeavyIon() == 2)	hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A());
+      else hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
 
       if(fMCEvent){ // Process MC Particle
          if(((AliConversionCuts*)fCutArray->At(iCut))->GetSignalRejection() != 0){
