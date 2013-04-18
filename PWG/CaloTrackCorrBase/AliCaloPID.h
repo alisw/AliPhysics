@@ -213,6 +213,9 @@ class AliCaloPID : public TObject {
   void    SwitchOnSplitAsymmetryCut()          { fUseSplitAsyCut     = kTRUE  ; }
   void    SwitchOffSplitAsymmetryCut()         { fUseSplitAsyCut     = kFALSE ; }
   
+  void    SwitchOnSplitShowerShapeCut()        { fUseSplitSSCut      = kTRUE  ; }
+  void    SwitchOffSplitShowerShapeCut()       { fUseSplitSSCut      = kFALSE ; }
+  
   void    SetClusterSplittingM02Cut(Float_t min=0, Float_t max=100) 
   { fSplitM02MinCut   = min ; fSplitM02MaxCut  = max ; }
   
@@ -283,7 +286,8 @@ private:
   Bool_t    fDoClusterSplitting;                // Cluster splitting analysis
   Bool_t    fUseSimpleMassCut;                  // Use simple min-max pi0 mass cut
   Bool_t    fUseSimpleM02Cut;                   // Use simple min-max M02 cut
-  Bool_t    fUseSplitAsyCut ;                   // Remove splitted clusters with too large asymmetry, range defined in AliCaloPID
+  Bool_t    fUseSplitAsyCut ;                   // Remove splitted clusters with too large asymmetry
+  Bool_t    fUseSplitSSCut  ;                   // Remove splitted clusters out of shower shape band
   Float_t   fSplitM02MaxCut ;                   // Study clusters with l0 smaller than cut
   Float_t   fSplitM02MinCut ;                   // Study clusters with l0 larger than cut  // simple case
   Int_t     fSplitMinNCells ;                   // Study clusters with ncells larger than cut  
