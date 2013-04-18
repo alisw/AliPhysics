@@ -2563,8 +2563,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     
     eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
     
-    //if(eCell > eCellMin)
-      energy += eCell;
+    if(eCell > eCellMin) energy += eCell;
     
   }//cell loop
   
@@ -2590,13 +2589,12 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
     if(shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
     
-    if(energy > 0)// && eCell > eCellMin)
+    if(energy > 0 && eCell > eCellMin)
     {
       w  = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell,energy);
 
       //correct weight, ONLY in simulation
-      //w *= (1 - fWSimu * w );
-      w *= (1 - eCellMin * w );
+      w *= (1 - fWSimu * w );
 
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;
@@ -2613,7 +2611,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
         sEtaPhi  += w * etai * phii ;
       }
     }
-    //else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
+    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
     
   }//cell loop
   
@@ -2647,13 +2645,12 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
     if(shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
     
-    if(energy > 0)// && eCell > eCellMin)
+    if(energy > 0 && eCell > eCellMin)
     {
       w  = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell,energy);
       
       //correct weight, ONLY in simulation
-      //w *= (1 - fWSimu * w );
-      w *= (1 - eCellMin * w );
+      w *= (1 - fWSimu * w );
 
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;
@@ -2664,7 +2661,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
         dPhi +=  w * (phii-phiMean)*(phii-phiMean) ;
       }
     }
-    //else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
+    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
   }// cell loop
   
   //Normalize to the weigth and set shower shape parameters
