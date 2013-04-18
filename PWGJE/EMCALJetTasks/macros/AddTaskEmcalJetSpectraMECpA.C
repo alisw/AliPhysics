@@ -54,26 +54,37 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
 
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
 
   //const char *nJets;
   TString nJets("");
 
   TString scaledname(Form("%s_Scaled", nRhosCh));
+  TString newrhoname(Form("%s_All", nRhosCh));
 
   
   if(!(usedTracks=="")){
     cout << "USEDTRACKS EXISTS" << usedTracks <<endl;
     AliEmcalJetTask* jetFinderTaskChBack = AddTaskEmcalJet(usedTracks,"",cKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt);
 
+    AliEmcalJetTask* jetFinderTaskChBackall = AddTaskEmcalJet(usedTracks,"",cKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt,0.01,"Jets_allpt");
+    jetFinderTaskChBackall->SetMinJetPt(0);
+
+    AliEmcalJetTask* jetFinderTaskChSig = AddTaskEmcalJet(usedTracks,"",cANTIKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt);
+
     AliEmcalJetTask* jetFinderTaskChEmBack = AddTaskEmcalJet(usedTracks,outClusName,cKT,radius,cFULLJETS,minTrackPt, minClusterPt);
+    jetFinderTaskChEmBack->SetMinJetPt(0);
 
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cANTIKT,radius, cFULLJETS,minTrackPt,minClusterPt);
 
-  AliAnalysisTaskRho *rhochtask = AddTaskRho(jetFinderTaskChBack->GetName(),usedTracks,outClusName,nRhosCh,radius,0,0.01,0,sfunc,2,kTRUE,nRhosCh);
+  AliAnalysisTaskRhoSparse *rhochtask = AddTaskRhoSparse(jetFinderTaskChBack->GetName(),jetFinderTaskChSig->GetName(),usedTracks,outClusName,nRhosCh,radius,0,0.01,0,0,sfunc,2,kTRUE,nRhosCh);
   rhochtask->SetCentralityEstimator(CentEst);
 
-  AliAnalysisTaskRho *rhochemtask = AddTaskRho(jetFinderTaskChEmBack->GetName(),usedTracks,outClusName,nRhosChEm,radius,0,0.01,0,0,1,kTRUE,nRhosChEm);
+  AliAnalysisTaskRhoSparse *rhochalltask = AddTaskRhoSparse(jetFinderTaskChBackall->GetName(),jetFinderTaskChSig->GetName(),usedTracks,outClusName,newrhoname,radius,0,0.0,0,0,sfunc,2,kTRUE,newrhoname);
+  rhochtask->SetCentralityEstimator(CentEst);
+
+
+  AliAnalysisTaskRhoSparse *rhochemtask = AddTaskRhoSparse(jetFinderTaskChEmBack->GetName(),jetFinderTask->GetName(),usedTracks,outClusName,nRhosChEm,radius,0,0.01,0,0,0,1,kTRUE,nRhosChEm);
   rhochemtask->SetCentralityEstimator(CentEst);
 
   //nJets=jetFinderTask->GetName();
@@ -111,10 +122,9 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
 
   cout << "Running non charged rho task..." <<endl;
 
-  AliAnalysisTaskRho *rhoemtask = AddTaskRho(jetFinderTaskEmBack->GetName(),usedTracks,outClusName,nRhosEm,radius,0,0.01,0,0,1,kTRUE,nRhosEm);
+  AliAnalysisTaskRhoSparse *rhoemtask = AddTaskRhoSparse(jetFinderTaskEmBack->GetName(),jetFinderTaskEm->GetName(),usedTracks,outClusName,nRhosEm,radius,0,0.01,0,0,0,1,kTRUE,nRhosEm);
   rhoemtask->SetCentralityEstimator(CentEst);
 
-  //if((!usedTracks=="")) nJets = jetFinderTaskEm->GetName();
   if(usedTracks=="") nJets +=jetFinderTaskEm->GetName();
 
 

@@ -48,6 +48,7 @@ AliHadCorrTask::AliHadCorrTask() :
   for(Int_t i=0; i<8; i++) {
     fHistEsubPch[i]    = 0;
     fHistEsubPchRat[i] = 0;
+    fHistEsubPchRatAll[i] = 0;
 
     if (i<4) {
       fHistMatchEvsP[i]    = 0;
@@ -89,6 +90,7 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
   for(Int_t i=0; i<8; i++) {
     fHistEsubPch[i]    = 0;
     fHistEsubPchRat[i] = 0;
+    fHistEsubPchRatAll[i] = 0;
 
     if (i<4) {
       fHistMatchEvsP[i]    = 0;
@@ -377,6 +379,10 @@ void AliHadCorrTask::UserCreateOutputObjects()
     name = Form("fHistEsubPchRat_%i",icent);
     fHistEsubPchRat[icent]=new TH2F(name, name, 400, 0., 200., 1000, 0., 10.);
     fOutput->Add(fHistEsubPchRat[icent]);
+
+    name = Form("fHistEsubPchRatAll_%i",icent);
+    fHistEsubPchRatAll[icent]=new TH2F(name, name, 400, 0., 200., 1000, 0., 10.);
+    fOutput->Add(fHistEsubPchRatAll[icent]);
     
     if (icent<4) {
       for(Int_t itrk=0; itrk<4; ++itrk) {
@@ -618,14 +624,14 @@ Bool_t AliHadCorrTask::Run()
       fHistEbefore->Fill(fCent, cluster->E());
   
     // apply correction / subtraction
-    if (fHadCorr > 0) {
-      // to subtract only the closest track set fHadCor to a %
-      // to subtract all tracks within the cut set fHadCor to %+1
-      if (fHadCorr > 1)
-	energyclus = ApplyHadCorrAllTracks(emccluster, fHadCorr - 1);	
-      else 
-	energyclus = ApplyHadCorrOneTrack(emccluster, fHadCorr);	
-    }
+    // to subtract only the closest track set fHadCor to a %
+    // to subtract all tracks within the cut set fHadCor to %+1
+    if (fHadCorr > 1)
+      energyclus = ApplyHadCorrAllTracks(emccluster, fHadCorr - 1);	
+    else if (fHadCorr > 1)
+      energyclus = ApplyHadCorrOneTrack(emccluster, fHadCorr);	
+    else 
+      energyclus = cluster->E();
 
     if (energyclus < 0) 
       energyclus = 0;
@@ -797,7 +803,10 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
       
       fHistEsubPchRat[centbinchm]->Fill(totalTrkP, Esub / totalTrkP);
       fHistEsubPch[centbinchm]->Fill(totalTrkP, Esub);
-    } 
+    }
+    if (totalTrkP > 0) {
+      fHistEsubPchRatAll[fCentBin]->Fill(totalTrkP, Esub / totalTrkP);
+    }
   }
 
   // apply the correction
