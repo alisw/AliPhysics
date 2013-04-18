@@ -108,8 +108,6 @@ class AliFragmentationFunctionCorrections : public TObject {
   void EffCorr(); 
   void EffCorrBgr();
 
-  void XiShift(const Int_t corrLevel); 
-
   void SubtractBgr(Double_t sysErr = 0);
 
   void WriteSingleTrackEff(TString strInfile, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE, TString strOutDir = "", TString strPostfix = "");
@@ -235,10 +233,6 @@ class AliFragmentationFunctionCorrections : public TObject {
   Int_t fNCorrectionLevelsSinglePt;      //! corrections applied: efficiency, secondaries, resolution unfolding, bgr subtraction
   AliFragFuncCorrHistos** fCorrSinglePt; //! array to keep single track pt spectra, 1D in jet pt bins dimension 
 
-
-
-  // xi shift
-  TH1F** fh1FFXiShift;          //! FF: track xi, corrected for shift in jet energy
 
   // eff correction
   TH1F*  fh1EffSinglePt;       //!  efficiency all tracks

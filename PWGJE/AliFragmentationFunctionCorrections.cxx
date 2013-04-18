@@ -72,7 +72,6 @@ AliFragmentationFunctionCorrections::AliFragmentationFunctionCorrections()
    ,fCorrBgr(0)
    ,fNCorrectionLevelsSinglePt(0)
    ,fCorrSinglePt(0)
-   ,fh1FFXiShift(0)
    ,fh1EffSinglePt(0)
    ,fh1EffPt(0) 
    ,fh1EffZ(0) 
@@ -142,7 +141,6 @@ AliFragmentationFunctionCorrections::AliFragmentationFunctionCorrections(const  
   ,fCorrBgr(copy.fCorrBgr)    
   ,fNCorrectionLevelsSinglePt(copy.fNCorrectionLevelsSinglePt)
   ,fCorrSinglePt(copy.fCorrSinglePt)   
-  ,fh1FFXiShift(copy.fh1FFXiShift)                  
   ,fh1EffSinglePt(copy.fh1EffSinglePt)
   ,fh1EffPt(copy.fh1EffPt)                      
   ,fh1EffZ(copy.fh1EffZ)                       
@@ -217,7 +215,6 @@ AliFragmentationFunctionCorrections& AliFragmentationFunctionCorrections::operat
     fCorrBgr                        = o.fCorrBgr;                      
     fNCorrectionLevelsSinglePt      = o.fNCorrectionLevelsSinglePt;
     fCorrSinglePt                   = o.fCorrSinglePt;
-    fh1FFXiShift                    = o.fh1FFXiShift;                  
     fh1EffSinglePt                  = o.fh1EffSinglePt;
     fh1EffPt                        = o.fh1EffPt;                      
     fh1EffZ                         = o.fh1EffZ;                       
@@ -274,8 +271,6 @@ AliFragmentationFunctionCorrections::~AliFragmentationFunctionCorrections()
   if(fJetPtSlices) delete fJetPtSlices;
   if(fNJets)       delete fNJets;
   if(fNJetsBgr)    delete fNJetsBgr;
-
-  DeleteHistoArray(fh1FFXiShift);
 
   DeleteHistoArray(fh1EffPt);
   DeleteHistoArray(fh1EffXi);
@@ -745,8 +740,6 @@ void AliFragmentationFunctionCorrections::SetJetPtSlices(Float_t* bins, const In
   fNCorrectionLevelsBgr = 0; 
   fCorrBgr = new AliFragFuncCorrHistos*[fgMaxNCorrectionLevels];
   AddCorrectionLevelBgr(); // first 'correction' level = raw bgr dist
-
-  fh1FFXiShift = BookHistoArray();
 
   // eff histos
 
@@ -1512,8 +1505,6 @@ void AliFragmentationFunctionCorrections::WriteOutput(TString strfile, TString s
     for(Int_t c=0; c<fNCorrectionLevels; c++) if(fCorrFF[c]->GetZ(i)->GetEntries())       fCorrFF[c]->GetZ(i)->Write();
     for(Int_t c=0; c<fNCorrectionLevels; c++) if(fCorrFF[c]->GetXi(i)->GetEntries())      fCorrFF[c]->GetXi(i)->Write();
 
-    if(fh1FFXiShift[i]->GetEntries()) fh1FFXiShift[i]->Write();
-
     for(Int_t c=0; c<fNCorrectionLevelsBgr; c++) if(fCorrBgr[c]->GetTrackPt(i)->GetEntries()) fCorrBgr[c]->GetTrackPt(i)->Write();
     for(Int_t c=0; c<fNCorrectionLevelsBgr; c++) if(fCorrBgr[c]->GetZ(i)->GetEntries())       fCorrBgr[c]->GetZ(i)->Write();
     for(Int_t c=0; c<fNCorrectionLevelsBgr; c++) if(fCorrBgr[c]->GetXi(i)->GetEntries())      fCorrBgr[c]->GetXi(i)->Write();
@@ -2108,139 +2099,6 @@ void AliFragmentationFunctionCorrections::EffCorrBgr()
     
     fCorrBgr[fNCorrectionLevelsBgr-1]->AddCorrHistos(i,hFFTrackPtEffCorr,hFFZEffCorr,hFFXiEffCorr);
   }
-}
-
-//______________________________________________________________________
-void AliFragmentationFunctionCorrections::XiShift(const Int_t corrLevel)
-{
-  // re-evaluate jet energy after FF corrections from dN/dpt distribution
-  // apply correction (shift) to dN/dxi distribution: xi = ln (pt/E) -> xi' = ln (pt/E') = ln (pt/E x E/E') = xi + ln E/E'
-  // argument corrlevel: which level of correction to be corrected/shifted to 
-
-  if(corrLevel>=fNCorrectionLevels){ 
-    Printf(" calc xi shift: corrLevel exceeded - do nothing");
-    return;
-  }
-
-  Double_t* jetPtUncorr = new Double_t[fNJetPtSlices];
-  Double_t* jetPtCorr   = new Double_t[fNJetPtSlices];
-  Double_t* deltaXi     = new Double_t[fNJetPtSlices];
-
-  for(Int_t i=0; i<fNJetPtSlices; i++){
-    
-    TH1F* histPtRaw = fCorrFF[0]->GetTrackPt(i);
-    TH1F* histPt    = fCorrFF[corrLevel]->GetTrackPt(i);
-
-    Double_t ptUncorr = 0;
-    Double_t ptCorr   = 0;
-
-    for(Int_t bin = 1; bin<=histPtRaw->GetNbinsX(); bin++){
-
-      Double_t cont   = histPtRaw->GetBinContent(bin);
-      Double_t width  = histPtRaw->GetBinWidth(bin);
-      Double_t meanPt = histPtRaw->GetBinCenter(bin);
-
-      ptUncorr += meanPt*cont*width;
-    }
-    
-    for(Int_t bin = 1; bin<=histPt->GetNbinsX(); bin++){
-      
-      Double_t cont   = histPt->GetBinContent(bin);
-      Double_t width  = histPt->GetBinWidth(bin);
-      Double_t meanPt = histPt->GetBinCenter(bin);
-      
-      ptCorr += meanPt*cont*width;
-    }
-
-    jetPtUncorr[i] = ptUncorr; 
-    jetPtCorr[i]   = ptCorr;   
-  }
-
-  // ---
-
-  for(Int_t i=0; i<fNJetPtSlices; i++){
-
-    std::cout<<" jet pt bin "<<i<<" from "<<fJetPtSlices->At(i)<<" to "<<fJetPtSlices->At(i+1)
-	     <<" jetPtUncorr "<<jetPtUncorr[i]<<" corrLevel "<<corrLevel<<" jet pt corr "<<jetPtCorr[i]<<" ratio "
-	     <<jetPtCorr[i]/jetPtUncorr[i]<<std::endl;
-  } 
-
-  return; // for TEST!!!
-
-  // calc dXi from dN/dpt distribution : 
-  // sum over track pt for raw and corrected FF is equivalent to raw/corrected jet pt 
-
-  for(Int_t i=0; i<fNJetPtSlices; i++){
-
-    Float_t jetPtLoLim = fJetPtSlices->At(i);
-    Float_t jetPtUpLim = fJetPtSlices->At(i+1);
-
-    Double_t meanJetPt = 0.5*(jetPtUpLim+jetPtLoLim);
-    
-    Double_t ptUncorr = jetPtUncorr[i]; 
-    Double_t ptCorr   = jetPtCorr[i]; 
-
-    Double_t dXi = TMath::Log(ptCorr/ptUncorr);
-    
-    Printf(" calc xi shift: jet pt slice %d, mean jet pt %f, ptUncorr %f, ptCorr %f, ratio corr/uncorr %f, dXi %f "
-	   ,i,meanJetPt,ptUncorr,ptCorr,ptCorr/ptUncorr,dXi);
-    
-    deltaXi[i] = dXi;
-  }
-  
-  // book & fill new dN/dxi histos
-
-  for(Int_t i=0; i<fNJetPtSlices; i++){
-
-    TH1F* histXi = fCorrFF[corrLevel]->GetXi(i);
-            
-    Double_t dXi = deltaXi[i];
-
-    Int_t nBins  = histXi->GetNbinsX();
-    const Double_t* binsVec = histXi->GetXaxis()->GetXbins()->GetArray();
-    Float_t binsVecNew[nBins+1];
-    
-    TString strName = histXi->GetName(); 
-    strName.Append("_shift");
-    TString strTit  = histXi->GetTitle();  
-
-    TH1F* hXiCorr; 
-
-    // create shifted histo ...
-
-    if(binsVec){ // binsVec only neq NULL if histo was rebinned before
-
-      for(Int_t bin=0; bin<nBins+1; bin++) binsVecNew[bin] = binsVec[bin] + dXi;    
-      hXiCorr = new TH1F(strName,strTit,nBins,binsVecNew);
-    }
-    else{ // uniform bin size
-      
-      Double_t xMin  = histXi->GetXaxis()->GetXmin();
-      Double_t xMax  = histXi->GetXaxis()->GetXmax();
-
-      xMin += dXi;
-      xMax += dXi;
-      
-      hXiCorr = new TH1F(strName,strTit,nBins,xMin,xMax);
-    }
-
-    // ... and fill
-
-    for(Int_t bin=1; bin<nBins+1; bin++){
-      Double_t cont = histXi->GetBinContent(bin);
-      Double_t err  = histXi->GetBinError(bin);
-      
-      hXiCorr->SetBinContent(bin,cont);
-      hXiCorr->SetBinError(bin,err);
-    }
-    
-    new(fh1FFXiShift[i]) TH1F(*hXiCorr);
-    delete hXiCorr;
-  }
-
-  delete[] jetPtUncorr;
-  delete[] jetPtCorr;
-  delete[] deltaXi;
 }
 
 //_____________________________________________________
@@ -5791,7 +5649,8 @@ void AliFragmentationFunctionCorrections::ReadBinShiftCorrSinglePt(TString strfi
   }
  
 
-  if(fNHistoBinsPt) hBbBCorrPt = (TH1F*) hBbBCorrPt->Rebin(fNHistoBinsSinglePt,strNameBbBCorrPt+"_rebin",fHistoBinsSinglePt->GetArray());
+  if(fNHistoBinsPt && hBbBCorrPt) 
+    hBbBCorrPt = (TH1F*) hBbBCorrPt->Rebin(fNHistoBinsSinglePt,strNameBbBCorrPt+"_rebin",fHistoBinsSinglePt->GetArray());
 
   if(hBbBCorrPt) hBbBCorrPt->SetDirectory(0); 
  
