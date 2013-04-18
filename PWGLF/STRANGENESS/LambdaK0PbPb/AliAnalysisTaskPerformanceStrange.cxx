@@ -683,19 +683,19 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   Int_t lComeFromSigma      = 0;
   
   // Production Radius
-  Double_t mcPosX     = 0.0,  mcPosY      = 0.0,  mcPosZ      = 0.0;
-  Double_t mcPosR     = 0.0;
+  //  Double_t mcPosX     = 0.0,  mcPosY      = 0.0; //,  mcPosZ      = 0.0;
+  //  Double_t mcPosR     = 0.0;
 
   // Decay Radius
-  Double_t mcDecayPosX = 0, mcDecayPosY = 0, mcDecayPosR = 0;
+  //  Double_t mcDecayPosX = 0, mcDecayPosY = 0;//, mcDecayPosR = 0;
 
   // current mc particle 's mother
-  Int_t iCurrentMother  = 0, lPdgCurrentMother    = 0;
+  //  Int_t iCurrentMother  = 0; //lPdgCurrentMother    = 0;
   //  Bool_t lCurrentMotherIsPrimary;
 
   // variables for multiple reconstruction studies:
   Int_t id0           = 0, id1          = 0;
-  Int_t lNtimesReconstructedK0s   = 0, lNtimesReconstructedLambda   = 0, lNtimesReconstructedAntiLambda   = 0;
+  //  Int_t lNtimesReconstructedK0s   = 0, lNtimesReconstructedLambda   = 0, lNtimesReconstructedAntiLambda   = 0;
   // Int_t lNtimesReconstructedK0sMI = 0, lNtimesReconstructedLambdaMI = 0, lNtimesReconstructedAntiLambdaMI = 0;
 
   ////********************************
@@ -733,33 +733,33 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	lRapCurrentPart   = MyRapidity(p0->Energy(),p0->Pz());
 	//lEtaCurrentPart   = p0->Eta();
 	lPtCurrentPart    = p0->Pt();
-	iCurrentMother    = p0->GetFirstMother();
+	//	iCurrentMother    = p0->GetFirstMother();
 
 	//	lPdgCurrentMother = stack->Particle(iCurrentMother)->GetPdgCode();
-	if (iCurrentMother == -1){lPdgCurrentMother=0; } else {lPdgCurrentMother = stack->Particle(iCurrentMother)->GetPdgCode();}	
+	//	if (iCurrentMother == -1){lPdgCurrentMother=0; } else {lPdgCurrentMother = stack->Particle(iCurrentMother)->GetPdgCode();}	
 
-	mcPosX = p0->Vx();
-	mcPosY = p0->Vy();
-	mcPosZ = p0->Vz();
-	mcPosR = TMath::Sqrt(mcPosX*mcPosX+mcPosY*mcPosY);
+	//	mcPosX = p0->Vx();
+	//	mcPosY = p0->Vy();
+	//	mcPosZ = p0->Vz();
+	//	mcPosR = TMath::Sqrt(mcPosX*mcPosX+mcPosY*mcPosY);
 	
 	id0  = p0->GetDaughter(0);
 	id1  = p0->GetDaughter(1);
 
 	// Decay Radius and Production Radius
 	if ( id0 <= lNbMCPart && id0 > 0 && id1 <= lNbMCPart && id1 > 0) {
-	  TParticle *pDaughter0 = stack->Particle(id0);
+	  //	  TParticle *pDaughter0 = stack->Particle(id0);
 	  //	  TParticle *pDaughter1 = stack->Particle(id1);
 	  //	  lPdgCurrentDaughter0 = pDaughter0->GetPdgCode();
 	  //	  lPdgCurrentDaughter1 = pDaughter1->GetPdgCode();
 	  
-	  mcDecayPosX = pDaughter0->Vx();
-	  mcDecayPosY = pDaughter0->Vy();
-	  mcDecayPosR = TMath::Sqrt(mcDecayPosX*mcDecayPosX+mcDecayPosY*mcDecayPosY);
+	  //	  mcDecayPosX = pDaughter0->Vx();
+	  //	  mcDecayPosY = pDaughter0->Vy();
+	  //	  mcDecayPosR = TMath::Sqrt(mcDecayPosX*mcDecayPosX+mcDecayPosY*mcDecayPosY);
 	}
 	else  {
 	  //Printf("ERROR: particle with label %d and/or %d not found in stack (mc loop)", id0,id1);
-	  mcDecayPosR = -1.0;
+	  //	  mcDecayPosR = -1.0;
 	}
 	
 	if (lPdgcodeCurrentPart==310)   {
@@ -783,15 +783,15 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	else if (lPdgcodeCurrentPart==-3334) { //Anti Omega
 	  if (TMath::Abs(lRapCurrentPart) < lCutRap) fHistMCPtAllAntiXi->Fill(lPtCurrentPart);
 	}	
-
+	/*
 	if ( ( ( TMath::Abs(lPdgCurrentMother) == 3212)  ||
 	       ( TMath::Abs(lPdgCurrentMother) == 3224)  ||
 	       ( TMath::Abs(lPdgCurrentMother) == 3214)  ||
 	       ( TMath::Abs(lPdgCurrentMother) == 3114) )
 	     && ( iCurrentMother <= lNbMCPrimary )
-	     ) lComeFromSigma = 1;
+	     ) //lComeFromSigma = 1;
 	else lComeFromSigma = 0;
-      
+	*/
 	//*********************************************
 	// Now keep only primary particles   
 	// if ( ( iMc > lNbMCPrimary ) && (!lComeFromSigma) ) continue;
@@ -813,7 +813,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
 	if (ProdDistance > 0.001) continue; // secondary V0
     
-	lNtimesReconstructedK0s   = 0; lNtimesReconstructedLambda   = 0; lNtimesReconstructedAntiLambda   = 0;
+	//	lNtimesReconstructedK0s   = 0; lNtimesReconstructedLambda   = 0; lNtimesReconstructedAntiLambda   = 0;
 
         // Rap distribution
         if (lPdgcodeCurrentPart==310) {
@@ -866,7 +866,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   Int_t    nCasTot= 0;
 
   // Qualities
-  Double_t v0q = 0, kinCasQual = 0;
+  //  Double_t v0q = 0;//, kinCasQual = 0;
   //  Int_t nv0sMI =0;   
   // Variables:
   Double_t  lV0Position[3];
@@ -875,8 +875,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   Double_t lDcaNegToPrimVertex = 0;
   Double_t lDcaV0Daughters     = 0;
   Double_t lV0cosPointAngle    = 0;
-  Double_t lChi2V0             = 0;
-  Double_t lV0DecayLength      = 0;
+  //  Double_t lChi2V0             = 0;
+  //  Double_t lV0DecayLength      = 0;
   Double_t lV0tDecayLength     = 0; //transverse decay length in xy plain
   Double_t lV0Radius           = 0;
   //  Double_t lDcaV0ToPrimVertex  = 0;
@@ -899,10 +899,10 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   Int_t    lCheckPIdK0Short     = 0, lCheckMcK0Short        = 0;
   Int_t    lCheckPIdLambda      = 0, lCheckMcLambda         = 0;
   Int_t    lCheckPIdAntiLambda  = 0, lCheckMcAntiLambda     = 0;
-  Int_t    lCheckSecondaryK0s   = 0, lCheckSecondaryLambda  = 0, lCheckSecondaryAntiLambda  = 0;
+  //  Int_t    lCheckSecondaryK0s   = 0, lCheckSecondaryLambda  = 0, lCheckSecondaryAntiLambda  = 0;
   //  Int_t    lCheckGamma          = 0;
   Double_t mcPosMotherX         = 0, mcPosMotherY           = 0, mcPosMotherZ  = 0;
-  Double_t mcPosMotherR         = 0;
+  //  Double_t mcPosMotherR         = 0;
   //  Double_t mcMotherPt           = 0;
 
   Int_t lIndexPosMother        = 0;
@@ -914,15 +914,15 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   Int_t lPdgcodeMotherOfMother = 0;
 
   // Reconstructed position
-  Double_t rcPosXK0s        = 0,  rcPosYK0s        = 0, rcPosZK0s        = 0;
-  Double_t rcPosRK0s        = 0;
-  Double_t rcPosXLambda     = 0,  rcPosYLambda     = 0, rcPosZLambda     = 0;
-  Double_t rcPosRLambda     = 0;
-  Double_t rcPosXAntiLambda = 0,  rcPosYAntiLambda = 0, rcPosZAntiLambda = 0;
-  Double_t rcPosRAntiLambda = 0;
+  //  Double_t rcPosXK0s        = 0,  rcPosYK0s        = 0, rcPosZK0s        = 0;
+  //  Double_t rcPosRK0s        = 0;
+  // Double_t rcPosXLambda     = 0,  rcPosYLambda     = 0, rcPosZLambda     = 0;
+  // Double_t rcPosRLambda     = 0;
+  // Double_t rcPosXAntiLambda = 0,  rcPosYAntiLambda = 0, rcPosZAntiLambda = 0;
+  // Double_t rcPosRAntiLambda = 0;
 
   // Pt resolution
-  Double_t deltaPtK0s  = 0, deltaPtLambda  = 0, deltaPtAntiLambda  = 0;
+  //  Double_t deltaPtK0s  = 0, deltaPtLambda  = 0, deltaPtAntiLambda  = 0;
 
   // Daughters
   AliESDtrack  *myTrackPos  = NULL;
@@ -954,13 +954,13 @@ Bool_t lIsNegProtonForTPC = kFALSE;
 Bool_t lIsPosPionForTPC   = kFALSE;
 Bool_t lIsPosProtonForTPC = kFALSE;
       
- Double_t lEffMassXi      = 0. ;
- Double_t lChi2Xi         = -1. ;
- Double_t lDcaXiDaughters = -1. ;
- Double_t lXiCosineOfPointingAngle = -1. ;
+// Double_t lEffMassXi      = 0. ;
+// Double_t lChi2Xi         = -1. ;
+ // Double_t lDcaXiDaughters = -1. ;
+// Double_t lXiCosineOfPointingAngle = -1. ;
  Double_t lPosXi[3] = { -1000.0, -1000.0, -1000.0 };
- Double_t lXiRadius2D = -1000. ;
- Double_t lXiRadius3D = -1000. ;
+ // Double_t lXiRadius2D = -1000. ;
+ // Double_t lXiRadius3D = -1000. ;
 
  Int_t lIDs = 0;
  Int_t lIndexBachelorMother = 0;
@@ -977,9 +977,9 @@ Bool_t lIsPosProtonForTPC = kFALSE;
   Double_t  lPrimaryVtxPosition[3];
   Double_t  lPrimaryVtxCov[6];
   Double_t  lPrimaryVtxChi2 = 999;
-  Double_t  lResPrimaryVtxX = 999;
-  Double_t  lResPrimaryVtxY = 999;
-  Double_t  lResPrimaryVtxZ = 999;
+  //  Double_t  lResPrimaryVtxX = 999;
+  //  Double_t  lResPrimaryVtxY = 999;
+  //  Double_t  lResPrimaryVtxZ = 999;
      
   AliAODVertex *myPrimaryVertex = NULL;
   //const AliVVertex *mySPDPrimaryVertex = NULL;
@@ -1002,9 +1002,9 @@ Bool_t lIsPosProtonForTPC = kFALSE;
     if ( ( TMath::Abs(lPrimaryVtxPosition[2]) ) > cutPrimVertex) return ; //// cut on z of prim. vertex!!!!!
     fHistNumberEvents->Fill(4.5);    
     lPrimaryVtxChi2 = myBestPrimaryVertex->GetChi2toNDF();
-    lResPrimaryVtxX = myBestPrimaryVertex->GetXRes();
-    lResPrimaryVtxY = myBestPrimaryVertex->GetYRes();
-    lResPrimaryVtxZ = myBestPrimaryVertex->GetZRes();
+    //    lResPrimaryVtxX = myBestPrimaryVertex->GetXRes();
+    //    lResPrimaryVtxY = myBestPrimaryVertex->GetYRes();
+    //    lResPrimaryVtxZ = myBestPrimaryVertex->GetZRes();
     // remove TPC-only primary vertex : retain only events with tracking + SPD vertex
     const AliESDVertex *mySPDPrimaryVertex = ((AliESDEvent*)fESD)->GetPrimaryVertexSPD();
     if (!mySPDPrimaryVertex) return;
@@ -1089,17 +1089,17 @@ Bool_t lIsPosProtonForTPC = kFALSE;
 	AliWarning("Pb / Idx(Bach. track) = Idx(Pos. track) ... continue!"); continue;
       }
 
-      lEffMassXi                      = Cas->GetEffMassXi();
-      lChi2Xi                         = Cas->GetChi2Xi();
-      lDcaXiDaughters                 = Cas->GetDcaXiDaughters();
-      lXiCosineOfPointingAngle        = Cas->GetCascadeCosineOfPointingAngle( lPrimaryVtxPosition[0],
-									     lPrimaryVtxPosition[1],
-									     lPrimaryVtxPosition[2] );
+      //      lEffMassXi                      = Cas->GetEffMassXi();
+      //      lChi2Xi                         = Cas->GetChi2Xi();
+      //      lDcaXiDaughters                 = Cas->GetDcaXiDaughters();
+      //      lXiCosineOfPointingAngle        = Cas->GetCascadeCosineOfPointingAngle( lPrimaryVtxPosition[0],
+      //									     lPrimaryVtxPosition[1],
+      //									     lPrimaryVtxPosition[2] );
       // Take care : the best available vertex should be used (like in AliCascadeVertexer)                                                                                 
 
       Cas->GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] );
-      lXiRadius2D    = TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );
-      lXiRadius3D    = TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] +  lPosXi[2]*lPosXi[2]);
+      //      lXiRadius2D    = TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );
+      //      lXiRadius3D    = TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] +  lPosXi[2]*lPosXi[2]);
 
 
       AliESDtrack *pTrackXi           = fESD->GetTrack( lIdxPosXi );
@@ -1124,20 +1124,20 @@ Bool_t lIsPosProtonForTPC = kFALSE;
       
 
       if( bachTrackXi->Charge() < 0 ) {
-	v0q = 0;
-      kinCasQual =  Cas->ChangeMassHypothesis(v0q,3312);
+	//	v0q = 0;
+	//      kinCasQual =  Cas->ChangeMassHypothesis(v0q,3312);
       lInvMassXi = Cas->GetEffMassXi();
-	v0q = 0;
-      kinCasQual =  Cas->ChangeMassHypothesis(v0q,3334);
+      //	v0q = 0;
+	//      kinCasQual =  Cas->ChangeMassHypothesis(v0q,3334);
       lInvMassOmega = Cas->GetEffMassXi();
       }
 
       if( bachTrackXi->Charge() > 0 ) {
-	v0q = 0;
-      kinCasQual =  Cas->ChangeMassHypothesis(v0q,-3312);
+	//	v0q = 0;
+	//      kinCasQual =  Cas->ChangeMassHypothesis(v0q,-3312);
       lInvMassAntiXi = Cas->GetEffMassXi();
-	v0q = 0;
-      kinCasQual =  Cas->ChangeMassHypothesis(v0q,-3334);
+      //	v0q = 0;
+	//      kinCasQual =  Cas->ChangeMassHypothesis(v0q,-3334);
       lInvMassAntiOmega = Cas->GetEffMassXi();
       }
 
@@ -1215,10 +1215,10 @@ Bool_t lIsPosProtonForTPC = kFALSE;
   for (Int_t iV0 = 0; iV0 < nv0sTot; iV0++) {
      
     lIndexPosMother     = 0; lIndexNegMother     = 0; lIndexMotherOfMother       = 0;
-    lCheckPIdK0Short    = 0; lCheckMcK0Short     = 0; lCheckSecondaryK0s         = 0;
-    lCheckPIdLambda     = 0; lCheckMcLambda      = 0; lCheckSecondaryLambda      = 0;
-    lCheckPIdAntiLambda = 0; lCheckMcAntiLambda  = 0; lCheckSecondaryAntiLambda  = 0;       
-    lComeFromSigma      = 0; //lCheckGamma = 0;
+    lCheckPIdK0Short    = 0; lCheckMcK0Short     = 0;// lCheckSecondaryK0s         = 0;
+    lCheckPIdLambda     = 0; lCheckMcLambda      = 0;// lCheckSecondaryLambda      = 0;
+    lCheckPIdAntiLambda = 0; lCheckMcAntiLambda  = 0;// lCheckSecondaryAntiLambda  = 0;       
+      lComeFromSigma      = 0; //lCheckGamma = 0;
     
     if(fAnalysisType == "ESD") {
 
@@ -1242,7 +1242,7 @@ Bool_t lIsPosProtonForTPC = kFALSE;
      
       // VO's main characteristics to check the reconstruction cuts
       lOnFlyStatus       = v0->GetOnFlyStatus();
-      lChi2V0            = v0->GetChi2V0();
+      //      lChi2V0            = v0->GetChi2V0();
       lDcaV0Daughters    = v0->GetDcaV0Daughters();
       //      lDcaV0ToPrimVertex = v0->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
       lV0cosPointAngle   = v0->GetV0CosineOfPointingAngle(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1], lPrimaryVtxPosition[2]);
@@ -1250,9 +1250,9 @@ Bool_t lIsPosProtonForTPC = kFALSE;
       v0->GetXYZ(lV0Position[0], lV0Position[1], lV0Position[2]);
 
       lV0Radius      = TMath::Sqrt(lV0Position[0]*lV0Position[0]+lV0Position[1]*lV0Position[1]);
-      lV0DecayLength = TMath::Sqrt(TMath::Power(lV0Position[0] - lPrimaryVtxPosition[0],2) +
-		                   TMath::Power(lV0Position[1] - lPrimaryVtxPosition[1],2) +
-		                   TMath::Power(lV0Position[2] - lPrimaryVtxPosition[2],2 ));
+      //      lV0DecayLength = TMath::Sqrt(TMath::Power(lV0Position[0] - lPrimaryVtxPosition[0],2) +
+      //		                   TMath::Power(lV0Position[1] - lPrimaryVtxPosition[1],2) +
+      //		                   TMath::Power(lV0Position[2] - lPrimaryVtxPosition[2],2 ));
       lV0tDecayLength = TMath::Sqrt(TMath::Power(lV0Position[0] - lPrimaryVtxPosition[0],2) +
 				    TMath::Power(lV0Position[1] - lPrimaryVtxPosition[1],2));
 
@@ -1366,14 +1366,14 @@ Bool_t lIsPosProtonForTPC = kFALSE;
 	if (lIndexPosMother == -1) {
 	  lPdgcodeMother = 0;
 	  lIndexMotherOfMother = 0;
-	  mcPosX = 0;
-	  mcPosY = 0;
-	  mcPosZ = 0;
-	  mcPosR = 0;
+	  //	  mcPosX = 0;
+	  //	  mcPosY = 0;
+	  //	  mcPosZ = 0;
+	  //	  mcPosR = 0;
 	  mcPosMotherX = 0;
 	  mcPosMotherY = 0;
 	  mcPosMotherZ = 0;
-	  mcPosMotherR = 0;
+	  //	  mcPosMotherR = 0;
 	  // mcMotherPt = 1;
 	}
 
@@ -1390,14 +1390,14 @@ Bool_t lIsPosProtonForTPC = kFALSE;
 	    lPdgcodeMotherOfMother = lMCESDMotherOfMother->GetPdgCode();
 	  }
 	
-	  mcPosX = lMCESDPartPos->Vx();
-	  mcPosY = lMCESDPartPos->Vy();
-	  mcPosZ = lMCESDPartPos->Vz();
-	  mcPosR = TMath::Sqrt(mcPosX*mcPosX+mcPosY*mcPosY);
+	  //	  mcPosX = lMCESDPartPos->Vx();
+	  //	  mcPosY = lMCESDPartPos->Vy();
+	  //	  mcPosZx = lMCESDPartPos->Vz();
+	  //	  mcPosR = TMath::Sqrt(mcPosX*mcPosX+mcPosY*mcPosY);
 	  mcPosMotherX = lMCESDMother->Vx();
 	  mcPosMotherY = lMCESDMother->Vy();
 	  mcPosMotherZ = lMCESDMother->Vz();
-	  mcPosMotherR = TMath::Sqrt(mcPosMotherX*mcPosMotherX+mcPosMotherY*mcPosMotherY);
+	  //	  mcPosMotherR = TMath::Sqrt(mcPosMotherX*mcPosMotherX+mcPosMotherY*mcPosMotherY);
 	
 	  //  mcMotherPt   = lMCESDMother->Pt();
 	}
@@ -1442,27 +1442,27 @@ Bool_t lIsPosProtonForTPC = kFALSE;
 	    ProdDistance = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
 
 	    if (ProdDistance < 0.001) lCheckMcK0Short  = 1;
-	    else lCheckSecondaryK0s = 1;
+	    //	    else //lCheckSecondaryK0s = 1;
 
 	  }
 	}
-      else if( ( (lPDGCodePosDaughter==+2212) && (lPDGCodeNegDaughter==-211)  )  ) 
+            else if( ( (lPDGCodePosDaughter==+2212) && (lPDGCodeNegDaughter==-211)  )  ) 
 	{
 	  lCheckPIdLambda     = 1;
 	  //	  fHistMCDaughterTrack->Fill(5);
-	  if ( (lIndexPosMother==lIndexNegMother) &&
+	  	  if ( (lIndexPosMother==lIndexNegMother) &&
 	       (lPdgcodeMother==3122)  ){
-	    if ( ( TMath::Abs(lPdgcodeMotherOfMother) == 3212) ||
+		     if ( ( TMath::Abs(lPdgcodeMotherOfMother) == 3212) ||
 		 ( TMath::Abs(lPdgcodeMotherOfMother) == 3224) ||
 		 ( TMath::Abs(lPdgcodeMotherOfMother) == 3214) ||
 		 ( TMath::Abs(lPdgcodeMotherOfMother) == 3114)
 		 ) lComeFromSigma = 1;
 	    else lComeFromSigma = 0; 
+		    
 
-
-	    // if ( (lIndexPosMother <= lNbMCPrimary) || 
-	    //     ( ( lIndexPosMother > lNbMCPrimary) && (lComeFromSigma) )
-	    //      ) lCheckMcLambda  = 1; 
+	     if ( (lIndexPosMother <= lNbMCPrimary) || 
+	         ( ( lIndexPosMother > lNbMCPrimary) && (lComeFromSigma) )
+	          ) lCheckMcLambda  = 1; 
 	    // else lCheckSecondaryLambda    = 1;
 
 	    Double_t dx = 0;
@@ -1477,27 +1477,27 @@ Bool_t lIsPosProtonForTPC = kFALSE;
 	    ProdDistance = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
 
 	    if (ProdDistance < 0.001) lCheckMcLambda  = 1;
-	    else lCheckSecondaryLambda = 1;
+	    //	    else lCheckSecondaryLambda = 1;
 	    
 	
 	  }
 	}
-      else if( ( (lPDGCodePosDaughter==211)   && (lPDGCodeNegDaughter==-2212) )	) 
+            else if( ( (lPDGCodePosDaughter==211)   && (lPDGCodeNegDaughter==-2212) )	) 
 	{
 	  lCheckPIdAntiLambda = 1;
 	  //	  fHistMCDaughterTrack->Fill(7);
-	  if ( (lIndexPosMother==lIndexNegMother) &&
+	  	  if ( (lIndexPosMother==lIndexNegMother) &&
 	       (lPdgcodeMother==-3122) ) {
-	    if ( ( TMath::Abs(lPdgcodeMotherOfMother) == 3212) ||
+		   if ( ( TMath::Abs(lPdgcodeMotherOfMother) == 3212) ||
 		 ( TMath::Abs(lPdgcodeMotherOfMother) == 3224) ||
 		 ( TMath::Abs(lPdgcodeMotherOfMother) == 3214) ||
 		 ( TMath::Abs(lPdgcodeMotherOfMother) == 3114)
 		 ) lComeFromSigma = 1;
 	    else lComeFromSigma = 0;  
-
-	    //  if ( (lIndexPosMother <= lNbMCPrimary) || 
-	    //       ( ( lIndexPosMother > lNbMCPrimary) && (lComeFromSigma) )
-	    //       ) lCheckMcAntiLambda  = 1;
+		
+	      if ( (lIndexPosMother <= lNbMCPrimary) || 
+	           ( ( lIndexPosMother > lNbMCPrimary) && (lComeFromSigma) )
+	           ) lCheckMcAntiLambda  = 1;
 	    //  else lCheckSecondaryAntiLambda = 1;
 
 	    Double_t dx = 0;
@@ -1512,7 +1512,7 @@ Bool_t lIsPosProtonForTPC = kFALSE;
 	    ProdDistance = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
 
 	    if (ProdDistance < 0.001) lCheckMcAntiLambda = 1;
-	    else lCheckSecondaryAntiLambda = 1;
+	    //	    else lCheckSecondaryAntiLambda = 1;
 
 	  }
 	}
@@ -1530,9 +1530,9 @@ Bool_t lIsPosProtonForTPC = kFALSE;
     //////////////////////////////////////
 
     //    lCheckPIDK0sPosDaughter        = 0, lCheckPIDK0sNegDaughter        = 0;
-    lCheckPIDLambdaPosDaughter     = 0;//, lCheckPIDLambdaNegDaughter     = 0;
+//    lCheckPIDLambdaPosDaughter     = 0;//, lCheckPIDLambdaNegDaughter     = 0;
     //lCheckPIDAntiLambdaPosDaughter = 0;,
-    lCheckPIDAntiLambdaNegDaughter = 0;
+//    lCheckPIDAntiLambdaNegDaughter = 0;
 
     if (lMomInnerWallPos < lLimitPPID) {
       if (nSigmaPosPion < cutNSigmaLowP)   {
