@@ -40,7 +40,7 @@ public:
   void SetSignalsMC(TObjArray* array)    {fSignalsMC = array;}
   void SetStepForMCGenerated(Bool_t switcher=kTRUE)    {fStepGenerated = switcher;}
   void SetPairTypes(EPairType ptype=kOSonly) { fPairType=ptype; }
-  void SetRefHist(TH1 *obj, UInt_t vars[4]);
+  void AddRefHist(TH1 *obj, UInt_t vars[4]);
 
   void AddCutVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins,
 		      Double_t min, Double_t max, Bool_t log=kFALSE, Bool_t leg=kFALSE, EBinType btype=kStdBin);
@@ -72,13 +72,13 @@ private:
   Bool_t    fHasMC;
   Bool_t    fStepGenerated;         // switcher for generated particles
 
-  TH1       *fRefObj;               // reference object
+  TObjArray fRefObj;               // reference object
 
   AliDielectronHF(const AliDielectronHF &c);
   AliDielectronHF &operator=(const AliDielectronHF &c);
 
   
-  ClassDef(AliDielectronHF,2)         // Dielectron HF
+  ClassDef(AliDielectronHF,3)         // Dielectron HF
 };
 
 

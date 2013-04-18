@@ -51,7 +51,7 @@ AliDielectronHF::AliDielectronHF() :
   fAxes(kMaxCuts),
   fHasMC(kFALSE),
   fStepGenerated(kFALSE),
-  fRefObj(0x0)
+  fRefObj(1)
 {
   //
   // Default Constructor
@@ -62,6 +62,7 @@ AliDielectronHF::AliDielectronHF() :
     fBinType[i]=kStdBin;
   }
   fAxes.SetOwner(kTRUE);
+  fRefObj.SetOwner(kTRUE);
 }
 
 //______________________________________________
@@ -73,7 +74,7 @@ AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
   fAxes(kMaxCuts),
   fHasMC(kFALSE),
   fStepGenerated(kFALSE),
-  fRefObj(0x0)
+  fRefObj(1)
 {
   //
   // Named Constructor
@@ -84,6 +85,7 @@ AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
     fBinType[i]=kStdBin;
   }
   fAxes.SetOwner(kTRUE);
+  fRefObj.SetOwner(kTRUE);
 }
 
 //______________________________________________
@@ -96,7 +98,7 @@ AliDielectronHF::~AliDielectronHF()
 }
 
 //________________________________________________________________
-void AliDielectronHF::SetRefHist(TH1 *obj, UInt_t vars[4])
+void AliDielectronHF::AddRefHist(TH1 *obj, UInt_t vars[4])
 {
   //
   // store reference object and its varaibles
@@ -105,9 +107,8 @@ void AliDielectronHF::SetRefHist(TH1 *obj, UInt_t vars[4])
   //  UInt_t val[2]={AliDielectronVarManager::kM,AliDielectronVarManager::kPt};
   AliDielectronHistos::StoreVariables(obj,vars);
   AliDielectronHistos::AdaptNameTitle(obj,"Pair");
-  obj->SetName("");
-  fRefObj     = obj;
-
+  obj->SetName(Form("HF_%s",obj->GetName()));
+  fRefObj.AddLast(obj);
 }
 
 //________________________________________________________________
@@ -215,9 +216,9 @@ void AliDielectronHF::Fill(Int_t label1, Int_t label2, Int_t nSignal)
 // 	     AliDielectronVarManager::GetValueName(fVarCuts[i]),
 // 	     valuesLeg1[fVarCuts[i]], valuesLeg2[fVarCuts[i]], valuesPair[fVarCuts[i]]); 
 //     }
-    Fill(nSignal, valuesPair,  valuesLeg1, valuesLeg2);
+    Fill(nSignal+fSignalsMC->GetEntries(), valuesPair,  valuesLeg1, valuesLeg2);
   }
-  // on OS at the moment
+  // only OS at the moment
   // else if(part1->Charge()>0)
   //   valuesPair[AliDielectronVarManager::kPairType]=0;
   // else
@@ -321,11 +322,12 @@ void AliDielectronHF::Fill(Int_t Index, Double_t * const valuesPair, Double_t * 
     if(!selected) continue;
 
     // fill the object with Pair and event values (TODO: this needs to be changed)
-    TH1 *tmp=static_cast<TH1*>(histArr->At(ihist));
+    TObjArray *tmp = (TObjArray*) histArr->At(ihist);
     TString title = tmp->GetName();
     AliDebug(10,title.Data());
-
-    AliDielectronHistos::FillValues(tmp, valuesPair);
+    for(Int_t i=0; i<tmp->GetEntriesFast(); i++) {
+      AliDielectronHistos::FillValues(tmp->At(i), valuesPair);
+    }
     //    AliDebug(10,Form("Fill var %d %s value %f in %s \n",fVar,AliDielectronVarManager::GetValueName(fVar),valuesPair[fVar],tmp->GetName()));
   } //end of hist loop
 
@@ -360,8 +362,8 @@ void AliDielectronHF::Init()
 
   //  printf("fRefObj %p \n",fRefObj);
   for(Int_t ihist=0; ihist<size; ihist++) {
-    histArr->AddAt(fRefObj->Clone(""), ihist);
-    //histArr->AddAt(fRefObj->Clone(Form("h%04d",ihist)), ihist);
+    histArr->AddAt(fRefObj.Clone(""), ihist);
+    //histArr->AddAt(fRefObj.Clone(Form("h%04d",ihist)), ihist);
   }
 
   // loop over all cut variables
@@ -389,9 +391,10 @@ void AliDielectronHF::Init()
 	break;
       }
 
-      TH1 *tmp=static_cast<TH1*>(histArr->At(ihist));
+      TObjArray *tmp= (TObjArray*) histArr->At(ihist);
       TString title = tmp->GetName();
-      if(ivar!=0)           title+=":";
+      if(!ivar)             title ="";
+      if( ivar)             title+=":";
       if(fVarCutType[ivar]) title+="Leg";
       title+=AliDielectronVarManager::GetValueName(fVarCuts[ivar]);
       title+=Form("#%.2f#%.2f",lowEdge,upEdge);

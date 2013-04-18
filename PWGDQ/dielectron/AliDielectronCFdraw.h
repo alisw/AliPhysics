@@ -60,6 +60,8 @@ public:
   void UnsetRangeUser(AliDielectronVarManager::ValueTypes type, const char* slices="", Bool_t leg=kFALSE);
 
   TString FindSteps(const char* search="");
+  Int_t   FindStep(const char* search="");
+  Int_t   FindVar(AliDielectronVarManager::ValueTypes type, Bool_t leg=kFALSE);
 
   virtual void Draw(const Option_t* varnames = "") { Draw(varnames,"");}
   virtual void Print(const Option_t*) const { if (fCfContainer) fCfContainer->Print(""); }
@@ -103,5 +105,13 @@ private:
 //
 // Inline functions
 //
+
+inline Int_t AliDielectronCFdraw::FindVar(AliDielectronVarManager::ValueTypes type, Bool_t leg)
+{
+  //
+  // find variable number in CF container
+  //
+  return ( fCfContainer->GetVar(Form("%s%s", leg?"Leg1_":"", AliDielectronVarManager::GetValueName(type))) );
+}
 #endif
 
