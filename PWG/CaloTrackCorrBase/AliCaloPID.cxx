@@ -82,6 +82,7 @@ fDoClusterSplitting(kFALSE),
 fUseSimpleMassCut(kFALSE),
 fUseSimpleM02Cut(kFALSE),
 fUseSplitAsyCut(kFALSE),
+fUseSplitSSCut(kTRUE),
 fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
@@ -116,6 +117,7 @@ fDoClusterSplitting(kFALSE),
 fUseSimpleMassCut(kFALSE),
 fUseSimpleM02Cut(kFALSE),
 fUseSplitAsyCut(kFALSE),
+fUseSplitSSCut(kTRUE),
 fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
@@ -152,6 +154,7 @@ fDoClusterSplitting(kFALSE),
 fUseSimpleMassCut(kFALSE),
 fUseSimpleM02Cut(kFALSE),
 fUseSplitAsyCut(kFALSE),
+fUseSplitSSCut(kTRUE),
 fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
@@ -318,6 +321,8 @@ Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(const Float_t energy, const Float_
   // Select the appropriate mass range for pi0 selection in splitting method
   // No used yet in splitting ID decision
   
+  if(!fUseSplitAsyCut) return kTRUE ;
+  
   Float_t abasy = TMath::Abs(asy);
 
   Int_t inlm = nlm-1;
@@ -385,6 +390,8 @@ Bool_t AliCaloPID::IsInPi0M02Range(const Float_t energy, const Float_t m02,  con
 {
   // Select the appropriate m02 range in splitting method for pi0
   
+  if(!fUseSplitSSCut) return kTRUE ;
+  
   Float_t minCut = fSplitM02MinCut;
   Float_t maxCut = fSplitM02MaxCut;
   
@@ -424,6 +431,8 @@ Bool_t AliCaloPID::IsInEtaM02Range(const Float_t energy, const Float_t m02,  con
 {
   // Select the appropriate m02 range in splitting method to select eta's
   // Use same parametrization as pi0, just shift the distributions (to be tuned)
+  
+  if(!fUseSplitSSCut) return kTRUE ;
   
   Float_t minCut = fSplitM02MinCut;
   Float_t maxCut = fSplitM02MaxCut;
@@ -472,6 +481,8 @@ Bool_t AliCaloPID::IsInConM02Range(const Float_t energy, const Float_t m02,  con
 {
   // Select the appropriate m02 range in splitting method for converted photons
   // Just min limit for pi0s is max for conversion.
+  
+  if(!fUseSplitSSCut) return kTRUE ;
   
   Float_t minCut = 0.1;
   Float_t maxCut = 0.3;
@@ -781,7 +792,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   // Asymmetry of cluster
   Float_t asy =-10;
   if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
-  if( fUseSplitAsyCut &&  !IsInPi0SplitAsymmetryRange(eClus,asy,nMax) ) return kNeutralUnknown ;
+  if( !IsInPi0SplitAsymmetryRange(eClus,asy,nMax) ) return kNeutralUnknown ;
   
   if (fDebug>0) printf("\t pass asymmetry cut\n");
   
