@@ -221,7 +221,7 @@ namespace RawProduction {
   }
   void MakePi0FitTCP(Input& input, const TriCenPidBin& outBin, Output& output) {
     //MakePtBins();
-    Printf("\MakePi0FitTCP(%s)", outBin.Key().Data());
+    Printf("MakePi0FitTCP(%s)", outBin.Key().Data());
     output.SetDir(outBin);
 
     TH1F * hTotSelEvents          = (TH1F*) input.GetHistogram("hTotSelEvents");
@@ -895,7 +895,9 @@ namespace RawProduction {
   Output::Output(const TString& fileName, const char* options)
   : fFile(0x0)
   {
+    TDirectory* priorDir = gDirectory;
     fFile = TFile::Open(fileName.Data(), options);
+    priorDir->cd();
   }
   Output::~Output()
   {
