@@ -186,7 +186,7 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
   Double_t gCut=0.05;
   AliDielectronVarCuts *gammaCuts = new AliDielectronVarCuts("GammaCuts","GammaCuts");
   gammaCuts->AddCut(AliDielectronVarManager::kM,            0.0,   gCut);
-  //  die->GetPairPreFilter().AddCuts(gammaCuts);
+  die->GetPairPreFilter().AddCuts(gammaCuts);
 
   // rapidity selection
   Double_t yCut=0.9;
@@ -213,6 +213,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   die->SetHistogramManager(histos);
 }
 
+//______________________________________________________________________________________
 void SetEtaCorrection(AliDielectron *die) {
 
   if (AliDielectronPID::GetCentroidCorrFunction()) return;
