@@ -38,6 +38,8 @@ namespace RawProduction {
   // Fit range
   Double_t rangeMin=0.05 ;
   Double_t rangeMax=0.3 ;
+  void FitRanges(double lowerEdge=0, double upperEdge=0);
+
 
   // Fit limits
   double lowerMass = 0.110; double upperMass = 0.145;
@@ -355,22 +357,7 @@ namespace RawProduction {
       hPi0Ratio->SetMarkerStyle(20) ;
       hPi0Ratio->SetMarkerSize(0.7) ;
 
-      if( ptBinEdges[ptBin] < 2.1 ) {
-	rangeMin = 0.1;
-	rangeMax = 0.2;
-      } else if( ptBinEdges[ptBin] < 3.1 ) {
-	rangeMin = 0.08;
-	rangeMax = 0.22;
-      } else if( ptBinEdges[ptBin] < 5.1 ) {
-	rangeMin = 0.08;
-	rangeMax = 0.25;
-      } else if( ptBinEdges[ptBin] < 10.1 ) {
-	rangeMin = 0.07;
-	rangeMax = 0.3;
-      } else {
-	rangeMin = 0.05;
-	rangeMax = 0.3;
-      }
+      FitRanges(ptBinEdges[ptBin-1],ptBinEdges[ptBin]);//Sets the Fit ranges in the relevant pT bin
 
       // ================================================
       // Fit Pol1 ratio
@@ -990,6 +977,49 @@ namespace RawProduction {
     return binEdges;
   }
  
+  void FitRanges(double lowerEdge, double upperEdge)
+  {
+    if(PbPb1 == centBinVersion || PbPb2 == centBinVersion  )
+      {
+	if( upperEdge < 2.1 ) {
+	  rangeMin = 0.1;
+	  rangeMax = 0.2;
+	} else if( upperEdge < 3.1 ) {
+	  rangeMin = 0.08;
+	  rangeMax = 0.22;
+	} else if( upperEdge < 5.1 ) {
+	  rangeMin = 0.08;
+	  rangeMax = 0.25;
+	} else if( upperEdge < 10.1 ) {
+	  rangeMin = 0.07;
+	  rangeMax = 0.3;
+	} else {
+	  rangeMin = 0.05;
+	  rangeMax = 0.3;
+	}
+      }
+    else if( pPb1 == centBinVersion)
+      {
+	if( upperEdge < 2.1 ) {
+	  rangeMin = 0.1;
+	  rangeMax = 0.2;
+	} else if( upperEdge < 3.1 ) {
+	  rangeMin = 0.08;
+	  rangeMax = 0.22;
+	} else if( upperEdge < 5.1 ) {
+	  rangeMin = 0.08;
+	  rangeMax = 0.25;
+	} else if( upperEdge < 10.1 ) {
+	  rangeMin = 0.07;
+	  rangeMax = 0.3;
+	} else {
+	  rangeMin = 0.05;
+	  rangeMax = 0.3;
+	}
+      }
+  }
+
+
 
   TH1* GetHistogram_cent(Input& input, const TString& name, int fromCent, int toCent)
   {
