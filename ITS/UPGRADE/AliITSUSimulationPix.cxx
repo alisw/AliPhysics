@@ -507,9 +507,9 @@ void AliITSUSimulationPix::RemoveDeadPixels()
   if (calObj->IsBad()) {ClearMap(); return;} // whole module is masked
   //
   // prepare the list of r/o cycles seen
-  Char_t cyclesSeen[2*kMaxROCycleAccept];
+  Char_t cyclesSeen[2*kMaxROCycleAccept+1];
   int ncycles = 0;
-  for (int i=2*kMaxROCycleAccept;i--;) if (fCyclesID[i]) cyclesSeen[ncycles++]=i-kMaxROCycleAccept;
+  for (int i=(2*kMaxROCycleAccept+1);i--;) if (fCyclesID[i]) cyclesSeen[ncycles++]=i-kMaxROCycleAccept;
   
   // remove single bad pixels one by one
   int nsingle = calObj->GetNrBadSingle();
