@@ -64,15 +64,19 @@ TF1* GetEfficency(const TString& trigger, int fromCent, int toCent, const TStrin
 TH1* GetRawProduction(const RawProduction::Output& rawOutput, const TString& trigger="kMB", int fromCent=0, int toCent=10,
 		      const TString& pid="All", const TString& graphName="yr1", Color_t color=kBlack, Style_t style=kFullDotSmall)
 {
-  
-  TString name(Form("%s/c%02i-%02i/%s/%s", trigger.Data(), fromCent, toCent, pid.Data(), graphName.Data()));
-  TH1* hist = rawOutput.GetHistogram(name.Data());
-  hist->SetTitle(Form("%s, %02i-%02i%%, %s", trigger.Data(), fromCent, toCent, graphName.Data()));
-  hist->GetXaxis()->SetTitle("p_{T}");
+  TString newName = Form("raw_%s_%02i-%02i_%s_%s", trigger.Data(), fromCent, toCent, pid.Data(), graphName.Data());
+  TH1* hist = dynamic_cast<TH1*> ( gDirectory->Get(newName.Data()) );
+
+  if( ! hist ) {
+    TString oldName(Form("%s/c%02i-%02i/%s/%s", trigger.Data(), fromCent, toCent, pid.Data(), graphName.Data()));
+    TH1* hist = rawOutput.GetHistogram(oldName.Data());
+    hist->SetName(newName.Data());
+    hist->SetTitle(Form("%s, %02i-%02i%%, %s", trigger.Data(), fromCent, toCent, graphName.Data()));
+    hist->GetXaxis()->SetTitle("p_{T}");
+  }
   hist->SetLineColor(color);
   hist->SetMarkerColor(color);
   hist->SetMarkerStyle(style);
-  
   return hist;
 }
 
@@ -82,15 +86,16 @@ TH1* MakeProduction(const RawProduction::Output& rawOutput, const TString& trigg
   // First, check if production histogram allready exist in cd.
   TString name = Form("prod_%s_%02i-%02i_%s_%s", trigger.Data(), fromCent, toCent, pid.Data(), graphName.Data());
   TH1* hist = dynamic_cast<TH1*> ( gDirectory->Get(name.Data()) );
-  if( hist ) {
-    return hist;
-  }
 
-  // else clone raw and correct for efficiancy
-  const TH1* rawHist = GetRawProduction(rawOutput, trigger, fromCent, toCent, pid, graphName, color, style);
-  hist = (TH1*) rawHist->Clone(name.Data());
-  hist->Divide(GetEfficency(trigger, fromCent, toCent, pid, graphName));
-  hist->GetYaxis()->SetTitle("#frac{d^{2}N_{#pi^{0}}}{p_{T}dp_{T}dy N_{ev}}");
+  if( ! hist ) { // else clone raw and correct for efficiancy
+    const TH1* rawHist = GetRawProduction(rawOutput, trigger, fromCent, toCent, pid, graphName, color, style);
+    hist = (TH1*) rawHist->Clone(name.Data());
+    hist->Divide(GetEfficency(trigger, fromCent, toCent, pid, graphName));
+    hist->GetYaxis()->SetTitle("#frac{d^{2}N_{#pi^{0}}}{p_{T}dp_{T}dy N_{ev}}");
+  }
+  hist->SetLineColor(color);
+  hist->SetMarkerColor(color);
+  hist->SetMarkerStyle(style);
   return hist;
 }
 
@@ -219,12 +224,12 @@ void DrawPIDRatios(const RawProduction::Output& rawOutput)
   TStringToken methodes("yr1 yr1int", " ");
   while( methodes.NextToken() ) {
     for(int ic=0; ic<nCent; ++ic) {
-      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "Allcore CPVcore Disp2core Both2core All Disp2 Both2 Both2", true );
-      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "Allcore CPVcore Disp2core Both2core All Disp2 Both2 Both2", false );
+      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "Allcore CPVcore Disp2core Both2core All CPV Disp2 Both2", true );
+      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "Allcore CPVcore Disp2core Both2core All CPV Disp2 Both2", false );
       DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "Allcore CPVcore Disp2core Both2core", true );
       DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "Allcore CPVcore Disp2core Both2core", false );
-      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "All Disp2 Both2 Both2 Allcore", true );
-      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "All Disp2 Both2 Both2 Allcore", false );
+      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "All Disp2 CPV Both2 Allcore", true );
+      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "All Disp2 CPV Both2 Allcore", false );
     }
   }
 }
