@@ -549,7 +549,7 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
                 histoName += Form("%s%s",trackSel.At(itrackSel)->GetName(),methodSel.At(imethodSel)->GetName());
                 num = (TH1*)GetSum(physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), histoName.Data());
                 if ( ! num ) continue;
-                effGraph = new TGraphAsymmErrors(num, den);
+                effGraph = new TGraphAsymmErrors(num, den, "e0");
                 currName = Form("%s_%s_%s_%s_%s", physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), trackSel.At(itrackSel)->GetName(), methodSel.At(imethodSel)->GetName());
                 effGraph->SetTitle(currName.Data());
 
@@ -650,7 +650,7 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
           histoName = GetHistoName(baseIndex[itype], kNcounts-1, ich, -1, -1);
           den = (TH1*)fList->FindObject(histoName.Data());
           if ( ! num || ! den ) continue;
-          effGraph = new TGraphAsymmErrors(num, den);
+          effGraph = new TGraphAsymmErrors(num, den, "e0");
           effGraph->GetYaxis()->SetRangeUser(0., 1.1);
           effGraph->GetYaxis()->SetTitle("Efficiency");
           effGraph->GetXaxis()->SetTitle(baseName[itype].Data());
