@@ -39,8 +39,8 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp(Bool_t enablePS=kTRUE){
   AliAnalysisTaskMultiDielectron *taskMB = new AliAnalysisTaskMultiDielectron("MultiDieMB");
   if ((!hasMC) && enablePS) taskMB->UsePhysicsSelection();
   //taskMB->SelectCollisionCandidates(AliVEvent::kMB);
-  taskMB->SetTriggerMask(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8);
-  taskMB->SelectCollisionCandidates(AliVEvent::kAny);
+//  taskMB->SetTriggerMask(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8);
+  taskMB->SelectCollisionCandidates(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8);
 
 //  taskMB->SetRejectPileup();
 
