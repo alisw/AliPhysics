@@ -317,7 +317,7 @@ Long64_t AliSpectraBothHistoManager::Merge(TCollection* list)
   return count+1;
 }
 
-
+//________________________________________________________________________________
 TH1* AliSpectraBothHistoManager::GetHistogram1D(UInt_t histoType, UInt_t particleType, UInt_t charge) {
   // GetHistogram using particle ID and histogram type
   Int_t baseId = -1;
@@ -377,7 +377,7 @@ TH1* AliSpectraBothHistoManager::GetHistogram1D(UInt_t histoType, UInt_t particl
 
   return GetHistogram(baseId);
 }
-
+//____________________________________________________________________________________________________
 TH2* AliSpectraBothHistoManager::GetHistogram2D(UInt_t histoType, UInt_t particleType, UInt_t charge){
   // returns histo based on ids, casting it to TH2*
   return (TH2*) GetHistogram1D(histoType,particleType,charge);
