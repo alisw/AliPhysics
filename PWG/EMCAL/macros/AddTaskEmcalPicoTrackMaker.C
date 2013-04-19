@@ -54,7 +54,7 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   } else if (runPeriod == "lhc11a") {
     eTask->SetAODfilterBits(256,16); // hybrid tracks for LHC11a
     eTask->SetMC(kFALSE);
-  } else if (runPeriod == "lhc12a15a") {
+  } else if (runPeriod.Contains("lhc12a15a")) {
     eTask->SetAODfilterBits(256,16); // hybrid tracks for LHC12a15a
     eTask->SetMC(kTRUE);
   } else if (runPeriod.Contains(":")) {
