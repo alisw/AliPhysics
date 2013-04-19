@@ -137,7 +137,8 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 
 
 
-   const AliVVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated		 
+   const AliVVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated	
+
   if(vertex)fHistoVtxBefSel->Fill(vertex->GetZ());
   fIsSelected =kFALSE;
   if(CheckVtx() && CheckCentralityCut() && CheckMultiplicityCut() && CheckVtxChi2perNDF())
@@ -194,18 +195,22 @@ Bool_t AliSpectraBothEventCuts::CheckVtx()
       fHistoCuts->Fill(kVtxNoEvent);
       return kFALSE;
     }
-   if(vertex->GetNContributors()<1)
+    if(vertex->GetNContributors()<1)
    {
-      fHistoCuts->Fill(kVtxNoEvent);
+
+      fHistoCuts->Fill(kZeroCont);
       return kFALSE;
 
    }
-   TString tmp(vertex->GetTitle());	
-   if(tmp.Contains("TPC"))
+	
+   TString tmp(vertex->GetTitle());
+   if(tmp.Contains("NoConstraint"))
    {
-	fHistoCuts->Fill(kVtxNoEvent);
-      	return kFALSE;
-   }				
+        fHistoCuts->Fill(kTPCasPV);
+        return kFALSE;
+   }
+
+
  // if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
    // {
     //  return kTRUE;

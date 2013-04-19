@@ -22,7 +22,7 @@ class AliSpectraBothTrackCuts;
 class AliSpectraBothEventCuts : public TNamed
 {
  public:
-  enum {  kProcessedEvents = 0,kPhysSelEvents,kAcceptedEvents, kVtxRange, kVtxCentral, kVtxNoEvent, kQVector, kNVtxCuts};
+  enum {  kProcessedEvents = 0,kPhysSelEvents,kAcceptedEvents, kVtxRange, kVtxCentral, kVtxNoEvent, kQVector,kTPCasPV,kZeroCont,kNVtxCuts};
 enum {kDoNotCheckforSDD=0,kwithSDD,kwithoutSDD};	
 
   // Constructors
