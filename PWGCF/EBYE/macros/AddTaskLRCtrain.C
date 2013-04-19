@@ -15,7 +15,7 @@ AliAnalysisTaskLRC *AddTaskLRCtrain(
         , double vertexZmax = 7.0
         )
 {
-    gROOT->LoadMacro("configLRCAnalysis.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configLRCAnalysis.C");
     //gROOT->LoadMacro("AliAnalysisTaskIA.cxx+g");
 
     // A. Get the pointer to the existing analysis manager via the static access method.
