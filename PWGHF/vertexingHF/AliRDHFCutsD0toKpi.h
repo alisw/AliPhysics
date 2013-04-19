@@ -90,8 +90,20 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
      kBayesSimple
   };
 
+  
+  enum EBayesianCondition {
+     kMaxProb,
+     kAbovePrior,
+     kThreshold
+  };
+  
+  void SetBayesianCondition(Int_t cond) {fBayesianCondition=cond;}
+  Int_t GetBayesianCondition() const {return fBayesianCondition;}
   void SetCombPID(Bool_t CombPID){fCombPID=CombPID;}
   Bool_t GetCombPID() const {return fCombPID;}
+  void SetBayesProbThreshold(Double_t thresh){fProbThreshold=thresh;}
+  Double_t GetBayesProbThreshold() const {return fProbThreshold;}
+  
 
  protected:
   
@@ -112,9 +124,13 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Int_t fnSpecies;   //number of species (used only for array declaration)
   Double_t* fWeightsPositive; //[fnSpecies] Bayesian weights for positive track
   Double_t* fWeightsNegative; //[fnSpecies] Bayesian weights for negative track
-  Int_t fBayesianStrategy;
 
-  ClassDef(AliRDHFCutsD0toKpi,10);  // class for cuts on AOD reconstructed D0->Kpi
+  Double_t fProbThreshold; //Probability threshold for kaon to be accepted in Bayesian method (only applied if fBayesianCondition==kThreshold)
+  
+  Int_t fBayesianStrategy;    // Switch for which Bayesian PID strategy to use
+  Int_t fBayesianCondition;   //Switch for conition applied to kaons
+
+  ClassDef(AliRDHFCutsD0toKpi,11);  // class for cuts on AOD reconstructed D0->Kpi
 };
 
 #endif
