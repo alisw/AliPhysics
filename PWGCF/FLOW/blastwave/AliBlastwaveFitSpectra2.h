@@ -43,13 +43,13 @@ public:
   Int_t SetNormalization();
   Int_t GetNpar() {return 3;};
   
-  const Float_t GetParStart(Int_t ipar) {if(ipar>=0 && ipar <3) return fgStartValues[ipar]; else return 0.0;};
-  const Float_t GetParStep(Int_t ipar) {if(ipar>=0 && ipar <3) return fgStepValues[ipar]; else return 0.0;};
-  const Float_t GetParMin(Int_t ipar) {if(ipar>=0 && ipar <3) return fgMinValues[ipar]; else return 0.0;};
-  const Float_t GetParMax(Int_t ipar) {if(ipar>=0 && ipar <3) return fgMaxValues[ipar]; else return 0.0;};
+  Float_t GetParStart(Int_t ipar) {if(ipar>=0 && ipar <3) return fgStartValues[ipar]; else return 0.0;};
+  Float_t GetParStep(Int_t ipar) {if(ipar>=0 && ipar <3) return fgStepValues[ipar]; else return 0.0;};
+  Float_t GetParMin(Int_t ipar) {if(ipar>=0 && ipar <3) return fgMinValues[ipar]; else return 0.0;};
+  Float_t GetParMax(Int_t ipar) {if(ipar>=0 && ipar <3) return fgMaxValues[ipar]; else return 0.0;};
   
-  const Float_t GetMeanBeta();
-  const Float_t GetMeanBeta(Double_t par[]);
+  Float_t GetMeanBeta();
+  Float_t GetMeanBeta(Double_t par[]);
 
   // method suggested to be replace (virtual in the base class)
   void SetMass(Double_t mass);

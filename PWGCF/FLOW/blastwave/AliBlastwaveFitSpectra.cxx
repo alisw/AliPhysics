@@ -134,7 +134,7 @@ Double_t AliBlastwaveFitSpectra::Pt(Double_t x[],Double_t par[]){
   return res;
 }
 //------------------------------------------------------------------------------
-const Float_t AliBlastwaveFitSpectra::GetMeanBeta(){
+Float_t AliBlastwaveFitSpectra::GetMeanBeta(){
     TF1 fbeta("fbeta","TMath::TanH([0]*TMath::Power(x,[1]))*x",0,1);
     fbeta.SetNpx(1000);
 
@@ -146,7 +146,7 @@ const Float_t AliBlastwaveFitSpectra::GetMeanBeta(){
     return fbeta.Integral(0.,1.)*2;
 }
 //------------------------------------------------------------------------------
-const Float_t AliBlastwaveFitSpectra::GetMeanBeta(Double_t par[]){
+Float_t AliBlastwaveFitSpectra::GetMeanBeta(Double_t par[]){
   // par[0] = T_fo
   // par[1] = rho_av
   // par[2] = R_power

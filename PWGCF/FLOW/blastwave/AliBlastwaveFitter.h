@@ -35,7 +35,7 @@ public:
     Int_t PrepareToFit();
     Int_t Fit();
 
-    static void FCN(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
+    static void FCN(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t /*iflag*/);
     static Double_t GetChi2(){return fgChi2;};
     static Int_t GetNDGF(){return fgNDGF;};
 
