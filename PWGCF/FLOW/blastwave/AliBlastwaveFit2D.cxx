@@ -229,7 +229,7 @@ Double_t AliBlastwaveFit2D::Pt(Double_t x[],Double_t par[]){
   return res;
 }
 //------------------------------------------------------------------------------
-const Float_t AliBlastwaveFit2D::GetMeanBeta(){
+Float_t AliBlastwaveFit2D::GetMeanBeta(){
 
   TF2 fbeta("fbeta","TMath::TanH(([0]+[1]*TMath::Cos(2*x))*TMath::Power(y,[2]))*y*(1+2*[3]*cos(2*x))",0,2*TMath::Pi(),0,1);
   fbeta.SetNpx(1000);
@@ -243,7 +243,7 @@ const Float_t AliBlastwaveFit2D::GetMeanBeta(){
   return fbeta.Integral(0.,2*TMath::Pi(),0.,1.)/TMath::Pi();
 }
 //------------------------------------------------------------------------------
-const Float_t AliBlastwaveFit2D::GetMeanBeta(Double_t par[]){
+Float_t AliBlastwaveFit2D::GetMeanBeta(Double_t par[]){
   // par[0] = T_fo
   // par[1] = s2
   // par[2] = rh0_mean

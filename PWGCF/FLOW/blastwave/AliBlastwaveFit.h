@@ -31,18 +31,18 @@ public:
     virtual Int_t SetParameter(Int_t ipar,Double_t val) = 0;
     virtual Int_t SetNormalization() = 0;
     virtual Int_t GetNpar() = 0;
-    virtual const Float_t GetParStart(Int_t ipar) = 0;
-    virtual const Float_t GetParStep(Int_t ipar) = 0;
-    virtual const Float_t GetParMin(Int_t ipar) = 0;
-    virtual const Float_t GetParMax(Int_t ipar) = 0;
+    virtual Float_t GetParStart(Int_t ipar) = 0;
+    virtual Float_t GetParStep(Int_t ipar) = 0;
+    virtual Float_t GetParMin(Int_t ipar) = 0;
+    virtual Float_t GetParMax(Int_t ipar) = 0;
     
     virtual void SetMass(Double_t mass) {fMass=mass;};
     virtual const char *GetParName(Int_t i) {if(i>=0) return "parNoName"; else return "";};
     virtual void SwitchOffFlow(TMinuit *) const {};
     
 
-    virtual const Float_t GetMeanBeta() = 0;
-    virtual const Float_t GetMeanBeta(Double_t par[]) = 0;
+    virtual Float_t GetMeanBeta() = 0;
+    virtual Float_t GetMeanBeta(Double_t par[]) = 0;
 
     Double_t GetMass() const {return fMass;};
     

@@ -136,10 +136,10 @@ Double_t AliBlastwaveFitSpectra2::Pt(Double_t x[],Double_t par[]){
   return res;
 }
 //------------------------------------------------------------------------------
-const Float_t AliBlastwaveFitSpectra2::GetMeanBeta(){
+Float_t AliBlastwaveFitSpectra2::GetMeanBeta(){
     return fgFuncIntYield->GetParameter(2);
 }
 //------------------------------------------------------------------------------
-const Float_t AliBlastwaveFitSpectra2::GetMeanBeta(Double_t par[]){
+Float_t AliBlastwaveFitSpectra2::GetMeanBeta(Double_t par[]){
     return par[1];
 }

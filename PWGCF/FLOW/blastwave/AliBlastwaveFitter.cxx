@@ -30,7 +30,14 @@ AliBlastwaveFitter::AliBlastwaveFitter() :
     fNfunction(0),
     fMinuit(new TMinuit()),
     fMinos(kFALSE)
-{  
+{
+  // inititalize arrays
+  for(Int_t i=0;i<fgNmaxFunction;i++){
+    fFunc[i]=NULL;
+    fSpectraFlag[i]=0;
+    fV2Flag[i]=0;
+  }
+  
 }
 //------------------------------------------------------------------------------
 AliBlastwaveFitter::~AliBlastwaveFitter(){
@@ -190,7 +197,7 @@ Int_t AliBlastwaveFitter::Fit(){
     return 0;
 }
 //------------------------------------------------------------------------------
-void AliBlastwaveFitter::FCN(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag){
+void AliBlastwaveFitter::FCN(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t /*iflag*/){
     Double_t chi = 0., val, vale, pull,pt;
     Int_t iNorm = 0,nparFunc;
 
@@ -306,7 +313,6 @@ void AliBlastwaveFitter::FCN(Int_t &npar, Double_t *gin, Double_t &f, Double_t *
     if(fgNDGF > 0) fgChi2 = chi/fgNDGF;
 
     f = chi;
-    iflag = 0;
 }
 //------------------------------------------------------------------------------
 TGraph*  AliBlastwaveFitter::DoContour(Int_t np,Int_t ip1,Int_t ip2,Float_t nsigma){
