@@ -5,243 +5,235 @@
 #include <Rtypes.h>
 #include <TLegend.h>
 #include <TString.h>
+#include <TAttMarker.h>
+#include <RtypesCint.h>
+#include <TNamed.h>
+#include "TDirectoryFile.h"
+#include <TPRegexp.h>
+#include <X3DDefs.h>
 
 namespace RawProduction {
   class Output;
 }
 
-TF1* GetEfficency(const char* trigger, int cent, const char* pid)
+enum EffVersion { LHC10h_1234_Apr_10 };
+EffVersion effVersion = LHC10h_1234_Apr_10;
+bool canvHalfWidth=false;
+
+TF1* GetEfficency(const TString& trigger, int fromCent, int toCent, const TString& pid, const TString& methode)
 {
-  if( -1 == cent )
-    cent = 0;
-  char fileName[256]; sprintf(fileName, "eff_pi0_%s.root", trigger);
-  char funcName[256]; sprintf(funcName, "eff_pi0_%s_cen%i", pid, cent);
-  
-  TFile* file = TFile::Open(fileName, "READ");
-  TF1* func = (TF1*)file->Get(funcName);
-  return func;
+  // Dmitri LHC10h Apr. 10 Efficiencies
+  // avalible pids: Allcore Disp2core CPVcore Both2core Disp2 All CPV Both2
+  if( effVersion == LHC10h_1234_Apr_10 ) {
+    if( ! methode.Contains("yr1") ) {
+      Printf("ERROR:GetEfficency: only pol1 efficiancies avalible");
+      return 0x0;
+    }
+    
+    // Cent bin defintion as extracted from PHOS_embedding/
+    int cent = -1;
+    if( 0 == fromCent && 5 == toCent ) cent = 0;
+    if( 5 == fromCent && 10 == toCent ) cent = 1;
+    if( 10 == fromCent && 20 == toCent ) cent = 2;
+    if( 20 == fromCent && 40 == toCent ) cent = 3;
+    if( 40 == fromCent && 60 == toCent ) cent = 4;
+    if( 60 == fromCent && 80 == toCent ) cent = 5;
+    if( cent < 0 ) {
+      Printf("ERROR:GetEfficency not avalible for centrality [%i,%i)", fromCent, toCent);
+      return 0x0;
+    }
+    
+    // determine name and return efficiancy function
+    TDirectory* pastDir = gDirectory;
+    TFile* file = TFile::Open("PHOS_eff_Full_PbPb_1234.root", "READ");
+    char funcName[256]; 
+    if ( methode.Contains("int") ) 
+      sprintf(funcName, "eff_int_Pi0_Gaus_PbPb_%s_cen%i", pid.Data(), cent);
+    else 
+      sprintf(funcName, "eff_int_Pi0_Gaus_PbPb_%s_cen%i", pid.Data(), cent);
+    TF1* func = dynamic_cast<TF1*> ( file->Get(funcName) );
+    pastDir->cd();
+    
+    if( ! func )
+      Printf("ERROR:GetEfficency: efficiancy function %s does not exist", funcName);
+    return func;
+  }
+  return 0x0; // should not be reached
 }
 
-// void DrawAbs(const RawProduction::Output& output, const char* trigger, int cent, TStringToken& names) 
-// {
-//   names.NextToken();
-// 
-//   const char* pid = "All";
-//   char canvName[256] = Form("PSBS_Abs_%s_c%03i_%s_%s", trigger, cent, pid, names.Data());
-//   TCanvas* canv = new TCanvas(canvName, canvName);  
-//   TLegend* leg = new TLegend(0.6,0.8,0.95,0.95);
-// 
-//   TH1* hist = output.GetHistogram(Form("%s/c%03i/%s/%s", trigger, cent, pid, names.Data()));
-//   if(names.Contains("mr")) hist->SetTitle(Form("Peak Position, %s, %s, %s", trigger, RawProduction::GetCentString(cent), pid));
-//   if(names.Contains("sr")) hist->SetTitle(Form("Peak Width, %s, %s, %s", trigger, RawProduction::GetCentString(cent), pid));
-//   if(names.Contains("mr")) hist->GetYaxis()->SetRangeUser(0.12, 0.15);
-//   if(names.Contains("mr")) hist->GetYaxis()->SetTitle("Peak #mu");
-//   if(names.Contains("sr")) hist->GetYaxis()->SetRangeUser(0., 0.012);
-//   if(names.Contains("sr")) hist->GetYaxis()->SetTitle("Peak #sigma");
-//   hist->GetXaxis()->SetTitle("p_{T}");
-//   //Printf(hist->GetTitle());
-//   hist->SetMarkerStyle(21);
-//   //hist->SetMarkerSize(1.5);
-//   hist->SetMarkerColor(kBlack);
-//   hist->SetLineColor(kBlack);
-//   hist->Draw();
-//   leg->AddEntry(hist, "Pol1, Ratio", "lep");
-//   
-//   int marker = 21;
-//   Color_t color[3] = {kRed, kBlue, kMagenta};
-//   while( names.NextToken() ) {
-//     hist = output.GetHistogram(Form("%s/c%03i/%s/%s", trigger, cent, "All", names.Data()));
-//     //Printf(hist->GetName());
-//     hist->SetMarkerStyle(++marker);
-//     hist->SetMarkerColor(color[marker-22]);
-//     hist->SetLineColor(color[marker-22]);
-//     hist->Draw("same");
-//     char legName[256] = "";
-//     if(names.Contains("1")) sprintf(legName, "Pol1");
-//     if(names.Contains("2")) sprintf(legName, "Pol2");
-//     if( marker <23 ) sprintf(legName, "%s, Ratio", legName);
-//     leg->AddEntry(hist, legName, "lep");
-//   }
-//   
-//   hist = output.GetHistogram(Form("%s/c%03i/%s/%s", trigger, cent, pid, names.Data()));
-//   hist->Draw("same");
-// 
-//   leg->Draw();
-//   
-//   canv->SaveAs(Form("imgs/%s.png", canvName));
-//   canv->SaveAs(Form("imgs/%s.pdf", canvName));
-// }
-
-void DrawRatios(const RawProduction::Output& output, const char* trigger, int cent)
+TH1* GetRawProduction(const RawProduction::Output& rawOutput, const TString& trigger="kMB", int fromCent=0, int toCent=10,
+		      const TString& pid="All", const TString& graphName="yr1", Color_t color=kBlack, Style_t style=kFullDotSmall)
 {
-  const int nProdTypes = 2;
-  enum ProdType { RAW=0, EffCor=1 };
   
-  for(int prodType=0; prodType < nProdTypes; ++prodType) {  
-    TStringToken graphs("yr1 yr1int yr2 yr2int", " ");
-    while ( graphs.NextToken() ) {
-      char graphName[32]; sprintf(graphName, "%s", graphs.Data());
-
-      // All
-      TH1* hAll = output.GetHistogram(Form("%s/c%03i/%s/%s", trigger, cent, "All", graphName));
-      char newName[256] = Form("E*%s_All", graphName);
-      hAll = (TH1*) hAll->Clone(newName);
-      hAll->SetTitle(Form("%s, %s, %s, %s", graphName, trigger, RawProduction::GetCentString(cent), graphName));
-      hAll->GetXaxis()->SetTitle("IM_{#gamma #gamma}");
-      hAll->SetLineColor(kBlack);
-      hAll->SetMarkerColor(kBlack);
-      hAll->SetMarkerStyle(20);
-      hAll->GetXaxis()->SetLabelFont(63); //font in pixels
-      hAll->GetXaxis()->SetLabelSize(16); //in pixels
-      hAll->GetYaxis()->SetLabelFont(63); //font in pixels
-      hAll->GetYaxis()->SetLabelSize(16); //in pixels
-
-      // Allcore
-      TH1* hAllcore = output.GetHistogram(Form("%s/c%03i/%s/%s", trigger, cent, "Allcore", graphName));
-      sprintf(newName, "E*%s_Allcore", graphName);
-      hAllcore = (TH1*) hAllcore->Clone(newName);
-      hAllcore->SetLineColor(kCyan);
-      hAllcore->SetMarkerColor(kCyan);
-      hAllcore->SetMarkerStyle(25);
+  TString name(Form("%s/c%02i-%02i/%s/%s", trigger.Data(), fromCent, toCent, pid.Data(), graphName.Data()));
+  TH1* hist = rawOutput.GetHistogram(name.Data());
+  hist->SetTitle(Form("%s, %02i-%02i%%, %s", trigger.Data(), fromCent, toCent, graphName.Data()));
+  hist->GetXaxis()->SetTitle("p_{T}");
+  hist->SetLineColor(color);
+  hist->SetMarkerColor(color);
+  hist->SetMarkerStyle(style);
   
-      // CPV
-      TH1* hCPV = output.GetHistogram(Form("%s/c%03i/%s/%s", trigger, cent, "CPV", graphName));
-      sprintf(newName, "E*%s_CPV", graphName);
-      hCPV = (TH1*) hCPV->Clone(newName);
-      hCPV->SetLineColor(kBlue);
-      hCPV->SetMarkerColor(kBlue);
-      hCPV->SetMarkerStyle(22);
+  return hist;
+}
 
-      // CPVcore
-      TH1* hCPVcore = output.GetHistogram(Form("%s/c%03i/%s/%s", trigger, cent, "CPVcore", graphName));
-      sprintf(newName, "E*%s_CPVcore", graphName);
-      hCPVcore = (TH1*) hCPVcore->Clone(newName);
-      hCPVcore->SetLineColor(kGreen);
-      hCPVcore->SetMarkerColor(kGreen);
-      hCPVcore->SetMarkerStyle(26);
+TH1* MakeProduction(const RawProduction::Output& rawOutput, const TString& trigger="kMB", int fromCent=0, int toCent=10,
+		      const TString& pid="All", const TString& graphName="yr1", Color_t color=kBlack, Style_t style=kFullDotSmall)
+{
+  // First, check if production histogram allready exist in cd.
+  TString name = Form("prod_%s_%02i-%02i_%s_%s", trigger.Data(), fromCent, toCent, pid.Data(), graphName.Data());
+  TH1* hist = dynamic_cast<TH1*> ( gDirectory->Get(name.Data()) );
+  if( hist ) {
+    return hist;
+  }
 
-      // Both
-      TH1* hBoth = output.GetHistogram(Form("%s/c%03i/%s/%s", trigger, cent, "Both", graphName));
-      sprintf(newName, "E*%s_Both", graphName);
-      hBoth = (TH1*) hBoth->Clone(newName);
-      hBoth->SetLineColor(kRed);
-      hBoth->SetMarkerColor(kRed);
-      hBoth->SetMarkerStyle(33);
+  // else clone raw and correct for efficiancy
+  const TH1* rawHist = GetRawProduction(rawOutput, trigger, fromCent, toCent, pid, graphName, color, style);
+  hist = (TH1*) rawHist->Clone(name.Data());
+  hist->Divide(GetEfficency(trigger, fromCent, toCent, pid, graphName));
+  hist->GetYaxis()->SetTitle("#frac{d^{2}N_{#pi^{0}}}{p_{T}dp_{T}dy N_{ev}}");
+  return hist;
+}
 
-      // Efficiancy correction
-      if( EffCor == prodType ) {
-	hAll->GetYaxis()->SetTitle("#frac{d^{2}N_{#pi^{0}}}{p_{T}dp_{T}dy N_{ev}}");
-	hAll->Divide(GetEfficency(trigger, cent, "All"));
-	hAllcore->Divide(GetEfficency(trigger, cent, "Allcore"));
-	hCPV->Divide(GetEfficency(trigger, cent, "CPV"));
-	hCPVcore->Divide(GetEfficency(trigger, cent, "CPVcore"));
-	hBoth->Divide(GetEfficency(trigger, cent, "Both"));
-      }
-      
-      // hAll / hAllcore
-      TH1* hAll_hAll = hAll->Clone(Form("%s_div_hAll", hAll->GetName()));
-      hAll_hAll->Divide(hAll);
-      // hAllcore / hAll
-      TH1* hAllcore_hAll = hAllcore->Clone(Form("%s_div_hAll", hAllcore->GetName()));
-      hAllcore_hAll->Divide(hAll);
-      // hCPV / hAll
-      TH1* hCPV_hAll = hCPV->Clone(Form("%s_div_hAll", hCPV->GetName()));
-      hCPV_hAll->Divide(hAll);
-      // hAllcore / hCPVcore
-      TH1* hCPVcore_hAllcore = hCPVcore->Clone(Form("%s_div_Allcore", hCPVcore->GetName()));
-      hCPVcore_hAllcore->Divide(hAllcore);
-      // hBoth / hAll
-      TH1* hBoth_hAll = hBoth->Clone(Form("%s_div_hAll", hBoth->GetName()));
-      hBoth_hAll->Divide(hAll);
+TH1* MakeRatio(TH1* h1, TH1* h2, const TString& title ="")
+{
+  TString name = Form("%s_%s", h1->GetName(), h2->GetName());
+  TH1* hist = dynamic_cast<TH1*> ( gDirectory->Get(name.Data()) );
+  if( hist )
+    return hist;
 
+  hist = (TH1*)h1->Clone(name.Data());
+  hist->Divide(h2);
+  hist->SetTitle(title.Data());
+  hist->GetYaxis()->SetTitle("Ratio");
+  return hist;
+}
+
+
+TCanvas* DrawPIDProductionWithRatios(const RawProduction::Output& rawOutput, const TString& trigger,
+		       int fromCent, int toCent, const TString& methode="yr1",
+		       const TString& pids = TString("Allcore CPVcore Disp2core Both2core"), bool raw = false)
+{
+  const int capacity = 8;
+  const int nHists = TMath::Min( pids.CountChar(' ')+1, capacity);
+  TStringToken pidst = TStringToken(pids, " ");
+  char pidsa[capacity][64] ={""};
   
-      TCanvas* canv = new TCanvas(Form("%s_c%03i_%s_ratio", trigger, cent, graphName), Form("%s_c%03i_%s_ratio", trigger, cent, graphName));
+  TH1* hists[capacity] = {0x0};
+  const Style_t markers[capacity] = {22, 22, 23, 33, 24, 26, 32, 27};
+  const Color_t colors[capacity] = {kBlack, kRed, kBlue, kGreen, kGray, kMagenta, kCyan, kOrange};
   
-      canv->cd();
-      TPad *pad1 = new TPad("pad1","pad1",0,0.4,1,1);
-      pad1->SetBottomMargin(0);
-      pad1->SetLogy();
-      pad1->Draw();
-      pad1->cd();
-      hAll->GetYaxis()->SetTitleSize(0.06);
-      hAll->GetYaxis()->SetTitleOffset(0.6);
-      hAll->GetYaxis()->SetRangeUser(2.0e-7, 90.);
-      hAll->DrawCopy();
-      hAllcore->DrawCopy("same");
-      hCPV->DrawCopy("same");
-      hCPVcore->DrawCopy("same");
-      hBoth->DrawCopy("same");
-      TLegend* leg1 = new TLegend(0.7,0.6,0.85,0.88);
-      leg1->AddEntry(hAll, "All", "lep");
-      leg1->AddEntry(hAllcore, "Allcore", "lep");
-      leg1->AddEntry(hCPV, "CPV", "lep");
-      leg1->AddEntry(hCPVcore, "CPVcore", "lep");
-      leg1->AddEntry(hBoth, "Both", "lep");
-      leg1->Draw();
+  int index = 0;
+  while(pidst.NextToken() && index < capacity) {
+    sprintf(pidsa[index], "%s", pidst.Data());
+    if(raw)
+      hists[index] = GetRawProduction(rawOutput, trigger, fromCent, toCent, pidst, methode, colors[index], markers[index]);
+    else
+      hists[index] = MakeProduction(rawOutput, trigger, fromCent, toCent, pidst, methode, colors[index], markers[index]);
+    index++;
+  }
   
-      canv->cd();
-      TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.4);
-      pad2->SetTopMargin(0);
-      pad2->Draw();
-      pad2->cd();
-      pad2->SetGridy();
-      hAll_hAll->GetYaxis()->SetRangeUser(0.2, 1.4);
-      hAll_hAll->GetYaxis()->SetTitle("");
-      hAll_hAll->SetTitle("");
-      hAll_hAll->DrawCopy("AXIS");
-      hAll_hAll->DrawCopy("AXIGsame");
-      hAllcore_hAll->DrawCopy("same");
-      hCPV_hAll->DrawCopy("same");
-      hCPVcore_hAllcore->DrawCopy("same");
-      hBoth_hAll->DrawCopy("same");
-      TLegend* leg2 = new TLegend(0.7,0.63,0.85,0.98);
-      //leg2->AddEntry(hAll_hAll, "All/All", "lep");
-      leg2->AddEntry(hAllcore_hAll, "Allcore/All", "lep");
-      leg2->AddEntry(hCPV_hAll, "CPV/All", "lep");
-      leg2->AddEntry(hCPVcore_hAllcore, "CPVcore/Allcore", "lep");
-      leg2->AddEntry(hBoth_hAll, "Both/All", "lep");
-      leg2->Draw();
+  //TString pids_underscore = TString(pids); pids_underscore.ReplaceAll(" ", "_");
+  TString key = Form("PIDRatios_%s_c%02i-%02i_%s_%s_raw%i_h%i", trigger.Data(), fromCent, toCent, methode.Data(), TString(pids).ReplaceAll(" ", "_").Data(), raw, canvHalfWidth);
+  //TString key = Form("PIDRatios_%s_c%02i-%02i_%s_raw%i", trigger.Data(), fromCent, toCent, methode.Data(), raw);
   
-      if(RAW == prodType) {
-	canv->SaveAs(Form("imgs/prod_ratios_%s_%i_%s_RAW.pdf", trigger, cent, graphName));      
-	canv->SaveAs(Form("imgs/prod_ratios_%s_%i_%s_RAW.png", trigger, cent, graphName));      
-      } else if (EffCor == prodType ) {
-	canv->SaveAs(Form("imgs/prod_ratios_%s_%i_%s.pdf", trigger, cent, graphName));      
-	canv->SaveAs(Form("imgs/prod_ratios_%s_%i_%s.png", trigger, cent, graphName));      
-      }
-      delete canv;
+  TCanvas* canv = 0x0;
+  if( canvHalfWidth) 
+    canv = new TCanvas(key.Data(), key.Data(), 1024/2, 768);
+  else 
+    canv = new TCanvas(key.Data(), key.Data(), 1024, 768);
+
+  // Direct
+  canv->cd();
+  TPad *pad1 = new TPad("pad1","pad1",0,0.4,1,1);
+  pad1->SetBottomMargin(0);
+  pad1->SetLogy();
+  pad1->Draw();
+  pad1->cd();
+  if( canvHalfWidth ) {
+    hists[0]->GetYaxis()->SetLabelFont(63); //font in pixels
+    hists[0]->GetYaxis()->SetLabelSize(10); //in pixels
+    hists[0]->GetYaxis()->SetTitleSize(0.03);
+    hists[0]->GetYaxis()->SetTitleOffset(1.2);
+  } else {
+    hists[0]->GetYaxis()->SetLabelFont(63); //font in pixels
+    hists[0]->GetYaxis()->SetLabelSize(20); //in pixels
+    hists[0]->GetYaxis()->SetTitleSize(0.055);
+    hists[0]->GetYaxis()->SetTitleOffset(0.7);
+  }
+  if( raw )
+    hists[0]->GetYaxis()->SetRangeUser(1.e-7, 1.e1);
+  else
+    hists[0]->GetYaxis()->SetRangeUser(1.e-5, 1.e3);
+  // Draw
+  hists[0]->DrawCopy();
+  for(int i=1;i<nHists;++i)
+    hists[i]->DrawCopy("same");
+  // Legend
+  TLegend* leg1 = new TLegend(0.7,0.6,0.85,0.88);
+  for(int i=0;i<nHists;++i)
+    leg1->AddEntry(hists[i], pidsa[i] , "lep");
+  leg1->Draw();
+  
+  // Ratios
+  canv->cd();
+  TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.4);
+  pad2->SetTopMargin(0);
+  pad2->Draw();
+  pad2->cd();
+  pad2->SetGridy();
+  TH1* firstRatio = MakeRatio(hists[1], hists[0]);
+  if ( raw )
+    firstRatio->GetYaxis()->SetRangeUser(0., 2.);
+  else
+    firstRatio->GetYaxis()->SetRangeUser(0.6, 1.4);
+  firstRatio->GetYaxis()->SetTitle("");
+  firstRatio->GetYaxis()->SetLabelFont(63); 
+  firstRatio->GetYaxis()->SetLabelSize(25);
+  firstRatio->GetXaxis()->SetLabelFont(63); 
+  firstRatio->GetXaxis()->SetLabelSize(20);
+  firstRatio->SetTitle("Ratio");
+  // Draw
+  firstRatio->DrawCopy("AXIS");
+  firstRatio->DrawCopy("AXIGsame");
+  firstRatio->DrawCopy("same");
+  for(int i=2;i<nHists;++i)
+    MakeRatio(hists[i],hists[0])->DrawCopy("same");
+  // Ratios
+  TLegend* leg2 = new TLegend(0.7,0.63,0.85,0.98);
+  for(int i=1;i<nHists;++i)
+    leg2->AddEntry(MakeRatio(hists[i],hists[0]), Form("%s/%s", pidsa[i], pidsa[0]), "lep");
+  leg2->Draw();
+  
+  canv->SaveAs(Form("imgs/%s.pdf", key.Data()));
+  canv->SaveAs(Form("imgs/%s.png", key.Data()));
+  
+  return canv;
+  //delete canv;
+}
+
+
+void DrawPIDRatios(const RawProduction::Output& rawOutput)
+{
+  const int nCent = 2;
+  int centBins[nCent][2] = {{0,5}, {5,10}/*, {10,20}, {20,40}, {40,60}, {60,80}*/};
+  TStringToken methodes("yr1 yr1int", " ");
+  while( methodes.NextToken() ) {
+    for(int ic=0; ic<nCent; ++ic) {
+      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "Allcore CPVcore Disp2core Both2core All Disp2 Both2 Both2", true );
+      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "Allcore CPVcore Disp2core Both2core All Disp2 Both2 Both2", false );
+      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "Allcore CPVcore Disp2core Both2core", true );
+      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "Allcore CPVcore Disp2core Both2core", false );
+      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "All Disp2 Both2 Both2 Allcore", true );
+      DrawPIDProductionWithRatios(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], methodes.Data(), "All Disp2 Both2 Both2 Allcore", false );
     }
   }
-    
-}
-
-
-void DrawProductions(const RawProduction::Output& output, const char* trigger, int cent)
-{
-  // TStringToken mrst("mr1r;mr2r;mr1;mr2", ";");
-  // DrawAbs(output, trigger, cent, mrst);
-    
-  DrawRatios(output, trigger, cent);
 }
 
 void DrawProduction()
 {
   gROOT->LoadMacro("MakeRawProduction.C+g");
-  RawProduction::Output output;
+  RawProduction::Output rawOutput;
   gStyle->SetOptStat(0);
   
-  
-//   DrawProductions(output, "kMB", -10);
-//   DrawProductions(output, "kPHOSPb", -10);
-
-  DrawProductions(output, "kCentral", -1);
-//   DrawProductions(output, "kMB", -1);
-//   DrawProductions(output, "kPHOSPb", -1);
-// 
-//   DrawProductions(output, "kSemiCentral", -11);
-//   DrawProductions(output, "kMB", -11);
-//   DrawProductions(output, "kPHOSPb", -11);
-// 
-//   DrawProductions(output, "kPHOSPb", -6);
-//   DrawProductions(output, "kMB", -6);
+  DrawPIDRatios(rawOutput);
 }
