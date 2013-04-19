@@ -858,7 +858,12 @@ namespace RawProduction {
 
     if( listPath.EqualTo("") ) {
       char cstr[256] = "";
-      sprintf(cstr, "PHOSPi0Flow_%s/PHOSPi0Flow_%sCoutput1", fBin.Trigger().Data(), fBin.Trigger().Data());
+      if( pPb1 == centBinVersion ) {
+	sprintf(cstr, "PHOSPi0pPb_%s/PHOSPi0pPb_%sCoutput1", fBin.Trigger().Data(), fBin.Trigger().Data());
+      }
+      if(PbPb1 == centBinVersion || PbPb2 == centBinVersion  ){
+	sprintf(cstr, "PHOSPi0Flow_%s/PHOSPi0Flow_%sCoutput1", fBin.Trigger().Data(), fBin.Trigger().Data());
+      }
       listPath = cstr;
     }
 
