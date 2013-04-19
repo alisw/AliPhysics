@@ -249,7 +249,7 @@ public:
     kPhiMaxPt,               // phi angle of the track with maximum pt
     kMaxPt,                  // track with maximum pt
 
-    //// v0 reaction plane quantities from AliEPSelectionTaks, angles interval [0,+pi]
+    //// v0 reaction plane quantities from AliEPSelectionTaks, angles interval [-pi,+pi]
     kv0ArpH2,                // VZERO-A reaction plane of the Q vector for 2nd harmonic
     kv0CrpH2,                //         reaction plane
     kv0ACrpH2,               // VZERO-AC reaction plane of the Q vector for 2nd harmonic
@@ -1576,11 +1576,11 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   for(Int_t ivar=AliDielectronVarManager::kv0ArpH2; ivar<=kv0C0v0C3DiffH2;   ivar++) values[ivar] = 0.0; // v0  variables
   for(Int_t ivar=AliDielectronVarManager::kTPCxH2;  ivar<=kTPCsub12DiffH2uc; ivar++) values[ivar] = 0.0; // tpc variables
 
-  // ep angle interval [-pi/2, +pi/2]
+  // ep angle interval [todo, fill]
   AliEventplane *ep = const_cast<AliVEvent*>(event)->GetEventplane();
   if(ep) {
 
-    // TPC event plane quantities (uncorrected)  
+    // TPC event plane quantities (uncorrected)
     TVector2 *qstd  = ep->GetQVector();  // This is the "standard" Q-Vector for TPC
     TVector2 *qsub1 = ep->GetQsub1();    // random subevent plane
     TVector2 *qsub2 = ep->GetQsub2();
@@ -1588,13 +1588,13 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
       values[AliDielectronVarManager::kTPCxH2uc]       = qstd->X();
       values[AliDielectronVarManager::kTPCyH2uc]       = qstd->Y();
       values[AliDielectronVarManager::kTPCmagH2uc]     = qstd->Mod();
-      values[AliDielectronVarManager::kTPCrpH2uc]      = qstd->Phi()/2;
+      values[AliDielectronVarManager::kTPCrpH2uc]      = ((TMath::Abs(qstd->X())>1.0e-10) ? TMath::ATan2(qstd->Y(),qstd->X())/2.0 : 0.0);
       values[AliDielectronVarManager::kTPCsub1xH2uc]   = qsub1->X();
       values[AliDielectronVarManager::kTPCsub1yH2uc]   = qsub1->Y();
-      values[AliDielectronVarManager::kTPCsub1rpH2uc]  = qsub1->Phi()/2;
+      values[AliDielectronVarManager::kTPCsub1rpH2uc]  = ((TMath::Abs(qsub1->X())>1.0e-10) ? TMath::ATan2(qsub1->Y(),qsub1->X())/2.0 : 0.0);
       values[AliDielectronVarManager::kTPCsub2xH2uc]   = qsub2->X();
       values[AliDielectronVarManager::kTPCsub2yH2uc]   = qsub2->Y();
-      values[AliDielectronVarManager::kTPCsub2rpH2uc]  = qsub2->Phi()/2;
+      values[AliDielectronVarManager::kTPCsub2rpH2uc]  = ((TMath::Abs(qsub2->X())>1.0e-10) ? TMath::ATan2(qsub2->Y(),qsub2->X())/2.0 : 0.0);
 
       values[AliDielectronVarManager::kTPCsub12DiffH2uc] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2uc] -
 									   values[AliDielectronVarManager::kTPCsub2rpH2uc]) );
@@ -1604,28 +1604,28 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     TVector2 qvec;
     Double_t qx = 0, qy = 0;
     ep->CalculateVZEROEventPlane(event,10, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0ACrpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0ACrpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     values[AliDielectronVarManager::kv0ACxH2]   = qvec.X();
     values[AliDielectronVarManager::kv0ACyH2]   = qvec.Y();
     values[AliDielectronVarManager::kv0ACmagH2] = qvec.Mod();
     ep->CalculateVZEROEventPlane(event, 8, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0ArpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0ArpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     values[AliDielectronVarManager::kv0AxH2]   = qvec.X();
     values[AliDielectronVarManager::kv0AyH2]   = qvec.Y();
     values[AliDielectronVarManager::kv0AmagH2] = qvec.Mod();
     ep->CalculateVZEROEventPlane(event, 9, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0CrpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0CrpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     values[AliDielectronVarManager::kv0CxH2]   = qvec.X();
     values[AliDielectronVarManager::kv0CyH2]   = qvec.Y();
     values[AliDielectronVarManager::kv0CmagH2] = qvec.Mod();
     ep->CalculateVZEROEventPlane(event, 0, 0, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0C0rpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0C0rpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     ep->CalculateVZEROEventPlane(event, 3, 3, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0C3rpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0C3rpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     ep->CalculateVZEROEventPlane(event, 4, 4, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0A0rpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0A0rpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     ep->CalculateVZEROEventPlane(event, 7, 7, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0A3rpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0A3rpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
   } //if: eventplane
 
   // ESD VZERO information
@@ -1804,14 +1804,16 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   // nanoAODs (w/o AliEventPlane branch) should have the tpc event plane angle stored in the header
   if(!header->GetEventplaneP()) {
 
-    values[AliDielectronVarManager::kNTrk] = header->GetRefMultiplicity();    // overwritten datamembers in "our" nanoAODs
-    values[AliDielectronVarManager::kNacc] = header->GetRefMultiplicityPos(); // overwritten datamembers in "our" nanoAODs
+    //    values[AliDielectronVarManager::kNTrk] = header->GetRefMultiplicity();    // overwritten datamembers in "our" nanoAODs
+    //    values[AliDielectronVarManager::kNacc] = header->GetRefMultiplicityPos(); // overwritten datamembers in "our" nanoAODs
 
+    TVector2 qvec;
     // TPC
-    values[AliDielectronVarManager::kTPCrpH2uc]  = header->GetEventplane();
-    values[AliDielectronVarManager::kTPCmagH2uc] = header->GetEventplaneMag();
-    values[AliDielectronVarManager::kTPCxH2uc]   = TMath::Cos(header->GetEventplane()) * header->GetEventplaneMag();
-    values[AliDielectronVarManager::kTPCyH2uc]   = TMath::Sin(header->GetEventplane()) * header->GetEventplaneMag();
+    qvec.Set(header->GetEventplaneQx(), header->GetEventplaneQy());
+    values[AliDielectronVarManager::kTPCxH2uc]   = qvec.X();
+    values[AliDielectronVarManager::kTPCyH2uc]   = qvec.Y();
+    values[AliDielectronVarManager::kTPCmagH2uc] = qvec.Mod();
+    values[AliDielectronVarManager::kTPCrpH2uc]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
 
     // VZERO
     AliEventplane ep2;
@@ -1821,31 +1823,30 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
     if(eptask) eptask->SetEventplaneParams(&ep2,centralityF);
     else printf("no VZERO event plane selection task added! \n");
 
-    TVector2 qvec;
     Double_t qx = 0, qy = 0;
     ep2.CalculateVZEROEventPlane(event,10, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0ACrpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0ACrpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     values[AliDielectronVarManager::kv0ACxH2]   = qvec.X();
     values[AliDielectronVarManager::kv0ACyH2]   = qvec.Y();
     values[AliDielectronVarManager::kv0ACmagH2] = qvec.Mod();
     ep2.CalculateVZEROEventPlane(event, 8, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0ArpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0ArpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     values[AliDielectronVarManager::kv0AxH2]   = qvec.X();
     values[AliDielectronVarManager::kv0AyH2]   = qvec.Y();
     values[AliDielectronVarManager::kv0AmagH2] = qvec.Mod();
     ep2.CalculateVZEROEventPlane(event, 9, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0CrpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0CrpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     values[AliDielectronVarManager::kv0CxH2]   = qvec.X();
     values[AliDielectronVarManager::kv0CyH2]   = qvec.Y();
     values[AliDielectronVarManager::kv0CmagH2] = qvec.Mod();
     ep2.CalculateVZEROEventPlane(event, 0, 0, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0C0rpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0C0rpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     ep2.CalculateVZEROEventPlane(event, 3, 3, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0C3rpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0C3rpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     ep2.CalculateVZEROEventPlane(event, 4, 4, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0A0rpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0A0rpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
     ep2.CalculateVZEROEventPlane(event, 7, 7, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0A3rpH2]  = qvec.Phi()/2;
+    values[AliDielectronVarManager::kv0A3rpH2]  = ((TMath::Abs(qvec.X())>1.0e-10) ? TMath::ATan2(qvec.Y(),qvec.X())/2.0 : 0.0);
   }
 
   const AliAODVertex *vtxtpc = GetVertex(event, AliAODVertex::kMainTPC);
@@ -1888,16 +1889,16 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
       values[AliDielectronVarManager::kTPCxH2]   = qcorr->X();
       values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();
       values[AliDielectronVarManager::kTPCmagH2] = qcorr->Mod();
-      values[AliDielectronVarManager::kTPCrpH2]  = qcorr->Phi()/2;
+      values[AliDielectronVarManager::kTPCrpH2]  = ((TMath::Abs(qcorr->X())>1.0e-10) ? TMath::ATan2(qcorr->Y(),qcorr->X())/2.0 : 0.0);
     }
     if(qcsub1 && qcsub2) {
       values[AliDielectronVarManager::kTPCsub1xH2]   = qcsub1->X();
       values[AliDielectronVarManager::kTPCsub1yH2]   = qcsub1->Y();
-      values[AliDielectronVarManager::kTPCsub1rpH2]  = qcsub1->Phi()/2;
+      values[AliDielectronVarManager::kTPCsub1rpH2]  = ((TMath::Abs(qcsub1->X())>1.0e-10) ? TMath::ATan2(qcsub1->Y(),qcsub1->X())/2.0 : 0.0);
 
       values[AliDielectronVarManager::kTPCsub2xH2]   = qcsub2->X();
       values[AliDielectronVarManager::kTPCsub2yH2]   = qcsub2->Y();
-      values[AliDielectronVarManager::kTPCsub2rpH2]  = qcsub2->Phi()/2;
+      values[AliDielectronVarManager::kTPCsub2rpH2]  = ((TMath::Abs(qcsub2->X())>1.0e-10) ? TMath::ATan2(qcsub2->Y(),qcsub2->X())/2.0 : 0.0);
 
       values[AliDielectronVarManager::kTPCsub12DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] -
 									 values[AliDielectronVarManager::kTPCsub2rpH2]) );
