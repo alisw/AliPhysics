@@ -74,6 +74,8 @@ class AliAODHeader : public AliVHeader {
   Double_t  GetCentrality()         const { return fCentrality; }
   Double_t  GetEventplane()         const { return fEventplane; }
   Double_t  GetEventplaneMag()      const { return fEventplaneMag; }
+  Double_t  GetEventplaneQx()       const { return fEventplaneQx; }
+  Double_t  GetEventplaneQy()       const { return fEventplaneQy; }
   Double_t  GetZDCN1Energy()        const { return fZDCN1Energy; }
   Double_t  GetZDCP1Energy()        const { return fZDCP1Energy; }
   Double_t  GetZDCN2Energy()        const { return fZDCN2Energy; }
@@ -204,6 +206,8 @@ class AliAODHeader : public AliVHeader {
   Double32_t  fCentrality;          // Centrality
   Double32_t  fEventplane;          // Event plane angle
   Double32_t  fEventplaneMag;       // Length of Q vector from TPC event plance
+  Double32_t  fEventplaneQx;        // Q vector component x from TPC event plance
+  Double32_t  fEventplaneQy;        // Q vector component y from TPC event plance
   Double32_t  fZDCN1Energy;         // reconstructed energy in the neutron1 ZDC
   Double32_t  fZDCP1Energy;         // reconstructed energy in the proton1 ZDC
   Double32_t  fZDCN2Energy;         // reconstructed energy in the neutron2 ZDC
@@ -267,11 +271,19 @@ void AliAODHeader::SetEventplane(AliEventplane* eventplane)      {
 	fEventplane = eventplane->GetEventplane("Q");
         const TVector2* qvect=eventplane->GetQVector();
         fEventplaneMag = -999;
-        if (qvect) fEventplaneMag=qvect->Mod();
+	fEventplaneQx = -999;
+	fEventplaneQy = -999;
+        if (qvect) {
+	  fEventplaneMag=qvect->Mod();
+	  fEventplaneQx=qvect->X();
+	  fEventplaneQy=qvect->Y();
+	}
     }
     else{
 	fEventplane = -999;
         fEventplaneMag = -999;
+	fEventplaneQx = -999;
+	fEventplaneQy = -999;
     }
 }
 inline

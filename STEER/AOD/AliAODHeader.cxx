@@ -36,6 +36,8 @@ AliAODHeader::AliAODHeader() :
   fCentrality(-999.),
   fEventplane(-999.),
   fEventplaneMag(-999.),
+  fEventplaneQx(-999.),
+  fEventplaneQy(-999.),
   fZDCN1Energy(-999.),
   fZDCP1Energy(-999.),
   fZDCN2Energy(-999.),
@@ -97,6 +99,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fCentrality(-999.),
   fEventplane(-999.),
   fEventplaneMag(-999.),
+  fEventplaneQx(-999.),
+  fEventplaneQy(-999.),
   fZDCN1Energy(-999.),
   fZDCP1Energy(-999.),
   fZDCN2Energy(-999.),
@@ -178,6 +182,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fCentrality(cent),
   fEventplane(eventplane),
   fEventplaneMag(0),
+  fEventplaneQx(0),
+  fEventplaneQy(0),
   fZDCN1Energy(n1Energy),
   fZDCP1Energy(p1Energy),
   fZDCN2Energy(n2Energy),
@@ -245,6 +251,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fCentrality(hdr.fCentrality),
   fEventplane(hdr.fEventplane),
   fEventplaneMag(hdr.fEventplaneMag),
+  fEventplaneQx(hdr.fEventplaneQx),
+  fEventplaneQy(hdr.fEventplaneQy),
   fZDCN1Energy(hdr.fZDCN1Energy),
   fZDCP1Energy(hdr.fZDCP1Energy),
   fZDCN2Energy(hdr.fZDCN2Energy),
@@ -322,6 +330,8 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fCentrality       = hdr.fCentrality;
     fEventplane       = hdr.fEventplane;
     fEventplaneMag    = hdr.fEventplaneMag;
+    fEventplaneQx     = hdr.fEventplaneQx;
+    fEventplaneQy     = hdr.fEventplaneQy;
     fZDCN1Energy      = hdr.fZDCN1Energy;
     fZDCP1Energy      = hdr.fZDCP1Energy;
     fZDCN2Energy      = hdr.fZDCN2Energy;
@@ -453,6 +463,8 @@ void AliAODHeader::Clear(Option_t* /*opt*/)
     fEventplaneP = 0;
     fEventplane = -999;
     fEventplaneMag = -999.;
+    fEventplaneQx = -999.;
+    fEventplaneQy = -999.;
   }
   return;
 }
@@ -473,8 +485,10 @@ void AliAODHeader::Print(Option_t* /*option*/) const
   printf("Muon mag. field scale   : %f\n", fMuonMagFieldScale);
   
   printf("Centrality              : %f\n", fCentrality);
-  printf("Event plane             : %f\n", fEventplane);
-  printf("Event plane             : %f\n", fEventplaneMag);
+  printf("Event plane Ang         : %f\n", fEventplane);
+  printf("Event plane Mag         : %f\n", fEventplaneMag);
+  printf("Event plane Qx          : %f\n", fEventplaneQx);
+  printf("Event plane Qy          : %f\n", fEventplaneQy);
   printf("ZDC N1 Energy           : %f\n", fZDCN1Energy);
   printf("ZDC P1 Energy           : %f\n", fZDCP1Energy);
   printf("ZDC N2 Energy           : %f\n", fZDCN2Energy);
