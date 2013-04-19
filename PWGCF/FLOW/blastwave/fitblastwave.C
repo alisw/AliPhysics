@@ -47,7 +47,194 @@ Float_t ptMaxPr = 1.7; // 3.0 in spectra group
 
 Bool_t kLoaded = kFALSE;
 
-drawBWfit(Int_t ic=2,Float_t Tfo=0.1,Float_t s2=0.057,Float_t meanRho=0.8,Float_t rho_2=0.025,Float_t gamma=1.1){
+TGraphErrors *getPtNqPi(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_pion_%02i_%02i.txt",cmin[i],cmax[i]);
+    gpiv2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 2;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mPi);
+    Int_t j=0;
+    while(gpiv2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gpiv2->GetX()[j-1];
+    Float_t xmax = gpiv2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gpiv2->GetY()[j-1] + fr2*gpiv2->GetY()[j];
+    eval[i] = fr1*gpiv2->GetEYlow()[j-1] + fr2*gpiv2->GetEYlow()[j];
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) pion v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+TGraphErrors *getPtNqKa(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_kaon_%02i_%02i.txt",cmin[i],cmax[i]);
+    gkav2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 2;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mKa);
+    Int_t j=0;
+    while(gkav2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gkav2->GetX()[j-1];
+    Float_t xmax = gkav2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gkav2->GetY()[j-1] + fr2*gkav2->GetY()[j];
+    eval[i] = fr1*gkav2->GetEYlow()[j-1] + fr2*gkav2->GetEYlow()[j];
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) kaon v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+TGraphErrors *getPtNqPr(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_antipr_%02i_%02i.txt",cmin[i],cmax[i]);
+    gprv2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 3;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mPr);
+    Int_t j=0;
+    while(gprv2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gprv2->GetX()[j-1];
+    Float_t xmax = gprv2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gprv2->GetY()[j-1] + fr2*gprv2->GetY()[j];
+    eval[i] = fr1*gprv2->GetEYlow()[j-1] + fr2*gprv2->GetEYlow()[j];
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) antiproton v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+TGraphErrors *getPtNqPiV2Nq(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_pion_%02i_%02i.txt",cmin[i],cmax[i]);
+    gpiv2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 2;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mPi);
+    Int_t j=0;
+    while(gpiv2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gpiv2->GetX()[j-1];
+    Float_t xmax = gpiv2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gpiv2->GetY()[j-1]/2 + fr2*gpiv2->GetY()[j]/2;
+    eval[i] = fr1*gpiv2->GetEYlow()[j-1]/2 + fr2*gpiv2->GetEYlow()[j]/2;
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) pion v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+TGraphErrors *getPtNqKaV2Nq(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_kaon_%02i_%02i.txt",cmin[i],cmax[i]);
+    gkav2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 2;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mKa);
+
+    Int_t j=0;
+    while(gkav2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gkav2->GetX()[j-1];
+    Float_t xmax = gkav2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gkav2->GetY()[j-1]/2 + fr2*gkav2->GetY()[j]/2;
+    eval[i] = fr1*gkav2->GetEYlow()[j-1]/2 + fr2*gkav2->GetEYlow()[j]/2;
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) kaon v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+TGraphErrors *getPtNqPrV2Nq(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_antipr_%02i_%02i.txt",cmin[i],cmax[i]);
+    gprv2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 3;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mPr);
+    Int_t j=0;
+    while(gprv2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gprv2->GetX()[j-1];
+    Float_t xmax = gprv2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gprv2->GetY()[j-1]/3 + fr2*gprv2->GetY()[j]/3;
+    eval[i] = fr1*gprv2->GetEYlow()[j-1]/3 + fr2*gprv2->GetEYlow()[j]/3;
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) antiproton v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+drawBWfit(Int_t ic=2,Float_t Tfo=0.1,Float_t s2=0.057,Float_t meanRho=0.8,Float_t rho_2=0.025,Float_t gamma=1.1,Float_t ptmin=0,Float_t ptmax=10){
   if(! kLoaded) LoadLib();
   char name[200];
   TFile *f = new TFile("SPECTRA_COMB_20120809_default.root");
@@ -271,6 +458,9 @@ drawBWfit(Int_t ic=2,Float_t Tfo=0.1,Float_t s2=0.057,Float_t meanRho=0.8,Float_
 
   for(Int_t i=0;i < 100;i++){
     Float_t x = 0.1*(i+0.5);
+
+    if(x < ptmin || x > ptmax) continue;
+
     if(hpiplus && gpiv2){
       numPi += bwExt[0]->GetV2Fit()->Eval(x) * bwExt[0]->GetSpectraFit()->Eval(x);
       denPi += bwExt[0]->GetSpectraFit()->Eval(x);
