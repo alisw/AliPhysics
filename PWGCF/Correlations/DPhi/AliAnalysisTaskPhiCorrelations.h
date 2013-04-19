@@ -108,6 +108,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetSkipFastCluster(Bool_t flag = kTRUE)  { fSkipFastCluster = flag; }
     void   SetWeightPerEvent(Bool_t flag = kTRUE)   { fWeightPerEvent = flag; }
     void   SetCustomBinning(const char* binningStr) { fCustomBinning = binningStr; }
+    void   SetPtOrder(Bool_t flag) { fPtOrder = flag; }
     
     AliHelperPID* GetHelperPID() { return fHelperPID; }
     void   SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
@@ -193,10 +194,11 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t fSkipFastCluster;	   // skip kFastOnly flagged events (only for data)
     Bool_t fWeightPerEvent;	   // weight with the number of trigger particles per event
     TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
+    Bool_t fPtOrder;		   // apply pT,a < pt,t condition; default: kTRUE
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 29); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 30); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

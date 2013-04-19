@@ -70,6 +70,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fCutResonances(kFALSE),
   fOnlyOneEtaSide(0),
   fWeightPerEvent(kFALSE),
+  fPtOrder(kTRUE),
   fRunNumber(0),
   fMergeCount(1)
 {
@@ -239,6 +240,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCutResonances(kFALSE),
   fOnlyOneEtaSide(0),
   fWeightPerEvent(kFALSE),
+  fPtOrder(kTRUE),
   fRunNumber(0),
   fMergeCount(1)
 {
@@ -629,7 +631,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         if (mixed && triggerParticle == particle)
           continue;
         
-        if (particle->Pt() > triggerParticle->Pt())
+        if (fPtOrder && particle->Pt() > triggerParticle->Pt())
           continue;
           
 	if (fAssociatedSelectCharge != 0)
@@ -1153,6 +1155,8 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fWeightPerEvent = fWeightPerEvent;
   target.fRunNumber = fRunNumber;
   target.fMergeCount = fMergeCount;
+  target.fWeightPerEvent = fWeightPerEvent;
+  target.fPtOrder = fPtOrder;
 }
 
 //____________________________________________________________________

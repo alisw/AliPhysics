@@ -240,16 +240,17 @@ void  AliAnalysisTaskLeadingTrackUE::Exec(Option_t */*option*/)
 	}
 
   // Get number of trials from MC header
-  Float_t nTrials = 1;
+  
+//   Float_t nTrials = 1;
   if (fMcHandler) {
   	fMcEvent = fMcHandler->MCEvent();
-  	if (fMcEvent) {
+//   	if (fMcEvent) {
                 // TO-DO: extend to PHOJET
-  		AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(fMcEvent);
-  		if(pythiaGenHeader){
-  			nTrials = pythiaGenHeader->Trials();
-  			}
-  		}
+//   		AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(fMcEvent);
+//   		if(pythiaGenHeader){
+//   			nTrials = pythiaGenHeader->Trials();
+//   			}
+//   		}
   	}
 
   // TO-DO	

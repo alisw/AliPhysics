@@ -143,6 +143,7 @@ fRemoveDuplicates(kFALSE),
 fSkipFastCluster(kFALSE),
 fWeightPerEvent(kFALSE),
 fCustomBinning(),
+fPtOrder(kTRUE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -272,6 +273,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetWeightPerEvent(fWeightPerEvent);
   fHistosMixed->SetWeightPerEvent(fWeightPerEvent);
   
+  fHistos->SetPtOrder(fPtOrder);
+  fHistosMixed->SetPtOrder(fPtOrder);
+  
   if (fEfficiencyCorrectionTriggers)
    {
     fHistos->SetEfficiencyCorrectionTriggers(fEfficiencyCorrectionTriggers);
@@ -396,6 +400,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fRemoveDuplicates", &fRemoveDuplicates,"RemoveDuplicates/O");
   settingsTree->Branch("fSkipFastCluster", &fSkipFastCluster,"SkipFastCluster/O");
   settingsTree->Branch("fWeightPerEvent", &fWeightPerEvent,"WeightPerEvent/O");
+  settingsTree->Branch("fPtOrder", &fPtOrder,"PtOrder/O");
   //fCustomBinning
   
   settingsTree->Fill();
