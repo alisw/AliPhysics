@@ -84,7 +84,6 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
  			fHistDataPt[iHistoName] = 0x0;
  		 	fHistDataPhiEtaPt[iHistoName] = 0x0;	
  		 	fHistDataNTracks[iHistoName] = 0x0;
-  			fNTracks[iHistoName] = 0;
 
   			// DCA histograms. 
   			fHistDataDCAxy[iHistoName] = 0x0;
@@ -98,6 +97,9 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
   				}
   			}
  		}
+
+  		fNTracks[iHistoName] = 0;
+
  		// Initialize data DCA for one sigma.
  		fHistDataDCAxyOneSigma[iHistoName] = 0x0;
 
@@ -172,7 +174,6 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID(const char* name):
  			fHistDataPt[iHistoName] = 0x0;
  			fHistDataPhiEtaPt[iHistoName] = 0x0;
  		 	fHistDataNTracks[iHistoName] = 0x0;
-  			fNTracks[iHistoName] = 0;
 
   			// DCA histograms. 
   			fHistDataDCAxy[iHistoName] = 0x0;
@@ -186,6 +187,9 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID(const char* name):
   				}
   			}
  		}
+
+  		fNTracks[iHistoName] = 0;
+
 		// Initialize data DCA for one sigma.
  		fHistDataDCAxyOneSigma[iHistoName] = 0x0;
 

@@ -86,28 +86,28 @@ public:
 
 	Double_t GetTOFsignal() const {return fTOFsignal;}
 	Double_t GetTOFsignalMinusExpected(Int_t species) const {
-		if (species < 0 || species > 3) {
+		if (species < 0 || species > 2) {
 			cout<<"ERROR: Unknown species"<<endl;
 			return -10e10;
 		}
 		return fTOFsignalMinusExpected[species];
 	}
 	Double_t GetTOFsignalExpected(Int_t species) const {
-		if (species < 0 || species > 3) {
+		if (species < 0 || species > 2) {
 			cout<<"ERROR: Unknown species"<<endl;
 			return -10e10;
 		}
 		return (fTOFsignal - fTOFsignalMinusExpected[species]);
 	}
 	Double_t GetNumberOfSigmasTOF(Int_t species) const {
-		if (species < 0 || species > 3) {
+		if (species < 0 || species > 2) {
 			cout<<"ERROR: Unknown species"<<endl;
 			return -10e10;
 		}
 		return fTOFNsigma[species];
 	}
 	Double_t GetNumberOfSigmasTPC(Int_t species) const {
-		if (species < 0 || species > 3) {
+		if (species < 0 || species > 2) {
 			cout<<"ERROR: Unknown species"<<endl;
 			return -10e10;
 		}

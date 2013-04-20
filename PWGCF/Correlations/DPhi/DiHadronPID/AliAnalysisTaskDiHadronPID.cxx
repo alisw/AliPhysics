@@ -219,6 +219,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 	// Create TOF correlations histograms (DPhi,DEta,pt,TOF).
 	fTOFhistos = new TObjArray(15);
 	fTOFhistos->SetName("CorrelationsTOF");
+	fTOFhistos->SetOwner(kTRUE);
 
 	Int_t nbins[4] = {fNDPhiBins,fNDEtaBins,0,0};
 	Double_t min[4] = {-TMath::Pi()/2.,-1.6,0.,0.};
