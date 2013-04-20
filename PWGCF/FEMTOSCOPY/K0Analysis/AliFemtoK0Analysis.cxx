@@ -21,7 +21,7 @@
 //  authors: Matthew Steinpreis (matthew.steinpreis@cern.ch)
 //   
 //  Major changes:
-//	- TOF mismatch function calls changed (3/28/13)
+//	- TOF mismatch function calls changed (4/18/13)
 //	- added minimum decay length cut (3/28/13)
 //
 //  Minor changes:
@@ -29,6 +29,10 @@
 //	  of k0Count (which included skipped k0s with shared daughters) (3/25/13)
 //	- added hists for 3D mom. in LF and PRF (3/28/13) 
 //	- changed calling of PIDResponse (should be same actions) (3/28/13)
+//	- keep "side" K0s for mass plot (4/18)
+//		- tweaked loading and skipping appropriately
+//		- use merit test to skip sides (against good and side K0s)
+//		- a good K0 cant be skipped by a side
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -255,8 +259,8 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
   fOutputList->Add(fHistKtK0);
 
   //invariant mass distributions
-  //TH3F* fHistMassPtK0= new TH3F("fHistMassPtK0", "",kCentBins,.5,kCentBins+.5,40,0.,4.,200,.4,.6);
-  //fOutputList->Add(fHistMassPtK0);
+  TH3F* fHistMass = new TH3F("fHistMass","",kCentBins,.5,kCentBins+.5,50,0.,5.,400,.3,.7);
+  fOutputList->Add(fHistMass);
   //TH3F* fHistMassPtCFK0 = new TH3F("fHistMassPtCFK0","",kCentBins,.5,kCentBins+.5,50,0.,5.,200,.4,.6);
   //fOutputList->Add(fHistMassPtCFK0);
   //TH3F* fHistMassPtCFBkgK0 = new TH3F("fHistMassPtCFBkgK0","",kCentBins,.5,kCentBins+.5,50,0.,5.,200,.4,.6);
@@ -595,43 +599,43 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     if(fabs(fPidAOD->NumberOfSigmasTPC(prongTrackNeg,AliPID::kPion)) < kMaxTPCSigmaPion) goodPiMinus = kTRUE;
    
     //Positive daughter identification TOF
-    //float probMis;
-    //AliPIDResponse::EDetPidStatus statusPosTOF = fPidAOD->CheckPIDStatus(AliPIDResponse::kTOF, prongTrackPos);
+    float probMis;
+    AliPIDResponse::EDetPidStatus statusPosTOF = fPidAOD->CheckPIDStatus(AliPIDResponse::kTOF, prongTrackPos);
     double Ppos = v0->PProng(pos0or1);
     if(Ppos > kTOFLow) //PiPlus
     {
-     if( (statusPos&AliESDtrack::kTOFpid)!=0 && (statusPos&AliESDtrack::kTIME)!=0 && (statusPos&AliESDtrack::kTOFout)!=0 && (statusPos&AliESDtrack::kTOFmismatch)<=0)
-     //if(AliPIDResponse::kDetPidOk == statusPosTOF)
+     //if( (statusPos&AliESDtrack::kTOFpid)!=0 && (statusPos&AliESDtrack::kTIME)!=0 && (statusPos&AliESDtrack::kTOFout)!=0 && (statusPos&AliESDtrack::kTOFmismatch)<=0) (OBSOLETE; NEW CALL BELOW)
+     if(AliPIDResponse::kDetPidOk == statusPosTOF)
      {
-      //probMis = fPidAOD->GetTOFMismatchProbability(prongTrackPos);
-      //if(probMis < 0.01) //avoid TOF-TPC mismatch
-      //{
+      probMis = fPidAOD->GetTOFMismatchProbability(prongTrackPos);
+      if(probMis < 0.01) //avoid TOF-TPC mismatch
+      {
        if(fabs(fPidAOD->NumberOfSigmasTOF(prongTrackPos,AliPID::kPion)) < kMaxTOFSigmaPion) goodPiPlus = kTRUE;
        else goodPiPlus = kFALSE;
-      //}  
+      }  
      }
     }
     //Negative daughter identification TOF
-    //AliPIDResponse::EDetPidStatus statusNegTOF = fPidAOD->CheckPIDStatus(AliPIDResponse::kTOF, prongTrackNeg);
+    AliPIDResponse::EDetPidStatus statusNegTOF = fPidAOD->CheckPIDStatus(AliPIDResponse::kTOF, prongTrackNeg);
     double Pneg = v0->PProng(neg0or1);
     if(Pneg > kTOFLow) //PiMinus
     {
-     if( (statusNeg&AliESDtrack::kTOFpid)!=0 && (statusNeg&AliESDtrack::kTIME)!=0 && (statusNeg&AliESDtrack::kTOFout)!=0 && (statusNeg&AliESDtrack::kTOFmismatch)<=0)
-     //if(AliPIDResponse::kDetPidOk == statusNegTOF)
+     //if( (statusNeg&AliESDtrack::kTOFpid)!=0 && (statusNeg&AliESDtrack::kTIME)!=0 && (statusNeg&AliESDtrack::kTOFout)!=0 && (statusNeg&AliESDtrack::kTOFmismatch)<=0) (OBSOLETE; NEW CALL BELOW)
+     if(AliPIDResponse::kDetPidOk == statusNegTOF)
      {
-      //probMis = fPidAOD->GetTOFMismatchProbability(prongTrackPos);
-      //if(probMis < 0.01) //avoid TOF-TPC mismatch
-      //{
+      probMis = fPidAOD->GetTOFMismatchProbability(prongTrackPos);
+      if(probMis < 0.01) //avoid TOF-TPC mismatch
+      {
        if(fabs(fPidAOD->NumberOfSigmasTOF(prongTrackNeg,AliPID::kPion)) < kMaxTOFSigmaPion) goodPiMinus = kTRUE;
        else goodPiMinus = kFALSE;
-      //}
+      }
      }
     }
     
     //K0 cuts
     if(v0->Eta() > kEtaCut)                                continue;    
     if(v0->CosPointingAngle(primaryVertex) < kMinCosAngle) continue;
-    if(v0->MassK0Short() < .4 || v0->MassK0Short() > .6)   continue;
+    if(v0->MassK0Short() < .2 || v0->MassK0Short() > .8)   continue;
     if(v0->DcaNegToPrimVertex() < kMinDCAPrimaryPion)      continue;
     if(v0->DcaPosToPrimVertex() < kMinDCAPrimaryPion)      continue;  
     if(v0->DecayLength(primaryVertex) > kMaxDLK0)          continue;
@@ -661,39 +665,48 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     //}// if kMCCase
     
     if(v0->MassK0Short() > .48 && v0->MassK0Short() < .515) goodK0 = kTRUE;
-    else continue; //remove if want to do mass plots; would need to amend other stuff
+    //else continue; //removed, Apr 18
      
     //Check for shared daughters, using v0 DCA to judge
     tempK0[v0Count].fSkipShared = kFALSE;
     if(fMeritCase){
      for(int iID = 0; iID<v0Count; iID++){
-      if(tempK0[iID].fSkipShared == kFALSE){
+      if(tempK0[iID].fSkipShared == kFALSE){		//if old is already skipped, go to next old
        if(tempK0[iID].fDaughterID1 == prongTrackPos->GetID() || tempK0[iID].fDaughterID2 == prongTrackNeg->GetID()){
-         if(tempK0[iID].fV0Dca <= v0Dca){	//if old beats new
-          tempK0[v0Count].fSkipShared = kTRUE;	//skip new
+        if(tempK0[iID].fV0Dca <= v0Dca){		//if old beats new...
+         if(!tempK0[iID].fK0 && goodK0) continue;	//if bad old beats new good, do nothing...				
+         else{						//but if bad old beats new bad, or good old beats anything, skip new
+          tempK0[v0Count].fSkipShared = kTRUE;		//skip new
           break;					//no need to keep checking others
          }
-         else{//new beats old
-	  tempK0[iID].fSkipShared = kTRUE;	//skip old	
-	  k0Count--;}				//subtract from number of K0s (new one will be added later, if it succeeds)
+        }
+        else{						//if new beats old...
+         if(tempK0[iID].fK0 && !goodK0) continue;	//if bad new beats good old, do nothing...
+         else{						//but if bad new beats bad old, or good new beats anything, skip old
+	  tempK0[iID].fSkipShared = kTRUE;		//skip old	
+	  if(tempK0[iID].fK0) k0Count--;		//if good old gets skipped, subtract from number of K0s (new one will be added later, if it succeeds)
+         }
+        }
        }
       }
      }
-    if(tempK0[v0Count].fSkipShared) continue;
+     if(tempK0[v0Count].fSkipShared) continue;		//if new K0 is skipped, don't load; go to next v0
     }//if MeritCase	 	
 									
     //load parameters into temporary class instance
     if(v0Count < kMaxNumK0)
     {
-	tempK0[v0Count].fK0 = kTRUE;
-        //else tempK0[v0Count].fK0 = kFALSE;  //in case I include v0s that arent "good" K0s 
-        k0Count++; //same as v0count right now (continue if not in mass range, above)
+	if(goodK0){
+         tempK0[v0Count].fK0 = kTRUE;
+         k0Count++;
+        }
+        else tempK0[v0Count].fK0 = kFALSE; 
 
         //if(v0->MassK0Short() > .45 && v0->MassK0Short() < .48) tempK0[v0Count].fSideLeft = kTRUE;
         //else tempK0[v0Count].fSideLeft = kFALSE;
         //if(v0->MassK0Short() > .515 && v0->MassK0Short() < .545) tempK0[v0Count].fSideRight = kTRUE;
         //else tempK0[v0Count].fSideRight = kFALSE;
-	if(!goodK0) continue; //no sides, speed up analysis (REDUNDANT RIGHT NOW)
+	//if(!goodK0) continue; //no sides, speed up analysis (REDUNDANT RIGHT NOW)
 
         tempK0[v0Count].fDaughterID1    = prongTrackPos->GetID();
         tempK0[v0Count].fDaughterID2    = prongTrackNeg->GetID();
@@ -748,10 +761,16 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   (fEvt) = fEC[zBin][centBin]->fEvt;
   (fEvt)->fFillStatus = 1;
   int unskippedCount = 0;
-  for(int i=0;i<v0Count;i++){
-   if(!tempK0[i].fSkipShared){//don't include skipped v0s (from shared daughters)
-    (fEvt)->fK0Particle[unskippedCount] = tempK0[i];
-    unskippedCount++;
+  for(int i=0;i<v0Count;i++)
+  {
+   if(!tempK0[i].fSkipShared)				//don't include skipped v0s (from shared daughters)
+   {
+    ((TH3F*)fOutputList->FindObject("fHistMass"))->Fill(centBin+1,tempK0[i].fPt,tempK0[i].fMass);
+    if(tempK0[i].fK0)					//make sure particle is good (mass)
+    {
+     (fEvt)->fK0Particle[unskippedCount] = tempK0[i];	//load good, unskipped K0s
+     unskippedCount++;					//count good, unskipped K0s
+    }
    }
   }
   (fEvt)->fNumV0s = unskippedCount;
