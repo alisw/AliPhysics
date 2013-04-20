@@ -99,6 +99,7 @@ public:
  	TH1F* GetHistDataTOFMismatch(Int_t charge, Int_t species, Int_t ptbin);
 	Double_t GetPtMinPID(Int_t bin) const {
 		Int_t ptclass = GetPtClass(bin);
+		if (ptclass == -1) {return -999.;}
 		Int_t bininptclass = GetBinInPtClass(bin);
 		Double_t minpt = fPtBoundaryPID[ptclass];
 		Double_t maxpt = fPtBoundaryPID[ptclass+1];
@@ -107,6 +108,7 @@ public:
 	}
 	Double_t GetPtMaxPID(Int_t bin) const {
 		Int_t ptclass = GetPtClass(bin);
+		if (ptclass == -1) {return -999.;}		
 		Int_t bininptclass = GetBinInPtClass(bin);
 		Double_t minpt = fPtBoundaryPID[ptclass];
 		Double_t maxpt = fPtBoundaryPID[ptclass+1];
@@ -375,7 +377,7 @@ private:
 	TH1F*					fHistDataDCAxy[3];				//! DCA_{xy} distribution.
 	TH1F*					fHistDataDCAz[3];				//! DCA_{z} distribution
 	TH2F* 					fHistDataDCAxyOneSigma[12];		//! DCA_{xy} distribution of particles as identified by 1 sigma method.
-	Int_t					fNTracks[3];					//! Number of tracks
+	Int_t					fNTracks[12];					//! Number of tracks
 
 	TH3F* 					fHistDataPID[3][3][5];			//! TPC/TOF v.s. pT, [charge][mass assumption][ptclass]
 	TH2F*					fHistTOFMismatch[3][3][5];		//! TOF Mismatch histograms, [charge][mass assumption][ptclass]

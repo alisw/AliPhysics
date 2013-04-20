@@ -258,7 +258,7 @@ Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 
 		// Get the centrality object.
 	    CurrentCentrality = event->GetCentrality();
-	    if (!CurrentCentrality) select = kFALSE;
+	    if (!CurrentCentrality) {select = kFALSE; return select;}
 
 	    // Check the quality of the centrality estimation.
 	    // If 0 then quality is OK, c.f. TOF/PbPb276/macros/TOFmatchEff.C
@@ -276,7 +276,7 @@ Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 
 	// Get the primary vertex.
 	AliAODVertex* CurrentPrimaryVertex = event->GetPrimaryVertex();
-    if (!CurrentPrimaryVertex) select = kFALSE;
+    if (!CurrentPrimaryVertex) {select = kFALSE; return select;}
 
 	// Test Vertex Z.
     Double_t vtxz = CurrentPrimaryVertex->GetZ();
