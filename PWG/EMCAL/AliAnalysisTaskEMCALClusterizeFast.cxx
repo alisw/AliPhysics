@@ -242,13 +242,13 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
   if (fDoUpdateCells) 
     UpdateCells();
 
-  if (!fDoClusterize || (!fAttachClusters && !fOutputAODBranch))
+  if (!fDoClusterize || (!fAttachClusters && !fOutputAODBranch) || !fCaloClusters)
     return;
 
   UpdateClusters();
   CalibrateClusters();
 
-  if (fCaloClusters && fOutputAODBranch && fCaloClusters != fOutputAODBranch)
+  if (fOutputAODBranch && fCaloClusters != fOutputAODBranch)
     CopyClusters(fCaloClusters, fOutputAODBranch);
 }
 
@@ -284,6 +284,7 @@ void AliAnalysisTaskEMCALClusterizeFast::CopyClusters(TClonesArray *orig, TClone
     dc->SetM02(oc->GetM02());
     dc->SetM20(oc->GetM20());
     dc->SetDistanceToBadChannel(oc->GetDistanceToBadChannel()); 
+    dc->SetMCEnergyFraction(oc->GetMCEnergyFraction());
 
     //MC
     UInt_t nlabels = oc->GetNLabels();
@@ -657,10 +658,13 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     Double32_t ratios[ncells];
     Int_t *dlist = recpoint->GetDigitsList();
     Float_t *elist = recpoint->GetEnergiesList();
+    Double_t mcEnergy = 0;
     for (Int_t c = 0; c < ncells; ++c) {
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(dlist[c]));
       absIds[ncells_true] = digit->GetId();
       ratios[ncells_true] = elist[c]/recpoint->GetEnergy();
+      if (digit->GetIparent(1) > 0)
+	mcEnergy += digit->GetDEParent(1)/recpoint->GetEnergy();
       ++ncells_true;
     }
     
@@ -694,16 +698,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     recpoint->GetElipsAxis(elipAxis);
     c->SetM02(elipAxis[0]*elipAxis[0]);
     c->SetM20(elipAxis[1]*elipAxis[1]);
-    // Now it is done in CalibrateClusters()
-    /*
-    if (fPedestalData) {
-      c->SetDistanceToBadChannel(recpoint->GetDistanceToBadTower()); 
-    } else {
-      if (fRecoUtils && fRecoUtils->IsBadChannelsRemovalSwitchedOn()) {
-        fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fCaloCells, c);
-      } 
-    }
-    */
+    c->SetMCEnergyFraction(mcEnergy);
 
     //MC
     AliESDCaloCluster *esdClus = dynamic_cast<AliESDCaloCluster*>(c);
