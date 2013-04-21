@@ -1,5 +1,5 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Double_t etacorr=1.0, Int_t system=0/*0=pp,1=PbPb*/, Int_t   					flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", TString cutsfilename="D0toKpiCuts.root", 
-					TString cutsfilename2="AssocPartCuts.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", 						Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE)
+AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE, Bool_t effOn=kTRUE, Double_t etacorr=1.5, Int_t system=0/*0=pp,1=PbPb*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_fBit0_woITS.root", TString 
+cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", TString effName = "3D_eff_wo_ITScls2_f0_p8eta.root", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -118,6 +118,17 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     } 
   }
 
+  if(effOn) {
+    //Load efficiency map
+    TFile* fileeff=new TFile(effName.Data());
+    if(!fileeff->IsOpen()){
+      cout<<"Input file not found for efficiency! Exiting..."<<endl;
+      return;
+    }  
+    TCanvas *c = (TCanvas*)fileeff->Get("c");
+    TH3D *h3D = (TH3D*)c->FindObject("heff_rebin");
+  }
+
   //Cuts for correlated tracks/K0
   AliHFAssociatedTrackCuts* corrCuts=new AliHFAssociatedTrackCuts();
   corrCuts = (AliHFAssociatedTrackCuts*)filecuts2->Get(cutsTrkname.Data());
@@ -125,6 +136,9 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
       cout<<"Specific AliHFAssociatedTrackCuts not found"<<endl;
       return;
   }
+  corrCuts->SetTrackCutsNames();
+  corrCuts->SetvZeroCutsNames();
+  corrCuts->SetEfficiencyWeightMap(h3D);
   corrCuts->PrintAll();
 
   TString centr="";
@@ -144,6 +158,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   AliAnalysisTaskSED0Correlations *massD0Task = new AliAnalysisTaskSED0Correlations(taskname.Data(),RDHFD0Corrs,corrCuts);
   massD0Task->SetDebugLevel(2);
   massD0Task->SetReadMC(readMC);
+  massD0Task->SetMCReconstructedTracks(recoTrMC);
+  massD0Task->SetMCReconstructedD0(recoD0MC);
   massD0Task->SetEvMixing(mixing);
   massD0Task->SetFillOnlyD0D0bar(flagD0D0bar);
   massD0Task->SetSystem(system); //0=pp, 1=PbPb
