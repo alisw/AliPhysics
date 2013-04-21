@@ -118,6 +118,9 @@ class AliVCluster : public TObject
   virtual Int_t       GetNTracksMatched() const     {return 0 ; }
   virtual TObject    *GetTrackMatched(Int_t) const  {return 0 ; }//AODCaloCluster
   virtual Int_t       GetTrackMatchedIndex() const  {return -1; }//ESDCaloCluster
+
+  virtual Double_t    GetMCEnergyFraction() const           {return 0 ; }
+  virtual void        SetMCEnergyFraction(Double_t)         { ; }
   
   virtual void GetMomentum(TLorentzVector &/*tl*/, Double_t * /*v*/) { ; }
   

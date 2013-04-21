@@ -140,6 +140,9 @@ class AliESDCaloCluster : public AliVCluster
   Double_t GetCellAmplitudeFraction(Int_t i) const {  
     if (fCellsAmpFraction && i >=0 && i < fNCells ) return fCellsAmpFraction[i];    
     else return -1;}
+
+  Double_t    GetMCEnergyFraction() const           { return fMCEnergyFraction ; }
+  void        SetMCEnergyFraction(Double_t e)       { fMCEnergyFraction = e    ; }
   
  protected:
   
@@ -168,6 +171,7 @@ class AliESDCaloCluster : public AliVCluster
   Char_t       fClusterType;       // Flag for different cluster type/versions
   Double_t     fTOF;               //[0,0,12] time-of-flight
   
+  Double_t     fMCEnergyFraction;          //!MC energy (embedding)
   
   ClassDef(AliESDCaloCluster,11)  //ESDCaloCluster 
 

@@ -33,7 +33,8 @@ AliAODCluster::AliAODCluster() :
   fNLabel(0),
   fLabel(0x0),
   fFilterMap(0),
-  fType(kUndef)
+  fType(kUndef),
+  fMCEnergyFraction(0.)
 {
   // default constructor
 
@@ -57,7 +58,8 @@ AliAODCluster::AliAODCluster(Int_t id,
   fNLabel(0),
   fLabel(0x0),
   fFilterMap(selectInfo),
-  fType(ttype)
+  fType(ttype),
+  fMCEnergyFraction(0.)
 {
   // constructor
   for (Int_t i = 0; i <  3; i++) fPosition[i] = 0.;
@@ -84,7 +86,8 @@ AliAODCluster::AliAODCluster(Int_t id,
   fNLabel(0),
   fLabel(0x0),
   fFilterMap(selectInfo),
-  fType(ttype)
+  fType(ttype),
+  fMCEnergyFraction(0.)
 {
   // constructor
   for (Int_t i = 0; i <  3; i++) fPosition[i] = 0.;
@@ -122,7 +125,8 @@ AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
   fNLabel(0),
   fLabel(0x0),
   fFilterMap(clus.fFilterMap),
-  fType(clus.fType)
+  fType(clus.fType),
+  fMCEnergyFraction(clus.fMCEnergyFraction)
 {
   // Copy constructor
 
@@ -149,6 +153,8 @@ AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
     fFilterMap = clus.fFilterMap;
 
     fType = clus.fType;
+
+    fMCEnergyFraction = clus.fMCEnergyFraction;
   }
 
   return *this;

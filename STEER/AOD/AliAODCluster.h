@@ -90,7 +90,9 @@ class AliAODCluster : public AliVCluster {
     else {for(Int_t i=0; i<13; fPID[i++]=0) ;} fPID[AliAODCluster::kUnknown]=1.;}
   
   void RemoveLabel();
-  
+
+  Double_t    GetMCEnergyFraction() const           { return fMCEnergyFraction ; }
+  void        SetMCEnergyFraction(Double_t e)       { fMCEnergyFraction = e    ; }
   
  private :
   
@@ -107,6 +109,8 @@ class AliAODCluster : public AliVCluster {
   UInt_t        fFilterMap;      // filter information, one bit per set of cuts
   
   Char_t        fType;           // cluster type
+
+  Double_t      fMCEnergyFraction;     //!MC energy (embedding)
   
   ClassDef(AliAODCluster,6);
 };

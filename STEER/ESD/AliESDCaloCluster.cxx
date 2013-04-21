@@ -47,7 +47,9 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fDistToBadChannel(1024),
   fID(0),
   fNExMax(0),
-  fClusterType(kUndef), fTOF(0.)
+  fClusterType(kUndef), 
+  fTOF(0.),
+  fMCEnergyFraction(0.)
 {
   //
   // The default ESD constructor 
@@ -76,7 +78,8 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fID(clus.fID),
   fNExMax(clus.fNExMax),
   fClusterType(clus.fClusterType),
-  fTOF(clus.fTOF)
+  fTOF(clus.fTOF),
+  fMCEnergyFraction(0.)
 {
   //
   // The copy constructor 
@@ -180,6 +183,7 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
     fLabels = 0;
   }
 
+  fMCEnergyFraction = source.fMCEnergyFraction;
   
   return *this;
 
