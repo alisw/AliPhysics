@@ -69,6 +69,7 @@
 
 #pragma link C++ class  AliHFEVZEROEventPlane+;
 #pragma link C++ class  AliAnalysisTaskFlowTPCTOFEPSP+;
+#pragma link C++ class  AliAnalysisTaskFlowTPCTOFQCSP+;
 
 #pragma link C++ class  AliSelectNonHFE+;
 #pragma link C++ class  AliHFENonPhotonicElectron+;

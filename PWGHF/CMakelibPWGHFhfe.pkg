@@ -79,6 +79,7 @@ set (SRCS
     hfe/AliHFEdebugTreeTask.cxx
     hfe/AliHFEVZEROEventPlane.cxx
     hfe/AliAnalysisTaskFlowTPCTOFEPSP.cxx
+    hfe/AliAnalysisTaskFlowTPCTOFQCSP.cxx
     hfe/AliSelectNonHFE.cxx
     hfe/AliHFENonPhotonicElectron.cxx
     hfe/AliHFEdebugTreeTaskAOD.cxx
