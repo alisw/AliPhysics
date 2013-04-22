@@ -98,8 +98,6 @@ class AliTriggerAnalysis : public TObject
       fTRDminSectorHEE = minSectorHEE; fTRDmaxSectorHEE = maxSectorHEE;
       fTRDptHJT = ptHJT; fTRDnHJT = nHJT;
     }
-    void SetUseTRDMatchCut(Bool_t flag){ fUseTRDMatchCut=flag; }
-    Bool_t GetUseTRDMatchCut(){ return fUseTRDMatchCut; }
 
     Int_t GetSPDGFOThreshhold() const { return fSPDGFOThreshold; }
     Float_t GetV0TimeOffset() const { return fV0TimeOffset; }
@@ -168,7 +166,6 @@ class AliTriggerAnalysis : public TObject
     UChar_t fTRDmaxSectorHEE;	// max sector for HEE trigger
     Float_t fTRDptHJT;		// pt threshold for HJT trigger
     UChar_t fTRDnHJT;		// no of track threshold for HJT trigger
-    Bool_t  fUseTRDMatchCut;    // flag to decide whether to use or not the matching cut
 
     Bool_t  fDoFMD;                 // If false, skips the FMD (physics selection runs much faster)
     Float_t fFMDLowCut;		    // 
@@ -195,7 +192,7 @@ class AliTriggerAnalysis : public TObject
 
     Bool_t fTPCOnly;         // flag to set whether TPC only tracks have to be used for the offline trigger 
 
-    ClassDef(AliTriggerAnalysis, 20)
+    ClassDef(AliTriggerAnalysis, 21)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);

@@ -81,7 +81,6 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fTRDmaxSectorHEE(8),
   fTRDptHJT(3.),
   fTRDnHJT(3),
-  fUseTRDMatchCut(kFALSE),
   fDoFMD(kTRUE),
   fFMDLowCut(0.2),
   fFMDHitCut(0.5),
@@ -2004,12 +2003,7 @@ Bool_t AliTriggerAnalysis::TRDTrigger(const AliESDEvent *esd, Trigger trigger)
       
       AliESDTrdTrack *trdTrack = esd->GetTrdTrack(iTrack);   
       if (!trdTrack) continue;
-      if (fUseTRDMatchCut && !trdTrack->GetTrackMatch()) continue;
-      
-      AliESDtrack *match = dynamic_cast<AliESDtrack*>(trdTrack->GetTrackMatch());
-      AliDebugClass(3, Form("GTU track %2i with pt = %5.2f has match: %p (pt = %5.2f)",
-			    iTrack, trdTrack->Pt(), match, match ? match->Pt() : 0));
-      
+
       // for the electron triggers we only consider matched tracks
       if(trigger==kTRDHQU)
 	if ( (TMath::Abs(trdTrack->Pt()) > fTRDptHQU) && (trdTrack->GetPID() > fTRDpidHQU) ) { 
