@@ -291,13 +291,16 @@ AliForwardMultiplicityTask::UserCreateOutputObjects()
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (!ah) AliFatal("No AOD output handler set in analysis manager");
+  //if (!ah) AliFatal("No AOD output handler set in analysis manager");
+    if (ah)  
+   {
+	TObject* obj = &fAODFMD;
+	ah->AddBranch("AliAODForwardMult", &obj);
+  	TObject* epobj = &fAODEP;
+ 	ah->AddBranch("AliAODForwardEP", &epobj);
+
+   }
     
-    
-  TObject* obj = &fAODFMD;
-  ah->AddBranch("AliAODForwardMult", &obj);
-  TObject* epobj = &fAODEP;
-  ah->AddBranch("AliAODForwardEP", &epobj);
 
   fEventInspector.CreateOutputObjects(fList);
   fSharingFilter.CreateOutputObjects(fList);

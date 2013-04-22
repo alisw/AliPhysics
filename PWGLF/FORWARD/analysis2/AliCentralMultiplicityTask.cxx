@@ -170,12 +170,12 @@ void AliCentralMultiplicityTask::UserCreateOutputObjects()
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (!ah) AliFatal("No AOD output handler set in analysis manager");
-  
-  
-  TObject* obj = &fAODCentral;
-  ah->AddBranch("AliAODCentralMult", &obj);
-  
+  if (ah) 
+{
+   //AliFatal("No AOD output handler set in analysis manager");
+  	TObject* obj = &fAODCentral;
+  	ah->AddBranch("AliAODCentralMult", &obj);
+ } 
   
     
   fList = new TList();
@@ -289,10 +289,11 @@ AliCentralMultiplicityTask::MarkEventForStore() const
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (!ah)  
-    AliFatal("No AOD output handler set in analysis manager");
-
-  ah->SetFillAOD(kTRUE);
+  if (ah)
+ {  
+    //AliFatal("No AOD output handler set in analysis manager");
+	ah->SetFillAOD(kTRUE);
+ }
 }
 
 //____________________________________________________________________

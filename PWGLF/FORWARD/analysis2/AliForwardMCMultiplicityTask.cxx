@@ -296,18 +296,19 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (!ah) AliFatal("No AOD output handler set in analysis manager");
-    
-    
-  TObject* obj = &fAODFMD;
-  ah->AddBranch("AliAODForwardMult", &obj);
+  if (ah) 
+  {  
+    //AliFatal("No AOD output handler set in analysis manager");
 
-  TObject* mcobj = &fMCAODFMD;
-  ah->AddBranch("AliAODForwardMult", &mcobj);
+  	TObject* obj = &fAODFMD;
+ 	 ah->AddBranch("AliAODForwardMult", &obj);
 
-  TObject* epobj = &fAODEP;
-  ah->AddBranch("AliAODForwardEP", &epobj);
-  
+  	TObject* mcobj = &fMCAODFMD;
+  	ah->AddBranch("AliAODForwardMult", &mcobj);
+
+  	TObject* epobj = &fAODEP;
+  	ah->AddBranch("AliAODForwardEP", &epobj);
+  }
   fPrimary = new TH2D("primary", "MC Primaries", 
 		      200, -4, 6, 20, 0, 2*TMath::Pi());
   fPrimary->SetXTitle("#eta");
@@ -316,7 +317,8 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
   fPrimary->Sumw2();
   fPrimary->SetStats(0);
   fPrimary->SetDirectory(0);
-  ah->AddBranch("TH2D", &fPrimary);
+  if(ah)	
+ 	 ah->AddBranch("TH2D", &fPrimary);
 
   fEventInspector.CreateOutputObjects(fList);
   fSharingFilter.CreateOutputObjects(fList);
