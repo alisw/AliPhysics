@@ -628,7 +628,7 @@ Bool_t AliHadCorrTask::Run()
     // to subtract all tracks within the cut set fHadCor to %+1
     if (fHadCorr > 1)
       energyclus = ApplyHadCorrAllTracks(emccluster, fHadCorr - 1);	
-    else if (fHadCorr > 1)
+    else if (fHadCorr > 0)
       energyclus = ApplyHadCorrOneTrack(emccluster, fHadCorr);	
     else 
       energyclus = cluster->E();
