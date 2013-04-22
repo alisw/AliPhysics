@@ -4,7 +4,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   const char*    dataType           = "ESD",
   const char*    periodstr          = "LHC11h",
   const char*    usedTracks         = "PicoTracks",
-  const char*    usedMCParticles    = "MCParticles",
+  const char*    usedMCParticles    = "MCParticlesSelected",
   const char*    usedClusters       = "CaloClusters",
   const char*    outClusName        = "CaloClustersCorr",
   const Double_t hadcorr            = 2.0,
@@ -27,7 +27,6 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
     Error("AddTaskJetPreparation","No analysis manager found.");
     return 0;
   }
-  Bool_t isMC = (mgr->GetMCtruthEventHandler() != NULL);
 
   // Set trackcuts according to period. Every period used should be definied here
   TString period(periodstr);
@@ -51,8 +50,6 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 
   if ((dType == "AOD") && (clusterColName == "CaloClusters"))
     clusterColName = "caloClusters";
-  if ((dType == "AOD") && (particleColName == "MCParticles"))
-    particleColName = "mcparticles";
 
   if (makePicoTracks && (dType == "ESD" || dType == "AOD") )
   {
@@ -98,7 +95,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   }
 
   // Produce MC particles
-  if (isMC && (particleColName != ""))
+  if(particleColName != "")
   {
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
     AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(particleColName.Data(), kFALSE, kFALSE);
