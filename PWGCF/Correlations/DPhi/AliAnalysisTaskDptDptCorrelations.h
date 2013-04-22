@@ -288,7 +288,12 @@ protected:
   TH1D * _m5;
   TH1D * _m6;
   TH1D * _vertexZ;
-  
+  TH1F * _etadis;
+  TH1F * _phidis;
+  TH1F * _dcaz;
+  TH1F * _dcaxy;  
+
+
   // PARTICLE 1 (satisfies filter 1)
   // Primary filled quantities
   TH1F      *  _n1_1_vsPt;         
