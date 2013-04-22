@@ -138,6 +138,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fTPCnsigma(0)
   ,fCent(0)
   ,fEleInfo(0)
+  ,fElenSigma(0)
   /*
   ,fClsEBftTrigCut(0)	 
   ,fClsEAftTrigCut(0)	 
@@ -262,6 +263,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fTPCnsigma(0)
   ,fCent(0)
   ,fEleInfo(0)
+  ,fElenSigma(0)
   /*
   ,fClsEBftTrigCut(0)	 
   ,fClsEAftTrigCut(0)	 
@@ -754,7 +756,22 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
       }
     }
-     
+
+    //Get Cal info PID response
+    double eop2;
+    double ss[4];
+    Double_t nSigmaEop = fPID->GetPIDResponse()->NumberOfSigmasEMCAL(track,AliPID::kElectron,eop2,ss);
+    if(fTPCnSigma>-1.5 && fTPCnSigma<3.0 && nITS>2.5 && nTPCcl>100)
+      {
+       double valEop[3];
+       valEop[0] = cent;
+       valEop[1] = pt;
+       valEop[2] = nSigmaEop;
+       fElenSigma->Fill(valEop);
+      }
+
+   // ============ PID
+
     if(nITS<2.5)continue;
     if(nTPCcl<100)continue;
    
@@ -1102,8 +1119,6 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   // Make common binning
   const Double_t kMinP = 0.;
   const Double_t kMaxP = 20.;
-  //const Double_t kTPCSigMim = 40.;
-  //const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, cell, M02, M20, Disp, Centrality, select)
   Int_t nBins[16] =  {  100,     7,  60,    20,    90,  250,   25,   40,   10, 200,  100, 100,  500,    5, 100,    8};
@@ -1111,6 +1126,14 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   Double_t max[16] = {kMaxP,   6.5, 4.0,   1.0,   4.0,  2.5, 0.05,   40,   10, 2.0, 20.0, 100,  100,  4.5, 180,  6.5};
   fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;clsF;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
   if(fqahist==1)fOutputList->Add(fEleInfo);
+
+  // Make common binning
+  Int_t nBinsEop[3] =  { 10, 50, 100};
+  Double_t minEop[3] = {  0,  0,  -5};
+  Double_t maxEop[3] = {100, 50,   5};
+  fElenSigma= new THnSparseD("fElenSigma", "Electron nSigma; cent; pT [GeV/c]; nSigma", 3, nBinsEop, minEop, maxEop);
+  fOutputList->Add(fElenSigma);
+
 
   //<---  Trigger info
   /*
@@ -1421,7 +1444,8 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     recg.SetProductionVertex(primV);
     
     // mass const.
-    recg.SetMassConstraint(0,0.0001);
+    //recg.SetMassConstraint(0,0.0001);
+    // v5-04-50-AN no constrain
 
     // check chi2
     if(recg.GetNDF()<1) continue;
@@ -1837,7 +1861,7 @@ double AliAnalysisTaskHFECal::MCEopMeanCorrection(double pTmc, float central)
  else if(central>50 && central<=70)
    {
     fcorr0->SetParameters(0.989,2.495,2.167);
-    fcorr1->SetParameters(0.961e-1,1.734,1.438e-01);
+    fcorr1->SetParameters(0.961,1.734,1.438e-01);
    }
  else if(central>70 && central<=100)
    {
