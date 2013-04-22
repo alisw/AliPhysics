@@ -57,6 +57,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fUseCellsToMatch(kFALSE),
   fMinJetMCPt(1),
   fPythiaHeader(0),
+  fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
   fTracks2(0),
@@ -70,6 +71,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistTrials(0),
   fHistXsection(0),
   fHistEvents(0),
+  fHistPtHard(0),
   fMCEnergy1vsEnergy2(0),
   fHistJets1PhiEta(0),
   fHistJets1PtArea(0),
@@ -167,6 +169,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fUseCellsToMatch(kFALSE),
   fMinJetMCPt(1),
   fPythiaHeader(0),
+  fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
   fTracks2(0),
@@ -180,6 +183,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistTrials(0),
   fHistXsection(0),
   fHistEvents(0),
+  fHistPtHard(0),
   fMCEnergy1vsEnergy2(0),
   fHistJets1PhiEta(0),
   fHistJets1PtArea(0),
@@ -418,6 +422,11 @@ void AliJetResponseMaker::UserCreateOutputObjects()
       fHistXsection->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
       fHistEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
     }
+
+    fHistPtHard = new TH1F("fHistPtHard", "fHistPtHard", fNbins*2, fMinBinPt, fMaxBinPt*4);
+    fHistPtHard->GetXaxis()->SetTitle("p_{T,hard} (GeV/c)");
+    fHistPtHard->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistPtHard);
   }
 
   if (fIsEmbedded) {
@@ -1015,9 +1024,6 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
 
   if (fRho2)
     fRho2Val = fRho2->GetVal();
-
-  const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
-  const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
   
   if (MCEvent()) {
     fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
@@ -1035,10 +1041,12 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
   }
 
   if (fPythiaHeader) {
-    Double_t pthard = fPythiaHeader->GetPtHard();
+    fPtHard = fPythiaHeader->GetPtHard();
     
+    const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+    const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
     for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
-      if (pthard >= ptHardLo[fPtHardBin] && pthard < ptHardHi[fPtHardBin])
+      if (fPtHard >= ptHardLo[fPtHardBin] && fPtHard < ptHardHi[fPtHardBin])
 	break;
     }
     
@@ -1556,6 +1564,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
     fHistEventsAfterSel->SetBinContent(fPtHardBin + 1, fHistEventsAfterSel->GetBinContent(fPtHardBin + 1) + 1);
   if (fHistTrialsAfterSel)
     fHistTrialsAfterSel->SetBinContent(fPtHardBin + 1, fHistTrialsAfterSel->GetBinContent(fPtHardBin + 1) + fNTrials);
+  if (fHistPtHard)
+    fHistPtHard->Fill(fPtHard);
 
   GetSortedArray(indexes, fJets2, fRho2Val);
 
