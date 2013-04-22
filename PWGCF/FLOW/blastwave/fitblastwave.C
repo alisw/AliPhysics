@@ -744,8 +744,18 @@ LoadLib(){
   gSystem->Load("libPWGCFflowBW.so");
   kLoaded = kTRUE;
 
-  gROOT->LoadMacro("v2All.C");
-//   kStat=0;
+  Int_t check = gROOT->LoadMacro("v2All.C");
+  
+  printf("INSTRUCTIONS:\n");
+  printf("official results in txt format in v2 paper svn repo (in case of problem ask to Carlos Perez)\n");
+  printf("notice that v2s for pi, K and p are read in txt format assuming that the values are in ./v2/ dir\n");
+  printf("pi, K and p spectra are read from root file for blastwave fit\n");
+  printf("other species v2s are loaded from v2All.C macro\n");
+  printf("v2All.C available in https://twiki.cern.ch/twiki/bin/viewauth/ALICE/FlowPAGQM2012talkIdentified\n\n");
+  if(check){
+    printf("press enter to continue\n");
+    getchar();
+  }
 }
 
 
