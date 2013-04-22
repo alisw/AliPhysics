@@ -90,9 +90,17 @@ Double_t AliEventPlaneResolutionHandler::GetEventPlaneResolution(Double_t minCen
   if(minCent>50.5 || maxCent>50.5) fWeight=0;
   Double_t weight=-1.;  
   if(fWeight==1) weight=fNcoll[ncBin];
-  else if(fWeight==2 && minCent>29.5 && maxCent<50.5)  weight=fYield24[ncBin];
+  // protection: weights from yield computed for 30-50, 10-30 and 0-10 centralities
+  // cannot be used on wider ranges
+  else if(fWeight==2 && minCent>29.5 && maxCent<50.5)  weight=fYield24[ncBin]; 
   else if(fWeight==3 && minCent>29.5 && maxCent<50.5)  weight=fYield46[ncBin];
   else if(fWeight==4 && minCent>29.5 && maxCent<50.5)  weight=fYield612[ncBin];
+  else if(fWeight==2 && minCent>9.5 && maxCent<30.5)  weight=fYield24[ncBin];
+  else if(fWeight==3 && minCent>9.5 && maxCent<30.5)  weight=fYield46[ncBin];
+  else if(fWeight==4 && minCent>9.5 && maxCent<30.5)  weight=fYield612[ncBin];
+  else if(fWeight==2 && maxCent<10.5)  weight=fYield24[ncBin];
+  else if(fWeight==3 && maxCent<10.5)  weight=fYield46[ncBin];
+  else if(fWeight==4 && maxCent<10.5)  weight=fYield612[ncBin];
   TH1F* hevpls2=0x0;
   TH1F* hevpls3=0x0;
   TH1F* hevpls1=(TH1F*)inputFile->Get(Form("%sCentr%d_%d",fCorrHistoName1.Data(),minCentrTimesTen,minCentrTimesTen+25));
@@ -115,6 +123,12 @@ Double_t AliEventPlaneResolutionHandler::GetEventPlaneResolution(Double_t minCen
     else if(fWeight==2 && minCent>29.5 && maxCent<50.5)  weight=fYield24[ncBin];
     else if(fWeight==3 && minCent>29.5 && maxCent<50.5)  weight=fYield46[ncBin];
     else if(fWeight==4 && minCent>29.5 && maxCent<50.5)  weight=fYield612[ncBin];
+    else if(fWeight==2 && minCent>9.5 && maxCent<30.5)  weight=fYield24[ncBin];
+    else if(fWeight==3 && minCent>9.5 && maxCent<30.5)  weight=fYield46[ncBin];
+    else if(fWeight==4 && minCent>9.5 && maxCent<30.5)  weight=fYield612[ncBin];
+    else if(fWeight==2 && maxCent<10.5)  weight=fYield24[ncBin];
+    else if(fWeight==3 && maxCent<10.5)  weight=fYield46[ncBin];
+    else if(fWeight==4 && maxCent<10.5)  weight=fYield612[ncBin];
     TH1F* htmp1=(TH1F*)inputFile->Get(Form("%sCentr%d_%d",fCorrHistoName1.Data(),iCentr,iCentr+25));
     if(weight>0.) htmp1->Scale(weight);
     hevpls1->Add(htmp1);
@@ -215,16 +229,19 @@ void AliEventPlaneResolutionHandler::InitializeWeights(){
 		      969.86,859.571,759.959,669.648,589.588,
 		      516.039,451.409,392.853,340.493,294.426,
 		      252.385,215.484,183.284,155.101,130.963};
-  Double_t y24[20]={1,1,1,1,
-		    1,1,1,1,1,1,1,1,
-		    446,402,339,277,218,185,184,104};
 
-  Double_t y46[20]={1,1,1,1,
-		    1,1,1,1,1,1,1,1,
-		    49,150,127,105,88,71,71,53};
-  Double_t y612[20]={1,1,1,1,
-		    1,1,1,1,1,1,1,1,
-		    89,92,79,66,57,59,38,58};
+  Double_t y24[20]={544.155,491.803,533.516,449.618,
+		    213.097,179.483,194.977,156.73,118.84,152.306,92.7,122.538,
+		    36.64,33.01,27.79,22.57,17.90,15.25,15.03,8.57};
+
+  Double_t y46[20]={158.386,129.294,135.683,112.203,
+		    59.425,61.506,65.779,43.521,35.530,41.014,26.744,33.593,
+		    12.24,12.32,10.44,8.55,7.20,5.85,5.80,4.37};
+
+  Double_t y612[20]={76.010,85.944,99.105,84.779,
+		     45.404,25.059,36.734,31.177,31.587,46.088,19.367,39.945,
+		     7.31,7.55,6.47,5.38,4.68,4.86,3.10,4.78};
+
   for(Int_t i=0; i<20; i++){
     fNcoll[i]=ncoll[i];
     fYield24[i]=y24[i];
