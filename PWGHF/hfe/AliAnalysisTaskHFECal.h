@@ -128,6 +128,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   
   TH1F			*fCent;			//! centrality
   THnSparseD		*fEleInfo;		//! EMC acc
+  THnSparseD		*fElenSigma;		//! EMC acc
   /*
   //<---- trigger info
   TH1F	      *fClsEBftTrigCut;	//Cluster E before trigger selection
