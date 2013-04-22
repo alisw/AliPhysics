@@ -69,8 +69,8 @@ _requestedCharge_1    (   1),
 _requestedCharge_2    (  -1),
 _dcaZMin              ( -3), 
 _dcaZMax              (  3.), 
-_dcaXYMin             ( -3.), 
-_dcaXYMax             (  3.),
+_dcaXYMin             ( -2.4), 
+_dcaXYMax             (  2.4),
 _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 70), 
@@ -171,6 +171,12 @@ _m3 ( 0),
 _m4 ( 0),
 _m5 ( 0),
 _m6 ( 0),
+
+_etadis ( 0),
+_phidis ( 0),
+_dcaz   ( 0),
+_dcaxy  ( 0),
+
 _vertexZ           ( 0),
 _n1_1_vsPt         ( 0),         
 _n1_1_vsEtaVsPhi   ( 0),
@@ -342,8 +348,8 @@ _requestedCharge_1    (   1),
 _requestedCharge_2    (  -1),
 _dcaZMin              ( -3), 
 _dcaZMax              (  3.), 
-_dcaXYMin             ( -3.), 
-_dcaXYMax             (  3.),
+_dcaXYMin             ( -2.4), 
+_dcaXYMax             (  2.4),
 _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 70), 
@@ -444,6 +450,10 @@ _m3 ( 0),
 _m4 ( 0),
 _m5 ( 0),
 _m6 ( 0),
+_etadis ( 0),
+_phidis ( 0),
+_dcaz ( 0),
+_dcaxy ( 0),
 _vertexZ           ( 0),
 _n1_1_vsPt         ( 0),         
 _n1_1_vsEtaVsPhi   ( 0),
@@ -915,6 +925,13 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   name = "m6"; _m6      = createHisto1D(name,name,_nBins_M6, _min_M6, _max_M6, _title_m6, _title_counts);
   name = "zV"; _vertexZ = createHisto1D(name,name,_nBins_vertexZ, _min_vertexZ, _max_vertexZ, "z-Vertex (cm)", _title_counts);
   
+
+  name = "Eta";     _etadis   = createHisto1F(name,name, 200, -1.1, 1.1, "#eta","counts");
+  name = "Phi";     _phidis   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
+  name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
+  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
+
+
   if (_singlesOnly)
     {
     name = n1Name+part_1_Name+vsPt;              _n1_1_vsPt              = createHisto1F(name,name, _nBins_pt_1,  _min_pt_1,  _max_pt_1,   _title_pt_1,  _title_AvgN_1);
@@ -1226,8 +1243,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           eta      >=  _min_eta_1 && 
           eta      <   _max_eta_1) 
         {
-        //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - check vertex  for 1:" << endl;
-        // Get the dca information
+        
+	  /*
         if (t->PropagateToDCA(vertex, _field, 100., b, bCov) )
           {
           dcaXY = b[0];
@@ -1238,18 +1255,29 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           dcaXY = -999999;
           dcaZ  = -999999;
           }
+	  */
+	  
+	  dcaXY = t->DCA(); //new change Prabhat                                        
+	  dcaZ  = t->ZAtDCA(); //new change Prabhat  
+	  
+	   // skip track if DCA too large
+	     if (dcaZ  <  _dcaZMin || 
+	     dcaZ     >   _dcaZMax || 
+	     dcaXY    <  _dcaXYMin || 
+	     dcaXY    >   _dcaXYMax)
+	     continue; //track does not have a valid DCA
+	  
 
-        // skip track if DCA too large
-        if (dcaZ     <  _dcaZMin && 
-            dcaZ     >  _dcaZMax && 
-            dcaXY    <  _dcaXYMin && 
-            dcaXY    >  _dcaXYMax)
-          continue; //track does not have a valid DCA
-        //cout << "keep track:" << endl;
-     
+	  //if (dcaZ > _dcaZMax) continue;
+	     //cout <<"Prabhat=============="<<"  "<<_dcaZMax<<"    "<<dcaZ<<endl;
+	_etadis->Fill(eta); //prabhat QA                                  
+	_phidis->Fill(phi);
+	_dcaz->Fill(dcaZ); //Prabhat QA             
+        _dcaxy->Fill(dcaXY);
+
 
         iPhi   = int( phi/_width_phi_1);
-        ////cout << " AliAnalysisTaskDptDptCorrelations::analyze(Event * event) -1- iTrack:" << iTrack<< endl<< "pt:" << pt << " phi:" <<  phi << " eta:" << eta << endl;
+        
         if (iPhi<0 || iPhi>=_nBins_phi_1 ) 
           {
           AliWarning("AliAnalysisTaskDptDptCorrelations::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
@@ -1280,13 +1308,11 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           AliWarning("AliAnalysisTaskDptDptCorrelations::analyze(AliceEvent * event) iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_1");
           continue;
           }
-        //cout << "all good; process track:" << endl;
+        
 
         if (_singlesOnly)
           {
-          //_betaVsP_1->Fill(p*q,_trackFilter_1->getBeta() );
-          //_dedxVsP_1->Fill(p*q,dedx);
-          //_corrDedxVsP_1->Fill(p*q,_trackFilter_1->getCorrectedDedx() );
+        
           __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
           __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
    
@@ -1325,28 +1351,34 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           eta      >=  _min_eta_2 && 
           eta      <   _max_eta_2)  
         {
-        // Get the dca information
-        //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - check vertex for 2:" << endl;
-        if (t->PropagateToDCA(vertex, _field, 100., b, bCov) )
-          {
-          dcaXY = b[0];
-          dcaZ  = b[1];
-          } 
-        else
-          {
-          dcaXY = -999999;
-          dcaZ  = -999999;
-          }
+	  /* 
+	     if (t->PropagateToDCA(vertex, _field, 100., b, bCov) )
+	     {
+	     dcaXY = b[0];
+	     dcaZ  = b[1];
+	     } 
+	     else
+	     {
+	     dcaXY = -999999;
+	     dcaZ  = -999999;
+	     }
+	  */
+	  
+	  dcaXY = t->DCA(); //new change Prabhat                                        
+	  dcaZ  = t->ZAtDCA(); //new change Prabhat  
+	  //if (dcaZ > _dcaZMax) continue;
+	  //cout <<"Prabhat=============="<<"  "<<_dcaZMax<<"    "<<dcaZ<<endl;
 
-       // skip track if DCA too large
-        if (dcaZ     <  _dcaZMin && 
-            dcaZ     >  _dcaZMax && 
-            dcaXY    <  _dcaXYMin && 
-            dcaXY    >  _dcaXYMax)
-          continue; //track does not have a valid DCA
-        
-        iPhi   = int( phi/_width_phi_2);
-        
+	  
+	  if (dcaZ     <  _dcaZMin || 
+	      dcaZ     >   _dcaZMax || 
+	      dcaXY    <  _dcaXYMin || 
+	      dcaXY    >   _dcaXYMax)
+	    continue; //track does not have a valid DCA
+	  
+
+	  iPhi   = int( phi/_width_phi_2);
+	  
         if (iPhi<0 || iPhi>=_nBins_phi_2 ) 
           {
           AliWarning("AliAnalysisTaskDptDptCorrelations::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
@@ -1373,16 +1405,19 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           AliWarning("AliAnalysisTaskDptDptCorrelations::analyze(AliceEvent * event) iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_2");
           continue;
           }
-                
+        
+
         if (_correctionWeight_2)
           corr = _correctionWeight_2[iZEtaPhiPt];
         else
           corr = 1;
-        
+        //dpt = pt - (charge>0) ? _avgPt_vsEtaPhi_2p[iEtaPhi] : _avgPt_vsEtaPhi_2m[iEtaPhi];       
+
         if (_singlesOnly)
           {
-	    __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
-	    __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
+          //_dedxVsP_2->Fill(p*q,dedx);
+          __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
+          __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
           }
         else
           {
