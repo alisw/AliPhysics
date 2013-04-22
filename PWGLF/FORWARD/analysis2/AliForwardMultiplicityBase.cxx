@@ -38,7 +38,7 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
   : AliAnalysisTaskSE(name), 
     fEnableLowFlux(false), 
     fFirstEvent(true),
-    fCorrManager(0)
+    fCorrManager(0)	
 {
   DGUARD(fDebug, 3,"Named CTOR of AliForwardMultiplicityBase %s",name);
   // Set our persistent pointer 
@@ -248,10 +248,9 @@ AliForwardMultiplicityBase::MarkEventForStore() const
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (!ah)  
-    AliFatal("No AOD output handler set in analysis manager");
+  if (ah)    	
+	ah->SetFillAOD(kTRUE);
 
-  ah->SetFillAOD(kTRUE);
 }
 
 //____________________________________________________________________

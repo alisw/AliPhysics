@@ -99,13 +99,15 @@ void AliCentralMCMultiplicityTask::UserCreateOutputObjects()
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (!ah) AliFatal("No AOD output handler set in analysis manager");
+  if (ah)
+ {	 
+	AliFatal("No AOD output handler set in analysis manager");
   
   
-  TObject* obj = &fAODMCCentral;
-  ah->AddBranch("AliAODCentralMult", &obj);
+  	TObject* obj = &fAODMCCentral;
+  	ah->AddBranch("AliAODCentralMult", &obj);
 
-  
+  }
   fTrackDensity.CreateOutputObjects(fList);
 
 }
@@ -127,12 +129,13 @@ fAODMCCentral.Init(*(fAODCentral.GetHistogram().GetXaxis()));
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (!ah)  
-    AliFatal("No AOD output handler set in analysis manager");
+  if (ah)
+{  
+  //  AliFatal("No AOD output handler set in analysis manager");
 
   // if base class did not want this event, then neither to we 
   if (!ah->GetFillAOD() || fIvz <= 0) return;
-  
+ } 
   const AliMCEvent*  mcEvent = MCEvent();
   if (!mcEvent) return;
   TH2D&              hist    = fAODMCCentral.GetHistogram();
