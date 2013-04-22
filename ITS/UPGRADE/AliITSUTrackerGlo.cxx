@@ -128,6 +128,7 @@ void AliITSUTrackerGlo::CreateDefaultTrackCond()
   cond->SetNLayers(fITS->GetNLayersActive());
   cond->AddNewCondition(nLr);
   cond->AddGroupPattern( 0xffff ); // require all layers hit
+  cond->Init();
   //
   fDefTrackConds.AddLast(cond);
   //
@@ -182,6 +183,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   //
   for (int icnd=0;icnd<nTrackCond;icnd++) {
     fCurrTrackCond = (AliITSUTrackCond*)trackConds->UncheckedAt(icnd);
+    if (!fCurrTrackCond->IsInitDone()) fCurrTrackCond->Init();
     // select ESD tracks to propagate
     for (int itr=0;itr<nTrESD;itr++) {
       fCurrESDtrack = esdEv->GetTrack(itr);
@@ -486,7 +488,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
       // cluster search is done. Do we need to have a version of this seed skipping current layer
       if (!NeedToKill(&seedUC,kMissingCluster)) {
 	AliITSUSeed* seedSkp = NewSeedFromPool(&seedUC);
-	double penalty = -AliITSUReconstructor::GetRecoParam()->GetMissPenalty(ila);
+	double penalty = -fCurrTrackCond->GetMissPenalty(ila);
 	// to do: make penalty to account for probability to miss the cluster for good reason
 	seedSkp->SetChi2Cl(penalty);
 	AddProlongationHypothesis(seedSkp,ila);      
@@ -775,8 +777,8 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
   fTrImpData[kTrPhiOut] = ATan2(fTrImpData[kTrYOut],fTrImpData[kTrXOut]);
   double sgy = sc.GetSigmaY2() + dr*dr*sc.GetSigmaSnp2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(ilrA);
   double sgz = sc.GetSigmaZ2() + dr*dr*sc.GetSigmaTgl2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(ilrA);
-  sgy = Sqrt(sgy)*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY();
-  sgz = Sqrt(sgz)*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ();
+  sgy = Sqrt(sgy)*fCurrTrackCond->GetNSigmaRoadY(ilrA);
+  sgz = Sqrt(sgz)*fCurrTrackCond->GetNSigmaRoadZ(ilrA);
   double dphi0 = 0.5*Abs(fTrImpData[kTrPhiOut]-fTrImpData[kTrPhiIn]);
   double phi0  = 0.5*(fTrImpData[kTrPhiOut]+fTrImpData[kTrPhiIn]);
   if ( dphi0>(0.5*Pi()) ) {
@@ -867,7 +869,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   //
   double dy2 = dy*dy;
   double tol2 = (track->GetSigmaY2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(lr))*
-    AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY(); // RS TOOPTIMIZE
+    fCurrTrackCond->GetNSigmaRoadY(lr)*fCurrTrackCond->GetNSigmaRoadY(lr); // RS TOOPTIMIZE
   if (dy2>tol2) {                          // the clusters are sorted in Z(col) then in Y(row). 
     if (goodCl&&goodSeed && AliDebugLevelClass()>2) {    
       AliDebug(2,Form("Lost good cl: dy2=%e > tol2=%e |ESDtrack#%d (MClb:%d)",dy2,tol2,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
@@ -882,7 +884,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   }
   double dz2 = dz*dz;
   tol2 = (track->GetSigmaZ2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(lr))*
-    AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ(); // RS TOOPTIMIZE
+    fCurrTrackCond->GetNSigmaRoadZ(lr)*fCurrTrackCond->GetNSigmaRoadZ(lr); // RS TOOPTIMIZE
   if (dz2>tol2) {
     if (goodCl&&goodSeed && AliDebugLevelClass()>2) {
       AliDebug(2,Form("Lost good cl on L:%d : dz2=%e > tol2=%e |ESDtrack#%d (MClb:%d)",lr,dz2,tol2,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
@@ -904,10 +906,10 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   }
 #endif
   //
-  if (chi2>AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr)) {
+  if (chi2>fCurrTrackCond->GetMaxTr2ClChi2(lr)) {
     if (goodCl&&goodSeed && AliDebugLevelClass()>2) {
       AliDebug(2,Form("Lost good cl on L:%d : Chi2=%e > Chi2Max=%e |dy: %+.3e dz: %+.3e |ESDtrack#%d (MClb:%d)\n",
-		      lr,chi2,AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr),dy,dz,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
+		      lr,chi2,fCurrTrackCond->GetMaxTr2ClChi2(lr),dy,dz,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
       track->Print("etp");
       cl->Print("");
       PrintSeedClusters(track);

@@ -36,6 +36,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   //
   int nBranch[7] = {3,3,3,3,3,3,3}; // max branching for the seed on layer
   int nCands[7]  = {250,200,150,100,60,40,20}; // max branching for the TPC seed
+  float tr2clChi2[7] = {50,50,50,50,50,50,50}; // cut on cluster to track chi2 
   //
   {
     AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetLowFluxParam();
@@ -52,10 +53,13 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
     trCond->SetNLayers(nLr); 
-    // each seed propagated to given layer can produce max nBranch branches
-    for (int i=0;i<nLr;i++) trCond->SetMaxBranches(i,nBranch[i]);
-    // each tpc track may have at most nCands prolongations
-    for (int i=0;i<nLr;i++) trCond->SetMaxCandidates(i,nCands[i]);
+    //
+    for (int i=0;i<nLr;i++) {
+      trCond->SetMaxBranches(i,nBranch[i]);    // each seed propagated to given layer can produce max nBranch branches
+      trCond->SetMaxCandidates(i,nCands[i]);   // each tpc track may have at most nCands prolongations
+      trCond->SetMaxTr2ClChi2(i,tr2clChi2[i]);   // cut on cluster to track chi2
+      //
+    }
     //
     trCond->AddNewCondition(5); // min hits
     trCond->AddGroupPattern( kBit0|kBit1 );
@@ -71,7 +75,9 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     trCond->AddGroupPattern( kBit1|kBit2 );
     trCond->AddGroupPattern( kBit3|kBit4 );
     trCond->AddGroupPattern( kBit5|kBit6 );
-    //    
+    //
+    trCond->Init();
+    //
     itsRecoParam->AddTrackingCondition(trCond);
     // Add tracking conditions <<<
   }
@@ -85,13 +91,19 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     itsRecoParam->SetTitle("HighMult");
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
-    for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kTRUE);
-    //
+     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kTRUE);
+    //  
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
     trCond->SetNLayers(nLr); 
-    for (int i=0;i<nLr;i++) trCond->SetMaxBranches(i,nBranch[i]);
-    for (int i=0;i<nLr;i++) trCond->SetMaxCandidates(i,nCands[i]);
+    //
+    for (int i=0;i<nLr;i++) {
+      trCond->SetMaxBranches(i,nBranch[i]);    // each seed propagated to given layer can produce max nBranch branches
+      trCond->SetMaxCandidates(i,nCands[i]);   // each tpc track may have at most nCands prolongations
+      trCond->SetMaxTr2ClChi2(i,tr2clChi2[i]);   // cut on cluster to track chi2
+      //
+    }
+    //
     trCond->AddNewCondition(5); // min hits
     trCond->AddGroupPattern( kBit0|kBit1 );
     trCond->AddGroupPattern( kBit3|kBit4 );
@@ -106,7 +118,9 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     trCond->AddGroupPattern( kBit1|kBit2 );
     trCond->AddGroupPattern( kBit3|kBit4 );
     trCond->AddGroupPattern( kBit5|kBit6 );
-    //    
+    //
+    trCond->Init();
+    //
     itsRecoParam->AddTrackingCondition(trCond);
     // Add tracking conditions <<<
     //

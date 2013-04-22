@@ -1,14 +1,26 @@
 #include "AliITSUTrackCond.h"
 #include "AliITSUAux.h"
 #include "AliLog.h"
+#include <TMath.h>
 
 using namespace AliITSUAux;
+using namespace TMath;
+
+Int_t     AliITSUTrackCond::fgkMaxBranches = 50;
+Int_t     AliITSUTrackCond::fgkMaxCandidates = 500;
+Float_t   AliITSUTrackCond::fgkMaxTr2ClChi2  = 50.;
+Float_t   AliITSUTrackCond::fgkMissPenalty  = 2.;
 
 //______________________________________________________________
 AliITSUTrackCond::AliITSUTrackCond(int nLayers)
-  :fNLayers(0)
+  :fInitDone(kFALSE)
+  ,fNLayers(0)
   ,fMaxBranches(0)
   ,fMaxCandidates(0)
+  ,fMaxTr2ClChi2(0)
+  ,fMissPenalty(0)
+  ,fNSigmaRoadY(0)
+  ,fNSigmaRoadZ(0)
   ,fNConditions(0)
   ,fConditions(0)
   ,fAuxData(0)
@@ -19,22 +31,28 @@ AliITSUTrackCond::AliITSUTrackCond(int nLayers)
 
 //______________________________________________________________
 AliITSUTrackCond::AliITSUTrackCond(const AliITSUTrackCond& src)
-  :TObject(src),
-   fNLayers(src.fNLayers)
+  :TObject(src)
+  ,fInitDone(src.fInitDone)
+  ,fNLayers(0)
   ,fMaxBranches(0)
   ,fMaxCandidates(0)
+  ,fMaxTr2ClChi2(0)
+  ,fMissPenalty(0)
+  ,fNSigmaRoadY(0)
+  ,fNSigmaRoadZ(0)
   ,fNConditions(src.fNConditions)
   ,fConditions(src.fConditions)
   ,fAuxData(src.fAuxData)
 {
   // copy c-tor
-  if (fNLayers>0) {
-    fMaxBranches = new Short_t[fNLayers];
-    fMaxCandidates = new Short_t[fNLayers];
-    for (int i=fNLayers;i--;) {
-      SetMaxBranches(i,src.GetMaxBranches(i));
-      SetMaxCandidates(i,src.GetMaxCandidates(i));
-    }
+  SetNLayers(src.fNLayers);
+  for (int i=fNLayers;i--;) {
+    SetMaxBranches(i,src.GetMaxBranches(i));
+    SetMaxCandidates(i,src.GetMaxCandidates(i));
+    SetMaxTr2ClChi2(i,src.GetMaxTr2ClChi2(i));
+    SetMissPenalty(i,src.GetMissPenalty(i));
+    SetNSigmaRoadY(i,src.GetNSigmaRoadY(i));
+    SetNSigmaRoadZ(i,src.GetNSigmaRoadZ(i));
   }
 }
 
@@ -43,18 +61,19 @@ AliITSUTrackCond& AliITSUTrackCond::operator=(const AliITSUTrackCond& src)
 {
   // copy op.
   if (this!=&src) {
-    fNLayers = src.fNLayers;
+    fInitDone = src.fInitDone;
     fNConditions = src.fNConditions;
     fConditions  = src.fConditions;
-    if (fNLayers) {
-      delete fMaxBranches;
-      delete fMaxCandidates;
-      fMaxBranches = new Short_t[fNLayers];
-      fMaxCandidates = new Short_t[fNLayers];
-      for (int i=fNLayers;i--;) {
-	SetMaxBranches(i,src.GetMaxBranches(i));
-	SetMaxCandidates(i,src.GetMaxCandidates(i));
-      }
+    //
+    SetNLayers(src.fNLayers);
+    //
+    for (int i=fNLayers;i--;) {
+      SetMaxBranches(i,src.GetMaxBranches(i));
+      SetMaxCandidates(i,src.GetMaxCandidates(i));
+      SetMaxTr2ClChi2(i,src.GetMaxTr2ClChi2(i));
+      SetMissPenalty(i,src.GetMissPenalty(i));
+      SetNSigmaRoadY(i,src.GetNSigmaRoadY(i));
+      SetNSigmaRoadZ(i,src.GetNSigmaRoadZ(i));
     }
     fAuxData = src.fAuxData;
   }
@@ -65,15 +84,42 @@ AliITSUTrackCond& AliITSUTrackCond::operator=(const AliITSUTrackCond& src)
 void AliITSUTrackCond::SetNLayers(int nLayers)
 {
   // set number of layers
+  fInitDone = kFALSE;
+  if (fNLayers) {
+    delete fMaxBranches;
+    delete fMaxCandidates;
+    delete fMaxTr2ClChi2;
+    delete fMissPenalty;
+    delete fNSigmaRoadY;
+    delete fNSigmaRoadZ;
+  }
   fNLayers = nLayers;
+  //
   if (fNLayers>0) {
     fMaxBranches = new Short_t[fNLayers];
     fMaxCandidates = new Short_t[fNLayers];
+    fMaxTr2ClChi2  = new Float_t[fNLayers];
+    fMissPenalty   = new Float_t[fNLayers];
+    fNSigmaRoadY   = new Float_t[fNLayers];
+    fNSigmaRoadZ   = new Float_t[fNLayers];
     for (int i=fNLayers;i--;) {
-      SetMaxBranches(i,kMaxBranches);
-      SetMaxCandidates(i,kMaxCandidates);
+      SetMaxBranches(i,fgkMaxBranches);
+      SetMaxCandidates(i,fgkMaxCandidates);
+      SetMaxTr2ClChi2(i,fgkMaxTr2ClChi2);
+      SetMissPenalty(i,fgkMissPenalty);
+      SetNSigmaRoadY(i,-1); // force recalculation
+      SetNSigmaRoadZ(i,-1); // force recalculation
     }
   }
+  else {
+    fMaxBranches   = 0;
+    fMaxCandidates = 0;
+    fMaxTr2ClChi2  = 0;
+    fMissPenalty   = 0;
+    fNSigmaRoadY   = 0;
+    fNSigmaRoadZ   = 0;
+  }
+  //
 }
 
 //______________________________________________________________
@@ -139,6 +185,27 @@ void AliITSUTrackCond::Print(Option_t*) const
     printf("\n");
     cntCond += kNAuxSz;
   }
-  printf("Max allowed branches/candidates per seed: ");
-  for (int i=0;i<fNLayers;i++) printf("L%d: %d/%d ",i,fMaxBranches[i],fMaxCandidates[i]); printf("\n");
+  printf("Cuts:\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\n", "MaxBrn","MaxCand","Chi2Cl","Mis.Pen.","NSig.Y","NSig.Z");
+  for (int i=0;i<fNLayers;i++) {
+    printf("Lr%2d:\t%8d\t%8d\t%8.1f\t%8.2f\t%8.2f\t%8.2f\n",i,
+	   fMaxBranches[i],fMaxCandidates[i],fMaxTr2ClChi2[i],fMissPenalty[i],fNSigmaRoadY[i],fNSigmaRoadZ[i]);
+  }
+  //
+}
+
+//______________________________________________________________
+void AliITSUTrackCond::Init()
+{
+  // finalize and check consistency
+  if (fInitDone) return;
+  //
+  for (int ilr=0;ilr<fNLayers;ilr++) {
+    if (IsLayerExcluded(ilr)) continue;
+    float nsig = Sqrt(GetMaxTr2ClChi2(ilr));
+    if (GetNSigmaRoadY(ilr)<0) SetNSigmaRoadY(ilr,nsig);
+    if (GetNSigmaRoadZ(ilr)<0) SetNSigmaRoadZ(ilr,nsig);
+    //
+  }
+  //
+  fInitDone = kTRUE;
 }

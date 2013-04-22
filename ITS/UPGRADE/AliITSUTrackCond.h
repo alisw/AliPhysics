@@ -49,16 +49,41 @@ class AliITSUTrackCond : public TObject
   //
   virtual void  Print(Option_t* option = "")           const;
 
- protected:
+  void        SetMaxTr2ClChi2(Int_t lr, Float_t v)           {fMaxTr2ClChi2[lr] = v;}
+  void        SetMissPenalty(Int_t lr,  Float_t v)           {fMissPenalty[lr] = v;}
+  void        SetNSigmaRoadY(Int_t lr,  Float_t v)           {fNSigmaRoadY[lr] = v;}
+  void        SetNSigmaRoadZ(Int_t lr,  Float_t v)           {fNSigmaRoadZ[lr] = v;}
   //
+  Float_t     GetMissPenalty(Int_t lr)                 const {return fMissPenalty[lr];}
+  Float_t     GetMaxTr2ClChi2(Int_t lr)                const {return fMaxTr2ClChi2[lr];}
+  Float_t     GetNSigmaRoadY(Int_t lr)                 const {return fNSigmaRoadY[lr];}
+  Float_t     GetNSigmaRoadZ(Int_t lr)                 const {return fNSigmaRoadZ[lr];}
+  Bool_t      IsLayerExcluded(Int_t lr)                const {return GetMaxTr2ClChi2(lr)<=0;}
+  //
+  void        Init();
+  Bool_t      IsInitDone()                             const {return fInitDone;}
+  //
+ protected: 
+  //
+  Bool_t      fInitDone;                 // initialization flag
   Int_t       fNLayers;                  // total number of layers
   Short_t*    fMaxBranches;              // [fNLayers] max allowed branches per seed on each layer
   Short_t*    fMaxCandidates;            // [fNLayers] max allowed candidates per TPC seed on each layer
+  Float_t*    fMaxTr2ClChi2;             // [fNLayers] max track-to-cluster chi2
+  Float_t*    fMissPenalty;              // [fNLayers] chi2 penalty for missing hit on the layer
+  Float_t*    fNSigmaRoadY;              // [fNLayers] number of sigmas in Y
+  Float_t*    fNSigmaRoadZ;              // [fNLayers] number of sigmas in Z
+  //
   Short_t     fNConditions;              // number of conditions defined
   TArrayS     fConditions;               // fNConditions  set of conditions
   TArrayS     fAuxData;                  // condition beginning (1st group), n groups, min clus
   //
-  ClassDef(AliITSUTrackCond,2)           // set of requirements on track hits pattern
+  static Int_t   fgkMaxBranches;          // def max number of branches per seed on current layer 
+  static Int_t   fgkMaxCandidates;        // def max number of total candidates on current layer 
+  static Float_t fgkMaxTr2ClChi2;         // def track-to-cluster chi2 cut
+  static Float_t fgkMissPenalty;          // penalty for missing cluster
+  //
+  ClassDef(AliITSUTrackCond,3)           // set of requirements on track hits pattern
 };
 
 

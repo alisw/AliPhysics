@@ -34,12 +34,7 @@ class AliITSURecoParam : public AliDetectorRecoParam
   Double_t    GetTanLorentzAngle(Int_t lr)       const;
   Double_t    GetSigmaY2(Int_t lr)               const;
   Double_t    GetSigmaZ2(Int_t lr)               const;
-  Double_t    GetMaxTr2ClChi2(Int_t lr)          const;
-  Double_t    GetMissPenalty(Int_t lr)           const;
   Bool_t      GetAllowDiagonalClusterization(Int_t lr) const;
-  //
-  Double_t    GetNSigmaRoadY()                   const {return fNSigmaRoadY;}
-  Double_t    GetNSigmaRoadZ()                   const {return fNSigmaRoadZ;}
   //
   Double_t    GetTPCITSWallRMin()                const {return fTPCITSWallRMin;}
   Double_t    GetTPCITSWallRMax()                const {return fTPCITSWallRMax;}
@@ -53,16 +48,12 @@ class AliITSURecoParam : public AliDetectorRecoParam
   void        SetTanLorentzAngle(Int_t lr, Double_t v);
   void        SetSigmaY2(Int_t lr, Double_t v);
   void        SetSigmaZ2(Int_t lr, Double_t v);
-  void        SetMaxTr2ClChi2(Int_t lr, Double_t v);
-  void        SetMissPenalty(Int_t lr, Double_t v);
   void        SetAllowDiagonalClusterization(Int_t lr, Bool_t v);
   //
   void        SetMaxDforV0dghtrForProlongation(Double_t v)            {fMaxDforV0dghtrForProlongation = v;}
   void        SetMaxDForProlongation(Double_t v)                      {fMaxDForProlongation = v;}
   void        SetMaxDZForProlongation(Double_t v)                     {fMaxDZForProlongation = v;}
   void        SetMinPtForProlongation(Double_t v)                     {fMinPtForProlongation = v;}
-  void        SetNSigmaRoadY(Double_t v)                              {fNSigmaRoadY=v;}
-  void        SetNSigmaRoadZ(Double_t v)                              {fNSigmaRoadZ=v;}
   //
   void        SetTPCITSWallRMin(double v)                             {fTPCITSWallRMin = v;}
   void        SetTPCITSWallRMax(double v)                             {fTPCITSWallRMax = v;}
@@ -79,8 +70,6 @@ class AliITSURecoParam : public AliDetectorRecoParam
   Double_t       fMaxDForProlongation; // max. rphi imp. par. cut
   Double_t       fMaxDZForProlongation; // max. 3D imp. par. cut
   Double_t       fMinPtForProlongation; // min. pt cut
-  Double_t       fNSigmaRoadY;          // N sigmas for road in Y
-  Double_t       fNSigmaRoadZ;          // N sigmas for road in Z
   //
   Double_t       fTPCITSWallRMin;       // minR
   Double_t       fTPCITSWallRMax;       // maxR
@@ -91,8 +80,6 @@ class AliITSURecoParam : public AliDetectorRecoParam
   Double_t*      fTanLorentzAngle;  //[fNLayers] Optional Lorentz angle for each layer
   Double_t*      fSigmaY2;          //[fNLayers] addition to road width^2
   Double_t*      fSigmaZ2;          //[fNLayers] addition to road width^2
-  Double_t*      fMaxTr2ClChi2;     //[fNLayers] max track-to-cluster chi2
-  Double_t*      fMissPenalty;      //[fNLayers] chi2 penalty for missing hit on the layer
   //
   TObjArray      fTrackingConditions; // array of tracking conditions for different iterations
   //
@@ -100,29 +87,23 @@ class AliITSURecoParam : public AliDetectorRecoParam
   static const Double_t fgkMaxDForProlongation;                // default
   static const Double_t fgkMaxDZForProlongation;               // default
   static const Double_t fgkMinPtForProlongation;               // default
-  static const Double_t fgkNSigmaRoadY;                        // default
-  static const Double_t fgkNSigmaRoadZ;                        // default
-  // for arrays
+  static const Double_t fgkTanLorentzAngle;                    // default
   static const Double_t fgkSigmaRoadY;                         // default
   static const Double_t fgkSigmaRoadZ;                         // default
-  static const Double_t fgkMaxTr2ClChi2;                       // default
-  static const Double_t fgkTanLorentzAngle;                    // default
-  static const Double_t fgkMissPenalty;                        // default
   //
   // hardwired params for TPC-ITS border layer
-  static const Double_t fgkTPCITSWallRMin;                     // minR
-  static const Double_t fgkTPCITSWallRMax;                     // maxR
+  static const Double_t fgkTPCITSWallRMin;                     // fiducial R min   
+  static const Double_t fgkTPCITSWallRMax;                     // fiducial R max
   static const Double_t fgkTPCITSWallZSpanH;                   // half Z span
   static const Double_t fgkTPCITSWallMaxStep;                  // max tracking step
   //
-  // clusterization options
   static const Bool_t   fgkAllowDiagonalClusterization;        // clusters of pixels with common corners
   //
  private:
   AliITSURecoParam(const AliITSURecoParam & param);
   AliITSURecoParam & operator=(const AliITSURecoParam &param);
 
-  ClassDef(AliITSURecoParam,2) // ITS reco parameters
+  ClassDef(AliITSURecoParam,4) // ITS reco parameters
 };
 
 //_____________________________________________________________________________
@@ -144,20 +125,6 @@ inline Double_t AliITSURecoParam::GetSigmaZ2(Int_t lr) const
 {
   // get tg of Lorentz Angle for the layer
   return (lr<fNLayers)&&fSigmaZ2 ? fSigmaZ2[lr]:fgkSigmaRoadZ*fgkSigmaRoadZ;//0;
-}
-
-//_____________________________________________________________________________
-inline Double_t AliITSURecoParam::GetMaxTr2ClChi2(Int_t lr) const
-{
-  // get tg of Lorentz Angle for the layer
-  return (lr<fNLayers)&&fMaxTr2ClChi2 ? fMaxTr2ClChi2[lr]:fgkMaxTr2ClChi2; //0;
-}
-
-//_____________________________________________________________________________
-inline Double_t AliITSURecoParam::GetMissPenalty(Int_t lr) const
-{
-  // get penalty for missing hit
-  return (lr<fNLayers)&&fMissPenalty ? fMissPenalty[lr]:fgkMissPenalty; //0;
 }
 
 //_____________________________________________________________________________
