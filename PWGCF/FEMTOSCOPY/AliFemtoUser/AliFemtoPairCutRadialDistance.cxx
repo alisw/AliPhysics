@@ -109,7 +109,7 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   Bool_t pass5 = kTRUE;
 
     rad = fMinRad;
-    for (Double_t iter=fMinRad*10; iter<251; iter+=1.0) {
+    for (Double_t iter=fMinRad*100; iter<251; iter+=1.0) {
       Double_t dps = (phi1-phi2+(TMath::ASin(-0.075*chg1*fMagSign*rad/ptv1))-(TMath::ASin(-0.075*chg2*fMagSign*rad/ptv2)));
         dps = TVector2::Phi_mpi_pi(dps);
       double etad = eta2 - eta1;
