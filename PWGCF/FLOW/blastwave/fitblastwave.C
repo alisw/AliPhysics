@@ -47,6 +47,65 @@ Float_t ptMaxPr = 1.7; // 3.0 in spectra group
 
 Bool_t kLoaded = kFALSE;
 
+TGraphErrors *getPtNqMass(Float_t ptnq,Int_t nq,Float_t mass,Int_t ncentr,TGraphAsymmErrors **g,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<ncentr;i++){   
+    Float_t pt = ptnq * nq;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mass);
+    Int_t j=0;
+    while(g[i]->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = g[i]->GetX()[j-1];
+    Float_t xmax = g[i]->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*g[i]->GetY()[j-1] + fr2*g[i]->GetY()[j];
+    eval[i] = fr1*g[i]->GetEYlow()[j-1] + fr2*g[i]->GetEYlow()[j];
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) mass=%f n1=%f v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],mass,nq,ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *gres = new TGraphErrors(ncentr,centr,val,ecentr,eval);
+  return gres;
+}
+
+TGraphErrors *getPtNqMass(Float_t ptnq,Int_t nq,Float_t mass,Int_t ncentr,TGraphErrors **g,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<ncentr;i++){   
+    Float_t pt = ptnq * nq;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mass);
+    Int_t j=0;
+    while(g[i]->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = g[i]->GetX()[j-1];
+    Float_t xmax = g[i]->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*g[i]->GetY()[j-1] + fr2*g[i]->GetY()[j];
+    eval[i] = fr1*g[i]->GetEY()[j-1] + fr2*g[i]->GetEY()[j];
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) mass=%f n1=%f v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],mass,nq,ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *gres = new TGraphErrors(ncentr,centr,val,ecentr,eval);
+  return gres;
+}
+
+
 TGraphErrors *getPtNqPi(Float_t ptnq,Bool_t mtflag=kFALSE){
   char name[200];
 
@@ -139,6 +198,71 @@ TGraphErrors *getPtNqPr(Float_t ptnq,Bool_t mtflag=kFALSE){
   TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
   return g;
 }
+
+TGraphErrors *getPtNqMassV2Nq(Float_t ptnq,Int_t nq,Float_t mass,Int_t ncentr,TGraphAsymmErrors **g,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<ncentr;i++){   
+    Float_t pt = ptnq * nq;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mass);
+    Int_t j=0;
+    while(g[i]->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = g[i]->GetX()[j-1];
+    Float_t xmax = g[i]->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*g[i]->GetY()[j-1] + fr2*g[i]->GetY()[j];
+    eval[i] = fr1*g[i]->GetEYlow()[j-1] + fr2*g[i]->GetEYlow()[j];
+
+    val[i] /= nq;
+    eval[i] /= nq;
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) mass=%f n1=%f v2/nq at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],mass,nq,ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *gres = new TGraphErrors(ncentr,centr,val,ecentr,eval);
+  return gres;
+}
+
+TGraphErrors *getPtNqMassV2Nq(Float_t ptnq,Int_t nq,Float_t mass,Int_t ncentr,TGraphErrors **g,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<ncentr;i++){   
+    Float_t pt = ptnq * nq;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mass);
+    Int_t j=0;
+    while(g[i]->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = g[i]->GetX()[j-1];
+    Float_t xmax = g[i]->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*g[i]->GetY()[j-1] + fr2*g[i]->GetY()[j];
+    eval[i] = fr1*g[i]->GetEY()[j-1] + fr2*g[i]->GetEY()[j];
+
+    val[i] /= nq;
+    eval[i] /= nq;
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) mass=%f n1=%f v2/nq at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],mass,nq,ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *gres = new TGraphErrors(ncentr,centr,val,ecentr,eval);
+  return gres;
+}
+
 
 TGraphErrors *getPtNqPiV2Nq(Float_t ptnq,Bool_t mtflag=kFALSE){
   char name[200];
@@ -1617,5 +1741,234 @@ Float_t ComputePrV2int(Int_t ic=2,Float_t xmin=0,Float_t xmax=20){
   gprSp1->Draw("P");
   gprSp2->Draw("P");
   hprplus->Draw("SAME");
+}
+
+drawAllMtNq(Float_t pt=0.5){
+  if(! kLoaded) LoadLib();
+  char title[200];
+
+  TLegend *leg = new TLegend(pt,0.15,0.8,0.5);
+  leg->SetFillStyle(0);
+
+  TGraphErrors *ge = getPtNqPiV2Nq(pt,1);
+  ge->Draw("AP");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(4);
+  ge->SetLineColor(4);
+
+  ge->SetMinimum(0);
+  ge->SetMaximum(0.1);
+
+  sprintf(title,"v_{2}/n_{q} for KE_{T}/n_{q} = %4.2f GeV/#it{c};centrality (%);v_{2}/n_{q}",pt);
+  ge->SetTitle(title);
+
+  leg->AddEntry(ge,"#pi","lp");
+
+  ge = getPtNqKaV2Nq(pt,1);
+  ge->Draw("P");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(1);
+  ge->SetLineColor(1);
+  leg->AddEntry(ge,"K","lp");
+ 
+  ge = getPtNqPrV2Nq(pt,1);
+  ge->Draw("P");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(2);
+  ge->SetLineColor(2);
+  leg->AddEntry(ge,"#bar{p}","lp");
+
+
+  TGraphErrors *g[9];
+  TGraphAsymmErrors *ga[9];
+  g[0]=Lv2_05_SPVZE();
+  g[1]=Lv2_510_SPVZE();
+  g[2]=Lv2_1020_SPVZE();
+  g[3]=Lv2_2030_SPVZE();
+  g[4]=Lv2_3040_SPVZE();
+  ge = getPtNqMassV2Nq(pt,3,1.115,5,g,1);
+  ge->Draw("P");
+  ge->SetLineColor(8);
+  ge->SetMarkerColor(8);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Lambda","lp");
+
+  g[0]=Kv2_05_SPVZE();
+  g[1]=Kv2_510_SPVZE();
+  g[2]=Kv2_1020_SPVZE();
+  g[3]=Kv2_2030_SPVZE();
+  g[4]=Kv2_3040_SPVZE();
+  ge = getPtNqMassV2Nq(pt,2,0.493,5,g,1);
+  ge->Draw("P");
+  ge->SetLineColor(6);
+  ge->SetMarkerColor(6);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"K^{0}_{s}","lp");
+
+  ga[0] = v2Xi0510();
+  ga[1] = v2Xi0510();
+  ga[2] = v2Xi1020();
+  ga[3] = v2Xi2030();
+  ga[4] = v2Xi3040();
+  ga[5] = v2Xi4050();
+  ga[6] = v2Xi5060();
+
+  ge = getPtNqMassV2Nq(pt,3,1.321,7,ga,1);
+  ge->Draw("P");
+  ge->SetLineColor(33);
+  ge->SetMarkerColor(33);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Xi","lp");
+  ge->RemovePoint(0);
+
+  ga[0] = v2Omega0510();
+  ga[1] = v2Omega0510();
+  ga[2] = v2Omega1020();
+  ga[3] = v2Omega2030();
+  ga[4] = v2Omega3040();
+  ga[5] = v2Omega4050();
+  ga[6] = v2Omega5060();
+
+  ge = getPtNqMassV2Nq(pt,3,1.672,7,ga,1);
+  ge->Draw("P");
+  ge->SetLineColor(11);
+  ge->SetMarkerColor(11);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Omega","lp");
+  ge->RemovePoint(0);
+
+  ga[0] = v2SPPhi1020();
+  ga[1] = v2SPPhi1020();
+  ga[2] = v2SPPhi1020();
+  ga[3] = v2SPPhi2030();
+  ga[4] = v2SPPhi3040();
+  ga[5] = v2SPPhi4050();
+  ga[6] = v2SPPhi5060();
+
+  ge = getPtNqMassV2Nq(pt,2,1.0194,7,ga,1);
+  ge->Draw("P");
+  ge->SetLineColor(13);
+  ge->SetMarkerColor(13);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#phi","lp");
+  leg->Draw("SAME");
+  ge->RemovePoint(1);
+  ge->RemovePoint(0);
+
+}
+
+drawAllPtNq(Float_t pt=0.5){
+  if(! kLoaded) LoadLib();
+  char title[200];
+
+  TLegend *leg = new TLegend(pt,0.15,0.8,0.5);
+  leg->SetFillStyle(0);
+
+  TGraphErrors *ge = getPtNqPiV2Nq(pt,0);
+  ge->Draw("AP");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(4);
+  ge->SetLineColor(4);
+
+  ge->SetMinimum(0);
+  ge->SetMaximum(0.1);
+
+  sprintf(title,"v_{2}/n_{q} for p_{T}/n_{q} = %4.2f GeV/#it{c};centrality (%);v_{2}/n_{q}",pt);
+  ge->SetTitle(title);
+
+  leg->AddEntry(ge,"#pi","lp");
+
+  ge = getPtNqKaV2Nq(pt,0);
+  ge->Draw("P");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(1);
+  ge->SetLineColor(1);
+  leg->AddEntry(ge,"K","lp");
+ 
+  ge = getPtNqPrV2Nq(pt,0);
+  ge->Draw("P");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(2);
+  ge->SetLineColor(2);
+  leg->AddEntry(ge,"#bar{p}","lp");
+
+
+  TGraphErrors *g[9];
+  TGraphAsymmErrors *ga[9];
+  g[0]=Lv2_05_SPVZE();
+  g[1]=Lv2_510_SPVZE();
+  g[2]=Lv2_1020_SPVZE();
+  g[3]=Lv2_2030_SPVZE();
+  g[4]=Lv2_3040_SPVZE();
+  ge = getPtNqMassV2Nq(pt,3,1.115,5,g,0);
+  ge->Draw("P");
+  ge->SetLineColor(8);
+  ge->SetMarkerColor(8);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Lambda","lp");
+
+  g[0]=Kv2_05_SPVZE();
+  g[1]=Kv2_510_SPVZE();
+  g[2]=Kv2_1020_SPVZE();
+  g[3]=Kv2_2030_SPVZE();
+  g[4]=Kv2_3040_SPVZE();
+  ge = getPtNqMassV2Nq(pt,2,0.493,5,g,0);
+  ge->Draw("P");
+  ge->SetLineColor(6);
+  ge->SetMarkerColor(6);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"K^{0}_{s}","lp");
+
+  ga[0] = v2Xi0510();
+  ga[1] = v2Xi0510();
+  ga[2] = v2Xi1020();
+  ga[3] = v2Xi2030();
+  ga[4] = v2Xi3040();
+  ga[5] = v2Xi4050();
+  ga[6] = v2Xi5060();
+
+  ge = getPtNqMassV2Nq(pt,3,1.321,7,ga,0);
+  ge->Draw("P");
+  ge->SetLineColor(33);
+  ge->SetMarkerColor(33);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Xi","lp");
+  ge->RemovePoint(0);
+
+  ga[0] = v2Omega0510();
+  ga[1] = v2Omega0510();
+  ga[2] = v2Omega1020();
+  ga[3] = v2Omega2030();
+  ga[4] = v2Omega3040();
+  ga[5] = v2Omega4050();
+  ga[6] = v2Omega5060();
+
+  ge = getPtNqMassV2Nq(pt,3,1.672,7,ga,0);
+  ge->Draw("P");
+  ge->SetLineColor(11);
+  ge->SetMarkerColor(11);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Omega","lp");
+  ge->RemovePoint(0);
+
+  ga[0] = v2SPPhi1020();
+  ga[1] = v2SPPhi1020();
+  ga[2] = v2SPPhi1020();
+  ga[3] = v2SPPhi2030();
+  ga[4] = v2SPPhi3040();
+  ga[5] = v2SPPhi4050();
+  ga[6] = v2SPPhi5060();
+
+  ge = getPtNqMassV2Nq(pt,2,1.0194,7,ga,0);
+  ge->Draw("P");
+  ge->SetLineColor(13);
+  ge->SetMarkerColor(13);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#phi","lp");
+  leg->Draw("SAME");
+
+  ge->RemovePoint(1);
+  ge->RemovePoint(0);
+
 }
 
