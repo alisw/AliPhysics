@@ -1,3 +1,7 @@
+#ifndef ALIANALYSISTASKLAMBDANAOD_H
+#define ALIANALYSISTASKLAMBDANAOD_H
+
+
 /**************************************************************************
  * Author : Nicole Alice Martin (nicole.alice.martin@cern.ch)                  *
  *                                                                        *
@@ -17,9 +21,6 @@
 //  task for the investigation of (anti-)lambda-n bound state
 //          uses the V0 finders, based on AODs or ESDS
 //-----------------------------------------------------------------
-
-#ifndef ALIANALYSISTASKLAMBDANAOD_H
-#define ALIANALYSISTASKLAMBDANAOD_H
 
 class TF1;
 class TH1F;
@@ -44,6 +45,8 @@ class AliESDv0;
 #include <fstream>
 #include "AliAnalysisTaskSE.h"
 #include "THnSparse.h"
+#include "AliStack.h"
+#include "AliVTrack.h"
 
 #define maxNofTracks 100000
 
