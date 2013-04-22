@@ -37,6 +37,7 @@
 #include "AliITSUSeed.h"
 #include "AliITSUAux.h"
 #include "AliITSUClusterPix.h"
+#include "AliITSUGeomTGeo.h"
 using namespace AliITSUAux;
 using namespace TMath;
 
@@ -368,6 +369,7 @@ Bool_t AliITSUTrackerGlo::NeedToProlong(AliESDtrack* esdTr)
        && (Abs(dtz[0])>AliITSUReconstructor::GetRecoParam()->GetMaxDForProlongation() ||
 	   Abs(dtz[1])>AliITSUReconstructor::GetRecoParam()->GetMaxDZForProlongation())) return kFALSE;
   //
+  //  if (esdTr->Pt()<3) return kFALSE;//RS
   return kTRUE;
 }
 
@@ -471,7 +473,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 	if (!seedT.RotateToAlpha(sens->GetPhiTF())) continue;
 	//
 	int clID0 = sens->GetFirstClusterId();
-	for (int icl=ncl;icl--;) {
+	for (int icl=ncl;icl--;) { // don't change the order, clusters are sorted
 	  //	  AliLog::SetClassDebugLevel("AliITSUTrackerGlo",10);
 	  int res = CheckCluster(&seedT,ila,clID0+icl);
 	  //	  AliLog::SetClassDebugLevel("AliITSUTrackerGlo", 0);
@@ -852,7 +854,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
 #ifdef  _FILL_CONTROL_HISTOS_
   int hcOffs = fTrackPhase*kHistosPhase + lr;
   double htrPt=-1;
-  if (goodCl&&goodSeed && fCHistoArr /*&& track->GetChi2Penalty()<1e-5*/) {
+  if (goodCl && (((AliITSUClusterPix*)cl)->GetNPix()>1 || !((AliITSUClusterPix*)cl)->IsSplit()) && goodSeed && fCHistoArr /* && track->GetChi2Penalty()<1e-5*/) {
     htrPt = track->Pt();
     ((TH2*)fCHistoArr->At(kHResY+hcOffs))->Fill(htrPt,dy);
     ((TH2*)fCHistoArr->At(kHResZ+hcOffs))->Fill(htrPt,dz);
@@ -873,7 +875,9 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
       cl->Print();
       PrintSeedClusters(track);
     }
-    if (dy>0) return kStopSearchOnSensor;  // No chance that other cluster of this sensor will match (all Y's will be even larger)
+    // clusters are sorted in increasing Y and the loop goes from last (highers Y) to 1st.
+    // if the track has too large y for this cluster (dy<0) it will be so for all other clusters of the sensor
+    if (dy<0) return kStopSearchOnSensor;  // No chance that other cluster of this sensor will match (all Y's will be even larger)
     else      return kClusterNotMatching;   // Other clusters may match
   }
   double dz2 = dz*dz;

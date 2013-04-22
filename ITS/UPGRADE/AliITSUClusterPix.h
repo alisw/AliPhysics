@@ -71,7 +71,7 @@ class AliITSUClusterPix : public AliCluster
   //
   static  void                 SetGeom(AliITSUGeomTGeo* gm) {fgGeom = gm;}
   static  void                 SetSortMode(SortMode_t md)   {fgMode &= ~kSortBits; fgMode |= md;}
-  static  UInt_t               GetSortMode()                {return fgMode|kSortBits;}
+  static  UInt_t               GetSortMode()                {return fgMode&kSortBits;}
   static  UInt_t               GetMode()                    {return fgMode;}
   static  SortMode_t           SortModeIdTrkYZ()            {return kSortIdTrkYZ;}
   static  SortMode_t           SortModeIdLocXZ()            {return kSortIdLocXZ;}

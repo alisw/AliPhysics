@@ -247,7 +247,7 @@ void AliITSUClusterPix::GetTrackingXYZ(Float_t xyz[3]) const
   }
   // now in local frame
   GetTracking2LocalMatrix()->MasterToLocal(loc,trk);
-  for (int i=3;i--;) xyz[i] = loc[i];
+  for (int i=3;i--;) xyz[i] = trk[i];
   //
 }
 
