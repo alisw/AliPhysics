@@ -46,9 +46,10 @@ class AliAnalysisTaskZDCTreeMaker : public AliAnalysisTaskSE {
   //
   TTree   *fCentralityTree;     //! output tree
   //
-  //char     fTrigClass[100];	//  fired trigger classes
+  char     fTrigClass[100];	//  fired trigger classes
   //
   Bool_t   fIsEventSelected;    //  is physics selection on
+  Bool_t   fIsPileupFromSPD;	//  is pilue up from SPD
   //
   Double_t fxVertex;		//  X vertex from ITS
   Double_t fyVertex;		//  Y vertex from ITS
@@ -98,7 +99,7 @@ class AliAnalysisTaskZDCTreeMaker : public AliAnalysisTaskSE {
   AliAnalysisTaskZDCTreeMaker& operator= (const AliAnalysisTaskZDCTreeMaker& ana);
   AliAnalysisTaskZDCTreeMaker(const AliAnalysisTaskZDCTreeMaker& c);
   //
-  ClassDef(AliAnalysisTaskZDCTreeMaker,1); 
+  ClassDef(AliAnalysisTaskZDCTreeMaker,2); 
 
 };
 
