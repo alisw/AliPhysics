@@ -89,6 +89,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Double_t                    fMinJetMCPt;                    // minimum jet MC pt
 
   AliGenPythiaEventHeader    *fPythiaHeader;                  //!event Pythia header
+  Double_t                    fPtHard;                        //!event pt hard
   Int_t                       fPtHardBin;                     //!event pt hard bin
   Int_t                       fNTrials;                       //!event trials
   TClonesArray               *fTracks2;                       //!Tracks 2
@@ -103,6 +104,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH1                        *fHistTrials;                             //!trials from pyxsec.root
   TProfile                   *fHistXsection;                           //!x section from pyxsec.root
   TH1                        *fHistEvents;                             //!total number of events per pt hard bin
+  TH1                        *fHistPtHard;                             //!pt hard distribution
   TH2                        *fMCEnergy1vsEnergy2;                     //!total MC energy jet 1 vs total energy jet 2
   // Jets 1
   TH2                        *fHistJets1PhiEta;                        //!phi-eta distribution of jets 1
