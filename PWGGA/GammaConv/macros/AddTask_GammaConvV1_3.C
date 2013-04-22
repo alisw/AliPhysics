@@ -31,8 +31,6 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
    else if (trainConfig.Contains("pPb")) IsHeavyIon=2;
 
    Bool_t doEtaShift = kFALSE;
-   Int_t forceEtaShift = 0; // Carefull !!! Should be zero otherwise will shift eta cut for all periods
-                            // Use doEtaShift flag for pPb or Pbp instead (1: shift +0.465, 2: shift -0.465)
 
    TString cutnumber = "";
    if(IsHeavyIon == 1){
@@ -81,7 +79,6 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
             fCuts->SelectCollisionCandidates(AliVEvent::kINT7);
             fCuts->DoEtaShift(doEtaShift);
          }
-         fCuts->ForceEtaShift(forceEtaShift);
          fV0ReaderV1->SetConversionCuts(fCuts);
          fCuts->SetFillCutHistograms("",kTRUE);
       }
@@ -129,7 +126,7 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
      cutarray[ 0] = "8020000072093172023290000"; mesonCutArray[0] = "01627045000";  //standard cut Pi0 Pb 00-20  wo shifted Eta 0.3
      cutarray[ 1] = "8240000072093172023290000"; mesonCutArray[1] = "01627045000";  //standard cut Pi0 Pb 20-40 wo shifted Eta 0.3
      cutarray[ 2] = "8460000072093172023290000"; mesonCutArray[2] = "01627045000";  //standard cut Pi0 Pb 40-60 wo shifted Eta 0.3
-     cutarray[ 3] = "8680000072093172023290000"; mesonCutArray[3] = "01627045000";  //standard cut Pi0 Pb 60-80 wo shifted Eta 0.3
+     cutarray[ 3] = "8600000072093172023290000"; mesonCutArray[3] = "01627045000";  //standard cut Pi0 Pb 60-100 wo shifted Eta 0.3
    } else {
       cutarray[ 0] = "0002011002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
       cutarray[ 1] = "0003011002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
