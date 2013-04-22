@@ -70,9 +70,9 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
 
 if (rejOnly) {
 
-  AliDielectron *lowmass8=ConfigLMEEPbPb2011AOD(8,hasMC,bESDANA);
-  task->AddDielectron(lowmass8);
-  printf("add: %s\n",lowmass8->GetName());
+  AliDielectron *lowmass7=ConfigLMEEPbPb2011AOD(7,hasMC,bESDANA);
+  task->AddDielectron(lowmass7);
+  printf("add: %s\n",lowmass7->GetName());
 
 }
 else {
@@ -85,9 +85,9 @@ else {
   printf("add: %s\n",lowmass1->GetName());
 
 if (PIDbaseline) {
-	AliDielectron *lowmass7=ConfigLMEEPbPb2011AOD(7,hasMC,bESDANA);
-	task->AddDielectron(lowmass7);
-	printf("add: %s\n",lowmass7->GetName());
+	AliDielectron *lowmass8=ConfigLMEEPbPb2011AOD(8,hasMC,bESDANA);
+	task->AddDielectron(lowmass8);
+	printf("add: %s\n",lowmass8->GetName());
 }
 }
 

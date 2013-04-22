@@ -4,7 +4,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFCentHPT;TPCTOFSemiCentHPT;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFCentnoTOF;NoPIDNoPairing;TPCTOFCentRej");
+TString names=("noPairing;TPCTOFCentHPT;TPCTOFSemiCentHPT;TPCTOFPerinoRej;TPCTOFCentRej;TPCTOFSemiCent;TPCTOFCentBothSPD;TPCTOFCentITSRejAlt;TPCTOFCentITSRej");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -44,7 +44,7 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	//not yet implemented
   }
   else if (cutDefinition==1) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOFHPT;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kFALSE;
   }
@@ -61,7 +61,7 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
   else if (cutDefinition==4) {
 	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
-	rejectionStep = kFALSE;
+	rejectionStep = kTRUE;
   }
   else if (cutDefinition==5) {
 	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
@@ -69,18 +69,18 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	rejectionStep = kTRUE;
   }
   else if (cutDefinition==6) {
-	//selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-	selectedPID = LMEECutLib::kPbPb2011TPC;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	//selectedPID = LMEECutLib::kPbPb2011TPC;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kFALSE;
   }
   else if (cutDefinition==7) {
-	selectedPID = LMEECutLib::kPbPb2011NoPID;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFHPT;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
-	rejectionStep = kFALSE;
+	rejectionStep = kTRUE;
   }
   else if (cutDefinition==8) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFHPT;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kTRUE;
   }
@@ -104,15 +104,31 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
    }
 
   if (rejectionStep) {
-	  if (ESDanalysis) {
+/*	  if (ESDanalysis) {
 		  die->GetTrackFilter().AddCuts( LMCL->GetESDTrackCutsAna(selectedPID) );
 		  die->GetPairPreFilterLegs().AddCuts( LMCL->GetESDTrackCutsAna(selectedPID) );
 	  }
+	  */
 
 	  //die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(selectedPID) );
-	  die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
-	  die->GetPairPreFilterLegs().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
-	  die->GetPairPreFilter().AddCuts(LMCL->GetPairCuts(selectedPID) );
+
+
+   if ((cutDefinition == 7)||(cutDefinition == 8)) {
+	 //track cuts done for PRE in the PID method
+	 //	die->GetTrackFilter().AddCuts(LMCL->GetTrackCutsPre(selectedPID) );
+	die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(selectedPID) );
+   }
+   else if (cutDefinition == 4){
+	die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(LMEECutLib::kPbPb2011TPCorTOF) );
+   }
+   else {
+	die->GetTrackFilter().AddCuts(LMCL->GetTrackCutsAna(selectedPID) );
+	die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
+   }
+	die->GetPairPreFilter().AddCuts(LMCL->GetPairCuts(selectedPID) );
+
+	die->GetPairPreFilterLegs().AddCuts(LMCL->GetTrackCutsAna(selectedPID) );
+	die->GetPairPreFilterLegs().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
 	}
 	else { //No Prefilter, no Pairfilter
 	  
@@ -122,7 +138,13 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	  
 	  die->GetTrackFilter().AddCuts( LMCL->GetTrackCutsAna(selectedPID) );
 	  die->GetTrackFilter().AddCuts( LMCL->GetPIDCutsAna(selectedPID) );
-	  
+	  if (cutDefinition == 6) {
+		AliDielectronTrackCuts *trackCutsDielSPD = new AliDielectronTrackCuts("trackCutsDielSPD","trackCutsDielSPD");
+		trackCutsDielSPD->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+		die->GetTrackFilter().AddCuts( trackCutsDielSPD );
+
+
+	  }
 	  die->GetPairFilter().AddCuts(LMCL->GetPairCuts2(selectedPID,kFALSE));
 
 
