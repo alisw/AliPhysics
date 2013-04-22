@@ -68,6 +68,7 @@ public:
   TBits  GetIRInt2InteractionMap() { SetIRInteractionMap(); return fIRInt2InteractionsMap; }
   TBits  GetIRInt1InteractionMap() { SetIRInteractionMap(); return fIRInt1InteractionsMap; }
   Int_t  GetIRInt2ClosestInteractionMap();
+  Int_t  GetIRInt1ClosestInteractionMap(Int_t gap = 3);
   Int_t  GetIRInt2LastInteractionMap();
 //**************************************************************************
 
