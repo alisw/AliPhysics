@@ -31,9 +31,7 @@ void AddTask_GammaConvV1_2(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
    else if (trainConfig.Contains("pPb")) IsHeavyIon=2;
 
    Bool_t doEtaShift = kFALSE;
-   Int_t forceEtaShift = 0; // Carefull !!! Should be zero otherwise will shift eta cut for all periods
-                            // Use doEtaShift flag for pPb or Pbp instead (1: shift +0.465, 2: shift -0.465)
-
+   
    TString cutnumber = "";
    if(IsHeavyIon == 1){
       cutnumber = "1000000002084001001500000";
@@ -81,7 +79,6 @@ void AddTask_GammaConvV1_2(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
             fCuts->SelectCollisionCandidates(AliVEvent::kINT7);
             fCuts->DoEtaShift(doEtaShift);
          }
-         fCuts->ForceEtaShift(forceEtaShift);
          fV0ReaderV1->SetConversionCuts(fCuts);
          fCuts->SetFillCutHistograms("",kTRUE);
       }
