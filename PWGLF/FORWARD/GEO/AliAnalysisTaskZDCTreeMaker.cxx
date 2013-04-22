@@ -67,6 +67,7 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker():
     fOutput(0x0),
     fCentralityTree(0x0),
     fIsEventSelected(kFALSE),
+    fIsPileupFromSPD(kFALSE),
     fxVertex(0),	 
     fyVertex(0),	 
     fzVertex(0),	 
@@ -127,6 +128,7 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
     fOutput(0x0),
     fCentralityTree(0x0),
     fIsEventSelected(kFALSE),
+    fIsPileupFromSPD(kFALSE),
     fxVertex(0),       
     fyVertex(0),       
     fzVertex(0),       
@@ -289,6 +291,7 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       
       // use response of AliPhysicsSelection
       fIsEventSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);       
+      fIsPileupFromSPD = esd->IsPileupFromSPD(5);
 
       AliCentrality *centrality = esd->GetCentrality();
       fCentralityV0M = centrality->GetCentralityPercentile("V0M");
@@ -375,6 +378,7 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       
       // use response of AliPhysicsSelection
       fIsEventSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCINT5);       
+      fIsPileupFromSPD = aod->IsPileupFromSPD(5);
       
       AliCentrality *centrality = aod->GetCentrality();
       fCentralityV0M = centrality->GetCentralityPercentile("V0M");

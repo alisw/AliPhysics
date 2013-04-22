@@ -209,12 +209,13 @@ void AliAnalysisTaskZDCpAcalib::UserExec(Option_t */*option*/)
       sprintf(fTrigClass,"%s",triggerClass.Data());
       
       // use response of AliPhysicsSelection
-      fIsEventSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCINT5);       
+      fIsEventSelected =
+      (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);       
 
           
-      AliESDVZERO *vzeroAOD = esd->GetVZEROData();
-      fIsV0ATriggered = vzeroAOD->GetV0ADecision();
-      fIsV0CTriggered = vzeroAOD->GetV0CDecision();
+      AliESDVZERO *vzeroESD = esd->GetVZEROData();
+      fIsV0ATriggered = vzeroESD->GetV0ADecision();
+      fIsV0CTriggered = vzeroESD->GetV0CDecision();
         
       AliESDZDC *esdZDC = esd->GetESDZDC();
        
