@@ -21,7 +21,9 @@ void readClusters(int nev=-1,int evStart=0)
   AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE);
   Int_t nLayers = gm->GetNLayers();
   AliITSUClusterPix::SetGeom(gm);
-
+  AliITSURecoDet *its = new AliITSURecoDet(gm, "ITSinterface");
+  its->CreateClusterArrays();
+  //
   TH2F *xyGlob = new TH2F("xyGlob"," X - Y Global coordinates ",500,-50,50,500,-50,50);
   xyGlob->SetXTitle("cm"); 
   xyGlob->SetMarkerStyle(7); 
@@ -31,7 +33,6 @@ void readClusters(int nev=-1,int evStart=0)
   TH1F* rGlob = new TH1F("rGlob","R global", 5000, 0,50.);
 
   TTree * cluTree = 0x0;
-  TObjArray layerClus;
   
   int nevTot = (Int_t)runLoader->GetNumberOfEvents();
   printf("N Events : %i \n",nevTot);
@@ -50,26 +51,29 @@ void readClusters(int nev=-1,int evStart=0)
     while(1) {
       TBranch* br = cluTree->GetBranch(Form("ITSRecPoints%d",nlr));
       if (!br) break;
-      TClonesArray* clr = 0;
-      br->SetAddress(&clr);
-      layerClus.AddLast(clr);
+      br->SetAddress(its->GetLayerActive(nlr)->GetClustersAddress());
       nlr++;
-    }
-
+    }    
     printf(" tree entries: %d\n",cluTree->GetEntries());
     cluTree->GetEntry(0);      
+    AliITSUClusterPix::SetSortMode( AliITSUClusterPix::SortModeIdTrkYZ());
+    for (int ilr=0;ilr<nlr;ilr++) {its->GetLayerActive(ilr)->GetClusters()->Sort();}
+    its->ProcessClusters();
     //
     for (int ilr=0;ilr<nlr;ilr++) {
-      TClonesArray* clr = (TClonesArray*)layerClus.At(ilr);
+      AliITSURecoLayer* lr = its->GetLayerActive(ilr);
+      TClonesArray* clr = lr->GetClusters();
+      
       int nClu = clr->GetEntries();
       printf("Layer %d : %d clusters\n",ilr,nClu);
       //
       for (int icl=0;icl<nClu;icl++) {
 	AliITSUClusterPix *cl = (AliITSUClusterPix*)clr->At(icl);
-	cl->Print("glo");
-	Double_t loc[3]={cl->GetX(),cl->GetY(),cl->GetZ()}; 
-	Double_t glob[3]; 
-	gm->LocalToGlobal(cl->GetVolumeId(),loc,glob);
+	printf("#%4d | ",icl); cl->Print("glo");
+	Float_t loc[3];
+	cl->GetLocalXYZ(loc);
+	Float_t glob[3]; 
+	cl->GetGlobalXYZ(glob);
 	//printf("%d: mod %d: loc(%.4lf,%.4lf,%.4lf); glob(%.4lf,%.4lf,%.4lf); \n",icl,cl->GetVolumeId(),
 	//       loc[0],loc[1],loc[2],glob[0],glob[1],glob[2]);
 	xyGlob->Fill(glob[0],glob[1]);
@@ -77,7 +81,6 @@ void readClusters(int nev=-1,int evStart=0)
 	rGlob->Fill(TMath::Sqrt(glob[0]*glob[0]+glob[1]*glob[1]));
       }
     }
-    layerClus.Clear();
   }//event loop
 
   Int_t size = 400;
