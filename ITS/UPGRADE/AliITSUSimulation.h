@@ -62,7 +62,7 @@ class AliITSUSimulation : public TObject
   virtual void CreateFastRecPoints(AliITSUModule *,Int_t,TRandom *,TClonesArray* /*recp*/) {}
   //
   // readout phase (strobe, timing etc) generation
-  virtual void GenerateReadOutCycleOffset() {}
+  virtual Double_t GenerateReadOutCycleOffset();
   //
   AliITSCalibration*  GetCalibDead()                   const {return fCalibDead;}
   AliITSCalibration*  GetCalibNoisy()                  const {return fCalibNoisy;}
@@ -87,6 +87,9 @@ class AliITSUSimulation : public TObject
   void SetNoDebug()                                        {fDebug=0;}
   void ClearMap()                                          {fSensMap->Clear();}
   //
+  Double_t GetReadOutCycleOffset()              const      {return fReadOutCycleOffset;}
+  void     SetReadOutCycleOffset(Double_t v=0)             {fReadOutCycleOffset = v;}
+  //
   static  Int_t GenOrderedSample(UInt_t nmax,UInt_t ngen,TArrayI &vals,TArrayI &ind);
   //
   static  Double_t GausInt1D(Double_t sig,Double_t a,Double_t b);
@@ -101,11 +104,14 @@ class AliITSUSimulation : public TObject
   AliITSUSimuParam    *fSimuParam;      //! simulation parameters
   AliITSUParamList    *fResponseParam;  //! response parameterization data
   AliITSUModule       *fModule;         //! module being processed
+  Float_t              fReadOutCycleOffset; //! The phase of the RO with respect to the trigger
+  Float_t              fReadOutCycleLength; //! readout cycle lenght in s
+
   Int_t                fEvent;          //! event number being processed
   Int_t                fDebug;          //!  debug flag
   Bool_t               fCyclesID[2*kMaxROCycleAccept+1]; //! status of RO cycles
 
-  ClassDef(AliITSUSimulation,1)       // Simulation base class 
+  ClassDef(AliITSUSimulation,2)       // Simulation base class 
     
 };
 

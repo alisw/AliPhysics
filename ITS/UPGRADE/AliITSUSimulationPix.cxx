@@ -61,8 +61,6 @@ ClassImp(AliITSUSimulationPix)
 //______________________________________________________________________
 AliITSUSimulationPix::AliITSUSimulationPix()
 :  fTanLorAng(0)
-  ,fReadOutCycleLength(25e-6)
-  ,fReadOutCycleOffset(0)
   ,fGlobalChargeScale(1.0)
   ,fSpread2DHisto(0)
   ,fSpreadFun(0)
@@ -76,8 +74,6 @@ AliITSUSimulationPix::AliITSUSimulationPix()
 AliITSUSimulationPix::AliITSUSimulationPix(AliITSUSimuParam* sim,AliITSUSensMap* map)
   :AliITSUSimulation(sim,map)
   ,fTanLorAng(0)
-  ,fReadOutCycleLength(25e-6)
-  ,fReadOutCycleOffset(0)
   ,fGlobalChargeScale(1.0)
   ,fSpread2DHisto(0)
   ,fSpreadFun(0)
@@ -92,8 +88,6 @@ AliITSUSimulationPix::AliITSUSimulationPix(AliITSUSimuParam* sim,AliITSUSensMap*
 AliITSUSimulationPix::AliITSUSimulationPix(const AliITSUSimulationPix &s) 
   :AliITSUSimulation(s)
   ,fTanLorAng(s.fTanLorAng)
-  ,fReadOutCycleLength(s.fReadOutCycleLength)
-  ,fReadOutCycleOffset(s.fReadOutCycleOffset)
   ,fGlobalChargeScale(s.fGlobalChargeScale)
   ,fSpread2DHisto(s.fSpread2DHisto)
   ,fSpreadFun(s.fSpreadFun)
@@ -116,8 +110,6 @@ AliITSUSimulationPix& AliITSUSimulationPix::operator=(const AliITSUSimulationPix
   //    Assignment operator
   if (&s == this) return *this;
   AliITSUSimulation::operator=(s);
-  fReadOutCycleLength = s.fReadOutCycleLength;
-  fReadOutCycleOffset = s.fReadOutCycleOffset;
   fSpread2DHisto = s.fSpread2DHisto;
   //
   fGlobalChargeScale = s.fGlobalChargeScale;
@@ -710,18 +702,6 @@ void AliITSUSimulationPix::SetCouplingOld(AliITSUSDigit* old)
    if ((j2<0)||(j2>(fSeg->Npx()-1))||(pulse2<fSimuParam->GetPixThreshold(modId))) pulse2 = old->GetSignal();
    else UpdateMapSignal(col,UInt_t(j2),old->GetTrack(0),old->GetHit(0),pulse2,cycle);
  } // for isign
-}
-
-//______________________________________________________________________
-void AliITSUSimulationPix::GenerateReadOutCycleOffset()
-{
-  // Generate randomly the strobe
-  // phase w.r.t to the LHC clock
-  fReadOutCycleOffset = fReadOutCycleLength*gRandom->Rndm();
-  // fReadOutCycleOffset = 25e-9*gRandom->Rndm(); // clm: I think this way we shift too much 10-30 us! The global shift should be between the BCs?!
-  // RS: 25 ns is too small number, the staggering will not work. Let's at the moment keep fully random shift (still, no particle from correct
-  // collision will be lost) untill real number is specified
- //
 }
 
 //______________________________________________________________________

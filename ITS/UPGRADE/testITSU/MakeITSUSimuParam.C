@@ -10,6 +10,16 @@ const int kAddNoise = -1;
 const int kAddNoiseInAllMod = -1;
 
 const char* inpPSFName = "$ALICE_ROOT/ITS/UPGRADE/misc/ITSU_pixel_response_PSFs.root";
+const int kNLayers = 7; 
+
+/*
+  these are readout phases settings: 
+  the rule is: 
+  1) abs(kROShifts)<1: the modules of the layer are synchronized, the layer 
+     phase is set to kROShifts*ROCycleLength of the modules of this layer
+  2) abs(kROShifts)>1: each module within the layer will have random phase within its ROCycleLength
+*/
+const float kROShifts[kNLayers] = {0.5,0.5,0.5, -0.5,-0.5, 0.5,0.5};
 
 void MakeITSUSimuParam(const char* cdbURI="local://") {
   //========================================================================
@@ -55,6 +65,9 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Func()
   //const char* macroname = "MakeITSUSimuParam.C";
   //
   AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+  //
+  itsSimuParam->SetNLayers(kNLayers);
+  for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
   //
   // Add spread function parameterization data
   AliITSUParamList* parData = 0;
@@ -196,6 +209,9 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map()
   //
   AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
   //
+  itsSimuParam->SetNLayers(kNLayers);
+  for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
+  //
   // Add spread function parameterization data
   AliITSUParamList* parData = 0;
   //
@@ -292,6 +308,9 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map()
   //const char* macroname = "MakeITSUSimuParam.C";
   //
   AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+  //
+  itsSimuParam->SetNLayers(kNLayers);
+  for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
   //
   // Add spread function parameterization data
   AliITSUParamList* parData = 0;

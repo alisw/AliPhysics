@@ -57,22 +57,22 @@
 using namespace TMath;
 
 
-const Double_t  AliITSUSimuParam::fgkPixBiasVoltageDefault = 18.182;
-const Double_t  AliITSUSimuParam::fgkPixThreshDefault = 20.;
-const Double_t  AliITSUSimuParam::fgkPixThrSigmaDefault = 5.;
-const Double_t  AliITSUSimuParam::fgkPixMinElToAddDefault = 1.;
+const Float_t  AliITSUSimuParam::fgkPixBiasVoltageDefault = 18.182;
+const Float_t  AliITSUSimuParam::fgkPixThreshDefault = 20.;
+const Float_t  AliITSUSimuParam::fgkPixThrSigmaDefault = 5.;
+const Float_t  AliITSUSimuParam::fgkPixMinElToAddDefault = 1.;
 const UInt_t    AliITSUSimuParam::fgkPixCouplingOptDefault = AliITSUSimuParam::kNoCouplingPix;
-const Double_t  AliITSUSimuParam::fgkPixCouplColDefault = 0.;
-const Double_t  AliITSUSimuParam::fgkPixCouplRowDefault = 0.055;
-const Double_t  AliITSUSimuParam::fgkPixEccDiffDefault = 0.85;
-const Double_t  AliITSUSimuParam::fgkPixLorentzHoleWeightDefault = 1.0;
-const Double_t  AliITSUSimuParam::fgkGeVtoChargeDefault = 3.6e-9;
-const Double_t  AliITSUSimuParam::fgkDOverVDefault = 0.000375;
-const Double_t  AliITSUSimuParam::fgkTDefault = 300;
-const Double_t  AliITSUSimuParam::fgkPixFakeRateDefault = 1e-4;
+const Float_t  AliITSUSimuParam::fgkPixCouplColDefault = 0.;
+const Float_t  AliITSUSimuParam::fgkPixCouplRowDefault = 0.055;
+const Float_t  AliITSUSimuParam::fgkPixEccDiffDefault = 0.85;
+const Float_t  AliITSUSimuParam::fgkPixLorentzHoleWeightDefault = 1.0;
+const Float_t  AliITSUSimuParam::fgkGeVtoChargeDefault = 3.6e-9;
+const Float_t  AliITSUSimuParam::fgkDOverVDefault = 0.000375;
+const Float_t  AliITSUSimuParam::fgkTDefault = 300;
+const Float_t  AliITSUSimuParam::fgkPixFakeRateDefault = 1e-4;
 const Bool_t    AliITSUSimuParam::fgkPixNoiseInAllMod = kFALSE;        
 
-const Double_t  AliITSUSimuParam::fgkNsigmasDefault = 3.;
+const Float_t  AliITSUSimuParam::fgkNsigmasDefault = 3.;
 const Int_t    AliITSUSimuParam::fgkNcompsDefault = 121;
 
 ClassImp(AliITSUSimuParam)
@@ -83,6 +83,7 @@ AliITSUSimuParam::AliITSUSimuParam()
   ,fDOverV(fgkDOverVDefault)
   ,fT(fgkTDefault)
   //
+  ,fNLayers(0)
   ,fNPix(0)
   ,fPixCouplOpt(kNoCouplingPix)
   ,fPixCouplCol(fgkPixCouplColDefault)
@@ -101,6 +102,8 @@ AliITSUSimuParam::AliITSUSimuParam()
   ,fPixFakeRateDef(fgkPixFakeRateDefault)
   ,fPixNoiseInAllMod(fgkPixNoiseInAllMod)
   //
+  ,fLrROCycleShift(0)
+  //
   ,fPixThresh(0)
   ,fPixThrSigma(0)
   ,fPixBiasVoltage(0)
@@ -110,16 +113,19 @@ AliITSUSimuParam::AliITSUSimuParam()
   ,fRespFunParam(0)
 {  
   // default constructor
+  SetNPix(0);
+  SetNLayers(0);
   fRespFunParam.SetOwner(kTRUE);
 }
 
 //______________________________________________________________________
-AliITSUSimuParam::AliITSUSimuParam(UInt_t nPix)
+AliITSUSimuParam::AliITSUSimuParam(UInt_t nLayer,UInt_t nPix)
   :fGeVcharge(fgkGeVtoChargeDefault)
   ,fDOverV(fgkDOverVDefault)
   ,fT(fgkTDefault)
     //
-  ,fNPix(nPix)
+  ,fNLayers(0)
+  ,fNPix(0)
   ,fPixCouplOpt(kNoCouplingPix)
   ,fPixCouplCol(fgkPixCouplColDefault)
   ,fPixCouplRow(fgkPixCouplRowDefault)
@@ -137,6 +143,8 @@ AliITSUSimuParam::AliITSUSimuParam(UInt_t nPix)
   ,fPixFakeRateDef(fgkPixFakeRateDefault)
   ,fPixNoiseInAllMod(fgkPixNoiseInAllMod)
   //
+  ,fLrROCycleShift(0)
+   //
   ,fPixThresh(0)
   ,fPixThrSigma(0)
   ,fPixBiasVoltage(0)
@@ -146,16 +154,8 @@ AliITSUSimuParam::AliITSUSimuParam(UInt_t nPix)
   ,fRespFunParam(0)
 {  
   // regular constructor
-  if (fNPix>0) {
-    fPixBiasVoltage = new Double_t[fNPix];
-    fPixThresh      = new Double_t[fNPix];
-    fPixThrSigma    = new Double_t[fNPix];
-    fPixNoise       = new Double_t[fNPix];
-    fPixBaseline    = new Double_t[fNPix];
-  }
-  SetPixThreshold(fgkPixThreshDefault,fgkPixThrSigmaDefault);
-  SetPixNoise(0.,0.);
-  SetPixBiasVoltage(fgkPixBiasVoltageDefault);
+  SetNPix(nPix);
+  SetNLayers(nLayer);
   fRespFunParam.SetOwner(kTRUE);
   //
 }
@@ -167,6 +167,7 @@ AliITSUSimuParam::AliITSUSimuParam(const AliITSUSimuParam &simpar)
   ,fDOverV(simpar.fDOverV)
   ,fT(simpar.fT)
    //
+  ,fNLayers(simpar.fNLayers)
   ,fNPix(simpar.fNPix)
   ,fPixCouplOpt(simpar.fPixCouplOpt)
   ,fPixCouplCol(simpar.fPixCouplCol)
@@ -185,6 +186,7 @@ AliITSUSimuParam::AliITSUSimuParam(const AliITSUSimuParam &simpar)
   ,fPixFakeRateDef(simpar.fPixFakeRateDef)
   ,fPixNoiseInAllMod(simpar.fPixNoiseInAllMod)
    //
+  ,fLrROCycleShift(0)
   ,fPixThresh(0)
   ,fPixThrSigma(0)
   ,fPixBiasVoltage(0)
@@ -195,12 +197,18 @@ AliITSUSimuParam::AliITSUSimuParam(const AliITSUSimuParam &simpar)
    //
 {
   // copy constructor
+  //
+  if (fNLayers>0) {
+    fLrROCycleShift = new Float_t[fNLayers];
+    for (int i=fNLayers;i--;) fLrROCycleShift[i] = simpar.fLrROCycleShift[i];
+  }
+  //
   if (fNPix) {
-    fPixBiasVoltage = new Double_t[fNPix];
-    fPixThresh      = new Double_t[fNPix];
-    fPixThrSigma    = new Double_t[fNPix];
-    fPixNoise       = new Double_t[fNPix];
-    fPixBaseline    = new Double_t[fNPix];
+    fPixBiasVoltage = new Float_t[fNPix];
+    fPixThresh      = new Float_t[fNPix];
+    fPixThrSigma    = new Float_t[fNPix];
+    fPixNoise       = new Float_t[fNPix];
+    fPixBaseline    = new Float_t[fNPix];
   }
   for (Int_t i=fNPix;i--;) {
     fPixBiasVoltage[i] = simpar.fPixBiasVoltage[i];
@@ -215,6 +223,36 @@ AliITSUSimuParam::AliITSUSimuParam(const AliITSUSimuParam &simpar)
     if (pr) fRespFunParam.AddLast(new AliITSUParamList(*pr));
   }
   fRespFunParam.SetOwner(kTRUE);
+}
+
+//______________________________________________________________________
+void AliITSUSimuParam::SetNPix(Int_t np)
+{
+  if (fNPix>0) AliFatal(Form("Number of pixels is already set to %d",fNPix));
+  if (np>0) {
+    fNPix = np;
+    fPixBiasVoltage = new Float_t[fNPix];
+    fPixThresh      = new Float_t[fNPix];
+    fPixThrSigma    = new Float_t[fNPix];
+    fPixNoise       = new Float_t[fNPix];
+    fPixBaseline    = new Float_t[fNPix];
+  }
+  SetPixThreshold(fgkPixThreshDefault,fgkPixThrSigmaDefault);
+  SetPixNoise(0.,0.);
+  SetPixBiasVoltage(fgkPixBiasVoltageDefault);
+  //
+}
+
+//______________________________________________________________________
+void AliITSUSimuParam::SetNLayers(Int_t nl)
+{
+  if (fNLayers>0) AliFatal(Form("Number of layers is already set to %d",fNLayers));
+  if (nl>0) {
+    fNLayers = nl;
+    fLrROCycleShift = new Float_t[fNLayers];
+  }
+  SetLrROCycleShift(0);
+  //
 }
 
 //______________________________________________________________________
@@ -237,6 +275,7 @@ AliITSUSimuParam::~AliITSUSimuParam()
   delete[] fPixThrSigma;
   delete[] fPixNoise;
   delete[] fPixBaseline;
+  delete[] fLrROCycleShift;
 }
 
 //________________________________________________________________________
@@ -294,6 +333,14 @@ Double_t AliITSUSimuParam::CalcProbNoiseOverThreshold(UInt_t mod) const
     else             return 0;
   }
   return CalcProbNoiseOverThreshold(base, noise, thresh);
+}
+
+//_______________________________________________________________________
+void AliITSUSimuParam::SetLrROCycleShift(Double_t v,Int_t lr)
+{
+  // set fractional offset of layer RO cycle
+  if (lr<0) for (int i=fNLayers;i--;) fLrROCycleShift[i]=v;
+  else fLrROCycleShift[lr]=v;
 }
 
 //_______________________________________________________________________

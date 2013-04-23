@@ -75,6 +75,7 @@ the AliITS class.
 #include <TString.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
+#include <TMath.h>
 #include "AliDetector.h"
 #include "AliITSU.h"
 #include "AliITSLoader.h"
@@ -100,6 +101,8 @@ the AliITS class.
 #include "AliITSUParamList.h"
 #include "AliCDBManager.h" // tmp! Later the simuparam should be loaded centrally
 #include "AliCDBEntry.h"
+
+using namespace TMath;
 
 ClassImp(AliITSU)
 
@@ -505,14 +508,27 @@ void AliITSU::Hits2SDigits(Int_t evNumber,Int_t bgrev,Option_t *option,const cha
   FillModules(bgrev,option,filename);
   //
   Int_t nmodules = fGeomTGeo->GetNModules();
-  
+  int prevLr = -1;
+  float roPhase=0; // synchronysation type between layers/modules
+  Bool_t randomyzeModules = kFALSE; // do we need to randomize layers
+  //
   for(int module=0;module<nmodules;module++) {
     int lr = fGeomTGeo->GetLayer(module);
     AliITSUSimulation* sim = GetSimulationModel(lr);
     sim->InitSimulationModule(GetModule(module),evNumber/*,gAlice->GetEvNumber()*/,GetSegmentation(lr),GetResponseParam(lr));
+    //
+    if (prevLr!=lr) { // new layer started)
+      roPhase = fSimuParam->GetLrROCycleShift(lr);
+      if (Abs(roPhase)<1.) roPhase = roPhase*sim->GenerateReadOutCycleOffset(); // modules synchronized within layer with this offset
+      else                randomyzeModules = kTRUE;                     // modules have random offset
+    }
+    if (randomyzeModules) sim->GenerateReadOutCycleOffset();
+    else                  sim->SetReadOutCycleOffset(roPhase);
+    //
     sim->SDigitiseModule();
     fLoader->TreeS()->Fill();      // fills all branches - wasted disk space
     ResetSDigits();
+    prevLr = lr;
   } 
   //
   ClearModules();
@@ -563,14 +579,27 @@ void AliITSU::Hits2Digits(Int_t evNumber,Int_t bgrev,Option_t *option,const char
   FillModules(bgrev,option,filename);
   // 
   Int_t nmodules = fGeomTGeo->GetNModules();
+  int prevLr = -1;
+  float roPhase=0; // synchronysation type between layers/modules
+  Bool_t randomyzeModules = kFALSE; // do we need to randomize layers
+  //
   for (Int_t module=0;module<nmodules;module++) {
     int lr = fGeomTGeo->GetLayer(module);
     AliITSUSimulation* sim = GetSimulationModel(lr);
+    //
     sim->InitSimulationModule(GetModule(module),evNumber/*gAlice->GetEvNumber()*/,GetSegmentation(lr),GetResponseParam(lr));
+    if (prevLr!=lr) { // new layer started)
+      roPhase = fSimuParam->GetLrROCycleShift(lr);
+      if (Abs(roPhase)<1.) roPhase = roPhase*sim->GenerateReadOutCycleOffset(); // modules synchronized within layer with this offset
+      else                randomyzeModules = kTRUE;                     // modules have random offset
+    }
+    if (randomyzeModules) sim->GenerateReadOutCycleOffset();
+    else                  sim->SetReadOutCycleOffset(roPhase);
     sim->DigitiseModule();
     // fills all branches - wasted disk space
     fLoader->TreeD()->Fill(); 
     ResetDigits();
+    prevLr = lr;
   } // end for module
   //
   ClearModules();
@@ -805,16 +834,30 @@ void AliITSU::SDigits2Digits()
   TBranch* brchSDigits = trees->GetBranch(GetName());
   //
   int nmodules = fGeomTGeo->GetNModules();
+  int prevLr = -1;
+  float roPhase=0; // synchronysation type between layers/modules
+  Bool_t randomyzeModules = kFALSE; // do we need to randomize layers
+  //
   for (int module=0;module<nmodules;module++) {
     int lr = fGeomTGeo->GetLayer(module);
     AliITSUSimulation* sim = GetSimulationModel(lr);
     sim->InitSimulationModule(GetModule(module),gAlice->GetEvNumber(),GetSegmentation(lr),GetResponseParam(lr));
+    //
+    if (prevLr!=lr) { // new layer started)
+      roPhase = fSimuParam->GetLrROCycleShift(lr);
+      if (Abs(roPhase)<1.) roPhase = roPhase*sim->GenerateReadOutCycleOffset(); // modules synchronized within layer with this offset
+      else                randomyzeModules = kTRUE;                     // modules have random offset
+    }
+    if (randomyzeModules) sim->GenerateReadOutCycleOffset();
+    else                  sim->SetReadOutCycleOffset(roPhase);
+    //
     fSDigits->Clear();
     brchSDigits->GetEvent(module);
     sim->AddSDigitsToModule(fSDigits,0);
     sim->FinishSDigitiseModule();
     fLoader->TreeD()->Fill();
     ResetDigits();
+    prevLr = lr;
   }
   //  WriteFOSignals(); 
   fLoader->TreeD()->GetEntries();

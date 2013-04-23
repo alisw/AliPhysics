@@ -37,6 +37,8 @@ AliITSUSimulation::AliITSUSimulation()
   ,fSimuParam(0)
   ,fResponseParam(0)
   ,fModule(0)
+  ,fReadOutCycleOffset(0)
+  ,fReadOutCycleLength(25e-6)  
   ,fEvent(0)
   ,fDebug(0)
 {
@@ -51,6 +53,8 @@ AliITSUSimulation::AliITSUSimulation(AliITSUSimuParam* sim,AliITSUSensMap* map)
   ,fSimuParam(sim)
   ,fResponseParam(0)
   ,fModule(0)
+  ,fReadOutCycleOffset(0)
+  ,fReadOutCycleLength(25e-6)
   ,fEvent(0)
   ,fDebug(0)
 {
@@ -67,6 +71,8 @@ AliITSUSimulation::AliITSUSimulation(const AliITSUSimulation &s)
   ,fSimuParam(s.fSimuParam)   
   ,fResponseParam(s.fResponseParam)
   ,fModule(s.fModule)
+  ,fReadOutCycleOffset(s.fReadOutCycleOffset)
+  ,fReadOutCycleLength(s.fReadOutCycleLength)
   ,fEvent(s.fEvent)
   ,fDebug(s.fDebug)
 {
@@ -85,6 +91,8 @@ AliITSUSimulation&  AliITSUSimulation::operator=(const AliITSUSimulation &s)
   fSimuParam = s.fSimuParam;
   fResponseParam = s.fResponseParam;
   fModule    = s.fModule;
+  fReadOutCycleOffset = s.fReadOutCycleOffset;
+  fReadOutCycleLength = s.fReadOutCycleLength;
   fEvent     = s.fEvent;
   return *this;
 }
@@ -101,7 +109,6 @@ void AliITSUSimulation::InitSimulationModule(AliITSUModule* mod, Int_t event, Al
   ClearMap();
   memset(fCyclesID,0,(1+2*kMaxROCycleAccept)*sizeof(Bool_t));
   //
-  if (event != fEvent) GenerateReadOutCycleOffset(); 
   SetEvent(event);
   
 }
@@ -191,4 +198,16 @@ Int_t AliITSUSimulation::GenOrderedSample(UInt_t nmax,UInt_t ngen,TArrayI &vals,
   }
   Sort((int)ngen,valA,indA,kFALSE);
   return ngen;
+}
+
+//______________________________________________________________________
+Double_t AliITSUSimulation::GenerateReadOutCycleOffset()
+{
+  // Generate randomly the strobe
+  // phase w.r.t to the LHC clock
+  return fReadOutCycleOffset = fReadOutCycleLength*gRandom->Rndm();
+  // fReadOutCycleOffset = 25e-9*gRandom->Rndm(); // clm: I think this way we shift too much 10-30 us! The global shift should be between the BCs?!
+  // RS: 25 ns is too small number, the staggering will not work. Let's at the moment keep fully random shift (still, no particle from correct
+  // collision will be lost) untill real number is specified
+ //
 }

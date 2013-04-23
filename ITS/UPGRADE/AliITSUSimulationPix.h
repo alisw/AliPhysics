@@ -79,15 +79,14 @@ public:
   void AddNoisyPixels();   
   void RemoveDeadPixels();
   void FrompListToDigits();
+  //
   Int_t AddRandomNoisePixels(Double_t tof=0);
   Bool_t SetTanLorAngle(Double_t WeightHole=1.0);
   Double_t GetTanLorAngle() const {return fTanLorAng;};
   //
   // For backwards compatibility
   void SDigitsToDigits(){ FinishSDigitiseModule();}
-  
-  virtual void GenerateReadOutCycleOffset();
-  //
+  //  
   Double_t SpreadFunDoubleGauss2D(const Double_t *dtIn);
   Double_t SpreadFunGauss2D(const Double_t *dtIn);
   Double_t SpreadFrom2DHisto(const Double_t *dtIn);
@@ -108,8 +107,6 @@ public:
   //   
  protected:
    Double_t      fTanLorAng;               //! Tangent of the Lorentz Angle (weighted average for hole and electrons)
-   Double_t      fReadOutCycleLength;      // readout cycle lenght in s
-   Double_t      fReadOutCycleOffset;      // The phase of the RO with respect to the trigger
    Double_t      fGlobalChargeScale;       // Charge scaling to match Geant and Test beam
    //   
    TH2*          fSpread2DHisto;           //! optional 2D histo for charge spread parameterization
