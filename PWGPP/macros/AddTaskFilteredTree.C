@@ -72,7 +72,7 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   // Create task
   //
   AliAnalysisTaskFilteredTree *task = new AliAnalysisTaskFilteredTree("AliAnalysisTaskFilteredTree");
-  task->SetUseMCInfo(hasMC);
+  //task->SetUseMCInfo(hasMC);
   //task->SetLowPtTrackDownscaligF(1.e4);
   //task->SetLowPtV0DownscaligF(1.e2);
   task->SetLowPtTrackDownscaligF(1.e7);
@@ -91,7 +91,6 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   // AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kAllPart ;
   //AlidNdPtHelper::AnalysisMode analysisMode = AlidNdPtHelper::kTPCITS;
 
-  task->SetUseMCInfo(hasMC);
   task->SetEventCuts(evtCuts);
   task->SetAcceptanceCuts(accCuts);
   task->SetTrackCuts(esdTrackCuts);

@@ -110,13 +110,13 @@ AliAnalysisTaskFilteredTree::~AliAnalysisTaskFilteredTree()
 {
   //the output trees not to be deleted in case of proof analysis
   Bool_t deleteTrees=kTRUE;
-  if ((AliAnalysisManager::GetAnalysisManager()))
-  {
-    if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == 
-             AliAnalysisManager::kProofAnalysis)
-      deleteTrees=kFALSE;
-  }
-  if (deleteTrees) delete fTreeSRedirector;
+  //if ((AliAnalysisManager::GetAnalysisManager()))
+  //{
+  //  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == 
+  //           AliAnalysisManager::kProofAnalysis)
+  //    deleteTrees=kFALSE;
+  //}
+  //if (deleteTrees) delete fTreeSRedirector;
 
   delete fFilteredTreeEventCuts;
   delete fFilteredTreeAcceptanceCuts;
@@ -180,14 +180,17 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
     return;
   }
 
-  // MC event
-  if(fUseMCInfo) {
-    fMC = MCEvent();
-    if (!fMC) {
-      Printf("ERROR: MC event not available");
-      return;
-    }
-  }
+  //// MC event
+  //if(fUseMCInfo) {
+  //  fMC = MCEvent();
+  //  if (!fMC) {
+  //    Printf("ERROR: MC event not available");
+  //    return;
+  //  }
+  //}
+  
+  //if MC info available - use it.
+  fMC = MCEvent();
 
   if(fUseESDfriends) {
     fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
@@ -210,7 +213,7 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
   ProcessdEdx(fESD,fMC,fESDfriend);
 
   if (fProcessCosmics) { ProcessCosmics(fESD); }
-  if(IsUseMCInfo()) { ProcessMCEff(fESD,fMC,fESDfriend); }
+  if(IsUseMCInfo()) { ProcessMCEff(fESD,fMC,fESDfriend);}
 }
 
 //_____________________________________________________________________________
@@ -1123,7 +1126,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       
       if(isOKtpcInnerC  && isOKtrackInnerC) dumpToTree = kTRUE;
       if(fUseESDfriends && isOKtrackInnerC2 && isOKouterITSc) dumpToTree = kTRUE;
-      if(fUseMCInfo     && isOKtrackInnerC3) dumpToTree = kTRUE;
+      if(fMC && isOKtrackInnerC3) dumpToTree = kTRUE;
       TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
       if (fReducePileUp){  
 	//
@@ -1178,7 +1181,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       if (!trackInnerC2) {trackInnerC2=new AliExternalTrackParam();newtrackInnerC2=kTRUE;}
       if (!outerITSc) {outerITSc=new AliExternalTrackParam();newouterITSc=kTRUE;}
       if (!trackInnerC3) {trackInnerC3=new AliExternalTrackParam();newtrackInnerC3=kTRUE;}
-      if (fUseMCInfo)
+      if (fMC)
       {
         if (!refTPCIn) {refTPCIn=new AliTrackReference(); newrefTPCIn=kTRUE;}
         if (!refITS) {refITS=new AliTrackReference();newrefITS=kTRUE;}
@@ -1232,7 +1235,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	  "chi2InnerC="<<chi2trackC(0,0)<<        // chi2s  of tracks TPCinner to the combined
 	  "chi2OuterITS="<<chi2OuterITS(0,0)<<    // chi2s  of tracks TPC at inner wall to the ITSout
 	  "centralityF="<<centralityF;
-        if (fUseMCInfo)
+        if (fMC)
         {
           (*fTreeSRedirector)<<"highPt"<<
           "refTPCIn.="<<refTPCIn<<
@@ -1306,13 +1309,14 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 {
   //
   // Fill tree for efficiency studies MC only
+  AliInfo("we start!");
 
   if(!esdEvent) {
     AliDebug(AliLog::kError, "esdEvent not available");
     return;
   }
 
-   if(!mcEvent) {
+  if(!mcEvent) {
     AliDebug(AliLog::kError, "mcEvent not available");
     return;
   }
@@ -1339,7 +1343,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     Printf("ERROR: Could not receive input handler");
     return;
   }
-   
+
   // get file name
   TTree *chain = (TChain*)GetInputData(0);
   if(!chain) { 
@@ -1377,51 +1381,48 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   TArrayF vtxMC(3);
 
   Int_t multMCTrueTracks = 0;
-  if(IsUseMCInfo())
-  {
-    //
-    if(!mcEvent) {
-      AliDebug(AliLog::kError, "mcEvent not available");
-      return;
-    }
-    // get MC event header
-    header = mcEvent->Header();
-    if (!header) {
-      AliDebug(AliLog::kError, "Header not available");
-      return;
-    }
-    // MC particle stack
-    stack = mcEvent->Stack();
-    if (!stack) {
-      AliDebug(AliLog::kError, "Stack not available");
-      return;
-    }
+  //
+  if(!mcEvent) {
+    AliDebug(AliLog::kError, "mcEvent not available");
+    return;
+  }
+  // get MC event header
+  header = mcEvent->Header();
+  if (!header) {
+    AliDebug(AliLog::kError, "Header not available");
+    return;
+  }
+  // MC particle stack
+  stack = mcEvent->Stack();
+  if (!stack) {
+    AliDebug(AliLog::kError, "Stack not available");
+    return;
+  }
 
-    // get MC vertex
-    genHeader = header->GenEventHeader();
-    if (!genHeader) {
-      AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
-      return;
-    }
-    genHeader->PrimaryVertex(vtxMC);
+  // get MC vertex
+  genHeader = header->GenEventHeader();
+  if (!genHeader) {
+    AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
+    return;
+  }
+  genHeader->PrimaryVertex(vtxMC);
 
-    // multipliticy of all MC primary tracks
-    // in Zv, pt and eta ranges)
-    multMCTrueTracks = GetMCTrueTrackMult(mcEvent,evtCuts,accCuts);
+  // multipliticy of all MC primary tracks
+  // in Zv, pt and eta ranges)
+  multMCTrueTracks = GetMCTrueTrackMult(mcEvent,evtCuts,accCuts);
 
-  } // end bUseMC
 
   // get reconstructed vertex  
   //const AliESDVertex* vtxESD = 0; 
   AliESDVertex* vtxESD = 0; 
   if(GetAnalysisMode() == kTPCAnalysisMode) {
-        vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTPC();
+    vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTPC();
   }
   else if(GetAnalysisMode() == kTPCITSAnalysisMode) {
-     vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTracks();
+    vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTracks();
   }
   else {
-    	return;
+    return;
   }
 
   if(!vtxESD) return;
@@ -1435,119 +1436,116 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
-    if(IsUseMCInfo()) 
+    if(!stack) return;
+
+    //
+    // MC info
+    //
+    TParticle *particle=NULL;
+    TParticle *particleMother=NULL;
+    Int_t mech=-1;
+
+    // reco event info
+    Double_t vert[3] = {0}; 
+    vert[0] = vtxESD->GetXv();
+    vert[1] = vtxESD->GetYv();
+    vert[2] = vtxESD->GetZv();
+    Int_t mult = vtxESD->GetNContributors();
+    Double_t bz = esdEvent->GetMagneticField();
+    Double_t runNumber = esdEvent->GetRunNumber();
+    Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+    Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+
+    // loop over MC stack
+    for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
     {
-      if(!stack) return;
+      particle = stack->Particle(iMc);
+      if (!particle)
+        continue;
 
-      //
-      // MC info
-      //
-      TParticle *particle=NULL;
-      TParticle *particleMother=NULL;
-      Int_t mech=-1;
+      // only charged particles
+      if(!particle->GetPDG()) continue;
+      Double_t charge = particle->GetPDG()->Charge()/3.;
+      if (TMath::Abs(charge) < 0.001)
+        continue;
 
-      // reco event info
-      Double_t vert[3] = {0}; 
-      vert[0] = vtxESD->GetXv();
-      vert[1] = vtxESD->GetYv();
-      vert[2] = vtxESD->GetZv();
-      Int_t mult = vtxESD->GetNContributors();
-      Double_t bz = esdEvent->GetMagneticField();
-      Double_t runNumber = esdEvent->GetRunNumber();
-      Double_t evtTimeStamp = esdEvent->GetTimeStamp();
-      Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+      // only primary particles
+      Bool_t prim = stack->IsPhysicalPrimary(iMc);
+      if(!prim) continue;
 
-      // loop over MC stack
-      for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
+      // downscale low-pT particles
+      Double_t scalempt= TMath::Min(particle->Pt(),10.);
+      Double_t downscaleF = gRandom->Rndm();
+      downscaleF *= fLowPtTrackDownscaligF;
+      if(TMath::Exp(2*scalempt)<downscaleF) continue;
+
+      // is particle in acceptance
+      if(!accCuts->AcceptTrack(particle)) continue;
+
+      // check if particle reconstructed
+      Bool_t isRec = kFALSE;
+      Int_t  trackIndex = -1;
+      for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
       {
-         particle = stack->Particle(iMc);
-         if (!particle)
-         continue;
 
-         // only charged particles
-         if(!particle->GetPDG()) continue;
-         Double_t charge = particle->GetPDG()->Charge()/3.;
-         if (TMath::Abs(charge) < 0.001)
-         continue;
-
-         // only primary particles
-         Bool_t prim = stack->IsPhysicalPrimary(iMc);
-         if(!prim) continue;
-
-         // downscale low-pT particles
-         Double_t scalempt= TMath::Min(particle->Pt(),10.);
-         Double_t downscaleF = gRandom->Rndm();
-         downscaleF *= fLowPtTrackDownscaligF;
-         if(TMath::Exp(2*scalempt)<downscaleF) continue;
-
-         // is particle in acceptance
-         if(!accCuts->AcceptTrack(particle)) continue;
-       
-         // check if particle reconstructed
-         Bool_t isRec = kFALSE;
-         Int_t  trackIndex = -1;
-         for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
-         {
-           
-           AliESDtrack *track = esdEvent->GetTrack(iTrack);
-           if(!track) continue;
-           if(track->Charge()==0) continue;
-           if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track)) 
-           {
-             Int_t label =  TMath::Abs(track->GetLabel());
-             if(label == iMc) {
-               isRec = kTRUE;
-               trackIndex = iTrack;
-               break;
-             }
-           } 
-         }
-
-         // Store information in the output tree
-         AliESDtrack *recTrack = NULL; 
-         if(trackIndex>-1)  { 
-           recTrack = esdEvent->GetTrack(trackIndex); 
-         } else {
-           recTrack = new AliESDtrack(); 
-         } 
-
-	 particleMother = GetMother(particle,stack);
-         mech = particle->GetUniqueID();
-
-         //MC particle track length
-         Double_t tpcTrackLength = 0.;
-         AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(iMc);
-         if(mcParticle) {
-           Int_t counter;
-           tpcTrackLength = mcParticle->GetTPCTrackLength(bz,0.05,counter,3.0);
-         } 
-
-
-         //
-         if(fTreeSRedirector) {
-           (*fTreeSRedirector)<<"MCEffTree"<<
-           "fileName.="<<&fileName<<
-           "triggerClass.="<<&triggerClass<<
-           "runNumber="<<runNumber<<
-           "evtTimeStamp="<<evtTimeStamp<<
-           "evtNumberInFile="<<evtNumberInFile<<
-           "Bz="<<bz<<
-           "vtxESD.="<<vtxESD<<
-           "mult="<<mult<<
-           "esdTrack.="<<recTrack<<
-           "isRec="<<isRec<<
-           "tpcTrackLength="<<tpcTrackLength<<
-           "particle.="<<particle<<
-       	   "particleMother.="<<particleMother<<
-           "mech="<<mech<<
-           "\n";
-         }
-
-         if(trackIndex <0 && recTrack) delete recTrack; recTrack=0;
+        AliESDtrack *track = esdEvent->GetTrack(iTrack);
+        if(!track) continue;
+        if(track->Charge()==0) continue;
+        if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track)) 
+        {
+          Int_t label =  TMath::Abs(track->GetLabel());
+          if(label == iMc) {
+            isRec = kTRUE;
+            trackIndex = iTrack;
+            break;
+          }
+        } 
       }
+
+      // Store information in the output tree
+      AliESDtrack *recTrack = NULL; 
+      if(trackIndex>-1)  { 
+        recTrack = esdEvent->GetTrack(trackIndex); 
+      } else {
+        recTrack = new AliESDtrack(); 
+      } 
+
+      particleMother = GetMother(particle,stack);
+      mech = particle->GetUniqueID();
+
+      //MC particle track length
+      Double_t tpcTrackLength = 0.;
+      AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(iMc);
+      if(mcParticle) {
+        Int_t counter;
+        tpcTrackLength = mcParticle->GetTPCTrackLength(bz,0.05,counter,3.0);
+      } 
+
+
+      //
+      if(fTreeSRedirector) {
+        (*fTreeSRedirector)<<"MCEffTree"<<
+          "fileName.="<<&fileName<<
+          "triggerClass.="<<&triggerClass<<
+          "runNumber="<<runNumber<<
+          "evtTimeStamp="<<evtTimeStamp<<
+          "evtNumberInFile="<<evtNumberInFile<<
+          "Bz="<<bz<<
+          "vtxESD.="<<vtxESD<<
+          "mult="<<mult<<
+          "esdTrack.="<<recTrack<<
+          "isRec="<<isRec<<
+          "tpcTrackLength="<<tpcTrackLength<<
+          "particle.="<<particle<<
+          "particleMother.="<<particleMother<<
+          "mech="<<mech<<
+          "\n";
+      }
+
+      if(trackIndex <0 && recTrack) delete recTrack; recTrack=0;
     }
   }
-  
+
 }
 
 //_____________________________________________________________________________
@@ -2246,6 +2244,16 @@ void AliAnalysisTaskFilteredTree::Terminate(Option_t *)
     return;
   }
   */
+  
+  Bool_t deleteTrees=kTRUE;
+  if ((AliAnalysisManager::GetAnalysisManager()))
+  {
+    if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == 
+             AliAnalysisManager::kProofAnalysis)
+      deleteTrees=kFALSE;
+  }
+  if (deleteTrees) delete fTreeSRedirector;
+  fTreeSRedirector=NULL;
 }
 
 //_____________________________________________________________________________
