@@ -1438,8 +1438,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   }//if (mc->HasMC())
 
-  values[AliDielectronVarManager::kMomAsymDau1] = pair->GetFirstDaughter()->P()  / values[AliDielectronVarManager::kP];
-  values[AliDielectronVarManager::kMomAsymDau2] = pair->GetSecondDaughter()->P() / values[AliDielectronVarManager::kP];
+    values[AliDielectronVarManager::kMomAsymDau1] = (values[AliDielectronVarManager::kP] != 0)? pair->GetFirstDaughter()->P()  / values[AliDielectronVarManager::kP]: 0;
+	values[AliDielectronVarManager::kMomAsymDau2] = (values[AliDielectronVarManager::kP] != 0)? pair->GetSecondDaughter()->P()  / values[AliDielectronVarManager::kP]: 0;
 }
 
 inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *particle, Double_t * const values)
