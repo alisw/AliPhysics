@@ -679,15 +679,15 @@ void AliAnaParticleIsolation::GetCoeffNormBadCell(const AliAODPWG4ParticleCorrel
     }
     if (phiBandCells > 0.) 
     {
-     printf("Energy density phiBandBadCellsCoeff = %.2f phiBandCells%.2f\n", phiBandBadCellsCoeff,phiBandCells);
+    // printf("Energy density phiBandBadCellsCoeff = %.2f phiBandCells%.2f\n", phiBandBadCellsCoeff,phiBandCells);
       phiBandBadCellsCoeff = (phiBandCells-phiBandBadCellsCoeff)/phiBandCells;
-     printf("phiBandBadCellsCoeff = %.2f\n", phiBandBadCellsCoeff);
+    // printf("phiBandBadCellsCoeff = %.2f\n", phiBandBadCellsCoeff);
      } 
       if (etaBandCells > 0.) 
     {
-      printf("Energy density etaBandBadCellsCoeff = %.2f etaBandCells%.2f\n", etaBandBadCellsCoeff,etaBandCells);
+      //printf("Energy density etaBandBadCellsCoeff = %.2f etaBandCells%.2f\n", etaBandBadCellsCoeff,etaBandCells);
       etaBandBadCellsCoeff = (etaBandCells-etaBandBadCellsCoeff)/etaBandCells;
-      printf("etaBandBadCellsCoeff = %.2f\n",etaBandBadCellsCoeff);
+     // printf("etaBandBadCellsCoeff = %.2f\n",etaBandBadCellsCoeff);
    } 
    
      }
