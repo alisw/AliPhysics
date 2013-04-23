@@ -27,8 +27,6 @@ class TF1;
 class TList;
 class AliVTrack;
 class TGraph;
-class TH2D;
-class TH3D;
 class AliPIDResponse;
 class AliDielectronVarManager;
 class AliDielectronVarCuts;
@@ -61,12 +59,6 @@ public:
   void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp, Double_t min, Double_t max, Bool_t exclude, UInt_t pidBitType,              TF1 * const funSigma);
   void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp,
   	      AliDielectronVarCuts *varcuts, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire );
-  void AddCut(DetType det, AliPID::EParticleType type, TH3D * const histLow, Double_t nSigmaUp,
-              Double_t min=0, Double_t max=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire,
-              Int_t var=-1);
-  void AddCut(DetType det, AliPID::EParticleType type, TH3D * const histLow, TH3D * const histUp,
-              Double_t min=0, Double_t max=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire,
-              Int_t var=-1);
   
   void SetDefaults(Int_t def);
 
@@ -96,9 +88,6 @@ public:
   static Double_t GetEtaCorr(const AliVTrack *track);
   static Double_t GetCntrdCorr(const AliVTrack *track) { return (fgFunCntrdCorr ? GetPIDCorr(track,fgFunCntrdCorr) : 0.0); }
   static Double_t GetWdthCorr(const AliVTrack *track)  { return (fgFunWdthCorr  ? GetPIDCorr(track,fgFunWdthCorr)  : 1.0); }
-
-  void SetElectronNsigmaCentroidMap(TH2D * const centEtaMap) {fElectronCentroidCentEta = centEtaMap;}
-  void SetElectronNsigmaWidthMap(TH2D * const centEtaMap) {fElectronWidthCentEta = centEtaMap;}
 
 private:
   enum {kNmaxPID=30};
@@ -133,12 +122,7 @@ private:
   static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
 
   static Double_t GetPIDCorr(const AliVTrack *track, TF1 *fun);
-
-  TH2D* fElectronCentroidCentEta; //centrality-eta dependence of the electron centroids
-  TH2D* fElectronWidthCentEta;    //centrality-eta dependence of the electron widths
-  TH3D* fHistElectronCutLow[kNmaxPID];  //centrality-eta-pin map for the electron lower cut in units of n-sigma widths centered to zero
-  TH3D* fHistElectronCutUp[kNmaxPID];  //centrality-eta-pin map for the electron lower cut in units of n-sigma widths centered to zero  
-
+  
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut);
