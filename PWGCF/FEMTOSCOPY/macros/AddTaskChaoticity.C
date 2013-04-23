@@ -10,6 +10,8 @@ AliChaoticity *AddTaskChaoticity(
 				 Int_t FixedLambdaBinMomRes=9,
 				 Int_t FixedLambdaBinr3=10,
 				 UInt_t FilterBit=7,
+				 Float_t MaxChi2NDF=10,
+				 Int_t MinTPCncls=0,
 				 Float_t MinSepPair=0.035,
 				 Float_t SigmaCutTPC=2.0,
 				 Float_t SigmaCutTOF=2.0,
@@ -40,6 +42,8 @@ AliChaoticity *AddTaskChaoticity(
   ChaoticityTask->SetFixedLambdaBinMomRes(FixedLambdaBinMomRes);
   ChaoticityTask->SetFixedLambdaBinr3(FixedLambdaBinr3);
   ChaoticityTask->SetFilterBit(FilterBit);
+  ChaoticityTask->SetMaxChi2NDF(MaxChi2NDF);
+  ChaoticityTask->SetMinTPCncls(MinTPCncls);
   ChaoticityTask->SetPairSeparationCut(MinSepPair);
   ChaoticityTask->SetNsigmaTPC(SigmaCutTPC);
   ChaoticityTask->SetNsigmaTOF(SigmaCutTOF);
