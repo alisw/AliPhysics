@@ -75,6 +75,8 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
                 Bool_t GetCrystalBallParam()               const { return fCrystalBallParam; }
 		TH1F * GetCsiMcHisto()                     const { return fhCsiMC; }
                 Double_t GetResWeight(Int_t iW)            const { return fWeightType[iW]; }
+		
+		Double_t* GetParameters()                         { return fParameters;}
 
 		// return pointer to likelihood functions  
 		TF1* GetCsiMC(Double_t xmin, Double_t xmax,Double_t normalization);
@@ -116,7 +118,7 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 		void SetIntegralMassBkg(Double_t integral) { fintmMassBkg = integral; }
 		void SetCsiMC(const TH1F* MCtemplate) {fhCsiMC = (TH1F*)MCtemplate->Clone("fhCsiMC");}
 
-		void SetResolutionConstants(Double_t* resolutionConst, Int_t type);
+		void SetResolutionConstants(const Double_t* resolutionConst, Int_t type);
 		void SetMassWndHigh(Double_t limit) { fMassWndHigh = TDatabasePDG::Instance()->GetParticle(443)->Mass() + limit ;}
 		void SetMassWndLow(Double_t limit) { fMassWndLow = TDatabasePDG::Instance()->GetParticle(443)->Mass() - limit ;}
 		void SetCrystalBallFunction(Bool_t okCB) {fCrystalBallParam = okCB;}
@@ -127,6 +129,11 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 		void ReadMCtemplates(Int_t BinNum);
 
 		void PrintStatus();
+
+		Double_t EvaluateCDFInvMassSigDistr(Double_t m) const ;
+		Double_t EvaluateCDFInvMassBkgDistr(Double_t m) const;
+		Double_t ResolutionFunc(Double_t x, Int_t type) const;
+		Double_t EvaluateCDFDecayTimeBkgDistr(Double_t x, Int_t type) const ;
 
 	private:  
 		Double_t fParameters[45];        /*  par[0]  = weightRes;                
@@ -199,13 +206,10 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 		Double_t EvaluateCDFfuncSignalPart(Double_t x, Double_t m, Int_t type) const ;      // Signal part 
 		Double_t EvaluateCDFDecayTimeSigDistr(Double_t x, Int_t type) const ;
 		Double_t EvaluateCDFDecayTimeSigDistrFunc(const Double_t* x, const Double_t *par) const { return par[0]*EvaluateCDFDecayTimeSigDistr(x[0],(Int_t)par[1]);}
-		Double_t EvaluateCDFInvMassSigDistr(Double_t m) const ;
                 Double_t EvaluateCDFInvMassSigDistrFunc(const Double_t* x, const Double_t *par) const {return par[0]*EvaluateCDFInvMassSigDistr(x[0])/fintmMassSig;}
 		Double_t EvaluateCDFfuncBkgPart(Double_t x,Double_t m,Int_t type) const ;          // Background part
-		Double_t EvaluateCDFDecayTimeBkgDistr(Double_t x, Int_t type) const ;
 		Double_t EvaluateCDFDecayTimeBkgDistrFunc(const Double_t* x, const Double_t *par) const { return EvaluateCDFDecayTimeBkgDistr(x[0],(Int_t)par[1])*par[0];}
                 Double_t EvaluateCDFDecayTimeBkgDistrFuncAllTypes(const Double_t* x, const Double_t *par) const {return (fWeightType[2]*EvaluateCDFDecayTimeBkgDistr(x[0],2)+fWeightType[1]*EvaluateCDFDecayTimeBkgDistr(x[0],1)+fWeightType[0]*EvaluateCDFDecayTimeBkgDistr(x[0],0))*par[0];}
-		Double_t EvaluateCDFInvMassBkgDistr(Double_t m) const;
                 Double_t EvaluateCDFInvMassBkgDistrFunc(const Double_t* x, const Double_t *par) const {return par[0]*EvaluateCDFInvMassBkgDistr(x[0])/fintmMassBkg;} 
                   
                 Double_t EvaluateCDFInvMassTotalDistr(const Double_t* x, const Double_t *par) const;
@@ -222,7 +226,6 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 		Double_t FunBkgPos(Double_t x, Int_t type) const ;
 		Double_t FunBkgNeg(Double_t x, Int_t type) const ;
 		Double_t FunBkgSym(Double_t x, Int_t type) const ;
-		Double_t ResolutionFunc(Double_t x, Int_t type) const;
 		Double_t ResolutionFuncf(const Double_t* x, const Double_t *par) const { return ResolutionFunc(x[0],(Int_t)par[1])*par[0];}
                 Double_t ResolutionFuncAllTypes(const Double_t* x, const Double_t *par) const { return (fWeightType[2]*ResolutionFunc(x[0],2)+fWeightType[1]*ResolutionFunc(x[0],1)+fWeightType[0]*ResolutionFunc(x[0],0))*par[0]; }                 
  

@@ -325,8 +325,8 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
        nanoEv->GetHeader()->SetEventplane((static_cast<AliAODEvent*>(InputEvent()))->GetHeader()->GetEventplaneP());
        nanoEv->GetHeader()->ResetEventplanePointer(); 
        // set multiplicity
-       nanoEv->GetHeader()->SetRefMultiplicity((Int_t)values[AliDielectronVarManager::kNTrk]);
-       nanoEv->GetHeader()->SetRefMultiplicityPos((Int_t)values[AliDielectronVarManager::kNacc]);
+       //       nanoEv->GetHeader()->SetRefMultiplicity((Int_t)values[AliDielectronVarManager::kNTrk]);
+       //       nanoEv->GetHeader()->SetRefMultiplicityPos((Int_t)values[AliDielectronVarManager::kNacc]);
        //nanoEv->GetHeader()->SetRefMultiplicityNeg(values[AliDielectronVarManager::kMatchEffITSTPC]);
 
          for(int kj=0; kj<(fDielectron->GetTrackArray(0))->GetEntries(); kj++){
