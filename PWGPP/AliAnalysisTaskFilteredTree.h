@@ -48,7 +48,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   virtual Bool_t Notify();
   virtual void   FinishTaskOutput();
   void SetUseMCInfo(Bool_t info)           { fUseMCInfo = info; }
-  Bool_t IsUseMCInfo() const               { return fUseMCInfo; }
+  Bool_t IsUseMCInfo() const               { return (fMC)?kTRUE:kFALSE; }
   void SetUseESDfriends(Bool_t friends)    { fUseESDfriends = friends; }
   Bool_t IsUseESDfriends() const              { return fUseESDfriends; }
   
