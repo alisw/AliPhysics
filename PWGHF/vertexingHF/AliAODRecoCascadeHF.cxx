@@ -127,6 +127,13 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     return -1;
   }
 
+  if ( isV0 &&
+       ( (pdgDg[1]==2212 && pdgDg[0]==310) ||
+	 (pdgDg[1]==211 && pdgDg[0]==3122) ) ) {
+    AliWarning("Please, pay attention: first element in AliAODRecoCascadeHF object must be the bachelor and second one V0. Skipping!");
+    return -1;
+  }
+
   Int_t lab2Prong = -1;
 
   if (!isV0) {
@@ -160,14 +167,6 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     if ( isV0 && (dgLabels[0]!=-1 && dgLabels[1]!=-1) ) {
       AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(Getv0());
       Bool_t onTheFly = theV0->GetOnFlyStatus();
-      
-      if ( (pdgDg[1]==2212 && pdgDg[0]==310) ||
-	   (pdgDg[1]==211 && pdgDg[0]==3122) ) {
-	Int_t pdgDgtemp[2]={pdgDg[1],pdgDg[0]};
-	pdgDg[0]=pdgDgtemp[0];
-	pdgDg[1]=pdgDgtemp[1];
-      }
-
       if (pdgDg[0]==2212 && pdgDg[1]==310) {
 	AliAODMCParticle*k0s = dynamic_cast<AliAODMCParticle*>(mcArray->At(lab2Prong));
 	if(k0s){
