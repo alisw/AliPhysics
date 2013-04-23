@@ -62,6 +62,8 @@ class AliOADBCentrality : public TNamed {
   TH1F*   FMDhist()        const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultFMD_percentile")));}
   TH1F*   ZNAhist()        const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZNA_percentile")));}
   TH1F*   ZNChist()        const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZNC_percentile")));}
+  TH1F*   ZPAhist()        const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZPA_percentile")));}
+  TH1F*   ZPChist()        const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZPC_percentile")));}
   TH2F*   ZEMvsZDChist()   const  {return ((TH2F*) (Hists2D()->FindObject("fHOutMultZEMvsZDC")));}
 
   TH1F*   NPAhist()        const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultNPA_percentile")));}
@@ -79,7 +81,9 @@ class AliOADBCentrality : public TNamed {
   TH1F*   FMDhisttrue()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultFMDtrue_percentile")));}
   TH1F*   ZNAhisttrue()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZNAtrue_percentile")));}
   TH1F*   ZNChisttrue()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZNCtrue_percentile")));}
-
+  TH1F*   ZPAhisttrue()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZPAtrue_percentile")));}
+  TH1F*   ZPChisttrue()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZPCtrue_percentile")));}
+ 
   TH1F*   V0histtrueDPM()     const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultV0MtrueDPM_percentile")));}
   TH1F*   V0AhisttrueDPM()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultV0AtrueDPM_percentile")));}
   TH1F*   V0ChisttrueDPM()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultV0CtrueDPM_percentile")));}
@@ -92,7 +96,8 @@ class AliOADBCentrality : public TNamed {
   TH1F*   FMDhisttrueDPM()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultFMDtrueDPM_percentile")));}
   TH1F*   ZNAhisttrueDPM()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZNAtrueDPM_percentile")));}
   TH1F*   ZNChisttrueDPM()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZNCtrueDPM_percentile")));}
-
+  TH1F*   ZPAhisttrueDPM()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZPAtrueDPM_percentile")));}
+  TH1F*   ZPChisttrueDPM()    const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultZPCtrueDPM_percentile")));}
   TList*  Hists1D()        const  {return f1DHistos;}
   TList*  Hists2D()        const  {return f2DHistos;}
 
