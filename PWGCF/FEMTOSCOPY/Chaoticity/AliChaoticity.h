@@ -84,6 +84,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void SetCentBinRange(Int_t low, Int_t high) {fCentBinLowLimit = low; fCentBinHighLimit = high;}
   void SetLEGOCase(Bool_t lego) {fLEGO = lego;}
   void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
+  void SetMaxChi2NDF(Float_t MaxChi2NDF) {fMaxChi2NDF = MaxChi2NDF;}
+  void SetMinTPCncls(Int_t MinTPCncls) {fMinTPCncls = MinTPCncls;}
   void SetPairSeparationCut(Float_t pairsep) {fMinSepPair = pairsep;}
   void SetNsigmaTPC(Float_t nsig) {fSigmaCutTPC = nsig;}
   void SetNsigmaTOF(Float_t nsig) {fSigmaCutTOF = nsig;}
@@ -241,6 +243,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Int_t fFixedLambdaBinMomRes;
   Int_t fFixedLambdaBinr3;
   UInt_t fFilterBit;
+  Float_t fMaxChi2NDF;
+  Int_t fMinTPCncls;
   Double_t fBfield;
   Int_t fMbin;
   Int_t fFSIbin;

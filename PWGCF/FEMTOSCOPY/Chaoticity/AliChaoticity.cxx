@@ -64,6 +64,8 @@ AliAnalysisTaskSE(),
   fFixedLambdaBinMomRes(9),
   fFixedLambdaBinr3(10),
   fFilterBit(7),
+  fMaxChi2NDF(10),
+  fMinTPCncls(0),
   fBfield(0),
   fMbin(0),
   fFSIbin(0),
@@ -227,6 +229,8 @@ AliChaoticity::AliChaoticity(const Char_t *name)
   fFixedLambdaBinMomRes(9),
   fFixedLambdaBinr3(10),
   fFilterBit(7),
+  fMaxChi2NDF(10),
+  fMinTPCncls(0),
   fBfield(0),
   fMbin(0),
   fFSIbin(0),
@@ -396,6 +400,8 @@ AliChaoticity::AliChaoticity(const AliChaoticity &obj)
     fFixedLambdaBinMomRes(obj.fFixedLambdaBinMomRes),
     fFixedLambdaBinr3(obj.fFixedLambdaBinr3),
     fFilterBit(obj.fFilterBit),
+    fMaxChi2NDF(obj.fMaxChi2NDF),
+    fMinTPCncls(obj.fMinTPCncls),
     fBfield(obj.fBfield),
     fMbin(obj.fMbin),
     fFSIbin(obj.fFSIbin),
@@ -508,6 +514,8 @@ AliChaoticity &AliChaoticity::operator=(const AliChaoticity &obj)
   fFixedLambdaBinMomRes = obj.fFixedLambdaBinMomRes;
   fFixedLambdaBinr3 = obj.fFixedLambdaBinr3;
   fFilterBit = obj.fFilterBit;
+  fMaxChi2NDF = obj.fMaxChi2NDF;
+  fMinTPCncls = obj.fMinTPCncls;
   fBfield = obj.fBfield;
   fMbin = obj.fMbin;
   fFSIbin = obj.fFSIbin;
@@ -691,7 +699,7 @@ AliChaoticity::~AliChaoticity()
 void AliChaoticity::ParInit()
 {
   cout<<"AliChaoticity MyInit() call"<<endl;
-  cout<<"lego:"<<fLEGO<<"  MCcase:"<<fMCcase<<"  PbPbcase:"<<fPbPbcase<<"  TabulatePairs:"<<fTabulatePairs<<"  GenSignal:"<<fGenerateSignal<<"  CentLow:"<<fCentBinLowLimit<<"  CentHigh:"<<fCentBinHighLimit<<"  RMax:"<<fRMax<<"  LambdaBinMomRes:"<<fFixedLambdaBinMomRes<<"  LambdaBinr3:"<<fFixedLambdaBinr3<<"  FB:"<<fFilterBit<<"  MinPairSep:"<<fMinSepPair<<"  NsigTPC:"<<fSigmaCutTPC<<"  NsigTOF:"<<fSigmaCutTOF<<endl;
+  cout<<"lego:"<<fLEGO<<"  MCcase:"<<fMCcase<<"  PbPbcase:"<<fPbPbcase<<"  TabulatePairs:"<<fTabulatePairs<<"  GenSignal:"<<fGenerateSignal<<"  CentLow:"<<fCentBinLowLimit<<"  CentHigh:"<<fCentBinHighLimit<<"  RMax:"<<fRMax<<"  LambdaBinMomRes:"<<fFixedLambdaBinMomRes<<"  LambdaBinr3:"<<fFixedLambdaBinr3<<"  FB:"<<fFilterBit<<"  MaxChi2/NDF:"<<fMaxChi2NDF<<"  MinTPCncls:"<<fMinTPCncls<<"  MinPairSep:"<<fMinSepPair<<"  NsigTPC:"<<fSigmaCutTPC<<"  NsigTOF:"<<fSigmaCutTOF<<endl;
 
   fRandomNumber = new TRandom3();
   fRandomNumber->SetSeed(0);
@@ -919,6 +927,12 @@ void AliChaoticity::UserCreateOutputObjects()
   
   TProfile *fAvgMult = new TProfile("fAvgMult","",fMbins,.5,fMbins+.5, 0,1500,"");
   fOutputList->Add(fAvgMult);
+
+  TH2D *fTrackChi2NDF = new TH2D("fTrackChi2NDF","",20,0,100, 100,0,10);
+  fOutputList->Add(fTrackChi2NDF);
+  TH2D *fTrackTPCncls = new TH2D("fTrackTPCncls","",20,0,100, 110,50,160);
+  fOutputList->Add(fTrackTPCncls);
+
 
   TH3D *fTPNRejects1 = new TH3D("fTPNRejects1","",kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
   fOutputList->Add(fTPNRejects1);
@@ -1665,8 +1679,13 @@ void AliChaoticity::Exec(Option_t *)
 	fTempStruct[myTracks].fKey = 100;
       }
       
-   
-   
+     
+      ((TH2D*)fOutputList->FindObject("fTrackChi2NDF"))->Fill(centralityPercentile, aodtrack->Chi2perNDF());
+      ((TH2D*)fOutputList->FindObject("fTrackTPCncls"))->Fill(centralityPercentile, aodtrack->GetTPCncls());
+      if(aodtrack->Chi2perNDF() > fMaxChi2NDF) continue;
+      if(aodtrack->GetTPCncls() < fMinTPCncls) continue;
+      
+
       if(aodtrack->Charge() > 0) positiveTracks++;
       else negativeTracks++;
       
@@ -4009,6 +4028,7 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t track3
 Float_t AliChaoticity::MCWeight(Int_t charge1, Int_t charge2, Int_t r, Int_t dampIndex, Float_t qinv){
   
   Float_t radius = Float_t(r)/0.19733;// convert to GeV (starts at 5 fm, was 3 fm)
+  
   Float_t myDamp = fDampStart + (fDampStep)*dampIndex;
   Float_t coulCorr12 = FSICorrelationTherm2(charge1, charge2, qinv);
   if(charge1==charge2){
