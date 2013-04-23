@@ -119,6 +119,8 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Float_t  fCentCND;            // percentile centrality from candle 
   Float_t  fCentZNA;            // percentile centrality from ZNA 
   Float_t  fCentZNC;            // percentile centrality from ZNC 
+  Float_t  fCentZPA;            // percentile centrality from ZPA 
+  Float_t  fCentZPC;            // percentile centrality from ZPC 
   Float_t  fCentNPA;            // percentile centrality from Npart (MC) 
   Float_t  fCentV0MvsFMD;       // percentile centrality from V0 vs FMD
   Float_t  fCentTKLvsV0M;       // percentile centrality from tracklets vs V0
@@ -138,6 +140,8 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Float_t  fCentCNDtrue;        // percentile centrality from true (sim) tracks (candle condition)
   Float_t  fCentZNAtrue;        // percentile centrality from true (sim) ZNA
   Float_t  fCentZNCtrue;        // percentile centrality from true (sim) ZNC
+  Float_t  fCentZPAtrue;        // percentile centrality from true (sim) ZPA
+  Float_t  fCentZPCtrue;        // percentile centrality from true (sim) ZPC
 
 
   TH1F    *fHtempV0M;           // histogram with centrality vs multiplicity using V0
@@ -154,6 +158,8 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F    *fHtempCND;           // histogram with centrality vs multiplicity using candle
   TH1F    *fHtempZNA;           // histogram with centrality vs multiplicity using ZNA
   TH1F    *fHtempZNC;           // histogram with centrality vs multiplicity using ZNC
+  TH1F    *fHtempZPA;           // histogram with centrality vs multiplicity using ZPA
+  TH1F    *fHtempZPC;           // histogram with centrality vs multiplicity using ZPC
   TH1F    *fHtempV0MvsFMD;      // histogram with centrality vs multiplicity using V0 vs FMD   
   TH1F    *fHtempTKLvsV0M;      // histogram with centrality vs multiplicity using tracklets vs V0
   TH2F    *fHtempZEMvsZDC;      // histogram with centrality vs multiplicity using ZEM vs ZDC 
@@ -173,6 +179,8 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F    *fHtempCNDtrue;       // histogram with centrality true (sim) vs multiplicity using candle
   TH1F    *fHtempZNAtrue;       // histogram with centrality true (sim) vs multiplicity using ZNA
   TH1F    *fHtempZNCtrue;       // histogram with centrality true (sim) vs multiplicity using ZNC
+  TH1F    *fHtempZPAtrue;       // histogram with centrality true (sim) vs multiplicity using ZPA
+  TH1F    *fHtempZPCtrue;       // histogram with centrality true (sim) vs multiplicity using ZPC
 
   TList   *fOutputList; // output list
   
@@ -214,6 +222,8 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutCentNPA     ;      //control histogram for centrality
   TH1F *fHOutCentZNA     ;      //control histogram for centrality
   TH1F *fHOutCentZNC     ;      //control histogram for centrality
+  TH1F *fHOutCentZPA     ;      //control histogram for centrality
+  TH1F *fHOutCentZPC     ;      //control histogram for centrality
   TH1F *fHOutCentV0MvsFMD;      //control histogram for centrality
   TH1F *fHOutCentTKLvsV0M;      //control histogram for centrality
   TH1F *fHOutCentZEMvsZDC;      //control histogram for centrality
@@ -260,6 +270,8 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutMultNPA ;          //control histogram for multiplicity
   TH1F *fHOutMultZNA ;          //control histogram for multiplicity
   TH1F *fHOutMultZNC ;          //control histogram for multiplicity
+  TH1F *fHOutMultZPA ;          //control histogram for multiplicity
+  TH1F *fHOutMultZPC ;          //control histogram for multiplicity
 
   TH2F *fHOutMultV0MvsZDN;      //control histogram for multiplicity
   TH2F *fHOutMultZEMvsZDN;      //control histogram for multiplicity
@@ -292,7 +304,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutVertex ;           //control histogram for vertex SPD
   TH1F *fHOutVertexT0 ;         //control histogram for vertex T0
 
-  ClassDef(AliCentralitySelectionTask, 26); 
+  ClassDef(AliCentralitySelectionTask, 27); 
 };
 
 #endif

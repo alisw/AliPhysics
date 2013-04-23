@@ -39,6 +39,8 @@ AliCentrality::AliCentrality() : TNamed("Centrality", "Centrality"),
   fCentralityCND(0),
   fCentralityZNA(0),
   fCentralityZNC(0),
+  fCentralityZPA(0),
+  fCentralityZPC(0),
   fCentralityNPA(0),
   fCentralityV0MvsFMD(0),
   fCentralityTKLvsV0M(0),
@@ -56,7 +58,9 @@ AliCentrality::AliCentrality() : TNamed("Centrality", "Centrality"),
   fCentralityCL1true(0),
   fCentralityCNDtrue(0),
   fCentralityZNAtrue(0),
-  fCentralityZNCtrue(0)
+  fCentralityZNCtrue(0),
+  fCentralityZPAtrue(0),
+  fCentralityZPCtrue(0)
 {
   /// constructor
 }
@@ -78,6 +82,8 @@ AliCentrality::AliCentrality(const AliCentrality& cnt) :
   fCentralityCND(cnt.fCentralityCND),
   fCentralityZNA(cnt.fCentralityZNA),
   fCentralityZNC(cnt.fCentralityZNC),
+  fCentralityZPA(cnt.fCentralityZPA),
+  fCentralityZPC(cnt.fCentralityZPC),
   fCentralityNPA(cnt.fCentralityNPA),
   fCentralityV0MvsFMD(cnt.fCentralityV0MvsFMD),
   fCentralityTKLvsV0M(cnt.fCentralityTKLvsV0M),
@@ -95,7 +101,9 @@ AliCentrality::AliCentrality(const AliCentrality& cnt) :
   fCentralityCL1true(cnt.fCentralityCL1true),
   fCentralityCNDtrue(cnt.fCentralityCNDtrue),
   fCentralityZNAtrue(cnt.fCentralityZNAtrue),
-  fCentralityZNCtrue(cnt.fCentralityZNCtrue)
+  fCentralityZNCtrue(cnt.fCentralityZNCtrue),
+  fCentralityZPAtrue(cnt.fCentralityZPAtrue),
+  fCentralityZPCtrue(cnt.fCentralityZPCtrue)
 {
   /// Copy constructor
 }
@@ -120,6 +128,8 @@ AliCentrality& AliCentrality::operator=(const AliCentrality& c)
     fCentralityCND = c.fCentralityCND;
     fCentralityZNA = c.fCentralityZNA;
     fCentralityZNC = c.fCentralityZNC;
+    fCentralityZPA = c.fCentralityZPA;
+    fCentralityZPC = c.fCentralityZPC;
     fCentralityNPA = c.fCentralityNPA;
     fCentralityV0MvsFMD = c.fCentralityV0MvsFMD;
     fCentralityTKLvsV0M = c.fCentralityTKLvsV0M;
@@ -138,6 +148,8 @@ AliCentrality& AliCentrality::operator=(const AliCentrality& c)
     fCentralityCNDtrue = c.fCentralityCNDtrue;
     fCentralityZNAtrue = c.fCentralityZNAtrue;
     fCentralityZNCtrue = c.fCentralityZNCtrue;
+    fCentralityZPAtrue = c.fCentralityZPAtrue;
+    fCentralityZPCtrue = c.fCentralityZPCtrue;
   }
 
   return *this;
@@ -172,6 +184,8 @@ Float_t AliCentrality::GetCentralityPercentile(const char *x) const
     if(method.CompareTo("CND")==0)      return fCentralityCND;
     if(method.CompareTo("ZNA")==0)      return fCentralityZNA;
     if(method.CompareTo("ZNC")==0)      return fCentralityZNC;
+    if(method.CompareTo("ZPA")==0)      return fCentralityZPA;
+    if(method.CompareTo("ZPC")==0)      return fCentralityZPC;
     if(method.CompareTo("NPA")==0)      return fCentralityNPA;
     if(method.CompareTo("V0MvsFMD")==0) return fCentralityV0MvsFMD;
     if(method.CompareTo("TKLvsV0M")==0) return fCentralityTKLvsV0M;
@@ -190,6 +204,8 @@ Float_t AliCentrality::GetCentralityPercentile(const char *x) const
     if(method.CompareTo("CNDtrue")==0)      return fCentralityCNDtrue;
     if(method.CompareTo("ZNAtrue")==0)      return fCentralityZNAtrue;
     if(method.CompareTo("ZNCtrue")==0)      return fCentralityZNCtrue;
+    if(method.CompareTo("ZPAtrue")==0)      return fCentralityZPAtrue;
+    if(method.CompareTo("ZPCtrue")==0)      return fCentralityZPCtrue;
     return -1;
   } else {
     return -1;
@@ -215,6 +231,8 @@ Int_t AliCentrality::GetCentralityClass10(const char *x) const
     if(method.CompareTo("CND")==0)      return (Int_t) (fCentralityCND / 10.0);
     if(method.CompareTo("ZNA")==0)      return (Int_t) (fCentralityZNA / 10.0);
     if(method.CompareTo("ZNC")==0)      return (Int_t) (fCentralityZNC / 10.0);
+    if(method.CompareTo("ZPA")==0)      return (Int_t) (fCentralityZPA / 10.0);
+    if(method.CompareTo("ZPC")==0)      return (Int_t) (fCentralityZPC / 10.0);
     if(method.CompareTo("NPA")==0)      return (Int_t) (fCentralityNPA / 10.0);
     if(method.CompareTo("V0MvsFMD")==0) return (Int_t) (fCentralityV0MvsFMD / 10.0);
     if(method.CompareTo("TKLvsV0M")==0) return (Int_t) (fCentralityTKLvsV0M / 10.0);
@@ -233,6 +251,8 @@ Int_t AliCentrality::GetCentralityClass10(const char *x) const
     if(method.CompareTo("CNDtrue")==0)  return (Int_t) (fCentralityCNDtrue / 10.0);
     if(method.CompareTo("ZNAtrue")==0)  return (Int_t) (fCentralityZNAtrue / 10.0);
     if(method.CompareTo("ZNCtrue")==0)  return (Int_t) (fCentralityZNCtrue / 10.0);
+    if(method.CompareTo("ZPAtrue")==0)  return (Int_t) (fCentralityZPAtrue / 10.0);
+    if(method.CompareTo("ZPCtrue")==0)  return (Int_t) (fCentralityZPCtrue / 10.0);
     return -1;
   } else {
     return -1;
@@ -258,6 +278,8 @@ Int_t AliCentrality::GetCentralityClass5(const char *x) const
     if(method.CompareTo("CND")==0)      return (Int_t) (fCentralityCND / 5.0);
     if(method.CompareTo("ZNA")==0)      return (Int_t) (fCentralityZNA / 5.0);
     if(method.CompareTo("ZNC")==0)      return (Int_t) (fCentralityZNC / 5.0);
+    if(method.CompareTo("ZPA")==0)      return (Int_t) (fCentralityZPA / 5.0);
+    if(method.CompareTo("ZPC")==0)      return (Int_t) (fCentralityZPC / 5.0);
     if(method.CompareTo("NPA")==0)      return (Int_t) (fCentralityNPA / 5.0);
     if(method.CompareTo("V0MvsFMD")==0) return (Int_t) (fCentralityV0MvsFMD / 5.0);
     if(method.CompareTo("TKLvsV0M")==0) return (Int_t) (fCentralityTKLvsV0M / 5.0);
@@ -276,6 +298,8 @@ Int_t AliCentrality::GetCentralityClass5(const char *x) const
     if(method.CompareTo("CNDtrue")==0)  return (Int_t) (fCentralityCNDtrue / 5.0);
     if(method.CompareTo("ZNAtrue")==0)  return (Int_t) (fCentralityZNAtrue / 5.0);
     if(method.CompareTo("ZNCtrue")==0)  return (Int_t) (fCentralityZNCtrue / 5.0);
+    if(method.CompareTo("ZPAtrue")==0)  return (Int_t) (fCentralityZPAtrue / 5.0);
+    if(method.CompareTo("ZPCtrue")==0)  return (Int_t) (fCentralityZPCtrue / 5.0);
     return -1;
   } else {
     return -1;
@@ -302,6 +326,8 @@ Bool_t AliCentrality::IsEventInCentralityClass(Float_t a, Float_t b, const char 
     if ((method.CompareTo("CND")==0) && (fCentralityCND >=a && fCentralityCND < b)) return kTRUE;
     if ((method.CompareTo("ZNA")==0) && (fCentralityZNA >=a && fCentralityZNA < b)) return kTRUE;
     if ((method.CompareTo("ZNC")==0) && (fCentralityZNC >=a && fCentralityZNC < b)) return kTRUE;
+    if ((method.CompareTo("ZPA")==0) && (fCentralityZPA >=a && fCentralityZPA < b)) return kTRUE;
+    if ((method.CompareTo("ZPC")==0) && (fCentralityZPC >=a && fCentralityZPC < b)) return kTRUE;
     if ((method.CompareTo("NPA")==0) && (fCentralityNPA >=a && fCentralityNPA < b)) return kTRUE;
     if ((method.CompareTo("V0MvsFMD")==0) && (fCentralityV0MvsFMD >=a && fCentralityV0MvsFMD < b)) return kTRUE;
     if ((method.CompareTo("TKLvsV0M")==0) && (fCentralityTKLvsV0M >=a && fCentralityTKLvsV0M < b)) return kTRUE;
@@ -320,6 +346,8 @@ Bool_t AliCentrality::IsEventInCentralityClass(Float_t a, Float_t b, const char 
     if ((method.CompareTo("CNDtrue")==0) && (fCentralityCNDtrue >=a && fCentralityCNDtrue < b)) return kTRUE;
     if ((method.CompareTo("ZNAtrue")==0) && (fCentralityZNAtrue >=a && fCentralityZNAtrue < b)) return kTRUE;
     if ((method.CompareTo("ZNCtrue")==0) && (fCentralityZNCtrue >=a && fCentralityZNCtrue < b)) return kTRUE;
+    if ((method.CompareTo("ZPAtrue")==0) && (fCentralityZPAtrue >=a && fCentralityZPAtrue < b)) return kTRUE;
+    if ((method.CompareTo("ZPCtrue")==0) && (fCentralityZPCtrue >=a && fCentralityZPCtrue < b)) return kTRUE;
     else return kFALSE;
   } else {
     return kFALSE;
@@ -344,6 +372,8 @@ Float_t AliCentrality::GetCentralityPercentileUnchecked(const char *x) const
   if(method.CompareTo("CND")==0)      return fCentralityCND;
   if(method.CompareTo("ZNA")==0)      return fCentralityZNA;
   if(method.CompareTo("ZNC")==0)      return fCentralityZNC;
+  if(method.CompareTo("ZPA")==0)      return fCentralityZPA;
+  if(method.CompareTo("ZPC")==0)      return fCentralityZPC;
   if(method.CompareTo("NPA")==0)      return fCentralityNPA;
   if(method.CompareTo("V0MvsFMD")==0) return fCentralityV0MvsFMD;
   if(method.CompareTo("TKLvsV0M")==0) return fCentralityTKLvsV0M;
@@ -361,7 +391,9 @@ Float_t AliCentrality::GetCentralityPercentileUnchecked(const char *x) const
   if(method.CompareTo("CL1true")==0)  return fCentralityCL1true;
   if(method.CompareTo("CNDtrue")==0)  return fCentralityCNDtrue;
   if(method.CompareTo("ZNAtrue")==0)  return fCentralityZNAtrue;
-  if(method.CompareTo("ZNCtrue")==0)   return fCentralityZNCtrue;
+  if(method.CompareTo("ZNCtrue")==0)  return fCentralityZNCtrue;
+  if(method.CompareTo("ZPAtrue")==0)  return fCentralityZPAtrue;
+  if(method.CompareTo("ZPCtrue")==0)  return fCentralityZPCtrue;
   return -1;
 }
 
@@ -383,6 +415,8 @@ Int_t AliCentrality::GetCentralityClass10Unchecked(const char *x) const
     if(method.CompareTo("CND")==0)      return (Int_t) (fCentralityCND / 10.0);
     if(method.CompareTo("ZNA")==0)      return (Int_t) (fCentralityZNA / 10.0);
     if(method.CompareTo("ZNC")==0)      return (Int_t) (fCentralityZNC / 10.0);
+    if(method.CompareTo("ZPA")==0)      return (Int_t) (fCentralityZPA / 10.0);
+    if(method.CompareTo("ZPC")==0)      return (Int_t) (fCentralityZPC / 10.0);
     if(method.CompareTo("NPA")==0)      return (Int_t) (fCentralityNPA / 10.0);
     if(method.CompareTo("V0MvsFMD")==0) return (Int_t) (fCentralityV0MvsFMD / 10.0);
     if(method.CompareTo("TKLvsV0M")==0) return (Int_t) (fCentralityTKLvsV0M / 10.0);
@@ -401,6 +435,8 @@ Int_t AliCentrality::GetCentralityClass10Unchecked(const char *x) const
     if(method.CompareTo("CNDtrue")==0)  return (Int_t) (fCentralityCNDtrue / 10.0);
     if(method.CompareTo("ZNAtrue")==0)  return (Int_t) (fCentralityZNAtrue / 10.0);
     if(method.CompareTo("ZNCtrue")==0)  return (Int_t) (fCentralityZNCtrue / 10.0);
+    if(method.CompareTo("ZPAtrue")==0)  return (Int_t) (fCentralityZPAtrue / 10.0);
+    if(method.CompareTo("ZPCtrue")==0)  return (Int_t) (fCentralityZPCtrue / 10.0);
   return -1;
 }
 
@@ -422,6 +458,8 @@ Int_t AliCentrality::GetCentralityClass5Unchecked(const char *x) const
     if(method.CompareTo("CND")==0)      return (Int_t) (fCentralityCND / 5.0);
     if(method.CompareTo("ZNA")==0)      return (Int_t) (fCentralityZNA / 5.0);
     if(method.CompareTo("ZNC")==0)      return (Int_t) (fCentralityZNC / 5.0);
+    if(method.CompareTo("ZPA")==0)      return (Int_t) (fCentralityZPA / 5.0);
+    if(method.CompareTo("ZPC")==0)      return (Int_t) (fCentralityZPC / 5.0);
     if(method.CompareTo("NPA")==0)      return (Int_t) (fCentralityNPA / 5.0);
     if(method.CompareTo("V0MvsFMD")==0) return (Int_t) (fCentralityV0MvsFMD / 5.0);
     if(method.CompareTo("TKLvsV0M")==0) return (Int_t) (fCentralityTKLvsV0M / 5.0);
@@ -440,6 +478,8 @@ Int_t AliCentrality::GetCentralityClass5Unchecked(const char *x) const
     if(method.CompareTo("CNDtrue")==0)  return (Int_t) (fCentralityCNDtrue / 5.0);
     if(method.CompareTo("ZNAtrue")==0)  return (Int_t) (fCentralityZNAtrue / 5.0);
     if(method.CompareTo("ZNCtrue")==0)  return (Int_t) (fCentralityZNCtrue / 5.0);
+    if(method.CompareTo("ZPAtrue")==0)  return (Int_t) (fCentralityZPAtrue / 5.0);
+    if(method.CompareTo("ZPCtrue")==0)  return (Int_t) (fCentralityZPCtrue / 5.0);
   return -1;
 } 
 
@@ -461,6 +501,8 @@ Bool_t AliCentrality::IsEventInCentralityClassUnchecked(Float_t a, Float_t b, co
     if ((method.CompareTo("CND")==0) && (fCentralityCND >=a && fCentralityCND < b)) return kTRUE;
     if ((method.CompareTo("ZNA")==0) && (fCentralityZNA >=a && fCentralityZNA < b)) return kTRUE;
     if ((method.CompareTo("ZNC")==0) && (fCentralityZNC >=a && fCentralityZNC < b)) return kTRUE;
+    if ((method.CompareTo("ZPA")==0) && (fCentralityZPA >=a && fCentralityZPA < b)) return kTRUE;
+    if ((method.CompareTo("ZPC")==0) && (fCentralityZPC >=a && fCentralityZPC < b)) return kTRUE;
     if ((method.CompareTo("NPA")==0) && (fCentralityNPA >=a && fCentralityNPA < b)) return kTRUE;
     if ((method.CompareTo("V0MvsFMD")==0) && (fCentralityV0MvsFMD >=a && fCentralityV0MvsFMD < b)) return kTRUE;
     if ((method.CompareTo("TKLvsV0M")==0) && (fCentralityTKLvsV0M >=a && fCentralityTKLvsV0M < b)) return kTRUE;
@@ -479,6 +521,8 @@ Bool_t AliCentrality::IsEventInCentralityClassUnchecked(Float_t a, Float_t b, co
     if ((method.CompareTo("CNDtrue")==0) && (fCentralityCNDtrue >=a && fCentralityCNDtrue < b)) return kTRUE;
     if ((method.CompareTo("ZNAtrue")==0) && (fCentralityZNAtrue >=a && fCentralityZNAtrue < b)) return kTRUE;
     if ((method.CompareTo("ZNCtrue")==0) && (fCentralityZNCtrue >=a && fCentralityZNCtrue < b)) return kTRUE;
+    if ((method.CompareTo("ZPAtrue")==0) && (fCentralityZPAtrue >=a && fCentralityZPAtrue < b)) return kTRUE;
+    if ((method.CompareTo("ZPCtrue")==0) && (fCentralityZPCtrue >=a && fCentralityZPCtrue < b)) return kTRUE;
   else return kFALSE;
 } 
 
@@ -501,6 +545,8 @@ void AliCentrality::Reset()
   fCentralityCND      =  0;
   fCentralityZNA      =  0;
   fCentralityZNC      =  0;
+  fCentralityZPA      =  0;
+  fCentralityZPC      =  0;
   fCentralityNPA      =  0;
   fCentralityV0MvsFMD =  0;
   fCentralityTKLvsV0M =  0;
@@ -519,4 +565,6 @@ void AliCentrality::Reset()
   fCentralityCNDtrue  =  0;
   fCentralityZNAtrue  =  0;
   fCentralityZNCtrue  =  0;
+  fCentralityZPAtrue  =  0;
+  fCentralityZPCtrue  =  0;
 }

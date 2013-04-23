@@ -37,6 +37,8 @@ class AliCentrality : public TNamed
   void SetCentralityCND(Float_t cent) {fCentralityCND = cent;}
   void SetCentralityZNA(Float_t cent) {fCentralityZNA = cent;}
   void SetCentralityZNC(Float_t cent) {fCentralityZNC = cent;}
+  void SetCentralityZPA(Float_t cent) {fCentralityZPA = cent;}
+  void SetCentralityZPC(Float_t cent) {fCentralityZPC = cent;}
   void SetCentralityNPA(Float_t cent) {fCentralityNPA = cent;}
   void SetCentralityV0MvsFMD(Float_t cent) {fCentralityV0MvsFMD = cent;}
   void SetCentralityTKLvsV0M(Float_t cent) {fCentralityTKLvsV0M = cent;}
@@ -52,6 +54,9 @@ class AliCentrality : public TNamed
   void SetCentralityCL1true(Float_t cent) {fCentralityCL1true = cent;}
   void SetCentralityCNDtrue(Float_t cent) {fCentralityCNDtrue = cent;}
   void SetCentralityZNAtrue(Float_t cent) {fCentralityZNAtrue = cent;}
+  void SetCentralityZNCtrue(Float_t cent) {fCentralityZNCtrue = cent;}
+  void SetCentralityZPAtrue(Float_t cent) {fCentralityZPAtrue = cent;}
+  void SetCentralityZPCtrue(Float_t cent) {fCentralityZPCtrue = cent;}
 
   /// get centrality result
   Float_t GetCentralityPercentile(const char *method) const;
@@ -83,6 +88,8 @@ class AliCentrality : public TNamed
   Float_t fCentralityCND;   // Centrality from tracks (candle condition)
   Float_t fCentralityZNA;   // Centrality from ZNA
   Float_t fCentralityZNC;   // Centrality from ZNC
+  Float_t fCentralityZPA;   // Centrality from ZPA
+  Float_t fCentralityZPC;   // Centrality from ZPC
   Float_t fCentralityNPA;   // Centrality from Npart (MC)
   Float_t fCentralityV0MvsFMD;   // Centrality from V0 vs FMD
   Float_t fCentralityTKLvsV0M;   // Centrality from tracklets vs V0
@@ -102,7 +109,9 @@ class AliCentrality : public TNamed
   Float_t fCentralityCNDtrue;   // Centrality from true (sim) tracks (candle condition)
   Float_t fCentralityZNAtrue;   // Centrality from true (sim) ZNA
   Float_t fCentralityZNCtrue;   // Centrality from true (sim) ZNC
+  Float_t fCentralityZPAtrue;   // Centrality from true (sim) ZNA
+  Float_t fCentralityZPCtrue;   // Centrality from true (sim) ZNC
 
-  ClassDef(AliCentrality, 7)
+  ClassDef(AliCentrality, 8)
 };
 #endif //ALICENTRALITY_H
