@@ -70,7 +70,12 @@ AliFemtoTrack::AliFemtoTrack():
   fXatDCA(0),
   fYatDCA(0),
   fZatDCA(0),
-  fHiddenInfo(0)
+  fHiddenInfo(0),
+  fTrueMomentum(0),  // True (simulated) momentum
+  fEmissionPoint(0), // Emission point coordinates
+  fPDGPid(0),        // True PID of the particle
+  fMass(0),          // True particle mass
+  fGlobalEmissionPoint(0)
 {
   // Default constructor
   fHiddenInfo = NULL;
@@ -140,7 +145,12 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fXatDCA(0),
   fYatDCA(0),
   fZatDCA(0),
-  fHiddenInfo(0)
+  fHiddenInfo(0),
+  fTrueMomentum(0),  // True (simulated) momentum
+  fEmissionPoint(0), // Emission point coordinates
+  fPDGPid(0),        // True PID of the particle
+  fMass(0),          // True particle mass
+  fGlobalEmissionPoint(0)
  { 
    // copy constructor
   fCharge = t.fCharge;
@@ -202,6 +212,26 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   for(int i=0;i<9;i++)
     fNominalTpcPoints[i] = t.fNominalTpcPoints[i];
 
+
+  fTrueMomentum = new AliFemtoThreeVector();
+  fTrueMomentum->SetX(t.fTrueMomentum->x());
+  fTrueMomentum->SetY(t.fTrueMomentum->y());
+  fTrueMomentum->SetZ(t.fTrueMomentum->z());
+
+  fEmissionPoint = new AliFemtoLorentzVector();
+  fEmissionPoint->SetX(t.fEmissionPoint->x());
+  fEmissionPoint->SetY(t.fEmissionPoint->y());
+  fEmissionPoint->SetZ(t.fEmissionPoint->z());
+  fEmissionPoint->SetT(t.fEmissionPoint->e());
+
+  fPDGPid = t.fPDGPid;
+  fMass = t.fMass;
+ 
+  fGlobalEmissionPoint = new AliFemtoThreeVector();
+  fGlobalEmissionPoint->SetX(t.fGlobalEmissionPoint->x());
+  fGlobalEmissionPoint->SetY(t.fGlobalEmissionPoint->y());
+  fGlobalEmissionPoint->SetZ(t.fGlobalEmissionPoint->z());
+  //fGlobalEmissionPoint->SetT(t.fGlobalEmissionPoint->e());
   //  cout << "Created track " << this << endl;
 }
 
@@ -256,6 +286,12 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fKinkIndexes[0] = aTrack.fKinkIndexes[0];
   fKinkIndexes[1] = aTrack.fKinkIndexes[1];
   fKinkIndexes[2] = aTrack.fKinkIndexes[2];
+  //fTrueMomentum = aTrack.fTrueMomentum;
+  //fEmissionPoint(0), // Emission point coordinates
+  //fPDGPid(0),        // True PID of the particle
+  //  fGlobalEmissionPoint(0)
+  fMass = aTrack.fMass;
+  fPDGPid = aTrack.fPDGPid;
 
   for(int i=0;i<6;i++) {
     fHasPointOnITS[i]=false;
@@ -505,3 +541,150 @@ void AliFemtoTrack::SetNominalTPCExitPoint(double *aXTPC)
   fNominalTpcExitPoint.SetY(aXTPC[1]);
   fNominalTpcExitPoint.SetZ(aXTPC[2]);
 }
+
+
+
+
+//_____________________________________________
+AliFemtoThreeVector   *AliFemtoTrack::GetTrueMomentum() const
+{
+  return fTrueMomentum;
+}
+//_____________________________________________
+AliFemtoLorentzVector *AliFemtoTrack::GetEmissionPoint() const
+{
+  return fEmissionPoint;
+}
+//_____________________________________________
+Int_t                  AliFemtoTrack::GetPDGPid() const
+{
+  return fPDGPid;
+}
+//_____________________________________________
+Double_t                  AliFemtoTrack::GetMass() const
+{
+  return fMass;
+}
+//_____________________________________________
+void                   AliFemtoTrack::SetTrueMomentum(AliFemtoThreeVector *aMom)
+{
+  // Set momentum from vector
+  if (fTrueMomentum) {
+    fTrueMomentum->SetX(aMom->x());
+    fTrueMomentum->SetY(aMom->y());
+    fTrueMomentum->SetZ(aMom->z());
+  }
+  else {
+    fTrueMomentum = new AliFemtoThreeVector(*aMom);
+  }
+}
+//_____________________________________________
+void                   AliFemtoTrack::SetTrueMomentum(const AliFemtoThreeVector& aMom)
+{
+  // Set momentum from vector
+  if (fTrueMomentum) {
+    fTrueMomentum->SetX(aMom.x());
+    fTrueMomentum->SetY(aMom.y());
+    fTrueMomentum->SetZ(aMom.z());
+  }
+  else {
+    fTrueMomentum = new AliFemtoThreeVector();
+    *fTrueMomentum = aMom;
+  }
+}
+//_____________________________________________
+void                   AliFemtoTrack::SetTrueMomentum(Double_t aPx, Double_t aPy, Double_t aPz)
+{
+  // Set momentum from components
+  if (!fTrueMomentum) fTrueMomentum = new AliFemtoThreeVector();
+    fTrueMomentum->SetX(aPx);
+    fTrueMomentum->SetY(aPy);
+    fTrueMomentum->SetZ(aPz);
+}
+//_____________________________________________
+void                   AliFemtoTrack::SetEmissionPoint(AliFemtoLorentzVector *aPos)
+{
+  // Set position from vector
+  if (fEmissionPoint) {
+    fEmissionPoint->SetX(aPos->px());
+    fEmissionPoint->SetY(aPos->py());
+    fEmissionPoint->SetZ(aPos->pz());
+    fEmissionPoint->SetT(aPos->e());
+  }
+  else {
+    fEmissionPoint = new AliFemtoLorentzVector(*aPos);
+  }
+}
+//_____________________________________________
+void                   AliFemtoTrack::SetEmissionPoint(const AliFemtoLorentzVector& aPos)
+{
+  // Set position from vector
+  if (fEmissionPoint) {
+    fEmissionPoint->SetX(aPos.px());
+    fEmissionPoint->SetY(aPos.py());
+    fEmissionPoint->SetZ(aPos.pz());
+    fEmissionPoint->SetT(aPos.e());
+  }
+  else {
+    fEmissionPoint = new AliFemtoLorentzVector();
+    *fEmissionPoint = aPos;
+  }
+}
+//_____________________________________________
+void                   AliFemtoTrack::SetPDGPid(Int_t aPid)
+{
+  fPDGPid = aPid;
+}
+//_____________________________________________
+void                   AliFemtoTrack::SetMass(Double_t aMass)
+{
+  fMass = aMass;
+}
+//_____________________________________________
+void                   AliFemtoTrack::SetEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz, Double_t aT)
+{
+  // Set position from components
+  if (fEmissionPoint) {
+    fEmissionPoint->SetX(aRx);
+    fEmissionPoint->SetY(aRy);
+    fEmissionPoint->SetZ(aRz);
+    fEmissionPoint->SetT(aT);
+  }
+  else {
+    fEmissionPoint = new AliFemtoLorentzVector(aRx, aRy, aRz, aT); 
+  }
+}
+
+//_____________________________________________
+AliFemtoThreeVector *AliFemtoTrack::GetGlobalEmissionPoint() const
+{
+  return fGlobalEmissionPoint;
+}
+//_____________________________________________
+void                   AliFemtoTrack::SetGlobalEmissionPoint(const AliFemtoThreeVector& aPos)
+{
+  // set position from vector
+  if (fGlobalEmissionPoint) {
+    fGlobalEmissionPoint->SetX(aPos.x());
+    fGlobalEmissionPoint->SetY(aPos.y());
+    fGlobalEmissionPoint->SetZ(aPos.z());
+  }
+  else {
+    fGlobalEmissionPoint = new AliFemtoThreeVector();
+    *fGlobalEmissionPoint = aPos;
+  }
+}
+//_____________________________________________
+void                   AliFemtoTrack::SetGlobalEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz)
+{
+  // Set position from components
+  if (fGlobalEmissionPoint) {
+    fGlobalEmissionPoint->SetX(aRx);
+    fGlobalEmissionPoint->SetY(aRy);
+    fGlobalEmissionPoint->SetZ(aRz);
+  }
+  else {
+    fGlobalEmissionPoint = new AliFemtoThreeVector(aRx, aRy, aRz); 
+  }
+}
+//_______________________

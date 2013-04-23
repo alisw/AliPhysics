@@ -14,6 +14,7 @@
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoModelGlobalHiddenInfo.h"
 #include "AliFemtoLorentzVector.h"
+#include "AliFemtoTrack.h"
 
 //_______________________
 AliFemtoModelGausRinvFreezeOutGenerator::AliFemtoModelGausRinvFreezeOutGenerator() :
@@ -53,14 +54,14 @@ AliFemtoModelGausRinvFreezeOutGenerator& AliFemtoModelGausRinvFreezeOutGenerator
 //_______________________
 void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aPair)
 {
-  AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
-  AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
+  AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
+  AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
 
   if ((!inf1) || (!inf2)) { cout << "Hidden info not created! "  << endl; exit(kFALSE); }
 
   if (fSelectPrimary) {
-    const AliFemtoModelGlobalHiddenInfo *infg1 = dynamic_cast<const AliFemtoModelGlobalHiddenInfo *>(aPair->Track1()->HiddenInfo());
-    const AliFemtoModelGlobalHiddenInfo *infg2 = dynamic_cast<const AliFemtoModelGlobalHiddenInfo *>(aPair->Track2()->HiddenInfo());
+    const AliFemtoTrack *infg1 = dynamic_cast<const AliFemtoTrack *>(aPair->Track1()->Track());
+    const AliFemtoTrack *infg2 = dynamic_cast<const AliFemtoTrack *>(aPair->Track2()->Track());
     
     if ((infg1) && (infg2)) {
       // assume the emission point is in [cm] and try to judge if

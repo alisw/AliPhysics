@@ -288,8 +288,10 @@ AliFemtoModelWeightGeneratorLednicky& AliFemtoModelWeightGeneratorLednicky::oper
 double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
 {
   // Get hidden information pointers
-  AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
-  AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
+  //AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
+  //AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
+  AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
+  AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
 
   // Calculate pair variables
   Double_t tPx = inf1->GetTrueMomentum()->x()+inf2->GetTrueMomentum()->x();

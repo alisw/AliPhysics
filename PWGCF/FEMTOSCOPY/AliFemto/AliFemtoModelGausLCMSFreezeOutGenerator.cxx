@@ -57,8 +57,10 @@ void AliFemtoModelGausLCMSFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   // Generate two particle emission points with respect
   // to their pair momentum 
   // The source is the 3D Gaussian ellipsoid in the LCMS frame
-  AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
-  AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
+  //AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
+  //AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
+  AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
+  AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
 
   if ((!inf1) || (!inf2)) { cout << "Hidden info not created! "  << endl; exit(kFALSE); }
 

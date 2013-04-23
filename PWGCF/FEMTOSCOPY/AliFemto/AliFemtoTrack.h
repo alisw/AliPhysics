@@ -176,6 +176,25 @@ public:
   void SetXatDCA(const double& x);
   void SetYatDCA(const double& x);
   void SetZatDCA(const double& x);
+
+ 
+  void SetTrueMomentum(AliFemtoThreeVector *aMom);
+  void SetTrueMomentum(const AliFemtoThreeVector& aMom);
+  void SetTrueMomentum(Double_t aPx, Double_t aPy, Double_t aPz);
+  void SetEmissionPoint(AliFemtoLorentzVector *aPos);
+  void SetEmissionPoint(const AliFemtoLorentzVector& aPos);
+  void SetEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz, Double_t aT);
+  void SetPDGPid(Int_t aPid);
+  void SetMass(Double_t aMass);
+
+  AliFemtoThreeVector   *GetTrueMomentum() const;
+  AliFemtoLorentzVector *GetEmissionPoint() const;
+  Int_t                  GetPDGPid() const;
+  Double_t               GetMass() const;
+
+  AliFemtoThreeVector   *GetGlobalEmissionPoint() const;
+  void                   SetGlobalEmissionPoint(const AliFemtoThreeVector& aPos);
+  void                   SetGlobalEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz);
  
   //Alice stuff
   enum {
@@ -255,6 +274,14 @@ public:
   //  mutable 
   AliFemtoHiddenInfo* fHiddenInfo; //! hidden info
   /***/
+
+
+  AliFemtoThreeVector   *fTrueMomentum;  // True (simulated) momentum
+  AliFemtoLorentzVector *fEmissionPoint; // Emission point coordinates
+  Int_t                  fPDGPid;        // True PID of the particle
+  Double_t               fMass;          // True particle mass
+  AliFemtoThreeVector   *fGlobalEmissionPoint;
+
 };
 
 //inline const float* AliFemtoTrack::NSigma() const 

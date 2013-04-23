@@ -679,6 +679,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	
 	AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
 	tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
+	trackCopy->SetGlobalEmissionPoint(fpx, fpy, fpz);
 	
 	fpx *= 1e13;
 	fpy *= 1e13;
@@ -739,6 +740,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	}
 	
 	tInfo->SetPDGPid(tPart->GetPdgCode());
+	trackCopy->SetPDGPid(tPart->GetPdgCode());
 	
 	if (fRotateToEventPlane) {
 	  double tPhi = TMath::ATan2(tPart->Py(), tPart->Px());
@@ -747,19 +749,32 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	  tInfo->SetTrueMomentum(tRad*TMath::Cos(tPhi - tReactionPlane),
 				 tRad*TMath::Sin(tPhi - tReactionPlane),
 				 tPart->Pz());
+	  trackCopy->SetTrueMomentum(tRad*TMath::Cos(tPhi - tReactionPlane),
+				 tRad*TMath::Sin(tPhi - tReactionPlane),
+				 tPart->Pz());
 	}
 	else
-	  tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
+	  {
+	    tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
+	    trackCopy->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
+	  }
 	Double_t mass2 = (tPart->Energy() *tPart->Energy() -
 			  tPart->Px()*tPart->Px() -
 			  tPart->Py()*tPart->Py() -
 			  tPart->Pz()*tPart->Pz());
 	if (mass2>0.0)
-	  tInfo->SetMass(TMath::Sqrt(mass2));
+	  {
+	    tInfo->SetMass(TMath::Sqrt(mass2));
+	    trackCopy->SetMass(TMath::Sqrt(mass2));
+	  }
 	else 
-	  tInfo->SetMass(0.0);
+	  {
+	    tInfo->SetMass(0.0);
+	    trackCopy->SetMass(0.0);
+	  }
 	
 	tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
+	trackCopy->SetEmissionPoint(fpx, fpy, fpz, fpt);
 	trackCopy->SetHiddenInfo(tInfo);
       }
       else {
