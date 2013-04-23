@@ -426,8 +426,8 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     return 0;
   }
 
-
   //if(fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) return 0;
+  if ( fUseTrackSelectionWithFilterBits && !(bachelorTrack->TestFilterMask(BIT(4))) ) return 0;
 
   // selection on daughter tracks
   if (selectionLevel==AliRDHFCuts::kAll ||
@@ -917,8 +917,8 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
     return 0;
   }
 
-
   //if(fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) return 0;
+  if ( fUseTrackSelectionWithFilterBits && !(bachelorTrack->TestFilterMask(BIT(4))) ) return 0;
 
   // selection on daughter tracks
   if (selectionLevel==AliRDHFCuts::kAll ||

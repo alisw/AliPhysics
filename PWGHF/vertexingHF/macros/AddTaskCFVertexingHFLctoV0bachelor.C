@@ -1,12 +1,14 @@
 //DEFINITION OF A FEW CONSTANTS
-const Double_t ptmin = 0.0;
-const Double_t ptmax = 12.0;
+const Double_t ptmin =    0.0;
+const Double_t ptmax = 9999.0;
+const Double_t etamin = -0.9;
+const Double_t etamax =  0.9;
 const Double_t ymin  = -1.2 ;
 const Double_t ymax  =  1.2 ;
-const Double_t cosPAV0min = 0.99;
-const Double_t cosPAV0max = 1.02;
-const Int_t onFlymin = 0;
-const Int_t onFlymax = 2;
+const Double_t cosPAV0min = -1.05;
+const Double_t cosPAV0max = +1.05;
+const Float_t onFlymin = -0.5;
+const Float_t onFlymax =  1.5;
 const Float_t centmin =   0.;
 //const Float_t centmin_0_10   =   0.;
 //const Float_t centmax_0_10   =  10.;
@@ -15,34 +17,32 @@ const Float_t centmin =   0.;
 //const Float_t centmin_60_100 =  60.;
 //const Float_t centmax_60_100 = 100.;
 const Float_t centmax = 100.;
-const Int_t fakemin = 0;
-const Int_t fakemax = 3;
-const Float_t multmin =   0;
-//const Float_t multmin_0_20 =     0;
-//const Float_t multmax_0_20 =    20;
-//const Float_t multmin_20_50 =   20;
-//const Float_t multmax_20_50 =   50;
+const Float_t fakemin = -0.5;
+const Float_t fakemax =  2.5;
+const Float_t multmin =   0.;
+//const Float_t multmin_0_20   =   0;
+//const Float_t multmax_0_20   =  20;
+//const Float_t multmin_20_50  =  20;
+//const Float_t multmax_20_50  =  50;
 //const Float_t multmin_50_102 =  50;
 //const Float_t multmax_50_102 = 102;
-const Float_t multmax = 102;
+const Float_t multmax = 102.;
 
-const Double_t ptBachmin  = 0.0;
+const Double_t ptBachmin  =  0.0;
 const Double_t ptBachmax  = 30.0;
-const Double_t ptV0posmin = 0.0;
+const Double_t ptV0posmin =  0.0;
 const Double_t ptV0posmax = 30.0;
-const Double_t ptV0negmin = 0.0;
+const Double_t ptV0negmin =  0.0;
 const Double_t ptV0negmax = 30.0;
-const Double_t dcaV0min   = 0.0; // nSigma
-const Double_t dcaV0max   = 1.5; // nSigma
+const Double_t dcaV0min   =  0.; // nSigma
+const Double_t dcaV0max   = 15.; // nSigma
 const Double_t cTV0min    = 0.0; // micron
 const Double_t cTV0max    = 300; // micron
 const Double_t cTmin      = 0.0; // micron
 const Double_t cTmax      = 300; // micron
-const Float_t cosPAmin    =-1.02;
-const Float_t cosPAmax    = 1.02;
+const Float_t cosPAmin    =-1.05;
+const Float_t cosPAmax    = 1.05;
 
-const Double_t etamin = -0.9;
-const Double_t etamax =  0.9;
 //const Double_t zmin = -15.;
 //const Double_t zmax =  15.;
 
@@ -50,9 +50,12 @@ const Double_t etamax =  0.9;
 //----------------------------------------------------
 
 AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "./LctoV0bachelorCuts.root",
-							 Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB = kTRUE,
-							 Bool_t isKeepDfromBOnly = kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,
-							 Char_t lcToV0bachelorDecayMode = 0,
+							 Bool_t rejectIfNotFromQuark=kTRUE,
+							 //Bool_t isKeepDfromB = kTRUE, Bool_t isKeepDfromBOnly = kFALSE, // all in
+							 Bool_t isKeepDfromB = kFALSE, Bool_t isKeepDfromBOnly = kFALSE, // prompt
+							 //Bool_t isKeepDfromB = kTRUE, Bool_t isKeepDfromBOnly = kTRUE, // no-prompt
+							 Int_t configuration = AliCFTaskVertexingHF::kCheetah,
+							 Int_t pdgCode = 4122, Char_t isSign = 2, Char_t lcToV0bachelorDecayMode = 0,
 							 TString usercomment = "username")
 {
 
@@ -109,20 +112,20 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   const Double_t phimin = 0.0;
   const Double_t phimax = 2.*TMath::Pi();
 
-  const Int_t nbinpt          =  8; //bins in pt from 0 to 12 GeV
-  const Int_t nbiny           = 24; //bins in y
-  const Int_t nbininvMassV0   = 60; //bins in invMassV0
-  const Int_t nbinpointingV0  = 12; //bins in cosPointingAngleV0
-  const Int_t nbinonFly       =  2; //bins in onFlyStatus x V0
+  const Int_t nbinpt           =  11; //bins in pt from 0,1,2,3,4,5,6,8,12,17,25,35 GeV
+  const Int_t nbiny            =  24; //bins in y
+  const Int_t nbininvMassV0    =  60; //bins in invMassV0
+  const Int_t nbinpointingV0   =  42; //bins in cosPointingAngleV0
+  const Int_t nbinonFly        =   2; //bins in onFlyStatus x V0
 
-  const Int_t nbincent        = 18; //bins in centrality (total number)
+  const Int_t nbincent          = 18; //bins in centrality (total number)
   //const Int_t nbincent_0_10   =  4; //bins in centrality between 0 and 10
   //const Int_t nbincent_10_60  = 10; //bins in centrality between 10 and 60
   //const Int_t nbincent_60_100 =  4; //bins in centrality between 60 and 100
 
-  const Int_t nbinfake        =  3; //bins in fake
+  const Int_t nbinfake          =  3; //bins in fake
 
-  const Int_t nbinmult        = 48; //bins in multiplicity (total number)
+  const Int_t nbinmult          = 48; //bins in multiplicity (total number)
   //const Int_t nbinmult_0_20   = 20; //bins in multiplicity between 0 and 20
   //const Int_t nbinmult_20_50  = 15; //bins in multiplicity between 20 and 50
   //const Int_t nbinmult_50_102 = 13; //bins in multiplicity between 50 and 102
@@ -131,11 +134,11 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   const Int_t nbinptBach      = 300; //bins in pt from 0 to 30 GeV
   const Int_t nbinptV0pos     = 300; //bins in pt from 0 to 30 GeV
   const Int_t nbinptV0neg     = 300; //bins in pt from 0 to 30 GeV
-  const Int_t nbinphi         = 18; //bins in Phi
-  const Int_t nbindcaV0       = 15; //bins in dcaV0
-  const Int_t nbincTV0        = 15; //bins in cTV0
-  const Int_t nbincT          = 15; //bins in cT
-  const Int_t nbinpointing    = 51; //bins in cosPointingAngle
+  const Int_t nbinphi         =  18; //bins in Phi
+  const Int_t nbindcaV0       = 150; //bins in dcaV0
+  const Int_t nbincTV0        =  15; //bins in cTV0
+  const Int_t nbincT          =  15; //bins in cT
+  const Int_t nbinpointing    =  42; //bins in cosPointingAngle
 
   //the sensitive variables, their indices
 
@@ -192,10 +195,15 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
 
   // pt
   Double_t *binLimpT=new Double_t[iBin[0]+1];
-  //for(Int_t ii=0; ii<=iBin[0]; ii++) binLimpT[ii]=(Double_t)ptmin + (ptmax-ptmin)/iBin[0]*(Double_t)ii ; 
-  for(Int_t ii=0; ii<=iBin[0]-2; ii++) binLimpT[ii]=(Double_t)ptmin + (Double_t)ii;
-  binLimpT[iBin[0]-1]=8.;
-  binLimpT[iBin[0]]=12.;
+  Double_t pTminCand =  0.;
+  Double_t pTmaxCand = 35.;
+  for(Int_t ii=0; ii<=iBin[0]-6; ii++) binLimpT[ii]=(Double_t)pTminCand + (Double_t)ii;
+  binLimpT[iBin[0]-5]= 6.;
+  binLimpT[iBin[0]-4]= 8.;
+  binLimpT[iBin[0]-3]=12.;
+  binLimpT[iBin[0]-2]=17.;
+  binLimpT[iBin[0]-1]=25.;
+  binLimpT[iBin[0]]=35.;
 
   // y
   Double_t *binLimy=new Double_t[iBin[1]+1];
@@ -563,7 +571,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   task->SetSign(isSign);
   task->SetCentralitySelection(kFALSE);
   task->SetFakeSelection(0);
-  task->SetRejectCandidateIfNotFromQuark(kTRUE); // put to false if you want to keep HIJING D0!!
+  task->SetRejectCandidateIfNotFromQuark(rejectIfNotFromQuark); // put to false if you want to keep HIJING D0!!
   task->SetUseMCVertex(kFALSE); // put to true if you want to do studies on pp
 
   if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
