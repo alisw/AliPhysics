@@ -3151,7 +3151,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       if(!bgCalo) 
         printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - Event %d in calo pool not available?\n",ev);
       
-      if(OnlyIsolated() && bgCalo)
+      if(OnlyIsolated())
       {
         Int_t n=0; Int_t nfrac = 0; Bool_t isolated = kFALSE; Float_t coneptsum = 0;
         GetIsolationCut()->MakeIsolationCut(bgTracks,bgCalo,
@@ -3210,13 +3210,10 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
         TLorentzVector mom ;
         for(Int_t jlead = 0;jlead <nClusters; jlead++ )
         {
-          AliVCluster *cluster = (AliVCluster*) bgCalo->At(jlead) ;
+          AliAODPWG4Particle *cluster= (AliAODPWG4Particle*) bgCalo->At(jlead) ;
           
-          Double_t vertex[]={0,0,0}; // assume 0 vertex
-          cluster->GetMomentum(mom,vertex) ;
-
-          ptAssoc  = mom.Pt();
-          phiAssoc = mom.Phi() ;
+          ptAssoc  = cluster->Pt();
+          phiAssoc = cluster->Phi() ;
           
           if(phiAssoc < 0) phiAssoc+=TMath::TwoPi();
           if (fMakeNearSideLeading)
