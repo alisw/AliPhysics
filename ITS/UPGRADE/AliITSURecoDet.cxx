@@ -90,7 +90,7 @@ Bool_t AliITSURecoDet::Build()
   TGeoVolume *v = gGeoManager->GetVolume(fgkBeamPipeVolName);
   AliITSURecoLayer* lrp = 0;
   if (!v) AliWarning("No beam pipe found in geometry");
-  {
+  else {
     TGeoTube *t=(TGeoTube*)v->GetShape();
     rMin = t->GetRmin();
     rMax = t->GetRmax();
