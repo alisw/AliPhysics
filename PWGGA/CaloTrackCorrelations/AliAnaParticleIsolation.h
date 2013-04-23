@@ -45,6 +45,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Float_t      CalculateExcessAreaFraction(const Float_t excess, const Float_t conesize);
   
+  void 	   GetCoeffNormBadCell(const AliAODPWG4ParticleCorrelation * pCandidate, 
+                                        const AliCaloTrackReader * reader,  Float_t &  coneBadCellsCoeff, Float_t &  etaBandBadCellsCoeff, Float_t & phiBandBadCellsCoeff, const Float_t conesize) ;
+
   void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate,
                                                    const Float_t coneptsumCluster,const Float_t coneptsumCell, const Float_t coneptsumTrack ) ;
   
