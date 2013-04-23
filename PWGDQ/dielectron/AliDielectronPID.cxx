@@ -28,6 +28,8 @@ Detailed description
 #include <TMath.h>
 #include <TF1.h>
 #include <TGraph.h>
+#include <TH2D.h>
+#include <TH3D.h>
 
 #include <AliVTrack.h>
 #include <AliVCluster.h>
@@ -57,7 +59,9 @@ TGraph *AliDielectronPID::fgdEdxRunCorr=0x0;
 AliDielectronPID::AliDielectronPID() :
   AliAnalysisCuts(),
   fNcuts(0),
-  fPIDResponse(0x0)
+  fPIDResponse(0x0),
+  fElectronCentroidCentEta(0x0),
+  fElectronWidthCentEta(0x0)
 {
   //
   // Default Constructor
@@ -78,6 +82,8 @@ AliDielectronPID::AliDielectronPID() :
     fSigmaFunUp[icut]=0;
     fFunSigma[icut]=0x0;
     fVarCuts[icut]=0x0;
+    fHistElectronCutLow[icut]=0x0;
+    fHistElectronCutUp[icut]=0x0;
   }
 }
 
@@ -85,7 +91,9 @@ AliDielectronPID::AliDielectronPID() :
 AliDielectronPID::AliDielectronPID(const char* name, const char* title) :
   AliAnalysisCuts(name, title),
   fNcuts(0),
-  fPIDResponse(0x0)
+  fPIDResponse(0x0),
+  fElectronCentroidCentEta(0x0),
+  fElectronWidthCentEta(0x0)
 {
   //
   // Named Constructor
@@ -106,6 +114,8 @@ AliDielectronPID::AliDielectronPID(const char* name, const char* title) :
     fSigmaFunUp[icut]=0;
     fFunSigma[icut]=0x0;
     fVarCuts[icut]=0x0;
+    fHistElectronCutLow[icut]=0x0;
+    fHistElectronCutUp[icut]=0x0;
   }
 }
 
@@ -224,6 +234,39 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t 
 }
 
 //______________________________________________
+void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, TH3D * const histLow, Double_t nSigmaUp,
+                              Double_t min/*=0*/, Double_t max/*=0*/, Bool_t exclude/*=kFALSE*/,
+                              UInt_t pidBitType/*=AliDielectronPID::kRequire*/, Int_t var/*=-1*/)
+{
+  //                                                                                    
+  // cut using a TH3D(Pin,centrality,eta) as a lower cut
+  // 
+  if(histLow==0x0){
+    AliError("A valid histogram is required for the lower cut. Not adding the cut!");
+    return;
+  }
+  fHistElectronCutLow[fNcuts]=histLow;
+  AddCut(det,type,0.,nSigmaUp,min,max,exclude,pidBitType,var);
+}
+
+//______________________________________________                                                                                    
+void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, TH3D * const histLow, TH3D * const histUp,
+                              Double_t min/*=0*/, Double_t max/*=0*/, Bool_t exclude/*=kFALSE*/,
+                              UInt_t pidBitType/*=AliDielectronPID::kRequire*/, Int_t var/*=-1*/)
+{
+  //
+  // cut using a TH3D(Pin,centrality,eta) as lower and upper cut
+  //
+  if ( (histUp==0x0) || (histLow==0x0) ){
+    AliError("A valid histogram is required for upper and lower cut. Not adding the cut!");
+    return;
+  }
+  fHistElectronCutUp[fNcuts]=histUp;
+  fHistElectronCutLow[fNcuts]=histLow;
+  AddCut(det,type,0.,0.,min,max,exclude,pidBitType,var);
+}
+
+//______________________________________________
 void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp,
                               AliDielectronVarCuts *var, Bool_t exclude/*=kFALSE*/,
                               UInt_t pidBitType/*=AliDielectronPID::kRequire*/)
@@ -296,7 +339,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     Double_t min=fmin[icut];
     Double_t max=fmax[icut];
     Double_t val=values[fActiveCuts[icut]];
-
+    
     // test var range. In case min==max do not cut
     if ( fVarCuts[icut] ) {
       if ( !fVarCuts[icut]->IsSelected(part) ) continue;
@@ -393,20 +436,75 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut)
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
 
   Double_t mom=part->GetTPCmomentum();
-  
+  Double_t centroid=0.0;
+  Double_t width=1.0;
+  Double_t eta = 0.0;
+  Double_t centrality = 0.0;
+
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTPC(part, fPartType[icut]);
 
   if (fPartType[icut]==AliPID::kElectron){
     numberOfSigmas-=fgCorr;
     numberOfSigmas-=GetCntrdCorr(part);
     numberOfSigmas/=GetWdthCorr(part);
+
+    // recalculate the number of sigmas from the electron assuption using the electron centroid and width maps
+    if(fElectronCentroidCentEta || fElectronWidthCentEta) {
+      eta=part->Eta();
+      centrality = AliDielectronVarManager::GetCurrentEvent()->GetCentrality()->GetCentralityPercentile("V0M");
+      if(fElectronCentroidCentEta) {
+        Int_t centBin = fElectronCentroidCentEta->GetXaxis()->FindBin(centrality);
+        Int_t etaBin = fElectronCentroidCentEta->GetYaxis()->FindBin(eta);
+        if(centBin>=1 && centBin<=fElectronCentroidCentEta->GetXaxis()->GetNbins() &&
+           etaBin>=1 && etaBin<=fElectronCentroidCentEta->GetYaxis()->GetNbins())
+          centroid = fElectronCentroidCentEta->GetBinContent(fElectronCentroidCentEta->GetXaxis()->FindBin(centrality),
+                                                             fElectronCentroidCentEta->GetYaxis()->FindBin(eta));
+      }
+      if(fElectronWidthCentEta) {
+        Int_t centBin =fElectronWidthCentEta->GetXaxis()->FindBin(centrality);
+        Int_t etaBin = fElectronWidthCentEta->GetYaxis()->FindBin(eta);
+        if(centBin>=1 && centBin<=fElectronWidthCentEta->GetXaxis()->GetNbins() &&
+           etaBin>=1 && etaBin<=fElectronWidthCentEta->GetYaxis()->GetNbins())
+          width = fElectronWidthCentEta->GetBinContent(fElectronWidthCentEta->GetXaxis()->FindBin(centrality),
+                                                       fElectronWidthCentEta->GetYaxis()->FindBin(eta));
+      }
+    }
+    if(width<0.01) width = 1.0;
+    numberOfSigmas = (numberOfSigmas-centroid)/width;
   }
-  
+
   // test if we are supposed to use a function for the cut
   if (fFunUpperCut[icut]) fNsigmaUp[icut] =fFunUpperCut[icut]->Eval(mom);
   if (fFunLowerCut[icut]) fNsigmaLow[icut]=fFunLowerCut[icut]->Eval(mom);
-  
-  Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
+
+  // if electron selection 3D maps are loaded, then find the corresponding cuts based on momentum, eta and centrality
+  Double_t lowElectronCut = fNsigmaLow[icut];
+  Double_t upElectronCut = fNsigmaUp[icut];
+  if((fPartType[icut]==AliPID::kElectron) && (fHistElectronCutLow[icut] || fHistElectronCutUp[icut])) {
+    eta=part->Eta();
+    centrality = AliDielectronVarManager::GetCurrentEvent()->GetCentrality()->GetCentralityPercentile("V0M");
+  }
+  if((fPartType[icut]==AliPID::kElectron) && fHistElectronCutLow[icut]) {
+    Int_t pbin = fHistElectronCutLow[icut]->GetZaxis()->FindBin(mom);
+    Int_t centBin = fHistElectronCutLow[icut]->GetXaxis()->FindBin(centrality);
+    Int_t etaBin = fHistElectronCutLow[icut]->GetYaxis()->FindBin(eta);
+    // apply this cut only in the range covered in the histogram range
+    if(pbin!=0    && pbin!=(fHistElectronCutLow[icut]->GetZaxis()->GetNbins()+1)             &&
+       centBin!=0 && centBin!=(fHistElectronCutLow[icut]->GetXaxis()->GetNbins()+1) &&
+       etaBin!=0  && etaBin!=(fHistElectronCutLow[icut]->GetYaxis()->GetNbins()+1))
+      lowElectronCut = fHistElectronCutLow[icut]->GetBinContent(centBin, etaBin, pbin);
+  }
+  if((fPartType[icut]==AliPID::kElectron) && fHistElectronCutUp[icut]) {
+    Int_t pbin = fHistElectronCutUp[icut]->GetZaxis()->FindBin(mom);
+    Int_t centBin = fHistElectronCutUp[icut]->GetXaxis()->FindBin(centrality);
+    Int_t etaBin = fHistElectronCutUp[icut]->GetYaxis()->FindBin(eta);
+    // apply this cut only in the p range existing in the histogram range
+    if(pbin!=0    && pbin!=(fHistElectronCutUp[icut]->GetZaxis()->GetNbins()+1)             &&
+       centBin!=0 && centBin!=(fHistElectronCutUp[icut]->GetXaxis()->GetNbins()+1) &&
+       etaBin!=0  && etaBin!=(fHistElectronCutUp[icut]->GetYaxis()->GetNbins()+1))
+      upElectronCut = fHistElectronCutUp[icut]->GetBinContent(centBin, etaBin, pbin);
+  }
+  Bool_t selected=((numberOfSigmas>=lowElectronCut)&&(numberOfSigmas<=upElectronCut))^fExclude[icut];
   return selected;
 }
 
@@ -595,8 +693,8 @@ void AliDielectronPID::SetDefaults(Int_t def){
   else if (def==13) {
     // TPC electron inclusion
     // TOF electron inclusion if available
-    AddCut(kTOF,AliPID::kElectron,-3.,3.,0,200,kFALSE,AliDielectronPID::kIfAvailable);
-    AddCut(kTPC,AliPID::kElectron,10.);
+    AddCut(kTOF,AliPID::kElectron,-4.,4.,0,200,kFALSE,AliDielectronPID::kIfAvailable);
+    AddCut(kTPC,AliPID::kElectron,-3.5,3.5);
   }
   else if (def==14) {
     // TRD 1D 90% elec eff, 4-6 tracklets
@@ -604,8 +702,8 @@ void AliDielectronPID::SetDefaults(Int_t def){
     // TOF electron inclusion if available
     AddCut(AliDielectronPID::kTRDeleEff,AliPID::kElectron,.9,1.,3.5,6.,kFALSE,
 	   AliDielectronPID::kIfAvailable,AliDielectronVarManager::kTRDpidQuality);
-    AddCut(kTOF,AliPID::kElectron,-3.,3.,0,200,kFALSE,AliDielectronPID::kIfAvailable);
-    AddCut(kTPC,AliPID::kElectron,10.);
+    AddCut(kTOF,AliPID::kElectron,-4.,4.,0,200,kFALSE,AliDielectronPID::kIfAvailable);
+    AddCut(kTPC,AliPID::kElectron,-3.5,3.5);
   }
   else if (def==15) {
     // TRD 1D 90% elec eff, 4-6 tracklets, chi2 < 2
@@ -615,14 +713,8 @@ void AliDielectronPID::SetDefaults(Int_t def){
 	   AliDielectronPID::kIfAvailable,AliDielectronVarManager::kTRDpidQuality);
     AddCut(AliDielectronPID::kTRDeleEff,AliPID::kElectron,.9,1.,0.,2.,kFALSE,
 	   AliDielectronPID::kIfAvailable,AliDielectronVarManager::kTRDchi2);
-    AddCut(kTOF,AliPID::kElectron,-3.,3.,0,200,kFALSE,AliDielectronPID::kIfAvailable);
-    AddCut(kTPC,AliPID::kElectron,10.);
-  }
-  else if (def==16) {
-    // TPC electron inclusion
-    // TOF electron inclusion if available
-    AddCut(kTOF,AliPID::kElectron,-3.,3.,0,200,kFALSE,AliDielectronPID::kIfAvailable);
-    AddCut(kTPC,AliPID::kElectron,-3.5,+3.5);
+    AddCut(kTOF,AliPID::kElectron,-4.,4.,0,200,kFALSE,AliDielectronPID::kIfAvailable);
+    AddCut(kTPC,AliPID::kElectron,-3.5,3.5);
   }
 
 }
