@@ -258,7 +258,7 @@ void RawYields(Float_t cMin, Float_t cMax, TString centr) {
 
 Double_t fd(Double_t x) {
   //Effective FD correction
-  return 0.1619 + 0.05295*x - 0.01749*x*x + 0.001425*x*x*x - 3.446e-05*x*x*x*x;
+   return 0.219901 + 0.0322588*x - 0.0173934*x*x + 0.00179039*x*x*x - 5.67881e-05*x*x*x*x;
 }
 
 void Spectra(TString centr) {
