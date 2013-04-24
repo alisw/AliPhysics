@@ -80,6 +80,7 @@ set ( SRCS
   FORWARD/analysis2/AliForwardQATask.cxx
   FORWARD/analysis2/AliForwardUtil.cxx
   FORWARD/analysis2/AliMCTruthdNdetaTask.cxx
+  FORWARD/analysis2/AliMCAuxHandler.cxx
   FORWARD/analysis2/AliPoissonCalculator.cxx
   FORWARD/analysis2/AliSPDMCTrackDensity.cxx
   FORWARD/GEO/AliAnalysisTaskZDCPbPb.cxx
