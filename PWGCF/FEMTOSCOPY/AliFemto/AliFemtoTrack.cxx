@@ -214,25 +214,30 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
 
 
   fTrueMomentum = new AliFemtoThreeVector();
-  fTrueMomentum->SetX(t.fTrueMomentum->x());
-  fTrueMomentum->SetY(t.fTrueMomentum->y());
-  fTrueMomentum->SetZ(t.fTrueMomentum->z());
+  if(t.fTrueMomentum){
+    fTrueMomentum->SetX(t.fTrueMomentum->x());
+    fTrueMomentum->SetY(t.fTrueMomentum->y());
+    fTrueMomentum->SetZ(t.fTrueMomentum->z());}
 
   fEmissionPoint = new AliFemtoLorentzVector();
-  fEmissionPoint->SetX(t.fEmissionPoint->x());
-  fEmissionPoint->SetY(t.fEmissionPoint->y());
-  fEmissionPoint->SetZ(t.fEmissionPoint->z());
-  fEmissionPoint->SetT(t.fEmissionPoint->e());
+  if(t.fEmissionPoint){
+    fEmissionPoint->SetX(t.fEmissionPoint->x());
+    fEmissionPoint->SetY(t.fEmissionPoint->y());
+    fEmissionPoint->SetZ(t.fEmissionPoint->z());
+    fEmissionPoint->SetT(t.fEmissionPoint->e());
+  }
 
   fPDGPid = t.fPDGPid;
   fMass = t.fMass;
  
   fGlobalEmissionPoint = new AliFemtoThreeVector();
-  fGlobalEmissionPoint->SetX(t.fGlobalEmissionPoint->x());
-  fGlobalEmissionPoint->SetY(t.fGlobalEmissionPoint->y());
-  fGlobalEmissionPoint->SetZ(t.fGlobalEmissionPoint->z());
-  //fGlobalEmissionPoint->SetT(t.fGlobalEmissionPoint->e());
-  //  cout << "Created track " << this << endl;
+  if(t.fGlobalEmissionPoint){
+    fGlobalEmissionPoint->SetX(t.fGlobalEmissionPoint->x());
+    fGlobalEmissionPoint->SetY(t.fGlobalEmissionPoint->y());
+    fGlobalEmissionPoint->SetZ(t.fGlobalEmissionPoint->z());
+    //fGlobalEmissionPoint->SetT(t.fGlobalEmissionPoint->e());
+    //  cout << "Created track " << this << endl;
+  }
 }
 
 AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
