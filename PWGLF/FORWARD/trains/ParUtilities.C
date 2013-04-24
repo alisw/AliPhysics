@@ -20,8 +20,10 @@
 # include <TROOT.h>
 # include <fstream>
 # include <cstdlib>
+# include "Helper.C"
 #else
 class TString;
+class Helper;
 #endif
 
 // ===================================================================
@@ -202,12 +204,25 @@ struct ParUtilities
    */
   static Bool_t MakeScriptPAR(Bool_t isLocal, 
 			      const TString& script, 
-			      const TString& deps)
+			      const TString& deps, 
+			      Helper*        helper)
   {
+    TObjArray* depList = deps.Tokenize(", ");
+    
     // --- In local mode, just AcLic and load ------------------------
     if (isLocal) { 
-      if (gROOT->LoadMacro(Form("%s++g", script.Data())) < 0)
+      // Load dependencies 
+      TIter       next(depList);
+      TObject*    dep = 0;
+      while ((dep = next())) 
+	helper->LoadLibrary(dep->GetName());
+      
+      // AcLic and load 
+      if (gROOT->LoadMacro(Form("%s++g", script.Data())) < 0) {
+	Error("ParUtilities::MakeScriptPAR", 
+	      "Failed to build local library %s", script.Data());
 	return false;
+      }
       return true;
     }
 
@@ -269,7 +284,6 @@ struct ParUtilities
       }
       
       // --- Make scripts, etc. ----------------------------------------
-      TObjArray* depList = deps.Tokenize(", ");
       if (!MakeBuildScript(dir, base)) 
 	throw TString::Format("Failed to make build script");
       if (!MakeUtilityScript(dir)) 

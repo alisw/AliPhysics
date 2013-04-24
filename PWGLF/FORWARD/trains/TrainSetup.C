@@ -395,7 +395,7 @@ struct TrainSetup
       if (!train->Options().Parse(opts)) 
 	throw TString("Failed to parse options");
 
-      Info("", "URL=%s", train->Options().Get("url").Data());
+      // Info("", "URL=%s", train->Options().Get("url").Data());
 
       // Check if we got a help request
       if (train->Options().Has("help")) { 

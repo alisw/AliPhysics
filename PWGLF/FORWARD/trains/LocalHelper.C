@@ -144,9 +144,13 @@ struct LocalHelper : public Helper
     TString pattern(fOptions.Has("pattern") ? fOptions.Get("pattern") : "");
     Bool_t  recursive = fOptions.Has("recursive");
     Bool_t  mc        = fOptions.Has("mc");
+    TString file      = fUrl.GetFile();
+    if (file.IsNull()) {
+      Error("PostSetup", "No input source specified");
+      return false;
+    }
 
-    fChain = ChainBuilder::Create(fUrl.GetFile(), treeName, 
-				  pattern, mc, recursive);
+    fChain = ChainBuilder::Create(file, treeName, pattern, mc, recursive);
 
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) { 

@@ -188,6 +188,10 @@ struct Helper
    * @return Execution mode set in set-up URL
    */
   virtual UShort_t Mode() const = 0;
+  /**
+   * Get the mode string used for AliAnalysisManager::StartAnalysis
+   */
+  virtual const char* ModeString() const { return "unknown"; }
   /** 
    * Get the operation - this only makes sense for Grid jobs
    * 
@@ -377,6 +381,7 @@ protected:
 
   virtual Bool_t ParseOptions()
   {
+    //std::cout << "Url options: \"" << fUrl.GetOptions() << "\"" << std::endl;
     return fOptions.Parse(fUrl.GetOptions(), "&");
   }
   /** 

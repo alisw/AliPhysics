@@ -91,9 +91,12 @@ struct Option /* : public TNamed */
     if (HasArg()) {
       fIsSet = true;
       fValue = val;
+      // Info("Set", "Setting option %s with arg %s to %s", 
+      // fName.Data(), fArg.Data(), fValue.Data());
       return;
     }
 
+    // Info("Set", "Setting option %s with no arg", fName.Data());
     // Allow flags to get =true, =1, =false, =0 values
     if (!val.IsNull() && 
 	(val.EqualTo("false", TString::kIgnoreCase) || 
@@ -389,6 +392,8 @@ struct OptionList
       Warning("OptionList::Add", "Option %s already registered", name.Data());
       return o;
     }
+    // Info("Add", "New option %s with arg %s (%s) and value %s",    
+    //	 name.Data(), arg.Data(), desc.Data(), val.Data());
     o = new Option(name, arg, desc, val);
     Link*  cur  = fList;
     if (!cur) { 
