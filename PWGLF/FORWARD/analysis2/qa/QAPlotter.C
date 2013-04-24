@@ -55,7 +55,7 @@ struct QAPlotter : public QABase
      * @param d Detector 
      * @param r Ring 
      */
-    Ring(UShort_t d, Char_t r)
+    Ring(UShort_t d, Char_t r, Bool_t useVar=false)
       : QARing(d, r),
         fGChi2(0),
         fGC(0),
@@ -66,7 +66,8 @@ struct QAPlotter : public QABase
         fGSingles(0),
         fGLoss(0),
         fGBeta(0),
-        fGOccupancy(0)
+        fGOccupancy(0),
+	fUseVar(useVar)
     {
       fGChi2           = new TGraphAsymmErrors;
       fGC              = new TGraphAsymmErrors;
@@ -143,6 +144,12 @@ struct QAPlotter : public QABase
       Double_t y  = q.mean;
       Double_t el = y-q.min;
       Double_t eh = q.max-y;
+      if (fUseVar) { 
+	Info("UpdateGraph", "Setting errors on %s to variance",
+	     g->GetName());
+	el = q.var; 
+	eh = q.var; 
+      }
       if (TMath::Abs(y) < 1e-6) return;
       Int_t    i  = g->GetN();
       g->SetPoint(i, runNo, y);
@@ -185,20 +192,23 @@ struct QAPlotter : public QABase
     TGraph*            fGLoss;     // Graph of 'lost' data 
     TGraph*            fGBeta;     // Graph of Poisson vs ELoss correlation
     TGraphAsymmErrors* fGOccupancy;// Graph of mean occupancy              
+    Bool_t             fUseVar;    // Use variance 
   };
   /** 
    * Constructor 
    */
-  QAPlotter(Int_t prodYear=0, Char_t prodLetter='\0') 
+  QAPlotter(Int_t prodYear=0, Char_t prodLetter='\0', Bool_t useVar=false) 
     : QABase(false, prodYear, prodLetter),
       fNAccepted(0),
-      fVz(0)
+      fVz(0),
+      fUseVar(useVar)
   {
-    fFMD1i = new Ring(1, 'I'); 
-    fFMD2i = new Ring(2, 'I'); 
-    fFMD2o = new Ring(2, 'O'); 
-    fFMD3i = new Ring(3, 'I'); 
-    fFMD3o = new Ring(3, 'O'); 
+    Info("QAPlotter", "Do we use variance? %s", fUseVar ? "yes" : "no");
+    fFMD1i = new Ring(1, 'I', useVar); 
+    fFMD2i = new Ring(2, 'I', useVar); 
+    fFMD2o = new Ring(2, 'O', useVar); 
+    fFMD3i = new Ring(3, 'I', useVar); 
+    fFMD3o = new Ring(3, 'O', useVar); 
     fNAccepted = new TGraph;
     fNAccepted->SetName("nAccepted");
     fNAccepted->SetMarkerStyle(20);
@@ -254,6 +264,7 @@ struct QAPlotter : public QABase
     UInt_t nEntries = fTree->GetEntries();
     UInt_t j = 0;
     fRuns.Set(nEntries);
+    Info("Run", "Got %d runs", nEntries);
     for (UInt_t i = 0; i < nEntries; i++) {
       fTree->GetEntry(i);
 
@@ -503,13 +514,18 @@ struct QAPlotter : public QABase
   {
     h->GetXaxis()->SetNoExponent();
     // h->GetXaxis()->SetTitleOffset(1);
-    h->SetYTitle(title);
+    TString ytitle(title);
+    if (fUseVar) ytitle.Append(" (errors: variance)");
+    else         ytitle.Append(" (errors: min/max)");
+    h->SetYTitle(ytitle.Data());
     h->SetXTitle("Run #");
+    Info("AddRuns", "%s: %s vs %s", h->GetName(), 
+	 h->GetXaxis()->GetTitle(), h->GetYaxis()->GetTitle());
 
     Int_t    r1  = h->GetXaxis()->GetXmin();
     Int_t    r2  = h->GetXaxis()->GetXmax();
     Double_t lx  = 0;
-    Double_t tx  = .045; // (r2 - r1) / 18;
+    Double_t tx  = .025; // (r2 - r1) / 18;
     Double_t wx  = 1 - fCanvas->GetLeftMargin() - fCanvas->GetRightMargin();
     Double_t dy  = .025;
     Double_t y   = fCanvas->GetBottomMargin()+dy;
@@ -620,6 +636,7 @@ struct QAPlotter : public QABase
   UInt_t        fLast;      // Last run
   TArrayI       fRuns;      // Seen runs 
   TObjArray     fFiles;
+  Bool_t        fUseVar;    // Use variance rather than min/max 
 };
  
 //

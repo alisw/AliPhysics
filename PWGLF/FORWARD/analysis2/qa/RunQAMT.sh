@@ -31,13 +31,18 @@ Options:
 	-l,--log-file              Log file output [$redir]
 	-b,--barrel     MODE       Fetch barrel data  [$barrel]
 	-f,--force                 Force re-run analysis [$force]
+	-V,--variance              Errors=variance (not min/max) [$variance]
+        -L,--local                 Local trending_<X>.root files [$from_local]
+	-d,--directory  DIR        Search custom AliEn directory [$path]
 
 Note the option -j and the options -p and -P are mutually exclusive,
 The option -Q is only used if the options -p and -P are given.
 Production identifiers are of the form LHC11h, LHC11h3, or LHC11h_2. 
-Pass identifers are of the form pass2, pass1_HLT, or cpass1.  If barrel mode
-is >0, then do not assume ESD directory.  If mode>1, then get 
-trending_barrel.root and QAresults_barrel.root
+Pass identifers are of the form pass2, pass1_HLT, or cpass1.  
+If barrel mode>0, then do not assume ESD directory.  
+If barrel mode>1, then get trending_barrel.root and QAresults_barrel.root
+Option -d is for hand-made QA passes. 
+If optiond -d is not specified then official QA passes are assumed.
 EOF
 }
 
@@ -214,10 +219,11 @@ other=QAresults.root
 files=
 path=
 numf=0
+from_local=0
 get_filelist()
 {
     mess 3 "Getting file list" 
-    
+
     local datd=data
     local esdd=ESDs/
     if test ${barrel} -gt 0 ; then
@@ -253,8 +259,14 @@ get_filelist()
 	*) post="_${post}" ;; 
     esac
 
-    path=/alice/${datd}/${year}/${prodfull}/
-    local search="${esdd}${passpre}${paid}${post}"
+    local search=
+    if test "x$path" = "x" ; then 
+	# Assume official productions 
+	path=/alice/${datd}/${year}/${prodfull}/
+	search="${esdd}${passpre}${paid}${post}"
+    else
+	search="*"
+    fi
 
     if test $qanumber -gt 0 ; then 
 	qapost=`printf "QA%02d" $qanumber` 
@@ -267,9 +279,14 @@ get_filelist()
 	Path:			$path
 	Search:			$search
 EOF
-    mess 1 "Getting list of files from AliEn - can take minutes - be patient"
-    mess 2 "alien_find ${path} ${search}"
-    files=`alien_find ${path} ${search} | grep -v "\(files found\|AND THE\)" 2>> ${redir}` 
+    if test $from_local -lt 1 ; then 
+
+	mess 1 "Getting list of files from AliEn - can take minutes - be patient"
+	mess 2 "alien_find ${path} ${search}"
+	files=`alien_find ${path} ${search} | grep -v "\(files found\|AND THE\)" 2>> ${redir}` 
+    else 
+	files=`ls ${top}/${store}/trending_*.root | sed 's,${top}/${store}/,,g'`
+    fi
     for i in $files ; do 
 	let numf=$numf+1
     done 
@@ -285,8 +302,11 @@ EOF
 fix_perm()
 {
     # if test ! -f $1 ; then return ; fi 
-    chmod g+rwX $1 >> ${redir} 2>&1 
-    chmod o+rX $1 >> ${redir} 2>&1 
+    chmod g+rwX $1 >> /dev/null 2>&1 
+    chmod o+rX $1 >> /dev/null 2>&1 
+    # 
+    # chmod g+rwX $1 >> ${redir} 2>&1 
+    # chmod o+rX $1 >> ${redir} 2>&1 
 }
 
 # --- Check if a file is OK ------------------------------------------
@@ -399,8 +419,13 @@ submit_runs()
     for i in $@ ; do 
 	let cur=$sta+$counter
 
-	local b=`echo $i | sed -e "s,${path},,"` 
-	local r=`echo $b | sed -e "s,/.*,,"` 
+	local r
+	if test $from_local -lt 1 ; then 
+	    local b=`echo $i | sed -e "s,${path},,"` 
+	    r=`echo $b | sed -e "s,/.*,,"` 
+	else
+	    r=`basename $i .root | sed 's/trending_//'` 
+	fi
 
 	printf "%3d/%3d: %s\n" $cur $max $r 
 	runs[$counter]=$r
@@ -476,11 +501,12 @@ copy_style()
 }	
 
 # --- Run the final trending -----------------------------------------
+variance=0
 make_trend()
 {
     local dir=$1 
     local ret=0
-    mess 1 -n "Analysing $dir ... "
+    mess 1 -n "Analysing for trend $dir ... "
     (cd $dir 
 	rm -f trend_*_*.html 
 	rm -f trend_*_*.pdf
@@ -488,7 +514,7 @@ make_trend()
 
 	root -l -b <<EOF 
 .L RunFinalQA.C
-RunFinalQA(".", $prodyear, "$prodletter");
+RunFinalQA(".", $prodyear, "$prodletter", $variance);
 .q
 EOF
 	mess 1 -n " ... "
@@ -589,12 +615,15 @@ while test $# -gt 0 ; do
 	-R|--also-results) also_results=1     ;; 
 	-Q|--qa-number)    qanumber=$2        ; shift ;;
 	-l|--log-file)     redir=             ;; 
+	-L|--local)        from_local=0	      ;;
+	-V|--variance)     variance=1         ;;
 	-b|--barrel)       barrel=$2          ; shift ;;
 	-f|--force)        let force=$force+1 ;; 
 	-p|--production) 
 	    prodfull=$2; shift; parse_prod ; year=20${prodyear} ;;
 	-P|--pass) 
 	    passfull=$2; shift; parse_pass ;;
+	-d|--directory)	   path=$2		; shift ;;
 	*) echo "$0: Unknown argument: $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift
@@ -674,6 +703,8 @@ cat <<EOF
 	Lock file:		${lock}
 	Log:                    ${redir}
 	Force:                  ${force}
+	Use variance:           ${variance}
+	Use pre-downloaded:	${from_local}
 EOF
 # --- Do a search to find our files ----------------------------------
 get_filelist
