@@ -90,6 +90,9 @@ class AliITSUSimulation : public TObject
   Double_t GetReadOutCycleOffset()              const      {return fReadOutCycleOffset;}
   void     SetReadOutCycleOffset(Double_t v=0)             {fReadOutCycleOffset = v;}
   //
+  Double_t GetReadOutCycleLength()              const      {return fReadOutCycleLength;}
+  void     SetReadOutCycleLength(Double_t v=25e-6)         {fReadOutCycleLength = v;}
+  //
   static  Int_t GenOrderedSample(UInt_t nmax,UInt_t ngen,TArrayI &vals,TArrayI &ind);
   //
   static  Double_t GausInt1D(Double_t sig,Double_t a,Double_t b);

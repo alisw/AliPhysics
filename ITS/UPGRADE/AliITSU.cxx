@@ -519,7 +519,7 @@ void AliITSU::Hits2SDigits(Int_t evNumber,Int_t bgrev,Option_t *option,const cha
     //
     if (prevLr!=lr) { // new layer started)
       roPhase = fSimuParam->GetLrROCycleShift(lr);
-      if (Abs(roPhase)<1.) roPhase = roPhase*sim->GenerateReadOutCycleOffset(); // modules synchronized within layer with this offset
+      if (Abs(roPhase)<1.) roPhase = roPhase*sim->GetReadOutCycleLength(); // modules synchronized within layer with this offset
       else                randomyzeModules = kTRUE;                     // modules have random offset
     }
     if (randomyzeModules) sim->GenerateReadOutCycleOffset();
