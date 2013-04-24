@@ -105,6 +105,9 @@
 #pragma link C++ class AliForwardCreateResponseMatrices::Bin+;
 #pragma link C++ class AliForwardMultiplicityDistribution+;
 #pragma link C++ class AliForwardMultiplicityDistribution::Bin+;
+
+#pragma link C++ class AliMCAuxHandler+;
+
 #else
 # error Not for compilation 
 #endif
