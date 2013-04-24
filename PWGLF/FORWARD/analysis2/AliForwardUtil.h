@@ -177,6 +177,21 @@ public:
    */
   static Short_t ParseMagneticField(Float_t field);
   /** 
+   * Get a string representation of the magnetic field
+   * 
+   * @param field Magnetic field in kG
+   * 
+   * @return String representation of the magnetic field
+   */
+  static const char* MagneticFieldString(Short_t field);
+  /* @} */
+
+  //==================================================================
+  /** 
+   * @{ 
+   * @name Recalculate @f$\eta@f$, @f$\phi@f$, etc. 
+   */
+  /** 
    * Get the radius of a strip. 
    * 
    * @param ring  Ring identifier 'I' or 'O'
@@ -207,17 +222,13 @@ public:
    */  
   static Double_t GetPhiFromStrip(Char_t ring, UShort_t strip, 
 				  Double_t phi, Double_t xvtx, Double_t yvtx);
-  /** 
-   * Get a string representation of the magnetic field
-   * 
-   * @param field Magnetic field in kG
-   * 
-   * @return String representation of the magnetic field
-   */
-   static const char* MagneticFieldString(Short_t field);
   /* @} */
 
-  //__________________________________________________________________
+  //==================================================================
+  /** 
+   * @{ 
+   * @name Manager related tasks 
+   */
   /** 
    * Get the AOD event - either from the input (AOD analysis) or the
    * output (ESD analysis)
@@ -245,8 +256,9 @@ public:
    * @return true if the needed task was found 
    */
   static Bool_t CheckForTask(const char* clsOrName, Bool_t cls=true);
+  /* @} */
 
-  //__________________________________________________________________
+  //==================================================================
   /** 
    * @{ 
    * @name Member functions to store and retrieve analysis parameters 
@@ -263,6 +275,7 @@ public:
   static void GetParameter(TObject* o, ULong_t& value);
   /* @} */
 
+  //==================================================================
   /** 
    * @{ 
    * @name Energy stragling functions 
@@ -531,6 +544,18 @@ public:
      * @return The function fitted to the data 
      */
     TF1* FitNParticle(TH1* dist, UShort_t n, Double_t sigman=-1);
+    /** 
+     * Fit a composite distribution of energy loss from both primaries
+     * and secondaries
+     * 
+     * @param dist   Distribution 
+     * @param sigman If larger than zero, the initial guess of the
+     *                detector included noise.  If zero or less this
+     *                parameter is fixed to 0.
+     * 
+     * @return Function fitted to the data 
+     */
+    TF1* FitComposite(TH1* dist, Double_t sigman);
     /**
      * Get Lower cut on data 
      *
@@ -748,7 +773,7 @@ public:
      */
     TH1* GetOutputHist(const TList* d, const char* name) const;
     /** 
-     * 
+     * Get the colour of this ring 
      * 
      * 
      * @return 

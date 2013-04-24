@@ -139,7 +139,8 @@ GetListOfFiles(const char* input=".")
  * @ingroup pwglf_forward_qa_scripts
  */
 void 
-RunFinalQA(const char* dir, Int_t prodYear=0, const char* prodLetter="")
+RunFinalQA(const char* dir, Int_t prodYear=0, const char* prodLetter="",
+	   Bool_t useVar=false)
 {
    int ret = 0;
    gROOT->SetMacroPath(Form(".:%s",gROOT->GetMacroPath()));
@@ -149,7 +150,9 @@ RunFinalQA(const char* dir, Int_t prodYear=0, const char* prodLetter="")
    gROOT->LoadMacro("QABase.h+g");
    gROOT->LoadMacro("QAPlotter.C+g");
 
-   QAPlotter p(prodYear, prodLetter[0]);
+   Info("RunFinalQA", "Final QA: %d%c (variance: %s)", 
+	prodYear, prodLetter[0], (useVar ? "true" : "false"));
+   QAPlotter p(prodYear, prodLetter[0], useVar);
   
    TList* l = GetListOfFiles(dir);
    TIter next(l);

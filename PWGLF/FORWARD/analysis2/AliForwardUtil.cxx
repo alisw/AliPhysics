@@ -469,6 +469,22 @@ namespace {
     return constant * AliForwardUtil::LandauGaus(x, delta, xi, sigma, sigmaN);
   }
 
+  Double_t landauGausComposite(Double_t* xp, Double_t* pp)
+  {
+    Double_t x           = xp[0];
+    Double_t cP          = pp[AliForwardUtil::ELossFitter::kC];
+    Double_t deltaP      = pp[AliForwardUtil::ELossFitter::kDelta];
+    Double_t xiP         = pp[AliForwardUtil::ELossFitter::kXi];
+    Double_t sigmaP      = pp[AliForwardUtil::ELossFitter::kSigma];
+    Double_t cS          = pp[AliForwardUtil::ELossFitter::kSigma+1];
+    Double_t deltaS      = pp[AliForwardUtil::ELossFitter::kSigma+2];
+    Double_t xiS         = pp[AliForwardUtil::ELossFitter::kSigma+3];
+    Double_t sigmaS      = pp[AliForwardUtil::ELossFitter::kSigma+4];
+
+    return (cP * AliForwardUtil::LandauGaus(x,deltaP,xiP,sigmaP,0) + 
+	    cS * AliForwardUtil::LandauGaus(x,deltaS,xiS,sigmaS,0));
+  }
+    
   // 
   // Utility function to use in TF1 defintition 
   //
@@ -926,34 +942,45 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   dist->GetXaxis()->SetRangeUser(fLowCut, fMaxRange);
   
   // Get the bin with maximum 
-  Int_t    maxBin = dist->GetMaximumBin();
-  Double_t maxE   = dist->GetBinLowEdge(maxBin);
+  Int_t    peakBin = dist->GetMaximumBin();
+  Double_t peakE   = dist->GetBinLowEdge(peakBin);
   
   // Get the low edge 
-  dist->GetXaxis()->SetRangeUser(fLowCut, maxE);
-  Int_t    minBin = maxBin - fMinusBins; // dist->GetMinimumBin();
+  dist->GetXaxis()->SetRangeUser(fLowCut, peakE);
+  Int_t    minBin = peakBin - fMinusBins; // dist->GetMinimumBin();
   Double_t minE   = TMath::Max(dist->GetBinCenter(minBin),fLowCut);
-  Double_t maxEE  = dist->GetBinCenter(maxBin+2*fMinusBins);
+  Double_t maxE   = dist->GetBinCenter(peakBin+2*fMinusBins);
 
+  Int_t    minEb = dist->GetXaxis()->FindBin(minE);
+  Int_t    maxEb = dist->GetXaxis()->FindBin(maxE);
+  Double_t intg  = dist->Integral(minEb, maxEb);
+  if (intg <= 0) {
+    ::Warning("Fit1Particle", 
+	      "Integral of %s between [%f,%f] [%03d,%03d] = %f < 0", 
+	      dist->GetName(), minE, maxE, minEb, maxEb, intg);
+    return 0;
+  }
+    
   // Restore the range 
   dist->GetXaxis()->SetRangeUser(0, fMaxRange);
   
   // Define the function to fit 
-  TF1* landau1 = new TF1("landau1", landauGaus1, minE,maxEE,kSigmaN+1);
+  TF1* landau1 = new TF1("landau1", landauGaus1, minE,maxE,kSigmaN+1);
 
   // Set initial guesses, parameter names, and limits  
-  landau1->SetParameters(1,0.5,0.07,0.1,sigman);
+  landau1->SetParameters(1,peakE,peakE/10,peakE/5,sigman);
   landau1->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}");
   landau1->SetNpx(500);
   landau1->SetParLimits(kDelta, minE, fMaxRange);
   landau1->SetParLimits(kXi,    0.00, fMaxRange);
-  landau1->SetParLimits(kSigma, 0.01, 0.1);
+  landau1->SetParLimits(kSigma, 1e-5, fMaxRange);
   if (sigman <= 0)  landau1->FixParameter(kSigmaN, 0);
   else              landau1->SetParLimits(kSigmaN, 0, fMaxRange);
 
   // Do the fit, getting the result object 
-  TFitResultPtr r = dist->Fit(landau1, "RNQS", "", minE, maxEE);
-  landau1->SetRange(minE, fMaxRange);
+  ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxE);
+  TFitResultPtr r = dist->Fit(landau1, "RNQS", "", minE, maxE);
+  // landau1->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*r), 0);
   fFunctions.AddAtAndExpand(landau1, 0);
 
@@ -998,20 +1025,30 @@ AliForwardUtil::ELossFitter::FitNParticle(TH1* dist, UShort_t n,
   Double_t maxEi   = n * (delta1 + xi1 * TMath::Log(n)) + 2 * n * xi1;
   Double_t minE    = f->GetXmin();
 
+  Int_t    minEb = dist->GetXaxis()->FindBin(minE);
+  Int_t    maxEb = dist->GetXaxis()->FindBin(maxEi);
+  Double_t intg  = dist->Integral(minEb, maxEb);
+  if (intg <= 0) {
+    ::Warning("FitNParticle",
+	      "Integral of %s between [%f,%f] [%03d,%03d] = %f < 0", 
+	      dist->GetName(), minE, maxEi, minEb, maxEb, intg);
+    return 0;
+  }
+
   // Array of weights 
   TArrayD a(n-1);
   for (UShort_t i = 2; i <= n; i++) 
     a.fArray[i-2] = (n == 2 ? 0.05 : 0.000001);
   // Make the fit function 
-  TF1* landaun     = MakeNLandauGaus(r->Parameter(kC),
-				     r->Parameter(kDelta),
-				     r->Parameter(kXi),
-				     r->Parameter(kSigma),
-				     r->Parameter(kSigmaN),
-				     n,a.fArray,minE,maxEi);
+  TF1* landaun = MakeNLandauGaus(r->Parameter(kC),
+				 r->Parameter(kDelta),
+				 r->Parameter(kXi),
+				 r->Parameter(kSigma),
+				 r->Parameter(kSigmaN),
+				 n, a.fArray, minE, maxEi);
   landaun->SetParLimits(kDelta,  minE, fMaxRange);       // Delta
   landaun->SetParLimits(kXi,     0.00, fMaxRange);       // xi
-  landaun->SetParLimits(kSigma,  0.01, 1);            // sigma
+  landaun->SetParLimits(kSigma,  1e-5, fMaxRange);       // sigma
   // Check if we're using the noise sigma 
   if (sigman <= 0)  landaun->FixParameter(kSigmaN, 0);
   else              landaun->SetParLimits(kSigmaN, 0, fMaxRange);
@@ -1022,14 +1059,133 @@ AliForwardUtil::ELossFitter::FitNParticle(TH1* dist, UShort_t n,
   }
 
   // Do the fit 
+  ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxEi);
   TFitResultPtr tr = dist->Fit(landaun, "RSQN", "", minE, maxEi);
   
-  landaun->SetRange(minE, fMaxRange);
+  // landaun->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*tr), n-1);
   fFunctions.AddAtAndExpand(landaun, n-1);
   
   return landaun;
 }  
+//____________________________________________________________________
+TF1*
+AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
+{
+  // 
+  // Fit a composite particle signal to the passed energy loss
+  // distribution
+  // 
+  // Parameters:
+  //    dist    Data to fit the function to 
+  //    sigman If larger than zero, the initial guess of the
+  //               detector induced noise. If zero or less, then this 
+  //               parameter is ignored in the fit (fixed at 0)
+  // 
+  // Return:
+  //    The function fitted to the data 
+  //
+
+  // Find the fit range 
+  dist->GetXaxis()->SetRangeUser(fLowCut, fMaxRange);
+  
+  // Get the bin with maximum 
+  Int_t    peakBin = dist->GetMaximumBin();
+  Double_t peakE   = dist->GetBinLowEdge(peakBin);
+  
+  // Get the low edge 
+  dist->GetXaxis()->SetRangeUser(fLowCut, peakE);
+  Int_t    minBin = peakBin - fMinusBins; // dist->GetMinimumBin();
+  Double_t minE   = TMath::Max(dist->GetBinCenter(minBin),fLowCut);
+  Double_t maxE   = dist->GetBinCenter(peakBin+2*fMinusBins);
+
+  // Get the range in bins and the integral of that range 
+  Int_t    minEb = dist->GetXaxis()->FindBin(minE);
+  Int_t    maxEb = dist->GetXaxis()->FindBin(maxE);
+  Double_t intg  = dist->Integral(minEb, maxEb);
+  if (intg <= 0) {
+    ::Warning("Fit1Particle", 
+	      "Integral of %s between [%f,%f] [%03d,%03d] = %f < 0", 
+	      dist->GetName(), minE, maxE, minEb, maxEb, intg);
+    return 0;
+  }
+    
+  // Restore the range 
+  dist->GetXaxis()->SetRangeUser(0, fMaxRange);
+  
+  // Define the function to fit 
+  TF1* seed = new TF1("landauSeed", landauGaus1, minE,maxE,kSigmaN+1);
+
+  // Set initial guesses, parameter names, and limits  
+  seed->SetParameters(1,peakE,peakE/10,peakE/5,sigman);
+  seed->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}");
+  seed->SetNpx(500);
+  seed->SetParLimits(kDelta, minE, fMaxRange);
+  seed->SetParLimits(kXi,    0.00, fMaxRange);
+  seed->SetParLimits(kSigma, 1e-5, fMaxRange);
+  if (sigman <= 0)  seed->FixParameter(kSigmaN, 0);
+  else              seed->SetParLimits(kSigmaN, 0, fMaxRange);
+
+  // Do the fit, getting the result object 
+  ::Info("FitComposite", "Fitting seed in the range %f,%f", minE, maxE);
+  /* TFitResultPtr r = */ dist->Fit(seed, "RNQS", "", minE, maxE);
+
+  maxE = dist->GetXaxis()->GetXmax();
+  TF1* comp = new TF1("composite", landauGausComposite, 
+		      minE, maxE, kSigma+1+4);
+  comp->SetParNames("C",       "#Delta_{p}",       "#xi",       "#sigma",
+		    "C#prime", "#Delta_{p}#prime", "#xi#prime", "#sigma#prim");
+  comp->SetParameters(0.8 * seed->GetParameter(kC),  // 0 Primary weight 
+		      seed->GetParameter(kDelta),    // 1 Primary Delta
+		      seed->GetParameter(kDelta)/10, // 2 primary Xi
+		      seed->GetParameter(kDelta)/5,  // 3 primary sigma
+		      1.20 * seed->GetParameter(kC), // 5 Secondary weight
+		      seed->GetParameter(kDelta),    // 6 secondary Delta
+		      seed->GetParameter(kXi),       // 7 secondary Xi
+		      seed->GetParameter(kSigma));   // 8 secondary sigma
+		      
+  // comp->SetParLimits(kC,       minE, fMaxRange); // C
+  comp->SetParLimits(kDelta,      minE, fMaxRange); // Delta
+  comp->SetParLimits(kXi,         0.00, fMaxRange); // Xi 
+  comp->SetParLimits(kSigma,      1e-5, fMaxRange); // Sigma
+  // comp->SetParLimits(kSigma+1, minE, fMaxRange); // C
+  comp->SetParLimits(kSigma+2,    minE/10, fMaxRange); // Delta
+  comp->SetParLimits(kSigma+3,    0.00,    fMaxRange); // Xi 
+  comp->SetParLimits(kSigma+4,    1e-6,    fMaxRange); // Sigma
+  comp->SetLineColor(kRed+1);
+  comp->SetLineWidth(3);
+  
+  // Do the fit, getting the result object 
+  ::Info("FitComposite", "Fitting composite in the range %f,%f", minE, maxE);
+  /* TFitResultPtr r = */ dist->Fit(comp, "RNQS", "", minE, maxE);
+
+#if 0
+  TF1* part1 = static_cast<TF1*>(seed->Clone("part1"));
+  part1->SetLineColor(kGreen+1);
+  part1->SetLineWidth(4);
+  part1->SetRange(minE, maxE);
+  part1->SetParameters(comp->GetParameter(0), // C 
+		       comp->GetParameter(1), // Delta
+		       comp->GetParameter(2), // Xi
+		       comp->GetParameter(3), // sigma
+		       0);
+  part1->Save(minE,maxE,0,0,0,0);
+  dist->GetListOfFunctions()->Add(part1);
+
+  TF1* part2 = static_cast<TF1*>(seed->Clone("part2"));
+  part2->SetLineColor(kBlue+1);
+  part2->SetLineWidth(4);
+  part2->SetRange(minE, maxE);
+  part2->SetParameters(comp->GetParameter(4), // C 
+		       comp->GetParameter(5), // Delta
+		       comp->GetParameter(6), // Xi
+		       comp->GetParameter(7), // sigma
+		       0);
+  part2->Save(minE,maxE,0,0,0,0);
+  dist->GetListOfFunctions()->Add(part2);
+#endif
+  return comp;
+}
 
 //====================================================================
 AliForwardUtil::Histos::~Histos()
