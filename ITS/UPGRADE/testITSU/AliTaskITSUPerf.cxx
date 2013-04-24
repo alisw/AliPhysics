@@ -103,6 +103,7 @@ AliTaskITSUPerf::AliTaskITSUPerf(const char *name)
   ,fMCStatus(0)
   ,fNPtBins(20)
   ,fNResBins(100)
+  ,fMinTPCclusters(70)
   ,fPtMin(0)
   ,fPtMax(10.)
   ,fEtaMin(-3.)
@@ -113,6 +114,7 @@ AliTaskITSUPerf::AliTaskITSUPerf(const char *name)
   ,fCurrCentBin(0)
   ,fNCentBins(1)
   ,fUseCentralityVar(0)
+  ,fTPCCut(0)
 {
   // Constructor
 
@@ -137,6 +139,7 @@ AliTaskITSUPerf::~AliTaskITSUPerf()
   //
   delete fITS;
   delete fGeom;
+  delete fTPCCut;
   //
 }
 
@@ -172,6 +175,12 @@ void AliTaskITSUPerf::UserCreateOutputObjects()
     if (!hst || !(hst->InheritsFrom(TH1::Class()))) continue;
     ((TH1*)hst)->Sumw2();
   }
+  //
+  fTPCCut = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  fTPCCut->SetEtaRange(fEtaMin,fEtaMax);
+  fTPCCut->SetPtRange(fPtMin,fPtMax);
+  fTPCCut->SetPtRange(fPtMin,fPtMax);
+  fTPCCut->SetMinNClustersTPC(fMinTPCclusters);
   //
   PostData(1, fOutput);
   //
@@ -239,8 +248,8 @@ void AliTaskITSUPerf::BookStandardHistosCentMCLb(Int_t bin, Int_t mcLb)
   // book standard set of histos for specific centrality bin and MC status type, 
   // adding them to output list and management array
   //
-  const double kMaxDPt = 0.3;
-  const double kMaxDCA = 0.3;
+  const double kMaxDPt = 0.2;
+  const double kMaxDCA = 0.1;
 
   TH2* h2=0;
   // pt resolution
@@ -339,7 +348,9 @@ void AliTaskITSUPerf::CheckTracks()
     AliESDtrack* trc = fESDEvent->GetTrack(itr);
     //
     // at the moment we consider only TPC/ITS tracks
-    if (!trc->IsOn(AliESDtrack::kTPCin)) continue;
+    //if (!trc->IsOn(AliESDtrack::kTPCin)) continue;
+    if (!fTPCCut->IsSelected(trc)) continue;
+
     Int_t labMC    = trc->GetLabel();
     Int_t labMCabs = TMath::Abs(labMC);
     Int_t labMCTPC = trc->GetTPCLabel();
@@ -356,6 +367,8 @@ void AliTaskITSUPerf::CheckTracks()
     double pt  = trc->Pt();
     double eta = trc->Eta();
     //
+    //    if (eta>fEtaMax || eta<fEtaMin) continue;
+    //    if (nClTPC<fMinTPCclusters) continue;
     //    printf("#%3d pt:%5.2f eta:%+5.2f | Lb:%+6d LbTPC:%+6d LbITS:%+6d MCTp:%d | Ntpc:%3d Nits:%3d\n",itr,pt,eta,labMC,labMCTPC,labMCITS,mcLabType, nClTPC,nClITS);
     //
     GetHisto(&fHistosCent,kHMatchStatus)->Fill(pt,mcLabType);  // matching status
@@ -370,6 +383,10 @@ void AliTaskITSUPerf::CheckTracks()
       double etaMC = part->Eta();
       //
       if ( (mcStatus&BIT(kMCPrimBit)) ) {
+	printf("#%4d Pt:%5.2f Eta:%5.2f |",itr,ptMC,etaMC);
+	for (int k=0;k<32;k++) printf("%d", (mcStatus&(0x1<<k)) ? 1:0);
+	printf("| %+5d %+5d %+5d |%3d %d -> %d\n",labMC,labMCTPC,labMCITS,nClTPC,nClITS,mcLabType);
+
 	// compare MC vs reco track params
 	if (ptMC>0) GetHisto(&fHistosCentMCLb,kHResPTvsPTMC, mcLabType)->Fill(ptMC, (ptMC-pt)/ptMC);
 	//

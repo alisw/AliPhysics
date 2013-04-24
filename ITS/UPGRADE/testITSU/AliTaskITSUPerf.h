@@ -74,6 +74,7 @@ class AliTaskITSUPerf : public AliAnalysisTaskSE {
   //
   Int_t      GetCentralityBin() const;
   //
+  void       SetMinTPCClusters(Int_t ncl=70)    {fMinTPCclusters = ncl;}
   void       SetEtaCut(Float_t etaCut)          {fEtaMax = TMath::Abs(etaCut); fEtaMin= -fEtaMax;}
   void       SetEtaMin(Float_t etaMin)          {fEtaMin = etaMin;}
   void       SetEtaMax(Float_t etaMax)          {fEtaMax = etaMax;}
@@ -113,6 +114,8 @@ class AliTaskITSUPerf : public AliAnalysisTaskSE {
   Int_t            fNPtBins;                 //! N pt bins for histos
   Int_t            fNResBins;                //! N bins for resolution histos
   //
+  Int_t            fMinTPCclusters;          //! min N tpc clusters to accept
+  //
   Double_t         fPtMin;                   //! min pt for histos
   Double_t         fPtMax;                   //! max pt for histos
   Double_t         fEtaMin;                  //! min eta range
@@ -123,6 +126,8 @@ class AliTaskITSUPerf : public AliAnalysisTaskSE {
   Int_t  fCurrCentBin;                     // current centrality bin
   Int_t  fNCentBins;                       // N of mult bins
   Int_t  fUseCentralityVar;                // what is used to determine the centrality
+  //
+  AliESDtrackCuts* fTPCCut;                // cut on reference TPC tracks
   //
   static const char* fgkLabelTypes[kNLabelTypes]; // label truthness names
  private:    
