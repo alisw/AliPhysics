@@ -615,7 +615,7 @@ while test $# -gt 0 ; do
 	-R|--also-results) also_results=1     ;; 
 	-Q|--qa-number)    qanumber=$2        ; shift ;;
 	-l|--log-file)     redir=             ;; 
-	-L|--local)        from_local=0	      ;;
+	-L|--local)        from_local=1	      ;;
 	-V|--variance)     variance=1         ;;
 	-b|--barrel)       barrel=$2          ; shift ;;
 	-f|--force)        let force=$force+1 ;; 
