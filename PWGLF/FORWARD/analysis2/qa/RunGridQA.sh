@@ -211,7 +211,7 @@ cat <<EOF
 EOF
 
 # --- Do the actual running ------------------------------------------
-url="alien:///alice/data/${year}/${prodfull}\?run=${runs}\&pattern=${search}#esdTree"
+url="alien:///alice/data/${year}/${prodfull}\?run=${runs}\&pattern=${search}&ttl=18000&split=100&merge=50#esdTree"
 train=MakeQATrain
 opts=(--class=${train} \
     --name=${name} \
