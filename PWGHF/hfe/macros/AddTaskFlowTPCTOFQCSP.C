@@ -58,7 +58,7 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
     }
 
 //create a task
-  AliAnalysisTaskFlowTPCTOFQCSP *taskHFE = ConfigHFEemcalMod(kFALSE, minTPCCluster, pixel);    //kTRUE if MC
+  AliAnalysisTaskFlowTPCTOFQCSP *taskHFE = ConfigHFEStandardCuts(minTPCCluster, pixel);    //kTRUE if MC
     
   if(debug) cout << " === AliAnalysisTaskFlowTPCTOFQCSP === " << taskHFE << endl;
   if(!taskHFE) {
@@ -147,19 +147,19 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
   mgr->AddTask(taskHFE);
     
     if (QC) {  // add qc tasks
-        AddQCmethod(Form("QCTPCin_%s",uniqueID.Data()), harmonic, flowEvent,  debug ,uniqueID, -0.8, -0.0, 0.0, 0.8,false,POIfilterVZERO);
+        TPCTOF::AddQCmethod(Form("QCTPCin_%s",uniqueID.Data()), harmonic, flowEvent,  debug ,uniqueID, -0.8, -0.0, 0.0, 0.8,false,POIfilterVZERO);
         if(debug) cout << "    --> Hanging QC task ...succes! "<< endl;
     }   
     if (SP_TPC) {  // add sp subevent tasks
-        AddSPmethod(Form("SPTPCQa_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, false, POIfilterRight);
+        TPCTOF::AddSPmethod(Form("SPTPCQa_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, false, POIfilterRight);
         if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-        AddSPmethod(Form("SPTPCQb_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qb", harmonic, flowEvent,  false, shrinkSP, debug,uniqueID, false, POIfilterLeft);
+        TPCTOF::AddSPmethod(Form("SPTPCQb_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qb", harmonic, flowEvent,  false, shrinkSP, debug,uniqueID, false, POIfilterLeft);
         if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
     }
     if (VZERO_SP) {  // add sp subevent tasks
-        AddSPmethod(Form("SPVZEROQa_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, true, POIfilterVZERO);
+        TPCTOF::AddSPmethod(Form("SPVZEROQa_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, true, POIfilterVZERO);
         if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-        AddSPmethod(Form("SPVZEROQb_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qb", harmonic, flowEvent,  false, shrinkSP, debug,uniqueID, true, POIfilterVZERO);
+        TPCTOF::AddSPmethod(Form("SPVZEROQb_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qb", harmonic, flowEvent,  false, shrinkSP, debug,uniqueID, true, POIfilterVZERO);
         if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
     }
 
@@ -170,87 +170,16 @@ return taskHFE;
 }
 
 //_____________________________________________________________________________
-
-
-//_____________________________________________________________________________
-void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, double maxEtaB, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool bEP, bool shrink = false, bool debug, TString uniqueID,Bool_t VZERO_SP = kFALSE,  AliFlowTrackSimpleCuts* POIfilter)
-        {
-            // add sp task and invm filter tasks
-            if(debug) (bEP) ? cout << " ****** Reveived request for EP task ****** " << endl : cout << " ******* Switching to SP task ******* " << endl;
-            TString fileName = AliAnalysisManager::GetCommonFileName();
-            (bEP) ? fileName+=":EP" : fileName+=":SP";
-  //          if(etagap) {
-    //            fileName+="_SUBEVENTS";
-      //          if(debug) cout << "    --> Setting up subevent analysis <-- " << endl;
-        //    }
-            if(debug) cout << "    --> fileName " << fileName << endl;
-            TString myFolder = fileName;
-            if(debug) cout << "    --> myFolder " << myFolder << endl;
-            TString myNameSP;
-            (bEP) ? myNameSP = Form("%sEPv%d%s", name, harmonic, Qvector): myNameSP = Form("%sSPv%d%s", name, harmonic, Qvector);
-            if(debug) cout << " myNameSP " << myNameSP << endl;
-            AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-            AliAnalysisDataContainer *flowEventOut = mgr->CreateContainer(Form("Filter_%s",myNameSP.Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
-            AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myNameSP.Data()), NULL, POIfilter);
-            tskFilter->SetSubeventEtaRange(minEtaA, maxEtaA, minEtaB, maxEtaB);
-            if(VZERO_SP) tskFilter->SetSubeventEtaRange(-10, 0, 0, 10);
-            mgr->AddTask(tskFilter);
-            mgr->ConnectInput(tskFilter, 0, flowEvent);
-            mgr->ConnectOutput(tskFilter, 1, flowEventOut);
-            AliAnalysisDataContainer *outSP = mgr->CreateContainer(myNameSP.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
-            AliAnalysisTaskScalarProduct *tskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s", myNameSP.Data()), kFALSE);
-            tskSP->SetApplyCorrectionForNUA(kTRUE);
-            tskSP->SetHarmonic(harmonic);
-            tskSP->SetTotalQvector(Qvector);
-            if (bEP) tskSP->SetBehaveAsEP();
-            if (shrink) tskSP->SetBookOnlyBasicCCH(kTRUE);
-            mgr->AddTask(tskSP);
-            mgr->ConnectInput(tskSP, 0, flowEventOut);
-            mgr->ConnectOutput(tskSP, 1, outSP);
-        }
-//_____________________________________________________________________________
-void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, Bool_t debug, TString uniqueID,double minEtaA, double maxEtaA, double minEtaB, double maxEtaB,Bool_t VZERO_SP = kFALSE,  AliFlowTrackSimpleCuts* POIfilter)
-        {
-            // add qc task and invm filter tasks
-            if(debug) cout << " ****** Received request for QC v" << harmonic << " task " << name << ", IO ****** " << flowEvent << endl;
-            TString fileName = AliAnalysisManager::GetCommonFileName();
-            fileName+=":QC";
-            if(debug) cout << "    --> Common filename: " << fileName << endl;
-            TString myFolder = Form("v%d", harmonic);
-            if(debug) cout << "    --> myFolder: " << myFolder << endl;
-            TString myName = Form("%s", name);
-            if(debug) cout << "    --> myName: " << myName << endl;
-            AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-            AliAnalysisDataContainer *flowEventOut = mgr->CreateContainer(Form("Filter_%s", myName.Data()), AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
-            AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myName.Data()), NULL, POIfilter);
-            tskFilter->SetSubeventEtaRange(minEtaA, maxEtaA, minEtaB, maxEtaB);
-        //    if(VZERO_SP) tskFilter->SetSubeventEtaRange(-10, 0, 0, 10);
-            mgr->AddTask(tskFilter);
-            mgr->ConnectInput(tskFilter, 0, flowEvent);
-            mgr->ConnectOutput(tskFilter, 1, flowEventOut);
-            
-            AliAnalysisDataContainer *outQC = mgr->CreateContainer(myName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
-            AliAnalysisTaskQCumulants *tskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants_%s", myName.Data()), kFALSE);
-            tskQC->SetApplyCorrectionForNUA(kTRUE);
-            tskQC->SetHarmonic(harmonic);
-            tskQC->SetBookOnlyBasicCCH(kTRUE);
-            mgr->AddTask(tskQC);
-            mgr->ConnectInput(tskQC, 0, flowEventOut);
-            mgr->ConnectOutput(tskQC, 1, outQC);
-        }
-//_____________________________________________________________________________
-
-
 //_____________________________________________________________________________
                     
-AliAnalysisTaskFlowTPCTOFQCSP* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel){
+AliAnalysisTaskFlowTPCTOFQCSP* ConfigHFEStandardCuts(Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel){
     //
     // HFE standard task configuration
     //
     
     Bool_t kAnalyseTaggedTracks = kTRUE;
     
-    AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsEMCAL","HFE Standard Cuts");  //TODO....change the cuts values to PbPb
+    AliHFEcuts *hfecuts = new AliHFEcuts("hfeCuts","HFE Standard Cuts");  //TODO....change the cuts values to PbPb
     //  hfecuts->CreateStandardCuts();
     hfecuts->SetMinNClustersTPC(minTPCCulster);
     hfecuts->SetMinNClustersITS(3);
@@ -301,6 +230,76 @@ AliAnalysisTaskFlowTPCTOFQCSP* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCulste
 }
 
 //_____________________________________________________________________________
+
+namespace TPCTOF{
+    //_____________________________________________________________________________
+    void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, double maxEtaB, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool bEP, bool shrink = false, bool debug, TString uniqueID,Bool_t VZERO_SP = kFALSE,  AliFlowTrackSimpleCuts* POIfilter)
+    {
+        // add sp task and invm filter tasks
+        if(debug) (bEP) ? cout << " ****** Reveived request for EP task ****** " << endl : cout << " ******* Switching to SP task ******* " << endl;
+        TString fileName = AliAnalysisManager::GetCommonFileName();
+        (bEP) ? fileName+=":EP_tpctof" : fileName+=":SP_tpctof";
+        //          if(etagap) {
+        //            fileName+="_SUBEVENTS";
+        //          if(debug) cout << "    --> Setting up subevent analysis <-- " << endl;
+        //    }
+        if(debug) cout << "    --> fileName " << fileName << endl;
+        TString myFolder = fileName;
+        if(debug) cout << "    --> myFolder " << myFolder << endl;
+        TString myNameSP;
+        (bEP) ? myNameSP = Form("%sEPv%d%s", name, harmonic, Qvector): myNameSP = Form("%sSPv%d%s", name, harmonic, Qvector);
+        if(debug) cout << " myNameSP " << myNameSP << endl;
+        AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+        AliAnalysisDataContainer *flowEventOut = mgr->CreateContainer(Form("Filter_%s",myNameSP.Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
+        AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myNameSP.Data()), NULL, POIfilter);
+        tskFilter->SetSubeventEtaRange(minEtaA, maxEtaA, minEtaB, maxEtaB);
+        if(VZERO_SP) tskFilter->SetSubeventEtaRange(-10, 0, 0, 10);
+        mgr->AddTask(tskFilter);
+        mgr->ConnectInput(tskFilter, 0, flowEvent);
+        mgr->ConnectOutput(tskFilter, 1, flowEventOut);
+        AliAnalysisDataContainer *outSP = mgr->CreateContainer(myNameSP.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+        AliAnalysisTaskScalarProduct *tskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s", myNameSP.Data()), kFALSE);
+        tskSP->SetApplyCorrectionForNUA(kTRUE);
+        tskSP->SetHarmonic(harmonic);
+        tskSP->SetTotalQvector(Qvector);
+        if (bEP) tskSP->SetBehaveAsEP();
+        if (shrink) tskSP->SetBookOnlyBasicCCH(kTRUE);
+        mgr->AddTask(tskSP);
+        mgr->ConnectInput(tskSP, 0, flowEventOut);
+        mgr->ConnectOutput(tskSP, 1, outSP);
+    }
+    //_____________________________________________________________________________
+    void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, Bool_t debug, TString uniqueID,double minEtaA, double maxEtaA, double minEtaB, double maxEtaB,Bool_t VZERO_SP = kFALSE,  AliFlowTrackSimpleCuts* POIfilter)
+    {
+        // add qc task and invm filter tasks
+        if(debug) cout << " ****** Received request for QC v" << harmonic << " task " << name << ", IO ****** " << flowEvent << endl;
+        TString fileName = AliAnalysisManager::GetCommonFileName();
+        fileName+=":QC_tpctof";
+        if(debug) cout << "    --> Common filename: " << fileName << endl;
+        TString myFolder = Form("v%d", harmonic);
+        if(debug) cout << "    --> myFolder: " << myFolder << endl;
+        TString myName = Form("%s", name);
+        if(debug) cout << "    --> myName: " << myName << endl;
+        AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+        AliAnalysisDataContainer *flowEventOut = mgr->CreateContainer(Form("Filter_%s", myName.Data()), AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
+        AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myName.Data()), NULL, POIfilter);
+        tskFilter->SetSubeventEtaRange(minEtaA, maxEtaA, minEtaB, maxEtaB);
+        //    if(VZERO_SP) tskFilter->SetSubeventEtaRange(-10, 0, 0, 10);
+        mgr->AddTask(tskFilter);
+        mgr->ConnectInput(tskFilter, 0, flowEvent);
+        mgr->ConnectOutput(tskFilter, 1, flowEventOut);
+        
+        AliAnalysisDataContainer *outQC = mgr->CreateContainer(myName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+        AliAnalysisTaskQCumulants *tskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants_%s", myName.Data()), kFALSE);
+        tskQC->SetApplyCorrectionForNUA(kTRUE);
+        tskQC->SetHarmonic(harmonic);
+        tskQC->SetBookOnlyBasicCCH(kTRUE);
+        mgr->AddTask(tskQC);
+        mgr->ConnectInput(tskQC, 0, flowEventOut);
+        mgr->ConnectOutput(tskQC, 1, outQC);
+    }
+    //_____________________________________________________________________________
+}
 
 
 
