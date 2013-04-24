@@ -160,7 +160,8 @@ class AliHFEcuts : public TNamed{
       fTPCclusterDef= clusterDef;
       fTPCratioDef = ratioDef;
     }
-    void SetEtaRange(Double_t etaRange){fEtaRange = etaRange;};
+    void SetEtaRange(Double_t etaRange){fEtaRange[0] = -etaRange; fEtaRange[1] = etaRange;};
+    void SetEtaRange(Double_t etamin, Double_t etamax){fEtaRange[0] = etamin; fEtaRange[1] = etamax;};
     void SetVertexRange(Double_t zrange){fVertexRangeZ = zrange;};
     void SetTOFPIDStep(Bool_t tofPidStep) {fTOFPIDStep = tofPidStep;};
     void SetTOFMISMATCHStep(Bool_t tofMismatchStep) {fTOFMISMATCHStep = tofMismatchStep;};
@@ -226,7 +227,7 @@ class AliHFEcuts : public TNamed{
     ULong64_t fRequirements;  	  // Bitmap for requirements
     UChar_t   fTPCclusterDef;       // TPC cluster definition
     UChar_t   fTPCratioDef;             // TPC cluster ratio Definition
-    Double_t fEtaRange;               // Eta range
+    Double_t fEtaRange[2];               // Eta range
     Double_t fDCAtoVtx[2];	      // DCA to Vertex
     Double_t fProdVtx[4];	        // Production Vertex
     Double_t fPtRange[2];	        // pt range
