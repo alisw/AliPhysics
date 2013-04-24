@@ -40,6 +40,8 @@ class AliAnalysisKinkESDat : public AliAnalysisTaskSE {
   void SetMulCut(Int_t low, Int_t up){fLowMulcut=low;fUpMulcut=up;}	  
   void SetKinkRadius(Float_t lRadiusKLow, Float_t lRadiusKUp)  { fKinkRadLow=lRadiusKLow; fKinkRadUp=lRadiusKUp;}	  
 
+  void SetNClusterCut(Int_t lowCluster){fLowCluster=lowCluster;}	  
+  void SetQtCut(Float_t   lowQt){fLowQt=lowQt;}	  
  private:
    TH1F        *fHistPtESD; //Pt spectrum of all ESD inside eta, Pt cuts
    TH1F        *fHistPt; //Pt spectrum of all ESD tracks
@@ -126,6 +128,8 @@ Int_t fLowMulcut;  //
 Int_t fUpMulcut;
 Int_t fKinkRadUp;
 Int_t fKinkRadLow;
+Int_t fLowCluster;
+Float_t  fLowQt;       
 AliESDtrackCuts* fCutsMul;
 AliESDtrackCuts* fMaxDCAtoVtxCut;  
 AliPIDResponse *fPIDResponse;     //! PID response object

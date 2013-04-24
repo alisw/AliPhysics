@@ -61,7 +61,7 @@ AliAnalysisKinkESDat::AliAnalysisKinkESDat(const char *name)
        fRatioCrossedRows(0), fRatioCrossedRowsKink(0),fRadiusPt(0), fRadiusPtcln(0),  fInvMassMuNuPt(0), fPtCut1(0), fPtCut2(0), fPtCut3(0),
       fAngMomKKinks(0),
  f1(0), f2(0),
-      fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200), fKinkRadLow(130), fCutsMul(0),  fMaxDCAtoVtxCut(0),  fPIDResponse(0)
+      fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200), fKinkRadLow(130), fLowCluster(20), fLowQt(.12), fCutsMul(0),  fMaxDCAtoVtxCut(0),  fPIDResponse(0)
 {
   // Constructor
 
@@ -350,7 +350,7 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
   
      
  Int_t nESDTracK = 0;
- Int_t nESDTrKink = 0;
+// Int_t nESDTrKink = 0;
 
    Int_t nGoodTracks =  esd->GetNumberOfTracks();
     fESDMult->Fill(nGoodTracks);
@@ -358,7 +358,7 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
        Double_t nsigmall = 100.0;
        Double_t nsigma = 100.0;
        Double_t nsigmaPion =-100.0;
-       Double_t nsigmaDau  =-100.0;
+  //     Double_t nsigmaDau  =-100.0;
        Double_t dEdxKinkDau =0.0;
        Double_t KinkDauCl   =0.0;
 // apo Eftihi 
@@ -476,8 +476,6 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
 //          continue;   //    allagi  23Jul11
 
                     if (!fMaxDCAtoVtxCut->AcceptTrack(track)) continue;
-// Float_t MaxDCAxy =       fMaxDCAtoVtxCut->GetMaxDCAToVertexXYPtDep(track );
-   //       if (MaxDCAxy > 2.4 )  continue ; 
 
     fdcatoVxXY->Fill(dcaToVertexXYpos);
 //
@@ -526,7 +524,7 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
 	   Float_t qT=kink->GetQt();
             Float_t motherPt=motherMfromKink.Pt();
 // Kink  mother momentum 
-     Double_t trMomTPCKink=motherMfromKink.Mag();        
+//     Double_t trMomTPCKink=motherMfromKink.Mag();        
 // TPC mother momentun
      Double_t trMomTPC=track->GetTPCmomentum();      
   //     fTPCSgnlKinkDau->Fill( daughterMKink.Mag(), dEdxKinkDau  ) ;  //  daughter kink 
@@ -543,7 +541,7 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
 
                 fQtMothP->Fill( track->P(), qT);
 
-        if ( qT> 0.04)  fHistQt1  ->Fill(qT) ;  //  Qt   distr
+        if ( qT> fLowQt )  fHistQt1  ->Fill(qT) ;  //  Qt   distr
 
 
 
@@ -585,13 +583,14 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
        //if( ( kink->GetR()> 120 ) && ( kink->GetR() < 210 )  )  {
        if( ( kink->GetR()> fKinkRadLow ) && ( kink->GetR() <fKinkRadUp   )  )  {
     //  for systematics   if( ( kink->GetR()> 130 ) && ( kink->GetR() < 200 )  )  {
-      if (qT>0.12)  fAngMomKC->Fill(track->P(), kinkAngle); 
-          if ( qT>0.12) fM1kaon->Fill(invariantMassKmu);
-             if ( qT > 0.12) 
+      if (qT>fLowQt )  fAngMomKC->Fill(track->P(), kinkAngle); 
+          if ( qT> fLowQt ) fM1kaon->Fill(invariantMassKmu);
+             if ( qT > fLowQt) 
          fRadiusNcl->Fill( (kink->GetR()) ,(track->GetTPCclusters(0)  ) ) ;
   }    
 //  tails cleaning
-             if(  ( tpcNCl<20) ) continue;  // test 27 feb 2012 ,, OK
+               if(  ( tpcNCl<fLowCluster) ) continue;  // test 27 feb 2012 ,, OK
+          //  edw iatn !!!    if(  ( tpcNCl<50 ) ) continue;  // test 15 March  13,, OK
 // cleaning BG in tails
       Int_t tpcNClHigh = -51.67+ (11./12.)  *( kink->GetR() ) ;  
                if ( tpcNCl > tpcNClHigh) continue;   
@@ -604,7 +603,8 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
                fHistPtKPDG->Fill(track->Pt());  // ALL  K-candidates until now                 
     //  if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=120.)&&(kink->GetR()<=210.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.6)){
      //if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=120.)&&(kink->GetR()<=210.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
-     if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>= fKinkRadLow )&&(kink->GetR()<= fKinkRadUp ))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
+     //if((kinkAngle>maxDecAngpimu)&&(qT>0.04)&&(qT<0.30)&&((kink->GetR()>= fKinkRadLow )&&(kink->GetR()<= fKinkRadUp ))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
+     if((kinkAngle>maxDecAngpimu)&&(qT>fLowQt)&&(qT<0.30)&&((kink->GetR()>= fKinkRadLow )&&(kink->GetR()<= fKinkRadUp ))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
   // systematics   if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=130.)&&(kink->GetR()<=200.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
 //
         fAngMomKKinks->Fill(track->P(), kinkAngle); 
@@ -618,8 +618,7 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
            fTPCSgnlPa->Fill( track->GetInnerParam()->GetP() ,(track->GetTPCsignal()  ) ) ;
 //
             //  NO dEdx cut test 9/2/13               if ( nsigma               > 3.5) continue;
-                        if ( nsigma               > 3.5) continue;
-            // system               if ( nsigma               > 4.0) continue;   // gia systamatic error
+                     if ( nsigma               > 3.5) continue; 
 // 
 //  next plots for the identified kaons by the kink analysis
 

@@ -44,6 +44,9 @@ class AliAnalysisKinkESDMC : public AliAnalysisTaskSE {
   void SetKinkRadius(Float_t lRadiusKLow, Float_t lRadiusKUp)  { fKinkRadLow=lRadiusKLow; fKinkRadUp=lRadiusKUp;}
 
   
+         void SetNClusterCut(Int_t lowCluster){fLowCluster=lowCluster;}
+  void SetQtCut(Float_t   lowQt){fLowQt=lowQt;}
+
  private:
    TH1F        *fHistPtESD; //!Pt spectrum of all ESD inside eta, Pt cuts
    TH1F        *fHistPt; //!Pt spectrum of all ESD tracks
@@ -145,6 +148,9 @@ class AliAnalysisKinkESDMC : public AliAnalysisTaskSE {
    TH1F        *fRatioCrossedRowsKink; //ratio  crossed rows  for kinks                                      
    TH2F        *fRadiusPt;//kinks,  Radius      vs Pt                                        
    TH2F        *fRadiusPtcln;//kinks,  Radius      vs Pt    for clean kaons                                  
+   TH2F        *fRadiusPtKaon;//kinks,  Radius      vs Pt    for clean kaons                                  
+   TH2F        *fRadiusPtPion;//kinks,  Radius      vs Pt    for clean kaons                                  
+   TH2F        *fRadiusPtFake;//kinks,  Radius      vs Pt    for clean kaons                                  
    TH1F        *fPtCut1; //K Pt  spectrum   of all kinks  from track bank, K0 bins
    TH1F        *fPtCut2; //K Pt  spectrum   of all kinks  from track bank, K0 bins
    TH1F        *fPtCut3; //K Pt  spectrum   of all kinks  from track bank, K0 bins
@@ -177,6 +183,9 @@ class AliAnalysisKinkESDMC : public AliAnalysisTaskSE {
 Int_t fUpMulcut;
 Int_t fKinkRadUp;
 Int_t fKinkRadLow;
+    Int_t fLowCluster;
+Float_t  fLowQt;
+
 AliESDtrackCuts*  fCutsMul;
 
      AliESDtrackCuts* fMaxDCAtoVtxCut;
