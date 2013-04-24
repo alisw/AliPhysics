@@ -66,18 +66,26 @@ struct ChainBuilder
     src = tmp;
 
     // --- Check if directory or file --------------------------------
-    if (R_ISDIR(stat.fMode)) return kDirectory;
+    if (R_ISDIR(stat.fMode)) {
+      // Info("ChainBuilder::CheckSource", "%s is a directory", tmp.Data());
+      return kDirectory;
+    }
 
     // --- check file type -------------------------------------------
     TString type(gSystem->GetFromPipe(Form("file -b %s", src.Data())));
-    if      (type.Contains("ROOT"))  return kROOT;
-    else if (type.Contains("XML"))   return kXML;
-    else if (type.Contains("ASCII")) return kAscii;
+    // Info("ChainBuilder::CheckSource", "file -b %s -> %s", 
+    //      tmp.Data(), type.Data());
+    UShort_t ret = kInvalid;
+    if      (type.Contains("ROOT"))  ret = kROOT;
+    else if (type.Contains("XML"))   ret = kXML;
+    else if (type.Contains("ASCII")) ret = kAscii;
 
-    Error("ChainBuilder::CheckSource", 
-	  "Do not now how to process %s of type %s", 
-	  src.Data(), type.Data());
-    return kInvalid;
+    if (ret == kInvalid) {
+      Error("ChainBuilder::CheckSource", 
+	    "Do not now how to process %s of type %s", 
+	    src.Data(), type.Data());
+    }
+    return ret;
   }
   //------------------------------------------------------------------
   /** 
@@ -91,6 +99,10 @@ struct ChainBuilder
 			Bool_t         mc, 
 			Bool_t         recursive)
   {
+    // Info("ChainBuilder::Create", 
+    // "src=%s treeName=%s pattern=%s mc=%s recursive=%s",
+    // src.Data(), treeName.Data(), pattern.Data(), 
+    // (mc ? "true" : "false"), (recursive ? "true" : "false"));
     TString tmp(src);
     UShort_t type = CheckSource(tmp);
 
@@ -115,6 +127,7 @@ struct ChainBuilder
 	    src.Data());
       return 0;
     }
+
     TString tN(treeName);
     if (tN.IsNull()) 
       Warning("ChainBuilder::Create", "No tree name specified, assuming T");
@@ -124,7 +137,14 @@ struct ChainBuilder
       if      (tN.EqualTo("esdTree")) pat = "AliESD";
       else if (tN.EqualTo("aodTree")) pat = "AliAOD";
     }
-      
+#if 0
+    Info("ChainBuilder::Create", "Type=%s, tree=%s, pattern=%s", 
+	 (type == kDirectory ? "directory" : 
+	  type == kXML       ? "XML" : 
+	  type == kAscii     ? "ASCII" : 
+	  type == kROOT      ? "ROOT" : "unknown"),
+	 tN.Data(), pat.Data());
+#endif 
     // --- Create output ---------------------------------------------
     TChain* chain = new TChain(tN);
 
@@ -171,6 +191,7 @@ struct ChainBuilder
    */
   static Bool_t CreateFromXML(TChain* chain, const TString& src) 
   {
+    // Info("ChainBuilder::CreateFromXML", "Create from XML");
     Long_t ret = gROOT->ProcessLine(Form("TAlienCollection(\"%s\")", 
 					 src.Data()));
     if (!ret) { 
@@ -201,6 +222,7 @@ struct ChainBuilder
    */
   static Bool_t CreateFromList(TChain* chain, const TString& src) 
   {
+    // Info("ChainBuilder::CreateFromList", "Creating from list");
     std::ifstream in(src.Data());
     if (!in) { 
       Error("ChainBuilder::CreateFromList", 
@@ -234,7 +256,7 @@ struct ChainBuilder
 				    Bool_t         recursive) 
   {
     // Info("", "Scanning src=%s, pattern=%s, mc=%d recursive=%d", 
-    //       src.Data(), pattern.Data(), mc, recursive);
+    //      src.Data(), pattern.Data(), mc, recursive);
     // Save current directory 
     TString savdir(gSystem->WorkingDirectory());
     TSystemDirectory d(gSystem->BaseName(src.Data()), src.Data());
@@ -280,7 +302,7 @@ struct ChainBuilder
 	  Warning("", "Returned collection invalid");
 	  continue;
 	}
-	Info("", "Adding file collection");
+	// Info("", "Adding file collection");
 	chain->AddFileInfoList(fc->GetList());
 	ok = true;
       }

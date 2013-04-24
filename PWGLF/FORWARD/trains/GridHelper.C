@@ -147,7 +147,7 @@ struct GridHelper : public PluginHelper
     }
     Int_t       nRuns  = 0;
     TString     runs   = fOptions.Get("run");
-    TObjArray*  tokens = runs.Tokenize(",+.");
+    TObjArray*  tokens = runs.Tokenize(",+:");
     TObjString* part   = 0;
     TIter       next(tokens);
     Bool_t      range  = false;
@@ -215,6 +215,28 @@ struct GridHelper : public PluginHelper
 	  continue;
 	}
       }
+      while (!in.eof()) {
+	TString lne;
+	lne.ReadLine(in);
+
+	TString bare = lne.Strip(TString::kBoth);
+	if (bare[0] == '#') continue;
+
+	TObjArray* ltokens = bare.Tokenize(" \t,");
+	TIter lnext(ltokens);
+	TObjString* str = 0;
+	while ((str = static_cast<TObjString*>(lnext()))) {
+	  const TString& token = str->String();
+	  if (!token.IsDigit()) continue;
+	  
+	  int r = token.Atoi();
+	  fHandler->AddRunNumber(r);
+	  StoreRun(r);
+	  nRuns++;
+	}
+	ltokens->Delete();
+      }
+#if 0
       while (!in.eof()) { 
 	Int_t r;
 	in >> r;
@@ -226,6 +248,7 @@ struct GridHelper : public PluginHelper
 	in >> c;
 	if (in.bad()) break;
       }
+#endif
       individual = true;
       in.close();
     }
