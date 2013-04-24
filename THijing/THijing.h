@@ -179,8 +179,8 @@ public:
    virtual void        SetPARJ(Int_t key, Float_t parm);
    virtual void        SetMSTJ(Int_t key, Int_t   parm);   
    virtual void        SetMDCY(Int_t key1, Int_t key2, Int_t   parm);   
+   virtual void        SetMDME(Int_t key1, Int_t key2, Int_t   parm);   
    virtual Int_t       GetMDCY(Int_t key1, Int_t key2);   
-   
    // access to HIJING routines:
 
    virtual void         Hijset(float efrm, const char* frame, const char*
