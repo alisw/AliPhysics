@@ -224,12 +224,17 @@ TFile* AliJetEmbeddingFromPYTHIATask::GetNextFile()
   }
   
   if (gSystem->AccessPathName(baseFileName)) {
-    AliDebug(3,Form("File %s does not exist!", baseFileName.Data()));
+    AliError(Form("File %s does not exist!", baseFileName.Data()));
     return 0;
   }
 
   AliDebug(3,Form("Trying to open file %s...", fileName.Data()));
   TFile *file = TFile::Open(fileName);
+
+  if (!file || file->IsZombie()) {
+    AliError(Form("Unable to open file: %s!", fileName.Data()));
+    return 0;
+  }
 
   return file;
 }

@@ -264,8 +264,10 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
     i++;
   } 
 
-  if (!fCurrentAODFile || fCurrentAODFile->IsZombie())
+  if (!fCurrentAODFile || fCurrentAODFile->IsZombie()) {
+    AliError("Could not open AOD file to embed!");
     return kFALSE;
+  }
 
   const TList *clist = fCurrentAODFile->GetStreamerInfoCache();
   if(clist) {
@@ -277,8 +279,10 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
   }
 
   fCurrentAODTree = static_cast<TTree*>(fCurrentAODFile->Get(fAODTreeName));
-  if (!fCurrentAODTree)
+  if (!fCurrentAODTree) {
+    AliError(Form("Could not get tree %s from file %s", fAODTreeName.Data(), fCurrentAODFile->GetName()));
     return kFALSE;
+  }
 
   if (!fAODHeaderName.IsNull()) 
     fCurrentAODTree->SetBranchAddress(fAODHeaderName, &fAODHeader);
@@ -339,15 +343,17 @@ TFile* AliJetEmbeddingFromAODTask::GetNextFile()
   }
   
   if (gSystem->AccessPathName(baseFileName)) {
-    AliDebug(3,Form("File %s does not exist!", baseFileName.Data()));
+    AliError(Form("File %s does not exist!", baseFileName.Data()));
     return 0;
   }
 
   AliDebug(3,Form("Trying to open file %s...", fileName.Data()));
   TFile *file = TFile::Open(fileName);
 
-  if (!file)
-    AliDebug(3,Form("Unable to open file: %s!", fileName.Data()));
+  if (!file || file->IsZombie()) {
+    AliError(Form("Unable to open file: %s!", fileName.Data()));
+    return 0;
+  }
 
   return file;
 }
@@ -359,8 +365,10 @@ Bool_t AliJetEmbeddingFromAODTask::GetNextEntry()
 
   do {
     if (!fCurrentAODFile || !fCurrentAODTree || fCurrentAODEntry >= fCurrentAODTree->GetEntries()) {
-      if (!OpenNextFile())
+      if (!OpenNextFile()) {
+	AliError("Could not open the next file!");
 	return kFALSE;
+      }
     }
     
     fCurrentAODTree->GetEntry(fCurrentAODEntry);

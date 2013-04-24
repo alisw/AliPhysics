@@ -24,8 +24,12 @@ AliJetResponseMaker* AddTaskJetRespPtHard(
   const char *taskname           = "AliJetResponseMaker",
   Bool_t      biggerMatrix       = kFALSE
 )
-{  
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
+{
+  TCollection *funct = gROOT->GetListOfGlobalFunctions();
+  if (!funct->Contains("AddTaskJetResponseMaker"))
+    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
+  else
+    Printf("Function AddTaskJetResponseMaker already loaded, will not load again...");
 
   Double_t centRanges[5] = {0,10,30,50,100};
  

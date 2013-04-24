@@ -41,15 +41,17 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fJet2AreaCut(-1),
   fPtBiasJet2Track(0),
   fPtBiasJet2Clus(0),
+  fJet2MinEta(-999),
+  fJet2MaxEta(-999),
+  fJet2MinPhi(-999),
+  fJet2MaxPhi(-999),
+  fMaxClusterPt2(1000),
+  fMaxTrackPt2(1000),
   fAreCollections1MC(kFALSE),  
   fAreCollections2MC(kTRUE),
   fMatching(kNoMatching),
   fMatchingPar1(0),
   fMatchingPar2(0),
-  fJet2MinEta(-999),
-  fJet2MaxEta(-999),
-  fJet2MinPhi(-999),
-  fJet2MaxPhi(-999),
   fSelectPtHardBin(-999),
   fIsEmbedded(kFALSE),
   fIsPythia(kTRUE),
@@ -153,15 +155,17 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fJet2AreaCut(-1),
   fPtBiasJet2Track(0),
   fPtBiasJet2Clus(0),
+  fJet2MinEta(-999),
+  fJet2MaxEta(-999),
+  fJet2MinPhi(-999),
+  fJet2MaxPhi(-999),
+  fMaxClusterPt2(1000),
+  fMaxTrackPt2(1000),
   fAreCollections1MC(kFALSE),  
   fAreCollections2MC(kTRUE),
   fMatching(kNoMatching),
   fMatchingPar1(0),
   fMatchingPar2(0),
-  fJet2MinEta(-999),
-  fJet2MaxEta(-999),
-  fJet2MinPhi(-999),
-  fJet2MaxPhi(-999),
   fSelectPtHardBin(-999),
   fIsEmbedded(kFALSE),
   fIsPythia(kTRUE),
@@ -1636,6 +1640,9 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     if (jet2->Eta() < fJet2MinEta || jet2->Eta() > fJet2MaxEta || jet2->Phi() < fJet2MinPhi || jet2->Phi() > fJet2MaxPhi)
       continue;
+
+    if (jet2->MaxTrackPt() > fMaxTrackPt2 || jet2->MaxClusterPt() > fMaxClusterPt2)
+      continue;
     
     fHistJets2PtArea->Fill(jet2->Area(), jet2->Pt());
     fHistJets2PhiEta->Fill(jet2->Eta(), jet2->Phi());
@@ -1777,6 +1784,9 @@ Bool_t AliJetResponseMaker::FillHistograms()
       continue;
 
     if (jet1->Eta() < fJetMinEta || jet1->Eta() > fJetMaxEta || jet1->Phi() < fJetMinPhi || jet1->Phi() > fJetMaxPhi)
+      continue;
+
+    if (jet1->MCPt() < fMinJetMCPt)
       continue;
 
     if (!jet1->MatchedJet()) {
