@@ -47,6 +47,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetMCLabelShift(Int_t s)                                        { fMCLabelShift      = s         ; }
   void                        SetUseCellsToMatch(Bool_t i)                                    { fUseCellsToMatch   = i         ; }
   void                        SetMinJetMCPt(Float_t pt)                                       { fMinJetMCPt        = pt        ; }
+  void                        SetMaxClusterPt2(Float_t b)                                     { fMaxClusterPt2     = b         ; }
+  void                        SetMaxTrackPt2(Float_t b)                                       { fMaxTrackPt2       = b         ; }
 
  protected:
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
@@ -72,15 +74,17 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Float_t                     fJet2AreaCut;                   // cut on jet area (second jet collection)
   Float_t                     fPtBiasJet2Track;               // select jets 2 with a minimum pt track
   Float_t                     fPtBiasJet2Clus;                // select jets 2 with a minimum pt cluster
+  Float_t                     fJet2MinEta;                    // minimum eta jet 2 acceptance
+  Float_t                     fJet2MaxEta;                    // maximum eta jet 2 acceptance
+  Float_t                     fJet2MinPhi;                    // minimum phi jet 2 acceptance
+  Float_t                     fJet2MaxPhi;                    // maximum phi jet 2 acceptance
+  Float_t                     fMaxClusterPt2;                 // maximum cluster constituent pt to accept the jet in collection 2 (default 1000 GeV/c)
+  Float_t                     fMaxTrackPt2;                   // maximum track constituent pt to accept the jet in collection 2 (default 1000 GeV/c)
   Bool_t                      fAreCollections1MC;             // collections 1 MC
   Bool_t                      fAreCollections2MC;             // collections 1 MC
   MatchingType                fMatching;                      // matching type
   Double_t                    fMatchingPar1;                  // matching parameter for jet1-jet2 matching
   Double_t                    fMatchingPar2;                  // matching parameter for jet2-jet1 matching
-  Float_t                     fJet2MinEta;                    // minimum eta jet 2 acceptance
-  Float_t                     fJet2MaxEta;                    // maximum eta jet 2 acceptance
-  Float_t                     fJet2MinPhi;                    // minimum phi jet 2 acceptance
-  Float_t                     fJet2MaxPhi;                    // maximum phi jet 2 acceptance  
   Int_t                       fSelectPtHardBin;               // select one pt hard bin for analysis
   Bool_t                      fIsEmbedded;                    // trigger, embedded signal
   Bool_t                      fIsPythia;                      // trigger, if it is a PYTHIA production
@@ -177,6 +181,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 16) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 17) // Jet response matrix producing task
 };
 #endif
