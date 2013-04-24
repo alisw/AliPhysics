@@ -114,7 +114,6 @@ AliHFEcuts::AliHFEcuts():
   fRequirements(0),
   fTPCclusterDef(0),
   fTPCratioDef(0),
-  fEtaRange(0.8),
   fMinClustersTPC(0),
   fMinClustersTPCPID(0),
   fMinClustersITS(0),
@@ -157,7 +156,7 @@ AliHFEcuts::AliHFEcuts():
   memset(fPtRange, 0, sizeof(Double_t) * 2);
   memset(fIPCutParams, 0, sizeof(Float_t) * 4);
   memset(fSigmaToVtx, 0, sizeof(Double_t) * 3);
-
+  fEtaRange[0] = -0.8; fEtaRange[1] = 0.8;
 }
 
 //__________________________________________________________________
@@ -166,7 +165,6 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fRequirements(0),
   fTPCclusterDef(0),
   fTPCratioDef(0),
-  fEtaRange(0.8),
   fMinClustersTPC(0),
   fMinClustersTPCPID(0),
   fMinClustersITS(0),
@@ -209,6 +207,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   memset(fPtRange, 0, sizeof(Double_t) * 2);
   memset(fIPCutParams, 0, sizeof(Float_t) * 4);
   memset(fSigmaToVtx, 0, sizeof(Double_t) * 3);
+  fEtaRange[0] = -0.8; fEtaRange[1] = 0.8;
 }
 
 //__________________________________________________________________
@@ -217,7 +216,6 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fRequirements(c.fRequirements),
   fTPCclusterDef(c.fTPCclusterDef),
   fTPCratioDef(c.fTPCratioDef),
-  fEtaRange(c.fEtaRange),
   fMinClustersTPC(0),
   fMinClustersTPCPID(0),
   fMinClustersITS(0),
@@ -277,7 +275,6 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fRequirements = fRequirements;
   target.fTPCclusterDef = fTPCclusterDef;
   target.fTPCratioDef = fTPCratioDef;
-  target.fEtaRange = fEtaRange;
   target.fMinClustersTPC = fMinClustersTPC;
   target.fMinClustersTPCPID = fMinClustersTPCPID;
   target.fMinClustersITS = fMinClustersITS;
@@ -314,6 +311,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   memcpy(target.fPtRange, fPtRange, sizeof(Double_t) *2);
   memcpy(target.fIPCutParams, fIPCutParams, sizeof(Float_t) * 4);
   memcpy(target.fSigmaToVtx, fSigmaToVtx, sizeof(Double_t) * 3);
+  memcpy(target.fEtaRange, fEtaRange, sizeof(Double_t) * 2);
 
   // Copy cut List
   if(target.fCutList){
@@ -559,7 +557,7 @@ void AliHFEcuts::SetParticleGenCutList(){
     AliCFTrackKineCuts *kineMCcuts = new AliCFTrackKineCuts((Char_t *)"fCutsKineMC", (Char_t *)"MC Kine Cuts");
     kineMCcuts->SetPtRange(fPtRange[0], fPtRange[1]);
     //kineMCcuts->SetEtaRange(-0.8, 0.8);
-    kineMCcuts->SetEtaRange(-TMath::Abs(fEtaRange),TMath::Abs(fEtaRange));
+    kineMCcuts->SetEtaRange(fEtaRange[0],fEtaRange[1]);
     if(IsQAOn()) kineMCcuts->SetQAOn(fHistQA);
     mcCuts->AddLast(kineMCcuts);
   }
@@ -640,7 +638,7 @@ void AliHFEcuts::SetRecKineITSTPCCutList(){
   AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts((Char_t *)"fCutsKineRec", (Char_t *)"REC Kine Cuts");
   kineCuts->SetPtRange(fPtRange[0], fPtRange[1]);
   //kineCuts->SetEtaRange(-0.8, 0.8);
-  kineCuts->SetEtaRange(-TMath::Abs(fEtaRange),TMath::Abs(fEtaRange));
+  kineCuts->SetEtaRange(fEtaRange[0],fEtaRange[1]);
   
   if(IsQAOn()){
     trackQuality->SetQAOn(fHistQA);

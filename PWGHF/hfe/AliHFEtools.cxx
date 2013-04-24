@@ -33,6 +33,9 @@
 #include "TAxis.h"
 #include "TMath.h"
 #include "TString.h"
+#include "TFile.h"
+#include "TKey.h"
+#include "TROOT.h"
 
 #include "AliAODMCParticle.h"
 #include "AliAODpidUtil.h"
@@ -454,4 +457,34 @@ void AliHFEtools::BinParameterisation(const TF1 &fun, const TArrayD &xbins, TArr
         xmax = xbins[ib+1];
         bincontent[ib] = (helper.Integral(xmin, xmax))/(xmax - xmin);
     }
+}
+
+
+
+
+//_________________________________________________________________________
+//Function  AliHFEtools::GetHFEResultList() - opens file from argument and returns TList Object containing String "Results"
+//_________________________________________________________________________
+TList *AliHFEtools::GetHFEResultList(const TString str){
+
+    TFile *f = TFile::Open(str.Data());
+    if(!f || f->IsZombie()){
+        printf("Could not read file %s\n",str.Data()); 
+        return NULL ;
+    }
+    gROOT->cd();
+    TKey *k;
+    TIter next(f->GetListOfKeys());
+    while ((k = dynamic_cast<TKey *>(next()))){
+        TString s(k->GetName());
+        if(s.Contains("Results")) break;
+    }
+    if(!k){
+        printf("Output container not found\n");
+        f->Close(); delete f;
+        return NULL;
+    } 
+    TList *returnlist = dynamic_cast<TList *>(k->ReadObj());
+    f->Close(); delete f;
+    return returnlist;
 }

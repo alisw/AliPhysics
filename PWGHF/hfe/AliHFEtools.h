@@ -55,6 +55,7 @@ class AliHFEtools : public TObject{
     static Bool_t ExchangeXYGraph(TGraph* g = 0);
     static Bool_t ExchangeXYGraphErrors(TGraphErrors* g = 0);
     static void BinParameterisation(const TF1 &fun, const TArrayD &xbins, TArrayD &bincontent);
+    static TList *GetHFEResultList(const TString str);
 
   private:
       AliHFEtools(const AliHFEtools &);
