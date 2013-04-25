@@ -97,11 +97,12 @@ AliMCParticle::~AliMCParticle()
 
 
 
-Float_t  AliMCParticle::GetTPCTrackLength(Float_t bz,  Float_t ptmin, Int_t &counter, Float_t deadWidth){
+Float_t  AliMCParticle::GetTPCTrackLength(Float_t bz,  Float_t ptmin, Int_t &counter, Float_t deadWidth, Float_t zMax){
   //
   // return track length in geometrically active volume of TPC.
   // z nad rphi acceptance is included
   // doesn't take into account dead channel and ExB  
+  // 25/04/2013 --> zMax as a parameter with default value 230 cm to take into account L1 shift introduced in AliTPC.cxx
   // Intput:
   // trackRefs
   // bz - magnetic field
@@ -113,7 +114,7 @@ Float_t  AliMCParticle::GetTPCTrackLength(Float_t bz,  Float_t ptmin, Int_t &cou
 
     const Float_t kRMin = 90;
     const Float_t kRMax = 245;
-    const Float_t kZMax = 250;
+//    const Float_t kZMax = 250;
     const Float_t kMinPt= ptmin; 
 
     Float_t length =0;
@@ -156,7 +157,8 @@ Float_t  AliMCParticle::GetTPCTrackLength(Float_t bz,  Float_t ptmin, Int_t &cou
 	
 	for (Float_t radius = radius0; radius < radius1; radius+=1){
 	    param.GetXYZAt(radius, bz, xyz);
-	    if (TMath::Abs(xyz[2]) > kZMax) continue;
+//	    if (TMath::Abs(xyz[2]) > kZMax) continue;
+            if (TMath::Abs(xyz[2]) > zMax) continue;
 	    Float_t gradius = TMath::Sqrt(xyz[1] * xyz[1] + xyz[0] * xyz[0]);
 	    if (gradius > kRMax) continue;
 	    alpha = TMath::ATan2(xyz[1],xyz[0]);

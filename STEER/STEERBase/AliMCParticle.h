@@ -66,7 +66,7 @@ public:
       {return dynamic_cast<AliTrackReference*>((*fTrackReferences)[i]);}
 
     // "Trackable" criteria
-    Float_t  GetTPCTrackLength(Float_t bz, Float_t ptmin, Int_t &counter, Float_t deadWidth);
+    Float_t  GetTPCTrackLength(Float_t bz, Float_t ptmin, Int_t &counter, Float_t deadWidth, Float_t zMax=230. );
     // Navigation
     Int_t GetMother()        const {return fMother;}
     Int_t GetFirstDaughter() const {return fFirstDaughter;}
