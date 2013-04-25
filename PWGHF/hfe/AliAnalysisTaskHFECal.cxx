@@ -103,8 +103,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fPID(0)
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
-  //,fInvmassCut(0.01)	
-  ,fInvmassCut(0.1)	
+  ,fInvmassCut(0.05)	
+  //,fInvmassCut(0.1)	 // no mass
   ,fNoEvents(0)
   ,fEMCAccE(0)
   ,hEMCAccE(0)
@@ -229,8 +229,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fPID(0)       
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
-  //,fInvmassCut(0.01)	
-  ,fInvmassCut(0.1)	
+  ,fInvmassCut(0.05)	
+  //,fInvmassCut(0.1)	
   ,fNoEvents(0)
   ,fEMCAccE(0)
   ,hEMCAccE(0)
@@ -1445,21 +1445,20 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     primV += recg;
     recg.SetProductionVertex(primV);
     
-    // mass const.
-    //recg.SetMassConstraint(0,0.0001);
-    // v5-04-50-AN no constrain
-
     // check chi2
     if(recg.GetNDF()<1) continue;
     Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
-    if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
-    
+    if(TMath::Sqrt(TMath::Abs(chi2recg))>5.) continue;
+
+    // mass const.
+    recg.SetMassConstraint(0,0.0001);
+    // v5-04-50-AN no constrain
+    recg.GetMass(mass,width);
+
+    // angle   
     openingAngle = ge1.GetAngle(ge2);
     if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
     if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
-    
-    
-    recg.GetMass(mass,width);
     
     double ishower = 0;
     if(shower>0.0 && shower<0.3)ishower = 1;
@@ -1485,6 +1484,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     //printf("fInvmassCut %f\n",fInvmassCut);
     //printf("openingAngle %f\n",fOpeningAngleCut);
 
+    // angle cut
     if(openingAngle > fOpeningAngleCut) continue;
     
     // for real data  
