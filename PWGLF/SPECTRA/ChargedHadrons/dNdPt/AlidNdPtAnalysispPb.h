@@ -312,8 +312,8 @@ private:
   Int_t fCentralityNedges; // fCentralityNbins+1 uses for streaming dynamic array
   Double_t *fBinsCentrality; //[fCentralityNedges]
 
-  Int_t fNVCentralityEvent; //! temp
-  Int_t fNVCentralityTrack; //! temp
+  Int_t fNVCentralityEvent; //
+  Int_t fNVCentralityTrack; //
   Double_t *fVCentralityEvent; //[fNVCentralityEvent]
   Double_t *fVCentralityTrack; //[fNVCentralityTrack]
 
@@ -342,7 +342,7 @@ private:
   AlidNdPtAnalysispPb(const AlidNdPtAnalysispPb&); // not implemented
   AlidNdPtAnalysispPb& operator=(const AlidNdPtAnalysispPb&); // not implemented
 
-  ClassDef(AlidNdPtAnalysispPb,1);
+  ClassDef(AlidNdPtAnalysispPb,2);
 };
 
 #endif
