@@ -2553,6 +2553,70 @@ void AliUEHist::DeepCopy(AliUEHist* from)
   }
 }
 
+void AliUEHist::SymmetrizepTBins()
+{
+  // copy pt,a < pt,t bins to pt,a > pt,t (inverting deltaphi and delta eta as it should be)
+  // symmetric bins are not touched!
+  
+  for (Int_t region=0; region<4; region++)
+  {
+    if (!fTrackHist[region])
+      continue;
+  
+    for (Int_t step=0; step<fTrackHist[region]->GetNStep(); step++)
+    {
+      Printf("Copying region %d step %d", region, step);
+      THnSparse* target = fTrackHist[region]->GetGrid(step)->GetGrid();
+      if (target->GetEntries() == 0)
+	continue;
+      
+      // axes: 0 delta eta; 1 pT,a; 2 pT,t; 3 centrality; 4 delta phi; 5 vtx-z
+      for (Int_t i3 = 1; i3 <= target->GetAxis(3)->GetNbins(); i3++)
+	for (Int_t i5 = 1; i5 <= target->GetAxis(5)->GetNbins(); i5++)
+	{
+	  for (Int_t i1 = 1; i1 <= target->GetAxis(1)->GetNbins(); i1++)
+	    for (Int_t i2 = 1; i2 <= target->GetAxis(2)->GetNbins(); i2++)
+	    {
+	      if (target->GetAxis(1)->GetBinLowEdge(i1) >= target->GetAxis(2)->GetBinUpEdge(i2))
+	      {
+		// find source bin
+		Int_t binA = target->GetAxis(1)->FindBin(target->GetAxis(2)->GetBinCenter(i2));
+		Int_t binT = target->GetAxis(2)->FindBin(target->GetAxis(1)->GetBinCenter(i1));
+		
+		Printf("(%d %d) Copying from %d %d to %d %d", i3, i5, binA, binT, i1, i2);
+		
+		for (Int_t i0 = 1; i0 <= target->GetAxis(0)->GetNbins(); i0++)
+		  for (Int_t i4 = 1; i4 <= target->GetAxis(4)->GetNbins(); i4++)
+		  {
+		    Int_t binEta = target->GetAxis(0)->FindBin(-target->GetAxis(0)->GetBinCenter(i0));
+		    Double_t phi = -target->GetAxis(4)->GetBinCenter(i4);
+		    if (phi < -TMath::Pi()/2)
+		      phi += TMath::TwoPi();
+		    Int_t binPhi = target->GetAxis(4)->FindBin(phi);
+		    
+		    Int_t binSource[] = { binEta, binA, binT, i3, binPhi, i5 };
+		    Int_t binTarget[] = { i0, i1, i2, i3, i4, i5 };
+		    
+		    Double_t value = target->GetBinContent(binSource);
+		    Double_t error = target->GetBinError(binSource);
+		    
+		    if (value == 0)
+		      continue;
+		    
+// 		    Double_t value2 = target->GetBinContent(binTarget);
+// 		    Double_t error2 = target->GetBinError(binTarget);
+// 		    Printf("  Values: %f +- %f; %f +- %f", value, error, value2, error2);
+
+		    target->SetBinContent(binTarget, value);
+		    target->SetBinError(binTarget, error);
+		  }
+	      }
+	    }
+	}
+    }
+  }
+}
+
 //____________________________________________________________________
 void AliUEHist::ExtendTrackingEfficiency(Bool_t verbose)
 {

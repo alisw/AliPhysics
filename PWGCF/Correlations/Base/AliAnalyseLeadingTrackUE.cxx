@@ -951,7 +951,7 @@ Bool_t  AliAnalyseLeadingTrackUE::VertexSelection(const TObject* obj, Int_t ntra
 		if (name.CompareTo("PrimaryVertex") && name.CompareTo("SPDVertex"))return kFALSE;
 
 		// Select a quality vertex by number of tracks?
-  		if( nTracksPrim < ntracks || TMath::Abs(zVertex) > zed ) {
+  		if( nTracksPrim < ntracks || TMath::Abs(zVertex) >= zed ) {
   			if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
   			return kFALSE;
   			}
@@ -967,7 +967,7 @@ Bool_t  AliAnalyseLeadingTrackUE::VertexSelection(const TObject* obj, Int_t ntra
 
   if (obj->InheritsFrom("AliMCEvent"))
   { 
-    if (TMath::Abs(((AliMCEvent*) obj)->GetPrimaryVertex()->GetZ()) > zed)
+    if (TMath::Abs(((AliMCEvent*) obj)->GetPrimaryVertex()->GetZ()) >= zed)
     {
       if (fDebug > 1) AliInfo(" Primary-vertex Selection: event (based on MC) REJECTED ...");
       return kFALSE;
@@ -976,7 +976,7 @@ Bool_t  AliAnalyseLeadingTrackUE::VertexSelection(const TObject* obj, Int_t ntra
 
   if (obj->InheritsFrom("AliAODMCHeader"))
   { 
-    if (TMath::Abs(((AliAODMCHeader*) obj)->GetVtxZ()) > zed)
+    if (TMath::Abs(((AliAODMCHeader*) obj)->GetVtxZ()) >= zed)
     {
       if (fDebug > 1) AliInfo(" Primary-vertex Selection: event (based on MC) REJECTED ...");
       return kFALSE;
@@ -995,7 +995,7 @@ Bool_t  AliAnalyseLeadingTrackUE::VertexSelection(const TObject* obj, Int_t ntra
                if (name.CompareTo("PrimaryVertex") && name.CompareTo("SPDVertex"))return kFALSE;
 
                // Select a quality vertex by number of tracks?
-               if( nTracksPrim < ntracks || TMath::Abs(zVertex) > zed ) {
+               if( nTracksPrim < ntracks || TMath::Abs(zVertex) >= zed ) {
                        if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
                        return kFALSE;
                        }
