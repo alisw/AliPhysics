@@ -1,7 +1,7 @@
 //
 // Macro designed for use with the AliAnalysisTaskDptDptCorrelations task.
 //
-// Author: Claude Pruneau & Prabhat Pujahari, Wayne State
+// Author: Prabhat Pujahari & Claude Pruneau, Wayne State
 // 
 //           system:  0: PbPb                 1: pp
 //      singlesOnly:  0: full correlations    1: singles only
@@ -13,7 +13,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
                                                                  int    singlesOnly            = 0,
                                                                  int    useWeights             = 1,
                                                                  int    centralityMethod       = 4,
-                                                                 int    chargeSet              = 1) 
+                                                                 int    chargeSet              = 1)
+
 {
   // Set Default Configuration of this analysis
   // ==========================================
@@ -32,7 +33,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
     if (centralityMethod == 4)
       {
       nCentrality = 10;
-      minCentrality[0] = 0.5; maxCentrality[0] = 5.0;
+      minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
       minCentrality[1] = 5.0; maxCentrality[1] = 10.;
       minCentrality[2] = 10.; maxCentrality[2] = 20.;
       minCentrality[3] = 20.; maxCentrality[3] = 30.;
@@ -46,7 +47,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       }
     else
       {
-	//cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
+      cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
       return 0;
       }
     }
@@ -62,13 +63,13 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       }
     else
       {
-	//cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
+      cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
       return 0;
       }
     }
   else
     {
-      //cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". Option NOT CURRENTLY AVAILABLE. ABORT."
+    cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". Option NOT CURRENTLY AVAILABLE. ABORT."
     return 0;
     }
 
@@ -80,8 +81,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
   double etaMax                 =  1.0;
   double dcaZMin                = -3.0;
   double dcaZMax                =  3.0;
-  double dcaXYMin               = -3.0;
-  double dcaXYMax               =  3.0;
+  double dcaXYMin               = -2.4;
+  double dcaXYMax               =  2.4;
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
   int    nClusterMin            =   70;
@@ -97,7 +98,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
   
   if (!analysisManager) 
     {
-    ::Error("AddTaskDptDptCorrelations2010", "No analysis manager to connect to.");
+    ::Error("AddTaskDptDptCorrelations", "No analysis manager to connect to.");
     return NULL;
     }  
   
@@ -167,15 +168,17 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       baseName     +=  eventName;
       listName     =   baseName;
       taskName     =   baseName;
-      
-      inputHistogramFileName =  "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPb276Calibration_2010.root"; 
+
+      //inputHistogramFileName =  "/Users/prabhat/Archive/calib/PbPb276Calibration_PP_2010.root";
+      inputHistogramFileName =  "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPb276Calibration_2010.root";
+
       outputHistogramFileName = baseName;
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
       outputHistogramFileName += ".root";
       
-      /*    cout << "============================================================" << endl;
-	    cout << "                   iTask: " << iTask << endl;
-	    cout << "               Task Name: " << taskName << endl;
+    cout << "============================================================" << endl;
+    cout << "                   iTask: " << iTask << endl;
+      cout << "               Task Name: " << taskName << endl;
       cout << "               List Name: " << listName << endl;
       cout << "  inputHistogramFileName: " << inputHistogramFileName  << endl;
       cout << " outputHistogramFileName: " << outputHistogramFileName << endl;
@@ -205,9 +208,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       cout << "        requestedCharge1: " << requestedCharge1 << endl;
       cout << "        requestedCharge2: " << requestedCharge2 << endl;
     cout << "============================================================" << endl;
-      */    
-
-      TFile  * inputFile  = 0;
+    
+    TFile  * inputFile  = 0;
       TList  * histoList  = 0;
       TH3F   * weight_1   = 0;
       TH3F   * weight_2   = 0;
