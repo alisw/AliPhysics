@@ -11,10 +11,10 @@ class AliITSUSegmentationPix :
 public AliITSsegmentation {
  public:
   AliITSUSegmentationPix(UInt_t id=0, int nchips=0,int ncol=0,int nrow=0,
-			   double pitchX=0,double pitchZ=0,
-			   double thickness=0,
-			   double pitchLftC=-1,double pitchRgtC=-1,
-			   double edgL=0,double edgR=0,double edgT=0,double edgB=0);
+			 float pitchX=0,float pitchZ=0,
+			 float thickness=0,
+			 float pitchLftC=-1,float pitchRgtC=-1,
+			 float edgL=0,float edgR=0,float edgT=0,float edgB=0);
   
   //  AliITSUSegmentationPix(Option_t *opt="" );
   AliITSUSegmentationPix(const AliITSUSegmentationPix &source);
@@ -42,14 +42,22 @@ public AliITSsegmentation {
   //
   virtual Int_t    GetChipFromChannel(Int_t, Int_t iz) const;
   //
-  virtual Float_t Dpx(Int_t ix=0) const;
-  virtual Float_t Dpz(Int_t iz)   const;
+  virtual Float_t  Dpx(Int_t ix=0) const;
+  virtual Float_t  Dpz(Int_t iz)   const;
+  Float_t          DxActive()      const {return fDxActive;}
+  Float_t          DzActive()      const {return fDzActive;}
+  Float_t          GetShiftXLoc()  const {return fShiftXLoc;}
+  Float_t          GetShiftZLoc()  const {return fShiftZLoc;}
+  Float_t          GetGuardLft()   const {return fGuardLft;}
+  Float_t          GetGuardRgt()   const {return fGuardRgt;}
+  Float_t          GetGuardTop()   const {return fGuardTop;}
+  Float_t          GetGuardBot()   const {return fGuardBot;}
   //
-  Int_t   GetNRow()               const {return fNRow;}
-  Int_t   GetNCol()               const {return fNCol;}
+  Int_t            GetNRow()       const {return fNRow;}
+  Int_t            GetNCol()       const {return fNCol;}
   //
-  virtual Int_t                   Npx() const {return GetNRow();}
-  virtual Int_t                   Npz() const {return GetNCol();}
+  virtual Int_t    Npx()           const {return GetNRow();}
+  virtual Int_t    Npz()           const {return GetNCol();}
   //
   virtual void Neighbours(Int_t iX,Int_t iZ,Int_t* Nlist,Int_t Xlist[10],Int_t Zlist[10]) const;
   //
@@ -58,6 +66,7 @@ public AliITSsegmentation {
   //
   virtual Int_t                    GetDetTypeID()              const {return GetUniqueID();}
   //
+  void         SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Float_t *shiftX, const Float_t *shiftZ);
   void         SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Double_t *shiftX, const Double_t *shiftZ);
   void         GetDiodShift(Int_t row,Int_t col, Float_t &dx,Float_t &dz) const;
   void         GetDiodShift(Int_t row,Int_t col, Double_t &dx,Double_t &dz) const {float dxf,dzf; GetDiodShift(row,col,dxf,dzf); dx=dxf; dz=dzf; }
@@ -71,29 +80,33 @@ public AliITSsegmentation {
   Float_t Col2Z(Int_t col) const;
   //
  protected:
-    Double_t fGuardLft;        // left guard edge
-    Double_t fGuardRgt;        // right guard edge
-    Double_t fGuardTop;        // upper guard edge
-    Double_t fGuardBot;        // bottom guard edge
-    Double_t fPitchX;          // default pitch in X
-    Double_t fPitchZ;          // default pitch in Z
-    Double_t fPitchZLftCol;    // Z pitch of left column of each chip
-    Double_t fPitchZRgtCol;    // Z pitch of right column of each chip
-    Double_t fChipDZ;          // aux: chip size along Z
-    Int_t    fNChips;          // number of chips per module
-    Int_t    fNColPerChip;     // number of columns per chip
-    Int_t    fNRow;            // number of rows
-    Int_t    fNCol;            // number of columns (total)
+    Float_t fGuardLft;        // left guard edge
+    Float_t fGuardRgt;        // right guard edge
+    Float_t fGuardTop;        // upper guard edge
+    Float_t fGuardBot;        // bottom guard edge
+    Float_t fShiftXLoc;       // shift in local X of sensitive area wrt geometry center
+    Float_t fShiftZLoc;       // shift in local Z of sensitive area wrt geometry center
+    Float_t fDxActive;        // size of active area in X
+    Float_t fDzActive;        // size of active area in Z    
+    Float_t fPitchX;          // default pitch in X
+    Float_t fPitchZ;          // default pitch in Z
+    Float_t fPitchZLftCol;    // Z pitch of left column of each chip
+    Float_t fPitchZRgtCol;    // Z pitch of right column of each chip
+    Float_t fChipDZ;          // aux: chip size along Z
+    Int_t   fNChips;          // number of chips per module
+    Int_t   fNColPerChip;     // number of columns per chip
+    Int_t   fNRow;            // number of rows
+    Int_t   fNCol;            // number of columns (total)
     //
-    Int_t    fDiodShiftMatNCol; // periodicity of diod shift in columns
-    Int_t    fDiodShiftMatNRow; // periodicity of diod shift in rows
-    Int_t    fDiodShiftMatDim;  // dimension of diod shift matrix
-    Double32_t* fDiodShidtMatX; //[fDiodShiftMatDim] diod shift in X (along column), in fraction of X pitch
-    Double32_t* fDiodShidtMatZ; //[fDiodShiftMatDim] diod shift in Z (along row), in fraction of Z pitch
+    Int_t   fDiodShiftMatNCol; // periodicity of diod shift in columns
+    Int_t   fDiodShiftMatNRow; // periodicity of diod shift in rows
+    Int_t   fDiodShiftMatDim;  // dimension of diod shift matrix
+    Float_t* fDiodShidtMatX; //[fDiodShiftMatDim] diod shift in X (along column), in fraction of X pitch
+    Float_t* fDiodShidtMatZ; //[fDiodShiftMatDim] diod shift in Z (along row), in fraction of Z pitch
     //
     static const char* fgkSegmListName; // pattern for segmentations list name
     //
-  ClassDef(AliITSUSegmentationPix,2) //Segmentation class upgrade pixels 
+  ClassDef(AliITSUSegmentationPix,3) //Segmentation class upgrade pixels 
 
 };
 

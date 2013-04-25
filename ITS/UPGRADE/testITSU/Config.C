@@ -294,7 +294,9 @@ void Config()
       //
       const int kDiodShift_NCol_M32terP31 = 2;
       const int kDiodShift_NRow_M32terP31 = 1;
-
+      //
+      const double kReadOutEdge = 0.1;   // width of the readout edge (passive bottom)
+      const double kGuardRing   = 0.005; // width of passive area on left/right/top of the sensor
       const double kDiodShiftM32terP31X[ kDiodShift_NCol_M32terP31 ][ kDiodShift_NRow_M32terP31 ] = {0.30,-0.19};
       const double kDiodShiftM32terP31Z[ kDiodShift_NCol_M32terP31 ][ kDiodShift_NRow_M32terP31 ] = {0.0 , 0.0 };
       // create segmentations:
@@ -304,7 +306,13 @@ void Config()
 								350,  //835,  // nrows
 								33.e-4,  // default row pitch in cm
 								20.e-4,  // default col pitch in cm
-								18.e-4  // sensor thickness in cm
+								18.e-4,  // sensor thickness in cm
+								-1,     // no special left col between chips
+								-1,     // no special right col between chips
+								kGuardRing, // left
+								kGuardRing, // right
+								kGuardRing, // top
+								kReadOutEdge  // bottom
 								);    // see AliITSUSegmentationPix.h for extra options
       seg0->SetDiodShiftMatrix(kDiodShift_NRow_M32terP31,kDiodShift_NCol_M32terP31, &kDiodShiftM32terP31X[0][0], &kDiodShiftM32terP31Z[0][0]);
       seg0->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
@@ -314,7 +322,13 @@ void Config()
 								700,//835,  // nrows
 								33.e-4,  // default row pitch in cm
 								20.e-4,  // default col pitch in cm
-								18.e-4  // sensor thickness in cm
+								18.e-4,  // sensor thickness in cm
+								-1,     // no special left col between chips
+								-1,     // no special right col between chips
+								kGuardRing, // left
+								kGuardRing, // right
+								kGuardRing, // top
+								kReadOutEdge  // bottom	
 								);    // see AliITSUSegmentationPix.h for extra options
       seg1->SetDiodShiftMatrix(kDiodShift_NRow_M32terP31,kDiodShift_NCol_M32terP31, &kDiodShiftM32terP31X[0][0], &kDiodShiftM32terP31Z[0][0]);
       seg1->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
@@ -324,45 +338,47 @@ void Config()
 								700,//835,  // nrows
 								33.e-4,  // default row pitch in cm
 								20.e-4,  // default col pitch in cm
-								18.e-4   // sensor thickness in cm
-								);    // see AliITSUSegmentationPix.h for extra options
+								18.e-4,   // sensor thickness in cm
+								-1,     // no special left col between chips
+								-1,     // no special right col between chips
+								kGuardRing, // left
+								kGuardRing, // right
+								kGuardRing, // top
+								kReadOutEdge  // bottom								
+								);    // see AliITSUSegmentationPix.h for extra options      
       seg2->SetDiodShiftMatrix(kDiodShift_NRow_M32terP31,kDiodShift_NCol_M32terP31, &kDiodShiftM32terP31X[0][0], &kDiodShiftM32terP31Z[0][0]);
       seg2->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       //
       int nmod,nlad; // modules per ladded, n ladders
       // sum of insensitive boarder around module (in cm)
-      Float_t deadX = 0.1;  // on each side
-      Float_t deadZ = 0.01; // on each side
       double tilt = 10.;     double thickLr = 0.05;
       //      virtual void   DefineLayerTurbo(const Int_t nlay, const Double_t r,  const Double_t zlen, const Int_t nladd,   const Int_t nmod, const Double_t width,
       //				  const Double_t tilt,   const Double_t lthick = 0.,    const Double_t dthick = 0.,   const UInt_t detType=0);
       AliITSUv11 *ITS  = new AliITSUv11("ITS Upgrade",7);
       nmod = 9;
       nlad = 12;
-      ITS->DefineLayerTurbo(0,0., 2.2,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
+      ITS->DefineLayerTurbo(0,0., 2.2,  nmod*seg0->Dz(), nlad, nmod, seg0->Dx(), tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
       nmod = 9;
       nlad = 16;
-      ITS->DefineLayerTurbo(1,0., 2.8,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
+      ITS->DefineLayerTurbo(1,0., 2.8,  nmod*seg0->Dz(), nlad, nmod, seg0->Dx(), tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
       nmod = 9;
       nlad = 20;
-      ITS->DefineLayerTurbo(2,0., 3.6,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
+      ITS->DefineLayerTurbo(2,0., 3.6,  nmod*seg0->Dz(), nlad, nmod, seg0->Dx(), tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
       nmod = 29;
       nlad = 48;
-      ITS->DefineLayerTurbo(3,0., 20.0, nmod*(seg1->Dz()+deadZ*2), nlad, nmod, seg1->Dx()+deadX*2, tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
+      ITS->DefineLayerTurbo(3,0., 20.0, nmod*seg1->Dz(), nlad, nmod, seg1->Dx(), tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
       nmod = 29;
       nlad = 48;
-      ITS->DefineLayerTurbo(4,0., 22.0, nmod*(seg1->Dz()+deadZ*2), nlad, nmod, seg1->Dx()+deadX*2, tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
+      ITS->DefineLayerTurbo(4,0., 22.0, nmod*seg1->Dz(), nlad, nmod, seg1->Dx(), tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
       nmod = 50;
       nlad = 94;
-      ITS->DefineLayerTurbo(5,0., 40.0, nmod*(seg2->Dz()+deadZ*2), nlad, nmod, seg2->Dx()+deadX*2, tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); //41 creates ovl!
+      ITS->DefineLayerTurbo(5,0., 40.0, nmod*seg2->Dz(), nlad, nmod, seg2->Dx(), tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); //41 creates ovl!
       nmod = 50;
       nlad = 94;
-      ITS->DefineLayerTurbo(6,0., 43.0, nmod*(seg2->Dz()+deadZ*2), nlad, nmod, seg2->Dx()+deadX*2, tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); 
+      ITS->DefineLayerTurbo(6,0., 43.0, nmod*seg2->Dz(), nlad, nmod, seg2->Dx(), tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); 
       //
-
     }
  
-
   if (iTPC)
     {
       //============================ TPC parameters ===================
