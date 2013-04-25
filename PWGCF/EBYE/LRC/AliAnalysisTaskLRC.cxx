@@ -59,6 +59,8 @@
 #include "TRandom3.h"
 #include <TComplex.h>
 
+#include <TF1.h>
+
 //#include "AliSimpleEvent.h"
 
 //flag use my Event Tree
@@ -78,6 +80,7 @@ AliAnalysisTaskLRC::AliAnalysisTaskLRC( const char *name, Bool_t runKine)
     ,fEsdTrackCuts(0)
     ,fAODtrackCutBit(128)
     ,fNumberOfPhiSectors(1)
+    ,fArrTrackCuts(0x0)
     ,fHistCutsNamesBins(0)
     //    ,fNumberOfCutsToRemember(0)
     ,fSwitchToListingCuts(0)
@@ -105,11 +108,17 @@ AliAnalysisTaskLRC::AliAnalysisTaskLRC( const char *name, Bool_t runKine)
     ,fHistVy(0)
     ,fHistVz(0)
     ,fHistVertexNconributors(0)
+    ,fHistNumberOfPileupVerticesTracks(0)
+    ,fHistNumberOfPileupVerticesSPD(0)
     ,fHistEventPlane(0)
     ,fHistPt(0)
     ,fHistEta(0)
     ,fHistPhi(0)
     ,fHistEtaPhi(0)
+    ,fHistPhiLRCrotationsCheck(0)
+    ,fHistPhiArtificialProfilingCheck(0)
+    ,fHistPhiArtificialProfilingCheckWrtEvPlane(0)
+    ,fHistPhiArtificialEvPlane(0)
     ,fHistEtaVsZvCoverage(0)
     ,fHistEtaVsZvCoverageAccepted(0)
     ,fHistMultBeforeCuts(0)
@@ -162,6 +171,8 @@ AliAnalysisTaskLRC::AliAnalysisTaskLRC( const char *name, Bool_t runKine)
     ,fMaxCentralityClass(98)
     ,fIsIonsAnalysis(kFALSE)
     ,fEtInsteadOfPt(kFALSE)
+    ,fUsePhiShufflingByHand(kFALSE)
+    ,fUseToyEvents(kFALSE)
     ,fTmpCounter(0)
     ,fPIDResponse(0x0)
     ,fPIDCombined(0x0)
@@ -348,7 +359,7 @@ void AliAnalysisTaskLRC::UserCreateOutputObjects()
             lrcBase->InitDataMembers();
         else continue;
         //remember pointer to be used in the analysis
-        fLRCprocArrayPointers[i] = lrcBase;
+        //fLRCprocArrayPointers[i] = lrcBase;
     }
 
 
@@ -403,6 +414,13 @@ void AliAnalysisTaskLRC::UserCreateOutputObjects()
     fHistVertexNconributors = new TH1I("fHistVertexNconributors","Primary vertex n contributors;N contributors;Entries",101,-0.5,100.5);
     fOutList->Add(fHistVertexNconributors);
 
+    fHistNumberOfPileupVerticesTracks = new TH1I("fHistNumberOfPileupVerticesTracks","Number of pilup verteces (by tracks);N verteces;Entries",11,-0.5,10.5);
+    fOutList->Add(fHistNumberOfPileupVerticesTracks);
+
+    fHistNumberOfPileupVerticesSPD = new TH1I("fHistNumberOfPileupVerticesSPD","Number of pilup verteces (by SPD);N verteces;Entries",11,-0.5,10.5);
+    fOutList->Add(fHistNumberOfPileupVerticesSPD);
+
+
     if ( fIsIonsAnalysis )
     {
         //Event plane
@@ -418,22 +436,36 @@ void AliAnalysisTaskLRC::UserCreateOutputObjects()
     
     fHistEta = new TH1F("fHistEta", "#eta distribution", 200, -4, 4);
     fHistEta->GetXaxis()->SetTitle("#eta");
-    fHistEta->GetYaxis()->SetTitle("dN/ETA");
+    fHistEta->GetYaxis()->SetTitle("dN/#eta");
     fHistEta->SetMarkerStyle(kFullCircle);
     fOutList->Add(fHistEta);
     
     fHistPhi = new TH1F("fHistPhi", "#phi distribution", 200, 0, 2*TMath::Pi() );
     fHistPhi->GetXaxis()->SetTitle("#phi");
-    fHistPhi->GetYaxis()->SetTitle("dN/ETA");
+    fHistPhi->GetYaxis()->SetTitle("dN/#phi");
     fHistPhi->SetMarkerStyle(kFullCircle);
     fOutList->Add(fHistPhi);
     
     fHistEtaPhi = new TH2D("fHistEtaPhi","N tracks in (#eta, #phi);#eta;#phi",25,-0.8,0.8,25,0,2*TMath::Pi());
     fOutList->Add(fHistEtaPhi);
 
+    fHistPhiLRCrotationsCheck = new TH1F("fHistPhiLRCrotationsCheck", "#phi distribution in LRC rotations;#phi;dN/#phi", 200, -4*TMath::Pi(), 4*TMath::Pi() );
+    fOutList->Add(fHistPhiLRCrotationsCheck);
+
+    //some histos for tracks manipulations by hand
+    fHistPhiArtificialProfilingCheck = new TH1F("fHistPhiArtificialProfilingCheck", "#phi distribution tracks distr by hand;#phi;dN/#phi", 200, -4*TMath::Pi(), 4*TMath::Pi() );
+    fHistPhiArtificialProfilingCheckWrtEvPlane = new TH1F("fHistPhiArtificialProfilingCheckWrtEvPlane", "#phi distribution by hand wrt event plane;#phi;dN/#phi", 200, -4*TMath::Pi(), 4*TMath::Pi() );
+    fHistPhiArtificialEvPlane = new TH1F("fHistPhiArtificialEvPlane", "#phi distribution of event plane;#phi;dN/#phi", 200, -4*TMath::Pi(), 4*TMath::Pi() );
+    if ( fUsePhiShufflingByHand )
+    {
+        fOutList->Add(fHistPhiArtificialProfilingCheck);
+        fOutList->Add(fHistPhiArtificialProfilingCheckWrtEvPlane);
+        fOutList->Add(fHistPhiArtificialEvPlane);
+    }
+
     //Eta vs Zv
-    fHistEtaVsZvCoverage = new TH2D("fHistEtaVsZvCoverage","TPC tracks ETA vs Zv;V_{z} (cm);ETA",100,-20,20,50,-2,2);
-    fHistEtaVsZvCoverageAccepted = new TH2D("fHistEtaVsZvCoverageAccepted","Accepted TPC tracks ETA vs Zv;V_{z} (cm);ETA",100,-20,20,50,-2,2);
+    fHistEtaVsZvCoverage = new TH2D("fHistEtaVsZvCoverage","TPC tracks #eta vs Zv;V_{z} (cm);#eta",100,-20,20,50,-2,2);
+    fHistEtaVsZvCoverageAccepted = new TH2D("fHistEtaVsZvCoverageAccepted","Accepted TPC tracks #eta vs Zv;V_{z} (cm);#eta",100,-20,20,50,-2,2);
     fOutList->Add(fHistEtaVsZvCoverage);
     fOutList->Add(fHistEtaVsZvCoverageAccepted);
 
@@ -667,6 +699,13 @@ void AliAnalysisTaskLRC::UserCreateOutputObjects()
 
     // NEW HISTO added to fOutput here
     PostData(1, fOutList); // Post data for ALL output slots >0 here, to get at least an empty histogram
+
+    for( Int_t i = 0; i < fLRCproc.GetEntries(); i++)
+    {
+        PostData( Proc(i)->GetOutputSlotNumber(),Proc(i)->CreateOutput() );
+    }
+
+
     //if ( fSetIncludeEventTreeInOutput )
     //    PostData(2, fEventTree);
     //int a;
@@ -701,6 +740,25 @@ void AliAnalysisTaskLRC::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAdditional )//Option_t *)
 {
+    // ########### if use toy events
+//    if ( fUseToyEvents )
+//    {
+//        //generate all events here and fill LRC processors
+//        for ( Int_t toyEventId = 0; toyEventId < fNumberOfToyEvents; toyEventId++ )
+//        {
+//            int nToyTracks =  0;
+//            for ( Int_t toyTrackId = 0; toyTrackId < nToyTracks; toyTrackId++ )
+//            {
+//                // ########### ProfilePhiByHand
+//                ProfilePhiByHand( nToyTracks);
+//            }
+
+//        }
+
+//        //just return
+//        return;
+//    }
+
     // Main loop
     // Called for each event
     //printf( "starting UserExec...\n" );
@@ -803,34 +861,66 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
     Int_t lCentralityClass5 		= 0;
     Float_t lReactionPlane       = -1.;
 
-    if( lESD && fIsIonsAnalysis )
+
+    if( !fRunKine && fIsIonsAnalysis )
     {
-        AliCentrality *centrality = lESD->GetCentrality();
-        lCentralityPercentile 	= centrality->GetCentralityPercentile("V0M"); 	// returns the centrality percentile, a float from 0 to 100 (or to the trigger efficiency)
-        lCentralityClass10 		= centrality->GetCentralityClass10("V0M");//"FMD"); 		// returns centrality class for 10% width (a integer from 0 to 10)
-        lCentralityClass5 		= centrality->GetCentralityClass5("V0M");//"TKL"); 		// returns centrality class for 5% width (a integer from 0 to 20)
-        Bool_t lCentralityInClass = centrality->IsEventInCentralityClass(fMinCentralityClass,fMaxCentralityClass,"V0M"); // returns kTRUE if the centrality of the event is between a and b, otherwise kFALSE
-        //cout << lCentralityPercentile << " "
-        //<< fMinCentralityClass << " "
-        //<< fMaxCentralityClass << " "
-        //<< lCentralityInClass << endl;
+        AliCentrality *centrality = 0x0;
 
-        if ( !lCentralityInClass )
+        if ( lESD )
+            centrality = lESD->GetCentrality();
+        else if ( lAOD )
+            centrality = lAOD->GetCentrality();
+
+        if ( centrality )
         {
-            //cout << "outside of centrality class!" << endl;
-            fHistEventCutStats->Fill("Wrong centrality", 1);
-            PostData(1, fOutList);
-            return;
+            lCentralityPercentile 	= centrality->GetCentralityPercentile("V0M"); 	// returns the centrality percentile, a float from 0 to 100 (or to the trigger efficiency)
+            lCentralityClass10 		= centrality->GetCentralityClass10("V0M");//"FMD"); 		// returns centrality class for 10% width (a integer from 0 to 10)
+            lCentralityClass5 		= centrality->GetCentralityClass5("V0M");//"TKL"); 		// returns centrality class for 5% width (a integer from 0 to 20)
+            Bool_t lCentralityInClass = centrality->IsEventInCentralityClass(fMinCentralityClass,fMaxCentralityClass,"V0M"); // returns kTRUE if the centrality of the event is between a and b, otherwise kFALSE
+            //cout << lCentralityPercentile << " "
+            //<< fMinCentralityClass << " "
+            //<< fMaxCentralityClass << " "
+            //<< lCentralityInClass << endl;
+
+            if ( !lCentralityInClass )
+            {
+                //cout << "outside of centrality class!" << endl;
+                fHistEventCutStats->Fill("Wrong centrality", 1);
+                PostData(1, fOutList);
+                return;
+            }
+
+            fHistCentralityPercentile->Fill( lCentralityPercentile );
+            fHistCentralityClass10->Fill( lCentralityClass10 );
+            fHistCentralityClass5->Fill( lCentralityClass5 );
+
+            // get the reaction plane
+            lReactionPlane = GetEventPlane( event );
+            fHistEventPlane->Fill( lReactionPlane, lCentralityPercentile );
         }
-
-        fHistCentralityPercentile->Fill( lCentralityPercentile );
-        fHistCentralityClass10->Fill( lCentralityClass10 );
-        fHistCentralityClass5->Fill( lCentralityClass5 );
-
-        // get the reaction plane
-        lReactionPlane = GetEventPlane( event );
-        fHistEventPlane->Fill( lReactionPlane, lCentralityPercentile );
     }
+
+    //number of verteces in ESD (pileup)
+    if ( lESD )
+    {
+        int lNumberOfPileUpVerteces = 0;
+        TClonesArray *lPileupVertecesTracks = lESD->GetPileupVerticesTracks();
+        lNumberOfPileUpVerteces = lPileupVertecesTracks->GetSize();
+        fHistNumberOfPileupVerticesTracks->Fill( lNumberOfPileUpVerteces );
+
+        TClonesArray *lPileupVertecesSPD = lESD->GetPileupVerticesSPD();
+        lNumberOfPileUpVerteces = lPileupVertecesSPD->GetSize();
+        fHistNumberOfPileupVerticesSPD->Fill( lNumberOfPileUpVerteces );
+    }
+    else if ( lAOD ) //number of verteces in AOD (pileup)
+    {
+        int lNumberOfPileUpVerteces = 0;
+        lNumberOfPileUpVerteces = lAOD->GetNumberOfPileupVerticesTracks();
+        fHistNumberOfPileupVerticesTracks->Fill( lNumberOfPileUpVerteces );
+        lNumberOfPileUpVerteces = lAOD->GetNumberOfPileupVerticesSPD();
+        fHistNumberOfPileupVerticesSPD->Fill( lNumberOfPileUpVerteces );
+    }
+
 
     // Vertex present
     //    const AliESDVertex *vertex = lESD->GetPrimaryVertex();
@@ -893,6 +983,7 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
         //                    cin >> aa;
         //        //        }
     }
+
 
 
     //cut on number of SPD tracklets (25.03.2012)
@@ -982,7 +1073,7 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
     fHistAcceptedMult->Fill(lNchTrigger);
     fHistEventCutStats->Fill("Analyzed",1);
 
-    if ( fFlagWatchV0 ) // cut on V0 multiplicity "radius" in 2D-hist for both A and C sides
+    if ( lESD && fFlagWatchV0 ) // cut on V0 multiplicity "radius" in 2D-hist for both A and C sides
     {
         const AliESDVZERO* vzrData = lESD->GetVZEROData(); //aod the same
 
@@ -1018,6 +1109,9 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
 
 
 
+
+
+
     Int_t nTracksInEvent = ( !fRunKine )
             ? event->GetNumberOfTracks()
             : eventMC->GetNumberOfTracks();
@@ -1038,7 +1132,7 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
         //Track variables
         double lPt = 0;   // Temp Pt
         double lEta = -100;	  // Temp ETA
-        double lPhi;    // Temp Phi
+        double lPhi = -100;    // Temp Phi
         double lMass = 0;    // Temp Mass
         double lEt = 0;
         Short_t lCharge = 0;
@@ -1070,8 +1164,8 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
         //lPhi += phiAdditional; // add here extra phi angle! (when applying tracks rotation by hand)
 
 
-        if ( lPhi > 2 * TMath::Pi() )
-            lPhi -= 2 * TMath::Pi();
+        //        if ( lPhi > 2 * TMath::Pi() )
+        //            lPhi -= 2 * TMath::Pi();
         //cout << "track pt = " <<  lPt << endl;
         lCharge = track->Charge();
 
@@ -1331,78 +1425,63 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
             continue;
         }
 
+        if ( lNumberOfAcceptedTracksForLRC >= kMaxParticlesNumber )
+        {
+	    AliDebug(AliLog::kError, "lNumberOfAcceptedTracksForLRC too large...");
+            break;
+        }
+
         //fill arrays with track data for LRC
         fArrayTracksPt[lNumberOfAcceptedTracksForLRC]       = (fEtInsteadOfPt ? lEt : lPt);
         fArrayTracksEta[lNumberOfAcceptedTracksForLRC]      = lEta;
         fArrayTracksPhi[lNumberOfAcceptedTracksForLRC]      = lPhi;
         fArrayTracksCharge[lNumberOfAcceptedTracksForLRC]   = lCharge;
         fArrayTracksPID[lNumberOfAcceptedTracksForLRC]      = lMostProbablePIDPure;
+
         lNumberOfAcceptedTracksForLRC++;
 
     } //end of track loop
 
 
-    // ########### LRC processors filling
-    Int_t lLrcNum = fLRCproc.GetEntries(); // Number of processors attached
-
-    //prepare phi rotation step
-    float phiStep = 2 * TMath::Pi();
-    if ( fNumberOfPhiSectors > 1 )
-        phiStep /= fNumberOfPhiSectors;
-    double lPhiRotatedExtra = 0; //additional phi rotation of all tracks in case
-
-    //start LRC filling
-    for ( Int_t sectorId = 0; sectorId < fNumberOfPhiSectors; sectorId++ )
+    //profiling tracks in phi BY HAND if requested
+    if ( fUsePhiShufflingByHand )
     {
-        if ( lLrcNum > kMaxLRCprocArrayPointers ) //too many processors loaded, thus break and do nothing with LRC processors
-            break;
-        //pass signal to LRC-based analysis to start event
-        for( Int_t i = 0 ; i < lLrcNum; i++ )
+        double lFictionEventPlanePhi = fRand->Uniform(0,2*TMath::Pi());
+        fHistPhiArtificialEvPlane->Fill( lFictionEventPlanePhi );
+        TF1 lFictionEventPlaneFunc( "fictionEventPlane", "0.75 + 0.25*TMath::Cos(x)", 0, 2*TMath::Pi() );
+        for ( Int_t trackId = 0; trackId < lNumberOfAcceptedTracksForLRC; trackId++ )
         {
-            fLRCprocArrayPointers[i]->StartEvent();
-            //pass the centrality
-            fLRCprocArrayPointers[i]->SetEventCentrality( lCentralityPercentile );
+            //check phi wrt event plane
+            Double_t lProfiledPhiWrtEvPlane = lFictionEventPlaneFunc.GetRandom();
+            //FixAngleInTwoPi( lProfiledPhiWrtEvPlane );
+            fHistPhiArtificialProfilingCheckWrtEvPlane->Fill( lProfiledPhiWrtEvPlane );
+
+            //  double lOppositePhi = ( ( fRand->Uniform(0,1) > 0.5 ) ? -TMath::Pi() : 0 );
+            //  double lRandomConeAngleEta = fRand->Gaus(0,0.5);
+            //  double lRandomConeAnglePhi = fRand->Gaus(0,TMath::PiOver2());
+
+            //double lFictionPhi = fRand->Uniform(0,2*TMath::Pi());
+            //double lPhiSign = ( ( fRand->Uniform(0,1) > 0.5 ) ? TMath::Pi() : 0 );
+
+            //add event plane phi angle
+            Double_t lProfiledPhi = lProfiledPhiWrtEvPlane + lFictionEventPlanePhi;
+            FixAngleInTwoPi( lProfiledPhi );
+            fHistPhiArtificialProfilingCheck->Fill( lProfiledPhi );
+
+            fArrayTracksPhi[trackId] = lProfiledPhi; //lPhi + lRandomConeAnglePhi; //lPhi;
+
+            //        fArrayTracksPhi[lNumberOfAcceptedTracksForLRC]      = lPhi - lRandomConeAnglePhi; //lPhi;
+            //        if ( fArrayTracksPhi[lNumberOfAcceptedTracksForLRC] > 2 * TMath::Pi() )
+            //            fArrayTracksPhi[lNumberOfAcceptedTracksForLRC] -= 2 * TMath::Pi();
         }
-
-        //pass track data to LRC-based analysis
-        for(Int_t i = 0; i < lLrcNum; i++ )
-        {
-            for ( Int_t trackId = 0; trackId < lNumberOfAcceptedTracksForLRC; trackId++ )
-            {
-                if ( fEtInsteadOfPt && fArrayTracksPt[trackId]  == 0 ) //in Et-mode we didn't measure Et! exit
-                    break;
-
-                //if ( fEtInsteadOfPt && lMostProbablePIDPure == -1 ) //don't have pure PID
-                //	continue;
-                //rotate track phi
-                float lPhi = fArrayTracksPhi[trackId] + lPhiRotatedExtra;
-                if ( lPhi > 2 * TMath::Pi() )
-                    lPhi -= 2 * TMath::Pi();
-
-                fLRCprocArrayPointers[i]->AddTrackPtEta(
-                            fArrayTracksPt[trackId]
-                            , fArrayTracksEta[trackId]
-                            , lPhi
-                            , fArrayTracksCharge[trackId]
-                            , fArrayTracksPID[trackId]
-                            );
-            }
-
-        }
-
-        //take event only if at least 1 track in this event fulfill the requirements! //21.11.11
-        Bool_t lDontTakeEventDecision =  kFALSE; //lNaccept > 0 ? kFALSE : kTRUE;
-        //pass signal to LRC-based analysis to finish the event
-        for( Int_t i = 0; i < lLrcNum; i++ )
-        {
-            fLRCprocArrayPointers[i]->FinishEvent( lDontTakeEventDecision );
-        }
-
-        lPhiRotatedExtra += phiStep; //increase phi step to rotate tracks
     }
 
+    // ########### ProfilePhiByHand
+    if ( fUsePhiShufflingByHand )
+        ProfilePhiByHand( lNumberOfAcceptedTracksForLRC);
 
-
+    // ########### LRC processors filling
+    FillLRCProcessors( lNumberOfAcceptedTracksForLRC, lCentralityPercentile );
 
 
     // ######### fill some QA plots
@@ -1668,3 +1747,108 @@ void AliAnalysisTaskLRC::AddTrackCutForBits(AliESDtrackCuts*  const cuts, TStrin
     //    fNumberOfCutsToRemember++;
 }
 
+
+
+void AliAnalysisTaskLRC::FillLRCProcessors( int numberOfAcceptedTracksForLRC, Double_t eventCentrality )
+{
+    //pass signal to LRC-based analysis to start event
+    Int_t lLrcNum = fLRCproc.GetEntries(); // Number of processors attached
+
+    //prepare phi rotation step
+    Double_t phiStep = 2 * TMath::Pi();
+    if ( fNumberOfPhiSectors > 1 )
+        phiStep /= fNumberOfPhiSectors;
+    Double_t lPhiRotatedExtra = 0; //additional phi rotation of all tracks in case
+
+
+    //start LRC filling
+    for ( Int_t sectorId = 0; sectorId < fNumberOfPhiSectors; sectorId++ )
+    {
+        if ( lLrcNum > kMaxLRCprocArrayPointers ) //too many processors loaded, thus break and do nothing with LRC processors
+        {
+            cout << "Mistake???" << endl;
+            break;
+        }
+        //pass signal to LRC-based analysis to start event
+        for( Int_t lrcProcessorId = 0; lrcProcessorId < lLrcNum; lrcProcessorId++ )
+        {
+            AliLRCBase *lrcBase = dynamic_cast<AliLRCBase*> (fLRCproc.At(lrcProcessorId));
+            lrcBase->StartEvent();
+            //pass the centrality
+            lrcBase->SetEventCentrality( eventCentrality );
+            //        }
+
+            //pass track data to LRC-based analysis
+            for ( Int_t trackId = 0; trackId < numberOfAcceptedTracksForLRC; trackId++ )
+            {
+                if ( fEtInsteadOfPt && (fArrayTracksPt[trackId]  == 0 ) ) //in Et-mode we didn't measure Et! exit
+                {
+                    cout << "Mistake???" << endl;
+                    break;
+                }               //if ( fEtInsteadOfPt && lMostProbablePIDPure == -1 ) //don't have pure PID
+                //	continue;
+
+                //rotate track phi
+                Double_t lPhi = fArrayTracksPhi[trackId] + lPhiRotatedExtra;
+                FixAngleInTwoPi( lPhi );
+
+                fHistPhiLRCrotationsCheck->Fill( lPhi );
+
+                //            for(Int_t i = 0; i < lLrcNum; i++ )
+                //            {
+                lrcBase->AddTrackPtEta(
+                            fArrayTracksPt[trackId]
+                            , fArrayTracksEta[trackId]
+                            , lPhi
+                            , fArrayTracksCharge[trackId]
+                            , fArrayTracksPID[trackId]
+                            );
+                //            }
+
+            }
+
+            //take event only if at least 1 track in this event fulfill the requirements! //21.11.11
+            Bool_t lDontTakeEventDecision =  kFALSE; //lNaccept > 0 ? kFALSE : kTRUE;
+            //pass signal to LRC-based analysis to finish the event
+            //        for( Int_t i = 0; i < lLrcNum; i++ )
+            //        {
+            lrcBase->FinishEvent( lDontTakeEventDecision );
+        }
+
+        lPhiRotatedExtra += phiStep; //increase phi step to rotate tracks
+    }
+}
+
+void AliAnalysisTaskLRC::ProfilePhiByHand( int numberOfAcceptedTracksForLRC )
+{
+    //profiling tracks in phi BY HAND if requested
+
+    double lFictionEventPlanePhi = fRand->Uniform(0,2*TMath::Pi());
+    fHistPhiArtificialEvPlane->Fill( lFictionEventPlanePhi );
+    TF1 lFictionEventPlaneFunc( "fictionEventPlane", "0.75 + 0.25*TMath::Cos(x)", 0, 2*TMath::Pi() );
+    for ( Int_t trackId = 0; trackId < numberOfAcceptedTracksForLRC; trackId++ )
+    {
+        //check phi wrt event plane
+        Double_t lProfiledPhiWrtEvPlane = lFictionEventPlaneFunc.GetRandom();
+        //FixAngleInTwoPi( lProfiledPhiWrtEvPlane );
+        fHistPhiArtificialProfilingCheckWrtEvPlane->Fill( lProfiledPhiWrtEvPlane );
+
+        //  double lOppositePhi = ( ( fRand->Uniform(0,1) > 0.5 ) ? -TMath::Pi() : 0 );
+        //  double lRandomConeAngleEta = fRand->Gaus(0,0.5);
+        //  double lRandomConeAnglePhi = fRand->Gaus(0,TMath::PiOver2());
+
+        //double lFictionPhi = fRand->Uniform(0,2*TMath::Pi());
+        //double lPhiSign = ( ( fRand->Uniform(0,1) > 0.5 ) ? TMath::Pi() : 0 );
+
+        //add event plane phi angle
+        Double_t lProfiledPhi = lProfiledPhiWrtEvPlane + lFictionEventPlanePhi;
+        FixAngleInTwoPi( lProfiledPhi );
+        fHistPhiArtificialProfilingCheck->Fill( lProfiledPhi );
+
+        fArrayTracksPhi[trackId] = lProfiledPhi; //lPhi + lRandomConeAnglePhi; //lPhi;
+
+        //        fArrayTracksPhi[lNumberOfAcceptedTracksForLRC]      = lPhi - lRandomConeAnglePhi; //lPhi;
+        //        if ( fArrayTracksPhi[lNumberOfAcceptedTracksForLRC] > 2 * TMath::Pi() )
+        //            fArrayTracksPhi[lNumberOfAcceptedTracksForLRC] -= 2 * TMath::Pi();
+    }
+}

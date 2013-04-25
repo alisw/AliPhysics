@@ -168,6 +168,8 @@ Bool_t AliLRCProcess::InitDataMembers()
     }
     fEventCount=0;
     fOutList = new TList();
+    fOutList->SetOwner();  // IMPORTANT!
+
     fOutList->SetName(fShortDef);
 
     Double_t lowMultHor, hiMultHor;
@@ -240,7 +242,7 @@ Bool_t AliLRCProcess::InitDataMembers()
     fHistNchForwardPtPt->GetYaxis()->SetTitle("dN/dN_{ch}");
     fHistNchForwardPtPt->SetMarkerStyle(kFullCircle);
 
-    fHistPhiForward = new TH1D("fPhiForward", "#phi distribution in Forward window", 108, 0, 3*TMath::Pi());
+    fHistPhiForward = new TH1D("fPhiForward", "#phi distribution in Forward window", 144, 0, 2*TMath::Pi());
     fHistPhiForward->GetXaxis()->SetTitle("Phi");
     fHistPhiForward->GetYaxis()->SetTitle("dN/Phi");
     fHistPhiForward->SetMarkerStyle(kFullCircle);
@@ -272,7 +274,7 @@ Bool_t AliLRCProcess::InitDataMembers()
     fHistNchBackward->GetYaxis()->SetTitle("dN/dN_{ch}");
     fHistNchBackward->SetMarkerStyle(kFullCircle);
 
-    fHistPhiBackward = new TH1D("fPhiBakward", "#phi distribution in Backward window", 108, 0, 3*TMath::Pi());
+    fHistPhiBackward = new TH1D("fPhiBakward", "#phi distribution in Backward window", 144, 0, 2*TMath::Pi());
     fHistPhiBackward->GetXaxis()->SetTitle("Phi");
     fHistPhiBackward->GetYaxis()->SetTitle("dN/Phi");
     fHistPhiBackward->SetMarkerStyle(kFullCircle);
@@ -565,7 +567,7 @@ Bool_t AliLRCProcess::InitDataMembers()
     fOutList->Add(fHistTestPIDForward);
     fOutList->Add(fHistTestPIDBackward);
 
-//    fOutList->Add(fHistNfCentrality);
+    //    fOutList->Add(fHistNfCentrality);
     
     
     //fOutList->Add(fHistDifferenceNf);
@@ -598,8 +600,8 @@ AliLRCProcess::~AliLRCProcess()
 void AliLRCProcess::SetShortDef()
 {
     // Creating task and output container name
-    char str[80];
-    snprintf(str,80, "TaskLRCw%3.1fto%3.1fvs%3.1fto%3.1f",fStartForwardETA,fEndForwardETA,fStartBackwardETA,fEndBackwardETA);
+    char str[200];
+    snprintf(str,200, "TaskLRCw%3.1fto%3.1fvs%3.1fto%3.1f",fStartForwardETA,fEndForwardETA,fStartBackwardETA,fEndBackwardETA);
     /*if ( fWhichParticleToProcess != kLRCany
         && (int)fWhichParticleToProcess > 0 && (int)fWhichParticleToProcess <= 6 ) //to avoid program falling
     {
