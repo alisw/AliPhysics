@@ -131,7 +131,6 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 		return false;
 
 
-	
     fHistoCuts->Fill(kPhysSelEvents);
 
 
