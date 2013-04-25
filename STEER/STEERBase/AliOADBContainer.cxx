@@ -20,9 +20,6 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
-
-
-
 #include "AliOADBContainer.h"
 #include "AliLog.h"
 #include <TObjArray.h>
@@ -188,7 +185,6 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
   fArray->AddAt(obj, idx);
 
 }
-    
  
 void  AliOADBContainer::AddDefaultObject(TObject* obj)
 {
@@ -221,7 +217,7 @@ Int_t AliOADBContainer::GetIndexForRun(Int_t run) const
   if (found > 1) {
     AliError(Form("More than one (%5d) object found; return last (%5d) !\n", found, index));
   } else if (index == -1) {
-    AliWarning(Form("No object found for run %5d !\n", run));
+    AliWarning(Form("No object (%s) found for run %5d !\n", GetName(), run));
   }
   
   return index;
@@ -236,7 +232,7 @@ TObject* AliOADBContainer::GetObject(Int_t run, const char* def) const
     // no object found, try default
     obj = fDefaultList->FindObject(def);
     if (!obj) {
-      AliError("Default Object not found !\n");
+      AliError(Form("Default Object (%s) not found !\n", GetName()));
       return (0);
     } else {
       return (obj);
@@ -272,7 +268,7 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
     file->GetObject(key, cont);
     if (!cont)
     {
-	AliError("Object not found in file \n");	
+      AliError(Form("Object (%s) not found in file \n", GetName()));	
 	return 1;
     }
 
