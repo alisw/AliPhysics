@@ -94,6 +94,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
 ,fEvtSelMaxJetEta( 999.)
 ,fEvtSelMinJetPhi(0.)
 ,fEvtSelMaxJetPhi(TMath::Pi()*2.)
+,fExtraEffPb(1)
 ,fToyMinNbOfTracks(1)
 ,fToyMaxNbOfTracks(1)
 ,fToyMinTrackPt(50.)
@@ -178,6 +179,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 ,fEvtSelMaxJetEta( 999.)
 ,fEvtSelMinJetPhi(0.)
 ,fEvtSelMaxJetPhi(TMath::Pi()*2.)
+,fExtraEffPb(1)
 ,fToyMinNbOfTracks(1)
 ,fToyMaxNbOfTracks(1)
 ,fToyMinTrackPt(50.)
@@ -262,6 +264,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
 ,fEvtSelMaxJetEta(copy.fEvtSelMaxJetEta)
 ,fEvtSelMinJetPhi(copy.fEvtSelMinJetPhi)
 ,fEvtSelMaxJetPhi(copy.fEvtSelMaxJetPhi)
+,fExtraEffPb(copy.fExtraEffPb)
 ,fToyMinNbOfTracks(copy.fToyMinNbOfTracks)
 ,fToyMaxNbOfTracks(copy.fToyMaxNbOfTracks)
 ,fToyMinTrackPt(copy.fToyMinTrackPt)
@@ -349,6 +352,7 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
       fEvtSelMaxJetEta   = o.fEvtSelMaxJetEta;
       fEvtSelMinJetPhi   = o.fEvtSelMinJetPhi;
       fEvtSelMaxJetPhi   = o.fEvtSelMaxJetPhi;
+      fExtraEffPb        = o.fExtraEffPb;
       fToyMinNbOfTracks  = o.fToyMinNbOfTracks;
       fToyMaxNbOfTracks  = o.fToyMaxNbOfTracks;
       fToyMinTrackPt     = o.fToyMinTrackPt;
@@ -824,7 +828,8 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
             if(fEmbedMode==kAODFull)      tmpTr = fAODevent->GetTrack(it);
             if(fEmbedMode==kAODJetTracks) tmpTr = dynamic_cast<AliAODTrack*>(leadJet->GetRefTracks()->At(it));
             if(!tmpTr) continue;
-
+            Double_t rd=rndm->Uniform(0.,1.);
+            if(rd>fExtraEffPb) continue; 
             tmpTr->SetStatus(AliESDtrack::kEmbedded);
 
             new ((*tracks)[nAODtracks++]) AliAODTrack(*tmpTr); 
