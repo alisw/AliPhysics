@@ -70,6 +70,8 @@ public:
     
     void SetIonsAnalysis(Bool_t isIonsFlag ){ fIsIonsAnalysis = isIonsFlag; }
     void SetEtAnalysis(Bool_t isEtAnalysisFlag ){ fEtInsteadOfPt = isEtAnalysisFlag; }
+    void SetUsePhiShufflingByHand(Bool_t usePhiShufflingByHand ){ fUsePhiShufflingByHand = usePhiShufflingByHand; }
+    void SetUseToyEvents(Bool_t useToyEvents ){ fUseToyEvents = useToyEvents; }
     void SetArtificialInefficiencyCoeff( Double_t artificialInefficiencyCoeff ) { fArtificialInefficiency = artificialInefficiencyCoeff; }   //Sets coeff for artificial inefficiency
 
     //void SetNumberOfPhiSectorsByHand( Int_t numberOfPhiSectorsByHand ) { fNumberOfPhiSectorsByHand = numberOfPhiSectorsByHand; }
@@ -109,7 +111,20 @@ public:
     Bool_t GetFlagWatchV0 () {  return fFlagWatchV0 ; }
     Bool_t GetFlagWatchFMD() {  return fFlagWatchFMD; }
 
-    enum enTaskObjectParameters { kMaxParticlesNumber = 10000, kMaxLRCprocArrayPointers = 1000 }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)
+    void FillLRCProcessors( int nTracks, Double_t eventCentrality );
+    void ProfilePhiByHand( int numberOfAcceptedTracksForLRC );
+
+
+    inline void FixAngleInTwoPi( Double_t &lPhi )
+    {
+        if ( lPhi > 2 * TMath::Pi() )
+            lPhi -= 2 * TMath::Pi();
+        else if ( lPhi < 0 )
+            lPhi += 2 * TMath::Pi();
+    }
+
+
+    enum enTaskObjectParameters { kMaxParticlesNumber = 1000, kMaxLRCprocArrayPointers = 10000 }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)
 
 protected:
     void SetParticleTypeToProcessors( int windowId, char* strPid );
@@ -121,14 +136,8 @@ protected:
     Int_t fAODtrackCutBit;//track cut bit from track selection (only used for AODs)
 
     Int_t fNumberOfPhiSectors; // n of phi rotations
-    AliLRCBase *fLRCprocArrayPointers[kMaxLRCprocArrayPointers];
+//    AliLRCBase *fLRCprocArrayPointers[kMaxLRCprocArrayPointers];
 
-    //arrays with data for LRC processors
-    float fArrayTracksPt[kMaxParticlesNumber];
-    float fArrayTracksEta[kMaxParticlesNumber];
-    float fArrayTracksPhi[kMaxParticlesNumber];
-    Short_t fArrayTracksCharge[kMaxParticlesNumber];
-    Int_t fArrayTracksPID[kMaxParticlesNumber];
 
 
     // Array with different track cuts to remember in simple event Tree
@@ -175,11 +184,13 @@ protected:
     TH1I *fHistAODTrackStats;  //! AOD track bits statistics
 
 
-    TH1D *fHistVx;  //!Vx hist
-    TH1D *fHistVy;  //!Vy hist
-    TH1D *fHistVz;  //!Vz hist
+    TH1D *fHistVx;  //! Vx hist
+    TH1D *fHistVy;  //! Vy hist
+    TH1D *fHistVz;  //! Vz hist
 
-    TH1I *fHistVertexNconributors;  //!vertex contributors number
+    TH1I *fHistVertexNconributors;  //! vertex contributors number
+    TH1I *fHistNumberOfPileupVerticesTracks;  //! number of pileup verteces in event (ESD or AOD) by tracks
+    TH1I *fHistNumberOfPileupVerticesSPD;  //! number of pileup verteces in event (ESD or AOD) by SPD
 
     TH2F *fHistEventPlane; //event plane distribution
 
@@ -188,7 +199,11 @@ protected:
     TH1F *fHistEta; //! Overal Eta spectrum
     TH1F *fHistPhi; //! Overal Phi spectrum
     TH2D *fHistEtaPhi;       //! 2D plot for checking acceptance
-    
+    TH1F *fHistPhiLRCrotationsCheck; //! Overal Phi spectrum for LRC rotations
+    TH1F *fHistPhiArtificialProfilingCheck; //! hist for the check of profiled phi
+    TH1F *fHistPhiArtificialProfilingCheckWrtEvPlane; //! hist for the check of profiled phi wrt event plane
+    TH1F *fHistPhiArtificialEvPlane; //! hist artificial event plane
+
     TH2D *fHistEtaVsZvCoverage; //! Statistics on tracks Zv and Eta for all tracks
     TH2D *fHistEtaVsZvCoverageAccepted; //!  Statistics on tracks Zv and Eta for accepted tracks
 
@@ -267,6 +282,9 @@ protected:
     Bool_t fIsIonsAnalysis; //Ions analysis flag
     Bool_t fEtInsteadOfPt; //pass the Et instead of Pt to LRC processors
 
+    Bool_t fUsePhiShufflingByHand; //flag for manual suffling of tracks phi
+    Bool_t fUseToyEvents; //flag for manual suffling of tracks phi
+
     Int_t fTmpCounter; //! TMP
 
     const AliPIDResponse *fPIDResponse;     //! PID response object
@@ -302,6 +320,15 @@ protected:
 
 
     TStopwatch *fAnalysisTimer;
+
+
+    //arrays with data for LRC processors
+    Double_t fArrayTracksPt[kMaxParticlesNumber];
+    Double_t fArrayTracksEta[kMaxParticlesNumber];
+    Double_t fArrayTracksPhi[kMaxParticlesNumber];
+    Short_t fArrayTracksCharge[kMaxParticlesNumber];
+    Int_t fArrayTracksPID[kMaxParticlesNumber];
+
 
     //test MC particles
 //    TH1D *fHistMCvertexRdeltaFromParent;  //!MC R hist
@@ -343,7 +370,7 @@ protected:
     //    TTree *fEventTree;              //! event tree to write into output file
     //    Bool_t fSetIncludeEventTreeInOutput;    // flag to use event tree or not
 
-    ClassDef(AliAnalysisTaskLRC, 10 );
+    ClassDef(AliAnalysisTaskLRC, 11 );
 };
 
 #endif

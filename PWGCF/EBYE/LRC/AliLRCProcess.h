@@ -303,7 +303,7 @@ private:
     //LRCparticleType fWhichParticleToProcess; // ! LRC processor sense only this type of particles (-1 by default)
     //LRCpidFillCondition fPidFillCondition;
 
-    ClassDef(AliLRCProcess, 2);
+    ClassDef(AliLRCProcess, 3);
 };
 
 #endif
