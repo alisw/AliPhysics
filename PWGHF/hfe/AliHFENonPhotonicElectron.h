@@ -120,6 +120,8 @@ class AliHFENonPhotonicElectron : public TNamed {
   THnSparseF		*fIncElectron;			//! centrality, pt, Source MC, P, TPCsignal
   THnSparseF		*fUSign;			//! delta phi, c, pt, inv, source
   THnSparseF		*fLSign;			//! delta phi, c, pt, inv, source
+  THnSparseF    *fUSmatches;  //! number of matched tracks with oposite sign per inclusive track after inv mass cut
+  THnSparseF    *fLSmatches;  //! number of matched tracks with same sign per inclusive track after inv mass cut
 //  THnSparseF		*fUSignAngle;			//! angle, c, source
 //  THnSparseF		*fLSignAngle;			//! angle, c, source
 
