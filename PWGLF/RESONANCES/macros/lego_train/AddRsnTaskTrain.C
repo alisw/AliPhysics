@@ -11,6 +11,7 @@ AliAnalysisTask *AddRsnTaskTrain(const char *commonStr,const char *rsnStr,const 
    // or like we are using it now
    //    return AddRsnTask(rsnStr,rsnCutStr,"");
 
+   Printf ("Running AddRsnTaskTrain(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\")",commonStr,rsnStr,rsnCutStr,rsnQualityCutStr.Data(),extraMacro.Data(),extraMacroArgs.Data());
    Bool_t valid;
    AliAnalysisManager::GetGlobalStr("LegoTrainPath",valid);
    if (!valid) {
