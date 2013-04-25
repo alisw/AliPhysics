@@ -191,7 +191,7 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   Bool_t   DeuteronPID(AliVTrack *trackP, AliVTrack *trackN, Double_t ptotP, Double_t ptotN, Int_t runNumber, Bool_t isDeuteron[3]);
   Bool_t   PionPID(AliVTrack *trackP, AliVTrack *trackN, Double_t ptotP, Double_t ptotN, Int_t runNumber, Bool_t isPion[2]);
   Bool_t   TrackCuts(AliVTrack *track, Bool_t testTrackCuts);
-  Bool_t   FilterBit(AliVTrack *track, Bool_t testFilterBit);
+  //Bool_t   FilterBit(AliVTrack *track, Bool_t testFilterBit);
   Double_t MomentumInnerParam(AliVTrack *track, Double_t ptot);
 
  
