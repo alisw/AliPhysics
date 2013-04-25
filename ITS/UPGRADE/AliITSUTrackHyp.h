@@ -48,6 +48,7 @@ class AliITSUTrackHyp: public AliKalmanTrack
   UChar_t          fNLayers;               // number of layers
   Int_t            fITSLabel;              // ITS MC Label, the global one (wrt TPC) is fLab
   AliESDtrack*     fESDTrack;              // reference esd track
+  AliITSUSeed*     fWinner;                // winner seed
   TObjArray*       fLayerSeeds;            // seeds of given layer
   //
   ClassDef(AliITSUTrackHyp,1)

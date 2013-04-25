@@ -90,6 +90,7 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 AddSeedBranch(AliITSUSeed* seed);
   void                   ValidateAllowedBranches(Int_t accMax);
   void                   ValidateAllowedCandidates(Int_t ilr, Int_t accMax);
+  void                   FlagSeedClusters(const AliITSUSeed* seed, Bool_t flg);
   //
   AliITSUSeed*           NewSeedFromPool(const AliITSUSeed* src=0);
   void                   ResetSeedsPool();
@@ -137,8 +138,10 @@ class AliITSUTrackerGlo : public AliTracker {
   Int_t                           fLastSeedID;     //! id of the pool seed on which is returned by the NextFreeSeed method
   //
   TObjArray                       fDefTrackConds;  //! default tracking conditions
-  AliITSUTrackCond*               fCurrTrackCond;  // current tracking condition
-  Int_t                           fTrackPhase;     // tracking phase
+  AliITSUTrackCond*               fCurrTrackCond;  //! current tracking condition
+  Int_t                           fCurrActLrID;    //! current active layer ID being processed (set only when needed, not guaranteed)
+  AliITSURecoLayer*               fCurrLayer;      //! current layer being processed  (set only when needed, not guaranteed)
+  Int_t                           fTrackPhase;     //! tracking phase
   Int_t*                          fClInfo;         //! auxiliary track cluster info
   //
   static const Double_t           fgkToler;        // tracking tolerance
@@ -147,7 +150,7 @@ class AliITSUTrackerGlo : public AliTracker {
   // this code is only for special histos needed to extract some control parameters
   void BookControlHistos();
   TObjArray* fCHistoArr;
-  enum {kHResY=0,kHResYP=10,kHResZ=20,kHResZP=30,kHChi2Cl=40};
+  enum {kHResY=0,kHResYP=10,kHResZ=20,kHResZP=30,kHChi2Cl=40,kHChi2Nrm=50,kHBestInBranch=60,kHBestInCand=70};
   enum {kHistosPhase=100};
   //
 #endif

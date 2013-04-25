@@ -220,7 +220,7 @@ void AliITSURecoLayer::Build()
   } // ladders
   //
 }
-
+///*
 //______________________________________________________
 Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *sensors[AliITSURecoSens::kNNeighbors])
 {
@@ -274,7 +274,7 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *senso
   //
   return nsens;
 }
-
+//*/
 /*
 Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *sensors[AliITSURecoSens::kNNeighbors],int mcLab)
 {

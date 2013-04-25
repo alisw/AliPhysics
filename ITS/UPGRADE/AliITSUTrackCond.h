@@ -34,6 +34,7 @@ class AliITSUTrackCond : public TObject
   ~AliITSUTrackCond() {}
   
   void        SetNLayers(Int_t nl);
+  void        SetClSharing(Int_t lr, Char_t v=0)   {fClSharing[lr] = v;}
   void        SetMaxBranches(Int_t lr, Int_t mb)   {fMaxBranches[lr] = mb;}
   void        SetMaxCandidates(Int_t lr, Int_t nc) {fMaxCandidates[lr] = nc;}
   void        SetID(Int_t id)                      {SetUniqueID(id);}
@@ -54,6 +55,7 @@ class AliITSUTrackCond : public TObject
   void        SetNSigmaRoadY(Int_t lr,  Float_t v)           {fNSigmaRoadY[lr] = v;}
   void        SetNSigmaRoadZ(Int_t lr,  Float_t v)           {fNSigmaRoadZ[lr] = v;}
   //
+  Char_t      GetClSharing(Int_t lr)                   const {return fClSharing[lr];}
   Float_t     GetMissPenalty(Int_t lr)                 const {return fMissPenalty[lr];}
   Float_t     GetMaxTr2ClChi2(Int_t lr)                const {return fMaxTr2ClChi2[lr];}
   Float_t     GetNSigmaRoadY(Int_t lr)                 const {return fNSigmaRoadY[lr];}
@@ -67,6 +69,7 @@ class AliITSUTrackCond : public TObject
   //
   Bool_t      fInitDone;                 // initialization flag
   Int_t       fNLayers;                  // total number of layers
+  Char_t*     fClSharing;                // [fNLayers] is cluster sharing allowed
   Short_t*    fMaxBranches;              // [fNLayers] max allowed branches per seed on each layer
   Short_t*    fMaxCandidates;            // [fNLayers] max allowed candidates per TPC seed on each layer
   Float_t*    fMaxTr2ClChi2;             // [fNLayers] max track-to-cluster chi2
@@ -78,6 +81,7 @@ class AliITSUTrackCond : public TObject
   TArrayS     fConditions;               // fNConditions  set of conditions
   TArrayS     fAuxData;                  // condition beginning (1st group), n groups, min clus
   //
+  static Char_t  fgkClSharing;           // def cl.sharing allowed level
   static Int_t   fgkMaxBranches;          // def max number of branches per seed on current layer 
   static Int_t   fgkMaxCandidates;        // def max number of total candidates on current layer 
   static Float_t fgkMaxTr2ClChi2;         // def track-to-cluster chi2 cut

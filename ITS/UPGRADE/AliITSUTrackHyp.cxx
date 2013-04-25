@@ -12,6 +12,7 @@ AliITSUTrackHyp::AliITSUTrackHyp(Int_t nlr)
 : fNLayers(nlr)
   ,fITSLabel(0)
   ,fESDTrack(0)
+  ,fWinner(0)
   ,fLayerSeeds(0)
 {
   // def. c-tor
@@ -31,9 +32,10 @@ AliITSUTrackHyp::AliITSUTrackHyp(const AliITSUTrackHyp &src)
   , fNLayers(src.fNLayers)
   , fITSLabel(src.fITSLabel)
   , fESDTrack(src.fESDTrack)
+  , fWinner(0)
   , fLayerSeeds(0)
 {
-  // copy c-tor
+  // copy c-tor. Note: it is shallow
   if (fNLayers>0) {
     fLayerSeeds = new TObjArray[fNLayers];
     for (int ilr=fNLayers;ilr--;) {
@@ -44,6 +46,7 @@ AliITSUTrackHyp::AliITSUTrackHyp(const AliITSUTrackHyp &src)
 	AddSeed(sd,ilr);
       }      
     }
+    fWinner = src.fWinner;
   }
   //
 }
@@ -70,7 +73,7 @@ void AliITSUTrackHyp::Print(Option_t* ) const
 AliITSUSeed* AliITSUTrackHyp::GetWinner() const
 {
   // Get best candidate. TODO
-  return fLayerSeeds[0].GetEntriesFast()>0 ? GetSeed(0,0) : 0;
+  return fWinner;
 }
 
 //__________________________________________________________________
@@ -78,11 +81,11 @@ AliITSUSeed* AliITSUTrackHyp::DefineWinner(int lr, int id)
 {
   // assign best candidate
   if (GetNSeeds(lr)<=id) return 0;
-  AliITSUSeed* winner = GetSeed(lr,id);
-  this->AliExternalTrackParam::operator=(*winner);
-  SetChi2(winner->GetChi2GloNrm());
-  SetNumberOfClusters(winner->GetNLayersHit());
-  return winner;
+  fWinner = GetSeed(lr,id);
+  this->AliExternalTrackParam::operator=(*fWinner);
+  SetChi2(fWinner->GetChi2GloNrm());
+  SetNumberOfClusters(fWinner->GetNLayersHit());
+  return fWinner;
 }
 
 //__________________________________________________________________
