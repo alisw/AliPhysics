@@ -71,7 +71,7 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,in
 {
   // Default constructor, sizes in cm
   if (nchips) SetUniqueID( AliITSUGeomTGeo::ComposeDetTypeID(id) );
-  fChipDZ = (fNColPerChip-2)*fPitchZ;
+  fChipDZ = (fNColPerChip-2)*fPitchZ + fPitchZLftCol + fPitchZRgtCol;;
   fDxActive = fNRow*fPitchX;
   fDzActive = fNChips*fChipDZ;
   SetDetSize( fDxActive + fGuardTop+fGuardBot,
