@@ -18,9 +18,11 @@ class AliITSUTrackHyp: public AliKalmanTrack
   AliITSUTrackHyp &operator=(const AliITSUTrackHyp &src);
   virtual ~AliITSUTrackHyp();
   //
+  void               InitFrom(const AliITSUTrackHyp *src);
   Int_t              GetNLayers()        const {return fNLayers;}
   Int_t              GetNSeeds(Int_t lr) const {return fLayerSeeds[lr].GetEntriesFast();}
   AliITSUSeed*       GetSeed(Int_t lr, Int_t id) const {return (AliITSUSeed*)fLayerSeeds[lr].UncheckedAt(id);}
+  AliITSUSeed*       RemoveSeed(Int_t lr, Int_t id) const {return (AliITSUSeed*)fLayerSeeds[lr].RemoveAt(id);}
   AliITSUSeed*       GetWinner()         const;
   AliESDtrack*       GetESDTrack()       const {return fESDTrack;}
   Int_t              GetITSLabel()       const {return fITSLabel;}

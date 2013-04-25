@@ -24,9 +24,7 @@ class AliITSUTrackCond : public TObject
 {
  public:
   enum {kCondStart,kNGroups,kMinClus,kNAuxSz};
-  enum {kMaxBranches=50,kMaxCandidates=500};     // max number of branches one can create for single seed on any layer (except branch w/o cl. attached)
-  
-
+  //
   AliITSUTrackCond(Int_t nLayers=0);
   AliITSUTrackCond(const AliITSUTrackCond& src);
   AliITSUTrackCond &operator=(const AliITSUTrackCond& src);

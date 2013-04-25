@@ -2,6 +2,7 @@
 #include "AliESDtrack.h"
 #include "AliCluster.h"
 #include "AliITSUAux.h"
+#include <TString.h>
 
 ClassImp(AliITSUTrackHyp)
 
@@ -50,6 +51,16 @@ AliITSUTrackHyp::AliITSUTrackHyp(const AliITSUTrackHyp &src)
   }
   //
 }
+//__________________________________________________________________
+void AliITSUTrackHyp::InitFrom(const AliITSUTrackHyp *src)
+{
+  // copy initial params
+  fNLayers = src->fNLayers;
+  fITSLabel = src->fITSLabel;
+  fESDTrack = src->fESDTrack;
+  fWinner = src->fWinner;
+  //
+}
 
 //__________________________________________________________________
 AliITSUTrackHyp &AliITSUTrackHyp::operator=(const AliITSUTrackHyp &src)
@@ -63,10 +74,20 @@ AliITSUTrackHyp &AliITSUTrackHyp::operator=(const AliITSUTrackHyp &src)
 }
 
 //__________________________________________________________________
-void AliITSUTrackHyp::Print(Option_t* ) const
+void AliITSUTrackHyp::Print(Option_t* opt) const
 {
   printf("Track Hyp.#%4d. NSeeds:",GetUniqueID());
-  for (int i=0;i<fNLayers;i++) printf(" (%d) %3d",i,GetNSeeds(i)); printf("\n");
+  TString opts = opt;
+  opts.ToLower();
+  Bool_t prSeeds = opts.Contains("l");
+  for (int i=0;i<fNLayers;i++) {
+    printf("Lr (%d) %3d ",i,GetNSeeds(i)); 
+    if (prSeeds) {
+      printf("\n");
+      for (int isd=0;isd<GetNSeeds(i);isd++) ((AliITSUSeed*)GetSeed(i,isd))->Print(opt);
+    }
+  }
+  if (!prSeeds) printf("\n");
 }
 
 //__________________________________________________________________

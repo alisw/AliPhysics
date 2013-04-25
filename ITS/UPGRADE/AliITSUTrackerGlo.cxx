@@ -60,13 +60,17 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fCountITSout(0)
   ,fCountITSrefit(0)
   ,fHypStore(100)
+  ,fLayerMaxCandidates(1000)
+  ,fLayerCandidates(0)
   ,fNBranchesAdded(0)
   ,fNCandidatesAdded(0)
   ,fCurrHyp(0)
+  ,fWorkHyp(0)
   ,fSeedsPool("AliITSUSeed",0)
   ,fFreeSeedsID(0)
   ,fNFreeSeeds(0)
   ,fLastSeedID(0)
+  ,fNLrActive(0)
   ,fDefTrackConds(0)
   ,fCurrTrackCond(0)
   ,fCurrActLrID(-1)
@@ -110,9 +114,12 @@ void AliITSUTrackerGlo::Init(AliITSUReconstructor* rec)
   // init with external reconstructor
   //
   fITS = rec->GetITSInterface();
-  int nLr = fITS->GetNLayersActive();
-  fClInfo = new Int_t[nLr<<1];
+  fNLrActive = fITS->GetNLayersActive();
+  fClInfo = new Int_t[fNLrActive*2];
+  fWorkHyp = new AliITSUTrackHyp(fNLrActive);
   //
+  if (fLayerMaxCandidates<1) fLayerMaxCandidates = 1000;
+  fLayerCandidates = new AliITSUSeed*[fLayerMaxCandidates];
   fSeedsPool.ExpandCreateFast(1000); // RS TOCHECK
   fFreeSeedsID.Set(1000);
   //
@@ -122,13 +129,11 @@ void AliITSUTrackerGlo::Init(AliITSUReconstructor* rec)
 void AliITSUTrackerGlo::CreateDefaultTrackCond()
 {
   // creates default tracking conditions to be used when recoparam does not provide them
-  int nLr = fITS->GetNLayersActive();
-  fClInfo = new Int_t[nLr<<1];
-  //
+
   AliITSUTrackCond* cond = new AliITSUTrackCond();
   //
-  cond->SetNLayers(fITS->GetNLayersActive());
-  cond->AddNewCondition(nLr);
+  cond->SetNLayers(fNLrActive);
+  cond->AddNewCondition(fNLrActive);
   cond->AddGroupPattern( 0xffff ); // require all layers hit
   cond->Init();
   //
@@ -209,7 +214,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
       AliLog::SetClassDebugLevel("AliITSUTrackerGlo",dbg ? 10:0);
       */
 
-      AliDebug(1,Form("Processing track %d | M=%.3f Pt=%.3f | MCLabel: %d",itr,fCurrESDtrack->GetMass(kTRUE),fCurrESDtrack->Pt(),fCurrESDtrMClb));//RS
+      AliDebug(-1,Form("Processing track %d | M=%.3f Pt=%.3f | MCLabel: %d",itr,fCurrESDtrack->GetMass(kTRUE),fCurrESDtrack->Pt(),fCurrESDtrMClb));//RS
       FindTrack(fCurrESDtrack, itr);
     }   
     //
@@ -405,27 +410,28 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
   AliITSUSeed seedUC;  // copy of the seed from the upper layer
   AliITSUSeed seedT;   // transient seed between the seedUC and new prolongation hypothesis
   //
-  if (!InitHypothesis(esdTr,esdID)) return;  // initialize prolongations hypotheses tree
+  AliITSUTrackHyp* hypTr = InitHypothesis(esdTr,esdID);  // initialize prolongations hypotheses tree
+  fCurrHyp = fWorkHyp;
+  fCurrHyp->InitFrom(hypTr);
   //
   AliITSURecoSens *hitSens[AliITSURecoSens::kNNeighbors+1];
   //
   TObjArray clArr; // container for transfer of clusters matching to seed
   //
-  int nLrActive = fITS->GetNLayersActive();
-  for (int ila=nLrActive;ila--;) {
+  for (int ila=fNLrActive;ila--;) {
     fCurrActLrID = ila;
     fCurrLayer = fITS->GetLayerActive(ila);
     Bool_t noClSharing = fCurrTrackCond->GetClSharing(ila)==0;
     int ilaUp = ila+1;                         // prolong seeds from layer above
     //
     // for the outermost layer the seed is created from the ESD track
-    int nSeedsUp = (ilaUp==nLrActive) ? 1 : fCurrHyp->GetNSeeds(ilaUp);
+    int nSeedsUp = (ilaUp==fNLrActive) ? 1 : fCurrHyp->GetNSeeds(ilaUp);
     int maxNBranches   = fCurrTrackCond->GetMaxBranches(ila);
     int maxNCandidates = fCurrTrackCond->GetMaxCandidates(ila);
     //
     for (int isd=0;isd<nSeedsUp;isd++) {
       AliITSUSeed* seedU;
-      if (ilaUp==nLrActive) {
+      if (ilaUp==fNLrActive) {
 	seedU = 0;
 	seedUC.InitFromESDTrack(esdTr);
       }
@@ -540,35 +546,40 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
       AliITSUSeed* sp = fCurrHyp->GetSeed(ila,ih);
       while(sp->GetParent()) {
 	sp->Smooth(vecL,matL);
-	if (sp->GetLayerID()>=fITS->GetNLayersActive()-1) break;
+	if (sp->GetLayerID()>=fNLrActive-1) break;
 	sp = (AliITSUSeed*)sp->GetParent();
       }
       */
   }
   //
-  SaveCurrentTrackHypotheses();
+  SaveReducedHypothesesTree(hypTr);
+  if (AliDebugLevelClass()>1) {
+    printf("\nSaved hypotheses for esdTrack %d (MCLab:%d)\n",esdID,fCurrESDtrMClb);
+    hypTr->Print("l");
+  }
+  fCurrHyp = 0;
   //
 }
 
 //_________________________________________________________________________
-Bool_t AliITSUTrackerGlo::InitHypothesis(AliESDtrack *esdTr, Int_t esdID)
+AliITSUTrackHyp* AliITSUTrackerGlo::InitHypothesis(AliESDtrack *esdTr, Int_t esdID)
 {
   // init prolongaion candidates finding for single seed
-  fCurrHyp = GetTrackHyp(esdID);
-  if (fCurrHyp) return kTRUE;
+  AliITSUTrackHyp* hyp = GetTrackHyp(esdID);
+  if (hyp) return hyp;
   //
   fCountProlongationTrials++;
   //
   fCurrMass = esdTr->GetMass();
   if (fCurrMass<kPionMass*0.9) fCurrMass = kPionMass; // don't trust to mu, e identification from TPCin
   //
-  fCurrHyp = new AliITSUTrackHyp(fITS->GetNLayersActive());
-  fCurrHyp->SetESDTrack(esdTr);
-  fCurrHyp->SetUniqueID(esdID);
-  fCurrHyp->SetMass(fCurrMass);
-  SetTrackHyp(fCurrHyp,esdID);
+  hyp = new AliITSUTrackHyp(fNLrActive);
+  hyp->SetESDTrack(esdTr);
+  hyp->SetUniqueID(esdID);
+  hyp->SetMass(fCurrMass);
+  SetTrackHyp(hyp,esdID);
   //
-  return kTRUE;
+  return hyp;
   // TO DO
 }
 
@@ -1086,16 +1097,6 @@ Bool_t AliITSUTrackerGlo::PropagateSeed(AliExternalTrackParam *seed, Double_t xT
 }
 
 //______________________________________________________________________________
-void AliITSUTrackerGlo::SaveCurrentTrackHypotheses()
-{
-  // RS: shall we clean up killed seeds?
-  ((TObjArray*)fCurrHyp->GetLayerSeeds(0))->Sort();
-  fCurrHyp = 0;
-  // TODO
-  
-}
-
-//______________________________________________________________________________
 void AliITSUTrackerGlo::FinalizeHypotheses()
 {
   // select winner for each hypothesis, remove cl. sharing conflicts
@@ -1337,9 +1338,13 @@ void AliITSUTrackerGlo::CookMCLabel(AliITSUTrackHyp* hyp)
 Bool_t AliITSUTrackerGlo::AddSeedBranch(AliITSUSeed* seed)
 {
   // add new prolongation branch for the seed to temporary array. The seeds are sorted according to Compare f-n
-  if (fNCandidatesAdded+fNBranchesAdded>=AliITSUTrackCond::kMaxCandidates ) {
-    AliError(Form("Number of candidates for current seed reached limit of AliITSUTrackCond::kMaxCandidates=%d, increase it",AliITSUTrackCond::kMaxCandidates));
-    return kFALSE;
+  if (fNCandidatesAdded+fNBranchesAdded>=fLayerMaxCandidates ) {
+    AliInfo(Form("Number of candidates at layer %d for current seed reached %d, increasing buffer",fCurrActLrID,fLayerMaxCandidates));
+    fLayerMaxCandidates = 2*(fLayerMaxCandidates+1);
+    AliITSUSeed** tmpArr = fLayerCandidates;
+    fLayerCandidates = new AliITSUSeed*[fLayerMaxCandidates];
+    memcpy(fLayerCandidates,tmpArr,(fNCandidatesAdded+fNBranchesAdded)*sizeof(AliITSUSeed*));
+    delete tmpArr; // delete only array, not objects
   }
   AliITSUSeed** branches = &fLayerCandidates[fNCandidatesAdded]; // note: fNCandidatesAdded is incremented after adding all branches of current seed
   int slot=fNBranchesAdded++;
@@ -1396,8 +1401,16 @@ void AliITSUTrackerGlo::ValidateAllowedCandidates(Int_t ilr, Int_t acceptMax)
   // transfer allowed number of branches to hypothesis container
   //
   // sort candidates in increasing order of chi2
-  Int_t index[AliITSUTrackCond::kMaxCandidates];
-  Float_t chi2[AliITSUTrackCond::kMaxCandidates];
+  static int lastSize = 0;
+  static int *index = 0;
+  static float *chi2 = 0;
+  if (fLayerMaxCandidates>lastSize) {
+    lastSize = fLayerMaxCandidates;
+    delete[] index;
+    delete[] chi2;
+    index = new int[lastSize];
+    chi2  = new float[lastSize];
+  }
   for (int i=fNCandidatesAdded;i--;) chi2[i] = fLayerCandidates[i]->GetChi2GloNrm();
   Sort(fNCandidatesAdded,chi2,index,kFALSE);
   //
@@ -1430,10 +1443,36 @@ void AliITSUTrackerGlo::ValidateAllowedCandidates(Int_t ilr, Int_t acceptMax)
 }
 
 //__________________________________________________________________
+void AliITSUTrackerGlo::SaveReducedHypothesesTree(AliITSUTrackHyp* dest)
+{
+  // remove those hypothesis seeds which dont lead to candidates at final layer
+  //
+  // 1st, flag the seeds to save
+  int lr0 = 0;
+  for (int isd=0;isd<fCurrHyp->GetNSeeds(lr0);isd++) {
+    AliITSUSeed* seed = fCurrHyp->RemoveSeed(lr0,isd);
+    if (!seed) continue;
+    seed->FlagTree(AliITSUSeed::kSave);
+    dest->AddSeed(seed,lr0);
+  }
+  for (int ilr=1;ilr<fNLrActive;ilr++) {
+    int nsd = fCurrHyp->GetNSeeds(ilr);
+    for (int isd=0;isd<nsd;isd++) {
+      AliITSUSeed* seed = fCurrHyp->RemoveSeed(ilr,isd);
+      if (!seed) continue; // already discarded or saved
+      if (seed->IsSaved()) dest->AddSeed(seed,ilr);
+      else MarkSeedFree(seed);
+    }
+  }
+  //
+  //  AliInfo(Form("SeedsPool: %d, BookedUpTo: %d, free: %d",fSeedsPool.GetSize(),fSeedsPool.GetEntriesFast(),fNFreeSeeds));
+}
+
+//__________________________________________________________________
 void AliITSUTrackerGlo::FlagSplitClusters()
 {
   // set special bit on split clusters using MC info
-  for (int ilr=fITS->GetNLayersActive();ilr--;) {
+  for (int ilr=fNLrActive;ilr--;) {
     int nsplit=0;
     AliITSURecoLayer* lr = fITS->GetLayerActive(ilr);
     for (int isn=lr->GetNSensors();isn--;) {
@@ -1518,10 +1557,9 @@ void AliITSUTrackerGlo::BookControlHistos()
     const int nchbins=200;
     const int maxBr  = 15;
     const int maxCand = 200;
-    int nblr = fITS->GetNLayersActive();
     TString ttl;
     for (int stp=0;stp<kNTrackingPhases;stp++) {
-      for (int ilr=0;ilr<nblr;ilr++) {
+      for (int ilr=0;ilr<fNLrActive;ilr++) {
 	int hoffs = stp*kHistosPhase + ilr;
 	double mxdf = ilr>=kNResDef ? kResDef[kNResDef-1] : kResDef[ilr];
 	ttl = Form("S%d_residY%d",stp,ilr);

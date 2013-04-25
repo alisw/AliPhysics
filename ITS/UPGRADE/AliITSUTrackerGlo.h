@@ -68,7 +68,7 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   Init(AliITSUReconstructor* rec);
   void                   FindTrack(AliESDtrack* esdTr, Int_t esdID);
   void                   CreateDefaultTrackCond();
-  Bool_t                 InitHypothesis(AliESDtrack *esdTr, Int_t esdID);
+  AliITSUTrackHyp*       InitHypothesis(AliESDtrack *esdTr, Int_t esdID);
   Bool_t                 TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo);
   Bool_t                 TransportToLayer(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo);
   Bool_t                 TransportToLayerX(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo, Double_t xStop);  
@@ -99,7 +99,7 @@ class AliITSUTrackerGlo : public AliTracker {
   AliITSUTrackHyp*       GetTrackHyp(Int_t id)               const  {return (AliITSUTrackHyp*)fHypStore.UncheckedAt(id);}
   void                   SetTrackHyp(AliITSUTrackHyp* hyp,Int_t id) {fHypStore.AddAtAndExpand(hyp,id);}
   void                   DeleteLastSeedFromPool()                   {fSeedsPool.RemoveLast();}
-  void                   SaveCurrentTrackHypotheses();
+  void                   SaveReducedHypothesesTree(AliITSUTrackHyp* dest);
   void                   FinalizeHypotheses();
   void                   UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag);
   void                   CookMCLabel(AliITSUTrackHyp* hyp);
@@ -128,14 +128,17 @@ class AliITSUTrackerGlo : public AliTracker {
   //
   // the seeds management to be optimized
   TObjArray                       fHypStore;       // storage for tracks hypotheses
-  AliITSUSeed*                    fLayerCandidates[AliITSUTrackCond::kMaxCandidates]; // array for branches of current track prolongation
+  Int_t                           fLayerMaxCandidates; //! size of tmp candidates array 
+  AliITSUSeed**                   fLayerCandidates;//! array for branches of current track prolongation
   Int_t                           fNBranchesAdded; // number of branches created for current seed in prolongation
   Int_t                           fNCandidatesAdded; // number of candidates added for current seed in prolongation
-  AliITSUTrackHyp*                fCurrHyp;        // hypotheses container for current track
+  AliITSUTrackHyp*                fCurrHyp;        //! hypotheses container for current track
+  AliITSUTrackHyp*                fWorkHyp;        //! temporary hypothesis for track finding
   TClonesArray                    fSeedsPool;      //! pool for seeds
   TArrayI                         fFreeSeedsID;    //! array of ID's of freed seeds
   Int_t                           fNFreeSeeds;     //! number of seeds freed in the pool
   Int_t                           fLastSeedID;     //! id of the pool seed on which is returned by the NextFreeSeed method
+  Int_t                           fNLrActive;      //! number of active layers
   //
   TObjArray                       fDefTrackConds;  //! default tracking conditions
   AliITSUTrackCond*               fCurrTrackCond;  //! current tracking condition
