@@ -29,7 +29,8 @@ enum {
  knormalizationtoeventspassingPhySel=0x8,
  kveretxcorrectionandbadchunkscorr=0x10,
  kmcisusedasdata=0x20,
- kdonotusedcacuts=0x40		
+ kdonotusedcacuts=0x40,
+ kuseprimaryPIDcont=0x80			
 };	
 
 Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag,Bool_t mcasdata=false);
@@ -93,6 +94,7 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	TH1F* contWD[6];
 	TH1F* contMat[6];
 	TH1F* confinal[6];
+	TH1F* contPIDpri[6];
 	
 	TH1F* contfit[12];
 	TH1F* contWDfit[12];
@@ -114,7 +116,8 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	GetPtHistFromPtDCAhisto("hHistPtRecTrue","conPID",managermc,contPID,dcacutxy);
 	GetPtHistFromPtDCAhisto("hHistPtRecSigmaSecondaryWeakDecay","conWD",managermc,contWD,dcacutxy);
 	GetPtHistFromPtDCAhisto("hHistPtRecSigmaSecondaryMaterial","conMat",managermc,contMat,dcacutxy);
-	
+	GetPtHistFromPtDCAhisto("hHistPtRecSigmaPrimary","conPIDprimary",managermc,contPIDpri,dcacutxy);
+
 	
 //	Double_t neventsdata =  ecutsdata->NumberOfEvents();
 	Double_t neventsmcall = 1 ;  //if loop over MC is done after or befor events cuts this will be changed 
@@ -213,7 +216,13 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		RecomputeErrors(contallMC[i]);
 		contallMC[i]->Sumw2(); 
 		contallMC[i]->Divide(contallMC[i],rawspectramc[i],1,1,"B");
-		
+	
+		// contamintaion from PID but only primaries
+		contPIDpri[i]->Add(eff[i],-1.0);
+		RecomputeErrors(contPIDpri[i]);
+		contPIDpri[i]->Divide(contPIDpri[i],rawspectramc[i],1,1,"B");
+
+	
 		eff[i]->Divide(eff[i],MCTruth[i],1,1,"B");
 		
 		
@@ -224,9 +233,12 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		contPID[i]->ResetStats();
 		contPID[i]->Sumw2();
 		contPID[i]->Divide(contPID[i],rawspectramc[i],1,1,"B");
+	
+		if(options&kuseprimaryPIDcont)
+			confinal[i]=(TH1F*)contPIDpri[i]->Clone(Form(tmpname.Data(),"confinal"));
+		else	
+			confinal[i]=(TH1F*)contPID[i]->Clone(Form(tmpname.Data(),"confinal"));
 		
-		confinal[i]=(TH1F*)contPID[i]->Clone(Form(tmpname.Data(),"confinal"));
-
 
 		contWD[i]->Divide(contWD[i],rawspectramc[i],1,1,"B");
 		contMat[i]->Divide(contMat[i],rawspectramc[i],1,1,"B");
@@ -259,15 +271,18 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		lout->Add(spectra[i]);
 		lout->Add(spectraLeonardo[i]);
 		lout->Add(confinal[i]);
+		lout->Add(contPIDpri[i]);
 	}
-	TFile* fout=new TFile(Form("./results/ResMY_%s_%s.root",outnamemc.Data(),outdate.Data()),"RECREATE");
+	outdate.ReplaceAll("/","_");
+	TFile* fout=new TFile(Form("./results/ResMY_%s_%s_%#X.root",outnamemc.Data(),outdate.Data(),options),"RECREATE");
 	if (options&kdodca)
 		DCACorrectionMarek(managerdata,managermc,dcacutxy,fout,contfit,contWDfit,contMatfit,primaryfit);
 	for (int i=0;i<6;i++)
 	{
 			if(options&kdodca)
 			{
-				confinal[i]->Add(contfit[i]);
+				if((options&kuseprimaryPIDcont)||(i!=1&&i!=4)) //if we do not use cont PId only for primary  and this is a kaon that do not use fit
+					confinal[i]->Add(contfit[i]);
 				GetCorrectedSpectra(spectra[i],rawspectradata[i],eff[i],confinal[i]);
 			}
 			else
@@ -275,8 +290,16 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 				GetCorrectedSpectra(spectra[i],rawspectradata[i],eff[i],contallMC[i]);	
 			}
 			GetCorrectedSpectraLeonardo(spectraLeonardo[i],corrLeonardo[i],primaryfit[i],primaryfit[i+6]);
-			CleanHisto(spectra[i],-1,100,contPID[i]);
-			CleanHisto(spectraLeonardo[i],-1,100,contPID[i]);				
+			if(options&kuseprimaryPIDcont)
+			{
+				CleanHisto(spectra[i],-1,100,contPIDpri[i]);
+				CleanHisto(spectraLeonardo[i],-1,100,contPIDpri[i]);		
+			}
+			else
+			{
+				CleanHisto(spectra[i],-1,100,contPID[i]);
+				CleanHisto(spectraLeonardo[i],-1,100,contPID[i]);
+			}				
 	}
 	
 	GFCorrection(spectra,tcutsdata->GetPtTOFMatching(),options);
@@ -434,32 +457,13 @@ void GetPtHistFromPtDCAhisto(TString hnamein, TString hnameout, AliSpectraBothHi
 		for(Int_t ipart=0;ipart<3;ipart++)
 		{
 			Int_t index=ipart+3*icharge;
-			//TString hname=Form("hHistPtRecSigma%s%s",Particle[ipart].Data(),Sign[icharge].Data());
 			printf("Getting %s",hnamein.Data());
 			TString nameinfinal=Form("%s%s%s",hnamein.Data(),Particle[ipart].Data(),Sign[icharge].Data());
 			TString nameoutfinal=Form("%s%s%s",hnameout.Data(),Particle[ipart].Data(),Sign[icharge].Data());
 			
 			
 			histo[index]=GetOneHistFromPtDCAhisto(nameinfinal,nameoutfinal,hman,dcacutxy);
-			/*histo[index] =(TH1F*)((TH1F*) hman->GetPtHistogram1D(Form("%s%s%s",hnamein.Data(),Particle[ipart].Data(),Sign[icharge].Data()),-1,-1))->Clone();
-			histo[index]->SetName(Form("%s%s%s",hnameout.Data(),Particle[ipart].Data(),Sign[icharge].Data()));
-			histo[index]->SetTitle(Form("%s%s%s",hnameout.Data(),Particle[ipart].Data(),Sign[icharge].Data()));
-		  
-			if(dcacutxy)
-			{
-				for(int ibin=1;ibin<histo[index]->GetNbinsX();ibin++)
-				{
-					Double_t lowedge=histo[index]->GetBinLowEdge(ibin);
-					Float_t cut=dcacutxy->Eval(lowedge);
-					TH1F* dcahist=(TH1F*)hman->GetDCAHistogram1D(Form("%s%s%s",hnamein.Data(),Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge));
-					Float_t inyield=dcahist->Integral(dcahist->GetXaxis()->FindBin(-1.0*cut),dcahist->GetXaxis()->FindBin(cut));
-					cout<<"corr data "<<histo[index]->GetBinContent(ibin)<<" "<<inyield<<" "<<dcahist->Integral()<<endl;
-					histo[index]->SetBinContent(ibin,inyield);
-					histo[index]->SetBinError(ibin,TMath::Sqrt(inyield));
-				}
-			}*/
 			CleanHisto(histo[index],min[ipart],max[ipart]);
-			// histo[index]->Sumw2();
 		}
 	} 
 }
@@ -489,16 +493,8 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
   printf("\n\n-> DCA Correction");  
   Double_t FitRange[2]={-2.0,2.0};
   Double_t CutRange[2]={-3.0,3.0};
-  Double_t minptformaterial[6]={0.0,100.0,0.0,0.0,100.0,0.0};
-  Double_t maxptformaterial[6]={0.0,-100.0,1.3,0.0,-100.0,0.0};
-  Bool_t usefit[3]={true,false,true};
-  Double_t maxbinforfit[6]={1.5,0,2.0,1.5,0,2.0};
+ 
   Printf("\DCACorr");
- // TH1F *hcorrection[2];
- /* TCanvas *ccorrection=new TCanvas("DCAcorrection","DCAcorrection",700,500);
-  TCanvas *cRatiocorrection=new TCanvas("DCARatiocorrection","DCARatiocorrection",700,500);
-  cRatiocorrection->Divide(2,1);
-  ccorrection->Divide(2,1);*/
   TString sample[2]={"data","mc"};
   ofstream debug("debugDCA.txt");
   TList* listofdcafits=new TList();
@@ -510,8 +506,6 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 			for(Int_t isample=0;isample<2;isample++)
 			{
 
-				/*hcorrection[isample]=(TH1F*)Spectra[index]->Clone();
-				hcorrection[isample]->Reset("all");*/
 				for(Int_t ibin_data=7;ibin_data<40;ibin_data++)
 				{	
 						
@@ -524,13 +518,11 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						CutRange[0]=-1.0*CutRange[1];
 					}	
 					debug<<"cut  "<<CutRange[1]<<" "<<CutRange[0]<<endl;		
-					Bool_t useMaterial=kFALSE;
-					cout<<"try to fit "<<lowedge<<" "<<maxbinforfit[index]<<endl;
-					if(lowedge>maxbinforfit[index])
-						continue;
-					if(lowedge>minptformaterial[index]&&lowedge<maxptformaterial[index])
-						useMaterial=kTRUE;
-	  
+	     				Short_t fitsettings=DCAfitsettings(lowedge+0.5*binwidth,index);
+					debug<<"settings "<< fitsettings<<endl;
+					if(fitsettings==0)
+						continue;	
+						
 					TCanvas *cDCA=new TCanvas(Form("cDCA%d%s%s%sbin%d",index,sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),ibin_data),Form("cDCA%d%s%s%sbin%d",index,sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),ibin_data),1700,1500);
 					if(isample==0)
 						TH1F *hToFit =(TH1F*) ((TH1F*)hman_data->GetDCAHistogram1D(Form("hHistPtRecSigma%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
@@ -541,50 +533,55 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					TH1F *hmc2=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryWeakDecay%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
 					TH1F *hmc3=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryMaterial%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
 					Double_t minentries=1;
-					debug<<" Entries "<<isample<<" "<<hToFit->GetEntries()<<" "<<hmc1->GetEntries()<<" "<<hmc2->GetEntries()<<" "<<hmc3->GetEntries()<<endl;
-					debug<<"2 Entries "<<isample<<" "<<hToFit->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))<<" "<<hmc1->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))<<" "<<hmc2->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))<<" "<<hmc3->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))<<endl;
-					debug<< CutRange[0]<<" "<<CutRange[1]<<" "<<lowedge<<endl;
-					if(hToFit->GetEntries()<=minentries || hmc1->GetEntries()<=minentries || hmc2->GetEntries()<=minentries || hmc3->GetEntries()<=minentries)
+					debug<<hToFit->GetEntries()<<" "<<hmc1->GetEntries()<<" "<<hmc2->GetEntries()<<" "<<hmc3->GetEntries()<<endl;
+					debug<<((fitsettings&0x1)&&hmc2->GetEntries()<=minentries)<<" "<<((fitsettings&0x2)&&hmc3->GetEntries()<=minentries)<<endl;
+					if(hToFit->GetEntries()<=minentries || hmc1->GetEntries()<=minentries || ((fitsettings&0x1)&&hmc2->GetEntries()<=minentries) || ((fitsettings&0x2)&&hmc3->GetEntries()<=minentries))
 						continue;
-					//Data and MC can have different stat
 					hToFit->Sumw2();
 					hmc1->Sumw2();
 					hmc2->Sumw2();
 					hmc3->Sumw2();
 					
 					Float_t corrforrebinning[4]={1.0,1.0,1.0,1.0};	
+					Int_t binCutRange[]={hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1])};			
+
 					
-	
 					if(hmc3->GetNbinsX()>300)
 					{
 					
-						corrforrebinning[0]=hToFit->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]));
-						corrforrebinning[1]=hmc1->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]));
-						corrforrebinning[2]=hmc2->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]));
-						corrforrebinning[3]=hmc3->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]));
+						corrforrebinning[0]=hToFit->Integral(binCutRange[0],binCutRange[1]);
+						corrforrebinning[1]=hmc1->Integral(binCutRange[0],binCutRange[1]);
+						corrforrebinning[2]=hmc2->Integral(binCutRange[0],binCutRange[1]);
+						corrforrebinning[3]=hmc3->Integral(binCutRange[0],binCutRange[1]);
 
 						hToFit->Rebin(30);
 						hmc1->Rebin(30);
 						hmc2->Rebin(30);
 						hmc3->Rebin(30);
-						if(hToFit->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))>0.0)
-							corrforrebinning[0]=corrforrebinning[0]/hToFit->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]));
+
+						binCutRange[0]=hmc1->GetXaxis()->FindBin(CutRange[0]);
+						binCutRange[1]=hmc1->GetXaxis()->FindBin(CutRange[1]);
+
+
+						//after rebbing we lose resolution of the dca this correction also us to do obtain inside used dca
+
+						if(hToFit->Integral(binCutRange[0],binCutRange[1])>0.0)
+							corrforrebinning[0]=corrforrebinning[0]/hToFit->Integral(binCutRange[0],binCutRange[1]);
 						else	
 							corrforrebinning[0]=1.0;
-						if(hmc1->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))>0.0)
-							corrforrebinning[1]=corrforrebinning[1]/hmc1->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]));
+						if(hmc1->Integral(binCutRange[0],binCutRange[1])>0.0)
+							corrforrebinning[1]=corrforrebinning[1]/hmc1->Integral(binCutRange[0],binCutRange[1]);
 						else	
 							corrforrebinning[1]=1.0;
-						if(hmc2->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))>0.0)
-							corrforrebinning[2]=corrforrebinning[2]/hmc2->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]));
+						if(hmc2->Integral(binCutRange[0],binCutRange[1])>0.0)
+							corrforrebinning[2]=corrforrebinning[2]/hmc2->Integral(binCutRange[0],binCutRange[1]);
 						else	
 							corrforrebinning[2]=1.0;
-						if(hmc3->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))>0.0)
-							corrforrebinning[3]=corrforrebinning[3]/hmc3->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]));
+						if(hmc3->Integral(binCutRange[0],binCutRange[1])>0.0)
+							corrforrebinning[3]=corrforrebinning[3]/hmc3->Integral(binCutRange[0],binCutRange[1]);
 						else	
 							corrforrebinning[3]=1.0;
 							
-						debug<<" cor bin "<<corrforrebinning[0]<<" "<<corrforrebinning[1]<<" "<<corrforrebinning[2]<<" "<<corrforrebinning[3]<<endl;
 
 
 					}
@@ -595,114 +592,121 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					gPad->SetLogy();
 	 
 					TObjArray *mc=0x0;
-					if(useMaterial)
+					if(fitsettings==3)
 						mc = new TObjArray(3);        // MC histograms are put in this array
 					else
 						mc = new TObjArray(2);
+
+						
 					mc->Add(hmc1);
-					mc->Add(hmc2);
-					if(useMaterial)
+					if(fitsettings&0x1)
+						mc->Add(hmc2);
+					if(fitsettings&0x2)
 						mc->Add(hmc3);
 					TFractionFitter* fit = new TFractionFitter(hToFit,mc); // initialise
 					fit->Constrain(0,0.0,1.0);               // constrain fraction 1 to be between 0 and 1
-					fit->Constrain(1,0.0,1.0);               // constrain fraction 1 to be between 0 and 1
-					if(useMaterial)
-						fit->Constrain(2,0.0,1.0);               // constrain fraction 1 to be between 0 and 1
-					fit->SetRangeX(hToFit->GetXaxis()->FindBin(FitRange[0]),hToFit->GetXaxis()->FindBin(FitRange[1]));
-					hToFit->GetXaxis()->SetRange(hToFit->GetXaxis()->FindBin(FitRange[0]),hToFit->GetXaxis()->FindBin(FitRange[1]));
+					if(fitsettings&0x1)
+						fit->Constrain(1,0.0,1.0);               // constrain fraction 1 to be between 0 and 1
+					if(fitsettings&0x2)
+						fit->Constrain(1+(fitsettings&0x1),0.0,1.0);               // constrain fraction 1 to be between 0 and 1
+					
+					Int_t binFitRange[]={hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1])};			
+					fit->SetRangeX(binFitRange[0],binFitRange[1]);
+					hToFit->GetXaxis()->SetRange(binFitRange[0],binFitRange[1]);
 					hToFit->SetTitle(Form("DCA distr - %s %s %s %lf",sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),lowedge));
 					Int_t status = fit->Fit();               // perform the fit
 					cout << "fit status: " << status << endl;
 					debug<<"fit status: " << status << endl;
 		
-					if (status == 0 && usefit[ipart])
-					{ 	                   // check on fit status
+					if (status == 0)
+					{ 	
+						Double_t v1=0.0,v2=0.0,v3=0.0;
+						Double_t ev1=0.0,ev2=0.0,ev3=0.0;
+						Double_t cov=0.0;
+						                   
+						// check on fit status
 						TH1F* result = (TH1F*) fit->GetPlot();
 						TH1F* PrimMCPred=(TH1F*)fit->GetMCPrediction(0);
-						TH1F* secStMCPred=(TH1F*)fit->GetMCPrediction(1);
+						
+						TH1F* secStMCPred=0X0;
 					
 						TH1F* secMCPred=0x0;
-						if(useMaterial)
-							secMCPred=(TH1F*)fit->GetMCPrediction(2);
 	    
-						Double_t v1=0,v2=0,v3=0;
-						Double_t ev1=0,ev2=0,ev3=0;
-						Double_t cov=0.0;
 						//first method, use directly the fit result
 						fit->GetResult(0,v1,ev1);
-						fit->GetResult(1,v2,ev2);
-						if(useMaterial)
+
+						if(fitsettings&0x1)
 						{
-							fit->GetResult(2,v3,ev3);
-							fit->GetFitter()->GetCovarianceMatrixElement(1,2);
+							fit->GetResult(1,v2,ev2);
+							secStMCPred=(TH1F*)fit->GetMCPrediction(1);
+
 						}
-						debug<<v1<<" "<<ev1<<" "<<v2<<" "<<ev2<<" "<<v3<<" "<<ev3<<" "<<endl;
-					
-	    
-	   
-						Float_t normalizationdata=hToFit->Integral(hToFit->GetXaxis()->FindBin(CutRange[0]),hToFit->GetXaxis()->FindBin(CutRange[1]))/hToFit->Integral(hToFit->GetXaxis()->FindBin(FitRange[0]),hToFit->GetXaxis()->FindBin(FitRange[1]));
+						if(fitsettings&0x2)
+						{
+							fit->GetResult(1+(fitsettings&0x1),v3,ev3);
+							secMCPred=(TH1F*)fit->GetMCPrediction(1+(fitsettings&0x1));
+							if(fitsettings&0x1)
+								cov=fit->GetFitter()->GetCovarianceMatrixElement(1,2);
+
+
+						}
 						
-						Float_t normalizationmc1=hmc1->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/hmc1->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))/normalizationdata;
-						Float_t normalizationmc2=hmc2->Integral(hmc2->GetXaxis()->FindBin(CutRange[0]),hmc2->GetXaxis()->FindBin(CutRange[1]))/hmc2->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc2->GetXaxis()->FindBin(FitRange[1]))/normalizationdata;
-						Float_t normalizationmc3=hmc3->Integral(hmc3->GetXaxis()->FindBin(CutRange[0]),hmc3->GetXaxis()->FindBin(CutRange[1]))/hmc3->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc3->GetXaxis()->FindBin(FitRange[1]))/normalizationdata;
+					
+						debug<<v1<<" "<<ev1<<" "<<v2<<" "<<ev2<<" "<<v3<<" "<<ev3<<" "<<" "<<cov<<endl;
+					
+	    					// becuase dca cut range is not a fit range the results from TFractionFitter should be rescale
+						// This can be done in two ways or use input histograms or output histograms
+						// The difference between those two methods should be on the level of statistical error	 	
+	   					// I use output histograms 
+						
+ 						// Method 1 input histo 	
+
+						Float_t normalizationdata=hToFit->Integral(hToFit->GetXaxis()->FindBin(CutRange[0]),hToFit->GetXaxis()->FindBin(CutRange[1]))/hToFit->Integral(binFitRange[0],binFitRange[1]);
+						normalizationdata*=corrforrebinning[0];
+
+						Float_t normalizationmc1=(hmc1->Integral(binCutRange[0],binCutRange[1])/hmc1->Integral(binFitRange[0],binFitRange[1]))/normalizationdata;
+						Float_t normalizationmc2=0.0;
+						if(fitsettings&0x1)
+							normalizationmc2=(hmc2->Integral(binCutRange[0],binCutRange[1])/hmc2->Integral(binFitRange[0],binFitRange[1]))/normalizationdata;
+						Float_t normalizationmc3=0.0;
+						if(fitsettings&0x2)
+							normalizationmc3=(hmc3->Integral(binCutRange[0],binCutRange[1])/hmc3->Integral(binFitRange[0],binFitRange[1]))/normalizationdata;
+
+						normalizationmc1*=corrforrebinning[1];
+						normalizationmc2*=corrforrebinning[2];
+						normalizationmc3*=corrforrebinning[3];
+
 						debug<<"After Nor"<<endl;
 						debug<<v1*normalizationmc1<<" "<<ev1*normalizationmc1<<" "<<v2*normalizationmc2<<" "<<ev2*normalizationmc2<<" "<<v3*normalizationmc3<<" "<<ev3*normalizationmc3<<" "<<endl;
 						debug<<1.0-v1*normalizationmc1<<" "<<ev1*normalizationmc1<<" "<<v2*normalizationmc2+v3*normalizationmc3<<" "<<TMath::Sqrt(ev2*ev2*normalizationmc2*normalizationmc2+ev3*ev3*normalizationmc3*normalizationmc3+cov*normalizationmc3*normalizationmc2)<<endl;
 						debug<<"addtional info"<<endl;
-						Float_t normalizationmc1b=(hmc1->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/hmc1->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1])))/normalizationdata;
-
-						debug<<normalizationmc1<<" "<<normalizationmc1b<<endl;
-						debug<<hmc1->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/hmc1->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<" "<<secStMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/secStMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<endl;
-						//debug<<hmc1->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<" "<<secStMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<endl;
-						debug<<hmc2->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/hmc2->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<" "<<PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<endl;
-						//debug<<hmc2->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<" "<<PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))<<endl;
-						if(PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))>0.0)
-						{
-						if(useMaterial)
-						{
-							debug<<" ITSsa "<<endl;
-							debug<<PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/(PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))+secStMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1]))+secMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1])))<<endl;
-						}			
-						else
-						{
-							debug<<" ITSsa "<<endl;
-							debug<<PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))/(PrimMCPred->Integral(hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1]))+secStMCPred->Integral(hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1])))<<endl;
-		
-						}
-						}
-						else 
-						{
-							debug<<" ITSsa "<<endl;
-							debug<<" NO "<<endl;
-						}
 
 
+					       //Method 2 output histo		
 
-						Float_t normalizationdata1=result->Integral(result->GetXaxis()->FindBin(CutRange[0]),result->GetXaxis()->FindBin(CutRange[1]))/result->Integral(result->GetXaxis()->FindBin(FitRange[0]),result->GetXaxis()->FindBin(FitRange[1]));
+						Float_t normalizationdata1=result->Integral(binCutRange[0],binCutRange[1])/result->Integral(binFitRange[0],binFitRange[1]);
 						
 
 						normalizationdata1*=corrforrebinning[0];
 
 
-						Float_t normalizationmc11=PrimMCPred->Integral(PrimMCPred->GetXaxis()->FindBin(CutRange[0]),PrimMCPred->GetXaxis()->FindBin(CutRange[1]))/PrimMCPred->Integral(PrimMCPred->GetXaxis()->FindBin(FitRange[0]),PrimMCPred->GetXaxis()->FindBin(FitRange[1]))/normalizationdata1;
-						Float_t normalizationmc21=secStMCPred->Integral(secStMCPred->GetXaxis()->FindBin(CutRange[0]),secStMCPred->GetXaxis()->FindBin(CutRange[1]))/secStMCPred->Integral(secStMCPred->GetXaxis()->FindBin(FitRange[0]),secStMCPred->GetXaxis()->FindBin(FitRange[1]))/normalizationdata1;
-						Float_t normalizationmc31=0;
-						if(useMaterial)
-							normalizationmc31=secMCPred->Integral(secMCPred->GetXaxis()->FindBin(CutRange[0]),secMCPred->GetXaxis()->FindBin(CutRange[1]))/secMCPred->Integral(secMCPred->GetXaxis()->FindBin(FitRange[0]),secMCPred->GetXaxis()->FindBin(FitRange[1]))/normalizationdata1;
+						Float_t normalizationmc11=(PrimMCPred->Integral(binCutRange[0],binCutRange[1])/PrimMCPred->Integral(binFitRange[0],binFitRange[1]))/normalizationdata1;
+						Float_t normalizationmc21=0.0;
+						if(fitsettings&0x1)
+							normalizationmc21=(secStMCPred->Integral(binCutRange[0],binCutRange[1])/secStMCPred->Integral(binFitRange[0],binFitRange[1]))/normalizationdata1;
+						Float_t normalizationmc31=0.0;
+						if(fitsettings&0x2)
+							normalizationmc31=(secMCPred->Integral(binCutRange[0],binCutRange[1])/secMCPred->Integral(binFitRange[0],binFitRange[1]))/normalizationdata1;
 						
 						normalizationmc11*=corrforrebinning[1];
 						normalizationmc21*=corrforrebinning[2];
 						normalizationmc31*=corrforrebinning[3];
 
-				debug<<"After Nor 2"<<endl;
+						debug<<"After Nor 2"<<endl;
 						debug<<v1*normalizationmc11<<" "<<ev1*normalizationmc11<<" "<<v2*normalizationmc21<<" "<<ev2*normalizationmc21<<" "<<v3*normalizationmc31<<" "<<ev3*normalizationmc31<<endl;
 						
 						debug<<1.0-v1*normalizationmc11<<" "<<ev1*normalizationmc11<<" "<<v2*normalizationmc21+v3*normalizationmc31<<" "<<TMath::Sqrt(ev2*ev2*normalizationmc21*normalizationmc21+ev3*ev3*normalizationmc31*normalizationmc31+cov*normalizationmc31*normalizationmc21)<<endl;
 					
-						debug<<CutRange[0]<<" "<<CutRange[1]<<endl;		
-						debug<<" Entries "<<isample<<" "<<hToFit->GetEntries()<<" "<<hmc1->GetEntries()<<" "<<hmc2->GetEntries()<<" "<<hmc3->GetEntries()<<endl;
-						debug<<"2 Entries "<<isample<<" "<<hToFit->Integral(result->GetXaxis()->FindBin(CutRange[0]),result->GetXaxis()->FindBin(CutRange[1]))<<" "<<hmc1->Integral(result->GetXaxis()->FindBin(CutRange[0]),result->GetXaxis()->FindBin(CutRange[1]))<<" "<<hmc2->Integral(result->GetXaxis()->FindBin(CutRange[0]),result->GetXaxis()->FindBin(CutRange[1]))<<" "<<hmc3->Integral(result->GetXaxis()->FindBin(CutRange[0]),result->GetXaxis()->FindBin(CutRange[1]))<<endl;
-
 						
 						hconWD[index+6*isample]->SetBinContent(ibin_data,v2*normalizationmc21);
 						hconWD[index+6*isample]->SetBinError(ibin_data,ev2*normalizationmc21);
@@ -710,16 +714,8 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						hconMat[index+6*isample]->SetBinError(ibin_data,ev3*normalizationmc31);
 						hprimary[index+6*isample]->SetBinContent(ibin_data,v1*normalizationmc11);
 						hprimary[index+6*isample]->SetBinError(ibin_data,ev1*normalizationmc11);
-						if(useMaterial)
-						{
-							hcon[index+6*isample]->SetBinContent(ibin_data,v2*normalizationmc21+v3*normalizationmc31);
-							hcon[index+6*isample]->SetBinError(ibin_data,TMath::Sqrt(ev2*ev2*normalizationmc21*normalizationmc21+ev3*ev3*normalizationmc31*normalizationmc31+cov*normalizationmc31*normalizationmc21));
-						}
-						else
-						{
-							hcon[index+6*isample]->SetBinContent(ibin_data,v2*normalizationmc21);
-							hcon[index+6*isample]->SetBinError(ibin_data,ev2*normalizationmc21);
-						}
+						hcon[index+6*isample]->SetBinContent(ibin_data,v2*normalizationmc21+v3*normalizationmc31);
+						hcon[index+6*isample]->SetBinError(ibin_data,TMath::Sqrt(ev2*ev2*normalizationmc21*normalizationmc21+ev3*ev3*normalizationmc31*normalizationmc31+cov*normalizationmc31*normalizationmc21));
 						
 						
 						
@@ -727,26 +723,32 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						result->Scale(1.0/result->Integral(result->GetXaxis()->FindBin(FitRange[0]),result->GetXaxis()->FindBin(FitRange[1])));
 						hToFit->Scale(1.0/hToFit->Integral(hToFit->GetXaxis()->FindBin(FitRange[0]),hToFit->GetXaxis()->FindBin(FitRange[1])));
 						PrimMCPred->Scale(v1/PrimMCPred->Integral(PrimMCPred->GetXaxis()->FindBin(FitRange[0]),PrimMCPred->GetXaxis()->FindBin(FitRange[1])));
-						secStMCPred->Scale(v2/secStMCPred->Integral(secStMCPred->GetXaxis()->FindBin(FitRange[0]),secStMCPred->GetXaxis()->FindBin(FitRange[1])));
-						if(useMaterial)
-							secMCPred->Scale(v3/secMCPred->Integral(secMCPred->GetXaxis()->FindBin(FitRange[0]),secMCPred->GetXaxis()->FindBin(FitRange[1])));	    
-						   
-						result->SetLineColor(kBlack);
-						PrimMCPred->SetLineColor(kGreen+2);
-						secStMCPred->SetLineColor(kRed);
-						
+
 						hToFit->SetMinimum(0.0001);
 						hToFit->DrawClone("E1x0");
 						result->SetTitle("Fit result");
+						result->SetLineColor(kBlack);
 						result->DrawClone("lhistsame");
+					
+						PrimMCPred->SetLineColor(kGreen+2);
 						PrimMCPred->DrawClone("lhistsame");
-						secStMCPred->DrawClone("lhistsame");
-						if(useMaterial)
+						if(fitsettings&0x1)
 						{
+
+							secStMCPred->Scale(v2/secStMCPred->Integral(secStMCPred->GetXaxis()->FindBin(FitRange[0]),secStMCPred->GetXaxis()->FindBin(FitRange[1])));
+							secStMCPred->SetLineColor(kRed);
+							secStMCPred->DrawClone("lhistsame");
+
+						}
+						if(fitsettings&0x2)
+						{
+							
+							secMCPred->Scale(v3/secMCPred->Integral(secMCPred->GetXaxis()->FindBin(FitRange[0]),secMCPred->GetXaxis()->FindBin(FitRange[1])));
 							secMCPred->SetLineColor(kBlue);	
 							secMCPred->DrawClone("lhistsame");
-						}
-					}
+	    
+						}   
+					}				
 					else
 					{
 						hconWD[index+6*isample]->SetBinContent(ibin_data,0.0);
@@ -830,8 +832,13 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	  	gGFCorrectionKaonMinus->SetTitle("gGFCorrectionKaonMinus");
 	 	 TString fnameGeanFlukaK="GFCorrection/correctionForCrossSection.321.root";
   	  	TFile *fGeanFlukaK= new TFile(fnameGeanFlukaK.Data());
-	  	if (!fGeanFlukaK)		
-			return;
+	  	if (!fGeanFlukaK)
+		{
+			fnameGeanFlukaK="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/GFCorrection/correctionForCrossSection.321.root";
+			fGeanFlukaK= new TFile(fnameGeanFlukaK.Data());
+			if (!fGeanFlukaK)
+				return;
+		}
 	  	TH1F *hGeantFlukaKPos=(TH1F*)fGeanFlukaK->Get("gHistCorrectionForCrossSectionParticles");
 	  	TH1F *hGeantFlukaKNeg=(TH1F*)fGeanFlukaK->Get("gHistCorrectionForCrossSectionAntiParticles");
 	  	//getting GF func for Kaons with TOF
@@ -885,7 +892,18 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	  const Int_t kNCharge=2;
 	  Int_t kPos=0;
 	  Int_t kNeg=1;
-	  TFile* fGFProtons = new TFile ("GFCorrection/correctionForCrossSection.root");
+          TString fnameGFProtons= "GFCorrection/correctionForCrossSection.root"
+	  TFile* fGFProtons = new TFile (fnameGFProtons.Data());
+	  if (!fGFProtons)
+	  { 
+		fnameGFProtons=="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/GFCorrection/correctionForCrossSection.root";
+		TFile* fGFProtons = new TFile (fnameGFProtons.Data());
+		if (!fGFProtons)
+			return;
+	  }
+		
+
+
 	  TH2D * hCorrFluka[kNCharge];
 	  TH2D * hCorrFluka[2];
 	  hCorrFluka[kPos] = (TH2D*)fGFProtons->Get("gHistCorrectionForCrossSectionProtons");
@@ -1136,3 +1154,18 @@ void Divideby2pipt(TH1* hist)
 
 	}
 }
+
+Short_t DCAfitsettings (Float_t pt, Int_t type)
+{
+	 Double_t minptformaterial[6]={0.0,0.2,0.0,0.0,0.2,0.0};
+ 	 Double_t maxptformaterial[6]={0.0,0.6,1.3,0.0,0.6,0.0};
+	 Double_t minptforWD[6]={0.2,100.0,0.3,0.2,100.0,0.3};
+ 	 Double_t maxptforWD[6]={1.5,-100.0,2.0,1.5,-100.0,2.0};
+	Short_t value=0x0;
+	if (pt<maxptformaterial[type]&&pt>minptformaterial[type])
+		value=value+2;
+	if (pt<maxptforWD[type]&&pt>minptforWD[type])
+		value=value+1;
+	return value;	
+
+}  
