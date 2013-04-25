@@ -116,6 +116,23 @@ public:
   /// destructor
   ~AliHLTTPCDataCompressionComponent();
 
+  enum {
+    kCompressionModeNone=0,
+    kCompressionModeV1,
+    kCompressionModeV1TrackModel,
+    kCompressionModeV2,
+    kCompressionModeV2TrackModel,
+    kNofCompressionModes    
+  };
+
+  enum {
+    kDeflaterModeNone=0,
+    kDeflaterModeSimple,
+    kDeflaterModeHuffman,
+    kDeflaterModeHuffmanTrainer,
+    kNofDeflaterModes
+  };
+
   /// inherited from AliHLTComponent: id of the component
   virtual const char* GetComponentID();
 
