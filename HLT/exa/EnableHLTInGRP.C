@@ -32,10 +32,12 @@
  * 
  * @return true if the macro completed successfully and false otherwise.
  */
-bool EnableHLTInGRP(Int_t runNumber, const char* grpPath = "local://./")
+bool EnableHLTInGRP(Int_t runNumber,
+		    const char* cdbURI = "local://$ALICE_ROOT/OCDB",
+		    const char* grpPath = "local://./")
 {
 	AliCDBManager* cdb = AliCDBManager::Instance();
-	cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+	cdb->SetDefaultStorage(cdbURI);
 	cdb->SetSpecificStorage("GRP/GRP/Data", grpPath);
 	cdb->SetRun(runNumber);
 	AliCDBEntry* entry = (AliCDBEntry*)cdb->Get("GRP/GRP/Data")->Clone();
