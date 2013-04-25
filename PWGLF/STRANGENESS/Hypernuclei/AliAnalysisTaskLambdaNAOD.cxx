@@ -120,6 +120,8 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD()
   fMCtrue(0),
   fOnlyQA(0),
   fTriggerFired(),
+  fV0object(NULL),
+  fItrk(0),
   fOutputContainer(NULL)
 {
   // default Constructor
@@ -161,6 +163,8 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD(const char *name)
     fMCtrue(0),
     fOnlyQA(0),
     fTriggerFired(),
+    fV0object(NULL),
+    fItrk(0),
     fOutputContainer(NULL)
 {
   // Constructor
@@ -460,7 +464,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
   }
  
 
-  Int_t centrality = 0;
+  Int_t centrality = -1;
   Double_t vertex[3]          = {-100.0, -100.0, -100.0};
 
   //Initialisation of the event and basic event cuts:
@@ -497,12 +501,13 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	AliCentrality *esdCentrality = fESDevent->GetCentrality();
 	centrality = esdCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
 	if(!fMCtrue){
-	  if (centrality < 0 || centrality > 8 ) return; //select only events with centralities between 0 and 80 %
+	  if (centrality < 0. || centrality > 8. ) return; //select only events with centralities between 0 and 80 %
 	}
       }
 
-  // count number of events
-  fHistNumberOfEvents->Fill(centrality);
+    //cout << "centrality "<< centrality << endl;
+    // count number of events
+    fHistNumberOfEvents->Fill(centrality);
 
  }
 
@@ -565,7 +570,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 
    Bool_t v0ChargesCorrect = kTRUE;
    Bool_t testTrackCuts = kFALSE;
-   Bool_t testFilterBit = kFALSE;
+   //Bool_t testFilterBit = kFALSE;
 
    Int_t of = 7;
    Int_t onFlyStatus = 5;
@@ -991,12 +996,16 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 
       //Rotation for background calculation
       //Int_t rotation=1; // =1 signal, =2 Rotation of the pion , =3 Rotation of the deuteron
+
+      Double_t fStartAnglePhi=TMath::Pi();
+      Double_t fConeAnglePhi=TMath::Pi(); //-0.174;
+      phi  = fStartAnglePhi+(2*gRandom->Rndm()-1)*fConeAnglePhi;
      
       for(Int_t rotation=1;rotation<4;rotation++){ //loop for rotation
         
-	Double_t fStartAnglePhi=TMath::Pi();
-	Double_t fConeAnglePhi=TMath::Pi(); //-0.174;
-	phi  = fStartAnglePhi+(2*gRandom->Rndm()-1)*fConeAnglePhi;
+	//Double_t fStartAnglePhi=TMath::Pi();
+	//Double_t fConeAnglePhi=TMath::Pi(); //-0.174;
+	//phi  = fStartAnglePhi+(2*gRandom->Rndm()-1)*fConeAnglePhi;
           
 	//calculate new rotated momenta
 	momentumPionRot[0]=TMath::Cos(phi)*momentumPion[0]-TMath::Sin(phi)*momentumPion[1];
@@ -1483,7 +1492,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::TrackCuts(AliVTrack *track, Bool_t testTrackCu
   return testTrackCuts;
 }
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskLambdaNAOD::FilterBit(AliVTrack *track, Bool_t testFilterBit) {
+/*Bool_t AliAnalysisTaskLambdaNAOD::FilterBit(AliVTrack *track, Bool_t testFilterBit) {
 
   testFilterBit = kFALSE;
 
@@ -1494,7 +1503,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::FilterBit(AliVTrack *track, Bool_t testFilterB
   //if(testFilterBit == kTRUE) cout <<   "testFilterBit im test: " << testFilterBit<< endl;
 
   return testFilterBit;
-}
+  }*/
 //______________________________________________________________________
 void AliAnalysisTaskLambdaNAOD::MCGenerated(AliStack* stack) 
 { 
