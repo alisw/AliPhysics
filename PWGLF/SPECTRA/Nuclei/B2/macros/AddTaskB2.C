@@ -111,7 +111,7 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 	
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/CreateHistograms.C");
 	
-	AliLnHistoMap* hMap = CreateHistograms(species, simulation, maxDCAxy, maxEta, maxY, heavyIons);
+	AliLnHistoMap* hMap = CreateHistograms(species, simulation, maxDCAxy, maxEta, maxY, meanNtrk, heavyIons);
 	
 	task->SetHistogramMap(hMap);
 	
@@ -170,6 +170,7 @@ Double_t GetMeanNtrk(const TString& period, Double_t eta)
 		if(period =="lhc10e")       return 9.55678; // pass2
 		
 		// MC
+		if(period =="lhc10f6a")            return 7.15259;
 		if(period =="lhc10e21")            return 7.69483;
 	}
 	else // |eta|<0.5
@@ -217,6 +218,7 @@ Double_t GetNSDMeanNtrk(const TString& period, Double_t eta)
 		if(period =="lhc10e")       return 9.90511; // pass2
 		
 		// MC
+		if(period =="lhc10f6a")            return 7.5087;
 		if(period =="lhc10e21")            return 7.91423;
 	}
 	else // |eta|<0.5
