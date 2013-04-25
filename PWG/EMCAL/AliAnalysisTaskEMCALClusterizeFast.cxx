@@ -382,8 +382,6 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 	idigit++;
       }
 
-      //fDigitsArr->Sort();
-
       if (fSubBackground) {
 	avgE /= fGeom->GetNumberOfSuperModules()*48*24;
 	Int_t ndigis = fDigitsArr->GetEntries();
@@ -501,9 +499,9 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 //________________________________________________________________________________________
 void AliAnalysisTaskEMCALClusterizeFast::CalibrateClusters()
 {
-  // PROCESS SINGLE CLUSTER RECALIBRATION -------------------------------------
-  // now go through clusters one by one and process separate correction
+  // Go through clusters one by one and process separate correction
   // as those were defined or not
+
   Int_t nclusters = fCaloClusters->GetEntriesFast();
   for (Int_t icluster=0; icluster < nclusters; ++icluster) { 
     AliVCluster *clust = static_cast<AliVCluster*>(fCaloClusters->At(icluster));
