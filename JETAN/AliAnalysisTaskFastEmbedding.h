@@ -67,7 +67,7 @@ public:
    void SetEvtSelJetPtRange(Float_t minPt, Float_t maxPt) {fEvtSelMinJetPt = minPt; fEvtSelMaxJetPt = maxPt;}
    void SetEvtSelJetEtaRange(Float_t minEta, Float_t maxEta) {fEvtSelMinJetEta = minEta; fEvtSelMaxJetEta = maxEta;}
    void SetEvtSelJetPhiRange(Float_t minPhi, Float_t maxPhi) {fEvtSelMinJetPhi = minPhi; fEvtSelMaxJetPhi = maxPhi;}
-   
+      void SetEffExtra(Float_t effextra) {fExtraEffPb = effextra;}   
    void SetToyNumberOfTrackRange(Int_t minN = 1, Int_t maxN = 1){ fToyMinNbOfTracks = minN, fToyMaxNbOfTracks = maxN; }
    void SetToyTrackRanges(Double_t minPt = 50., Double_t maxPt = 50., Double_t ptDistr=0,
    Double_t minEta = -.5, Double_t maxEta = .5,
@@ -137,7 +137,7 @@ private:
    Float_t fEvtSelMaxJetEta;      // maximum eta of the leading jet
    Float_t fEvtSelMinJetPhi;      // minimum phi of the leading jet
    Float_t fEvtSelMaxJetPhi;      // maximum phi of the leading jet
-   
+   Double_t fExtraEffPb;          //extra efficiency PbPb      
    
    // settings for toy "track generation"
    Int_t    fToyMinNbOfTracks;             // minimum nb. of tracks per event
