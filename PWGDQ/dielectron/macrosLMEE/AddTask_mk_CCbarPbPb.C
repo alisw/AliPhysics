@@ -20,8 +20,8 @@ AliAnalysisTask *AddTask_mk_CCbarPbPb(TString prod="",ULong64_t triggers=AliVEve
   if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
   
   
-  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/Config_mk_CCbarPbPb.C");
-//  TString configFile("Config_mk_CCbarPbPb.C");
+TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/Config_mk_CCbarPbPb.C");
+//TString configFile("Config_mk_CCbarPbPb.C");
  
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
@@ -29,7 +29,7 @@ AliAnalysisTask *AddTask_mk_CCbarPbPb(TString prod="",ULong64_t triggers=AliVEve
    AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDie");
 
      //load dielectron configuration file
-    TString checkconfig="$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/Config_mk_CCbarPbPb";//for train
+TString checkconfig="$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/Config_mk_CCbarPbPb";
 //  TString checkconfig="ConfigCCbar_mk_pp";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
     gROOT->LoadMacro(configFile.Data());
@@ -52,7 +52,7 @@ AliAnalysisTask *AddTask_mk_CCbarPbPb(TString prod="",ULong64_t triggers=AliVEve
   task->SetEventFilter(eventCuts);
 
   // pileup rejection
-  task->SetTriggerMask(AliVEvent::kEMCEGA+AliVEvent::kEMCEJE);
+  task->SetTriggerMask(AliVEvent::kEMCEGA);
   task->UsePhysicsSelection();
    
   mgr->AddTask(task);
