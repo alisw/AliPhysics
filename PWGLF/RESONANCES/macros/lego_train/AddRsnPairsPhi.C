@@ -86,6 +86,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    Int_t useMixing = AliRsnTrainManager::GetGlobalInt("IsMixing",valid);
    Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
 
+   Int_t useMixLike = AliRsnTrainManager::GetGlobalInt("RsnMixLike",valid);
    Int_t useRapidity = AliRsnTrainManager::GetGlobalInt("RsnUseRapidity",valid);
 
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
@@ -115,11 +116,16 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    // [1] = mixing
    // [2] = like ++
    // [3] = like --
-   Bool_t  use     [5] = { 1      ,  useMixing      ,  1      ,  1      ,  isMC  };
-   TString name    [5] = {"Unlike", "Mixing", "LikePP", "LikeMM", "Trues"};
-   TString comp    [5] = {"PAIR"  , "MIX"   , "PAIR"  , "PAIR"  , "TRUE" };
-   Char_t  charge1 [5] = {'+'     , '+'     , '+'     , '-'     , '+'    };
-   Char_t  charge2 [5] = {'-'     , '-'     , '+'     , '-'     , '-'    };
+
+//   Bool_t useMixLike = kFALSE;
+//   useMixLike = kTRUE;
+
+   const Int_t numAxis = 7;
+   Bool_t  use     [numAxis] = { 1      ,  useMixing      ,  1      ,  1      ,  isMC  ,  useMixLike,  useMixLike};
+   TString name    [numAxis] = {"Unlike", "Mixing", "LikePP", "LikeMM", "Trues", "MixingPP", "MixingMM"};
+   TString comp    [numAxis] = {"PAIR"  , "MIX"   , "PAIR"  , "PAIR"  , "TRUE" , "MIX"   , "MIX"   };
+   Char_t  charge1 [numAxis] = {'+'     , '+'     , '+'     , '-'     , '+'    , '+'     , '-'     };
+   Char_t  charge2 [numAxis] = {'-'     , '-'     , '+'     , '-'     , '-'    , '+'     , '-'     };
 
    // common definitions
    TString outputType = "HIST";
@@ -134,6 +140,15 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    Int_t nCent = 20; Double_t minCent = 0.0, maxCent = 100.0;
    Int_t nRes  = 200; Double_t maxRes  = 0.01;
 
+   // in case pp
+   if (collisionType==0) {
+      nIM   = 150; minIM  = 0.975; maxIM  =  1.125;
+      nPt   = 160; minPt  = 0.0,   maxPt  = 8.0;
+      nEta  = 30;  minEta = -1.5;  maxEta =  1.5;
+      nY    = 3;   minY   = -1.5;  maxY   =  1.5;
+   }
+
+
    // retrieve mass from PDG database
    Int_t         pdg  = 333;
    TDatabasePDG *db   = TDatabasePDG::Instance();
@@ -142,7 +157,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
 
    Printf(suffix.Data());
    // create standard outputs
-   for (Int_t i = 0; i < 5; i++) {
+   for (Int_t i = 0; i < numAxis; i++) {
       if (!use[i]) continue;
       // create output
       AliRsnMiniOutput *out = taskRsnMini->CreateOutput(Form("%s_%s", suffix.Data(),name[i].Data() ), outputType.Data(), comp[i].Data());
@@ -165,7 +180,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
          out->AddAxis(ptID, nPt, minPt, maxPt);
 
          if (useRapidity) out->AddAxis(yID, nY, minY, maxY);
-         else  out->AddAxis(etaID, nEta, minEta, maxEta);
+         if (collisionType==0) out->AddAxis(etaID, nEta, minEta, maxEta);
          // axis Z: centrality
          if (collisionType==1) out->AddAxis(centID, nCent, minCent, maxCent);
       }
@@ -192,7 +207,8 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
          // axis Y: transverse momentum
          outRes->AddAxis(ptID, nPt, minPt, maxPt);
          if (useRapidity) outRes->AddAxis(yID, nY, minY, maxY);
-         else  outRes->AddAxis(etaID, nEta, minEta, maxEta);
+         if (collisionType==0) outRes->AddAxis(etaID, nEta, minEta, maxEta);
+
          // axis Z: centrality
          if (collisionType==1) outRes->AddAxis(centID, nCent, minCent, maxCent);
       }
@@ -218,7 +234,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
          // axis Y: transverse momentum
          outMC->AddAxis(ptID, nPt, minPt, maxPt);
          if (useRapidity) outMC->AddAxis(yID, nY, minY, maxY);
-         else  outMC->AddAxis(etaID, nEta, minEta, maxEta);
+         if (collisionType==0) outMC->AddAxis(etaID, nEta, minEta, maxEta);
          // axis Z: centrality
          if (collisionType==1) outMC->AddAxis(centID, nCent, minCent, maxCent);
       }

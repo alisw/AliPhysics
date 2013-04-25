@@ -7,7 +7,8 @@ void RsnTrainSettingsExtra(Double_t primaryVertex,
                            Double_t useMixDiffMult,
                            Double_t useMixDiffVz,
                            Double_t useMixDiffAngle,
-                           Int_t printRefresh=-1) {
+                           Int_t printRefresh=-1,
+                           Int_t useMixLike=0) {
 
    AliRsnTrainManager::SetGlobalDbl("RsnEventCutPrimaryVertex",primaryVertex);
    AliRsnTrainManager::SetGlobalInt("RsnCommonQualityCut",useCommonQualityCut);
@@ -22,6 +23,7 @@ void RsnTrainSettingsExtra(Double_t primaryVertex,
    AliRsnTrainManager::SetGlobalDbl("RsnMixDiffAngle",useMixDiffAngle);
 
    AliRsnTrainManager::SetGlobalInt("RsnMixPrintRefresh",printRefresh);
+   AliRsnTrainManager::SetGlobalInt("RsnMixLike",useMixLike);
 
    return;
 }
