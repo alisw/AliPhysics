@@ -16,7 +16,7 @@
 // macro for creating histograms
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
-AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Double_t maxDCAxy, Double_t maxEta, Double_t maxY, Bool_t heavyIons)
+AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Double_t maxDCAxy, Double_t maxEta, Double_t maxY, Double_t meanNtrk, Bool_t heavyIons)
 {
 //
 // Define an create the histograms for the analysis
@@ -141,13 +141,15 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 	// multiplicity
 	
 	hMap->Add( species + "_Event_Ntrk", ntrkBins, ntrkMin, ntrkMax, Form("Track multiplicity (all events, |#eta|< %.1f)",maxEta), "N_{trk}", "Events");
+	hMap->Add( species + "_Event_Zmult", ntrkBins, ntrkMin, TMath::CeilNint(ntrkMax/meanNtrk), Form("KNO multiplicity (all events, |#eta|< %.1f)", maxEta), "N_{trk}/<N_{trk}>", "Events");
 	hMap->Add( species + "_Ana_Event_Ntrk", ntrkBins, ntrkMin, ntrkMax, Form("Track multiplicity (|#eta|< %.1f)", maxEta), "N_{trk}", "Events");
+	hMap->Add( species + "_Ana_Event_Zmult", ntrkBins, ntrkMin, TMath::CeilNint(ntrkMax/meanNtrk), Form("KNO multiplicity (|#eta|< %.1f)", maxEta), "N_{trk}/<N_{trk}>", "Events");
 	
 	for(Int_t i=0; i<2; ++i)
 	{
 		hMap->Add( particle[i] + "_PID_Ntrk_pTPC", ptBins, ptMin, ptMax, ntrkBins, ntrkMin, ntrkMax, particle[i] + " candidates " + Form("(|#eta|< %.1f)", maxEta), "p_{TPC}/Z (GeV/c)", "N_{trk}");
 		
-		hMap->Add( particle[i] + "_PID_Zmult_pTPC", ptBins, ptMin, ptMax, 400, 0, 20, particle[i] + " candidates " + Form("(|#eta|< %.1f)", maxEta), "p_{TPC}/Z (GeV/c)", "z_{mult}");
+		hMap->Add( particle[i] + "_PID_Zmult_pTPC", ptBins, ptMin, ptMax, ntrkBins, ntrkMin, TMath::CeilNint(ntrkMax/meanNtrk), particle[i] + " candidates " + Form("(|#eta|< %.1f)", maxEta), "p_{TPC}/Z (GeV/c)", "z_{mult}");
 		
 		if(simulation)
 		{
@@ -159,7 +161,7 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 	
 	if(simulation)
 	{
-		hMap->Add( species + "_Ana_Event_Nch_Ntrk", 200, 0., 200., 200, 0., 200., Form("Track multiplicity (|#eta|< %.1f)", maxEta), "N_{trk}", "N_{ch}");
+		hMap->Add( species + "_Ana_Event_Nch_Ntrk",  ntrkBins, ntrkMin, ntrkMax,  ntrkBins, ntrkMin, ntrkMax, Form("Track multiplicity (|#eta|< %.1f)", maxEta), "N_{trk}", "N_{ch}");
 	}
 	
 	hMap->Add( species + "_Vertex_XZ", 500, -50., 50., 800, -1., 1., "Primary Vertex", "Z (cm)", "X (cm)");
@@ -322,8 +324,6 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 		
 			hMap->Add( particle[i] + "_Sim_PID_Pt", ptBins, ptMin, ptMax, Form("%s after PID (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 		
-			hMap->Add( particle[i] + "_Sim_PID_Prim_R", 200, 0., 200., Form("%s after PID (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "R_{xyz} (cm)");
-			
 			hMap->Add( particle[i] + "_Sim_PtY", etaBins, etaMin, etaMax, ptBins, ptMin, ptMax, particle[i].Data(), "y", "p_{T} (GeV/c)");
 			
 			hMap->Add( particle[i] + "_Sim_Prim_M2_P", ptBins, ptMin, ptMax, m2Bins, m2Min, m2Max, Form("Primary %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p (GeV/c)", "m^{2} (GeV^{2}/c^{4})");

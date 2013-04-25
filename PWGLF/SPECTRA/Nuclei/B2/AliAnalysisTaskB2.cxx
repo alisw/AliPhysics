@@ -317,9 +317,10 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	fNtrk = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent, AliESDtrackCuts::kTrackletsITSTPC, fMaxEta);
 	if(fSimulation) fNch = this->GetChargedMultiplicity(fMaxEta);
 	
-	((TH1D*)fHistoMap->Get(fSpecies + "_Event_Ntrk"))->Fill(fNtrk);
-	
 	fKNOmult = fNtrk/fMeanNtrk;
+	
+	((TH1D*)fHistoMap->Get(fSpecies + "_Event_Ntrk"))->Fill(fNtrk);
+	((TH1D*)fHistoMap->Get(fSpecies + "_Event_Zmult"))->Fill(fKNOmult);
 	
 	if( (fKNOmult >= fMinKNOmult) && (fKNOmult < fMaxKNOmult) ) fMultTrigger = kTRUE;
 	
@@ -552,6 +553,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 	((TH1D*)fHistoMap->Get(fSpecies + "_Stats"))->Fill(2); // analyzed events
 	
 	((TH1D*)fHistoMap->Get(fSpecies + "_Ana_Event_Ntrk"))->Fill(fNtrk);
+	((TH1D*)fHistoMap->Get(fSpecies + "_Ana_Event_Zmult"))->Fill(fKNOmult);
 	
 	if(fSimulation)
 	{
