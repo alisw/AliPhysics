@@ -1094,7 +1094,7 @@ void AlidNdPtAnalysispPb::Init()
   // create histograms for centrality
   // (only if fDimensionsCentralityEstimators > 0)
   
-   if (fDimensionsCentralityEstimators > 0) {
+//   if (fDimensionsCentralityEstimators > 0) {
       
     // fCentralityEventHist
     //zv:multRec:multMB:cent[n]
@@ -1162,7 +1162,7 @@ void AlidNdPtAnalysispPb::Init()
     fNVCentralityTrack = fDimensionsCentralityEstimators + 5;
     fVCentralityEvent = new Double_t[fNVCentralityEvent];
     fVCentralityTrack = new Double_t[fNVCentralityTrack];
-  }
+ // }
   
   // init folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
@@ -1176,6 +1176,7 @@ void AlidNdPtAnalysispPb::Process(AliESDEvent *const esdEvent, AliMCEvent *const
 {
   //  init if not done already
   if (!fIsInit) { Init(); }
+  
   
   //
   // Process real and/or simulated events
@@ -2107,8 +2108,10 @@ Long64_t AlidNdPtAnalysispPb::Merge(TCollection* const list)
     fRecTrackHist->Add(entry->fRecTrackHist);
     fEventCount->Add(entry->fEventCount);
     fEventMultHist->Add(entry->fEventMultHist);
-    fCentralityEventHist->Add(entry->fCentralityEventHist);
-    fCentralityTrackHist->Add(entry->fCentralityTrackHist);
+    if (fDimensionsCentralityEstimators > 0) {
+        fCentralityEventHist->Add(entry->fCentralityEventHist);
+        fCentralityTrackHist->Add(entry->fCentralityTrackHist);
+    }
 
     //
     fEventMultCorrelationMatrix->Add(entry->fEventMultCorrelationMatrix);
