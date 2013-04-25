@@ -113,6 +113,8 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistDeltaEtaPhi(0),
   fHistDeltaPtvsJet1Pt(0),
   fHistDeltaPtvsJet2Pt(0),
+  fHistDeltaPtOverJet1PtvsJet1Pt(0),
+  fHistDeltaPtOverJet2PtvsJet2Pt(0),
   fHistDeltaPtvsDistance(0),
   fHistDeltaPtvsCommonEnergy1(0),
   fHistDeltaPtvsCommonEnergy2(0),
@@ -120,8 +122,10 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistDeltaPtvsArea2(0),
   fHistDeltaPtvsDeltaArea(0),
   fHistJet1PtvsJet2Pt(0),
-  fHistDeltaCorrPtvsJet1Pt(0),
-  fHistDeltaCorrPtvsJet2Pt(0),
+  fHistDeltaCorrPtvsJet1CorrPt(0),
+  fHistDeltaCorrPtvsJet2CorrPt(0),
+  fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt(0),
+  fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt(0),
   fHistDeltaCorrPtvsDistance(0),
   fHistDeltaCorrPtvsCommonEnergy1(0),
   fHistDeltaCorrPtvsCommonEnergy2(0),
@@ -129,8 +133,10 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistDeltaCorrPtvsArea2(0),
   fHistDeltaCorrPtvsDeltaArea(0),
   fHistJet1CorrPtvsJet2CorrPt(0),
-  fHistDeltaMCPtvsJet1Pt(0),
+  fHistDeltaMCPtvsJet1MCPt(0),
   fHistDeltaMCPtvsJet2Pt(0),
+  fHistDeltaMCPtOverJet1MCPtvsJet1MCPt(0),
+  fHistDeltaMCPtOverJet2PtvsJet2Pt(0),
   fHistDeltaMCPtvsDistance(0),
   fHistDeltaMCPtvsCommonEnergy1(0),
   fHistDeltaMCPtvsCommonEnergy2(0),
@@ -227,6 +233,8 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistDeltaEtaPhi(0),
   fHistDeltaPtvsJet1Pt(0),
   fHistDeltaPtvsJet2Pt(0),
+  fHistDeltaPtOverJet1PtvsJet1Pt(0),
+  fHistDeltaPtOverJet2PtvsJet2Pt(0),
   fHistDeltaPtvsDistance(0),
   fHistDeltaPtvsCommonEnergy1(0),
   fHistDeltaPtvsCommonEnergy2(0),
@@ -234,8 +242,10 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistDeltaPtvsArea2(0),
   fHistDeltaPtvsDeltaArea(0),
   fHistJet1PtvsJet2Pt(0),
-  fHistDeltaCorrPtvsJet1Pt(0),
-  fHistDeltaCorrPtvsJet2Pt(0),
+  fHistDeltaCorrPtvsJet1CorrPt(0),
+  fHistDeltaCorrPtvsJet2CorrPt(0),
+  fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt(0),
+  fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt(0),
   fHistDeltaCorrPtvsDistance(0),
   fHistDeltaCorrPtvsCommonEnergy1(0),
   fHistDeltaCorrPtvsCommonEnergy2(0),
@@ -243,8 +253,10 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistDeltaCorrPtvsArea2(0),
   fHistDeltaCorrPtvsDeltaArea(0),
   fHistJet1CorrPtvsJet2CorrPt(0),
-  fHistDeltaMCPtvsJet1Pt(0),
+  fHistDeltaMCPtvsJet1MCPt(0),
   fHistDeltaMCPtvsJet2Pt(0),
+  fHistDeltaMCPtOverJet1MCPtvsJet1MCPt(0),
+  fHistDeltaMCPtOverJet2PtvsJet2Pt(0),
   fHistDeltaMCPtvsDistance(0),
   fHistDeltaMCPtvsCommonEnergy1(0),
   fHistDeltaMCPtvsCommonEnergy2(0),
@@ -696,6 +708,20 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistDeltaPtvsJet2Pt->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistDeltaPtvsJet2Pt);
 
+  fHistDeltaPtOverJet1PtvsJet1Pt = new TH2F("fHistDeltaPtOverJet1PtvsJet1Pt", "fHistDeltaPtOverJet1PtvsJet1Pt", 
+					    fNbins, fMinBinPt, fMaxBinPt, fNbins, -5, 5);
+  fHistDeltaPtOverJet1PtvsJet1Pt->GetXaxis()->SetTitle("p_{T,1}");  
+  fHistDeltaPtOverJet1PtvsJet1Pt->GetYaxis()->SetTitle("#deltap_{T} / p_{T,1}");
+  fHistDeltaPtOverJet1PtvsJet1Pt->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistDeltaPtOverJet1PtvsJet1Pt);
+
+  fHistDeltaPtOverJet2PtvsJet2Pt = new TH2F("fHistDeltaPtOverJet2PtvsJet2Pt", "fHistDeltaPtOverJet2PtvsJet2Pt", 
+					    fNbins, fMinBinPt, fMaxBinPt, fNbins, -5, 5);
+  fHistDeltaPtOverJet2PtvsJet2Pt->GetXaxis()->SetTitle("p_{T,2}");  
+  fHistDeltaPtOverJet2PtvsJet2Pt->GetYaxis()->SetTitle("#deltap_{T} / p_{T,2}");
+  fHistDeltaPtOverJet2PtvsJet2Pt->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistDeltaPtOverJet2PtvsJet2Pt);
+
   fHistDeltaPtvsDistance = new TH2F("fHistDeltaPtvsDistance", "fHistDeltaPtvsDistance", 
 				    fNbins/2, 0, 1.2, 2*fNbins, -fMaxBinPt, fMaxBinPt);
   fHistDeltaPtvsDistance->GetXaxis()->SetTitle("Distance");  
@@ -745,19 +771,33 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fOutput->Add(fHistJet1PtvsJet2Pt);
 
   if (!fRhoName.IsNull() || !fRho2Name.IsNull()) {  
-    fHistDeltaCorrPtvsJet1Pt = new TH2F("fHistDeltaCorrPtvsJet1Pt", "fHistDeltaCorrPtvsJet1Pt", 
-					fNbins/2, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
-    fHistDeltaCorrPtvsJet1Pt->GetXaxis()->SetTitle("p_{T,1}");  
-    fHistDeltaCorrPtvsJet1Pt->GetYaxis()->SetTitle("#deltap_{T}^{corr} (GeV/c)");
-    fHistDeltaCorrPtvsJet1Pt->GetZaxis()->SetTitle("counts");
-    fOutput->Add(fHistDeltaCorrPtvsJet1Pt);
+    fHistDeltaCorrPtvsJet1CorrPt = new TH2F("fHistDeltaCorrPtvsJet1CorrPt", "fHistDeltaCorrPtvsJet1CorrPt", 
+					2*fNbins, -fMaxBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+    fHistDeltaCorrPtvsJet1CorrPt->GetXaxis()->SetTitle("p_{T,1}^{corr}");  
+    fHistDeltaCorrPtvsJet1CorrPt->GetYaxis()->SetTitle("#deltap_{T}^{corr} (GeV/c)");
+    fHistDeltaCorrPtvsJet1CorrPt->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistDeltaCorrPtvsJet1CorrPt);
 
-    fHistDeltaCorrPtvsJet2Pt = new TH2F("fHistDeltaCorrPtvsJet2Pt", "fHistDeltaCorrPtvsJet2Pt", 
-					fNbins/2, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
-    fHistDeltaCorrPtvsJet2Pt->GetXaxis()->SetTitle("p_{T,2}");  
-    fHistDeltaCorrPtvsJet2Pt->GetYaxis()->SetTitle("#deltap_{T}^{corr} (GeV/c)");
-    fHistDeltaCorrPtvsJet2Pt->GetZaxis()->SetTitle("counts");
-    fOutput->Add(fHistDeltaCorrPtvsJet2Pt);
+    fHistDeltaCorrPtvsJet2CorrPt = new TH2F("fHistDeltaCorrPtvsJet2CorrPt", "fHistDeltaCorrPtvsJet2CorrPt", 
+					2*fNbins, -fMaxBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+    fHistDeltaCorrPtvsJet2CorrPt->GetXaxis()->SetTitle("p_{T,2}^{corr}");  
+    fHistDeltaCorrPtvsJet2CorrPt->GetYaxis()->SetTitle("#deltap_{T}^{corr} (GeV/c)");
+    fHistDeltaCorrPtvsJet2CorrPt->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistDeltaCorrPtvsJet2CorrPt);
+
+    fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt = new TH2F("fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt", "fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt", 
+							  2*fNbins, -fMaxBinPt, fMaxBinPt, fNbins, -5, 5);
+    fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt->GetXaxis()->SetTitle("p_{T,1}^{corr}");  
+    fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt->GetYaxis()->SetTitle("#deltap_{T}^{corr} / p_{T,1}^{corr}");
+    fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt);
+
+    fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt = new TH2F("fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt", "fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt", 
+							  2*fNbins, -fMaxBinPt, fMaxBinPt, fNbins, -5, 5);
+    fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt->GetXaxis()->SetTitle("p_{T,2}^{corr}");  
+    fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt->GetYaxis()->SetTitle("#deltap_{T}^{corr} / p_{T,2}^{corr}");
+    fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt);
 
     fHistDeltaCorrPtvsDistance = new TH2F("fHistDeltaCorrPtvsDistance", "fHistDeltaCorrPtvsDistance", 
 					  fNbins/2, 0, 1.2, 2*fNbins, -fMaxBinPt, fMaxBinPt);
@@ -818,12 +858,12 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   }
 
   if (fIsEmbedded) {
-    fHistDeltaMCPtvsJet1Pt = new TH2F("fHistDeltaMCPtvsJet1Pt", "fHistDeltaMCPtvsJet1Pt", 
+    fHistDeltaMCPtvsJet1MCPt = new TH2F("fHistDeltaMCPtvsJet1MCPt", "fHistDeltaMCPtvsJet1MCPt", 
 				      fNbins, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
-    fHistDeltaMCPtvsJet1Pt->GetXaxis()->SetTitle("p_{T,1}");  
-    fHistDeltaMCPtvsJet1Pt->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
-    fHistDeltaMCPtvsJet1Pt->GetZaxis()->SetTitle("counts");
-    fOutput->Add(fHistDeltaMCPtvsJet1Pt);
+    fHistDeltaMCPtvsJet1MCPt->GetXaxis()->SetTitle("p_{T,1}^{MC}");  
+    fHistDeltaMCPtvsJet1MCPt->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
+    fHistDeltaMCPtvsJet1MCPt->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistDeltaMCPtvsJet1MCPt);
 
     fHistDeltaMCPtvsJet2Pt = new TH2F("fHistDeltaMCPtvsJet2Pt", "fHistDeltaMCPtvsJet2Pt", 
 				      fNbins, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
@@ -831,6 +871,20 @@ void AliJetResponseMaker::UserCreateOutputObjects()
     fHistDeltaMCPtvsJet2Pt->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fHistDeltaMCPtvsJet2Pt->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaMCPtvsJet2Pt);
+
+    fHistDeltaMCPtOverJet1MCPtvsJet1MCPt = new TH2F("fHistDeltaMCPtOverJet1MCPtvsJet1MCPt", "fHistDeltaMCPtOverJet1MCPtvsJet1MCPt", 
+						    fNbins, fMinBinPt, fMaxBinPt, fNbins, -5, 5);
+    fHistDeltaMCPtOverJet1MCPtvsJet1MCPt->GetXaxis()->SetTitle("p_{T,1}^{MC}");  
+    fHistDeltaMCPtOverJet1MCPtvsJet1MCPt->GetYaxis()->SetTitle("#deltap_{T} / p_{T,1}^{MC}");
+    fHistDeltaMCPtOverJet1MCPtvsJet1MCPt->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistDeltaMCPtOverJet1MCPtvsJet1MCPt);
+
+    fHistDeltaMCPtOverJet2PtvsJet2Pt = new TH2F("fHistDeltaMCPtOverJet2PtvsJet2Pt", "fHistDeltaMCPtOverJet2PtvsJet2Pt", 
+						fNbins, fMinBinPt, fMaxBinPt, fNbins, -5, 5);
+    fHistDeltaMCPtOverJet2PtvsJet2Pt->GetXaxis()->SetTitle("p_{T,2}");  
+    fHistDeltaMCPtOverJet2PtvsJet2Pt->GetYaxis()->SetTitle("#deltap_{T} / p_{T,2}");
+    fHistDeltaMCPtOverJet2PtvsJet2Pt->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistDeltaMCPtOverJet2PtvsJet2Pt);
 
     fHistDeltaMCPtvsDistance = new TH2F("fHistDeltaMCPtvsDistance", "fHistDeltaMCPtvsDistance", 
 					fNbins/2, 0, 1.2, 2*fNbins, -fMaxBinPt, fMaxBinPt);
@@ -1448,14 +1502,12 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
 	  if (sortedIndexes1[iClus1] == 0)
 	    continue;
 	  Int_t iCell1 = 0, iCell2 = 0;
-	  Bool_t common=kFALSE;
 	  while (iCell1 < ncells1[iClus1] && iCell2 < ncells2) {
 	    if (cellsId1[iClus1][sortedIndexes1[iClus1][iCell1]] == cellsId2[sortedIndexes2[iCell2]]) { // found a common cell
 	      d1 -= cellsFrac1[iClus1][sortedIndexes1[iClus1][iCell1]] * ptClus1[iClus1];
 	      d2 -= cellsFrac2[sortedIndexes2[iCell2]] * ptClus2;
 	      iCell1++;
 	      iCell2++;
-	      common = kTRUE;
 	    }
 	    else if (cellsId1[iClus1][sortedIndexes1[iClus1][iCell1]] > cellsId2[sortedIndexes2[iCell2]]) { 
 	      iCell2++;
@@ -1707,6 +1759,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
 	Double_t dpt = jet2->MatchedJet()->Pt() - jet2->Pt();
 	fHistDeltaPtvsJet1Pt->Fill(jet2->MatchedJet()->Pt(), dpt);
 	fHistDeltaPtvsJet2Pt->Fill(jet2->Pt(), dpt);
+	fHistDeltaPtOverJet1PtvsJet1Pt->Fill(jet2->MatchedJet()->Pt(), dpt/jet2->MatchedJet()->Pt());
+	fHistDeltaPtOverJet2PtvsJet2Pt->Fill(jet2->Pt(), dpt/jet2->Pt());
 
 	fHistDeltaPtvsDistance->Fill(d, dpt);
 	fHistDeltaPtvsCommonEnergy1->Fill(ce1, dpt);
@@ -1724,8 +1778,10 @@ Bool_t AliJetResponseMaker::FillHistograms()
 	  Double_t corrpt1 = jet2->MatchedJet()->Pt() - fRhoVal * jet2->MatchedJet()->Area();
 	  Double_t corrpt2 = jet2->Pt() - fRho2Val * jet2->Area();
 	  Double_t dcorrpt = corrpt1 - corrpt2;
-	  fHistDeltaCorrPtvsJet1Pt->Fill(jet2->MatchedJet()->Pt(), dcorrpt);
-	  fHistDeltaCorrPtvsJet2Pt->Fill(jet2->Pt(), dcorrpt);
+	  fHistDeltaCorrPtvsJet1CorrPt->Fill(corrpt1, dcorrpt);
+	  fHistDeltaCorrPtvsJet2CorrPt->Fill(corrpt2, dcorrpt);
+	  fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt->Fill(corrpt1, dcorrpt/corrpt1);
+	  fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt->Fill(corrpt2, dcorrpt/corrpt2);
 	  fHistDeltaCorrPtvsDistance->Fill(d, dcorrpt);
 	  fHistDeltaCorrPtvsCommonEnergy1->Fill(ce1, dcorrpt);
 	  fHistDeltaCorrPtvsCommonEnergy2->Fill(ce2, dcorrpt);
@@ -1737,8 +1793,10 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
 	if (fIsEmbedded) {
 	  Double_t dmcpt = jet2->MatchedJet()->MCPt() - jet2->Pt();
-	  fHistDeltaMCPtvsJet1Pt->Fill(jet2->MatchedJet()->MCPt(), dmcpt);
+	  fHistDeltaMCPtvsJet1MCPt->Fill(jet2->MatchedJet()->MCPt(), dmcpt);
 	  fHistDeltaMCPtvsJet2Pt->Fill(jet2->Pt(), dmcpt);
+	  fHistDeltaMCPtOverJet1MCPtvsJet1MCPt->Fill(jet2->MatchedJet()->MCPt(), dmcpt/jet2->MatchedJet()->MCPt());
+	  fHistDeltaMCPtOverJet2PtvsJet2Pt->Fill(jet2->Pt(), dmcpt/jet2->Pt());
 	  fHistDeltaMCPtvsDistance->Fill(d, dmcpt);
 	  fHistDeltaMCPtvsCommonEnergy1->Fill(ce1, dmcpt);
 	  fHistDeltaMCPtvsCommonEnergy2->Fill(ce2, dmcpt);

@@ -151,6 +151,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistDeltaEtaPhi;                        //!delta eta-phi between matched jets
   TH2                        *fHistDeltaPtvsJet1Pt;                    //!delta pt between matched jets vs jet 1 pt
   TH2                        *fHistDeltaPtvsJet2Pt;                    //!delta pt between matched jets vs jet 2 pt
+  TH2                        *fHistDeltaPtOverJet1PtvsJet1Pt;          //!delta pt / jet 1 pt between matched jets vs jet 1 pt
+  TH2                        *fHistDeltaPtOverJet2PtvsJet2Pt;          //!delta pt / jet 2 pt between matched jets vs jet 2 pt
   TH2                        *fHistDeltaPtvsDistance;                  //!delta pt between matched jets vs distance
   TH2                        *fHistDeltaPtvsCommonEnergy1;             //!delta pt between matched jets vs common energy 1 (%)
   TH2                        *fHistDeltaPtvsCommonEnergy2;             //!delta pt between matched jets vs common energy 2 (%)
@@ -158,8 +160,10 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistDeltaPtvsArea2;                     //!delta pt between matched jets vs jet 2 area
   TH2                        *fHistDeltaPtvsDeltaArea;                 //!delta pt between matched jets vs delta area
   TH2                        *fHistJet1PtvsJet2Pt;                     //!correlation jet 1 pt vs jet 2 pt
-  TH2                        *fHistDeltaCorrPtvsJet1Pt;                //!delta pt corr between matched jets vs jet 1 pt
-  TH2                        *fHistDeltaCorrPtvsJet2Pt;                //!delta pt corr between matched jets vs jet 2 pt
+  TH2                        *fHistDeltaCorrPtvsJet1CorrPt;            //!delta pt corr / jet 1 corr pt between matched jets vs jet 1 corr pt
+  TH2                        *fHistDeltaCorrPtvsJet2CorrPt;            //!delta pt corr / jet 2 corr pt between matched jets vs jet 2 corr pt
+  TH2                        *fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt;//!delta pt corr between matched jets vs jet 1 corr pt
+  TH2                        *fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt;//!delta pt corr between matched jets vs jet 2 corr pt
   TH2                        *fHistDeltaCorrPtvsDistance;              //!delta pt corr between matched jets vs distance
   TH2                        *fHistDeltaCorrPtvsCommonEnergy1;         //!delta pt corr between matched jets vs common energy 1 (%)
   TH2                        *fHistDeltaCorrPtvsCommonEnergy2;         //!delta pt corr between matched jets vs common energy 2 (%)
@@ -167,8 +171,10 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistDeltaCorrPtvsArea2;                 //!delta pt corr between matched jets vs jet 2 area
   TH2                        *fHistDeltaCorrPtvsDeltaArea;             //!delta pt corr between matched jets vs delta area
   TH2                        *fHistJet1CorrPtvsJet2CorrPt;             //!correlation jet 1 corr pt vs jet 2 corr pt
-  TH2                        *fHistDeltaMCPtvsJet1Pt;                  //!jet 1 MC pt - jet2 pt vs jet 1 pt
+  TH2                        *fHistDeltaMCPtvsJet1MCPt;                //!jet 1 MC pt - jet2 pt vs jet 1 MC pt
   TH2                        *fHistDeltaMCPtvsJet2Pt;                  //!jet 1 MC pt - jet2 pt vs jet 2 pt
+  TH2                        *fHistDeltaMCPtOverJet1MCPtvsJet1MCPt;    //!jet 1 MC pt - jet2 pt / jet 1 MC pt vs jet 1 pt
+  TH2                        *fHistDeltaMCPtOverJet2PtvsJet2Pt;        //!jet 1 MC pt - jet2 pt / jet 2 pt vs jet 2 pt
   TH2                        *fHistDeltaMCPtvsDistance;                //!jet 1 MC pt - jet2 pt vs distance
   TH2                        *fHistDeltaMCPtvsCommonEnergy1;           //!jet 1 MC pt - jet2 pt vs common energy 1 (%)
   TH2                        *fHistDeltaMCPtvsCommonEnergy2;           //!jet 1 MC pt - jet2 pt vs common energy 2 (%)
