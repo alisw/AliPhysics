@@ -1447,13 +1447,14 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     
     // check chi2
     if(recg.GetNDF()<1) continue;
-    Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
-    if(TMath::Sqrt(TMath::Abs(chi2recg))>5.) continue;
 
     // mass const.
     recg.SetMassConstraint(0,0.0001);
     // v5-04-50-AN no constrain
     recg.GetMass(mass,width);
+
+    Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
+    if(TMath::Sqrt(TMath::Abs(chi2recg))>30.) continue;
 
     // angle   
     openingAngle = ge1.GetAngle(ge2);

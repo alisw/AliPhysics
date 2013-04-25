@@ -86,6 +86,8 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const char *name, const Cha
   ,fIncElectron		(NULL)
   ,fUSign		(NULL)
   ,fLSign		(NULL)
+  ,fUSmatches(NULL)
+  ,fLSmatches(NULL)
 //  ,fUSignAngle	(NULL)
 //  ,fLSignAngle	(NULL)
 {
@@ -124,6 +126,8 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron()
   ,fIncElectron		(NULL)
   ,fUSign		(NULL)
   ,fLSign		(NULL)
+  ,fUSmatches(NULL)
+  ,fLSmatches(NULL)
 //  ,fUSignAngle	(NULL)
 //  ,fLSignAngle	(NULL)
 {
@@ -162,6 +166,8 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const AliHFENonPhotonicElec
   ,fIncElectron		(ref.fIncElectron)
   ,fUSign		(ref.fUSign)
   ,fLSign		(ref.fLSign)
+  ,fUSmatches(ref.fUSmatches)
+  ,fLSmatches(ref.fLSmatches)
 //  ,fUSignAngle	(ref.fUSignAngle)
 //  ,fLSignAngle	(ref.fLSignAngle)
 {
@@ -273,53 +279,23 @@ void AliHFENonPhotonicElectron::Init()
     AliDebug(2,Form("bin phi is %f for %d",binLimAngle[i],i));
   }
 
-  Int_t nBinsTPC = 400;
-  Double_t minTPC = 20;
-  Double_t maxTPC = 220;
-  Double_t binLimTPC[nBinsTPC+1];
-  for(Int_t i=0; i<=nBinsTPC; i++)
-  {
-    binLimTPC[i]=(Double_t)minTPC + (maxTPC-minTPC)/nBinsTPC*(Double_t)i ;
-    AliDebug(2,Form("bin TPC is %f for %d",binLimTPC[i],i));
-  }
-
-  Int_t nBinsTPCSigma = 240;
-  Double_t minTPCSigma = -12.0;
-  Double_t maxTPCSigma =  12.0;
-  Double_t binLimTPCSigma[nBinsTPCSigma+1];
-  for(Int_t i=0; i<=nBinsTPCSigma; i++) binLimTPCSigma[i]=(Double_t)minTPCSigma + (maxTPCSigma-minTPCSigma)/nBinsTPCSigma*(Double_t)i ;
-
-  Int_t nBinsTOFSigma = 240;
-  Double_t minTOFSigma = -12.0;
-  Double_t maxTOFSigma =  12.0;
-  Double_t binLimTOFSigma[nBinsTOFSigma+1];
-  for(Int_t i=0; i<=nBinsTOFSigma; i++) binLimTOFSigma[i]=(Double_t)minTOFSigma + (maxTOFSigma-minTOFSigma)/nBinsTOFSigma*(Double_t)i ;
-
   // Associated Electron
-  const Int_t nDimAssElectron=7;
-  Int_t nBinAssElectron[nDimAssElectron] = {nBinsC,nBinsPt,nBinsSource,nBinsP,nBinsTPC,nBinsTPCSigma,nBinsTOFSigma};
+  const Int_t nDimAssElectron=3;
+  Int_t nBinAssElectron[nDimAssElectron] = {nBinsC,nBinsPt,nBinsSource};
   fAssElectron = new THnSparseF("fAssElectron","fAssElectron",nDimAssElectron,nBinAssElectron);
   fAssElectron->SetBinEdges(0,binLimC);
   fAssElectron->SetBinEdges(1,binLimPt);
   fAssElectron->SetBinEdges(2,binLimSource);
-  fAssElectron->SetBinEdges(3,binLimP);
-  fAssElectron->SetBinEdges(4,binLimTPC);
-  fAssElectron->SetBinEdges(5,binLimTPCSigma);
-  fAssElectron->SetBinEdges(6,binLimTOFSigma);
   fAssElectron->Sumw2();
   AliDebug(2,"AliHFENonPhotonicElectron: fAssElectron");
 
   // Inclusive Electron
-  const Int_t nDimIncElectron=7;
-  Int_t nBinIncElectron[nDimIncElectron] = {nBinsC,nBinsPt,nBinsSource,nBinsP,nBinsTPC,nBinsTPCSigma,nBinsTOFSigma};
+  const Int_t nDimIncElectron=3;
+  Int_t nBinIncElectron[nDimIncElectron] = {nBinsC,nBinsPt,nBinsSource};
   fIncElectron = new THnSparseF("fIncElectron","fIncElectron",nDimIncElectron,nBinIncElectron);
   fIncElectron->SetBinEdges(0,binLimC);
   fIncElectron->SetBinEdges(1,binLimPt);
   fIncElectron->SetBinEdges(2,binLimSource);
-  fIncElectron->SetBinEdges(3,binLimP);
-  fIncElectron->SetBinEdges(4,binLimTPC);
-  fIncElectron->SetBinEdges(5,binLimTPCSigma);
-  fIncElectron->SetBinEdges(6,binLimTOFSigma);
   fIncElectron->Sumw2();
   AliDebug(2,"AliHFENonPhotonicElectron: fIncElectron");
 
@@ -351,6 +327,22 @@ void AliHFENonPhotonicElectron::Init()
   fLSign->Sumw2();
   AliDebug(2,"AliHFENonPhotonicElectron: fLSign");
 
+  // Histograms counting the number of like sign / unlike sign matches per inclusive track
+  const Int_t nBinsMatches = 50;
+  Double_t binLimMatches[nBinsMatches+1];
+  for(int ib = 0; ib <= nBinsMatches; ib++) binLimMatches[ib] = ib;
+  const Int_t nDimMatches = 3;  // centrality, pt_inc, number of matches 
+  const Int_t nBinsMatchHist[nDimMatches] = {nBinsC, nBinsPt, nBinsMatches};
+  fUSmatches = new THnSparseF("fUSmatches", "fUSmatches", nDimMatches, nBinsMatchHist);
+  fUSmatches->SetBinEdges(0,binLimC);
+  fUSmatches->SetBinEdges(1,binLimPt);
+  fUSmatches->SetBinEdges(2,binLimMatches);
+
+  fLSmatches = new THnSparseF("fLSmatches", "fLSmatches", nDimMatches, nBinsMatchHist);
+  fLSmatches->SetBinEdges(0,binLimC);
+  fLSmatches->SetBinEdges(1,binLimPt);
+  fLSmatches->SetBinEdges(2,binLimMatches);
+
 /*
   // ee angle Unlike Sign
   const Int_t nDimUSignAngle=3;
@@ -377,6 +369,8 @@ void AliHFENonPhotonicElectron::Init()
   fListOutput->Add(fIncElectron);
   fListOutput->Add(fUSign);
   fListOutput->Add(fLSign);
+  fListOutput->Add(fUSmatches);
+  fListOutput->Add(fLSmatches);
 //  fListOutput->Add(fUSignAngle);
 //  fListOutput->Add(fLSignAngle);
 
@@ -450,11 +444,11 @@ Int_t AliHFENonPhotonicElectron::FillPoolAssociatedTracks(AliVEvent *inputEvent,
       AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
       if(aodtrack)
       {
-	// filter
-	if(fUseFilterAOD)
-	{
-	  if(!(aodtrack->TestFilterBit(fFilter))) survivedbackground = kFALSE;
-	}
+	      // filter
+	      if(fUseFilterAOD)
+	      {
+	        if(!(aodtrack->TestFilterBit(fFilter))) survivedbackground = kFALSE;
+	      }
 
       }
     }
@@ -474,16 +468,16 @@ Int_t AliHFENonPhotonicElectron::FillPoolAssociatedTracks(AliVEvent *inputEvent,
       hfetrack2.SetRecTrack(track);
       if(binct>-1)
       {
-	hfetrack2.SetCentrality((Int_t)binct);
-	AliDebug(2,Form("centrality %d and %d",binct,hfetrack2.GetCentrality()));
-	hfetrack2.SetPbPb();
+	      hfetrack2.SetCentrality((Int_t)binct);
+	      AliDebug(2,Form("centrality %d and %d",binct,hfetrack2.GetCentrality()));
+	      hfetrack2.SetPbPb();
       }
 
       if(fPIDBackground->IsSelected(&hfetrack2,0x0,"recTrackCont",fPIDBackgroundQA))
       {
-	fArraytrack->AddAt(k,fCounterPoolBackground);
-	fCounterPoolBackground++;
-	AliDebug(2,Form("fCounterPoolBackground %d, track %d",fCounterPoolBackground,k));
+	      fArraytrack->AddAt(k,fCounterPoolBackground);
+	      fCounterPoolBackground++;
+	      AliDebug(2,Form("fCounterPoolBackground %d, track %d",fCounterPoolBackground,k));
       }
     }
   } // loop tracks
@@ -504,36 +498,27 @@ Int_t AliHFENonPhotonicElectron::CountPoolAssociated(AliVEvent *inputEvent, Int_
 
   if(fnumberfound > 0) //!count only events with an inclusive electron
   {
-    Double_t valueAssElectron[7] = { binct, -1, -1, -1, -1, -20, -20};		//Centrality	Pt	Source	P	TPCsignal	TPCsigma	TOFsigma
+    Double_t valueAssElectron[3] = { binct, -1, -1};		//Centrality	Pt	Source
     Int_t iTrack2 = 0;
     Int_t indexmother2 = -1;
     AliVTrack *track2 = 0x0;
 
-    for(Int_t ii = 0; ii < fCounterPoolBackground; ii++)
-    {
+    for(Int_t ii = 0; ii < fCounterPoolBackground; ii++){
       iTrack2 = fArraytrack->At(ii);
       AliDebug(2,Form("track %d",iTrack2));
       track2 = (AliVTrack *)inputEvent->GetTrack(iTrack2);
 
-      if(!track2)
-      {
-	//printf("ERROR: Could not receive track %d", iTrack2);
-	continue;
+      if(!track2){
+	      //printf("ERROR: Could not receive track %d", iTrack2);
+	      continue;
       }
 
       // if MC look
-      if(fMCEvent || fAODArrayMCInfo)
-      {
-	valueAssElectron[2] = FindMother(TMath::Abs(track2->GetLabel()), indexmother2) ;
-      }
+      if(fMCEvent || fAODArrayMCInfo) valueAssElectron[2] = FindMother(TMath::Abs(track2->GetLabel()), indexmother2) ;
 
       fkPIDRespons = fPIDBackground->GetPIDResponse();
 
       valueAssElectron[1] = track2->Pt() ;
-      valueAssElectron[3] = track2->P() ;
-      valueAssElectron[4] = track2->GetTPCsignal() ;
-      valueAssElectron[5] = fkPIDRespons->NumberOfSigmasTPC( track2, AliPID::kElectron) ;
-      valueAssElectron[6] = fkPIDRespons->NumberOfSigmasTOF( track2, AliPID::kElectron) ;
 
       fAssElectron->Fill( valueAssElectron) ;
     }
@@ -578,7 +563,7 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   fkPIDRespons = fPIDBackground->GetPIDResponse();
 
   //Set Fill-Arrays for THnSparse
-  Double_t valueIncElectron[7]	= { binct, track1->Pt(), source, track1->P(), track1->GetTPCsignal(), fkPIDRespons->NumberOfSigmasTPC( track1, AliPID::kElectron), fkPIDRespons->NumberOfSigmasTOF( track1, AliPID::kElectron)};	//Centrality	Pt	Source	P	TPCsignal	TPCsigma	TOFsigma
+  Double_t valueIncElectron[3]	= { binct, track1->Pt(), source};	//Centrality	Pt	Source	P	
   Double_t valueSign[7]		= { deltaphi, binct, track1->Pt(), -1, source, -1, -1};			//DeltaPhi	Centrality	Pt	InvariantMass	Source	Angle	Pt
   //Double_t valueAngle[3]	= { -1, binct, source};								//Angle		Centrality	Source
 
@@ -593,6 +578,10 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   Int_t source2 = -1;
   Int_t fPDGtrack2 = 0;
   Float_t fCharge2 = 0;
+
+  // count number of matches with opposite/same sign track in the given mass range
+  Int_t countsMatchLikesign(0),
+        countsMatchUnlikesign(0);
 
   Double_t dca12 = 0;
 
@@ -632,14 +621,12 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   fnumberfound++;
   //printf(Form("Inclusive Pool: TrackNr. %d, fnumberfound %d \n", iTrack1, fnumberfound));
 
-  for(Int_t idex = 0; idex < fCounterPoolBackground; idex++)
-  {
+  for(Int_t idex = 0; idex < fCounterPoolBackground; idex++){
     iTrack2 = fArraytrack->At(idex);
     AliDebug(2,Form("track %d",iTrack2));
     track2 = (AliVTrack *)vEvent->GetTrack(iTrack2);
 
-    if(!track2)
-    {
+    if(!track2){
       //printf("ERROR: Could not receive track %d", iTrack2);
       continue;
     }
@@ -658,39 +645,29 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
     AliDebug(2,"Different");
 
     // if MC look
-    if(fMCEvent || fAODArrayMCInfo)
-    {
+    if(fMCEvent || fAODArrayMCInfo){
       source2	 = FindMother(TMath::Abs(track2->GetLabel()), indexmother2);
       pdg2	 = CheckPdg(TMath::Abs(track2->GetLabel()));
 
-      if(source2 >=0 )
-      {
-	if((indexmother2 == indexmother) && (source == source2) && ((pdg1*pdg2)<0.0))
-	{
-	  if(source == kElectronfromconversion)
-	  {
-	    //valueAngle[2] = kElectronfromconversionboth;
-	    valueSign[4] = kElectronfromconversionboth;
-	  }
-
-	  if(source == kElectronfrompi0)
-	  {
-	    //valueAngle[2] = kElectronfrompi0both;
-	    valueSign[4] = kElectronfrompi0both;
-	  }
-
-	  if(source == kElectronfrometa)
-	  {
-	    //valueAngle[2] = kElectronfrometaboth;
-	    valueSign[4] = kElectronfrometaboth;
-	  }
-	}
+      if(source2 >=0 ){
+	      if((indexmother2 == indexmother) && (source == source2) && ((pdg1*pdg2)<0.0)){
+          switch(source){
+                  case kElectronfromconversion: 
+                          valueSign[4] = kElectronfromconversionboth; 
+                          break;
+                  case kElectronfrompi0: 
+                          valueSign[4] = kElectronfrompi0both; 
+                          break;
+                  case kElectronfrometa:
+                          valueSign[4] = kElectronfrometaboth;
+                          break;
+          };
+        }
       }
     }
 
 
-    if(fAlgorithmMA && (!aodeventu)) 
-    {
+    if(fAlgorithmMA && (!aodeventu)){
       /**				*
        *	ESD-Analysis		*
        **				*/
@@ -727,14 +704,19 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
       if(angleESD > fMaxOpening3D) continue;				 //! Cut on Opening Angle
       if(invmassESD > fMaxInvMass) continue;				//! Cut on Invariant Mass
 
-      if((fCharge1*fCharge2)>0.0)	fLSign->Fill( valueSign, weight);
-      else				fUSign->Fill( valueSign, weight);
+      if((fCharge1*fCharge2)>0.0){	
+        fLSign->Fill( valueSign, weight);
+        // count like-sign background matched pairs per inclusive based on mass cut
+        if(invmassESD < 0.14) countsMatchLikesign++;
+      } else {
+        fUSign->Fill( valueSign, weight);
+        // count unlike-sign matched pairs per inclusive based on mass cut
+        if(invmassESD < 0.14) countsMatchUnlikesign++;
+      }
 
       if((fCharge1*fCharge2)>0.0)	kLSignPhotonic=kTRUE;
       else				kUSignPhotonic=kTRUE;
-    }
-    else
-    {
+    } else {
       /**				*
        *	AOD-AliKF-Analysis	*
        **				*/
@@ -744,6 +726,7 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
       fPDGtrack2 = 11;
       if(fCharge2>0) fPDGtrack2 = -11;
 
+      AliKFParticle::SetField(vEvent->GetMagneticField());
       AliKFParticle ktrack2(*track2, fPDGtrack2);
       AliKFParticle recoGamma(ktrack1,ktrack2);
 
@@ -759,11 +742,11 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
       // if set mass constraint
       if(fSetMassConstraint) //&& pVtx)
       {
-	primV += recoGamma;
-	primV -= ktrack1;
-	primV -= ktrack2;
-	recoGamma.SetProductionVertex(primV);
-	recoGamma.SetMassConstraint(0,0.0001);
+	      primV += recoGamma;
+	      primV -= ktrack1;
+	      primV -= ktrack2;
+	      recoGamma.SetProductionVertex(primV);
+	      recoGamma.SetMassConstraint(0,0.0001);
       }
 
       recoGamma.GetMass(invmassAOD,width);
@@ -779,13 +762,26 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
       if(angleAOD > fMaxOpening3D) continue;				//! Cut on Opening Angle
       if(invmassAOD > fMaxInvMass) continue;				//! Cut on Invariant Mass
 
-      if((fCharge1*fCharge2)>0.0)	fLSign->Fill( valueSign, weight);
-      else				fUSign->Fill( valueSign, weight);
+      if((fCharge1*fCharge2)>0.0){	
+        fLSign->Fill( valueSign, weight);
+        // count like-sign background matched pairs per inclusive based on mass cut
+        if(invmassAOD < 0.14) countsMatchLikesign++;
+      } else {
+        fUSign->Fill( valueSign, weight);
+        // count unlike-sign matched pairs per inclusive based on mass cut
+        if(invmassAOD < 0.14) countsMatchUnlikesign++;
+      }
 
       if((fCharge1*fCharge2)>0.0)	kLSignPhotonic=kTRUE;
       else				kUSignPhotonic=kTRUE;
     }
   }
+
+  // Fill counted
+  Double_t valCountsLS[3] = {binct, track1->Pt(), countsMatchLikesign},
+           valCountsUS[3] = {binct, track1->Pt(), countsMatchUnlikesign}; 
+  fUSmatches->Fill(valCountsUS);
+  fLSmatches->Fill(valCountsLS);
 
   if( kUSignPhotonic &&  kLSignPhotonic) taggedphotonic = 6;
   if(!kUSignPhotonic &&  kLSignPhotonic) taggedphotonic = 4;

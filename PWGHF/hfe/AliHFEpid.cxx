@@ -184,6 +184,23 @@ void AliHFEpid::ClearCommonObjects(){
 }
 
 //____________________________________________________________
+void AliHFEpid::SetDetectorsForAnalysis(TString detectors){
+  //
+  // Set detectors used in Analysis to the position corresponding to their 
+  // position in the string
+  // Detectors are separated by ","
+  //
+  TObjArray *detarray = detectors.Tokenize(",");
+  TObjString *detString(NULL);
+  int ndet(0);
+  for(int idet = 0; idet < detarray->GetEntries(); idet++){
+    detString = dynamic_cast<TObjString *>(detarray->At(idet));
+    if(detString) AddDetector(detString->String(), ndet++);
+  }
+  AliDebug(1, Form("%d detectors used in Analysis", ndet));
+}
+
+//____________________________________________________________
 void AliHFEpid::AddDetector(TString detector, UInt_t position){
   //
   // Add Detector in position 

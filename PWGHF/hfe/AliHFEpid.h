@@ -68,6 +68,7 @@ class AliHFEpid : public TNamed{
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
 
     void AddDetector(TString detector, UInt_t position);
+    void SetDetectorsForAnalysis(TString detectors);
     void SetPIDResponse(const AliPIDResponse * const pid);
     void SetVarManager(AliHFEvarManager *vm) { fVarManager = vm; }
     void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData, hasMCdata); };
