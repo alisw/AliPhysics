@@ -95,6 +95,7 @@ class AliUEHist : public TObject
   
   void CondenseBin(THnSparse* grid, THnSparse* target, Int_t axis, Float_t targetValue, Float_t from, Float_t to);
   void CondenseBin(CFStep step, Int_t trackAxis, Int_t eventAxis, Float_t targetValue, Float_t from = 0, Float_t to = -1, CFStep tmpStep = AliUEHist::kCFStepBiasStudy2);
+  void SymmetrizepTBins();
   
   void SetCombineMinMax(Bool_t flag) { fCombineMinMax = flag; }
   
