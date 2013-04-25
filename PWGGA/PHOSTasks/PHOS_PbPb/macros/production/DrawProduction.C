@@ -10,6 +10,7 @@
 #include <TNamed.h>
 #include "TDirectoryFile.h"
 #include <TPRegexp.h>
+#include <TGraphAsymmErrors.h>
 #include <cfloat>
 
 namespace RawProduction {
@@ -24,13 +25,13 @@ int maxFailedCombined = 0;
 TH1* MakeCombinedMethodeProduction(const RawProduction::Output& rawOutput, const TString& trigger="kMB", int fromCent=0, int toCent=10, const TString& pid="All", const TString& graphName="yr1", Color_t color=kBlack, Style_t style=kFullDotSmall);
 TH1* MakeCombinedProduction(const RawProduction::Output& rawOutput, const TString& trigger="kMB", int fromCent=0, int toCent=10, const TString& pid="All", const TString& graphName="yr1", Color_t color=kBlack, Style_t style=kFullDotSmall);
 
-TF1* GetEfficency(const TString& trigger, int fromCent, int toCent, const TString& pid, const TString& methode)
+TF1* GetEfficiency(const TString& trigger, int fromCent, int toCent, const TString& pid, const TString& methode)
 {
   // Dmitri LHC10h Apr. 10 Efficiencies
   // avalible pids: Allcore Disp2core CPVcore Both2core Disp2 All CPV Both2
   if( effVersion == LHC10h_1234_Apr_10 ) {
     if( ! methode.Contains("yr1") ) {
-      Printf("ERROR:GetEfficency: only pol1 efficiancies avalible");
+      Printf("ERROR:GetEfficiency: only pol1 efficiancies avalible");
       return 0x0;
     }
     
@@ -43,7 +44,7 @@ TF1* GetEfficency(const TString& trigger, int fromCent, int toCent, const TStrin
     if( 40 == fromCent && 60 == toCent ) cent = 4;
     if( 60 == fromCent && 80 == toCent ) cent = 5;
     if( cent < 0 ) {
-      Printf("ERROR:GetEfficency not avalible for centrality [%i,%i)", fromCent, toCent);
+      Printf("ERROR:GetEfficiency not avalible for centrality [%i,%i)", fromCent, toCent);
       return 0x0;
     }
     
@@ -59,7 +60,7 @@ TF1* GetEfficency(const TString& trigger, int fromCent, int toCent, const TStrin
     pastDir->cd();
     
     if( ! func )
-      Printf("ERROR:GetEfficency: efficiancy function %s does not exist", funcName);
+      Printf("ERROR:GetEfficiency: efficiancy function %s does not exist", funcName);
     return func;
   }
   return 0x0; // should not be reached
@@ -93,7 +94,7 @@ TH1* MakeProduction(const RawProduction::Output& rawOutput, const TString& trigg
   TString name = Form("prod_%s_%02i-%02i_%s_%s", trigger.Data(), fromCent, toCent, pid.Data(), methode.Data());
   TH1* hist = dynamic_cast<TH1*> ( gDirectory->Get(name.Data()) );
   
-  // Check if combined.
+  // Check if combined, The order corresponds to combining methodes then PID.
   if( ! hist ) hist = MakeCombinedProduction(rawOutput, trigger, fromCent, toCent, pid, methode, color, style);
   if( ! hist ) hist = MakeCombinedMethodeProduction(rawOutput, trigger, fromCent, toCent, pid, methode, color, style);
   
@@ -102,8 +103,9 @@ TH1* MakeProduction(const RawProduction::Output& rawOutput, const TString& trigg
   if( ! hist ) { 
     const TH1* rawHist = GetRawProduction(rawOutput, trigger, fromCent, toCent, pid, methode, color, style);
     hist = (TH1*) rawHist->Clone(name.Data());
-    hist->Divide(GetEfficency(trigger, fromCent, toCent, pid, methode));
-    hist->GetYaxis()->SetTitle("#frac{d^{2}N_{#pi^{0}}}{p_{T}dp_{T}dy N_{ev}}");
+    TF1* efficiency = GetEfficiency(trigger, fromCent, toCent, pid, methode);
+    hist->Divide(efficiency, 2*TMath::Pi());
+    hist->GetYaxis()->SetTitle("#frac{d^{2}N_{#pi^{0}}}{2#pi p_{T}dp_{T}dy N_{ev}}");
   }
   hist->SetLineColor(color);
   hist->SetMarkerColor(color);
@@ -323,7 +325,7 @@ TCanvas* DrawPIDProductionWithRatios(const RawProduction::Output& rawOutput, con
   if( raw )
     hists[0]->GetYaxis()->SetRangeUser(1.e-7, 1.e1);
   else
-    hists[0]->GetYaxis()->SetRangeUser(1.e-5, 1.e3);
+    hists[0]->GetYaxis()->SetRangeUser(1.e-6, 1.e3);
   // Draw
   hists[0]->DrawCopy();
   for(int i=1;i<nHists;++i)
@@ -424,7 +426,7 @@ TCanvas* DrawMethodeProductionWithRatios(const RawProduction::Output& rawOutput,
   if( raw )
     hists[0]->GetYaxis()->SetRangeUser(1.e-7, 1.e1);
   else
-    hists[0]->GetYaxis()->SetRangeUser(1.e-5, 1.e3);
+    hists[0]->GetYaxis()->SetRangeUser(1.e-6, 1.e3);
   // Draw
   hists[0]->DrawCopy();
   for(int i=1;i<nHists;++i)
@@ -472,6 +474,85 @@ TCanvas* DrawMethodeProductionWithRatios(const RawProduction::Output& rawOutput,
   //delete canv;
 }
 
+TGraphAsymmErrors* GetPWWGACombinedYield(int fromCent, int toCent, const TString& detector = "")
+{
+  // detector may be "", "PHOS, "PCM"
+
+  // InvYieldPbPbStatErr_4060
+  // InvYieldPbPbPHOSStatErr_0010
+  const TString graphName = Form("InvYieldPbPb%sStatErr_%02i%02i", detector.Data(), fromCent, toCent);
+
+  const TString fileName = "CombinedResultsPbPb.root";
+  TFile* file = TFile::Open(fileName.Data());
+  TGraphAsymmErrors* graph = dynamic_cast<TGraphAsymmErrors*> ( file->Get(graphName.Data()) );
+  
+  if( ! graph )
+    Printf("ERROR: GetPWWGACombinedYield(%i,%i,%s): %s was not found", fromCent, toCent, detector.Data(), graphName.Data());
+
+  return graph;
+}
+
+
+void CompareToPWGGA(const RawProduction::Output& rawOutput, const TString& trigger, int fromCent, int toCent, 
+		    const TString& methode="yr1comb", const TString& pid = "Combcore", const TString& detector="")
+{
+  TGraphAsymmErrors* pwgGraph =  GetPWWGACombinedYield(fromCent, toCent, detector);
+  TH1* production = MakeProduction(rawOutput, trigger, fromCent, toCent, pid, methode, kRed, kFullDotMedium);
+  TString name = Form("pwggaRatio%s_%s", detector.Data(), production->GetName());
+  TH1* hRatio = production->Clone(name.Data());
+  TString detStr = detector;
+  if( detStr.EqualTo("") ) detStr = "Combined PWGGA (PHOS+PCM)";
+  hRatio->SetTitle(Form("%s vs %s", hRatio->GetTitle(), detStr.Data()));
+  hRatio->GetYaxis()->SetTitle(Form("PHOS 11h (10h eff.) / %s", detStr.Data()));
+  
+  
+  TString canvName = Form("PWGGAprod%s_%s", detector.Data(), production->GetName());
+  TCanvas* canv = new TCanvas(canvName.Data(), canvName.Data(), 1024, 768);
+  production->GetYaxis()->SetRangeUser(1.e-6, 1.e3);
+  canv->SetLogy();
+  production->Draw();
+  pwgGraph->Draw();
+  TLegend* leg = new TLegend(0.4,0.7,0.85,0.88);
+  leg->AddEntry(production, "11h (10h eff.)", "lep");
+  leg->AddEntry(pwgGraph, Form("10h %s", detStr.Data()), "lep");
+  leg->Draw();
+  canv->SaveAs(Form("imgs/%s.png", canvName.Data()));
+  canv->SaveAs(Form("imgs/%s.pdf", canvName.Data()));
+  
+  
+  for(int ptBin=1; ptBin <production->GetNbinsX(); ptBin++) {
+    int graphBin = ptBin-3;
+    if( graphBin >= 0 && pwgGraph->GetN() > ptBin ) {
+      //Printf("%f %f %f", production->GetBinLowEdge(ptBin), pwgGraph->GetX()[graphBin], production->GetBinLowEdge(ptBin+1));
+      double p = production->GetBinContent(ptBin);
+      double p_e = production->GetBinError(ptBin);
+      double pwgP = pwgGraph->GetY()[graphBin];
+      double pwgP_e = (pwgGraph->GetEYlow()[graphBin] + pwgGraph->GetEYhigh()[graphBin])/2;
+      if( 0. != p && 0. != pwgP) {
+	double ratio = p/pwgP;
+	double ratio_e = TMath::Sqrt((p_e*p_e + pwgP_e*pwgP_e*p/pwgP)/pwgP);
+	//Printf("%f %f - %f", p, pwgP, ratio);
+	hRatio->SetBinContent(ptBin, ratio);
+	hRatio->SetBinError(ptBin, ratio_e);
+      }
+      else {
+	hRatio->SetBinContent(ptBin, 0.);
+	hRatio->SetBinError(ptBin, 0.);
+      }
+    }
+    else {
+      hRatio->SetBinContent(ptBin, 0.);
+      hRatio->SetBinError(ptBin, 0.);
+    }
+  }
+  TString canvRName = Form("PWGGAratio%s_%s", detector.Data(), production->GetName());
+  TCanvas* canvRatio = new TCanvas(canvRName.Data(), canvRName.Data(), 1024, 768);;
+  canvRatio->SetLogy();
+  hRatio->GetYaxis()->SetRangeUser(0.1, 5.);
+  hRatio->Draw();
+  canvRatio->SaveAs(Form("imgs/%s.png", canvRName.Data()));
+  canvRatio->SaveAs(Form("imgs/%s.pdf", canvRName.Data()));
+}
 
 void DrawPIDRatios(const RawProduction::Output& rawOutput)
 {
@@ -517,11 +598,25 @@ void DrawMethodeRatios(const RawProduction::Output& rawOutput)
   }
 }
 
+void ComparePWGGA(const RawProduction::Output& rawOutput)
+{
+  const int nCent = 2;
+  int centBins[nCent][2] = {{0,5}, {5,10}/*, {10,20}, {20,40}, {40,60}, {60,80}*/};
+  for(int ic=0; ic<nCent; ++ic) {// TODO: return to "<nCent"
+    CompareToPWGGA(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], "yr1comb", "Combcore");
+    CompareToPWGGA(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], "yr1comb", "Combcore", "PHOS");
+    CompareToPWGGA(rawOutput, "kCentral", centBins[ic][0], centBins[ic][1], "yr1comb", "Combcore", "PCM");
+  }
+}
+
+
 void DrawProduction()
 {
   gROOT->LoadMacro("MakeRawProduction.C+g");
   RawProduction::Output rawOutput;
   gStyle->SetOptStat(0);
+  
+  ComparePWGGA(rawOutput);
   
   DrawMethodeRatios(rawOutput);
   DrawPIDRatiosCombined(rawOutput);
