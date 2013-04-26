@@ -126,6 +126,7 @@ public:
   // calculate cos(theta*) and phi* in HE and CS pictures
   void GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const;
   
+
   Double_t ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const;
   static Double_t ThetaPhiCM(const AliVParticle* d1, const AliVParticle* d2, 
 			                       const Bool_t isHE, const Bool_t isTheta);
@@ -134,9 +135,15 @@ public:
   Double_t PhivPair(Double_t MagField)const; //Angle of ee plane w.r.t. to magnetic field
   Double_t PairPlanev0rpH2Angle(Double_t kv0CrpH2)const;
   Double_t PairPlaneMagAngle(Double_t kv0CrpH2)const;
+  Double_t PairPlaneAngle(Double_t kv0CrpH2)const;
+
   Double_t GetCosPointingAngle(const AliVVertex *primVtx) const;
   Double_t GetArmAlpha() const;
   Double_t GetArmPt()    const;
+
+  // calculate ratation of p1 p2
+  void GetRotPair(Double_t &RotPairx, Double_t &RotPairy, Double_t &RotPairz) const;
+  
 
   // internal KF particle
   const AliKFParticle& GetKFParticle()       const { return fPair; }
@@ -174,3 +181,5 @@ private:
 };
 
 #endif
+
+
