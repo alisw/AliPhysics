@@ -298,19 +298,35 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Event","Centrality","Centrality;Centrality [%]",100, 0, 100,
 						AliDielectronVarManager::kCentrality);
 
-  histos->UserHistogram("Event","v0ACrpH2","VZERO-AC;v0ACrpH2",
+  histos->UserHistogram("Event","v0ACrpH2_old","VZERO-AC;v0ACrpH2",
 						100,-2.0,2.0,
 						AliDielectronVarManager::kv0ACrpH2);
-  histos->UserHistogram("Event","v0ArpH2","VZERO-A;v0ArpH2",
+
+  histos->UserHistogram("Event","v0ArpH2_old","VZERO-A;v0ArpH2",
 						100,-2.0,2.0,
 						AliDielectronVarManager::kv0ArpH2);
-  histos->UserHistogram("Event","v0CrpH2","VZERO-C;v0CrpH2",
+  histos->UserHistogram("Event","v0CrpH2_old","VZERO-C;v0CrpH2",
 						100,-2.0,2.0,
 						AliDielectronVarManager::kv0CrpH2);
 
-  histos->UserHistogram("Event","Corr_v0ACrpH2","CORR VZERO-AC RP;#Psi_{2}^{V0A} (rad.);#Psi_{2}^{V0C} (rad.)",
+  histos->UserHistogram("Event","Corr_v0ACrpH2_old","CORR VZERO-AC RP;#Psi_{2}^{V0A} (rad.);#Psi_{2}^{V0C} (rad.)",
 						100,-2.0,2.0.,100,-2.0,2.0,
 						AliDielectronVarManager::kv0ArpH2,AliDielectronVarManager::kv0CrpH2);
+
+  histos->UserHistogram("Event","v0ACrpH2","VZERO-AC;v0ACrpH2",
+                        100,0.,3.15,
+                        AliDielectronVarManager::kv0ACrpH2);
+
+  histos->UserHistogram("Event","v0ArpH2","VZERO-A;v0ArpH2",
+                        100,0.,3.15,
+                        AliDielectronVarManager::kv0ArpH2);
+  histos->UserHistogram("Event","v0CrpH2","VZERO-C;v0CrpH2",
+                        100,0.,3.15,
+                        AliDielectronVarManager::kv0CrpH2);
+
+  histos->UserHistogram("Event","Corr_v0ACrpH2","CORR VZERO-AC RP;#Psi_{2}^{V0A} (rad.);#Psi_{2}^{V0C} (rad.)",
+                        100,0.,3.15.,100,0.,3.15,
+                        AliDielectronVarManager::kv0ArpH2,AliDielectronVarManager::kv0CrpH2);
   
 	//add histograms to Track classes
   /*  histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
@@ -416,7 +432,18 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 						100,0,1.6,AliDielectronVarManager::kPairPlanev0rpH2Angle);
   histos->UserHistogram("Pair","PairPlaneMagAngle","Phi;Phi[rad];#counts",
 						100,0,1.6,AliDielectronVarManager::kPairPlaneMagAngle);
+  histos->UserHistogram("Pair","PairPlaneAngle","Phi;Phi[rad];#counts",
+						100,0,1.6,AliDielectronVarManager::kPairPlaneAngle);
 
+
+  histos->UserHistogram("Pair","RotationPair_x","Px_Rot;Px_Rot[GeV];#tracks",
+						300,0,30,AliDielectronVarManager::kRotPairx);
+  histos->UserHistogram("Pair","RotationPair_y","Px_Rot;Py_Rot[GeV];#tracks",
+						300,0,30,AliDielectronVarManager::kRotPairy);
+  histos->UserHistogram("Pair","RotationPair_z","Px_Rot;Pz_Rot[GeV];#tracks",
+						300,0,30,AliDielectronVarManager::kRotPairz);
+
+  
     
   //2D Histo Plot
   histos->UserHistogram("Pair","InvMassALLPairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
@@ -431,7 +458,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 						200,0.3,0.5,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
     
   
-
+  /*
   histos->UserHistogram("Pair","InvMassALLPhivPair","PhivPair vs Inv. Mass;Inv. Mass [GeV]; Phiv",
 						1000,0.0,5.0,200,0.,4,AliDielectronVarManager::kM,AliDielectronVarManager::kPhivPair);
   histos->UserHistogram("Pair","InvMassALL2PhivPair","PhivPair vs Inv. Mass;Inv. Mass [GeV]; Phiv",
@@ -454,7 +481,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Pair","InvMassHighOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
 						200,0.3,0.5,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
 
-
+  */
 
 
   histos->UserHistogram("Pair","InvMassAllPairplaneMagAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
@@ -479,7 +506,17 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Pair","InvMassHighPairplaneRPAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
 						200,0.3,0.5,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlanev0rpH2Angle);
     
-    
+  histos->UserHistogram("Pair","InvMassAllPairplaneAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
+                        1000,0.0,5.0,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle);
+  histos->UserHistogram("Pair","InvMassAll2PairplaneAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
+                        500,0.0,0.50,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle);
+  histos->UserHistogram("Pair","InvMassLoweeplaneAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
+                        300,0.0,0.03,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle);
+  histos->UserHistogram("Pair","InvMassMiddleeelaneAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
+                        180,0.12,0.3,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle);
+  histos->UserHistogram("Pair","InvMassHighPairplaneAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
+                        200,0.3,0.5,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle);
+
      
 
   //add histograms to Track classes
