@@ -500,7 +500,7 @@ public:
   Int_t	           fEventNumber;            // Event number
   Int_t            fDataType ;              // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
   Int_t            fDebug;                  // Debugging level
-  AliFiducialCut * fFiducialCut;            //! Acceptance cuts
+  AliFiducialCut * fFiducialCut;            // Acceptance cuts
   Bool_t           fCheckFidCut ;           // Do analysis for clusters in defined region         
 
   Bool_t           fComparePtHardAndJetPt;  // In MonteCarlo, jet events, reject fake events with wrong jet energy.
