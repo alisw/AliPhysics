@@ -29,6 +29,7 @@
 #include "TH2.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
+#include "TGraphAsymmErrors.h"
 #include "THnSparse.h"
 #include "TAxis.h"
 #include "TMath.h"
@@ -487,4 +488,51 @@ TList *AliHFEtools::GetHFEResultList(const TString str){
     TList *returnlist = dynamic_cast<TList *>(k->ReadObj());
     f->Close(); delete f;
     return returnlist;
+}
+
+//__________________________________________
+void AliHFEtools::NormaliseBinWidth(TH1 *histo){
+  //
+  // Helper function to correct histograms for the bin width
+  //
+  Double_t binwidth(0.);
+  for(Int_t ipt = 1; ipt <= histo->GetNbinsX(); ipt++){
+    binwidth = histo->GetBinWidth(ipt);
+    histo->SetBinContent(ipt, histo->GetBinContent(ipt)/binwidth);
+    histo->SetBinError(ipt, histo->GetBinError(ipt)/binwidth);
+  }
+}
+
+//__________________________________________
+void AliHFEtools::NormaliseBinWdith(TGraphErrors *graph){
+  //
+  // Helper function to correct graphs with symmetric errors 
+  // for the bin width
+  //
+  Double_t binwidth(0.);
+  Double_t *ypoints = graph->GetY(),
+           *yerrors = graph->GetEY();
+  for(int ipt = 0; ipt < graph->GetN(); ipt++){
+    binwidth = 2*graph->GetEX()[ipt];
+    ypoints[ipt] /= binwidth;
+    yerrors[ipt] /= binwidth;
+  }
+}
+
+//__________________________________________
+void AliHFEtools::NormaliseBinWdithAsymm(TGraphAsymmErrors *graph){
+  //
+  // Helper function to correct graphs with asymmetric errors 
+  // for the bin width
+  //
+  Double_t binwidth(0.);
+  Double_t *ypoints = graph->GetY(),
+           *yerrorslow = graph->GetEYlow(),
+           *yerrorshigh = graph->GetEYhigh();
+  for(int ipt = 0; ipt < graph->GetN(); ipt++){
+    binwidth = graph->GetEXlow()[ipt] + graph->GetEXhigh()[ipt];
+    ypoints[ipt] /= binwidth;
+    yerrorslow[ipt] /= binwidth;
+    yerrorshigh[ipt] /= binwidth;
+  }
 }

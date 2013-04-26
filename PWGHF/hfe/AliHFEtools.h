@@ -29,7 +29,9 @@ class AliPIDResponse;
 class AliVParticle;
 class TGraph;
 class TGraphErrors;
+class TGraphAsymmErrors;
 class TH1D;
+class TH1;
 class TF1;
 class TString;
 
@@ -56,6 +58,9 @@ class AliHFEtools : public TObject{
     static Bool_t ExchangeXYGraphErrors(TGraphErrors* g = 0);
     static void BinParameterisation(const TF1 &fun, const TArrayD &xbins, TArrayD &bincontent);
     static TList *GetHFEResultList(const TString str);
+    static void NormaliseBinWidth(TH1 *histo);
+    static void NormaliseBinWdith(TGraphErrors *graph);
+    static void NormaliseBinWdithAsymm(TGraphAsymmErrors *graph);
 
   private:
       AliHFEtools(const AliHFEtools &);
