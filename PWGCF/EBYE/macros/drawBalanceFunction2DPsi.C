@@ -1038,17 +1038,17 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
   TH1D *gHistBalanceFunctionMixed_scale      = NULL;
 
   if(kProjectInEta){
-    gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionX("gHistBalanceFunctionSubtracted1D",binMin,binMax));
+    gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionX("gHistBalanceFunctionSubtractedEta",binMin,binMax));
     gHistBalanceFunctionSubtracted->Scale(gHistBalanceFunctionSubtracted2D->GetYaxis()->GetBinWidth(1));   // to remove normalization to phi bin width
-    gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionX("gHistBalanceFunctionMixed1D",binMin,binMax));
+    gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionX("gHistBalanceFunctionMixedEta",binMin,binMax));
     gHistBalanceFunctionMixed->Scale(gHistBalanceFunctionMixed2D->GetYaxis()->GetBinWidth(1));   // to remove normalization to phi bin width
     gHistBalanceFunctionSubtracted->SetTitle("B(#Delta#eta)");
     gHistBalanceFunctionMixed->SetTitle("B_{mix}(#Delta#eta)");  
   }
   else{
-    gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionY("gHistBalanceFunctionSubtracted1D",binMin,binMax));
+    gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunctionSubtracted2D->ProjectionY("gHistBalanceFunctionSubtractedPhi",binMin,binMax));
     gHistBalanceFunctionSubtracted->Scale(gHistBalanceFunctionSubtracted2D->GetXaxis()->GetBinWidth(1));   // to remove normalization to eta bin width
-    gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionY("gHistBalanceFunctionMixed1D",binMin,binMax));
+    gHistBalanceFunctionMixed      = dynamic_cast<TH1D *>(gHistBalanceFunctionMixed2D->ProjectionY("gHistBalanceFunctionMixedPhi",binMin,binMax));
     gHistBalanceFunctionMixed->Scale(gHistBalanceFunctionMixed2D->GetXaxis()->GetBinWidth(1));   // to remove normalization to eta bin width
     gHistBalanceFunctionSubtracted->SetTitle("B(#Delta#varphi)");
     gHistBalanceFunctionMixed->SetTitle("B_{mix}(#Delta#varphi)");  
@@ -1282,7 +1282,9 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 					 Double_t ptTriggerMin = -1.,
 					 Double_t ptTriggerMax = -1.,
 					 Double_t ptAssociatedMin = -1.,
-					 Double_t ptAssociatedMax = -1.) {
+					 Double_t ptAssociatedMax = -1.,
+					 TString eventClass = "Multiplicity"
+) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
   //Author: Panos.Christakoglou@nikhef.nl
@@ -1291,15 +1293,35 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 
   //Get the input file
   TString filename = lhcPeriod; 
-  //filename += "/Train"; filename += gTrainNumber;
-  filename +="/PttFrom";
-  filename += Form("%.1f",ptTriggerMin); filename += "To"; 
-  filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
-  filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
-  filename += Form("%.1f",ptAssociatedMax); 
-  filename += "/correlationFunction.";
-  filename += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
-  filename += ".PsiAll.PttFrom";
+  if(lhcPeriod != ""){
+    //filename += "/Train"; filename += gTrainNumber;
+    filename +="/PttFrom";
+    filename += Form("%.1f",ptTriggerMin); filename += "To"; 
+    filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
+    filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
+    filename += Form("%.1f",ptAssociatedMax); 
+    filename += "/correlationFunction.";
+  }
+  else{
+    filename += "correlationFunction.";
+  }
+  if(eventClass == "Centrality"){
+    filename += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+    filename += ".PsiAll.PttFrom";
+  }
+  else if(eventClass == "Multiplicity"){
+    filename += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+    filename += ".PsiAll.PttFrom";
+  }
+  else{ // "EventPlane" (default)
+    filename += "Centrality";
+    filename += gCentrality; filename += ".Psi";
+    if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
+    else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
+    else if((psiMin == 1.5)&&(psiMax == 2.5)) filename += "OutOfPlane.Ptt";
+    else if((psiMin == 2.5)&&(psiMax == 3.5)) filename += "Rest.PttFrom";
+    else filename += "All.PttFrom";
+  }  
   filename += Form("%.1f",ptTriggerMin); filename += "To"; 
   filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
@@ -1376,7 +1398,7 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   latexInfo1->DrawLatex(0.54,0.76,ptaLatex.Data());
 
   TString pngName = "BalanceFunction2D."; 
-  pngName += Form("Multiplicity: %.1f - %.1f",psiMin,psiMax);
+  pngName += Form("%s: %.1f - %.1f",eventClass.Data(),psiMin,psiMax);
   pngName += ".PttFrom";  
   pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
   pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
@@ -1394,17 +1416,17 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 		  ptTriggerMin,ptTriggerMax,
 		  ptAssociatedMin,ptAssociatedMax,
 		  kTRUE,
-		  "Multiplicity",
+		  eventClass,
 		  kFALSE);
 
   drawProjections(gHistBalanceFunction2D,
-		  kFALSE,
-		  1,80,
-		  gCentrality,
-		  psiMin,psiMax,
-		  ptTriggerMin,ptTriggerMax,
-		  ptAssociatedMin,ptAssociatedMax,
-		  kTRUE,
-		  "Multiplicity",
-		  kFALSE);
+  		  kFALSE,
+  		  1,80,
+  		  gCentrality,
+  		  psiMin,psiMax,
+  		  ptTriggerMin,ptTriggerMax,
+  		  ptAssociatedMin,ptAssociatedMax,
+  		  kTRUE,
+  		  eventClass.Data(),
+  		  kFALSE);
 }
