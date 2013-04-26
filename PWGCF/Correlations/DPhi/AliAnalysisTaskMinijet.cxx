@@ -105,7 +105,7 @@ AliAnalysisTaskMinijet::AliAnalysisTaskMinijet(const char *name)
     fChargedPi0(0),
     fVertexCheck(0),
     fPropagateDca(0),
-    fCentralityMethod("V0M")
+    fCentralityMethod("")
 {
     
     //Constructor
@@ -244,7 +244,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     Double_t maxEffHisto[3] = {fEtaCut,            ptMax,        maxbinCentr};
     
     //5 dim matrix
-    Int_t binsEffHisto5[6]   = {  nPtBins,   nPtBins,    1,                              90,         nbinsCentr ,      2 };
+    Int_t binsEffHisto5[6]   = {  nPtBins,   nPtBins,    36,                              90,         nbinsCentr ,      2 };
     Double_t minEffHisto5[6] = {  ptMin,     ptMin,     -2*fEtaCut,          -0.5*TMath::Pi(),       minbinCentr ,   -0.5 };
     Double_t maxEffHisto5[6] = {  ptMax,     ptMax,      2*fEtaCut,           1.5*TMath::Pi(),      maxbinCentr ,    1.5 };
     
@@ -647,6 +647,9 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                     else if(fAODEvent)ntracks = ReadEventAOD(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 7);
                     else AliInfo("Fatal Error");
                     
+                    if (fCentralityMethod.Length() > 0)
+                        ntracks = TMath::Nint(centrality);
+                    
                     // analyse
                     if(pt.size()){ //(internally ntracks=fNRecAccept)
                         Analyse(pt, eta, phi, charge, strangenessWeight, TMath::Nint(fNRecAcceptStrangeCorr), nTracksTracklets[1], nTracksTracklets[2], 7);//step 7 = TrigVtxRecNrecStrangeCorr
@@ -660,6 +663,9 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                     if(fESDEvent)       ntracks = ReadEventESDRecMcProp(pt, eta, phi, charge,strangenessWeight, nTracksTracklets, 4);
                     else if(fAODEvent)  ntracks = ReadEventAODRecMcProp(pt, eta, phi, charge,strangenessWeight, nTracksTracklets, 4);
                     else AliInfo("Fatal Error");
+                    
+                    if (fCentralityMethod.Length() > 0)
+                        ntracks = TMath::Nint(centrality);
                     
                     //analyse
                     if(pt.size()){//(internally ntracks=fNRecAccept)
@@ -675,6 +681,9 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                         else if(fAODEvent)  ntracks = ReadEventAODRecMcProp(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 6);
                         else AliInfo("Fatal Error");
                         
+                        if (fCentralityMethod.Length() > 0)
+                            ntracks = TMath::Nint(centrality);
+                        
                         //analyse
                         if(pt.size()){//(internally ntracks=fNRecAccept)
                             Analyse(pt, eta, phi, charge, strangenessWeight, TMath::Nint(fNRecAcceptStrangeCorr), nTracksTracklets[1], nTracksTracklets[2], 6); //step 6 = TrigVtxRecMcPropNrecStrangeCorr
@@ -686,6 +695,11 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                     if(fESDEvent)       ntracks = ReadEventESDMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 3);
                     else if(fAODEvent)  ntracks = ReadEventAODMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 3);
                     else AliInfo("Fatal Error");
+                    
+                    if (fCentralityMethod.Length() > 0){
+                        fNRecAccept = TMath::Nint(centrality);
+                        fNMcPrimAccept = TMath::Nint(centrality);
+                    }
                     
                     // analyse
                     if(pt.size()){
@@ -711,6 +725,10 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                 else if(fAODEvent) ntracks  = ReadEventAODMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 1);//read tracks
                 else AliInfo("Fatal Error");
                 
+                if (fCentralityMethod.Length() > 0)
+                    fNMcPrimAccept = TMath::Nint(centrality);
+                
+                
                 // analyse
                 if(pt.size()){
                     Analyse(pt, eta, phi, charge, strangenessWeight, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 1);  // step 1 = TrigAllMcNmc
@@ -732,6 +750,9 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                 else if(fAODEvent) ntracks  = ReadEventAODMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 0);
                 else AliInfo("Fatal Error");
                 
+                if (fCentralityMethod.Length() > 0)
+                    fNMcPrimAccept = TMath::Nint(centrality);
+                
                 //analyse
                 if(pt.size()){
                     Analyse(pt, eta, phi, charge, strangenessWeight, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 0);  //second part of step 0 // step 0 = AllAllMcNmc
@@ -744,6 +765,9 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
         // read event
         if(fMode==0)       ntracks  = ReadEventESDMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 0);
         else if (fMode==1) ntracks  = ReadEventAODMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 0);
+        
+        if (fCentralityMethod.Length() > 0)
+            fNMcPrimAccept = TMath::Nint(centrality);
         
         // analyse
         if(pt.size()){
