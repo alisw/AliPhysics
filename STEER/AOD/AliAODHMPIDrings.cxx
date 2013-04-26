@@ -53,17 +53,17 @@ AliAODHMPIDrings::AliAODHMPIDrings(
                     Int_t trkId,
                     Int_t qn, 
                     Int_t cluIdx,
-                    Double32_t  trkTheta,
-                    Double32_t trkPhi,
-                    Double32_t signal,
-                    Double32_t occ,
-                    Double32_t chi2,
-                    Double32_t trkX,
-                    Double32_t trkY,
-                    Double32_t mipX,
-                    Double32_t mipY,
-                    Double32_t *pid,
-                    Double32_t *p         ):
+                    Double_t  trkTheta,
+                    Double_t trkPhi,
+                    Double_t signal,
+                    Double_t occ,
+                    Double_t chi2,
+                    Double_t trkX,
+                    Double_t trkY,
+                    Double_t mipX,
+                    Double_t mipY,
+                    Double_t *pid,
+                    Double_t *p         ):
                     TObject(),
                     
                     fHmpidAODtrkId(trkId),
@@ -138,25 +138,25 @@ AliAODHMPIDrings& AliAODHMPIDrings::operator=(const AliAODHMPIDrings& hmpidAOD)
                                   
 }
 //________________________________________________________________________________________________________________________________________________________
-void AliAODHMPIDrings::GetHmpPidProbs(Double32_t *pid) const
+void AliAODHMPIDrings::GetHmpPidProbs(Double_t *pid) const
 {
   // Gets probabilities of each particle type (in HMPID)
   for (Int_t i=0; i<AliPID::kSPECIES; i++) pid[i]=fHmpidAODpid[i];
 }
 //________________________________________________________________________________________________________________________________________________________
-void  AliAODHMPIDrings::GetHmpMom(Double32_t *mom) const
+void  AliAODHMPIDrings::GetHmpMom(Double_t *mom) const
 {
   for( Int_t ico = 0 ; ico < 3; ico++) mom[ico] = fHMPIDmom[ico];
 }
 //________________________________________________________________________________________________________________________________________________________
-void AliAODHMPIDrings::SetHmpPidProbs(Double32_t *pid)
+void AliAODHMPIDrings::SetHmpPidProbs(Double_t *pid)
 {
   // Gets probabilities of each particle type (in HMPID)
   for (Int_t i=0; i<AliPID::kSPECIES; i++) fHmpidAODpid[i] = pid[i];
 }
 
 //________________________________________________________________________________________________________________________________________________________
-void  AliAODHMPIDrings::SetHmpMom(Double32_t *mom)
+void  AliAODHMPIDrings::SetHmpMom(Double_t *mom)
 {
   for( Int_t ico = 0 ; ico < 3; ico++) fHMPIDmom[ico] = mom[ico];  
 }

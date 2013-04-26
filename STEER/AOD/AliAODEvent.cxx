@@ -964,7 +964,7 @@ AliAODHMPIDrings *AliAODEvent::GetHMPIDringForTrackID(Int_t trackID) const
   {
     for(Int_t ien = 0 ; ien < GetNHMPIDrings(); ien++)
     {
-      if( ien == trackID ) return GetHMPIDring(ien);      
+      if( GetHMPIDring(ien)->GetHmpTrkID() == trackID ) return GetHMPIDring(ien);      
     }//rings loop  
   }
   return 0;
