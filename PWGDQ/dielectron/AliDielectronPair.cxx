@@ -253,6 +253,46 @@ void AliDielectronPair::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double
 }
 
 //______________________________________________
+void AliDielectronPair::GetRotPair(Double_t &RotPairx, Double_t &RotPairy, Double_t &RotPairz) const
+{
+  // calculation of rotation p1 p2
+  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
+  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
+
+  px1 = fD1.GetPx();
+  py1 = fD1.GetPy();
+  pz1 = fD1.GetPz();
+
+  px2 = fD2.GetPx();
+  py2 = fD2.GetPy();
+  pz2 = fD2.GetPz();
+
+  // normal vector of ee plane
+  Double_t pnorx = py1*pz2 - pz1*py2;
+  Double_t pnory = pz1*px2 - px1*pz2;
+  Double_t pnorz = px1*py2 - py1*px2;
+  Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
+
+  //unit vector
+  Double_t upnx = -9999.;
+  Double_t upny = -9999.;
+  Double_t upnz = -9999.;
+  if (pnor !=0) 
+  {
+	upnx= pnorx/pnor;
+	upny= pnory/pnor;
+	upnz= pnorz/pnor;
+  }
+
+
+  RotPairx = upnx;
+  RotPairy = upny;
+  RotPairz = upnz;
+
+}
+
+
+//______________________________________________
 Double_t AliDielectronPair::PsiPair(Double_t MagField) const
 {
   //Following idea to use opening of colinear pairs in magnetic field from e.g. PHENIX
@@ -691,8 +731,13 @@ Double_t AliDielectronPair::PairPlaneMagAngle(Double_t kv0CrpH2) const
   Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
 
   //unit vector  
-  Double_t upnx = pnorx/pnor;
-  Double_t upny = pnory/pnor;
+  Double_t upnx = -9999.;
+  Double_t upny = -9999.;
+  if (pnor !=0) 
+  {
+	upnx= pnorx/pnor;
+	upny= pnory/pnor;
+  }
   //  Double_t upnz = pnorz/pnor;
 
   // normal vector of strong magnetic field plane
@@ -718,6 +763,73 @@ Double_t AliDielectronPair::PairPlaneMagAngle(Double_t kv0CrpH2) const
   return PM;
 }
 
+//______________________________________________
+Double_t AliDielectronPair::PairPlaneAngle(Double_t kv0CrpH2) const
+{
+
+  // Calculate the angle between electron pair plane and VZERO-C reaction plane for 2nd harmonic
+  // kv0CrpH2 is reaction plane angle
+
+  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
+  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
+
+  px1 = fD1.GetPx();
+  py1 = fD1.GetPy();
+  pz1 = fD1.GetPz();
+
+  px2 = fD2.GetPx();
+  py2 = fD2.GetPy();
+  pz2 = fD2.GetPz();
+
+  //p1+p2
+  Double_t px = px1+px2;
+  Double_t py = py1+py2;
+  Double_t pz = pz1+pz2;
+
+  // normal vector of ee plane
+  Double_t pnorx = py1*pz2 - pz1*py2;
+  Double_t pnory = pz1*px2 - px1*pz2;
+  Double_t pnorz = px1*py2 - py1*px2;
+  Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
+
+  //unit vector  
+  Double_t upnx = -9999.;
+  Double_t upny = -9999.;
+  if (pnor !=0) 
+  {
+	upnx= pnorx/pnor;
+	upny= pnory/pnor;
+  } 
+  //  Double_t upnz = pnorz/pnor;
+
+  // normal vector of strong magnetic field plane
+  //rotation coordinates (x,y,z)->(x',y',z')
+  //x'=(cos(v0CrpH2),sin(v0CrpH2),0);y'=(-sin(v0CrpH2),cos(v0CrpH2),0);z'=(0,0,1)=z
+  //(p1+p2)x'z
+  Double_t rotpx = px*TMath::Cos(kv0CrpH2)+py*TMath::Sin(kv0CrpH2);
+  //Double_t rotpy =;
+  // Double_t rotpz = pz;
+
+  Double_t ax = py*pz;
+  Double_t ay = pz*rotpx-pz*px;
+  Double_t az = -rotpx*py;
+
+  Double_t uax = ax/TMath::Sqrt(ax*ax + ay*ay +az*az);
+  Double_t uay = ay/TMath::Sqrt(ax*ax + ay*ay +az*az);
+  Double_t uaz = az/TMath::Sqrt(ax*ax + ay*ay +az*az);
+
+  //PM is the angle between Pair plane and Magnetic field plane
+  Double_t cosPM = upnx*uax + upny*uay;
+  Double_t PM = TMath::ACos(cosPM);
+
+  //keep interval [0,pi/2]
+  if(PM > TMath::Pi()/2){
+    PM -= TMath::Pi();
+    PM *= -1.0;
+
+  }
+  return PM;
+}
 
 
 //______________________________________________
@@ -731,3 +843,4 @@ void AliDielectronPair::SetBeamEnergy(AliVEvent *ev, Double_t beamEbyHand)
   else
     fBeamEnergy = beamEbyHand;
 }
+

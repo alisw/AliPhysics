@@ -27,18 +27,9 @@ Detailed description
 
 #include <TVectorD.h>
 #include <TH1.h>
-#include <TH1F.h>
-#include <TH2.h>
-#include <TH3.h>
-#include <TProfile.h>
-#include <TProfile2D.h>
-#include <TProfile3D.h>
 #include <TAxis.h>
-#include <TString.h>
-#include <TObjString.h>
-#include <TObjArray.h>
-
 #include <AliVParticle.h>
+
 #include <AliLog.h>
 
 #include "AliDielectron.h"
@@ -60,7 +51,7 @@ AliDielectronHF::AliDielectronHF() :
   fAxes(kMaxCuts),
   fHasMC(kFALSE),
   fStepGenerated(kFALSE),
-  fRefObj(1)
+  fRefObj(0x0)
 {
   //
   // Default Constructor
@@ -71,7 +62,6 @@ AliDielectronHF::AliDielectronHF() :
     fBinType[i]=kStdBin;
   }
   fAxes.SetOwner(kTRUE);
-  fRefObj.SetOwner(kTRUE);
 }
 
 //______________________________________________
@@ -83,7 +73,7 @@ AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
   fAxes(kMaxCuts),
   fHasMC(kFALSE),
   fStepGenerated(kFALSE),
-  fRefObj(1)
+  fRefObj(0x0)
 {
   //
   // Named Constructor
@@ -94,7 +84,6 @@ AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
     fBinType[i]=kStdBin;
   }
   fAxes.SetOwner(kTRUE);
-  fRefObj.SetOwner(kTRUE);
 }
 
 //______________________________________________
@@ -106,144 +95,24 @@ AliDielectronHF::~AliDielectronHF()
   fAxes.Delete();
 }
 
-//_____________________________________________________________________________
-void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
-				      const TVectorD * const binsX,
-				      UInt_t valTypeX, TString option)
+//________________________________________________________________
+void AliDielectronHF::SetRefHist(TH1 *obj, UInt_t vars[4])
 {
   //
-  // Histogram creation 1D case with arbitraty binning X
-  // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
+  // store reference object and its varaibles
   //
 
-  TH1 *hist=0x0;
-  if(valTypeP==999)
-    hist=new TH1F("","",binsX->GetNrows()-1,binsX->GetMatrixArray());
-  else {
-    TString opt=""; Double_t pmin=0., pmax=0.;
-    if(!option.IsNull()) {
-      TObjArray *arr=option.Tokenize(";");
-      arr->SetOwner();
-      opt=((TObjString*)arr->At(0))->GetString();
-      if(arr->GetEntriesFast()>1) pmin=(((TObjString*)arr->At(1))->GetString()).Atof();
-      if(arr->GetEntriesFast()>2) pmax=(((TObjString*)arr->At(2))->GetString()).Atof();
-      delete arr;
-    }
-    hist=new TProfile("","",binsX->GetNrows()-1,binsX->GetMatrixArray());
-    ((TProfile*)hist)->BuildOptions(pmin,pmax,opt.Data());
-    //      printf(" name %s PROFILE options: pmin %.1f pmax %.1f err %s \n",name,((TProfile*)hist)->GetYmin(),((TProfile*)hist)->GetYmax(),((TProfile*)hist)->GetErrorOption() );
-  }
+  //  UInt_t val[2]={AliDielectronVarManager::kM,AliDielectronVarManager::kPt};
+  AliDielectronHistos::StoreVariables(obj,vars);
+  AliDielectronHistos::AdaptNameTitle(obj,"Pair");
+  obj->SetName("");
+  fRefObj     = obj;
 
-  // store variales in axes
-  UInt_t valType[4] = {0};
-  valType[0]=valTypeX;     valType[1]=valTypeP;
-  AliDielectronHistos::StoreVariables(hist, valType);
-
-  // adapt the name and title of the histogram in case they are empty
-  AliDielectronHistos::AdaptNameTitle(hist, histClass);
-  hist->SetName(Form("HF_%s",hist->GetName()));
-
-  fRefObj.AddLast(hist);
-  delete binsX;
-}
-
-//_____________________________________________________________________________
-void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
-				      const TVectorD * const binsX, const TVectorD * const binsY,
-				      UInt_t valTypeX, UInt_t valTypeY, TString option)
-{
-  //
-  // Histogram creation 2D case with arbitraty binning X and Y
-  // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
-  //
-
-  TH1 *hist=0x0;
-  if(valTypeP==999) {
-    hist=new TH2F("","",
-		  binsX->GetNrows()-1,binsX->GetMatrixArray(),
-		  binsY->GetNrows()-1,binsY->GetMatrixArray()); 
-  }
-  else  {
-    TString opt=""; Double_t pmin=0., pmax=0.;
-    if(!option.IsNull()) {
-      TObjArray *arr=option.Tokenize(";");
-      arr->SetOwner();
-      opt=((TObjString*)arr->At(0))->GetString();
-      if(arr->GetEntriesFast()>1) pmin=(((TObjString*)arr->At(1))->GetString()).Atof();
-      if(arr->GetEntriesFast()>2) pmax=(((TObjString*)arr->At(2))->GetString()).Atof();
-      delete arr;
-    }
-    hist=new TProfile2D("","",
-			binsX->GetNrows()-1,binsX->GetMatrixArray(),
-			binsY->GetNrows()-1,binsY->GetMatrixArray());
-    ((TProfile2D*)hist)->BuildOptions(pmin,pmax,opt.Data());
-  }
-
-  // store variales in axes
-  UInt_t valType[4] = {0};
-  valType[0]=valTypeX;     valType[1]=valTypeY; valType[3]=valTypeP;
-  AliDielectronHistos::StoreVariables(hist, valType);
-
-  // adapt the name and title of the histogram in case they are empty
-  AliDielectronHistos::AdaptNameTitle(hist, histClass);
-  hist->SetName(Form("HF_%s",hist->GetName()));
-
-  fRefObj.AddLast(hist);
-  delete binsX;
-  delete binsY;
-}
-
-//_____________________________________________________________________________
-void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
-				      const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
-				      UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ, TString option)
-{
-  //
-  // Histogram creation 3D case with arbitraty binning X, Y, Z
-  // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
-  //
-  TH1 *hist=0x0;
-  if(valTypeP==999) {
-    hist=new TH3F("","",
-		  binsX->GetNrows()-1,binsX->GetMatrixArray(),
-		  binsY->GetNrows()-1,binsY->GetMatrixArray(),
-		  binsZ->GetNrows()-1,binsZ->GetMatrixArray());
-  }
-  else {
-    TString opt=""; Double_t pmin=0., pmax=0.;
-    if(!option.IsNull()) {
-      TObjArray *arr=option.Tokenize(";");
-      arr->SetOwner();
-      opt=((TObjString*)arr->At(0))->GetString();
-      if(arr->GetEntriesFast()>1) pmin=(((TObjString*)arr->At(1))->GetString()).Atof();
-      if(arr->GetEntriesFast()>2) pmax=(((TObjString*)arr->At(2))->GetString()).Atof();
-      delete arr;
-    }
-    hist=new TProfile3D("","",
-			binsX->GetNrows()-1,binsX->GetMatrixArray(),
-			binsY->GetNrows()-1,binsY->GetMatrixArray(),
-			binsZ->GetNrows()-1,binsZ->GetMatrixArray());
-    ((TProfile3D*)hist)->BuildOptions(pmin,pmax,opt.Data());
-  }
-
-  // store variales in axes
-  UInt_t valType[4] = {0};
-  valType[0]=valTypeX;     valType[1]=valTypeY;     valType[2]=valTypeZ;     valType[3]=valTypeP;
-  AliDielectronHistos::StoreVariables(hist, valType);
-
-  // adapt the name and title of the histogram in case they are empty
-  AliDielectronHistos::AdaptNameTitle(hist, histClass);
-  hist->SetName(Form("HF_%s",hist->GetName()));
-
-  fRefObj.AddLast(hist);
-  delete binsX;
-  delete binsY;
-  delete binsZ;
 }
 
 //________________________________________________________________
 void AliDielectronHF::AddCutVariable(AliDielectronVarManager::ValueTypes type,
-				     Int_t nbins, Double_t min, Double_t max, Bool_t log, Bool_t leg, EBinType btype)
+                                             Int_t nbins, Double_t min, Double_t max, Bool_t log, Bool_t leg, EBinType btype)
 {
   //
   // Add a variable to the mixing handler
@@ -346,9 +215,9 @@ void AliDielectronHF::Fill(Int_t label1, Int_t label2, Int_t nSignal)
 // 	     AliDielectronVarManager::GetValueName(fVarCuts[i]),
 // 	     valuesLeg1[fVarCuts[i]], valuesLeg2[fVarCuts[i]], valuesPair[fVarCuts[i]]); 
 //     }
-    Fill(nSignal+fSignalsMC->GetEntries(), valuesPair,  valuesLeg1, valuesLeg2);
+    Fill(nSignal, valuesPair,  valuesLeg1, valuesLeg2);
   }
-  // only OS at the moment
+  // on OS at the moment
   // else if(part1->Charge()>0)
   //   valuesPair[AliDielectronVarManager::kPairType]=0;
   // else
@@ -452,12 +321,11 @@ void AliDielectronHF::Fill(Int_t Index, Double_t * const valuesPair, Double_t * 
     if(!selected) continue;
 
     // fill the object with Pair and event values (TODO: this needs to be changed)
-    TObjArray *tmp = (TObjArray*) histArr->At(ihist);
+    TH1 *tmp=static_cast<TH1*>(histArr->At(ihist));
     TString title = tmp->GetName();
     AliDebug(10,title.Data());
-    for(Int_t i=0; i<tmp->GetEntriesFast(); i++) {
-      AliDielectronHistos::FillValues(tmp->At(i), valuesPair);
-    }
+
+    AliDielectronHistos::FillValues(tmp, valuesPair);
     //    AliDebug(10,Form("Fill var %d %s value %f in %s \n",fVar,AliDielectronVarManager::GetValueName(fVar),valuesPair[fVar],tmp->GetName()));
   } //end of hist loop
 
@@ -492,8 +360,8 @@ void AliDielectronHF::Init()
 
   //  printf("fRefObj %p \n",fRefObj);
   for(Int_t ihist=0; ihist<size; ihist++) {
-    histArr->AddAt(fRefObj.Clone(""), ihist);
-    //histArr->AddAt(fRefObj.Clone(Form("h%04d",ihist)), ihist);
+    histArr->AddAt(fRefObj->Clone(""), ihist);
+    //histArr->AddAt(fRefObj->Clone(Form("h%04d",ihist)), ihist);
   }
 
   // loop over all cut variables
@@ -521,10 +389,9 @@ void AliDielectronHF::Init()
 	break;
       }
 
-      TObjArray *tmp= (TObjArray*) histArr->At(ihist);
+      TH1 *tmp=static_cast<TH1*>(histArr->At(ihist));
       TString title = tmp->GetName();
-      if(!ivar)             title ="";
-      if( ivar)             title+=":";
+      if(ivar!=0)           title+=":";
       if(fVarCutType[ivar]) title+="Leg";
       title+=AliDielectronVarManager::GetValueName(fVarCuts[ivar]);
       title+=Form("#%.2f#%.2f",lowEdge,upEdge);
