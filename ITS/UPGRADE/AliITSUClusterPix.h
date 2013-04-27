@@ -104,7 +104,8 @@ inline void AliITSUClusterPix::DecClUsage() {
 //______________________________________________________
 inline void AliITSUClusterPix::SetClUsage(Int_t n) {
   // set cluster usage counter
-  fNxNzN &= ((n&0xff)<<24)&0x00ffffff; 
+  fNxNzN &= 0x00ffffff;
+  fNxNzN |= (n&0xff)<<24;
   if (n<2) SetBit(kShared,kFALSE);
   if (!n)  SetBit(kUsed,kFALSE);
 }
