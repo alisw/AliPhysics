@@ -41,7 +41,10 @@ set ( SRCS
  PHOSTasks/CaloCellQA/AliCaloCellsQA.cxx
  PHOSTasks/CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
  PHOSTasks/omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
- )
+ PHOSTasks/UserTasks/AliCaloClusterInfo.cxx
+ PHOSTasks/UserTasks/AliPHOSpPbPi0Header.cxx
+ PHOSTasks/UserTasks/AliAnalysisTaskSEPHOSpPbPi0.cxx
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

@@ -34,4 +34,9 @@
 // Omega3pi
 #pragma link C++ class AliAnalysisTaskOmegaPi0PiPi+;
 
+// UserTasks
+#pragma link C++ class AliCaloClusterInfo+;
+#pragma link C++ class AliPHOSpPbPi0Header+;
+#pragma link C++ class AliAnalysisTaskSEPHOSpPbPi0+;
+
 #endif
