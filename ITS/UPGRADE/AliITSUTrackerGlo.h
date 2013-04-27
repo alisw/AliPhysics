@@ -8,7 +8,6 @@
 //-------------------------------------------------------------------------
 //                ITS upgrade tracker base class
 //-------------------------------------------------------------------------
-
 #include "AliTracker.h"
 #include "AliESDEvent.h"
 #include "AliITSUSeed.h"
@@ -154,10 +153,11 @@ class AliITSUTrackerGlo : public AliTracker {
   void BookControlHistos();
   TObjArray* fCHistoArr;
   enum {kHResY=0,kHResYP=10,kHResZ=20,kHResZP=30,kHChi2Cl=40,kHChi2Nrm=50,kHBestInBranch=60,kHBestInCand=70};
+  enum {kHClShare=0}; // custom histos 
   enum {kHistosPhase=100};
   //
 #endif
-
+  //
   ClassDef(AliITSUTrackerGlo,1)   //ITS upgrade tracker
     
 };

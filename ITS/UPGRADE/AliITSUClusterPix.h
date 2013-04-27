@@ -2,6 +2,7 @@
 #define ALIITSUCLUSTERPIX_H
 
 #include "AliCluster.h"
+#include <TMath.h>
 
 class TGeoHMatrix;
 class AliITSUGeomTGeo;
@@ -48,10 +49,15 @@ class AliITSUClusterPix : public AliCluster
   void    GetLocalXYZ(Float_t xyz[3])                       const;
   void    GetTrackingXYZ(Float_t xyz[3])                    const; 
   //
-  void    SetNxNzN(UChar_t nx,UChar_t nz,UShort_t n) {fNxNzN = (n<<16) + (nx<<8) + nz;}
+  void    SetNxNzN(UChar_t nx,UChar_t nz,UShort_t n)              {fNxNzN = ( ((n&0xff)<<16)) + ((nx&0xff)<<8) + (nz&0xff);}
+  void    SetClUsage(Int_t n);
+  void    ModClUsage(Bool_t used=kTRUE)                           {used ? IncClUsage() : DecClUsage();}
+  void    IncClUsage()                                            {SetClUsage(GetClUsage()+1); IncreaseClusterUsage();}
+  void    DecClUsage();
   Int_t   GetNx()                                           const {return (fNxNzN>>8)&0xff;}
   Int_t   GetNz()                                           const {return fNxNzN&0xff;}
-  Int_t   GetNPix()                                         const {return fNxNzN>>16;}
+  Int_t   GetNPix()                                         const {return (fNxNzN>>16)&0xff;}
+  Int_t   GetClUsage()                                      const {return (fNxNzN>>24)&0xff;}
   //
   void    SetQ(UShort_t q)                                        {fCharge = q;}
   Int_t   GetQ()                                            const {return fCharge;}
@@ -80,11 +86,27 @@ class AliITSUClusterPix : public AliCluster
   //
   UShort_t                fCharge;        //  charge (for MC studies only)
   Int_t                   fNxNzN;         //  effective cluster size in X (1st byte) and Z (2nd byte) directions 
-                                          //  and total Npix(3d&4th bytes)
+                                          //  and total Npix(3d byte). 4th byte is used for clusters usage counter
   static UInt_t           fgMode;         //! general mode (sorting mode etc)
   static AliITSUGeomTGeo* fgGeom;         //! pointer on the geometry data
 
   ClassDef(AliITSUClusterPix,1)
 };
+
+//______________________________________________________
+inline void AliITSUClusterPix::DecClUsage() {
+  // decrease cluster usage counter
+  int n=GetClUsage(); 
+  if (n) SetClUsage(--n);
+  //
+}
+
+//______________________________________________________
+inline void AliITSUClusterPix::SetClUsage(Int_t n) {
+  // set cluster usage counter
+  fNxNzN &= ((n&0xff)<<24)&0x00ffffff; 
+  if (n<2) SetBit(kShared,kFALSE);
+  if (!n)  SetBit(kUsed,kFALSE);
+}
 
 #endif
