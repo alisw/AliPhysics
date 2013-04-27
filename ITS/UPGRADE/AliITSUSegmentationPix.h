@@ -18,7 +18,7 @@ public AliITSsegmentation {
   
   //  AliITSUSegmentationPix(Option_t *opt="" );
   AliITSUSegmentationPix(const AliITSUSegmentationPix &source);
-  virtual ~AliITSUSegmentationPix() {}
+  virtual ~AliITSUSegmentationPix();
   AliITSUSegmentationPix& operator=(const AliITSUSegmentationPix &source);
   //
   virtual void    Init();

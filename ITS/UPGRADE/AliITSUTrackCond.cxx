@@ -91,13 +91,13 @@ void AliITSUTrackCond::SetNLayers(int nLayers)
   // set number of layers
   fInitDone = kFALSE;
   if (fNLayers) {
-    delete fClSharing;
-    delete fMaxBranches;
-    delete fMaxCandidates;
-    delete fMaxTr2ClChi2;
-    delete fMissPenalty;
-    delete fNSigmaRoadY;
-    delete fNSigmaRoadZ;
+    delete[] fClSharing;
+    delete[] fMaxBranches;
+    delete[] fMaxCandidates;
+    delete[] fMaxTr2ClChi2;
+    delete[] fMissPenalty;
+    delete[] fNSigmaRoadY;
+    delete[] fNSigmaRoadZ;
   }
   fNLayers = nLayers;
   //

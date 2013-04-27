@@ -189,7 +189,7 @@ AliITSU::~AliITSU()
     delete[] fSegModelLr;
   }
   //
-  delete fResponseLr; // note: the response data is owned by the CDBManager, we don't delete them
+  delete[] fResponseLr; // note: the response data is owned by the CDBManager, we don't delete them
   //
   delete[] fLayerName;  // Array of TStrings
   delete[] fIdSens;

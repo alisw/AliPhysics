@@ -81,6 +81,15 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,in
 }
 
 //_____________________________________________________________________________RS
+AliITSUSegmentationPix::~AliITSUSegmentationPix()
+{
+  // d-tor
+  delete[] fDiodShidtMatX;
+  delete[] fDiodShidtMatZ;
+}
+
+
+//_____________________________________________________________________________RS
 void AliITSUSegmentationPix::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
 {
   //  Returns pixel coordinates (ix,iz) for given coordinates (x,z counted from corner of col/row 0:0)
