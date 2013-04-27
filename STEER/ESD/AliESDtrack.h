@@ -186,6 +186,7 @@ public:
   Bool_t  GetITSModuleIndexInfo(Int_t ilayer,Int_t &idet,Int_t &status,
 				Float_t &xloc,Float_t &zloc) const;
   Int_t   GetITSLabel() const {return fITSLabel;}
+  void    SetITSLabel(Int_t label) {fITSLabel = label;}
   void    SetITStrack(AliKalmanTrack * track){
     if (fFriendTrack) fFriendTrack->SetITStrack(track);
   }

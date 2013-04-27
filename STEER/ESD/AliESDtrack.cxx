@@ -365,7 +365,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   //
   //copy constructor
   //
-  for (Int_t i=kNITSchi2Std;i--;) fITSchi2Std[i] = track.fTrackTime[i];
+  for (Int_t i=kNITSchi2Std;i--;) fITSchi2Std[i] = track.fITSchi2Std[i];
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i]=track.fTrackTime[i];
   for (Int_t i=0;i<AliPID::kSPECIES;i++)  fR[i]=track.fR[i];
   //
