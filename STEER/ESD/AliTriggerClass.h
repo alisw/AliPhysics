@@ -57,6 +57,7 @@ public:
         AliTriggerBCMask* GetBCMask() const { return fMask[0]; }
 	           UInt_t GetTimeGroup() const { return fTimeGroup; }
 	           UInt_t GetTimeWindow() const { return fTimeGroup; }
+		   UInt_t GetPrescaler() const { return fPrescaler; }
 
 		   Bool_t SetMasks(AliTriggerConfiguration *config,TString &mask);
                     void  Trigger( const TObjArray& inputs , const TObjArray& functions);
