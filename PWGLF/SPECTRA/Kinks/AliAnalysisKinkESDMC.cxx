@@ -625,7 +625,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
 ///   inside radius region ----------------------------------------------
                        if(MCKinkAngle2 < 2.) continue;  // as in ESD 
 		        //          ======  8/2/13 if (((daughter1->R())>120)&&((daughter1->R())<210)&& (MCQt>0.120)  ){
-		        if (((daughter1->R())> fKinkRadLow )&&((daughter1->R())< fKinkRadUp )&& (MCQt>0.040)  ){
+		        if (((daughter1->R())> fKinkRadLow )&&((daughter1->R())< fKinkRadUp )&& (MCQt>fLowQt)  ){
 
         if ( ( code==321 )&&( dcode ==-13  ))   {  
             fradPtRapDC->Fill( radiusD, 1./ptK, rapidiKMC);  // systematics 26/8
