@@ -295,3 +295,20 @@ void AliTriggerClass::Print( const Option_t* ) const
    else
      cout << "   Class is not fired  " << endl;
 }
+//______________________________________________________________________
+ Int_t AliTriggerClass::GetDownscaleFactor(Double_t& ds) const 
+{
+ // There are 2 types of downscaling:
+ // - Random time veto downscale (option=0 <=> bit 31=0)
+ // - Class busy veto (option=1 <=> bit 31=1)
+ // 
+ Int_t option=0;
+ if(fPrescaler&(1<<31)) option=1;
+ if(option){
+   ds = (fPrescaler&0x1ffffff)/100.; // class busy in milisec
+ }else{
+   ds = 1.- fPrescaler/2097151.;     // reduction factor in %
+ }
+ return option;
+}
+
