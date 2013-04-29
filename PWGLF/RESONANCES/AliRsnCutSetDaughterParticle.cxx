@@ -287,6 +287,20 @@ void AliRsnCutSetDaughterParticle::Init()
 	 AddCut(iCutTOFMatch);	
          SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName()) );
          break;
+
+   case AliRsnCutSetDaughterParticle::kQualityStd2010TRD:
+     AddCut(fCutQuality);
+     AddCut(iCutPhiTRD2010);
+     SetCutScheme( Form("%s&%s",fCutQuality->GetName(),iCutPhiTRD2010->GetName()) );
+     break;
+     
+   case AliRsnCutSetDaughterParticle::kQualityStd2010NoTRD:
+     AddCut(fCutQuality);
+     AddCut(iCutPhiNoTRD2010);
+     SetCutScheme( Form("%s&%s",fCutQuality->GetName(),iCutPhiNoTRD2010->GetName()) );
+     break;
+   
+
     default :
          break;
    }
