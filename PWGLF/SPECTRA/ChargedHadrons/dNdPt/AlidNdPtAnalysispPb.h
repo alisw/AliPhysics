@@ -166,7 +166,8 @@ public :
   THnSparseF* GetRecEventHist() const {return fRecEventHist;} 
   THnSparseF* GetRecTrackHist() const {return fRecTrackHist;}
   THnSparseF* GetEventMultHist() const {return fEventMultHist;} 
-  
+  THnSparseF* GetMCPrimTrackHist() const {return fMCPrimTrackHist;} 
+    
   //
   // centrality histograms etc. getter+setter
   //
@@ -294,9 +295,10 @@ private:
   // Generic histograms to be corrected
   //
   THnSparseF *fRecEventHist;    //-> Zv:multMB  
-  THnSparseF *fRecTrackHist; //-> Zv:pT:eta:multRec
+  THnSparseF *fRecTrackHist; //-> Zv:pT:eta:multRec  
   THnSparseF *fEventCount; //-> trig, trig + vertex, selected event
   THnSparseF *fEventMultHist; // event multiplicities multMB:multRecTemp:multRec
+  THnSparseF *fMCPrimTrackHist; //-> Zv:mcpT:mceta:multtrue
 
   //
   // candle events track corrections
@@ -342,7 +344,7 @@ private:
   AlidNdPtAnalysispPb(const AlidNdPtAnalysispPb&); // not implemented
   AlidNdPtAnalysispPb& operator=(const AlidNdPtAnalysispPb&); // not implemented
 
-  ClassDef(AlidNdPtAnalysispPb,2);
+  ClassDef(AlidNdPtAnalysispPb,3);
 };
 
 #endif

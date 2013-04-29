@@ -144,6 +144,7 @@ ClassImp(AlidNdPtAnalysispPb)
   fRecTrackHist(0),
   fEventCount(0),
   fEventMultHist(0),
+  fMCPrimTrackHist(0),
 
   // Candle event histogram
   fRecCandleEventMatrix(0),
@@ -276,6 +277,7 @@ AlidNdPtAnalysispPb::AlidNdPtAnalysispPb(Char_t* name, Char_t* title): AlidNdPt(
   fRecTrackHist(0),
   fEventCount(0),
   fEventMultHist(0),
+  fMCPrimTrackHist(0),
 
   // Candle event histogram
   fRecCandleEventMatrix(0),
@@ -409,6 +411,7 @@ AlidNdPtAnalysispPb::~AlidNdPtAnalysispPb() {
   if(fRecTrackHist) delete fRecTrackHist; fRecTrackHist=0; 
   if(fEventCount) delete fEventCount; fEventCount=0;
   if(fEventMultHist) delete fEventMultHist; fEventMultHist=0;
+  if(fMCPrimTrackHist) delete fMCPrimTrackHist; fMCPrimTrackHist=0;
 
   //
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
@@ -505,7 +508,23 @@ void AlidNdPtAnalysispPb::Init()
   fRecTrackHist->GetAxis(2)->SetTitle("#eta");
   fRecTrackHist->GetAxis(3)->SetTitle("multiplicity MB");
   fRecTrackHist->Sumw2();
+  
+  
+  Int_t binsMCPrimTrackHist[4]={fZvNbins,fPtNbins,fEtaNbins,fMultNbins};
+ // Double_t minTrackHist[4]={-25.,0.,-1.5,-0.5}; 
+ // Double_t maxTrackHist[4]={25.,50.,1.5,149.5}; 
 
+  fMCPrimTrackHist = new THnSparseF("fMCPrimTrackHist","Zv:mcpT:mceta:multTrue",4,binsMCPrimTrackHist); 
+  fMCPrimTrackHist->SetBinEdges(0,fBinsZv);
+  fMCPrimTrackHist->SetBinEdges(1,fBinsPt);
+  fMCPrimTrackHist->SetBinEdges(2,fBinsEta);
+  fMCPrimTrackHist->SetBinEdges(3,fBinsMult);
+  fMCPrimTrackHist->GetAxis(0)->SetTitle("Zv (cm)");
+  fMCPrimTrackHist->GetAxis(1)->SetTitle("MC p_{T} (GeV/c)");
+  fMCPrimTrackHist->GetAxis(2)->SetTitle("#eta (MC)");
+  fMCPrimTrackHist->GetAxis(3)->SetTitle("true multiplicity (MC)");
+  fMCPrimTrackHist->Sumw2();  
+  
   //
   // rec. vs MC correlation matrices
   //
@@ -1811,6 +1830,8 @@ void AlidNdPtAnalysispPb::Process(AliESDEvent *const esdEvent, AliMCEvent *const
 
            if( AlidNdPtHelper::IsPrimaryParticle(stack, iMc, GetParticleMode()) ) 
 	     fGenPrimTrackMatrix->Fill(vTrackMatrix);
+	     Double_t vMCPrimTrackHist[4] = {vtxMC[2],particle->Pt(),particle->Eta(),multMCTrueTracks}; 
+	     fMCPrimTrackHist->Fill(vMCPrimTrackHist);
 
 	   // fill control histograms
            if(fHistogramsOn) 
@@ -2165,6 +2186,7 @@ Long64_t AlidNdPtAnalysispPb::Merge(TCollection* const list)
     fRecSecTrackMatrix->Add(entry->fRecSecTrackMatrix);
     //
     fRecMultTrackMatrix->Add(entry->fRecMultTrackMatrix);
+    fMCPrimTrackHist->Add(entry->fMCPrimTrackHist);
 
     //
     // control analysis histograms
