@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEpp(Bool_t enablePS=kTRUE){
+AliAnalysisTask *AddTask_cbaumann_LMEEpp(Bool_t enablePS=kTRUE, Int_t triggerSel=(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8), Int_t collCands=(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8)){
 
 
   //get the current analysis manager
@@ -40,8 +40,8 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp(Bool_t enablePS=kTRUE){
   if ((!hasMC) && enablePS) taskMB->UsePhysicsSelection();
   //taskMB->SelectCollisionCandidates(AliVEvent::kMB);
 //  taskMB->SetTriggerMask(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8);
-  taskMB->SetTriggerMask(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8);
-  taskMB->SelectCollisionCandidates(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8);
+  taskMB->SetTriggerMask(triggerSel);
+  taskMB->SelectCollisionCandidates(collCands);
 
 //  taskMB->SetRejectPileup();
 
