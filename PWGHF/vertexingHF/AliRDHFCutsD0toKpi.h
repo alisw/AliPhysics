@@ -41,7 +41,6 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod);
 
   virtual Int_t IsSelectedCombPID(AliAODRecoDecayHF* d); 
-  virtual Int_t IsSelectedSimpleBayesianPID(AliAODRecoDecayHF* d);
   virtual void CalculateBayesianWeights(AliAODRecoDecayHF* d);
 
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}

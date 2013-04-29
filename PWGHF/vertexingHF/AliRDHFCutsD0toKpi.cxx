@@ -422,26 +422,11 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
       fIsSelectedPID=returnvaluePID;
       if(!returnvaluePID) return 0;
    } else {
-      switch (fBayesianStrategy) {
-            case kBayesSimple:
-				returnvaluePID = IsSelectedSimpleBayesianPID(d);
-				break;
-            case kBayesWeightNoFilter:
-				CalculateBayesianWeights(d);
-				returnvaluePID = 3;
-				break;
-            case(kBayesWeight):
-				returnvaluePID = IsSelectedCombPID(d);
-				break;
-            case(kBayesMomentum):
-				returnvaluePID = IsSelectedCombPID(d);
-				break;
-            default:
-				returnvaluePID = IsSelectedCombPID(d);
-				break;
+      returnvaluePID = IsSelectedCombPID(d);
+      if(!returnvaluePID) return 0;
       }
     }
-  }
+  
 
 
   Int_t returnvalueComb=CombineSelectionLevels(3,returnvalueCuts,returnvaluePID);
@@ -1777,24 +1762,13 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
 
   if (!fUsePID || !d) return 3;
 
-  switch (fBayesianStrategy) {
-
-      case kBayesWeightNoFilter:
-		CalculateBayesianWeights(d);   //If weighted, no filtering: Calculate weights, return as unidentified
-		return 3;
-		break;
-      case kBayesSimple:
-	    return IsSelectedSimpleBayesianPID(d);   // If simple, go to simple method
-	    break;
-      case kBayesWeight:
-    	break;
-      case kBayesMomentum:
-	  	break;  //If weighted or momentum method, stay in this function
-
-  }
-
-  //  Int_t isD0D0barPID[2]={1,2};
-
+  
+  if (fBayesianStrategy == kBayesWeightNoFilter) {
+     //WeightNoFilter: Accept all particles (no PID cut) but fill mass histos with weights in task
+     CalculateBayesianWeights(d);
+     return 3;
+     
+}
 
 
 
@@ -1803,19 +1777,10 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
   Int_t returnvalue = 0;
 
   Int_t isPosKaon = 0, isNegKaon = 0;
-  //   Int_t combinedPID[2][2];// CONVENTION: [daught][isK,IsPi]; [0][0]=(prong 1, isK)=value [0][1]=(prong 1, isPi)=value;
-  //                                                                                                 same for prong 2
-  //                                               values convention  0 = not identified (but compatible) || No PID (->hasPID flag)
-  //                                                                  1 = identified
-  // PID search:   pion (TPC) or not K (TOF), Kaon hypothesis for both
-  // Initial hypothesis: unknown (but compatible)
 
-
-  //   combinedPID[0][0] = 0; // First daughter, kaon
-  //   combinedPID[0][1] = 0; // First daughter, pion
-  //   combinedPID[1][0] = 0; // Second daughter, kaon
-  //   combinedPID[1][1] = 0; // Second daughter, pion
-
+  //Bayesian methods used here check for ID of kaon, and whether it is positive or negative.
+  
+  
   Bool_t checkPIDInfo[2] = {kTRUE, kTRUE};
   AliAODTrack *aodtrack[2] = {(AliAODTrack*)d->GetDaughter(0), (AliAODTrack*)d->GetDaughter(1)};
 
@@ -1849,9 +1814,9 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
    CalculateBayesianWeights(d);        //Calculates all Bayesian probabilities for both positive and negative tracks
     //      Double_t prob0[AliPID::kSPECIES];
     //      fPidHF->GetPidCombined()->ComputeProbabilities(aodtrack[daught], fPidHF->GetPidResponse(), prob0);
-   ///Three possible Bayesian methods: Picked using SetBayesianCondition(int).
+   ///Three possible Bayesian probability cuts: Picked using SetBayesianCondition(int).
    switch (fBayesianCondition) {
-      ///A: Standard max. probability method   
+      ///A: Standard max. probability method (accept most likely species) 
       case kMaxProb:
 			if (TMath::MaxElement(AliPID::kSPECIES, fWeightsPositive) == fWeightsPositive[AliPID::kKaon]) { //If highest probability lies with kaon
 			  isPosKaon = 1;  //flag [daught] as a kaon
@@ -1861,7 +1826,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
 			  isNegKaon = 1;  //flag [daught] as a kaon
 			}
    		    break;
-      ///B: Method based on probability greater than prior
+      ///B: Accept if probability greater than prior
       case kAbovePrior:
 
 			if (fWeightsNegative[AliPID::kKaon] > (fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->
@@ -1875,7 +1840,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
 
         	break;
 
-      ///C: Method based on probability greater than user-defined threshold
+      ///C: Accept if probability greater than user-defined threshold
       case kThreshold:
          if (fWeightsNegative[AliPID::kKaon] > fProbThreshold) {
             isNegKaon = 1;
@@ -1887,160 +1852,73 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
          break;
   }
    
+     
+     //Momentum-based selection (also applied to filtered weighted method)
+     
+     if (fBayesianStrategy == kBayesMomentum || fBayesianCondition == kBayesWeight) {
+         if (isNegKaon && isPosKaon) { // If both are kaons, reject
+            isD0 = 0;
+            isD0bar = 0;
+         } else if (isNegKaon) {       //If negative kaon present, D0
+            isD0 = 1;
+         } else if (isPosKaon) {       //If positive kaon present, D0bar
+            isD0bar = 1;
+         } else {                      //If neither ID'd as kaon, subject to extra tests
+            isD0 = 1;
+            isD0bar = 1;
+            if (aodtrack[0]->P() < 1.5 && (fPidHF->CheckStatus(aodtrack[0], "TOF"))) { //If it's low momentum and not ID'd as a kaon, we assume it must be a pion
+               if (aodtrack[0]->Charge() == -1) {
+            isD0 = 0;  //Check charge and reject based on pion hypothesis
+               }
+               if (aodtrack[0]->Charge() == 1) {
+            isD0bar = 0;
+               }
+            }
+            if (aodtrack[1]->P() < 1.5 && (fPidHF->CheckStatus(aodtrack[1], "TOF"))) {
+               if (aodtrack[1]->Charge() == -1) {
+            isD0 = 0;
+               }
+               if (aodtrack[1]->Charge() == 1) {
+            isD0bar = 0;
+               }
+            }
+         }
 
-  //Momentum-based selection
+            
 
+         if (isD0 && isD0bar) {
+            returnvalue = 3;
+         }
+         if (isD0 && !isD0bar) {
+            returnvalue = 1;
+         }
+         if (!isD0 && isD0bar) {
+            returnvalue = 2;
+         }
+         if (!isD0 && !isD0bar) {
+            returnvalue = 0;
+         }
+     }
 
-  if (isNegKaon && isPosKaon) { // If both are kaons, reject
-    isD0 = 0;
-    isD0bar = 0;
-  } else if (isNegKaon) {       //If negative kaon present, D0
-    isD0 = 1;
-  } else if (isPosKaon) {       //If positive kaon present, D0bar
-    isD0bar = 1;
-  } else {                      //If neither ID'd as kaon, subject to extra tests
-    isD0 = 1;
-    isD0bar = 1;
-    if (aodtrack[0]->P() < 1.5 && (fPidHF->CheckStatus(aodtrack[0], "TOF"))) { //If it's low momentum and not ID'd as a kaon, we assume it must be a pion
-      if (aodtrack[0]->Charge() == -1) {
-	isD0 = 0;  //Check charge and reject based on pion hypothesis
-      }
-      if (aodtrack[0]->Charge() == 1) {
-	isD0bar = 0;
-      }
+    //Simple Bayesian
+    if (fBayesianStrategy == kBayesSimple) {
+       
+         if (isPosKaon && isNegKaon)   {  //If both are ID'd as kaons, reject
+               returnvalue = 0;
+            } else if (isNegKaon)   {     //If negative kaon, D0
+               returnvalue = 1;
+            } else if (isPosKaon)   {     //If positive kaon, D0-bar
+               returnvalue = 2;
+            } else {
+               returnvalue = 0;  //If neither kaon, reject
+            }
     }
-    if (aodtrack[1]->P() < 1.5 && (fPidHF->CheckStatus(aodtrack[1], "TOF"))) {
-      if (aodtrack[1]->Charge() == -1) {
-	isD0 = 0;
-      }
-      if (aodtrack[1]->Charge() == 1) {
-	isD0bar = 0;
-      }
-    }
-  }
-
-   
-
-  if (isD0 && isD0bar) {
-    returnvalue = 3;
-  }
-  if (isD0 && !isD0bar) {
-    returnvalue = 1;
-  }
-  if (!isD0 && isD0bar) {
-    returnvalue = 2;
-  }
-  if (!isD0 && !isD0bar) {
-    returnvalue = 0;
-  }
-
+    
   return returnvalue;
 
 
 
 }
-
-
-//---------------------------------------------------------------------------
-Int_t AliRDHFCutsD0toKpi::IsSelectedSimpleBayesianPID(AliAODRecoDecayHF* d)
-
-{
-  //Apply Bayesian PID selection; "simple" method.
-  //Looks for a kaon via max. probability. If neither daughter is a kaon, candidate is rejected.
-
-  Int_t isPosKaon = 0, isNegKaon = 0;
-  Int_t returnvalue;          //0 = rejected, 1 = D0, 2 = D0bar. This version will not output 3 (both).
-  Bool_t checkPIDInfo[2] = {kTRUE, kTRUE};
-
-  AliAODTrack *aodtrack[2] = {(AliAODTrack*)d->GetDaughter(0), (AliAODTrack*)d->GetDaughter(1)};
-  if ((aodtrack[0]->Charge() * aodtrack[1]->Charge()) != -1) {
-    return 0;  //Reject if charges do not oppose
-  }
-  Double_t momentumpositive=0., momentumnegative=0.;	//Used in "prob > prior" method
-  for (Int_t daught = 0; daught < 2; daught++) {
-    //Loop over prongs to check PID information
-
-
-
-      if (aodtrack[daught]->Charge() == -1) {
-         momentumnegative = aodtrack[daught]->P();
-	  }
-      if (aodtrack[daught]->Charge() == +1) {
-         momentumpositive = aodtrack[daught]->P();
-      }
-      if (!(fPidHF->CheckStatus(aodtrack[daught], "TPC")) && !(fPidHF->CheckStatus(aodtrack[daught], "TOF"))) {
-      checkPIDInfo[daught] = kFALSE;
-      continue;
-      }
-   }
-
-   //Loop over daughters ends here
-
-  if (!checkPIDInfo[0] && !checkPIDInfo[1]) {
-     return 0;      //Reject if both daughters lack both TPC and TOF info
-  }
-
-  CalculateBayesianWeights(d);
-
-   
-
-   ///Three possible Bayesian methods: Picked using SetBayesianCondition(int). 
-   switch (fBayesianCondition) {
-
-      ///A: Standard max. probability method
-      case kMaxProb:
-		   
-		  if (TMath::MaxElement(AliPID::kSPECIES, fWeightsPositive) == fWeightsPositive[AliPID::kKaon]) { //If highest probability lies with kaon
-			isPosKaon = 1;  //flag [daught] as a kaon
-		  }
-
-		  if (TMath::MaxElement(AliPID::kSPECIES, fWeightsNegative) == fWeightsNegative[AliPID::kKaon]) { //If highest probability lies with kaon
-			isNegKaon = 1;  //flag [daught] as a kaon
-		  }
-
-          break;
-
-  ///B: Method based on probability greater than prior
-      case kAbovePrior:
-
-         if (fWeightsNegative[AliPID::kKaon] > (fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->
-                                                GetBinContent(fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->FindBin(momentumnegative)))) {  //Retrieves relevant prior, gets value at momentum
-            isNegKaon = 1;
-         }
-         if (fWeightsPositive[AliPID::kKaon] > (fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->
-                                                GetBinContent(fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->FindBin(momentumpositive)))) {  //Retrieves relevant prior, gets value at momentum
-            isPosKaon = 1;
-         }
-
-         break;
-
-      ///C: Method based on probability greater than user-defined threshold
-      case kThreshold:
-         if (fWeightsNegative[AliPID::kKaon] > fProbThreshold) {
-            isNegKaon = 1;
-         }
-         if (fWeightsPositive[AliPID::kKaon] > fProbThreshold) {
-            isPosKaon = 1;
-         }
-
-         break;
- 	}
-
-
-
-  if (isPosKaon && isNegKaon)   {  //If both are ID'd as kaons, reject
-    returnvalue = 0;
-  } else if (isNegKaon)   {     //If negative kaon, D0
-    returnvalue = 1;
-  } else if (isPosKaon)   {     //If positive kaon, D0-bar
-    returnvalue = 2;
-  } else {
-    returnvalue = 0;  //If neither kaon, reject
-  }
-
-  return returnvalue;
-}
-
 
 
 
