@@ -653,7 +653,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
                                                                 Double_t   vertex[3],
                                                                 Int_t    & nMax,
                                                                 Double_t & mass,   Double_t & angle,
-                                                                Double_t & e1  ,   Double_t & e2,
+                                                                TLorentzVector & l1, TLorentzVector & l2,
                                                                 Int_t    & absId1, Int_t    & absId2 )
 {
   // Split the cluster in 2, do invariant mass, get the mass and decide 
@@ -770,16 +770,13 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   
   caloutils->SplitEnergy(absId1,absId2,cluster, cells, &cluster1, &cluster2,nMax); /*absIdList, maxEList,*/
   
-  TLorentzVector cellMom1; 
-  TLorentzVector cellMom2;  
+  cluster1.GetMomentum(l1,vertex);
+  cluster2.GetMomentum(l2,vertex);
   
-  cluster1.GetMomentum(cellMom1,vertex);
-  cluster2.GetMomentum(cellMom2,vertex);
-  
-  mass  = (cellMom1+cellMom2).M();
-  angle = cellMom2.Angle(cellMom1.Vect());
-  e1    = cluster1.E();
-  e2    = cluster2.E();
+  mass  = (l1+l2).M();
+  angle = l2.Angle(l1.Vect());
+  Float_t e1 = cluster1.E();
+  Float_t e2 = cluster2.E();
     
   // Consider clusters with splitted energy not too different to original cluster energy
   Float_t splitFracCut = 0;

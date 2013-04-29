@@ -1879,12 +1879,12 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     Int_t    nMax = 0;
     Double_t mass = 0., angle = 0.;
-    Double_t e1   = 0., e2    = 0.;
+    TLorentzVector    l1, l2;
     Int_t    absId1 = -1; Int_t absId2 = -1;
 
     Int_t pidTag = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(cluster,cells,GetCaloUtils(),
                                                                                GetVertex(0), nMax, mass, angle,
-                                                                               e1,e2,absId1,absId2);
+                                                                               l1,l2,absId1,absId2);
     if (nMax <= 0) 
     {
       if(GetDebug() > 0 )
@@ -1893,7 +1893,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       return;
     }
     
+    Float_t e1 = l1.Energy();
+    Float_t e2 = l2.Energy();
+    
     Float_t splitFrac = (e1+e2)/en;
+
     Float_t asym = -10;
     if(e1+e2>0) asym = (e1-e2)/(e1+e2);
         

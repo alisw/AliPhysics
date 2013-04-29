@@ -164,7 +164,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhAsymmetry ;             //! cluster E vs asymmetry of 2 splitted clusters 
   TH2F         * fhSelectedMass  ;         //! pair mass vs E, for selected pairs
   TH2F         * fhSelectedAsymmetry  ;    //! cluster E vs asymmetry of 2 splitted clusters, for selected pairs
-
+  TH1F         * fhSplitE  ;       //! split sub-cluster pair energy sum
+  TH1F         * fhSplitPt  ;      //! split sub-cluster pair pT sum
+  
   TH1F         * fhPtDecay  ;              //! Number of identified  pi0/eta decay photons vs pT
   TH1F         * fhEDecay   ;              //! Number of identified  pi0/eta decay photons vs E
   
@@ -222,6 +224,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH1F         * fhMCEReject[6];              //! Number of rejected as pi0 vs E coming from X
   TH1F         * fhMCPtReject[6];             //! Number of rejected as pi0 vs Pt coming from X
 
+  TH1F         * fhMCSplitE[6];               //! Number of identified as pi0 vs sum E  split coming from X
+  TH1F         * fhMCSplitPt[6];              //! Number of identified as pi0 vs sum Pt split coming from X
+
+  
   TH2F         * fhMCPtCentrality[6] ;        //! centrality  vs pi0/eta pT  coming from X
 
   

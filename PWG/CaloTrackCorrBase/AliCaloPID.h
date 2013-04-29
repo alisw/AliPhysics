@@ -88,7 +88,7 @@ class AliCaloPID : public TObject {
                                                           AliCalorimeterUtils * caloutils,
                                                           Double_t vertex[3], 
                                                           Int_t & nLocMax, Double_t & mass, Double_t & angle,
-                                                          Double_t & e1  , Double_t & e2,
+                                                          TLorentzVector & l1  , TLorentzVector & l2,
                                                           Int_t & absId1, Int_t & absId2) ;
   
   Int_t     GetIdentifiedParticleType(const AliVCluster * cluster) ;

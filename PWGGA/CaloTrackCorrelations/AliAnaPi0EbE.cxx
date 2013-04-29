@@ -64,11 +64,12 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhEEtaReject(0),               fhEPhiReject(0),              fhEtaPhiReject(0),
     fhMass(0),                     fhAsymmetry(0), 
     fhSelectedMass(0),             fhSelectedAsymmetry(0),
-    fhPtDecay(0),                  fhEDecay(0),  
+    fhSplitE(0),                   fhSplitPt(0),
+    fhPtDecay(0),                  fhEDecay(0),
     // Shower shape histos
     fhEDispersion(0),              fhELambda0(0),                fhELambda1(0), 
     fhELambda0NoTRD(0),            fhELambda0FracMaxCellCut(0),  
-    fhEFracMaxCell(0),             fhEFracMaxCellNoTRD(0),            
+    fhEFracMaxCell(0),             fhEFracMaxCellNoTRD(0),
     fhENCells(0),                  fhETime(0),                   fhEPairDiffTime(0),
     fhDispEtaE(0),                 fhDispPhiE(0),
     fhSumEtaE(0),                  fhSumPhiE(0),                 fhSumEtaPhiE(0),
@@ -108,6 +109,9 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhMCPhi            [i] = 0;                   
     fhMCEta            [i] = 0;
     fhMCPtCentrality   [i] = 0;
+    
+    fhMCSplitE         [i] = 0;
+    fhMCSplitPt        [i] = 0;
     
     fhEMCLambda0       [i] = 0;
     fhEMCLambda0NoTRD  [i] = 0;
@@ -1338,6 +1342,18 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhSelectedAsymmetry->SetYTitle("A = ( E1 - E2 ) / ( E1 + E2 )");
     outputContainer->Add(fhSelectedAsymmetry);
     
+    fhSplitE  = new TH1F
+    ("hSplitE","Selected #pi^{0} (#eta) pairs energy sum of split sub-clusters",nptbins,ptmin,ptmax);
+    fhSplitE->SetYTitle("counts");
+    fhSplitE->SetXTitle("E (GeV)");
+    outputContainer->Add(fhSplitE) ;
+    
+    fhSplitPt  = new TH1F
+    ("hSplitPt","Selected #pi^{0} (#eta) pairs pT sum of split sub-clusters",nptbins,ptmin,ptmax);
+    fhSplitPt->SetYTitle("counts");
+    fhSplitPt->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhSplitPt) ;
+    
     if(IsDataMC())
     {
       for(Int_t i = 0; i< 6; i++)
@@ -1348,6 +1364,23 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhMCEAsymmetry[i]->SetXTitle("E (GeV)");
         fhMCEAsymmetry[i]->SetYTitle("A = ( E1 - E2 ) / ( E1 + E2 )");
         outputContainer->Add(fhMCEAsymmetry[i]);
+        
+        fhMCSplitE[i]  = new TH1F
+        (Form("hSplitE_MC%s",pname[i].Data()),
+         Form("cluster from %s, energy sum of split sub-clusters",ptype[i].Data()),
+         nptbins,ptmin,ptmax);
+        fhMCSplitE[i]->SetYTitle("counts");
+        fhMCSplitE[i]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCSplitE[i]) ;
+ 
+        fhMCSplitPt[i]  = new TH1F
+        (Form("hSplitPt_MC%s",pname[i].Data()),
+         Form("cluster from %s, pT sum of split sub-clusters",ptype[i].Data()),
+         nptbins,ptmin,ptmax);
+        fhMCSplitPt[i]->SetYTitle("counts");
+        fhMCSplitPt[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCSplitPt[i]) ;
+        
       } 
     }
   }
@@ -2093,12 +2126,12 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     //PID selection or bit setting
     Int_t    nMaxima = 0 ; 
     Double_t mass    = 0 , angle = 0;
-    Double_t e1      = 0 , e2    = 0;
+    TLorentzVector    l1, l2;
     Int_t    absId1 = -1; Int_t absId2 = -1;
 
     Int_t idPartType = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(calo,cells,GetCaloUtils(),
                                                                                    GetVertex(evtIndex),nMaxima,
-                                                                                   mass,angle,e1,e2,absId1,absId2) ;
+                                                                                   mass,angle,l1,l2,absId1,absId2) ;
     
     if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",idPartType);
   
@@ -2121,7 +2154,9 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fhMass->Fill(mom.E(),mass);
 
     // Asymmetry of all clusters
-    Float_t asy =-10;      
+    Float_t asy =-10;
+    Float_t e1 = l1.Energy();
+    Float_t e2 = l2.Energy();
     if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
     fhAsymmetry->Fill(mom.E(),asy);
     
@@ -2129,7 +2164,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     {
       Int_t mcIndex = GetMCIndex(tag);
       fhMCEAsymmetry[mcIndex]->Fill(mom.E(),asy);
-    }  
+    }
     
     // If cluster does not pass pid, not pi0/eta, skip it.
     if     (GetOutputAODName().Contains("Pi0") && idPartType != AliCaloPID::kPi0) 
@@ -2154,6 +2189,19 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fhSelectedAsymmetry->Fill(mom.E(),asy);
     fhSelectedMass     ->Fill(mom.E(),mass);
 
+    fhSplitE   ->Fill(e1+e2);
+    Float_t pt1 = l1.Pt();
+    Float_t pt2 = l2.Pt();
+    fhSplitPt  ->Fill(pt1+pt2);
+
+    if(IsDataMC())
+    {
+      Int_t mcIndex = GetMCIndex(tag);
+      fhMCSplitE    [mcIndex]->Fill(e1+e2);
+      fhMCSplitPt   [mcIndex]->Fill(pt1+pt2);
+    }
+
+    
     //-----------------------
     //Create AOD for analysis
     
