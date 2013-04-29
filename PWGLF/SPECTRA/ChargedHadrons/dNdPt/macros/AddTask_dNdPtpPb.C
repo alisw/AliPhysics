@@ -15,8 +15,8 @@ CheckLoadLibrary("libPWG0selectors");
   }
 
   // Switch off all AliInfo (too much output!!!)
-  AliLog::SetGlobalLogLevel(AliLog::kError);
-  mgr->SetDebugLevel(0);
+//  AliLog::SetGlobalLogLevel(AliLog::kError);
+//  mgr->SetDebugLevel(0);
 
   //
   // Create event cuts
@@ -33,17 +33,18 @@ CheckLoadLibrary("libPWG0selectors");
   //
   // Create geom. acceptance cuts
   //
-  Float_t etaWindow = 1.0 ;
+  //Float_t etaWindow = 1.0;
+  eta1 = -0.765409; eta2 = -0.165409; 
   Float_t ptMin = 0.1 ;
 
   AlidNdPtAcceptanceCuts *accCuts = new AlidNdPtAcceptanceCuts("AlidNdPtAcceptanceCuts","Geom. acceptance cuts");
-  accCuts->SetEtaRange(-etaWindow,etaWindow);
+  accCuts->SetEtaRange(eta1,eta2);
   accCuts->SetPtRange(ptMin,1.e10);
 
   //
   // Create standard esd track cuts
   //
-  Int_t cutMode = 200;
+  Int_t cutMode = 2014;
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
   //gROOT->LoadMacro("./CreatedNdPtTrackCuts.C");
@@ -132,7 +133,7 @@ CheckLoadLibrary("libPWG0selectors");
     
     
     // set centrality estimator
-    fdNdPtAnalysis->SetCentralityEstimators("NPA");
+   // fdNdPtAnalysis->SetCentralityEstimators("NPA");
   
 
   // Add analysis object
@@ -142,7 +143,7 @@ CheckLoadLibrary("libPWG0selectors");
   mgr->AddTask(task);
 
   // Create containers for input
-//  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
  
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
 
