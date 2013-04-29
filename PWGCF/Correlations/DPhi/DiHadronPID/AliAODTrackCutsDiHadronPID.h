@@ -1,5 +1,8 @@
 #ifndef ALIAODTRACKCUTSDIHADRONPID_H
 #define ALIAODTRACKCUTSDIHADRONPID_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. * 
+* See cxx source for full Copyright notice */ 
+/* $Id$ */
 
 #include "TFormula.h"
 #include "TH1F.h"
@@ -27,10 +30,10 @@ private:
 	AliAODTrackCutsDiHadronPID(const AliAODTrackCutsDiHadronPID&);
 	AliAODTrackCutsDiHadronPID& operator=(const AliAODTrackCutsDiHadronPID&);
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 //  Interface, methods used to get information about the track cuts, and to
 //  retrieve filled histograms. 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 public:
 	void PrintCuts();								// Gives an overview of the cuts.
@@ -96,7 +99,9 @@ public:
 // Since we will often want to have TOF histograms, here are a few methods which return the 
 // appropriate projections. The class does not own these projections, and the user must take care of them.
 	TH1F* GetHistDataTOFProjection(Int_t charge, Int_t species, Int_t ptbin);
+	TObjArray* GetDataTOFProjection(Int_t charge, Int_t species);
  	TH1F* GetHistDataTOFMismatch(Int_t charge, Int_t species, Int_t ptbin);
+ 	TObjArray* GetDataTOFMismatch(Int_t charge, Int_t species);
 	Double_t GetPtMinPID(Int_t bin) const {
 		Int_t ptclass = GetPtClass(bin);
 		if (ptclass == -1) {return -999.;}
@@ -161,10 +166,10 @@ public:
 
 	Int_t GetDebugLevel() const {return fDebug;}
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 //  Methods used to configure the track cuts object, to be called at
 //  initialization, i.e., before the object is added to an analysis task.  
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 public:
 
@@ -218,9 +223,9 @@ public:
 
 	void SetDebugLevel(Int_t debuglevel) {fDebug = debuglevel;}
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 //  Methods called by the analysis task. 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 public:
 
@@ -234,9 +239,9 @@ public:
 	Bool_t IsSelectedGeneratedMC(AliAODMCParticle* particle);
 	Bool_t IsSelectedReconstructedMC(AliTrackDiHadronPID* track);
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 //  Internal methods.
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 public:
 
@@ -336,9 +341,9 @@ private:
 	TH3F* InitializePIDHisto(const char* name, Int_t histoclass, Int_t expspecies, Int_t ptclass);
 	TH2F* InitializeTOFMismatchHisto(const char* name, Int_t histoclass, Int_t expspecies, Int_t ptclass);
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 //  Data members.
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 private:
 // Track Cuts
@@ -381,6 +386,7 @@ private:
 
 	TH3F* 					fHistDataPID[3][3][5];			//! TPC/TOF v.s. pT, [charge][mass assumption][ptclass]
 	TH2F*					fHistTOFMismatch[3][3][5];		//! TOF Mismatch histograms, [charge][mass assumption][ptclass]
+	TH3F*					fHistTPCTOFMismatch[3][3][5];	//! TPC/TOF mismatch histograms (Same as TOF, but now the TPC hit of the track is included.)
 
 // QA histograms for Primary Reconstructed MC tracks.
 	TList*					fPrimRecMCTrackQAHistos;		//
@@ -427,7 +433,7 @@ private:
 
 	Int_t 					fDebug;							// Debug flag.
 
-	ClassDef(AliAODTrackCutsDiHadronPID,4);
+	ClassDef(AliAODTrackCutsDiHadronPID,5);
 
 };
 

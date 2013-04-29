@@ -1,6 +1,23 @@
-// -------------------------------------------------------------------------
-//  INFO
-// -------------------------------------------------------------------------
+/************************************************************************* 
+* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. * 
+*                                                                        * 
+* Author: The ALICE Off-line Project.                                    * 
+* Contributors are mentioned in the code where appropriate.              * 
+*                                                                        * 
+* Permission to use, copy, modify and distribute this software and its   * 
+* documentation strictly for non-commercial purposes is hereby granted   * 
+* without fee, provided that the above copyright notice appears in all   * 
+* copies and that both the copyright notice and this permission notice   * 
+* appear in the supporting documentation. The authors make no claims     * 
+* about the suitability of this software for any purpose. It is          * 
+* provided "as is" without express or implied warranty.                  * 
+**************************************************************************/
+
+// -----------------------------------------------------------------------
+//  This analysis task fills histograms with PID information of tracks 
+//  associated to a high p_T trigger.
+// -----------------------------------------------------------------------
+//  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 
 #include <iostream>
 
@@ -47,7 +64,7 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskDiHadronPID);
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 	AliAnalysisTaskSE(),
 	fPIDResponse(0x0),
@@ -94,7 +111,7 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char* name):
 	AliAnalysisTaskSE(name),
 	fPIDResponse(0x0),
@@ -143,7 +160,7 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char* name):
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 AliAnalysisTaskDiHadronPID::~AliAnalysisTaskDiHadronPID() {;
 
 	//
@@ -154,7 +171,7 @@ AliAnalysisTaskDiHadronPID::~AliAnalysisTaskDiHadronPID() {;
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 
 	//
@@ -258,7 +275,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 void AliAnalysisTaskDiHadronPID::LocalInit() {
 
 	//
@@ -269,7 +286,7 @@ void AliAnalysisTaskDiHadronPID::LocalInit() {
  	
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 
 	//
@@ -451,7 +468,7 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 Bool_t AliAnalysisTaskDiHadronPID::LoadExtMismatchHistos() {
 
 	//
@@ -509,7 +526,7 @@ Bool_t AliAnalysisTaskDiHadronPID::LoadExtMismatchHistos() {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 Double_t AliAnalysisTaskDiHadronPID::GenerateRandomHit(Double_t eta) {
 
 	//
@@ -555,7 +572,7 @@ Double_t AliAnalysisTaskDiHadronPID::GenerateRandomHit(Double_t eta) {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 void AliAnalysisTaskDiHadronPID::PrintPoolManagerContents() {
 
 	//
@@ -595,7 +612,7 @@ void AliAnalysisTaskDiHadronPID::PrintPoolManagerContents() {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 void AliAnalysisTaskDiHadronPID::Terminate(Option_t*) {;
 
 	//

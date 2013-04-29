@@ -1,8 +1,22 @@
-// -------------------------------------------------------------------------
-//  Tools for drawing/ manipulating histograms.
-//  ! NEEDS CLEANUP !
-// -------------------------------------------------------------------------
-// Author: Misha Veldhoen (misha.veldhoen@cern.ch)
+/************************************************************************* 
+* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. * 
+*                                                                        * 
+* Author: The ALICE Off-line Project.                                    * 
+* Contributors are mentioned in the code where appropriate.              * 
+*                                                                        * 
+* Permission to use, copy, modify and distribute this software and its   * 
+* documentation strictly for non-commercial purposes is hereby granted   * 
+* without fee, provided that the above copyright notice appears in all   * 
+* copies and that both the copyright notice and this permission notice   * 
+* appear in the supporting documentation. The authors make no claims     * 
+* about the suitability of this software for any purpose. It is          * 
+* provided "as is" without express or implied warranty.                  * 
+**************************************************************************/
+
+// -----------------------------------------------------------------------
+//  Tools for drawing/ manipulating histograms. (NEEDS CLEANUP!)
+// -----------------------------------------------------------------------
+//  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 
 #include <iostream>
 #include "TCanvas.h"
@@ -20,7 +34,7 @@
 
 using namespace std;
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 TObjArray* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name, 
 	const char* title, TH1F* h1, TH1F* h2, Int_t markerstyle, Bool_t logy) {
 
@@ -123,7 +137,7 @@ TObjArray* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name,
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(
 	TH1F* histIn, Double_t* binsx, Int_t Nbinsx, Bool_t density) {
 
@@ -263,7 +277,7 @@ TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 TH1F* AliHistToolsDiHadronPID::TrimHisto(TH1F* histo, Int_t firstbin, Int_t lastbin) {
 
 	const char* name = histo->GetName();

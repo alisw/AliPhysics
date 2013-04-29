@@ -1,10 +1,22 @@
-// -------------------------------------------------------------------------
-// Copies all info that is needed for the DiHadronPID analysis.
-// Possible Extension: At this moment the object is protected for returning
-// pointers to the original tracks. It could at some point be beneficial to
-// be able to access this information.
-// -------------------------------------------------------------------------
-// Author: Misha Veldhoen (misha.veldhoen@cern.ch)
+/************************************************************************* 
+* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. * 
+*                                                                        * 
+* Author: The ALICE Off-line Project.                                    * 
+* Contributors are mentioned in the code where appropriate.              * 
+*                                                                        * 
+* Permission to use, copy, modify and distribute this software and its   * 
+* documentation strictly for non-commercial purposes is hereby granted   * 
+* without fee, provided that the above copyright notice appears in all   * 
+* copies and that both the copyright notice and this permission notice   * 
+* appear in the supporting documentation. The authors make no claims     * 
+* about the suitability of this software for any purpose. It is          * 
+* provided "as is" without express or implied warranty.                  * 
+**************************************************************************/
+
+// -----------------------------------------------------------------------
+//  Track class for the DiHadronPID analysis.
+// -----------------------------------------------------------------------
+//  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 
 #include <iostream>
 using namespace std;
@@ -20,12 +32,12 @@ using namespace std;
 #include "AliPIDResponse.h"
 #include "AliTPCPIDResponse.h"
 
-// Objects own include.
+// Class header.
 #include "AliTrackDiHadronPID.h"
 
 ClassImp(AliTrackDiHadronPID);
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 AliTrackDiHadronPID::AliTrackDiHadronPID():
 	TObject(),
 	fAODTrack(0x0),
@@ -87,7 +99,7 @@ AliTrackDiHadronPID::AliTrackDiHadronPID():
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 AliTrackDiHadronPID::AliTrackDiHadronPID(AliAODTrack* track, AliAODTrack* globaltrack, AliAODMCParticle* mcparticle, AliPIDResponse* pidresponse):
 	TObject(),
 	fAODTrack(0x0),
@@ -189,7 +201,7 @@ AliTrackDiHadronPID::AliTrackDiHadronPID(AliAODTrack* track, AliAODTrack* global
 		if ( sigmaTPCProton < 1.0) {cout<<"tpcsigmabelowone: "<<sigmaTPCProton<<endl;}*/
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 Bool_t AliTrackDiHadronPID::CopyBasicTrackInfo() {
 
 	//
@@ -219,7 +231,7 @@ Bool_t AliTrackDiHadronPID::CopyBasicTrackInfo() {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 Bool_t AliTrackDiHadronPID::CopyFlags() {
 
 	//
@@ -243,7 +255,7 @@ Bool_t AliTrackDiHadronPID::CopyFlags() {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 Bool_t AliTrackDiHadronPID::CopyDCAInfo() {
 
 	//
@@ -270,7 +282,7 @@ Bool_t AliTrackDiHadronPID::CopyDCAInfo() {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 Bool_t AliTrackDiHadronPID::CopyITSInfo() {
 
 	//
@@ -292,7 +304,7 @@ Bool_t AliTrackDiHadronPID::CopyITSInfo() {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 Bool_t AliTrackDiHadronPID::CopyTPCInfo() {
 
 	//
@@ -321,7 +333,7 @@ Bool_t AliTrackDiHadronPID::CopyTPCInfo() {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 Bool_t AliTrackDiHadronPID::CopyTOFInfo() {
 
 	//
@@ -349,7 +361,7 @@ Bool_t AliTrackDiHadronPID::CopyTOFInfo() {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 Bool_t AliTrackDiHadronPID::CopyMCInfo() {
 
 	// Copies MC info (needs an MC track with the same label)

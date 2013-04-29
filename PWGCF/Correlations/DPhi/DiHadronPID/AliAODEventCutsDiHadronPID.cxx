@@ -1,7 +1,22 @@
-// -------------------------------------------------------------------------
-// Object managing event cuts, and holding QA histograms.
-// -------------------------------------------------------------------------
-// Author: Misha Veldhoen (misha.veldhoen@cern.ch)
+/************************************************************************* 
+* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. * 
+*                                                                        * 
+* Author: The ALICE Off-line Project.                                    * 
+* Contributors are mentioned in the code where appropriate.              * 
+*                                                                        * 
+* Permission to use, copy, modify and distribute this software and its   * 
+* documentation strictly for non-commercial purposes is hereby granted   * 
+* without fee, provided that the above copyright notice appears in all   * 
+* copies and that both the copyright notice and this permission notice   * 
+* appear in the supporting documentation. The authors make no claims     * 
+* about the suitability of this software for any purpose. It is          * 
+* provided "as is" without express or implied warranty.                  * 
+**************************************************************************/
+
+// -----------------------------------------------------------------------
+//  Event Cut class for the DiHadronPID analysis.
+// -----------------------------------------------------------------------
+//  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 
 #include <iostream>
 #include "TList.h"
@@ -22,7 +37,7 @@ using namespace std;
 
 ClassImp(AliAODEventCutsDiHadronPID);
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID():
 	TNamed(),
 	fIsPbPb(kTRUE),
@@ -57,7 +72,7 @@ AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID():
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID(const char* name):
 	TNamed(name,"AOD Event Cuts"),
 	fIsPbPb(kTRUE),
@@ -92,7 +107,7 @@ AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID(const char* name):
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 AliAODEventCutsDiHadronPID::~AliAODEventCutsDiHadronPID() {
 
 	//
@@ -109,7 +124,7 @@ AliAODEventCutsDiHadronPID::~AliAODEventCutsDiHadronPID() {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 Long64_t AliAODEventCutsDiHadronPID::Merge(TCollection* list) {
 
 	//
@@ -165,7 +180,7 @@ Long64_t AliAODEventCutsDiHadronPID::Merge(TCollection* list) {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 void AliAODEventCutsDiHadronPID::CreateHistos() {
 
 	cout<<"AliAODEventCutsDiHadronPID - Creating histograms"<<endl;
@@ -225,7 +240,7 @@ void AliAODEventCutsDiHadronPID::CreateHistos() {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 	
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
@@ -315,7 +330,7 @@ Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 
 }
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 void AliAODEventCutsDiHadronPID::PrintCuts() {
 
 	// NOT IMPLEMENTED.
