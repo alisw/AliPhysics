@@ -710,7 +710,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
     
     //Centrality stuff 
     if(fUseCentrality) {
-      if(gAnalysisLevel == "AOD") { //centrality in AOD header
+      if((gAnalysisLevel == "AOD")||(gAnalysisLevel == "MCAOD")) { //centrality in AOD header
 	AliAODHeader *header = (AliAODHeader*) event->GetHeader();
 	if(header){
 	  gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
@@ -773,14 +773,14 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
       else{
 	gCentrality = -1.;
       }
-    }
+    }//centrality
 
     //Multiplicity stuff 
-    if(fUseMultiplicity) 
+    if(fUseMultiplicity)
       gRefMultiplicity = GetRefMultiOrCentrality(event);
-    
+
     // Event Vertex MC
-    if(gAnalysisLevel == "MC"){
+    if(gAnalysisLevel == "MC") {
       if(!event) {
 	AliError("mcEvent not available");
 	return 0x0;
@@ -889,7 +889,7 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     // Fills Event statistics histograms
   
   Float_t gCentrality = -1.;
-  Double_t fMultiplicity = -100.;
+  Double_t gMultiplicity = 0.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
   if(fEventClass == "Centrality"){
@@ -921,23 +921,39 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
   if(fEventClass=="Multiplicity"&&gAnalysisLevel == "ESD"){
     AliESDEvent* gESDEvent = dynamic_cast<AliESDEvent*>(event);
     if(gESDEvent){
-      fMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(gESDEvent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
+      gMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(gESDEvent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
     }//AliESDevent cast
   }
   else if(fEventClass=="Multiplicity"&&gAnalysisLevel == "AOD"){
     AliAODHeader *header = (AliAODHeader*) event->GetHeader();
     if(header){
-      fMultiplicity = header->GetRefMultiplicity();
+      gMultiplicity = header->GetRefMultiplicity();
     }//AOD header
   }
   else if(fEventClass=="Multiplicity"&&gAnalysisLevel == "MC") {
     AliMCEvent* gMCEvent = dynamic_cast<AliMCEvent*>(event);
-    fMultiplicity = gMCEvent->GetNumberOfPrimaries();
-  }
+    //Calculating the multiplicity as the number of charged primaries
+    //within \pm 0.8 in eta and pT > 0.1 GeV/c
+    for(Int_t iParticle = 0; iParticle < gMCEvent->GetNumberOfPrimaries(); iParticle++) {
+      AliMCParticle* track = dynamic_cast<AliMCParticle *>(gMCEvent->GetTrack(iParticle));
+      if (!track) {
+	AliError(Form("Could not receive particle %d", iParticle));
+	continue;
+      }
+      
+      //exclude non stable particles
+      if(!(gMCEvent->IsPhysicalPrimary(iParticle))) continue;
+      if(track->Pt() < 0.1)  continue;
+      if(track->Eta() < fEtaMin || track->Eta() > fEtaMax)  continue;
+      if(track->Charge() == 0) continue;
+
+      gMultiplicity += 1;
+    }//loop over primaries
+  }//MC mode & multiplicity class
 
   Double_t lReturnVal = -100;
   if(fEventClass=="Multiplicity"){
-    lReturnVal = fMultiplicity;
+    lReturnVal = gMultiplicity;
   }else if(fEventClass=="Centrality"){
     lReturnVal = gCentrality;
   }
@@ -1128,6 +1144,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
     }//track loop
   }// AOD analysis
 
+  else if(gAnalysisLevel == "MCAOD") {
+  }
 
   else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD") { // handling of TPC only tracks different in AOD and ESD
 
