@@ -81,9 +81,6 @@ class AliAnalysisTaskZDCTreeMaker : public AliAnalysisTaskSE {
   Float_t  fZNAtowerLG[5];	//  ZNA 5 tower signals
   Float_t  fZPAtowerLG[5];	//  ZPA 5 tower signals
   //
-//  Int_t    fTDCvalues[32][4];   // TDC raw values !ONLY FOR ESDs ANALYSIS!
-//  Float_t  fTDCcorr[32][4];     // TDC corrected values  !ONLY FOR ESDs ANALYSIS!
-  //
   Int_t    fTDCZNC[4];	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
   Int_t    fTDCZPC[4];	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
   Int_t    fTDCZNA[4];	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
@@ -91,15 +88,19 @@ class AliAnalysisTaskZDCTreeMaker : public AliAnalysisTaskSE {
 //  Int_t    fTDCZEM1;	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
 //  Int_t    fTDCZEM2;	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
   
-  Float_t fCentralityV0M;        // Centrality from V0A+V0C
-  Float_t fCentralityV0A;        // Centrality from V0A
-  Float_t fCentralityV0C;        // Centrality from V0C
-  Float_t fCentralityCL1;        // Centrality from Clusters in layer 1
+  Float_t fCentralityV0M;       // Centrality from V0A+V0C
+  Float_t fCentralityV0A;       // Centrality from V0A
+  Float_t fCentralityV0C;       // Centrality from V0C
+  Float_t fCentralityCL1;       // Centrality from Clusters in layer 1
+  Float_t fCentralityZNA;       // Centrality from ZNA
+  Float_t fCentralityZPA;       // Centrality from ZPA
+  Float_t fCentralityZNC;       // Centrality from ZNC
+  Float_t fCentralityZPC;       // Centrality from ZPC
   //
   AliAnalysisTaskZDCTreeMaker& operator= (const AliAnalysisTaskZDCTreeMaker& ana);
   AliAnalysisTaskZDCTreeMaker(const AliAnalysisTaskZDCTreeMaker& c);
   //
-  ClassDef(AliAnalysisTaskZDCTreeMaker,2); 
+  ClassDef(AliAnalysisTaskZDCTreeMaker,3); 
 
 };
 
