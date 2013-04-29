@@ -770,16 +770,26 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistJet1PtvsJet2Pt->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJet1PtvsJet2Pt);
 
-  if (!fRhoName.IsNull() || !fRho2Name.IsNull()) {  
-    fHistDeltaCorrPtvsJet1CorrPt = new TH2F("fHistDeltaCorrPtvsJet1CorrPt", "fHistDeltaCorrPtvsJet1CorrPt", 
-					2*fNbins, -fMaxBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+  if (!fRhoName.IsNull() || !fRho2Name.IsNull()) {
+    if (fRhoName.IsNull()) 
+      fHistDeltaCorrPtvsJet1CorrPt = new TH2F("fHistDeltaCorrPtvsJet1CorrPt", "fHistDeltaCorrPtvsJet1CorrPt", 
+					      fNbins, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+    else
+      fHistDeltaCorrPtvsJet1CorrPt = new TH2F("fHistDeltaCorrPtvsJet1CorrPt", "fHistDeltaCorrPtvsJet1CorrPt", 
+					      2*fNbins, -fMaxBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+      
     fHistDeltaCorrPtvsJet1CorrPt->GetXaxis()->SetTitle("p_{T,1}^{corr}");  
     fHistDeltaCorrPtvsJet1CorrPt->GetYaxis()->SetTitle("#deltap_{T}^{corr} (GeV/c)");
     fHistDeltaCorrPtvsJet1CorrPt->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaCorrPtvsJet1CorrPt);
 
-    fHistDeltaCorrPtvsJet2CorrPt = new TH2F("fHistDeltaCorrPtvsJet2CorrPt", "fHistDeltaCorrPtvsJet2CorrPt", 
-					2*fNbins, -fMaxBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+    if (fRho2Name.IsNull()) 
+      fHistDeltaCorrPtvsJet2CorrPt = new TH2F("fHistDeltaCorrPtvsJet2CorrPt", "fHistDeltaCorrPtvsJet2CorrPt", 
+					      fNbins, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);					      
+    else
+      fHistDeltaCorrPtvsJet2CorrPt = new TH2F("fHistDeltaCorrPtvsJet2CorrPt", "fHistDeltaCorrPtvsJet2CorrPt", 
+					      2*fNbins, -fMaxBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+
     fHistDeltaCorrPtvsJet2CorrPt->GetXaxis()->SetTitle("p_{T,2}^{corr}");  
     fHistDeltaCorrPtvsJet2CorrPt->GetYaxis()->SetTitle("#deltap_{T}^{corr} (GeV/c)");
     fHistDeltaCorrPtvsJet2CorrPt->GetZaxis()->SetTitle("counts");
