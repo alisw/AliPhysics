@@ -71,6 +71,9 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
     fHistDeltaPtEmbArea[i] = 0;
   }
 
+  memset(fEmbeddedClusterIds, -1, 999*sizeof(Int_t));
+  memset(fEmbeddedTrackIds, -1, 999*sizeof(Int_t));
+
   SetMakeGeneralHistograms(kTRUE);
 }
 
@@ -121,6 +124,9 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
     fHistRhoVSEmbBkg[i] = 0;
     fHistDeltaPtEmbArea[i] = 0;
   }
+
+  memset(fEmbeddedClusterIds, -1, 999*sizeof(Int_t));
+  memset(fEmbeddedTrackIds, -1, 999*sizeof(Int_t));
 
   SetMakeGeneralHistograms(kTRUE);
 }
