@@ -25,7 +25,7 @@ AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(Bool_t isMCtruth=kFALSE, UInt_t t
   AliAnalysisTaskSEPHOSpPbPi0 *task = new AliAnalysisTaskSEPHOSpPbPi0("TaskPHOSpPbPi0");
   task->SetUseMC(isMCtruth);
   task->SetXBins(tCent, tBuffer);
-  task->SetLogWeight(0.07);
+  task->SetLogWeight(0.06);
   task->SetMinNCells(2);
   task->SetMinClusterEnergy(0.3);
   task->SetMinM02(0.2);
