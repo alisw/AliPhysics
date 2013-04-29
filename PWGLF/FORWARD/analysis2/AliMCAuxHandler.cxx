@@ -344,7 +344,7 @@ AliMCAuxHandler::GetParticleArray(AliMCAuxHandler* handler,
   }
   
   AliStack* stack = event->Stack();
-  if (!event) { 
+  if (!stack) { 
     ::Error("AliMCAuxHandler::GetArray", "Event has no stack");
     return 0;
   }
