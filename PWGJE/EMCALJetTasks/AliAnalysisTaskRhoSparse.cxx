@@ -148,8 +148,16 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
       continue;
     } 
 
+    TotaljetArea+=jet->Area();
+    
+    if(jet->Pt()>0.1){
+      TotaljetAreaPhys+=jet->Area();
+    }
+
     if (!AcceptJet(jet))
       continue;
+
+ 
 
    // Search for overlap with signal jets
     Bool_t isOverlapping = kFALSE;
@@ -173,21 +181,16 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
     if(isOverlapping) 
       continue;
 
-    rhovec[NjetAcc] = jet->Pt() / jet->Area();
-
-    TotaljetAreaPhys+=jet->Area();
-    TotaljetArea+=jet->Area();
-    ++NjetAcc;
+    if(jet->Pt()>0.1){
+      rhovec[NjetAcc] = jet->Pt() / jet->Area();
+      ++NjetAcc;
+    }
+    
 
   }
 
-  const Double_t TpcMaxPhi = TMath::Pi()*2.;
-
-  const Double_t TpcArea = TpcMaxPhi * 2.*(0.7);
   Double_t OccCorr=0.0;
-  //cout << "Area Physical: " << TotaljetAreaPhys << " total: " << TotaljetArea <<endl;
-  //if(TotaljetArea>0) OccCorr=TotaljetAreaPhys/TotaljetArea;
-  if(TpcArea>0) OccCorr=TotaljetAreaPhys/TpcArea;
+  if(TotaljetArea>0) OccCorr=TotaljetAreaPhys/TotaljetArea;
  
   fHistOccCorrvsCent->Fill(fCent, OccCorr);
 
@@ -196,12 +199,12 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
     //find median value
     Double_t rho = TMath::Median(NjetAcc, rhovec);
 
+
     if(fRhoCMS){
       rho = rho * OccCorr;
     }
 
     fRho->SetVal(rho);
-
 
     if (fRhoScaled) {
       Double_t rhoScaled = rho * GetScaleFactor(fCent);
