@@ -206,7 +206,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t isAOD, Bool_t useMC, TString appendix
     Float_t tpcparamhigh=paramsTPCdEdxcuthighAssoc[a];
     pidbackground->ConfigureTPCcentralityCut(a,cutmodelAssoc,tpcparamlow,tpcparamhigh);
   }
-  backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
+  //backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
   backe->SetHFEBackgroundCuts(hfeBackgroundCuts);
 
   task->SetHFEBackgroundSubtraction(backe);
