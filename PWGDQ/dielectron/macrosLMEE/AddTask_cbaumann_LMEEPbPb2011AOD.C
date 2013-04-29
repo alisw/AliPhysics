@@ -1,5 +1,6 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEoutput.root", Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE, Bool_t PIDbaseline=kFALSE, Bool_t rejOnly=kTRUE) {
-
+AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEoutput.root", 
+	  Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE, Bool_t PIDbaseline=kFALSE, Bool_t rejOnly=kTRUE,
+	  Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral),Int_t collCands= AliVEvent::kAny) {
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -57,10 +58,10 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  task->SetTriggerMask(triggerNames);
 //  task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
 //  task->SetRejectPileup();
-  task->SelectCollisionCandidates(AliVEvent::kAny);  
+  task->SelectCollisionCandidates(collCands);  
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
 	
 
@@ -70,9 +71,9 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
 
 if (rejOnly) {
 
-  AliDielectron *lowmass7=ConfigLMEEPbPb2011AOD(7,hasMC,bESDANA);
-  task->AddDielectron(lowmass7);
-  printf("add: %s\n",lowmass7->GetName());
+  AliDielectron *lowmass1=ConfigLMEEPbPb2011AOD(1,hasMC,bESDANA);
+  task->AddDielectron(lowmass1);
+  printf("add: %s\n",lowmass1->GetName());
 
 }
 else {

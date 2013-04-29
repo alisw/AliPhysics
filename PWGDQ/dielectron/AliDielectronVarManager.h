@@ -1435,24 +1435,32 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
       }
     }
     
-    values[AliDielectronVarManager::kTRDpidEffPair] = 0.;
-    if (fgTRDpidEff[0][0]){
-      Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
-      Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
-      AliVParticle* leg1 = pair->GetFirstDaughter();
-      AliVParticle* leg2 = pair->GetSecondDaughter();
-      if (leg1 && leg2){
-        Fill(leg1, valuesLeg1);
-        Fill(leg2, valuesLeg2);
-        values[AliDielectronVarManager::kTRDpidEffPair] = valuesLeg1[AliDielectronVarManager::kTRDpidEffLeg]*valuesLeg2[AliDielectronVarManager::kTRDpidEffLeg];
-      }
-    }
+	values[AliDielectronVarManager::kTRDpidEffPair] = 0.;
+	if (fgTRDpidEff[0][0]){
+	  Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
+	  Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
+	  AliVParticle* leg1 = pair->GetFirstDaughter();
+	  AliVParticle* leg2 = pair->GetSecondDaughter();
+	  if (leg1 && leg2){
+		Fill(leg1, valuesLeg1);
+		Fill(leg2, valuesLeg2);
+		values[AliDielectronVarManager::kTRDpidEffPair] = valuesLeg1[AliDielectronVarManager::kTRDpidEffLeg]*valuesLeg2[AliDielectronVarManager::kTRDpidEffLeg];
+	  }
+	}
 
 
   }//if (mc->HasMC())
 
-  values[AliDielectronVarManager::kMomAsymDau1] = (values[AliDielectronVarManager::kP] != 0)? pair->GetFirstDaughter()->P()  / values[AliDielectronVarManager::kP]: 0;
-  values[AliDielectronVarManager::kMomAsymDau2] = (values[AliDielectronVarManager::kP] != 0)? pair->GetSecondDaughter()->P()  / values[AliDielectronVarManager::kP]: 0;
+  AliVParticle* leg1 = pair->GetFirstDaughter();
+  AliVParticle* leg2 = pair->GetSecondDaughter();
+  if (leg1)
+	values[AliDielectronVarManager::kMomAsymDau1] = (values[AliDielectronVarManager::kP] != 0)? leg1->P()  / values[AliDielectronVarManager::kP]: 0;
+  else 
+	values[AliDielectronVarManager::kMomAsymDau1] = -9999.;
+  if (leg2)
+	values[AliDielectronVarManager::kMomAsymDau2] = (values[AliDielectronVarManager::kP] != 0)? leg2->P()  / values[AliDielectronVarManager::kP]: 0;
+  else 
+	values[AliDielectronVarManager::kMomAsymDau2] = -9999.;
 }
 
 inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *particle, Double_t * const values)
