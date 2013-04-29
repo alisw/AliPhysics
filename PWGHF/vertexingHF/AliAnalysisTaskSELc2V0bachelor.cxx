@@ -1452,10 +1452,12 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
 	AliDebug(2,Form(" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cascade number %d (total cascade number = %d)", iLctopK0s,nCascades));
 
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel));
-	pdgCode = partLc->GetPdgCode();
-	if (pdgCode<0) AliDebug(2,Form(" ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ MClabel=%d ~~~~~~~~~~ pdgCode=%d", mcLabel, pdgCode));
-	pdgCode = TMath::Abs(pdgCode);
-	isLc = 1;
+	if(partLc){
+	  pdgCode = partLc->GetPdgCode();
+	  if (pdgCode<0) AliDebug(2,Form(" ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ MClabel=%d ~~~~~~~~~~ pdgCode=%d", mcLabel, pdgCode));
+	  pdgCode = TMath::Abs(pdgCode);
+	  isLc = 1;
+	}
       } else {
 	pdgCode=-1;
       }
