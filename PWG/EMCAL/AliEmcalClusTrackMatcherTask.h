@@ -8,14 +8,22 @@
 class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskEmcal {
  public:
   AliEmcalClusTrackMatcherTask();
-  AliEmcalClusTrackMatcherTask(const char *name);
+  AliEmcalClusTrackMatcherTask(const char *name, Bool_t histo=kFALSE);
   virtual ~AliEmcalClusTrackMatcherTask();
 
-  Bool_t       Run();
+  void         UserCreateOutputObjects();
+
   void         SetMaxDistance(Double_t d)       { fMaxDistance = d; }
 
  protected:
-  Double_t     fMaxDistance;        // maximum distance to match clusters and tracks
+
+  Bool_t       Run();
+  Int_t        GetMomBin(Double_t p) const;
+
+  Double_t     fMaxDistance            ;// maximum distance to match clusters and tracks
+
+  TH1         *fHistMatchEta[8][9][2]  ;//!deta distribution
+  TH1         *fHistMatchPhi[8][9][2]  ;//!dphi distribution
 
  private:
   AliEmcalClusTrackMatcherTask(const AliEmcalClusTrackMatcherTask&);            // not implemented
