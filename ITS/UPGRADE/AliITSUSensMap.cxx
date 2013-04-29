@@ -136,6 +136,6 @@ void  AliITSUSensMap::SetDimensions(UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle)
   fDimCol = dimCol; 
   fDimRow = dimRow; 
   fDimCycle=dimCycle;
-  if ((fDimCol*fDimRow*fDimCycle*2)>kMaxPackDim) AliFatal(Form("Dimension %dx%dx%d*2 cannot be packed to UInt_t",fDimCol,fDimRow,fDimCycle));
+  if ((fDimCol*fDimRow*fDimCycle)>kMaxPackDim/2) AliFatal(Form("Dimension %dx%dx%d*2 cannot be packed to UInt_t",fDimCol,fDimRow,fDimCycle));
 }
 
