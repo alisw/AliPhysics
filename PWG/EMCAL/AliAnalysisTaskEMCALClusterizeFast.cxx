@@ -188,6 +188,10 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
 {
   // Main loop, called for each event
 
+  // if no operation is requested, return
+  if (!fDoClusterize && !fDoUpdateCells)
+    return;
+
   // remove the contents of output list set in the previous event 
   if (fOutputAODBranch)
     fOutputAODBranch->Clear("C");
