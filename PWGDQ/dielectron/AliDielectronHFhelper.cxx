@@ -317,9 +317,9 @@ TH1* AliDielectronHFhelper::FindHistograms(TObjArray *histos)
 	    histos->AddAt(0x0,i);
 	  }
 	  if(bFndBin && !(binmin == min && binmax == max)) {
-	      histos->AddAt(0x0,i);
-	      AliDebug(10,Form(" removed, within range min %.2f,%.2f  max %.2f,%.2f",binmin,min,binmax,max));
-	    }
+	    histos->AddAt(0x0,i);
+	    AliDebug(10,Form(" removed, within range min %.2f,%.2f  max %.2f,%.2f",binmin,min,binmax,max));
+	  }
 	  // clean up
 	  if(limits) delete limits;
 
