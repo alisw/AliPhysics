@@ -84,12 +84,14 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker():
     fZPAEnergy(0),
     fZEM1Energy(0), 
     fZEM2Energy(0),
-//    fTDCZEM1(0),
-//    fTDCZEM2(0),
     fCentralityV0M(0),
     fCentralityV0A(0),
     fCentralityV0C(0),
-    fCentralityCL1(0)
+    fCentralityCL1(0),
+    fCentralityZNA(0),
+    fCentralityZPA(0),    
+    fCentralityZNC(0),
+    fCentralityZPC(0)    
 {   
    // Default constructor
 
@@ -112,10 +114,6 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker():
      fTDCZPA[ihit] = 9999;
   }
   
-  /*for(Int_t itdc=0; itdc<32; itdc++){
-    for(Int_t ihit=0; ihit<4; ihit++) fTDCvalues[itdc][ihit]=9999;
-//    for(Int_t ihit=0; ihit<4; ihit++) fTDCcorr[itdc][ihit]=-9999.;
-  }*/
 }   
 
 //________________________________________________________________________
@@ -129,10 +127,10 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
     fCentralityTree(0x0),
     fIsEventSelected(kFALSE),
     fIsPileupFromSPD(kFALSE),
-    fxVertex(0),       
-    fyVertex(0),       
-    fzVertex(0),       
-    fVertexer3d(kFALSE), 
+    fxVertex(0),	 
+    fyVertex(0),	 
+    fzVertex(0),	 
+    fVertexer3d(kFALSE),
     fNTracklets(0),
     fIsV0ATriggered(0),
     fIsV0CTriggered(0),
@@ -145,12 +143,15 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
     fZPAEnergy(0),
     fZEM1Energy(0), 
     fZEM2Energy(0),
-//    fTDCZEM1(0),
-//    fTDCZEM2(0),
     fCentralityV0M(0),
     fCentralityV0A(0),
     fCentralityV0C(0),
-    fCentralityCL1(0)
+    fCentralityCL1(0),
+    fCentralityZNA(0),
+    fCentralityZPA(0),    
+    fCentralityZNC(0),
+    fCentralityZPC(0)    
+    
 {
   // Default constructor
   fNClusters[0]=fNClusters[1]=0;
@@ -172,11 +173,6 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
      fTDCZNA[ihit] = 9999.;
      fTDCZPA[ihit] = 9999;
   }
-  
-  /*for(Int_t itdc=0; itdc<32; itdc++){
-    for(Int_t ihit=0; ihit<4; ihit++) fTDCvalues[itdc][ihit]=9999;
-//    for(Int_t ihit=0; ihit<4; ihit++) fTDCcorr[itdc][ihit]=-9999.;
-  }*/
   
   // Output slot #1 writes into a TList container
   DefineOutput(1, TList::Class()); 
@@ -212,7 +208,7 @@ void AliAnalysisTaskZDCTreeMaker::UserCreateOutputObjects()
 
     fCentralityTree = new TTree("fCentralityTree", "Centrality vs. multiplicity tree");
     //
-//    fCentralityTree->Branch("trigClass",&fTrigClass,"trigClass/C");
+    fCentralityTree->Branch("trigClass",&fTrigClass,"trigClass/C");
     fCentralityTree->Branch("eventSelected",&fIsEventSelected,"eventSelected/O");
     fCentralityTree->Branch("xVertex", &fxVertex,"xVertex/D");
     fCentralityTree->Branch("yVertex", &fyVertex,"yVertex/D");
@@ -254,6 +250,10 @@ void AliAnalysisTaskZDCTreeMaker::UserCreateOutputObjects()
     fCentralityTree->Branch("centrV0Amult", &fCentralityV0A, "centrV0Amult/F");
     fCentralityTree->Branch("centrV0Cmult", &fCentralityV0C, "centrV0Cmult/F");
     fCentralityTree->Branch("centrSPDclu1", &fCentralityCL1, "centrSPDclu1/F");
+    fCentralityTree->Branch("centrZNA", &fCentralityZNA, "centrZNA/F");
+    fCentralityTree->Branch("centrZPA", &fCentralityZPA, "centrZPA/F");
+    fCentralityTree->Branch("centrZNC", &fCentralityZNA, "centrZNC/F");
+    fCentralityTree->Branch("centrZPC", &fCentralityZPA, "centrZPC/F");
   
     fOutput->Add(fCentralityTree);      
     PostData(1, fOutput);
@@ -283,11 +283,8 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       if(!fIsMCInput && esd->GetEventType()!=7) return; 
       
       // ***** Trigger selection
-      //TString triggerClass = esd->GetFiredTriggerClasses();
-      //sprintf(fTrigClass,"%s",triggerClass.Data());
-      
-      // Taking only C1ZED triggers
-      //if(triggerClass.Contains("C1ZED")==0) return;
+      TString triggerClass = esd->GetFiredTriggerClasses();
+      sprintf(fTrigClass,"%s",triggerClass.Data());
       
       // use response of AliPhysicsSelection
       fIsEventSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);       
@@ -298,7 +295,10 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       fCentralityV0A = centrality->GetCentralityPercentile("V0A");
       fCentralityV0C = centrality->GetCentralityPercentile("V0C");
       fCentralityCL1 = centrality->GetCentralityPercentile("CL1");
-      //fCentralityZDC = centrality->GetCentralityPercentile("ZEMvsZDC");
+      fCentralityZNA = centrality->GetCentralityPercentile("ZNA");
+      fCentralityZPA = centrality->GetCentralityPercentile("ZPA");
+      fCentralityZNC = centrality->GetCentralityPercentile("ZNC");
+      fCentralityZPC = centrality->GetCentralityPercentile("ZPC");
                 
       const AliESDVertex *vertex = esd->GetPrimaryVertexSPD();
       fxVertex = vertex->GetX();
@@ -360,11 +360,6 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
 	 fTDCZPA[itdc] = esdZDC->GetZDCTDCData(13, itdc);
       }
 
-      /*for(Int_t itdc=0; itdc<32; itdc++){
-	 for(Int_t i=0; i<4; i++){
-	   fTDCvalues[itdc][i] = esdZDC->GetZDCTDCData(itdc, i);
-	 }
-      }*/      
   }   
   else if(fAnalysisInput.CompareTo("AOD")==0){
 
@@ -385,11 +380,14 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       fCentralityV0A = centrality->GetCentralityPercentile("V0A");
       fCentralityV0C = centrality->GetCentralityPercentile("V0C");
       fCentralityCL1 = centrality->GetCentralityPercentile("CL1");
-      //fCentralityZDC = centrality->GetCentralityPercentile("ZEMvsZDC");
-     
+      fCentralityZNA = centrality->GetCentralityPercentile("ZNA");
+      fCentralityZPA = centrality->GetCentralityPercentile("ZPA");
+      fCentralityZNC = centrality->GetCentralityPercentile("ZNC");
+      fCentralityZPC = centrality->GetCentralityPercentile("ZPC");
+      
       // ***** Trigger selection
-      //TString triggerClass = aod->GetFiredTriggerClasses();
-      //sprintf(fTrigClass,"%s",triggerClass.Data());
+      TString triggerClass = aod->GetFiredTriggerClasses();
+      sprintf(fTrigClass,"%s",triggerClass.Data());
       
       const AliAODVertex *vertex = aod->GetPrimaryVertexSPD();
       fxVertex = vertex->GetX();
