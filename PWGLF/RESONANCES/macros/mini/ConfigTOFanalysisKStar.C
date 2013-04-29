@@ -46,7 +46,7 @@ Bool_t ConfigTOFanalysisKStar
   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
   Int_t iCutK = task->AddTrackCuts(cutSetK);
   
-  if(enableMonitor){
+  if (enableMonitor){
     Printf("======== Cut monitoring enabled");
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
     AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
@@ -54,10 +54,6 @@ Bool_t ConfigTOFanalysisKStar
     AddMonitorOutput(isMC, cutSetK->GetMonitorOutput()), monitorOpt.Data();
   }  
   
-  if (monitorOpt.Contains("MonOnly")) {
-    Printf("======== Cut monitoring only");   
-    return kTRUE;
-  }
   // -- Values ------------------------------------------------------------------------------------
   /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
   /* IM resolution    */ Int_t resID  = task->CreateValue(AliRsnMiniValue::kInvMassRes, kTRUE);

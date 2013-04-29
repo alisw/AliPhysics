@@ -25,7 +25,7 @@ public:
    enum ERsnDaughterCutSet {
       kNoCuts,
       kQualityStd2010,
-      kQualityStd2011,
+      kQualityStd2011,    
       kTOFMatch,
       kFastTPCpidNsigma,
       kFastTOFpidNsigma,
@@ -36,7 +36,9 @@ public:
       kTOFMatchNoTRD2010,
       kTOFpidKstarPbPbTRD2010,
       kTOFpidKstarPbPbNoTRD2010,
-      kTOFMatchTPCpidNsigma,      
+      kTOFMatchTPCpidNsigma,     
+      kQualityStd2010TRD,
+      kQualityStd2010NoTRD,
       kNDaughterCuts
    };
 
