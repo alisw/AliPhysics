@@ -257,7 +257,7 @@ void AliRsnCutSetDaughterParticle::Init()
          AddCut(iCutTOFNSigma);
          AddCut(iCutTPCTOFNSigma);
 	 AddCut(iCutPhiTRD2010);
-         SetCutScheme( Form("%s&%s&%s%s",fCutQuality->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),iCutPhiTRD2010->GetName()) );
+         SetCutScheme( Form("%s&%s&%s&%s",fCutQuality->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),iCutPhiTRD2010->GetName()) );
          break;
 
  case AliRsnCutSetDaughterParticle::kTOFpidKstarPbPbNoTRD2010:
@@ -273,7 +273,7 @@ void AliRsnCutSetDaughterParticle::Init()
          AddCut(iCutTOFNSigma);
          AddCut(iCutTPCTOFNSigma);
 	 AddCut(iCutPhiNoTRD2010);
-         SetCutScheme( Form("%s&%s&%s%s",fCutQuality->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),iCutPhiNoTRD2010->GetName()) );
+         SetCutScheme( Form("%s&%s&%s&%s",fCutQuality->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),iCutPhiNoTRD2010->GetName()) );
          break;
 
    case AliRsnCutSetDaughterParticle::kTOFMatchTPCpidNsigma :
