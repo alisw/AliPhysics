@@ -316,6 +316,33 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   else 
     fHiddenInfo = NULL;
 
+
+  if(!fTrueMomentum && aTrack.fTrueMomentum)
+    fTrueMomentum = new AliFemtoThreeVector();
+  if(aTrack.fTrueMomentum){
+    fTrueMomentum->SetX(aTrack.fTrueMomentum->x());
+    fTrueMomentum->SetY(aTrack.fTrueMomentum->y());
+    fTrueMomentum->SetZ(aTrack.fTrueMomentum->z());}
+
+  if(!fEmissionPoint && aTrack.fEmissionPoint) 
+    fEmissionPoint = new AliFemtoLorentzVector();
+  if(aTrack.fEmissionPoint){
+    fEmissionPoint->SetX(aTrack.fEmissionPoint->x());
+    fEmissionPoint->SetY(aTrack.fEmissionPoint->y());
+    fEmissionPoint->SetZ(aTrack.fEmissionPoint->z());
+    fEmissionPoint->SetT(aTrack.fEmissionPoint->e());
+  }
+ 
+  if(!fGlobalEmissionPoint && aTrack.fGlobalEmissionPoint)
+    fGlobalEmissionPoint = new AliFemtoThreeVector();
+  if(aTrack.fGlobalEmissionPoint){
+    fGlobalEmissionPoint->SetX(aTrack.fGlobalEmissionPoint->x());
+    fGlobalEmissionPoint->SetY(aTrack.fGlobalEmissionPoint->y());
+    fGlobalEmissionPoint->SetZ(aTrack.fGlobalEmissionPoint->z());
+    //fGlobalEmissionPoint->SetT(t.fGlobalEmissionPoint->e());
+    //  cout << "Created track " << this << endl;
+  }
+
   return *this;
 }
 
@@ -418,6 +445,12 @@ AliFemtoTrack::~AliFemtoTrack()
   // destructor
   if (fHiddenInfo)
     delete fHiddenInfo;
+
+  if(fTrueMomentum) delete fTrueMomentum;
+  if(fEmissionPoint) delete fEmissionPoint;
+  if(fGlobalEmissionPoint) delete fGlobalEmissionPoint;
+
+
   //  cout << "Deleted track " << this << endl;
 }
 
