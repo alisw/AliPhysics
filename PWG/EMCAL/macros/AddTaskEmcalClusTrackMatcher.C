@@ -3,7 +3,8 @@
 AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   const char *nTracks    = "EmcalTracks",
   const char *nClusters  = "EmcalClusters",
-  Double_t maxDist       = 0.1
+  Double_t maxDist       = 0.1,
+  Bool_t   createHisto   = kFALSE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -27,7 +28,7 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   // Init the task and do settings
   //-------------------------------------------------------
   TString name(Form("ClusTrackMatcher_%s_%s",nTracks,nClusters));
-  AliEmcalClusTrackMatcherTask* matcher = new AliEmcalClusTrackMatcherTask(name);
+  AliEmcalClusTrackMatcherTask* matcher = new AliEmcalClusTrackMatcherTask(name, createHisto);
   matcher->SetTracksName(nTracks);
   matcher->SetClusName(nClusters);
   matcher->SetMaxDistance(maxDist);
@@ -42,6 +43,16 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
   mgr->ConnectInput  (matcher, 0,  cinput1 );
+
+  if (createHisto) {
+    TString contname(name);
+    contname += "_histos";
+    AliAnalysisDataContainer *coutput = mgr->CreateContainer(contname,
+							     TList::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     AliAnalysisManager::GetCommonFileName());
+    mgr->ConnectOutput(matcher,1,coutput);
+  }
 
   return matcher;
 }
