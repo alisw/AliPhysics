@@ -1,5 +1,8 @@
 #ifndef ALIANALYSYSTASKDIHADRONPID_H
 #define ALIANALYSYSTASKDIHADRONPID_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. * 
+* See cxx source for full Copyright notice */ 
+/* $Id$ */
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventPoolManager.h"

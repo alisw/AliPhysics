@@ -104,6 +104,7 @@ TList *GetListOfObjects(const char* filename,
   else{
     listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
     cout<<"======================================================="<<endl;
+    cout<<"List name (control): "<<listBFName.Data()<<endl;
     cout<<"List name: "<<listBF->GetName()<<endl;
     //listBF->ls();
     
