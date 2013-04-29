@@ -23,6 +23,12 @@ AliBlastwaveFitter::AliBlastwaveFitter(const char *name) :
     fMinuit(new TMinuit()),
     fMinos(kFALSE)
 {
+  // inititalize arrays
+  for(Int_t i=0;i<fgNmaxFunction;i++){
+    fFunc[i]=NULL;
+    fSpectraFlag[i]=0;
+    fV2Flag[i]=0;
+  }
 }
 //------------------------------------------------------------------------------
 AliBlastwaveFitter::AliBlastwaveFitter() :
@@ -36,8 +42,7 @@ AliBlastwaveFitter::AliBlastwaveFitter() :
     fFunc[i]=NULL;
     fSpectraFlag[i]=0;
     fV2Flag[i]=0;
-  }
-  
+  } 
 }
 //------------------------------------------------------------------------------
 AliBlastwaveFitter::~AliBlastwaveFitter(){
