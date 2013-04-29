@@ -105,11 +105,18 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   
   //Event characteristics scheme
   taskBF->SetEventClass(fArgEventClass);
-  if(fArgEventClass == "Multiplicity")
+  if(fArgEventClass == "Multiplicity") 
     taskBF->SetMultiplicityRange(centrMin,centrMax);
-  else 
+  else {
+    if(analysisType == "MC")
+      taskBF->SetImpactParameterRange(centrMin,centrMax);
+    else {
     taskBF->SetCentralityPercentileRange(centrMin,centrMax);
-  
+    // centrality estimator (default = V0M)
+    taskBF->SetCentralityEstimator(centralityEstimator);
+    }
+  }
+
   taskBF->SetAnalysisObject(bf);
   if(gRunShuffling) taskBF->SetShufflingObject(bfs);
   if(gRunMixing){
@@ -146,7 +153,6 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   }
   else if(analysisType == "MC") {
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax); 
-    taskBF->SetImpactParameterRange(centrMin,centrMax);
   }
 
   // offline trigger selection (AliVEvent.h)
@@ -155,15 +161,10 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   // documentation in https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PWG1EvSelDocumentation
   if(bCentralTrigger) taskBF->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
   else                taskBF->SelectCollisionCandidates(AliVEvent::kMB);
-
-  // centrality estimator (default = V0M)
-  taskBF->SetCentralityEstimator(centralityEstimator);
   
   // vertex cut (x,y,z)
   taskBF->SetVertexDiamond(.3,.3,vertexZ);
   
-
-
   //bf->PrintAnalysisSettings();
   mgr->AddTask(taskBF);
   
