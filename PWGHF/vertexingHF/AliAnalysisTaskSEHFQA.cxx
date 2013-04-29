@@ -1535,12 +1535,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  Int_t labD = -1;
 	  if (fDecayChannel==AliAnalysisTaskSEHFQA::kLambdactoV0 && (dynamic_cast<AliAODRecoCascadeHF*>(d))->Getv0()) {
 
-	    Int_t pdgDgLctoV0bachelor[2]={310,2212};
+	    Int_t pdgDgLctoV0bachelor[2]={2212,310};
 	    Int_t pdgDgV0toDaughters[2]={211,211};
-	    Int_t mcLabelK0S = (dynamic_cast<AliAODRecoCascadeHF*>(d))->MatchToMC(pdg,pdgDgLctoV0bachelor[0],pdgDgLctoV0bachelor,pdgDgV0toDaughters,mcArray,kTRUE); // Lc->K0S+p and cc
-	    pdgDgLctoV0bachelor[0]=3122, pdgDgLctoV0bachelor[1]=211;
+	    Int_t mcLabelK0S = (dynamic_cast<AliAODRecoCascadeHF*>(d))->MatchToMC(pdg,pdgDgLctoV0bachelor[1],pdgDgLctoV0bachelor,pdgDgV0toDaughters,mcArray,kTRUE); // Lc->K0S+p and cc
+	    pdgDgLctoV0bachelor[1]=3122, pdgDgLctoV0bachelor[0]=211;
 	    pdgDgV0toDaughters[0]=2212,  pdgDgV0toDaughters[1]=211;
-	    Int_t mcLabelLambda = (dynamic_cast<AliAODRecoCascadeHF*>(d))->MatchToMC(pdg,pdgDgLctoV0bachelor[0],pdgDgLctoV0bachelor,pdgDgV0toDaughters,mcArray,kTRUE); // Lc->Lambda+pi and cc
+	    Int_t mcLabelLambda = (dynamic_cast<AliAODRecoCascadeHF*>(d))->MatchToMC(pdg,pdgDgLctoV0bachelor[1],pdgDgLctoV0bachelor,pdgDgV0toDaughters,mcArray,kTRUE); // Lc->Lambda+pi and cc
 	    if (mcLabelK0S!=-1 || mcLabelLambda!=-1) AliInfo(Form("mcLabelK0S=%d - mcLabelLambda=%d",mcLabelK0S,mcLabelLambda));
 
 	    if (mcLabelK0S!=-1 && mcLabelLambda!=-1)
