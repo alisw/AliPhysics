@@ -1011,7 +1011,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
       
       AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
       triggerAnalysis->SetAnalyzeMC(fMC);
-      triggerAnalysis->EnableHistograms();
+      triggerAnalysis->EnableHistograms(fIsPP);
       triggerAnalysis->SetSPDGFOThreshhold(1);
       triggerAnalysis->SetDoFMD(kFALSE);
       triggerAnalysis->SetCorrZDCCutParams(fTriggerOADB->GetZDCCutRefSumCorr(),
@@ -1655,7 +1655,7 @@ void AliPhysicsSelection::SaveHistograms(const char* folder)
     for (Int_t iTrigClass = 0; iTrigClass < kNClasses; iTrigClass++){
       delete [] rows[iTrigClass];
     }  
-  }  
+  } // end of ComputeBackground  
 
   fHistStatistics[0]->Write();
   fHistStatistics[1]->Write();

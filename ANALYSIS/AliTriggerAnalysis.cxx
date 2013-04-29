@@ -204,17 +204,25 @@ AliTriggerAnalysis::~AliTriggerAnalysis()
   }
 }
 
-void AliTriggerAnalysis::EnableHistograms()
+void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux)
 {
-  // creates the monitoring histograms
+  // creates the monitoring histograms (dynamical range of histograms can be adapted for pp and pPb via isLowFlux flag)
   
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  
-  fHistBitsSPD = new TH2F("fHistBitsSPD", "SPD GFO;number of fired chips (offline);number of fired chips (hardware)", 1202, -1.5, 1200.5, 1202, -1.5, 1200.5);
+  //
+  Int_t nBins = isLowFlux ? 600 : 1202;
+  fHistBitsSPD = new TH2F("fHistBitsSPD", "SPD GFO;number of fired chips (offline);number of fired chips (hardware)", nBins, -1.5, -1.5 + nBins, nBins, -1.5, -1.5+nBins);
+  //
   fHistFiredBitsSPD = new TH1F("fHistFiredBitsSPD", "SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
-  fHistSPDClsVsTrk = new TH2F("fHistSPDClsVsTrk", "SPD Clusters vs Tracklets", 300, -0.5, 2999.5, 1000, -0.5, 9999.5);
+  //
+  Int_t nBinsX = isLowFlux ? 100  : 300;
+  Int_t nBinsY = isLowFlux ? 500  : 1000;
+  Float_t xMax = isLowFlux ? 400  : 2999.5;
+  Float_t yMax = isLowFlux ? 4000 : 9999.5;
+  fHistSPDClsVsTrk = new TH2F("fHistSPDClsVsTrk", "SPD Clusters vs Tracklets", nBinsX, -0.5, xMax, nBinsY, -0.5, yMax);
+  //
   fHistV0A = new TH1F("fHistV0A", "V0A;leading time (ns);events", 400, -100, 100);
   fHistV0C = new TH1F("fHistV0C", "V0C;leading time (ns);events", 400, -100, 100);
   fHistZDC = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
@@ -1791,8 +1799,8 @@ void AliTriggerAnalysis::SaveHistograms() const
     
   if (fHistBitsSPD) {
     fHistBitsSPD->Write();
-    fHistBitsSPD->ProjectionX();
-    fHistBitsSPD->ProjectionY();
+    //fHistBitsSPD->ProjectionX();
+    //fHistBitsSPD->ProjectionY();
   }
   else Printf("Cannot save fHistBitsSPD");
   if (fHistFiredBitsSPD) fHistFiredBitsSPD->Write();

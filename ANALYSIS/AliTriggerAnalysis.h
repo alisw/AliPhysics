@@ -38,7 +38,7 @@ class AliTriggerAnalysis : public TObject
     AliTriggerAnalysis();
     virtual ~AliTriggerAnalysis();
     
-    void EnableHistograms();
+    void EnableHistograms(Bool_t isLowFlux = kFALSE);
     void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
     
     Bool_t IsTriggerFired(const AliESDEvent* aEsd, Trigger trigger);
