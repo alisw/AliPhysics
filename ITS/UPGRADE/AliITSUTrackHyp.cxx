@@ -14,6 +14,7 @@ AliITSUTrackHyp::AliITSUTrackHyp(Int_t nlr)
   ,fITSLabel(0)
   ,fESDTrack(0)
   ,fWinner(0)
+  ,fTPCSeed(0)
   ,fLayerSeeds(0)
 {
   // def. c-tor
@@ -25,6 +26,7 @@ AliITSUTrackHyp::~AliITSUTrackHyp()
 {
   // d-tor
   delete[] fLayerSeeds;
+  delete fTPCSeed;
 }
 
 //__________________________________________________________________
@@ -34,6 +36,7 @@ AliITSUTrackHyp::AliITSUTrackHyp(const AliITSUTrackHyp &src)
   , fITSLabel(src.fITSLabel)
   , fESDTrack(src.fESDTrack)
   , fWinner(0)
+  , fTPCSeed(src.fTPCSeed)
   , fLayerSeeds(0)
 {
   // copy c-tor. Note: it is shallow
@@ -59,6 +62,7 @@ void AliITSUTrackHyp::InitFrom(const AliITSUTrackHyp *src)
   fITSLabel = src->fITSLabel;
   fESDTrack = src->fESDTrack;
   fWinner = src->fWinner;
+  fTPCSeed = src->fTPCSeed;
   //
 }
 
@@ -152,22 +156,7 @@ Int_t AliITSUTrackHyp::FetchClusterInfo(Int_t *clIDarr) const
   // fill cl.id's in the array. The clusters of layer L will be set at slots
   // clID[2L] (and clID[2L+1] if there is an extra cluster).
   for (int i=fNLayers<<1;i--;) clIDarr[i]=-1;
-  Int_t lr,ncl=0;
-  AliITSUSeed* seed = GetWinner();
-  if (!seed) {
-    AliFatal("The winner is not set");
-    return ncl;
-  }
-  while(seed) {
-    int clID = seed->GetLrCluster(lr);
-    if (clID>=0) {
-      int slotLr = lr<<1;
-      clIDarr[ clIDarr[slotLr]<0 ? slotLr : slotLr+1 ] = clID;
-      ncl++;
-    }
-    seed = (AliITSUSeed*)seed->GetParent();
-  }
-  return ncl;
+  return GetWinner() ? GetWinner()->FetchClusterInfo(clIDarr) : 0;
 }
 
 //__________________________________________________________________

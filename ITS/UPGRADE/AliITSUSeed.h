@@ -32,6 +32,8 @@ class AliITSUSeed: public AliExternalTrackParam
   void            SetFake(Bool_t v=kTRUE)                {SetBit(kFake, v);}
   void            Save(Bool_t v=kTRUE)                   {SetBit(kSave,v);}
   void            FlagTree(UInt_t bits, Bool_t v=kTRUE);
+  void            SetChi2ITSTPC(Float_t v)               {fChi2Match = v;}
+  void            SetChi2ITSSA(Float_t v)                {fChi2ITSSA = v;}
   //
   UInt_t          GetLrClusterID()                 const {return fClID;}
   Int_t           GetLrCluster(Int_t &lr)          const {return UnpackCluster(fClID,lr);}
@@ -47,10 +49,13 @@ class AliITSUSeed: public AliExternalTrackParam
   Float_t         GetChi2Glo()                     const {return fChi2Glo;}
   Float_t         GetChi2Penalty()                 const {return fChi2Penalty;}
   Float_t         GetChi2GloNrm()                  const;
+  Float_t         GetChi2ITSTPC()                  const {return fChi2Match;}
+  Float_t         GetChi2ITSSA()                   const {return fChi2ITSSA;}
   Bool_t          IsKilled()                       const {return TestBit(kKilled);}
   Bool_t          IsFake()                         const {return TestBit(kFake);}
   Bool_t          IsSaved()                        const {return TestBit(kSave);}
   Bool_t          ContainsFake()                   const;
+  Int_t           FetchClusterInfo(Int_t *clIDarr) const;
   //
   Int_t           GetPoolID()                      const {return int(GetUniqueID())-1;}
   void            SetPoolID(Int_t id)                    {SetUniqueID(id+1);}
@@ -63,7 +68,7 @@ class AliITSUSeed: public AliExternalTrackParam
   virtual Int_t	  Compare(const TObject* obj)      const;
   //
   // test
-  void            InitFromESDTrack(const AliESDtrack* esdTr);
+  void            InitFromSeed(const AliExternalTrackParam* seed);
   void            ResetFMatrix();
   void            ApplyELoss2FMatrix(Double_t frac, Bool_t beforeProp);
   Bool_t          ApplyMaterialCorrection(Double_t xOverX0, Double_t xTimesRho, Double_t mass, Bool_t beforeProp);
@@ -87,6 +92,8 @@ class AliITSUSeed: public AliExternalTrackParam
   Float_t               fChi2Glo;           // current chi2 global (sum of track-cluster chi2's on layers with hit)
   Float_t               fChi2Cl;            // track-cluster chi2 (if >0) or penalty for missing cluster (if < 0)
   Float_t               fChi2Penalty;       // total penalty (e.g. for missing clusters)
+  Float_t               fChi2Match;         // ITS/TPC matching chi2 (per NDF)  // RS: to move to separate object of final seed
+  Float_t               fChi2ITSSA;         // ITSSA backward fit chi2 (per NDF) // RS: to move to separate object of final seed
   Double_t              fFMatrix[kNFElem];  // matrix of propagation from prev layer (non-trivial elements)
   Double_t              fKMatrix[kNKElem];  // Gain matrix non-trivial elements (note: standard MBF formula uses I-K*H)
   Double_t              fRMatrix[kNRElem];  // rotation matrix non-trivial elements

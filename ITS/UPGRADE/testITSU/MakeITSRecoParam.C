@@ -38,6 +38,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   int nCands[7]  = {10,500,500,500,300,200,100}; // max candidates for the TPC seed
   float tr2clChi2[7] = {50,50,50,50,50,80,100}; // cut on cluster to track chi2 
   float missPen[7] = {2.,2.,2.,2.,2.,2.,2.};    // missing cluster penalty
+  float maxChi2Match = 15.;
+  float maxChi2SA    = 15.;  
   //
   {
     AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetLowFluxParam();
@@ -54,6 +56,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
     trCond->SetNLayers(nLr); 
+    trCond->SetMaxITSTPCMatchChi2(maxChi2Match);
+    trCond->SetMaxITSSAChi2(maxChi2SA);
     //
     for (int i=0;i<nLr;i++) {
       trCond->SetMaxBranches(i,nBranch[i]);    // each seed propagated to given layer can produce max nBranch branches
@@ -103,6 +107,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
     trCond->SetNLayers(nLr); 
+    trCond->SetMaxITSTPCMatchChi2(maxChi2Match);
+    trCond->SetMaxITSSAChi2(maxChi2SA);
     //
     for (int i=0;i<nLr;i++) {
       trCond->SetMaxBranches(i,nBranch[i]);    // each seed propagated to given layer can produce max nBranch branches

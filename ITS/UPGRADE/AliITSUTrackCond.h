@@ -48,11 +48,15 @@ class AliITSUTrackCond : public TObject
   //
   virtual void  Print(Option_t* option = "")           const;
 
+  void        SetMaxITSTPCMatchChi2(Float_t v)               {fMaxITSTPCMatchChi2 = v;}
+  void        SetMaxITSSAChi2(Float_t v)                     {fMaxITSSAChi2 = v;}
   void        SetMaxTr2ClChi2(Int_t lr, Float_t v)           {fMaxTr2ClChi2[lr] = v;}
   void        SetMissPenalty(Int_t lr,  Float_t v)           {fMissPenalty[lr] = v;}
   void        SetNSigmaRoadY(Int_t lr,  Float_t v)           {fNSigmaRoadY[lr] = v;}
   void        SetNSigmaRoadZ(Int_t lr,  Float_t v)           {fNSigmaRoadZ[lr] = v;}
   //
+  Float_t     GetMaxITSTPCMatchChi2()                  const {return fMaxITSTPCMatchChi2;}
+  Float_t     GetMaxITSSAChi2()                        const {return fMaxITSSAChi2;}
   Char_t      GetClSharing(Int_t lr)                   const {return fClSharing[lr];}
   Float_t     GetMissPenalty(Int_t lr)                 const {return fMissPenalty[lr];}
   Float_t     GetMaxTr2ClChi2(Int_t lr)                const {return fMaxTr2ClChi2[lr];}
@@ -67,6 +71,8 @@ class AliITSUTrackCond : public TObject
   //
   Bool_t      fInitDone;                 // initialization flag
   Int_t       fNLayers;                  // total number of layers
+  Float_t     fMaxITSTPCMatchChi2;       // max chi2 for ITS/TPC matching
+  Float_t     fMaxITSSAChi2;             // max chi2 for ITS standalone fit (backward)
   Char_t*     fClSharing;                // [fNLayers] is cluster sharing allowed
   Short_t*    fMaxBranches;              // [fNLayers] max allowed branches per seed on each layer
   Short_t*    fMaxCandidates;            // [fNLayers] max allowed candidates per TPC seed on each layer
@@ -84,8 +90,10 @@ class AliITSUTrackCond : public TObject
   static Int_t   fgkMaxCandidates;        // def max number of total candidates on current layer 
   static Float_t fgkMaxTr2ClChi2;         // def track-to-cluster chi2 cut
   static Float_t fgkMissPenalty;          // penalty for missing cluster
+  static Float_t fgkMaxMatchChi2;         // max acceptable matching chi2
+  static Float_t fgkMaxITSSAChi2;         // max acceptable standalone ITS backward fit chi2
   //
-  ClassDef(AliITSUTrackCond,3)           // set of requirements on track hits pattern
+  ClassDef(AliITSUTrackCond,4)           // set of requirements on track hits pattern
 };
 
 

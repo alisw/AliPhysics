@@ -39,6 +39,7 @@
 #include "AliITSUClusterPix.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliCodeTimer.h"
+#include "AliRefArray.h"
 using namespace AliITSUAux;
 using namespace TMath;
 
@@ -69,6 +70,7 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fWorkHyp(0)
   ,fSeedsPool("AliITSUSeed",0)
   ,fFreeSeedsID(0)
+  ,fESDIndex(0)
   ,fNFreeSeeds(0)
   ,fLastSeedID(0)
   ,fNLrActive(0)
@@ -77,7 +79,6 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fCurrActLrID(-1)
   ,fCurrLayer(0)
   ,fTrackPhase(-1)
-  ,fClInfo(0)
 #ifdef  _FILL_CONTROL_HISTOS_
   ,fCHistoArr(0)
 #endif
@@ -91,7 +92,9 @@ AliITSUTrackerGlo::~AliITSUTrackerGlo()
 {
  // Default destructor
  //  
-  delete[] fClInfo;
+  delete[] fLayerCandidates;
+  if (fWorkHyp) fWorkHyp->SetTPCSeed(0); // this hypothesis does not own the seed
+  delete fWorkHyp;
   //
 #ifdef  _FILL_CONTROL_HISTOS_
   if (fCHistoArr) {
@@ -116,13 +119,14 @@ void AliITSUTrackerGlo::Init(AliITSUReconstructor* rec)
   //
   fITS = rec->GetITSInterface();
   fNLrActive = fITS->GetNLayersActive();
-  fClInfo = new Int_t[fNLrActive*2];
   fWorkHyp = new AliITSUTrackHyp(fNLrActive);
   //
   if (fLayerMaxCandidates<1) fLayerMaxCandidates = 1000;
   fLayerCandidates = new AliITSUSeed*[fLayerMaxCandidates];
   fSeedsPool.ExpandCreateFast(1000); // RS TOCHECK
   fFreeSeedsID.Set(1000);
+  fESDIndex.Set(1000);
+  
   //
 }
 
@@ -157,8 +161,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   if (!fCHistoArr) BookControlHistos();
 #endif
   static int evID = 0;
-  static TArrayI esdTrInd;
-  static TArrayF esdTrPt; 
+  static TArrayF esdTrPt(fESDIndex.GetSize()); 
   //
   TObjArray *trackConds = 0;
   //
@@ -196,11 +199,11 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
 #endif
   //
   // the tracks will be reconstructed in decreasing pt order, sort them
-  if (esdTrInd.GetSize()<nTrESD) {
-    esdTrInd.Set(nTrESD+200);
+  if (fESDIndex.GetSize()<nTrESD) {
+    fESDIndex.Set(nTrESD+200);
     esdTrPt.Set(nTrESD+200);
   }
-  int* esdTrackIndex = esdTrInd.GetArray();
+  int* esdTrackIndex = fESDIndex.GetArray();
   float* trPt = esdTrPt.GetArray();
   for (int itr=nTrESD;itr--;) trPt[itr] = esdEv->GetTrack(itr)->Pt();
   Sort(nTrESD,trPt,esdTrackIndex,kTRUE);    
@@ -216,7 +219,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
       //
       if (!NeedToProlong(fCurrESDtrack)) continue;  // are we interested in this track?
       /*
-	// if speceific tracks should be checked, create a global array int wtc[] = {evITS*10000+trID, ...};
+	// if specific tracks should be checked, create a global array int wtc[] = {evITS*10000+trID, ...};
       Bool_t dbg = kFALSE;
       int nwtc = sizeof(wtc)/sizeof(int);
 
@@ -232,7 +235,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
       AliLog::SetClassDebugLevel("AliITSUTrackerGlo",dbg ? 10:0);
       */
 
-      AliDebug(1,Form("Processing track %d(esd%d) | M=%.3f Pt=%.3f | MCLabel: %d",trID,itr,fCurrESDtrack->GetMass(kTRUE),fCurrESDtrack->Pt(),fCurrESDtrMClb));//RS
+      AliDebug(-1,Form("Processing track %d(esd%d) | M=%.3f Pt=%.3f | MCLabel: %d",itr,trID,fCurrESDtrack->GetMass(kTRUE),fCurrESDtrack->Pt(),fCurrESDtrMClb));//RS
       FindTrack(fCurrESDtrack, trID);
     }   
     //
@@ -263,10 +266,9 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
   //
   double bz0 = GetBz();
   Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
-  AliITSUTrackHyp dummyTr,*currTr=0;
+  AliITSUTrackHyp dummyTr;
   const double kWatchStep=10.; // for larger steps watch arc vs segment difference
   Double_t times[AliPID::kSPECIES];
-  //
   //
   for (int itr=0;itr<nTrESD;itr++) {
     fCurrESDtrack = esdEv->GetTrack(itr);
@@ -306,19 +308,21 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
       continue;
     }
     //
-    currTr = GetTrackHyp(itr);
-    currTr->StartTimeIntegral();
-    currTr->AddTimeStep(dst);
-    //    printf("Before resetCov: "); currTr->AliExternalTrackParam::Print();
-    currTr->ResetCovariance(10000);
-    if (RefitTrack(currTr,fITS->GetRMax())) { // propagate to exit from the ITS/TPC screen
-      UpdateESDTrack(currTr,AliESDtrack::kITSout);
+    fCurrHyp = GetTrackHyp(itr);
+    fCurrHyp->StartTimeIntegral();
+    fCurrHyp->AddTimeStep(dst);
+    //    printf("Before resetCov: "); fCurrHyp->AliExternalTrackParam::Print();
+    fCurrHyp->ResetCovariance(10000);
+    double chi2 = RefitTrack(fCurrHyp,fITS->GetRMax());
+    if (chi2>0) { // propagate to exit from the ITS/TPC screen
+      fCurrHyp->SetChi2(chi2);
+      UpdateESDTrack(fCurrHyp,AliESDtrack::kITSout);
       fCountITSout++;
     }
     else {
       AliDebug(2,Form("Refit Failed for track %d | ESDtrack#%d (MClb:%d)",itr,fCurrESDtrack->GetID(),fCurrESDtrMClb));
-      //currTr->AliExternalTrackParam::Print();
-      //currTr->GetWinner()->Print();
+      //fCurrHyp->AliExternalTrackParam::Print();
+      //fCurrHyp->GetWinner()->Print();
     }
     //
   }
@@ -341,7 +345,6 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
   //  AliLog::SetClassDebugLevel("AliITSUTrackerGlo",10);
 
   AliDebug(1,Form("Will refit inward %d tracks",nTrESD));
-  AliITSUTrackHyp *currTr=0;
   //
   for (int itr=0;itr<nTrESD;itr++) {
     fCurrESDtrack = esdEv->GetTrack(itr);
@@ -352,10 +355,12 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
     if (   trStat & AliESDtrack::kITSrefit ) continue; // already done
     if (  (trStat & AliESDtrack::kTPCout) && !(trStat & AliESDtrack::kTPCrefit) ) continue;
     //
-    currTr = GetTrackHyp(itr);
-    currTr->AliExternalTrackParam::operator=(*fCurrESDtrack);  // fetch current ESDtrack kinematics
-    if (RefitTrack(currTr,fITS->GetRMin())) { // propagate up to inside radius of the beam pipe
-      UpdateESDTrack(currTr,AliESDtrack::kITSrefit);
+    fCurrHyp = GetTrackHyp(itr);
+    fCurrHyp->AliExternalTrackParam::operator=(*fCurrESDtrack);  // fetch current ESDtrack kinematics
+    double chi2 = RefitTrack(fCurrHyp,fITS->GetRMin());
+    if (chi2>0) { // propagate up to inside radius of the beam pipe
+      fCurrHyp->SetChi2(chi2);
+      UpdateESDTrack(fCurrHyp,AliESDtrack::kITSrefit);
       fCountITSrefit++;
     }
     else {
@@ -431,6 +436,8 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
   AliITSUSeed seedT;   // transient seed between the seedUC and new prolongation hypothesis
   //
   AliITSUTrackHyp* hypTr = InitHypothesis(esdTr,esdID);  // initialize prolongations hypotheses tree
+  if (!hypTr || hypTr->GetSkip()) return;
+  //
   fCurrHyp = fWorkHyp;
   fCurrHyp->InitFrom(hypTr);
   //
@@ -453,7 +460,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
       AliITSUSeed* seedU;
       if (ilaUp==fNLrActive) {
 	seedU = 0;
-	seedUC.InitFromESDTrack(esdTr);
+	seedUC.InitFromSeed(fCurrHyp->GetTPCSeed()); // init with seed already propagated to outer layer
       }
       else {
 	seedU = fCurrHyp->GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong	
@@ -464,7 +471,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
       seedUC.ResetFMatrix();                    // reset the matrix for propagation to next layer
       // go till next active layer
       AliDebug(2,Form("working on Lr:%d Seed:%d of %d for esdID=%d (MClb:%d) | pT=%.3f",ila,isd,nSeedsUp,esdID,fCurrESDtrMClb,seedUC.Pt()));
-      if (!TransportToLayer(&seedUC, fITS->GetLrIDActive(ilaUp), fITS->GetLrIDActive(ila)) ) {
+      if (seedU && !TransportToLayer(&seedUC, fITS->GetLrIDActive(ilaUp), fITS->GetLrIDActive(ila)) ) { // external seed already prolonged
 	//
 	AliDebug(2,Form("Transport failed | esdID=%d (MClb:%d)",esdID,fCurrESDtrMClb));
 	// Check if the seed satisfies to track definition
@@ -597,7 +604,10 @@ AliITSUTrackHyp* AliITSUTrackerGlo::InitHypothesis(AliESDtrack *esdTr, Int_t esd
   hyp->SetESDTrack(esdTr);
   hyp->SetUniqueID(esdID);
   hyp->SetMass(fCurrMass);
+  hyp->SetTPCSeed( new AliExternalTrackParam(*esdTr) );
   SetTrackHyp(hyp,esdID);
+
+  if (!TransportToLayer(hyp->GetTPCSeed(),fITS->GetNLayers(), fITS->GetLrIDActive(fNLrActive-1))) hyp->SetSkip(); // propagate to outer R of ITS
   //
   return hyp;
   // TO DO
@@ -1111,31 +1121,60 @@ Bool_t AliITSUTrackerGlo::PropagateSeed(AliExternalTrackParam *seed, Double_t xT
 }
 
 //______________________________________________________________________________
+Bool_t AliITSUTrackerGlo::FinalizeHypothesis(AliITSUTrackHyp* hyp)
+{
+  // finalize single TPC track hypothesis
+  if (!hyp || hyp->GetESDTrack()->IsOn(AliESDtrack::kITSin)) return kFALSE;
+  AliITSUSeed* winner = 0;
+  fCurrHyp = hyp;
+  if (!(winner=hyp->DefineWinner())) return kFALSE;
+  FlagSeedClusters(winner,kTRUE);
+  CookMCLabel(hyp);
+  //
+#ifdef  _FILL_CONTROL_HISTOS_
+  if (fCHistoArr) {
+    TH2* hchimt = 0;
+    TH2* hchiSA = 0;
+    int lb = Abs(hyp->GetESDTrack()->GetTPCLabel());
+    if ( hyp->GetITSLabel()==lb ) {
+      hchimt = (TH2*)fCHistoArr->At(kHChiMatchCorr);
+      hchiSA = (TH2*)fCHistoArr->At(kHChiITSSACorr);
+    }
+    else if ( Abs(hyp->GetITSLabel()) == lb ) hchimt = (TH2*)fCHistoArr->At(kHChiMatchFake);
+    else if ( hyp->GetITSLabel()>=0 ) hchimt = (TH2*)fCHistoArr->At(kHChiMatchCorrMiss);
+    else hchimt = (TH2*)fCHistoArr->At(kHChiMatchFakeMiss);
+    if (!hchiSA) hchiSA =  (TH2*)fCHistoArr->At(kHChiITSSAFake);
+    printf("MTStatus: ITS:%+5d TPC:%+5d chimt:%e chi2SA:%e-> %s\n",
+	   hyp->GetITSLabel(),lb,winner->GetChi2ITSTPC(),winner->GetChi2ITSSA(),hchimt->GetName());
+    if (hchimt) hchimt->Fill(hyp->GetTPCSeed()->Pt(),winner->GetChi2ITSTPC());
+    if (hchiSA) hchiSA->Fill(hyp->GetTPCSeed()->Pt(),winner->GetChi2ITSSA());      
+  }
+#endif    
+  //
+  UpdateESDTrack(hyp,AliESDtrack::kITSin);
+  return kTRUE;
+}
+
+//______________________________________________________________________________
 void AliITSUTrackerGlo::FinalizeHypotheses()
 {
   // select winner for each hypothesis, remove cl. sharing conflicts
+  AliCodeTimerAuto("",0); 
   AliDebug(2,"TODO");
   //
   int nh = fHypStore.GetEntriesFast();
-  AliITSUSeed* winner = 0;
   for (int ih=0;ih<nh;ih++) {
-    AliITSUTrackHyp* hyp = (AliITSUTrackHyp*) fHypStore.UncheckedAt(ih); 
-    if (!hyp) continue; // removed
-    if (hyp->GetESDTrack()->IsOn(AliESDtrack::kITSin)) continue; // winner already defined
-    //
-    if (!(winner=hyp->DefineWinner())) continue;   // failed to find winner
-    FlagSeedClusters(winner,kTRUE);
-    fCountITSin++;
-    CookMCLabel(hyp);
-    UpdateESDTrack(hyp,AliESDtrack::kITSin);
+    if (FinalizeHypothesis( GetTrackHyp(ih) )) fCountITSin++;
   }
   //
+  AliITSUSeed* winner = 0;
+
 #ifdef  _FILL_CONTROL_HISTOS_
   // if requested, collect cluster sharing statistics
   TH2* hShare = 0;
   if (fCHistoArr && (hShare=(TH2*)fCHistoArr->At(kHClShare))) {
     for (int ih=0;ih<nh;ih++) {
-      AliITSUTrackHyp* hyp = (AliITSUTrackHyp*) fHypStore.UncheckedAt(ih); 
+      AliITSUTrackHyp* hyp = GetTrackHyp(ih);
       if (!hyp || !(winner=hyp->GetWinner())) continue;
       int lrID = 0;
       double pt = hyp->Pt();
@@ -1149,6 +1188,51 @@ void AliITSUTrackerGlo::FinalizeHypotheses()
     }  
   }
 #endif  
+
+  AliRefArray** refArr = new AliRefArray*[fNLrActive];
+  for (int ilr=0;ilr<fNLrActive;ilr++) refArr[ilr] = new AliRefArray(1000);
+  for (int ih=0;ih<nh;ih++) {
+    AliITSUTrackHyp* hyp = GetTrackHyp(ih);
+    if (!hyp || !(winner=hyp->GetWinner())) continue;
+    int lrID = 0;
+    do {
+      int clID = winner->GetLrCluster(lrID);
+      if (clID<0) continue;
+      AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
+      if (!cl->IsClusterShared()) continue;
+      refArr[lrID]->AddReference(clID,ih);
+    } while ((winner=(AliITSUSeed*)winner->GetParent()));
+  }    
+  UInt_t refs[100];
+  for (int ilr=0;ilr<fNLrActive;ilr++) {
+    int ncl = fITS->GetLayerActive(ilr)->GetNClusters();
+    printf("\nClusterSharingDump: Lr %d (%d cl)\n",ilr,ncl);
+    int cnt = 0;
+    for (int icl=0;icl<ncl;icl++) {
+      if (!refArr[ilr]->HasReference(icl)) continue;
+      int nref = refArr[ilr]->GetReferences(icl,refs,100);
+      printf("--- cl%3d(#%d): NShare=%4d\n",cnt++,icl,nref);     
+      for (int ir=0;ir<nref;ir++) {
+	AliITSUTrackHyp* hyp = GetTrackHyp(refs[ir]);
+	winner = hyp->GetWinner();
+	AliESDtrack* esdTr = hyp->GetESDTrack();
+	printf("#%4d Pt:%.3f Chi:%6.2f Ncl:%d MCits%+5d MCtpc:%+5d ESD:%4d |",
+	       refs[ir],winner->Pt(),winner->GetChi2GloNrm(),winner->GetNLayersHit(),
+	       hyp->GetITSLabel(),esdTr->GetTPCLabel(),esdTr->GetID());
+	int prevL=-1;
+	do {
+	  int lrs;
+	  int clID = winner->GetLrCluster(lrs);
+	  if (clID<0) continue;
+	  while( lrs>++prevL ) printf("%4s        ","----");
+	  printf("%4d (%5.1f)",clID,winner->GetChi2Cl());
+	} while ((winner=(AliITSUSeed*)winner->GetParent()));
+	printf("|\n");
+      }
+    }
+  }
+
+  delete[] refArr;
 
 }
 
@@ -1185,10 +1269,12 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
 }
 
 //______________________________________________________________________________
-Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_t stopAtLastCl)
+Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDest, Int_t stopCond)
 {
-  // refit track till radius rDest
-  AliITSUTrackHyp tmpTr;
+  // refit track till radius rDest. The cluster,mass info is taken from fCurrHyp (and its winner seed)
+  // if stopCond<0 : propagate till last cluster then stop
+  // if stopCond==0: propagate till last cluster then try to go till limiting rDest, don't mind if fail
+  // if stopCond>0 : rDest must be reached
   //
   double rCurr = Sqrt(trc->GetX()*trc->GetX() + trc->GetY()*trc->GetY());
   int dir,lrStart,lrStop;
@@ -1198,14 +1284,15 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
   lrStop  = fITS->FindLastLayerID(rDest,dir);
   if (AliDebugLevelClass()>2) {
     printf("Refit %d: Lr:%d (%f) -> Lr:%d (%f)\n",dir,lrStart,rCurr, lrStop,rDest);
-    printf("Before refit: "); trc->AliExternalTrackParam::Print();
+    printf("Before refit: "); trc->Print();
   }
   if (lrStop<0 || lrStart<0) AliFatal(Form("Failed to find start(%d) or last(%d) layers. Track from %.3f to %.3f",lrStart,lrStop,rCurr,rDest));
   //
-  int ncl = trc->FetchClusterInfo(fClInfo);
-  fCurrMass = trc->GetMass();
-  tmpTr.AliKalmanTrack::operator=(*trc);
-  tmpTr.SetChi2(0);
+  Int_t clInfo[2*AliITSUAux::kMaxLayers];
+  Int_t nCl = fCurrHyp->FetchClusterInfo(clInfo);
+  fCurrMass = fCurrHyp->GetMass();
+  AliExternalTrackParam tmpTr(*trc);
+  double chi2 = 0;
   int iclLr[2],nclLr,clCount=0;
   //
   for (int ilr=lrStart;ilr!=lrStop;ilr+=dir) {
@@ -1213,17 +1300,17 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
     if ( dir*(rCurr-lr->GetR(dir))>0) continue; // this layer is already passed
     int ilrA2,ilrA = lr->GetActiveID();
     // passive layer or active w/o hits will be traversed on the way to next cluster
-    if (!lr->IsActive() || fClInfo[ilrA2=(ilrA<<1)]<0) continue; 
+    if (!lr->IsActive() || clInfo[ilrA2=(ilrA<<1)]<0) continue; 
     //
     // select the order in which possible 2 clusters (in case of the overlap) will be traversed and fitted
     nclLr=0;
     if (dir>0) { // clusters are stored in increasing radius order
-      iclLr[nclLr++]=fClInfo[ilrA2++];
-      if (fClInfo[ilrA2]>=0) iclLr[nclLr++]=fClInfo[ilrA2];
+      iclLr[nclLr++]=clInfo[ilrA2++];
+      if (clInfo[ilrA2]>=0) iclLr[nclLr++]=clInfo[ilrA2];
     }
     else {
-      if ( fClInfo[ilrA2+1]>=0 ) iclLr[nclLr++]=fClInfo[ilrA2+1];
-      iclLr[nclLr++]=fClInfo[ilrA2];
+      if ( clInfo[ilrA2+1]>=0 ) iclLr[nclLr++]=clInfo[ilrA2+1];
+      iclLr[nclLr++]=clInfo[ilrA2];
     }
     //
     Bool_t transportedToLayer = kFALSE;
@@ -1231,16 +1318,17 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
       AliITSUClusterPix* clus =  (AliITSUClusterPix*)lr->GetCluster(iclLr[icl]);
       AliITSURecoSens* sens = lr->GetSensorFromID(clus->GetVolumeId());
       if (!tmpTr.Rotate(sens->GetPhiTF())) {
-	AliDebug(2,Form("Failed on rotate to %f | ESDtrack#%d (MClb:%d)",sens->GetPhiTF(),fCurrESDtrack->GetID(),fCurrESDtrMClb));
-	return kFALSE;
+	AliESDtrack* trESD = fCurrHyp->GetESDTrack();
+	AliDebug(2,Form("Failed on rotate to %f | ESDtrack#%d (MClb:%d)",sens->GetPhiTF(),trESD->GetID(),trESD->GetTPCLabel()));
+	return -1;
       }
       //
       double xClus = sens->GetXTF()+clus->GetX();
       if (!transportedToLayer) {
 	if (ilr!=lrStart && !TransportToLayerX(&tmpTr,lrStart,ilr,xClus)) {
-	  AliDebug(2,Form("Failed to transport %d -> %d | ESDtrack#%d (MClb:%d)\n",lrStart,ilr,fCurrESDtrack->GetID(),fCurrESDtrMClb));
-	  //tmpTr.AliExternalTrackParam::Print(); trc->GetWinner()->Print("etp");
-	  return kFALSE; // go to the entrance to the layer
+	  AliESDtrack* trESD = fCurrHyp->GetESDTrack();
+	  AliDebug(2,Form("Failed to transport %d -> %d | ESDtrack#%d (MClb:%d)\n",lrStart,ilr,trESD->GetID(),trESD->GetTPCLabel()));
+	  return -1; // go to the entrance to the layer
 	}
 	lrStart = ilr;
 	transportedToLayer = kTRUE;
@@ -1248,75 +1336,77 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
       //
       if (AliDebugLevelClass()>1) {
 	AliDebug(2,Form("Propagate to cl:%d on lr %d Need to go %.4f -> %.4f",icl,ilrA,tmpTr.GetX(),xClus));
-	//	printf("Before: "); tmpTr.AliExternalTrackParam::Print();
       }
       //
       if (!PropagateSeed(&tmpTr,xClus,fCurrMass)) {
-	AliDebug(2,Form("Failed on propagate to %f (dir=%d) | ESDtrack#%d (MClb:%d)",xClus,dir,fCurrESDtrack->GetID(),fCurrESDtrMClb));
-	//tmpTr.AliExternalTrackParam::Print(""); trc->GetWinner()->Print("etp");
-	return kFALSE;
+	AliESDtrack* trESD = fCurrHyp->GetESDTrack();
+	AliDebug(2,Form("Failed on propagate to %f (dir=%d) | ESDtrack#%d (MClb:%d)",xClus,dir,trESD->GetID(),trESD->GetTPCLabel()));
+	return -1;
       }
+      //
+      Double_t p[2]={clus->GetY(), clus->GetZ()};
+      Double_t cov[3]={clus->GetSigmaY2(), clus->GetSigmaYZ(), clus->GetSigmaZ2()};
+      double chi2cl = tmpTr.GetPredictedChi2(p,cov);
+      chi2 += chi2cl;
       //
 #ifdef  _FILL_CONTROL_HISTOS_
       int hcOffs = (1+fTrackPhase)*kHistosPhase + ilrA;
       double htrPt=-1;
-      if (fCHistoArr && trc->GetLabel()>=0/* && trc->Charge()>0*/) {
+      if (fCHistoArr && fTrackPhase>kClus2Tracks && trc->GetLabel()>=0/* && trc->Charge()>0*/) {
 	htrPt = tmpTr.Pt();
-	double dy = clus->GetY()-tmpTr.GetY();
-	double dz = clus->GetZ()-tmpTr.GetZ();
+	double dy = p[0]-tmpTr.GetY();
+	double dz = p[1]-tmpTr.GetZ();
 	((TH2*)fCHistoArr->At(kHResY+hcOffs))->Fill(htrPt,dy);
 	((TH2*)fCHistoArr->At(kHResZ+hcOffs))->Fill(htrPt,dz);
 	double errY = tmpTr.GetSigmaY2();
 	double errZ = tmpTr.GetSigmaZ2();
 	if (errY>0) ((TH2*)fCHistoArr->At(kHResYP+hcOffs))->Fill(htrPt,dy/Sqrt(errY));
 	if (errZ>0) ((TH2*)fCHistoArr->At(kHResZP+hcOffs))->Fill(htrPt,dz/Sqrt(errZ));
+	((TH2*)fCHistoArr->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2cl);
       }
 #endif  
-      //
-      double chi2;
-      if ( (chi2=tmpTr.Update(clus))<0 ) {
-	AliDebug(2,Form("Failed on Update | ESDtrack#%d (MClb:%d)",fCurrESDtrack->GetID(),fCurrESDtrMClb));		
-	return kFALSE;
+      //      
+      if ( !tmpTr.Update(p,cov) ) {
+	AliESDtrack* trESD = fCurrHyp->GetESDTrack();
+	AliDebug(2,Form("Failed on Update | ESDtrack#%d (MClb:%d)",trESD->GetID(),trESD->GetTPCLabel()));
+	return -1;
       }
-#ifdef  _FILL_CONTROL_HISTOS_
-      if (htrPt>0) {
-	((TH2*)fCHistoArr->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2);
-      }
-#endif 
       if (AliDebugLevelClass()>1) {
-	printf("AfterRefit: "); tmpTr.AliExternalTrackParam::Print();
+	printf("AfterRefit: "); tmpTr.Print();
       }
-      if (stopAtLastCl && ++clCount==ncl) return kTRUE; // it was requested to not propagate after last update
+      if (++clCount==nCl && stopCond<0) {
+	*trc = tmpTr;
+	return chi2; // it was requested to not propagate after last update
+      }
     }
     //
   }
   // All clusters were succesfully fitted. Even if the track does not reach rDest, this is enough to validate it.
   // Still, try to go as close as possible to rDest.
   //
-  if (lrStart!=lrStop) {
-    //printf("Going to last layer %d -> %d\n",lrStart,lrStop);
+  while(lrStart!=lrStop) {
     if (!TransportToLayer(&tmpTr,lrStart,lrStop)) {
-      AliDebug(1,Form("Failed on TransportToLayer %d->%d | ESDtrack#%d (MClb:%d)",lrStart,lrStop,fCurrESDtrack->GetID(),fCurrESDtrMClb));
-      //tmpTr.AliExternalTrackParam::Print();
-      //trc->GetWinner()->Print("etp");
-      return kTRUE;
+      AliDebug(-1,Form("Failed on TransportToLayer %d->%d | ESDtrack#%d (MClb:%d), X=%f",lrStart,lrStop,fCurrESDtrack->GetID(),fCurrESDtrMClb,tmpTr.GetX()));
+      if (stopCond>0) return -chi2; // rDest was obligatory
+      break; 
     }    
     if (!GoToExitFromLayer(&tmpTr,fITS->GetLayer(lrStop),dir)) {
-      AliDebug(3,Form("Failed on GoToExitFromLayer %d | ESDtrack#%d (MClb:%d)",lrStop,fCurrESDtrack->GetID(),fCurrESDtrMClb));
-      return kTRUE; // go till the exit from layer
+      AliDebug(-1,Form("Failed on GoToExitFromLayer %d | ESDtrack#%d (MClb:%d), X=%f",lrStop,fCurrESDtrack->GetID(),fCurrESDtrMClb,tmpTr.GetX()));
+      if (stopCond>0) return -chi2; // rDest was obligatory
+      break;
     }
-    //
-    //printf("On exit from last layer\n");
-    //tmpTr.AliExternalTrackParam::Print();
-    // go to the destination radius
-    if (!tmpTr.GetXatLabR(rDest,rDest,GetBz(),dir)) return kTRUE;
-    if (!PropagateSeed(&tmpTr,rDest,fCurrMass, 100, kFALSE)) return kTRUE;
-  }
-  trc->AliKalmanTrack::operator=(tmpTr);
+    // go to the destination radius. Note that here we don't select direction to avoid precision problems
+    if (!tmpTr.GetXatLabR(rDest,rDest,GetBz(),0) || !PropagateSeed(&tmpTr,rDest,fCurrMass, 100, kFALSE)) {
+      if (stopCond>0) return -chi2; // rDest was obligatory
+      break;
+    }
+    break;
+  } 
+  *trc=tmpTr;
   if (AliDebugLevelClass()>2) {
-    printf("After refit (now at lr %d): ",lrStop); trc->AliExternalTrackParam::Print();
+    printf("After refit (now at lr %d): ",lrStop); trc->Print();
   }
-  return kTRUE;
+  return chi2;
 }
 
 //__________________________________________________________________
@@ -1438,6 +1528,7 @@ void AliITSUTrackerGlo::ValidateAllowedCandidates(Int_t ilr, Int_t acceptMax)
 {
   // transfer allowed number of branches to hypothesis container
   //
+  AliCodeTimerAuto("",0); 
   // sort candidates in increasing order of chi2
   static int lastSize = 0;
   static int *index = 0;
@@ -1464,9 +1555,25 @@ void AliITSUTrackerGlo::ValidateAllowedCandidates(Int_t ilr, Int_t acceptMax)
   }
 #endif
   //
-  int nb = Min(fNCandidatesAdded,acceptMax);
+  int nacc=0,nb=0;
+  if (ilr>0) { // just take 1st acceptMax candidates
+    nb = Min(fNCandidatesAdded,acceptMax);
+    for (int ib=0;ib<nb;ib++) AddProlongationHypothesis(fLayerCandidates[index[ib]],ilr);
+  }
+  else { // for innermost layer test ITS SA backward chi2 and matching to TPC
+    AliITSUSeed* wn0 = fCurrHyp->GetWinner(); // in principle, should be NULL
+    for (nb=0;nb<fNCandidatesAdded;nb++) {
+      AliITSUSeed* sd = fLayerCandidates[index[nb]];    
+      fCurrHyp->SetWinner(sd);
+      if (!CheckBackwardMatching(sd)) MarkSeedFree(sd); // discard bad backward tracks
+      else {
+	AddProlongationHypothesis(sd,ilr);
+	if (++nacc==acceptMax) {nb++; break;} // the rest will be discarded
+      }
+    }
+    fCurrHyp->SetWinner(wn0); // restore original winner (NULL?)
+  }
   //
-  for (int ib=0;ib<nb;ib++) AddProlongationHypothesis(fLayerCandidates[index[ib]],ilr);
   // disable unused candidates
   for (int ib=nb;ib<fNCandidatesAdded;ib++) {
     //
@@ -1480,6 +1587,39 @@ void AliITSUTrackerGlo::ValidateAllowedCandidates(Int_t ilr, Int_t acceptMax)
   }
   fNCandidatesAdded = 0; // reset candidates counter
   //
+}
+
+//__________________________________________________________________
+Bool_t AliITSUTrackerGlo::CheckBackwardMatching(AliITSUSeed* seed)
+{
+  // check seed backward propagation chi2 and matching to TPC 
+  double bz0 = GetBz();
+  double rDest = fITS->GetLayerActive(fNLrActive-1)->GetR(1); // outer R of outer layer
+  static AliExternalTrackParam trback;
+  trback = *seed;
+  trback.ResetCovariance(10000);
+  int ndf = seed->GetNLayersHit()*2-5;
+  double chi2sa = RefitTrack(&trback,rDest,1);
+  if (chi2sa<0) return kFALSE;
+  if (ndf>0) chi2sa /= ndf;
+  if (chi2sa>fCurrTrackCond->GetMaxITSSAChi2()) return kFALSE;
+  //
+  // relate to TPC track at outer layer
+  AliExternalTrackParam* tpcSeed = fCurrHyp->GetTPCSeed();
+  if (!trback.Rotate(tpcSeed->GetAlpha()) || !trback.PropagateParamOnlyTo(tpcSeed->GetX(),bz0)) {
+    if (AliDebugLevelClass()>+1 && !seed->ContainsFake()) {
+      AliInfo(Form("Failed to propagate seed to TPC track @ X:%.3f Alpha:%.3f",tpcSeed->GetX(),tpcSeed->GetAlpha()));
+      seed->Print("etp");
+      trback.Print();
+    }
+    return kFALSE; 
+  }
+  double chi2Match = trback.GetPredictedChi2(tpcSeed)/5;
+  if (chi2Match>fCurrTrackCond->GetMaxITSTPCMatchChi2()) return kFALSE;
+  //
+  seed->SetChi2ITSSA(chi2sa);
+  seed->SetChi2ITSTPC(chi2Match);
+  return kTRUE;
 }
 
 //__________________________________________________________________
@@ -1652,5 +1792,38 @@ void AliITSUTrackerGlo::BookControlHistos()
   hclShare->SetDirectory(0);
   fCHistoArr->AddAtAndExpand(hclShare,kHClShare);
   //  
+  TH2* hchiMatch = 0; 
+  ttl = Form("Chi2MatchCorr");
+  hchiMatch = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
+  hchiMatch->SetDirectory(0);
+  fCHistoArr->AddAtAndExpand(hchiMatch,kHChiMatchCorr);
+  // 
+  ttl = Form("Chi2MatchFake");
+  hchiMatch = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
+  hchiMatch->SetDirectory(0);
+  fCHistoArr->AddAtAndExpand(hchiMatch,kHChiMatchFake);
+  // 
+  ttl = Form("Chi2MatchCorrMiss");
+  hchiMatch = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
+  hchiMatch->SetDirectory(0);
+  fCHistoArr->AddAtAndExpand(hchiMatch,kHChiMatchCorrMiss);
+  // 
+  ttl = Form("Chi2MatchFakeMiss");
+  hchiMatch = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
+  hchiMatch->SetDirectory(0);
+  fCHistoArr->AddAtAndExpand(hchiMatch,kHChiMatchFakeMiss);
+  // 
+  TH2* hchiSA = 0; 
+  ttl = Form("Chi2ITSSACorr");
+  hchiSA = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins/2,0.,chiMax/2);
+  hchiSA->SetDirectory(0);
+  fCHistoArr->AddAtAndExpand(hchiSA,kHChiITSSACorr);
+  // 
+  ttl = Form("Chi2ITSSAFake");
+  hchiSA = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins/2,0.,chiMax/2);
+  hchiSA->SetDirectory(0);
+  fCHistoArr->AddAtAndExpand(hchiSA,kHChiITSSAFake);
+  // 
+
 }
 #endif
