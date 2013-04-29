@@ -130,7 +130,7 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
    } else {
       cutarray[ 0] = "0002011002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
       cutarray[ 1] = "0003011002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
-      cutarray[ 2] = "0002011002093663003800000"; mesonCutArray[2] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
+      cutarray[ 2] = "0002012002093663003800000"; mesonCutArray[2] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
       cutarray[ 3] = "0003012002093663003800000"; mesonCutArray[3] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
    }
 
