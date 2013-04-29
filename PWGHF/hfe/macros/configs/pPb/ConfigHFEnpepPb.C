@@ -1,4 +1,22 @@
-AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, TString appendix,
+Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma){
+  TFile *in = TFile::Open(Form("$ALICE_ROOT/PWGHF/hfe/configs/pPb/%s", filename.Data()));
+  gROOT->cd();
+  int isig = static_cast<int>(sigma * 100.);
+  printf("Getting hadron background for the sigma cut: %d\n", isig);
+  bool status = kTRUE;
+  for(int icent = 0; icent < 12; icent++){
+    functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_%d_%d", isig, icent)));
+    if(functions[icent]) printf("Config for centrality class %d found\n", icent);
+    else{
+      printf("Config for the centrality class %d not found\n", icent);
+      status = kFALSE;
+    }
+  }
+  delete in;
+  return status;
+}
+
+AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t isAOD, Bool_t useMC, TString appendix,
                 UChar_t TPCcl=70, UChar_t TPCclPID = 80, 
                 UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000., 
                 Double_t* tpcdEdxcutlow=NULL, Double_t* tpcdEdxcuthigh=NULL, 
@@ -9,7 +27,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, TString appendix,
                 Double_t assDCAr=1.0, Double_t assDCAz=2.0, 
                 Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL)
 {
-  Bool_t kAnalyseTaggedTracks = kTRUE;
+  Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
  
   //***************************************//
   //        Setting up the HFE cuts        //
@@ -29,6 +47,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, TString appendix,
   hfecuts->SetMaxImpactParam(DCAxy,DCAz);
   hfecuts->SetUseMixedVertex(kTRUE);
   hfecuts->SetVertexRange(10.);
+  if(isAOD) hfecuts->SetAODFilterBit(4);
 
   // TOF settings:
   Int_t usetof=0;
@@ -53,6 +72,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, TString appendix,
   task->SetpPbAnalysis();
   task->SetHFECuts(hfecuts);
   task->SetRemovePileUp(kFALSE);
+  if(!isAOD) task->SetRemoveFirstEventInChunk();
   task->GetPIDQAManager()->SetHighResolutionHistos();
 
   // Setttings for pPb
@@ -138,11 +158,24 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, TString appendix,
   //AliHFEpidTOF *tofpid = pid->GetDetPID(AliHFEpid::kTOFpid);
   //if(TOFs<3.) tofpid->SetTOFnSigmaBand(-3,TOFs); //only to check the assymmetric tof cut
   
+  // Load hadron background
+  if(!useMC){
+    Bool_t status = kTRUE;
+    TF1 *hBackground[12];
+    status = ReadContaminationFunctions("hadronContamination_pPbTPCTOF_forwardEta.root", hBackground, tpcdEdxcutlow[0]);
+    for(Int_t a=0;a<12;a++) {
+      //  printf("back %f \n",p0[a]);
+      if(status) task->SetBackGroundFactorsFunction(hBackground[a],a);
+      else printf("not all background functions found\n");
+    }
+  }
+
   //***************************************//
   //       Configure NPE plugin            //
   //***************************************//
 
   AliHFENonPhotonicElectron *backe = new AliHFENonPhotonicElectron(Form("HFEBackGroundSubtractionPID2%s",appendix.Data()),"Background subtraction");  //appendix
+  if(isAOD) backe->SetAOD(kTRUE);
     //Setting the Cuts for the Associated electron-pool
   AliHFEcuts *hfeBackgroundCuts = new AliHFEcuts(Form("HFEBackSub%s",appendix.Data()),"Background sub Cuts");
   hfeBackgroundCuts->SetEtaRange(assETA);
@@ -152,6 +185,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, TString appendix,
   hfeBackgroundCuts->SetMinNClustersITS(assITS);
   hfeBackgroundCuts->SetMinNClustersTPC(assTPCcl);
   hfeBackgroundCuts->SetMinNClustersTPCPID(assTPCPIDcl);
+  if(isAOD) hfeBackgroundCuts->SetAODFilterBit(4);
   hfeBackgroundCuts->SetQAOn();			        // QA
 
   AliHFEpid *pidbackground = backe->GetPIDBackground();

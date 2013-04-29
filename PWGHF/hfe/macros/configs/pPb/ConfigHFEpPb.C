@@ -1,3 +1,21 @@
+Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma){
+  TFile *in = TFile::Open(Form("$ALICE_ROOT/PWGHF/hfe/configs/pPb/%s", filename.Data()));
+  gROOT->cd();
+  int isig = static_cast<int>(sigma * 100.);
+  printf("Getting hadron background for the sigma cut: %d\n", isig);
+  bool status = kTRUE;
+  for(int icent = 0; icent < 12; icent++){
+    functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_%d_%d", isig, icent)));
+    if(functions[icent]) printf("Config for centrality class %d found\n", icent);
+    else{
+      printf("Config for the centrality class %d not found\n", icent);
+      status = kFALSE;
+    }
+  }
+  delete in;
+  return status;
+}
+
 AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix, 
 				 UChar_t TPCcl=70, UChar_t TPCclPID = 80, 
 				 UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000.,
@@ -137,6 +155,18 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
   // The below two lines should be removed after this check
   //AliHFEpidTOF *tofpid = pid->GetDetPID(AliHFEpid::kTOFpid);
   //if(TOFs<3.) tofpid->SetTOFnSigmaBand(-3,TOFs); //only to check the assymmetric tof cut
+
+  // Load hadron background
+  if(!useMC){
+    Bool_t status = kTRUE;
+    TF1 *hBackground[12];
+    status = ReadContaminationFunctions("hadronContamination_pPbTPCTOF_forwardEta.root", hBackground, tpcdEdxcutlow[0]);
+    for(Int_t a=0;a<12;a++) {
+      //  printf("back %f \n",p0[a]);
+      if(status) task->SetBackGroundFactorsFunction(hBackground[a],a);
+      else printf("not all background functions found\n");
+    }
+  }
 
   //***************************************//
   //          V0 tagged tracks             //

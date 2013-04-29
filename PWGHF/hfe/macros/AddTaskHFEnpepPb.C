@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEnpepPb(){
+AliAnalysisTask *AddTaskHFEnpepPb(Bool_t isAOD, Bool_t useMC, Bool_t kNPERef = kFALSE, Bool_t kNPECent = kFALSE){
 
   // Default settings (TOF-TPC pPb)
   const int	kDefTPCcl	= 110;
@@ -34,10 +34,6 @@ AliAnalysisTask *AddTaskHFEnpepPb(){
     return 0;
   }
 
-  Bool_t MCthere=kTRUE;
-  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
-  if(!mcH) MCthere=kFALSE;
-
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 
   //@@ 0 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -50,17 +46,20 @@ AliAnalysisTask *AddTaskHFEnpepPb(){
     dEdxachm[icent] = kassTPCSplus;
   }
 
-  RegisterTaskNPEpPb( MCthere, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, dEdxlm, dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, kHFEV0A, kassETA, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm);
-  RegisterTaskNPEpPb( MCthere, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, dEdxlm, dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, kHFEV0M, kassETA, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm);
-  RegisterTaskNPEpPb( MCthere, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, dEdxlm, dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, kHFECL1, kassETA, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm);
-  RegisterTaskNPEpPb( MCthere, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, dEdxlm, dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, kHFEZNA, kassETA, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm);
-
+  if(kNPERef){
+    RegisterTaskNPEpPb(isAOD, useMC, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, dEdxlm, dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, kHFEV0A, kassETA, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm);
+  }
+  if(kNPECent){
+    RegisterTaskNPEpPb(isAOD, useMC, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, dEdxlm, dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, kHFEV0M, kassETA, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm);
+    RegisterTaskNPEpPb(isAOD, useMC, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, dEdxlm, dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, kHFECL1, kassETA, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm);
+    RegisterTaskNPEpPb(isAOD, useMC, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, dEdxlm, dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, kHFEZNA, kassETA, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm);
+  }
   return NULL;
 }
 
 //===============================================================================
 
-AliAnalysisTask *RegisterTaskNPEpPb(Bool_t useMC, 
+AliAnalysisTask *RegisterTaskNPEpPb(Bool_t isAOD, Bool_t useMC, 
                Int_t tpcCls=120, Int_t tpcClsPID=80, 
                Int_t itsCls=4, Double_t dcaxy=1.0, Double_t dcaz=2.0, 
                Double_t *tpcdEdxcutlow=NULL, Double_t *tpcdEdxcuthigh=NULL, 
@@ -88,7 +87,7 @@ AliAnalysisTask *RegisterTaskNPEpPb(Bool_t useMC,
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisTaskHFE *task = ConfigHFEnpepPb(useMC, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, tpcdEdxcutlow, tpcdEdxcuthigh, tofs, 0, itshitpixel, icent, assETA, assITS, assTPCcl, assTPCPIDcl, assDCAr, assDCAz, assTPCSminus, assTPCSplus);
+  AliAnalysisTaskHFE *task = ConfigHFEnpepPb(isAOD, useMC, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, tpcdEdxcutlow, tpcdEdxcuthigh, tofs, 0, itshitpixel, icent, assETA, assITS, assTPCcl, assTPCPIDcl, assDCAr, assDCAz, assTPCSminus, assTPCSplus);
   task->SetESDAnalysis();
 
   if (useMC)	task->SetHasMCData(kTRUE);
