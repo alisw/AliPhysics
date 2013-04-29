@@ -813,11 +813,14 @@ Double_t AliDielectronPair::PairPlaneAngle(Double_t kv0CrpH2) const
   Double_t ax = py*pz;
   Double_t ay = pz*rotpx-pz*px;
   Double_t az = -rotpx*py;
-
-  Double_t uax = ax/TMath::Sqrt(ax*ax + ay*ay +az*az);
-  Double_t uay = ay/TMath::Sqrt(ax*ax + ay*ay +az*az);
-  Double_t uaz = az/TMath::Sqrt(ax*ax + ay*ay +az*az);
-
+  
+  Double_t denomHelper = ax*ax + ay*ay +az*az;
+  Double_t uax = -9999.;
+  Double_t uay = -9999.;
+  if (denomHelper !=0)  {
+	 uax = ax/TMath::Sqrt(denomHelper);
+	 uay = ay/TMath::Sqrt(denomHelper);
+  }
   //PM is the angle between Pair plane and Magnetic field plane
   Double_t cosPM = upnx*uax + upny*uay;
   Double_t PM = TMath::ACos(cosPM);
@@ -843,4 +846,5 @@ void AliDielectronPair::SetBeamEnergy(AliVEvent *ev, Double_t beamEbyHand)
   else
     fBeamEnergy = beamEbyHand;
 }
+
 
