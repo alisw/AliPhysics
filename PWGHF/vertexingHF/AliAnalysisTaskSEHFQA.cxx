@@ -479,11 +479,23 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     TH1F* hdistrSelTr=new TH1F(hname.Data(),"Distribution of number of Selected tracks per event;no.good-tracks/ev;Entries",4000,-0.5,3999.5);
     hdistrSelTr->SetTitleOffset(1.3,"Y");
 
-    hname="hd0";
-    TH1F* hd0=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of 'good' tracks;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+    hname="hd0dau";
+    TH1F* hd0dau=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of D daughter tracks;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
-    hname="hd0z";
-    TH1F* hd0z=new TH1F(hname.Data(),"Impact parameter (z) distribution of 'good' tracks;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+    hname="hd0zdau";
+    TH1F* hd0zdau=new TH1F(hname.Data(),"Impact parameter (z) distribution of D daughter tracks;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+
+    hname="hd0TracksSPDin";
+    TH1F* hd0TracksSPDin=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks kITSrefit, SPDinner; d_{0rphi}[cm];Entries",200,-0.5,0.5);
+
+    hname="hd0TracksSPDany";
+    TH1F* hd0TracksSPDany=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks kITSrefit, SPDany; d_{0rphi}[cm];Entries",200,-0.5,0.5);
+
+    hname="hd0TracksFilterBit4";
+    TH1F* hd0TracksFilterBit4=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks FilterBit4; d_{0rphi}[cm];Entries",200,-0.5,0.5);
+
+    hname="hd0TracksTPCITSSPDany";
+    TH1F* hd0TracksTPCITSSPDany=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks TPC+ITScuts+SPDany; d_{0rphi}[cm];Entries",200,-0.5,0.5);
 
     fOutputTrack->Add(hnClsITS);
     fOutputTrack->Add(hnClsITSselTr);
@@ -494,8 +506,12 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputTrack->Add(hptGoodTr);
     fOutputTrack->Add(hdistrGoodTr);
     fOutputTrack->Add(hdistrSelTr);
-    fOutputTrack->Add(hd0);
-    fOutputTrack->Add(hd0z);
+    fOutputTrack->Add(hd0TracksSPDin);
+    fOutputTrack->Add(hd0TracksSPDany);
+    fOutputTrack->Add(hd0TracksFilterBit4);
+    fOutputTrack->Add(hd0TracksTPCITSSPDany);
+    fOutputTrack->Add(hd0dau);
+    fOutputTrack->Add(hd0zdau);
 
     if(fReadMC){
       hname="hdistrFakeTr";
@@ -1168,21 +1184,31 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   //select event
   if(!fCuts->IsEventSelected(aod)) {
     evSelected=kFALSE;
-    if(fCuts->IsEventRejectedDueToPileupSPD()) {hWhyEvRejected->Fill(1); evselByPileup=kFALSE;}// rejected for pileup
-    if(fCuts->IsEventRejectedDueToCentrality()) {hWhyEvRejected->Fill(2); evSelbyCentrality=kFALSE; //rejected by centrality
+    if(fCuts->IsEventRejectedDueToPileupSPD()) {
+      if(fOnOff[3]) hWhyEvRejected->Fill(1); 
+      evselByPileup=kFALSE;
+    }// rejected for pileup
+    if(fCuts->IsEventRejectedDueToCentrality()) {
+      if(fOnOff[3]) hWhyEvRejected->Fill(2); 
+      evSelbyCentrality=kFALSE; //rejected by centrality
     }
     if(fCuts->IsEventRejectedDueToNotRecoVertex() ||
        fCuts->IsEventRejectedDueToVertexContributors() ||
        fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()){ 
       evSelByVertex=kFALSE; 
-      hWhyEvRejected->Fill(3);
+      if(fOnOff[3]) hWhyEvRejected->Fill(3);
     }
-    if(fCuts->IsEventRejectedDueToTrigger()) hWhyEvRejected->Fill(4);//tmp
-    if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion() && fOnOff[3]) {((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber)); hWhyEvRejected->Fill(5);
+    if(fCuts->IsEventRejectedDueToTrigger() && fOnOff[3]) hWhyEvRejected->Fill(4);//tmp
+    if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion() && fOnOff[3]) {
+      ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber)); 
+      hWhyEvRejected->Fill(5);
     }
-    if(fCuts->IsEventRejectedDuePhysicsSelection()) { evSelByPS=kFALSE;hWhyEvRejected->Fill(6); }
+    if(fCuts->IsEventRejectedDuePhysicsSelection()) { 
+      evSelByPS=kFALSE;
+      if(fOnOff[3]) hWhyEvRejected->Fill(6); 
+    }
   }
-  if(evSelected){
+  if(evSelected && fOnOff[3]){
     TH2F* hTrigS=(TH2F*)fOutputEvSelection->FindObject("hTrigCentSel");
     hTrigS->Fill(-1.,centrality);
 
@@ -1311,12 +1337,27 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
       // Track selection cuts
       if(track->GetID()<0) continue;
-      Bool_t selTrack=kTRUE;
+      Double_t d0z0[2],covd0z0[3];
+      track->PropagateToDCA(vtx1,aod->GetMagneticField(),99999.,d0z0,covd0z0);
+      if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
+	((TH1F*)fOutputTrack->FindObject("hd0TracksFilterBit4"))->Fill(d0z0[0]);
+      }
       ULong_t trStatus=track->GetStatus();
-      if (!((trStatus & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
+      if(trStatus&AliESDtrack::kITSrefit){
+	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)){
+	  ((TH1F*)fOutputTrack->FindObject("hd0TracksSPDany"))->Fill(d0z0[0]);
+	  if(track->HasPointOnITSLayer(0)){
+	    ((TH1F*)fOutputTrack->FindObject("hd0TracksSPDin"))->Fill(d0z0[0]);
+	  }
+	}
+      }
+
+      Bool_t selTrack=kTRUE;
+       if (!((trStatus & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
 	  !((trStatus & AliVTrack::kITSrefit) == AliVTrack::kITSrefit)){
 	selTrack=kFALSE;
       }
+
       Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
       Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
       if (track->GetTPCNclsF()>0) {
@@ -1324,6 +1365,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
       if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ){
 	selTrack=kFALSE;	
+      }
+      if(selTrack){
+	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)){
+	  ((TH1F*)fOutputTrack->FindObject("hd0TracksTPCITSSPDany"))->Fill(d0z0[0]);
+	}
       }
 
       AliAODPid *pid = track->GetDetPid();
@@ -1353,7 +1399,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    htmpfl->Fill(6.);
 	  }
 	}
-
+      
 	if(selTrack && isTOFok){
 	  Double_t tofTime=pid->GetTOFsignal();
 	  AliTOFHeader* tofH=(AliTOFHeader*)aod->GetTOFHeader();
@@ -1414,7 +1460,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  }
 	}//if TOF status
 	//}
-
+      
 	if(pidHF && pidHF->CheckStatus(track,"TPC")){ 
 
 	  Double_t TPCp=pid->GetTPCmomentum();
@@ -1494,7 +1540,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    /*nclsTot>3 &&*/
 	    nclsSPD>0) {//count good tracks
 
-	    
+	
 	  if(fReadMC && label<0) {
 	    ((TH1F*)fOutputTrack->FindObject("hptFakeTr"))->Fill(track->Pt());
 	    isFakeTrack++;	
@@ -1601,10 +1647,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 		((TH1F*)fOutputTrack->FindObject("hd0f"))->Fill(d->Getd0Prong(id));
 	      } else {
 		((TH1F*)fOutputTrack->FindObject("hptGoodTrFromDaugh"))->Fill(track->Pt());
-		((TH1F*)fOutputTrack->FindObject("hd0"))->Fill(d->Getd0Prong(id));
+		((TH1F*)fOutputTrack->FindObject("hd0dau"))->Fill(d->Getd0Prong(id));
 		Double_t d0rphiz[2],covd0[3];
 		Bool_t isDCA=track->PropagateToDCA(aod->GetPrimaryVertex(),aod->GetMagneticField(),9999.,d0rphiz,covd0);
-		if(isDCA) ((TH1F*)fOutputTrack->FindObject("hd0z"))->Fill(d0rphiz[1]);
+		if(isDCA) ((TH1F*)fOutputTrack->FindObject("hd0zdau"))->Fill(d0rphiz[1]);
 	      }
 	    }
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
