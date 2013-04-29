@@ -15,6 +15,8 @@ AliITSUSeed::AliITSUSeed()
   ,fChi2Glo(0)
   ,fChi2Cl(0)
   ,fChi2Penalty(0)
+  ,fChi2Match(0)
+  ,fChi2ITSSA(0)
   ,fParent(0)
 {
   // def c-tor
@@ -36,6 +38,8 @@ AliITSUSeed::AliITSUSeed(const AliITSUSeed& src)
   ,fChi2Glo(src.fChi2Glo)
   ,fChi2Cl(src.fChi2Cl)
   ,fChi2Penalty(src.fChi2Penalty)
+  ,fChi2Match(src.fChi2Match)
+  ,fChi2ITSSA(src.fChi2ITSSA)
   ,fParent(src.fParent) 
 {
   // def c-tor
@@ -65,8 +69,8 @@ void AliITSUSeed::Print(Option_t* opt) const
 {
   // print seed info
   int lr,cl = GetLrCluster(lr);
-  printf("%cLr%d Nchild: %3d Cl:%4d Chi2Glo:%7.2f(%7.2f) Chi2Cl:%7.2f Penalty: %7.2f",IsKilled() ? '-':' ',
-	 lr,GetNChildren(),cl,GetChi2Glo(),GetChi2GloNrm(),GetChi2Cl(), GetChi2Penalty());
+  printf("%cLr%d Nchild: %3d Cl:%4d Chi2Glo:%7.2f(%7.2f) Chi2Cl:%7.2f Penalty: %7.2f Mtc:%6.2f Bwd:%6.2f",IsKilled() ? '-':' ',
+	 lr,GetNChildren(),cl,GetChi2Glo(),GetChi2GloNrm(),GetChi2Cl(), GetChi2Penalty(), GetChi2ITSTPC(), GetChi2ITSSA());
   printf(" |"); 
   int lrc=0;
   const AliITSUSeed *sdc = this;
@@ -86,11 +90,11 @@ void AliITSUSeed::Print(Option_t* opt) const
 }
 
 //______________________________________________________________________________
-void AliITSUSeed::InitFromESDTrack(const AliESDtrack* esdTr)
+void AliITSUSeed::InitFromSeed(const AliExternalTrackParam* seed)
 {
   // init seed from ESD track
   TObject::Clear();
-  AliExternalTrackParam::operator=(*esdTr);
+  AliExternalTrackParam::operator=(*seed);
   ResetFMatrix();
   fHitsPattern = 0;
   fClID = 0;
@@ -640,6 +644,24 @@ Bool_t AliITSUSeed::ContainsFake() const
     seed = (AliITSUSeed*)seed->GetParent();
   }  
   return kFALSE;
+}
+
+//__________________________________________________________________
+Int_t AliITSUSeed::FetchClusterInfo(Int_t *clIDarr) const
+{
+  // fill cl.id's in the array. The clusters of layer L will be set at slots
+  // clID[2L] (and clID[2L+1] if there is an extra cluster).
+  Int_t lr,ncl=0;
+  const AliITSUSeed* seed = this;
+  do {
+    int clID = seed->GetLrCluster(lr);
+    if (clID>=0) {
+      lr<<=1;
+      clIDarr[ clIDarr[lr]<0 ? lr : lr+1 ] = clID;
+      ncl++;
+    }
+  } while ((seed=(AliITSUSeed*)seed->GetParent()));
+  return ncl;
 }
 
 /*
