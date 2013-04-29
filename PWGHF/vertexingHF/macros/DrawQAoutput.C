@@ -11,6 +11,7 @@
 #include <TCanvas.h>
 #include <TLegend.h>
 #include <TPaveText.h>
+#include <TPaveStats.h>
 #include <TStyle.h>
 #include <TClass.h>
 #include <TDatabasePDG.h>
@@ -247,7 +248,55 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
   cst->SaveAs(Form("%s%s.png",hstat->GetName(),textleg.Data()));
   cst->SaveAs(Form("%s%s.eps",hstat->GetName(),textleg.Data()));
 
-
+  TH1F* hd0fb4=(TH1F*)list->FindObject("hd0TracksFilterBit4");
+  TH1F* hd0SPD1=(TH1F*)list->FindObject("hd0TracksSPDin");
+  TH1F* hd0SPDany=(TH1F*)list->FindObject("hd0TracksSPDany");
+  TH1F* hd0TPCITScuts=(TH1F*)list->FindObject("hd0TracksTPCITSSPDany");
+  if(hd0fb4 && hd0SPD1 && hd0SPDany && hd0TPCITScuts){
+    TCanvas* ctrsel=new TCanvas("ctrsel","Track Sel");
+    ctrsel->SetLogy();
+    hd0SPD1->Draw();
+    ctrsel->Update();
+    TPaveStats *st1=(TPaveStats*)hd0SPD1->GetListOfFunctions()->FindObject("stats");
+    st1->SetY1NDC(0.71);
+    st1->SetY2NDC(0.9);
+    hd0SPDany->SetLineColor(4);
+    hd0SPDany->Draw("sames");
+    ctrsel->Update();
+    TPaveStats *st2=(TPaveStats*)hd0SPDany->GetListOfFunctions()->FindObject("stats");
+    st2->SetY1NDC(0.51);
+    st2->SetY2NDC(0.7);
+    st2->SetTextColor(4);
+    hd0fb4->SetLineColor(2);
+    hd0fb4->Draw("sames");
+    ctrsel->Update();
+    TPaveStats *st3=(TPaveStats*)hd0fb4->GetListOfFunctions()->FindObject("stats");
+    st3->SetY1NDC(0.31);
+    st3->SetY2NDC(0.5);
+    st3->SetTextColor(2);
+    hd0TPCITScuts->SetLineColor(kGreen+1);
+    hd0TPCITScuts->Draw("sames");
+    ctrsel->Update();
+    TPaveStats *st4=(TPaveStats*)hd0TPCITScuts->GetListOfFunctions()->FindObject("stats");
+    st4->SetY1NDC(0.71);
+    st4->SetY2NDC(0.9);
+    st4->SetX1NDC(0.55);
+    st4->SetX2NDC(0.75);
+    st4->SetTextColor(kGreen+1);
+    ctrsel->Modified();
+    TLegend* leg=new TLegend(0.15,0.5,0.45,0.78);
+    leg->SetFillStyle(0);
+    leg->SetBorderSize(0);
+    leg->AddEntry(hd0SPD1,"kITSrefit+SPD inner","L");
+    leg->AddEntry(hd0SPDany,"kITSrefit+SPD any","L");
+    leg->AddEntry(hd0TPCITScuts,"TPC+ITS cuts+SPD any","L");
+    leg->AddEntry(hd0fb4,"Filter Bit 4","L");
+    leg->Draw();
+    
+    ctrsel->SaveAs("ImpactParameterTrackSel.eps");
+    ctrsel->SaveAs("ImpactParameterTrackSel.png");
+    
+  }
 }
 
 //draw "pid related" histograms (list "outputPID")
