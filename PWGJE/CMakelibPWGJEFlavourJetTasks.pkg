@@ -1,0 +1,47 @@
+# -*- mode: Makefile -*-
+# $Id$
+#--------------------------------------------------------------------------------#
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS 
+	FlavourJetTasks/AliAnalysisTaskSEDmesonsFilterCJ.cxx
+	FlavourJetTasks/AliAnalysisTaskFlavourJetCorrelations.cxx
+)
+
+set ( DHDR  PWGJEFlavourJetTasksLinkDef.h)
+
+string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( FASTJET_ROOT $ENV{FASTJET_ROOT} )
+
+if(FASTJET_ROOT)
+  set ( EDEFINE -isystem${FASTJET_ROOT}/include )
+else()
+  set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet )
+endif(FASTJET_ROOT)
+
+set ( EINCLUDE JETAN/fastjet PWGJE/EMCALJetTasks PWGJE/FlavourJetTasks PWG/EMCAL PWGHF/vertexingHF EMCAL OADB STEER/ESD STEER/STEERBase )
