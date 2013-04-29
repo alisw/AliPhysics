@@ -1111,44 +1111,44 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
     // store in txt files
     TString meanFileName = filename;
     if(kProjectInEta) 
-      //meanFileName= "deltaEtaProjection_Mean.txt";
-      meanFileName.ReplaceAll(".root","_DeltaEtaProjection_Mean.txt");
+      meanFileName= "deltaEtaProjection_Mean.txt";
+    //meanFileName.ReplaceAll(".root","_DeltaEtaProjection_Mean.txt");
     else              
-      //meanFileName = "deltaPhiProjection_Mean.txt";
-      meanFileName.ReplaceAll(".root","_DeltaPhiProjection_Mean.txt");
+      meanFileName = "deltaPhiProjection_Mean.txt";
+      //meanFileName.ReplaceAll(".root","_DeltaPhiProjection_Mean.txt");
     ofstream fileMean(meanFileName.Data(),ios::app);
     fileMean << " " << gHistBalanceFunctionSubtracted->GetMean() << " " <<gHistBalanceFunctionSubtracted->GetMeanError()<<endl;
     fileMean.close();
 
     TString rmsFileName = filename;
     if(kProjectInEta) 
-      //rmsFileName = "deltaEtaProjection_Rms.txt";
-      rmsFileName.ReplaceAll(".root","_DeltaEtaProjection_Rms.txt");
+      rmsFileName = "deltaEtaProjection_Rms.txt";
+      //rmsFileName.ReplaceAll(".root","_DeltaEtaProjection_Rms.txt");
     else              
-      //rmsFileName = "deltaPhiProjection_Rms.txt");
-      rmsFileName.ReplaceAll(".root","_DeltaPhiProjection_Rms.txt");
+      rmsFileName = "deltaPhiProjection_Rms.txt");
+      //rmsFileName.ReplaceAll(".root","_DeltaPhiProjection_Rms.txt");
     ofstream fileRms(rmsFileName.Data(),ios::app);
     fileRms << " " << gHistBalanceFunctionSubtracted->GetRMS() << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;
     fileRms.close();
 
     TString skewnessFileName = filename;
     if(kProjectInEta) 
-      //skewnessFileName = "deltaEtaProjection_Skewness.txt";
-      skewnessFileName.ReplaceAll(".root","_DeltaEtaProjection_Skewness.txt");
+      skewnessFileName = "deltaEtaProjection_Skewness.txt";
+      //skewnessFileName.ReplaceAll(".root","_DeltaEtaProjection_Skewness.txt");
     else              
-      //skewnessFileName = "deltaPhiProjection_Skewness.txt";
-      skewnessFileName.ReplaceAll(".root","_DeltaPhiProjection_Skewness.txt");
+      skewnessFileName = "deltaPhiProjection_Skewness.txt";
+    //skewnessFileName.ReplaceAll(".root","_DeltaPhiProjection_Skewness.txt");
     ofstream fileSkewness(skewnessFileName.Data(),ios::app);
     fileSkewness << " " << gHistBalanceFunctionSubtracted->GetSkewness(1) << " " <<gHistBalanceFunctionSubtracted->GetSkewness(11)<<endl;
     fileSkewness.close();
 
     TString kurtosisFileName = filename;
     if(kProjectInEta) 
-      //kurtosisFileName = "deltaEtaProjection_Kurtosis.txt";
-      kurtosisFileName.ReplaceAll(".root","_DeltaEtaProjection_Kurtosis.txt");
+      kurtosisFileName = "deltaEtaProjection_Kurtosis.txt";
+      //kurtosisFileName.ReplaceAll(".root","_DeltaEtaProjection_Kurtosis.txt");
     else
-      //kurtosisFileName = "deltaPhiProjection_Kurtosis.txt";              
-      kurtosisFileName.ReplaceAll(".root","_DeltaPhiProjection_Kurtosis.txt");
+      kurtosisFileName = "deltaPhiProjection_Kurtosis.txt";              
+      //kurtosisFileName.ReplaceAll(".root","_DeltaPhiProjection_Kurtosis.txt");
     ofstream fileKurtosis(kurtosisFileName.Data(),ios::app);
     fileKurtosis << " " << gHistBalanceFunctionSubtracted->GetKurtosis(1) << " " <<gHistBalanceFunctionSubtracted->GetKurtosis(11)<<endl;
     fileKurtosis.close();
@@ -1194,44 +1194,44 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
     // store in txt files
     TString meanFileName = filename;
     if(kProjectInEta) 
-      //meanFileName = "deltaEtaProjection_Mean.txt";
-      meanFileName.ReplaceAll(".root","_DeltaEtaProjection_Mean.txt");
+      meanFileName = "deltaEtaProjection_Mean.txt";
+      //meanFileName.ReplaceAll(".root","_DeltaEtaProjection_Mean.txt");
     else              
-      //meanFileName = "deltaPhiProjection_Mean.txt";
-      meanFileName.ReplaceAll(".root","_DeltaPhiProjection_Mean.txt");
+      meanFileName = "deltaPhiProjection_Mean.txt";
+      //meanFileName.ReplaceAll(".root","_DeltaPhiProjection_Mean.txt");
     ofstream fileMean(meanFileName.Data(),ios::app);
     fileMean << " " << meanAnalytical << " " <<meanAnalyticalError<<endl;
     fileMean.close();
 
     TString rmsFileName = filename;
     if(kProjectInEta) 
-      //rmsFileName = "deltaEtaProjection_Rms.txt";
-      rmsFileName.ReplaceAll(".root","_DeltaEtaProjection_Rms.txt");
+      rmsFileName = "deltaEtaProjection_Rms.txt";
+      //rmsFileName.ReplaceAll(".root","_DeltaEtaProjection_Rms.txt");
     else              
-      //rmsFileName = "deltaPhiProjection_Rms.txt";
-      rmsFileName.ReplaceAll(".root","_DeltaPhiProjection_Rms.txt");
+      rmsFileName = "deltaPhiProjection_Rms.txt";
+//rmsFileName.ReplaceAll(".root","_DeltaPhiProjection_Rms.txt");
     ofstream fileRms(rmsFileName.Data(),ios::app);
     fileRms << " " << sigmaAnalytical << " " <<sigmaAnalyticalError<<endl;
     fileRms.close();
 
     TString skewnessFileName = filename;
     if(kProjectInEta) 
-      //skewnessFileName = "deltaEtaProjection_Skewness.txt";
-      skewnessFileName.ReplaceAll(".root","_DeltaEtaProjection_Skewness.txt");
+      skewnessFileName = "deltaEtaProjection_Skewness.txt";
+      //skewnessFileName.ReplaceAll(".root","_DeltaEtaProjection_Skewness.txt");
     else              
-      //skewnessFileName = "deltaPhiProjection_Skewness.txt";
-      skewnessFileName.ReplaceAll(".root","_DeltaPhiProjection_Skewness.txt");
+      skewnessFileName = "deltaPhiProjection_Skewness.txt";
+      //skewnessFileName.ReplaceAll(".root","_DeltaPhiProjection_Skewness.txt");
     ofstream fileSkewness(skewnessFileName.Data(),ios::app);
     fileSkewness << " " << skewnessAnalytical << " " <<skewnessAnalyticalError<<endl;
     fileSkewness.close();
 
     TString kurtosisFileName = filename;
     if(kProjectInEta) 
-      //kurtosisFileName = "deltaEtaProjection_Kurtosis.txt";
-      kurtosisFileName.ReplaceAll(".root","_DeltaEtaProjection_Kurtosis.txt");
+      kurtosisFileName = "deltaEtaProjection_Kurtosis.txt";
+      //kurtosisFileName.ReplaceAll(".root","_DeltaEtaProjection_Kurtosis.txt");
     else              
-      //kurtosisFileName = "deltaPhiProjection_Kurtosis.txt";
-      kurtosisFileName.ReplaceAll(".root","_DeltaPhiProjection_Kurtosis.txt");
+      kurtosisFileName = "deltaPhiProjection_Kurtosis.txt";
+      //kurtosisFileName.ReplaceAll(".root","_DeltaPhiProjection_Kurtosis.txt");
     ofstream fileKurtosis(kurtosisFileName.Data(),ios::app);
     fileKurtosis << " " << kurtosisAnalytical << " " <<kurtosisAnalyticalError<<endl;
     fileKurtosis.close();
@@ -1429,11 +1429,4 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   		  kTRUE,
   		  eventClass.Data(),
   		  kFALSE);
-
-  TString outFileName = filename;
-  outFileName.ReplaceAll("correlationFunction","balanceFunction2D");
-  gHistBalanceFunction2D->SetName("gHistBalanceFunctionSubtracted");
-  TFile *fOut = TFile::Open(outFileName.Data(),"recreate");  
-  gHistBalanceFunction2D->Write();
-  fOut->Close();
 }
