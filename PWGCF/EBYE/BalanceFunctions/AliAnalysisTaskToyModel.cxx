@@ -15,6 +15,8 @@
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 
+#include "AliEventPoolManager.h"           
+
 #include "AliAnalysisTaskToyModel.h"
 #include "AliBalance.h"
 #include "AliBalancePsi.h"
@@ -35,7 +37,7 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fUseDebug(kFALSE),
   fBalance(0),
   fRunShuffling(kFALSE), fShuffledBalance(0),
-  fRunMixing(kFALSE), fMixedBalance(0),
+  fRunMixing(kFALSE), fMixedBalance(0), fPoolMgr(0),
   fList(0), fListBF(0), fListBFS(0), fListBFM(0),
   fHistEventStats(0),
   fHistNumberOfAcceptedParticles(0),
@@ -407,6 +409,50 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
     fListBFM->Add(fMixedBalance->GetHistNnp());
   }
 
+  // Event Mixing
+  if(fRunMixing){
+    Int_t fMixingTracks = 2000;
+    Int_t trackDepth = fMixingTracks; 
+    Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+    
+    // centrality bins
+    Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,7.,10.,20.,30.,40.,50.,60.,70.,80.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    Double_t* centbins        = centralityBins;
+    Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
+
+    // multiplicity bins
+    Double_t multiplicityBins[] = {0,10,20,30,40,50,60,70,80,100,100000}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    Double_t* multbins        = multiplicityBins;
+    Int_t nMultiplicityBins     = sizeof(multiplicityBins) / sizeof(Double_t) - 1;
+    
+    // Zvtx bins
+    Double_t vertexBins[] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    Double_t* vtxbins     = vertexBins;
+    Int_t nVertexBins     = sizeof(vertexBins) / sizeof(Double_t) - 1;
+    
+    // Event plane angle (Psi) bins
+    Double_t psiBins[] = {0.,45.,135.,215.,305.,360.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    Double_t* psibins     = psiBins;
+    Int_t nPsiBins     = sizeof(psiBins) / sizeof(Double_t) - 1;
+    
+    // // run the event mixing also in bins of event plane (statistics!)
+    // if(fRunMixingEventPlane){
+    //   if(fEventClass=="Multiplicity"){
+    // 	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nMultiplicityBins, multbins, nVertexBins, vtxbins, nPsiBins, psibins);
+    //   }
+    //   else{
+    // 	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins, nPsiBins, psibins);
+    //   }
+    // }
+    // else{
+    //if(fEventClass=="Multiplicity"){
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nMultiplicityBins, multbins, nVertexBins, vtxbins);
+    //}
+    //else{
+    //fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
+    //}
+  }
+
   TH1::AddDirectory(oldStatus);
 }
 
@@ -461,14 +507,6 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     fAzimuthalAngleProtons->SetParameter(5,fPentangularFlowProtons);
   }
 
-  //TObjArray for the accepted particles
-  TObjArray *tracksMain = new TObjArray();
-  tracksMain->SetOwner(kTRUE);
-  TObjArray *tracksMixing = 0x0;
-  if(fRunMixing) {
-    tracksMixing = new TObjArray();
-    tracksMixing->SetOwner(kTRUE);
-  }
 
   for(Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     // vector holding the charges/kinematics of all tracks (charge,y,eta,phi,p0,p1,p2,pt,E)
@@ -478,6 +516,17 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     //chargeVectorShuffle[i] = new vector<Double_t>;
     //chargeVector[i]        = new vector<Double_t>;
     //}
+
+    // TObjArray for the accepted particles 
+    // (has to be done here, otherwise mxing with event pool does not work, overwriting pointers!)
+    TObjArray *tracksMain = new TObjArray();
+    tracksMain->SetOwner(kTRUE);
+    TObjArray *tracksMixing = 0x0;
+    if(fRunMixing) {
+      tracksMixing = new TObjArray();
+      tracksMixing->SetOwner(kTRUE);
+    }
+
     tracksMain->Clear();
     if(fRunMixing) tracksMixing->Clear();
     
@@ -798,10 +847,65 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     fHistNumberOfAcceptedParticles->Fill(gNumberOfAcceptedParticles);
     fHistReactionPlane->Fill(fReactionPlane);
 
+    // Event mixing 
+    if (fRunMixing)
+      {
+	// 1. First get an event pool corresponding in mult (cent) and
+	//    zvertex to the current event. Once initialized, the pool
+	//    should contain nMix (reduced) events. This routine does not
+	//    pre-scan the chain. The first several events of every chain
+	//    will be skipped until the needed pools are filled to the
+	//    specified depth. If the pool categories are not too rare, this
+	//    should not be a problem. If they are rare, you could lose`
+	//    statistics.
+	
+	// 2. Collect the whole pool's content of tracks into one TObjArray
+	//    (bgTracks), which is effectively a single background super-event.
+	
+	// 3. The reduced and bgTracks arrays must both be passed into
+	//    FillCorrelations(). Also nMix should be passed in, so a weight
+	//    of 1./nMix can be applied.
+	
+	AliEventPool* pool = fPoolMgr->GetEventPool(1., 0.,fReactionPlane);
+      
+	if (!pool){
+	  AliFatal(Form("No pool found for centrality = %f, zVtx = %f, psi = %f", 1, 0,fReactionPlane));
+	}
+	else{
+	  
+	  //pool->SetDebug(1);
+	  
+	  if (pool->IsReady() || pool->NTracksInPool() > 50000 / 10 || pool->GetCurrentNEvents() >= 5){ 
+	    
+	    
+	    Int_t nMix = pool->GetCurrentNEvents();
+	    //cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << ", tracks in this event = "<<gNumberOfAcceptedParticles <<", event Plane = "<<fReactionPlane<<endl;
+	    
+	    //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
+	    //((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
+	    //if (pool->IsReady())
+	    //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
+	    
+	    // Fill mixed-event histos here  
+	    for (Int_t jMix=0; jMix<nMix; jMix++) 
+	      {
+		TObjArray* tracksMixed = pool->GetEvent(jMix);
+		fMixedBalance->CalculateBalance(fReactionPlane,tracksMain,tracksMixed,1,1.,0.);
+	      }
+	  }
+	  
+	  // Update the Event pool
+	  pool->UpdatePool(tracksMain);
+	  //pool->PrintInfo();
+	  
+	}//pool NULL check  
+      }//run mixing
+    
     //Calculate the balance function
     fBalance->CalculateBalance(fReactionPlane,tracksMain,NULL,1,1.,0.);
-    if(fRunMixing)
-      fMixedBalance->CalculateBalance(fReactionPlane,tracksMixing,NULL,1,1.,0.);
+    //if(fRunMixing)
+    //  fMixedBalance->CalculateBalance(fReactionPlane,tracksMixing,NULL,1,1.,0.);	     
+
   }//event loop
 }      
 
