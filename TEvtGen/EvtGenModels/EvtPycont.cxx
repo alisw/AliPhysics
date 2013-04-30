@@ -34,12 +34,12 @@ using std::endl;
 
 extern "C" {
   extern void pystat_(int &);
+  extern struct
+  {
+    int dc[18];
+  } decaych_;
 }
 
-// extern struct
-// {
-//   int dc[18];
-// } decaych_;
 
 
 EvtPycont::~EvtPycont() {
@@ -68,28 +68,28 @@ void EvtPycont::init()
   }
   checkNArg(0,12);
 
-   // for( int i=0; i<18; i++)
-   //   decaych_.dc[i]=0;
-   // if ( getNArg() == 12 ) {
-   //   decaych_.dc[0]=(int)getArg(0);
-   //   decaych_.dc[1]=(int)getArg(1);
-   //   decaych_.dc[2]=(int)getArg(2);
-   //   decaych_.dc[3]=(int)getArg(3);
-   //   decaych_.dc[4]=(int)getArg(4);
-   //   decaych_.dc[5]=(int)getArg(5);
-   //   decaych_.dc[10]=(int)getArg(6);
-   //   decaych_.dc[11]=(int)getArg(7);
-   //   decaych_.dc[12]=(int)getArg(8);
-   //   decaych_.dc[13]=(int)getArg(9);
-   //   decaych_.dc[14]=(int)getArg(10);
-   //   decaych_.dc[15]=(int)getArg(11);
-   // }
-   // else{
-   //   decaych_.dc[0]=1;
-   //   decaych_.dc[1]=1;
-   //   decaych_.dc[2]=1;
-   //   decaych_.dc[3]=1;
-   // }
+   for( int i=0; i<18; i++)
+     decaych_.dc[i]=0;
+   if ( getNArg() == 12 ) {
+     decaych_.dc[0]=(int)getArg(0);
+     decaych_.dc[1]=(int)getArg(1);
+     decaych_.dc[2]=(int)getArg(2);
+     decaych_.dc[3]=(int)getArg(3);
+     decaych_.dc[4]=(int)getArg(4);
+     decaych_.dc[5]=(int)getArg(5);
+     decaych_.dc[10]=(int)getArg(6);
+     decaych_.dc[11]=(int)getArg(7);
+     decaych_.dc[12]=(int)getArg(8);
+     decaych_.dc[13]=(int)getArg(9);
+     decaych_.dc[14]=(int)getArg(10);
+     decaych_.dc[15]=(int)getArg(11);
+   }
+   else{
+     decaych_.dc[0]=1;
+     decaych_.dc[1]=1;
+     decaych_.dc[2]=1;
+     decaych_.dc[3]=1;
+   }
 
 }
 

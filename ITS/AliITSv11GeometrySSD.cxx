@@ -1844,14 +1844,14 @@ TList* AliITSv11GeometrySSD::GetCarbonFiberSupportList(){
   ////////////////////
   vertexposition[0][0] = new TVector3();
   vertexposition[0][1] = new TVector3(fgkCarbonFiberSupportXAxisLength,
-									  fgkCarbonFiberSupportYAxisLength);
+				      fgkCarbonFiberSupportYAxisLength, 0);
   vertexposition[0][2] = new TVector3(carbonfibersupportxaxisEdgeproj,
 									  carbonfibersupportxaxisEdgeproj
-					   *			  TMath::Tan(theta));
+				      *			  TMath::Tan(theta), 0);
   vertexposition[0][3] = new TVector3(fgkCarbonFiberSupportXAxisLength
 					   -			  carbonfibersupportxaxisEdgeproj,
 									  fgkCarbonFiberSupportYAxisLength
-					   -			  vertexposition[0][2]->Y());
+				      -	vertexposition[0][2]->Y(), 0);
   ////////////////////////////////////////////////////
   //Setting the parameters for Isometry Transformation
   ////////////////////////////////////////////////////
@@ -1862,7 +1862,7 @@ TList* AliITSv11GeometrySSD::GetCarbonFiberSupportList(){
   param[0] = 0., param[1] = 1., param[2] = 0., param[3] = -symmetryplaneposition;
   for(Int_t j=0; j<kvertexnumber; j++) vertexposition[1][j] = 
     new TVector3((GetReflection(vertexposition[0][j],param))->X(),
-		 (GetReflection(vertexposition[0][j],param))->Y());
+		 (GetReflection(vertexposition[0][j],param))->Y(), 0);
   const char* carbonfibersupportshapename[kshapesnumber] = 
 						{"CarbonFiberSupportShape1","CarbonFiberSupportShape2"};
   const char* carbonfibersupportname[kshapesnumber] = 
@@ -1911,10 +1911,10 @@ TGeoVolume* AliITSv11GeometrySSD::GetCarbonFiberJunction(Double_t width){
 			*			  TMath::DegToRad()),
 						  fgkCarbonFiberJunctionEdge[0]
 			*			  TMath::Sin(fgkCarbonFiberJunctionAngle[0]
-			*			  TMath::DegToRad()));
+					* TMath::DegToRad()), 0);
   vertex[4] = new TVector3(fgkCarbonFiberJunctionLength-fgkSSDTolerance,
-						   fgkCarbonFiberJunctionEdge[1]);
-  vertex[5] = new TVector3(fgkCarbonFiberJunctionLength-fgkSSDTolerance); 
+			   fgkCarbonFiberJunctionEdge[1], 0);
+  vertex[5] = new TVector3(fgkCarbonFiberJunctionLength-fgkSSDTolerance, 0, 0); 
   vertex[1] = GetReflection(vertex[5],reflectionparam);	
   vertex[2] = GetReflection(vertex[4],reflectionparam);	
   Double_t xvertexpoints[6], yvertexpoints[6];
@@ -1946,24 +1946,24 @@ TList* AliITSv11GeometrySSD::GetCarbonFiberLowerSupportList(){
   for(Int_t i = 0; i<kshapesnumber; i++) vertexposition[i] = 
 						 new TVector3*[kvertexnumber];
   //First Shape Vertex Positioning
-  vertexposition[0][0] = new TVector3(fgkCarbonFiberLowerSupportLowerLenght);
+  vertexposition[0][0] = new TVector3(fgkCarbonFiberLowerSupportLowerLenght, 0, 0);
   vertexposition[0][1] = new TVector3(fgkCarbonFiberTriangleLength
-					   -		fgkCarbonFiberLowerSupportLowerLenght);
+				      -	fgkCarbonFiberLowerSupportLowerLenght, 0, 0);
   vertexposition[0][2] = new TVector3();
-  vertexposition[0][3] = new TVector3(fgkCarbonFiberTriangleLength);
+  vertexposition[0][3] = new TVector3(fgkCarbonFiberTriangleLength, 0, 0);
   //Second Shape Vertex Positioning
   Double_t theta = TMath::ATan((fgkCarbonFiberLowerSupportVolumePosition[1]
 				 -				fgkCarbonFiberLowerSupportVolumePosition[0])
 				 /				fgkCarbonFiberTriangleLength);
   vertexposition[1][0] = new TVector3(vertexposition[0][0]->X(),
 								vertexposition[0][0]->X()*TMath::Tan(theta)
-				 +				fgkCarbonFiberLowerSupportVolumePosition[0]);
+				      + fgkCarbonFiberLowerSupportVolumePosition[0], 0);
   vertexposition[1][1] = new TVector3(vertexposition[0][1]->X(),
 								vertexposition[0][1]->X()*TMath::Tan(theta)
-				 +				fgkCarbonFiberLowerSupportVolumePosition[0]);
-  vertexposition[1][2] = new TVector3(0.,fgkCarbonFiberLowerSupportVolumePosition[0]);
+				      + fgkCarbonFiberLowerSupportVolumePosition[0], 0);
+  vertexposition[1][2] = new TVector3(0.,fgkCarbonFiberLowerSupportVolumePosition[0], 0);
   vertexposition[1][3] = new TVector3(fgkCarbonFiberTriangleLength,
-								fgkCarbonFiberLowerSupportVolumePosition[1]);
+				      fgkCarbonFiberLowerSupportVolumePosition[1], 0);
   const char* carbonfiberlowersupportshapename[kshapesnumber] = 
 			  {"CarbonFiberLowerSupportShape1","CarbonFiberLowerSupportShape2"};
   const char* carbonfiberlowersupportname[kshapesnumber] = 
@@ -2002,11 +2002,11 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDSensorSupport(Double_t length, Double_t 
 	TGeoXtru* ssdsensorsupportshape = new TGeoXtru(2);	
     TVector3* vertexposition[kvertexnumber];
 	vertexposition[0] = new TVector3();	
-	vertexposition[1] = new TVector3(0.0,length);	
-	vertexposition[2] = new TVector3(thickness[1],vertexposition[1]->Y());	
-	vertexposition[3] = new TVector3(vertexposition[2]->X(),thickness[0]);	
-	vertexposition[4] = new TVector3(height,vertexposition[3]->Y());	
-	vertexposition[5] = new TVector3(vertexposition[4]->X());	
+	vertexposition[1] = new TVector3(0.0,length,0);	
+	vertexposition[2] = new TVector3(thickness[1],vertexposition[1]->Y(),0);	
+	vertexposition[3] = new TVector3(vertexposition[2]->X(),thickness[0],0);	
+	vertexposition[4] = new TVector3(height,vertexposition[3]->Y(),0);	
+	vertexposition[5] = new TVector3(vertexposition[4]->X(),0,0);	
 	Double_t xvertexpoints[6], yvertexpoints[6];
 	for(Int_t i=0; i<kvertexnumber; i++) 
 		xvertexpoints[i] = vertexposition[i]->X(), 
@@ -2042,20 +2042,20 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingTubeSupport(Int_t nedges){
 
   Double_t router = fgkCoolingTubeSupportRmin/CosD(phi/nedges);  //  Recalc inner radius so that tube fits inside  
   vertexposition[0] = new TVector3(router*CosD(angle),
-								   router*SinD(angle));
+				   router*SinD(angle), 0);
   vertexposition[1] = new TVector3(fgkCoolingTubeSupportRmax*CosD(angle),
-								   fgkCoolingTubeSupportRmax*SinD(angle));
+				   fgkCoolingTubeSupportRmax*SinD(angle),0);
   vertexposition[2] = new TVector3(vertexposition[1]->X(),
-								   fgkCoolingTubeSupportRmax);
+				   fgkCoolingTubeSupportRmax, 0);
   vertexposition[3] = new TVector3(-vertexposition[1]->X(),
-								   fgkCoolingTubeSupportRmax);
+				   fgkCoolingTubeSupportRmax, 0);
   vertexposition[4] = new TVector3(-vertexposition[1]->X(),
-								    vertexposition[1]->Y());
+				   vertexposition[1]->Y(), 0);
 
   for(Int_t i=0; i<nedges; i++)
 	vertexposition[i+5] = 
 		new TVector3(router*CosD(psi+i*(2.*phi/nedges)),
-			     router*SinD(psi+i*(2.*phi/nedges)));
+			     router*SinD(psi+i*(2.*phi/nedges)), 0);
   ///////////////////////////////////////////////////////////////////////
   // TGeoXTru Volume definition for Cooling Tube Support Arc Part
   ///////////////////////////////////////////////////////////////////////
@@ -2153,14 +2153,14 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingTubeSupport(Int_t nedges){
    ////////////////////////////////////////
   // Positioning the vertices for TGeoXTru
   ////////////////////////////////////////
-  virtualvertex[0] = new TVector3(-fgkCoolingTubeSupportRmax,-fgkCoolingTubeSupportRmax); 
-  virtualvertex[1] = new TVector3(virtualvertex[0]->X(),-virtualvertex[0]->Y());
-  virtualvertex[2] = new TVector3(-virtualvertex[0]->X(),virtualvertex[1]->Y());
-  virtualvertex[3] = new TVector3(virtualvertex[2]->X(),0.5*fgkCoolingTubeSupportHeight);
-  virtualvertex[4] = new TVector3(virtualvertex[3]->X()+boxlength,virtualvertex[3]->Y());
-  virtualvertex[5] = new TVector3(virtualvertex[4]->X(),-virtualvertex[4]->Y());
-  virtualvertex[6] = new TVector3(virtualvertex[3]->X(),-virtualvertex[3]->Y());
-  virtualvertex[7] = new TVector3(virtualvertex[2]->X(),-virtualvertex[2]->Y());
+  virtualvertex[0] = new TVector3(-fgkCoolingTubeSupportRmax,-fgkCoolingTubeSupportRmax, 0); 
+  virtualvertex[1] = new TVector3(virtualvertex[0]->X(),-virtualvertex[0]->Y(),0);
+  virtualvertex[2] = new TVector3(-virtualvertex[0]->X(),virtualvertex[1]->Y(),0);
+  virtualvertex[3] = new TVector3(virtualvertex[2]->X(),0.5*fgkCoolingTubeSupportHeight,0);
+  virtualvertex[4] = new TVector3(virtualvertex[3]->X()+boxlength,virtualvertex[3]->Y(),0);
+  virtualvertex[5] = new TVector3(virtualvertex[4]->X(),-virtualvertex[4]->Y(),0);
+  virtualvertex[6] = new TVector3(virtualvertex[3]->X(),-virtualvertex[3]->Y(),0);
+  virtualvertex[7] = new TVector3(virtualvertex[2]->X(),-virtualvertex[2]->Y(),0);
   Double_t xmothervertex[kvirtualvertexnumber], ymothervertex[kvirtualvertexnumber];
   for(Int_t i=0; i< kvirtualvertexnumber; i++)
 	xmothervertex[i] = virtualvertex[i]->X(),
@@ -2535,7 +2535,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingBlockSystem(){
   coolingblocktransvector = new TVector3(fgkCoolingTubeSeparation,
 								  fgkSSDSensorLength
 								- 2.*fgkSSDModuleStiffenerPosition[1]
-								- fgkSSDCoolingBlockWidth);
+					 - fgkSSDCoolingBlockWidth, 0);
   const Int_t kcoolingblocktransnumber = 2;
   const Int_t kcoolingblocknumber = 4;
   TGeoHMatrix* coolingblockmatrix[kcoolingblocknumber];
@@ -2701,14 +2701,14 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDEndFlex(){
   TVector3* referencetrans[karcnumber];
   referencetrans[0] = new TVector3(ssdflexboxlength*CosD(2.*fgkSSDFlexAngle)
 					+			   radius[0]*SinD(2.*fgkSSDFlexAngle),
-								   radius[0]);
+				   radius[0], 0);
   referencetrans[1] = new TVector3(referencetrans[0]->X()
 					+              fgkSSDFlexLength[2],
-     -              fgkSSDStiffenerHeight);
+				   -              fgkSSDStiffenerHeight, 0);
 for(Int_t i=0; i<karcnumber; i++){
 	for(Int_t j=0; j<knedges+1; j++){
 		vertexposition[j+i*(knedges+1)] = new TVector3(radius[i]*CosD(angle[i]),
-										               radius[i]*SinD(angle[i]));
+							 radius[i]*SinD(angle[i]), 0);
 		angle[i] +=  deltangle[i]*(1.0-2.0*i);
 	} 	
   }
@@ -2742,29 +2742,30 @@ for(Int_t i=0; i<karcnumber; i++){
 	}
   }
   for(Int_t i=0; i<kendflexlayernumber; i++){
-	vertex[i][0] = new TVector3(transvector[i]->X(),transvector[i]->Y());
-	vertex[i][1] = new TVector3(transvector[i+1]->X(),transvector[i+1]->Y());
+    vertex[i][0] = new TVector3(transvector[i]->X(),transvector[i]->Y(),0);
+    vertex[i][1] = new TVector3(transvector[i+1]->X(),transvector[i+1]->Y(),0);
 	for(Int_t j=0; j<karcnumber*(knedges+1); j++){
 		if(j<(knedges+1)){
 			vertex[i][j+2] = new TVector3(vertexposition[j]->X()*ratioradius[0][i+1],
-										  vertexposition[j]->Y()*ratioradius[0][i+1]);
+						vertexposition[j]->Y()*ratioradius[0][i+1], 0);
 			vertex[i][j+2]->RotateZ(referenceangle[0]);
 			*vertex[i][j+2] += *referencetrans[0];
 			vertex[i][4*(knedges+1)-j+1] = 
 							 new TVector3(vertexposition[j]->X()*ratioradius[0][i],
-										  vertexposition[j]->Y()*ratioradius[0][i]);
+				 vertexposition[j]->Y()*ratioradius[0][i], 0);
 			vertex[i][4*(knedges+1)-j+1]->RotateZ(referenceangle[0]);
 			*vertex[i][4*(knedges+1)-j+1] += *referencetrans[0];
 		}
 		else{
 		
 			vertex[i][j+2] = new TVector3(vertexposition[j]->X()*ratioradius[1][i+1],
-										  vertexposition[j]->Y()*ratioradius[1][i+1]);
+						vertexposition[j]->Y()*ratioradius[1][i+1],0);
 			vertex[i][j+2]->RotateZ(referenceangle[1]);
 			*vertex[i][j+2] += *referencetrans[1];
 			vertex[i][4*(knedges+1)-j+1] = 
 							 new TVector3(vertexposition[j]->X()*ratioradius[1][i],
-										  vertexposition[j]->Y()*ratioradius[1][i]);
+				       vertexposition[j]->Y()*ratioradius[1][i],
+				       0);
 			vertex[i][4*(knedges+1)-j+1]->RotateZ(referenceangle[1]);
 			*vertex[i][4*(knedges+1)-j+1] += *referencetrans[1];
 	   }
@@ -2898,7 +2899,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
 	screwvertex[i] = new TVector3(fgkSSDMountingBlockScrewHoleRadius[0]
 				   *CosD(phi0+i*deltaphi),
 				   fgkSSDMountingBlockScrewHoleRadius[0]
-				   *SinD(phi0+i*deltaphi));
+				      *SinD(phi0+i*deltaphi), 0);
   Double_t xscrewvertex[kscrewvertexnumber+6];
   Double_t yscrewvertex[kscrewvertexnumber+6];
   xscrewvertex[0] = - fgkSSDMountingBlockScrewHoleRadius[0];	
@@ -3238,25 +3239,25 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDCoolingBlock(Int_t nedges){
   // Vertex Positioning for TGeoXTru
   ///////////////////////////////////////
   TVector3** vertexposition = new TVector3*[2*kvertexnumber+nedges+1];
-  vertexposition[0] = new TVector3(0.0,0.0);
-  vertexposition[1] = new TVector3(0.0,fgkSSDCoolingBlockHeight[1]);
+  vertexposition[0] = new TVector3(0.0,0.0, 0.);
+  vertexposition[1] = new TVector3(0.0,fgkSSDCoolingBlockHeight[1],0);
   vertexposition[2] = new TVector3(fgkSSDCoolingBlockHoleLength[1],
-					  vertexposition[1]->Y());
+				   vertexposition[1]->Y(),0);
   vertexposition[3] = new TVector3(vertexposition[2]->X(),
-					  vertexposition[2]->Y()+fgkSSDCoolingBlockHeight[2]);
-  vertexposition[4] = new TVector3(vertexposition[1]->X(),vertexposition[3]->Y());
+				   vertexposition[2]->Y()+fgkSSDCoolingBlockHeight[2],0);
+  vertexposition[4] = new TVector3(vertexposition[1]->X(),vertexposition[3]->Y(),0);
   vertexposition[5] = new TVector3(vertexposition[4]->X(),
-					+ vertexposition[3]->Y()+fgkSSDCoolingBlockHoleRadius[1]);
+				   + vertexposition[3]->Y()+fgkSSDCoolingBlockHoleRadius[1],0);
   vertexposition[6] = new TVector3(Xfrom2Points(vertexposition[5]->X(),
 					  vertexposition[5]->Y(),0.5*(fgkSSDCoolingBlockLength
 					- fgkSSDCoolingBlockHoleLength[0]
 					- 4.*fgkSSDCoolingBlockHoleRadius[1]),
 					  fgkSSDCoolingBlockHeight[0]
 					- fgkSSDCoolingBlockHoleRadius[1],
-					  fgkSSDCoolingBlockHeight[0]),fgkSSDCoolingBlockHeight[0]);
+						fgkSSDCoolingBlockHeight[0]),fgkSSDCoolingBlockHeight[0], 0);
   vertexposition[7] = new TVector3(0.5*(fgkSSDCoolingBlockLength
 					- fgkSSDCoolingBlockHoleLength[0]),
-					  vertexposition[6]->Y());
+				   vertexposition[6]->Y(), 0);
   Double_t alpha = TMath::ACos(0.5*fgkSSDCoolingBlockHoleLength[0]
 			   / fgkSSDCoolingBlockHoleRadius[0])*TMath::RadToDeg();
   Double_t phi = 180.-alpha;
@@ -3264,10 +3265,11 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDCoolingBlock(Int_t nedges){
   Double_t deltapsi = psi/nedges;
   Double_t radius = fgkSSDCoolingBlockHoleRadius[0]/CosD(0.5*deltapsi);
   TVector3* transvector = new TVector3(0.5*fgkSSDCoolingBlockLength,
-						  fgkSSDCoolingBlockHoleCenter);
+				       fgkSSDCoolingBlockHoleCenter, 0);
   for(Int_t i=0; i<nedges+1; i++){
 	vertexposition[kvertexnumber+i] = new TVector3(radius*CosD(phi+i*deltapsi),
-											       radius*SinD(phi+i*deltapsi));
+						   radius*SinD(phi+i*deltapsi),
+						   0);
    *vertexposition[kvertexnumber+i] += (*transvector);
   }
   Double_t param[4] = {1.0,0.0,0.0,-0.5*fgkSSDCoolingBlockLength};  
@@ -3348,7 +3350,7 @@ void AliITSv11GeometrySSD::GetSSDChipCables(TGeoVolume *&cableL, TGeoVolume *&ca
   TVector3* vertex = new TVector3();
   TVector3* transvector[kssdchipcableslaynumber];
   transvector[0] = new TVector3(fgkSSDChipWidth,
-								SSDChipCablesHeight-ssdchipcablesradius[0]);
+				SSDChipCablesHeight-ssdchipcablesradius[0], 0);
   transvector[1] = new TVector3();
   TGeoXtru* ssdchipcableshape[kssdchipcableslaynumber*kssdchipcablesnumber];
   TGeoVolume* ssdchipcable[kssdchipcableslaynumber*kssdchipcablesnumber];
@@ -3362,19 +3364,19 @@ void AliITSv11GeometrySSD::GetSSDChipCables(TGeoVolume *&cableL, TGeoVolume *&ca
 				 +		 fgkSSDChipCablesHeight[1]);  
 	for(Int_t i=0; i<kssdchipcableslaynumber; i++){
 		vertexposition[i][0] = new TVector3(0.,SSDChipCablesHeight
-							 - fgkSSDChipCablesHeight[0]-i*fgkSSDChipCablesHeight[1]);
+					      - fgkSSDChipCablesHeight[0]-i*fgkSSDChipCablesHeight[1], 0);
 		vertexposition[i][1] = new TVector3(0.,SSDChipCablesHeight
-							 - i*fgkSSDChipCablesHeight[0]);
+						    - i*fgkSSDChipCablesHeight[0], 0);
 		vertexposition[i][2*(nedges+1)+2] = 
 					new TVector3(fgkSSDChipWidth+ssdchipcablesradius[0]
 				+				 fgkSSDChipCablesWidth[1]
 				+				 fgkSSDChipCablesWidth[2],
 								((1.-i)*fgkSSDChipCablesHeight[i]
-				+				 fgkSSDChipCablesHeight[1]));
+				+ fgkSSDChipCablesHeight[1]), 0);
         vertexposition[i][2*(nedges+1)+3] = 
 					new TVector3(vertexposition[i][2*(nedges+1)+2]->X(),
 								 vertexposition[i][2*(nedges+1)+2]->Y()
-				-				 fgkSSDChipCablesHeight[i]);
+		       - fgkSSDChipCablesHeight[i], 0);
 	    for(Int_t j=0; j<nedges+1; j++){ 		
 		    angle = 0.5*phi+TMath::Power(-1,i+1)*j*deltaphi;
 			vertex->SetX(ssdchipcablesradius[0]*CosD(angle));
@@ -3383,14 +3385,14 @@ void AliITSv11GeometrySSD::GetSSDChipCables(TGeoVolume *&cableL, TGeoVolume *&ca
 						new TVector3(*vertex+*transvector[i]);
 			vertexposition[1][(nedges+1)*i+j+2] = 
 						new TVector3(vertex->X()*ratio[2*i]+transvector[i]->X(),
-									 vertex->Y()*ratio[2*i]+transvector[i]->Y());
+				       vertex->Y()*ratio[2*i]+transvector[i]->Y(), 0);
 			vertexposition[0][(4-i)*(nedges+1)+4-j-1] = 
 						new TVector3(*vertexposition[1][(nedges+1)*i+j+2]);
 			vertexposition[1][(4-i)*(nedges+1)+4-j-1] = 
 						new TVector3(vertex->X()*ratio[2*i+1]
 							+			 transvector[i]->X(),
 									   	 vertex->Y()*ratio[2*i+1]
-							+	     	 transvector[i]->Y());
+				       + transvector[i]->Y(), 0);
 		}
 	}
 	for(Int_t i=0; i<kssdchipcableslaynumber; i++){
@@ -3559,15 +3561,15 @@ TList* AliITSv11GeometrySSD::GetLadderCableSegment(Double_t ssdendladdercablelen
 												  new TVector3*[kvertexnumber];
 //Shape Vertex Positioning
   for(Int_t i=0; i<kladdercablesegmentnumber; i++){
-	laddercablesegmentvertexposition[i][0] = new TVector3(0.,i*fgkSSDFlexHeight[0]);
+    laddercablesegmentvertexposition[i][0] = new TVector3(0.,i*fgkSSDFlexHeight[0], 0);
 	laddercablesegmentvertexposition[i][1] = new TVector3(fgkSSDLadderCableWidth,
-														  i*fgkSSDFlexHeight[0]);
+							      i*fgkSSDFlexHeight[0], 0);
 	laddercablesegmentvertexposition[i][2] = new TVector3(0.,fgkSSDFlexHeight[0]
 										   +			     fgkSSDFlexHeight[1]
-										   +			  i*fgkSSDFlexHeight[0]);
+							      + i*fgkSSDFlexHeight[0], 0);
 	laddercablesegmentvertexposition[i][3] = 
 						   new TVector3(laddercablesegmentvertexposition[i][1]->X(),
-										laddercablesegmentvertexposition[i][2]->Y());
+								laddercablesegmentvertexposition[i][2]->Y(), 0);
   }
   Double_t laddercablesegmentwidth[2][2] = {{fgkSSDFlexHeight[0],fgkSSDFlexHeight[0]},
 							     		    {fgkSSDFlexHeight[1],fgkSSDFlexHeight[1]}};	
@@ -4194,7 +4196,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   for(Int_t i=0; i<fgklayernumber; i++){
 	for(Int_t j=0; j<nedges+1; j++){
 		vertex[i][j] = new TVector3(fgkMountingBlockSupportRadius[i]*TMath::Cos(psi0[i]+j*deltapsi[i]),
-								    fgkMountingBlockSupportRadius[i]*TMath::Sin(psi0[i]+j*deltapsi[i]));
+					    fgkMountingBlockSupportRadius[i]*TMath::Sin(psi0[i]+j*deltapsi[i]), 0);
 		if(vertex[i][j]->X()>mountingsupportedgevector[i]->X()) indexedge[i]++;
 		vertexlist[i]->Add(vertex[i][j]);
 	}
@@ -4743,12 +4745,12 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   for(Int_t i=0; i<fgklayernumber; i++){
     ringsupportvertex[i] = new TVector3*[2*kssdlayladdernumber[i]+3+nedges];	
 	ringsupportvertex[i][0] = new TVector3(0.,fgkMountingBlockSupportRadius[i]
-							*			   TMath::Cos(theta[i]));
+					   * TMath::Cos(theta[i]), 0);
 	ringsupportvertex[i][1] = new TVector3(-0.5*fgkSSDMountingBlockLength[0]
 							-			   mountingsupportedge[i],
-										   ringsupportvertex[i][0]->Y());
+					       ringsupportvertex[i][0]->Y(), 0);
 	ringsupportvertex[i][2] = new TVector3(0.5*fgkSSDMountingBlockLength[0],
-										   ringsupportvertex[i][1]->Y()); 									   	
+					       ringsupportvertex[i][1]->Y(),0); 									   	
     ringsupportvertex[i][2]->RotateZ(theta[i]+phi[i]);
 	for(Int_t j=1; j<kssdlayladdernumber[i]; j++){
 	   ringsupportvertex[i][2*j+1] = new TVector3(*ringsupportvertex[i][1]);  	
@@ -4760,7 +4762,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
     for(Int_t j=0; j<nedges+1; j++){
 		ringsupportvertex[i][2*kssdlayladdernumber[i]+2+j] = 
 			new TVector3((ringsupportvertex[i][0]->Y()-fgkLadderSupportHeight)*CosD(90.0-j*angle),
-						 (ringsupportvertex[i][0]->Y()-fgkLadderSupportHeight)*SinD(90.0-j*angle));
+			       (ringsupportvertex[i][0]->Y()-fgkLadderSupportHeight)*SinD(90.0-j*angle), 0);
 	}
   }
   Double_t **xmothervertex = new Double_t*[fgklayernumber];
@@ -8042,8 +8044,8 @@ TGeoXtru* AliITSv11GeometrySSD::GetArcShape(Double_t phi, Double_t rmin,
 	Double_t angle = 0.;
     for(Int_t i=0; i<nedges+1; i++){ 
 		angle = 90.+0.5*phi-i*(phi/nedges);
-		vertexposition[0][i] = new TVector3(rmin*CosD(angle),rmin*SinD(angle));
-		vertexposition[1][i] = new TVector3(rmax*CosD(angle),rmax*SinD(angle));
+		vertexposition[0][i] = new TVector3(rmin*CosD(angle),rmin*SinD(angle),0);
+		vertexposition[1][i] = new TVector3(rmax*CosD(angle),rmax*SinD(angle),0);
 	}
 	Double_t *xvertexpoints = new Double_t[kvertexnumber];
 	Double_t *yvertexpoints = new Double_t[kvertexnumber];

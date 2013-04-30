@@ -658,14 +658,14 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
 
     AliTRDtrackGTU **trkInRefLayer = new AliTRDtrackGTU*[fGtuParam->GetNRefLayers()];
 
-    Bool_t done = kFALSE;
+    // Bool_t done = kFALSE;
     Int_t minIdx = 0;
     AliTRDtrackGTU *trkStage0 = 0x0;
 
     for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++) {
         // ----- Merging and Unification in Reflayers (seed_merger) -----
 	do {
-	    done = kTRUE;
+	  // done = kTRUE;
 	    trkStage0 = 0x0;
 	    for (Int_t refLayerIdx = 0; refLayerIdx < fGtuParam->GetNRefLayers(); refLayerIdx++) {
 		trkInRefLayer[refLayerIdx] = (AliTRDtrackGTU*) fTracks[zch][refLayerIdx].First();
@@ -675,13 +675,13 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
 		else if (trkStage0 == 0x0 ) {
 		    trkStage0 = trkInRefLayer[refLayerIdx];
 		    minIdx = refLayerIdx;
-		    done = kFALSE;
+		    // done = kFALSE;
 		}
 		else if (trkInRefLayer[refLayerIdx]->GetZSubChannel() < trkStage0->GetZSubChannel() ||
 			 (trkInRefLayer[refLayerIdx]->GetZSubChannel() == trkStage0->GetZSubChannel() && trkInRefLayer[refLayerIdx]->GetYapprox() < trkStage0->GetYapprox()) ) {
 		    minIdx = refLayerIdx;
 		    trkStage0 = trkInRefLayer[refLayerIdx];
-		    done = kFALSE;
+		    // done = kFALSE;
 		}
 	    }
             if (!trkStage0)
@@ -723,7 +723,7 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
 // ----- Merging in zchannels - 1st stage -----
 
     do {
-	done = kTRUE;
+      // done = kTRUE;
 	trkStage0 = 0x0;
         for (Int_t zch = fGtuParam->GetNZChannels() - 1; zch > -1; zch--) {
 	    AliTRDtrackGTU *trk = (AliTRDtrackGTU*) tracksRefUnique[zch]->First();
@@ -733,13 +733,13 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
 	    else if (trkStage0 == 0x0 ) {
 		trkStage0 = trk;
 		minIdx = zch;
-		done = kFALSE;
+		// done = kFALSE;
 	    }
 	    else if ( ((trk->GetZChannel() + 3 * trk->GetZSubChannel()) / 2 - 1) <  ((trkStage0->GetZChannel() + 3 * trkStage0->GetZSubChannel()) / 2 -1 ) ||
 		      (((trk->GetZChannel() + 3 * trk->GetZSubChannel()) / 2 - 1) == ((trkStage0->GetZChannel() + 3 * trkStage0->GetZSubChannel()) / 2 -1 ) && (trk->GetYapprox() < trkStage0->GetYapprox()) ) ) {
 		minIdx = zch;
 		trkStage0 = trk;
-		done = kFALSE;
+		// done = kFALSE;
 	    }
 	}
 
@@ -808,7 +808,7 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
 // ----- Merging in zchanels - 2nd stage -----
 
     do {
-	done = kTRUE;
+      // done = kTRUE;
 	trkStage0 = 0x0;
 	for (Int_t i = 1; i >= 0; i--) {
 	    AliTRDtrackGTU *trk = (AliTRDtrackGTU*) tracksZSplitted[i]->First();
@@ -818,13 +818,13 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
 	    else if (trkStage0 == 0x0 ) {
 		trkStage0 = trk;
 		minIdx = i;
-		done = kFALSE;
+		// done = kFALSE;
 	    }
 	    else if ( (((trk->GetZChannel() + 3 * (trk->GetZSubChannel() - 1)) / 2) <  ((trkStage0->GetZChannel() + 3 * (trkStage0->GetZSubChannel() - 1)) / 2)) ||
 		      ((((trk->GetZChannel() + 3 * (trk->GetZSubChannel() - 1)) / 2) == ((trkStage0->GetZChannel() + 3 * (trkStage0->GetZSubChannel() - 1)) / 2)) && (trk->GetYapprox() < trkStage0->GetYapprox()) ) ) {
 		minIdx = i;
 		trkStage0 = trk;
-		done = kFALSE;
+		// done = kFALSE;
 	    }
 	}
 

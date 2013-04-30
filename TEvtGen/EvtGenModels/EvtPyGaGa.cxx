@@ -34,12 +34,12 @@
 
 extern "C" {
   extern void pystat_(int &);
+  extern struct
+  {
+    int dc[18];
+  } decaych_;
 }
 
-// extern struct
-// {
-//   int dc[18];
-// } decaych_;
 
 EvtPyGaGa::~EvtPyGaGa()
 {
@@ -61,8 +61,8 @@ void EvtPyGaGa::init()
 {
   // check that there are 1 argument
   checkNArg(0);
-  // for( int i=0; i<18; i++)
-  //   decaych_.dc[i]=0;
+  for( int i=0; i<18; i++)
+    decaych_.dc[i]=0;
 }
 
 void EvtPyGaGa::initProbMax()

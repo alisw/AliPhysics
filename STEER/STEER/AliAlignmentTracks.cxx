@@ -33,8 +33,9 @@
 #include "AliTrackFitterRieman.h"
 #include "AliTrackResidualsChi2.h"
 #include "AliESDEvent.h"
-#include "AliESDfriend.h"
 #include "AliLog.h"
+#include "AliESDfriend.h"
+
 ClassImp(AliAlignmentTracks)
 
 //______________________________________________________________________________

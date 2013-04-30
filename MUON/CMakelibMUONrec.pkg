@@ -89,4 +89,6 @@ set ( EXPORT
   AliMUONTrackParam.h 
   AliMUONCDB.h 
   AliMUONVTrackStore.h
-  AliMUONClusterStoreV2.h)
+  AliMUONClusterStoreV2.h
+  AliMUONQADataMakerRec.h
+  )

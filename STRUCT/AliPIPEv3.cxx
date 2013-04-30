@@ -578,7 +578,8 @@ void AliPIPEv3::CreateGeometry()
     z = -shCp3Mo->GetZ(0);
     shCp3Mo->DefineSection(11, z, 0., kCP3FlangeRo);
 //
-    TGeoVolume* voCp3Mo = new TGeoVolume("CP3MO", shCp3Mo, kMedAir);
+    // TGeoVolume* voCp3Mo = new TGeoVolume("CP3MO", shCp3Mo, kMedAir);
+    TGeoVolume* voCp3Mo = new TGeoVolumeAssembly("CP3MO");
     voCp3Mo->SetVisibility(0);
     TGeoVolumeAssembly* voCp3 = new TGeoVolumeAssembly("Cp3");
     voCp3->AddNode(voCp3Mo,  1, gGeoIdentity);

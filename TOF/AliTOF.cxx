@@ -68,9 +68,10 @@
 
 class AliTOFcluster;
 
-extern TROOT *gROOT;
+// extern TROOT *gROOT;
+// extern TVirtualMC *gMC;
 
-extern AliRun *gAlice;
+// extern AliRun *gAlice;
 
 ClassImp(AliTOF)
 

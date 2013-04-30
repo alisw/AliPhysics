@@ -122,4 +122,4 @@ set ( DHDR ITSrecLinkDef.h)
 
 set ( EINCLUDE TPC RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
 
-set ( EXPORT AliITStrackV2.h AliITSVertexer.h AliITSRecoParam.h)
+set ( EXPORT AliITStrackV2.h AliITSVertexer.h AliITSRecoParam.h AliITSQAChecker.h AliITSQADataMakerRec.h)
