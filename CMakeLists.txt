@@ -454,6 +454,9 @@ install ( DIRECTORY OCDB
 install ( DIRECTORY QAref 
 	  DESTINATION . 
 	  PATTERN ".svn" EXCLUDE)
+install ( DIRECTORY GRP 
+	  DESTINATION . 
+	  PATTERN ".svn" EXCLUDE)
 
 #
 # EOF

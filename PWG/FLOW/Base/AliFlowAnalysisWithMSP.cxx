@@ -33,6 +33,9 @@
 #include <iostream>
 #include <iomanip>
 
+using std::setw;
+using std::setprecision;
+
 AliFlowAnalysisWithMSP::AliFlowAnalysisWithMSP() 
    : TNamed(), fHarmonic(2), fNUA(kFALSE), fBookCommonHistograms(kFALSE), fCommonHist(0), fQaComponents(0), 
    fQbComponents(0), fQaQb(0), fPtUComponents(0), fEtaUComponents(0), fAllStatistics(0), 
@@ -415,7 +418,6 @@ void AliFlowAnalysisWithMSP::Print(const Option_t *opt)const
    std::cout << std::endl;
 
    std::cout << "NUA terms: " << (fNUA?"(applied)":"(NOT applied)") << std::endl;
-
    const double ux=fPtUComponents->Average(0);       // Average over all bins
    const double eux=TMath::Sqrt(fPtUComponents->Variance(0));
    std::cout << "<ux>       " << setw(12) << ux << " +- " << setw(12) << eux << (TMath::Abs(ux)<2*eux?" NOT significant ":" ") << std::endl;

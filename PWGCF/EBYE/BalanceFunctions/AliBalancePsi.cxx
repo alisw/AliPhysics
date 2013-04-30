@@ -39,6 +39,9 @@
 #include "AliTHn.h"
 
 #include "AliBalancePsi.h"
+using std::cout;
+using std::endl;
+using std::cerr;
 
 ClassImp(AliBalancePsi)
 

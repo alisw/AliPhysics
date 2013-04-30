@@ -45,7 +45,6 @@
 #include "TMath.h"
 #include "TAxis.h"
 #include "TCanvas.h"
-
 ClassImp(AliAnalysisTriggerScalers)
 
 namespace {

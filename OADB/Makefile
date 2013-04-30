@@ -1,6 +1,6 @@
 PACKAGE = invalid-only-for-proof
 
-include Makefile.arch
+include $(ROOTSYS)/etc/Makefile.arch
 
 SRCS     = $(wildcard *.cxx */*.cxx)
 HDRS     = $(SRCS:.cxx=.h)
@@ -12,6 +12,14 @@ ifndef PACKCXXFLAGS
 endif
 
 ALICEINC = -I.
+
+ifneq ($(ESD_INCLUDE),)
+   ALICEINC += -I../$(ESD_INCLUDE) 
+endif
+
+ifneq ($(AOD_INCLUDE),)
+   ALICEINC += -I../$(AOD_INCLUDE) 
+endif
 
 ifneq ($(STEERBase_INCLUDE),)
    ALICEINC += -I../$(STEERBase_INCLUDE)
@@ -26,11 +34,11 @@ ifneq ($(OADB_INCLUDE),)
 endif
 
 # only if no par file was loaded before
-#ifeq ($(ALICEINC),-I.)
+ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
   endif
-#endif
+endif
 
 
 
