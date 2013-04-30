@@ -22,7 +22,8 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
 				Bool_t kUseVzBinning = kTRUE,
 				Int_t rebinEta = 1,
 				Int_t rebinPhi = 1,
-				TString eventClass = "EventPlane") //Can be "EventPlane", "Centrality", "Multiplicity"
+				TString eventClass = "EventPlane", //Can be "EventPlane", "Centrality", "Multiplicity"
+				Bool_t bToy = kFALSE)
 { 
   //Macro that draws the correlation functions from the balance function
   //analysis vs the reaction plane
@@ -50,11 +51,11 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
 
   //Prepare the objects and return them
   TList *listQA = NULL;
-  TList *list = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0);
+  TList *list = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0,bToy);
   TList *listShuffled = NULL;
-  if(kShowShuffled) listShuffled = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1);
+  if(kShowShuffled) listShuffled = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1,bToy);
   TList *listMixed = NULL;
-  if(kShowMixed) listMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2);
+  if(kShowMixed) listMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2,bToy);
 
   // else  get the QA histograms (for convolution)
   else{    
@@ -99,7 +100,8 @@ TList *GetListOfObjects(const char* filename,
 			Int_t gCentrality,
 			Int_t gBit,
 			const char *gCentralityEstimator,
-			Int_t kData = 1) {
+			Int_t kData = 1,
+			Bool_t bToy = kFALSE) {
   //Get the TList objects (QA, bf, bf shuffled)
   TList *listBF = 0x0;
   
@@ -121,21 +123,29 @@ TList *GetListOfObjects(const char* filename,
   TString listBFName;
   if(kData == 0) {
     //cout<<"no shuffling - no mixing"<<endl;
-    listBFName = "listBFPsi_";
+    listBFName = "listBFPsi";
   }
   else if(kData == 1) {
     //cout<<"shuffling - no mixing"<<endl;
-    listBFName = "listBFPsiShuffled_";
+    listBFName = "listBFPsiShuffled";
   }
   else if(kData == 2) {
     //cout<<"no shuffling - mixing"<<endl;
-    listBFName = "listBFPsiMixed_";
+    listBFName = "listBFPsiMixed";
   }
-  listBFName += centralityArray[gCentrality-1];
-  if(gBit > -1) {
-    listBFName += "_Bit"; listBFName += gBit; }
-  if(gCentralityEstimator) {
-    listBFName += "_"; listBFName += gCentralityEstimator;}
+
+  // different list names in case of toy model
+  if(!bToy){
+    listBFName += "_";
+    listBFName += centralityArray[gCentrality-1];
+    if(gBit > -1) {
+      listBFName += "_Bit"; listBFName += gBit; }
+    if(gCentralityEstimator) {
+      listBFName += "_"; listBFName += gCentralityEstimator;}
+  }
+  else{
+    listBFName.ReplaceAll("Psi","");
+  }
 
   // histograms were already retrieved (in first iteration)
   if(dir->Get(Form("%s_histograms",listBFName.Data()))){
