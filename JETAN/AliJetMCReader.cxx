@@ -84,7 +84,7 @@ Bool_t AliJetMCReader::FillMomentumArray(Int_t event)
     TParticle *part = (TParticle*)arrayMC[label]; //particle
     pt = part->Pt(); // pt of the particle
     if (pt < ptMin) continue; //check  cuts 
-    p = part->P();
+    p.SetXYZ(part->Px(), part->Py(), part->Pz());
     e = part->Energy();
    // fill momentum array
     new ((*fMomentumArray)[goodTrack]) TLorentzVector(p.X(), p.Y(), p.Z(), e);

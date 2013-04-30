@@ -24,6 +24,9 @@
 #include "AliVCluster.h"
 #include "AliVEvent.h"
 #include "AliVParticle.h"
+using std::cout;
+using std::endl;
+using std::cerr;
 
 ClassImp(AliEmcalJetTask)
 

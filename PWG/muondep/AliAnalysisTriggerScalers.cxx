@@ -97,7 +97,7 @@
 #include "TBox.h"
 #include "TCanvas.h"
 #include "TText.h"
-
+using std::make_pair;
 ClassImp(AliAnalysisTriggerScalers)
 
 namespace {

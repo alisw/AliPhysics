@@ -33,6 +33,9 @@
 #include <iostream>
 #include <iomanip>
 
+using std::setw;
+using std::setprecision;
+
 AliFlowAnalysisWithMSP::AliFlowAnalysisWithMSP() 
    : TNamed(), 
    fHarmonic(2), fNUA(kFALSE), fUseCommonConstants(kFALSE), fBookCommonHistograms(kFALSE), fCommonHist(0), fQaComponents(0), 
@@ -519,7 +522,7 @@ void AliFlowAnalysisWithMSP::Print(const Option_t *opt)const
    double vn=0;
    double vnerror=0;
 
-   std::cout << setprecision(4);
+   std::cout << std::setprecision(4);
    Calculate(vn, vnerror, fAllStatistics, fPtUComponents, 0, 0);      
    std::cout << "v" << fHarmonic << " for POI       : " << setw(11) << vn << " +- " << setw(9) << vnerror << std::endl;
    Calculate(vn, vnerror, fAllStatistics, fPtUComponents, 0, 1);
@@ -529,7 +532,7 @@ void AliFlowAnalysisWithMSP::Print(const Option_t *opt)const
    std::cout << std::endl;
 
    std::cout << "NUA terms: " << (fNUA?"(applied)":"(NOT applied)") << std::endl;
-   std::cout << setprecision(3);
+   std::cout << std::setprecision(3);
    const double ux=fPtUComponents->Average(0);       // Average over all bins
    const double eux=TMath::Sqrt(fPtUComponents->Variance(0));
    std::cout << "<ux>       " << setw(12) << ux << " +- " << setw(12) << eux << (TMath::Abs(ux)<2*eux?" NOT significant ":" ") << std::endl;
