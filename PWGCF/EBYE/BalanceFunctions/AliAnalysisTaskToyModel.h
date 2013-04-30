@@ -12,6 +12,7 @@ class TH3F;
 class TF1;
 
 class AliBalancePsi;
+class AliEventPoolManager;
 
 class AliAnalysisTaskToyModel : public TObject {
  public:
@@ -154,6 +155,7 @@ class AliAnalysisTaskToyModel : public TObject {
   AliBalancePsi *fShuffledBalance; //BF object (shuffled)
   Bool_t fRunMixing;//run mixing or not
   AliBalancePsi *fMixedBalance; //BF object (mixed)
+  AliEventPoolManager*     fPoolMgr;         //! event pool manager
   TList *fList; //fList object
   TList *fListBF; //fList object
   TList *fListBFS; //fList object (shuffling)
