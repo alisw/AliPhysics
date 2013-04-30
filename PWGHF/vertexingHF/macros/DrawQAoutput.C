@@ -20,6 +20,8 @@
 #include <AliRDHFCuts.h>
 #endif
 
+/* $Id$ */ 
+
 TString *periodsname;
 
 //read the file and take list and stat
@@ -82,9 +84,6 @@ Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString lis
 	  if(partname.Contains("D04")) cutobjname="D0toKpipipiCuts";
 	  else{
 	    if(partname.Contains("Lc")) cutobjname="LctopKpiAnalysisCuts";
-	    else{
-	      if(partname.Contains("LcToV0x")) cutobjname="LctoV0AnalysisCuts";
-	    }
 	  }
 	}
       }
@@ -125,13 +124,13 @@ Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString lis
 }
 
 //draw "track related" histograms (list "outputTrack")
-void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./", Bool_t superimpose=kFALSE, TString suffixdir="",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root"){
+void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./", Bool_t superimpose=kFALSE, TString suffixdir="",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root", Bool_t normint=kTRUE /*normalize at integral, or at nevents*/){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
 
-  TString listname="outputTrack",name1="",name2="",path2="",filename2="PWG3histograms.root";
+  TString listname="outputTrack",name1="",name2="",path2="",filename2="PWG3histograms.root",legtext1="",legtext2="",suffixdir2="";
   TString tmp="y";
 
   if(superimpose){
@@ -148,35 +147,45 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
       cout<<"Filename: "<<endl;
       cout<<">";
       cin>>filename2;
+      cout<<"Suffix in the dir name, if any (otherwhise write no)\n>";
+      cin>>suffixdir2;
+      if(suffixdir2=="no") suffixdir2="";
+      cout<<"Text in the legend:\n 1)";
+      cin>>legtext1;
+      cout<<"2)";
+      cin>>legtext2;
     }
     
   }
 
+  Float_t nevents,nevents2;
   TList* list;
   TH1F * hstat;
   TString dirname="PWG3_D2H_QA";
-  dirname+=suffixdir;
-  Bool_t isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path,filename,dirname);
+  //dirname+=suffixdir;
+  Bool_t isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path,filename,Form("%s%s",dirname.Data(),suffixdir.Data()));
   if(!isRead) return;
   if(!list || !hstat){
     cout<<":-( null pointers..."<<endl;
     return;
   }
+  nevents=hstat->GetBinContent(1);
   TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
   pvtxt->SetBorderSize(0);
   pvtxt->SetFillStyle(0);
-  pvtxt->AddText(name1);
+  pvtxt->AddText(legtext1);
 
   TList* llist;
   TH1F* hhstat;
   if(superimpose){
-    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2,filename2,dirname);
+    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2,filename2,Form("%s%s",dirname.Data(),suffixdir2.Data()));
     if(!isRead) return;
     if(!llist || !hhstat){
       cout<<":-( null pointers..."<<endl;
       return;
     }
-    TText *redtext=pvtxt->AddText(name2);
+    nevents2=hhstat->GetBinContent(1);
+    TText *redtext=pvtxt->AddText(legtext2);
     redtext->SetTextColor(kRed);
     hhstat->Scale(hstat->Integral()/hhstat->Integral());
 
@@ -189,14 +198,15 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
     if(superimpose){
       hh=(TH1F*)llist->At(i);
       hr=(TH1F*)hh->Clone(Form("%s_ratio",hh->GetName()));
-      hh->Scale(h->Integral()/hh->Integral());
+      if(hh && TMath::Abs(hh->Integral()) > 1e-6)hh->Scale(h->Integral()/hh->Integral());
     }
     if(!h || (superimpose && !hh)){
       cout<<"Histogram "<<i<<" not found"<<endl;
       continue;
     }
     if(superimpose){
-      hh->Scale(h->Integral()/hh->Integral());
+      if(normint) hh->Scale(h->Integral()/hh->Integral());
+      else hh->Scale(nevents/nevents2);
       hhstat->SetLineColor(kRed);
       hh->SetLineColor(kRed);
       hr->Divide(h);
@@ -252,12 +262,22 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
   TH1F* hd0SPD1=(TH1F*)list->FindObject("hd0TracksSPDin");
   TH1F* hd0SPDany=(TH1F*)list->FindObject("hd0TracksSPDany");
   TH1F* hd0TPCITScuts=(TH1F*)list->FindObject("hd0TracksTPCITSSPDany");
+  TH1F* hhd0fb4=0x0; TH1F* hhd0SPD1=0x0; TH1F* hhd0SPDany=0x0; TH1F* hhd0TPCITScuts=0x0;
+  if(superimpose){
+    hhd0fb4=(TH1F*)llist->FindObject("hd0TracksFilterBit4");
+    hhd0SPD1=(TH1F*)llist->FindObject("hd0TracksSPDin");
+    hhd0SPDany=(TH1F*)llist->FindObject("hd0TracksSPDany");
+    hhd0TPCITScuts=(TH1F*)llist->FindObject("hd0TracksTPCITSSPDany");
+
+  }
   if(hd0fb4 && hd0SPD1 && hd0SPDany && hd0TPCITScuts){
     TCanvas* ctrsel=new TCanvas("ctrsel","Track Sel");
     ctrsel->SetLogy();
+    hd0SPD1->SetLineColor(kCyan+3);
     hd0SPD1->Draw();
     ctrsel->Update();
     TPaveStats *st1=(TPaveStats*)hd0SPD1->GetListOfFunctions()->FindObject("stats");
+    st1->SetTextColor(kCyan+3);
     st1->SetY1NDC(0.71);
     st1->SetY2NDC(0.9);
     hd0SPDany->SetLineColor(4);
@@ -293,6 +313,26 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
     leg->AddEntry(hd0fb4,"Filter Bit 4","L");
     leg->Draw();
     
+    if(superimpose && hhd0fb4 && hhd0SPD1 && hhd0SPDany && hhd0TPCITScuts){
+      hhd0SPD1->SetLineColor(kCyan+3);
+      hhd0SPD1->SetStats(0);
+      hhd0SPD1->SetLineStyle(3);
+      hhd0SPDany->SetLineColor(4);
+      hhd0SPDany->SetStats(0);
+      hhd0SPDany->SetLineStyle(3);
+      hhd0TPCITScuts->SetLineColor(kGreen+1);
+      hhd0TPCITScuts->SetStats(0);
+      hhd0TPCITScuts->SetLineStyle(3);
+      hhd0fb4->SetLineColor(2);
+      hhd0fb4->SetStats(0);
+      hhd0fb4->SetLineStyle(3);
+      ctrsel->cd();
+      hhd0SPD1->Draw("sames");
+      hhd0SPDany->Draw("sames");
+      hhd0TPCITScuts->Draw("sames");
+      hhd0fb4->Draw("sames");
+
+    }
     ctrsel->SaveAs("ImpactParameterTrackSel.eps");
     ctrsel->SaveAs("ImpactParameterTrackSel.png");
     
