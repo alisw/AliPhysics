@@ -9,7 +9,8 @@
 
 void AddTRDv0Monitor(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
-  Info("AddTRDv0Monitor", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName()));
+  Info("AddTRDv0Monitor", "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", 
+       ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName());
 
   AliTRDv0Monitor *v0Mon(NULL);;
   mgr->AddTask(v0Mon = new AliTRDv0Monitor((char*)"TRDv0Monitor"));

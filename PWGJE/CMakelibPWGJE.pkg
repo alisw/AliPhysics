@@ -60,3 +60,9 @@ set ( DHDR  PWGJELinkDef.h)
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( EINCLUDE ANALYSIS JETAN JETAN/fastjet CORRFW PWGJE PWG/Tools PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
+
+install (DIRECTORY macros
+	 DESTINATION PWGJE
+	 PATTERN ".svn" EXCLUDE 
+         PATTERN ".d"   EXCLUDE 
+	 PATTERN ".so"  EXCLUDE)

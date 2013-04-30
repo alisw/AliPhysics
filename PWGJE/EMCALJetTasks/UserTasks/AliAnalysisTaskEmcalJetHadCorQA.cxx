@@ -27,6 +27,7 @@
 #include "AliEmcalParticle.h"
 #include "AliPicoTrack.h"
 #include "AliEMCALGeometry.h"
+using std::vector;
 
 ClassImp(AliAnalysisTaskEmcalJetHadCorQA)
 

@@ -17,6 +17,9 @@
 #include <AliESDtrack.h>
 #include <AliESDtrack.h>
 #include "AliEMCALClusterParams.h" 
+using std::endl;
+using std::cout;
+using std::cerr;
 
 ClassImp(AliEMCALClusterParams)
   

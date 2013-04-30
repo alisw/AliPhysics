@@ -48,6 +48,9 @@
 #include "AliHelperPID.h"
 
 #include "AliEbyEParticleRatioFluctuationTask.h"
+using std::cout;
+using std::endl;
+using std::cerr;
 
 ClassImp(AliEbyEParticleRatioFluctuationTask)
 

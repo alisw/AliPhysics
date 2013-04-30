@@ -82,6 +82,8 @@
 
 #include "AliCentrality.h"
 
+using namespace std;
+
 ClassImp(AliAnalysisTaskHFECal)
 //________________________________________________________________________
 AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name) 

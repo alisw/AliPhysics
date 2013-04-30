@@ -51,6 +51,9 @@
 #include "AliVEvent.h"
 
 #include "AliAnalysisTaskFragmentationFunction.h"
+using std::cout;
+using std::endl;
+using std::cerr;
 
 ClassImp(AliAnalysisTaskFragmentationFunction)
 

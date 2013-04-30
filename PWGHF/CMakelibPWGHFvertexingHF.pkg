@@ -89,7 +89,11 @@ set ( DHDR  PWGHFvertexingHFLinkDef.h)
 
 set ( EINCLUDE   PWGHF/vertexingHF CORRFW STEER/AOD STEER/ESD STEER/STEERBase PWG/FLOW/Base PWG/FLOW/Tasks)
 
-install ( FILES vertexingHF/AliAODRecoDecayHF.h vertexingHF/AliAODRecoDecayHF2Prong.h
+install ( FILES vertexingHF/AliAODRecoDecayHF.h 
+  	  vertexingHF/AliAODRecoDecayHF2Prong.h
+  	  vertexingHF/AddD2HTrain.C 
+  	  vertexingHF/ConfigVertexingHF.C 
+  	  vertexingHF/ConfigVertexingHF_highmult.C 
           DESTINATION PWGHF/vertexingHF/ )
 
 install ( DIRECTORY vertexingHF/macros

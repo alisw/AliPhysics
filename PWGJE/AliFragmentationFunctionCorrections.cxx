@@ -31,6 +31,10 @@
 #include "AliFragmentationFunctionCorrections.h"
 #include <iostream> // OB TEST!!!
 #include <fstream>
+using std::cout;
+using std::endl;
+using std::cerr;
+using std::fstream;
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

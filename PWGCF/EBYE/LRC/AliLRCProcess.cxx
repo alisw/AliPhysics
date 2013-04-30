@@ -29,6 +29,9 @@
 #include "TString.h"
 #include "TMath.h"
 //#include "TClonesArray.h"
+using std::cout;
+using std::endl;
+using std::cerr;
 
 //#include <AliPID.h> //for particle mass only
 ClassImp(AliLRCProcess)

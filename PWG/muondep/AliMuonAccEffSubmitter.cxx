@@ -67,7 +67,8 @@
 #include "TString.h"
 #include "TSystem.h"
 #include <vector>
-
+#include <fstream>
+using std::ifstream;
 namespace
 {
   Int_t splitLevel=10;
