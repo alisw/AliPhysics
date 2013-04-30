@@ -2283,6 +2283,16 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
     skewness = fMu3 / TMath::Power(sigma,3);
     kurtosis = fMu4 / TMath::Power(sigma,4) - 3;
 
+    // normalize with sigma^r
+    fMu  /= TMath::Power(sigma,1);    
+    fMu2 /= TMath::Power(sigma,2);    
+    fMu3 /= TMath::Power(sigma,3);    
+    fMu4 /= TMath::Power(sigma,4);    
+    fMu5 /= TMath::Power(sigma,5);    
+    fMu6 /= TMath::Power(sigma,6);    
+    fMu7 /= TMath::Power(sigma,7);    
+    fMu8 /= TMath::Power(sigma,8);    
+
     // ----------------------------------------------------------------------
     // then calculate the higher moment errors
     // cout<<fNormalization<<" "<<gHist->GetEffectiveEntries()<<" "<<gHist->Integral()<<endl;
