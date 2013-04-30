@@ -18,7 +18,8 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
 			      Double_t ptAssociatedMax = -1.,
 			      Bool_t kUseVzBinning = kTRUE,
 			      Bool_t k2pMethod = kTRUE,
-			      TString eventClass = "EventPlane") //Can be "EventPlane", "Centrality", "Multiplicity"
+			      TString eventClass = "EventPlane", //Can be "EventPlane", "Centrality", "Multiplicity"
+			      Bool_t bToy = kFALSE)
 {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
@@ -36,11 +37,11 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
   gStyle->SetPalette(1,0);
 
   //Prepare the objects and return them
-  TList *listBF = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0);
+  TList *listBF = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0,bToy);
   TList *listBFShuffled = NULL;
-  if(kShowShuffled) listBFShuffled = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1);
+  if(kShowShuffled) listBFShuffled = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1,bToy);
   TList *listBFMixed = NULL;
-  if(kShowMixed) listBFMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2);
+  if(kShowMixed) listBFMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2,bToy);
   if(!listBF) {
     Printf("The TList object was not created");
     return;
@@ -57,7 +58,8 @@ TList *GetListOfObjects(const char* filename,
 			Int_t gCentrality,
 			Int_t gBit,
 			const char *gCentralityEstimator,
-			Int_t kData = 1) {
+			Int_t kData = 1,
+			Bool_t bToy = kFALSE) {
   //Get the TList objects (QA, bf, bf shuffled)
   TList *listBF = 0x0;
   
@@ -79,21 +81,29 @@ TList *GetListOfObjects(const char* filename,
   TString listBFName;
   if(kData == 0) {
     //cout<<"no shuffling - no mixing"<<endl;
-    listBFName = "listBFPsi_";
+    listBFName = "listBFPsi";
   }
   else if(kData == 1) {
     //cout<<"shuffling - no mixing"<<endl;
-    listBFName = "listBFPsiShuffled_";
+    listBFName = "listBFPsiShuffled";
   }
   else if(kData == 2) {
     //cout<<"no shuffling - mixing"<<endl;
-    listBFName = "listBFPsiMixed_";
+    listBFName = "listBFPsiMixed";
   }
-  listBFName += centralityArray[gCentrality-1];
-  if(gBit > -1) {
-    listBFName += "_Bit"; listBFName += gBit; }
-  if(gCentralityEstimator) {
-    listBFName += "_"; listBFName += gCentralityEstimator;}
+
+  // different list names in case of toy model
+  if(!bToy){
+    listBFName += "_"
+    listBFName += centralityArray[gCentrality-1];
+    if(gBit > -1) {
+      listBFName += "_Bit"; listBFName += gBit; }
+    if(gCentralityEstimator) {
+      listBFName += "_"; listBFName += gCentralityEstimator;}
+  }
+  else{
+    listBFName.ReplaceAll("Psi","");
+  }
 
   // histograms were already retrieved (in first iteration)
   if(dir->Get(Form("%s_histograms",listBFName.Data()))){
@@ -1237,6 +1247,22 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
     fileKurtosis.close();
   }
 
+  // Weighted mean as calculated for 1D analysis
+  Double_t weightedMean, weightedMeanError;
+  GetWeightedMean1D(gHistBalanceFunctionSubtracted,kProjectInEta,1,-1,weightedMean,weightedMeanError);
+  Printf("Weighted Mean: %lf - Error: %lf",weightedMean, weightedMeanError);
+ 
+  // store in txt files
+  TString weightedMeanFileName = filename;
+  if(kProjectInEta) 
+    weightedMeanFileName = "deltaEtaProjection_WeightedMean.txt";
+    //weightedMeanFileName.ReplaceAll(".root","_DeltaEtaProjection_WeightedMean.txt");
+  else              
+    weightedMeanFileName = "deltaPhiProjection_WeightedMean.txt";
+    //weightedMeanFileName.ReplaceAll(".root","_DeltaPhiProjection_WeightedMean.txt");
+  ofstream fileWeightedMean(weightedMeanFileName.Data(),ios::app);
+  fileWeightedMean << " " << weightedMean << " " <<weightedMeanError<<endl;
+  fileWeightedMean.close();
 
 
   TCanvas *c2 = new TCanvas("c2","",600,0,600,500);
@@ -1429,4 +1455,64 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   		  kTRUE,
   		  eventClass.Data(),
   		  kFALSE);
+
+  TString outFileName = filename;
+  outFileName.ReplaceAll("correlationFunction","balanceFunction2D");
+  gHistBalanceFunction2D->SetName("gHistBalanceFunctionSubtracted");
+  TFile *fOut = TFile::Open(outFileName.Data(),"recreate");  
+  gHistBalanceFunction2D->Write();
+  fOut->Close();
+  
 }
+
+//____________________________________________________________________//
+void GetWeightedMean1D(TH1D *gHistBalance, Bool_t kProjectInEta = kTRUE, Int_t fStartBin = 1, Int_t fStopBin = -1, Double_t &WM, Double_t &WME) {
+
+  //Prints the calculated width of the BF and its error
+  Double_t gSumXi = 0.0, gSumBi = 0.0, gSumBiXi = 0.0;
+  Double_t gSumBiXi2 = 0.0, gSumBi2Xi2 = 0.0;
+  Double_t gSumDeltaBi2 = 0.0, gSumXi2DeltaBi2 = 0.0;
+  Double_t deltaBalP2 = 0.0, integral = 0.0;
+  Double_t deltaErrorNew = 0.0;
+
+  //Retrieve this variables from Histogram
+  Int_t fNumberOfBins = gHistBalance->GetNbinsX();
+  if(fStopBin > -1)   fNumberOfBins = fStopBin;
+  Double_t fP2Step    = gHistBalance->GetBinWidth(1); // assume equal binning!
+  Double_t currentBinCenter = 0.;
+
+  for(Int_t i = fStartBin; i <= fNumberOfBins; i++) {
+
+    // in order to recover the |abs| in the 1D analysis
+    currentBinCenter = gHistBalance->GetBinCenter(i);
+    if(kProjectInEta){
+      if(currentBinCenter < 0) currentBinCenter = -currentBinCenter;
+    }
+    else{
+      if(currentBinCenter < 0) currentBinCenter = -currentBinCenter;
+      if(currentBinCenter > TMath::Pi()) currentBinCenter = 2 * TMath::Pi() - currentBinCenter;
+    }
+
+    gSumXi += currentBinCenter;
+    gSumBi += gHistBalance->GetBinContent(i);
+    gSumBiXi += gHistBalance->GetBinContent(i)*currentBinCenter;
+    gSumBiXi2 += gHistBalance->GetBinContent(i)*TMath::Power(currentBinCenter,2);
+    gSumBi2Xi2 += TMath::Power(gHistBalance->GetBinContent(i),2)*TMath::Power(currentBinCenter,2);
+    gSumDeltaBi2 +=  TMath::Power(gHistBalance->GetBinError(i),2);
+    gSumXi2DeltaBi2 += TMath::Power(currentBinCenter,2) * TMath::Power(gHistBalance->GetBinError(i),2);
+    
+    deltaBalP2 += fP2Step*TMath::Power(gHistBalance->GetBinError(i),2);
+    integral += fP2Step*gHistBalance->GetBinContent(i);
+  }
+  for(Int_t i = fStartBin; i < fNumberOfBins; i++)
+    deltaErrorNew += gHistBalance->GetBinError(i)*(currentBinCenter*gSumBi - gSumBiXi)/TMath::Power(gSumBi,2);
+  
+  Double_t integralError = TMath::Sqrt(deltaBalP2);
+  
+  Double_t delta = gSumBiXi / gSumBi;
+  Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
+  
+  WM  = delta;
+  WME = deltaError;
+}
+
