@@ -23,6 +23,7 @@ AliITSURecoDet::AliITSURecoDet(AliITSUGeomTGeo* geom, const char* name)
   ,fNLayersActive(0)
   ,fRMax(-1)
   ,fRMin(-1)
+  ,fRITSTPCRef(-1)
   ,fLayers(0)
   ,fLayersActive(0)
   ,fGeom(geom)
@@ -48,7 +49,10 @@ void AliITSURecoDet::Print(Option_t* opt) const
   //print 
   printf("Detector %s, %d layers, %d active layers\n",GetName(),GetNLayers(),GetNLayersActive());
   TString opts = opt; opts.ToLower();
-  if (opts.Contains("lr")) for (int i=0;i<GetNLayers();i++) GetLayer(i)->Print(opt);
+  if (opts.Contains("lr")) {
+    for (int i=0;i<GetNLayers();i++) GetLayer(i)->Print(opt);
+    printf("ITS-TPC matching reference R: %.3f\n",fRITSTPCRef);
+  }
 }
 
 //______________________________________________________
@@ -142,6 +146,22 @@ void AliITSURecoDet::IndexLayers()
     SetRMin(GetLayer(0)->GetRMin()-kRMargin);
     SetRMax(GetLayer(fNLayers-1)->GetRMax()+kRMargin);
   }
+  //
+  // define the reference R for ITS/TPC matching: outside of last layer but before TPC materials
+  const double kOffsLastActR = 5.; // offset of reference layer wrt last active R
+  int lastActive = GetLrIDActive(fNLayersActive-1);
+  AliITSURecoLayer* lrA = GetLayer(lastActive); // last active
+  double rref = lrA->GetRMax() + kOffsLastActR;
+  //
+  if (lastActive <  fNLayers-1) { // there are material layers outside ...
+    AliITSURecoLayer* lrL = GetLayer(lastActive+1);
+    if (lrL->GetRMin()<=rref) rref = lrL->GetRMin();
+    if (rref - lrA->GetRMax()<kOffsLastActR) {
+      AliError(Form("The ITS-TPC matching reference R=%.2f is too close to last active R=%.3f",rref,lrA->GetRMax()));
+    }
+  }
+  SetRITSTPCRef(rref);
+  //
 }
 
 //______________________________________________________

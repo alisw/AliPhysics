@@ -24,6 +24,7 @@ class AliITSURecoDet : public TNamed
   //
   Double_t           GetRMin()                     const {return fRMin;}
   Double_t           GetRMax()                     const {return fRMax;}
+  Double_t           GetRITSTPCRef()               const {return fRITSTPCRef;}
   Int_t              GetNLayers()                  const {return fNLayers;}
   Int_t              GetNLayersActive()            const {return fNLayersActive;}
   Int_t              GetLrIDActive(Int_t lrActID)  const;
@@ -35,6 +36,7 @@ class AliITSURecoDet : public TNamed
   //
   void               SetRMin(Double_t r)                 {fRMin = r;}
   void               SetRMax(Double_t r)                 {fRMax = r;}
+  void               SetRITSTPCRef(Double_t r)           {fRITSTPCRef = r;}
   //
   void               AddLayer(const AliITSURecoLayer* lr);
   //
@@ -53,6 +55,7 @@ class AliITSURecoDet : public TNamed
   Int_t              fNLayersActive;  // N of active layers
   Double_t           fRMax;           // max  R
   Double_t           fRMin;           // min  R
+  Double_t           fRITSTPCRef;     // reference radius for ITS/TPC matching check
   TObjArray          fLayers;         // layers
   TObjArray          fLayersActive;   // active layers
   AliITSUGeomTGeo*   fGeom;           // ITS geometry
@@ -73,7 +76,8 @@ class AliITSURecoDet : public TNamed
 inline Int_t AliITSURecoDet::GetLrIDActive(Int_t lrActID) const 
 {
   // get global layer id from active id
-  return (lrActID<fNLayersActive) ? ((AliITSURecoLayer*)fLayersActive.UncheckedAt(lrActID))->GetID() : fNLayers;
+  return (lrActID<fNLayersActive) ? ((AliITSURecoLayer*)fLayersActive.UncheckedAt(lrActID))->GetID() 
+    : GetLayerActive(fNLayersActive-1)->GetID()+1;
 }
 
 //_____________________________________________________________

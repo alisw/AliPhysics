@@ -208,6 +208,7 @@ void AliITSUTrackCond::Print(Option_t*) const
   }
   //
   printf("ITS/TPC matching MaxChi2: %.3f\n",fMaxITSTPCMatchChi2);
+  printf("ITS_SA BWD fit   MaxChi2: %.3f\n",fMaxITSSAChi2);
   //
 }
 
@@ -224,8 +225,8 @@ void AliITSUTrackCond::Init()
     if (GetNSigmaRoadZ(ilr)<0) SetNSigmaRoadZ(ilr,nsig);
     //
   }
-  if (fMaxITSTPCMatchChi2<1e-6) fMaxITSTPCMatchChi2 = fgkMaxMatchChi2;
-  if (fMaxITSSAChi2<1e-6)       fMaxITSSAChi2       = fgkMaxITSSAChi2;
+  if (fMaxITSTPCMatchChi2<1e-6) SetMaxITSTPCMatchChi2(fgkMaxMatchChi2);
+  if (fMaxITSSAChi2<1e-6)       SetMaxITSSAChi2(fgkMaxITSSAChi2);
   //
   fInitDone = kTRUE;
 }
