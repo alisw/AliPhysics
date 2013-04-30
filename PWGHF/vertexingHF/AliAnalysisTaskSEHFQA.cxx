@@ -1179,33 +1179,38 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
   Bool_t evSelbyCentrality=kTRUE,evSelected=kTRUE,evSelByVertex=kTRUE,evselByPileup=kTRUE,evSelByPS=kTRUE;
 
-  TH1F* hWhyEvRejected=(TH1F*)fOutputEvSelection->FindObject("hWhyEvRejected");
+  TH1F* hWhyEvRejected=0x0;
+  if(fOnOff[3]){
+    hWhyEvRejected=(TH1F*)fOutputEvSelection->FindObject("hWhyEvRejected");
+  }
 
   //select event
   if(!fCuts->IsEventSelected(aod)) {
     evSelected=kFALSE;
     if(fCuts->IsEventRejectedDueToPileupSPD()) {
-      if(fOnOff[3]) hWhyEvRejected->Fill(1); 
+      if(hWhyEvRejected) hWhyEvRejected->Fill(1); 
       evselByPileup=kFALSE;
     }// rejected for pileup
     if(fCuts->IsEventRejectedDueToCentrality()) {
-      if(fOnOff[3]) hWhyEvRejected->Fill(2); 
+      if(hWhyEvRejected) hWhyEvRejected->Fill(2); 
       evSelbyCentrality=kFALSE; //rejected by centrality
     }
     if(fCuts->IsEventRejectedDueToNotRecoVertex() ||
        fCuts->IsEventRejectedDueToVertexContributors() ||
        fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()){ 
       evSelByVertex=kFALSE; 
-      if(fOnOff[3]) hWhyEvRejected->Fill(3);
+      if(hWhyEvRejected) hWhyEvRejected->Fill(3);
     }
-    if(fCuts->IsEventRejectedDueToTrigger() && fOnOff[3]) hWhyEvRejected->Fill(4);//tmp
-    if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion() && fOnOff[3]) {
-      ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber)); 
-      hWhyEvRejected->Fill(5);
+    if(fCuts->IsEventRejectedDueToTrigger()){
+      if(hWhyEvRejected) hWhyEvRejected->Fill(4);
+    }
+    if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) {
+      if(fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber)); 
+      if(hWhyEvRejected) hWhyEvRejected->Fill(5);
     }
     if(fCuts->IsEventRejectedDuePhysicsSelection()) { 
       evSelByPS=kFALSE;
-      if(fOnOff[3]) hWhyEvRejected->Fill(6); 
+      if(hWhyEvRejected) hWhyEvRejected->Fill(6); 
     }
   }
   if(evSelected && fOnOff[3]){
