@@ -263,7 +263,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     if(fPeriod.Contains("11c") ||fPeriod.Contains("11d") )
       isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC7);
     if(fPeriod.Contains("11h") )
-      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMCEGA);
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);//kEMCEGA);
 
   }
   if(fIsMC){
@@ -697,7 +697,7 @@ void  AliAnalysisTaskEMCALPhoton::GetMcParts()
     if (pt<0.5)
       continue;
     Double_t eta = mcP->Eta();
-    if (eta<-0.7||eta>0.7)
+    if (TMath::Abs(eta)>0.7)
       continue;
     Double_t phi  = mcP->Phi();
     if (phi<1.0||phi>3.3)
