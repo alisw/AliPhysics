@@ -212,7 +212,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(namePart_par_TPCvsP_kTOFtrue[iS],40,"NsigmaTPCvsP_kTOFout&&kTIME_%s",name[iS]);
-      snprintf(namePart_title_TPCvsP_kTOFtrue[iS],150,"NsigmaTPCvsP_kTOFout&&kTIME_%s;p (GeV/c);n_{#sigma_{TPC}}^{%s}",name[iS],name[iS]);
+      snprintf(namePart_title_TPCvsP_kTOFtrue[iS],120,"NsigmaTPCvsP_kTOFout&&kTIME_%s;p (GeV/c);n_{#sigma_{TPC}}^{%s}",name[iS],name[iS]);
     }
     
     for(Int_t iS=0;iS<18;iS++) {
@@ -310,7 +310,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 	snprintf(titleDCAxy[iS][j],120,"hDCAxy_%s_%s;DCA_{xy} (cm)",name[iS],par_name_nbin[j]);
 	
 	snprintf(nameDCAz[iS][j],120,"hDCAz_%s_%s",name[iS],par_name_nbin[j]);
-	snprintf(titleDCAz[iS][j],120,"hDCAz_%s_%s;DCA_{xy} (cm)",name[iS],par_name_nbin[j]);
+	snprintf(titleDCAz[iS][j],120,"hDCAz_%s_%s;DCA_{z} (cm)",name[iS],par_name_nbin[j]);
 	
 	snprintf(nameM2CutDCAxy[iS][j],120,"hM2_CutDCAxy_%s_%s",name[iS],par_name_nbin[j]);
 	snprintf(titleM2CutDCAxy[iS][j],120,"hM2_CutDCAxy_%s_%s;M^{2}_{TOF} (GeV^{2}/c^{4})",name[iS],par_name_nbin[j]);
@@ -524,7 +524,6 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if(!fAOD && !fESD){
     Printf("%s:%d AODEvent and ESDEvent not found in Input Manager",(char*)__FILE__,__LINE__);
-    this->Dump();
     return;
   }
   
@@ -573,8 +572,6 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	AliVTrack* track = (AliVTrack *) fEvent->GetTrack(iT);
 	
 	if (!track){
-	  track->Delete();
-	  //isTrack=0;
 	  continue;
 	}
 	
@@ -607,8 +604,8 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	Float_t M2 = 1000.0;
 	Float_t M = 1000.0;
 	Float_t Z2 = 1000.0;
-	Float_t DCAxy = b[1];
-	Float_t DCAz = b[0];
+	Float_t DCAxy = b[0];
+	Float_t DCAz = b[1];
 
 	if(TMath::Abs(DCAz)>DCAzCUT)//CUT ON DCAz
 	  continue;
