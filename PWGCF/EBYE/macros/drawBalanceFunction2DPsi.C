@@ -94,7 +94,7 @@ TList *GetListOfObjects(const char* filename,
 
   // different list names in case of toy model
   if(!bToy){
-    listBFName += "_"
+    listBFName += "_";
     listBFName += centralityArray[gCentrality-1];
     if(gBit > -1) {
       listBFName += "_Bit"; listBFName += gBit; }
