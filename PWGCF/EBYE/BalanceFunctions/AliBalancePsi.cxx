@@ -1338,8 +1338,8 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
       TH2D* hTemp2Mix = (TH2D*)fHistNPMix->Project(0,1,2);
       TH2D* hTemp3Mix = (TH2D*)fHistPPMix->Project(0,1,2);
       TH2D* hTemp4Mix = (TH2D*)fHistNNMix->Project(0,1,2);
-      TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
-      TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
+      // TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
+      // TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
       // ============================================================================================
       
       hTemp1->Sumw2();
@@ -1591,8 +1591,8 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
       TH2D* hTemp2Mix = (TH2D*)fHistNPMix->Project(0,1,2);
       TH2D* hTemp3Mix = (TH2D*)fHistPPMix->Project(0,1,2);
       TH2D* hTemp4Mix = (TH2D*)fHistNNMix->Project(0,1,2);
-      TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
-      TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
+      // TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
+      // TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
       // ============================================================================================
       
       hTemp1->Sumw2();

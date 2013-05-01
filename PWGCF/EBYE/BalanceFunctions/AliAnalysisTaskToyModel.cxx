@@ -416,9 +416,9 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
     Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
     
     // centrality bins
-    Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,7.,10.,20.,30.,40.,50.,60.,70.,80.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-    Double_t* centbins        = centralityBins;
-    Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
+    // Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,7.,10.,20.,30.,40.,50.,60.,70.,80.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    // Double_t* centbins        = centralityBins;
+    // Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
 
     // multiplicity bins
     Double_t multiplicityBins[] = {0,10,20,30,40,50,60,70,80,100,100000}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
@@ -431,9 +431,9 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
     Int_t nVertexBins     = sizeof(vertexBins) / sizeof(Double_t) - 1;
     
     // Event plane angle (Psi) bins
-    Double_t psiBins[] = {0.,45.,135.,215.,305.,360.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-    Double_t* psibins     = psiBins;
-    Int_t nPsiBins     = sizeof(psiBins) / sizeof(Double_t) - 1;
+    // Double_t psiBins[] = {0.,45.,135.,215.,305.,360.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    // Double_t* psibins     = psiBins;
+    // Int_t nPsiBins     = sizeof(psiBins) / sizeof(Double_t) - 1;
     
     // // run the event mixing also in bins of event plane (statistics!)
     // if(fRunMixingEventPlane){
@@ -869,7 +869,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	AliEventPool* pool = fPoolMgr->GetEventPool(1., 0.,fReactionPlane);
       
 	if (!pool){
-	  AliFatal(Form("No pool found for centrality = %f, zVtx = %f, psi = %f", 1, 0,fReactionPlane));
+	  AliFatal(Form("No pool found for centrality = %f, zVtx = %f, psi = %f", 1., 0.,fReactionPlane));
 	}
 	else{
 	  
