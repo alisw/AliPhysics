@@ -926,13 +926,14 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
   }
   
-  if(fAnaType == kIMCalo)
-  {
+
     fhEPairDiffTime = new TH2F("hEPairDiffTime","cluster pair time difference vs E",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
     fhEPairDiffTime->SetXTitle("E_{pair} (GeV)");
     fhEPairDiffTime->SetYTitle("#Delta t (ns)");
     outputContainer->Add(fhEPairDiffTime);
-    
+  
+  if(fAnaType == kIMCalo)
+  {
     TString combiName [] = {"1LocMax","2LocMax","NLocMax","1LocMax2LocMax","1LocMaxNLocMax","2LocMaxNLocMax","1LocMaxSSBad","NLocMaxSSGood"};
     TString combiTitle[] = {"1 Local Maxima in both clusters","2 Local Maxima in both clusters","more than 2 Local Maxima in both clusters",
       "1 Local Maxima paired with 2 Local Maxima","1 Local Maxima paired with more than 2 Local Maxima",
@@ -2159,7 +2160,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Float_t e2 = l2.Energy();
     if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
     fhAsymmetry->Fill(mom.E(),asy);
-    
+
     if(IsDataMC())
     {
       Int_t mcIndex = GetMCIndex(tag);
@@ -2189,16 +2190,29 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fhSelectedAsymmetry->Fill(mom.E(),asy);
     fhSelectedMass     ->Fill(mom.E(),mass);
 
-    fhSplitE   ->Fill(e1+e2);
-    Float_t pt1 = l1.Pt();
-    Float_t pt2 = l2.Pt();
-    fhSplitPt  ->Fill(pt1+pt2);
+    TLorentzVector l12 = l1+l2;
+    Float_t ptSplit = l12.Pt();
+    Float_t  eSplit = e1+e2;
+    fhSplitE   ->Fill( eSplit);
+    fhSplitPt  ->Fill(ptSplit);
 
+    //Check split-clusters with good time window difference
+    Double_t tof1  = cells->GetCellTime(absId1);
+    GetCaloUtils()->RecalibrateCellTime(tof1, fCalorimeter, absId1,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+    tof1*=1.e9;
+    
+    Double_t tof2  = cells->GetCellTime(absId2);
+    GetCaloUtils()->RecalibrateCellTime(tof2, fCalorimeter, absId2,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+    tof2*=1.e9;
+    
+    Double_t t12diff = tof1-tof2;
+    fhEPairDiffTime->Fill(e1+e2,    t12diff);
+    
     if(IsDataMC())
     {
       Int_t mcIndex = GetMCIndex(tag);
-      fhMCSplitE    [mcIndex]->Fill(e1+e2);
-      fhMCSplitPt   [mcIndex]->Fill(pt1+pt2);
+      fhMCSplitE    [mcIndex]->Fill( eSplit);
+      fhMCSplitPt   [mcIndex]->Fill(ptSplit);
     }
 
     
