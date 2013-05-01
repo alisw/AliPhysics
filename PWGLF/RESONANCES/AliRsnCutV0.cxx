@@ -30,7 +30,6 @@
 ClassImp(AliRsnCutV0)
 
 //_________________________________________________________________________________________________
-//AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis) :
 AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleType pid, AliPID::EParticleType pid2) :
    AliRsnCut(name, AliRsnTarget::kDaughter),
    fHypothesis(0),
@@ -41,11 +40,11 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fMaxDaughtersDCA(0.5),
    fMinTPCcluster(70),
    fMaxRapidity(0.8),
+   fDCARptFormula(""),
    fPID(pid),
    fPID2(pid2),
-   fPIDCut1(0),
-   fPIDCut2(0),
-   fPIDCut3(0),
+   fPIDCutProton(0),
+   fPIDCutPion(0),
    fESDtrackCuts(0x0),
    fCutQuality(Form("%sDaughtersQuality", name)),
    fAODTestFilterBit(5)
@@ -69,11 +68,11 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fMaxDaughtersDCA(copy.fMaxDaughtersDCA),
    fMinTPCcluster(copy.fMinTPCcluster),
    fMaxRapidity(copy.fMaxRapidity),
+   fDCARptFormula(copy.fDCARptFormula),   
    fPID(copy.fPID),
    fPID2(copy.fPID2),
-   fPIDCut1(copy.fPIDCut1),
-   fPIDCut2(copy.fPIDCut2),
-   fPIDCut3(copy.fPIDCut3),
+   fPIDCutProton(copy.fPIDCutProton),
+   fPIDCutPion(copy.fPIDCutPion),
    fESDtrackCuts(copy.fESDtrackCuts),
    fCutQuality(copy.fCutQuality),
    fAODTestFilterBit(copy.fAODTestFilterBit)
@@ -85,8 +84,7 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
 //
    fCutQuality.SetPtRange(0.15, 1E+20);
    fCutQuality.SetEtaRange(-0.8, 0.8);
-   fCutQuality.SetDCARmax(0.05);
-   //fCutQuality.SetDCARPtFormula("0.0182+0.0350/pt^1.01");
+   fCutQuality.SetDCARPtFormula(fDCARptFormula);
    fCutQuality.SetDCAZmax(2.0);
    fCutQuality.SetSPDminNClusters(1);
    fCutQuality.SetITSminNClusters(0);
@@ -115,11 +113,12 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
    fMinTPCcluster = copy.fMinTPCcluster;
    fMaxRapidity = copy.fMaxRapidity;
+   fDCARptFormula = copy.fDCARptFormula;
+   fCutQuality = copy.fCutQuality;
    fPID = copy.fPID;
    fPID2 = copy.fPID2;
-   fPIDCut1 = copy.fPIDCut1;
-   fPIDCut2 = copy.fPIDCut2;
-   fPIDCut3 = copy.fPIDCut3;
+   fPIDCutProton = copy.fPIDCutProton;
+   fPIDCutPion = copy.fPIDCutPion;
    fESDtrackCuts = copy.fESDtrackCuts;
    fCutQuality = copy.fCutQuality;
    fAODTestFilterBit = copy.fAODTestFilterBit;
@@ -244,8 +243,8 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
    // and computes all values used in the PID cut
    //Bool_t   isTOFpos  = MatchTOF(ptrack);
    //Bool_t   isTOFneg  = MatchTOF(ntrack);
-   Double_t pospTPC   = pTrack->GetTPCmomentum();
-   Double_t negpTPC   = nTrack->GetTPCmomentum();
+   //Double_t pospTPC   = pTrack->GetTPCmomentum();
+   //Double_t negpTPC   = nTrack->GetTPCmomentum();
    //Double_t posp      = pTrack->P();
    //Double_t negp      = nTrack->P();
    Double_t posnsTPC   = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, fPID));
@@ -269,17 +268,9 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
       //return (posnsTOF <= maxTOF);
       //} else {
       // TPC:
-      // below 600 MeV: 4sigma
-      // above 600 MeV: 3sigma
 
-      if (pospTPC <= 0.6 && fPID==AliPID::kProton)
-         maxTPC = fPIDCut1;
-      else if (pospTPC > 0.6 && fPID==AliPID::kProton)
-         maxTPC = fPIDCut2;
-      else
-         return kFALSE;
-
-      maxTPC2 = fPIDCut3;
+      maxTPC = fPIDCutProton;
+      maxTPC2 = fPIDCutPion;
 
       if (! ((posnsTPC <= maxTPC) && (negnsTPC2 <= maxTPC2)) ) {
          AliDebugClass(2, "Failed check on V0 PID");
@@ -298,17 +289,10 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
       //return (negnsTOF <= maxTOF);
       //} else {
       // TPC:
-      // below 600 MeV: 4sigma
-      // above 600 MeV: 3sigma
 
-      if (negpTPC <= 0.6 && fPID==AliPID::kProton)
-         maxTPC = fPIDCut1;
-      else if (negpTPC > 0.6 && fPID==AliPID::kProton)
-         maxTPC = fPIDCut2;
-      else
-         return kFALSE;
-
-      maxTPC2 = fPIDCut3;
+     
+         maxTPC = fPIDCutProton;
+         maxTPC2 = fPIDCutPion;
 
       if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2)) ) {
          AliDebugClass(2, "Failed check on V0 PID");
@@ -447,8 +431,8 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
    // and computes all values used in the PID cut
    //Bool_t   isTOFpos  = MatchTOF(ptrack);
    //Bool_t   isTOFneg  = MatchTOF(ntrack);
-   Double_t pospTPC   = pTrack->GetTPCmomentum();
-   Double_t negpTPC   = nTrack->GetTPCmomentum();
+   //Double_t pospTPC   = pTrack->GetTPCmomentum();
+   //Double_t negpTPC   = nTrack->GetTPCmomentum();
    //Double_t posp      = pTrack->P();
    //Double_t negp      = nTrack->P();
    Double_t posnsTPC   = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, fPID));
@@ -474,17 +458,10 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       //return (posnsTOF <= maxTOF);
       //} else {
       // TPC:
-      // below 600 MeV: 4sigma
-      // above 600 MeV: 3sigma
-
-      if (pospTPC <= 0.6 && fPID==AliPID::kProton)
-         maxTPC = fPIDCut1; // EF safer value to run on MC
-      else if (pospTPC > 0.6 && fPID==AliPID::kProton)
-         maxTPC = fPIDCut2; // EF safer value to run on MC
-      else
-         return kFALSE;
-
-      maxTPC2 = fPIDCut3; // EF safer value to run on MC
+     
+     
+         maxTPC = fPIDCutProton; 
+         maxTPC2 = fPIDCutPion; 
 
       if (! ((posnsTPC <= maxTPC) && (negnsTPC2 <= maxTPC2)) ) {
          AliDebugClass(2, "Failed check on V0 PID");
@@ -502,17 +479,10 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       //return (negnsTOF <= maxTOF);
       //} else {
       // TPC:
-      // below 600 MeV: 4sigma
-      // above 600 MeV: 3sigma
 
-      if (negpTPC <= 0.6 && fPID==AliPID::kProton)
-         maxTPC = fPIDCut1; // EF safer value to run on MC
-      else if (negpTPC > 0.6 && fPID==AliPID::kProton)
-         maxTPC = fPIDCut2; // EF safer value to run on MC
-      else
-         return kFALSE;
-
-      maxTPC2 = fPIDCut3; // EF safer value to run on MC
+      
+         maxTPC = fPIDCutProton;
+         maxTPC2 = fPIDCutPion;
 
       if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2)) ) {
          AliDebugClass(2, "Failed check on V0 PID");

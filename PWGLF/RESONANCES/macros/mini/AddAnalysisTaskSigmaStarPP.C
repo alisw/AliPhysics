@@ -21,9 +21,9 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
    Bool_t      isPP,
    Float_t     cutV = 10.0,
    Int_t       aodFilterBit = 5,
-   Int_t       piPIDCut = 3.0,
-   Int_t       pPIDCut = 3.0,
-   Float_t     piDCAcut = 0.05,
+   Float_t     piPIDCut = 3.0,
+   Float_t     pPIDCut = 3.0,
+   Float_t     trackDCAcut = 7.0,
    Float_t     massTol = 0.01,
    Float_t     lambdaDCA = 0.3,
    Float_t     lambdaCosPoinAn = 0.99,
@@ -49,7 +49,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
    } 
 
    // create the task and configure 
-   TString taskName = Form("SigmaStar%s%s_%.1f_%d", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"),cutV,NTPCcluster);
+   TString taskName = Form("SigmaStar%s%s_%.1f_%d_%.1f_%.1f_%.1f_%.2f_%.1f_%.2f_%.1f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pPIDCut,trackDCAcut,massTol,lambdaDCA,lambdaCosPoinAn,lambdaDaughDCA);
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    if (!isMC && !isPP){
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
@@ -128,7 +128,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
        Printf("========================== MC analysis - PID cuts not used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, piDCAcut, massTol, lambdaDCA, lambdaCosPoinAn, lambdaDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
+   if (!ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, trackDCAcut, massTol, lambdaDCA, lambdaCosPoinAn, lambdaDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
@@ -137,7 +137,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
    //  outputFileName += ":Rsn";
    Printf("AddAnalysisTaskSigmaStarPP - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
-   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%d",outNameSuffix.Data(), cutV, NTPCcluster), 
+   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%d_%.1f_%.1f_%.1f_%.2f_%.1f_%.2f_%.1f",outNameSuffix.Data(),cutV,NTPCcluster,piPIDCut,pPIDCut,trackDCAcut,massTol,lambdaDCA,lambdaCosPoinAn,lambdaDaughDCA), 
 							   TList::Class(), 
 							   AliAnalysisManager::kOutputContainer, 
 							   outputFileName);

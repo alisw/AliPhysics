@@ -102,24 +102,28 @@ const char *AliRsnValueDaughter::GetTypeName() const
 //
 
    switch (fType) {
-      case kP:           return "SingleTrackPtot";
-      case kPt:          return "SingleTrackPt";
-      case kPtpc:        return "SingleTrackPtpc";
-      case kEta:         return "SingleTrackEta";
-      case kMass:        return "SingleTrackMass";
-      case kITSsignal:   return "SingleTrackITSsignal";
-      case kTPCsignal:   return "SingleTrackTPCsignal";
-      case kTOFsignal:   return "SingleTrackTOFsignal";
-      case kTPCnsigmaPi: return "SingleTrackTPCnsigmaPion";
-      case kTPCnsigmaK:  return "SingleTrackTPCnsigmaKaon";
-      case kTPCnsigmaP:  return "SingleTrackTPCnsigmaProton";
-      case kTOFnsigmaPi: return "SingleTrackTOFnsigmaPion";
-      case kTOFnsigmaK:  return "SingleTrackTOFnsigmaKaon";
-      case kTOFnsigmaP:  return "SingleTrackTOFnsigmaProton";
-      case kCharge:      return "SingleTrackCharge";
-      case kPhi:         return "SingleTrackPhi";
-      case kPhiOuterTPC: return "SingleTrackPhiOuterTPC";
-      default:           return "Undefined";
+      case kP:            	       return "SingleTrackPtot";
+      case kPt:           	       return "SingleTrackPt";
+      case kPtpc:         	       return "SingleTrackPtpc";
+      case kEta:          	       return "SingleTrackEta";
+      case kMass:         	       return "SingleTrackMass";
+      case kITSsignal:    	       return "SingleTrackITSsignal";
+      case kTPCsignal:    	        return "SingleTrackTPCsignal";
+      case kTOFsignal:    	        return "SingleTrackTOFsignal";
+      case kTPCnsigmaPi:  	        return "SingleTrackTPCnsigmaPion";
+      case kTPCnsigmaK:   	        return "SingleTrackTPCnsigmaKaon";
+      case kTPCnsigmaP:   	        return "SingleTrackTPCnsigmaProton";
+      case kTOFnsigmaPi:  	        return "SingleTrackTOFnsigmaPion";
+      case kTOFnsigmaK:   	        return "SingleTrackTOFnsigmaKaon";
+      case kTOFnsigmaP:   	        return "SingleTrackTOFnsigmaProton";
+      case kV0DCA:        	        return "V0DCAToPrimaryVertex";
+      case kDaughterDCA:  	        return "V0DaughterDCA";
+      case kCosPointAng:  	        return "V0CosineOfPointingAngle";
+      case kLambdaProtonPIDCut:         return "V0LambdaProtonNsigma";
+      case kAntiLambdaAntiProtonPIDCut: return "V0AntiLambdaAntiProtonNsigma";
+      case kLambdaPionPIDCut:           return "V0LambdaPionNsigma";
+      case kAntiLambdaAntiPionPIDCut:   return "V0AntiLambdaPionNsigma";
+      default:                          return "Undefined";
    }
 }
 
@@ -143,6 +147,14 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
    AliVParticle   *ref   = fDaughter->GetRef();
    AliVParticle   *refMC = fDaughter->GetRefMC();
    AliVTrack      *track = fDaughter->Ref2Vtrack();
+   AliESDv0       *v0esd = fDaughter->Ref2ESDv0();
+   AliAODv0       *v0aod = fDaughter->Ref2AODv0();
+   AliESDEvent    *lESDEvent = fEvent->GetRefESD();
+   
+   Double_t xPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetX();
+   Double_t yPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetY();
+   Double_t zPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetZ();
+   
    if (fUseMCInfo && !refMC) {
       AliError("No MC");
       return kFALSE;
@@ -371,34 +383,137 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
             fComputedValue = 0.0;
             return kFALSE;
          }
-
-      case kCharge:
-         fComputedValue = (fUseMCInfo ? refMC->Charge() : ref->Charge());
-         return kTRUE;
-   
-      case kPhi:         
-	fComputedValue = (fUseMCInfo ? (refMC->Phi()*TMath::RadToDeg()) : (ref->Phi()*TMath::RadToDeg()));	
-	return kTRUE;
-
-      case kPhiOuterTPC:    
-	if (track) {
-	  Double_t pos[3]={0.,0.,0.};
-	  Double_t phiOut = -999.0;
-	  Double_t radius = 278.;//TPC outer (vessel) = 278 cm, TOF radius (active surf.) = 378 cm;  ref. PPR.1
-	  AliExternalTrackParam etp; //thanks to Andrea and Cristina
-	  etp.CopyFromVTrack(track);
-	  if(etp.GetXYZAt(radius, 5., pos)){
-	    phiOut=TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
-	    if (phiOut<0) phiOut+= (2*TMath::Pi()*TMath::RadToDeg());
-	  }
-	  fComputedValue = phiOut;	
-	} else {
-	  AliWarning("Cannot get phi at outer TPC radius for non-track object");
-	  fComputedValue = -99.0;
+      case kV0DCA:
+         if(v0esd) {
+	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+	   fComputedValue = v0ESD->GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
+	   return kTRUE;
+	 }
+	 if(v0aod) {
+	   AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+	   fComputedValue = v0AOD->DcaV0ToPrimVertex();
+	   return kTRUE;
+	 }
+	 else {
+	  fComputedValue = -999;
 	  return kFALSE;
-	}
-	return kTRUE;
-	
+	 }	 	 
+      case kDaughterDCA:
+         if(v0esd) {
+	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+	   fComputedValue = v0ESD->GetDcaV0Daughters();
+	   return kTRUE;
+	 }
+	 if(v0aod) {
+	   AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+	   fComputedValue = v0AOD->DcaV0Daughters();
+	   return kTRUE;
+	 }
+	 else {
+	  fComputedValue = -999;
+	  return kFALSE;
+	 }
+      case kCosPointAng:
+         if(v0esd) {
+	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+	   fComputedValue = v0ESD->GetV0CosineOfPointingAngle();
+	   return kTRUE;	 
+	 }
+	 if(v0aod) {
+	   AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+	   fComputedValue = TMath::Cos(v0AOD->OpenAngleV0());
+	   return kTRUE;
+	 }
+	 else {
+	  fComputedValue = -999;
+	  return kFALSE;
+	 }
+      case kLambdaProtonPIDCut:
+         if(v0esd) {
+	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+	   // retrieve the V0 daughters
+   	   UInt_t lIdxPos      = (UInt_t) TMath::Abs(v0ESD->GetPindex());
+   	   AliESDtrack *pTrack = lESDEvent->GetTrack(lIdxPos);
+	   AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+	   fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, AliPID::kProton));
+	   return kTRUE;	 
+	 }
+	 if(v0aod) {
+	   AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+	   AliAODTrack *pTrack = (AliAODTrack *) (v0AOD->GetSecondaryVtx()->GetDaughter(0));
+	   AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+	   fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, AliPID::kProton));
+	   return kTRUE;
+	 }
+	 else {
+	  fComputedValue = -999;
+	  return kFALSE;
+	 }
+       case kAntiLambdaAntiProtonPIDCut:
+         if(v0esd) {
+	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+	   // retrieve the V0 daughters
+   	   UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0ESD->GetNindex());
+   	   AliESDtrack *nTrack = lESDEvent->GetTrack(lIdxNeg);
+	   AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+	   fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, AliPID::kProton));
+	   return kTRUE;	 
+	 }
+	 if(v0aod) {
+	   AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+	   AliAODTrack *nTrack = (AliAODTrack *) (v0AOD->GetSecondaryVtx()->GetDaughter(1));
+	   AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+	   fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, AliPID::kProton));
+	   return kTRUE;
+	 }
+	 else {
+	  fComputedValue = -999;
+	  return kFALSE;
+	 }
+      case kLambdaPionPIDCut:
+         if(v0esd) {
+	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+	   // retrieve the V0 daughters
+   	   UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0ESD->GetNindex());
+   	   AliESDtrack *nTrack = lESDEvent->GetTrack(lIdxNeg);
+	   AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+	   fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, AliPID::kPion));
+	   return kTRUE;	 
+	 }
+	 if(v0aod) {
+	   AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+	   AliAODTrack *nTrack = (AliAODTrack *) (v0AOD->GetSecondaryVtx()->GetDaughter(1));
+	   AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+	   fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, AliPID::kPion));
+	   return kTRUE;
+	 }
+	 else {
+	  fComputedValue = -999;
+	  return kFALSE;
+	 }
+       case kAntiLambdaAntiPionPIDCut:
+         if(v0esd) {
+	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+	   // retrieve the V0 daughters
+   	   UInt_t lIdxPos      = (UInt_t) TMath::Abs(v0ESD->GetPindex());
+   	   AliESDtrack *pTrack = lESDEvent->GetTrack(lIdxPos);
+	   AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+	   fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, AliPID::kPion));
+	   return kTRUE;	 
+	 }
+	 if(v0aod) {
+	   AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+	   AliAODTrack *pTrack = (AliAODTrack *) (v0AOD->GetSecondaryVtx()->GetDaughter(0));
+	   AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+	   fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, AliPID::kPion));
+	   return kTRUE;
+	 }
+	 else {
+	  fComputedValue = -999;
+	  return kFALSE;
+	 }
+	 
+      
       default:
          AliError(Form("[%s] Invalid value type for this computation", GetName()));
          return kFALSE;
