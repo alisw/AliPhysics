@@ -58,8 +58,6 @@ protected:
     AliAnalysisTaskPi0Flow(const AliAnalysisTaskPi0Flow&); // not implemented
     AliAnalysisTaskPi0Flow& operator=(const AliAnalysisTaskPi0Flow&); // not implemented
 
-    virtual void MakeMCHistograms();
-
     // Step 0:
     AliVEvent* GetEvent();
 
@@ -87,17 +85,17 @@ protected:
     void FillPHOSCellQAHists();
 
     // Step 8: Event Photons (PHOS Clusters) selection
-    void SelectPhotonClusters();
-    void FillSelectedClusterHistograms();
+    virtual void SelectPhotonClusters();
+    virtual void FillSelectedClusterHistograms();
 
     // Step 9: Consider pi0 (photon/cluster) pairs.
-    void ConsiderPi0s();
+    virtual void ConsiderPi0s();
 
     // Step 10; Mixing
-    void ConsiderPi0sMix();
+    virtual void ConsiderPi0sMix();
 
     // Step 11: MC
-    virtual void DoMC();
+    virtual void ProcessMC();
 
     // Step 12: Update lists
     void UpdateLists();

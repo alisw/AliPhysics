@@ -1,5 +1,8 @@
 void AddPi0FlowAndDependenciesMC()
 {
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCHandler.C");
+  AddMCHandler();
+
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskEventplane.C");
   AddTaskEventplane();
 

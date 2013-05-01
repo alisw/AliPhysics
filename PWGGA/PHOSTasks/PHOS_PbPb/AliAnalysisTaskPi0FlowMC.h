@@ -22,15 +22,22 @@ public:
   AliAnalysisTaskPi0FlowMC(const char* name = "AliAnalysisTaskPi0Flow", Period period = kUndefinedPeriod);
   virtual ~AliAnalysisTaskPi0FlowMC();
 
+protected: // Override:
+  virtual void UserCreateOutputObjects();
+  virtual void UserExec(Option_t *option);
+  // Pi0FlowTask
+  virtual void SelectPhotonClusters();
+  virtual void FillSelectedClusterHistograms();
+  virtual void ConsiderPi0s();
+  virtual void ConsiderPi0sMix();
+  virtual void ProcessMC();
+
 protected: // member functions:
   AliAnalysisTaskPi0FlowMC(const AliAnalysisTaskPi0FlowMC&); // not implemented
   AliAnalysisTaskPi0FlowMC& operator=(const AliAnalysisTaskPi0FlowMC&); // not implemented
-
-  virtual void MakeMCHistograms();
-  virtual void DoMC();
   
   AliStack* GetMCStack();
-  
+
 protected: // member variables:
   AliStack* fStack;
   
@@ -39,6 +46,7 @@ protected: // member variables:
   Double_t PrimaryWeight(Int_t primary);
   Double_t PrimaryParticleWeight(TParticle * particle);
   void FillSecondaries() ;
+  Int_t FindPrimary(AliVCluster* clu,  Bool_t& sure);
   Int_t FindCommonParent(Int_t iPart, Int_t jPart) ;
   Bool_t HaveParent(Int_t iPart, Int_t pdgParent);
   Bool_t InPi0mass(Double_t m, Double_t pt);
@@ -47,8 +55,8 @@ protected: // member variables:
 
   static const Double_t kRCut = 1.;
   enum ParticleID {kEta=221};
-  
-  
+
+
   ClassDef(AliAnalysisTaskPi0FlowMC, 1); // PHOS analysis task
 };
 

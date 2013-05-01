@@ -341,8 +341,6 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
   }
   
-  this->MakeMCHistograms();
-  
   // Setup photon lists
   Int_t kapacity = kNVtxZBins * GetNumberOfCentralityBins() * fNEMRPBins;
   fCaloPhotonsPHOSLists = new TObjArray(kapacity);
@@ -351,12 +349,7 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
   PostData(1, fOutputContainer);
 }
 
-void AliAnalysisTaskPi0Flow::MakeMCHistograms()
-{
-  //empty, MC extensions should override
-}
-
-void AliAnalysisTaskPi0Flow::DoMC()
+void AliAnalysisTaskPi0Flow::ProcessMC()
 {
   //empty, MC extensions should override
 }
@@ -443,8 +436,8 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 
 
   // Step 8: Event Photons (PHOS Clusters) selection
-  SelectPhotonClusters();
-  FillSelectedClusterHistograms();
+  this->SelectPhotonClusters();
+  this->FillSelectedClusterHistograms();
   LogProgress(8);
 
   if( ! fCaloPhotonsPHOS->GetEntriesFast() )
@@ -454,15 +447,15 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 
 
   // Step 9: Consider pi0 (photon/cluster) pairs.
-  ConsiderPi0s();
+  this->ConsiderPi0s();
   LogProgress(9);
 
   // Step 10; Mixing
-  ConsiderPi0sMix();
+  this->ConsiderPi0sMix();
   LogProgress(10);
   
   // Step 11: MC
-  this->DoMC();
+  this->ProcessMC();
 
   // Step 12: Update lists
   UpdateLists();
