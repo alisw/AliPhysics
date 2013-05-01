@@ -17,27 +17,30 @@ class AliRsnCutDaughterSigmaStar2010PP : public AliRsnCut {
 public:
 
    AliRsnCutDaughterSigmaStar2010PP(const char *name = "", AliPID::EParticleType pid = AliPID::kPion);
+   AliRsnCutDaughterSigmaStar2010PP(const AliRsnCutDaughterSigmaStar2010PP &copy);
+   AliRsnCutDaughterSigmaStar2010PP &operator=(const AliRsnCutDaughterSigmaStar2010PP &copy);
    virtual ~AliRsnCutDaughterSigmaStar2010PP() { }
 
-   //void                   SetPID(AliPID::EParticleType type) {fPID = type;}
-   AliRsnCutTrackQuality *CutQuality()                       {return &fCutQuality;}
+   AliRsnCutTrackQuality *CutQuality()                         {return &fCutQuality;}
    Bool_t                 MatchTOF(const AliVTrack *vtrack);
    virtual Bool_t         IsSelected(TObject *obj);
 
-   void           SetPIDCut(Double_t value)                  {fPIDCut = value;}
-   void           SetMinTPCcluster(Int_t value)              {fMinTPCcluster = value;}
-   
+   void           SetPIDCut(Double_t value)                    {fPIDCut = value;}
+   void           SetMinTPCcluster(Int_t value)                {fMinTPCcluster = value;}
+   void           SetDCARPtFormula(const char *formula)        {fDCARptFormula = formula;}
+    
 private:
 
-   AliPID::EParticleType fPID;              // PID for track
-   AliRsnCutTrackQuality fCutQuality;       // track quality cut
+   AliPID::EParticleType fPID;                  // PID for track
+   AliRsnCutTrackQuality fCutQuality;           // track quality cut
 
    ClassDef(AliRsnCutDaughterSigmaStar2010PP,2) // cut definitions for Sigma*
 
 protected:
 
-   Double_t         fPIDCut;          // nsigmas for pions
-   Int_t            fMinTPCcluster;   // min allowed TPC cluster
+   Double_t         fPIDCut;                    // nsigmas for pions
+   Int_t            fMinTPCcluster;             // min allowed TPC cluster
+   TString          fDCARptFormula;             // min DCAR pt dependent formula
 };
 
 //__________________________________________________________________________________________________

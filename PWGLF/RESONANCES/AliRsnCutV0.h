@@ -18,7 +18,6 @@ class AliRsnCutV0 : public AliRsnCut {
 public:
 
 
-   //AliRsnCutV0(const char *name = "AliRsnCutV0", Int_t hypothesis = kLambda0);
    AliRsnCutV0(const char *name = "AliRsnCutV0", Int_t hypothesis = kLambda0, AliPID::EParticleType pid = AliPID::kProton, AliPID::EParticleType pid2 = AliPID::kPion);
    AliRsnCutV0(const AliRsnCutV0 &copy);
    AliRsnCutV0 &operator=(const AliRsnCutV0 &copy);
@@ -32,13 +31,14 @@ public:
    void           SetMaxDaughtersDCA(Double_t value)       {fMaxDaughtersDCA = value;}
    void           SetMinTPCcluster(Int_t value)            {fMinTPCcluster = value;}
    void           SetMaxRapidity(Double_t value)           {fMaxRapidity = value;}
+   void           SetDCARPtFormula(const char *formula)    {fDCARptFormula = formula;}
+   
+   void           SetPIDCutProton(Double_t value)          {fPIDCutProton = value;}
+   void           SetPIDCutPion(Double_t value)            {fPIDCutPion = value;}
+  
 
-   void           SetPIDCut1(Double_t value)               {fPIDCut1 = value;}
-   void           SetPIDCut2(Double_t value)               {fPIDCut2 = value;}
-   void           SetPIDCut3(Double_t value)               {fPIDCut3 = value;}
-
-   AliRsnCutTrackQuality *CutQuality()                       {return &fCutQuality;}
-   void           SetAODTestFilterBit(Int_t value) {fAODTestFilterBit = value;}
+   AliRsnCutTrackQuality *CutQuality()                     {return &fCutQuality;}
+   void           SetAODTestFilterBit(Int_t value)         {fAODTestFilterBit = value;}
    Int_t          GetAODTestFilterBit()                    {return fAODTestFilterBit;}
 
    virtual Bool_t IsSelected(TObject *obj);
@@ -49,6 +49,7 @@ protected:
    Bool_t      CheckESD(AliESDv0 *track);
    Bool_t      CheckAOD(AliAODv0 *track);
 
+   
    Int_t            fHypothesis;       // PDG code corresponding to expected V0 hypothesis
    Double_t         fMass;             // mass corresponding to hypothesis
    Double_t         fTolerance;        // tolerance in the difference between computed and expected mass
@@ -57,20 +58,20 @@ protected:
    Double_t         fMaxDaughtersDCA;  // max allowed DCA between the two daughers
    Int_t            fMinTPCcluster;    // min allowed TOC cluster
    Double_t         fMaxRapidity;      // max allowed V0 rapidity
-
+   TString          fDCARptFormula;    // min DCAR pt dependent formula
+   
    AliPID::EParticleType fPID;         // PID for track
    AliPID::EParticleType fPID2;        // PID for track
 
-   Double_t         fPIDCut1;          // nsigmas for protons < 600 MeV/c
-   Double_t         fPIDCut2;          // nsigmas for protons > 600 MeV/c
-   Double_t         fPIDCut3;          // nsigmas for pions
-
-
+   Double_t         fPIDCutProton;          // nsigmas for protons
+   Double_t         fPIDCutPion;          // nsigmas for pions
+   
    AliESDtrackCuts *fESDtrackCuts;     // quality cuts for v0 daughters
-
-   AliRsnCutTrackQuality fCutQuality;       // track quality cut
-   Int_t            fAODTestFilterBit;  // test filter bit for AODs
-
+   
+   AliRsnCutTrackQuality fCutQuality;  // track quality cut
+   
+   Int_t            fAODTestFilterBit; // test filter bit for AODs
+   
    ClassDef(AliRsnCutV0, 1)
 };
 

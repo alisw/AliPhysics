@@ -32,13 +32,17 @@ public:
       kTOFnsigmaP, // TOF number of sigmas proton
       kNITSclusters,  // n ITS clusters
       kNTPCclusters,  // n TPC clusters
-      kITSchi2,    // ITS chi^2
-      kTPCchi2,    // TPC chi^2
-      kDCAXY,      // DCA xy
-      kDCAZ,       // DCA z
-      kCharge,     // charge
-      kPhi,        // azimuthal angle at vertex
-      kPhiOuterTPC,// azimuthal angle at TPC outer radius
+      kITSchi2,     // ITS chi^2
+      kTPCchi2,     // TPC chi^2
+      kDCAXY,       // DCA xy
+      kDCAZ,        // DCA z
+      kV0DCA,       // V0 DCA 
+      kDaughterDCA, // DCA of V0 Daughters
+      kCosPointAng, // V0 Cosing of Pointing Angle
+      kLambdaProtonPIDCut,         //V0 - Lambda number of sigmas proton	   
+      kAntiLambdaAntiProtonPIDCut, //V0 - AntiLambda number of sigmas antiproton	
+      kLambdaPionPIDCut,	          //V0 - Lambda number of sigmas pion	
+      kAntiLambdaAntiPionPIDCut,   //V0 - AntiLambda number of sigmas pion	
       kTypes
    };
 

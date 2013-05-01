@@ -20,7 +20,8 @@ AliRsnCutDaughterSigmaStar2010PP::AliRsnCutDaughterSigmaStar2010PP(const char *n
    fPID(pid),
    fCutQuality(Form("%sQuality", name)),
    fPIDCut(3.0),
-   fMinTPCcluster(70)
+   fMinTPCcluster(70),
+   fDCARptFormula("")
 {
 //
 // Constructor
@@ -29,8 +30,7 @@ AliRsnCutDaughterSigmaStar2010PP::AliRsnCutDaughterSigmaStar2010PP(const char *n
 
    fCutQuality.SetPtRange(0.15, 1E+20);
    fCutQuality.SetEtaRange(-0.8, 0.8);
-   fCutQuality.SetDCARmax(0.05);
-   //fCutQuality.SetDCARPtFormula("0.0182+0.0350/pt^1.01");
+   fCutQuality.SetDCARPtFormula(fDCARptFormula);
    fCutQuality.SetDCAZmax(2.0);
    fCutQuality.SetSPDminNClusters(1);
    fCutQuality.SetITSminNClusters(0);
@@ -103,22 +103,7 @@ Bool_t AliRsnCutDaughterSigmaStar2010PP::IsSelected(TObject *obj)
    //For the moment TOF is not used - PID ONLY WITH TPC - 3 sigmas in the whole range
 
    // TPC:
-   // below 350 MeV: 5sigma
-   // between 350 and 500 MeV: 3sigma
-   // pions above 500 MeV: 2sigma
-   // kaons between 500 and 700 MeV: 2sigma
-   // kaons above 700 MeV: rejected
-   /*if (pTPC <= 0.35)
-      maxTPC = 5.0;
-   else if (pTPC <= 0.5)
-      maxTPC = 3.0;
-   else if (pTPC > 0.5 && fPID == AliPID::kPion)
-      maxTPC = 2.0;
-   else if (pTPC > 0.5 && pTPC <= 0.7 && fPID == AliPID::kKaon)
-      maxTPC = 2.0;
-   else
-      return kFALSE;*/
-   //maxTPC = 3.0;
+   
    maxTPC = fPIDCut;
    return (nsTPC <= maxTPC);
 
