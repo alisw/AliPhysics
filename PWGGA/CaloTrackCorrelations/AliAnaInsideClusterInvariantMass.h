@@ -336,6 +336,13 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhM02WeightPi0[3][10] ;                  //! M02 for selected pi0 with different weight, with NLM = 1, = 2, > 2
   TH2F       * fhM02ECellCutPi0[3][10] ;                //! M02 for selected pi0 with different cut on cell energy, with NLM = 1, = 2, > 2
 
+  TH2F       * fhPi0EPairDiffTimeNLM1;                  //! E vs Pair of clusters time difference vs E, for selected pi0, NLM=1
+  TH2F       * fhPi0EPairDiffTimeNLM2;                  //! E vs Pair of clusters time difference vs E, for selected pi0, NLM=2
+  TH2F       * fhPi0EPairDiffTimeNLMN;                  //! E vs Pair of clusters time difference vs E, for selected pi0, NLM>2
+  TH2F       * fhEtaEPairDiffTimeNLM1;                  //! E vs Pair of clusters time difference vs E, for selected eta, NLM=1
+  TH2F       * fhEtaEPairDiffTimeNLM2;                  //! E vs Pair of clusters time difference vs E, for selected eta, NLM=2
+  TH2F       * fhEtaEPairDiffTimeNLMN;                  //! E vs Pair of clusters time difference vs E, for selected eta, NLM>2
+
   
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment

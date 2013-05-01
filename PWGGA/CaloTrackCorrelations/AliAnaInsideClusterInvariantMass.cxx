@@ -78,7 +78,10 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fhEventPlanePi0NLocMaxN(0), fhEventPlaneEtaNLocMaxN(0),
   fhClusterEtaPhiNLocMax1(0), fhClusterEtaPhiNLocMax2(0),  fhClusterEtaPhiNLocMaxN(0),
   fhPi0EtaPhiNLocMax1(0),     fhPi0EtaPhiNLocMax2(0),      fhPi0EtaPhiNLocMaxN(0),
-  fhEtaEtaPhiNLocMax1(0),     fhEtaEtaPhiNLocMax2(0),      fhEtaEtaPhiNLocMaxN(0)
+  fhEtaEtaPhiNLocMax1(0),     fhEtaEtaPhiNLocMax2(0),      fhEtaEtaPhiNLocMaxN(0),
+  fhPi0EPairDiffTimeNLM1(0),  fhPi0EPairDiffTimeNLM2(0),   fhPi0EPairDiffTimeNLMN(0),
+  fhEtaEPairDiffTimeNLM1(0),  fhEtaEPairDiffTimeNLM2(0),   fhEtaEPairDiffTimeNLMN(0)
+
 {
   //default ctor
   
@@ -1669,7 +1672,6 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   fhEtaEtaPhiNLocMaxN->SetYTitle("#phi (rad)");
   fhEtaEtaPhiNLocMaxN->SetXTitle("#eta");
   outputContainer->Add(fhEtaEtaPhiNLocMaxN) ;
-
   
   if(fFillSSWeightHisto)
   {
@@ -1756,6 +1758,38 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
 
     }
   }
+  
+  Int_t tdbins   = GetHistogramRanges()->GetHistoDiffTimeBins() ;    Float_t tdmax  = GetHistogramRanges()->GetHistoDiffTimeMax();     Float_t tdmin  = GetHistogramRanges()->GetHistoDiffTimeMin();
+
+  fhPi0EPairDiffTimeNLM1 = new TH2F("hPi0EPairDiffTimeNLocMax1","cluster pair time difference vs E, selected #pi, NLM=1",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+  fhPi0EPairDiffTimeNLM1->SetXTitle("E_{pair} (GeV)");
+  fhPi0EPairDiffTimeNLM1->SetYTitle("#Delta t (ns)");
+  outputContainer->Add(fhPi0EPairDiffTimeNLM1);
+
+  fhPi0EPairDiffTimeNLM2 = new TH2F("hPi0EPairDiffTimeNLocMax2","cluster pair time difference vs E, selected #pi, NLM=2",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+  fhPi0EPairDiffTimeNLM2->SetXTitle("E_{pair} (GeV)");
+  fhPi0EPairDiffTimeNLM2->SetYTitle("#Delta t (ns)");
+  outputContainer->Add(fhPi0EPairDiffTimeNLM2);
+
+  fhPi0EPairDiffTimeNLMN = new TH2F("hPi0EPairDiffTimeNLocMaxN","cluster pair time difference vs E, selected #pi, NLM>2",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+  fhPi0EPairDiffTimeNLMN->SetXTitle("E_{pair} (GeV)");
+  fhPi0EPairDiffTimeNLMN->SetYTitle("#Delta t (ns)");
+  outputContainer->Add(fhPi0EPairDiffTimeNLMN);
+
+  fhEtaEPairDiffTimeNLM1 = new TH2F("hEtaEPairDiffTimeNLocMax1","cluster pair time difference vs E, selected #eta, NLM=1",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+  fhEtaEPairDiffTimeNLM1->SetXTitle("E_{pair} (GeV)");
+  fhEtaEPairDiffTimeNLM1->SetYTitle("#Delta t (ns)");
+  outputContainer->Add(fhEtaEPairDiffTimeNLM1);
+  
+  fhEtaEPairDiffTimeNLM2 = new TH2F("hEtaEPairDiffTimeNLocMax2","cluster pair time difference vs E, selected #eta, NLM=2",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+  fhEtaEPairDiffTimeNLM2->SetXTitle("E_{pair} (GeV)");
+  fhEtaEPairDiffTimeNLM2->SetYTitle("#Delta t (ns)");
+  outputContainer->Add(fhEtaEPairDiffTimeNLM2);
+  
+  fhEtaEPairDiffTimeNLMN = new TH2F("hEtaEPairDiffTimeNLocMaxN","cluster pair time difference vs E, selected #eta, NLM>2",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+  fhEtaEPairDiffTimeNLMN->SetXTitle("E_{pair} (GeV)");
+  fhEtaEPairDiffTimeNLMN->SetYTitle("#Delta t (ns)");
+  outputContainer->Add(fhEtaEPairDiffTimeNLMN);
   
   return outputContainer ;
   
@@ -1895,6 +1929,16 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     Float_t e1 = l1.Energy();
     Float_t e2 = l2.Energy();
+    
+    Double_t tof1  = cells->GetCellTime(absId1);
+    GetCaloUtils()->RecalibrateCellTime(tof1, fCalorimeter, absId1,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+    tof1*=1.e9;
+    
+    Double_t tof2  = cells->GetCellTime(absId2);
+    GetCaloUtils()->RecalibrateCellTime(tof2, fCalorimeter, absId2,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+    tof2*=1.e9;
+    
+    Double_t t12diff = tof1-tof2;
     
     Float_t splitFrac = (e1+e2)/en;
 
@@ -2275,6 +2319,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
           fhEventPlanePi0NLocMax1->Fill(en,evp) ;
           if(en > ecut)fhPi0EtaPhiNLocMax1->Fill(eta,phi);
           FillSSWeightHistograms(cluster, 0, absId1, absId2);
+          fhPi0EPairDiffTimeNLM1->Fill(e1+e2,t12diff);
         }
       }
       else if(pidTag==AliCaloPID::kEta)
@@ -2285,6 +2330,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhEventPlaneEtaNLocMax1->Fill(en,evp) ;
           if(en > ecut)fhEtaEtaPhiNLocMax1->Fill(eta,phi);
+          fhEtaEPairDiffTimeNLM1->Fill(e1+e2,t12diff);
         }
       }
       
@@ -2335,6 +2381,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
           fhEventPlanePi0NLocMax2->Fill(en,evp) ;
           if(en > ecut)fhPi0EtaPhiNLocMax2->Fill(eta,phi);
           FillSSWeightHistograms(cluster, 1, absId1, absId2);
+          fhPi0EPairDiffTimeNLM2->Fill(e1+e2,t12diff);
         }
       }
       else if(pidTag==AliCaloPID::kEta)
@@ -2345,6 +2392,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhEventPlaneEtaNLocMax2->Fill(en,evp) ;
           if(en > ecut)fhEtaEtaPhiNLocMax2->Fill(eta,phi);
+          fhEtaEPairDiffTimeNLM2->Fill(e1+e2,t12diff);
         }
       }
       
@@ -2395,6 +2443,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
           fhEventPlanePi0NLocMaxN->Fill(en,evp) ;
           if(en > ecut)fhPi0EtaPhiNLocMaxN->Fill(eta,phi);
           FillSSWeightHistograms(cluster, 2,  absId1, absId2);
+          fhPi0EPairDiffTimeNLMN->Fill(e1+e2,t12diff);
         }
       }
       else if(pidTag==AliCaloPID::kEta)
@@ -2405,6 +2454,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhEventPlaneEtaNLocMaxN->Fill(en,evp) ;
           if(en > ecut)fhEtaEtaPhiNLocMaxN->Fill(eta,phi);
+          fhEtaEPairDiffTimeNLMN->Fill(e1+e2,t12diff);
         }
       }
       
