@@ -67,7 +67,7 @@ set ( DHDR PWGflowTasksLinkDef.h)
 set ( EXPORT ${HDRS} )
 
 if( ALICE_TARGET STREQUAL "win32gcc")
-        set ( ELIBS -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lPWGflowBase -lPWGmuon -lANALYSISalice -lANALYSIS -lAOD -lESD -lSTEERBase ${ROOTCLIBS} -lEG )
+        set ( ELIBS -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lPWGflowBase -lPWGJE/EMCALJetTasks/ -lPWGmuon -lANALYSISalice -lANALYSIS -lAOD -lESD -lSTEERBase ${ROOTCLIBS} -lEG )
 endif( ALICE_TARGET STREQUAL "win32gcc")
 
-set ( EINCLUDE PWG/FLOW/Base PWG/FLOW/Tasks STEER/ESD STEER/STEERBase PWG/muon)
+set ( EINCLUDE PWG/FLOW/Base PWG/FLOW/Tasks STEER/ESD STEER/STEERBase PWGJE/EMCALJetTasks/ PWG/muon)

@@ -9,7 +9,7 @@ class AliFlowTrackCuts;
 
 void AddTaskJetFlow( TString name    = "name",
                      TString jets    = "jets",
-                     Float_t ptbump  = 200,
+                     Float_t ptbump  = 0,
                      TArrayI* cent   = 0x0,
                      Bool_t debug    = kTRUE  )
 {
@@ -29,7 +29,7 @@ void AddTaskJetFlow( TString name    = "name",
     }
     // check the centrality setup
     if(!cent) {
-        Int_t c[] = {0, 20, 40, 60, 80, 100};
+        Int_t c[] = {0, 10, 30, 50, 70, 90};
         cent = new TArrayI(sizeof(c)/sizeof(c[0]), c);
         printf(" > Setup default centrality binning with %i bins \n ", cent->GetSize());
     }

@@ -37,6 +37,7 @@
 #include <TString.h>
 #include <AliAODEvent.h>
 #include <AliESDEvent.h>
+#include <AliEmcalJet.h>
 
 #include "AliAnalysisTaskJetFlow.h"
 
@@ -107,6 +108,7 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
     if(!InputEvent() || !fCutsNull || !fCutsRP) return; // coverity (and sanity)
     // get the jet array, which is added as an extension to the AliVEvent by the jetfinder
     TClonesArray* jets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName.Data()));
+    Int_t nAcceptedJets(0);
     if(jets) {
         Int_t iJets = jets->GetEntriesFast();
         if(iJets <= 0) {
@@ -122,21 +124,26 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
         fFlowEvent->DefineDeadZone(0, 0, 0, 0);
         // loop over jets and inject them as POI's
         for(Int_t i(0); i < iJets; i++) {
-            AliVParticle* jet = static_cast<AliVParticle*>(jets->At(i));
+            AliEmcalJet* jet = static_cast<AliEmcalJet*>(jets->At(i));
             if(jet) {
-                if(jet->Pt() + fPtBump <= 0) {
+                if(jet->Pt() + fPtBump <= .15) {
                     fHistAnalysisSummary->SetBinContent(4, 1);
                     continue;
                 }
+                nAcceptedJets++;
                 AliFlowTrack* flowTrack = new AliFlowTrack(jet);
-                flowTrack->SetPt(flowTrack->Pt() + fPtBump);
+                flowTrack->SetPt(jet->PtSub() + fPtBump);
                 flowTrack->SetForPOISelection(kTRUE);
                 flowTrack->SetForRPSelection(kFALSE);
                 fFlowEvent->InsertTrack(flowTrack);
-            }       
+            }
         }
     }
     else if(fDebug > 0 ) printf(" Failed to find TClones Jet array while using name %s \n ", fJetsName.Data());
+    if(nAcceptedJets < 1) {
+        printf(" > No accepted jets in event ! < " );
+        return;
+    }
     PostData(1, fOutputList);
     PostData(2, fFlowEvent);
     if(fDebug>0) {
