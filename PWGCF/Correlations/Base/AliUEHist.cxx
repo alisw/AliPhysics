@@ -861,7 +861,7 @@ void AliUEHist::GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region regio
 }
 
 //____________________________________________________________________
-TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd)
+TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t normalizePerTrigger)
 {
   // Calls GetUEHist(...) for *each* vertex bin and multiplicity bin and performs a sum of ratios:
   // 1_N [ (same/mixed)_1 + (same/mixed)_2 + (same/mixed)_3 + ... ]
@@ -873,6 +873,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   // Parameters:
   //   mixed: AliUEHist containing mixed event corresponding to this object
   //   <other parameters> : check documentation of AliUEHist::GetUEHist
+  //  normalizePerTrigger: divide through number of triggers
   
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -1077,9 +1078,12 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     if (sums[0] > 0)
       errors[0] /= sums[0];
     
-    Printf("Dividing %f tracks by %d events (%d correlation function(s)) (error %f)", totalTracks->Integral(), totalEvents, nCorrelationFunctions, errors[0]);
-    if (totalEvents > 0)
-      totalTracks->Scale(1.0 / totalEvents);
+    if (normalizePerTrigger)
+    {
+      Printf("Dividing %f tracks by %d events (%d correlation function(s)) (error %f)", totalTracks->Integral(), totalEvents, nCorrelationFunctions, errors[0]);
+      if (totalEvents > 0)
+	totalTracks->Scale(1.0 / totalEvents);
+    }
   
     // normalizate to dphi width
     Float_t normalization = totalTracks->GetXaxis()->GetBinWidth(1);
@@ -1096,6 +1100,24 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   TH1::AddDirectory(oldStatus);
   
   return totalTracks;
+}
+
+TH1* AliUEHist::GetTriggersAsFunctionOfMultiplicity(AliUEHist::CFStep step, Float_t ptLeadMin, Float_t ptLeadMax)
+{
+  // returns the distribution of triggers as function of centrality/multiplicity
+
+  ResetBinLimits(fEventHist->GetGrid(step));
+  
+  Int_t firstBin = fEventHist->GetGrid(step)->GetGrid()->GetAxis(0)->FindBin(ptLeadMin);
+  Int_t lastBin = fEventHist->GetGrid(step)->GetGrid()->GetAxis(0)->FindBin(ptLeadMax);
+  Printf("Using pT range %d --> %d", firstBin, lastBin);
+  fEventHist->GetGrid(step)->GetGrid()->GetAxis(0)->SetRange(firstBin, lastBin);
+  
+  TH1* eventHist = fEventHist->GetGrid(step)->Project(1);
+
+  ResetBinLimits(fEventHist->GetGrid(step));
+  
+  return eventHist;  
 }
 
 /*
@@ -2555,8 +2577,7 @@ void AliUEHist::DeepCopy(AliUEHist* from)
 
 void AliUEHist::SymmetrizepTBins()
 {
-  // copy pt,a < pt,t bins to pt,a > pt,t (inverting deltaphi and delta eta as it should be)
-  // symmetric bins are not touched!
+  // copy pt,a < pt,t bins to pt,a > pt,t (inverting deltaphi and delta eta as it should be) including symmetric bins
   
   for (Int_t region=0; region<4; region++)
   {
@@ -2570,6 +2591,9 @@ void AliUEHist::SymmetrizepTBins()
       if (target->GetEntries() == 0)
 	continue;
       
+      // for symmetric bins
+      THnSparse* source = (THnSparse*) target->Clone();
+      
       // axes: 0 delta eta; 1 pT,a; 2 pT,t; 3 centrality; 4 delta phi; 5 vtx-z
       for (Int_t i3 = 1; i3 <= target->GetAxis(3)->GetNbins(); i3++)
 	for (Int_t i5 = 1; i5 <= target->GetAxis(5)->GetNbins(); i5++)
@@ -2577,42 +2601,53 @@ void AliUEHist::SymmetrizepTBins()
 	  for (Int_t i1 = 1; i1 <= target->GetAxis(1)->GetNbins(); i1++)
 	    for (Int_t i2 = 1; i2 <= target->GetAxis(2)->GetNbins(); i2++)
 	    {
-	      if (target->GetAxis(1)->GetBinLowEdge(i1) >= target->GetAxis(2)->GetBinUpEdge(i2))
-	      {
-		// find source bin
-		Int_t binA = target->GetAxis(1)->FindBin(target->GetAxis(2)->GetBinCenter(i2));
-		Int_t binT = target->GetAxis(2)->FindBin(target->GetAxis(1)->GetBinCenter(i1));
-		
-		Printf("(%d %d) Copying from %d %d to %d %d", i3, i5, binA, binT, i1, i2);
-		
-		for (Int_t i0 = 1; i0 <= target->GetAxis(0)->GetNbins(); i0++)
-		  for (Int_t i4 = 1; i4 <= target->GetAxis(4)->GetNbins(); i4++)
+	      // find source bin
+	      Int_t binA = target->GetAxis(1)->FindBin(target->GetAxis(2)->GetBinCenter(i2));
+	      Int_t binT = target->GetAxis(2)->FindBin(target->GetAxis(1)->GetBinCenter(i1));
+	      
+	      Printf("(%d %d) Copying from %d %d to %d %d", i3, i5, binA, binT, i1, i2);
+	      
+	      for (Int_t i0 = 1; i0 <= target->GetAxis(0)->GetNbins(); i0++)
+		for (Int_t i4 = 1; i4 <= target->GetAxis(4)->GetNbins(); i4++)
+		{
+		  Int_t binEta = target->GetAxis(0)->FindBin(-target->GetAxis(0)->GetBinCenter(i0));
+		  Double_t phi = -target->GetAxis(4)->GetBinCenter(i4);
+		  if (phi < -TMath::Pi()/2)
+		    phi += TMath::TwoPi();
+		  Int_t binPhi = target->GetAxis(4)->FindBin(phi);
+		  
+		  Int_t binSource[] = { binEta, binA, binT, i3, binPhi, i5 };
+		  Int_t binTarget[] = { i0, i1, i2, i3, i4, i5 };
+		  
+		  Double_t value = source->GetBinContent(binSource);
+		  Double_t error = source->GetBinError(binSource);
+		  
+		  if (error == 0)
+		    continue;
+		  
+		  Double_t value2 = target->GetBinContent(binTarget);
+		  Double_t error2 = target->GetBinError(binTarget);
+		  
+		  Double_t sum = value;
+		  Double_t err = error;
+		  
+		  if (error2 > 0)
 		  {
-		    Int_t binEta = target->GetAxis(0)->FindBin(-target->GetAxis(0)->GetBinCenter(i0));
-		    Double_t phi = -target->GetAxis(4)->GetBinCenter(i4);
-		    if (phi < -TMath::Pi()/2)
-		      phi += TMath::TwoPi();
-		    Int_t binPhi = target->GetAxis(4)->FindBin(phi);
-		    
-		    Int_t binSource[] = { binEta, binA, binT, i3, binPhi, i5 };
-		    Int_t binTarget[] = { i0, i1, i2, i3, i4, i5 };
-		    
-		    Double_t value = target->GetBinContent(binSource);
-		    Double_t error = target->GetBinError(binSource);
-		    
-		    if (value == 0)
-		      continue;
-		    
-// 		    Double_t value2 = target->GetBinContent(binTarget);
-// 		    Double_t error2 = target->GetBinError(binTarget);
-// 		    Printf("  Values: %f +- %f; %f +- %f", value, error, value2, error2);
-
-		    target->SetBinContent(binTarget, value);
-		    target->SetBinError(binTarget, error);
+		    sum = value / error / error + value2 / error2 / error2;
+		    err = 1.0 / error / error + 1.0 / error2 / error2;
+		    sum /= err;
+		    err = TMath::Sqrt(1.0 / err);
 		  }
-	      }
+		  
+// 		  Printf("  Values: %f +- %f; %f +- %f --> %f +- %f", value, error, value2, error2, sum, err);
+
+		  target->SetBinContent(binTarget, value);
+		  target->SetBinError(binTarget, error);
+		}
 	    }
 	}
+	
+	delete source;
     }
   }
 }

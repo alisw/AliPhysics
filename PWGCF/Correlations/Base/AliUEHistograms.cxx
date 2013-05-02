@@ -631,7 +631,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         if (mixed && triggerParticle == particle)
           continue;
         
-        if (fPtOrder && particle->Pt() > triggerParticle->Pt())
+        if (fPtOrder && particle->Pt() >= triggerParticle->Pt())
           continue;
           
 	if (fAssociatedSelectCharge != 0)

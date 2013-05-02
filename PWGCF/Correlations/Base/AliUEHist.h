@@ -58,7 +58,9 @@ class AliUEHist : public TObject
   void GetHistsZVtx(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, TH3** trackHist, TH1** eventHist);
   void GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, THnBase** trackHist, TH2** eventHist);
   
-  TH2* GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd);
+  TH2* GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t normalizePerTrigger = kTRUE);
+  
+  TH1* GetTriggersAsFunctionOfMultiplicity(AliUEHist::CFStep step, Float_t ptLeadMin, Float_t ptLeadMax);
 
   TH1* GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Int_t source = 1, Int_t axis3 = -1);
   THnBase* GetTrackEfficiencyND(CFStep step1, CFStep step2);
@@ -105,6 +107,7 @@ class AliUEHist : public TObject
   void SetCentralityRange(Float_t min, Float_t max)    { fCentralityMin = min; fCentralityMax = max; }
   void SetZVtxRange(Float_t min, Float_t max)          { fZVtxMin = min; fZVtxMax = max; }
   
+  Float_t GetTrackEtaCut() { return fTrackEtaCut; }
   void SetTrackEtaCut(Float_t value) { fTrackEtaCut = value; }
   void SetWeightPerEvent(Bool_t flag)   { fWeightPerEvent = flag; }
   
