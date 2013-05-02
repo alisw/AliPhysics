@@ -324,9 +324,9 @@ void AliAnalysisTaskJetResponseV2::UserCreateOutputObjects()
     fhnJetsArea = NewTHnSparseF("fhnJetsArea", entries, opt);
   }
 
-  // cent : nInpTrks : jetPt(3x) : deltaPt : delta : jetArea(3x) : fraction(2x) : pT hard bin
+  // cent : nInpTrks : jetPt(3x) : deltaPt : delta : jetArea(3x) : fraction(2x) : deltaR(1x) : pT hard bin
   if(fbJets3Branches){
-    entries = 1<<0 | 1<<1 | 1<<6 | 1<<7 | 1<<27 | 1<<14 | 1<<28 | 1<<12 | 1<<13 | 1<<29 | 1<<19 | 1<<30 | 1<<26;
+    entries = 1<<0 | 1<<1 | 1<<6 | 1<<7 | 1<<27 | 1<<14 | 1<<28 | 1<<12 | 1<<13 | 1<<29 | 1<<19 | 1<<30 | 1<<17 | 1<<26;
     opt = 1<<6 | 1<<7 | 1<<27 | 1<<14 | 1<<28;
     fhnJets3Branches = NewTHnSparseF("fhnJets3Branches", entries, opt);
   }
@@ -802,12 +802,12 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
     }
 
     if(fbJets3Branches){
-      Double_t jetEntries3Branches[13] = {
+      Double_t jetEntries3Branches[14] = {
 	(Double_t)centValue, (Double_t)nInputTracks, 
 	(Double_t)jetPt[0], (Double_t)jetPt[1],
 	(Double_t)jetArea[0], (Double_t)jetArea[1],
 	(Double_t)deltaPt, (Double_t)fraction, (Double_t)pthardbin,
-	(Double_t)jetPt[2],(Double_t)delta,(Double_t)jetArea[2], (Double_t)fraction2
+	(Double_t)jetPt[2],(Double_t)delta,(Double_t)jetArea[2], (Double_t)fraction2, (Double_t)deltaR
       };				 
       fhnJets3Branches->Fill(jetEntries3Branches);
     }

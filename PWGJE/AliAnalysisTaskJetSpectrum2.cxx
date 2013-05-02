@@ -580,7 +580,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     
     // Bins:  Jet number: pTJet, cent, eta, phi, Area, trigger, acceptance, signed pT leading
     const Int_t nBinsSparse2 = 9;
-    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 60,   8,  18, 18, 100,fNTrigger,fNAcceptance+1,20};
+    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 60,   8,  6, 90, 100,fNTrigger,fNAcceptance+1,20};
     if(cJetBranch.Contains("RandomCone")){
       nBins2[5] = 1;
     }
@@ -1071,23 +1071,25 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
     if(ttphi<0)ttphi+=TMath::Pi()*2.;  
     Float_t ttpt=tt->Pt();
     Int_t phiBintt = GetPhiBin(ttphi-fRPAngle);
-     Double_t dphitrigjet=RelativePhi(ttphi,phiJet);
+    Double_t dphitrigjet=RelativePhi(ttphi,phiJet);
     if(fTRP==1){
-    if(TMath::Abs(dphitrigjet)<TMath::Pi()-0.6) continue; 
-    var1[1] = ptJet;
-    var1[4] = phiBintt;
-    var1[5] = jet->EffectiveAreaCharged();
-    var1[7] = ttpt;
-    var1[8] = CheckAcceptance(phiJet,etaJet);}
-
-     if(fTRP==0){
-    var1[1] = ptJet;
-    var1[4] = phiBin;
-    var1[5] = jet->EffectiveAreaCharged();
-    var1[7] = ptLead;
-    var1[8] = CheckAcceptance(phiJet,etaJet);}
+      if(TMath::Abs(dphitrigjet)<TMath::Pi()-0.6) continue; 
+      var1[1] = ptJet;
+      var1[4] = phiBintt;
+      var1[5] = jet->EffectiveAreaCharged();
+      var1[7] = ttpt;
+      var1[8] = CheckAcceptance(phiJet,etaJet);
+    }
     
-
+    if(fTRP==0){
+      var1[1] = ptJet;
+      var1[4] = phiBin;
+      var1[5] = jet->EffectiveAreaCharged();
+      var1[7] = ptLead;
+      var1[8] = CheckAcceptance(phiJet,etaJet);
+    }
+    
+    //jet number;p_{T,jet};cent;#eta;#phi;area;trigger;acceptance bin;signed pt leading
     var2[1] = ptJet;
     var2[3] = etaJet;
     var2[4] = phiJet;

@@ -90,6 +90,7 @@ public:
    virtual void     SetFillJetsBeforeCut1(Bool_t b) { fbJetsBeforeCut1 = b; }
    virtual void     SetFillJetsBeforeCut2(Bool_t b) { fbJetsBeforeCut2 = b; }
    virtual void     SetKeepJets(Bool_t b = kTRUE) { fKeepJets = b; }
+   virtual void     SetMatchMaxDist(Double_t max) { fMatchMaxDist = max;}
 
 private:
    // ESD/AOD events
