@@ -351,7 +351,13 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 	Int_t cellMCLabel=-1;
 	if (fCaloCells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
 	  break;
-	
+
+	if (cellMCLabel > 0 && cellEFrac < 1e-6) 
+	  cellEFrac = 1;
+
+	if (cellAmplitude < 1e-6 || cellNumber < 0)
+	  continue;	
+
 	if (fInputCellType == kFEEDataMCOnly) {
 	  if (cellMCLabel <= 0)
 	    continue;
@@ -363,14 +369,11 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 	else if (fInputCellType == kFEEDataExcludeMC) {
 	  if (cellMCLabel > 0) 
 	    continue;
-	  else 
+	  else {
 	    cellAmplitude *= 1 - cellEFrac;
+	    cellEFrac = 0;
+	  }
 	}
-
-	if (cellMCLabel > 0 && cellEFrac < 1e-6) cellEFrac = 1;
-
-	if (cellAmplitude < 1e-6 || cellNumber < 0)
-	  continue;
 	
 	AliEMCALDigit *digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(cellMCLabel, cellMCLabel, cellNumber,
 									(Float_t)cellAmplitude, (Float_t)cellTime,
