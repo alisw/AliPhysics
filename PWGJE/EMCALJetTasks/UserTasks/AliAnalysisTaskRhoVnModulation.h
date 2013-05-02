@@ -26,7 +26,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kUser, kFourierSeries }; // fit type
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
-        enum detectorType       { kTPC, kTPCSUB, kVZEROA, kVZEROC };    // detector that was used
+        enum detectorType       { kTPC, kTPCSUB, kVZEROA, kVZEROC};    // detector that was used
         // constructors, destructor
                                 AliAnalysisTaskRhoVnModulation();
                                 AliAnalysisTaskRhoVnModulation(const char *name, runModeType type);
@@ -82,6 +82,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
         void                    SetRebinSwapHistoOnTheFly(Bool_t r)             {fRebinSwapHistoOnTheFly = r; }
         void                    SetSaveThisPercentageOfFits(Float_t p)          {fPercentageOfFits = p; }
+        void                    SetUseV0EventPlaneFromHeader(Bool_t h)          {fUseV0EventPlaneFromHeader = h;}
         // 'trivial' helper calculations
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneTPC(Double_t* tpc);
@@ -150,6 +151,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         Float_t                 fExcludeLeadingJetsFromFit;    // exclude n leading jets from fit
         Bool_t                  fRebinSwapHistoOnTheFly;       // rebin swap histo on the fly
         Float_t                 fPercentageOfFits;      // save this percentage of fits
+        Bool_t                  fUseV0EventPlaneFromHeader;    // use the vzero event plane from the header
         // transient object pointers
         TList*                  fOutputList;            //! output list
         TList*                  fOutputListGood;        //! output list for local analysis
@@ -193,7 +195,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH2F*                   fHistRhoVsRCPt[10];             //! rho * A vs rcpt
         TH1F*                   fHistRCPt[10];                  //! rcpt
         TH2F*                   fHistDeltaPtDeltaPhi2[10];      //! dpt vs dphi
-        TH2F*                   fHistDeltaPtDeltaPhi3[10];
+        TH2F*                   fHistDeltaPtDeltaPhi3[10];      //! dpt vs dphi
         TH2F*                   fHistRCPhiEtaExLJ[10];          //! random cone eta and phi, excl leading jet
         TH2F*                   fHistRhoVsRCPtExLJ[10];         //! rho * A vs rcpt, excl leading jet
         TH1F*                   fHistRCPtExLJ[10];              //! rcpt, excl leading jet
@@ -226,7 +228,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 5);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 6);
 };
 
 #endif
