@@ -62,7 +62,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
     kSCLimit3 = 1// 1, 10
   };
 
-  static const Int_t fKbinsT   = 3;// Set fKstep as well !!!!
+  static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!
   static const Int_t fKbinsY   = 1;// Set fKstep as well !!!!
   static const Int_t fEDbins   = 1;
   static const Int_t fCentBins = 10;// 0-50%
