@@ -45,6 +45,10 @@ Int_t fNumberOfDeadSectors = 3;//number of dead sectors
 Bool_t fEfficiencyDropNearEtaEdges = kTRUE;//efficiency drop in eta edges
 //=========Detector effects=========//
 
+//=========Jets=========//
+Bool_t kUseJets = kFALSE;
+//=========Jets=========//
+
 //=========Dynamical Correlations=========//
 Bool_t kUseDynamicalCorrelations = kFALSE;
 Double_t gDynamicalCorrelationsPercentage = 0.1;
@@ -145,6 +149,10 @@ void runBalanceFunctionToyModel(Int_t nEvents = 10,
     toyModelAnalysis->SetQuandrangularFlowForProtons(gQuandrangularFlow);
     toyModelAnalysis->SetPentangularFlowForProtons(gPentangularFlow);
   }
+
+  //Jets
+  if(kUseJets)
+    toyModelAnalysis->SetUseJets();
 
   //Dynamical correlations
   if(kUseDynamicalCorrelations) 
