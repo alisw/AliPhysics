@@ -22,7 +22,7 @@ void AddAliEbyEParticleRatioFluctuationTask(Double_t vz=10,Double_t ptl=0.5, Dou
   taskname += "_";
   taskname += Form("%d",AODfilterBit);
   taskname += "_";
-  taskname += Form("pt_%.1f_%.1f", ptl, pth);
+  taskname += Form("PT_%.1f_%.1f", ptl, pth);
   taskname += "_";
 
   Bool_t isMC = 0;  
@@ -58,7 +58,7 @@ void AddAliEbyEParticleRatioFluctuationTask(Double_t vz=10,Double_t ptl=0.5, Dou
   for(Int_t i = 0; i < 8 ; i ++) {
     Double_t eta = 0.1 + 0.1*i;
     TString taskname1 = taskname;
-    taskname1 += Form("eta_%.2f",eta);
+    taskname1 += Form("ETA_%.2f",eta);
     task[i] = new AliEbyEParticleRatioFluctuationTask(taskname1.Data());
     task[i]->SetVertexDiamond(vx,vy,vz);
     task[i]->SetAODtrackCutBit(AODfilterBit);
@@ -78,6 +78,7 @@ void AddAliEbyEParticleRatioFluctuationTask(Double_t vz=10,Double_t ptl=0.5, Dou
   taskqa = new AliEbyEParticleRatioFluctuationTask("QACFEbyEPR");
   //  taskqa->SetPIDMethod(1);
   taskqa->RunQA();
+  // taskqa->Debug();
   taskqa->SetVertexDiamond(vx,vy,vz);
   taskqa->SetAODtrackCutBit(AODfilterBit);
   taskqa->SetKinematicsCuts(ptl,pth,0.8);
@@ -94,7 +95,7 @@ void AddAliEbyEParticleRatioFluctuationTask(Double_t vz=10,Double_t ptl=0.5, Dou
   else if(ikey > 0 && ikey < 9) {
     Double_t eta = 0.1*ikey;
     TString taskname1 = taskname;
-    taskname1 += Form("eta_%.2f",eta);
+    taskname1 += Form("ETA_%.2f",eta);
     AliEbyEParticleRatioFluctuationTask *task1 
       = new AliEbyEParticleRatioFluctuationTask(taskname1.Data());
     task1->SetVertexDiamond(vx,vy,vz);
