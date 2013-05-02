@@ -48,22 +48,39 @@
 #include "AliHelperPID.h"
 
 #include "AliEbyEParticleRatioFluctuationTask.h"
-using std::cout;
-using std::endl;
-using std::cerr;
 
 ClassImp(AliEbyEParticleRatioFluctuationTask)
 
 //-----------------------------------------------------------------------
-AliEbyEParticleRatioFluctuationTask::AliEbyEParticleRatioFluctuationTask( const char *name ) : AliAnalysisTaskSE( name ), fThnList(NULL), fAnalysisType("AOD"), fAnalysisData("PbPb"), fCentralityEstimator("V0M"), fVxMax(3.), fVyMax(3.), fVzMax(10.), fDCAxy(2.4),  fDCAz(3.2), fPtLowerLimit(0.2), fPtHigherLimit(5.), fEtaLowerLimit(-1.), fEtaHigherLimit(1.), fAODtrackCutBit(128), isQA(kFALSE), fDebug(kFALSE), fHelperPID(0x0),fEventCounter(NULL), fHistoCorrelation(NULL) { 
+AliEbyEParticleRatioFluctuationTask::AliEbyEParticleRatioFluctuationTask( const char *name ) : AliAnalysisTaskSE( name ), 
+  fThnList(NULL), 
+  fAnalysisType("AOD"), 
+  fAnalysisData("PbPb"), 
+  fCentralityEstimator("V0M"), 
+  fVxMax(3.), 
+  fVyMax(3.), 
+  fVzMax(10.), 
+  fDCAxy(2.4),  
+  fDCAz(3.2), 
+  fPtLowerLimit(0.2), 
+  fPtHigherLimit(5.), 
+  fEtaLowerLimit(-1.), 
+  fEtaHigherLimit(1.), 
+  fTPCNClus(80),
+  fAODtrackCutBit(128), 
+  isQA(kFALSE), 
+  fDebug(kFALSE), 
+  fHelperPID(0x0),
+  fEventCounter(NULL), 
+  fHistoCorrelation(NULL) { 
   for(Int_t i = 0; i < 14; i++ ) fHistQA[i] = NULL;
-  DefineOutput(1, TList::Class()); // Outpput....
+  DefineOutput(1, TList::Class()); //! Connect Outpput....
 }
 
 AliEbyEParticleRatioFluctuationTask::~AliEbyEParticleRatioFluctuationTask() {
-  //clean up
-  if (fThnList) delete fThnList;
-  if (fHelperPID) delete fThnList;
+  //!   Cleaning up
+  if (fThnList)   delete fThnList;
+  if (fHelperPID) delete fHelperPID;
 }
 
 //---------------------------------------------------------------------------------
@@ -71,25 +88,25 @@ void AliEbyEParticleRatioFluctuationTask::UserCreateOutputObjects() {
   fThnList = new TList();
   fThnList->SetOwner(kTRUE);
 
-  fEventCounter = new TH1D("fEventCounter","EventCounter", 250, 0.5,250.5);
+  fEventCounter = new TH1D("fEventCounter","EventCounter", 300, 0.5,300.5);
   if (isQA) fThnList->Add(fEventCounter);
   
-  fHistQA[0] = new TH1D("fHistQAvx", "Histo Vx Selected", 5000, -5., 5.);
-  fHistQA[1] = new TH1D("fHistQAvy", "Histo Vy Selected", 5000, -5., 5.);
-  fHistQA[2] = new TH1D("fHistQAvz", "Histo Vz Selected", 5000, -25., 25.);  
-  fHistQA[3] = new TH1D("fHistQAvxA", "Histo Vx", 5000, -5., 5.);
-  fHistQA[4] = new TH1D("fHistQAvyA", "Histo Vy", 5000, -5., 5.);
-  fHistQA[5] = new TH1D("fHistQAvzA", "Histo Vz", 5000, -25., 25.);
+  fHistQA[0] = new TH2F("fHistQAvx", "Histo Vx Selected;Centrality;Vx", 100,0,100, 5000, -5., 5.);
+  fHistQA[1] = new TH2F("fHistQAvy", "Histo Vy Selected;Centrality;Vy", 100,0,100, 5000, -5., 5.);
+  fHistQA[2] = new TH2F("fHistQAvz", "Histo Vz Selected;Centrality;Vz", 100,0,100, 5000, -25., 25.);  
+  fHistQA[3] = new TH2F("fHistQAvxA", "Histo Vx;Centrality;Vx", 100,0,100, 5000, -5., 5.);
+  fHistQA[4] = new TH2F("fHistQAvyA", "Histo Vy;Centrality;Vy", 100,0,100, 5000, -5., 5.);
+  fHistQA[5] = new TH2F("fHistQAvzA", "Histo Vz;Centrality;Vz", 100,0,100, 5000, -25., 25.);
 
-  fHistQA[6] = new TH1D("fHistQADcaXyA", "Histo DCAxy", 600, -15., 15.);
-  fHistQA[7] = new TH1D("fHistQADcaZA", "Histo DCAz ", 600, -15., 15.);   
-  fHistQA[8] = new TH1D("fHistQAPtA","p_{T} distribution",1000,0,10);
-  fHistQA[9] = new TH1D("fHistQAEtaA","#eta distribution",240,-1.2,1.2);
+  fHistQA[6] = new TH2F("fHistQADcaXyA", "Histo DCAxy;Centrality;DCAxy",100,0,100, 600, -15., 15.);
+  fHistQA[7] = new TH2F("fHistQADcaZA", "Histo DCAz;Centrality;DCAz ",100,0,100, 600, -15., 15.);   
+  fHistQA[8] = new TH2F("fHistQAPtA","p_{T} distribution;Centrality;p_{T}",100,0,100,1000,0,10);
+  fHistQA[9] = new TH2F("fHistQAEtaA","#eta distribution;Centrality;#eta",100,0,100,240,-1.2,1.2);
 
-  fHistQA[10] = new TH1D("fHistQADcaXy", "Histo DCAxy after Selected", 600, -15., 15.);
-  fHistQA[11] = new TH1D("fHistQADcaZ", "Histo DCAz Selected", 600, -15., 15.);   
-  fHistQA[12] = new TH1D("fHistQAPt","p_{T} distribution Selected",1000,0,10);
-  fHistQA[13] = new TH1D("fHistQAEta","#eta distribution Selected",240,-1.2,1.2);
+  fHistQA[10] = new TH2F("fHistQADcaXy", "Histo DCAxy after Selected;Centrality;DCAxy", 100,0,100,600, -15., 15.);
+  fHistQA[11] = new TH2F("fHistQADcaZ", "Histo DCAz Selected;Centrality;DCAz", 100,0,100,600, -15., 15.);   
+  fHistQA[12] = new TH2F("fHistQAPt","p_{T} distribution Selected;Centrality;p_{T}",100,0,100,1000,0,10);
+  fHistQA[13] = new TH2F("fHistQAEta","#eta distribution Selected;Centrality;#eta",100,0,100, 240,-1.2,1.2);
   
   if (isQA) for(Int_t i = 0; i < 14; i++) fThnList->Add(fHistQA[i]);
   
@@ -113,6 +130,7 @@ void AliEbyEParticleRatioFluctuationTask::UserCreateOutputObjects() {
 
 //----------------------------------------------------------------------------------
 void AliEbyEParticleRatioFluctuationTask::UserExec( Option_t * ){
+
   if (isQA) fEventCounter->Fill(1);
 
   AliAODEvent* event = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -121,8 +139,16 @@ void AliEbyEParticleRatioFluctuationTask::UserExec( Option_t * ){
     return;
   }
 
-  if (!AcceptEvent(event)) return;
+  Int_t gCent   = -1;
+  Float_t gRefMul = -1;
+  
+  AliAODHeader *aodHeader = event->GetHeader();
+  gCent = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
+  gRefMul = aodHeader->GetRefMultiplicity();
+  if (gCent < 0 || gCent > 100) return;
   if (isQA) fEventCounter->Fill(2);  
+
+  if (!AcceptEvent(event,gCent)) return;
   
   Int_t icharge = -1;
   Int_t gCharge[2];
@@ -135,24 +161,21 @@ void AliEbyEParticleRatioFluctuationTask::UserExec( Option_t * ){
     }
   }
 
-  Float_t gCent   = -1;
-  Float_t gRefMul = -1;
 
   if(fAnalysisType == "AOD") {
-    AliAODHeader *aodHeader = event->GetHeader();
-    gCent = aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-    gRefMul = aodHeader->GetRefMultiplicity();
-    
-    if (gCent < 0 || gCent > 100) return;
-    if (isQA) fEventCounter->Fill(50+gCent);
+    if (isQA) {
+	fEventCounter->Fill(5);
+	fEventCounter->Fill(50+gCent);
+    }
     
     for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
       AliAODTrack* track = dynamic_cast<AliAODTrack *>(event->GetTrack(itrk));
       if (!track) continue;
       
-      if (!AcceptTrack(track)) continue;
+      if (!AcceptTrack(track, gCent)) continue;
             
       Int_t a = fHelperPID->GetParticleSpecies((AliVTrack*) track,kTRUE);
+
       if(a < 0 || a > 2) continue;
       icharge = track->Charge() > 0 ? 0 : 1;
       gCharge[icharge]++;
@@ -160,27 +183,28 @@ void AliEbyEParticleRatioFluctuationTask::UserExec( Option_t * ){
     }
   }
   else if(fAnalysisType == "MCAOD") {
-    TClonesArray *arrayMC = (TClonesArray*) event->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    TClonesArray *arrayMC= 0; 
+    arrayMC = dynamic_cast<TClonesArray*> (event->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
     if (!arrayMC) {
-      AliFatal("Error: MC particles branch not found!\n");
+      Printf("Error: MC particles branch not found!\n");
+      return;
     }
     AliAODMCHeader *mcHdr=0;
     mcHdr=(AliAODMCHeader*)event->GetList()->FindObject(AliAODMCHeader::StdBranchName());  
     if(!mcHdr) {
-      printf("MC header branch not found!\n");
+      Printf("MC header branch not found!\n");
       return;
     }
     
-    AliAODHeader *aodHeader = event->GetHeader();
-    AliCentrality* fcentrality = aodHeader->GetCentralityP();
-    gCent = fcentrality ->GetCentralityPercentile(fCentralityEstimator.Data());
-    if (gCent < 0 || gCent > 100) return;
-    if (isQA) fEventCounter->Fill(50+gCent);      
-
+    if (isQA) {
+      fEventCounter->Fill(5);
+      fEventCounter->Fill(50+gCent);
+    }
+    
     Int_t nMC = arrayMC->GetEntries();
     for (Int_t iMC = 0; iMC < nMC; iMC++) {
       AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
-      if(!AcceptMCTrack(partMC)) continue;
+      if(!AcceptMCTrack(partMC, gCent)) continue;
       Int_t a = fHelperPID->GetMCParticleSpecie((AliVEvent*) event,(AliVTrack*)partMC,1);
       if(a < 0 || a > 2) continue;
       icharge = partMC->Charge() > 0 ? 0 : 1;
@@ -188,12 +212,14 @@ void AliEbyEParticleRatioFluctuationTask::UserExec( Option_t * ){
       gPid[a][icharge]++;
     }
   }
-  else return;
+  else {
+    printf(" No Event Type is Defined ");
+    return;
+  }
   
-    
   if( (gCharge[0] + gCharge[1]) != 0 ) {
     if (isQA) {
-      fEventCounter->Fill(3); 
+      fEventCounter->Fill(6); 
       fEventCounter->Fill(160 + gCent);
     }
     else { 
@@ -233,7 +259,7 @@ void AliEbyEParticleRatioFluctuationTask::Terminate( Option_t * ){
 }
 
 //___________________________________________________________
-Bool_t AliEbyEParticleRatioFluctuationTask::AcceptEvent(AliAODEvent *event) const {
+Bool_t AliEbyEParticleRatioFluctuationTask::AcceptEvent(AliAODEvent *event, Int_t cent) const {
   Bool_t ver = kFALSE;
   const AliAODVertex *vertex = event->GetPrimaryVertex();
   if(vertex) {
@@ -243,10 +269,10 @@ Bool_t AliEbyEParticleRatioFluctuationTask::AcceptEvent(AliAODEvent *event) cons
       if(fCov[5] != 0) {
 	
 	if(isQA) {	
-	  fEventCounter->Fill(5);
-	  fHistQA[3]->Fill(vertex->GetX());
-	  fHistQA[4]->Fill(vertex->GetY());
-	  fHistQA[5]->Fill(vertex->GetZ());
+	  fEventCounter->Fill(3);
+	  fHistQA[3]->Fill(cent,vertex->GetX());
+	  fHistQA[4]->Fill(cent,vertex->GetY());
+	  fHistQA[5]->Fill(cent,vertex->GetZ());
 	}
 	
 	if(TMath::Abs(vertex->GetX()) < fVxMax) {
@@ -254,10 +280,10 @@ Bool_t AliEbyEParticleRatioFluctuationTask::AcceptEvent(AliAODEvent *event) cons
 	    if(TMath::Abs(vertex->GetZ()) < fVzMax) {
 	      ver = kTRUE;
 	      if(isQA) {	
-		fEventCounter->Fill(6);
-		fHistQA[0]->Fill(vertex->GetX());
-		fHistQA[1]->Fill(vertex->GetY());
-		fHistQA[2]->Fill(vertex->GetZ());
+		fEventCounter->Fill(4);
+		fHistQA[0]->Fill(cent,vertex->GetX());
+		fHistQA[1]->Fill(cent,vertex->GetY());
+		fHistQA[2]->Fill(cent,vertex->GetZ());
 	      }
 	    }
 	  }
@@ -273,31 +299,31 @@ Bool_t AliEbyEParticleRatioFluctuationTask::AcceptEvent(AliAODEvent *event) cons
 
 
 //___________________________________________________________
-Bool_t AliEbyEParticleRatioFluctuationTask::AcceptTrack(AliAODTrack *track) const {
-  if(!track) return kFALSE;
-  if (track->Charge() == 0 ) return kFALSE;
+Bool_t AliEbyEParticleRatioFluctuationTask::AcceptTrack(AliAODTrack *track, Int_t cent) const {
+  if(!track)                                  return kFALSE;
+  if (track->Charge() == 0 )                  return kFALSE;
   
   if(isQA) {
-    fHistQA[6]->Fill(track->DCA());
-    fHistQA[7]->Fill(track->ZAtDCA());
-    fHistQA[8]->Fill(track->Pt());
-    fHistQA[9]->Fill(track->Eta());
+    fHistQA[6]->Fill(cent,track->DCA());
+    fHistQA[7]->Fill(cent,track->ZAtDCA());
+    fHistQA[8]->Fill(cent,track->Pt());
+    fHistQA[9]->Fill(cent,track->Eta());
   }
   
   if (!track->TestFilterBit(fAODtrackCutBit)) return kFALSE;
 
   if (track->Eta() < fEtaLowerLimit ||
-      track->Eta() > fEtaHigherLimit) return kFALSE;
+      track->Eta() > fEtaHigherLimit)         return kFALSE;
   if (track->Pt() < fPtLowerLimit ||
-      track->Pt() > fPtHigherLimit) return kFALSE;  
-  if ( track->DCA() > fDCAxy ) return kFALSE; 
-  if ( track->ZAtDCA() > fDCAz ) return kFALSE;
+      track->Pt() > fPtHigherLimit)           return kFALSE;  
+  if ( track->DCA() > fDCAxy )                return kFALSE; 
+  if ( track->ZAtDCA() > fDCAz )              return kFALSE;
    
   if(isQA) {
-    fHistQA[10]->Fill(track->DCA());
-    fHistQA[11]->Fill(track->ZAtDCA());
-    fHistQA[12]->Fill(track->Pt());
-    fHistQA[13]->Fill(track->Eta());
+    fHistQA[10]->Fill(cent,track->DCA());
+    fHistQA[11]->Fill(cent,track->ZAtDCA());
+    fHistQA[12]->Fill(cent,track->Pt());
+    fHistQA[13]->Fill(cent,track->Eta());
   }
  
   return kTRUE;
@@ -305,13 +331,13 @@ Bool_t AliEbyEParticleRatioFluctuationTask::AcceptTrack(AliAODTrack *track) cons
 
 
 //___________________________________________________________
-Bool_t AliEbyEParticleRatioFluctuationTask::AcceptMCTrack(AliAODMCParticle *track) const {
+Bool_t AliEbyEParticleRatioFluctuationTask::AcceptMCTrack(AliAODMCParticle *track, Int_t cent) const {
   if(!track) return kFALSE;
   if(!track->IsPhysicalPrimary()) return kFALSE;
   if (track->Charge() == 0 ) return kFALSE;
   if(isQA) {
-    fHistQA[8]->Fill(track->Pt());
-    fHistQA[9]->Fill(track->Eta());
+    fHistQA[8]->Fill(cent,track->Pt());
+    fHistQA[9]->Fill(cent,track->Eta());
   }
 
   if (track->Eta() < fEtaLowerLimit ||
@@ -320,8 +346,8 @@ Bool_t AliEbyEParticleRatioFluctuationTask::AcceptMCTrack(AliAODMCParticle *trac
       track->Pt() > fPtHigherLimit) return kFALSE;  
     
   if(isQA) {
-    fHistQA[12]->Fill(track->Pt());
-    fHistQA[13]->Fill(track->Eta());
+    fHistQA[12]->Fill(cent,track->Pt());
+    fHistQA[13]->Fill(cent,track->Eta());
   }
  
   return kTRUE;

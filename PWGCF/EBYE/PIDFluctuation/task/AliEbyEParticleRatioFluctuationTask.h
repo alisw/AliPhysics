@@ -50,29 +50,30 @@ class AliEbyEParticleRatioFluctuationTask: public AliAnalysisTaskSE {
 
  private:
 
-  Bool_t       AcceptEvent(AliAODEvent *event) const; //! accept eventc
-  Bool_t       AcceptTrack(AliAODTrack *track) const; //! accept track
-  Bool_t       AcceptMCTrack(AliAODMCParticle *track) const; //! accept track
+  Bool_t       AcceptEvent(AliAODEvent *event, Int_t cent) const; //! accept eventc
+  Bool_t       AcceptTrack(AliAODTrack *track, Int_t cent) const; //! accept track
+  Bool_t       AcceptMCTrack(AliAODMCParticle *track, Int_t cent) const; //! accept track
   TList        *fThnList;
-  TString      fAnalysisType;          //! "PbPb", "pp", "pA"
-  TString      fAnalysisData;          //! "AOD", "AODMC"
+  TString      fAnalysisType;          //! "AOD", "AODMC"
+  TString      fAnalysisData;          //! "PbPb", "pp", "pA"
   TString      fCentralityEstimator;   //! "V0M","TRK","TKL","ZDC","FMD"  
   Double_t     fVxMax;                 //!  vxmax
   Double_t     fVyMax;                 //!  vymax
   Double_t     fVzMax;                 //!  vzmax
-  Double_t     fDCAxy;
-  Double_t     fDCAz;
+  Double_t     fDCAxy;                 //!  DCA xy
+  Double_t     fDCAz;                  //!  DCA z
   Double_t     fPtLowerLimit;
   Double_t     fPtHigherLimit;
   Double_t     fEtaLowerLimit;
   Double_t     fEtaHigherLimit;
+
   Int_t        fTPCNClus;
   Int_t        fAODtrackCutBit;
   Bool_t       isQA;
   Bool_t       fDebug;
   AliHelperPID *fHelperPID;
   TH1D         *fEventCounter;
-  TH1D         *fHistQA[14];
+  TH2F         *fHistQA[14];
   THnSparseI   *fHistoCorrelation; 
   
   //________________________________
