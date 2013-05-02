@@ -34,6 +34,7 @@ set ( SRCS
     EBYE/BalanceFunctions/AliAnalysisTaskTriggeredBF.cxx 
     EBYE/BalanceFunctions/AliAnalysisTaskEfficiencyBF.cxx 
     EBYE/BalanceFunctions/AliAnalysisTaskEfficiencyBFPsi.cxx 
+    EBYE/BalanceFunctions/AliAnalysisTaskEffContBF.cxx
     EBYE/BalanceFunctions/AliBalance.cxx 
     EBYE/BalanceFunctions/AliBalancePsi.cxx 
     EBYE/BalanceFunctions/AliBalanceEventMixing.cxx 

@@ -13,7 +13,7 @@ class AliBalance;
 Int_t binfirst = 0;  //where do we start numbering bins
 Int_t binlast = 8;  //where do we stop numbering bins
 const Int_t numberOfCentralityBins = 9;
-Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.}; // in centrality percentile
+Double_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.}; // in centrality percentile
 
 //Systematic studies
 const Int_t numberOfSyst = 13;
@@ -26,11 +26,10 @@ Float_t etaMin[numberOfSyst] = {-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.
 Float_t etaMax[numberOfSyst] = {0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,1.0,0.6,0.4};   // eta cuts
 
 Bool_t kUsePID = kFALSE;
-Bool_t kUseHBTCut = kFALSE;
-Bool_t kUseConversionCut = kFALSE;
-Bool_t kUseResonanceCut = kFALSE;
-Bool_t kUseMomentumDifferenceCut = kFALSE;
-Int_t  kAODbit = 272;
+Bool_t bUseHBTCut = kTRUE;
+Bool_t bUseConversionCut = kTRUE;
+Bool_t bResonancesCut = kTRUE;
+Bool_t bMomentumDifferenceCut = kTRUE;
 
 //______________________________________________________________________________
 void runBalanceFunctionPsi(
@@ -39,7 +38,7 @@ void runBalanceFunctionPsi(
 	 const Int_t bunchN = 0,
          const bool bAOD = 1, // 1 = AOD ANALYSIS, 0 = ESD ANALYSIS
          const bool bMCtruth = 0, // 1 = MCEvent handler is on (MC truth), 0 = MCEvent handler is off (MC reconstructed/real data)
-         const bool bMCphyssel = 0, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
+         const bool bMCphyssel = 1, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
          const Long64_t nentries = 50000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
          const Long64_t firstentry = 0, // for local and proof mode, ignored in grid mode
          TString proofdataset = "bunchPROOF", // path to dataset on proof cluster, for proof analysis
@@ -104,17 +103,32 @@ void runBalanceFunctionPsi(
       }
       else if((bAOD)&&(!bMCtruth)) {
 	chain = new TChain("aodTree");
-	for(Int_t i = 1; i < 4; i++) {
-	  filename = "/glusterfs/alice1/alice2/pchrist/pp/LHC10c/7TeV/Data/Set";
+	for(Int_t i = 10; i < 99; i++) {
+	  filename = "/project/alice/users/alisrm/Efficiency_Contamination/LHC13b3_HIJING_pA_AOD/";
 	  filename += i; filename += "/AliAOD.root";
 	  chain->Add(filename.Data());
 	}
       }
-      else if(bMCtruth) {
+      else if((!bAOD)&&(bMCtruth)) {
 	chain = new TChain("TE");
-	filename = "galice.root";
-	chain->Add(filename.Data());
+	for(Int_t i = 10; i < 99; i++) {
+	  filename = "/project/alice/users/alisrm/Efficiency_Contamination/LHC13b3_HIJING_pA_AOD/";
+	  filename += i;
+	  filename += "/galice.root";
+	  chain->Add(filename.Data());
+	}
       }
+      else if((bAOD)&&(bMCtruth)) { //used for MCAOD
+	chain = new TChain("aodTree");   
+	for(Int_t i = 10; i < 99; i++) { 
+	  filename = "/project/alice/users/alisrm/Efficiency_Contamination/LHC13b3_HIJING_pA_AOD/";
+	  filename += i; 
+	  filename += "/AliAOD.root";
+	  chain->Add(filename.Data());
+	} 
+      }
+      
+
     }//local mode
 
     // input handler (ESD or AOD)
@@ -180,7 +194,7 @@ void runBalanceFunctionPsi(
     // create task
     //Add the centrality determination task and the physics selection 
     // (only on ESD level, in AODs centrality is already in header and events are selected)
-    if(!bAOD){
+    if((!bAOD)&&(!bMCtruth)){
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
 
@@ -200,9 +214,15 @@ void runBalanceFunctionPsi(
     AliVZEROEPSelectionTask* epSelTask = AddTaskVZEROEPSelection();
 
     //Add the BF task (all centralities)
-    gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/AddTaskBalancePsiCentralityTrain.C"); 
-    AliAnalysisTaskBFPsi *task = AddTaskBalancePsiCentralityTrain(0,100,kFALSE,kTRUE,kFALSE,"",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1,kUsePID,kUseResonanceCut,kUseHBTCut,kUseConversionCut,kUseMomentumDifferenceCut,kAODbit,kFALSE,"AnalysisResults","Multiplicity");
     
+    gROOT->LoadMacro("AddTaskBalancePsiCentralityTrain.C"); 
+    for (Int_t i = 0; i<numberOfCentralityBins; i++) {
+      Double_t lowCentralityBinEdge = centralityArray[i];
+      Double_t highCentralityBinEdge = centralityArray[i+1];
+      Printf("\nWagon for centrality bin %i: %.0f-%.0f",i,lowCentralityBinEdge,highCentralityBinEdge);
+      AliAnalysisTaskBFPsi *task = AddTaskBalancePsiCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge,0,1,0,"V0M",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1,kUsePID,bResonancesCut,bUseHBTCut,bUseConversionCut,bMomentumDifferenceCut,128,0,"AnalysisResults","Centrality","AOD",1); 
+    } // end of for (Int_t i=0; i<numberOfCentralityBins; i++)
+
     // enable debug printouts
     //mgr->SetDebugLevel(2);
     //mgr->SetUseProgressBar(1,100);

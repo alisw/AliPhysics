@@ -21,6 +21,7 @@
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODInputHandler.h"
+#include "AliAODMCParticle.h" 
 #include "AliCollisionGeometry.h"
 #include "AliGenEventHeader.h"
 #include "AliMCEventHandler.h"
@@ -160,8 +161,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
 
   //======================================================correction
   for (Int_t i=0; i<kCENTRALITY; i++){
-    fHistMatrixCorrectionPlus[i] = NULL; 
-    fHistMatrixCorrectionMinus[i] = NULL; 
+    fHistCorrectionPlus[i] = NULL; 
+    fHistCorrectionMinus[i] = NULL; 
   }
   //=====================================================correction
 
@@ -512,53 +513,43 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(const char* filename,
     Printf("File not found!!!");
     return;
   }
-  
-  //Get the TDirectoryFile and TList
-  TDirectoryFile *dir = dynamic_cast<TDirectoryFile *>(f->Get("PWGCFEbyE.outputBalanceFunctionEfficiencyAnalysis"));
-  if(!dir) {
-    Printf("TDirectoryFile not found!!!");
-    return;
-  }
-  
-  TString listEffName = "";
-  for (Int_t iCent = 0; iCent < kCENTRALITY; iCent++) {
-    listEffName = "listEfficiencyBF_";  
-    listEffName += (TString)((Int_t)(centralityArrayForPbPb[iCent]));
-    listEffName += "_";
-    listEffName += (TString)((Int_t)(centralityArrayForPbPb[iCent+1]));
-    TList *list = (TList*)dir->Get(listEffName.Data());
-    if(!list) {
-      Printf("TList Efficiency not found!!!");
-      return;
-    }
     
-    TString histoName = "fHistMatrixCorrectionPlus";
-    fHistMatrixCorrectionPlus[iCent]= dynamic_cast<TH3D *>(list->FindObject(histoName.Data()));
-    if(!fHistMatrixCorrectionPlus[iCent]) {
+  //TString listEffName = "";
+  for (Int_t iCent = 0; iCent < kCENTRALITY; iCent++) {
+    
+    //Printf("iCent %d:",iCent);
+    
+    TString histoName = "fHistCorrectionPlus";
+    histoName += centralityArrayForPbPb_string[iCent];
+    fHistCorrectionPlus[iCent]= dynamic_cast<TH3D *>(f->Get(histoName.Data()));
+    if(!fHistCorrectionPlus[iCent]) {
       Printf("fHist not found!!!");
       return;
     }
     
-    histoName = "fHistMatrixCorrectionMinus";
-    fHistMatrixCorrectionMinus[iCent] = dynamic_cast<TH3D *>(list->FindObject(histoName.Data()));  
-    if(!fHistMatrixCorrectionMinus[iCent]) {
+    histoName = "fHistCorrectionMinus";
+    histoName += centralityArrayForPbPb_string[iCent];
+    //histoName += (TString)((Int_t)(centralityArrayForPbPb[iCent])); //histoName += "-";
+    //histoName += (TString)((Int_t)(centralityArrayForPbPb[iCent+1]));
+    fHistCorrectionMinus[iCent] = dynamic_cast<TH3D *>(f->Get(histoName.Data())); 
+    if(!fHistCorrectionMinus[iCent]) {
       Printf("fHist not found!!!");
       return; 
     }
   }//loop over centralities: ONLY the PbPb case is covered
 
-  if(fHistMatrixCorrectionPlus[0]){
-    fEtaMinForCorrections = fHistMatrixCorrectionPlus[0]->GetXaxis()->GetXmin();
-    fEtaMaxForCorrections = fHistMatrixCorrectionPlus[0]->GetXaxis()->GetXmax();
-    fEtaBinForCorrections = fHistMatrixCorrectionPlus[0]->GetNbinsX();
+  if(fHistCorrectionPlus[0]){
+    fEtaMinForCorrections = fHistCorrectionPlus[0]->GetXaxis()->GetXmin();
+    fEtaMaxForCorrections = fHistCorrectionPlus[0]->GetXaxis()->GetXmax();
+    fEtaBinForCorrections = fHistCorrectionPlus[0]->GetNbinsX();
     
-    fPtMinForCorrections = fHistMatrixCorrectionPlus[0]->GetYaxis()->GetXmin();
-    fPtMaxForCorrections = fHistMatrixCorrectionPlus[0]->GetYaxis()->GetXmax();
-    fPtBinForCorrections = fHistMatrixCorrectionPlus[0]->GetNbinsY();
+    fPtMinForCorrections = fHistCorrectionPlus[0]->GetYaxis()->GetXmin();
+    fPtMaxForCorrections = fHistCorrectionPlus[0]->GetYaxis()->GetXmax();
+    fPtBinForCorrections = fHistCorrectionPlus[0]->GetNbinsY();
     
-    fPhiMinForCorrections = fHistMatrixCorrectionPlus[0]->GetZaxis()->GetXmin();
-    fPhiMaxForCorrections = fHistMatrixCorrectionPlus[0]->GetZaxis()->GetXmax();
-    fPhiBinForCorrections = fHistMatrixCorrectionPlus[0]->GetNbinsZ();
+    fPhiMinForCorrections = fHistCorrectionPlus[0]->GetZaxis()->GetXmin();
+    fPhiMaxForCorrections = fHistCorrectionPlus[0]->GetZaxis()->GetXmax();
+    fPhiBinForCorrections = fHistCorrectionPlus[0]->GetNbinsZ();
   }
 }
 
@@ -707,14 +698,14 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   
   if(isSelectedMain) {
     fHistEventStats->Fill(2,gCentrality); //triggered events
-    
+
     //Centrality stuff 
     if(fUseCentrality) {
-      if((gAnalysisLevel == "AOD")||(gAnalysisLevel == "MCAOD")) { //centrality in AOD header
+      if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD") { //centrality in AOD header
 	AliAODHeader *header = (AliAODHeader*) event->GetHeader();
 	if(header){
 	  gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-	  
+	  //Printf("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb %lf:", gCentrality);
 	  // QA for centrality estimators
 	  fHistCentStats->Fill(0.,header->GetCentralityP()->GetCentralityPercentile("V0M"));
 	  fHistCentStats->Fill(1.,header->GetCentralityP()->GetCentralityPercentile("FMD"));
@@ -893,7 +884,7 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
   if(fEventClass == "Centrality"){
-    if(gAnalysisLevel == "AOD") { //centrality in AOD header
+    if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD") { //centrality in AOD header
       AliAODHeader *header = (AliAODHeader*) event->GetHeader();
       if(header){
         gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
@@ -1017,33 +1008,39 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
   if(fEtaBinForCorrections != 0) {
     Double_t widthEta = (fEtaMaxForCorrections - fEtaMinForCorrections)/fEtaBinForCorrections;
     if(fEtaMaxForCorrections != fEtaMinForCorrections) 
-      binEta = (Int_t)(vEta/widthEta)+1;
+      binEta = (Int_t)((vEta-fEtaMinForCorrections)/widthEta)+1;
   }
 
   if(fPtBinForCorrections != 0) {
     Double_t widthPt = (fPtMaxForCorrections - fPtMinForCorrections)/fPtBinForCorrections;
     if(fPtMaxForCorrections != fPtMinForCorrections) 
-      binPt = (Int_t)(vPt/widthPt) + 1;
+      binPt = (Int_t)((vPt-fPtMinForCorrections)/widthPt) + 1;
   }
  
   if(fPhiBinForCorrections != 0) {
     Double_t widthPhi = (fPhiMaxForCorrections - fPhiMinForCorrections)/fPhiBinForCorrections;
     if(fPhiMaxForCorrections != fPhiMinForCorrections) 
-      binPhi = (Int_t)(vPhi/widthPhi)+ 1;
+      binPhi = (Int_t)((vPhi-fPhiMinForCorrections)/widthPhi)+ 1;
   }
 
   Int_t gCentralityInt = 1;
   for (Int_t i=0; i<kCENTRALITY; i++){
-    if((centralityArrayForPbPb[i] <= gCentrality)&&(gCentrality <= centralityArrayForPbPb[i+1]))
+    if((centralityArrayForPbPb[i] <= gCentrality)&&(gCentrality <= centralityArrayForPbPb[i+1])){
       gCentralityInt = i;
+      break;
+    }
   }
   
-  if(fHistMatrixCorrectionPlus[gCentralityInt]){
+  //Printf("//=============CENTRALITY=============// %d:",gCentralityInt);
+
+  if(fHistCorrectionPlus[gCentralityInt]){
     if (vCharge > 0) {
-      correction = fHistMatrixCorrectionPlus[gCentralityInt]->GetBinContent(fHistMatrixCorrectionPlus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
+      correction = fHistCorrectionPlus[gCentralityInt]->GetBinContent(fHistCorrectionPlus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
+      //Printf("CORRECTIONplus: %.2f | Centrality %d",correction,gCentralityInt);  
     }
     if (vCharge < 0) {
-      correction = fHistMatrixCorrectionMinus[gCentralityInt]->GetBinContent(fHistMatrixCorrectionMinus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
+      correction = fHistCorrectionMinus[gCentralityInt]->GetBinContent(fHistCorrectionMinus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
+      //Printf("CORRECTIONminus: %.2f | Centrality %d",correction,gCentralityInt);
     }
   }
   else {
@@ -1138,6 +1135,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
       
       // add the track to the TObjArray
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
@@ -1146,6 +1145,54 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 
   else if(gAnalysisLevel == "MCAOD") {
   }
+
+  //==============================================================================================================
+  else if(gAnalysisLevel == "MCAOD") {
+    
+    AliMCEvent* mcEvent = MCEvent();
+    if (!mcEvent) {
+      Printf("ERROR: Could not retrieve MC event");
+    }
+    
+    for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {
+      AliAODMCParticle *aodTrack = (AliAODMCParticle*) mcEvent->GetTrack(iTracks); 
+      if (!aodTrack) {
+	Printf("ERROR: Could not receive track %d (mc loop)", iTracks);
+	continue;
+      }
+      
+      if(!aodTrack->IsPhysicalPrimary()) continue;   
+      
+      vCharge = aodTrack->Charge();
+      vEta    = aodTrack->Eta();
+      vY      = aodTrack->Y();
+      vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
+      vPt     = aodTrack->Pt();
+      
+      // Kinematics cuts from ESD track cuts
+      if( vPt < fPtMin || vPt > fPtMax)      continue;
+      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
+      
+      // fill QA histograms
+      fHistPt->Fill(vPt,gCentrality);
+      fHistEta->Fill(vEta,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      
+      //=======================================correction
+      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+      
+      // add the track to the TObjArray
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+    }//aodTracks
+  }//MCAOD
+  //==============================================================================================================
 
   else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD") { // handling of TPC only tracks different in AOD and ESD
 
@@ -1325,6 +1372,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 
       // add the track to the TObjArray
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));   
@@ -1453,6 +1501,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	
 	//=======================================correction
 	Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge,gCentrality);  
+	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 
 	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
       } //track loop
@@ -1483,6 +1532,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetShuffledTracks(TObjArray *tracks, Double_t g
     AliVParticle* track = (AliVParticle*) tracks->At(i);
     //==============================correction
     Double_t correction = GetTrackbyTrackCorrectionMatrix(track->Eta(), track->Phi(),track->Pt(), chargeVector->at(i), gCentrality);
+    //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
     tracksShuffled->Add(new AliBFBasicParticle(track->Eta(), track->Phi(), track->Pt(),chargeVector->at(i), correction));
   }
 
@@ -1517,3 +1567,4 @@ void AliAnalysisTaskBFPsi::Terminate(Option_t *) {
   // not implemented ...
 
 }
+

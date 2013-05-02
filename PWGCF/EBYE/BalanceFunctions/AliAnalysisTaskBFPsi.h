@@ -26,6 +26,7 @@ class AliEventPoolManager;
 //================================correction
 #define kCENTRALITY 9  
 const Double_t centralityArrayForPbPb[kCENTRALITY+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
+const TString centralityArrayForPbPb_string[kCENTRALITY] = {"0-5","5-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
 //================================correction
 
 class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
@@ -39,7 +40,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
 
   //========================correction
-  virtual void   SetInputCorrection(const char* filename, const char* gSystem); 
+  virtual void   SetInputCorrection(const char* filename, const char* gCollSystem);//{
+    //fileNameCorrection = filename;//++++++++++++++++++++++++++++++=
+    //;}
   //========================correction
 
   void SetAnalysisObject(AliBalancePsi *const analysis) {
@@ -216,8 +219,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2D *fHistNSigmaTPCvsPtafterPID;//TPC nsigma vs pT after PID cuts (QA histogram)
   TH2D *fHistNSigmaTOFvsPtafterPID;//TOF nsigma vs pT after PID cuts (QA histogram)
   
-  TH3D *fHistMatrixCorrectionPlus[kCENTRALITY]; //======================================================correction
-  TH3D *fHistMatrixCorrectionMinus[kCENTRALITY]; //=====================================================correction
+  TH3D *fHistCorrectionPlus[kCENTRALITY]; //======================================================correction
+  TH3D *fHistCorrectionMinus[kCENTRALITY]; //=====================================================correction
 
   AliPIDResponse *fPIDResponse;     //! PID response object
   AliPIDCombined       *fPIDCombined;     //! combined PID object
@@ -230,6 +233,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUsePIDPropabilities;//flag to use probability method for PID
   Double_t fPIDNSigma;//nsigma cut for PID
   Double_t fMinAcceptedPIDProbability;//probability cut for PID
+
+  //const char*  fileNameCorrection; //++++++++++++++++++++++++++++++++++
+
   //============PID============//
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts

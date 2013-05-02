@@ -1,5 +1,5 @@
 //__________________________________________________//
-AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "ESD", 
+AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "AOD", 
 					const char* centralityName = 0x0,
 					Double_t centrMin = 0.,
 					Double_t centrMax = 100.,
