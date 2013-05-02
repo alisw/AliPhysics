@@ -105,8 +105,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fPID(0)
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
-  ,fInvmassCut(0.05)	
-  //,fInvmassCut(0.1)	 // no mass
+  ,fInvmassCut(0)	 // no mass
+  ,fSetMassConstraint(kTRUE)
   ,fNoEvents(0)
   ,fEMCAccE(0)
   ,hEMCAccE(0)
@@ -231,8 +231,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fPID(0)       
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
-  ,fInvmassCut(0.05)	
-  //,fInvmassCut(0.1)	
+  ,fInvmassCut(0)	 // no mass
+  ,fSetMassConstraint(kTRUE)
   ,fNoEvents(0)
   ,fEMCAccE(0)
   ,hEMCAccE(0)
@@ -1048,9 +1048,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fIncpTM20 = new TH2F("fIncpTM20","HFE pid electro vs. centrality with M20",200,0,100,100,0,50);
   fOutputList->Add(fIncpTM20);
   
-  Int_t nBinspho[9] =  { 200, 100, 500, 12,   50,    4, 200,   8, 100};
-  Double_t minpho[9] = {  0.,  0.,  0., -2.5,  0, -0.5,   0,-1.5,   0};   
-  Double_t maxpho[9] = {100., 50., 0.5, 3.5,   1,  3.5,   2, 6.5,  50};   
+  Int_t nBinspho[9] =  { 10,  30,   600, 12,   50,    4,  40,   8,  30};
+  Double_t minpho[9] = {  0.,  0., -0.1, -2.5,  0, -0.5,   0,-1.5,   0};   
+  Double_t maxpho[9] = {100., 30.,  0.5, 3.5,   1,  3.5,   2, 6.5,  30};   
 
   fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; Mcele;", 9, nBinspho,minpho, maxpho);
   if(fqahist==1)fOutputList->Add(fInvmassLS);
@@ -1449,16 +1449,18 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     
     // check chi2
     if(recg.GetNDF()<1) continue;
+    Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
+    Double_t chi2cut = 3.0;
 
-    // mass const.
-    recg.SetMassConstraint(0,0.0001);
-    // v5-04-50-AN no constrain
+    // mass.
+    if(fSetMassConstraint)
+      {
+       recg.SetMassConstraint(0,0.0001);
+       chi2cut = 30.0;
+      }
     recg.GetMass(mass,width);
 
-    Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
-    if(TMath::Sqrt(TMath::Abs(chi2recg))>30.) continue;
-
-    // angle   
+        // angle   
     openingAngle = ge1.GetAngle(ge2);
     if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
     if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
@@ -1489,7 +1491,11 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
 
     // angle cut
     if(openingAngle > fOpeningAngleCut) continue;
-    
+    // chi2 cut
+    if(TMath::Sqrt(TMath::Abs(chi2recg))>chi2cut) continue;
+
+   
+
     // for real data  
     //printf("mce =%f\n",mce);
     if(mce<-0.5) // mce==-1. is real
