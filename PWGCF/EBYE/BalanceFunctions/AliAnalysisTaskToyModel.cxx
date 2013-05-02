@@ -82,21 +82,27 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fAzimuthalAngleProtons(0), fDirectedFlowProtons(0.0), 
   fEllipticFlowProtons(0.0), fTriangularFlowProtons(0.0),
   fQuandrangularFlowProtons(0.0), fPentangularFlowProtons(0.0),
-  fUseDynamicalCorrelations(kFALSE), fDynamicalCorrelationsPercentage(0.1) {
+  fUseDynamicalCorrelations(kFALSE), fDynamicalCorrelationsPercentage(0.1),
+  fUseJets(kFALSE), fPtAssoc(0) {
   // Constructor
 }
 
 //________________________________________________________________________
 AliAnalysisTaskToyModel::~AliAnalysisTaskToyModel() {
   //Destructor
-  delete fPtSpectraAllCharges;
-  delete fAzimuthalAngleAllCharges;
-  delete fPtSpectraPions;
-  delete fAzimuthalAnglePions;
-  delete fPtSpectraKaons;
-  delete fAzimuthalAngleKaons;
-  delete fPtSpectraProtons;
-  delete fAzimuthalAngleProtons;
+  if(fUseAllCharges) {
+    delete fPtSpectraAllCharges;
+    delete fAzimuthalAngleAllCharges;
+  }
+  else {
+    delete fPtSpectraPions;
+    delete fAzimuthalAnglePions;
+    delete fPtSpectraKaons;
+    delete fAzimuthalAngleKaons;
+    delete fPtSpectraProtons;
+    delete fAzimuthalAngleProtons;
+  }
+  if(fUseJets) delete fPtAssoc;
 }
 
 //________________________________________________________________________
@@ -121,12 +127,12 @@ void AliAnalysisTaskToyModel::Init() {
 
   if(fUseAllCharges) {
     fParticleMass = fPionMass;
-    //fPtSpectraAllCharges = new TF1("fPtSpectraAllCharges","x*TMath::Exp(-TMath::Power([0]*[0]+x*x,0.5)/[1])",0.,5.);
-    //fPtSpectraAllCharges->SetParName(0,"Mass");
-    //fPtSpectraAllCharges->SetParName(1,"Temperature");
-    fPtSpectraAllCharges = new TF1("fPtSpectraAllCharges","(x^2/TMath::Sqrt(TMath::Power(x,2) + TMath::Power(0.139,2)))*TMath::Power((1. + x/[0]),-[1])",0.,20.);
-    fPtSpectraAllCharges->SetParName(0,"pt0");
-    fPtSpectraAllCharges->SetParName(1,"b");
+    fPtSpectraAllCharges = new TF1("fPtSpectraAllCharges","x*TMath::Exp(-TMath::Power([0]*[0]+x*x,0.5)/[1])",0.,5.);
+    fPtSpectraAllCharges->SetParName(0,"Mass");
+    fPtSpectraAllCharges->SetParName(1,"Temperature");
+    //fPtSpectraAllCharges = new TF1("fPtSpectraAllCharges","(x^2/TMath::Sqrt(TMath::Power(x,2) + TMath::Power(0.139,2)))*TMath::Power((1. + x/[0]),-[1])",0.,20.);
+    //fPtSpectraAllCharges->SetParName(0,"pt0");
+    //fPtSpectraAllCharges->SetParName(1,"b");
   }
   else {
     fPtSpectraPions = new TF1("fPtSpectraPions","x*TMath::Exp(-TMath::Power([0]*[0]+x*x,0.5)/[1])",0.,5.);
@@ -187,6 +193,18 @@ void AliAnalysisTaskToyModel::Init() {
     fAzimuthalAngleProtons->SetParName(5,"Pentangular flow");
   }
   //==============Flow values==============//
+
+  //===================Jets===================//
+  if(fUseJets) {
+    fPtAssoc = new TF1("fPtAssoc","x*TMath::Exp(-TMath::Power([0]*[0]+x*x,0.5)/[1])",0.,20.);
+    fPtAssoc->SetParName(0,"pt0");
+    fPtAssoc->SetParName(1,"b");
+    fPtAssoc->SetParameter(0,0.139);
+    fPtAssoc->SetParameter(1,0.5);
+    fPtAssoc->SetLineColor(1);
+  }
+
+  //===================Jets===================//
 
   //==============Efficiency matrix==============//
   if(fSimulateDetectorEffects) SetupEfficiencyMatrix();
@@ -469,6 +487,8 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
   Float_t vE = 0.0;
   Bool_t isPion = kFALSE, isKaon = kFALSE, isProton = kFALSE;
 
+  Double_t gDecideCharge = 0.;
+
   if(fUseAllCharges) {
     //fPtSpectraAllCharges->SetParameter(0,fParticleMass);
     fPtSpectraAllCharges->SetParameter(0,1.05);
@@ -575,7 +595,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       fHistEtaTotal->Fill(vEta);
 
       //Decide the charge
-      Double_t gDecideCharge = gRandom->Rndm();
+      gDecideCharge = gRandom->Rndm();
       if(gDecideCharge <= 1.*nGeneratedPositive/nMultiplicity)       
 	vCharge = 1;
       else 
@@ -684,6 +704,198 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       if(fRunMixing) 
 	tracksMixing->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
     }//generated positive particle loop
+
+    //Jets
+    if(fUseJets) {
+      const Int_t nAssociated = 3;
+
+      Double_t gPtTrig1 = 0., gPtTrig2 = 0., gPtAssoc = 0.;
+      Double_t gPhiTrig1 = 0., gPhiTrig2 = 0., gPhiAssoc = 0.;
+      Double_t gEtaTrig1 = 0., gEtaTrig2 = 0., gEtaAssoc = 0.;
+      Short_t gChargeTrig1 = 0, gChargeTrig2 = 0, gChargeAssoc = 0;
+ 
+      Double_t gJetCone = 0.2;
+
+      //First leading particle
+      gPtTrig1 = gRandom->Uniform(3.,5.);
+      gEtaTrig1 = gRandom->Uniform(-0.8,0.8);
+      gPhiTrig1 = gRandom->Uniform(0.,TMath::TwoPi());
+
+      //Decide the charge
+      gDecideCharge = gRandom->Rndm();
+      if(gDecideCharge <= 0.5)
+	gChargeTrig1 = 1;
+      else 
+	gChargeTrig1 = -1;
+      
+      //Acceptance
+      if((gEtaTrig1 < fEtaMin) || (gEtaTrig1 > fEtaMax)) continue;
+      //pt coverage
+      if((gPtTrig1 < fPtMin) || (gPtTrig1 > fPtMax)) continue;
+      //Printf("pt: %lf - mins: %lf - max: %lf",vPt,fPtMin,fPtMax);
+
+      //acceptance filter
+      if(fUseAcceptanceParameterization) {
+	Double_t gRandomNumberForAcceptance = gRandom->Rndm();
+	if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(gPtTrig1)) 
+	  continue;
+      }
+
+      //Detector effects
+      if(fSimulateDetectorEffects) {
+	Double_t randomNumber = gRandom->Rndm();
+	if(randomNumber > fEfficiencyMatrix->GetBinContent(fEfficiencyMatrix->FindBin(gEtaTrig1,gPtTrig1,gPhiTrig1)))
+	  continue;
+      }
+
+      gNumberOfAcceptedParticles += 1;
+
+      // add the track to the TObjArray
+      tracksMain->Add(new AliBFBasicParticle(gEtaTrig1, gPhiTrig1, gPtTrig1, gChargeTrig1, 1.0));  
+      if(fRunMixing) 
+	tracksMixing->Add(new AliBFBasicParticle(gEtaTrig1, gPhiTrig1, gPtTrig1, gChargeTrig1, 1.0));  
+
+      Int_t iAssociated = 0; 
+      while(iAssociated < nAssociated) {
+	gPtAssoc = fPtAssoc->GetRandom();
+	if(gPtAssoc < gPtTrig1) {
+	  gEtaAssoc = gRandom->Uniform(gEtaTrig1 - gJetCone/2.,gEtaTrig1 + gJetCone/2.);
+	  gPhiAssoc = gRandom->Uniform(gPhiTrig1 - gJetCone/2.,gPhiTrig1 + gJetCone/2.);
+	  if(gPhiAssoc < 0.) gPhiAssoc += TMath::TwoPi();
+	  else if(gPhiAssoc > TMath::TwoPi()) gPhiAssoc -= TMath::TwoPi();
+	  
+	  iAssociated += 1;
+
+	  gDecideCharge = gRandom->Rndm();
+	  if(gDecideCharge <= 0.5)
+	    gChargeAssoc = 1;
+	  else 
+	    gChargeAssoc = -1;
+	  
+	  //Acceptance
+	  if((gEtaAssoc < fEtaMin) || (gEtaAssoc > fEtaMax)) continue;
+	  //pt coverage
+	  if((gPtAssoc < fPtMin) || (gPtAssoc > fPtMax)) continue;
+	  //Printf("pt: %lf - mins: %lf - max: %lf",vPt,fPtMin,fPtMax);
+
+	  //acceptance filter
+	  if(fUseAcceptanceParameterization) {
+	    Double_t gRandomNumberForAcceptance = gRandom->Rndm();
+	    if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(gPtAssoc)) 
+	      continue;
+	  }
+
+	  //Detector effects
+	  if(fSimulateDetectorEffects) {
+	    Double_t randomNumber = gRandom->Rndm();
+	    if(randomNumber > fEfficiencyMatrix->GetBinContent(fEfficiencyMatrix->FindBin(gEtaAssoc,gPtAssoc,gPhiAssoc)))
+	      continue;
+	  }
+
+	  gNumberOfAcceptedParticles += 1;
+
+	  // add the track to the TObjArray
+	  tracksMain->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
+	  if(fRunMixing) 
+	    tracksMixing->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
+	}//pt,assoc < pt,trig
+      }//associated
+      
+      //back2back
+      gPtTrig2 = gPtTrig1;
+      gEtaTrig2 = -gEtaTrig1;
+      gPhiTrig2 = TMath::Pi() + gPhiTrig1;
+      if(gPhiTrig2 < 0.) gPhiTrig2 += TMath::TwoPi();
+      else if(gPhiTrig2 > TMath::TwoPi()) gPhiTrig2 -= TMath::TwoPi();
+
+      //Decide the charge
+      gDecideCharge = gRandom->Rndm();
+      if(gDecideCharge <= 0.5)
+	gChargeTrig2 = 1;
+      else 
+	gChargeTrig2 = -1;
+      
+      //Acceptance
+      if((gEtaTrig2 < fEtaMin) || (gEtaTrig2 > fEtaMax)) continue;
+      //pt coverage
+      if((gPtTrig2 < fPtMin) || (gPtTrig2 > fPtMax)) continue;
+      //Printf("pt: %lf - mins: %lf - max: %lf",vPt,fPtMin,fPtMax);
+
+      //acceptance filter
+      if(fUseAcceptanceParameterization) {
+	Double_t gRandomNumberForAcceptance = gRandom->Rndm();
+	if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(gPtTrig2)) 
+	  continue;
+      }
+
+      //Detector effects
+      if(fSimulateDetectorEffects) {
+	Double_t randomNumber = gRandom->Rndm();
+	if(randomNumber > fEfficiencyMatrix->GetBinContent(fEfficiencyMatrix->FindBin(gEtaTrig2,gPtTrig2,gPhiTrig2)))
+	  continue;
+      }
+
+      gNumberOfAcceptedParticles += 1;
+
+      // add the track to the TObjArray
+      tracksMain->Add(new AliBFBasicParticle(gEtaTrig2, gPhiTrig2, gPtTrig2, gChargeTrig2, 1.0));  
+      if(fRunMixing) 
+	tracksMixing->Add(new AliBFBasicParticle(gEtaTrig2, gPhiTrig2, gPtTrig2, gChargeTrig2, 1.0));  
+
+      iAssociated = 0; 
+      while(iAssociated < nAssociated) {
+	gPtAssoc = fPtAssoc->GetRandom();
+	if(gPtAssoc < gPtTrig2) {
+	  gEtaAssoc = gRandom->Uniform(gEtaTrig2 - gJetCone/2.,gEtaTrig2 + gJetCone/2.);
+	  gPhiAssoc = gRandom->Uniform(gPhiTrig2 - gJetCone/2.,gPhiTrig2 + gJetCone/2.);
+	  if(gPhiAssoc < 0.) gPhiAssoc += TMath::TwoPi();
+	  else if(gPhiAssoc > TMath::TwoPi()) gPhiAssoc -= TMath::TwoPi();
+	  
+	  iAssociated += 1;
+
+	  gDecideCharge = gRandom->Rndm();
+	  if(gDecideCharge <= 0.5)
+	    gChargeAssoc = 1;
+	  else 
+	    gChargeAssoc = -1;
+	  
+	  //Acceptance
+	  if((gEtaAssoc < fEtaMin) || (gEtaAssoc > fEtaMax)) continue;
+	  //pt coverage
+	  if((gPtAssoc < fPtMin) || (gPtAssoc > fPtMax)) continue;
+	  //Printf("pt: %lf - mins: %lf - max: %lf",vPt,fPtMin,fPtMax);
+
+	  //acceptance filter
+	  if(fUseAcceptanceParameterization) {
+	    Double_t gRandomNumberForAcceptance = gRandom->Rndm();
+	    if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(gPtAssoc)) 
+	      continue;
+	  }
+
+	  //Detector effects
+	  if(fSimulateDetectorEffects) {
+	    Double_t randomNumber = gRandom->Rndm();
+	    if(randomNumber > fEfficiencyMatrix->GetBinContent(fEfficiencyMatrix->FindBin(gEtaAssoc,gPtAssoc,gPhiAssoc)))
+	      continue;
+	  }
+
+	  gNumberOfAcceptedParticles += 1;
+
+	  // add the track to the TObjArray
+	  tracksMain->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
+	  if(fRunMixing) 
+	    tracksMixing->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
+	}//pt,assoc < pt,trig
+      }//associated
+    }//Jet usage
+
+
+
+
+
+
+
+
     
     //Dynamical correlations
     Int_t nGeneratedPositiveDynamicalCorrelations = 0;

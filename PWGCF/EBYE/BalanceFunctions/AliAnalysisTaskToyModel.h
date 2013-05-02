@@ -143,6 +143,9 @@ class AliAnalysisTaskToyModel : public TObject {
     fUseDynamicalCorrelations = kTRUE; 
     fDynamicalCorrelationsPercentage = percentage;
   }
+
+  //Jet-like structures
+  void SetUseJets() {fUseJets = kTRUE;}
   //============Toy model: List of setters============//
 
  private:
@@ -251,6 +254,9 @@ class AliAnalysisTaskToyModel : public TObject {
 
   Bool_t fUseDynamicalCorrelations; //Usage of dynamical correlations
   Double_t fDynamicalCorrelationsPercentage; //Percentage of correlations
+
+  Bool_t fUseJets;//Usage of jet-like structures
+  TF1 *fPtAssoc;//pt of associated
 
   AliAnalysisTaskToyModel(const AliAnalysisTaskToyModel&); // not implemented
   AliAnalysisTaskToyModel& operator=(const AliAnalysisTaskToyModel&); // not implemented
