@@ -322,9 +322,9 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     
     for(Int_t iS=0;iS<18;iS++) {
       for(Int_t j=0;j<nbin;j++) {
-	hDCAxy[iB][iS][j] = new TH1D(nameDCAxy[iS][j],titleDCAxy[iS][j],1200,-3.0,3.0);//125 bins
+	hDCAxy[iB][iS][j] = new TH1D(nameDCAxy[iS][j],titleDCAxy[iS][j],875,-3.5,3.5);//125 bins
 	hDCAxy[iB][iS][j]->GetXaxis()->CenterTitle();
-	hDCAz[iB][iS][j] = new TH1D(nameDCAz[iS][j],titleDCAz[iS][j],1200,-3.0,3.0);//125 bins
+	hDCAz[iB][iS][j] = new TH1D(nameDCAz[iS][j],titleDCAz[iS][j],875,-3.5,3.5);//125 bins
 	hDCAz[iB][iS][j]->GetXaxis()->CenterTitle();
       }
     }
