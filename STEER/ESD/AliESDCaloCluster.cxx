@@ -79,7 +79,7 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fNExMax(clus.fNExMax),
   fClusterType(clus.fClusterType),
   fTOF(clus.fTOF),
-  fMCEnergyFraction(0.)
+  fMCEnergyFraction(clus.fMCEnergyFraction)
 {
   //
   // The copy constructor 
