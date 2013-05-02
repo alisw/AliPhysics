@@ -1,4 +1,4 @@
-AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC){
+AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst){
   //
   // HFE standard task configuration
   //
@@ -21,7 +21,10 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC){
   AliAnalysisTaskHFECal *task = new AliAnalysisTaskHFECal("HFEanalysisEMCal");
   printf("task ------------------------ %p\n ", task);
   task->SetHFECuts(hfecuts);
-  task->SetInvariantMassCut(0.05);
+  task->SetMassConstraint(MassConst);
+  Double_t masscut = 0.05;
+  if(!MassConst)masscut = 0.1;
+  task->SetInvariantMassCut(masscut);
 
   // Define PID
   AliHFEpid *pid = task->GetPID();
