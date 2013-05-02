@@ -82,7 +82,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   jetTask->SetModulationFitMinMaxP(.05, 1);
   // if centralities haven't been specified use defaults
   if(!centralities) {
-     Int_t c[] = {0, 20, 40, 60, 80, 100};
+     Int_t c[] = {0, 10, 30, 50, 70, 90};
      jetTask->SetCentralityClasses(new TArrayI(sizeof(c)/sizeof(c[0]), c));
   }
   // if a randomized hasn't specified use a safe default 
