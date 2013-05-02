@@ -409,11 +409,11 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
 
    
 
-    fh2Ntriggers=new TH2F("# of triggers","",10,0.,100.,50,0.,50.);
+    fh2Ntriggers=new TH2F("# of triggers","",100,0.,100.,50,0.,50.);
     fh2Ntriggers2C10=new TH2F("# of triggers2C10","",50,0.,50.,50,0.,50.);
     fh2Ntriggers2C20=new TH2F("# of triggers2C20","",50,0.,50.,50,0.,50.);
-    fh3JetDensity=new TH3F("Jet density vs mutliplicity A>0.4","",100,0.,4000.,100,0.,5.,10,0.,50.);
-    fh3JetDensityA4=new TH3F("Jet density vs multiplicity A>0.4","",100,0.,4000.,100,0.,5.,10,0.,50.);
+    fh3JetDensity=new TH3F("Jet density vs mutliplicity A>0.07","",100,0.,4000.,100,0.,5.,25,0.,50.);
+    fh3JetDensityA4=new TH3F("Jet density vs multiplicity A>0.4","",100,0.,4000.,100,0.,5.,25,0.,50.);
     fh2RPJetsC10=new TH2F("RPJetC10","",35,0.,3.5,100,0.,100.);
     fh2RPJetsC20=new TH2F("RPJetC20","",35,0.,3.5,100,0.,100.); 
     fh2RPTC10=new TH2F("RPTriggerC10","",35,0.,3.5,50,0.,50.); 
@@ -481,10 +481,27 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
         fOutputList->Add(fh2RPTC20);
 
         const Int_t dimSpec = 5;
-	const Int_t nBinsSpec[dimSpec]     = {10,100, 140, 50, fNRPBins};
+	const Int_t nBinsSpec[dimSpec]     = {100,6, 140, 50, fNRPBins};
 	const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0, 0};
 	const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50, fNRPBins};
 	fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum",dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+
+             //change binning in jet area
+     Double_t *xPt6 = new Double_t[7];
+     xPt6[0] = 0.;
+     xPt6[1]=0.07;
+     xPt6[2]=0.2;
+     xPt6[3]=0.4;
+     xPt6[4]=0.6;
+     xPt6[5]=0.8; 
+     xPt6[6]=1;
+    fHJetSpec->SetBinEdges(1,xPt6);
+    delete [] xPt6;
+
+
+
+
+
 	fOutputList->Add(fHJetSpec);  
 
 
@@ -748,8 +765,10 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
 
            if(fFlagJetHadron==0){
-           if(fFlagPhiBkg!=0) if((TMath::Abs(dphi)<TMath::Pi()/2.-0.1)||(TMath::Abs(dphi)>TMath::Pi()/2.+0.1)) continue;
-           if(fFlagPhiBkg==0) if(TMath::Abs(dphi)<TMath::Pi()-0.6) continue;}
+           if(fFlagPhiBkg==1) if((TMath::Abs(dphi)<TMath::Pi()/2.-0.1)||(TMath::Abs(dphi)>TMath::Pi()/2.+0.1)) continue;
+           if(fFlagPhiBkg==0) if(TMath::Abs(dphi)<TMath::Pi()-0.6) continue;
+           if(fFlagPhiBkg==2) if(TMath::Abs(dphi)<TMath::Pi()-0.7) continue;
+           if(fFlagPhiBkg==3) if(TMath::Abs(dphi)<TMath::Pi()-0.5) continue;}
  
            if(fFlagJetHadron!=0) if(TMath::Abs(dphi)>0.4) continue;
 
