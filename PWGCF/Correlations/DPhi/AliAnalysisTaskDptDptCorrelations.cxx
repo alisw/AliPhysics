@@ -41,9 +41,7 @@
 #include "AliMultiplicity.h"
 #include "AliCentrality.h"
 #include "AliAnalysisTaskDptDptCorrelations.h"
-using std::cout;
-using std::endl;
-using std::cerr;
+
 ClassImp(AliAnalysisTaskDptDptCorrelations)
 
 AliAnalysisTaskDptDptCorrelations::AliAnalysisTaskDptDptCorrelations()
@@ -173,13 +171,11 @@ _m3 ( 0),
 _m4 ( 0),
 _m5 ( 0),
 _m6 ( 0),
-
-_etadis ( 0),
-_phidis ( 0),
-_dcaz   ( 0),
-_dcaxy  ( 0),
-
-_vertexZ           ( 0),
+_vertexZ ( 0),
+//_etadis ( 0),
+//_phidis ( 0),
+//_dcaz   ( 0),
+//_dcaxy  ( 0),
 _n1_1_vsPt         ( 0),         
 _n1_1_vsEtaVsPhi   ( 0),
 _s1pt_1_vsEtaVsPhi ( 0), 
@@ -452,11 +448,12 @@ _m3 ( 0),
 _m4 ( 0),
 _m5 ( 0),
 _m6 ( 0),
-_etadis ( 0),
-_phidis ( 0),
-_dcaz ( 0),
-_dcaxy ( 0),
-_vertexZ           ( 0),
+
+_vertexZ ( 0),
+  //_etadis ( 0),
+  //_phidis ( 0),
+  //_dcaz ( 0),
+  //_dcaxy ( 0),
 _n1_1_vsPt         ( 0),         
 _n1_1_vsEtaVsPhi   ( 0),
 _s1pt_1_vsEtaVsPhi ( 0), 
@@ -928,10 +925,10 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   name = "zV"; _vertexZ = createHisto1D(name,name,_nBins_vertexZ, _min_vertexZ, _max_vertexZ, "z-Vertex (cm)", _title_counts);
   
 
-  name = "Eta";     _etadis   = createHisto1F(name,name, 200, -1.1, 1.1, "#eta","counts");
-  name = "Phi";     _phidis   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-  name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
-  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
+  //name = "Eta";     _etadis   = createHisto1F(name,name, 200, -1.1, 1.1, "#eta","counts");
+  //name = "Phi";     _phidis   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
+  //name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
+  //name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
 
 
   if (_singlesOnly)
@@ -1054,8 +1051,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   int    iVertex, iVertexP1, iVertexP2;
   int    iZEtaPhiPt;
   float  massElecSq = 2.5e-7;
-  double b[2];
-  double bCov[3];
+  //double b[2];
+  //double bCov[3];
   const  AliAODVertex*	vertex;
   int    nClus;
   bool   bitOK;
@@ -1272,10 +1269,10 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 
 	  //if (dcaZ > _dcaZMax) continue;
 	     //cout <<"Prabhat=============="<<"  "<<_dcaZMax<<"    "<<dcaZ<<endl;
-	_etadis->Fill(eta); //prabhat QA                                  
-	_phidis->Fill(phi);
-	_dcaz->Fill(dcaZ); //Prabhat QA             
-        _dcaxy->Fill(dcaXY);
+	     //_etadis->Fill(eta); //prabhat QA                                  
+	     //_phidis->Fill(phi);
+	     //_dcaz->Fill(dcaZ); //Prabhat QA             
+	     //_dcaxy->Fill(dcaXY);
 
 
         iPhi   = int( phi/_width_phi_1);

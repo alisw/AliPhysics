@@ -32,22 +32,31 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
     {
     if (centralityMethod == 4)
       {
-      nCentrality = 10;
-      minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
-      minCentrality[1] = 5.0; maxCentrality[1] = 10.;
-      minCentrality[2] = 10.; maxCentrality[2] = 20.;
-      minCentrality[3] = 20.; maxCentrality[3] = 30.;
-      minCentrality[4] = 30.; maxCentrality[4] = 40.;
-      minCentrality[5] = 40.; maxCentrality[5] = 50.;
-      minCentrality[6] = 50.; maxCentrality[6] = 60.;
-      minCentrality[7] = 60.; maxCentrality[7] = 70.;
-      minCentrality[8] = 70.; maxCentrality[8] = 80.;
-      minCentrality[9] = 80.; maxCentrality[9] = 90.;
-      
+
+	nCentrality = 6;
+        minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
+        minCentrality[1] = 5.0; maxCentrality[1] = 10.;
+	minCentrality[2] = 30.; maxCentrality[2] = 40.;
+        minCentrality[3] = 40.; maxCentrality[3] = 50.;
+        minCentrality[4] = 70.; maxCentrality[4] = 80.;
+        minCentrality[5] = 80.; maxCentrality[5] = 90.;
+	/*
+	  nCentrality = 10;
+	  minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
+	  minCentrality[1] = 5.0; maxCentrality[1] = 10.;
+	  minCentrality[2] = 10.; maxCentrality[2] = 20.;
+	  minCentrality[3] = 20.; maxCentrality[3] = 30.;
+	  minCentrality[4] = 30.; maxCentrality[4] = 40.;
+	  minCentrality[5] = 40.; maxCentrality[5] = 50.;
+	  minCentrality[6] = 50.; maxCentrality[6] = 60.;
+	  minCentrality[7] = 60.; maxCentrality[7] = 70.;
+	  minCentrality[8] = 70.; maxCentrality[8] = 80.;
+	  minCentrality[9] = 80.; maxCentrality[9] = 90.;
+	*/
       }
     else
       {
-      cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
+	//cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
       return 0;
       }
     }
@@ -63,13 +72,13 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       }
     else
       {
-      cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
+	//cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
       return 0;
       }
     }
   else
     {
-    cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". Option NOT CURRENTLY AVAILABLE. ABORT."
+      //cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". Option NOT CURRENTLY AVAILABLE. ABORT."
     return 0;
     }
 
@@ -176,7 +185,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
       outputHistogramFileName += ".root";
       
-    cout << "============================================================" << endl;
+      /*cout << "============================================================" << endl;
     cout << "                   iTask: " << iTask << endl;
       cout << "               Task Name: " << taskName << endl;
       cout << "               List Name: " << listName << endl;
@@ -208,7 +217,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       cout << "        requestedCharge1: " << requestedCharge1 << endl;
       cout << "        requestedCharge2: " << requestedCharge2 << endl;
     cout << "============================================================" << endl;
-    
+      */
     TFile  * inputFile  = 0;
       TList  * histoList  = 0;
       TH3F   * weight_1   = 0;
@@ -219,7 +228,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
         inputFile = TFile::Open(inputHistogramFileName,"OLD");
         if (!inputFile)
           {
-          cout << "Requested file:" << inputHistogramFileName << " was not opened. ABORT." << endl;
+	    //cout << "Requested file:" << inputHistogramFileName << " was not opened. ABORT." << endl;
           return;
           }
         TString nameHistoBase = "correction_";
@@ -228,18 +237,18 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
         if (requestedCharge1 == 1)
           {
           nameHisto = nameHistoBase + "_p";
-          cout << "Input Histogram named: " << nameHisto << endl;
+          //cout << "Input Histogram named: " << nameHisto << endl;
           weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         else
           {
           nameHisto = nameHistoBase + "_m";
-          cout << "Input Histogram named: " << nameHisto << endl;
+          //cout << "Input Histogram named: " << nameHisto << endl;
           weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         if (!weight_1) 
           {
-          cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
+	    //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
           return 0;
           }
         
@@ -249,18 +258,18 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
           if (requestedCharge2 == 1)
             {
             nameHisto = nameHistoBase + "_p";
-            cout << "Input Histogram named: " << nameHisto << endl;
+            //cout << "Input Histogram named: " << nameHisto << endl;
             weight_2 = (TH3F *) inputFile->Get(nameHisto);
             }
           else
             {
             nameHisto = nameHistoBase + "_m";
-            cout << "Input Histogram named: " << nameHisto << endl;
+            //cout << "Input Histogram named: " << nameHisto << endl;
             weight_2 = (TH3F *) inputFile->Get(nameHisto);
             }
           if (!weight_2) 
             {
-            cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
+	      //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
             return 0;
             }
           }  
@@ -301,16 +310,16 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       task->SetWeigth_2(            weight_2        );
       
       
-      cout << "Creating task output container" << endl;
+      //cout << "Creating task output container" << endl;
       taskOutputContainer = analysisManager->CreateContainer(listName, 
                                                              TList::Class(),    
                                                              AliAnalysisManager::kOutputContainer, 
                                                              Form("%s:Histos", AliAnalysisManager::GetCommonFileName()));
-      cout << "Add task to analysis manager and connect it to input and output containers" << endl;
+      //cout << "Add task to analysis manager and connect it to input and output containers" << endl;
       analysisManager->AddTask(task);
       analysisManager->ConnectInput( task,  0, analysisManager->GetCommonInputContainer());
       analysisManager->ConnectOutput(task,  0, taskOutputContainer );
-      cout << "Task added ...." << endl;
+      //cout << "Task added ...." << endl;
       
       iTask++;
     
