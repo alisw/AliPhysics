@@ -50,6 +50,7 @@ Bool_t AliTRDonlineTrackMatching::fEsdTrackCutRequireITSrefit = kFALSE;
 Bool_t AliTRDonlineTrackMatching::fEsdTrackCutPrim = kFALSE;
 
 AliTRDonlineTrackMatching::AliTRDonlineTrackMatching() :
+  TObject(),
   fTRDgeo(NULL),
   fMinMatchRating(0.25),
   fHistMatchRating(NULL)
@@ -59,6 +60,7 @@ AliTRDonlineTrackMatching::AliTRDonlineTrackMatching() :
 }
 
 AliTRDonlineTrackMatching::AliTRDonlineTrackMatching(const AliTRDonlineTrackMatching &c) :
+  TObject(c),
   fTRDgeo(c.fTRDgeo),
   fMinMatchRating(c.fMinMatchRating),
   fHistMatchRating(c.fHistMatchRating)
@@ -326,7 +328,7 @@ Bool_t AliTRDonlineTrackMatching::ProcessEvent(AliESDEvent *esdEvent) {
     return kTRUE;
 
   if (!AliGeomManager::GetGeometry()){
-    printf("Geometry not available! Aborting TRD track matching.\n");
+    AliError("Geometry not available! Skipping TRD track matching.");
     return kFALSE;
   }
 
@@ -354,7 +356,7 @@ Bool_t AliTRDonlineTrackMatching::ProcessEvent(AliESDEvent *esdEvent) {
     esdTrack = esdEvent->GetTrack(iEsdTrack);
 
     if (!esdTrack){
-      printf("#TRACKMATCHING - invalid ESD track!\n");
+      AliError("invalid ESD track!");
       continue;
     }
 
@@ -420,7 +422,7 @@ Bool_t AliTRDonlineTrackMatching::ProcessEvent(AliESDEvent *esdEvent) {
 	  break;
 
 	if (stacksForReg[iReg] >= 90){
-	  printf("#TRACKMATCHING - invalid stack for registration: %i\n", stacksForReg[iReg]);
+	  AliError(Form("invalid stack for registration: %i", stacksForReg[iReg]));
 	  continue;
 	}
 
@@ -628,7 +630,8 @@ Int_t AliTRDonlineTrackMatching::EstimateTrackDistance(AliESDtrack *esd_track, A
       // transform to global coordinates
       TGeoHMatrix *matrix = fTRDgeo->GetClusterMatrix(trklDet);
       if (!matrix){
-	printf("ERROR - invalid TRD cluster matrix in EstimateTrackDistance for detector %i", trklDet);
+	if ((stack_gtu != 13*5+2) && (stack_gtu != 14*5+2) && (stack_gtu != 15*5+2))
+	  AliError(Form("invalid TRD cluster matrix in EstimateTrackDistance for detector %i", trklDet));
 	return -5;
       }
       matrix->LocalToMaster(xtrkl, ptrkl);
@@ -653,7 +656,7 @@ Int_t AliTRDonlineTrackMatching::EstimateTrackDistance(AliESDtrack *esd_track, A
 
       Double_t n_len = TMath::Sqrt(n0[0]*n0[0] + n0[1]*n0[1] + n0[2]*n0[2]);
       if (n_len == 0.){ // This should never happen
-	printf("<ERROR> divison by zero in estimate_track_distance!");
+	AliError("divison by zero in estimate_track_distance!");
 	n_len = 1.;
       }
       Double_t n[3] = {n0[0]/n_len, n0[1]/n_len, n0[2]/n_len}; // normal vector of plane
@@ -774,5 +777,6 @@ void AliTRDonlineTrackMatching::SetEsdTrackDefaultCuts(const char* cutIdent) {
     fEsdTrackCutMaxDCAtoVertexZ = 1000.;
     fEsdTrackCutsITSlayerMask = 0x0;
   } else
-    printf("ERROR: invalid cut set");
+    AliErrorClass("invalid cut set");
+
 }
