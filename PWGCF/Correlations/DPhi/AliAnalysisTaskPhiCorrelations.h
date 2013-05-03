@@ -66,7 +66,6 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual     void    SetReduceMemoryFootprint(Bool_t flag) { fReduceMemoryFootprint = flag; }
     virtual	void	SetEventMixing(Bool_t flag) { fFillMixed = flag; }
     virtual	void    SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
-    virtual	void	SetCompareCentralities(Bool_t flag) { fCompareCentralities = flag; }
     virtual	void	SetTwoTrackEfficiencyStudy(Bool_t flag) { fTwoTrackEfficiencyStudy = flag; }
     virtual	void	SetTwoTrackEfficiencyCut(Float_t value = 0.02) { fTwoTrackEfficiencyCut = value; }
     virtual	void	SetUseVtxAxis(Int_t flag) { fUseVtxAxis = flag; }
@@ -133,7 +132,6 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t             fReduceMemoryFootprint; // reduce memory consumption by writing less debug histograms
     Bool_t		fFillMixed;		// enable event mixing (default: ON)
     Int_t  		fMixingTracks;		// size of track buffer for event mixing
-    Bool_t		fCompareCentralities;	// use the z vtx axis for a centrality comparison
     Bool_t		fTwoTrackEfficiencyStudy; // two-track efficiency study on
     Float_t		fTwoTrackEfficiencyCut;   // enable two-track efficiency cut
     Int_t		fUseVtxAxis;              // use z vtx as axis (needs 7-10 times more memory!)
@@ -198,7 +196,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 30); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 31); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
@@ -239,6 +237,8 @@ class AliDPhiBasicParticle : public AliVParticle
     // PID
     virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }      
     virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
+    
+    virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
     
   private:
     Float_t fEta;      // eta
