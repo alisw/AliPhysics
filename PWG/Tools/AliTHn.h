@@ -5,6 +5,10 @@
  * See cxx source for full Copyright notice                               */
 
 // optimized data container reusing functionality of AliCFContainer / THnsparse
+//
+// Use AliTHn instead of AliCFContainer and your memory consumption will be drastically reduced
+// As AliTHn derives from AliCFContainer, you can just replace your current AliCFContainer object by AliTHn
+// Once you have the merged output, call FillParent() and you can use AliCFContainer as usual
 
 #include "TObject.h"
 #include "TString.h"
