@@ -40,7 +40,8 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       TString fileNameBase="AnalysisResults",
 						       TString fArgEventClass="Centrality",
 						       TString analysisTypeUser="AOD",
-						       Bool_t bVertexBinning=kTRUE) {
+						       Bool_t bVertexBinning=kTRUE,
+						       TString correctionFileName = "$ALICE_ROOT/PWGCF/EBYE/BalanceFunctions/Corrections/CorrectionMaps.root") {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -111,15 +112,9 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   taskBF->SetEventClass(fArgEventClass);
  
   //++++++++++++++++++++++
-  TString correctionFileName = "$ALICE_ROOT/PWGCF/EBYE/BalanceFunctions/Corrections/CorrectionMaps.root"; //to put the path for the correction maps
-  TFile *fCorrectionMatrix  = TFile::Open(correctionFileName.Data());
-  if(!fCorrectionMatrix){
-    Printf("WARNING CORRECTION histogram file not found");
-    return NULL;
-  }
-  
+  // Efficiency + Contamination corrections
+  // If correctionFileName = "", do not use corrections
   taskBF->SetInputCorrection(correctionFileName.Data(),"");
-
   //+++++++++++++++++++++
 
   taskBF->SetAnalysisObject(bf);
