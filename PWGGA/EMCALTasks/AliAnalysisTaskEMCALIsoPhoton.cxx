@@ -234,6 +234,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   const Int_t ndims =   fNDimensions;
   Double_t xmin[] = { 0.,   0.,  -10.,   -10., -10., -10., -10., -0.1,-0.05, -0.7, 1.4,-0.15e-06,-0.5,-1.5};
   Double_t xmax[] = { 100., 4., 190., 190., 190.,  190., 190., 0.1, 0.05, 0.7, 3.192, 0.15e-06,99.5,99.5};
+  if(fPeriod.Contains("11h")){
+    xmax[12]=3999.5;
+  }
   fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, CeIsoNoUESub, AllIsoNoUESub, d#phi_{trk},d#eta_{trk},#eta_{clus},#phi_{clus},T_{max},mult,mc-p_{T}^{#gamma}", ndims, bins, xmin, xmax);
   fOutputList->Add(fHnOutput);
 
@@ -263,6 +266,12 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
 	isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
       else
 	isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
+  }
+  if(fPeriod.Contains("11h")){
+    if(fTrigBit.Contains("kAny"))
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);
+    if(fTrigBit.Contains("kAnyINT"))
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);
   }
   if(fIsMc)
     isSelected = kTRUE;
