@@ -449,7 +449,7 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
                if(GetMap()->GetpListItem(i)==0) continue;
                else{
                    GetMap()->GetMapIndex(GetMap()->GetpListItem(i)->GetIndex(),iz,ix);
-                   SetCoupling(iz,ix,idtrack,h);
+                   SetCoupling(iz,ix);
                } // end for i
            break;
        case 2: // case 4:
@@ -457,7 +457,7 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
                if(GetMap()->GetpListItem(i)==0) continue;
                else{
                    GetMap()->GetMapIndex(GetMap()->GetpListItem(i)->GetIndex(),iz,ix);
-                   SetCouplingOld(iz,ix,idtrack,h);
+                   SetCouplingOld(iz,ix);
                } // end for i
            break;
        } // end switch
@@ -550,7 +550,7 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
                if(GetMap()->GetpListItem(i)==0) continue;
                else{
                    GetMap()->GetMapIndex(GetMap()->GetpListItem(i)->GetIndex(),iz,ix);
-                   SetCoupling(iz,ix,idtrack,h);
+                   SetCoupling(iz,ix);
                } // end for i
            break;
        case 2: // case 4:
@@ -558,7 +558,7 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
                if(GetMap()->GetpListItem(i)==0) continue;
                else{
                    GetMap()->GetMapIndex(GetMap()->GetpListItem(i)->GetIndex(),iz,ix);  
-                   SetCouplingOld(iz,ix,idtrack,h);
+                   SetCouplingOld(iz,ix);
                } // end for i
            break;
        } // end switch
@@ -878,8 +878,7 @@ void AliITSsimulationSPD::ResetHistograms(){
 }
 
 //______________________________________________________________________
-void AliITSsimulationSPD::SetCoupling(Int_t col, Int_t row, Int_t ntrack,
-				      Int_t idhit) {
+void AliITSsimulationSPD::SetCoupling(Int_t col, Int_t row) {
    //  Take into account the coupling between adiacent pixels.
    //  The parameters probcol and probrow are the probability of the
    //  signal in one pixel shared in the two adjacent pixels along
@@ -900,8 +899,6 @@ void AliITSsimulationSPD::SetCoupling(Int_t col, Int_t row, Int_t ntrack,
    // Inputs:
    //    Int_t col            z cell index
    //    Int_t row            x cell index
-   //    Int_t ntrack         track incex number
-   //    Int_t idhit          hit index number
    // Outputs:
    //    none.
    // Return:
@@ -912,9 +909,9 @@ void AliITSsimulationSPD::SetCoupling(Int_t col, Int_t row, Int_t ntrack,
    Double_t xr=0.;
 
    GetCouplings(couplC,couplR);
-   if(GetDebug(3)) Info("SetCoupling","(col=%d,row=%d,ntrack=%d,idhit=%d) "
+   if(GetDebug(3)) Info("SetCoupling","(col=%d,row=%d) "
                         "Calling SetCoupling couplC=%e couplR=%e",
-                        col,row,ntrack,idhit,couplC,couplR);
+                        col,row,couplC,couplR);
    j1 = col;
    j2 = row;
    pulse1 = GetMap()->GetSignalOnly(col,row);
@@ -927,7 +924,7 @@ void AliITSsimulationSPD::SetCoupling(Int_t col, Int_t row, Int_t ntrack,
                j1 = col;
                flag = 1;
            }else{
-               UpdateMapSignal(row,j1,ntrack,idhit,pulse1);
+               UpdateMapNoise(row,j1,pulse1);
                //  flag = 0;
                flag = 1; // only first next!!
            } // end if
@@ -940,7 +937,7 @@ void AliITSsimulationSPD::SetCoupling(Int_t col, Int_t row, Int_t ntrack,
                j2 = row;
                flag = 1;
            }else{
-               UpdateMapSignal(j2,col,ntrack,idhit,pulse2);
+               UpdateMapNoise(j2,col,pulse2);
                //  flag = 0;
                flag = 1; // only first next!!
            } // end if
@@ -948,8 +945,7 @@ void AliITSsimulationSPD::SetCoupling(Int_t col, Int_t row, Int_t ntrack,
    } // for isign
 }
 //______________________________________________________________________
-void AliITSsimulationSPD::SetCouplingOld(Int_t col, Int_t row,
-               Int_t ntrack,Int_t idhit) {
+void AliITSsimulationSPD::SetCouplingOld(Int_t col, Int_t row) {
    //  Take into account the coupling between adiacent pixels.
    //  The parameters probcol and probrow are the fractions of the
    //  signal in one pixel shared in the two adjacent pixels along
@@ -968,8 +964,6 @@ void AliITSsimulationSPD::SetCouplingOld(Int_t col, Int_t row,
    // Inputs:
    //    Int_t col            z cell index
    //    Int_t row            x cell index
-   //    Int_t ntrack         track incex number
-   //    Int_t idhit          hit index number
    //    Int_t module         module number
    // Outputs:
    //    none.
@@ -985,9 +979,9 @@ void AliITSsimulationSPD::SetCouplingOld(Int_t col, Int_t row,
 //    cout << "Threshold --> " << GetThreshold() << endl;  // dom
 //    cout << "Couplings --> " << couplC << " " << couplR << endl;  // dom
 
-   if(GetDebug(3)) Info("SetCouplingOld","(col=%d,row=%d,ntrack=%d,idhit=%d) "
+   if(GetDebug(3)) Info("SetCouplingOld","(col=%d,row=%d) "
                         "Calling SetCoupling couplC=%e couplR=%e",
-                        col,row,ntrack,idhit,couplC,couplR);
+                        col,row,couplC,couplR);
    for (Int_t isign=-1;isign<=1;isign+=2){// loop in col direction
    pulse1 = GetMap()->GetSignalOnly(col,row);
    pulse2 = pulse1;
@@ -1001,7 +995,7 @@ void AliITSsimulationSPD::SetCouplingOld(Int_t col, Int_t row,
                j1 = col;
                flag = 1;
            }else{
-               UpdateMapSignal(row,j1,ntrack,idhit,pulse1);
+               UpdateMapNoise(row,j1,pulse1);
                // flag = 0;
                flag = 1;  // only first next !!
            } // end if
@@ -1015,7 +1009,7 @@ void AliITSsimulationSPD::SetCouplingOld(Int_t col, Int_t row,
                j2 = row;
                flag = 1;
            }else{
-               UpdateMapSignal(j2,col,ntrack,idhit,pulse2);
+               UpdateMapNoise(j2,col,pulse2);
                // flag = 0;
                flag = 1; // only first next!!
            } // end if

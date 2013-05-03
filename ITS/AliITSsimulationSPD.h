@@ -102,9 +102,9 @@ private:
    virtual void SetSegmentationModel(Int_t /*dt*/, AliITSsegmentation *seg){fDetType->SetSegmentationModel(0,seg);}
    // Bari-Salerno Coupling parameters
    // "New" coupling routine  Tiziano Virgili
-   void SetCoupling(Int_t col,Int_t row,Int_t ntrack,Int_t idhit);
+   void SetCoupling(Int_t col,Int_t row);
    // "Old" coupling routine  Rocco Caliandro
-   void SetCouplingOld(Int_t col, Int_t row,Int_t ntrack,Int_t idhit);
+   void SetCouplingOld(Int_t col, Int_t row);
    // Getters for data kept in fSegmentation and fResponse.
    // Returns the Threshold in electrons
    Double_t GetThreshold(){
