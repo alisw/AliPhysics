@@ -15,6 +15,9 @@
 
 /* $Id: AliTHn.cxx 20164 2007-08-14 15:31:50Z morsch $ */
 
+// Use AliTHn instead of AliCFContainer and your memory consumption will be drastically reduced
+// As AliTHn derives from AliCFContainer, you can just replace your current AliCFContainer object by AliTHn
+// Once you have the merged output, call FillParent() and you can use AliCFContainer as usual
 //
 // this storage container is optimized for small memory usage
 //   under/over flow bins do not exist
