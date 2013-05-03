@@ -50,8 +50,9 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   void         FillMyClusters();
   void         FillMyAltClusters();
   void         FillIsoTracks();
-  void         FillMcPart(TParticle *mcP, Int_t ipart, Int_t itrack);
+  void         FillMcPart(TParticle *mcP,  Int_t itrack);
   void         GetMcParts();
+  Double_t     GetMcIsolation(TParticle *mcP, Int_t itrack, Double_t radius, Double_t pt)                 const;
   Double_t     GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)       const;
   Double_t     GetPhiBandEt(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)            const;
  // Double_t     GetPhiBandEt(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)            const;
@@ -121,7 +122,7 @@ class AliPhotonHeaderObj : public TObject
 {
   public: AliPhotonHeaderObj() :
   TObject(), fInputFileName(""), fTrClassMask(0), fTrCluster(0), fV0Cent(0), fV0(0), fCl1Cent(0), 
-	  fCl1(0), fTrCent(0), fTr(0), fNClus(0), fNCells(0), fTrackMult(0)  {;}
+    fCl1(0), fTrCent(0), fTr(0), fNClus(0), fNCells(0), fTrackMult(0), fNMcParts(0)  {;}
   public:
   TString       fInputFileName;  // used for normalization purposes in MC productions
   ULong64_t     fTrClassMask;    //         trigger class mask
@@ -135,8 +136,9 @@ class AliPhotonHeaderObj : public TObject
   Int_t         fNClus;
   Int_t         fNCells;
   Int_t         fTrackMult;
+  Int_t         fNMcParts;
 
-  ClassDef(AliPhotonHeaderObj,4)
+  ClassDef(AliPhotonHeaderObj,5)
 };
 
 class AliPhotonConvObj : public TObject
@@ -251,8 +253,9 @@ class AliPhotonTrackObj : public TObject
 class AliPhotonMcPartObj : public TObject
 {
   public: AliPhotonMcPartObj() :
-        TObject(), fLabel(-1), fPdg(0), fPt(0), fEta(0), fPhi(0), 
-        fVR(0), fVEta(0), fVPhi(0), fMother(-1)  {;}
+  TObject(), fLabel(-1), fPdg(0), fPt(0), fEta(0), fPhi(0), 
+    fVR(0), fVEta(0), fVPhi(0), fMother(-1), fFirstD(-1),
+    fLastD(-1), fStatus(-1), fIso(-1) {;}
   public:
   Short_t    fLabel;
   Short_t    fPdg;
@@ -263,8 +266,12 @@ class AliPhotonMcPartObj : public TObject
   Double32_t fVEta;
   Double32_t fVPhi;
   Short_t    fMother;
+  Short_t    fFirstD;
+  Short_t    fLastD;
+  Short_t    fStatus;
+  Double32_t fIso;
 
-  ClassDef(AliPhotonMcPartObj,1)
+  ClassDef(AliPhotonMcPartObj,2)
 };
 
 #endif
