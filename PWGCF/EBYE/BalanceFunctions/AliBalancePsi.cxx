@@ -890,12 +890,16 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
   // ranges (in bins) for vertexZ and centrality (psi)
   Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin);
   Int_t binPsiMax    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMax-0.00001);
-  Int_t binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
-  Int_t binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  Int_t binVertexMin = 0;
+  Int_t binVertexMax = 0;
+  if(fVertexBinning){
+    binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
+    binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  }  
   Double_t binPsiLowEdge    = 0.;
-  Double_t binPsiUpEdge     = 0.;
+  Double_t binPsiUpEdge     = 1000.;
   Double_t binVertexLowEdge = 0.;
-  Double_t binVertexUpEdge  = 0.;
+  Double_t binVertexUpEdge  = 1000.;
 
   TH1D* h1 = NULL;
   TH1D* h2 = NULL;
@@ -911,8 +915,10 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
       // determine the bin edges for this bin
       binPsiLowEdge    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinLowEdge(iBinPsi);
       binPsiUpEdge     = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinUpEdge(iBinPsi);
-      binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
-      binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+      if(fVertexBinning){
+	binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
+	binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+      }
       
       // Psi_2
       fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
@@ -1254,8 +1260,12 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
   // ranges (in bins) for vertexZ and centrality (psi)
   Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin);
   Int_t binPsiMax    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMax-0.00001);
-  Int_t binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
-  Int_t binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  Int_t binVertexMin = 0;
+  Int_t binVertexMax = 0;
+  if(fVertexBinning){
+    binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
+    binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  }  
   Double_t binPsiLowEdge    = 0.;
   Double_t binPsiUpEdge     = 0.;
   Double_t binVertexLowEdge = 0.;
@@ -1275,8 +1285,10 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
       // determine the bin edges for this bin
       binPsiLowEdge    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinLowEdge(iBinPsi);
       binPsiUpEdge     = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinUpEdge(iBinPsi);
-      binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
-      binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+      if(fVertexBinning){
+	binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
+	binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+      }
 
       // Psi_2
       fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(binPsiLowEdge,binPsiUpEdge-0.00001); 
@@ -1511,8 +1523,12 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
   // ranges (in bins) for vertexZ and centrality (psi)
   Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin);
   Int_t binPsiMax    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMax-0.00001);
-  Int_t binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
-  Int_t binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  Int_t binVertexMin = 0;
+  Int_t binVertexMax = 0;
+  if(fVertexBinning){
+    binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
+    binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  }  
   Double_t binPsiLowEdge    = 0.;
   Double_t binPsiUpEdge     = 0.;
   Double_t binVertexLowEdge = 0.;
@@ -1532,8 +1548,10 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
       // determine the bin edges for this bin
       binPsiLowEdge    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinLowEdge(iBinPsi);
       binPsiUpEdge     = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinUpEdge(iBinPsi);
-      binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
-      binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+      if(fVertexBinning){
+	binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
+	binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+      }
 
       // Psi_2
       fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001);
@@ -1730,12 +1748,16 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
   // ranges (in bins) for vertexZ and centrality (psi)
   Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin);
   Int_t binPsiMax    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMax-0.00001);
-  Int_t binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
-  Int_t binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  Int_t binVertexMin = 0;
+  Int_t binVertexMax = 0;
+  if(fVertexBinning){
+    binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
+    binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  }  
   Double_t binPsiLowEdge    = 0.;
-  Double_t binPsiUpEdge     = 0.;
+  Double_t binPsiUpEdge     = 1000.;
   Double_t binVertexLowEdge = 0.;
-  Double_t binVertexUpEdge  = 0.;
+  Double_t binVertexUpEdge  = 1000.;
 
   // loop over all bins
   for(Int_t iBinPsi = binPsiMin; iBinPsi <= binPsiMax; iBinPsi++){
@@ -1746,9 +1768,11 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
       // determine the bin edges for this bin
       binPsiLowEdge    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinLowEdge(iBinPsi);
       binPsiUpEdge     = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinUpEdge(iBinPsi);
-      binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
-      binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
-    
+      if(fVertexBinning){
+	binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
+	binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+      }
+
       // get the 2D histograms for the correct type
       if(type=="PN"){
 	fSame  = GetCorrelationFunctionPN(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
