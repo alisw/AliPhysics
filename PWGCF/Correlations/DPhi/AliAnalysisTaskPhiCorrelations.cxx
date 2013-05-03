@@ -89,7 +89,6 @@ fMode(0),
 fReduceMemoryFootprint(kFALSE),
 fFillMixed(kTRUE),
 fMixingTracks(50000),
-fCompareCentralities(kFALSE),
 fTwoTrackEfficiencyStudy(kFALSE),
 fTwoTrackEfficiencyCut(0),
 fUseVtxAxis(kFALSE),
@@ -536,7 +535,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   TObjArray* tracksCorrelateMC = tracksMC;
   if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
   {
-    // TODO for MC this uses the PDG of the mother of the particle
     tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
     CleanUp(tmpList, mc, skipParticlesAbove);
     tracksCorrelateMC = CloneAndReduceTrackList(tmpList);
@@ -968,7 +966,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   fHistos->FillEvent(centrality, AliUEHist::kCFStepVertex);
  
   // optimization
-  if (centrality < 0 && !fCompareCentralities)
+  if (centrality < 0)
     return;
 
   TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
@@ -1022,11 +1020,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (fFillpT)
     weight = -1;
 
-  // fill two different centralities (syst study)
-  // the zvtx axis is used to distinguish the results of both centralities: configured centrality in zvtx = 0, SPD in zvtx = 2
-  if (fCompareCentralities)
-    zVtx = 0;
-  
   // Fill containers at STEP 6 (reconstructed)
   if (centrality >= 0)
   {
@@ -1039,14 +1032,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
   }
 
-  // fill second time with SPD centrality
-  if (fCompareCentralities && centralityObj)
-  {
-    centrality = centralityObj->GetCentralityPercentile("CL1");
-    if (centrality >= 0 && !fSkipStep6)
-      fHistos->FillCorrelations(centrality, 2, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight, kFALSE, kFALSE, 0, 0.02, kTRUE);
-  }
-  
   // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
   TObjArray* tracksClone = CloneAndReduceTrackList(tracks);
   delete tracks;
@@ -1129,8 +1114,10 @@ TObjArray* AliAnalysisTaskPhiCorrelations::CloneAndReduceTrackList(TObjArray* tr
   
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
-    AliVParticle* particle = (AliVParticle*) tracks->At(i);
-    tracksClone->Add(new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
+    AliVParticle* particle = (AliVParticle*) tracks->UncheckedAt(i);
+    AliDPhiBasicParticle* copy = new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
+    copy->SetUniqueID(particle->GetUniqueID());
+    tracksClone->Add(copy);
   }
   
   return tracksClone;

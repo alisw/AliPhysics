@@ -832,7 +832,6 @@ void AliUEHist::GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region regio
     {
       fGetMultCache = ChangeToThn(sparse);
       // should work but causes SEGV in ProjectionND below 
-//       delete sparse;
     }
     sparse = fGetMultCache;
   }
@@ -858,6 +857,7 @@ void AliUEHist::GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region regio
 
   // convert to THn 
   *trackHist = ChangeToThn(tmpTrackHist);
+  delete tmpTrackHist;
 }
 
 //____________________________________________________________________
