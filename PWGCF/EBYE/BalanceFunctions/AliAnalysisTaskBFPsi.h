@@ -40,9 +40,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
 
   //========================correction
-  virtual void   SetInputCorrection(const char* filename, const char* gCollSystem);//{
-    //fileNameCorrection = filename;//++++++++++++++++++++++++++++++=
-    //;}
+  virtual void   SetInputCorrection(TString filename, TString gCollSystem);//{
   //========================correction
 
   void SetAnalysisObject(AliBalancePsi *const analysis) {
@@ -149,8 +147,6 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
         fEventClass = receivedEventClass;
     }
 
-    //========================correction=============================//
-    // void SetInputCorrection(const char* filename = "efficiencyCorrection.root"){}
 
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
@@ -233,8 +229,6 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUsePIDPropabilities;//flag to use probability method for PID
   Double_t fPIDNSigma;//nsigma cut for PID
   Double_t fMinAcceptedPIDProbability;//probability cut for PID
-
-  //const char*  fileNameCorrection; //++++++++++++++++++++++++++++++++++
 
   //============PID============//
 
