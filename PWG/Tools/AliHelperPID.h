@@ -18,7 +18,7 @@ namespace AliHelperPIDNameSpace {
   
   enum PIDType_t
   {
-    kNSigmaTPC,
+    kNSigmaTPC = 0,
     kNSigmaTOF,
     kNSigmaTPCTOF,  // squared sum
     kNSigmaPIDType=kNSigmaTPCTOF
@@ -27,7 +27,7 @@ namespace AliHelperPIDNameSpace {
   
   enum AliHelperDetectorType_t
   {
-    kTPC,
+    kTPC = 0,
     kTOF,
     kNDetectors
   };
@@ -35,7 +35,7 @@ namespace AliHelperPIDNameSpace {
   
   enum AliHelperParticleSpecies_t
   {
-    kSpPion,
+    kSpPion = 0,
     kSpKaon,
     kSpProton,
     kNSpecies,
@@ -45,7 +45,7 @@ namespace AliHelperPIDNameSpace {
   
   enum AliHelperCharge_t
   {
-    kChPos,
+    kChPos = 0,
     kChNeg,
     kNCharge
   };
@@ -80,7 +80,7 @@ class AliHelperPID : public TNamed
   void SetfPtTOFPID(Double_t pttof){fPtTOFPID=pttof;}
   //getters of the other data members
   TList * GetOutputList() {return fOutputList;}//get the TList with histos
-  Double_t* GetNSigmas() {return *fnsigmas;}//get nsigma[ipart][idet], calculated in CalculateNSigmas(trk)
+  Double_t* GetNSigmas(AliHelperParticleSpecies_t species) {return fnsigmas[species];}//get nsigma[ipart][idet], calculated in CalculateNSigmas(trk)
   Bool_t* GetfHasDoubleCounting() {return fHasDoubleCounting;}//get fHasDoubleCounting[ipart], calculated in GetDoubleCounting(trk)
   //getter of histo "name" from fOutput
   TH2F* GetHistogram2D(const char * name);//return histogram "name" from fOutputList
