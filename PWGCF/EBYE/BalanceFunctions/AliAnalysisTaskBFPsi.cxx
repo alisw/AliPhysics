@@ -502,15 +502,23 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
 
 
 //________________________________________________________________________
-void AliAnalysisTaskBFPsi::SetInputCorrection(const char* filename, 
-					      const char* gCollSystem) {
+void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename, 
+					      TString gCollSystem) {
   //Open files that will be used for correction
   TString gCollidingSystem = gCollSystem;
+
+  cout<<filename<<endl;
+
+  // No file specified -> run without corrections
+  if(!filename.Contains(".root")) {
+    AliInfo(Form("No correction file specified (= %s) --> run without corrections",filename.Data()));
+    return;
+  }
 
   //Open the input file
   TFile *f = TFile::Open(filename);
   if(!f->IsOpen()) {
-    Printf("File not found!!!");
+    AliInfo(Form("File %s not found --> run without corrections",filename.Data()));
     return;
   }
     
@@ -1135,7 +1143,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
       
       // add the track to the TObjArray
@@ -1170,30 +1177,39 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;
 
-      // //Exclude resonances
-      // if(fExcludeResonancesInMC) {
-      // 	TParticle *particle = track->Particle();
-      // 	if(!particle) continue;
+      // Remove neutral tracks
+      if( vCharge == 0 ) continue;
+
+      //Exclude resonances
+      if(fExcludeResonancesInMC) {
 	
-      // 	Bool_t kExcludeParticle = kFALSE;
-      // 	Int_t gMotherIndex = particle->GetFirstMother();
-      // 	if(gMotherIndex != -1) {
-      // 	  AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
-      // 	  if(motherTrack) {
-      // 	    TParticle *motherParticle = motherTrack->Particle();
-      // 	    if(motherParticle) {
-      // 	      Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
-      // 	      //if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
-      // 	      if(pdgCodeOfMother == 113) {
-      // 		kExcludeParticle = kTRUE;
-      // 	      }
-      // 	    }
-      // 	  }
-      // 	}
+      	Bool_t kExcludeParticle = kFALSE;
+      	Int_t gMotherIndex = aodTrack->GetMother();
+      	if(gMotherIndex != -1) {
+	  AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+	  if(motherTrack) {
+	    Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
+	    //if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
+	    //if(pdgCodeOfMother == 113) {
+	    if(pdgCodeOfMother == 113  // rho0
+	       || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
+	       || pdgCodeOfMother == 221  // eta
+	       || pdgCodeOfMother == 331  // eta'
+	       || pdgCodeOfMother == 223  // omega
+	       || pdgCodeOfMother == 333  // phi
+	       || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
+	       || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
+	       || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
+	       
+	       ) {
+	      kExcludeParticle = kTRUE;
+	    }
+	  }
+	}
 	
-      // 	//Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
-      // 	if(kExcludeParticle) continue;
-      // }
+      	//Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
+      	if(kExcludeParticle) continue;
+      }
 
       // fill QA histograms
       fHistPt->Fill(vPt,gCentrality);
@@ -1205,8 +1221,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
       else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
       
-      //=======================================correction (NO corrections in case of MC truth)
-      Double_t correction = 1.;      
+      //=======================================correction
+      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
       
       // add the track to the TObjArray
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
@@ -1420,6 +1437,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	//exclude non stable particles
 	if(!(gMCEvent->IsPhysicalPrimary(iTracks))) continue;
 	
+	vCharge = track->Charge();
 	vEta    = track->Eta();
 	vPt     = track->Pt();
 	vY      = track->Y();
@@ -1432,6 +1450,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	else if (fUsePID){
 	  if( vY < fEtaMin || vY > fEtaMax)  continue;
 	}
+
+	// Remove neutral tracks
+	if( vCharge == 0 ) continue;
 	
 	//analyze one set of particles
 	if(fUseMCPdgCode) {
@@ -1475,7 +1496,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  if(kExcludeParticle) continue;
 	}
 	
-	vCharge = track->Charge();
 	vPhi    = track->Phi();
 	//Printf("phi (before): %lf",vPhi);
 	
@@ -1519,8 +1539,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	
 	//vPhi *= TMath::RadToDeg();
 	
-	//=======================================correction (NO corrections in case of MC truth)
-	Double_t correction = 1.;
+      //=======================================correction
+      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 
 	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
       } //track loop
