@@ -69,6 +69,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   UInt_t	 GetTrackStatus() { return fTrackStatus; }
   void		 SetCheckMotherPDG(Bool_t checkpdg) { fCheckMotherPDG = checkpdg; }
   Bool_t	 GetCheckMotherPDG() { return fCheckMotherPDG; }
+  void		 NextEvent() { fEventCounter++; }
 
 protected:
   Bool_t CheckTrack(AliVParticle * part);
@@ -86,6 +87,7 @@ private:
   AliESDtrackCuts *fEsdTrackCutsExtra1;    // set of cuts when reading ESD
   AliESDtrackCuts *fEsdTrackCutsExtra2;    // set of cuts when reading ESD
   AliHelperPID   *fHelperPID;    // PID Helper object
+  UInt_t fEventCounter;		  //! processed events (counter)
   
   ClassDef(AliAnalyseLeadingTrackUE,0)
 };

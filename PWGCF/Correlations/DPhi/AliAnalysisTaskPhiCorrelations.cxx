@@ -335,6 +335,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 //____________________________________________________________________
 void  AliAnalysisTaskPhiCorrelations::Exec(Option_t */*option*/)
 {
+  // exec (per event)
+  fAnalyseUE->NextEvent();
+  
   // receive ESD pointer if we are not running AOD analysis
   if (!fAOD)
   {

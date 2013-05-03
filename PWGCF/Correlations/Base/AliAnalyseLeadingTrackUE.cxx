@@ -83,7 +83,8 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fEsdTrackCuts(0x0), 
   fEsdTrackCutsExtra1(0x0), 
   fEsdTrackCutsExtra2(0x0), 
-  fHelperPID(0x0) 
+  fHelperPID(0x0),
+  fEventCounter(0)
 {
   // constructor
 }
@@ -793,6 +794,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
   // only charged
   if (!part->Charge())return 0;
   
+  part->SetUniqueID(fEventCounter * 100000 + ipart);
   return part;
 }
 

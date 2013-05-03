@@ -657,7 +657,10 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  // if the trigger particle is also part of the associated particle list, the pT ordering condition is applied anyway
 	  if (!mixed || (*existsInMixed)[i] != 0)
 	    if (particle->Pt() >= triggerParticle->Pt())
+	    {
+// 	      Printf("Skipping %d %d", i, j);
 	      continue;
+	    }
 	}
 	
 	if (fAssociatedSelectCharge != 0)
