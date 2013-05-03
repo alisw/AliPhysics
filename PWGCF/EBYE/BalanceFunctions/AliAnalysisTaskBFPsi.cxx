@@ -705,7 +705,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	AliAODHeader *header = (AliAODHeader*) event->GetHeader();
 	if(header){
 	  gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-	  //Printf("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb %lf:", gCentrality);
+
 	  // QA for centrality estimators
 	  fHistCentStats->Fill(0.,header->GetCentralityP()->GetCentralityPercentile("V0M"));
 	  fHistCentStats->Fill(1.,header->GetCentralityP()->GetCentralityPercentile("FMD"));
@@ -1143,9 +1143,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
     }//track loop
   }// AOD analysis
 
-  else if(gAnalysisLevel == "MCAOD") {
-  }
-
   //==============================================================================================================
   else if(gAnalysisLevel == "MCAOD") {
     
@@ -1172,7 +1169,32 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       // Kinematics cuts from ESD track cuts
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;
-      
+
+      // //Exclude resonances
+      // if(fExcludeResonancesInMC) {
+      // 	TParticle *particle = track->Particle();
+      // 	if(!particle) continue;
+	
+      // 	Bool_t kExcludeParticle = kFALSE;
+      // 	Int_t gMotherIndex = particle->GetFirstMother();
+      // 	if(gMotherIndex != -1) {
+      // 	  AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
+      // 	  if(motherTrack) {
+      // 	    TParticle *motherParticle = motherTrack->Particle();
+      // 	    if(motherParticle) {
+      // 	      Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
+      // 	      //if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
+      // 	      if(pdgCodeOfMother == 113) {
+      // 		kExcludeParticle = kTRUE;
+      // 	      }
+      // 	    }
+      // 	  }
+      // 	}
+	
+      // 	//Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
+      // 	if(kExcludeParticle) continue;
+      // }
+
       // fill QA histograms
       fHistPt->Fill(vPt,gCentrality);
       fHistEta->Fill(vEta,gCentrality);
@@ -1183,10 +1205,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
       else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
       
-      //=======================================correction
-      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-
-      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+      //=======================================correction (NO corrections in case of MC truth)
+      Double_t correction = 1.;      
       
       // add the track to the TObjArray
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
@@ -1499,9 +1519,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	
 	//vPhi *= TMath::RadToDeg();
 	
-	//=======================================correction
-	Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge,gCentrality);  
-	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+	//=======================================correction (NO corrections in case of MC truth)
+	Double_t correction = 1.;
 
 	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
       } //track loop
