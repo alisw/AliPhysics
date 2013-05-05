@@ -111,6 +111,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillAsymmetryHisto()     { fFillAsymmetryHisto  = kTRUE  ; }
   void         SwitchOffFillAsymmetryHisto()    { fFillAsymmetryHisto  = kFALSE ; }
 
+  void         SwitchOnFillOriginHisto()        { fFillOriginHisto     = kTRUE  ; }
+  void         SwitchOffFillOriginHisto()       { fFillOriginHisto     = kFALSE ; }
   
   //MC analysis related methods
     
@@ -160,6 +162,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillSSCombinations;        // Do invariant mass for different combination of shower shape clusters
   Bool_t   fFillAngleHisto;            // Fill histograms with pair opening angle
   Bool_t   fFillAsymmetryHisto;        // Fill histograms with asymmetry vs pt
+  Bool_t   fFillOriginHisto;           // Fill histograms depending on their origin
 
   //Histograms
   

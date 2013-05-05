@@ -67,7 +67,7 @@ fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),      
 fMakeInvPtPlots(kFALSE),     fSameSM(kFALSE),              
 fFillSMCombinations(kFALSE), fCheckConversion(kFALSE),
 fFillBadDistHisto(kFALSE),   fFillSSCombinations(kFALSE),  
-fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),
+fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),  fFillOriginHisto(0),
 //Histograms
 fhAverTotECluster(0),        fhAverTotECell(0),            fhAverTotECellvsCluster(0),
 fhEDensityCluster(0),        fhEDensityCell(0),            fhEDensityCellvsCluster(0),
@@ -239,11 +239,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   fhReMod                = new TH2F*[fNModules]   ;
   fhMiMod                = new TH2F*[fNModules]   ;
   
-  if(fCalorimeter == "PHOS"){
+  if(fCalorimeter == "PHOS")
+  {
     fhReDiffPHOSMod        = new TH2F*[fNModules]   ;  
     fhMiDiffPHOSMod        = new TH2F*[fNModules]   ;
   }
-  else{
+  else
+  {
     fhReSameSectorEMCALMod = new TH2F*[fNModules/2] ;
     fhReSameSideEMCALMod   = new TH2F*[fNModules-2] ;  
     fhMiSameSectorEMCALMod = new TH2F*[fNModules/2] ;
@@ -253,13 +255,15 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   fhRe1 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
   fhMi1 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
-  if(fFillBadDistHisto){
+  if(fFillBadDistHisto)
+  {
     fhRe2 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
     fhRe3 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
     fhMi2 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
     fhMi3 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
   }
-  if(fMakeInvPtPlots) {
+  if(fMakeInvPtPlots)
+  {
     fhReInvPt1 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
     fhMiInvPt1 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
     if(fFillBadDistHisto){
@@ -320,9 +324,12 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  for(Int_t ic=0; ic<GetNCentrBin(); ic++){
-    for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
-      for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
+  for(Int_t ic=0; ic<GetNCentrBin(); ic++)
+  {
+    for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
+    {
+      for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
+      {
         Int_t index = ((ic*fNPIDBits)+ipid)*fNAsymCuts + iasym;
         //printf("cen %d, pid %d, asy %d, Index %d\n",ic,ipid,iasym,index);
         //Distance to bad module 1
@@ -335,7 +342,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         //printf("name: %s\n ",fhRe1[index]->GetName());
         outputContainer->Add(fhRe1[index]) ;
         
-        if(fFillBadDistHisto){
+        if(fFillBadDistHisto)
+        {
           //Distance to bad module 2
           snprintf(key, buffersize,"hRe_cen%d_pidbit%d_asy%d_dist2",ic,ipid,iasym) ;
           snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 2",
@@ -356,7 +364,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         }
         
         //Inverse pT 
-        if(fMakeInvPtPlots){
+        if(fMakeInvPtPlots)
+        {
           //Distance to bad module 1
           snprintf(key, buffersize,"hReInvPt_cen%d_pidbit%d_asy%d_dist1",ic,ipid,iasym) ;
           snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 1",
@@ -386,6 +395,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
             outputContainer->Add(fhReInvPt3[index]) ;
           }
         }
+        
         if(DoOwnMix())
         {
           //Distance to bad module 1
@@ -415,8 +425,10 @@ TList * AliAnaPi0::GetCreateOutputObjects()
             fhMi3[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
             outputContainer->Add(fhMi3[index]) ;
           }
+          
           //Inverse pT
-          if(fMakeInvPtPlots){
+          if(fMakeInvPtPlots)
+          {
             //Distance to bad module 1
             snprintf(key, buffersize,"hMiInvPt_cen%d_pidbit%d_asy%d_dist1",ic,ipid,iasym) ;
             snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d, PID bit=%d and asymmetry %1.2f, dist bad 1",
@@ -450,7 +462,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  if(fFillAsymmetryHisto){
+  if(fFillAsymmetryHisto)
+  {
     fhRePtAsym = new TH2F("hRePtAsym","Asymmetry vs pt, for pairs",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
     fhRePtAsym->SetXTitle("p_{T} (GeV/c)");
     fhRePtAsym->SetYTitle("Asymmetry");
@@ -467,8 +480,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhRePtAsymEta);
   }
   
-  if(fMultiCutAna){
-    
+  if(fMultiCutAna)
+  {
     fhRePIDBits         = new TH2F*[fNPIDBits];
     for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
       snprintf(key,   buffersize,"hRe_pidbit%d",ipid) ;
@@ -482,14 +495,16 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhRePtNCellAsymCuts    = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
     fhMiPtNCellAsymCuts    = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
     
-    if(fFillSMCombinations){
+    if(fFillSMCombinations)
       for(Int_t iSM = 0; iSM < fNModules; iSM++) fhRePtNCellAsymCutsSM[iSM] = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
       
-    }
     
-    for(Int_t ipt=0; ipt<fNPtCuts; ipt++){
-      for(Int_t icell=0; icell<fNCellNCuts; icell++){
-        for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
+    for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
+    {
+      for(Int_t icell=0; icell<fNCellNCuts; icell++)
+      {
+        for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
+        {
           snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d",ipt,icell,iasym) ;
           snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f ",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
           Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
@@ -506,8 +521,10 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           fhMiPtNCellAsymCuts[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
           outputContainer->Add(fhMiPtNCellAsymCuts[index]) ;          
           
-          if(fFillSMCombinations){       
-            for(Int_t iSM = 0; iSM < fNModules; iSM++){
+          if(fFillSMCombinations)
+          {
+            for(Int_t iSM = 0; iSM < fNModules; iSM++)
+            {
               snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM%d",ipt,icell,iasym,iSM) ;
               snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f, SM %d ",
                        fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym],iSM) ;
@@ -522,9 +539,11 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       }
     }
     
-    if(ntrmbins!=0){
+    if(ntrmbins!=0)
+    {
       fhRePtMult = new TH3F*[fNAsymCuts] ;
-      for(Int_t iasym = 0; iasym<fNAsymCuts; iasym++){
+      for(Int_t iasym = 0; iasym<fNAsymCuts; iasym++)
+      {
         fhRePtMult[iasym] = new TH3F(Form("hRePtMult_asym%d",iasym),Form("(p_{T},C,M)_{#gamma#gamma}, A<%1.2f",fAsymCuts[iasym]),
                                      nptbins,ptmin,ptmax,ntrmbins,ntrmmin,ntrmmax,nmassbins,massmin,massmax);
         fhRePtMult[iasym]->SetXTitle("p_{T} (GeV/c)");
@@ -622,8 +641,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   } 
   
   //Histograms filled only if MC data is requested 	
-  if(IsDataMC()){
-    
+  if(IsDataMC())
+  {
     fhReMCFromConversion = new TH2F("hReMCFromConversion","Invariant mass of 2 clusters originated in conversions",
                          nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
     fhReMCFromConversion->SetXTitle("p_{T} (GeV/c)");
@@ -737,64 +756,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhPrimEtaPtEventPlane) ;
     outputContainer->Add(fhPrimEtaAccPtEventPlane) ;
     
-    //Prim origin
-    //Pi0
-    fhPrimPi0PtOrigin     = new TH2F("hPrimPi0PtOrigin","Primary pi0 pt vs origin",nptbins,ptmin,ptmax,11,0,11) ;
-    fhPrimPi0PtOrigin->SetXTitle("p_{T} (GeV/c)");
-    fhPrimPi0PtOrigin->SetYTitle("Origin");
-    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
-    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
-    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances ");
-    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
-    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
-    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
-    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
-    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
-    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
-    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
-    outputContainer->Add(fhPrimPi0PtOrigin) ;
-    
-    fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated pi0 pt vs origin",nptbins,ptmin,ptmax,11,0,11) ;
-    fhMCPi0PtOrigin->SetXTitle("p_{T} (GeV/c)");
-    fhMCPi0PtOrigin->SetYTitle("Origin");
-    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
-    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
-    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
-    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
-    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
-    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
-    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
-    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
-    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
-    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
-    outputContainer->Add(fhMCPi0PtOrigin) ;    
-    
-    //Eta
-    fhPrimEtaPtOrigin     = new TH2F("hPrimEtaPtOrigin","Primary pi0 pt vs origin",nptbins,ptmin,ptmax,7,0,7) ;
-    fhPrimEtaPtOrigin->SetXTitle("p_{T} (GeV/c)");
-    fhPrimEtaPtOrigin->SetYTitle("Origin");
-    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
-    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
-    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
-    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
-    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(5 ,"Other");
-    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(6 ,"#eta prime ");
-    
-    outputContainer->Add(fhPrimEtaPtOrigin) ;
-    
-    fhMCEtaPtOrigin     = new TH2F("hMCEtaPtOrigin","Reconstructed pair from generated pi0 pt vs origin",nptbins,ptmin,ptmax,7,0,7) ;
-    fhMCEtaPtOrigin->SetXTitle("p_{T} (GeV/c)");
-    fhMCEtaPtOrigin->SetYTitle("Origin");
-    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
-    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
-    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
-    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
-    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(5 ,"Other");
-    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(6 ,"#eta prime");
-    
-    outputContainer->Add(fhMCEtaPtOrigin) ;
-    
-    if(fFillAngleHisto)
+     if(fFillAngleHisto)
     {
       fhPrimPi0OpeningAngle  = new TH2F
       ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,0,0.5); 
@@ -836,117 +798,182 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
     }
     
-    for(Int_t i = 0; i<13; i++){
-      fhMCOrgMass[i] = new TH2F(Form("hMCOrgMass_%d",i),Form("mass vs pt, origin %d",i),nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-      fhMCOrgMass[i]->SetXTitle("p_{T} (GeV/c)");
-      fhMCOrgMass[i]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-      outputContainer->Add(fhMCOrgMass[i]) ;
+    if(fFillOriginHisto)
+    {
+      //Prim origin
+      //Pi0
+      fhPrimPi0PtOrigin     = new TH2F("hPrimPi0PtOrigin","Primary pi0 pt vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+      fhPrimPi0PtOrigin->SetXTitle("p_{T} (GeV/c)");
+      fhPrimPi0PtOrigin->SetYTitle("Origin");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances ");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+      outputContainer->Add(fhPrimPi0PtOrigin) ;
       
-      fhMCOrgAsym[i]= new TH2F(Form("hMCOrgAsym_%d",i),Form("asymmetry vs pt, origin %d",i),nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
-      fhMCOrgAsym[i]->SetXTitle("p_{T} (GeV/c)");
-      fhMCOrgAsym[i]->SetYTitle("A");
-      outputContainer->Add(fhMCOrgAsym[i]) ;
+      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated pi0 pt vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+      fhMCPi0PtOrigin->SetXTitle("p_{T} (GeV/c)");
+      fhMCPi0PtOrigin->SetYTitle("Origin");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+      outputContainer->Add(fhMCPi0PtOrigin) ;    
       
-      fhMCOrgDeltaEta[i] = new TH2F(Form("hMCOrgDeltaEta_%d",i),Form("#Delta #eta of pair vs pt, origin %d",i),nptbins,ptmin,ptmax,netabins,-1.4,1.4) ;
-      fhMCOrgDeltaEta[i]->SetXTitle("p_{T} (GeV/c)");
-      fhMCOrgDeltaEta[i]->SetYTitle("#Delta #eta");
-      outputContainer->Add(fhMCOrgDeltaEta[i]) ;
+      //Eta
+      fhPrimEtaPtOrigin     = new TH2F("hPrimEtaPtOrigin","Primary pi0 pt vs origin",nptbins,ptmin,ptmax,7,0,7) ;
+      fhPrimEtaPtOrigin->SetXTitle("p_{T} (GeV/c)");
+      fhPrimEtaPtOrigin->SetYTitle("Origin");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(5 ,"Other");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(6 ,"#eta prime ");
       
-      fhMCOrgDeltaPhi[i]= new TH2F(Form("hMCOrgDeltaPhi_%d",i),Form("#Delta #phi of pair vs p_{T}, origin %d",i),nptbins,ptmin,ptmax,nphibins,-0.7,0.7) ;
-      fhMCOrgDeltaPhi[i]->SetXTitle("p_{T} (GeV/c)");
-      fhMCOrgDeltaPhi[i]->SetYTitle("#Delta #phi (rad)");
-      outputContainer->Add(fhMCOrgDeltaPhi[i]) ;
+      outputContainer->Add(fhPrimEtaPtOrigin) ;
       
-    }
-    
-    if(fMultiCutAnaSim){
-      fhMCPi0MassPtTrue  = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-      fhMCPi0MassPtRec   = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-      fhMCPi0PtTruePtRec = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-      fhMCEtaMassPtRec   = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-      fhMCEtaMassPtTrue  = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-      fhMCEtaPtTruePtRec = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-      for(Int_t ipt=0; ipt<fNPtCuts; ipt++){
-        for(Int_t icell=0; icell<fNCellNCuts; icell++){
-          for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
-            Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
-            
-            fhMCPi0MassPtRec[index] = new TH2F(Form("hMCPi0MassPtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                               Form("Reconstructed Mass vs reconstructed p_T of true #pi^{0} cluster pairs for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
-                                               nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-            fhMCPi0MassPtRec[index]->SetXTitle("p_{T, reconstructed} (GeV/c)");
-            fhMCPi0MassPtRec[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-            outputContainer->Add(fhMCPi0MassPtRec[index]) ;    
-            
-            fhMCPi0MassPtTrue[index] = new TH2F(Form("hMCPi0MassPtTrue_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                Form("Reconstructed Mass vs generated p_T of true #pi^{0} cluster pairs for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
-                                                nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-            fhMCPi0MassPtTrue[index]->SetXTitle("p_{T, generated} (GeV/c)");
-            fhMCPi0MassPtTrue[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-            outputContainer->Add(fhMCPi0MassPtTrue[index]) ;
-            
-            fhMCPi0PtTruePtRec[index] = new TH2F(Form("hMCPi0PtTruePtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                 Form("Generated vs reconstructed p_T of true #pi^{0} cluster pairs, 0.01 < rec. mass < 0.17 MeV/c^{2} for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
-                                                 nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
-            fhMCPi0PtTruePtRec[index]->SetXTitle("p_{T, generated} (GeV/c)");
-            fhMCPi0PtTruePtRec[index]->SetYTitle("p_{T, reconstructed} (GeV/c)");
-            outputContainer->Add(fhMCPi0PtTruePtRec[index]) ;
-            
-            fhMCEtaMassPtRec[index] = new TH2F(Form("hMCEtaMassPtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                               Form("Reconstructed Mass vs reconstructed p_T of true #eta cluster pairs for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
-                                               nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-            fhMCEtaMassPtRec[index]->SetXTitle("p_{T, generated} (GeV/c)");
-            fhMCEtaMassPtRec[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-            outputContainer->Add(fhMCEtaMassPtRec[index]) ;
-            
-            fhMCEtaMassPtTrue[index] = new TH2F(Form("hMCEtaMassPtTrue_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                Form("Reconstructed Mass vs generated p_T of true #eta cluster pairs for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
-                                                nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-            fhMCEtaMassPtTrue[index]->SetXTitle("p_{T, generated} (GeV/c)");
-            fhMCEtaMassPtTrue[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-            outputContainer->Add(fhMCEtaMassPtTrue[index]) ;
-            
-            fhMCEtaPtTruePtRec[index] = new TH2F(Form("hMCEtaPtTruePtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                 Form("Generated vs reconstructed p_T of true #eta cluster pairs, 0.01 < rec. mass < 0.17 MeV/c^{2} for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
-                                                 nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
-            fhMCEtaPtTruePtRec[index]->SetXTitle("p_{T, generated} (GeV/c)");
-            fhMCEtaPtTruePtRec[index]->SetYTitle("p_{T, reconstructed} (GeV/c)");
-            outputContainer->Add(fhMCEtaPtTruePtRec[index]) ;
+      fhMCEtaPtOrigin     = new TH2F("hMCEtaPtOrigin","Reconstructed pair from generated pi0 pt vs origin",nptbins,ptmin,ptmax,7,0,7) ;
+      fhMCEtaPtOrigin->SetXTitle("p_{T} (GeV/c)");
+      fhMCEtaPtOrigin->SetYTitle("Origin");
+      fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+      fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+      fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+      fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+      fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(5 ,"Other");
+      fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(6 ,"#eta prime");
+      
+      outputContainer->Add(fhMCEtaPtOrigin) ;
+      
+      for(Int_t i = 0; i<13; i++)
+      {
+        fhMCOrgMass[i] = new TH2F(Form("hMCOrgMass_%d",i),Form("mass vs pt, origin %d",i),nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhMCOrgMass[i]->SetXTitle("p_{T} (GeV/c)");
+        fhMCOrgMass[i]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+        outputContainer->Add(fhMCOrgMass[i]) ;
+        
+        fhMCOrgAsym[i]= new TH2F(Form("hMCOrgAsym_%d",i),Form("asymmetry vs pt, origin %d",i),nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+        fhMCOrgAsym[i]->SetXTitle("p_{T} (GeV/c)");
+        fhMCOrgAsym[i]->SetYTitle("A");
+        outputContainer->Add(fhMCOrgAsym[i]) ;
+        
+        fhMCOrgDeltaEta[i] = new TH2F(Form("hMCOrgDeltaEta_%d",i),Form("#Delta #eta of pair vs pt, origin %d",i),nptbins,ptmin,ptmax,netabins,-1.4,1.4) ;
+        fhMCOrgDeltaEta[i]->SetXTitle("p_{T} (GeV/c)");
+        fhMCOrgDeltaEta[i]->SetYTitle("#Delta #eta");
+        outputContainer->Add(fhMCOrgDeltaEta[i]) ;
+        
+        fhMCOrgDeltaPhi[i]= new TH2F(Form("hMCOrgDeltaPhi_%d",i),Form("#Delta #phi of pair vs p_{T}, origin %d",i),nptbins,ptmin,ptmax,nphibins,-0.7,0.7) ;
+        fhMCOrgDeltaPhi[i]->SetXTitle("p_{T} (GeV/c)");
+        fhMCOrgDeltaPhi[i]->SetYTitle("#Delta #phi (rad)");
+        outputContainer->Add(fhMCOrgDeltaPhi[i]) ;
+        
+      }
+      
+      if(fMultiCutAnaSim)
+      {
+        fhMCPi0MassPtTrue  = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+        fhMCPi0MassPtRec   = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+        fhMCPi0PtTruePtRec = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+        fhMCEtaMassPtRec   = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+        fhMCEtaMassPtTrue  = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+        fhMCEtaPtTruePtRec = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+        for(Int_t ipt=0; ipt<fNPtCuts; ipt++){
+          for(Int_t icell=0; icell<fNCellNCuts; icell++){
+            for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
+              Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
+              
+              fhMCPi0MassPtRec[index] = new TH2F(Form("hMCPi0MassPtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
+                                                 Form("Reconstructed Mass vs reconstructed p_T of true #pi^{0} cluster pairs for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                 nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+              fhMCPi0MassPtRec[index]->SetXTitle("p_{T, reconstructed} (GeV/c)");
+              fhMCPi0MassPtRec[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+              outputContainer->Add(fhMCPi0MassPtRec[index]) ;    
+              
+              fhMCPi0MassPtTrue[index] = new TH2F(Form("hMCPi0MassPtTrue_pt%d_cell%d_asym%d",ipt,icell,iasym),
+                                                  Form("Reconstructed Mass vs generated p_T of true #pi^{0} cluster pairs for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                  nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+              fhMCPi0MassPtTrue[index]->SetXTitle("p_{T, generated} (GeV/c)");
+              fhMCPi0MassPtTrue[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+              outputContainer->Add(fhMCPi0MassPtTrue[index]) ;
+              
+              fhMCPi0PtTruePtRec[index] = new TH2F(Form("hMCPi0PtTruePtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
+                                                   Form("Generated vs reconstructed p_T of true #pi^{0} cluster pairs, 0.01 < rec. mass < 0.17 MeV/c^{2} for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                   nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
+              fhMCPi0PtTruePtRec[index]->SetXTitle("p_{T, generated} (GeV/c)");
+              fhMCPi0PtTruePtRec[index]->SetYTitle("p_{T, reconstructed} (GeV/c)");
+              outputContainer->Add(fhMCPi0PtTruePtRec[index]) ;
+              
+              fhMCEtaMassPtRec[index] = new TH2F(Form("hMCEtaMassPtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
+                                                 Form("Reconstructed Mass vs reconstructed p_T of true #eta cluster pairs for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                 nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+              fhMCEtaMassPtRec[index]->SetXTitle("p_{T, generated} (GeV/c)");
+              fhMCEtaMassPtRec[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+              outputContainer->Add(fhMCEtaMassPtRec[index]) ;
+              
+              fhMCEtaMassPtTrue[index] = new TH2F(Form("hMCEtaMassPtTrue_pt%d_cell%d_asym%d",ipt,icell,iasym),
+                                                  Form("Reconstructed Mass vs generated p_T of true #eta cluster pairs for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                  nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+              fhMCEtaMassPtTrue[index]->SetXTitle("p_{T, generated} (GeV/c)");
+              fhMCEtaMassPtTrue[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+              outputContainer->Add(fhMCEtaMassPtTrue[index]) ;
+              
+              fhMCEtaPtTruePtRec[index] = new TH2F(Form("hMCEtaPtTruePtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
+                                                   Form("Generated vs reconstructed p_T of true #eta cluster pairs, 0.01 < rec. mass < 0.17 MeV/c^{2} for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                   nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
+              fhMCEtaPtTruePtRec[index]->SetXTitle("p_{T, generated} (GeV/c)");
+              fhMCEtaPtTruePtRec[index]->SetYTitle("p_{T, reconstructed} (GeV/c)");
+              outputContainer->Add(fhMCEtaPtTruePtRec[index]) ;
+            }
           }
-        }
-      }  
-    }//multi cut ana
-    else {
-      fhMCPi0MassPtTrue  = new TH2F*[1];
-      fhMCPi0PtTruePtRec = new TH2F*[1];
-      fhMCEtaMassPtTrue  = new TH2F*[1];
-      fhMCEtaPtTruePtRec = new TH2F*[1];
-      
-      fhMCPi0MassPtTrue[0] = new TH2F("hMCPi0MassPtTrue","Reconstructed Mass vs generated p_T of true #pi^{0} cluster pairs",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-      fhMCPi0MassPtTrue[0]->SetXTitle("p_{T, generated} (GeV/c)");
-      fhMCPi0MassPtTrue[0]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-      outputContainer->Add(fhMCPi0MassPtTrue[0]) ;
-      
-      fhMCPi0PtTruePtRec[0]= new TH2F("hMCPi0PtTruePtRec","Generated vs reconstructed p_T of true #pi^{0} cluster pairs, 0.01 < rec. mass < 0.17 MeV/c^{2}",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
-      fhMCPi0PtTruePtRec[0]->SetXTitle("p_{T, generated} (GeV/c)");
-      fhMCPi0PtTruePtRec[0]->SetYTitle("p_{T, reconstructed} (GeV/c)");
-      outputContainer->Add(fhMCPi0PtTruePtRec[0]) ;
-      
-      fhMCEtaMassPtTrue[0] = new TH2F("hMCEtaMassPtTrue","Reconstructed Mass vs generated p_T of true #eta cluster pairs",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-      fhMCEtaMassPtTrue[0]->SetXTitle("p_{T, generated} (GeV/c)");
-      fhMCEtaMassPtTrue[0]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-      outputContainer->Add(fhMCEtaMassPtTrue[0]) ;
-      
-      fhMCEtaPtTruePtRec[0]= new TH2F("hMCEtaPtTruePtRec","Generated vs reconstructed p_T of true #eta cluster pairs, 0.01 < rec. mass < 0.17 MeV/c^{2}",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
-      fhMCEtaPtTruePtRec[0]->SetXTitle("p_{T, generated} (GeV/c)");
-      fhMCEtaPtTruePtRec[0]->SetYTitle("p_{T, reconstructed} (GeV/c)");
-      outputContainer->Add(fhMCEtaPtTruePtRec[0]) ;
+        }  
+      }//multi cut ana
+      else
+      {
+        fhMCPi0MassPtTrue  = new TH2F*[1];
+        fhMCPi0PtTruePtRec = new TH2F*[1];
+        fhMCEtaMassPtTrue  = new TH2F*[1];
+        fhMCEtaPtTruePtRec = new TH2F*[1];
+        
+        fhMCPi0MassPtTrue[0] = new TH2F("hMCPi0MassPtTrue","Reconstructed Mass vs generated p_T of true #pi^{0} cluster pairs",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhMCPi0MassPtTrue[0]->SetXTitle("p_{T, generated} (GeV/c)");
+        fhMCPi0MassPtTrue[0]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+        outputContainer->Add(fhMCPi0MassPtTrue[0]) ;
+        
+        fhMCPi0PtTruePtRec[0]= new TH2F("hMCPi0PtTruePtRec","Generated vs reconstructed p_T of true #pi^{0} cluster pairs, 0.01 < rec. mass < 0.17 MeV/c^{2}",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
+        fhMCPi0PtTruePtRec[0]->SetXTitle("p_{T, generated} (GeV/c)");
+        fhMCPi0PtTruePtRec[0]->SetYTitle("p_{T, reconstructed} (GeV/c)");
+        outputContainer->Add(fhMCPi0PtTruePtRec[0]) ;
+        
+        fhMCEtaMassPtTrue[0] = new TH2F("hMCEtaMassPtTrue","Reconstructed Mass vs generated p_T of true #eta cluster pairs",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhMCEtaMassPtTrue[0]->SetXTitle("p_{T, generated} (GeV/c)");
+        fhMCEtaMassPtTrue[0]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+        outputContainer->Add(fhMCEtaMassPtTrue[0]) ;
+        
+        fhMCEtaPtTruePtRec[0]= new TH2F("hMCEtaPtTruePtRec","Generated vs reconstructed p_T of true #eta cluster pairs, 0.01 < rec. mass < 0.17 MeV/c^{2}",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
+        fhMCEtaPtTruePtRec[0]->SetXTitle("p_{T, generated} (GeV/c)");
+        fhMCEtaPtTruePtRec[0]->SetYTitle("p_{T, reconstructed} (GeV/c)");
+        outputContainer->Add(fhMCEtaPtTruePtRec[0]) ;
+      }
     }
   }
   
-  if(fFillSMCombinations){
+  if(fFillSMCombinations)
+  {
     TString pairnamePHOS[] = {"(0-1)","(0-2)","(1-2)","(0-3)","(0-4)","(1-3)","(1-4)","(2-3)","(2-4)","(3-4)"};
-    for(Int_t imod=0; imod<fNModules; imod++){
+    for(Int_t imod=0; imod<fNModules; imod++)
+    {
       //Module dependent invariant mass
       snprintf(key, buffersize,"hReMod_%d",imod) ;
       snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for Module %d",imod) ;
@@ -954,7 +981,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhReMod[imod]->SetXTitle("p_{T} (GeV/c)");
       fhReMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
       outputContainer->Add(fhReMod[imod]) ;
-      if(fCalorimeter=="PHOS"){
+      if(fCalorimeter=="PHOS")
+      {
         snprintf(key, buffersize,"hReDiffPHOSMod_%d",imod) ;
         snprintf(title, buffersize,"Real pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
         fhReDiffPHOSMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -963,7 +991,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         outputContainer->Add(fhReDiffPHOSMod[imod]) ;
       }
       else{//EMCAL
-        if(imod<fNModules/2){
+        if(imod<fNModules/2)
+        {
           snprintf(key, buffersize,"hReSameSectorEMCAL_%d",imod) ;
           snprintf(title, buffersize,"Real pairs EMCAL, clusters in same sector, SM(%d,%d)",imod*2,imod*2+1) ;
           fhReSameSectorEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -971,7 +1000,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           fhReSameSectorEMCALMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
           outputContainer->Add(fhReSameSectorEMCALMod[imod]) ;
         }
-        if(imod<fNModules-2){
+        if(imod<fNModules-2)
+        {
           snprintf(key, buffersize,"hReSameSideEMCAL_%d",imod) ;
           snprintf(title, buffersize,"Real pairs EMCAL, clusters in same side SM(%d,%d)",imod, imod+2) ;
           fhReSameSideEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -999,7 +1029,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           outputContainer->Add(fhMiDiffPHOSMod[imod]) ;
         }//PHOS
         else{//EMCAL
-          if(imod<fNModules/2){
+          if(imod<fNModules/2)
+          {
             snprintf(key, buffersize,"hMiSameSectorEMCALMod_%d",imod) ;
             snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same sector, SM(%d,%d)",imod*2,imod*2+1) ;
             fhMiSameSectorEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -1008,6 +1039,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
             outputContainer->Add(fhMiSameSectorEMCALMod[imod]) ;
           }
           if(imod<fNModules-2){
+            
             snprintf(key, buffersize,"hMiSameSideEMCALMod_%d",imod) ;
             snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same side SM(%d,%d)",imod, imod+2) ;
             fhMiSameSideEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -1446,6 +1478,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
   //Array of histograms ordered as follows: 0-Photon, 1-electron, 2-pi0, 3-eta, 4-a-proton, 5-a-neutron, 6-stable particles, 
   // 7-other decays, 8-string, 9-final parton, 10-initial parton, intermediate, 11-colliding proton, 12-unrelated
   
+  if(!fFillOriginHisto) return;
+  
   Int_t ancPDG    = 0;
   Int_t ancStatus = 0;
   TLorentzVector ancMomentum;
@@ -1697,6 +1731,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     return ;
   }
   
+  Int_t ncentr = GetNCentrBin();
+  if(GetNCentrBin()==0) ncentr = 1;
+  
   //Init variables
   Int_t module1         = -1;
   Int_t module2         = -1;
@@ -1935,7 +1972,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
                 //printf("index %d :(cen %d * nPID %d + ipid %d)*nasym %d + iasym %d - max index %d\n",index,curCentrBin,fNPIDBits,ipid,fNAsymCuts,iasym, curCentrBin*fNPIDBits*fNAsymCuts);
                
-                if(index < 0 || index >= curCentrBin*fNPIDBits*fNAsymCuts) continue ;
+                if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
                 
                 fhRe1     [index]->Fill(pt,m);
                 if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt,m,1./pt) ;
