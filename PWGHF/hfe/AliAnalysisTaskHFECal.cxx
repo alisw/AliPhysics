@@ -191,7 +191,10 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fgeoFake(0)
   ,fFakeTrk0(0)
   ,fFakeTrk1(0)
-  ,ftimingEle(0) 
+  ,ftimingEle(0)
+  ,fIncReco(0)
+  ,fPhoReco(0)
+  ,fSamReco(0) 
   //,fnSigEtaCorr(NULL)
 {
   //Named constructor
@@ -318,6 +321,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fFakeTrk0(0)
   ,fFakeTrk1(0)
   ,ftimingEle(0)
+  ,fIncReco(0)
+  ,fPhoReco(0)
+  ,fSamReco(0)
   //,fnSigEtaCorr(NULL)
 {
 	//Default constructor
@@ -844,6 +850,24 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        if(fFlagConvinatElec) fSameElecPtM20->Fill(cent,pt);
      }
     
+ 
+    //--------
+     
+    double recopT =  SumpT(iTracks,track);
+
+    if(m20>0.0 && m20<0.3)
+      {
+       fIncpTM20->Fill(cent,pt);
+       ftimingEle->Fill(pt,emctof);
+       if(fFlagPhotonicElec) fPhoElecPtM20->Fill(cent,pt);
+       if(fFlagConvinatElec) fSameElecPtM20->Fill(cent,pt);
+
+       fIncReco->Fill(pt,recopT);
+       if(fFlagPhotonicElec) fPhoReco->Fill(pt,recopT);
+       if(fFlagConvinatElec) fSamReco->Fill(pt,recopT);
+
+     }
+
     // MC
     // check label for electron candidiates
 
@@ -1048,9 +1072,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fIncpTM20 = new TH2F("fIncpTM20","HFE pid electro vs. centrality with M20",200,0,100,100,0,50);
   fOutputList->Add(fIncpTM20);
   
-  Int_t nBinspho[9] =  { 10,  30,   600, 12,   50,    4,  40,   8,  30};
-  Double_t minpho[9] = {  0.,  0., -0.1, -2.5,  0, -0.5,   0,-1.5,   0};   
-  Double_t maxpho[9] = {100., 30.,  0.5, 3.5,   1,  3.5,   2, 6.5,  30};   
+  Int_t nBinspho[9] =  { 10,  30,   600, 60,   50,    4,  40,   8,  30};
+  Double_t minpho[9] = {  0.,  0., -0.1, 40,  0, -0.5,   0,-1.5,   0};   
+  Double_t maxpho[9] = {100., 30.,  0.5, 100,   1,  3.5,   2, 6.5,  30};   
 
   fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; Mcele;", 9, nBinspho,minpho, maxpho);
   if(fqahist==1)fOutputList->Add(fInvmassLS);
@@ -1335,6 +1359,15 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fnSigEtaCorr[6] = new TGraphErrors(12,etaval,corr6); // 70-90
 
 
+  fIncReco = new TH2D("fIncReco","Inc",50,0,50,100,0,100);
+  fOutputList->Add(fIncReco);
+
+  fPhoReco = new TH2D("fPhoReco","Pho",50,0,50,100,0,100);
+  fOutputList->Add(fPhoReco);
+
+  fSamReco = new TH2D("fSamReco","Same",50,0,50,100,0,100);
+  fOutputList->Add(fSamReco);
+
   PostData(1,fOutputList);
 }
 
@@ -1472,7 +1505,8 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     phoinfo[0] = cent;
     phoinfo[1] = ptPrim;
     phoinfo[2] = mass;
-    phoinfo[3] = nSig;
+    //phoinfo[3] = nSig;
+    phoinfo[3] = dEdxAsso;
     phoinfo[4] = openingAngle;
     phoinfo[5] = ishower;
     phoinfo[6] = ep;
@@ -1931,4 +1965,42 @@ double AliAnalysisTaskHFECal::NsigmaCorrection(double tmpeta, float central)
 
 }
 
+
+double AliAnalysisTaskHFECal::SumpT(Int_t itrack, AliESDtrack* track)
+{
+ 
+  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  fTrackCuts->SetRequireTPCRefit(kTRUE);
+  fTrackCuts->SetRequireITSRefit(kTRUE);
+  fTrackCuts->SetEtaRange(-0.9,0.9);
+  //fTrackCuts->SetRequireSigmaToVertex(kTRUE);
+  fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
+  fTrackCuts->SetMinNClustersTPC(90);
+ 
+  double pTrecp = track->Pt();
+  double phiorg = track->Phi();
+  double etaorg = track->Eta();
+
+  for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
+    AliESDtrack* trackAsso = fESD->GetTrack(jTracks);
+    if (!trackAsso) {
+      printf("ERROR: Could not receive track %d\n", jTracks);
+      continue;
+    }
+    if(itrack==jTracks)continue;
+    double pTAss = trackAsso->Pt();
+    double etaAss = trackAsso->Eta();
+    double phiAss = trackAsso->Phi();
+
+    double delphi = phiorg - phiAss;
+    double deleta = etaorg - etaAss;
+
+    double R = sqrt(pow(deleta,2)+pow(delphi,2));
+    if(pTAss<0.5)continue;
+    if(R<0.7)pTrecp+=pTAss;
+
+    }
+ 
+   return pTrecp;
+}
 
