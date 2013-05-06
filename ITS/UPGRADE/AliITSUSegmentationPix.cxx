@@ -559,7 +559,7 @@ void AliITSUSegmentationPix::SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Dou
 }
 
 //______________________________________________________________________
-void AliITSUSegmentationPix::Print(Option_t* option) const
+void AliITSUSegmentationPix::Print(Option_t* /*option*/) const
 {
   // print itself
   const double kmc=1e4;
