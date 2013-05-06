@@ -631,7 +631,7 @@ Int_t AliTRDonlineTrackMatching::EstimateTrackDistance(AliESDtrack *esd_track, A
       TGeoHMatrix *matrix = fTRDgeo->GetClusterMatrix(trklDet);
       if (!matrix){
 	if ((stack_gtu != 13*5+2) && (stack_gtu != 14*5+2) && (stack_gtu != 15*5+2))
-	  AliError(Form("invalid TRD cluster matrix in EstimateTrackDistance for detector %i", trklDet));
+	  AliDebug(1, Form("invalid TRD cluster matrix in EstimateTrackDistance for detector %i", trklDet));
 	return -5;
       }
       matrix->LocalToMaster(xtrkl, ptrkl);
