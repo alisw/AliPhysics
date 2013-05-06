@@ -1588,19 +1588,19 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kTRD,"+CINT7WUHJT-[B|I|S]-NOPF-[CENT,FAST]","B", triggerCount);
   oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kTRD,"+CINT7WUHJT-ACE-NOPF-[CENT,FAST]","ACE", triggerCount);
   oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
-  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp && TRDHJT");
 
   triggerCount++;
   oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kTRD,"+CINT7WUHSE-[B|I|S]-NOPF-[CENT,FAST]","B", triggerCount);
   oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kTRD,"+CINT7WUHSE-ACE-NOPF-[CENT,FAST]","ACE", triggerCount);
   oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
-  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp && TRDHSE");
 
   triggerCount++;
   oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kTRD,"+CINT7WUHQU-[B|I|S]-NOPF-[CENT,FAST]","B", triggerCount);
   oadbLHC13g->AddBGTriggerClass          ( AliVEvent::kTRD,"+CINT7WUHQU-ACE-NOPF-[CENT,FAST]","ACE", triggerCount);
   oadbLHC13g->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
-  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
+  oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp && TRDHQU");
 
   triggerCount++;
   oadbLHC13g->AddCollisionTriggerClass   ( AliVEvent::kMUS7,"+CMSL7-[B|I]-NOPF-MUON","B", triggerCount);
