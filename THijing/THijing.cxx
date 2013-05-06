@@ -1177,7 +1177,7 @@ void  THijing::SetMDME(Int_t key1, Int_t key2, Int_t   parm)
   if ( key1 < 1 || key1 > 2000) {
     printf("ERROR in THijing::SetMDME(key1, key2, parm):\n");
     printf("      key1=%i is out of range [1..2000]\n", key1);
-  } else if ( key2 < 1 || key2 > 3) {
+  } else if ( key2 < 1 || key2 > 2) {
     printf("ERROR in THijing::SetMDME(key1, key2, parm):\n");
     printf("      key2=%i is out of range [1..3]\n", key2);
   } else {
