@@ -1295,7 +1295,9 @@ Bool_t AliDielectronMC::GetPrimaryVertex(Double_t &primVtxX, Double_t &primVtxY,
      primVtxZ = mcVtx->GetZ();
      }else if(fAnaType == kAOD){
      AliAODEvent *aod=((AliAODInputHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()))->GetEvent();
+     if(!aod) return kFALSE;
      AliAODMCHeader *mcHead = dynamic_cast<AliAODMCHeader*>(aod->FindListObject(AliAODMCHeader::StdBranchName()));
+     if(!mcHead) return kFALSE; 
      primVtxX = mcHead->GetVtxX();
      primVtxY = mcHead->GetVtxY();
      primVtxZ = mcHead->GetVtxZ();
