@@ -620,7 +620,7 @@ AliGenEventHeader *AliMCEvent::FindHeader(Int_t ipart) {
     Int_t nproduced = 0;
     do { // Go trhough all headers and look for the correct one
       header = (AliGenEventHeader*) headIt();
-      nproduced += header->NProduced();
+      if (header) nproduced += header->NProduced();
     } while (header && ipart >= nproduced);
   }
 
