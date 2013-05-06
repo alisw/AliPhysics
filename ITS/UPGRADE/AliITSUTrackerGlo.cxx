@@ -1209,51 +1209,53 @@ void AliITSUTrackerGlo::FinalizeHypotheses()
   }
 #endif  
 
-  AliRefArray** refArr = new AliRefArray*[fNLrActive];
-  for (int ilr=0;ilr<fNLrActive;ilr++) refArr[ilr] = new AliRefArray(1000);
-  for (int ih=0;ih<nh;ih++) {
-    AliITSUTrackHyp* hyp = GetTrackHyp(ih);
-    if (!hyp || !(winner=hyp->GetWinner())) continue;
-    int lrID = 0;
-    do {
-      int clID = winner->GetLrCluster(lrID);
-      if (clID<0) continue;
-      AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
-      if (!cl->IsClusterShared()) continue;
-      refArr[lrID]->AddReference(clID,ih);
-    } while ((winner=(AliITSUSeed*)winner->GetParent()));
-  }    
-  //  /*
-  UInt_t refs[100];
-  for (int ilr=0;ilr<fNLrActive;ilr++) {
-    int ncl = fITS->GetLayerActive(ilr)->GetNClusters();
-    printf("\nClusterSharingDump: Lr %d (%d cl)\n",ilr,ncl);
-    int cnt = 0;
-    for (int icl=0;icl<ncl;icl++) {
-      if (!refArr[ilr]->HasReference(icl)) continue;
-      int nref = refArr[ilr]->GetReferences(icl,refs,100);
-      printf("--- cl%3d(#%d): NShare=%4d\n",cnt++,icl,nref);     
-      for (int ir=0;ir<nref;ir++) {
-	AliITSUTrackHyp* hyp = GetTrackHyp(refs[ir]);
-	winner = hyp->GetWinner();
-	AliESDtrack* esdTr = hyp->GetESDTrack();
-	printf("#%4d Pt:%.3f Chi:%6.2f Ncl:%d MCits%+5d MCtpc:%+5d ESD:%4d |",
-	       refs[ir],winner->Pt(),winner->GetChi2GloNrm(),winner->GetNLayersHit(),
-	       hyp->GetITSLabel(),esdTr->GetTPCLabel(),esdTr->GetID());
-	int prevL=-1;
-	do {
-	  int lrs;
-	  int clID = winner->GetLrCluster(lrs);
-	  if (clID<0) continue;
-	  while( lrs>++prevL ) printf("%4s        ","----");
-	  printf("%4d (%5.1f)",clID,winner->GetChi2Cl());
-	} while ((winner=(AliITSUSeed*)winner->GetParent()));
-	printf("|\n");
+  if (AliDebugLevelClass()>+2) {
+    //
+    AliRefArray** refArr = new AliRefArray*[fNLrActive];
+    for (int ilr=0;ilr<fNLrActive;ilr++) refArr[ilr] = new AliRefArray(1000);
+    for (int ih=0;ih<nh;ih++) {
+      AliITSUTrackHyp* hyp = GetTrackHyp(ih);
+      if (!hyp || !(winner=hyp->GetWinner())) continue;
+      int lrID = 0;
+      do {
+	int clID = winner->GetLrCluster(lrID);
+	if (clID<0) continue;
+	AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
+	if (!cl->IsClusterShared()) continue;
+	refArr[lrID]->AddReference(clID,ih);
+      } while ((winner=(AliITSUSeed*)winner->GetParent()));
+    }    
+    UInt_t refs[100];
+    for (int ilr=0;ilr<fNLrActive;ilr++) {
+      int ncl = fITS->GetLayerActive(ilr)->GetNClusters();
+      printf("\nClusterSharingDump: Lr %d (%d cl)\n",ilr,ncl);
+      int cnt = 0;
+      for (int icl=0;icl<ncl;icl++) {
+	if (!refArr[ilr]->HasReference(icl)) continue;
+	int nref = refArr[ilr]->GetReferences(icl,refs,100);
+	printf("--- cl%3d(#%d): NShare=%4d\n",cnt++,icl,nref);     
+	for (int ir=0;ir<nref;ir++) {
+	  AliITSUTrackHyp* hyp = GetTrackHyp(refs[ir]);
+	  winner = hyp->GetWinner();
+	  AliESDtrack* esdTr = hyp->GetESDTrack();
+	  printf("#%4d Pt:%.3f Chi:%6.2f Ncl:%d MCits%+5d MCtpc:%+5d ESD:%4d |",
+		 refs[ir],winner->Pt(),winner->GetChi2GloNrm(),winner->GetNLayersHit(),
+		 hyp->GetITSLabel(),esdTr->GetTPCLabel(),esdTr->GetID());
+	  int prevL=-1;
+	  do {
+	    int lrs;
+	    int clID = winner->GetLrCluster(lrs);
+	    if (clID<0) continue;
+	    while( lrs>++prevL ) printf("%4s        ","----");
+	    printf("%4d (%5.1f)",clID,winner->GetChi2Cl());
+	  } while ((winner=(AliITSUSeed*)winner->GetParent()));
+	  printf("|\n");
+	}
       }
     }
-  }
-  //  */
-  delete[] refArr;
+    delete[] refArr;
+  
+  } // debug only
 
 }
 
