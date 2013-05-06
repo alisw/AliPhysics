@@ -32,6 +32,8 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         void                    SetJetCollectionName(TString jets)      {fJetsName      = jets;}
         void                    SetDebugMode(Int_t d)                   {fDebug         = d;}
         void                    SetPtBump(Float_t b)                    {fPtBump        = b;}
+        void                    SetCCMaxPt(Float_t m)                   {fCCMaxPt       = m;}
+        void                    SetCCBinsInPt(Float_t b)                {fCCBinsInPt    = b;}
         void                    SetMinMaxCentrality(Float_t min, Float_t max)       {fCentralityMin = min; fCentralityMax = max; }
         // analysis details
         Bool_t                  PassesCuts(AliVEvent* event); 
@@ -45,6 +47,8 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         dataType                fDataType;              //! data type
         // members
         Float_t                 fPtBump;                // track pt += ptbump
+        Float_t                 fCCMaxPt;               // max pt for flow analysis (common constants)
+        Float_t                 fCCBinsInPt;            // bins in pt for flow analysis (common constants)
         Float_t                 fCentralityMin;         // minimium centrality
         Float_t                 fCentralityMax;         // maximum centrality
         // cut objects
@@ -59,7 +63,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         AliAnalysisTaskJetFlow(const AliAnalysisTaskJetFlow&);                  // not implemented
         AliAnalysisTaskJetFlow& operator=(const AliAnalysisTaskJetFlow&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetFlow, 2);
+        ClassDef(AliAnalysisTaskJetFlow, 3);
 };
 
 #endif
