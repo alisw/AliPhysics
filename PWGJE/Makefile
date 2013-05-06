@@ -103,6 +103,7 @@ endif
     ALICEINC += -I$(ALICE_ROOT)/JETAN/fastjet
     ALICEINC += -I$(ALICE_ROOT)/PWGJE/EMCALJetTasks
     ALICEINC += -I$(ALICE_ROOT)/PWG/CaloTrackCorrBase
+    ALICEINC += -I$(ALICE_ROOT)/PWGHF/vertexingHF
   endif
 #endif
 
