@@ -687,6 +687,7 @@ void  AliAnalysisTaskEMCALPhoton::GetMcParts()
     TParticle *mcP = static_cast<TParticle*>(fStack->Particle(iTrack));
     if (!mcP){
       mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
+      mcp->fLabel = iTrack;
       continue;
     }
     // primary particle
@@ -695,6 +696,7 @@ void  AliAnalysisTaskEMCALPhoton::GetMcParts()
                               (mcP->Vz()-evtVtx->GetZ())*(mcP->Vz()-evtVtx->GetZ()));
     if(dR > 0.5){
       mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
+      mcp->fLabel = iTrack;
       continue;
     }
     
@@ -702,15 +704,18 @@ void  AliAnalysisTaskEMCALPhoton::GetMcParts()
     Double_t pt = mcP->Pt() ;
     if (pt<0.5){
       mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
+      mcp->fLabel = iTrack;
       continue;
     }
     Double_t eta = mcP->Eta();
     if (TMath::Abs(eta)>0.7){
       mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
+      mcp->fLabel = iTrack;
       continue;
     }
     Double_t phi  = mcP->Phi();
     if (phi<1.0||phi>3.3){
+      mcp->fLabel = iTrack;
       mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
       continue;
     }
@@ -720,6 +725,7 @@ void  AliAnalysisTaskEMCALPhoton::GetMcParts()
     } else if(mcP->GetPdgCode() == 22 ) {
     } else {
       mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
+      mcp->fLabel = iTrack;
       continue;
     }
     
