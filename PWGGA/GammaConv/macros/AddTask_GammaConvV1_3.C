@@ -1,5 +1,5 @@
 
-void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
+void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE, UInt_t triggerMaskpPb = AliVEvent::kINT7){
 
    gSystem->Load("libCore.so");  
    gSystem->Load("libTree.so");
@@ -76,7 +76,7 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       fCuts= new AliConversionCuts(cutnumber.Data(),cutnumber.Data());
       if(fCuts->InitializeCutsFromCutString(cutnumber.Data())){
          if (IsHeavyIon==2){
-            fCuts->SelectCollisionCandidates(AliVEvent::kINT7);
+            fCuts->SelectCollisionCandidates(triggerMaskpPb);
             fCuts->DoEtaShift(doEtaShift);
          }
          fV0ReaderV1->SetConversionCuts(fCuts);
@@ -123,10 +123,11 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
 // Standard cut gamma 0-20%
       cutarray[ 2] = "1480003042092370023750000"; mesonCutArray[ 2] = "01522065009"; // Standard cut gamma 40-80
    } else if(trainConfig.Contains("pPb")){ //pA needs thighter rapidity cut y < 0.5
-     cutarray[ 0] = "8020000072093172023290000"; mesonCutArray[0] = "01627045000";  //standard cut Pi0 Pb 00-20  wo shifted Eta 0.3
-     cutarray[ 1] = "8240000072093172023290000"; mesonCutArray[1] = "01627045000";  //standard cut Pi0 Pb 20-40 wo shifted Eta 0.3
-     cutarray[ 2] = "8460000072093172023290000"; mesonCutArray[2] = "01627045000";  //standard cut Pi0 Pb 40-60 wo shifted Eta 0.3
-     cutarray[ 3] = "8600000072093172023290000"; mesonCutArray[3] = "01627045000";  //standard cut Pi0 Pb 60-100 wo shifted Eta 0.3
+       cutarray[ 0] = "8020000002093172023290000"; mesonCutArray[0] = "01621045000";  //standard cut Pi0 PbPb 00-20
+       cutarray[ 1] = "8240000002093172023290000"; mesonCutArray[1] = "01621045000";  //standard cut Pi0 PbPb 20-40
+       cutarray[ 2] = "8460000002093172023290000"; mesonCutArray[2] = "01621045000";  //standard cut Pi0 PbPb 40-60
+       cutarray[ 3] = "8600000002093172023290000"; mesonCutArray[3] = "01621045000";  //standard cut Pi0 PbPb 60-100
+
    } else {
       cutarray[ 0] = "0002011002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
       cutarray[ 1] = "0003011002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
@@ -158,7 +159,7 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       analysisCuts[i] = new AliConversionCuts();
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       if (trainConfig.Contains("pPb")){
-         analysisCuts[i]->SelectCollisionCandidates(AliVEvent::kINT7);
+         analysisCuts[i]->SelectCollisionCandidates(triggerMaskpPb);
       }
       ConvCutList->Add(analysisCuts[i]);
 
@@ -175,9 +176,10 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
    task->SetMesonCutList(numberOfCuts,MesonCutList);
    task->SetMoveParticleAccordingToVertex(kTRUE);
    task->SetDoMesonAnalysis(kTRUE);
-//    if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
-//    if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
+   if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
+   if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
 
+   
    //connect containers
    AliAnalysisDataContainer *coutput =
       mgr->CreateContainer("GammaConvV1", TList::Class(),

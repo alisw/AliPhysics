@@ -56,7 +56,7 @@ Double_t NonLinear(Double_t *x, Double_t * /*par*/)
 
 //-------------------------------------------------------------------------------------------
 AliCaloClusterInfo::AliCaloClusterInfo():
-  TObject(), fLorentzVector(), fModule(0), fNCells(0), fTRUNumber(0), fNTracksMatched(0), fTrackCharge(0), fPIDBit(0),
+  TObject(), fLorentzVector(), fModule(0), fNCells(0), fTRUNumber(0), fNTracksMatched(0), fTrackCharge(0), fPIDBit(0x0),
   fDistToBad(0.), fEmcCpvDistance(0.), fM02(0.), fM20(0.), fTOF(0.), fTrackDz(0.), fTrackDx(0.), fTrackPt(0.)
 {
   //
@@ -66,7 +66,7 @@ AliCaloClusterInfo::AliCaloClusterInfo():
 
 //-------------------------------------------------------------------------------------------
 AliCaloClusterInfo::AliCaloClusterInfo(AliVCluster* const clust, AliESDEvent* const esd, AliPHOSGeoUtils* const phosGeo, Double_t vtx[3]):
-  TObject(), fLorentzVector(), fModule(0), fNCells(0), fTRUNumber(0), fNTracksMatched(0), fTrackCharge(0), fPIDBit(0),
+  TObject(), fLorentzVector(), fModule(0), fNCells(0), fTRUNumber(0), fNTracksMatched(0), fTrackCharge(0), fPIDBit(0x0),
   fDistToBad(0.), fEmcCpvDistance(0.), fM02(0.), fM20(0.), fTOF(0.), fTrackDz(0.), fTrackDx(0.), fTrackPt(0.)
 {
   //
@@ -136,10 +136,9 @@ void AliCaloClusterInfo::FillCaloClusterInfo(AliVCluster* const clust, AliESDEve
   fModule         = relId[0];
   fTRUNumber      = GetTRUNumber(relId[2], relId[3]);
 
-  AliPHOSCalibData *calibData = 0x0;
-  calibData = new AliPHOSCalibData();
   if (esd) { // TODO recalibration for ESD
     TVector3 vtxVector(vtx);
+    AliPHOSCalibData *calibData = new AliPHOSCalibData();
     TF1 *nonLinCorr = new TF1("Non-linear", NonLinear, 0., 40., 0);
 
     AliPHOSEsdCluster phosClust( *(AliESDCaloCluster*) (clust) );
@@ -165,21 +164,25 @@ void AliCaloClusterInfo::FillCaloClusterInfo(AliVCluster* const clust, AliESDEve
     if (fModule==3) fLorentzVector *= 135.5/137.2;
 
     Int_t iESDtrack = clust->GetTrackMatchedIndex();
-    if (iESDtrack>-1) trkESD = esd->GetTrack(iESDtrack);
-    if (!trkESD) { fTrackPt = 0.; fTrackCharge = 0; }
-    else {
-      fTrackPt     = trkESD->Pt();
-      fTrackCharge = trkESD->Charge();
+    if (iESDtrack>-1) { 
+      trkESD = esd->GetTrack(iESDtrack);
+      if (trkESD) {
+        fTrackPt     = trkESD->Pt();
+        fTrackCharge = trkESD->Charge();
+      }
     }
+    else { fTrackPt = -1.; fTrackCharge = 0; }
   }else {
     clust->GetMomentum(fLorentzVector, vtx);
 
-    trkAOD = dynamic_cast <AliAODTrack*> (clust->GetTrackMatched(0));
-    if (!trkAOD) { fTrackPt = 0.; fTrackCharge = 0; }
-    else {
-      fTrackPt     = trkAOD->Pt();
-      fTrackCharge = trkAOD->Charge();
+    if (clust->GetNTracksMatched()>0) {
+      trkAOD = dynamic_cast <AliAODTrack*> (clust->GetTrackMatched(0));
+      if (trkAOD) {
+        fTrackPt     = trkAOD->Pt();
+        fTrackCharge = trkAOD->Charge();
+      }
     }
+    else { fTrackPt = -1.; fTrackCharge = 0; }
   }
 
   fNCells         = clust->GetNCells();
@@ -192,7 +195,7 @@ void AliCaloClusterInfo::FillCaloClusterInfo(AliVCluster* const clust, AliESDEve
   fTrackDz        = clust->GetTrackDz();
   fTrackDx        = clust->GetTrackDx();
   if (TestDisp())                             fPIDBit |= BIT(1); // Disp
-  if (IsInFiducialRegion(/*relId[2], relId[3])*/)) fPIDBit |= BIT(2); // Fiducial
+  if (IsInFiducialRegion(relId[2], relId[3])) fPIDBit |= BIT(2); // Fiducial
 
   return;
 }
@@ -303,42 +306,36 @@ Bool_t AliCaloClusterInfo::TestDisp()
 }
 
 //-----------------------------------------------------------------------------
-Bool_t AliCaloClusterInfo::IsInFiducialRegion(/*Int_t cellX, Int_t cellZ*/)
+Bool_t AliCaloClusterInfo::IsInFiducialRegion(Int_t cellX, Int_t cellZ)
 {
-/*const Int_t edgeX = 2;
-  const Int_t edgeZ = 8;
-  if (cellX >edgeX && cellX<(65-edgeX) && cellZ>edgeZ && cellZ <(57-edgeZ)) return kTRUE; // remove 2 cells in x direction and 8 cells in z direction
-  return kFALSE;*/
+  const Int_t edgeX = 2;
+  const Int_t edgeZ = 2;
+  if (cellX >edgeX && cellX<(65-edgeX) && cellZ>edgeZ && cellZ <(57-edgeZ)) return kTRUE;
+  return kFALSE;
 
-  Double_t eta = TMath::Abs(fLorentzVector.Eta());                                // abs eta
+//Double_t eta = TMath::Abs(fLorentzVector.Eta());                                // abs eta
 //Double_t phi = (fLorentzVector.Phi())*TMath::RadToDeg(); if (phi<0.) phi+=360.; // phi in degree
 
-  return (Bool_t)(eta<0.13 /*&& ((phi>260.25 && phi<279.75) || (phi>300.25 && phi<319.75))*/);
+//return (Bool_t)(eta<0.13 /*&& ((phi>260.25 && phi<279.75) || (phi>300.25 && phi<319.75))*/);
 }
 
 //-----------------------------------------------------------------------------
 Bool_t AliCaloClusterInfo::AreNeighbors(Int_t id1, Int_t id2, AliPHOSGeoUtils* const phosGeo)
 {
   // return true if absId are "Neighbors" (adjacent, including diagornaly,)
-  // false if not.
 
-  Int_t relid1[4] ;
-  phosGeo->AbsToRelNumbering(id1, relid1) ;
-
-  Int_t relid2[4] ;
-  phosGeo->AbsToRelNumbering(id2, relid2) ;
+  Int_t relid1[4];   phosGeo->AbsToRelNumbering(id1, relid1);
+  Int_t relid2[4];   phosGeo->AbsToRelNumbering(id2, relid2);
 
   // if inside the same PHOS module
-  if ( (relid1[0] == relid2[0]) && (relid1[1]==relid2[1]) ) {
-    const Int_t rowdiff = TMath::Abs( relid1[2] - relid2[2] ) ;
-    const Int_t coldiff = TMath::Abs( relid1[3] - relid2[3] ) ;
+  if ((relid1[0] == relid2[0]) && (relid1[1]==relid2[1])) {
+    const Int_t rowdiff = TMath::Abs(relid1[2]-relid2[2]);
+    const Int_t coldiff = TMath::Abs(relid1[3]-relid2[3]);
 
     // and if diff in both direction is 1 or less
-    if (( coldiff <= 1 )  && ( rowdiff <= 1 ))
-      return kTRUE; // are neighbors
+    if ((coldiff<2)  && (rowdiff<2)) return kTRUE; // are neighbors
   }
 
-  // else false
   return kFALSE;
 }
 

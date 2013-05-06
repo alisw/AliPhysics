@@ -409,126 +409,126 @@ Bool_t AliDalitzElectronCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     cutIndex++;
 
 
-  if( fDodEdxSigmaITSCut == kTRUE ){
+		if( fDodEdxSigmaITSCut == kTRUE ){
 
 
-        if( fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLineITS ||
-                fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kElectron)> fPIDnSigmaAboveElectronLineITS ){
-
-          if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-          return kFALSE;
+			if( fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLineITS ||
+					fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kElectron)> fPIDnSigmaAboveElectronLineITS ){
+				
+				if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+				return kFALSE;
       }
-     
-  }
-
- if(hITSdEdxafter)hITSdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
-
-
-  cutIndex++;
-
-
-  if(fDodEdxSigmaTPCCut == kTRUE){
-
-
+			
+		}
+		
+		if(hITSdEdxafter)hITSdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
+		
+		
+		cutIndex++;
+		
+		
+		if(fDodEdxSigmaTPCCut == kTRUE){
+			
+			
       // TPC Electron Line
       if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLineTPC ||
-		fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLineTPC){
-
-	  if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-	  return kFALSE;
+					fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLineTPC){
+				
+				if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+				return kFALSE;
       }
       cutIndex++;
-
+			
       // TPC Pion Line
-	if( fCurrentTrack->P()>fPIDMinPnSigmaAbovePionLineTPC && fCurrentTrack->P()<fPIDMaxPnSigmaAbovePionLineTPC ){
-	  if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLineTPC     &&
-		 fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLineTPC &&
-		 fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineTPC){
+			if( fCurrentTrack->P()>fPIDMinPnSigmaAbovePionLineTPC && fCurrentTrack->P()<fPIDMaxPnSigmaAbovePionLineTPC ){
+				if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLineTPC     &&
+					 fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLineTPC &&
+					 fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineTPC){
+					
+					if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+					return kFALSE;
+				}
+			}
+			cutIndex++;
+			
+			// High Pt Pion rej
+			if( fCurrentTrack->P()>fPIDMaxPnSigmaAbovePionLineTPC ){
+				if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLineTPC &&
+					 fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLineTPC&&
+					 fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineTPCHighPt){
+					
+					if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+					return kFALSE;
+				}
+			}
+			
+			cutIndex++;
+		}
 
-	      if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-	      return kFALSE;
-	  }
-	}
-	cutIndex++;
-   
-	// High Pt Pion rej
-	if( fCurrentTrack->P()>fPIDMaxPnSigmaAbovePionLineTPC ){
-	  if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLineTPC &&
-		 fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLineTPC&&
-		 fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineTPCHighPt){
-
-                if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-		return kFALSE;
-	  }
-	}
-
-	cutIndex++;
-  }
-
-  else{ cutIndex+=3; }
+		else{ cutIndex+=3; }
 
 
-  if(   fDoKaonRejectionLowP == kTRUE   ){
+		if(   fDoKaonRejectionLowP == kTRUE   ){
 
-        if( fCurrentTrack->P() < fPIDMinPKaonRejectionLowP ){
-
-          if( TMath::Abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
-
-              if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-
-              return kFALSE;
-          }
-        }
-  }
-  cutIndex++;
-   
-  if(   fDoProtonRejectionLowP == kTRUE    ){
-
-        if( fCurrentTrack->P()  < fPIDMinPProtonRejectionLowP ){
-          if( TMath::Abs(   fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
-
-              if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-              return kFALSE;
-          }
-        }
-  }
-   cutIndex++;
-   
-  if(fDoPionRejectionLowP == kTRUE){
-        if( fCurrentTrack->P() < fPIDMinPPionRejectionLowP ){
-          if( TMath::Abs( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)) < fPIDnSigmaAtLowPAroundPionLine ){
-
-              if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-                return kFALSE;
-          }
-        }
-  }
-  cutIndex++;
-
-   
-  if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
-   if(hTOFbefore) hTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
-     if(fUseTOFpid){
+			if( fCurrentTrack->P() < fPIDMinPKaonRejectionLowP ){
+				
+				if( TMath::Abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
+					
+					if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+					
+					return kFALSE;
+				}
+			}
+		}
+		cutIndex++;
+		
+		if(   fDoProtonRejectionLowP == kTRUE    ){
+			
+			if( fCurrentTrack->P()  < fPIDMinPProtonRejectionLowP ){
+				if( TMath::Abs(   fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
+					
+					if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+					return kFALSE;
+				}
+			}
+		}
+		cutIndex++;
+		
+		if(fDoPionRejectionLowP == kTRUE){
+			if( fCurrentTrack->P() < fPIDMinPPionRejectionLowP ){
+				if( TMath::Abs( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)) < fPIDnSigmaAtLowPAroundPionLine ){
+					
+					if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+					return kFALSE;
+				}
+			}
+		}
+		cutIndex++;
+		
+		
+		if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
+			if(hTOFbefore) hTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
+			if(fUseTOFpid){
         if(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)>fTofPIDnSigmaAboveElectronLine ||
            fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)<fTofPIDnSigmaBelowElectronLine ){
-           if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-           return kFALSE;
+					if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+					return kFALSE;
         }
-     }
-     if(hTOFafter)hTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
-  }
-  else if ( fRequireTOF == kTRUE ) {
-
-            if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-            return kFALSE;
-  }
-     cutIndex++;
-
-  if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-  if(hTPCdEdxafter)hTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
-  if(hTPCdEdxSignalafter)hTPCdEdxSignalafter->Fill(fCurrentTrack->P(),TMath::Abs(fCurrentTrack->GetTPCsignal()));
-
-  return kTRUE;
+			}
+			if(hTOFafter)hTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
+		}
+		else if ( fRequireTOF == kTRUE ) {
+			
+			if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+			return kFALSE;
+		}
+		cutIndex++;
+		
+		if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+		if(hTPCdEdxafter)hTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
+		if(hTPCdEdxSignalafter)hTPCdEdxSignalafter->Fill(fCurrentTrack->P(),TMath::Abs(fCurrentTrack->GetTPCsignal()));
+		
+		return kTRUE;
 }
 ///________________________________________________________________________
 
@@ -692,100 +692,100 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
 	  return kTRUE;
 	} else return kFALSE;
 
- case kededxSigmaTPCCut:
-        if( SetTPCdEdxCutElectronLine(value)) { //NOTE SetITSdEdxCutElectronLine: To be implemented 
-          fCuts[kededxSigmaTPCCut] = value;
-          UpdateCutString(cutID, value);
-          return kTRUE;
-        } else return kFALSE;
-
+	case kededxSigmaTPCCut:
+		if( SetTPCdEdxCutElectronLine(value)) { //NOTE SetITSdEdxCutElectronLine: To be implemented 
+			fCuts[kededxSigmaTPCCut] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+		
   case kpidedxSigmaTPCCut:
-        if( SetTPCdEdxCutPionLine(value)) { //NOTE SetITSdEdxCutPionLine: To be implemented
-          fCuts[kpidedxSigmaTPCCut] = value;
-          UpdateCutString(cutID, value);
-          return kTRUE;
-        } else return kFALSE;
-
+		if( SetTPCdEdxCutPionLine(value)) { //NOTE SetITSdEdxCutPionLine: To be implemented
+			fCuts[kpidedxSigmaTPCCut] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+		
   case kpiMinMomdedxSigmaTPCCut:
-	if( SetMinMomPiondEdxTPCCut(value)) {
-	  fCuts[kpiMinMomdedxSigmaTPCCut] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;
-	} else return kFALSE;
-
+		if( SetMinMomPiondEdxTPCCut(value)) {
+			fCuts[kpiMinMomdedxSigmaTPCCut] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+		
   case kpiMaxMomdedxSigmaTPCCut:
-        if( SetMaxMomPiondEdxTPCCut(value)) {
-          fCuts[kpiMaxMomdedxSigmaTPCCut] = value;
-          UpdateCutString(cutID, value);
-          return kTRUE;
-        } else return kFALSE;
-
+		if( SetMaxMomPiondEdxTPCCut(value)) {
+			fCuts[kpiMaxMomdedxSigmaTPCCut] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+		
   case kLowPRejectionSigmaCut:
-        if( SetLowPRejectionCuts(value) ) {
-          fCuts[kLowPRejectionSigmaCut] = value;
-          UpdateCutString(cutID, value);
-          return kTRUE;
-        } else return kFALSE;
-
-
+		if( SetLowPRejectionCuts(value) ) {
+			fCuts[kLowPRejectionSigmaCut] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+		
+		
   case kTOFelectronPID:
-        if( SetTOFElectronPIDCut(value)) {
-          fCuts[kTOFelectronPID] = value;
-          UpdateCutString(cutID, value);
-          return kTRUE;
-        } else return kFALSE;
+		if( SetTOFElectronPIDCut(value)) {
+			fCuts[kTOFelectronPID] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
   case kclsITSCut:
-	if( SetITSClusterCut(value) ) {
-	  fCuts[kclsITSCut] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;		 	
-        } else return kFALSE;
+		if( SetITSClusterCut(value) ) {
+			fCuts[kclsITSCut] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;		 	
+		} else return kFALSE;
   case kclsTPCCut:
-	if( SetTPCClusterCut(value)) {
-	  fCuts[kclsTPCCut] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;
-	} else return kFALSE;
-
+		if( SetTPCClusterCut(value)) {
+			fCuts[kclsTPCCut] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+		
   case ketaCut:
-	if( SetEtaCut(value)) {
-	  fCuts[ketaCut] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;
-	} else return kFALSE;
-   case kPsiPair:
-        if( SetPsiPairCut(value)) {
-          fCuts[kPsiPair] = value;
-          UpdateCutString(cutID, value);
-          return kTRUE;
-        } else return kFALSE;
-
+		if( SetEtaCut(value)) {
+			fCuts[ketaCut] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+	case kPsiPair:
+		if( SetPsiPairCut(value)) {
+			fCuts[kPsiPair] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+		
   case kRejectSharedElecGamma:
-        if( SetRejectSharedElecGamma(value)) {
-          fCuts[kRejectSharedElecGamma] = value;
-          UpdateCutString(cutID, value);
+		if( SetRejectSharedElecGamma(value)) {
+			fCuts[kRejectSharedElecGamma] = value;
+			UpdateCutString(cutID, value);
           return kTRUE;
-        } else return kFALSE;
-
+		} else return kFALSE;
+		
   case kBackgroundScheme:
-        if( SetBackgroundScheme(value)) {
-          fCuts[kBackgroundScheme] = value;
-          UpdateCutString(cutID, value);
-          return kTRUE;
-        } else return kFALSE;
+		if( SetBackgroundScheme(value)) {
+			fCuts[kBackgroundScheme] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
 
   case kNumberOfRotations:
-        if( SetNumberOfRotations(value)) {
-          fCuts[kNumberOfRotations] = value;
-          UpdateCutString(cutID, value);
-          return kTRUE;
-        } else return kFALSE;
-
+		if( SetNumberOfRotations(value)) {
+			fCuts[kNumberOfRotations] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+		
   case kNCuts:
-	cout << "Error:: Cut id out of range"<< endl;
-	return kFALSE;
+		cout << "Error:: Cut id out of range"<< endl;
+		return kFALSE;
   }
-
+	
   cout << "Error:: Cut id " << cutID << " not recognized "<< endl;
   return kFALSE;
 
@@ -1086,28 +1086,29 @@ Bool_t AliDalitzElectronCuts::SetEtaCut(Int_t etaCut)
 { 
   // Set eta Cut
 	switch(etaCut){
-                case 0: fEtaCut         = 100.;
-                        break;
-		case 1:	// 1.4
-			fEtaCut		= 1.4;
-			break;
-		case 2:	// 1.2
-			fEtaCut		= 1.2;
-			break;
-		case 3: // 0.9
-			fEtaCut		= 0.9;
-			break;
-		case 4: // 0.8
-			fEtaCut		= 0.8;
-			break;
-		case 5: // 0.75
-			fEtaCut		= 0.75;
-			break;
-		default:
-			cout<<"Warning: EtaCut not defined "<<etaCut<<endl;
-			return kFALSE;
-    }
-    return kTRUE;
+	case 0: 
+		fEtaCut = 100.;
+		break;
+	case 1:	// 1.4
+		fEtaCut	= 1.4;
+		break;
+	case 2:	// 1.2
+		fEtaCut	= 1.2;
+		break;
+	case 3: // 0.9
+		fEtaCut	= 0.9;
+		break;
+	case 4: // 0.8
+		fEtaCut	= 0.8;
+		break;
+	case 5: // 0.75
+		fEtaCut	= 0.75;
+		break;
+	default:
+		cout<<"Warning: EtaCut not defined "<<etaCut<<endl;
+		return kFALSE;
+	}
+	return kTRUE;
 }
 
 ///________________________________________________________________________

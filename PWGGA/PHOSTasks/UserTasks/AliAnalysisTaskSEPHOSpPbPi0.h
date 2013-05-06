@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSEPHOSPPBPI0_cxx
-#define ALIANALYSISTAKSSEPHOSPPBPI0_cxx
+#ifndef ALIANALYSISTASKSEPHOSPPBPI0_H
+#define ALIANALYSISTAKSSEPHOSPPBPI0_H
 
 /* Copyright(c) 1998-2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -27,7 +27,7 @@ class AliAnalysisTaskSEPHOSpPbPi0 : public AliAnalysisTaskSE {
 
   AliAnalysisTaskSEPHOSpPbPi0();
   AliAnalysisTaskSEPHOSpPbPi0(const char *name);
-  virtual ~AliAnalysisTaskSEPHOSpPbPi0(); 
+  virtual ~AliAnalysisTaskSEPHOSpPbPi0();
   
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -40,8 +40,8 @@ class AliAnalysisTaskSEPHOSpPbPi0 : public AliAnalysisTaskSE {
     printf("Set %s \n",fPHOSBadMap[mod]->GetName());
   }
 
-  void SetUseMC(Bool_t isMC)                                  { fIsMC          = isMC;                         }
-  void SetXBins(const TArrayD& tCent, const TArrayI& tBuffer) { fCentralityBin = tCent; fBufferSize = tBuffer; }
+  void SetUseMC(Bool_t isMC=kFALSE)                           { fIsMC          = isMC;                         }
+  void SetXBins(const TArrayF& tCent, const TArrayI& tBuffer) { fCentralityBin = tCent; fBufferSize = tBuffer; }
   void SetLogWeight(Float_t logWeight)                  const { AliCaloClusterInfo::SetLogWeight(logWeight);   }
 
   static void SetMinNCells(Int_t ncells=2)                    { fgMinNCells                         = ncells;  }
@@ -55,7 +55,7 @@ class AliAnalysisTaskSEPHOSpPbPi0 : public AliAnalysisTaskSE {
   AliAnalysisTaskSEPHOSpPbPi0& operator=(const AliAnalysisTaskSEPHOSpPbPi0&); // not implemented
 
   void PHOSInitialize(AliESDEvent* const esd);
-  void FillCaloClusterInfo(Int_t nclsts, AliESDEvent* const esd);
+  void FillCaloClusterInfo(AliESDEvent* const esd);
 
   Bool_t IsGoodCaloCluster(Int_t iMod, Int_t cellX, Int_t cellZ);
 
@@ -65,17 +65,20 @@ class AliAnalysisTaskSEPHOSpPbPi0 : public AliAnalysisTaskSE {
   static Double_t fgMinDistToBad;
 
   Bool_t               fIsMC;               // flag of whether the input is MC
-  TArrayD              fCentralityBin;      // Centrality bin
+  TArrayF              fCentralityBin;      // Centrality bin
   TArrayI              fBufferSize;         // Buffer size for event mixing
 
   Int_t                fRunNumber;          // Run Number
-  TH2I                *fPHOSBadMap[5];      // Container for PHOS bad channels map
+  TH2I                *fPHOSBadMap[5];      // Container of PHOS bad channels map
   AliPHOSGeoUtils     *fPHOSGeo;            // PHOS geometry
 
   TList               *fEventList[10][10];  // Event list for mixing
-  TList               *fList;               // output list of histograms
-  AliPHOSpPbPi0Header *fHeader;             // output for info at ev level
-  TClonesArray        *fCaloClArr;          // output clones array for Calo clusters
+  TList               *fListEvent;          // output list of Event
+  TList               *fListCaloCl;         // output list of Calo Cluster histograms
+  TList               *fListPi0;            // output list of Pi0 histograms
+  TList               *fListMC;             // output list of MC histograms
+  AliPHOSpPbPi0Header *fHeader;             // output for info at event level
+  TClonesArray        *fCaloClArr;          // Container of Calo clusters Info
    
   ClassDef(AliAnalysisTaskSEPHOSpPbPi0, 1);
 };
