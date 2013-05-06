@@ -248,6 +248,10 @@ void AliAODInputHandler::ConnectFriends()
 	TString aodTreeFName,aodFriendTreeFName;
 	TTree *ttree = fTree->GetTree();
 	if (!ttree) ttree = fTree;
+   if(!ttree->GetCurrentFile()){
+     AliWarning("Couldn't get current AOD file, not connecting friends");
+     return;
+   }
 	aodTreeFName = ttree->GetCurrentFile()->GetName();
 	
 	while((obj = (TNamed*)next())) {
