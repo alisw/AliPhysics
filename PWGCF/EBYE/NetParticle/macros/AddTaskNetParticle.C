@@ -191,12 +191,23 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   // ----------------------------------------------
   // -- data containers - output
   // ----------------------------------------------
-  AliAnalysisDataContainer *coutput     = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s.root", name));
-  AliAnalysisDataContainer *coutputEff  = mgr->CreateContainer(Form("%s_eff", name), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s.root", name));
-  AliAnalysisDataContainer *coutputCont = mgr->CreateContainer(Form("%s_cont", name), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s.root", name));
-  AliAnalysisDataContainer *coutputDca  = mgr->CreateContainer(Form("%s_dca", name), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s.root", name));
+  TString outputFileName = "";
+  TString outputQAFileName = "";
+  if(isModeAOD){
+    outputFileName = Form("%s:%s",AliAnalysisManager::GetCommonFileName(),name);
+    outputQAFileName = Form("%s:%s",AliAnalysisManager::GetCommonFileName(),name);
+  }
+  else{
+    outputFileName = Form("%s.root",name);
+    outputQAFileName = Form("%sQA.root",name);
+  }
 
-  AliAnalysisDataContainer *coutputQA   = mgr->CreateContainer(Form("%sQA", name), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%sQA.root", name));
+  AliAnalysisDataContainer *coutput     = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *coutputEff  = mgr->CreateContainer(Form("%s_eff", name), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *coutputCont = mgr->CreateContainer(Form("%s_cont", name), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *coutputDca  = mgr->CreateContainer(Form("%s_dca", name), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+
+  AliAnalysisDataContainer *coutputQA   = mgr->CreateContainer(Form("%sQA", name), TList::Class(), AliAnalysisManager::kOutputContainer, outputQAFileName);
     
   mgr->ConnectInput  (task,  0, cinput );
   mgr->ConnectOutput (task,  1, coutput);

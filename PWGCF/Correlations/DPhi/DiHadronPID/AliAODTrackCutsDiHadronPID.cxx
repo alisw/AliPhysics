@@ -84,11 +84,6 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
  	// Default constructor
  	//
 
- 	// Q: When an object is loaded from a TFile, then the default constructor is called.
- 	//    I am assuming that the valiables initialized here are overwritten by the values
- 	//    which were stored in the file, except for the data members which have an
- 	//    exclamation mark in the header file. -> Check this! 
-
  	cout<<"AliAODTrackCutsDiHadronPID Default Constructor Called."<<endl;
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
@@ -419,7 +414,465 @@ Long64_t AliAODTrackCutsDiHadronPID::Merge(TCollection* list) {
 }
 
 // -----------------------------------------------------------------------
-void AliAODTrackCutsDiHadronPID::PrintCuts() {}
+void AliAODTrackCutsDiHadronPID::PrintCuts() const { /* NOT IMPLEMENTED */ }
+
+// -----------------------------------------------------------------------
+TList* AliAODTrackCutsDiHadronPID::GetListOfDataQAHistos() const {
+
+	// Returns the list of data histograms.
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	if (fPrimRecMCTrackQAHistos) {
+		return fPrimRecMCTrackQAHistos;
+	} else {
+		return 0x0;
+	}
+
+}
+
+// -----------------------------------------------------------------------
+TList* AliAODTrackCutsDiHadronPID::GetListOfPrimRecMCTrackQAHistos() const {
+
+	// Returns the list of histograms of reconstructed primary tracks.
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	if (fPrimRecMCTrackQAHistos) {
+		return fPrimRecMCTrackQAHistos;
+	} else {
+		return 0x0;
+	}
+
+}
+
+// -----------------------------------------------------------------------
+TList* AliAODTrackCutsDiHadronPID::GetListOfPrimGenMCTrackQAHistos() const {
+
+	// Returns the list of histograms of generator level primary particles.
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	if (fPrimGenMCTrackQAHistos) {
+		return fPrimGenMCTrackQAHistos;
+	} else {
+		return 0x0;
+	}
+
+}
+
+// -----------------------------------------------------------------------
+TList* AliAODTrackCutsDiHadronPID::GetListOfSecRecMCTrackQAHistos() const  {
+
+	// Returns the list of histograms of reconstructed secondary tracks.
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+	
+	if (fSecRecMCTrackQAHistos) {
+		return fSecRecMCTrackQAHistos;
+	} else {
+		return 0x0;
+	}
+
+}
+
+// -----------------------------------------------------------------------
+TList* AliAODTrackCutsDiHadronPID::GetListOfSecGenMCTrackQAHistos() const {
+
+	// Returns the list of histograms of generator level secondary particles.
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	if (fSecGenMCTrackQAHistos) {
+		return fSecGenMCTrackQAHistos;
+	} else {
+		return 0x0;
+	}
+
+}
+
+// -----------------------------------------------------------------------
+TH1F* AliAODTrackCutsDiHadronPID::GetHistDataTOFProjection(Int_t charge, Int_t species, Int_t ptbin) {
+
+	// Returns a projection in TOF of the data histogram.
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	Int_t ptclass = GetPtClass(ptbin);
+	if (ptclass == -1) return 0x0;
+	Int_t bininptclass = GetBinInPtClass(ptbin);
+
+	// Retrieve original the 3D histogram (we don't own it).
+	TH3F* htmp = (TH3F*)GetHistData(Form("fHistDataPID%s%s%s",fHistoName[charge].Data(),fParticleName[species].Data(),fPtClassName[ptclass].Data()));
+
+	// Make the projection.
+	TH1F* htmp_proj = (TH1F*)htmp->ProjectionY(Form("TOFprojection_%i_%i_%i",charge,species,ptbin),bininptclass,bininptclass);
+
+	// Some settings of the output histogram.
+	htmp_proj->SetDirectory(0);
+	htmp_proj->SetTitle(Form("%5.3f < p_{T} < %5.3f",GetPtMinPID(ptbin),GetPtMaxPID(ptbin)));
+	htmp_proj->Sumw2();
+
+	return htmp_proj;
+
+}
+
+// -----------------------------------------------------------------------
+TObjArray* AliAODTrackCutsDiHadronPID::GetDataTOFProjection(Int_t charge, Int_t species) {
+
+	// Returns a TObjArray with all TOF histograms (as needed by AliSpectrumDiHadronPID)
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	TObjArray* aout = new TObjArray(GetNPtBinsPID());
+	aout->SetOwner(kTRUE);
+	for (Int_t iPtBin = 1; iPtBin < (GetNPtBinsPID() + 1); iPtBin++) {
+		aout->AddLast((TH1F*)GetHistDataTOFProjection(charge, species, iPtBin));
+	}
+
+	return aout;
+
+}
+
+// -----------------------------------------------------------------------
+TH1F* AliAODTrackCutsDiHadronPID::GetHistDataTOFMismatch(Int_t charge, Int_t species, Int_t ptbin) {
+
+	// Returns a projection in TOF of the mismatch histogram.
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	Int_t ptclass = GetPtClass(ptbin);
+	if (ptclass == -1) return 0x0;
+	Int_t bininptclass = GetBinInPtClass(ptbin);
+
+	// Retrieve original the 2D histogram (we don't own it).
+	TH2F* htmp = (TH2F*)GetHistData(Form("fHistTOFMismatch%s%s%s",fHistoName[charge].Data(),fParticleName[species].Data(),fPtClassName[ptclass].Data()));
+
+	// Make the projection.
+	TH1F* htmp_proj = (TH1F*)htmp->ProjectionY(Form("TOFprojectionMismatch_%i_%i_%i",charge,species,ptbin),bininptclass,bininptclass);
+
+	// Some settings of the output histogram.
+	htmp_proj->SetDirectory(0);
+	htmp_proj->SetTitle(Form("%5.3f < p_{T} < %5.3f",GetPtMinPID(ptbin),GetPtMaxPID(ptbin)));
+	htmp_proj->Sumw2();
+
+	return htmp_proj;
+
+}
+
+// -----------------------------------------------------------------------
+TObjArray* AliAODTrackCutsDiHadronPID::GetDataTOFMismatch(Int_t charge, Int_t species) {
+
+	// Returns a TObjArray with all TOF mismatch histograms (as needed by AliSpectrumDiHadronPID)
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	TObjArray* aout = new TObjArray(GetNPtBinsPID());
+	aout->SetOwner(kTRUE);
+	for (Int_t iPtBin = 1; iPtBin < (GetNPtBinsPID() + 1); iPtBin++) {
+		aout->AddLast((TH1F*)GetHistDataTOFMismatch(charge, species, iPtBin));
+	}
+
+	return aout;
+
+}
+
+// -----------------------------------------------------------------------
+TH2F* AliAODTrackCutsDiHadronPID::GetHistDataTPCTOFProjection(Int_t charge, Int_t species, Int_t ptbin) {
+	
+	// Returns a projection in TOF of the data histogram.
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	Int_t ptclass = GetPtClass(ptbin);
+	if (ptclass == -1) return 0x0;
+	Int_t bininptclass = GetBinInPtClass(ptbin);
+
+	// Retrieve original the 3D histogram (we don't own it).
+	TH3F* htmp = (TH3F*)GetHistData(Form("fHistDataPID%s%s%s",fHistoName[charge].Data(),fParticleName[species].Data(),fPtClassName[ptclass].Data()));
+
+	// Make the projection.
+	TAxis* ptaxis = htmp->GetXaxis();
+	Int_t NbinsPt = ptaxis->GetNbins();
+	//cout<<"bin in pt class: "<<bininptclass<<endl;
+	ptaxis->SetRange(bininptclass, bininptclass);
+	TH2F* htmp_proj = (TH2F*)htmp->Project3D("zy");
+	htmp_proj->SetName(Form("TPCTOFprojection_%i_%i_%i",charge,species,ptbin));
+
+	//cout<<"projection: "<<htmp_proj<<endl;
+
+	// Some settings of the output histogram.
+	htmp_proj->SetDirectory(0);
+	htmp_proj->SetTitle(Form("%5.3f < p_{T} < %5.3f",GetPtMinPID(ptbin),GetPtMaxPID(ptbin)));
+	htmp_proj->Sumw2();
+
+	// Putting back the range on the p_T axis.
+	ptaxis->SetRange(1, NbinsPt);
+
+	return htmp_proj;
+
+}
+
+// -----------------------------------------------------------------------
+TObjArray* AliAODTrackCutsDiHadronPID::GetDataTPCTOFProjection(Int_t charge, Int_t species) {
+
+	// TODO: This is basically a copy of GetDataTOFProjection -> Make into one function.
+
+	// Returns a TObjArray with all TPC/TOF histograms (as needed by AliSpectrumDiHadronPID)
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	TObjArray* aout = new TObjArray(GetNPtBinsPID());
+	aout->SetOwner(kTRUE);
+	for (Int_t iPtBin = 1; iPtBin < (GetNPtBinsPID() + 1); iPtBin++) {
+
+		aout->AddLast((TH2F*)GetHistDataTPCTOFProjection(charge, species, iPtBin));
+		cout<<"aout entries: "<<aout->GetEntriesFast()<<endl;
+	}
+
+	return aout;
+
+}
+
+// -----------------------------------------------------------------------
+TH2F* AliAODTrackCutsDiHadronPID::GetHistDataTPCTOFMismatch(Int_t charge, Int_t species, Int_t ptbin) {
+
+	// Returns a projection in TPC/TOF of the mismatch histogram.
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	Int_t ptclass = GetPtClass(ptbin);
+	if (ptclass == -1) return 0x0;
+	Int_t bininptclass = GetBinInPtClass(ptbin);
+
+	// Retrieve original the 3D histogram (we don't own it).
+	TH3F* htmp = (TH3F*)GetHistData(Form("fHistTPCTOFMismatch%s%s%s",fHistoName[charge].Data(),fParticleName[species].Data(),fPtClassName[ptclass].Data()));
+
+	// Make the projection.
+	TAxis* ptaxis = htmp->GetXaxis();
+	Int_t NbinsPt = ptaxis->GetNbins();
+	ptaxis->SetRange(bininptclass, bininptclass);
+	TH2F* htmp_proj = (TH2F*)htmp->Project3D("zy");	
+	htmp_proj->SetName(Form("TPCTOFprojectionMismatch_%i_%i_%i",charge,species,ptbin));
+
+	// Some settings of the output histogram.
+	htmp_proj->SetDirectory(0);
+	htmp_proj->SetTitle(Form("%5.3f < p_{T} < %5.3f",GetPtMinPID(ptbin),GetPtMaxPID(ptbin)));
+	htmp_proj->Sumw2();
+
+	return htmp_proj;
+
+	// Putting back the range on the p_T axis.
+	ptaxis->SetRange(1, NbinsPt);
+
+}
+
+// -----------------------------------------------------------------------
+TObjArray* AliAODTrackCutsDiHadronPID::GetDataTPCTOFMismatch(Int_t charge, Int_t species) {
+
+	// Returns a TObjArray with all TPC/TOF mismatch histograms (as needed by AliSpectrumDiHadronPID)
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	TObjArray* aout = new TObjArray(GetNPtBinsPID());
+	aout->SetOwner(kTRUE);
+	for (Int_t iPtBin = 1; iPtBin < (GetNPtBinsPID() + 1); iPtBin++) {
+		aout->AddLast((TH2F*)GetHistDataTPCTOFMismatch(charge, species, iPtBin));
+	}
+
+	return aout;
+
+}
+
+// -----------------------------------------------------------------------
+Double_t AliAODTrackCutsDiHadronPID::GetPtMin(const Int_t bin) const {
+	
+	// Same as: TAxis::GetBinLowEdge()
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	if ((bin < 1) || (bin > fNPtBins + 1)) {
+		cout<<"Bin is out of range..."<<endl; 
+		return -999.;
+	} else {
+		return fPtAxis[bin - 1];
+	}
+
+}
+
+// -----------------------------------------------------------------------
+Double_t AliAODTrackCutsDiHadronPID::GetPtMax(const Int_t bin) const {
+	
+	// Same as: TAxis::GetBinUpEdge()
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	if ((bin < 1) || (bin > fNPtBins + 1)) {
+		cout<<"Bin is out of range..."<<endl; 
+		return -999.;
+	} else {
+		return fPtAxis[bin];
+	}
+
+}
+
+// -----------------------------------------------------------------------
+Int_t AliAODTrackCutsDiHadronPID::GetNPtBinsPID(const Int_t ptclass) const {
+
+	// Returns the number of pt bins that are used in every "pt class",
+	// where a "pt class" is a range in pT which have the same range in
+	// TOF/ TPC. If class == -1, then the retrun value is the total number
+	// of bins in all classes together.
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	if (ptclass == -1) {
+		Int_t nptbinspid = 0;
+		for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
+			nptbinspid += fNPtBinsPID[iPtClass];
+		}
+		return nptbinspid;
+	} else if (ptclass >= 0 && ptclass < 5) {
+		return fNPtBinsPID[ptclass];
+	} else {
+		return -999;
+	}
+
+}
+
+// -----------------------------------------------------------------------
+Double_t* AliAODTrackCutsDiHadronPID::GetPtAxisPID() const {
+
+	// Returns an array representing the pT axis for the PID
+	// histograms.
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	const Int_t nptbinspid = GetNPtBinsPID();
+	Double_t* ptaxis = new Double_t[nptbinspid + 1];
+
+	for (Int_t iPtBin = 0; iPtBin < nptbinspid; iPtBin++) {
+		ptaxis[iPtBin] = GetPtMinPID(iPtBin + 1); 
+	}
+
+	ptaxis[nptbinspid] = GetPtMaxPID(nptbinspid);
+	return ptaxis;
+
+}
+
+// -----------------------------------------------------------------------
+Double_t AliAODTrackCutsDiHadronPID::GetPtMinPID(const Int_t bin) const {
+
+	// Same as: TAxis::GetBinLowEdge()
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	Int_t ptclass = GetPtClass(bin);
+
+	if (ptclass == -1) {return -999.;}
+
+	Int_t bininptclass = GetBinInPtClass(bin);
+
+	Double_t minpt = fPtBoundaryPID[ptclass];
+	Double_t maxpt = fPtBoundaryPID[ptclass+1];
+	Double_t ptres = (maxpt - minpt)/((Double_t)fNPtBinsPID[ptclass]);
+
+	return (minpt + ptres * ((Double_t)(bininptclass - 1)) );
+
+}
+
+// -----------------------------------------------------------------------
+Double_t AliAODTrackCutsDiHadronPID::GetPtMaxPID(const Int_t bin) const {
+
+	// Same as: TAxis::GetBinUpEdge()
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	Int_t ptclass = GetPtClass(bin);
+
+	if (ptclass == -1) {return -999.;}		
+
+	Int_t bininptclass = GetBinInPtClass(bin);
+
+	Double_t minpt = fPtBoundaryPID[ptclass];
+	Double_t maxpt = fPtBoundaryPID[ptclass+1];
+	Double_t ptres = (maxpt - minpt)/((Double_t)fNPtBinsPID[ptclass]);
+
+	return (minpt + ptres * ((Double_t)(bininptclass)) );
+
+}
+
+// -----------------------------------------------------------------------
+Double_t AliAODTrackCutsDiHadronPID::GetPtClassMin(const Int_t ptclass) const {
+
+	// Returns the minimum p_T of a p_T class.
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	if (ptclass >= 0 && ptclass < 5) {
+		return fPtBoundaryPID[ptclass];
+	} else {
+		return -999;
+	}
+
+}
+
+// -----------------------------------------------------------------------
+Double_t AliAODTrackCutsDiHadronPID::GetPtClassMax(const Int_t ptclass) const {
+
+	// Returns the maximum p_T of a p_T class.
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	if (ptclass >= 0 && ptclass < 5) {
+		return fPtBoundaryPID[ptclass+1];
+	} else {
+		return -999;
+	}
+
+}
+
+// -----------------------------------------------------------------------
+Bool_t AliAODTrackCutsDiHadronPID::RequestQAHistos(const Int_t histoclass, const Bool_t Enable3DSpectra, const Bool_t EnablePIDHistos) {
+
+	// Request certain histograms to be filled.
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	if ((histoclass > -1) && (histoclass < 12)) {
+		fHistRequested[histoclass] = kTRUE;
+		f3DSpectraEnabeled[histoclass] = Enable3DSpectra;
+		fPIDHistosEnabeled[histoclass] = EnablePIDHistos;
+		//cout<<"histoclass: "<<histoclass<<" requested: "<<fHistRequested[histoclass]<<endl;
+		return kTRUE;
+	} else { 
+		return kFALSE;
+	}
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::StartNewEvent() {
+
+	// FIXME: This method is now only suited for Data (3 histo classes only.) 
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	// Resetting the counters.
+	for (Int_t iHistoClass = 0; iHistoClass < 3; iHistoClass++) {
+		fNTracks[iHistoClass] = 0;
+ 	}
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::EventIsDone(Bool_t IsMC) {
+
+	// FIXME: This method is now only suited for Data (3 histo classes only.) 
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	// Fill NTracks histos.
+
+	for (Int_t iHistoClass = 0; iHistoClass < 3; iHistoClass++) {
+
+		if (fHistRequested[iHistoClass]) {
+			
+			if (IsMC) {
+				// THE FOLLOWING SHOULD NEVER HAPPEN.
+				//if (!fHistPrimRecMCPt[iHistoClass]) InitializeRecMCHistos(iHistoClass);
+				fHistPrimRecNTracks[iHistoClass]->Fill(fNTracks[iHistoClass]);
+			} else {
+				// THE FOLLOWING SHOULD NEVER HAPPEN.
+				//if (!fHistDataPt[iHistoClass]) InitializeDataHistos(iHistoClass);
+				fHistDataNTracks[iHistoClass]->Fill(fNTracks[iHistoClass]);
+			}
+		}
+	}
+}
 
 // -----------------------------------------------------------------------
 void AliAODTrackCutsDiHadronPID::CreateHistos() {
@@ -435,7 +888,6 @@ void AliAODTrackCutsDiHadronPID::CreateHistos() {
 	//       that the lists of QA histograms already exist, so this may become a fatal error
 	//       instead of a warning.
 
-	cout<<"AliAODTrackCutsDiHadronPID - Creating histograms for cuts: "<<fName<<endl;
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	if (fIsMC) {
@@ -490,43 +942,6 @@ void AliAODTrackCutsDiHadronPID::CreateHistos() {
 			}	
 		} else {cout<<"AliAODTrackCutsDiHadronPID - Warning, Data QA TList was already created..."<<endl;}
 	
-	}
-}
-
-// -----------------------------------------------------------------------
-void AliAODTrackCutsDiHadronPID::StartNewEvent() {
-
-	// FIXME: This method is now only suited for Data (3 histo classes only.) 
-	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
-	// Resetting the counters.
-	for (Int_t iHistoClass = 0; iHistoClass < 3; iHistoClass++) {
-		fNTracks[iHistoClass] = 0;
- 	}
-}
-
-// -----------------------------------------------------------------------
-void AliAODTrackCutsDiHadronPID::EventIsDone(Bool_t IsMC) {
-
-	// FIXME: This method is now only suited for Data (3 histo classes only.) 
-	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
-	// Fill NTracks histos.
-
-	for (Int_t iHistoClass = 0; iHistoClass < 3; iHistoClass++) {
-
-		if (fHistRequested[iHistoClass]) {
-			
-			if (IsMC) {
-				// THE FOLLOWING SHOULD NEVER HAPPEN.
-				//if (!fHistPrimRecMCPt[iHistoClass]) InitializeRecMCHistos(iHistoClass);
-				fHistPrimRecNTracks[iHistoClass]->Fill(fNTracks[iHistoClass]);
-			} else {
-				// THE FOLLOWING SHOULD NEVER HAPPEN.
-				//if (!fHistDataPt[iHistoClass]) InitializeDataHistos(iHistoClass);
-				fHistDataNTracks[iHistoClass]->Fill(fNTracks[iHistoClass]);
-			}
-		}
 	}
 }
 
@@ -686,6 +1101,45 @@ Bool_t AliAODTrackCutsDiHadronPID::IsSelectedReconstructedMC(AliTrackDiHadronPID
 
 	// Track Has Passed.
 	return kTRUE;
+
+}
+
+// -----------------------------------------------------------------------
+Int_t AliAODTrackCutsDiHadronPID::GetPtClass(const Int_t ptbin) const {
+
+	// Returns a p_T class as a function of bin (PID histos)
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	Int_t currentptclass = 0;
+	Int_t currentptbin = fNPtBinsPID[0];
+
+	while (currentptbin < ptbin) {
+		currentptclass++;
+		if (currentptclass == 5) {break;}
+		currentptbin += fNPtBinsPID[currentptclass];
+	}
+
+	if (currentptclass == 5) {
+		cout<<"GetPtClass -> ptbin out of range!"<<endl; 
+		return -1;
+	}
+
+	return currentptclass;
+}
+
+// -----------------------------------------------------------------------
+Int_t AliAODTrackCutsDiHadronPID::GetBinInPtClass(const Int_t ptbin) const {
+
+	// Returns the bin withing the p_T class (i.e., 1..Nbins)
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	Int_t ptclass = GetPtClass(ptbin);
+	if (ptclass == -1) {return -1;}
+
+	Int_t ptbinout = ptbin;
+	for (Int_t iPtClass = 0; iPtClass < ptclass; iPtClass++) {ptbinout -= fNPtBinsPID[iPtClass];}
+
+	return ptbinout;
 
 }
 
@@ -1028,84 +1482,3 @@ TH2F* AliAODTrackCutsDiHadronPID::InitializeTOFMismatchHisto(const char* name, I
 
 }
 
-// -----------------------------------------------------------------------
-TH1F* AliAODTrackCutsDiHadronPID::GetHistDataTOFProjection(Int_t charge, Int_t species, Int_t ptbin) {
-
-	// Returns a projection in TOF of the data histogram.
-	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
-	Int_t ptclass = GetPtClass(ptbin);
-	if (ptclass == -1) return 0x0;
-	Int_t bininptclass = GetBinInPtClass(ptbin);
-
-	// Retrieve original the 3D histogram.
-	TH3F* htmp = (TH3F*)GetHistData(Form("fHistDataPID%s%s%s",fHistoName[charge].Data(),fParticleName[species].Data(),fPtClassName[ptclass].Data()));
-
-	// Make the projection.
-	TH1F* htmp_proj = (TH1F*)htmp->ProjectionY(Form("TOFprojection_%i_%i_%i",charge,species,ptbin),bininptclass,bininptclass);
-
-	// Some settings of the output histogram.
-	htmp_proj->SetDirectory(0);
-	htmp_proj->SetTitle(Form("%5.3f < p_{T} < %5.3f",GetPtMinPID(ptbin),GetPtMaxPID(ptbin)));
-	htmp_proj->Sumw2();
-
-	return htmp_proj;
-
-}
-
-// -----------------------------------------------------------------------
-TObjArray* AliAODTrackCutsDiHadronPID::GetDataTOFProjection(Int_t charge, Int_t species) {
-
-	// Returns a TObjArray with all TOF histograms (as needed by AliSpectrumDiHadronPID)
-	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
-	TObjArray* aout = new TObjArray(GetNPtBinsPID());
-	aout->SetOwner(kTRUE);
-	for (Int_t iPtBin = 1; iPtBin < (GetNPtBinsPID() + 1); iPtBin++) {
-		aout->AddLast((TH1F*)GetHistDataTOFProjection(charge, species, iPtBin));
-	}
-
-	return aout;
-
-}
-
-// -----------------------------------------------------------------------
-TH1F* AliAODTrackCutsDiHadronPID::GetHistDataTOFMismatch(Int_t charge, Int_t species, Int_t ptbin) {
-
-	// Returns a projection in TOF of the mismatch histogram.
-	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
-	Int_t ptclass = GetPtClass(ptbin);
-	if (ptclass == -1) return 0x0;
-	Int_t bininptclass = GetBinInPtClass(ptbin);
-
-	// Retrieve the original 2D histogram.
-	TH2F* htmp = (TH2F*)GetHistData(Form("fHistTOFMismatch%s%s%s",fHistoName[charge].Data(),fParticleName[species].Data(),fPtClassName[ptclass].Data()));
-
-	// Make the projection.
-	TH1F* htmp_proj = (TH1F*)htmp->ProjectionY(Form("TOFprojectionsMismatch_%i_%i_%i",charge,species,ptbin),bininptclass,bininptclass);
-
-	// Some settings of the output histogram.
-	htmp_proj->SetDirectory(0);
-	htmp_proj->SetTitle(Form("%5.3f < p_{T} < %5.3f",GetPtMinPID(ptbin),GetPtMaxPID(ptbin)));
-	htmp_proj->Sumw2();
-
-	return htmp_proj;
-
-}
-
-// -----------------------------------------------------------------------
-TObjArray* AliAODTrackCutsDiHadronPID::GetDataTOFMismatch(Int_t charge, Int_t species) {
-
-	// Returns a TObjArray with all TOF mismatch histograms (as needed by AliSpectrumDiHadronPID)
-	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
-	TObjArray* aout = new TObjArray(GetNPtBinsPID());
-	aout->SetOwner(kTRUE);
-	for (Int_t iPtBin = 1; iPtBin < (GetNPtBinsPID() + 1); iPtBin++) {
-		aout->AddLast((TH1F*)GetHistDataTOFMismatch(charge, species, iPtBin));
-	}
-
-	return aout;
-
-}

@@ -22,6 +22,8 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TMath.h"
+#include "TF1.h"
+#include "TF2.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
@@ -35,111 +37,8 @@
 using namespace std;
 
 // -----------------------------------------------------------------------
-TObjArray* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name, 
-	const char* title, TH1F* h1, TH1F* h2, Int_t markerstyle, Bool_t logy) {
-
-	// - Creates a window comparing two histograms h1, and h2.
-	// - Returns an array of pointers to the objects created
-	//   in this function.
-
-	//Int_t optstat = gStyle->GetOptStat();
-	gStyle->SetOptStat(0);
-	//c->UseCurrentStyle();
-	//gStyle->SetOptStat(optstat);
-
-	TH1F* spectra[2];
-	TH1F* division;
-	Int_t spectracolor[2] = {1,2};
-	Int_t divisioncolor = 4;
-
-	// Cloning and configuring spectra.
-	spectra[0] = (TH1F*)h1->Clone();
-	//spectra[0]->SetDirectory(0);
-	spectra[1] = (TH1F*)h2->Clone();
-	//spactra[1]->SetDirectory(0);	
-	for (Int_t iSpectra = 0; iSpectra < 2; iSpectra++) {
-		spectra[iSpectra]->Sumw2();
-		spectra[iSpectra]->SetMarkerStyle(markerstyle);
-		spectra[iSpectra]->SetLineColor(spectracolor[iSpectra]);
-		spectra[iSpectra]->SetMarkerColor(spectracolor[iSpectra]);
-	}
-
-	// Creating the division.
-	division = (TH1F*)spectra[0]->Clone("hDivision");
-	division->Divide(spectra[1]);
-	division->SetLineColor(divisioncolor);
-	division->SetMarkerColor(divisioncolor);
-	division->GetYaxis()->SetTitle("Ratio");
-
-	// Creating window
-	//TCanvas* c = new TCanvas(name,title,0,0,400,400);
-	TCanvas* c = TCanvas::MakeDefCanvas();
-	c->SetName(name);
-	c->SetTitle(title);
-	TPad* p1 = new TPad("p1","pad1",0,0.25,1,1);
-	p1->SetRightMargin(0.05);
-	p1->SetBottomMargin(0.);
-	TPad* p2 = new TPad("p2","pad2",0,0,1,0.25);
-	p2->SetTopMargin(0.);
-	p2->SetRightMargin(0.05);
-	p2->SetBottomMargin(0.3);
-	p2->SetFillStyle(4000);
-	p1->Draw();
-	p2->Draw();
-
-	// Determining plotting range.
-	Double_t max = TMath::Max(spectra[0]->GetMaximum(),spectra[1]->GetMaximum());
-	Double_t min = TMath::Min(spectra[0]->GetMinimum(),spectra[1]->GetMinimum());
-	Double_t range = max-min;
-	spectra[0]->SetMinimum(min-0.05*range);
-	spectra[0]->SetMaximum(max+0.05*range);
-
-	// Drawing
-	p1->cd();
-	if (logy) {p1->SetLogy();}
-	spectra[0]->Draw("e");
-	spectra[0]->GetXaxis()->SetLabelSize(0);
-	spectra[0]->GetYaxis()->SetLabelSize(0.05);
-	spectra[0]->GetYaxis()->SetTitleSize(0.05);
-	spectra[0]->GetYaxis()->SetTitleOffset(1.1);
-	//Double_t labelsize = spectra[0]->GetYaxis()->GetLabelSize();
-	spectra[1]->Draw("same e");
-	p2->cd();
-	division->SetTitle("");
-	division->GetXaxis()->SetLabelSize(0.1);
-	division->GetXaxis()->SetTitleSize(0.15);
-	division->GetXaxis()->SetTitleOffset(0.6);
-	division->GetYaxis()->SetLabelSize(0.1);
-	division->GetYaxis()->SetTitleSize(0.12);
-	division->GetYaxis()->SetTitleOffset(0.3);
-	division->Draw("e");
-
-	//c->UseCurrentStyle();
-
-	//gStyle->SetOptStat(optstat);
-
-	TLegend* legend = new TLegend(0.75,0.8,0.95,0.95);
-	legend->AddEntry(spectra[0],h1->GetTitle(),"lpe");
-	legend->AddEntry(spectra[1],h2->GetTitle(),"lpe");
-	p1->cd();
-	legend->Draw("same");
-
-	// returning the created objects.
-	TObjArray* returnobjects = new TObjArray(6);
-	returnobjects->AddLast(c);
-	returnobjects->AddLast(p1);
-	returnobjects->AddLast(p2);
-	returnobjects->AddLast(spectra[0]);
-	returnobjects->AddLast(spectra[1]);
-	returnobjects->AddLast(division);
-
-	return returnobjects;
-
-}
-
-// -----------------------------------------------------------------------
 TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(
-	TH1F* histIn, Double_t* binsx, Int_t Nbinsx, Bool_t density) {
+	const TH1F* histIn, const Double_t* binsx, const Int_t Nbinsx, const Bool_t density) {
 
 	// Rebins a histogram (hin) with a variable binning to a histogram
 	// with another variable binning (binsx). If the "density" flag is set,
@@ -278,7 +177,18 @@ TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(
 }
 
 // -----------------------------------------------------------------------
-TH1F* AliHistToolsDiHadronPID::TrimHisto(TH1F* histo, Int_t firstbin, Int_t lastbin) {
+TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(const TH1F* histIn, const TH1F* histAxis, const Bool_t density) {
+
+	// Rebins histogram histIn to the x-axis of histAxis
+	TAxis* xaxis = histAxis->GetXaxis();
+	Int_t nbinsx = xaxis->GetNbins();
+	const Double_t* binsx = (xaxis->GetXbins())->GetArray();
+	return RebinVariableBinning(histIn, const_cast<Double_t*>(binsx), nbinsx, density);
+
+}
+
+// -----------------------------------------------------------------------
+TH1F* AliHistToolsDiHadronPID::TrimHisto(const TH1F* histo, const Int_t firstbin, const Int_t lastbin) {
 
 	const char* name = histo->GetName();
 	const char* title = histo->GetTitle();
@@ -310,3 +220,201 @@ TH1F* AliHistToolsDiHadronPID::TrimHisto(TH1F* histo, Int_t firstbin, Int_t last
 	return hout;
 
 }
+
+// -----------------------------------------------------------------------
+void AliHistToolsDiHadronPID::ConstMinusHist(TH1F* histo, const Float_t cc) {
+
+	// h -> (c-h)
+	Int_t nbins = histo->GetNbinsX();
+	for (Int_t iBin = 0; iBin < (nbins + 1); iBin++) {
+		Float_t bincontent = histo->GetBinContent(iBin);
+		histo->SetBinContent(iBin,(cc - bincontent));
+	}
+
+}
+
+// -----------------------------------------------------------------------
+TH3F* AliHistToolsDiHadronPID::MakeHist3D(const char* name, const char* title, 
+	const Int_t nbinsX, const Double_t minX, const Double_t maxX,
+	const Int_t nbinsY, const Double_t minY, const Double_t maxY,
+	const Int_t nbinsZ, const Double_t* zaxis) {
+
+	const Double_t* xaxis = const_cast<Double_t*>(CreateAxis(nbinsX,minX,maxX));
+	const Double_t* yaxis = const_cast<Double_t*>(CreateAxis(nbinsY,minY,maxY));
+
+	TH3F* hout = new TH3F(name,title,nbinsX,xaxis,nbinsY,yaxis,nbinsZ,zaxis);
+
+	return hout;
+
+}
+
+// -----------------------------------------------------------------------
+TH2F* AliHistToolsDiHadronPID::Function2DToHist2D(const TF2* function, const TH2* grid) {
+
+	// Creates a 2D histogram of "function" using the binning of 
+	// the histogram "grid". 
+	//  - We assume "grid" to have fixed binwidth.
+	//  - Bins are only filled if they are within the domain of the function.
+	//  - Histogram takes over the color of the function.
+
+	// Gathering info about the axes.
+	TAxis* Xaxis = grid->GetXaxis();
+	Int_t NbinsX = Xaxis->GetNbins();
+	TAxis* Yaxis = grid->GetYaxis();
+	Int_t NbinsY = Yaxis->GetNbins();
+
+	// Determining function range.
+	Double_t Xmin = 0.; 
+	Double_t Xmax = 0.; 
+	Double_t Ymin = 0.; 
+	Double_t Ymax = 0.;
+	function->GetRange(Xmin, Ymin, Xmax, Ymax);
+
+	// Creating the histogram.
+	TH2F* hout = new TH2F(Form("%s_hist", function->GetName()),
+		Form("%s (Hist);%s;%s", function->GetTitle(), Xaxis->GetTitle(), Yaxis->GetTitle()),
+		NbinsX, Xaxis->GetBinLowEdge(1), Xaxis->GetBinUpEdge(NbinsX),
+		NbinsY, Yaxis->GetBinLowEdge(1), Yaxis->GetBinUpEdge(NbinsY));
+	hout->SetLineColor(function->GetLineColor());
+	hout->SetMarkerColor(function->GetLineColor());
+	hout->SetDirectory(0);
+
+	// Filling the histogram.
+	for (Int_t iBinX = 1; iBinX < (NbinsX + 1); iBinX++) {
+		for (Int_t iBinY = 1; iBinY < (NbinsY + 1); iBinY++) {
+			Double_t CoordX = Xaxis->GetBinCenter(iBinX);
+			Double_t CoordY = Yaxis->GetBinCenter(iBinY);
+
+			if ( (CoordX < Xmin) || (CoordX > Xmax) || (CoordY < Ymin) || (CoordY > Ymax) ) {continue;}
+
+			hout->SetBinContent(iBinX, iBinY, function->Eval(CoordX, CoordY));
+		}		
+	}
+
+	return hout;
+
+}
+
+// -----------------------------------------------------------------------
+TObjArray* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name, 
+	const char* title, const TH1F* h1, const TH1F* h2, const Int_t markerstyle, const Bool_t logy) {
+
+	// - Creates a window comparing two histograms h1, and h2.
+	// - Returns an array of pointers to the objects created
+	//   in this function.
+
+	//Int_t optstat = gStyle->GetOptStat();
+	gStyle->SetOptStat(0);
+	//c->UseCurrentStyle();
+	//gStyle->SetOptStat(optstat);
+
+	TH1F* spectra[2];
+	TH1F* division;
+	Int_t spectracolor[2] = {1,2};
+	Int_t divisioncolor = 4;
+
+	// Cloning and configuring spectra.
+	spectra[0] = (TH1F*)h1->Clone();
+	//spectra[0]->SetDirectory(0);
+	spectra[1] = (TH1F*)h2->Clone();
+	//spactra[1]->SetDirectory(0);	
+	for (Int_t iSpectra = 0; iSpectra < 2; iSpectra++) {
+		spectra[iSpectra]->Sumw2();
+		spectra[iSpectra]->SetMarkerStyle(markerstyle);
+		spectra[iSpectra]->SetLineColor(spectracolor[iSpectra]);
+		spectra[iSpectra]->SetMarkerColor(spectracolor[iSpectra]);
+	}
+
+	// Creating the division.
+	division = (TH1F*)spectra[0]->Clone("hDivision");
+	division->Divide(spectra[1]);
+	division->SetLineColor(divisioncolor);
+	division->SetMarkerColor(divisioncolor);
+	division->GetYaxis()->SetTitle("Ratio");
+
+	// Creating window
+	//TCanvas* c = new TCanvas(name,title,0,0,400,400);
+	TCanvas* c = TCanvas::MakeDefCanvas();
+	c->SetName(name);
+	c->SetTitle(title);
+	TPad* p1 = new TPad("p1","pad1",0,0.25,1,1);
+	p1->SetRightMargin(0.05);
+	p1->SetBottomMargin(0.);
+	TPad* p2 = new TPad("p2","pad2",0,0,1,0.25);
+	p2->SetTopMargin(0.);
+	p2->SetRightMargin(0.05);
+	p2->SetBottomMargin(0.3);
+	p2->SetFillStyle(4000);
+	p1->Draw();
+	p2->Draw();
+
+	// Determining plotting range.
+	Double_t max = TMath::Max(spectra[0]->GetMaximum(),spectra[1]->GetMaximum());
+	Double_t min = TMath::Min(spectra[0]->GetMinimum(),spectra[1]->GetMinimum());
+	Double_t range = max-min;
+	spectra[0]->SetMinimum(min-0.05*range);
+	spectra[0]->SetMaximum(max+0.05*range);
+
+	// Drawing
+	p1->cd();
+	if (logy) {p1->SetLogy();}
+	spectra[0]->Draw("e");
+	spectra[0]->GetXaxis()->SetLabelSize(0);
+	spectra[0]->GetYaxis()->SetLabelSize(0.05);
+	spectra[0]->GetYaxis()->SetTitleSize(0.05);
+	spectra[0]->GetYaxis()->SetTitleOffset(1.1);
+	//Double_t labelsize = spectra[0]->GetYaxis()->GetLabelSize();
+	spectra[1]->Draw("same e");
+	p2->cd();
+	division->SetTitle("");
+	division->GetXaxis()->SetLabelSize(0.1);
+	division->GetXaxis()->SetTitleSize(0.15);
+	division->GetXaxis()->SetTitleOffset(0.6);
+	division->GetYaxis()->SetLabelSize(0.1);
+	division->GetYaxis()->SetTitleSize(0.12);
+	division->GetYaxis()->SetTitleOffset(0.3);
+	division->Draw("e");
+
+	//c->UseCurrentStyle();
+
+	//gStyle->SetOptStat(optstat);
+
+	TLegend* legend = new TLegend(0.75,0.8,0.95,0.95);
+	legend->AddEntry(spectra[0],h1->GetTitle(),"lpe");
+	legend->AddEntry(spectra[1],h2->GetTitle(),"lpe");
+	p1->cd();
+	legend->Draw("same");
+
+	// returning the created objects.
+	TObjArray* returnobjects = new TObjArray(6);
+	returnobjects->AddLast(c);
+	returnobjects->AddLast(p1);
+	returnobjects->AddLast(p2);
+	returnobjects->AddLast(spectra[0]);
+	returnobjects->AddLast(spectra[1]);
+	returnobjects->AddLast(division);
+
+	return returnobjects;
+
+}
+
+// -----------------------------------------------------------------------
+Double_t* AliHistToolsDiHadronPID::CreateAxis(const Int_t nbins, const Double_t min, const Double_t max) {
+
+	if (nbins <= 0) return 0x0;
+	if (max < min) return 0x0;
+
+	Double_t* axis = new Double_t[nbins + 1];
+	Double_t binsize = (max - min)/((Double_t)nbins);
+	for (Int_t iBin = 0; iBin < nbins + 1; iBin++) {
+		axis[iBin] = min + ((Double_t)iBin) * binsize;
+	}
+
+	return axis;
+}
+
+
+
+
+
+

@@ -47,6 +47,9 @@ public:
     void SetMixTriggers(Bool_t mixtriggers = kTRUE) {fMixTriggers = mixtriggers;}
 	void SetDebugLevel(Int_t debuglevel) {fDebug = debuglevel;}
 
+	void SetMakeTOFCorrelations(Bool_t makeTOF) {fMakeTOFcorrelations = makeTOF;}
+	void SetMakeTOFTPCCorrelations(Bool_t makeTOFTPC) {fMakeTOFTPCcorrelations = makeTOFTPC;}
+
 	// Getters.
 	Int_t GetNDEtaBins() const {return fNDEtaBins;}
 	Int_t GetNDPhiBins() const {return fNDPhiBins;}
@@ -56,6 +59,9 @@ public:
 	Bool_t GetMixEvents() const {return fMixEvents;}
 	Bool_t GetMixTriggers() const {return fMixTriggers;}
 	Int_t GetDebugLevel() const {return fDebug;}	
+
+	Bool_t GetMakeTOFCorrelations() const {return fMakeTOFcorrelations;}
+	Bool_t GetMakeTOFTPCCorrelations() const {return fMakeTOFTPCcorrelations;}
 
 private:
 	//void FillGlobalTracksArray();
@@ -94,9 +100,10 @@ private:
 	TH3F*							fCorrelations;				//! Correlations Histogram.
 	TH3F*							fMixedEvents;				//! Mixed Events Histogram.	
 	
-	TObjArray*						fTOFhistos;					//! Array holding all correlation functions.
-	THnF*							fCorrelationsTOF[5][3];		//! Correlations with TOF info.
-	THnF*							fCorrelationsTOFTPC[5][3];	//! Correlations with TPC and TOF info.
+	TObjArray*						fTOFhistos;					//! Array holding all correlation functions with TOF information.
+	TAxis*							fTOFPtAxis;					//! P_t axis used for the TOF correlation histograms.
+	TObjArray*						fTOFTPChistos;				//! Array holding all correlation functions with TOF and TPC information.
+	TAxis*							fTOFTPCPtAxis;				//! P_t axis used for the TOF/ TPC correlation histograms.
 
 	// Settings.
 	Int_t							fNDEtaBins;					//
@@ -114,9 +121,11 @@ private:
 	TObjArray*						fLvsEtaProjections;			//		
 
 	// Flags.
+	Bool_t							fMakeTOFcorrelations;		//
+	Bool_t							fMakeTOFTPCcorrelations;	//
 	Int_t							fDebug;						// Debug flag.
 
-	ClassDef(AliAnalysisTaskDiHadronPID,2);
+	ClassDef(AliAnalysisTaskDiHadronPID,3);
 
 };
 
