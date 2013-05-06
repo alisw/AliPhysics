@@ -436,6 +436,9 @@ Long64_t AliSpectraBothEventCuts::Merge(TCollection* list)
   // TList collections_histoQVectorNeg;
   TList collections_histoQVector;
   TList collections_histoEP;
+  TList collections_histoVtxAftSelwithoutZvertexCut;
+  TList collections_histoVtxalltriggerEventswithMCz;
+  TList collections_histoVtxAftSelwithoutZvertexCutusingMCz;			
 
   Int_t count = 0;
 
@@ -464,6 +467,13 @@ Long64_t AliSpectraBothEventCuts::Merge(TCollection* list)
     collections_histoQVector.Add(histo_histoQVector);
     TH1F * histo_histoEP = entry->GetHistoEP();      
     collections_histoEP.Add(histo_histoEP);
+    TH1F* histo_histoVtxAftSelwithoutZvertexCut=entry->GetHistoVtxAftSelwithoutZvertexCut();
+    collections_histoVtxAftSelwithoutZvertexCut.Add(histo_histoVtxAftSelwithoutZvertexCut);
+    TH1F* histo_histoVtxalltriggerEventswithMCz=entry->GetHistoVtxGenerated();
+    collections_histoVtxalltriggerEventswithMCz.Add(histo_histoVtxalltriggerEventswithMCz);
+    TH1F* histo_histoVtxAftSelwithoutZvertexCutusingMCz=entry->GetHistoVtxAftSelwithoutZvertexCutusingMCz();
+    collections_histoVtxAftSelwithoutZvertexCutusingMCz.Add(histo_histoVtxAftSelwithoutZvertexCutusingMCz);	
+
     count++;
   }
   
@@ -477,7 +487,11 @@ Long64_t AliSpectraBothEventCuts::Merge(TCollection* list)
   // fHistoQVectorNeg->Merge(&collections_histoQVectorNeg);
   fHistoQVector->Merge(&collections_histoQVector);
   fHistoEP->Merge(&collections_histoEP);
-  
+
+  fHistoVtxAftSelwithoutZvertexCut->Merge(&collections_histoVtxAftSelwithoutZvertexCut);
+  fHistoVtxalltriggerEventswithMCz->Merge(&collections_histoVtxalltriggerEventswithMCz);
+  fHistoVtxAftSelwithoutZvertexCutusingMCz->Merge(&collections_histoVtxAftSelwithoutZvertexCutusingMCz);
+ 
 
   delete iter;
 
