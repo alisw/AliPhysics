@@ -478,7 +478,7 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
   for(Int_t ilay=0; ilay<6; ilay++) nClusters[ilay] = (Float_t)mult->GetNumberOfITSClusters(ilay);
   if (vertex) spdCorr = AliESDUtils::GetCorrSPD2(nClusters[1],vertex->GetZ());
   //
-  Float_t centrality = -1;
+  Float_t centrality = -99;
   //
   // IMPORTANT CENTRALITY DEFINITION FOR pp
   //
@@ -538,16 +538,17 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
     AliCentrality *esdCentrality = fESD->GetCentrality();
     Float_t pApercentile = esdCentrality->GetCentralityPercentile(fCentEst.Data()); // centrality percentile determined with V0M
     if (pApercentile >=  0. && pApercentile <  5.) centrality = -1; 
-    if (pApercentile >=  5. && pApercentile < 10.) centrality = 0; 
-    if (pApercentile >= 10. && pApercentile < 20.) centrality = 1;
-    if (pApercentile >= 20. && pApercentile < 30.) centrality = 2;
-    if (pApercentile >= 30. && pApercentile < 40.) centrality = 3;
-    if (pApercentile >= 40. && pApercentile < 50.) centrality = 4;
-    if (pApercentile >= 50. && pApercentile < 60.) centrality = 5; 
-    if (pApercentile >= 60. && pApercentile < 70.) centrality = 6;
-    if (pApercentile >= 70. && pApercentile < 80.) centrality = 7;
-    if (pApercentile >= 80. && pApercentile < 90.) centrality = 8;
-    if (pApercentile >= 90. && pApercentile <= 100.) centrality = 9;
+    else if (pApercentile >=  5. && pApercentile < 10.) centrality = 0; 
+    else if (pApercentile >= 10. && pApercentile < 20.) centrality = 1;
+    else if (pApercentile >= 20. && pApercentile < 30.) centrality = 2;
+    else if (pApercentile >= 30. && pApercentile < 40.) centrality = 3;
+    else if (pApercentile >= 40. && pApercentile < 50.) centrality = 4;
+    else if (pApercentile >= 50. && pApercentile < 60.) centrality = 5; 
+    else if (pApercentile >= 60. && pApercentile < 70.) centrality = 6;
+    else if (pApercentile >= 70. && pApercentile < 80.) centrality = 7;
+    else if (pApercentile >= 80. && pApercentile < 90.) centrality = 8;
+    else if (pApercentile >= 90. && pApercentile <= 100.) centrality = 9;
+    else centrality = -99;
 
     /*
     cout << "*****************ispA switch works***************************" << endl;
@@ -564,7 +565,7 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
   if (fESD->GetPrimaryVertexTPC()) nContributors = fESD->GetPrimaryVertexTPC()->GetNContributors();
   //
   
-  Int_t processtype = 0;
+  //  Int_t processtype = 0;
   Int_t processCode = 0;
   //
   // important change: fill generated only after vertex cut in case of heavy-ions
@@ -720,7 +721,7 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
     Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
     Bool_t hasTOFtime = status&AliESDtrack::kTIME;
     Bool_t hasTOFpid  = status&AliESDtrack::kTOFpid;
-    Bool_t hasTOFmismatch  = status&AliESDtrack::kTOFmismatch;
+    //Bool_t hasTOFmismatch  = status&AliESDtrack::kTOFmismatch;
     Bool_t hasTOF     = kFALSE;
     if (hasTOFout && hasTOFtime && hasTOFpid) hasTOF = kTRUE;
 
