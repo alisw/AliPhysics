@@ -48,11 +48,11 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetFlow)
 
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow() : AliAnalysisTaskSE(), 
-    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fPtBump(0), fCentralityMin(-1), fCentralityMax(-1), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fFlowEvent(0), fHistAnalysisSummary(0)
+    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fFlowEvent(0), fHistAnalysisSummary(0)
 { /* default constructor */ }
 //_____________________________________________________________________________
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(const char* name) : AliAnalysisTaskSE(name),
-    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fPtBump(0), fCentralityMin(-1), fCentralityMax(-1), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fFlowEvent(0), fHistAnalysisSummary(0)
+    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fFlowEvent(0), fHistAnalysisSummary(0)
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -96,8 +96,8 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
     fFlowEvent = new AliFlowEvent(1000);
     PostData(2, fFlowEvent);
     AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
-    cc->SetPtMax(100+fPtBump);
-    cc->SetNbinsPt(40);
+    cc->SetPtMax(fCCMaxPt+fPtBump);
+    cc->SetNbinsPt(fCCBinsInPt);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetFlow::UserExec(Option_t *)
