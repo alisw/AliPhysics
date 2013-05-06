@@ -1000,17 +1000,17 @@ namespace RawProduction {
       }
     else if( pPb1 == centBinVersion)
       {
-	if( upperEdge < 2.1 ) {
-	  rangeMin = 0.1;
-	  rangeMax = 0.2;
+	if( upperEdge < 1.0 ) {
+	  rangeMin = 0.08;
+	  rangeMax = 0.18;
 	} else if( upperEdge < 3.1 ) {
 	  rangeMin = 0.08;
-	  rangeMax = 0.22;
+	  rangeMax = 0.18;
 	} else if( upperEdge < 5.1 ) {
 	  rangeMin = 0.08;
-	  rangeMax = 0.25;
+	  rangeMax = 0.2;
 	} else if( upperEdge < 10.1 ) {
-	  rangeMin = 0.07;
+	  rangeMin = 0.05;
 	  rangeMax = 0.3;
 	} else {
 	  rangeMin = 0.05;
@@ -1209,16 +1209,12 @@ void MakeRawProductionAllpPb()
     //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Disp2core Dispwou CPV CPVcore CPV2 CPV2core Both Bothcore Both2 Both2core", " ");
     while(pids.NextToken()) {
       if(triggers.EqualTo("kINT7") || triggers.EqualTo("kPHI7")) {
-	RawProduction::TriCenPidBin tcpBin(0, 20, pids, triggerBin.Trigger());
+	RawProduction::TriCenPidBin tcpBin(0, 40, pids, triggerBin.Trigger());
 	RawProduction::MakePi0FitTCP(input, tcpBin, output);
-	RawProduction::TriCenPidBin tcpBin2(20, 40, pids, triggerBin.Trigger());
+	RawProduction::TriCenPidBin tcpBin2(40, 60, pids, triggerBin.Trigger());
 	RawProduction::MakePi0FitTCP(input, tcpBin2, output);
-	RawProduction::TriCenPidBin tcpBin3(40, 60, pids, triggerBin.Trigger());
+	RawProduction::TriCenPidBin tcpBin3(60, 100, pids, triggerBin.Trigger());
 	RawProduction::MakePi0FitTCP(input, tcpBin3, output);
-	RawProduction::TriCenPidBin tcpBin4(60, 80, pids, triggerBin.Trigger());
-	RawProduction::MakePi0FitTCP(input, tcpBin4, output);
-	RawProduction::TriCenPidBin tcpBin5(80, 100, pids, triggerBin.Trigger());
-	RawProduction::MakePi0FitTCP(input, tcpBin5, output);
 	RawProduction::TriCenPidBin tcpBin6(0, 100, pids, triggerBin.Trigger());
 	RawProduction::MakePi0FitTCP(input, tcpBin6, output);
       }
