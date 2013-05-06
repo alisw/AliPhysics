@@ -24,6 +24,7 @@ class AliPHOSCalibData;
 class AliESDtrack ;
 class AliESDCaloCluster ;
 class AliEPFlattener;
+class AliAnalysisUtils;
 
 #include "TArrayD.h"
 
@@ -135,7 +136,7 @@ protected:
     UInt_t GetNumberOfCentralityBins() { return fCentEdges.GetSize()-1; }
     TList* GetCaloPhotonsPHOSList(UInt_t vtxBin, UInt_t centBin, UInt_t rpBin);
     
-
+    AliAnalysisUtils* GetAnalysisUtils();
 
 
 protected:
@@ -203,6 +204,7 @@ protected:
     Double_t fVertex[3];
     TVector3 fVertexVector;
     Int_t fVtxBin;
+
 
     // Step 4: Centrality
     Float_t fCentralityV0M ; //!Centrality of the currecnt event
