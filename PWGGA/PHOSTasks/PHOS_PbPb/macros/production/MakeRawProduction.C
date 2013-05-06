@@ -67,8 +67,8 @@ namespace RawProduction {
   }
 
   // Pt bin parameters
-  Int_t nPtBins=20; //Z PWGGA commenly agreed upon binnings
-  Double_t ptBinEdges[21] =  {0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,3.0,3.5,4.0,5.0,6.0,8.0,10.,12.,15.};
+  Int_t nPtBins=25; //Z PWGGA commenly agreed upon binnings
+  Double_t ptBinEdges[26] =  {0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,3.0,3.5,4.0,5.0,6.0,8.0,10.,12.,15.,20.,25.,30.,35.,40.};
   
   //Double_t ptBinEdges[1000] = {0};
   // old:
@@ -1203,8 +1203,10 @@ void MakeRawProductionAllpPb()
     RawProduction::Input input("AnalysisResults.root", triggerBin);
 
     RawProduction::MakePi0Fit(input, triggerBin, output);
-    
-    TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Disp2core Dispwou CPV CPVcore CPV2 CPV2core Both Bothcore Both2 Both2core", " ");
+
+
+    TStringToken pids("All Disp CPV Both", " ");
+    //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Disp2core Dispwou CPV CPVcore CPV2 CPV2core Both Bothcore Both2 Both2core", " ");
     while(pids.NextToken()) {
       if(triggers.EqualTo("kINT7") || triggers.EqualTo("kPHI7")) {
 	RawProduction::TriCenPidBin tcpBin(0, 20, pids, triggerBin.Trigger());
@@ -1216,7 +1218,9 @@ void MakeRawProductionAllpPb()
 	RawProduction::TriCenPidBin tcpBin4(60, 80, pids, triggerBin.Trigger());
 	RawProduction::MakePi0FitTCP(input, tcpBin4, output);
 	RawProduction::TriCenPidBin tcpBin5(80, 100, pids, triggerBin.Trigger());
-	RawProduction::MakePi0FitTCP(input, tcpBin4, output);
+	RawProduction::MakePi0FitTCP(input, tcpBin5, output);
+	RawProduction::TriCenPidBin tcpBin6(0, 100, pids, triggerBin.Trigger());
+	RawProduction::MakePi0FitTCP(input, tcpBin6, output);
       }
     } // pid
   } // trigger
