@@ -871,7 +871,8 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
 
   fTrImpData[kTrPhi0] = phi0;
   fTrImpData[kTrZ0]   = 0.5*(fTrImpData[kTrZOut]+fTrImpData[kTrZIn]);
-  fTrImpData[kTrDPhi] = dphi0 + sgy/lrA->GetR();
+  dphi0 += sgy/lrA->GetR();
+  fTrImpData[kTrDPhi] =  dphi0<PiOver2() ? dphi0 : PiOver2();
   fTrImpData[kTrDZ]   = 0.5*Abs(fTrImpData[kTrZOut]-fTrImpData[kTrZIn])   + sgz;
   //  
   return kTRUE;
@@ -1222,7 +1223,7 @@ void AliITSUTrackerGlo::FinalizeHypotheses()
       refArr[lrID]->AddReference(clID,ih);
     } while ((winner=(AliITSUSeed*)winner->GetParent()));
   }    
-  /*
+  //  /*
   UInt_t refs[100];
   for (int ilr=0;ilr<fNLrActive;ilr++) {
     int ncl = fITS->GetLayerActive(ilr)->GetNClusters();
@@ -1231,7 +1232,7 @@ void AliITSUTrackerGlo::FinalizeHypotheses()
     for (int icl=0;icl<ncl;icl++) {
       if (!refArr[ilr]->HasReference(icl)) continue;
       int nref = refArr[ilr]->GetReferences(icl,refs,100);
-      //      printf("--- cl%3d(#%d): NShare=%4d\n",cnt++,icl,nref);     
+      printf("--- cl%3d(#%d): NShare=%4d\n",cnt++,icl,nref);     
       for (int ir=0;ir<nref;ir++) {
 	AliITSUTrackHyp* hyp = GetTrackHyp(refs[ir]);
 	winner = hyp->GetWinner();
@@ -1251,7 +1252,7 @@ void AliITSUTrackerGlo::FinalizeHypotheses()
       }
     }
   }
-  */
+  //  */
   delete[] refArr;
 
 }
