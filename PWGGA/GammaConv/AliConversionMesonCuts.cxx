@@ -296,6 +296,78 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
    }
    return kFALSE;
 }
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
+   // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
+   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+   if(!fMCStack)return kFALSE;
+	 // if(fMCMother->GetPdgCode()==20443 ){
+	 // 	 return kFALSE;
+	 // }
+   if(fMCMother->GetPdgCode()==10441 || fMCMother->GetPdgCode()==10443 || fMCMother->GetPdgCode()==445 ){
+		 if(fMCMother->R()>fMaxR)	return kFALSE; // cuts on distance from collision point
+
+		 Double_t rapidity = 10.;
+		 if(fMCMother->Energy() - fMCMother->Pz() == 0 || fMCMother->Energy() + fMCMother->Pz() == 0){
+			 rapidity=8.-fRapidityShift;
+		 }
+		 else{
+			 rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())))-fRapidityShift;
+		 }	
+		
+		 // Rapidity Cut
+		 if(abs(rapidity)>fRapidityCutMeson)return kFALSE;
+
+		 // Select only -> ChiC radiative (JPsi+gamma) decay channel
+      if(fMCMother->GetNDaughters()!=2)return kFALSE;
+
+			TParticle *jpsi 	= 0x0;
+			TParticle *gamma 	= 0x0;
+			TParticle *positron = 0x0;
+			TParticle *electron = 0x0;
+
+			Int_t labeljpsiChiC = -1;
+	
+			for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){				
+				
+				TParticle* temp = (TParticle*)fMCStack->Particle( index );
+				
+				switch( temp->GetPdgCode() ) {
+				case 443:
+					jpsi =  temp;
+					labeljpsiChiC = index;
+					break;
+				case 22:
+					gamma    =  temp;
+					labelgammaChiC = index;
+					break;
+				}
+			}
+
+      if ( !jpsi || ! gamma) return kFALSE;
+			if(jpsi->GetNDaughters()!=2)return kFALSE;
+                
+
+			for(Int_t index= jpsi->GetFirstDaughter();index<= jpsi->GetLastDaughter();index++){				
+				TParticle* temp = (TParticle*)fMCStack->Particle( index );
+				switch( temp->GetPdgCode() ) {
+				case -11:
+					electron =  temp;
+					labelelectronChiC = index;
+					break;
+				case 11:
+					positron =  temp;
+					labelpositronChiC = index;
+					break;
+				}
+			}
+			if( !electron || !positron) return kFALSE;
+			if( positron && electron && gamma) return kTRUE;
+   }
+   return kFALSE;
+}
+
 
 
 ///________________________________________________________________________

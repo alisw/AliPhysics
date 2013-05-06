@@ -56,8 +56,8 @@ Double_t AliAnalysisTaskSEPHOSpPbPi0::fgMinDistToBad     = 2.5;
 
 //________________________________________________________________________
 AliAnalysisTaskSEPHOSpPbPi0::AliAnalysisTaskSEPHOSpPbPi0():
-  AliAnalysisTaskSE(), fIsMC(kFALSE), fCentralityBin(10), fBufferSize(10),
-  fRunNumber(-1), fPHOSGeo(0), fList(0), fHeader(0), fCaloClArr(0)
+  AliAnalysisTaskSE(), fIsMC(kFALSE), fCentralityBin(10), fBufferSize(10), fRunNumber(-1), fPHOSGeo(0),
+  fListEvent(0), fListCaloCl(0), fListPi0(0), fListMC(0), fHeader(0), fCaloClArr(0)
 {
   //
   // Default constructor
@@ -70,8 +70,8 @@ AliAnalysisTaskSEPHOSpPbPi0::AliAnalysisTaskSEPHOSpPbPi0():
 }
 //________________________________________________________________________
 AliAnalysisTaskSEPHOSpPbPi0::AliAnalysisTaskSEPHOSpPbPi0(const char *name):
-  AliAnalysisTaskSE(name), fIsMC(kFALSE), fCentralityBin(10), fBufferSize(10),
-  fRunNumber(-1), fPHOSGeo(0), fList(0), fHeader(0), fCaloClArr(0)
+  AliAnalysisTaskSE(name), fIsMC(kFALSE), fCentralityBin(10), fBufferSize(10), fRunNumber(-1), fPHOSGeo(0),
+  fListEvent(0), fListCaloCl(0), fListPi0(0), fListMC(0), fHeader(0), fCaloClArr(0)
 {
   // Constructor
   for (Int_t i=0; i<10; i++) { for (Int_t j=0; j<10; j++) fEventList[i][j] = 0; }
@@ -81,6 +81,9 @@ AliAnalysisTaskSEPHOSpPbPi0::AliAnalysisTaskSEPHOSpPbPi0(const char *name):
     fPHOSBadMap[i] = new TH2I(Form("PHOS_BadMap_mod%d", i), Form("PHOS_BadMap_mod%d", i), 64, 0., 64., 56, 0., 56.);
 
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
+  DefineOutput(3, TList::Class());
+  DefineOutput(4, TList::Class());
 }
 
 //_____________________________________________________________________________
@@ -89,9 +92,12 @@ AliAnalysisTaskSEPHOSpPbPi0::~AliAnalysisTaskSEPHOSpPbPi0()
   //
   // Default destructor
   //
-  if (fList)        { delete fList;        fList      = NULL; }
-  if (fHeader)      { delete fHeader;      fHeader    = NULL; }
-  if (fCaloClArr)   { delete fCaloClArr;   fCaloClArr = NULL; }
+  if (fListEvent)   { delete fListEvent;   fListEvent  = NULL; }
+  if (fListCaloCl)  { delete fListCaloCl;  fListCaloCl = NULL; }
+  if (fListPi0)     { delete fListPi0;     fListPi0    = NULL; }
+  if (fListMC)      { delete fListMC;      fListMC     = NULL; }
+  if (fHeader)      { delete fHeader;      fHeader     = NULL; }
+  if (fCaloClArr)   { delete fCaloClArr;   fCaloClArr  = NULL; }
 }
 
 //________________________________________________________________________
@@ -102,16 +108,23 @@ void AliAnalysisTaskSEPHOSpPbPi0::UserCreateOutputObjects()
 //fPHOSGeo = new AliPHOSGeoUtils("PHOSGeo");
 //fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP");
 
-  if (!fHeader)    fHeader    = new AliPHOSpPbPi0Header();
-  if (!fCaloClArr) fCaloClArr = new TClonesArray("AliCaloClusterInfo", 0);
-  if (!fList)      fList      = new TList();
+  if (!fHeader)     fHeader     = new AliPHOSpPbPi0Header();
+  if (!fCaloClArr)  fCaloClArr  = new TClonesArray("AliCaloClusterInfo", 0);
+  if (!fListEvent)  fListEvent  = new TList();
+  if (!fListCaloCl) fListCaloCl = new TList();
+  if (!fListPi0)    fListPi0    = new TList();
+  if (!fListMC)     fListMC     = new TList();
 
   fHeader->SetIsMC(fIsMC);
-  fHeader->SetNCent(fCentralityBin.GetSize());
-  fHeader->CreateHistograms(fList);
+  fHeader->SetNCent(fCentralityBin.GetSize()-1);
+  fHeader->CreateHistograms(fListEvent, fListCaloCl, fListPi0, fListMC);
 
   // Post output data.
-  PostData(1, fList);
+  PostData(1, fListEvent);
+  PostData(2, fListCaloCl);
+  PostData(3, fListPi0);
+  PostData(4, fListMC);
+
   return;
 }
 
@@ -128,7 +141,6 @@ void AliAnalysisTaskSEPHOSpPbPi0::UserExec(Option_t *)
     } else { AliError("MC event not found. Nothing done!"); return; }
   }
 
-  Int_t       nclsts = 0;
   AliAODEvent *aod   = 0;
   AliESDEvent *esd   = 0;
 
@@ -136,19 +148,17 @@ void AliAnalysisTaskSEPHOSpPbPi0::UserExec(Option_t *)
     aod = dynamic_cast<AliAODEvent*>(fInputEvent);
     if (!aod) { AliError("AOD event not found. Nothing done!");   return; }
     if (!fIsMC && (aod->GetHeader()->GetEventType()!=7))          return; // check event type; should be PHYSICS = 7 for data and 0 for MC
-    if (!fHeader->IspAVertexOK(aod))                              return; // check p-A collision vertex
-    nclsts = aod->GetNumberOfCaloClusters();   if (nclsts<1)      return;
   } else {
     esd = dynamic_cast<AliESDEvent*>(fInputEvent);
     if (!esd) { AliError("ESD event not found. Nothing done!");   return; }
     if (!fIsMC && (esd->GetHeader()->GetEventType()!=7))          return; // check event type; should be PHYSICS = 7 for data and 0 for MC
-    if (!fHeader->IspAVertexOK(esd))                              return; // check p-A collision vertex
-    nclsts = esd->GetNumberOfCaloClusters();   if (nclsts<1)      return;
   }
 
   // Fill Event info
   fHeader->SetEventInfo(fInputHandler);
-  fHeader->FillHistosEvnH(fList);
+  fHeader->FillHistosEvent(fListEvent);
+
+  if (!fHeader->IsSelected()) return; // event selection
 
   // PHOS Geometry and Misalignment initialization at the first time it runs
   if(fRunNumber != fInputEvent->GetRunNumber()) {
@@ -157,54 +167,55 @@ void AliAnalysisTaskSEPHOSpPbPi0::UserExec(Option_t *)
   }
 
   // Fill PHOS cells QA histograms
-  fHeader->FillHistosCaloCellsQA(fList, fInputEvent->GetPHOSCells(), fPHOSGeo);
-//aod = 0;
+  fHeader->FillHistosCaloCellsQA(fListCaloCl, fInputEvent->GetPHOSCells(), fPHOSGeo);
+  aod = 0;
 
   // Fill PHOS cluster Clones Array
-  FillCaloClusterInfo(nclsts, esd);
+  FillCaloClusterInfo(esd);
 
   if (!fCaloClArr->GetEntriesFast()) return;
-  Int_t zvtx = (Int_t)((fHeader->Vz() + 10.)/2.);    if (zvtx<0) zvtx = 0; if (zvtx>9) zvtx = 9;
-  Int_t cent = TMath::BinarySearch<Double_t>(fCentralityBin.GetSize()-1, fCentralityBin.GetArray(), fHeader->Centrality());
+
+  // vertex bining and centrality bining
+  Int_t zvtx = (Int_t)((fHeader->Vz() + 10.)/2.);   if (zvtx<0) zvtx = 0;   if (zvtx>9) zvtx = 9;
+  Int_t cent = TMath::BinarySearch<Float_t>(fCentralityBin.GetSize()-1, fCentralityBin.GetArray(), fHeader->Centrality());
   if (!fEventList[zvtx][cent]) fEventList[zvtx][cent] = new TList(); 
   TList *eventList = fEventList[zvtx][cent];
 
   // Fill cluster histograms
-  fHeader->FillHistosCaloCluster(fList, fCaloClArr, cent);
+  fHeader->FillHistosCaloCluster(fListCaloCl, fCaloClArr, cent);
 
   // Fill pi0 histograms
-  fHeader->FillHistosPi0(fList, fCaloClArr, cent);
+  fHeader->FillHistosPi0(fListPi0, fCaloClArr, cent);
 
   // Fill mixed pi0 histograms
-  fHeader->FillHistosMixPi0(fList, fCaloClArr, eventList, cent);
+  fHeader->FillHistosMixPi0(fListPi0, fCaloClArr, eventList, cent);
 
   // Fill MC info
-  AliStack *stack = 0;
+  AliStack *stack = 0x0;
   if (fIsMC) {
     if (esd) {
-      if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
-      if(static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
+      if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) {
+      if (static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
         stack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
       }
-      fHeader->FillHistosMC(fList, stack, fPHOSGeo, cent);
+      fHeader->FillHistosMC(fListMC, stack, fPHOSGeo, cent);
     } else
-      fHeader->FillHistosMC(fList, MCEvent(), fPHOSGeo, cent);
+      fHeader->FillHistosMC(fListMC, MCEvent(), fPHOSGeo, cent);
   }
-//esd = 0;
+  esd = 0;
 
   // Fill event list for mixing
-  if(fCaloClArr->GetEntriesFast()>0) {
+  if (fCaloClArr->GetEntriesFast()>0) {
     eventList->AddFirst(fCaloClArr);   fCaloClArr = 0;
-    //fCaloClArr->Clear();
-    if(eventList->GetSize()>fBufferSize[cent]) { // Remove redundant events
-      TClonesArray * tmp = static_cast<TClonesArray*>(eventList->Last()) ;
+    if (eventList->GetSize()>fBufferSize[cent]) { // Remove redundant events
+      TClonesArray *tmp = static_cast<TClonesArray*>(eventList->Last());
       eventList->RemoveLast();
-      delete tmp ;
+      delete tmp;
     }
   }
 
   return;
-}      
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskSEPHOSpPbPi0::Terminate(Option_t *) 
@@ -241,18 +252,19 @@ void AliAnalysisTaskSEPHOSpPbPi0::PHOSInitialize(AliESDEvent* const esd)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEPHOSpPbPi0::FillCaloClusterInfo(Int_t nclsts, AliESDEvent* const esd)
+void AliAnalysisTaskSEPHOSpPbPi0::FillCaloClusterInfo(AliESDEvent* const esd)
 {
   // Fill calo cluster info
   if (fCaloClArr) fCaloClArr->Clear();
   else fCaloClArr = new TClonesArray("AliCaloClusterInfo", 0);
 
-  TClonesArray       &caloRef     = *fCaloClArr;
-  Int_t              countN       = 0;
-  Int_t              relId[4]     = {0,0,0,0}; // module = relId[0]; cellX = relId[2]; cellZ = relId[3];
-  Float_t            position[3]  = {0,0,0};
-  Double_t           vtx[3]       = {0,0,0}; fHeader->GetXYZ(vtx);
-  TLorentzVector     momentum;
+  Int_t    nclsts       = fInputEvent->GetNumberOfCaloClusters();
+  Int_t    countN       = 0;
+  Int_t    relId[4]     = {0,0,0,0}; // module = relId[0]; cellX = relId[2]; cellZ = relId[3];
+  Float_t  position[3]  = {0,0,0};
+  Double_t vtx[3]       = {0,0,0};   fHeader->GetXYZ(vtx);
+  TClonesArray &caloRef = *fCaloClArr;
+  TLorentzVector momentum;
   AliVCluster        *clust       = 0;
   AliCaloClusterInfo *caloCluster = 0;
   for (Int_t iclst=0; iclst<nclsts; iclst++) {  // loop over all clusters
@@ -266,8 +278,8 @@ void AliAnalysisTaskSEPHOSpPbPi0::FillCaloClusterInfo(Int_t nclsts, AliESDEvent*
     if (relId[0] == 2)                                                    { clust=0; continue; } // !remove module 2
 
     caloCluster = new AliCaloClusterInfo(clust, esd, fPHOSGeo, vtx);
-//  if (esd && !(caloCluster->LorentzVector().E()>fgMinClusterEnergy)) { delete caloCluster; caloCluster=0; clust=0; continue; } // check again for ESD
-    if (caloCluster->TestCPV(fHeader->MagneticField())) caloCluster->SetPIDBit(BIT(0));          // set CPV bit
+    if (esd && !(caloCluster->LorentzVector().E()>fgMinClusterEnergy)) { delete caloCluster; caloCluster=0; clust=0; continue; } // check again for ESD
+    if (caloCluster->GetTrackPt()==-1. || caloCluster->TestCPV(fHeader->MagneticField()))    caloCluster->SetPIDBit(BIT(0));     // set CPV bit
 
     clust = 0;
 

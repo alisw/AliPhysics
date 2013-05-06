@@ -21,7 +21,7 @@ class AliPHOSGeoUtils;
 
 class AliCaloClusterInfo : public TObject{
  public:
-  
+ 
   AliCaloClusterInfo();
   AliCaloClusterInfo(AliVCluster* const clust, AliESDEvent* const esd, AliPHOSGeoUtils* const phosGeo, Double_t vtx[3]);
   AliCaloClusterInfo(const AliCaloClusterInfo &src);
@@ -58,7 +58,7 @@ class AliCaloClusterInfo : public TObject{
 
   Bool_t TestDisp();
   Bool_t AreNeighbors(Int_t id1,Int_t id2, AliPHOSGeoUtils* const phosGeo);
-  Bool_t IsInFiducialRegion(/*Int_t cellX, Int_t cellZ*/);
+  Bool_t IsInFiducialRegion(Int_t cellX, Int_t cellZ);
   Int_t  GetTRUNumber(Int_t cellX, Int_t cellZ);
 
   static Float_t fgLogWeight; 

@@ -42,17 +42,16 @@ class AliPHOSpPbPi0Header : public TNamed {
   TString  FiredTriggerClass()     const { return fFiredTriggerClass;              }
   UInt_t   SelectionMask()         const { return fSelMask;                        }
   Int_t    VtxContrsN()            const { return fVtxContrsN;                     }
+  Bool_t   IspAVertexOK()          const { return fIspAVertexOK;                   }
   Bool_t   IsPileupSPD()           const { return fIsPileupSPD;                    }
   Float_t  Centrality()            const { return fCentrality;                     }
   Double_t MagneticField()         const { return fMagneticField;                  }
-
-  Bool_t   IspAVertexOK(AliAODEvent* const event);
-  Bool_t   IspAVertexOK(AliESDEvent* const event);
+  Bool_t   IsSelected();
 
   void SetEventInfo(AliInputEventHandler* const handler);
 
-  void CreateHistograms(TList *list);
-  void FillHistosEvnH(TList *list);
+  void CreateHistograms(TList *listEvent, TList *listCaloCl, TList *listPi0, TList *listMC);
+  void FillHistosEvent(TList *list);
   void FillHistosCaloCellsQA(TList *list, AliVCaloCells* const cells, AliPHOSGeoUtils* const phosGeo);
   void FillHistosCaloCluster(TList *list, TClonesArray* const caloClArr, Int_t cent);
   void FillHistosPi0(TList *list, TClonesArray* const caloClArr, Int_t cent);
@@ -65,16 +64,19 @@ class AliPHOSpPbPi0Header : public TNamed {
 
  private :
 
-  void CreateHistosEvnH(TList *list);
+  void CreateHistosEvent(TList *list);
   void CreateHistosCaloCellsQA(TList *list);
   void CreateHistosCaloCluster(TList *list);
   void CreateHistosPi0(TList *list);
   void CreateHistosMixPi0(TList *list);
   void CreateHistosMC(TList *list);
 
+  Bool_t IspAVertexOK(AliAODEvent* const event);
+  Bool_t IspAVertexOK(AliESDEvent* const event);
+
+  Int_t  HitPHOSModule(AliAODMCParticle* const pMC, AliPHOSGeoUtils* const phosGeo);
+  Int_t  HitPHOSModule(TParticle* const pMC, AliPHOSGeoUtils* const phosGeo);
   Double_t PrimaryParticleWeight(Int_t pdg, Double_t pt);
-  Bool_t   IsHitPHOS(AliAODMCParticle* const pMC, AliPHOSGeoUtils* const phosGeo);
-  Bool_t   IsHitPHOS(TParticle* const pMC, AliPHOSGeoUtils* const phosGeo);
 
   static Bool_t fgIsMC;            // flag to use MC
   static Int_t  fgNCent;           // # of centrality bins
@@ -89,6 +91,7 @@ class AliPHOSpPbPi0Header : public TNamed {
   TString  fFiredTriggerClass;            // trigger class
   UInt_t   fSelMask;                      // mask of physics selection
   Int_t    fVtxContrsN;                   // num. of contributors of vtx rec
+  Bool_t   fIspAVertexOK;                 // is pA collision vertex OK
   Bool_t   fIsPileupSPD;                  // is Pileup from SPD
   Float_t  fCentrality;                   // event certrality
   Double_t fMagneticField;                // magnetic field

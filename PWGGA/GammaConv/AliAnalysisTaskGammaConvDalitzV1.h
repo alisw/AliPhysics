@@ -119,9 +119,13 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH1F **hMCEtaGGPt;
     TH1F **hMCPi0InAccPt;
     TH1F **hMCEtaInAccPt;
+    TH1F **hMCChiCPt;
+    TH1F **hMCChiCInAccPt;
     TH2F **hESDEposEnegTruePi0DalitzInvMassPt;
     TH2F **hESDEposEnegTrueEtaDalitzInvMassPt;
     TH2F **hESDEposEnegTruePhotonInvMassPt;
+    TH2F **hESDEposEnegTrueJPsiInvMassPt;
+    TH2F **hESDTrueMotherChiCInvMassPt;
     TH2F **hESDTrueMotherInvMassPt;
     TH2F **hESDTrueMotherPi0GGInvMassPt;
     TH2F **hESDTruePrimaryMotherInvMassMCPt;

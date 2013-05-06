@@ -1,5 +1,5 @@
 
-void AddTask_GammaConvV1_2(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
+void AddTask_GammaConvV1_2(TString trainConfig = "pp",   Bool_t isMC	= kFALSE, UInt_t triggerMaskpPb = AliVEvent::kINT7){
 
    gSystem->Load("libCore.so");  
    gSystem->Load("libTree.so");
@@ -76,7 +76,7 @@ void AddTask_GammaConvV1_2(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       fCuts= new AliConversionCuts(cutnumber.Data(),cutnumber.Data());
       if(fCuts->InitializeCutsFromCutString(cutnumber.Data())){
          if (IsHeavyIon==2){
-            fCuts->SelectCollisionCandidates(AliVEvent::kINT7);
+            fCuts->SelectCollisionCandidates(triggerMaskpPb);
             fCuts->DoEtaShift(doEtaShift);
          }
          fV0ReaderV1->SetConversionCuts(fCuts);
@@ -122,8 +122,8 @@ void AddTask_GammaConvV1_2(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       cutarray[ 1] = "3010003042092970723220000"; mesonCutArray[ 1] = "01022045000";  // most central
       cutarray[ 2] = "1680003042092970723220000"; mesonCutArray[ 2] = "01022065000";  // peripheral
    } else if(trainConfig.Contains("pPb")){ //pA needs thighter rapidity cut y < 0.5
-      cutarray[ 0] = "8000000082093172023290000"; mesonCutArray[0] = "01629045000";  //standard cut Pi0 Pb 00-100 shifted Eta 0.4
-      cutarray[ 1] = "8000000072093172023290000"; mesonCutArray[1] = "01627045000";  //standard cut Pi0 Pb 00-100 wo shifted Eta 0.3
+      cutarray[ 0] = "8000000082093172023290000"; mesonCutArray[ 0] = "01629045000"; //shifted Pbp
+      cutarray[ 1] = "8000000002093172023290000"; mesonCutArray[ 1] = "01621045000"; //standard cut Pi0 PbPb 00-100 Full Eta Range
    } else {
       cutarray[ 0] = "0000011002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
       cutarray[ 1] = "0001011002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
@@ -155,7 +155,7 @@ void AddTask_GammaConvV1_2(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       analysisCuts[i] = new AliConversionCuts();
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       if (trainConfig.Contains("pPb")){
-         analysisCuts[i]->SelectCollisionCandidates(AliVEvent::kINT7);
+         analysisCuts[i]->SelectCollisionCandidates(triggerMaskpPb);
          if (i<1){
             analysisCuts[i]->DoEtaShift(kTRUE);
             analysisCuts[i]->SetEtaShift("Pbp");
