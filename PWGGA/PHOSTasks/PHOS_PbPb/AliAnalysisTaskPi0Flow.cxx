@@ -54,6 +54,7 @@
 #include "TProfile.h"
 #include "AliOADBContainer.h"
 #include "AliEPFlattener.h"
+#include "AliAnalysisUtils.h"
 
 // Analysis task to fill histograms with PHOS ESD or AOD clusters and cells
 // Authors : Dmitri Peressounko
@@ -146,6 +147,7 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
 
   // Initialize non-linrarity correction
   fNonLinCorr = new TF1("nonlib",rnlin,0.,40.,0);
+
 
 
 }
@@ -2553,6 +2555,13 @@ Bool_t AliAnalysisTaskPi0Flow::RejectEventVertex()
     return true; // reject
   LogSelection(2, fInternalRunNumber);
 
+  if( kLHC13 == fPeriod ) {//pPb vertex and pileup cut
+    const bool vertexSelected = GetAnalysisUtils()->IsVertexSelected2013pA(fEvent);
+    if(! vertexSelected ) return true;//reject
+    const bool pileupSelected = GetAnalysisUtils()->IsPileUpEvent(fEvent);
+    if(! pileupSelected ) return true;//reject   
+  }
+
   return false; // accept event.
 }
 
@@ -2841,4 +2850,16 @@ Bool_t AliAnalysisTaskPi0Flow::TestCoreLambda(Double_t pt,Double_t l1,Double_t l
               0.5*(l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma +
               0.5*c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
   return (R2<2.5*2.5) ;  
+}
+
+
+AliAnalysisUtils* AliAnalysisTaskPi0Flow::GetAnalysisUtils()
+{
+  static AliAnalysisUtils* utils = 0x0;
+  if(utils) 
+    return utils;
+
+  utils = new AliAnalysisUtils();
+
+  return utils;
 }
