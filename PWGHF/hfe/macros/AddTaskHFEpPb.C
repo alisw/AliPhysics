@@ -47,7 +47,7 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
   
   if(kTPC_Only){
     // for the moment (09.02.2013) use the same as TOF-TPC. Refine later on
-    RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth); // 50%
+    RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,-0.8,0.8); // 50%
   }
   
   //------------------------------//
@@ -57,7 +57,7 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
   if(kTPCTOF_Ref){
     // Reference task
     // with centrality V0A
-    RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth); // 50%
+    RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth,1,-0.8,0.8); // 50%
   }
 
   if (kTPCTOF_Cent){
@@ -125,6 +125,7 @@ AliAnalysisTask *RegisterTask(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, Int_
 			      //Double_t tpcs=-0.0113, Double_t tpcu=3.09, 
 			      Double_t tofs=3., Int_t tofm=0,
 			      Int_t itshitpixel = AliHFEextraCuts::kBoth, Int_t icent=1, 
+            Double_t EtaMin=-0.8, Double_t EtaMax=0.8,
 			      Bool_t withetacorrection = kFALSE){
 
   Int_t idcaxy = (Int_t)(dcaxy*10.);
@@ -135,6 +136,8 @@ AliAnalysisTask *RegisterTask(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, Int_
   Int_t ipixelany = itshitpixel;
   Int_t ietacorr = 0;
   if(withetacorrection) ietacorr = 1;
+  Int_t iEtaMin = (Int_t)(EtaMin*10.);
+  Int_t iEtaMax = (Int_t)(EtaMax*10.);
 
   printf("Argument passed to function to determine the centrality estimator %i\n", icent);
 
@@ -144,8 +147,8 @@ AliAnalysisTask *RegisterTask(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, Int_
   else TString cesti("V0A");
 
   
-  TString appendix(TString::Format("centTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%dTOFs%dm%ipa%dce%s",tpcCls,
-				   tpcClsPID,itsCls,idcaxy,idcaz,tpclow,itofs,tofm,ipixelany,cesti.Data()));
+  TString appendix(TString::Format("centTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%dTOFs%dm%ipa%dce%seta%d%d",tpcCls,
+				   tpcClsPID,itsCls,idcaxy,idcaz,tpclow,itofs,tofm,ipixelany,cesti.Data(),iEtaMin,iEtaMax));
   printf("Add macro appendix %s\n", appendix.Data());
 
 
@@ -154,7 +157,7 @@ AliAnalysisTask *RegisterTask(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, Int_
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisTaskHFE *task = ConfigHFEpPb(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, 
 					  tpcdEdxcutlow,tpcdEdxcuthigh,
-					  tofs,tofm,itshitpixel,icent);
+					  tofs,tofm,itshitpixel,icent,EtaMin,EtaMax);
 
   if(isAOD)
     task->SetAODAnalysis();
