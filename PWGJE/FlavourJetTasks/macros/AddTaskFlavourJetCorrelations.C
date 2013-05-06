@@ -1,52 +1,107 @@
 // $Id$
 
 AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
-  TString sUsedTrks    = "",
-  TString sUsedClus    = "",
-  TString sUsedJets    = "",
-  TString sUsedRho     = "",
-  TString sTaskName    = "AliAnalysisTaskFlavourJetCorrelations",
-  Bool_t  bIsMakeHisto = kTRUE)
+  AliAnalysisTaskRecoJetCorrelations::ECandidateType cand = AliAnalysisTaskRecoJetCorrelations::kDstartoKpipi,
+  TString filename = "DStartoKpipiCuts.root",
+  Bool_t theMCon = kFALSE,
+  TString jetArrname = "",
+  TString suffix = "",
+  Bool_t triggerOnLeadingJet = kFALSE,
+  Float_t R = 0.4,
+  Float_t jptcut = 10.,
+  Int_t acceptance = 1 /*1= 0-2pi, 2=emcal cut*/,
+  Double_t areaCut = 0.)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
   if (!mgr) {
-    ::Error("AddTaskFlavourJetCorrelations.C::AddTaskFlavourJetCorrelations", "No analysis manager to connect to.");
+    ::Error("AddTaskFlavourJetCorrelations::AddTaskFlavourJetCorrelations", "No analysis manager to connect to.");
     return NULL;
+  } 
+
+  Bool_t useStdC = kFALSE;
+  TFile* filecuts=TFile::Open(filename);
+  if (!filecuts || (filecuts && !filecuts->IsOpen())) {
+    cout<<"Input file not found: use std cuts"<<endl;
+    useStdC = kTRUE;
   }
 
-  if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskFlavourJetCorrelations.C::AddTaskFlavourJetCorrelations", "This task requires an input event handler");
-    return NULL;
+  AliRDHFCuts *analysiscuts = 0x0;
+  switch (cand) {
+  case 0 :
+    if (useStdC) {
+      analysiscuts = new AliRDHFCutsD0toKpi();
+      analysiscuts->SetStandardCutsPP2010();
+    } else
+      analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiCuts");
+    break;
+  case 1 :
+    if(useStdC) {
+      analysiscuts = new AliRDHFCutsDStartoKpipi();
+      analysiscuts->SetStandardCutsPP2010();
+    } else
+      analysiscuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get("DStartoKpipiCuts");
+    analysiscuts->SetName("DStartoKpipiCuts");
+    break;
+  }
+  
+  if (!analysiscuts) { // mm let's see if everything is ok
+    AliFatal("Specific AliRDHFCuts not found");
+    return;
   }
 
-  TString type = mgr->GetInputEventHandler()->GetDataType();
-  if (!type.Contains("ESD") && !type.Contains("AOD")) {
-    ::Error("AddTaskFlavourJetCorrelations.C::AddTaskFlavourJetCorrelations", "Task manager to have an ESD or AOD input handler.");
-    return NULL;
-  }
-//=============================================================================
+  printf("CREATE TASK\n"); //CREATE THE TASK
 
-  AliAnalysisTaskFlavourJetCorrelations *taskFlavourCJ = new AliAnalysisTaskFlavourJetCorrelations(sTaskName.Data(),bIsMakeHisto);
-  taskFlavourCJ->SetClusName(sUsedClus.Data());
-  taskFlavourCJ->SetTracksName(sUsedTrks.Data());
-  taskFlavourCJ->SetJetsName(sUsedJets.Data());
-  taskFlavourCJ->SetRhoName(sUsedRho.Data());
+  // create the task
+  AliAnalysisTaskFlavourJetCorrelations *task = new AliAnalysisTaskFlavourJetCorrelations("AnaTaskFlavourJetCorrelations", analysiscuts, cand, jetArrname);
 
-  mgr->AddTask(taskFlavourCJ);
-  mgr->ConnectInput( taskFlavourCJ, 0, mgr->GetCommonInputContainer());
-//mgr->ConnectOutput(taskFlavourCJ, 0, mgr->GetCommonOutputContainer());
+  //D meson settings
+  task->SetMC(theMCon);
+  task->SetTriggerOnLeadingJet(triggerOnLeadingJet);
 
-  TString sOutput0 = sTaskName + "_" + sUsedJets;
-  TString sOutput1 = sOutput0  + "_GeneralHistograms";
-  TString sOutput2 = sOutput0  + "_ControlHistograms";
-  TString sOutput3 = sOutput0  + "_AnDzeroHistograms";
-  TString sOutput4 = sOutput0  + "_AnDstarHistograms";
-  TString sCommon  = AliAnalysisManager::GetCommonFileName();
-  mgr->ConnectOutput(taskFlavourCJ, 1, mgr->CreateContainer(sOutput1.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,sCommon.Data()));
-  mgr->ConnectOutput(taskFlavourCJ, 2, mgr->CreateContainer(sOutput2.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,sCommon.Data()));
-  mgr->ConnectOutput(taskFlavourCJ, 3, mgr->CreateContainer(sOutput3.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,sCommon.Data()));
-  mgr->ConnectOutput(taskFlavourCJ, 4, mgr->CreateContainer(sOutput4.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,sCommon.Data()));
+  //jet settings
+  task->SetJetRadius(R);
+  task->SetJetPtCut(jptcut);
 
-  return taskFlavourCJ;
+  Float_t etaCov=0.9;
+  if (acceptance==2) etaCov=0.7; //EMCal
+
+  Float_t minEta = -etaCov+R;
+  Float_t maxEta =  etaCov-R;
+  if (acceptance) task->SetJetEtaLimits(minEta, maxEta);
+
+  Float_t minPhi = 0.;
+  Float_t maxPhi = 2.*TMath::Pi();
+//if (acceptance==2) { /*80-180 degree*/ }
+  if (acceptance) task->SetJetPhiLimits(minPhi, maxPhi);
+
+  //Float_t area=0.6*TMath::Pi()*R*R;
+  task->SetJetAreaCut(areaCut);
+  mgr->AddTask(task);
+
+  // Create and connect containers for input/output
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  outputfile += ":PWG3_D2H_DEmcalJet";
+  outputfile += suffix;
+
+  TString nameContainer0="histogramsCorrelations";
+  TString nameContainer1="cuts";
+
+  nameContainer0 += suffix;
+  nameContainer1 += suffix;
+
+  // ------ input data ------
+  AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
+
+  // ----- output data -----
+
+  // output TH1I for event counting
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(nameContainer0, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(nameContainer1, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+
+  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task,1,coutput1);
+  mgr->ConnectOutput(task,2,coutput2);
+
+  Printf("Input and Output connected to the manager");
+  return task ;
 }

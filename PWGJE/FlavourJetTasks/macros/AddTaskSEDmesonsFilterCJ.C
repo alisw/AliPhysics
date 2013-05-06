@@ -1,57 +1,84 @@
 // $Id$
 
-AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(TString sCutDzero = "", TString sCutDstar = "")
+AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(
+  AliAnalysisTaskSEDmesonsForJetCorrelations::ECandidateType cand = AliAnalysisTaskSEDmesonsForJetCorrelations::kDstartoKpipi,
+  TString filename = "DStartoKpipiCuts.root",
+  Bool_t theMCon = kFALSE,
+  TString suffix = "")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
   if (!mgr) {
-    ::Error("AddTaskSEDmesonsFilterCJ.C::AddTaskSEDmesonsFilterCJ", "No analysis manager to connect to.");
+    ::Error("AddTaskSEDmesonsFilterCJ", "No analysis manager to connect to.");
     return NULL;
+  } 
+
+  Bool_t useStdC = kFALSE;
+  TFile* filecuts=TFile::Open(filename);
+  if(!filecuts || (filecuts && !filecuts->IsOpen())) {
+    cout<<"Input file not found: use std cuts"<<endl;
+    useStdC = kTRUE;
   }
 
-  TString type = mgr->GetInputEventHandler()->GetDataType();
-  if (!type.Contains("ESD") && !type.Contains("AOD")) {
-    ::Error("AddTaskSEDmesonsFilterCJ.C::AddTaskSEDmesonsFilterCJ", "Task manager to have an ESD or AOD input handler.");
-    return NULL;
+  AliRDHFCuts *analysiscuts=0x0;
+  switch (cand) {
+  case 0 :
+    if(useStdC) {
+      analysiscuts = new AliRDHFCutsD0toKpi();
+      analysiscuts->SetStandardCutsPP2010();
+    } else
+      analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiCuts");
+    break;
+  case 1 :
+    if(useStdC) {
+      analysiscuts = new AliRDHFCutsDStartoKpipi();
+      analysiscuts->SetStandardCutsPP2010();
+    } else
+      analysiscuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get("DStartoKpipiCuts");
+    analysiscuts->SetName("DStartoKpipiCuts");
+    break;
   }
+  
+  if (!analysiscuts) { // mm let's see if everything is ok
+    AliFatal("Specific AliRDHFCuts not found");
+    return;
+  } 
 
-  if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskSEEAddTaskSEDmesonsFilterCJ.C::AddTaskSEEAddTaskSEDmesonsFilterCJ", "This task requires an input event handler");
-    return NULL;
-  }
-//=============================================================================
+  printf("CREATE TASK\n"); //CREATE THE TASK
 
-  TFile *file = 0;
-  AliRDHFCutsD0toKpi      *cutDzero = 0;
-  AliRDHFCutsDStartoKpipi *cutDstar = 0;
+  // create the task
+  AliAnalysisTaskSEDmesonsFilterCJ *task = new AliAnalysisTaskSEDmesonsFilterCJ("AnaTaskSEDmesonsFilterCJ",analysiscuts,cand);
+  task->SetMC(theMCon); //D meson settings
+  mgr->AddTask(task);
 
-  if (!sCutDzero.IsNull()) {
-    file = TFile::Open(sCutDzero.Data(), "READ");
-    cutDzero = dynamic_cast<AliRDHFCutsD0toKpi*>(file->Get("D0toKpiCuts"));
-    file->Close();
-  }
+  // Create and connect containers for input/output
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  outputfile += ":PWG3_D2H_DmesonsForJetCorrelations";
+  outputfile += suffix;
 
-  if (!sCutDstar.IsNull()) {
-    file = TFile::Open(sCutDstar.Data(), "READ");
-    cutDstar = dynamic_cast<AliRDHFCutsDStartoKpipi*>(file->Get("DStartoKpipiCuts"));
-    file->Close();
-  }
+  TString nameContainer0="histograms";
+  TString nameContainer1="cuts";
+//TString nameContainer2="DcandidatesSel";
 
-  AliAnalysisTaskSEDmesonsFilterCJ *taskDemsonFilterCJ = new AliAnalysisTaskSEDmesonsFilterCJ("AliAnalysisTaskSEDmesonsFilterCJ");
-  taskDemsonFilterCJ->SetCutDzero(cutDzero);
-  taskDemsonFilterCJ->SetCutDstar(cutDstar);
-  mgr->AddTask(taskDemsonFilterCJ);
+  nameContainer0 += suffix;
+  nameContainer1 += suffix;
+//nameContainer2 += suffix;
 
-  mgr->ConnectInput( taskDemsonFilterCJ, 0, mgr->GetCommonInputContainer());
-//mgr->ConnectOutput(taskDemsonFilterCJ, 0, mgr->GetCommonOutputContainer());
+  // ------ input data ------
+  AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
+  
+  // ----- output data -----
+  
+  // output TH1I for event counting
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(nameContainer0, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(nameContainer1, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+//AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(nameContainer2, TList::Class(),AliAnalysisManager::kExchangeContainer, outputfile.Data());
+  
+  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task,1,coutput1);
+  mgr->ConnectOutput(task,2,coutput2);
+//mgr->ConnectOutput(task,3,coutput3);
 
-  TString sCommon  = AliAnalysisManager::GetCommonFileName();
-  TString sCutName = "AnalysisCutsDmeson.root";
-  TString sOutput1 = "AliAnalysisTaskSEDmesonsFilterCJ_ListDmesonCuts";
-  TString sOutput2 = "AliAnalysisTaskSEDmesonsFilterCJ_Dzero_ControlHistograms";
-  TString sOutput3 = "AliAnalysisTaskSEDmesonsFilterCJ_Dstar_ControlHistograms";
-  mgr->ConnectOutput(taskDemsonFilterCJ, 1, mgr->CreateContainer(sOutput1.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,sCutName.Data()));
-  mgr->ConnectOutput(taskDemsonFilterCJ, 2, mgr->CreateContainer(sOutput2.Data(),TList::Class(),AliAnalysisManager::kOutputContainer, sCommon.Data()));
-  mgr->ConnectOutput(taskDemsonFilterCJ, 3, mgr->CreateContainer(sOutput3.Data(),TList::Class(),AliAnalysisManager::kOutputContainer, sCommon.Data()));
-  return taskDemsonFilterCJ;
+  Printf("Input and Output connected to the manager");
+  return task ;
 }
+
