@@ -55,6 +55,7 @@
 #include "AliAODTrackCutsDiHadronPID.h"
 #include "AliAODEventCutsDiHadronPID.h"
 #include "AliHistToolsDiHadronPID.h"
+#include "AliFunctionsDiHadronPID.h"
 
 // AnalysisTask headers.
 #include "AliAnalysisTaskSE.h"
@@ -80,6 +81,9 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 	fCorrelations(0x0),
 	fMixedEvents(0x0),
 	fTOFhistos(0x0),
+	fTOFPtAxis(0x0),
+	fTOFTPChistos(0x0),
+	fTOFTPCPtAxis(0x0),
 	fNDEtaBins(32),
 	fNDPhiBins(32),	
 	fMinNEventsForMixing(5),
@@ -90,7 +94,9 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 	fCalculateTOFmismatch(kTRUE),
 	fT0Fill(0x0),
 	fLvsEta(0x0),
-	fLvsEtaProjections(0x0),		
+	fLvsEtaProjections(0x0),	
+	fMakeTOFcorrelations(kTRUE),
+	fMakeTOFTPCcorrelations(kFALSE),
 	fDebug(0)
 
 {
@@ -100,14 +106,6 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 	//
 
 	if (fDebug > 0) {AliInfo("AliAnalysisTaskDiHadronPID Default Constructor.");}		
-
-	for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
-			for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
-			fCorrelationsTOF[iPtClass][iSpecies] = 0x0;
-			fCorrelationsTOFTPC[iPtClass][iSpecies] = 0x0;
-		}
-	}
-
 
 }
 
@@ -126,7 +124,10 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char* name):
 	fPtSpectrum(0x0),
 	fCorrelations(0x0),
 	fMixedEvents(0x0),
-	fTOFhistos(0x0),	
+	fTOFhistos(0x0),
+	fTOFPtAxis(0x0),
+	fTOFTPChistos(0x0),
+	fTOFTPCPtAxis(0x0),		
 	fNDEtaBins(32),
 	fNDPhiBins(32),
 	fMinNEventsForMixing(5),
@@ -137,7 +138,9 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char* name):
 	fCalculateTOFmismatch(kTRUE),
 	fT0Fill(0x0),
 	fLvsEta(0x0),
-	fLvsEtaProjections(0x0),						
+	fLvsEtaProjections(0x0),
+	fMakeTOFcorrelations(kTRUE),
+	fMakeTOFTPCcorrelations(kFALSE),							
 	fDebug(0) 
 
 {
@@ -147,13 +150,6 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char* name):
 	//
 
 	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
-	for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
-			for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
-			fCorrelationsTOF[iPtClass][iSpecies] = 0x0;
-			fCorrelationsTOFTPC[iPtClass][iSpecies] = 0x0;
-		}
-	}
 
 	DefineInput(0,TChain::Class());
 	DefineOutput(1,TList::Class());
@@ -168,6 +164,9 @@ AliAnalysisTaskDiHadronPID::~AliAnalysisTaskDiHadronPID() {;
 	//
 
 	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (fPoolMgr) {delete fPoolMgr; fPoolMgr = 0x0;}
+	if (fOutputList) {delete fOutputList; fOutputList = 0x0;}
 
 }
 
@@ -188,11 +187,11 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 	fPIDResponse = inputHandler->GetPIDResponse();	
 
 	// Not very neat - only set up for 0-5% analysis.
-	Int_t nCentralityBins  = 5;
-	Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.};
+	Int_t nCentralityBins  = 15;
+	Double_t centralityBins[] = {0., 1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1 };
 
 	Int_t nZvtxBins  = 7;
-	Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
+	Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
 
 	fPoolMgr = new AliEventPoolManager(fPoolSize, fPoolTrackDepth, nCentralityBins, (Double_t*) centralityBins, nZvtxBins, (Double_t*) vertexBins);
     // --- END ---
@@ -211,9 +210,13 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 	fTrackCutsAssociated->CreateHistos();
 	fOutputList->Add(fTrackCutsAssociated);
 
-	// Get the pT axis for the PID histograms.
+	// Get the pT axis for the TOF PID correlations.
 	Double_t* ptaxis = fTrackCutsAssociated->GetPtAxisPID();
 	Int_t nptbins = fTrackCutsAssociated->GetNPtBinsPID();
+	fTOFPtAxis = new TAxis(nptbins, ptaxis);
+	fTOFPtAxis->SetName("fTOFPtAxis");
+	fTOFPtAxis->SetTitle("p_{T} GeV/c");
+	fOutputList->Add(fTOFPtAxis);
 
 	// Create Pt spectrum histogram.
 	fPtSpectrum = new TH1F("fPtSpectrum","p_{T} Spectrum;p_{T} (GeV/c);Count",nptbins,ptaxis);
@@ -233,40 +236,135 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 		nptbins, ptaxis);
 	fOutputList->Add(fMixedEvents);
 
-	// Create TOF correlations histograms (DPhi,DEta,pt,TOF).
-	fTOFhistos = new TObjArray(15);
-	fTOFhistos->SetName("CorrelationsTOF");
-	fTOFhistos->SetOwner(kTRUE);
+	TString speciesname[] = {"Pion","Kaon","Proton"};
 
-	Int_t nbins[4] = {fNDPhiBins,fNDEtaBins,0,0};
-	Double_t min[4] = {-TMath::Pi()/2.,-1.6,0.,0.};
-	Double_t max[4] = {3.*TMath::Pi()/2.,1.6,0.,0.};
+	// Create TOF correlations histograms (DPhi,DEta,TOF).
+	if (fMakeTOFcorrelations) {
 
-	for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
-		
-		nbins[2] = fTrackCutsAssociated->GetNPtBinsPID(iPtClass);
-		min[2] = fTrackCutsAssociated->GetPtClassMin(iPtClass);
-		max[2] = fTrackCutsAssociated->GetPtClassMax(iPtClass);
+		fTOFhistos = new TObjArray(3);
+		fTOFhistos->SetOwner(kTRUE);	
+		fTOFhistos->SetName("CorrelationsTOF");
 
 		for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 
-			nbins[3] = fTrackCutsAssociated->GetNTOFbins(iPtClass,iSpecies);
-			min[3] = fTrackCutsAssociated->GetTOFmin(iPtClass,iSpecies);
-			max[3] = fTrackCutsAssociated->GetTOFmax(iPtClass,iSpecies);
+			TObjArray* atmp = new TObjArray(fTOFPtAxis->GetNbins());
+			atmp->SetOwner(kTRUE);
+			atmp->SetName(speciesname[iSpecies].Data());
 
-			fCorrelationsTOF[iPtClass][iSpecies] = new THnF(
-				Form("fCorrelationsTOF_%i_%i",iPtClass,iSpecies),
-				Form("CorrelationsTOF_%i_%i",iPtClass,iSpecies),
-				4,nbins,min,max);
+			for (Int_t iBinPt = 1; iBinPt < (fTOFPtAxis->GetNbins() + 1); iBinPt++) {
 
-			fTOFhistos->Add(fCorrelationsTOF[iPtClass][iSpecies]);
+				Int_t iPtClass = fTrackCutsAssociated->GetPtClass(iBinPt);
+
+				Int_t NBinsTOF = fTrackCutsAssociated->GetNTOFbins(iPtClass,iSpecies);
+				Double_t TOFmin = fTrackCutsAssociated->GetTOFmin(iPtClass,iSpecies);
+				Double_t TOFmax = fTrackCutsAssociated->GetTOFmax(iPtClass,iSpecies);
+
+				cout << "ptbin: "<< iBinPt << " class: " << iPtClass << " TOFBins: " << NBinsTOF << " min: " << TOFmin << " max: " << TOFmax << endl; 
+
+				TH3F* htmp = new TH3F(Form("fCorrelationsTOF_%i",iBinPt),
+					Form("%5.3f < p_{T} < %5.3f; #Delta#phi; #Delta#eta; t_{TOF} (ps)", fTOFPtAxis->GetBinLowEdge(iBinPt), fTOFPtAxis->GetBinUpEdge(iBinPt)), 
+					fNDPhiBins, -TMath::Pi()/2., 3.*TMath::Pi()/2.,
+					fNDEtaBins, -1.6, 1.6, NBinsTOF, TOFmin, TOFmax);
+				htmp->SetDirectory(0);
+
+				atmp->Add(htmp);
+
+			}
+
+			fTOFhistos->Add(atmp);
 
 		}
+
+		fOutputList->Add(fTOFhistos);
+
 	}
 
-	fOutputList->Add(fTOFhistos);
+	// Create TOF/TPC correlation histograms. (DPhi,DEta,TOF,TPC).
+	if (fMakeTOFTPCcorrelations) {
 
-	// TODO: Create TOF/TPC correlations histogram.
+		Double_t ptarrayTOFTPC[16] = {2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 
+									  2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 
+									  4.2, 4.6, 5.0};
+		fTOFTPCPtAxis = new TAxis(15, ptarrayTOFTPC);
+		fTOFTPCPtAxis->SetName("fTOFTPCPtAxis");
+		fTOFTPCPtAxis->SetTitle("p_{T} GeV/c");
+		fOutputList->Add(fTOFTPCPtAxis);
+
+		Int_t NBinsTOFTPC[4] = {32, 32, 60, 40};
+		Double_t minTOFTPC[4] = {-TMath::Pi()/2., -1.6, -1., -1.};
+		Double_t maxTOFTPC[4] = {3.*TMath::Pi()/2., 1.6, -1., -1.};
+
+		Double_t sTOFest = 110.;
+		Double_t sTPCest = 4.5;
+
+		fTOFTPChistos = new TObjArray(3);
+		fTOFTPChistos->SetOwner(kTRUE);
+		fTOFTPChistos->SetName("TOFTPChistos");
+
+		for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
+
+			TObjArray* atmp = new TObjArray(fTOFTPCPtAxis->GetNbins());
+			atmp->SetOwner(kTRUE);
+			atmp->SetName(speciesname[iSpecies].Data());
+
+			for (Int_t iBinPt = 1; iBinPt < (fTOFTPCPtAxis->GetNbins() + 1); iBinPt++) {
+		
+				// Determine PID ranges.
+
+				// Set range +/- 5 sigma of main peak. (+ 10 sigma for TOF max, for mismatches.)
+				Double_t TOFmin = -5. * sTOFest;
+				Double_t TOFmax = 10. * sTOFest;
+				Double_t TPCmin = -4. * sTPCest;
+				Double_t TPCmax = 4. * sTPCest;
+
+				Double_t TOFexp = AliFunctionsDiHadronPID::TOFExpTime(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(iSpecies));
+				Double_t TPCexp = AliFunctionsDiHadronPID::TPCExpdEdX(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(iSpecies));
+
+				for (Int_t jSpecies = 0; jSpecies < 3; jSpecies++) {
+
+					if (iSpecies == jSpecies) {continue;}
+
+					Double_t TOFexpOther = AliFunctionsDiHadronPID::TOFExpTime(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(jSpecies));
+					Double_t TPCexpOther = AliFunctionsDiHadronPID::TPCExpdEdX(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(jSpecies));
+				
+					// If any peak is within +/- 7 sigma, then also add this peak.
+					if ( (TMath::Abs(TOFexp - TOFexpOther) < 7. * sTOFest) ||
+						 (TMath::Abs(TPCexp - TPCexpOther) < 7. * sTPCest) ) {
+
+						TOFmin = TMath::Min(TOFmin, (TOFexpOther - TOFexp - 2. * sTOFest) );
+						TOFmax = TMath::Max(TOFmax, (TOFexpOther - TOFexp + 10. * sTOFest) );
+						TPCmin = TMath::Min(TPCmin, (TPCexpOther - TPCexp - 2. * sTPCest) );
+						TPCmax = TMath::Max(TPCmax, (TPCexpOther - TPCexp + 2. * sTPCest) );						
+
+					}
+
+				}
+
+				minTOFTPC[2] = TOFmin;
+				maxTOFTPC[2] = TOFmax;
+				minTOFTPC[3] = TPCmin;
+				maxTOFTPC[3] = TPCmax;
+
+				THnF* htmp = new THnF(Form("fCorrelationsTOF_%i",iBinPt),
+					Form("%5.3f < p_{T} < %5.3f", fTOFTPCPtAxis->GetBinLowEdge(iBinPt), fTOFTPCPtAxis->GetBinUpEdge(iBinPt)), 
+					4, NBinsTOFTPC, minTOFTPC, maxTOFTPC);
+
+				(htmp->GetAxis(0))->SetTitle("#Delta#phi");
+				(htmp->GetAxis(1))->SetTitle("#Delta#eta");
+				(htmp->GetAxis(2))->SetTitle("t_{TOF} (ps)");
+				(htmp->GetAxis(3))->SetTitle("dE/dx (a.u.)");
+
+				atmp->Add(htmp);
+
+			}
+
+			fTOFTPChistos->Add(atmp);
+
+		}
+
+		fOutputList->Add(fTOFTPChistos);
+
+	}
 
 	// Load external TOF histograms if flag is set.
 	if (fCalculateTOFmismatch) {LoadExtMismatchHistos();}
@@ -279,11 +377,11 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 void AliAnalysisTaskDiHadronPID::LocalInit() {
 
 	//
-	// Initialize on the client. (or on my computer?? - I think so...)
+	// Initialize on the this computer. 
 	//
 
 	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
- 	
+
 }
 
 // -----------------------------------------------------------------------
@@ -349,22 +447,41 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 			Double_t DEta = triggertrack->Eta() - associatedtrack->Eta();
 			fCorrelations->Fill(DPhi,DEta,associatedtrack->Pt());
 
-			Double_t tofhistfill[4] = {DPhi,DEta,associatedtrack->Pt(),-999.};
-
 			for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
-				tofhistfill[3] = associatedtrack->GetTOFsignalMinusExpected(iSpecies);
 
-				for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
+				Double_t apt = associatedtrack->Pt();
 
-					// prevent under/over-flow bins to be filled.
-					Double_t ptmin = fTrackCutsAssociated->GetPtClassMin(iPtClass);
-					Double_t ptmax = fTrackCutsAssociated->GetPtClassMax(iPtClass);
-					Double_t apt = associatedtrack->Pt();
+				// Fill TOF correlations.
+				if (fMakeTOFcorrelations) {
+				
+					TObjArray* atmp = (TObjArray*)fTOFhistos->At(iSpecies);
+					Int_t ptbin = fTOFPtAxis->FindBin(apt);
 
-					if ( (apt > ptmin) && (apt < ptmax) ) {
-						fCorrelationsTOF[iPtClass][iSpecies]->Fill(tofhistfill);
+					// Only fill if histogram exists in fTOFhistos.
+					if ( !(ptbin < 1) && !(ptbin > fTOFPtAxis->GetNbins()) ) {
+
+						TH3F* htmp = (TH3F*)atmp->At(ptbin - 1);
+						htmp->Fill(DPhi, DEta, associatedtrack->GetTOFsignalMinusExpected(iSpecies));
+
 					}
+				}
 
+				// Fill TOF/ TPC Correlations.
+				if (fMakeTOFTPCcorrelations) {
+
+					TObjArray* atmp = (TObjArray*)fTOFTPChistos->At(iSpecies);
+					Int_t ptbin = fTOFTPCPtAxis->FindBin(apt);
+
+					// Only fill if histogram exists in fTOFhistos.
+					if ( !(ptbin < 1) && !(ptbin > fTOFTPCPtAxis->GetNbins()) ) {
+
+						THnF* htmp = (THnF*)atmp->At(ptbin - 1);
+						Double_t TOFTPCfill[4] = {DPhi, DEta, 
+							associatedtrack->GetTOFsignalMinusExpected(iSpecies), associatedtrack->GetTPCsignalMinusExpected(iSpecies)}; 
+
+						htmp->Fill(TOFTPCfill);
+
+					}				
 				}
 			}
 		}

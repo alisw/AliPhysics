@@ -5,7 +5,7 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
 	Int_t PoolTrackDepth = 2000,
 	Int_t PoolSize = 1000,
 	Bool_t MixEvents = kTRUE,
-	Bool_t MixTriggers = kFALSE,
+	Bool_t MixTriggers = kTRUE,
 	Double_t MinCentrality = 5.,
 	Double_t MaxCentrality = 0.,
 	const char* CentralityEstimator = "V0M",
@@ -15,12 +15,14 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
 	Double_t maxAssociatedPt = 5.0,
 	Double_t minTriggerPt = 5.,
 	Double_t maxTriggerPt = 10.,
-	Bool_t requestAllSingleTrackHistos = kTRUE,
+	Bool_t requestAllSingleTrackHistos = kFALSE,
 	Int_t FilterMaskTrigger = 7,
 	Int_t FilterMaskAssociated = 5,
 	Bool_t isPbPb = kTRUE,
 	Bool_t isMC = kFALSE,
 	Int_t DebugLevel = 0,
+	Bool_t MakeTOFCorrelations = kTRUE,
+	Bool_t MakeTOFTPCCorrelations = kFALSE,
 	const char* outputFileName = 0,
 	const char* containerName = "DiHadronPID",
 	const char* folderName = "PWGCF_DiHadronPID")
@@ -45,6 +47,8 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
     DiHadronPIDTask->SetMixEvents(MixEvents);
     DiHadronPIDTask->SetMixTriggers(MixTriggers);
     DiHadronPIDTask->SetDebugLevel(DebugLevel);
+    DiHadronPIDTask->SetMakeTOFCorrelations(MakeTOFCorrelations);
+    DiHadronPIDTask->SetMakeTOFTPCCorrelations(MakeTOFTPCCorrelations);
 
     // Configure and add Event Cuts.
 	AliAODEventCutsDiHadronPID* eventcuts = new AliAODEventCutsDiHadronPID("EventCuts");

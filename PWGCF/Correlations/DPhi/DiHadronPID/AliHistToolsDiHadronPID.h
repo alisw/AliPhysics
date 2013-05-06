@@ -4,6 +4,11 @@
 * See cxx source for full Copyright notice */ 
 /* $Id$ */
 
+class TF2;
+class TH1F;
+class TH2F;
+class TH3F;
+
 class AliHistToolsDiHadronPID {
 
 public:
@@ -15,57 +20,23 @@ protected:
 public:
 
 	// Histogram Manipulation.
-	static TH1F* RebinVariableBinning(TH1F* histIn, Double_t* binsx, Int_t Nbinsx, Bool_t density = kTRUE);
-	static TH1F* RebinVariableBinning(TH1F* histIn, TH1F* histAxis, Bool_t density = kTRUE) {
-
-		// Rebins histogram histIn to the x-axis of histAxis
-		TAxis* xaxis = histAxis->GetXaxis();
-		Int_t nbinsx = xaxis->GetNbins();
-		const Double_t* binsx = (xaxis->GetXbins())->GetArray();
-		return RebinVariableBinning(histIn, const_cast<Double_t*>(binsx), nbinsx, density);
-
-	}
-	static TH1F* TrimHisto(TH1F* histo, Int_t firstbin, Int_t lastbin);
-	static void ConstMinusHist(TH1F* histo, const Float_t cc = 1) {
-
-		// h -> (c-h)
-		Int_t nbins = histo->GetNbinsX();
-		for (Int_t iBin = 0; iBin < (nbins + 1); iBin++) {
-			Float_t bincontent = histo->GetBinContent(iBin);
-			histo->SetBinContent(iBin,(cc - bincontent));
-		}
-
-	}
+	static TH1F* RebinVariableBinning(const TH1F* histIn, const Double_t* binsx, const Int_t Nbinsx, const Bool_t density = kTRUE);
+	static TH1F* RebinVariableBinning(const TH1F* histIn, const TH1F* histAxis, const Bool_t density = kTRUE);
+	static TH1F* TrimHisto(const TH1F* histo, const Int_t firstbin, const Int_t lastbin);
+	static void ConstMinusHist(TH1F* histo, const Float_t cc = 1);
 	static TH3F* MakeHist3D(const char* name, const char* title, 
-		Int_t nbinsX, Double_t minX, Double_t maxX,
-		Int_t nbinsY, Double_t minY, Double_t maxY,
-		Int_t nbinsZ, const Double_t* zaxis) {
+		const Int_t nbinsX, const Double_t minX, const Double_t maxX,
+		const Int_t nbinsY, const Double_t minY, const Double_t maxY,
+		const Int_t nbinsZ, const Double_t* zaxis);
 
-		const Double_t* xaxis = const_cast<Double_t*>(CreateAxis(nbinsX,minX,maxX));
-		const Double_t* yaxis = const_cast<Double_t*>(CreateAxis(nbinsY,minY,maxY));
-
-		TH3F* hout = new TH3F(name,title,nbinsX,xaxis,nbinsY,yaxis,nbinsZ,zaxis);
-	
-		return hout;
-	}
+	// Creating histograms from other histograms or functions.
+	static TH2F* Function2DToHist2D(const TF2* function, const TH2* grid);
 
 	// Histogram Visualization.
-	static TObjArray* CreateSpectraComparison(const char* name, const char* title, TH1F* h1, TH1F* h2, Int_t markerstyle = 8, Bool_t logy = kTRUE);
+	static TObjArray* CreateSpectraComparison(const char* name, const char* title, const TH1F* h1, const TH1F* h2, const Int_t markerstyle = 8, const Bool_t logy = kTRUE);
 
 private:
-	static Double_t* CreateAxis(const Int_t nbins, Double_t min, Double_t max) {
-		if (nbins <= 0) return 0x0;
-		if (max < min) return 0x0;
-
-		Double_t* axis = new Double_t[nbins + 1];
-		Double_t binsize = (max - min)/((Double_t)nbins);
-		for (Int_t iBin = 0; iBin < nbins + 1; iBin++) {
-			axis[iBin] = min + ((Double_t)iBin) * binsize;
-		}
-
-		return axis;
-	}
-
+	static Double_t* CreateAxis(const Int_t nbins, const Double_t min, const Double_t max);
 
 };
 
