@@ -30,7 +30,10 @@ enum {
  kveretxcorrectionandbadchunkscorr=0x10,
  kmcisusedasdata=0x20,
  kdonotusedcacuts=0x40,
- kuseprimaryPIDcont=0x80			
+ kuseprimaryPIDcont=0x80,
+ knormalizationwithbin0integralsdata=0x100,
+ knormalizationwithbin0integralsMC=0x200,
+					
 };	
 
 Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag,Bool_t mcasdata=false);
@@ -119,23 +122,33 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	GetPtHistFromPtDCAhisto("hHistPtRecSigmaPrimary","conPIDprimary",managermc,contPIDpri,dcacutxy);
 
 	
-//	Double_t neventsdata =  ecutsdata->NumberOfEvents();
 	Double_t neventsmcall = 1 ;  //if loop over MC is done after or befor events cuts this will be changed 
 	Double_t neventsdata =  1;
 	Double_t neventsmc =  1;
 
+	//Normaliztion of MCtruth depends if the loop was done after of before ESD event cuts.
+	//In currect code this cannot be check on the level of macro.
+	//If the loop was done before MC should be done to all processed events (NumberOfProcessedEvents())
+	//If loop was done after MC should be normalized to all accepted events (NumberOfEvents()) 
+	// The option one will be alaways use.
+	
+	neventsmcall= ecutsmc->NumberOfProcessedEvents();
 	if(options&knormalizationtoeventspassingPhySel)
 	{
-		neventsmcall= ecutsmc->NumberOfProcessedEvents();
+		//neventsmcall= ecutsmc->NumberOfProcessedEvents();
 		 neventsdata=ecutsdata->NumberOfPhysSelEvents();
 		 neventsmc=ecutsmc->NumberOfPhysSelEvents();
 	}
+	else if ((options&knormalizationwithbin0integralsdata)||(options&knormalizationwithbin0integralsMC))
+	{
+		neventsdata=Normaliztionwithbin0integrals(options);
+		neventsmc=ecutsmc->NumberOfPhysSelEvents();
+	}
 	else
 	{
-		neventsdata=ecutsdata->NumberOfEvents();
+		//neventsdata=ecutsdata->NumberOfEvents(); //number of accepted events
 		 neventsmc=ecutsmc->NumberOfEvents();
 		neventsmcall= ecutsmc->NumberOfEvents();
-
 
 	}
 	GetMCTruth(MCTruth);
@@ -314,7 +327,11 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	TList* listqa=new TList();
 	TList* canvaslist=new TList();
 	Float_t vertexcorrection=1.0;
-	Float_t corrbadchunksvtx=QAPlotsBoth(managerdata,managermc,ecutsdata,ecutsmc,tcutsdata,tcutsmc,listqa,canvaslist);
+	Float_t corrbadchunksvtx=1.0;
+	if ((options&knormalizationwithbin0integralsdata)||(options&knormalizationwithbin0integralsMC))
+		corrbadchunksvtx=QAPlotsBoth(managerdata,managermc,ecutsdata,ecutsmc,tcutsdata,tcutsmc,listqa,canvaslist,0);
+	else
+		corrbadchunksvtx=QAPlotsBoth(managerdata,managermc,ecutsdata,ecutsmc,tcutsdata,tcutsmc,listqa,canvaslist,1);
 	if (options&kveretxcorrectionandbadchunkscorr)
 		vertexcorrection=corrbadchunksvtx;
 	cout<<" VTX corr="<<vertexcorrection<<endl;
@@ -341,6 +358,7 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	canvaslist->Write("outputcanvas",TObject::kSingleKey);
 
 	fout->Close();
+	//Normaliztionwithbin0integrals();
 
 }
 
@@ -1168,4 +1186,60 @@ Short_t DCAfitsettings (Float_t pt, Int_t type)
 		value=value+1;
 	return value;	
 
-}  
+} 
+
+Float_t Normaliztionwithbin0integrals(UInt_t options)
+{
+	
+	TH1F* bin0mcRec=(TH1F*)ecutsmc->GetHistoVtxGenerated()->Clone("Bin0_rec");
+	TH1F* bin0mcMC=(TH1F*)ecutsmc->GetHistoVtxGenerated()->Clone("Bin0_MC");
+
+	TH1F* vertexmc=ecutsmc->GetHistoVtxAftSelwithoutZvertexCut(); 
+	TH1F* vertexmcMCz=ecutsmc->GetHistoVtxAftSelwithoutZvertexCutusingMCz(); 
+	TH1F* vertexdata=ecutsdata->GetHistoVtxAftSelwithoutZvertexCut();
+
+	TH1I* histodata=ecutsdata->GetHistoCuts();
+	TH1I* histomc=ecutsmc->GetHistoCuts();
+
+	Float_t dataevents=(Float_t)histodata->GetBinContent(3);
+	cout<<histodata->GetBinContent(2)<<endl;
+	Float_t databin0events=((Float_t)histodata->GetBinContent(2))-((Float_t)histodata->GetBinContent(4));	
+
+	bin0mcRec->Sumw2();
+	bin0mcMC->Sumw2();
+		
+	bin0mcRec->Add(vertexmc,-1);
+	bin0mcMC->Add(vertexmcMCz,-1);
+	
+	bin0mcRec->Divide(vertexmc);
+	bin0mcMC->Divide(vertexmcMCz);
+	
+	bin0mcRec->Multiply(vertexdata);
+	bin0mcMC->Multiply(vertexdata);
+	
+	Float_t bin0mcRecN=0.0;
+	Float_t bin0mcMCN=0.0;
+
+	for (int i=0;i<=bin0mcRec->GetXaxis()->GetNbins();i++)
+	{
+		bin0mcRecN+=bin0mcRec->GetBinContent(i);
+		bin0mcMCN+=bin0mcMC->GetBinContent(i);
+
+	}
+	bin0mcRec->Scale(databin0events/bin0mcRecN);
+	bin0mcMC->Scale(databin0events/bin0mcMCN);		
+	
+	Int_t binmin=bin0mcRec->GetXaxis()->FindBin(-10);
+	Int_t binmax=bin0mcRec->GetXaxis()->FindBin(10)-1;
+	cout<<	bin0mcRec->GetXaxis()->GetBinLowEdge(binmin)<<" "<<bin0mcRec->GetXaxis()->GetBinUpEdge(binmax)<<endl;
+	cout<<bin0mcRecN<<" "<<bin0mcMCN<<" "<<databin0events<<endl;	
+	cout<<dataevents<<" normalization "<<dataevents+bin0mcRec->Integral(binmin,binmax)<<" "<<dataevents+bin0mcMC->Integral(binmin,binmax)<<endl;
+	cout<<histodata->GetBinContent(2)<<" "<<histodata->GetBinContent(4)<<endl;
+	if ((options&knormalizationwithbin0integralsdata)==knormalizationwithbin0integralsdata)
+		return 	dataevents+bin0mcRec->Integral(binmin,binmax);
+ 	else if ((options&kknormalizationwithbin0integralsMC)==knormalizationwithbin0integralsdata)
+		return dataevents+bin0mcMC->Integral(binmin,binmax) ;
+	else
+		return 1;		
+}
+ 

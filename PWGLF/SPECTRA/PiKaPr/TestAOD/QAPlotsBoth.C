@@ -1,7 +1,7 @@
 Float_t QAPlotsBoth( AliSpectraBothHistoManager* hman_data, AliSpectraBothHistoManager* hman_mc,
 	      AliSpectraBothEventCuts* ecuts_data, AliSpectraBothEventCuts* ecuts_mc,
 	      AliSpectraBothTrackCuts* tcuts_data, AliSpectraBothTrackCuts* tcuts_mc,
-	      TList * flistqa,TList * flistcanvas)
+	      TList * flistqa,TList * flistcanvas,Bool_t fullicorr=kTRUE)
 {
 TString pidmethods[3]={"TPC","TOF","TPCTOF"};	
 	Double_t neventsdata =  ecutsdata->NumberOfPhysSelEvents();
@@ -96,6 +96,8 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
                 binstartx++;
         binstartx++;
 	flistcanvas->Add(plot_on_canvas("vertex",fHistoVtxAftSeldata,fHistoVtxAftSelmc));
+	/*
+
 	TF1* fdata=new TF1("dataveretxfit","gausn");
 	TF1* fmc=new TF1("mcveretxfit","gausn");
 	//we strat fit a second not empty bin
@@ -105,8 +107,20 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 	fHistoVtxAftSelmc->Fit("mcveretxfit","0","",minfit,-1.0*minfit);
 	Float_t datavertexratio=fHistoVtxAftSeldata->Integral(-1,-1,"width")/fdata->GetParameter(0);
 	Float_t mcvertexratio=fHistoVtxAftSelmc->Integral(-1,-1,"width")/fmc->GetParameter(0);
+	*/
+	//Event cut histo 
+	TH1I* histodata=ecuts_data->GetHistoCuts();
+	TH1I* histomc=ecuts_mc->GetHistoCuts();
 	
+	Int_t events_data=histodata->GetBinContent(3);
+	Int_t events_mc=histomc->GetBinContent(3);
 
+	if(events_data==0&&events_mc==0)
+		return 0;
+
+
+	Float_t datavertexratio=((Float_t)(events_data))/((Float_t)histodata->GetBinContent(4));
+         Float_t mcvertexratio=((Float_t)(events_mc))/((Float_t)histomc->GetBinContent(4));
 	 TH1F* fHistoEtaAftSeldata=(TH1F*)ecuts_data->GetHistoEtaAftSel();
 	 TH1F* fHistoEtaAftSelmc=(TH1F*)ecuts_mc->GetHistoEtaAftSel();
 	flistcanvas->Add(plot_on_canvas("ETA",fHistoEtaAftSeldata,fHistoEtaAftSelmc));
@@ -140,9 +154,15 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 	cout<<"Bad chunks "<<badchunksfraction<<endl;	
 	binzero->Draw("E1");
 	flistcanvas->Add(cbc);
+	if(TMath::Abs(hmul->GetEntries()/events_mc-1.0)>0.001)
+		cout<<"MC merging problem"<<endl;
+	if(TMath::Abs(hman_data->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()/events_data-1.0)>0.001)
+		cout<<"Data merging problem"<<endl;
 	
-	return (1.0-badchunksfraction)*mcvertexratio/datavertexratio;
-
+	if(fullicorr)
+		return (1.0-badchunksfraction)*mcvertexratio/datavertexratio;
+	else 
+		return (1.0-badchunksfraction)*mcvertexratio;
 }
 TCanvas* plot_on_canvas(TString name, TH1* h1,TH1* h2)
 {
