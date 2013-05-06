@@ -21,7 +21,8 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
 				 UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000.,
 				 Double_t* tpcdEdxcutlow=NULL,Double_t* tpcdEdxcuthigh=NULL,
 				 Double_t TOFs=3., Int_t TOFmis=0,
-				 Int_t itshitpixel = 0, Int_t icent = 1){
+				 Int_t itshitpixel = 0, Int_t icent = 1,
+         Double_t etami=-0.8, Double_t etama=0.8){
   
   Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
   
@@ -40,6 +41,7 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetCutITSpixel(itshitpixel);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
+  hfecuts->SetEtaRange(etami,etama);
   if(isAOD) hfecuts->SetAODFilterBit(4);
   
   //if((iPixelAny==AliHFEextraCuts::kAny) || (iPixelAny==AliHFEextraCuts::kSecond))     
@@ -91,8 +93,8 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
   // Define Variables
   Double_t ptbinning[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
 
-  Double_t etabinning[9] = {-0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8};
-  //Double_t etabinning[17] = {-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+  //Double_t etabinning[9] = {-0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8};
+  Double_t etabinning[17] = {-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
 
   Int_t sizept=(sizeof(ptbinning)/sizeof(double))-1;
   Int_t sizeeta=(sizeof(etabinning)/sizeof(double))-1;
