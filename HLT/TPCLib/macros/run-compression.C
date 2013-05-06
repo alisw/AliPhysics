@@ -10,11 +10,11 @@
 // in order to couple to the input.
 // 1) AliRoot reconstruction examples, just use the macro in front of
 //    the reconstruction macro, e.g.
-// aliroot -b -q -l runmonitor.C(2) $ALICE_ROOT/HLT/exa/recraw-local.C'("raw.root", "local://OCDB", 0, 5, "HLT", "loglevel=0x7c chains=compressor-input-writer")'
+// aliroot -b -q -l run-compression.C $ALICE_ROOT/HLT/exa/recraw-local.C'("raw.root", "local://OCDB", 0, 5, "HLT", "loglevel=0x7c chains=compressor-input-writer")'
 // 
 // 2) standalone chains can be used if all input files are available
 // on disk and the configuration file for the publisher is existing
-// aliroot -b -q -l runmonitor.C'(2, 2, 1, "writer", "compressor compressor-publisher", 167808, "local://OCDB")'
+// aliroot -b -q -l run-compressor.C'(1, 2, 1, "writer", "compressor compressor-publisher", 167808, "local://OCDB")'
 //
 // Chains:
 // 'hltout-cluster-writer' writes clusters for every event in directory
@@ -133,7 +133,7 @@ void run_compression(int mode, int events,
 // an abbreviated version setting default deflaterMode to 2 and
 // omitting monitorInput
 // example:
-//  aliroot -b -q -l runmonitor.C'(1, 5, "compressor", "", 167808)'
+//  aliroot -b -q -l run-compression.C'(1, 5, "compressor", "", 167808)'
 void run_compression(int mode, int events,
 		const char* chain,
 		int runno,
