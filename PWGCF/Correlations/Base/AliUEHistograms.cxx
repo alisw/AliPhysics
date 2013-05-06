@@ -561,17 +561,17 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
   // list needed to prevent double counting
   // contains 1 if list element in list <particles> is also contained in <mixed> 
   TArrayC* existsInMixed = 0;
-  if (mixed && !fPtOrder)
-  {
-    existsInMixed = new TArrayC(particles->GetEntriesFast());
-    for (Int_t i=0; i<particles->GetEntriesFast(); i++)
-    {
-      if (mixed->Contains(particles->UncheckedAt(i)))
-	(*existsInMixed)[i] = 1;
-      else
-	(*existsInMixed)[i] = 0;
-    }
-  }
+//   if (mixed && !fPtOrder)
+//   {
+//     existsInMixed = new TArrayC(particles->GetEntriesFast());
+//     for (Int_t i=0; i<particles->GetEntriesFast(); i++)
+//     {
+//       if (mixed->Contains(particles->UncheckedAt(i)))
+// 	(*existsInMixed)[i] = 1;
+//       else
+// 	(*existsInMixed)[i] = 0;
+//     }
+//   }
   
   // if particles is not set, just fill event statistics
   if (particles)
@@ -651,17 +651,17 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  if (particle->Pt() >= triggerParticle->Pt())
 	    continue;
 	}
-	else
-	{
-	  // if we do not use the pt ordering, we have to prevent double counting in a different way
-	  // if the trigger particle is also part of the associated particle list, the pT ordering condition is applied anyway
-	  if (!mixed || (*existsInMixed)[i] != 0)
-	    if (particle->Pt() >= triggerParticle->Pt())
-	    {
-// 	      Printf("Skipping %d %d", i, j);
-	      continue;
-	    }
-	}
+// 	else
+// 	{
+// 	  // if we do not use the pt ordering, we have to prevent double counting in a different way
+// 	  // if the trigger particle is also part of the associated particle list, the pT ordering condition is applied anyway
+// 	  if (!mixed || (*existsInMixed)[i] != 0)
+// 	    if (particle->Pt() >= triggerParticle->Pt())
+// 	    {
+// // 	      Printf("Skipping %d %d", i, j);
+// 	      continue;
+// 	    }
+// 	}
 	
 	if (fAssociatedSelectCharge != 0)
 	  if (particle->Charge() * fAssociatedSelectCharge < 0)
