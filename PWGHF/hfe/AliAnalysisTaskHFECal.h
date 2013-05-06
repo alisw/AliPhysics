@@ -57,6 +57,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
   void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent, Bool_t tagpi0, Bool_t tageta);
+  double SumpT(Int_t itrack, AliESDtrack *track);
   void FindMother(TParticle* part, int &label, int &pid);
   double GetMCweight(double mcPi0pT);
   double GetMCweightEta(double mcEtapT);
@@ -183,7 +184,10 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH2D                   *fFakeTrk0;
  TH2D                   *fFakeTrk1;
  TH2D                   *ftimingEle;
- 
+ TH2D                   *fIncReco;
+ TH2D                   *fPhoReco;
+ TH2D                   *fSamReco; 
+
  //<----- correction
  TGraphErrors           *fnSigEtaCorr[7];
 
