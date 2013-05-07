@@ -79,7 +79,7 @@ class AliTOFGeometry: public TObject{
   virtual void    ImportGeometry();
   virtual void    SetHoles(Bool_t holes) {fgHoles = holes;};
   static  Bool_t  GetHoles() {return fgHoles;};
-  virtual Float_t DistanceToPadPar(Int_t *det, const Float_t * pos, Float_t *dist3d=0) const;
+  static  Float_t DistanceToPadPar(Int_t *det, const Float_t * pos, Float_t *dist3d=0);
   virtual Bool_t  IsInsideThePadPar(Int_t *det, const Float_t * pos) const;
   virtual Bool_t  IsInsideThePad(TGeoHMatrix *mat, const Float_t * pos, Float_t *dist3d=0) const;
   static  void    GetVolumePath(const Int_t * ind, Char_t *path );

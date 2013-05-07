@@ -330,7 +330,7 @@ void AliTOFGeometry::DetToStripRF(Int_t nPadX, Int_t nPadZ, Float_t &x,  Float_t
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::DistanceToPadPar(Int_t *det, const Float_t * pos, Float_t *dist3d) const
+Float_t AliTOFGeometry::DistanceToPadPar(Int_t *det, const Float_t * pos, Float_t *dist3d)
 {
 //
 // Returns distance of  space point with coor pos (x,y,z) (cm) wrt 
