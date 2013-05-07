@@ -34,6 +34,151 @@
 
 
 //------------------------------------------------------------------------------
+//== INVARIANT MASS DISTRIBUTIONS (ThnMother) ================================
+//-- event characteristics
+// number of charged primary particles - combined => can be w/ soft tracks
+const Int_t AliCDMesonBase::fgkNNcombined      = 2; // number of bins
+const Double_t AliCDMesonBase::fgkMinNcombined = 2; // lower border
+const Double_t AliCDMesonBase::fgkMaxNcombined = 4; // upper border (#bins + lower border)
+
+// unlike sign or like sign charged?
+const Int_t AliCDMesonBase::fgkNCombCh      = 2; // kBinPPMM = number of bins
+const Double_t AliCDMesonBase::fgkMinCombCh = 1.; // kBinPM = lower border
+const Double_t AliCDMesonBase::fgkMaxCombCh = 3.; // kBinPPMM + kBinPM = upper border
+
+// two track PID, take care the enum changed from time to time
+const Int_t AliCDMesonBase::fgkNCombPID      = 13; // kBinPIDUnknown = number of bins
+const Double_t AliCDMesonBase::fgkMinCombPID = 1.; // kBinPionE = lower border
+const Double_t AliCDMesonBase::fgkMaxCombPID = 14.;// ...  = upper border
+
+// gap configuration, used for different detectors
+const Int_t AliCDMesonBase::fgkNGapConfig      = 4; // kBinNG = number of bins
+const Double_t AliCDMesonBase::fgkMinGapConfig = 1.; // kBinDG = lower border
+const Double_t AliCDMesonBase::fgkMaxGapConfig = 5.; // kBinNG + kBinDG = upper border
+
+//-- mother kinematics
+// invariant mass of the two-track system
+const Int_t AliCDMesonBase::fgkNMass      = 1024; // number of bins
+const Double_t AliCDMesonBase::fgkMinMass = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxMass = 5.12; // upper border
+
+// transverse momentum of the two-track system
+const Int_t AliCDMesonBase::fgkNMotherPt      = 128;//10; // number of bins
+const Double_t AliCDMesonBase::fgkMinMotherPt = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxMotherPt = .64; //6.4 //2; // upper border
+
+// cosine theta* (opening angle of the two daugther tracks in the
+// centre-of-mass system of the two-track/mother system)
+// **no meaning full variable**
+const Int_t AliCDMesonBase::fgkNCTS      = 2; // number of bins
+const Double_t AliCDMesonBase::fgkMinCTS = -1.; // lower border
+const Double_t AliCDMesonBase::fgkMaxCTS = -0.9; // upper border
+
+// opening angle in the lab frame
+const Int_t AliCDMesonBase::fgkNOA      = 20; // number of bins
+const Double_t AliCDMesonBase::fgkMinOA = -1.; // lower border
+const Double_t AliCDMesonBase::fgkMaxOA = 1.; // upper border
+
+//-- daughter kinematics
+// transverse momentum of one of the two daughter particles
+// (randomly selected)
+const Int_t AliCDMesonBase::fgkNDaughterPt      = 128; // number of bins
+const Double_t AliCDMesonBase::fgkMinDaughterPt = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxDaughterPt = 6.4; // upper border
+
+// pseudo rapidity of one of the two daughter particles
+// (randomly selected)
+//const Int_t AliCDMesonBase::fgkNDaughterEta      = 64; // number of bins
+//const Double_t AliCDMesonBase::fgkMinDaughterEta = -1.28; // lower border
+//const Double_t AliCDMesonBase::fgkMaxDaughterEta =  1.28; // upper border
+
+//-- Event quality information
+// boolean values to reduce output size
+
+// are there tracks in addition to the ones selected using AliCDMesonTracks
+// (ITSTPC, ITSsa, ITSpureSA) (0 = no, 1 = yes)
+const Int_t AliCDMesonBase::fgkNTrackResiduals      = 2; // number of bins
+const Double_t AliCDMesonBase::fgkMinTrackResiduals = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxTrackResiduals = 2.; // upper border
+
+// vertex with in +/-4cm (0 = no, 1 = yes)
+const Int_t AliCDMesonBase::fgkNVertexZinRng      = 2; // number of bins
+const Double_t AliCDMesonBase::fgkMinVertexZinRng = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxVertexZinRng = 2.; // upper border
+
+// are the vertices from SPD and tracks within 0.5cm? (0 = no, 1 = yes)
+const Int_t AliCDMesonBase::fgkNVertexCoincidence      = 2; // number of bins
+const Double_t AliCDMesonBase::fgkMinVertexCoincidence = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxVertexCoincidence = 2.; // upper border
+
+// are there SPD tracklets which are not assigned to tracks? (0 = no, 1 = yes)
+const Int_t AliCDMesonBase::fgkNTrackletResiduals      = 2; // number of bins
+const Double_t AliCDMesonBase::fgkMinTrackletResiduals = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxTrackletResiduals = 2.; // upper border
+
+//-- MC event information
+const Int_t AliCDMesonBase::fgkNProcessType      = 4; // kBinDD = number of bins
+const Double_t AliCDMesonBase::fgkMinProcessType = 0.; // kBinND = lower border
+const Double_t AliCDMesonBase::fgkMaxProcessType = 4.; // kBinDD = upper border
+
+
+//== EMPTY EVENT STUDY (ThnEmptyEvents) ======================================
+// event type
+const Int_t AliCDMesonBase::fgkNEventType      = 5; // kBinEventE = number of bins (5)
+const Double_t AliCDMesonBase::fgkMinEventType = 1.; // kBinEventI = lower border (1)
+const Double_t AliCDMesonBase::fgkMaxEventType = 6.; // kBinEventE+kBinEventI = u. b.
+
+// multiplicities (reused for different detectors and ways of counting)
+const Int_t AliCDMesonBase::fgkNMult      = 32; // number of bins
+const Double_t AliCDMesonBase::fgkMinMult = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxMult = 31.; // upper border
+
+// multplicities - extended range
+// (reused for different detectors and ways of counting)
+const Int_t AliCDMesonBase::fgkNMultW      = 64; // number of bins
+const Double_t AliCDMesonBase::fgkMinMultW = 0; // lower border
+const Double_t AliCDMesonBase::fgkMaxMultW = 63; // upper border
+
+//== MULTIPLICITY STUDY (TnnMultiplicity) ====================================
+// number of ITSTPC tracks in event
+const Int_t AliCDMesonBase::fgkNNch      = 51; // number of bins
+const Double_t AliCDMesonBase::fgkMinNch = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxNch = 51.; // upper border
+
+// number of ITS standalone tracks in event
+const Int_t AliCDMesonBase::fgkNNsoft      = 11; // number of bins
+const Double_t AliCDMesonBase::fgkMinNsoft = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxNsoft = 11.; // upper border
+
+// combined multiplicity
+const Int_t AliCDMesonBase::fgkNNcomb      = 61; // number of bins
+const Double_t AliCDMesonBase::fgkMinNcomb = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxNcomb = 61.; // upper border
+
+// gap configuration is reused from THnMother
+
+// number of residual tracks
+const Int_t AliCDMesonBase::fgkNNresidualTracks      = 11; // number of bins
+const Double_t AliCDMesonBase::fgkMinNresidualTracks = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxNresidualTracks = 11.; // upper border
+
+// number of residual tracklets
+const Int_t AliCDMesonBase::fgkNNresidualTracklets      = 21; // number of bins
+const Double_t AliCDMesonBase::fgkMinNresidualTracklets = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxNresidualTracklets = 21.; // upper border
+
+// vertex z-position
+const Int_t AliCDMesonBase::fgkNVertexZ      = 20; // number of bins
+const Double_t AliCDMesonBase::fgkMinVertexZ = -10.; // lower border
+const Double_t AliCDMesonBase::fgkMaxVertexZ = 10.; // upper border
+
+// SPD and track vertex distance
+const Int_t AliCDMesonBase::fgkNVerticesDistance      = 10; // number of bins
+const Double_t AliCDMesonBase::fgkMinVerticesDistance = 0.; // lower border
+const Double_t AliCDMesonBase::fgkMaxVerticesDistance = 5.; // upper border
+
+
+//------------------------------------------------------------------------------
 Int_t AliCDMesonBase::GetGapBin(TString tag, const Int_t gapcg,
                                 Bool_t checkCentralActivity /* = kTRUE */)
 {
