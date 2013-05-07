@@ -38,7 +38,6 @@
 #pragma link C++ class AliAnalysisTaskFullpAJets+;
 #pragma link C++ class AliAnalysisTaskFullppJet;
 #pragma link C++ class AliAnalysisTaskHJetEmbed+;
-#pragma link C++ class AliAnalysisTaskQualityAssurancePA;
 #pragma link C++ class AliAnalysisTaskRhoVnModulation+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;
