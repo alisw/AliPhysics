@@ -18,7 +18,7 @@ class TRandom3;
 class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
  public:
   // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
-  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeJets(1), fAnalyzeQA(1), fAnalyzeBackground(1), fAnalyzeDeprecatedBackgrounds(1), fAnalyzePythia(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fUsePtHardBin(-1), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.6), fNumberRandCones(8), fNumberExcludedJets(-1), fDijetMaxAngleDeviation(10.0), fPhysicalJetRadius(0.6), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinJetPt(1.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinDijetLeadingPt(10.0), fNumberOfCentralityBins(100), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0), fIsDEBUG(0)
+  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeJets(1), fAnalyzeQA(1), fAnalyzeBackground(1), fAnalyzeDeprecatedBackgrounds(1), fAnalyzePythia(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0),  fUseVertexCut(1), fUsePileUpCut(1), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fUsePtHardBin(-1), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.6), fNumberRandCones(8), fNumberExcludedJets(-1), fDijetMaxAngleDeviation(10.0), fPhysicalJetRadius(0.6), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinJetPt(1.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinDijetLeadingPt(10.0), fNumberOfCentralityBins(100), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0), fIsDEBUG(0)
   {
     for(Int_t i=0;i<1024;i++)
       fSignalJets[i] = NULL;
@@ -28,6 +28,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskChargedJetsPA();
   virtual void     UserCreateOutputObjects();
   virtual void     UserExec(Option_t *option);
+  virtual Bool_t   UserNotify();
   virtual void     Terminate(Option_t *);
 
   // ######### SETTERS/GETTERS
@@ -36,6 +37,8 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        SetAnalyzeBackground(Bool_t val) {fAnalyzeBackground = val;}
   void        SetAnalyzeDeprecatedBackgrounds(Bool_t val) {fAnalyzeDeprecatedBackgrounds = val;}
   void        SetAnalyzePythia(Bool_t val) {fAnalyzePythia = val;}
+  void        SetUseVertexCut (Bool_t val) {fUseVertexCut = val;}
+  void        SetUsePileUpCut (Bool_t val) {fUsePileUpCut = val;}
 
   void        SetTrackMinPt(Double_t minPt) {fMinJetPt = minPt;}
   void        SetSignalJetMinPt(Double_t minPt) {fMinJetPt = minPt;}
@@ -69,6 +72,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& area, AliEmcalJet* excludeJet1, AliEmcalJet* excludeJet2, Bool_t doSearchPerpendicular);
   Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius);
   Double_t    GetPtHard();
+  Double_t    GetPythiaTrials();
   Int_t       GetPtHardBin();
   void        GetPerpendicularCone(Double_t vecPhi, Double_t vecTheta, Double_t& conePt);
 
@@ -104,7 +108,6 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   template <class T> T* AddHistogram2D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, Int_t yBins = 100, Double_t yMin = 0.0, Double_t yMax = 20.0, const char* xTitle = "x axis", const char* yTitle = "y axis", const char* zTitle = "z axis");
 
   // ######### STANDARD FUNCTIONS
-  Bool_t    Notify();
   void      Calculate(AliVEvent* event);
   void      ExecOnce();
   void      Init ();
@@ -120,6 +123,8 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   Bool_t              fHasJets;               // trigger if jets are actually valid
   Bool_t              fHasBackgroundJets;     // trigger if background is actually valid
   Bool_t              fIsMC;                  // trigger if data is MC (for naming reasons)
+  Bool_t              fUseVertexCut;          // trigger if vertex cut should be done
+  Bool_t              fUsePileUpCut;          // trigger if pileup cut should be done
 
   // ########## SOURCE INFORMATION
   TClonesArray*       fJetArray;              //! object containing the jets
