@@ -70,6 +70,45 @@ void CheckCommutator(const char * inputCharge="SC_NeCO2_eps5_50kHz.root"){
   fdiffXY1->GetYaxis()->SetTitle("y (cm)");
   fdiffXY1->GetZaxis()->SetTitle("#delta R#Phi (cm)");
   fdiffXY1->Draw("colz");
+  //
+  //
+  //
+  
+ 
+
+}
+
+void DrawFuncions(){
+    AliTPCSpaceCharge3D *spaceCharge = new AliTPCSpaceCharge3D;
+  spaceCharge->SetSCDataFileName("SpaceCharge.root");
+  spaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
+  //spaceCharge->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
+  spaceCharge->InitSpaceCharge3DDistortion();
+  spaceCharge->CreateHistoSCinZR(0.,50,50)->Draw("surf1");
+  spaceCharge->CreateHistoDRPhiinZR(0,100,100)->Draw("colz"); 
+  ocdb="local://$ALICE_ROOT/OCDB/";
+  AliCDBManager::Instance()->SetDefaultStorage(ocdb);
+  AliCDBManager::Instance()->SetRun(0);   
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));   
+  spaceCharge->AddVisualCorrection(spaceCharge,1); 
+  //
+  // 
+  //
+  TCanvas *canvasFun = new TCanvas("canvasFun","canvasFun",600,500);
+  gStyle->SetOptTitle(1);
+  TF1 * fdiffR = new TF1("fdiffR", "(AliTPCCorrection::GetCorrXYZ(x,0,10,0,1)-AliTPCCorrection::GetCorrXYZ(x+1,0,10,0,1))",80,245);
+  fdiffR->SetNpx(1000);
+  fdiffR->GetXaxis()->SetTitle("R (cm)");
+  fdiffR->GetYaxis()->SetTitle("#Delta_{R}(R)-#Delta_{R}(R+1) (cm)");
+  fdiffR->Draw();
+  canvas->WriteAs("radialShrinking.png");
+
+  TF1 * fdiffSigmaR = new TF1("fdiffSigmaR", "(AliTPCCorrection::GetCorrXYZ(x,0,10,0,1)-AliTPCCorrection::GetCorrXYZ(x,0,10-7,0,1))",80,245);
+  fdiffSigmaR->SetNpx(1000);
+  fdiffSigmaR->GetXaxis()->SetTitle("R (cm)");
+  fdiffSigmaR->GetYaxis()->SetTitle("#Delta_{R}(R,Z)-#Delta_{R}(R,Z+#sigma_{z}) (cm)");
+  fdiffSigmaR->Draw();
+  canvas->WriteAs("radialSigmaR.png");
 
 }
 
@@ -89,6 +128,8 @@ void spaceChargeSimulationTrack(){
   AliCDBManager::Instance()->SetDefaultStorage(ocdb);
   AliCDBManager::Instance()->SetRun(0);   
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));   
+  spaceCharge->AddVisualCorrection(spaceCharge,1); 
+  TF1 * fdiffR = new TF1("fdiffR", "(AliTPCCorrection::GetCorrXYZ(x,0,10,0,1)-AliTPCCorrection::GetCorrXYZ(x+1,0,10,0,1))",80,245);
   //
   // 2. MC generation of the tracks
   //    Distort track and fit distroted track within AliTPCorrection::FitDistortedTrack(*t, refX, dir,  pcstream)
@@ -157,14 +198,43 @@ void DrawDistortions(){
   TTree * tree = (TTree*)f->Get("fitDistortSpaceCharge3D");
   tree->SetMarkerStyle(25);
   tree->SetMarkerSize(0.4);  
-  tree->Draw("track1.GetY()-track0.GetY():abs(track0.GetSigned1Pt()):track0.GetTgl()","track0.GetSigned1Pt()>0&&track0.GetTgl()>0","colz",10000);
-tree->Draw("track1.GetY()-track0.GetY():track0.GetSigned1Pt():track0.GetTgl()","track0.GetTgl()>0","colz",10000);
 
-//
- tree->SetMarkerSize(0.25);
- tree->SetMarkerColor(1);
- tree->Draw("point0.fY:point0.fX","point0.fX!=0","",20,0);
- tree->SetMarkerColor(2);
- tree->Draw("point1.fY:point1.fX","point1.fX!=0","same",20,0);
+  //
+  // DCA as function of theta and 1/pt 
+  //
+  TCanvas *c1 = new TCanvas();
+  tree->Draw("track1.GetY()-track0.GetY():track0.GetSigned1Pt():track0.GetTgl()","track0.GetTgl()>0","colz",10000);
+  // Get the histogram and set axis titles
+  TH2F *htemp = (TH2F*)gPad->GetPrimitive("htemp");
+  htemp->GetXaxis()->SetTitle("1/p_{T}");
+  htemp->GetYaxis()->SetTitle("#Delta DCA");
+  htemp->GetZaxis()->SetTitle("tan(#lambda)");
+  htemp->SetTitle("DCA difference");
+  c1->Update();
+  c1->SaveAs("DCAdifference.eps")
+
+  //
+  tree->Draw("track1.GetSigned1Pt()-track0.GetSigned1Pt():track0.GetSigned1Pt():track0.GetTgl()","track0.GetTgl()>0","colz",10000);
+  htemp = (TH2F*)gPad->GetPrimitive("htemp");
+  htemp->GetXaxis()->SetTitle("1/p_{T}");
+  htemp->GetYaxis()->SetTitle("#Delta 1/pT (1/GeV/c)");
+  htemp->GetZaxis()->SetTitle("tan(#lambda)");
+  htemp->SetTitle("1/pT difference");
+  c1->Update();
+  c1->SaveAs("1Ptdifference.eps")
+  //
+  // 
+  TCanvas *canvasEvent = new TCanvas("canvasEvent","canvasEvent",600,500);
+  tree->SetMarkerSize(0.25);
+  tree->SetMarkerColor(1);
+  tree->Draw("point0.fY:point0.fX","point0.fX!=0","",40,0);
+  tree->SetMarkerColor(2);
+  tree->Draw("point1.fY:point1.fX","point1.fX!=0","same",40,0);
+  htemp = (TH2F*)gPad->GetPrimitive("htemp");
+  htemp->GetXaxis()->SetTitle("x (cm)");
+  htemp->GetYaxis()->SetTitle("y (cm)");
+  htemp->SetTitle("Event");
+  c1->Update();
+  c1->SaveAs("Event.eps")
 
 }
