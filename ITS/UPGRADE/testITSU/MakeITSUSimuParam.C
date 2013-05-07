@@ -31,7 +31,7 @@ const int kNLayers = 7;
 */
 const float kROShifts[kNLayers] = {0.5,0.5,0.5, -0.5,-0.5, 0.5,0.5};
 
-void MakeITSUSimuParam(Double_t qscale=1.5, Double_t sncut=5.0,const char* cdbURI="local://") {
+void MakeITSUSimuParam(const char* cdbURI="local://") {
   //========================================================================
   //
   // Steering macro for ITS simulation parameters
@@ -45,35 +45,35 @@ void MakeITSUSimuParam(Double_t qscale=1.5, Double_t sncut=5.0,const char* cdbUR
   // Select only one parameterziation... and don't forget to set 18 um thickness in Config.C !!!
   
   //____ MIMOSA32 P26 Response parameterzied by fit functions
-  //param = MakeITSUSimuParam_M32P26Func(qscale,sncut);
+  //param = MakeITSUSimuParam_M32P26Func(qscale,sncut); // ---> probably it will be removed later ... 
   
   //____ MIMOSA32 P26 Response parameterzied by map
-  param = MakeITSUSimuParam_M32P26Map(qscale,sncut);
+  param = MakeITSUSimuParam_M32P26Map(0.897417,5);
 
   //____ MIMOSA32ter P31 Response parameterzied by map //suggested!!! 
-  //param = MakeITSUSimuParam_M32terP31Map(qscale,sncut);
+  //param = MakeITSUSimuParam_M32terP31Map(1.37308,5);
   
   //____ MIMOSA32ter P31 Response parameterzied by map 1MRad irradiation
-  //param = MakeITSUSimuParam_M32terP31Map1MRad(qscale,sncut);
+  //param = MakeITSUSimuParam_M32terP31Map1MRad(1.427053,5);
   
   //____ MIMOSA32ter P31 Response parameterzied by map , 300kRad + 3e12 neq/cm2 irradiation
-  //param = MakeITSUSimuParam_M32terP31Map300kRad3e12(qscale,sncut);
+  //param = MakeITSUSimuParam_M32terP31Map300kRad3e12(1.481150,5);
     
   //____ MIMOSA32ter P31 Response parameterzied by map , 1MRad+ 1e13 neq/cm2 irradiation
-  //param = MakeITSUSimuParam_M32terP31Map1MRad1e13(qscale,sncut);
+  //param = MakeITSUSimuParam_M32terP31Map1MRad1e13(1.542050,5);
   
   
   //___ MIMOSA32 P26 , 300kRad + 3e12 neq/cm2 irradiation 30 deg
-  // param = MakeITSUSimuParam_M32P26Map300kRad3e12(qscale,sncut);
+  // param = MakeITSUSimuParam_M32P26Map300kRad3e12(0.493370,5);
   
   //____ MIMOSA32 P26 , 300kRad + 3e12 neq/cm2 irradiation 20 deg
-  //param = MakeITSUSimuParam_M32P26Map300kRad3e12_20deg(qscale,sncut);
+  //param = MakeITSUSimuParam_M32P26Map300kRad3e12_20deg(0.485547,5);
     
   //___ MIMOSA32 P26 ,  1MRad+ 1e13 neq/cm2 irradiation 30 deg
-  //param = MakeITSUSimuParam_M32P26Map1MRad1e13(qscale,sncut);
+  //param = MakeITSUSimuParam_M32P26Map1MRad1e13(0.439929,5);
     
-  //___ MIMOSA32 P26 ,  1MRad+ 1e13 neq/cm2 irradiation 30 deg
-  //param = MakeITSUSimuParam_M32P26Map1MRad1e13_20deg(qscale,sncut);
+  //___ MIMOSA32 P26 ,  1MRad+ 1e13 neq/cm2 irradiation 20 deg
+  //param = MakeITSUSimuParam_M32P26Map1MRad1e13_20deg(0.444916,5);
     
   
   
