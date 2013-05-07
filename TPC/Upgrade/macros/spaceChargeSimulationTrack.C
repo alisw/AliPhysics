@@ -74,12 +74,12 @@ void CheckCommutator(const char * inputCharge="SC_NeCO2_eps5_50kHz.root"){
 }
 
 
-void SimulateTrackDistortion(){
+void spaceChargeSimulationTrack(){
   //
   // 1. Initialzation form space charge maps
   //
   AliTPCSpaceCharge3D *spaceCharge = new AliTPCSpaceCharge3D;
-  spaceCharge->SetSCDataFileName("SC_NeCO2_eps5_50kHz.root");
+  spaceCharge->SetSCDataFileName("SpaceCharge.root");
   spaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
   //spaceCharge->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
   spaceCharge->InitSpaceCharge3DDistortion();
@@ -104,7 +104,7 @@ void SimulateTrackDistortion(){
   for(Int_t nt=0; nt<nTracks; nt++){
     Double_t phi = gRandom->Uniform(0.0, 2*TMath::Pi());
     Double_t eta = gRandom->Uniform(-etaCuts, etaCuts);
-    Double_t pt = fpt.GetRandom(); // momentum for f1
+    Double_t pt = 1/(gRandom->Rndm()*5+0.00001); // momentum for f1
     //   printf("phi %lf  eta %lf pt %lf\n",phi,eta,pt);
     Short_t sign=1;
     if(gRandom->Rndm() < 0.5){
@@ -135,9 +135,36 @@ void SimulateTrackDistortion(){
   tree->SetMarkerSize(0.4);
   
   //
-  // DCA distrotion example
+  // DCA distortion example
   //
-  tree->Draw("track1.GetY()-track0.GetY():track0.GetTgl():abs(track1.fP[4])","track1.fP[4]>0","colz",10000)
+  tree->Draw("track1.GetY()-track0.GetY():track0.GetTgl():abs(track0.fP[4])","track0.fP[4]>0","colz",10000);
+  tree->Draw("track1.GetTgl()-track0.GetTgl():track0.GetSigned1Pt():track0.GetTgl()","abs(track0.GetTgl()-0.5)<0.4","colz",10000);
 
+  /*
+    problems:
+    
+   */
 }
 
+/*
+ */
+
+void DrawDistortions(){
+  //
+  //
+  //
+  TFile * f = TFile::Open("trackDist.root");
+  TTree * tree = (TTree*)f->Get("fitDistortSpaceCharge3D");
+  tree->SetMarkerStyle(25);
+  tree->SetMarkerSize(0.4);  
+  tree->Draw("track1.GetY()-track0.GetY():abs(track0.GetSigned1Pt()):track0.GetTgl()","track0.GetSigned1Pt()>0&&track0.GetTgl()>0","colz",10000);
+tree->Draw("track1.GetY()-track0.GetY():track0.GetSigned1Pt():track0.GetTgl()","track0.GetTgl()>0","colz",10000);
+
+//
+ tree->SetMarkerSize(0.25);
+ tree->SetMarkerColor(1);
+ tree->Draw("point0.fY:point0.fX","point0.fX!=0","",20,0);
+ tree->SetMarkerColor(2);
+ tree->Draw("point1.fY:point1.fX","point1.fX!=0","same",20,0);
+
+}
