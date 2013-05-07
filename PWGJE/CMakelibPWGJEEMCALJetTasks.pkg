@@ -56,7 +56,6 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskFullpAJets.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskQualityAssurancePA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoVnModulation.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
