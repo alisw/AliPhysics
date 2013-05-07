@@ -34,10 +34,12 @@ set ( DHDR  JETANdevLinkDef.h)
 set(FASTJET_ROOT $ENV{FASTJET_ROOT})
 
 if(FASTJET_ROOT)
-  set ( EDEFINE -isystem${FASTJET_ROOT}/include)
+  set (FASTJET_INC ${FASTJET_ROOT}/include)
 else()
-  set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet)
+  set (FASTJET_INC ${ALICE_ROOT}/JETAN/fastjet)
 endif(FASTJET_ROOT)
+
+set ( EDEFINE -isystem${FASTJET_INC})
 
 set ( EINCLUDE  ANALYSIS  OADB)
 
