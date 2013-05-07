@@ -42,7 +42,7 @@
 
 
 #include "AliAnalysisTaskChargedJetsPA.h"
-using std::min;
+
 //TODO: Not accessing the particles when using MC
 //TODO: FillHistogram can be done better with virtual TH1(?)
 ClassImp(AliAnalysisTaskChargedJetsPA)
@@ -75,6 +75,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
     }
 
     // ######## Jet stuff
+    AddHistogram2D<TH2D>("hJetConstituentPt", "Jet constituents p_{T} distribution", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
     AddHistogram1D<TH1D>("hJetCountAll", "Number of Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
     AddHistogram1D<TH1D>("hJetCountAccepted", "Number of accepted Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
     AddHistogram1D<TH1D>("hLeadingJetPt", "Leading jet p_{T}", "", 500,  0, 100, "p_{T} (GeV/c)","dN^{Jets}/dp_{T}");
@@ -94,8 +95,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
     // ########## Default background estimates
     AddHistogram2D<TH2D>("hKTBackgroundImprovedCMS", "KT background density (Improved CMS approach)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
     AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMS", "Background fluctuations #delta p_{T} (KT, Improved CMS-like)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtNoBackground", "Background fluctuations #delta p_{T} (No background)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtNoBackgroundNoEmptyCones", "Background fluctuations #delta p_{T} (No background, no empty cones)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMSPartialExclusion", "Background fluctuations #delta p_{T} (KT, Improved CMS-like, partial jet exclusion)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
 
     AddHistogram2D<TProfile2D>("hJetPtSubtractedRhoKTImprovedCMS", "Mean subtracted KT (CMS w/o signal) background from jets", "COLZ", 600, 0, 150, fNumberOfCentralityBins, 0, 100, "Jet p_{T}", "Centrality", "#rho mean");
     AddHistogram2D<TH2D>("hJetPtSubtractedRhoKTImprovedCMS020", "Mean subtracted KT (CMS w/o signal) background from jets, 0-20", "COLZ", 600, 0, 150, 400,0.,40., "Jet p_{T} (GeV/c)", "#rho (GeV/c)", "dN^{Events}/dp_{T}#rho");
@@ -130,16 +130,18 @@ void AliAnalysisTaskChargedJetsPA::Init()
       AddHistogram2D<TH2D>("hDeltaPtKTTrackLike", "Background fluctuations #delta p_{T} (KT, track-like)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
       AddHistogram2D<TH2D>("hDeltaPtTR", "Background fluctuations #delta p_{T} (TR, cone R=0.6)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
       AddHistogram2D<TH2D>("hDeltaPtRC", "Background fluctuations #delta p_{T} (RC)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtNoBackground", "Background fluctuations #delta p_{T} (No background)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtNoBackgroundNoEmptyCones", "Background fluctuations #delta p_{T} (No background, no empty cones)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
 
 
       // ########## Profiles for background means vs. centrality
-      AddHistogram1D<TProfile>("hKTMeanBackgroundPbPb", "KT background mean (PbPb approach w/o ghosts)", "", 100, 0, 100, "Centrality", "#rho mean");
-      AddHistogram1D<TProfile>("hKTMeanBackgroundPbPbWithGhosts", "KT background mean (PbPb approach)", "", 100, 0, 100, "Centrality", "#rho mean");
-      AddHistogram1D<TProfile>("hKTMeanBackgroundCMS", "KT background mean (CMS approach)", "", 100, 0, 100, "Centrality", "#rho mean");
-      AddHistogram1D<TProfile>("hKTMeanBackgroundMean", "KT background mean (Mean approach)", "",  100, 0, 100, "Centrality", "#rho mean");
-      AddHistogram1D<TProfile>("hKTMeanBackgroundTPC", "KT background mean (Track-like approach)", "", 100, 0, 100, "Centrality", "#rho mean");
-      AddHistogram1D<TProfile>("hTRMeanBackground", "TR background mean", "", 100, 0, 100, "Centrality", "#rho mean");
-      AddHistogram1D<TProfile>("hRCMeanBackground", "RC background mean", "", 100, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hKTMeanBackgroundPbPb", "KT background mean (PbPb approach w/o ghosts)", "", fNumberOfCentralityBins, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hKTMeanBackgroundPbPbWithGhosts", "KT background mean (PbPb approach)", "", fNumberOfCentralityBins, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hKTMeanBackgroundCMS", "KT background mean (CMS approach)", "", fNumberOfCentralityBins, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hKTMeanBackgroundMean", "KT background mean (Mean approach)", "",  fNumberOfCentralityBins, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hKTMeanBackgroundTPC", "KT background mean (Track-like approach)", "", fNumberOfCentralityBins, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hTRMeanBackground", "TR background mean", "", fNumberOfCentralityBins, 0, 100, "Centrality", "#rho mean");
+      AddHistogram1D<TProfile>("hRCMeanBackground", "RC background mean", "", fNumberOfCentralityBins, 0, 100, "Centrality", "#rho mean");
     }
   }
 
@@ -147,25 +149,24 @@ void AliAnalysisTaskChargedJetsPA::Init()
   // NOTE: Track & Cluster & QA histograms
   if (fAnalyzeQA)
   {
-    AddHistogram1D<TH1D>("hNumberEvents", "Number of events (0 = before, 1 = after vertex cuts)", "", 2, 0, 2, "#Delta z(cm)","N^{Events}/cut");
     AddHistogram1D<TH1D>("hVertexX", "X distribution of the vertex", "", 2000, -1., 1., "#Delta x(cm)","dN^{Events}/dx");
     AddHistogram1D<TH1D>("hVertexY", "Y distribution of the vertex", "", 2000, -1., 1., "#Delta y(cm)","dN^{Events}/dy");
     AddHistogram2D<TH2D>("hVertexXY", "XY distribution of the vertex", "COLZ", 500, -1., 1., 500, -1., 1.,"#Delta x(cm)", "#Delta y(cm)","dN^{Events}/dxdy");
     AddHistogram1D<TH1D>("hVertexZ", "Z distribution of the vertex", "", 100, -10., 10., "#Delta z(cm)","dN^{Events}/dz");
     AddHistogram1D<TH1D>("hVertexR", "R distribution of the vertex", "", 100, 0., 1., "#Delta r(cm)","dN^{Events}/dr");
-    AddHistogram1D<TH1D>("hCentralityV0M", "Centrality distribution V0M", "", 100, 0., 100., "Centrality","dN^{Events}");
-    AddHistogram1D<TH1D>("hCentralityV0A", "Centrality distribution V0A", "", 100, 0., 100., "Centrality","dN^{Events}");
-    AddHistogram1D<TH1D>("hCentralityV0C", "Centrality distribution V0C", "", 100, 0., 100., "Centrality","dN^{Events}");
+    AddHistogram1D<TH1D>("hCentralityV0M", "Centrality distribution V0M", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
+    AddHistogram1D<TH1D>("hCentralityV0A", "Centrality distribution V0A", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
+    AddHistogram1D<TH1D>("hCentralityV0C", "Centrality distribution V0C", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
 
-    AddHistogram2D<TH2D>("hTrackCountAcc", "Number of tracks in acceptance vs. centrality", "LEGO2", 750, 0., 750., 100, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
-    AddHistogram1D<TH1D>("hTrackPt", "Tracks p_{T} distribution", "", 1000, 0., 250., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");
-    AddHistogram1D<TH1D>("hTrackPtNegEta", "Tracks p_{T} distribution (negative #eta)", "", 1000, 0., 250., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");
-    AddHistogram1D<TH1D>("hTrackPtPosEta", "Tracks p_{T} distribution (positive #eta)", "", 1000, 0., 250., "p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");      
+    AddHistogram2D<TH2D>("hTrackCountAcc", "Number of tracks in acceptance vs. centrality", "LEGO2", 750, 0., 750., fNumberOfCentralityBins, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
+    AddHistogram2D<TH2D>("hTrackPt", "Tracks p_{T} distribution", "", 1000, 0., 250., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
+    AddHistogram2D<TH2D>("hTrackPtNegEta", "Tracks p_{T} distribution (negative #eta)", "", 1000, 0., 250., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
+    AddHistogram2D<TH2D>("hTrackPtPosEta", "Tracks p_{T} distribution (positive #eta)", "", 1000, 0., 250., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
     AddHistogram1D<TH1D>("hTrackCharge", "Charge", "", 11, -5, 5, "Charge (e)","dN^{Tracks}/dq");
     AddHistogram1D<TH1D>("hTrackPhi", "Track #phi distribution", "", 360, 0, TMath::TwoPi(), "#phi","dN^{Tracks}/d#phi");
     AddHistogram2D<TH2D>("hTrackPhiEta", "Track angular distribution", "LEGO2", 100, 0., 2*TMath::Pi(),100, -2.5, 2.5, "#phi","#eta","dN^{Tracks}/(d#phi d#eta)");
 
-    AddHistogram2D<TH2D>("hTrackPhiPtCut", "Track #phi distribution for different pT cuts", "LEGO2", 360, 0, TMath::TwoPi(), 20, 0, 20, "#phi", "p_{T} lower cut", "dN^{Tracks}/d#phi dp_{T}");      
+    AddHistogram2D<TH2D>("hTrackPhiPtCut", "Track #phi distribution for different pT cuts", "LEGO2", 360, 0, TMath::TwoPi(), 20, 0, 20, "#phi", "p_{T} lower cut", "dN^{Tracks}/d#phi dp_{T}");
     AddHistogram2D<TH2D>("hTrackPhiLabel", "Track #phi distribution in different labels", "LEGO2", 360, 0, TMath::TwoPi(), 3, 0, 3, "#phi", "Label", "dN^{Tracks}/d#phi");
     AddHistogram1D<TH1D>("hTrackEta", "Track #eta distribution", "", 180, -fTrackEtaWindow, +fTrackEtaWindow, "#eta","dN^{Tracks}/d#eta");
     if (fAnalyzeJets)
@@ -178,13 +179,10 @@ void AliAnalysisTaskChargedJetsPA::Init()
     }
   }
 
-
   // NOTE: Pythia histograms
   if (fAnalyzePythia)
   {
     AddHistogram1D<TH1D>("hPythiaPtHard", "Pythia p_{T} hard distribution", "", 2000, 0, 400, "p_{T} hard","dN^{Events}/dp_{T,hard}");
-    AddHistogram1D<TProfile>("hPythiaXSection", "Pythia cross section distribution", "", fNumPtHardBins+1, 0, fNumPtHardBins+1, "p_{T} hard bin","dN^{Events}/dp_{T,hard}");
-    AddHistogram1D<TH1D>("hPythiaNTrials", "Pythia trials (no correction for manual cuts)", "", fNumPtHardBins+1, 0, fNumPtHardBins+1, "p_{T} hard bin", "Trials");
   }
 
   // register Histograms
@@ -198,7 +196,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName) : AliAnalysisTaskSE(name), fOutputList(0), fAnalyzeJets(1), fAnalyzeQA(1), fAnalyzeBackground(1), fAnalyzeDeprecatedBackgrounds(1), fAnalyzePythia(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fUsePtHardBin(-1), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.6), fNumberRandCones(8), fNumberExcludedJets(-1), fDijetMaxAngleDeviation(10.0), fPhysicalJetRadius(0.6), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinJetPt(1.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinDijetLeadingPt(10.0), fNumberOfCentralityBins(100), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0), fIsDEBUG(0)
+AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName) : AliAnalysisTaskSE(name), fOutputList(0), fAnalyzeJets(1), fAnalyzeQA(1), fAnalyzeBackground(1), fAnalyzeDeprecatedBackgrounds(1), fAnalyzePythia(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fUseVertexCut(1), fUsePileUpCut(1), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fUsePtHardBin(-1), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.6), fNumberRandCones(8), fNumberExcludedJets(-1), fDijetMaxAngleDeviation(10.0), fPhysicalJetRadius(0.6), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinJetPt(1.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinDijetLeadingPt(10.0), fNumberOfCentralityBins(100), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0), fIsDEBUG(0)
 {
   #ifdef DEBUGMODE
     AliInfo("Calling constructor.");
@@ -232,6 +230,7 @@ AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, con
   for(Int_t i=0;i<1024;i++)
     fSignalJets[i] = NULL;
 
+
   #ifdef DEBUGMODE
     AliInfo("Constructor done.");
   #endif
@@ -257,38 +256,78 @@ inline Double_t AliAnalysisTaskChargedJetsPA::GetConePt(Double_t eta, Double_t p
 //________________________________________________________________________
 inline Double_t AliAnalysisTaskChargedJetsPA::GetPtHard()
 {
-  Double_t tmpPtHard = -1.0;
-
-  if (!MCEvent())
-    AliError("MCEvent not accessible although demanded!");
-  else
-  {
-    AliGenPythiaEventHeader* pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+  #ifdef DEBUGMODE
+    AliInfo("Starting GetPtHard.");
+  #endif
+  AliGenPythiaEventHeader* pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+  if (MCEvent()) 
     if (!pythiaHeader)
     {
       // Check if AOD
       AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
-      for(UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++)
+      if (aodMCH)
       {
-        pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
-        if(pythiaHeader) break;
+        for(UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++)
+        {
+          pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+          if (pythiaHeader) break;
+        }
       }
-      if(!pythiaHeader)
-        AliError("Pythia Header not accessible!");
-      else
-        tmpPtHard = pythiaHeader->GetPtHard();
     }
-    else
-      tmpPtHard = pythiaHeader->GetPtHard();
-  }
-  return tmpPtHard;
+
+  #ifdef DEBUGMODE
+    AliInfo("Ending GetPtHard.");
+  #endif
+  if (pythiaHeader)
+    return pythiaHeader->GetPtHard();
+
+  AliWarning(Form("In task %s: GetPtHard() failed!", GetName()));
+  return -1.0;
 }
+
+
+//________________________________________________________________________
+inline Double_t AliAnalysisTaskChargedJetsPA::GetPythiaTrials()
+{
+  #ifdef DEBUGMODE
+    AliInfo("Starting GetPythiaTrials.");
+  #endif
+  AliGenPythiaEventHeader* pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+  if (MCEvent()) 
+    if (!pythiaHeader)
+    {
+      // Check if AOD
+      AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+      if (aodMCH)
+      {
+        for(UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++)
+        {
+          pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+          if (pythiaHeader) break;
+        }
+      }
+    }
+
+  #ifdef DEBUGMODE
+    AliInfo("Ending GetPythiaTrials.");
+  #endif
+  if (pythiaHeader)
+    return pythiaHeader->Trials();
+
+  AliWarning(Form("In task %s: GetPythiaTrials() failed!", GetName()));
+  return -1.0;
+}
+
 
 
 //________________________________________________________________________
 inline Int_t AliAnalysisTaskChargedJetsPA::GetPtHardBin()
 {
+  #ifdef DEBUGMODE
+    AliInfo("Starting GetPtHardBin.");
+  #endif
   // ########## PT HARD BIN EDGES
   const Int_t kPtHardLowerEdges[] =  { 0, 5,11,21,36,57, 84,117,152,191,234};
   const Int_t kPtHardHigherEdges[] = { 5,11,21,36,57,84,117,152,191,234,1000000};
@@ -300,6 +339,9 @@ inline Int_t AliAnalysisTaskChargedJetsPA::GetPtHardBin()
     if (tmpPtHard >= kPtHardLowerEdges[tmpPtHardBin] && tmpPtHard < kPtHardHigherEdges[tmpPtHardBin])
       break;
 
+  #ifdef DEBUGMODE
+    AliInfo("Ending GetPtHardBin.");
+  #endif
   return tmpPtHardBin;
 }
 
@@ -329,8 +371,6 @@ inline Bool_t AliAnalysisTaskChargedJetsPA::IsTrackInAcceptance(AliVParticle* tr
     if (TMath::Abs(track->Eta()) <= fTrackEtaWindow)
       if (track->Pt() >= fMinTrackPt)
         return kTRUE;
-  if(fIsMC)
-    return kTRUE;
 
   return kFALSE;
 }
@@ -371,8 +411,6 @@ inline Bool_t AliAnalysisTaskChargedJetsPA::IsBackgroundJetInAcceptance(AliEmcal
     if (TMath::Abs(jet->Eta()) <= fBackgroundJetEtaWindow)
       if (jet->Pt() >= fMinBackgroundJetPt)
         return kTRUE;
-  if(fIsMC)
-    return kTRUE;
 
   return kFALSE;
 }
@@ -385,9 +423,6 @@ inline Bool_t AliAnalysisTaskChargedJetsPA::IsSignalJetInAcceptance(AliEmcalJet 
       if (jet->Pt() >= fMinJetPt)
         if (jet->Area() >= fMinJetArea)
           return kTRUE;
-  if(fIsMC)
-    if(jet->Area() >= fMinJetArea)
-      return kTRUE;
 
   return kFALSE;
 }
@@ -613,7 +648,7 @@ Double_t AliAnalysisTaskChargedJetsPA::GetCorrectedJetPt(AliEmcalJet* jet, Doubl
 
   if(!jet)
   {
-    AliError("Jet pointer passed to GetCorrectedJet() not valid!");
+    AliError("Jet pointer passed to GetCorrectedJetPt() not valid!");
     return -1.0;
   }
 
@@ -656,31 +691,36 @@ void AliAnalysisTaskChargedJetsPA::GetDeltaPt(Double_t& deltaPt, Double_t rho, B
   Double_t tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
 
   // if there is a jet, check for overlap if demanded
-  if(leadingJetExclusion)
+  if(leadingJetExclusion && fNumberSignalJets)
   {
-    for (Int_t i = 0; i<fNumberSignalJets; i++)
+    AliEmcalJet* tmpLeading = dynamic_cast<AliEmcalJet*>(fJetArray->At(0));
+    // Get leading jet (regardless of pT)
+    for (Int_t i = 1; i<fJetArray->GetEntries(); i++)
     {
-      AliEmcalJet* tmpJet = fSignalJets[i];
+      AliEmcalJet* tmpJet = static_cast<AliEmcalJet*>(fJetArray->At(i));
+      // if jet is in acceptance and higher, take as new leading
+      if (tmpJet)
+        if ((TMath::Abs(tmpJet->Eta()) <= fSignalJetEtaWindow) && (tmpJet->Area() >= fMinJetArea))
+          if((!tmpLeading) || (tmpJet->Pt() > tmpLeading->Pt()))
+            tmpLeading = tmpJet;
+    }
+  
+    Double_t excludedJetPhi = tmpLeading->Phi();
+    Double_t excludedJetEta = tmpLeading->Eta();
+    Double_t tmpDeltaPhi = GetDeltaPhi(tmpRandConePhi, excludedJetPhi);
 
-      Double_t excludedJetPhi = tmpJet->Phi();
-      Double_t excludedJetEta = tmpJet->Eta();
-      Double_t tmpDeltaPhi = GetDeltaPhi(tmpRandConePhi, excludedJetPhi);
+    // Check, if cone has overlap with jet
+    if ( tmpDeltaPhi*tmpDeltaPhi + TMath::Abs(tmpRandConeEta-excludedJetEta)*TMath::Abs(tmpRandConeEta-excludedJetEta) <= fRandConeRadius*fRandConeRadius)
+    {
+      // Define probability to exclude the RC
+      Double_t probability = 1 - (fNumberSignalJets-1)/fNumberSignalJets;
 
-      // Check, if cone has overlap with jet
-      if ( tmpDeltaPhi*tmpDeltaPhi + TMath::Abs(tmpRandConeEta-excludedJetEta)*TMath::Abs(tmpRandConeEta-excludedJetEta) <= fRandConeRadius*fRandConeRadius)
-      {
-        // Define probability to exclude the RC
-        Double_t probability = 1 - (fNumberSignalJets-1)/fNumberSignalJets;
-
-        // Only exclude cone with a given probability
-        if (fRandom->Rndm()<=probability)
-        {
-          coneValid = kFALSE;
-          break;
-        }
-      }
+      // Only exclude cone with a given probability
+      if (fRandom->Rndm()<=probability)
+        coneValid = kFALSE;
     }
   }
+
 
   // Get the cones' pt and calculate delta pt
   if (coneValid)
@@ -817,7 +857,10 @@ void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensity(Int_t numberExcludeLea
 //    cout << Form("My task brings rhoRaw=%1.4f, Occupancy=%1.4f, rhoCMS=%1.4f", TMath::Median(rhoCMSJetCount, tmpRhoCMS),tmpCoveredArea/tmpSummedArea, rhoCMS) << endl; // DEBUG
   }
   if (rhoImprovedCMSJetCount > 0)
+  {
     rhoImprovedCMS = TMath::Median(rhoImprovedCMSJetCount, tmpRhoImprovedCMS) * tmpCoveredArea/tmpSummedArea;
+//    cout << Form("==R== Using rho=%E, coverage=%E(%E/%E)", rhoImprovedCMS, tmpCoveredArea/tmpSummedArea, tmpCoveredArea,tmpSummedArea) << endl;
+  }
   if (rhoMeanJetCount > 0)
     rhoMean = TMath::Mean(rhoMeanJetCount, tmpRhoMean);
 
@@ -1124,9 +1167,15 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   FillHistogram("hNumberEvents", 0.5); // number of events before manual cuts
 
   if(!fIsMC)
-    if(!fHelperClass->IsVertexSelected2013pA(event))
-      return;
- 
+  {
+    if(fUseVertexCut)
+      if(!fHelperClass->IsVertexSelected2013pA(event))
+        return;
+    if(fUsePileUpCut)
+      if(!fHelperClass->IsPileUpEvent(event))
+        return;
+  }
+
   FillHistogram("hNumberEvents", 1.5); // number of events after manual cuts
 
   #ifdef DEBUGMODE
@@ -1211,11 +1260,11 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
       if (IsTrackInAcceptance(track))
       {
         FillHistogram("hTrackPhiEta", track->Phi(),track->Eta(), 1);
-        FillHistogram("hTrackPt", track->Pt());
+        FillHistogram("hTrackPt", track->Pt(), centralityPercentile);
         if(track->Eta() >= 0)
-          FillHistogram("hTrackPtPosEta", track->Pt());
+          FillHistogram("hTrackPtPosEta", track->Pt(), centralityPercentile);
         else
-          FillHistogram("hTrackPtNegEta", track->Pt());        
+          FillHistogram("hTrackPtNegEta", track->Pt(), centralityPercentile);
                 
         FillHistogram("hTrackEta", track->Eta());
         FillHistogram("hTrackPhi", track->Phi());
@@ -1262,6 +1311,9 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         FillHistogram("hJetPtBgrdSubtractedKTMean", GetCorrectedJetPt(tmpJet, backgroundKTMean), centralityPercentile);
         FillHistogram("hJetPtBgrdSubtractedKTTrackLike", GetCorrectedJetPt(tmpJet, backgroundKTTrackLike), centralityPercentile);
       }
+
+      for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
+        FillHistogram("hJetConstituentPt", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
 
       if(fAnalyzeQA)
       {
@@ -1352,6 +1404,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
 
     Double_t tmpDeltaPtNoBackground = 0.0;
     Double_t tmpDeltaPtKTImprovedCMS = 0.0;
+    Double_t tmpDeltaPtKTImprovedCMSPartialExclusion = 0.0;
 
     Double_t tmpDeltaPtKTPbPb = 0.0;
     Double_t tmpDeltaPtKTPbPbWithGhosts = 0.0;
@@ -1363,6 +1416,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
 
     GetDeltaPt(tmpDeltaPtNoBackground, 0.0);
     GetDeltaPt(tmpDeltaPtKTImprovedCMS, backgroundKTImprovedCMS);
+    GetDeltaPt(tmpDeltaPtKTImprovedCMSPartialExclusion, backgroundKTImprovedCMS, kTRUE);
 
     GetDeltaPt(tmpDeltaPtKTPbPb, backgroundKTPbPb);
     GetDeltaPt(tmpDeltaPtKTPbPbWithGhosts, backgroundKTPbPbWithGhosts);
@@ -1377,10 +1431,9 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
 
     if(tmpDeltaPtKTImprovedCMS > -10000.0)
       FillHistogram("hDeltaPtKTImprovedCMS", tmpDeltaPtKTImprovedCMS, centralityPercentile);
-    if(tmpDeltaPtNoBackground > -10000.0)
-      FillHistogram("hDeltaPtNoBackground", tmpDeltaPtNoBackground, centralityPercentile);
-    if(tmpDeltaPtNoBackground > 0.000001)
-      FillHistogram("hDeltaPtNoBackgroundNoEmptyCones", tmpDeltaPtNoBackground, centralityPercentile);
+    if(tmpDeltaPtKTImprovedCMSPartialExclusion > -10000.0)
+      FillHistogram("hDeltaPtKTImprovedCMSPartialExclusion", tmpDeltaPtKTImprovedCMSPartialExclusion, centralityPercentile);
+
 
     if(fAnalyzeDeprecatedBackgrounds)
     {
@@ -1399,6 +1452,12 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         FillHistogram("hDeltaPtRC", tmpDeltaPtRC, centralityPercentile);
       if(tmpDeltaPtTR > -10000.0)
         FillHistogram("hDeltaPtTR", tmpDeltaPtTR, centralityPercentile);
+
+      if(tmpDeltaPtNoBackground > -10000.0)
+        FillHistogram("hDeltaPtNoBackground", tmpDeltaPtNoBackground, centralityPercentile);
+      if(tmpDeltaPtNoBackground > 0.000001)
+        FillHistogram("hDeltaPtNoBackgroundNoEmptyCones", tmpDeltaPtNoBackground, centralityPercentile);
+
     }
   }
   
@@ -1410,10 +1469,10 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   if(fAnalyzePythia)
   {
     FillHistogram("hPythiaPtHard", GetPtHard());
-    FillHistogram("hPythiaNTrials", GetPtHardBin()+0.1, fTrials);
+    FillHistogram("hPythiaNTrials", GetPtHardBin()+0.1, GetPythiaTrials());
     FillHistogram("hPythiaXSection", GetPtHardBin()+0.1, fCrossSection);
 
-    #ifdef DEBUGMODE
+        #ifdef DEBUGMODE
       AliInfo("Calculate()::Pythia done.");
     #endif
   }
@@ -1423,13 +1482,13 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskChargedJetsPA::Notify()
+Bool_t AliAnalysisTaskChargedJetsPA::UserNotify()
 {
   // Implemented Notify() to read the cross sections
   // and number of trials from pyxsec.root
   // 
   #ifdef DEBUGMODE
-    AliInfo("Notify started.");
+    AliInfo("UserNotify started.");
   #endif
 
   if(fAnalyzePythia)
@@ -1489,12 +1548,14 @@ Bool_t AliAnalysisTaskChargedJetsPA::Notify()
       fCrossSection = xsection;
       fxsec->Close();
     }
+    cout << "========== Got xsec: " << fCrossSection << endl;
     #ifdef DEBUGMODE
-      AliInfo("Notify ended.");
+      AliInfo("UserNotify ended.");
     #endif
   }
   return kTRUE;
 }
+
 
 //________________________________________________________________________
 inline Double_t AliAnalysisTaskChargedJetsPA::EtaToTheta(Double_t arg)
@@ -1575,7 +1636,7 @@ inline void AliAnalysisTaskChargedJetsPA::FillHistogram(const char * key, Double
   TH1* tmpHist = static_cast<TH1*>(fOutputList->FindObject(GetHistoName(key)));
   if(!tmpHist)
   {
-    AliWarning(Form("Cannot find histogram <%s> ",key)) ;
+    AliError(Form("Cannot find histogram <%s> ",key)) ;
     return;
   }
 
@@ -1588,7 +1649,7 @@ inline void AliAnalysisTaskChargedJetsPA::FillHistogram(const char * key, Double
   TH1* tmpHist = static_cast<TH1*>(fOutputList->FindObject(GetHistoName(key)));
   if(!tmpHist)
   {
-    AliWarning(Form("Cannot find histogram <%s> ",key));
+    AliError(Form("Cannot find histogram <%s> ",key));
     return;
   }
 
@@ -1604,7 +1665,7 @@ inline void AliAnalysisTaskChargedJetsPA::FillHistogram(const char * key, Double
   TH2* tmpHist = static_cast<TH2*>(fOutputList->FindObject(GetHistoName(key)));
   if(!tmpHist)
   {
-    AliWarning(Form("Cannot find histogram <%s> ",key));
+    AliError(Form("Cannot find histogram <%s> ",key));
     return;
   }
   
@@ -1675,9 +1736,15 @@ void AliAnalysisTaskChargedJetsPA::UserCreateOutputObjects()
   // Note: Saving to file with e.g. OpenFile(0) is must be before creating other objects.
 
   fRandom = new TRandom3(0);
-  
+
+
   fOutputList = new TList();
   fOutputList->SetOwner(); // otherwise it produces leaks in merging
+
+  // NOTE: Pythia histograms
+  AddHistogram1D<TProfile>("hPythiaXSection", "Pythia cross section distribution", "", fNumPtHardBins+1, 0, fNumPtHardBins+1, "p_{T} hard bin","dN^{Events}/dp_{T,hard}");
+  AddHistogram1D<TH1D>("hPythiaNTrials", "Pythia trials (no correction for manual cuts)", "", fNumPtHardBins+1, 0, fNumPtHardBins+1, "p_{T} hard bin", "Trials");
+
 
   PostData(1, fOutputList);
 }
