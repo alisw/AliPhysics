@@ -40,13 +40,14 @@ set ( SRCS
 set(FASTJET_ROOT $ENV{FASTJET_ROOT})
 
 if(FASTJET_ROOT)
-  set ( EDEFINE -isystem${FASTJET_ROOT}/include )
+  set (FASTJET_INC ${FASTJET_ROOT}/include)
 else()
-  set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet)
+  set (FASTJET_INC ${ALICE_ROOT}/JETAN/fastjet)
 endif(FASTJET_ROOT)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  FASTJETANLinkDef.h)
 
-set ( EINCLUDE  JETAN/fastjet ANALYSIS STEER/AOD STEER/STEERBase)
+set ( EDEFINE -isystem${FASTJET_INC})
+set ( EINCLUDE  ${FASTJET_INC} ANALYSIS STEER/AOD STEER/STEERBase)
