@@ -451,7 +451,7 @@ Double_t AliVertexingHFUtils::GetCorrectedNtracklets(TProfile* estimatorAvg, Dou
   //
 
   if(TMath::Abs(vtxZ)>10.0){
-    printf("ERROR: Z vertex out of range for correction of multiplicity\n");
+    //    printf("ERROR: Z vertex out of range for correction of multiplicity\n");
     return uncorrectedNacc;
   }
 
