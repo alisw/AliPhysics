@@ -230,145 +230,144 @@ private:
 	//== INVARIANT MASS DISTRIBUTIONS (ThnMother) ================================
 	//-- event characteristics
 	// number of charged primary particles - combined => can be w/ soft tracks
-	static const Int_t fgkNNcombined      = 2; // number of bins
-	static const Double_t fgkMinNcombined = 2; // lower border
-	static const Double_t fgkMaxNcombined = 4; // upper border (#bins + lower border)
+	static const Int_t fgkNNcombined;      // number of bins
+	static const Double_t fgkMinNcombined; // lower border
+	static const Double_t fgkMaxNcombined; // upper border (#bins + lower border)
 
 	// unlike sign or like sign charged?
-	static const Int_t fgkNCombCh      = 2; // kBinPPMM = number of bins
-	static const Double_t fgkMinCombCh = 1.; // kBinPM = lower border
-	static const Double_t fgkMaxCombCh = 3.; // kBinPPMM + kBinPM = upper border
+	static const Int_t fgkNCombCh;      // kBinPPMM = number of bins
+	static const Double_t fgkMinCombCh; // kBinPM = lower border
+	static const Double_t fgkMaxCombCh; // kBinPPMM + kBinPM = upper border
 
 	// two track PID, take care the enum changed from time to time
-	static const Int_t fgkNCombPID      = 13; // kBinPIDUnknown = number of bins
-	static const Double_t fgkMinCombPID = 1.; // kBinPionE = lower border
-	static const Double_t fgkMaxCombPID = 14.;// ...  = upper border
+	static const Int_t fgkNCombPID;      // kBinPIDUnknown = number of bins
+	static const Double_t fgkMinCombPID; // kBinPionE = lower border
+	static const Double_t fgkMaxCombPID; // ...  = upper border
 
 	// gap configuration, used for different detectors
-	static const Int_t fgkNGapConfig      = 4; // kBinNG = number of bins
-	static const Double_t fgkMinGapConfig = 1.; // kBinDG = lower border
-	static const Double_t fgkMaxGapConfig = 5.; // kBinNG + kBinDG = upper border
+	static const Int_t fgkNGapConfig;      // kBinNG = number of bins
+	static const Double_t fgkMinGapConfig; // kBinDG = lower border
+	static const Double_t fgkMaxGapConfig; // kBinNG + kBinDG = upper border
 
 	//-- mother kinematics
 	// invariant mass of the two-track system
-	static const Int_t fgkNMass      = 1024; // number of bins
-	static const Double_t fgkMinMass = 0.; // lower border
-	static const Double_t fgkMaxMass = 5.12; // upper border
+	static const Int_t fgkNMass;      // number of bins
+	static const Double_t fgkMinMass; // lower border
+	static const Double_t fgkMaxMass; // upper border
 
 	// transverse momentum of the two-track system
-	static const Int_t fgkNMotherPt      = 128;//10; // number of bins
-	static const Double_t fgkMinMotherPt = 0.; // lower border
-	static const Double_t fgkMaxMotherPt = .64; //6.4 //2; // upper border
+	static const Int_t fgkNMotherPt;      // number of bins
+	static const Double_t fgkMinMotherPt; // lower border
+	static const Double_t fgkMaxMotherPt; // upper border
 
 	// cosine theta* (opening angle of the two daugther tracks in the
 	// centre-of-mass system of the two-track/mother system)
 	// **no meaning full variable**
-	static const Int_t fgkNCTS      = 2; // number of bins
-	static const Double_t fgkMinCTS = -1.; // lower border
-	static const Double_t fgkMaxCTS = -0.9; // upper border
+	static const Int_t fgkNCTS;      // number of bins
+	static const Double_t fgkMinCTS; // lower border
+	static const Double_t fgkMaxCTS; // upper border
 
 	// opening angle in the lab frame
-	static const Int_t fgkNOA      = 20; // number of bins
-	static const Double_t fgkMinOA = -1.; // lower border
-	static const Double_t fgkMaxOA = 1.; // upper border
+	static const Int_t fgkNOA;      // number of bins
+	static const Double_t fgkMinOA; // lower border
+	static const Double_t fgkMaxOA; // upper border
 
 	//-- daughter kinematics
 	// transverse momentum of one of the two daughter particles
 	// (randomly selected)
-	static const Int_t fgkNDaughterPt      = 128; // number of bins
-	static const Double_t fgkMinDaughterPt = 0.; // lower border
-	static const Double_t fgkMaxDaughterPt = 6.4; // upper border
+	static const Int_t fgkNDaughterPt;      // number of bins
+	static const Double_t fgkMinDaughterPt; // lower border
+	static const Double_t fgkMaxDaughterPt; // upper border
 
 	// pseudo rapidity of one of the two daughter particles
 	// (randomly selected)
-	//static const Int_t fgkNDaughterEta      = 64; // number of bins
-	//static const Double_t fgkMinDaughterEta = -1.28; // lower border
-	//static const Double_t fgkMaxDaughterEta =  1.28; // upper border
+	//static const Int_t fgkNDaughterEta;      // number of bins
+	//static const Double_t fgkMinDaughterEta; // lower border
+	//static const Double_t fgkMaxDaughterEta; // upper border
 
 	//-- Event quality information
 	// boolean values to reduce output size
 
 	// are there tracks in addition to the ones selected using AliCDMesonTracks
-	// (ITSTPC, ITSsa, ITSpureSA) (0 = no, 1 = yes)
-	static const Int_t fgkNTrackResiduals      = 2; // number of bins
-	static const Double_t fgkMinTrackResiduals = 0.; // lower border
-	static const Double_t fgkMaxTrackResiduals = 2.; // upper border
+	static const Int_t fgkNTrackResiduals;     // number of bins
+	static const Double_t fgkMinTrackResiduals; // lower border
+	static const Double_t fgkMaxTrackResiduals; // upper border
 
 	// vertex with in +/-4cm (0 = no, 1 = yes)
-	static const Int_t fgkNVertexZinRng      = 2; // number of bins
-	static const Double_t fgkMinVertexZinRng = 0.; // lower border
-	static const Double_t fgkMaxVertexZinRng = 2.; // upper border
+	static const Int_t fgkNVertexZinRng;      // number of bins
+	static const Double_t fgkMinVertexZinRng; // lower border
+	static const Double_t fgkMaxVertexZinRng; // upper border
 
 	// are the vertices from SPD and tracks within 0.5cm? (0 = no, 1 = yes)
-	static const Int_t fgkNVertexCoincidence      = 2; // number of bins
-	static const Double_t fgkMinVertexCoincidence = 0.; // lower border
-	static const Double_t fgkMaxVertexCoincidence = 2.; // upper border
+	static const Int_t fgkNVertexCoincidence;      // number of bins
+	static const Double_t fgkMinVertexCoincidence; // lower border
+	static const Double_t fgkMaxVertexCoincidence; // upper border
 
 	// are there SPD tracklets which are not assigned to tracks? (0 = no, 1 = yes)
-	static const Int_t fgkNTrackletResiduals      = 2; // number of bins
-	static const Double_t fgkMinTrackletResiduals = 0.; // lower border
-	static const Double_t fgkMaxTrackletResiduals = 2.; // upper border
+	static const Int_t fgkNTrackletResiduals;      // number of bins
+	static const Double_t fgkMinTrackletResiduals; // lower border
+	static const Double_t fgkMaxTrackletResiduals; // upper border
 
 	//-- MC event information
-	static const Int_t fgkNProcessType      = 4; // kBinDD = number of bins
-	static const Double_t fgkMinProcessType = 0.; // kBinND = lower border
-	static const Double_t fgkMaxProcessType = 4.; // kBinDD = upper border
+	static const Int_t fgkNProcessType;      // kBinDD = number of bins
+	static const Double_t fgkMinProcessType; // kBinND = lower border
+	static const Double_t fgkMaxProcessType; // kBinDD = upper border
 
 
 	//== EMPTY EVENT STUDY (ThnEmptyEvents) ======================================
 	// event type
-	static const Int_t fgkNEventType      = 5; // kBinEventE = number of bins (5)
-	static const Double_t fgkMinEventType = 1.; // kBinEventI = lower border (1)
-	static const Double_t fgkMaxEventType = 6.; // kBinEventE+kBinEventI = u. b.
+	static const Int_t fgkNEventType;      // kBinEventE = number of bins
+	static const Double_t fgkMinEventType; // kBinEventI = lower border
+	static const Double_t fgkMaxEventType; // kBinEventE+kBinEventI = u. b.
 
 	// multiplicities (reused for different detectors and ways of counting)
-	static const Int_t fgkNMult      = 32; // number of bins
-	static const Double_t fgkMinMult = 0.; // lower border
-	static const Double_t fgkMaxMult = 31.; // upper border
+	static const Int_t fgkNMult;     // number of bins
+	static const Double_t fgkMinMult; // lower border
+	static const Double_t fgkMaxMult; // upper border
 
 	// multplicities - extended range
 	// (reused for different detectors and ways of counting)
-	static const Int_t fgkNMultW      = 64; // number of bins
-	static const Double_t fgkMinMultW = 0; // lower border
-	static const Double_t fgkMaxMultW = 63; // upper border
+	static const Int_t fgkNMultW;      // number of bins
+	static const Double_t fgkMinMultW; // lower border
+	static const Double_t fgkMaxMultW; // upper border
 
 	//== MULTIPLICITY STUDY (TnnMultiplicity) ====================================
 	// number of ITSTPC tracks in event
-	static const Int_t fgkNNch      = 51; // number of bins
-	static const Double_t fgkMinNch = 0.; // lower border
-	static const Double_t fgkMaxNch = 51.; // upper border
+	static const Int_t fgkNNch;      // number of bins
+	static const Double_t fgkMinNch; // lower border
+	static const Double_t fgkMaxNch; // upper border
 
 	// number of ITS standalone tracks in event
-	static const Int_t fgkNNsoft      = 11; // number of bins
-	static const Double_t fgkMinNsoft = 0.; // lower border
-	static const Double_t fgkMaxNsoft = 11.; // upper border
+	static const Int_t fgkNNsoft;      // number of bins
+	static const Double_t fgkMinNsoft; // lower border
+	static const Double_t fgkMaxNsoft; // upper border
 
 	// combined multiplicity
-	static const Int_t fgkNNcomb      = 61; // number of bins
-	static const Double_t fgkMinNcomb = 0.; // lower border
-	static const Double_t fgkMaxNcomb = 61.; // upper border
+	static const Int_t fgkNNcomb;      // number of bins
+	static const Double_t fgkMinNcomb; // lower border
+	static const Double_t fgkMaxNcomb; // upper border
 
 	// gap configuration is reused from THnMother
 
 	// number of residual tracks
-	static const Int_t fgkNNresidualTracks      = 11; // number of bins
-	static const Double_t fgkMinNresidualTracks = 0.; // lower border
-	static const Double_t fgkMaxNresidualTracks = 11.; // upper border
+	static const Int_t fgkNNresidualTracks;      // number of bins
+	static const Double_t fgkMinNresidualTracks; // lower border
+	static const Double_t fgkMaxNresidualTracks; // upper border
 
 	// number of residual tracklets
-	static const Int_t fgkNNresidualTracklets      = 21; // number of bins
-	static const Double_t fgkMinNresidualTracklets = 0.; // lower border
-	static const Double_t fgkMaxNresidualTracklets = 21.; // upper border
+	static const Int_t fgkNNresidualTracklets;      // number of bins
+	static const Double_t fgkMinNresidualTracklets; // lower border
+	static const Double_t fgkMaxNresidualTracklets; // upper border
 
 	// vertex z-position
-	static const Int_t fgkNVertexZ      = 20; // number of bins
-	static const Double_t fgkMinVertexZ = -10.; // lower border
-	static const Double_t fgkMaxVertexZ = 10.; // upper border
+	static const Int_t fgkNVertexZ;      // number of bins
+	static const Double_t fgkMinVertexZ; // lower border
+	static const Double_t fgkMaxVertexZ; // upper border
 
 	// SPD and track vertex distance
-	static const Int_t fgkNVerticesDistance      = 10; // number of bins
-	static const Double_t fgkMinVerticesDistance = 0.; // lower border
-	static const Double_t fgkMaxVerticesDistance = 5.; // upper border
+	static const Int_t fgkNVerticesDistance;      // number of bins
+	static const Double_t fgkMinVerticesDistance; // lower border
+	static const Double_t fgkMaxVerticesDistance; // upper border
 
 	// MC process type is resued from THnMother
 };
