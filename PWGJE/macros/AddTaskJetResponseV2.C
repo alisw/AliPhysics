@@ -75,7 +75,7 @@ AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(Bool_t emb = kTRUE, Char_t* t
    Printf("Branch2: %s",branch2.Data());
 
    task->SetBranchNames(branch1,branch2);
-   task->SetOfflineTrgMask(AliVEvent::kMB);
+   //task->SetOfflineTrgMask(AliVEvent::kMB);
 
    task->SetEvtClassMin(eventClassMin);
    task->SetEvtClassMax(eventClassMax);
