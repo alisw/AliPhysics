@@ -4,6 +4,8 @@ More documentation in macros, and more in slides by Matthias[1].
 
 To run locally, using compiled libraries and AddTask macros:
 root -b -q -l setupPi0Flow.C'("filelist.txt", -1)' run-single-task.C'("local", "AOD", "AddPi0FlowAndDependencies.C")'
+root -b -q -l setupPi0Flow.C'("filelist.txt", -1, NULL, "", "ESD")' run-single-task.C'("local", "ESD", "AddPi0FlowAndDependencies.C")'
+root -b -q -l setupPi0Flow.C'("filelist.txt", -1, NULL, "", "ESD")' run-single-task.C'("local", "ESD", "AddPi0FlowAndDependenciesMC.C")'
 
 To run in testmode:
 aliroot -b -q -l setupPi0Flow.C run-single-task.C'("test", "170312", "AddPi0FlowAndDependencies.C")'
