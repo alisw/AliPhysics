@@ -244,7 +244,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     Double_t maxEffHisto[3] = {fEtaCut,            ptMax,        maxbinCentr};
     
     //5 dim matrix
-    Int_t binsEffHisto5[6]   = {  nPtBins,   nPtBins,    36,                              90,         nbinsCentr ,      2 };
+    Int_t binsEffHisto5[6]   = {  nPtBins,   nPtBins,    1,                              90,         nbinsCentr ,      2 };
     Double_t minEffHisto5[6] = {  ptMin,     ptMin,     -2*fEtaCut,          -0.5*TMath::Pi(),       minbinCentr ,   -0.5 };
     Double_t maxEffHisto5[6] = {  ptMax,     ptMax,      2*fEtaCut,           1.5*TMath::Pi(),      maxbinCentr ,    1.5 };
     
