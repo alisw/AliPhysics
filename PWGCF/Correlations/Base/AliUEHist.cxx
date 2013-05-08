@@ -2633,16 +2633,14 @@ void AliUEHist::SymmetrizepTBins()
 		  
 		  if (error2 > 0)
 		  {
-		    sum = value / error / error + value2 / error2 / error2;
-		    err = 1.0 / error / error + 1.0 / error2 / error2;
-		    sum /= err;
-		    err = TMath::Sqrt(1.0 / err);
+		    sum = value + value2;
+		    err = TMath::Sqrt(error * error + error2 * error2);
 		  }
-		  
-// 		  Printf("  Values: %f +- %f; %f +- %f --> %f +- %f", value, error, value2, error2, sum, err);
 
-		  target->SetBinContent(binTarget, value);
-		  target->SetBinError(binTarget, error);
+		  // Printf("  Values: %f +- %f; %f +- %f --> %f +- %f", value, error, value2, error2, sum, err);
+		  
+		  target->SetBinContent(binTarget, sum);
+		  target->SetBinError(binTarget, err);
 		}
 	    }
 	}
