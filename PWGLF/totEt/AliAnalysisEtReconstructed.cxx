@@ -63,6 +63,10 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fHistGammaEnergyAdded(0)
 	,fHistMatchedTracksEvspTvsMult(0)
 	,fHistMatchedTracksEvspTvsMultEffCorr(0)
+	,fHistFoundHadronsvsCent(0)
+	,fHistNotFoundHadronsvsCent(0)
+	,fHistFoundHadronsEtvsCent(0)
+	,fHistNotFoundHadronsEtvsCent(0)
 	,fHistNominalRawEt(0)
 	,fHistNominalNonLinHighEt(0)
 	,fHistNominalNonLinLowEt(0)
@@ -90,6 +94,10 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fHistGammaEnergyAdded;
     delete fHistMatchedTracksEvspTvsMult;
     delete fHistMatchedTracksEvspTvsMultEffCorr;
+    delete fHistFoundHadronsvsCent;
+    delete fHistNotFoundHadronsvsCent;
+    delete fHistFoundHadronsEtvsCent;
+    delete fHistNotFoundHadronsEtvsCent;
     delete fHistNominalRawEt;
     delete fHistNominalNonLinHighEt;
     delete fHistNominalNonLinLowEt;
@@ -136,6 +144,11 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     Float_t effHighRawEt = 0;
     Float_t effLowRawEt = 0;
 
+    Float_t nChargedHadronsMeasured = 0.0;
+    Float_t nChargedHadronsTotal = 0.0;
+    Float_t nChargedHadronsEtMeasured = 0.0;
+    Float_t nChargedHadronsEtTotal = 0.0;
+
 
     for (Int_t iCluster = 0; iCluster < event->GetNumberOfCaloClusters(); iCluster++)
     {
@@ -180,7 +193,12 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                     AliError("Error: track does not exist");
                 }
                 else {
-		  fHistMatchedTracksEvspTvsMult->Fill(track->P(),cluster->E(),fClusterMult);
+		  nChargedHadronsMeasured++;
+		  nChargedHadronsTotal += 1/fTmCorrections->TrackMatchingEfficiency(track->Pt(),fClusterMult);
+		  Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster);
+		  nChargedHadronsEtMeasured+= TMath::Sin(cp.Theta())*effCorrEt;
+		  nChargedHadronsEtTotal+= 1/fTmCorrections->TrackMatchingEfficiency(track->Pt(),fClusterMult) *effCorrEt;
+		  fHistMatchedTracksEvspTvsMult->Fill(track->P(),TMath::Sin(cp.Theta())*cluster->E(),fClusterMult);
 		  fHistMatchedTracksEvspTvsMultEffCorr->Fill(track->P(),CorrectForReconstructionEfficiency(*cluster),fClusterMult);
                     const Double_t *pidWeights = track->PID();
 
@@ -251,15 +269,14 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             }
             //continue;
         } // distance
-        else
-	  {//these are clusters which were not track matched
+        else{//these are clusters which were not track matched
 	  fCutFlow->Fill(x++);
 	  //std::cout << x++ << std::endl;
-
-            //if (cluster->E() >  fSingleCellEnergyCut && cluster->GetNCells() == fCuts->GetCommonSingleCell()) continue;
-            //if (cluster->E() < fClusterEnergyCut) continue;
-            cluster->GetPosition(pos);
-	    
+	  
+	  //if (cluster->E() >  fSingleCellEnergyCut && cluster->GetNCells() == fCuts->GetCommonSingleCell()) continue;
+	  //if (cluster->E() < fClusterEnergyCut) continue;
+	  cluster->GetPosition(pos);
+	  
 	    TVector3 p2(pos);
 	    
 	    fClusterPosition->Fill(p2.Phi(), p2.PseudoRapidity());
@@ -300,7 +317,17 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fHistNominalNonLinLowEt->Fill(nonlinLowRawEt,cent);
     fHistNominalEffHighEt->Fill(effHighRawEt,cent);
     fHistNominalEffLowEt->Fill(effLowRawEt,cent);
-
+    fHistFoundHadronsvsCent->Fill(nChargedHadronsMeasured,cent);
+    fHistNotFoundHadronsvsCent->Fill(nChargedHadronsTotal-nChargedHadronsMeasured,cent);
+    fHistFoundHadronsEtvsCent->Fill(nChargedHadronsEtMeasured,cent);
+    fHistNotFoundHadronsEtvsCent->Fill(nChargedHadronsEtTotal-nChargedHadronsEtMeasured,cent);
+//     cout<<"Number of hadrons measured:  "<<nChargedHadronsMeasured<<" Estimated total number of hadrons "<<nChargedHadronsTotal<<" ET in track matched hadrons "<<
+//       nChargedHadronsEtMeasured;
+//     if(nChargedHadronsMeasured>0)cout<<" ("<<nChargedHadronsEtMeasured/nChargedHadronsMeasured<<") ";
+//     cout<<" ET in all hadrons ";
+//     cout<<nChargedHadronsEtTotal;
+//     if(nChargedHadronsTotal>0) cout<<" ("<<nChargedHadronsEtTotal/nChargedHadronsTotal<<") ";
+//     cout<<endl;
     return 0;
 }
 
@@ -380,6 +407,10 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fHistGammaEnergyAdded);
     list->Add(fHistMatchedTracksEvspTvsMult);
     list->Add(fHistMatchedTracksEvspTvsMultEffCorr);
+    list->Add(fHistFoundHadronsvsCent);
+    list->Add(fHistNotFoundHadronsvsCent);
+    list->Add(fHistFoundHadronsEtvsCent);
+    list->Add(fHistNotFoundHadronsEtvsCent);
     list->Add(fHistNominalRawEt);
     list->Add(fHistNominalNonLinHighEt);
     list->Add(fHistNominalNonLinLowEt);
@@ -459,6 +490,10 @@ void AliAnalysisEtReconstructed::CreateHistograms()
 
     fHistMatchedTracksEvspTvsMult = new TH3F("fHistMatchedTracksEvspTvsMult", "fHistMatchedTracksEvspTvsMult",100, 0, 3,100,0,3,10,0,100);
     fHistMatchedTracksEvspTvsMultEffCorr = new TH3F("fHistMatchedTracksEvspTvsMultEffCorr", "fHistMatchedTracksEvspTvsMultEffCorr",100, 0, 3,100,0,3,10,0,100);
+    fHistFoundHadronsvsCent = new TH2F("fHistFoundHadronsvsCent","fHistFoundHadronsvsCent",100,0,100,20,0,20);
+    fHistNotFoundHadronsvsCent = new TH2F("fHistNotFoundHadronsvsCent","fHistNotFoundHadronsvsCent",100,0,100,20,0,20);
+    fHistFoundHadronsEtvsCent = new TH2F("fHistFoundHadronsEtvsCent","fHistFoundHadronsEtvsCent",100,0,200,20,0,20);
+    fHistNotFoundHadronsEtvsCent = new TH2F("fHistNotFoundHadronsEtvsCent","fHistNotFoundHadronsEtvsCent",100,0,200,20,0,20);
     
     maxEt = 100;
     histname = "fHistNominalRawEt" + fHistogramNameSuffix;
