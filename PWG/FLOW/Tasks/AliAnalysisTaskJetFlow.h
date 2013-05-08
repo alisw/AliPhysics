@@ -7,6 +7,7 @@
 
 #include <AliAnalysisTaskSE.h>
 #include <AliFlowTrackCuts.h>
+#include <AliFlowEventCuts.h>
 #include <AliFlowEvent.h>
 #include <TString.h>
 #include <AliVEvent.h>
@@ -55,6 +56,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         AliFlowTrackCuts*       fCutsRP;                // rp cuts
         AliFlowTrackCuts*       fCutsPOI;               // poi cuts
         AliFlowTrackCuts*       fCutsNull;              // empty cuts
+        AliFlowEventCuts*       fCutsEvent;             // event cuts
         // containers, setup
         AliFlowEvent*           fFlowEvent;             //! container for flow analysis
         // histograms

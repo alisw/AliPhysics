@@ -33,6 +33,7 @@
 #include <AliFlowEventSimple.h>
 #include <AliFlowTrack.h>
 #include <AliFlowTrackCuts.h>
+#include <AliFlowEventCuts.h>
 #include <AliFlowCommonConstants.h>
 #include <TString.h>
 #include <AliAODEvent.h>
@@ -48,11 +49,11 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetFlow)
 
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow() : AliAnalysisTaskSE(), 
-    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fFlowEvent(0), fHistAnalysisSummary(0)
+    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent(0), fHistAnalysisSummary(0)
 { /* default constructor */ }
 //_____________________________________________________________________________
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(const char* name) : AliAnalysisTaskSE(name),
-    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fFlowEvent(0), fHistAnalysisSummary(0)
+    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent(0), fHistAnalysisSummary(0)
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -65,6 +66,7 @@ AliAnalysisTaskJetFlow::~AliAnalysisTaskJetFlow()
     // destructor
     if(fOutputList)     delete fOutputList;
     if(fFlowEvent)      delete fFlowEvent;
+    if(fCutsEvent)      delete fCutsEvent;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetFlow::LocalInit()
@@ -73,6 +75,8 @@ void AliAnalysisTaskJetFlow::LocalInit()
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(dynamic_cast<AliAODEvent*>(InputEvent())) fDataType = kAOD; // determine the datatype
     else if(dynamic_cast<AliESDEvent*>(InputEvent())) fDataType = kESD;
+    fCutsEvent = new AliFlowEventCuts();
+    fCutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSTPC); 
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
@@ -120,13 +124,12 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
         fCutsNull->SetEvent(InputEvent(), MCEvent());
         fFlowEvent->ClearFast();
         fFlowEvent->Fill(fCutsRP, fCutsNull);
-        fFlowEvent->SetReferenceMultiplicity(64);       // hardcoded for vzero
-        fFlowEvent->DefineDeadZone(0, 0, 0, 0);
+        fFlowEvent->SetReferenceMultiplicity(fCutsEvent->RefMult(InputEvent(), MCEvent()));
         // loop over jets and inject them as POI's
         for(Int_t i(0); i < iJets; i++) {
             AliEmcalJet* jet = static_cast<AliEmcalJet*>(jets->At(i));
             if(jet) {
-                if(jet->Pt() + fPtBump <= .15) {
+                if(jet->PtSub() + fPtBump <= .15) {
                     fHistAnalysisSummary->SetBinContent(4, 1);
                     continue;
                 }
@@ -141,7 +144,7 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
     }
     else if(fDebug > 0 ) printf(" Failed to find TClones Jet array while using name %s \n ", fJetsName.Data());
     if(nAcceptedJets < 1) {
-        printf(" > No accepted jets in event ! < " );
+        if(fDebug > 0) printf(" > No accepted jets in event ! < " );
         return;
     }
     PostData(1, fOutputList);
