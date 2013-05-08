@@ -35,7 +35,7 @@ const char* analysisName="PHOSPi0Flow";
 const char* includePath="-I$ALICE_ROOT/include -I$ALICE_ROOT/PHOS -I$ALICE_ROOT/PWGGA/PHOSTasks/PHOS_PbPb";
 const char* libraryDependencies="libCore.so libTree.so libGeom.so libVMC.so libPhysics.so libMinuit.so libGui.so libXMLParser.so libMinuit2.so libProof.so libSTEERBase.so libESD.so libAOD.so libOADB.so libANALYSIS.so libANALYSISalice.so libCDB.so libRAWDatabase.so libSTEER.so libCORRFW.so libPHOSUtils.so libPHOSbase.so libPHOSpi0Calib.so libPHOSrec.so libPHOSshuttle.so libPHOSsim.so libPWGGAPHOSTasks.so libTENDER.so libTRDbase.so libVZERObase.so libVZEROrec.so libTENDERSupplies.so libPWGGAUtils.so";
 
-void setupPi0Flow(const char* localAodDirectory, int nFiles, const char* lhcPeriod, const char* mcProd="")
+void setupPi0Flow(const char* localAodDirectory, int nFiles, const char* lhcPeriod, const char* mcProd="", const TString& dataType="AOD")
 {
   //
   // adding include path and libraries
@@ -81,13 +81,18 @@ void setupPi0Flow(const char* localAodDirectory, int nFiles, const char* lhcPeri
     // from there later
     //
     //gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/MakeAODInputChain.C");
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/PHOS_PbPb/macros/single-task/MakeAODInputChain.C");
-    TChain* chain = 0;
-    chain = MakeAODInputChain(localAodDirectory, nFiles);
+    TChain* chain = 0x0;
+    if( dataType.EqualTo("AOD") ) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/PHOS_PbPb/macros/single-task/MakeAODInputChain.C");
+      chain = MakeAODInputChain(localAodDirectory, nFiles);
+    } 
+    else if ( dataType.EqualTo("ESD") ) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/CreateESDChain.C");
+      chain = CreateESDChain(localAodDirectory, nFiles);
+    }
     // TString aodPathName(localAodDirectory);
     // if (!aodPathName.EndsWith("/")) aodPathName+="/";
     // aodPathName+="AliAOD.root";
-    TChain* chain;
     // if (gSystem->AccessPathName(aodPathName)==0) {
     //   // Create a chain with one set of AliAOD.root and AliAOD.VertexingHF.root. The set needs 
     //   // to be located in the same folder as you run from (physically or linked)
