@@ -113,7 +113,7 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
     AliDielectronTrackCuts *trackCuts=new AliDielectronTrackCuts("trackCuts","trackCuts");
     trackCuts->SetRequireTPCRefit(kTRUE);
     trackCuts->SetRequireITSRefit(kTRUE);
-    diele->GetTrackFilter().AddCuts(trackCuts);//old
+    diele->GetTrackFilter().AddCuts(trackCuts);
 
   }
   
@@ -285,13 +285,13 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD)
   AliDielectronCF *cf=new AliDielectronCF(diele->GetName(),diele->GetTitle());
   
   //pair variables
-  cf->AddVariable(AliDielectronVarManager::kPt,"4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 20.0");
+  cf->AddVariable(AliDielectronVarManager::kPt,"0., 2., 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 20.0");
   cf->AddVariable(AliDielectronVarManager::kM,750,0.,15.);
   cf->AddVariable(AliDielectronVarManager::kPairType,12,0,12);
 //  cf->AddVariable(AliDielectronVarManager::kOpeningAngle,"0.,0.1,0.2,0.4,0.6,0.8,1.0,2.0,3.14");
-  cf->AddVariable(AliDielectronVarManager::kY,20,-1.,1.); 
+//  cf->AddVariable(AliDielectronVarManager::kY,20,-1.,1.); 
   //leg variables
-  cf->AddVariable(AliDielectronVarManager::kPt,"1.0, 1.1, 1.2, 1.3, 1.4, 1.5,1.6,1.7,1.8,1.9, 2.0, 3.0, 10.0,15,,20,,30,,40,,50,",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kPt,"1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2., 3., 5., 10., 15., 20., 30., 40., 50.",kTRUE);
 //   cf->AddVariable(AliDielectronVarManager::kP,"0.0, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 10.0, 100.0",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kNclsTPC,"80, 85, 90, 95, 100, 110, 120, 160",kTRUE);
 //  cf->AddVariable(AliDielectronVarManager::kEta,"-5.0,-1.0,-0.9,-0.7,0.7,0.9,1.0,5.0",kTRUE);
@@ -308,10 +308,10 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD)
   cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,60,-3.,3.,kTRUE);
   //event variables
   cf->AddVariable(AliDielectronVarManager::kCentrality,20,0.,100.);
-  cf->AddVariable(AliDielectronVarManager::kMultV0,26,0.,26000.);
+//  cf->AddVariable(AliDielectronVarManager::kMultV0,26,0.,26000.);
   cf->AddVariable(AliDielectronVarManager::kZvPrim,20,-10.,10.);
 
-  cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,6,0.,6.,kTRUE);
+//  cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,6,0.,6.,kTRUE);
 
   if (hasMC){
       cf->AddVariable(AliDielectronVarManager::kPdgCode,10000,-5000.5,4999.5,kTRUE);
