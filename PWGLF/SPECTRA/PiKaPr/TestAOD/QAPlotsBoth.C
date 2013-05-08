@@ -61,7 +61,7 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 						maxposdata->SetBinContent(ibin,nsig_data_Proj1->GetXaxis()->GetBinCenter(nsig_data_Proj1->GetMaximumBin()));	
 						maxposdata->SetBinError(ibin,nsig_data_Proj1->GetXaxis()->GetBinWidth(nsig_data_Proj1->GetMaximumBin())/2.0);	
 	 				}
-				cout<<Form("%s%sdatamaxpos",Particle[ipart].Data(),pidmethods[imethod].Data())<<" "<<nsig_data_Proj1->GetMaximumBin()<<" "<<nsig_data_Proj1->GetXaxis()->FindBin(2.0)<<" "<<nsig_data_Proj1->GetXaxis()->FindBin(-2.0)<<" "<<nsig_data_Proj1->GetXaxis()->GetBinCenter(nsig_data_Proj1->GetMaximumBin())<<" "<<ibin<<endl;
+				//cout<<Form("%s%sdatamaxpos",Particle[ipart].Data(),pidmethods[imethod].Data())<<" "<<nsig_data_Proj1->GetMaximumBin()<<" "<<nsig_data_Proj1->GetXaxis()->FindBin(2.0)<<" "<<nsig_data_Proj1->GetXaxis()->FindBin(-2.0)<<" "<<nsig_data_Proj1->GetXaxis()->GetBinCenter(nsig_data_Proj1->GetMaximumBin())<<" "<<ibin<<endl;
 
 					nsig_data_Proj1->GetXaxis()->SetRange(0,nsig_data_Proj1->GetXaxis()->GetNbins());
 									
@@ -71,7 +71,7 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 						maxposmc->SetBinContent(ibin,nsig_mc_Proj1->GetXaxis()->GetBinCenter(nsig_mc_Proj1->GetMaximumBin()));	
 						maxposmc->SetBinError(ibin,nsig_mc_Proj1->GetXaxis()->GetBinWidth(nsig_mc_Proj1->GetMaximumBin())/2.0);	
 	 				}
-						cout<<Form("%s%smcmaxpos",Particle[ipart].Data(),pidmethods[imethod].Data())<<" "<<nsig_mc_Proj1->GetMaximumBin()<<" "<<nsig_mc_Proj1->GetXaxis()->FindBin(2.0)<<" "<<nsig_mc_Proj1->GetXaxis()->FindBin(-2.0)<<" "<<ibin<<" "<<nsig_mc_Proj1->GetXaxis()->GetBinCenter(nsig_mc_Proj1->GetMaximumBin())<<endl;
+				//		cout<<Form("%s%smcmaxpos",Particle[ipart].Data(),pidmethods[imethod].Data())<<" "<<nsig_mc_Proj1->GetMaximumBin()<<" "<<nsig_mc_Proj1->GetXaxis()->FindBin(2.0)<<" "<<nsig_mc_Proj1->GetXaxis()->FindBin(-2.0)<<" "<<ibin<<" "<<nsig_mc_Proj1->GetXaxis()->GetBinCenter(nsig_mc_Proj1->GetMaximumBin())<<endl;
 
 					nsig_mc_Proj1->GetXaxis()->SetRange(0,nsig_mc_Proj1->GetXaxis()->GetNbins());
 

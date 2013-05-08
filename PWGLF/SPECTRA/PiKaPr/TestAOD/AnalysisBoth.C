@@ -17,27 +17,36 @@ Int_t Color[3]={1,2,4};
 Int_t Marker[6]={20,21,22,24,25,26};
 Double_t Range[3]={0.3,0.3,0.5}; // LowPt range for pi k p
 
+
+Double_t FitRange[2]={-2.0,2.0};
+Double_t CutRange[2]={-3.0,3.0};
+Double_t minptformaterial[6]={0.0,0.2,0.0,0.0,0.2,0.0};
+Double_t maxptformaterial[6]={0.0,0.6,1.3,0.0,0.6,0.0};
+Double_t minptforWD[6]={0.2,100.0,0.3,0.2,100.0,0.3};
+Double_t maxptforWD[6]={1.5,-100.0,2.0,1.5,-100.0,2.0};
+
+
 enum ECharge_t {
   kPositive,
   kNegative,
   kNCharges
 };
 enum {
- kdodca=0x1,
- kgeantflukaKaon=0x2,
- kgeantflukaProton=0x4,
- knormalizationtoeventspassingPhySel=0x8,
- kveretxcorrectionandbadchunkscorr=0x10,
- kmcisusedasdata=0x20,
- kdonotusedcacuts=0x40,
- kuseprimaryPIDcont=0x80,
- knormalizationwithbin0integralsdata=0x100,
- knormalizationwithbin0integralsMC=0x200,
-					
+ kdodca=0x1, //dca fits are made 
+ kgeantflukaKaon=0x2,// geant fluka correction is used for kaons 
+ kgeantflukaProton=0x4, // geant fluka correction is used for protons and antiprotons
+ knormalizationtoeventspassingPhySel=0x8,// spectra are divided by number of events passing physic selection   
+ kveretxcorrectionandbadchunkscorr=0x10, // correction for difference in z vertex distribution in data and MC and correction for bad chunks is applied
+ kmcisusedasdata=0x20, // the result of the looping over MC is used as data input 
+ kdonotusedcacuts=0x40, // allows to use the constant dca cut for all pt bins not the pt dependet defined in stardrad track cuts 2011
+ kuseprimaryPIDcont=0x80, //pid contamination is calculated using only primiary particle in this case K should use dca fits 
+ knormalizationwithbin0integralsdata=0x100, // the normalization factor is calcualte using integral over z vertex distributions (in this case reconstructed vertex disitrbution uses z vertex for data) 
+ knormalizationwithbin0integralsMC=0x200, //in this case reconstructed vertex disitrbution uses z vertex for data, those to options will be use only if knormalizationtoeventspassingPhySel is not set
+ kuserangeonfigfile=0x400 // use of config file for dca fit settings					
 };	
 
 Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag,Bool_t mcasdata=false);
-void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TString outnamemc="" )
+void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TString outnamemc="",TString configfile="" )
 {
 	TH1::AddDirectory(kFALSE);
 	gSystem->Load("libCore.so");  
@@ -66,12 +75,15 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	{
 	
 		AliESDtrackCuts* esdtrackcuts= AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
-		TString formulastring(esdtrackcuts->GetMaxDCAToVertexXYPtDep());
+		TString formulastring(esdtrackcuts->GetMaxDCAToVertexXYPtDep());	
 		formulastring.ReplaceAll("pt","x");
 		dcacutxy=new TFormula("dcacutxy",formulastring.Data());
 	}
+	if(options&kuserangeonfigfile)
+		if(!ReadConfigFile(configfile))
+			return;		
 	TList* lout=new TList();
-
+	
 
 	TString indirname=Form("/output/train%s",outdate.Data());
 	//TString indirname("/output/train24072012");
@@ -165,7 +177,9 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	
 	
 	TH1F* spectraall=(TH1F*)allrecdata->Clone("recNch");
+	spectraall->SetTitle("recNch");
 	TH1F* contall=(TH1F*)allrecMC->Clone("contall");
+	contall->SetTitle("contall");
 	contall->Add(alleff,-1);
 	alleff->Divide(alleff,allgen,1,1,"B");
 	contall->Divide(contall,allrecMC,1,1,"B");
@@ -192,16 +206,24 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		
 		TString tmpname(rawspectramc[i]->GetTitle());
 		tmpname.ReplaceAll("SpectraMC","%s");
-		contallMC[i]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"contallMC")); 
+		contallMC[i]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"contallMC"));
+		contallMC[i]->SetTitle(Form(tmpname.Data(),"contallMC"));
 		contfit[i]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"contfit"));
+		contfit[i]->SetTitle(Form(tmpname.Data(),"contfit"));
 		contWDfit[i]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"contWDfit"));
+		contWDfit[i]->SetTitle(Form(tmpname.Data(),"contWDfit"));
 		contMatfit[i]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"contMatfit"));
+		contMatfit[i]->SetTitle(Form(tmpname.Data(),"contMatfit"));
 		primaryfit[i]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"primaryfit"));
-		
+		primaryfit[i]->SetTitle(Form(tmpname.Data(),"primaryfit"));
 		contfit[i+6]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"contfitonMC"));
+		contfit[i+6]->SetTitle(Form(tmpname.Data(),"contfitonMC"));
 		contWDfit[i+6]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"contWDfitonMC"));
+		contWDfit[i+6]->SetTitle(Form(tmpname.Data(),"contWDfitonMC"));
 		contMatfit[i+6]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"contMatfitonMC"));
+		contMatfit[i+6]->SetTitle(Form(tmpname.Data(),"contMatfitonMC"));
 		primaryfit[i+6]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"primaryfitMC"));
+		primaryfit[i+6]->SetTitle(Form(tmpname.Data(),"primaryfitMC"));
 		
 		contfit[i]->Reset();
 		contWDfit[i]->Reset();
@@ -217,10 +239,12 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		SetBintoOne(primaryfit[i]);
 		SetBintoOne(primaryfit[i+6]);		
 		spectra[i]=(TH1F*)rawspectradata[i]->Clone(Form(tmpname.Data(),"SpectraFinal"));
-		
+		spectra[i]->SetTitle(Form(tmpname.Data(),"SpectraFinal"));
 		spectraLeonardo[i]=(TH1F*)rawspectradata[i]->Clone(Form(tmpname.Data(),"SpectraFinalLeonardo"));
+		spectraLeonardo[i]->SetTitle(Form(tmpname.Data(),"SpectraFinalLeonardo"));
+
 		corrLeonardo[i]=(TH1F*)MCTruth[i]->Clone(Form(tmpname.Data(),"CorrFactLeonardo"));
-		
+		corrLeonardo[i]->SetTitle(Form(tmpname.Data(),"CorrFactLeonardo"));			
 		corrLeonardo[i]->Divide(corrLeonardo[i],rawspectramc[i],1,1,"B");
 		
 		
@@ -251,7 +275,7 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 			confinal[i]=(TH1F*)contPIDpri[i]->Clone(Form(tmpname.Data(),"confinal"));
 		else	
 			confinal[i]=(TH1F*)contPID[i]->Clone(Form(tmpname.Data(),"confinal"));
-		
+		confinal[i]->SetTitle(Form(tmpname.Data(),"confinal"));
 
 		contWD[i]->Divide(contWD[i],rawspectramc[i],1,1,"B");
 		contMat[i]->Divide(contMat[i],rawspectramc[i],1,1,"B");
@@ -287,7 +311,12 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		lout->Add(contPIDpri[i]);
 	}
 	outdate.ReplaceAll("/","_");
-	TFile* fout=new TFile(Form("./results/ResMY_%s_%s_%#X.root",outnamemc.Data(),outdate.Data(),options),"RECREATE");
+	configfile.ReplaceAll(".","_");
+	TFile* fout=0x0;
+	if(configfile.Length()>0&&(options&kuserangeonfigfile))
+		fout=new TFile(Form("./results/ResMY_%s_%s_%#X_%s.root",outnamemc.Data(),outdate.Data(),options,configfile.Data()),"RECREATE");
+	else
+		fout=new TFile(Form("./results/ResMY_%s_%s_%#X.root",outnamemc.Data(),outdate.Data(),options),"RECREATE");
 	if (options&kdodca)
 		DCACorrectionMarek(managerdata,managermc,dcacutxy,fout,contfit,contWDfit,contMatfit,primaryfit);
 	for (int i=0;i<6;i++)
@@ -409,6 +438,8 @@ Bool_t   OpenFile(TString dirname,TString outputname, Bool_t mcflag, Bool_t mcas
 		tcutsmc->PrintCuts();
 		if(!managermc||!ecutsmc||!tcutsmc)
 			return false;
+		if(managermc->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()!=ecutsmc->GetHistoCuts()->GetBinContent(4))
+			cout<<"Please check MC file possible problem with merging"<<endl;
 	}
 	else
 	{
@@ -419,6 +450,9 @@ Bool_t   OpenFile(TString dirname,TString outputname, Bool_t mcflag, Bool_t mcas
 		tcutsdata->PrintCuts();
 		if(!managerdata||!ecutsdata||!tcutsdata)
 			return false;
+		if(managerdata->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()!=ecutsdata->GetHistoCuts()->GetBinContent(4))
+			cout<<"Please check DATA file possible problem with merging"<<endl;
+
 	}
 	return true;
 }
@@ -453,8 +487,8 @@ TH1F* GetOneHistFromPtDCAhisto(TString name,TString hnameout,AliSpectraBothHisto
 					Float_t cut=dcacutxy->Eval(lowedge);
 					TH1F* dcahist=(TH1F*)hman->GetDCAHistogram1D(name.Data(),lowedge,lowedge));
 					Float_t inyield=dcahist->Integral(dcahist->GetXaxis()->FindBin(-1.0*cut),dcahist->GetXaxis()->FindBin(cut));
-					cout<<"corr data "<<histo->GetBinContent(ibin)<<" "<<inyield<<" "<<dcahist->Integral()<<" "<<hnameout.Data()<<endl;
-					cout<<"test dca "<<lowedge<<" "<<dcacutxy->Eval(lowedge)<<" "<<dcacutxy->Eval(histo->GetXaxis()->GetBinUpEdge(ibin))<<" "<<dcahist->GetBinLowEdge(dcahist->GetXaxis()->FindBin(-1.0*cut))<<" "<<dcahist->GetXaxis()->GetBinUpEdge(dcahist->GetXaxis()->FindBin(-1.0*cut))<<endl;
+					//cout<<"corr data "<<histo->GetBinContent(ibin)<<" "<<inyield<<" "<<dcahist->Integral()<<" "<<hnameout.Data()<<endl;
+					//cout<<"test dca "<<lowedge<<" "<<dcacutxy->Eval(lowedge)<<" "<<dcacutxy->Eval(histo->GetXaxis()->GetBinUpEdge(ibin))<<" "<<dcahist->GetBinLowEdge(dcahist->GetXaxis()->FindBin(-1.0*cut))<<" "<<dcahist->GetXaxis()->GetBinUpEdge(dcahist->GetXaxis()->FindBin(-1.0*cut))<<endl;
 					histo->SetBinContent(ibin,inyield);
 					histo->SetBinError(ibin,TMath::Sqrt(inyield));
 				}
@@ -475,7 +509,7 @@ void GetPtHistFromPtDCAhisto(TString hnamein, TString hnameout, AliSpectraBothHi
 		for(Int_t ipart=0;ipart<3;ipart++)
 		{
 			Int_t index=ipart+3*icharge;
-			printf("Getting %s",hnamein.Data());
+			Printf("Getting %s",hnamein.Data());
 			TString nameinfinal=Form("%s%s%s",hnamein.Data(),Particle[ipart].Data(),Sign[icharge].Data());
 			TString nameoutfinal=Form("%s%s%s",hnameout.Data(),Particle[ipart].Data(),Sign[icharge].Data());
 			
@@ -509,8 +543,7 @@ void CleanHisto(TH1F* h, Float_t minV, Float_t maxV,TH1* contpid=0x0)
 void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHistoManager* hman_mc,TFormula* fun,TFile *fout,TH1F** hcon,TH1F** hconWD,TH1F** hconMat,TH1F** hprimary)
 {
   printf("\n\n-> DCA Correction");  
-  Double_t FitRange[2]={-2.0,2.0};
-  Double_t CutRange[2]={-3.0,3.0};
+  
  
   Printf("\DCACorr");
   TString sample[2]={"data","mc"};
@@ -705,6 +738,11 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						Float_t normalizationdata1=result->Integral(binCutRange[0],binCutRange[1])/result->Integral(binFitRange[0],binFitRange[1]);
 						
 
+						// if the cut range is bigger the fit range we should calculate the normalization factor for data using the data histogram 
+						// because result histogram has entries only in fits range 	 
+						if(FitRange[0]>CutRange[0]||FitRange[1]<CutRange[1])	
+							normalizationdata1=normalizationdata;
+					
 						normalizationdata1*=corrforrebinning[0];
 
 
@@ -1143,7 +1181,7 @@ TH1* GetSumAllCh(TH1F** spectra, Double_t* mass  )
 				Float_t maxy=eta2y(pt,masstmp,0.8);
 				Float_t conver=maxy*(TMath::Sqrt(1-masstmp*masstmp/(mt2*TMath::CosH(maxy)*TMath::CosH(maxy)))+TMath::Sqrt(1-masstmp*masstmp/(mt2*TMath::CosH(0.0)*TMath::CosH(0.0))));
 				conver=conver/1.6;
-				cout<<maxy<<" "<<conver<<" "<<masstmp<<""<<spectra[i]->GetName()<<endl;
+				//cout<<maxy<<" "<<conver<<" "<<masstmp<<""<<spectra[i]->GetName()<<endl;
 				Float_t bincontent=allch->GetBinContent(j);
 				Float_t binerror=allch->GetBinError(j);
 				bincontent+=conver*value;
@@ -1175,10 +1213,6 @@ void Divideby2pipt(TH1* hist)
 
 Short_t DCAfitsettings (Float_t pt, Int_t type)
 {
-	 Double_t minptformaterial[6]={0.0,0.2,0.0,0.0,0.2,0.0};
- 	 Double_t maxptformaterial[6]={0.0,0.6,1.3,0.0,0.6,0.0};
-	 Double_t minptforWD[6]={0.2,100.0,0.3,0.2,100.0,0.3};
- 	 Double_t maxptforWD[6]={1.5,-100.0,2.0,1.5,-100.0,2.0};
 	Short_t value=0x0;
 	if (pt<maxptformaterial[type]&&pt>minptformaterial[type])
 		value=value+2;
@@ -1202,7 +1236,7 @@ Float_t Normaliztionwithbin0integrals(UInt_t options)
 	TH1I* histomc=ecutsmc->GetHistoCuts();
 
 	Float_t dataevents=(Float_t)histodata->GetBinContent(3);
-	cout<<histodata->GetBinContent(2)<<endl;
+	//cout<<histodata->GetBinContent(2)<<endl;
 	Float_t databin0events=((Float_t)histodata->GetBinContent(2))-((Float_t)histodata->GetBinContent(4));	
 
 	bin0mcRec->Sumw2();
@@ -1243,3 +1277,110 @@ Float_t Normaliztionwithbin0integrals(UInt_t options)
 		return 1;		
 }
  
+
+Bool_t ReadConfigFile(TString configfile)
+{
+	ifstream infile(configfile.Data());
+	if(infile.is_open()==false)
+		return false;
+	TString namesofSetting[28]={"CutRangeMin","CutRangeMax","FitRangeMin","FitRangeMax","MinMatPionPlus","MaxMatPionPlus","MinMatKaonPlus","MaxMatKaonPlus","MinMatProtonPlus","MaxMatProtonPlus","MinMatPionMinus","MaxMatPionMinus","MinMatKaonMinus","MaxMatKaonMinus","MinMatProtonMinus","MaxMatProtonMinus","MinWDPionPlus","MaxWDPionPlus","MinWDKaonPlus","MaxWDKaonPlus","MinWDProtonPlus","MaxWDProtonPlus","MinWDPionMinus","MaxWDPionMinus","MinWDKaonMinus","MaxWDKaonMinus","MinWDProtonMinus","MaxWDProtonMinus"};	
+
+	char buffer[256];
+	while (infile.eof()==false)
+	{
+		buffer[0]='#'; 
+		while (buffer[0]=='#'&&infile.eof()==false)
+			infile.getline(buffer,256);
+		TString tmpstring(buffer);
+		cout<<buffer<<endl;
+		if(tmpstring.Contains(namesofSetting[0]))
+			CutRange[0]=(tmpstring.Remove(0,namesofSetting[0].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[1]))
+			CutRange[1]=(tmpstring.Remove(0,namesofSetting[1].Length()+1)).Atof();	
+		else if (tmpstring.Contains(namesofSetting[2]))
+			FitRange[0]=(tmpstring.Remove(0,namesofSetting[2].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[3]))
+			FitRange[1]=(tmpstring.Remove(0,namesofSetting[3].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[4]))
+			minptformaterial[0]=(tmpstring.Remove(0,namesofSetting[4].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[5]))
+			maxptformaterial[0]=(tmpstring.Remove(0,namesofSetting[5].Length()+1)).Atof();	
+		else if (tmpstring.Contains(namesofSetting[6]))
+			minptformaterial[1]=(tmpstring.Remove(0,namesofSetting[6].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[7]))
+			maxptformaterial[1]=(tmpstring.Remove(0,namesofSetting[7].Length()+1)).Atof();	
+		else if (tmpstring.Contains(namesofSetting[8]))
+			minptformaterial[2]=(tmpstring.Remove(0,namesofSetting[8].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[9]))
+			maxptformaterial[2]=(tmpstring.Remove(0,namesofSetting[9].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[10]))
+			minptformaterial[3]=(tmpstring.Remove(0,namesofSetting[10].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[11]))
+			maxptformaterial[3]=(tmpstring.Remove(0,namesofSetting[11].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[12]))
+			minptformaterial[4]=(tmpstring.Remove(0,namesofSetting[12].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[13]))
+			maxptformaterial[4]=(tmpstring.Remove(0,namesofSetting[13].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[14]))
+			minptformaterial[5]=(tmpstring.Remove(0,namesofSetting[14].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[15]))
+			maxptformaterial[5]=(tmpstring.Remove(0,namesofSetting[15].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[16]))
+			minptforWD[0]=(tmpstring.Remove(0,namesofSetting[16].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[17]))
+			maxptforWD[0]=(tmpstring.Remove(0,namesofSetting[17].Length()+1)).Atof();	
+		else if (tmpstring.Contains(namesofSetting[18]))
+			minptforWD[1]=(tmpstring.Remove(0,namesofSetting[18].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[19]))
+			maxptforWD[1]=(tmpstring.Remove(0,namesofSetting[19].Length()+1)).Atof();	
+		else if (tmpstring.Contains(namesofSetting[20]))
+			minptforWD[2]=(tmpstring.Remove(0,namesofSetting[20].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[21]))
+			maxptforWD[2]=(tmpstring.Remove(0,namesofSetting[21].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[22]))
+			minptforWD[3]=(tmpstring.Remove(0,namesofSetting[22].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[23]))
+			maxptforWD[3]=(tmpstring.Remove(0,namesofSetting[23].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[24]))
+			minptforWD[4]=(tmpstring.Remove(0,namesofSetting[24].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[25]))
+			maxptforWD[4]=(tmpstring.Remove(0,namesofSetting[25].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[26]))
+			minptforWD[5]=(tmpstring.Remove(0,namesofSetting[26].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[27]))
+			maxptforWD[5]=(tmpstring.Remove(0,namesofSetting[27].Length()+1)).Atof();				
+		else
+			continue;
+
+	}
+	for(int i=0;i<6;i++)
+		cout<<minptformaterial[i]<<" "<<maxptformaterial[i]<<" "<<minptforWD[i]<<" "<<maxptforWD[i]<<endl;
+	cout<<FitRange[0]<<" "<<FitRange[1]<<" "<<CutRange[0]<<CutRange[1]<<endl;
+	if(FitRange[0]>=FitRange[1])	
+	{
+		cout<<"A"<<endl;				
+		return false;
+	}
+	if(CutRange[0]>=CutRange[1])
+	{	
+		cout<<"B"<<endl;				
+		return false;
+	}
+	for(int i=0;i<6;i++)
+	{
+		if((minptformaterial[i]>maxptformaterial[i]&&minptformaterial[i]>0.0)||minptformaterial[i]<0.0||maxptformaterial[i]<0.0)
+		{
+			cout<<"C"<<endl;
+			return false;
+		}
+		if((minptforWD[i]>maxptforWD[i]&&minptforWD[i]>0.0)||minptforWD[i]<0.0||maxptforWD[i]<0.0)
+		{
+			cout<<"D"<<endl;
+			return false;
+		}
+	}
+	
+		
+
+	return true;
+}
