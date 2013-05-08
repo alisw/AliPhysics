@@ -1150,6 +1150,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
           }
           
           //Origin of meson
+          if(fFillOriginHisto)
+          {
           Int_t momindex  = prim->GetFirstMother();
           if(momindex >= 0)
           {
@@ -1181,7 +1183,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
               //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );          
             }
           } // pi0 has mother
-          
+          }
           //Check if both photons hit Calorimeter
           if(prim->GetNDaughters()!=2) continue; //Only interested in 2 gamma decay
           Int_t iphot1=prim->GetFirstDaughter() ;
@@ -1337,28 +1339,32 @@ void AliAnaPi0::FillAcceptanceHistograms()
             AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
             Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
             Int_t momstatus = mother->GetStatus();
-            if(pdg == 111){
-              if     (momstatus  == 21) fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
-              else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
-              else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(pi0Pt,2.5);// resonances
-              else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(pi0Pt,8.5);//eta
-              else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(pi0Pt,9.5);//eta prime
-              else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(pi0Pt,4.5);//rho
-              else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(pi0Pt,5.5);//omega
-              else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
-              else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
-              else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
-              else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
-            }//pi0
-            else
+            if(fFillOriginHisto)
             {
-              if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
-              else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
-              else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
-              else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(pi0Pt,5.5);//eta prime
-              else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(pi0Pt,3.5);//resonances
-              else fhPrimEtaPtOrigin->Fill(pi0Pt,4.5);//stable, conversions?
-              //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );          
+              if(pdg == 111)
+              {
+                if     (momstatus  == 21) fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
+                else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
+                else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(pi0Pt,2.5);// resonances
+                else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(pi0Pt,8.5);//eta
+                else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(pi0Pt,9.5);//eta prime
+                else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(pi0Pt,4.5);//rho
+                else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(pi0Pt,5.5);//omega
+                else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
+                else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
+                else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
+                else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
+              }//pi0
+              else
+              {
+                if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
+                else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
+                else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
+                else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(pi0Pt,5.5);//eta prime
+                else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(pi0Pt,3.5);//resonances
+                else fhPrimEtaPtOrigin->Fill(pi0Pt,4.5);//stable, conversions?
+                //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );          
+              }
             }
           }//pi0 has mother
           
@@ -1531,37 +1537,40 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
         fhMCPi0MassPtTrue[0]->Fill(ancMomentum.Pt(),mass);
         if(mass < 0.17 && mass > 0.1) {
           fhMCPi0PtTruePtRec[0]->Fill(ancMomentum.Pt(),pt); 
-          
-          if(GetReader()->ReadStack()){	
-            TParticle* ancestor = GetMCStack()->Particle(ancLabel);
-            momindex  = ancestor->GetFirstMother();
-            if(momindex < 0) return;
-            TParticle* mother = GetMCStack()->Particle(momindex);
-            mompdg    = TMath::Abs(mother->GetPdgCode());
-            momstatus = mother->GetStatusCode();         
+          if(fFillOriginHisto)
+          {
+            if(GetReader()->ReadStack())
+            {
+              TParticle* ancestor = GetMCStack()->Particle(ancLabel);
+              momindex  = ancestor->GetFirstMother();
+              if(momindex < 0) return;
+              TParticle* mother = GetMCStack()->Particle(momindex);
+              mompdg    = TMath::Abs(mother->GetPdgCode());
+              momstatus = mother->GetStatusCode();         
+            }
+            else
+            {
+              TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
+              AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
+              momindex  = ancestor->GetMother();
+              if(momindex < 0) return;
+              AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+              mompdg    = TMath::Abs(mother->GetPdgCode());
+              momstatus = mother->GetStatus();  
+            }            
+            
+            if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt,0.5);//parton
+            else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt,1.5);//quark
+            else if(mompdg     > 2100  && mompdg   < 2210) fhMCPi0PtOrigin->Fill(pt,2.5);// resonances
+            else if(mompdg    == 221) fhMCPi0PtOrigin->Fill(pt,8.5);//eta
+            else if(mompdg    == 331) fhMCPi0PtOrigin->Fill(pt,9.5);//eta prime
+            else if(mompdg    == 213) fhMCPi0PtOrigin->Fill(pt,4.5);//rho
+            else if(mompdg    == 223) fhMCPi0PtOrigin->Fill(pt,5.5);//omega
+            else if(mompdg    >= 310   && mompdg    <= 323) fhMCPi0PtOrigin->Fill(pt,6.5);//k0S, k+-,k*
+            else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt,6.5);//k0L
+            else if(momstatus == 11 || momstatus  == 12 ) fhMCPi0PtOrigin->Fill(pt,3.5);//resonances   
+            else                      fhMCPi0PtOrigin->Fill(pt,7.5);//other?
           }
-          else {
-            TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-            AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
-            momindex  = ancestor->GetMother();
-            if(momindex < 0) return;
-            AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
-            mompdg    = TMath::Abs(mother->GetPdgCode());
-            momstatus = mother->GetStatus();  
-          }            
-          
-          if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt,0.5);//parton
-          else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt,1.5);//quark
-          else if(mompdg     > 2100  && mompdg   < 2210) fhMCPi0PtOrigin->Fill(pt,2.5);// resonances
-          else if(mompdg    == 221) fhMCPi0PtOrigin->Fill(pt,8.5);//eta
-          else if(mompdg    == 331) fhMCPi0PtOrigin->Fill(pt,9.5);//eta prime
-          else if(mompdg    == 213) fhMCPi0PtOrigin->Fill(pt,4.5);//rho
-          else if(mompdg    == 223) fhMCPi0PtOrigin->Fill(pt,5.5);//omega
-          else if(mompdg    >= 310   && mompdg    <= 323) fhMCPi0PtOrigin->Fill(pt,6.5);//k0S, k+-,k*
-          else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt,6.5);//k0L
-          else if(momstatus == 11 || momstatus  == 12 ) fhMCPi0PtOrigin->Fill(pt,3.5);//resonances   
-          else                      fhMCPi0PtOrigin->Fill(pt,7.5);//other?
-          
         }//pi0 mass region
         
       }
@@ -1591,31 +1600,36 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
         fhMCEtaMassPtTrue[0]->Fill(ancMomentum.Pt(),mass);
         if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[0]->Fill(ancMomentum.Pt(),pt); 
         
-        if(GetReader()->ReadStack()){	
-          TParticle* ancestor = GetMCStack()->Particle(ancLabel);
-          momindex  = ancestor->GetFirstMother();
-          if(momindex < 0) return;
-          TParticle* mother = GetMCStack()->Particle(momindex);
-          mompdg    = TMath::Abs(mother->GetPdgCode());
-          momstatus = mother->GetStatusCode();         
+        if(fFillOriginHisto)
+        {
+          if(GetReader()->ReadStack())
+          {
+            TParticle* ancestor = GetMCStack()->Particle(ancLabel);
+            momindex  = ancestor->GetFirstMother();
+            if(momindex < 0) return;
+            TParticle* mother = GetMCStack()->Particle(momindex);
+            mompdg    = TMath::Abs(mother->GetPdgCode());
+            momstatus = mother->GetStatusCode();         
+          }
+          else
+          {
+            TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
+            AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
+            momindex  = ancestor->GetMother();
+            if(momindex < 0) return;
+            AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+            mompdg    = TMath::Abs(mother->GetPdgCode());
+            momstatus = mother->GetStatus();  
+          }          
+          
+          if     (momstatus == 21 ) fhMCEtaPtOrigin->Fill(pt,0.5);//parton
+          else if(mompdg    < 22  ) fhMCEtaPtOrigin->Fill(pt,1.5);//quark
+          else if(mompdg    > 2100  && mompdg   < 2210) fhMCEtaPtOrigin->Fill(pt,2.5);//qq resonances
+          else if(mompdg    == 331) fhMCEtaPtOrigin->Fill(pt,5.5);//eta prime
+          else if(momstatus == 11 || momstatus  == 12 ) fhMCEtaPtOrigin->Fill(pt,3.5);//resonances
+          else fhMCEtaPtOrigin->Fill(pt,4.5);//stable, conversions?
+          //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
         }
-        else {
-          TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-          AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
-          momindex  = ancestor->GetMother();
-          if(momindex < 0) return;
-          AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
-          mompdg    = TMath::Abs(mother->GetPdgCode());
-          momstatus = mother->GetStatus();  
-        }          
-        
-        if     (momstatus == 21 ) fhMCEtaPtOrigin->Fill(pt,0.5);//parton
-        else if(mompdg    < 22  ) fhMCEtaPtOrigin->Fill(pt,1.5);//quark
-        else if(mompdg    > 2100  && mompdg   < 2210) fhMCEtaPtOrigin->Fill(pt,2.5);//qq resonances
-        else if(mompdg    == 331) fhMCEtaPtOrigin->Fill(pt,5.5);//eta prime
-        else if(momstatus == 11 || momstatus  == 12 ) fhMCEtaPtOrigin->Fill(pt,3.5);//resonances
-        else fhMCEtaPtOrigin->Fill(pt,4.5);//stable, conversions?
-        //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );  
       }// eta mass region
     }
     else if(ancPDG==-2212){//AProton
