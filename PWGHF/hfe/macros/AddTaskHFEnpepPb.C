@@ -13,8 +13,8 @@ AliAnalysisTask *AddTaskHFEnpepPb(Bool_t isAOD, Bool_t useMC, Bool_t kNPERef = k
   // Default setting for the associated electron for the NonPhotonic Analysis
   const double	kassETA		=   0.8;
   const int	kassITS		=   2;
-  const int	kassTPCcl	= 100;
-  const int	kassTPCPIDcl	=  80;
+  const int	kassTPCcl	= 60;
+  const int	kassTPCPIDcl	=  60;
   const double	kassDCAr	=   1.0;
   const double	kassDCAz	=   2.0;
   const double	kassTPCSminus	=  -3.0;
