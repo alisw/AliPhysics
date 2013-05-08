@@ -74,6 +74,10 @@ protected:
 
     TH3F *fHistMatchedTracksEvspTvsMult;   //For measuring hadron deposits
     TH3F *fHistMatchedTracksEvspTvsMultEffCorr;   //For measuring hadron deposits
+    TH2F *fHistFoundHadronsvsCent;   //For measuring hadron deposits
+    TH2F *fHistNotFoundHadronsvsCent;   //For measuring hadron deposits
+    TH2F *fHistFoundHadronsEtvsCent;   //For measuring hadron deposits
+    TH2F *fHistNotFoundHadronsEtvsCent;   //For measuring hadron deposits
     TH2D *fHistNominalRawEt;//Total ET from clusters with nominal reconstruction efficiency and nonlinearity correction vs centrality
     TH2D *fHistNominalNonLinHighEt;//Total ET from clusters with nominal reconstruction efficiency and high bound of nonlinearity correction vs centrality
     TH2D *fHistNominalNonLinLowEt;//Total ET from clusters with nominal reconstruction efficiency and low bound of nonlinearity correction vs centrality

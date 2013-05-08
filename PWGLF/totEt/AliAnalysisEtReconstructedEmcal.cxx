@@ -81,10 +81,10 @@ Double_t AliAnalysisEtReconstructedEmcal::GetCorrectionModification(const AliESD
   }
   if(effCorr!=0){
     if(effCorr==1){//high bound
-      factor *=1.05;
+      factor *=1.02;
     }
     else{//low bound
-      factor *=0.95;
+      factor *=0.98;
     }
   }
   //cout<<"Factor:  "<<factor<<endl;

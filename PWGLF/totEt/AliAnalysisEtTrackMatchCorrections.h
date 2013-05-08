@@ -4,6 +4,7 @@
 
 #include "TNamed.h"
 #include "TF1.h"
+#include "TH2F.h"
 
 class AliAnalysisEtTrackMatchCorrections : public TNamed
 {
@@ -14,7 +15,7 @@ public:
     AliAnalysisEtTrackMatchCorrections();
 
 //! Constructor
-    AliAnalysisEtTrackMatchCorrections(const TString name, const TF1 &chargedContr, const TF1 &neutralContr, const TF1 &gammaContr, const TF1 &secondaryContr, Double_t meanCharged, Double_t meanNeutral, Double_t meanGammas, Double_t meanSecondary);
+    AliAnalysisEtTrackMatchCorrections(const TString name, const TF1 &chargedContr, const TF1 &neutralContr, const TF1 &gammaContr, const TF1 &secondaryContr, const TH2F &recoEff, Double_t meanCharged, Double_t meanNeutral, Double_t meanGammas, Double_t meanSecondary);
 
 //! Copy constructor
     AliAnalysisEtTrackMatchCorrections(const AliAnalysisEtTrackMatchCorrections &obj);
@@ -42,6 +43,10 @@ public:
     TF1 SecondaryContr() const {
         return *fSecondaryContr;
     }
+
+    TH2F TrackMatchingEfficiency() const {
+      return *fRecoEff;
+    }
     
     Double_t ChargedContr(int mult) const {
         return fChargedContr->Eval(mult)*fMeanCharged;
@@ -58,6 +63,8 @@ public:
     Double_t SecondaryContr(int mult) const {
         return fSecondaryContr->Eval(mult)*fMeanSecondary;
     }
+
+    Double_t TrackMatchingEfficiency(float pT, int mult) const;
 
 
 // Setters
@@ -78,6 +85,10 @@ public:
         *fSecondaryContr = secondaryContr;
     }
 
+    void SetReconstructionEfficiency(const TH2F &recoEff) {
+        *fRecoEff = recoEff;
+    }
+
 
 private:
 
@@ -89,6 +100,8 @@ private:
     TF1 *fGammaContr;	
     // SecondaryContr
     TF1 *fSecondaryContr;
+
+    TH2F *fRecoEff;//Reconstruction efficiency, x axis = pT, y axis = multiplicity, z = efficiency
     
     // Mean deposited energy from charged particles
     Double_t fMeanCharged;

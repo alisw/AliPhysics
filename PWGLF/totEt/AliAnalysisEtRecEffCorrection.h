@@ -12,6 +12,7 @@
 #include "TArrayD.h"
 #include "TNamed.h"
 #include "TF1.h"
+#include "TH2F.h"
 
 class AliAnalysisEtRecEffCorrection : public TNamed
 {
@@ -22,7 +23,7 @@ public:
     AliAnalysisEtRecEffCorrection();
 
 //! Constructor
-    AliAnalysisEtRecEffCorrection(TString name, const TF1& correction, const Double_t maxEnergy);
+    AliAnalysisEtRecEffCorrection(TString name, const TF1& correction, const TH2F &recoEff, const Double_t maxEnergy);
 
 //! Copy constructor
     AliAnalysisEtRecEffCorrection(const AliAnalysisEtRecEffCorrection &obj);
@@ -63,6 +64,7 @@ private:
 
     // Energy correction function
     TF1 *fEnergyCorrection;
+    TH2F *fRecoEff;//Reconstruction efficiency, x axis = pT, y axis = multiplicity, z = efficiency
     
     
     

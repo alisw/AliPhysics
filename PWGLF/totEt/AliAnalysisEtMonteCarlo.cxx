@@ -246,12 +246,15 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fCalcTrackMatchVsMult(kFALSE)
 						  ,fHistGammasFound(0)
 						  ,fHistGammasGenerated(0)
+						  ,fHistGammasFoundMult(0)
+						  ,fHistGammasGeneratedMult(0)
 						  ,fHistChargedTracksCut(0)
 						  ,fHistChargedTracksAccepted(0)
 						  ,fHistGammasCut(0)
 						  ,fHistGammasAccepted(0)
 						  ,fHistChargedTracksCutMult(0)
 						  ,fHistChargedTracksAcceptedMult(0)
+						  ,fHistChargedTracksAcceptedLowPtMult(0)
 						  ,fHistGammasCutMult(0)
 						  ,fHistGammasAcceptedMult(0)
 						  ,fHistBadTrackMatches(0)
@@ -274,6 +277,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistHadronDepositsReco(0)
 						  ,fHistHadronDepositsAllMult(0)
 						  ,fHistHadronDepositsRecoMult(0)
+						  ,fHistHadronsAllMult(0)
 						  ,fHistMultChVsSignalVsMult(0)
 {
 }
@@ -377,12 +381,15 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistPiZeroMultAcc; // enter comment here
     delete fHistGammasFound; // enter comment here
     delete fHistGammasGenerated; // enter comment here
+    delete fHistGammasFoundMult; // enter comment here
+    delete fHistGammasGeneratedMult; // enter comment here
     delete fHistChargedTracksCut;
     delete fHistChargedTracksAccepted;
     delete fHistGammasCut;
     delete fHistGammasAccepted;
     delete fHistChargedTracksCutMult;
     delete fHistChargedTracksAcceptedMult;
+    delete fHistChargedTracksAcceptedLowPtMult;
     delete fHistGammasCutMult;
     delete fHistGammasAcceptedMult;
     delete fHistBadTrackMatches;
@@ -404,6 +411,7 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistHadronDepositsReco;
     delete fHistHadronDepositsAllMult;
     delete fHistHadronDepositsRecoMult;
+    delete fHistHadronsAllMult;
     delete fHistMultChVsSignalVsMult;
 }
 
@@ -514,44 +522,44 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                 Double_t et = part->Energy() * TMath::Sin(part->Theta()) + particleMassPart;
 
 
-                // Fill up total E_T counters for each particle species
-                if (code == fgProtonCode || code == fgAntiProtonCode)
-                {
-                }
-                if (code == fgPiPlusCode || code == fgPiMinusCode)
-                {
-                    if (code == fgPiPlusCode)
-                    {
-                    }
-                    else
-                    {
-                    }
-                }
-                if (code == fgGammaCode)
-                {
-                }
-                if (code == fgKPlusCode)
-                {
-                }
-                if(code == fgKMinusCode)
-                {
-                }
-                if (code == fgMuPlusCode || code == fgMuMinusCode)
-                {
-                }
-                if (code == fgEPlusCode || code == fgEMinusCode)
-                {
-                }
-                // some neutrals also
-                if (code == fgNeutronCode)
-                {
-                }
-                if (code == fgAntiNeutronCode)
-                {
-                }
-                if (code == fgGammaCode)
-                {
-                }
+//                 // Fill up total E_T counters for each particle species
+//                 if (code == fgProtonCode || code == fgAntiProtonCode)
+//                 {
+//                 }
+//                 if (code == fgPiPlusCode || code == fgPiMinusCode)
+//                 {
+//                     if (code == fgPiPlusCode)
+//                     {
+//                     }
+//                     else
+//                     {
+//                     }
+//                 }
+//                 if (code == fgGammaCode)
+//                 {
+//                 }
+//                 if (code == fgKPlusCode)
+//                 {
+//                 }
+//                 if(code == fgKMinusCode)
+//                 {
+//                 }
+//                 if (code == fgMuPlusCode || code == fgMuMinusCode)
+//                 {
+//                 }
+//                 if (code == fgEPlusCode || code == fgEMinusCode)
+//                 {
+//                 }
+//                 // some neutrals also
+//                 if (code == fgNeutronCode)
+//                 {
+//                 }
+//                 if (code == fgAntiNeutronCode)
+//                 {
+//                 }
+//                 if (code == fgGammaCode)
+//                 {
+//                 }
 
                 // Neutral particles
                 //if (TMath::Abs(pdg->Charge() - fCuts->GetMonteCarloNeutralParticle()) <1e-3 )
@@ -720,14 +728,19 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
    
 	
 	Bool_t nottrackmatched = kTRUE;//default to no track matched
+	Float_t matchedTrackp = 0.0;
+	Float_t matchedTrackpt = 0.0;
 	nottrackmatched = fSelector->PassTrackMatchingCut(*caloCluster);
 	//by default ALL matched tracks are accepted, whether or not the match is good.  So we check to see if the track is good.
 	if(!nottrackmatched){
 	  Int_t trackMatchedIndex = caloCluster->GetTrackMatchedIndex();
 	  if(trackMatchedIndex < 0) nottrackmatched=kTRUE;
 	  AliESDtrack *track = realEvent->GetTrack(trackMatchedIndex);
+	  matchedTrackp = track->P();
+	  matchedTrackpt = track->Pt();
 	  //if this is a good track, accept track will return true.  The track matched is good, so not track matched is false
 	  nottrackmatched = !(fEsdtrackCutsTPC->AcceptTrack(track));
+	  //if(!nottrackmatched) cout<<"Matched track p: "<<matchedTrackp<<" sim "<<part->P()<<endl;
 	}
      
 
@@ -840,11 +853,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		fHistChargedTracksCutMult->Fill(fDepositedEt,fClusterMult);
 		if(fClusterMult<25){fHistChargedTracksCutPeripheral->Fill(fDepositedEt);}
 	      }
-	      fHistMatchedTracksEvspTBkgd->Fill(part->P(),fReconstructedE);
+	      fHistMatchedTracksEvspTBkgd->Fill(matchedTrackp,fReconstructedE);
 	      if(fCalcTrackMatchVsMult){
-		if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(part->P(),fReconstructedE);}
-		fHistMatchedTracksEvspTBkgdvsMult->Fill(part->P(),fReconstructedE,fClusterMult);
-		fHistMatchedTracksEvspTBkgdvsMultEffCorr->Fill(part->P(),clEt,fClusterMult);//Fill with the efficiency corrected energy
+		if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(matchedTrackp,fReconstructedEt);}
+		fHistMatchedTracksEvspTBkgdvsMult->Fill(matchedTrackp,fReconstructedEt,fClusterMult);
+		fHistMatchedTracksEvspTBkgdvsMultEffCorr->Fill(matchedTrackp,clEt,fClusterMult);//Fill with the efficiency corrected energy
 	      }
 	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(1);
 	      if(caloCluster->GetLabel()!=trackindex){
@@ -878,6 +891,9 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      fHistDxDzNonRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
 	      fHistChargedTracksAccepted->Fill(fDepositedEt);
 	      if(fCalcTrackMatchVsMult){
+		if(matchedTrackpt<0.5){//if we could never have matched this because of its pt, how much energy did it deposit?
+		  fHistChargedTracksAcceptedLowPtMult->Fill(fDepositedEt,fClusterMult);
+		}
 		fHistChargedTracksAcceptedMult->Fill(fDepositedEt,fClusterMult);
 		if(fClusterMult<25){fHistChargedTracksAcceptedPeripheral->Fill(fDepositedEt);}
 	      }
@@ -905,11 +921,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		fHistChargedTracksCutMult->Fill(fDepositedEt,fClusterMult);
 		if(fClusterMult<25){fHistChargedTracksCutPeripheral->Fill(fDepositedEt);}
 	      }
-	      fHistMatchedTracksEvspTBkgd->Fill(part->P(),fReconstructedE);
+	      fHistMatchedTracksEvspTBkgd->Fill(matchedTrackp,fReconstructedE);
 	      if(fCalcTrackMatchVsMult){
-		if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(part->P(),fReconstructedE);}
-		fHistMatchedTracksEvspTBkgdvsMult->Fill(part->P(),fReconstructedE,fClusterMult);
-		fHistMatchedTracksEvspTBkgdvsMultEffCorr->Fill(part->P(),clEt,fClusterMult);//fill with the efficiency corrected energy
+		if(fClusterMult<25){fHistMatchedTracksEvspTBkgdPeripheral->Fill(matchedTrackp,fReconstructedEt);}
+		fHistMatchedTracksEvspTBkgdvsMult->Fill(matchedTrackp,fReconstructedEt,fClusterMult);
+		fHistMatchedTracksEvspTBkgdvsMultEffCorr->Fill(matchedTrackp,clEt,fClusterMult);//fill with the efficiency corrected energy
 	      }
 	    }
 	  }
@@ -948,11 +964,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		fHistGammasCutMult->Fill(fDepositedEt,fClusterMult);
 		if(fClusterMult<25){fHistGammasCutPeripheral->Fill(fDepositedEt);}
 	      }
-	      fHistMatchedTracksEvspTSignal->Fill(part->P(),fReconstructedE);
+	      fHistMatchedTracksEvspTSignal->Fill(matchedTrackp,fReconstructedE);
 	      if(fCalcTrackMatchVsMult){
-		if(fClusterMult<25){fHistMatchedTracksEvspTSignalPeripheral->Fill(part->P(),fReconstructedE);}
-		fHistMatchedTracksEvspTSignalvsMult->Fill(part->P(),fReconstructedE,fClusterMult);
-		fHistMatchedTracksEvspTSignalvsMultEffCorr->Fill(part->P(),clEt,fClusterMult);
+		if(fClusterMult<25){fHistMatchedTracksEvspTSignalPeripheral->Fill(matchedTrackp,fReconstructedEt);}
+		fHistMatchedTracksEvspTSignalvsMult->Fill(matchedTrackp,fReconstructedEt,fClusterMult);
+		fHistMatchedTracksEvspTSignalvsMultEffCorr->Fill(matchedTrackp,clEt,fClusterMult);
 	      }
 	    }
 	  }
@@ -992,11 +1008,17 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         if(pdg->PdgCode()==fgGammaCode && fSelector->CutGeometricalAcceptance(*part))// TMath::Abs(part->Eta()) < 0.12)
 	{
 	  fHistGammasGenerated->Fill(part->Energy());
+	  fHistGammasGeneratedMult->Fill(part->Energy(),fClusterMult);
 	  if(std::binary_search(foundGammas.begin(),foundGammas.end(),iPart))
 	  {
 	    fHistGammasFound->Fill(part->Energy());
+	    fHistGammasFoundMult->Fill(part->Energy(),fClusterMult);
 	  }
 	}
+        if(pdg->PdgCode()==fgPiPlusCode || pdg->PdgCode()==fgPiMinusCode || pdg->PdgCode()==fgProtonCode || pdg->PdgCode()==fgAntiProtonCode){//section here for all hadrons generated
+	  fHistHadronsAllMult->Fill(part->Pt(),fClusterMult);
+	}
+	
         
     }
     if(fCalcForKaonCorrection){
@@ -1409,6 +1431,8 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
 
     fHistGammasFound = new TH1F("fHistGammasFound", "fHistGammasFound",200, 0, 10);
     fHistGammasGenerated = new TH1F("fHistGammasGenerated", "fHistGammasGenerated",200, 0, 10);
+    fHistGammasFoundMult = new TH2F("fHistGammasFoundMult", "fHistGammasFoundMult",200, 0, 10,10,0,100);
+    fHistGammasGeneratedMult = new TH2F("fHistGammasGeneratedMult", "fHistGammasGeneratedMult",200, 0, 10,10,0,100);
     fHistChargedTracksCut = new TH1F("fHistChargedTracksCut", "fHistChargedTracksCut",100, 0, 5);
     fHistChargedTracksAccepted = new TH1F("fHistChargedTracksAccepted", "fHistChargedTracksAccepted",100, 0, 5);
     fHistGammasCut = new TH1F("fHistGammasTracksCut", "fHistGammasTracksCut",100, 0, 5);
@@ -1417,6 +1441,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     if(fCalcTrackMatchVsMult){
       fHistChargedTracksCutMult = new TH2F("fHistChargedTracksCutMult", "fHistChargedTracksCutMult",100, 0, 5,10,0,100);
       fHistChargedTracksAcceptedMult = new TH2F("fHistChargedTracksAcceptedMult", "fHistChargedTracksAcceptedMult",100, 0, 5,10,0,100);
+      fHistChargedTracksAcceptedLowPtMult = new TH2F("fHistChargedTracksAcceptedLowPtMult", "fHistChargedTracksAcceptedLowPtMult",100, 0, 5,10,0,100);
       fHistGammasCutMult = new TH2F("fHistGammasTracksCutMult", "fHistGammasTracksCutMult",100, 0, 5,10,0,100);
       fHistGammasAcceptedMult = new TH2F("fHistGammasTracksAcceptedMult", "fHistGammasTracksAcceptedMult",100, 0, 5,10,0,100);
     }
@@ -1453,6 +1478,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
       fHistHadronDepositsAllMult = new TH2F("fHistHadronDepositsAllMult","All Hadrons which deposited energy in calorimeter",fgNumOfPtBins,fgPtAxis,nMult,nMultCuts);
       fHistHadronDepositsRecoMult = new TH2F("fHistHadronDepositsRecoMult","Reconstructed Hadrons which deposited energy in calorimeter",fgNumOfPtBins,fgPtAxis,nMult,nMultCuts);
 
+      fHistHadronsAllMult = new TH2F("fHistHadronsAllMult","All Hadrons vs cluster mult",fgNumOfPtBins,fgPtAxis,nMult,nMultCuts);
 
       fHistMultChVsSignalVsMult = new TH3F("fHistMultChVsSignalVsMult","Charged particle Multiplicity vs Signal particle multiplicity vs Cluster Mult",nMult,nMultCuts,nMult,nMultCuts,nMult,nMultCuts);
 }
@@ -1567,6 +1593,8 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     
     list->Add(fHistGammasFound);
     list->Add(fHistGammasGenerated);
+    list->Add(fHistGammasFoundMult);
+    list->Add(fHistGammasGeneratedMult);
     list->Add(fHistChargedTracksCut);
     list->Add(fHistChargedTracksAccepted);
     list->Add(fHistGammasCut);
@@ -1574,6 +1602,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     if(fCalcTrackMatchVsMult){
       list->Add(fHistChargedTracksCutMult);
       list->Add(fHistChargedTracksAcceptedMult);
+      list->Add(fHistChargedTracksAcceptedLowPtMult);
       list->Add(fHistGammasCutMult);
       list->Add(fHistGammasAcceptedMult);
     }
@@ -1598,6 +1627,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistHadronDepositsReco);
     list->Add(fHistHadronDepositsAllMult);
     list->Add(fHistHadronDepositsRecoMult);
+    list->Add(fHistHadronsAllMult);
     list->Add(fHistMultChVsSignalVsMult);
 
 }
