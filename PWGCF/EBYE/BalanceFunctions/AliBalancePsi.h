@@ -206,7 +206,8 @@ class AliBalancePsi : public TObject {
   void UseResonancesCut() {fResonancesCut = kTRUE;}
   void UseHBTCut() {fHBTCut = kTRUE;}
   void UseConversionCut() {fConversionCut = kTRUE;}
-  void UseMomentumDifferenceCut() {fQCut = kTRUE;}
+  void UseMomentumDifferenceCut(Double_t gDeltaPtCutMin) {
+    fQCut = kTRUE; fDeltaPtMin = gDeltaPtCutMin;}
 
  private:
   Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign); 
@@ -247,6 +248,7 @@ class AliBalancePsi : public TObject {
   Bool_t fHBTCut;//cut for two-track efficiency (like HBT group)
   Bool_t fConversionCut;//conversion cut
   Bool_t fQCut;//cut on momentum difference to suppress femtoscopic effect correlations
+  Double_t fDeltaPtMin;//delta pt cut: minimum value
   Bool_t fVertexBinning;//use vertex z binning in AliTHn
 
   TString fEventClass;

@@ -78,6 +78,7 @@ AliBalancePsi::AliBalancePsi() :
   fHBTCut(kFALSE),
   fConversionCut(kFALSE),
   fQCut(kFALSE),
+  fDeltaPtMin(0.0),
   fVertexBinning(kFALSE),
   fEventClass("EventPlane"){
   // Default constructor
@@ -114,6 +115,7 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHBTCut(balance.fHBTCut),
   fConversionCut(balance.fConversionCut),
   fQCut(balance.fQCut),
+  fDeltaPtMin(balance.fDeltaPtMin),
   fVertexBinning(balance.fVertexBinning),
   fEventClass("EventPlane"){
   //copy constructor
@@ -668,11 +670,11 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       // momentum difference cut - suppress femtoscopic effects
       if(fQCut){ 
 
-	Double_t ptMin        = 0.1; //const for the time being (should be changeable later on)
+	//Double_t ptMin        = 0.1; //const for the time being (should be changeable later on)
 	Double_t ptDifference = TMath::Abs( firstPt - secondPt[j]);
 
 	fHistQbefore->Fill(trackVariablesPair[1],trackVariablesPair[2],ptDifference);
-	if(ptDifference < ptMin) continue;
+	if(ptDifference < fDeltaPtMin) continue;
 	fHistQafter->Fill(trackVariablesPair[1],trackVariablesPair[2],ptDifference);
 
       }
