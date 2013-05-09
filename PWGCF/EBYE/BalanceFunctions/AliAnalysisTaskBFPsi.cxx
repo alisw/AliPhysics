@@ -103,6 +103,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistProbTPCTOFvsPtafterPID(NULL),
   fHistNSigmaTPCvsPtafterPID(NULL), 
   fHistNSigmaTOFvsPtafterPID(NULL),  
+  fCentralityArrayBinsForCorrections(kCENTRALITY),
   fPIDResponse(0x0),
   fPIDCombined(0x0),
   fParticleOfInterest(kPion),
@@ -163,6 +164,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   for (Int_t i=0; i<kCENTRALITY; i++){
     fHistCorrectionPlus[i] = NULL; 
     fHistCorrectionMinus[i] = NULL; 
+    fCentralityArrayForCorrections[i] = -1.;
   }
   //=====================================================correction
 
@@ -523,12 +525,12 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
   }
     
   //TString listEffName = "";
-  for (Int_t iCent = 0; iCent < kCENTRALITY; iCent++) {
+  for (Int_t iCent = 0; iCent < fCentralityArrayBinsForCorrections-1; iCent++) {
     
     //Printf("iCent %d:",iCent);
     
     TString histoName = "fHistCorrectionPlus";
-    histoName += centralityArrayForPbPb_string[iCent];
+    histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
     fHistCorrectionPlus[iCent]= dynamic_cast<TH3D *>(f->Get(histoName.Data()));
     if(!fHistCorrectionPlus[iCent]) {
       Printf("fHist not found!!!");
@@ -536,9 +538,7 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
     }
     
     histoName = "fHistCorrectionMinus";
-    histoName += centralityArrayForPbPb_string[iCent];
-    //histoName += (TString)((Int_t)(centralityArrayForPbPb[iCent])); //histoName += "-";
-    //histoName += (TString)((Int_t)(centralityArrayForPbPb[iCent+1]));
+    histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
     fHistCorrectionMinus[iCent] = dynamic_cast<TH3D *>(f->Get(histoName.Data())); 
     if(!fHistCorrectionMinus[iCent]) {
       Printf("fHist not found!!!");
@@ -1032,8 +1032,8 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
   }
 
   Int_t gCentralityInt = 1;
-  for (Int_t i=0; i<kCENTRALITY; i++){
-    if((centralityArrayForPbPb[i] <= gCentrality)&&(gCentrality <= centralityArrayForPbPb[i+1])){
+  for (Int_t i=0; i<fCentralityArrayBinsForCorrections-1; i++){
+    if((fCentralityArrayForCorrections[i] <= gCentrality)&&(gCentrality <= fCentralityArrayForCorrections[i+1])){
       gCentralityInt = i;
       break;
     }
