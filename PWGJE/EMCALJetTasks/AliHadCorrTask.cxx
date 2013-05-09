@@ -33,6 +33,7 @@ AliHadCorrTask::AliHadCorrTask() :
   fDoTrackClus(0),
   fHadCorr(0),
   fEexclCell(0),
+  fDoExact(kFALSE),
   fEsdMode(kTRUE),
   fOutClusters(0),
   fHistNclusvsCent(0),
@@ -55,6 +56,11 @@ AliHadCorrTask::AliHadCorrTask() :
       fHistMatchdRvsEP[i]  = 0;
       fHistNMatchEnergy[i] = 0;
 
+      fHistEmbTrackMatchesOversub[i] = 0;
+      fHistNonEmbTrackMatchesOversub[i] = 0;
+      fHistOversub[i] = 0;
+      fHistOversubOverClusE[i] = 0;
+
       for(Int_t j=0; j<4; j++)
 	fHistNCellsEnergy[i][j] = 0;
     }
@@ -75,6 +81,7 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
   fDoTrackClus(1),
   fHadCorr(0),
   fEexclCell(0),
+  fDoExact(kFALSE),
   fEsdMode(kTRUE),
   fOutClusters(0),
   fHistNclusvsCent(0),
@@ -96,6 +103,11 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
       fHistMatchEvsP[i]    = 0;
       fHistMatchdRvsEP[i]  = 0;
       fHistNMatchEnergy[i] = 0;
+
+      fHistEmbTrackMatchesOversub[i] = 0;
+      fHistNonEmbTrackMatchesOversub[i] = 0;
+      fHistOversub[i] = 0;
+      fHistOversubOverClusE[i] = 0;
 
       for(Int_t j=0; j<4; j++)
 	fHistNCellsEnergy[i][j] = 0;
@@ -363,55 +375,57 @@ void AliHadCorrTask::UserCreateOutputObjects()
 
   TString name;
 
-  for(Int_t icent=0; icent<8; ++icent) {
+  const Int_t nCentChBins = fNcentBins * 2;
+
+  for(Int_t icent=0; icent<nCentChBins; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
       for(Int_t ieta=0; ieta<2; ++ieta) {
 	name = Form("fHistMatchEtaPhi_%i_%i_%i",icent,ipt,ieta);
-	fHistMatchEtaPhi[icent][ipt][ieta] = new TH2F(name, name, 200, -0.1, 0.1, 400, -0.2, 0.2);
+	fHistMatchEtaPhi[icent][ipt][ieta] = new TH2F(name, name, fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
 	fOutput->Add(fHistMatchEtaPhi[icent][ipt][ieta]);
       }
     }
 
     name = Form("fHistEsubPch_%i",icent);
-    fHistEsubPch[icent]=new TH1F(name, name, 400, 0., 100.);
+    fHistEsubPch[icent]=new TH1F(name, name, fNbins, fMinBinPt, fMaxBinPt);
     fOutput->Add(fHistEsubPch[icent]);
     
     name = Form("fHistEsubPchRat_%i",icent);
-    fHistEsubPchRat[icent]=new TH2F(name, name, 400, 0., 200., 1000, 0., 10.);
+    fHistEsubPchRat[icent]=new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
     fOutput->Add(fHistEsubPchRat[icent]);
 
     name = Form("fHistEsubPchRatAll_%i",icent);
-    fHistEsubPchRatAll[icent]=new TH2F(name, name, 400, 0., 200., 1000, 0., 10.);
+    fHistEsubPchRatAll[icent]=new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
     fOutput->Add(fHistEsubPchRatAll[icent]);
     
-    if (icent<4) {
+    if (icent<fNcentBins) {
       for(Int_t itrk=0; itrk<4; ++itrk) {
 	name = Form("fHistNCellsEnergy_%i_%i",icent,itrk);
-	fHistNCellsEnergy[icent][itrk]  = new TH2F(name, name, 1000, 0, 100, 101, -0.5, 100.5);
+	fHistNCellsEnergy[icent][itrk]  = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, 101, -0.5, 100.5);
 	fOutput->Add(fHistNCellsEnergy[icent][itrk]);
       }
 
       name = Form("fHistMatchEvsP_%i",icent);
-      fHistMatchEvsP[icent] = new TH2F(name, name, 400, 0., 200., 1000, 0., 10.);
+      fHistMatchEvsP[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
       fOutput->Add(fHistMatchEvsP[icent]);
 
       name = Form("fHistMatchdRvsEP_%i",icent);
-      fHistMatchdRvsEP[icent] = new TH2F(name, name, 1000, 0., 1., 1000, 0., 10.);
+      fHistMatchdRvsEP[icent] = new TH2F(name, name, fNbins, 0., 0.2, fNbins*2, 0., 10.);
       fOutput->Add(fHistMatchdRvsEP[icent]);
 
       name = Form("fHistNMatchEnergy_%i",icent);
-      fHistNMatchEnergy[icent]  = new TH2F(name, name, 1000, 0, 100, 101, -0.5, 100.5);
+      fHistNMatchEnergy[icent]  = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, 101, -0.5, 100.5);
       fOutput->Add(fHistNMatchEnergy[icent]);
     }
   }
 
   fHistNclusvsCent      = new TH1F("Nclusvscent",      "NclusVsCent",      100, 0, 100);
   fHistNclusMatchvsCent = new TH1F("NclusMatchvscent", "NclusMatchVsCent", 100, 0, 100);
-  fHistEbefore          = new TH1F("Ebefore",          "Ebefore",          100, 0, 100);
-  fHistEafter           = new TH1F("Eafter",           "Eafter",           100, 0, 100);
-  fHistEoPCent          = new TH2F("EoPCent",          "EoPCent",          100, 0, 100, 1000, 0,   10);
-  fHistNMatchCent       = new TH2F("NMatchesCent",     "NMatchesCent",     100, 0, 100, 11, -0.5, 10.5);
-  fHistNClusMatchCent   = new TH2F("NClusMatchesCent", "NClusMatchesCent", 100, 0, 100, 11, -0.5, 10.5);
+  fHistEbefore          = new TH1F("Ebefore",          "Ebefore",          fNbins, fMinBinPt, fMaxBinPt);
+  fHistEafter           = new TH1F("Eafter",           "Eafter",           fNbins, fMinBinPt, fMaxBinPt);
+  fHistEoPCent          = new TH2F("EoPCent",          "EoPCent",          100, 0, 100, fNbins*2, 0, 10);
+  fHistNMatchCent       = new TH2F("NMatchesCent",     "NMatchesCent",     100, 0, 100, 11, -0.5,  10.5);
+  fHistNClusMatchCent   = new TH2F("NClusMatchesCent", "NClusMatchesCent", 100, 0, 100, 11, -0.5,  10.5);
 
   fOutput->Add(fHistNclusMatchvsCent);
   fOutput->Add(fHistNclusvsCent);
@@ -420,6 +434,34 @@ void AliHadCorrTask::UserCreateOutputObjects()
   fOutput->Add(fHistEoPCent);
   fOutput->Add(fHistNMatchCent);
   fOutput->Add(fHistNClusMatchCent);
+
+  if (fIsEmbedded) {
+    for(Int_t icent=0; icent<fNcentBins; ++icent) {
+      name = Form("fHistEmbTrackMatchesOversub_%d",icent);
+      fHistEmbTrackMatchesOversub[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbTrackMatchesOversub[icent]->GetXaxis()->SetTitle("E_{clus}^{raw} (GeV)");
+      fHistEmbTrackMatchesOversub[icent]->GetYaxis()->SetTitle("E_{oversub} (GeV)");
+      fOutput->Add(fHistEmbTrackMatchesOversub[icent]);
+
+      name = Form("fHistNonEmbTrackMatchesOversub_%d",icent);
+      fHistNonEmbTrackMatchesOversub[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+      fHistNonEmbTrackMatchesOversub[icent]->GetXaxis()->SetTitle("E_{clus}^{raw} (GeV)");
+      fHistNonEmbTrackMatchesOversub[icent]->GetYaxis()->SetTitle("E_{oversub} (GeV)");
+      fOutput->Add(fHistNonEmbTrackMatchesOversub[icent]);
+
+      name = Form("fHistOversub_%d",icent);
+      fHistOversub[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+      fHistOversub[icent]->GetXaxis()->SetTitle("E_{clus}^{raw} (GeV)");
+      fHistOversub[icent]->GetYaxis()->SetTitle("E_{oversub} (GeV)");
+      fOutput->Add(fHistOversub[icent]);
+
+      name = Form("fHistOversubOverClusE_%d",icent);
+      fHistOversubOverClusE[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, 0, 1.2);
+      fHistOversubOverClusE[icent]->GetXaxis()->SetTitle("E_{clus}^{raw} (GeV)");
+      fHistOversubOverClusE[icent]->GetYaxis()->SetTitle("E_{oversub} / E_{clus}^{raw}");
+      fOutput->Add(fHistOversubOverClusE[icent]);
+    }
+  }
 
   PostData(1, fOutput);
 }
@@ -430,12 +472,6 @@ void AliHadCorrTask::ExecOnce()
   // Do base class initializations and if it fails -> bail out
   if (!fInitialized)
     AliAnalysisTaskEmcal::ExecOnce();
-  if (!fInitialized)
-    return;
-
-  // Init the analysis.
-
-  AliAnalysisTaskEmcal::ExecOnce();
 
   if (!fInitialized)
     return;
@@ -466,7 +502,6 @@ void AliHadCorrTask::ExecOnce()
   else {
     fInitialized = kFALSE;
     AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutCaloName.Data()));
-    fInitialized = kFALSE;
     return;
   }
 }
@@ -521,7 +556,7 @@ void AliHadCorrTask::DoTrackLoop()
 }
 
 //________________________________________________________________________
-void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t &totalTrkP, Int_t &Nmatches) 
+void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t &totalTrkP, Int_t &Nmatches, Double_t &trkPMCfrac, Int_t &NMCmatches) 
 {
   // Do the loop over matched tracks for cluster emccluster.
 
@@ -556,7 +591,7 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
     Int_t    mombin    = GetMomBin(mom); 
     Int_t    centbinch = fCentBin;
     if (track->Charge()<0) 
-      centbinch += 4;
+      centbinch += fNcentBins;
 
     if (fCreateHisto) {
       Int_t etabin = 0;
@@ -583,6 +618,10 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
     }
 
     if ((phidiff < phiCuthi && phidiff > phiCutlo) && TMath::Abs(etadiff) < etaCut) {
+      if (track->GetLabel() > fMinMCLabel) {
+	++NMCmatches;
+	trkPMCfrac += track->P();
+      }
       ++Nmatches;
       totalTrkP += track->P();
 
@@ -593,6 +632,9 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
       }
     }
   }
+
+  if (totalTrkP > 0)
+    trkPMCfrac /= totalTrkP;
 }
 
 //________________________________________________________________________
@@ -620,8 +662,10 @@ Bool_t AliHadCorrTask::Run()
       continue;
 
     Double_t energyclus = 0;
-    if (fCreateHisto)
+    if (fCreateHisto) {
       fHistEbefore->Fill(fCent, cluster->E());
+      fHistNclusvsCent->Fill(fCent);
+    }
   
     // apply correction / subtraction
     // to subtract only the closest track set fHadCor to a %
@@ -697,7 +741,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   Int_t mombin = GetMomBin(mom);
   Int_t centbinch = fCentBin;
   if (track->Charge()<0) 
-    centbinch += 4;
+    centbinch += fNcentBins;
 
   // plot some histograms if switched on
   if (fCreateHisto) {
@@ -753,9 +797,12 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
   
   Double_t totalTrkP  = 0.0; // count total track momentum
   Int_t    Nmatches   = 0;   // count total number of matches
+
+  Double_t trkPMCfrac   = 0.0; // count total track momentum
+  Int_t    NMCmatches   = 0;   // count total number of matches
   
   // do the loop over the matched tracks and get the number of matches and the total momentum
-  DoMatchedTracksLoop(emccluster, totalTrkP, Nmatches);
+  DoMatchedTracksLoop(emccluster, totalTrkP, Nmatches, trkPMCfrac, NMCmatches);
 
   Double_t Esub = hadCorr * totalTrkP;
 	
@@ -770,13 +817,8 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
   if ((energyclus - Esub) < clusEexcl) 
     Esub = (energyclus - clusEexcl);
 
-  Double_t EoP = 0;
-  if (totalTrkP>0)
-    EoP = energyclus / totalTrkP;
-
   // plot some histograms if switched on
   if (fCreateHisto) {
-    fHistNclusvsCent->Fill(fCent);
     fHistNMatchCent->Fill(fCent, Nmatches);
     fHistNMatchEnergy[fCentBin]->Fill(energyclus, Nmatches);
     
@@ -787,25 +829,56 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
       fHistNCellsEnergy[fCentBin][Nmatches]->Fill(energyclus, cNcells);
     else
       fHistNCellsEnergy[fCentBin][3]->Fill(energyclus, cNcells);
-
-    if (EoP > 0) {
+      
+    if (totalTrkP>0) {
+      Double_t EoP = energyclus / totalTrkP;
       fHistEoPCent->Fill(fCent, EoP);
       fHistMatchEvsP[fCentBin]->Fill(energyclus, EoP);
+
+      fHistEsubPchRatAll[fCentBin]->Fill(totalTrkP, Esub / totalTrkP);
+
+      if (Nmatches == 1) {
+	Int_t iMin = emccluster->GetMatchedObjId();
+	AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iMin));
+	AliVTrack *track = emctrack->GetTrack();
+	Int_t centbinchm = fCentBin;
+	if (track->Charge()<0) 
+	  centbinchm += fNcentBins;
+	
+	fHistEsubPchRat[centbinchm]->Fill(totalTrkP, Esub / totalTrkP);
+	fHistEsubPch[centbinchm]->Fill(totalTrkP, Esub);
+      }
     }
 
-    if (Nmatches == 1 && totalTrkP > 0) {
-      Int_t iMin = emccluster->GetMatchedObjId();
-      AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iMin));
-      AliVTrack *track = emctrack->GetTrack();
-      Int_t centbinchm = fCentBin;
-      if (track->Charge()<0) 
-	centbinchm += 4;
+    if (fIsEmbedded) {
+      Double_t EsubMC = hadCorr * totalTrkP * trkPMCfrac;
+      Double_t EsubBkg = hadCorr * totalTrkP - EsubMC;
+      Double_t EclusMC = energyclus * cluster->GetMCEnergyFraction();
+      Double_t EclusBkg = energyclus - EclusMC;
       
-      fHistEsubPchRat[centbinchm]->Fill(totalTrkP, Esub / totalTrkP);
-      fHistEsubPch[centbinchm]->Fill(totalTrkP, Esub);
-    }
-    if (totalTrkP > 0) {
-      fHistEsubPchRatAll[fCentBin]->Fill(totalTrkP, Esub / totalTrkP);
+      Double_t EclusCorr = 0;
+      if (energyclus > Esub)
+	EclusCorr = energyclus - Esub;
+      
+      Double_t EclusMCcorr = 0;
+      if (EclusMC > EsubMC)
+	EclusMCcorr = EclusMC - EsubMC;
+
+      Double_t EclusBkgcorr = 0;
+      if (EclusBkg > EsubBkg)
+	EclusBkgcorr = EclusBkg - EsubBkg;
+
+      Double_t overSub = EclusMCcorr + EclusBkgcorr - EclusCorr;
+      fHistOversub[fCentBin]->Fill(energyclus, overSub);
+      fHistOversubOverClusE[fCentBin]->Fill(energyclus, overSub / energyclus);
+
+      if (trkPMCfrac < 0.05)
+	fHistNonEmbTrackMatchesOversub[fCentBin]->Fill(energyclus, overSub);
+      else if (trkPMCfrac > 0.95)
+	fHistEmbTrackMatchesOversub[fCentBin]->Fill(energyclus, overSub);
+
+      if (fDoExact)
+	Esub -= overSub;
     }
   }
 
