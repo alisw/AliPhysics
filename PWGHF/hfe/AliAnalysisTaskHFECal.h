@@ -109,6 +109,8 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   THnSparseD		*fInvmassULS;		//! Inv mass of ULS (e,e)
   THnSparseD		*fInvmassLSmc;		//! Inv mass of LS (e,e)
   THnSparseD		*fInvmassULSmc;		//! Inv mass of ULS (e,e)
+  TH2D		*fInvmassLSreco;		//! Inv mass of LS (e,e)
+  TH2D		*fInvmassULSreco;		//! Inv mass of ULS (e,e)
   TH2D		*fInvmassLSmc0;		//! Inv mass of ULS (e,e)
   TH2D		*fInvmassLSmc1;		//! Inv mass of ULS (e,e)
   TH2D		*fInvmassLSmc2;		//! Inv mass of ULS (e,e)
