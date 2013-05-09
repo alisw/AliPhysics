@@ -349,6 +349,10 @@ public:
                                                        InitTrackCuts()                 ; }
   Int_t    GetTrackCutsType() const                  { return fTrackCutsType; }
 
+  void     SetAODTrackFilterMask( UInt_t mask)       {fAODFilterMask    = mask  ; }
+  void     SwitchOnAODHybridTracksMatch()            {fAODHybridTracks  = kTRUE ; }
+  void     SwitchOffAODHybridTracksMatch()           {fAODHybridTracks  = kFALSE ; }
+  
   // track quality cut setters  
   void     SetMinTrackPt(Double_t pt=0)              { fCutMinTrackPt           = pt   ; }
   void     SetMinNClustersTPC(Int_t min=-1)          { fCutMinNClusterTPC       = min  ; }
@@ -428,6 +432,8 @@ private:
     
   //Track matching
   UInt_t     fAODFilterMask;             // Filter mask to select AOD tracks. Refer to $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
+  Bool_t     fAODHybridTracks;           // Match with hybrid
+  
   TArrayI  * fMatchedTrackIndex;         // Array that stores indexes of matched tracks      
   TArrayI  * fMatchedClusterIndex;       // Array that stores indexes of matched clusters
   TArrayF  * fResidualEta;               // Array that stores the residual eta
@@ -460,7 +466,7 @@ private:
   Bool_t     fCutRequireITSpureSA; 	 // ITS pure standalone tracks
   
   
-  ClassDef(AliEMCALRecoUtils, 19)
+  ClassDef(AliEMCALRecoUtils, 20)
   
 };
 

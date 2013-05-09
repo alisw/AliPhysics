@@ -71,7 +71,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
   fRejectExoticCluster(kFALSE),           fRejectExoticCells(kFALSE), 
   fExoticCellFraction(0),                 fExoticCellDiffTime(0),                 fExoticCellMinAmplitude(0),
-  fPIDUtils(),                            fAODFilterMask(0),
+  fPIDUtils(),                            fAODFilterMask(0),                      fAODHybridTracks(0),
   fMatchedTrackIndex(0x0),                fMatchedClusterIndex(0x0), 
   fResidualEta(0x0), fResidualPhi(0x0),   fCutEtaPhiSum(kFALSE),                  fCutEtaPhiSeparate(kFALSE), 
   fCutR(0),                               fCutEta(0),                             fCutPhi(0),
@@ -119,6 +119,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fExoticCellFraction(reco.fExoticCellFraction),             fExoticCellDiffTime(reco.fExoticCellDiffTime),               
   fExoticCellMinAmplitude(reco.fExoticCellMinAmplitude),
   fPIDUtils(reco.fPIDUtils),                                 fAODFilterMask(reco.fAODFilterMask),
+  fAODHybridTracks(reco.fAODHybridTracks),
   fMatchedTrackIndex(  reco.fMatchedTrackIndex?  new TArrayI(*reco.fMatchedTrackIndex):0x0),
   fMatchedClusterIndex(reco.fMatchedClusterIndex?new TArrayI(*reco.fMatchedClusterIndex):0x0),
   fResidualEta(        reco.fResidualEta?        new TArrayF(*reco.fResidualEta):0x0),
@@ -192,6 +193,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fPIDUtils                  = reco.fPIDUtils;
 
   fAODFilterMask             = reco.fAODFilterMask;
+  fAODHybridTracks           = reco.fAODHybridTracks;
   
   fCutEtaPhiSum              = reco.fCutEtaPhiSum;
   fCutEtaPhiSeparate         = reco.fCutEtaPhiSeparate;
@@ -995,7 +997,8 @@ void AliEMCALRecoUtils::InitParameters()
   fExoticCellDiffTime     = 1e6;
   fExoticCellMinAmplitude = 0.5;
   
-  fAODFilterMask = 32;
+  fAODFilterMask   = 32;
+  fAODHybridTracks = kFALSE;
   
   fCutEtaPhiSum      = kTRUE;
   fCutEtaPhiSeparate = kFALSE;
@@ -1875,14 +1878,22 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     {
       aodTrack = aodevent->GetTrack(itr);
       if(!aodTrack) continue;
-      if(!aodTrack->TestFilterMask(fAODFilterMask)) continue; //Select AOD tracks that fulfill GetStandardITSTPCTrackCuts2010()
+      
+      //Check mask if not hybrid
+      if(!fAODHybridTracks && !aodTrack->TestFilterMask(fAODFilterMask) ) continue; //Select AOD tracks that fulfill GetStandardITSTPCTrackCuts2010()
+      
+      //Check hybrid
+      if( fAODHybridTracks && !aodTrack->IsHybridGlobalConstrainedGlobal()) continue ;
+      
       if(aodTrack->Pt()<fCutMinTrackPt) continue;
+
       Double_t phi = aodTrack->Phi()*TMath::RadToDeg();
       if(TMath::Abs(aodTrack->Eta())>0.8 || phi <= 20 || phi >= 240 ) continue;
       Double_t pos[3],mom[3];
       aodTrack->GetXYZ(pos);
       aodTrack->GetPxPyPz(mom);
       AliDebug(5,Form("aod track: i=%d | pos=(%5.4f,%5.4f,%5.4f) | mom=(%5.4f,%5.4f,%5.4f) | charge=%d\n",itr,pos[0],pos[1],pos[2],mom[0],mom[1],mom[2],aodTrack->Charge()));
+
       trackParam= new AliExternalTrackParam(pos,mom,cv,aodTrack->Charge());
     }
     
