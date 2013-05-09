@@ -182,13 +182,13 @@ Bool_t AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL()
   
   if(fEMCALEnergyCut <= 0) return kTRUE; // accept
   
-  Int_t           nCluster = InputEvent() -> GetNumberOfCaloClusters();
-  AliVCaloCells * caloCell = InputEvent() -> GetEMCALCells();
-  Int_t           bc       = InputEvent() -> GetBunchCrossNumber();
-
+  Int_t           nCluster = fEvent -> GetNumberOfCaloClusters();
+  AliVCaloCells * caloCell = fEvent -> GetEMCALCells();
+  Int_t           bc       = fEvent -> GetBunchCrossNumber();
+  
   for(Int_t icalo = 0; icalo < nCluster; icalo++)
   {
-    AliVCluster *clus = (AliVCluster*) (InputEvent()->GetCaloCluster(icalo));
+    AliVCluster *clus = (AliVCluster*) (fEvent->GetCaloCluster(icalo));
     
     if( ( clus->IsEMCAL() ) && ( clus->GetNCells() > fEMCALNcellsCut ) && ( clus->E() > fEMCALEnergyCut ) &&
        fRecoUtils->IsGoodCluster(clus,fGeom,caloCell,bc))
@@ -196,7 +196,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL()
       
       if (fDebug > 0)
         printf("AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL() - Accept :  E %2.2f > %2.2f, nCells %d > %d \n",
-                             clus->E(), fEMCALEnergyCut, clus->GetNCells(), fEMCALNcellsCut);
+               clus->E(), fEMCALEnergyCut, clus->GetNCells(), fEMCALNcellsCut);
       
       return kTRUE;
     }
@@ -208,7 +208,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL()
   
   return kFALSE;
   
-}  
+}
 
 //_______________________________________________
 void AliAnalysisTaskEMCALClusterize::AccessOADB()
@@ -483,10 +483,7 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
   // Also check if the quality of the event is good if not reject it
   
   fEvent = 0x0;
-  
-  //Process events if there is a high energy cluster
-  if(!AcceptEventEMCAL())  return ; 
-    
+      
   AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   Int_t eventN = Entry();
   if(aodIH) eventN = aodIH->GetReadEntry(); 
@@ -542,6 +539,9 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
     Error("UserExec","Event not available");
     return ;
   }
+  
+  //Process events if there is a high energy cluster
+  if(!AcceptEventEMCAL())  { fEvent = 0x0 ; return ; }
   
   //-------------------------------------------------------------------------------------
   // Reject events if LED was firing, use only for LHC11a data 
