@@ -23,7 +23,7 @@
 // Authors: A.Dainese, andrea.dainese@lnl.infn.it
 // Chiara Bianchin, chiara.bianchin@pd.infn.it (invariant mass)
 // Carmelo Di Giglio, carmelo.digiglio@ba.infn.it (like sign)
-// Jeremy Wilkinson, jwilkinson@physi.uni-heidelberg.de (weighted Bayesian)
+// Jeremy Wilkinson, jwilkinson@physi.uni-heidelberg.de (weighted Bayesian
 /////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
@@ -338,6 +338,72 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 	fDistr->Add(tmpMS);
       }
 
+
+      //Ncls, phi, pt distrubutions
+
+      namedistr="hNclsD0vsptB_";
+      namedistr+=i;
+      TH2F *hNclsD0vsptB = new TH2F(namedistr.Data(),"N cls distrubution [B];p_{T} [GeV/c];N cls",200,0.,20.,100,0.,200.);
+      namedistr="hNclsD0barvsptB_";
+      namedistr+=i;
+      TH2F *hNclsD0barvsptB = new TH2F(namedistr.Data(),"N cls distrubution [B];p_{T} [GeV/c];N cls",200,0.,20.,100,0.,200.);
+
+      namedistr="hNITSpointsD0vsptB_";
+      namedistr+=i;
+      TH2F *hNITSpointsD0vsptB = new TH2F(namedistr.Data(),"N ITS points distrubution [B];p_{T} [GeV/c];N points",200,0.,20.,7,0.,7.);
+
+      namedistr="hNSPDpointsD0B_";
+      namedistr+=i;
+      TH1I *hNSPDpointsD0B = new TH1I(namedistr.Data(),"N SPD points distrubution [B]; ;N tracks",4,0,4);
+      hNSPDpointsD0B->GetXaxis()->SetBinLabel(1, "no SPD");
+      hNSPDpointsD0B->GetXaxis()->SetBinLabel(2, "kOnlyFirst");
+      hNSPDpointsD0B->GetXaxis()->SetBinLabel(3, "kOnlySecond");
+      hNSPDpointsD0B->GetXaxis()->SetBinLabel(4, "kBoth");
+
+
+      namedistr="hptD0B_";
+      namedistr+=i;
+      TH1F *hptD0B = new TH1F(namedistr.Data(), "p_{T} distribution [B];p_{T} [GeV/c]",200,0.,20.);
+      namedistr="hptD0barB_";
+      namedistr+=i;
+      TH1F *hptD0barB = new TH1F(namedistr.Data(), "p_{T} distribution [B];p_{T} [GeV/c]",200,0.,20.);
+      
+      namedistr="hphiD0B_";
+      namedistr+=i;
+      TH1F *hphiD0B = new TH1F(namedistr.Data(), "#phi distribution [B];#phi [rad]",100,0.,2*TMath::Pi());
+      namedistr="hphiD0barB_";
+      namedistr+=i;
+      TH1F *hphiD0barB = new TH1F(namedistr.Data(), "#phi distribution [B];#phi [rad]",100,0.,2*TMath::Pi());
+
+      namedistr="hptBnoMcut_";
+      namedistr+=i;
+      TH1F *hptBnoMcut = new TH1F(namedistr.Data(), "p_{T} distribution [B no M cut];p_{T} [GeV/c]",200,0.,20.);
+
+      namedistr="hphiBnoMcut_";
+      namedistr+=i;
+      TH1F *hphiBnoMcut = new TH1F(namedistr.Data(), "#phi distribution [B no M cut];#phi [rad]",100,0.,2*TMath::Pi());
+      
+      namedistr="hNclsprongsvsptS_";
+      namedistr+=i;
+      TH2F *hNclsprongsvsptS = new TH2F(namedistr.Data(),"N cls distrubution [S];p_{T} [GeV/c];N cls",200,0.,20.,100,0.,200.);
+
+      namedistr="hptS_";
+      namedistr+=i;
+      TH1F *hptS = new TH1F(namedistr.Data(), "p_{T} distribution [S];p_{T} [GeV/c]",200,0.,20.);
+
+      namedistr="hphiS_";
+      namedistr+=i;
+      TH1F *hphiS = new TH1F(namedistr.Data(), "#phi distribution [S];#phi [rad]",100,0.,2*TMath::Pi());
+
+      namedistr="hptKpiS_";
+      namedistr+=i;
+      TH1F *hptKpiS = new TH1F(namedistr.Data(), "K #pi p_{T} distribution [S];p_{T} [GeV/c]",200,0.,20.);
+
+      namedistr="hphiKpiS_";
+      namedistr+=i;
+      TH1F *hphiKpiS = new TH1F(namedistr.Data(), "K #pi #phi distribution [S];#phi [rad]",100,0.,2*TMath::Pi());
+
+
       //  dca
       namedistr="hdcaB_";
       namedistr+=i;
@@ -389,6 +455,21 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
       tmpMB->Sumw2();
 
 
+      fDistr->Add(hNclsD0vsptB);
+      fDistr->Add(hNclsD0barvsptB);
+      fDistr->Add(hNITSpointsD0vsptB);
+      fDistr->Add(hNSPDpointsD0B);
+      fDistr->Add(hptD0B);
+      fDistr->Add(hphiD0B);
+      fDistr->Add(hptD0barB);
+      fDistr->Add(hphiD0barB);
+      fDistr->Add(hptBnoMcut);
+      fDistr->Add(hphiBnoMcut);
+      fDistr->Add(hNclsprongsvsptS);
+      fDistr->Add(hptS);
+      fDistr->Add(hphiS);
+      fDistr->Add(hptKpiS);
+      fDistr->Add(hphiKpiS);
 
       fDistr->Add(hdcaB);
 
@@ -1134,6 +1215,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
   Double_t normalizedDecayLength2 = -1, normalizedDecayLengthxy=-1;
   Double_t decayLength2 = -1, decayLengthxy=-1;
   Double_t ptProng[2]={-99,-99};
+  Double_t phiProng[2]={-99,-99};
   Double_t d0Prong[2]={-99,-99};
   
 
@@ -1214,6 +1296,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
       normalizedDecayLengthxy=decayLengthxy/part->DecayLengthXYError();
 
       ptProng[0]=prong0->Pt(); ptProng[1]=prong1->Pt();
+      phiProng[0]=prong0->Phi(); phiProng[1]=prong1->Phi();
       d0Prong[0]=part->Getd0Prong(0); d0Prong[1]=part->Getd0Prong(1);
 
       if(fArray==1) cout<<"LS signal: ERROR"<<endl;
@@ -1238,6 +1321,15 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	    fillthispi+=ptbin;
 	    ((TH1F*)listout->FindObject(fillthispi))->Fill(ptProng[iprong]);
 	  }
+
+	  // fill pt and phi distrib if pi, mass cut
+	  fillthispi="hptKpiS_";
+	  fillthispi+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthispi))->Fill(ptProng[iprong]);
+	  fillthispi="hphiKpiS_";
+	  fillthispi+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthispi))->Fill(phiProng[iprong]);
+
 	  fillthispi="hd0piS_";
 	  fillthispi+=ptbin;
 	  ((TH1F*)listout->FindObject(fillthispi))->Fill(d0Prong[iprong]);
@@ -1257,6 +1349,15 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	    fillthisK+=ptbin;
 	    ((TH1F*)listout->FindObject(fillthisK))->Fill(ptProng[iprong]);
 	  }
+
+	  // fill pt and phi distrib if k, mass cut
+	  fillthispi="hptKpiS_";
+	  fillthispi+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthispi))->Fill(ptProng[iprong]);
+	  fillthispi="hphiKpiS_";
+	  fillthispi+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthispi))->Fill(phiProng[iprong]);
+
 	  fillthisK="hd0KS_";
 	  fillthisK+=ptbin;
 	  ((TH1F*)listout->FindObject(fillthisK))->Fill(d0Prong[iprong]);
@@ -1273,6 +1374,27 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	  ((TH1F*)listout->FindObject(fillthis))->Fill(cosPointingAngle,d0Prong[iprong]);
 	}
       } //end loop on prongs
+
+      //pt and phi distib w/o requiring pi or K
+      fillthispi="hptS_";
+      fillthispi+=ptbin;
+      ((TH1F*)listout->FindObject(fillthispi))->Fill(ptProng[0]);
+      ((TH1F*)listout->FindObject(fillthispi))->Fill(ptProng[1]);
+      fillthispi="hphiS_";
+      fillthispi+=ptbin;
+      ((TH1F*)listout->FindObject(fillthispi))->Fill(phiProng[0]);
+      ((TH1F*)listout->FindObject(fillthispi))->Fill(phiProng[1]);
+
+      fillthis="hNclsprongsvsptS_";
+      fillthis+=ptbin;
+      Float_t mom = ((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt();
+      Float_t ncls = (Float_t)((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->GetTPCNcls();
+      if(!(TH2F*)listout->FindObject(fillthis)) {Printf("HISTO NOT FOUND"); return;}
+      ((TH2F*)listout->FindObject(fillthis))->Fill(mom, ncls);
+      mom = ((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->Pt();
+      ncls = (Float_t)((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->GetTPCNcls();
+      ((TH2F*)listout->FindObject(fillthis))->Fill(mom, ncls);
+
 
       fillthis="hdcaS_";
       fillthis+=ptbin;	  
@@ -1373,6 +1495,17 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
       ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt());
       ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt());
     }
+
+    //pt and phi distributions of the prongs
+    fillthis="hptBnoMcut_";
+    fillthis+=ptbin;
+    ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt());
+    ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->Pt());
+    fillthis="hphiBnoMcut_";
+    fillthis+=ptbin;
+    ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Phi());
+    ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->Phi());
+
     //apply cut on invariant mass on the pair
     if(TMath::Abs(minvD0-mPDG)<invmasscut || TMath::Abs(minvD0bar-mPDG)<invmasscut){
       if(fSys==0){
@@ -1405,6 +1538,57 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	  }
 	}
       }
+
+      //fill pt and phi distrib for prongs with M cut
+
+      if (!fCutOnDistr || (fCutOnDistr && (fIsSelectedCandidate==1 || fIsSelectedCandidate==3))){
+	  fillthis="hptD0B_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt());
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->Pt());
+	  fillthis="hphiD0B_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Phi());
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->Phi());
+
+	  for(Int_t it=0; it<2; it++){
+	    Int_t nPointsITS = 0;
+	    for (Int_t il=0; il<6; il++){ 
+	      if(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(il)) nPointsITS++;
+	    }
+	    fillthis="hNSPDpointsD0B_";
+	    fillthis+=ptbin;
+	    if(!(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0)) && !(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(1))){ //no SPD points
+	    ((TH1I*)listout->FindObject(fillthis))->Fill(0);
+	    } 
+	    if(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0) && !(((AliAODTrack*)(fDaughterTracks.UncheckedAt(it)))->HasPointOnITSLayer(1))){ //kOnlyFirst
+	      ((TH1I*)listout->FindObject(fillthis))->Fill(1);
+	    } 
+	    if(!(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0)) && ((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(1)){ //kOnlySecond
+	      ((TH1I*)listout->FindObject(fillthis))->Fill(2);
+	    }
+	    if(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0) && ((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(1)){ //kboth
+	      ((TH1I*)listout->FindObject(fillthis))->Fill(3);
+	    } 
+	    
+	    fillthis="hNITSpointsD0vsptB_";
+	    fillthis+=ptbin;
+	    ((TH2F*)listout->FindObject(fillthis))->Fill(nPointsITS, ((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Pt());
+	  }
+
+
+	}
+
+	if (!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate>1)) {
+	  fillthis="hptD0barB_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt());
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->Pt());
+	  fillthis="hphiD0barB_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Phi());
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->Phi());
+	}
 	
       fillthis="hd0B_";
       fillthis+=ptbin;
@@ -1522,6 +1706,30 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
       }  
 
+      if (!fCutOnDistr || (fCutOnDistr && (fIsSelectedCandidate==1 || fIsSelectedCandidate==3))){
+	    fillthis="hNclsD0vsptB_";
+	    fillthis+=ptbin;
+	    Float_t mom = ((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt();
+	    Float_t ncls = (Float_t)((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->GetTPCNcls();
+	    if(!(TH2F*)listout->FindObject(fillthis)) {Printf("HISTO NOT FOUND"); return;}
+	    ((TH2F*)listout->FindObject(fillthis))->Fill(mom, ncls);
+	    mom = ((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->Pt();
+	    ncls = (Float_t)((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->GetTPCNcls();
+	    ((TH2F*)listout->FindObject(fillthis))->Fill(mom,ncls);
+	  }
+
+	    if (!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate>1)){
+	    fillthis="hNclsD0barvsptB_";
+	    fillthis+=ptbin;
+	    Float_t mom = ((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt();
+	    Float_t ncls = (Float_t)((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->GetTPCNcls();
+	    if(!(TH2F*)listout->FindObject(fillthis)) {Printf("HISTO NOT FOUND"); return;}
+	    ((TH2F*)listout->FindObject(fillthis))->Fill(mom, ncls);
+	    mom = ((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->Pt();
+	    ncls = (Float_t)((AliAODTrack*)fDaughterTracks.UncheckedAt(1))->GetTPCNcls();
+	    ((TH2F*)listout->FindObject(fillthis))->Fill(mom,ncls);
+	  }
+	  
       fillthis="hdcaB_";
       fillthis+=ptbin;
       ((TH1F*)listout->FindObject(fillthis))->Fill(part->GetDCA());
