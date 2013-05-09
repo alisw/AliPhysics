@@ -133,6 +133,7 @@ ClassImp(AliehDPhiBasicParticle)
   ,fEovPMin(0.8)                                                                
   ,fEovPMax(1.2)
   ,fTriggerCentral(kTRUE) 
+  ,fTriggerMB(kTRUE) 
   ,fPoolMgr(0x0)  
     ,fNoEvents(0)
     //  ,fTrkpt(0)
@@ -407,6 +408,7 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fEovPMin(0.8)                                                                          
   ,fEovPMax(1.2)
   ,fTriggerCentral(kTRUE) 
+  ,fTriggerMB(kTRUE) 
   ,fPoolMgr(0x0)    
     ,fNoEvents(0)
     //  ,fTrkpt(0)
@@ -695,14 +697,19 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
   }
 
 
-  if(fTriggerCentral){
+  if(fTriggerMB && fTriggerCentral){
     // trigger selection
     if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral))) return;
   }
 
-  if(!fTriggerCentral){
+  if(fTriggerMB && !fTriggerCentral){
     // trigger selection
     if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral))) return;
+  }
+  
+  if(!fTriggerMB){
+// trigger selection
+        if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kEMCEGA))) return;
   }
   // centrality selection 
   //  SetCentralityParameters(0., 7., "V0M");

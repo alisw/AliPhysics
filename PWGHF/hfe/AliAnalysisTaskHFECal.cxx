@@ -121,6 +121,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fInvmassULS(0)		
   ,fInvmassLSmc(0)		
   ,fInvmassULSmc(0)		
+  ,fInvmassLSreco(0)		
+  ,fInvmassULSreco(0)		
   ,fInvmassLSmc0(0)		
   ,fInvmassLSmc1(0)		
   ,fInvmassLSmc2(0)		
@@ -250,6 +252,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fInvmassULS(0)		
   ,fInvmassLSmc(0)		
   ,fInvmassULSmc(0)		
+  ,fInvmassLSreco(0)		
+  ,fInvmassULSreco(0)		
   ,fInvmassLSmc0(0)		
   ,fInvmassLSmc1(0)		
   ,fInvmassLSmc2(0)		
@@ -1088,6 +1092,14 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fInvmassULSmc = new THnSparseD("fInvmassULSmc", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; MCele", 9, nBinspho,minpho, maxpho);
   if(fqahist==1)fOutputList->Add(fInvmassULSmc);
 
+  fInvmassLSreco = new TH2D("fInvmassLSreco", "Inv mass of LS (e,e) reco; cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassLSreco->Sumw2();
+  fOutputList->Add(fInvmassLSreco);
+
+  fInvmassULSreco = new TH2D("fInvmassULSreco", "Inv mass of ULS (e,e) reco; cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassULSreco->Sumw2();
+  fOutputList->Add(fInvmassULSreco);
+
   fInvmassLSmc0 = new TH2D("fInvmassLSmc0", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
   fInvmassLSmc0->Sumw2();
   fOutputList->Add(fInvmassLSmc0);
@@ -1526,17 +1538,18 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     // angle cut
     if(openingAngle > fOpeningAngleCut) continue;
     // chi2 cut
-    if(TMath::Sqrt(TMath::Abs(chi2recg))>chi2cut) continue;
-
-   
-
+    //if(TMath::Sqrt(TMath::Abs(chi2recg))>chi2cut) continue;
+    if(chi2recg>chi2cut) continue;
+ 
+    if(fFlagLS ) fInvmassLSreco->Fill(ptPrim,mass);
+    if(fFlagULS) fInvmassULSreco->Fill(ptPrim,mass);
+  
     // for real data  
     //printf("mce =%f\n",mce);
     if(mce<-0.5) // mce==-1. is real
        {
          //printf("Real data\n");
 	 if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
-	 //if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (p1==p2)){ <--- only MC train (55,56) v5-03-68-AN & 69 for check
 	       flagPhotonicElec = kTRUE;
 	      }
 	 if(mass<fInvmassCut && fFlagLS && !flagConvinatElec){
@@ -1551,15 +1564,16 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
          if(w>0.0)
            {
            //cout << "tagpi0 = " << tagpi0 << " ; tageta = " << tageta << endl;
-           if(fFlagLS && ibgevent==0 && jbgevent==0 && tagpi0) fInvmassLSmc0->Fill(ptPrim,mass,w);
-           if(fFlagULS && ibgevent==0 && jbgevent==0 && tagpi0) fInvmassULSmc0->Fill(ptPrim,mass,w);
-           if(fFlagLS && ibgevent==0 && jbgevent==0 && tageta) fInvmassLSmc1->Fill(ptPrim,mass,w);
-           if(fFlagULS && ibgevent==0 && jbgevent==0 && tageta) fInvmassULSmc1->Fill(ptPrim,mass,w);
-           if(fFlagLS && ibgevent==0 && jbgevent==0 && (p1==p2) && tagpi0) fInvmassLSmc2->Fill(ptPrim,mass,w);
-           if(fFlagULS && ibgevent==0 && jbgevent==0 && (p1==p2) && tagpi0) fInvmassULSmc2->Fill(ptPrim,mass,w);
-           if(fFlagLS && ibgevent==0 && jbgevent==0 && (p1==p2) && tageta) fInvmassLSmc3->Fill(ptPrim,mass,w);
-           if(fFlagULS && ibgevent==0 && jbgevent==0 && (p1==p2) && tageta) fInvmassULSmc3->Fill(ptPrim,mass,w);
+           if(fFlagLS && ibgevent==0 && jbgevent==0 && tagpi0) fInvmassLSmc0->Fill(ptPrim,mass);
+           if(fFlagULS && ibgevent==0 && jbgevent==0 && tagpi0) fInvmassULSmc0->Fill(ptPrim,mass);
+           if(fFlagLS && ibgevent==0 && jbgevent==0 && tageta) fInvmassLSmc1->Fill(ptPrim,mass);
+           if(fFlagULS && ibgevent==0 && jbgevent==0 && tageta) fInvmassULSmc1->Fill(ptPrim,mass);
+           if(fFlagLS && ibgevent==0 && jbgevent==0 && (p1==p2) && tagpi0) fInvmassLSmc2->Fill(ptPrim,mass);
+           if(fFlagULS && ibgevent==0 && jbgevent==0 && (p1==p2) && tagpi0) fInvmassULSmc2->Fill(ptPrim,mass);
+           if(fFlagLS && ibgevent==0 && jbgevent==0 && (p1==p2) && tageta) fInvmassLSmc3->Fill(ptPrim,mass);
+           if(fFlagULS && ibgevent==0 && jbgevent==0 && (p1==p2) && tageta) fInvmassULSmc3->Fill(ptPrim,mass);
           }
+
 	 if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (ibgevent==jbgevent)){
 	 //if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (p1==p2)){ <--- only MC train (55,56) v5-03-68-AN & 69 for check
 	       flagPhotonicElec = kTRUE;
