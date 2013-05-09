@@ -12,7 +12,8 @@ AliChaoticity *AddTaskChaoticity(
 				 UInt_t FilterBit=7,
 				 Float_t MaxChi2NDF=10,
 				 Int_t MinTPCncls=0,
-				 Float_t MinSepPair=0.035,
+				 Float_t MinSepPairEta=0.03,
+				 Float_t MinSepPairPhi=0.04,
 				 Float_t SigmaCutTPC=2.0,
 				 Float_t SigmaCutTOF=2.0,
 				 TString StWeightName="alien:///alice/cern.ch/user/d/dgangadh/WeightFile.root",
@@ -44,7 +45,8 @@ AliChaoticity *AddTaskChaoticity(
   ChaoticityTask->SetFilterBit(FilterBit);
   ChaoticityTask->SetMaxChi2NDF(MaxChi2NDF);
   ChaoticityTask->SetMinTPCncls(MinTPCncls);
-  ChaoticityTask->SetPairSeparationCut(MinSepPair);
+  ChaoticityTask->SetPairSeparationCutEta(MinSepPairEta);
+  ChaoticityTask->SetPairSeparationCutPhi(MinSepPairPhi);
   ChaoticityTask->SetNsigmaTPC(SigmaCutTPC);
   ChaoticityTask->SetNsigmaTOF(SigmaCutTOF);
   mgr->AddTask(ChaoticityTask);
