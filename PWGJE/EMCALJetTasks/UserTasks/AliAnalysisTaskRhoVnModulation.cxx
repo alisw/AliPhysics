@@ -1109,19 +1109,23 @@ void AliAnalysisTaskRhoVnModulation::FillJetHistograms(Double_t vzero[2][2], Dou
     Int_t iJets(fJets->GetEntriesFast());
     for(Int_t i(0); i < iJets; i++) {
         AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
-        if(!PassesCuts(jet)) continue;
-        Double_t pt(jet->Pt()), area(jet->Area()), eta(jet->Eta()), phi(jet->Phi());
-        Double_t rho(RhoVal(phi, fJetRadius, fRho->GetVal()));
-        fHistJetPtRaw[fInCentralitySelection]->Fill(pt);
-        fHistJetPt[fInCentralitySelection]->Fill(pt-area*rho);
-        fHistJetEtaPhi[fInCentralitySelection]->Fill(eta, phi);
-        fHistJetPtArea[fInCentralitySelection]->Fill(pt-area*rho, area);
-        fHistJetPsiTPCPt[fInCentralitySelection]->Fill(PhaseShift(phi-tpc[0]), pt-area*rho);
-        fHistJetPsiVZEROAPt[fInCentralitySelection]->Fill(PhaseShift(phi-vzero[0][0]), pt-area*rho);
-        fHistJetPsiVZEROCPt[fInCentralitySelection]->Fill(PhaseShift(phi-vzero[1][0]), pt-area*rho);
-        fHistJetPtConstituents[fInCentralitySelection]->Fill(pt-area*rho, jet->Nch());
-        fHistJetEtaRho[fInCentralitySelection]->Fill(eta, pt/area);
-        if(fSetPtSub) jet->SetPtSub(pt-area*rho);
+        if(PassesCuts(jet)) {
+            Double_t pt(jet->Pt()), area(jet->Area()), eta(jet->Eta()), phi(jet->Phi());
+            Double_t rho(RhoVal(phi, fJetRadius, fRho->GetVal()));
+            fHistJetPtRaw[fInCentralitySelection]->Fill(pt);
+            fHistJetPt[fInCentralitySelection]->Fill(pt-area*rho);
+            fHistJetEtaPhi[fInCentralitySelection]->Fill(eta, phi);
+            fHistJetPtArea[fInCentralitySelection]->Fill(pt-area*rho, area);
+            fHistJetPsiTPCPt[fInCentralitySelection]->Fill(PhaseShift(phi-tpc[0]), pt-area*rho);
+            fHistJetPsiVZEROAPt[fInCentralitySelection]->Fill(PhaseShift(phi-vzero[0][0]), pt-area*rho);
+            fHistJetPsiVZEROCPt[fInCentralitySelection]->Fill(PhaseShift(phi-vzero[1][0]), pt-area*rho);
+            fHistJetPtConstituents[fInCentralitySelection]->Fill(pt-area*rho, jet->Nch());
+            fHistJetEtaRho[fInCentralitySelection]->Fill(eta, pt/area);
+            if(fSetPtSub) jet->SetPtSub(pt-area*rho);
+        }
+        else { // if the jet is rejected, excluded it for the flow analysis
+            if(fSetPtSub) jet->SetPtSub(-999.);
+        }
     }
 }
 //_____________________________________________________________________________
