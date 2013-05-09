@@ -42,7 +42,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetMatching(MatchingType t, Double_t p1=1, Double_t p2=1)       { fMatching = t; fMatchingPar1 = p1; fMatchingPar2 = p2; }
   void                        SetPtHardBin(Int_t b)                                           { fSelectPtHardBin   = b         ; }
   void                        SetAreMCCollections(Bool_t f1, Bool_t f2)                       { fAreCollections1MC = f1; fAreCollections2MC = f2; }
-  void                        SetIsEmbedded(Bool_t i)                                         { fIsEmbedded        = i         ; }
   void                        SetIsPythia(Bool_t i)                                           { fIsPythia          = i         ; }
   void                        SetMCLabelShift(Int_t s)                                        { fMCLabelShift      = s         ; }
   void                        SetUseCellsToMatch(Bool_t i)                                    { fUseCellsToMatch   = i         ; }
@@ -86,7 +85,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Double_t                    fMatchingPar1;                  // matching parameter for jet1-jet2 matching
   Double_t                    fMatchingPar2;                  // matching parameter for jet2-jet1 matching
   Int_t                       fSelectPtHardBin;               // select one pt hard bin for analysis
-  Bool_t                      fIsEmbedded;                    // trigger, embedded signal
   Bool_t                      fIsPythia;                      // trigger, if it is a PYTHIA production
   Int_t                       fMCLabelShift;                  // if MC label > fMCLabelShift, MC label -= fMCLabelShift
   Bool_t                      fUseCellsToMatch;               // use cells instead of clusters to match jets (slower but sometimes needed)
@@ -187,6 +185,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 17) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 18) // Jet response matrix producing task
 };
 #endif
