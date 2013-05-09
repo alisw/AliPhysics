@@ -170,7 +170,7 @@ void AliTOFTenderSupply::Init()
       else if (fRecoPass == 3) {fCorrectExpTimes=kFALSE; fCorrectTRDBug=kTRUE;}
       fLHC10dPatch=kFALSE;
       fT0IntercalibrationShift = 0;
-      fT0DetectorAdjust=kTRUE;
+      fT0DetectorAdjust=kFALSE;   // it was kTRUE
     }
     else if (run>=118503&&run<=121040) { //period="LHC10C";
       if (fRecoPass == 2) {fCorrectExpTimes=kTRUE; fCorrectTRDBug=kFALSE;}
@@ -183,13 +183,13 @@ void AliTOFTenderSupply::Init()
       fCorrectExpTimes=kFALSE;
       fLHC10dPatch=kTRUE;
       fT0IntercalibrationShift = 0;
-      fT0DetectorAdjust=kTRUE;
+      fT0DetectorAdjust=kFALSE;     // it was kTRUE
     }
     else if (run>=127719&&run<=130850) { //period="LHC10E";
       fCorrectExpTimes=kFALSE;
       fLHC10dPatch=kFALSE;
       fT0IntercalibrationShift = 30.;
-      fT0DetectorAdjust=kTRUE;
+      fT0DetectorAdjust=kFALSE;      // it was kTRUE
     }
     else if (run>=133004&&run<=135029) { //period="LHC10F";
       fTenderNoAction=kTRUE;
@@ -201,7 +201,7 @@ void AliTOFTenderSupply::Init()
       fCorrectExpTimes=kFALSE;
       fLHC10dPatch=kFALSE;                
       fT0IntercalibrationShift = 0.;
-      fT0DetectorAdjust=kTRUE;
+      fT0DetectorAdjust=kFALSE;      // it was kTRUE
     }
     else if (run>=139699) {              //period="LHC11A";
       fTenderNoAction=kTRUE;
@@ -285,26 +285,26 @@ void AliTOFTenderSupply::ProcessEvent()
     fTOFCalib->Init(fTender->GetRun());
     
     if(event->GetT0TOF()){ // read T0 detector correction from OCDB
-      // OCDB instance
-      if (fT0DetectorAdjust) {
-	AliCDBManager* ocdbMan = AliCDBManager::Instance();
-	ocdbMan->SetRun(fTender->GetRun());    
-	AliCDBEntry *entry = ocdbMan->Get("T0/Calib/TimeAdjust/");
-	if(entry) {
-	  AliT0CalibSeasonTimeShift *clb = (AliT0CalibSeasonTimeShift*) entry->GetObject();
-	  Float_t *t0means= clb->GetT0Means();
-	  //      Float_t *t0sigmas = clb->GetT0Sigmas();
-	  fT0shift[0] = t0means[0] + fT0IntercalibrationShift;
-	  fT0shift[1] = t0means[1] + fT0IntercalibrationShift;
-	  fT0shift[2] = t0means[2] + fT0IntercalibrationShift;
-	  fT0shift[3] = t0means[3] + fT0IntercalibrationShift;
+	// OCDB instance
+	if (fT0DetectorAdjust) {
+	  AliCDBManager* ocdbMan = AliCDBManager::Instance();
+	  ocdbMan->SetRun(fTender->GetRun());    
+	  AliCDBEntry *entry = ocdbMan->Get("T0/Calib/TimeAdjust/");
+	  if(entry) {
+	    AliT0CalibSeasonTimeShift *clb = (AliT0CalibSeasonTimeShift*) entry->GetObject();
+	    Float_t *t0means= clb->GetT0Means();
+	    //      Float_t *t0sigmas = clb->GetT0Sigmas();
+	    fT0shift[0] = t0means[0] + fT0IntercalibrationShift;
+	    fT0shift[1] = t0means[1] + fT0IntercalibrationShift;
+	    fT0shift[2] = t0means[2] + fT0IntercalibrationShift;
+	    fT0shift[3] = t0means[3] + fT0IntercalibrationShift;
+	  } else {
+	    for (Int_t i=0;i<4;i++) fT0shift[i]=0;
+	    AliWarning("TofTender no T0 entry found T0shift set to 0");
+	  }
 	} else {
 	  for (Int_t i=0;i<4;i++) fT0shift[i]=0;
-	  AliWarning("TofTender no T0 entry found T0shift set to 0");
 	}
-      } else {
-	for (Int_t i=0;i<4;i++) fT0shift[i]=0;
-      }
     }
   }
 
@@ -330,34 +330,36 @@ void AliTOFTenderSupply::ProcessEvent()
     if (event->GetT0TOF(1) == 0) event->SetT0TOF(1, 99999.);
     if (event->GetT0TOF(2) == 0) event->SetT0TOF(2, 99999.);
 
-    if(!fIsMC){   // data: apply shifts to align around Zero
-      event->SetT0TOF(0,event->GetT0TOF(0) - fT0shift[0]);
-      event->SetT0TOF(1,event->GetT0TOF(1) - fT0shift[1]);
-      event->SetT0TOF(2,event->GetT0TOF(2) - fT0shift[2]);
-    } else {
+    if (fT0DetectorAdjust) {
+      if(!fIsMC){   // data: apply shifts to align around Zero
+	event->SetT0TOF(0,event->GetT0TOF(0) - fT0shift[0]);
+	event->SetT0TOF(1,event->GetT0TOF(1) - fT0shift[1]);
+	event->SetT0TOF(2,event->GetT0TOF(2) - fT0shift[2]);
+      } else {
       // MC: add smearing for realistic T0A and T0C resolution
-      Double_t defResolutionT0A = 33.;   // in future we will get this from ESDrun data structure or via OCDB
-      Double_t defResolutionT0C = 30.;   // for the moment we don't trust them
-      if ( (fgT0Aresolution > defResolutionT0A) && (event->GetT0TOF(1)<90000.) ) { // add smearing only if signal is there
-	Double_t addedSmearingT0A = TMath::Sqrt(fgT0Aresolution*fgT0Aresolution - defResolutionT0A*defResolutionT0A);
-        Double_t smearingT0A = gRandom->Gaus(0.,addedSmearingT0A);
-	event->SetT0TOF(1,event->GetT0TOF(1) + smearingT0A);
-      }
-      if ( (fgT0Cresolution > defResolutionT0C) && (event->GetT0TOF(2)<90000.) ) { // add smearing only if signal is there
+	Double_t defResolutionT0A = 33.;   // in future we will get this from ESDrun data structure or via OCDB
+	Double_t defResolutionT0C = 30.;   // for the moment we don't trust them
+	if ( (fgT0Aresolution > defResolutionT0A) && (event->GetT0TOF(1)<90000.) ) { // add smearing only if signal is there
+	  Double_t addedSmearingT0A = TMath::Sqrt(fgT0Aresolution*fgT0Aresolution - defResolutionT0A*defResolutionT0A);
+	  Double_t smearingT0A = gRandom->Gaus(0.,addedSmearingT0A);
+	  event->SetT0TOF(1,event->GetT0TOF(1) + smearingT0A);
+	}
+	if ( (fgT0Cresolution > defResolutionT0C) && (event->GetT0TOF(2)<90000.) ) { // add smearing only if signal is there
 	Double_t addedSmearingT0C = TMath::Sqrt(fgT0Cresolution*fgT0Cresolution - defResolutionT0C*defResolutionT0C);
 	Double_t smearingT0C = gRandom->Gaus(0.,addedSmearingT0C);
         event->SetT0TOF(2,event->GetT0TOF(2) + smearingT0C);
+	}
+	if (event->GetT0TOF(0)<90000.) { // we recompute the AND only if it is already there...
+	  Double_t smearedT0AC = (event->GetT0TOF(1)+event->GetT0TOF(2))/2.;
+	  event->SetT0TOF(0,smearedT0AC); 
+	}
+	if (fDebugLevel > 1) Printf(" TofTender: T0 time (postSmear) %f %f %f",event->GetT0TOF(0),event->GetT0TOF(1),event->GetT0TOF(2));
+	// add finally the timeZero offset also to the T0 detector information
+	event->SetT0TOF(0,event->GetT0TOF(0) + startTime);
+	event->SetT0TOF(1,event->GetT0TOF(1) + startTime);
+	event->SetT0TOF(2,event->GetT0TOF(2) + startTime);  
+	if (fDebugLevel > 1) Printf(" TofTender: T0 time (postStart) %f %f %f",event->GetT0TOF(0),event->GetT0TOF(1),event->GetT0TOF(2));
       }
-      if (event->GetT0TOF(0)<90000.) { // we recompute the AND only if it is already there...
-	Double_t smearedT0AC = (event->GetT0TOF(1)+event->GetT0TOF(2))/2.;
-	event->SetT0TOF(0,smearedT0AC); 
-      }
-      if (fDebugLevel > 1) Printf(" TofTender: T0 time (postSmear) %f %f %f",event->GetT0TOF(0),event->GetT0TOF(1),event->GetT0TOF(2));
-      // add finally the timeZero offset also to the T0 detector information
-      event->SetT0TOF(0,event->GetT0TOF(0) + startTime);
-      event->SetT0TOF(1,event->GetT0TOF(1) + startTime);
-      event->SetT0TOF(2,event->GetT0TOF(2) + startTime);  
-      if (fDebugLevel > 1) Printf(" TofTender: T0 time (postStart) %f %f %f",event->GetT0TOF(0),event->GetT0TOF(1),event->GetT0TOF(2));
     }
     // after shifts adjust (data) or smearing+offset (MC) we 'clean' to default if signals not there 
     if(event->GetT0TOF(0) > 900000) event->SetT0TOF(0, 999999.);
