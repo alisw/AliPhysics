@@ -119,8 +119,8 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   }
   if (mon) mon->Add(outMonitorEta);
   if (lm) lm->AddOutput(outMonitorEta);
-
-  // output:  TH2D for phi vs pt
+  
+  // output:  TH2D for phi at vertex
   AliRsnListOutput *outMonitorPhi = new AliRsnListOutput("Phi", AliRsnListOutput::kHistoDefault);
   //outMonitorPhi->AddValue(axisMomPt);
   outMonitorPhi->AddValue(axisPhi);
@@ -130,7 +130,7 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   if (mon) mon->Add(outMonitorPhi);
   if (lm) lm->AddOutput(outMonitorPhi);
   
-  // output:  TH2D for phiOuterTPC vs pt
+  // output:  TH2D for phiOuterTPC at TPC outer radius
   AliRsnListOutput *outMonitorPhiOuterTPC = new AliRsnListOutput("PhiOuterTPC", AliRsnListOutput::kHistoDefault);
   //outMonitorPhiOuterTPC->AddValue(axisMomPt);
   outMonitorPhiOuterTPC->AddValue(axisPhiOuterTPC);
@@ -139,6 +139,16 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   }
   if (mon) mon->Add(outMonitorPhiOuterTPC);
   if (lm) lm->AddOutput(outMonitorPhiOuterTPC);
+
+  // output:  TH2D for phi vs pt
+  AliRsnListOutput *outMonitorPhiVsPt = new AliRsnListOutput("PhiVsPt", AliRsnListOutput::kHistoDefault);
+  outMonitorPhiVsPt->AddValue(axisMomPt);
+  outMonitorPhiVsPt->AddValue(axisPhi);
+  if (!opt.Contains("NoSIGN")) {
+    outMonitorPhiVsPt->AddValue(axisCharge);
+  }
+  if (mon) mon->Add(outMonitorPhiVsPt);
+  if (lm) lm->AddOutput(outMonitorPhiVsPt);
 
   /****************************************************************/
   /***************      MONITOR TRACK QUALITY  ********************/
