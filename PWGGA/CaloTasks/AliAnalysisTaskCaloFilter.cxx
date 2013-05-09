@@ -144,7 +144,7 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEvent()
   else if( fEventSelection[1] && AcceptEventPHOS () ) eventSel = kTRUE; // accept event depending on PHOS  activity
   
   else if( fEventSelection[2] && AcceptEventTrack() ) eventSel = kTRUE; // accept event depending on Track activity
-  
+    
   return eventSel ;
   
 }
@@ -170,7 +170,7 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventEMCAL()
        fEMCALRecoUtils->IsGoodCluster(clus,fEMCALGeo,caloCell,bc))
     { 
       
-      if (fDebug > 0) printf("AliAnalysisTaskCaloFilter::AcceptEventEMCAL() - Accept :  E %2.2f > %2.2f, nCells %d > %d \n", 
+      if (fDebug > 0) printf("AliAnalysisTaskCaloFilter::AcceptEventEMCAL() - Accept :  E %2.2f > %2.2f, nCells %d > %d \n",
                              clus->E(), fEMCALEnergyCut, clus->GetNCells(), fEMCALNcellsCut);
       
       return kTRUE;
@@ -670,7 +670,7 @@ void AliAnalysisTaskCaloFilter::FillAODHeader()
   header->SetL2TriggerInputs(fESDEvent->GetHeader()->GetL2TriggerInputs());    
   
   header->SetMagneticField(fEvent->GetMagneticField());
-  //header->SetMuonMagFieldScale(fESDEvent->GetCurrentDip()/6000.); 
+  header->SetMuonMagFieldScale(fESDEvent->GetCurrentDip()/6000.); 
   
   header->SetZDCN1Energy(fEvent->GetZDCN1Energy());
   header->SetZDCP1Energy(fEvent->GetZDCP1Energy());
