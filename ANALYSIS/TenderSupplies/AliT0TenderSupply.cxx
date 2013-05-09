@@ -22,15 +22,12 @@
 
 #include <AliESDEvent.h>
 #include <AliESDtrack.h>
-
 #include <AliTender.h>
 #include <AliT0TenderSupply.h>
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
 #include <AliT0CalibSeasonTimeShift.h>
 #include <AliESDInputHandler.h>
-#include <AliAnalysisManager.h>
-#include <AliProdInfo.h>
 
 ClassImp(AliT0TenderSupply)
 
@@ -75,81 +72,41 @@ AliT0TenderSupply::~AliT0TenderSupply(){
 void AliT0TenderSupply::Init(){
   // Init
   //
-  AliLog::SetClassDebugLevel("AliT0TenderSupply",10); 
   Int_t run = fTender->GetRun();
   if (run == 0) return;    // to skip first init, when we don't have yet a run number
+  Printf("----------- TZERO Tender ----------------");
 
-  // reset to no-action
   fCorrectMeanTime = kFALSE; //reset
   for(int i=0; i<4; i++) fTimeOffset[i]=0;
-  fPass4LHC11aCorrection=kFALSE;
-  fCorrectStartTimeOnAmplSatur = kFALSE;
 
-  // check if MC
-  AliAnalysisManager *mgr=AliAnalysisManager::GetAnalysisManager();
-  AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-  if (!inputHandler) return;
-  TList *uiList = inputHandler->GetUserInfo();
-  AliProdInfo prodInfo(uiList);
-  prodInfo.List();
-  Bool_t fIsMc = kFALSE;
-  if ( mgr->GetMCtruthEventHandler() ) fIsMc=kTRUE;
-  if (prodInfo.IsMC() == kTRUE) fIsMc=kTRUE;                // protection
-
-  if (!fIsMc) {  // we consider actions only for data, not for MC
-
-    // align T0s for LHC10d/LHC10e
-    if ((run>=122195 &&  run<=126437) || (run>=127712 && run<=130850)) {
-      AliInfo("Loading TZERO OCBD entries");
-      fCorrectMeanTime=kTRUE;
-      AliCDBManager* ocdbMan = AliCDBManager::Instance();
-      ocdbMan->SetRun(fTender->GetRun());    
-      AliCDBEntry *entry = ocdbMan->Get("T0/Calib/TimeAdjust/");
-      if(entry) {
+  // align T0s for LHC10def periods 
+  if (fTender->GetRun()>=122195 &&  fTender->GetRun()<=130850){
+    Printf("Loading TZERO OCBD entries");
+    fCorrectMeanTime=kTRUE;
+    Printf("fCorrectMeanTime %i \n", fCorrectMeanTime);
+ 
+    AliCDBManager* ocdbMan = AliCDBManager::Instance();
+    ocdbMan->SetRun(fTender->GetRun());    
+    AliCDBEntry *entry = ocdbMan->Get("T0/Calib/TimeAdjust/");
+    if(entry) {
       AliT0CalibSeasonTimeShift *clb = (AliT0CalibSeasonTimeShift*) entry->GetObject();
       Float_t *t0means = clb->GetT0Means();
       for (Int_t i=0;i<4;i++) fTimeOffset[i] = t0means[i];
-      } else {
-	for (Int_t i=0;i<4;i++) fTimeOffset[i] = 0;
-	AliWarning("T0Tender no T0 entry found T0shift set to 0");
-      }
-    }  
-    
-    // LHC11a pass4
-    if (run>=139699 && run<=146860) {
-      Int_t recoPass = prodInfo.GetRecoPass();
-      if (recoPass < 0) {
-	AliESDInputHandler *esdIH = dynamic_cast<AliESDInputHandler*>(fTender->GetESDhandler());
-	if (esdIH) {
-	  TTree *tree= (TTree*)esdIH->GetTree();
-	  TFile *file= (TFile*)tree->GetCurrentFile();
-	  if (file) {
-	    TString fileName(file->GetName());
-	    if (fileName.Contains("pass4") ) recoPass=4;
-	  }
-	}
-      }
-      if (recoPass == 4) fPass4LHC11aCorrection=kTRUE;
+    } else {
+      for (Int_t i=0;i<4;i++) fTimeOffset[i] = 0;
+      AliWarning("T0Tender no T0 entry found T0shift set to 0");
     }
+  }  
 	
-    // LHC11h
-    fAmplitudeThreshold = 100; //in mips
-    if(167693<= run && run<=170593){  
-      fCorrectStartTimeOnAmplSatur = kTRUE;
-      fAmplitudeThreshold = 50; //in mips
-    }
-
+  // LHC11h
+  fCorrectStartTimeOnAmplSatur = kFALSE;
+  fAmplitudeThreshold = 100; //in mips
+  if(167693<= run && run<=170593){  
+    fCorrectStartTimeOnAmplSatur = kTRUE;
+    fAmplitudeThreshold = 50; //in mips
   }
 
 
-  AliInfo("|******************************************************|");
-  AliInfo(Form("|    Alice T0 Tender Initialisation (Run %d)       |",run));
-  AliInfo("|    Settings:                                         |");
-  AliInfo(Form("|    Monte Carlo flag               :  %d               |",fIsMc));
-  AliInfo(Form("|    Adjust Offsets (LHC10d/LHC10e) :  %d               |",fCorrectMeanTime));
-  AliInfo(Form("|    LHC11a pass4 patch   (LHC11a)  :  %d               |",fPass4LHC11aCorrection));
-  AliInfo(Form("|    Amplitude Correction (LHC11h)  :  %d               |",fCorrectStartTimeOnAmplSatur));
-  AliInfo("|******************************************************|");
 
 }
 
@@ -163,16 +120,31 @@ void AliT0TenderSupply::ProcessEvent(){
 
     AliESDEvent *event=fTender->GetEvent();
     if (!event) return;
-
-    //Do something when the run number changed, like loading OCDB entries etc.
-    if(fTender->RunChanged()) Init();
-
+     //...........................................
+   //Do something when the run number changed, like loading OCDB entries etc.
+     if(fTender->RunChanged()) Init();
+    
+   if(fTender->RunChanged()){
+      Init();
+      if (fTender->GetRun()>=139699&&  fTender->GetRun()<=146860){
+        AliESDInputHandler *esdIH = dynamic_cast<AliESDInputHandler*>  (fTender->GetESDhandler());
+        if (esdIH) {
+          TTree *tree= (TTree*)esdIH->GetTree();
+          TFile *file= (TFile*)tree->GetCurrentFile();
+         if (file){
+            TString fileName(file->GetName());
+	    if (fileName.Contains("pass4") ) fPass4LHC11aCorrection=kTRUE;
+	  }
+	}
+      }
+    }
     
     if(fPass4LHC11aCorrection) {
       const Double32_t* mean = event->GetT0TOF();
       event->SetT0TOF(0, (mean[1]+mean[2])/2.);
-     }
  
+    }
+    //...........................................
     if(fCorrectStartTimeOnAmplSatur){
         //correct A side ORA on amplitude saturation
         const Double32_t* time = event->GetT0time();
@@ -199,15 +171,16 @@ void AliT0TenderSupply::ProcessEvent(){
         }
     }
 
+    //...........................................
     if(fCorrectMeanTime) {
       // correct mean time offsets  
       const Double32_t* mean = event->GetT0TOF();
       for(int it0=0; it0<3; it0++){
-	if(-2000 < mean[it0]){
+	if( mean[it0] < 10000 || (mean[it0]>6499000 && mean[it0]<6555000 ) )
 	  event->SetT0TOF(it0, mean[it0] - fTimeOffset[it0]); 
-	}
       }
     }
+    //...........................................
 
 
 }
