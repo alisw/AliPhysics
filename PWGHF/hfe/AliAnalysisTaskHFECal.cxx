@@ -866,10 +866,12 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        if(fFlagPhotonicElec) fPhoElecPtM20->Fill(cent,pt);
        if(fFlagConvinatElec) fSameElecPtM20->Fill(cent,pt);
 
-       fIncReco->Fill(pt,recopT);
-       if(fFlagPhotonicElec) fPhoReco->Fill(pt,recopT);
-       if(fFlagConvinatElec) fSamReco->Fill(pt,recopT);
-
+       if(pt>5.0)
+         {
+          fIncReco->Fill(cent,recopT);
+          if(fFlagPhotonicElec) fPhoReco->Fill(cent,recopT);
+          if(fFlagConvinatElec) fSamReco->Fill(cent,recopT);
+         }
      }
 
     // MC
@@ -1371,13 +1373,13 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fnSigEtaCorr[6] = new TGraphErrors(12,etaval,corr6); // 70-90
 
 
-  fIncReco = new TH2D("fIncReco","Inc",50,0,50,100,0,100);
+  fIncReco = new TH2D("fIncReco","Inc",10,0,100,100,0,100);
   fOutputList->Add(fIncReco);
 
-  fPhoReco = new TH2D("fPhoReco","Pho",50,0,50,100,0,100);
+  fPhoReco = new TH2D("fPhoReco","Pho",10,0,100,100,0,100);
   fOutputList->Add(fPhoReco);
 
-  fSamReco = new TH2D("fSamReco","Same",50,0,50,100,0,100);
+  fSamReco = new TH2D("fSamReco","Same",10,0,100,100,0,100);
   fOutputList->Add(fSamReco);
 
   PostData(1,fOutputList);
@@ -2011,7 +2013,7 @@ double AliAnalysisTaskHFECal::SumpT(Int_t itrack, AliESDtrack* track)
 
     double R = sqrt(pow(deleta,2)+pow(delphi,2));
     if(pTAss<0.5)continue;
-    if(R<0.7)pTrecp+=pTAss;
+    if(R<0.4)pTrecp+=pTAss;
 
     }
  
