@@ -86,7 +86,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
   void SetMaxChi2NDF(Float_t MaxChi2NDF) {fMaxChi2NDF = MaxChi2NDF;}
   void SetMinTPCncls(Int_t MinTPCncls) {fMinTPCncls = MinTPCncls;}
-  void SetPairSeparationCut(Float_t pairsep) {fMinSepPair = pairsep;}
+  void SetPairSeparationCutEta(Float_t pairsep) {fMinSepPairEta = pairsep;}
+  void SetPairSeparationCutPhi(Float_t pairsep) {fMinSepPairPhi = pairsep;}
   void SetNsigmaTPC(Float_t nsig) {fSigmaCutTPC = nsig;}
   void SetNsigmaTOF(Float_t nsig) {fSigmaCutTOF = nsig;}
   void SetRMax(Int_t rbin) {fRMax = rbin;}
@@ -281,7 +282,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Float_t fSigmaCutTPC;
   Float_t fSigmaCutTOF;
   
-  Float_t fMinSepPair;
+  Float_t fMinSepPairEta;
+  Float_t fMinSepPairPhi;
   Float_t fShareQuality;
   Float_t fShareFraction;
   
