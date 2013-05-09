@@ -39,11 +39,14 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // Event methods, settings
   
   Bool_t         AcceptEventEMCAL();
-  void           SwitchOnSelectEMCALEvent()                    { fSelectEMCALEvent = kTRUE   ; }
-  void           SwitchOffSelectEMCALEvent()                   { fSelectEMCALEvent = kFALSE  ; }
-  void           SetEMCALEnergyCut(Float_t cut)                { fEMCALEnergyCut = cut       ; }
-  void           SetEMCALNcellsCut(Int_t cut)                  { fEMCALNcellsCut = cut       ; }
+  void           SwitchOnSelectEMCALEvent()                    { fSelectEMCALEvent   = kTRUE   ; }
+  void           SwitchOffSelectEMCALEvent()                   { fSelectEMCALEvent   = kFALSE  ; }
+  void           SetEMCALEnergyCut(Float_t cut)                { fEMCALEnergyCut     = cut     ; }
+  void           SetEMCALNcellsCut(Int_t cut)                  { fEMCALNcellsCut     = cut     ; }
 
+  void           SwitchOnInputAODFilter()                      { fInputFromFilter    = kTRUE   ; }
+  void           SwitchOffInputAODFilter()                     { fInputFromFilter    = kFALSE  ; }
+  
   void           CheckAndGetEvent();
   
   Bool_t         IsExoticEvent();
@@ -235,10 +238,12 @@ private:
   Bool_t                 fRemapMCLabelForAODs ;      // Remap AOD cells MC label
 
   
+  Bool_t                 fInputFromFilter ;          // Get the input from AODs from the filter 
+  
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterize, 26);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 27);
 
 };
 

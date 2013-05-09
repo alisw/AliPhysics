@@ -91,6 +91,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fEMCALEnergyCut(0.),    fEMCALNcellsCut (0)
 , fSetCellMCLabelFromCluster(0)
 , fRemapMCLabelForAODs(0)
+, fInputFromFilter(0)
 {
   // Constructor
   
@@ -130,6 +131,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fEMCALEnergyCut(0.),      fEMCALNcellsCut (0)
 , fSetCellMCLabelFromCluster(0)
 , fRemapMCLabelForAODs(0)
+, fInputFromFilter(0)
 {
   // Constructor
   
@@ -484,7 +486,7 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
   
   //Process events if there is a high energy cluster
   if(!AcceptEventEMCAL())  return ; 
-  
+    
   AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   Int_t eventN = Entry();
   if(aodIH) eventN = aodIH->GetReadEntry(); 
@@ -522,6 +524,11 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
       printf("\t OutputEvent N Clusters %d, N Cells %d\n", AODEvent()->GetNumberOfCaloClusters(),
              AODEvent()->GetEMCALCells()->GetNumberOfCells());
     }
+  }
+  else if(fInputFromFilter)
+  {
+    //printf("Get Input From Filtered AOD\n");
+    fEvent =  AODEvent();
   }
   else 
   {
