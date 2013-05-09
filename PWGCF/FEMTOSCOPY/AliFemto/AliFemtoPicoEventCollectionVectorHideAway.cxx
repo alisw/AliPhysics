@@ -50,10 +50,12 @@ AliFemtoPicoEventCollection* AliFemtoPicoEventCollectionVectorHideAway::PicoEven
   int ix,iy,iz;
   ix=0;iy=0;iz=0;
 
-  ix = (int)floor( (x-fMinx)/fStepx );
-  iy = (int)floor( (y-fMiny)/fStepy );
-  iz = (int)floor( (z-fMinz)/fStepz );
-
+  if(fStepx != 0 && fStepy != 0 && fStepz != 0)
+    {
+      ix = (int)floor( (x-fMinx)/fStepx );
+      iy = (int)floor( (y-fMiny)/fStepy );
+      iz = (int)floor( (z-fMinz)/fStepz );
+    }
   return PicoEventCollection( ix,iy,iz );
 }
 //___________________________________
