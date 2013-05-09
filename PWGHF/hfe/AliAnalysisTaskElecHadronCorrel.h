@@ -63,6 +63,8 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     void ElectronHadCorrelEtaBinsNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH2F *DphiPtEta1, TH2F *DphiPtEta11,TH2F *DphiPtEta12,TH2F *DphiPtEta13,TH2F *DphiPtEta14,TH2F *DphiPtEta2, TH2F *DphiPtEta21,TH2F *DphiPtEta22,TH2F *DphiPtEta23,TH2F *DphiPtEta24);	
     // void ElectronHadCorrelEtaBinsNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH3F *DphiPtEta1, TH3F *DphiPtEta11,TH3F *DphiPtEta12,TH3F *DphiPtEta13,TH3F *DphiPtEta14);	
     void HadronInfo(Int_t itrack);
+
+    void SetEventTriggerSelectionMB(Bool_t TriggerMB) {fTriggerMB = TriggerMB;};
     void SetTriggerSelection(Bool_t TriggerCentral) {fTriggerCentral = TriggerCentral;};
     void    SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
     void    CheckCentrality(AliVEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
@@ -122,6 +124,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     Double_t   fEovPMin;//
     Double_t   fEovPMax;//
     Bool_t     fTriggerCentral;//
+    Bool_t     fTriggerMB;//
 
     AliEventPoolManager*     fPoolMgr;         //! event pool manager
 

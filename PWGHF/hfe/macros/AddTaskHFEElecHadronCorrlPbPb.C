@@ -1,4 +1,5 @@
-AliAnalysisTaskElecHadronCorrel *AddTaskHFEElecHadronCorrlPbPb(Bool_t TrigSelCen = kTRUE,
+AliAnalysisTaskElecHadronCorrel *AddTaskHFEElecHadronCorrlPbPb(Bool_t EventTrigSelMB=kTRUE,
+                                                               Bool_t TrigSelCen = kTRUE,
                                                                Double_t CentrMin = 0,
                                                                Double_t CentMax = 7,
                                                                Double_t TPCNsigMinE = -2,
@@ -43,7 +44,7 @@ AliAnalysisTaskElecHadronCorrel *AddTaskHFEElecHadronCorrlPbPb(Bool_t TrigSelCen
 
   //analysis task 
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFEElecHadronCorrelPbPb.C");
-  AliAnalysisTaskElecHadronCorrel *taskHFEeh = ConfigHFEElecHadronCorrelPbPb(MCthere,TrigSelCen,CentrMin,CentMax,TPCNsigMinE,TPCNsigMaxE,TPCNsigMinH,TPCNsigMaxH,SSM02Min,SSM02Max,SSM20Min,SSM20Max,Disp,EovPMin,EovPMax,InvM,TaskName);
+  AliAnalysisTaskElecHadronCorrel *taskHFEeh = ConfigHFEElecHadronCorrelPbPb(MCthere,EventTrigSelMB,TrigSelCen,CentrMin,CentMax,TPCNsigMinE,TPCNsigMaxE,TPCNsigMinH,TPCNsigMaxH,SSM02Min,SSM02Max,SSM20Min,SSM20Max,Disp,EovPMin,EovPMax,InvM,TaskName);
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGHF_hfeCalPbPbeh";

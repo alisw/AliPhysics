@@ -1,4 +1,5 @@
 AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC,
+                                                               Bool_t EventTrigSelMB=kTRUE,
                                                                Bool_t TrigSelCen = kTRUE,
                                                                Double_t CentMin = 0,
                                                                Double_t CentMax = 7,
@@ -51,6 +52,7 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC,
 //  task->SetRemovePileUp(kTRUE);
 //  task->SetInvariantMassCut(0.1);
 
+  task->SetEventTriggerSelectionMB(EventTrigSelMB);
   task->SetTriggerSelection(TrigSelCen);
   task->SetCentralityParameters(CentMin, CentMax, "V0M");
   task->SetInvariantMassCut(InvM);
