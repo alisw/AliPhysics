@@ -288,6 +288,9 @@ protected:
   TH1D * _m5;
   TH1D * _m6;
   TH1D * _vertexZ;
+
+  TH1F * _Ncluster1;
+  TH1F * _Ncluster2;
   TH1F * _etadis;
   TH1F * _phidis;
   TH1F * _dcaz;
