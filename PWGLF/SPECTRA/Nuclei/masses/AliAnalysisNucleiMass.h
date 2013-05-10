@@ -37,7 +37,10 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   void SetDCAzCut(Float_t fDCAzCut) {DCAzCUT =fDCAzCut;}
   void SetDCAxyCut(Float_t fDCAxyCut) {DCAxyCUT=fDCAxyCut;}
   void SetkTPCcut(Bool_t isTPCcut) {kTPCcut=isTPCcut;}
+  void SetNsigmaTPCCut(Float_t NsigmaTpcCut) {NsigmaTPCCut=NsigmaTpcCut;}
+  void SetisSignalCheck(Bool_t IsSignalCheck) {isSignalCheck=IsSignalCheck;}
   
+
  private:
   AliAnalysisNucleiMass(const AliAnalysisNucleiMass &old); 
   AliAnalysisNucleiMass& operator=(const AliAnalysisNucleiMass &source);
@@ -61,6 +64,10 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   Bool_t kTOF;                      //! kTOFout and kTIME required
 
   Int_t iBconf;                      //! if Magnetic Configuration is down or up 
+
+  Bool_t isSignalCheck;               // if write with an appropriate binning the plots of the various signals (QA,...) 
+
+  Float_t NsigmaTPCCut;              // number of sigma Tpc Cut
 
   AliAODEvent* fAOD;                //! AOD object
   

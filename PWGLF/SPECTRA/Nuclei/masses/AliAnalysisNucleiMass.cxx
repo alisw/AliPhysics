@@ -35,6 +35,8 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass():
   kTPC(0),
   kTOF(0),
   iBconf(0),
+  isSignalCheck(kTRUE),
+  NsigmaTPCCut(2.0),
   fAOD(NULL),
   fESD(NULL),
   fEvent(NULL),
@@ -59,6 +61,8 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass(const char *name):
   kTPC(0),
   kTOF(0),
   iBconf(0),
+  isSignalCheck(kTRUE),
+  NsigmaTPCCut(2.0),
   fAOD(NULL), 
   fESD(NULL),
   fEvent(NULL),
@@ -91,53 +95,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     hZvertex[iB] = new TH1F("hZvertex","Vertex distribution of selected events; z vertex (cm)",240,-30,30);
     
     hTOFSignalPion[iB] = new TH1F("hTOFSignalPion","TOF signal 0.9<p_{T}<1.0; t-t_{exp}^{#pi} (ps)",1500,-1500,1500);
-    
-    fdEdxVSp[iB][0] = new TH2F("fdEdxVSp","dE/dx vs p; p/|Z| (GeV/c); dE/dx_{TPC} (a.u.)",500,0,5,2000,0,1000);
-    fdEdxVSp[iB][1] = new TH2F("fdEdxVSp_pos","dE/dx vs p positive charge; p/|Z| (GeV/c); dE/dx_{TPC} (a.u.)",500,0,5,2000,0,1000);
-    fdEdxVSp[iB][2] = new TH2F("fdEdxVSp_neg","dE/dx vs p negative charge; p/|Z| (GeV/c); dE/dx_{TPC} (a.u.)",500,0,5,2000,0,1000);
-    
-    fBetaTofVSp[iB] = new TH2F("fBetaTofVSp","#beta_{TOF} vs p; p(GeV/c); #beta_{TOF}",1000,0,5,1300,0.4,1.05);
-    
-    fM2vsP_NoTpcCut[iB][0] = new TH2F("fM2vsP_NoTpcCut","M_{TOF}^{2} vs p; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
-    fM2vsP_NoTpcCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive","M_{TOF}^{2} vs p Pos Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
-    fM2vsP_NoTpcCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative","M_{TOF}^{2} vs p Neg Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
-    
-    fM2vsP_NoTpcCut_DCAxyCut[iB][0] = new TH2F("fM2vsP_NoTpcCut_DCAxycut","M_{TOF}^{2} vs p with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
-    fM2vsP_NoTpcCut_DCAxyCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive_DCAxycut","M_{TOF}^{2} vs p Pos Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
-    fM2vsP_NoTpcCut_DCAxyCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative_DCAxycut","M_{TOF}^{2} vs p Neg Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
-    
-    fM2vsZ[iB][0] = new TH2F("fM2vsZ","M_{TOF}^{2} vs Z^{2} Integrated p_{T};Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][1] = new TH2F("fM2vsZ_0.3pT0.5","M_{TOF}^{2} vs Z^{2} 0.3<pT<0.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][2] = new TH2F("fM2vsZ_0.5pT1.0","M_{TOF}^{2} vs Z^{2} 0.5<pT<1.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][3] = new TH2F("fM2vsZ_1.0pT1.5","M_{TOF}^{2} vs Z^{2} 1.0<pT<1.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][4] = new TH2F("fM2vsZ_1.5pT2.0","M_{TOF}^{2} vs Z^{2} 1.5<pT<2.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][5] = new TH2F("fM2vsZ_2.0pT2.5","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][6] = new TH2F("fM2vsZ_2.5pT3.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][7] = new TH2F("fM2vsZ_3.0pT3.5","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][8] = new TH2F("fM2vsZ_3.5pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][9] = new TH2F("fM2vsZ_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][10] = new TH2F("fM2vsZ_0.0pT1.0","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][11] = new TH2F("fM2vsZ_1.0pT2.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][12] = new TH2F("fM2vsZ_2.0pT3.0","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][13] = new TH2F("fM2vsZ_3.0pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZ[iB][14] = new TH2F("fM2vsZ_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    
-    fM2vsZwithTPC[iB][0] = new TH2F("fM2vsZwithTPC","M_{TOF}^{2} vs Z^{2} Integrated p_{T} withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][1] = new TH2F("fM2vsZwithTPC_0.3pT0.5","M_{TOF}^{2} vs Z^{2} 0.3<pT<0.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][2] = new TH2F("fM2vsZwithTPC_0.5pT1.0","M_{TOF}^{2} vs Z^{2} 0.5<pT<1.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][3] = new TH2F("fM2vsZwithTPC_1.0pT1.5","M_{TOF}^{2} vs Z^{2} 1.0<pT<1.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][4] = new TH2F("fM2vsZwithTPC_1.5pT2.0","M_{TOF}^{2} vs Z^{2} 1.5<pT<2.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][5] = new TH2F("fM2vsZwithTPC_2.0pT2.5","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][6] = new TH2F("fM2vsZwithTPC_2.5pT3.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][7] = new TH2F("fM2vsZwithTPC_3.0pT3.5","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][8] = new TH2F("fM2vsZwithTPC_3.5pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][9] = new TH2F("fM2vsZwithTPC_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][10] = new TH2F("fM2vsZwithTPC_0.0pT1.0","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][11] = new TH2F("fM2vsZwithTPC_1.0pT2.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][12] = new TH2F("fM2vsZwithTPC_2.0pT3.0","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][13] = new TH2F("fM2vsZwithTPC_3.0pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    fM2vsZwithTPC[iB][14] = new TH2F("fM2vsZwithTPC_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
-    
+   
     char namePart[9][30];
     char namePart_par_TPC[9][40];
     char namePart_title_TPC[9][120];
@@ -176,15 +134,6 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       snprintf(namePart_title_ProfileTOF[i],80,"hBetaVsP_Exp%s;p (GeV/c); #beta_{TOF}",namePart[i]);
     }
     
-    for(Int_t i=0;i<9;i++) {
-      fNsigmaTPC[iB][i] = new TH2F(namePart_par_TPC[i],namePart_title_TPC[i],250,0,5,200,-5,5);
-      fNsigmaTPC[iB][i]->GetYaxis()->CenterTitle();
-      fNsigmaTOF[iB][i] = new TH2F(namePart_par_TOF[i],namePart_title_TOF[i],250,0,5,200,-5,5);
-      fNsigmaTOF[iB][i]->GetYaxis()->CenterTitle();
-      hDeDxExp[iB][i] = new TProfile(namePart_par_ProfileTPC[i],namePart_title_ProfileTPC[i],500,0,5,0,1000,"");
-      hBetaExp[iB][i] = new TProfile(namePart_par_ProfileTOF[i],namePart_title_ProfileTOF[i],400,0,5,0.4,1.05,"");
-    }
-    
     char namePart_par_TPCvsP_kTOFtrue[18][80];
     char namePart_title_TPCvsP_kTOFtrue[18][120];
     
@@ -213,13 +162,8 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(namePart_par_TPCvsP_kTOFtrue[iS],40,"NsigmaTPCvsP_kTOFout&&kTIME_%s",name[iS]);
       snprintf(namePart_title_TPCvsP_kTOFtrue[iS],120,"NsigmaTPCvsP_kTOFout&&kTIME_%s;p (GeV/c);n_{#sigma_{TPC}}^{%s}",name[iS],name[iS]);
-    }
-    
-    for(Int_t iS=0;iS<18;iS++) {
-      fNsigmaTPCvsP_kTOFtrue[iB][iS] = new TH2F(namePart_par_TPCvsP_kTOFtrue[iS],namePart_title_TPCvsP_kTOFtrue[iS],250,0,5,200,-5,5);
-      fNsigmaTPCvsP_kTOFtrue[iB][iS]->GetYaxis()->CenterTitle();
-    }
-    
+     }
+ 
     char name_par_MvsP[18][60];
     char name_title_MvsP[18][150];
     
@@ -227,8 +171,6 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       snprintf(name_par_MvsP[i],60,"M2vsP_%s",name[i]);
       snprintf(name_title_MvsP[i],150,"M_{TOF}^{2}_%s_2#sigma_TPCcut;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4});p/|Z| (GeV/c)",name[i]);
     }
-    
-    for (Int_t i=0;i<18;i++) fM2vsP[iB][i] = new TH2F(name_par_MvsP[i],name_title_MvsP[i],8000,0,10,200,0,10);
     
     char name_par_MvsP_DCAxyCut[18][60];
     char name_title_MvsP_DCAxyCut[18][150];
@@ -238,9 +180,155 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       snprintf(name_title_MvsP_DCAxyCut[i],150,"M_{TOF}^{2}_%s_2#sigma_TPCcut_DCAxyCut;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4});p/|Z| (GeV/c)",name[i]);
     }
     
-    for (Int_t i=0;i<18;i++) fM2vsP_DCAxyCut[iB][i] = new TH2F(name_par_MvsP_DCAxyCut[i],name_title_MvsP_DCAxyCut[i],8000,0,10,200,0,10);
+    if(isSignalCheck){
+      
+      fdEdxVSp[iB][0] = new TH2F("fdEdxVSp","dE/dx vs p; p/|Z| (GeV/c); dE/dx_{TPC} (a.u.)",500,0,5,2000,0,1000);
+      fdEdxVSp[iB][1] = new TH2F("fdEdxVSp_pos","dE/dx vs p positive charge; p/|Z| (GeV/c); dE/dx_{TPC} (a.u.)",500,0,5,2000,0,1000);
+      fdEdxVSp[iB][2] = new TH2F("fdEdxVSp_neg","dE/dx vs p negative charge; p/|Z| (GeV/c); dE/dx_{TPC} (a.u.)",500,0,5,2000,0,1000);
+      
+      fBetaTofVSp[iB] = new TH2F("fBetaTofVSp","#beta_{TOF} vs p; p(GeV/c); #beta_{TOF}",1000,0,5,1300,0.4,1.05);
+      
+      fM2vsP_NoTpcCut[iB][0] = new TH2F("fM2vsP_NoTpcCut","M_{TOF}^{2} vs p; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
+      fM2vsP_NoTpcCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive","M_{TOF}^{2} vs p Pos Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
+      fM2vsP_NoTpcCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative","M_{TOF}^{2} vs p Neg Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
+      
+      fM2vsP_NoTpcCut_DCAxyCut[iB][0] = new TH2F("fM2vsP_NoTpcCut_DCAxycut","M_{TOF}^{2} vs p with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
+      fM2vsP_NoTpcCut_DCAxyCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive_DCAxycut","M_{TOF}^{2} vs p Pos Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
+      fM2vsP_NoTpcCut_DCAxyCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative_DCAxycut","M_{TOF}^{2} vs p Neg Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",8000,0,10,200,0,10);
+      
+      fM2vsZ[iB][0] = new TH2F("fM2vsZ","M_{TOF}^{2} vs Z^{2} Integrated p_{T};Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][1] = new TH2F("fM2vsZ_0.3pT0.5","M_{TOF}^{2} vs Z^{2} 0.3<pT<0.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][2] = new TH2F("fM2vsZ_0.5pT1.0","M_{TOF}^{2} vs Z^{2} 0.5<pT<1.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][3] = new TH2F("fM2vsZ_1.0pT1.5","M_{TOF}^{2} vs Z^{2} 1.0<pT<1.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][4] = new TH2F("fM2vsZ_1.5pT2.0","M_{TOF}^{2} vs Z^{2} 1.5<pT<2.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][5] = new TH2F("fM2vsZ_2.0pT2.5","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][6] = new TH2F("fM2vsZ_2.5pT3.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][7] = new TH2F("fM2vsZ_3.0pT3.5","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][8] = new TH2F("fM2vsZ_3.5pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][9] = new TH2F("fM2vsZ_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][10] = new TH2F("fM2vsZ_0.0pT1.0","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][11] = new TH2F("fM2vsZ_1.0pT2.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][12] = new TH2F("fM2vsZ_2.0pT3.0","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][13] = new TH2F("fM2vsZ_3.0pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZ[iB][14] = new TH2F("fM2vsZ_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+
+      fM2vsZwithTPC[iB][0] = new TH2F("fM2vsZwithTPC","M_{TOF}^{2} vs Z^{2} Integrated p_{T} withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][1] = new TH2F("fM2vsZwithTPC_0.3pT0.5","M_{TOF}^{2} vs Z^{2} 0.3<pT<0.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][2] = new TH2F("fM2vsZwithTPC_0.5pT1.0","M_{TOF}^{2} vs Z^{2} 0.5<pT<1.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][3] = new TH2F("fM2vsZwithTPC_1.0pT1.5","M_{TOF}^{2} vs Z^{2} 1.0<pT<1.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][4] = new TH2F("fM2vsZwithTPC_1.5pT2.0","M_{TOF}^{2} vs Z^{2} 1.5<pT<2.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][5] = new TH2F("fM2vsZwithTPC_2.0pT2.5","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][6] = new TH2F("fM2vsZwithTPC_2.5pT3.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][7] = new TH2F("fM2vsZwithTPC_3.0pT3.5","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][8] = new TH2F("fM2vsZwithTPC_3.5pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][9] = new TH2F("fM2vsZwithTPC_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][10] = new TH2F("fM2vsZwithTPC_0.0pT1.0","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][11] = new TH2F("fM2vsZwithTPC_1.0pT2.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][12] = new TH2F("fM2vsZwithTPC_2.0pT3.0","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][13] = new TH2F("fM2vsZwithTPC_3.0pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      fM2vsZwithTPC[iB][14] = new TH2F("fM2vsZwithTPC_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",4000,-4,4,1000,0,10);
+      
+      for(Int_t i=0;i<9;i++) {
+	fNsigmaTPC[iB][i] = new TH2F(namePart_par_TPC[i],namePart_title_TPC[i],125,0,5,100,-5,5);
+	fNsigmaTPC[iB][i]->GetYaxis()->CenterTitle();
+	fNsigmaTOF[iB][i] = new TH2F(namePart_par_TOF[i],namePart_title_TOF[i],125,0,5,100,-5,5);
+	fNsigmaTOF[iB][i]->GetYaxis()->CenterTitle();
+	hDeDxExp[iB][i] = new TProfile(namePart_par_ProfileTPC[i],namePart_title_ProfileTPC[i],500,0,5,0,1000,"");
+	hBetaExp[iB][i] = new TProfile(namePart_par_ProfileTOF[i],namePart_title_ProfileTOF[i],400,0,5,0.4,1.05,"");
+      }
+      
+      for(Int_t iS=0;iS<18;iS++) {
+	fNsigmaTPCvsP_kTOFtrue[iB][iS] = new TH2F(namePart_par_TPCvsP_kTOFtrue[iS],namePart_title_TPCvsP_kTOFtrue[iS],125,0,5,100,-5,5);
+	fNsigmaTPCvsP_kTOFtrue[iB][iS]->GetYaxis()->CenterTitle();
+      }
+      
+      for (Int_t i=0;i<18;i++) fM2vsP[iB][i] = new TH2F(name_par_MvsP[i],name_title_MvsP[i],8000,0,10,200,0,10);
+      
+      for (Int_t i=0;i<18;i++) fM2vsP_DCAxyCut[iB][i] = new TH2F(name_par_MvsP_DCAxyCut[i],name_title_MvsP_DCAxyCut[i],8000,0,10,200,0,10);
+      
+    }
     
+    else{//IsSignalCheck is kFALSE
+      
+      fdEdxVSp[iB][0] = new TH2F("fdEdxVSp","dE/dx vs p; p/|Z| (GeV/c); dE/dx_{TPC} (a.u.)",1,0,5,1,0,1000);
+      fdEdxVSp[iB][1] = new TH2F("fdEdxVSp_pos","dE/dx vs p positive charge; p/|Z| (GeV/c); dE/dx_{TPC} (a.u.)",1,0,5,1,0,1000);
+      fdEdxVSp[iB][2] = new TH2F("fdEdxVSp_neg","dE/dx vs p negative charge; p/|Z| (GeV/c); dE/dx_{TPC} (a.u.)",1,0,5,1,0,1000);
     
+      fBetaTofVSp[iB] = new TH2F("fBetaTofVSp","#beta_{TOF} vs p; p(GeV/c); #beta_{TOF}",1,0,5,1,0.4,1.05);
+      
+      fM2vsP_NoTpcCut[iB][0] = new TH2F("fM2vsP_NoTpcCut","M_{TOF}^{2} vs p; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
+      fM2vsP_NoTpcCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive","M_{TOF}^{2} vs p Pos Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
+      fM2vsP_NoTpcCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative","M_{TOF}^{2} vs p Neg Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
+      
+      fM2vsP_NoTpcCut_DCAxyCut[iB][0] = new TH2F("fM2vsP_NoTpcCut_DCAxycut","M_{TOF}^{2} vs p with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
+      fM2vsP_NoTpcCut_DCAxyCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive_DCAxycut","M_{TOF}^{2} vs p Pos Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
+      fM2vsP_NoTpcCut_DCAxyCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative_DCAxycut","M_{TOF}^{2} vs p Neg Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
+
+      /*fM2vsP_NoTpcCut[iB][0] = new TH2F("fM2vsP_NoTpcCut","M_{TOF}^{2} vs p; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,10);
+      fM2vsP_NoTpcCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive","M_{TOF}^{2} vs p Pos Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,10);
+      fM2vsP_NoTpcCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative","M_{TOF}^{2} vs p Neg Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,10);
+      
+      fM2vsP_NoTpcCut_DCAxyCut[iB][0] = new TH2F("fM2vsP_NoTpcCut_DCAxycut","M_{TOF}^{2} vs p with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,10);
+      fM2vsP_NoTpcCut_DCAxyCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive_DCAxycut","M_{TOF}^{2} vs p Pos Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,10);
+      fM2vsP_NoTpcCut_DCAxyCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative_DCAxycut","M_{TOF}^{2} vs p Neg Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,10);*/
+      
+      fM2vsZ[iB][0] = new TH2F("fM2vsZ","M_{TOF}^{2} vs Z^{2} Integrated p_{T};Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][1] = new TH2F("fM2vsZ_0.3pT0.5","M_{TOF}^{2} vs Z^{2} 0.3<pT<0.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][2] = new TH2F("fM2vsZ_0.5pT1.0","M_{TOF}^{2} vs Z^{2} 0.5<pT<1.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][3] = new TH2F("fM2vsZ_1.0pT1.5","M_{TOF}^{2} vs Z^{2} 1.0<pT<1.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][4] = new TH2F("fM2vsZ_1.5pT2.0","M_{TOF}^{2} vs Z^{2} 1.5<pT<2.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][5] = new TH2F("fM2vsZ_2.0pT2.5","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][6] = new TH2F("fM2vsZ_2.5pT3.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][7] = new TH2F("fM2vsZ_3.0pT3.5","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][8] = new TH2F("fM2vsZ_3.5pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][9] = new TH2F("fM2vsZ_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][10] = new TH2F("fM2vsZ_0.0pT1.0","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][11] = new TH2F("fM2vsZ_1.0pT2.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][12] = new TH2F("fM2vsZ_2.0pT3.0","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][13] = new TH2F("fM2vsZ_3.0pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZ[iB][14] = new TH2F("fM2vsZ_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+
+      fM2vsZwithTPC[iB][0] = new TH2F("fM2vsZwithTPC","M_{TOF}^{2} vs Z^{2} Integrated p_{T} withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][1] = new TH2F("fM2vsZwithTPC_0.3pT0.5","M_{TOF}^{2} vs Z^{2} 0.3<pT<0.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][2] = new TH2F("fM2vsZwithTPC_0.5pT1.0","M_{TOF}^{2} vs Z^{2} 0.5<pT<1.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][3] = new TH2F("fM2vsZwithTPC_1.0pT1.5","M_{TOF}^{2} vs Z^{2} 1.0<pT<1.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][4] = new TH2F("fM2vsZwithTPC_1.5pT2.0","M_{TOF}^{2} vs Z^{2} 1.5<pT<2.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][5] = new TH2F("fM2vsZwithTPC_2.0pT2.5","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][6] = new TH2F("fM2vsZwithTPC_2.5pT3.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][7] = new TH2F("fM2vsZwithTPC_3.0pT3.5","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][8] = new TH2F("fM2vsZwithTPC_3.5pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][9] = new TH2F("fM2vsZwithTPC_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][10] = new TH2F("fM2vsZwithTPC_0.0pT1.0","M_{TOF}^{2} vs Z^{2} 2.0<pT<2.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][11] = new TH2F("fM2vsZwithTPC_1.0pT2.0","M_{TOF}^{2} vs Z^{2} 2.5<pT<3.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][12] = new TH2F("fM2vsZwithTPC_2.0pT3.0","M_{TOF}^{2} vs Z^{2} 3.0<pT<3.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][13] = new TH2F("fM2vsZwithTPC_3.0pT4.0","M_{TOF}^{2} vs Z^{2} 3.5<pT<4.0 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      fM2vsZwithTPC[iB][14] = new TH2F("fM2vsZwithTPC_4.0pT4.5","M_{TOF}^{2} vs Z^{2} 4.0<pT<4.5 withTPCcut;Z;M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4})",1,-4,4,1,0,10);
+      
+      for(Int_t i=0;i<9;i++) {
+	fNsigmaTPC[iB][i] = new TH2F(namePart_par_TPC[i],namePart_title_TPC[i],1,0,5,1,-5,5);
+	fNsigmaTPC[iB][i]->GetYaxis()->CenterTitle();
+	fNsigmaTOF[iB][i] = new TH2F(namePart_par_TOF[i],namePart_title_TOF[i],1,0,5,1,-5,5);
+	fNsigmaTOF[iB][i]->GetYaxis()->CenterTitle();
+	hDeDxExp[iB][i] = new TProfile(namePart_par_ProfileTPC[i],namePart_title_ProfileTPC[i],1,0,5,0,1000,"");
+	hBetaExp[iB][i] = new TProfile(namePart_par_ProfileTOF[i],namePart_title_ProfileTOF[i],1,0,5,0.4,1.05,"");
+      }
+      
+      for(Int_t iS=0;iS<18;iS++) {
+	fNsigmaTPCvsP_kTOFtrue[iB][iS] = new TH2F(namePart_par_TPCvsP_kTOFtrue[iS],namePart_title_TPCvsP_kTOFtrue[iS],1,0,5,1,-5,5);
+	fNsigmaTPCvsP_kTOFtrue[iB][iS]->GetYaxis()->CenterTitle();
+      }
+      
+      /*for (Int_t i=0;i<18;i++) fM2vsP[iB][i] = new TH2F(name_par_MvsP[i],name_title_MvsP[i],1,0,10,1,0,10);
+     
+	for (Int_t i=0;i<18;i++) fM2vsP_DCAxyCut[iB][i] = new TH2F(name_par_MvsP_DCAxyCut[i],name_title_MvsP_DCAxyCut[i],1,0,10,1,0,10);*/
+      
+      for (Int_t i=0;i<18;i++) fM2vsP[iB][i] = new TH2F(name_par_MvsP[i],name_title_MvsP[i],1250,0,10,80,0,8);
+      
+      for (Int_t i=0;i<18;i++) fM2vsP_DCAxyCut[iB][i] = new TH2F(name_par_MvsP_DCAxyCut[i],name_title_MvsP_DCAxyCut[i],1250,0,10,80,0,8);
+
+    }
+       
+
     Char_t par_name_nbin[nbin][30];
     
     snprintf(par_name_nbin[0],30,"0.4<Pt<0.5");
@@ -548,13 +636,15 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
   else iBconf=1;//B++
 
   hNeventSelected[iBconf]->Fill(v0Centr);//selected events
+
+  //const AliAODVertex* vtxEVENT = (AliAODVertex*) fEvent->GetPrimaryVertex();
   
-  const AliAODVertex* vtxAOD = fAOD->GetPrimaryVertex();
-  
+  const AliVVertex* vtxEVENT = fEvent->GetPrimaryVertex();
+
   Float_t zvtx = 10000.0;
 
-  if(vtxAOD->GetNContributors()>0)
-    zvtx = vtxAOD->GetZ();
+  if(vtxEVENT->GetNContributors()>0)
+    zvtx = vtxEVENT->GetZ();
   
    hZvertex[iBconf]->Fill(zvtx);
     
@@ -712,7 +802,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	  }
 	  
 	  for(Int_t iS=0;iS<9;iS++) {
-	    if(TMath::Abs(nsigmaTPC[iS])<2.0) {
+	    if(TMath::Abs(nsigmaTPC[iS])<NsigmaTPCCut) {
 	      FlagPid += ((Int_t)TMath::Power(2,iS));
 	    }
 	  }
