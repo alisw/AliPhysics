@@ -105,9 +105,15 @@ AliITSUSeed* AliITSUTrackHyp::GetWinner() const
 AliITSUSeed* AliITSUTrackHyp::DefineWinner(int lr, int id)
 {
   // assign best candidate
-  if (GetNSeeds(lr)<=id) return 0;
-  fWinner = GetSeed(lr,id);
+  int nsd = GetNSeeds(lr);
+  while ( id<nsd && ( !(fWinner=GetSeed(lr,id)) || fWinner->IsKilled() ) ) {id++; fWinner=0;}
+  if (!fWinner) {
+    //    AliInfo(Form("No winner candidates out of %d for %d",nsd,GetUniqueID()));
+    return 0;
+  }
+  UInt_t idESD = GetUniqueID(); // retain ESDtrackID
   this->AliExternalTrackParam::operator=(*fWinner);
+  SetUniqueID(idESD);
   SetChi2(fWinner->GetChi2GloNrm());
   SetNumberOfClusters(fWinner->GetNLayersHit());
   return fWinner;

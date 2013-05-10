@@ -34,12 +34,13 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     recoParamArray->AddLast(itsRecoParam);
   }
   //
-  int nBranch[7] = {10,10,10,10,10,10,10}; // max branching for the seed on layer
-  int nCands[7]  = {10,500,500,500,300,200,100}; // max candidates for the TPC seed
-  float tr2clChi2[7] = {50,50,50,50,50,80,100}; // cut on cluster to track chi2 
+  int nBranch[7] = {5,10,15,4,6,6,10}; // max branching for the seed on layer
+  int nCands[7]  = {10,20,25,20,30,15,20}; // max candidates for the TPC seed
+  float tr2clChi2[7] = {20,20,25,25,25,30,40}; // cut on cluster to track chi2 
+  float gloChi2[7]   = {9, 10,15,20,30,30,30}; // cut on seed global norm chi2
   float missPen[7] = {2.,2.,2.,2.,2.,2.,2.};    // missing cluster penalty
-  float maxChi2Match = 15.;
-  float maxChi2SA    = 15.;  
+  float maxChi2Match = 10.;
+  float maxChi2SA    = 10.;  
   //
   {
     AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetLowFluxParam();
@@ -63,6 +64,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
       trCond->SetMaxBranches(i,nBranch[i]);    // each seed propagated to given layer can produce max nBranch branches
       trCond->SetMaxCandidates(i,nCands[i]);   // each tpc track may have at most nCands prolongations
       trCond->SetMaxTr2ClChi2(i,tr2clChi2[i]); // cut on cluster to track chi2
+      trCond->SetMaxChi2GloNrm(i,gloChi2[i]);  // cut on cluster to track global chi2
       trCond->SetMissPenalty(i,missPen[i]);    // missing cluster penalty
       //
     }
@@ -114,6 +116,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
       trCond->SetMaxBranches(i,nBranch[i]);    // each seed propagated to given layer can produce max nBranch branches
       trCond->SetMaxCandidates(i,nCands[i]);   // each tpc track may have at most nCands prolongations
       trCond->SetMaxTr2ClChi2(i,tr2clChi2[i]);   // cut on cluster to track chi2
+      trCond->SetMaxChi2GloNrm(i,gloChi2[i]);  // cut on cluster to track global chi2
       trCond->SetMissPenalty(i,missPen[i]);    // missing cluster penalty
       //
     }

@@ -73,6 +73,9 @@ class AliITSUClusterPix : public AliCluster
   virtual Bool_t               IsEqual(const TObject* obj)  const;
   virtual Int_t	               Compare(const TObject* obj)  const;
   //
+  UShort_t                     GetRecoInfo()                const {return fRecoInfo;}
+  void                         SetRecoInfo(UShort_t v)            {fRecoInfo = v; ModClUsage(v>0);}
+  //
   Bool_t  HasCommonTrack(const AliCluster* cl)          const;
   //
   static  void                 SetGeom(AliITSUGeomTGeo* gm) {fgGeom = gm;}
@@ -85,12 +88,13 @@ class AliITSUClusterPix : public AliCluster
  protected:
   //
   UShort_t                fCharge;        //  charge (for MC studies only)
+  UShort_t                fRecoInfo;      //! space reserved for reco time manipulations
   Int_t                   fNxNzN;         //  effective cluster size in X (1st byte) and Z (2nd byte) directions 
                                           //  and total Npix(3d byte). 4th byte is used for clusters usage counter
   static UInt_t           fgMode;         //! general mode (sorting mode etc)
   static AliITSUGeomTGeo* fgGeom;         //! pointer on the geometry data
 
-  ClassDef(AliITSUClusterPix,1)
+  ClassDef(AliITSUClusterPix,2)
 };
 
 //______________________________________________________

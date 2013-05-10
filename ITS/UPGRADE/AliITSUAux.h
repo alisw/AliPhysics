@@ -11,10 +11,12 @@
 //                                                                   //
 ///////////////////////////////////////////////////////////////////////
 
+#define _ITSU_TUNING_MODE_
 
 class AliITSUGeomTGeo;
 class AliITSsegmentation;
 using namespace TMath;
+
 
 
 namespace AliITSUAux {

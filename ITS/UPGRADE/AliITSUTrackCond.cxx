@@ -10,6 +10,7 @@ Char_t    AliITSUTrackCond::fgkClSharing = 0;
 Int_t     AliITSUTrackCond::fgkMaxBranches = 50;
 Int_t     AliITSUTrackCond::fgkMaxCandidates = 500;
 Float_t   AliITSUTrackCond::fgkMaxTr2ClChi2  = 50.;
+Float_t   AliITSUTrackCond::fgkMaxChi2GloNrm = 50.;
 Float_t   AliITSUTrackCond::fgkMissPenalty  = 2.;
 Float_t   AliITSUTrackCond::fgkMaxMatchChi2 = 15.;
 Float_t   AliITSUTrackCond::fgkMaxITSSAChi2 = 15;
@@ -23,6 +24,7 @@ AliITSUTrackCond::AliITSUTrackCond(int nLayers)
   ,fMaxBranches(0)
   ,fMaxCandidates(0)
   ,fMaxTr2ClChi2(0)
+  ,fMaxChi2GloNrm(0)
   ,fMissPenalty(0)
   ,fNSigmaRoadY(0)
   ,fNSigmaRoadZ(0)
@@ -45,6 +47,7 @@ AliITSUTrackCond::AliITSUTrackCond(const AliITSUTrackCond& src)
   ,fMaxBranches(0)
   ,fMaxCandidates(0)
   ,fMaxTr2ClChi2(0)
+  ,fMaxChi2GloNrm(0)
   ,fMissPenalty(0)
   ,fNSigmaRoadY(0)
   ,fNSigmaRoadZ(0)
@@ -58,6 +61,7 @@ AliITSUTrackCond::AliITSUTrackCond(const AliITSUTrackCond& src)
     SetMaxBranches(i,src.GetMaxBranches(i));
     SetMaxCandidates(i,src.GetMaxCandidates(i));
     SetMaxTr2ClChi2(i,src.GetMaxTr2ClChi2(i));
+    SetMaxChi2GloNrm(i,src.GetMaxChi2GloNrm(i));
     SetMissPenalty(i,src.GetMissPenalty(i));
     SetNSigmaRoadY(i,src.GetNSigmaRoadY(i));
     SetNSigmaRoadZ(i,src.GetNSigmaRoadZ(i));
@@ -82,6 +86,7 @@ AliITSUTrackCond& AliITSUTrackCond::operator=(const AliITSUTrackCond& src)
       SetMaxBranches(i,src.GetMaxBranches(i));
       SetMaxCandidates(i,src.GetMaxCandidates(i));
       SetMaxTr2ClChi2(i,src.GetMaxTr2ClChi2(i));
+      SetMaxChi2GloNrm(i,src.GetMaxChi2GloNrm(i));
       SetMissPenalty(i,src.GetMissPenalty(i));
       SetNSigmaRoadY(i,src.GetNSigmaRoadY(i));
       SetNSigmaRoadZ(i,src.GetNSigmaRoadZ(i));
@@ -102,6 +107,7 @@ void AliITSUTrackCond::SetNLayers(int nLayers)
     delete[] fMaxBranches;
     delete[] fMaxCandidates;
     delete[] fMaxTr2ClChi2;
+    delete[] fMaxChi2GloNrm;
     delete[] fMissPenalty;
     delete[] fNSigmaRoadY;
     delete[] fNSigmaRoadZ;
@@ -113,6 +119,7 @@ void AliITSUTrackCond::SetNLayers(int nLayers)
     fMaxBranches   = new Short_t[fNLayers];
     fMaxCandidates = new Short_t[fNLayers];
     fMaxTr2ClChi2  = new Float_t[fNLayers];
+    fMaxChi2GloNrm = new Float_t[fNLayers];
     fMissPenalty   = new Float_t[fNLayers];
     fNSigmaRoadY   = new Float_t[fNLayers];
     fNSigmaRoadZ   = new Float_t[fNLayers];
@@ -121,6 +128,7 @@ void AliITSUTrackCond::SetNLayers(int nLayers)
       SetMaxBranches(i,fgkMaxBranches);
       SetMaxCandidates(i,fgkMaxCandidates);
       SetMaxTr2ClChi2(i,fgkMaxTr2ClChi2);
+      SetMaxChi2GloNrm(i,fgkMaxChi2GloNrm);
       SetMissPenalty(i,fgkMissPenalty);
       SetNSigmaRoadY(i,-1); // force recalculation
       SetNSigmaRoadZ(i,-1); // force recalculation
@@ -131,6 +139,7 @@ void AliITSUTrackCond::SetNLayers(int nLayers)
     fMaxBranches   = 0;
     fMaxCandidates = 0;
     fMaxTr2ClChi2  = 0;
+    fMaxChi2GloNrm = 0;
     fMissPenalty   = 0;
     fNSigmaRoadY   = 0;
     fNSigmaRoadZ   = 0;
@@ -201,10 +210,10 @@ void AliITSUTrackCond::Print(Option_t*) const
     printf("\n");
     cntCond += kNAuxSz;
   }
-  printf("Cuts:\t%6s\t%6s\t%4s\t%8s\t%8s\t%8s\t%8s\n", "MaxBrn","MaxCnd","ClSh","Chi2Cl","Mis.Pen.","NSig.Y","NSig.Z");
+  printf("Cuts:\t%6s\t%6s\t%4s\t%8s\t%8s\t%8s\t%8s\t%8s\n", "MaxBrn","MaxCnd","ClSh","Chi2Cl","Chi2Glo","Mis.Pen.","NSig.Y","NSig.Z");
   for (int i=0;i<fNLayers;i++) {
-    printf("Lr%2d:\t%6d\t%6d\t%4d\t%8.1f\t%8.2f\t%8.2f\t%8.2f\n",i,
-	   fMaxBranches[i],fMaxCandidates[i],fClSharing[i],fMaxTr2ClChi2[i],fMissPenalty[i],fNSigmaRoadY[i],fNSigmaRoadZ[i]);
+    printf("Lr%2d:\t%6d\t%6d\t%4d\t%8.1f\t%8.2f\t%8.2f\t%8.2f\t%8.2f\n",i,
+	   fMaxBranches[i],fMaxCandidates[i],fClSharing[i],fMaxTr2ClChi2[i],fMaxChi2GloNrm[i],fMissPenalty[i],fNSigmaRoadY[i],fNSigmaRoadZ[i]);
   }
   //
   printf("ITS/TPC matching MaxChi2: %.3f\n",fMaxITSTPCMatchChi2);
@@ -220,7 +229,7 @@ void AliITSUTrackCond::Init()
   //
   for (int ilr=0;ilr<fNLayers;ilr++) {
     if (IsLayerExcluded(ilr)) continue;
-    float nsig = Sqrt(GetMaxTr2ClChi2(ilr));
+    float nsig = Sqrt(2*GetMaxTr2ClChi2(ilr));
     if (GetNSigmaRoadY(ilr)<0) SetNSigmaRoadY(ilr,nsig);
     if (GetNSigmaRoadZ(ilr)<0) SetNSigmaRoadZ(ilr,nsig);
     //

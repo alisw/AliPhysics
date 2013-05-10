@@ -18,6 +18,10 @@ AliITSUSeed::AliITSUSeed()
   ,fChi2Match(0)
   ,fChi2ITSSA(0)
   ,fParent(0)
+#ifdef _ITSU_TUNING_MODE_ // this is used only for tuning histo filling
+  ,fOrdBranch(0) 
+  ,fOrdCand(0)
+#endif
 {
   // def c-tor
   ResetFMatrix();
@@ -41,6 +45,10 @@ AliITSUSeed::AliITSUSeed(const AliITSUSeed& src)
   ,fChi2Match(src.fChi2Match)
   ,fChi2ITSSA(src.fChi2ITSSA)
   ,fParent(src.fParent) 
+#ifdef _ITSU_TUNING_MODE_ // this is used only for tuning histo filling
+  ,fOrdBranch(src.fOrdBranch) 
+  ,fOrdCand(src.fOrdCand)
+#endif
 {
   // def c-tor
   for (int i=kNFElem;i--;) fFMatrix[i] = src.fFMatrix[i];
@@ -69,7 +77,7 @@ void AliITSUSeed::Print(Option_t* opt) const
 {
   // print seed info
   int lr,cl = GetLrCluster(lr);
-  printf("%cLr%d Nchild: %3d Cl:%4d Chi2Glo:%7.2f(%7.2f) Chi2Cl:%7.2f Penalty: %7.2f Mtc:%6.2f Bwd:%6.2f",IsKilled() ? '-':' ',
+  printf("%cLr%d Nchild: %3d Cl:%4d Chi2Glo:%7.2f(%7.2f) Chi2Cl:%7.2f Penalty: %7.2f Mtc:%6.3f Bwd:%6.3f",IsKilled() ? '-':' ',
 	 lr,GetNChildren(),cl,GetChi2Glo(),GetChi2GloNrm(),GetChi2Cl(), GetChi2Penalty(), GetChi2ITSTPC(), GetChi2ITSSA());
   printf(" |"); 
   int lrc=0;

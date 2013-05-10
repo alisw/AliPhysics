@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#define _FILL_CONTROL_HISTOS_
-
 //-------------------------------------------------------------------------
 //                ITS upgrade tracker base class
 //-------------------------------------------------------------------------
@@ -13,6 +11,7 @@
 #include "AliITSUSeed.h"
 #include "AliITSUTrackCond.h"
 #include "AliITSUTrackHyp.h"
+#include "AliITSUAux.h"
 #include <TArrayI.h>
 
 class AliITSUReconstructor;
@@ -91,7 +90,7 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 AddSeedBranch(AliITSUSeed* seed);
   void                   ValidateAllowedBranches(Int_t accMax);
   void                   ValidateAllowedCandidates(Int_t ilr, Int_t accMax);
-  void                   FlagSeedClusters(const AliITSUSeed* seed, Bool_t flg);
+  void                   FlagSeedClusters(const AliITSUSeed* seed, Bool_t flg, UShort_t hypRef);
   //
   AliITSUSeed*           NewSeedFromPool(const AliITSUSeed* src=0);
   void                   ResetSeedsPool();
@@ -100,6 +99,7 @@ class AliITSUTrackerGlo : public AliTracker {
   AliITSUTrackHyp*       GetTrackHyp(Int_t id)               const  {return (AliITSUTrackHyp*)fHypStore.UncheckedAt(id);}
   void                   SetTrackHyp(AliITSUTrackHyp* hyp,Int_t id) {fHypStore.AddAtAndExpand(hyp,id);}
   void                   DeleteLastSeedFromPool()                   {fSeedsPool.RemoveLast();}
+  void                   CheckClusterSharingConflicts(AliITSUTrackHyp* hyp);
   void                   SaveReducedHypothesesTree(AliITSUTrackHyp* dest);
   void                   FinalizeHypotheses();
   Bool_t                 FinalizeHypothesis(AliITSUTrackHyp* hyp);
@@ -151,13 +151,13 @@ class AliITSUTrackerGlo : public AliTracker {
   //
   static const Double_t           fgkToler;        // tracking tolerance
   //
-#ifdef  _FILL_CONTROL_HISTOS_
+#ifdef  _ITSU_TUNING_MODE_
   // this code is only for special histos needed to extract some control parameters
-  void BookControlHistos();
-  TObjArray* fCHistoArr;
+  void BookControlHistos(const char* pref);
+  TObjArray* fCHistoArrCorr;
+  TObjArray* fCHistoArrFake;
   enum {kHResY=0,kHResYP=10,kHResZ=20,kHResZP=30,kHChi2Cl=40,kHChi2Nrm=50,kHBestInBranch=60,kHBestInCand=70};
-  enum {kHClShare=0,kHChiMatchCorr,kHChiMatchFake,kHChiMatchCorrMiss,kHChiMatchFakeMiss,
-	kHChiITSSACorr,kHChiITSSAFake}; // custom histos 
+  enum {kHChiMatch,kHChiITSSA}; // custom histos 
   enum {kHistosPhase=100};
   //
 #endif
@@ -198,7 +198,10 @@ inline void AliITSUTrackerGlo::KillSeed(AliITSUSeed* seed, Bool_t branch)
 inline void AliITSUTrackerGlo::AddProlongationHypothesis(AliITSUSeed* seed, Int_t lr)
 {
   // add new seed prolongation hypothesis 
-  fCurrHyp->AddSeed(seed,lr);
+#ifdef  _ITSU_TUNING_MODE_
+  seed->SetOrdCand(fCurrHyp->GetNSeeds(lr));
+#endif
+  fCurrHyp->AddSeed(seed,lr);  
 }
 
 #endif

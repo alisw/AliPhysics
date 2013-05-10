@@ -51,6 +51,7 @@ class AliITSUTrackCond : public TObject
   void        SetMaxITSTPCMatchChi2(Float_t v)               {fMaxITSTPCMatchChi2 = v;}
   void        SetMaxITSSAChi2(Float_t v)                     {fMaxITSSAChi2 = v;}
   void        SetMaxTr2ClChi2(Int_t lr, Float_t v)           {fMaxTr2ClChi2[lr] = v;}
+  void        SetMaxChi2GloNrm(Int_t lr, Float_t v)           {fMaxChi2GloNrm[lr] = v;}
   void        SetMissPenalty(Int_t lr,  Float_t v)           {fMissPenalty[lr] = v;}
   void        SetNSigmaRoadY(Int_t lr,  Float_t v)           {fNSigmaRoadY[lr] = v;}
   void        SetNSigmaRoadZ(Int_t lr,  Float_t v)           {fNSigmaRoadZ[lr] = v;}
@@ -60,6 +61,7 @@ class AliITSUTrackCond : public TObject
   Char_t      GetClSharing(Int_t lr)                   const {return fClSharing[lr];}
   Float_t     GetMissPenalty(Int_t lr)                 const {return fMissPenalty[lr];}
   Float_t     GetMaxTr2ClChi2(Int_t lr)                const {return fMaxTr2ClChi2[lr];}
+  Float_t     GetMaxChi2GloNrm(Int_t lr)               const {return fMaxChi2GloNrm[lr];}
   Float_t     GetNSigmaRoadY(Int_t lr)                 const {return fNSigmaRoadY[lr];}
   Float_t     GetNSigmaRoadZ(Int_t lr)                 const {return fNSigmaRoadZ[lr];}
   Bool_t      IsLayerExcluded(Int_t lr)                const {return GetMaxTr2ClChi2(lr)<=0;}
@@ -77,6 +79,7 @@ class AliITSUTrackCond : public TObject
   Short_t*    fMaxBranches;              // [fNLayers] max allowed branches per seed on each layer
   Short_t*    fMaxCandidates;            // [fNLayers] max allowed candidates per TPC seed on each layer
   Float_t*    fMaxTr2ClChi2;             // [fNLayers] max track-to-cluster chi2
+  Float_t*    fMaxChi2GloNrm;            // [fNLayers] max norm global chi2
   Float_t*    fMissPenalty;              // [fNLayers] chi2 penalty for missing hit on the layer
   Float_t*    fNSigmaRoadY;              // [fNLayers] number of sigmas in Y
   Float_t*    fNSigmaRoadZ;              // [fNLayers] number of sigmas in Z
@@ -89,11 +92,12 @@ class AliITSUTrackCond : public TObject
   static Int_t   fgkMaxBranches;          // def max number of branches per seed on current layer 
   static Int_t   fgkMaxCandidates;        // def max number of total candidates on current layer 
   static Float_t fgkMaxTr2ClChi2;         // def track-to-cluster chi2 cut
+  static Float_t fgkMaxChi2GloNrm;        // def global norm chi2 cut
   static Float_t fgkMissPenalty;          // penalty for missing cluster
   static Float_t fgkMaxMatchChi2;         // max acceptable matching chi2
   static Float_t fgkMaxITSSAChi2;         // max acceptable standalone ITS backward fit chi2
   //
-  ClassDef(AliITSUTrackCond,4)           // set of requirements on track hits pattern
+  ClassDef(AliITSUTrackCond,5)           // set of requirements on track hits pattern
 };
 
 

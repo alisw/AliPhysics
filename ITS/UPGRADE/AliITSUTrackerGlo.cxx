@@ -35,7 +35,6 @@
 #include "AliITSUReconstructor.h"
 #include "AliITSReconstructor.h"
 #include "AliITSUSeed.h"
-#include "AliITSUAux.h"
 #include "AliITSUClusterPix.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliCodeTimer.h"
@@ -79,8 +78,9 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fCurrActLrID(-1)
   ,fCurrLayer(0)
   ,fTrackPhase(-1)
-#ifdef  _FILL_CONTROL_HISTOS_
-  ,fCHistoArr(0)
+#ifdef  _ITSU_TUNING_MODE_
+  ,fCHistoArrCorr(0)
+  ,fCHistoArrFake(0)
 #endif
 {
   // Default constructor
@@ -96,17 +96,24 @@ AliITSUTrackerGlo::~AliITSUTrackerGlo()
   if (fWorkHyp) fWorkHyp->SetTPCSeed(0); // this hypothesis does not own the seed
   delete fWorkHyp;
   //
-#ifdef  _FILL_CONTROL_HISTOS_
-  if (fCHistoArr) {
+#ifdef  _ITSU_TUNING_MODE_
+  if (fCHistoArrCorr || fCHistoArrFake) {
     TFile* ctrOut = TFile::Open("itsuControlHistos.root","recreate");
     ctrOut->cd();
     AliInfo("Storing control histos");
-    fCHistoArr->Print();
     //    ctrOut->WriteObject(fCHistoArr,"controlH","kSingleKey");
-    fCHistoArr->Write();
+    if (fCHistoArrCorr) {
+      fCHistoArrCorr->Write();
+      delete fCHistoArrCorr;
+    }
+    if (fCHistoArrFake) {
+      fCHistoArrFake->Write();
+      delete fCHistoArrFake;
+    }
     ctrOut->Close();
     delete ctrOut;
-    fCHistoArr = 0;
+    fCHistoArrCorr = 0;
+    fCHistoArrFake = 0;    
   }
 #endif 
   //
@@ -157,8 +164,9 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   AliCodeTimerAuto("",0);
   SetTrackingPhase(kClus2Tracks);
   //
-#ifdef  _FILL_CONTROL_HISTOS_
-  if (!fCHistoArr) BookControlHistos();
+#ifdef  _ITSU_TUNING_MODE_
+  if (!fCHistoArrCorr) BookControlHistos("Corr");
+  if (!fCHistoArrFake) BookControlHistos("Fake");
 #endif
   static int evID = 0;
   static TArrayF esdTrPt(fESDIndex.GetSize()); 
@@ -194,7 +202,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   //
   fITS->ProcessClusters();
   //
-#ifdef  _FILL_CONTROL_HISTOS_
+#ifdef  _ITSU_TUNING_MODE_
   FlagSplitClusters(); // tmp RS
 #endif
   //
@@ -319,7 +327,6 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
       if (ndf>0) chi2 /= ndf;
       fCurrHyp->SetChi2(chi2);
       UpdateESDTrack(fCurrHyp,AliESDtrack::kITSout);
-      fCountITSout++;
     }
     else {
       AliDebug(2,Form("Refit Failed for track %d | ESDtrack#%d (MClb:%d)",itr,fCurrESDtrack->GetID(),fCurrESDtrMClb));
@@ -365,7 +372,6 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
     if (chi2>0) { // propagate up to inside radius of the beam pipe      
       fCurrHyp->SetChi2(chi2);
       UpdateESDTrack(fCurrHyp,AliESDtrack::kITSrefit);
-      fCountITSrefit++;
     }
     else {
       AliDebug(2,Form("Refit Failed for track %d |ESDtrack#%d (MClb:%d)",itr,fCurrESDtrack->GetID(),fCurrESDtrMClb));
@@ -555,8 +561,10 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 	double penalty = -fCurrTrackCond->GetMissPenalty(ila);
 	// to do: make penalty to account for probability to miss the cluster for good reason
 	seedSkp->SetChi2Cl(penalty);
-	AddSeedBranch(seedSkp);
-	//	AddProlongationHypothesis(seedSkp,ila);      
+	if (seedSkp->GetChi2GloNrm()>fCurrTrackCond->GetMaxChi2GloNrm(ila)) {
+	  MarkSeedFree(seedSkp);
+	}
+	else AddSeedBranch(seedSkp);
       }
       // transfer the new branches of the seed to the hypothesis container
       if (fNBranchesAdded) ValidateAllowedBranches(maxNBranches);
@@ -922,11 +930,11 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   if (cl->GetLabel(0)>=0) {
     for (int i=0;i<3;i++) if (cl->GetLabel(i)>=0 && cl->GetLabel(i)==currLabel) {goodCl = kTRUE; break;}
   }
-  Bool_t goodSeed = !track->ContainsFake();
   //
   if (TMath::Abs(cl->GetX())>kTolerX) { // if due to the misalingment X is large, propagate track only
     if (!track->PropagateParamOnlyTo(track->GetX()+cl->GetX(),GetBz())) {
-      if (goodCl&&goodSeed && AliDebugLevelClass()>2 ) {
+      //
+      if (AliDebugLevelClass()>2 && goodCl && !track->ContainsFake()) {
 	AliDebug(2,Form("Lost good cl on L:%d failed propagation. |ESDtrack#%d (MClb:%d)",lr,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
 	track->Print("etp");
 	cl->Print();
@@ -937,25 +945,12 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   double dy = cl->GetY()-track->GetY();
   double dz = cl->GetZ()-track->GetZ();
   //
-#ifdef  _FILL_CONTROL_HISTOS_
-  int hcOffs = (1+fTrackPhase)*kHistosPhase + lr;
-  double htrPt=-1;
-  if (goodCl && (((AliITSUClusterPix*)cl)->GetNPix()>1 || !((AliITSUClusterPix*)cl)->IsSplit()) && goodSeed && fCHistoArr /* && track->GetChi2Penalty()<1e-5*/) {
-    htrPt = track->Pt();
-    ((TH2*)fCHistoArr->At(kHResY+hcOffs))->Fill(htrPt,dy);
-    ((TH2*)fCHistoArr->At(kHResZ+hcOffs))->Fill(htrPt,dz);
-    double errY = track->GetSigmaY2();
-    double errZ = track->GetSigmaZ2();
-    if (errY>0) ((TH2*)fCHistoArr->At(kHResYP+hcOffs))->Fill(htrPt,dy/Sqrt(errY));
-    if (errZ>0) ((TH2*)fCHistoArr->At(kHResZP+hcOffs))->Fill(htrPt,dz/Sqrt(errZ));
-  }
-#endif  
-  //
   double dy2 = dy*dy;
   double tol2 = (track->GetSigmaY2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(lr))*
     fCurrTrackCond->GetNSigmaRoadY(lr)*fCurrTrackCond->GetNSigmaRoadY(lr); // RS TOOPTIMIZE
   if (dy2>tol2) {                          // the clusters are sorted in Z(col) then in Y(row). 
-    if (goodCl&&goodSeed && AliDebugLevelClass()>2) {    
+    //
+    if (AliDebugLevelClass()>2 && goodCl &&  !track->ContainsFake()) {    
       AliDebug(2,Form("Lost good cl: dy2=%e > tol2=%e |ESDtrack#%d (MClb:%d)",dy2,tol2,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
       track->Print("etp");
       cl->Print();
@@ -970,7 +965,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   tol2 = (track->GetSigmaZ2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(lr))*
     fCurrTrackCond->GetNSigmaRoadZ(lr)*fCurrTrackCond->GetNSigmaRoadZ(lr); // RS TOOPTIMIZE
   if (dz2>tol2) {
-    if (goodCl&&goodSeed && AliDebugLevelClass()>2) {
+    if (AliDebugLevelClass()>2 && goodCl &&  !track->ContainsFake()) {
       AliDebug(2,Form("Lost good cl on L:%d : dz2=%e > tol2=%e |ESDtrack#%d (MClb:%d)",lr,dz2,tol2,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
       track->Print("etp");
       cl->Print();
@@ -984,14 +979,8 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   Double_t cov[3]={cl->GetSigmaY2(), cl->GetSigmaYZ(), cl->GetSigmaZ2()};
   double chi2 = track->GetPredictedChi2(p,cov);
   //
-#ifdef  _FILL_CONTROL_HISTOS_
-  if (htrPt>0) {
-    ((TH2*)fCHistoArr->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2);
-  }
-#endif
-  //
   if (chi2>fCurrTrackCond->GetMaxTr2ClChi2(lr)) {
-    if (goodCl&&goodSeed && AliDebugLevelClass()>2) {
+    if (AliDebugLevelClass()>2 && goodCl &&  !track->ContainsFake()) {
       AliDebug(2,Form("Lost good cl on L:%d : Chi2=%e > Chi2Max=%e |dy: %+.3e dz: %+.3e |ESDtrack#%d (MClb:%d)\n",
 		      lr,chi2,fCurrTrackCond->GetMaxTr2ClChi2(lr),dy,dz,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
       track->Print("etp");
@@ -1003,7 +992,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   //
   track = NewSeedFromPool(track);  // input track will be reused, use its clone for updates
   if (!track->Update()) {
-    if (goodCl&&goodSeed && AliDebugLevelClass()>2) {
+    if (AliDebugLevelClass()>2 && goodCl &&  !track->ContainsFake()) {
       AliDebug(2,Form("Lost good cluster on L:%d : failed to update",lr));
       track->Print("etp");
       cl->Print("");
@@ -1014,6 +1003,18 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   }
   track->SetChi2Cl(chi2);
   track->SetLrClusterID(lr,clID);
+  //
+  if (track->GetChi2GloNrm()>fCurrTrackCond->GetMaxChi2GloNrm(lr)) {
+    if (AliDebugLevelClass()>2 && goodCl &&  !track->ContainsFake()) {
+      AliDebug(2,Form("Lost good cl on L:%d : Chi2Glo=%e > Chi2Max=%e |dy: %+.3e dz: %+.3e |ESDtrack#%d (MClb:%d)\n",
+		      lr,track->GetChi2GloNrm(),fCurrTrackCond->GetMaxChi2GloNrm(lr),dy,dz,fCurrESDtrack->GetID(),fCurrESDtrMClb)); 
+      track->Print("etp");
+      cl->Print("");
+      PrintSeedClusters(track);
+    }
+    MarkSeedFree(track);
+    return kClusterNotMatching;
+  }
   //  cl->IncreaseClusterUsage(); // do this only for winners
   //
   track->SetFake(!goodCl);
@@ -1022,11 +1023,6 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
 	       goodCl,clID,lr,dy,dz2,cl->GetLabel(0),cl->GetLabel(1),cl->GetLabel(2), chi2, track->IsFake() ? '-':'+'));
   //
   AddSeedBranch(track);
-#ifdef  _FILL_CONTROL_HISTOS_
-  if (htrPt>0) {
-    ((TH2*)fCHistoArr->At(kHChi2Nrm+hcOffs))->Fill(htrPt,track->GetChi2GloNrm());
-  }
-#endif
   //
   return kClusterMatching;
 }
@@ -1149,30 +1145,40 @@ Bool_t AliITSUTrackerGlo::FinalizeHypothesis(AliITSUTrackHyp* hyp)
   fCurrHyp = hyp;
   fCurrMass = hyp->GetMass();
   if (!(winner=hyp->DefineWinner())) return kFALSE;
-  FlagSeedClusters(winner,kTRUE);
   CookMCLabel(hyp);
   //
-#ifdef  _FILL_CONTROL_HISTOS_
-  if (fCHistoArr) {
-    TH2* hchimt = 0;
-    TH2* hchiSA = 0;
-    int lb = Abs(hyp->GetESDTrack()->GetTPCLabel());
-    if ( hyp->GetITSLabel()==lb ) {
-      hchimt = (TH2*)fCHistoArr->At(kHChiMatchCorr);
-      hchiSA = (TH2*)fCHistoArr->At(kHChiITSSACorr);
-    }
-    else if ( Abs(hyp->GetITSLabel()) == lb ) hchimt = (TH2*)fCHistoArr->At(kHChiMatchFake);
-    else if ( hyp->GetITSLabel()>=0 ) hchimt = (TH2*)fCHistoArr->At(kHChiMatchCorrMiss);
-    else hchimt = (TH2*)fCHistoArr->At(kHChiMatchFakeMiss);
-    if (!hchiSA) hchiSA =  (TH2*)fCHistoArr->At(kHChiITSSAFake);
-    //    printf("MTStatus: ITS:%+5d TPC:%+5d chimt:%e chi2SA:%e-> %s\n",hyp->GetITSLabel(),lb,winner->GetChi2ITSTPC(),winner->GetChi2ITSSA(),hchimt->GetName());
-    if (hchimt) hchimt->Fill(hyp->GetTPCSeed()->Pt(),winner->GetChi2ITSTPC());
-    if (hchiSA) hchiSA->Fill(hyp->GetTPCSeed()->Pt(),winner->GetChi2ITSSA());      
+#ifdef  _ITSU_TUNING_MODE_  // fill tuning histos
+  TObjArray* dest = hyp->GetLabel()>=0 ? fCHistoArrCorr : fCHistoArrFake;
+  if (dest) {
+    AliITSUSeed* sd = winner;
+    double htrPt = hyp->Pt();
+    do {
+      int clID,lrID;
+      if ( (clID=sd->GetLrCluster(lrID))<0 ) continue;
+      int hcOffs = (1+fTrackPhase)*kHistosPhase + lrID;
+      ((TH2*)dest->At(kHChi2Nrm+hcOffs))->Fill(htrPt,sd->GetChi2GloNrm());
+      ((TH2*)dest->At(kHBestInBranch+hcOffs))->Fill(htrPt,sd->GetOrdBranch());
+      ((TH2*)dest->At(kHBestInCand+hcOffs))->Fill(htrPt,  sd->GetOrdCand());
+      //
+      if (dest==fCHistoArrFake && !sd->IsFake()) continue; // for the fake seeds fill only fake clusters part
+      //
+      ((TH2*)dest->At(kHResY+hcOffs))->Fill(htrPt,sd->GetResidY());
+      ((TH2*)dest->At(kHResZ+hcOffs))->Fill(htrPt,sd->GetResidZ());
+      ((TH2*)dest->At(kHResYP+hcOffs))->Fill(htrPt,sd->GetPullY());
+      ((TH2*)dest->At(kHResZP+hcOffs))->Fill(htrPt,sd->GetPullZ());
+      ((TH2*)dest->At(kHChi2Cl+hcOffs))->Fill(htrPt,sd->GetChi2Cl());
+      //
+    } while((sd=(AliITSUSeed*)sd->GetParent()));
+    //
+    ((TH2*)dest->At(kHChiMatch))->Fill(htrPt,winner->GetChi2ITSTPC());
+    ((TH2*)dest->At(kHChiITSSA))->Fill(htrPt,winner->GetChi2ITSSA());
   }
-#endif    
   //
-  UpdateESDTrack(hyp,AliESDtrack::kITSin);
-  return kTRUE;
+#endif
+  //
+  CheckClusterSharingConflicts(hyp);
+  return hyp->GetWinner();  // winner might change of disappear after resolving conflicts
+  //
 }
 
 //______________________________________________________________________________
@@ -1183,101 +1189,119 @@ void AliITSUTrackerGlo::FinalizeHypotheses()
   AliDebug(2,"TODO");
   //
   int nh = fHypStore.GetEntriesFast();
-  for (int ih=0;ih<nh;ih++) {
-    if (FinalizeHypothesis( GetTrackHyp(ih) )) fCountITSin++;
-  }
+  for (int ih=0;ih<nh;ih++) FinalizeHypothesis(GetTrackHyp(ih));
   //
+  for (int ih=0;ih<nh;ih++) UpdateESDTrack(GetTrackHyp(ih),AliESDtrack::kITSin);
+  //
+}
+
+//______________________________________________________________________________
+void AliITSUTrackerGlo::CheckClusterSharingConflicts(AliITSUTrackHyp* hyp)
+{
+  // remove eventual cluster sharing conflicts
   AliITSUSeed* winner = 0;
-
-#ifdef  _FILL_CONTROL_HISTOS_
-  // if requested, collect cluster sharing statistics
-  TH2* hShare = 0;
-  if (fCHistoArr && (hShare=(TH2*)fCHistoArr->At(kHClShare))) {
-    for (int ih=0;ih<nh;ih++) {
-      AliITSUTrackHyp* hyp = GetTrackHyp(ih);
-      if (!hyp || !(winner=hyp->GetWinner())) continue;
-      int lrID = 0;
-      double pt = hyp->Pt();
-      do {
-	int clID = winner->GetLrCluster(lrID);
-	if (clID<0) continue;
-	AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
-	if (!cl->IsClusterShared()) continue;
-	hShare->Fill(pt,winner->IsFake() ? lrID+fNLrActive : lrID);
-      } while ((winner=(AliITSUSeed*)winner->GetParent()));
-    }  
-  }
-#endif  
-
-  if (AliDebugLevelClass()>+2) {
-    //
-    AliRefArray** refArr = new AliRefArray*[fNLrActive];
-    for (int ilr=0;ilr<fNLrActive;ilr++) refArr[ilr] = new AliRefArray(1000);
-    for (int ih=0;ih<nh;ih++) {
-      AliITSUTrackHyp* hyp = GetTrackHyp(ih);
-      if (!hyp || !(winner=hyp->GetWinner())) continue;
-      int lrID = 0;
-      do {
-	int clID = winner->GetLrCluster(lrID);
-	if (clID<0) continue;
-	AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
-	if (!cl->IsClusterShared()) continue;
-	refArr[lrID]->AddReference(clID,ih);
-      } while ((winner=(AliITSUSeed*)winner->GetParent()));
-    }    
-    UInt_t refs[100];
-    for (int ilr=0;ilr<fNLrActive;ilr++) {
-      int ncl = fITS->GetLayerActive(ilr)->GetNClusters();
-      printf("\nClusterSharingDump: Lr %d (%d cl)\n",ilr,ncl);
-      int cnt = 0;
-      for (int icl=0;icl<ncl;icl++) {
-	if (!refArr[ilr]->HasReference(icl)) continue;
-	int nref = refArr[ilr]->GetReferences(icl,refs,100);
-	printf("--- cl%3d(#%d): NShare=%4d\n",cnt++,icl,nref);     
-	for (int ir=0;ir<nref;ir++) {
-	  AliITSUTrackHyp* hyp = GetTrackHyp(refs[ir]);
-	  winner = hyp->GetWinner();
-	  AliESDtrack* esdTr = hyp->GetESDTrack();
-	  printf("#%4d Pt:%.3f Chi:%6.2f Ncl:%d MCits%+5d MCtpc:%+5d ESD:%4d |",
-		 refs[ir],winner->Pt(),winner->GetChi2GloNrm(),winner->GetNLayersHit(),
-		 hyp->GetITSLabel(),esdTr->GetTPCLabel(),esdTr->GetID());
-	  int prevL=-1;
-	  do {
-	    int lrs;
-	    int clID = winner->GetLrCluster(lrs);
-	    if (clID<0) continue;
-	    while( lrs>++prevL ) printf("%4s        ","----");
-	    printf("%4d (%5.1f)",clID,winner->GetChi2Cl());
-	  } while ((winner=(AliITSUSeed*)winner->GetParent()));
-	  printf("|\n");
-	}
-      }
+  if (!(winner=hyp->GetWinner())) return;
+  UShort_t idH = (UShort_t)hyp->GetUniqueID()+1;
+  int lrID,clID;
+  AliITSUSeed* winSD=winner;
+  do {
+    if ( (clID=winSD->GetLrCluster(lrID))<0 ) continue;
+    AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
+    Int_t refID = cl->GetRecoInfo();                // was it already referred by some track (with refID-1 if >0)
+    if (!refID) {cl->SetRecoInfo(idH); continue;}   // if not, refer from track to cluster
+    if (refID==idH) continue;                          // ignore reference to itself
+    // the cluster is already used by other track, need to resolve the conflict
+    AliITSUTrackHyp* hypC = GetTrackHyp(refID-1);   // competitor
+    //    printf("Ref to %d (%p) from %d Cl %d %d\n",refID-1,hypC, idH-1,clID,lrID);
+    AliITSUSeed* winnerC = hypC->GetWinner();
+    if (!winnerC) {
+      printf("Missing winner, ERROR\n");
+      continue;
     }
-    delete[] refArr;
-  
-  } // debug only
-
+    //
+    if (AliDebugLevelClass()>1) { //------------------------ DEBUG -------------------
+      AliInfo(Form("Shared cl#%4d on Lr:%d: Hyp%3d/Q:%6.3f vs Hyp%3d/Q:%6.3f",
+		   clID,lrID,idH-1,winner->GetQualityVar(),refID-1,winnerC->GetQualityVar()));
+      // dump winner of hyp
+      printf("#%4d Pt:%.3f Chi:%6.3f/%6.3f/%6.3f Ncl:%d MCits%+5d MCtpc:%+5d |",
+	     idH-1,winner->Pt(),winner->GetChi2GloNrm(),winner->GetChi2ITSTPC(),winner->GetChi2ITSSA(),
+	     winner->GetNLayersHit(),hyp->GetITSLabel(),hyp->GetESDTrack()->GetTPCLabel());
+      int prevL=-1;
+      AliITSUSeed* sd = winner;
+      do {
+	int lrs;
+	int clIDt = sd->GetLrCluster(lrs);
+	if (clIDt<0) continue;
+	while( lrs>++prevL ) printf("%4s        ","----");
+	printf("%4d (%5.1f)",clIDt,sd->GetChi2Cl());
+      } while ((sd=(AliITSUSeed*)sd->GetParent()));
+      printf("|\n");
+      // dump winner of hypC
+      printf("#%4d Pt:%.3f Chi:%6.3f/%6.3f/%6.3f Ncl:%d MCits%+5d MCtpc:%+5d |",
+	     refID-1,winnerC->Pt(),winnerC->GetChi2GloNrm(),winnerC->GetChi2ITSTPC(),winnerC->GetChi2ITSSA(),
+	     winnerC->GetNLayersHit(),hypC->GetITSLabel(),hypC->GetESDTrack()->GetTPCLabel());
+      prevL=-1;
+      sd = winnerC;
+      do {
+	int lrs;
+	int clIDt = sd->GetLrCluster(lrs);
+	if (clIDt<0) continue;
+	while( lrs>++prevL ) printf("%4s        ","----");
+	printf("%4d (%5.1f)",clIDt,sd->GetChi2Cl());
+      } while ((sd=(AliITSUSeed*)sd->GetParent()));
+      printf("|\n");
+    }  //-------------------------------------------------- DEBUG -------------------
+    //
+    if (winner->GetQualityVar()<winnerC->GetQualityVar()) { // current tracks is better then competitor track
+      FlagSeedClusters(winnerC,kFALSE,refID); // unflag cluster usage by loser
+      cl->SetRecoInfo(idH);
+      //
+      //if ( hypC->GetLabel()>=0) AliInfo(Form("KILLING CORRECT: %d",refID-1));
+      winnerC->Kill();
+      if (hypC->DefineWinner()) {             // find new winner instead of suppressed candidate
+	CookMCLabel(hypC);
+	CheckClusterSharingConflicts(hypC);   // and check its sharing conflicts again
+	if (winner->IsKilled()) break;        // the current winner might have been killed during check of new winner of hypC!
+      }
+    }    
+    else { // competitor hypC is better than the hyp
+      FlagSeedClusters(winner,kFALSE,idH); // unflag cluster usage by loser
+      winner->Kill();
+      //if ( hyp->GetLabel()>=0) AliInfo(Form("KILLING CORRECT: %d",idH-1));
+      if (hyp->DefineWinner()) {
+	CookMCLabel(hyp);
+	CheckClusterSharingConflicts(hyp);
+      }
+      break;
+    }
+    //   
+  } while ((winSD=(AliITSUSeed*)winSD->GetParent()));
+  //
+  return;
 }
 
 //______________________________________________________________________________
 void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
 {
   // update ESD track with current best hypothesis
+  if (!hyp) return;
   AliESDtrack* esdTr = hyp->GetESDTrack();
   if (!esdTr) return;
   AliITSUSeed* win = hyp->GetWinner();
-  if (!win) return;
+  if (!win || win->IsKilled()) return;
   double chiSav;
   //
   switch (flag) {
   case AliESDtrack::kITSin: 
     esdTr->UpdateTrackParams(hyp,flag); // update kinematics
+    fCountITSin++;
     // TODO: set cluster info
     break;
     //
   case AliESDtrack::kITSout: 
     // here the stored chi2 will correspond to backward ITS-SA fit
     esdTr->UpdateTrackParams(hyp,flag); // update kinematics
+    fCountITSout++;
     // TODO: avoid setting friend
     break;
     //
@@ -1288,6 +1312,7 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
     hyp->SetChi2(win->GetChi2ITSTPC());
     esdTr->UpdateTrackParams(hyp,flag); // update kinematics
     hyp->SetChi2(chiSav);
+    fCountITSrefit++;
     // TODO: avoid setting cluster info
     break;
   default:
@@ -1382,20 +1407,21 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDes
       double chi2cl = tmpTr.GetPredictedChi2(p,cov);
       chi2 += chi2cl;
       //
-#ifdef  _FILL_CONTROL_HISTOS_
-      int hcOffs = (1+fTrackPhase)*kHistosPhase + ilrA;
-      double htrPt=-1;
-      if (fCHistoArr && fTrackPhase>kClus2Tracks && trc->GetLabel()>=0/* && trc->Charge()>0*/) {
-	htrPt = tmpTr.Pt();
+#ifdef  _ITSU_TUNING_MODE_
+      TObjArray* dest = trc->GetLabel()>=0 ? fCHistoArrCorr : fCHistoArrFake;
+      if (dest && fTrackPhase>kClus2Tracks) {
+	int hcOffs = (1+fTrackPhase)*kHistosPhase + ilrA;
+	//
+	double htrPt = tmpTr.Pt();
 	double dy = p[0]-tmpTr.GetY();
 	double dz = p[1]-tmpTr.GetZ();
-	((TH2*)fCHistoArr->At(kHResY+hcOffs))->Fill(htrPt,dy);
-	((TH2*)fCHistoArr->At(kHResZ+hcOffs))->Fill(htrPt,dz);
+	((TH2*)dest->At(kHResY+hcOffs))->Fill(htrPt,dy);
+	((TH2*)dest->At(kHResZ+hcOffs))->Fill(htrPt,dz);
 	double errY = tmpTr.GetSigmaY2();
 	double errZ = tmpTr.GetSigmaZ2();
-	if (errY>0) ((TH2*)fCHistoArr->At(kHResYP+hcOffs))->Fill(htrPt,dy/Sqrt(errY));
-	if (errZ>0) ((TH2*)fCHistoArr->At(kHResZP+hcOffs))->Fill(htrPt,dz/Sqrt(errZ));
-	((TH2*)fCHistoArr->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2cl);
+	if (errY>0) ((TH2*)dest->At(kHResYP+hcOffs))->Fill(htrPt,dy/Sqrt(errY));
+	if (errZ>0) ((TH2*)dest->At(kHResZP+hcOffs))->Fill(htrPt,dz/Sqrt(errZ));
+	((TH2*)dest->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2cl);
       }
 #endif  
       //      
@@ -1524,30 +1550,12 @@ void AliITSUTrackerGlo::ValidateAllowedBranches(Int_t acceptMax)
   //  if (nb<fNBranchesAdded) printf("ValidateAllowedBranches: %d of %d (%d) on lr %d\n",nb,fNBranchesAdded,fNCandidatesAdded,ilr);
   // disable unused branches
   AliITSUSeed** branches = &fLayerCandidates[fNCandidatesAdded];
-#ifdef  _FILL_CONTROL_HISTOS_
-  int bestID = -1;
-  for (int ib=0;ib<fNBranchesAdded;ib++) {
-    AliITSUSeed* sd = branches[ib];
-    if (!sd->ContainsFake() && (bestID<0 || sd->Compare(branches[bestID])<0) ) bestID = ib;
-  }
-  if (bestID>=0) {
-    TH2* hb = (TH2*)fCHistoArr->At(kHBestInBranch + (1+fTrackPhase)*kHistosPhase + fCurrActLrID);
-    if (hb) hb->Fill(branches[bestID]->Pt(), bestID);
-  }
+  //
+#ifdef  _ITSU_TUNING_MODE_
+  for (int ib=0;ib<fNBranchesAdded;ib++) branches[ib]->SetOrdBranch(ib);
 #endif
   //
-  for (int ib=nb;ib<fNBranchesAdded;ib++) {
-    //
-#ifdef  _FILL_CONTROL_HISTOS_    
-    if (AliDebugLevelClass()>-2 && !branches[ib]->ContainsFake() /*&& branches[ib]->GetNLayersHit()*/
-	&& (bestID<0 || branches[ib]->Compare(branches[bestID])<0 ) ) {
-      printf("Suppress good branch as %d of %d |",ib,fNBranchesAdded); branches[ib]->Print();
-      //      printf("Survivors : \n");
-      //      for (int j=0;j<nb;j++) branches[j]->Print();
-    }
-#endif    
-    MarkSeedFree(branches[ib]);
-  }
+  for (int ib=nb;ib<fNBranchesAdded;ib++) MarkSeedFree(branches[ib]);
   fNCandidatesAdded += nb; // update total candidates counter
   fNBranchesAdded = 0; // reset branches counter
   //
@@ -1573,18 +1581,6 @@ void AliITSUTrackerGlo::ValidateAllowedCandidates(Int_t ilr, Int_t acceptMax)
   for (int i=fNCandidatesAdded;i--;) chi2[i] = fLayerCandidates[i]->GetChi2GloNrm();
   Sort(fNCandidatesAdded,chi2,index,kFALSE);
   //
-#ifdef  _FILL_CONTROL_HISTOS_
-  int bestID = -1;
-  for (int ib=0;ib<fNCandidatesAdded;ib++) {
-    AliITSUSeed* sd = fLayerCandidates[index[ib]];
-    if (!sd->ContainsFake() && (bestID<0 || sd->Compare(fLayerCandidates[index[bestID]])<0) ) bestID = ib;
-  }
-  if (bestID>=0) {
-    TH2* hb = (TH2*)fCHistoArr->At(kHBestInCand + (1+fTrackPhase)*kHistosPhase + fCurrActLrID);
-    if (hb) hb->Fill(fLayerCandidates[index[bestID]]->Pt(), bestID);
-  }
-#endif
-  //
   int nacc=0,nb=0;
   if (ilr>0) { // just take 1st acceptMax candidates
     nb = Min(fNCandidatesAdded,acceptMax);
@@ -1603,18 +1599,8 @@ void AliITSUTrackerGlo::ValidateAllowedCandidates(Int_t ilr, Int_t acceptMax)
     }
     fCurrHyp->SetWinner(wn0); // restore original winner (NULL?)
   }
-  //
   // disable unused candidates
-  for (int ib=nb;ib<fNCandidatesAdded;ib++) {
-    //
-#ifdef  _FILL_CONTROL_HISTOS_
-    if (AliDebugLevelClass()>-2 && !fLayerCandidates[index[ib]]->ContainsFake() /*&& fLayerCandidates[index[ib]]->GetNLayersHit()*/
-	&& (bestID<0 || fLayerCandidates[index[ib]]->Compare(fLayerCandidates[index[bestID]])<0 ) ) {
-      printf("Suppress good candidate as %d of %d |",index[ib],fNCandidatesAdded); fLayerCandidates[index[ib]]->Print();
-    }
-#endif
-    MarkSeedFree(fLayerCandidates[index[ib]]);    
-  }
+  for (int ib=nb;ib<fNCandidatesAdded;ib++) MarkSeedFree(fLayerCandidates[index[ib]]);    
   fNCandidatesAdded = 0; // reset candidates counter
   //
 }
@@ -1735,29 +1721,42 @@ void AliITSUTrackerGlo::PrintSeedClusters(const AliITSUSeed* seed, Option_t* opt
 }
 
 //__________________________________________________________________
-void AliITSUTrackerGlo::FlagSeedClusters(const AliITSUSeed* seed, Bool_t flg)
+void AliITSUTrackerGlo::FlagSeedClusters(const AliITSUSeed* seed, Bool_t flg, UShort_t ref)
 {
   // mark used clusters
   int lrID,clID;
   while (seed) {
-    if ( (clID=seed->GetLrCluster(lrID))>=0 ) ((AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID))->ModClUsage(flg);
+    if ( (clID=seed->GetLrCluster(lrID))>=0 ) {
+      AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
+      if (ref) { // do we need to set or delete cluster->track ref?
+	if (flg) {
+	  if (!cl->GetRecoInfo()) cl->SetRecoInfo(ref);  // set ref only if cluster already does not refer to other track, inc.counter
+	}
+	else {
+	  if (cl->GetRecoInfo()==ref) cl->SetRecoInfo(0); // unset reference only if it refers to ref, decrease counter	    
+	}
+      }
+    }
     seed = (AliITSUSeed*)seed->GetParent();
   }
   //
 }
 
-
-
-#ifdef  _FILL_CONTROL_HISTOS_
+#ifdef  _ITSU_TUNING_MODE_
 //__________________________________________________________________
-void AliITSUTrackerGlo::BookControlHistos()
+void AliITSUTrackerGlo::BookControlHistos(const char* pref)
 {
   // book special control histos
-  if (fCHistoArr) return;
+  TString prefS = pref;
+  prefS.ToLower();
+  TObjArray* dest = 0;
+  if      (prefS=="corr") dest = fCHistoArrCorr = new TObjArray();
+  else if (prefS=="fake") dest = fCHistoArrFake = new TObjArray();
+  else    {AliError(Form("Unknown histo set %s is requested",pref)); return;}
+  dest->SetOwner(kTRUE);
+  //
   const int kNResDef=7;
   const double kResDef[kNResDef]={0.05,0.05,0.3, 0.05,1,0.5,1.5};
-  fCHistoArr = new TObjArray();
-  fCHistoArr->SetOwner(kTRUE);
   const double ptMax=10;
   const double plMax=10;
   const double chiMax=100;
@@ -1772,88 +1771,63 @@ void AliITSUTrackerGlo::BookControlHistos()
     for (int ilr=0;ilr<fNLrActive;ilr++) {
       int hoffs = (1+stp)*kHistosPhase + ilr;
       double mxdf = ilr>=kNResDef ? kResDef[kNResDef-1] : kResDef[ilr];
-      ttl = Form("S%d_residY%d",stp,ilr);
+      ttl = Form("S%d_residY%d_%s",stp,ilr,pref);
       TH2F* hdy = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
-      fCHistoArr->AddAtAndExpand(hdy,hoffs + kHResY);
+      dest->AddAtAndExpand(hdy,hoffs + kHResY);
       hdy->SetDirectory(0);
       //
-      ttl = Form("S%d_residYPull%d",stp,ilr);	
+      ttl = Form("S%d_residYPull%d_%s",stp,ilr,pref);	
       TH2F* hdyp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
-      fCHistoArr->AddAtAndExpand(hdyp,hoffs + kHResYP);
+      dest->AddAtAndExpand(hdyp,hoffs + kHResYP);
       hdyp->SetDirectory(0);
       //
-      ttl = Form("S%d_residZ%d",stp,ilr);	
+      ttl = Form("S%d_residZ%d_%s",stp,ilr,pref);	
       TH2F* hdz = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
-      fCHistoArr->AddAtAndExpand(hdz,hoffs + kHResZ);
+      dest->AddAtAndExpand(hdz,hoffs + kHResZ);
       hdz->SetDirectory(0);
       //
-      ttl = Form("S%d_residZPull%d",stp,ilr);		
+      ttl = Form("S%d_residZPull%d_%s",stp,ilr,pref);		
       TH2F* hdzp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
       hdzp->SetDirectory(0);
-      fCHistoArr->AddAtAndExpand(hdzp,hoffs + kHResZP);
+      dest->AddAtAndExpand(hdzp,hoffs + kHResZP);
       //
-      ttl = Form("S%d_chi2Cl%d",stp,ilr);		
+      ttl = Form("S%d_chi2Cl%d_%s",stp,ilr,pref);		
       TH2F* hchi = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
       hchi->SetDirectory(0);
-      fCHistoArr->AddAtAndExpand(hchi,hoffs + kHChi2Cl);
+      dest->AddAtAndExpand(hchi,hoffs + kHChi2Cl);
       //
-      ttl = Form("S%d_chi2Nrm%d",stp,ilr);		
+      ttl = Form("S%d_chi2Nrm%d_%s",stp,ilr,pref);		
       TH2F* hchiN = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
       hchiN->SetDirectory(0);
-      fCHistoArr->AddAtAndExpand(hchiN,hoffs + kHChi2Nrm);
+      dest->AddAtAndExpand(hchiN,hoffs + kHChi2Nrm);
       //
       if (stp==0) { // these histos make sense only for clusters2tracks stage
-	ttl = Form("S%d_bestInBranch%d",stp,ilr);		
+	ttl = Form("S%d_bestInBranch%d_%s",stp,ilr,pref);		
 	TH2* hnbr = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, maxBr,-0.5,maxBr-0.5);
 	hnbr->SetDirectory(0);
-	fCHistoArr->AddAtAndExpand(hnbr,hoffs + kHBestInBranch);
+	dest->AddAtAndExpand(hnbr,hoffs + kHBestInBranch);
 	//
-	ttl = Form("S%d_bestInCands%d",stp,ilr);		
+	ttl = Form("S%d_bestInCands%d_%s",stp,ilr,pref);		
 	TH2* hncn = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, maxCand,-0.5,maxCand-0.5);
 	hncn->SetDirectory(0);
-	fCHistoArr->AddAtAndExpand(hncn,hoffs + kHBestInCand);
+	dest->AddAtAndExpand(hncn,hoffs + kHBestInCand);
 	//
       }
     }
   }
   // custom histos
-  ttl = Form("ClSharing");
-  TH2* hclShare = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, 2*fNLrActive,0,2*fNLrActive);
-  hclShare->SetDirectory(0);
-  fCHistoArr->AddAtAndExpand(hclShare,kHClShare);
   //  
   TH2* hchiMatch = 0; 
-  ttl = Form("Chi2MatchCorr");
+  ttl = Form("Chi2Match_%s",pref);
   hchiMatch = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
   hchiMatch->SetDirectory(0);
-  fCHistoArr->AddAtAndExpand(hchiMatch,kHChiMatchCorr);
-  // 
-  ttl = Form("Chi2MatchFake");
-  hchiMatch = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
-  hchiMatch->SetDirectory(0);
-  fCHistoArr->AddAtAndExpand(hchiMatch,kHChiMatchFake);
-  // 
-  ttl = Form("Chi2MatchCorrMiss");
-  hchiMatch = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
-  hchiMatch->SetDirectory(0);
-  fCHistoArr->AddAtAndExpand(hchiMatch,kHChiMatchCorrMiss);
-  // 
-  ttl = Form("Chi2MatchFakeMiss");
-  hchiMatch = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
-  hchiMatch->SetDirectory(0);
-  fCHistoArr->AddAtAndExpand(hchiMatch,kHChiMatchFakeMiss);
+  dest->AddAtAndExpand(hchiMatch,kHChiMatch);
   // 
   TH2* hchiSA = 0; 
-  ttl = Form("Chi2ITSSACorr");
+  ttl = Form("Chi2ITSSA_%s",pref);
   hchiSA = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins/2,0.,chiMax/2);
   hchiSA->SetDirectory(0);
-  fCHistoArr->AddAtAndExpand(hchiSA,kHChiITSSACorr);
+  dest->AddAtAndExpand(hchiSA,kHChiITSSA);
   // 
-  ttl = Form("Chi2ITSSAFake");
-  hchiSA = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins/2,0.,chiMax/2);
-  hchiSA->SetDirectory(0);
-  fCHistoArr->AddAtAndExpand(hchiSA,kHChiITSSAFake);
-  // 
-
 }
 #endif

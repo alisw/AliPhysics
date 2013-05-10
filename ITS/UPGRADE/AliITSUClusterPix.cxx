@@ -14,6 +14,7 @@ UInt_t           AliITSUClusterPix::fgMode = 0;
 //_____________________________________________________
 AliITSUClusterPix::AliITSUClusterPix()
   : fCharge(0)
+  , fRecoInfo(0)
   , fNxNzN(0)
 {
   // default constructor
@@ -29,6 +30,7 @@ AliITSUClusterPix::~AliITSUClusterPix()
 AliITSUClusterPix::AliITSUClusterPix(const AliITSUClusterPix& cluster) 
   :AliCluster(cluster)
   ,fCharge(cluster.fCharge)
+  ,fRecoInfo(cluster.fRecoInfo)
   ,fNxNzN(cluster.fNxNzN)
 {
   // copy constructor
@@ -41,6 +43,7 @@ AliITSUClusterPix& AliITSUClusterPix::operator=(const AliITSUClusterPix& cluster
   if(&cluster == this) return *this;
   fNxNzN = cluster.fNxNzN;
   fCharge = cluster.fCharge;
+  fRecoInfo = cluster.fRecoInfo;
   TObject::operator=(cluster);
   AliCluster::operator=(cluster);
   return *this;
