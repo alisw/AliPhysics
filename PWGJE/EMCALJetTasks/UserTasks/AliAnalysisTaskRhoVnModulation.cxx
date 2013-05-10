@@ -933,10 +933,10 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
        default: break;
     }
     fCent = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
-    if(fCent <= 0 || fCent >= 100 || TMath::Abs(fCent-InputEvent()->GetCentrality()->GetCentralityPercentile("TRK")) > 5.) return kFALSE;
+    if(fCent <= fCentralityClasses->At(0) || fCent >= fCentralityClasses->At(fCentralityClasses->GetSize()-1) || TMath::Abs(fCent-InputEvent()->GetCentrality()->GetCentralityPercentile("TRK")) > 5.) return kFALSE;
     // determine centrality class
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) {
-        if(fCent > fCentralityClasses->At(i) && fCent < fCentralityClasses->At(1+i)) {
+        if(fCent >= fCentralityClasses->At(i) && fCent <= fCentralityClasses->At(1+i)) {
             fInCentralitySelection = i;
             break; }
     } 
