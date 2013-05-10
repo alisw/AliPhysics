@@ -49,6 +49,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetJetType(Byte_t t)                              { fJetType            = t     ; }
   void           SetJetAlgo(Byte_t t)                              { fJetAlgo            = t     ; }
   void           SetZVertexCut(Double_t z)                         { fZVertexCut         = z     ; }
+  void           SetMaxVertexDist(Double_t d)                      { fMaxVertexDist      = d     ; }
 
  protected:
   Bool_t          ExecOnce()            ;// intialize task
@@ -72,6 +73,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   Double_t       fMaxCentrality       ;//  Maximum centrality
   UInt_t         fTriggerMask         ;//  Trigger selection mask
   Double_t       fZVertexCut          ;//  Z vertex cut
+  Double_t       fMaxVertexDist       ;//  Maximum distance allowed between the vertices of the current and the embedded events
   Double_t       fJetMinPt            ;//  Select events with a minimum jet pt
   Double_t       fJetMinEta           ;//  Min eta for jets
   Double_t       fJetMaxEta           ;//  Max eta for jets
@@ -107,11 +109,12 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   TH1           *fHistAODFileError    ;//! AOD file ID (to be embedded) error
   TH1           *fHistNotEmbedded     ;//! File ID not embedded
   TH1           *fHistEmbeddingQA     ;//! Embedding QA
+  TH1           *fHistRejectedEvents  ;//! Rejected events
 
  private:
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
   AliJetEmbeddingFromAODTask &operator=(const AliJetEmbeddingFromAODTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromAODTask, 9) // Jet embedding from AOD task
+  ClassDef(AliJetEmbeddingFromAODTask, 10) // Jet embedding from AOD task
 };
 #endif

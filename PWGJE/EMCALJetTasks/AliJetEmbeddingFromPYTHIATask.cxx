@@ -93,6 +93,11 @@ void AliJetEmbeddingFromPYTHIATask::UserCreateOutputObjects()
   fHistEmbeddingQA->GetXaxis()->SetBinLabel(2, "Not embedded");
   fOutput->Add(fHistEmbeddingQA);
 
+  fHistRejectedEvents = new TH1F("fHistRejectedEvents", "fHistRejectedEvents", 500, -0.5, 499.5);
+  fHistRejectedEvents->GetXaxis()->SetTitle("# of rejected events");
+  fHistRejectedEvents->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistRejectedEvents);
+
   PostData(1, fOutput);
 }
 

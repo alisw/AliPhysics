@@ -158,6 +158,14 @@ void AliJetModelBaseTask::UserExec(Option_t *)
   if (!fIsInit)
     return;
 
+  fVertex[0] = 0;
+  fVertex[1] = 0;
+  fVertex[2] = 0;
+
+  const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
+  if (vert)
+    vert->GetXYZ(fVertex);
+
   if (fCopyArray) {
     if (fOutTracks)
       fOutTracks->Delete();
@@ -635,7 +643,7 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId, Int_t labe
 }
 
 //________________________________________________________________________
-AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t type, Double_t etaemc, Double_t phiemc, Bool_t ise, Int_t label)
+AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t type, Double_t etaemc, Double_t phiemc, Bool_t ise, Int_t label, Short_t charge)
 {
   // Add a track to the event.
 
@@ -656,7 +664,7 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
   AliPicoTrack *track = new ((*fOutTracks)[nTracks]) AliPicoTrack(pt, 
 								  eta, 
 								  phi, 
-								  1,
+								  charge,
 								  label,
 								  type, 
 								  etaemc, 

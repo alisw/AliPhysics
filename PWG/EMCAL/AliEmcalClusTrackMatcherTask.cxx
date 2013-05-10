@@ -66,7 +66,9 @@ void AliEmcalClusTrackMatcherTask::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  for(Int_t icent=0; icent<8; ++icent) {
+  const Int_t nCentChBins = fNcentBins * 2;
+
+  for(Int_t icent=0; icent<nCentChBins; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
       for(Int_t ieta=0; ieta<2; ++ieta) {
 	TString nameEta(Form("fHistMatchEta_%i_%i_%i",icent,ipt,ieta));
@@ -149,7 +151,7 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
 	Int_t mombin = GetMomBin(track->P());
 	Int_t centbinch = fCentBin;
 	if (track->Charge()<0) 
-	  centbinch += 4;
+	  centbinch += fNcentBins;
 	Int_t etabin = 0;
 	if(track->Eta() > 0) 
 	  etabin = 1;
