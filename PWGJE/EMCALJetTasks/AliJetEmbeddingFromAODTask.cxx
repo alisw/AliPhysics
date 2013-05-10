@@ -54,10 +54,11 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fAODClusName(),
   fAODCellsName(),
   fAODMCParticlesName(),
-  fMinCentrality(0),
-  fMaxCentrality(10),
+  fMinCentrality(-1),
+  fMaxCentrality(-1),
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
+  fMaxVertexDist(999),
   fJetMinPt(0),
   fJetMinEta(-0.5),
   fJetMaxEta(0.5),
@@ -91,7 +92,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fHistFileMatching(0),
   fHistAODFileError(0),
   fHistNotEmbedded(0),
-  fHistEmbeddingQA(0)
+  fHistEmbeddingQA(0),
+  fHistRejectedEvents(0)
 {
   // Default constructor.
   SetSuffix("AODEmbedding");
@@ -117,10 +119,11 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fAODClusName(""),
   fAODCellsName("emcalCells"),
   fAODMCParticlesName(AliAODMCParticle::StdBranchName()),
-  fMinCentrality(0),
-  fMaxCentrality(10),
+  fMinCentrality(-1),
+  fMaxCentrality(-1),
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
+  fMaxVertexDist(999),
   fJetMinPt(0),
   fJetMinEta(-0.5),
   fJetMaxEta(0.5),
@@ -154,7 +157,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fHistFileMatching(0),
   fHistAODFileError(0),
   fHistNotEmbedded(0),
-  fHistEmbeddingQA(0)
+  fHistEmbeddingQA(0),
+  fHistRejectedEvents(0)
 {
   // Standard constructor.
   SetSuffix("AODEmbedding");
@@ -209,6 +213,11 @@ void AliJetEmbeddingFromAODTask::UserCreateOutputObjects()
   fHistEmbeddingQA->GetXaxis()->SetBinLabel(1, "OK");
   fHistEmbeddingQA->GetXaxis()->SetBinLabel(2, "Not embedded");
   fOutput->Add(fHistEmbeddingQA);
+
+  fHistRejectedEvents = new TH1F("fHistRejectedEvents", "fHistRejectedEvents", 500, -0.5, 499.5);
+  fHistRejectedEvents->GetXaxis()->SetTitle("# of rejected events");
+  fHistRejectedEvents->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistRejectedEvents);
 
   PostData(1, fOutput);
 }
@@ -305,9 +314,9 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
   if (fRandomAccess)
     fCurrentAODEntry = TMath::Nint(gRandom->Rndm()*fCurrentAODTree->GetEntries());
   else
-    fCurrentAODEntry = 0;
+    fCurrentAODEntry = -1;
 
-  AliDebug(3,Form("Will start embedding from entry %d", fCurrentAODEntry));
+  AliDebug(3,Form("Will start embedding from entry %d", fCurrentAODEntry+1));
   
   if (fHistFileMatching)
     fHistFileMatching->Fill(fCurrentFileID, fCurrentAODFileID-1);
@@ -361,33 +370,43 @@ TFile* AliJetEmbeddingFromAODTask::GetNextFile()
 //________________________________________________________________________
 Bool_t AliJetEmbeddingFromAODTask::GetNextEntry() 
 {
-  Int_t attempts = 0;
+  Int_t attempts = -1;
 
   do {
-    if (!fCurrentAODFile || !fCurrentAODTree || fCurrentAODEntry >= fCurrentAODTree->GetEntries()) {
+    if (!fCurrentAODFile || !fCurrentAODTree || fCurrentAODEntry+1 >= fCurrentAODTree->GetEntries()) {
       if (!OpenNextFile()) {
 	AliError("Could not open the next file!");
 	return kFALSE;
       }
     }
-    
-    fCurrentAODTree->GetEntry(fCurrentAODEntry);
-    fCurrentAODEntry++;
-    attempts++;
 
+    if (!fCurrentAODTree) {
+      AliError("Could not get the tree!");
+      return kFALSE;
+    }
+    
+    fCurrentAODEntry++;
+    fCurrentAODTree->GetEntry(fCurrentAODEntry);
+
+    attempts++;
     if (attempts == 1000) 
       AliWarning("After 1000 attempts no event has been accepted by the event selection (trigger, centrality...)!");
 
-  } while (!IsAODEventSelected() && fCurrentAODTree);
+  } while (!IsAODEventSelected());
 
-  return (fCurrentAODTree!=0);
+  fHistRejectedEvents->Fill(attempts);
+
+  if (!fCurrentAODTree)
+    return kFALSE;
+
+  return kTRUE;
 }
 
 //________________________________________________________________________
 Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
 {
   // AOD event selection.
-  
+
   if (!fEsdTreeMode && fAODHeader) {
     AliAODHeader *aodHeader = static_cast<AliAODHeader*>(fAODHeader);
 
@@ -423,6 +442,14 @@ Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
 		      vert[2], fZVertexCut));
       return kFALSE;
     }
+    Double_t dist = TMath::Sqrt((vert[0]-fVertex[0])*(vert[0]-fVertex[0])+(vert[1]-fVertex[1])*(vert[1]-fVertex[1])+(vert[2]-fVertex[2])*(vert[2]-fVertex[2]));
+    if (dist > fMaxVertexDist) {
+      AliDebug(2,Form("Event rejected because the distance between the current and embedded verteces is > %f. "
+		      "Current event vertex (%f, %f, %f), embedded event vertex (%f, %f, %f). Distance = %f", 
+		      fMaxVertexDist, fVertex[0], fVertex[1], fVertex[2], vert[0], vert[1], vert[2], dist));
+      return kFALSE;
+    }
+      
   }
 
   // Jet selection
@@ -588,7 +615,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	    AliDebug(1,Form("%s: Track %d with label==0", GetName(), i));
 	}
 
-	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), isEmc, label);
+	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), isEmc, label, track->Charge());
 	AliDebug(3, "Track embedded!");
       }
     }
