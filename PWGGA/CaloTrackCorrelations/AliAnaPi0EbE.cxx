@@ -52,6 +52,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fMinDist(0.),fMinDist2(0.),    fMinDist3(0.),	
     fNLMCutMin(-1),                fNLMCutMax(10), 
     fTimeCutMin(-10000),           fTimeCutMax(10000),
+    fRejectTrackMatch(kTRUE),
     fFillPileUpHistograms(0),
     fFillWeightHistograms(kFALSE), fFillTMHisto(0),              
     fFillSelectClHisto(0),         fFillOnlySimpleSSHisto(1),
@@ -2116,12 +2117,11 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     }      
     
     //Skip matched clusters with tracks
-    if(IsTrackMatched(calo, GetReader()->GetInputEvent())) 
+    if(fRejectTrackMatch && IsTrackMatched(calo, GetReader()->GetInputEvent()))
     {
       FillRejectedClusterHistograms(mom,tag);
       continue ;
     }
-        
     
     //Check PID
     //PID selection or bit setting
