@@ -96,6 +96,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Double_t       GetTimeCutMin()                       const { return fTimeCutMin              ; }
   Double_t       GetTimeCutMax()                       const { return fTimeCutMax              ; }
  
+  Bool_t         IsTrackMatchRejectionOn()             const { return fRejectTrackMatch        ; }
+  void           SwitchOnTrackMatchRejection()               { fRejectTrackMatch      = kTRUE  ; }
+  void           SwitchOffTrackMatchRejection()              { fRejectTrackMatch      = kFALSE ; }
+  
   void           SwitchOnFillPileUpHistograms()              { fFillPileUpHistograms  = kTRUE  ; }
   void           SwitchOffFillPileUpHistograms()             { fFillPileUpHistograms  = kFALSE ; }    
     
@@ -129,10 +133,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Int_t          fNLMCutMin  ;             // Remove clusters/cells with number of local maxima smaller than this value
   Int_t          fNLMCutMax  ;             // Remove clusters/cells with number of local maxima larger than this value
   Float_t        fNLMECutMin[3] ;          // Minimum energy of the cluster, depending on nlm.
-
   Double_t       fTimeCutMin  ;            // Remove clusters/cells with time smaller than this value, in ns
   Double_t       fTimeCutMax  ;            // Remove clusters/cells with time larger than this value, in ns
-  
+  Bool_t         fRejectTrackMatch ;       // Remove clusters which have an associated TPC track
+
   Bool_t         fFillPileUpHistograms;    // Fill pile-up related histograms
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   Bool_t         fFillTMHisto;             // Fill track matching plots
@@ -290,7 +294,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,24)
+  ClassDef(AliAnaPi0EbE,25)
 } ;
 
 
