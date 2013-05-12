@@ -65,7 +65,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double psid = TMath::Pi()/6.;
 
   // Switches for QA analyses
-  int runmults[10] = {1, 1, 1, 1, 1, 0, 0, 0, 0, 0};
+  int runmults[10] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 1};
   int multbins[11] = {0.00001, 100, 200, 300, 400, 500, 600, 700, 800, 900, 900};
   int runch[10] = {1, 1, 1, 1, 1, 1, 1, 0, 0, 0};
   const char *chrgs[10] = { "V0LL", "V0ALAL", "V0LAL", "V0PL", "V0APL", "V0PAL", "V0APAL","PP","PAP","APAP" };
@@ -92,7 +92,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   Reader->SetFilterBit(7);
   Reader->SetCentralityPreSelection(0.00001, 910);
   Reader->SetReadV0(1); //Read V0
-  Reader->SetMagneticFieldSign(1.0); //-1->field1, 1->field3
+  Reader->SetMagneticFieldSign(-1.0); //-1->field1, 1->field3
 
   AliFemtoManager* Manager=new AliFemtoManager();
   Manager->SetEventReader(Reader);
@@ -331,7 +331,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 	      //sqp3cetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 	      sqp5cetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
-	      sqp5cetaphitpc[aniter]->SetMagneticFieldSign(1.0); //-1->field1, 1->field3
+	      sqp5cetaphitpc[aniter]->SetMagneticFieldSign(-1.0); //-1->field1, 1->field3
 	      sqp5cetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.012);
 	      sqp5cetaphitpc[aniter]->SetEtaDifferenceMinimum(0.017);
 	      sqp5cetaphitpc[aniter]->SetShareQualityMax(1.0);
