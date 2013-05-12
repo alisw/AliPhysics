@@ -349,11 +349,15 @@ public:
                                                        InitTrackCuts()                 ; }
   Int_t    GetTrackCutsType() const                  { return fTrackCutsType; }
 
-  void     SetAODTrackFilterMask( UInt_t mask)       {fAODFilterMask    = mask  ; }
-  void     SwitchOnAODHybridTracksMatch()            {fAODHybridTracks  = kTRUE ; }
-  void     SwitchOffAODHybridTracksMatch()           {fAODHybridTracks  = kFALSE ; }
+  // Define AOD track type for matching
+  void     SwitchOffAODHybridTracksMatch()           { fAODHybridTracks         = kFALSE ; }
+  void     SwitchOffAODTPCOnlyTracksMatch()          { fAODTPCOnlyTracks        = kFALSE ; }
+  void     SwitchOnAODHybridTracksMatch()            { fAODHybridTracks         = kTRUE  ; SwitchOffAODTPCOnlyTracksMatch() ; }
+  void     SwitchOnAODTPCOnlyTracksMatch()           { fAODTPCOnlyTracks        = kTRUE  ; SwitchOffAODHybridTracksMatch()  ; }
+  void     SetAODTrackFilterMask( UInt_t mask)       { fAODFilterMask           = mask   ;
+                                                       SwitchOffAODTPCOnlyTracksMatch()  ; SwitchOffAODHybridTracksMatch()  ; }
   
-  // track quality cut setters  
+  // track quality cut setters
   void     SetMinTrackPt(Double_t pt=0)              { fCutMinTrackPt           = pt   ; }
   void     SetMinNClustersTPC(Int_t min=-1)          { fCutMinNClusterTPC       = min  ; }
   void     SetMinNClustersITS(Int_t min=-1)          { fCutMinNClusterITS       = min  ; }
@@ -367,6 +371,7 @@ public:
   void     SetDCAToVertex2D(Bool_t b=kFALSE)         { fCutDCAToVertex2D        = b    ; }
   void     SetRequireITSStandAlone(Bool_t b=kFALSE)    {fCutRequireITSStandAlone = b;} //Marcel
   void     SetRequireITSPureStandAlone(Bool_t b=kFALSE){fCutRequireITSpureSA     = b;}
+  
   // getters								
   Double_t GetMinTrackPt()                     const { return fCutMinTrackPt           ; }
   Int_t    GetMinNClusterTPC()                 const { return fCutMinNClusterTPC       ; }
@@ -433,6 +438,7 @@ private:
   //Track matching
   UInt_t     fAODFilterMask;             // Filter mask to select AOD tracks. Refer to $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
   Bool_t     fAODHybridTracks;           // Match with hybrid
+  Bool_t     fAODTPCOnlyTracks;          // Match with TPC only tracks
   
   TArrayI  * fMatchedTrackIndex;         // Array that stores indexes of matched tracks      
   TArrayI  * fMatchedClusterIndex;       // Array that stores indexes of matched clusters

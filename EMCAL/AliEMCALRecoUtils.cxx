@@ -71,7 +71,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
   fRejectExoticCluster(kFALSE),           fRejectExoticCells(kFALSE), 
   fExoticCellFraction(0),                 fExoticCellDiffTime(0),                 fExoticCellMinAmplitude(0),
-  fPIDUtils(),                            fAODFilterMask(0),                      fAODHybridTracks(0),
+  fPIDUtils(),                            fAODFilterMask(0),
+  fAODHybridTracks(0),                    fAODTPCOnlyTracks(0),
   fMatchedTrackIndex(0x0),                fMatchedClusterIndex(0x0), 
   fResidualEta(0x0), fResidualPhi(0x0),   fCutEtaPhiSum(kFALSE),                  fCutEtaPhiSeparate(kFALSE), 
   fCutR(0),                               fCutEta(0),                             fCutPhi(0),
@@ -119,7 +120,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fExoticCellFraction(reco.fExoticCellFraction),             fExoticCellDiffTime(reco.fExoticCellDiffTime),               
   fExoticCellMinAmplitude(reco.fExoticCellMinAmplitude),
   fPIDUtils(reco.fPIDUtils),                                 fAODFilterMask(reco.fAODFilterMask),
-  fAODHybridTracks(reco.fAODHybridTracks),
+  fAODHybridTracks(reco.fAODHybridTracks),                   fAODTPCOnlyTracks(reco.fAODTPCOnlyTracks),
   fMatchedTrackIndex(  reco.fMatchedTrackIndex?  new TArrayI(*reco.fMatchedTrackIndex):0x0),
   fMatchedClusterIndex(reco.fMatchedClusterIndex?new TArrayI(*reco.fMatchedClusterIndex):0x0),
   fResidualEta(        reco.fResidualEta?        new TArrayF(*reco.fResidualEta):0x0),
@@ -194,6 +195,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
 
   fAODFilterMask             = reco.fAODFilterMask;
   fAODHybridTracks           = reco.fAODHybridTracks;
+  fAODTPCOnlyTracks          = reco.fAODTPCOnlyTracks;
   
   fCutEtaPhiSum              = reco.fCutEtaPhiSum;
   fCutEtaPhiSeparate         = reco.fCutEtaPhiSeparate;
@@ -997,8 +999,9 @@ void AliEMCALRecoUtils::InitParameters()
   fExoticCellDiffTime     = 1e6;
   fExoticCellMinAmplitude = 0.5;
   
-  fAODFilterMask   = 32;
-  fAODHybridTracks = kFALSE;
+  fAODFilterMask    = 128;
+  fAODHybridTracks  = kFALSE;
+  fAODTPCOnlyTracks = kTRUE;
   
   fCutEtaPhiSum      = kTRUE;
   fCutEtaPhiSeparate = kFALSE;
@@ -1878,12 +1881,22 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     {
       aodTrack = aodevent->GetTrack(itr);
       if(!aodTrack) continue;
-      
-      //Check mask if not hybrid
-      if(!fAODHybridTracks && !aodTrack->TestFilterMask(fAODFilterMask) ) continue; //Select AOD tracks that fulfill GetStandardITSTPCTrackCuts2010()
-      
-      //Check hybrid
-      if( fAODHybridTracks && !aodTrack->IsHybridGlobalConstrainedGlobal()) continue ;
+            
+      if(fAODTPCOnlyTracks) // Match with TPC only tracks, default from May 2013, before filter bit 32
+      {
+        //printf("Match with TPC only tracks, accept? %d, test bit 128 <%d> \n", aodTrack->IsTPCOnly(), aodTrack->TestFilterMask(128));
+        if(!aodTrack->IsTPCOnly()) continue ;
+      }
+      else if(fAODHybridTracks) // Match with hybrid tracks
+      {
+        //printf("Match with Hybrid tracks, accept? %d \n", aodTrack->IsHybridGlobalConstrainedGlobal());
+        if(!aodTrack->IsHybridGlobalConstrainedGlobal()) continue ;
+      }
+      else // Match with tracks on a mask
+      {
+        //printf("Match with tracks having filter bit mask %d, accept? %d \n",fAODFilterMask,aodTrack->TestFilterMask(fAODFilterMask));
+        if(!aodTrack->TestFilterMask(fAODFilterMask) ) continue; //Select AOD tracks
+      }
       
       if(aodTrack->Pt()<fCutMinTrackPt) continue;
 
@@ -2633,7 +2646,7 @@ void AliEMCALRecoUtils::Print(const Option_t *) const
 
   printf("Track cuts: \n");
   printf("Minimum track pT: %1.2f\n",fCutMinTrackPt);
-  printf("AOD track selection mask: %d\n",fAODFilterMask);
+  printf("AOD track selection: tpc only %d, or hybrid %d, or mask: %d\n",fAODTPCOnlyTracks,fAODHybridTracks, fAODFilterMask);
   printf("TPCRefit = %d, ITSRefit = %d\n",fCutRequireTPCRefit,fCutRequireITSRefit);
   printf("AcceptKinks = %d\n",fCutAcceptKinkDaughters);
   printf("MinNCulsterTPC = %d, MinNClusterITS = %d\n",fCutMinNClusterTPC,fCutMinNClusterITS);
