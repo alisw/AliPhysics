@@ -36,6 +36,9 @@ public:
       kTPCchi2,     // TPC chi^2
       kDCAXY,       // DCA xy
       kDCAZ,        // DCA z
+      kCharge,     // charge
+      kPhi,        // azimuthal angle at vertex
+      kPhiOuterTPC,// azimuthal angle at TPC outer radius
       kV0DCA,       // V0 DCA 
       kDaughterDCA, // DCA of V0 Daughters
       kCosPointAng, // V0 Cosing of Pointing Angle

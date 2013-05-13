@@ -116,6 +116,9 @@ const char *AliRsnValueDaughter::GetTypeName() const
       case kTOFnsigmaPi:  	        return "SingleTrackTOFnsigmaPion";
       case kTOFnsigmaK:   	        return "SingleTrackTOFnsigmaKaon";
       case kTOFnsigmaP:   	        return "SingleTrackTOFnsigmaProton";
+      case kCharge:                     return "SingleTrackCharge";
+      case kPhi:                        return "SingleTrackPhi";
+      case kPhiOuterTPC:                return "SingleTrackPhiOuterTPC";
       case kV0DCA:        	        return "V0DCAToPrimaryVertex";
       case kDaughterDCA:  	        return "V0DaughterDCA";
       case kCosPointAng:  	        return "V0CosineOfPointingAngle";
@@ -383,6 +386,34 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
             fComputedValue = 0.0;
             return kFALSE;
          }
+
+     case kCharge:
+         fComputedValue = (fUseMCInfo ? refMC->Charge() : ref->Charge());
+         return kTRUE;
+   
+      case kPhi:         
+        fComputedValue = (fUseMCInfo ? (refMC->Phi()*TMath::RadToDeg()) : (ref->Phi()*TMath::RadToDeg()));      
+        return kTRUE;
+
+      case kPhiOuterTPC:    
+        if (track) {
+          Double_t pos[3]={0.,0.,0.};
+          Double_t phiOut = -999.0;
+          Double_t radius = 278.;//TPC outer (vessel) = 278 cm, TOF radius (active surf.) = 378 cm;  ref. PPR.1
+          AliExternalTrackParam etp; //thanks to Andrea and Cristina
+          etp.CopyFromVTrack(track);
+          if(etp.GetXYZAt(radius, 5., pos)){
+            phiOut=TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
+            if (phiOut<0) phiOut+= (2*TMath::Pi()*TMath::RadToDeg());
+          }
+          fComputedValue = phiOut;      
+        } else {
+          AliWarning("Cannot get phi at outer TPC radius for non-track object");
+          fComputedValue = -99.0;
+          return kFALSE;
+        }
+        return kTRUE;
+
       case kV0DCA:
          if(v0esd) {
 	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
