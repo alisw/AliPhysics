@@ -91,8 +91,9 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhECellClusterRatio(0),        fhECellClusterLogRatio(0),                 
     fhEMaxCellClusterRatio(0),     fhEMaxCellClusterLogRatio(0),
     fhTrackMatchedDEta(0),         fhTrackMatchedDPhi(0),        fhTrackMatchedDEtaDPhi(0),
-    fhTrackMatchedMCParticle(0),   fhdEdx(0),                     
-    fhEOverP(0),                   fhEOverPNoTRD(0),                
+    fhTrackMatchedMCParticleE(0),
+    fhTrackMatchedMCParticleDEta(0), fhTrackMatchedMCParticleDPhi(0),
+    fhdEdx(0),                     fhEOverP(0),                 fhEOverPNoTRD(0),
     // Number of local maxima in cluster
     fhNLocMax(0),
     // PileUp
@@ -423,24 +424,30 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
       
       if(IsDataMC())
       {
+        Int_t mctag = -1;
         if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  )
         {
           if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
-                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle->Fill(e, 2.5 );
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle->Fill(e, 0.5 );
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle->Fill(e, 1.5 );
-          else                                                                                 fhTrackMatchedMCParticle->Fill(e, 3.5 );
+                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) mctag =  2.5 ;
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) mctag =  0.5 ;
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) mctag =  1.5 ;
+          else                                                                                 mctag =  3.5 ;
           
         }
         else
         {
           if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
-                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle->Fill(e, 6.5 );
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle->Fill(e, 4.5 );
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle->Fill(e, 5.5 );
-          else                                                                                 fhTrackMatchedMCParticle->Fill(e, 7.5 );
-        }        
-      }  // MC              
+                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) mctag =  6.5 ;
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) mctag =  4.5 ;
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) mctag =  5.5 ;
+          else                                                                                 mctag =  7.5 ;
+        }
+        
+        fhTrackMatchedMCParticleE   ->Fill(e , mctag);
+        fhTrackMatchedMCParticleDEta->Fill(dZ, mctag);
+        fhTrackMatchedMCParticleDPhi->Fill(dR, mctag);
+        
+      }  // MC
     }
   }// Track matching histograms   
   
@@ -1003,23 +1010,61 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
     if(IsDataMC() && fFillTMHisto)
     {
-      fhTrackMatchedMCParticle  = new TH2F
-      ("hTrackMatchedMCParticle",
+      fhTrackMatchedMCParticleE  = new TH2F
+      ("hTrackMatchedMCParticleE",
        "Origin of particle vs energy",
        nptbins,ptmin,ptmax,8,0,8); 
-      fhTrackMatchedMCParticle->SetXTitle("E (GeV)");   
-      //fhTrackMatchedMCParticle->SetYTitle("Particle type");
+      fhTrackMatchedMCParticleE->SetXTitle("E (GeV)");   
+      //fhTrackMatchedMCParticleE->SetYTitle("Particle type");
       
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(1 ,"Photon");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(2 ,"Electron");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(4 ,"Rest");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
+      fhTrackMatchedMCParticleE->GetYaxis()->SetBinLabel(1 ,"Photon");
+      fhTrackMatchedMCParticleE->GetYaxis()->SetBinLabel(2 ,"Electron");
+      fhTrackMatchedMCParticleE->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
+      fhTrackMatchedMCParticleE->GetYaxis()->SetBinLabel(4 ,"Rest");
+      fhTrackMatchedMCParticleE->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
+      fhTrackMatchedMCParticleE->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
+      fhTrackMatchedMCParticleE->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
+      fhTrackMatchedMCParticleE->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
       
-      outputContainer->Add(fhTrackMatchedMCParticle);   
+      outputContainer->Add(fhTrackMatchedMCParticleE);
+      
+      fhTrackMatchedMCParticleDEta  = new TH2F
+      ("hTrackMatchedMCParticleDEta",
+       "Origin of particle vs #eta residual",
+       nresetabins,resetamin,resetamax,8,0,8);
+      fhTrackMatchedMCParticleDEta->SetXTitle("#Delta #eta");
+      //fhTrackMatchedMCParticleDEta->SetYTitle("Particle type");
+      
+      fhTrackMatchedMCParticleDEta->GetYaxis()->SetBinLabel(1 ,"Photon");
+      fhTrackMatchedMCParticleDEta->GetYaxis()->SetBinLabel(2 ,"Electron");
+      fhTrackMatchedMCParticleDEta->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
+      fhTrackMatchedMCParticleDEta->GetYaxis()->SetBinLabel(4 ,"Rest");
+      fhTrackMatchedMCParticleDEta->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
+      fhTrackMatchedMCParticleDEta->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
+      fhTrackMatchedMCParticleDEta->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
+      fhTrackMatchedMCParticleDEta->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
+      
+      outputContainer->Add(fhTrackMatchedMCParticleDEta);
+
+      fhTrackMatchedMCParticleDPhi  = new TH2F
+      ("hTrackMatchedMCParticleDPhi",
+       "Origin of particle vs #phi residual",
+       nresphibins,resphimin,resphimax,8,0,8);
+      fhTrackMatchedMCParticleDPhi->SetXTitle("#Delta #phi");
+      //fhTrackMatchedMCParticleDPhi->SetYTitle("Particle type");
+      
+      fhTrackMatchedMCParticleDPhi->GetYaxis()->SetBinLabel(1 ,"Photon");
+      fhTrackMatchedMCParticleDPhi->GetYaxis()->SetBinLabel(2 ,"Electron");
+      fhTrackMatchedMCParticleDPhi->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
+      fhTrackMatchedMCParticleDPhi->GetYaxis()->SetBinLabel(4 ,"Rest");
+      fhTrackMatchedMCParticleDPhi->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
+      fhTrackMatchedMCParticleDPhi->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
+      fhTrackMatchedMCParticleDPhi->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
+      fhTrackMatchedMCParticleDPhi->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
+      
+      outputContainer->Add(fhTrackMatchedMCParticleDPhi);
+
+      
     }
   }  
   
