@@ -715,8 +715,8 @@ void  AliAnalysisTaskEMCALPhoton::GetMcParts()
     }
     Double_t phi  = mcP->Phi();
     if (phi<1.0||phi>3.3){
-      mcp->fLabel = iTrack;
       mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
+      mcp->fLabel = iTrack;
       continue;
     }
     // pion or eta meson or direct photon
