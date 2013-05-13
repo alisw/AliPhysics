@@ -424,7 +424,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
       
       if(IsDataMC())
       {
-        Int_t mctag = -1;
+        Float_t mctag = -1;
         if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  )
         {
           if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
