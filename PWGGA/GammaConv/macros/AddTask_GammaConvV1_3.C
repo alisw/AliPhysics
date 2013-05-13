@@ -111,7 +111,7 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE, U
    // Cut Numbers to use in Analysis
    Int_t numberOfCuts = 2;
    if(trainConfig.Contains("PbPb")) numberOfCuts = 3;
-   else if(trainConfig.Contains("pPb")) numberOfCuts = 4;
+   else if(trainConfig.Contains("pPb")) numberOfCuts = 5;
    else numberOfCuts = 4;
 
    TString *cutarray = new TString[numberOfCuts];
@@ -123,10 +123,11 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE, U
 // Standard cut gamma 0-20%
       cutarray[ 2] = "1480003042092370023750000"; mesonCutArray[ 2] = "01522065009"; // Standard cut gamma 40-80
    } else if(trainConfig.Contains("pPb")){ //pA needs thighter rapidity cut y < 0.5
-       cutarray[ 0] = "8020000002093172023290000"; mesonCutArray[0] = "01621045000";  //standard cut Pi0 PbPb 00-20
-       cutarray[ 1] = "8240000002093172023290000"; mesonCutArray[1] = "01621045000";  //standard cut Pi0 PbPb 20-40
-       cutarray[ 2] = "8460000002093172023290000"; mesonCutArray[2] = "01621045000";  //standard cut Pi0 PbPb 40-60
-       cutarray[ 3] = "8600000002093172023290000"; mesonCutArray[3] = "01621045000";  //standard cut Pi0 PbPb 60-100
+       cutarray[ 0] = "8000000002093172023290000"; mesonCutArray[ 0] = "01621045000";
+       cutarray[ 1] = "8020000002093172023290000"; mesonCutArray[ 1] = "01621045000";  //standard cut Pi0 PbPb 00-20
+       cutarray[ 2] = "8240000002093172023290000"; mesonCutArray[ 2] = "01621045000";  //standard cut Pi0 PbPb 20-40
+       cutarray[ 3] = "8460000002093172023290000"; mesonCutArray[ 3] = "01621045000";  //standard cut Pi0 PbPb 40-60
+       cutarray[ 4] = "8600000002093172023290000"; mesonCutArray[ 4] = "01621045000";  //standard cut Pi0 PbPb 60-100
 
    } else {
       cutarray[ 0] = "0002011002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
@@ -160,6 +161,8 @@ void AddTask_GammaConvV1_3(TString trainConfig = "pp",   Bool_t isMC	= kFALSE, U
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       if (trainConfig.Contains("pPb")){
          analysisCuts[i]->SelectCollisionCandidates(triggerMaskpPb);
+         analysisCuts[i]->DoEtaShift(kTRUE);
+         analysisCuts[i]->SetEtaShift("pPb");
       }
       ConvCutList->Add(analysisCuts[i]);
 
