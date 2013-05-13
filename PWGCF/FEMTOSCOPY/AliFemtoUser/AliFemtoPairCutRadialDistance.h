@@ -46,6 +46,7 @@ public:
   void SetEtaDifferenceMinimum(double etpc);
   void SetMinimumRadius(double minrad);
   void SetMagneticFieldSign(int magsign);
+  void SetPhiStarMin(Bool_t);
 
 
  protected:
@@ -54,6 +55,7 @@ public:
   Double_t fEtaMin;           // Minimum allowed pair separation in eta
   Double_t fMinRad;
   Int_t fMagSign;
+  Bool_t fPhistarmin;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoPairCutRadialDistance, 0)

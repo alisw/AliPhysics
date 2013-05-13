@@ -24,25 +24,28 @@ ClassImp(AliFemtoPairCutRadialDistance)
 
 //__________________
 AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance():
-  AliFemtoPairCutAntiGamma(),
+AliFemtoPairCutAntiGamma(),
   fDPhiStarMin(0),
   fEtaMin(0),
   fMinRad(0.8),
-  fMagSign(1)
+  fMagSign(1),
+  fPhistarmin(kTRUE)
 {
 }
 //__________________
-AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance(const AliFemtoPairCutRadialDistance& c) : 
+AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance(const AliFemtoPairCutRadialDistance& c) :
   AliFemtoPairCutAntiGamma(c),
-  fDPhiStarMin(0), 
+  fDPhiStarMin(0),
   fEtaMin(0),
   fMinRad(0.8),
-  fMagSign(1)
-{ 
+  fMagSign(1),
+  fPhistarmin(kTRUE)
+{
   fDPhiStarMin = c.fDPhiStarMin;
   fEtaMin = c.fEtaMin;
   fMinRad = c.fMinRad;
   fMagSign = c.fMagSign;
+  fPhistarmin = c.fPhistarmin;
 }
 
 //__________________
@@ -56,6 +59,8 @@ AliFemtoPairCutRadialDistance& AliFemtoPairCutRadialDistance::operator=(const Al
     fEtaMin = c.fEtaMin;
     fMinRad = c.fMinRad;
     fMagSign = c.fMagSign;
+    fPhistarmin = c.fPhistarmin;
+
   }
 
   return *this;
@@ -65,11 +70,10 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   // Accept pairs based on their TPC entrance separation and
   // quality and sharity
   //  bool temp = true;
-  
+
 //    double pih = 3.14159265358979312;
 //    double pit = 6.28318530717958623;
 
-  
   double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();
   double chg1 = pair->Track1()->Track()->Charge();
@@ -80,53 +84,68 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
 
 
-    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  AliAODEvent *fAOD;
 
+  if (!aodH) {
+    // AliWarning("Could not get AODInputHandler");
+    return false;
+  }
+  else {
+    fAOD = aodH->GetEvent();
+  }
 
-    AliAODEvent *fAOD;
+  Double_t magsign = fAOD->GetMagneticField();
+  if (magsign > 1)
+    fMagSign = 1;
+  else if ( magsign < 1)
+    fMagSign = -1;
+  else
+    fMagSign = magsign;
 
-    if (!aodH) {
-        // AliWarning("Could not get AODInputHandler");
-        return false;
-    }
-    else {
-
-        fAOD = aodH->GetEvent();
-    }
-
-    Int_t magsign = fAOD->GetMagneticField();
-    if (magsign > 1)
-        fMagSign = 1;
-    else if ( magsign < 1)
-        fMagSign = -1;
-    else
-        fMagSign = magsign;
-
-
-     // cout << "mag sign = " << fMagSign << endl;
+  //cout << "mag sign = " << magsign << endl;
 
   Double_t rad;
   Bool_t pass5 = kTRUE;
 
-    rad = fMinRad;
-    for (Double_t iter=fMinRad*100; iter<251; iter+=1.0) {
-      Double_t dps = (phi1-phi2+(TMath::ASin(-0.075*chg1*fMagSign*rad/ptv1))-(TMath::ASin(-0.075*chg2*fMagSign*rad/ptv2)));
-        dps = TVector2::Phi_mpi_pi(dps);
-      double etad = eta2 - eta1;
+  rad = fMinRad;
+
+  if (fPhistarmin) {
+    for (rad = 0.8; rad < 2.5; rad += 0.01) {
+      Double_t dps = (phi2-phi1+(TMath::ASin(-0.075*chg2*fMagSign*rad/ptv2))-(TMath::ASin(-0.075*chg1*fMagSign*rad/ptv1)));
+      dps = TVector2::Phi_mpi_pi(dps);
+      Double_t etad = eta2 - eta1;
       if (fabs(etad)<fEtaMin && fabs(dps)<fDPhiStarMin) {
-	//       cout << "5% cut is not passed - returning" << endl;
-	pass5 = kFALSE;
-	break;
+        // cout << "5% cut is not passed - returning" << endl;
+        pass5 = kFALSE;
+        break;
       }
-      rad+=0.01;
     }
-  
+  }
+  else {
+
+    double afsi0b = 0.07510020733*chg1*fMagSign*rad/ptv1;
+    double afsi1b = 0.07510020733*chg2*fMagSign*rad/ptv2;
+
+    if (fabs(afsi0b) >=1.) return kTRUE;
+    if (fabs(afsi1b) >=1.) return kTRUE;
+
+    Double_t dps =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
+    dps = TVector2::Phi_mpi_pi(dps);
+
+    Double_t etad = eta2 - eta1;
+    if (fabs(etad)<fEtaMin && fabs(dps)<fDPhiStarMin) {
+      pass5 = kFALSE;
+    }
+
+  }
 
   if (pass5) {
     pass5 = AliFemtoPairCutAntiGamma::Pass(pair);
   }
-  else
+  else {
     fNPairsFailed++;
+  }
 
   return pass5;
 }
@@ -158,13 +177,13 @@ void AliFemtoPairCutRadialDistance::SetPhiStarDifferenceMinimum(double dtpc)
   fDPhiStarMin = dtpc;
 }
 
-void AliFemtoPairCutRadialDistance::SetEtaDifferenceMinimum(double etpc) 
+void AliFemtoPairCutRadialDistance::SetEtaDifferenceMinimum(double etpc)
 {
   fEtaMin = etpc;
 }
 
 
-void AliFemtoPairCutRadialDistance::SetMinimumRadius(double minrad) 
+void AliFemtoPairCutRadialDistance::SetMinimumRadius(double minrad)
 {
   fMinRad = minrad;
 }
@@ -174,4 +193,9 @@ void AliFemtoPairCutRadialDistance::SetMagneticFieldSign(int magsign)
   if(magsign>1) fMagSign = 1;
   else if(magsign<1) fMagSign = -1;
   else fMagSign = magsign;
+}
+
+void AliFemtoPairCutRadialDistance::SetPhiStarMin(Bool_t phistarmin)
+{
+  fPhistarmin = phistarmin;
 }
