@@ -67,6 +67,7 @@
 #include "AliEMCALCalibData.h"
 #include "AliEMCALSimParam.h"
 #include "AliEMCALRawDigit.h"
+#include "AliCaloCalibPedestal.h"
 
   namespace
   {
@@ -395,6 +396,9 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     //Put Noise contribution, smear time and energy     
     Float_t timeResolution = 0;
     for(absID = 0; absID < nEMC; absID++){ // Nov 30, 2006 by PAI; was from 1 to nEMC
+        
+      if (IsDead(absID)) continue; // Don't instantiate dead digits
+        
       Float_t energy = 0 ;    
         
       // amplitude set to zero, noise will be added later
@@ -674,7 +678,7 @@ void AliEMCALDigitizer::Decalibrate(AliEMCALDigit *digit)
 	
 	Bool_t bCell = geom->GetCellIndex(absId, iSupMod, nModule, nIphi, nIeta) ;
 	
-	if (!bCell) Error("DigitizeEnergyTime","Wrong cell id number : absId %i ", absId) ;
+	if (!bCell) Error("Decalibrate","Wrong cell id number : absId %i ", absId) ;
 	geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
 	
 	if (fCalibData) {
@@ -843,16 +847,10 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
   
   AliRunLoader *runLoader = AliRunLoader::Instance();
   
-  AliRun* run = runLoader->GetAliRun();
-  
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));
-  if(!emcalLoader){
-    AliFatal("Did not get the  Loader");
-  }
-  else {
-    AliEMCAL* emcal = dynamic_cast<AliEMCAL*>(run->GetDetector("EMCAL"));
-    if(emcal){
-      AliEMCALGeometry* geom = emcal->GetGeometry();
+  if (!emcalLoader) AliFatal("Did not get the  Loader");
+  
+    const  AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
       
       // build FOR from simulated digits
       // and xfer to the corresponding TRU input (mapping)
@@ -866,7 +864,9 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
       TIter NextDigit(digits);
       while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
       {
-	    Decalibrate(digit);   
+        if (IsDead(digit)) continue;
+        
+	      Decalibrate(digit);   
 		  
         Int_t id = digit->GetId();
         
@@ -930,10 +930,6 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
       delete [] timeSamples;
 		
 	  if (digits && digits->GetEntriesFast()) digits->Delete();
-    }// AliEMCAL exists
-    else AliFatal("Could not get AliEMCAL");
-  }// loader exists
-  
 }
 
 //____________________________________________________________________________ 
@@ -1230,5 +1226,81 @@ void AliEMCALDigitizer::WriteDigits(TClonesArray* digits, const char* branchName
     //	treeD->Fill();
   }// loader exists
   else AliFatal("Loader not available");
+}
+
+//__________________________________________________________________
+Bool_t AliEMCALDigitizer::IsDead(AliEMCALDigit *digit) 
+{
+  AliRunLoader *runLoader = AliRunLoader::Instance();
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));
+  if (!emcalLoader) AliFatal("Did not get the  Loader");
+  
+  AliCaloCalibPedestal *caloPed = emcalLoader->PedestalData();
+  if (!caloPed) {
+    AliWarning("Could not access pedestal data! No dead channel removal applied");
+    return kFALSE;
+  }
+  
+	// Load Geometry
+  const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
+  if (!geom) AliFatal("Did not get geometry from EMCALLoader");
+  
+  Int_t absId   = digit->GetId();
+  Int_t iSupMod = -1;
+  Int_t nModule = -1;
+  Int_t nIphi   = -1;
+  Int_t nIeta   = -1;
+  Int_t iphi    = -1;
+  Int_t ieta    = -1;
+	
+  Bool_t bCell = geom->GetCellIndex(absId, iSupMod, nModule, nIphi, nIeta) ;
+	
+  if (!bCell) Error("IsDead","Wrong cell id number : absId %i ", absId) ;
+  geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
+
+  Int_t channelStatus = (Int_t)(caloPed->GetDeadMap(iSupMod))->GetBinContent(ieta,iphi);
+
+  if (channelStatus == AliCaloCalibPedestal::kDead) 
+    return kTRUE;
+  else
+    return kFALSE;
+}
+
+
+//__________________________________________________________________
+Bool_t AliEMCALDigitizer::IsDead(Int_t absId)
+{
+    AliRunLoader *runLoader = AliRunLoader::Instance();
+    AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));
+    if (!emcalLoader) AliFatal("Did not get the  Loader");
+    
+    AliCaloCalibPedestal *caloPed = emcalLoader->PedestalData();
+    if (!caloPed) {
+        AliWarning("Could not access pedestal data! No dead channel removal applied");
+        return kFALSE;
+    }
+    
+	// Load Geometry
+    const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
+    if (!geom) AliFatal("Did not get geometry from EMCALLoader");
+    
+    Int_t iSupMod = -1;
+    Int_t nModule = -1;
+    Int_t nIphi   = -1;
+    Int_t nIeta   = -1;
+    Int_t iphi    = -1;
+    Int_t ieta    = -1;
+	
+    Bool_t bCell = geom->GetCellIndex(absId, iSupMod, nModule, nIphi, nIeta) ;
+	
+    if (!bCell) Error("IsDead","Wrong cell id number : absId %i ", absId) ;
+    geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
+    
+    Int_t channelStatus = (Int_t)(caloPed->GetDeadMap(iSupMod))->GetBinContent(ieta,iphi);
+    
+    if (channelStatus == AliCaloCalibPedestal::kDead)
+        return kTRUE;
+    else
+        return kFALSE;
 }
 
