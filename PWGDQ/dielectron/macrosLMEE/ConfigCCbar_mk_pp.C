@@ -105,9 +105,9 @@ void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t is
 {
   // Setup the pair cuts
   AliDielectronVarCuts *mycut = new AliDielectronVarCuts("CutEMCAL","cut for EMCal");
-  mycut->AddCut(AliDielectronVarManager::kEMCALnSigmaEle,-2.,3.);
+//  mycut->AddCut(AliDielectronVarManager::kEMCALnSigmaEle,-2.,3.);//not needed anymore
   mycut->AddCut(AliDielectronVarManager::kEMCALE,3.5,100.);
-  mycut->AddCut(AliDielectronVarManager::kEMCALEoverP,0.75,1.25);  
+  mycut->AddCut(AliDielectronVarManager::kEMCALEoverP,0.75,1.25);//  
 
   AliDielectronPairLegCuts *varpair=new AliDielectronPairLegCuts();
   varpair->GetLeg1Filter().AddCuts(mycut);
@@ -214,16 +214,20 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
   histos->UserHistogram("Track","dEdx_Eta","dEdx vs eta;#eta;TPC signal (arb units);#tracks",
                         200,-1.,1.,800,20.,200.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal,kTRUE);
 
+  /*
   histos->UserHistogram("Track","kNclsSTPC_kDeltaEta","kNclsSTPC vs kDeltaEta;kNclsSTPC;kDeltaEta;#tracks",
-                        160,0.,159.,160,0.,1.6,AliDielectronVarManager::kNclsSTPC,AliDielectronVarManager::kDeltaEta,kTRUE);
+                        100,0.,1.,160,0.,1.6,AliDielectronVarManager::kNclsSTPC,AliDielectronVarManager::kDeltaEta,kTRUE);
   histos->UserHistogram("Track","kNclsSTPC_kDeltaPhi","kNclsSTPC vs kDeltaPhi;kNclsSTPC;kDeltaPhi;#tracks",
-                        160,0.,159.,160,0.,6.4,AliDielectronVarManager::kNclsSTPC,AliDielectronVarManager::kDeltaPhi,kTRUE);
+                        100,0.,1.,160,0.,6.4,AliDielectronVarManager::kNclsSTPC,AliDielectronVarManager::kDeltaPhi,kTRUE);
   histos->UserHistogram("Track","kDeltaPhi_kDeltaEta","kDeltaPhi vs kDeltaEta;kDeltaPhi;kDeltaEta;#tracks",
                         160,0.,6.4,160,0.,1.6,AliDielectronVarManager::kDeltaPhi,AliDielectronVarManager::kDeltaEta,kTRUE);
-  
+  */
   histos->UserHistogram("Track","dEdx_nSigmaEMCal","dEdx vs nSigmaEMCal;NsigmaEmcal;TPC signal (arb units);NSigmaEMCAL",
                         200,-5.,5.,800,20.,200.,AliDielectronVarManager::kEMCALnSigmaEle,AliDielectronVarManager::kTPCsignal,kTRUE);
 
+    histos->UserHistogram("Track","nSigmaTPC_nSigmaEMCal","nSigmaTPC vs nSigmaEMCal;NsigmaEmcal;nSigmaTPC;NSigmaEMCAL",
+                        200,-5.,5.,200,-5.,5.,AliDielectronVarManager::kEMCALnSigmaEle,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
+    
   histos->UserHistogram("Track","dEdx_TPCnSigmaEle","dEdx vs TPCnSigmaEle;TPC signal electrons(arbunits);TPC number of sigmas Electrons;TPC signal (a.u.);#tracks",
                         100,-10.,10.,800,20.,200.,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kTPCsignal,kTRUE);
 
@@ -291,13 +295,13 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD)
   //global leg variables
   cf->AddVariable(AliDielectronVarManager::kPt,"0.,0.5,0.75,0.9,1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 2.0, 3.0, 4.0, 8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,30.0,50.0,100.0",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kEta,44,-1.2,1.2,kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kPhi,64,0.,64*0.1,kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kPhi,64,-64.*0.1,64.*0.1,kTRUE);
 
   //ITS
   cf->AddVariable(AliDielectronVarManager::kNclsITS,6,0.,6.,kTRUE);
   
   //TPC
-  cf->AddVariable(AliDielectronVarManager::kNclsSTPC,80,0.,160.,kTRUE);//shared cluster
+  cf->AddVariable(AliDielectronVarManager::kNclsSTPC,20,0.,1.,kTRUE);//shared cluster
   cf->AddVariable(AliDielectronVarManager::kNclsTPC,"65, 70, 75, 80, 85, 90, 95, 100, 120, 160",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kTPCsignalN,80,0.,160.,kTRUE);   
   cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,80,-4.,4.,kTRUE);
@@ -307,7 +311,7 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD)
   //EMCal
   cf->AddVariable(AliDielectronVarManager::kEMCALE,20,0.,20.,kTRUE); 
   cf->AddVariable(AliDielectronVarManager::kEMCALnSigmaEle,50,-5.,5.,kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kEMCALNCells,50,0,50,kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kEMCALNCells,100,0,50,kTRUE);
   cf->AddVariable(AliDielectronVarManager::kEMCALEoverP,"0.6,0.7,0.8,0.9,1.1,1.2,1.3,1.4,1.8,2.0,4.0",kTRUE);
   
   cf->AddVariable(AliDielectronVarManager::kMixingBin,100,0.,100.);
