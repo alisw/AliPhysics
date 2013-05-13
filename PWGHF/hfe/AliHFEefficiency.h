@@ -54,6 +54,8 @@ class AliHFEefficiency : public AliAnalysisTaskSE{
 
     void CalculatePTsmearing();
     void DrawPtResolution(const TList * const l);
+    void DrawSignalEfficiency(AliCFEffGrid *eff, AliCFContainer *cont, Int_t var);
+    void DrawCutEfficiency(AliCFEffGrid *eff, AliCFContainer *cont, Int_t var);
 
   private:
     enum{
@@ -65,8 +67,7 @@ class AliHFEefficiency : public AliAnalysisTaskSE{
     };
     AliHFEefficiency(const AliHFEefficiency &);
     AliHFEefficiency &operator=(const AliHFEefficiency &);
-    void DrawSignalEfficiency(AliCFEffGrid *eff, AliCFContainer *cont, Int_t var);
-    void DrawCutEfficiency(AliCFEffGrid *eff, AliCFContainer *cont, Int_t var);
+
 
     AliHFEtrackFilter *fFilter;           //! Track Filter
     AliHFEcutStep *fMCcut;                //! MC Signal

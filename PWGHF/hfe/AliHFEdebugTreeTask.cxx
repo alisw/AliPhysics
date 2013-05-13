@@ -34,6 +34,7 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliMCParticle.h"
+#include "AliStack.h"
 #include "AliPIDResponse.h"
 #include "AliTrackReference.h"
 #include "AliVEvent.h"
@@ -163,6 +164,13 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
   if(mcthere){ 
     fTrackCuts->SetMCEvent(fMCEvent);
     fSignalCuts->SetMCEvent(fMCEvent);
+  }
+
+  // MC get stack
+  AliStack* stack = 0x0;
+  if(mcthere){
+      stack = fMCEvent->Stack();
+      if(!stack) AliError("No Stack");
   }
 
   // Get Primary Vertex
@@ -526,6 +534,34 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
     tofdx=track->GetTOFsignalDx();
     tofdz=track->GetTOFsignalDz();
 
+    // TOF track status
+    UInt_t status = 0;
+    status = track->GetStatus();
+    Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
+    Bool_t hasTOFtime = status&AliESDtrack::kTIME;
+    Bool_t hasTOFpid  = status&AliESDtrack::kTOFpid;
+    Bool_t hasgoodTOF     = kFALSE;
+    if (hasTOFout && hasTOFtime && hasTOFpid) hasgoodTOF = kTRUE;
+
+    // TRD track status
+    Bool_t hasTRDin = status&AliESDtrack::kTRDin;
+
+
+    // TOF mismatch (particle spectra group)
+    Int_t mismatchlevel=0; // default value; in data always 0
+    if(mcthere){
+	Int_t tofLabel[3];
+	track->GetTOFLabel(tofLabel);
+        if(TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0]) || tofLabel[1] > 0) mismatchlevel=1;
+	TParticle *matchedTrack = stack->Particle(TMath::Abs(tofLabel[0]));
+	if(TMath::Abs(matchedTrack->GetFirstMother()) == TMath::Abs(track->GetLabel()))
+	{
+	    if(mismatchlevel==1) mismatchlevel=3;
+            else mismatchlevel=2;
+	}
+    }
+
+
     // Fill Tree
     (*fDebugTree) << "PIDdebug"
                   << "centrality="          << centrality
@@ -607,7 +643,10 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                   << "vy="                  << vtx[1]
                   << "vz="                  << vtx[2]
                   << "tofdx="                << tofdx
-                  << "tofdz="                << tofdz
+	          << "tofdz="                << tofdz
+                  << "statusTOFtracking="   << hasgoodTOF
+                  << "TOFmismatchlevel="    << mismatchlevel
+                  << "statusTRDtracking="   << hasTRDin
                   << "ncontrib="            << ncontrib
                   << "mesonID="             << mesonID
                   << "eR="                  << eR

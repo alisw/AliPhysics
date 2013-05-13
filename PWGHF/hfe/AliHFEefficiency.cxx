@@ -340,7 +340,7 @@ void AliHFEefficiency::DrawCutEfficiency(AliCFEffGrid *eff, AliCFContainer *cont
     hEff->SetMarkerColor(kBlue - 5 + istep);
     hEff->Draw(kFirst ? "ep" : "epsame");
     kFirst = kFALSE;
-    leg->AddEntry(hEff, effTitle.Data(), "p");
+    leg->AddEntry(hEff, cont->GetStepTitle(istep), "p");
   }
   leg->SetBorderSize(0);
   leg->SetFillStyle(0);
