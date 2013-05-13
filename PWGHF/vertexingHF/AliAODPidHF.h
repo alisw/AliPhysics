@@ -28,7 +28,8 @@ class AliAODPidHF : public AliAODPid{
   kTPC,
   kTOF,
   kTPCTOF,
-  kTPCITS
+  kTPCITS,
+  kTPCAndTOF
  };
 
  AliAODPidHF();
