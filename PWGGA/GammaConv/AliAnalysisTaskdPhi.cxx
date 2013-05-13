@@ -532,7 +532,7 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
 		
 
 		Int_t leadingpi = fIsoAna->IsLeading(static_cast<AliAODConversionParticle*>(pion), tracks, tIDs);
-		piCorr->FillTriggerCounters(pion, leadingpi);
+		//piCorr->FillTriggerCounters(pion, leadingpi);
 		tIDs[2] = ph2->GetLabel(0);
 		tIDs[3] = ph2->GetLabel(1);
 		if(pion->Pt() > fAxistPt.GetBinLowEdge(1) && 

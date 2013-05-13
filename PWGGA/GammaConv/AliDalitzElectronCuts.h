@@ -48,11 +48,13 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
         kpiMaxMomdedxSigmaTPCCut,
         kLowPRejectionSigmaCut,
         kTOFelectronPID,
+        kclsITSCut,
         kclsTPCCut,
 	ketaCut,
         kPsiPair,
         kRejectSharedElecGamma,
         kBackgroundScheme,
+        kNumberOfRotations,
 	kNCuts
   };
 
@@ -85,6 +87,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   TString GetCutNumber();
 
     // Cut Selection
+  Bool_t ElectronIsSelectedMC(Int_t labelParticle,AliStack *fMCStack);
   Bool_t TrackIsSelected(AliESDtrack* lTrack);
   Bool_t ElectronIsSelected(AliESDtrack* lTrack);
   void InitAODpidUtil(Int_t type);
@@ -97,8 +100,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   
   void PrintCuts();
 
-  void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
-  void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
+  void InitCutHistograms(TString name="",Bool_t preCut = kTRUE,TString cutName="");
+  void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE,TString cutName=""){if(!fHistograms){InitCutHistograms(name,preCut,cutName);};}
   TList *GetCutHistograms(){return fHistograms;}
 
   static AliVTrack * GetTrack(AliVEvent * event, Int_t label);
@@ -109,17 +112,18 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t dEdxCuts(AliVTrack * track);
   Bool_t PIDProbabilityCut(AliConversionPhotonBase *photon, AliVEvent * event);
   Bool_t RejectSharedElecGamma(TList *photons, Int_t indexEle);
-  Bool_t IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi ) const;
+  Bool_t IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi );
 
   // Event Cuts
 
-  Double_t GetPsiPair( const AliESDtrack* trackPos, const AliESDtrack* trackNeg ) const;
+  //Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg );
 
   Bool_t SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut);
   Bool_t SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut);
   Bool_t SetITSdEdxCutElectronLine(Int_t ededxSigmaCut);
   Bool_t SetMinMomPiondEdxTPCCut(Int_t piMomdedxSigmaCut);
   Bool_t SetMaxMomPiondEdxTPCCut(Int_t piMomdedxSigmaCut);
+  Bool_t SetITSClusterCut(Int_t clsITSCut);
   Bool_t SetTPCClusterCut(Int_t clsTPCCut);
   Bool_t SetEtaCut(Int_t etaCut);
   Bool_t SetMinMomPiondEdxCut(Int_t piMinMomdedxSigmaCut);
@@ -129,6 +133,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetPsiPairCut(Int_t psiCut);
   Bool_t SetRejectSharedElecGamma(Int_t RCut);
   Bool_t SetBackgroundScheme(Int_t BackgroundScheme);
+  Bool_t SetNumberOfRotations(Int_t NumberOfRotations);
   
   // Request Flags
 
@@ -138,6 +143,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t DoPsiPairCut(){return fDoPsiPairCut;}
   Bool_t   UseTrackMultiplicity(){ return fUseTrackMultiplicityForBG;}
   Int_t    GetBKGMethod(){ return fBKGMethod; }
+  Int_t    NumberOfRotationEvents(){return fnumberOfRotationEventsForBG;}
   
 
   
@@ -181,8 +187,10 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
   Bool_t   fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
   Bool_t   fUseTOFpid; // flag to use tof pid
+  Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
   Bool_t   fUseTrackMultiplicityForBG; // use multiplicity
   Int_t    fBKGMethod;
+  Int_t    fnumberOfRotationEventsForBG;
 
 
   // Histograms
@@ -193,6 +201,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   TH2F *hITSdEdxafter;
   TH2F *hTPCdEdxbefore; // TPC dEdx before cuts
   TH2F *hTPCdEdxafter; // TPC dEdx after cuts
+  TH2F *hTPCdEdxSignalbefore; //TPC dEdx signal before
+  TH2F *hTPCdEdxSignalafter; //TPC dEdx signal  after
   TH2F *hTOFbefore; // TOF after cuts
   TH2F *hTOFafter; // TOF after cuts
   
@@ -203,7 +213,7 @@ private:
   AliDalitzElectronCuts& operator=(const AliDalitzElectronCuts&); // not implemented
 
 
-  ClassDef(AliDalitzElectronCuts,1)
+  ClassDef(AliDalitzElectronCuts,2)
 };
 
 

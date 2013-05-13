@@ -6,6 +6,16 @@
 #include "AliESDv0.h"
 #include "AliConversionCuts.h"
 #include "AliExternalTrackParam.h"
+#include "TObject.h"
+#include "AliMCEvent.h"   // for CF
+#include "AliESDEvent.h"
+#include "AliKFParticle.h"
+#include "TParticle.h"
+#include <vector>
+#include "AliESDpid.h"
+#include "TF1.h"
+#include "TRandom3.h"
+#include "AliAnalysisManager.h"
 
 class AliConversionPhotonBase;
 class TRandom3;
@@ -21,14 +31,13 @@ class AliAODConversionPhoton;
 using namespace std;
 
 class AliV0ReaderV1 : public AliAnalysisTaskSE {
-	
- public: 
-	
+
+ public:
+
   AliV0ReaderV1(const char *name="V0ReaderV1");
   virtual ~AliV0ReaderV1();                            //virtual destructor
   void UserCreateOutputObjects();
-
-
+  virtual Bool_t Notify();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
   virtual void Init();
@@ -51,7 +60,8 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
   void SetCreateAODs(Bool_t k=kTRUE){fCreateAOD=k;}
   void SetDeltaAODFilename(TString s){fDeltaAODFilename=s;}
   void SetDeltaAODBranchName(TString string) { fDeltaAODBranchName = string;AliInfo(Form("Set DeltaAOD BranchName to: %s",fDeltaAODBranchName.Data()));}
-
+  TString GetPeriodName(){return fPeriodName;}
+  
 protected:
     // Reconstruct Gammas
     Bool_t ProcessESDV0s();
@@ -59,7 +69,7 @@ protected:
     void FillAODOutput();
     void FindDeltaAODBranchName();
     Bool_t GetAODConversionGammas();
-   
+
     // Getter Functions
 
     const AliExternalTrackParam *GetExternalTrackParam(AliESDv0 *fCurrentV0,Int_t &tracklabel,Int_t charge);
@@ -84,13 +94,14 @@ protected:
     TString     fDeltaAODBranchName;// File where Gamma Conv AOD is located, if not in default AOD
     TString fDeltaAODFilename; // set filename for delta/satellite aod
     Bool_t fEventIsSelected;
-
+    TString fPeriodName;
+    
 private:
     AliV0ReaderV1(AliV0ReaderV1 &original);
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1,1)
+    ClassDef(AliV0ReaderV1,2)
 };
 
 inline void AliV0ReaderV1::SetConversionCuts(const TString cut){

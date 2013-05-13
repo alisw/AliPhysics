@@ -46,14 +46,14 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 	kchi2MesonCut,
 	kElecShare,
 	kToCloseV0s,
-	kuseMCPSmearing,              
+	kuseMCPSmearing,
 	kNCuts
   };
 
   Bool_t SetCutIds(TString cutString); 
   Int_t fCuts[kNCuts];
   Bool_t SetCut(cutIds cutID, Int_t cut);
-  Bool_t UpdateCutString(cutIds cutID, Int_t value);
+  Bool_t UpdateCutString();
 
   static const char * fgkCutNames[kNCuts];
 
@@ -61,6 +61,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   void FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0);
    
   AliConversionMesonCuts(const char *name="MesonCuts", const char * title="Meson Cuts");
+  AliConversionMesonCuts(const AliConversionMesonCuts&);
+  AliConversionMesonCuts& operator=(const AliConversionMesonCuts&);
+
   virtual ~AliConversionMesonCuts();                            //virtual destructor
 
   virtual Bool_t IsSelected(TObject* /*obj*/){return kTRUE;}
@@ -69,13 +72,13 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   TString GetCutNumber();
 
   // Cut Selection
-  Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE);
-  Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Bool_t bMCDaughtersInAcceptance=kFALSE);
-	Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack);
+  Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE, Double_t fRapidityShift=0.);
+  Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift=0.);
+  Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift=0.);
   void PrintCuts();
 
-  void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
-  void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
+  void InitCutHistograms(TString name="");
+  void SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
   TList *GetCutHistograms(){return fHistograms;}
   void SmearParticle(AliAODConversionPhoton * photon);
   
@@ -99,12 +102,14 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   // Request Flags
   Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
   Bool_t UseTrackMultiplicity(){return fUseTrackMultiplicityForBG;}
-  Int_t NumberOfBGEvents(){return fNumberOfBGEvents;}
+  Int_t GetNumberOfBGEvents(){return fNumberOfBGEvents;}
   Int_t NDegreesRotation(){return fnDegreeRotationPMForBG;}
+  Bool_t DoBGCalculation(){return fDoBG;}
   Bool_t DoBGProbability(){return fdoBGProbability;}
   Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
   Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
   Bool_t UseMCPSmearing(){return fUseMCPSmearing;}
+  Int_t BackgroundHandlerType(){return fBackgroundHandler;}
   
   protected:
   TList *fHistograms;
@@ -116,6 +121,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   Double_t fAlphaCutMeson; // max value for meson alpha cut
   Double_t fRapidityCutMeson; // max value for meson rapidity
   Bool_t fUseRotationMethodInBG; // flag to apply rotation method for meson bg estimation
+  Bool_t fDoBG; // flag to intialize BG
   Bool_t fdoBGProbability; // flag to use probability method for meson bg estimation
   Bool_t fUseTrackMultiplicityForBG; // flag to use track multiplicity for meson bg estimation (else V0 mult)
   Int_t fnDegreeRotationPMForBG; //
@@ -130,7 +136,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   Double_t fPSigSmearingCte; //
   TF1 *fBrem; //
   TRandom3 fRandom; //
-  Int_t *fElectronLabelArray; // Array with elec/pos v0 label
+  Int_t fElectronLabelArraySize;
+  Int_t *fElectronLabelArray; //[fElectronLabelArraySize] Array with elec/pos v0 label
+  Int_t fBackgroundHandler; //
   
   // Histograms
   TObjString *fCutString; // cut number used for analysis
@@ -140,11 +148,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
 private:
 
-  AliConversionMesonCuts(const AliConversionMesonCuts&); // not implemented
-  AliConversionMesonCuts& operator=(const AliConversionMesonCuts&); // not implemented
 
-
-  ClassDef(AliConversionMesonCuts,2)
+  ClassDef(AliConversionMesonCuts,3)
 };
 
 
