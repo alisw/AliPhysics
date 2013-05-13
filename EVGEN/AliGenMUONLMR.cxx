@@ -29,12 +29,17 @@ ClassImp(AliGenMUONLMR)
       fPt[i] = NULL;
       fY[i] = NULL;
       fMult[i] = NULL;
-      fDecay[i] = NULL;
       fParticle[i] = NULL;
     }
-    for (int i=0; i<3; i++) fDalitz[i] = NULL;
-    for (int i=0; i<3; i++) fMu[i] = NULL;
-						 
+    for (int i=0; i<2; i++) {
+      fMu[i]     = NULL;
+      fDecay[i] = NULL;
+    }						 
+
+    for (int i=0; i<3; i++) {
+      fDalitz[i] = NULL;
+    }						 
+
   }
 
 //-----------------------------------------------------------
