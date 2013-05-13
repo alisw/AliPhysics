@@ -42,6 +42,25 @@ void MakeITSUSimuParam(Int_t simuType = 0, const char* cdbURI="local://") {
   // Author: L.Molnar
   // Contact: levente.molnar@cern.ch
   //
+  //
+  //****** DO NOT FORGET TO SET THE RIGHT GEOMETRY IN THE Config.C *****
+  //
+  //****** P26 chips Config.C parameters *****
+  // col pitch 20 um
+  // row pitch 20 um
+  // sensor thickness 18 um
+  // SET diode staggering to:   kDiodShiftM32terP31X[][] = {0.0, 0.0};
+  // SET diode staggering to:   kDiodShiftM32terP31Z[][] = {0.0, 0.0};
+  //
+  //
+  //****** P31 chips Config.C parameters  *****
+  // col pitch 20 um
+  // row pitch 33 um
+  // sensor thickness 18 um
+  // SET diode staggering to:   kDiodShiftM32terP31X[][] = {0.30,-0.19};
+  // SET diode staggering to:   kDiodShiftM32terP31Z[][] = {0.0, 0.0};
+  //
+  //
   //========================================================================
   AliITSUSimuParam *param = 0;
   //
@@ -50,12 +69,12 @@ void MakeITSUSimuParam(Int_t simuType = 0, const char* cdbURI="local://") {
     switch(simuType) {
             
         case 0:
-                //____ MIMOSA32 P26 Response parameterzied by map ---> selected for TDR 
+                //____ MIMOSA32 P26 Response parameterzied by map ---> selected for TDR
                 param = MakeITSUSimuParam_M32P26Map(kSNcut);
         break;
         //
         case 1:
-                //____ MIMOSA32ter P31 Response parameterzied by map 
+                //____ MIMOSA32ter P31 Response parameterzied by map
                 param = MakeITSUSimuParam_M32terP31Map(kSNcut);
         break;
         //
