@@ -194,6 +194,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fFakeTrk0(0)
   ,fFakeTrk1(0)
   ,ftimingEle(0)
+  ,fIncMaxE(0)
   ,fIncReco(0)
   ,fPhoReco(0)
   ,fSamReco(0) 
@@ -325,6 +326,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fFakeTrk0(0)
   ,fFakeTrk1(0)
   ,ftimingEle(0)
+  ,fIncMaxE(0)
   ,fIncReco(0)
   ,fPhoReco(0)
   ,fSamReco(0)
@@ -491,6 +493,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
    FindTriggerClusters();
 
   // make EMCAL array 
+  double maxE = 0.0;
   for(Int_t iCluster=0; iCluster<fESD->GetNumberOfCaloClusters(); iCluster++)
      {
       AliESDCaloCluster *clust = fESD->GetCaloCluster(iCluster);
@@ -508,6 +511,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          //if(clustE>3.0)fEMCAccE->Fill(calInfo); 
          //if(fqahist==1 && clustE>1.5)fEMCAccE->Fill(calInfo); 
          hEMCAccE->Fill(cent,clustE); 
+         if(clustE>maxE)maxE = clustE; 
         }
    }
 
@@ -694,7 +698,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     
     // Track extrapolation
     
-    Int_t charge = track->Charge();
+    //Int_t charge = track->Charge();
     fTrkpt->Fill(pt);
     mom = track->P();
     phi = track->Phi();
@@ -720,6 +724,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
         double nmatch = -1.0;
         double oppstatus = 0.0;
         double emctof = 0.0;
+        Bool_t MaxEmatch = kFALSE;
 
     Bool_t fFlagPhotonicElec = kFALSE;
     Bool_t fFlagConvinatElec = kFALSE;
@@ -730,6 +735,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       if(clust && clust->IsEMCAL()){
 
 	        double clustE = clust->E();
+                if(clustE==maxE)MaxEmatch = kTRUE;
                 eop = clustE/fabs(mom);
                  //cout << "eop org = "<< eop << endl;
                 if(mcLabel>-1.0)
@@ -861,11 +867,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
     if(m20>0.0 && m20<0.3)
       {
-       fIncpTM20->Fill(cent,pt);
-       ftimingEle->Fill(pt,emctof);
-       if(fFlagPhotonicElec) fPhoElecPtM20->Fill(cent,pt);
-       if(fFlagConvinatElec) fSameElecPtM20->Fill(cent,pt);
-
+       if(MaxEmatch)fIncMaxE->Fill(cent,pt);
        if(pt>5.0)
          {
           fIncReco->Fill(cent,recopT);
@@ -1372,6 +1374,8 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fnSigEtaCorr[5] = new TGraphErrors(12,etaval,corr5); // 50-70
   fnSigEtaCorr[6] = new TGraphErrors(12,etaval,corr6); // 70-90
 
+  fIncMaxE = new TH2D("fIncMaxE","Inc",10,0,100,10,0,100);
+  fOutputList->Add(fIncMaxE);
 
   fIncReco = new TH2D("fIncReco","Inc",10,0,100,100,0,100);
   fOutputList->Add(fIncReco);
@@ -1401,8 +1405,6 @@ Bool_t AliAnalysisTaskHFECal::ProcessCutStep(Int_t cutStep, AliVParticle *track)
   return kTRUE;
 }
 //_________________________________________
-//void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec)
-//void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig)
 void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent, Bool_t tagpi0, Bool_t tageta)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
@@ -1519,8 +1521,8 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     phoinfo[0] = cent;
     phoinfo[1] = ptPrim;
     phoinfo[2] = mass;
-    //phoinfo[3] = nSig;
-    phoinfo[3] = dEdxAsso;
+    phoinfo[3] = nSig;
+    //phoinfo[3] = dEdxAsso;
     phoinfo[4] = openingAngle;
     phoinfo[5] = ishower;
     phoinfo[6] = ep;
