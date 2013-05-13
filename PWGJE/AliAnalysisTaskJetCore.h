@@ -17,6 +17,7 @@ class TH1I;
 class TH2F;
 class TH3F;
 class THnSparse;
+class TRandom3;
 class AliESDEvent;
 class AliAODExtension;
 class AliAODEvent;
@@ -83,6 +84,9 @@ public:
    virtual void     SetFlagPhiBkg(Int_t yesno){fFlagPhiBkg=yesno;}
    virtual void     SetFlagEtaBkg(Int_t yesno){fFlagEtaBkg=yesno;}
    virtual void     SetFlagJetHadron(Int_t yesno){fFlagJetHadron=yesno;}
+   virtual void     SetTTLow(Float_t ttlow){fTTLow=ttlow;}
+   virtual void     SetTTUp(Float_t ttup){fTTUp=ttup;}
+   virtual void     SetFlagHardest(Int_t yesno){fHardest=yesno;}
    virtual void     SetFlagRandom(Int_t yesno){fFlagRandom=yesno;}
    virtual void     SetFlagOnlyRecoil(Int_t yesno){fFlagOnlyRecoil=yesno;}
    virtual void     SetFlagOnlyHardest(Int_t yesno){fFlagOnlyHardest=yesno;} 
@@ -109,6 +113,7 @@ private:
     AliAODEvent *fAODOut;    //! AOD event 
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
     Int_t   GetListOfTracks(TList *list);
+   Int_t   SelectTrigger(TList *list);
    Int_t   GetHardestTrackBackToJet(AliAODJet *jet);
    Int_t   GetListOfTracksCloseToJet(TList *list,AliAODJet *jet);
    // jets to compare
@@ -140,6 +145,9 @@ private:
    Int_t   fFlagPhiBkg;
    Int_t   fFlagEtaBkg;
    Int_t   fFlagJetHadron;
+   Float_t fTTLow;
+   Float_t fTTUp;
+   Int_t   fHardest;
    Int_t   fFlagRandom;
    Int_t   fFlagOnlyRecoil;
    Int_t   fFlagOnlyHardest;
@@ -215,6 +223,8 @@ private:
      Double_t            fTrigBuffer[10][7];      //!buffer for triggers   
      TH2F        *fhTTPt;                     //! Trigger track pt for normalization (Rongrong)
      THnSparse   *fHJetPhiCorr;               //! Azimuthal correlation between trigger track and recoil jets (Rongrong)
+       TRandom3*                   fRandom;          // TRandom3  
+
    AliAnalysisTaskJetCore(const AliAnalysisTaskJetCore&); // not implemented
    AliAnalysisTaskJetCore& operator=(const AliAnalysisTaskJetCore&); // not implemented
 
