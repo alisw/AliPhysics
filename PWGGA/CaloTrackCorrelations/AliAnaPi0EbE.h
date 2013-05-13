@@ -261,8 +261,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhTrackMatchedDEta     ;  //! Eta distance between track and cluster vs cluster E
   TH2F         * fhTrackMatchedDPhi     ;  //! Phi distance between track and cluster vs cluster E
   TH2F         * fhTrackMatchedDEtaDPhi ;  //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
-  TH2F         * fhTrackMatchedMCParticle; //! Trace origin of matched particle
-  TH2F         * fhdEdx  ;                 //! matched track dEdx vs cluster E 
+  TH2F         * fhTrackMatchedMCParticleE;    //! Trace origin of matched particle, energy
+  TH2F         * fhTrackMatchedMCParticleDEta; //! Trace origin of matched particle, eta residual
+  TH2F         * fhTrackMatchedMCParticleDPhi; //! Trace origin of matched particle, phi residual
+  TH2F         * fhdEdx  ;                 //! matched track dEdx vs cluster E
   TH2F         * fhEOverP;                 //! matched track E cluster over P track vs cluster E
   TH2F         * fhEOverPNoTRD;                 //! matched track E cluster over P track vs cluster E, not behind TRD 
 
