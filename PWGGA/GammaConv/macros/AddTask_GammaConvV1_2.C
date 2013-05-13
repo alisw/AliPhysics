@@ -110,20 +110,27 @@ void AddTask_GammaConvV1_2(TString trainConfig = "pp",   Bool_t isMC	= kFALSE, U
    task->SetIsHeavyIon(IsHeavyIon);
    // Cut Numbers to use in Analysis
    Int_t numberOfCuts = 2;
-   if(trainConfig.Contains("PbPb")) numberOfCuts = 3;
-   else if(trainConfig.Contains("pPb")) numberOfCuts = 2;
+   if(trainConfig.Contains("PbPb")) numberOfCuts = 7;
+   else if(trainConfig.Contains("pPb")) numberOfCuts = 5;
    else numberOfCuts = 3;
 
    TString *cutarray = new TString[numberOfCuts];
    TString *mesonCutArray = new TString[numberOfCuts];
 
    if(trainConfig.Contains("PbPb")){
-      cutarray[ 0] = "1000003042092970723220000"; mesonCutArray[ 0] = "01022045000";  // all centralities
-      cutarray[ 1] = "3010003042092970723220000"; mesonCutArray[ 1] = "01022045000";  // most central
-      cutarray[ 2] = "1680003042092970723220000"; mesonCutArray[ 2] = "01022065000";  // peripheral
+      cutarray[ 0] = "3010002042092970023220000"; mesonCutArray[ 0] = "01522045000";
+      cutarray[ 1] = "1010002042092970023220000"; mesonCutArray[ 1] = "01522045000";
+      cutarray[ 2] = "3120002042092970023220000"; mesonCutArray[ 2] = "01522045000";
+      cutarray[ 3] = "1120002042092970023220000"; mesonCutArray[ 3] = "01522045000";
+      cutarray[ 4] = "1240002042092970023220000"; mesonCutArray[ 4] = "01522045000";
+      cutarray[ 5] = "1460002042092970023220000"; mesonCutArray[ 5] = "01522065000";
+      cutarray[ 6] = "1680002042092970023220000"; mesonCutArray[ 6] = "01522065000";
    } else if(trainConfig.Contains("pPb")){ //pA needs thighter rapidity cut y < 0.5
-      cutarray[ 0] = "8000000082093172023290000"; mesonCutArray[ 0] = "01629045000"; //shifted Pbp
-      cutarray[ 1] = "8000000002093172023290000"; mesonCutArray[ 1] = "01621045000"; //standard cut Pi0 PbPb 00-100 Full Eta Range
+      cutarray[ 0] = "8000000082093172003290000"; mesonCutArray[ 0] = "01629045000";
+      cutarray[ 1] = "8020000002093172023290000"; mesonCutArray[ 1] = "01621045000"; //standard cut Pi0 PbPb 00-20
+      cutarray[ 2] = "8240000002093172023290000"; mesonCutArray[ 2] = "01621045000"; //standard cut Pi0 PbPb 20-40
+      cutarray[ 3] = "8460000002093172023290000"; mesonCutArray[ 3] = "01621045000"; //standard cut Pi0 PbPb 40-60
+      cutarray[ 4] = "8600000002093172023290000"; mesonCutArray[ 4] = "01621045000"; //standard cut Pi0 PbPb 60-100
    } else {
       cutarray[ 0] = "0000011002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
       cutarray[ 1] = "0001011002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
@@ -137,10 +144,10 @@ void AddTask_GammaConvV1_2(TString trainConfig = "pp",   Bool_t isMC	= kFALSE, U
    TList *HeaderList = new TList();
    // TObjString *Header1 = new TObjString("PARAM");
    // HeaderList->Add(Header1);
-    TObjString *Header2 = new TObjString("BOX");
+    TObjString *Header2 = new TObjString("pi0_1");
     HeaderList->Add(Header2);
-//   TObjString *Header3 = new TObjString("Pythia");
-//   HeaderList->Add(Header3);
+    TObjString *Header3 = new TObjString("eta_2");
+    HeaderList->Add(Header3);
 //   TObjString *Header4 = new TObjString("Hijing");
 //   HeaderList->Add(Header4);
 
@@ -156,10 +163,6 @@ void AddTask_GammaConvV1_2(TString trainConfig = "pp",   Bool_t isMC	= kFALSE, U
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       if (trainConfig.Contains("pPb")){
          analysisCuts[i]->SelectCollisionCandidates(triggerMaskpPb);
-         if (i<1){
-            analysisCuts[i]->DoEtaShift(kTRUE);
-            analysisCuts[i]->SetEtaShift("Pbp");
-         }
       }
       ConvCutList->Add(analysisCuts[i]);
 
