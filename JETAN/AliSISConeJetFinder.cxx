@@ -50,7 +50,7 @@
 // get info on how fastjet was configured
 #include "fastjet/config.h"
 
-#ifdef ENABLE_PLUGIN_SISCONE
+#if defined(ENABLE_PLUGIN_SISCONE) || defined(FASTJET_ENABLE_PLUGIN_SISCONE)
 #include "fastjet/SISConePlugin.hh"
 #endif
 
