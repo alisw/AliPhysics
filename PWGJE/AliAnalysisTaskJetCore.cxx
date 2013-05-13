@@ -32,7 +32,7 @@
 #include "TH3F.h"
 #include "THnSparse.h"
 #include "TCanvas.h"
-
+#include "TRandom3.h"
 #include "AliLog.h"
 
 #include "AliAnalysisTask.h"
@@ -88,6 +88,9 @@ fDoEventMixing(0),
 fFlagPhiBkg(0),
 fFlagEtaBkg(0),
 fFlagJetHadron(0),
+fTTLow(11),
+fTTUp(13),
+fHardest(0),
 fFlagRandom(0),
 fFlagOnlyRecoil(0),
 fFlagOnlyHardest(1),
@@ -154,8 +157,8 @@ fh2RPTC10(0x0),
 fh2RPTC20(0x0), 
 fHJetSpec(0x0),
 fhTTPt(0x0),
-fHJetPhiCorr(0x0)
-
+fHJetPhiCorr(0x0),
+fRandom(0x0)
  
 {
    // default Constructor
@@ -209,6 +212,9 @@ fDoEventMixing(0),
 fFlagPhiBkg(0),
 fFlagEtaBkg(0),
 fFlagJetHadron(0),
+fTTLow(11),
+fTTUp(13),
+fHardest(0),
 fFlagRandom(0),
 fFlagOnlyRecoil(0),
 fFlagOnlyHardest(1),
@@ -275,7 +281,8 @@ fh2RPTC10(0x0),
 fh2RPTC20(0x0), 
 fHJetSpec(0x0),
 fhTTPt(0x0),
-fHJetPhiCorr(0x0)
+fHJetPhiCorr(0x0),
+fRandom(0x0)
 
  {
    // Constructor
@@ -330,6 +337,12 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
 
    Bool_t oldStatus = TH1::AddDirectoryStatus();
    TH1::AddDirectory(kFALSE);
+
+
+        // set seed
+   fRandom = new TRandom3(0);
+  
+
 
 
    fHistEvtSelection = new TH1I("fHistEvtSelection", "event selection", 6, -0.5, 5.5);
@@ -681,9 +694,10 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    //for(Int_t n=0;n<aodJets[0]->GetEntriesFast();n++){
    //  ptsub[n]=0;
    //  inord[n]=0;}   
-
+   Int_t nT=0;
    TList ParticleList;
-   Int_t nT = GetListOfTracks(&ParticleList);
+   if(fHardest==1) nT = GetListOfTracks(&ParticleList);
+   if(fHardest==0) nT=SelectTrigger(&ParticleList);
      for (Int_t iJetType = 0; iJetType < 2; iJetType++) {
       fListJets[iJetType]->Clear();
       if (!aodJets[iJetType]) continue;
@@ -711,6 +725,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    Int_t trigBBTrack=-1;
    Int_t trigInTrack=-1;
    fRPAngle = aod->GetHeader()->GetEventplane();     
+
+
 
    AliVParticle *partback = (AliVParticle*)ParticleList.At(nT);     
    if(!partback){  
@@ -1143,6 +1159,65 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
       return index;
  
 }
+
+
+
+     Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list){
+     Int_t iCount = 0;
+     AliAODEvent *aod = 0;
+     if(!fESD)aod = fAODIn;
+     else aod = fAODOut;   
+     if(!aod)return 0;
+     Int_t index=-1;
+     Double_t triggers[100];
+     for(Int_t cr=0;cr<100;cr++){triggers[cr]=-1;}
+     Int_t im=0;
+     for(int it = 0;it < aod->GetNumberOfTracks();++it){
+      AliAODTrack *tr = aod->GetTrack(it);
+      Bool_t bGood = false;
+      if(fFilterType == 0)bGood = true;
+      else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
+      else if(fFilterType == 2)bGood = 
+      tr->IsHybridGlobalConstrainedGlobal();    
+      if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+      if(bGood==false) continue;
+      if(TMath::Abs(tr->Eta())>0.9)continue;
+      if(tr->Pt()<0.15)continue;
+      list->Add(tr);
+      iCount++;
+      
+      if(tr->Pt()>=fTTLow && tr->Pt()<fTTUp){
+      	triggers[im]=iCount-1;
+        im=im+1;}
+
+     }
+      Int_t rd=0;
+      if(im==0) rd=0;
+      if(im>0) rd=fRandom->Integer(im-1);
+      index=triggers[rd];
+
+     
+  
+   
+  
+      return index;
+ 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
    Int_t  AliAnalysisTaskJetCore::GetHardestTrackBackToJet(AliAODJet *jetbig){
  
