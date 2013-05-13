@@ -186,6 +186,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH2D                   *fFakeTrk0;
  TH2D                   *fFakeTrk1;
  TH2D                   *ftimingEle;
+ TH2D                   *fIncMaxE;
  TH2D                   *fIncReco;
  TH2D                   *fPhoReco;
  TH2D                   *fSamReco; 
