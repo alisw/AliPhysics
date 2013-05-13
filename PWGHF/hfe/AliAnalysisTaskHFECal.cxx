@@ -1096,43 +1096,43 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fInvmassULSmc = new THnSparseD("fInvmassULSmc", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; MCele", 9, nBinspho,minpho, maxpho);
   if(fqahist==1)fOutputList->Add(fInvmassULSmc);
 
-  fInvmassLSreco = new TH2D("fInvmassLSreco", "Inv mass of LS (e,e) reco; cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassLSreco = new TH2D("fInvmassLSreco", "Inv mass of LS (e,e) reco; cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,600,-0.1,0.5 );
   fInvmassLSreco->Sumw2();
   fOutputList->Add(fInvmassLSreco);
 
-  fInvmassULSreco = new TH2D("fInvmassULSreco", "Inv mass of ULS (e,e) reco; cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassULSreco = new TH2D("fInvmassULSreco", "Inv mass of ULS (e,e) reco; cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,600,-0.1,0.5 );
   fInvmassULSreco->Sumw2();
   fOutputList->Add(fInvmassULSreco);
 
-  fInvmassLSmc0 = new TH2D("fInvmassLSmc0", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassLSmc0 = new TH2D("fInvmassLSmc0", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,600,-0.1,0.5 );
   fInvmassLSmc0->Sumw2();
   fOutputList->Add(fInvmassLSmc0);
   
-  fInvmassLSmc1 = new TH2D("fInvmassLSmc1", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassLSmc1 = new TH2D("fInvmassLSmc1", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,600,-0.1,0.5 );
   fInvmassLSmc1->Sumw2();
   fOutputList->Add(fInvmassLSmc1);
 
-  fInvmassLSmc2 = new TH2D("fInvmassLSmc2", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassLSmc2 = new TH2D("fInvmassLSmc2", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,600,-0.1,0.5 );
   fInvmassLSmc2->Sumw2();
   fOutputList->Add(fInvmassLSmc2);
 
-  fInvmassLSmc3 = new TH2D("fInvmassLSmc3", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassLSmc3 = new TH2D("fInvmassLSmc3", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,600,-0.1,0.5 );
   fInvmassLSmc3->Sumw2();
   fOutputList->Add(fInvmassLSmc3);
 
-  fInvmassULSmc0 = new TH2D("fInvmassULSmc0", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassULSmc0 = new TH2D("fInvmassULSmc0", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,600,-0.1,0.5 );
   fInvmassULSmc0->Sumw2();
   fOutputList->Add(fInvmassULSmc0);
 
-  fInvmassULSmc1 = new TH2D("fInvmassULSmc1", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassULSmc1 = new TH2D("fInvmassULSmc1", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,600,-0.1,0.5 );
   fInvmassULSmc1->Sumw2();
   fOutputList->Add(fInvmassULSmc1);
 
-  fInvmassULSmc2 = new TH2D("fInvmassULSmc2", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassULSmc2 = new TH2D("fInvmassULSmc2", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,600,-0.1,0.5 );
   fInvmassULSmc2->Sumw2();
   fOutputList->Add(fInvmassULSmc2);
 
-  fInvmassULSmc3 = new TH2D("fInvmassULSmc3", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
+  fInvmassULSmc3 = new TH2D("fInvmassULSmc3", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,600,-0.1,0.5 );
   fInvmassULSmc3->Sumw2();
   fOutputList->Add(fInvmassULSmc3);
 
