@@ -1445,17 +1445,17 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDes
   //
   if (lrStart!=lrStop) {
     if (!TransportToLayer(&tmpTr,lrStart,lrStop)) {
-      AliDebug(-1,Form("Failed on TransportToLayer %d->%d | ESDtrack#%d (MClb:%d), X=%f",lrStart,lrStop,fCurrESDtrack->GetID(),fCurrESDtrMClb,tmpTr.GetX()));
-      if (stopCond>0) return -chi2; // rDest was obligatory
+      AliDebug(1,Form("Failed on TransportToLayer %d->%d | ESDtrack#%d (MClb:%d), X=%f",lrStart,lrStop,fCurrESDtrack->GetID(),fCurrESDtrMClb,tmpTr.GetX()));
+      return (stopCond>0) ? -chi2 : chi2; // rDest was obligatory
     }    
     if (!GoToExitFromLayer(&tmpTr,fITS->GetLayer(lrStop),dir)) {
-      AliDebug(-1,Form("Failed on GoToExitFromLayer %d | ESDtrack#%d (MClb:%d), X=%f",lrStop,fCurrESDtrack->GetID(),fCurrESDtrMClb,tmpTr.GetX()));
-      if (stopCond>0) return -chi2; // rDest was obligatory
+      AliDebug(1,Form("Failed on GoToExitFromLayer %d | ESDtrack#%d (MClb:%d), X=%f",lrStop,fCurrESDtrack->GetID(),fCurrESDtrMClb,tmpTr.GetX()));
+      return (stopCond>0) ? -chi2 : chi2; // rDest was obligatory
     }
   }
   // go to the destination radius. Note that here we don't select direction to avoid precision problems
   if (!tmpTr.GetXatLabR(rDest,rDest,GetBz(),0) || !PropagateSeed(&tmpTr,rDest,fCurrMass, 100, kFALSE)) {
-    if (stopCond>0) return -chi2; // rDest was obligatory
+    return (stopCond>0) ? -chi2 : chi2; // rDest was obligatory
   }
   *trc=tmpTr;
   if (AliDebugLevelClass()>2) {
