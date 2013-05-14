@@ -1,7 +1,7 @@
-AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isMCtruth=kFALSE, Bool_t isBadMap=kFALSE, Double_t logWeight = 0.)
+AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isMCtruth=kFALSE, Bool_t isBadMap=kFALSE, Double_t width = 0.)
 {
 // Creates a task to analysis pi0 in p-Pb collisions with PHOS
-// H. ZHu - 05/05/2013
+// Author: H. Zhu - 05/14/2013
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -23,16 +23,27 @@ AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isM
 
   const Int_t nBins = 6;
   Float_t cBin[nBins+1] = {0., 20., 40., 60., 80., 90., 100.}; TArrayF tCent(nBins+1, cBin);
-  Int_t   buffer[nBins] = { 40,  80,  80,  100,  100,  100  }; TArrayI tBuffer(nBins, buffer);
+  Int_t   buffer[nBins] = { 40,  80,  80,  100, 100, 100    }; TArrayI tBuffer(nBins, buffer);
+
+  Double_t cutsEvent[4] = {  1.,    // 0, min of VtxNCont
+                            10.,    // 1, max of VtxZ
+                             0.,    // 2, min of Centrality
+                           100.  }; // 3, max of Centrality
+
+  Double_t cutsCaloCl[5] = { 0.3,    // 0, min of cluster Energy
+                             2.,     // 1, min of NCells
+                             0.2,    // 2, min of M02
+                             2.5,    // 3, min of DistToBad
+                             7e-8 }; // 4, max of TOF
 
   AliAnalysisTaskSEPHOSpPbPi0 *task = new AliAnalysisTaskSEPHOSpPbPi0("TaskPHOSpPbPi0");
   task->SetUseMC(isMCtruth);
   task->SetXBins(tCent, tBuffer);
-  task->SetLogWeight(logWeight); // for ESD decalibration
-  task->SetMinDistToBad(2.5);
-  task->SetMinNCells(2);
-  task->SetMinClusterEnergy(0.3);
-  task->SetMinM02(0.2);
+  task->SetEventCuts(cutsEvent);
+  task->SetCaloClCuts(cutsCaloCl);
+  task->SetDecaliWidth(width);    // for decalibration
+  task->SetRemovePileup(kFALSE);  // not remove pileup events
+  task->SetUseFiducialCut(kTRUE); // use fiducial cut
   task->SetDebugLevel(-1);
 
   if (triggerTag==0) task->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -55,15 +66,14 @@ AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isM
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
-  AliAnalysisDataContainer *output1 = mgr->CreateContainer("EventInfo", TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
-  AliAnalysisDataContainer *output2 = mgr->CreateContainer("CaloClInfo", TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
-  AliAnalysisDataContainer *output3 = mgr->CreateContainer("Pi0Info", TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
+  AliAnalysisDataContainer *output1 = mgr->CreateContainer("histosQA", TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
   mgr->ConnectOutput(task, 1, output1);
+  AliAnalysisDataContainer *output2 = mgr->CreateContainer("histosRD", TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
   mgr->ConnectOutput(task, 2, output2);
-  mgr->ConnectOutput(task, 3, output3);
+
   if (isMCtruth) {
-    AliAnalysisDataContainer *output4 = mgr->CreateContainer("MCInfo", TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
-    mgr->ConnectOutput(task, 4, output4);
+    AliAnalysisDataContainer *output3 = mgr->CreateContainer("histosMC", TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
+    mgr->ConnectOutput(task, 3, output3);
   }
 
   return task;

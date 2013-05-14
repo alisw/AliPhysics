@@ -18,10 +18,12 @@ class TList;
 class TParticle;
 class TClonesArray;
 
-class AliInputEventHander;
+class AliInputEventHandler;
 class AliMCEvent;
 class AliStack;
 class AliAODMCParticle;
+class AliAODEvent;
+class AliESDEvent;
 class AliVCaloCells;
 class AliPHOSGeoUtils;
 
@@ -42,15 +44,14 @@ class AliPHOSpPbPi0Header : public TNamed {
   TString  FiredTriggerClass()     const { return fFiredTriggerClass;              }
   UInt_t   SelectionMask()         const { return fSelMask;                        }
   Int_t    VtxContrsN()            const { return fVtxContrsN;                     }
-  Bool_t   IspAVertexOK()          const { return fIspAVertexOK;                   }
+  Bool_t   IsVertexOK()            const { return fIsVertexOK;                     }
   Bool_t   IsPileupSPD()           const { return fIsPileupSPD;                    }
   Float_t  Centrality()            const { return fCentrality;                     }
-  Double_t MagneticField()         const { return fMagneticField;                  }
   Bool_t   IsSelected();
 
   void SetEventInfo(AliInputEventHandler* const handler);
 
-  void CreateHistograms(TList *listEvent, TList *listCaloCl, TList *listPi0, TList *listMC);
+  void CreateHistograms(TList *listQA, TList *listRD, TList *listMC);
   void FillHistosEvent(TList *list);
   void FillHistosCaloCellsQA(TList *list, AliVCaloCells* const cells, AliPHOSGeoUtils* const phosGeo);
   void FillHistosCaloCluster(TList *list, TClonesArray* const caloClArr, Int_t cent);
@@ -59,8 +60,11 @@ class AliPHOSpPbPi0Header : public TNamed {
   void FillHistosMC(TList *list, AliMCEvent* const mcEvent, AliPHOSGeoUtils* const phosGeo, Int_t cent);
   void FillHistosMC(TList *list, AliStack*   const stack,   AliPHOSGeoUtils* const phosGeo, Int_t cent);
 
-  static void SetIsMC(Bool_t isMC=kFALSE) { fgIsMC  = isMC;  }
-  static void SetNCent(Int_t ncent=10)    { fgNCent = ncent; }
+  static void SetIsMC(Bool_t isMC=kFALSE)         { fgIsMC                         = isMC;    }
+  static void SetIspARun(Bool_t ispARun=kFALSE)   { fgIspARun                      = ispARun; }
+  static void SetUseFiducialCut(Bool_t fc=kFALSE) { fgUseFiducialCut               = fc;      }
+  static void SetNCent(Int_t ncent=10)            { fgNCent                        = ncent;   }
+  static void SetSelectionCuts(Double_t cuts[4])  { for (Int_t i=4; i--;) fgCuts[i]=cuts[i];  }
 
  private :
 
@@ -71,30 +75,33 @@ class AliPHOSpPbPi0Header : public TNamed {
   void CreateHistosMixPi0(TList *list);
   void CreateHistosMC(TList *list);
 
-  Bool_t IspAVertexOK(AliAODEvent* const event);
-  Bool_t IspAVertexOK(AliESDEvent* const event);
+  Bool_t    CheckEventVertex(AliAODEvent* const aod, AliESDEvent* const esd);
+  Int_t     HitPHOSModule(AliAODMCParticle* const pMC, AliPHOSGeoUtils* const phosGeo);
+  Int_t     HitPHOSModule(TParticle* const pMC, AliPHOSGeoUtils* const phosGeo);
+  Double_t  PrimaryParticleWeight(Int_t pdg, Double_t pt);
 
-  Int_t  HitPHOSModule(AliAODMCParticle* const pMC, AliPHOSGeoUtils* const phosGeo);
-  Int_t  HitPHOSModule(TParticle* const pMC, AliPHOSGeoUtils* const phosGeo);
-  Double_t PrimaryParticleWeight(Int_t pdg, Double_t pt);
+  static Bool_t   fgIsMC;           // flag to use MC
+  static Bool_t   fgIspARun;        // flag to use pA vertex cut
+  static Bool_t   fgUseFiducialCut; // flag to use fiducial cut
+  static Int_t    fgNCent;          // # of centrality bins
+  static Double_t fgCuts[4];        // 0, low limit of num. of vtx contributors
+                                    // 1, up limit of vz
+                                    // 2, centrality max
+                                    // 3, centrality min
 
-  static Bool_t fgIsMC;            // flag to use MC
-  static Int_t  fgNCent;           // # of centrality bins
-
-  enum { kAll,      kCpv,       kDisp,       kFiducial,      kBoth,      kBothPlusFiducial, kPIDs                               };   // PID
-  enum { kPtClu,    kEtaClu,    kPhiClu,     kM02Clu,        kM20Clu,    kTOFClu,           kNCellsClu, kNClustersClu, kVarsClu };   // clusters
-  enum { kPtPi0,    kEtaPi0,    kPhiPi0,     kAsyPi0,        kAnglePi0,  kInvMassPi0,       kVarsPi0                            };   // pi0
-  enum { kPtMixPi0, kEtaMixPi0, kPhiMixPi0,  kInvMassMixPi0, kVarsMixPi0                                                        };   // Mixed pi0
-  enum { kVertexMC, kPtMC,      kRapidityMC, kPhiMC,         kWeightMC,  kVarsMC                                                };   // MC
+  enum { kAll,      kCpv,       kDisp,       kBoth,          kCpv2,      kDisp2,      kBoth2,     kPIDs                   };   // PID
+  enum { kPtClu,    kEtaClu,    kPhiClu,     kM02Clu,        kM20Clu,    kTOFClu,     kNCellsClu, kNClustersClu, kVarsClu };   // clusters
+  enum { kPtPi0,    kEtaPi0,    kPhiPi0,     kAsyPi0,        kAnglePi0,  kInvMassPi0, kVarsPi0                            };   // pi0
+  enum { kPtMixPi0, kEtaMixPi0, kPhiMixPi0,  kInvMassMixPi0, kVarsMixPi0                                                  };   // Mixed pi0
+  enum { kVertexMC, kPtMC,      kRapidityMC, kPhiMC,         kWeightMC,  kVarsMC                                          };   // MC
 
   Double_t fVtx[3];                       // position of vtx
   TString  fFiredTriggerClass;            // trigger class
   UInt_t   fSelMask;                      // mask of physics selection
   Int_t    fVtxContrsN;                   // num. of contributors of vtx rec
-  Bool_t   fIspAVertexOK;                 // is pA collision vertex OK
+  Bool_t   fIsVertexOK;                   // is vertex OK
   Bool_t   fIsPileupSPD;                  // is Pileup from SPD
   Float_t  fCentrality;                   // event certrality
-  Double_t fMagneticField;                // magnetic field
 
   ClassDef(AliPHOSpPbPi0Header, 1)
 };

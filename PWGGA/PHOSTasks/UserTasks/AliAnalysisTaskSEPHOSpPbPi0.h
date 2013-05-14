@@ -18,8 +18,10 @@ class TList;
 class TString;
 class TArray;
 class TClonesArray;
+class AliAODEvent;
 class AliESDEvent;
 class AliPHOSGeoUtils;
+class AliPHOSCalibData;
 class AliPHOSpPbPi0Header;
 
 class AliAnalysisTaskSEPHOSpPbPi0 : public AliAnalysisTaskSE {
@@ -42,12 +44,12 @@ class AliAnalysisTaskSEPHOSpPbPi0 : public AliAnalysisTaskSE {
 
   void SetUseMC(Bool_t isMC=kFALSE)                           { fIsMC          = isMC;                         }
   void SetXBins(const TArrayF& tCent, const TArrayI& tBuffer) { fCentralityBin = tCent; fBufferSize = tBuffer; }
-  void SetLogWeight(Float_t logWeight)                  const { AliCaloClusterInfo::SetLogWeight(logWeight);   }
+  void SetEventCuts(Double_t cuts[4])                   const { AliPHOSpPbPi0Header::SetSelectionCuts(cuts);   }
 
-  static void SetMinNCells(Int_t ncells=2)                    { fgMinNCells                         = ncells;  }
-  static void SetMinClusterEnergy(Double_t energy=0.3)        { fgMinClusterEnergy                  = energy;  }
-  static void SetMinM02(Double_t m02=0.2)                     { fgMinM02                            = m02;     }
-  static void SetMinDistToBad(Double_t dist=2.5)              { fgMinDistToBad                      = dist;    }
+  static void SetRemovePileup(Bool_t rm=kFALSE)               { fgRemovePileup                   = rm;         }
+  static void SetUseFiducialCut(Bool_t fc=kFALSE)             { fgUseFiducialCut                 = fc;         }
+  static void SetDecaliWidth(Double_t width)                  { fgDecaliWidth                    = width;      }
+  static void SetCaloClCuts(Double_t cuts[5])                 { for (Int_t i=5; i--; ) fgCuts[i] = cuts[i];    }          
 
  private:
 
@@ -55,14 +57,20 @@ class AliAnalysisTaskSEPHOSpPbPi0 : public AliAnalysisTaskSE {
   AliAnalysisTaskSEPHOSpPbPi0& operator=(const AliAnalysisTaskSEPHOSpPbPi0&); // not implemented
 
   void PHOSInitialize(AliESDEvent* const esd);
-  void FillCaloClusterInfo(AliESDEvent* const esd);
+  void FillCaloClusterInfo(AliAODEvent* const aod, AliESDEvent* const esd);
 
   Bool_t IsGoodCaloCluster(Int_t iMod, Int_t cellX, Int_t cellZ);
 
-  static Int_t    fgMinNCells;
-  static Double_t fgMinClusterEnergy;
-  static Double_t fgMinM02;
-  static Double_t fgMinDistToBad;
+  static const Float_t kLogWeight = 4.5;
+
+  static Bool_t        fgRemovePileup;      // flag of remove pileup events
+  static Bool_t        fgUseFiducialCut;    // flag of use fiducial cut
+  static Double_t      fgDecaliWidth;       // decalibration width
+  static Double_t      fgCuts[5];           // 0, min of cluster Energy
+                                            // 1, min of NCells
+                                            // 2, min of M02
+                                            // 3, min of distance to bad channels
+                                            // 4, max of the cluster TOF 
 
   Bool_t               fIsMC;               // flag of whether the input is MC
   TArrayF              fCentralityBin;      // Centrality bin
@@ -71,13 +79,13 @@ class AliAnalysisTaskSEPHOSpPbPi0 : public AliAnalysisTaskSE {
   Int_t                fRunNumber;          // Run Number
   TH2I                *fPHOSBadMap[5];      // Container of PHOS bad channels map
   AliPHOSGeoUtils     *fPHOSGeo;            // PHOS geometry
+  AliPHOSCalibData    *fPHOSCalibData;      // PHOS calibration
 
   TList               *fEventList[10][10];  // Event list for mixing
-  TList               *fListEvent;          // output list of Event
-  TList               *fListCaloCl;         // output list of Calo Cluster histograms
-  TList               *fListPi0;            // output list of Pi0 histograms
+  TList               *fListQA;             // output list of QA histograms
+  TList               *fListRD;             // output list of Real Data histograms
   TList               *fListMC;             // output list of MC histograms
-  AliPHOSpPbPi0Header *fHeader;             // output for info at event level
+  AliPHOSpPbPi0Header *fHeader;             // info at event level
   TClonesArray        *fCaloClArr;          // Container of Calo clusters Info
    
   ClassDef(AliAnalysisTaskSEPHOSpPbPi0, 1);
