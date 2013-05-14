@@ -44,6 +44,8 @@
 #include "AliTRDfeeParam.h"
 #include "AliTRDmcmSim.h"
 #include "AliTRDtrackletWord.h"
+#include "AliTRDtrackGTU.h"
+#include "AliESDTrdTrack.h"
 #include "AliTRDdigitsParam.h"
 
 ClassImp(AliTRDrawData)
@@ -58,8 +60,8 @@ AliTRDrawData::AliTRDrawData()
   ,fFee(NULL)
   ,fNumberOfDDLs(0)
   ,fTrackletTree(NULL)
-  ,fTracklets(NULL)
-  ,fTracks(NULL)
+  ,fTracklets(new TClonesArray("AliTRDtrackletWord", 1000))
+  ,fTracks(new TClonesArray("AliESDTrdTrack", 500))
   ,fSMindexPos(0)
   ,fStackindexPos(0)
   ,fEventCounter(0)
@@ -84,8 +86,8 @@ AliTRDrawData::AliTRDrawData(const AliTRDrawData &r)
   ,fFee(NULL)
   ,fNumberOfDDLs(0)
   ,fTrackletTree(NULL)
-  ,fTracklets(NULL)
-  ,fTracks(NULL)
+  ,fTracklets(new TClonesArray("AliTRDtrackletWord", 1000))
+  ,fTracks(new TClonesArray("AliESDTrdTrack", 500))
   ,fSMindexPos(0)
   ,fStackindexPos(0)
   ,fEventCounter(0)
@@ -109,6 +111,8 @@ AliTRDrawData::~AliTRDrawData()
   // Destructor
   //
 
+  delete fTracklets;
+  delete fTracks;
   delete fMcmSim;
 
 }
@@ -544,27 +548,70 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 
   AliTRDrawStream input(rawReader);
 
+  AliRunLoader *runLoader = AliRunLoader::Instance();
+
   // ----- preparing tracklet output -----
-  AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets");
+  AliDataLoader *trklLoader = runLoader->GetLoader("TRDLoader")->GetDataLoader("tracklets");
   if (!trklLoader) {
     trklLoader = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
-    AliRunLoader::Instance()->GetLoader("TRDLoader")->AddDataLoader(trklLoader);
+    runLoader->GetLoader("TRDLoader")->AddDataLoader(trklLoader);
   }
   if (!trklLoader) {
+    AliError("Could not get the tracklet data loader!");
     return 0x0;
   }
+  // trklLoader->SetEvent();
+  trklLoader->Load("update");
   AliTreeLoader *trklTreeLoader = dynamic_cast<AliTreeLoader*> (trklLoader->GetBaseLoader("tracklets-raw"));
   if (!trklTreeLoader) {
     trklTreeLoader = new AliTreeLoader("tracklets-raw", trklLoader);
     trklLoader->AddBaseLoader(trklTreeLoader);
   }
-  if (!trklTreeLoader) {
+
+  TClonesArray *fTrackletArray = new TClonesArray("AliTRDtrackletWord", 256);
+  Int_t lastHC = -1;
+  if (trklLoader->Tree())
+    trklLoader->MakeTree();
+  TTree *trackletTree = trklTreeLoader->Tree();
+  if (!trackletTree) {
+    trklTreeLoader->MakeTree();
+    trackletTree = trklTreeLoader->Tree();
+  }
+  if (!trackletTree->GetBranch("hc"))
+    trackletTree->Branch("hc", &lastHC, "hc/I");
+  else
+    trackletTree->SetBranchAddress("hc", &lastHC);
+
+  if (!trackletTree->GetBranch("trkl"))
+    trackletTree->Branch("trkl", &fTrackletArray);
+  else
+    trackletTree->SetBranchAddress("trkl", &fTrackletArray);
+
+  // ----- preparing track output -----
+  AliDataLoader *trkLoader = 0x0;
+  trkLoader = runLoader->GetLoader("TRDLoader")->GetDataLoader("gtutracks");
+  if (!trkLoader) {
+    trkLoader = new AliDataLoader("TRD.GtuTracks.root","gtutracks", "gtutracks");
+    runLoader->GetLoader("TRDLoader")->AddDataLoader(trkLoader);
+  }
+  if (!trkLoader) {
+    AliError("Could not get the GTU-track data loader!");
     return 0x0;
   }
+  trkLoader->Load("UPDATE");
 
-  if (!trklTreeLoader->Tree())
-    trklTreeLoader->MakeTree();
+  TTree *trackTree = trkLoader->Tree();
+  if (!trackTree) {
+    trkLoader->MakeTree();
+    trackTree = trkLoader->Tree();
+  }
 
+  AliTRDtrackGTU trk;
+  if (!trackTree->GetBranch("TRDtrackGTU"))
+    trackTree->Branch("TRDtrackGTU", "AliTRDtrackGTU", &trk, 32000);
+
+  // ----- read the raw data -----
+  // write the tracklets to arrays while reading raw data
   input.SetTrackletArray(fTracklets);
   input.SetTrackArray(fTracks);
 
@@ -594,8 +641,41 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
     fTrgFlags[iSector] = input.GetTriggerFlags(iSector);
   }
 
+  // ----- tracklet output -----
+  fTrackletArray->Clear();
+  Int_t nTracklets = fTracklets ? fTracklets->GetEntries() : 0;
+  AliDebug(1, Form("Writing %i tracklets to loader", nTracklets));
+  for (Int_t iTracklet = 0; iTracklet < nTracklets; ++iTracklet) {
+    AliTRDtrackletWord *trkl = (AliTRDtrackletWord*) fTracklets->At(iTracklet);
+    if (trkl->GetHCId() != lastHC) {
+      if (fTrackletArray->GetEntriesFast() > 0) {
+  	trackletTree->Fill();
+  	fTrackletArray->Clear();
+      }
+      lastHC = trkl->GetHCId();
+    }
+    new ((*fTrackletArray)[fTrackletArray->GetEntriesFast()]) AliTRDtrackletWord(*trkl);
+  }
+  if (fTrackletArray->GetEntriesFast() > 0) {
+      trackletTree->Fill();
+      fTrackletArray->Clear();
+  }
   trklTreeLoader->WriteData("OVERWRITE");
+  trklLoader->WriteData("OVERWRITE");
   trklLoader->UnloadAll();
+  trklLoader->CloseFile();
+
+  // ----- track output -----
+  Int_t nTracks = fTracks ? fTracks->GetEntriesFast() : 0;
+  AliDebug(1, Form("Writing %i tracks to loader", nTracks));
+  for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
+    AliESDTrdTrack *trkEsd = (AliESDTrdTrack*) fTracks->At(iTrack);
+    trk = *trkEsd;
+    trackTree->Fill();
+  }
+  trkLoader->WriteData("OVERWRITE");
+  trkLoader->UnloadAll();
+  trkLoader->CloseFile();
 
   return digitsManager;
 }
