@@ -48,8 +48,11 @@ class TNamed;
 
 ClassImp(AliPHOSpPbPi0Header)
 
-Bool_t AliPHOSpPbPi0Header::fgIsMC  = kFALSE;
-Int_t  AliPHOSpPbPi0Header::fgNCent = 10;
+Bool_t   AliPHOSpPbPi0Header::fgIsMC           = kFALSE;
+Bool_t   AliPHOSpPbPi0Header::fgIspARun        = kFALSE;
+Bool_t   AliPHOSpPbPi0Header::fgUseFiducialCut = kFALSE;
+Int_t    AliPHOSpPbPi0Header::fgNCent          = 10;
+Double_t AliPHOSpPbPi0Header::fgCuts[4]        = { 1., 10., 0., 100. };
 
 //_____________________________________________________________________________
 AliPHOSpPbPi0Header::AliPHOSpPbPi0Header() :
@@ -57,10 +60,9 @@ TNamed(),
 fFiredTriggerClass(),
 fSelMask(0),
 fVtxContrsN(0),
-fIspAVertexOK(kFALSE),
+fIsVertexOK(kFALSE),
 fIsPileupSPD(kFALSE),
-fCentrality(0.),
-fMagneticField(0.)
+fCentrality(0.)
 {
   //
   // default constructor
@@ -74,10 +76,9 @@ TNamed(),
 fFiredTriggerClass(src.fFiredTriggerClass),
 fSelMask(src.fSelMask),
 fVtxContrsN(src.fVtxContrsN),
-fIspAVertexOK(src.fIspAVertexOK),
+fIsVertexOK(src.fIsVertexOK),
 fIsPileupSPD(src.fIsPileupSPD),
-fCentrality(src.fCentrality),
-fMagneticField(src.fMagneticField)
+fCentrality(src.fCentrality)
 {
   //
   // copy constructor
@@ -97,10 +98,9 @@ AliPHOSpPbPi0Header& AliPHOSpPbPi0Header::operator=(const AliPHOSpPbPi0Header &s
   fFiredTriggerClass            = src.fFiredTriggerClass;
   fSelMask                      = src.fSelMask;
   fVtxContrsN                   = src.fVtxContrsN;
-  fIspAVertexOK                 = src.fIspAVertexOK;
+  fIsVertexOK                   = src.fIsVertexOK;
   fIsPileupSPD                  = src.fIsPileupSPD;
   fCentrality                   = src.fCentrality;
-  fMagneticField                = src.fMagneticField;
   for (Int_t i=3; i--;) fVtx[i] = src.fVtx[i];
 
   return *this;
@@ -120,19 +120,16 @@ void AliPHOSpPbPi0Header::SetEventInfo(AliInputEventHandler* const handler)
   // fill info at event level
 
   AliVEvent *event = handler->GetEvent();
-  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event);
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+  AliAODEvent *aod = 0x0;   aod = dynamic_cast<AliAODEvent*>(event);
+  AliESDEvent *esd = 0x0;   esd = dynamic_cast<AliESDEvent*>(event);
 
-  if (aod) { fFiredTriggerClass = aod->GetFiredTriggerClasses(); fIspAVertexOK = IspAVertexOK(aod); }
-  if (esd) { fFiredTriggerClass = esd->GetFiredTriggerClasses(); fIspAVertexOK = IspAVertexOK(esd); }
-  fSelMask = handler->IsEventSelected();
-  
-  fIsPileupSPD = (aod && !aod->GetTracklets()) ? event->IsPileupFromSPD(3,0.8,3.,2.,5.) : event->IsPileupFromSPDInMultBins(); //TODO not sure!!!
+  fIsVertexOK   = CheckEventVertex(aod, esd);
+  fSelMask      = handler->IsEventSelected();
+  fIsPileupSPD  = (aod && !aod->GetTracklets()) ? event->IsPileupFromSPD(3,0.8,3.,2.,5.) :
+                                                  event->IsPileupFromSPDInMultBins(); //TODO not sure!!!
 
   AliCentrality *cent = event->GetCentrality();
   if (cent) fCentrality = cent->GetCentralityPercentile("V0M");
-
-  fMagneticField = event->GetMagneticField();
 
 //this->SetTitle(vertex->GetTitle());
   return;
@@ -142,23 +139,38 @@ void AliPHOSpPbPi0Header::SetEventInfo(AliInputEventHandler* const handler)
 Bool_t AliPHOSpPbPi0Header::IsSelected()
 {
   // select event according to the event selection cuts
-  if (!fIspAVertexOK)                      return kFALSE;
-  if (!(TMath::Abs(fVtx[2])<10.))          return kFALSE;
-  if (fCentrality<0. || fCentrality>100.)  return kFALSE;
+  if (fVtxContrsN<(Int_t)fgCuts[0])                    return kFALSE; // num. of vtx contributors cut
+  if (TMath::Abs(fVtx[2])>fgCuts[1])                   return kFALSE; // Vtxz cut
+  if (fCentrality<fgCuts[2] || fCentrality>fgCuts[3])  return kFALSE; // centrality selection
+  if (fgIspARun && !fIsVertexOK)                       return kFALSE; // pA vertex cut
 
   return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t AliPHOSpPbPi0Header::IspAVertexOK(AliAODEvent* const event)
+Bool_t AliPHOSpPbPi0Header::CheckEventVertex(AliAODEvent* const aod, AliESDEvent* const esd)
 {
-  // check p-A collection vertex
-  const AliAODVertex* trkVtx = event->GetPrimaryVertex();   trkVtx->GetXYZ(fVtx);   fVtxContrsN  = trkVtx->GetNContributors();
+  // check event vertex
+
+  Bool_t   isAOD = kFALSE;
+  if (aod) isAOD = kTRUE;
+  if (esd) isAOD = kFALSE;
+
+  // set event basic info
+  fFiredTriggerClass       = isAOD ? aod->GetFiredTriggerClasses() : esd->GetFiredTriggerClasses();
+  const AliVVertex* trkVtx = isAOD ? dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertex()) :
+                                     dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertex()) ;
+  trkVtx->GetXYZ(fVtx);   fVtxContrsN  = trkVtx->GetNContributors();
+
   if (!trkVtx || fVtxContrsN<1)                                                           return kFALSE;
+  if (!fgIspARun)                                                                         return kTRUE;  // Following cuts are for pA vertex
   if (!((TString)trkVtx->GetTitle()).Contains("VertexerTracks"))                          return kFALSE;
-  const AliAODVertex* spdVtx = event->GetPrimaryVertexSPD();
+
+  const AliVVertex* spdVtx = isAOD ? dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertexSPD()) :
+                                     dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexSPD()) ;
+  Double_t cov[6]={0.};  spdVtx->GetCovarianceMatrix(cov);
+
   if (spdVtx->GetNContributors()<1)                                                       return kFALSE;
-  Double_t cov[6]={0}; spdVtx->GetCovarianceMatrix(cov);
   if (((TString)spdVtx->GetTitle()).Contains("vertexer:Z") && (TMath::Sqrt(cov[5])>0.25)) return kFALSE; // Double_t zRes = TMath::Sqrt(cov[5]);
   if (TMath::Abs(spdVtx->GetZ() - fVtx[2])>0.5)                                           return kFALSE;
 
@@ -166,31 +178,15 @@ Bool_t AliPHOSpPbPi0Header::IspAVertexOK(AliAODEvent* const event)
 }
 
 //_____________________________________________________________________________
-Bool_t AliPHOSpPbPi0Header::IspAVertexOK(AliESDEvent* const event)
-{
-  // check p-A collection vertex
-  const AliESDVertex* trkVtx = event->GetPrimaryVertex();   trkVtx->GetXYZ(fVtx);   fVtxContrsN  = trkVtx->GetNContributors();
-  if (!trkVtx || fVtxContrsN<1)                                                           return kFALSE;
-  if (!((TString)trkVtx->GetTitle()).Contains("VertexerTracks"))                          return kFALSE;
-  const AliESDVertex* spdVtx = event->GetPrimaryVertexSPD();
-  if (spdVtx->GetNContributors()<1)                                                       return kFALSE;
-  Double_t cov[6]={0}; spdVtx->GetCovarianceMatrix(cov);
-  if (((TString)spdVtx->GetTitle()).Contains("vertexer:Z") && (TMath::Sqrt(cov[5])>0.25)) return kFALSE; // Double_t zRes = TMath::Sqrt(cov[5]);
-  if (TMath::Abs(spdVtx->GetZ() - fVtx[2])>0.5)                                           return kFALSE;
-
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
-void AliPHOSpPbPi0Header::CreateHistograms(TList *listEvent, TList *listCaloCl, TList *listPi0, TList *listMC)
+void AliPHOSpPbPi0Header::CreateHistograms(TList *listQA, TList *listRD, TList *listMC)
 {
   // create output histos of pi0 analysis according to the MC flag
 
-  this->CreateHistosEvent(listEvent);
-  this->CreateHistosCaloCellsQA(listCaloCl);
-  this->CreateHistosCaloCluster(listCaloCl);
-  this->CreateHistosPi0(listPi0);
-  this->CreateHistosMixPi0(listPi0);
+  this->CreateHistosEvent(listQA);
+  this->CreateHistosCaloCellsQA(listQA);
+  this->CreateHistosCaloCluster(listQA);
+  this->CreateHistosPi0(listRD);
+  this->CreateHistosMixPi0(listRD);
   if (fgIsMC) this->CreateHistosMC(listMC);
 
   return;
@@ -208,8 +204,8 @@ void AliPHOSpPbPi0Header::CreateHistosEvent(TList *list)
 
   const Int_t nhs    = 4;
   TString tName[nhs] = { "VtxNcontr", "Centrality", "Vz", "Pileup" };
-  Int_t   nbins[nhs] = {       202  ,         200 , 500 ,     500  };
-  Double_t xlow[nhs] = {        -2.5,        -100., -25.,     -25. };
+  Int_t   nbins[nhs] = {       202  ,         110 , 500 ,     500  };
+  Double_t xlow[nhs] = {        -2.5,         -10., -25.,     -25. };
   Double_t  xup[nhs] = {       199.5,         100.,  25.,      25. };
 
   TString hName;
@@ -291,8 +287,8 @@ void AliPHOSpPbPi0Header::CreateHistosCaloCluster(TList *list)
 
   const Int_t nMods = 3;
   const Int_t nTRUs = 8;
-                         // {  kAll,  kCpv,  kDisp,  kFiducial,  kBoth, kBothPlusFiducial, kPIDs                       };   // PID
-  TString namePID[kPIDs] =  { "All", "Cpv", "Disp", "Fiducial", "Both", "BothPlusFiducial"                             };
+                         // { kAll,  kCpv,  kDisp,  kBoth,  kCpv2,  kDisp2,  kBoth2,     kPIDs };   // PID
+  TString namePID[kPIDs] =  { "All", "Cpv", "Disp", "Both", "Cpv2", "Disp2", "Both2"           };
                          // { kPtClu, kEtaClu, kPhiClu, kM02Clu, kM20Clu, kTOFClu, kNCellsClu, kNClustersClu, kVarsClu };   // clusters
   TString tName[kVarsClu] = {   "Pt",   "Eta",   "Phi",   "M02",   "M20",   "TOF",   "NCells",   "NClusters"           };
   Int_t    bins[kVarsClu] = {   500 ,  300   ,   120  ,    200 ,    200 ,    400 ,      1000 ,          20             };
@@ -381,8 +377,8 @@ void AliPHOSpPbPi0Header::CreateHistosPi0(TList *list)
 
   const Int_t nComb = 2;
   TString srcMod[nComb]  =  { "Mod11", "Mod33" }; 
-                         // {   kAll,  kCpv,  kDisp,  kFiducial,  kBoth, kBothPlusFiducial, kPIDs   };  // PID
-  TString namePID[kPIDs]  = {  "All", "Cpv", "Disp", "Fiducial", "Both", "BothPlusFiducial"         };
+                         // { kAll,  kCpv,  kDisp,  kBoth,  kCpv2,  kDisp2,  kBoth2,     kPIDs      };  // PID
+  TString namePID[kPIDs] =  { "All", "Cpv", "Disp", "Both", "Cpv2", "Disp2", "Both2"                };
                          // { kPtPi0, kEtaPi0, kPhiPi0, kAsyPi0,   kAnglePi0, kInvMassPi0, kVarsPi0 };  // pi0
   TString tName[kVarsPi0] = {   "Pt",   "Eta",   "Phi",   "Asy",     "Angle",   "InvMass"           };
   Int_t    bins[kVarsPi0] = {   500 ,  300   ,   120  ,    100 ,        180 ,       1000            };
@@ -441,9 +437,9 @@ void AliPHOSpPbPi0Header::CreateHistosMixPi0(TList *list)
 
   Bool_t oldStatus = TH2::AddDirectoryStatus(); TH2::AddDirectory(kFALSE);
   const Int_t nComb = 2;
-  TString  srcMod[nComb]     = { "Mod11", "Mod33" };
-                            // {  kAll,  kCpv,  kDisp,  kFiducial,  kBoth, kBothPlusFiducial, kPIDs  };  // PID
-  TString  namePID[kPIDs]    = { "All", "Cpv", "Disp", "Fiducial", "Both", "BothPlusFiducial"        };
+  TString  srcMod[nComb] =  { "Mod11", "Mod33" };
+                         // { kAll,  kCpv,  kDisp,  kBoth,  kCpv2,  kDisp2,  kBoth2,     kPIDs       };  // PID
+  TString namePID[kPIDs] =  { "All", "Cpv", "Disp", "Both", "Cpv2", "Disp2", "Both2"                 };
                              //{ kPtMixPi0, kEtaMixPi0, kPhiMixPi0, kInvMassMixPi0, kVarsMixPi0      };  // Mix Pi0
   TString tName[kVarsMixPi0] = {      "Pt",      "Eta",      "Phi",      "InvMass"                   };
   Int_t    bins[kVarsMixPi0] = {      500 ,     300   ,      120  ,          1000                    };
@@ -492,7 +488,8 @@ void AliPHOSpPbPi0Header::CreateHistosMC(TList *list)
   if (!list) list = new TList();
   list->SetOwner();
 
-  Bool_t oldStatus = TH2::AddDirectoryStatus(); TH2::AddDirectory(kFALSE);
+  Bool_t oldStatus1 = TH2::AddDirectoryStatus(); TH1::AddDirectory(kFALSE);
+  Bool_t oldStatus2 = TH2::AddDirectoryStatus(); TH2::AddDirectory(kFALSE);
   const Int_t method = 2;
   const char *mName[method] = {"IsPrimary", "RCut"};
   const Int_t cut    = 3;
@@ -505,38 +502,40 @@ void AliPHOSpPbPi0Header::CreateHistosMC(TList *list)
   Double_t xMin[kVarsMC] = {        0.,    0.,         -1.,              0.,       0.           };
   Double_t xMax[kVarsMC] = {      500.,   50.,          1.,  TMath::TwoPi(),      10.           };
 
-  TH2D   *histo = 0;
+  TH1D   *histo1 = 0;
+  TH2D   *histo2 = 0;
   TString hName;
 
   for (Int_t iType=0; iType<type; iType++) {
     hName  = Form("hMC%s_%s%s", pName[iType], tName[kPtMC].Data(), tName[kVertexMC].Data());
-    histo = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kVertexMC], xMin[kVertexMC], xMax[kVertexMC]);
-    histo->Sumw2(); list->Add(histo); histo = 0;
+    histo2 = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kVertexMC], xMin[kVertexMC], xMax[kVertexMC]);
+    histo2->Sumw2(); list->Add(histo2); histo2 = 0;
     hName  = Form("hMC%s_%s%s", pName[iType], tName[kPtMC].Data(), tName[kRapidityMC].Data());
-    histo = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kRapidityMC], xMin[kRapidityMC], xMax[kRapidityMC]);
-    histo->Sumw2(); list->Add(histo); histo = 0;
+    histo2 = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kRapidityMC], xMin[kRapidityMC], xMax[kRapidityMC]);
+    histo2->Sumw2(); list->Add(histo2); histo2 = 0;
     hName  = Form("hMC%s_%s%s_%s", pName[iType], tName[kPtMC].Data(), tName[kVertexMC].Data(), mName[0]);
-    histo = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kVertexMC], xMin[kVertexMC], xMax[kVertexMC]);
-    histo->Sumw2(); list->Add(histo); histo = 0;
+    histo2 = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kVertexMC], xMin[kVertexMC], xMax[kVertexMC]);
+    histo2->Sumw2(); list->Add(histo2); histo2 = 0;
     for (Int_t iMethod=0; iMethod<method; iMethod++) {
       for (Int_t iCent=0; iCent<fgNCent; iCent++) {
         for (Int_t i=0; i<kVarsMC-2; i++) {
-          hName  = Form("hMC%s_%s%s_cent%d_%s", pName[iType], tName[i+1].Data(), tName[kWeightMC].Data(), iCent, mName[iMethod]);
-          histo = new TH2D(hName.Data(), hName.Data(), bins[i+1], xMin[i+1], xMax[i+1], bins[kWeightMC], xMin[kWeightMC], xMax[kWeightMC]);
-          histo->Sumw2(); list->Add(histo); histo = 0;
+          hName  = Form("hMC%s_%s_cent%d_%s", pName[iType], tName[i+1].Data(), iCent, mName[iMethod]);
+          histo1 = new TH1D(hName.Data(), hName.Data(), bins[i+1], xMin[i+1], xMax[i+1] );
+          histo1->Sumw2(); list->Add(histo1); histo1 = 0;
 
         }
         for (Int_t iCut=0; iCut<cut; iCut++) {
-          hName  = Form("hMC%s_%s%s_cent%d_%s_%s", pName[iType], tName[kPtMC].Data(), tName[kWeightMC].Data(), iCent, cName[iCut], mName[iMethod]);
-          histo = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kWeightMC], xMin[kWeightMC], xMax[kWeightMC]);
-          histo->Sumw2(); list->Add(histo); histo = 0;
+          hName  = Form("hMC%s_%s_cent%d_%s_%s", pName[iType], tName[kPtMC].Data(), iCent, cName[iCut], mName[iMethod]);
+          histo1 = new TH1D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC]);
+          histo1->Sumw2(); list->Add(histo1); histo1 = 0;
         }
       }
     }
   }
 
 
-  TH2::AddDirectory(oldStatus);
+  TH1::AddDirectory(oldStatus1);
+  TH2::AddDirectory(oldStatus2);
   return;
 }
 
@@ -574,13 +573,13 @@ void AliPHOSpPbPi0Header::FillHistosCaloCellsQA(TList *list, AliVCaloCells* cons
 
   ((TH2D*)list->FindObject(Form("hCaloCellsQA_%s", tName[0].Data())))->Fill(fCentrality, cells->GetNumberOfCells());
   for (Int_t iCell=0; iCell<cells->GetNumberOfCells(); iCell++) {
-    Int_t relId[4] = {0,0,0,0};
-    phosGeo->AbsToRelNumbering(cells->GetCellNumber(iCell),relId); // Int_t mod   = relId[0]; Int_t cellX = relId[2]; Int_t cellZ = relId[3];
+    Int_t relID[4] = {0,0,0,0};
+    phosGeo->AbsToRelNumbering(cells->GetCellNumber(iCell),relID); // Int_t mod   = relID[0]; Int_t cellX = relID[2]; Int_t cellZ = relID[3];
     Double_t wight[2] = { 1., cells->GetAmplitude(iCell)};
     ((TH1D*)list->FindObject(Form("hCaloCellsQA_%s", "E")))->Fill(wight[1]);
-    ((TH1D*)list->FindObject(Form("hCaloCellsQA_%s_Mod%d", "E", relId[0])))->Fill(wight[1]);
+    ((TH1D*)list->FindObject(Form("hCaloCellsQA_%s_Mod%d", "E", relID[0])))->Fill(wight[1]);
     for (Int_t i=1; i<nhs; i++)
-      ((TH2D*)list->FindObject(Form("hCaloCellsQA_%s_Mod%d", tName[i].Data(), relId[0])))->Fill(relId[2], relId[3], wight[i-1]);
+      ((TH2D*)list->FindObject(Form("hCaloCellsQA_%s_Mod%d", tName[i].Data(), relID[0])))->Fill(relID[2], relID[3], wight[i-1]);
   }
 
   return;
@@ -592,9 +591,9 @@ void AliPHOSpPbPi0Header::FillHistosCaloCluster(TList *list, TClonesArray* const
   // fill histograms for calocluster according to evnet && calocluster candidates selection cuts
 
   if (!list)  return;
-                         // {       kAll,   kCpv,  kDisp,  kFiducial,           kBoth,   kBothPlusFiducial,   kPIDs    };   // PID
-  TString namePID[kPIDs]  = {      "All",  "Cpv", "Disp", "Fiducial",          "Both",   "BothPlusFiducial"            };
-  UInt_t  PIDBIT[kPIDs]   = { 0x00000000, BIT(0), BIT(1),     BIT(2), (BIT(0)|BIT(1)), (BIT(0)|BIT(1)|BIT(2))          };
+                         // { kAll,  kCpv,  kDisp,  kBoth,  kCpv2,  kDisp2,  kBoth2,     kPIDs       };  // PID
+  TString namePID[kPIDs] =  { "All", "Cpv", "Disp", "Both", "Cpv2", "Disp2", "Both2"                 };
+  UInt_t  PIDBIT[kPIDs]   = { 0x0,  BIT(0), BIT(1), BIT(0)|BIT(1), BIT(2), BIT(3), BIT(2)|BIT(3)     };
                          // { kPtClu, kEtaClu, kPhiClu, kM02Clu, kM20Clu, kTOFClu, kNCellsClu, kNClustersClu, kVarsClu };   // clusters
   TString tName[kVarsClu] = {   "Pt",   "Eta",   "Phi",   "M02",   "M20",   "TOF",   "NCells",   "NClusters"           };
 
@@ -654,11 +653,11 @@ void AliPHOSpPbPi0Header::FillHistosPi0(TList *list, TClonesArray* const caloClA
   // fill histograms for pi0 according to evnet && pi0 candidates selection cuts
 
   if (!list) return;
-                         // {       kAll,   kCpv,  kDisp,  kFiducial,         kBoth, kBothPlusFiducial,      kPIDs     };   // PID
-  TString namePID[kPIDs] =  {      "All",  "Cpv", "Disp", "Fiducial",        "Both", "BothPlusFiducial"                };
-  UInt_t  PIDBIT[kPIDs]  =  { 0x00000000, BIT(0), BIT(1),     BIT(2), BIT(0)|BIT(1), BIT(0)|BIT(1)|BIT(2)              };
-                         // { kPtPi0, kEtaPi0, kPhiPi0, kAsyPi0, kAnglePi0, kInvMassPi0, kVarsPi0                      };   // pi0
-  TString tName[kVarsPi0] = {   "Pt",   "Eta",   "Phi",   "Asy",   "Angle",   "InvMass"                                };
+                         // { kAll,  kCpv,  kDisp,  kBoth,  kCpv2,  kDisp2,  kBoth2,     kPIDs     };  // PID
+  TString namePID[kPIDs] =  { "All", "Cpv", "Disp", "Both", "Cpv2", "Disp2", "Both2"               };
+  UInt_t  PIDBIT[kPIDs]   = { 0x0,  BIT(0), BIT(1), BIT(0)|BIT(1), BIT(2), BIT(3), BIT(2)|BIT(3)   };
+                         // { kPtPi0, kEtaPi0, kPhiPi0, kAsyPi0, kAnglePi0, kInvMassPi0, kVarsPi0  };  // Pi0
+  TString tName[kVarsPi0] = {   "Pt",   "Eta",   "Phi",   "Asy",   "Angle",   "InvMass"            };
 
   Int_t entries = caloClArr->GetEntriesFast();
   Int_t iMod = 0, jMod = 0, srcMod = 0;
@@ -726,11 +725,11 @@ void AliPHOSpPbPi0Header::FillHistosMixPi0(TList *list, TClonesArray* const iCal
   // fill histograms for mixed pi0 according to evnet && pi0 candidates selection cuts
 
   if (!list) return;
-                            // {       kAll,   kCpv,  kDisp,  kFiducial,         kBoth, kBothPlusFiducial,     kPIDs   };   // PID
-  TString namePID[kPIDs]    =  {      "All",  "Cpv", "Disp", "Fiducial",        "Both", "BothPlusFiducial"             };
-  UInt_t  PIDBIT[kPIDs]     =  { 0x00000000, BIT(0), BIT(1),     BIT(2), BIT(0)|BIT(1), BIT(0)|BIT(1)|BIT(2)           };
-                            // { kPtMixPi0, kEtaMixPi0, kPhiMixPi0, kInvMassMixPi0, kVarsMixPi0                        };   // Mix pi0
-  TString tName[kVarsMixPi0] = {      "Pt",      "Eta",      "Phi",      "InvMass"                                     };
+                        // { kAll,  kCpv,  kDisp,  kBoth,  kCpv2,  kDisp2,  kBoth2,     kPIDs     };  // PID
+  TString namePID[kPIDs] = { "All", "Cpv", "Disp", "Both", "Cpv2", "Disp2", "Both2"               };
+  UInt_t  PIDBIT[kPIDs]  = { 0x0,  BIT(0), BIT(1), BIT(0)|BIT(1), BIT(2), BIT(3), BIT(2)|BIT(3)   };
+                            // { kPtMixPi0, kEtaMixPi0, kPhiMixPi0, kInvMassMixPi0, kVarsMixPi0   };   // Mix pi0
+  TString tName[kVarsMixPi0] = {      "Pt",      "Eta",      "Phi",      "InvMass"                };
 
   Int_t iEntries = iCaloClArr->GetEntriesFast();
   Int_t iMod = 0, jMod = 0, srcMod = 0;
@@ -810,7 +809,7 @@ void AliPHOSpPbPi0Header::FillHistosMC(TList *list, AliMCEvent* const mcEvent, A
     Double_t r      = TMath::Sqrt(TMath::Power(pMC->Xv(), 2) + TMath::Power(pMC->Yv(), 2));
     Double_t y      = pMC->Y();
     Double_t phi    = pMC->Phi();   while (phi<0.) phi += TMath::TwoPi(); while (phi>TMath::TwoPi()) phi -= TMath::TwoPi();
-    Double_t weight = PrimaryParticleWeight(pdg, pt);
+//  Double_t weight = PrimaryParticleWeight(pdg, pt);
 
     ((TH2D*)list->FindObject(Form("hMC%s_PtVertex", pName.Data())))->Fill(pt, r);
     ((TH2D*)list->FindObject(Form("hMC%s_PtRapidity", pName.Data())))->Fill(pt, y);
@@ -818,11 +817,11 @@ void AliPHOSpPbPi0Header::FillHistosMC(TList *list, AliMCEvent* const mcEvent, A
     Int_t mod1 = 0, mod2 = 0;
     AliAODMCParticle *gamma1=0x0, *gamma2=0x0;
     if (r<1.) {
-      ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_RCut", pName.Data(), cent)))->Fill(pt, weight);
-      ((TH2D*)list->FindObject(Form("hMC%s_RapidityWeight_cent%d_RCut", pName.Data(), cent)))->Fill(y, weight);
-      ((TH2D*)list->FindObject(Form("hMC%s_PhiWeight_cent%d_RCut", pName.Data(), cent)))->Fill(phi, weight);
-      if (y<1.)   ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_WideY_RCut", pName.Data(), cent)))->Fill(pt, weight); 
-      if (y<0.12) ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_NarrY_RCut", pName.Data(), cent)))->Fill(pt, weight); 
+      ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_RCut", pName.Data(), cent)))->Fill(pt);
+      ((TH1D*)list->FindObject(Form("hMC%s_Rapidity_cent%d_RCut", pName.Data(), cent)))->Fill(y);
+      ((TH1D*)list->FindObject(Form("hMC%s_Phi_cent%d_RCut", pName.Data(), cent)))->Fill(phi);
+      if (y<1.)   ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_WideY_RCut", pName.Data(), cent)))->Fill(pt); 
+      if (y<0.15) ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_NarrY_RCut", pName.Data(), cent)))->Fill(pt); 
       if (pMC->GetNDaughters()==2) { // Do not account Dalitz decays
         gamma1 = (AliAODMCParticle*)mcEvent->GetTrack(pMC->GetDaughter(0));
         gamma2 = (AliAODMCParticle*)mcEvent->GetTrack(pMC->GetDaughter(1));
@@ -830,18 +829,16 @@ void AliPHOSpPbPi0Header::FillHistosMC(TList *list, AliMCEvent* const mcEvent, A
         mod1 = HitPHOSModule(gamma1, phosGeo);
         mod2 = HitPHOSModule(gamma2, phosGeo);
         if (mod1!=-1 && mod1!=2 && mod2!=-1 && mod2!=2 && TMath::Abs(mod1-mod2)<2) // !remove module 2
-          ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_Acc_RCut", pName.Data(), cent)))->Fill(pt, weight);
+          ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_Acc_RCut", pName.Data(), cent)))->Fill(pt);
       }
     }
-    Int_t mother = pMC->GetMother(); if (mother<0) continue;
-    Bool_t isPrimary = ((AliAODMCParticle*)mcEvent->GetTrack(mother))->IsPhysicalPrimary();
-    if (isPrimary) {
+    if (pMC->IsPhysicalPrimary()) {
       ((TH2D*)list->FindObject(Form("hMC%s_PtVertex_IsPrimary", pName.Data())))->Fill(pt, r);
-      ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_IsPrimary", pName.Data(), cent)))->Fill(pt, weight);
-      ((TH2D*)list->FindObject(Form("hMC%s_RapidityWeight_cent%d_IsPrimary", pName.Data(), cent)))->Fill(y, weight);
-      ((TH2D*)list->FindObject(Form("hMC%s_PhiWeight_cent%d_IsPrimary", pName.Data(), cent)))->Fill(phi, weight);
-      if (y<1.)   ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_WideY_IsPrimary", pName.Data(), cent)))->Fill(pt, weight); 
-      if (y<0.12) ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_NarrY_IsPrimary", pName.Data(), cent)))->Fill(pt, weight); 
+      ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_IsPrimary", pName.Data(), cent)))->Fill(pt);
+      ((TH1D*)list->FindObject(Form("hMC%s_Rapidity_cent%d_IsPrimary", pName.Data(), cent)))->Fill(y);
+      ((TH1D*)list->FindObject(Form("hMC%s_Phi_cent%d_IsPrimary", pName.Data(), cent)))->Fill(phi);
+      if (y<1.)   ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_WideY_IsPrimary", pName.Data(), cent)))->Fill(pt); 
+      if (y<0.15) ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_NarrY_IsPrimary", pName.Data(), cent)))->Fill(pt); 
       if (pMC->GetNDaughters()==2) { // Do not account Dalitz decays
         gamma1 = (AliAODMCParticle*)mcEvent->GetTrack(pMC->GetDaughter(0));
         gamma2 = (AliAODMCParticle*)mcEvent->GetTrack(pMC->GetDaughter(1));
@@ -849,7 +846,7 @@ void AliPHOSpPbPi0Header::FillHistosMC(TList *list, AliMCEvent* const mcEvent, A
         mod1 = HitPHOSModule(gamma1, phosGeo);
         mod2 = HitPHOSModule(gamma2, phosGeo);
         if (mod1!=-1 && mod1!=2 && mod2!=-1 && mod2!=2 && TMath::Abs(mod1-mod2)<2) // !remove module 2
-          ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_Acc_IsPrimary", pName.Data(), cent)))->Fill(pt, weight);
+          ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_Acc_IsPrimary", pName.Data(), cent)))->Fill(pt);
       }
     }
   }
@@ -879,7 +876,7 @@ void AliPHOSpPbPi0Header::FillHistosMC(TList *list, AliStack* const stack, AliPH
     Double_t r      = pMC->R();
     Double_t y      = pMC->Y();
     Double_t phi    = pMC->Phi();   while (phi<0.) phi += TMath::TwoPi(); while (phi>TMath::TwoPi()) phi -= TMath::TwoPi();
-    Double_t weight = PrimaryParticleWeight(pdg, pt);
+//  Double_t weight = PrimaryParticleWeight(pdg, pt);
 
     ((TH2D*)list->FindObject(Form("hMC%s_PtVertex", pName.Data())))->Fill(pt, r);
     ((TH2D*)list->FindObject(Form("hMC%s_PtRapidity", pName.Data())))->Fill(pt, y);
@@ -887,11 +884,11 @@ void AliPHOSpPbPi0Header::FillHistosMC(TList *list, AliStack* const stack, AliPH
     Int_t mod1 = 0, mod2 = 0;
     TParticle *gamma1 = 0x0, *gamma2 = 0x0;
     if (r<1.) { // R_Cut
-      ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_RCut", pName.Data(), cent)))->Fill(pt, weight);
-      ((TH2D*)list->FindObject(Form("hMC%s_RapidityWeight_cent%d_RCut", pName.Data(), cent)))->Fill(y, weight);
-      ((TH2D*)list->FindObject(Form("hMC%s_PhiWeight_cent%d_RCut", pName.Data(), cent)))->Fill(phi, weight);
-      if (y<0.5)  ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_WideY_RCut", pName.Data(), cent)))->Fill(pt, weight);
-      if (y<0.13) ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_NarrY_RCut", pName.Data(), cent)))->Fill(pt, weight);
+      ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_RCut", pName.Data(), cent)))->Fill(pt);
+      ((TH1D*)list->FindObject(Form("hMC%s_Rapidity_cent%d_RCut", pName.Data(), cent)))->Fill(y);
+      ((TH1D*)list->FindObject(Form("hMC%s_Phi_cent%d_RCut", pName.Data(), cent)))->Fill(phi);
+      if (y<0.5)  ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_WideY_RCut", pName.Data(), cent)))->Fill(pt);
+      if (y<0.15) ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_NarrY_RCut", pName.Data(), cent)))->Fill(pt);
       if (pMC->GetNDaughters()==2) { // Do not account Dalitz decays
         gamma1 = stack->Particle(pMC->GetFirstDaughter());
         gamma2 = stack->Particle(pMC->GetLastDaughter());
@@ -899,16 +896,16 @@ void AliPHOSpPbPi0Header::FillHistosMC(TList *list, AliStack* const stack, AliPH
         mod1 = HitPHOSModule(gamma1, phosGeo);
         mod2 = HitPHOSModule(gamma2, phosGeo);
         if (mod1!=-1 && mod1!=2 && mod2!=-1 && mod2!=2 && TMath::Abs(mod1-mod2)<2) // !remove module 2
-          ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_Acc_RCut", pName.Data(), cent)))->Fill(pt, weight);
+          ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_Acc_RCut", pName.Data(), cent)))->Fill(pt);
       }
     }
-    if (pMC->IsPrimary()) { // IsPrimary
+    if (stack->IsPhysicalPrimary(i)) { // IsPrimary
       ((TH2D*)list->FindObject(Form("hMC%s_PtVertex_IsPrimary", pName.Data())))->Fill(pt, r);
-      ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_IsPrimary", pName.Data(), cent)))->Fill(pt, weight);
-      ((TH2D*)list->FindObject(Form("hMC%s_RapidityWeight_cent%d_IsPrimary", pName.Data(), cent)))->Fill(y, weight);
-      ((TH2D*)list->FindObject(Form("hMC%s_PhiWeight_cent%d_IsPrimary", pName.Data(), cent)))->Fill(phi, weight);
-      if (y<0.5)  ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_WideY_IsPrimary", pName.Data(), cent)))->Fill(pt, weight);
-      if (y<0.13) ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_NarrY_IsPrimary", pName.Data(), cent)))->Fill(pt, weight);
+      ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_IsPrimary", pName.Data(), cent)))->Fill(pt);
+      ((TH1D*)list->FindObject(Form("hMC%s_Rapidity_cent%d_IsPrimary", pName.Data(), cent)))->Fill(y);
+      ((TH1D*)list->FindObject(Form("hMC%s_Phi_cent%d_IsPrimary", pName.Data(), cent)))->Fill(phi);
+      if (y<0.5)  ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_WideY_IsPrimary", pName.Data(), cent)))->Fill(pt);
+      if (y<0.15) ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_NarrY_IsPrimary", pName.Data(), cent)))->Fill(pt);
       if (pMC->GetNDaughters()==2) { // Do not account Dalitz decays
         gamma1 = stack->Particle(pMC->GetFirstDaughter());
         gamma2 = stack->Particle(pMC->GetLastDaughter());
@@ -916,7 +913,7 @@ void AliPHOSpPbPi0Header::FillHistosMC(TList *list, AliStack* const stack, AliPH
         mod1 = HitPHOSModule(gamma1, phosGeo);
         mod2 = HitPHOSModule(gamma2, phosGeo);
         if (mod1!=-1 && mod1!=2 && mod2!=-1 && mod2!=2 && TMath::Abs(mod1-mod2)<2) // !remove module 2
-          ((TH2D*)list->FindObject(Form("hMC%s_PtWeight_cent%d_Acc_IsPrimary", pName.Data(), cent)))->Fill(pt, weight);
+          ((TH1D*)list->FindObject(Form("hMC%s_Pt_cent%d_Acc_IsPrimary", pName.Data(), cent)))->Fill(pt);
       }
     }
   }
@@ -983,36 +980,42 @@ Double_t AliPHOSpPbPi0Header::PrimaryParticleWeight(Int_t pdg, Double_t pt)
 Int_t AliPHOSpPbPi0Header::HitPHOSModule(AliAODMCParticle* const pMC, AliPHOSGeoUtils* const phosGeo)
 { 
 
-  Int_t mod=0, relId[4]={0,0,0,0}; 
+  Int_t mod=0, relID[4]={0,0,0,0}; 
   Double_t x=0., z=0.;
   Double_t vtx[3]; pMC->XvYvZv(vtx);
   Double_t theta = pMC->Theta();
   Double_t phi   = pMC->Phi();
     
   if (!phosGeo->ImpactOnEmc(vtx, theta, phi, mod, z, x)) return -1;
+  phosGeo->RelPosToRelId(mod, x, z, relID);
+  if (fgUseFiducialCut) {
+    const Int_t edgeX = 2;
+    const Int_t edgeZ = 2;
+    if (relID[2] >edgeX && relID[2]<(65-edgeX) && relID[3]>edgeZ && relID[3] <(57-edgeZ)) return relID[0];
+    else return -1;
+  }
 
-  const Int_t edgeX = 2;
-  const Int_t edgeZ = 2;
-  phosGeo->RelPosToRelId(mod, x, z, relId);
-  if (relId[2] >edgeX && relId[2]<(65-edgeX) && relId[3]>edgeZ && relId[3] <(57-edgeZ)) return relId[0];
-  else return -1;
+  return relID[0];
 }
 
 //________________________________________________________________________
 Int_t AliPHOSpPbPi0Header::HitPHOSModule(TParticle* const pMC, AliPHOSGeoUtils* const phosGeo)
 {
 
-  Int_t mod=0, relId[4]={0,0,0,0}; 
+  Int_t mod=0, relID[4]={0,0,0,0}; 
   Double_t x=0., z=0.;
   Double_t vtx[3] = { pMC->Vx(), pMC->Vy(), pMC->Vz() };
   Double_t theta = pMC->Theta();
   Double_t phi   = pMC->Phi();
 
   if (!phosGeo->ImpactOnEmc(vtx, theta, phi, mod, z, x)) return -1;
+  phosGeo->RelPosToRelId(mod, x, z, relID);
+  if (fgUseFiducialCut) {
+    const Int_t edgeX = 2;
+    const Int_t edgeZ = 2;
+    if (relID[2] >edgeX && relID[2]<(65-edgeX) && relID[3]>edgeZ && relID[3] <(57-edgeZ)) return relID[0];
+    else return -1;
+  } 
 
-  const Int_t edgeX = 2;
-  const Int_t edgeZ = 2;
-  phosGeo->RelPosToRelId(mod, x, z, relId);
-  if (relId[2] >edgeX && relId[2]<(65-edgeX) && relId[3]>edgeZ && relId[3] <(57-edgeZ)) return relId[0];
-  else return -1;
+  return relID[0];
 }
