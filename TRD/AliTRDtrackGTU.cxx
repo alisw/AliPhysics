@@ -107,6 +107,36 @@ AliTRDtrackGTU& AliTRDtrackGTU::operator=(const AliTRDtrackGTU &rhs)
   return *this;
 }
 
+AliTRDtrackGTU& AliTRDtrackGTU::operator=(const AliESDTrdTrack &rhs)
+{
+  if ((void*) &rhs != (void*) this) {
+    TObject::operator=(rhs);
+    fStack         = rhs.GetStack();
+    fSector        = rhs.GetSector();
+    fPID           = rhs.GetPID();
+    fTrackletMask  = rhs.GetLayerMask();
+    fNTracklets    = 0;
+    fRefLayerIdx   = -1;
+    fZChannel      = -1;
+    fZSubChannel   = -1;
+    fA             = rhs.GetA();
+    fB             = rhs.GetB();
+    fC             = rhs.GetC();
+    fLabel         = rhs.GetLabel();
+    for (Int_t iTracklet = 0; iTracklet < 6; iTracklet++) {
+      AliTRDtrackletGTU *trkl = new ((*fTracklets)[iTracklet]) AliTRDtrackletGTU();
+      if (fTrackletMask & (1 << iTracklet)) {
+	++fNTracklets;
+	trkl->SetIndex(rhs.GetTrackletIndex(iTracklet));
+      }
+      else
+	trkl->SetIndex(-1);
+    }
+  }
+
+  return *this;
+}
+
 AliTRDtrackGTU::~AliTRDtrackGTU()
 {
 // dtor

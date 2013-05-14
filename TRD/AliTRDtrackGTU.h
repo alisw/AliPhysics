@@ -21,6 +21,7 @@ class AliTRDtrackGTU : public TObject {
   AliTRDtrackGTU();
   AliTRDtrackGTU(const AliTRDtrackGTU &rhs);
   AliTRDtrackGTU& operator=(const AliTRDtrackGTU &rhs);
+  AliTRDtrackGTU& operator=(const AliESDTrdTrack &rhs);
   ~AliTRDtrackGTU();
 
 // ----- Track properties
