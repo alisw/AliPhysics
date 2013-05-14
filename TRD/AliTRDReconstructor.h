@@ -50,7 +50,7 @@ public:
   virtual void        FillESD(AliRawReader *, TTree *clusterTree, AliESDEvent *esd) const { FillESD((TTree * )NULL, clusterTree, esd);                    }
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
   static TClonesArray* GetClusters();
-  static TClonesArray* GetTracklets(const char *trkltype = "AliTRDtrackletMCM");
+  static TClonesArray* GetTracklets(const char *trkltype = "");
   static TClonesArray* GetTracks();
   static Int_t        GetNTimeBins()             { return fgNTimeBins;}
   Int_t               GetNdEdxSlices() const     { return (Int_t)AliTRDpidUtil::GetNdEdxSlices(GetPIDMethod());}

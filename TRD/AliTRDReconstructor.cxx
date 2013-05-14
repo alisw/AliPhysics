@@ -185,8 +185,6 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   ResetContainers();
 
   AliTRDrawData rawData;
-  rawData.SetTracklets(GetTracklets("AliTRDtrackletMCM")); // link allocated online tracklets
-  rawData.SetTracks(GetTracks());                          // link allocated online tracks
 
   AliTRDdigitsManager *manager = rawData.Raw2Digits(rawReader);
   manager->MakeBranch(digitsTree);
@@ -237,16 +235,15 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
     return;
   }
 
-  if(fgClusters){
-    AliDebug(1, Form("Removing %5d clusters @ %p", fgClusters->GetEntriesFast(), (void*)fgClusters));
-    fgClusters->Clear();
-  }
+  ResetContainers();
   AliTRDclusterizer clusterizer(fgTaskNames[AliTRDrecoParam::kClusterizer], fgTaskNames[AliTRDrecoParam::kClusterizer]);
   clusterizer.SetReconstructor(this);
   clusterizer.SetUseLabels(kTRUE);
   clusterizer.SetStoreRawSignals(kTRUE);
   clusterizer.OpenOutput(clusterTree);
   clusterizer.ReadDigits(digitsTree);
+  clusterizer.ReadTracklets();
+  clusterizer.ReadTracks();
   clusterizer.MakeClusters();
   fgNTimeBins = clusterizer.GetNTimeBins();
 }
@@ -389,7 +386,7 @@ TClonesArray* AliTRDReconstructor::GetTracklets(const char *trkltype)
 {
 // Build/ Retrieve online tracklets array
 
-  if (trkltype != 0) {
+  if (trkltype && strlen(trkltype) > 0) {
     if(fgTracklets && (TClass::GetClass(trkltype) != fgTracklets->GetClass())){
       fgTracklets->Delete();
       delete fgTracklets;
