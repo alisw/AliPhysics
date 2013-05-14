@@ -1691,28 +1691,31 @@ void AliTRDmcmSim::FitTracklet()
         // assemble and store the tracklet word
         fMCMT[cpu] = (pid << 24) | (padrow << 20) | (slope << 13) | offset;
 
-        // calculate MC label
+        // calculate number of hits and MC label
         Int_t mcLabel[] = { -1, -1, -1};
 	Int_t nHits0 = 0;
 	Int_t nHits1 = 0;
-        if (fDigitsManager) {
-	  const Int_t maxLabels = 30;
-          Int_t label[maxLabels] = {0}; // up to 30 different labels possible
-          Int_t count[maxLabels] = {0};
-          Int_t nLabels = 0;
-          for (Int_t iHit = 0; iHit < fNHits; iHit++) {
-            if ((fHits[iHit].fChannel - fFitPtr[cpu] < 0) ||
-                (fHits[iHit].fChannel - fFitPtr[cpu] > 1))
-              continue;
 
-	    // counting contributing hits
-	    if (fHits[iHit].fTimebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos) &&
-		fHits[iHit].fTimebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0, fDetector, fRobPos, fMcmPos))
-	      nHits0++;
-	    if (fHits[iHit].fTimebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1, fDetector, fRobPos, fMcmPos) &&
-		fHits[iHit].fTimebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos))
-	      nHits1++;
+	const Int_t maxLabels = 30;
+	Int_t label[maxLabels] = {0}; // up to 30 different labels possible
+	Int_t count[maxLabels] = {0};
+	Int_t nLabels = 0;
 
+	for (Int_t iHit = 0; iHit < fNHits; iHit++) {
+	  if ((fHits[iHit].fChannel - fFitPtr[cpu] < 0) ||
+	      (fHits[iHit].fChannel - fFitPtr[cpu] > 1))
+	    continue;
+
+	  // counting contributing hits
+	  if (fHits[iHit].fTimebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos) &&
+	      fHits[iHit].fTimebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0, fDetector, fRobPos, fMcmPos))
+	    nHits0++;
+	  if (fHits[iHit].fTimebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1, fDetector, fRobPos, fMcmPos) &&
+	      fHits[iHit].fTimebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos))
+	    nHits1++;
+
+	  // label calculation only if there is a digitsmanager to get the labels from
+	  if (fDigitsManager) {
 	    for (Int_t i = 0; i < 3; i++) {
 	      Int_t currLabel = fHits[iHit].fLabel[i];
 	      for (Int_t iLabel = 0; iLabel < nLabels; iLabel++) {
@@ -1729,12 +1732,15 @@ void AliTRDmcmSim::FitTracklet()
 	      }
 	    }
 	  }
-	  Int_t index[2*maxLabels];
-	  TMath::Sort(maxLabels, count, index);
-	  for (Int_t i = 0; i < 3; i++) {
-	    if (count[index[i]] <= 0)
-	      break;
-	    mcLabel[i] = label[index[i]];
+
+	  if (fDigitsManager) {
+	    Int_t index[2*maxLabels];
+	    TMath::Sort(maxLabels, count, index);
+	    for (Int_t i = 0; i < 3; i++) {
+	      if (count[index[i]] <= 0)
+		break;
+	      mcLabel[i] = label[index[i]];
+	    }
 	  }
         }
         new ((*fTrackletArray)[fTrackletArray->GetEntriesFast()]) AliTRDtrackletMCM((UInt_t) fMCMT[cpu], fDetector*2 + fRobPos%2, fRobPos, fMcmPos);
