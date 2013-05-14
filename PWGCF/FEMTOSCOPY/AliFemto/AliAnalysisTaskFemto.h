@@ -29,6 +29,7 @@
 #include "AliFemtoEventReaderAODChain.h"
 #include "AliFemtoEventReaderStandard.h"
 #include "AliFemtoEventReaderKinematicsChain.h"
+#include "AliFemtoEventReaderKinematicsChainESD.h"
 #include "AliFemtoManager.h"
 
 #include "AliESDpid.h"
@@ -58,6 +59,7 @@ AliAnalysisTaskFemto() : AliAnalysisTaskSE(), fESD(0), fESDpid(0), fAOD(0), fAOD
   void SetFemtoReaderStandard(AliFemtoEventReaderStandard *aReader);
   void SetFemtoManager(AliFemtoManager *aManager);
   void SetFemtoReaderKinematics(AliFemtoEventReaderKinematicsChain *aReader);
+  void SetFemtoReaderKinematicsESD(AliFemtoEventReaderKinematicsChainESD *aReader);
 
  private:
   AliESDEvent                 *fESD;          //! ESD object
