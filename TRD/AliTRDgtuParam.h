@@ -42,6 +42,17 @@ class AliTRDgtuParam : public TObject {
   static Int_t GetBitExcessAlpha() { return fgkBitExcessAlpha; }
   static Int_t GetBitExcessYProj() { return fgkBitExcessYProj; }
 
+  Float_t GetInnerPadLength(Int_t stack, Int_t layer) const {
+      return (stack == 2) ? 9. : fgkInnerPadLength[layer];
+  }
+  Float_t GetOuterPadLength(Int_t stack, Int_t layer) const {
+      return (stack == 2) ? 8. : fgkOuterPadLength[layer];
+  }
+  Float_t GetZrow(Int_t stack, Int_t layer, Int_t padrow) const {
+    Float_t zRowCorrected = fgkRow0Pos[layer][stack] - GetOuterPadLength(stack, layer) + GetInnerPadLength(stack, layer);
+    return zRowCorrected - (0.5 + padrow) * GetInnerPadLength(stack, layer);
+  }
+
   AliTRDgeometry* GetGeo() const { return fGeo; }
   Float_t GetVertexSize() const { return fVertexSize; }
   Int_t GetCiAlpha(Int_t layer) const;
@@ -65,13 +76,19 @@ class AliTRDgtuParam : public TObject {
   static void SetUseGTUconst(Bool_t b) { fgUseGTUconst = b; }
   static Bool_t GetUseGTUconst() { return fgUseGTUconst; }
 
+  static void SetUseGTUmerge(Bool_t b) { fgUseGTUmerge = b; }
+  static Bool_t GetUseGTUmerge() { return fgUseGTUmerge; }
+
+  static void SetLimitNoTracklets(Bool_t b) { fgLimitNoTracklets = b; }
+  static Bool_t GetLimitNoTracklets() { return fgLimitNoTracklets; }
+
   // z-channel map
   Int_t GenerateZChannelMap(); // could have different modes (for beam-beam, cosmics, ...)
   Bool_t DisplayZChannelMap(Int_t zchannel = -1, Int_t subch = 0) const;
 
   // variables for pt-reconstruction (not used at the moment)
   Bool_t GenerateRecoCoefficients(Int_t trackletMask);
-  Float_t GetAki(Int_t k, Int_t i);
+  Int_t   GetAki(Int_t k, Int_t i);
   Float_t GetBki(Int_t k, Int_t i);
   Float_t GetCki(Int_t k, Int_t i);
 //  Float_t GetD(Int_t k) const;
@@ -95,6 +112,8 @@ class AliTRDgtuParam : public TObject {
   static const Int_t fgkBitExcessAlpha; // excess bits for alpha
   static const Int_t fgkBitExcessYProj; // excess bits for projected y-position
 
+  static const Int_t fgkPtInfinity; // infinite pt as obtained when a == 0
+
  protected:
   static       Int_t fgDeltaY;    	// accepted deviation in y_proj, default: 9
   static       Int_t fgDeltaAlpha;      // accepted deviation in alpha, default: 11
@@ -103,7 +122,16 @@ class AliTRDgtuParam : public TObject {
 
   static       Bool_t fgUseGTUconst;    // use constants as in the GTU for the calculations
 					       // instead of geometry derived quantities
+  static       Bool_t fgUseGTUmerge;    // use merge algorithm exactly as in hardware
+  static       Bool_t fgLimitNoTracklets; // limit the number of tracklets per layer
   static const Bool_t fgZChannelMap[5][16][6][16]; // z-channel tables as in GTU
+  static const Float_t fgkRadius[6];    // layer radius as used in the GTU code
+  static const Float_t fgkThickness;    // drift length as used in the GTU code
+  static const Float_t fgkRow0Pos[6][5]; // geometry constant from GTU implementation
+  static const Float_t fgkInnerPadLength[6]; // geometry constant from GTU implementation
+  static const Float_t fgkOuterPadLength[6]; // geometry constant from GTU implementation
+  static const Float_t fgkAcoeff[32][6]; // geometry constant from GTU implementation
+  static const Int_t   fgkMaskID[64]; // geometry constant from GTU implementation
 
   Float_t fVertexSize;		// assumed vertex size (z-dir.) for the z-channel map
 

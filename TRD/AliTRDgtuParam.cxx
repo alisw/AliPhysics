@@ -23,6 +23,8 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <limits>
+
 #include "TROOT.h"
 #include "TMath.h"
 #include "TMatrix.h"
@@ -39,6 +41,8 @@ ClassImp(AliTRDgtuParam)
 
 AliTRDgtuParam *AliTRDgtuParam::fgInstance = 0;
 Bool_t AliTRDgtuParam::fgUseGTUconst = kTRUE;
+Bool_t AliTRDgtuParam::fgUseGTUmerge = kTRUE;
+Bool_t AliTRDgtuParam::fgLimitNoTracklets = kTRUE;
 
 // ----- matching windows -----
       Int_t     AliTRDgtuParam::fgDeltaY     = 19;
@@ -58,7 +62,10 @@ const Int_t 	AliTRDgtuParam::fgkBitExcessY 	  = 4;
 const Int_t 	AliTRDgtuParam::fgkBitExcessAlpha = 10;
 const Int_t 	AliTRDgtuParam::fgkBitExcessYProj = 2;
 
-// ----- z-channel tables -----
+// pt higher than the one for smallest possible a != 0
+const Int_t    AliTRDgtuParam::fgkPtInfinity      = std::numeric_limits<Int_t>::max();
+
+// ----- geometry constants used in GTU -----
 const Bool_t    AliTRDgtuParam::fgZChannelMap[5][16][6][16] = {
 
 {  /* --- Stack 0 --- */
@@ -1192,6 +1199,58 @@ const Bool_t    AliTRDgtuParam::fgZChannelMap[5][16][6][16] = {
  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}}}
 
 };
+const Float_t   AliTRDgtuParam::fgkRadius[6] = { 300.65, 313.25, 325.85, 338.45, 351.05, 363.65 };
+const Float_t   AliTRDgtuParam::fgkThickness = 3.;
+const Float_t   AliTRDgtuParam::fgkRow0Pos[6][5] = {
+  {301, 177, 53, -57, -181},
+  {301, 177, 53, -57, -181},
+  {315, 184, 53, -57, -188},
+  {329, 191, 53, -57, -195},
+  {343, 198, 53, -57, -202},
+  {347, 200, 53, -57, -204}
+};
+const Float_t   AliTRDgtuParam::fgkInnerPadLength[] = {7.5, 7.5, 8.0, 8.5, 9.0, 9.0};
+const Float_t   AliTRDgtuParam::fgkOuterPadLength[] = {7.5, 7.5, 7.5, 7.5, 7.5, 8.5};
+const Float_t   AliTRDgtuParam::fgkAcoeff[32][6] = {
+  {-3440, -3303,  3174,  3057,     0,     0},
+  {-3481,     0,  -171,     0,  3140,     0},
+  {-2850, -1380,     0,  1277,  2441,     0},
+  {-3481,     0,  -171,     0,  3140,     0},
+  {    0, -3568, -3431,  3303,  3185,     0},
+  {-2783, -1378,  -136,  1275,  2510,     0},
+  {-1500, -2857,  1384,     0,     0,  2461},
+  {    0, -3609,     0,  -171,     0,  3268},
+  {-3685,     0,  3400, -3276,     0,  3049},
+  {    0, -3609,     0,  -171,     0,  3268},
+  {-1498, -2792,  1382,  -132,     0,  2528},
+  {-1850, -1777,     0,     0,  1585,  1531},
+  {-3481,     0,  -171,     0,  3140,     0},
+  {    0, -2953, -1431,     0,  1328,  2544},
+  {-1808, -1776,   -89,     0,  1631,  1530},
+  {-2932,     0,     0, -1314,  2511,  1223},
+  {    0, -3609,     0,  -171,     0,  3268},
+  {-1849, -1738,     0,   -82,  1583,  1574},
+  {    0,     0, -3696, -3559,  3431,  3313},
+  {-2863,     0,  -140, -1312,  2582,  1221},
+  {    0, -2886, -1429,  -136,  1327,  2613},
+  {-1806, -1736,   -89,   -82,  1629,  1572},
+  {   -1,    -1,    -1,    -1,    -1,    -1},
+  {   -1,    -1,    -1,    -1,    -1,    -1},
+  {   -1,    -1,    -1,    -1,    -1,    -1},
+  {   -1,    -1,    -1,    -1,    -1,    -1},
+  {   -1,    -1,    -1,    -1,    -1,    -1},
+  {   -1,    -1,    -1,    -1,    -1,    -1},
+  {   -1,    -1,    -1,    -1,    -1,    -1},
+  {   -1,    -1,    -1,    -1,    -1,    -1},
+  {   -1,    -1,    -1,    -1,    -1,    -1},
+  {   -1,    -1,    -1,    -1,    -1,    -1}
+};
+const Int_t     AliTRDgtuParam::fgkMaskID[] = {
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0,
+  -1, -1, -1, -1, -1, -1, -1,  1, -1, -1, -1,  2, -1,  3,  4,  5,
+  -1, -1, -1, -1, -1, -1, -1,  6, -1, -1, -1,  7, -1,  8,  9, 10,
+  -1, -1, -1, 11, -1, 12, 13, 14, -1, 15, 16, 17, 18, 19, 20, 21
+};
 
 AliTRDgtuParam::AliTRDgtuParam() :
   fVertexSize(20.0),
@@ -1402,16 +1461,35 @@ Int_t AliTRDgtuParam::GetCiYProj(Int_t layer) const
 {
   // get the constant for the calculation of y_proj
 
-  Float_t xmid = (fGeo->GetTime0(0) + fGeo->GetTime0(fGeo->Nlayer()-1)) / 2.;
-  Int_t ci = TMath::Nint(- (fGeo->GetTime0(layer) - xmid) / GetChamberThickness() * GetBinWidthdY() / GetBinWidthY() * (1 << GetBitExcessYProj()) );
+  Int_t ci = 0;
+
+  if (fgUseGTUconst) {
+    Float_t xmid = (fgkRadius[0] + fgkRadius[5]) / 2.;
+    ci = TMath::Nint(- (fgkRadius[layer] - xmid) * fgkBinWidthdY / (fgkBinWidthY * fgkThickness) * (1 << GetBitExcessYProj()));
+  } else {
+    Float_t xmid = (fGeo->GetTime0(0) + fGeo->GetTime0(fGeo->Nlayer()-1)) / 2.;
+    ci = TMath::Nint(- (fGeo->GetTime0(layer) - xmid) / GetChamberThickness() * GetBinWidthdY() / GetBinWidthY() * (1 << GetBitExcessYProj()) );
+  }
+
   return ci;
 }
 
 Int_t AliTRDgtuParam::GetYt(Int_t stack, Int_t layer, Int_t zrow) const
 {
-    return (Int_t) (- ( (layer % 2 ? 1 : -1) *
-			(GetGeo()->GetPadPlane(layer, stack)->GetRowPos(zrow) - GetGeo()->GetPadPlane(layer, stack)->GetRowSize(zrow) / 2) *
-			TMath::Tan(- 2.0 / 180.0 * TMath::Pi()) ) / 0.016 );
+  // return yt for the calculation of y'
+
+  Int_t yt = 0;
+
+  if (fgUseGTUconst) {
+    yt = TMath::Nint (- ( (layer % 2 ? 1. : -1.) *
+			  GetZrow(stack, layer, zrow) * TMath::Tan(- 2./180. * TMath::Pi()) / fgkBinWidthY ));
+  } else {
+    yt = TMath::Nint (- ( (layer % 2 ? 1. : -1.) *
+			  (GetGeo()->GetPadPlane(layer, stack)->GetRowPos(zrow) - GetGeo()->GetPadPlane(layer, stack)->GetRowSize(zrow) / 2.) *
+			  TMath::Tan(- 2./180. * TMath::Pi()) ) / fgkBinWidthY );
+  }
+
+  return yt;
 }
 
 Bool_t AliTRDgtuParam::GenerateRecoCoefficients(Int_t trackletMask)
@@ -1451,13 +1529,17 @@ Bool_t AliTRDgtuParam::GenerateRecoCoefficients(Int_t trackletMask)
   return kTRUE;
 }
 
-Float_t AliTRDgtuParam::GetAki(Int_t k, Int_t i)
+Int_t AliTRDgtuParam::GetAki(Int_t k, Int_t i)
 {
   // get A_ki for the calculation of the tracking parameters
-  if (fCurrTrackletMask != k)
-    GenerateRecoCoefficients(k);
-
-  return -fAki[i];
+  if (fgUseGTUconst) {
+    Int_t maskId = fgkMaskID[k];
+    return fgkAcoeff[maskId][i];
+  } else {
+    if (fCurrTrackletMask != k)
+      GenerateRecoCoefficients(k);
+    return -(((Int_t) fAki[i]) << 9);
+  }
 }
 
 Float_t AliTRDgtuParam::GetBki(Int_t k, Int_t i)
@@ -1558,6 +1640,10 @@ Int_t AliTRDgtuParam::GetPt(Int_t layerMask, Int_t a, Float_t /* b */, Float_t x
 {
   // returns 0.3 * B * 1/a (1/128 GeV/c)
   // a : offset, b : slope (not used)
+
+  // protect against division by zero, covers both cases
+  if ((a >> 2) == 0)
+    return fgkPtInfinity;
 
   if (fgUseGTUconst) {
     //----- calculation as in the GTU ----
