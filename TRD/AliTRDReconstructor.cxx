@@ -45,6 +45,7 @@
 #include "AliESDTrdTrigger.h"
 #include "AliTRDtrackletWord.h"
 #include "AliTRDtrackletMCM.h"
+#include "AliTRDonlineTrackMatching.h"
 
 #define SETFLG(n,f) ((n) |= f)
 #define CLRFLG(n,f) ((n) &= ~f)
@@ -52,6 +53,7 @@
 ClassImp(AliTRDReconstructor)
 
 AliESDTrdTrigger AliTRDReconstructor::fgTriggerFlags;
+AliTRDonlineTrackMatching AliTRDReconstructor::fgOnlineTrackMatcher;
 TClonesArray *AliTRDReconstructor::fgClusters = NULL;
 TClonesArray *AliTRDReconstructor::fgTracklets = NULL;
 TClonesArray *AliTRDReconstructor::fgTracks = NULL;
@@ -312,6 +314,11 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
     }
   }
   esd->SetTrdTrigger(&fgTriggerFlags);
+
+  // ----- matching GTU tracks to global tracks -----
+  AliDebug(1, Form("TRD track matching with %i ESD, %i TRD tracks",
+		   esd->GetNumberOfTracks(), esd->GetNumberOfTrdTracks()));
+  fgOnlineTrackMatcher.ProcessEvent(esd);
 }
 
 //_____________________________________________________________________________

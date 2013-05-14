@@ -23,6 +23,7 @@ class TClonesArray;
 class TTreeSRedirector;
 class AliRawReader;
 class AliTRDclusterizer;
+class AliTRDonlineTrackMatching;
 class AliTRDReconstructor: public AliReconstructor 
 {
 public:
@@ -107,6 +108,7 @@ private:
   static TClonesArray *fgTracks;      //  list of GTU tracks for local reconstructor
   static Int_t         fgNTimeBins;   //  number of time bins as given by the clusterizer
   AliTRDclusterizer   *fClusterizer;  //! instance of TRD clusterizer
+  static AliTRDonlineTrackMatching fgOnlineTrackMatcher; // track matcher between on-line and off-line track
   static AliESDTrdTrigger fgTriggerFlags; //  L1 trigger flags
 
   ClassDef(AliTRDReconstructor, 5)    //  Class for the TRD reconstruction
