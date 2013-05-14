@@ -126,6 +126,17 @@ void AliHLTTRDClusterizer::AddTrackletsToArray()
 
   // fNoOfTracklets += 512;
 
+  /*
+  // this way of accessing tracklets is obsolete
+  // and did not give any results since long time
+  // removing it now to allow for removal of useless
+  // legacy code in the clusterizer
+  //
+  // if tracklets are needed here, they should be taken
+  // from TrackletsArray()
+  //
+  // jkl
+
   UInt_t* trackletword;
   AliHLTTRDTrackletWordArray* trklArr = new(fTrMemCurrPtr) AliHLTTRDTrackletWordArray(fDet);
   fTrMemCurrPtr += sizeof(AliHLTTRDTrackletWordArray);
@@ -140,6 +151,7 @@ void AliHLTTRDClusterizer::AddTrackletsToArray()
       fTrMemCurrPtr += trkl*sizeof(UInt_t);
       trklArr->fCount += trkl;
     }
+  */
 
   // fTrackletContainer[0]+=256;
   // fTrackletContainer[1]+=256;
