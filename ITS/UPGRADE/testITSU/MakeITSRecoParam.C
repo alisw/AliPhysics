@@ -85,6 +85,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     trCond->SetMaxITSTPCMatchChi2(maxChi2Match);
     trCond->SetMaxITSSAChi2(maxChi2SA);
     //
+    // to exclude some layer use trCon->ExcludeLayer(lrID);
+    //
     for (int i=0;i<nLr;i++) {
       trCond->SetMaxBranches(i,nBranch[i]);    // each seed propagated to given layer can produce max nBranch branches
       trCond->SetMaxCandidates(i,nCands[i]);   // each tpc track may have at most nCands prolongations

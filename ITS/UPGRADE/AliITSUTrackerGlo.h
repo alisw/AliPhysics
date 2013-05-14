@@ -50,8 +50,6 @@ class AliITSUTrackerGlo : public AliTracker {
   virtual Int_t          LoadClusters(TTree * treeRP=0);
   virtual void           UnloadClusters();
   virtual AliCluster*    GetCluster(Int_t index) const;
-  void                   FlagSplitClusters();
-  Bool_t                 ContainsSplitCluster(const AliITSUSeed* seed, Int_t maxSize=99999);
   void                   PrintSeedClusters(const AliITSUSeed* seed, Option_t* option="");
   //
   Int_t                  GetCountPronlongationTrials() const {return fCountProlongationTrials;}
@@ -106,7 +104,12 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag);
   void                   CookMCLabel(AliITSUTrackHyp* hyp);
   void                   SetTrackingPhase(Int_t p)        {fTrackPhase = p;}
- //
+  //
+  // monitoring stuff
+  void                   FlagSplitClusters();
+  Bool_t                 ContainsSplitCluster(const AliITSUSeed* seed, Int_t maxSize=99999);
+  void                   CheckClusterUsage();
+  //
  protected:
   TObject*&              NextFreeSeed();
   //
@@ -127,6 +130,7 @@ class AliITSUTrackerGlo : public AliTracker {
   Int_t                           fCountITSin;     // number of successful ITSin 
   Int_t                           fCountITSout;    // number of successful ITSout
   Int_t                           fCountITSrefit;  // number of successful ITSrefit 
+  Int_t                           fNTracksESD;     // number of esd tracks
   //
   // the seeds management to be optimized
   TObjArray                       fHypStore;       // storage for tracks hypotheses

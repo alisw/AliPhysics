@@ -53,10 +53,11 @@ class AliITSUTrackCond : public TObject
   void        SetMaxITSTPCMatchChi2(Float_t v)               {fMaxITSTPCMatchChi2 = v;}
   void        SetMaxITSSAChi2(Float_t v)                     {fMaxITSSAChi2 = v;}
   void        SetMaxTr2ClChi2(Int_t lr, Float_t v)           {fMaxTr2ClChi2[lr] = v;}
-  void        SetMaxChi2GloNrm(Int_t lr, Float_t v)           {fMaxChi2GloNrm[lr] = v;}
+  void        SetMaxChi2GloNrm(Int_t lr, Float_t v)          {fMaxChi2GloNrm[lr] = v;}
   void        SetMissPenalty(Int_t lr,  Float_t v)           {fMissPenalty[lr] = v;}
   void        SetNSigmaRoadY(Int_t lr,  Float_t v)           {fNSigmaRoadY[lr] = v;}
   void        SetNSigmaRoadZ(Int_t lr,  Float_t v)           {fNSigmaRoadZ[lr] = v;}
+  void        ExcludeLayer(Int_t lr)                         {fExlLayers |= 0x1<<lr;}
   //
   Float_t     GetMaxITSTPCMatchChi2()                  const {return fMaxITSTPCMatchChi2;}
   Float_t     GetMaxITSSAChi2()                        const {return fMaxITSSAChi2;}
@@ -66,7 +67,9 @@ class AliITSUTrackCond : public TObject
   Float_t     GetMaxChi2GloNrm(Int_t lr)               const {return fMaxChi2GloNrm[lr];}
   Float_t     GetNSigmaRoadY(Int_t lr)                 const {return fNSigmaRoadY[lr];}
   Float_t     GetNSigmaRoadZ(Int_t lr)                 const {return fNSigmaRoadZ[lr];}
-  Bool_t      IsLayerExcluded(Int_t lr)                const {return GetMaxTr2ClChi2(lr)<=0;}
+  Bool_t      IsLayerExcluded(Int_t lr)                const {return fExlLayers&(0x1<<lr);}
+  Int_t       GetActiveLrInner()                       const {return fActiveLrInner;}
+  Int_t       GetActiveLrOuter()                       const {return fActiveLrOuter;}
   //
   void        Init();
   Bool_t      IsInitDone()                             const {return fInitDone;}
@@ -74,6 +77,9 @@ class AliITSUTrackCond : public TObject
  protected: 
   //
   Bool_t      fInitDone;                 // initialization flag
+  Char_t      fActiveLrInner;            // innermost active layer to consider
+  Char_t      fActiveLrOuter;            // outermose active layer to consider
+  Short_t     fExlLayers;                // pattern of active layers to skip
   Int_t       fNLayers;                  // total number of layers
   Float_t     fMaxITSTPCMatchChi2;       // max chi2 for ITS/TPC matching
   Float_t     fMaxITSSAChi2;             // max chi2 for ITS standalone fit (backward)
@@ -90,7 +96,7 @@ class AliITSUTrackCond : public TObject
   TArrayI     fConditions;               // fNConditions  set of conditions
   TArrayS     fAuxData;                  // condition beginning (1st group), n groups, min clus
   //
-  static Char_t  fgkClSharing;           // def cl.sharing allowed level
+  static Char_t  fgkClSharing;            // def cl.sharing allowed level
   static Int_t   fgkMaxBranches;          // def max number of branches per seed on current layer 
   static Int_t   fgkMaxCandidates;        // def max number of total candidates on current layer 
   static Float_t fgkMaxTr2ClChi2;         // def track-to-cluster chi2 cut
@@ -99,7 +105,7 @@ class AliITSUTrackCond : public TObject
   static Float_t fgkMaxMatchChi2;         // max acceptable matching chi2
   static Float_t fgkMaxITSSAChi2;         // max acceptable standalone ITS backward fit chi2
   //
-  ClassDef(AliITSUTrackCond,6)           // set of requirements on track hits pattern
+  ClassDef(AliITSUTrackCond,7)           // set of requirements on track hits pattern
 };
 
 
