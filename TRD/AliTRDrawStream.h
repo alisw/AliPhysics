@@ -48,16 +48,13 @@ class AliTRDrawStream : public TObject
   TClonesArray* GetMarkerArray() const { return fMarkers; }
 
   AliTRDdigitsManager* GetDigitsManager() const { return fDigitsManager; }
-  TTree *GetTrackletTree() const { return fTrackletTree; }
 
-  Bool_t ReadEvent(TTree *trackletTree = 0x0);
+  Bool_t ReadEvent();
 
   Bool_t NextDDL();
   Int_t NextChamber(AliTRDdigitsManager *digMgr);
   Int_t NextChamber(AliTRDdigitsManager *digMgr,
   		      UInt_t ** /* trackletContainer */, UShort_t ** /* errorContainer */) { AliError("Deprecated, use NextChamber(AliTRDdigitsManger*) instead!"); return NextChamber(digMgr); }
-
-  Bool_t ConnectTracklets(TTree *trklTree);
 
   void StoreErrorsInTree()   { fStoreError = &AliTRDrawStream::StoreErrorTree; }
   void StoreErrorsInArray()  { fStoreError = &AliTRDrawStream::StoreErrorArray; }
@@ -168,12 +165,36 @@ class AliTRDrawStream : public TObject
     }
     return size;
   }
+  Int_t GetEventSize(Int_t sector, Int_t stack, Int_t hc) const {
+    return fStats.fStatsSector[sector].fStatsHC[12*stack + hc].fBytes;
+  }
   Int_t GetNTracklets(Int_t sector) const { return fStats.fStatsSector[sector].fNTracklets; }
   Int_t GetNMCMs(Int_t sector)      const { return fStats.fStatsSector[sector].fNMCMs; }
   Int_t GetNChannels(Int_t sector)  const { return fStats.fStatsSector[sector].fNChannels; }
 
   ULong64_t GetTrkFlags(Int_t sector, Int_t stack) const { return (fCurrTrgFlags[sector] & (1 << (27 + stack))) ? fCurrTrkFlags[sector*fgkNstacks + stack] : 0; }
   UInt_t GetTriggerFlags(Int_t sector) const { return fCurrTrgFlags[sector]; }
+  UInt_t GetLinkMonitorFlags(Int_t sector, Int_t stack) const {
+    UInt_t temp = 0;
+    for (Int_t iLink = 0; iLink < 12; iLink++)
+      temp |= (fCurrLinkMonitorFlags[(sector * fgkNstacks + stack) * fgkNlinks + iLink] & 0x3) << (iLink * 2);
+    temp |= ((GetMatchFlagsBP(sector)   >> stack) & 0x1) << 24;
+    temp |= ((GetMatchFlagsSRAM(sector) >> stack) & 0x1) << 25;
+    return temp;
+  }
+  UInt_t GetMatchFlagsSRAM(Int_t sector) const { return fCurrMatchFlagsSRAM[sector]; }
+  UInt_t GetMatchFlagsBP(Int_t sector)   const { return fCurrMatchFlagsPostBP[sector]; }
+
+#ifdef TRD_RAW_DEBUG
+  UInt_t GetBC(Int_t hc)               const { return fCurrBC[hc]; }
+  UInt_t GetEvCount(Int_t det)     const { return fCurrEvCount[det]; }
+  UInt_t GetL0Count(Int_t sector)  const { return fCurrL0Count[sector]; }
+  UInt_t GetL1aCount(Int_t sector) const { return fCurrL1aCount[sector]; }
+  UInt_t GetL1rCount(Int_t sector) const { return fCurrL1rCount[sector]; }
+  UInt_t GetL2aCount(Int_t sector) const { return fCurrL2aCount[sector]; }
+  UInt_t GetL2rCount(Int_t sector) const { return fCurrL2rCount[sector]; }
+  UInt_t GetChecksumStack(Int_t sector, Int_t stack) const { return fCurrChecksumStack[sector][stack]; }
+#endif
 
   // raw data dumping
   void SetDumpMCM(Int_t det, Int_t rob, Int_t mcm, Bool_t dump = kTRUE);
@@ -207,6 +228,8 @@ class AliTRDrawStream : public TObject
   Int_t ReadTPData(Int_t mode = 1);
   Int_t ReadZSData();
   Int_t ReadNonZSData();
+
+  UShort_t CalcLinkChecksum(UInt_t *data, Int_t size);
 
   Int_t SeekNextStack();
   Int_t SeekNextLink();
@@ -300,6 +323,15 @@ class AliTRDrawStream : public TObject
   UInt_t fCurrTrackEnable;			// current value of track enable
   UInt_t fCurrTrackletEnable; 			// current value of tracklet enable
   UInt_t fCurrStackMask;			// current mask of active stacks
+#ifdef TRD_RAW_DEBUG
+  UInt_t *fCurrL0Count;  	                // number of received L0 triggers
+  UInt_t *fCurrL1aCount;	                // number of received L1a triggers
+  UInt_t *fCurrL1rCount;	                // number of received L1r triggers
+  UInt_t *fCurrL2aCount;	                // number of received L2a triggers
+  UInt_t *fCurrL2rCount;	                // number of received L2r triggers
+   Int_t fCurrL0offset[540];	                // current offset for L0 accepts from GTU and chambers
+  UInt_t fCurrEvCount[540];	                // current event count from the MCMs
+#endif
 
   // Tracking header
   UInt_t *fCurrTrkHeaderIndexWord;              // current tracking header index word
@@ -325,9 +357,9 @@ class AliTRDrawStream : public TObject
   UInt_t *fCurrLinkDebugFlags;			// current link debug flags
 
   // CRC checks from trailer
-  Char_t fCurrMatchFlagsSRAM;
-  Char_t fCurrMatchFlagsPostBP;
-  UInt_t fCurrChecksumStack[5];
+  Char_t fCurrMatchFlagsSRAM[18];
+  Char_t fCurrMatchFlagsPostBP[18];
+  UInt_t fCurrChecksumStack[18][5];
   UInt_t fCurrChecksumSIU;
 
   // HC information
@@ -342,21 +374,19 @@ class AliTRDrawStream : public TObject
   Int_t fCurrHC;				// current HC
   Int_t fCurrCheck;				// current check bits
   Int_t fCurrNtimebins;				// current number of timebins
-  Int_t fCurrBC;				// current BC
   Int_t fCurrPtrgCnt;				// current pretrigger count
   Int_t fCurrPtrgPhase;				// current pretrigger phase
+#ifdef TRD_RAW_DEBUG
+  Int_t fCurrBC[1080];				// current BC
+#endif
 
   // settings for dumping
   Int_t fDumpMCM[100];		                // MCMs to dump
   Int_t fNDumpMCMs;                             // number of MCMs to dump
 
-  // tracklet information
-  TClonesArray *fTrackletArray;			// pointer to array for tracklet storage
-
   // output data
   AliTRDarrayADC *fAdcArray;			// pointer to ADC array
   AliTRDSignalIndex *fSignalIndex;		// pointer to the signal index
-  TTree *fTrackletTree; 			// pointer to the tree for tracklet storage
   TClonesArray *fTracklets;			// pointer to array of tracklets
   TClonesArray *fTracks;			// pointer to array of GTU tracks
   TClonesArray *fMarkers;			// pointer to array of markers (data present, errors, ...)

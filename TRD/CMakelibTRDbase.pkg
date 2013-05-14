@@ -113,6 +113,16 @@ set ( DHDR  TRDbaseLinkDef.h)
 
 set ( EINCLUDE  RAW TRD/Cal STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
 
+if (TRD_RAW_CRC)
+  message ( STATUS "CRC support for AliTRDrawStream enabled" )
+  set ( EDEFINE "${EDEFINE} -DTRD_RAW_CRC" )
+endif (TRD_RAW_CRC)
+
+if (TRD_RAW_DEBUG)
+  message ( STATUS "Debug support for AliTRDrawStream enabled" )
+  set ( EDEFINE "${EDEFINE} -DTRD_RAW_DEBUG" )
+endif (TRD_RAW_DEBUG)
+
 set ( EXPORT 
   Cal/AliTRDCalPID.h 
   AliTRDgeometry.h
