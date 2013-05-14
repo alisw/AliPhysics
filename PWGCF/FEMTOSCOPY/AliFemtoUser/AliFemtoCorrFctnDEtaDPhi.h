@@ -13,10 +13,14 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
+#include "THnSparse.h"
 #include "AliFemtoCorrFctn.h"
 
 class AliFemtoCorrFctnDEtaDPhi : public AliFemtoCorrFctn {
 public:
+  enum CorrectionType {kNone=0, kPt=1, kEta=2};
+  typedef enum CorrectionType ReadCorrectionType;
+
   AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiBins, const int& aEtaBins);
   AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPhi& aCorrFctn);
   virtual ~AliFemtoCorrFctnDEtaDPhi();
@@ -29,6 +33,7 @@ public:
 
   virtual void Finish();
   void SetDoPtAnalysis(int do2d);
+  void SetDoCorrections(CorrectionType doCorr);
 
   void WriteHistos();
   virtual TList* GetOutputList();
@@ -57,6 +62,12 @@ private:
   TH2D *fYtYtNumerator;
   TH2D *fYtYtDenominator; 
 
+  CorrectionType fIfCorrection;
+  THnSparseF *fPtCorrectionsNum;
+  THnSparseF *fPtCorrectionsDen;
+
+  THnSparseF *fEtaCorrectionsNum;
+  THnSparseF *fEtaCorrectionsDen;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnDEtaDPhi, 1)

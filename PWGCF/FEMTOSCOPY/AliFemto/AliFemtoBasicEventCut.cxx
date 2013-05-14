@@ -26,8 +26,8 @@ AliFemtoBasicEventCut::AliFemtoBasicEventCut() :
   fEventMult[1] = 100000;
   fVertZPos[0] = -100.0;
   fVertZPos[1] = 100.0;
-  fPsiEP[0] = -100.0;
-  fPsiEP[1] = 100.0;
+  fPsiEP[0] = -1000.0;
+  fPsiEP[1] = 1000.0;
 } 
 //------------------------------
 AliFemtoBasicEventCut::~AliFemtoBasicEventCut(){
@@ -70,7 +70,7 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
   // cout << "AliFemtoBasicEventCut:: goodEvent" <<goodEvent << endl;
 
   goodEvent ? fNEventsPassed++ : fNEventsFailed++ ;
-  //  cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
+    cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
 //     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)) &&
 
   return (goodEvent);
