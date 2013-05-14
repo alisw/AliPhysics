@@ -154,9 +154,17 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
    AliAODv0       *v0aod = fDaughter->Ref2AODv0();
    AliESDEvent    *lESDEvent = fEvent->GetRefESD();
    
-   Double_t xPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetX();
-   Double_t yPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetY();
-   Double_t zPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetZ();
+   Double_t xPrimaryVertex = -999.9;
+   Double_t yPrimaryVertex = -999.9;
+   Double_t zPrimaryVertex = -999.9;
+   
+   if(lESDEvent){
+   
+   xPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetX();
+   yPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetY();
+   zPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetZ();
+   
+   }
    
    if (fUseMCInfo && !refMC) {
       AliError("No MC");
@@ -460,7 +468,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
 	  return kFALSE;
 	 }
       case kLambdaProtonPIDCut:
-         if(v0esd) {
+         if(v0esd && lESDEvent) {
 	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
 	   // retrieve the V0 daughters
    	   UInt_t lIdxPos      = (UInt_t) TMath::Abs(v0ESD->GetPindex());
@@ -481,7 +489,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
 	  return kFALSE;
 	 }
        case kAntiLambdaAntiProtonPIDCut:
-         if(v0esd) {
+         if(v0esd && lESDEvent) {
 	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
 	   // retrieve the V0 daughters
    	   UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0ESD->GetNindex());
@@ -502,7 +510,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
 	  return kFALSE;
 	 }
       case kLambdaPionPIDCut:
-         if(v0esd) {
+         if(v0esd && lESDEvent) {
 	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
 	   // retrieve the V0 daughters
    	   UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0ESD->GetNindex());
@@ -523,7 +531,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
 	  return kFALSE;
 	 }
        case kAntiLambdaAntiPionPIDCut:
-         if(v0esd) {
+         if(v0esd && lESDEvent) {
 	   AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
 	   // retrieve the V0 daughters
    	   UInt_t lIdxPos      = (UInt_t) TMath::Abs(v0ESD->GetPindex());
