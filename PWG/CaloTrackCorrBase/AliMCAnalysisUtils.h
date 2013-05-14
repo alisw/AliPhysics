@@ -52,10 +52,10 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   CheckCommonAncestor(const Int_t index1, const Int_t index2, const AliCaloTrackReader* reader, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & v) ;
   
-  Int_t   CheckOrigin(const Int_t label, const AliCaloTrackReader * reader, const Int_t input) ;
+  Int_t   CheckOrigin(const Int_t label, const AliCaloTrackReader * reader) ;
   
   //Check the label of the most significant particle but do checks on the rest of the contributing labels
-  Int_t   CheckOrigin       (const Int_t *label,  const Int_t nlabels, const AliCaloTrackReader * reader, const Int_t input) ;
+  Int_t   CheckOrigin       (const Int_t *label,  const Int_t nlabels, const AliCaloTrackReader * reader) ;
   Int_t   CheckOriginInStack(const Int_t *labels, const Int_t nlabels, AliStack * stack)                ; // ESD
   Int_t   CheckOriginInAOD  (const Int_t *labels, const Int_t nlabels, const TClonesArray* mcparticles) ; // AOD
   
@@ -83,7 +83,7 @@ class AliMCAnalysisUtils : public TObject {
   //--------------------------------------
   // Other methods
   //--------------------------------------
-  
+    
   // Method to recover MC jets stored in generator
   TList * GetJets(const AliCaloTrackReader * reader) ;
   

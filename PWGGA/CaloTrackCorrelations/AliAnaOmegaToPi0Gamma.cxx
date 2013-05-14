@@ -343,23 +343,21 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
     }
     else if(GetReader()->ReadAODMCParticles()){
       //Get the list of MC particles
-      mcparticles0 = GetReader()->GetAODMCParticles(0);
-      if(!mcparticles0 )     {
+      mcparticles0 = GetReader()->GetAODMCParticles();
+      if(!mcparticles0 )
+      {
         if(GetDebug() > 0) printf("AliAnaAcceptance::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
       }
-      //           if(GetReader()->GetSecondInputAODTree()){
-      //               mcparticles1 = GetReader()->GetAODMCParticles(1);
-      //               if(!mcparticles1 && GetDebug() > 0)     {
-      //                   printf("AliAnaAcceptance::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
-      //                }
-      //           }
-      else{
-        for(Int_t i=0;i<mcparticles0->GetEntries();i++){
+      else
+      {
+        for(Int_t i=0;i<mcparticles0->GetEntries();i++)
+        {
           aodprimary =(AliAODMCParticle*)mcparticles0->At(i);
           pdg = aodprimary->GetPdgCode() ;
           eta=aodprimary->Eta();
           pt=aodprimary->Pt();
-          if(TMath::Abs(eta)<0.5) {
+          if(TMath::Abs(eta)<0.5)
+          {
             if(pdg==223) fhOmegaPriPt->Fill(pt);
           }
           

@@ -158,8 +158,9 @@ fh1EOverP(0),                          fh2dR(0),
 fh2EledEdx(0),                         fh2MatchdEdx(0),
 fhMCEle1EOverP(0),                     fhMCEle1dR(0),                          fhMCEle2MatchdEdx(0),
 fhMCChHad1EOverP(0),                   fhMCChHad1dR(0),                        fhMCChHad2MatchdEdx(0),
-fhMCNeutral1EOverP(0),                 fhMCNeutral1dR(0),                      fhMCNeutral2MatchdEdx(0), fh1EOverPR02(0),           
-fhMCEle1EOverPR02(0),                  fhMCChHad1EOverPR02(0),                 fhMCNeutral1EOverPR02(0)
+fhMCNeutral1EOverP(0),                 fhMCNeutral1dR(0),                      fhMCNeutral2MatchdEdx(0), fh1EOverPR02(0),       
+fhMCEle1EOverPR02(0),                  fhMCChHad1EOverPR02(0),                 fhMCNeutral1EOverPR02(0),
+fh1EleEOverP(0), fhMCEle1EleEOverP(0), fhMCChHad1EleEOverP(0), fhMCNeutral1EleEOverP(0)
 {
   //Default Ctor
   
@@ -661,7 +662,7 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, const In
     Int_t  nLabel = clus->GetNLabels();
     Int_t* labels = clus->GetLabels();
     if(IsDataMC()){
-      Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels,nLabel, GetReader(),0);
+      Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels,nLabel, GetReader());
       if(   GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton) && 
          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0)    && 
          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)    &&
@@ -1014,7 +1015,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
   Int_t charge = 0;	
   
   //Check the origin.
-  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels,nLabels, GetReader(),0);
+  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels,nLabels, GetReader());
   
   if     ( GetReader()->ReadStack() && 
           !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown))
@@ -1070,7 +1071,6 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
         if( iParent < 0 )
         {
           iParent = iMother;
-          printf("break\n");
           break;
         }
         
@@ -1127,10 +1127,10 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
           !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown))
   {//it MC AOD and known tag
     //Get the list of MC particles
-    if(!GetReader()->GetAODMCParticles(0)) 
+    if(!GetReader()->GetAODMCParticles())
       AliFatal("MCParticles not available!");
     
-    aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(label);
+    aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
     iMother = label;
     pdg0    = TMath::Abs(aodprimary->GetPdgCode());
     pdg     = pdg0;
@@ -1152,13 +1152,13 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
       if(GetDebug() > 1 ) 
         printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
       //Get the parent
-      aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iParent);
+      aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles())->At(iParent);
       pdg = TMath::Abs(aodprimary->GetPdgCode());
       while ((pdg == 22 || pdg == 11) && !aodprimary->IsPhysicalPrimary()) 
       {
         Int_t iMotherOrg = iMother;
         iMother    = iParent;
-        aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMother);
+        aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles())->At(iMother);
         status     = aodprimary->IsPrimary();
         iParent    = aodprimary->GetMother();
         pdg        = TMath::Abs(aodprimary->GetPdgCode());
@@ -1167,7 +1167,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
         // there are other possible decays, ignore them for the moment
         if(pdg==111 || pdg==221)
         {
-          aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMotherOrg);
+          aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles())->At(iMotherOrg);
           break;
         }        
         
@@ -1199,7 +1199,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
       while(pdg != 111 && pdg != 221)
       {
         iMother    = iParent;
-        aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMother);
+        aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles())->At(iMother);
         status     = aodprimary->IsPrimary();
         iParent    = aodprimary->GetMother();
         pdg        = TMath::Abs(aodprimary->GetPdgCode());
@@ -1357,7 +1357,10 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
   Double_t eOverP = e/tmom;
   
   fh1EOverP->Fill(tpt, eOverP);
-  if(dR < 0.02) fh1EOverPR02->Fill(tpt,eOverP);
+  if(dR < 0.02){
+    fh1EOverPR02->Fill(tpt,eOverP);
+    if(dedx > 60 && dedx < 100) fh1EleEOverP->Fill(tpt,eOverP);
+  }
   
   fh2dR->Fill(e,dR);
   fh2MatchdEdx->Fill(tmom,dedx);
@@ -1371,21 +1374,30 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
       fhMCEle1EOverP->Fill(tpt,eOverP);
       fhMCEle1dR->Fill(dR);
       fhMCEle2MatchdEdx->Fill(tmom,dedx);		
-      if(dR < 0.02) fhMCEle1EOverPR02->Fill(tpt,eOverP);
+      if(dR < 0.02){
+	fhMCEle1EOverPR02->Fill(tpt,eOverP);
+	if(dedx > 60 && dedx < 100) fhMCEle1EleEOverP->Fill(tpt,eOverP);
+      }
     }
     else if(charge!=0)
     {
       fhMCChHad1EOverP->Fill(tpt,eOverP);
       fhMCChHad1dR->Fill(dR);
       fhMCChHad2MatchdEdx->Fill(tmom,dedx);	
-      if(dR < 0.02) fhMCChHad1EOverPR02->Fill(tpt,eOverP);
+      if(dR < 0.02){
+	fhMCChHad1EOverPR02->Fill(tpt,eOverP);
+	if(dedx > 60 && dedx < 100) fhMCChHad1EleEOverP->Fill(tpt,eOverP);
+      }
     }
     else if(charge == 0)
     {
       fhMCNeutral1EOverP->Fill(tpt,eOverP);
       fhMCNeutral1dR->Fill(dR);
       fhMCNeutral2MatchdEdx->Fill(tmom,dedx);	
-      if(dR < 0.02) fhMCNeutral1EOverPR02->Fill(tpt,eOverP);
+      if(dR < 0.02){
+	fhMCNeutral1EOverPR02->Fill(tpt,eOverP);
+	if(dedx > 60 && dedx < 100) fhMCNeutral1EleEOverP->Fill(tpt,eOverP);
+      }
     }
   }//DataMC
   
@@ -2118,6 +2130,11 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fh1EOverPR02->SetYTitle("E/p");
     fh1EOverPR02->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fh1EOverPR02);	
+
+    fh1EleEOverP = new TH2F("h1EleEOverP","Electron candidates E/p (60<dEdx<100)",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
+    fh1EleEOverP->SetYTitle("E/p");
+    fh1EleEOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fh1EleEOverP);
   }
   
   if(fFillAllPi0Histo)
@@ -2711,6 +2728,22 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhMCNeutral1EOverPR02->SetYTitle("E/p");
     fhMCNeutral1EOverPR02->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhMCNeutral1EOverPR02);
+    
+    fhMCEle1EleEOverP = new TH2F("hMCEle1EleEOverP","Electron candidates E/p (60<dEdx<100), MC electrons",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
+    fhMCEle1EleEOverP->SetYTitle("E/p");
+    fhMCEle1EleEOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCEle1EleEOverP);
+
+    fhMCChHad1EleEOverP = new TH2F("hMCEle1EleEOverP","Electron candidates E/p (60<dEdx<100), MC charged hadrons",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
+    fhMCChHad1EleEOverP->SetYTitle("E/p");
+    fhMCChHad1EleEOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCChHad1EleEOverP);
+
+    fhMCNeutral1EleEOverP = new TH2F("hMCNeutral1EleEOverP","Electron candidates E/p (60<dEdx<100), MC neutrals",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
+    fhMCNeutral1EleEOverP->SetYTitle("E/p");
+    fhMCNeutral1EleEOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCNeutral1EleEOverP);
+    
   }
   
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
@@ -3043,13 +3076,13 @@ void AliAnaCalorimeterQA::MCHistograms()
   }
   else if(GetReader()->ReadAODMCParticles()){
     
-    if(!GetReader()->GetAODMCParticles(0)) 	
+    if(!GetReader()->GetAODMCParticles())
       AliFatal("AODMCParticles not available!");
     
     //Fill some pure MC histograms, only primaries.
-    for(Int_t i=0 ; i < (GetReader()->GetAODMCParticles(0))->GetEntriesFast(); i++)
+    for(Int_t i=0 ; i < (GetReader()->GetAODMCParticles())->GetEntriesFast(); i++)
     {
-      AliAODMCParticle *aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(i) ;
+      AliAODMCParticle *aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(i) ;
       
       if (!aodprimary->IsPrimary()) continue; //accept all which is not MC transport generated. Don't know how to avoid partons
       
@@ -3206,7 +3239,7 @@ void AliAnaCalorimeterQA::WeightHistograms(AliVCluster *clus, AliVCaloCells* cel
       
       if(IsDataMC()){  
         
-        Int_t tag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(),clus->GetNLabels(), GetReader(),0);
+        Int_t tag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(),clus->GetNLabels(), GetReader());
         
         if(   GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton) && 
            !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0)      && 

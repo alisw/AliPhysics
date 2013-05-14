@@ -44,6 +44,7 @@
 #include "AliVCaloCells.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliAODMCParticle.h"
 
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
@@ -79,9 +80,9 @@ fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0), 
 fRecalculateClusters(kFALSE),fSelectEmbeddedClusters(kFALSE),
 fTrackStatus(0),             fTrackFilterMask(0),             
-fESDtrackCuts(0),            fConstrainTrack(kFALSE),
+fESDtrackCuts(0),            fESDtrackComplementaryCuts(0),   fConstrainTrack(kFALSE),
 fSelectHybridTracks(0),      fSelectSPDHitTracks(kFALSE),
-fTrackMult(0),               fTrackMultEtaCut(0.8),
+fTrackMult(0),               fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE), 
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),      
 fEventTriggerMask(0),        fMixEventTriggerMask(0),         fEventTriggerAtSE(0), 
@@ -93,10 +94,16 @@ fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),                    
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE), 
-fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),  fUseEventsWithPrimaryVertex(kFALSE),
-fTriggerAnalysis (0x0),
+fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
+fDoVertexBCEventSelection(kFALSE),
+fDoRejectNoTrackEvents(kFALSE),
+fUseEventsWithPrimaryVertex(kFALSE),
+fTriggerAnalysis (0x0),      fTimeStampEventSelect(0),
+fTimeStampEventFracMin(0),   fTimeStampEventFracMax(0),
+fTimeStampRunMin(0),         fTimeStampRunMax(0),
 fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
-fCentralityClass(""),        fCentralityOpt(0),
+fVertexBC(-200),             fRecalculateVertexBC(0),
+fCentralityClass(""),            fCentralityOpt(0),
 fEventPlaneMethod(""),       fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 {
   //Ctor
@@ -150,6 +157,7 @@ AliCaloTrackReader::~AliCaloTrackReader()
 	}
   
   delete fESDtrackCuts;
+  delete fESDtrackComplementaryCuts;
   delete fTriggerAnalysis;
   
   //  Pointers not owned, done by the analysis frame
@@ -158,6 +166,20 @@ AliCaloTrackReader::~AliCaloTrackReader()
   //  if(fMC)          delete fMC ;  
   //  Pointer not owned, deleted by maker
   //  if (fCaloUtils) delete fCaloUtils ;
+  
+}
+
+//________________________________________________________________________
+Bool_t  AliCaloTrackReader::AcceptDCA(const Float_t pt, const Float_t dca)
+{
+  // Accept track if DCA is smaller than function
+  
+  Float_t cut = fTrackDCACut[0]+fTrackDCACut[1]/TMath::Power(pt,fTrackDCACut[2]);
+  
+  if(TMath::Abs(dca) < cut)
+    return kTRUE;
+  else
+    return kFALSE;
   
 }
 
@@ -235,6 +257,44 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
   
 }
 
+//_________________________________________________________________
+void AliCaloTrackReader::CorrectMCLabelForAODs(AliVCluster * clus)
+{
+ // AODs filter particles, not anymore correspondance with MC position in array
+ // Check if label is correct and if not, change it
+  
+  Int_t * labels = clus->GetLabels();
+
+  for(UInt_t ilabel = 0; ilabel < clus->GetNLabels(); ilabel++)
+  {
+    Int_t orgLabel = labels[ilabel];
+        
+    TClonesArray * arr = GetAODMCParticles()  ;
+        
+    if(!arr)
+    {
+      printf("AliCaloTrackReader::CorrectMCLabelForAODs() - Input array not available\n");
+      return ;
+    }
+    
+    AliAODMCParticle *  particle = (AliAODMCParticle *)arr->At(orgLabel);
+    
+    if(orgLabel != particle->Label())
+    {
+      // loop on the particles list and check if there is one with the same label
+      for(Int_t ind = 0; ind < arr->GetEntriesFast(); ind++ )
+      {
+        particle = (AliAODMCParticle *) arr->At(ind);
+        
+        if(orgLabel == particle->Label()) labels[ilabel] = ind;
+      }
+    }
+    
+    //if(orgLabel!=labels[ilabel]) printf("\t Label in %d - out %d \n",orgLabel, clus->GetLabels()[ilabel]);
+    
+  }
+}
+
 //____________________________________________
 AliStack* AliCaloTrackReader::GetStack() const 
 {
@@ -301,23 +361,19 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
 }
 
 //____________________________________________________________________
-TClonesArray* AliCaloTrackReader::GetAODMCParticles(Int_t input) const 
+TClonesArray* AliCaloTrackReader::GetAODMCParticles() const 
 {
   //Return list of particles in AOD. Do it for the corresponding input event.
   
   TClonesArray * rv = NULL ; 
   if(fDataType == kAOD)
   {
-    if(input == 0)
-    {
-      //Normal input AOD
-      AliAODEvent * evt = dynamic_cast<AliAODEvent*> (fInputEvent) ;
-      if(evt)
-        rv = (TClonesArray*)evt->FindListObject("mcparticles");
-      else  
-        printf("AliCaloTrackReader::GetAODMCParticles() - wrong AOD input index? %d, or non existing tree? \n",input); 
-    }  
-    
+    //Normal input AOD
+    AliAODEvent * evt = dynamic_cast<AliAODEvent*> (fInputEvent) ;
+    if(evt)
+      rv = (TClonesArray*)evt->FindListObject("mcparticles");
+    else  
+      printf("AliCaloTrackReader::GetAODMCParticles() - Null AOD event \n"); 
   } 
   else 
   {
@@ -347,6 +403,54 @@ AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader() const
   return mch;
 }
 
+//___________________________________________________________
+Int_t AliCaloTrackReader::GetVertexBC(const AliVVertex * vtx)
+{
+  // Get the vertex BC
+    
+  Int_t vertexBC=vtx->GetBC();
+  if(!fRecalculateVertexBC) return vertexBC;
+  
+  // In old AODs BC not stored, recalculate it
+  // loop over the global track and select those which have small DCA to primary vertex (e.g. primary).
+  // If at least one of these primaries has valid BC != 0, then this vertex is a pile-up candidate.
+  // Execute after CTS
+  Double_t bz  = fInputEvent->GetMagneticField();
+  Bool_t   bc0 = kFALSE;
+  Int_t    ntr = GetCTSTracks()->GetEntriesFast();
+  //printf("N Tracks %d\n",ntr);
+  
+  for(Int_t i = 0 ; i < ntr ; i++)
+  {
+    AliVTrack * track =  (AliVTrack*) (GetCTSTracks()->At(i));
+    
+    //Check if has TOF info, if not skip
+    ULong_t status  = track->GetStatus();
+    Bool_t  okTOF   = (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ;
+    vertexBC        = track->GetTOFBunchCrossing(bz);
+    Float_t pt      = track->Pt();
+    
+    if(!okTOF) continue;
+    
+    // Get DCA x, y
+    Double_t dca[2]   = {1e6,1e6};
+    Double_t covar[3] = {1e6,1e6,1e6};
+    track->PropagateToDCA(vtx,bz,100.,dca,covar);
+    
+    if(AcceptDCA(pt,dca[0]))
+    {
+      if     (vertexBC !=0 && fVertexBC != AliVTrack::kTOFBCNA) return vertexBC;
+      else if(vertexBC == 0)                                    bc0 = kTRUE;
+    }
+  }
+  
+  if( bc0 ) vertexBC = 0 ;
+  else      vertexBC = AliVTrack::kTOFBCNA ;
+  
+  return vertexBC;
+  
+}
+
 //_____________________________
 void AliCaloTrackReader::Init()
 {
@@ -371,6 +475,9 @@ void AliCaloTrackReader::Init()
     TGeoManager::Import(fImportGeometryFilePath) ; // default need file "geometry.root" in local dir!!!!
   }
 
+  if(!fESDtrackCuts)
+    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks
+
 }
 
 //_______________________________________
@@ -386,10 +493,11 @@ void AliCaloTrackReader::InitParameters()
   fPHOSPtMax  = 1000. ;
   
   //Track DCA cuts
-  fTrackDCACut[0] = 3; //xy, quite large
-  fTrackDCACut[1] = 3; //z, quite large
-  fTrackDCACut[2] = 3; //TPC constrained, quite large
-
+  // dca_xy cut = 0.0105+0.0350/TMath::Power(pt,1.1);
+  fTrackDCACut[0] = 0.0105; 
+  fTrackDCACut[1] = 0.0350; 
+  fTrackDCACut[2] = 1.1;
+  
   //Do not filter the detectors input by default.
   fFillEMCAL      = kFALSE;
   fFillPHOS       = kFALSE;
@@ -414,7 +522,8 @@ void AliCaloTrackReader::InitParameters()
   fTrackStatus     = 0;
   fTrackFilterMask = 128; //For AODs, but what is the difference between fTrackStatus and fTrackFilterMask?
   
-  fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks 
+  fESDtrackCuts = 0;
+  fESDtrackComplementaryCuts = 0;
   
   fConstrainTrack = kFALSE ; // constrain tracks to vertex
   
@@ -453,7 +562,21 @@ void AliCaloTrackReader::InitParameters()
 
   // Parametrized time cut (LHC11c)
   //fEMCALParamTimeCutMin[0] =-5;   fEMCALParamTimeCutMin[1] =-1 ; fEMCALParamTimeCutMin[2] = 1.87; fEMCALParamTimeCutMin[3] = 0.4;   
-  //fEMCALParamTimeCutMax[0] = 3.5; fEMCALParamTimeCutMax[1] = 50; fEMCALParamTimeCutMax[2] = 0.15; fEMCALParamTimeCutMax[3] = 1.6;   
+  //fEMCALParamTimeCutMax[0] = 3.5; fEMCALParamTimeCutMax[1] = 50; fEMCALParamTimeCutMax[2] = 0.15; fEMCALParamTimeCutMax[3] = 1.6;
+  
+  fTimeStampRunMin = -1;
+  fTimeStampRunMax = 1e12;
+  fTimeStampEventFracMin = -1;
+  fTimeStampEventFracMax = 2;
+
+  for(Int_t i = 0; i < 19; i++)
+  {
+    fEMCalBCEvent   [i] = 0;
+    fEMCalBCEventCut[i] = 0;
+    fTrackBCEvent   [i] = 0;
+    fTrackBCEventCut[i] = 0;
+  }
+  
 }
 
 //___________________________________________________________
@@ -586,7 +709,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
                                           const char * /*currentFileName*/) 
 {
   //Fill the event counter and input lists that are needed, called by the analysis maker.
-    
+  
   fEventNumber = iEntry;
   //fCurrentFileName = TString(currentFileName);
   if(!fInputEvent)
@@ -688,6 +811,25 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   //------------------------------------------------------
   //Event rejection depending on vertex, pileup, v0and
   //------------------------------------------------------
+  if(fDataType==kESD && fTimeStampEventSelect)
+  {
+    AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
+    if(esd)
+    {
+      Int_t timeStamp = esd->GetTimeStamp();
+      Float_t timeStampFrac = 1.*(timeStamp-fTimeStampRunMin) / (fTimeStampRunMax-fTimeStampRunMin);
+      
+      //printf("stamp0 %d, max0 %d, frac %f\n", timeStamp-fTimeStampRunMin,fTimeStampRunMax-fTimeStampRunMin, timeStampFrac);
+      
+      if(timeStampFrac < fTimeStampEventFracMin || timeStampFrac > fTimeStampEventFracMax) return kFALSE;
+    }
+    //printf("\t accept time stamp\n");
+  }
+
+  
+  //------------------------------------------------------
+  //Event rejection depending on vertex, pileup, v0and
+  //------------------------------------------------------
 
   if(fUseEventsWithPrimaryVertex)
   {
@@ -760,7 +902,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
         if(fTrackMult == 0) return kFALSE;
       }// no cluster
     }// CaloFileter patch
-  }// Event selection
+  }// Event selection/AliceSoft/AliRoot/trunk/PWG/CaloTrackCorrBase/AliCaloTrackReader.h
   //------------------------------------------------------
   
   //Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
@@ -770,36 +912,15 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     Int_t cen = GetEventCentrality();
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return kFALSE; //reject events out of bin.
   }
-  
+    
   //Fill the arrays with cluster/tracks/cells data
   
-  if(fFillEMCALCells) 
-    FillInputEMCALCells();
-  
-  if(fFillPHOSCells)  
-    FillInputPHOSCells();
-  
-  FillInputVZERO();
-  
-  if(fEventTriggerAtSE)
+  if(!fEventTriggerAtSE)
   {
-    if(fFillCTS)
-    {   
-      FillInputCTS();
-      //Accept events with at least one track
-      if(fTrackMult == 0 && fDoEventSelection) return kFALSE;
-    }
-    if(fFillEMCAL) 
-      FillInputEMCAL();
-    if(fFillPHOS)  
-      FillInputPHOS();
-  }
-  else 
-  {
-    // In case of mixing analysis, all triggers accepted, but trigger particles selected 
-    // only for the specific trigered events selected here. Mixing done only for MB events,
-    // tracks array filled also for those events and not the others.
-
+    // In case of mixing analysis, accept MB events, not only Trigger
+    // Track and cluster arrays filled for MB in order to create the pool in the corresponding analysis
+    // via de method in the base class FillMixedEventPool()
+    
     AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
     
@@ -808,21 +929,42 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     UInt_t isTrigger = inputHandler->IsEventSelected() & fEventTriggerMask;
     UInt_t isMB      = inputHandler->IsEventSelected() & fMixEventTriggerMask;
     
-    if(fFillCTS && (isMB || isTrigger))
-    {   
-      FillInputCTS();
-      //Accept events with at least one track
-      if(fTrackMult == 0 && fDoEventSelection) return kFALSE;
-    }
+    if(!isTrigger && !isMB) return kFALSE;
     
-    if(isTrigger)
-    {
-      if(fFillEMCAL) 
-        FillInputEMCAL();
-      if(fFillPHOS)  
-        FillInputPHOS();
-    } 
+    //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
   }
+  
+  // Get the main vertex BC, in case not available
+  // it is calculated in FillCTS checking the BC of tracks
+  // with DCA small (if cut applied, if open)
+  fVertexBC=fInputEvent->GetPrimaryVertex()->GetBC();
+  
+  if(fFillCTS)
+  {
+    FillInputCTS();
+    //Accept events with at least one track
+    if(fTrackMult == 0 && fDoRejectNoTrackEvents) return kFALSE ;
+  }
+  
+  if(fDoVertexBCEventSelection)
+  {
+    if(fVertexBC!=0 && fVertexBC!=AliVTrack::kTOFBCNA) return kFALSE ;
+  }
+    
+  if(fFillEMCALCells)
+    FillInputEMCALCells();
+  
+  if(fFillPHOSCells)
+    FillInputPHOSCells();
+  
+  if(fFillEMCAL)
+    FillInputEMCAL();
+  
+  if(fFillPHOS)
+    FillInputPHOS();
+  
+  FillInputVZERO();
+
   
   return kTRUE ;
 }
@@ -1038,6 +1180,10 @@ void AliCaloTrackReader::FillInputCTS()
     fTrackBCEvent   [i] = 0;
     fTrackBCEventCut[i] = 0;
   }
+  
+  Bool_t   bc0  = kFALSE;
+  if(fRecalculateVertexBC) fVertexBC=AliVTrack::kTOFBCNA;
+  
   for (Int_t itrack =  0; itrack <  nTracks; itrack++)
   {////////////// track loop
     AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; // retrieve track from esd
@@ -1050,33 +1196,50 @@ void AliCaloTrackReader::FillInputCTS()
     
     nstatus++;
     
+    Float_t dcaTPC =-999;
+    
     if     (fDataType==kESD)
     {
       AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (track);
       
-      if(esdTrack && fESDtrackCuts->AcceptTrack(esdTrack))
+      if(esdTrack)
       {
-        track->GetPxPyPz(pTrack) ;
-
-        if(fConstrainTrack)
+        if(fESDtrackCuts->AcceptTrack(esdTrack))
         {
+          track->GetPxPyPz(pTrack) ;
+
+          if(fConstrainTrack)
+          {
+            if(esdTrack->GetConstrainedParam())
+            {
+              const AliExternalTrackParam* constrainParam = esdTrack->GetConstrainedParam();
+              esdTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
+              esdTrack->GetConstrainedPxPyPz(pTrack);
+            }
+            else continue;
+            
+          } // use constrained tracks
+          
+          if(fSelectSPDHitTracks)
+          {//Not much sense to use with TPC only or Hybrid tracks
+            if(!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1)) continue ;
+          }
+        }
+        // Complementary track to global : Hybrids (make sure that the previous selection is for Global)
+        else  if(fESDtrackComplementaryCuts && fESDtrackComplementaryCuts->AcceptTrack(esdTrack))
+        {
+          // constrain the track
           if(esdTrack->GetConstrainedParam())
           {
-            const AliExternalTrackParam* constrainParam = esdTrack->GetConstrainedParam();
-            esdTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
-            esdTrack->GetConstrainedPxPyPz(pTrack);
+            esdTrack->Set(esdTrack->GetConstrainedParam()->GetX(),esdTrack->GetConstrainedParam()->GetAlpha(),esdTrack->GetConstrainedParam()->GetParameter(),esdTrack->GetConstrainedParam()->GetCovariance());
+          
+            track->GetPxPyPz(pTrack) ;
+
           }
           else continue;
-          
-        } // use constrained tracks
-        
-        if(fSelectSPDHitTracks)
-        {//Not much sense to use with TPC only or Hybrid tracks
-          if(!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1)) continue ;
         }
+        else continue;
       }
-      else continue;
-      
     } // ESD
     else if(fDataType==kAOD)
     {
@@ -1107,6 +1270,10 @@ void AliCaloTrackReader::FillInputCTS()
         
         if (fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS(): \t accepted track! \n");
         
+        //In case of AODs, TPC tracks cannot be propagated back to primary vertex,
+        // info stored here
+        dcaTPC = aodtrack->DCA();
+        
         track->GetPxPyPz(pTrack) ;
         
       } // aod track exists
@@ -1114,15 +1281,10 @@ void AliCaloTrackReader::FillInputCTS()
       
     } // AOD
     
-    //Count the tracks in eta < 0.9
-    //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
-    if(TMath::Abs(track->Eta())< fTrackMultEtaCut) fTrackMult++;
-    
     TLorentzVector momentum(pTrack[0],pTrack[1],pTrack[2],0);
     
-    Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
-    Double_t tof = -1000;
-    //Int_t    bc  = -1000;
+    Bool_t okTOF  = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
+    Double_t tof  = -1000;
     Int_t trackBC = -1000 ;
     
     if(okTOF)
@@ -1131,21 +1293,36 @@ void AliCaloTrackReader::FillInputCTS()
       SetTrackEventBC(trackBC+9);
 
       tof = track->GetTOFsignal()*1e-3;
-      //printf("track TOF %e\n",tof);
-      //bc = TMath::Nint((tof-25)/50) + 9;
-      //printf("track pt %f, tof %2.2f, bc=%d\n",track->Pt(),tof,bc);
-      //SetTrackEventBC(bc);
-
     }
+                
+    if(fUseTrackDCACut)
+    {
+      //normal way to get the dca, cut on dca_xy
+      if(dcaTPC==-999)
+      {
+        Double_t dca[2]   = {1e6,1e6};
+        Double_t covar[3] = {1e6,1e6,1e6};
+        Bool_t okDCA = track->PropagateToDCA(fInputEvent->GetPrimaryVertex(),bz,100.,dca,covar);
+        if( okDCA) okDCA = AcceptDCA(momentum.Pt(),dca[0]);
+        if(!okDCA)
+        {
+          //printf("AliCaloTrackReader::FillInputCTS() - Reject track pt %2.2f, dca_xy %2.4f, BC %d\n",momentum.Pt(),dca[0],trackBC);
+          continue ;
+        }
+      }
+    }// DCA cuts
     
-    if(fCTSPtMin > momentum.Pt() || fCTSPtMax < momentum.Pt()) continue ;
-        
-    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
-      
     if(okTOF)
     {
-       //SetTrackEventBCcut(bc);
+      //SetTrackEventBCcut(bc);
       SetTrackEventBCcut(trackBC+9);
+      
+      //After selecting tracks with small DCA, pointing to vertex, set vertex BC depeding on tracks BC
+      if(fRecalculateVertexBC)
+      {
+        if     (trackBC !=0 && trackBC != AliVTrack::kTOFBCNA) fVertexBC = trackBC;
+        else if(trackBC == 0)                                  bc0 = kTRUE;
+      }
 
       //In any case, the time should to be larger than the fixed window ...
       if( fUseTrackTimeCut && (trackBC!=0 || tof < fTrackTimeCutMin  || tof > fTrackTimeCutMax) )
@@ -1154,35 +1331,16 @@ void AliCaloTrackReader::FillInputCTS()
         continue ;
       }
       //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
-
+      
     }
-          
-    if(fUseTrackDCACut)
-    {
-      //In case of hybrid tracks on AODs, constrained TPC tracks cannot be propagated back to primary vertex
-      AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
-      Float_t dcaCons = -999;
-      if(aodTrack)
-      {
-        dcaCons = aodTrack->DCA();
-        //vtxBC   = aodTrack->GetProdVertex()->GetBC();
-        if(dcaCons > -999)
-        {
-          if(TMath::Abs(dcaCons) > fTrackDCACut[2] ) continue ;
-        }
-      }
-
-      //non contrained TPC tracks (tracks with ITS points) on AODs
-      if(dcaCons==-999)
-      {
-        Double_t dca[2]   = {1e6,1e6};
-        Double_t covar[3] = {1e6,1e6,1e6};
-        Bool_t okDCA = track->PropagateToDCA(fInputEvent->GetPrimaryVertex(),bz,100.,dca,covar);
-        if( !okDCA                               ||
-            TMath::Abs(dca[0]) > fTrackDCACut[0] ||
-            TMath::Abs(dca[1]) > fTrackDCACut[1]    ) continue ;
-      }
-    }// DCA cuts
+    
+    //Count the tracks in eta < 0.9
+    //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
+    if(TMath::Abs(track->Eta())< fTrackMultEtaCut) fTrackMult++;
+    
+    if(fCTSPtMin > momentum.Pt() || fCTSPtMax < momentum.Pt()) continue ;
+    
+    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
     
     if(fDebug > 2 && momentum.Pt() > 0.1)
       printf("AliCaloTrackReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
@@ -1194,6 +1352,12 @@ void AliCaloTrackReader::FillInputCTS()
     
   }// track loop
 	
+  if(fVertexBC ==0 || fVertexBC == AliVTrack::kTOFBCNA)
+  {
+    if( bc0 ) fVertexBC = 0 ;
+    else      fVertexBC = AliVTrack::kTOFBCNA ;
+  }
+  
   if(fDebug > 1)
     printf("AliCaloTrackReader::FillInputCTS()   - aod entries %d, input tracks %d, pass status %d, multipliticy %d\n", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult);//fCTSTracksNormalInputEntries);
   
@@ -1323,8 +1487,13 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   if (fMixedEvent) 
     clus->SetID(iclus) ; 
   
-  fEMCALClusters->Add(clus);	
-    
+  //Correct MC label for AODs
+  
+  if(ReadAODMCParticles())
+    CorrectMCLabelForAODs(clus);
+  
+  fEMCALClusters->Add(clus);
+  
 }
 
 //_______________________________________
@@ -1514,6 +1683,9 @@ void AliCaloTrackReader::FillInputPHOS()
           clus->SetID(iclus) ; 
         }              
         
+        if(ReadAODMCParticles())
+          CorrectMCLabelForAODs(clus);
+        
         fPHOSClusters->Add(clus);	
         
       }//PHOS cluster
@@ -1634,7 +1806,7 @@ Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
       return kTRUE;
       
     }
-    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) 
+    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1)
     {
       //      cout<<"bad vertex type::"<< event->GetPrimaryVertex()->GetName() << endl;
       return kFALSE;
@@ -1655,4 +1827,16 @@ void  AliCaloTrackReader::SetTrackCuts(AliESDtrackCuts * cuts)
   fESDtrackCuts = cuts ; 
   
 }		  
+
+//_________________________________________________________________________
+void  AliCaloTrackReader::SetTrackComplementaryCuts(AliESDtrackCuts * cuts)
+{
+  // Set Track cuts for complementary tracks (hybrids)
+  
+  if(fESDtrackComplementaryCuts) delete fESDtrackComplementaryCuts ;
+  
+  fESDtrackComplementaryCuts = cuts ;
+  
+}
+
 

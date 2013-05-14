@@ -1141,7 +1141,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
     }//stack exists and data is MC
   }//read stack
   else if(GetReader()->ReadAODMCParticles()){
-    TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
+    TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
     if(mcparticles){
       Int_t nprim = mcparticles->GetEntriesFast();
       
@@ -1359,7 +1359,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
             momstatus = mother->GetStatusCode();         
           }
           else {
-            TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
+            TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
             AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
             momindex  = ancestor->GetMother();
             if(momindex < 0) return;
@@ -1418,7 +1418,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
           momstatus = mother->GetStatusCode();         
         }
         else {
-          TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
+          TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
           AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
           momindex  = ancestor->GetMother();
           if(momindex < 0) return;

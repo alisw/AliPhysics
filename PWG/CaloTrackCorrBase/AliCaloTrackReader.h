@@ -118,7 +118,8 @@ public:
   void             SetEMCALEMax (Float_t  e)               { SetEMCALPtMax(e)              ; }
   void             SetPHOSEMax  (Float_t  e)               { SetPHOSPtMax (e)              ; }
   
-  
+  // Track DCA cut
+  Bool_t           AcceptDCA(const Float_t pt, const Float_t dca);
   Double_t         GetTrackDCACut(Int_t i)           const { if(i >= 0 && i < 3 ) return fTrackDCACut[i] ;
                                                              else return -999              ; }
   
@@ -127,6 +128,7 @@ public:
   
   void             SwitchOnUseTrackDCACut()                { fUseTrackDCACut = kTRUE       ; }
   void             SwitchOffUseTrackDCACut()               { fUseTrackDCACut = kFALSE      ; }
+  Bool_t           IsDCACutOn()                      const { return fUseTrackDCACut        ; }
   
   //Time cut
   
@@ -256,15 +258,42 @@ public:
   
   void             SwitchOnEventSelection()                { fDoEventSelection      = kTRUE  ; }
   void             SwitchOffEventSelection()               { fDoEventSelection      = kFALSE ; }
-  Bool_t           IsEventSelectionDone()            const { return fDoEventSelection        ; } 
+  Bool_t           IsEventSelectionDone()            const { return fDoEventSelection        ; }
   
   void             SwitchOnV0ANDSelection()                { fDoV0ANDEventSelection = kTRUE  ; }
   void             SwitchOffV0ANDSelection()               { fDoV0ANDEventSelection = kFALSE ; }
   Bool_t           IsV0ANDEventSelectionDone()       const { return fDoV0ANDEventSelection   ; } 
 
+  void             SwitchOnVertexBCEventSelection()        { fDoVertexBCEventSelection = kTRUE  ; }
+  void             SwitchOffVertexBCEventSelection()       { fDoVertexBCEventSelection = kFALSE ; }
+  Bool_t           IsVertexBCEventSelectionDone()    const { return fDoVertexBCEventSelection   ; }
+  
   void             SwitchOnPrimaryVertexSelection()        { fUseEventsWithPrimaryVertex = kTRUE  ; }
   void             SwitchOffPrimaryVertexSelection()       { fUseEventsWithPrimaryVertex = kFALSE ; }
   Bool_t           IsPrimaryVertexSelectionDone()    const { return fUseEventsWithPrimaryVertex   ; } 
+  
+  void             SwitchOnRejectNoTrackEvents()           { fDoRejectNoTrackEvents = kTRUE  ; }
+  void             SwitchOffRejectNoTrackEvents()          { fDoRejectNoTrackEvents = kFALSE ; }
+  Bool_t           IsEventWithNoTrackRejectionDone() const { return fDoRejectNoTrackEvents   ; }
+  
+  //Time Stamp
+  
+  Double_t         GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
+  Double_t         GetRunTimeStampMax()              const { return fTimeStampRunMax         ; }
+  
+  void             SetRunTimeStamp(Double_t a, Double_t b) { fTimeStampRunMin = a            ;
+                                                             fTimeStampRunMax = b            ; } // seconds
+  
+  Float_t          GetEventTimeStampFractionMin()    const { return fTimeStampEventFracMin   ; }
+  Float_t          GetEventTimeStampFractionMax()    const { return fTimeStampEventFracMax   ; }
+  
+  void             SetEventTimeStampFraction(Float_t a, Float_t b) { fTimeStampEventFracMin = a ;
+                                                                     fTimeStampEventFracMax = b ; }
+  
+  void             SwitchOnSelectEventTimeStamp()          { fTimeStampEventSelect = kTRUE   ; }
+  void             SwitchOffSelectEventTimeStamp()         { fTimeStampEventSelect = kFALSE  ; }
+  
+  Bool_t           IsSelectEventTimeStampOn()              {return  fTimeStampEventSelect    ; }
   
   Bool_t           IsPileUpFromSPD()               const ;
   Bool_t           IsPileUpFromEMCal()             const ;
@@ -291,6 +320,10 @@ public:
   void             SetEMCalEventBCcut(Int_t bc)            { if(bc >=0 && bc < 19) fEMCalBCEventCut[bc] = 1 ; }
   void             SetTrackEventBCcut(Int_t bc)            { if(bc >=0 && bc < 19) fTrackBCEventCut[bc] = 1 ; }
 
+  Int_t           GetVertexBC(const AliVVertex * vtx);
+  Int_t           GetVertexBC()                  const     { return fVertexBC              ; }
+  void            SwitchOnRecalculateVertexBC()            { fRecalculateVertexBC = kTRUE  ; }
+  void            SwitchOffRecalculateVertexBC()           { fRecalculateVertexBC = kFALSE ; }
   
   // Track selection
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
@@ -302,8 +335,12 @@ public:
   AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts         ; }
   void             SetTrackCuts(AliESDtrackCuts * cuts)    ;
 
+  AliESDtrackCuts* GetTrackComplementaryCuts()       const { return fESDtrackComplementaryCuts ; }
+  void             SetTrackComplementaryCuts(AliESDtrackCuts * cuts)  ;
+
+  
   void             SwitchOnConstrainTrackToVertex()        { fConstrainTrack     = kTRUE  ; } 
-  void             SwitchOffConstrainTrackToVertex()       { fConstrainTrack     = kFALSE ; }      
+  void             SwitchOffConstrainTrackToVertex()       { fConstrainTrack     = kFALSE ; }
   
   void             SwitchOnAODHybridTrackSelection()       { fSelectHybridTracks = kTRUE  ; } 
   void             SwitchOffAODHybridTrackSelection()      { fSelectHybridTracks = kFALSE ; }      
@@ -409,9 +446,10 @@ public:
   virtual AliGenEventHeader* GetGenEventHeader()     const ;
   
   //Filtered kinematics in AOD	
-  virtual TClonesArray*     GetAODMCParticles(Int_t input = 0) const ;
-  virtual AliAODMCHeader*   GetAODMCHeader()         const ;
-	
+  virtual TClonesArray*     GetAODMCParticles()      const ;
+  virtual AliAODMCHeader*   GetAODMCHeader   ()      const ;
+	virtual void              CorrectMCLabelForAODs(AliVCluster * clus);
+  
   virtual AliVEvent*        GetInputEvent()          const { return fInputEvent            ; }
   virtual AliVEvent*        GetOriginalInputEvent()  const { return 0x0                    ; }
   virtual AliAODEvent*      GetOutputEvent()         const { return fOutputEvent           ; }
@@ -488,7 +526,7 @@ public:
   Double_t         fTrackTimeCutMin;        // Remove tracks with time smaller than this value, in ns
   Double_t         fTrackTimeCutMax;        // Remove tracks with time larger than this value, in ns
   Bool_t           fUseTrackDCACut;         // Do DCA selection
-  Double_t         fTrackDCACut[3];         // Remove tracks with DCA larger than cut
+  Double_t         fTrackDCACut[3];         // Remove tracks with DCA larger than cut, parameters of function stored here
 
   TList          * fAODBranchList ;         //-> List with AOD branches created and needed in analysis
   TObjArray      * fCTSTracks ;             //-> temporal array with tracks
@@ -511,7 +549,8 @@ public:
   
   ULong_t          fTrackStatus        ;    // Track selection bit, select tracks refitted in TPC, ITS ...
   ULong_t          fTrackFilterMask    ;    // Track selection bit, for AODs (any difference with track status?)
-  AliESDtrackCuts *fESDtrackCuts       ;    // Track cut 
+  AliESDtrackCuts *fESDtrackCuts       ;    // Track cut
+  AliESDtrackCuts *fESDtrackComplementaryCuts;    // Track cut, complementary cuts for hybrids
   Bool_t           fConstrainTrack     ;    // Constrain Track to vertex
   Bool_t           fSelectHybridTracks ;    // Select CTS tracks of type hybrid (only for AODs)
   Bool_t           fSelectSPDHitTracks ;    // Ensure that track hits SPD layers
@@ -557,13 +596,23 @@ public:
   Bool_t           fRemoveLEDEvents;             // Remove events where LED was wrongly firing - EMCAL LHC11a
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
+  Bool_t           fDoVertexBCEventSelection;    // Select events with vertex on BC=0 or -100
+  Bool_t           fDoRejectNoTrackEvents;       // Reject events with no selected tracks in event
   Bool_t           fUseEventsWithPrimaryVertex ; // Select events with primary vertex
   AliTriggerAnalysis* fTriggerAnalysis;          // Access to trigger selection algorithm for V0AND calculation
+  
+  Bool_t           fTimeStampEventSelect;        // Select events within a fraction of data taking time
+  Float_t          fTimeStampEventFracMin;       // Minimum value of time stamp fraction event
+  Float_t          fTimeStampEventFracMax;       // Maximum value of time stamp fraction event
+  Double_t         fTimeStampRunMin;             // Minimum value of time stamp in run
+  Double_t         fTimeStampRunMax;             // Maximum value of time stamp in run
+  
   Double_t         fPileUpParamSPD[5];           // Parameters to pass to method IsPileupFromSPD: Int_t minContributors,
                                                  // Double_t minZdist, 
                                                  // Double_t nSigmaZdist, 
                                                  // Double_t nSigmaDiamXY, 
                                                  // Double_t nSigmaDiamZ)
+  
   // Pile-up in EMCal
   Int_t            fNPileUpClusters;             // Number of clusters with time avobe 20 ns
   Int_t            fNNonPileUpClusters;          // Number of clusters with time below 20 ns
@@ -572,7 +621,9 @@ public:
   Int_t            fEMCalBCEventCut[19];         // Fill one entry per event if there is a cluster in a given BC, depend on cluster E, acceptance cut
   Int_t            fTrackBCEvent[19];            // Fill one entry per event if there is a track in a given BC
   Int_t            fTrackBCEventCut[19];         // Fill one entry per event if there is a track in a given BC, depend on track pT, acceptance cut
-
+  Int_t            fVertexBC;                    // Vertex BC
+  Bool_t           fRecalculateVertexBC;         // Recalculate vertex BC from tracks pointing to vertex
+  
   //Centrality/Event plane
   TString          fCentralityClass;        // Name of selected centrality class     
   Int_t            fCentralityOpt;          // Option for the returned value of the centrality, possible options 5, 10, 100
@@ -586,7 +637,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,47)
+  ClassDef(AliCaloTrackReader,51)
   
 } ;
 

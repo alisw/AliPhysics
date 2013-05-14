@@ -77,7 +77,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fFillPileUpHistograms(0),       
     //Histograms
     fhPtInput(0),                   fhPtFidCut(0),
-    fhPtLeading(0),                 fhPtLeadingPileUp(),              
+    fhPtLeading(0),                 fhPtLeadingVtxBC0(0),
     fhPtLeadingVzBin(0),            fhPtLeadingBin(0),                 
     fhPhiLeading(0),                fhEtaLeading(0),   
     fhPtLeadingMC(),
@@ -113,6 +113,10 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhXEChargedBC0(),               fhXEUeChargedBC0(),
     fhZTChargedBC0(),               fhZTUeChargedBC0(),
     fhPtTrigChargedBC0(),
+    fhDeltaPhiChargedVtxBC0(),      fhDeltaPhiChargedPtA3GeVVtxBC0(),
+    fhXEChargedVtxBC0(),            fhXEUeChargedVtxBC0(),
+    fhZTChargedVtxBC0(),            fhZTUeChargedVtxBC0(),
+    fhPtTrigChargedVtxBC0(),
     fhDeltaPhiUeLeftCharged(0),     fhDeltaPhiUeRightCharged(0),
     fhDeltaPhiUeLeftUpCharged(0),   fhDeltaPhiUeRightUpCharged(0),
     fhDeltaPhiUeLeftDownCharged(0), fhDeltaPhiUeRightDownCharged(0),
@@ -161,9 +165,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhMCPtZTCharged(0),             fhMCPtHbpZTCharged(0),
     fhMCPtTrigPout(0),              fhMCPtAssocDeltaPhi(0),
     //Mixing
-    fhNEventsTrigger(0),            
-    fhNtracksAll(0),                fhNtracksTrigger(0),            fhNtracksMB(0),
-    fhNclustersAll(0),              fhNclustersTrigger(0),          fhNclustersMB(0),
+    fhNEventsTrigger(0),            fhNtracksMB(0),                 fhNclustersMB(0),
     fhMixDeltaPhiCharged(0),        fhMixDeltaPhiDeltaEtaCharged(0),
     fhMixXECharged(0),              fhMixHbpXECharged(0),
     fhMixDeltaPhiChargedAssocPtBin(),
@@ -287,6 +289,13 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(co
         if(ptAssoc > 3 ) fhDeltaPhiChargedPtA3GeVBC0->Fill(ptTrig ,deltaPhi) ;
     }
     
+    Int_t vtxBC = GetReader()->GetVertexBC();
+    if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA)
+    {
+      fhDeltaPhiChargedVtxBC0->Fill(ptTrig ,deltaPhi) ;
+      if(ptAssoc > 3 ) fhDeltaPhiChargedPtA3GeVVtxBC0->Fill(ptTrig ,deltaPhi) ;
+    }
+    
     if(GetReader()->IsPileUpFromSPD())               { fhDeltaEtaChargedPileUp[0]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[0]->Fill(ptTrig ,deltaPhi) ; }
     if(GetReader()->IsPileUpFromEMCal())             { fhDeltaEtaChargedPileUp[1]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[1]->Fill(ptTrig ,deltaPhi) ; }
     if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhDeltaEtaChargedPileUp[2]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[2]->Fill(ptTrig ,deltaPhi) ; }
@@ -294,8 +303,6 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(co
     if(GetReader()->IsPileUpFromSPDAndNotEMCal())    { fhDeltaEtaChargedPileUp[4]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[4]->Fill(ptTrig ,deltaPhi) ; }
     if(GetReader()->IsPileUpFromEMCalAndNotSPD())    { fhDeltaEtaChargedPileUp[5]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[5]->Fill(ptTrig ,deltaPhi) ; }
     if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) { fhDeltaEtaChargedPileUp[6]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[6]->Fill(ptTrig ,deltaPhi) ; }
-    
-
     
     if(ptAssoc > 3 )
     {
@@ -496,6 +503,14 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(con
       fhPtTrigChargedBC0->Fill(ptTrig,ptAssoc);
     }
 
+    Int_t vtxBC = GetReader()->GetVertexBC();
+    if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA)
+    {
+      fhXEChargedVtxBC0    ->Fill(ptTrig,xE);
+      fhZTChargedVtxBC0    ->Fill(ptTrig,zT);
+      fhPtTrigChargedVtxBC0->Fill(ptTrig,ptAssoc);
+    }
+       
     if(GetReader()->IsPileUpFromSPD())                { fhXEChargedPileUp[0]->Fill(ptTrig,xE); fhZTChargedPileUp[0]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[0]->Fill(ptTrig,ptAssoc); }
     if(GetReader()->IsPileUpFromEMCal())              { fhXEChargedPileUp[1]->Fill(ptTrig,xE); fhZTChargedPileUp[1]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[1]->Fill(ptTrig,ptAssoc); }
     if(GetReader()->IsPileUpFromSPDOrEMCal())         { fhXEChargedPileUp[2]->Fill(ptTrig,xE); fhZTChargedPileUp[2]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[2]->Fill(ptTrig,ptAssoc); }
@@ -589,6 +604,13 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(const
       fhZTUeChargedBC0->Fill(ptTrig,uezT);
     }
     
+    Int_t vtxBC = GetReader()->GetVertexBC();
+    if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA)
+    {
+      fhXEUeChargedVtxBC0->Fill(ptTrig,uexE);
+      fhZTUeChargedVtxBC0->Fill(ptTrig,uezT);
+    }
+
     if(GetReader()->IsPileUpFromSPD())               { fhXEUeChargedPileUp[0]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[0]->Fill(ptTrig,uezT);}
     if(GetReader()->IsPileUpFromEMCal())             { fhXEUeChargedPileUp[1]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[1]->Fill(ptTrig,uezT);}
     if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhXEUeChargedPileUp[2]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[2]->Fill(ptTrig,uezT);}
@@ -809,13 +831,26 @@ void AliAnaParticleHadronCorrelation::FillNeutralUnderlyingEventSidesHistograms(
   }
 } 
 
+//______________________________________________________
+void AliAnaParticleHadronCorrelation::FillEventMixPool()
+{
+  // Fill the pool with tracks if requested
+    
+  if(DoOwnMix())
+  {
+    FillChargedEventMixPool();
+    
+    if(OnlyIsolated() || fFillNeutralEventMixPool)
+      FillNeutralEventMixPool();
+  }
+  
+}
+
 //_____________________________________________________________
 void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
 {
   // Mixed event pool filling for tracks
-  
-  //printf("FillChargedEventMixPool for %s\n",GetInputAODName().Data());
-  
+    
   if(fUseMixStoredInReader && GetReader()->GetLastTracksMixedEvent() == GetEventNumber())
   {
     //printf("%s : Pool already filled for this event !!!\n",GetInputAODName().Data());
@@ -823,19 +858,12 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
   }
   
   Int_t nTracks = GetCTSTracks()->GetEntriesFast();
-  
-  fhNtracksAll->Fill(nTracks);
-  
+    
   AliAnalysisManager   * manager      = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler * inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
   
   if(!inputHandler) return ;
-  
-  if( inputHandler->IsEventSelected( ) & GetReader()->GetEventTriggerMask()    )
-  {
-    fhNtracksTrigger->Fill(nTracks);
-  }
-  
+    
   // Do mixing only with MB event (or the chosen mask), if not skip
   if( !(inputHandler->IsEventSelected( ) & GetReader()->GetMixEventTriggerMask()) ) return ;
   
@@ -907,7 +935,6 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
   //else                                     pl    = GetEMCALClusters();
   
   Int_t nClusters   = pl->GetEntriesFast();
-  fhNclustersAll->Fill(nClusters);
   
   if(fUseMixStoredInReader && GetReader()->GetLastCaloMixedEvent() == GetEventNumber())
   {
@@ -919,12 +946,7 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
   AliInputEventHandler * inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
   
   if(!inputHandler) return ;
-  
-  if( inputHandler->IsEventSelected( ) & GetReader()->GetEventTriggerMask()    )
-  {
-    fhNclustersTrigger->Fill(nClusters);
-  }
-  
+    
   // Do mixing only with MB event (or the chosen mask), if not skip
   if( !(inputHandler->IsEventSelected( ) & GetReader()->GetMixEventTriggerMask()) ) return ;
   
@@ -1430,6 +1452,59 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       outputContainer->Add(fhZTUeChargedBC0) ;
       outputContainer->Add(fhPtTrigChargedBC0) ;
 
+      fhPtLeadingVtxBC0  = new TH1F("hPtLeadingVtxBC0","p_{T} distribution of leading particles", nptbins,ptmin,ptmax);
+      fhPtLeadingVtxBC0->SetXTitle("p_{T}^{trig} (GeV/c)");
+      
+      fhDeltaPhiChargedVtxBC0  = new TH2F
+      ("hDeltaPhiChargedVtxBC0","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}, track BC==0",
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiChargedVtxBC0->SetYTitle("#Delta #phi (rad)");
+      fhDeltaPhiChargedVtxBC0->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      fhDeltaPhiChargedPtA3GeVVtxBC0  = new TH2F
+      ("hDeltaPhiChargedPtA3GeVVtxBC0","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}, p_{TA}>3 GeV/c, track BC==0",
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiChargedPtA3GeVVtxBC0->SetYTitle("#Delta #phi (rad)");
+      fhDeltaPhiChargedPtA3GeVVtxBC0->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      fhPtTrigChargedVtxBC0  =
+      new TH2F("hPtTrigChargedVtxBC0","trigger and charged tracks pt distribution, track BC==0",
+               nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhPtTrigChargedVtxBC0->SetYTitle("p_{T h^{#pm}} (GeV/c)");
+      fhPtTrigChargedVtxBC0->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      fhXEChargedVtxBC0  =
+      new TH2F("hXEChargedVtxBC0","x_{E} for charged tracks, track BC==0",
+               nptbins,ptmin,ptmax,200,0.,2.);
+      fhXEChargedVtxBC0->SetYTitle("x_{E}");
+      fhXEChargedVtxBC0->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      fhXEUeChargedVtxBC0  =
+      new TH2F("hXEUeChargedVtxBC0","x_{E} for Underlying Event, track BC==0",
+               nptbins,ptmin,ptmax,200,0.,2.);
+      fhXEUeChargedVtxBC0->SetYTitle("x_{E}");
+      fhXEUeChargedVtxBC0->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      fhZTChargedVtxBC0  =
+      new TH2F("hZTChargedVtxBC0","z_{T} for charged tracks, track BC==0",
+               nptbins,ptmin,ptmax,200,0.,2.);
+      fhZTChargedVtxBC0->SetYTitle("z_{T}");
+      fhZTChargedVtxBC0->SetXTitle("p_{T trigger}");
+      
+      fhZTUeChargedVtxBC0  =
+      new TH2F("hZTUeChargedVtxBC0","z_{T} for Underlying Event, track BC==0",
+               nptbins,ptmin,ptmax,200,0.,2.);
+      fhZTUeChargedVtxBC0->SetYTitle("z_{T}");
+      fhZTUeChargedVtxBC0->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      outputContainer->Add(fhPtLeadingVtxBC0);
+      outputContainer->Add(fhDeltaPhiChargedVtxBC0) ;
+      outputContainer->Add(fhDeltaPhiChargedPtA3GeVVtxBC0) ;
+      outputContainer->Add(fhXEChargedVtxBC0) ;
+      outputContainer->Add(fhXEUeChargedVtxBC0) ;
+      outputContainer->Add(fhZTChargedVtxBC0) ;
+      outputContainer->Add(fhZTUeChargedVtxBC0) ;
+      outputContainer->Add(fhPtTrigChargedVtxBC0) ;
       
       for(Int_t i = 0 ; i < 7 ; i++)
       {
@@ -2323,23 +2398,11 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhEventMixBin->SetXTitle("bin");
     outputContainer->Add(fhEventMixBin) ;
     
-    fhNtracksAll=new TH1F("hNtracksAll","Number of tracks w/o event trigger",2000,0,2000);
-    outputContainer->Add(fhNtracksAll);
-    
-    fhNtracksTrigger=new TH1F("hNtracksTriggerEvent","Number of tracks w/ event trigger",2000,0,2000);
-    outputContainer->Add(fhNtracksTrigger);
-    
     fhNtracksMB=new TH1F("hNtracksMBEvent","Number of tracks w/ event trigger kMB",2000,0,2000);
     outputContainer->Add(fhNtracksMB);
     
     if(fFillNeutralEventMixPool || OnlyIsolated())
     {
-      fhNclustersAll=new TH1F("hNclustersAll","Number of clusters w/o event trigger",2000,0,2000);
-      outputContainer->Add(fhNclustersAll);
-      
-      fhNclustersTrigger=new TH1F("hNclustersTriggerEvent","Number of clusters w/ event trigger",2000,0,2000);
-      outputContainer->Add(fhNclustersTrigger);
-      
       fhNclustersMB=new TH1F("hNclustersMBEvent","Number of clusters w/ event trigger kMB",2000,0,2000);
       outputContainer->Add(fhNclustersMB);
     }
@@ -2572,15 +2635,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   Double_t v[3] = {0,0,0}; //vertex ;
   GetReader()->GetVertex(v);
   if(!GetMixedEvent() && TMath::Abs(v[2]) > GetZvertexCut()) return ;   
-  
-  // Fill the pool with tracks if requested
-  if(DoOwnMix())
-  {
-    FillChargedEventMixPool();
-    if(OnlyIsolated() || fFillNeutralEventMixPool)
-      FillNeutralEventMixPool();
-  }
-  
+    
   //Loop on stored AOD particles, find leading trigger
   Double_t ptTrig      = fMinTriggerPt ;
   fLeadingTriggerIndex = -1 ;
@@ -2753,6 +2808,9 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
  
       if(fFillPileUpHistograms)
       {
+        Int_t vtxBC = GetReader()->GetVertexBC();
+        if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA)     fhPtLeadingVtxBC0->Fill(pt);
+
         if(GetReader()->IsPileUpFromSPD())               fhPtLeadingPileUp[0]->Fill(pt);
         if(GetReader()->IsPileUpFromEMCal())             fhPtLeadingPileUp[1]->Fill(pt);
         if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtLeadingPileUp[2]->Fill(pt);
@@ -3504,7 +3562,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
   else if(GetReader()->ReadAODMCParticles())
   {
     //Get the list of MC particles
-    mcparticles0 = GetReader()->GetAODMCParticles(0);
+    mcparticles0 = GetReader()->GetAODMCParticles();
     if(!mcparticles0) return;
     
     if(label >=mcparticles0->GetEntriesFast())

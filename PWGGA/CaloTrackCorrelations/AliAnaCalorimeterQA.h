@@ -395,10 +395,16 @@ public:
   TH1F *   fhMCNeutral1dR;                    //! distance between projected track and cluster, MC neutral
   TH2F *   fhMCNeutral2MatchdEdx;             //! dE/dx vs. momentum for all matches, MC neutral	
 	
-  TH2F *   fh1EOverPR02;                      //! p/E for track-cluster matches, dR > 0.2	
-  TH2F *   fhMCEle1EOverPR02;                 //! p/E for track-cluster matches, dR > 0.2, MC electrons
-  TH2F *   fhMCChHad1EOverPR02;               //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
-  TH2F *   fhMCNeutral1EOverPR02;             //! p/E for track-cluster matches, dR > 0.2, MC neutral
+  TH2F *   fh1EOverPR02;                      //! p/E for track-cluster matches, dR < 0.2
+  TH2F *   fhMCEle1EOverPR02;                 //! p/E for track-cluster matches, dR < 0.2, MC electrons
+  TH2F *   fhMCChHad1EOverPR02;               //! p/E for track-cluster matches, dR < 0.2, MC charged hadrons
+  TH2F *   fhMCNeutral1EOverPR02;             //! p/E for track-cluster matches, dR < 0.2, MC neutral
+
+  TH2F *   fh1EleEOverP;                      //! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100
+  TH2F *   fhMCEle1EleEOverP;                 //! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC electrons
+  TH2F *   fhMCChHad1EleEOverP;               //! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC charged hadrons
+  TH2F *   fhMCNeutral1EleEOverP;             //! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC neutral
+
 	
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor

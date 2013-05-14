@@ -481,7 +481,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
         if(pdg == 22)
         {
           // Get tag of this particle photon from fragmentation, decay, prompt ...
-          tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader(), 0);
+          tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
           if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
           {
             //A conversion photon from a hadron, skip this kind of photon
@@ -611,7 +611,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   }//read stack
   else if(GetReader()->ReadAODMCParticles())
   {
-    TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
+    TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
     if(mcparticles)
     {
       Int_t nprim = mcparticles->GetEntriesFast();
@@ -625,7 +625,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
         if(pdg == 22)
         {
           // Get tag of this particle photon from fragmentation, decay, prompt ...
-          tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader(), 0);
+          tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
           if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
           {
             //A conversion photon from a hadron, skip this kind of photon
@@ -1293,7 +1293,7 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
       if(IsDataMC())
       {
         
-        Int_t tag = GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(),GetReader(), 0);
+        Int_t tag = GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(),GetReader());
         
         if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  )
         {
@@ -2702,7 +2702,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     if(IsDataMC())
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodph.GetInputFileIndex());
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader());
       aodph.SetTag(tag);
       
       if(GetDebug() > 0)
@@ -2864,7 +2864,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         {
           printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called?\n");
         }
-        else if(GetReader()->ReadAODMCParticles() && !GetReader()->GetAODMCParticles(0))
+        else if(GetReader()->ReadAODMCParticles() && !GetReader()->GetAODMCParticles())
         {
           printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
         }	
