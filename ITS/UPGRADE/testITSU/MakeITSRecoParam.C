@@ -34,13 +34,38 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     recoParamArray->AddLast(itsRecoParam);
   }
   //
+  const Bool_t kAllowDiagCl = kFALSE;
+  //
+  // tuned for 20x20 pixels with x/x0= 0.3,0.3,0.3,0.5,0.5,0.5,0.5%
+  int nBranch[7] = {5,10,15,4,6,6,10}; // max branching for the seed on layer
+  int nCands[7]  = {10,20,45,20,45,15,10}; // max candidates for the TPC seed
+  float tr2clChi2[7] = {20,25,30,40,45,45,70}; // cut on cluster to track chi2 
+  float gloChi2[7]   = {10, 15,20,40,70,70,70}; // cut on seed global norm chi2
+  float missPen[7] = {2.,2.,2.,2.,2.,2.,2.};    // missing cluster penalty
+  float maxChi2Match = 10.;
+  float maxChi2SA    = 10.;  
+  //
+  /*
+    // tuned for 20x33 pixels
   int nBranch[7] = {5,10,15,4,6,6,10}; // max branching for the seed on layer
   int nCands[7]  = {10,20,25,20,30,15,20}; // max candidates for the TPC seed
   float tr2clChi2[7] = {20,20,25,25,25,30,40}; // cut on cluster to track chi2 
   float gloChi2[7]   = {9, 10,15,20,30,30,30}; // cut on seed global norm chi2
   float missPen[7] = {2.,2.,2.,2.,2.,2.,2.};    // missing cluster penalty
   float maxChi2Match = 10.;
-  float maxChi2SA    = 10.;  
+  float maxChi2SA    = 10.;      
+  */
+
+  /*
+  // this is for tuning only
+  int nBranch[7] = {30,20,20,20,20,20,20}; // max branching for the seed on layer
+  int nCands[7]  = {20,100,100,100,100,55,20}; // max candidates for the TPC seed
+  float tr2clChi2[7] = {40,50,60,80,80,80,80}; // cut on cluster to track chi2 
+  float gloChi2[7]   = {20, 30,40,60,80,80,80}; // cut on seed global norm chi2
+  float missPen[7] = {2.,2.,2.,2.,2.,2.,2.};    // missing cluster penalty
+  float maxChi2Match = 20.;
+  float maxChi2SA    = 20.;  
+  */
   //
   {
     AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetLowFluxParam();
@@ -52,7 +77,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     itsRecoParam->SetTitle("LowMult");
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
-    for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kTRUE);
+    for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
     //  
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
@@ -70,24 +95,9 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     }
     //
     trCond->AddNewCondition(5); // min hits
-    trCond->AddGroupPattern( kBit0|kBit1 );
-    trCond->AddGroupPattern( kBit3|kBit4 );
-    trCond->AddGroupPattern( kBit5|kBit6 );
-    //
-    trCond->AddNewCondition(5); // min hits
-    trCond->AddGroupPattern( kBit0|kBit1 );
-    trCond->AddGroupPattern( kBit3|kBit4 );
-    trCond->AddGroupPattern( kBit5|kBit6 );
-    //
-    trCond->AddNewCondition(5);
-    trCond->AddGroupPattern( kBit0|kBit2 );
-    trCond->AddGroupPattern( kBit3|kBit4 );
-    trCond->AddGroupPattern( kBit5|kBit6 );
-    //
-    trCond->AddNewCondition(5);
-    trCond->AddGroupPattern( kBit1|kBit2 );
-    trCond->AddGroupPattern( kBit3|kBit4 );
-    trCond->AddGroupPattern( kBit5|kBit6 );
+    trCond->AddGroupPattern( kBit0|kBit1|kBit2, 2); // at least 2 hits in 3 inner layers
+    trCond->AddGroupPattern( kBit3|kBit4      , 1); // at least 1 hit in 2 middle layers
+    trCond->AddGroupPattern( kBit5|kBit6      , 1); // at least 1 hit in 2 outer layers
     //
     trCond->Init();
     //
@@ -104,7 +114,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     itsRecoParam->SetTitle("HighMult");
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
-     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kTRUE);
+    for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
     //  
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
@@ -122,19 +132,9 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     }
     //
     trCond->AddNewCondition(5); // min hits
-    trCond->AddGroupPattern( kBit0|kBit1 );
-    trCond->AddGroupPattern( kBit3|kBit4 );
-    trCond->AddGroupPattern( kBit5|kBit6 );
-    //
-    trCond->AddNewCondition(5);
-    trCond->AddGroupPattern( kBit0|kBit2 );
-    trCond->AddGroupPattern( kBit3|kBit4 );
-    trCond->AddGroupPattern( kBit5|kBit6 );
-    //
-    trCond->AddNewCondition(5);
-    trCond->AddGroupPattern( kBit1|kBit2 );
-    trCond->AddGroupPattern( kBit3|kBit4 );
-    trCond->AddGroupPattern( kBit5|kBit6 );
+    trCond->AddGroupPattern( kBit0|kBit1|kBit2, 2); // at least 2 hits in 3 inner layers
+    trCond->AddGroupPattern( kBit3|kBit4      , 1); // at least 1 hit in 2 middle layers
+    trCond->AddGroupPattern( kBit5|kBit6      , 1); // at least 1 hit in 2 outer layers
     //
     trCond->Init();
     //

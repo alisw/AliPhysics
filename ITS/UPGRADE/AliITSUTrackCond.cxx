@@ -148,13 +148,15 @@ void AliITSUTrackCond::SetNLayers(int nLayers)
 }
 
 //______________________________________________________________
-void AliITSUTrackCond::AddGroupPattern(UShort_t patt)
+void AliITSUTrackCond::AddGroupPattern(UShort_t patt,Int_t minCl)
 {
-  // add new group pattern to last condition
+  // add new group pattern to last condition: the track should have at least minCl clusters at layers given by patt
   if (fNConditions<1) AliFatal("Can be called only after AddCondition");
+  if (minCl>int(AliITSUAux::kMaxLayers)) AliFatal(Form("Requested Nlayers=%d exceeds max alowed %d",minCl,AliITSUAux::kMaxLayers));
+  if (minCl<1)                           AliFatal(Form("Requested Nlayers=%d for pattern %x",minCl,patt));
   int ind = fConditions.GetSize();
   fConditions.Set(ind+1);
-  fConditions[ind] = patt;
+  fConditions[ind] = (patt&AliITSUAux::kMaxLrMask) | (minCl<<kShiftNcl);
   fAuxData[(fNConditions-1)*kNAuxSz + kNGroups]++;
 }
 
@@ -175,7 +177,7 @@ Bool_t AliITSUTrackCond::CheckPattern(UShort_t patt) const
 {
   // check if the pattern matches to some condition
   Short_t *arrAux = (Short_t*)fAuxData.GetArray();
-  Short_t *arrGrp = (Short_t*)fConditions.GetArray();  
+  UInt_t  *arrGrp = (UInt_t*)fConditions.GetArray();  
   int ncl = NumberOfBitsSet(patt);
   int cntCond = 0;
   for (int ic=0;ic<fNConditions;ic++) {
@@ -183,7 +185,11 @@ Bool_t AliITSUTrackCond::CheckPattern(UShort_t patt) const
     int grAddr = arrAux[cntCond+kCondStart]; // 1st group pattern address in the condition
     Bool_t ok = kTRUE;
     // if every group of the condition does not match, check next contition
-    for (int ig=arrAux[cntCond+kNGroups];ig--;) if ( !(patt&arrGrp[grAddr++]) ) {ok = kFALSE; break;}
+    for (int ig=arrAux[cntCond+kNGroups];ig--;) {
+      UInt_t pattReq = arrGrp[grAddr++];
+      UShort_t actLr = (pattReq&AliITSUAux::kMaxLrMask)&patt;  // patter of active layers satisfying to mask
+      if (!actLr || NumberOfBitsSet(actLr)<(pattReq>>kShiftNcl)) {ok = kFALSE; break;}
+    }
     if (ok) return kTRUE;
     cntCond += kNAuxSz;
   }
@@ -196,16 +202,18 @@ void AliITSUTrackCond::Print(Option_t*) const
   // print conditions
   int nc = GetNConditions();  
   Short_t *arrAux = (Short_t*)fAuxData.GetArray();
-  Short_t *arrGrp = (Short_t*)fConditions.GetArray();  
+  UInt_t  *arrGrp = (UInt_t*)fConditions.GetArray();  
   int cntCond = 0;
   printf("Conditions set ID=%d : %d entries\n",GetID(),nc);
   for (int i=0;i<nc;i++) {
     printf("#%2d: MinCl:%2d | %d groups :",i,arrAux[cntCond+kMinClus],arrAux[cntCond+kNGroups]);
     int grAddr = arrAux[cntCond+kCondStart];
     for (int ig=arrAux[cntCond+kNGroups];ig--;) {
+      UInt_t patt = arrGrp[grAddr];
       printf("{");
-      PrintBits(arrGrp[grAddr++], fNLayers);
-      printf("}");
+      PrintBits(patt, fNLayers);      
+      printf("|%d}",patt>>kShiftNcl);
+      grAddr++;
     }
     printf("\n");
     cntCond += kNAuxSz;

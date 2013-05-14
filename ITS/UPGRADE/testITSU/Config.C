@@ -48,7 +48,7 @@
 #include <TVirtualMagField.h>
 #endif
 
-Int_t generatorFlag = 0;
+Int_t generatorFlag = 1;
 
 /* $Id: Config.C 47147 2011-02-07 11:46:44Z amastros $ */
 enum PprTrigConf_t
@@ -159,11 +159,10 @@ void Config()
 
 
   // The cocktail itself
-  
   if (generatorFlag==0) {
     // Fast generator with parametrized pi,kaon,proton distributions
     
-    int  nParticles = 100;//14022;
+    int  nParticles = 1000;//14022;
     AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
     gener->SetMomentumRange(0.1, 10.);
     gener->SetPhiRange(0., 360.);
@@ -171,10 +170,58 @@ void Config()
     Float_t thmax = EtaToTheta(-2.5);  // theta max. <---> eta min
     gener->SetThetaRange(thmin,thmax);
     gener->SetOrigin(0, 0, 0);  //vertex position
-    gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
+    gener->SetSigma(50e-4, 50e-4, 5.0);   //Sigma in (X,Y,Z) (cm) on IP position
+    gener->SetVertexSmear(kPerEvent);
     gener->Init();
     
-  } else if (generatorFlag==1) {
+  }
+  else if (generatorFlag==1) {
+    int  nParticlesHP = 10000;
+    int  nPiPFlat=200;
+    int  nPiMFlat=200;
+
+    AliGenCocktail *cocktail = new AliGenCocktail();
+    cocktail->SetProjectile("A", 208, 82);
+    cocktail->SetTarget    ("A", 208, 82);
+    Float_t thmin = EtaToTheta( 2.5);   // theta min. <---> eta max
+    Float_t thmax = EtaToTheta(-2.5);  // theta max. <---> eta min 
+    cocktail->SetThetaRange(thmin,thmax);
+    cocktail->SetEnergyCMS(5500);
+    cocktail->SetOrigin(0, 0, 0);  //vertex position
+    cocktail->SetSigma(50e-4, 50e-4, 5.0);   //Sigma in (X,Y,Z) (cm) on IP position
+    cocktail->SetVertexSmear(kPerEvent);
+    cocktail->Init();  
+
+    // HijingParam + flat pion spectrum
+    
+    AliGenHIJINGpara *generH = new AliGenHIJINGpara(nParticlesHP);
+    generH->SetMomentumRange(0.1, 10.);
+    generH->SetPhiRange(0., 360.);
+    generH->SetThetaRange(thmin,thmax);
+    generH->SetOrigin(0, 0, 0);  //vertex position
+    generH->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
+    //    generH->Init();
+    //
+    cocktail->AddGenerator(generH,"hijingParam",1);
+    //
+    AliGenBox *gpipflat = new AliGenBox(nPiPFlat);
+    gpipflat->SetMomentumRange(0,10.);
+    gpipflat->SetPhiRange(0., 360.);
+    gpipflat->SetThetaRange(thmin,thmax);
+    gpipflat->SetPart(kPiPlus);
+    cocktail->AddGenerator(gpipflat,"genPiPlus",1);
+    //
+    //
+    AliGenBox *gpimflat = new AliGenBox(nPiMFlat);
+    gpimflat->SetMomentumRange(0,10.);
+    gpimflat->SetPhiRange(0., 360.);
+    gpimflat->SetThetaRange(thmin,thmax);
+    gpimflat->SetPart(kPiMinus);
+    cocktail->AddGenerator(gpimflat,"genPimus",1);
+    //
+    cocktail->Init();
+  }
+  else if (generatorFlag==2) {
     
     // Pure HiJing generator adapted to ~2000dNdy at highest energy
     
@@ -192,11 +239,13 @@ void Config()
     generHijing->SetPtHardMin(4.5);
     
     AliGenerator*  gener = generHijing;
-    gener->SetSigma(0, 0, 6);      // Sigma in (X,Y,Z) (cm) on IP position
+    gener->SetSigma(50e-4, 50e-4, 5.0);   //Sigma in (X,Y,Z) (cm) on IP position
     gener->SetVertexSmear(kPerEvent);
     gener->Init();
       
   }
+  // 
+  
 
   // 
   // Activate this line if you want the vertex smearing to happen
@@ -292,21 +341,24 @@ void Config()
     {
       //=================== ITS parameters ============================
       //
-      const int kDiodShift_NCol_M32terP31 = 2;
-      const int kDiodShift_NRow_M32terP31 = 1;
+      // sensitive area 13x15mm (X,Z) with 20x20 micron pitch, 2mm dead zone on readout side and 50 micron guardring
+      const double kSensThick = 18e-4;
+      const double kPitchX = 20e-4;
+      const double kPitchZ = 20e-4;
+      const int    kNRow   = 650; 
+      const int    kNCol   = 750;
+      const int    kNChips = 4;
       //
-      const double kReadOutEdge = 0.1;   // width of the readout edge (passive bottom)
-      const double kGuardRing   = 0.005; // width of passive area on left/right/top of the sensor
-      const double kDiodShiftM32terP31X[ kDiodShift_NCol_M32terP31 ][ kDiodShift_NRow_M32terP31 ] = {0.30,-0.19};
-      const double kDiodShiftM32terP31Z[ kDiodShift_NCol_M32terP31 ][ kDiodShift_NRow_M32terP31 ] = {0.0 , 0.0 };
+      const double kReadOutEdge = 0.2;   // width of the readout edge (passive bottom)
+      const double kGuardRing   = 50e-4; // width of passive area on left/right/top of the sensor
       // create segmentations:
-      AliITSUSegmentationPix* seg0 = new AliITSUSegmentationPix(0,    // segID (0:9)
-								5,    // chips per module
-								1500, // ncols (total for module)
-								350,  //835,  // nrows
-								33.e-4,  // default row pitch in cm
-								20.e-4,  // default col pitch in cm
-								18.e-4,  // sensor thickness in cm
+      AliITSUSegmentationPix* seg0 = new AliITSUSegmentationPix(0,        // segID (0:9)
+								kNChips,  // chips per module
+								kNChips*kNCol,    // ncols (total for module)
+								kNRow,    // nrows
+								kPitchX,  // default row pitch in cm
+								kPitchZ,  // default col pitch in cm
+								kSensThick,  // sensor thickness in cm
 								-1,     // no special left col between chips
 								-1,     // no special right col between chips
 								kGuardRing, // left
@@ -314,68 +366,97 @@ void Config()
 								kGuardRing, // top
 								kReadOutEdge  // bottom
 								);    // see AliITSUSegmentationPix.h for extra options
-      seg0->SetDiodShiftMatrix(kDiodShift_NRow_M32terP31,kDiodShift_NCol_M32terP31, &kDiodShiftM32terP31X[0][0], &kDiodShiftM32terP31Z[0][0]);
       seg0->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
-      AliITSUSegmentationPix* seg1 = new AliITSUSegmentationPix(1,    // segID (0:9)
-								5*2,    // chips per module
-								1500, // ncols (total for module)
-								700,//835,  // nrows
-								33.e-4,  // default row pitch in cm
-								20.e-4,  // default col pitch in cm
-								18.e-4,  // sensor thickness in cm
-								-1,     // no special left col between chips
-								-1,     // no special right col between chips
-								kGuardRing, // left
-								kGuardRing, // right
-								kGuardRing, // top
-								kReadOutEdge  // bottom	
-								);    // see AliITSUSegmentationPix.h for extra options
-      seg1->SetDiodShiftMatrix(kDiodShift_NRow_M32terP31,kDiodShift_NCol_M32terP31, &kDiodShiftM32terP31X[0][0], &kDiodShiftM32terP31Z[0][0]);
-      seg1->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
-      AliITSUSegmentationPix* seg2 = new AliITSUSegmentationPix(2,    // segID (0:9)
-								5*2,    // chips per module
-								1500, // ncols (total for module)
-								700,//835,  // nrows
-								33.e-4,  // default row pitch in cm
-								20.e-4,  // default col pitch in cm
-								18.e-4,   // sensor thickness in cm
-								-1,     // no special left col between chips
-								-1,     // no special right col between chips
-								kGuardRing, // left
-								kGuardRing, // right
-								kGuardRing, // top
-								kReadOutEdge  // bottom								
-								);    // see AliITSUSegmentationPix.h for extra options      
-      seg2->SetDiodShiftMatrix(kDiodShift_NRow_M32terP31,kDiodShift_NCol_M32terP31, &kDiodShiftM32terP31X[0][0], &kDiodShiftM32terP31Z[0][0]);
-      seg2->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       //
-      int nmod,nlad; // modules per ladded, n ladders
-      // sum of insensitive boarder around module (in cm)
-      double tilt = 10.;     double thickLr = 0.05;
+      seg0->Print();
+      //
+      const double kMinOvl = 0.01; // require active zones overlap
+      const double kPhi0 = 0.;  // az.angle of 1st stave
+      const double kTilt = 10.; // tilt in degrees
+      const double kLrTick03 = 280e-4;   // stave thickness for 0.3%X layers
+      const double kLrTick05 = 470e-4;   // stave thickness for 0.5%X layers
+      double xActProj = seg0->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
+      double dzLr,rLr,ovlA;
+      int nStaveLr,nModPerStaveLr,idLr;
       //      virtual void   DefineLayerTurbo(const Int_t nlay, const Double_t r,  const Double_t zlen, const Int_t nladd,   const Int_t nmod, const Double_t width,
       //				  const Double_t tilt,   const Double_t lthick = 0.,    const Double_t dthick = 0.,   const UInt_t detType=0);
       AliITSUv11 *ITS  = new AliITSUv11("ITS Upgrade",7);
-      nmod = 9;
-      nlad = 12;
-      ITS->DefineLayerTurbo(0,0., 2.2,  nmod*seg0->Dz(), nlad, nmod, seg0->Dx(), tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
-      nmod = 9;
-      nlad = 16;
-      ITS->DefineLayerTurbo(1,0., 2.8,  nmod*seg0->Dz(), nlad, nmod, seg0->Dx(), tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
-      nmod = 9;
-      nlad = 20;
-      ITS->DefineLayerTurbo(2,0., 3.6,  nmod*seg0->Dz(), nlad, nmod, seg0->Dx(), tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
-      nmod = 29;
-      nlad = 48;
-      ITS->DefineLayerTurbo(3,0., 20.0, nmod*seg1->Dz(), nlad, nmod, seg1->Dx(), tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
-      nmod = 29;
-      nlad = 48;
-      ITS->DefineLayerTurbo(4,0., 22.0, nmod*seg1->Dz(), nlad, nmod, seg1->Dx(), tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
-      nmod = 50;
-      nlad = 94;
-      ITS->DefineLayerTurbo(5,0., 40.0, nmod*seg2->Dz(), nlad, nmod, seg2->Dx(), tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); //41 creates ovl!
-      nmod = 50;
-      nlad = 94;
-      ITS->DefineLayerTurbo(6,0., 43.0, nmod*seg2->Dz(), nlad, nmod, seg2->Dx(), tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); 
+      idLr = 0;
+      rLr = 2.2;
+      dzLr = 2*11.2;   // min Z to cover
+      nModPerStaveLr = 1+dzLr/seg0->Dz();
+      ovlA = -1;
+      nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
+      do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+      ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg0->Dz(), nStaveLr, nModPerStaveLr, seg0->Dx(), kTilt, kLrTick03, seg0->Dy(), seg0->GetDetTypeID());
+      printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
+	     idLr,rLr,nModPerStaveLr*seg0->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+      //
+      idLr = 1;
+      rLr = 2.8;
+      dzLr = 2*12.1;
+      nModPerStaveLr = 1+dzLr/seg0->Dz();
+      ovlA = -1;
+      nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
+      do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++;);		
+      ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg0->Dz(), nStaveLr, nModPerStaveLr, seg0->Dx(), kTilt, kLrTick03, seg0->Dy(), seg0->GetDetTypeID());
+      printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
+	     idLr,rLr,nModPerStaveLr*seg0->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+      //
+      idLr = 2;
+      rLr = 3.6;
+      dzLr = 2*13.4;
+      nModPerStaveLr = 1+dzLr/seg0->Dz();
+      ovlA = -1;
+      nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
+      do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+      ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg0->Dz(), nStaveLr, nModPerStaveLr, seg0->Dx(), kTilt, kLrTick03, seg0->Dy(), seg0->GetDetTypeID());
+      printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
+	     idLr,rLr,nModPerStaveLr*seg0->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+      //
+      idLr = 3;
+      rLr = 20.0;
+      dzLr = 2*39.0;
+      nModPerStaveLr = 1+dzLr/seg0->Dz();
+      ovlA = -1;
+      nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
+      do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+      ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg0->Dz(), nStaveLr, nModPerStaveLr, seg0->Dx(), kTilt, kLrTick05, seg0->Dy(), seg0->GetDetTypeID());
+      printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
+	     idLr,rLr,nModPerStaveLr*seg0->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+      //
+      idLr = 4;
+      rLr = 22.0;
+      dzLr = 2*41.8;
+      nModPerStaveLr = 1+dzLr/seg0->Dz();
+      ovlA = -1;
+      nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
+      do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+      ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg0->Dz(), nStaveLr, nModPerStaveLr, seg0->Dx(), kTilt, kLrTick05, seg0->Dy(), seg0->GetDetTypeID());
+      printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
+	     idLr,rLr,nModPerStaveLr*seg0->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+      //
+      idLr = 5;
+      rLr = 40.0;
+      dzLr = 2*71.2;
+      nModPerStaveLr = 1+dzLr/seg0->Dz();
+      ovlA = -1;
+      nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
+      do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+      ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg0->Dz(), nStaveLr, nModPerStaveLr, seg0->Dx(), kTilt, kLrTick05, seg0->Dy(), seg0->GetDetTypeID());
+      printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
+	     idLr,rLr,nModPerStaveLr*seg0->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+      //
+      idLr = 6;
+      rLr = 43.0;
+      dzLr = 2*74.3;
+      nModPerStaveLr = 1+dzLr/seg0->Dz();
+      ovlA = -1;
+      nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
+      do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+      ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg0->Dz(), nStaveLr, nModPerStaveLr, seg0->Dx(), kTilt, kLrTick05, seg0->Dy(), seg0->GetDetTypeID());
+      printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
+	     idLr,rLr,nModPerStaveLr*seg0->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
       //
     }
  

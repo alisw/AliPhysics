@@ -146,7 +146,7 @@ void AliITSUTrackerGlo::CreateDefaultTrackCond()
   //
   cond->SetNLayers(fNLrActive);
   cond->AddNewCondition(fNLrActive);
-  cond->AddGroupPattern( 0xffff ); // require all layers hit
+  cond->AddGroupPattern( 0xffff, fNLrActive ); // require all layers hit
   cond->Init();
   //
   fDefTrackConds.AddLast(cond);

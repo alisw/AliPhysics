@@ -3,6 +3,7 @@
 
 #include <TObject.h>
 #include <TArrayS.h>
+#include <TArrayI.h>
 
 //------------------------------------------------------------------------------
 //
@@ -24,6 +25,7 @@ class AliITSUTrackCond : public TObject
 {
  public:
   enum {kCondStart,kNGroups,kMinClus,kNAuxSz};
+  enum {kShiftNcl=24};  // the min_Nclusters for each pattern is stored starting from this bit
   //
   AliITSUTrackCond(Int_t nLayers=0);
   AliITSUTrackCond(const AliITSUTrackCond& src);
@@ -37,7 +39,7 @@ class AliITSUTrackCond : public TObject
   void        SetMaxCandidates(Int_t lr, Int_t nc) {fMaxCandidates[lr] = nc;}
   void        SetID(Int_t id)                      {SetUniqueID(id);}
   void        AddNewCondition(Int_t minClusters);
-  void        AddGroupPattern(UShort_t patt);
+  void        AddGroupPattern(UShort_t patt,Int_t ncl);
 
   Int_t       GetID()                                  const {return GetUniqueID();}
   Int_t       GetMaxBranches(Int_t lr)                 const {return fMaxBranches[lr];}
@@ -85,7 +87,7 @@ class AliITSUTrackCond : public TObject
   Float_t*    fNSigmaRoadZ;              // [fNLayers] number of sigmas in Z
   //
   Short_t     fNConditions;              // number of conditions defined
-  TArrayS     fConditions;               // fNConditions  set of conditions
+  TArrayI     fConditions;               // fNConditions  set of conditions
   TArrayS     fAuxData;                  // condition beginning (1st group), n groups, min clus
   //
   static Char_t  fgkClSharing;           // def cl.sharing allowed level
@@ -97,7 +99,7 @@ class AliITSUTrackCond : public TObject
   static Float_t fgkMaxMatchChi2;         // max acceptable matching chi2
   static Float_t fgkMaxITSSAChi2;         // max acceptable standalone ITS backward fit chi2
   //
-  ClassDef(AliITSUTrackCond,5)           // set of requirements on track hits pattern
+  ClassDef(AliITSUTrackCond,6)           // set of requirements on track hits pattern
 };
 
 

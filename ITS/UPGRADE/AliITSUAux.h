@@ -37,6 +37,7 @@ namespace AliITSUAux {
   const UInt_t   kLrMask    = 0xf0000000;     // layer mask
   const UInt_t   kClMask    = 0x0fffffff;     // cluster mask
   const UInt_t   kMaxLayers = 15;             // max number of active layers
+  const UInt_t   kMaxLrMask = 0x7fff;         // bitmask for allowed layers
 }
 
 //_________________________________________________________________________________
