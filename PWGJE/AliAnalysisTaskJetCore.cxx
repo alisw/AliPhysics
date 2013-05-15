@@ -88,8 +88,11 @@ fDoEventMixing(0),
 fFlagPhiBkg(0),
 fFlagEtaBkg(0),
 fFlagJetHadron(0),
-fTTLow(11),
-fTTUp(13),
+fFrac(0.8),
+fTTLowRef(11),
+fTTUpRef(13),
+fTTLowSig(15),
+fTTUpSig(19),
 fHardest(0),
 fFlagRandom(0),
 fFlagOnlyRecoil(0),
@@ -212,8 +215,11 @@ fDoEventMixing(0),
 fFlagPhiBkg(0),
 fFlagEtaBkg(0),
 fFlagJetHadron(0),
-fTTLow(11),
-fTTUp(13),
+fFrac(0.8),
+fTTLowRef(11),
+fTTUpRef(13),
+fTTLowSig(15),
+fTTUpSig(19),
 fHardest(0),
 fFlagRandom(0),
 fFlagOnlyRecoil(0),
@@ -689,15 +695,27 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    aodJets[1] = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fJetBranchName[1].Data()));  } 
 
 
-   //Double_t ptsub[aodJets[0]->GetEntriesFast()];
-   //Int_t inord[aodJets[0]->GetEntriesFast()];
-   //for(Int_t n=0;n<aodJets[0]->GetEntriesFast();n++){
-   //  ptsub[n]=0;
-   //  inord[n]=0;}   
+
    Int_t nT=0;
    TList ParticleList;
-   if(fHardest==1) nT = GetListOfTracks(&ParticleList);
-   if(fHardest==0) nT=SelectTrigger(&ParticleList);
+   Double_t minT=0;
+   Double_t maxT=0;
+   Double_t dice=fRandom->Uniform(0,1);
+   if(dice>fFrac){ minT=fTTLowRef;
+                   maxT=fTTUpRef;}
+   if(dice<=fFrac){minT=fTTLowSig;
+                   maxT=fTTUpSig;} 
+
+
+
+   if(fHardest==1 || fHardest==2) nT = GetListOfTracks(&ParticleList);
+   if(fHardest==0) nT=SelectTrigger(&ParticleList,minT,maxT);
+   if(nT<0){  
+   PostData(1, fOutputList);
+   return;}   
+
+
+
      for (Int_t iJetType = 0; iJetType < 2; iJetType++) {
       fListJets[iJetType]->Clear();
       if (!aodJets[iJetType]) continue;
@@ -726,27 +744,37 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    Int_t trigInTrack=-1;
    fRPAngle = aod->GetHeader()->GetEventplane();     
 
-
-
+   if(fHardest==0 || fHardest==1){
    AliVParticle *partback = (AliVParticle*)ParticleList.At(nT);     
    if(!partback){  
    PostData(1, fOutputList);
    return;}
 
-
-   //for(Int_t tt=0;tt<ParticleList.GetEntries();tt++){
-   //if(fFlagOnlyHardest!=0){if(tt!=nT) continue;}
-   //AliVParticle *partback = (AliVParticle*)ParticleList.At(tt);     
-   Double_t accep=2.*TMath::Pi()*1.8;
-   Int_t injet4=0;
-   Int_t injet=0; 
-   if(fSemigoodCorrect){
+    if(fSemigoodCorrect){
    Double_t disthole=RelativePhi(partback->Phi(),fHolePos);
    if(TMath::Abs(disthole)+fHoleWidth>TMath::Pi()-0.6){ 
    PostData(1, fOutputList);
-   return;}
+   return;}} 
 
-   }
+
+    }
+
+
+   for(Int_t tt=0;tt<ParticleList.GetEntries();tt++){
+     if(fHardest==0||fHardest==1){if(tt!=nT) continue;}
+     AliVParticle *partback = (AliVParticle*)ParticleList.At(tt);     
+     if(!partback) continue;
+     if(partback->Pt()<10) continue;
+
+   Double_t accep=2.*TMath::Pi()*1.8;
+   Int_t injet4=0;
+   Int_t injet=0; 
+
+   if(fSemigoodCorrect){
+   Double_t disthole=RelativePhi(partback->Phi(),fHolePos);
+   if(TMath::Abs(disthole)+fHoleWidth>TMath::Pi()-0.6) continue;}
+
+   
 
    fh2Ntriggers->Fill(centValue,partback->Pt());
    Double_t phiBinT = RelativePhi(partback->Phi(),fRPAngle);
@@ -1077,7 +1105,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
     
 
-
+   }
 
 
 
@@ -1162,14 +1190,14 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
 
 
 
-     Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list){
+Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t maxT){
      Int_t iCount = 0;
      AliAODEvent *aod = 0;
      if(!fESD)aod = fAODIn;
      else aod = fAODOut;   
      if(!aod)return 0;
      Int_t index=-1;
-     Double_t triggers[100];
+     Int_t triggers[100];
      for(Int_t cr=0;cr<100;cr++){triggers[cr]=-1;}
      Int_t im=0;
      for(int it = 0;it < aod->GetNumberOfTracks();++it){
@@ -1186,7 +1214,7 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
       list->Add(tr);
       iCount++;
       
-      if(tr->Pt()>=fTTLow && tr->Pt()<fTTUp){
+      if(tr->Pt()>=minT && tr->Pt()<maxT){
       	triggers[im]=iCount-1;
         im=im+1;}
 

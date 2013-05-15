@@ -84,8 +84,11 @@ public:
    virtual void     SetFlagPhiBkg(Int_t yesno){fFlagPhiBkg=yesno;}
    virtual void     SetFlagEtaBkg(Int_t yesno){fFlagEtaBkg=yesno;}
    virtual void     SetFlagJetHadron(Int_t yesno){fFlagJetHadron=yesno;}
-   virtual void     SetTTLow(Float_t ttlow){fTTLow=ttlow;}
-   virtual void     SetTTUp(Float_t ttup){fTTUp=ttup;}
+   virtual void     SetFlagFrac(Float_t fraction){fFrac=fraction;} 
+   virtual void     SetTTLowRef(Float_t ttlow){fTTLowRef=ttlow;}
+   virtual void     SetTTUpRef(Float_t ttup){fTTUpRef=ttup;}
+   virtual void     SetTTLowSig(Float_t ttlows){fTTLowSig=ttlows;}
+   virtual void     SetTTUpSig(Float_t ttups){fTTUpSig=ttups;}
    virtual void     SetFlagHardest(Int_t yesno){fHardest=yesno;}
    virtual void     SetFlagRandom(Int_t yesno){fFlagRandom=yesno;}
    virtual void     SetFlagOnlyRecoil(Int_t yesno){fFlagOnlyRecoil=yesno;}
@@ -113,7 +116,7 @@ private:
     AliAODEvent *fAODOut;    //! AOD event 
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
     Int_t   GetListOfTracks(TList *list);
-   Int_t   SelectTrigger(TList *list);
+   Int_t   SelectTrigger(TList *list,Double_t minT,Double_t maxT);
    Int_t   GetHardestTrackBackToJet(AliAODJet *jet);
    Int_t   GetListOfTracksCloseToJet(TList *list,AliAODJet *jet);
    // jets to compare
@@ -145,8 +148,11 @@ private:
    Int_t   fFlagPhiBkg;
    Int_t   fFlagEtaBkg;
    Int_t   fFlagJetHadron;
-   Float_t fTTLow;
-   Float_t fTTUp;
+   Float_t fFrac;               //fraction of events to evaluate signal
+   Float_t fTTLowRef;
+   Float_t fTTUpRef;
+   Float_t fTTLowSig;
+   Float_t fTTUpSig;
    Int_t   fHardest;
    Int_t   fFlagRandom;
    Int_t   fFlagOnlyRecoil;
