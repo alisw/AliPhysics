@@ -1,4 +1,4 @@
-AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, UChar_t TPCcl=70, UChar_t TPCclPID = 80, UChar_t ITScl=3,
+AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, TString appendix, UChar_t TPCcl=70, UChar_t TPCclPID = 80, UChar_t ITScl=3,
 				    Double_t DCAxy=1000., Double_t DCAz=1000.,
 				    Double_t TPCs=0., Double_t TPCu=3.09, Double_t TOFs=3., Int_t TOFmis=0,
 				    Double_t IpSig=3., Bool_t prodcut = kFALSE, 
@@ -15,8 +15,8 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, UChar_t TPCcl=
   // TRD settings
   Float_t eeff[6] = {0.7, 0.75, 0.8, 0.85, 0.9, 0.95};
   Int_t eeffint[6] = {70, 75, 80, 85, 90, 95};
-//  if(TRDeff >= 6 || TRDtl < 4 || TRDtl > 6) return NULL;
-  if(TRDeff >= 6 || TRDtl > 6) return NULL;
+  if(TRDeff >= 6 || TRDtl < 4 || TRDtl > 6) return NULL;
+//  if(TRDeff >= 6 || TRDtl > 6) return NULL;
   printf("TRD settings: %i %f \n",TRDtl, eeff[TRDeff]);
 
   Int_t iDCAxy = (Int_t)(DCAxy*10.);
@@ -34,9 +34,8 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, UChar_t TPCcl=
   if(mcstr) iMCStr = 1;
   if(withetacorrection) iEtaCorr = 1;
 
-  printf("\n hfeCutsPID2t%di%dr%dz%ds%dt%db%dp%do%dt%dpa%detacorr%dptbin%dtrdtrg%detacut%i \n",TPCcl,ITScl,iDCAxy,iDCAz,iTPCs,iTOFs,TOFmis,iIpSig,iProdCut,iIpOpp,iMCStr,iPixelAny,iEtaCorr,ptbin,TRDtrigger,etacut);
 
-  AliHFEcuts *hfecuts = new AliHFEcuts(Form("hfeCutsPID2tc%dtp%di%dr%dz%ds%dt%db%dp%do%dt%dpa%detacorr%dptbin%dtrdtrg%dtrdl%itrde%ietacut%i",TPCcl,TPCclPID,ITScl,iDCAxy,iDCAz,iTPCs,iTOFs,TOFmis,iIpSig,iProdCut,iIpOpp,iMCStr,iPixelAny,iEtaCorr,ptbin,TRDtrigger,TRDtl,TRDeff,etacut),"HFE cuts TOF TPC");
+  AliHFEcuts *hfecuts = new AliHFEcuts(appendix,"HFE cuts TOF TPC TRD");
   //hfecuts->SetQAOn();
   hfecuts->CreateStandardCuts();
   hfecuts->SetMinNClustersTPC(TPCcl);
@@ -115,7 +114,6 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, UChar_t TPCcl=
   // New pPb cuts (February 2013)
   hfecuts->SetUseCorrelationVertex();
   hfecuts->SetSPDVtxResolutionCut();
-
   // TOF settings:
   Int_t usetof=0;
   Bool_t kTOFmis=kFALSE;
@@ -129,16 +127,13 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, UChar_t TPCcl=
       printf("CONFIGURATION FILE: TOF mismatch rejection is set ON \n");
     }
   }
-
-  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(Form("HFEanalysisPID2tc%dtp%di%dr%dz%ds%dt%db%dp%do%dt%dpa%detacorr%dptbin%dtrdtrg%d",TPCcl,TPCclPID,ITScl,iDCAxy,iDCAz,iTPCs,TOFs,iIpSig,iProdCut,iIpOpp,iMCStr,iPixelAny,iEtaCorr,ptbin,TRDtrigger));
+  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(appendix);
   printf("task %p\n", task);
   task->SetHFECuts(hfecuts);
   task->GetPIDQAManager()->SetHighResolutionHistos();
-
   if(!isAOD) task->SetRemoveFirstEventInChunk(); // Remove first event in chunk in case of ESD analysis
   task->SetRemovePileUp(kFALSE);
   //task->SetApplypAVertexCut();
-
   Bool_t activateTRDTrigger=kFALSE;
   if(TRDtrigger>0) activateTRDTrigger=kTRUE;
   task->SetTRDTrigger(activateTRDTrigger,TRDtrigger);
@@ -164,7 +159,6 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, UChar_t TPCcl=
   vm->AddVariable("charge");
   vm->AddVariable("source");
   //vm->AddVariable("centrality");
-
   if(!useMC){
     // New background model (LHC10d pass2)
     //TF1 *hBackground = new TF1("hadronicBackgroundFunction", "TMath::Exp(([0]/(x**1.5))+[1])", 0., 20.);
