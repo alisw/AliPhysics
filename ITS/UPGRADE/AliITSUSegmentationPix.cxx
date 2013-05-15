@@ -563,7 +563,7 @@ void AliITSUSegmentationPix::Print(Option_t* /*option*/) const
 {
   // print itself
   const double kmc=1e4;
-  printf("Segmentation %d: Active Size: DX: %.1f DZ: %.1f DY: %.1f | Pitch: X:%.1f Z:%.1f\n",
+  printf("Segmentation %d: Active Size: DX: %.1f DY: %.1f DZ: %.1f | Pitch: X:%.1f Z:%.1f\n",
 	 GetUniqueID(),kmc*DxActive(),kmc*Dy(),kmc*DzActive(),kmc*Dpx(1),kmc*Dpz(1));
   printf("Passive Edges: Bottom: %.1f Right: %.1f Top: %.1f Left: %.1f -> DX: %.1f DZ: %.1f Shift: x:%.1f z:%.1f\n",
 	 kmc*fGuardBot,kmc*fGuardRgt,kmc*fGuardTop,kmc*fGuardLft,kmc*Dx(),kmc*Dz(),kmc*fShiftXLoc,kmc*fShiftZLoc);
