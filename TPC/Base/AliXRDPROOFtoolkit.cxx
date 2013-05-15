@@ -726,6 +726,7 @@ void AliXRDPROOFtoolkit::CacheFileList(const char * fileIn, const char* cachePre
       fname.ReplaceAll("-","_");
       fname.ReplaceAll("/","_");
       fname.ReplaceAll(":","_");
+      fname.ReplaceAll("~","_");
       cacheFile=cachePrefix;
       cacheFile+=fname;
       printf("%s\t%s\n",currentFile.Data(),cacheFile.Data());
@@ -793,8 +794,8 @@ void   AliXRDPROOFtoolkit::MakeTreeFromList(const char *fout, const char * treeO
       Int_t nbranchesCurrent = tree->GetListOfBranches()->GetEntries();
       if ( nbranches ==0 ) nbranches=nbranchesCurrent;
       if ( nbranches!=nbranchesCurrent){
-	foutLog<<"Error  tree layout\t"<<currentFile<<treeIn<<nbranches<<nbranchesCurrent<<"\n";
-	cout<<"Error tree layout\t"   <<currentFile<<treeIn<<nbranches<<nbranchesCurrent<<"\n";
+	foutLog<<"Error  tree layout\t"<<currentFile<<"   \t"<<treeIn<<"  \t"<<nbranches<<"  \t"<<nbranchesCurrent<<"\n";
+	cout<<"Error tree layout\t"   <<currentFile<<"   \t"<<treeIn<<"  \t"<<nbranches<<"  \t"<<nbranchesCurrent<<"\n";
       }     
       counter++;
     }
@@ -815,5 +816,7 @@ void   AliXRDPROOFtoolkit::MakeTreeFromList(const char *fout, const char * treeO
   TTree * tree = chain->CopyTree("1");
   fileOut->cd();
   tree->Write(treeOut);
+  delete tree;
   fileOut->Close(); 
+  delete fileOut;
 }
