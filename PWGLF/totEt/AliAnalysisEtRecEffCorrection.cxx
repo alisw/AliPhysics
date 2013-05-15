@@ -57,7 +57,19 @@ bool AliAnalysisEtRecEffCorrection::operator==(const AliAnalysisEtRecEffCorrecti
 
 Double_t AliAnalysisEtRecEffCorrection::CorrectedEnergy(Double_t energy)
 {
- 
   return fEnergyCorrection->Eval(energy);
   
+}
+Double_t AliAnalysisEtRecEffCorrection::CorrectedEnergy(Double_t energy, int mult)
+{
+  if(fRecoEff) return 1.0/ReconstructionEfficiency(energy, mult);
+  return 1.0;
+  
+}
+
+Double_t AliAnalysisEtRecEffCorrection::ReconstructionEfficiency(float energy, int mult) const {
+  Double_t eff = 1.0;
+  if(fRecoEff) eff =  fRecoEff->GetBinContent(fRecoEff->GetXaxis()->FindBin(energy),fRecoEff->GetXaxis()->FindBin(mult));
+  //cout <<"eff "<<eff<<endl;
+  return eff;
 }

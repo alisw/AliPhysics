@@ -17,6 +17,8 @@
 
 TCanvas *c1 = 0;
 
+TH2* bayneseffdiv2D(TH2* numerator, TH2* denominator,Char_t* name) ;
+TH1* bayneseffdiv(TH1* numerator, TH1* denominator,Char_t* name) ;
 
 //creates an empty set of correction factors for debugging purposes
 TF1 * generateRecEffFunction(Double_t p0, Double_t p1);
@@ -201,11 +203,21 @@ int calculateCorrections(TString filename="rootFiles/LHC11a10a_bis/Et.ESD.simPbP
   Double_t meanGamma = 0.51/(p0 + p1*0.51);
   Double_t meanSecondary = meanGamma; 
   
-  AliAnalysisEtTrackMatchCorrections *cor = new AliAnalysisEtTrackMatchCorrections(("TmCorrections"+detector).Data(), fitcharged, fitneutral, fitgamma, fitsecondary, 
+  TH2F  *fHistHadronDepositsAllMult = l->FindObject("fHistHadronDepositsAllMult");
+  TH2F  *fHistHadronDepositsRecoMult = l->FindObject("fHistHadronDepositsRecoMult");
+  TH2F *eff2D = (TH2F*) bayneseffdiv2D(fHistHadronDepositsRecoMult,fHistHadronDepositsAllMult,"eff2D");
+  //cor->SetReconstructionEfficiency(eff2D);
+  
+  TH2F  *fHistGammasGeneratedMult = l->FindObject("fHistGammasGeneratedMult");
+  TH2F  *fHistGammasFoundMult = l->FindObject("fHistGammasFoundMult");
+  TH2F *gammaEff2D = (TH2F*) bayneseffdiv2D(fHistGammasFoundMult,fHistGammasGeneratedMult,"gammaEff2D");
+
+  AliAnalysisEtTrackMatchCorrections *cor = new AliAnalysisEtTrackMatchCorrections(("TmCorrections"+detector).Data(), fitcharged, fitneutral, fitgamma, fitsecondary, *eff2D,
 										   meanCharged, meanNeutral, meanGamma, meanSecondary );
   
+
   TF1 *func = generateRecEffFunction(p0, p1);
-  AliAnalysisEtRecEffCorrection *recor = new AliAnalysisEtRecEffCorrection(("ReCorrections"+detector).Data(), *func, 1000);
+  AliAnalysisEtRecEffCorrection *recor = new AliAnalysisEtRecEffCorrection(("ReCorrections"+detector).Data(), *func,*gammaEff2D, 1000);
   TFile *outfile = TFile::Open("calocorrections.root","RECREATE");
   cor->Write();
   recor->Write();
@@ -220,4 +232,90 @@ TF1* generateRecEffFunction(Double_t p0, Double_t p1)
   Double_t params[2] = {p0, p1};
   f->SetParameters(params);
   return f;
+}
+
+TH1* bayneseffdiv(TH1* numerator, TH1* denominator,Char_t* name) 
+{
+    if(!numerator){
+      cerr<<"Error:  numerator does not exist!"<<endl;
+      return NULL;
+    }
+    if(!denominator){
+      cerr<<"Error:  denominator does not exist!"<<endl;
+      return NULL;
+    }
+    TH1* result = (TH1*)numerator->Clone(name);
+    Int_t nbins = numerator->GetNbinsX();
+    for (Int_t ibin=0; ibin<= nbins+1; ++ibin) {
+      Double_t numeratorVal = numerator->GetBinContent(ibin);
+      Double_t denominatorVal = denominator->GetBinContent(ibin);
+      // Check if the errors are right or the thing is scaled
+      Double_t numeratorValErr = numerator->GetBinError(ibin);
+      if (!(numeratorValErr==0. || numeratorVal ==0.) ) {
+	Double_t rescale = numeratorValErr*numeratorValErr/numeratorVal;
+	numeratorVal /= rescale;
+      }
+      Double_t denominatorValErr = denominator->GetBinError(ibin);
+      if (!(denominatorValErr==0. || denominatorVal==0. )) {
+	Double_t rescale = denominatorValErr*denominatorValErr/denominatorVal;
+	denominatorVal /= rescale;
+      }
+      Double_t quotient = 0.;
+      if (denominatorVal!=0.) {
+	quotient = numeratorVal/denominatorVal;
+      }
+      Double_t quotientErr=0;
+      quotientErr = TMath::Sqrt(
+				(numeratorVal+1.0)/(denominatorVal+2.0)*
+				((numeratorVal+2.0)/(denominatorVal+3.0)-(numeratorVal+1.0)/(denominatorVal+2.0)));
+      result->SetBinContent(ibin,quotient);
+      result->SetBinError(ibin,quotientErr);
+      //cout<<"Setting bin "<<ibin<<" to "<<quotient<<" "<<numeratorVal<<"/"<<denominatorVal<<endl;
+    }
+    return result;
+}
+
+
+TH2* bayneseffdiv2D(TH2* numerator, TH2* denominator,Char_t* name) 
+{
+  if(!numerator){
+    cerr<<"Error:  numerator does not exist!"<<endl;
+    return NULL;
+  }
+  if(!denominator){
+    cerr<<"Error:  denominator does not exist!"<<endl;
+    return NULL;
+  }
+  TH2* result = (TH2*)numerator->Clone(name);
+  Int_t nbinsX = numerator->GetNbinsX();
+  Int_t nbinsY = numerator->GetNbinsY();
+  for (Int_t ibin=0; ibin<= nbinsX+1; ++ibin) {
+    for (Int_t jbin=0; jbin<= nbinsY+1; ++jbin) {
+      Double_t numeratorVal = numerator->GetBinContent(ibin,jbin);
+      Double_t denominatorVal = denominator->GetBinContent(ibin,jbin);
+      // Check if the errors are right or the thing is scaled
+      Double_t numeratorValErr = numerator->GetBinError(ibin,jbin);
+      if (!(numeratorValErr==0. || numeratorVal ==0.) ) {
+	Double_t rescale = numeratorValErr*numeratorValErr/numeratorVal;
+	numeratorVal /= rescale;
+      }
+      Double_t denominatorValErr = denominator->GetBinError(ibin,jbin);
+      if (!(denominatorValErr==0. || denominatorVal==0. )) {
+	Double_t rescale = denominatorValErr*denominatorValErr/denominatorVal;
+	denominatorVal /= rescale;
+      }
+      Double_t quotient = 0.;
+      if (denominatorVal!=0.) {
+	quotient = numeratorVal/denominatorVal;
+      }
+      Double_t quotientErr=0;
+      quotientErr = TMath::Sqrt(
+				(numeratorVal+1.0)/(denominatorVal+2.0)*
+				((numeratorVal+2.0)/(denominatorVal+3.0)-(numeratorVal+1.0)/(denominatorVal+2.0)));
+      result->SetBinContent(ibin,jbin,quotient);
+      result->SetBinError(ibin,jbin,quotientErr);
+      //cout<<"Setting bin "<<ibin<<" to "<<quotient<<" "<<numeratorVal<<"/"<<denominatorVal<<endl;
+    }
+  }
+  return result;
 }
