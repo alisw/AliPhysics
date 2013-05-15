@@ -162,19 +162,20 @@ void AliITSUSDigit::AddSignal(Int_t track,Int_t hit,Double_t signal)
   }
   //
   // new entry add it in order.
-  // if this signal is <= smallest then don't add it.
-  if (fNTracks==(kBuffSize-1) && signal <= fSignal[kBuffSize-1]) return;
+  if (fNTracks==(kBuffSize-1) && signal<=fSignal[kBuffSize-1]) return;   // if this signal is <= smallest then don't add it.
   //
   for (i=fNTracks;i--;) {
-    if (signal > fSignal[i]) {
-      fSignal[i+1] = fSignal[i];
-      fTrack[i+1]  = fTrack[i];
-      fHits[i+1]   = fHits[i];
+    if (signal > fSignal[i]) { // shift smaller signals to the end of the list
+      if (i<kBuffSize-2) {     // (if there is a space...)
+	fSignal[i+1] = fSignal[i];
+	fTrack[i+1]  = fTrack[i];
+	fHits[i+1]   = fHits[i];
+      }
     } else {
       fSignal[i+1] = signal;
       fTrack[i+1]  = track;
       fHits[i+1]   = hit;
-      fNTracks++;
+      if (fNTracks<kBuffSize-1) fNTracks++;
       return; // put it in the right place, now exit.
     } //  end if
   } // end if; end for i
