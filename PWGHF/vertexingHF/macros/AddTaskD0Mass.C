@@ -66,14 +66,11 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
 
     out7name ="coutputVarTree";
 
-   //detector signal hists
-
+    //detector signal hists
     out8name="detectorSignals";
     if(cutOnDistr) out8name+="C"; 
     if(flagD0D0bar==1)out8name+="D0";
     if(flagD0D0bar==2)out8name+="D0bar";
-
-    
 
 
     inname="cinputmassD0_0";
@@ -107,6 +104,27 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     if(flagD0D0bar==1)out4name+="D0";
     if(flagD0D0bar==2)out4name+="D0bar";
 
+    //AliNormalizationCounter
+    out5name="normalizationCounterLS";
+    if(cutOnDistr) out5name+="C"; 
+    if(flagD0D0bar==1)out5name+="D0";
+    if(flagD0D0bar==2)out5name+="D0bar";
+
+    // mass, pt, imp param distr
+    out6name="coutputmassD0MassPtLS";
+    if(cutOnDistr) out6name+="C"; 
+    if(flagD0D0bar==1)out6name+="D0";
+    if(flagD0D0bar==2)out6name+="D0bar";
+
+    out7name ="coutputVarTreeLS";
+
+    //detector signal hists
+    out8name="detectorSignalsLS";
+    if(cutOnDistr) out8name+="C"; 
+    if(flagD0D0bar==1)out8name+="D0";
+    if(flagD0D0bar==2)out8name+="D0bar";
+
+    
     inname="cinputmassD0_1";
     if(cutOnDistr) inname+="C"; 
     if(flagD0D0bar==1)inname+="D0";
