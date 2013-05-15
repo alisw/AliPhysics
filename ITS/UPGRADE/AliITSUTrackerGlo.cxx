@@ -1299,7 +1299,15 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
   case AliESDtrack::kITSin: 
     esdTr->UpdateTrackParams(hyp,flag); // update kinematics
     fCountITSin++;
-    // TODO: set cluster info
+    // set fakes cluster info
+    {
+      UShort_t clfake = 0;
+      AliITSUSeed* sd = win;
+      do {
+	if (sd->IsFake()) clfake |= 0x1<<sd->GetLayerID();
+      } while ((sd=(AliITSUSeed*)sd->GetParent()));
+      esdTr->SetITSSharedMap(clfake);
+    }
     break;
     //
   case AliESDtrack::kITSout: 
