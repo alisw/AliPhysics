@@ -57,6 +57,8 @@ AliAnalysisTaskSE(),
   fYVsPtTC(0),
   fYVsPtSig(0),
   fYVsPtSigTC(0),
+  fPhiEtaCand(0),
+  fPhiEtaCandSigReg(0),
   fSPDMult(0),
   fNtupleDplus(0),
   fUpmasslimit(1.965),
@@ -136,6 +138,8 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fYVsPtTC(0),
   fYVsPtSig(0),
   fYVsPtSigTC(0),
+  fPhiEtaCand(0),
+  fPhiEtaCandSigReg(0),
   fSPDMult(0),
   fNtupleDplus(0),
   fUpmasslimit(1.965),
@@ -662,6 +666,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fYVsPtTC=new TH2F("hYVsPtTC","YvsPt (analysis cuts)",40,0.,20.,80,-2.,2.);
   fYVsPtSig=new TH2F("hYVsPtSig","YvsPt (MC, only sig., prod. cuts)",40,0.,20.,80,-2.,2.);
   fYVsPtSigTC=new TH2F("hYVsPtSigTC","YvsPt (MC, only Sig, analysis cuts)",40,0.,20.,80,-2.,2.);
+  fPhiEtaCand=new TH2F("hPhiEtaCand","phi vs. eta candidates",20,-1.,1.,50,0.,2*TMath::Pi());
+  fPhiEtaCandSigReg=new TH2F("hPhiEtaCandSigReg","phi vs. eta candidates",20,-1.,1.,50,0.,2*TMath::Pi());
   fSPDMult = new TH1F("hSPDMult", "Tracklets multiplicity; Tracklets ; Entries",200,0.,200.); 
   fOutput->Add(fPtVsMass);
   fOutput->Add(fPtVsMassTC);
@@ -669,6 +675,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->Add(fYVsPtTC);
   fOutput->Add(fYVsPtSig);
   fOutput->Add(fYVsPtSigTC);
+  fOutput->Add(fPhiEtaCand);
+  fOutput->Add(fPhiEtaCandSigReg);
   fOutput->Add(fSPDMult);
 
 
@@ -820,8 +828,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
       if(!fRDCutsAnalysis->GetIsSelectedCuts()) continue;
 
+      Double_t etaD=d->Eta();
+      Double_t phiD=d->Phi();
       if(fEtaSelection!=0){
-	Double_t etaD=d->Eta();
 	if(fEtaSelection==1 && etaD<0) continue;
 	if(fEtaSelection==-1 && etaD>0) continue;
       }
@@ -868,7 +877,11 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
       if(isFidAcc){
 	fPtVsMass->Fill(invMass,ptCand);
-	if(passTightCuts) fPtVsMassTC->Fill(invMass,ptCand);
+	if(passTightCuts){
+	  fPtVsMassTC->Fill(invMass,ptCand);
+	  fPhiEtaCand->Fill(etaD,phiD);
+	  if(TMath::Abs(invMass-1.8696)<0.05) fPhiEtaCandSigReg->Fill(etaD,phiD);
+	}
       }
 
 

@@ -126,6 +126,8 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH2F *fYVsPtTC;     //! hist. of Y vs. Pt (analysis cuts)
   TH2F *fYVsPtSig;    //! hist. of Y vs. Pt (MC, only sig, prod. cuts)
   TH2F *fYVsPtSigTC;    //! hist. of Y vs. Pt (MC, only sig, analysis cuts)
+  TH2F *fPhiEtaCand;      //! hist. with eta/phi distribution of candidates
+  TH2F *fPhiEtaCandSigReg;//! hist. eta/phi of candidates in D+ mass region
   TH1F *fSPDMult;    //! hist. of spd mult
   TNtuple *fNtupleDplus; //! output ntuple
   Float_t fUpmasslimit;  //upper inv mass limit for histos
@@ -149,7 +151,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t fEtaSelection; // eta region to accept D+ 0=all, -1 = negative, 1 = positive 
   Int_t fSystem;   //0=pp,1=PbPb
   
-  ClassDef(AliAnalysisTaskSEDplus,20); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,21); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
