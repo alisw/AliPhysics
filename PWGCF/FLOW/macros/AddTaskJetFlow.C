@@ -7,11 +7,15 @@
 class AliAnalysisDataContainer;
 class AliFlowTrackCuts;
 
-void AddTaskJetFlow( TString name    = "name",
-                     TString jets    = "jets",
-                     Float_t ptbump  = 0,
-                     TArrayI* cent   = 0x0,
-                     Bool_t debug    = kTRUE  )
+void AddTaskJetFlow( TString name       = "name",
+                     TString jets       = "jets",
+                     Float_t ptbump     = 0,
+                     TArrayI* cent      = 0x0,
+                     Float_t MinPOIPt   = 0.15,
+                     Float_t MaxPOIPt   = 150,
+                     Float_t CCBinsInPt = 100,
+                     Bool_t VParticle   = kFALSE,
+                     Bool_t debug       = kFALSE  )
 {
     // first check the environment (common to all tasks)
     if(debug) printf("\n\n  >> AddTaskJetFlow <<\n");
@@ -45,6 +49,11 @@ void AddTaskJetFlow( TString name    = "name",
         TString tempName(Form("%s_%i_%i", name.Data(), cent->At(i), cent->At(i+1)));
         // create the task
         AliAnalysisTaskJetFlow* task = new AliAnalysisTaskJetFlow(tempName.Data());   
+        task->SetCCMaxPt(MaxPOIPt);
+        task->SetCCBinsInPt(CCBinsInPt);
+        task->SetDoVParticleAnalysis(VParticle);
+        task->SetMinMaxPOIPt(MinPOIPt, MaxPOIPt);
+        (debug) ? task->SetDebugMode(1) : task->SetDebugMode(-1);
         if(!task) {
              if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
              return 0x0;

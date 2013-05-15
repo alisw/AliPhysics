@@ -21,8 +21,10 @@
  * jet correlation task - correlates jets to the vzero reaction plane using
  * the scalar product method 
  *
- * this task should be run AFTER 
+ * this task expects POI's in a TClonesArray, e.g. from running it after 
  * $ALICE_ROOT/PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskRhoVnModulation()
+ * if subtracted jet pt is stored by using jet->PtSub() run in default mode
+ * to run on unsubtracted jets - or any other class inheriting from AliVParticle - call SetDoVParticleAnalysis(kTRUE)
  *
  * */
 
@@ -49,11 +51,11 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetFlow)
 
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow() : AliAnalysisTaskSE(), 
-    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent(0), fHistAnalysisSummary(0)
+    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fInitialized(kFALSE), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPOIPtMin(0.15), fPOIPtMax(150), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent(0), fHistAnalysisSummary(0), fCentralitySelection(0)
 { /* default constructor */ }
 //_____________________________________________________________________________
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(const char* name) : AliAnalysisTaskSE(name),
-    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent(0), fHistAnalysisSummary(0)
+    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fInitialized(kFALSE), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPOIPtMin(0.15), fPOIPtMax(150), fCutsRP(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent(0), fHistAnalysisSummary(0), fCentralitySelection(0)
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -73,8 +75,6 @@ void AliAnalysisTaskJetFlow::LocalInit()
 {
     // executed once
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    if(dynamic_cast<AliAODEvent*>(InputEvent())) fDataType = kAOD; // determine the datatype
-    else if(dynamic_cast<AliESDEvent*>(InputEvent())) fDataType = kESD;
     fCutsEvent = new AliFlowEventCuts();
     fCutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSTPC); 
 }
@@ -95,6 +95,10 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
     fHistAnalysisSummary->SetBinContent(3, fCentralityMax);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(4, "pt bias");
     fOutputList->Add(fHistAnalysisSummary);
+    // qa
+    fCentralitySelection = new TH1F("fCentralitySelection", "fCentralitySelection", 100, 0, 100);
+    fOutputList->Add(fCentralitySelection);
+
     PostData(1, fOutputList);
     // create the flow event and configure the static cc object
     fFlowEvent = new AliFlowEvent(1000);
@@ -108,8 +112,13 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
 {
     // user exec
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    
     if(!InputEvent() || !fCutsNull || !fCutsRP) return; // coverity (and sanity)
+    if(!fInitialized) { 
+        if(dynamic_cast<AliAODEvent*>(InputEvent())) fDataType = kAOD; // determine the datatype
+        else if(dynamic_cast<AliESDEvent*>(InputEvent())) fDataType = kESD;
+        fInitialized = kTRUE;
+    }
+    if(!PassesCuts(InputEvent())) return;               // check the event cuts
     // get the jet array, which is added as an extension to the AliVEvent by the jetfinder
     TClonesArray* jets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName.Data()));
     Int_t nAcceptedJets(0);
@@ -126,19 +135,37 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
         fFlowEvent->Fill(fCutsRP, fCutsNull);
         fFlowEvent->SetReferenceMultiplicity(fCutsEvent->RefMult(InputEvent(), MCEvent()));
         // loop over jets and inject them as POI's
-        for(Int_t i(0); i < iJets; i++) {
-            AliEmcalJet* jet = static_cast<AliEmcalJet*>(jets->At(i));
-            if(jet) {
-                if(jet->PtSub() + fPtBump <= .15) {
-                    fHistAnalysisSummary->SetBinContent(4, 1);
-                    continue;
+        if(fVParticleAnalysis) {
+            for(Int_t i(0); i < iJets; i++) {
+                AliVParticle* jet = static_cast<AliVParticle*>(jets->At(i));
+                if(jet) {
+                    if(jet->Pt() + fPtBump <= fPOIPtMin || jet->Pt() > fPOIPtMax) {
+                        fHistAnalysisSummary->SetBinContent(4, 1);
+                        continue;
+                    }
+                    nAcceptedJets++;
+                    AliFlowTrack* flowTrack = new AliFlowTrack(jet);
+                    flowTrack->SetPt(jet->Pt() + fPtBump);
+                    flowTrack->SetForPOISelection(kTRUE);
+                    flowTrack->SetForRPSelection(kFALSE);
+                    fFlowEvent->InsertTrack(flowTrack);
                 }
-                nAcceptedJets++;
-                AliFlowTrack* flowTrack = new AliFlowTrack(jet);
-                flowTrack->SetPt(jet->PtSub() + fPtBump);
-                flowTrack->SetForPOISelection(kTRUE);
-                flowTrack->SetForRPSelection(kFALSE);
-                fFlowEvent->InsertTrack(flowTrack);
+            }
+        } else {
+            for(Int_t i(0); i < iJets; i++) {
+                AliEmcalJet* jet = static_cast<AliEmcalJet*>(jets->At(i));
+                if(jet) {
+                    if(jet->PtSub() + fPtBump <= fPOIPtMin || jet->Pt() > fPOIPtMax) {
+                        fHistAnalysisSummary->SetBinContent(4, 1);
+                        continue;
+                    }
+                    nAcceptedJets++;
+                    AliFlowTrack* flowTrack = new AliFlowTrack(jet);
+                    flowTrack->SetPt(jet->PtSub() + fPtBump);
+                    flowTrack->SetForPOISelection(kTRUE);
+                    flowTrack->SetForRPSelection(kFALSE);
+                    fFlowEvent->InsertTrack(flowTrack);
+                }
             }
         }
     }
@@ -147,6 +174,7 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
         if(fDebug > 0) printf(" > No accepted jets in event ! < " );
         return;
     }
+    fCentralitySelection->Fill(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
     PostData(1, fOutputList);
     PostData(2, fFlowEvent);
     if(fDebug>0) {
