@@ -35,7 +35,9 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         void                    SetPtBump(Float_t b)                    {fPtBump        = b;}
         void                    SetCCMaxPt(Float_t m)                   {fCCMaxPt       = m;}
         void                    SetCCBinsInPt(Float_t b)                {fCCBinsInPt    = b;}
-        void                    SetMinMaxCentrality(Float_t min, Float_t max)       {fCentralityMin = min; fCentralityMax = max; }
+        void                    SetMinMaxCentrality(Float_t min, Float_t max)   {fCentralityMin = min; fCentralityMax = max; }
+        void                    SetMinMaxPOIPt(Float_t min, Float_t max)        {fPOIPtMin = min; fPOIPtMax = max; }        
+        void                    SetDoVParticleAnalysis(Bool_t d)        {fVParticleAnalysis = d; }
         // analysis details
         Bool_t                  PassesCuts(AliVEvent* event); 
 
@@ -46,12 +48,16 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         TString                 fJetsName;              // name of jet list
         TList*                  fOutputList;            //! output list
         dataType                fDataType;              //! data type
+        Bool_t                  fVParticleAnalysis;     // do the analysis on vparticles instead of jets
+        Bool_t                  fInitialized;           //! check if the analysis is initialized
         // members
         Float_t                 fPtBump;                // track pt += ptbump
         Float_t                 fCCMaxPt;               // max pt for flow analysis (common constants)
         Float_t                 fCCBinsInPt;            // bins in pt for flow analysis (common constants)
         Float_t                 fCentralityMin;         // minimium centrality
         Float_t                 fCentralityMax;         // maximum centrality
+        Float_t                 fPOIPtMin;              // minimum pt for poi's
+        Float_t                 fPOIPtMax;              // maximum pt for poi's
         // cut objects
         AliFlowTrackCuts*       fCutsRP;                // rp cuts
         AliFlowTrackCuts*       fCutsPOI;               // poi cuts
@@ -61,6 +67,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         AliFlowEvent*           fFlowEvent;             //! container for flow analysis
         // histograms
         TH1F*                   fHistAnalysisSummary;   //! analysis summary
+        TH1F*                   fCentralitySelection;   //! centrality selection
 
         AliAnalysisTaskJetFlow(const AliAnalysisTaskJetFlow&);                  // not implemented
         AliAnalysisTaskJetFlow& operator=(const AliAnalysisTaskJetFlow&);       // not implemented
