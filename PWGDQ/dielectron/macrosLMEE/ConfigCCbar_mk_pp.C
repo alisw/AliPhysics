@@ -5,7 +5,7 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD);
 
 AliESDtrackCuts *SetupESDtrackCutsDieleData(Int_t cutDefinition);
 
-TString namesDieleData=("baseMixzVert;baseMixzVert+OnlyComplete;baseMixzVert40Bins");
+TString namesDieleData=("baseMixzVert40Bins;baseMixzVert40BinsComplete;kMixLegs");
 
 
 TObjArray *arrNamesDieleData=namesDieleData.Tokenize(";");
@@ -40,17 +40,15 @@ AliDielectron* ConfigCCbar_mk_pp(Int_t cutDefinition, Bool_t isAOD=kFALSE)
 
   // mixing
   AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
-  mix->AddVariable(AliDielectronVarManager::kZvPrim,20,-10.,10.);
-  if(cutDefinition == 2)mix->AddVariable(AliDielectronVarManager::kZvPrim,40,-10.,10.);
-  mix->SetDepth(100);
+  mix->AddVariable(AliDielectronVarManager::kZvPrim,40,-10.,10.);
   if(cutDefinition == 1)mix->SetMixUncomplete(kFALSE);
+  mix->SetDepth(100);
   mix->SetMixType(AliDielectronMixingHandler::kAll);
   diele->SetMixingHandler(mix);
 
   
-// check MultV0
-  
 //  old code
+//  if(cutDefinition == 2)mix->AddVariable(AliDielectronVarManager::kZvPrim,20,-10.,10.);  
 //  if(cutDefinition==1)mix->AddVariable(AliDielectronVarManager::kRefMult,"1,35,44,50,57,62,68,73,79,85,91,97,104,111,119,129,140,155,176,212,600");// 20 binssame integral per bin
 //  if(cutDefinition==2)mix->AddVariable(AliDielectronVarManager::kVZEROchMult,"1,2,3,4,5,6,7,8,9,10,12,120");
 //  if(cutDefinition==3){mix->SetDepth(20); mix->SetMixUncomplete(kFALSE);}
@@ -105,14 +103,18 @@ void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t is
 {
   // Setup the pair cuts
   AliDielectronVarCuts *mycut = new AliDielectronVarCuts("CutEMCAL","cut for EMCal");
-//  mycut->AddCut(AliDielectronVarManager::kEMCALnSigmaEle,-2.,3.);//not needed anymore
+  mycut->AddCut(AliDielectronVarManager::kEMCALnSigmaEle,-2.,3.);//not needed anymore
   mycut->AddCut(AliDielectronVarManager::kEMCALE,3.5,100.);
-  mycut->AddCut(AliDielectronVarManager::kEMCALEoverP,0.75,1.25);//  
+//  mycut->AddCut(AliDielectronVarManager::kEMCALEoverP,0.75,1.25);//  
 
   AliDielectronPairLegCuts *varpair=new AliDielectronPairLegCuts();
   varpair->GetLeg1Filter().AddCuts(mycut);
   varpair->GetLeg2Filter().AddCuts(mycut);
-  varpair->SetCutType(AliDielectronPairLegCuts::kAnyLeg);
+  if(cutDefinition == 0 || cutDefinition == 1){
+    varpair->SetCutType(AliDielectronPairLegCuts::kAnyLeg);
+  } else if(cutDefinition == 2){
+    varpair->SetCutType(AliDielectronPairLegCuts::kMixLegs);
+  }
   diele->GetPairFilter().AddCuts(varpair);
 
 
@@ -214,14 +216,6 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
   histos->UserHistogram("Track","dEdx_Eta","dEdx vs eta;#eta;TPC signal (arb units);#tracks",
                         200,-1.,1.,800,20.,200.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal,kTRUE);
 
-  /*
-  histos->UserHistogram("Track","kNclsSTPC_kDeltaEta","kNclsSTPC vs kDeltaEta;kNclsSTPC;kDeltaEta;#tracks",
-                        100,0.,1.,160,0.,1.6,AliDielectronVarManager::kNclsSTPC,AliDielectronVarManager::kDeltaEta,kTRUE);
-  histos->UserHistogram("Track","kNclsSTPC_kDeltaPhi","kNclsSTPC vs kDeltaPhi;kNclsSTPC;kDeltaPhi;#tracks",
-                        100,0.,1.,160,0.,6.4,AliDielectronVarManager::kNclsSTPC,AliDielectronVarManager::kDeltaPhi,kTRUE);
-  histos->UserHistogram("Track","kDeltaPhi_kDeltaEta","kDeltaPhi vs kDeltaEta;kDeltaPhi;kDeltaEta;#tracks",
-                        160,0.,6.4,160,0.,1.6,AliDielectronVarManager::kDeltaPhi,AliDielectronVarManager::kDeltaEta,kTRUE);
-  */
   histos->UserHistogram("Track","dEdx_nSigmaEMCal","dEdx vs nSigmaEMCal;NsigmaEmcal;TPC signal (arb units);NSigmaEMCAL",
                         200,-5.,5.,800,20.,200.,AliDielectronVarManager::kEMCALnSigmaEle,AliDielectronVarManager::kTPCsignal,kTRUE);
 
@@ -290,8 +284,9 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD)
   cf->AddVariable(AliDielectronVarManager::kPairType,12,0,12);
   cf->AddVariable(AliDielectronVarManager::kEta,20,-1.,1.);
   cf->AddVariable(AliDielectronVarManager::kY,20,-1.,1.);
-  cf->AddVariable(AliDielectronVarManager::kPhi,20,0.,20*0.32);
-
+  cf->AddVariable(AliDielectronVarManager::kPhi,64,-64.*0.1,64.*0.1);
+  cf->AddVariable(AliDielectronVarManager::kOpeningAngle,64,0.,3.2);
+  
   //global leg variables
   cf->AddVariable(AliDielectronVarManager::kPt,"0.,0.5,0.75,0.9,1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 2.0, 3.0, 4.0, 8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,30.0,50.0,100.0",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kEta,44,-1.2,1.2,kTRUE);

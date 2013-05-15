@@ -428,10 +428,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 						100,-3.15,3.15,AliDielectronVarManager::kDeltaPhiv0ACrpH2);
 
     
-  histos->UserHistogram("Pair","PairPlanev0ACrpH2Angle","Phi;Phi[rad];#counts",
-						100,0,1.6,AliDielectronVarManager::kPairPlanev0rpH2Angle);
-  histos->UserHistogram("Pair","PairPlaneMagAngle","Phi;Phi[rad];#counts",
-						100,0,1.6,AliDielectronVarManager::kPairPlaneMagAngle);
+  // histos->UserHistogram("Pair","PairPlanev0ACrpH2Angle","Phi;Phi[rad];#counts",
+  //					100,0,1.6,AliDielectronVarManager::kPairPlanev0rpH2Angle);
+  //  histos->UserHistogram("Pair","PairPlaneMagAngle","Phi;Phi[rad];#counts",
+  //					100,0,1.6,AliDielectronVarManager::kPairPlaneMagAngle);
   histos->UserHistogram("Pair","PairPlaneAngle","Phi;Phi[rad];#counts",
 						100,0,1.6,AliDielectronVarManager::kPairPlaneAngle);
 
@@ -481,7 +481,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Pair","InvMassHighOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
 						200,0.3,0.5,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
 
-  */
+  
 
 
   histos->UserHistogram("Pair","InvMassAllPairplaneMagAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
@@ -505,18 +505,21 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 						180,0.12,0.3,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlanev0rpH2Angle);
   histos->UserHistogram("Pair","InvMassHighPairplaneRPAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
 						200,0.3,0.5,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlanev0rpH2Angle);
-    
+  */  
   histos->UserHistogram("Pair","InvMassAllPairplaneAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
                         1000,0.0,5.0,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle);
   histos->UserHistogram("Pair","InvMassAll2PairplaneAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
                         500,0.0,0.50,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle);
+  histos->UserHistogram("Pair","InvMassMiddle2PairplaneAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
+                        400,0.1,0.50,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle);
+  
   histos->UserHistogram("Pair","InvMassLoweeplaneAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
                         300,0.0,0.03,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle);
   histos->UserHistogram("Pair","InvMassMiddleeelaneAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
                         180,0.12,0.3,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle);
   histos->UserHistogram("Pair","InvMassHighPairplaneAngle","ee plane and Mag Vector Angle vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
                         200,0.3,0.5,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle);
-
+  
      
 
   //add histograms to Track classes
@@ -602,6 +605,5 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 void EnableMC() {
   MCenabled=kTRUE;
 }
-
 
 
