@@ -7,7 +7,9 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 							 TString finAnObjname="AnalysisCuts", 
 							 TString estimatorFilename="",
 							 Double_t refMult=9.26,
-							 Bool_t subtractDau=kTRUE)
+							 Bool_t subtractDau=kFALSE,
+							 Bool_t NchWeight=kFALSE,
+							 Int_t configuration = AliAnalysisTaskSEDvsMultiplicity::kNtrk10)
 {
   //
   // Test macro for the AliAnalysisTaskSE for D+ candidates
@@ -71,6 +73,18 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   dMultTask->SetUseBit(kTRUE);
   dMultTask->SetDoImpactParameterHistos(kFALSE);
   dMultTask->SetSubtractTrackletsFromDaughters(subtractDau);
+  dMultTask->SetMultiplicityEstimator(configuration);
+
+  if(NchWeight){
+    TH1F *hNchPrimaries = (TH1F*)filecuts->Get("hGenPrimaryParticlesInelGt0");
+    if(hNchPrimaries) {
+      dMultTask->UseMCNchWeight(true);
+      dMultTask->SetHistoNchWeight(hNchPrimaries);
+    } else {
+      AliFatal("Histogram for multiplicity weights not found");
+      return 0x0;
+    }
+  }
 
   if(pdgMeson==421) { 
     dMultTask->SetMassLimits(1.5648,2.1648);
