@@ -705,7 +705,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	dcaV0 = v0->DcaV0Daughters();
 
 	// Define the V0 (neutral) track
-	AliNeutralTrackParam *trackV0;
+	AliNeutralTrackParam *trackV0=NULL;
 	if(fInputAOD) {
 	  const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
 	  if(trackVV0) trackV0 = new AliNeutralTrackParam(trackVV0);
