@@ -505,11 +505,12 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
 
 //________________________________________________________________________
 void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename, 
-					      TString gCollSystem) {
+					      Int_t nCentralityBins, 
+					      Double_t *centralityArrayForCorrections) {
   //Open files that will be used for correction
-  TString gCollidingSystem = gCollSystem;
-
-  cout<<filename<<endl;
+  fCentralityArrayBinsForCorrections = nCentralityBins;
+  for (Int_t i=0; i<nCentralityBins; i++)
+    fCentralityArrayForCorrections[i] = centralityArrayForCorrections[i];
 
   // No file specified -> run without corrections
   if(!filename.Contains(".root")) {
@@ -525,10 +526,8 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
   }
     
   //TString listEffName = "";
-  for (Int_t iCent = 0; iCent < fCentralityArrayBinsForCorrections-1; iCent++) {
-    
-    //Printf("iCent %d:",iCent);
-    
+  for (Int_t iCent = 0; iCent < fCentralityArrayBinsForCorrections-1; iCent++) {    
+    //Printf("iCent %d:",iCent);    
     TString histoName = "fHistCorrectionPlus";
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
     fHistCorrectionPlus[iCent]= dynamic_cast<TH3D *>(f->Get(histoName.Data()));
