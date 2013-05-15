@@ -1971,6 +1971,11 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // fill Event header information from the RawEventHeader
     if (fRawReader){FillRawEventHeaderESD(fesd);}
     if (fRawReader){FillRawEventHeaderESD(fhltesd);}
+    if (fRawReader){
+      // Store DAQ detector pattern and attributes
+      fesd->SetDAQDetectorPattern(fRawReader->GetDetectorPattern()[0]);
+      fesd->SetDAQAttributes(fRawReader->GetAttributes()[2]);
+    }
 
     fesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     fhltesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());

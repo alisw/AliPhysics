@@ -502,6 +502,10 @@ public:
   ULong_t GetDetectorStatus() const {return fDetectorStatus;}
   Bool_t IsDetectorOn(ULong_t detMask) const {return (fDetectorStatus&detMask)>0;}
 
+  void SetDAQDetectorPattern(UInt_t pattern) {fDAQDetectorPattern = pattern;}
+  void SetDAQAttributes(UInt_t attributes) {fDAQAttributes = attributes;}
+  UInt_t GetDAQDetectorPattern() const {return fDAQDetectorPattern;}
+  UInt_t GetDAQAttributes() const {return fDAQAttributes;}
   
 protected:
   AliESDEvent(const AliESDEvent&);
@@ -561,8 +565,10 @@ protected:
   AliEventplane *fEventplane; //! Event plane for AA collision
 
   ULong64_t fDetectorStatus; // set detector event status bit for good event selection
+  UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
+  UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
 
-  ClassDef(AliESDEvent,18)  //ESDEvent class 
+  ClassDef(AliESDEvent,19)  //ESDEvent class 
 };
 #endif 
 
