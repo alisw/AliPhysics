@@ -647,11 +647,13 @@ void AliAnalysisTaskFlowTPCTOFQCSP::UserCreateOutputObjects()
  
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
-    if (!inputHandler)
+    if (!inputHandler){
         AliFatal("Input handler needed");
-    
+    }
+    else{
+        fPIDResponse=inputHandler->GetPIDResponse();
+    }
   //pid response object
-  fPIDResponse=inputHandler->GetPIDResponse();
   if (!fPIDResponse)AliError("PIDResponse object was not created");
     
     

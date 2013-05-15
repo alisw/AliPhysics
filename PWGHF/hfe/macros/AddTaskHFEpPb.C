@@ -53,11 +53,11 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
     // for the moment (09.02.2013) use the same as TOF-TPC. Refine later on
     RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,-0.8,0.8); // 50%
   }
-  
+
   //------------------------------//
   //   TPC-TOF analysis
   //------------------------------//
-  
+
   if(kTPCTOF_Ref){
     // Reference task
     // with centrality V0A
@@ -71,22 +71,22 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
     RegisterTask(isMC,isAOD, kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth,3); // CL1
     RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth,4); // ZNA
 
-  }  
+  }
 
   if(kTPCTOF_Sys){
 
     // TPC PID
     if (!isMC){
       // 84%
-      //RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl0[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth); 
+      //RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl0[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth);
       //RegisterTaskPID2(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,-0.835,kDefTPCu,kDefTOFs,0,AliHFEextraCuts::kBoth);
       // 70%
-      RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth); 
+      RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth);
       // 60%
-      RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl2[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth); 
+      RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl2[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth);
       //RegisterTaskPID2(isMC,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,-0.184,kDefTPCu,kDefTOFs,0,AliHFEextraCuts::kBoth);
       // 40%
-      RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl3[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth); 
+      RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl3[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth);
       //RegisterTaskPID2(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,0.265,kDefTPCu,kDefTOFs,0,AliHFEextraCuts::kBoth);
     }
 
@@ -107,23 +107,23 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
     RegisterTask(isMC,isAOD,100,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth);
     RegisterTask(isMC,isAOD,120,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth);
     // TPC clusters PID
-    RegisterTask(isMC,isAOD,kDefTPCcl,100,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth); 
+    RegisterTask(isMC,isAOD,kDefTPCcl,100,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth);
   }
 
    if(kTPCTOFTRD_Ref){
 
       RegisterTaskPID2(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,kDefTOFs,0,AliHFEextraCuts::kBoth,kFALSE,TRDtrigger);
+      RegisterTaskPID2(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,TRDtrigger);
    }
 
   if(kTPCTOFTRD_PID){
       // without TOF
-      RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,0,4,"TPC",etacut);
-      RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,6,4,"TRD,TPC",etacut);
-      RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,6,4,"TPC,TRD",etacut);
-      RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,6,2,"TRD,TPC",etacut);
-      RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,5,4,"TRD,TPC",etacut);
-      RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,5,4,"TPC,TRD",etacut);
-      RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,5,2,"TRD,TPC",etacut);
+      RegisterTaskPID2TRD(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,6,4,"TRD,TPC",etacut);
+      RegisterTaskPID2TRD(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,6,4,"TPC,TRD",etacut);
+      RegisterTaskPID2TRD(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,6,2,"TRD,TPC",etacut);
+      RegisterTaskPID2TRD(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,5,4,"TRD,TPC",etacut);
+      RegisterTaskPID2TRD(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,5,4,"TPC,TRD",etacut);
+      RegisterTaskPID2TRD(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,5,2,"TRD,TPC",etacut);
   }
 
   
@@ -271,34 +271,13 @@ AliAnalysisTask *RegisterTaskPID2TRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=12
 				  Int_t tofm=0,
 				  Int_t itshitpixel = AliHFEextraCuts::kBoth, 
 				  Bool_t withetacorrection = kTRUE,
-				     Int_t TRDtrigger=0,Int_t trdl=6, Int_t trde=4,TString detector,Int_t etacut){
+				     Int_t TRDtrigger=0,Int_t trdl=6, Int_t trde=4,TString detector="TRD,TPC",Int_t etacut=0){
 
     TString detused=detector.Copy();
     TPRegexp(",").Substitute(detused,"","g");
     printf("detectors in use %s %s \n",detector.Data(),detused.Data());
 
-
-  gROOT->LoadMacro("$TRAIN_ROOT/util/hfe/configs/ConfigHFEmbpPbTRD.C");
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisTaskHFE *task = ConfigHFEmbpPbTRD(useMC, isAOD, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz,
-					     tpcs,tpcu,tofs,tofm,3.,kFALSE,kTRUE,kFALSE,itshitpixel,withetacorrection,0,TRDtrigger,trdl,trde,detector,etacut);
-
-  if(isAOD)
-    task->SetAODAnalysis();
-  else
-    task->SetESDAnalysis();
-
-  if (useMC)
-    task->SetHasMCData(kTRUE);
-  else{
-    task->SetHasMCData(kFALSE);
-  }
-
-  if(TRDtrigger==0) task->SelectCollisionCandidates(AliVEvent::kINT7);
-  else task->SelectCollisionCandidates(AliVEvent::kTRD);
-
-  Int_t idcaxy = (Int_t)(dcaxy*10.);
+    Int_t idcaxy = (Int_t)(dcaxy*10.);
   Int_t idcaz = (Int_t)(dcaz*10.);
   Int_t itpcs = (Int_t)(tpcs*1000.);
   Int_t itofs = (Int_t)(tofs*10.);
@@ -310,15 +289,44 @@ AliAnalysisTask *RegisterTaskPID2TRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=12
 				   tpcClsPID,itsCls,idcaxy,idcaz,itpcs,itofs,tofm,ipixelany,TRDtrigger,trdl,trde,detused.Data(),etacut));
   printf("Add macro appendix %s\n", appendix.Data());
 
+
+
+  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/ConfigHFEmbpPbTRD.C");
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+  AliAnalysisTaskHFE *task = ConfigHFEmbpPbTRD(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz,
+					     tpcs,tpcu,tofs,tofm,3.,kFALSE,kTRUE,kFALSE,itshitpixel,withetacorrection,0,TRDtrigger,trdl,trde,detector,etacut);
+
+  if(isAOD)
+    task->SetAODAnalysis();
+  else
+    task->SetESDAnalysis();
+
+  if(useMC)
+    task->SetHasMCData(kTRUE);
+  else{
+    task->SetHasMCData(kFALSE);
+  }
+
+  if(TRDtrigger==0) task->SelectCollisionCandidates(AliVEvent::kINT7);
+  else task->SelectCollisionCandidates(AliVEvent::kTRD);
+
+
+  TString containerName = mgr->GetCommonFileName();
+  containerName += ":HFEtask";
+  containerName += appendix.Data();
+  printf("container name: %s\n", containerName.Data());
+
   //create data containers
   task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()), 
 					      TList::Class(), AliAnalysisManager::kOutputContainer, 
-					      Form("HFEtask%s.root", appendix.Data())));
+					      containerName.Data()));
   task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(), 
 					      AliAnalysisManager::kOutputContainer, 
-					      Form("HFEtask%s.root", appendix.Data())));
+					      containerName.Data()));
   mgr->ConnectInput(task,  0, cinput );
 
   mgr->AddTask(task);
+
   return NULL;
 }
