@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE, Int_t system=1 /*0=pp, 1=PbPb*/, TString finDirname="",Bool_t trackon=kTRUE,Bool_t pidon=kTRUE,Bool_t centralityon=kTRUE, Bool_t eventselon=kTRUE, Bool_t flowobson=kFALSE){
+AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE, Int_t system=1 /*0=pp, 1=PbPb*/, TString finDirname="",Bool_t trackon=kTRUE,Bool_t pidon=kTRUE,Bool_t centralityon=kTRUE, Bool_t eventselon=kTRUE, Bool_t flowobson=kFALSE, Bool_t filldistribforeffcheckson=kFALSE){
   //
   // Test macro for the AliAnalysisTaskSE for HF mesons quality assurance
   //Author: C.Bianchin chiara.bianchin@pd.infn.it
@@ -148,6 +148,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   taskQA->SetCentralityOn(centralityon);
   taskQA->SetEvSelectionOn(eventselon);
   taskQA->SetFlowObsOn(flowobson);
+  taskQA->SetFillDistributionsForTrackEffChecks(filldistribforeffcheckson);
   mgr->AddTask(taskQA);
 
   //

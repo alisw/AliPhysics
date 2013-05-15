@@ -51,6 +51,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   void SetFlowObsOn(Bool_t flowobson=kTRUE){fOnOff[4]=flowobson;}
   void SetUseSelectionBit(Bool_t selectionbiton=kTRUE){fUseSelectionBit=selectionbiton;}
   void SetSecondCentralityEstimator(AliRDHFCuts::ECentrality est){fEstimator = est;}
+  void SetFillDistributionsForTrackEffChecks(Bool_t filldistrtrackeffcheckson=kFALSE){fFillDistrTrackEffChecks = filldistrtrackeffcheckson;}
 
   //getters
   AliRDHFCuts* GetCutObject() const {return fCuts;}
@@ -62,6 +63,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   Bool_t GetFlowObsStatus() const {return fOnOff[4];}
   Bool_t GetUseSelectionBit() const {return fUseSelectionBit;}
   AliRDHFCuts::ECentrality GetSecondCentralityEstimator()const {return fEstimator;}
+  Bool_t GetFillDistributionsForTrackEffChecks()const {return fFillDistrTrackEffChecks;}
 
  private:
   AliAnalysisTaskSEHFQA(const AliAnalysisTaskSEHFQA &source);
@@ -84,8 +86,9 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  Bool_t fSimpleMode;       // if true, don't do candidates (much faster in PbPb)
  Bool_t fUseSelectionBit;  // flag to use or not the selection bit
  Bool_t fOnOff[5];         // on-off the QA on tracks (0), PID (1), centrality (2), event selection -- default is {kTRUE,kTRUE,kTRUE,kTRUE}
+ Bool_t fFillDistrTrackEffChecks;
 
- ClassDef(AliAnalysisTaskSEHFQA,8); //AnalysisTaskSE for the quality assurance of HF in hadrons
+ ClassDef(AliAnalysisTaskSEHFQA,9); //AnalysisTaskSE for the quality assurance of HF in hadrons
 
 };
 
