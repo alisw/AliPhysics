@@ -86,11 +86,11 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
         fHistRCPtExLJ[i] = 0;
         fHistDeltaPtDeltaPhi2ExLJ[i] = 0;
         fHistDeltaPtDeltaPhi3ExLJ[i] = 0;
-        fHistRCPhiEtaRand[i] = 0;
-        fHistRhoVsRCPtRand[i] = 0;
-        fHistRCPtRand[i] = 0;
-        fHistDeltaPtDeltaPhi2Rand[i] = 0;
-        fHistDeltaPtDeltaPhi3Rand[i] = 0;
+        /* fHistRCPhiEtaRand[i] = 0; */
+        /* fHistRhoVsRCPtRand[i] = 0; */
+        /* fHistRCPtRand[i] = 0; */
+        /* fHistDeltaPtDeltaPhi2Rand[i] = 0; */
+        /* fHistDeltaPtDeltaPhi3Rand[i] = 0; */
         fHistJetPtRaw[i] = 0;
         fHistJetPt[i] = 0;
         fHistJetEtaPhi[i] = 0;
@@ -138,11 +138,11 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation(const char* name,
         fHistRCPtExLJ[i] = 0;
         fHistDeltaPtDeltaPhi2ExLJ[i] = 0;
         fHistDeltaPtDeltaPhi3ExLJ[i] = 0;
-        fHistRCPhiEtaRand[i] = 0;
-        fHistRhoVsRCPtRand[i] = 0;
-        fHistRCPtRand[i] = 0;
-        fHistDeltaPtDeltaPhi2Rand[i] = 0;
-        fHistDeltaPtDeltaPhi3Rand[i] = 0;
+        /* fHistRCPhiEtaRand[i] = 0; */
+        /* fHistRhoVsRCPtRand[i] = 0; */
+        /* fHistRCPtRand[i] = 0; */
+        /* fHistDeltaPtDeltaPhi2Rand[i] = 0; */
+        /* fHistDeltaPtDeltaPhi3Rand[i] = 0; */
         fHistJetPtRaw[i] = 0;
         fHistJetPt[i] = 0;
         fHistJetEtaPhi[i] = 0;
@@ -335,17 +335,17 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
         fHistRhoVsRCPt[i] =            BookTH2F("fHistRhoVsRCPt", "p_{t} (RC) [GeV/c]", "#rho * A (RC) [GeV/c]", 100, 0, 300, 100, 0, 350, i);
         fHistRCPt[i] =                 BookTH1F("fHistRCPt", "p_{t} (RC) [GeV/c]", 130, -20, 150, i);
         fHistRCPhiEtaExLJ[i] =         BookTH2F("fHistRCPhiEtaExLJ", "#phi (RC)", "#eta (RC)", 100, 0, TMath::TwoPi(), 100, -1, 1, i);
-        fHistDeltaPtDeltaPhi2[i] =     BookTH2F("fHistDeltaPtDeltaPhi2", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 100, 0, TMath::TwoPi(), 100, -50, 100, i);
-        fHistDeltaPtDeltaPhi3[i] =     BookTH2F("fHistDeltaPtDeltaPhi3", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 100, 0, TMath::TwoPi(), 100, -50, 100, i);
+        fHistDeltaPtDeltaPhi2[i] =     BookTH2F("fHistDeltaPtDeltaPhi2", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 50, 0, TMath::Pi(), 100, -50, 100, i);
+        fHistDeltaPtDeltaPhi3[i] =     BookTH2F("fHistDeltaPtDeltaPhi3", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 50, 0, TMath::TwoPi()/3., 100, -50, 100, i);
         fHistRhoVsRCPtExLJ[i] =        BookTH2F("fHistRhoVsRCPtExLJ", "p_{t} (RC) [GeV/c]", "#rho * A (RC) [GeV/c]", 100, 0, 300, 100, 0, 350, i);
         fHistRCPtExLJ[i] =             BookTH1F("fHistRCPtExLJ", "p_{t} (RC) [GeV/c]", 130, -20, 150, i);
-        fHistRCPhiEtaRand[i] =         BookTH2F("fHistRCPhiEtaRand", "#phi (RC)", "#eta (RC)", 100, 0, TMath::TwoPi(), 100, -1, 1, i);
-        fHistDeltaPtDeltaPhi2ExLJ[i] = BookTH2F("fHistDeltaPtDeltaPhi2ExLJ", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 100, 0, TMath::TwoPi(), 100, -50, 100, i);
-        fHistDeltaPtDeltaPhi3ExLJ[i] = BookTH2F("fHistDeltaPtDeltaPhi3ExLJ", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 100, 0, TMath::TwoPi(), 100, -50, 100, i);
-        fHistRhoVsRCPtRand[i] =        BookTH2F("fHistRhoVsRCPtRand", "p_{t} (RC) [GeV/c]", "#rho * A (RC) [GeV/c]", 100, 0, 300, 100, 0, 350, i);
-        fHistRCPtRand[i] =             BookTH1F("fHistRCPtRand", "p_{t} (RC) [GeV/c]", 130, -20, 150, i);
-        fHistDeltaPtDeltaPhi2Rand[i] =  BookTH2F("fHistDeltaPtDeltaPhi2Rand", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 100, 0, TMath::TwoPi(), 100, -50, 100, i);
-        fHistDeltaPtDeltaPhi3Rand[i] =  BookTH2F("fHistDeltaPtDeltaPhi3Rand", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 100, 0, TMath::TwoPi(), 100, -50, 100, i);
+        /* fHistRCPhiEtaRand[i] =         BookTH2F("fHistRCPhiEtaRand", "#phi (RC)", "#eta (RC)", 100, 0, TMath::TwoPi(), 100, -1, 1, i); */
+        fHistDeltaPtDeltaPhi2ExLJ[i] = BookTH2F("fHistDeltaPtDeltaPhi2ExLJ", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 50, 0, TMath::Pi(), 100, -50, 100, i);
+        fHistDeltaPtDeltaPhi3ExLJ[i] = BookTH2F("fHistDeltaPtDeltaPhi3ExLJ", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 50, 0, TMath::TwoPi()/3., 100, -50, 100, i);
+        /* fHistRhoVsRCPtRand[i] =        BookTH2F("fHistRhoVsRCPtRand", "p_{t} (RC) [GeV/c]", "#rho * A (RC) [GeV/c]", 100, 0, 300, 100, 0, 350, i); */
+        /* fHistRCPtRand[i] =             BookTH1F("fHistRCPtRand", "p_{t} (RC) [GeV/c]", 130, -20, 150, i); */
+        /* fHistDeltaPtDeltaPhi2Rand[i] =  BookTH2F("fHistDeltaPtDeltaPhi2Rand", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 50, 0, TMath::Pi(), 100, -50, 100, i); */
+        /* fHistDeltaPtDeltaPhi3Rand[i] =  BookTH2F("fHistDeltaPtDeltaPhi3Rand", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 50, 0, TMath::TwoPi()/3., 100, -50, 100, i); */
         // jet histograms (after kinematic cuts)
         fHistJetPtRaw[i] =             BookTH1F("fHistJetPtRaw", "p_{t} RAW [GeV/c]", 200, -50, 150, i);
         fHistJetPt[i] =                BookTH1F("fHistJetPt", "p_{t} [GeV/c]", 350, -100, 250, i);
@@ -354,16 +354,16 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
         fHistJetPtConstituents[i] =    BookTH2F("fHistJetPtConstituents", "p_{t} [GeV/c]", "Area", 350, -100, 250, 60, 0, 150, i);
         fHistJetEtaRho[i] =            BookTH2F("fHistJetEtaRho", "#eta", "#rho", 100, -1, 1, 100, 0, 300, i);
         // in plane and out of plane spectra
-        fHistJetPsiTPCPt[i] =          BookTH2F("fHistJetPsiTPCPt", "#phi_{jet} - #Psi_{2, TPC}", "p_{t} [GeV/c]", 100, 0., TMath::TwoPi(), 700, -100, 250, i);
-        fHistJetPsiVZEROAPt[i] =       BookTH2F("fHistJetPsiVZEROAPt", "#phi_{jet} - #Psi_{2, VZEROA}", "p_{t} [GeV/c]", 100, 0., TMath::TwoPi(), 700, -100, 250, i);
-        fHistJetPsiVZEROCPt[i] =       BookTH2F("fHistJetPsiVZEROCPt", "#phi_{jet} - #Psi_{V2, ZEROC}", "p_{t} [GeV/c]", 100, 0., TMath::TwoPi(), 700, -100, 250, i);
+        fHistJetPsiTPCPt[i] =          BookTH2F("fHistJetPsiTPCPt", "#phi_{jet} - #Psi_{2, TPC}", "p_{t} [GeV/c]", 50, 0., TMath::Pi(), 700, -100, 250, i);
+        fHistJetPsiVZEROAPt[i] =       BookTH2F("fHistJetPsiVZEROAPt", "#phi_{jet} - #Psi_{2, VZEROA}", "p_{t} [GeV/c]", 50, 0., TMath::Pi(), 700, -100, 250, i);
+        fHistJetPsiVZEROCPt[i] =       BookTH2F("fHistJetPsiVZEROCPt", "#phi_{jet} - #Psi_{V2, ZEROC}", "p_{t} [GeV/c]", 50, 0., TMath::Pi(), 700, -100, 250, i);
         // phi minus psi
-        fHistDeltaPhi2VZEROA[i] =       BookTH1F("fHistDeltaPhi2VZEROA", "#phi_{jet} - #Psi_{2, VZEROA}", 100, 0, TMath::TwoPi(), i);
-        fHistDeltaPhi2VZEROC[i] =       BookTH1F("fHistDeltaPhi2VZEROC", "#phi_{jet} - #Psi_{2, VZEROC}", 100, 0, TMath::TwoPi(), i);
-        fHistDeltaPhi2TPC[i] =          BookTH1F("fHistDeltaPhi2TPC", "#phi_{jet} - #Psi_{2, TPC}", 100, 0, TMath::TwoPi(), i);
-        fHistDeltaPhi3VZEROA[i] =       BookTH1F("fHistDeltaPhi3VZEROA", "#phi_{jet} - #Psi_{2, VZEROA}", 100, 0, TMath::TwoPi(), i);
-        fHistDeltaPhi3VZEROC[i] =       BookTH1F("fHistDeltaPhi3VZEROC", "#phi_{jet} - #Psi_{2, VZEROC}", 100, 0, TMath::TwoPi(), i);
-        fHistDeltaPhi3TPC[i] =          BookTH1F("fHistDeltaPhi3TPC", "#phi_{jet} - #Psi_{2, TPC}", 100, 0, TMath::TwoPi(), i);
+        fHistDeltaPhi2VZEROA[i] =       BookTH1F("fHistDeltaPhi2VZEROA", "#phi_{jet} - #Psi_{2, VZEROA}", 50, 0, TMath::Pi(), i);
+        fHistDeltaPhi2VZEROC[i] =       BookTH1F("fHistDeltaPhi2VZEROC", "#phi_{jet} - #Psi_{2, VZEROC}", 50, 0, TMath::Pi(), i);
+        fHistDeltaPhi2TPC[i] =          BookTH1F("fHistDeltaPhi2TPC", "#phi_{jet} - #Psi_{2, TPC}", 50, 0, TMath::Pi(), i);
+        fHistDeltaPhi3VZEROA[i] =       BookTH1F("fHistDeltaPhi3VZEROA", "#phi_{jet} - #Psi_{2, VZEROA}", 50, 0, TMath::TwoPi()/3., i);
+        fHistDeltaPhi3VZEROC[i] =       BookTH1F("fHistDeltaPhi3VZEROC", "#phi_{jet} - #Psi_{2, VZEROC}", 50, 0, TMath::TwoPi()/3., i);
+        fHistDeltaPhi3TPC[i] =          BookTH1F("fHistDeltaPhi3TPC", "#phi_{jet} - #Psi_{2, TPC}", 50, 0, TMath::TwoPi()/3., i);
 
         fProfV2Resolution[i] = new TProfile(Form("fProfV2Resolution_%i", i), Form("fProfV2Resolution_%i", i), 8, -0.5, 7.5);
         fProfV2Resolution[i]->GetXaxis()->SetBinLabel(1, "<cos(2(#Psi_{a} - #Psi_{b}))>");
@@ -1078,8 +1078,8 @@ void AliAnalysisTaskRhoVnModulation::FillDeltaPtHistograms(Double_t psi2, Double
            fHistRCPhiEta[fInCentralitySelection]->Fill(phi, eta);
            fHistRhoVsRCPt[fInCentralitySelection]->Fill(pt, RhoVal(phi, fJetRadius, fRho->GetVal())*areaRC);
            fHistRCPt[fInCentralitySelection]->Fill(pt);
-           fHistDeltaPtDeltaPhi2[fInCentralitySelection]->Fill(PhaseShift(phi-psi2), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
-           fHistDeltaPtDeltaPhi3[fInCentralitySelection]->Fill(PhaseShift(phi-psi3), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
+           fHistDeltaPtDeltaPhi2[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
+           fHistDeltaPtDeltaPhi3[fInCentralitySelection]->Fill(PhaseShift(phi-psi3, 3.), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
        }
        // get a random cone excluding leading jet area
        CalculateRandomCone(pt, eta, phi, leadingJet);
@@ -1087,18 +1087,18 @@ void AliAnalysisTaskRhoVnModulation::FillDeltaPtHistograms(Double_t psi2, Double
            fHistRCPhiEtaExLJ[fInCentralitySelection]->Fill(phi, eta);
            fHistRhoVsRCPtExLJ[fInCentralitySelection]->Fill(pt, RhoVal(phi, fJetRadius, fRho->GetVal())*areaRC);
            fHistRCPtExLJ[fInCentralitySelection]->Fill(pt);
-           fHistDeltaPtDeltaPhi2ExLJ[fInCentralitySelection]->Fill(PhaseShift(phi-psi2), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
-           fHistDeltaPtDeltaPhi3ExLJ[fInCentralitySelection]->Fill(PhaseShift(phi-psi3), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
+           fHistDeltaPtDeltaPhi2ExLJ[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
+           fHistDeltaPtDeltaPhi3ExLJ[fInCentralitySelection]->Fill(PhaseShift(phi-psi3, 3.), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
        }
        // get a random cone in an event with randomized phi and eta
-       CalculateRandomCone(pt, eta, phi, 0x0, kTRUE);
+       /* CalculateRandomCone(pt, eta, phi, 0x0, kTRUE);
        if( pt > 0) {
            fHistRCPhiEtaRand[fInCentralitySelection]->Fill(phi, eta);
            fHistRhoVsRCPtRand[fInCentralitySelection]->Fill(pt, RhoVal(phi, fJetRadius, fRho->GetVal())*areaRC);
            fHistRCPtRand[fInCentralitySelection]->Fill(pt);
-           fHistDeltaPtDeltaPhi2Rand[fInCentralitySelection]->Fill(PhaseShift(phi-psi2), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
-           fHistDeltaPtDeltaPhi3Rand[fInCentralitySelection]->Fill(PhaseShift(phi-psi3), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
-       }
+           fHistDeltaPtDeltaPhi2Rand[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
+           fHistDeltaPtDeltaPhi3Rand[fInCentralitySelection]->Fill(PhaseShift(phi-psi3, 3.), pt - areaRC*RhoVal(phi, fJetRadius, fRho->GetVal()));
+       } */
     } 
 }
 //_____________________________________________________________________________
@@ -1116,9 +1116,9 @@ void AliAnalysisTaskRhoVnModulation::FillJetHistograms(Double_t vzero[2][2], Dou
             fHistJetPt[fInCentralitySelection]->Fill(pt-area*rho);
             fHistJetEtaPhi[fInCentralitySelection]->Fill(eta, phi);
             fHistJetPtArea[fInCentralitySelection]->Fill(pt-area*rho, area);
-            fHistJetPsiTPCPt[fInCentralitySelection]->Fill(PhaseShift(phi-tpc[0]), pt-area*rho);
-            fHistJetPsiVZEROAPt[fInCentralitySelection]->Fill(PhaseShift(phi-vzero[0][0]), pt-area*rho);
-            fHistJetPsiVZEROCPt[fInCentralitySelection]->Fill(PhaseShift(phi-vzero[1][0]), pt-area*rho);
+            fHistJetPsiTPCPt[fInCentralitySelection]->Fill(PhaseShift(phi-tpc[0], 2.), pt-area*rho);
+            fHistJetPsiVZEROAPt[fInCentralitySelection]->Fill(PhaseShift(phi-vzero[0][0], 2.), pt-area*rho);
+            fHistJetPsiVZEROCPt[fInCentralitySelection]->Fill(PhaseShift(phi-vzero[1][0], 2.), pt-area*rho);
             fHistJetPtConstituents[fInCentralitySelection]->Fill(pt-area*rho, jet->Nch());
             fHistJetEtaRho[fInCentralitySelection]->Fill(eta, pt/area);
             if(fSetPtSub) jet->SetPtSub(pt-area*rho);
@@ -1138,12 +1138,12 @@ void AliAnalysisTaskRhoVnModulation::FillDeltaPhiHistograms(Double_t vzero[2][2]
        for(Int_t iTPC(0); iTPC < iTracks; iTPC++) {
            AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(iTPC));
            if(!PassesCuts(track)) continue;
-           fHistDeltaPhi2VZEROA[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-vzero[0][0]));
-           fHistDeltaPhi2VZEROC[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-vzero[1][0]));
-           fHistDeltaPhi2TPC[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-tpc[0]));
-           fHistDeltaPhi3VZEROA[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-vzero[0][1]));
-           fHistDeltaPhi3VZEROC[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-vzero[1][1]));
-           fHistDeltaPhi3TPC[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-tpc[1]));
+           fHistDeltaPhi2VZEROA[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-vzero[0][0], 2.));
+           fHistDeltaPhi2VZEROC[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-vzero[1][0], 2.));
+           fHistDeltaPhi2TPC[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-tpc[0], 2.));
+           fHistDeltaPhi3VZEROA[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-vzero[0][1], 3.));
+           fHistDeltaPhi3VZEROC[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-vzero[1][1], 3.));
+           fHistDeltaPhi3TPC[fInCentralitySelection]->Fill(PhaseShift(track->Phi()-tpc[1], 3.));
        }
    }
 }

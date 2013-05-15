@@ -42,6 +42,14 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
             while (x>=TMath::TwoPi())x-=TMath::TwoPi();
             while (x<0.)x+=TMath::TwoPi();
             return x; }
+        /* inline */    Double_t PhaseShift(Double_t x, Double_t n) const {
+            x = PhaseShift(x);
+            if(TMath::Nint(n)==2) while (x>TMath::Pi()) x = TMath::TwoPi() - x;
+            if(TMath::Nint(n)==3) {
+                if(x>2.*TMath::TwoPi()/n) x = TMath::TwoPi() - x;
+                if(x>TMath::TwoPi()/n) x = TMath::TwoPi()-(x+TMath::TwoPi()/n);
+            }
+            return x; }
         /* inline */    Double_t ChiSquarePDF(Int_t ndf, Double_t x) const {
             Double_t n(ndf/2.), denom(TMath::Power(2, n)*TMath::Gamma(n));
             if (denom!=0)  return ((1./denom)*TMath::Power(x, n-1)*TMath::Exp(-x/2.)); 
@@ -203,11 +211,11 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH1F*                   fHistRCPtExLJ[10];              //! rcpt, excl leading jet
         TH2F*                   fHistDeltaPtDeltaPhi2ExLJ[10];  //! dpt vs dphi, excl leading jet
         TH2F*                   fHistDeltaPtDeltaPhi3ExLJ[10];  //! dpt vs dphi, excl leading jet
-        TH2F*                   fHistRCPhiEtaRand[10];          //! random cone eta and phi, randomized
-        TH2F*                   fHistRhoVsRCPtRand[10];         //! rho * A vs rcpt, randomized
-        TH1F*                   fHistRCPtRand[10];              //! rcpt, randomized
-        TH2F*                   fHistDeltaPtDeltaPhi2Rand[10];  //! dpt vs dphi, randomized
-        TH2F*                   fHistDeltaPtDeltaPhi3Rand[10];  //! dpt vs dphi, randomized
+        /* TH2F*                   fHistRCPhiEtaRand[10];          //! random cone eta and phi, randomized */
+        /* TH2F*                   fHistRhoVsRCPtRand[10];         //! rho * A vs rcpt, randomized */
+        /* TH1F*                   fHistRCPtRand[10];              //! rcpt, randomized */ 
+        /* TH2F*                   fHistDeltaPtDeltaPhi2Rand[10];  //! dpt vs dphi, randomized */
+        /* TH2F*                   fHistDeltaPtDeltaPhi3Rand[10];  //! dpt vs dphi, randomized */
         // jet histograms (after kinematic cuts)
         TH1F*                   fHistJetPtRaw[10];              //! jet pt - no background subtraction
         TH1F*                   fHistJetPt[10];                 //! pt of found jets (background subtracted)
