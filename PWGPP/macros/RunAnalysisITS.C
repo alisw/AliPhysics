@@ -1,9 +1,9 @@
 class AliAnalysisGrid;
 
-void RunAnalysisITS(TString pluginmode,Int_t firstrun,Int_t lastrun,
+void RunAnalysisITS(TString pluginmode="",Int_t firstrun=177173,Int_t lastrun=177173,
 		    Bool_t readMC=kFALSE,
-		    Bool_t runAlign=kTRUE,
-		    Bool_t runITS=kTRUE,
+		    Bool_t runAlign=kFALSE,
+		    Bool_t runITS=kFALSE,
 		    Bool_t runImpPar=kTRUE,
 		    Bool_t runVtx=kFALSE,
 		    Bool_t runSPD=kFALSE) 
@@ -19,9 +19,9 @@ void RunAnalysisITS(TString pluginmode,Int_t firstrun,Int_t lastrun,
   TString analysisMode = "grid"; // "local", "grid", or "proof" (not yet)
 
   Long64_t nentries=1000000000000000,firstentry=0;
-  Bool_t useAlienPlugin=kTRUE;
-  Bool_t uselibPWGPP=kFALSE;
-  TString loadMacroPath="../../";
+  Bool_t useAlienPlugin=kFALSE;
+  Bool_t uselibPWGPP=kTRUE;
+  TString loadMacroPath="./";
   Bool_t readHLT=kFALSE;
   //
 
@@ -99,14 +99,14 @@ void RunAnalysisITS(TString pluginmode,Int_t firstrun,Int_t lastrun,
     taskName="AddTaskPerformanceITS.C"; 
     taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
-    AliAnalysisTaskITSTrackingCheck *itsTask = AddTaskPerformanceITS(readMC,kFALSE,kFALSE);  
+    AliAnalysisTaskITSTrackingCheck *itsTask = AddTaskPerformanceITS(readMC,kFALSE,kFALSE,0,1000000,1);  
   }
   if(runImpPar) {
     if(!uselibPWGPP) gROOT->LoadMacro("AliAnalysisTaskSEImpParRes.cxx++g");
     taskName="AddTaskImpParRes.C"; 
     taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
-    AliAnalysisTaskSEImpParRes *d0Task = AddTaskImpParRes(readMC,-1,kFALSE);  
+    AliAnalysisTaskSEImpParRes *d0Task = AddTaskImpParRes(readMC,-1,kFALSE,kFALSE,0,1000000,0);  
   }
   if(runVtx) {
     if(!uselibPWGPP) gROOT->LoadMacro("AliAnalysisTaskVertexESD.cxx++g");
@@ -135,7 +135,7 @@ void RunAnalysisITS(TString pluginmode,Int_t firstrun,Int_t lastrun,
   // Apply the event selection
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   Bool_t bkgRej=kTRUE;
-  AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(readMC,bkgRej);
+  //AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(readMC,bkgRej);
   
 
   //

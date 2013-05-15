@@ -5,10 +5,10 @@ void PlotITSTrackingRes(TString filename="ITS.Performance.root",
 			Int_t pdgcode=211,
 			Bool_t useAbsPdg=kTRUE,
 			Bool_t box=kTRUE,
-			Int_t minITSpoints=6,
+			Int_t minITSpoints=7,
 			Bool_t nofakes=kTRUE,
 			Bool_t askITSrefit=kTRUE,
-			Int_t minTPCcls=1) 
+			Int_t minTPCcls=70) 
 {
   //
   // Plot ITS tracking resolutions from ITS.Performance.root
@@ -25,6 +25,13 @@ void PlotITSTrackingRes(TString filename="ITS.Performance.root",
   cout<<"Opening file "<<filename.Data()<<endl;   
     
   TList *list = (TList*)file->Get("cOutputITS");
+  TDirectoryFile *dir=0;
+  if(!list) {
+    dir=(TDirectoryFile*)file->GetDirectory("ITS_Performance");
+    if(dir) list = (TList*)dir->Get("cOutputITS");
+  }
+
+
   TNtuple *ntTracks = (TNtuple*)list->FindObject("fNtupleESDTracks");
 
       
@@ -385,6 +392,7 @@ void PlotITSTrackingRes(TString filename="ITS.Performance.root",
     //printf("%d\n",ITSflag);
     Int_t nITSsel=ITSnCluster(ITSflag);
 
+    //cout<<nITSsel<<"  "<<nITSclsassign<<endl;
 
     if(nTPCcls<=minTPCcls) continue;
 

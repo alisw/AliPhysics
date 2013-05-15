@@ -20,7 +20,17 @@ void PlotITSTrackingEff(TString filename="ITS.Performance.root",
   TFile *file= TFile::Open(filename.Data());
   cout<<"Open File "<<filename<<endl;   
 
+
+
   TList *list = (TList*)file->Get("cOutputITS");
+  TDirectoryFile *dir=0;
+  if(!list) {
+    dir=(TDirectoryFile*)file->GetDirectory("ITS_Performance");
+    if(dir) list = (TList*)dir->Get("cOutputITS");
+  }
+
+
+
   TNtuple *ntTracks = (TNtuple*)list->FindObject("fNtupleESDTracks");
     
   //Getting and Addressing  NTuples    

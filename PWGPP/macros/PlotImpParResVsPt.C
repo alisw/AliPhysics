@@ -6,10 +6,10 @@ void PlotImpParResVsPt()
   gStyle->SetOptStat(0);
 
 
-  TFile *file1=TFile::Open("QAresults_LHC11h_p2_170593.root","READ");
-  TDirectoryFile *dir1=(TDirectoryFile*)file1->GetDirectory("ImpParRes_Performance");
+  TFile *file1=TFile::Open("QAresults_merged_195344_195351.root","READ");
+  TDirectoryFile *dir1=(TDirectoryFile*)file1->GetDirectory("ImpParRes_Performance_wSDD");
   
-  //TFile *d0dist1=TFile::Open("/home/luojb/2011/ImpactParameter/OutputFile/PP/LHC10b/ImpParRes.Performance_LHC10bcde_pass2_ESDdiamond_2011_01_26.root","READ");
+  //TFile *d0dist1=TFile::Open("/home/luojb/2011/ImpactParameter/OutputFile/PP/LHC10b/ImpParRes.Performance_LHC10bcde_pass2_ESDdiamond_2011_01_26.root","READ"); 
   
   //if (!d0dist1->IsOpen()) return;
   
@@ -68,7 +68,14 @@ void PlotImpParResVsPt()
     TString getstr;
     Int_t jj=i+1;
     Double_t j =3.;  
+    //
+    // CHANGE ONLY HERE TO GET rphi 6 points, rphi SPDany, or z 6 points
+    //
+    //getstr="d0allpointzSkip_"; 
     getstr="d0allpointrphiSkip_"; 
+    //getstr="d0partpointrphiSkip_"; 
+    //
+    //
     getstr += jj;
     d0AllpointrphiSkip1_[i] = (TH1F*)d0allpointSkip1->FindObject(getstr);//->Clone(getstr+"d0allrphiRec");
 
