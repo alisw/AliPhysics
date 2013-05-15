@@ -389,6 +389,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
 
   TH1F *fHistPhiTPCInAcc = (TH1F*)list->FindObject("fHistPhiTPCInAcc");
   TH1F *fHistPhiITSMIokbadoutinz6InAcc = (TH1F*)list->FindObject("fHistPhiITSMIokbadoutinz6InAcc");
+  TH1F *fHistPhiITSMI7InAcc = (TH1F*)list->FindObject("fHistPhiITSMI7InAcc");
   TH1F *fHistPhiITSMI6InAcc = (TH1F*)list->FindObject("fHistPhiITSMI6InAcc");
   TH1F *fHistPhiITSMI5InAcc = (TH1F*)list->FindObject("fHistPhiITSMI5InAcc");
   TH1F *fHistPhiITSMI4InAcc = (TH1F*)list->FindObject("fHistPhiITSMI4InAcc");
@@ -399,6 +400,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
 
   TH1F *fHistEtaTPCInAcc = (TH1F*)list->FindObject("fHistEtaTPCInAcc");
   TH1F *fHistEtaITSMIokbadoutinz6InAcc = (TH1F*)list->FindObject("fHistEtaITSMIokbadoutinz6InAcc");
+  TH1F *fHistEtaITSMI7InAcc = (TH1F*)list->FindObject("fHistEtaITSMI7InAcc");
   TH1F *fHistEtaITSMI6InAcc = (TH1F*)list->FindObject("fHistEtaITSMI6InAcc");
   TH1F *fHistEtaITSMI5InAcc = (TH1F*)list->FindObject("fHistEtaITSMI5InAcc");
   TH1F *fHistEtaITSMI4InAcc = (TH1F*)list->FindObject("fHistEtaITSMI4InAcc");
@@ -414,6 +416,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPtTPCInAccPfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccPfromStrange");
   TH1F *fHistPtTPCInAccMCtwoSPD = (TH1F*)list->FindObject("fHistPtTPCInAccMCtwoSPD");
   TH1F *fHistPtTPCInAccMConeSPD = (TH1F*)list->FindObject("fHistPtTPCInAccMConeSPD");
+  TH1F *fHistPtITSMI7InAcc = (TH1F*)list->FindObject("fHistPtITSMI7InAcc");
   TH1F *fHistPtITSMI6InAcc = (TH1F*)list->FindObject("fHistPtITSMI6InAcc");
   TH1F *fHistPtITSMI5InAcc = (TH1F*)list->FindObject("fHistPtITSMI5InAcc");
   TH1F *fHistPtITSMI4InAcc = (TH1F*)list->FindObject("fHistPtITSMI4InAcc");
@@ -421,6 +424,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPtITSMI2InAcc = (TH1F*)list->FindObject("fHistPtITSMI2InAcc");
   TH1F *fHistPtITSMISPDInAcc = (TH1F*)list->FindObject("fHistPtITSMISPDInAcc");
   TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAcc");
+  TH1F *fHistPtITSMI7InAccFake = (TH1F*)list->FindObject("fHistPtITSMI7InAccFake");
   TH1F *fHistPtITSMI6InAccFake = (TH1F*)list->FindObject("fHistPtITSMI6InAccFake");
   TH1F *fHistPtITSMI5InAccFake = (TH1F*)list->FindObject("fHistPtITSMI5InAccFake");
   TH1F *fHistPtITSMI4InAccFake = (TH1F*)list->FindObject("fHistPtITSMI4InAccFake");
@@ -433,6 +437,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPtITSMIokbadoutinz5InAcc = (TH1F*)list->FindObject("fHistPtITSMIokbadoutinz5InAcc");
   TH1F *fHistPtITSMIokbadoutinz4InAcc = (TH1F*)list->FindObject("fHistPtITSMIokbadoutinz4InAcc");
   TH1F *fHistPtTPCInAccP = (TH1F*)list->FindObject("fHistPtTPCInAccP");
+  TH1F *fHistPtITSMI7InAccP = (TH1F*)list->FindObject("fHistPtITSMI7InAccP");
   TH1F *fHistPtITSMI6InAccP = (TH1F*)list->FindObject("fHistPtITSMI6InAccP");
   TH1F *fHistPtITSMI5InAccP = (TH1F*)list->FindObject("fHistPtITSMI5InAccP");
   TH1F *fHistPtITSMI4InAccP = (TH1F*)list->FindObject("fHistPtITSMI4InAccP");
@@ -441,6 +446,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPtITSMISPDInAccP = (TH1F*)list->FindObject("fHistPtITSMISPDInAccP");
   TH1F *fHistPtITSMIoneSPDInAccP = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAccP");
   TH1F *fHistPtTPCInAccS = (TH1F*)list->FindObject("fHistPtTPCInAccS");
+  TH1F *fHistPtITSMI7InAccS = (TH1F*)list->FindObject("fHistPtITSMI7InAccS");
   TH1F *fHistPtITSMI6InAccS = (TH1F*)list->FindObject("fHistPtITSMI6InAccS");
   TH1F *fHistPtITSMI5InAccS = (TH1F*)list->FindObject("fHistPtITSMI5InAccS");
   TH1F *fHistPtITSMI4InAccS = (TH1F*)list->FindObject("fHistPtITSMI4InAccS");
@@ -468,11 +474,15 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPtTPCInAccSfromMat = (TH1F*)list->FindObject("fHistPtTPCInAccSfromMat");
 
 
+  Bool_t upgrade = kFALSE;
+  if(fHistNclsITSMI->GetBinContent(7)>0) upgrade=kTRUE;
+
   //ReweightStrange(fHistPtTPCInAcc,fHistPtTPCInAccPfromStrange,fHistPtTPCInAccSfromStrange);
   //ReweightStrange(fHistPtITSTPCsel,fHistPtITSTPCselPfromStrange,fHistPtITSTPCselSfromStrange);
 
   //---------------------------------------------------------------
   TH1F *fHistPtITSMIge2InAcc = (TH1F*)fHistPtITSMI6InAcc->Clone("fHistPtITSMIge2InAcc");
+  if(upgrade) fHistPtITSMIge2InAcc->Add(fHistPtITSMI7InAcc);
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI5InAcc);
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI4InAcc);
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI3InAcc);
@@ -480,17 +490,20 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPtITSMIge2InAccFake = 0;
   if(fHistPtITSMI6InAccFake) {
     fHistPtITSMIge2InAccFake=(TH1F*)fHistPtITSMI6InAccFake->Clone("fHistPtITSMIge2InAccFake");
+    if(upgrade) fHistPtITSMIge2InAccFake->Add(fHistPtITSMI7InAccFake);
     fHistPtITSMIge2InAccFake->Add(fHistPtITSMI5InAccFake);
     fHistPtITSMIge2InAccFake->Add(fHistPtITSMI4InAccFake);
     fHistPtITSMIge2InAccFake->Add(fHistPtITSMI3InAccFake);
     fHistPtITSMIge2InAccFake->Add(fHistPtITSMI2InAccFake);
   }
   TH1F *fHistPtITSMIge2InAccP = (TH1F*)fHistPtITSMI6InAccP->Clone("fHistPtITSMIge2InAccP");
+  if(upgrade) fHistPtITSMIge2InAccP->Add(fHistPtITSMI7InAccP);
   fHistPtITSMIge2InAccP->Add(fHistPtITSMI5InAccP);
   fHistPtITSMIge2InAccP->Add(fHistPtITSMI4InAccP);
   fHistPtITSMIge2InAccP->Add(fHistPtITSMI3InAccP);
   fHistPtITSMIge2InAccP->Add(fHistPtITSMI2InAccP);
   TH1F *fHistPtITSMIge2InAccS = (TH1F*)fHistPtITSMI6InAccS->Clone("fHistPtITSMIge2InAccS");
+  if(upgrade) fHistPtITSMIge2InAccS->Add(fHistPtITSMI7InAccS);
   fHistPtITSMIge2InAccS->Add(fHistPtITSMI5InAccS);
   fHistPtITSMIge2InAccS->Add(fHistPtITSMI4InAccS);
   fHistPtITSMIge2InAccS->Add(fHistPtITSMI3InAccS);
@@ -504,6 +517,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
     fHistPtITSMI4InAccFake->Divide(fHistPtITSMI4InAccFake,fHistPtITSMI4InAcc,1,1,"B");
     fHistPtITSMI5InAccFake->Divide(fHistPtITSMI5InAccFake,fHistPtITSMI5InAcc,1,1,"B");
     fHistPtITSMI6InAccFake->Divide(fHistPtITSMI6InAccFake,fHistPtITSMI6InAcc,1,1,"B");
+    if(upgrade) fHistPtITSMI7InAccFake->Divide(fHistPtITSMI7InAccFake,fHistPtITSMI7InAcc,1,1,"B");
     fHistPtITSMISPDInAccFake->Divide(fHistPtITSMISPDInAccFake,fHistPtITSMISPDInAcc,1,1,"B");
     fHistPtITSMIoneSPDInAccFake->Divide(fHistPtITSMIoneSPDInAccFake,fHistPtITSMIoneSPDInAcc,1,1,"B");
     if (fHistPtITSTPCselFake)fHistPtITSTPCselFake->Divide(fHistPtITSTPCselFake,fHistPtITSTPCsel,1,1,"B");
@@ -517,23 +531,33 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TLegend *l2=new TLegend(0.5,0.5,0.9,0.9);
 
   TCanvas *c1= new TCanvas("c1","c1",10,10,600,500);
-  fHistNclsITSSA->SetMinimum(0);
-  fHistNclsITSSA->SetLineColor(1);
-  l1->AddEntry(fHistNclsITSSA,"ITS-SA","l");
-  fHistNclsITSSA->Draw();
-  fHistNclsITSSAInAcc->SetLineColor(4);
-  l1->AddEntry(fHistNclsITSSAInAcc,"ITS-SA in acc.","l");
-  fHistNclsITSSAInAcc->Draw("same");
+  fHistNclsITSMI->SetMinimum(0);
+  //fHistNclsITSSAInAcc->SetLineColor(4);
+  //l1->AddEntry(fHistNclsITSSAInAcc,"ITS-SA in acc.","l");
+  //fHistNclsITSSAInAcc->Draw("same");
   fHistNclsITSMI->SetLineColor(2);
   l1->AddEntry(fHistNclsITSMI,"ITS from TPC","l");
-  fHistNclsITSMI->Draw("same");
+  fHistNclsITSMI->Draw();
+  fHistNclsITSSA->SetLineColor(1);
+  l1->AddEntry(fHistNclsITSSA,"ITS-SA","l");
+  fHistNclsITSSA->Draw("same");
   l1->Draw();
 
 
   TCanvas *c2 =new TCanvas("c2","c2",10,10,1200,800);
   c2->Divide(3,2);
   c2->cd(1);
+  fHistClusterMapITSSA->SetLineColor(1);
+  fHistClusterMapITSSA->SetMarkerColor(1);
+  fHistClusterMapITSSA->SetMarkerStyle(21);
+  fHistClusterMapITSMI->SetLineColor(2);
+  fHistClusterMapITSMI->SetMarkerColor(2);
+  fHistClusterMapITSMI->SetMarkerStyle(21);
+  fHistClusterMapITSMI->Draw();
+  fHistClusterMapITSSA->Draw("same");
+  l1->Draw();
   //
+  c2->cd(2);
   fHistClusterMapITSSAokoutinzbad->SetLineColor(1);
   fHistClusterMapITSSAokoutinzbad->SetMarkerColor(1);
   fHistClusterMapITSSAokoutinzbad->SetMarkerStyle(20);
@@ -544,7 +568,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistClusterMapITSMIokoutinzbad->Draw("same");
   l1->Draw();
   //
-  c2->cd(2);
+  c2->cd(3);
   fHistClusterMapITSSAok->SetLineColor(1);
   fHistClusterMapITSSAok->SetMarkerColor(1);
   fHistClusterMapITSSAok->SetMarkerStyle(21);
@@ -554,7 +578,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistClusterMapITSMIok->SetMarkerStyle(21);
   fHistClusterMapITSMIok->Draw("same");
   //
-  c2->cd(3);
+  c2->cd(4);
   fHistClusterMapITSSAoutinz->SetLineColor(1);
   fHistClusterMapITSSAoutinz->SetMarkerColor(1);
   fHistClusterMapITSSAoutinz->SetMarkerStyle(22);
@@ -564,7 +588,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistClusterMapITSMIoutinz->SetMarkerStyle(22);
   fHistClusterMapITSMIoutinz->Draw("same");
   //
-  c2->cd(4);
+  c2->cd(5);
   fHistClusterMapITSSAbad->SetLineColor(1);
   fHistClusterMapITSSAbad->SetMarkerColor(1);
   fHistClusterMapITSSAbad->SetMarkerStyle(23);
@@ -574,7 +598,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistClusterMapITSMIbad->SetMarkerStyle(23);
   fHistClusterMapITSMIbad->Draw("same");
   //
-  c2->cd(5);
+  c2->cd(6);
   fHistClusterMapITSSAnocls->SetLineColor(1);
   fHistClusterMapITSSAnocls->SetMarkerColor(1);
   fHistClusterMapITSSAnocls->SetMarkerStyle(24);
@@ -584,6 +608,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistClusterMapITSMInocls->SetMarkerStyle(24);
   fHistClusterMapITSMInocls->Draw("same");
 
+  /*
   TCanvas *c3 =new TCanvas("c3","c3",10,10,1200,800);
   c3->Divide(1,2);
   c3->cd(1);
@@ -622,7 +647,9 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
     if(fHistClusterMapModuleITSMIallInAcc->GetBinContent(ib)) fHistClusterMapModuleITSMInoclsRatioInAcc->SetBinError(ib,TMath::Sqrt(fHistClusterMapModuleITSMInoclsRatioInAcc->GetBinContent(ib)*(1.-fHistClusterMapModuleITSMInoclsRatioInAcc->GetBinContent(ib))/fHistClusterMapModuleITSMIallInAcc->GetBinContent(ib))); 
   }
   fHistClusterMapModuleITSMInoclsRatioInAcc->Draw("same");
+  */
 
+  /*
   TCanvas *c3b = new TCanvas("c3b","c3b");
   c3b->Divide(2,1);
   c3b->cd(1);
@@ -631,6 +658,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   c3b->cd(2);
   fHistzlocSDDok->Divide(fHistzlocSDDall);
   fHistzlocSDDok->Draw();
+  */
 
   TCanvas *c4 =new TCanvas("c4","c4",10,10,1000,500);
   TLegend *l4a=new TLegend(0.5,0.5,0.9,0.9);
@@ -645,6 +673,12 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPhiITSMI6InAcc->SetMaximum(1.5);
   fHistPhiITSMI6InAcc->SetMinimum(0);
   fHistPhiITSMI6InAcc->Draw();
+  if(upgrade) {
+    fHistPhiITSMI7InAcc->Divide(fHistPhiITSMI7InAcc,fHistPhiTPCInAcc,1,1,"B");
+    fHistPhiITSMI7InAcc->SetLineColor(kOrange);
+    l4a->AddEntry(fHistPhiITSMI7InAcc,"7 cls","l");
+    fHistPhiITSMI7InAcc->Draw("same");
+  }
   fHistPhiITSMI5InAcc->Divide(fHistPhiITSMI5InAcc,fHistPhiTPCInAcc,1,1,"B");
   fHistPhiITSMI5InAcc->SetLineColor(3);
   //l4a->AddEntry(fHistPhiITSMI5InAcc,"5 cls","l");
@@ -663,11 +697,11 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   //fHistPhiITSMI2InAcc->Draw("same");
   fHistPhiITSMISPDInAcc->Divide(fHistPhiITSMISPDInAcc,fHistPhiTPCInAcc,1,1,"B");
   fHistPhiITSMISPDInAcc->SetLineColor(9);
-  l4a->AddEntry(fHistPhiITSMISPDInAcc,"2SPD + any","l");
+  l4a->AddEntry(fHistPhiITSMISPDInAcc,"All Inner + any","l");
   fHistPhiITSMISPDInAcc->Draw("same");
   fHistPhiITSMIoneSPDInAcc->Divide(fHistPhiITSMIoneSPDInAcc,fHistPhiTPCInAcc,1,1,"B");
   fHistPhiITSMIoneSPDInAcc->SetLineColor(15);
-  l4a->AddEntry(fHistPhiITSMIoneSPDInAcc,">=1SPD + any","l");
+  l4a->AddEntry(fHistPhiITSMIoneSPDInAcc,">=1 Inner + any","l");
   fHistPhiITSMIoneSPDInAcc->Draw("same");
   l4a->Draw();
   c4->cd(2);
@@ -679,6 +713,11 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistEtaITSMI6InAcc->SetMaximum(1.5);
   fHistEtaITSMI6InAcc->SetMinimum(0);
   fHistEtaITSMI6InAcc->Draw();
+  if(upgrade) {
+    fHistEtaITSMI7InAcc->Divide(fHistEtaITSMI7InAcc,fHistEtaTPCInAcc,1,1,"B");
+    fHistEtaITSMI7InAcc->SetLineColor(kOrange);
+    fHistEtaITSMI7InAcc->Draw("same");
+  }
   fHistEtaITSMI5InAcc->Divide(fHistEtaITSMI5InAcc,fHistEtaTPCInAcc,1,1,"B");
   fHistEtaITSMI5InAcc->SetLineColor(3);
   //fHistEtaITSMI5InAcc->Draw("same");
@@ -739,10 +778,10 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPtITSMIoneSPDInAccSecFrac->Divide(fHistPtITSMIoneSPDInAcc);
   fHistPtITSMIoneSPDInAccSecFrac->SetLineColor(15);
   fHistPtITSMIoneSPDInAccSecFrac->Draw("same");
-  TH1F *fHistPtITSTPCselSecFrac = (TH1F*)fHistPtITSTPCselS->Clone("fHistPtITSTPCselSecFrac");  
+  /* TH1F *fHistPtITSTPCselSecFrac = (TH1F*)fHistPtITSTPCselS->Clone("fHistPtITSTPCselSecFrac");  
   fHistPtITSTPCselSecFrac->Divide(fHistPtITSTPCsel);
   fHistPtITSTPCselSecFrac->SetLineColor(15);
-  fHistPtITSTPCselSecFrac->Draw("same");
+  fHistPtITSTPCselSecFrac->Draw("same"); */
 
 
   TLegend *l3=new TLegend(0.5,0.5,0.9,0.9);
@@ -759,8 +798,15 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPtITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points");
   fHistPtITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
   fHistPtITSMIge2InAcc->Divide(fHistPtITSMIge2InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMIge2InAcc->SetLineColor(1);
   fHistPtITSMIge2InAcc->Draw();
   l3->AddEntry(fHistPtITSMIge2InAcc,">=2 cls","l");
+  if(upgrade) {
+    fHistPtITSMI7InAcc->Divide(fHistPtITSMI7InAcc,fHistPtTPCInAcc,1,1,"B");
+    fHistPtITSMI7InAcc->SetLineColor(kOrange);
+    l3->AddEntry(fHistPtITSMI7InAcc,"7 cls","l");
+    fHistPtITSMI7InAcc->Draw("same");
+  }
   fHistPtITSMI6InAcc->Divide(fHistPtITSMI6InAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMI6InAcc->SetLineColor(2);
   l3->AddEntry(fHistPtITSMI6InAcc,"6 cls","l");
@@ -783,21 +829,21 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPtITSMI2InAcc->Draw("same");
   fHistPtITSMISPDInAcc->Divide(fHistPtITSMISPDInAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMISPDInAcc->SetLineColor(9);
-  l3->AddEntry(fHistPtITSMISPDInAcc,"2SPD + any","l");
+  l3->AddEntry(fHistPtITSMISPDInAcc,"All Inner + any","l");
   fHistPtITSMISPDInAcc->Draw("same");
   fHistPtITSMIoneSPDInAcc->Divide(fHistPtITSMIoneSPDInAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMIoneSPDInAcc->SetLineColor(15);
-  l3->AddEntry(fHistPtITSMIoneSPDInAcc,">=1SPD + any","l");
+  l3->AddEntry(fHistPtITSMIoneSPDInAcc,">=1 Inner + any","l");
   fHistPtITSMIoneSPDInAcc->Draw("same");
-  //fHistPtITSMIoneSPDthreeSDDSSDInAcc->Divide(fHistPtITSMIoneSPDthreeSDDSSDInAcc,fHistPtTPCInAcc,1,1,"B");
-  //fHistPtITSMIoneSPDthreeSDDSSDInAcc->SetLineColor(kOrange);
-  //l3->AddEntry(fHistPtITSMIoneSPDthreeSDDSSDInAcc,">=1SPD + >=3SDDSSD","l");
-  //fHistPtITSMIoneSPDthreeSDDSSDInAcc->Draw("same");
-  fHistPtITSTPCsel->Divide(fHistPtITSTPCsel,fHistPtTPCInAcc,1,1,"B");
-  fHistPtITSTPCsel->SetLineColor(kAzure+1);
-  l3->AddEntry(fHistPtITSTPCsel,">=1SPD + any + d_{0} cut","l");
-  fHistPtITSTPCsel->Draw("same");
-  fHistPtITSMIge2InAcc->Draw("same");
+  /* fHistPtITSMIoneSPDthreeSDDSSDInAcc->Divide(fHistPtITSMIoneSPDthreeSDDSSDInAcc,fHistPtTPCInAcc,1,1,"B");
+     fHistPtITSMIoneSPDthreeSDDSSDInAcc->SetLineColor(kOrange);
+     l3->AddEntry(fHistPtITSMIoneSPDthreeSDDSSDInAcc,">=1SPD + >=3SDDSSD","l");
+     fHistPtITSMIoneSPDthreeSDDSSDInAcc->Draw("same"); */
+  /* fHistPtITSTPCsel->Divide(fHistPtITSTPCsel,fHistPtTPCInAcc,1,1,"B");
+     fHistPtITSTPCsel->SetLineColor(kAzure+1);
+     l3->AddEntry(fHistPtITSTPCsel,">=1 Inner + any + d_{0} cut","l");
+     fHistPtITSTPCsel->Draw("same"); */
+  //fHistPtITSMIge2InAcc->Draw("same");
   l3->Draw();
   if(ioValues) {
     Int_t index,ptbin;
@@ -885,7 +931,13 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
     fHistPtITSMIge2InAccFake->SetMinimum(0);
     fHistPtITSMIge2InAccFake->SetTitle("Fraction of fake tracks with N ITS points");
     fHistPtITSMIge2InAccFake->SetYTitle("Fraction of fakes");
+    fHistPtITSMIge2InAccFake->SetLineColor(1);
     fHistPtITSMIge2InAccFake->Draw();
+    if(upgrade) {
+      fHistPtITSMI7InAccFake->SetLineColor(kOrange);
+      fHistPtITSMI7InAccFake->Draw("same");
+    }
+    fHistPtITSMI5InAccFake->SetLineColor(3);
     fHistPtITSMI6InAccFake->SetLineColor(2);
     fHistPtITSMI6InAccFake->Draw("same");
     fHistPtITSMI5InAccFake->SetLineColor(3);
@@ -900,15 +952,16 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
     fHistPtITSMISPDInAccFake->Draw("same");
     fHistPtITSMIoneSPDInAccFake->SetLineColor(15);
     fHistPtITSMIoneSPDInAccFake->Draw("same");
-    if(fHistPtITSTPCselFake) {
-      fHistPtITSTPCselFake->SetLineColor(kAzure+1);
-      fHistPtITSTPCselFake->Draw("same");
-    }
+    /* if(fHistPtITSTPCselFake) {
+       fHistPtITSTPCselFake->SetLineColor(kAzure+1);
+       fHistPtITSTPCselFake->Draw("same");
+       } */
     fHistPtITSMIge2InAccFake->Draw("same");
     l3->Draw();
   }
 
 
+  /*
   TLegend *l4d=new TLegend(0.5,0.5,0.9,0.9);
   TCanvas *c5d =new TCanvas("c5d","c5d",10,10,600,600);
   c5d->SetGridy();
@@ -926,7 +979,9 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   l4d->AddEntry(fHistPtITSMIoneSPDInAccMC,">=1SPD + any","l");
   fHistPtITSMIoneSPDInAccMC->Draw("same");
   l4d->Draw();
+  */
 
+  /*
   TFile *eff=new TFile("eff.root","recreate");
   fHistPtITSMIge2InAcc->Write();
   fHistPtITSMI6InAcc->Write();
@@ -943,11 +998,12 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistClusterMapModuleITSMIbadRatioInAcc->Write();
   fHistClusterMapModuleITSMInoclsRatioInAcc->Write();
   eff->Close();
+  */
 
   c5c->cd();
   l3->Draw();
 
-
+  /*
   TCanvas *c5b =new TCanvas("c5b","c5b",10,10,600,600);
   c5b->SetLogy();
   fHistRProdVtxInAccP->SetLineColor(2);
@@ -955,6 +1011,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistRProdVtxInAccS->SetMinimum(1);
   fHistRProdVtxInAccP->Draw();
   fHistRProdVtxInAccS->Draw("sames");
+  */
 
   TCanvas *c5a =new TCanvas("c5a","c5a",10,10,1200,600);
   c5a->Divide(2,1);
@@ -967,8 +1024,14 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPtITSMIge2InAccP->SetMinimum(0);
   fHistPtITSMIge2InAccP->SetTitle("Fraction of prolonged tracks with N ITS points");
   fHistPtITSMIge2InAccP->SetYTitle("ITS+TPC / TPC");
+  fHistPtITSMIge2InAccP->SetLineColor(1);
   fHistPtITSMIge2InAccP->Draw();
   fHistPtITSMIge2InAccP->Divide(fHistPtITSMIge2InAccP,fHistPtTPCInAccP,1,1,"B");
+  if(upgrade) {
+    fHistPtITSMI7InAccP->Divide(fHistPtITSMI7InAccP,fHistPtTPCInAccP,1,1,"B");
+    fHistPtITSMI7InAccP->SetLineColor(kOrange);
+    fHistPtITSMI7InAccP->Draw("same");
+  }
   fHistPtITSMI6InAccP->Divide(fHistPtITSMI6InAccP,fHistPtTPCInAccP,1,1,"B");
   fHistPtITSMI6InAccP->SetLineColor(2);
   fHistPtITSMI6InAccP->Draw("same");
@@ -990,10 +1053,10 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPtITSMIoneSPDInAccP->Divide(fHistPtITSMIoneSPDInAccP,fHistPtTPCInAccP,1,1,"B");
   fHistPtITSMIoneSPDInAccP->SetLineColor(15);
   fHistPtITSMIoneSPDInAccP->Draw("same");
-  fHistPtITSTPCselP->Divide(fHistPtITSTPCselP,fHistPtTPCInAccP,1,1,"B");
+  /* fHistPtITSTPCselP->Divide(fHistPtITSTPCselP,fHistPtTPCInAccP,1,1,"B");
   fHistPtITSTPCselP->SetLineColor(kAzure+1);
   fHistPtITSTPCselP->Draw("same");
-  fHistPtITSMIge2InAccP->Draw("same");
+  fHistPtITSMIge2InAccP->Draw("same"); */
   l3->Draw();
   c5a->cd(2);
   fHistPtITSMIge2InAccS->SetMaximum(1.5);
@@ -1001,10 +1064,16 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPtITSMIge2InAccS->SetTitle("Fraction of prolonged tracks with N ITS points");
   fHistPtITSMIge2InAccS->SetYTitle("ITS+TPC / TPC");
   fHistPtITSMIge2InAccS->Divide(fHistPtITSMIge2InAccS,fHistPtTPCInAccS,1,1,"B");
+  fHistPtITSMIge2InAccS->SetLineColor(1);
   fHistPtITSMIge2InAccS->Draw();
   fHistPtITSMI6InAccS->Divide(fHistPtITSMI6InAccS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSMI6InAccS->SetLineColor(2);
   fHistPtITSMI6InAccS->Draw("same");
+  if(upgrade) {
+    fHistPtITSMI7InAccS->Divide(fHistPtITSMI7InAccS,fHistPtTPCInAccS,1,1,"B");
+    fHistPtITSMI7InAccS->SetLineColor(kOrange);
+    fHistPtITSMI7InAccS->Draw("same");
+  }
   fHistPtITSMI5InAccS->Divide(fHistPtITSMI5InAccS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSMI5InAccS->SetLineColor(3);
   fHistPtITSMI5InAccS->Draw("same");
@@ -1023,10 +1092,10 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPtITSMIoneSPDInAccS->Divide(fHistPtITSMIoneSPDInAccS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSMIoneSPDInAccS->SetLineColor(15);
   fHistPtITSMIoneSPDInAccS->Draw("same");
-  fHistPtITSTPCselS->Divide(fHistPtITSTPCselS,fHistPtTPCInAccS,1,1,"B");
+  /* fHistPtITSTPCselS->Divide(fHistPtITSTPCselS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSTPCselS->SetLineColor(kAzure+1);
   fHistPtITSTPCselS->Draw("same");
-  fHistPtITSMIge2InAccS->Draw("same");
+  fHistPtITSMIge2InAccS->Draw("same"); */
   l3->Draw();
 
 
