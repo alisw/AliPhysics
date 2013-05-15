@@ -40,12 +40,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
 
   //========================correction
-  virtual void   SetInputCorrection(TString filename, TString gCollSystem);
-  virtual void   SetCentralityArrayForCorrections(Int_t nCentralityBins, Double_t *centralityArrayForCorrections) {
-    fCentralityArrayBinsForCorrections = nCentralityBins;
-  for (Int_t i=0; i<nCentralityBins; i++){
-    fCentralityArrayForCorrections[i] = centralityArrayForCorrections[i];}
-  }
+  virtual void   SetInputCorrection(TString filename, 
+				    Int_t nCentralityBins, 
+				    Double_t *centralityArrayForCorrections);
   //========================correction
 
   void SetAnalysisObject(AliBalancePsi *const analysis) {
