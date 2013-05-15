@@ -43,6 +43,12 @@ public:
         return *fEnergyCorrection;
     }
 
+
+    TH2F ReconstructionEfficiency() const {
+      return *fRecoEff;
+    }
+    Double_t ReconstructionEfficiency(float energy, int mult) const;
+
     Double_t MaxEnergy() const {
         return fMaxEnergy;
     }
@@ -57,13 +63,18 @@ public:
         fMaxEnergy = maxEnergy;
     }
 
+    void SetReconstructionEfficiency(const TH2F &recoEff) {
+        *fRecoEff = recoEff;
+    }
+
 
     Double_t CorrectedEnergy(Double_t energy); // Calculate corrected cluster E_T 
+    Double_t CorrectedEnergy(Double_t energy, int mult); // Calculate corrected cluster E_T 
     
 private:
 
     // Energy correction function
-    TF1 *fEnergyCorrection;
+    TF1 *fEnergyCorrection;//
     TH2F *fRecoEff;//Reconstruction efficiency, x axis = pT, y axis = multiplicity, z = efficiency
     
     

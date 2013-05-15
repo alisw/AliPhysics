@@ -195,11 +195,11 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                 else {
 		  nChargedHadronsMeasured++;
 		  nChargedHadronsTotal += 1/fTmCorrections->TrackMatchingEfficiency(track->Pt(),fClusterMult);
-		  Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster);
+		  Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,fClusterMult);
 		  nChargedHadronsEtMeasured+= TMath::Sin(cp.Theta())*effCorrEt;
 		  nChargedHadronsEtTotal+= 1/fTmCorrections->TrackMatchingEfficiency(track->Pt(),fClusterMult) *effCorrEt;
 		  fHistMatchedTracksEvspTvsMult->Fill(track->P(),TMath::Sin(cp.Theta())*cluster->E(),fClusterMult);
-		  fHistMatchedTracksEvspTvsMultEffCorr->Fill(track->P(),CorrectForReconstructionEfficiency(*cluster),fClusterMult);
+		  fHistMatchedTracksEvspTvsMultEffCorr->Fill(track->P(),CorrectForReconstructionEfficiency(*cluster,fClusterMult),fClusterMult);
                     const Double_t *pidWeights = track->PID();
 
                     Double_t maxpidweight = 0;
@@ -283,7 +283,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    fClusterEnergy->Fill(cluster->E());
 	    fClusterEt->Fill(TMath::Sin(p2.Theta())*cluster->E());
 
-	    Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster);
+	    Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,fClusterMult);
 	    fTotNeutralEt += effCorrEt;
 	    nominalRawEt += effCorrEt;
 	    nonlinHighRawEt += effCorrEt*GetCorrectionModification(*cluster,1,0);
@@ -508,12 +508,12 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fHistNominalEffLowEt = new TH2D(histname.Data(), histname.Data(),nbinsEt,minEt,maxEt,20,-0.5,19.5);
 
 }
-Double_t AliAnalysisEtReconstructed::ApplyModifiedCorrections(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr)
+Double_t AliAnalysisEtReconstructed::ApplyModifiedCorrections(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t mult)
 {
   Float_t pos[3];
   cluster.GetPosition(pos);
   TVector3 cp(pos);
-  Double_t corrEnergy = fReCorrections->CorrectedEnergy(cluster.E());
+  Double_t corrEnergy = fReCorrections->CorrectedEnergy(cluster.E(),mult);
   
   Double_t factorNonLin = GetCorrectionModification(cluster, nonLinCorr,effCorr);
 

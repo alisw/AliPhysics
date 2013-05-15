@@ -766,7 +766,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	}
 	fCutFlow->Fill(cf++);
         if(!fSelector->PassDistanceToBadChannelCut(*caloCluster)) continue;
-        Double_t clEt = CorrectForReconstructionEfficiency(*caloCluster);
+        Double_t clEt = CorrectForReconstructionEfficiency(*caloCluster,fClusterMult);
 //	if(code == fgK0SCode) std::cout << "K0 energy: " << caloCluster->E() << std::endl;
         if(!fSelector->PassMinEnergyCut(*caloCluster)) continue;
 
@@ -1076,7 +1076,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      caloCluster->GetPosition(pos);
 	      TVector3 cp(pos);
 	      Double_t clEt = caloCluster->E()*TMath::Sin(cp.Theta());
-	      Double_t clEtCorr = CorrectForReconstructionEfficiency(*caloCluster);
+	      Double_t clEtCorr = CorrectForReconstructionEfficiency(*caloCluster,fClusterMult);
 	      for(int l=0;l<nEtCuts;l++){//loop over cut values
 		if(clEt>=etCuts[l]){
 		  //cout<<", "<<clEt<<">="<<etCuts[l];
