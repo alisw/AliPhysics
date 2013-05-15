@@ -1,4 +1,8 @@
-AliPHOSTenderTask* AddAODPHOSTender()
+AliPHOSTenderTask* AddAODPHOSTender(const char* taskName = "PHOSTenderTask",
+				    const char* tenderName = "PHOStender",
+				    const char* options = "",
+				    Int_t pass = -1
+)
 {
   //Add a task with PHOS tender which works with AOD to the analysis train
   //Author: D.Peressounko
@@ -20,10 +24,10 @@ AliPHOSTenderTask* AddAODPHOSTender()
     ::Error("AddAODPHOSTender", Form("AOD input data required, input data is of type: %s", inputDataType.Data()));
 
   // create and add task
-  AliPHOSTenderTask * tenderTask = new AliPHOSTenderTask("AODPHOSTender") ;
-  AliPHOSTenderSupply *PHOSSupply=new AliPHOSTenderSupply("PHOStender");
-  PHOSSupply->SetReconstructionPass(1) ;
-  tenderTask->SetPHOSTenderSupply(PHOSSupply);
+  AliPHOSTenderTask * tenderTask = new AliPHOSTenderTask(taskName) ;
+  AliPHOSTenderSupply *PHOSSupply=new AliPHOSTenderSupply(tenderName) ;
+  PHOSSupply->SetReconstructionPass(pass) ;
+  tenderTask->SetPHOSTenderSupply(PHOSSupply) ;
 
   mgr->AddTask(tenderTask);
 
