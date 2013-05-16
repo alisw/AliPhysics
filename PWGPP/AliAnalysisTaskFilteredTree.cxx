@@ -109,7 +109,7 @@ AliAnalysisTaskFilteredTree::AliAnalysisTaskFilteredTree(const char *name)
 AliAnalysisTaskFilteredTree::~AliAnalysisTaskFilteredTree()
 {
   //the output trees not to be deleted in case of proof analysis
-  Bool_t deleteTrees=kTRUE;
+  //Bool_t deleteTrees=kTRUE;
   //if ((AliAnalysisManager::GetAnalysisManager()))
   //{
   //  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == 
@@ -213,7 +213,7 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
   ProcessdEdx(fESD,fMC,fESDfriend);
 
   if (fProcessCosmics) { ProcessCosmics(fESD); }
-  if(IsUseMCInfo()) { ProcessMCEff(fESD,fMC,fESDfriend);}
+  if(fMC) { ProcessMCEff(fESD,fMC,fESDfriend);}
 }
 
 //_____________________________________________________________________________
@@ -446,13 +446,8 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
   TArrayF vtxMC(3);
 
   Int_t multMCTrueTracks = 0;
-  if(IsUseMCInfo())
+  if(mcEvent)
   {
-    //
-    if(!mcEvent) {
-      AliDebug(AliLog::kError, "mcEvent not available");
-      return;
-    }
     // get MC event header
     header = mcEvent->Header();
     if (!header) {
@@ -477,7 +472,6 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
     // multipliticy of all MC primary tracks
     // in Zv, pt and eta ranges)
     multMCTrueTracks = GetMCTrueTrackMult(mcEvent,evtCuts,accCuts);
-
   } // end bUseMC
 
   // get reconstructed vertex  
@@ -726,13 +720,13 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
     isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
 
     physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
-    if(!physicsSelection) return;
+    if(!physicsSelection) {AliInfo("no physics selection"); return;}
     //SetPhysicsTriggerSelection(physicsSelection);
 
     if (isEventTriggered && (GetTrigger() == AliTriggerAnalysis::kV0AND)) {
       // set trigger (V0AND)
       triggerAnalysis = physicsSelection->GetTriggerAnalysis();
-      if(!triggerAnalysis) return;
+      if(!triggerAnalysis) {AliInfo("no trigger analysis");return;}
       isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
     }
   }
@@ -749,13 +743,8 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   TArrayF vtxMC(3);
 
   Int_t multMCTrueTracks = 0;
-  if(IsUseMCInfo())
+  if(mcEvent)
   {
-    //
-    if(!mcEvent) {
-      AliDebug(AliLog::kError, "mcEvent not available");
-      return;
-    }
     // get MC event header
     header = mcEvent->Header();
     if (!header) {
@@ -793,6 +782,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
      vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTracks();
   }
   else {
+    AliInfo("no ESD vertex");
     	return;
   }
 
@@ -811,7 +801,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
     //
     AliESDHeader *esdHeader = 0;
     esdHeader = esdEvent->GetHeader();
-    if(!esdHeader) return;
+    if(!esdHeader) {AliInfo("no esdHeader");return;}
     //Int_t ir1 = esdHeader->GetTriggerIREntries(); //all ir-s
     //Int_t ir2 = esdHeader->GetTriggerIREntries(-1,1); // int2 set, 180 ms time interval
     //
@@ -1022,7 +1012,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       Bool_t isOKtrackInnerC3 = kFALSE;
       AliExternalTrackParam *trackInnerC3 = new AliExternalTrackParam(*(track->GetInnerParam()));
 
-      if(IsUseMCInfo()) 
+      if(mcEvent) 
       {
         if(!stack) return;
 
@@ -1126,7 +1116,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       
       if(isOKtpcInnerC  && isOKtrackInnerC) dumpToTree = kTRUE;
       if(fUseESDfriends && isOKtrackInnerC2 && isOKouterITSc) dumpToTree = kTRUE;
-      if(fMC && isOKtrackInnerC3) dumpToTree = kTRUE;
+      if(mcEvent && isOKtrackInnerC3) dumpToTree = kTRUE;
       TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
       if (fReducePileUp){  
 	//
@@ -1181,7 +1171,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       if (!trackInnerC2) {trackInnerC2=new AliExternalTrackParam();newtrackInnerC2=kTRUE;}
       if (!outerITSc) {outerITSc=new AliExternalTrackParam();newouterITSc=kTRUE;}
       if (!trackInnerC3) {trackInnerC3=new AliExternalTrackParam();newtrackInnerC3=kTRUE;}
-      if (fMC)
+      if (mcEvent)
       {
         if (!refTPCIn) {refTPCIn=new AliTrackReference(); newrefTPCIn=kTRUE;}
         if (!refITS) {refITS=new AliTrackReference();newrefITS=kTRUE;}
@@ -1235,7 +1225,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	  "chi2InnerC="<<chi2trackC(0,0)<<        // chi2s  of tracks TPCinner to the combined
 	  "chi2OuterITS="<<chi2OuterITS(0,0)<<    // chi2s  of tracks TPC at inner wall to the ITSout
 	  "centralityF="<<centralityF;
-        if (fMC)
+        if (mcEvent)
         {
           (*fTreeSRedirector)<<"highPt"<<
           "refTPCIn.="<<refTPCIn<<
@@ -1263,6 +1253,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           "isFromMaterialITS="<<isFromMaterialITS;
         }
         //finish writing the entry
+        AliInfo("writing tree highPt");
         (*fTreeSRedirector)<<"highPt"<<"\n";
       }
 
@@ -2211,6 +2202,15 @@ void AliAnalysisTaskFilteredTree::FinishTaskOutput()
   //}
   //if(fCosmicPairsTree) fCosmicPairsTree->Print();  
 
+  Bool_t deleteTrees=kTRUE;
+  if ((AliAnalysisManager::GetAnalysisManager()))
+  {
+    if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == 
+             AliAnalysisManager::kProofAnalysis)
+      deleteTrees=kFALSE;
+  }
+  if (deleteTrees) delete fTreeSRedirector;
+  fTreeSRedirector=NULL;
 
   //OpenFile(1);
 
@@ -2245,15 +2245,6 @@ void AliAnalysisTaskFilteredTree::Terminate(Option_t *)
   }
   */
   
-  Bool_t deleteTrees=kTRUE;
-  if ((AliAnalysisManager::GetAnalysisManager()))
-  {
-    if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == 
-             AliAnalysisManager::kProofAnalysis)
-      deleteTrees=kFALSE;
-  }
-  if (deleteTrees) delete fTreeSRedirector;
-  fTreeSRedirector=NULL;
 }
 
 //_____________________________________________________________________________
