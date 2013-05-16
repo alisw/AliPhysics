@@ -120,7 +120,7 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD()
   fMCtrue(0),
   fOnlyQA(0),
   fTriggerFired(),
-  fV0object(NULL),
+//fV0object(NULL),
   fItrk(0),
   fOutputContainer(NULL)
 {
@@ -163,7 +163,7 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD(const char *name)
     fMCtrue(0),
     fOnlyQA(0),
     fTriggerFired(),
-    fV0object(NULL),
+    //fV0object(NULL),
     fItrk(0),
     fOutputContainer(NULL)
 {
@@ -304,13 +304,13 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fTreeV0 = new TTree("tree", "fTreeV0");  
   fTreeV0->Branch("fItrk", &fItrk, "fItrk/I");
 
-  fTreeV0->Branch("fV0object",&fV0object,"fV0object[fItrk]");
+  //fTreeV0->Branch("fV0object",&fV0object,"fV0object[fItrk]");
   fTreeV0->Branch("fV0finder",fV0finder,"fV0finder[fItrk]/I");
   fTreeV0->Branch("fkMB",fkMB,"fkMB[fItrk]/I");
   fTreeV0->Branch("fkCentral",fkCentral,"fkCentral[fItrk]/I");
   fTreeV0->Branch("fkSemiCentral",fkSemiCentral,"fkSemiCentral[fItrk]/I");
-  fTreeV0->Branch("fkEMCEJE",fkEMCEJE,"fkEMCEJE[fItrk]/I");
-  fTreeV0->Branch("fkEMCEGA",fkEMCEGA,"fkEMCEGA[fItrk]/I");
+  //fTreeV0->Branch("fkEMCEJE",fkEMCEJE,"fkEMCEJE[fItrk]/I");
+  //fTreeV0->Branch("fkEMCEGA",fkEMCEGA,"fkEMCEGA[fItrk]/I");
  
   fTreeV0->Branch("fPtotN",fPtotN,"fPtotN[fItrk]/D");
   fTreeV0->Branch("fPtotP",fPtotP,"fPtotP[fItrk]/D");
@@ -329,8 +329,8 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
 
   fTreeV0->Branch("fIsCorrectlyAssociated",fIsCorrectlyAssociated,"fIsCorrectlyAssociated[fItrk]/O"); //associated hypertriton
 
-  fTreeV0->Branch("fAmenterosAlphaTree",fAmenterosAlphaTree,"fAmenterosAlphaTree[fItrk]/D");
-  fTreeV0->Branch("fAmenterosQtTree",fAmenterosQtTree,"fAmenterosQtTree[fItrk]/D");
+  //fTreeV0->Branch("fAmenterosAlphaTree",fAmenterosAlphaTree,"fAmenterosAlphaTree[fItrk]/D");
+  //fTreeV0->Branch("fAmenterosQtTree",fAmenterosQtTree,"fAmenterosQtTree[fItrk]/D");
   fTreeV0->Branch("fRotationTree",fRotationTree,"fRotationTree[fItrk]/I");
    
   //Armenteros-Podolanski
@@ -446,10 +446,11 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
   //look for the generated particles
   MCGenerated(stack);
   
+  
   if (SetupEvent() < 0) {
     PostData(1, fOutputContainer);
     return;
-  }
+    }
   
   //DATA
   AliESDEvent *fESDevent = 0x0;
@@ -628,8 +629,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    fkMB[fItrk]              = -1;
    fkCentral[fItrk]         = -1;
    fkSemiCentral[fItrk]     = -1;
-   fkEMCEJE[fItrk]          = -1;
-   fkEMCEGA[fItrk]          = -1;
+   //fkEMCEJE[fItrk]          = -1;
+   //fkEMCEGA[fItrk]          = -1;
    
    fPtotN[fItrk]            = -1000;
    fPtotP[fItrk]            = -1000;
@@ -647,8 +648,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    fInvaMassDeuteronPionTree[fItrk] = 0;
    fChargeComboDeuteronPionTree[fItrk] = -1;
    
-   fAmenterosAlphaTree[fItrk] = 2;
-   fAmenterosQtTree[fItrk] = -1;
+   //fAmenterosAlphaTree[fItrk] = 2;
+   //fAmenterosQtTree[fItrk] = -1;
    
    //Get v0 object
    if(fAnalysisType == "ESD")v0ESD = fESDevent->GetV0(ivertex);
@@ -720,10 +721,10 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	  //testFilterBit = FilterBit(trackP,testFilterBit);
 	  //if(testFilterBit == kFALSE) continue;	
 	  //Track-Cuts
-	  testTrackCuts = TrackCuts(trackN,testTrackCuts);
+	  /*testTrackCuts = TrackCuts(trackN,testTrackCuts);
 	  if(testTrackCuts == kFALSE) continue;
 	  testTrackCuts = TrackCuts(trackP,testTrackCuts);
-	  if(testTrackCuts == kFALSE) continue;
+	  if(testTrackCuts == kFALSE) continue;*/
 	}
       
       //Get the total momentum for each track ---> at the inner readout of the TPC???? // momenta a always positive
@@ -1153,8 +1154,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	fkMB[fItrk]              = fTriggerFired[0];
 	fkCentral[fItrk]         = fTriggerFired[1];
 	fkSemiCentral[fItrk]     = fTriggerFired[2];
-	fkEMCEJE[fItrk]          = fTriggerFired[3];
-	fkEMCEGA[fItrk]          = fTriggerFired[4];
+	//fkEMCEJE[fItrk]          = fTriggerFired[3];
+	//fkEMCEGA[fItrk]          = fTriggerFired[4];
 	
 	fPtotN[fItrk]            = trackN->P(); //InnerParam???
 	fPtotP[fItrk]            = trackP->P(); //InnerParam???
@@ -1169,17 +1170,17 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	fCosinePAv0[fItrk]       = cosPointing;
 	fDecayRadiusTree[fItrk]  = decayRadius;
 	
-	fAmenterosAlphaTree[fItrk] = alpha;
-	fAmenterosQtTree[fItrk] = qt;
+	//fAmenterosAlphaTree[fItrk] = alpha;
+	//fAmenterosQtTree[fItrk] = qt;
 	fRotationTree[fItrk] = rotation;
 	
             
 	if (isDeuteron[0] == kTRUE)  //pos deuteron
 	  {
-	    fInvaMassDeuteronPionTree[fItrk] = invaMassDeuteronPion;
-	    fChargeComboDeuteronPionTree[fItrk] = chargeComboDeuteronPion;
+	    //fInvaMassDeuteronPionTree[fItrk] = invaMassDeuteronPion;
+	    //fChargeComboDeuteronPionTree[fItrk] = chargeComboDeuteronPion;
 	    
-	    fItrk++;
+	    //fItrk++;
 	    
 	    if(invaMassDeuteronPion < 2.1) 
 	      {
@@ -1237,7 +1238,7 @@ Int_t AliAnalysisTaskLambdaNAOD::Initialize() {
   ResetEvent();
 
   return 0;
-}
+  }
 //________________________________________________________________________
 Int_t AliAnalysisTaskLambdaNAOD::SetupEvent() {
   // Setup Reading of event
@@ -1284,7 +1285,7 @@ void AliAnalysisTaskLambdaNAOD::BinLogAxis(const THnSparse *h, Int_t axisNumber)
   axis->Set(bins, newBins);
   delete [] newBins;
   
-}
+  }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskLambdaNAOD::IsTriggered() {
   // Check if Event is triggered and fill Trigger Histogram

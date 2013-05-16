@@ -148,15 +148,15 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
 
 
   //Tree variables
-  AliAODv0 *fV0object;                                         //! Tree variable
+  //AliAODv0 *fV0object;                                         //! Tree variable
   Int_t  fItrk;                                                //! Tree variable
 
   Int_t fV0finder[maxNofTracks];                               //! Tree variable
   Int_t fkMB[maxNofTracks];                                    //! Tree variable
   Int_t fkCentral[maxNofTracks];                               //! Tree variable
   Int_t fkSemiCentral[maxNofTracks];                           //! Tree variable
-  Int_t fkEMCEJE[maxNofTracks];                                //! Tree variable
-  Int_t fkEMCEGA[maxNofTracks];                                //! Tree variable 
+  // Int_t fkEMCEJE[maxNofTracks];                                //! Tree variable
+  //Int_t fkEMCEGA[maxNofTracks];                                //! Tree variable 
 
   Double_t fPtotN[maxNofTracks];                               //! Tree variable
   Double_t fPtotP[maxNofTracks];                               //! Tree variable
@@ -174,8 +174,8 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   Int_t fChargeComboDeuteronPionTree[maxNofTracks];            //! Tree variable
   Bool_t fIsCorrectlyAssociated[maxNofTracks];                 //! Tree variable
 
-  Double_t fAmenterosAlphaTree[maxNofTracks];                  //! Tree variable
-  Double_t fAmenterosQtTree[maxNofTracks];                     //! Tree variable
+  //Double_t fAmenterosAlphaTree[maxNofTracks];                  //! Tree variable
+  //Double_t fAmenterosQtTree[maxNofTracks];                     //! Tree variable
   Int_t fRotationTree[maxNofTracks];                        //! Tree variable
 
 
