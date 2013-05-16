@@ -138,8 +138,8 @@ void AliRsnCutSetDaughterParticle::Init()
    AliRsnCutPIDNSigma *iCutTPCNSigma    = new AliRsnCutPIDNSigma("CutTPCNSigma", fPID, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
    AliRsnCutPIDNSigma *iCutTPCTOFNSigma = new AliRsnCutPIDNSigma("CutTPCTOFNSigma", fPID, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
    AliRsnCutPIDNSigma *iCutTOFNSigma    = new AliRsnCutPIDNSigma("CutTOFNSigma", fPID, AliRsnCutPIDNSigma::kTOF);//, AliRsnCutPIDNSigma::kP );
-   AliRsnCutPhi  *iCutPhiTRD2010        = new AliRsnCutPhi("CutPhiTRD2010","InTRD");
-   AliRsnCutPhi  *iCutPhiNoTRD2010      = new AliRsnCutPhi("CutPhiNoTRD2010","OutTRD");
+   AliRsnCutPhi  *iCutPhiTRD2010        = new AliRsnCutPhi("CutPhiTRD2010","InTRD CheckTOF");
+   AliRsnCutPhi  *iCutPhiNoTRD2010      = new AliRsnCutPhi("CutPhiNoTRD2010","OutTRD CheckTOF");
    
    switch (fAppliedCutSetID)
    {
