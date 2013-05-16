@@ -62,6 +62,7 @@ AliAODTrack::AliAODTrack() :
   fProdVertex(NULL),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
+  fTrackPtOnEMCal(-999),
   fTPCsignalTuned(0),
   fTOFsignalTuned(99999),
   fAODEvent(NULL)
@@ -120,6 +121,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fProdVertex(prodVertex),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
+  fTrackPtOnEMCal(-999),
   fTPCsignalTuned(0),
   fTOFsignalTuned(99999),
   fAODEvent(NULL)
@@ -182,6 +184,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fProdVertex(prodVertex),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
+  fTrackPtOnEMCal(-999),
   fTPCsignalTuned(0),
   fTOFsignalTuned(99999),
   fAODEvent(NULL)
@@ -239,6 +242,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fProdVertex(trk.fProdVertex),
   fTrackPhiOnEMCal(trk.fTrackPhiOnEMCal),
   fTrackEtaOnEMCal(trk.fTrackEtaOnEMCal),
+  fTrackPtOnEMCal(trk.fTrackPtOnEMCal),
   fTPCsignalTuned(trk.fTPCsignalTuned),
   fTOFsignalTuned(trk.fTOFsignalTuned),
   fAODEvent(trk.fAODEvent)
@@ -292,6 +296,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fCaloIndex         = trk.fCaloIndex;
     fTrackPhiOnEMCal   = trk.fTrackPhiOnEMCal;
     fTrackEtaOnEMCal   = trk.fTrackEtaOnEMCal;
+    fTrackPtOnEMCal    = trk.fTrackPtOnEMCal;
     fTPCsignalTuned    = trk.fTPCsignalTuned;
     fTOFsignalTuned    = trk.fTOFsignalTuned;
 

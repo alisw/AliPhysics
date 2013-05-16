@@ -362,7 +362,9 @@ public:
   
   Double_t GetTrackPhiOnEMCal() const {return fTrackPhiOnEMCal;}
   Double_t GetTrackEtaOnEMCal() const {return fTrackEtaOnEMCal;}
-  void SetTrackPhiEtaOnEMCal(Double_t phi,Double_t eta) {fTrackPhiOnEMCal=phi;fTrackEtaOnEMCal=eta;}
+  Double_t GetTrackPtOnEMCal() const {return fTrackPtOnEMCal;}
+  Double_t GetTrackPOnEMCal() const {return fTrackPtOnEMCal*TMath::CosH(fTrackEtaOnEMCal);}
+  void SetTrackPhiEtaPtOnEMCal(Double_t phi,Double_t eta,Double_t pt) {fTrackPhiOnEMCal=phi;fTrackEtaOnEMCal=eta;fTrackPtOnEMCal=pt;}
 
   Int_t GetPHOScluster() const {return fCaloIndex;}
   void SetPHOScluster(Int_t index) {fCaloIndex=index;}
@@ -547,14 +549,15 @@ protected:
 
   mutable const AliDetectorPID* fDetectorPID; //! transient object to cache PID information
 
-  Double_t fTrackPhiOnEMCal;   // phi of track after being propagated to 430cm
-  Double_t fTrackEtaOnEMCal;   // eta of track after being propagated to 430cm
+  Double_t      fTrackPhiOnEMCal;   // phi of track after being propagated to the EMCal surface (default r = 440 cm)
+  Double_t      fTrackEtaOnEMCal;   // eta of track after being propagated to the EMCal surface (default r = 440 cm)
+  Double_t      fTrackPtOnEMCal;    // pt of track after being propagated to the EMCal surface (default r = 440 cm)
   
  private:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,67)  //ESDtrack 
+  ClassDef(AliESDtrack,68)  //ESDtrack 
 };
 
 

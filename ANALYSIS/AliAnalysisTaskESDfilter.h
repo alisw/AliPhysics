@@ -89,6 +89,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   void EnableV0CascadeVerticesReco() { fIsV0CascadeRecoEnabled = kTRUE; }
 
   void SetPropagateTrackToEMCal(Bool_t propagate) {fDoPropagateTrackToEMCal = propagate;}
+  void SetEMCalSurfaceDistance(Double_t d) {fEMCalSurfaceDistance = d;}
 
   
 private:
@@ -175,7 +176,8 @@ private:
   AliESDtrackCuts* fTPCaloneTrackCuts; // TPC stand-alone track cuts
   Double_t        fV0Cuts[7];       // Array to store the values for the different reco selections V0 related
   Double_t        fCascadeCuts[8];  // Array to store the values for the different reco selections cascades related
-  Bool_t fDoPropagateTrackToEMCal;  // whether or not to propagate the tracks to EMCal surface (430cm) -- true by default
+  Bool_t fDoPropagateTrackToEMCal;  // whether or not to propagate the tracks to the EMCal surface -- true by default
+  Double_t fEMCalSurfaceDistance;   // EMCal surface distance from the center of the detector (r = 440 by default)
   
   
   ClassDef(AliAnalysisTaskESDfilter, 16); // Analysis task for standard ESD filtering

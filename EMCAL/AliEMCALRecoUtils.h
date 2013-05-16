@@ -266,7 +266,7 @@ public:
   
   static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
                                                const Double_t emcalR, const Double_t mass, const Double_t step, 
-                                               Float_t &eta, Float_t &phi);
+                                               Float_t &eta, Float_t &phi, Float_t &pt);
   static Bool_t ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, const Float_t *clsPos, 
                                            const Double_t mass, const Double_t step, 
                                            Float_t &tmpEta, Float_t &tmpPhi);
@@ -304,6 +304,7 @@ public:
   void     SetCutPhi(Float_t cutPhi)                  { fCutPhi = cutPhi              ; }
   void     SetClusterWindow(Double_t window)          { fClusterWindow = window       ; }
   void     SetCutZ(Float_t cutZ)                      { printf("Obsolete fucntion of cutZ=%1.1f\n",cutZ) ; } //Obsolete
+  void     SetEMCalSurfaceDistance(Double_t d)        { fEMCalSurfaceDistance = d     ; }
 
   Double_t GetMass()                            const { return fMass                  ; }
   Double_t GetStep()                            const { return fStepCluster           ; }
@@ -454,6 +455,7 @@ private:
   Double_t   fStepSurface;               // Length of step to extrapolate tracks to EMCal surface
   Double_t   fStepCluster;               // Length of step to extrapolate tracks to clusters
   Bool_t     fITSTrackSA;                // If track matching is to be done with ITS tracks standing alone	
+  Double_t   fEMCalSurfaceDistance;      // EMCal surface distance (= 430 by default, the last 10 cm are propagated on a cluster-track pair basis)
  
   // Track cuts  
   Int_t      fTrackCutsType;             // Esd track cuts type for matching
@@ -472,7 +474,7 @@ private:
   Bool_t     fCutRequireITSpureSA; 	 // ITS pure standalone tracks
   
   
-  ClassDef(AliEMCALRecoUtils, 20)
+  ClassDef(AliEMCALRecoUtils, 21)
   
 };
 

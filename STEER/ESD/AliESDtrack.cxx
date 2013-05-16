@@ -243,7 +243,8 @@ AliESDtrack::AliESDtrack() :
   fCacheChi2TPCConstrainedVsGlobalVertex(0),
   fDetectorPID(0x0),
   fTrackPhiOnEMCal(-999),
-  fTrackEtaOnEMCal(-999)
+  fTrackEtaOnEMCal(-999),
+  fTrackPtOnEMCal(-999)
 {
   //
   // The default ESD constructor 
@@ -360,7 +361,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fCacheChi2TPCConstrainedVsGlobalVertex(track.fCacheChi2TPCConstrainedVsGlobalVertex),
   fDetectorPID(0x0),
   fTrackPhiOnEMCal(track.fTrackPhiOnEMCal),
-  fTrackEtaOnEMCal(track.fTrackEtaOnEMCal)
+  fTrackEtaOnEMCal(track.fTrackEtaOnEMCal),
+  fTrackPtOnEMCal(track.fTrackPtOnEMCal)
 {
   //
   //copy constructor
@@ -490,7 +492,8 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fCacheChi2TPCConstrainedVsGlobalVertex(0),
   fDetectorPID(0x0),
   fTrackPhiOnEMCal(-999),
-  fTrackEtaOnEMCal(-999)
+  fTrackEtaOnEMCal(-999),
+  fTrackPtOnEMCal(-999)
 {
   //
   // ESD track from AliVTrack.
@@ -589,7 +592,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   track->GetIntegratedTimes(expt);
   SetIntegratedTimes(expt);
   //
-  SetTrackPhiEtaOnEMCal(track->GetTrackPhiOnEMCal(),track->GetTrackEtaOnEMCal());
+  SetTrackPhiEtaPtOnEMCal(track->GetTrackPhiOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPtOnEMCal());
   //
   SetLabel(track->GetLabel());
   // Set the status
@@ -680,7 +683,8 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fCacheChi2TPCConstrainedVsGlobalVertex(0),
   fDetectorPID(0x0),
   fTrackPhiOnEMCal(-999),
-  fTrackEtaOnEMCal(-999)
+  fTrackEtaOnEMCal(-999),
+  fTrackPtOnEMCal(-999)
 {
   //
   // ESD track from TParticle
@@ -1038,6 +1042,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   
   fTrackPhiOnEMCal= source.fTrackPhiOnEMCal;
   fTrackEtaOnEMCal= source.fTrackEtaOnEMCal;
+  fTrackPtOnEMCal= source.fTrackPtOnEMCal;
 
   return *this;
 }

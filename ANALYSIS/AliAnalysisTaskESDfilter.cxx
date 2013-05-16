@@ -115,7 +115,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fESDpid(0x0),
   fIsPidOwner(kFALSE),
   fTPCaloneTrackCuts(0),
-  fDoPropagateTrackToEMCal(kTRUE)
+  fDoPropagateTrackToEMCal(kTRUE),
+  fEMCalSurfaceDistance(440)
 {
   // Default constructor
     fV0Cuts[0] =  33.   ;   // max allowed chi2
@@ -186,7 +187,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fESDpid(0x0),
     fIsPidOwner(kFALSE),
     fTPCaloneTrackCuts(0),
-  fDoPropagateTrackToEMCal(kTRUE)
+    fDoPropagateTrackToEMCal(kTRUE),
+    fEMCalSurfaceDistance(440)
 {
   // Constructor
 
@@ -1235,7 +1237,7 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
 
     //Perform progagation of tracks if needed
     if(fDoPropagateTrackToEMCal) PropagateTrackToEMCal(esdTrack);
-    aodTrack->SetTrackPhiEtaOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal());
+    aodTrack->SetTrackPhiEtaPtOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal(),esdTrack->GetTrackPtOnEMCal());
 
     // do not duplicate PID information 
     //    aodTrack->ConvertAliPIDtoAODPID();
@@ -1389,7 +1391,7 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
 
     //Perform progagation of tracks if needed
     if(fDoPropagateTrackToEMCal) PropagateTrackToEMCal(esdTrack);
-    aodTrack->SetTrackPhiEtaOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal());
+    aodTrack->SetTrackPhiEtaPtOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal(),esdTrack->GetTrackPtOnEMCal());
   } // end of loop on tracks
   
 }
@@ -1460,7 +1462,7 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
 
     //Perform progagation of tracks if needed
     if(fDoPropagateTrackToEMCal) PropagateTrackToEMCal(esdTrack);
-    aodTrack->SetTrackPhiEtaOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal());
+    aodTrack->SetTrackPhiEtaPtOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal(),esdTrack->GetTrackPtOnEMCal());
 
     fAODTrackRefs->AddAt(aodTrack, nTrack);
     
@@ -1476,7 +1478,7 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
 void AliAnalysisTaskESDfilter::PropagateTrackToEMCal(AliESDtrack *esdTrack)
 {
   Double_t trkPos[3] = {0.,0.,0.};
-  Double_t EMCalEta=-999, EMCalPhi=-999;
+  Double_t EMCalEta=-999, EMCalPhi=-999, EMCalPt=-999;
   Double_t trkphi = esdTrack->Phi()*TMath::RadToDeg();
   if(TMath::Abs(esdTrack->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
     {
@@ -1484,14 +1486,15 @@ void AliAnalysisTaskESDfilter::PropagateTrackToEMCal(AliESDtrack *esdTrack)
       if(trkParam)
 	{
 	  AliExternalTrackParam trkParamTmp(*trkParam);
-	  if(AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, 430, esdTrack->GetMass(), 20, kTRUE, 0.8, -1))
+	  if(AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, fEMCalSurfaceDistance, esdTrack->GetMass(), 20, kTRUE, 0.8, -1))
 	    {
 	      trkParamTmp.GetXYZ(trkPos);
 	      TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
 	      EMCalEta = trkPosVec.Eta();
 	      EMCalPhi = trkPosVec.Phi();
+	      EMCalPt = trkPosVec.Pt();
 	      if(EMCalPhi<0)  EMCalPhi += 2*TMath::Pi();
-	      esdTrack->SetTrackPhiEtaOnEMCal(EMCalPhi,EMCalEta);
+	      esdTrack->SetTrackPhiEtaPtOnEMCal(EMCalPhi,EMCalEta,EMCalPt);
 	    }
 	}
     }

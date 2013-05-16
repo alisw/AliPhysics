@@ -62,6 +62,7 @@ public:
 	void                SetCutNTPC(Double_t value) {fCutNTPC=value;}
 	void                SetStepLength(Float_t length) {fStep=length;}
 	void                SetTrackCorrectionMode(Option_t *option);
+	void                SetEMCalSurfaceDistance(Double_t d) {fEMCalSurfaceDistance = d;}
 
 	enum {	kUnmatched = -99999 };
 	
@@ -97,6 +98,7 @@ private:
 	
 	Float_t     fStep;            // Length of each step in propagation
 	ETrackCorr  fTrackCorrMode;   // Material budget correction mode
+	Float_t     fEMCalSurfaceDistance; // EMCal surface distance
 	Double_t    fClusterWindow;   // Select clusters in the window to be matched to tracks
 	Double_t    fCutEta;	      // cut on eta difference
 	Double_t    fCutPhi;	      // cut on phi difference
@@ -107,7 +109,7 @@ private:
 	
 	AliEMCALGeometry *fGeom;      //! EMCAL geometry
 	
-	ClassDef(AliEMCALTracker, 6)  // EMCAL "tracker"
+	ClassDef(AliEMCALTracker, 7)  // EMCAL "tracker"
 };
 
 #endif

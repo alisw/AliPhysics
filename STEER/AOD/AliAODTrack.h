@@ -279,7 +279,9 @@ class AliAODTrack : public AliVTrack {
 
   Double_t GetTrackPhiOnEMCal() const {return fTrackPhiOnEMCal;}
   Double_t GetTrackEtaOnEMCal() const {return fTrackEtaOnEMCal;}
-  void SetTrackPhiEtaOnEMCal(Double_t phi,Double_t eta) {fTrackPhiOnEMCal=phi;fTrackEtaOnEMCal=eta;}
+  Double_t GetTrackPtOnEMCal() const {return fTrackPtOnEMCal;}
+  Double_t GetTrackPOnEMCal() const {return fTrackPtOnEMCal*TMath::CosH(fTrackEtaOnEMCal);}
+  void SetTrackPhiEtaPtOnEMCal(Double_t phi,Double_t eta,Double_t pt) {fTrackPhiOnEMCal=phi;fTrackEtaOnEMCal=eta;fTrackPtOnEMCal=pt;}
 
   Int_t GetPHOScluster() const {return fCaloIndex;}
   void SetPHOScluster(Int_t index) {fCaloIndex=index;}
@@ -449,15 +451,16 @@ class AliAODTrack : public AliVTrack {
   mutable const AliDetectorPID* fDetectorPID; //! transient object to cache calibrated PID information
   TRef          fProdVertex;        // vertex of origin
 
-  Double_t      fTrackPhiOnEMCal;   // phi of track after being propagated to 430cm
-  Double_t      fTrackEtaOnEMCal;   // eta of track after being propagated to 430cm
+  Double_t      fTrackPhiOnEMCal;   // phi of track after being propagated to the EMCal surface (default r = 440 cm)
+  Double_t      fTrackEtaOnEMCal;   // eta of track after being propagated to the EMCal surface (default r = 440 cm)
+  Double_t      fTrackPtOnEMCal;    // pt of track after being propagated to the EMCal surface (default r = 440 cm)
 
   Double_t      fTPCsignalTuned;    //! TPC signal tuned on data when using MC
   Double_t      fTOFsignalTuned;    //! TOF signal tuned on data when using MC
 
   const AliAODEvent* fAODEvent;     //! 
 
-  ClassDef(AliAODTrack, 21);
+  ClassDef(AliAODTrack, 22);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

@@ -73,6 +73,7 @@ AliEMCALTracker::AliEMCALTracker()
   fCutNTPC(50),
   fStep(20),
   fTrackCorrMode(kTrackCorrMMB),
+  fEMCalSurfaceDistance(440),
   fClusterWindow(50),
   fCutEta(0.025),
   fCutPhi(0.05),
@@ -99,6 +100,7 @@ AliEMCALTracker::AliEMCALTracker(const AliEMCALTracker& copy)
     fCutNTPC(copy.fCutNTPC),
     fStep(copy.fStep),
     fTrackCorrMode(copy.fTrackCorrMode),
+    fEMCalSurfaceDistance(copy.fEMCalSurfaceDistance),
     fClusterWindow(copy.fClusterWindow),
     fCutEta(copy.fCutEta),
     fCutPhi(copy.fCutPhi),
@@ -405,12 +407,12 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   if(!trkParam) return index;
   
   AliExternalTrackParam trkParamTmp(*trkParam);
-  Float_t eta, phi;
-  if(!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, 430., track->GetMass(kTRUE), fStep, eta, phi))  {
+  Float_t eta, phi, pt;
+  if(!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, fEMCalSurfaceDistance, track->GetMass(kTRUE), fStep, eta, phi, pt))  {
 	if(fITSTrackSA) delete trkParam;
 	return index;
   }
-  track->SetTrackPhiEtaOnEMCal(phi,eta);
+  track->SetTrackPhiEtaPtOnEMCal(phi,eta,pt);
   if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()){
 	 if(fITSTrackSA) delete trkParam;
 	return index;

@@ -78,7 +78,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fCutR(0),                               fCutEta(0),                             fCutPhi(0),
   fClusterWindow(0),                      fMass(0),                           
   fStepSurface(0),                        fStepCluster(0),
-  fITSTrackSA(kFALSE),
+  fITSTrackSA(kFALSE),                    fEMCalSurfaceDistance(430.),
   fTrackCutsType(0),                      fCutMinTrackPt(0),                      fCutMinNClusterTPC(0), 
   fCutMinNClusterITS(0),                  fCutMaxChi2PerClusterTPC(0),            fCutMaxChi2PerClusterITS(0),
   fCutRequireTPCRefit(kFALSE),            fCutRequireITSRefit(kFALSE),            fCutAcceptKinkDaughters(kFALSE),
@@ -129,7 +129,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCutR(reco.fCutR),        fCutEta(reco.fCutEta),           fCutPhi(reco.fCutPhi),
   fClusterWindow(reco.fClusterWindow),
   fMass(reco.fMass),        fStepSurface(reco.fStepSurface), fStepCluster(reco.fStepCluster),
-  fITSTrackSA(reco.fITSTrackSA),
+  fITSTrackSA(reco.fITSTrackSA),                             fEMCalSurfaceDistance(430.),
   fTrackCutsType(reco.fTrackCutsType),                       fCutMinTrackPt(reco.fCutMinTrackPt), 
   fCutMinNClusterTPC(reco.fCutMinNClusterTPC),               fCutMinNClusterITS(reco.fCutMinNClusterITS), 
   fCutMaxChi2PerClusterTPC(reco.fCutMaxChi2PerClusterTPC),   fCutMaxChi2PerClusterITS(reco.fCutMaxChi2PerClusterITS),
@@ -206,7 +206,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fMass                      = reco.fMass;
   fStepSurface               = reco.fStepSurface;
   fStepCluster               = reco.fStepCluster;
-  fITSTrackSA                = reco.fITSTrackSA;  
+  fITSTrackSA                = reco.fITSTrackSA;
+  fEMCalSurfaceDistance      = reco.fEMCalSurfaceDistance;
   
   fTrackCutsType             = reco.fTrackCutsType;
   fCutMinTrackPt             = reco.fCutMinTrackPt;
@@ -1926,8 +1927,8 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
 
     //Extrapolate the track to EMCal surface
     AliExternalTrackParam emcalParam(*trackParam);
-    Float_t eta, phi;
-    if(!ExtrapolateTrackToEMCalSurface(&emcalParam, 430., fMass, fStepSurface, eta, phi)) 
+    Float_t eta, phi, pt;
+    if(!ExtrapolateTrackToEMCalSurface(&emcalParam, fEMCalSurfaceDistance, fMass, fStepSurface, eta, phi, pt)) 
       {
   if(aodevent && trackParam) delete trackParam;
   if(fITSTrackSA && trackParam) delete trackParam;
@@ -2005,9 +2006,9 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
     
   if(!trackParam) return index;
   AliExternalTrackParam emcalParam(*trackParam);
-  Float_t eta, phi;
+  Float_t eta, phi, pt;
 
-  if(!ExtrapolateTrackToEMCalSurface(&emcalParam, 430., fMass, fStepSurface, eta, phi))	{
+  if(!ExtrapolateTrackToEMCalSurface(&emcalParam, fEMCalSurfaceDistance, fMass, fStepSurface, eta, phi, pt))	{
 	if(fITSTrackSA) delete trackParam;
 	return index;
   }
@@ -2101,11 +2102,12 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *
                                                          const Double_t mass, 
                                                          const Double_t step, 
                                                          Float_t &eta, 
-                                                         Float_t &phi)
+                                                         Float_t &phi,
+							 Float_t &pt)
 {
   //Extrapolate track to EMCAL surface
   
-  eta = -999, phi = -999;
+  eta = -999, phi = -999, pt = -999;
   if(!trkParam) return kFALSE;
   if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, emcalR, mass, step, kTRUE, 0.8, -1)) return kFALSE;
   Double_t trkPos[3] = {0.,0.,0.};
@@ -2113,6 +2115,7 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *
   TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
   eta = trkPosVec.Eta();
   phi = trkPosVec.Phi();
+  pt = trkParam->Pt();
   if(phi<0)
     phi += 2*TMath::Pi();
 
