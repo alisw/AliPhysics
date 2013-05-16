@@ -805,7 +805,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hWhichVertSelEv->GetXaxis()->SetBinLabel(3,"SPD-3D");
     hWhichVertSelEv->GetXaxis()->SetBinLabel(4,"SPD-z");
 
-    TH2F* hTrigCent=new TH2F("hTrigCent","Centrality vs. Trigger types",13,-1.5,11.5,12,-10,110);
+    TH2F* hTrigCent=new TH2F("hTrigCent","Centrality vs. Trigger types",14,-1.5,12.5,12,-10,110);
     hTrigCent->GetXaxis()->SetBinLabel(1,"All");
     hTrigCent->GetXaxis()->SetBinLabel(2,"kAny");
     hTrigCent->GetXaxis()->SetBinLabel(3,"kMB");
@@ -817,10 +817,11 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hTrigCent->GetXaxis()->SetBinLabel(9,"kEMCJET+GAMMA");
     hTrigCent->GetXaxis()->SetBinLabel(10,"Muons");
     hTrigCent->GetXaxis()->SetBinLabel(11,"PHOS");
-    hTrigCent->GetXaxis()->SetBinLabel(12,"HighMult");
-    hTrigCent->GetXaxis()->SetBinLabel(13,"Others");
+    hTrigCent->GetXaxis()->SetBinLabel(12,"TRD");
+    hTrigCent->GetXaxis()->SetBinLabel(13,"HighMult");
+    hTrigCent->GetXaxis()->SetBinLabel(14,"Others");
 
-    TH2F* hTrigMul=new TH2F("hTrigMul","Multiplicity vs. Trigger types",13,-1.5,11.5,100,0.,10000.);
+    TH2F* hTrigMul=new TH2F("hTrigMul","Multiplicity vs. Trigger types",14,-1.5,12.5,100,0.,10000.);
     hTrigMul->GetXaxis()->SetBinLabel(1,"All");
     hTrigMul->GetXaxis()->SetBinLabel(2,"kAny");
     hTrigMul->GetXaxis()->SetBinLabel(3,"kMB");
@@ -832,10 +833,11 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hTrigMul->GetXaxis()->SetBinLabel(9,"kEMCJET+GAMMA");
     hTrigMul->GetXaxis()->SetBinLabel(10,"Muons");
     hTrigMul->GetXaxis()->SetBinLabel(11,"PHOS");
-    hTrigMul->GetXaxis()->SetBinLabel(12,"HighMult");
-    hTrigMul->GetXaxis()->SetBinLabel(13,"Others");
+    hTrigMul->GetXaxis()->SetBinLabel(12,"TRD");
+    hTrigMul->GetXaxis()->SetBinLabel(13,"HighMult");
+    hTrigMul->GetXaxis()->SetBinLabel(14,"Others");
 
-    TH2F* hTrigCentSel=new TH2F("hTrigCentSel","Trigger types",13,-1.5,11.5,12,-10,110);
+    TH2F* hTrigCentSel=new TH2F("hTrigCentSel","Trigger types",14,-1.5,12.5,12,-10,110);
     hTrigCentSel->GetXaxis()->SetBinLabel(1,"All");
     hTrigCentSel->GetXaxis()->SetBinLabel(2,"kAny");
     hTrigCentSel->GetXaxis()->SetBinLabel(3,"kMB");
@@ -847,8 +849,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hTrigCentSel->GetXaxis()->SetBinLabel(9,"kEMCJET+GAMMA");
     hTrigCentSel->GetXaxis()->SetBinLabel(10,"Muons");
     hTrigCentSel->GetXaxis()->SetBinLabel(11,"PHOS");
-    hTrigCentSel->GetXaxis()->SetBinLabel(12,"HighMult");
-    hTrigCentSel->GetXaxis()->SetBinLabel(13,"Others");
+    hTrigCentSel->GetXaxis()->SetBinLabel(12,"TRD");
+    hTrigCentSel->GetXaxis()->SetBinLabel(13,"HighMult");
+    hTrigCentSel->GetXaxis()->SetBinLabel(14,"Others");
 
     AliCounterCollection *trigCounter=new AliCounterCollection("trigCounter");
     trigCounter->AddRubric("run",500000);
@@ -1295,13 +1298,17 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       hTrigC->Fill(9.,centrality);
       hTrigM->Fill(9.,multiplicity);
     }
-    if(evSelMask & (AliVEvent::kHighMult)){
+    if(evSelMask & (AliVEvent::kTRD)){
       hTrigC->Fill(10.,centrality);
       hTrigM->Fill(10.,multiplicity);
     }
-    if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
+    if(evSelMask & (AliVEvent::kHighMult)){
       hTrigC->Fill(11.,centrality);
       hTrigM->Fill(11.,multiplicity);
+    }
+    if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
+      hTrigC->Fill(12.,centrality);
+      hTrigM->Fill(12.,multiplicity);
     }
   }
   
@@ -1385,8 +1392,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     if(evSelMask & (AliVEvent::kEMCEJE | AliVEvent::kEMCEGA)) hTrigS->Fill(7.,centrality);
     if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))) hTrigS->Fill(8.,centrality);
     if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)) hTrigS->Fill(9.,centrality);
-    if(evSelMask & (AliVEvent::kHighMult)) hTrigS->Fill(10.,centrality);
-    if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)) hTrigS->Fill(11.,centrality);
+    if(evSelMask & (AliVEvent::kTRD)) hTrigS->Fill(10.,centrality);
+    if(evSelMask & (AliVEvent::kHighMult)) hTrigS->Fill(11.,centrality);
+    if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)) hTrigS->Fill(12.,centrality);
   }
   
   if(evSelected || (!evSelbyCentrality && evSelByVertex && evselByPileup && evSelByPS)){ //events selected or not selected because of centrality
