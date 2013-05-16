@@ -149,6 +149,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
         fEventClass = receivedEventClass;
     }
 
+    // electron rejection
+    void SetElectronRejection(Double_t gMaxNSigma){
+      fElectronRejection = kTRUE;
+      fElectronRejectionNSigma = gMaxNSigma;
+    }
+
 
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
@@ -237,6 +243,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUsePIDPropabilities;//flag to use probability method for PID
   Double_t fPIDNSigma;//nsigma cut for PID
   Double_t fMinAcceptedPIDProbability;//probability cut for PID
+
+  Bool_t   fElectronRejection;//flag to use electron rejection
+  Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
 
   //============PID============//
 

@@ -42,6 +42,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       TString fArgEventClass="Centrality",
 						       TString analysisTypeUser="AOD",
 						       Bool_t bVertexBinning=kTRUE,
+						       Double_t sigmaElectronRejection=3,
 						       TString correctionFileName = "",
 						       Int_t nCentralityArrayBinsForCorrection,
 						       Double_t *gCentralityArrayForCorrections) {
@@ -155,6 +156,9 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 
     // set extra TPC chi2 / nr of clusters cut
     taskBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
+
+    // electron rejection (so far only for AOD), <0 --> no rejection
+    if(sigmaElectronRejection > 0) taskBF->SetElectronRejection(sigmaElectronRejection);
     
   }
   else if(analysisType == "MC") {
@@ -194,14 +198,14 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   AliAnalysisDataContainer *coutBF = mgr->CreateContainer(Form("listBFPsi_%.0f-%.0f_Bit%d_%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   if(gRunShuffling) AliAnalysisDataContainer *coutBFS = mgr->CreateContainer(Form("listBFPsiShuffled_%.0f-%.0f_Bit%d_%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   if(gRunMixing) AliAnalysisDataContainer *coutBFM = mgr->CreateContainer(Form("listBFPsiMixed_%.0f-%.0f_Bit%d_%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  if(kUsePID) AliAnalysisDataContainer *coutQAPID = mgr->CreateContainer(Form("listQAPIDPsi_%.0f-%.0f_Bit%d_%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(kUsePID || sigmaElectronRejection > 0) AliAnalysisDataContainer *coutQAPID = mgr->CreateContainer(Form("listQAPIDPsi_%.0f-%.0f_Bit%d_%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskBF, 1, coutQA);
   mgr->ConnectOutput(taskBF, 2, coutBF);
   if(gRunShuffling) mgr->ConnectOutput(taskBF, 3, coutBFS);
   if(gRunMixing) mgr->ConnectOutput(taskBF, 4, coutBFM);
-  if(kUsePID && analysisType == "ESD") mgr->ConnectOutput(taskBF, 5, coutQAPID);
+  if((kUsePID && analysisType == "ESD")||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 5, coutQAPID);
 
   return taskBF;
 }
