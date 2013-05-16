@@ -22,23 +22,39 @@ class AliVTrack: public AliVParticle {
 
 public:
   enum {
-    kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
-    kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
-    kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
-    kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
-    kTOFmismatch=0x100000,
-    kHMPIDout=0x10000,kHMPIDpid=0x20000,
-    kEMCALmatch=0x40000,
-    kPHOSmatch=0x200000,
-    kTRDbackup =0x80000,
-    kTRDStop=0x20000000,
-    kESDpid=0x40000000,
-    kTIME=0x80000000,
-    kGlobalMerge=0x08000000,
-    kITSpureSA=0x10000000,
-    kMultInV0 =0x2000000,    //BIT(25): assumed to be belong to V0 in multiplicity estimates
-    kMultSec  =0x4000000,     //BIT(26): assumed to be secondary (due to the DCA) in multiplicity estimates
-    kEmbedded =0x8000000     // BIT(27), 1<<27: Is a track that has been embedded into the event
+    kITSin        = 0x1
+    ,kITSout      = 0x2
+    ,kITSrefit    = 0x4
+    ,kITSpid      = 0x8
+    ,kTPCin       = 0x10
+    ,kTPCout      = 0x20
+    ,kTPCrefit    = 0x40
+    ,kTPCpid      = 0x80
+    ,kTRDin       = 0x100
+    ,kTRDout      = 0x200
+    ,kTRDrefit    = 0x400
+    ,kTRDpid      = 0x800
+    ,kTOFin       = 0x1000
+    ,kTOFout      = 0x2000
+    ,kTOFrefit    = 0x4000
+    ,kTOFpid      = 0x8000
+    ,kHMPIDout    = 0x10000
+    ,kHMPIDpid    = 0x20000
+    ,kEMCALmatch  = 0x40000
+    ,kTRDbackup   = 0x80000
+    ,kTOFmismatch = 0x100000
+    ,kPHOSmatch   = 0x200000
+    ,kITSupg      = 0x400000     // flag that in the ITSupgrade reco
+    //
+    ,kGlobalMerge = 0x1000000
+    ,kMultInV0    = 0x2000000     //BIT(25): assumed to be belong to V0 in multiplicity estimates
+    ,kMultSec     = 0x4000000     //BIT(26): assumed to be secondary (due to the DCA) in multiplicity estimates
+    ,kEmbedded    = 0x8000000     // BIT(27), 1<<27: Is a track that has been embedded into the event
+    //
+    ,kITSpureSA   = 0x10000000
+    ,kTRDStop     = 0x20000000
+    ,kESDpid      = 0x40000000
+    ,kTIME        = 0x80000000
   };
   enum {
     kTRDnPlanes = 6,
