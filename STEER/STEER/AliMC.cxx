@@ -239,6 +239,16 @@ void  AliMC::AddParticles()
   //Anti-Hypertriton
   gMC->DefineParticle(-1010010030, "AntiHyperTriton", kPTHadron, 2.99131 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
 
+//Hyper hydrogen 4
+  gMC->DefineParticle(1010010040, "Hyperhydrog4", kPTHadron, 3.931 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
+  //Anti-Hyper hydrogen 4
+  gMC->DefineParticle(-1010010040, "AntiHyperhydrog4", kPTHadron, 3.931 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
+
+//Hyper helium 4
+  gMC->DefineParticle(1010020040, "Hyperhelium4", kPTHadron, 3.929 , 2.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
+  //Anti-Hyper helium 4
+  gMC->DefineParticle(-1010020040, "AntiHyperhelium4", kPTHadron, 3.929 , 2.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
+
 
   //Lambda-Neutron 
   gMC->DefineParticle(1010000020, "LambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
@@ -265,6 +275,7 @@ void  AliMC::AddParticles()
   bratio[0] = 50.;
   mode[0][0] = 1000020030; // Helium3 
   mode[0][1] = -211; // negative pion
+  
   bratio[1] = 50.;
   mode[1][0] = 1000010020; // deuteron 
   mode[1][1] = 2212; // proton
@@ -293,6 +304,88 @@ void  AliMC::AddParticles()
   amode[1][2] = 211; // positive pion
 
   gMC->SetDecayMode(-1010010030,abratio,amode);
+  
+  ////// ----------Hypernuclei with Mass=4 ----------- //////////
+  
+   // Define the 2- and 3-body phase space decay for the Hyper Hydrogen 4
+   
+  Int_t mode3[6][3];                  
+  Float_t bratio3[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     bratio3[kz] = 0.;
+     mode3[kz][0] = 0;
+     mode3[kz][1] = 0;
+     mode3[kz][2] = 0;
+  }
+  bratio3[0] = 50.;
+  mode3[0][0] = 1000020040; // Helium4 
+  mode3[0][1] = -211; // negative pion
+  
+  bratio3[1] = 50.;
+  mode3[1][0] = 1000010030; // tritium
+  mode3[1][1] = 2212; // proton
+  mode3[1][2] = -211; // negative pion
+
+  gMC->SetDecayMode(1010010040,bratio3,mode3);
+
+
+  // Define the 2- and 3-body phase space decay for the Hyper Hydrogen 4
+  Int_t amode3[6][3];                  
+  Float_t abratio3[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     abratio3[kz] = 0.;
+     amode3[kz][0] = 0;
+     amode3[kz][1] = 0;
+     amode3[kz][2] = 0;
+  }
+  abratio3[0] = 50.;
+  amode3[0][0] = -1000020040; // anti- Helium4 
+  amode3[0][1] = 211; // positive pion
+  abratio3[1] = 50.;
+  amode3[1][0] = -1000010030; // anti-tritium
+  amode3[1][1] = -2212; // anti-proton
+  amode3[1][2] = 211; // positive pion
+
+  gMC->SetDecayMode(-1010010040,abratio3,amode3);
+  
+  
+   // Define the 3-body phase space decay for the Hyper Helium 4
+  Int_t mode4[6][3];                  
+  Float_t bratio4[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     bratio4[kz] = 0.;
+     mode4[kz][0] = 0;
+     mode4[kz][1] = 0;
+     mode4[kz][2] = 0;
+  }
+  bratio4[0] = 100.;
+  mode4[0][0] = 1000020030; // Helium3 
+  mode4[0][1] = -211; // negative pion
+  mode4[0][2] = 2212; // proton
+  
+  gMC->SetDecayMode(1010020040,bratio4,mode4);
+
+
+  // Define the 2-body phase space decay for the Anti-Hyper Helium 4
+  Int_t amode4[6][3];                  
+  Float_t abratio4[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     abratio4[kz] = 0.;
+     amode4[kz][0] = 0;
+     amode4[kz][1] = 0;
+     amode4[kz][2] = 0;
+  }
+  abratio4[0] = 100.;
+  amode4[0][0] = -1000020030; // anti-Helium 3
+  amode4[0][1] = 211; // positive pion
+  amode4[0][2] = -2212; // anti proton
+
+  gMC->SetDecayMode(-1010020040,abratio4,amode4);
+
   
   // Define the 2-body phase space decay for the Lambda-neutron boundstate
   Int_t mode1[6][3];                  
