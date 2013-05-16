@@ -551,10 +551,10 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
     return fEMCMatrix[mod-1] ;
   }
   else{
-    AliWarning("Can not find PHOS misalignment matrixes\n") ;
-    AliWarning("Either import TGeoManager from geometry.root or \n");
-    AliWarning("read stored matrixes from AliESD Header: \n") ;
-    AliWarning("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ; 
+ //   AliWarning("Can not find PHOS misalignment matrixes\n") ;
+ //   AliWarning("Either import TGeoManager from geometry.root or \n");
+ //   AliWarning("read stored matrixes from AliESD Header: \n") ;
+ //   AliWarning("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ; 
     return 0 ;
   }
   return 0 ;
