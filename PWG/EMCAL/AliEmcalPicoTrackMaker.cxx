@@ -210,6 +210,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 									 type,
 									 track->GetTrackEtaOnEMCal(), 
 									 track->GetTrackPhiOnEMCal(), 
+									 track->GetTrackPtOnEMCal(), 
 									 isEmc);
     ++nacc;
   }

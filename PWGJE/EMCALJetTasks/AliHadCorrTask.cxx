@@ -573,20 +573,21 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
     AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iTrack));
     if (!emctrack)
       continue;
+
+    // check if track also points to cluster
+    if (fDoTrackClus && (emctrack->GetMatchedObjId(0)) != iClus)
+      continue;
+
     AliVTrack *track = emctrack->GetTrack();
     if (!track)
       continue;
     if (!AcceptTrack(track))
       continue;
 
-    // check if track also points to cluster
-    if (fDoTrackClus && (track->GetEMCALcluster()) != iClus)
-      continue;
-
     Double_t etadiff = 999;
     Double_t phidiff = 999;
     AliPicoTrack::GetEtaPhiDiff(track, cluster, phidiff, etadiff);
-    
+
     Double_t mom       = track->P();
     Int_t    mombin    = GetMomBin(mom); 
     Int_t    centbinch = fCentBin;
@@ -877,8 +878,13 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
       else if (trkPMCfrac > 0.95)
 	fHistEmbTrackMatchesOversub[fCentBin]->Fill(energyclus, overSub);
 
-      if (fDoExact)
+      if (fDoExact) {
 	Esub -= overSub;
+	if (EclusBkgcorr + EclusMCcorr > 0) {
+	  Double_t newfrac = EclusMCcorr / (EclusBkgcorr + EclusMCcorr);
+	  cluster->SetMCEnergyFraction(newfrac);
+	}
+      }
     }
   }
 

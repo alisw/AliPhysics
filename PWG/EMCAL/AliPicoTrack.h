@@ -11,7 +11,7 @@ class AliPicoTrack: public AliVTrack {
  public:
   AliPicoTrack();
   AliPicoTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t q, Int_t label, Byte_t type,
-               Double_t etaemc=0, Double_t phiemc=0, Bool_t ise=0);
+               Double_t etaemc=0, Double_t phiemc=0, Double_t ptemc=0, Bool_t ise=0);
   ~AliPicoTrack() {;}
   AliPicoTrack(const AliPicoTrack &pc); 
   AliPicoTrack &operator=(const AliPicoTrack &pc);
@@ -57,7 +57,9 @@ class AliPicoTrack: public AliVTrack {
 
   virtual Double_t GetTrackPhiOnEMCal() const { return fPhiEmc ; }
   virtual Double_t GetTrackEtaOnEMCal() const { return fEtaEmc ; }
-  virtual void SetTrackPhiEtaOnEMCal(Double_t eta, Double_t phi) { fEtaEmc = eta; fPhiEmc = phi; }
+  virtual Double_t GetTrackPtOnEMCal() const  { return fPtEmc  ; }
+  virtual Double_t GetTrackPOnEMCal() const   { return fPtEmc*TMath::CosH(fEtaEmc);}
+  virtual void SetTrackPhiEtaPtOnEMCal(Double_t eta, Double_t phi, Double_t pt) { fEtaEmc = eta; fPhiEmc = phi; fPtEmc = pt;}
 
   void     SetEMCALcluster(Int_t id)         { fClusId = id;   }
 
@@ -72,10 +74,11 @@ class AliPicoTrack: public AliVTrack {
   Byte_t           fTrackType;//           0=global track; 1=w/o SPD, w/ ITS refit; 2=w/o SPD, w/o ITS refit
   Double32_t       fEtaEmc;   //[-1,1,12]  eta at emcal surface
   Double32_t       fPhiEmc;   //[0,6.3,12] phi at emcal surface
+  Double32_t       fPtEmc;    //[0,0,12]   pt at emcal surface
   Bool_t           fEmcal;    //           is true if track propagated to emcal
   Short_t          fClusId;   //!          cluster id of matched cluster; -1 if not set
 
 
-  ClassDef(AliPicoTrack, 4) // Pico track class
+  ClassDef(AliPicoTrack, 5) // Pico track class
 };
 #endif

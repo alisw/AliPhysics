@@ -615,7 +615,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	    AliDebug(1,Form("%s: Track %d with label==0", GetName(), i));
 	}
 
-	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), isEmc, label, track->Charge());
+	AddTrack(track->Pt(), track->Eta(), track->Phi(), type, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), track->GetTrackPtOnEMCal(), isEmc, label, track->Charge());
 	AliDebug(3, "Track embedded!");
       }
     }
