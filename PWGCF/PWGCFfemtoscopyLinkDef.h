@@ -64,6 +64,7 @@
 #pragma link C++ class AliTwoTrackRes+;
 #pragma link C++ class AliFemtoMCTrackCut+;
 #pragma link C++ class AliFemtoEventReaderKinematicsChain+;
+#pragma link C++ class AliFemtoEventReaderKinematicsChainESD+;
 #pragma link C++ class AliFemtoV0TrackCut+;
 #pragma link C++ class AliFemtoV0PairCut+;
 #pragma link C++ class AliFemtoCutMonitorV0+;
