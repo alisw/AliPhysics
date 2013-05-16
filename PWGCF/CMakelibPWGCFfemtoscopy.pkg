@@ -86,6 +86,7 @@ set ( SRCS
     FEMTOSCOPY/AliFemto/AliTwoTrackRes.cxx
     FEMTOSCOPY/AliFemto/AliFemtoMCTrackCut.cxx
     FEMTOSCOPY/AliFemto/AliFemtoEventReaderKinematicsChain.cxx
+    FEMTOSCOPY/AliFemto/AliFemtoEventReaderKinematicsChainESD.cxx
     FEMTOSCOPY/AliFemto/AliFemtoV0PairCut.cxx 
     FEMTOSCOPY/AliFemto/AliFemtoV0TrackCut.cxx 
     FEMTOSCOPY/AliFemto/AliFemtoCutMonitorV0.cxx 
