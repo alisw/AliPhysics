@@ -1492,7 +1492,7 @@ void AliAnalysisTaskESDfilter::PropagateTrackToEMCal(AliESDtrack *esdTrack)
 	      TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
 	      EMCalEta = trkPosVec.Eta();
 	      EMCalPhi = trkPosVec.Phi();
-	      EMCalPt = trkPosVec.Pt();
+	      EMCalPt = trkParamTmp.Pt();
 	      if(EMCalPhi<0)  EMCalPhi += 2*TMath::Pi();
 	      esdTrack->SetTrackPhiEtaPtOnEMCal(EMCalPhi,EMCalEta,EMCalPt);
 	    }
