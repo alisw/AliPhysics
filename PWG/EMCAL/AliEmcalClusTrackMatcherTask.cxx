@@ -129,20 +129,23 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
       continue;
     if (!AcceptEmcalPart(partC))
       continue;
+    AliVCluster *clust = partC->GetCluster();
+
     for (Int_t t = 0; t < nT; ++t) {
       AliEmcalParticle *partT = static_cast<AliEmcalParticle*>(fTracks->At(t));
       if (!partT)
 	continue;
       if (!AcceptEmcalPart(partT))
         continue;
-      AliVCluster *clust = partC->GetCluster();
       AliVTrack   *track = partT->GetTrack()  ;
+
       Double_t deta = 999;
       Double_t dphi = 999;
       AliPicoTrack::GetEtaPhiDiff(track, clust, dphi, deta);
       Double_t d2 = deta * deta + dphi * dphi;
       if (d2 > maxd2)
         continue;
+
       Double_t d = TMath::Sqrt(d2);
       partC->AddMatchedObj(t, d);
       partT->AddMatchedObj(c, d);
