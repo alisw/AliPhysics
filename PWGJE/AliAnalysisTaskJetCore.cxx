@@ -1205,8 +1205,7 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
       Bool_t bGood = false;
       if(fFilterType == 0)bGood = true;
       else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
-      else if(fFilterType == 2)bGood = 
-      tr->IsHybridGlobalConstrainedGlobal();    
+      else if(fFilterType == 2)bGood = tr->IsHybridGlobalConstrainedGlobal();
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(bGood==false) continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
