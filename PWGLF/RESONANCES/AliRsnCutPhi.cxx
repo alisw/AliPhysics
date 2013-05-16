@@ -56,13 +56,22 @@ Bool_t AliRsnCutPhi::IsSelected(TObject *object)
     return accept;
   }
   
-  if (fOption.Contains("InTRD")) return IsInsideTRD(vtrack);
-  if (fOption.Contains("OutTRD")) return IsOutsideTRD(vtrack);
+  if (fOption.Contains("InTRD")) {
+    if (fOption.Contains("CheckTOF"))
+      return IsInsideTRD2TOF(vtrack);
+    else
+      return IsInsideTRD(vtrack);
+  }
+  if (fOption.Contains("OutTRD")) {
+    if (fOption.Contains("CheckTOF"))
+      return IsOutsideTRD2TOF(vtrack);
+    else
+      return IsOutsideTRD(vtrack);
+  }
   
   Double_t value = 90.0; 
   if (fOption.Contains("OuterTPC")) value = GetTrackPhi(vtrack, 278.0);
   if (fOption.Contains("InnerTOF")) value = GetTrackPhi(vtrack, 378.0);
-  
   if ( (value>=fPhiRange[0]) && (value<=fPhiRange[1]) ) 
     accept = kTRUE;
   else 
@@ -115,6 +124,53 @@ Bool_t AliRsnCutPhi::IsOutsideTRD(AliVTrack *vtrack)
   return accept;
 }
 
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutPhi::IsInsideTRD2TOF(AliVTrack *vtrack)
+{
+  //
+  // Checks if track falls inside the TRD sectors
+  // implemented for 2010 configuration only 
+  // edge effects removed by tightening the phi cut by 5 deg 
+  //
+  Bool_t accept = kFALSE;
+  if (!vtrack) {
+    AliError("Referenced daughter is not a track");
+    return accept;
+  }
+  Double_t value2Tpc = GetTrackPhi(vtrack, 278.0);
+  Double_t value2Tof = GetTrackPhi(vtrack, 378.0);
+  if ( ((value2Tpc>=0.0) && (value2Tpc<=35.0) && (value2Tof>=0.0) && (value2Tof<=35.0)  ) ||
+       ((value2Tpc>=135.0) && (value2Tpc<=215.0) && (value2Tof>=135.0) && (value2Tof<=215.0)) ||
+       ((value2Tpc>=345.0) && (value2Tpc<=360.0) && (value2Tof>=345.0) && (value2Tof<=360.0)) ) 
+    accept = kTRUE;
+  else 
+    accept = kFALSE;
+  return accept;
+}
+
+//----------------------------------------------------------------------------
+Bool_t AliRsnCutPhi::IsOutsideTRD2TOF(AliVTrack *vtrack)
+{
+  //
+  // Checks if track falls inside the TRD sectors
+  // implemented for 2010 configuration only 
+  // edge effects removed by tightening the phi cut by 5 deg 
+  //
+  Bool_t accept = kFALSE;
+  if (!vtrack) {
+    AliError("Referenced daughter is not a track");
+    return accept;
+  }
+  Double_t value2Tpc = GetTrackPhi(vtrack, 278.0);
+  Double_t value2Tof = GetTrackPhi(vtrack, 378.0);
+
+  if ( ((value2Tpc>=45.0) && (value2Tpc<=1255.0) && (value2Tof>=45.0) && (value2Tof<=125.0)  ) ||
+       ((value2Tpc>=225.0) && (value2Tpc<=335.0) && (value2Tof>=225.0) && (value2Tof<=335.0)) )
+    accept = kTRUE;
+  else 
+    accept = kFALSE;
+  return accept;
+}
 //----------------------------------------------------------------------------
 Double_t AliRsnCutPhi::GetTrackPhi(AliVTrack * vtrack, Double_t radius = 0.0)
 {

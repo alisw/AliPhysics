@@ -39,6 +39,10 @@ public:
       kTOFMatchTPCpidNsigma,     
       kQualityStd2010TRD,
       kQualityStd2010NoTRD,
+      kTOFMatchPPB2011, //pA analysis
+      kTPCpidKstarPPB2011,
+      kTOFpidKstarPPB2011,
+      kTPCTOFpidKstarPPB2011,
       kNDaughterCuts
    };
 
@@ -58,7 +62,7 @@ public:
    void           SetAODTrackCutFilterBit(Int_t ibit) {fAODTrkCutFilterBit=ibit; return;}
    //getters
    const char   *GetAppliedDaughterCutSetName() { return GetName();}
-   Int_t   GetAppliedDaughterCutSetId() { return fAppliedCutSetID;}
+   Int_t         GetAppliedDaughterCutSetId() { return fAppliedCutSetID;}
    const AliRsnCutTrackQuality *GetQualityCut() {return fCutQuality;};
 
 private:

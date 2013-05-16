@@ -35,7 +35,9 @@ class AliRsnCutPhi : public AliRsnCut {
  protected:
   Bool_t   IsInsideTRD(AliVTrack *vtrack);
   Bool_t   IsOutsideTRD(AliVTrack *vtrack);
-  Double_t   GetTrackPhi(AliVTrack * vtrack, Double_t radius);
+  Bool_t   IsInsideTRD2TOF(AliVTrack *vtrack);
+  Bool_t   IsOutsideTRD2TOF(AliVTrack *vtrack);
+  Double_t GetTrackPhi(AliVTrack * vtrack, Double_t radius);
 
  private:
   TString  fOption;

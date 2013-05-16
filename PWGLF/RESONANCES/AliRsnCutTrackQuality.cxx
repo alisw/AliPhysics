@@ -440,6 +440,27 @@ void AliRsnCutTrackQuality::SetDefaults2010()
 }
 
 //__________________________________________________________________________________________________
+void AliRsnCutTrackQuality::SetDefaults2011()
+{
+//
+// Default settings for cuts used in 2011
+//
+   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
+   fESDtrackCuts->SetMinNCrossedRowsTPC(120);
+   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+   fESDtrackCuts->SetMaxChi2PerClusterITS(36);
+   fESDtrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+   fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+ 
+   AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
+   AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
+   AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
+   SetPtRange(0.15, 1E+20);
+   SetEtaRange(-0.8, 0.8);
+   SetAODTestFilterBit(10);
+}
+
+//__________________________________________________________________________________________________
 const char *AliRsnCutTrackQuality::Binary(UInt_t number)
 {
 //

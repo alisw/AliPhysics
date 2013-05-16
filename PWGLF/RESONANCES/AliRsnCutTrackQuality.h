@@ -55,6 +55,7 @@ public:
    void      SetCheckOnlyFilterBit(Bool_t on=kTRUE)    {fCheckOnlyFilterBit=on;}
 
    void      SetDefaults2010();
+   void      SetDefaults2011();
    void      SetESDtrackCuts(AliESDtrackCuts *esdTrackCuts) {fESDtrackCuts = esdTrackCuts;}
    AliESDtrackCuts  *GetESDtrackCuts() {return fESDtrackCuts;}
 
