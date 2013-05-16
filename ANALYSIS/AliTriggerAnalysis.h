@@ -30,6 +30,7 @@ class AliTriggerAnalysis : public TObject
 		   kSPDGFOL0, kSPDGFOL1, kZDCTDCA, kZDCTDCC, kZDCTime, kCTPV0A, kCTPV0C, kTPCLaserWarmUp, kSPDClsVsTrkBG,
 		   kCentral,kSemiCentral, kT0, kT0BG, kT0Pileup, kEMCAL,kTPCHVdip,
 		   kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE,
+		   kIncompleteEvent,
 		   kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
     enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
@@ -71,8 +72,10 @@ class AliTriggerAnalysis : public TObject
     static const char* GetTriggerName(Trigger trigger);
     
     Bool_t IsLaserWarmUpTPCEvent(const AliESDEvent* esd);
-  	Bool_t IsHVdipTPCEvent(const AliESDEvent* esd);
+    Bool_t IsHVdipTPCEvent(const AliESDEvent* esd);
     Bool_t TRDTrigger(const AliESDEvent* esd, Trigger trigger);
+
+    Bool_t IsIncompleteEvent(const AliESDEvent* esd);
     
     void FillHistograms(const AliESDEvent* aEsd);
     void FillTriggerClasses(const AliESDEvent* aEsd);
@@ -192,7 +195,7 @@ class AliTriggerAnalysis : public TObject
 
     Bool_t fTPCOnly;         // flag to set whether TPC only tracks have to be used for the offline trigger 
 
-    ClassDef(AliTriggerAnalysis, 21)
+    ClassDef(AliTriggerAnalysis, 22)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);

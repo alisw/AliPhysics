@@ -580,6 +580,12 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigg
         AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
       return IsHVdipTPCEvent(aEsd);
     }
+    case kIncompleteEvent:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      return IsIncompleteEvent(aEsd);
+    }
     case kCentral:
     {
       if (offline)
@@ -703,6 +709,19 @@ Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliESDEvent* esd) {
   if (!esd->IsDetectorOn(AliDAQ::kTPC)) return kTRUE;
   return kFALSE;
 
+}
+
+Bool_t AliTriggerAnalysis::IsIncompleteEvent(const AliESDEvent* esd) 
+{
+  //
+  // Check whether the event is incomplete 
+  // (due to DAQ-HLT issues, it could be only part of the event was saved)
+  //
+  if ((esd->GetEventType() == 7) &&
+      (esd->GetDAQDetectorPattern() & (1<<4)) &&
+     !(esd->GetDAQAttributes() & (1<<7))) return kTRUE;
+
+  return kFALSE;
 }
 
 
