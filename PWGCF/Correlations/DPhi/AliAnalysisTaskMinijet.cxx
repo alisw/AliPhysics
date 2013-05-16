@@ -171,8 +171,21 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     // Called once
     if(fDebug) Printf("In User Create Output Objects.");
     
-    Int_t nbinsCentr = 101;
-    Float_t minbinCentr=-0.5, maxbinCentr=100.5;
+    Int_t nbinsCentr = 0;
+    Float_t minbinCentr=0, maxbinCentr=0;
+
+    if (fCentralityMethod.Length() > 0)
+    {
+        nbinsCentr = 100;
+        minbinCentr=0;
+        maxbinCentr=100;
+    }
+    else
+    {
+        nbinsCentr = 101;
+        minbinCentr=-0.5;
+        maxbinCentr=100.5;
+    }
 
     fStep = new TH1F("fStep", "fStep", 10, -0.5, 9.5);
     fEventStat = new TH1F("fEventStat", "fEventStat", 10, -0.5, 9.5);
