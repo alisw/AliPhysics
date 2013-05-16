@@ -55,6 +55,7 @@
 #include "AliESDtrackCuts.h"
 
 #include "AliHelperPID.h"
+#include "AliAnalysisUtils.h"
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -97,6 +98,7 @@ fSkipTrigger(kFALSE),
 fInjectedSignals(kFALSE),
 // pointers to UE classes
 fHelperPID(0x0),
+fAnalysisUtils(0x0),
 fAnalyseUE(0x0),
 fHistos(0x0),
 fHistosMixed(0),
@@ -867,7 +869,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   // skip fast cluster events here if requested
   if (fSkipFastCluster && (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly))
     return;
-
+ 
   // Support for ESD and AOD based analysis
   AliVEvent* inputEvent = fAOD;
   if (!inputEvent)
@@ -958,9 +960,18 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   
   // Trigger selection ************************************************
   if (!fSkipTrigger && !fAnalyseUE->TriggerSelection(fInputHandler)) return;
-  
+
   // Fill the "event-counting-container", it is needed to get the number of events remaining after each event-selection cut
   fHistos->FillEvent(centrality, AliUEHist::kCFStepTriggered);
+  
+  // Pileup selection ************************************************
+  if (fAnalysisUtils && fAnalysisUtils->IsPileUpEvent(inputEvent)) 
+  {
+    // count the removed events
+    fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+
+    return;
+  }
   
   // Vertex selection *************************************************
   if(!fAnalyseUE->VertexSelection(inputEvent, fnTracksVertex, fZVertex)) return;
