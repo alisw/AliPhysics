@@ -76,7 +76,7 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   Bool_t                 PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   Double_t               RefitTrack(AliExternalTrackParam* trc, Double_t r, Int_t stopCond=0);
-  Int_t                  GetTrackingPhase()                 const {return fTrackPhase;}
+  Int_t                  GetTrackingPhase()                 const {return fTrackPhaseID;}
 
   //
   void                   KillSeed(AliITSUSeed* seed, Bool_t branch=kFALSE);
@@ -103,7 +103,7 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 FinalizeHypothesis(AliITSUTrackHyp* hyp);
   void                   UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag);
   void                   CookMCLabel(AliITSUTrackHyp* hyp);
-  void                   SetTrackingPhase(Int_t p)        {fTrackPhase = p;}
+  void                   SetTrackingPhase(Int_t p)        {fTrackPhaseID = p;}
   //
   // monitoring stuff
   void                   FlagSplitClusters();
@@ -151,18 +151,20 @@ class AliITSUTrackerGlo : public AliTracker {
   AliITSUTrackCond*               fCurrTrackCond;  //! current tracking condition
   Int_t                           fCurrActLrID;    //! current active layer ID being processed (set only when needed, not guaranteed)
   AliITSURecoLayer*               fCurrLayer;      //! current layer being processed  (set only when needed, not guaranteed)
-  Int_t                           fTrackPhase;     //! tracking phase
+  Int_t                           fTrackPhaseID;   //! tracking phase (clusters2tracks, backward, inward)
+  Int_t                           fCurrPassID;     //! tracking pass (different tracking conditions)
   //
   static const Double_t           fgkToler;        // tracking tolerance
   //
 #ifdef  _ITSU_TUNING_MODE_
   // this code is only for special histos needed to extract some control parameters
-  void BookControlHistos(const char* pref);
-  TObjArray* fCHistoArrCorr;
-  TObjArray* fCHistoArrFake;
-  enum {kHResY=0,kHResYP=10,kHResZ=20,kHResZP=30,kHChi2Cl=40,kHChi2Nrm=50,kHBestInBranch=60,kHBestInCand=70};
+  Int_t GetHistoID(Int_t lr, Int_t hid, Int_t pass=0, Int_t phase=0);
+  TObjArray* BookControlHistos(const char* pref);
+  TObjArray* fCHistoArrCorr; // set of histos for each tracking pass/phase: correct
+  TObjArray* fCHistoArrFake; // set of histos for each tracking pass/phase: fakse
+  enum {kHResY,kHResYP,kHResZ,kHResZP,kHChi2Cl,kHChi2Nrm,kHBestInBranch,kHBestInCand,kMaxHID=10};
   enum {kHChiMatch,kHChiITSSA}; // custom histos 
-  enum {kHistosPhase=100};
+  enum {kHistosPhase=kMaxHID*(AliITSUAux::kMaxLayers+1),kHistosPass=kNTrackingPhases*kHistosPhase};
   //
 #endif
   //

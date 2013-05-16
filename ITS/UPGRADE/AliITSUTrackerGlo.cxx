@@ -78,7 +78,8 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fCurrTrackCond(0)
   ,fCurrActLrID(-1)
   ,fCurrLayer(0)
-  ,fTrackPhase(-1)
+  ,fTrackPhaseID(-1)
+  ,fCurrPassID(-1)
 #ifdef  _ITSU_TUNING_MODE_
   ,fCHistoArrCorr(0)
   ,fCHistoArrFake(0)
@@ -166,8 +167,8 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   SetTrackingPhase(kClus2Tracks);
   //
 #ifdef  _ITSU_TUNING_MODE_
-  if (!fCHistoArrCorr) BookControlHistos("Corr");
-  if (!fCHistoArrFake) BookControlHistos("Fake");
+  if (!fCHistoArrCorr) fCHistoArrCorr = BookControlHistos("Corr");
+  if (!fCHistoArrFake) fCHistoArrFake = BookControlHistos("Fake");
 #endif
   static int evID = 0;
   static TArrayF esdTrPt(fESDIndex.GetSize()); 
@@ -222,6 +223,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   Sort(fNTracksESD,trPt,esdTrackIndex,kTRUE);    
   //
   for (int icnd=0;icnd<nTrackCond;icnd++) {
+    fCurrPassID = icnd;
     fCurrTrackCond = (AliITSUTrackCond*)trackConds->UncheckedAt(icnd);
     if (!fCurrTrackCond->IsInitDone()) fCurrTrackCond->Init();
     // select ESD tracks to propagate
@@ -1165,23 +1167,22 @@ Bool_t AliITSUTrackerGlo::FinalizeHypothesis(AliITSUTrackHyp* hyp)
     do {
       int clID,lrID;
       if ( (clID=sd->GetLrCluster(lrID))<0 ) continue;
-      int hcOffs = (1+fTrackPhase)*kHistosPhase + lrID;
-      ((TH2*)dest->At(kHChi2Nrm+hcOffs))->Fill(htrPt,sd->GetChi2GloNrm());
-      ((TH2*)dest->At(kHBestInBranch+hcOffs))->Fill(htrPt,sd->GetOrdBranch());
-      ((TH2*)dest->At(kHBestInCand+hcOffs))->Fill(htrPt,  sd->GetOrdCand());
+      ((TH2*)dest->At( GetHistoID(lrID,kHChi2Nrm     ,fCurrPassID) ))->Fill(htrPt,sd->GetChi2GloNrm());
+      ((TH2*)dest->At( GetHistoID(lrID,kHBestInBranch,fCurrPassID) ))->Fill(htrPt,sd->GetOrdBranch());
+      ((TH2*)dest->At( GetHistoID(lrID,kHBestInCand  ,fCurrPassID) ))->Fill(htrPt,sd->GetOrdCand());
       //
       if (dest==fCHistoArrFake && !sd->IsFake()) continue; // for the fake seeds fill only fake clusters part
       //
-      ((TH2*)dest->At(kHResY+hcOffs))->Fill(htrPt,sd->GetResidY());
-      ((TH2*)dest->At(kHResZ+hcOffs))->Fill(htrPt,sd->GetResidZ());
-      ((TH2*)dest->At(kHResYP+hcOffs))->Fill(htrPt,sd->GetPullY());
-      ((TH2*)dest->At(kHResZP+hcOffs))->Fill(htrPt,sd->GetPullZ());
-      ((TH2*)dest->At(kHChi2Cl+hcOffs))->Fill(htrPt,sd->GetChi2Cl());
+      ((TH2*)dest->At( GetHistoID(lrID,kHResY        ,fCurrPassID) ))->Fill(htrPt,sd->GetResidY());
+      ((TH2*)dest->At( GetHistoID(lrID,kHResZ        ,fCurrPassID) ))->Fill(htrPt,sd->GetResidZ());
+      ((TH2*)dest->At( GetHistoID(lrID,kHResYP       ,fCurrPassID) ))->Fill(htrPt,sd->GetPullY());
+      ((TH2*)dest->At( GetHistoID(lrID,kHResZP       ,fCurrPassID) ))->Fill(htrPt,sd->GetPullZ());
+      ((TH2*)dest->At( GetHistoID(lrID,kHChi2Cl      ,fCurrPassID) ))->Fill(htrPt,sd->GetChi2Cl());
       //
     } while((sd=(AliITSUSeed*)sd->GetParent()));
     //
-    ((TH2*)dest->At(kHChiMatch))->Fill(htrPt,winner->GetChi2ITSTPC());
-    ((TH2*)dest->At(kHChiITSSA))->Fill(htrPt,winner->GetChi2ITSSA());
+    ((TH2*)dest->At( GetHistoID(-1,kHChiMatch,fCurrPassID) ))->Fill(htrPt,winner->GetChi2ITSTPC());
+    ((TH2*)dest->At( GetHistoID(-1,kHChiITSSA,fCurrPassID) ))->Fill(htrPt,winner->GetChi2ITSSA());
   }
   //
 #endif
@@ -1427,19 +1428,18 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDes
       //
 #ifdef  _ITSU_TUNING_MODE_
       TObjArray* dest = trc->GetLabel()>=0 ? fCHistoArrCorr : fCHistoArrFake;
-      if (dest && fTrackPhase>kClus2Tracks) {
-	int hcOffs = (1+fTrackPhase)*kHistosPhase + ilrA;
+      if (dest && fTrackPhaseID>kClus2Tracks) {
 	//
 	double htrPt = tmpTr.Pt();
 	double dy = p[0]-tmpTr.GetY();
 	double dz = p[1]-tmpTr.GetZ();
-	((TH2*)dest->At(kHResY+hcOffs))->Fill(htrPt,dy);
-	((TH2*)dest->At(kHResZ+hcOffs))->Fill(htrPt,dz);
+	((TH2*)dest->At( GetHistoID(ilrA,kHResY,0,fTrackPhaseID) ))->Fill(htrPt,dy);
+	((TH2*)dest->At( GetHistoID(ilrA,kHResZ,0,fTrackPhaseID) ))->Fill(htrPt,dz);
 	double errY = tmpTr.GetSigmaY2();
 	double errZ = tmpTr.GetSigmaZ2();
-	if (errY>0) ((TH2*)dest->At(kHResYP+hcOffs))->Fill(htrPt,dy/Sqrt(errY));
-	if (errZ>0) ((TH2*)dest->At(kHResZP+hcOffs))->Fill(htrPt,dz/Sqrt(errZ));
-	((TH2*)dest->At(kHChi2Cl+hcOffs))->Fill(htrPt,chi2cl);
+	if (errY>0) ((TH2*)dest->At( GetHistoID(ilrA,kHResYP,0,fTrackPhaseID) ))->Fill(htrPt,dy/Sqrt(errY));
+	if (errZ>0) ((TH2*)dest->At( GetHistoID(ilrA,kHResZP,0,fTrackPhaseID) ))->Fill(htrPt,dz/Sqrt(errZ));
+	((TH2*)dest->At( GetHistoID(ilrA,kHChi2Cl,0,fTrackPhaseID) ))->Fill(htrPt,chi2cl);
       }
 #endif  
       //      
@@ -1804,15 +1804,12 @@ void AliITSUTrackerGlo::CheckClusterUsage()
 
 #ifdef  _ITSU_TUNING_MODE_
 //__________________________________________________________________
-void AliITSUTrackerGlo::BookControlHistos(const char* pref)
+TObjArray* AliITSUTrackerGlo::BookControlHistos(const char* pref)
 {
   // book special control histos
   TString prefS = pref;
   prefS.ToLower();
-  TObjArray* dest = 0;
-  if      (prefS=="corr") dest = fCHistoArrCorr = new TObjArray();
-  else if (prefS=="fake") dest = fCHistoArrFake = new TObjArray();
-  else    {AliError(Form("Unknown histo set %s is requested",pref)); return;}
+  TObjArray* dest = new TObjArray;
   dest->SetOwner(kTRUE);
   //
   const int kNResDef=7;
@@ -1827,67 +1824,91 @@ void AliITSUTrackerGlo::BookControlHistos(const char* pref)
   const int maxBr  = 15;
   const int maxCand = 200;
   TString ttl;
-  for (int stp=0;stp<kNTrackingPhases;stp++) {
-    for (int ilr=0;ilr<fNLrActive;ilr++) {
-      int hoffs = (1+stp)*kHistosPhase + ilr;
-      double mxdf = ilr>=kNResDef ? kResDef[kNResDef-1] : kResDef[ilr];
-      ttl = Form("S%d_residY%d_%s",stp,ilr,pref);
-      TH2F* hdy = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
-      dest->AddAtAndExpand(hdy,hoffs + kHResY);
-      hdy->SetDirectory(0);
+  for (int phase=0;phase<kNTrackingPhases;phase++) {
+    for (int pass=0;pass<AliITSUReconstructor::GetRecoParam()->GetNTrackingConditions();pass++) {
       //
-      ttl = Form("S%d_residYPull%d_%s",stp,ilr,pref);	
-      TH2F* hdyp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
-      dest->AddAtAndExpand(hdyp,hoffs + kHResYP);
-      hdyp->SetDirectory(0);
-      //
-      ttl = Form("S%d_residZ%d_%s",stp,ilr,pref);	
-      TH2F* hdz = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
-      dest->AddAtAndExpand(hdz,hoffs + kHResZ);
-      hdz->SetDirectory(0);
-      //
-      ttl = Form("S%d_residZPull%d_%s",stp,ilr,pref);		
-      TH2F* hdzp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
-      hdzp->SetDirectory(0);
-      dest->AddAtAndExpand(hdzp,hoffs + kHResZP);
-      //
-      ttl = Form("S%d_chi2Cl%d_%s",stp,ilr,pref);		
-      TH2F* hchi = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
-      hchi->SetDirectory(0);
-      dest->AddAtAndExpand(hchi,hoffs + kHChi2Cl);
-      //
-      ttl = Form("S%d_chi2Nrm%d_%s",stp,ilr,pref);		
-      TH2F* hchiN = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
-      hchiN->SetDirectory(0);
-      dest->AddAtAndExpand(hchiN,hoffs + kHChi2Nrm);
-      //
-      if (stp==0) { // these histos make sense only for clusters2tracks stage
-	ttl = Form("S%d_bestInBranch%d_%s",stp,ilr,pref);		
+      for (int ilr=0;ilr<fNLrActive;ilr++) {
+	//
+	// ----------------- These are histos to be filled in Cluster2Tracks of each pass. 
+	// PropagateBack and RefitInward will be stored among the histos of 1st pass
+	if (pass>0 && phase!=kClus2Tracks) continue;
+	//
+	double mxdf = ilr>=kNResDef ? kResDef[kNResDef-1] : kResDef[ilr];
+	ttl = Form("Pass%d_S%d_residY%d_%s",pass,phase,ilr,pref);
+	TH2F* hdy = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
+	dest->AddAtAndExpand(hdy,GetHistoID(ilr,kHResY,pass,phase));
+	hdy->SetDirectory(0);
+	//
+	ttl = Form("Pass%d_S%d_residYPull%d_%s",pass,phase,ilr,pref);	
+	TH2F* hdyp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
+	dest->AddAtAndExpand(hdyp,GetHistoID(ilr,kHResYP,pass,phase));
+	hdyp->SetDirectory(0);
+	//
+	ttl = Form("Pass%d_S%d_residZ%d_%s",pass,phase,ilr,pref);	
+	TH2F* hdz = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nresbins,-mxdf,mxdf);
+	dest->AddAtAndExpand(hdz,GetHistoID(ilr,kHResZ,pass,phase));
+	hdz->SetDirectory(0);
+	//
+	ttl = Form("Pass%d_S%d_residZPull%d_%s",pass,phase,ilr,pref);		
+	TH2F* hdzp = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax,nplbins,-plMax,plMax);
+	hdzp->SetDirectory(0);
+	dest->AddAtAndExpand(hdzp,GetHistoID(ilr,kHResZP,pass,phase));
+	//
+	ttl = Form("Pass%d_S%d_chi2Cl%d_%s",pass,phase,ilr,pref);		
+	TH2F* hchi = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
+	hchi->SetDirectory(0);
+	dest->AddAtAndExpand(hchi,GetHistoID(ilr,kHChi2Cl,pass,phase));
+	//
+	// ------------------- These histos are filled for Clusters2Tracks only
+	if (phase!=kClus2Tracks) continue;
+	//
+	ttl = Form("Pass%d_S%d_chi2Nrm%d_%s",pass,phase,ilr,pref);		
+	TH2F* hchiN = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
+	hchiN->SetDirectory(0);
+	dest->AddAtAndExpand(hchiN,GetHistoID(ilr,kHChi2Nrm,pass,phase));
+	//
+	ttl = Form("Pass%d_S%d_bestInBranch%d_%s",pass,phase,ilr,pref);		
 	TH2* hnbr = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, maxBr,-0.5,maxBr-0.5);
 	hnbr->SetDirectory(0);
-	dest->AddAtAndExpand(hnbr,hoffs + kHBestInBranch);
+	dest->AddAtAndExpand(hnbr,GetHistoID(ilr,kHBestInBranch,pass,phase));
 	//
-	ttl = Form("S%d_bestInCands%d_%s",stp,ilr,pref);		
+	ttl = Form("Pass%d_S%d_bestInCands%d_%s",pass,phase,ilr,pref);		
 	TH2* hncn = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, maxCand,-0.5,maxCand-0.5);
 	hncn->SetDirectory(0);
-	dest->AddAtAndExpand(hncn,hoffs + kHBestInCand);
+	dest->AddAtAndExpand(hncn,GetHistoID(ilr,kHBestInCand,pass,phase));
 	//
+      } // loop over layers
+      //
+      // these are special histos, filled not per layer but in the end of track fit in Clusters2Tracks in EVERY pass
+      //  
+      if (phase==kClus2Tracks) {
+	TH2* hchiMatch = 0; 
+	ttl = Form("Pass%d_Chi2Match_%s",pass,pref);
+	hchiMatch = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
+	hchiMatch->SetDirectory(0);
+	dest->AddAtAndExpand(hchiMatch,GetHistoID(-1,kHChiMatch,pass,phase));
+	// 
+	TH2* hchiSA = 0; 
+	ttl = Form("Pass%d_Chi2ITSSA_%s",pass,pref);
+	hchiSA = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins/2,0.,chiMax/2);
+	hchiSA->SetDirectory(0);
+	dest->AddAtAndExpand(hchiSA,GetHistoID(-1,kHChiITSSA,pass,phase));
+	// 	
       }
-    }
-  }
-  // custom histos
-  //  
-  TH2* hchiMatch = 0; 
-  ttl = Form("Chi2Match_%s",pref);
-  hchiMatch = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins,0.,chiMax);
-  hchiMatch->SetDirectory(0);
-  dest->AddAtAndExpand(hchiMatch,kHChiMatch);
-  // 
-  TH2* hchiSA = 0; 
-  ttl = Form("Chi2ITSSA_%s",pref);
-  hchiSA = new TH2F(ttl.Data(),ttl.Data(),nptbins,0,ptMax, nchbins/2,0.,chiMax/2);
-  hchiSA->SetDirectory(0);
-  dest->AddAtAndExpand(hchiSA,kHChiITSSA);
-  // 
+    } // loop over tracking passes
+  }// loop over tracking phases
+  //
+  return dest;
 }
+
+//__________________________________________________________________
+Int_t AliITSUTrackerGlo::GetHistoID(Int_t lr, Int_t hid, Int_t pass, Int_t phase)
+{
+  // get id for the requested histo
+  if (lr<0) lr=-1;
+  lr++;
+  return pass*kHistosPass + phase*kHistosPhase + lr*kMaxHID + hid;
+  //
+}
+
 #endif
