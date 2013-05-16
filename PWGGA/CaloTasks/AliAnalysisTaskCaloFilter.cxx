@@ -785,7 +785,7 @@ void AliAnalysisTaskCaloFilter::FillAODTracks()
       
       if(track->IsEMCAL()) aodTrack->SetEMCALcluster(track->GetEMCALcluster());
       if(track->IsPHOS())  aodTrack->SetPHOScluster (track->GetPHOScluster());
-      aodTrack->SetTrackPhiEtaOnEMCal( track->GetTrackPhiOnEMCal(),  track->GetTrackPhiOnEMCal() );
+      aodTrack->SetTrackPhiEtaPtOnEMCal( track->GetTrackPhiOnEMCal(),  track->GetTrackPhiOnEMCal(),  track->GetTrackPtOnEMCal() );
           
     } 
     
