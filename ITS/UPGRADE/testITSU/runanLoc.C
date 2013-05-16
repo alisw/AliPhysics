@@ -33,7 +33,8 @@ void runanLoc(const char* inpData="AliESDs.root", const char* outFile="tstPerfAn
   task->SetEtaMin(-3);
   task->SetEtaMax(3);
   task->SetNPtBins(10);
-  task->SetPtMax(2);
+  task->SetNResBins(200);
+  task->SetPtMax(10);
   //
   // optionally set reconstructability condition
   task->SetTrackingConditions(GetTrackingConditions());

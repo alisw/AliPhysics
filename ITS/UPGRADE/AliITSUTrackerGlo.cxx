@@ -214,7 +214,11 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   }
   int* esdTrackIndex = fESDIndex.GetArray();
   float* trPt = esdTrPt.GetArray();
-  for (int itr=fNTracksESD;itr--;) trPt[itr] = esdEv->GetTrack(itr)->Pt();
+  for (int itr=fNTracksESD;itr--;) {
+    AliESDtrack* esdTr = esdEv->GetTrack(itr);
+    esdTr->SetStatus(AliESDtrack::kITSupg);
+    trPt[itr] = esdTr->Pt();
+  }
   Sort(fNTracksESD,trPt,esdTrackIndex,kTRUE);    
   //
   for (int icnd=0;icnd<nTrackCond;icnd++) {
@@ -253,7 +257,9 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
       fHypStore.Print();
     }
     FinalizeHypotheses();
+#ifdef  _ITSU_TUNING_MODE_
     CheckClusterUsage(); //!!RS
+#endif
     //
     //AliLog::SetClassDebugLevel("AliITSUTrackerGlo",0);     // in case wtc array was defined, uncomment this
   }
