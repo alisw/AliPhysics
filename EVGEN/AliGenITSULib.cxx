@@ -70,7 +70,8 @@ GenFunc AliGenITSULib::GetPt(Int_t iPID, const char * sForm) const
    case kLb    :    func=PtLbDist; break;  
    case kLc    :    func=PtLcDist; break;  
    case kXi_c  :    func=PtLcDist; break;
-   case kB     :    func=PtLbDist; break;
+   case kBplus :    func=PtLbDist; break;
+   case kBzero :    func=PtLbDist; break;
    case kDs    :    func=PtLcDist; break;
    case kDplus :    func=PtLcDist; break;
    default : AliError(Form("Unknown particle type: %i, Pt dist is 0",iPID));      func=0;
@@ -87,7 +88,7 @@ GenFunc AliGenITSULib::GetY(Int_t iPID, const char *sForm) const
 {
  GenFunc func;
 
- if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kB && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs) {
+ if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kBplus && TMath::Abs(iPID) != kBzero && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs) {
   AliError(Form("Unknown PID: %i, form: %s, returning 0",iPID,sForm));   //////////	
   func=0;
  } else { 
@@ -102,7 +103,7 @@ GenFuncIp AliGenITSULib::GetIp(Int_t iPID, const char *sForm) const
  // Return pointer to particle type parameterisation
  GenFuncIp id;
 
- if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kB && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs) {
+ if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kBplus && TMath::Abs(iPID) != kBzero && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs) {
   AliError(Form("Unknown PID: %i, form: %s, return 0",iPID,sForm));   //////////	
   id = 0;
  } else {
@@ -113,8 +114,10 @@ GenFuncIp AliGenITSULib::GetIp(Int_t iPID, const char *sForm) const
    case -kLb   :                                  return id=IpLbBar;
    case kXi_c  :                                  return id=IpXic;
    case -kXi_c :                                  return id=IpXicBar;
-   case kB     :                                  return id=IpBPlus;
-   case -kB    :                                  return id=IpBMinus;
+   case kBplus :                                  return id=IpBPlus;
+   case kBzero :                                  return id=IpB0;
+   case -kBzero:                                  return id=IpB0Bar;
+   case -kBplus:                                  return id=IpBMinus;
    case kDs    :                                  return id=IpDsPlus;
    case -kDs   :                                  return id=IpDsMinus;
    case kDplus :                                  return id=IpDPlus;

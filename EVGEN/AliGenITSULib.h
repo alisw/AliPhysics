@@ -17,7 +17,7 @@ class AliGenITSULib :public AliGenLib {
 
  public:
 
-  enum EPartId {kLb=5122,kLc=4122,kXi_c = 4232,kB = 521,kDs=431,kDplus=411};
+  enum EPartId {kLb=5122,kLc=4122,kXi_c = 4232,kBplus = 521,kBzero = 511,kDs=431,kDplus=411};
 
   //Getters
     
@@ -33,8 +33,10 @@ class AliGenITSULib :public AliGenLib {
   static Int_t IpLbBar(TRandom * /*ran*/)   {return    -(int)kLb;}
   static Int_t IpXic(TRandom * /*ran*/)     {return   (int)kXi_c;}
   static Int_t IpXicBar(TRandom * /*ran*/)  {return  -(int)kXi_c;}
-  static Int_t IpBPlus(TRandom * /*ran*/)   {return      (int)kB;}
-  static Int_t IpBMinus(TRandom * /*ran*/)  {return     -(int)kB;}
+  static Int_t IpBPlus(TRandom * /*ran*/)   {return      (int)kBplus;}
+  static Int_t IpBMinus(TRandom * /*ran*/)  {return     -(int)kBplus;}
+  static Int_t IpB0(TRandom * /*ran*/)  {return         (int)kBzero;}
+  static Int_t IpB0Bar(TRandom * /*ran*/)  {return         -(int)kBzero;}
   static Int_t IpDsPlus(TRandom * /*ran*/)  {return     (int)kDs;}
   static Int_t IpDsMinus(TRandom * /*ran*/) {return    -(int)kDs;}
   static Int_t IpDPlus(TRandom * /*ran*/)   {return  (int)kDplus;}
@@ -49,7 +51,7 @@ class AliGenITSULib :public AliGenLib {
 
 
 
-  ClassDef(AliGenITSULib,0)
+  ClassDef(AliGenITSULib,1)
     };
 
 #endif
