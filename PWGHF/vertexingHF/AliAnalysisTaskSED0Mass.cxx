@@ -294,6 +294,21 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 	namedistr+=i;
 	TH1F *hphiD0barS = new TH1F(namedistr.Data(), "#phi distribution [S];#phi [rad]",100,0.,2*TMath::Pi());
 
+
+	namedistr="hetaphiD0candidateS_";
+	namedistr+=i;
+	TH2F *hetaphiD0candidateS = new TH2F(namedistr.Data(), "D^{0} candidates #eta #phi distribution [S];#eta;#phi [rad]",100, -1.5, 1.5, 100, 0.,2*TMath::Pi());
+	namedistr="hetaphiD0barcandidateS_";
+	namedistr+=i;
+	TH2F *hetaphiD0barcandidateS = new TH2F(namedistr.Data(), "anti-D^{0} candidates #eta #phi distribution [S];#eta;#phi [rad]",100, -1.5, 1.5, 100, 0.,2*TMath::Pi());
+
+	namedistr="hetaphiD0candidatesignalregionS_";
+	namedistr+=i;
+	TH2F *hetaphiD0candidatesignalregionS = new TH2F(namedistr.Data(), "D^{0} candidates #eta #phi distribution [S] [mass cut];#eta;#phi [rad]",100, -1.5, 1.5, 100, 0.,2*TMath::Pi());
+	namedistr="hetaphiD0barcandidatesignalregionS_";
+	namedistr+=i;
+	TH2F *hetaphiD0barcandidatesignalregionS = new TH2F(namedistr.Data(), "anti-D^{0} candidates #eta #phi distribution [S] [mass cut];#eta;#phi [rad]",100, -1.5, 1.5, 100, 0.,2*TMath::Pi());
+
 	//  dca
 	namedistr="hdcaS_";
 	namedistr+=i;
@@ -354,6 +369,10 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 	fDistr->Add(hphiD0S);
 	fDistr->Add(hptD0barS);
 	fDistr->Add(hphiD0barS);
+	fDistr->Add(hetaphiD0candidateS);
+	fDistr->Add(hetaphiD0candidatesignalregionS);
+	fDistr->Add(hetaphiD0barcandidateS);
+	fDistr->Add(hetaphiD0barcandidatesignalregionS);
 
 	fDistr->Add(hdcaS);
 
@@ -415,7 +434,21 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
       namedistr="hphiD0barB_";
       namedistr+=i;
       TH1F *hphiD0barB = new TH1F(namedistr.Data(), "#phi distribution [B];#phi [rad]",100,0.,2*TMath::Pi());
-     
+
+      namedistr="hetaphiD0candidateB_";
+      namedistr+=i;
+      TH2F *hetaphiD0candidateB = new TH2F(namedistr.Data(), "D^{0} candidates #eta #phi distribution [B];#eta;#phi [rad]",100, -1.5, 1.5, 100, 0.,2*TMath::Pi());
+      namedistr="hetaphiD0barcandidateB_";
+      namedistr+=i;
+      TH2F *hetaphiD0barcandidateB = new TH2F(namedistr.Data(), "anti-D^{0} candidates #eta #phi distribution [B];#eta;#phi [rad]",100, -1.5, 1.5, 100, 0.,2*TMath::Pi());
+      
+      namedistr="hetaphiD0candidatesignalregionB_";
+      namedistr+=i;
+      TH2F *hetaphiD0candidatesignalregionB = new TH2F(namedistr.Data(), "D^{0} candidates #eta #phi distribution [B] [mass cut];#eta;#phi [rad]",100, -1.5, 1.5, 100, 0.,2*TMath::Pi());
+      namedistr="hetaphiD0barcandidatesignalregionB_";
+      namedistr+=i;
+      TH2F *hetaphiD0barcandidatesignalregionB = new TH2F(namedistr.Data(), "anti-D^{0} candidates #eta #phi distribution [B] [mass cut];#eta;#phi [rad]",100, -1.5, 1.5, 100, 0.,2*TMath::Pi());
+      
       //  dca
       namedistr="hdcaB_";
       namedistr+=i;
@@ -475,6 +508,10 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
       fDistr->Add(hphiD0B);
       fDistr->Add(hptD0barB);
       fDistr->Add(hphiD0barB);
+      fDistr->Add(hetaphiD0candidateB);
+      fDistr->Add(hetaphiD0candidatesignalregionB);
+      fDistr->Add(hetaphiD0barcandidateB);
+      fDistr->Add(hetaphiD0barcandidatesignalregionB);
      
       fDistr->Add(hdcaB);
 
@@ -1174,7 +1211,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
   Double_t invmasscut=0.03;
 
-  TString fillthispi="",fillthisK="",fillthis="", fillthispt="";
+  TString fillthispi="",fillthisK="",fillthis="", fillthispt="", fillthisetaphi="";
 
   Int_t ptbin=cuts->PtBin(part->Pt());
   Double_t pt = part->Pt();
@@ -1221,6 +1258,8 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
   Double_t decayLength2 = -1, decayLengthxy=-1;
   Double_t ptProng[2]={-99,-99};
   Double_t d0Prong[2]={-99,-99};
+  Double_t etaD = 99.;
+  Double_t phiD = 99.;
   
 
   //disable the PID
@@ -1272,6 +1311,11 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
     }
 
     //no mass cut ditributions: mass
+
+    etaD = part->Eta();
+    phiD = part->Phi();
+
+
     fillthis="hMassS_";
     fillthis+=ptbin;
     fillthispt="histSgnPt";
@@ -1280,11 +1324,33 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	|| (!fReadMC && (isSelectedPID==1 || isSelectedPID==3))){//D0
       ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
       if(fFillPtHist && fReadMC) ((TH2F*)fOutputMassPt->FindObject(fillthispt))->Fill(minvD0,pt);
+      
+      fillthisetaphi="hetaphiD0candidateS_";	
+      fillthisetaphi+=ptbin;
+      ((TH2F*)listout->FindObject(fillthisetaphi))->Fill(etaD, phiD);
+    
+      if(TMath::Abs(minvD0-mPDG)<0.05){
+	fillthisetaphi="hetaphiD0candidatesignalregionS_";	
+	fillthisetaphi+=ptbin;
+	((TH2F*)listout->FindObject(fillthisetaphi))->Fill(etaD, phiD);
+      }
+
     }
     else { //D0bar
       if(fReadMC || (!fReadMC && isSelectedPID > 1)){
 	((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
 	if(fFillPtHist && fReadMC) ((TH2F*)fOutputMassPt->FindObject(fillthispt))->Fill(minvD0bar,pt);
+
+	fillthisetaphi="hetaphiD0barcandidateS_";	
+	fillthisetaphi+=ptbin;
+	((TH2F*)listout->FindObject(fillthisetaphi))->Fill(etaD, phiD);
+	
+	if(TMath::Abs(minvD0bar-mPDG)<0.05){
+	  fillthisetaphi="hetaphiD0barcandidatesignalregionS_";	
+	  fillthisetaphi+=ptbin;
+	  ((TH2F*)listout->FindObject(fillthisetaphi))->Fill(etaD, phiD);
+	}
+
       }
     }
 
@@ -1528,7 +1594,10 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
   } else{ //Background or LS
     //if(!fReadMC){
     //cout<<"is background"<<endl;
-     
+
+    etaD = part->Eta();
+    phiD = part->Phi();
+           
     //no mass cut distributions: mass, ptbis
     fillthis="hMassB_";
     fillthis+=ptbin;
@@ -1537,10 +1606,31 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
     if (!fCutOnDistr || (fCutOnDistr && (fIsSelectedCandidate==1 || fIsSelectedCandidate==3))) {
       ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
       if(fFillPtHist && fReadMC) ((TH2F*)fOutputMassPt->FindObject(fillthispt))->Fill(minvD0,pt);
+      
+      fillthisetaphi="hetaphiD0candidateB_";
+      fillthisetaphi+=ptbin;
+      ((TH2F*)listout->FindObject(fillthisetaphi))->Fill(etaD, phiD);
+    
+      if(TMath::Abs(minvD0-mPDG)<0.05){
+	fillthisetaphi="hetaphiD0candidatesignalregionB_";
+	fillthisetaphi+=ptbin;
+	((TH2F*)listout->FindObject(fillthisetaphi))->Fill(etaD, phiD);
+      }
     }
     if (!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate>1)) {
       ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
       if(fFillPtHist && fReadMC) ((TH2F*)fOutputMassPt->FindObject(fillthispt))->Fill(minvD0bar,pt);
+
+      fillthisetaphi="hetaphiD0barcandidateB_";	
+      fillthisetaphi+=ptbin;
+      ((TH2F*)listout->FindObject(fillthisetaphi))->Fill(etaD, phiD);
+      
+      if(TMath::Abs(minvD0bar-mPDG)<0.05){
+	fillthisetaphi="hetaphiD0barcandidatesignalregionB_";	
+	fillthisetaphi+=ptbin;
+	((TH2F*)listout->FindObject(fillthisetaphi))->Fill(etaD, phiD);
+      }
+
     }
     if(fSys==0){
       fillthis="hptB1prongnoMcut_";
@@ -1555,8 +1645,8 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
     }
 
 
-    //apply cut on invariant mass on the pair
-    if(TMath::Abs(minvD0-mPDG)<invmasscut || TMath::Abs(minvD0bar-mPDG)<invmasscut){
+      //apply cut on invariant mass on the pair
+      if(TMath::Abs(minvD0-mPDG)<invmasscut || TMath::Abs(minvD0bar-mPDG)<invmasscut){
       if(fSys==0){
 	ptProng[0]=((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt(); ptProng[1]=((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt();
 	cosThetaStarD0 = part->CosThetaStarD0();
@@ -1569,7 +1659,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
       decayLengthxy = part->DecayLengthXY();
       normalizedDecayLengthxy=decayLengthxy/part->DecayLengthXYError();
       d0Prong[0]=part->Getd0Prong(0); d0Prong[1]=part->Getd0Prong(1);
-
+     
 
       AliAODTrack *prongg=(AliAODTrack*)fDaughterTracks.UncheckedAt(0);
       if(!prongg) {
@@ -1598,6 +1688,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	    fillthis="hphiD0B_";
 	    fillthis+=ptbin;
 	    ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Phi());
+
 	    Int_t nPointsITS = 0;
 	    for (Int_t il=0; il<6; il++){ 
 	      if(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(il)) nPointsITS++;
@@ -1805,7 +1896,8 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
       fillthis="hnormdeclxyd0d0B_";
       fillthis+=ptbin;
-      ((TH2F*)listout->FindObject(fillthis))->Fill(normalizedDecayLengthxy,d0Prong[0]*d0Prong[1]);	
+      ((TH2F*)listout->FindObject(fillthis))->Fill(normalizedDecayLengthxy,d0Prong[0]*d0Prong[1]);
+
 
       if(recalcvtx) {
 
