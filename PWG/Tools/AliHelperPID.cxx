@@ -43,7 +43,7 @@ const char * kParticleSpeciesName[]={"Pions","Kaons","Protons","Undefined"} ;
 
 ClassImp(AliHelperPID)
 
-AliHelperPID::AliHelperPID() : TNamed("HelperPID", "PID object"),fisMC(0), fPIDType(kNSigmaTPCTOF), fNSigmaPID(3), fPIDResponse(0),fOutputList(0),fRequestTOFPID(1),fUseExclusiveNSigma(0),fPtTOFPID(.6),fHasTOFPID(0){
+AliHelperPID::AliHelperPID() : TNamed("HelperPID", "PID object"),fisMC(0), fPIDType(kNSigmaTPCTOF), fNSigmaPID(3), fPIDResponse(0),fOutputList(0),fRequestTOFPID(1),fRemoveTracksT0Fill(0),fUseExclusiveNSigma(0),fPtTOFPID(.6),fHasTOFPID(0){
   
   for(Int_t ipart=0;ipart<kNSpecies;ipart++)
     for(Int_t ipid=0;ipid<=kNSigmaPIDType;ipid++)
@@ -424,6 +424,21 @@ void AliHelperPID::CheckTOF(AliVTrack * trk)
   else fHasTOFPID=kTRUE;
   //in addition to KTOFout and kTIME we look at the pt
   if(trk->Pt()<fPtTOFPID)fHasTOFPID=kFALSE;
+  
+  if(fRemoveTracksT0Fill)
+    {
+      //get the PIDResponse
+      if(!fPIDResponse) {
+	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+	AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+	fPIDResponse = inputHandler->GetPIDResponse();
+      }
+      if(!fPIDResponse) {
+	AliFatal("Cannot get pid response");
+      }
+      Int_t startTimeMask = fPIDResponse->GetTOFResponse().GetStartTimeMask(trk->P());
+      if (startTimeMask < 0)fHasTOFPID=kFALSE; 
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
