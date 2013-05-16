@@ -73,7 +73,7 @@ void drawCorrection(const char* filenameEffCont = "mergedAnalysisResults_proofPb
     h1d[iBin]->Sumw2();
     h1n[iBin] = dynamic_cast<TH3D*>(listEffCont[iBin]->FindObject("fHistSurvivedEtaPtPhiPlus"));
     h1n[iBin]->Sumw2();
-    h1d[iBin]->Divide(h1n[iBin]);
+    h1n[iBin]->Divide(h1d[iBin]);
     //h1d->GetYaxis()->SetTitleOffset(1.5);
     //h1d->SetTitle("Efficiency (+)");
     //h1d->SetName("fHistEfficiencyPlus");
@@ -85,7 +85,7 @@ void drawCorrection(const char* filenameEffCont = "mergedAnalysisResults_proofPb
     h2d[iBin]->Sumw2();
     h2n[iBin] = dynamic_cast<TH3D*>(listEffCont[iBin]->FindObject("fHistSurvivedEtaPtPhiMinus"));
     h2n[iBin]->Sumw2();
-    h2d[iBin]->Divide(h2n[iBin]);
+    h2n[iBin]->Divide(h2d[iBin]);
     //h2d->GetYaxis()->SetTitleOffset(1.5);
     //h2d->SetTitle("Efficiency (-)");
     //h2d->SetName("fHistEfficiencyMinus");
@@ -101,7 +101,7 @@ void drawCorrection(const char* filenameEffCont = "mergedAnalysisResults_proofPb
     h3d[iBin]->SetName("fHistContaminationSecondaries");
     h3d[iBin]->Sumw2();
 
-    h4d[iBin]->Add(h4d[iBin]);
+    h4d[iBin]->Add(h3d[iBin]);
     h3d[iBin]->Divide(h4d[iBin]);
     //h3d->GetYaxis()->SetTitleOffset(2.0);
     //h3d->GetXaxis()->SetTitleOffset(1.5);
@@ -131,7 +131,7 @@ void drawCorrection(const char* filenameEffCont = "mergedAnalysisResults_proofPb
     histName += strCentrality[iBin].Data();
     correctionMatrix[iBin]->cd(1);
     fHistCorrectionPlus[iBin] = dynamic_cast<TH3F *>(h3d[iBin]->Clone());
-    fHistCorrectionPlus[iBin]->Divide(h1d[iBin]);  
+    fHistCorrectionPlus[iBin]->Divide(h1n[iBin]);  
     fHistCorrectionPlus[iBin]->SetName(histName.Data());
     fHistCorrectionPlus[iBin]->GetYaxis()->SetTitleOffset(2.0);
     fHistCorrectionPlus[iBin]->GetXaxis()->SetTitleOffset(1.5);
@@ -144,7 +144,7 @@ void drawCorrection(const char* filenameEffCont = "mergedAnalysisResults_proofPb
     histName1 += strCentrality[iBin].Data();
     correctionMatrix[iBin]->cd(2);
     fHistCorrectionMinus[iBin] = dynamic_cast<TH3F *>(h3d[iBin]->Clone());
-    fHistCorrectionMinus[iBin]->Divide(h2d[iBin]);
+    fHistCorrectionMinus[iBin]->Divide(h2n[iBin]);
     fHistCorrectionMinus[iBin]->SetName(histName1.Data());
     fHistCorrectionMinus[iBin]->GetYaxis()->SetTitleOffset(2.0);
     fHistCorrectionMinus[iBin]->GetXaxis()->SetTitleOffset(1.5);

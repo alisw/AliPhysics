@@ -113,6 +113,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUsePIDPropabilities(kFALSE), 
   fPIDNSigma(3.),
   fMinAcceptedPIDProbability(0.8),
+  fElectronRejection(kFALSE),
+  fElectronRejectionNSigma(-1.),
   fESDtrackCuts(0),
   fCentralityEstimator("V0M"),
   fUseCentrality(kFALSE),
@@ -260,7 +262,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   }
 
   //PID QA list
-  if(fUsePID) {
+  if(fUsePID || fElectronRejection) {
     fHistListPIDQA = new TList();
     fHistListPIDQA->SetName("listQAPID");
     fHistListPIDQA->SetOwner();
@@ -490,6 +492,22 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fHistNSigmaTOFvsPtafterPID = new TH2D ("NSigmaTOFvsPtafter","NSigmaTOFvsPtafter", 1000, -10, 10, 1000, 0, 500); 
     fHistListPIDQA->Add(fHistNSigmaTOFvsPtafterPID); //addition 
   }
+
+  // for electron rejection only TPC nsigma histograms
+  if(!fUsePID && fElectronRejection) {
+ 
+    fHistdEdxVsPTPCbeforePID = new TH2D ("dEdxVsPTPCbefore","dEdxVsPTPCbefore", 1000, -10.0, 10.0, 1000, 0, 1000); 
+    fHistListPIDQA->Add(fHistdEdxVsPTPCbeforePID); //addition 
+    
+    fHistNSigmaTPCvsPtbeforePID = new TH2D ("NSigmaTPCvsPtbefore","NSigmaTPCvsPtbefore", 1000, -10, 10, 1000, 0, 500); 
+    fHistListPIDQA->Add(fHistNSigmaTPCvsPtbeforePID); //addition 
+    
+    fHistdEdxVsPTPCafterPID = new TH2D ("dEdxVsPTPCafter","dEdxVsPTPCafter", 1000, -10, 10, 1000, 0, 1000); 
+    fHistListPIDQA->Add(fHistdEdxVsPTPCafterPID); //addition 
+
+    fHistNSigmaTPCvsPtafterPID = new TH2D ("NSigmaTPCvsPtafter","NSigmaTPCvsPtafter", 1000, -10, 10, 1000, 0, 500); 
+    fHistListPIDQA->Add(fHistNSigmaTPCvsPtafterPID); //addition  
+  }
   //====================PID========================//
 
   // Post output data.
@@ -497,7 +515,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   PostData(2, fListBF);
   if(fRunShuffling) PostData(3, fListBFS);
   if(fRunMixing) PostData(4, fListBFM);
-  if(fUsePID) PostData(5, fHistListPIDQA);       //PID
+  if(fUsePID || fElectronRejection) PostData(5, fHistListPIDQA);       //PID
 
   TH1::AddDirectory(oldStatus);
 }
@@ -532,7 +550,7 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
     fHistCorrectionPlus[iCent]= dynamic_cast<TH3D *>(f->Get(histoName.Data()));
     if(!fHistCorrectionPlus[iCent]) {
-      Printf("fHist not found!!!");
+      AliError(Form("fHist %s not found!!!",histoName.Data()));
       return;
     }
     
@@ -540,7 +558,7 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
     fHistCorrectionMinus[iCent] = dynamic_cast<TH3D *>(f->Get(histoName.Data())); 
     if(!fHistCorrectionMinus[iCent]) {
-      Printf("fHist not found!!!");
+      AliError(Form("fHist %s not found!!!",histoName.Data()));
       return; 
     }
   }//loop over centralities: ONLY the PbPb case is covered
@@ -588,7 +606,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   }
   
   // PID Response task active?
-  if(fUsePID) {
+  if(fUsePID || fElectronRejection) {
     fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
     if (!fPIDResponse) AliFatal("This Task needs the PID response attached to the inputHandler");
   }
@@ -1097,6 +1115,26 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	fHistTrackStats->Fill(iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
       }
       if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+
+      //===========================PID (so far only for electron rejection)===============================//		    
+      if(fElectronRejection) {
+	
+	// get the electron nsigma
+	Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kElectron));
+	
+	//Fill QA before the PID
+	fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+	//end of QA-before pid
+	
+	//Make the decision based on the n-sigma
+	if(nSigma < fElectronRejectionNSigma) continue;
+	
+	//Fill QA after the PID
+	fHistdEdxVsPTPCafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	fHistNSigmaTPCvsPtafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+      }
+      //===========================end of PID (so far only for electron rejection)===============================//
       
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
@@ -1165,7 +1203,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       
       if(!aodTrack->IsPhysicalPrimary()) continue;   
-      
+
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
       vY      = aodTrack->Y();
