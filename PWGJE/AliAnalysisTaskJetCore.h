@@ -158,7 +158,7 @@ private:
    Int_t   fFlagOnlyRecoil;
    Int_t   fFlagOnlyHardest;
    Int_t   fTrackTypeRec;
-   Int_t   fRPAngle;
+   Float_t   fRPAngle;
    Int_t   fNRPBins;
    Int_t   fSemigoodCorrect;
    Float_t fHolePos;
