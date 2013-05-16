@@ -43,6 +43,8 @@
 #include "AliPHOSEsdCluster.h"
 #include "AliPHOSAodCluster.h"
 #include "AliOADBContainer.h"
+#include "AliAODCaloCells.h"
+#include "AliESDCaloCells.h"
 
 ClassImp(AliPHOSTenderSupply)
 
@@ -302,7 +304,7 @@ void AliPHOSTenderSupply::ProcessEvent()
      
       clu->SetEmcCpvDistance(r);    
       clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
-      clu->SetTOF(cluPHOS.GetTOF());       
+      clu->SetTOF(EvalTOFesd(&cluPHOS,cells));       
 
     }
   }
@@ -372,7 +374,7 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetEmcCpvDistance(r); //Distance in sigmas
      
       clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
-      clu->SetTOF(cluPHOS.GetTOF());       
+      clu->SetTOF(EvalTOFaod(&cluPHOS,cells));       
     }
   }
 
@@ -701,4 +703,75 @@ void AliPHOSTenderSupply::EvalLambdas(AliVCluster * clu, Double_t &m02, Double_t
     m20=m02=0.;
   }
 
+}
+//________________________________________________________________________
+Double_t AliPHOSTenderSupply::EvalTOFesd(AliPHOSEsdCluster * clu,AliESDCaloCells * cells){ 
+  //calculate dispecrsion of the cluster in the circle with radius distanceCut around the maximum
+      
+  Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
+  Float_t wtot = 0.;
+  Double_t t = 0. ;
+  Int_t mulDigit=clu->GetNCells() ;
+  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
+    Int_t absId=clu->GetCellAbsId(iDigit) ;
+    Bool_t isHG=kTRUE ;
+    if(cells->GetCellMCLabel(absId)==-2) //This is LG digit. No statistics to calibrate LG timing, remove them from TOF calculation
+      continue ;
+    if(elist[iDigit]>0){ 
+      //weight = 1./sigma^2
+      //Sigma is parameterization of TOF resolution 16.05.2013
+      Double_t wi2=1./(2.4e-9 + 3.9e-9/elist[iDigit]) ;
+      Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
+      t+=ti*wi2 ;
+      wtot+=wi2 ;
+    }
+  }
+  if(wtot>0){
+    t=t/wtot ;
+  }
+  return t ;
+} 
+//________________________________________________________________________
+Double_t AliPHOSTenderSupply::EvalTOFaod(AliPHOSAodCluster * clu,AliAODCaloCells * cells){ 
+  //calculate dispecrsion of the cluster in the circle with radius distanceCut around the maximum
+      
+  Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
+  Float_t wtot = 0.;
+  Double_t t = 0. ;
+  Int_t mulDigit=clu->GetNCells() ;
+  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
+    Int_t absId=clu->GetCellAbsId(iDigit) ;
+    Bool_t isHG=kTRUE ;
+    if(cells->GetCellMCLabel(absId)==-2) //This is LG digit. No statistics to calibrate LG timing, remove them from TOF calculation
+      continue ;
+    if(elist[iDigit]>0){ 
+      //weight = 1./sigma^2
+      //Sigma is parameterization of TOF resolution 16.05.2013
+      Double_t wi2=1./(2.4e-9 + 3.9e-9/elist[iDigit]) ;
+      Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
+      t+=ti*wi2 ;
+      wtot+=wi2 ;
+    }
+  }
+  if(wtot>0){
+    t=t/wtot ;
+  }
+  return t ;
+} 
+//________________________________________________________________________
+Double_t AliPHOSTenderSupply::CalibrateTOF(Double_t tof, Int_t absId, Bool_t isHG){
+  //Apply time re-calibration separately for HG and LG channels
+  //By default (if not filled) shifts are zero.  
+  Int_t relId[4];
+  fPHOSGeo->AbsToRelNumbering(absId,relId) ;
+  Int_t   module = relId[0];
+  Int_t   column = relId[3];
+  Int_t   row    = relId[2];
+  if(isHG)
+    tof-=fPHOSCalibData->GetTimeShiftEmc(module, column, row);
+  else
+    tof-=fPHOSCalibData->GetLGTimeShiftEmc(module, column, row);
+ 
+  return tof ;
+  
 }
