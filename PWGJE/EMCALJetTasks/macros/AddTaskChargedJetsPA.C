@@ -8,16 +8,16 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   const char*         usedTracks              = "PicoTracks",
   const char*         centralityType          = "V0A",
   Double_t            trackEtaWindow          = 0.9,
-  Double_t            vertexWindow            = 10.0,
-  Double_t            vertexMaxR              = 1.0,
   Double_t            minJetPt                = 5.0, // signal jet min pt
   Double_t            minBackgroundJetPt      = 0.0, // background jet min pt
   Double_t            dijetLeadingMinPt       = 10.0,
   Double_t            dijetMaxAngleDev        = 10.0,
   Int_t               numberOfPtHardBins      = 0,
-  const char*         fileEtaCorrectionFactors= "alien:///alice/cern.ch/user/r/rhaake/pA/EtaCorrectionFactors.root",
   const char*         externalMacro           = NULL,
-  Bool_t              isEMCalTrain            = kTRUE
+  Bool_t              useVertexCut            = kTRUE,
+  Bool_t              usePileUpCut            = kFALSE,
+  Bool_t              isEMCalTrain            = kFALSE,
+  Bool_t              calculateExternalRho    = kFALSE
 )
 {
   // #### Detect the demanded trigger with its readable name
@@ -59,17 +59,46 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,jetRadius,1,0.150,0.300); // kt
 
   jetFinderTaskKT->SetMinJetPt(minBackgroundJetPt);
+
+  // #### Define extern rho task
+  if(calculateExternalRho)
+  {
+    TString myRhoName("");
+    if(isMC)
+      myRhoName = Form("RhoR0%2.0f_%s_MC%s",jetRadius*100,triggerName.Data(), stringPtHard.Data());
+    else
+      myRhoName = Form("RhoR0%2.0f_%s%s",jetRadius*100,triggerName.Data(), stringPtHard.Data());
+
+    contRhoHistos = manager->CreateContainer(myRhoName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChargedJetsPA", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisTaskRhoSparse *rhotask = new AliAnalysisTaskRhoSparse(myRhoName.Data(), kTRUE);
+    rhotask->SetAnaType(AliAnalysisTaskEmcal::kTPC);
+    rhotask->SetJetsName(jetFinderTaskKT->GetName());
+    rhotask->SetSigJetsName(jetFinderTask->GetName());
+    rhotask->SetTracksName(usedTracks);
+    rhotask->SetRhoName(myRhoName.Data());
+    rhotask->SetJetAreaCut(0);
+    rhotask->SetJetPtCut(0.150);
+    rhotask->SetJetRadius(jetRadius);
+    rhotask->SetRhoCMS(kTRUE);
+    rhotask->SelectCollisionCandidates(trigger);
+    manager->AddTask(rhotask);
+    manager->ConnectInput(rhotask, 0, manager->GetCommonInputContainer());
+    manager->ConnectOutput(rhotask, 1, contRhoHistos);
+
+  }
+
   // #### Define analysis task
   AliAnalysisTaskChargedJetsPA *task = NULL;
   contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChargedJetsPA", AliAnalysisManager::GetCommonFileName()));
   task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA_%s_%s", jetFinderTask->GetName(), triggerName.Data()), usedTracks, jetFinderTask->GetName(),jetFinderTaskKT->GetName());
 
   // #### Task preferences
-  task->SetAcceptanceWindows(trackEtaWindow, vertexWindow, vertexMaxR, jetRadius, jetRadius);
+  task->SetAcceptanceWindows(trackEtaWindow, jetRadius, jetRadius);
   task->SetAnalyzeQA(kTRUE);
   task->SetAnalyzeBackground(kTRUE);
   task->SetAnalyzeDeprecatedBackgrounds(kTRUE);
-  
+  task->SetUsePileUpCut(usePileUpCut);
+  task->SetUseVertexCut(useVertexCut);
   task->SetSignalJetMinPt(minJetPt);
   task->SetSignalJetMinArea(0.6*jetRadius*jetRadius*TMath::Pi());
   task->SetDijetLeadingMinPt(dijetLeadingMinPt);
@@ -80,6 +109,8 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   task->SelectCollisionCandidates(trigger);
   task->SetCentralityType(centralityType);
   task->SetUsePtHardBin(ptHardBin);
+  if(calculateExternalRho)
+    task->SetExternalRhoTaskName(myRhoName.Data());
 
   if(numberOfPtHardBins)
     task->SetNumberOfPtHardBins(numberOfPtHardBins);
