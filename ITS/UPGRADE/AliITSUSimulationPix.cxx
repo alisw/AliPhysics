@@ -232,7 +232,7 @@ void AliITSUSimulationPix::Hits2SDigits()
 	y  += dy;
 	z   = z0+z1*tp;
 	if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
-	el  = dt * de / fSimuParam->GetGeVToCharge();
+	el  = fGlobalChargeScale * dt * de / fSimuParam->GetGeVToCharge();
 	//
 	if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
 	SpreadCharge2D(x,z,y,ix,iz,el,tof,idtrack,h);
@@ -242,7 +242,7 @@ void AliITSUSimulationPix::Hits2SDigits()
       y   = y0 + 0.5*thick;
       z   = z0;
       if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
-      el  = de / fSimuParam->GetGeVToCharge();
+      el  = fGlobalChargeScale * de / fSimuParam->GetGeVToCharge();
       if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
       SpreadCharge2D(x,z,y,ix,iz,el,tof,idtrack,h);
     } // end if st>0.0    
@@ -323,7 +323,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
       y   = y0+0.5*thick;
       z   = z0;
       if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
-      el  = de / fSimuParam->GetGeVToCharge();
+      el  = fGlobalChargeScale * de / fSimuParam->GetGeVToCharge();
       if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
       SpreadCharge2D(x,z,y,ix,iz,el,tof,idtrack,h);
     } // end if st>0.0
@@ -622,7 +622,6 @@ Int_t AliITSUSimulationPix::AddRandomNoisePixels(Double_t tof)
     iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
     UpdateMapNoise(col,row,AliITSUSimuParam::GenerateNoiseQFunction(probNoisy,noiseMean,noiseSig),  iCycle);
   }
-  printf("added %d\n",ncand);
   return ncand;
 }
 
