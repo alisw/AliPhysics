@@ -217,7 +217,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   float* trPt = esdTrPt.GetArray();
   for (int itr=fNTracksESD;itr--;) {
     AliESDtrack* esdTr = esdEv->GetTrack(itr);
-    esdTr->SetStatus(AliESDtrack::kITSupg);
+    esdTr->SetStatus(AliESDtrack::kITSupg);   // Flag all tracks as participating in the ITSup reco
     trPt[itr] = esdTr->Pt();
   }
   Sort(fNTracksESD,trPt,esdTrackIndex,kTRUE);    
@@ -232,7 +232,8 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
       fCurrESDtrack = esdEv->GetTrack(trID);
       fCurrESDtrMClb = fCurrESDtrack->GetLabel();
       //
-      if (!NeedToProlong(fCurrESDtrack)) continue;  // are we interested in this track?
+      
+      if (!NeedToProlong(fCurrESDtrack,trID)) continue;  // are we interested in this track?
       /*
 	// if specific tracks should be checked, create a global array int wtc[] = {evITS*10000+trID, ...};
       Bool_t dbg = kFALSE;
@@ -241,9 +242,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
       for (int k=0;k<nwtc;k++) {
 	if (wtc[k]==evID*10000+trID) {
 	  dbg = kTRUE;
-	  printf("\n\n\n\n\n\n\n");
 	  printf("At esdTr: %d MC: %d\n",wtc[k],fCurrESDtrMClb);
-	  printf("\n\n\n\n\n\n\n");
 	  break;
 	}
       }
@@ -424,11 +423,21 @@ AliCluster * AliITSUTrackerGlo::GetCluster(Int_t /*index*/) const
 } 
 
 //_________________________________________________________________________
-Bool_t AliITSUTrackerGlo::NeedToProlong(AliESDtrack* esdTr)
+Bool_t AliITSUTrackerGlo::NeedToProlong(AliESDtrack* esdTr, Int_t esdID)
 {
   // do we need to match this track to ITS?
   //
   static double bz = GetBz();
+  //
+  // is it already prolonged
+  if (esdTr->IsOn(AliESDtrack::kITSin)) return kFALSE;
+  AliITSUTrackHyp* hyp = GetTrackHyp(esdID); // in case there is unfinished hypothesis from prev.pass, clean it
+  if (hyp) {
+    CleanHypothesis(hyp);
+    if (hyp->GetSkip()) return kFALSE; // need to skip this
+    return kTRUE;
+  }
+  //
   if (!esdTr->IsOn(AliESDtrack::kTPCin) ||
       esdTr->IsOn(AliESDtrack::kTPCout) ||
       esdTr->IsOn(AliESDtrack::kITSin)  ||
@@ -1313,6 +1322,10 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
       do {
 	if (sd->IsFake()) clfake |= 0x1<<sd->GetLayerID();
       } while ((sd=(AliITSUSeed*)sd->GetParent()));
+      //
+      // RS: Temporary set special flag for tracks from the afterburner
+      if (fCurrPassID>0) clfake |= 0x1<<7;
+      //
       esdTr->SetITSSharedMap(clfake);
     }
     break;
@@ -1662,14 +1675,14 @@ void AliITSUTrackerGlo::SaveReducedHypothesesTree(AliITSUTrackHyp* dest)
   // remove those hypothesis seeds which dont lead to candidates at final layer
   //
   // 1st, flag the seeds to save
-  int lr0 = 0;
+  int lr0 = fCurrTrackCond->GetActiveLrInner();
   for (int isd=0;isd<fCurrHyp->GetNSeeds(lr0);isd++) {
     AliITSUSeed* seed = fCurrHyp->RemoveSeed(lr0,isd);
     if (!seed) continue;
     seed->FlagTree(AliITSUSeed::kSave);
     dest->AddSeed(seed,lr0);
   }
-  for (int ilr=1;ilr<fNLrActive;ilr++) {
+  for (int ilr=0;ilr<fNLrActive;ilr++) {
     int nsd = fCurrHyp->GetNSeeds(ilr);
     for (int isd=0;isd<nsd;isd++) {
       AliITSUSeed* seed = fCurrHyp->RemoveSeed(ilr,isd);
@@ -1680,6 +1693,21 @@ void AliITSUTrackerGlo::SaveReducedHypothesesTree(AliITSUTrackHyp* dest)
   }
   //
   //  AliInfo(Form("SeedsPool: %d, BookedUpTo: %d, free: %d",fSeedsPool.GetSize(),fSeedsPool.GetEntriesFast(),fNFreeSeeds));
+}
+
+//__________________________________________________________________
+void AliITSUTrackerGlo::CleanHypothesis(AliITSUTrackHyp* hyp)
+{
+  // clean hypothesis
+  hyp->SetWinner(0);
+  for (int ilr=0;ilr<fNLrActive;ilr++) {
+    int nsd = hyp->GetNSeeds(ilr);
+    for (int isd=0;isd<nsd;isd++) {
+      AliITSUSeed* seed = hyp->RemoveSeed(ilr,isd);
+      if (!seed) continue; // already discarded or saved
+      MarkSeedFree(seed);
+    }
+  }
 }
 
 //__________________________________________________________________

@@ -61,7 +61,7 @@ class AliITSUTrackerGlo : public AliTracker {
   AliITSURecoDet*        GetITSInterface()       const {return fITS;}
   //
   //------------------------------------
-  Bool_t                 NeedToProlong(AliESDtrack* estTr);
+  Bool_t                 NeedToProlong(AliESDtrack* estTr, Int_t esdID);
   void                   Init(AliITSUReconstructor* rec);
   void                   FindTrack(AliESDtrack* esdTr, Int_t esdID);
   void                   CreateDefaultTrackCond();
@@ -99,6 +99,7 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   DeleteLastSeedFromPool()                   {fSeedsPool.RemoveLast();}
   void                   CheckClusterSharingConflicts(AliITSUTrackHyp* hyp);
   void                   SaveReducedHypothesesTree(AliITSUTrackHyp* dest);
+  void                   CleanHypothesis(AliITSUTrackHyp* hyp);
   void                   FinalizeHypotheses();
   Bool_t                 FinalizeHypothesis(AliITSUTrackHyp* hyp);
   void                   UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag);
