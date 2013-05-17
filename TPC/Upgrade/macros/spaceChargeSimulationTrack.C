@@ -1,9 +1,9 @@
-void CheckCommutator(const char * inputCharge="SC_NeCO2_eps5_50kHz.root"){
+void CheckCommutator(const char * inputCharge="SpaceCharge.root"){
   //
   // 1.) create an space charge correction map - using as input 2x2d space charge distribution
   // file 
   /*
-    const char * inputCharge="SC_NeCO2_eps5_50kHz.root"
+    const char * inputCharge="SpaceCharge.root"
   */
   AliTPCSpaceCharge3D *spaceCharge = new AliTPCSpaceCharge3D;
   spaceCharge->SetSCDataFileName(inputCharge);
@@ -12,6 +12,7 @@ void CheckCommutator(const char * inputCharge="SC_NeCO2_eps5_50kHz.root"){
   spaceCharge->InitSpaceCharge3DDistortion();
   spaceCharge->CreateHistoSCinZR(0.,50,50)->Draw("surf1");
   spaceCharge->CreateHistoDRPhiinZR(0,100,100)->Draw("colz");
+  spaceCharge->AddVisualCorrection(spaceCharge,1);
   //
   // 2.) Instantiate magnetic field
   //
@@ -73,13 +74,17 @@ void CheckCommutator(const char * inputCharge="SC_NeCO2_eps5_50kHz.root"){
   //
   //
   //
-  
- 
-
 }
 
-void DrawFuncions(){
-    AliTPCSpaceCharge3D *spaceCharge = new AliTPCSpaceCharge3D;
+
+
+
+void DrawFuncionIntegralSpaceCharge(){
+  //
+  // Make nice plot and compare the r and rphi distortion using "Stefan standard implementation" integration  
+  // and using integration along trajectories
+  //
+  AliTPCSpaceCharge3D *spaceCharge = new AliTPCSpaceCharge3D;
   spaceCharge->SetSCDataFileName("SpaceCharge.root");
   spaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
   //spaceCharge->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
@@ -91,9 +96,81 @@ void DrawFuncions(){
   AliCDBManager::Instance()->SetRun(0);   
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));   
   spaceCharge->AddVisualCorrection(spaceCharge,1); 
+
   //
-  // 
   //
+  TCanvas *canvasIntegrate = new TCanvas("canvasIntegrate","canvasIntegrate",600,600);
+  canvasIntegrate->Divide(1,2);
+  //
+  TF1 *fdistRStefan = new TF1("fdistRStefan","AliTPCCorrection::GetCorrXYZ(x,0,10,0,1)",85,250);
+  TF1 *fdistRDriftS5 = new TF1("fdistRDriftS3","AliTPCCorrection::GetCorrXYZIntegrateZ(x,0,10,0,1,5)",85,250);
+  TF1 *fdistRDriftS2 = new TF1("fdistRDriftS2","AliTPCCorrection::GetCorrXYZIntegrateZ(x,0,10,0,1,2)",85,250);
+  TF1 *fdistRDriftS1 = new TF1("fdistRDriftS1","AliTPCCorrection::GetCorrXYZIntegrateZ(x,0,10,0,1,1)",85,250);
+  TF1 *fdistRPhiStefan = new TF1("fdistRPhiStefan","AliTPCCorrection::GetCorrXYZ(x,0,10,1,1)",85,250);
+  TF1 *fdistRPhiDriftS5 = new TF1("fdistRPhiDriftS3","AliTPCCorrection::GetCorrXYZIntegrateZ(x,0,10,1,1,5)",85,250);
+  TF1 *fdistRPhiDriftS2 = new TF1("fdistRPhiDriftS2","AliTPCCorrection::GetCorrXYZIntegrateZ(x,0,10,1,1,2)",85,250);
+  TF1 *fdistRPhiDriftS1 = new TF1("fdistRPhiDriftS1","AliTPCCorrection::GetCorrXYZIntegrateZ(x,0,10,1,1,1)",85,250);
+  canvasIntegrate->cd(1);
+  TLegend * legendR=new TLegend(0.4,0.6,0.9,0.9,"Space charge #Delta_{R}");
+  fdistRStefan->GetXaxis()->SetTitle("R (cm)");
+  fdistRStefan->GetYaxis()->SetTitle("#Delta_{R} (cm)");
+  fdistRStefan->SetLineColor(2);
+  //
+  fdistRDriftS5->SetLineColor(1); fdistRDriftS5->SetLineStyle(2); 
+  fdistRDriftS2->SetLineColor(4); fdistRDriftS2->SetLineStyle(1); 
+  fdistRDriftS1->SetLineColor(1); fdistRDriftS1->SetLineStyle(3);
+  fdistRStefan->Draw();
+  fdistRDriftS5->Draw("same");
+  fdistRDriftS2->Draw("same");
+  fdistRDriftS1->Draw("same");
+  legendR->AddEntry(fdistRStefan,"Stefan integration");
+  legendR->AddEntry(fdistRDriftS5,"Drift lines (step=5cm);");
+  legendR->AddEntry(fdistRDriftS2,"Drift lines (step=2cm);");
+  legendR->AddEntry(fdistRDriftS1,"Drift lines (step=1cm);");
+  legendR->Draw();
+
+  canvasIntegrate->cd(2);  
+  fdistRPhiStefan->GetXaxis()->SetTitle("RPhi (cm)");
+  fdistRPhiStefan->GetYaxis()->SetTitle("#Delta_{RPhi} (cm)");
+  fdistRPhiStefan->SetLineColor(2);
+  //
+  fdistRPhiDriftS5->SetLineColor(4); fdistRPhiDriftS5->SetLineStyle(2); 
+  fdistRPhiDriftS2->SetLineColor(4); 
+  fdistRPhiDriftS1->SetLineColor(4); fdistRPhiDriftS1->SetLineStyle(2);
+  fdistRPhiStefan->Draw();
+  fdistRPhiDriftS5->Draw("same");
+  fdistRPhiDriftS2->Draw("same");
+  fdistRPhiDriftS1->Draw("same");
+  
+  TLegend * legendRPhi=new TLegend(0.4,0.6,0.9,0.9,"Space charge #Delta_{RPhi}");
+  fdistRPhiStefan->GetXaxis()->SetTitle("RPhi (cm)");
+  fdistRPhiStefan->GetYaxis()->SetTitle("#Delta_{RPhi} (cm)");
+  fdistRPhiStefan->SetLineColor(2);
+ legendRPhi->AddEntry(fdistRPhiStefan,"Stefan integration");
+  legendRPhi->AddEntry(fdistRPhiDriftS5,"Drift lines (step=5cm);");
+  legendRPhi->AddEntry(fdistRPhiDriftS2,"Drift lines (step=2cm);");
+  legendRPhi->AddEntry(fdistRPhiDriftS1,"Drift lines (step=1cm);");
+  legendRPhi->Draw();
+  canvasIntegrate->SaveAs("canvasIntegrate.png");
+}
+
+void DrawFuncions(){
+  //
+  // Make a default plot for the  
+  //
+  AliTPCSpaceCharge3D *spaceCharge = new AliTPCSpaceCharge3D;
+  spaceCharge->SetSCDataFileName("SpaceCharge.root");
+  spaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
+  //spaceCharge->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
+  spaceCharge->InitSpaceCharge3DDistortion();
+  spaceCharge->CreateHistoSCinZR(0.,50,50)->Draw("surf1");
+  spaceCharge->CreateHistoDRPhiinZR(0,100,100)->Draw("colz"); 
+  ocdb="local://$ALICE_ROOT/OCDB/";
+  AliCDBManager::Instance()->SetDefaultStorage(ocdb);
+  AliCDBManager::Instance()->SetRun(0);   
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));   
+  spaceCharge->AddVisualCorrection(spaceCharge,1); 
+
   TCanvas *canvasFun = new TCanvas("canvasFun","canvasFun",600,500);
   gStyle->SetOptTitle(1);
   TF1 * fdiffR = new TF1("fdiffR", "(AliTPCCorrection::GetCorrXYZ(x,0,10,0,1)-AliTPCCorrection::GetCorrXYZ(x+1,0,10,0,1))",80,245);
@@ -101,15 +178,21 @@ void DrawFuncions(){
   fdiffR->GetXaxis()->SetTitle("R (cm)");
   fdiffR->GetYaxis()->SetTitle("#Delta_{R}(R)-#Delta_{R}(R+1) (cm)");
   fdiffR->Draw();
-  canvas->WriteAs("radialShrinking.png");
+  canvasFun->SaveAs("radialShrinking.png");
 
   TF1 * fdiffSigmaR = new TF1("fdiffSigmaR", "(AliTPCCorrection::GetCorrXYZ(x,0,10,0,1)-AliTPCCorrection::GetCorrXYZ(x,0,10-7,0,1))",80,245);
   fdiffSigmaR->SetNpx(1000);
   fdiffSigmaR->GetXaxis()->SetTitle("R (cm)");
   fdiffSigmaR->GetYaxis()->SetTitle("#Delta_{R}(R,Z)-#Delta_{R}(R,Z+#sigma_{z}) (cm)");
   fdiffSigmaR->Draw();
-  canvas->WriteAs("radialSigmaR.png");
-
+  canvasFun->SaveAs("radialSigmaR.png");
+  //
+  TF1 * fdistortion = new TF1("fdiffSigmaR", "AliTPCCorrection::GetCorrXYZ(x,0,10,0,1)+x",80,245);
+  fdistortion->SetNpx(1000);
+  fdistortion->GetXaxis()->SetTitle("R (cm)");
+  fdistortion->GetYaxis()->SetTitle("R' (cm)");
+  fdistortion->Draw();  
+  canvasFun->SaveAs("radialDistortion.png");  
 }
 
 

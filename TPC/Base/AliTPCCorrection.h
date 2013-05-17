@@ -36,7 +36,10 @@ public:
           void CorrectPoint (      Float_t x[],const Short_t roc);
           void CorrectPointLocal(Float_t x[],const Short_t roc);
           void CorrectPoint (const Float_t x[],const Short_t roc,Float_t xp[]);
-  virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
+	  virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
+
+  virtual void GetCorrectionDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
+  virtual void GetCorrectionIntegralDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
 
   // functions to distort a space point
           void DistortPoint (      Float_t x[],const Short_t roc);
@@ -78,6 +81,10 @@ public:
   static void AddVisualCorrection(AliTPCCorrection* corr, Int_t position);
   static Double_t GetCorrSector(Double_t sector, Double_t r, Double_t kZ, Int_t axisType, Int_t corrType=0);
   static Double_t GetCorrXYZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0);
+  //
+  static Double_t GetCorrXYZDz(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0,Double_t delta=5);
+  static Double_t GetCorrXYZIntegrateZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0, Double_t delta=5);
+  
 
 protected:
   TH2F* CreateTH2F(const char *name,const char *title,
