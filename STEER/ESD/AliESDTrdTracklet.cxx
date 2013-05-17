@@ -25,13 +25,8 @@
 
 ClassImp(AliESDTrdTracklet)
 
-const Float_t AliESDTrdTracklet::fgkBinWidthY   = 160e-4; // 160 um
-const Float_t AliESDTrdTracklet::fgkBinWidthDy  = 140e-4; // 140 um
-const Float_t AliESDTrdTracklet::fgkX0          = 2.21;
-const Float_t AliESDTrdTracklet::fgkDriftLength = 3.;
-
 AliESDTrdTracklet::AliESDTrdTracklet() :
-  TObject(),
+  AliVTrdTracklet(),
   fHCId(-1),
   fTrackletWord(0),
   fLabel(-1)
@@ -41,7 +36,7 @@ AliESDTrdTracklet::AliESDTrdTracklet() :
 }
 
 AliESDTrdTracklet::AliESDTrdTracklet(UInt_t trackletWord, Short_t hcid, Int_t label) :
-  TObject(),
+  AliVTrdTracklet(),
   fHCId(hcid),
   fTrackletWord(trackletWord),
   fLabel(label)
@@ -55,7 +50,7 @@ AliESDTrdTracklet::~AliESDTrdTracklet()
 }
 
 AliESDTrdTracklet::AliESDTrdTracklet(const AliESDTrdTracklet &trkl) :
-  TObject(trkl),
+  AliVTrdTracklet(trkl),
   fHCId(trkl.fHCId),
   fTrackletWord(trkl.fTrackletWord),
   fLabel(trkl.fLabel)
@@ -71,7 +66,7 @@ AliESDTrdTracklet& AliESDTrdTracklet::operator=(const AliESDTrdTracklet &trkl)
   if (this == &trkl)
     return *this;
 
-  TObject::operator=(trkl);
+  AliVTrdTracklet::operator=(trkl);
   fHCId = trkl.fHCId;
   fTrackletWord = trkl.fTrackletWord;
   fLabel = trkl.fLabel;
@@ -101,11 +96,4 @@ Int_t AliESDTrdTracklet::GetBinDy() const
   else {
     return ((fTrackletWord >> 13) & 0x7f);
   }
-}
-
-Float_t AliESDTrdTracklet::GetDyDx() const
-{
-  // returns the deflection over 3 cm drift length
-
-  return GetBinDy() * fgkBinWidthDy/fgkDriftLength;
 }

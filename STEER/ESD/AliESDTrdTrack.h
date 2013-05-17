@@ -44,6 +44,12 @@ class AliESDTrdTrack : public AliVTrdTrack {
   Double_t Phi()       const { return 0.; };
   Double_t Eta()       const { return 0.; };
 
+  Int_t GetNTracklets() const {
+    Int_t count = 0;
+    for (Int_t iLayer = 0; iLayer < 6; ++iLayer)
+      count += (fLayerMask >> iLayer) & 1;
+    return count;
+  }
   AliESDTrdTracklet* GetTracklet(Int_t idx) const
     { return (GetLayerMask() & (1<<idx)) ? (AliESDTrdTracklet*) ((fTrackletRefs[idx]).GetObject()) : 0x0; }
   AliVTrack* GetTrackMatch() const { return (AliVTrack*) fTrackMatch.GetObject(); }

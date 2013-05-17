@@ -100,6 +100,7 @@ AliESDTrdTrack& AliESDTrdTrack::operator=(const AliESDTrdTrack& track)
   fFlags        = track.fFlags;
   fFlagsTiming  = track.fFlagsTiming;
   fReserved     = track.fReserved;
+  fTrackMatch   = track.fTrackMatch;
   fLabel        = track.fLabel;
   for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
     fTrackletIndex[iLayer] = track.fTrackletIndex[iLayer];

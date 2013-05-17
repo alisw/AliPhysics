@@ -40,6 +40,7 @@
 #include "AliESDCaloCells.h"
 
 #include "AliESDVZERO.h"
+#include "AliESDTrdTrack.h"
 #ifdef MFT_UPGRADE
 //#include "AliESDMFT.h"
 #endif
@@ -55,7 +56,6 @@ class AliMultiplicity;
 class AliRawDataErrorLog;
 class AliESDRun;
 class AliESDTrdTrigger;
-class AliESDTrdTrack;
 class AliESDTrdTracklet;
 class AliESDMuonTrack;
 class AliESDMuonCluster;

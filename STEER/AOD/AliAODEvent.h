@@ -35,6 +35,7 @@
 #include "AliAODVZERO.h"
 #include "AliAODHMPIDrings.h"
 #include "AliAODZDC.h"
+#include "AliAODTrdTrack.h"
 #ifdef MFT_UPGRADE
 #include "AliAODMFT.h"
 #endif
@@ -67,6 +68,7 @@ class AliAODEvent : public AliVEvent {
 		       kAODVZERO,
 		       kAODZDC,
 		       kTOFHeader,                       
+		       kAODTrdTracks,
 #ifdef MFT_UPGRADE
 	           kAODVZERO,
 #endif
@@ -248,6 +250,13 @@ class AliAODEvent : public AliVEvent {
   Int_t         AddDimuon(const AliAODDimuon* dimu)
     {new((*fDimuons)[fDimuons->GetEntriesFast()]) AliAODDimuon(*dimu); return fDimuons->GetEntriesFast()-1;}
   
+  // // -- TRD
+  Int_t GetNumberOfTrdTracks() const { return fTrdTracks ? fTrdTracks->GetEntriesFast() : 0; }
+  AliAODTrdTrack* GetTrdTrack(Int_t i) const {
+    return (AliAODTrdTrack *) (fTrdTracks ? fTrdTracks->At(i) : 0x0);
+  }
+  AliAODTrdTrack& AddTrdTrack(const AliVTrdTrack *track);
+
   // -- Services
   void    CreateStdContent();
   void    SetStdNames();
@@ -262,7 +271,8 @@ class AliAODEvent : public AliVEvent {
 		   Int_t fmdClusSize = 0, 
 		   Int_t pmdClusSize = 0,
                    Int_t hmpidRingsSize = 0,
-		   Int_t dimuonArrsize =0
+		   Int_t dimuonArrsize =0,
+		   Int_t nTrdTracks = 0
 		   );
   void    ClearStd();
   void    Reset(); 
@@ -333,6 +343,7 @@ class AliAODEvent : public AliVEvent {
 			     //  combinatorial algorithm.
                              //  It contains also TOF time resolution
                              //  and T0spread as written in OCDB
+  TClonesArray    *fTrdTracks;    //! TRD AOD tracks (triggered)
 #ifdef MFT_UPGRADE
   AliAODMFT       *fAODMFT;       //! VZERO AOD
 #endif

@@ -126,6 +126,7 @@
 #pragma link C++ class AliProdInfo+;
 
 #pragma link C++ class AliVTrdTrack+;
+#pragma link C++ class AliVTrdTracklet+;
 
 #endif
 

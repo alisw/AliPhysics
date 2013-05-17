@@ -6,9 +6,9 @@
 
 // ESD format for TRD tracklet from FEE used for triggering
 
-#include "TObject.h"
+#include "AliVTrdTracklet.h"
 
-class AliESDTrdTracklet : public TObject
+class AliESDTrdTracklet : public AliVTrdTracklet
 {
  public:
   AliESDTrdTracklet();
@@ -19,18 +19,14 @@ class AliESDTrdTracklet : public TObject
 
   void SetTrackletWord(UInt_t trklWord) { fTrackletWord = trklWord; }
   void SetHCId(Short_t hcid) { fHCId = hcid; }
+  void SetLabel(Int_t label) { fLabel = label; }
 
   // ----- tracklet information -----
-  UInt_t GetTrackletWord() const { return fTrackletWord; }
-  Int_t  GetBinY()  const;
-  Int_t  GetBinDy() const;
-  Int_t  GetBinZ()  const { return ((fTrackletWord >> 20) & 0xf);  }
-  Int_t  GetPID()   const { return ((fTrackletWord >> 24) & 0xff); }
-
-  // ----- position information (chamber-local) -----
-  Float_t GetLocalX() const { return fgkX0; }
-  Float_t GetLocalY() const { return GetBinY() * fgkBinWidthY; }
-  Float_t GetDyDx() const;
+  virtual UInt_t GetTrackletWord() const { return fTrackletWord; }
+  virtual Int_t  GetBinY()  const;
+  virtual Int_t  GetBinDy() const;
+  virtual Int_t  GetBinZ()  const { return ((fTrackletWord >> 20) & 0xf);  }
+  virtual Int_t  GetPID()   const { return ((fTrackletWord >> 24) & 0xff); }
 
   // ----- geometrical information -----
   Int_t GetHCId() const { return fHCId; }
@@ -47,12 +43,6 @@ class AliESDTrdTracklet : public TObject
   UInt_t fTrackletWord;		// tracklet word (as from FEE)
 				// pppp : pppp : zzzz : dddd : dddy : yyyy : yyyy : yyyy
   Int_t  fLabel;		// MC label
-
-  static const Float_t fgkBinWidthY;   // bin width y-position
-  static const Float_t fgkBinWidthDy;  // bin width deflection length
-
-  static const Float_t fgkX0;          // reference position in x-direction
-  static const Float_t fgkDriftLength; // drift length to which the deflection length is scaled
 
   ClassDef(AliESDTrdTracklet, 1);
 };

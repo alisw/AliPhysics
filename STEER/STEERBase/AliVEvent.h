@@ -24,6 +24,7 @@
 #include "AliVCaloTrigger.h"
 #include "TRefArray.h"
 #include "AliTOFHeader.h"
+#include "AliVTrdTrack.h"
 class AliCentrality;
 class AliEventplane;
 class AliVVZERO;
@@ -189,6 +190,9 @@ public:
   virtual Float_t        GetVZEROEqMultiplicity(Int_t /* i */) const {return -1;}
   virtual void           SetVZEROEqFactors(Float_t /* factors */[64]) const {return;}
   virtual AliVZDC   *GetZDCData() const = 0;
+
+  virtual Int_t GetNumberOfTrdTracks() const { return 0; }
+  virtual AliVTrdTrack* GetTrdTrack(Int_t /* iTrack */) const { return 0x0; }
 
   ClassDef(AliVEvent,2)  // base class for AliEvent data
 };

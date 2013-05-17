@@ -45,6 +45,8 @@ set ( SRCS
     AOD/AliAODVZERO.cxx
     AOD/AliAODZDC.cxx	
     AOD/AliAODHMPIDrings.cxx	
+    AOD/AliAODTrdTrack.cxx
+    AOD/AliAODTrdTracklet.cxx
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")

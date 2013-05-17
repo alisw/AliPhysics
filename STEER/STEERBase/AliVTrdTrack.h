@@ -9,6 +9,7 @@
 #include "TObject.h"
 
 class AliVTrack;
+class AliVTrdTracklet;
 
 class AliVTrdTrack : public TObject {
  public:
@@ -27,10 +28,14 @@ class AliVTrdTrack : public TObject {
   virtual Int_t GetSector()    const = 0;
 
   virtual Bool_t GetTrackInTime() const = 0;
+  virtual UChar_t GetFlagsTiming() const = 0;
 
   virtual Int_t GetLabel()     const = 0;
 
   virtual Double_t Pt()        const = 0;
+
+  virtual Int_t GetNTracklets() const = 0;
+  virtual AliVTrdTracklet* GetTracklet(Int_t idx) const = 0;
 
   virtual AliVTrack* GetTrackMatch() const = 0;
 
