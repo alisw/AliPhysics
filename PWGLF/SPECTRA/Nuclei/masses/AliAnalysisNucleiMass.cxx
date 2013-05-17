@@ -41,6 +41,12 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass():
   fESD(NULL),
   fEvent(NULL),
   fPIDResponse(NULL)
+/*fBetaTofVSp(NULL),
+  fCentrality(NULL),
+  hNevent(NULL),
+  hNeventSelected(NULL),
+  hTOFSignalPion(NULL),
+  hZvertex(NULL)*/
 {
    // Default constructor (should not be used)
   fList1[0]=new TList();
@@ -67,6 +73,12 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass(const char *name):
   fESD(NULL),
   fEvent(NULL),
   fPIDResponse(NULL)
+  /*fBetaTofVSp(NULL),
+  fCentrality(NULL),
+  hNevent(NULL),
+  hNeventSelected(NULL),
+  hTOFSignalPion(NULL),
+  hZvertex(NULL)*/
 {
   fList1[0]=new TList();
   DefineOutput(1, TList::Class());
