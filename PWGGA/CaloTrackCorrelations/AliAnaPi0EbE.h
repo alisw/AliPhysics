@@ -168,8 +168,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhAsymmetry ;             //! cluster E vs asymmetry of 2 splitted clusters 
   TH2F         * fhSelectedMass  ;         //! pair mass vs E, for selected pairs
   TH2F         * fhSelectedAsymmetry  ;    //! cluster E vs asymmetry of 2 splitted clusters, for selected pairs
-  TH1F         * fhSplitE  ;       //! split sub-cluster pair energy sum
-  TH1F         * fhSplitPt  ;      //! split sub-cluster pair pT sum
+  TH1F         * fhSplitE  ;               //! split sub-cluster pair energy sum
+  TH1F         * fhSplitPt  ;              //! split sub-cluster pair pT sum
+  TH2F         * fhNLocMaxSplitPt  ;       //! split sub-cluster pair pT sum, as a function of n maxima
   
   TH1F         * fhPtDecay  ;              //! Number of identified  pi0/eta decay photons vs pT
   TH1F         * fhEDecay   ;              //! Number of identified  pi0/eta decay photons vs E
@@ -230,10 +231,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   TH1F         * fhMCSplitE[6];               //! Number of identified as pi0 vs sum E  split coming from X
   TH1F         * fhMCSplitPt[6];              //! Number of identified as pi0 vs sum Pt split coming from X
-
+  TH2F         * fhMCNLocMaxSplitPt[6];       //! Number of identified as pi0 vs sum Pt split coming from X, for different NLM
   
   TH2F         * fhMCPtCentrality[6] ;        //! centrality  vs pi0/eta pT  coming from X
-
   
   TH2F         * fhMCPi0PtGenRecoFraction;    //! SS id, clusters id as pi0 (eta), coming from 2 photon, pi0 primary, pt vs E prim pi0 / E reco
   TH2F         * fhMCEtaPtGenRecoFraction;    //! SS id, clusters id as pi0 (eta), coming from 2 photon, eta primary, pt vs E prim eta / E reco  
@@ -269,8 +269,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEOverPNoTRD;                 //! matched track E cluster over P track vs cluster E, not behind TRD 
 
   // Local maxima
-  TH2F         * fhNLocMax;                //! number of maxima in selected clusters
-  TH2F         * fhELambda0LocMax[3] ;     //! E vs lambda0 of selected cluster, 1,2,>2 local maxima in cluster 
+  TH2F         * fhNLocMaxE;               //! number of maxima in selected clusters
+  TH2F         * fhNLocMaxPt;              //! number of maxima in selected clusters
+  TH2F         * fhMCNLocMaxPt[6];         //! number of maxima in selected clusters
+  TH2F         * fhELambda0LocMax[3] ;     //! E vs lambda0 of selected cluster, 1,2,>2 local maxima in cluster
   TH2F         * fhELambda1LocMax[3] ;     //! E vs lambda1 of selected cluster, 1,2,>2 local maxima in cluster 
   TH2F         * fhEDispersionLocMax[3] ;  //! E vs lambda1 of selected cluster, 1,2,>2 local maxima in cluster 
   TH2F         * fhEDispEtaLocMax[3] ;     //! E vs eta dispersion of selected cluster, 1,2,>2 local maxima in cluster 
@@ -296,7 +298,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,25)
+  ClassDef(AliAnaPi0EbE,26)
 } ;
 
 

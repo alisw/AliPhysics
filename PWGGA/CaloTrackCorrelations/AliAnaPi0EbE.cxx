@@ -65,7 +65,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhEEtaReject(0),               fhEPhiReject(0),              fhEtaPhiReject(0),
     fhMass(0),                     fhAsymmetry(0), 
     fhSelectedMass(0),             fhSelectedAsymmetry(0),
-    fhSplitE(0),                   fhSplitPt(0),
+    fhSplitE(0),                   fhSplitPt(0),                 fhNLocMaxSplitPt(0),
     fhPtDecay(0),                  fhEDecay(0),
     // Shower shape histos
     fhEDispersion(0),              fhELambda0(0),                fhELambda1(0), 
@@ -95,7 +95,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhTrackMatchedMCParticleDEta(0), fhTrackMatchedMCParticleDPhi(0),
     fhdEdx(0),                     fhEOverP(0),                 fhEOverPNoTRD(0),
     // Number of local maxima in cluster
-    fhNLocMax(0),
+    fhNLocMaxE(0),                 fhNLocMaxPt(0),
     // PileUp
     fhTimeENoCut(0),                    fhTimeESPD(0),           fhTimeESPDMulti(0),
     fhTimeNPileUpVertSPD(0),            fhTimeNPileUpVertTrack(0),
@@ -108,12 +108,14 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
   {
     fhMCE              [i] = 0;
     fhMCPt             [i] = 0;
-    fhMCPhi            [i] = 0;                   
+    fhMCNLocMaxPt      [i] = 0;
+    fhMCPhi            [i] = 0;
     fhMCEta            [i] = 0;
     fhMCPtCentrality   [i] = 0;
     
     fhMCSplitE         [i] = 0;
     fhMCSplitPt        [i] = 0;
+    fhMCNLocMaxSplitPt [i] = 0;
     
     fhEMCLambda0       [i] = 0;
     fhEMCLambda0NoTRD  [i] = 0;
@@ -351,7 +353,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
     }
   }  
   
-  fhNLocMax->Fill(e,nMaxima);
+  fhNLocMaxE ->Fill(e ,nMaxima);
 
   fhELambda0LocMax   [indexMax]->Fill(e,l0); 
   fhELambda1LocMax   [indexMax]->Fill(e,l1);
@@ -853,11 +855,20 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       }
     }    
     
-    fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
-                         nptbins,ptmin,ptmax,10,0,10); 
-    fhNLocMax ->SetYTitle("N maxima");
-    fhNLocMax ->SetXTitle("E (GeV)");
-    outputContainer->Add(fhNLocMax) ;  
+    fhNLocMaxE = new TH2F("hNLocMaxE","Number of local maxima in cluster",
+                          nptbins,ptmin,ptmax,10,0,10);
+    fhNLocMaxE ->SetYTitle("N maxima");
+    fhNLocMaxE ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhNLocMaxE) ;
+    
+    if(fAnaType == kSSCalo)
+    {
+      fhNLocMaxPt = new TH2F("hNLocMaxPt","Number of local maxima in cluster",
+                            nptbins,ptmin,ptmax,10,0,10);
+      fhNLocMaxPt ->SetYTitle("N maxima");
+      fhNLocMaxPt ->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhNLocMaxPt) ;
+    }
     
     for (Int_t i = 0; i < 3; i++) 
     {
@@ -1223,6 +1234,15 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         
         if(fAnaType == kSSCalo)
         {
+          
+          fhMCNLocMaxPt[i] = new TH2F
+          (Form("hNLocMaxPt_MC%s",pname[i].Data()),
+           Form("cluster from %s, pT of cluster, for NLM",ptype[i].Data()),
+           nptbins,ptmin,ptmax,10,0,10);
+          fhMCNLocMaxPt[i] ->SetYTitle("N maxima");
+          fhMCNLocMaxPt[i] ->SetXTitle("p_{T} (GeV/c)");
+          outputContainer->Add(fhMCNLocMaxPt[i]) ;
+
           fhMCEReject[i]  = new TH1F
           (Form("hEReject_MC%s",pname[i].Data()),
            Form("Rejected as #pi^{0} (#eta), cluster from %s",
@@ -1401,6 +1421,13 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhSplitPt->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhSplitPt) ;
     
+    fhNLocMaxSplitPt = new TH2F("hNLocMaxSplitPt","Number of local maxima in cluster",
+                         nptbins,ptmin,ptmax,10,0,10);
+    fhNLocMaxSplitPt ->SetYTitle("N maxima");
+    fhNLocMaxSplitPt ->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhNLocMaxSplitPt) ;
+
+    
     if(IsDataMC())
     {
       for(Int_t i = 0; i< 6; i++)
@@ -1427,6 +1454,14 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhMCSplitPt[i]->SetYTitle("counts");
         fhMCSplitPt[i]->SetXTitle("p_{T} (GeV/c)");
         outputContainer->Add(fhMCSplitPt[i]) ;
+        
+        fhMCNLocMaxSplitPt[i] = new TH2F
+        (Form("hNLocMaxSplitPt_MC%s",pname[i].Data()),
+         Form("cluster from %s, pT sum of split sub-clusters, for NLM",ptype[i].Data()),
+         nptbins,ptmin,ptmax,10,0,10);
+        fhMCNLocMaxSplitPt[i] ->SetYTitle("N maxima");
+        fhMCNLocMaxSplitPt[i] ->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCNLocMaxSplitPt[i]) ;
         
       } 
     }
@@ -2238,8 +2273,10 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     TLorentzVector l12 = l1+l2;
     Float_t ptSplit = l12.Pt();
     Float_t  eSplit = e1+e2;
-    fhSplitE   ->Fill( eSplit);
-    fhSplitPt  ->Fill(ptSplit);
+    fhSplitE        ->Fill( eSplit);
+    fhSplitPt       ->Fill(ptSplit);
+    fhNLocMaxSplitPt->Fill(ptSplit ,nMaxima);
+    fhNLocMaxPt     ->Fill(mom.Pt(),nMaxima);
 
     //Check split-clusters with good time window difference
     Double_t tof1  = cells->GetCellTime(absId1);
@@ -2256,8 +2293,10 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(IsDataMC())
     {
       Int_t mcIndex = GetMCIndex(tag);
-      fhMCSplitE    [mcIndex]->Fill( eSplit);
-      fhMCSplitPt   [mcIndex]->Fill(ptSplit);
+      fhMCSplitE        [mcIndex]->Fill( eSplit);
+      fhMCSplitPt       [mcIndex]->Fill(ptSplit);
+      fhMCNLocMaxSplitPt[mcIndex]->Fill(ptSplit ,nMaxima);
+      fhMCNLocMaxPt     [mcIndex]->Fill(mom.Pt(),nMaxima);
     }
 
     
