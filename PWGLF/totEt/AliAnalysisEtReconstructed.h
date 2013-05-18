@@ -45,7 +45,7 @@ protected:
     bool CheckGoodVertex(AliVParticle *track);
     virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
 
-    virtual Double_t GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+    virtual Double_t GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t mult);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
 
     AliAnalysisHadEtCorrections *fCorrections;//corrections needed for hadronic et
 
@@ -72,8 +72,8 @@ protected:
     TH2D *fHistNeutralEnergyRemoved; // Neutral energy removed
     TH2D *fHistGammaEnergyAdded; // gamma energy added
 
-    TH3F *fHistMatchedTracksEvspTvsMult;   //For measuring hadron deposits
-    TH3F *fHistMatchedTracksEvspTvsMultEffCorr;   //For measuring hadron deposits
+    TH3F *fHistMatchedTracksEvspTvsCent;   //For measuring hadron deposits
+    TH3F *fHistMatchedTracksEvspTvsCentEffCorr;   //For measuring hadron deposits
     TH2F *fHistFoundHadronsvsCent;   //For measuring hadron deposits
     TH2F *fHistNotFoundHadronsvsCent;   //For measuring hadron deposits
     TH2F *fHistFoundHadronsEtvsCent;   //For measuring hadron deposits
