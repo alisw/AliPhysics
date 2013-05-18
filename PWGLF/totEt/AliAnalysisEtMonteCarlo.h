@@ -321,7 +321,9 @@ protected:
     TH1F *fHistGammasAccepted;
     TH2F *fHistChargedTracksCutMult;
     TH2F *fHistChargedTracksAcceptedMult;
-    TH2F *fHistChargedTracksAcceptedLowPtMult;
+    TH2F *fHistChargedTracksAcceptedLowPtCent;
+    TH2F *fHistChargedTracksAcceptedLowPtCentNoAntiProtons;
+    TH2F *fHistChargedTracksAcceptedLowPtCentAntiProtons;
     TH2F *fHistGammasCutMult;
     TH2F *fHistGammasAcceptedMult;
     TH1F *fHistBadTrackMatches;
@@ -329,10 +331,10 @@ protected:
     TH2F *fHistMatchedTracksEvspTSignal;
     TH2F *fHistMatchedTracksEvspTBkgdPeripheral;
     TH2F *fHistMatchedTracksEvspTSignalPeripheral;
-    TH3F *fHistMatchedTracksEvspTBkgdvsMult;
-    TH3F *fHistMatchedTracksEvspTSignalvsMult;
-    TH3F *fHistMatchedTracksEvspTBkgdvsMultEffCorr;
-    TH3F *fHistMatchedTracksEvspTSignalvsMultEffCorr;
+    TH3F *fHistMatchedTracksEvspTBkgdvsCent;
+    TH3F *fHistMatchedTracksEvspTSignalvsCent;
+    TH3F *fHistMatchedTracksEvspTBkgdvsCentEffCorr;
+    TH3F *fHistMatchedTracksEvspTSignalvsCentEffCorr;
     TH1F *fHistChargedTracksCutPeripheral;
     TH1F *fHistChargedTracksAcceptedPeripheral;
     TH1F *fHistGammasCutPeripheral;
@@ -341,9 +343,9 @@ protected:
     TH2F *fHistGoodTrackMatchesdPhidEta;
     TH1F *fHistHadronDepositsAll;
     TH1F *fHistHadronDepositsReco;
-    TH2F *fHistHadronDepositsAllMult;
-    TH2F *fHistHadronDepositsRecoMult;
-    TH2F *fHistHadronsAllMult;
+    TH2F *fHistHadronDepositsAllCent;
+    TH2F *fHistHadronDepositsRecoCent;
+    TH2F *fHistHadronsAllCent;
     TH3F *fHistMultChVsSignalVsMult;
 
 

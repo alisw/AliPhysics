@@ -61,8 +61,8 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fHistChargedEnergyRemoved(0)
 	,fHistNeutralEnergyRemoved(0)
 	,fHistGammaEnergyAdded(0)
-	,fHistMatchedTracksEvspTvsMult(0)
-	,fHistMatchedTracksEvspTvsMultEffCorr(0)
+	,fHistMatchedTracksEvspTvsCent(0)
+	,fHistMatchedTracksEvspTvsCentEffCorr(0)
 	,fHistFoundHadronsvsCent(0)
 	,fHistNotFoundHadronsvsCent(0)
 	,fHistFoundHadronsEtvsCent(0)
@@ -92,8 +92,8 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fHistChargedEnergyRemoved;
     delete fHistNeutralEnergyRemoved;
     delete fHistGammaEnergyAdded;
-    delete fHistMatchedTracksEvspTvsMult;
-    delete fHistMatchedTracksEvspTvsMultEffCorr;
+    delete fHistMatchedTracksEvspTvsCent;
+    delete fHistMatchedTracksEvspTvsCentEffCorr;
     delete fHistFoundHadronsvsCent;
     delete fHistNotFoundHadronsvsCent;
     delete fHistFoundHadronsEtvsCent;
@@ -198,8 +198,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		  Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,fClusterMult);
 		  nChargedHadronsEtMeasured+= TMath::Sin(cp.Theta())*effCorrEt;
 		  nChargedHadronsEtTotal+= 1/fTmCorrections->TrackMatchingEfficiency(track->Pt(),fClusterMult) *effCorrEt;
-		  fHistMatchedTracksEvspTvsMult->Fill(track->P(),TMath::Sin(cp.Theta())*cluster->E(),fClusterMult);
-		  fHistMatchedTracksEvspTvsMultEffCorr->Fill(track->P(),CorrectForReconstructionEfficiency(*cluster,fClusterMult),fClusterMult);
+		  fHistMatchedTracksEvspTvsCent->Fill(track->P(),TMath::Sin(cp.Theta())*cluster->E(),cent);
+		  fHistMatchedTracksEvspTvsCentEffCorr->Fill(track->P(),CorrectForReconstructionEfficiency(*cluster,fClusterMult),cent);
                     const Double_t *pidWeights = track->PID();
 
                     Double_t maxpidweight = 0;
@@ -286,10 +286,10 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,fClusterMult);
 	    fTotNeutralEt += effCorrEt;
 	    nominalRawEt += effCorrEt;
-	    nonlinHighRawEt += effCorrEt*GetCorrectionModification(*cluster,1,0);
-	    nonlinLowRawEt += effCorrEt*GetCorrectionModification(*cluster,-1,0);
-	    effHighRawEt += effCorrEt*GetCorrectionModification(*cluster,0,1);
-	    effLowRawEt += effCorrEt*GetCorrectionModification(*cluster,0,-1);
+	    nonlinHighRawEt += effCorrEt*GetCorrectionModification(*cluster,1,0,fClusterMult);
+	    nonlinLowRawEt += effCorrEt*GetCorrectionModification(*cluster,-1,0,fClusterMult);
+	    effHighRawEt += effCorrEt*GetCorrectionModification(*cluster,0,1,fClusterMult);
+	    effLowRawEt += effCorrEt*GetCorrectionModification(*cluster,0,-1,fClusterMult);
             fNeutralMultiplicity++;
         }
         fMultiplicity++;
@@ -369,7 +369,6 @@ void AliAnalysisEtReconstructed::Init()
 
 bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)
 { // propagate track to detector radius
-
     if (!track) {
         cout<<"Warning: track empty"<<endl;
         return kFALSE;
@@ -405,8 +404,8 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fHistChargedEnergyRemoved);
     list->Add(fHistNeutralEnergyRemoved);
     list->Add(fHistGammaEnergyAdded);
-    list->Add(fHistMatchedTracksEvspTvsMult);
-    list->Add(fHistMatchedTracksEvspTvsMultEffCorr);
+    list->Add(fHistMatchedTracksEvspTvsCent);
+    list->Add(fHistMatchedTracksEvspTvsCentEffCorr);
     list->Add(fHistFoundHadronsvsCent);
     list->Add(fHistNotFoundHadronsvsCent);
     list->Add(fHistFoundHadronsEtvsCent);
@@ -488,8 +487,8 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     histname = "fHistGammaEnergyAdded" + fHistogramNameSuffix;
     fHistGammaEnergyAdded = new TH2D(histname.Data(), histname.Data(), 1000, .0, 30, 100, -0.5 , 99.5);
 
-    fHistMatchedTracksEvspTvsMult = new TH3F("fHistMatchedTracksEvspTvsMult", "fHistMatchedTracksEvspTvsMult",100, 0, 3,100,0,3,10,0,100);
-    fHistMatchedTracksEvspTvsMultEffCorr = new TH3F("fHistMatchedTracksEvspTvsMultEffCorr", "fHistMatchedTracksEvspTvsMultEffCorr",100, 0, 3,100,0,3,10,0,100);
+    fHistMatchedTracksEvspTvsCent = new TH3F("fHistMatchedTracksEvspTvsCent", "fHistMatchedTracksEvspTvsCent",100, 0, 3,100,0,3,20,0,20);
+    fHistMatchedTracksEvspTvsCentEffCorr = new TH3F("fHistMatchedTracksEvspTvsCentEffCorr", "fHistMatchedTracksEvspTvsCentEffCorr",100, 0, 3,100,0,3,20,0,20);
     fHistFoundHadronsvsCent = new TH2F("fHistFoundHadronsvsCent","fHistFoundHadronsvsCent",100,0,100,20,0,20);
     fHistNotFoundHadronsvsCent = new TH2F("fHistNotFoundHadronsvsCent","fHistNotFoundHadronsvsCent",100,0,100,20,0,20);
     fHistFoundHadronsEtvsCent = new TH2F("fHistFoundHadronsEtvsCent","fHistFoundHadronsEtvsCent",100,0,200,20,0,20);
@@ -515,18 +514,18 @@ Double_t AliAnalysisEtReconstructed::ApplyModifiedCorrections(const AliESDCaloCl
   TVector3 cp(pos);
   Double_t corrEnergy = fReCorrections->CorrectedEnergy(cluster.E(),mult);
   
-  Double_t factorNonLin = GetCorrectionModification(cluster, nonLinCorr,effCorr);
+  Double_t factorNonLin = GetCorrectionModification(cluster, nonLinCorr,effCorr,mult);
 
   //std::cout << "Original energy: " << cluster.E() << ", corrected energy: " << corrEnergy << std::endl;
   return TMath::Sin(cp.Theta())*corrEnergy*factorNonLin;
 }
 
-Double_t AliAnalysisEtReconstructed::GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr){//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+Double_t AliAnalysisEtReconstructed::GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t mult){//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
   if(nonLinCorr==0){
     cout<<"Warning:  This function should not get called!"<<endl;//this statement is basically here to avoid a compilation warning
   }
   if(effCorr==0){
     cout<<"Warning:  This function should not get called!"<<endl;//this statement is basically here to avoid a compilation warning
   }
-  return cluster.E();
+  return cluster.E()*mult;
 }

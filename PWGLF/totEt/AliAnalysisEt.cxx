@@ -701,7 +701,7 @@ Int_t AliAnalysisEt::ReadCorrections(TString filename)
  return -1; 
 }
 
-Double_t AliAnalysisEt::CorrectForReconstructionEfficiency(const AliESDCaloCluster& cluster, int mult)
+Double_t AliAnalysisEt::CorrectForReconstructionEfficiency(const AliESDCaloCluster& cluster, Int_t mult)
 {
   Float_t pos[3];
   cluster.GetPosition(pos);

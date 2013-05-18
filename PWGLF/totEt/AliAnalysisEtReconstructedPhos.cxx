@@ -103,9 +103,8 @@ void AliAnalysisEtReconstructedPhos::CreateHistograms()
   AliAnalysisEtReconstructed::CreateHistograms();
 }
 
-Double_t AliAnalysisEtReconstructedPhos::GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr){//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+Double_t AliAnalysisEtReconstructedPhos::GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t mult){//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
   Double_t factor = 1.0;
-  //Double_t E = fReCorrections->CorrectedEnergy(cluster.E());
   if(nonLinCorr!=0){
     if(nonLinCorr==1){//high bound on nonlinearity
       factor *=1.05;
@@ -120,6 +119,10 @@ Double_t AliAnalysisEtReconstructedPhos::GetCorrectionModification(const AliESDC
     }
     else{//low bound
       factor *=0.995;
+    }
+    if(mult<0){//this condition will never be met but it will stop a compiler warning that results in Coverity sending me an email about once every two weeks.
+      Double_t E = cluster.E();
+      factor = 1.0*E;
     }
   }
   return factor;
