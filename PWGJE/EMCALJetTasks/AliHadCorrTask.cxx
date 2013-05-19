@@ -818,6 +818,33 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
   if ((energyclus - Esub) < clusEexcl) 
     Esub = (energyclus - clusEexcl);
 
+  // embedding
+  Double_t EsubMC = 0;
+  Double_t EsubBkg = 0;
+  Double_t EclusMC = 0;
+  Double_t EclusBkg = 0;
+  Double_t EclusCorr = 0;
+  Double_t EclusMCcorr = 0;
+  Double_t EclusBkgcorr = 0;
+  Double_t overSub = 0;
+  if (fIsEmbedded) {
+    EsubMC = hadCorr * totalTrkP * trkPMCfrac;
+    EsubBkg = hadCorr * totalTrkP - EsubMC;
+    EclusMC = energyclus * cluster->GetMCEnergyFraction();
+    EclusBkg = energyclus - EclusMC;
+ 
+    if (energyclus > Esub)
+      EclusCorr = energyclus - Esub;
+
+    if (EclusMC > EsubMC)
+      EclusMCcorr = EclusMC - EsubMC;
+  
+    if (EclusBkg > EsubBkg)
+      EclusBkgcorr = EclusBkg - EsubBkg;
+  
+    overSub = EclusMCcorr + EclusBkgcorr - EclusCorr;
+  }
+
   // plot some histograms if switched on
   if (fCreateHisto) {
     fHistNMatchCent->Fill(fCent, Nmatches);
@@ -849,42 +876,24 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
 	fHistEsubPchRat[centbinchm]->Fill(totalTrkP, Esub / totalTrkP);
 	fHistEsubPch[centbinchm]->Fill(totalTrkP, Esub);
       }
-    }
 
-    if (fIsEmbedded) {
-      Double_t EsubMC = hadCorr * totalTrkP * trkPMCfrac;
-      Double_t EsubBkg = hadCorr * totalTrkP - EsubMC;
-      Double_t EclusMC = energyclus * cluster->GetMCEnergyFraction();
-      Double_t EclusBkg = energyclus - EclusMC;
-      
-      Double_t EclusCorr = 0;
-      if (energyclus > Esub)
-	EclusCorr = energyclus - Esub;
-      
-      Double_t EclusMCcorr = 0;
-      if (EclusMC > EsubMC)
-	EclusMCcorr = EclusMC - EsubMC;
+      if (fIsEmbedded) {
+	fHistOversub[fCentBin]->Fill(energyclus, overSub);
+	fHistOversubOverClusE[fCentBin]->Fill(energyclus, overSub / energyclus);
 
-      Double_t EclusBkgcorr = 0;
-      if (EclusBkg > EsubBkg)
-	EclusBkgcorr = EclusBkg - EsubBkg;
-
-      Double_t overSub = EclusMCcorr + EclusBkgcorr - EclusCorr;
-      fHistOversub[fCentBin]->Fill(energyclus, overSub);
-      fHistOversubOverClusE[fCentBin]->Fill(energyclus, overSub / energyclus);
-
-      if (trkPMCfrac < 0.05)
-	fHistNonEmbTrackMatchesOversub[fCentBin]->Fill(energyclus, overSub);
-      else if (trkPMCfrac > 0.95)
-	fHistEmbTrackMatchesOversub[fCentBin]->Fill(energyclus, overSub);
-
-      if (fDoExact) {
-	Esub -= overSub;
-	if (EclusBkgcorr + EclusMCcorr > 0) {
-	  Double_t newfrac = EclusMCcorr / (EclusBkgcorr + EclusMCcorr);
-	  cluster->SetMCEnergyFraction(newfrac);
-	}
+	if (trkPMCfrac < 0.05)
+	  fHistNonEmbTrackMatchesOversub[fCentBin]->Fill(energyclus, overSub);
+	else if (trkPMCfrac > 0.95)
+	  fHistEmbTrackMatchesOversub[fCentBin]->Fill(energyclus, overSub);
       }
+    }
+  }
+
+  if (fIsEmbedded && fDoExact) {
+    Esub -= overSub;
+    if (EclusBkgcorr + EclusMCcorr > 0) {
+      Double_t newfrac = EclusMCcorr / (EclusBkgcorr + EclusMCcorr);
+      cluster->SetMCEnergyFraction(newfrac);
     }
   }
 
