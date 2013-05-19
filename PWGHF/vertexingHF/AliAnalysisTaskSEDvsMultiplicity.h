@@ -31,7 +31,6 @@
 #include "AliVEvent.h"
 
 
-
 class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 {
  public:
@@ -77,8 +76,21 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
     fMultEstimatorAvg[3]=new TProfile(*hprof);
   }
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
+
+  // Nch weights on MC
+  void UseMCNchWeight(Bool_t flag) { fUseNchWeight = flag; }
+  void SetHistoNchWeight(TH1F *h){
+    if(fHistoMCNch) delete fHistoMCNch;
+    fHistoMCNch = new TH1F(*h);
+  }
+
   void SetSubtractTrackletsFromDaughters(Bool_t opt){fSubtractTrackletsFromDau=opt;}
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
+
+  enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 };
+  void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
+  Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
+
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -94,7 +106,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   TProfile* GetEstimatorHistogram(const AliVEvent *event);
   void CreateImpactParameterHistos();
-
+  void CreateMeasuredNchHisto();
 
   TList  *fOutput; //! list send on output slot 1
   TList  *fListCuts; //list of cuts
@@ -148,13 +160,18 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t  fMCOption;  // 0=keep all cand, 1=keep only signal, 2= keep only back
   Bool_t fUseBit;    // flag to use bitmask
   Bool_t fSubtractTrackletsFromDau; // flag for subtracting D meson daughter contribution to N of tracklets
+
+  Bool_t fUseNchWeight; // weight on the MC on the generated multiplicity
+  TH1F* fHistoMCNch;    // weight histogram for the MC on the generated multiplicity
+  TH1F* fHistoMeasNch;  //! weight histogram on the true measured multiplicity
   
   TProfile* fMultEstimatorAvg[4]; // TProfile with mult vs. Z per period
   Double_t fRefMult;   // refrence multiplcity (period b)
   Int_t fPdgMeson;   // pdg code of analyzed meson
 
+  Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2 
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,5); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,6); // D vs. mult task
 };
 
 #endif
