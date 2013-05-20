@@ -198,6 +198,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fIncReco(0)
   ,fPhoReco(0)
   ,fSamReco(0) 
+  ,fIncRecoMaxE(0)
+  ,fPhoRecoMaxE(0)
+  ,fSamRecoMaxE(0) 
   //,fnSigEtaCorr(NULL)
 {
   //Named constructor
@@ -330,6 +333,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fIncReco(0)
   ,fPhoReco(0)
   ,fSamReco(0)
+  ,fIncRecoMaxE(0)
+  ,fPhoRecoMaxE(0)
+  ,fSamRecoMaxE(0)
   //,fnSigEtaCorr(NULL)
 {
 	//Default constructor
@@ -771,7 +777,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nmatch; valdedx[9] = m20; valdedx[10] = mcpT;
 		  valdedx[11] = cent; valdedx[12] = dEdx; valdedx[13] = oppstatus; valdedx[14] = nTPCcl;
                   valdedx[15] = mcele;
-                  if(fqahist==1)fEleInfo->Fill(valdedx);
+                  //if(fqahist==1)fEleInfo->Fill(valdedx);
                  
 
       }
@@ -873,6 +879,12 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
           fIncReco->Fill(cent,recopT);
           if(fFlagPhotonicElec) fPhoReco->Fill(cent,recopT);
           if(fFlagConvinatElec) fSamReco->Fill(cent,recopT);
+          if(MaxEmatch)
+            {
+             fIncRecoMaxE->Fill(cent,recopT);
+             if(fFlagPhotonicElec) fPhoRecoMaxE->Fill(cent,recopT);
+             if(fFlagConvinatElec) fSamRecoMaxE->Fill(cent,recopT);
+            }
          }
      }
 
@@ -1045,7 +1057,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   Double_t xminE[5] = {1.0,  -1,   0.0,   0, -0.5}; 
   Double_t xmaxE[5] = {3.5,   1, 100.0, 100,  9.5}; 
   fEMCAccE = new THnSparseD("fEMCAccE","EMC acceptance & E;#eta;#phi;Energy;Centrality;trugCondition;",5,binsE,xminE,xmaxE);
-  if(fqahist==1)fOutputList->Add(fEMCAccE);
+  //if(fqahist==1)fOutputList->Add(fEMCAccE);
 
   hEMCAccE = new TH2F("hEMCAccE","Cluster Energy",200,0,100,100,0,20);
   fOutputList->Add(hEMCAccE);
@@ -1377,13 +1389,22 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fIncMaxE = new TH2D("fIncMaxE","Inc",10,0,100,10,0,100);
   fOutputList->Add(fIncMaxE);
 
-  fIncReco = new TH2D("fIncReco","Inc",10,0,100,100,0,100);
+  fIncReco = new TH2D("fIncReco","Inc",10,0,100,100,0,500);
   fOutputList->Add(fIncReco);
 
-  fPhoReco = new TH2D("fPhoReco","Pho",10,0,100,100,0,100);
+  fPhoReco = new TH2D("fPhoReco","Pho",10,0,100,100,0,500);
   fOutputList->Add(fPhoReco);
 
-  fSamReco = new TH2D("fSamReco","Same",10,0,100,100,0,100);
+  fSamReco = new TH2D("fSamReco","Same",10,0,100,100,0,500);
+  fOutputList->Add(fSamReco);
+
+  fIncRecoMaxE = new TH2D("fIncRecoMaxE","Inc",10,0,100,100,0,500);
+  fOutputList->Add(fIncRecoMaxE);
+
+  fPhoRecoMaxE = new TH2D("fPhoRecoMaxE","Pho",10,0,100,100,0,500);
+  fOutputList->Add(fPhoReco);
+
+  fSamRecoMaxE = new TH2D("fSamRecoMaxE","Same",10,0,100,100,0,500);
   fOutputList->Add(fSamReco);
 
   PostData(1,fOutputList);
