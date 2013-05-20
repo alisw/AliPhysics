@@ -174,12 +174,14 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
         Bool_t matched = kTRUE;//default to no track matched
 	Int_t trackMatchedIndex = cluster->GetTrackMatchedIndex();//find the index of the matched track
-	matched = fSelector->PassTrackMatchingCut(*cluster);
-	if(!matched){
-	  if(trackMatchedIndex < 0) matched=kTRUE;
-	  AliESDtrack *track = event->GetTrack(trackMatchedIndex);
-	  //if this is a good track, accept track will return true.  The track matched is good, so not track matched is false
-	  matched = !(fEsdtrackCutsTPC->AcceptTrack(track));
+	matched = !(fSelector->PassTrackMatchingCut(*cluster));//PassTrackMatchingCut is false if there is a matched track
+	if(matched){//if the track match is good (, is the track good?
+	  if(trackMatchedIndex < 0) matched=kFALSE;//If the index is bad, don't count it
+	  if(matched){
+	    AliESDtrack *track = event->GetTrack(trackMatchedIndex);
+	    //if this is a good track, accept track will return true.  The track matched is good, so not track matched is false
+	    matched = fEsdtrackCutsTPC->AcceptTrack(track);//If the track is bad, don't count it
+	  }
 	}
 
 
@@ -193,11 +195,14 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                     AliError("Error: track does not exist");
                 }
                 else {
+		  float eff = fTmCorrections->TrackMatchingEfficiency(track->Pt(),fClusterMult);
+		  if(TMath::Abs(eff)<1e-5) eff = 1.0;
+		  //cout<<"pt "<<track->Pt()<<" eff "<<eff<<endl;
 		  nChargedHadronsMeasured++;
-		  nChargedHadronsTotal += 1/fTmCorrections->TrackMatchingEfficiency(track->Pt(),fClusterMult);
+		  nChargedHadronsTotal += 1/eff;
 		  Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,fClusterMult);
 		  nChargedHadronsEtMeasured+= TMath::Sin(cp.Theta())*effCorrEt;
-		  nChargedHadronsEtTotal+= 1/fTmCorrections->TrackMatchingEfficiency(track->Pt(),fClusterMult) *effCorrEt;
+		  nChargedHadronsEtTotal+= 1/eff *effCorrEt;
 		  fHistMatchedTracksEvspTvsCent->Fill(track->P(),TMath::Sin(cp.Theta())*cluster->E(),cent);
 		  fHistMatchedTracksEvspTvsCentEffCorr->Fill(track->P(),CorrectForReconstructionEfficiency(*cluster,fClusterMult),cent);
                     const Double_t *pidWeights = track->PID();
@@ -490,9 +495,9 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fHistMatchedTracksEvspTvsCent = new TH3F("fHistMatchedTracksEvspTvsCent", "fHistMatchedTracksEvspTvsCent",100, 0, 3,100,0,3,20,0,20);
     fHistMatchedTracksEvspTvsCentEffCorr = new TH3F("fHistMatchedTracksEvspTvsCentEffCorr", "fHistMatchedTracksEvspTvsCentEffCorr",100, 0, 3,100,0,3,20,0,20);
     fHistFoundHadronsvsCent = new TH2F("fHistFoundHadronsvsCent","fHistFoundHadronsvsCent",100,0,100,20,0,20);
-    fHistNotFoundHadronsvsCent = new TH2F("fHistNotFoundHadronsvsCent","fHistNotFoundHadronsvsCent",100,0,100,20,0,20);
+    fHistNotFoundHadronsvsCent = new TH2F("fHistNotFoundHadronsvsCent","fHistNotFoundHadronsvsCent",100,0,200,20,0,20);
     fHistFoundHadronsEtvsCent = new TH2F("fHistFoundHadronsEtvsCent","fHistFoundHadronsEtvsCent",100,0,200,20,0,20);
-    fHistNotFoundHadronsEtvsCent = new TH2F("fHistNotFoundHadronsEtvsCent","fHistNotFoundHadronsEtvsCent",100,0,200,20,0,20);
+    fHistNotFoundHadronsEtvsCent = new TH2F("fHistNotFoundHadronsEtvsCent","fHistNotFoundHadronsEtvsCent",100,0,300,20,0,20);
     
     maxEt = 100;
     histname = "fHistNominalRawEt" + fHistogramNameSuffix;
