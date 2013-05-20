@@ -299,7 +299,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      sqp1cetaphitpc[aniter]->SetMinAvgSeparation(3,3);
 
 	      sqp2cetaphitpc[aniter] = new AliFemtoV0TrackPairCut(); //lambda-proton
-	      sqp2cetaphitpc[aniter]->SetShareQualityMax(1.0); //between V0 daughter and track
+	      sqp2cetaphitpc[aniter]->SetShareQualityMax(0.0); //between V0 daughter and track
 	      sqp2cetaphitpc[aniter]->SetShareFractionMax(0.05);
 	      sqp2cetaphitpc[aniter]->SetTPCOnly(kTRUE);
 	      sqp2cetaphitpc[aniter]->SetDataType(AliFemtoPairCut::kAOD);
@@ -310,7 +310,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      sqp2cetaphitpc[aniter]->SetMinAvgSeparation(1,0);
 
 	      sqp3cetaphitpc[aniter] = new AliFemtoV0TrackPairCut(); //antilambda-antiproton
-	      sqp3cetaphitpc[aniter]->SetShareQualityMax(1.0); //between V0 daughter and track
+	      sqp3cetaphitpc[aniter]->SetShareQualityMax(0.0); //between V0 daughter and track
 	      sqp3cetaphitpc[aniter]->SetShareFractionMax(0.05);
 	      sqp3cetaphitpc[aniter]->SetTPCOnly(kTRUE);
 	      sqp3cetaphitpc[aniter]->SetDataType(AliFemtoPairCut::kAOD);
@@ -321,7 +321,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      sqp3cetaphitpc[aniter]->SetMinAvgSeparation(1,11);
 
 	      sqp4cetaphitpc[aniter] = new AliFemtoV0TrackPairCut(); //lambda-antiproton, antilambda-proton
-	      sqp4cetaphitpc[aniter]->SetShareQualityMax(1.0); //between V0 daughter and track
+	      sqp4cetaphitpc[aniter]->SetShareQualityMax(0.0); //between V0 daughter and track
 	      sqp4cetaphitpc[aniter]->SetShareFractionMax(0.05);
 	      sqp4cetaphitpc[aniter]->SetTPCOnly(kTRUE);
 	      sqp4cetaphitpc[aniter]->SetDataType(AliFemtoPairCut::kAOD);
@@ -334,7 +334,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      sqp5cetaphitpc[aniter]->SetMagneticFieldSign(1.0); //-1->field1, 1->field3
 	      sqp5cetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.012);
 	      sqp5cetaphitpc[aniter]->SetEtaDifferenceMinimum(0.017);
-	      sqp5cetaphitpc[aniter]->SetShareQualityMax(1.0);
+	      sqp5cetaphitpc[aniter]->SetShareQualityMax(0.0);
 	      sqp5cetaphitpc[aniter]->SetShareFractionMax(0.05);
 	      sqp5cetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
 	      sqp5cetaphitpc[aniter]->SetMaxEEMinv(0.002);
