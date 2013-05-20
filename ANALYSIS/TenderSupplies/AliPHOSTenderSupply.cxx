@@ -707,29 +707,56 @@ void AliPHOSTenderSupply::EvalLambdas(AliVCluster * clu, Double_t &m02, Double_t
 //________________________________________________________________________
 Double_t AliPHOSTenderSupply::EvalTOFesd(AliPHOSEsdCluster * clu,AliESDCaloCells * cells){ 
   //calculate dispecrsion of the cluster in the circle with radius distanceCut around the maximum
-      
+
   Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
-  Float_t wtot = 0.;
-  Double_t t = 0. ;
   Int_t mulDigit=clu->GetNCells() ;
+
+  Float_t tMax= 0.; //Time at the maximum
+  Float_t eMax=0. ;
   for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
     Int_t absId=clu->GetCellAbsId(iDigit) ;
-    Bool_t isHG=kTRUE ;
     if(cells->GetCellMCLabel(absId)==-2) //This is LG digit. No statistics to calibrate LG timing, remove them from TOF calculation
       continue ;
+    if( elist[iDigit]>eMax){
+      tMax=CalibrateTOF(cells->GetCellTime(absId),absId,kTRUE) ;
+      eMax=elist[iDigit] ;
+    }
+  }
+ 
+  //Try to improve accuracy 
+  //Do not account time of soft cells:
+//  const Double_t part=0.5 ;
+  Double_t eMin=TMath::Max(0.5,0.5*eMax) ;
+  if(eMin>0.9*eMax)eMin=0.9*eMax ; //At least eMax should remain
+  Float_t wtot = 0.;
+  Double_t t = 0. ;
+  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
+    Int_t absId=clu->GetCellAbsId(iDigit) ;
+    if(cells->GetCellMCLabel(absId)==-2) //This is LG digit. No statistics to calibrate LG timing, remove them from TOF calculation
+      continue ;
+    
+    Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,kTRUE) ;
+    if(TMath::Abs(ti-tMax)>25.e-8) //remove soft cells with wrong time
+      continue ;
+    
+    //Remove too soft cells
+    if(elist[iDigit]<eMin)
+      continue ;
+    
     if(elist[iDigit]>0){ 
       //weight = 1./sigma^2
       //Sigma is parameterization of TOF resolution 16.05.2013
       Double_t wi2=1./(2.4e-9 + 3.9e-9/elist[iDigit]) ;
-      Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
       t+=ti*wi2 ;
       wtot+=wi2 ;
     }
   }
   if(wtot>0){
     t=t/wtot ;
-  }
+  }  
+  
   return t ;
+     
 } 
 //________________________________________________________________________
 Double_t AliPHOSTenderSupply::EvalTOFaod(AliPHOSAodCluster * clu,AliAODCaloCells * cells){ 
@@ -762,6 +789,7 @@ Double_t AliPHOSTenderSupply::EvalTOFaod(AliPHOSAodCluster * clu,AliAODCaloCells
 Double_t AliPHOSTenderSupply::CalibrateTOF(Double_t tof, Int_t absId, Bool_t isHG){
   //Apply time re-calibration separately for HG and LG channels
   //By default (if not filled) shifts are zero.  
+    
   Int_t relId[4];
   fPHOSGeo->AbsToRelNumbering(absId,relId) ;
   Int_t   module = relId[0];
