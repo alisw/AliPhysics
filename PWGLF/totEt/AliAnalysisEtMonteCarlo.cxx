@@ -736,14 +736,14 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	Float_t matchedTrackpt = 0.0;
 	nottrackmatched = fSelector->PassTrackMatchingCut(*caloCluster);
 	//by default ALL matched tracks are accepted, whether or not the match is good.  So we check to see if the track is good.
-	if(!nottrackmatched){
+	if(!nottrackmatched){//if the track is trackmatched
 	  Int_t trackMatchedIndex = caloCluster->GetTrackMatchedIndex();
 	  if(trackMatchedIndex < 0) nottrackmatched=kTRUE;
 	  AliESDtrack *track = realEvent->GetTrack(trackMatchedIndex);
 	  matchedTrackp = track->P();
 	  matchedTrackpt = track->Pt();
 	  //if this is a good track, accept track will return true.  The track matched is good, so not track matched is false
-	  nottrackmatched = !(fEsdtrackCutsTPC->AcceptTrack(track));
+	  nottrackmatched = !(fEsdtrackCutsTPC->AcceptTrack(track));//if the track is bad, this is track matched
 	  //if(!nottrackmatched) cout<<"Matched track p: "<<matchedTrackp<<" sim "<<part->P()<<endl;
 	}
      
