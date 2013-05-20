@@ -190,6 +190,9 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH2D                   *fIncReco;
  TH2D                   *fPhoReco;
  TH2D                   *fSamReco; 
+ TH2D                   *fIncRecoMaxE;
+ TH2D                   *fPhoRecoMaxE;
+ TH2D                   *fSamRecoMaxE; 
 
  //<----- correction
  TGraphErrors           *fnSigEtaCorr[7];
