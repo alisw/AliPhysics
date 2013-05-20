@@ -45,12 +45,13 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   void         SetClusterizer(AliAnalysisTaskEMCALClusterizeFast *c)             { fClusterizer        =    c;    }
   void         SetMcMode(Bool_t mc)                                              { fIsMC               =    mc;   }
   void         SetDebugMode(Bool_t d)                                            { fDebug              =    d;    }
+  void         SetRedoV0(Bool_t v)                                               { fRedoV0             =    v;    }
   void         FindConversions();
   void         FillMyCells();
   void         FillMyClusters();
   void         FillMyAltClusters();
   void         FillIsoTracks();
-  void         FillMcPart(TParticle *mcP,  Int_t itrack);
+  void         FillMcPart(TParticle *mcP,  Int_t itrack, Int_t label);
   void         GetMcParts();
   Double_t     GetMcIsolation(TParticle *mcP, Int_t itrack, Double_t radius, Double_t pt)                 const;
   Double_t     GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)       const;
@@ -82,6 +83,7 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   Bool_t                                 fIsTrain;                //variable to set train mode
   Bool_t                                 fIsMC;                   //variable to switch mcparts branch on/off
   Bool_t                                 fDebug;                 //variable to switch debug on/off
+  Bool_t                                 fRedoV0;                 //variable to recalculate V0s - must be off for A-A collisions
   Bool_t                                 fIsGrid;                //variable to set grid mode
   Double_t                               fClusThresh;            //!energy threshold for cluster be saved
   AliAnalysisTaskEMCALClusterizeFast    *fClusterizer;           //!pointer for alternative clusterizer
@@ -96,6 +98,7 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   
   TList                                 *fOutputList;            //! Output list
   TTree                                 *fTree;                  //!output tree
+  Int_t                                  fMyMcIndex; //!counter of the saved mc particlesx
   
   //conversion histograms
   TH2F                                  *fNV0sBefAndAftRerun;      //!check the number of V0s before and after rerun
