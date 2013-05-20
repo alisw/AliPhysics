@@ -65,7 +65,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double psi = TMath::Pi()/2.;
   double psid = TMath::Pi()/3.;
 
-  int runepvzero[4] = {1, 1, 1, 1};
+  int runepvzero[4] = {0, 0, 0, 1};
   double epvzerobins[4] = {-psi, -psi+psid, -psi+2*psid, -psi+3*psid};
 
   int runmults[10] = {1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -258,7 +258,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                 //dtc1etaphitpc[aniter]->SetMaxImpactXY(0.1); // 2.4 0.1
                 // dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0205, 0.035, -1.1);     //      DCA xy
                 dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01);     //      DCA xy
-                dtc1etaphitpc[aniter]->SetMaxImpactZ(2.0); // 2.0 0.1
+                dtc1etaphitpc[aniter]->SetMaxImpactZ(0.15); // 2.0 0.1
 
                 if (ichg == 2) {
                   //dtc1etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
@@ -270,7 +270,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                   //dtc2etaphitpc[aniter]->SetMaxImpactXY(0.1); // 2.4 0.1
                   // dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0205, 0.035, -1.1);     //      DCA xy
                   dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01);     //      DCA xy
-                  dtc2etaphitpc[aniter]->SetMaxImpactZ(2.0); // 2.0 0.1
+                  dtc2etaphitpc[aniter]->SetMaxImpactZ(0.15); // 2.0 0.1
                 }
 
               }
@@ -330,8 +330,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
                 // sqpcetaphitpc[aniter]->SetMagneticFieldSign(-1); // field1 -1, field3 +1
                 // sqpcetaphitpc[aniter]->SetMinimumRadius(0.8); // biggest inefficiency for R=1.1 m (checked on small sample)
-                sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045); // 0.012 - pions, 0.017 - kaons, 0.018
-                sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.01); // 0.017 - pions, 0.015 - kaons
+                sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.09); // 0.012 - pions, 0.017 - kaons, 0.018
+                sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02); // 0.017 - pions, 0.015 - kaons
 
               }
 
@@ -412,8 +412,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                 }
               }
 
-              // cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),24, 24);
-              // anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
+              cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),24, 24);
+              anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
 
               Manager->AddAnalysis(anetaphitpc[aniter]);
             }
