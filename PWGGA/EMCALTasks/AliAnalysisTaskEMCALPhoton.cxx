@@ -73,6 +73,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton() :
   fIsTrain(0),
   fIsMC(0),
   fDebug(0),
+  fRedoV0(1),
   fIsGrid(0),
   fClusThresh(2.0),
   fClusterizer(0),
@@ -82,6 +83,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton() :
   fStack(0x0),
   fOutputList(0),
   fTree(0),
+  fMyMcIndex(0),
   fNV0sBefAndAftRerun(0),
   fConversionVtxXY(0),
   fInvMassV0(0),
@@ -117,6 +119,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name) :
   fIsTrain(0),
   fIsMC(0),
   fDebug(0),
+  fRedoV0(1),
   fIsGrid(0),
   fClusThresh(2.),
   fClusterizer(0),
@@ -126,6 +129,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name) :
   fStack(0x0),
   fOutputList(0),
   fTree(0),
+  fMyMcIndex(0),
   fNV0sBefAndAftRerun(0),
   fConversionVtxXY(0),
   fInvMassV0(0),
@@ -148,7 +152,9 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name) :
 void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
 {
   // Create histograms, called once.
-    
+  if(fDebug)
+    printf("::UserCreateOutputObjects() starting\n");
+
   fSelTracks = new TObjArray();
   
   fSelPrimTracks = new TObjArray();
@@ -249,6 +255,10 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
   
   PostData(1, fOutputList);
   PostData(2, fTree);
+
+  if(fDebug)
+    printf("::UserCreateOutputObjects() DONE!\n");
+
 }
 
 //________________________________________________________________________
@@ -271,7 +281,11 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   }
   if(!isSelected)
     return;
-
+  if(fDebug){
+    printf("::UserExec(): event accepted\n");
+    if(fIsMC)
+      printf("\t in MC mode\n");
+  }
   // Post output data.
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
@@ -329,6 +343,12 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     fStack = (AliStack*)fMCEvent->Stack();
     fHeader->fNMcParts = fStack->GetNtrack();
   }
+  else{
+    if(fIsMC){
+      printf("ERROR: MC Event not available, returning...\n");
+      return;
+    }
+  }
 
   
   FindConversions();
@@ -339,6 +359,9 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   FillIsoTracks();
   if(fIsMC)
     GetMcParts();
+
+  if(fDebug)
+    printf("fMyMcParts nentries=%d",fMyMcParts->GetEntries());
   
   fTree->Fill();
   fSelTracks->Clear();
@@ -351,6 +374,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   fMyTracks->Clear();
   if(fMyMcParts)
     fMyMcParts->Clear();
+  fMyMcIndex = 0;
   fCaloClusters->Clear();
   if(fCaloClustersNew)
     fCaloClustersNew->Clear();
@@ -362,14 +386,15 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
 void AliAnalysisTaskEMCALPhoton::FindConversions() 
 {
   // Find conversion.
-
+  if(fDebug)
+    printf("::FindConversions() starting\n");
   if(!fTrCuts)
     return;
   Int_t iconv = 0;
   Int_t nV0Orig = fESD->GetNumberOfV0s();
   Int_t nV0s = nV0Orig;
   Int_t ntracks = fESD->GetNumberOfTracks();
-  if(!fPeriod.Contains("11h") && !fPeriod.Contains("10h")){
+  if(fRedoV0){
     fESD->ResetV0s();
     AliV0vertexer lV0vtxer;
     lV0vtxer.Tracks2V0vertices(fESD);
@@ -461,6 +486,8 @@ void AliAnalysisTaskEMCALPhoton::FindConversions()
    myconv->fPosDedx    =  pos->GetTPCsignal();
    myconv->fPosMcLabel =  pos->GetLabel();
   }
+  if(fDebug)
+    printf("::FindConversions() returning...\n\n");
   return;
 }
 
@@ -468,6 +495,8 @@ void AliAnalysisTaskEMCALPhoton::FindConversions()
 void AliAnalysisTaskEMCALPhoton::FillMyCells() 
 {
   // Fill cells.
+  if(fDebug)
+    printf("::FillMyCells() starting\n");
 
   if (!fEMCalCells)
     return;
@@ -492,12 +521,16 @@ void AliAnalysisTaskEMCALPhoton::FillMyCells()
     mycell->fPhi = phi;
     mycell->fTime = fEMCalCells->GetCellTime(absID);
   }
+  if(fDebug)
+    printf("::FillMyCells() returning...\n\n");
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPhoton::FillMyClusters() 
 {
   // Fill clusters.
+  if(fDebug)
+    printf("::FillMyClusters() starting\n");
 
   if (!fCaloClusters)
     return;
@@ -570,12 +603,16 @@ void AliAnalysisTaskEMCALPhoton::FillMyClusters()
     }
     myclus->fTrEp = clus->E()/track->P();
   }
+  if(fDebug)
+    printf("::FillMyClusters() returning...\n\n");
   
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPhoton::FillMyAltClusters() 
 {
   // Fill clusters.
+  if(fDebug)
+    printf("::FillMyAltClusters() starting\n");
 
   if(!fCaloClustersNew)
     return;
@@ -639,12 +676,16 @@ void AliAnalysisTaskEMCALPhoton::FillMyAltClusters()
     }
     myclus->fTrEp = clus->E()/track->P();
   }
+  if(fDebug)
+    printf("::FillMyAltClusters() returning...\n\n");
   
 }
 //________________________________________________________________________
 void  AliAnalysisTaskEMCALPhoton::FillIsoTracks()
 {
   // Fill high pt tracks.
+  if(fDebug)
+    printf("::FillIsoTracks() starting\n");
 
   if(!fSelPrimTracks)
     return;
@@ -668,12 +709,16 @@ void  AliAnalysisTaskEMCALPhoton::FillIsoTracks()
     mtr->fDedx = track->GetTPCsignal();
     mtr->fMcLabel = track->GetLabel();
   }
+  if(fDebug)
+    printf("::FillIsoTracks() returning...\n\n");
 }
 
 //________________________________________________________________________
 void  AliAnalysisTaskEMCALPhoton::GetMcParts()
 {
-  // Get MC particles.
+   // Get MC particles.
+  if(fDebug)
+    printf("::GetMcParts() starting\n");
 
   if (!fStack)
     return;
@@ -682,87 +727,63 @@ void  AliAnalysisTaskEMCALPhoton::GetMcParts()
   if (!evtVtx)
     return;
   Int_t nTracks = fStack->GetNtrack();
-  AliPhotonMcPartObj *mcp = 0;
   for (Int_t iTrack = 0; iTrack<nTracks; ++iTrack) {
     TParticle *mcP = static_cast<TParticle*>(fStack->Particle(iTrack));
-    if (!mcP){
-      mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
-      mcp->fLabel = iTrack;
+    if (!mcP)
       continue;
-    }
+
     // primary particle
     Double_t dR = TMath::Sqrt((mcP->Vx()-evtVtx->GetX())*(mcP->Vx()-evtVtx->GetX()) + 
                               (mcP->Vy()-evtVtx->GetY())*(mcP->Vy()-evtVtx->GetY()) +
                               (mcP->Vz()-evtVtx->GetZ())*(mcP->Vz()-evtVtx->GetZ()));
-    if(dR > 0.5){
-      mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
-      mcp->fLabel = iTrack;
+    if(dR > 0.5)
       continue;
-    }
+    
     
     // kinematic cuts
     Double_t pt = mcP->Pt() ;
-    if (pt<0.5){
-      mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
-      mcp->fLabel = iTrack;
+    if (pt<0.5)
       continue;
-    }
+    
     Double_t eta = mcP->Eta();
-    if (TMath::Abs(eta)>0.7){
-      mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
-      mcp->fLabel = iTrack;
+    if (TMath::Abs(eta)>0.7)
       continue;
-    }
+
     Double_t phi  = mcP->Phi();
-    if (phi<1.0||phi>3.3){
-      mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
-      mcp->fLabel = iTrack;
+    if (phi<1.0||phi>3.3)
       continue;
-    }
+    
+    if (mcP->GetMother(0)!=6 && mcP->GetMother(0)!=7 )
+      continue;
+
+
     // pion or eta meson or direct photon
     if(mcP->GetPdgCode() == 111) {
     } else if(mcP->GetPdgCode() == 221) {
     } else if(mcP->GetPdgCode() == 22 ) {
     } else {
-      mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(iTrack));
-      mcp->fLabel = iTrack;
       continue;
     }
-    
-    bool checkIfAlreadySaved = false;
-    for(Int_t imy=0;imy<fMyMcParts->GetEntries();imy++){
-      AliPhotonMcPartObj *mymc = static_cast<AliPhotonMcPartObj*>(fMyMcParts->At(imy));
-      if(!mymc)
-	continue;
-      if(imy == iTrack)
-	checkIfAlreadySaved = true;
-    }
-    if(!checkIfAlreadySaved){
-      FillMcPart(mcP,  iTrack);
-    }
-    for(Int_t id=mcP->GetFirstDaughter(); id <= mcP->GetLastDaughter(); id++){
-      if(id<=mcP->GetMother(0))
-	continue;
-      if(id<0 || id>nTracks)
-	continue;
-      TParticle *mcD = static_cast<TParticle*>(fStack->Particle(id));
-      if(!mcD)
-	continue;
-      FillMcPart(mcD, id);
-      }
+
+    FillMcPart(mcP,  fMyMcIndex++, iTrack);
   }
+  if(fDebug)
+    printf("::GetMcParts() returning...\n\n");
 }
 
 //________________________________________________________________________
-void  AliAnalysisTaskEMCALPhoton::FillMcPart(TParticle *mcP,  Int_t itrack)
+void  AliAnalysisTaskEMCALPhoton::FillMcPart(TParticle *mcP,  Int_t itrack, Int_t label)
 {
   // Fill MC particles.
-
-  if(!mcP)
-    return;
+  Int_t nTracks = fStack->GetNtrack();
+  if(fDebug)
+    printf("\t::FillMcParts() starting with label %d\n", itrack);
+  
+  /*if(!mcP)
+    return;*/
   TVector3 vmcv(mcP->Vx(),mcP->Vy(), mcP->Vz());
   AliPhotonMcPartObj *mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(itrack));
-  mcp->fLabel = itrack ;
+  mcp->fLabel = label ;
   mcp->fPdg = mcP->GetPdgCode() ;
   mcp->fPt = mcP->Pt() ;
   mcp->fEta = mcP->Eta() ;
@@ -776,11 +797,31 @@ void  AliAnalysisTaskEMCALPhoton::FillMcPart(TParticle *mcP,  Int_t itrack)
   mcp->fFirstD = mcP->GetFirstDaughter() ;
   mcp->fLastD = mcP->GetLastDaughter() ;
   mcp->fStatus = mcP->GetStatusCode();
-  mcp->fIso = AliAnalysisTaskEMCALPhoton::GetMcIsolation(mcP, itrack, 0.4 , 0.2);
+  if(itrack == 8)
+    mcp->fIso = AliAnalysisTaskEMCALPhoton::GetMcIsolation(mcP, itrack, 0.4 , 0.2);
+  else
+    mcp->fIso = -1;
+  if(fDebug)
+    printf("\t::FillMcParts(): label=%d, pdg=%d, pt=%1.1f, mom=%d\n\t::FillMcParts() returning...\n\n", mcp->fLabel,mcp->fPdg,mcp->fPt,mcp->fMother);
+  for(Int_t id=mcP->GetFirstDaughter(); id <= mcP->GetLastDaughter(); id++){
+    if(id<=mcP->GetMother(0))
+      continue;
+    if(id<0 || id>nTracks)
+      continue;
+    TParticle *mcD = static_cast<TParticle*>(fStack->Particle(id));
+    if(!mcD)
+      continue;
+    FillMcPart(mcD, fMyMcIndex++, id);
+  }
+  
 }
 //________________________________________________________________________                                                                                                                                   
 Double_t AliAnalysisTaskEMCALPhoton::GetMcIsolation(TParticle *mcP, Int_t itrack, Double_t radius, Double_t pt) const
 {
+  if(fDebug){
+    printf("\t\t::GetMcIsolation() starting\n");
+    printf("\t\t   incoming particle: PDG = %d, itrack=%d;\n",mcP->GetPdgCode(),itrack);
+  }
   if (!fStack)
     return -1;
   if(!mcP)
@@ -802,6 +843,8 @@ Double_t AliAnalysisTaskEMCALPhoton::GetMcIsolation(TParticle *mcP, Int_t itrack
       continue;
     if(mcisop->GetStatusCode()!=1)
       continue;
+    if(mcisop->GetMother(0) == itrack)
+      continue;
     if(mcisop->Pt()<pt)
       continue;
     TVector3 vmcv(mcisop->Vx(),mcisop->Vy(), mcisop->Vz());  
@@ -812,14 +855,18 @@ Double_t AliAnalysisTaskEMCALPhoton::GetMcIsolation(TParticle *mcP, Int_t itrack
       continue;
     sumpt += mcisop->Pt();
   }
+  if(fDebug)
+    printf("\t\t::GetMcIsolation() returning value %f ...\n\n",sumpt);
   return sumpt;
-}
+ }
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskEMCALPhoton::GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius, Double_t pt) const
 {
   // Compute isolation based on tracks.
-  
+  if(fDebug)
+    printf("\t::GetTrackIsolation() starting\n");
+   
   Double_t trkIsolation = 0;
   Double_t rad2 = radius*radius;
   Int_t ntrks = fSelPrimTracks->GetEntries();
@@ -838,6 +885,8 @@ Double_t AliAnalysisTaskEMCALPhoton::GetTrackIsolation(Double_t cEta, Double_t c
       continue;
     trkIsolation += track->Pt();
   } 
+  if(fDebug)
+    printf("\t::GetTrackIsolation() returning\n\n");
   return trkIsolation;
 }
 
