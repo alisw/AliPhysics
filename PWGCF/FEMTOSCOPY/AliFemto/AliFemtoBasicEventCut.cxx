@@ -70,7 +70,7 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
   // cout << "AliFemtoBasicEventCut:: goodEvent" <<goodEvent << endl;
 
   goodEvent ? fNEventsPassed++ : fNEventsFailed++ ;
-    cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
+  // cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
 //     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)) &&
 
   return (goodEvent);
