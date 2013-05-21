@@ -29,6 +29,8 @@ public:
   {FillESD((TTree*)NULL,(TTree*)NULL,esd);}
 
   static const AliTPCRecoParam* GetRecoParam() { return dynamic_cast<const AliTPCRecoParam*>(AliReconstructor::GetRecoParam(1)); }
+  virtual void                 GetPidSettings(AliESDpid *esdPID);
+  
   //
   static Double_t GetCtgRange()     { return GetRecoParam()->GetCtgRange();}
   static Double_t GetMaxSnpTracker(){ return GetRecoParam()->GetMaxSnpTracker();}
@@ -48,6 +50,9 @@ private:
   static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
   AliTPCclusterer*           fClusterer;   // TPC clusterer
   static AliTPCAltroEmulator * fAltroEmulator;    // ALTRO emulator
+
+  void SetSplinesFromOADB(const char* tmplt, AliESDpid *esdPID);
+  
   ClassDef(AliTPCReconstructor, 0)   // class for the TPC reconstruction
 };
 
