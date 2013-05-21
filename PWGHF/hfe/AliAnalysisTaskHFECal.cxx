@@ -1402,10 +1402,10 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fOutputList->Add(fIncRecoMaxE);
 
   fPhoRecoMaxE = new TH2D("fPhoRecoMaxE","Pho",10,0,100,100,0,500);
-  fOutputList->Add(fPhoReco);
+  fOutputList->Add(fPhoRecoMaxE);
 
   fSamRecoMaxE = new TH2D("fSamRecoMaxE","Same",10,0,100,100,0,500);
-  fOutputList->Add(fSamReco);
+  fOutputList->Add(fSamRecoMaxE);
 
   PostData(1,fOutputList);
 }
