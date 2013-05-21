@@ -130,7 +130,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoQinvCorrFctn          *cqinvtpc[50];
   AliFemtoCorrFctnNonIdDR       *ckstartpc[50];
   AliFemtoCorrFctnNonIdDR       *ckstarkttpc[50*2];
-  // AliFemtoCorrFctnDEtaDPhi      *cdedpetaphi[50];
+  AliFemtoCorrFctnDEtaDPhi      *cdedpetaphi[50*2];
 
   //   AliFemtoCorrFctn3DLCMSSym     *cq3dlcmskttpc[20*2];
   //   AliFemtoCorrFctnTPCNcls       *cqinvnclstpc[20];

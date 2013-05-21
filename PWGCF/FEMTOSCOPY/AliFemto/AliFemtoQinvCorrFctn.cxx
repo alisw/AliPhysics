@@ -186,16 +186,18 @@ void AliFemtoQinvCorrFctn::AddRealPair(AliFemtoPair* pair){
     double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
 
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    AliAODEvent *fAOD;
+    Int_t magsign = 0;
 
     if (!aodH) {
       //AliWarning("Could not get AODInputHandler");
     }
     else {
+      AliAODEvent *fAOD;
+      magsign = fAOD->GetMagneticField();
       fAOD = aodH->GetEvent();
     }
 
-    Int_t magsign = fAOD->GetMagneticField();
+
     Int_t fMagSign;
 
     if (magsign > 1)
@@ -247,17 +249,20 @@ void AliFemtoQinvCorrFctn::AddMixedPair(AliFemtoPair* pair){
     double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
 
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    AliAODEvent *fAOD;
+    Int_t magsign = 0;
+
 
     if (!aodH) {
       //AliWarning("Could not get AODInputHandler");
       cout << "Could not get AODInputHandler" << endl;
     }
     else {
+      AliAODEvent *fAOD;
       fAOD = aodH->GetEvent();
+      magsign = fAOD->GetMagneticField();
     }
 
-    Int_t magsign = fAOD->GetMagneticField();
+
     Int_t fMagSign;
     if (magsign > 1)
       fMagSign = 1;
