@@ -609,12 +609,15 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
   
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
-    UShort_t db = d << 4;
     for (UShort_t q=0; q<nr; q++) { 
-      UShort_t rb = db | ((q+1));
-      // Skipping selected FMD rings 
-      if (rb & fSkipFMDRings) continue;
       Char_t      r = (q == 0 ? 'I' : 'O');
+      // Skipping selected FMD rings 
+      if(d==1 && r=='I' && (fSkipFMDRings & kFMD1I)) continue; 
+      if(d==2 && r=='I' && (fSkipFMDRings & kFMD2I)) continue; 
+      if(d==2 && r=='O' && (fSkipFMDRings & kFMD2O)) continue; 
+      if(d==3 && r=='I' && (fSkipFMDRings & kFMD3I)) continue; 
+      if(d==3 && r=='O' && (fSkipFMDRings & kFMD3O)) continue; 
+
       TH2D*       h = hists.Get(d,r);
       TH2D*       t = static_cast<TH2D*>(h->Clone(Form("FMD%d%c_tmp",d,r)));
       Int_t       i = (d == 1 ? 1 : 2*d + (q == 0 ? -2 : -1));
