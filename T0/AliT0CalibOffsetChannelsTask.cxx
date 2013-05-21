@@ -115,7 +115,6 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
   // Create histograms
   Float_t low = fCDBcfds[fRefPMTC] - 500;
   Float_t high = fCDBcfds[fRefPMTA] + 500;
-  printf(" AliT0CalibOffsetChannelsTask::UserCreateOutputObjects ::low %f high %f \n", low, high);
   for (Int_t i=0; i<24; i++) {
     fTimeDiff[i]   = new TH1F (Form("CFD1minCFD%d",i+1),"fTimeDiff",150, -300, 300);
     fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",250,low, high);//6000, 7000);
@@ -123,7 +122,7 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
   }
 
   fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",200,-4000,4000);   //or A plus or C 
-  fResolution      = new TH1F("fResolution","fResolution",200,-1000,1000);// or A minus or C spectrum
+  fResolution      = new TH1F("fResolution","fResolution",200,-2000,2000);// or A minus or C spectrum
   fTzeroORA        = new TH1F("fTzeroORA","fTzeroORA",200,-4000,4000);// or A spectrum
   fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",200,-4000,4000);// or C spectrum
 
@@ -171,7 +170,7 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
   for (Int_t i=0; i<24; i++) {
     if( time[i] > 0  && amp[i]>0.1 ){
       if (eq)	{
-	fCFD[i]->Fill( time[i] );
+	fCFD[i]->Fill( time[i] );//////!!!!!
 	if(  time[fRefPMTC] > 0 && i<12)   {
 	  diff =  time[i]-time[fRefPMTC];
 	  fTimeDiff[i]->Fill( diff);
@@ -201,10 +200,10 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
     Double32_t orA = mean[1]  +  fCDBT0s[1] ;
     Double32_t orC = mean[2] + fCDBT0s[2] ;
     
-    if(orA<9999) fTzeroORA->Fill(orA);
-    if(orC<9999) fTzeroORC->Fill(orC);
-    if(orA<9999 && orC<9999) fResolution->Fill((orA-orC)/2.);
-    if(orA<9999 && orC<9999) fTzeroORAplusORC->Fill(meanTOF); 
+    if(orA<99999) fTzeroORA->Fill(orA);
+    if(orC<99999) fTzeroORC->Fill(orC);
+    if(orA<99999 && orC<99999) fResolution->Fill((orA-orC)/2.);
+    if(orA<99999 && orC<99999) fTzeroORAplusORC->Fill(meanTOF); 
   } //if TVDC on
     //  printf("%f   %f  %f\n",orA,orC,meanTOF);
   PostData(1, fTzeroObject);
