@@ -102,14 +102,14 @@ public:
    * FMD ring bits for skipping 
    */
    enum FMDRingBits { 
-     kFMD1I=0x11,
+     kFMD1I=0x01,
      kFMD1 =kFMD1I,
-     kFMD2I=0x21,
-     kFMD2O=0x22,
+     kFMD2I=0x02,
+     kFMD2O=0x24,
      kFMD2 =kFMD2I|kFMD2O,
-     kFMD3I=0x31,
-     kFMD3O=0x32,
-     kFMD3 =kFMD2I|kFMD2O
+     kFMD3I=0x08,
+     kFMD3O=0x10,
+     kFMD3 =kFMD3I|kFMD3O
   };
   /** 
    * Constructor 
