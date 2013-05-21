@@ -51,6 +51,7 @@
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 #include "AliESDtrackCuts.h"
+#include "AliESDv0Cuts.h"
 #include "AliAnalysisTaskHdibaryonLPpi.h"
 
 #include "TFile.h"
@@ -75,7 +76,10 @@ using namespace std;
 ClassImp(AliAnalysisTaskHdibaryonLPpi)
 
 //________________________________________________________________________
-AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : AliAnalysisTaskSE(name)/*AliAnalysisTask(name, ""), fMCEvent(0)*/, fESD(0),
+AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : AliAnalysisTaskSE(name)/*AliAnalysisTask(name, ""), fMCEvent(0)*/, fESD(0),   fESDtrackCutsV0(0),
+  fESDCutsV0(0),
+  fEsdTrackCuts(0),
+  fBin(0),
   fEvent(0x0),
   fHistList(0),  
   fHistMassDPi(0), 
@@ -93,6 +97,7 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : A
   fHistMassPQoffl(0),
   fHistDC(0),
   fHistArmenterosPodolanski(0),
+  fHistArmenterosPodolanskiCut(0), 
   fHistHDibaryonInvaMassGen(0),
   fHistHDibaryonInvaMassGenRes(0),
   fHistAntiHDibaryonInvaMassGen(0),
@@ -138,6 +143,7 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : A
   fHistPtvsYGen(0),
   fHistPtvsYAso(0), 
   fHistRap(0),
+  fHistCount(0),
   fPIDtpcESD(0) 
 
 {
@@ -970,7 +976,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	  Int_t labelOma = tparticleMother->GetFirstMother();
 	  TParticle *tparticleOma = stack->Particle(TMath::Abs(labelOma));
 
-	  if ((tparticleOma->GetPdgCode() < 0) && TMath::Abs(tparticleMother->GetPdgCode())==PDGLambda){// check mother to be Lambda 
+	  if ((tparticleOma->GetPdgCode() < 0) && TMath::Abs(tparticleMother->GetPdgCode())==pdgLambda){// check mother to be Lambda 
 	    Int_t labelFirstDaughter  = tparticleMother->GetDaughter(1);// Proton
 	    Int_t labelThirdDaughter  = tparticleMother->GetDaughter(0);// Pion
 	    

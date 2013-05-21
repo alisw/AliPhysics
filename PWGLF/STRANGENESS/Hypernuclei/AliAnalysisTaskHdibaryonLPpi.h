@@ -74,9 +74,10 @@ public:
 
 private:
   AliESDEvent *fESD; //AliESD event	
-  AliESDtrackCuts* fEsdTrackCuts; // track cuts
+  //  AliESDtrackCuts* fEsdTrackCuts; // track cuts
   AliESDtrackCuts   *fESDtrackCutsV0;     // basic cut variables for v0's
   AliESDv0Cuts *fESDCutsV0; // V0 track cuts
+  AliESDtrackCuts* fEsdTrackCuts; // track cuts
   
   Int_t       fBin;        //bin for the angular plot
 
