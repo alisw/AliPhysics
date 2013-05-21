@@ -49,6 +49,7 @@ set ( SRCS
   STRANGENESS/Cascades/AliAnalysisTaskCheckCascadepp276.cxx
   STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascadepp276.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskLambdaNAOD.cxx
+  STRANGENESS/Hypernuclei/AliAnalysisTaskHdibaryonLPpi.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
