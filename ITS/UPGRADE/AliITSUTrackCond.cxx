@@ -200,7 +200,7 @@ Bool_t AliITSUTrackCond::CheckPattern(UShort_t patt) const
     for (int ig=arrAux[cntCond+kNGroups];ig--;) {
       UInt_t pattReq = arrGrp[grAddr++];
       UShort_t actLr = (pattReq&AliITSUAux::kMaxLrMask)&patt;  // patter of active layers satisfying to mask
-      if (!actLr || NumberOfBitsSet(actLr)<(pattReq>>kShiftNcl)) {ok = kFALSE; break;}
+      if (!actLr || NumberOfBitsSet(actLr)<int(pattReq>>kShiftNcl)) {ok = kFALSE; break;}
     }
     if (ok) return kTRUE;
     cntCond += kNAuxSz;
