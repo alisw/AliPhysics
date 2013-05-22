@@ -51,6 +51,15 @@ class AliEventPlaneResolutionHandler : public TObject{
   }
   Double_t GetEventPlaneResolution(Double_t minCent, Double_t maxCent);
 
+  TH1F* GetSubEvABCorrelHisto() const{
+    return fHistoAB;
+  }
+  TH1F* GetSubEvBCCorrelHisto() const{
+    return fHistoBC;
+  }
+  TH1F* GetSubEvACCorrelHisto() const{
+    return fHistoAC;
+  }
 
 
   enum EEventPlane {kTPCFullEta, kTPCPosEta,kVZERO,kVZEROA,kVZEROC};
@@ -78,6 +87,9 @@ class AliEventPlaneResolutionHandler : public TObject{
   Double_t fYield24[20];     // values of D0 yield 2<pt<4 in the subranges
   Double_t fYield46[20];     // values of D0 yield 4<pt<6 in the subranges
   Double_t fYield612[20];    // values of D0 yield 6<pt<12 in the subranges
+  TH1F*    fHistoAB;         // histo of subevents A-B   
+  TH1F*    fHistoBC;         // histo of subevents B-C   
+  TH1F*    fHistoAC;         // histo of subevents A-C   
   TString  fRootFileName;    // file with histos of correlations
 
   ClassDef(AliEventPlaneResolutionHandler,0) 

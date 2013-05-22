@@ -46,6 +46,9 @@ AliEventPlaneResolutionHandler::AliEventPlaneResolutionHandler():TObject(),
   fNsubevents(2),
   fExtrapToFull(kFALSE),
   fWeight(0),
+  fHistoAB(0x0),
+  fHistoBC(0x0),
+  fHistoAC(0x0),
   fRootFileName("$ALICE_ROOT/PWGHF/vertexingHF/charmFlow/EventPlaneResolutionHistos.root")
 {
   // Default contructor
@@ -63,6 +66,9 @@ AliEventPlaneResolutionHandler::AliEventPlaneResolutionHandler(TString filename)
   fNsubevents(2),
   fExtrapToFull(kFALSE),
   fWeight(0),
+  fHistoAB(0x0),
+  fHistoBC(0x0),
+  fHistoAC(0x0),
   fRootFileName(filename.Data())
 {
   // Standard contructor
@@ -71,6 +77,8 @@ AliEventPlaneResolutionHandler::AliEventPlaneResolutionHandler(TString filename)
 //______________________________________________________________________
 Double_t AliEventPlaneResolutionHandler::GetEventPlaneResolution(Double_t minCent, Double_t maxCent){
   // method to compute the event plane resolution starting from correlations
+
+  TDirectory *current = gDirectory;
 
   TFile* inputFile=new TFile(fRootFileName.Data());
   if(!inputFile || (inputFile && !inputFile->IsOpen())){
@@ -148,11 +156,21 @@ Double_t AliEventPlaneResolutionHandler::GetEventPlaneResolution(Double_t minCen
   if(fNsubevents==2){
     if(fExtrapToFull) resol=AliVertexingHFUtils::GetFullEvResol(hevpls1);
     else resol=AliVertexingHFUtils::GetSubEvResol(hevpls1);
+    current->cd();
+    if(fHistoAB) delete fHistoAB;
+    fHistoAB=(TH1F*)hevpls1->Clone("hCorrelSubAB");
   }else if(fNsubevents==3){
     Double_t correl1=hevpls1->GetMean();
     Double_t correl2=hevpls2->GetMean();
     Double_t correl3=hevpls3->GetMean();
     resol=TMath::Sqrt(correl1*correl2/correl3);
+    current->cd();
+    if(fHistoAB) delete fHistoAB;
+    fHistoAB=(TH1F*)hevpls1->Clone("hCorrelSubAB");
+    if(fHistoBC) delete fHistoBC;
+    fHistoBC=(TH1F*)hevpls2->Clone("hCorrelSubBC");
+    if(fHistoAC) delete fHistoAC;
+    fHistoAC=(TH1F*)hevpls3->Clone("hCorrelSubAC");
   }
   inputFile->Close();
   return resol;
