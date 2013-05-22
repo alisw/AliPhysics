@@ -72,10 +72,11 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   TH2                   *fHistEsubPchRatAll[8];      //!Esub/momentum of matched tracks vs. total momentum of matched tracks (all number of matches)
 
   // Embedding QA plots
-  TH2                   *fHistEmbTrackMatchesOversub[4];    //!Over-subtracted energy with embedded track matches (non-embedded matches < 5%)
-  TH2                   *fHistNonEmbTrackMatchesOversub[4]; //!Over-subtracted energy with non-embedded track matches (embedded matches < 5%)
-  TH2                   *fHistOversub[4];                   //!Over-subtracted energy
-  TH2                   *fHistOversubOverClusE[4];          //!Over-subtracted energy / cluster energy
+  TH2                   *fHistEmbTrackMatchesOversub[4];    //!Over-subtracted energy / cluster energy with embedded track matches (non-embedded matches < 5%)
+  TH2                   *fHistNonEmbTrackMatchesOversub[4]; //!Over-subtracted energy / cluster energy with non-embedded track matches (embedded matches < 5%)
+  TH2                   *fHistOversubMCClusters[4];         //!Over-subtracted energy / cluster energy (cluster MC energy fraction > 95%)
+  TH2                   *fHistOversubNonMCClusters[4];      //!Over-subtracted energy / cluster energy (cluster MC energy fraction < 5%)
+  TH2                   *fHistOversub[4];                   //!Over-subtracted energy / cluster energy
 
  private:
   AliHadCorrTask(const AliHadCorrTask&);            // not implemented
