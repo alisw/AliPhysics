@@ -589,19 +589,15 @@ void AliAnalysisTaskEMCALPhoton::FillMyClusters()
       continue;
     }
     AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(matchIndex));
-    if(!track){
-      myclus->fTrEp = -1;
+    if(!track)
       continue;
-    }
-    if(!fPrTrCuts){
-      myclus->fTrEp = -1;
+    if(!fPrTrCuts)
       continue;
-    }
-    if(!fPrTrCuts->IsSelected(track)){
-      myclus->fTrEp = -1;
+    if(!fPrTrCuts->IsSelected(track))
       continue;
-    }
+    
     myclus->fTrEp = clus->E()/track->P();
+    myclus->fTrDedx = track->GetTPCsignal();
   }
   if(fDebug)
     printf("::FillMyClusters() returning...\n\n");
