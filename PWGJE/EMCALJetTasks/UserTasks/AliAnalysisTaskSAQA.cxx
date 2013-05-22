@@ -51,6 +51,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistNCellsEnergy(0),
   fHistFcrossEnergy(0),
   fHistClusTimeEnergy(0),
+  fHistClusMCEnergyFraction(0),
   fHistCellsAbsIdEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
@@ -96,6 +97,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistNCellsEnergy(0),
   fHistFcrossEnergy(0),
   fHistClusTimeEnergy(0),
+  fHistClusMCEnergyFraction(0),
   fHistCellsAbsIdEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
@@ -253,6 +255,13 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     fHistClusTimeEnergy->GetXaxis()->SetTitle("E_{cluster} (GeV)");
     fHistClusTimeEnergy->GetYaxis()->SetTitle("Time");
     fOutput->Add(fHistClusTimeEnergy);
+
+    if (fIsEmbedded) {
+      fHistClusMCEnergyFraction = new TH1F("fHistClusMCEnergyFraction","fHistClusMCEnergyFraction", fNbins, 0, 1.2);
+      fHistClusMCEnergyFraction->GetXaxis()->SetTitle("MC fraction");
+      fHistClusMCEnergyFraction->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistClusMCEnergyFraction);
+    }
 
     fHistNCellsEnergy = new TH2F("fHistNCellsEnergy","Number of cells vs. energy of clusters", fNbins, fMinBinPt, fMaxBinPt, 30, 0, 30);
     fHistNCellsEnergy->GetXaxis()->SetTitle("E_{cluster} (GeV)");
@@ -504,6 +513,9 @@ Float_t AliAnalysisTaskSAQA::DoClusterLoop()
 
     if (cells)
       fHistFcrossEnergy->Fill(cluster->E(), GetFcross(cluster, cells));
+
+    if (fHistClusMCEnergyFraction)
+      fHistClusMCEnergyFraction->Fill(cluster->GetMCEnergyFraction());
 
     fNclusters++;
   }
