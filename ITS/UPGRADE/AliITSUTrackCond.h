@@ -57,7 +57,7 @@ class AliITSUTrackCond : public TObject
   void        SetMissPenalty(Int_t lr,  Float_t v)           {fMissPenalty[lr] = v;}
   void        SetNSigmaRoadY(Int_t lr,  Float_t v)           {fNSigmaRoadY[lr] = v;}
   void        SetNSigmaRoadZ(Int_t lr,  Float_t v)           {fNSigmaRoadZ[lr] = v;}
-  void        ExcludeLayer(Int_t lr)                         {fExlLayers |= 0x1<<lr;}
+  void        ExcludeLayer(Int_t lr)                         {fAllowLayers &= ~(0x1<<lr);}
   //
   Float_t     GetMaxITSTPCMatchChi2()                  const {return fMaxITSTPCMatchChi2;}
   Float_t     GetMaxITSSAChi2()                        const {return fMaxITSSAChi2;}
@@ -67,9 +67,10 @@ class AliITSUTrackCond : public TObject
   Float_t     GetMaxChi2GloNrm(Int_t lr)               const {return fMaxChi2GloNrm[lr];}
   Float_t     GetNSigmaRoadY(Int_t lr)                 const {return fNSigmaRoadY[lr];}
   Float_t     GetNSigmaRoadZ(Int_t lr)                 const {return fNSigmaRoadZ[lr];}
-  Bool_t      IsLayerExcluded(Int_t lr)                const {return fExlLayers&(0x1<<lr);}
+  Bool_t      IsLayerExcluded(Int_t lr)                const {return !(fAllowLayers&(0x1<<lr));}
   Int_t       GetActiveLrInner()                       const {return fActiveLrInner;}
   Int_t       GetActiveLrOuter()                       const {return fActiveLrOuter;}
+  UShort_t    GetAllowedLayers()                       const {return fAllowLayers;}
   //
   void        Init();
   Bool_t      IsInitDone()                             const {return fInitDone;}
@@ -79,7 +80,7 @@ class AliITSUTrackCond : public TObject
   Bool_t      fInitDone;                 // initialization flag
   Char_t      fActiveLrInner;            // innermost active layer to consider
   Char_t      fActiveLrOuter;            // outermose active layer to consider
-  Short_t     fExlLayers;                // pattern of active layers to skip
+  UShort_t    fAllowLayers;              // pattern of active layers to be checked
   Int_t       fNLayers;                  // total number of layers
   Float_t     fMaxITSTPCMatchChi2;       // max chi2 for ITS/TPC matching
   Float_t     fMaxITSSAChi2;             // max chi2 for ITS standalone fit (backward)
@@ -105,7 +106,7 @@ class AliITSUTrackCond : public TObject
   static Float_t fgkMaxMatchChi2;         // max acceptable matching chi2
   static Float_t fgkMaxITSSAChi2;         // max acceptable standalone ITS backward fit chi2
   //
-  ClassDef(AliITSUTrackCond,7)           // set of requirements on track hits pattern
+  ClassDef(AliITSUTrackCond,8)           // set of requirements on track hits pattern
 };
 
 
