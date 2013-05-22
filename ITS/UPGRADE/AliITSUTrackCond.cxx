@@ -19,7 +19,7 @@ AliITSUTrackCond::AliITSUTrackCond(int nLayers)
   :fInitDone(kFALSE)
   ,fActiveLrInner(0)
   ,fActiveLrOuter(0)
-  ,fExlLayers(0)
+  ,fAllowLayers(0)
   ,fNLayers(0)
   ,fMaxITSTPCMatchChi2(fgkMaxMatchChi2)
   ,fMaxITSSAChi2(fgkMaxITSSAChi2)
@@ -45,7 +45,7 @@ AliITSUTrackCond::AliITSUTrackCond(const AliITSUTrackCond& src)
   ,fInitDone(src.fInitDone)
   ,fActiveLrInner(src.fActiveLrInner)
   ,fActiveLrOuter(src.fActiveLrOuter)
-  ,fExlLayers(src.fExlLayers)
+  ,fAllowLayers(src.fAllowLayers)
   ,fNLayers(0)
   ,fMaxITSTPCMatchChi2(src.fMaxITSTPCMatchChi2)
   ,fMaxITSSAChi2(src.fMaxITSSAChi2)
@@ -84,7 +84,7 @@ AliITSUTrackCond& AliITSUTrackCond::operator=(const AliITSUTrackCond& src)
     fActiveLrInner = src.fActiveLrInner;
     fActiveLrOuter = src.fActiveLrOuter;
     //
-    fExlLayers = src.fExlLayers;
+    fAllowLayers = src.fAllowLayers;
     fNConditions = src.fNConditions;
     fConditions  = src.fConditions;
     fMaxITSTPCMatchChi2 = src.fMaxITSTPCMatchChi2;
@@ -123,6 +123,7 @@ void AliITSUTrackCond::SetNLayers(int nLayers)
     delete[] fNSigmaRoadZ;
   }
   fNLayers = nLayers;
+  fAllowLayers = 0;
   //
   if (fNLayers>0) {
     fActiveLrInner = 0;
@@ -136,6 +137,7 @@ void AliITSUTrackCond::SetNLayers(int nLayers)
     fNSigmaRoadY   = new Float_t[fNLayers];
     fNSigmaRoadZ   = new Float_t[fNLayers];
     for (int i=fNLayers;i--;) {
+      fAllowLayers |= 0x1<<i;
       SetClSharing(i,fgkClSharing);
       SetMaxBranches(i,fgkMaxBranches);
       SetMaxCandidates(i,fgkMaxCandidates);
@@ -230,9 +232,9 @@ void AliITSUTrackCond::Print(Option_t*) const
     printf("\n");
     cntCond += kNAuxSz;
   }
-  if (fExlLayers) {
-    printf("Exluded Layers: ");
-    for (int i=0;i<fNLayers;i++) if (IsLayerExcluded(i)) printf(" %d",i); printf("\n");
+  if (fAllowLayers) {
+    printf("Allowed Layers: ");
+    for (int i=0;i<fNLayers;i++) if (!IsLayerExcluded(i)) printf(" %d",i); printf("\n");
   }
   printf("Cuts:\t%6s\t%6s\t%4s\t%8s\t%8s\t%8s\t%8s\t%8s\n", "MaxBrn","MaxCnd","ClSh","Chi2Cl","Chi2Glo","Mis.Pen.","NSig.Y","NSig.Z");
   for (int i=0;i<fNLayers;i++) {

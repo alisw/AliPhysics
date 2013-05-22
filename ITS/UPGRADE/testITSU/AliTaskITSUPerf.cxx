@@ -101,9 +101,14 @@ AliTaskITSUPerf::AliTaskITSUPerf(const char *name)
   ,fITS(0)
   ,fNSelTracksMC(0)
   ,fMCStatus(0)
+    //
+#ifdef _CLUS_LIST_
+  ,fClLists(0)
+#endif
+    //
   ,fNPtBins(20)
   ,fNResBins(100)
-  ,fMinTPCclusters(70)
+  ,fMinTPCclusters(60)
   ,fPtMin(0)
   ,fPtMax(10.)
   ,fEtaMin(-3.)
@@ -182,6 +187,9 @@ void AliTaskITSUPerf::UserCreateOutputObjects()
   fTPCCut->SetPtRange(fPtMin,fPtMax);
   fTPCCut->SetMinNClustersTPC(fMinTPCclusters);
   //
+#ifdef _CLUS_LIST_
+  fClLists.SetOwner();
+#endif
   PostData(1, fOutput);
   //
 }
@@ -239,6 +247,9 @@ void AliTaskITSUPerf::UserExec(Option_t *)
 //________________________________________________________________________
 void AliTaskITSUPerf::Terminate(Option_t *) 
 {
+#ifdef _CLUS_LIST_
+  fClLists.Delete();
+#endif
   Printf("Terminating...");
 }
 
@@ -280,12 +291,24 @@ void AliTaskITSUPerf::BookStandardHistosCent(Int_t bin)
   TH2* h2=0;
   //
   // MC labels combination vs pt
-  h2 = new TH2F(Form("B%d_%s",bin,"MCLabvsPT"),
-		Form("B%d %s",bin,"MCLabComb vs p_{T}"),
+  h2 = new TH2F(Form("B%d_%s_RCBL",bin,"MCLabvsPT"),
+		Form("B%d %s Reconstructable",bin,"MCLabComb vs p_{T}"),
 		fNPtBins,fPtMin,fPtMax,kNLabelTypes,-0.5,kNLabelTypes-0.5);
-  AddHisto(&fHistosCent,h2, GetHistoID(kHMatchStatus,-1,bin) );
+  AddHisto(&fHistosCent,h2, GetHistoID(kHMatchStatusRcbl,-1,bin) );
   for (int i=0;i<kNLabelTypes;i++) h2->GetYaxis()->SetBinLabel(i+1,fgkLabelTypes[i]);
   //  
+  h2 = new TH2F(Form("B%d_%s_NotRCBL_prim",bin,"MCLabvsPT"),
+		Form("B%d %s Not Reconstructable, Prim.",bin,"MCLabComb vs p_{T}"),
+		fNPtBins,fPtMin,fPtMax,kNLabelTypes,-0.5,kNLabelTypes-0.5);
+  AddHisto(&fHistosCent,h2, GetHistoID(kHMatchStatusNRcblPrim,-1,bin) );
+  for (int i=0;i<kNLabelTypes;i++) h2->GetYaxis()->SetBinLabel(i+1,fgkLabelTypes[i]);
+  //
+  h2 = new TH2F(Form("B%d_%s_NotRCBL_sec",bin,"MCLabvsPT"),
+		Form("B%d %s Not Reconstructable, Sec.",bin,"MCLabComb vs p_{T}"),
+		fNPtBins,fPtMin,fPtMax,kNLabelTypes,-0.5,kNLabelTypes-0.5);
+  AddHisto(&fHistosCent,h2, GetHistoID(kHMatchStatusNRcblSec,-1,bin) );
+  for (int i=0;i<kNLabelTypes;i++) h2->GetYaxis()->SetBinLabel(i+1,fgkLabelTypes[i]);
+
 
 }
 
@@ -337,6 +360,7 @@ Int_t AliTaskITSUPerf::GetHistoID(Int_t htype, Int_t mcStat, Int_t centBin) cons
 void AliTaskITSUPerf::CheckTracks()
 {
   // build mc truth info for tracks 
+  Bool_t dump = kFALSE;
   //
   int ntr = fESDEvent->GetNumberOfTracks();
   int ntrMC = fStack->GetNtrack();
@@ -359,33 +383,61 @@ void AliTaskITSUPerf::CheckTracks()
     Int_t nClITS   = trc->GetNcls(0);
     //
     UInt_t& mcStatus = (UInt_t &)fMCStatus[labMCabs];
-    Bool_t reject = mcStatus & BIT(kTrCondFail);
-    if (reject) continue;
-    //
-    int mcLabType = GetMCLabType(labMCTPC,labMCITS,nClTPC,nClITS);
-    //
     double pt  = trc->Pt();
     double eta = trc->Eta();
+    //
+    Bool_t reject = mcStatus & BIT(kTrCondFail);
+    //
+    int mcLabType = GetMCLabType(labMCTPC,labMCITS,nClTPC,nClITS);
     //
     //    if (eta>fEtaMax || eta<fEtaMin) continue;
     //    if (nClTPC<fMinTPCclusters) continue;
     //    printf("#%3d pt:%5.2f eta:%+5.2f | Lb:%+6d LbTPC:%+6d LbITS:%+6d MCTp:%d | Ntpc:%3d Nits:%3d\n",itr,pt,eta,labMC,labMCTPC,labMCITS,mcLabType, nClTPC,nClITS);
     //
-    GetHisto(&fHistosCent,kHMatchStatus)->Fill(pt,mcLabType);  // matching status
+    if (reject) {
+      GetHisto(&fHistosCent,(mcStatus & BIT(kMCPrimBit)) ? kHMatchStatusNRcblPrim:kHMatchStatusNRcblSec)->Fill(pt,mcLabType);  // matching status
+      if (dump) {
+	printf("--#%4d Pt:%5.2f Eta:%5.2f |",itr,pt,eta);
+	for (int k=0;k<32;k++) printf("%d", (mcStatus&(0x1<<k)) ? 1:0);
+	printf("| %+5d %+5d %+5d |%3d %d -> %d\n",labMC,labMCTPC,labMCITS,nClTPC,nClITS,mcLabType);
+      }
+      continue;
+    }
+    GetHisto(&fHistosCent,kHMatchStatusRcbl)->Fill(pt,mcLabType);  // matching status
     //
     AliMCParticle *part  = 0;
+    TObjArray* clList = 0;
     //
-    if (labMCabs<ntrMC) part = (AliMCParticle*)fMCEvent->GetTrack(labMCabs);
-    //
+#ifdef _CLUS_LIST_
+    if (labMCabs<ntrMC) {
+      part = (AliMCParticle*)fMCEvent->GetTrack(labMCabs);
+      //
+      clList = (TObjArray*)fClLists.At(labMCabs);
+      if (clList) {
+	printf("Clusters for track %d MCLabel:%d\n",itr,labMC);
+	for (int ic=0;ic<clList->GetEntriesFast();ic++) {
+	  AliITSUClusterPix* cl = (AliITSUClusterPix*) clList->At(ic);
+	  cl->Print();
+	}
+      }
+    }
+#endif
+
     if (part) {
       //
       double ptMC = part->Pt();
       double etaMC = part->Eta();
       //
-      if ( (mcStatus&BIT(kMCPrimBit)) ) {
-	printf("#%4d Pt:%5.2f Eta:%5.2f |",itr,ptMC,etaMC);
+      if (dump) {
+	printf("  #%4d Pt:%5.2f Eta:%5.2f |",itr,ptMC,etaMC);
 	for (int k=0;k<32;k++) printf("%d", (mcStatus&(0x1<<k)) ? 1:0);
 	printf("| %+5d %+5d %+5d |%3d %d -> %d\n",labMC,labMCTPC,labMCITS,nClTPC,nClITS,mcLabType);
+      }
+      //
+      if ( (mcStatus&BIT(kMCPrimBit)) ) {
+	//	printf("#%4d Pt:%5.2f Eta:%5.2f |",itr,ptMC,etaMC);
+	//	for (int k=0;k<32;k++) printf("%d", (mcStatus&(0x1<<k)) ? 1:0);
+	//	printf("| %+5d %+5d %+5d |%3d %d -> %d\n",labMC,labMCTPC,labMCITS,nClTPC,nClITS,mcLabType);
 
 	// compare MC vs reco track params
 	if (ptMC>0) GetHisto(&fHistosCentMCLb,kHResPTvsPTMC, mcLabType)->Fill(ptMC, (ptMC-pt)/ptMC);
@@ -415,6 +467,20 @@ void AliTaskITSUPerf::BuildMCInfo()
   //
   if (fMCStatus.GetSize()<ntrMC) fMCStatus.Set(ntrMC);
   fMCStatus.Reset();
+#ifdef _CLUS_LIST_
+  fClLists.Delete();
+  if (fClLists.GetSize()<ntrMC) fClLists.Expand(ntrMC);
+  //
+  // create empty lists for reconstructed tracks
+  int ntr = fESDEvent->GetNumberOfTracks();
+  for (int itr=0;itr<ntr;itr++) {
+    AliESDtrack* trc = fESDEvent->GetTrack(itr);
+    int lb = TMath::Abs(trc->GetLabel());
+    if (lb<ntrMC && !fClLists.At(itr)) {
+      fClLists.AddAt(new TObjArray(7),lb);
+    }
+  }
+#endif
   //
   for (int itr=0;itr<ntrMC;itr++) {
     //
@@ -438,8 +504,9 @@ void AliTaskITSUPerf::BuildMCInfo()
   if (fRPTree) {
     // load clusters
     fITS->LoadClusters(fRPTree);
+    fITS->ProcessClusters(); // order in the same way as in reconstruction
     //
-    for (int ilr=fITS->GetNLayersActive();ilr--;) {
+    for (int ilr=0;ilr<fITS->GetNLayersActive();ilr++) {
       AliITSURecoLayer* lr = fITS->GetLayerActive(ilr);
       for (int icl=lr->GetNClusters();icl--;) {
 	AliCluster* cl = lr->GetCluster(icl); 
@@ -449,6 +516,10 @@ void AliTaskITSUPerf::BuildMCInfo()
 	  if (lab<0||lab>=ntrMC) continue;
 	  UInt_t& mcStatus = (UInt_t &)fMCStatus[lab];
 	  mcStatus |= 0x1<<(ilr+kITSHitBits);
+#ifdef _CLUS_LIST_
+	  TObjArray *clList = (TObjArray*)fClLists.At(lab);
+	  if (clList) clList->AddLast(cl);  // create cl.list only for reconstructed tracks
+#endif
 	}
       }
     }

@@ -8,6 +8,8 @@
 // Author:  ruben.shahoyan@cern.ch                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+//#define _CLUS_LIST_
+
 class TH1F; 
 class TH2F;
 class TH3F;
@@ -43,7 +45,9 @@ class AliTaskITSUPerf : public AliAnalysisTaskSE {
   };
   //
   enum {  // histos defined for each centrality bin (regardless MClabels combination)
-    kHMatchStatus
+    kHMatchStatusRcbl
+    ,kHMatchStatusNRcblPrim
+    ,kHMatchStatusNRcblSec
     ,kHNStdHistosCent
   };
     
@@ -110,6 +114,9 @@ class AliTaskITSUPerf : public AliAnalysisTaskSE {
   // MC info
   Int_t            fNSelTracksMC;            //! number of selected MC tracks
   TArrayI          fMCStatus;                //! mc info about every MC particle
+#ifdef _CLUS_LIST_
+  TObjArray        fClLists;                 //! list of MC clusters for each track
+#endif
   // 
   Int_t            fNPtBins;                 //! N pt bins for histos
   Int_t            fNResBins;                //! N bins for resolution histos

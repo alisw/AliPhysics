@@ -248,7 +248,6 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
       }
       AliLog::SetClassDebugLevel("AliITSUTrackerGlo",dbg ? 10:0);
       */
-
       AliDebug(1,Form("Processing track %d(esd%d) | M=%.3f Pt=%.3f | MCLabel: %d",itr,trID,fCurrESDtrack->GetMass(kTRUE),fCurrESDtrack->Pt(),fCurrESDtrMClb));//RS
       FindTrack(fCurrESDtrack, trID);
     }   
@@ -578,9 +577,10 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
       // cluster search is done. Do we need to have a version of this seed skipping current layer
       if (!NeedToKill(&seedUC,kMissingCluster)) {
 	AliITSUSeed* seedSkp = NewSeedFromPool(&seedUC);
-	double penalty = -fCurrTrackCond->GetMissPenalty(ila);
-	// to do: make penalty to account for probability to miss the cluster for good reason
-	seedSkp->SetChi2Cl(penalty);
+	if (nsens) { // to do: make penalty to account for probability to miss the cluster for good reason
+	  double penalty = -fCurrTrackCond->GetMissPenalty(ila);
+	  seedSkp->SetChi2Cl(penalty);
+	}
 	if (seedSkp->GetChi2GloNrm()>fCurrTrackCond->GetMaxChi2GloNrm(ila)) {
 	  MarkSeedFree(seedSkp);
 	}
@@ -1056,7 +1056,7 @@ Bool_t AliITSUTrackerGlo::NeedToKill(AliITSUSeed *seed, Int_t flag)
   if (flag==kMissingCluster) {
     int lastChecked = seed->GetLayerID();
     UShort_t patt = seed->GetHitsPattern();
-    if (lastChecked) patt |= ~(kMask<<lastChecked); // not all layers were checked, complete unchecked ones by potential hits
+    if (lastChecked) patt |= (~(kMask<<lastChecked))&fCurrTrackCond->GetAllowedLayers(); // not all layers were checked, complete unchecked ones by potential hits
     Bool_t seedOK = fCurrTrackCond->CheckPattern(patt);
     return !seedOK;
   }
@@ -1328,6 +1328,8 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
       //
       esdTr->SetITSSharedMap(clfake);
     }
+    // TEMPORARY: store iteration id
+    esdTr->SetITSModuleIndex(11,fCurrPassID);
     break;
     //
   case AliESDtrack::kITSout: 
@@ -1613,7 +1615,7 @@ void AliITSUTrackerGlo::ValidateAllowedCandidates(Int_t ilr, Int_t acceptMax)
   Sort(fNCandidatesAdded,chi2,index,kFALSE);
   //
   int nacc=0,nb=0;
-  if (ilr>0) { // just take 1st acceptMax candidates
+  if (ilr>fCurrTrackCond->GetActiveLrInner()) { // just take 1st acceptMax candidates
     nb = Min(fNCandidatesAdded,acceptMax);
     for (int ib=0;ib<nb;ib++) AddProlongationHypothesis(fLayerCandidates[index[ib]],ilr);
   }
