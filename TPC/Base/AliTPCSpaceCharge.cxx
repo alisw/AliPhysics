@@ -31,6 +31,11 @@
 //   <p>
 //   The scaling factor can be set via the function SetCorrectionFactor. An example of 
 //   the shape of the distortions is given below.
+//
+//   MI modification - 22.05.2013
+//   As an optional input the Space charge histogram RZ is used in case it is provided 
+//     - using the SetInputSpaceCharge function
+//
 // End_Html
 //
 // Begin_Macro(source)
@@ -60,6 +65,7 @@
 #include "AliTPCParam.h"
 #include "AliLog.h"
 #include "TMatrixD.h"
+#include "TH2.h"
 
 #include "TMath.h"
 #include "AliTPCROC.h"
@@ -69,7 +75,7 @@ ClassImp(AliTPCSpaceCharge)
 
 AliTPCSpaceCharge::AliTPCSpaceCharge()
   : AliTPCCorrection("SpaceCharge2D","Space Charge 2D"),
-    fC0(0.),fC1(0.),fCorrectionFactor(0.001),
+    fC0(0.),fC1(0.),fCorrectionFactor(0.001),fSpaceChargeHistogram(0),
     fInitLookUp(kFALSE)
 {
   //
@@ -219,6 +225,19 @@ void AliTPCSpaceCharge::InitSpaceChargeDistortion() {
       Double_t zterm = (fgkTPCZ0-zed) * (fgkOFCRadius*fgkOFCRadius - fgkIFCRadius*fgkIFCRadius) / fgkTPCZ0 ;
       // for 1/R**2 charge density in the TPC; then integrated in Z due to drifting ions
       chargeDensity(i,j) = zterm / ( TMath::Log(fgkOFCRadius/fgkIFCRadius) * ( radius*radius ) ) ;              
+    }
+  }
+  // Fill the initial space charge in case histogram exist
+  if (fSpaceChargeHistogram){
+    for ( Int_t j = 1 ; j < kColumns-1 ; j++ ) {
+      Double_t zed = j*gridSizeZ ;
+      for ( Int_t i = 1 ; i < kRows-1 ; i++ ) { 
+	Double_t radius = fgkIFCRadius + i*gridSizeR ;
+	
+	Double_t zterm = (fgkTPCZ0-zed) * (fgkOFCRadius*fgkOFCRadius - fgkIFCRadius*fgkIFCRadius) / fgkTPCZ0 ;
+	// for 1/R**2 charge density in the TPC; then integrated in Z due to drifting ions
+	chargeDensity(i,j) = fSpaceChargeHistogram->Interpolate(radius,zed);
+      }
     }
   }
 

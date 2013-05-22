@@ -12,6 +12,8 @@
 #include "AliTPCCorrection.h"
 
 
+class TH2; 
+
 class AliTPCSpaceCharge : public AliTPCCorrection {
 public:
   AliTPCSpaceCharge();
@@ -20,6 +22,8 @@ public:
   // initialization and update functions
   virtual void Init();
   virtual void Update(const TTimeStamp &timeStamp);
+  void    SetInputSpaceCharge(TH2 * hisSpaceCharge){fSpaceChargeHistogram = hisSpaceCharge;}  // MI add
+  const TH2 *   GetInputSpaceCharge(){return fSpaceChargeHistogram;}       // MI add 
 
 
   // common setters and getters for tangled ExB effect
@@ -50,11 +54,11 @@ private:
                                    // look up table which was created for M_mb = 900 and IR = 3000
                                    // compare Internal Note Nr: ???
 
+  TH2 *    fSpaceChargeHistogram;      // Histogram with the input space charge histogram - used as an optional input 
   Bool_t fInitLookUp;                  // flag to check it the Look Up table was created
 
   Double_t fLookUpErOverEz[kNZ][kNR];  // Array to store electric field integral (int Er/Ez)
   Double_t fLookUpDeltaEz[kNZ][kNR];   // Array to store electric field integral (int Delta Ez)
-
   // basic numbers for the poisson relaxation //can be set individually in each class
   enum {kRows   =257}; // grid size in r direction used in the poisson relaxation // ( 2**n + 1 ) eg. 65, 129, 257 etc.
   enum {kColumns=129}; // grid size in z direction used in the poisson relaxation // ( 2**m + 1 ) eg. 65, 129, 257 etc.
