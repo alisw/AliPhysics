@@ -45,6 +45,7 @@
 #include <AliVVertex.h>
 #include <AliESDEvent.h>
 #include <AliAODEvent.h>
+#include <AliAODTrack.h>
 
 #include <AliPicoTrack.h>
 #include <AliEmcalJet.h>
@@ -59,7 +60,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskRhoVnModulation)
 
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoVnModulation", kTRUE), 
-    fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(kGrid), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(0.4), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistPsiTPCSUBA(0), fHistPsiTPCSUBB(0),
+    fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(kGrid), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(0.4), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistPsiTPCSUBA(0), fHistPsiTPCSUBB(0),
    fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
@@ -111,7 +112,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
 }
 //_____________________________________________________________________________
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-  fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(type), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(0.4), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistPsiTPCSUBA(0), fHistPsiTPCSUBB(0), 
+  fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(type), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(0.4), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistPsiTPCSUBA(0), fHistPsiTPCSUBB(0), 
    fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
@@ -350,7 +351,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
         fHistJetPtRaw[i] =             BookTH1F("fHistJetPtRaw", "p_{t} RAW [GeV/c]", 200, -50, 150, i);
         fHistJetPt[i] =                BookTH1F("fHistJetPt", "p_{t} [GeV/c]", 350, -100, 250, i);
         fHistJetEtaPhi[i] =            BookTH2F("fHistJetEtaPhi", "#eta", "#phi", 100, -1, 1, 100, 0, TMath::TwoPi(), i);
-        fHistJetPtArea[i] =            BookTH2F("fHistJetPtArea", "p_{t} [GeV/c]", "Area", 350, -100, 250, 60, 0, 0.3, i);
+        fHistJetPtArea[i] =            BookTH2F("fHistJetPtArea", "p_{t} [GeV/c]", "Area", 175, -100, 250, 30, 0, 0.9, i);
         fHistJetPtConstituents[i] =    BookTH2F("fHistJetPtConstituents", "p_{t} [GeV/c]", "Area", 350, -100, 250, 60, 0, 150, i);
         fHistJetEtaRho[i] =            BookTH2F("fHistJetEtaRho", "#eta", "#rho", 100, -1, 1, 100, 0, 300, i);
         // in plane and out of plane spectra
@@ -398,7 +399,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     fOutputList->Add(fProfV3);
 
     // analysis summary histrogram, saves all relevant analysis settigns
-    fHistAnalysisSummary = BookTH1F("fHistAnalysisSummary", "flag", 42, -0.5, 42.5);
+    fHistAnalysisSummary = BookTH1F("fHistAnalysisSummary", "flag", 44, -0.5, 44.5);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(1, "fJetRadius"); 
     fHistAnalysisSummary->SetBinContent(1, fJetRadius);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(2, "fPtBiasJetTrack");
@@ -470,6 +471,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(35, "runModeType");
     fHistAnalysisSummary->SetBinContent(35, (int)fRunModeType);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(36, "data type");
+    fHistAnalysisSummary->SetBinContent(36, (int)fDataType);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(37, "iterator");
     fHistAnalysisSummary->SetBinContent(37, 1.);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(38, "fMinPvalue");
@@ -482,6 +484,10 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     fHistAnalysisSummary->SetBinContent(41, (int)fRebinSwapHistoOnTheFly);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(42, "fUsePtWeight");
     fHistAnalysisSummary->SetBinContent(42, (int)fUsePtWeight);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(43, "fMinLeadingHadronPt");
+    fHistAnalysisSummary->SetBinContent(43, fMinLeadingHadronPt);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(44, "fExplicitOutlierCut");
+    fHistAnalysisSummary->SetBinContent(44, fExplicitOutlierCut);
 
     if(fFillQAHistograms) {
         fHistRunnumbersEta = new TH2F("fHistRunnumbersEta", "fHistRunnumbersEta", 100, -.5, 99.5, 100, -1.1, 1.1);
@@ -494,6 +500,9 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
 
     fHistSwap = new TH1F("fHistSwap", "fHistSwap", 20, 0, TMath::TwoPi());
     fHistSwap->Sumw2();
+
+    // increase readability of output list
+    fOutputList->Sort();
     PostData(1, fOutputList);
 
     switch (fRunModeType) {
@@ -940,8 +949,33 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
             fInCentralitySelection = i;
             break; }
     } 
+    if(fExplicitOutlierCut == 2010 || fExplicitOutlierCut == 2011) {
+       if(!PassesCuts(fExplicitOutlierCut)) return kFALSE;
+    }
     if(fFillQAHistograms) FillQAHistograms(event);
     return kTRUE;
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(Int_t year) 
+{
+    // additional centrality cut based on relation between tpc and global multiplicity
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    AliAODEvent* event(dynamic_cast<AliAODEvent*>(InputEvent()));
+    if(!event) return kFALSE;
+    Int_t multTPC(0), multGlob(0), nTracks(InputEvent()->GetNumberOfTracks());
+    for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) { 
+        AliAODTrack* track = event->GetTrack(iTracks);
+        if(!track) continue;
+        if (!track || track->Pt() < .2 || track->Pt() > 5.0 || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70 || !track->GetDetPid() || track->GetDetPid()->GetTPCsignal() < 10.0)  continue;  // general quality cut
+        if (track->TestFilterBit(1) && track->Chi2perNDF() > 0.2) multTPC++;
+        if (!track->TestFilterBit(16) || track->Chi2perNDF() < 0.1) continue;
+        Double_t b[2] = {-99., -99.};
+        Double_t bCov[3] = {-99., -99., -99.};
+        if (track->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlob++;
+    }
+    if(year == 2010 && multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob)) return kTRUE;
+    if(year == 2011  && multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob)) return kTRUE;
+    return kFALSE;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(const AliVCluster* cluster) const
