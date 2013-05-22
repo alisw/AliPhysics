@@ -1166,6 +1166,11 @@ TString AliCalorimeterUtils::GetPass()
   else if (pass.Contains("ass3")) return TString("pass3");
   else if (pass.Contains("ass4")) return TString("pass4");
   else if (pass.Contains("ass5")) return TString("pass5");
+  else if (pass.Contains("calo") || pass.Contains("high_lumi"))
+  {
+    printf("AliCalorimeterUtils::GetPass() - Path contains <calo> or <high-lumi>, set as <pass1>\n");
+    return TString("pass1");
+  }
 
   // No condition fullfilled, give a default value
   printf("AliCalorimeterUtils::GetPass() - Pass number string not found \n");
