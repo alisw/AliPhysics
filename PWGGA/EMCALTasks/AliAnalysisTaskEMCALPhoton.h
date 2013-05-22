@@ -181,7 +181,7 @@ class AliPhotonClusterObj : public TObject
 {
   public: AliPhotonClusterObj() : 
   TObject(), fE(0), fEt(0), fR(0), fEta(0), fPhi(0), fN(0),fEmax(0),fTmax(0), fIdmax(0), fEcross(0),fDisp(-1), 
-        fM20(-1), fM02(-1),fTrDEta(0), fTrDPhi(0), fTrEp(0), fTrDedx(0), fTrIso01(0), fTrIso02(0), fTrIso03(0), fTrIso04(0), 
+        fM20(-1), fM02(-1),fTrDEta(0), fTrDPhi(0), fTrEp(-1), fTrDedx(-1), fTrIso01(0), fTrIso02(0), fTrIso03(0), fTrIso04(0), 
         fTrPhiBand01(0), fTrPhiBand02(0), fTrPhiBand03(0), fTrPhiBand04(0), fCellsAbsId(""),fMcLabel(-1)
         {;}
  public:
