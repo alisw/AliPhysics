@@ -86,12 +86,14 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetAbsVertexZ(Float_t v)                        {fAbsVertexZ = v; }
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
         void                    SetRandomConeRadius(Float_t r)                  {fRandomConeRadius = r; }
+        void                    SetMinLeadingHadronPt(Double_t m)               {fMinLeadingHadronPt = m; }
         void                    SetForceAbsVnHarmonics(Bool_t f)                {fAbsVnHarmonics = f; }
         void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
         void                    SetRebinSwapHistoOnTheFly(Bool_t r)             {fRebinSwapHistoOnTheFly = r; }
         void                    SetSaveThisPercentageOfFits(Float_t p)          {fPercentageOfFits = p; }
         void                    SetUseV0EventPlaneFromHeader(Bool_t h)          {fUseV0EventPlaneFromHeader = h;}
         void                    SetSetPtSub(Bool_t s)                           {fSetPtSub = s; }
+        void                    SetExplicitOutlierCutForYear(Int_t y)           {fExplicitOutlierCut = y;}
         // 'trivial' helper calculations
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneTPC(Double_t* tpc);
@@ -103,10 +105,11 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
             if(!track) return kFALSE;
             return (track->Pt() < fTrackPtCut || track->Eta() < fTrackMinEta || track->Eta() > fTrackMaxEta || track->Phi() < fTrackMinPhi || track->Phi() > fTrackMaxPhi) ? kFALSE : kTRUE; }
-        /* inline */    Bool_t PassesCuts(const AliEmcalJet* jet) const {
+        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) const {
             if(!jet || fJetRadius <= 0) return kFALSE;
-            return (jet->Pt() < fJetPtCut || jet->Area()/(fJetRadius*fJetRadius*TMath::Pi()) < fPercAreaCut || jet->Eta() < fJetMinEta || jet->Eta() > fJetMaxEta || jet->Phi() < fJetMinPhi || jet->Phi() > fJetMaxPhi) ? kFALSE : kTRUE; }
+            return (GetLeadingHadronPt(jet) < fMinLeadingHadronPt || jet->Pt() < fJetPtCut || jet->Area()/(fJetRadius*fJetRadius*TMath::Pi()) < fPercAreaCut || jet->Eta() < fJetMinEta || jet->Eta() > fJetMaxEta || jet->Phi() < fJetMinPhi || jet->Phi() > fJetMaxPhi) ? kFALSE : kTRUE; }
         Bool_t                  PassesCuts(AliVEvent* event);
+        Bool_t                  PassesCuts(Int_t year);
         Bool_t                  PassesCuts(const AliVCluster* track) const;
         // filling histograms
         void                    FillHistogramsAfterSubtraction(Double_t vzero[2][2], Double_t* tpc) const;
@@ -162,6 +165,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         Float_t                 fPercentageOfFits;      // save this percentage of fits
         Bool_t                  fUseV0EventPlaneFromHeader;    // use the vzero event plane from the header
         Bool_t                  fSetPtSub;              // store the subtracted pt in the jet
+        Int_t                   fExplicitOutlierCut;    // cut on correlation of tpc and global multiplicity
+        Double_t                fMinLeadingHadronPt;    // minimum pt for leading hadron
         // transient object pointers
         TList*                  fOutputList;            //! output list
         TList*                  fOutputListGood;        //! output list for local analysis
@@ -238,7 +243,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 7);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 8);
 };
 
 #endif
