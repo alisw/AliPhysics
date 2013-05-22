@@ -58,8 +58,9 @@ AliHadCorrTask::AliHadCorrTask() :
 
       fHistEmbTrackMatchesOversub[i] = 0;
       fHistNonEmbTrackMatchesOversub[i] = 0;
+      fHistOversubMCClusters[i] = 0;
+      fHistOversubNonMCClusters[i] = 0;
       fHistOversub[i] = 0;
-      fHistOversubOverClusE[i] = 0;
 
       for(Int_t j=0; j<4; j++)
 	fHistNCellsEnergy[i][j] = 0;
@@ -106,8 +107,9 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
 
       fHistEmbTrackMatchesOversub[i] = 0;
       fHistNonEmbTrackMatchesOversub[i] = 0;
+      fHistOversubMCClusters[i] = 0;
+      fHistOversubNonMCClusters[i] = 0;
       fHistOversub[i] = 0;
-      fHistOversubOverClusE[i] = 0;
 
       for(Int_t j=0; j<4; j++)
 	fHistNCellsEnergy[i][j] = 0;
@@ -438,28 +440,34 @@ void AliHadCorrTask::UserCreateOutputObjects()
   if (fIsEmbedded) {
     for(Int_t icent=0; icent<fNcentBins; ++icent) {
       name = Form("fHistEmbTrackMatchesOversub_%d",icent);
-      fHistEmbTrackMatchesOversub[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbTrackMatchesOversub[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, 0, 1.2);
       fHistEmbTrackMatchesOversub[icent]->GetXaxis()->SetTitle("E_{clus}^{raw} (GeV)");
-      fHistEmbTrackMatchesOversub[icent]->GetYaxis()->SetTitle("E_{oversub} (GeV)");
+      fHistEmbTrackMatchesOversub[icent]->GetYaxis()->SetTitle("E_{oversub} / E_{clus}^{raw}");
       fOutput->Add(fHistEmbTrackMatchesOversub[icent]);
 
       name = Form("fHistNonEmbTrackMatchesOversub_%d",icent);
-      fHistNonEmbTrackMatchesOversub[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+      fHistNonEmbTrackMatchesOversub[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, 0, 1.2);
       fHistNonEmbTrackMatchesOversub[icent]->GetXaxis()->SetTitle("E_{clus}^{raw} (GeV)");
-      fHistNonEmbTrackMatchesOversub[icent]->GetYaxis()->SetTitle("E_{oversub} (GeV)");
+      fHistNonEmbTrackMatchesOversub[icent]->GetYaxis()->SetTitle("E_{oversub} / E_{clus}^{raw}");
       fOutput->Add(fHistNonEmbTrackMatchesOversub[icent]);
 
-      name = Form("fHistOversub_%d",icent);
-      fHistOversub[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
-      fHistOversub[icent]->GetXaxis()->SetTitle("E_{clus}^{raw} (GeV)");
-      fHistOversub[icent]->GetYaxis()->SetTitle("E_{oversub} (GeV)");
-      fOutput->Add(fHistOversub[icent]);
+      name = Form("fHistOversubMCClusters_%d",icent);
+      fHistOversubMCClusters[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, 0, 1.2);
+      fHistOversubMCClusters[icent]->GetXaxis()->SetTitle("E_{clus}^{raw} (GeV)");
+      fHistOversubMCClusters[icent]->GetYaxis()->SetTitle("E_{oversub} / E_{clus}^{raw}");
+      fOutput->Add(fHistOversubMCClusters[icent]);
 
-      name = Form("fHistOversubOverClusE_%d",icent);
-      fHistOversubOverClusE[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, 0, 1.2);
-      fHistOversubOverClusE[icent]->GetXaxis()->SetTitle("E_{clus}^{raw} (GeV)");
-      fHistOversubOverClusE[icent]->GetYaxis()->SetTitle("E_{oversub} / E_{clus}^{raw}");
-      fOutput->Add(fHistOversubOverClusE[icent]);
+      name = Form("fHistOversubNonMCClusters_%d",icent);
+      fHistOversubNonMCClusters[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, 0, 1.2);
+      fHistOversubNonMCClusters[icent]->GetXaxis()->SetTitle("E_{clus}^{raw} (GeV)");
+      fHistOversubNonMCClusters[icent]->GetYaxis()->SetTitle("E_{oversub} / E_{clus}^{raw}");
+      fOutput->Add(fHistOversubNonMCClusters[icent]);
+
+      name = Form("fHistOversub_%d",icent);
+      fHistOversub[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, 0, 1.2);
+      fHistOversub[icent]->GetXaxis()->SetTitle("E_{clus}^{raw} (GeV)");
+      fHistOversub[icent]->GetYaxis()->SetTitle("E_{oversub} / E_{clus}^{raw}");
+      fOutput->Add(fHistOversub[icent]);
     }
   }
 
@@ -878,13 +886,17 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
       }
 
       if (fIsEmbedded) {
-	fHistOversub[fCentBin]->Fill(energyclus, overSub);
-	fHistOversubOverClusE[fCentBin]->Fill(energyclus, overSub / energyclus);
+	fHistOversub[fCentBin]->Fill(energyclus, overSub / energyclus);
+
+	if (cluster->GetMCEnergyFraction() > 0.95)
+	  fHistOversubMCClusters[fCentBin]->Fill(energyclus, overSub / energyclus);
+	else if (cluster->GetMCEnergyFraction() < 0.05)
+	  fHistOversubNonMCClusters[fCentBin]->Fill(energyclus, overSub / energyclus);
 
 	if (trkPMCfrac < 0.05)
-	  fHistNonEmbTrackMatchesOversub[fCentBin]->Fill(energyclus, overSub);
+	  fHistNonEmbTrackMatchesOversub[fCentBin]->Fill(energyclus, overSub / energyclus);
 	else if (trkPMCfrac > 0.95)
-	  fHistEmbTrackMatchesOversub[fCentBin]->Fill(energyclus, overSub);
+	  fHistEmbTrackMatchesOversub[fCentBin]->Fill(energyclus, overSub / energyclus);
       }
     }
   }
