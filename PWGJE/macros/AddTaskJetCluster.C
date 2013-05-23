@@ -94,7 +94,12 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
      clus->SetAODMCInput(kTRUE);
    }
 
-   if(typeRec.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
+ if (typeRec.Contains("AODMCHF")){
+     clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCHF);
+     clus->SetTrackPtCut(kPtTrackCutCl);
+     clus->SetTrackEtaWindow(kTrackEtaWindowCl);
+   }
+   else if(typeRec.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
      clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCChargedAcceptance);
      clus->SetTrackPtCut(kPtTrackCutCl);
      clus->SetTrackEtaWindow(kTrackEtaWindowCl);

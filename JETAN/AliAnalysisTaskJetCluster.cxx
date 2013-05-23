@@ -2014,9 +2014,59 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
       }
     }
   }// AODMCparticle
+  else if (type == kTrackAODMCHF){
+	  
+	AliAODEvent *aod = 0;
+    if(fUseAODMCInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
+    else aod = AODEvent();  
+	if(!aod)return iCount;
+	TClonesArray *tca = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+	if(!tca)return iCount;
+	for(int it = 0;it < tca->GetEntriesFast();++it){
+		AliAODMCParticle *part = (AliAODMCParticle*)(tca->At(it));
+		if(!part) continue;
+		int partpdg= part->PdgCode();
+		if(!part->IsPhysicalPrimary() && !IsBMeson(partpdg) && !IsDMeson(partpdg) )continue;
+		
+		if (IsBMeson(partpdg) || IsDMeson(partpdg)) {
+			iCount+= AddDaughters( list , part,tca);
+			}
+		else {
+			
+			if(part->Pt()<fTrackPtCut)	continue;
+			if(TMath::Abs(part->Eta())>fTrackEtaWindow)	continue;
+			if(part->Charge()==0)	continue;
+			
+			if((part->Pt()>=fTrackPtCut) && (TMath::Abs(part->Eta())<=fTrackEtaWindow) && (part->Charge()!=0))list->Add(part);
+			iCount++;
+		}
+		}
+ }
+  
   list->Sort();
   return iCount;
 }
+
+Int_t AliAnalysisTaskJetCluster::AddDaughters(TList * list, AliAODMCParticle *part, TClonesArray * tca){
+	Int_t count=0;
+	Int_t nDaugthers = part->GetNDaughters();
+	for(Int_t i=0;i< nDaugthers;++i){
+		AliAODMCParticle *partdaughter = (AliAODMCParticle*)(tca->At(i));
+			if(!partdaughter) continue;
+			if(partdaughter->Pt()<fTrackPtCut)continue;
+			if(TMath::Abs(partdaughter->Eta())>fTrackEtaWindow)continue;
+			if(partdaughter->Charge()==0)continue;
+			
+	if(!IsDMeson(partdaughter->PdgCode()) && !IsBMeson(partdaughter->PdgCode()) ){
+		list->Add(partdaughter);
+		count++;
+		}
+		else count+=AddDaughters(list,part,tca);
+	}			
+return count;	
+}
+
+
 
 void AliAnalysisTaskJetCluster::LoadTrPtResolutionRootFileFromOADB() {
 
@@ -2175,3 +2225,20 @@ void AliAnalysisTaskJetCluster::FitMomentumResolution() {
 
   }
 */
+
+
+bool AliAnalysisTaskJetCluster::IsBMeson(int pc){
+	int bPdG[] = {511,521,10511,10521,513,523,10513,10523,20513,20523,20513,20523,515,525,531,
+	10531,533,10533,20533,535,541,10541,543,10543,20543,545,551,10551,100551,
+	110551,200551,210551,553,10553,20553,30553,100553,110553,120553,130553,200553,210553,220553,
+	300553,9000533,9010553,555,10555,20555,100555,110555,120555,200555,557,100557};
+	for(int i=0;i< (int)(sizeof(bPdG)/sizeof(int));++i) if(abs(pc) == bPdG[i]) return true;
+return false;
+}
+bool AliAnalysisTaskJetCluster::IsDMeson(int pc){
+	int bPdG[] = {411,421,10411,10421,413,423,10413,10423,20431,20423,415,
+	425,431,10431,433,10433,20433,435,441,10441,100441,443,10443,20443,
+	100443,30443,9000443,9010443,9020443,445,100445};
+	for(int i=0;i< (int)(sizeof(bPdG)/sizeof(int));++i) if(abs(pc) == bPdG[i]) return true;
+return false;
+}

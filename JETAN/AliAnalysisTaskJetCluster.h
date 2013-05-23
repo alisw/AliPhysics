@@ -25,6 +25,7 @@ class AliGenPythiaEventHeader;
 class AliCFManager;
 class AliAODJetEventBackground;
 class AliJetFinder;
+class AliAODMCParticle;
 class TList;
 class TChain;
 class TH2F;
@@ -119,12 +120,14 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
 
     // Helper
     //
+	virtual bool	IsBMeson(int pc);
+	virtual bool	IsDMeson(int pc);
 
     // we have different cases
     // AOD reading -> MC from AOD
     // ESD reading -> MC from Kinematics
     // this has to match with our selection of input events
-    enum {kTrackUndef = 0, kTrackAOD, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance, kTrackAODextra, kTrackAODextraonly, kTrackAODMCextra, kTrackAODMCextraonly};
+    enum {kTrackUndef = 0, kTrackAOD, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance, kTrackAODextra, kTrackAODextraonly, kTrackAODMCextra, kTrackAODMCextraonly, kTrackAODMCHF};
     enum {kMaxJets = 4};
     enum {kMaxCorrelation =  3};
     enum {kMaxRadius =       5};
@@ -142,7 +145,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     AliAnalysisTaskJetCluster& operator=(const AliAnalysisTaskJetCluster&);
 
     Int_t GetListOfTracks(TList *list,Int_t type);
-
+	Int_t AddDaughters(TList * list, AliAODMCParticle *part, TClonesArray * tca);
+	
     AliAODEvent     *fAOD;                // ! where we take the jets from can be input or output AOD
     AliAODExtension *fAODExtension;       // ! AOD extension in case we write a non-sdt branch to a separate file and the aod is standard
     TRefArray       *fRef;               // ! trefarray for track references within the jet
@@ -328,7 +332,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 23) 
+    ClassDef(AliAnalysisTaskJetCluster, 24) 
 };
  
 #endif
