@@ -9,15 +9,16 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   const char*         centralityType          = "V0A",
   Double_t            trackEtaWindow          = 0.9,
   Double_t            minJetPt                = 5.0, // signal jet min pt
-  Double_t            minBackgroundJetPt      = 0.0, // background jet min pt
+  Double_t            minBackgroundJetPt      = -1.0, // background jet min pt
   Double_t            dijetLeadingMinPt       = 10.0,
   Double_t            dijetMaxAngleDev        = 10.0,
   Int_t               numberOfPtHardBins      = 0,
   const char*         externalMacro           = NULL,
   Bool_t              useVertexCut            = kTRUE,
-  Bool_t              usePileUpCut            = kFALSE,
+  Bool_t              usePileUpCut            = kTRUE,
   Bool_t              isEMCalTrain            = kFALSE,
-  Bool_t              calculateExternalRho    = kFALSE
+  Bool_t              calculateExternalRho    = kFALSE,
+  Bool_t              analyzeDeprecatedBackgrounds = kTRUE,
 )
 {
   // #### Detect the demanded trigger with its readable name
@@ -58,6 +59,15 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300); // anti-kt
   AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,jetRadius,1,0.150,0.300); // kt
 
+  if(minBackgroundJetPt > -1.0)
+  {
+    if(analyzeDeprecatedBackgrounds)
+      minBackgroundJetPt = 0.0;
+    else
+      minBackgroundJetPt = 0.15;
+  }
+
+
   jetFinderTaskKT->SetMinJetPt(minBackgroundJetPt);
 
   // #### Define extern rho task
@@ -96,7 +106,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   task->SetAcceptanceWindows(trackEtaWindow, jetRadius, jetRadius);
   task->SetAnalyzeQA(kTRUE);
   task->SetAnalyzeBackground(kTRUE);
-  task->SetAnalyzeDeprecatedBackgrounds(kTRUE);
+  task->SetAnalyzeDeprecatedBackgrounds(analyzeDeprecatedBackgrounds);
   task->SetUsePileUpCut(usePileUpCut);
   task->SetUseVertexCut(useVertexCut);
   task->SetSignalJetMinPt(minJetPt);
