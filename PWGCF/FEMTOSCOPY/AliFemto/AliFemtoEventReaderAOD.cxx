@@ -60,8 +60,9 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fFileName(" "),
   fTree(0x0),
   fAodFile(0x0),
-    fMagFieldSign(1),
-    fisEPVZ(kTRUE)
+  fMagFieldSign(1),
+  fisEPVZ(kTRUE),
+  fpA2013(kFALSE)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -90,8 +91,9 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fFileName(" "),
   fTree(0x0),
   fAodFile(0x0),
-    fMagFieldSign(1),
-    fisEPVZ(kTRUE)
+  fMagFieldSign(1),
+  fisEPVZ(kTRUE),
+  fpA2013(kFALSE)
 {
   // copy constructor
   fReadMC = aReader.fReadMC;
@@ -112,6 +114,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fCentRange[1] = aReader.fCentRange[1];
   fEstEventMult = aReader.fEstEventMult;
   fUsePreCent = aReader.fUsePreCent;
+  fpA2013 = aReader.fpA2013;
 }
 //__________________
 //Destructor
@@ -154,6 +157,7 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fCentRange[1] = aReader.fCentRange[1];
   fUsePreCent = aReader.fUsePreCent;
   fEstEventMult = aReader.fEstEventMult;
+  fpA2013 = aReader.fpA2013;
 
   return *this;
 }
@@ -300,6 +304,24 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
   // Primary Vertex position
   //  double fV1[3];
+  if(fpA2013)
+    {
+      const AliAODVertex* trkVtx = fEvent->GetPrimaryVertex();
+      if (!trkVtx || trkVtx->GetNContributors()<=0)  return;
+      TString vtxTtl = trkVtx->GetTitle();
+      if (!vtxTtl.Contains("VertexerTracks")) return;
+      Float_t zvtx = trkVtx->GetZ();
+      const AliAODVertex* spdVtx = fEvent->GetPrimaryVertexSPD();
+      if (spdVtx->GetNContributors()<=0)  return;
+      TString vtxTyp = spdVtx->GetTitle();
+      Double_t cov[6]={0};
+      spdVtx->GetCovarianceMatrix(cov);
+      Double_t zRes = TMath::Sqrt(cov[5]);
+      if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25))  return;
+      if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5)  return;
+
+      if (TMath::Abs(zvtx) > 10)  return;
+    }
   fEvent->GetPrimaryVertex()->GetPosition(fV1);
 
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
@@ -1364,4 +1386,7 @@ void AliFemtoEventReaderAOD::GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrac
   }
 }
 
-
+void AliFemtoEventReaderAOD::SetpA2013(Bool_t pa2013)
+{
+  fpA2013 = pa2013;
+}

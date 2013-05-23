@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////////
 //                                                                             //
-// AliFemtoPairCutRadialDistance - a pair cut which checks                     //
+// AliFemtoPairCutRadialDistanceV0 - a pair cut which checks                   //
 // for some pair qualities that attempt to identify slit/doubly                //
 // reconstructed tracks and also selects pairs based on their separation       //
 // at the entrance to the TPC                                                  //
@@ -14,16 +14,16 @@
  *
  ********************************************************************************/
 
-#include "AliFemtoPairCutRadialDistance.h"
+#include "AliFemtoPairCutRadialDistanceV0.h"
 #include <string>
 #include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoPairCutRadialDistance)
+ClassImp(AliFemtoPairCutRadialDistanceV0)
 #endif
 
 //__________________
-AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance():
+AliFemtoPairCutRadialDistanceV0::AliFemtoPairCutRadialDistanceV0():
 AliFemtoPairCutAntiGamma(),
   fDPhiStarMin(0),
   fEtaMin(0),
@@ -33,7 +33,7 @@ AliFemtoPairCutAntiGamma(),
 {
 }
 //__________________
-AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance(const AliFemtoPairCutRadialDistance& c) :
+AliFemtoPairCutRadialDistanceV0::AliFemtoPairCutRadialDistanceV0(const AliFemtoPairCutRadialDistanceV0& c) :
   AliFemtoPairCutAntiGamma(c),
   fDPhiStarMin(0),
   fEtaMin(0),
@@ -49,10 +49,10 @@ AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance(const AliFemtoPairC
 }
 
 //__________________
-AliFemtoPairCutRadialDistance::~AliFemtoPairCutRadialDistance(){
+AliFemtoPairCutRadialDistanceV0::~AliFemtoPairCutRadialDistanceV0(){
   /* no-op */
 }
-AliFemtoPairCutRadialDistance& AliFemtoPairCutRadialDistance::operator=(const AliFemtoPairCutRadialDistance& c)
+AliFemtoPairCutRadialDistanceV0& AliFemtoPairCutRadialDistanceV0::operator=(const AliFemtoPairCutRadialDistanceV0& c)
 {
   if (this != &c) {
     fDPhiStarMin = c.fDPhiStarMin;
@@ -66,7 +66,7 @@ AliFemtoPairCutRadialDistance& AliFemtoPairCutRadialDistance::operator=(const Al
   return *this;
 }
 //__________________
-bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
+bool AliFemtoPairCutRadialDistanceV0::Pass(const AliFemtoPair* pair){
   // Accept pairs based on their TPC entrance separation and
   // quality and sharity
   //  bool temp = true;
@@ -151,7 +151,7 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   return pass5;
 }
 //__________________
-AliFemtoString AliFemtoPairCutRadialDistance::Report(){
+AliFemtoString AliFemtoPairCutRadialDistanceV0::Report(){
   // Prepare a report from the execution
   string stemp = "AliFemtoRadialDistance Pair Cut - remove shared and split pairs and pairs with small separation at the specified radius\n";  char ctemp[100];
   snprintf(ctemp , 100, "Accept pair with separation more that %f",fDPhiStarMin);
@@ -162,41 +162,46 @@ AliFemtoString AliFemtoPairCutRadialDistance::Report(){
   return returnThis;}
 //__________________
 
-TList *AliFemtoPairCutRadialDistance::ListSettings()
+TList *AliFemtoPairCutRadialDistanceV0::ListSettings()
 {
   // return a list of settings in a writable form
   TList *tListSetttings =  AliFemtoPairCutAntiGamma::ListSettings();
   char buf[200];
-  snprintf(buf, 200, "AliFemtoPairCutRadialDistance.phistarsepmin=%f", fDPhiStarMin);
+  snprintf(buf, 200, "AliFemtoPairCutRadialDistanceV0.phistarsepmin=%f", fDPhiStarMin);
   tListSetttings->AddLast(new TObjString(buf));
 
   return tListSetttings;
 }
 
-void AliFemtoPairCutRadialDistance::SetPhiStarDifferenceMinimum(double dtpc)
+void AliFemtoPairCutRadialDistanceV0::SetPhiStarDifferenceMinimum(double dtpc)
 {
   fDPhiStarMin = dtpc;
 }
 
-void AliFemtoPairCutRadialDistance::SetEtaDifferenceMinimum(double etpc)
+void AliFemtoPairCutRadialDistanceV0::SetEtaDifferenceMinimum(double etpc)
 {
   fEtaMin = etpc;
 }
 
 
-void AliFemtoPairCutRadialDistance::SetMinimumRadius(double minrad)
+void AliFemtoPairCutRadialDistanceV0::SetMinimumRadius(double minrad)
 {
   fMinRad = minrad;
 }
 
-void AliFemtoPairCutRadialDistance::SetMagneticFieldSign(int magsign)
+void AliFemtoPairCutRadialDistanceV0::SetMagneticFieldSign(int magsign)
 {
   if(magsign>1) fMagSign = 1;
   else if(magsign<1) fMagSign = -1;
   else fMagSign = magsign;
 }
 
-void AliFemtoPairCutRadialDistance::SetPhiStarMin(Bool_t phistarmin)
+void AliFemtoPairCutRadialDistanceV0::SetPhiStarMinPrimDaughter1(Bool_t phistarmin)
 {
-  fPhistarmin = phistarmin;
+  fPhistarminPrimDaughter1 = phistarmin;
+}
+
+void AliFemtoPairCutRadialDistanceV0::SetPhiStarMinPrimDaughter2(Bool_t phistarmin)
+{
+  fPhistarminPrimDaughter2 = phistarmin;
 }

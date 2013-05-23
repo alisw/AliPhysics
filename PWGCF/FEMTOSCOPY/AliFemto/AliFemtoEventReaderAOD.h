@@ -23,6 +23,7 @@
 #include "AliFemtoV0.h"
 #include "AliAODpidUtil.h"
 #include "AliAODHeader.h"
+#include "AliAnalysisUtils.h"
 
 class AliFemtoEvent;
 class AliFemtoTrack;
@@ -54,6 +55,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void SetEPVZERO(Bool_t);
   void GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
   void SetUseMultiplicity(EstEventMult aType);
+  void SetpA2013(Bool_t pa2013);
 
  protected:
   virtual void CopyAODtoFemtoEvent(AliFemtoEvent *tEvent);
@@ -81,6 +83,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   double         fCentRange[2];     // Centrality pre-selection range
   AliAODpidUtil* fAODpidUtil;
   AliAODHeader* fAODheader; 
+ 
 
  private:
 
@@ -92,6 +95,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   TFile*         fAodFile;          // AOD file 
   int            fMagFieldSign;     // Magnetic field sign
   Bool_t fisEPVZ; // to get event plane angle from VZERO
+  Bool_t fpA2013; // analysis on pA 2013 data
 
 
 #ifdef __ROOT__

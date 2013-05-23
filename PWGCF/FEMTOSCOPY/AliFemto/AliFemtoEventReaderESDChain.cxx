@@ -48,7 +48,8 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fESDpid(0),
   fIsPidOwner(0),
   fReadV0(0),
-  fMagFieldSign(0)
+  fMagFieldSign(0),
+  fpA2013(kFALSE)
 {
   //constructor with 0 parameters , look at default settings 
   //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
@@ -78,7 +79,8 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fESDpid(0),
   fIsPidOwner(0),
   fReadV0(0),
-  fMagFieldSign(0)
+  fMagFieldSign(0),
+  fpA2013(kFALSE)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -94,6 +96,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fEventTrig = aReader.fEventTrig; //trigger
   fReadV0 = aReader.fReadV0;
   fMagFieldSign = aReader.fMagFieldSign;
+  fpA2013 = aReader.fpA2013;
 
   //   fEventFriend = aReader.fEventFriend;
   //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
@@ -152,6 +155,7 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
 
   fReadV0 = aReader.fReadV0;
   fMagFieldSign = aReader.fMagFieldSign;
+  fpA2013 = aReader.fpA2013;
   //  fEventFriend = aReader.fEventFriend;
   
   //   if (fClusterPerPadrow) {
@@ -242,14 +246,29 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   // and fill the AliFemtoEvent class
   // Returns a valid AliFemtoEvent
   AliFemtoEvent *hbtEvent = 0;
-  string tFriendFileName;
+ 
 
+  hbtEvent = new AliFemtoEvent;
+
+  CopyESDtoFemtoEvent(hbtEvent);
+
+  fCurEvent++;	
+
+
+  return hbtEvent; 
+}
+
+void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
+{
+  
+
+ //string tFriendFileName;
   // Get the friend information
   if (Debug()>1) cout<<"starting to read event "<<fCurEvent<<endl;
   //  fEvent->SetESDfriend(fEventFriend);
   if(fEvent->GetAliESDOld())fEvent->CopyFromOldESD();
   
-  hbtEvent = new AliFemtoEvent;
+
 
    //setting basic things
   //  hbtEvent->SetEventNumber(fEvent->GetEventNumber());
@@ -279,6 +298,25 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   //Vertex
   double fV1[3];
   double fVCov[6];
+
+  if(fpA2013)
+    {
+      const AliESDVertex* trkVtx = fEvent->GetPrimaryVertex();
+      if (!trkVtx || trkVtx->GetNContributors()<=0) return;
+      TString vtxTtl = trkVtx->GetTitle();
+      if (!vtxTtl.Contains("VertexerTracks")) return;
+      Float_t zvtx = trkVtx->GetZ();
+      const AliESDVertex* spdVtx = fEvent->GetVertex();
+      if (spdVtx->GetNContributors()<=0) return;
+      TString vtxTyp = spdVtx->GetTitle();
+      Double_t cov[6]={0};
+      spdVtx->GetCovarianceMatrix(cov);
+      Double_t zRes = TMath::Sqrt(cov[5]);
+      if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
+      if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
+
+      if (TMath::Abs(zvtx) > 10) return;
+    }
   if (fUseTPCOnly) {
     fEvent->GetPrimaryVertexTPC()->GetXYZ(fV1);
     fEvent->GetPrimaryVertexTPC()->GetCovMatrix(fVCov);
@@ -291,7 +329,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     if (!fEvent->GetPrimaryVertex()->GetStatus())
       fVCov[4] = -1001.0;
   }
-
+    
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
   hbtEvent->SetPrimVertPos(vertex);
   hbtEvent->SetPrimVertCov(fVCov);
@@ -900,11 +938,9 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     }
 
 
-  fCurEvent++;	
   if (Debug()>1) cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
-
-  return hbtEvent; 
 }
+
 //___________________
 void AliFemtoEventReaderESDChain::SetESDSource(AliESDEvent *aESD)
 {
@@ -1242,5 +1278,7 @@ void AliFemtoEventReaderESDChain::GetGlobalPositionAtGlobalRadiiThroughTPC(AliES
 }
 
 
-
-
+void AliFemtoEventReaderESDChain::SetpA2013(Bool_t pA2013)
+{
+  fpA2013 = pA2013;
+}
