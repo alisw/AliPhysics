@@ -22,6 +22,8 @@ class AliSlowNucleonModelExp : public AliSlowNucleonModel
     virtual ~AliSlowNucleonModelExp(){;}
     virtual void GetNumberOfSlowNucleons(AliCollisionGeometry* geo,
 					 Int_t& ngp, Int_t& ngn, Int_t& nbp, Int_t& nbn) const;
+    virtual void GetNumberOfSlowNucleons2(AliCollisionGeometry* geo,
+					 Int_t& ngp, Int_t& ngn, Int_t& nbp, Int_t& nbn) const;
     virtual void SetParameters(Float_t alpha1, Float_t alpha2);
     virtual void SetSaturation(Bool_t saturation) {fApplySaturation = saturation;}
     virtual void SetSaturationParams(Int_t ngray=15, Int_t nblack=28) 

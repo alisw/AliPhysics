@@ -140,7 +140,7 @@ void AliGenSlowNucleons::FinishRun()
 	TCanvas *c = new TCanvas("c","Canvas 1",400,10,600,700);
 	c->Divide(2,1);
 	c->cd(1);
-	fDebugHist1->Draw();
+	fDebugHist1->Draw("colz");
 	c->cd(2);
 	fDebugHist2->Draw();
 	c->cd(3);
@@ -164,11 +164,12 @@ void AliGenSlowNucleons::Generate()
 	//      Int_t  nnw  = fCollisionGeometry->NNw();
 	//      Int_t  nwnw = fCollisionGeometry->NwNw();
 	
-	fSlowNucleonModel->GetNumberOfSlowNucleons(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
+	//fSlowNucleonModel->GetNumberOfSlowNucleons(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
+	fSlowNucleonModel->GetNumberOfSlowNucleons2(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
 	if (fDebug) {
 	    //printf("Collision Geometry %f %d %d %d %d\n", b, nn, nwn, nnw, nwnw);
 	    printf("Slow nucleons: %d grayp  %d grayn  %d blackp  %d blackn \n", fNgp, fNgn, fNbp, fNbn);
-	    fDebugHist1->Fill(Float_t(fNgp + fNgn + fNbp + fNbn), fCollisionGeometry->NwN(), 1.);
+	    fDebugHist1->Fill(Float_t(fNgp + fNgn + fNbp + fNbn), fCollisionGeometry->NNw(), 1.);
 	    fDebugHist2->Fill(Float_t(fNgp + fNgn + fNbp + fNbn), b, 1.);
 	}
     }     
@@ -195,7 +196,7 @@ void AliGenSlowNucleons::Generate()
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p, theta);
 	if (fDebug) fCosThetaGrayHist->Fill(TMath::Cos(theta));
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.,1);
+		 time, kPNoProcess, nt, 1.,-2);
 	KeepTrack(nt);
     }
 //
@@ -207,7 +208,7 @@ void AliGenSlowNucleons::Generate()
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p, theta);
 	if (fDebug) fCosThetaGrayHist->Fill(TMath::Cos(theta));
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.,1);
+		 time, kPNoProcess, nt, 1.,-2);
 	KeepTrack(nt);
     }
 //
@@ -218,7 +219,7 @@ void AliGenSlowNucleons::Generate()
     for(i = 0; i < fNbp; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p, theta);
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.,1);
+		 time, kPNoProcess, nt, 1.,-1);
 	KeepTrack(nt);
     }
 //
@@ -229,7 +230,7 @@ void AliGenSlowNucleons::Generate()
     for(i = 0; i < fNbn; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p, theta);
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.,1);
+		 time, kPNoProcess, nt, 1.,-1);
 	KeepTrack(nt);
     }
 }
