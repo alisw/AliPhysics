@@ -23,7 +23,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
 {
     public:
          // enumerators
-        enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kUser, kFourierSeries }; // fit type
+        enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kUser, kFourierSeries, kIntegratedFlow }; // fit type
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
         enum detectorType       { kTPC, kTPCSUB, kVZEROA, kVZEROC};    // detector that was used
@@ -71,6 +71,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetFillQAHistograms(Bool_t qa)                  {fFillQAHistograms = qa;}
         void                    SetCentralityClasses(TArrayI* c)                {fCentralityClasses = c;}
+        void                    SetIntegratedFlow(TH1F* i, TH1F* j)             {fUserSuppliedV2 = i;
+                                                                                 fUserSuppliedV3 = j; }
         void                    SetNameJetClones(const char* name)              {fNameJetClones = name; }
         void                    SetNamePicoTrackClones(const char* name)        {fNamePicoTrackClones = name; }
         void                    SetNameRho(const char* name)                    {fNameRho = name; }
@@ -130,6 +132,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         Bool_t                  fInitialized;           //! is the analysis initialized?
         Bool_t                  fFillQAHistograms;      // fill qa histograms
         TArrayI*                fCentralityClasses;     //-> centrality classes (maximum 10)
+        TH1F*                   fUserSuppliedV2;        // histo with integrated v2
+        TH1F*                   fUserSuppliedV3;        // histo with integrated v3
         // members
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
         fitModulationType       fFitModulationType;     // fit modulation type
