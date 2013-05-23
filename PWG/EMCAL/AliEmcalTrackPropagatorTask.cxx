@@ -109,19 +109,20 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
 
     // Extrapolate the track to EMCal surface
     AliExternalTrackParam emcalParam(*trackParam);
-    Float_t etaout=-999, phiout=-999;
+    Float_t etaout=-999, phiout=-999, ptout=-999;
     Bool_t ret = fRecoUtils->ExtrapolateTrackToEMCalSurface(&emcalParam, 
                                                             fDist, 
                                                             fRecoUtils->GetMass(), 
                                                             fRecoUtils->GetStepSurface(), 
                                                             etaout, 
-                                                            phiout);
+                                                            phiout,
+							    ptout);
     if (!ret)
       continue;
     if (TMath::Abs(etaout)>0.75 || (phiout<70*TMath::DegToRad()) || (phiout>190*TMath::DegToRad()))
       continue;
     eTrack->SetOuterParam(&emcalParam,AliExternalTrackParam::kMultSec);
-    eTrack->SetTrackPhiEtaOnEMCal(phiout, etaout);
+    eTrack->SetTrackPhiEtaPtOnEMCal(phiout, etaout, ptout);
     eTrack->SetStatus(AliVTrack::kEMCALmatch);
   }
 }
