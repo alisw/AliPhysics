@@ -155,8 +155,8 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   Int_t fkMB[maxNofTracks];                                    //! Tree variable
   Int_t fkCentral[maxNofTracks];                               //! Tree variable
   Int_t fkSemiCentral[maxNofTracks];                           //! Tree variable
-  // Int_t fkEMCEJE[maxNofTracks];                                //! Tree variable
-  //Int_t fkEMCEGA[maxNofTracks];                                //! Tree variable 
+  Int_t fkEMCEJE[maxNofTracks];                                //! Tree variable
+  Int_t fkEMCEGA[maxNofTracks];                                //! Tree variable 
 
   Double_t fPtotN[maxNofTracks];                               //! Tree variable
   Double_t fPtotP[maxNofTracks];                               //! Tree variable
@@ -174,8 +174,8 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   Int_t fChargeComboDeuteronPionTree[maxNofTracks];            //! Tree variable
   Bool_t fIsCorrectlyAssociated[maxNofTracks];                 //! Tree variable
 
-  //Double_t fAmenterosAlphaTree[maxNofTracks];                  //! Tree variable
-  //Double_t fAmenterosQtTree[maxNofTracks];                     //! Tree variable
+  Double_t fAmenterosAlphaTree[maxNofTracks];                  //! Tree variable
+  Double_t fAmenterosQtTree[maxNofTracks];                     //! Tree variable
   Int_t fRotationTree[maxNofTracks];                        //! Tree variable
 
 
@@ -198,7 +198,8 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   void               MCGenerated(AliStack* stack);             //! function to loop over the genrated particles
   
   void               MCTwoBodyDecay (AliStack* stack, const TParticle *tparticleMother, Long_t PDGMother, Long_t PDGFirstDaughter, Long_t PDGSecondDaughter, Double_t massFirstDaughter, Double_t massSecondDaughter);                         //! function to calculate the invariant mass of two daughters and the pt of the mother
- 
+  //void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, const AliVEvent * const ev);
+
   AliAnalysisTaskLambdaNAOD(const AliAnalysisTaskLambdaNAOD&); // not implemented
   AliAnalysisTaskLambdaNAOD& operator=(const AliAnalysisTaskLambdaNAOD&); // not implemented
   //

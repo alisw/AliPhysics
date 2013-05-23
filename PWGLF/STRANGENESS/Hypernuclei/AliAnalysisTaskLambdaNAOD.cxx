@@ -309,8 +309,8 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fTreeV0->Branch("fkMB",fkMB,"fkMB[fItrk]/I");
   fTreeV0->Branch("fkCentral",fkCentral,"fkCentral[fItrk]/I");
   fTreeV0->Branch("fkSemiCentral",fkSemiCentral,"fkSemiCentral[fItrk]/I");
-  //fTreeV0->Branch("fkEMCEJE",fkEMCEJE,"fkEMCEJE[fItrk]/I");
-  //fTreeV0->Branch("fkEMCEGA",fkEMCEGA,"fkEMCEGA[fItrk]/I");
+  fTreeV0->Branch("fkEMCEJE",fkEMCEJE,"fkEMCEJE[fItrk]/I");
+  fTreeV0->Branch("fkEMCEGA",fkEMCEGA,"fkEMCEGA[fItrk]/I");
  
   fTreeV0->Branch("fPtotN",fPtotN,"fPtotN[fItrk]/D");
   fTreeV0->Branch("fPtotP",fPtotP,"fPtotP[fItrk]/D");
@@ -329,8 +329,8 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
 
   fTreeV0->Branch("fIsCorrectlyAssociated",fIsCorrectlyAssociated,"fIsCorrectlyAssociated[fItrk]/O"); //associated hypertriton
 
-  //fTreeV0->Branch("fAmenterosAlphaTree",fAmenterosAlphaTree,"fAmenterosAlphaTree[fItrk]/D");
-  //fTreeV0->Branch("fAmenterosQtTree",fAmenterosQtTree,"fAmenterosQtTree[fItrk]/D");
+  fTreeV0->Branch("fAmenterosAlphaTree",fAmenterosAlphaTree,"fAmenterosAlphaTree[fItrk]/D");
+  fTreeV0->Branch("fAmenterosQtTree",fAmenterosQtTree,"fAmenterosQtTree[fItrk]/D");
   fTreeV0->Branch("fRotationTree",fRotationTree,"fRotationTree[fItrk]/I");
    
   //Armenteros-Podolanski
@@ -629,8 +629,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    fkMB[fItrk]              = -1;
    fkCentral[fItrk]         = -1;
    fkSemiCentral[fItrk]     = -1;
-   //fkEMCEJE[fItrk]          = -1;
-   //fkEMCEGA[fItrk]          = -1;
+   fkEMCEJE[fItrk]          = -1;
+   fkEMCEGA[fItrk]          = -1;
    
    fPtotN[fItrk]            = -1000;
    fPtotP[fItrk]            = -1000;
@@ -648,8 +648,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    fInvaMassDeuteronPionTree[fItrk] = 0;
    fChargeComboDeuteronPionTree[fItrk] = -1;
    
-   //fAmenterosAlphaTree[fItrk] = 2;
-   //fAmenterosQtTree[fItrk] = -1;
+   fAmenterosAlphaTree[fItrk] = 2;
+   fAmenterosQtTree[fItrk] = -1;
    
    //Get v0 object
    if(fAnalysisType == "ESD")v0ESD = fESDevent->GetV0(ivertex);
@@ -796,8 +796,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 
       //unlinke-sign
       if (trackN->Charge()<0 && trackP->Charge()>0 && isDeuteron[1]==kTRUE && isPion[0]==kTRUE ) chargeComboDeuteronPion = 0; // -/+
-      //if (trackN->Charge()>0 && trackP->Charge()<0 && isDeuteron[1]==kTRUE && isPion[0]==kTRUE ) chargeComboDeuteronPion = 0; // -/+ //dürfte wegen charge correctur am anfang nicht existiere
-      //if (trackN->Charge()>0 && trackP->Charge()<0 && isDeuteron[0]==kTRUE && isPion[1]==kTRUE) chargeComboDeuteronPion = 2; // +/- //dürfte wegen charge correctur am anfang nicht existiere
+      //if (trackN->Charge()>0 && trackP->Charge()<0 && isDeuteron[1]==kTRUE && isPion[0]==kTRUE ) chargeComboDeuteronPion = 0; // -/+ //should not exist because of charge correction
+      //if (trackN->Charge()>0 && trackP->Charge()<0 && isDeuteron[0]==kTRUE && isPion[1]==kTRUE) chargeComboDeuteronPion = 2; // +/- //should not exist because of charge correction
       if (trackN->Charge()<0 && trackP->Charge()>0 && isDeuteron[0]==kTRUE && isPion[1]==kTRUE) chargeComboDeuteronPion = 2; // +/-
 
       //if(chargeComboDeuteronPion==0) cout << "chargeN: " << trackN->Charge() << " chargeP: " << trackP->Charge() << endl;
@@ -813,7 +813,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 
       if(fAnalysisType == "ESD")
 	{
-	  if(chargeComboDeuteronPion==0){ //anti-deuteron (isDeuteron[1]==kTRUE), positives pion (isPion[0]==kTRUE), trackN gehört zu anti-deuteron, tackP gehört zu pion
+	  if(chargeComboDeuteronPion==0){ //anti-deuteron (isDeuteron[1]==kTRUE), positives pion (isPion[0]==kTRUE), trackN corresponds to anti-deuteron, tackP corresponds to pion
 	    
 	    v0ESD->GetPPxPyPz(momentumPion[0], momentumPion[1], momentumPion[2]);
 	    v0ESD->GetNPxPyPz(momentumDeuteron[0], momentumDeuteron[1], momentumDeuteron[2]);
@@ -824,7 +824,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	    }
 	  }
 
-	  if(chargeComboDeuteronPion==2){ //deuteron (isDeuteron[0]==kTRUE), negative pion (isPion[1]==kTRUE), trackP gehört zu deuteron, tackN gehört zu pion
+	  if(chargeComboDeuteronPion==2){ //deuteron (isDeuteron[0]==kTRUE), negative pion (isPion[1]==kTRUE), trackP corresponds to deuteron, tackN corresponds to pion
 	    
 	    v0ESD->GetNPxPyPz(momentumPion[0], momentumPion[1], momentumPion[2]);
 	    v0ESD->GetPPxPyPz(momentumDeuteron[0], momentumDeuteron[1], momentumDeuteron[2]);
@@ -835,8 +835,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	    }
 	  }
 
-	  if(chargeComboDeuteronPion==1 || chargeComboDeuteronPion==3){ //trackN gehört zu deuteron oder pion, trackP gehört zu deuteron oder pion
-	    if(isDeuteron[2]==kTRUE){ //trackN gehört zu deuteron, trackP gehört zum pion
+	  if(chargeComboDeuteronPion==1 || chargeComboDeuteronPion==3){ //trackN corresponds to deuteron or pion, trackP corresponds to deuteron or pion
+	    if(isDeuteron[2]==kTRUE){ //trackN corresponds to deuteron, trackP corresponds to pion
 
 	      v0ESD->GetPPxPyPz(momentumPion[0], momentumPion[1], momentumPion[2]);
 	      v0ESD->GetNPxPyPz(momentumDeuteron[0], momentumDeuteron[1], momentumDeuteron[2]);
@@ -846,7 +846,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 		v0ESD->GetPPxPyPz(momentumDeuteron[0], momentumDeuteron[1], momentumDeuteron[2]);
 	      }
 	    }
-	    if(isDeuteron[2]==kFALSE){ //trackP gehört zum deuteron, trackN gehört zum pion
+	    if(isDeuteron[2]==kFALSE){ //trackP corresponds tp deuteron, trackN corresponds to pion
 
 	      v0ESD->GetNPxPyPz(momentumPion[0], momentumPion[1], momentumPion[2]);
 	      v0ESD->GetPPxPyPz(momentumDeuteron[0], momentumDeuteron[1], momentumDeuteron[2]);
@@ -866,7 +866,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 
       if(fAnalysisType == "AOD")
 	{
-	  if(chargeComboDeuteronPion==0){ //anti-deuteron (isDeuteron[1]==kTRUE), positives pion (isPion[0]==kTRUE), trackN gehört zu anti-deuteron, tackP gehört zu pion 
+	  if(chargeComboDeuteronPion==0){ //anti-deuteron (isDeuteron[1]==kTRUE), positives pion (isPion[0]==kTRUE), trackN corresponds to anti-deuteron, tackP corresponds to pion 
 	    
 	    momentumPion[0] = v0AOD->MomPosX();
 	    momentumPion[1] = v0AOD->MomPosY();
@@ -888,7 +888,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	    }
 	  }
 	  
-	  if (chargeComboDeuteronPion==2){ //deuteron (isDeuteron[0]==kTRUE), negative pion (isPion[1]==kTRUE), trackP gehört zu deuteron, tackN gehört zu pion
+	  if (chargeComboDeuteronPion==2){ //deuteron (isDeuteron[0]==kTRUE), negative pion (isPion[1]==kTRUE), trackP corresponds to deuteron, tackN corresponds to pion
 
 	    momentumPion[0] = v0AOD->MomNegX();
 	    momentumPion[1] = v0AOD->MomNegY();
@@ -910,8 +910,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	    }
 	  }
 
-	  if(chargeComboDeuteronPion==1 || chargeComboDeuteronPion==3){ //trackN gehört zu deuteron oder pion, trackP gehört zu deuteron oder pion
-	    if(isDeuteron[2]==kTRUE){ //trackN gehört zu deuteron, trackP gehört zum pion
+	  if(chargeComboDeuteronPion==1 || chargeComboDeuteronPion==3){ //trackN correponds to deuteron or pion, trackP corresponds to deuteron or pion
+	    if(isDeuteron[2]==kTRUE){ //trackN correponds to deuteron, trackP corresponds to pion
 	  
 	      momentumPion[0] = v0AOD->MomPosX();
 	      momentumPion[1] = v0AOD->MomPosY();
@@ -933,7 +933,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	      }
 	    }
 	   
-	    if(isDeuteron[2]==kFALSE){ //trackP gehört zum deuteron, trackN gehört zum pion
+	    if(isDeuteron[2]==kFALSE){ //trackP corresponds to deuteron, trackN corresponds to pion
 	      
 	      momentumPion[0] = v0AOD->MomNegX();
 	      momentumPion[1] = v0AOD->MomNegY();
@@ -998,15 +998,15 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
       //Rotation for background calculation
       //Int_t rotation=1; // =1 signal, =2 Rotation of the pion , =3 Rotation of the deuteron
 
-      Double_t fStartAnglePhi=TMath::Pi();
-      Double_t fConeAnglePhi=TMath::Pi(); //-0.174;
-      phi  = fStartAnglePhi+(2*gRandom->Rndm()-1)*fConeAnglePhi;
+      //Double_t fStartAnglePhi=TMath::Pi();
+      //Double_t fConeAnglePhi=TMath::Pi(); //-0.174;
+      //phi  = fStartAnglePhi+(2*gRandom->Rndm()-1)*fConeAnglePhi;
      
       for(Int_t rotation=1;rotation<4;rotation++){ //loop for rotation
         
-	//Double_t fStartAnglePhi=TMath::Pi();
-	//Double_t fConeAnglePhi=TMath::Pi(); //-0.174;
-	//phi  = fStartAnglePhi+(2*gRandom->Rndm()-1)*fConeAnglePhi;
+	Double_t fStartAnglePhi=TMath::Pi();
+	Double_t fConeAnglePhi=TMath::Pi(); //-0.174;
+	phi  = fStartAnglePhi+(2*gRandom->Rndm()-1)*fConeAnglePhi;
           
 	//calculate new rotated momenta
 	momentumPionRot[0]=TMath::Cos(phi)*momentumPion[0]-TMath::Sin(phi)*momentumPion[1];
@@ -1154,11 +1154,11 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	fkMB[fItrk]              = fTriggerFired[0];
 	fkCentral[fItrk]         = fTriggerFired[1];
 	fkSemiCentral[fItrk]     = fTriggerFired[2];
-	//fkEMCEJE[fItrk]          = fTriggerFired[3];
-	//fkEMCEGA[fItrk]          = fTriggerFired[4];
+	fkEMCEJE[fItrk]          = fTriggerFired[3];
+	fkEMCEGA[fItrk]          = fTriggerFired[4];
 	
-	fPtotN[fItrk]            = trackN->P(); //InnerParam???
-	fPtotP[fItrk]            = trackP->P(); //InnerParam???
+	fPtotN[fItrk]            = ptotN; 
+	fPtotP[fItrk]            = ptotP; 
 	fMotherPt[fItrk]         = transversMomentumMother;
 	
 	fdEdxN[fItrk]            = trackN->GetTPCsignal();
@@ -1170,24 +1170,24 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	fCosinePAv0[fItrk]       = cosPointing;
 	fDecayRadiusTree[fItrk]  = decayRadius;
 	
-	//fAmenterosAlphaTree[fItrk] = alpha;
-	//fAmenterosQtTree[fItrk] = qt;
+	fAmenterosAlphaTree[fItrk] = alpha;
+	fAmenterosQtTree[fItrk] = qt;
 	fRotationTree[fItrk] = rotation;
 	
             
 	if (isDeuteron[0] == kTRUE)  //pos deuteron
 	  {
-	    //fInvaMassDeuteronPionTree[fItrk] = invaMassDeuteronPion;
-	    //fChargeComboDeuteronPionTree[fItrk] = chargeComboDeuteronPion;
+	    fInvaMassDeuteronPionTree[fItrk] = invaMassDeuteronPion;
+	    fChargeComboDeuteronPionTree[fItrk] = chargeComboDeuteronPion;
 	    
-	    //fItrk++;
+	    fItrk++;
 	    
 	    if(invaMassDeuteronPion < 2.1) 
 	      {
 		if(chargeComboDeuteronPion == 2)fHistDeDxQA->Fill(ptotP*(trackP->Charge()), trackP->GetTPCsignal(),9);
 		if(chargeComboDeuteronPion == 2)fHistDeDxQA->Fill(ptotN*(trackN->Charge()), trackN->GetTPCsignal(),10);
 	      }
-	    //fHistArmenterosPodolanskiDeuteronPion->Fill(alpha*(-1),qt);
+	    fHistArmenterosPodolanskiDeuteronPion->Fill(alpha*(-1),qt);
 	  }
 
 	if (isDeuteron[1] == kTRUE) 
@@ -1202,7 +1202,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 		if(chargeComboDeuteronPion == 0)fHistDeDxQA->Fill(ptotN*trackN->Charge(), trackN->GetTPCsignal(),7);
 		if(chargeComboDeuteronPion == 0)fHistDeDxQA->Fill(ptotP*trackP->Charge(), trackP->GetTPCsignal(),8);
 	      }
-	    //fHistArmenterosPodolanskiAntiDeuteronPion->Fill(alpha,qt);
+	    fHistArmenterosPodolanskiAntiDeuteronPion->Fill(alpha,qt);
 	  }
 	
       }//end rotation loop
@@ -1346,8 +1346,8 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	expSignalDeuteronN = AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
 	expSignalDeuteronP = AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
 	
-	if(trackP->GetTPCsignal() >= 110 && ///??????????????????????????????????
-	   trackP->GetTPCsignal() < 1200 && 
+	if(//trackP->GetTPCsignal() >= 110 && ///??????????????????????????????????
+	   //trackP->GetTPCsignal() < 1200 && 
 	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.2 &&
 	   ptotP > 0.2 ){
 	  
@@ -1355,8 +1355,8 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	  if(trackP->Charge() <0)	 	isDeuteron[1] = kTRUE; //neg deuteron
 	}
 	
-	if(trackN->GetTPCsignal() >= 110 && ///??????????????????????????????????
-	   trackN->GetTPCsignal() < 1200 && 
+	if(//trackN->GetTPCsignal() >= 110 && ///??????????????????????????????????
+	   //trackN->GetTPCsignal() < 1200 && 
 	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.2 &&
 	   ptotN > 0.2){ 
 	  
@@ -1662,3 +1662,79 @@ Double_t AliAnalysisTaskLambdaNAOD::MomentumInnerParam(AliVTrack *track, Double_
 
   return ptot;
 } 
+//________________________________________________________________________
+/*void AliAnalysisTaskLambdaNAOD::RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, const AliVEvent * const ev){
+
+     // Before rotate needs to be moved to position 0,0,0, ; move back after rotation
+     if (!kfParticle) return;
+     Double_t dx = 0.;
+     Double_t dy = 0.;
+     Double_t dz = 0.;
+
+     if (ev){
+       dx = ev->GetPrimaryVertex()->GetX()-0.;
+       dy = ev->GetPrimaryVertex()->GetY()-0.;
+       dz = ev->GetPrimaryVertex()->GetZ()-0.;
+     }
+
+     kfParticle->X() = kfParticle->GetX() - dx;
+     kfParticle->Y() = kfParticle->GetY() - dy;
+     kfParticle->Z() = kfParticle->GetZ() - dz;
+
+
+     // Rotate the kf particle
+     Double_t c = cos(angle);
+     Double_t s = sin(angle);
+
+     Double_t mA[8][ 8];
+     for( Int_t i=0; i<8; i++ ){
+       for( Int_t j=0; j<8; j++){
+         mA[i][j] = 0;
+       }
+     }
+     for( int i=0; i<8; i++ ){
+       mA[i][i] = 1;
+     }
+     mA[0][0] =  c;  mA[0][1] = s;
+     mA[1][0] = -s;  mA[1][1] = c;
+     mA[3][3] =  c;  mA[3][4] = s;
+     mA[4][3] = -s;  mA[4][4] = c;
+
+     Double_t mAC[8][8];
+     Double_t mAp[8];
+
+     for( Int_t i=0; i<8; i++ ){
+       mAp[i] = 0;
+       for( Int_t k=0; k<8; k++){
+         mAp[i]+=mA[i][k] * kfParticle->GetParameter(k);
+       }
+     }
+
+     for( Int_t i=0; i<8; i++){
+       kfParticle->Parameter(i) = mAp[i];
+     }
+
+     for( Int_t i=0; i<8; i++ ){
+       for( Int_t j=0; j<8; j++ ){
+         mAC[i][j] = 0;
+         for( Int_t k=0; k<8; k++ ){
+           mAC[i][j]+= mA[i][k] * kfParticle->GetCovariance(k,j);
+         }
+       }
+     }
+
+     for( Int_t i=0; i<8; i++ ){
+       for( Int_t j=0; j<=i; j++ ){
+         Double_t xx = 0;
+         for( Int_t k=0; k<8; k++){
+           xx+= mAC[i][k]*mA[j][k];
+         }
+         kfParticle->Covariance(i,j) = xx;
+       }
+     }
+
+     kfParticle->X() = kfParticle->GetX() + dx;
+     kfParticle->Y() = kfParticle->GetY() + dy;
+     kfParticle->Z() = kfParticle->GetZ() + dz;
+
+     }*/
