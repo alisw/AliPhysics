@@ -535,7 +535,7 @@ void CreateITSU()
   ovlA = -1;
   xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
   nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++;);		
+  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetDetTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
 	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
