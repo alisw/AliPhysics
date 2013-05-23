@@ -66,6 +66,9 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   void SetESDSource(AliESDEvent *aESD);
   //  void SetESDfriendSource(AliESDfriend *aFriend);
   void SetESDPid(AliESDpid *esdPid) { fESDpid = esdPid; }
+
+  void CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent);
+  void SetpA2013(Bool_t pa2013);
  protected:
 
  private:
@@ -95,6 +98,8 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   Bool_t fIsPidOwner;
   bool           fReadV0;           // Read V0 information from the AOD and put it into V0Collection
   int    fMagFieldSign;
+
+  Bool_t fpA2013;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChain, 1)
