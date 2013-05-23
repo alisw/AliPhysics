@@ -122,6 +122,7 @@ fCentralityMethod("V0M"),
 fTrackEtaCut(0.8),
 fOnlyOneEtaSide(0),
 fPtMin(0.5),
+fDCAXYCut(0),
 fFilterBit(0xFF),
 fTrackStatus(0),
 fSelectBit(AliVEvent::kMB|AliVEvent::kUserDefined),
@@ -136,6 +137,7 @@ fTriggerRestrictEta(-1),
 fEtaOrdering(kFALSE),
 fCutConversions(kFALSE),
 fCutResonances(kFALSE),
+fRejectResonanceDaughters(-1),
 fFillOnlyStep0(kFALSE),
 fSkipStep6(kFALSE),
 fRejectCentralityOutliers(kFALSE),
@@ -217,6 +219,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // Initialize class with main algorithms, event and track selection. 
   fAnalyseUE = new AliAnalyseLeadingTrackUE();
   fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fPtMin);
+  fAnalyseUE->SetDCAXYCut(fDCAXYCut);
   fAnalyseUE->SetTrackStatus(fTrackStatus);
   fAnalyseUE->SetCheckMotherPDG(fCheckMotherPDG);
   fAnalyseUE->SetDebug(fDebug); 
@@ -267,6 +270,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 
   fHistos->SetPairCuts(fCutConversions, fCutResonances);
   fHistosMixed->SetPairCuts(fCutConversions, fCutResonances);
+  
+  fHistos->SetRejectResonanceDaughters(fRejectResonanceDaughters);
+  fHistosMixed->SetRejectResonanceDaughters(fRejectResonanceDaughters);
   
   fHistos->SetTrackEtaCut(fTrackEtaCut);
   fHistosMixed->SetTrackEtaCut(fTrackEtaCut);
@@ -395,6 +401,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fEtaOrdering", &fEtaOrdering,"EtaOrdering/O");
   settingsTree->Branch("fCutConversions", &fCutConversions,"CutConversions/O");
   settingsTree->Branch("fCutResonances", &fCutResonances,"CutResonances/O");
+  settingsTree->Branch("fRejectResonanceDaughters", &fRejectResonanceDaughters,"RejectResonanceDaughters/I");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
   settingsTree->Branch("fSkipTrigger", &fSkipTrigger,"SkipTrigger/O");

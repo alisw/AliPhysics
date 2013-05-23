@@ -46,6 +46,7 @@ class AliEventPoolManager;
 class AliESDEvent;
 class AliHelperPID;
 class AliAnalysisUtils;
+class TFormula;
 
 
 class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
@@ -87,6 +88,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetOnlyOneEtaSide(Int_t flag)     { fOnlyOneEtaSide = flag; }
     void   SetPtMin(Double_t val)            { fPtMin = val; }
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
+    void   SetDCAXYCut(TFormula* value)      { fDCAXYCut = value; }
     void   SetTrackStatus(UInt_t status)     { fTrackStatus = status; }
     void   SetCheckMotherPDG(Bool_t checkpdg) { fCheckMotherPDG = checkpdg; }
     
@@ -99,6 +101,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
     void   SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
     void   SetPairCuts(Bool_t conversions, Bool_t resonances) { fCutConversions = conversions; fCutResonances = resonances; }
+    void   SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
     void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
     void   SetFillpT(Bool_t flag) { fFillpT = flag; }
     void   SetStepsFillSkip(Bool_t step0, Bool_t step6) { fFillOnlyStep0 = step0; fSkipStep6 = step6; }
@@ -173,7 +176,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     // Track cuts
     Double_t      	fTrackEtaCut;          // Eta cut on particles
     Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
-    Double_t           fPtMin;                // Min pT to start correlations
+    Double_t            fPtMin;                // Min pT to start correlations
+    TFormula*           fDCAXYCut;             // additional pt dependent cut on DCA XY (only for AOD)
     UInt_t           	fFilterBit;            // Select tracks from an specific track cut 
     UInt_t         	fTrackStatus;          // if non-0, the bits set in this variable are required for each track
     UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
@@ -189,6 +193,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t fEtaOrdering;           // eta ordering, see AliUEHistograms.h for documentation
     Bool_t fCutConversions;        // cut on conversions (inv mass)
     Bool_t fCutResonances;         // cut on resonances (inv mass)
+    Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
     Bool_t fFillOnlyStep0; 	   // fill only step 0
     Bool_t fSkipStep6;		   // skip step 6 when filling
     Bool_t fRejectCentralityOutliers;  // enable rejection of outliers in centrality vs no track correlation
@@ -201,7 +206,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 32); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 33); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

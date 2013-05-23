@@ -50,6 +50,7 @@
 #include "AliMCEvent.h"
 #include "AliVParticle.h"
 #include "AliAODMCHeader.h"
+#include "TFormula.h"
 
 #include "AliAnalysisManager.h"
 #include "AliMCEventHandler.h"
@@ -80,6 +81,7 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fTrackEtaCut(0.8),
   fTrackPtMin(0),
   fEventSelection(AliVEvent::kMB|AliVEvent::kUserDefined),
+  fDCAXYCut(0),
   fEsdTrackCuts(0x0), 
   fEsdTrackCutsExtra1(0x0), 
   fEsdTrackCutsExtra2(0x0), 
@@ -703,6 +705,27 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	// track selection cuts
 	if ( !(((AliAODTrack*)part)->TestFilterBit(fFilterBit)) ) return 0; 
 	if (fTrackStatus != 0 && !CheckTrack(part)) return 0;
+	
+	// DCA XY
+	if (fDCAXYCut)
+	{
+	  const AliVVertex* vertex = aodEvent->GetPrimaryVertex();
+	  if (!vertex)
+	    return 0;
+	  
+	  Double_t pos[2];
+	  Double_t covar[2];
+	  AliAODTrack* clone = (AliAODTrack*) part->Clone();
+	  Bool_t success = clone->PropagateToDCA(vertex, aodEvent->GetHeader()->GetMagneticField(), 3, pos, covar);
+	  delete clone;
+	  if (!success)
+	    return 0;
+
+// 	  Printf("%f", ((AliAODTrack*)part)->DCA());
+// 	  Printf("%f", pos[0]);
+	  if (TMath::Abs(pos[0]) > fDCAXYCut->Eval(part->Pt()))
+	    return 0;
+	}
 
 	// eventually only hadrons
 	if (fOnlyHadrons){

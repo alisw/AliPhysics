@@ -68,6 +68,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fEtaOrdering(kFALSE),
   fCutConversions(kFALSE),
   fCutResonances(kFALSE),
+  fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
@@ -238,6 +239,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fEtaOrdering(kFALSE),
   fCutConversions(kFALSE),
   fCutResonances(kFALSE),
+  fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
@@ -558,21 +560,6 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
   for (Int_t i=0; i<input->GetEntriesFast(); i++)
     eta[i] = ((AliVParticle*) input->UncheckedAt(i))->Eta();
   
-  // list needed to prevent double counting
-  // contains 1 if list element in list <particles> is also contained in <mixed> 
-  TArrayC* existsInMixed = 0;
-//   if (mixed && !fPtOrder)
-//   {
-//     existsInMixed = new TArrayC(particles->GetEntriesFast());
-//     for (Int_t i=0; i<particles->GetEntriesFast(); i++)
-//     {
-//       if (mixed->Contains(particles->UncheckedAt(i)))
-// 	(*existsInMixed)[i] = 1;
-//       else
-// 	(*existsInMixed)[i] = 0;
-//     }
-//   }
-  
   // if particles is not set, just fill event statistics
   if (particles)
   {
@@ -608,7 +595,70 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	
 	triggerWeighting->Fill(triggerParticle->Pt());
       }
-//       new TCanvas; triggerWeighting->Draw();
+    }
+    
+    // identify K, Lambda candidates and flag those particles
+    // a TObject bit is used for this
+    const UInt_t kResonanceDaughterFlag = 1 << 14;
+    if (fRejectResonanceDaughters > 0)
+    {
+      Double_t resonanceMass = -1;
+      Double_t massDaughter1 = -1;
+      Double_t massDaughter2 = -1;
+      const Double_t interval = 0.02;
+      
+      switch (fRejectResonanceDaughters)
+      {
+	case 1: resonanceMass = 0.9; massDaughter1 = 0.1396; massDaughter2 = 0.9383; break; // method test
+	case 2: resonanceMass = 0.4976; massDaughter1 = 0.1396; massDaughter2 = massDaughter1; break; // k0
+	case 3: resonanceMass = 1.115; massDaughter1 = 0.1396; massDaughter2 = 0.9383; break; // lambda
+	default: AliFatal(Form("Invalid setting %d", fRejectResonanceDaughters));
+      }
+
+      for (Int_t i=0; i<particles->GetEntriesFast(); i++)
+	particles->UncheckedAt(i)->ResetBit(kResonanceDaughterFlag);
+      if (mixed)
+	for (Int_t i=0; i<jMax; i++)
+	  mixed->UncheckedAt(i)->ResetBit(kResonanceDaughterFlag);
+      
+      for (Int_t i=0; i<particles->GetEntriesFast(); i++)
+      {
+	AliVParticle* triggerParticle = (AliVParticle*) particles->UncheckedAt(i);
+	
+	for (Int_t j=0; j<jMax; j++)
+	{
+	  if (!mixed && i == j)
+	    continue;
+	
+	  AliVParticle* particle = 0;
+	  if (!mixed)
+	    particle = (AliVParticle*) particles->UncheckedAt(j);
+	  else
+	    particle = (AliVParticle*) mixed->UncheckedAt(j);
+	  
+	  // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event)
+	  if (mixed && triggerParticle->IsEqual(particle))
+	    continue;
+	 
+	  if (triggerParticle->Charge() * particle->Charge() > 0)
+	    continue;
+      
+	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerParticle->Eta(), triggerParticle->Phi(), particle->Pt(), particle->Eta(), particle->Phi(), massDaughter1, massDaughter2);
+	      
+	  if (TMath::Abs(mass - resonanceMass*resonanceMass) < interval*5)
+	  {
+	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerParticle->Eta(), triggerParticle->Phi(), particle->Pt(), particle->Eta(), particle->Phi(), massDaughter1, massDaughter2);
+
+	    if (mass > (resonanceMass-interval)*(resonanceMass-interval) && mass < (resonanceMass+interval)*(resonanceMass+interval))
+	    {
+	      triggerParticle->SetBit(kResonanceDaughterFlag);
+	      particle->SetBit(kResonanceDaughterFlag);
+	      
+// 	      Printf("Flagged %d %d %f", i, j, TMath::Sqrt(mass));
+	    }
+	  }
+	}
+      }
     }
     
     for (Int_t i=0; i<particles->GetEntriesFast(); i++)
@@ -631,6 +681,13 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	if (triggerParticle->Charge() * fTriggerSelectCharge < 0)
 	  continue;
 	
+      if (fRejectResonanceDaughters > 0)
+	if (triggerParticle->TestBit(kResonanceDaughterFlag))
+	{
+// 	  Printf("Skipped i=%d", i);
+	  continue;
+	}
+	
       for (Int_t j=0; j<jMax; j++)
       {
         if (!mixed && i == j)
@@ -643,25 +700,12 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
           particle = (AliVParticle*) mixed->UncheckedAt(j);
         
         // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event)
-        if (mixed && triggerParticle == particle)
+        if (mixed && triggerParticle->IsEqual(particle))
           continue;
         
         if (fPtOrder)
-	{
 	  if (particle->Pt() >= triggerParticle->Pt())
 	    continue;
-	}
-// 	else
-// 	{
-// 	  // if we do not use the pt ordering, we have to prevent double counting in a different way
-// 	  // if the trigger particle is also part of the associated particle list, the pT ordering condition is applied anyway
-// 	  if (!mixed || (*existsInMixed)[i] != 0)
-// 	    if (particle->Pt() >= triggerParticle->Pt())
-// 	    {
-// // 	      Printf("Skipping %d %d", i, j);
-// 	      continue;
-// 	    }
-// 	}
 	
 	if (fAssociatedSelectCharge != 0)
 	  if (particle->Charge() * fAssociatedSelectCharge < 0)
@@ -686,7 +730,14 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	    continue;
 	}
 
-        // conversions
+	if (fRejectResonanceDaughters > 0)
+	  if (particle->TestBit(kResonanceDaughterFlag))
+	  {
+// 	    Printf("Skipped j=%d", j);
+	    continue;
+	  }
+
+	// conversions
 	if (fCutConversions && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
@@ -905,8 +956,6 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
       triggerWeighting = 0;
     }
   }
-  
-  delete existsInMixed;
   
   fCentralityDistribution->Fill(centrality);
   fCentralityCorrelation->Fill(centrality, particles->GetEntriesFast());
