@@ -229,31 +229,31 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
 						dtc2etaphitpc[aniter]->SetMostProbableProton();
 					}
-					if (ichg == 9) // KpPp
+					if (ichg == 9) // KmPm
+					{
+						dtc1etaphitpc[aniter]->SetCharge(-1.0);
+						dtc1etaphitpc[aniter]->SetPt(0.3,20);
+						dtc1etaphitpc[aniter]->SetMass(KaonMass);		
+						dtc1etaphitpc[aniter]->SetMostProbableKaon();
+						dtc2etaphitpc[aniter]->SetCharge(-1.0);
+						dtc2etaphitpc[aniter]->SetPt(0.5,20);
+						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
+						dtc2etaphitpc[aniter]->SetMostProbableProton();
+					}
+					if (ichg == 10) // KpPm
 					{
 						dtc1etaphitpc[aniter]->SetCharge(1.0);
 						dtc1etaphitpc[aniter]->SetPt(0.3,20);
 						dtc1etaphitpc[aniter]->SetMass(KaonMass);		
 						dtc1etaphitpc[aniter]->SetMostProbableKaon();
-						dtc2etaphitpc[aniter]->SetCharge(1.0);
+						dtc2etaphitpc[aniter]->SetCharge(-1.0);
 						dtc2etaphitpc[aniter]->SetPt(0.5,20);
 						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
 						dtc2etaphitpc[aniter]->SetMostProbableProton();
 					}
-					if (ichg == 10) // KpPp
+					if (ichg ==11) // KmPp
 					{
-						dtc1etaphitpc[aniter]->SetCharge(1.0);
-						dtc1etaphitpc[aniter]->SetPt(0.3,20);
-						dtc1etaphitpc[aniter]->SetMass(KaonMass);		
-						dtc1etaphitpc[aniter]->SetMostProbableKaon();
-						dtc2etaphitpc[aniter]->SetCharge(1.0);
-						dtc2etaphitpc[aniter]->SetPt(0.5,20);
-						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
-						dtc2etaphitpc[aniter]->SetMostProbableProton();
-					}
-					if (ichg ==11) // KpPp
-					{
-						dtc1etaphitpc[aniter]->SetCharge(1.0);
+						dtc1etaphitpc[aniter]->SetCharge(-1.0);
 						dtc1etaphitpc[aniter]->SetPt(0.3,20);
 						dtc1etaphitpc[aniter]->SetMass(KaonMass);		
 						dtc1etaphitpc[aniter]->SetMostProbableKaon();
