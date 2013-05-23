@@ -180,7 +180,7 @@ private:
   Double_t fEMCalSurfaceDistance;   // EMCal surface distance from the center of the detector (r = 440 by default)
   
   
-  ClassDef(AliAnalysisTaskESDfilter, 16); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDfilter, 17); // Analysis task for standard ESD filtering
 };
 
 #endif

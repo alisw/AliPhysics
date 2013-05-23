@@ -280,7 +280,7 @@ class AliAODTrack : public AliVTrack {
   Double_t GetTrackPhiOnEMCal() const {return fTrackPhiOnEMCal;}
   Double_t GetTrackEtaOnEMCal() const {return fTrackEtaOnEMCal;}
   Double_t GetTrackPtOnEMCal() const {return fTrackPtOnEMCal;}
-  Double_t GetTrackPOnEMCal() const {return fTrackPtOnEMCal*TMath::CosH(fTrackEtaOnEMCal);}
+  Double_t GetTrackPOnEMCal() const {return TMath::Abs(fTrackEtaOnEMCal) < 1 ? fTrackPtOnEMCal*TMath::CosH(fTrackEtaOnEMCal) : -999;}
   void SetTrackPhiEtaPtOnEMCal(Double_t phi,Double_t eta,Double_t pt) {fTrackPhiOnEMCal=phi;fTrackEtaOnEMCal=eta;fTrackPtOnEMCal=pt;}
 
   Int_t GetPHOScluster() const {return fCaloIndex;}
