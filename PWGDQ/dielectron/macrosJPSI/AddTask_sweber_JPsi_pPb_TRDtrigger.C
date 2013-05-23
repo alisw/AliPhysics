@@ -67,7 +67,7 @@ AliAnalysisTask *AddTask_sweber_JPsi_pPb_TRDtrigger(){
   if ( trainConfig=="pp" ) task->SetRejectPileup();
   
   //create output container
-  TString containerName = "JPSI.root";
+  TString containerName = "AnalysisResults.root";
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("sweber_tree",
                          TTree::Class(),
