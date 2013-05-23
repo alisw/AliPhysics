@@ -60,7 +60,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskRhoVnModulation)
 
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoVnModulation", kTRUE), 
-    fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(kGrid), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(0.4), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistPsiTPCSUBA(0), fHistPsiTPCSUBB(0),
+    fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(kGrid), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(0.4), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistPsiTPCSUBA(0), fHistPsiTPCSUBB(0),
    fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
@@ -112,7 +112,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
 }
 //_____________________________________________________________________________
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-  fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(type), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(0.4), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistPsiTPCSUBA(0), fHistPsiTPCSUBB(0), 
+  fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(type), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(0.4), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistPsiTPCSUBA(0), fHistPsiTPCSUBB(0), 
    fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
@@ -209,7 +209,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::InitializeAnalysis()
             fFitModulation->FixParameter(1, 1.);        // constant
             fFitModulation->FixParameter(2, 3.);        // constant
         } break;
-        default : { // for the combined fit and the 'direct fourier series' we use v2 and v3 
+        default : { // for the combined fit, the 'direct fourier series' or the user supplied vn values we use v2 and v3
              SetModulationFit(new TF1("fit_kCombined", "[0]*([1]+[2]*([3]*TMath::Cos([2]*(x-[4]))+[7]*TMath::Cos([5]*(x-[6]))))", 0, TMath::TwoPi()));
              fFitModulation->SetParameter(0, 0.);       // normalization
              fFitModulation->SetParameter(3, 0.2);      // v2
@@ -501,6 +501,8 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     fHistSwap = new TH1F("fHistSwap", "fHistSwap", 20, 0, TMath::TwoPi());
     fHistSwap->Sumw2();
 
+    if(fUserSuppliedV2) fOutputList->Add(fUserSuppliedV2);
+    if(fUserSuppliedV3) fOutputList->Add(fUserSuppliedV3);
     // increase readability of output list
     fOutputList->Sort();
     PostData(1, fOutputList);
@@ -843,6 +845,14 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t* params, Double_t psi
             fFitModulation->SetParameter(4, psi2);
             fFitModulation->SetParameter(6, psi3);
             fFitModulation->SetParameter(7, TMath::Sqrt(cos3*cos3+sin3*sin3)/RhoVal());
+        } break;
+        case kIntegratedFlow : {
+            // use v2 and v3 values from an earlier iteration over the data
+            fFitModulation->FixParameter(3, fUserSuppliedV2->GetBinContent(fUserSuppliedV2->GetXaxis()->FindBin(fCent)));
+            fFitModulation->FixParameter(4, psi2);
+            fFitModulation->FixParameter(6, psi3);
+            fFitModulation->FixParameter(7, fUserSuppliedV3->GetBinContent(fUserSuppliedV3->GetXaxis()->FindBin(fCent)));
+            return kTRUE;     // no fit is performed
         }
         default : break;
     }
