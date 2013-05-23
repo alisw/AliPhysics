@@ -1241,8 +1241,18 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) < fCutMinDCAToVertexZ)
     cuts[27] = kTRUE;
   
-  for (Int_t i = 0; i < 3; i++)
-    cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(i*2), esdTrack->HasPointOnITSLayer(i*2+1));
+  for (Int_t i = 0; i < 3; i++) {
+    if(!(esdTrack->GetStatus()&AliESDtrack::kITSupg)) { // current ITS
+      cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(i*2), esdTrack->HasPointOnITSLayer(i*2+1));
+    } else { // upgraded ITS (7 layers)
+      // at the moment, for L012 the layers 12 are considered together
+      if(i==0) { // L012
+	cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(0), (esdTrack->HasPointOnITSLayer(1))&(esdTrack->HasPointOnITSLayer(2)));
+      } else { // L34 or L56
+	cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(i*2+1), esdTrack->HasPointOnITSLayer(i*2+2));
+      }
+    }
+  }
   
   if(fCutRequireITSStandAlone || fCutRequireITSpureSA){
     if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)){

@@ -41,6 +41,7 @@ class AliESDtrackCuts : public AliAnalysisCuts
 public:
   enum ITSClusterRequirement { kOff = 0, kNone, kAny, kFirst, kOnlyFirst, kSecond, kOnlySecond, kBoth };
   enum Detector { kSPD = 0, kSDD, kSSD };
+  enum ITSULayers { kITSU012 = 0, kITSU34, kITSU56 };
   enum MultEstTrackCuts { kMultEstTrackCutGlobal = 0, kMultEstTrackCutITSSA, kMultEstTrackCutDCAwSPD, kMultEstTrackCutDCAwoSPD, kNMultEstTrackCuts /* this must always be the last */};
   enum MultEstTrackType { kTrackletsITSTPC = 0, kTrackletsITSSA, kTracklets };
   enum VertexType { kVertexTracks = 0x1, kVertexSPD = 0x2, kVertexTPC = 0x4 };
@@ -88,6 +89,7 @@ public:
   void SetMinNCrossedRowsTPC(Float_t min=-1) { fCutMinNCrossedRowsTPC=min;}
   void SetMinRatioCrossedRowsOverFindableClustersTPC(Float_t min = -1) { fCutMinRatioCrossedRowsOverFindableClustersTPC=min;}
   void SetClusterRequirementITS(Detector det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
+  void SetClusterRequirementITS(ITSULayers det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
   void SetMaxChi2PerClusterTPC(Float_t max=1e10) {fCutMaxChi2PerClusterTPC=max;}
   void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS=max;}
   void SetMaxChi2TPCConstrainedGlobal(Float_t max=1e10) {fCutMaxChi2TPCConstrainedVsGlobal = max; }
@@ -129,6 +131,7 @@ public:
   Int_t   GetMinNClustersITS()       const   { return fCutMinNClusterITS;}
   TFormula *GetMinNClustersTPCPtDep() const  { return f1CutMinNClustersTPCPtDep;}
   ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
+  ITSClusterRequirement GetClusterRequirementITS(ITSULayers det) const { return fCutClusterRequirementITS[det]; }
   Float_t GetMaxChi2PerClusterTPC()  const   { return fCutMaxChi2PerClusterTPC;}
   Float_t GetMaxChi2PerClusterITS()  const   { return fCutMaxChi2PerClusterITS;}
   Float_t GetMaxChi2TPCConstrainedGlobal() const { return fCutMaxChi2TPCConstrainedVsGlobal; }
