@@ -65,7 +65,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistNCellsEnergy;         //!Number of cells vs. energy of cluster
   TH2                        *fHistFcrossEnergy;         //!Fcross vs. energy of cluster
   TH2                        *fHistClusTimeEnergy;       //!Time vs. energy of cluster
-  TH1                        *fHistClusMCEnergyFraction; //!MC energy fraction (embedding)
+  TH1                        *fHistClusMCEnergyFraction[4];//!MC energy fraction (embedding)
 
   // Jets
   TH3                        *fHistJetsPhiEtaPt[4];      //!Phi-Eta distribution of jets
