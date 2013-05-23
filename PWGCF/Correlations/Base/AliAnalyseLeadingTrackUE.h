@@ -31,6 +31,7 @@ class TROOT;
 class TVector3;
 class AliVTrack;
 class AliHelperPID;
+class TFormula;
 
 class AliAnalyseLeadingTrackUE : public TObject {
 
@@ -70,6 +71,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   void		 SetCheckMotherPDG(Bool_t checkpdg) { fCheckMotherPDG = checkpdg; }
   Bool_t	 GetCheckMotherPDG() { return fCheckMotherPDG; }
   void		 NextEvent() { fEventCounter++; }
+  void		 SetDCAXYCut(TFormula* value) { fDCAXYCut = value; }
 
 protected:
   Bool_t CheckTrack(AliVParticle * part);
@@ -83,6 +85,7 @@ private:
   Double_t       fTrackEtaCut;       // pseudo-rapidity limit of transverse regions     
   Double_t       fTrackPtMin;        // pt limit for selecting particles
   UInt_t         fEventSelection;    // bit for physics selection
+  TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
   AliESDtrackCuts *fEsdTrackCuts;    // set of cuts when reading ESD
   AliESDtrackCuts *fEsdTrackCutsExtra1;    // set of cuts when reading ESD
   AliESDtrackCuts *fEsdTrackCutsExtra2;    // set of cuts when reading ESD
