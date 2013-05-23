@@ -38,6 +38,7 @@
 #include "TProfile.h"
 #include "TFile.h"
 #include "TKey.h"
+#include "TRandom3.h"
 
 #include "AliLog.h"
 
@@ -133,7 +134,13 @@ fh1AvgTrials(0x0),
 fh1PtHard(0x0),
 fh1PtHardNoW(0x0),  
 fh1PtHardTrials(0x0),
-fAvgTrials(1)
+fAvgTrials(1),
+fHardest(0),
+fEventNumberRangeLow(0),
+fEventNumberRangeHigh(99),
+fTriggerPtRangeLow(0.0),
+fTriggerPtRangeHigh(10000.0),
+fRandom(0x0)
 {
    // default Constructor
 }
@@ -204,7 +211,13 @@ fh1AvgTrials(0x0),
 fh1PtHard(0x0),
 fh1PtHardNoW(0x0),  
 fh1PtHardTrials(0x0),
-fAvgTrials(1)
+fAvgTrials(1),
+fHardest(0),
+fEventNumberRangeLow(0),
+fEventNumberRangeHigh(99),
+fTriggerPtRangeLow(0.0),
+fTriggerPtRangeHigh(10000.0),
+fRandom(0x0)
 {
 // Constructor
 
@@ -276,7 +289,12 @@ fh1AvgTrials(a.fh1AvgTrials),
 fh1PtHard(a.fh1PtHard),
 fh1PtHardNoW(a.fh1PtHardNoW),  
 fh1PtHardTrials(a.fh1PtHardTrials),
-fAvgTrials(a.fAvgTrials)
+fAvgTrials(a.fAvgTrials),
+fHardest(a.fHardest),
+fEventNumberRangeLow(a.fEventNumberRangeLow),
+fEventNumberRangeHigh(a.fEventNumberRangeHigh),
+fTriggerPtRangeLow(a.fTriggerPtRangeLow),
+fTriggerPtRangeHigh(a.fTriggerPtRangeHigh)
 {
    //Copy Constructor
 }
@@ -296,6 +314,7 @@ AliAnalysisTaskJetCorePP::~AliAnalysisTaskJetCorePP()
    delete fListJets;
    delete fListJetsGen;
    delete fOutputList; // ????
+   delete fRandom;
 }
 
 //--------------------------------------------------------------
@@ -375,6 +394,8 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 
    fIsMC = (fJetBranchNameMC.Length()>0) ? kTRUE : kFALSE;
 
+   fRandom = new TRandom3(0);
+
    if(fIsMC) fListJetsGen = new TList(); //generator level
    OpenFile(1);
    if(!fOutputList) fOutputList = new TList();
@@ -389,7 +410,7 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fHistEvtSelection->GetXaxis()->SetBinLabel(3,"event selection (rejected)");
    fHistEvtSelection->GetXaxis()->SetBinLabel(4,"vertex cut (rejected)");
    fHistEvtSelection->GetXaxis()->SetBinLabel(5,"centrality (rejected)");
-   fHistEvtSelection->GetXaxis()->SetBinLabel(6,"multiplicity (rejected)");
+   fHistEvtSelection->GetXaxis()->SetBinLabel(6,"event number (rejected)");
    
    fOutputList->Add(fHistEvtSelection);
 
@@ -690,14 +711,17 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       }
    }
  
+   //-----------------select disjunct event subsamples ----------------
+   Int_t eventnum   = aod->GetHeader()->GetEventNumberESDFile();
+   Int_t lastdigit = eventnum % 10;
+   if(!(fEventNumberRangeLow<=lastdigit && lastdigit<=fEventNumberRangeHigh)){
+      fHistEvtSelection->Fill(5);
+      PostData(1, fOutputList);
+      return;
+   } 
+
    if(fDebug) std::cout<<" ACCEPTED EVENT "<<endl;
-  
    fHistEvtSelection->Fill(0); // accepted events 
-
-
-   
-
-
    // ------------------- end event selection --------------------
    
 
@@ -751,9 +775,12 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       fListJetsGen->Clear();
 
       //serarch for charged trigger at the MC generator level
-      Int_t indexTriggGen = -1;
-      Double_t ptTriggGen = -1;
-      Int_t iCounterGen   =  0;
+      Int_t    indexTriggGen = -1;
+      Double_t ptTriggGen    = -1;
+      Int_t    iCounterGen   =  0;
+      Int_t    triggersMC[200];//list of trigger candidates
+      Int_t    ntriggersMC   = 0; //index in triggers array
+
       if(fESD){//ESD input
 
          AliMCEvent* mcEvent = MCEvent();
@@ -776,6 +803,14 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
             AliMCParticle* part = (AliMCParticle*) mcEvent->GetTrack(it);
             if(!part) continue;  
             if(SelectMCGenTracks((AliVParticle*) part, &particleListGen, ptTriggGen, indexTriggGen, iCounterGen)){ 
+
+               if(fHardest==0 && ntriggersMC<200){//single inclusive trigger
+                  if(indexTriggGen > -1){//trigger candidater was found
+                     triggersMC[ntriggersMC] = indexTriggGen;
+                     ntriggersMC++; 
+                  }
+               }
+
                iCounterGen++;
             }
          }
@@ -795,21 +830,28 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
             if(!part->IsPhysicalPrimary()) continue;
             if(SelectMCGenTracks((AliVParticle*) part, &particleListGen, ptTriggGen, indexTriggGen, iCounterGen)){
 
+               if(fHardest==0 && ntriggersMC<200){//single inclusive trigger
+                  if(indexTriggGen > -1){ //trigger candidater was found
+                     triggersMC[ntriggersMC] = indexTriggGen;
+                     ntriggersMC++; 
+                  }
+               }
+
                iCounterGen++;
             }
          }
       }
- 
-      if(indexTriggGen > -1){  //Fill trigger histogram 
-         AliVParticle* triggerGen = (AliVParticle*) particleListGen.At(indexTriggGen);  
-         if(triggerGen && TMath::Abs((Float_t) triggerGen->Eta()) < fTriggerEtaCut){
-            fh2NtriggersGen->Fill(centValue, ptTriggGen);
+
+      if(fHardest==0){ //single inclusive trigger
+         if(ntriggersMC>0){ //there is at least one trigger 
+            Int_t rnd     = fRandom->Integer(ntriggersMC); //0 to ntriggers-1
+            indexTriggGen = triggersMC[rnd];
          }else{
-            indexTriggGen = -1;
-            ptTriggGen    = -1.0;
+            indexTriggGen = -1; //trigger not found
          }
       }
-   
+
+      //================== Fill jet list ===================
       if(aodGenJets){ 
          if(fDebug) Printf("########## %s: %d jets",fJetBranchNameMC.Data(), aodGenJets->GetEntriesFast());
 
@@ -817,7 +859,53 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
             AliAODJet *jetGen = dynamic_cast<AliAODJet*>((*aodGenJets)[igJet]);
             if(jetGen) fListJetsGen->Add(jetGen);
          }
-   
+      }
+
+      //============  Generator trigger+jet ==================
+      Int_t ilowGen  = (fHardest==0 || fHardest==1) ? indexTriggGen : 0;
+      Int_t ihighGen = (fHardest==0 || fHardest==1) ? indexTriggGen+1 : particleListGen.GetEntries();
+
+      for(Int_t igen= ilowGen; igen< ihighGen; igen++){ //loop over possible trigger
+         indexTriggGen = igen; //trigger hadron 
+
+         if(indexTriggGen == -1) continue;  
+         AliVParticle* triggerGen=(AliVParticle*) particleListGen.At(indexTriggGen);  
+         if(!triggerGen) continue;
+ 
+         if(fHardest >= 2){ 
+            if(triggerGen->Pt() < 10.0) continue; //all hadrons pt>10  
+         }
+         if(TMath::Abs((Float_t) triggerGen->Eta()) > fTriggerEtaCut) continue;
+
+         ptTriggGen = triggerGen->Pt(); //count triggers
+         fh2NtriggersGen->Fill(centValue, ptTriggGen);
+
+         //Count jets and trigger-jet pairs at MC  generator level
+         if(!aodGenJets) continue; 
+         for(Int_t ij=0; ij<fListJetsGen->GetEntries(); ij++){
+            AliAODJet* jet = (AliAODJet*)(fListJetsGen->At(ij));
+            if(!jet) continue;
+            Double_t etaJetGen = jet->Eta();
+ 
+            if((fJetEtaMin<=etaJetGen) && (etaJetGen<=fJetEtaMax)){ 
+
+               Double_t dphi = RelativePhi(triggerGen->Phi(), jet->Phi()); 
+               if(TMath::Abs((Double_t) dphi) < fkDeltaPhiCut) continue;
+
+               //Centrality, A, pT, pTtrigg
+               Double_t fillspecgen[] = { centValue,
+                                          jet->EffectiveAreaCharged(),
+                                          jet->Pt(),
+                                          ptTriggGen
+                                        };
+              fHJetSpecGen->Fill(fillspecgen);
+            }//back to back jet-trigger pair
+         }//jet loop
+      }//trigger loop
+
+
+      //================ RESPONSE MATRIX ===============
+      if(aodGenJets){ 
          //Count jets and trigger-jet pairs at MC  generator level
          for(Int_t ij=0; ij<fListJetsGen->GetEntries(); ij++){
             AliAODJet* jet = (AliAODJet*)(fListJetsGen->At(ij));
@@ -827,24 +915,8 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
  
             if((fJetEtaMin<=etaJetGen) && (etaJetGen<=fJetEtaMax)){ 
                fhJetPtGen->Fill(ptJetGen); // generator level pt spectum of jets response mx normalization
-
-               if(indexTriggGen > -1){
-                  AliVParticle* triggerGen = (AliVParticle*) particleListGen.At(indexTriggGen);  
-       
-                  Double_t dphi = RelativePhi(triggerGen->Phi(), jet->Phi()); 
-                  if(TMath::Abs((Double_t) dphi) < fkDeltaPhiCut) continue;
-
-                  //Centrality, A, pT, pTtrigg
-                  Double_t fillspecgen[] = { centValue,
-                                          jet->EffectiveAreaCharged(),
-                                          jet->Pt(),
-                                          ptTriggGen
-                                        };
-                  fHJetSpecGen->Fill(fillspecgen);
-               }
             }
          }
-
          if(fListJets->GetEntries()>0 && fListJetsGen->GetEntries()>0){ //at least some reconstructed jets
             Int_t ng = (Int_t) fListJetsGen->GetEntries();
             Int_t nr = (Int_t) fListJets->GetEntries();
@@ -886,43 +958,16 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       }//pointer MC generator jets
    } //analyze generator level MC
 
-   // ===============  RECONSTRUCTED TRACKS AND JETS ================
+   //=============  RECONSTRUCTED INCLUSIVE JETS ===============
 
-   //Find Hadron trigger
-   TList particleList; //list of tracks
-   Int_t indexTrigg = GetListOfTracks(&particleList); //index of trigger hadron in Particle list
-  
-   if(fIsMC) FillEffHistos(&particleList, &particleListGen); //Fill efficiency histos
- 
-   if(indexTrigg<0){
-      PostData(1, fOutputList);
-      return; // no trigger track found above 150 MeV/c 
-   }
-
-   AliVParticle *triggerHadron = (AliVParticle*) particleList.At(indexTrigg);     
-   if(!triggerHadron){  
-      PostData(1, fOutputList);
-      return;
-   }
-
-
-   fh2Ntriggers->Fill(centValue,triggerHadron->Pt()); //trigger pT
-
-      //Trigger Diagnostics---------------------------------
-   fhTriggerPhi->Fill(triggerHadron->Pt(),RelativePhi(triggerHadron->Phi(),0.0)); //phi -pi,pi
-   fhTriggerEta->Fill(triggerHadron->Pt(),triggerHadron->Eta());
-
-  
    Double_t etaJet  = 0.0;
    Double_t pTJet   = 0.0;
    Double_t areaJet = 0.0;
    Double_t phiJet  = 0.0;
-   Int_t injet4     = 0;
-   Int_t injet      = 0; 
    Int_t indexLeadingJet     = -1;
    Double_t pTLeadingJet     = -10.0; 
    Double_t areaLeadingJet   = -10.0;
-   //---------- jet loop ---------
+  
    for(Int_t ij=0; ij<fListJets->GetEntries(); ij++){
       AliAODJet* jet = (AliAODJet*)(fListJets->At(ij));
       if(!jet) continue;
@@ -935,16 +980,8 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       areaJet = jet->EffectiveAreaCharged();
 
       //Jet Diagnostics---------------------------------
-      fhJetPhi->Fill(pTJet,  RelativePhi(phiJet,0.0)); //phi -pi,pi
-      fhJetEta->Fill(pTJet,  etaJet);
-      if(areaJet >= 0.07) injet++; 
-      if(areaJet >= 0.4)  injet4++;
-      //--------------------------------------------------
-
-      Double_t dphi = RelativePhi(triggerHadron->Phi(), phiJet); 
-   
-      fhDphiTriggerJet->Fill(dphi); //Input
-
+      fhJetPhi->Fill(pTJet, RelativePhi(phiJet,0.0)); //phi -pi,pi
+      fhJetEta->Fill(pTJet, etaJet);
       //search for leading jet
       if(pTJet > pTLeadingJet){
          indexLeadingJet  = ij; 
@@ -959,59 +996,112 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
                              areaJet
                            };
       fHJetPtRaw->Fill(fillraw);
+   }
 
-      //Dphi versus jet pT   
-      //Centrality, Dphi=phiTrig-phiJet, pTjet, pTtrigg 
-      Double_t filldp[] = { centValue,
-                            dphi,
-                            pTJet,
-                            triggerHadron->Pt()
-                          };
-      fHDphiVsJetPtAll->Fill(filldp);
-
-      // Select back to back trigger - jet pairs
-      if(TMath::Abs((Double_t) dphi) < fkDeltaPhiCut) continue;
-      fhDphiTriggerJetAccept->Fill(dphi); //Accepted
-
- 
-      //Centrality, A, pTjet, pTtrigg
-      Double_t fillspec[] = { centValue,
-                              areaJet,
-                              pTJet,
-                              triggerHadron->Pt()
-                            };
-      fHJetSpec->Fill(fillspec);
-	   
-   }//jet loop
- 
    if(indexLeadingJet > -1){ 
-     // raw spectra of LEADING jets  
-     //Centrality, pTjet,  A
-     Double_t fillleading[] = { centValue,
-                                pTLeadingJet,
-                                areaLeadingJet
-                              };
-     fHLeadingJetPtRaw->Fill(fillleading);
+      // raw spectra of LEADING jets  
+      //Centrality, pTjet,  A
+      Double_t fillleading[] = { centValue,
+                                 pTLeadingJet,
+                                 areaLeadingJet
+                               };
+      fHLeadingJetPtRaw->Fill(fillleading);
    } 
 
+ 
+   // ===============  RECONSTRUCTED TRIGGER-JET PAIRS ================
+   //Find Hadron trigger
+   TList particleList; //list of tracks
+   Int_t indexTrigg = GetListOfTracks(&particleList); //index of trigger hadron in Particle list
+   if(fIsMC) FillEffHistos(&particleList, &particleListGen); //Fill efficiency histos
+
+   //set ranges of the trigger loop
+   Int_t ilow  = (fHardest==0 || fHardest==1) ? indexTrigg : 0;
+   Int_t ihigh = (fHardest==0 || fHardest==1) ? indexTrigg+1 : particleList.GetEntries();
+
+   for(Int_t itrk= ilow; itrk< ihigh; itrk++){ //loop over possible trigger
+      indexTrigg = itrk; //trigger hadron with pT >10 GeV 
+ 
+      if(indexTrigg < 0) continue;
+
+      AliVParticle *triggerHadron = (AliVParticle*) particleList.At(indexTrigg);     
+      if(!triggerHadron){  
+         PostData(1, fOutputList);
+         return;
+      }
+      if(fHardest >= 2){ 
+         if(triggerHadron->Pt() < 10.0) continue; //all hadrons pt>10  
+      }
+      if(TMath::Abs((Float_t) triggerHadron->Eta())> fTriggerEtaCut) continue;
+ 
+      //Fill trigger histograms
+      fh2Ntriggers->Fill(centValue,triggerHadron->Pt()); //trigger pT
+      fhTriggerPhi->Fill(triggerHadron->Pt(),RelativePhi(triggerHadron->Phi(),0.0)); //phi -pi,pi
+      fhTriggerEta->Fill(triggerHadron->Pt(),triggerHadron->Eta());
+
   
-   //Fill Jet Density In the Event A>0.07
-   if(injet>0){
-      Double_t filldens[]={ (Double_t) particleList.GetEntries(),
+      //---------- make trigger-jet pairs ---------
+      Int_t injet4     = 0;
+      Int_t injet      = 0; 
+ 
+      for(Int_t ij=0; ij<fListJets->GetEntries(); ij++){
+         AliAODJet* jet = (AliAODJet*)(fListJets->At(ij));
+         if(!jet) continue;
+         etaJet  = jet->Eta();
+         phiJet  = jet->Phi();
+         pTJet   = jet->Pt();
+         if(pTJet==0) continue; 
+     
+         if((etaJet<fJetEtaMin) || (etaJet>fJetEtaMax)) continue;
+         areaJet = jet->EffectiveAreaCharged();
+         if(areaJet >= 0.07) injet++; 
+         if(areaJet >= 0.4)  injet4++;
+
+         Double_t dphi = RelativePhi(triggerHadron->Phi(), phiJet); 
+         fhDphiTriggerJet->Fill(dphi); //Input
+
+         //Dphi versus jet pT   
+         //Centrality, Dphi=phiTrig-phiJet, pTjet, pTtrigg 
+         Double_t filldp[] = { centValue,
+                               dphi,
+                               pTJet,
+                               triggerHadron->Pt()
+                             };
+         fHDphiVsJetPtAll->Fill(filldp);
+      
+         // Select back to back trigger - jet pairs
+         if(TMath::Abs((Double_t) dphi) < fkDeltaPhiCut) continue;
+         fhDphiTriggerJetAccept->Fill(dphi); //Accepted
+
+ 
+         //Centrality, A, pTjet, pTtrigg
+         Double_t fillspec[] = { centValue,
+                                 areaJet,
+                                 pTJet,
+                                 triggerHadron->Pt()
+                               };
+         fHJetSpec->Fill(fillspec);
+      }//jet loop
+ 
+      //Fill Jet Density In the Event A>0.07
+      if(injet>0){
+         Double_t filldens[]={ (Double_t) particleList.GetEntries(),
                             injet/fkAcceptance,
                             triggerHadron->Pt()
                           };
-      fHJetDensity->Fill(filldens);
+         fHJetDensity->Fill(filldens);
+      } 
+
+      //Fill Jet Density In the Event A>0.4
+      if(injet4>0){ 
+         Double_t filldens4[]={ (Double_t) particleList.GetEntries(), 
+                                injet4/fkAcceptance,
+                                triggerHadron->Pt()
+                              };
+         fHJetDensityA4->Fill(filldens4);
+      }
    }
 
-   //Fill Jet Density In the Event A>0.4
-   if(injet4>0){ 
-      Double_t filldens4[]={ (Double_t) particleList.GetEntries(), 
-                             injet4/fkAcceptance,
-                             triggerHadron->Pt()
-                           };
-      fHJetDensityA4->Fill(filldens4);
-   }
 
    PostData(1, fOutputList);
 }
@@ -1041,6 +1131,8 @@ Int_t  AliAnalysisTaskJetCorePP::GetListOfTracks(TList *list){
 
    Int_t    index = -1; //index of the highest particle in the list
    Double_t ptmax = -10;
+   Int_t    triggers[200];
+   Int_t    ntriggers = 0; //index in triggers array
 
    for(Int_t it = 0; it < aodevt->GetNumberOfTracks(); it++){
       AliAODTrack *tr = aodevt->GetTrack(it);
@@ -1050,20 +1142,32 @@ Int_t  AliAnalysisTaskJetCorePP::GetListOfTracks(TList *list){
       if(TMath::Abs((Float_t) tr->Eta()) > fTrackEtaCut) continue;
       if(tr->Pt() < fTrackLowPtCut) continue;
       list->Add(tr);
-      if(tr->Pt()>ptmax){ 
-         ptmax = tr->Pt();	
-         index = iCount;
+
+      //Search trigger:
+      if(fHardest>0){ //leading particle 
+         if(tr->Pt()>ptmax){ 
+            ptmax = tr->Pt();	
+            index = iCount;
+         }
       }
+    
+      if(fHardest==0 && ntriggers<200){ //single inclusive 
+         if(fTriggerPtRangeLow <= tr->Pt() && 
+            tr->Pt() < fTriggerPtRangeHigh){ 
+            triggers[ntriggers] = iCount;
+            ntriggers++;
+         }
+      }
+
       iCount++;
    }
 
-   if(index>-1){ //check pseudorapidity cut on trigger
-      AliAODTrack *trigger = (AliAODTrack*) list->At(index);
-      if(trigger && TMath::Abs((Float_t) trigger->Eta())< fTriggerEtaCut){ return index;} 
-      return -1;
-   }else{
-      return -1;
+   if(fHardest==0 && ntriggers>0){ //select random inclusive trigger
+      Int_t rnd = fRandom->Integer(ntriggers); //0 to ntriggers-1
+      index     = triggers[rnd];
    }
+
+   return index;
 }
 
 //----------------------------------------------------------------------------
@@ -1114,11 +1218,23 @@ Bool_t AliAnalysisTaskJetCorePP::SelectMCGenTracks(AliVParticle *trk, TList *trk
    if(TMath::Abs((Float_t) trk->Eta()) > fTrackEtaCut) return kFALSE;
    trkList->Add(trk);
    fhPtTrkTruePrimGen->Fill(trk->Pt(),trk->Eta()); //Efficiency denominator
- 
-   if(ptLeading < trk->Pt()){
-      index      = counter;
-      ptLeading  = trk->Pt();
+
+   //Search trigger:
+   if(fHardest>0){ //leading particle 
+      if(ptLeading < trk->Pt()){
+         index      = counter;
+         ptLeading  = trk->Pt();
+      }
    }
+
+   if(fHardest==0){ //single inclusive 
+      index = -1;  
+      if(fTriggerPtRangeLow <= trk->Pt() && 
+            trk->Pt() < fTriggerPtRangeHigh){
+         index      = counter;
+      }
+   }
+
    return kTRUE;
 } 
 

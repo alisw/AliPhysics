@@ -7,7 +7,7 @@
 // **************************************
 // This task performs hadron-trigger recoil jet correlations 
 // Output pT spectrum of jet given trigger pT 
-// Author: filip krizek 1st March 2013
+// Author: filip krizek 16th March 2013
 // *******************************************
 
 class TH1F;
@@ -17,6 +17,7 @@ class TH2F;
 class TH3F;
 class TList;
 class THnSparse;
+class TRandom3;
 class TArrayI; 
 class TProfile;
 class TFile;
@@ -60,6 +61,12 @@ public:
    virtual void  SetTriggerEtaCut(Float_t eta) { fTriggerEtaCut = eta; }
    virtual void  SetTrackEtaCut(Float_t eta) { fTrackEtaCut = eta; }
    virtual void  SetTrackLowPtCut(Float_t pt) { fTrackLowPtCut=pt; } 
+   virtual void  SetTriggerType(Int_t tt){ fHardest=tt;}
+   virtual void  SetEventNumberRangeLow(Int_t rl){ fEventNumberRangeLow=rl;}
+   virtual void  SetEventNumberRangeHigh(Int_t rh){ fEventNumberRangeHigh=rh;}  
+   virtual void  SetTriggerPtRangeLow(Float_t tl){ fTriggerPtRangeLow=tl;}   
+   virtual void  SetTriggerPtRangeHigh(Float_t th){ fTriggerPtRangeHigh=th;}  
+
 
    Double_t RelativePhi(Double_t angle1, Double_t angle2); 
 
@@ -149,7 +156,16 @@ private:
    TH1F*         fh1PtHardTrials;  //! Number of trials
    Float_t       fAvgTrials;       // Average number of trials
 
-   ClassDef(AliAnalysisTaskJetCorePP, 4);  //has to end with number larger than 0
+   
+   Int_t   fHardest;               // trigger type 0=single incl, 1=LP 
+   Int_t   fEventNumberRangeLow;   // lower range of selected event numbers  
+   Int_t   fEventNumberRangeHigh;  // high range of selected event numbers  
+   Float_t fTriggerPtRangeLow;   // lower range of selected trigger pt
+   Float_t fTriggerPtRangeHigh;  // upper range of selected trigger pt
+
+   TRandom3* fRandom;           // TRandom3 
+
+   ClassDef(AliAnalysisTaskJetCorePP, 5);  //has to end with number larger than 0
 };
 
 #endif

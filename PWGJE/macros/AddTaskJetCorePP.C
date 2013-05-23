@@ -18,7 +18,12 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    Float_t triggerEtaCut = 0.9,
    Float_t trackEtaCut = 0.9,
    const Char_t* nonStdFile="",
-   const Char_t* mcflag=""  // real="", MC2 = charged jets, MC = all jets    
+   const Char_t* mcflag="",  // real="", MC2 = charged jets, MC = all jets  
+   Int_t triggerType=0,  //0=single incl trigger, 1=leading track, 2=hadron pt>10 
+   Int_t evtRangeLow=0,   //last digit of range of ESD event number
+   Int_t evtRangeHigh=9,  //first digit of range of ESD event number
+   Float_t trigRangeLow=0,  //trigger pT low bin boreder works with triggType=0
+   Float_t trigRangeHigh=50  //trigger pT high border works with triggType=0
   ){ 
 
    Printf("adding task jet response\n");
@@ -82,14 +87,22 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    task->SetTriggerEtaCut(triggerEtaCut);
    task->SetTrackEtaCut(trackEtaCut);
    task->SetTrackLowPtCut(trackLowPtCut);
+   task->SetTriggerType(triggerType); 
+   task->SetEventNumberRangeLow(evtRangeLow);
+   task->SetEventNumberRangeHigh(evtRangeHigh);
+   task->SetTriggerPtRangeLow(trigRangeLow);
+   task->SetTriggerPtRangeHigh(trigRangeHigh); 
+
+
    task->SetDebugLevel(0); //No debug messages 0
    mgr->AddTask(task);
-
+   //E=  range of last two decimal numbers in event numbers
+   //Ptt range of the cosidered trigger bin
    AliAnalysisDataContainer *coutputJetCorePP = mgr->CreateContainer(
-      Form("pwgjejetcorepp_%s_%s_%d",analBranch.Data(),mcSuffix.Data(),offlineTriggerMask), 
+      Form("pwgjejetcorepp_%s_%s_%d_T%d_E%d_%d_Ptt%.0f_%.0f",analBranch.Data(),mcSuffix.Data(),offlineTriggerMask,triggerType,evtRangeLow,evtRangeHigh,trigRangeLow,trigRangeHigh), 
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      Form("%s:PWGJE_jetcorepp_%s_%s_%d",AliAnalysisManager::GetCommonFileName(),analBranch.Data(),mcSuffix.Data() ,offlineTriggerMask)
+      Form("%s:PWGJE_jetcorepp_%s_%s_%d_T%d_E%d_%d_Ptt%.0f_%.0f",AliAnalysisManager::GetCommonFileName(),analBranch.Data(),mcSuffix.Data(),offlineTriggerMask,triggerType,evtRangeLow,evtRangeHigh,trigRangeLow,trigRangeHigh)
    );
 
    mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
