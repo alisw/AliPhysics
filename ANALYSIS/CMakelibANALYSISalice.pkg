@@ -41,6 +41,7 @@ set ( SRCS
     AliAnalysisTaskTagCreator.cxx 
     AliMultiEventInputHandler.cxx 
     AliTriggerAnalysis.cxx 
+    AliTRDTriggerAnalysis.cxx 
     AliPhysicsSelection.cxx 
     AliBackgroundSelection.cxx 
     AliPhysicsSelectionTask.cxx 
