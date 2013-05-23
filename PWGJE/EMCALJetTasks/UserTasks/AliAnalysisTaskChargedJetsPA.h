@@ -64,9 +64,11 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        GetSignalJets();
   Int_t       GetLeadingJets(TClonesArray* jetArray, Int_t* jetIDArray, Bool_t isSignalJets);
   Double_t    GetCorrectedJetPt(AliEmcalJet* jet, Double_t background);
-  void        GetDeltaPt(Double_t& deltaPt, Double_t rho, Bool_t leadingJetExclusion = kFALSE);
+  Double_t    GetDeltaPt(Double_t rho, Bool_t leadingJetExclusion = kFALSE);
 
-  void        GetKTBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoPbPb, Double_t& rhoPbPbWithGhosts, Double_t& rhoCMS, Double_t& rhoImprovedCMS, Double_t& rhoMean, Double_t& rhoTrackLike);
+  void        GetKTBackgroundDensityAll(Int_t numberExcludeLeadingJets, Double_t& rhoPbPb, Double_t& rhoPbPbWithGhosts, Double_t& rhoCMS, Double_t& rhoImprovedCMS, Double_t& rhoMean, Double_t& rhoTrackLike);
+  void        GetKTBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoImprovedCMS);
+
   Int_t       GetRCBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& rhoMedian, Double_t etaMin = 0, Double_t etaMax = 0, Int_t numberRandCones = 0);
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoNoExclusion, Double_t& rhoConeExclusion02, Double_t& rhoConeExclusion04, Double_t& rhoConeExclusion06, Double_t& rhoConeExclusion08, Double_t& rhoExactExclusion);
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& area, AliEmcalJet* excludeJet1, AliEmcalJet* excludeJet2, Bool_t doSearchPerpendicular);
@@ -84,6 +86,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   Bool_t      IsTrackInJet(AliEmcalJet* jet, Int_t trackIndex);
   Bool_t      IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2);
 
+  Bool_t      IsEventInAcceptance(AliVEvent* event);
   Bool_t      IsBackgroundJetInAcceptance(AliEmcalJet* jet);
   Bool_t      IsSignalJetInAcceptance(AliEmcalJet* jet);
   Bool_t      IsDijet(AliEmcalJet* jet1, AliEmcalJet* jet2);
