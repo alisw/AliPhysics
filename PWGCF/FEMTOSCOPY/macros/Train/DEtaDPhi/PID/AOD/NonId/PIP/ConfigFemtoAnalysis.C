@@ -129,52 +129,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 					dtc1etaphitpc[aniter]->SetEta(-1.0,1.0);
 					dtc2etaphitpc[aniter]->SetEta(-1.0,1.0);
-							
-					if (ichg == 0) // PIpKp
-					{
-						dtc1etaphitpc[aniter]->SetCharge(1.0);
-						dtc1etaphitpc[aniter]->SetPt(0.2,20);
-						dtc1etaphitpc[aniter]->SetMass(PionMass);		
-						dtc1etaphitpc[aniter]->SetMostProbablePion();
-						dtc2etaphitpc[aniter]->SetCharge(1.0);
-						dtc2etaphitpc[aniter]->SetPt(0.3,20);
-						dtc2etaphitpc[aniter]->SetMass(KaonMass);		
-						dtc2etaphitpc[aniter]->SetMostProbableKaon();
-					}		
-					if (ichg == 1) // PImKm
-					{
-						dtc1etaphitpc[aniter]->SetCharge(-1.0);
-						dtc1etaphitpc[aniter]->SetPt(0.2,20);
-						dtc1etaphitpc[aniter]->SetMass(PionMass);		
-						dtc1etaphitpc[aniter]->SetMostProbablePion();
-						dtc2etaphitpc[aniter]->SetCharge(-1.0);
-						dtc2etaphitpc[aniter]->SetPt(0.3,20);
-						dtc2etaphitpc[aniter]->SetMass(KaonMass);		
-						dtc2etaphitpc[aniter]->SetMostProbableKaon();
-					}		
-					if (ichg == 2) //PIpKm
-					{
-						dtc1etaphitpc[aniter]->SetCharge(1.0);
-						dtc1etaphitpc[aniter]->SetPt(0.2,20);
-						dtc1etaphitpc[aniter]->SetMass(PionMass);		
-						dtc1etaphitpc[aniter]->SetMostProbablePion();
-						dtc2etaphitpc[aniter]->SetCharge(-1.0);
-						dtc2etaphitpc[aniter]->SetPt(0.3,20);
-						dtc2etaphitpc[aniter]->SetMass(KaonMass);		
-						dtc2etaphitpc[aniter]->SetMostProbableKaon();
-					}
-					if (ichg == 3) // PImKp
-					{
-						dtc1etaphitpc[aniter]->SetCharge(-1.0);
-						dtc1etaphitpc[aniter]->SetPt(0.2,20);
-						dtc1etaphitpc[aniter]->SetMass(PionMass);		
-						dtc1etaphitpc[aniter]->SetMostProbablePion();
-						dtc2etaphitpc[aniter]->SetCharge(1.0);
-						dtc2etaphitpc[aniter]->SetPt(0.3,20);
-						dtc2etaphitpc[aniter]->SetMass(KaonMass);		
-						dtc2etaphitpc[aniter]->SetMostProbableKaon();
-					}
-					if (ichg == 4) // PIpPp
+					if (ichg == 0) // PIpPp
 					{
 						dtc1etaphitpc[aniter]->SetCharge(1.0);
 						dtc1etaphitpc[aniter]->SetPt(0.2,20);
@@ -185,7 +140,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
 						dtc2etaphitpc[aniter]->SetMostProbableProton();
 					}
-					if (ichg == 5) // PImPm
+					if (ichg == 1) // PImPm
 					{
 						dtc1etaphitpc[aniter]->SetCharge(-1.0);
 						dtc1etaphitpc[aniter]->SetPt(0.2,20);
@@ -196,7 +151,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
 						dtc2etaphitpc[aniter]->SetMostProbableProton();
 					}
-					if (ichg == 6) // PIpPm
+					if (ichg == 2) // PIpPm
 					{
 						dtc1etaphitpc[aniter]->SetCharge(1.0);
 						dtc1etaphitpc[aniter]->SetPt(0.2,20);
@@ -207,7 +162,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
 						dtc2etaphitpc[aniter]->SetMostProbableProton();
 					}
-					if (ichg == 7) // PImPp
+					if (ichg == 3) // PImPp
 					{
 						dtc1etaphitpc[aniter]->SetCharge(-1.0);
 						dtc1etaphitpc[aniter]->SetPt(0.2,20);
@@ -218,51 +173,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
 						dtc2etaphitpc[aniter]->SetMostProbableProton();
 					}
-					if (ichg == 8) // KpPp
-					{
-						dtc1etaphitpc[aniter]->SetCharge(1.0);
-						dtc1etaphitpc[aniter]->SetPt(0.3,20);
-						dtc1etaphitpc[aniter]->SetMass(KaonMass);		
-						dtc1etaphitpc[aniter]->SetMostProbableKaon();
-						dtc2etaphitpc[aniter]->SetCharge(1.0);
-						dtc2etaphitpc[aniter]->SetPt(0.5,20);
-						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
-						dtc2etaphitpc[aniter]->SetMostProbableProton();
-					}
-					if (ichg == 9) // KpPp
-					{
-						dtc1etaphitpc[aniter]->SetCharge(1.0);
-						dtc1etaphitpc[aniter]->SetPt(0.3,20);
-						dtc1etaphitpc[aniter]->SetMass(KaonMass);		
-						dtc1etaphitpc[aniter]->SetMostProbableKaon();
-						dtc2etaphitpc[aniter]->SetCharge(1.0);
-						dtc2etaphitpc[aniter]->SetPt(0.5,20);
-						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
-						dtc2etaphitpc[aniter]->SetMostProbableProton();
-					}
-					if (ichg == 10) // KpPp
-					{
-						dtc1etaphitpc[aniter]->SetCharge(1.0);
-						dtc1etaphitpc[aniter]->SetPt(0.3,20);
-						dtc1etaphitpc[aniter]->SetMass(KaonMass);		
-						dtc1etaphitpc[aniter]->SetMostProbableKaon();
-						dtc2etaphitpc[aniter]->SetCharge(1.0);
-						dtc2etaphitpc[aniter]->SetPt(0.5,20);
-						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
-						dtc2etaphitpc[aniter]->SetMostProbableProton();
-					}
-					if (ichg ==11) // KpPp
-					{
-						dtc1etaphitpc[aniter]->SetCharge(1.0);
-						dtc1etaphitpc[aniter]->SetPt(0.3,20);
-						dtc1etaphitpc[aniter]->SetMass(KaonMass);		
-						dtc1etaphitpc[aniter]->SetMostProbableKaon();
-						dtc2etaphitpc[aniter]->SetCharge(1.0);
-						dtc2etaphitpc[aniter]->SetPt(0.5,20);
-						dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
-						dtc2etaphitpc[aniter]->SetMostProbableProton();
-					}
-
+					
 				// Track quality cuts
 
 					if (runtype == 0)
