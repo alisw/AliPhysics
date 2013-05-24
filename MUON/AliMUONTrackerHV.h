@@ -32,7 +32,7 @@ public:
 
   void HVoff(const char* logfile="lhc11de.log", const char* outputBaseName="hvoff");
 
-  void Plot(const char* dcsname=0x0, Bool_t withPatch=kFALSE);
+  void Plot(const char* dcsname=0x0, Bool_t withPatch=kFALSE, Bool_t plotIntermediate=kFALSE);
 
   void Print(Option_t* dcsname="") const;
 
@@ -40,6 +40,10 @@ public:
   
   void Scan(Int_t verbose=0);
   
+  TGraph* Combine(TObjArray& graphs);
+
+  TMultiGraph* CombineMulti(TObjArray& graphs);
+
 private:
 
   void ReadIntegers(const char* filename, std::vector<int>& integers);

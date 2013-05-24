@@ -93,6 +93,98 @@ AliMUONTrackerHV::~AliMUONTrackerHV()
   delete fDCSNamer;
 }
 
+//____________________________________________________________________________
+TMultiGraph* AliMUONTrackerHV::CombineMulti(TObjArray& graphs)
+{
+  // combine multigraphs
+  
+  TMultiGraph* rv = new TMultiGraph;
+  
+  TIter next(&graphs);
+  TMultiGraph* mg;
+  TMultiGraph* ref = static_cast<TMultiGraph*>(next());
+
+  Int_t dref = ref->GetListOfGraphs()->GetEntries();
+
+  while ( ( mg = static_cast<TMultiGraph*>(next())) )
+  {
+    TList* list = mg->GetListOfGraphs();
+    Int_t d1 = list->GetEntries();
+    
+    if (  d1 != dref )
+    {
+      AliError(Form("%d vs %d",d1,dref));
+      return 0x0;
+    }
+  }
+  
+  for ( Int_t i = 0; i < dref; ++i )
+  {    
+    TObjArray graph;
+    next.Reset();
+    while ( ( mg = static_cast<TMultiGraph*>(next())) )
+    {
+      graph.Add(mg->GetListOfGraphs()->At(i));
+      TGraph* g = Combine(graph);
+      rv->Add(g);
+    }
+  }
+  return rv;
+}
+
+//____________________________________________________________________________
+TGraph* AliMUONTrackerHV::Combine(TObjArray& graphs)
+{
+  // make one graph out of several
+  // x axis is supposed to be time and will end up ordered in the
+  // returned graph
+  
+  std::map<int, std::vector<double> > values;
+  std::map<int, std::vector<double> >::const_iterator it;
+  
+  TIter next(&graphs);
+  TGraph* g;
+  
+  while ( ( g = static_cast<TGraph*>(next())) )
+  {
+    for ( Int_t i = 0; i < g->GetN(); ++i )
+    {
+      std::vector<double> pair;
+      
+      pair.push_back(g->GetX()[i]);
+      pair.push_back(g->GetY()[i]);
+      
+      values.insert( std::make_pair<int, std::vector<double> >(g->GetX()[i],pair));
+    }
+  }
+  
+  TGraph* rv(0x0);
+  
+  if ( values.size() )
+  {
+    std::vector<double> vx;
+    std::vector<double> vy;
+    
+    for ( it = values.begin(); it != values.end(); ++it )
+    {
+      const std::vector<double>& q = it->second;
+      
+      vx.push_back(q[0]);
+      vy.push_back(q[1]);
+    }
+    
+    rv = new TGraph(values.size(),&vx[0],&vy[0]);
+    rv->GetXaxis()->SetNoExponent();
+    
+    g = static_cast<TGraph*>(graphs.At(0));
+    
+    rv->SetName(g->GetName());
+    rv->SetTitle(g->GetTitle());
+  }
+  
+  return rv;
+}
+
 //______________________________________________________________________________
 void AliMUONTrackerHV::ReadIntegers(const char* filename, std::vector<int>& integers)
 {
@@ -238,6 +330,7 @@ AliMUONTrackerHV::GraphValues(TMap* m, const char* dcsname)
     g->SetPoint(i,val->GetTimeStamp(),val->GetFloat());
     ++i;
   }
+  g->SetName(dcsname);
   return g;
 }
 
@@ -337,6 +430,7 @@ void AliMUONTrackerHV::HVoff(const char* logfile, const char* outputBaseName)
       TObjArray* parts = s.Tokenize(":");
       TString alias = (static_cast<TObjString*>(parts->At(0)))->String();
       TString channel = DCSNamer()->DCSNameFromAlias(alias.Data());
+      channel += Form("(%4d)",DCSNamer()->DetElemIdFromDCSAlias(alias.Data()));
       channel.ReplaceAll(".actual.vMon","");
       hvoff->Fill(Form("%6d",it->first),channel.Data(),1.0);
       delete parts;
@@ -358,11 +452,11 @@ void AliMUONTrackerHV::HVoff(const char* logfile, const char* outputBaseName)
   hx->Draw();
   c2->Print(Form("%s-perrun.pdf",outputBaseName));
   TCanvas* c3 = new TCanvas;
-  c3->SetBottomMargin(0.5);
+  c3->SetBottomMargin(0.55);
   TH1* perchannel = hvoff->ProjectionY("hvoffperchannel");
   perchannel->GetXaxis()->SetBit(TAxis::kLabelsVert);
   perchannel->GetXaxis()->LabelsOption(">");
-  perchannel->Draw();
+  perchannel->Draw("texthist");
   c3->Print(Form("%s-perchannel.pdf",outputBaseName));
 }
 
@@ -437,12 +531,12 @@ AliMUONTrackerHV::Print(Option_t* dcsname) const
     TObjString* s;
     
     while ( ( s = static_cast<TObjString*>(next()) ) )
-    {      
+    {
       TString name(DCSNamer()->DCSNameFromAlias(s->String()));
       
       if ( dcsname && !name.Contains(dcsname)) continue;
-      
-      TPair* p = static_cast<TPair*>(m->FindObject(DCSNamer()->DCSAliasFromName(dcsname).Data()));
+
+      TPair* p = static_cast<TPair*>(m->FindObject(s->String()));
       
       if (!p) continue;
       
@@ -463,7 +557,7 @@ AliMUONTrackerHV::Print(Option_t* dcsname) const
 
 //______________________________________________________________________________
 void
-AliMUONTrackerHV::Plot(const char* dcsname, Bool_t withPatch)
+AliMUONTrackerHV::Plot(const char* dcsname, Bool_t withPatch, Bool_t plotIntermediate)
 {
   /// Show HV values for a given dcs name (or all if dcsname=0)
   /// Each canvas for each run will go to a separate PDF file
@@ -471,6 +565,7 @@ AliMUONTrackerHV::Plot(const char* dcsname, Bool_t withPatch)
   AliCDBManager::Instance()->SetDefaultStorage(fOCDBPath.Data());
   TList messages;
   messages.SetOwner(kTRUE);
+  TObjArray graphs;
   
   for ( std::vector<int>::size_type i = 0; i < fRunList.size(); ++i )
   {
@@ -485,6 +580,8 @@ AliMUONTrackerHV::Plot(const char* dcsname, Bool_t withPatch)
     TMultiGraph* mg = GraphHV(m,dcsname);
     
     if ( !mg ) continue;
+    
+    graphs.Add(mg);
     
     TString cname(Form("MCH_HV_RUN%09d",runNumber));
     
@@ -519,34 +616,51 @@ AliMUONTrackerHV::Plot(const char* dcsname, Bool_t withPatch)
       mg->Add(g,"");
     }
     
-    TCanvas* c = new TCanvas(cname.Data(),cname.Data());
-    
-    c->Draw();
-    
-    mg->SetTitle(cname.Data());
-    
-    mg->Draw("AL");
-    
-    TimeAxis(mg);
-    
-    if ( start )
+    if ( plotIntermediate )
     {
-      startRunLine = new TLine(start,mg->GetYaxis()->GetXmin(),start,mg->GetYaxis()->GetXmax());
-      startRunLine->SetLineColor(2);
-      startRunLine->SetLineWidth(4);
-    }
-    if  ( end )
-    {
-      endRunLine = new TLine(end,mg->GetYaxis()->GetXmin(),end,mg->GetYaxis()->GetXmax());
-      endRunLine->SetLineColor(2);
-      endRunLine->SetLineWidth(4);
-    }
+      TCanvas* c = new TCanvas(cname.Data(),cname.Data());
     
-    if ( startRunLine ) startRunLine->Draw();
-    if ( endRunLine ) endRunLine->Draw();
+      c->Draw();
     
-    c->SaveAs(Form("%s.pdf",cname.Data()));
+      mg->SetTitle(cname.Data());
+    
+      mg->Draw("AL");
+    
+      TimeAxis(mg);
+    
+      if ( start )
+      {
+        startRunLine = new TLine(start,mg->GetYaxis()->GetXmin(),start,mg->GetYaxis()->GetXmax());
+        startRunLine->SetLineColor(2);
+        startRunLine->SetLineWidth(4);
+      }
+      if  ( end )
+      {
+        endRunLine = new TLine(end,mg->GetYaxis()->GetXmin(),end,mg->GetYaxis()->GetXmax());
+        endRunLine->SetLineColor(2);
+        endRunLine->SetLineWidth(4);
+      }
+    
+      if ( startRunLine ) startRunLine->Draw();
+      if ( endRunLine ) endRunLine->Draw();
+    
+      c->SaveAs(Form("%s.pdf",cname.Data()));
+    }
   }
+  
+  new TCanvas;
+  
+  TMultiGraph* g = CombineMulti(graphs);
+
+  TIter next(g->GetListOfGraphs());
+  TGraph* gi;
+  
+  while ( ( gi = static_cast<TGraph*>(next())))
+  {
+    gi->SetMarkerStyle(kPlus);
+  }
+  g->Draw("alp");
+  TimeAxis(g);
 }
 
 //______________________________________________________________________________
