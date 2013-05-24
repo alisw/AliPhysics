@@ -858,21 +858,26 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	  if(fCov[5] != 0) {
 	    if(fUseMultiplicity) 
 	      fHistEventStats->Fill(3,gRefMultiplicity); //proper vertex
-	    else 
+	    else if(fUseCentrality)
 	      fHistEventStats->Fill(3,gCentrality); //proper vertex
 	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
 	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
 		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
-		  if(fUseMultiplicity) 
+		  if(fUseMultiplicity) {
+		    //cout<<"Filling 4 for multiplicity..."<<endl;
 		    fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
-		  else 
+		  }
+		  else if(fUseCentrality) {
+		    //cout<<"Filling 4 for centrality..."<<endl;
 		    fHistEventStats->Fill(4,gCentrality); //analyzed events
+		  }
 		  fHistVx->Fill(vertex->GetX());
 		  fHistVy->Fill(vertex->GetY());
 		  fHistVz->Fill(vertex->GetZ(),gCentrality);
 		  
 		  // take only events inside centrality class
 		  if(fUseCentrality) {
+		    //cout<<"Centrality..."<<endl;
 		    if((gCentrality > fCentralityPercentileMin) && (gCentrality < fCentralityPercentileMax)){
 		      fHistEventStats->Fill(5,gCentrality); //events with correct centrality
 		      return gCentrality;		
@@ -880,6 +885,8 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 		  }
 		  // take events only within the same multiplicity class
 		  else if(fUseMultiplicity) {
+		    //cout<<"N(min): "<<fNumberOfAcceptedTracksMin<<" - N(max): "<<fNumberOfAcceptedTracksMax<<" - Nref: "<<gRefMultiplicity<<endl;
+
 		    if((gRefMultiplicity > fNumberOfAcceptedTracksMin)||(gRefMultiplicity < fNumberOfAcceptedTracksMax)) {
 		      fHistEventStats->Fill(5,gRefMultiplicity); //events with correct multiplicity
 		      return gRefMultiplicity;

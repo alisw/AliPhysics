@@ -114,7 +114,18 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   
   //Event characteristics scheme
   taskBF->SetEventClass(fArgEventClass);
- 
+  if(fArgEventClass == "Multiplicity") 
+    taskBF->SetMultiplicityRange(centrMin,centrMax);
+  else if(fArgEventClass == "Centrality") {
+    if(analysisType == "MC")
+      taskBF->SetImpactParameterRange(centrMin,centrMax);
+    else {
+      taskBF->SetCentralityPercentileRange(centrMin,centrMax);
+      // centrality estimator (default = V0M)
+      taskBF->SetCentralityEstimator(centralityEstimator);
+    }
+  }
+
   //++++++++++++++++++++++
   // Efficiency + Contamination corrections
   // If correctionFileName = "", do not use corrections
@@ -133,7 +144,6 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     }
   }
 
-  taskBF->SetCentralityPercentileRange(centrMin,centrMax);
   if(analysisType == "ESD") {
     AliESDtrackCuts *trackCuts = GetTrackCutsObject(ptMin,ptMax,etaMin,etaMax,maxTPCchi2,DCAxy,DCAz,minNClustersTPC);
     taskBF->SetAnalysisCutObject(trackCuts);
