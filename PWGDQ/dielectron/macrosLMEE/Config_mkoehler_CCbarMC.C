@@ -320,13 +320,19 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD)
     cf->AddVariable(AliDielectronVarManager::kZvPrim,20,-20.,20.);
 
    
-    
+    /*
     if (cutDefinition == 0){
+      
 	    cf->SetStepForMCtruth();
+	    
   }
+    */
     
     
     
+        cf->SetStepForMCtruth();
+	
+	
   //leg variables
   diele->SetCFManagerPair(cf);
   
