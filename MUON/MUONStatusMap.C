@@ -288,7 +288,8 @@ void DrawPeriod(double run1, double run2, double ymin, double ymax, const char* 
   b->SetFillColor(5);
   b->Draw();
   TText* text = new TText((run1+run2)/2.0,ymax*0.6,label);
-  text->SetTextSize(0.05);
+  text->SetTextAlign(22);
+  text->SetTextSize(0.02);
   text->Draw();
 }
 
@@ -374,6 +375,14 @@ void DrawEvolution(const char* file, bool normalized=true)
     
     DrawPeriod(189122,190110,0,ymax,"12h");
   
+  // 2013
+  
+  DrawPeriod(195344,195483,0,ymax,"LHC13b");
+  DrawPeriod(195529,195677,0,ymax,"LHC13c");
+  DrawPeriod(195681,195873,0,ymax,"LHC13d");
+  DrawPeriod(195949,196311,0,ymax,"LHC13e");
+  DrawPeriod(196433,197388,0,ymax,"LHC13f");
+  
   Draw(f,"nbad",l,normalized);
   Draw(f,"nbadped",l,normalized);
   Draw(f,"nbadocc",l,normalized);
@@ -414,14 +423,18 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
     return;    
   }
   
-  int year(2012);
+  int year(2013);
   
   if ( runs[0] <= 139699 ) year=2010;
   
   if ( runs[0] <= 176000 ) year=2011;
+  
+  if ( runs[0] <= 195344 ) year = 2012;
       
   AliCDBManager::Instance()->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB?cacheFold=/local/cdb",year));
-  
+
+//  AliCDBManager::Instance()->SetDefaultStorage("local:///Users/laurent/Alice/OCDBcopy2013");
+//
   TList glist;
   
   glist.SetOwner(kTRUE);
