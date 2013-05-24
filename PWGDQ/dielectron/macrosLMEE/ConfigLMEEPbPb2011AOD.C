@@ -3,8 +3,8 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
-
-TString names=("noPairing;TPCTOFCentHPT;TPCTOFSemiCentHPT;TPCTOFPerinoRej;TPCTOFCentRej;TPCTOFSemiCent;TPCTOFCentBothSPD;TPCTOFCentITSRejAlt;TPCTOFCentITSRej");
+//adjust for 1,4,8
+TString names=("noPairing;TPCTOFCentHPT;TPCTOFSemiCentHPT;TPCTOFPerinoRej;TPCTOFCentRejPV;TPCTOFSemiCent;TPCTOFCentBothSPD;TPCTOFCentITSRejPVAlt;TPCTOFCentITSRejPV");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -44,7 +44,7 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	//not yet implemented
   }
   else if (cutDefinition==1) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFHPT;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kFALSE;
   }
@@ -59,7 +59,7 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	rejectionStep = kFALSE;
   }
   else if (cutDefinition==4) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFHPT;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kTRUE;
   }
@@ -118,9 +118,12 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	 //	die->GetTrackFilter().AddCuts(LMCL->GetTrackCutsPre(selectedPID) );
 	die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(selectedPID) );
    }
+   /*
+   //For PhiV rejection, test with same track sample as step 1
    else if (cutDefinition == 4){
 	die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(LMEECutLib::kPbPb2011TPCorTOF) );
    }
+   */
    else {
 	die->GetTrackFilter().AddCuts(LMCL->GetTrackCutsAna(selectedPID) );
 	die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
