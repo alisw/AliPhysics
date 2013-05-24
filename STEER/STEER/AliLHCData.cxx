@@ -46,6 +46,7 @@
 #include "AliTriggerBCMask.h"
 #include <TString.h>
 #include <TObjArray.h>
+#include <TGraph.h>
 
 ClassImp(AliLHCData)
 
@@ -81,7 +82,9 @@ const Char_t* AliLHCData::fgkDCSNames[] = {
   "LHC_BeamSizeBeam%1d_errorSigmaH",
   "LHC_BeamSizeBeam%1d_errorSigmaV",
   //
-  "LHC_CollimatorPos_%s_lvdt_%s"
+  "LHC_CollimatorPos_%s_lvdt_%s",
+  "ALICE_LumiIntFill",
+  "ALICE_BckgIntFill"
 };
 
 const Char_t* AliLHCData::fgkDCSColNames[] = {
@@ -322,7 +325,7 @@ TObject* AliLHCData::FindRecValidFor(int start,int nrec, double tstamp) const
   AliLHCDipValI *prevObj = 0;
   for (int i=0;i<nrec;i++) {
     AliLHCDipValI* curObj = (AliLHCDipValI*)fData[start+i];
-    if (TimeDifference(tstamp,curObj->GetTimeStamp())<0) break;
+    if (TimeDifference(tstamp,curObj->GetTimeStamp())<=0) break;
     prevObj = curObj;
   }
   if (!prevObj && nrec>0) prevObj = (AliLHCDipValI*)fData[start]; // if no exact match, return the 1st one
@@ -840,6 +843,13 @@ void AliLHCData::Print(const Option_t* opt) const
       PrintAux(full,fCollimators[coll][jaw],opts);
     }
   //
+  printf("* Alice fill integrated luminosity data:   ");
+  PrintAux(full,fLumiAlice,opts);
+  //
+  printf("* Alice fill integrated background data    ");
+  PrintAux(full,fBckgAlice,opts);
+  //
+
 }
 
 //___________________________________________________________________
@@ -876,6 +886,8 @@ void AliLHCData::Clear(const Option_t *)
     fRCBeta[i] = 0;
     fRCAngH[i] = 0;
     fRCAngV[i] = 0;
+    fLumiAlice[i] = 0;
+    fBckgAlice[i] = 0;    
     //
     for (int icl=kNCollimators;icl--;) for (int jaw=kNJaws;jaw--;) fCollimators[icl][jaw][i]=0;
     //
@@ -1027,4 +1039,148 @@ Int_t AliLHCData::GetMeanIntensity(int beamID, Double_t &colliding, Double_t &no
   colliding /= nrec;
   noncolliding /= nrec;
   return nrec;
+}
+
+//___________________________________________________________________
+void AliLHCData::FillLumiAlice(Int_t nrec, Int_t* timeArr, Double_t* valArr)
+{
+  // Create a record for lumi integrated from the beginning of fill
+  // We need dedicated method since this info comes from Alice (not LHCDip) as instantaneous values
+  // and is retrofitted for past runs
+  fLumiAlice[kStart] = fData.GetEntriesFast();
+  fLumiAlice[kNStor] = 0;
+  if (nrec<2 || !timeArr || !valArr) return;
+  double tprv,period,currTime;
+  if ((currTime=double(UInt_t(timeArr[0])))>fTMin) {
+    AliError(Form("TimeStamp of 1st record: %s > TimeStamp of SOR: %s, STOP",
+		  AliLHCDipValI::TimeAsString(currTime),AliLHCDipValI::TimeAsString(fTMin)));
+    return;
+  }
+  //
+  if ((tprv=double(UInt_t(timeArr[nrec-1])))<fTMax) {
+    AliWarning(Form("TimeStamp of last (%d) record: %s < TimeStamp of EOR: %s, Data will be truncated",nrec-1,
+		    AliLHCDipValI::TimeAsString(tprv),AliLHCDipValI::TimeAsString(fTMax)));
+  }
+  //
+  // init the average time step
+  period = (tprv - currTime)/(nrec-1);
+  double lumiInt  = 0;
+  //
+  for (int i=0;i<nrec;i++) {
+    tprv = currTime;
+    currTime = double(UInt_t(timeArr[i]));
+    if (i>0) period = currTime - tprv;
+    if (currTime-period>fTMax) continue;    
+    lumiInt += valArr[i]*period;    
+    //    printf("%d %.2f V:%f Int:%f\n",i,period,valArr[i],lumiInt);
+    if (currTime+period<fTMin) continue;
+    AliLHCDipValF* curValF = new AliLHCDipValF(1,currTime);
+    (*curValF)[0] = lumiInt;
+    fData.Add(curValF);
+    fLumiAlice[kNStor]++;
+  }
+  //
+  printf("Stored %d Alice Integrated luminosity records out of %d provided\n",fLumiAlice[kNStor],nrec);
+}
+
+//___________________________________________________________________
+void AliLHCData::FillBckgAlice(Int_t nrec, Int_t* timeArr, Double_t* valArr)
+{
+  // Create a record for lumi integrated from the beginning of fill
+  // We need dedicated method since this info comes from Alice (not LHCDip) as instantaneous values
+  // and is retrofitted for past runs
+  fBckgAlice[kStart] = fData.GetEntriesFast();
+  fBckgAlice[kNStor] = 0;
+  if (nrec<2 || !timeArr || !valArr) return;
+  double tprv,period,currTime;
+  if ((currTime=double(UInt_t(timeArr[0])))>fTMin) {
+    AliError(Form("TimeStamp of 1st record: %s > TimeStamp of SOR: %s, STOP",
+		  AliLHCDipValI::TimeAsString(currTime),AliLHCDipValI::TimeAsString(fTMin)));
+    return;
+  }
+  //
+  if ((tprv=double(UInt_t(timeArr[nrec-1])))<fTMax) {
+    AliWarning(Form("TimeStamp of last (%d) record: %s < TimeStamp of EOR: %s, Data will be truncated",nrec-1,
+		    AliLHCDipValI::TimeAsString(tprv),AliLHCDipValI::TimeAsString(fTMax)));
+  }
+  //
+  // init the average time step
+  period = (tprv - currTime)/(nrec-1);
+  double bckgInt  = 0;
+  //
+  for (int i=0;i<nrec;i++) {
+    tprv = currTime;
+    currTime = double(UInt_t(timeArr[i]));
+    if (i>0) period = currTime - tprv;
+    if (currTime-period>fTMax) continue;    
+    bckgInt += valArr[i]*period;    
+    if (currTime+period<fTMin) continue;
+    AliLHCDipValF* curValF = new AliLHCDipValF(1,currTime);
+    (*curValF)[0] = bckgInt;
+    fData.Add(curValF);
+    fBckgAlice[kNStor]++;
+  }
+  //
+  printf("Stored %d Alice Integrated Background records out of %d provided\n",fBckgAlice[kNStor],nrec);
+}
+
+//_____________________________________________________________________________
+Float_t AliLHCData::GetLumiInstAlice(Double_t tStamp) const 
+{
+  // get closest in time value on inst luminosity
+  int idx = FindEntryValidFor(fLumiAlice[kStart],fLumiAlice[kNStor],tStamp);
+  if (idx<0) return -1;
+  AliLHCDipValF *rec=GetLumiAliceRecord(idx),*rec1=GetLumiAliceRecord(idx>0 ? idx-1:idx+1);
+  if (!rec || !rec1) return -1;
+  double dt = rec->GetTimeStamp() - rec1->GetTimeStamp();
+  return TMath::Abs(dt)>1e-6 ? (rec->GetValue()-rec1->GetValue())/dt : -1;
+}
+
+//_____________________________________________________________________________
+Float_t AliLHCData::GetBckgInstAlice(Double_t tStamp) const 
+{
+  // get closest in time value on inst luminosity
+  int idx = FindEntryValidFor(fBckgAlice[kStart],fBckgAlice[kNStor],tStamp);
+  if (idx<0) return -1;
+  AliLHCDipValF *rec=GetBckgAliceRecord(idx),*rec1=GetBckgAliceRecord(idx>0 ? idx-1:idx+1);
+  if (!rec || !rec1) return -1;
+  double dt = rec->GetTimeStamp() - rec1->GetTimeStamp();
+  return TMath::Abs(dt)>1e-6 ? (rec->GetValue()-rec1->GetValue())/dt : -1;
+}
+
+//_____________________________________________________________________________
+TGraph* AliLHCData::ExportGraph(Int_t *coord, Int_t elID) const
+{
+  // export time/values to graph:
+  // coord: int[2] array with 1st entry and number of entries stored, obtained via GetOffs... method 
+  // elID - element of the AliLHCDipValT array to extract
+  if (!coord || coord[1]<1) return 0;
+  TGraph* gr = new TGraph(coord[1]);
+  for (int i=0;i<coord[1];i++) {
+    TObject* obj = fData.At(coord[0]+i);
+    if (!obj) {
+      AliError(Form("Entry %d does not exist",i));
+      continue;
+    }
+    if (obj->IsA()==AliLHCDipValD::Class()) {
+      AliLHCDipValD* objD =  (AliLHCDipValD*)obj;
+      gr->SetPoint(i,objD->GetTimeStamp(),objD->GetValue(elID));
+    }
+    else if (obj->IsA()==AliLHCDipValF::Class()) {
+      AliLHCDipValF* objF =  (AliLHCDipValF*)obj;
+      gr->SetPoint(i,objF->GetTimeStamp(),objF->GetValue(elID));
+    }
+    else if (obj->IsA()==AliLHCDipValI::Class()) {
+      AliLHCDipValI* objI =  (AliLHCDipValI*)obj;
+      gr->SetPoint(i,objI->GetTimeStamp(),objI->GetValue(elID));
+    }
+    else if (obj->IsA()==AliLHCDipValC::Class()) {
+      AliLHCDipValC* objC =  (AliLHCDipValC*)obj;
+      gr->SetPoint(i,objC->GetTimeStamp(),objC->GetValue(elID));
+    }
+    else {
+      AliError(Form("Graph cannot be exported for records of type %s",obj->IsA()->GetName()));
+    }
+  }
+  return gr;
 }
