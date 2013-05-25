@@ -18,7 +18,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Bool_t              usePileUpCut            = kTRUE,
   Bool_t              isEMCalTrain            = kFALSE,
   Bool_t              calculateExternalRho    = kFALSE,
-  Bool_t              analyzeDeprecatedBackgrounds = kTRUE,
+  Bool_t              analyzeDeprecatedBackgrounds = kTRUE
 )
 {
   // #### Detect the demanded trigger with its readable name
@@ -59,7 +59,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300); // anti-kt
   AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,jetRadius,1,0.150,0.300); // kt
 
-  if(minBackgroundJetPt > -1.0)
+  if(minBackgroundJetPt<0)
   {
     if(analyzeDeprecatedBackgrounds)
       minBackgroundJetPt = 0.0;
