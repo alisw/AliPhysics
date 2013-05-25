@@ -127,10 +127,12 @@ void Generate_Sample_Lookup(TMap &lookup){
         //   - MC/Data 
         //   - ESD/AOD
         //
-        AddSample(lookup, "LHC13b.pass2", "/alice/data/2013/LHC13b", "*/pass2/*/AliESDs.root", "Data", "ESD");
-        AddSample(lookup, "LHC13b.pass2.AOD", "/alice/data/2013/LHC13b", "*/pass2/AOD/*/AliAOD.root", "Data", "AOD"); 
+        AddSample(lookup, "LHC13b.pass2", "/alice/data/2013/LHC13b", "pass2/*/AliESDs.root", "Data", "ESD");
+        AddSample(lookup, "LHC13b.pass3", "/alice/data/2013/LHC13b", "pass3/*/AliESDs.root", "Data", "ESD");
+        AddSample(lookup, "LHC13b.pass2.AOD", "/alice/data/2013/LHC13b", "pass2/AOD/*/AliAOD.root", "Data", "AOD"); 
         AddSample(lookup, "LHC13b.pass2.AOD126", "/alice/data/2013/LHC13b", "*/pass2/AOD126/*/AliAOD.root", "Data", "AOD"); 
-        AddSample(lookup, "LHC13c.pass1", "/alice/data/2013/LHC13c/", "*/pass1/*/AliESDs.root", "Data", "ESD");
+        AddSample(lookup, "LHC13c.pass1", "/alice/data/2013/LHC13c/", "pass1/*/AliESDs.root", "Data", "ESD");
+        AddSample(lookup, "LHC13c.pass2", "/alice/data/2013/LHC13c/", "pass2/*/AliESDs.root", "Data", "ESD");
         AddSample(lookup, "LHC13c.pass1.AOD", "/alice/data/2013/LHC13c/", "*/pass1/AOD/*/AliAOD.root", "Data", "AOD");
         AddSample(lookup, "LHC13c.pass1.AOD126", "/alice/data/2013/LHC13c/", "*/pass1/AOD126/*/AliAOD.root", "Data", "AOD");
         AddSample(lookup, "LHC13b2", "/alice/sim/2013/LHC13b2", "*/*/AliESDs.root", "MC", "ESD");
@@ -138,10 +140,10 @@ void Generate_Sample_Lookup(TMap &lookup){
         AddSample(lookup, "LHC13b2plus", "/alice/sim/2013/LHC13b2_plus", "*/*/AliESDs.root", "MC", "ESD");
         AddSample(lookup, "LHC13b2plus.AOD", "/alice/sim/2013/LHC13b2_plus", "*/AliAOD.root", "MC", "AOD");
         AddSample(lookup, "LHC13b3", "/alice/sim/2013/LHC13b3", "*/*/AliESDs.root", "MC", "ESD");
-	AddSample(lookup, "LHC13b3.AOD", "/alice/sim/2013/LHC13b3", "*/AliAOD.root", "MC", "AOD");
-	AddSample(lookup, "LHC13d.pass1", "/alice/data/2013/LHC13d/", "pass1/*/AliESDs.root", "Data", "ESD");
-	AddSample(lookup, "LHC13e.pass1", "/alice/data/2013/LHC13e/", "pass1/*/AliESDs.root", "Data", "ESD");
-	AddSample(lookup, "LHC13f.pass1", "/alice/data/2013/LHC13f/", "pass1/*/AliESDs.root", "Data", "ESD");
+	      AddSample(lookup, "LHC13b3.AOD", "/alice/sim/2013/LHC13b3", "*/AliAOD.root", "MC", "AOD");
+	      AddSample(lookup, "LHC13d.pass1", "/alice/data/2013/LHC13d/", "pass1/*/AliESDs.root", "Data", "ESD");
+	      AddSample(lookup, "LHC13e.pass1", "/alice/data/2013/LHC13e/", "pass1/*/AliESDs.root", "Data", "ESD");
+	      AddSample(lookup, "LHC13f.pass1", "/alice/data/2013/LHC13f/", "pass1/*/AliESDs.root", "Data", "ESD");
         printf("Lookup table with sample information generated\n");
 }
 
@@ -253,21 +255,21 @@ void SetupUtil(bool isMC, bool isAOD){
         // 4. Centrality Task (ESD only)
         //
 
+        //===== ADD PID RESPONSE: ===
+        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+        AddTaskPIDResponse(isMC);
+
+        //==== Add tender ====
+        if(!isAOD){
+                gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+                //AddTaskTender();
+        }
+
         //==== Physics Selection ====
         if(!isAOD){
                 gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
                 AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
         }
-
-        //==== Add tender ====
-        if(!isAOD){
-                gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
-                AddTaskTender();
-        }
-
-        //===== ADD PID RESPONSE: ===
-        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-        AddTaskPIDResponse(isMC);
 
         //===== ADD CENTRALITY: ===
         if(!isAOD){
@@ -300,7 +302,7 @@ void SetupHFEtask(bool isMC, bool isAOD){
         AddTaskHFEpPb(isMC, isAOD);
         if(!isAOD){
                 gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEnpepPb.C");
-                AddTaskHFEnpepPb();
+                AddTaskHFEnpepPb(isMC, isAOD);
         }
 }
 
