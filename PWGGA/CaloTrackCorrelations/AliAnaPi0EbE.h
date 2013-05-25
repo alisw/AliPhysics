@@ -151,9 +151,11 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   TH1F         * fhPt  ;                   //! Number of identified  pi0/eta vs pT
   TH1F         * fhE   ;                   //! Number of identified  pi0/eta vs E
-  TH2F         * fhEEta  ;                 //! E vs eta of identified  pi0/eta 
-  TH2F         * fhEPhi  ;                 //! E vs phi of identified  pi0/eta 
-  TH2F         * fhEtaPhi  ;               //! eta vs phi of identified  pi0/eta 
+  TH2F         * fhEEta  ;                 //! E vs eta of identified  pi0/eta
+  TH2F         * fhEPhi  ;                 //! E vs phi of identified  pi0/eta
+  TH2F         * fhPtEta  ;                //! Pt vs eta of identified  pi0/eta
+  TH2F         * fhPtPhi  ;                //! Pt vs phi of identified  pi0/eta
+  TH2F         * fhEtaPhi  ;               //! eta vs phi of identified  pi0/eta
 
   TH2F         * fhPtCentrality ;          //! centrality  vs pi0/eta pT
   TH2F         * fhPtEventPlane ;          //! event plane vs pi0/eta pT
@@ -165,11 +167,17 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEtaPhiReject  ;         //! eta vs phi of rejected as  pi0/eta 
   
   TH2F         * fhMass  ;                 //! pair mass vs E, for all pairs
-  TH2F         * fhAsymmetry ;             //! cluster E vs asymmetry of 2 splitted clusters 
+  TH2F         * fhMassPt  ;               //! pair mass vs pT, for all pairs
+  TH2F         * fhMassSplitPt  ;          //! pair mass vs pT (split), for all pairs
   TH2F         * fhSelectedMass  ;         //! pair mass vs E, for selected pairs
+  TH2F         * fhSelectedMassPt  ;       //! pair mass vs pT, for selected pairs
+  TH2F         * fhSelectedMassSplitPt  ;  //! pair mass vs pT (split), for selected pairs
+  TH2F         * fhAsymmetry ;             //! cluster E vs asymmetry of 2 splitted clusters
   TH2F         * fhSelectedAsymmetry  ;    //! cluster E vs asymmetry of 2 splitted clusters, for selected pairs
   TH1F         * fhSplitE  ;               //! split sub-cluster pair energy sum
   TH1F         * fhSplitPt  ;              //! split sub-cluster pair pT sum
+  TH2F         * fhSplitPtEta  ;           //! split sub-cluster pair pT sum vs eta
+  TH2F         * fhSplitPtPhi  ;           //! split sub-cluster pair pT sum vs phi
   TH2F         * fhNLocMaxSplitPt  ;       //! split sub-cluster pair pT sum, as a function of n maxima
   
   TH1F         * fhPtDecay  ;              //! Number of identified  pi0/eta decay photons vs pT
@@ -224,14 +232,21 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   TH1F         * fhMCE[6];                    //! Number of identified as pi0 vs E coming from X
   TH1F         * fhMCPt[6];                   //! Number of identified as pi0 vs Pt coming from X
-  TH2F         * fhMCPhi[6];                  //! Phi of identified as pi0, coming from X
-  TH2F         * fhMCEta[6];                  //! eta of identified as pi0, coming from X
+  TH2F         * fhMCPhi[6];                  //! pt vs phi of identified as pi0, coming from X
+  TH2F         * fhMCEta[6];                  //! pt vs eta of identified as pi0, coming from X
   TH1F         * fhMCEReject[6];              //! Number of rejected as pi0 vs E coming from X
   TH1F         * fhMCPtReject[6];             //! Number of rejected as pi0 vs Pt coming from X
 
   TH1F         * fhMCSplitE[6];               //! Number of identified as pi0 vs sum E  split coming from X
   TH1F         * fhMCSplitPt[6];              //! Number of identified as pi0 vs sum Pt split coming from X
+  TH2F         * fhMCSplitPtPhi[6];           //! pt vs phi of identified as pi0, coming from X
+  TH2F         * fhMCSplitPtEta[6];           //! pt vs eta of identified as pi0, coming from X
   TH2F         * fhMCNLocMaxSplitPt[6];       //! Number of identified as pi0 vs sum Pt split coming from X, for different NLM
+  
+  TH2F         * fhMCMassPt[6];               //! pair pT vs Mass coming from X
+  TH2F         * fhMCMassSplitPt[6];          //! pair pT (split) vs Mass coming from X
+  TH2F         * fhMCSelectedMassPt[6];       //! selected pair pT vs Mass coming from X
+  TH2F         * fhMCSelectedMassSplitPt[6];  //! selected pair pT (split) vs Mass coming from X
   
   TH2F         * fhMCPtCentrality[6] ;        //! centrality  vs pi0/eta pT  coming from X
   
