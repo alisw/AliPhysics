@@ -59,13 +59,17 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fInputAODGammaConvName(""),
     // Histograms
     fhPt(0),                       fhE(0),                    
-    fhEEta(0),                     fhEPhi(0),                    fhEtaPhi(0),
+    fhEEta(0),                     fhEPhi(0),                    
+    fhPtEta(0),                    fhPtPhi(0),                   fhEtaPhi(0),
     fhPtCentrality(),              fhPtEventPlane(0),
     fhPtReject(0),                 fhEReject(0),
     fhEEtaReject(0),               fhEPhiReject(0),              fhEtaPhiReject(0),
-    fhMass(0),                     fhAsymmetry(0), 
-    fhSelectedMass(0),             fhSelectedAsymmetry(0),
-    fhSplitE(0),                   fhSplitPt(0),                 fhNLocMaxSplitPt(0),
+    fhMass(0),                     fhMassPt(0),                  fhMassSplitPt(0),
+    fhSelectedMass(0),             fhSelectedMassPt(0),          fhSelectedMassSplitPt(0),
+    fhAsymmetry(0),                fhSelectedAsymmetry(0),
+    fhSplitE(0),                   fhSplitPt(0),
+    fhSplitPtEta(0),               fhSplitPtPhi(0),
+    fhNLocMaxSplitPt(0),
     fhPtDecay(0),                  fhEDecay(0),
     // Shower shape histos
     fhEDispersion(0),              fhELambda0(0),                fhELambda1(0), 
@@ -115,6 +119,8 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     
     fhMCSplitE         [i] = 0;
     fhMCSplitPt        [i] = 0;
+    fhMCSplitPtPhi     [i] = 0;
+    fhMCSplitPtEta     [i] = 0;
     fhMCNLocMaxSplitPt [i] = 0;
     
     fhEMCLambda0       [i] = 0;
@@ -131,6 +137,11 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhMCESphericity    [i] = 0;    
     fhMCEAsymmetry     [i] = 0;          
 
+    fhMCMassPt             [i]=0;
+    fhMCMassSplitPt        [i]=0;
+    fhMCSelectedMassPt     [i]=0;
+    fhMCSelectedMassSplitPt[i]=0;
+    
     for(Int_t j = 0; j < 7; j++)
     {    
       fhMCLambda0DispEta    [j][i] = 0;
@@ -668,6 +679,18 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhEEta->SetYTitle("#eta");
   fhEEta->SetXTitle("E (GeV)");
   outputContainer->Add(fhEEta) ; 
+
+  fhPtPhi  = new TH2F
+  ("hPtPhi","Selected #pi^{0} (#eta) pairs: p_{T} vs #phi",nptbins,ptmin,ptmax, nphibins,phimin,phimax);
+  fhPtPhi->SetYTitle("#phi (rad)");
+  fhPtPhi->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtPhi) ;
+  
+  fhPtEta  = new TH2F
+  ("hPtEta","Selected #pi^{0} (#eta) pairs: p_{T} vs #eta",nptbins,ptmin,ptmax,netabins,etamin,etamax);
+  fhPtEta->SetYTitle("#eta");
+  fhPtEta->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtEta) ;
   
   fhEtaPhi  = new TH2F
   ("hEtaPhi","Selected #pi^{0} (#eta) pairs: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax); 
@@ -727,7 +750,19 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhSelectedMass->SetYTitle("mass (GeV/c^{2})");
   fhSelectedMass->SetXTitle("E (GeV)");
   outputContainer->Add(fhSelectedMass) ; 
+
+  fhMassPt  = new TH2F
+  ("hMassPt","all pairs mass: p_{T} vs mass",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+  fhMassPt->SetYTitle("mass (GeV/c^{2})");
+  fhMassPt->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhMassPt) ;
   
+  fhSelectedMassPt  = new TH2F
+  ("hSelectedMassPt","Selected #pi^{0} (#eta) pairs mass: p_{T} vs mass",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+  fhSelectedMassPt->SetYTitle("mass (GeV/c^{2})");
+  fhSelectedMassPt->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhSelectedMassPt) ;
+
   if(fAnaType != kSSCalo)
   {
     fhPtDecay  = new TH1F("hPtDecay","Number of identified  #pi^{0} (#eta) decay photons",nptbins,ptmin,ptmax); 
@@ -1277,7 +1312,23 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhMCEta[i]->SetYTitle("#eta");
         fhMCEta[i]->SetXTitle("p_{T} (GeV/c)");
         outputContainer->Add(fhMCEta[i]) ;
+
+        fhMCMassPt[i]  = new TH2F
+        (Form("hMassPt_MC%s",pname[i].Data()),
+         Form("all pairs mass: p_{T} vs massfrom %s",ptype[i].Data()),
+         nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+        fhMCMassPt[i]->SetYTitle("mass (GeV/c^{2})");
+        fhMCMassPt[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCMassPt[i]) ;
         
+        fhMCSelectedMassPt[i]  = new TH2F
+        (Form("hSelectedMassPt_MC%s",pname[i].Data()),
+         Form("Selected #pi^{0} (#eta) pairs mass: p_{T} vs massfrom %s",ptype[i].Data()),
+         nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+        fhMCSelectedMassPt[i]->SetYTitle("mass (GeV/c^{2})");
+        fhMCSelectedMassPt[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCSelectedMassPt[i]) ;
+
         
         if( fFillSelectClHisto )
         {
@@ -1421,11 +1472,39 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhSplitPt->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhSplitPt) ;
     
+    
+    fhSplitPtPhi  = new TH2F
+    ("hSplitPtPhi","Selected #pi^{0} (#eta) pairs: sum split sub-cluster p_{T} vs #phi",nptbins,ptmin,ptmax, nphibins,phimin,phimax);
+    fhSplitPtPhi->SetYTitle("#phi (rad)");
+    fhSplitPtPhi->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhSplitPtPhi) ;
+    
+    fhSplitPtEta  = new TH2F
+    ("hSplitPtEta","Selected #pi^{0} (#eta) pairs: sum split sub-cluster p_{T} vs #eta",nptbins,ptmin,ptmax,netabins,etamin,etamax);
+    fhSplitPtEta->SetYTitle("#eta");
+    fhSplitPtEta->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhSplitPtEta) ;
+
+    
     fhNLocMaxSplitPt = new TH2F("hNLocMaxSplitPt","Number of local maxima in cluster",
                          nptbins,ptmin,ptmax,10,0,10);
     fhNLocMaxSplitPt ->SetYTitle("N maxima");
     fhNLocMaxSplitPt ->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhNLocMaxSplitPt) ;
+
+    
+    fhMassSplitPt  = new TH2F
+    ("hMassSplitPt","all pairs mass: sum split sub-cluster p_{T} vs mass",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    fhMassSplitPt->SetYTitle("mass (GeV/c^{2})");
+    fhMassSplitPt->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMassSplitPt) ;
+    
+    fhSelectedMassSplitPt  = new TH2F
+    ("hSelectedMassSplitPt","Selected #pi^{0} (#eta) pairs mass: sum split sub-cluster p_{T} vs mass",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    fhSelectedMassSplitPt->SetYTitle("mass (GeV/c^{2})");
+    fhSelectedMassSplitPt->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhSelectedMassSplitPt) ;
+    
 
     
     if(IsDataMC())
@@ -1455,6 +1534,24 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhMCSplitPt[i]->SetXTitle("p_{T} (GeV/c)");
         outputContainer->Add(fhMCSplitPt[i]) ;
         
+        
+        fhMCSplitPtPhi[i]  = new TH2F
+        (Form("hSplitPtPhi_MC%s",pname[i].Data()),
+         Form("Identified as #pi^{0} (#eta), cluster from %s",ptype[i].Data()),
+         nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+        fhMCSplitPtPhi[i]->SetYTitle("#phi");
+        fhMCSplitPtPhi[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCSplitPtPhi[i]) ;
+        
+        fhMCSplitPtEta[i]  = new TH2F
+        (Form("hSplitPtEta_MC%s",pname[i].Data()),
+         Form("Identified as #pi^{0} (#eta), cluster from %s",
+              ptype[i].Data()),nptbins,ptmin,ptmax,netabins,etamin,etamax);
+        fhMCSplitPtEta[i]->SetYTitle("#eta");
+        fhMCSplitPtEta[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCSplitPtEta[i]) ;
+
+        
         fhMCNLocMaxSplitPt[i] = new TH2F
         (Form("hNLocMaxSplitPt_MC%s",pname[i].Data()),
          Form("cluster from %s, pT sum of split sub-clusters, for NLM",ptype[i].Data()),
@@ -1462,6 +1559,22 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhMCNLocMaxSplitPt[i] ->SetYTitle("N maxima");
         fhMCNLocMaxSplitPt[i] ->SetXTitle("p_{T} (GeV/c)");
         outputContainer->Add(fhMCNLocMaxSplitPt[i]) ;
+        
+        fhMCMassSplitPt[i]  = new TH2F
+        (Form("hMassSplitPt_MC%s",pname[i].Data()),
+         Form("all pairs mass: split p_{T} vs mass from %s",ptype[i].Data()),
+         nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+        fhMCMassSplitPt[i]->SetYTitle("mass (GeV/c^{2})");
+        fhMCMassSplitPt[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCMassSplitPt[i]) ;
+        
+        fhMCSelectedMassSplitPt[i]  = new TH2F
+        (Form("hSelectedMassSplitPt_MC%s",pname[i].Data()),
+         Form("Selected #pi^{0} (#eta) pairs mass: split p_{T} vs mass from %s",ptype[i].Data()),
+         nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+        fhMCSelectedMassSplitPt[i]->SetYTitle("mass (GeV/c^{2})");
+        fhMCSelectedMassSplitPt[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCSelectedMassSplitPt[i]) ;
         
       } 
     }
@@ -2231,19 +2344,33 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(GetDebug() > 1)
       printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - NLM %d accepted \n",nMaxima);
     
-    //mass of all clusters
-    fhMass->Fill(mom.E(),mass);
-
-    // Asymmetry of all clusters
-    Float_t asy =-10;
     Float_t e1 = l1.Energy();
     Float_t e2 = l2.Energy();
-    if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
-    fhAsymmetry->Fill(mom.E(),asy);
+    TLorentzVector l12 = l1+l2;
+    Float_t ptSplit = l12.Pt();
+    Float_t  eSplit = e1+e2;
+    Int_t mcIndex = GetMCIndex(tag);
+
+    //mass of all clusters
+    fhMass       ->Fill(mom.E(),mass);
+    fhMassPt     ->Fill(mom.Pt(),mass);
+    fhMassSplitPt->Fill(ptSplit,mass);
 
     if(IsDataMC())
     {
-      Int_t mcIndex = GetMCIndex(tag);
+      fhMCMassPt[mcIndex]     ->Fill(mom.Pt(),mass);
+      fhMCMassSplitPt[mcIndex]->Fill(ptSplit,mass);
+    }
+
+    // Asymmetry of all clusters
+    Float_t asy =-10;
+
+    if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
+    fhAsymmetry->Fill(mom.E(),asy);
+
+
+    if(IsDataMC())
+    {
       fhMCEAsymmetry[mcIndex]->Fill(mom.E(),asy);
     }
     
@@ -2267,14 +2394,17 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
                               mom.Pt(), idPartType);
     
     //Mass and asymmetry of selected pairs
-    fhSelectedAsymmetry->Fill(mom.E(),asy);
-    fhSelectedMass     ->Fill(mom.E(),mass);
+    fhSelectedAsymmetry  ->Fill(mom.E() ,asy );
+    fhSelectedMass       ->Fill(mom.E() ,mass);
+    fhSelectedMassPt     ->Fill(mom.Pt(),mass);
+    fhSelectedMassSplitPt->Fill(ptSplit ,mass);
 
-    TLorentzVector l12 = l1+l2;
-    Float_t ptSplit = l12.Pt();
-    Float_t  eSplit = e1+e2;
     fhSplitE        ->Fill( eSplit);
     fhSplitPt       ->Fill(ptSplit);
+    Float_t phi = mom.Phi();
+    if(phi<0) phi+=TMath::TwoPi();
+    fhSplitPtPhi    ->Fill(ptSplit,phi);
+    fhSplitPtEta    ->Fill(ptSplit,mom.Eta());
     fhNLocMaxSplitPt->Fill(ptSplit ,nMaxima);
     fhNLocMaxPt     ->Fill(mom.Pt(),nMaxima);
 
@@ -2292,11 +2422,16 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     if(IsDataMC())
     {
-      Int_t mcIndex = GetMCIndex(tag);
       fhMCSplitE        [mcIndex]->Fill( eSplit);
       fhMCSplitPt       [mcIndex]->Fill(ptSplit);
+      fhMCSplitPtPhi    [mcIndex]->Fill(ptSplit,phi);
+      fhMCSplitPtEta    [mcIndex]->Fill(ptSplit,mom.Eta());
       fhMCNLocMaxSplitPt[mcIndex]->Fill(ptSplit ,nMaxima);
       fhMCNLocMaxPt     [mcIndex]->Fill(mom.Pt(),nMaxima);
+      
+      fhMCSelectedMassPt     [mcIndex]->Fill(mom.Pt(),mass);
+      fhMCSelectedMassSplitPt[mcIndex]->Fill(ptSplit,mass);
+
     }
 
     
@@ -2377,6 +2512,8 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     
     fhEEta   ->Fill(ener,eta);
     fhEPhi   ->Fill(ener,phi);
+    fhPtEta  ->Fill(pt  ,eta);
+    fhPtPhi  ->Fill(pt  ,phi);
     fhEtaPhi ->Fill(eta ,phi);
 
     fhPtCentrality ->Fill(pt,cen) ;

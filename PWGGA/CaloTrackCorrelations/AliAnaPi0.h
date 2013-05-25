@@ -234,8 +234,10 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   
   //MC analysis histograms
   //Pi0 Acceptance
-  TH1F *   fhPrimPi0Pt ;               //! Spectrum of Primary 
-  TH1F *   fhPrimPi0AccPt ;            //! Spectrum of primary with accepted daughters 
+  TH1F *   fhPrimPi0E ;                //! Spectrum of Primary
+  TH1F *   fhPrimPi0Pt ;               //! Spectrum of Primary
+  TH1F *   fhPrimPi0AccE ;             //! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimPi0AccPt ;            //! Spectrum of primary with accepted daughters
   TH2F *   fhPrimPi0Y ;                //! Rapidity distribution of primary particles  vs pT
   TH2F *   fhPrimPi0AccY ;             //! Rapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimPi0Phi ;              //! Azimutal distribution of primary particles  vs pT
@@ -249,8 +251,10 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimPi0AccPtEventPlane ;  //! primary pi0 with accepted daughters reconstructed event plane vs pT
 
   //Eta acceptance
-  TH1F *   fhPrimEtaPt ;               //! Spectrum of Primary 
-  TH1F *   fhPrimEtaAccPt ;            //! Spectrum of primary with accepted daughters 
+  TH1F *   fhPrimEtaE ;                //! Spectrum of Primary
+  TH1F *   fhPrimEtaPt ;               //! Spectrum of Primary
+  TH1F *   fhPrimEtaAccE ;             //! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimEtaAccPt ;            //! Spectrum of primary with accepted daughters
   TH2F *   fhPrimEtaY ;                //! Rapidity distribution of primary particles vs pT
   TH2F *   fhPrimEtaAccY ;             //! Rapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimEtaPhi ;              //! Azimutal distribution of primary particles  vs pT
