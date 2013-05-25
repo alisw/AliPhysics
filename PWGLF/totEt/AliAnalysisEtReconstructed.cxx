@@ -63,6 +63,7 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fHistGammaEnergyAdded(0)
 	,fHistMatchedTracksEvspTvsCent(0)
 	,fHistMatchedTracksEvspTvsCentEffCorr(0)
+	,fHistMatchedTracksEvspTvsCentEffTMCorr(0)
 	,fHistFoundHadronsvsCent(0)
 	,fHistNotFoundHadronsvsCent(0)
 	,fHistFoundHadronsEtvsCent(0)
@@ -94,6 +95,7 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fHistGammaEnergyAdded;
     delete fHistMatchedTracksEvspTvsCent;
     delete fHistMatchedTracksEvspTvsCentEffCorr;
+    delete fHistMatchedTracksEvspTvsCentEffTMCorr;
     delete fHistFoundHadronsvsCent;
     delete fHistNotFoundHadronsvsCent;
     delete fHistFoundHadronsEtvsCent;
@@ -205,6 +207,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		  nChargedHadronsEtTotal+= 1/eff *effCorrEt;
 		  fHistMatchedTracksEvspTvsCent->Fill(track->P(),TMath::Sin(cp.Theta())*cluster->E(),cent);
 		  fHistMatchedTracksEvspTvsCentEffCorr->Fill(track->P(),CorrectForReconstructionEfficiency(*cluster,fClusterMult),cent);
+		  //Weighed by the number of tracks we didn't find
+		  fHistMatchedTracksEvspTvsCentEffTMCorr->Fill(track->P(), effCorrEt,cent, (1/eff-1) );
                     const Double_t *pidWeights = track->PID();
 
                     Double_t maxpidweight = 0;
@@ -312,6 +316,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fHistRemovedEnergy->Fill(removedEnergy);
     
     fTotNeutralEt = fGeomCorrection * fEMinCorrection * (fTotNeutralEt - removedEnergy);
+    fTotNeutralEtAcc = fTotNeutralEt;
     fTotEt = fTotChargedEt + fTotNeutralEt;
 // Fill the histograms...0
     FillHistograms();
@@ -411,6 +416,7 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fHistGammaEnergyAdded);
     list->Add(fHistMatchedTracksEvspTvsCent);
     list->Add(fHistMatchedTracksEvspTvsCentEffCorr);
+    list->Add(fHistMatchedTracksEvspTvsCentEffTMCorr);
     list->Add(fHistFoundHadronsvsCent);
     list->Add(fHistNotFoundHadronsvsCent);
     list->Add(fHistFoundHadronsEtvsCent);
@@ -494,6 +500,7 @@ void AliAnalysisEtReconstructed::CreateHistograms()
 
     fHistMatchedTracksEvspTvsCent = new TH3F("fHistMatchedTracksEvspTvsCent", "fHistMatchedTracksEvspTvsCent",100, 0, 3,100,0,3,20,0,20);
     fHistMatchedTracksEvspTvsCentEffCorr = new TH3F("fHistMatchedTracksEvspTvsCentEffCorr", "fHistMatchedTracksEvspTvsCentEffCorr",100, 0, 3,100,0,3,20,0,20);
+    fHistMatchedTracksEvspTvsCentEffTMCorr = new TH3F("fHistMatchedTracksEvspTvsCentEffTMCorr", "fHistMatchedTracksEvspTvsCentEffTMCorr",100, 0, 3,100,0,3,20,0,20);
     fHistFoundHadronsvsCent = new TH2F("fHistFoundHadronsvsCent","fHistFoundHadronsvsCent",100,0,100,20,0,20);
     fHistNotFoundHadronsvsCent = new TH2F("fHistNotFoundHadronsvsCent","fHistNotFoundHadronsvsCent",100,0,200,20,0,20);
     fHistFoundHadronsEtvsCent = new TH2F("fHistFoundHadronsEtvsCent","fHistFoundHadronsEtvsCent",100,0,200,20,0,20);
