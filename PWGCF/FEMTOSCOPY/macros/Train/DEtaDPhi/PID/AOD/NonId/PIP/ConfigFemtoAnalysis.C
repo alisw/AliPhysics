@@ -1,7 +1,7 @@
 /*********************************************************************
  *																							 *
  * Configfemtoanalysis.C - configuration macro for the femtoscopic	 *
- * analysis, meant as a QA process for two-particle effects				 *
+ * analysis, meant as a QA process for two-particle effects		 *
  *																							 *
  * Author: Adam Kisiel (Adam.Kisiel@cern.ch)									 *
  *																							 *
