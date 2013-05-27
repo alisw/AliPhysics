@@ -226,6 +226,9 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
   if(fUseNchWeight && !fHistoMCNch){ AliFatal("Nch weights can only be used without histogram"); return; }
   
   fListCuts=new TList();
+  fListCuts->SetOwner();
+  fListCuts->SetName("CutsList");
+
 
   if(fPdgMeson==411){
      AliRDHFCutsDplustoKpipi* copycut=new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDCutsAnalysis)));
@@ -522,9 +525,9 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       Double_t tmpweight = 1.0;
       if(nChargedMCPhysicalPrimary<=0) tmpweight = 0.0;
       else{
-	Double_t pMeas=fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nChargedMCPhysicalPrimary));
+	Double_t pMeas = fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nChargedMCPhysicalPrimary));
 	//	printf(" pMeas=%2.2f  and histo MCNch %s \n",pMeas,fHistoMCNch);
-	Double_t pMC=fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nChargedMCPhysicalPrimary));
+	Double_t pMC = fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nChargedMCPhysicalPrimary));
 	tmpweight = pMeas/pMC;
       }
       nchWeight *= tmpweight;
