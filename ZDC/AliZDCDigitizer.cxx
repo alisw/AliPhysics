@@ -301,11 +301,13 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
     else if(genHeader->InheritsFrom(AliGenCocktailEventHeader::Class())){
       TList* listOfHeaders = ((AliGenCocktailEventHeader*) genHeader)->GetHeaders();
       if(listOfHeaders){ 
-        hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("Hijing"));
-        if(!hijingHeader) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("Hijing_0"));      
-        if(!hijingHeader) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("HijingpPbPb"));
-        if(!hijingHeader) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("HijingpPb"));
-        if(!hijingHeader) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("HijingpPb_0"));      
+	for(Int_t iH = 0; iH < listOfHeaders->GetEntries(); ++iH) {
+	  AliGenEventHeader *currHeader = dynamic_cast <AliGenEventHeader *> (listOfHeaders->At(iH));
+	  if (currHeader && currHeader->InheritsFrom(AliGenHijingEventHeader::Class())) {
+	    hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (currHeader);
+	    break;
+	  }
+	}
       }
       else{
         printf(" No list of headers from generator \n");
