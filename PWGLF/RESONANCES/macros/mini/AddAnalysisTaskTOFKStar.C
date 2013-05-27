@@ -30,11 +30,13 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
    Float_t     maxDiffAngleMixDeg = 20.0,
-   Bool_t      isAOD49 = kFALSE,
+   Bool_t      isAOD49 = kTRUE,
    TString     outNameSuffix = "",
    Bool_t      useMixLS = 0,
    Int_t       signedPdg = 313,
-   TString     monitorOpt = ""
+   TString     monitorOpt = "",
+   Double_t    minYlab =  -0.5,
+   Double_t    maxYlab =  0.5
 )
 {  
   //
@@ -125,7 +127,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
    //
    AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-   cutY->SetRangeD(-0.5, 0.5);
+   cutY->SetRangeD(minYlab, maxYlab);
    
    AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
    cutsPair->AddCut(cutY);
