@@ -1418,7 +1418,7 @@ void AliPIDResponse::InitializeTRDResponse(){
 //______________________________________________________________________________
 void AliPIDResponse::SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::ETRDPIDMethod method) const{
 
-    if(fLHCperiod == "LHC10d" || fLHCperiod == "LHC10e"){
+    if(fLHCperiod.Contains("LHC10D") || fLHCperiod.Contains("LHC10E")){
 	// backward compatibility for setting with 8 slices
 	TRDslicesForPID[0] = 0;
 	TRDslicesForPID[1] = 7;
