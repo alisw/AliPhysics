@@ -294,9 +294,11 @@ fHardest(a.fHardest),
 fEventNumberRangeLow(a.fEventNumberRangeLow),
 fEventNumberRangeHigh(a.fEventNumberRangeHigh),
 fTriggerPtRangeLow(a.fTriggerPtRangeLow),
-fTriggerPtRangeHigh(a.fTriggerPtRangeHigh)
+fTriggerPtRangeHigh(a.fTriggerPtRangeHigh),
+fRandom(a.fRandom)
 {
    //Copy Constructor
+   fRandom->SetSeed(0);
 }
 //--------------------------------------------------------------
 
