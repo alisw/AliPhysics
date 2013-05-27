@@ -118,6 +118,7 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
  
   TH1F              *fHistNumberOfEvents;                      //! histo to count the number of events
   TH1F              *fHistTriggerStat;                         //! Trigger statistics
+  TH1F              *fHistTriggerStatAfterEventSelection;      //! Trigger statistics
   TH1F              *fHistLambdaNeutronPtGen;                  //! for MC
   TH1F              *fHistAntiLambdaNeutronPtGen;              //! for MC
   TH1F              *fHistLambdaNeutronInvaMassGen;            //! for MC
