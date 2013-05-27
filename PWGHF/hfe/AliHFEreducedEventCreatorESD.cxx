@@ -53,6 +53,7 @@
 #include "AliVCluster.h"
 #include "AliVVZERO.h"
 #include "AliVZDC.h"
+#include "AliTRDTriggerAnalysis.h"
 #include "TTreeStream.h"
 
 #include "AliHFEreducedEventCreatorESD.h"
@@ -68,6 +69,7 @@ AliHFEreducedEventCreatorESD::AliHFEreducedEventCreatorESD():
   fExtraCuts(NULL),
   fSignalCuts(NULL),
   fTPCpid(NULL),
+  fTRDTriggerAnalysis(NULL),
   fEventNumber(0),
   fNclustersTPC(70),
   fNclustersTPCPID(0),
@@ -88,6 +90,7 @@ AliHFEreducedEventCreatorESD::AliHFEreducedEventCreatorESD(const char *name):
   fExtraCuts(NULL),
   fSignalCuts(NULL),
   fTPCpid(NULL),
+  fTRDTriggerAnalysis(NULL),
   fEventNumber(0),
   fNclustersTPC(70),
   fNclustersTPCPID(0),
@@ -99,6 +102,7 @@ AliHFEreducedEventCreatorESD::AliHFEreducedEventCreatorESD(const char *name):
   //
   fTPCpid = new AliHFEpidTPC("QAtpcPID");
   fAnalysisUtils = new AliAnalysisUtils;
+  fTRDTriggerAnalysis = new AliTRDTriggerAnalysis(); 
   DefineOutput(1, TTree::Class());
 }
 
@@ -108,6 +112,7 @@ AliHFEreducedEventCreatorESD::~AliHFEreducedEventCreatorESD(){
   //
   if(fAnalysisUtils) delete fAnalysisUtils;
   if(fTPCpid) delete fTPCpid;
+  if(fTRDTriggerAnalysis) delete fTRDTriggerAnalysis;
   if(fHFEevent) delete fHFEevent;
   if(fSignalCuts) delete fSignalCuts;
   if(fTrackCuts) delete fTrackCuts;
@@ -228,6 +233,9 @@ void AliHFEreducedEventCreatorESD::UserExec(Option_t *){
   if(trigger & AliVEvent::kCentral) fHFEevent->SetCentralTrigger();
   if(trigger & AliVEvent::kSemiCentral) fHFEevent->SetCentralTrigger();
   if(trigger & AliVEvent::kEMCEJE) fHFEevent->SetEMCALTrigger();
+  fTRDTriggerAnalysis->CalcTriggers(event);
+  if(fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHSE)) fHFEevent->SetTRDSETrigger();
+  if(fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHQU)) fHFEevent->SetTRDDQTrigger();
 
   // Get Primary Vertex
   const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();

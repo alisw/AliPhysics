@@ -66,6 +66,7 @@
 #include "AliOADBContainer.h"
 #include "AliStack.h"
 #include "AliTriggerAnalysis.h"
+#include "AliTRDTriggerAnalysis.h" 
 #include "AliVVertex.h"
 
 #include "AliHFEcollection.h"
@@ -124,6 +125,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fTriggerAnalysis(NULL)
   , fPID(NULL)
   , fPIDqa(NULL)
+  , fTRDTriggerAnalysis(NULL)
   , fPIDpreselect(NULL)
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
@@ -193,6 +195,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fTriggerAnalysis(NULL)
   , fPID(NULL)
   , fPIDqa(NULL)
+  , fTRDTriggerAnalysis(NULL)
   , fPIDpreselect(NULL)
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
@@ -225,6 +228,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   fPIDqa = new AliHFEpidQAmanager;
   fVarManager = new AliHFEvarManager("hfeVarManager");
   fAnalysisUtils = new AliAnalysisUtils;
+  fTRDTriggerAnalysis = new AliTRDTriggerAnalysis();
 
   memset(fElecBackgroundFactor, 0, sizeof(Double_t) * kElecBgSpecies * kBgPtBins * kCentBins * kBgLevels);
   memset(fkBackGroundFactorArray, 0, sizeof(TF1 *) * 12);
@@ -270,6 +274,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fTriggerAnalysis(NULL)
   , fPID(NULL)
   , fPIDqa(NULL)
+  , fTRDTriggerAnalysis(NULL)
   , fPIDpreselect(NULL)
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
@@ -346,6 +351,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fTriggerAnalysis = fTriggerAnalysis;
   target.fPID = fPID;
   target.fPIDqa = fPIDqa;
+  target.fTRDTriggerAnalysis = fTRDTriggerAnalysis;
   target.fPIDpreselect = fPIDpreselect;
   target.fCuts = fCuts;
   target.fTaggedTrackCuts = fTaggedTrackCuts;
@@ -377,6 +383,7 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
   if(fPID) delete fPID;
   if(fPIDpreselect) delete fPIDpreselect;
   if(fVarManager) delete fVarManager;
+  if(fTRDTriggerAnalysis) delete fTRDTriggerAnalysis;
   if(fCFM) delete fCFM;
   if(fTriggerAnalysis) delete fTriggerAnalysis;
   if(fSignalCuts) delete fSignalCuts;
@@ -2186,30 +2193,15 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
     Bool_t cint7=kFALSE;
     Bool_t cint5=kFALSE;
     Bool_t trdtrgevent=kFALSE;
+    fTRDTriggerAnalysis->CalcTriggers(ev); 
 
-
+    // HSE no cleanup
     if(fWhichTRDTrigger==1)
     {
-       // DrawTRDTrigger(ev);
-
-     //  if (!(fAliTrigger->TRDTrigger(ev,AliTriggerAnalysis::kTRDHSE))) return kFALSE; // HSE
-     //  else
-	//  {
-
-     //      DrawTRDTrigger(ev);
-     //      return kTRUE;
-    //   }
-      //  if (!(AliTriggerAnalysis::TRDTrigger(ev) & 0x2)) return; // HSE
-      //  cint8= ev->IsTriggerClassFired("CINT8WUHSE-B-NOPF-CENT");
-      //  cint7= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT");
-      //  cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
-      //      (ev->GetHeader()->GetL1TriggerInputs() & (1 << 10));
-	//  printf("trdtrg condition %i \n",whichTRDTrigger);
 	cint8= ev->IsTriggerClassFired("CINT8WUHSE-B-NOPF-CENT");
 	cint7= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT");
 	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
 	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 10));
-	//     printf("trdtrg condition %i \n",whichTRDTrigger);
 	if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) return kFALSE;
 	else
 	{
@@ -2217,14 +2209,14 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
 	    return kTRUE;
 	}
     }
+
+    // HSE cleanup
     if(fWhichTRDTrigger==2)
     {
-	cint8= ev->IsTriggerClassFired("CINT8WUHSE-B-NOPF-CENT");
-	cint7= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT");
-	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
-	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 10));
-	//     printf("trdtrg condition %i \n",whichTRDTrigger);
-	if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) return kFALSE;
+	if(!fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHSE))
+	{
+	    return kFALSE;
+	}
 	else
 	{
 	    DrawTRDTrigger(ev);
@@ -2232,55 +2224,36 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
 	}
     }
 
-    //HQU
+    //HQU no cleanup
     if(fWhichTRDTrigger==3)
     {
-        /*
-	if (!(fAliTrigger->TRDTrigger(ev,AliTriggerAnalysis::kTRDHQU))) return kFALSE; // HQU
-	else
-	{
-	    DrawTRDTrigger(ev);
-	    return kTRUE;
-	}*/
-
 	cint8= ev->IsTriggerClassFired("CINT8WUHQU-B-NOPF-CENT");
 	cint7= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT");
 	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
 	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 12));
-	//  printf("trdtrg condition %i \n",whichTRDTrigger);
 	if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) return kFALSE;
 	else
 	{
 	    DrawTRDTrigger(ev);
 	    return kTRUE;
 	}
-
-
-     //   if (!(AliTriggerAnalysis::TRDTrigger(ev) & 0x4)) return; // HQU
-     //   cint8= ev->IsTriggerClassFired("CINT8WUHQU-B-NOPF-CENT");
-     //   cint7= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT");
-     //   cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
-     //       (ev->GetHeader()->GetL1TriggerInputs() & (1 << 12));
-	//  printf("trdtrg condition %i \n",whichTRDTrigger);
     }
+
+    // HQU cleanup
     if(fWhichTRDTrigger==4)
     {
-	cint8= ev->IsTriggerClassFired("CINT8WUHQU-B-NOPF-CENT");
-	cint7= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT");
-	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
-	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 12));
-	//  printf("trdtrg condition %i \n",whichTRDTrigger);
-	if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) return kFALSE;
+
+	if(!fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHQU))
+	{
+	    return kFALSE;
+	}
 	else
 	{
 	    DrawTRDTrigger(ev);
 	    return kTRUE;
 	}
     }
-
-  //  if((cint7==kFALSE)&&(cint8==kFALSE)&&(cint5==kFALSE)) trdtrgevent=kFALSE;
-  //  else trdtrgevent=kTRUE;
-  //   printf("in check fct %i \n",(Int_t)trdtrgevent);
+   
     return trdtrgevent;
 
 }
