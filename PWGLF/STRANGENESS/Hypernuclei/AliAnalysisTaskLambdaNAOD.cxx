@@ -95,8 +95,9 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD()
   fESDpid(0),
   fPIDResponse(0),
   fTreeV0(0),
-  fHistNumberOfEvents(0),
+  fHistNumberOfEvents(0),  
   fHistTriggerStat(0),
+  fHistTriggerStatAfterEventSelection(0),
   fHistLambdaNeutronPtGen(0),
   fHistAntiLambdaNeutronPtGen(0),
   fHistLambdaNeutronInvaMassGen(0),
@@ -140,6 +141,7 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD(const char *name)
     fTreeV0(0),
     fHistNumberOfEvents(0),
     fHistTriggerStat(0),
+    fHistTriggerStatAfterEventSelection(0),
     fHistLambdaNeutronPtGen(0),
     fHistAntiLambdaNeutronPtGen(0),
     fHistLambdaNeutronInvaMassGen(0),
@@ -363,10 +365,13 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   
   //trigger statitics histogram
   fHistTriggerStat = new TH1F("fHistTriggerStat","Trigger statistics", fNTriggers,-0.5,fNTriggers-0.5);
-  
   const Char_t* aTriggerNames[] = { "kMB", "kCentral", "kSemiCentral", "kEMCEJE", "kEMCEGA" };
   for ( Int_t ii=0; ii < fNTriggers; ii++ )
     fHistTriggerStat->GetXaxis()->SetBinLabel(ii+1, aTriggerNames[ii]);
+
+  fHistTriggerStatAfterEventSelection = new TH1F("fHistTriggerStatAfterEventSelection","Trigger statistics after event selection", fNTriggers,-0.5,fNTriggers-0.5);
+  for ( Int_t ii=0; ii < fNTriggers; ii++ )
+    fHistTriggerStatAfterEventSelection->GetXaxis()->SetBinLabel(ii+1, aTriggerNames[ii]);
 
   //QA dE/dx
   fHistDeDxQA = new TH3F("fHistDeDxQA", "QA dE/dx", 400, -6.0, 6.0, 500, 0.0, 2000, 15, -0.5, 14.5);
@@ -392,6 +397,7 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fOutputContainer->Add(fHistDeDxQA);
   fOutputContainer->Add(fHistNumberOfEvents);
   fOutputContainer->Add(fHistTriggerStat);
+  fOutputContainer->Add(fHistTriggerStatAfterEventSelection);
   fOutputContainer->Add(fHistLambdaNeutronPtGen);
   fOutputContainer->Add(fHistAntiLambdaNeutronPtGen);
   fOutputContainer->Add(fHistLambdaNeutronInvaMassGen);
@@ -501,14 +507,21 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
       { // PbPb
 	AliCentrality *esdCentrality = fESDevent->GetCentrality();
 	centrality = esdCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
+	//cout << "************************************EventSpecie " << fESDevent->GetEventSpecie() << " centrality "<< centrality << endl;
 	if(!fMCtrue){
 	  if (centrality < 0. || centrality > 8. ) return; //select only events with centralities between 0 and 80 %
 	}
       }
 
-    //cout << "centrality "<< centrality << endl;
+    //cout << "EventSpecie " << fESDevent->GetEventSpecie() << " centrality "<< centrality << endl;
     // count number of events
     fHistNumberOfEvents->Fill(centrality);
+    
+    if(fTriggerFired[0] == kTRUE)fHistTriggerStatAfterEventSelection->Fill(0);
+    if(fTriggerFired[1] == kTRUE)fHistTriggerStatAfterEventSelection->Fill(1);
+    if(fTriggerFired[2] == kTRUE)fHistTriggerStatAfterEventSelection->Fill(2);
+    if(fTriggerFired[3] == kTRUE)fHistTriggerStatAfterEventSelection->Fill(3);
+    if(fTriggerFired[4] == kTRUE)fHistTriggerStatAfterEventSelection->Fill(4);
 
  }
 
@@ -1150,7 +1163,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	//fill the THnSparse and the tree variables
 	
 	//tree variables which are independent of the particle-species
-	fV0finder[fItrk]         = onFlyStatus;
+	/*fV0finder[fItrk]         = onFlyStatus;
 	fkMB[fItrk]              = fTriggerFired[0];
 	fkCentral[fItrk]         = fTriggerFired[1];
 	fkSemiCentral[fItrk]     = fTriggerFired[2];
@@ -1172,15 +1185,15 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	
 	fAmenterosAlphaTree[fItrk] = alpha;
 	fAmenterosQtTree[fItrk] = qt;
-	fRotationTree[fItrk] = rotation;
+	fRotationTree[fItrk] = rotation;*/
 	
             
 	if (isDeuteron[0] == kTRUE)  //pos deuteron
 	  {
-	    fInvaMassDeuteronPionTree[fItrk] = invaMassDeuteronPion;
+	    /*  fInvaMassDeuteronPionTree[fItrk] = invaMassDeuteronPion;
 	    fChargeComboDeuteronPionTree[fItrk] = chargeComboDeuteronPion;
 	    
-	    fItrk++;
+	    fItrk++;*/
 	    
 	    if(invaMassDeuteronPion < 2.1) 
 	      {
@@ -1192,10 +1205,10 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 
 	if (isDeuteron[1] == kTRUE) 
 	  {
-	    fInvaMassDeuteronPionTree[fItrk] = invaMassDeuteronPion;
+	    /*fInvaMassDeuteronPionTree[fItrk] = invaMassDeuteronPion;
 	    fChargeComboDeuteronPionTree[fItrk] = chargeComboDeuteronPion;
 	    
-	    fItrk++;
+	    fItrk++;*/
 	    
 	    if(invaMassDeuteronPion < 2.1) 
 	      {
@@ -1204,7 +1217,39 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	      }
 	    fHistArmenterosPodolanskiAntiDeuteronPion->Fill(alpha,qt);
 	  }
-	
+
+	if((isDeuteron[0] == kTRUE) || (isDeuteron[1] == kTRUE)){
+	  //tree variables which are independent of the particle-species                                                                                                               
+	  fV0finder[fItrk]         = onFlyStatus;
+	  fkMB[fItrk]              = fTriggerFired[0];
+	  fkCentral[fItrk]         = fTriggerFired[1];
+	  fkSemiCentral[fItrk]     = fTriggerFired[2];
+	  fkEMCEJE[fItrk]          = fTriggerFired[3];
+	  fkEMCEGA[fItrk]          = fTriggerFired[4];
+	  
+	  fPtotN[fItrk]            = ptotN;
+	  fPtotP[fItrk]            = ptotP;
+	  fMotherPt[fItrk]         = transversMomentumMother;
+	  
+	  fdEdxN[fItrk]            = trackN->GetTPCsignal();
+	  fdEdxP[fItrk]            = trackP->GetTPCsignal();
+	  fSignN[fItrk]            = trackN->Charge();
+	  fSignP[fItrk]            = trackP->Charge();
+	  
+	  fDCAv0[fItrk]            = dcaV0;
+	  fCosinePAv0[fItrk]       = cosPointing;
+	  fDecayRadiusTree[fItrk]  = decayRadius;
+	  
+	  fAmenterosAlphaTree[fItrk] = alpha;
+	  fAmenterosQtTree[fItrk] = qt;
+	  fRotationTree[fItrk] = rotation;
+	  
+	  fInvaMassDeuteronPionTree[fItrk] = invaMassDeuteronPion;
+	  fChargeComboDeuteronPionTree[fItrk] = chargeComboDeuteronPion;
+	  
+	  fItrk++;
+	}
+
       }//end rotation loop
       
  } //end of v0 loop
@@ -1346,8 +1391,8 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	expSignalDeuteronN = AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
 	expSignalDeuteronP = AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
 	
-	if(//trackP->GetTPCsignal() >= 110 && ///??????????????????????????????????
-	   //trackP->GetTPCsignal() < 1200 && 
+	if(trackP->GetTPCsignal() >= 110 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies
+	   trackP->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
 	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.2 &&
 	   ptotP > 0.2 ){
 	  
@@ -1355,8 +1400,8 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	  if(trackP->Charge() <0)	 	isDeuteron[1] = kTRUE; //neg deuteron
 	}
 	
-	if(//trackN->GetTPCsignal() >= 110 && ///??????????????????????????????????
-	   //trackN->GetTPCsignal() < 1200 && 
+	if(trackN->GetTPCsignal() >= 110 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies
+	   trackN->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
 	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.2 &&
 	   ptotN > 0.2){ 
 	  
