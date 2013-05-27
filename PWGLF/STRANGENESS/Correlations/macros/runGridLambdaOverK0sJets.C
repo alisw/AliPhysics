@@ -4,9 +4,9 @@
 
 class AliAnalysisAlien;
 
-void runGridLambdaOverK0sJets(TString  runMode    = "test", 
-			      TString  alirootVer = "v5-04-31LF-AN",
-			      TString  rootVer    = "v5-34-02-1",
+void runGridLambdaOverK0sJets(TString  runMode    = "full", 
+			      TString  alirootVer = "v5-04-59-AN",
+			      TString  rootVer    = "v5-34-05",
 			      TString  dataPath   = "ESDs/pass2/AOD115/*/AliAOD.root",
 			      TString  dataDir    = "/alice/data/2011/LHC11h_2",		      
 			      TString  workDir    = "test",
@@ -14,14 +14,14 @@ void runGridLambdaOverK0sJets(TString  runMode    = "test",
 			      TString  data       = "PbPb2011",
 			      Float_t  minCen     = 0.,
 			      Float_t  maxCen     = 90.,
-			      Float_t  ptMinTrig  = 8.,
-			      Float_t  ptMaxTrig  = 20.,
+			      Float_t  ptMinTrig  = 5.,
+			      Float_t  ptMaxTrig  = 10.,
 			      Float_t  etaMaxTrig = 0.7,
 			      Float_t  rapMaxV0   = 0.7,
 			      Bool_t   sepInjec   = kTRUE,
 			      Bool_t   isMC       = kFALSE,
-			      Bool_t   usePID     = kTRUE,
-			      Bool_t   doQA       = kFALSE,
+			      Bool_t   usePID     = kFALSE,
+			      Bool_t   doQA       = kTRUE,
 			      Int_t    run        = 169838/*137530*//*138624*/){
 
 

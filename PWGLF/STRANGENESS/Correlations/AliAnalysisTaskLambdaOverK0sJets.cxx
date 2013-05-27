@@ -55,7 +55,7 @@ ClassImp(AliMiniParticle)
 // Global variables:
 static Int_t    nbins = 100;                 // Number of bins for l, pt, mass for V0
 static Int_t    nbinsPhi = 120;              // Number of bins for Phi
-static Int_t    nbinsdPhi = 40;              // Number of bins for dPhi
+static Int_t    nbinsdPhi = 28;              // Number of bins for dPhi
 static Int_t    nbinsdEta = 30;              // Number of bins for dEta
 static Int_t    nbinPtLP = 200;
 static Int_t    nbinsVtx = 20;
@@ -103,25 +103,33 @@ AliAnalysisTaskLambdaOverK0sJets::AliAnalysisTaskLambdaOverK0sJets(const char *n
 {
   // Dummy Constructor
 
-  for (Int_t i=0; i<kNCent*kN1; i++){ 
-    
+
+  for (Int_t i=0; i<kNCent; i++){ 
     // K0s
     fK0sMCPtPhiEta[i] = 0;
     fK0sAssocPtPhiEta[i] = 0;
+
+    // Lambda
+    fLambdaMCPtPhiEta[i] = 0;
+    fLambdaAssocPtPhiEta[i] = 0;
+    
+    // AntiLambda
+    fAntiLambdaMCPtPhiEta[i] = 0;
+    fAntiLambdaAssocPtPhiEta[i] = 0;
+  }
+
+  for (Int_t i=0; i<kNCent*kN1; i++){     
+    // K0s
     fK0sdPhidEtaMC[i] = 0;
     fK0sdPhidEtaPtL[i] = 0;
     fK0sdPhidEtaPtLBckg[i] = 0;
     
     // Lambda
-    fLambdaMCPtPhiEta[i] = 0;
-    fLambdaAssocPtPhiEta[i] = 0;
     fLambdadPhidEtaMC[i] = 0;
     fLambdadPhidEtaPtL[i] = 0;
     fLambdadPhidEtaPtLBckg[i] = 0;
     
     // AntiLambda
-    fAntiLambdaMCPtPhiEta[i] = 0;
-    fAntiLambdaAssocPtPhiEta[i] = 0;
     fAntiLambdadPhidEtaMC[i] = 0;
     fAntiLambdadPhidEtaPtL[i] = 0;
     fAntiLambdadPhidEtaPtLBckg[i] = 0;  
@@ -553,7 +561,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
       // Monte-Carlo level:
       if(fIsMC){
-	snprintf(hNameHist,100, "fK0sdPhidEtaMC_%.1f_%.1f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
+	snprintf(hNameHist,100, "fK0sdPhidEtaMC_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
 	fK0sdPhidEtaMC[jj*kN1+k] = new TH3F(hNameHist,"K^{0}_{S} MC: #Delta#phi vs #Delta#eta vs p_{T,l}",
 					    nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 					    nbinsdEta,-1.5,1.5,
@@ -565,7 +573,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       }
   
       // Reconstruction level:
-      snprintf(hNameHist,100, "fK0sdPhidEtaPtL_%.1f_%.1f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
+      snprintf(hNameHist,100, "fK0sdPhidEtaPtL_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
       fK0sdPhidEtaPtL[jj*kN1+k] = new TH3F(hNameHist,"K^{0}_{S}: #Delta#phi vs #Delta#eta vs p_{T,l}",
 					   nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 					   nbinsdEta,-1.5,1.5,
@@ -575,7 +583,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fK0sdPhidEtaPtL[jj*kN1+k]->GetZaxis()->SetTitle("Vertex Z (cm)"); 
       fOutput->Add(fK0sdPhidEtaPtL[jj*kN1+k]);
   
-      snprintf(hNameHist,100, "fK0sdPhidEtaPtL_Bckg_%.1f_%.1f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
+      snprintf(hNameHist,100, "fK0sdPhidEtaPtL_Bckg_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
       fK0sdPhidEtaPtLBckg[jj*kN1+k] = new TH3F(hNameHist,"K^{0}_{S}: #Delta#phi vs #Delta#eta vs p_{T,l}",
 					       nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 					       nbinsdEta,-1.5,1.5,
@@ -722,7 +730,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
       // Monte-Carlo level:
       if(fIsMC){
-	snprintf(hNameHist,100, "fLambdadPhidEtaMC_%.1f_%.1f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
+	snprintf(hNameHist,100, "fLambdadPhidEtaMC_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
 	fLambdadPhidEtaMC[jj*kN1+k] = new TH3F(hNameHist,"#Lambda MC: #Delta#phi vs #Delta#eta vs p_{T,l}",
 					       nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 					       nbinsdEta,-1.5,1.5,
@@ -734,7 +742,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       }
 
       // Reconstruction level:
-      snprintf(hNameHist,100, "fLambdadPhidEtaPtL_%.1f_%.1f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
+      snprintf(hNameHist,100, "fLambdadPhidEtaPtL_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
       fLambdadPhidEtaPtL[jj*kN1+k] = new TH3F(hNameHist,"#Lambda: #Delta#phi vs #Delta#eta vs p_{T,l}",
 					      nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 					      nbinsdEta,-1.5,1.5,
@@ -744,7 +752,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fLambdadPhidEtaPtL[jj*kN1+k]->GetZaxis()->SetTitle("Vertex Z (cm)");
       fOutput->Add(fLambdadPhidEtaPtL[jj*kN1+k]);
   
-      snprintf(hNameHist,100, "fLambdadPhidEtaPtL_Bckg_%.1f_%.1f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
+      snprintf(hNameHist,100, "fLambdadPhidEtaPtL_Bckg_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
       fLambdadPhidEtaPtLBckg[jj*kN1+k] = new TH3F(hNameHist,"#Lambda: #Delta#phi  vs #Delta#eta vs p_{T,l}",
 						  nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 						  nbinsdEta,-1.5,1.5,
@@ -888,7 +896,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
       // Monte-Carlo level:
       if(fIsMC){
-	snprintf(hNameHist,100, "fAntiLambdadPhidEtaMC_%.1f_%.1f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
+	snprintf(hNameHist,100, "fAntiLambdadPhidEtaMC_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
 	fAntiLambdadPhidEtaMC[jj*kN1+k] = new TH3F(hNameHist,"#bar{#Lambda} MC: #Delta#phi vs #Delta#eta vs p_{T,l}",
 						   nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 						   nbinsdEta,-1.5,1.5,
@@ -900,7 +908,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       }
 
       // Reconstruction level:
-      snprintf(hNameHist,100, "fAntiLambdadPhidEtaPtL_%.1f_%.1f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
+      snprintf(hNameHist,100, "fAntiLambdadPhidEtaPtL_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
       fAntiLambdadPhidEtaPtL[jj*kN1+k] = new TH3F(hNameHist,"#bar{#Lambda}: #Delta#phi vs #Delta#eta vs p_{T,l}",
 						  nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 						  nbinsdEta,-1.5,1.5,
@@ -910,7 +918,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fAntiLambdadPhidEtaPtL[jj*kN1+k]->GetZaxis()->SetTitle("Vertex Z (cm)");
       fOutput->Add(fAntiLambdadPhidEtaPtL[jj*kN1+k]);
   
-      snprintf(hNameHist,100, "fAntiLambdadPhidEtaPtL_Bckg_%.1f_%.1f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
+      snprintf(hNameHist,100, "fAntiLambdadPhidEtaPtL_Bckg_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
       fAntiLambdadPhidEtaPtLBckg[jj*kN1+k] = new TH3F(hNameHist,"#bar{#Lambda}: #Delta#phi  vs #Delta#eta vs p_{T,l}",
 						      nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 						      nbinsdEta,-1.5,1.5,
@@ -997,7 +1005,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     for(Int_t k=0;k<kN1;k++){
       for(Int_t j=0;j<kNVtxZ;j++){
       
-	snprintf(hNameHist,100,"fK0sdPhidEtaME_%.1f_%.1f_%.0f_%.0f_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[ll],kBinCent[ll+1],j);                  
+	snprintf(hNameHist,100,"fK0sdPhidEtaME_%.2f_%.2f_%.0f_%.0f_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[ll],kBinCent[ll+1],j);                  
 	fK0sdPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j] = new TH2F(hNameHist,"K^{0}_{S}: #Delta#phi vs #Delta#eta in ME;#Delta#phi (rad);#Delta#eta",
 								nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 								nbinsdEta,-1.5,1.5);
@@ -1011,7 +1019,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     for(Int_t k=0;k<kN1;k++){
       for(Int_t j=0;j<kNVtxZ;j++){
 
-	snprintf(hNameHist,100,"fLambdadPhidEtaME_%.1f_%.1f_%.0lf_%.0lf_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[ll],kBinCent[ll+1],j);
+	snprintf(hNameHist,100,"fLambdadPhidEtaME_%.2f_%.2f_%.0lf_%.0lf_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[ll],kBinCent[ll+1],j);
 	fLambdadPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j] = new TH2F(hNameHist,"#Lambda: #Delta#phi vs #Delta#eta in ME;#Delta#phi (rad);#Delta#eta",
 								   nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 								   nbinsdEta,-1.5,1.5);
@@ -1025,7 +1033,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     for(Int_t k=0;k<kN1;k++){
       for(Int_t j=0;j<kNVtxZ;j++){
 
-	snprintf(hNameHist,100,"fAntiLambdadPhidEtaME_%.1f_%.1f_%.0lf_%.0lf_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[ll],kBinCent[ll+1],j);
+	snprintf(hNameHist,100,"fAntiLambdadPhidEtaME_%.2f_%.2f_%.0lf_%.0lf_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[ll],kBinCent[ll+1],j);
 	fAntiLambdadPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j] = new TH2F(hNameHist,"#bar{#Lambda}: #Delta#phi vs #Delta#eta in ME;#Delta#phi (rad);#Delta#eta",
 								       nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 								       nbinsdEta,-1.5,1.5);
@@ -1965,7 +1973,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
   // 1) TriggerCheck
   // 2) Reconstruction
 
-  AliAODTrack *trkTrig;
+  AliAODTrack *trkTrig = 0x0;
   Float_t  ptTrig  = -100.;
   Float_t  phiTrig = -100.;
   Float_t  etaTrig = -100.; 
