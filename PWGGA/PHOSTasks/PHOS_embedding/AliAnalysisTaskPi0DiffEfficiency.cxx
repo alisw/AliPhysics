@@ -47,6 +47,35 @@ Double_t Scale(Double_t x){
 }
 
 ClassImp(AliAnalysisTaskPi0DiffEfficiency)
+//________________________________________________________________________
+AliAnalysisTaskPi0DiffEfficiency::AliAnalysisTaskPi0DiffEfficiency() 
+: AliAnalysisTaskSE(),
+  fStack(0),
+  fOutputContainer(0),
+  fPHOSEvent(0),
+  fPHOSEvent1(0),
+  fPHOSEvent2(0),
+  fPHOSCalibData(0),
+  fNonLinCorr(0),
+  fRPfull(0),
+  fRPA(0),
+  fRPC(0),
+  fRPFar(0),
+  fRPAFar(0),
+  fRPCFar(0),
+  fCentrality(0),
+  fCenBin(0),
+  fPHOSGeo(0),
+  fEventCounter(0)  
+{
+  // Constructor //should not be used
+  for(Int_t i=0;i<1;i++){
+    for(Int_t j=0;j<10;j++)
+      for(Int_t k=0;k<11;k++)
+        fPHOSEvents[i][j][k]=0 ;
+  }
+    
+}
 
 //________________________________________________________________________
 AliAnalysisTaskPi0DiffEfficiency::AliAnalysisTaskPi0DiffEfficiency(const char *name) 
@@ -67,7 +96,7 @@ AliAnalysisTaskPi0DiffEfficiency::AliAnalysisTaskPi0DiffEfficiency(const char *n
   fCentrality(0),
   fCenBin(0),
   fPHOSGeo(0),
-  fEventCounter(0)
+  fEventCounter(0)  
 {
   // Constructor
   for(Int_t i=0;i<1;i++){
@@ -100,7 +129,28 @@ AliAnalysisTaskPi0DiffEfficiency::AliAnalysisTaskPi0DiffEfficiency(const char *n
 
 
 }
-
+//________________________________________________________________________
+AliAnalysisTaskPi0DiffEfficiency::AliAnalysisTaskPi0DiffEfficiency(const AliAnalysisTaskPi0DiffEfficiency& a):
+AliAnalysisTaskSE(a),
+  fStack(0),
+  fOutputContainer(0),
+  fPHOSEvent(0),
+  fPHOSEvent1(0),
+  fPHOSEvent2(0),
+  fPHOSCalibData(0),
+  fNonLinCorr(0),
+  fRPfull(0),
+  fRPA(0),
+  fRPC(0),
+  fRPFar(0),
+  fRPAFar(0),
+  fRPCFar(0),
+  fCentrality(0),
+  fCenBin(0),
+  fPHOSGeo(0),
+  fEventCounter(0)
+{ // not implemented
+}
 //________________________________________________________________________
 void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
 {

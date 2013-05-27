@@ -15,7 +15,8 @@ class AliPHOSGeometry ;
 
 class AliAnalysisTaskPi0DiffEfficiency : public AliAnalysisTaskSE {
 public:
-  AliAnalysisTaskPi0DiffEfficiency(const char *name = "AliAnalysisTaskPi0DiffEfficiency");
+  AliAnalysisTaskPi0DiffEfficiency();
+  AliAnalysisTaskPi0DiffEfficiency(const char *name);
   virtual ~AliAnalysisTaskPi0DiffEfficiency() {}
   
   virtual void   UserCreateOutputObjects();
@@ -29,7 +30,7 @@ public:
   }
 
   protected:
-  AliAnalysisTaskPi0DiffEfficiency(const AliAnalysisTaskPi0DiffEfficiency& a):AliAnalysisTaskSE(a){} // not implemented
+  AliAnalysisTaskPi0DiffEfficiency(const AliAnalysisTaskPi0DiffEfficiency& a) ;
   AliAnalysisTaskPi0DiffEfficiency& operator=(const AliAnalysisTaskPi0DiffEfficiency& ){return *this;} // not implemented
   Bool_t IsGoodChannel(const char * det, Int_t mod,Int_t ix, Int_t iz); //Use addisional bad map for PHOS
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
