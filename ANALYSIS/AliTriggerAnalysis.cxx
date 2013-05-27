@@ -706,6 +706,7 @@ Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliESDEvent* esd) {
   //
   // This function flags events in which the TPC chamber HV is not at its nominal value
   //
+  if (fMC) return kFALSE; // there are no dip events in MC
   if (!esd->IsDetectorOn(AliDAQ::kTPC)) return kTRUE;
   return kFALSE;
 
