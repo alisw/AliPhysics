@@ -134,6 +134,8 @@ ClassImp(AliehDPhiBasicParticle)
   ,fEovPMax(1.2)
   ,fTriggerCentral(kTRUE) 
   ,fTriggerMB(kTRUE) 
+  ,fTPCNClsHad(80)  
+  ,fAssoEleITSref(kTRUE)  
   ,fPoolMgr(0x0)  
     ,fNoEvents(0)
     //  ,fTrkpt(0)
@@ -409,6 +411,8 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fEovPMax(1.2)
   ,fTriggerCentral(kTRUE) 
   ,fTriggerMB(kTRUE) 
+  ,fTPCNClsHad(80)  
+  ,fAssoEleITSref(kTRUE)  
   ,fPoolMgr(0x0)    
     ,fNoEvents(0)
     //  ,fTrkpt(0)
@@ -750,11 +754,10 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
     return;
   }
   // Look for kink mother for AOD
-  Double_t *listofmotherkink =0;
-  Int_t numberofvertices = 0, numberofmotherkink = 0;
+  Int_t numberofvertices = fAOD->GetNumberOfVertices();
+  Double_t listofmotherkink[numberofvertices];
+  Int_t numberofmotherkink = 0;
   if(IsAODanalysis()){
-    numberofvertices = fAOD->GetNumberOfVertices();
-    listofmotherkink = new Double_t[numberofvertices];
     for(Int_t ivertex=0; ivertex < numberofvertices; ivertex++) {
       AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
       if(!aodvertex) continue;
@@ -782,8 +785,9 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
     if(!track && !etrack && !atrack) continue;
 
     if(IsAODanalysis())
-      if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
-
+      if(atrack){
+        if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
+      }
     if(track->Pt()<1) continue;
 
     // fTrackPtBefTrkCuts->Fill(track->Pt());		
@@ -949,7 +953,6 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
   tracksClone->SetOwner();
   pool->UpdatePool(tracksClone);
 
-  delete listofmotherkink;
   PostData(1, fOutputList);
 }
 //_________________________________________
@@ -1650,7 +1653,7 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliVT
 
   fTrackCuts1->SetAcceptKinkDaughters(kFALSE);
   fTrackCuts1->SetRequireTPCRefit(kTRUE);
-  fTrackCuts1->SetRequireITSRefit(kTRUE);
+  fTrackCuts1->SetRequireITSRefit(fAssoEleITSref);
   fTrackCuts1->SetEtaRange(-0.9,0.9);
   fTrackCuts1->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts1->SetMaxChi2PerClusterTPC(4);
@@ -1677,7 +1680,11 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliVT
       if(!atrackAsso) continue;
       if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
       if(atrackAsso->GetTPCNcls() < 80) continue;
-      if((!(atrackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+      if(!(atrackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
+
+      if(fAssoEleITSref){
+        if(!(atrackAsso->GetStatus()&AliESDtrack::kITSrefit)) continue;
+      }
     }
     else{
       AliESDtrack *etrackAsso = dynamic_cast<AliESDtrack*>(VtrackAsso);
@@ -1778,7 +1785,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack 
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts2->SetMaxChi2PerClusterTPC(4);
-  fTrackCuts2->SetMinNClustersTPC(80);
+  fTrackCuts2->SetMinNClustersTPC(fTPCNClsHad);
   fTrackCuts2->SetMaxDCAToVertexZ(3.2);
   fTrackCuts2->SetMaxDCAToVertexXY(2.4);
   fTrackCuts2->SetDCAToVertex2D(kTRUE);
@@ -1798,7 +1805,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack 
       if(!atrackHad) continue;
       if(!atrackHad->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
       if((!(atrackHad->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrackHad->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-      if(atrackHad->GetTPCNcls() < 80) continue; 
+      if(atrackHad->GetTPCNcls() < fTPCNClsHad) continue; 
     }
     else{   
       AliESDtrack *etrackHad = dynamic_cast<AliESDtrack*>(VtrackHad); 
@@ -1849,7 +1856,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,In
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts2->SetMaxChi2PerClusterTPC(4);
-  fTrackCuts2->SetMinNClustersTPC(80);
+  fTrackCuts2->SetMinNClustersTPC(fTPCNClsHad);
   fTrackCuts2->SetMaxDCAToVertexZ(3.2);
   fTrackCuts2->SetMaxDCAToVertexXY(2.4);
   fTrackCuts2->SetDCAToVertex2D(kTRUE);
@@ -1869,7 +1876,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,In
       if(!atrackHad) continue;
       if(!atrackHad->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
       if((!(atrackHad->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrackHad->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-      if(atrackHad->GetTPCNcls() < 80) continue; 
+      if(atrackHad->GetTPCNcls() < fTPCNClsHad) continue; 
     }
     else{   
       AliESDtrack *etrackHad = dynamic_cast<AliESDtrack*>(VtrackHad); 
@@ -1919,7 +1926,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaFarSide(Int_t itrack, 
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts2->SetMaxChi2PerClusterTPC(4);
-  fTrackCuts2->SetMinNClustersTPC(80);
+  fTrackCuts2->SetMinNClustersTPC(fTPCNClsHad);
   fTrackCuts2->SetMaxDCAToVertexZ(3.2);
   fTrackCuts2->SetMaxDCAToVertexXY(2.4);
   fTrackCuts2->SetDCAToVertex2D(kTRUE);
@@ -1938,7 +1945,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaFarSide(Int_t itrack, 
       if(!atrackHad) continue;
       if(!atrackHad->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
       if((!(atrackHad->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrackHad->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-      if(atrackHad->GetTPCNcls() < 80) continue;
+      if(atrackHad->GetTPCNcls() < fTPCNClsHad) continue;
     }
     else{
       AliESDtrack *etrackHad = dynamic_cast<AliESDtrack*>(VtrackHad);
@@ -1989,7 +1996,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaBins(Int_t itrack, Ali
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts2->SetMaxChi2PerClusterTPC(4);
-  fTrackCuts2->SetMinNClustersTPC(80);
+  fTrackCuts2->SetMinNClustersTPC(fTPCNClsHad);
   fTrackCuts2->SetMaxDCAToVertexZ(3.2);
   fTrackCuts2->SetMaxDCAToVertexXY(2.4);
   fTrackCuts2->SetDCAToVertex2D(kTRUE);
@@ -2009,7 +2016,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaBins(Int_t itrack, Ali
       if(!atrackHad) continue;
       if(!atrackHad->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
       if((!(atrackHad->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrackHad->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-      if(atrackHad->GetTPCNcls() < 80) continue;
+      if(atrackHad->GetTPCNcls() < fTPCNClsHad) continue;
     }
     else{
       AliESDtrack *etrackHad = dynamic_cast<AliESDtrack*>(VtrackHad);
@@ -2075,7 +2082,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaBinsNoPartner(Int_t it
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts2->SetMaxChi2PerClusterTPC(4);
-  fTrackCuts2->SetMinNClustersTPC(80);
+  fTrackCuts2->SetMinNClustersTPC(fTPCNClsHad);
   fTrackCuts2->SetMaxDCAToVertexZ(3.2);
   fTrackCuts2->SetMaxDCAToVertexXY(2.4);
   fTrackCuts2->SetDCAToVertex2D(kTRUE);
@@ -2095,7 +2102,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelEtaBinsNoPartner(Int_t it
       if(!atrackHad) continue;
       if(!atrackHad->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
       if((!(atrackHad->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrackHad->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-      if(atrackHad->GetTPCNcls() < 80) continue;
+      if(atrackHad->GetTPCNcls() < fTPCNClsHad) continue;
     }
     else{
       AliESDtrack *etrackHad = dynamic_cast<AliESDtrack*>(VtrackHad);
@@ -2224,7 +2231,7 @@ TObjArray*  AliAnalysisTaskElecHadronCorrel::CloneAndReduceTrackList()
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);
-  fTrackCuts2->SetMinNClustersTPC(80);
+  fTrackCuts2->SetMinNClustersTPC(fTPCNClsHad);
   fTrackCuts2->SetMaxDCAToVertexZ(3.2);
   fTrackCuts2->SetMaxDCAToVertexXY(2.4);
   fTrackCuts2->SetDCAToVertex2D(kTRUE);
@@ -2247,7 +2254,7 @@ TObjArray*  AliAnalysisTaskElecHadronCorrel::CloneAndReduceTrackList()
       if(!atrack) continue;
       if(!atrack->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
       if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-      if(atrack->GetTPCNcls() < 80) continue;
+      if(atrack->GetTPCNcls() < fTPCNClsHad) continue;
     }
     else{
       AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
@@ -2286,7 +2293,7 @@ void AliAnalysisTaskElecHadronCorrel::HadronInfo(Int_t itrack)
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);                                           
   fTrackCuts2->SetMaxChi2PerClusterTPC(4);                                             
-  fTrackCuts2->SetMinNClustersTPC(80);                                                   
+  fTrackCuts2->SetMinNClustersTPC(fTPCNClsHad);                                                   
   fTrackCuts2->SetMaxDCAToVertexZ(3.2);
   fTrackCuts2->SetMaxDCAToVertexXY(2.4);
   fTrackCuts2->SetDCAToVertex2D(kTRUE);
@@ -2306,7 +2313,7 @@ void AliAnalysisTaskElecHadronCorrel::HadronInfo(Int_t itrack)
       if(!atrackHad) continue;
       if(!atrackHad->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
       if((!(atrackHad->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrackHad->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-      if(atrackHad->GetTPCNcls() < 80) continue; 
+      if(atrackHad->GetTPCNcls() < fTPCNClsHad) continue; 
     }
     else{   
       AliESDtrack *etrackHad = dynamic_cast<AliESDtrack*>(VtrackHad); 
