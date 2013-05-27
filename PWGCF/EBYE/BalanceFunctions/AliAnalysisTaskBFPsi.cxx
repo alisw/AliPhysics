@@ -548,7 +548,7 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
     //Printf("iCent %d:",iCent);    
     TString histoName = "fHistCorrectionPlus";
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
-    fHistCorrectionPlus[iCent]= dynamic_cast<TH3D *>(f->Get(histoName.Data()));
+    fHistCorrectionPlus[iCent]= dynamic_cast<TH3F *>(f->Get(histoName.Data()));
     if(!fHistCorrectionPlus[iCent]) {
       AliError(Form("fHist %s not found!!!",histoName.Data()));
       return;
@@ -556,7 +556,7 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
     
     histoName = "fHistCorrectionMinus";
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
-    fHistCorrectionMinus[iCent] = dynamic_cast<TH3D *>(f->Get(histoName.Data())); 
+    fHistCorrectionMinus[iCent] = dynamic_cast<TH3F *>(f->Get(histoName.Data())); 
     if(!fHistCorrectionMinus[iCent]) {
       AliError(Form("fHist %s not found!!!",histoName.Data()));
       return; 
@@ -1055,34 +1055,42 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
       binPhi = (Int_t)((vPhi-fPhiMinForCorrections)/widthPhi)+ 1;
   }
 
-  Int_t gCentralityInt = 1;
+  Int_t gCentralityInt = -1;
   for (Int_t i=0; i<fCentralityArrayBinsForCorrections-1; i++){
     if((fCentralityArrayForCorrections[i] <= gCentrality)&&(gCentrality <= fCentralityArrayForCorrections[i+1])){
       gCentralityInt = i;
       break;
     }
-  }
-  
-  //Printf("//=============CENTRALITY=============// %d:",gCentralityInt);
+  }  
 
-  if(fHistCorrectionPlus[gCentralityInt]){
-    if (vCharge > 0) {
-      correction = fHistCorrectionPlus[gCentralityInt]->GetBinContent(fHistCorrectionPlus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
-      //Printf("CORRECTIONplus: %.2f | Centrality %d",correction,gCentralityInt);  
-    }
-    if (vCharge < 0) {
-      correction = fHistCorrectionMinus[gCentralityInt]->GetBinContent(fHistCorrectionMinus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
-      //Printf("CORRECTIONminus: %.2f | Centrality %d",correction,gCentralityInt);
-    }
-  }
-  else {
+  // centrality not in array --> no correction
+  if(gCentralityInt < 0){
     correction = 1.;
   }
+  else{
+    
+    //Printf("//=============CENTRALITY=============// %d:",gCentralityInt);
+    
+    if(fHistCorrectionPlus[gCentralityInt]){
+      if (vCharge > 0) {
+	correction = fHistCorrectionPlus[gCentralityInt]->GetBinContent(fHistCorrectionPlus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
+	//Printf("CORRECTIONplus: %.2f | Centrality %d",correction,gCentralityInt);  
+      }
+      if (vCharge < 0) {
+	correction = fHistCorrectionMinus[gCentralityInt]->GetBinContent(fHistCorrectionMinus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
+	//Printf("CORRECTIONminus: %.2f | Centrality %d",correction,gCentralityInt);
+      }
+    }
+    else {
+      correction = 1.;
+    }
+  }//centrality in array
+  
   if (correction == 0.) { 
     AliError(Form("Should not happen : bin content = 0. >> eta: %.2f | phi : %.2f | pt : %.2f | cent %d",vEta, vPhi, vPt, gCentralityInt)); 
     correction = 1.; 
   } 
-    
+  
   return correction;
 }
 
