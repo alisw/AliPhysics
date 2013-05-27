@@ -53,6 +53,7 @@ class AliVertexerTracks;
 class AliAnalysisTaskHdibaryonLPpi : public AliAnalysisTaskSE {
  
 public:
+  AliAnalysisTaskHdibaryonLPpi();
   AliAnalysisTaskHdibaryonLPpi(const char *name);
   //  AliAnalysisTaskHdibaryonLPpi();
   virtual ~AliAnalysisTaskHdibaryonLPpi();
