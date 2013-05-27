@@ -6,10 +6,9 @@
           AliAnalysisTaskLambdaOverK0sJets class
 
           This program obtains the production of K0s and Lambdas and calculates 
-	  the correlation (in the variables phi and eta) with respect to a
-	  high-pt charged particle.
-	  It works with MC info and AOD tree.
-	  WARNING: The Mixed Event part is under construction.
+	  the correlation (in the variables phi and eta) with respect to the
+	  triggers particles (high-pt charged particles).
+	  It works with MC information and AOD tree.
 	  Origin: X. Sanchez Castro August2012, xsanchez@cern.ch
 */
 
@@ -31,8 +30,8 @@ class TH3F;
 class TList;
 class TString;
 
-const int    kN1 = 8; 
-const float  kPtBinV0[kN1+1] = {1.5,1.7,2.,2.5,3.,4.,5.,7.,10.};
+const int    kN1 = 9; 
+const float  kPtBinV0[kN1+1] = {1.75,2.0,2.25,2.5,2.75,3.0,4.0,5.0,7.0,10.0};
 
 const int    kNVtxZ = 10; 
 const double kBinVtxZ[kNVtxZ+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
