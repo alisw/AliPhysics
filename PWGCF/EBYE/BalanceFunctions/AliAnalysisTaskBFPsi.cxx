@@ -1252,7 +1252,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	       || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
 	       || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
 	       || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
-	       
+	       || pdgCodeOfMother == 111  // pi0 Dalitz
 	       ) {
 	      kExcludeParticle = kTRUE;
 	    }
@@ -1537,7 +1537,17 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	      if(motherParticle) {
 		Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
 		//if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
-		if(pdgCodeOfMother == 113) {
+		if(pdgCodeOfMother == 113  // rho0
+		   || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
+		   || pdgCodeOfMother == 221  // eta
+		   || pdgCodeOfMother == 331  // eta'
+		   || pdgCodeOfMother == 223  // omega
+		   || pdgCodeOfMother == 333  // phi
+		   || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
+		   || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
+		   || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
+		   || pdgCodeOfMother == 111  // pi0 Dalitz
+		   ) {
 		  kExcludeParticle = kTRUE;
 		}
 	      }
