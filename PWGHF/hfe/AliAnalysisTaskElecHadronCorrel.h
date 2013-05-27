@@ -78,6 +78,8 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     void SetShowerShapeCutsM20(Double_t M20CutMin, Double_t M20CutMax){fM20CutMin=M20CutMin; fM20CutMax=M20CutMax;};
     void SetShowerShapeCutsDisp(Double_t DispCutMin, Double_t DispCutMax){fDispCutMin=DispCutMin; fDispCutMax=DispCutMax;};
     void SetEovPCuts(Double_t EovPMin, Double_t EovPMax){fEovPMin=EovPMin;fEovPMax=EovPMax;};
+    void SetTPCNClsHad(Int_t TPCNClsHad) {fTPCNClsHad = TPCNClsHad;};
+    void SetAssoElecITSrefit(Bool_t AssoEleITSref){fAssoEleITSref = AssoEleITSref;};
     void MixedEvent(AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1, TH2F *DphiPt2, TH2F *DphiPt3, TH2F *DphiPt4);
     TObjArray* CloneAndReduceTrackList();
 
@@ -125,6 +127,8 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     Double_t   fEovPMax;//
     Bool_t     fTriggerCentral;//
     Bool_t     fTriggerMB;//
+    Int_t      fTPCNClsHad;//
+    Bool_t     fAssoEleITSref;//
 
     AliEventPoolManager*     fPoolMgr;         //! event pool manager
 

@@ -15,6 +15,10 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC,
                                                                Double_t EovPMin = 0.8,    
                                                                Double_t EovPMax = 1.2,    
                                                                Double_t InvM = 0.1,
+                                                               const char* CentralityMet = "VOM",
+                                                               Int_t TPCNClsEle = 100,
+                                                               Int_t TPCNClsHad = 80,
+                                                               Bool_t AssoEleITSref=kTRUE,
                                                                TString ContNameExt = "Central",
                                                                TString TaskName="hfeCorrl"){
 
@@ -26,7 +30,7 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC,
   
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsEMCAL","HFE Standard Cuts");
 //  hfecuts->CreateStandardCuts();
-  hfecuts->SetMinNClustersTPC(100);
+  hfecuts->SetMinNClustersTPC(TPCNClsEle);
   hfecuts->SetMinNClustersITS(3);
   hfecuts->SetMinNTrackletsTRD(0);
   hfecuts->SetMinRatioTPCclusters(0.6);
@@ -54,7 +58,7 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC,
 
   task->SetEventTriggerSelectionMB(EventTrigSelMB);
   task->SetTriggerSelection(TrigSelCen);
-  task->SetCentralityParameters(CentMin, CentMax, "V0M");
+  task->SetCentralityParameters(CentMin, CentMax, CentralityMet);
   task->SetInvariantMassCut(InvM);
   task->SetTPCnsigmaCutsElecSelection(TPCNsigMinE,TPCNsigMaxE);
   task->SetTPCnsigmaCutsHadSelection(TPCNsigMinH,TPCNsigMaxH);
@@ -63,6 +67,8 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC,
   task->SetShowerShapeCutsDisp(0,Disp);
   task->SetEovPCuts(EovPMin,EovPMax);
   task->SetRejectKinkMother(kTRUE);
+  task->SetTPCNClsHad(TPCNClsHad);
+  task->SetAssoElecITSrefit(AssoEleITSref);
 
   // Define PID
   AliHFEpid *pid = task->GetPID();
