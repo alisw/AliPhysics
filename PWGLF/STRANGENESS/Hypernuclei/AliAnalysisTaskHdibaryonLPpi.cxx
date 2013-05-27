@@ -74,6 +74,111 @@
 
 using namespace std;
 ClassImp(AliAnalysisTaskHdibaryonLPpi)
+//________________________________________________________________________
+AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi() : AliAnalysisTaskSE()/*AliAnalysisTask(name, ""), fMCEvent(0)*/, fESD(0),   fESDtrackCutsV0(0),
+  fESDCutsV0(0),
+  fEsdTrackCuts(0),
+  fBin(0),
+  fEvent(0x0),
+  fHistList(0),  
+  fHistMassDPi(0), 
+  fHistMassLPi(0),
+  fHistMassLambdaPi(0),
+  fHistMassLambda(0),
+  fHistMassLambdaPPi(0),
+  fHistMassLambdaP(0),
+  fHistMassLambdaK(0),
+  fHistMassK0onl(0),
+  fHistMassK0offl(0),
+  fHistMassK0onlC(0),
+  fHistMassK0offlC(0),
+  fHistMassPQonl(0), 
+  fHistMassPQoffl(0),
+  fHistDC(0),
+  fHistArmenterosPodolanski(0),
+  fHistArmenterosPodolanskiCut(0), 
+  fHistHDibaryonInvaMassGen(0),
+  fHistHDibaryonInvaMassGenRes(0),
+  fHistAntiHDibaryonInvaMassGen(0),
+  fHistHDibaryonInvaMassAso(0),
+  fHistHDibaryonInvaMassAsoReso(0),
+  fHistAntiHDibaryonInvaMassAso(0),
+  fHistCheck(0),
+  fHistHPointingAngle(0),
+  fHistMassH(0),
+  fHistMassLambdaFromH(0),
+  fHistMassLambdaFromHtLorentz(0),
+  fHistMassPpi(0),
+  fHistMassPpiReso(0),
+  fHistMassLpi(0),
+  fHistMassLP(0),
+  fHistProtonPIDBb(0),
+  fHistPionPIDBb(0),
+  fHistProtonPIDLambda(0),
+  fHistPionPIDLambda(0),
+  fHistMCdcaPvtxDvtx(0),
+  fHistMCdcaPvtxLvtx(0),
+  fHistMCdcaDvtxLvtx(0),
+  fHistMCangleLH(0),
+  fHistMCdecayAngle(0),
+  fHistMCpointingAngle(0),
+  fHistMCap(0),
+  fHistMCdcaPvtxDvtxReso(0),
+  fHistMCdcaPvtxLvtxReso(0),
+  fHistMCdcaDvtxLvtxReso(0),
+  fHistMCangleLHReso(0),
+  fHistMCdecayAngleReso(0),
+  fHistMCpointingAngleReso(0),
+  fHistMCapReso(0),
+  fHistNdim(0), 
+  fHistHilf1(0),
+  fHistHilf2(0), 
+  fHistHilf3(0),
+  fHistHilf4(0),
+  fHistHilf5(0), 
+  fHistHilf6(0),
+  fHistPtvsEtaGen(0),
+  fHistPtvsEtaAso(0),
+  fHistPtvsYGen(0),
+  fHistPtvsYAso(0), 
+  fHistRap(0),
+  fHistCount(0),
+  fPIDtpcESD(0) 
+
+{
+  // Constructor
+
+  // Define input and output slots here
+  // Input from a TChain
+  DefineInput(0, TChain::Class());
+  // Output to TList container
+  DefineOutput(1, TList::Class()); //full
+
+  //MC info contol
+  if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())SetHasMC();
+
+  //V0 cuts
+
+  fESDtrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0","AliESDtrackCutsV0");
+  fESDtrackCutsV0->SetAcceptKinkDaughters(kFALSE);
+  fESDtrackCutsV0->SetMinNClustersTPC(80);
+  fESDtrackCutsV0->SetMaxChi2PerClusterTPC(5);
+  fESDtrackCutsV0->SetRequireTPCRefit(kTRUE);
+  fESDtrackCutsV0->SetEtaRange(-0.9,0.9);
+
+  fESDCutsV0 = new AliESDv0Cuts("AliESDCutsV0","AliESDCutsV0");
+  fESDCutsV0->SetMaxDcaV0Daughters(2.0);
+  fESDCutsV0->SetMinDcaNegToVertex(1.0);
+  fESDCutsV0->SetMinDcaPosToVertex(1.0);
+
+  //ESD Track cuts
+  fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");    
+  fEsdTrackCuts->SetMinNClustersTPC(80);
+  fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  fEsdTrackCuts->SetMaxChi2PerClusterTPC(5);
+  fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
+  fEsdTrackCuts->SetEtaRange(-0.9,0.9);
+}
 
 //________________________________________________________________________
 AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : AliAnalysisTaskSE(name)/*AliAnalysisTask(name, ""), fMCEvent(0)*/, fESD(0),   fESDtrackCutsV0(0),
