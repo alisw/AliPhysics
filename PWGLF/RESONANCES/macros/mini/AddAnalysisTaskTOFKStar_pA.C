@@ -26,19 +26,17 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar_pA
    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTOFpidKstarPbPb2010,
    Float_t     nsigmaPi = 2.0,
    Float_t     nsigmaKa = 2.0,
-   Bool_t      enableMonitor = kTRUE,
-   Bool_t      IsMcTrueOnly = kFALSE,
-   Int_t       nmix = 0,
+   TString     outNameSuffix = "",
+   Double_t    minYlab =  0.465,
+   Double_t    maxYlab =  0.965,
+   Int_t       nmix = 10,
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
-   Float_t     maxDiffAngleMixDeg = 20.0,
-   Bool_t      isAOD49 = kFALSE,
-   TString     outNameSuffix = "",
-   Bool_t      useMixLS = 0,
    Int_t       signedPdg = 313,
+   Bool_t      enableMonitor = kTRUE,
    TString     monitorOpt = "",
-   Double_t    minYlab =  0.465,
-   Double_t    maxYlab =  0.965
+   Bool_t      IsMcTrueOnly = kFALSE,
+   Bool_t      useMixLS = 0
 )
 {  
   //
@@ -66,8 +64,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar_pA
    task->SetNMix(nmix);
    task->SetMaxDiffVz(maxDiffVzMix);
    task->SetMaxDiffMult(maxDiffMultMix);
-   ::Info("AddAnalysisTaskTOFKStar", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
-   
+   ::Info("AddAnalysisTaskTOFKStar", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));   
    mgr->AddTask(task);
    
    //
@@ -78,7 +75,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar_pA
    // - 3rd argument --> minimum required number of contributors
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
    AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
-   if (ispA) cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup
+   if (isUseCent) cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup
    
    // define and fill cut set for event cut
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
@@ -102,8 +99,6 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar_pA
      outMult->AddAxis(multID, 400, 0.0, 400.0);
    else
      outMult->AddAxis(multID, 100, 0.0, 100.0);
-   
-   }
 
    TH2F* hvz=new TH2F("hVzVsCent","",100,0.,100., 220,-11.,11.);
    task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
@@ -111,9 +106,6 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar_pA
    TH2F* hmc=new TH2F("MultiVsCent","",100,0.,100.,4000,0.,4000.);
    hmc->GetYaxis()->SetTitle("QUALITY");
    task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
-
-   TH2F* hep=new TH2F("hEventPlaneVsCent","",100,0.,100., 180,0.,TMath::Pi());
-   task->SetEventQAHist("eventplane",hep);//plugs this histogram into the fHAEventPlane data member
 
    //
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
