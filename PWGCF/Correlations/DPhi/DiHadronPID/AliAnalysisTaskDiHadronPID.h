@@ -45,8 +45,9 @@ public:
     void SetPoolSize(Int_t poolsize) {fPoolSize = poolsize;}
     void SetMixEvents(Bool_t mixevents = kTRUE) {fMixEvents = mixevents;}
     void SetMixTriggers(Bool_t mixtriggers = kTRUE) {fMixTriggers = mixtriggers;}
-	void SetDebugLevel(Int_t debuglevel) {fDebug = debuglevel;}
+	//void SetDebugLevel(Int_t debuglevel) {fDebug = debuglevel;}
 
+	void SetCalculateMismatch(Bool_t calcmismatch) {fCalculateMismatch = calcmismatch;}
 	void SetMakeTOFCorrelations(Bool_t makeTOF) {fMakeTOFcorrelations = makeTOF;}
 	void SetMakeTOFTPCCorrelations(Bool_t makeTOFTPC) {fMakeTOFTPCcorrelations = makeTOFTPC;}
 
@@ -58,8 +59,9 @@ public:
 	Int_t GetPoolSize() const {return fPoolSize;}
 	Bool_t GetMixEvents() const {return fMixEvents;}
 	Bool_t GetMixTriggers() const {return fMixTriggers;}
-	Int_t GetDebugLevel() const {return fDebug;}	
+	//Int_t GetDebugLevel() const {return fDebug;}	
 
+	Bool_t GetCalculateMismatch() const {return fCalculateMismatch;}
 	Bool_t GetMakeTOFCorrelations() const {return fMakeTOFcorrelations;}
 	Bool_t GetMakeTOFTPCCorrelations() const {return fMakeTOFTPCcorrelations;}
 
@@ -96,13 +98,19 @@ private:
 	TList* 							fOutputList;				//! Output List.
 
 	// Histograms.
-	TH1F*							fPtSpectrum;				//! Pt Spectrum.
-	TH3F*							fCorrelations;				//! Correlations Histogram.
-	TH3F*							fMixedEvents;				//! Mixed Events Histogram.	
+	TH1F*							fPtSpectrumTOFbins;			//! Pt Spectrum.
+	TH3F*							fCorrelationsTOFbins;		//! Correlations Histogram.
+	TH3F*							fMixedEventsTOFbins;		//! Mixed Events Histogram.	
 	
+	TH1F*							fPtSpectrumTOFTPCbins;		//! Pt Spectrum.
+	TH3F*							fCorrelationsTOFTPCbins;	//! Correlations Histogram.
+	TH3F*							fMixedEventsTOFTPCbins;		//! Mixed Events Histogram.	
+
 	TObjArray*						fTOFhistos;					//! Array holding all correlation functions with TOF information.
+	TObjArray*						fTOFmismatch;				//! Array holding mismatches, using fTOFPtAxis.
 	TAxis*							fTOFPtAxis;					//! P_t axis used for the TOF correlation histograms.
 	TObjArray*						fTOFTPChistos;				//! Array holding all correlation functions with TOF and TPC information.
+	TObjArray*						fTOFTPCmismatch;			//! Array holding mismatches, using fTOFTPCPtAxis.
 	TAxis*							fTOFTPCPtAxis;				//! P_t axis used for the TOF/ TPC correlation histograms.
 
 	// Settings.
@@ -113,7 +121,7 @@ private:
 	Int_t							fPoolSize;					// 
 	Bool_t							fMixEvents;					// NOT YET IMPLEMENTED.
 	Bool_t							fMixTriggers;				// If true, triggers are mixed, if not true, associateds are mixed.
-	Bool_t							fCalculateTOFmismatch;		//
+	Bool_t							fCalculateMismatch;			//
 
 	// TOF mismatch stuff.
 	TH1F*							fT0Fill;					//
@@ -123,9 +131,9 @@ private:
 	// Flags.
 	Bool_t							fMakeTOFcorrelations;		//
 	Bool_t							fMakeTOFTPCcorrelations;	//
-	Int_t							fDebug;						// Debug flag.
+	//Int_t							fDebug;						// Debug flag.
 
-	ClassDef(AliAnalysisTaskDiHadronPID,3);
+	ClassDef(AliAnalysisTaskDiHadronPID, 3);
 
 };
 

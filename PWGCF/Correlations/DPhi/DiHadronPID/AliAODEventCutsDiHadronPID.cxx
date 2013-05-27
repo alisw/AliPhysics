@@ -324,7 +324,7 @@ Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 	if (fIsPbPb) fHistCentralityQuality[1]->Fill(CurrentCentralityQuality);
 	fHistVertexZ[1]->Fill(vtxz);
 
-	cout<<"Event Selected: "<<select<<endl;
+	//cout<<"Event Selected: "<<select<<endl;
 
 	return select;
 

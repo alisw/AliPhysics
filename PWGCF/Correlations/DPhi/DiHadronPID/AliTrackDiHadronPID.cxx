@@ -173,25 +173,31 @@ AliTrackDiHadronPID::AliTrackDiHadronPID(AliAODTrack* track, AliAODTrack* global
 		AliError("No Track Supplied.");
 	}
 
-	// Find the Global Track.
-	if (fID >= 0) fAODGlobalTrack = fAODTrack;
+	// Copy the rest of the track parameters if the filtermap is nonzero.
+	// If fFiltermap == 0, then propagation to the DCA will result in a floating point error.
+	if (fFilterMap) {
 
-	// Copy DCA and PID info.
-	if (fAODGlobalTrack) {
-		CopyFlags();
-		if (fAODEvent) CopyDCAInfo();
-		else AliError("Couln't find AOD Event.");
-		CopyITSInfo();
-		if (fPIDResponse) CopyTPCInfo();
-		CopyTOFInfo();
-	} else {
-		AliError("Couldn't find Global Track.");
-	} 
+		// Find the Global Track.
+		if (fID >= 0) fAODGlobalTrack = fAODTrack;
 
-	// Copy MC info.
-	if (fAODMCParticle) {
-		CopyMCInfo();
-	} 
+		// Copy DCA and PID info.
+		if (fAODGlobalTrack) {
+			CopyFlags();
+			if (fAODEvent) CopyDCAInfo();
+			else AliError("Couln't find AOD Event.");
+			CopyITSInfo();
+			if (fPIDResponse) CopyTPCInfo();
+			CopyTOFInfo();
+		} else {
+			AliError("Couldn't find Global Track.");
+		} 
+
+		// Copy MC info.
+		if (fAODMCParticle) {
+			CopyMCInfo();
+		} 
+
+	}	
 
 	// Test 
 	/*	Double_t sigmaTOFProton = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(fAODTrack, AliPID::kProton));

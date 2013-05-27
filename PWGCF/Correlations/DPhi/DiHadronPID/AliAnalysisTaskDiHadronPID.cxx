@@ -77,12 +77,17 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 	fAssociatedTracks(0x0),
 	fCurrentAODEvent(0x0),
 	fOutputList(0x0),
-	fPtSpectrum(0x0),
-	fCorrelations(0x0),
-	fMixedEvents(0x0),
+	fPtSpectrumTOFbins(0x0),
+	fCorrelationsTOFbins(0x0),
+	fMixedEventsTOFbins(0x0),
+	fPtSpectrumTOFTPCbins(0x0),
+	fCorrelationsTOFTPCbins(0x0),
+	fMixedEventsTOFTPCbins(0x0),	
 	fTOFhistos(0x0),
+	fTOFmismatch(0x0),
 	fTOFPtAxis(0x0),
 	fTOFTPChistos(0x0),
+	fTOFTPCmismatch(0x0),
 	fTOFTPCPtAxis(0x0),
 	fNDEtaBins(32),
 	fNDPhiBins(32),	
@@ -91,13 +96,13 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 	fPoolSize(1000),
 	fMixEvents(kTRUE),
 	fMixTriggers(kFALSE),
-	fCalculateTOFmismatch(kTRUE),
+	fCalculateMismatch(kTRUE),
 	fT0Fill(0x0),
 	fLvsEta(0x0),
 	fLvsEtaProjections(0x0),	
 	fMakeTOFcorrelations(kTRUE),
-	fMakeTOFTPCcorrelations(kFALSE),
-	fDebug(0)
+	fMakeTOFTPCcorrelations(kFALSE)
+	//fDebug(0)
 
 {
 
@@ -121,13 +126,18 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char* name):
 	fAssociatedTracks(0x0),	
 	fCurrentAODEvent(0x0),
 	fOutputList(0x0),
-	fPtSpectrum(0x0),
-	fCorrelations(0x0),
-	fMixedEvents(0x0),
+	fPtSpectrumTOFbins(0x0),
+	fCorrelationsTOFbins(0x0),
+	fMixedEventsTOFbins(0x0),
+	fPtSpectrumTOFTPCbins(0x0),
+	fCorrelationsTOFTPCbins(0x0),
+	fMixedEventsTOFTPCbins(0x0),	
 	fTOFhistos(0x0),
+	fTOFmismatch(0x0),
 	fTOFPtAxis(0x0),
 	fTOFTPChistos(0x0),
-	fTOFTPCPtAxis(0x0),		
+	fTOFTPCmismatch(0x0),
+	fTOFTPCPtAxis(0x0),	
 	fNDEtaBins(32),
 	fNDPhiBins(32),
 	fMinNEventsForMixing(5),
@@ -135,13 +145,13 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char* name):
 	fPoolSize(1000),
 	fMixEvents(kTRUE),	
 	fMixTriggers(kFALSE),
-	fCalculateTOFmismatch(kTRUE),
+	fCalculateMismatch(kTRUE),
 	fT0Fill(0x0),
 	fLvsEta(0x0),
 	fLvsEtaProjections(0x0),
 	fMakeTOFcorrelations(kTRUE),
-	fMakeTOFTPCcorrelations(kFALSE),							
-	fDebug(0) 
+	fMakeTOFTPCcorrelations(kFALSE)							
+	//fDebug(0) 
 
 {
 
@@ -186,9 +196,18 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 	// Getting the pointer to the PID response object.
 	fPIDResponse = inputHandler->GetPIDResponse();	
 
-	// Not very neat - only set up for 0-5% analysis.
-	Int_t nCentralityBins  = 15;
-	Double_t centralityBins[] = {0., 1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1 };
+	// For now we don't bin in multiplicity for pp.
+	Int_t nCentralityBins = -1;
+	Double_t* centralityBins = 0x0;
+	if (fEventCuts->GetIsPbPb()) {
+		nCentralityBins = 15;
+		Double_t tmp[] = {0., 1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1 };
+		centralityBins = tmp;
+	} else {
+		nCentralityBins = 1;
+		Double_t tmp[] = {0.,1.};
+		centralityBins = tmp;
+	}
 
 	Int_t nZvtxBins  = 7;
 	Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
@@ -210,46 +229,61 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 	fTrackCutsAssociated->CreateHistos();
 	fOutputList->Add(fTrackCutsAssociated);
 
-	// Get the pT axis for the TOF PID correlations.
-	Double_t* ptaxis = fTrackCutsAssociated->GetPtAxisPID();
-	Int_t nptbins = fTrackCutsAssociated->GetNPtBinsPID();
-	fTOFPtAxis = new TAxis(nptbins, ptaxis);
-	fTOFPtAxis->SetName("fTOFPtAxis");
-	fTOFPtAxis->SetTitle("p_{T} GeV/c");
-	fOutputList->Add(fTOFPtAxis);
-
-	// Create Pt spectrum histogram.
-	fPtSpectrum = new TH1F("fPtSpectrum","p_{T} Spectrum;p_{T} (GeV/c);Count",nptbins,ptaxis);
-	fOutputList->Add(fPtSpectrum);
-
-	// Create unidentified correlations histogram.
-	fCorrelations = AliHistToolsDiHadronPID::MakeHist3D("fCorrelations","Correlations;#Delta#phi;#Delta#eta;p_{T} (GeV/c)",
-		fNDPhiBins,-TMath::Pi()/2.,3.*TMath::Pi()/2.,
-		fNDEtaBins,-1.6,1.6,
-		nptbins, ptaxis);
-	fOutputList->Add(fCorrelations);
-
-	// Create unidentified mixed events histogram.
-	fMixedEvents = AliHistToolsDiHadronPID::MakeHist3D("fMixedEvents","Mixed Events;#Delta#phi;#Delta#eta;p_{T} (GeV/c)",
-		fNDPhiBins,-TMath::Pi()/2.,3.*TMath::Pi()/2.,
-		fNDEtaBins,-1.6,1.6,
-		nptbins, ptaxis);
-	fOutputList->Add(fMixedEvents);
-
 	TString speciesname[] = {"Pion","Kaon","Proton"};
 
 	// Create TOF correlations histograms (DPhi,DEta,TOF).
 	if (fMakeTOFcorrelations) {
 
+		// Get the pT axis for the TOF PID correlations.
+		Double_t* ptaxis = fTrackCutsAssociated->GetPtAxisPID();
+		Int_t nptbins = fTrackCutsAssociated->GetNPtBinsPID();
+
+		// Create Pt spectrum histogram.
+		fPtSpectrumTOFbins = new TH1F("fPtSpectrumTOFbins","p_{T} Spectrum;p_{T} (GeV/c);Count",nptbins,ptaxis);
+		fOutputList->Add(fPtSpectrumTOFbins);
+
+		// Create unidentified correlations histogram.
+		fCorrelationsTOFbins = AliHistToolsDiHadronPID::MakeHist3D("fCorrelationsTOFbins","Correlations;#Delta#phi;#Delta#eta;p_{T} (GeV/c)",
+			fNDPhiBins,-TMath::Pi()/2.,3.*TMath::Pi()/2.,
+			fNDEtaBins,-1.6,1.6,
+			nptbins, ptaxis);
+		fOutputList->Add(fCorrelationsTOFbins);
+
+		// Create unidentified mixed events histogram.
+		fMixedEventsTOFbins = AliHistToolsDiHadronPID::MakeHist3D("fMixedEventsTOFbins","Mixed Events;#Delta#phi;#Delta#eta;p_{T} (GeV/c)",
+			fNDPhiBins,-TMath::Pi()/2.,3.*TMath::Pi()/2.,
+			fNDEtaBins,-1.6,1.6,
+			nptbins, ptaxis);
+		fOutputList->Add(fMixedEventsTOFbins);
+
+		// Create TOFPtaxis.
+		fTOFPtAxis = new TAxis(nptbins, ptaxis);
+		fTOFPtAxis->SetName("fTOFPtAxis");
+		fTOFPtAxis->SetTitle("p_{T} GeV/c");
+
+		// Create PID histograms.
 		fTOFhistos = new TObjArray(3);
 		fTOFhistos->SetOwner(kTRUE);	
 		fTOFhistos->SetName("CorrelationsTOF");
 
+		if (fCalculateMismatch) {
+			fTOFmismatch = new TObjArray(3);
+			fTOFmismatch->SetOwner(kTRUE);
+			fTOFmismatch->SetName("MismatchTOF");
+		}
+
 		for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 
-			TObjArray* atmp = new TObjArray(fTOFPtAxis->GetNbins());
-			atmp->SetOwner(kTRUE);
-			atmp->SetName(speciesname[iSpecies].Data());
+			TObjArray* TOFhistosTmp = new TObjArray(fTOFPtAxis->GetNbins());
+			TOFhistosTmp->SetOwner(kTRUE);
+			TOFhistosTmp->SetName(speciesname[iSpecies].Data());
+
+			TObjArray* TOFmismatchTmp = 0x0;
+			if (fCalculateMismatch) {
+				TOFmismatchTmp = new TObjArray(fTOFPtAxis->GetNbins());
+				TOFmismatchTmp->SetOwner(kTRUE);
+				TOFmismatchTmp->SetName(speciesname[iSpecies].Data());
+			}
 
 			for (Int_t iBinPt = 1; iBinPt < (fTOFPtAxis->GetNbins() + 1); iBinPt++) {
 
@@ -259,23 +293,35 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 				Double_t TOFmin = fTrackCutsAssociated->GetTOFmin(iPtClass,iSpecies);
 				Double_t TOFmax = fTrackCutsAssociated->GetTOFmax(iPtClass,iSpecies);
 
-				cout << "ptbin: "<< iBinPt << " class: " << iPtClass << " TOFBins: " << NBinsTOF << " min: " << TOFmin << " max: " << TOFmax << endl; 
+				//cout << "ptbin: "<< iBinPt << " class: " << iPtClass << " TOFBins: " << NBinsTOF << " min: " << TOFmin << " max: " << TOFmax << endl; 
 
+				// Correlation histogram.
 				TH3F* htmp = new TH3F(Form("fCorrelationsTOF_%i",iBinPt),
 					Form("%5.3f < p_{T} < %5.3f; #Delta#phi; #Delta#eta; t_{TOF} (ps)", fTOFPtAxis->GetBinLowEdge(iBinPt), fTOFPtAxis->GetBinUpEdge(iBinPt)), 
 					fNDPhiBins, -TMath::Pi()/2., 3.*TMath::Pi()/2.,
 					fNDEtaBins, -1.6, 1.6, NBinsTOF, TOFmin, TOFmax);
 				htmp->SetDirectory(0);
 
-				atmp->Add(htmp);
+				TOFhistosTmp->Add(htmp);
 
+				if (fCalculateMismatch) {
+					// Mismatch histogram.
+					TH1F* htmp2 = new TH1F(Form("fMismatchTOF_%i",iBinPt),
+						Form("%5.3f < p_{T} < %5.3f; t_{TOF} (ps)", fTOFPtAxis->GetBinLowEdge(iBinPt), fTOFPtAxis->GetBinUpEdge(iBinPt)),
+						NBinsTOF, TOFmin, TOFmax);
+					htmp2->SetDirectory(0);
+
+					TOFmismatchTmp->Add(htmp2);	
+				}	
 			}
 
-			fTOFhistos->Add(atmp);
+			fTOFhistos->Add(TOFhistosTmp);
+			if (fCalculateMismatch) {fTOFmismatch->Add(TOFmismatchTmp);}
 
 		}
 
 		fOutputList->Add(fTOFhistos);
+		if (fCalculateMismatch) {fOutputList->Add(fTOFmismatch);}
 
 	}
 
@@ -285,10 +331,28 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 		Double_t ptarrayTOFTPC[16] = {2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 
 									  2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 
 									  4.2, 4.6, 5.0};
-		fTOFTPCPtAxis = new TAxis(15, ptarrayTOFTPC);
+		const Int_t nptbins = 15;
+		fTOFTPCPtAxis = new TAxis(nptbins, ptarrayTOFTPC);
 		fTOFTPCPtAxis->SetName("fTOFTPCPtAxis");
 		fTOFTPCPtAxis->SetTitle("p_{T} GeV/c");
-		fOutputList->Add(fTOFTPCPtAxis);
+
+		// Create Pt spectrum histogram.
+		fPtSpectrumTOFTPCbins = new TH1F("fPtSpectrumTOFTPCbins","p_{T} Spectrum;p_{T} (GeV/c);Count",nptbins,ptarrayTOFTPC);
+		fOutputList->Add(fPtSpectrumTOFTPCbins);
+
+		// Create unidentified correlations histogram.
+		fCorrelationsTOFTPCbins = AliHistToolsDiHadronPID::MakeHist3D("fCorrelationsTOFTPCbins","Correlations;#Delta#phi;#Delta#eta;p_{T} (GeV/c)",
+			fNDPhiBins,-TMath::Pi()/2.,3.*TMath::Pi()/2.,
+			fNDEtaBins,-1.6,1.6,
+			nptbins, ptarrayTOFTPC);
+		fOutputList->Add(fCorrelationsTOFTPCbins);
+
+		// Create unidentified mixed events histogram.
+		fMixedEventsTOFTPCbins = AliHistToolsDiHadronPID::MakeHist3D("fMixedEventsTOFTPCbins","Mixed Events;#Delta#phi;#Delta#eta;p_{T} (GeV/c)",
+			fNDPhiBins,-TMath::Pi()/2.,3.*TMath::Pi()/2.,
+			fNDEtaBins,-1.6,1.6,
+			nptbins, ptarrayTOFTPC);
+		fOutputList->Add(fMixedEventsTOFTPCbins);
 
 		Int_t NBinsTOFTPC[4] = {32, 32, 60, 40};
 		Double_t minTOFTPC[4] = {-TMath::Pi()/2., -1.6, -1., -1.};
@@ -299,13 +363,26 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 
 		fTOFTPChistos = new TObjArray(3);
 		fTOFTPChistos->SetOwner(kTRUE);
-		fTOFTPChistos->SetName("TOFTPChistos");
+		fTOFTPChistos->SetName("CorrelationsTOFTPC");
+
+		if (fCalculateMismatch) {
+			fTOFTPCmismatch = new TObjArray(3);
+			fTOFTPCmismatch->SetOwner(kTRUE);
+			fTOFTPCmismatch->SetName("MismatchTOFTPC");
+		}
 
 		for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 
-			TObjArray* atmp = new TObjArray(fTOFTPCPtAxis->GetNbins());
-			atmp->SetOwner(kTRUE);
-			atmp->SetName(speciesname[iSpecies].Data());
+			TObjArray* TOFTPChistosTmp = new TObjArray(fTOFTPCPtAxis->GetNbins());
+			TOFTPChistosTmp->SetOwner(kTRUE);
+			TOFTPChistosTmp->SetName(speciesname[iSpecies].Data());
+
+			TObjArray* TOFTPCmismatchTmp = 0x0;
+			if (fCalculateMismatch) { 
+				TOFTPCmismatchTmp = new TObjArray(fTOFTPCPtAxis->GetNbins());
+				TOFTPCmismatchTmp->SetOwner(kTRUE);
+				TOFTPCmismatchTmp->SetName(speciesname[iSpecies].Data());	
+			}
 
 			for (Int_t iBinPt = 1; iBinPt < (fTOFTPCPtAxis->GetNbins() + 1); iBinPt++) {
 		
@@ -345,7 +422,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 				minTOFTPC[3] = TPCmin;
 				maxTOFTPC[3] = TPCmax;
 
-				THnF* htmp = new THnF(Form("fCorrelationsTOF_%i",iBinPt),
+				THnF* htmp = new THnF(Form("fCorrelationsTOFTPC_%i",iBinPt),
 					Form("%5.3f < p_{T} < %5.3f", fTOFTPCPtAxis->GetBinLowEdge(iBinPt), fTOFTPCPtAxis->GetBinUpEdge(iBinPt)), 
 					4, NBinsTOFTPC, minTOFTPC, maxTOFTPC);
 
@@ -354,20 +431,33 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 				(htmp->GetAxis(2))->SetTitle("t_{TOF} (ps)");
 				(htmp->GetAxis(3))->SetTitle("dE/dx (a.u.)");
 
-				atmp->Add(htmp);
+				TOFTPChistosTmp->Add(htmp);
+
+				if (fCalculateMismatch) { 
+					// Mismatch histogram.
+					TH2F* htmp2 = new TH2F(Form("fMismatchTOFTPC_%i",iBinPt),
+						Form("%5.3f < p_{T} < %5.3f; t_{TOF} (ps); dE/dx (a.u.)", fTOFTPCPtAxis->GetBinLowEdge(iBinPt), fTOFTPCPtAxis->GetBinUpEdge(iBinPt)), 
+						NBinsTOFTPC[2], TOFmin, TOFmax, NBinsTOFTPC[3], TPCmin, TPCmax);
+					htmp2->SetDirectory(0);
+
+					TOFTPCmismatchTmp->Add(htmp2);
+	
+				}
 
 			}
 
-			fTOFTPChistos->Add(atmp);
+			fTOFTPChistos->Add(TOFTPChistosTmp);
+			if (fCalculateMismatch) {fTOFTPCmismatch->Add(TOFTPCmismatchTmp);}
 
 		}
 
 		fOutputList->Add(fTOFTPChistos);
+		if (fCalculateMismatch) {fOutputList->Add(fTOFTPCmismatch);}
 
 	}
 
 	// Load external TOF histograms if flag is set.
-	if (fCalculateTOFmismatch) {LoadExtMismatchHistos();}
+	if (fCalculateMismatch) {LoadExtMismatchHistos();}
 
 	PostData(1,fOutputList);
 
@@ -421,14 +511,60 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 		pidtrack->SetDebugLevel(fDebug);
 
 		Double_t rndhittime = -1.e21;
-		if (fCalculateTOFmismatch) rndhittime = GenerateRandomHit(pidtrack->Eta());
-
-		// Fill p_T spectrum.
-		fPtSpectrum->Fill(pidtrack->Pt());
+		if (fCalculateMismatch) rndhittime = GenerateRandomHit(pidtrack->Eta());
 
 		// Fill the trigger/associated tracks array.
 		if (fTrackCutsTrigger->IsSelectedData(pidtrack,rndhittime)) {fTriggerTracks->AddLast(pidtrack);}
-		else if (fTrackCutsAssociated->IsSelectedData(pidtrack,rndhittime)) {fAssociatedTracks->AddLast(pidtrack);} 
+		else if (fTrackCutsAssociated->IsSelectedData(pidtrack,rndhittime)) {
+			
+			fAssociatedTracks->AddLast(pidtrack);
+
+			// Fill p_T spectrum.
+			if (fPtSpectrumTOFbins) fPtSpectrumTOFbins->Fill(pidtrack->Pt());
+			if (fPtSpectrumTOFTPCbins) fPtSpectrumTOFTPCbins->Fill(pidtrack->Pt());
+
+			// Fill mismatch histograms with associateds.
+			if (fCalculateMismatch && (rndhittime > -1.e20)) {
+
+				Double_t apt = pidtrack->Pt();
+
+				if (fMakeTOFcorrelations) {
+
+					for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
+
+						TObjArray* atmp = (TObjArray*)fTOFmismatch->At(iSpecies);
+						Int_t ptbin = fTOFPtAxis->FindBin(apt);
+
+						// Only fill if histogram exists in fTOFmismatch.
+						if ( !(ptbin < 1) && !(ptbin > fTOFPtAxis->GetNbins()) ) {
+
+							TH1F* htmp = (TH1F*)atmp->At(ptbin - 1);
+							htmp->Fill(rndhittime - pidtrack->GetTOFsignalExpected(iSpecies));
+
+						}
+					}
+				}
+
+				if (fMakeTOFTPCcorrelations) { 
+
+					for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
+
+						TObjArray* atmp = (TObjArray*)fTOFTPCmismatch->At(iSpecies);
+						Int_t ptbin = fTOFTPCPtAxis->FindBin(apt);
+
+						// Only fill if histogram exists in fTOFTPCmismatch.
+						if ( !(ptbin < 1) && !(ptbin > fTOFTPCPtAxis->GetNbins()) ) {
+
+							TH2F* htmp = (TH2F*)atmp->At(ptbin - 1);
+							htmp->Fill(rndhittime - pidtrack->GetTOFsignalExpected(iSpecies), pidtrack->GetTPCsignalMinusExpected(iSpecies));
+
+						}
+					}
+				}
+
+			}
+
+		} 
 		else {delete pidtrack;}
 
 	}
@@ -445,7 +581,8 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 			if (DPhi > 3.*TMath::Pi()/2.) {DPhi -= 2.*TMath::Pi();}
 
 			Double_t DEta = triggertrack->Eta() - associatedtrack->Eta();
-			fCorrelations->Fill(DPhi,DEta,associatedtrack->Pt());
+			if (fCorrelationsTOFbins) fCorrelationsTOFbins->Fill(DPhi,DEta,associatedtrack->Pt());
+			if (fCorrelationsTOFTPCbins) fCorrelationsTOFTPCbins->Fill(DPhi,DEta,associatedtrack->Pt());
 
 			for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 
@@ -487,19 +624,27 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 		}
 	}
 
-	cout<<"Triggers: "<<fTriggerTracks->GetEntriesFast()<<" Associateds: "<<fAssociatedTracks->GetEntriesFast()<<endl;	
-
-	// Determine centrality of current event.
-	TString centralityestimator = fEventCuts->GetCentralityEstimator();
-	AliCentrality* currentcentrality = fCurrentAODEvent->GetCentrality();
-	Float_t percentile = currentcentrality->GetCentralityPercentile(centralityestimator.Data());
+	//cout<<"Triggers: "<<fTriggerTracks->GetEntriesFast()<<" Associateds: "<<fAssociatedTracks->GetEntriesFast()<<endl;	
 
 	// Determine vtxz of current event.
 	AliAODVertex* currentprimaryvertex = fCurrentAODEvent->GetPrimaryVertex();
 	Double_t vtxz = currentprimaryvertex->GetZ();
 
-	AliEventPool* poolin = fPoolMgr->GetEventPool(percentile, vtxz); 
-	if (!poolin) {AliFatal(Form("No pool found for centrality = %f, vtxz = %f", percentile, vtxz));}
+	// Determine centrality of current event (for PbPb).
+	AliEventPool* poolin = 0x0;
+	Float_t percentile = -1.;
+	if (fEventCuts->GetIsPbPb()) {
+		TString centralityestimator = fEventCuts->GetCentralityEstimator();
+		AliCentrality* currentcentrality = fCurrentAODEvent->GetCentrality();
+		percentile = currentcentrality->GetCentralityPercentile(centralityestimator.Data());
+
+		poolin = fPoolMgr->GetEventPool(percentile, vtxz); 
+		if (!poolin) {AliFatal(Form("No pool found for centrality = %f, vtxz = %f", percentile, vtxz));}
+	} else {
+		poolin = fPoolMgr->GetEventPool(0.5, vtxz);	// There are no multiplicity bins for pp yet.  
+		if (!poolin) {AliFatal(Form("No pool found for vtxz = %f", vtxz));}
+	}
+
 	// TObjArray* fGlobalTracksArray; 
 
 	// Give a print out of the pool manager's contents.
@@ -507,7 +652,7 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 
 	// Mix events if there are enough events in the pool.
 	if (poolin->GetCurrentNEvents() >= fMinNEventsForMixing) {
-		{cout << "Mixing Events." << endl;}
+		//{cout << "Mixing Events." << endl;}
 
 		// Loop over all events in the event pool.
 		for (Int_t iMixEvent = 0; iMixEvent < poolin->GetCurrentNEvents(); iMixEvent++) {
@@ -529,7 +674,8 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 						if (DPhi > 3.*TMath::Pi()/2.) {DPhi -= 2.*TMath::Pi();}
 
 						Double_t DEta = mixtrack->Eta() - associatedtrack->Eta();
-						fMixedEvents->Fill(DPhi,DEta,associatedtrack->Pt());
+						if (fMixedEventsTOFbins) fMixedEventsTOFbins->Fill(DPhi,DEta,associatedtrack->Pt());
+						if (fMixedEventsTOFTPCbins) fMixedEventsTOFTPCbins->Fill(DPhi,DEta,associatedtrack->Pt());
 
 		    		}
 		   		}
@@ -549,8 +695,8 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 						if (DPhi > 3.*TMath::Pi()/2.) {DPhi -= 2.*TMath::Pi();}
 
 						Double_t DEta = triggertrack->Eta() - mixtrack->Eta();
-						fMixedEvents->Fill(DPhi,DEta,mixtrack->Pt());
-
+						if (fMixedEventsTOFbins) fMixedEventsTOFbins->Fill(DPhi,DEta,mixtrack->Pt());
+						if (fMixedEventsTOFTPCbins) fMixedEventsTOFTPCbins->Fill(DPhi,DEta,mixtrack->Pt());
 		    		}
 		   		}
 
@@ -559,8 +705,15 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 	}	
 
 	// Update the event pool.
-	AliEventPool* poolout = fPoolMgr->GetEventPool(percentile, vtxz); // Get the buffer associated with the current centrality and z-vtx
-	if (!poolout) AliFatal(Form("No pool found for centrality = %f, vtx_z = %f", percentile, vtxz));
+	AliEventPool* poolout = 0x0;
+	if (fEventCuts->GetIsPbPb()) {
+		poolout = fPoolMgr->GetEventPool(percentile, vtxz); // Get the buffer associated with the current centrality and z-vtx
+		if (!poolout) AliFatal(Form("No pool found for centrality = %f, vtx_z = %f", percentile, vtxz));
+	} else {
+		poolout = fPoolMgr->GetEventPool(0.5, vtxz); // Get the buffer associated with the current centrality and z-vtx
+		if (!poolout) AliFatal(Form("No pool found for vtx_z = %f", vtxz));
+	}
+
 
 	// Q: is it a problem that the fAssociatedTracks array can be bigger than the number of tracks inside?
 	if (fMixTriggers) {
@@ -601,7 +754,7 @@ Bool_t AliAnalysisTaskDiHadronPID::LoadExtMismatchHistos() {
 	fin = TFile::Open("alien:///alice/cern.ch/user/m/mveldhoe/rootfiles/TOFmismatchHistos.root");
 	if (!fin) {
 		AliWarning("Couln't open TOFmismatchHistos, will not calculate mismatches...");
-		fCalculateTOFmismatch = kFALSE;
+		fCalculateMismatch = kFALSE;
 		return kFALSE;
 	}
 
@@ -609,13 +762,13 @@ Bool_t AliAnalysisTaskDiHadronPID::LoadExtMismatchHistos() {
 	TH1F* tmp1 = (TH1F*)fin->Get("hNewT0Fill");
 	if (!tmp1) {
 		AliWarning("Couln't find hNewT0Fill, will not calculate mismatches...");
-		fCalculateTOFmismatch = kFALSE;
+		fCalculateMismatch = kFALSE;
 		return kFALSE;	
 	}
 	TH2F* tmp2 = (TH2F*)fin->Get("hLvsEta");
 	if (!tmp2) {
 		AliWarning("Couln't find hLvsEta, will not calculate mismatches...");
-		fCalculateTOFmismatch = kFALSE;
+		fCalculateMismatch = kFALSE;
 		return kFALSE;	
 	}	
 
@@ -636,7 +789,7 @@ Bool_t AliAnalysisTaskDiHadronPID::LoadExtMismatchHistos() {
 	for (Int_t iEtaBin = 1; iEtaBin < (nbinseta + 1); iEtaBin++) {
 		TH1F* tmp = (TH1F*)fLvsEta->ProjectionY(Form("LvsEtaProjection_%i",iEtaBin),iEtaBin,iEtaBin);
 		tmp->SetDirectory(0);
-		fLvsEtaProjections->AddAt(tmp,iEtaBin);
+		fLvsEtaProjections->AddAt(tmp,iEtaBin - 1);
 	}
 
 	return kTRUE;
@@ -656,8 +809,8 @@ Double_t AliAnalysisTaskDiHadronPID::GenerateRandomHit(Double_t eta) {
 	Double_t rndhittime = -1.e21;
 
 	// TOF mismatch flag is not turned on.
-	if (!fCalculateTOFmismatch) {
-		AliFatal("Called GenerateRandomHit() method, but flag fCalculateTOFmismatch not set.");
+	if (!fCalculateMismatch) {
+		AliFatal("Called GenerateRandomHit() method, but flag fCalculateMismatch not set.");
 		return rndhittime;
 	}
 
@@ -670,8 +823,9 @@ Double_t AliAnalysisTaskDiHadronPID::GenerateRandomHit(Double_t eta) {
 	// Finding the bin of the eta.
 	TAxis* etaAxis = fLvsEta->GetXaxis();
 	Int_t etaBin = etaAxis->FindBin(eta);
-	//cout<<"Eta: "<<eta<<" bin: "<<etaBin<<endl;
-	const TH1F* lengthDistribution = (const TH1F*)fLvsEtaProjections->At(etaBin);
+	if (etaBin == 0 || (etaBin == etaAxis->GetNbins() + 1)) {return rndhittime;}
+
+	const TH1F* lengthDistribution = (const TH1F*)fLvsEtaProjections->At(etaBin - 1);
 
 	if (!lengthDistribution) {
 		AliFatal("length Distribution not found.");

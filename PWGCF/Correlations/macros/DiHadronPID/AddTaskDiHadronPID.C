@@ -79,7 +79,8 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
 		triggercuts->RequestQAHistos(AliAODTrackCutsDiHadronPID::kAllProton);
 		triggercuts->RequestQAHistos(AliAODTrackCutsDiHadronPID::kPosProton);
 		triggercuts->RequestQAHistos(AliAODTrackCutsDiHadronPID::kNegProton);
-	}	triggercuts->SetDebugLevel(DebugLevel);
+	}	
+	triggercuts->SetDebugLevel(DebugLevel);
 	DiHadronPIDTask->SetTrackCutsTrigger(triggercuts);
 
 	// Configure and add track cuts for associateds.
