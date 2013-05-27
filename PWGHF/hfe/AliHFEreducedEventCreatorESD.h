@@ -28,6 +28,7 @@ class AliPIDResponse;
 class AliHFEcuts;
 class AliHFEextraCuts;
 class AliHFEpidTPC;
+class AliTRDTriggerAnalysis; 
 class AliHFEsignalCuts;
 class AliHFEreducedEvent;
 
@@ -61,6 +62,7 @@ class AliHFEreducedEventCreatorESD : public AliAnalysisTaskSE{
     AliHFEextraCuts *fExtraCuts;      // HFE IP info
     AliHFEsignalCuts *fSignalCuts;    // Signal Cuts
     AliHFEpidTPC *fTPCpid;            // TPC PID
+    AliTRDTriggerAnalysis *fTRDTriggerAnalysis; //! TRD Trigger Analysis 
     Int_t fEventNumber;               // Event Number
     Int_t fNclustersTPC;              // Min Number of clusters in TPC
     Int_t fNclustersTPCPID;           // Min Number of clusters for TPC PID

@@ -54,6 +54,7 @@ class AliAODMCHeader;
 class AliVEvent;
 class AliVParticle;
 class AliTriggerAnalysis;
+class AliTRDTriggerAnalysis;
 class TH1I; 
 class TList;
 class TClonesArray;
@@ -237,6 +238,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
     AliHFEpid *fPID;                      // PID
     AliHFEpidQAmanager *fPIDqa;           // PID QA
+    AliTRDTriggerAnalysis *fTRDTriggerAnalysis; //! TRD Trigger Analysis 
     AliHFEpid *fPIDpreselect;             // PID oject for pre-selected tracks (without QA)
     AliHFEcuts *fCuts;                    // Cut Collection
     AliHFEcuts *fTaggedTrackCuts;         // Cut Collection for V0 tagged tracks
