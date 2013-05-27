@@ -296,7 +296,7 @@ TH2F* AliHistToolsDiHadronPID::Function2DToHist2D(const TF2* function, const TH2
 }
 
 // -----------------------------------------------------------------------
-TObjArray* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name, 
+TCanvas* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name, 
 	const char* title, const TH1F* h1, const TH1F* h2, const Int_t markerstyle, const Bool_t logy) {
 
 	// - Creates a window comparing two histograms h1, and h2.
@@ -385,6 +385,7 @@ TObjArray* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name,
 	p1->cd();
 	legend->Draw("same");
 
+/*
 	// returning the created objects.
 	TObjArray* returnobjects = new TObjArray(6);
 	returnobjects->AddLast(c);
@@ -393,8 +394,9 @@ TObjArray* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name,
 	returnobjects->AddLast(spectra[0]);
 	returnobjects->AddLast(spectra[1]);
 	returnobjects->AddLast(division);
+*/
 
-	return returnobjects;
+	return c;
 
 }
 

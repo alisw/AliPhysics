@@ -616,7 +616,7 @@ TObjArray* AliAODTrackCutsDiHadronPID::GetDataTPCTOFProjection(Int_t charge, Int
 	for (Int_t iPtBin = 1; iPtBin < (GetNPtBinsPID() + 1); iPtBin++) {
 
 		aout->AddLast((TH2F*)GetHistDataTPCTOFProjection(charge, species, iPtBin));
-		cout<<"aout entries: "<<aout->GetEntriesFast()<<endl;
+		//cout<<"aout entries: "<<aout->GetEntriesFast()<<endl;
 	}
 
 	return aout;
@@ -1455,7 +1455,7 @@ TH3F* AliAODTrackCutsDiHadronPID::InitializePIDHisto(const char* name, Int_t his
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	TH3F* hout = new TH3F(Form("%s%s%s%s",name,fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),fPtClassName[ptclass].Data()),
-		Form("PID %s (Exp: %s);p_{T} (GeV/c);#Delta t (ms);dE/dx (a.u.)",fHistoName[histoclass].Data(),fParticleName[expspecies].Data()),
+		Form("PID %s (Exp: %s);p_{T} (GeV/c);#Delta t (ps);dE/dx (a.u.)",fHistoName[histoclass].Data(),fParticleName[expspecies].Data()),
 		fNPtBinsPID[ptclass],fPtBoundaryPID[ptclass],fPtBoundaryPID[ptclass+1],
 		fTOFbins[ptclass][expspecies],fTOFLowerBound[ptclass][expspecies],fTOFUpperBound[ptclass][expspecies],
 		fTPCbins[ptclass][expspecies],fTPCLowerBound[ptclass][expspecies],fTPCUpperBound[ptclass][expspecies]);
@@ -1472,7 +1472,7 @@ TH2F* AliAODTrackCutsDiHadronPID::InitializeTOFMismatchHisto(const char* name, I
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	TH2F* hout = new TH2F(Form("%s%s%s%s",name,fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),fPtClassName[ptclass].Data()),
-		Form("TOF Mismatch %s (Exp: %s);p_{T} (GeV/c);#Delta t (ms)",fHistoName[histoclass].Data(),fParticleName[expspecies].Data()),
+		Form("TOF Mismatch %s (Exp: %s);p_{T} (GeV/c);#Delta t (ps)",fHistoName[histoclass].Data(),fParticleName[expspecies].Data()),
 		fNPtBinsPID[ptclass],fPtBoundaryPID[ptclass],fPtBoundaryPID[ptclass+1],
 		fTOFbins[ptclass][expspecies],fTOFLowerBound[ptclass][expspecies],fTOFUpperBound[ptclass][expspecies]);
 

@@ -6,8 +6,10 @@
 
 class TF2;
 class TH1F;
+class TH2;
 class TH2F;
 class TH3F;
+class TCanvas;
 
 class AliHistToolsDiHadronPID {
 
@@ -33,7 +35,7 @@ public:
 	static TH2F* Function2DToHist2D(const TF2* function, const TH2* grid);
 
 	// Histogram Visualization.
-	static TObjArray* CreateSpectraComparison(const char* name, const char* title, const TH1F* h1, const TH1F* h2, const Int_t markerstyle = 8, const Bool_t logy = kTRUE);
+	static TCanvas* CreateSpectraComparison(const char* name, const char* title, const TH1F* h1, const TH1F* h2, const Int_t markerstyle = 8, const Bool_t logy = kTRUE);
 
 private:
 	static Double_t* CreateAxis(const Int_t nbins, const Double_t min, const Double_t max);
