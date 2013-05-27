@@ -53,6 +53,8 @@ class AliAnalysisTaskFlowTPCTOFQCSP : public AliAnalysisTaskSE {
     void                                 SetVz(Int_t ver) {fVz = ver;};
     void                                 SetQAPIDSparse(Bool_t qapidsparse) {fQAPIDSparse = qapidsparse;};
     void                                 SetPhiCut(Bool_t phicut){fPhiCut = phicut;};
+    void                                 SetOpeningAngleflag(Bool_t opang){fOP_angle = opang;};
+    void                                 SetOpeningAngleCut(Double_t opanglecut) {fOpeningAngleCut = opanglecut;};
     template <typename T> void           PlotVZeroMultiplcities(const T* event) const;
     template <typename T> void           SetNullCuts(T* aod);
     void                                 PrepareFlowEvent(Int_t iMulti, AliFlowEvent *FlowEv) const;
@@ -129,7 +131,11 @@ class AliAnalysisTaskFlowTPCTOFQCSP : public AliAnalysisTaskSE {
     Int_t                 fTPCS; //tpc signal cluster
     Int_t                 fVz; //vertex range
     Bool_t 	   	   	      fPhiCut;       //Phi cut to simulate emcal acc
-
+    Double_t 		      fOpeningAngleCut;	//openingAngle cut value
+    Bool_t                fOP_angle; //to shitch on and off the op_angle cut
+    TH1F			     *fOpeningAngleLS;	//opening angle for LS pairs
+    TH1F			     *fOpeningAngleULS;	//opening angle for ULS pairs
+    
     AliAnalysisTaskFlowTPCTOFQCSP(const AliAnalysisTaskFlowTPCTOFQCSP&); // not implemented
     AliAnalysisTaskFlowTPCTOFQCSP& operator=(const AliAnalysisTaskFlowTPCTOFQCSP&); // not implemented
 

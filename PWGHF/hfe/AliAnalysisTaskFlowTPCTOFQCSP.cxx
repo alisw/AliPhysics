@@ -164,6 +164,10 @@ ClassImp(AliAnalysisTaskFlowTPCTOFQCSP)
 ,fTPCS(0)
 ,fVz(0)
 ,fPhiCut(0)
+,fOpeningAngleCut(0.1)
+,fOP_angle(0)
+,fOpeningAngleLS(0)
+,fOpeningAngleULS(0)
 {
   //Named constructor
 
@@ -239,6 +243,10 @@ AliAnalysisTaskFlowTPCTOFQCSP::AliAnalysisTaskFlowTPCTOFQCSP()
 ,fTPCS(0)
 ,fVz(0)
 ,fPhiCut(0)
+,fOpeningAngleCut(0.1)
+,fOP_angle(0)
+,fOpeningAngleLS(0)
+,fOpeningAngleULS(0)
 {
   //Default constructor
 //  fPID = new AliHFEpid("hfePid");
@@ -571,6 +579,7 @@ void AliAnalysisTaskFlowTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const Al
     if(jTracks == itrack) continue;
     Double_t ptAsso=-999., nsigma=-999.0;
     Double_t mass=-999., width = -999;
+      Double_t openingAngle = -999.;
     Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
 
   
@@ -601,6 +610,16 @@ void AliAnalysisTaskFlowTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const Al
     if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
     recg.GetMass(mass,width);
 
+      if(fOP_angle){
+    openingAngle = ge1.GetAngle(ge2);
+    if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
+    if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
+      
+    if(openingAngle > fOpeningAngleCut) continue;
+
+      }
+      
+      
     if(fFlagLS) fInvmassLS1->Fill(mass);
     if(fFlagULS) fInvmassULS1->Fill(mass);
            
@@ -763,6 +782,14 @@ void AliAnalysisTaskFlowTPCTOFQCSP::UserCreateOutputObjects()
 
   fMultvsCentr = new TH2F("fMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 100, 0., 100, 100, 0, 3000);
   fOutputList->Add(fMultvsCentr);
+    
+  fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
+  fOutputList->Add(fOpeningAngleLS);
+    
+  fOpeningAngleULS = new TH1F("fOpeningAngleULS","Opening angle for ULS pairs",100,0,1);
+  fOutputList->Add(fOpeningAngleULS);
+  
+    
     
 //----------------------------------------------------------------------------
     EPVzA = new TH1D("EPVzA", "EPVzA", 80, -2, 2);

@@ -17,6 +17,8 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
                                               Float_t centrMin ,
                                               Float_t centrMax ,
                                               Double_t InvmassCut,
+                                              Bool_t op_ang = kTRUE,
+                                              Double_t op_angle_cut,
                                               Int_t Trigger,
                                               Double_t minTPCnsigma,
                                               Double_t maxTPCnsigma,
@@ -75,6 +77,8 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
   taskHFE->SetIDCuts(minTPCnsigma, maxTPCnsigma, minTOFnSigma, maxTOFnSigma);
   taskHFE->SetQAPIDSparse(QaPidSparse);
   taskHFE->SetPhiCut(PhiCut);
+  taskHFE->SetOpeningAngleflag(op_ang);
+  taskHFE->SetOpeningAngleCut(op_angle_cut);
     
     
 //set RP cuts for flow package analysis
