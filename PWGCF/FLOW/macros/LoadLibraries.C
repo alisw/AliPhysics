@@ -22,14 +22,15 @@ void LoadLibraries()
   gSystem->Load("libRAWDatarec");
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
-  gSystem->Load("libSTEER");
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libSTEER");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libANALYSIScalib");
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGmuon");
   gSystem->Load("libTPCbase");
   gSystem->Load("libTOFbase");
+  gSystem->Load("libTOFsim");
   gSystem->Load("libTOFrec");
   gSystem->Load("libTRDbase");
   gSystem->Load("libVZERObase");
