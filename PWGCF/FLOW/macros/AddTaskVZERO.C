@@ -1,4 +1,5 @@
-AliAnalysisTask *AddTaskVZERO(Bool_t ismc=kFALSE,Bool_t kV2=kTRUE,Bool_t kV3=kTRUE,Bool_t qa=kTRUE,Bool_t modulationdEdx=kFALSE,Bool_t globalTrack=kFALSE){
+AliAnalysisTask *AddTaskVZERO(Bool_t isafter2011=kFALSE,Bool_t ismc=kFALSE,Bool_t kV2=kTRUE,Bool_t kV3=kTRUE,Bool_t qa=kFALSE,Bool_t 
+modulationdEdx=kFALSE,Bool_t globalTrack=kFALSE){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -21,9 +22,13 @@ AliAnalysisTask *AddTaskVZERO(Bool_t ismc=kFALSE,Bool_t kV2=kTRUE,Bool_t kV3=kTR
   task->SetV3(kV3);
   if(ismc) task->SetMC();
   if(qa) task->SetQA();
+  if(isafter2011) task->SetAfter2011();
 
   task->SetFillDCAinfo(globalTrack); // 0 = TPC only track, 1 = global tracks
   task->SetModulationDEDx(modulationdEdx);
+  task->SetEtaCut(0.8);
+  task->SetMinDistV0(0.);
+  task->SetMaxDistV0(100.);
 
   mgr->AddTask(task);
 
