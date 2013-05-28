@@ -16,6 +16,7 @@
 #include "AliESDInputHandler.h"
 #include "AliESDtrackCuts.h"
 #include "AliCentrality.h"
+#include "AliLog.h"
 
 #include "AliAnalysisTaskEfficiencyBF.h"
 
@@ -316,12 +317,12 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
   
   AliMCEvent* mcEvent = MCEvent();
   if (!mcEvent) {
-    Printf("ERROR: Could not retrieve MC event");
+    AliError("ERROR: Could not retrieve MC event");
     return;
   }
   AliStack* stack = mcEvent->Stack();
   if (!stack) {
-    Printf("ERROR: Could not retrieve MC stack");
+    AliError("ERROR: Could not retrieve MC stack");
     return;
   }
 
@@ -370,7 +371,7 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
 		  for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {
 		    AliMCParticle *mcTrack = (AliMCParticle*) mcEvent->GetTrack(iTracks);
 		    if (!mcTrack) {
-		      Printf("ERROR: Could not receive track %d (mc loop)", iTracks);
+		      AliError(Form("ERROR: Could not receive track %d (mc loop)", iTracks));
 		      continue;
 		    }
 		    

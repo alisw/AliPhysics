@@ -30,6 +30,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliEventplane.h"
 #include "AliTHn.h"    
+#include "AliLog.h"
 
 #include "AliEventPoolManager.h"           
 
@@ -929,8 +930,9 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     }//ESD
     else if(gAnalysisLevel == "MC"){
       Double_t gImpactParameter = 0.;
-      if(dynamic_cast<AliMCEvent*>(event)){
-	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());      
+      AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
+      if(gMCEvent){
+	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());      
 	if(headerH){
 	  gImpactParameter = headerH->ImpactParameter();
 	  gCentrality      = gImpactParameter;
@@ -1207,80 +1209,82 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
     
     AliMCEvent* mcEvent = MCEvent();
     if (!mcEvent) {
-      Printf("ERROR: Could not retrieve MC event");
+      AliError("ERROR: Could not retrieve MC event");
     }
-    
-    for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {
-      AliAODMCParticle *aodTrack = (AliAODMCParticle*) mcEvent->GetTrack(iTracks); 
-      if (!aodTrack) {
-	Printf("ERROR: Could not receive track %d (mc loop)", iTracks);
-	continue;
-      }
+    else{
       
-      if(!aodTrack->IsPhysicalPrimary()) continue;   
-
-      vCharge = aodTrack->Charge();
-      vEta    = aodTrack->Eta();
-      vY      = aodTrack->Y();
-      vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
-      vPt     = aodTrack->Pt();
-      
-      // Kinematics cuts from ESD track cuts
-      if( vPt < fPtMin || vPt > fPtMax)      continue;
-      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
-
-      // Remove neutral tracks
-      if( vCharge == 0 ) continue;
-
-      //Exclude resonances
-      if(fExcludeResonancesInMC) {
-	
-      	Bool_t kExcludeParticle = kFALSE;
-      	Int_t gMotherIndex = aodTrack->GetMother();
-      	if(gMotherIndex != -1) {
-	  AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
-	  if(motherTrack) {
-	    Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
-	    //if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
-	    //if(pdgCodeOfMother == 113) {
-	    if(pdgCodeOfMother == 113  // rho0
-	       || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
-	       // || pdgCodeOfMother == 221  // eta
-	       // || pdgCodeOfMother == 331  // eta'
-	       // || pdgCodeOfMother == 223  // omega
-	       // || pdgCodeOfMother == 333  // phi
-	       || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
-	       // || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
-	       // || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
-	       || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
-	       || pdgCodeOfMother == 111  // pi0 Dalitz
-	       ) {
-	      kExcludeParticle = kTRUE;
-	    }
-	  }
+      for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {
+	AliAODMCParticle *aodTrack = (AliAODMCParticle*) mcEvent->GetTrack(iTracks); 
+	if (!aodTrack) {
+	  AliError(Form("ERROR: Could not receive track %d (mc loop)", iTracks));
+	  continue;
 	}
 	
-      	//Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
-      	if(kExcludeParticle) continue;
-      }
-
-      // fill QA histograms
-      fHistPt->Fill(vPt,gCentrality);
-      fHistEta->Fill(vEta,gCentrality);
-      fHistRapidity->Fill(vY,gCentrality);
-      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
-      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
-      fHistPhi->Fill(vPhi,gCentrality);
-      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
-      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
-      
-      //=======================================correction
-      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
-      
-      // add the track to the TObjArray
-      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
-    }//aodTracks
+	if(!aodTrack->IsPhysicalPrimary()) continue;   
+	
+	vCharge = aodTrack->Charge();
+	vEta    = aodTrack->Eta();
+	vY      = aodTrack->Y();
+	vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
+	vPt     = aodTrack->Pt();
+	
+	// Kinematics cuts from ESD track cuts
+	if( vPt < fPtMin || vPt > fPtMax)      continue;
+	if( vEta < fEtaMin || vEta > fEtaMax)  continue;
+	
+	// Remove neutral tracks
+	if( vCharge == 0 ) continue;
+	
+	//Exclude resonances
+	if(fExcludeResonancesInMC) {
+	  
+	  Bool_t kExcludeParticle = kFALSE;
+	  Int_t gMotherIndex = aodTrack->GetMother();
+	  if(gMotherIndex != -1) {
+	    AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+	    if(motherTrack) {
+	      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
+	      //if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
+	      //if(pdgCodeOfMother == 113) {
+	      if(pdgCodeOfMother == 113  // rho0
+		 || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
+		 // || pdgCodeOfMother == 221  // eta
+		 // || pdgCodeOfMother == 331  // eta'
+		 // || pdgCodeOfMother == 223  // omega
+		 // || pdgCodeOfMother == 333  // phi
+		 || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
+		 // || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
+		 // || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
+		 || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
+		 || pdgCodeOfMother == 111  // pi0 Dalitz
+		 ) {
+		kExcludeParticle = kTRUE;
+	      }
+	    }
+	  }
+	  
+	  //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
+	  if(kExcludeParticle) continue;
+	}
+	
+	// fill QA histograms
+	fHistPt->Fill(vPt,gCentrality);
+	fHistEta->Fill(vEta,gCentrality);
+	fHistRapidity->Fill(vY,gCentrality);
+	if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+	else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+	fHistPhi->Fill(vPhi,gCentrality);
+	if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+	else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+	
+	//=======================================correction
+	Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
+	
+	// add the track to the TObjArray
+	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+      }//aodTracks
+    }//MC event
   }//MCAOD
   //==============================================================================================================
 

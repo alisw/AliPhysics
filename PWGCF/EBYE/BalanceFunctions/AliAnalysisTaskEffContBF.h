@@ -23,7 +23,6 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(), 
     fAOD(0), 
-    fAODtrackCutBit(128), 
     fArrayMC(0),  
     fQAList(0), 
     fOutputList(0),
@@ -60,6 +59,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fVxMax(3.0), 
     fVyMax(3.0), 
     fVzMax(10.), 
+    fAODTrackCutBit(128),
     fMinNumberOfTPCClusters(80), 
     fMaxChi2PerTPCCluster(4.0),
     fMaxDCAxy(3.0), 
@@ -147,7 +147,6 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
 
  private:
   AliAODEvent* fAOD; //! AOD object  
-  Int_t fAODtrackCutBit;  
   TClonesArray *fArrayMC; //! array of MC particles  
   TList       *fQAList; //! QA list
   TList       *fOutputList; //! Output list

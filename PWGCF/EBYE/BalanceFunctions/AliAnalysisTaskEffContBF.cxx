@@ -33,7 +33,6 @@ ClassImp(AliAnalysisTaskEffContBF)
 AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name) 
   : AliAnalysisTaskSE(name), 
     fAOD(0),
-    fAODtrackCutBit(128),
     fArrayMC(0), 
     fQAList(0), 
     fOutputList(0), 
@@ -63,12 +62,14 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fHistSurvivedPhiEtaMinusMinus(0),
     fHistGeneratedPhiEtaPlusMinus(0),
     fHistSurvivedPhiEtaPlusMinus(0),
+    fAnalysisMode(0), 
     fCentralityEstimator("V0M"), 
     fCentralityPercentileMin(0.0), 
     fCentralityPercentileMax(5.0), 
     fVxMax(3.0), 
     fVyMax(3.0),
     fVzMax(10.), 
+    fAODTrackCutBit(128),
     fMinNumberOfTPCClusters(80),
     fMaxChi2PerTPCCluster(4.0),
     fMaxDCAxy(3.0),
@@ -299,7 +300,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
   
   AliMCEvent* mcEvent = MCEvent();
   if (!mcEvent) {
-    Printf("ERROR: Could not retrieve MC event");
+    AliError("ERROR: Could not retrieve MC event");
     return;
   }
   
@@ -361,7 +362,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		    AliAODTrack* track = fAOD->GetTrack(jTracks);
 		    if(!track) continue;
 		    
-		    if (!track->TestFilterBit(fAODtrackCutBit))
+		    if (!track->TestFilterBit(fAODTrackCutBit))
 		      continue;
 		    
 		    //acceptance
@@ -395,7 +396,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {
 		    AliAODMCParticle *mcTrack = (AliAODMCParticle*) mcEvent->GetTrack(iTracks); 
 		    if (!mcTrack) {
-		      Printf("ERROR: Could not receive track %d (mc loop)", iTracks);
+		      AliError(Form("ERROR: Could not receive track %d (mc loop)", iTracks));
 		      continue;
 		    }
 		    
@@ -456,7 +457,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		    AliAODTrack *trackAOD = static_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));    
 		    if(!trackAOD) continue;
 		    
-		    if (!trackAOD->TestFilterBit(fAODtrackCutBit)) 
+		    if (!trackAOD->TestFilterBit(fAODTrackCutBit)) 
 		      continue; 
 		    
 		    Int_t label = TMath::Abs(trackAOD->GetLabel()); 

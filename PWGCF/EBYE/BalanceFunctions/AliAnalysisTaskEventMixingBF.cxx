@@ -364,12 +364,12 @@ void  AliAnalysisTaskEventMixingBF::FinishTaskOutput(){
   //Printf("END EventMixingBF");
 
   if (!fBalance) {
-    Printf("ERROR: fBalance not available");
+    AliError("ERROR: fBalance not available");
     return;
   }  
   if(fRunShuffling) {
     if (!fShuffledBalance) {
-      Printf("ERROR: fShuffledBalance not available");
+      AliError("ERROR: fShuffledBalance not available");
       return;
     }
   }
@@ -422,12 +422,12 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
     if(gAnalysisLevel == "AOD") {
       AliAODEvent* aodEventMain = dynamic_cast<AliAODEvent*>(fMainEvent); 
       if(!aodEventMain) {
-  	Printf("ERROR: aodEventMain not available");
+  	AliError("ERROR: aodEventMain not available");
   	return;
       }
       AliAODEvent *aodEventMix  = dynamic_cast<AliAODEvent *>(fMixEvent); 
      if(!aodEventMix) {
-  	Printf("ERROR: aodEventMix not available");
+  	AliError("ERROR: aodEventMix not available");
   	return;
       }
 
@@ -510,7 +510,7 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   		    for (Int_t iTracksMain = 0; iTracksMain < aodEventMain->GetNumberOfTracks(); iTracksMain++) {
   		      AliAODTrack* aodTrackMain = dynamic_cast<AliAODTrack *>(aodEventMain->GetTrack(iTracksMain));
   		      if (!aodTrackMain) {
-  			Printf("ERROR: Could not receive track %d", iTracksMain);
+  			AliError(Form("ERROR: Could not receive track %d", iTracksMain));
   			continue;
   		      }
 		      
@@ -577,7 +577,7 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
 
   			AliAODTrack* aodTrackMix = dynamic_cast<AliAODTrack *>(aodEventMix->GetTrack(iTracksMix));
   			if (!aodTrackMix) {
-  			  Printf("ERROR: Could not receive track %d", iTracksMix);
+  			  AliError(Form("ERROR: Could not receive track %d", iTracksMix));
   			  continue;
   			}
 
