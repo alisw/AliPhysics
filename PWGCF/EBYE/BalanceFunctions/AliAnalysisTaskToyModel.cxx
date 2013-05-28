@@ -1134,7 +1134,7 @@ void  AliAnalysisTaskToyModel::FinishOutput() {
   //fList->Write("listQA",TObject::kSingleKey);
 
   if (!fBalance) {
-    Printf("ERROR: fBalance not available");
+    AliError("ERROR: fBalance not available");
     return;
   }  
   fListBF->SetName("listBF");
@@ -1144,7 +1144,7 @@ void  AliAnalysisTaskToyModel::FinishOutput() {
 
   if(fRunShuffling) {
     if (!fShuffledBalance) {
-      Printf("ERROR: fShuffledBalance not available");
+      AliError("ERROR: fShuffledBalance not available");
       return;
     }
     fListBFS->SetName("listBFShuffled");
@@ -1155,7 +1155,7 @@ void  AliAnalysisTaskToyModel::FinishOutput() {
 
   if(fRunMixing) {
     if (!fMixedBalance) {
-      Printf("ERROR: fMixedBalance not available");
+      AliError("ERROR: fMixedBalance not available");
       return;
     }
     fListBFM->SetName("listBFMixed");

@@ -877,7 +877,7 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedV0s(AliVEvent *event){
       AliAODTrack *pTrack=(AliAODTrack *)v0->GetDaughter(0); //0->Positive Daughter
       AliAODTrack *nTrack=(AliAODTrack *)v0->GetDaughter(1); //1->Negative Daughter
       if (!pTrack || !nTrack) {
-	Printf("ERROR: Could not retreive one of the daughter track");
+	AliError("ERROR: Could not retreive one of the daughter track");
 	continue;
       }
 

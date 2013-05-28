@@ -24,6 +24,7 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliESDtrackCuts.h"
+#include "AliLog.h"
 
 #include "TH2D.h"                  
 #include "AliPID.h"                
@@ -424,7 +425,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   if(gAnalysisLevel == "ESD") {
     AliESDEvent* gESD = dynamic_cast<AliESDEvent*>(InputEvent()); // from TaskSE
     if (!gESD) {
-      Printf("ERROR: gESD not available");
+      AliError("ERROR: gESD not available");
       return;
     }
 
@@ -474,7 +475,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		  for (Int_t iTracks = 0; iTracks < gESD->GetNumberOfTracks(); iTracks++) {
 		    AliESDtrack* track = dynamic_cast<AliESDtrack *>(gESD->GetTrack(iTracks));
 		    if (!track) {
-		      Printf("ERROR: Could not receive track %d", iTracks);
+		      AliError(Form("ERROR: Could not receive track %d", iTracks));
 		      continue;
 		    }	
 		    
@@ -662,7 +663,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   else if(gAnalysisLevel == "AOD") {
     AliAODEvent* gAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
     if(!gAOD) {
-      Printf("ERROR: gAOD not available");
+      AliError("ERROR: gAOD not available");
       return;
     }
 
@@ -745,7 +746,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		  for (Int_t iTracks = 0; iTracks < gAOD->GetNumberOfTracks(); iTracks++) {
 		    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(gAOD->GetTrack(iTracks));
 		    if (!aodTrack) {
-		      Printf("ERROR: Could not receive track %d", iTracks);
+		      AliError(Form("ERROR: Could not receive track %d", iTracks));
 		      continue;
 		    }
 		    Int_t gID = aodTrack->GetID();
@@ -759,7 +760,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       		  for (Int_t iTracks = 0; iTracks < gAOD->GetNumberOfTracks(); iTracks++) {
       		    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(gAOD->GetTrack(iTracks));
       		    if (!aodTrack) {
-      		      Printf("ERROR: Could not receive track %d", iTracks);
+      		      AliError(Form("ERROR: Could not receive track %d", iTracks));
       		      continue;
       		    }
 		    
@@ -972,13 +973,13 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   if(gAnalysisLevel == "MCESD") {
     AliMCEvent*  mcEvent = MCEvent(); 
     if (!mcEvent) {
-      Printf("ERROR: mcEvent not available");
+      AliError("ERROR: mcEvent not available");
       return;
     }
 
     AliESDEvent* gESD = dynamic_cast<AliESDEvent*>(InputEvent()); // from TaskSE
     if (!gESD) {
-      Printf("ERROR: gESD not available");
+      AliError("ERROR: gESD not available");
       return;
     }
 
@@ -1027,7 +1028,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		  for (Int_t iTracks = 0; iTracks < gESD->GetNumberOfTracks(); iTracks++) {
 		    AliESDtrack* track = dynamic_cast<AliESDtrack *>(gESD->GetTrack(iTracks));
 		    if (!track) {
-		      Printf("ERROR: Could not receive track %d", iTracks);
+		      AliError(Form("ERROR: Could not receive track %d", iTracks));
 		      continue;
 		    }	
 		    
@@ -1123,7 +1124,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   else if(gAnalysisLevel == "MC") {
     AliMCEvent*  mcEvent = MCEvent(); 
     if (!mcEvent) {
-      Printf("ERROR: mcEvent not available");
+      AliError("ERROR: mcEvent not available");
       return;
     }
 
@@ -1171,11 +1172,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	  fHistVy->Fill(gVertexArray.At(1));
 	  fHistVz->Fill(gVertexArray.At(2));
 	  
-	  Printf("There are %d tracks in this event", mcEvent->GetNumberOfPrimaries());
+	  AliInfo(Form("There are %d tracks in this event", mcEvent->GetNumberOfPrimaries()));
 	  for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfPrimaries(); iTracks++) {
 	    AliMCParticle* track = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iTracks));
 	    if (!track) {
-	      Printf("ERROR: Could not receive particle %d", iTracks);
+	      AliError(Form("ERROR: Could not receive particle %d", iTracks));
 	      continue;
 	    }
 	    
@@ -1335,12 +1336,12 @@ void  AliAnalysisTaskBF::FinishTaskOutput(){
   //Printf("END BF");
 
   if (!fBalance) {
-    Printf("ERROR: fBalance not available");
+    AliError("ERROR: fBalance not available");
     return;
   }  
   if(fRunShuffling) {
     if (!fShuffledBalance) {
-      Printf("ERROR: fShuffledBalance not available");
+      AliError("ERROR: fShuffledBalance not available");
       return;
     }
   }
