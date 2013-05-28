@@ -306,6 +306,12 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
   f3dHistPrimAnalysisPtVsYCMSVsMultV0AAntiLambda(0),
   f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short(0),
 
+//Added for cross-check
+  f3dHistPrimRawPtVsYCMSVsMultV0AKPlus(0),
+  f3dHistPrimRawPtVsYCMSVsMultV0AKMinus(0),
+  f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus(0),
+  f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus(0),
+
 //ZNA
   f3dHistPrimAnalysisPtVsYVsMultZNALambda(0),
   f3dHistPrimAnalysisPtVsYVsMultZNAAntiLambda(0),
@@ -659,6 +665,12 @@ f3dHistPrimAnalysisPtVsYVsMultV0AK0Short(0),
 f3dHistPrimAnalysisPtVsYCMSVsMultV0ALambda(0),
 f3dHistPrimAnalysisPtVsYCMSVsMultV0AAntiLambda(0),
 f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short(0),
+
+//Added for cross-check
+  f3dHistPrimRawPtVsYCMSVsMultV0AKPlus(0),
+  f3dHistPrimRawPtVsYCMSVsMultV0AKMinus(0),
+  f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus(0),
+  f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus(0),
 
 //ZNA
 f3dHistPrimAnalysisPtVsYVsMultZNALambda(0),
@@ -1365,6 +1377,16 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
     f3dHistPrimRawPtVsYCMSVsMultV0AK0Short = new TH3F( "f3dHistPrimRawPtVsYCMSVsMultV0AK0Short", "Pt_{K0S} Vs Y_{K0S} Vs Multiplicity; Pt_{K0S} (GeV/c); Y_{K0S} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
     if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimRawPtVsYCMSVsMultV0AK0Short);
   }
+
+  //Cross-check at Raw Level 
+  if(! f3dHistPrimRawPtVsYCMSVsMultV0AKPlus) {
+    f3dHistPrimRawPtVsYCMSVsMultV0AKPlus = new TH3F( "f3dHistPrimRawPtVsYCMSVsMultV0AKPlus", "Pt_{K+} Vs Y_{K+} Vs Multiplicity; Pt_{K+} (GeV/c); Y_{K+} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimRawPtVsYCMSVsMultV0AKPlus);
+  }
+  if(! f3dHistPrimRawPtVsYCMSVsMultV0AKMinus) {
+    f3dHistPrimRawPtVsYCMSVsMultV0AKMinus = new TH3F( "f3dHistPrimRawPtVsYCMSVsMultV0AKMinus", "Pt_{K-} Vs Y_{K-} Vs Multiplicity; Pt_{K-} (GeV/c); Y_{K-} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimRawPtVsYCMSVsMultV0AKMinus);
+  }
   
   //--- 3D Histo (Pt, Y, Multiplicity), ZNA Version
   
@@ -1858,6 +1880,18 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
     f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short = new TH3F( "f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short", "Pt_{K0S} Vs Y_{K0S} Vs Multiplicity; Pt_{K0S} (GeV/c); Y_{K0S} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
     if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short);
   }
+
+	//Cross-check at Analysis Level
+  if(! f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus) {
+    f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus = new TH3F( "f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus", "Pt_{K+} Vs Y_{K+} Vs Multiplicity; Pt_{K+} (GeV/c); Y_{K+} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus);
+  }
+	//Cross-check at Analysis Level
+  if(! f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus) {
+    f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus = new TH3F( "f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus", "Pt_{K-} Vs Y_{K-} Vs Multiplicity; Pt_{K-} (GeV/c); Y_{K-} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus);
+  }
+
   
   //ZNA
   
@@ -2601,7 +2635,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       lPdgcodeCurrentPart = p0->GetPdgCode();
 
       // Keep only K0s, Lambda and AntiLambda:
-      if ( (lPdgcodeCurrentPart != 310 ) && (lPdgcodeCurrentPart != 3122 ) && (lPdgcodeCurrentPart != -3122 ) ) continue;
+      if ( (lPdgcodeCurrentPart != 310 ) && (lPdgcodeCurrentPart != 3122 ) && (lPdgcodeCurrentPart != -3122 ) && (TMath::Abs(lPdgcodeCurrentPart) != 321 ) ) continue;
 	
       lRapCurrentPart   = MyRapidity(p0->Energy(),p0->Pz());
       lPtCurrentPart    = p0->Pt();
@@ -2661,6 +2695,16 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
         f3dHistPrimAnalysisPtVsYVsMultSPDK0Short->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicitySPD);
         f3dHistPrimAnalysisPtVsYCMSVsMultSPDK0Short->Fill(lPtCurrentPart, lRapCurrentPart+fpArapidityShift, lMultiplicitySPD);
       }
+      //Cross-check with Charged Kaons... 
+      if( lPdgcodeCurrentPart == 321 ){
+        //V0A
+        f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus->Fill(lPtCurrentPart, lRapCurrentPart+fpArapidityShift, lMultiplicityV0A);
+      }
+      if( lPdgcodeCurrentPart == -321 ){
+        //V0A
+        f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus->Fill(lPtCurrentPart, lRapCurrentPart+fpArapidityShift, lMultiplicityV0A);
+      }
+
    }
 
 //----- Loop on primary Xi, Omega --------------------------------------------------------------
