@@ -609,7 +609,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
       
       switch (fRejectResonanceDaughters)
       {
-	case 1: resonanceMass = 0.9; massDaughter1 = 0.1396; massDaughter2 = 0.9383; break; // method test
+	case 1: resonanceMass = 1.2; massDaughter1 = 0.1396; massDaughter2 = 0.9383; break; // method test
 	case 2: resonanceMass = 0.4976; massDaughter1 = 0.1396; massDaughter2 = massDaughter1; break; // k0
 	case 3: resonanceMass = 1.115; massDaughter1 = 0.1396; massDaughter2 = 0.9383; break; // lambda
 	default: AliFatal(Form("Invalid setting %d", fRejectResonanceDaughters));
