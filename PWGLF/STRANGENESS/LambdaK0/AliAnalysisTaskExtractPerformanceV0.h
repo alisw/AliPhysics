@@ -315,6 +315,12 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0AAntiLambda; //! AntiLambda
   TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short;    //! K0Short
 
+//Cross-checking histograms: Charged Kaons (to compare with neutral ones at generator level) 
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultV0AKPlus;     //! Added for cross-check of any bias
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultV0AKMinus;    //! Added for cross-check of any bias
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus;     //! Added for cross-check of any bias
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus;    //! Added for cross-check of any bias
+
 //ZNA containers
   
   TH3F      *f3dHistPrimAnalysisPtVsYVsMultZNALambda;     //! Lambda
