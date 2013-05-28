@@ -7,25 +7,25 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-AliFlowTrackCuts* AddTaskFlowOnMC(TString fileNameBase="FlowResults",
-				  Double_t etaMax = 1.5,
-				  Double_t ptMin  = 0.05,
-				  Double_t ptMax  = 20.0,
-				  Int_t chargePOI = 0,
-				  Int_t harmonic  = 2,
-				  Bool_t MCEP     = kTRUE,
-				  Bool_t SP       = kTRUE,
-				  Bool_t GFC      = kFALSE,
-				  Bool_t QC       = kTRUE,
-				  Bool_t FQD      = kFALSE,
-				  Bool_t LYZ1SUM  = kFALSE,
-				  Bool_t LYZ1PROD = kFALSE,
-				  Bool_t LYZ2SUM  = kFALSE,
-				  Bool_t LYZ2PROD = kFALSE,
-				  Bool_t LYZEP    = kFALSE,
-				  Bool_t MH       = kFALSE,
-				  Bool_t NL       = kFALSE,
-				  Int_t side      = 0) {
+AliAnalysisTaskFlowEvent *AddTaskFlowOnMC(TString fileNameBase="FlowResults",
+					  Double_t etaMax = 1.5,
+					  Double_t ptMin  = 0.05,
+					  Double_t ptMax  = 20.0,
+					  Int_t chargePOI = 0,
+					  Int_t harmonic  = 2,
+					  Bool_t MCEP     = kTRUE,
+					  Bool_t SP       = kTRUE,
+					  Bool_t GFC      = kFALSE,
+					  Bool_t QC       = kTRUE,
+					  Bool_t FQD      = kFALSE,
+					  Bool_t LYZ1SUM  = kFALSE,
+					  Bool_t LYZ1PROD = kFALSE,
+					  Bool_t LYZ2SUM  = kFALSE,
+					  Bool_t LYZ2PROD = kFALSE,
+					  Bool_t LYZEP    = kFALSE,
+					  Bool_t MH       = kFALSE,
+					  Bool_t NL       = kFALSE,
+					  Int_t side      = 0) {
   // Define the range for eta subevents (for SP method)
   Double_t minA = -etaMax;
   Double_t maxA = -0.5;
@@ -81,6 +81,15 @@ AliFlowTrackCuts* AddTaskFlowOnMC(TString fileNameBase="FlowResults",
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("event cuts");
   cutsEvent->SetQA(kFALSE);
   
+  // Ref mult TRACK CUTS:
+  AliFlowTrackCuts* cutsRefMult = new AliFlowTrackCuts("MCRefMult");
+  cutsRefMult->SetParamType(rptype);
+  cutsRefMult->SetParamMix(rpmix);
+  cutsRefMult->SetPtRange(ptMin,ptMax);
+  cutsRefMult->SetEtaRange(-etaMax,etaMax);
+  cutsRefMult->SetQA(kFALSE);
+  //cutsEvent->SetRefMultCuts(cutsRefMult);
+
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("MCRP");
   cutsRP->SetParamType(rptype);
@@ -332,6 +341,7 @@ AliFlowTrackCuts* AddTaskFlowOnMC(TString fileNameBase="FlowResults",
   }
   if (QC){
     AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants %s",outputSlotName.Data()),useWeights);
+    taskQC->SetMultiplicityIs(AliFlowCommonConstants::kRP); 
     taskQC->SetUsePhiWeights(WEIGHTS[0]); 
     taskQC->SetUsePtWeights(WEIGHTS[1]);
     taskQC->SetUseEtaWeights(WEIGHTS[2]); 
@@ -599,7 +609,7 @@ AliFlowTrackCuts* AddTaskFlowOnMC(TString fileNameBase="FlowResults",
     if (FillQAntuple) mgr->ConnectOutput(taskQAflow,2,coutputQAtaskTree);
   }
 
-  return cutsPOI;
+  return taskFE;
 }
 
 
