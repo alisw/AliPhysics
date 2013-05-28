@@ -123,7 +123,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fNumberOfAcceptedTracksMin = min;
     fNumberOfAcceptedTracksMax = max;}
   
+  // additional event cuts (default = kFALSE)
   void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
+  void CheckFirstEventInChunk() {fCheckFirstEventInChunk = kTRUE;}
+  void CheckPileUp() {fCheckPileUp = kTRUE;}
   
   //Acceptance filter
   void SetAcceptanceParameterization(TF1 *parameterization) {
@@ -264,6 +267,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
 
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
+  Bool_t fCheckFirstEventInChunk;//Usage of the "First Event in Chunk" check (not needed for new productions)
+  Bool_t fCheckPileUp;//Usage of the "Pile-Up" event check
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax

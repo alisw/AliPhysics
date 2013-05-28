@@ -31,6 +31,7 @@
 #include "AliEventplane.h"
 #include "AliTHn.h"    
 #include "AliLog.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliEventPoolManager.h"           
 
@@ -128,6 +129,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fNumberOfAcceptedTracksMax(10000),
   fHistNumberOfAcceptedTracks(0),
   fUseOfflineTrigger(kFALSE),
+  fCheckFirstEventInChunk(kFALSE),
+  fCheckPileUp(kFALSE),
   fVxMax(0.3),
   fVyMax(0.3),
   fVzMax(10.),
@@ -270,12 +273,12 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   }
 
   //Event stats.
-  TString gCutName[5] = {"Total","Offline trigger",
-                         "Vertex","Analyzed","sel. Centrality"};
+  TString gCutName[7] = {"Total","Offline trigger",
+                         "Vertex","Analyzed","sel. Centrality","Not1stEvInChunk","No Pile-Up"};
   fHistEventStats = new TH2F("fHistEventStats",
                              "Event statistics;;Centrality percentile;N_{events}",
-                             5,0.5,5.5,220,-5,105);
-  for(Int_t i = 1; i <= 5; i++)
+                             7,0.5,7.5,220,-5,105);
+  for(Int_t i = 1; i <= 7; i++)
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
 
@@ -716,6 +719,24 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
   fHistEventStats->Fill(1,gCentrality); //all events
+
+  // check first event in chunk (is not needed for new reconstructions)
+  if(fCheckFirstEventInChunk){
+    AliAnalysisUtils ut;
+    if(ut.IsFirstEventInChunk(event)) 
+      return -1.;
+    fHistEventStats->Fill(6,gCentrality); 
+  }
+
+  // check for pile-up event
+  if(fCheckPileUp){
+    AliAnalysisUtils ut;
+    ut.SetUseMVPlpSelection(kTRUE);
+    ut.SetUseOutOfBunchPileUp(kTRUE);
+    if(ut.IsPileUpEvent(event))
+      return -1.;
+    fHistEventStats->Fill(7,gCentrality); 
+  }
 
   // Event trigger bits
   fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
