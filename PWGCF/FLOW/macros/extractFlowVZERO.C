@@ -6,12 +6,13 @@ Bool_t kVZEROrescorr = kTRUE; // VZERO resolution corrections
 Bool_t kNUAcorr = kTRUE; // NUA corrections
 Bool_t kNUOcorr = kFALSE; // Not Uniform Occupancy (TOF) corrections
 Bool_t kPIDcorr = kFALSE; // PID corrections
+Bool_t kFEEDcorr = kFALSE; // antiproton feed-down corrections
 Bool_t kCleanMemory = kTRUE; // if kFALSE take care of the large numbers of TCanvases
 
 TH1D *hNUO[8]; // NUO corrections
 
 void LoadLib();
-void extractFlowVZERO(Int_t icentr,Int_t arm=2,Float_t pTh=0.8,Bool_t isMC=kFALSE,Int_t addbin=0);
+void extractFlowVZERO(Int_t icentr,const char *type="",Int_t arm=2,Float_t pTh=0.8,Bool_t isMC=kFALSE,Int_t addbin=0);
 TProfile *extractFlowVZEROsingle(Int_t icentr,Int_t spec,Int_t arm=2,Bool_t isMC=kFALSE,Float_t pTh=0.9,Int_t addbin=0,const char *nameSp="",Float_t detMin=0,Float_t detMax=1,Int_t chMin=-1,Int_t chMax=1);
 void compareTPCTOF(Int_t icentr,Int_t spec,Int_t arm=2,Float_t pTh=0.9,Int_t addbin=0);
 void plotQApid(Int_t ic,Float_t pt,Int_t addbin=0);
@@ -36,8 +37,12 @@ void LoadLib(){
   }
 }
 
-void extractFlowVZERO(Int_t icentr,Int_t arm,Float_t pTh,Bool_t isMC,Int_t addbin){
+void extractFlowVZERO(Int_t icentr,const char *type,Int_t arm,Float_t pTh,Bool_t isMC,Int_t addbin){
   LoadLib();
+
+  char name[100];
+  snprintf(name,100,"AnalysisResults%s.root",type);
+  if(!fo) fo = new TFile(name);
 
   new TCanvas();
 
@@ -204,6 +209,7 @@ void extractFlowVZERO(Int_t icentr,Int_t arm,Float_t pTh,Bool_t isMC,Int_t addbi
 
   char name[100];
 
+
   // PID correction
   if(kPIDcorr){
     TFile *fPidTOF = new TFile("$ALICE_ROOT/PWGCF/FLOW/other/BayesianPIDcontTPCTOF.root");
@@ -336,8 +342,39 @@ void extractFlowVZERO(Int_t icentr,Int_t arm,Float_t pTh,Bool_t isMC,Int_t addbi
     }
   }
 
+
+  // antiproton Feed down
+  TProfile *pFromLambda = extractFlowVZEROsingle(icentr,11,arm,0,pTh,addbin,"pFromLambda",1,1);
+  TProfile *piFromK = extractFlowVZEROsingle(icentr,12,arm,0,pTh,addbin,"piFromK",1,1,1,1);
+  TProfile *pFromLambda2 = extractFlowVZEROsingle(icentr,11,arm,0,0.6,addbin,"pFromLambdanoPID",0,1);
+  TProfile *piFromK2 = extractFlowVZEROsingle(icentr,12,arm,0,0.6,addbin,"piFromKnoPID",0,1);
+  TProfile *piFromK3 = extractFlowVZEROsingle(icentr,12,arm,0,0.6,addbin,"piFromKnoPIDtof",1,1);
+
+  TH1D *hFeedSyst = NULL;
+
+  if(kFEEDcorr){
+    hFeedSyst = new TH1D(*hPr);
+    hFeedSyst->SetName("hFeedSyst");
+    hFeedSyst->Reset();
+    for(Int_t k=1;k <=hPr->GetNbinsX();k++){
+      Float_t contam = 3.23174e-01 * TMath::Exp(- 9.46743e-01 *  hPr->GetBinCenter(k));
+      Float_t corr = contam * pFromLambda->GetBinContent(k)/(1-contam);
+      Float_t corrErr = contam * pFromLambda->GetBinError(k)/(1-contam);
+      Float_t value = hPr->GetBinContent(k)/(1-contam) - corr;
+      Float_t valueErr = hPr->GetBinError(k)/(1-contam);
+
+      hFeedSyst->SetBinContent(k,hPr->GetBinContent(k) - value);
+      hFeedSyst->SetBinContent(k,sqrt(corrErr*corrErr + valueErr*valueErr - hPr->GetBinError(k)*hPr->GetBinError(k)));
+
+      hPr->SetBinContent(k,value);
+      hPr->SetBinError(k,sqrt(corrErr*corrErr + valueErr*valueErr));
+
+    }
+    hFeedSyst->Divide(hPr);
+  }
+    
   // write output
-  snprintf(name,100,"results%03i-%03iv%i_pTh%3.1f.root",cMin[icentr],cMax[icentr+addbin],arm,pTh);
+  snprintf(name,100,"results%03i-%03iv%i_pTh%3.1f%s.root",cMin[icentr],cMax[icentr+addbin],arm,pTh,type);
   TFile *fout = new TFile(name,"RECREATE");
   pAll->ProjectionX()->Write();
   hPi->Write();
@@ -365,6 +402,16 @@ void extractFlowVZERO(Int_t icentr,Int_t arm,Float_t pTh,Bool_t isMC,Int_t addbi
     pTmp->SetMarkerStyle(26);
     pTmp->Write();
   }
+  extractFlowVZEROsingle(icentr,2,arm,0,pTh,addbin,"kProf")->Write();
+  extractFlowVZEROsingle(icentr,9,arm,0,pTh,addbin,"ks",0,1,1,1)->Write();
+  extractFlowVZEROsingle(icentr,9,arm,0,pTh,addbin,"ksMy",0,1,-1,-1)->Write();
+  extractFlowVZEROsingle(icentr,10,arm,0,pTh,addbin,"lambda")->Write();
+  pFromLambda->Write();
+  piFromK->Write();
+  pFromLambda2->Write();
+  piFromK2->Write();
+  piFromK3->Write();
+  if(hFeedSyst) hFeedSyst->Write();
   fout->Close();
 }
 
@@ -385,7 +432,7 @@ TProfile *extractFlowVZEROsingle(Int_t icentr,Int_t spec,Int_t arm,Bool_t isMC,F
   cont->ls();
 
   Float_t xMin[5] = {icentr/*centrality bin*/,chMin/*charge*/,pTh/*prob*/,-TMath::Pi()/arm/*Psi*/,detMin/*PID mask*/};
-  Float_t xMax[5] = {icentr+addbin,chMax,1,TMath::Pi()/arm,detMax};
+  Float_t xMax[5] = {icentr+addbin,chMax,1.0,TMath::Pi()/arm,detMax};
 
   cont->ls();
 
