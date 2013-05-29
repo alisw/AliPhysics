@@ -15,6 +15,8 @@ void AddTaskJetFlow( TString name       = "name",
                      Float_t MaxPOIPt   = 150,
                      Float_t CCBinsInPt = 100,
                      Bool_t VParticle   = kFALSE,
+                     Int_t year         = -1,
+                     Bool_t testFlow    = kFALSE,
                      Bool_t debug       = kFALSE  )
 {
     // first check the environment (common to all tasks)
@@ -55,6 +57,8 @@ void AddTaskJetFlow( TString name       = "name",
         task->SetCCMaxPt(MaxPOIPt);
         task->SetCCBinsInPt(CCBinsInPt);
         task->SetDoVParticleAnalysis(VParticle);
+        task->SetDoTestFlowAnalysis(testFlow);
+        task->SetExplicitOutlierCut(year);
         task->SetMinMaxPOIPt(MinPOIPt, MaxPOIPt);
         (debug) ? task->SetDebugMode(1) : task->SetDebugMode(-1);
         if(!task) {

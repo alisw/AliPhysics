@@ -5,7 +5,9 @@
 #ifndef AliAnalysisTaskJetFlow_H
 #define AliAnalysisTaskJetFlow_H
 
-// includes
+// root includes
+#include <TMath.h>
+//aliroot includes
 #include <AliAnalysisTaskSE.h>
 // forward declarations
 class TString;
@@ -31,6 +33,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
         // setters
+        void                    SetExplicitOutlierCut(Int_t c)          {fExplicitOutlierCut = c;}
         void                    SetCutsRP(AliFlowTrackCuts* tpc, AliFlowTrackCuts* vzero)  {fCutsRP_TPC = tpc; fCutsRP_VZERO = vzero; }
 
         void                    SetCutsPOI(AliFlowTrackCuts* c)         {fCutsPOI       = c;}
@@ -47,13 +50,26 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
                 {fDoTestFlowAnalysis = t; 
                  fPtBins = pt;  }
         // analysis details
-        Bool_t                  PassesCuts(AliVEvent* event); 
+        Bool_t                  PassesCuts(AliVEvent* event);
+        Bool_t                  PassesCuts(Int_t year); 
         void                    DoTestFlowAnalysis();
-
+        /* inline */    Double_t PhaseShift(Double_t x) const {  
+            while (x>=TMath::TwoPi())x-=TMath::TwoPi();
+            while (x<0.)x+=TMath::TwoPi();
+            return x; }
+        /* inline */    Double_t PhaseShift(Double_t x, Double_t n) const {
+            x = PhaseShift(x);
+            if(TMath::Nint(n)==2) while (x>TMath::Pi()) x = TMath::TwoPi() - x;
+            if(TMath::Nint(n)==3) {
+                if(x>2.*TMath::TwoPi()/n) x = TMath::TwoPi() - x;
+                if(x>TMath::TwoPi()/n) x = TMath::TwoPi()-(x+TMath::TwoPi()/n);
+            }
+            return x; }
     private:
 
         // analysis flags and task setup specifics
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
+        Int_t                   fExplicitOutlierCut;    // cut on multiplicity ourliers explicitely (slow)
         TString                 fJetsName;              // name of jet list
         TList*                  fOutputList;            //! output list
         dataType                fDataType;              //! data type
@@ -83,11 +99,13 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         TH1F*                   fCentralitySelection;   //! centrality selection
         TProfile*               fv2VZEROA;              //! v2 from VZEROA
         TProfile*               fv2VZEROC;              //! v2 from VZEROC
+        TProfile*               fTempA;                 //! internal bookkeeping
+        TProfile*               fTempC;                 //! internal bookkeeping
 
         AliAnalysisTaskJetFlow(const AliAnalysisTaskJetFlow&);                  // not implemented
         AliAnalysisTaskJetFlow& operator=(const AliAnalysisTaskJetFlow&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetFlow, 3);
+        ClassDef(AliAnalysisTaskJetFlow, 4);
 };
 
 #endif
