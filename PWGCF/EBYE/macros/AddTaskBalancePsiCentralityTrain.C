@@ -39,6 +39,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Int_t AODfilterBit = 128,
 						       Bool_t bCentralTrigger = kFALSE,
 						       TString fileNameBase="AnalysisResults",
+						       TString dirNameExtra="",
 						       TString fArgEventClass="Centrality",
 						       TString analysisTypeUser="AOD",
 						       Bool_t bVertexBinning=kTRUE,
@@ -110,7 +111,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 
   // Create the task, add it to manager and configure it.
   //===========================================================================
-  AliAnalysisTaskBFPsi *taskBF = new AliAnalysisTaskBFPsi("TaskBFPsi");
+  AliAnalysisTaskBFPsi *taskBF = new AliAnalysisTaskBFPsi(Form("TaskBFPsi_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()));
   
   //Event characteristics scheme
   taskBF->SetEventClass(fArgEventClass);
@@ -204,11 +205,11 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGCFEbyE.outputBalanceFunctionPsiAnalysis";
-  AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQAPsi_%.0f-%.0f_Bit%d_%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  AliAnalysisDataContainer *coutBF = mgr->CreateContainer(Form("listBFPsi_%.0f-%.0f_Bit%d_%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  if(gRunShuffling) AliAnalysisDataContainer *coutBFS = mgr->CreateContainer(Form("listBFPsiShuffled_%.0f-%.0f_Bit%d_%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  if(gRunMixing) AliAnalysisDataContainer *coutBFM = mgr->CreateContainer(Form("listBFPsiMixed_%.0f-%.0f_Bit%d_%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  if(kUsePID || sigmaElectronRejection > 0) AliAnalysisDataContainer *coutQAPID = mgr->CreateContainer(Form("listQAPIDPsi_%.0f-%.0f_Bit%d_%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQAPsi_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutBF = mgr->CreateContainer(Form("listBFPsi_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(gRunShuffling) AliAnalysisDataContainer *coutBFS = mgr->CreateContainer(Form("listBFPsiShuffled_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(gRunMixing) AliAnalysisDataContainer *coutBFM = mgr->CreateContainer(Form("listBFPsiMixed_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(kUsePID || sigmaElectronRejection > 0) AliAnalysisDataContainer *coutQAPID = mgr->CreateContainer(Form("listQAPIDPsi_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskBF, 1, coutQA);
