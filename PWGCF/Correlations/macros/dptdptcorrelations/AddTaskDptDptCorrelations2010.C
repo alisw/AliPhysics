@@ -95,7 +95,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
   int    nClusterMin            =   70;
-  int    trackFilterBit         =  128;
+  //int    trackFilterBit         =  128;//TPC only
+  int    trackFilterBit         =  272; //Hybrid
   
   int    requestedCharge1       =  1; //default
   int    requestedCharge2       = -1; //default
@@ -178,7 +179,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       listName     =   baseName;
       taskName     =   baseName;
 
-      //inputHistogramFileName =  "/Users/prabhat/Archive/calib/PbPb276Calibration_PP_2010.root";
+      //inputHistogramFileName =  "/Users/prabhat/Archive/calib/PbPb276Calibration_2010.root";
       inputHistogramFileName =  "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPb276Calibration_2010.root";
 
       outputHistogramFileName = baseName;

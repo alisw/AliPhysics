@@ -95,7 +95,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelationsforWeight(int    sys
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
   int    nClusterMin            =   70;
-  int    trackFilterBit         =  128;
+  int    trackFilterBit         =  272;
   
   int    requestedCharge1       =  1; //default
   int    requestedCharge2       = -1; //default
