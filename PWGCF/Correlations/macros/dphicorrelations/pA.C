@@ -1,7 +1,7 @@
 // 0       1       2       3       4  5  6 	        7     8             9                            10         11
 // nsyield,asyield,nswidth,aswidth,v2,v3,nsasyieldratio,v3/v2,remainingpeak,remainingjetyield/ridgeyield,chi2(v2v3),baseline
 const char* graphTitles[] = { "NS Ridge Yield", "AS Ridge Yield", "NS Width", "AS Width", "v2", "v3", "NS Yield / AS Yield", "v3 / v2", "remaining peak in %", "remaining jet / NS yield in %", "chi2/ndf", "baseline" };
-const Int_t NGraphs = 6; // pt index
+const Int_t NGraphs = 28; // pt index
 const Int_t NHists = 12; 
 TGraphErrors*** graphs = 0;
 
@@ -12,7 +12,7 @@ const char* kProjYieldTitleEta = "1/#it{N}_{trig} d#it{N}_{assoc}/d#Delta#eta pe
 // const char* kProjYieldTitlePhiOrEta = "1/N_{trig} dN_{assoc}/d#Delta#varphi (1/rad) , dN_{assoc}/d#Delta#eta";
 const char* kProjYieldTitlePhiOrEta = "#frac{1}{#it{N}_{trig}} #frac{d#it{N}_{assoc}}{d#Delta#varphi} (rad^{-1}) , d#it{N}_{assoc}/d#Delta#eta";
 
-Float_t etaMax = 1.8;
+Float_t etaMax = 1.6;
 
 void CreateGraphStructure()
 {
@@ -32,11 +32,17 @@ void WriteGraphs(const char* outputFileName = "graphs.root")
 {
   TFile::Open(outputFileName, "RECREATE");
   for (Int_t i=0; i<NGraphs; i++)
+  {
+    if (!graphs[i])
+      continue;
     for (Int_t j=0; j<NHists; j++)
     {
+      if (!graphs[i][j])
+	continue;
       graphs[i][j]->GetYaxis()->SetTitle(graphTitles[j]);
       graphs[i][j]->Write(Form("graph_%d_%d", i, j));
     }
+  }
 
   gFile->Close();
 }
@@ -54,6 +60,30 @@ void AddPoint(TGraphErrors* graph, Float_t x, Float_t y, Float_t xe, Float_t ye)
 {
 	graph->SetPoint(graph->GetN(), x, y);
 	graph->SetPointError(graph->GetN() - 1, xe, ye);
+}
+
+void RemovePointsBelowX(TGraphErrors* graph, Float_t minX)
+{
+  Int_t i=0;
+  while (i<graph->GetN())
+  {
+    if (graph->GetX()[i] < minX)
+      graph->RemovePoint(i);
+    else
+      i++;
+  }
+}
+
+void RemovePointsAboveX(TGraphErrors* graph, Float_t maxX)
+{
+  Int_t i=0;
+  while (i<graph->GetN())
+  {
+    if (graph->GetX()[i] > maxX)
+      graph->RemovePoint(i);
+    else
+      i++;
+  }
 }
 
 void DrawLatex(Float_t x, Float_t y, Int_t color, const char* text, Float_t textSize = 0.06)
@@ -1151,19 +1181,35 @@ Int_t gStudySystematic = 0; // 10 = exclusion zone to 0.5; 11 = exclusion off; 1
 
 void CorrelationSubtractionHistogram(const char* fileName, Bool_t centralityAxis = kTRUE, const char* outputFileName = "graphs.root")
 {
-  Int_t n = 6;
-  Int_t is[] = { 0, 1, 1, 2, 2, 2, 3 };
-  Int_t js[] = { 1, 1, 2, 1, 2, 3, 3 };
-  Bool_t symm[] = { 1, 0, 1, 0, 0, 1, 0 };
+//   Int_t n = 10; //15;
+//   // sorted by pT,T
+//   Int_t is[] =    { 0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4 };
+//   Int_t js[] =    { 1, 1, 2, 1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 4, 5 };
+//   Bool_t symm[] = { 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 
-//   Int_t n = 6;
+  // for extraction when trigger pT is from whole range
+  Int_t n = 5;
+  Int_t is[] =    { 0, 0, 0, 0, 0 };
+  Int_t js[] =    { 1, 2, 3, 4, 6 };
+  Bool_t symm[] = { 1, 1, 1, 1, 1 };
+
+  // sorted by pT,a
+//   Int_t n = 10; // 15
+/*  Int_t is[] =    { 0, 1, 2, 3, 1, 2, 3, 2, 3, 3 };
+  Int_t js[] =    { 1, 1, 1, 1, 2, 2, 2, 3, 3, 4 };
+  Bool_t symm[] = { 1, 0, 0, 0, 1, 0, 0, 1, 0, 1 };*/
+/*  Int_t is[] =    { 0, 1, 2, 3, 4, 1, 2, 3, 4, 2, 3, 4, 3, 4, 4 };
+  Int_t js[] =    { 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5 };
+  Bool_t symm[] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1 };*/
+
+  //   Int_t n = 6;
 //   Int_t is[] = { 0, 0, 1, 1, 1, 2 };
 //   Int_t js[] = { 1, 2, 1, 2, 3, 3 };
 
   Int_t centralityBins = 4;
 
   Int_t colors[] = { 1, 2, 3, 4, 6, 7 };
-  Int_t markers[] = { 20, 21, 22, 23, 24, 25, 26 };
+  Int_t markers[] = { 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34 };
 
   CreateGraphStructure();
   
@@ -1448,8 +1494,8 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     exclusion = 1.2;
   
   Int_t eta1 = hist1->GetYaxis()->FindBin(-etaMax + 0.001);
-  Int_t eta2 = hist1->GetYaxis()->FindBin(-exclusion + 0.001);
-  Int_t eta3 = hist1->GetYaxis()->FindBin(exclusion - 0.001);
+  Int_t eta2 = hist1->GetYaxis()->FindBin(-exclusion - 0.001);
+  Int_t eta3 = hist1->GetYaxis()->FindBin(exclusion + 0.001);
   Int_t eta6 = hist1->GetYaxis()->FindBin(etaMax - 0.001);
   Int_t phi1Z = hist1->GetXaxis()->FindBin(TMath::Pi()/2 - 0.2);
   Int_t phi2Z = hist1->GetXaxis()->FindBin(TMath::Pi()/2 + 0.2);
@@ -1971,7 +2017,7 @@ void DrawSeveral(Int_t n, const char** graphFiles, Int_t id)
   TGraphErrors*** base = graphs;
 
   Float_t yMax[] = { 0.1, 0.1, 2, 2, 0.25, 0.25, 4, 1.5, 50, 50, 4, 4 };
-  Int_t markers[] = { 20, 21, 22, 23, 24, 25, 26 };
+  Int_t markers[] = { 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34 };
 
   TString baseName(graphFiles[0]);
   baseName.ReplaceAll(".", "_");
@@ -1979,14 +2025,14 @@ void DrawSeveral(Int_t n, const char** graphFiles, Int_t id)
 //   Printf("%p", canvas);
   gPad->SetGridx();
   gPad->SetGridy();
-  dummy = new TH2F(Form("hist_%s_%d", graphFiles[0], id), Form(";%s;%s", graphs[0][id]->GetXaxis()->GetTitle(), graphs[0][id]->GetYaxis()->GetTitle()), 100, 0, 60, 100, 0, yMax[id]);
+  dummy = new TH2F(Form("hist_%s_%d", graphFiles[0], id), Form(";%s;%s", graphs[0][id]->GetXaxis()->GetTitle(), graphs[0][id]->GetYaxis()->GetTitle()), 100, 0, 100, 100, 0, yMax[id]);
   dummy->SetStats(0);
   dummy->DrawCopy();
   
   TCanvas* canvas2 = new TCanvas(Form("%s_%d_ratio", baseName.Data(), id), Form("%s_%d", baseName.Data(), id), 800, 600);
   gPad->SetGridx();
   gPad->SetGridy();
-  dummy = new TH2F(Form("hist_%s_%d_ratio", graphFiles[0], id), Form(";%s;%s ratio", graphs[0][id]->GetXaxis()->GetTitle(), graphs[0][id]->GetYaxis()->GetTitle()), 100, 0, 60, 100, 0, 2);
+  dummy = new TH2F(Form("hist_%s_%d_ratio", graphFiles[0], id), Form(";%s;%s ratio", graphs[0][id]->GetXaxis()->GetTitle(), graphs[0][id]->GetYaxis()->GetTitle()), 100, 0, 100, 100, 0, 2);
   dummy->SetStats(0);
   dummy->DrawCopy();
 
@@ -2001,9 +2047,14 @@ void DrawSeveral(Int_t n, const char** graphFiles, Int_t id)
     {
       if (TString(graphFiles[0]).Contains("cms") && i != 2 && i != 5) continue;
     
+      if (!graphs[i][id])
+	continue;
+      
+      graphs[i][id]->Print();
+    
       canvas->cd();
 //       Printf("%p", canvas);
-      graphs[i][id]->SetMarkerStyle(markers[i]);
+      graphs[i][id]->SetMarkerStyle(markers[i%16]);
       graphs[i][id]->SetMarkerColor(colors[fc]);
       graphs[i][id]->SetLineColor(colors[fc]);
       GraphShiftX((TGraphErrors*) graphs[i][id]->DrawClone("PSAME"), 0.5 / n * fc);
@@ -2023,10 +2074,12 @@ void DrawSeveral(Int_t n, const char** graphFiles, Int_t id)
   canvas->cd();
   legend->Draw();
   canvas->SaveAs(Form("%s.eps", canvas->GetName()));
+  canvas->SaveAs(Form("%s.png", canvas->GetName()));
 
   canvas2->cd();
   legend->Draw();
   canvas2->SaveAs(Form("%s.eps", canvas2->GetName()));
+  canvas2->SaveAs(Form("%s.png", canvas2->GetName()));
 }
 
 void CMSRidge()
@@ -2146,30 +2199,38 @@ void GetSystematic()
   CorrelationSubtractionHistogram(baseFile, kTRUE, fileTag + "_otherperipheral.root");
 }
 
-void DrawSystematics(TString fileTag = "graphs_121119")
+void DrawSystematics(TString fileTag = "graphs_121119", const char* suffix = "")
 {
-  if (1)
+  if (0)
   {
     const Int_t n = 6;
     const char* filesBase[] = { "", "_exclusion05", "_exclusion12", "_exclusion00", "_exclusionAS", "_exclusionScale" };
   }
-  else
+  else if (0)
   {
     const Int_t n = 5;
     const char* filesBase[] = { "", "_trackcuts", "_nonclosure", "_baseline", "_otherperipheral" };
+  }
+  else
+  {
+    const Int_t n = 3;
+    const char* filesBase[] = { "", "_analytical", "_asgap" };
   }
   
   const char* files[n];
   for (Int_t i=0; i<n; i++)
   {
     str = new TString;
-    str->Form("%s%s.root", fileTag.Data(), filesBase[i]);
+    str->Form("%s%s%s.root", fileTag.Data(), filesBase[i], suffix);
     files[i] = str->Data();
   }
   
-  const Int_t plots = 6;
-  Int_t ids[7] = { 0, 1, 2, 3, 4, 5, 7 };
+//   const Int_t plots = 6;
+//   Int_t ids[7] = { 0, 1, 2, 3, 4, 5, 7 };
   
+  const Int_t plots = 1;
+  Int_t ids[] = { 4 };
+
   for (Int_t i=0; i<plots; i++)
   {
     DrawSeveral(n, files, ids[i]);
@@ -2240,6 +2301,12 @@ void SetXError(TGraphErrors* graph, Float_t value)
     graph->GetEX()[j] = value;
 }
 
+void SetYError(TGraphErrors* graph, Float_t value)
+{
+  for (Int_t j=0; j<graph->GetN(); j++)
+    graph->GetEY()[j] = value;
+}
+
 void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel = 0, const char* outputFileName, Bool_t corrGraph = kFALSE)
 {
   ReadGraphs(graphFile);
@@ -2252,9 +2319,9 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
     yLabel = graphs[0][id1]->GetYaxis()->GetTitle();
   
   Float_t yMax[] = { 0.12, 0.12, 2, 2, 0.2, 0.25, 4, 1.5, 50, 50, 4 };
-  Int_t markers[] = { 20, 21, 22, 23, 29, 33 };
-  Int_t markers2[] = { 24, 25, 26, 32, 30, 27 };
-  Float_t markerSize[] = { 1.7, 1.7, 1.7, 1.7, 2.0, 2.0 };
+  Int_t markers[] = { 20, 21, 22, 23, 29, 33, 34, 2, 3, 5, 2, 3, 5, 2, 3, 5 };
+  Int_t markers2[] = { 24, 25, 26, 32, 30, 27, 28, 2, 3, 5, 2, 3, 5, 2, 3, 5 };
+  Float_t markerSize[] = { 1.7, 1.7, 1.7, 1.7, 2.0, 2.0, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7 };
 
   if (1)
   {
@@ -2356,7 +2423,7 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
   legend->SetFillColor(0);
   legend->SetBorderSize(0);
 
-  if (1)
+  if (0)
   {
     Int_t fillStyle[11] = { 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010, 3011 };
     
@@ -2383,6 +2450,9 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
   
   for (Int_t i=0; i<NGraphs; i++)
   {
+    if (graphs[i][id1]->GetN() == 0)
+      continue;
+    
     graphs[i][id1]->SetMarkerStyle(markers[i]);
     graphs[i][id1]->SetMarkerSize(markerSize[i]);
     graphs[i][id1]->SetMarkerColor(1);
@@ -2782,4 +2852,379 @@ void CompareATLAS()
   alice->SetLineColor(2);
   alice->SetMarkerColor(2);
   alice->Draw("PSAME");
+}
+
+TGraphErrors* GetGraphAsFunctionOfPt(const char* graphFile, Int_t graphID, Int_t centrID, Int_t maxpTIndex)
+{
+  ReadGraphs(graphFile);
+  
+  result = new TGraphErrors;
+  result->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  
+//   Printf("%s", graphFile);
+  
+  for (Int_t i=0; i<maxpTIndex; i++)
+  {
+    if (!graphs[i][graphID])
+      continue;
+    if (graphs[i][graphID]->GetN() == 0)
+      continue;
+    
+    TObjArray* tokens = TString(graphs[i][graphID]->GetTitle()).Tokenize("-");
+//     tokens->Print();
+    tokens = TString(tokens->At(1)->GetName()).Tokenize("<");
+    Float_t pt = (TString(tokens->At(0)->GetName()).Atof() + TString(tokens->At(2)->GetName()).Atof()) / 2;
+    Float_t width = (TString(tokens->At(2)->GetName()).Atof() - TString(tokens->At(0)->GetName()).Atof()) / 2;
+    
+    AddPoint(result, pt, graphs[i][graphID]->GetY()[centrID], width, graphs[i][graphID]->GetEY()[centrID]);
+    
+    result->GetYaxis()->SetTitle(graphs[i][graphID]->GetYaxis()->GetTitle());
+  }
+  
+  return result;
+}
+
+void DrawAsFunctionOfPt(const char* graphFile1, Int_t graphID, Int_t centrID, Int_t maxpTIndex)
+{
+  graph = GetGraphAsFunctionOfPt(graphFile1, graphID, centrID, maxpTIndex);
+  graph->Draw("AP");
+}
+
+TGraphErrors* DrawAsFunctionOfPt(const char* baseFile, Int_t n, const char** graphFiles, Int_t graphID, Int_t centrID, Int_t* maxpTIndex, const char** titles = 0)
+{
+  c = new TCanvas;
+  if (n > 4)
+    c2 = new TCanvas;
+  legend = new TLegend(0.125, 0.71, 0.62, 0.98);
+  legend->SetFillColor(0);
+  
+  TGraphErrors* allGraphs[20];
+  
+  for (Int_t i=0; i<n; i++)
+  {
+    graph = GetGraphAsFunctionOfPt(TString(baseFile) + graphFiles[i], graphID, centrID, maxpTIndex[i]);
+    graph->SetLineColor((i%4)+1);
+    graph->SetMarkerColor((i%4)+1);
+    graph->SetMarkerStyle(20+i);
+    RemovePointsBelowX(graph, 0.3);
+    if (TString(graphFiles[i]).Contains("Kaons"))
+    {
+      RemovePointsAboveX(graph, 3.0);
+      RemovePointsBelowX(graph, 0.3);
+    }
+    if (TString(graphFiles[i]).Contains("Protons"))
+    {
+      RemovePointsBelowX(graph, 0.5);
+    }
+//     graph->Print();
+    
+    c->cd();
+    if (1 || i < 4)
+      graph->Draw((i == 0) ? "AP" : "PSAME");
+    else
+    {
+      graph2 = (TGraphErrors*) graph->Clone();
+      SetXError(graph2, 0);
+      GraphShiftX(graph2, 0.05);
+      graph2->Draw("LSAME");
+    }
+      
+    legend->AddEntry(graph, (titles) ? titles[i] : graphFiles[i], "P");
+    
+    allGraphs[i] = graph;
+    
+    if (i >= 4)
+    {
+      graph = (TGraphErrors*) graph->Clone();
+//       SetYError(graph, 0);
+      DivideGraphs(graph, allGraphs[i%4]);
+      c2->cd();
+      graph->Draw((i == 4) ? "AP" : "PSAME");
+      graph->GetYaxis()->SetRangeUser(0.5, 1.5);
+    }
+  }
+  
+  c->cd();
+  legend->Draw();
+  
+  return allGraphs[0];
+}
+
+void DrawAsFunctionOfPt()
+{
+  const char* baseFile = "graphs_130513b"; Float_t maxY = 0.25;
+//   const char* baseFile = "graphs_130503_nosub"; Float_t maxY = 0.4;
+  const char* graphFiles[] = { ".root", "_pions.root", "_kaons.root", "_protons.root", 
+  "_wingremoved.root", "_wingremoved_pions.root", "_wingremoved_kaons.root", "_wingremoved_protons.root",
+  "_unfolded.root", "_pions_unfolded.root", "_kaons_unfolded.root", "_protons_unfolded.root", 
+  "_wingremoved_unfolded.root", "_wingremoved_pions_unfolded.root", "_wingremoved_kaons_unfolded.root", "_wingremoved_protons_unfolded.root" 
+  };
+   const char* titles[] = { 
+      "h-h", "h-#pi", "h-K", "h-p", 
+      "h-h wingremoved", "h-#pi wingremoved", "h-K wingremoved", "h-p wingremoved", 
+      "h", "#pi", "K", "p", 
+      "h wingremoved", "#pi wingremoved", "K wingremoved", "p wingremoved" };
+  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, 7, 7, 7, 7 };
+  
+  Int_t graphID = 4;
+  Int_t centrID = 1;
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles, graphID, centrID, max, titles);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+  
+//   first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, graphID, centrID, max, titles+4);
+//   first->GetYaxis()->SetRangeUser(0, maxY);
+
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+8, graphID, centrID, max, titles+8);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+  
+  return;
+
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+12, graphID, centrID, max, titles+12);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+
+  first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, graphID, centrID, max, titles);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+
+  first = DrawAsFunctionOfPt(baseFile, 8, graphFiles+8, graphID, centrID, max, titles+8);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+}
+
+void DrawAsFunctionOfPt2()
+{
+  const char* baseFile = "graphs_130423_nosub";
+  const char* graphFiles[] = { ".root", "_nomixed.root", "_allpt_unfolded.root", "_nomixed_allpt_unfolded.root", "_nogap.root", "_nomixed_nogap.root",  "_allpt_nogap_unfolded.root", "_nomixed_allpt_nogap_unfolded.root" };
+  Int_t max[] = { NGraphs, NGraphs, 4, 4, NGraphs, NGraphs, 4, 4 };
+  
+  new TCanvas;
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles, 4, 0, max);
+  first->GetYaxis()->SetRangeUser(0, 0.4);
+
+  new TCanvas;
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, 4, 0, max+4);
+  first->GetYaxis()->SetRangeUser(0, 0.4);
+}
+
+void DrawAsFunctionOfPt3()
+{
+//   const char* baseFile = "graphs_130515"; Float_t maxY = 0.25;
+  const char* baseFile = "graphs_130515_nosub"; Float_t maxY = 0.4;
+  const char* graphFiles[] = { ".root", "_pions.root", "_kaons.root", "_protons.root", "_unfolded.root", "_pions_unfolded.root", "_kaons_unfolded.root", "_protons_unfolded.root", "_allpt_unfolded.root", "_allpt_pions_unfolded.root", "_allpt_kaons_unfolded.root", "_allpt_protons_unfolded.root" };
+  const char* titles[] = { "h-h", "h-#pi", "h-K", "h-p", "h", "#pi", "K", "p", "h allpt", "#pi allpt", "K allpt", "p allpt" };
+  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, 7, 7, 7, 7 };
+  
+  Int_t graphID = 4;
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles, graphID, 0, max, titles);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, graphID, 0, max+4, titles+4);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+
+  first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, graphID, 0, max, titles);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+  
+  return;
+
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+8, graphID, 0, max+8, titles+8);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+
+  first = DrawAsFunctionOfPt(baseFile, 8, graphFiles+4, graphID, 0, max+4, titles+4);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+}
+
+void DrawAsFunctionOfPt4()
+{
+//   const char* baseFile = "graphs_130503";
+  const char* baseFile = "graphs_130503_nosub";
+  const char* graphFiles[] = { "_allpt_unfolded.root", "_allpt_pions_unfolded.root", "_allpt_kaons_unfolded.root", "_allpt_protons_unfolded.root", "_allpt.root", "_allpt_pions.root", "_allpt_kaons.root", "_allpt_protons.root" };
+
+  Int_t max[8] = { 8, 8, 8, 8, 8, 8, 8, 8 };
+  
+  Int_t centrID = 0;
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles, 4, centrID, max);
+  first->GetYaxis()->SetRangeUser(0, 0.25);
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, 4, centrID, max+4);
+  first->GetYaxis()->SetRangeUser(0, 0.25);
+
+  first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, 4, centrID, max);
+  first->GetYaxis()->SetRangeUser(0, 0.25);
+}
+
+void DrawAsFunctionOfPt5()
+{
+  const char* baseFile = "~/Dropbox/pid-ridge/pPb/graphs_LHC13bc_20130510"; Float_t maxY = 0.4;
+  const char* graphFiles[] = { 
+    "_HadronsNoSub.root", "_PionsNoSub.root", "_KaonsNoSub.root", "_ProtonsNoSub.root",
+    "_HadronsNoSubAnalytical.root", "_PionsNoSubAnalytical.root", "_KaonsNoSubAnalytical.root", "_ProtonsNoSubAnalytical.root"
+  };
+  
+  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs };
+  
+  Int_t graphID = 4;
+  Int_t centrID = 0;
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles, graphID, centrID, max, 0);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, graphID, centrID, max, 0);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+
+  first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, graphID, centrID, max, 0);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+}
+
+void DrawAsFunctionOfPt6()
+{
+  const char* baseFile = "graphs_130515b_nosub"; Float_t maxY = 0.4;
+  const char* graphFiles[] = { 
+    ".root", "_pions.root", "_kaons.root", "_protons.root",
+    "_analytical.root", "_analytical_pions.root", "_analytical_kaons.root", "_analytical_protons.root"
+  };
+  
+  Int_t max[] = { 6, 6, 6, 6, 6, 6, 6, 6 };
+  
+  Int_t graphID = 4;
+  Int_t centrID = 0;
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles, graphID, centrID, max, 0);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, graphID, centrID, max, 0);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+
+  first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, graphID, centrID, max, 0);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+}
+
+void CompareCentralityEstimators()
+{
+  const char* baseFile = "~/Dropbox/pid-ridge/pPb/graphs_LHC13bc_"; Float_t maxY = 0.25;
+  const char* graphFiles[] = { 
+    "20130510_Hadrons.root", "20130510_Pions.root", "20130510_Kaons.root", "20130510_Protons.root",
+    "20130517_Hadrons_ZNA.root", "20130517_Pions_ZNA.root", "20130517_Kaons_ZNA.root", "20130517_Protons_ZNA.root"
+  };
+  
+  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs };
+  
+  const char* titles[] = { 
+      "h V0A", "#pi V0A", "K V0A", "p V0A", 
+      "h ZNA", "#pi ZNA", "K ZNA", "p ZNA"
+   };
+      
+  Int_t graphID = 4;
+  Int_t centrID = 0;
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles, graphID, centrID, max, titles);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, graphID, centrID, max, titles+4);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+
+  first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, graphID, centrID, max, titles);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+}
+
+void DrawLikeUnlikeSign()
+{
+  const char* baseFile = "~/Dropbox/pid-ridge/pPb/graphs_LHC13bc_20130510"; Float_t maxY = 0.35;
+  const char* graphFiles[] = { 
+    "_Hadrons_LikeSign.root", "_Pions_LikeSign.root", "_Kaons_LikeSign.root", "_Protons_LikeSign.root", 
+    "_Hadrons_UnlikeSign.root", "_Pions_UnlikeSign.root", "_Kaons_UnlikeSign.root", "_Protons_UnlikeSign.root"
+  };
+  
+   const char* titles[] = { 
+      "h LS", "#pi LS", "K LS", "p LS", 
+      "h US", "#pi US", "K US", "p US" };
+  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs };
+  
+  Int_t graphID = 4;
+  Int_t centrID = 0;
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles, graphID, centrID, max, titles);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, graphID, centrID, max, titles+4);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+  
+  first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, graphID, centrID, max, titles);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+}
+
+void DrawRelativeError(Int_t id = 0)
+{
+  if (id == 0)
+  {
+    Int_t centrID = 0;
+    const char* file1 = "~/Dropbox/pid-ridge/pPb/graphs_LHC13bc_20130510_Kaons.root";
+    const char* file2 = "~/Dropbox/pid-ridge/syst020WithSub.root";
+    const char* label = "0-20% with subtraction";
+  }
+  else if (id == 1)
+  {
+    Int_t centrID = 0;
+    const char* file1 = "~/Dropbox/pid-ridge/pPb/graphs_LHC13bc_20130510_KaonsNoSub.root";
+    const char* file2 = "~/Dropbox/pid-ridge/syst020WithoutSub.root";
+    const char* label = "0-20% without subtraction";
+  }
+  else if (id == 2)
+  {
+    Int_t centrID = 3;
+    const char* file1 = "~/Dropbox/pid-ridge/pPb/graphs_LHC13bc_20130510_KaonsNoSub.root";
+    const char* file2 = "~/Dropbox/pid-ridge/syst60100WithoutSub.root";
+    const char* label = "60-100% without subtraction";
+  }
+  
+  graph = GetGraphAsFunctionOfPt(file1, 4, 0, NGraphs);
+  RemovePointsAboveX(graph, 3.0);
+  RemovePointsBelowX(graph, 0.3);
+  
+   new TCanvas;
+  graph->SetMarkerStyle(20);
+  graph->DrawClone("AP");
+  
+  for (Int_t i=0; i<graph->GetN(); i++)
+  {
+    if (graph->GetEY()[i] <= 0 || graph->GetY()[i] <= 0)
+      continue;
+    
+    graph->GetY()[i] = graph->GetEY()[i] / graph->GetY()[i];
+    graph->GetEY()[i] = 0;
+  }
+  
+  legend = new TLegend(0.6, 0.7, 0.9, 0.9);
+  new TCanvas;
+  clone = (TGraphErrors*) graph->DrawClone("AP");
+  clone->GetYaxis()->SetRangeUser(0, 0.5);
+  legend->AddEntry(clone, "stat", "P");
+  
+  TFile::Open(file2);
+  hist = (TH1*) gFile->Get("hsyst2");
+  hist->SetLineColor(2);
+  hist->Draw("SAME");
+  legend->AddEntry(hist, "syst", "L");
+  
+  for (Int_t i=0; i<graph->GetN(); i++)
+  {
+    if (graph->GetY()[i] <= 0)
+      continue;
+  
+    Float_t syst = hist->GetBinContent(hist->FindBin(graph->GetX()[i]));
+    graph->GetY()[i] = TMath::Sqrt(graph->GetY()[i] * graph->GetY()[i] + syst * syst);
+  }
+  
+  graph->SetLineColor(4);
+  graph->SetMarkerStyle(21);
+  graph->SetMarkerColor(4);
+  graph->DrawClone("PSAME");
+  legend->AddEntry(graph->DrawClone("PSAME"), "comb", "P");
+  
+  line = new TLine(0, 0.1, 4.0, 0.1);
+  line->Draw();
+  legend->AddEntry(line, "K0-Kch unc", "L");
+  legend->SetHeader(label);  
+  
+  legend->Draw();
 }
