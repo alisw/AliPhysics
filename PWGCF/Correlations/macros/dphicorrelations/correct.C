@@ -7646,7 +7646,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 8.0, 15.0, 20.0 };
     Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
   }
-  else if (1)
+  else if (0)
   {
     //pA, trigger from all pT
     maxLeadingPt = 1;
@@ -7675,10 +7675,18 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
   else if (1)
   {
     //pA, fine
-    maxLeadingPt = 7;
-    maxAssocPt = 8;
-    Float_t leadingPtArr[] =   {       0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 8.0, 15.0, 20.0 };
-    Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 8.0, 10.0, 12.0 };
+    maxLeadingPt = 7+2;
+    maxAssocPt = 8+2;
+    Float_t leadingPtArr[] =   {       0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 0.5, 4.0, 20.0 };
+    Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 0.5, 4.0, 12.0 };
+  }
+  else if (0)
+  {
+    //pA, v3
+    maxLeadingPt = 3;
+    maxAssocPt = 4;
+    Float_t leadingPtArr[] =   {       0.5, 1.5, 2.5, 4.0, 5.0, 8.0, 15.0, 20.0 };
+    Float_t assocPtArr[] =     { 0.15, 0.5, 1.5, 2.5, 4.0, 5.0, 8.0, 10.0, 12.0 };
   }
   else if (0)
   {
@@ -7833,7 +7841,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     for (Int_t j=1; j<maxAssocPt; j++)
     {
       if(0){
-	if(j!=(i+leadingPtOffset))continue;
+	if(j!=(i+1))continue;
 	Printf("\nOnly symmetric pt bins selected, leading pt: %f - %f     associated pt: %f - %f",leadingPtArr[i],leadingPtArr[i+leadingPtOffset],assocPtArr[j],assocPtArr[j+1]); 
       }
 
@@ -8789,15 +8797,15 @@ void AnalyzeDeltaPhiEtaGap2D(const char* fileName, Int_t method)
 }
 */
 
-void RemoveWing(const char* fileName)
+void RemoveWing(const char* fileName, const char* outputFile)
 {
   // remove wing by flattening using the ratio of a flat line to the corr fct at phi = pi/2 +- 0.25 as fct of delta eta
 
   file = TFile::Open(fileName);
-  file2 = TFile::Open("dphi_corr.root", "RECREATE");
+  file2 = TFile::Open(outputFile, "RECREATE");
   file2->Close();
   
-  Int_t maxLeadingPt = 5;
+  Int_t maxLeadingPt = 6;
   Int_t maxAssocPt = 7;
 
   Int_t nHists = 6;
@@ -8828,13 +8836,22 @@ void RemoveWing(const char* fileName)
 	  }
 	//new TCanvas; hist->DrawCopy("SURF1");
 
-	file2 = TFile::Open("dphi_corr.root", "UPDATE");
+	file2 = TFile::Open(outputFile, "UPDATE");
 	hist->Write();
 	file2->Close();
       }
     }
   }  
 }
+  
+void RemoveWingAllSpecies()
+{
+  const char* suffix[] = { "Hadrons", "Pions", "Kaons", "Protons" };
+  TString baseName = "dphi_corr_130513b_";
+  
+  for (Int_t i=0; i<4; i++)
+    RemoveWing(baseName + suffix[i] + ".root", baseName + suffix[i] + "_wingremoved.root");
+}  
   
 void PlotPtDistributions(const char* fileName1, Int_t centrBegin = 1, Int_t centrEnd = 2)
 {
@@ -14435,11 +14452,11 @@ void PlotPtCentrality()
 
 void ExtractForAllSpecies()
 {
-  TString baseName = "LHC13bc_20130502_";
+  TString baseName = "LHC13bc_20130510_";
   const char* suffix[] = { "Hadrons_symmetrized", "Pions", "Kaons", "Protons" };
-  TString baseNameOutput = "dphi_corr_130506_allpt_";
+  TString baseNameOutput = "dphi_corr_130515_";
   
-  for (Int_t i=0; i<1; i++)
+  for (Int_t i=0; i<4; i++)
     PlotDeltaPhiEtaGap(baseName + suffix[i] + ".root", 0, 0, 0, baseNameOutput + suffix[i] + ".root");
 }
 
