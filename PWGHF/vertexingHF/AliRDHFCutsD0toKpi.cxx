@@ -1903,8 +1903,8 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
     //Simple Bayesian
     if (fBayesianStrategy == kBayesSimple) {
        
-         if (isPosKaon && isNegKaon)   {  //If both are ID'd as kaons, reject
-               returnvalue = 0;
+         if (isPosKaon && isNegKaon)   {  //If both are ID'd as kaons, accept as possible
+               returnvalue = 3;
             } else if (isNegKaon)   {     //If negative kaon, D0
                returnvalue = 1;
             } else if (isPosKaon)   {     //If positive kaon, D0-bar
