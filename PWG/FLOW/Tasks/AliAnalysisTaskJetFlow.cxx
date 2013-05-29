@@ -60,11 +60,11 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetFlow)
 
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow() : AliAnalysisTaskSE(), 
-    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fDoTestFlowAnalysis(kFALSE), fInitialized(kFALSE), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPOIPtMin(0.15), fPOIPtMax(150), fPtBins(0), fCutsRP_TPC(0), fCutsRP_VZERO(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fHistAnalysisSummary(0), fCentralitySelection(0), fv2VZEROA(0), fv2VZEROC(0)
+    fDebug(-1), fExplicitOutlierCut(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fDoTestFlowAnalysis(kFALSE), fInitialized(kFALSE), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPOIPtMin(0.15), fPOIPtMax(150), fPtBins(0), fCutsRP_TPC(0), fCutsRP_VZERO(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fHistAnalysisSummary(0), fCentralitySelection(0), fv2VZEROA(0), fv2VZEROC(0), fTempA(0), fTempC(0)
 { /* default constructor for ROOT IO */ }
 //_____________________________________________________________________________
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(const char* name) : AliAnalysisTaskSE(name),
-    fDebug(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fDoTestFlowAnalysis(kFALSE), fInitialized(kFALSE), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPOIPtMin(0.15), fPOIPtMax(150), fPtBins(0), fCutsRP_TPC(0), fCutsRP_VZERO(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fHistAnalysisSummary(0), fCentralitySelection(0), fv2VZEROA(0), fv2VZEROC(0)
+    fDebug(-1), fExplicitOutlierCut(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fDoTestFlowAnalysis(kFALSE), fInitialized(kFALSE), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPOIPtMin(0.15), fPOIPtMax(150), fPtBins(0), fCutsRP_TPC(0), fCutsRP_VZERO(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fHistAnalysisSummary(0), fCentralitySelection(0), fv2VZEROA(0), fv2VZEROC(0), fTempA(0), fTempC(0)
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -80,6 +80,13 @@ AliAnalysisTaskJetFlow::~AliAnalysisTaskJetFlow()
     if(fFlowEvent_TPC)          delete fFlowEvent_TPC;
     if(fFlowEvent_VZERO)        delete fFlowEvent_VZERO;
     if(fCutsEvent)              delete fCutsEvent;
+    if(fCutsRP_VZERO)           delete fCutsRP_VZERO;
+    if(fCutsRP_TPC)             delete fCutsRP_TPC;
+    if(fCutsNull)               delete fCutsNull;
+    if(fCutsPOI)                delete fCutsPOI;
+    if(fPtBins)                 delete fPtBins;
+    if(fTempA)                  delete fTempA;
+    if(fTempC)                  delete fTempC;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetFlow::LocalInit()
@@ -125,6 +132,9 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
         fv2VZEROC->GetYaxis()->SetTitle("v_{2}^{obs}");
         fOutputList->Add(fv2VZEROA);
         fOutputList->Add(fv2VZEROC);
+        // bookkeeping histo's, will not be stored
+        fTempA = (TProfile*)fv2VZEROA->Clone("temp_a");
+        fTempC = (TProfile*)fv2VZEROC->Clone("temp_c");
     }
     // qa
     fCentralitySelection = new TH1F("fCentralitySelection", "fCentralitySelection", 100, 0, 100);
@@ -182,12 +192,13 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
                         continue;
                     }
                     nAcceptedJets++;
-                    AliFlowTrack* flowTrack = new AliFlowTrack(jet);
-                    flowTrack->SetPt(jet->Pt() + fPtBump);
-                    flowTrack->SetForPOISelection(kTRUE);
-                    flowTrack->SetForRPSelection(kFALSE);
-                    fFlowEvent_TPC->InsertTrack(flowTrack);
-                    fFlowEvent_VZERO->InsertTrack(flowTrack);
+                    // AliFlowTracks are created on the stack 
+                    AliFlowTrack flowTrack = AliFlowTrack(jet);
+                    flowTrack.SetPt(jet->Pt() + fPtBump);
+                    flowTrack.SetForPOISelection(kTRUE);
+                    flowTrack.SetForRPSelection(kFALSE);
+                    fFlowEvent_TPC->InsertTrack(&flowTrack);
+                    fFlowEvent_VZERO->InsertTrack(&flowTrack);
                 }
             }
         } else {
@@ -199,12 +210,12 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
                         continue;
                     }
                     nAcceptedJets++;
-                    AliFlowTrack* flowTrack = new AliFlowTrack(jet);
-                    flowTrack->SetPt(jet->PtSub() + fPtBump);
-                    flowTrack->SetForPOISelection(kTRUE);
-                    flowTrack->SetForRPSelection(kFALSE);
-                    fFlowEvent_TPC->InsertTrack(flowTrack);
-                    fFlowEvent_VZERO->InsertTrack(flowTrack);
+                    AliFlowTrack flowTrack = AliFlowTrack(jet);
+                    flowTrack.SetPt(jet->PtSub() + fPtBump);
+                    flowTrack.SetForPOISelection(kTRUE);
+                    flowTrack.SetForRPSelection(kFALSE);
+                    fFlowEvent_TPC->InsertTrack(&flowTrack);
+                    fFlowEvent_VZERO->InsertTrack(&flowTrack);
                 }
             }
         }
@@ -242,7 +253,32 @@ Bool_t AliAnalysisTaskJetFlow::PassesCuts(AliVEvent* event)
        default: break;
     }
     Float_t cent(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
+    if(fExplicitOutlierCut == 2010 || fExplicitOutlierCut == 2011) {
+       if(!PassesCuts(fExplicitOutlierCut)) return kFALSE;
+    }
     return (cent <= fCentralityMin || cent > fCentralityMax || TMath::Abs(cent-InputEvent()->GetCentrality()->GetCentralityPercentile("TRK")) > 5.) ? kFALSE : kTRUE;
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskJetFlow::PassesCuts(Int_t year) 
+{
+    // additional centrality cut based on relation between tpc and global multiplicity
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    AliAODEvent* event(dynamic_cast<AliAODEvent*>(InputEvent()));
+    if(!event) return kFALSE;
+    Int_t multTPC(0), multGlob(0), nTracks(InputEvent()->GetNumberOfTracks());
+    for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) { 
+        AliAODTrack* track = event->GetTrack(iTracks);
+        if(!track) continue;
+        if (!track || track->Pt() < .2 || track->Pt() > 5.0 || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70 || !track->GetDetPid() || track->GetDetPid()->GetTPCsignal() < 10.0)  continue;  // general quality cut
+        if (track->TestFilterBit(1) && track->Chi2perNDF() > 0.2) multTPC++;
+        if (!track->TestFilterBit(16) || track->Chi2perNDF() < 0.1) continue;
+        Double_t b[2] = {-99., -99.};
+        Double_t bCov[3] = {-99., -99., -99.};
+        if (track->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlob++;
+    }
+    if(year == 2010 && multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob)) return kTRUE;
+    if(year == 2011  && multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob)) return kTRUE;
+    return kFALSE;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetFlow::DoTestFlowAnalysis()
@@ -252,9 +288,8 @@ void AliAnalysisTaskJetFlow::DoTestFlowAnalysis()
     Double_t _a(0), _b(0), _c(0), _d(0);        // dummmy's
     Double_t Q2a(InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 2, _a, _b));
     Double_t Q2c(InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 2, _c, _d));
-    TProfile* a = (TProfile*)fv2VZEROA->Clone("temp_a");
-    TProfile* c = (TProfile*)fv2VZEROC->Clone("temp_c");
-    if(!(a||c)) return; // coverity
+    fTempA->Reset();    // clear the containers for a new iteration
+    fTempC->Reset();
     TClonesArray* jets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName.Data()));
     if(jets) {
         Int_t iJets = jets->GetEntriesFast();
@@ -262,25 +297,23 @@ void AliAnalysisTaskJetFlow::DoTestFlowAnalysis()
             for(Int_t i(0); i < iJets; i++) {
                 AliVParticle* jet = static_cast<AliVParticle*>(jets->At(i));
                 if(jet && jet->Pt() + fPtBump >= fPOIPtMin && jet->Pt() < fPOIPtMax) {
-                    a->Fill(jet->Pt(), TMath::Cos(2.*(jet->Phi()-Q2a)));
-                    c->Fill(jet->Pt(), TMath::Cos(2.*(jet->Phi()-Q2c)));
+                    fTempA->Fill(jet->Pt(), TMath::Cos(PhaseShift(2.*(jet->Phi()-Q2a), 2)));
+                    fTempC->Fill(jet->Pt(), TMath::Cos(PhaseShift(2.*(jet->Phi()-Q2c), 2)));
                 }
             }
         } else {
             for(Int_t i(0); i < iJets; i++) {
                 AliEmcalJet* jet = static_cast<AliEmcalJet*>(jets->At(i));
                 if(jet && jet->PtSub() + fPtBump >= fPOIPtMin && jet->PtSub() < fPOIPtMax) {
-                    a->Fill(jet->PtSub(), TMath::Cos(2.*(jet->Phi()-Q2a)));
-                    c->Fill(jet->PtSub(), TMath::Cos(2.*(jet->Phi()-Q2c)));
+                    fTempA->Fill(jet->PtSub(), TMath::Cos(PhaseShift(2.*(jet->Phi()-Q2a), 2)));
+                    fTempC->Fill(jet->PtSub(), TMath::Cos(PhaseShift(2.*(jet->Phi()-Q2c), 2)));
                 }
             }
         }
         for(Int_t i(0); i < fv2VZEROA->GetXaxis()->GetNbins(); i++) {
-            fv2VZEROA->Fill(fPtBins->At(i)+(fPtBins->At(i)+fPtBins->At(1+i))/2., a->GetBinContent(i+1));
-            fv2VZEROC->Fill(fPtBins->At(i)+(fPtBins->At(i)+fPtBins->At(1+i))/2., c->GetBinContent(i+1));
+            fv2VZEROA->Fill(fPtBins->At(i)+(fPtBins->At(i)+fPtBins->At(1+i))/2., fTempA->GetBinContent(i+1));
+            fv2VZEROC->Fill(fPtBins->At(i)+(fPtBins->At(i)+fPtBins->At(1+i))/2., fTempC->GetBinContent(i+1));
         }
-        delete a;
-        delete c;
     }
 }
 //_____________________________________________________________________________
