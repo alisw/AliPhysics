@@ -1007,7 +1007,13 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       Bool_t isFromMaterial=kFALSE, isFromMaterialTPC=kFALSE, isFromMaterialITS=kFALSE;
 
       AliTrackReference *refTPCIn = NULL;
+      AliTrackReference *refTPCOut = NULL;
       AliTrackReference *refITS = NULL;
+      AliTrackReference *refTRD = NULL;
+      AliTrackReference *refTOF = NULL;
+      AliTrackReference *refEMCAL = NULL;
+      AliTrackReference *refPHOS = NULL;
+      Int_t nrefTPC=0, nrefTRD=0, nrefTOF=0, nrefITS=0, nrefEMCAL=0, nrefPHOS=0;
 
       Bool_t isOKtrackInnerC3 = kFALSE;
       AliExternalTrackParam *trackInnerC3 = new AliExternalTrackParam(*(track->GetInnerParam()));
@@ -1052,7 +1058,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	//
         TParticle *part=0;
         TClonesArray *trefs=0;
-        Int_t status = mcEvent->GetParticleAndTR(track->GetTPCLabel(), part, trefs);
+        Int_t status = mcEvent->GetParticleAndTR(TMath::Abs(track->GetTPCLabel()), part, trefs);
 
 	if(status>0 && part && trefs && part->GetPDG() && part->GetPDG()->Charge()!=0.) 
 	{
@@ -1065,8 +1071,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             AliTrackReference *ref = (AliTrackReference *)trefs->At(iref);
 
              // Ref. in the middle ITS 
-            if(ref && ref->DetectorId()==AliTrackReference::kITS)
+            if(ref && ref->Label()==label && ref->DetectorId()==AliTrackReference::kITS)
             {
+	      nrefITS++;
 	      if(!refITS && countITS==2) {
 	        refITS = ref;
 	        //printf("refITS %p \n",refITS);
@@ -1075,14 +1082,48 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             }
 
             // TPC
-            if(ref && ref->DetectorId()==AliTrackReference::kTPC)
+            if(ref && ref->Label()==label  && ref->DetectorId()==AliTrackReference::kTPC)
             {
+	      nrefTPC++;
+	      refTPCOut=ref;
 	      if(!refTPCIn) {
 	        refTPCIn = ref;
 	        //printf("refTPCIn %p \n",refTPCIn);
 	        //break;
 	      }
             }
+            // TRD
+            if(ref && ref->Label()==label && ref->DetectorId()==AliTrackReference::kTRD)
+            {
+	      nrefTRD++;
+	      if(!refTRD) {
+	        refTRD = ref;
+	      }
+            }
+            // TOF
+            if(ref && ref->Label()==label  && ref->DetectorId()==AliTrackReference::kTOF)
+            {
+	      nrefTOF++;
+	      if(!refTOF) {
+	        refTOF = ref;
+	      }
+            }
+            // EMCAL
+            if(ref && ref->Label()==label  && ref->DetectorId()==AliTrackReference::kEMCAL)
+            {
+	      nrefEMCAL++;
+	      if(!refEMCAL) {
+	        refEMCAL = ref;
+	      }
+            }
+            // PHOS
+ //            if(ref && ref->Label()==label  && ref->DetectorId()==AliTrackReference::kPHOS)
+//             {
+// 	      nrefPHOS++;
+// 	      if(!refPHOS) {
+// 	        refPHOS = ref;
+// 	      }
+//             }
 	  }
 
           // transform inner params to TrackRef
@@ -1227,30 +1268,47 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	  "centralityF="<<centralityF;
         if (mcEvent)
         {
-          (*fTreeSRedirector)<<"highPt"<<
-          "refTPCIn.="<<refTPCIn<<
-          "refITS.="<<refITS<<
-          "particle.="<<particle<<
-          "particleMother.="<<particleMother<<
-          "mech="<<mech<<
-          "isPrim="<<isPrim<<
-          "isFromStrangess="<<isFromStrangess<<
-          "isFromConversion="<<isFromConversion<<
-          "isFromMaterial="<<isFromMaterial<<
-          "particleTPC.="<<particleTPC<<
-          "particleMotherTPC.="<<particleMotherTPC<<
-          "mechTPC="<<mechTPC<<
-          "isPrimTPC="<<isPrimTPC<<
-          "isFromStrangessTPC="<<isFromStrangessTPC<<
-          "isFromConversionTPC="<<isFromConversionTPC<<
-          "isFromMaterialTPC="<<isFromMaterialTPC<<
-          "particleITS.="<<particleITS<<
-          "particleMotherITS.="<<particleMotherITS<<
-          "mechITS="<<mechITS<<
-          "isPrimITS="<<isPrimITS<<
-          "isFromStrangessITS="<<isFromStrangessITS<<
-          "isFromConversionITS="<<isFromConversionITS<<
-          "isFromMaterialITS="<<isFromMaterialITS;
+	  AliTrackReference refDummy;
+	  if (!refITS) refITS = &refDummy;
+	  if (!refTRD) refTRD = &refDummy;
+	  if (!refTOF) refTOF = &refDummy;
+	  if (!refEMCAL) refEMCAL = &refDummy;
+	  if (!refPHOS) refPHOS = &refDummy;
+          (*fTreeSRedirector)<<"highPt"<<	
+	    "nrefITS="<<nrefITS<<              // number of track references in the ITS
+	    "nrefTPC="<<nrefTPC<<              // number of track references in the TPC
+	    "nrefTRD="<<nrefTRD<<              // number of track references in the TRD
+	    "nrefTOF="<<nrefTOF<<              // number of track references in the TOF
+	    "nrefEMCAL="<<nrefEMCAL<<              // number of track references in the TOF
+	    "nrefPHOS="<<nrefPHOS<<              // number of track references in the TOF
+	    "refTPCIn.="<<refTPCIn<<
+	    "refTPCOut.="<<refTPCOut<<
+	    "refITS.="<<refITS<<	    
+	    "refTRD.="<<refTRD<<	    
+	    "refTOF.="<<refTOF<<	    
+	    "refEMCAL.="<<refEMCAL<<	    
+	    "refPHOS.="<<refPHOS<<	    
+	    "particle.="<<particle<<
+	    "particleMother.="<<particleMother<<
+	    "mech="<<mech<<
+	    "isPrim="<<isPrim<<
+	    "isFromStrangess="<<isFromStrangess<<
+	    "isFromConversion="<<isFromConversion<<
+	    "isFromMaterial="<<isFromMaterial<<
+	    "particleTPC.="<<particleTPC<<
+	    "particleMotherTPC.="<<particleMotherTPC<<
+	    "mechTPC="<<mechTPC<<
+	    "isPrimTPC="<<isPrimTPC<<
+	    "isFromStrangessTPC="<<isFromStrangessTPC<<
+	    "isFromConversionTPC="<<isFromConversionTPC<<
+	    "isFromMaterialTPC="<<isFromMaterialTPC<<
+	    "particleITS.="<<particleITS<<
+	    "particleMotherITS.="<<particleMotherITS<<
+	    "mechITS="<<mechITS<<
+	    "isPrimITS="<<isPrimITS<<
+	    "isFromStrangessITS="<<isFromStrangessITS<<
+	    "isFromConversionITS="<<isFromConversionITS<<
+	    "isFromMaterialITS="<<isFromMaterialITS;
         }
         //finish writing the entry
         AliInfo("writing tree highPt");
