@@ -95,6 +95,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
 
   // Control histograms
   TH1F *   fhNEvents;           //! Number of events counter histogram
+  TH1F *   fhNExoticEvents;     //! Number of events triggered by exotic, counter histogram
   TH1F *   fhNPileUpEvents;     //! N events pasing pile up cut
   TH1F *   fhZVertex;           //! Vertex of accepted event
   TH1F *   fhPileUpClusterMult; //! N clusters with high time
