@@ -3062,8 +3062,8 @@ void AliChaoticity::Exec(Option_t *)
 	    
 	    q3 = sqrt(pow(qinv12,2) + pow(qinv13,2) + pow(qinv23,2));
 	    transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
-	    //if(transK3<0.35) fEDbin=0;
-	    //else fEDbin=1;
+	    if(transK3<0.3) fEDbin=0;
+	    else fEDbin=1;
 	    firstQ=0; secondQ=0; thirdQ=0;
 	    
 	    
