@@ -2242,6 +2242,11 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
     Int_t fNumberOfBins = gHist->GetNbinsX();
     //    Int_t fBinWidth     = gHist->GetBinWidth(1); // assume equal binning
 
+
+    // ----------------------------------------------------------------------
+    // ZYAM (for partially negative distributions)
+    // --> we subtract always the minimum value
+    Double_t zeroYield = gHist->GetMinimum();
     
     // ----------------------------------------------------------------------
     // first calculate the mean
@@ -2258,8 +2263,8 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
 	continue;
       }
 
-      fWeightedAverage   += gHist->GetBinContent(i) * gHist->GetBinCenter(i);
-      fNormalization     += gHist->GetBinContent(i);
+      fWeightedAverage   += (gHist->GetBinContent(i)-zeroYield) * gHist->GetBinCenter(i);
+      fNormalization     += (gHist->GetBinContent(i)-zeroYield);
     }  
     
     mean = fWeightedAverage / fNormalization;
@@ -2285,14 +2290,14 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
 	continue;
       }
 
-      fMu  += gHist->GetBinContent(i) * (gHist->GetBinCenter(i) - mean);
-      fMu2 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),2);
-      fMu3 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),3);
-      fMu4 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),4);
-      fMu5 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),5);
-      fMu6 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),6);
-      fMu7 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),7);
-      fMu8 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),8);
+      fMu  += (gHist->GetBinContent(i)-zeroYield) * (gHist->GetBinCenter(i) - mean);
+      fMu2 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),2);
+      fMu3 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),3);
+      fMu4 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),4);
+      fMu5 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),5);
+      fMu6 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),6);
+      fMu7 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),7);
+      fMu8 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),8);
     }
 
     // normalize to bin entries!
@@ -2318,7 +2323,7 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
     fMu6 /= TMath::Power(sigma,6);    
     fMu7 /= TMath::Power(sigma,7);    
     fMu8 /= TMath::Power(sigma,8);    
-
+  
     // ----------------------------------------------------------------------
     // then calculate the higher moment errors
     // cout<<fNormalization<<" "<<gHist->GetEffectiveEntries()<<" "<<gHist->Integral()<<endl;
@@ -2346,17 +2351,16 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
 
     if (TMath::Sqrt(normError) != 0){
       meanError        = sigma / TMath::Sqrt(normError); 
+      sigmaError       = TMath::Sqrt(Lambda11);
+      skewnessError    = TMath::Sqrt(Lambda22);
+      kurtosisError    = TMath::Sqrt(Lambda33);
+
+      success = kTRUE;    
+	  
     }
-    else return -999;
-    sigmaError       = TMath::Sqrt(Lambda11);
-    skewnessError    = TMath::Sqrt(Lambda22);
-    kurtosisError    = TMath::Sqrt(Lambda33);
-    
-    
-    success = kTRUE;    
+    else success = kFALSE;
+  
   }
-
-
   return success;
 }
 
