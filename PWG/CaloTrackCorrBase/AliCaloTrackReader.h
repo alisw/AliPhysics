@@ -238,7 +238,8 @@ public:
   void             SwitchOnLEDEventsRemoval()              { fRemoveLEDEvents       = kTRUE  ; }
   void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = kFALSE ; } 
   Bool_t           IsLEDEventRemoved()               const { return fRemoveLEDEvents         ; }   
-
+  Bool_t           RejectLEDEvents();
+  
   void             SetFiredTriggerClassName(TString name ) { fFiredTriggerClassName = name   ; }
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
   TString          GetFiredTriggerClasses() ;               
@@ -247,6 +248,12 @@ public:
   void             SetEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAny) 
                                                            { fEventTriggerMask = evtTrig     ; }
 
+  void             RejectExoticEvents();
+  Bool_t           IsExoticEvent()                         { return fIsExoticEvent           ; }
+  void             SwitchOnExoticEventsRemoval()           { fRemoveExoticEvents    = kTRUE  ; }
+  void             SwitchOffExoticEventsRemoval()          { fRemoveExoticEvents    = kFALSE ; }
+  void             SetExoticEventTrigger(Float_t tr)       { fExoticTrigger         = tr     ; }
+  
   UInt_t           GetMixEventTriggerMask()             const { return fMixEventTriggerMask  ; }
   void             SetMixEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAnyINT) 
                                                            { fMixEventTriggerMask = evtTrig  ; }
@@ -593,6 +600,9 @@ public:
   Float_t          fZvtxCut ;	                   // Cut on vertex position
   Bool_t           fAcceptFastCluster;           // Accept events from fast cluster, exclude these events for LHC11a
   Bool_t           fRemoveLEDEvents;             // Remove events where LED was wrongly firing - EMCAL LHC11a
+  Bool_t           fRemoveExoticEvents;          // Remove events triggered by exotic cluster
+  Float_t          fExoticTrigger;               // Threshold to look for triggered events by exotic clusters
+  Bool_t           fIsExoticEvent;               // Exotic event flag
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
   Bool_t           fDoVertexBCEventSelection;    // Select events with vertex on BC=0 or -100
@@ -636,7 +646,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,51)
+  ClassDef(AliCaloTrackReader,52)
   
 } ;
 

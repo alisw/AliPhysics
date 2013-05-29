@@ -92,7 +92,8 @@ fListMixedTracksEvents(),    fListMixedCaloEvents(),
 fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),                    
-fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE), 
+fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
+fRemoveExoticEvents(kFALSE), fExoticTrigger(3),               fIsExoticEvent(kFALSE),
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
 fDoVertexBCEventSelection(kFALSE),
 fDoRejectNoTrackEvents(kFALSE),
@@ -690,6 +691,17 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     return kFALSE;
   }
   
+  
+  //---------------------------------------------------------------------
+  // Do not count events that where likely triggered by an exotic cluster
+  //---------------------------------------------------------------------
+  if(fRemoveExoticEvents && GetFiredTriggerClasses().Contains("EMC"))
+  {
+    RejectExoticEvents();
+    //printf("Is this event exotic? %d\n",fIsExoticEvent);
+    if(fIsExoticEvent) return kFALSE;
+  }
+  
   //-------------------------------------------------------------------------------------
   // Reject event if large clusters with large energy
   // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
@@ -698,28 +710,13 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   Int_t run = fInputEvent->GetRunNumber();
   if( fRemoveLEDEvents && run > 146857  && run < 146861 )
   {
-    //printf("Event %d\n",GetEventNumber());
-    
-    // Count number of cells with energy larger than 0.1 in SM3, cut on this number
-    Int_t ncellsSM3 = 0;
-    for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++)
-    {
-      Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
-      Int_t sm    = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
-      if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==3) ncellsSM3++;
-    }
-    
-    Int_t ncellcut = 21;
-    if(fFiredTriggerClassName.Contains("EMC")) ncellcut = 35;
-    
-    if(ncellsSM3 >= ncellcut)
-    {
-      if(fDebug > 0) printf(" AliCaloTrackReader::FillInputEvent() - reject event with ncells in SM3 %d\n",ncellsSM3);
-      return kFALSE;
-    }
+    Bool_t reject = RejectLEDEvents();
+    if(reject) return kFALSE;
   }// Remove LED events
   
+  //------------------------
   // Reject pure LED events?
+  //-------------------------
   if( fFiredTriggerClassName  !="" && !fAnaLED)
   {
     //printf("Event type %d\n",eventType);
@@ -1747,7 +1744,7 @@ Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
   AliESDEvent * event = dynamic_cast<AliESDEvent*> (fInputEvent);
   if(!event) return kTRUE;
   
-  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) 
+  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0)
   {
     return kTRUE;
   }
@@ -1772,8 +1769,67 @@ Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
   
 }
 
+//____________________________________________
+void  AliCaloTrackReader::RejectExoticEvents()
+{
+  // Reject events triggered by exotic cells
+  // simple method
+  Int_t nOfHighECl = 0 ;
+  Int_t nExo       = 0 ;
+  Int_t nclusters  = fInputEvent->GetNumberOfCaloClusters();
+  for (Int_t iclus =  0; iclus <  nclusters; iclus++)
+  {
+    AliVCluster * clus = 0;
+    if ( (clus = fInputEvent->GetCaloCluster(iclus)) )
+    {
+      if (IsEMCALCluster(clus) && clus->E() > fExoticTrigger)
+      {
+        Bool_t exotic = GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCluster(clus, fInputEvent->GetEMCALCells());
+        if(exotic) nExo++;
+        else       nOfHighECl++;
+      }//EMCAL cluster
+    }// cluster exists
+  }// cluster loop
+  
+  //printf("trigger %2.1f, n Exotic %d, n high energy %d\n", fExoticTrigger,nExo,nOfHighECl);
+  
+  if ((nExo>0)&&(nOfHighECl==0)) fIsExoticEvent = kTRUE ;
+  else                           fIsExoticEvent = kFALSE;
+  
+}
+
+//__________________________________________
+Bool_t  AliCaloTrackReader::RejectLEDEvents()
+{
+  // LED Events in period LHC11a contaminated sample, simple method
+  // to reject such events
+  
+  // Count number of cells with energy larger than 0.1 in SM3, cut on this number
+  Int_t ncellsSM3 = 0;
+  for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++)
+  {
+    Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
+    Int_t sm    = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
+    if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==3) ncellsSM3++;
+  }
+  
+  Int_t ncellcut = 21;
+  if(GetFiredTriggerClasses().Contains("EMC")) ncellcut = 35;
+    
+  if(ncellsSM3 >= ncellcut)
+  {
+    if(fDebug > 0)
+      printf(" AliCaloTrackReader::FillInputEvent() - reject event with ncells in SM3 %d, cut %d, trig %s\n",
+             ncellsSM3,ncellcut,GetFiredTriggerClasses().Data());
+    return kTRUE;
+  }
+  
+  return kFALSE;
+  
+}
+
 //____________________________________________________________
-void  AliCaloTrackReader::SetTrackCuts(AliESDtrackCuts * cuts) 
+void  AliCaloTrackReader::SetTrackCuts(AliESDtrackCuts * cuts)
 { 
   // Set Track cuts
   

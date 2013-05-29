@@ -49,7 +49,7 @@ fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(kFALSE),           fMakeAOD(kFALSE), 
 fAnaDebug(0),                 fCuts(new TList), 
 fScaleFactor(-1),
-fhNEvents(0),                 fhNPileUpEvents(0),
+fhNEvents(0),                 fhNExoticEvents(), fhNPileUpEvents(0),
 fhZVertex(0),                 
 fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
@@ -76,7 +76,8 @@ fOutputContainer(new TList()), fAnalysisContainer(new TList()),
 fMakeHisto(maker.fMakeHisto),  fMakeAOD(maker.fMakeAOD),
 fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
-fhNEvents(maker.fhNEvents), 
+fhNEvents(maker.fhNEvents),
+fhNExoticEvents(maker.fhNExoticEvents),
 fhNPileUpEvents(maker.fhNPileUpEvents),
 fhZVertex(maker.fhZVertex),    
 fhPileUpClusterMult(maker.fhPileUpClusterMult),
@@ -172,7 +173,7 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
   
   fhNEvents        ->Fill(0); // Number of events analyzed
-  
+    
   if( fReader->IsPileUpFromSPD())
     fhNPileUpEvents->Fill(0.5);
   //if( event->IsPileupFromSPDInMultBins())
@@ -281,6 +282,10 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNEvents      = new TH1F("hNEvents",   "Number of analyzed events"     , 1 , 0 , 1  ) ;
   fhNEvents->SetYTitle("# events");
   fOutputContainer->Add(fhNEvents);
+  
+  fhNExoticEvents      = new TH1F("hNExoticEvents",   "Number of analyzed events triggered by exotic cluster"     , 1 , 0 , 1  ) ;
+  fhNExoticEvents->SetYTitle("# exotic events");
+  fOutputContainer->Add(fhNExoticEvents);
   
   fhNPileUpEvents      = new TH1F("hNPileUpEvents",   "Number of events considered as pile-up", 8 , 0 , 8 ) ;
   fhNPileUpEvents->SetYTitle("# events");
@@ -540,6 +545,8 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
   if(!ok)
   {
+    if(fReader->IsExoticEvent()) fhNExoticEvents->Fill(0) ;
+    
 	  if(fAnaDebug >= 1 )printf("*** Skip event *** %d \n",iEntry);
     fReader->ResetLists();
 	  return ;
