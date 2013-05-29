@@ -858,14 +858,15 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     trigCounter->AddRubric("triggerType","All/Any/MB/Cent/SemiCent/EMCAL/MUON/NoPhysSelMUON/NoPhysSelEvNot7/NoPhysSelCMUP1/NoPhysSelMB/NoPhysSelCent/NoPhysSelSemiCent/CINT7");
     trigCounter->Init();
 
-    TH1F* hWhyEvRejected=new TH1F("hWhyEvRejected", "Why Event rejected",6,-0.5,5.5);
+    TH1F* hWhyEvRejected=new TH1F("hWhyEvRejected", "Why Event rejected",7,-1.5,5.5);
 
-    hWhyEvRejected->GetXaxis()->SetBinLabel(1,"pileup");
-    hWhyEvRejected->GetXaxis()->SetBinLabel(2,"centrality");
-    hWhyEvRejected->GetXaxis()->SetBinLabel(3,"Vertex (more reasons)");
-    hWhyEvRejected->GetXaxis()->SetBinLabel(4,"trigger");
-    hWhyEvRejected->GetXaxis()->SetBinLabel(5,"z vertex out");
-    hWhyEvRejected->GetXaxis()->SetBinLabel(6,"physics sel");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(1,"N events");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(2,"pileup");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(3,"centrality");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(4,"Vertex not found");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(5,"trigger");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(6,"z vertex out of 10 cm");
+    hWhyEvRejected->GetXaxis()->SetBinLabel(7,"physics sel");
 
 
     fOutputEvSelection->Add(evselection);
@@ -1347,35 +1348,36 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   TH1F* hWhyEvRejected=0x0;
   if(fOnOff[3]){
     hWhyEvRejected=(TH1F*)fOutputEvSelection->FindObject("hWhyEvRejected");
+     if(hWhyEvRejected) hWhyEvRejected->Fill(-1); 
   }
 
   //select event
   if(!fCuts->IsEventSelected(aod)) {
     evSelected=kFALSE;
     if(fCuts->IsEventRejectedDueToPileupSPD()) {
-      if(hWhyEvRejected) hWhyEvRejected->Fill(1); 
+      if(hWhyEvRejected) hWhyEvRejected->Fill(0); 
       evselByPileup=kFALSE;
     }// rejected for pileup
     if(fCuts->IsEventRejectedDueToCentrality()) {
-      if(hWhyEvRejected) hWhyEvRejected->Fill(2); 
+      if(hWhyEvRejected) hWhyEvRejected->Fill(1); 
       evSelbyCentrality=kFALSE; //rejected by centrality
     }
     if(fCuts->IsEventRejectedDueToNotRecoVertex() ||
-       fCuts->IsEventRejectedDueToVertexContributors() ||
-       fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()){ 
+       fCuts->IsEventRejectedDueToVertexContributors()){ 
       evSelByVertex=kFALSE; 
-      if(hWhyEvRejected) hWhyEvRejected->Fill(3);
+      if(hWhyEvRejected) hWhyEvRejected->Fill(2);
     }
     if(fCuts->IsEventRejectedDueToTrigger()){
-      if(hWhyEvRejected) hWhyEvRejected->Fill(4);
+      if(hWhyEvRejected) hWhyEvRejected->Fill(3);
     }
     if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) {
+      evSelByVertex=kFALSE; 
       if(fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber)); 
-      if(hWhyEvRejected) hWhyEvRejected->Fill(5);
+      if(hWhyEvRejected) hWhyEvRejected->Fill(4);
     }
     if(fCuts->IsEventRejectedDuePhysicsSelection()) { 
       evSelByPS=kFALSE;
-      if(hWhyEvRejected) hWhyEvRejected->Fill(6); 
+      if(hWhyEvRejected) hWhyEvRejected->Fill(5); 
     }
   }
   if(evSelected && fOnOff[3]){
