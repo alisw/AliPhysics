@@ -1220,7 +1220,7 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
      }
       Int_t rd=0;
       if(im==0) rd=0;
-      if(im>0) rd=fRandom->Integer(im-1);
+      if(im>0) rd=fRandom->Integer(im);
       index=triggers[rd];
 
      
