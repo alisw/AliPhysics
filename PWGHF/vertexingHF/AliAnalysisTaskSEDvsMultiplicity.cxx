@@ -99,7 +99,8 @@ AliAnalysisTaskSE(),
   fHistoMeasNch(0),
   fRefMult(9.26),
   fPdgMeson(411),
-  fMultiplicityEstimator(kNtrk10)
+  fMultiplicityEstimator(kNtrk10),
+  fMCPrimariesEstimator(kEta10)
 {
    // Default constructor
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
@@ -154,7 +155,8 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHistoMeasNch(0),
   fRefMult(9.26),
   fPdgMeson(pdgMeson),
-  fMultiplicityEstimator(kNtrk10)
+  fMultiplicityEstimator(kNtrk10),
+  fMCPrimariesEstimator(kEta10)
 {
   // 
   // Standard constructor
@@ -276,8 +278,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   Float_t firstMultBin = -0.5;
   Float_t lastMultBin = 199.5;
   if(fMultiplicityEstimator==kVZERO) {
-    nMultBins = 600;
-    lastMultBin = 599.5;
+    nMultBins = 700;
+    lastMultBin = 699.5;
   }
 
   fHistNtrUnCorrEvSel = new TH1F("hNtrUnCorrEvSel","Uncorrected tracklets multiplicity for selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
@@ -353,11 +355,14 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
 
   fPtVsMassVsMultAntiPart=new TH3F("hPtVsMassvsMultAntiPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
 
+  fPtVsMassVsMultMC=new TH3F("hPtVsMassvsMultMC", "D true candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
+
   fOutput->Add(fPtVsMassVsMult);
   fOutput->Add(fPtVsMassVsMultUncorr);
   fOutput->Add(fPtVsMassVsMultNoPid);
   fOutput->Add(fPtVsMassVsMultPart);
   fOutput->Add(fPtVsMassVsMultAntiPart);
+  fOutput->Add(fPtVsMassVsMultMC);
 
   if(fDoImpPar) CreateImpactParameterHistos();
 
@@ -521,6 +526,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     Int_t nChargedMC=AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.0,1.0);
     Int_t nChargedMCPrimary=AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-1.0,1.0);
     Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-1.0,1.0);
+
+    // Compute the Nch weights (reference is Ntracklets within |eta|<1.0)
     if(fUseNchWeight){
       Double_t tmpweight = 1.0;
       if(nChargedMCPhysicalPrimary<=0) tmpweight = 0.0;
@@ -533,6 +540,31 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       nchWeight *= tmpweight;
       AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,nchWeight));
     }
+
+    // Now recompute the variables in case another MC estimator is considered
+    Int_t nChargedMCEta10 = nChargedMC;
+    Int_t nChargedMCEta16 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.6,1.6);
+    Int_t nChargedMCEtam37tm17 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-3.7,-1.7);
+    Int_t nChargedMCEta28t51 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,2.8,5.1);
+    Int_t nChargedMCPrimaryEta10 = nChargedMCPrimary;
+    Int_t nChargedMCPrimaryEta16 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-1.6,1.6);
+    Int_t nChargedMCPrimaryEtam37tm17 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-3.7,-1.7);
+    Int_t nChargedMCPrimaryEta28t51 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,2.8,5.1);
+    Int_t nChargedMCPhysicalPrimaryEta10 = nChargedMCPhysicalPrimary;
+    Int_t nChargedMCPhysicalPrimaryEta16 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-1.6,1.6);
+    Int_t nChargedMCPhysicalPrimaryEtam37tm17 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-3.7,-1.7);
+    Int_t nChargedMCPhysicalPrimaryEta28t51 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,2.8,5.1);
+    if(fMCPrimariesEstimator==kEta10to16){
+      nChargedMC = nChargedMCEta16 - nChargedMCEta10;
+      nChargedMCPrimary = nChargedMCPrimaryEta16 - nChargedMCPrimaryEta10;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta16 - nChargedMCPhysicalPrimaryEta10;
+    } else if(fMCPrimariesEstimator==kEtaVZERO){
+      nChargedMC = nChargedMCEtam37tm17 + nChargedMCEta28t51;
+      nChargedMCPrimary = nChargedMCPrimaryEtam37tm17 + nChargedMCPrimaryEta28t51;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEtam37tm17 + nChargedMCPhysicalPrimaryEta28t51;
+    }
+
+    // Here fill the MC correlation plots
     if(nChargedMCPhysicalPrimary>0){ // INEL>0 for |eta|<1
       fHistGenPrimaryParticlesInelGt0->Fill(nChargedMCPhysicalPrimary,nchWeight);
     }
@@ -568,6 +600,13 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     Double_t rapid=d->Y(fPdgMeson);
     Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
     if(!isFidAcc) continue;
+   
+    Int_t labD=-1;
+    if(fReadMC) {
+      labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
+      FillMCMassHistos(arrayMC,labD, countMult,nchWeight);
+    }
+
     Int_t passAllCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
     Int_t passTopolCuts=fRDCutsAnalysis->GetIsSelectedCuts();
     if(passTopolCuts==0) continue;
@@ -588,7 +627,6 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       }
     }
     Bool_t isPrimary=kTRUE;
-    Int_t labD=-1;
     Double_t trueImpParXY=9999.;
     Double_t impparXY=d->ImpParXY()*10000.;
     Double_t dlen=0.1; //FIXME
@@ -644,10 +682,10 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	}else{
 	  if(fillHisto && passAllCuts)fHistMassPtImpPar[4]->Fill(arrayForSparse);
 	}
-	if(fPdgMeson==421){
-	  if(TMath::Abs(labD)==fPdgMeson && fMCOption==2) continue;
-	  if(TMath::Abs(labD)!=fPdgMeson && fMCOption==1) continue;      
-	}
+
+	if(TMath::Abs(labD)==fPdgMeson && fMCOption==2) continue;
+	if(TMath::Abs(labD)!=fPdgMeson && fMCOption==1) continue;      
+
       }
       
       if(fPdgMeson==421){
@@ -689,7 +727,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     aveMult/=nSelCand;
     fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001));
   }else{
-    fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countTreta1corr);
+    fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr);
   }
 
 
@@ -836,4 +874,20 @@ void AliAnalysisTaskSEDvsMultiplicity::CreateMeasuredNchHisto(){
     fHistoMeasNch->SetBinContent(i+1,pch[i]);
     fHistoMeasNch->SetBinError(i+1,0.);
   }
+}
+
+//__________________________________________________________________________________________________
+void AliAnalysisTaskSEDvsMultiplicity::FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Int_t countMult,Double_t nchWeight) 
+{
+  //
+  // Function to fill the true MC signal
+  //
+  
+  if(labD>=0){
+    AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
+    Double_t mass = partD->M();
+    Double_t pt = partD->Pt();
+    fPtVsMassVsMultMC->Fill(countMult,mass,pt,nchWeight);
+  }
+
 }
