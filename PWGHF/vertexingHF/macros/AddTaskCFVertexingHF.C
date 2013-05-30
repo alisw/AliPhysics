@@ -42,12 +42,14 @@ const Float_t multmin_0_20 = 0;
 const Float_t multmax_0_20 = 20;
 const Float_t multmin_20_50 = 20;
 const Float_t multmax_20_50 = 50;
-const Float_t multmin_50_102 = 50;
-const Float_t multmax_50_102 = 102;
+const Float_t multmin_50_80 = 50;
+const Float_t multmax_50_80 = 80;
+const Float_t multmin_80_100 = 80;
+const Float_t multmax_80_100 = 100;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isFinePtBin=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isFinePtBin=kFALSE, Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE)
 {
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -136,7 +138,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const Int_t nbinmult = 48;  //bins in multiplicity (total number)
 	const Int_t nbinmult_0_20 = 20; //bins in multiplicity between 0 and 20
 	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
-	const Int_t nbinmult_50_102 = 13; //bins in multiplicity between 50 and 102
+	const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 102
+	const Int_t nbinmult_80_100 = 4; //bins in multiplicity between 50 and 102
 
 	//the sensitive variables, their indices
 
@@ -347,10 +350,19 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 1st range - differs from expected!\n");
 	}
 	for(Int_t i=0; i<=nbinmult_20_50; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_50 + (multmax_20_50-multmin_20_50)/nbinmult_20_50*(Double_t)i ; 
-	if (binLimmult[nbinmult_0_20+nbinmult_20_50] != multmin_50_102)  {
+	if (binLimmult[nbinmult_0_20+nbinmult_20_50] != multmin_50_80)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbinmult_50_102; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_102 + (multmax_50_102-multmin_50_102)/nbinmult_50_102*(Double_t)i ; 
+	for(Int_t i=0; i<=nbinmult_50_80; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_80 + (multmax_50_80-multmin_50_80)/nbinmult_50_80*(Double_t)i ; 
+	if (binLimmult[nbinmult_0_20+nbinmult_20_50+nbinmult_50_80] != multmin_80_100)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
+	}
+	for(Int_t i=0; i<=nbinmult_80_100; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80]=(Double_t)multmin_80_100 + (multmax_80_100-multmin_80_100)/nbinmult_80_100*(Double_t)i ; 
+
+	if(multiplicityEstimator==AliCFTaskVertexingHF::kVZERO) {
+	  Int_t items = nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100;
+	  for(Int_t i=0; i<=items; i++) binLimmult[i]*= 68./12.;
+	}
 
 	//one "container" for MC
 	TString nameContainer="";
@@ -570,6 +582,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	task->SetFakeSelection(0);
 	task->SetRejectCandidateIfNotFromQuark(kTRUE); // put to false if you want to keep HIJING D0!!
 	task->SetUseMCVertex(kFALSE); // put to true if you want to do studies on pp
+	task->SetMultiplicityEstimator(multiplicityEstimator);
+	task->SetIsPPData(isPPData);
 
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);	

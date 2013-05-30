@@ -74,6 +74,8 @@ public:
           kKstar = 3,  // Lc --> K* + pi
           kDelta = 4   // Lc --> Delta + K
         };
+
+	enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 }; // multiplicity estimators
 	
 	AliCFTaskVertexingHF();
 	AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func = 0x0);
@@ -123,6 +125,10 @@ public:
 	}
 	void CreateMeasuredNchHisto();
 	Double_t GetNchWeight(Int_t nch);
+	void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
+	Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
+	void SetIsPPData(Bool_t flag){ fIsPPData = flag; }
+
 
 	void   SetDselection(UShort_t originDselection) {fOriginDselection=originDselection;}
 	UShort_t GetDselection (){return fOriginDselection;}
@@ -221,7 +227,10 @@ protected:
 	Bool_t fUseSelectionBit;     // flag to use selection bit
 	UInt_t fPDGcode; // PDG code
 
-	ClassDef(AliCFTaskVertexingHF,15); // class for HF corrections as a function of many variables
+	Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
+	Bool_t fIsPPData; // flag for pp data (not checking centrality)
+
+	ClassDef(AliCFTaskVertexingHF,16); // class for HF corrections as a function of many variables
 };
 
 #endif
