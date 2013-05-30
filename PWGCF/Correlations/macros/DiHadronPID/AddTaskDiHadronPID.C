@@ -22,7 +22,10 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
 	Bool_t isMC = kFALSE,
 	Int_t DebugLevel = 0,
 	Bool_t MakeTOFCorrelations = kTRUE,
-	Bool_t MakeTOFTPCCorrelations = kFALSE,
+	Bool_t MakeTOFTPCCorrelationsPi = kFALSE,
+	Bool_t MakeTOFTPCCorrelationsKa = kFALSE,
+	Bool_t MakeTOFTPCCorrelationsPr = kFALSE,		
+	Double_t TOFIntervalFactorTOFTPC = 1.,
 	const char* outputFileName = 0,
 	const char* containerName = "DiHadronPID",
 	const char* folderName = "PWGCF_DiHadronPID")
@@ -48,7 +51,10 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
     DiHadronPIDTask->SetMixTriggers(MixTriggers);
     DiHadronPIDTask->SetDebugLevel(DebugLevel);
     DiHadronPIDTask->SetMakeTOFCorrelations(MakeTOFCorrelations);
-    DiHadronPIDTask->SetMakeTOFTPCCorrelations(MakeTOFTPCCorrelations);
+    DiHadronPIDTask->SetMakeTOFTPCCorrelationsPi(MakeTOFTPCCorrelationsPi);
+    DiHadronPIDTask->SetMakeTOFTPCCorrelationsKa(MakeTOFTPCCorrelationsKa);
+    DiHadronPIDTask->SetMakeTOFTPCCorrelationsPr(MakeTOFTPCCorrelationsPr);        
+    DiHadronPIDTask->SetTOFIntervalFactorTOFTPC(TOFIntervalFactorTOFTPC);
 
     // Configure and add Event Cuts.
 	AliAODEventCutsDiHadronPID* eventcuts = new AliAODEventCutsDiHadronPID("EventCuts");
