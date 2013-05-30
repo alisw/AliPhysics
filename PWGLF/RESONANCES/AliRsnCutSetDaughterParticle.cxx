@@ -34,31 +34,20 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, Ali
    AliRsnCutSet(name, AliRsnTarget::kDaughter),
    fPID(pid),
    fAppliedCutSetID(cutSetID),
-   fNsigmaTPC(1E20),
-   fNsigmaTOF(1E20),
+   fNsigmaTPC(nSigmaFast),
+   fNsigmaTOF(nSigmaFast),
    fCutQuality(new AliRsnCutTrackQuality("CutQuality")),
    fAODTrkCutFilterBit(AODfilterBit)
 {
    //
    // Constructor
    //
-   if ( (nSigmaFast<=0) &&
-        ((cutSetID == AliRsnCutSetDaughterParticle::kFastTPCpidNsigma) || (cutSetID == AliRsnCutSetDaughterParticle::kFastTOFpidNsigma) || (cutSetID == AliRsnCutSetDaughterParticle::kTOFMatchTPCpidNsigma)) ) {
-      AliError("Requested fast n-sigma PID with invalid value for n. Setting n = 1E20");
-   } else {
-      if (cutSetID == AliRsnCutSetDaughterParticle::kFastTPCpidNsigma) {
-         fNsigmaTPC = nSigmaFast;
-      }
-      if (cutSetID == AliRsnCutSetDaughterParticle::kTOFMatchTPCpidNsigma) {
-	fNsigmaTPC = nSigmaFast;
-      }
-      if ( (cutSetID == AliRsnCutSetDaughterParticle::kFastTOFpidNsigma) ||
-           (cutSetID == AliRsnCutSetDaughterParticle::kTOFpidKstarPbPb2010) ) {
-         fNsigmaTOF = nSigmaFast;
-      }
-   }
-
-   Init();
+  if (nSigmaFast<=0){
+    fNsigmaTPC=1e20;
+    fNsigmaTOF=1e20;
+    AliWarning("Requested fast n-sigma PID with negative value for n. --> Setting n = 1E20");
+  } 
+  Init();
 }
 
 //__________________________________________________________________________________________________
