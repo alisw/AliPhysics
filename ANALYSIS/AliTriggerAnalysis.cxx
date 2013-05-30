@@ -718,6 +718,7 @@ Bool_t AliTriggerAnalysis::IsIncompleteEvent(const AliESDEvent* esd)
   // Check whether the event is incomplete 
   // (due to DAQ-HLT issues, it could be only part of the event was saved)
   //
+  if (fMC) return kFALSE; // there are no incomplete events on MC
   if ((esd->GetEventType() == 7) &&
       (esd->GetDAQDetectorPattern() & (1<<4)) &&
      !(esd->GetDAQAttributes() & (1<<7))) return kTRUE;
