@@ -53,6 +53,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void SetOpeningAngleCut (Double_t openingAngle) {fOpeningAngleCut = openingAngle;};
   void SetInvariantMassCut (Double_t invmass) {fInvmassCut = invmass;};
   void SetMassConstraint	(Bool_t MassConstraint)		{ fSetMassConstraint	= MassConstraint; };
+  void SetMassWidthCut  	(Bool_t MassWidthCut)		{ fSetMassWidthCut	= MassWidthCut; };
   void SetQAHist (int qahist) {fqahist = qahist;};
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
@@ -89,6 +90,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   Double_t 		fOpeningAngleCut;	//openingAngle cut value
   Double_t		fInvmassCut;		//invariant mass cut value
   Bool_t		 fSetMassConstraint;		// Set mass constraint
+  Bool_t		 fSetMassWidthCut;		// Set mass constraint
  
   int ftriggers[48][60];//!
   int ftriggersCut[48][60];//!

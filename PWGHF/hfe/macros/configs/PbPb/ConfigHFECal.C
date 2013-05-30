@@ -1,4 +1,4 @@
-AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst){
+AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWidthCut){
   //
   // HFE standard task configuration
   //
@@ -22,6 +22,7 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst){
   printf("task ------------------------ %p\n ", task);
   task->SetHFECuts(hfecuts);
   task->SetMassConstraint(MassConst);
+  task->SetMassWidthCut(MassWidthCut);
   Double_t masscut = 0.05;
   if(!MassConst)masscut = 0.1;
   task->SetInvariantMassCut(masscut);

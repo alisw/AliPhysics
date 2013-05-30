@@ -107,6 +107,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fOpeningAngleCut(0.1)
   ,fInvmassCut(0)	 // no mass
   ,fSetMassConstraint(kTRUE)
+  ,fSetMassWidthCut(kFALSE)
   ,fNoEvents(0)
   ,fEMCAccE(0)
   ,hEMCAccE(0)
@@ -242,6 +243,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fOpeningAngleCut(0.1)
   ,fInvmassCut(0)	 // no mass
   ,fSetMassConstraint(kTRUE)
+  ,fSetMassWidthCut(kFALSE)
   ,fNoEvents(0)
   ,fEMCAccE(0)
   ,hEMCAccE(0)
@@ -1529,6 +1531,8 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
        chi2cut = 30.0;
       }
     recg.GetMass(mass,width);
+
+    if(fSetMassWidthCut && width>1e10)continue;
 
         // angle   
     openingAngle = ge1.GetAngle(ge2);
