@@ -55,6 +55,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   }
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
+  void SetMCOption(Int_t option=0){ fMCOption = option; }
   void SetUseBit(Bool_t use=kTRUE){fUseBit=use;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
 
@@ -90,7 +91,9 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 };
   void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
   Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
-
+  enum { kEta10=0, kEta10to16=1, kEtaVZERO=2 };
+  void SetMCPrimariesEstimator(Int_t value){ fMCPrimariesEstimator=value; }
+  Int_t GetMCPrimariesEstimator(){ return fMCPrimariesEstimator; }
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -107,6 +110,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TProfile* GetEstimatorHistogram(const AliVEvent *event);
   void CreateImpactParameterHistos();
   void CreateMeasuredNchHisto();
+  void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Int_t countMult,Double_t nchWeight);
 
   TList  *fOutput; //! list send on output slot 1
   TList  *fListCuts; //list of cuts
@@ -140,6 +144,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH3F *fPtVsMassVsMultUncorr;  //! hist. of Pt vs Mult vs. mass (raw mult)
   TH3F *fPtVsMassVsMultPart;  //! hist. of Pt vs Mult vs. mass (particle)
   TH3F *fPtVsMassVsMultAntiPart;  //! hist. of Pt vs Mult vs. mass (antiparticle)
+  TH3F *fPtVsMassVsMultMC;  //! hist. of Pt vs Mult vs. mass (MC true candidates before reconstruction)
 
   THnSparseF *fHistMassPtImpPar[5];//! histograms for impact paramter studies
 
@@ -169,9 +174,10 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Double_t fRefMult;   // refrence multiplcity (period b)
   Int_t fPdgMeson;   // pdg code of analyzed meson
 
-  Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2 
+  Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
+  Int_t fMCPrimariesEstimator;  // Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2 
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,6); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,7); // D vs. mult task
 };
 
 #endif
