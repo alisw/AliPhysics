@@ -62,6 +62,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   Bool_t isDplusKpipi = false;
   Bool_t isDstarD0pi = false;
   Bool_t isDsKKpi = false;
+  Bool_t isLctopKpi = false;
   if (isD0Kpi && isDplusKpipi && isDstarD0pi && isDsKKpi) {
     cout << "Sorry, can not deal with more than one correction at the same time"<<endl;
     return;
@@ -175,6 +176,15 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hDirectMCptMin = (TH1D*)mcfile->Get("hDsPhipitoKkpipred_min");
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hDsPhipitoKkpifromBpred_max_corr");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hDsPhipitoKkpifromBpred_min_corr");
+  }
+  else if (isLctopKpi){
+    decay = 5;
+    hDirectMCpt = (TH1D*)mcfile->Get("hLcpkpipred_central");
+    hFeedDownMCpt = (TH1D*)mcfile->Get("hLcpkpifromBpred_central_corr");
+    hDirectMCptMax = (TH1D*)mcfile->Get("hLcpkpipred_max");
+    hDirectMCptMin = (TH1D*)mcfile->Get("hLcpkpipred_min");
+    hFeedDownMCptMax = (TH1D*)mcfile->Get("hLcpkpifromBpred_max_corr");
+    hFeedDownMCptMin = (TH1D*)mcfile->Get("hLcpkpifromBpred_min_corr");
   }
   //
   hDirectMCpt->SetNameTitle("hDirectMCpt","direct MC spectra");
