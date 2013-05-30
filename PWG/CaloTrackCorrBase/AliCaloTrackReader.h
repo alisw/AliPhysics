@@ -250,7 +250,9 @@ public:
 
   void             RejectExoticEvents();
   Bool_t           IsExoticEvent()                         { return fIsExoticEvent           ; }
-  void             SwitchOnExoticEventsRemoval()           { fRemoveExoticEvents    = kTRUE  ; }
+  void             SwitchOnExoticEventsRemoval(Bool_t all = kFALSE)
+                                                           { fRemoveExoticEvents    = kTRUE  ;
+                                                             fForceExoticRejection  = all    ; }
   void             SwitchOffExoticEventsRemoval()          { fRemoveExoticEvents    = kFALSE ; }
   void             SetExoticEventTrigger(Float_t tr)       { fExoticTrigger         = tr     ; }
   
@@ -603,6 +605,7 @@ public:
   Bool_t           fRemoveExoticEvents;          // Remove events triggered by exotic cluster
   Float_t          fExoticTrigger;               // Threshold to look for triggered events by exotic clusters
   Bool_t           fIsExoticEvent;               // Exotic event flag
+  Bool_t           fForceExoticRejection;        // Reject events triggered by exotic only on EMC triggered events, except in MC to study false rejections
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
   Bool_t           fDoVertexBCEventSelection;    // Select events with vertex on BC=0 or -100
