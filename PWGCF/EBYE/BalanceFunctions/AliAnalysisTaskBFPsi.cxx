@@ -70,6 +70,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistListPIDQA(0),
   fHistEventStats(0),
   fHistCentStats(0),
+  fHistCentStatsUsed(0),    //++++++++++++++++++++++++++
   fHistTriggerStats(0),
   fHistTrackStats(0),
   fHistVx(0),
@@ -282,13 +283,19 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
 
-  TString gCentName[9] = {"V0M","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","TKLvsV0M","ZEMvsZDC"};
+  TString gCentName[13] = {"V0M","V0A","V0C","FMD","TRK","TKL","CL0","CL1","ZNA","ZPA","V0MvsFMD","TKLvsV0M","ZEMvsZDC"};
   fHistCentStats = new TH2F("fHistCentStats",
                              "Centrality statistics;;Cent percentile",
-			    9,-0.5,8.5,220,-5,105);
-  for(Int_t i = 1; i <= 9; i++)
+			    13,-0.5,12.5,220,-5,105);
+  for(Int_t i = 1; i <= 13; i++){
     fHistCentStats->GetXaxis()->SetBinLabel(i,gCentName[i-1].Data());
+    //fHistCentStatsUsed->GetXaxis()->SetBinLabel(i,gCentName[i-1].Data());  //++++++++++++++++++++++
+  }
   fList->Add(fHistCentStats);
+
+  fHistCentStatsUsed = new TH2F("fHistCentStatsUsed","Centrality statistics;;Cent percentile", 1,-0.5,0.5,220,-5,105); //++++++++++++++++++++++
+  fHistCentStatsUsed->GetXaxis()->SetBinLabel(1,fCentralityEstimator.Data());  //++++++++++++++++++++++
+  fList->Add(fHistCentStatsUsed); //++++++++++++++++++++++
 
   fHistTriggerStats = new TH1F("fHistTriggerStats","Trigger statistics;TriggerBit;N_{events}",1025,0,1025);
   fList->Add(fHistTriggerStats);
@@ -755,14 +762,21 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 
 	  // QA for centrality estimators
 	  fHistCentStats->Fill(0.,header->GetCentralityP()->GetCentralityPercentile("V0M"));
-	  fHistCentStats->Fill(1.,header->GetCentralityP()->GetCentralityPercentile("FMD"));
-	  fHistCentStats->Fill(2.,header->GetCentralityP()->GetCentralityPercentile("TRK"));
-	  fHistCentStats->Fill(3.,header->GetCentralityP()->GetCentralityPercentile("TKL"));
-	  fHistCentStats->Fill(4.,header->GetCentralityP()->GetCentralityPercentile("CL0"));
-	  fHistCentStats->Fill(5.,header->GetCentralityP()->GetCentralityPercentile("CL1"));
-	  fHistCentStats->Fill(6.,header->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
-	  fHistCentStats->Fill(7.,header->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
-	  fHistCentStats->Fill(8.,header->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
+	  fHistCentStats->Fill(1.,header->GetCentralityP()->GetCentralityPercentile("V0A"));
+	  fHistCentStats->Fill(2.,header->GetCentralityP()->GetCentralityPercentile("V0C"));
+	  fHistCentStats->Fill(3.,header->GetCentralityP()->GetCentralityPercentile("FMD"));
+	  fHistCentStats->Fill(4.,header->GetCentralityP()->GetCentralityPercentile("TRK"));
+	  fHistCentStats->Fill(5.,header->GetCentralityP()->GetCentralityPercentile("TKL")); 
+	  fHistCentStats->Fill(6.,header->GetCentralityP()->GetCentralityPercentile("CL0"));
+	  fHistCentStats->Fill(7.,header->GetCentralityP()->GetCentralityPercentile("CL1"));
+	  fHistCentStats->Fill(8.,header->GetCentralityP()->GetCentralityPercentile("ZNA"));
+	  fHistCentStats->Fill(9.,header->GetCentralityP()->GetCentralityPercentile("ZPA"));
+	  fHistCentStats->Fill(10.,header->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
+	  fHistCentStats->Fill(11.,header->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
+	  fHistCentStats->Fill(12.,header->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
+
+	  // Centrality estimator USED   ++++++++++++++++++++++++++++++
+	  fHistCentStatsUsed->Fill(0.,header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data()));
 	  
 	  // centrality QA (V0M)
 	  fHistV0M->Fill(event->GetVZEROData()->GetMTotV0A(), event->GetVZEROData()->GetMTotV0C());
@@ -786,14 +800,21 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 
 	// QA for centrality estimators
 	fHistCentStats->Fill(0.,centrality->GetCentralityPercentile("V0M"));
-	fHistCentStats->Fill(1.,centrality->GetCentralityPercentile("FMD"));
-	fHistCentStats->Fill(2.,centrality->GetCentralityPercentile("TRK"));
-	fHistCentStats->Fill(3.,centrality->GetCentralityPercentile("TKL"));
-	fHistCentStats->Fill(4.,centrality->GetCentralityPercentile("CL0"));
-	fHistCentStats->Fill(5.,centrality->GetCentralityPercentile("CL1"));
-	fHistCentStats->Fill(6.,centrality->GetCentralityPercentile("V0MvsFMD"));
-	fHistCentStats->Fill(7.,centrality->GetCentralityPercentile("TKLvsV0M"));
-	fHistCentStats->Fill(8.,centrality->GetCentralityPercentile("ZEMvsZDC"));
+	fHistCentStats->Fill(1.,centrality->GetCentralityPercentile("V0A"));
+	fHistCentStats->Fill(2.,centrality->GetCentralityPercentile("V0C"));
+	fHistCentStats->Fill(3.,centrality->GetCentralityPercentile("FMD"));
+	fHistCentStats->Fill(4.,centrality->GetCentralityPercentile("TRK"));
+	fHistCentStats->Fill(5.,centrality->GetCentralityPercentile("TKL"));
+	fHistCentStats->Fill(6.,centrality->GetCentralityPercentile("CL0"));
+	fHistCentStats->Fill(7.,centrality->GetCentralityPercentile("CL1"));
+	fHistCentStats->Fill(8.,centrality->GetCentralityPercentile("ZNA"));
+	fHistCentStats->Fill(9.,centrality->GetCentralityPercentile("ZPA"));
+	fHistCentStats->Fill(10.,centrality->GetCentralityPercentile("V0MvsFMD"));
+	fHistCentStats->Fill(11.,centrality->GetCentralityPercentile("TKLvsV0M"));
+	fHistCentStats->Fill(12.,centrality->GetCentralityPercentile("ZEMvsZDC"));
+
+	// Centrality estimator USED   ++++++++++++++++++++++++++++++
+	fHistCentStatsUsed->Fill(0.,centrality->GetCentralityPercentile(fCentralityEstimator.Data()));
 
 	// centrality QA (V0M)
 	fHistV0M->Fill(event->GetVZEROData()->GetMTotV0A(), event->GetVZEROData()->GetMTotV0C());

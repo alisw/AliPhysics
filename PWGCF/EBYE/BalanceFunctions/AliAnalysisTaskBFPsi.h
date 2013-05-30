@@ -190,6 +190,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   TH2F *fHistEventStats; //event stats
   TH2F *fHistCentStats; //centrality stats
+  TH2F *fHistCentStatsUsed; //centrality stats USED +++++++++++++++++++++++
   TH1F *fHistTriggerStats; //trigger stats
   TH1F *fHistTrackStats; //Track filter bit stats
   TH1F *fHistVx; //x coordinate of the primary vertex
