@@ -122,7 +122,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fLctoV0bachelorOption(1),
   fGenLctoV0bachelorOption(0),
   fUseSelectionBit(kTRUE),
-  fPDGcode(0)
+  fPDGcode(0),
+  fMultiplicityEstimator(kNtrk10),
+  fIsPPData(kFALSE)
 {
   //
   //Default ctor
@@ -172,7 +174,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fLctoV0bachelorOption(1),
   fGenLctoV0bachelorOption(0),
   fUseSelectionBit(kTRUE),
-  fPDGcode(0)
+  fPDGcode(0),
+  fMultiplicityEstimator(kNtrk10),
+  fIsPPData(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -251,7 +255,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fLctoV0bachelorOption(c.fLctoV0bachelorOption),
   fGenLctoV0bachelorOption(c.fGenLctoV0bachelorOption),
   fUseSelectionBit(c.fUseSelectionBit),
-  fPDGcode(c.fPDGcode)
+  fPDGcode(c.fPDGcode),
+  fMultiplicityEstimator(c.fMultiplicityEstimator),
+  fIsPPData(c.fIsPPData)
 {
   //
   // Copy Constructor
@@ -660,12 +666,26 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     fCuts->SetMaxCentrality(100.);
   }
 	
-  Float_t centValue = fCuts->GetCentrality(aodEvent);
+  Float_t centValue = 0.;
+  if(!fIsPPData) centValue = fCuts->GetCentrality(aodEvent);
   cfVtxHF->SetCentralityValue(centValue);  
 	
   // number of tracklets - multiplicity estimator
-  Double_t multiplicity = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.)); // casted to double because the CF is filled with doubles
+  Double_t countTr10 = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.)); // casted to double because the CF is filled with doubles
+
+  Double_t countTr16 = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.6,1.6));
+  Double_t vzeroMult=0;
+  AliAODVZERO *vzeroAOD = (AliAODVZERO*)aodEvent->GetVZEROData();
+  if(vzeroAOD) vzeroMult = vzeroAOD->GetMTotV0A() +  vzeroAOD->GetMTotV0C();
+
+  Double_t multiplicity = countTr10;
+  if(fMultiplicityEstimator==kNtrk10to16) { multiplicity = countTr16 - countTr10; }
+  if(fMultiplicityEstimator==kVZERO) { multiplicity = vzeroMult; }
+
+
   cfVtxHF->SetMultiplicity(multiplicity);
+
+  //  printf("Multiplicity estimator %d, value %2.2f\n",fMultiplicityEstimator,multiplicity);
 	
   for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
@@ -696,7 +716,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       continue;
     }
     else{
-      AliInfo(Form("Check on the family OK!!! (decaychannel = %d)",fDecayChannel));
+      AliDebug(2,Form("Check on the family OK!!! (decaychannel = %d)",fDecayChannel));
     }
 		
     //Fill the MC container
