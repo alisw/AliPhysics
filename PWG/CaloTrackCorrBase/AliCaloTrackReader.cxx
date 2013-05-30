@@ -93,7 +93,8 @@ fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),                    
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
-fRemoveExoticEvents(kFALSE), fExoticTrigger(3),               fIsExoticEvent(kFALSE),
+fRemoveExoticEvents(kFALSE), fExoticTrigger(3.),
+fIsExoticEvent(kFALSE),      fForceExoticRejection(kFALSE),
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
 fDoVertexBCEventSelection(kFALSE),
 fDoRejectNoTrackEvents(kFALSE),
@@ -692,10 +693,10 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   }
   
   
-  //---------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------------
   // Do not count events that where likely triggered by an exotic cluster
-  //---------------------------------------------------------------------
-  if(fRemoveExoticEvents && GetFiredTriggerClasses().Contains("EMC"))
+  //--------------------------------------------------------------------------------------------
+  if(fRemoveExoticEvents)
   {
     RejectExoticEvents();
     //printf("Is this event exotic? %d\n",fIsExoticEvent);
@@ -937,8 +938,9 @@ void AliCaloTrackReader::ResetLists()
   if(fPHOSClusters)    fPHOSClusters  -> Clear("C");
   
   fV0ADC[0] = 0;   fV0ADC[1] = 0; 
-  fV0Mul[0] = 0;   fV0Mul[1] = 0; 
+  fV0Mul[0] = 0;   fV0Mul[1] = 0;
   
+  fIsExoticEvent = kFALSE;
 }
 
 //____________________________________________________________
@@ -1774,6 +1776,13 @@ void  AliCaloTrackReader::RejectExoticEvents()
 {
   // Reject events triggered by exotic cells
   // simple method
+  
+  if(!GetFiredTriggerClasses().Contains("EMC") && !fForceExoticRejection)
+  {
+    fIsExoticEvent = kFALSE;
+    return;
+  }
+  
   Int_t nOfHighECl = 0 ;
   Int_t nExo       = 0 ;
   Int_t nclusters  = fInputEvent->GetNumberOfCaloClusters();
@@ -1785,16 +1794,19 @@ void  AliCaloTrackReader::RejectExoticEvents()
       if (IsEMCALCluster(clus) && clus->E() > fExoticTrigger)
       {
         Bool_t exotic = GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCluster(clus, fInputEvent->GetEMCALCells());
-        if(exotic) nExo++;
-        else       nOfHighECl++;
+        Bool_t bad    = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),clus->GetCellsAbsId(),clus->GetNCells());
+        
+        if     (exotic) nExo++;
+        else if(!bad)   nOfHighECl++;
+        
       }//EMCAL cluster
     }// cluster exists
   }// cluster loop
   
-  //printf("trigger %2.1f, n Exotic %d, n high energy %d\n", fExoticTrigger,nExo,nOfHighECl);
+  //printf("- trigger %2.1f, n Exotic %d, n high energy %d\n", fExoticTrigger,nExo,nOfHighECl);
   
-  if ((nExo>0)&&(nOfHighECl==0)) fIsExoticEvent = kTRUE ;
-  else                           fIsExoticEvent = kFALSE;
+  if ( ( nExo > 0 ) && ( nOfHighECl == 0 ) ) fIsExoticEvent = kTRUE ;
+  else                                       fIsExoticEvent = kFALSE;
   
 }
 
