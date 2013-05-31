@@ -6,6 +6,10 @@
 #include "AliCentrality.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliGenerator.h"
 #include "AliMultiplicity.h"
 #include <TParticle.h>
 #include <TSystem.h>
@@ -53,6 +57,7 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE
   fHistoSelTracks(0),
   fHistoTracklets(0),
   fHistoPtPhysPrim(0),
+  fHistoEtaPhysPrim(0),
   fHistoSPD3DVtxX(0),
   fHistoSPD3DVtxY(0),
   fHistoSPD3DVtxZ(0),
@@ -69,6 +74,7 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE
   fHistMotherID(0),
   fHistDSpecies(0),
   fHistBSpecies(0),
+  fHistNcollHFtype(0),
   fSearchUpToQuark(kFALSE),
   fSystem(0),
   fReadMC(kTRUE)
@@ -120,6 +126,9 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistoPtPhysPrim = new TH1F("hPtPhysPrim","",100,0.,20.);
   fHistoPtPhysPrim->Sumw2();
   fOutput->Add(fHistoPtPhysPrim);
+  fHistoEtaPhysPrim = new TH1F("hEtaPhysPrim","",100,-10.,10.);
+  fHistoEtaPhysPrim->Sumw2();
+  fOutput->Add(fHistoEtaPhysPrim);
 
   fHistoSPD3DVtxX = new TH1F("hSPD3DvX","",100,-1.,1.);
   fHistoSPD3DVtxX->Sumw2();
@@ -278,6 +287,9 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistBSpecies->GetXaxis()->SetBinLabel(10,"Lb-");
   fHistBSpecies->SetMinimum(0);
   fOutput->Add(fHistBSpecies);
+
+  fHistNcollHFtype=new TH2F("hNcollHFtype","",5,-1.5,3.5,30,-0.5,29.5);
+  fOutput->Add(fHistNcollHFtype);
   PostData(1,fOutput);
 
 }
@@ -331,7 +343,6 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
   }
 
   AliStack* stack=0;
-
   if(fReadMC){
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if (!eventHandler) {
@@ -353,8 +364,27 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Printf("ERROR: generated vertex not available");
       return;
     }
-    
-
+    //    const AliHeader* h=(AliHeader*)mcEvent->GetHeader();
+    //    cout<<h<<endl;
+    TString genname=mcEvent->GenEventHeader()->ClassName();
+    Int_t nColl=-1;
+    Int_t typeHF=-1;
+    TList* lgen=0x0;
+    if(genname.Contains("CocktailEventHeader")){
+      AliGenCocktailEventHeader *cockhead=(AliGenCocktailEventHeader*)mcEvent->GenEventHeader();
+      lgen=cockhead->GetHeaders();
+      for(Int_t ig=0; ig<lgen->GetEntries(); ig++){
+	AliGenerator* gen=(AliGenerator*)lgen->At(ig);
+	TString title=gen->GetName();
+	if(title.Contains("bchadr")) typeHF=1;
+	else if(title.Contains("chadr")) typeHF=0;
+	else if(title.Contains("bele")) typeHF=3;
+ 	else if(title.Contains("cele")) typeHF=2;
+      }
+      nColl=lgen->GetEntries();
+      printf("Ncoll=%d typeHF=%d\n",nColl,typeHF);
+      fHistNcollHFtype->Fill(typeHF,nColl);
+    }
     Int_t nParticles=stack->GetNtrack();
     Double_t dNchdy = 0.;
     Int_t nb = 0, nc=0;
@@ -368,6 +398,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       if(absPdg==5) nb++;
       if(stack->IsPhysicalPrimary(i)){
 	Double_t eta=part->Eta();
+	fHistoEtaPhysPrim->Fill(eta);
 	if(TMath::Abs(eta)<0.5){
 	  dNchdy+=0.6666;   // 2/3 for the ratio charged/all
 	  nPhysPrim++;
