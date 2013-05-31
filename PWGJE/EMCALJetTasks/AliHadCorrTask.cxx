@@ -154,7 +154,7 @@ Int_t AliHadCorrTask::GetMomBin(Double_t p) const
     pbin=6;
   else if (p>=5. && p<8.) 
     pbin=7;
-  else if (p>=8.) 
+  else 
     pbin=8;
 
   return pbin;

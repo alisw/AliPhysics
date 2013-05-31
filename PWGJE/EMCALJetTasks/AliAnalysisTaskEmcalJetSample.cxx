@@ -178,9 +178,9 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
 
   if (fJets) {
     static Int_t sortedJets[9999] = {-1};
-    GetSortedArray(sortedJets, fJets);
+    Bool_t r = GetSortedArray(sortedJets, fJets);
 
-    if (sortedJets[0]>=0) {
+    if (r && sortedJets[0]>=0) {
       AliEmcalJet* leadJet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[0]));
       if (leadJet)
 	fHistLeadingJetPt[fCentBin]->Fill(leadJet->Pt());
