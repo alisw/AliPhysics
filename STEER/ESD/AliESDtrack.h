@@ -41,6 +41,7 @@ class AliKalmanTrack;
 class AliTrackPointArray;
 class TPolyMarker3D;
 class AliDetectorPID;
+class TTreeSRedirector;
 
 class AliESDtrack : public AliExternalTrackParam {
 public:
@@ -421,6 +422,8 @@ public:
   // - set lengt of bit fields fTPCClusterMap and fTPCSharedMap to 0
   static void OnlineMode(bool mode) {fgkOnlineMode=mode;}
   static bool OnlineMode() {return fgkOnlineMode;}
+  Double_t GetLengthInActiveZone( AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 );
+  Double_t GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 );
 protected:
   
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex
