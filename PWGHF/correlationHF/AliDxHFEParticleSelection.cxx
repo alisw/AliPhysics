@@ -52,6 +52,7 @@ AliDxHFEParticleSelection::AliDxHFEParticleSelection(const char* name, const cha
   , fControlObjects(NULL)
   , fhEventControl(NULL)
   , fhTrackControl(NULL)
+  , fhNrTracksPerEvent(NULL)
   , fUseMC(0)
   , fVerbosity(0)
   , fDimThn(-1)
@@ -87,6 +88,7 @@ AliDxHFEParticleSelection::~AliDxHFEParticleSelection()
   fControlObjects=NULL;
   fhEventControl=NULL;
   fhTrackControl=NULL;
+  fhNrTracksPerEvent=NULL;
 }
 
 int AliDxHFEParticleSelection::Init()
@@ -112,17 +114,19 @@ int AliDxHFEParticleSelection::InitControlObjects()
 
   /// init the control objects, can be overloaded by childs which should
   /// call AliDxHFEParticleSelection::InitControlObjects() explicitly
-  std::auto_ptr<TH1D> hEventControl(new TH1D("hEventControl", "hEventControl", 10, 0, 10));
-  std::auto_ptr<TH1D> hTrackControl(new TH1D("hTrackControl", "hTrackControl", 10, 0, 10));
+  TString name;
+  name.Form("hEventControl%s", GetName());
+  fhEventControl=CreateControlHistogram(name.Data(), name.Data(),kNEventPropertyLabels,fgkEventControlBinNames);
 
-  fhEventControl=hEventControl.release();
-  for (int iLabel=0; iLabel<kNEventPropertyLabels; iLabel++)
-    fhEventControl->GetXaxis()->SetBinLabel(iLabel+1, fgkEventControlBinNames[iLabel]);
+  name.Form("hTrackControl%s", GetName());
+  fhTrackControl=CreateControlHistogram(name.Data(), name.Data(),kNTrackPropertyLabels,fgkTrackControlBinNames);
+  
+  name.Form("hNrTracksPerEvent%s", GetName());
+  fhNrTracksPerEvent=CreateControlHistogram(name.Data(), name.Data(),100);
+  
   AddControlObject(fhEventControl);
-  fhTrackControl=hTrackControl.release();
-  for (int iLabel=0; iLabel<kNTrackPropertyLabels; iLabel++)
-    fhTrackControl->GetXaxis()->SetBinLabel(iLabel+1, fgkTrackControlBinNames[iLabel]);
   AddControlObject(fhTrackControl);
+  AddControlObject(fhNrTracksPerEvent);
 
   return 0;
 }
@@ -240,14 +244,19 @@ int AliDxHFEParticleSelection::AddControlObject(TObject* pObj)
   return 0;
 }
 
-int AliDxHFEParticleSelection::HistogramEventProperties(int bin)
+int AliDxHFEParticleSelection::HistogramEventProperties(int histonr,int bin)
 {
   /// histogram event properties
   if (!fControlObjects) return 0;
 
   // TODO: use enums for the bins of the control histogram
   // for now: 0=all, 1=events with D0s, 2=events with correlated D0s
-  fhEventControl->Fill(bin);
+  if(histonr==kHistoEvent){
+    fhEventControl->Fill(bin);
+  }
+  if(histonr==kHistoNrTracksPrEvent){
+    fhNrTracksPerEvent->Fill(bin);
+  }
   return 0;
 }
 

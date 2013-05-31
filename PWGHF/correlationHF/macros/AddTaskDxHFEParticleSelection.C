@@ -112,9 +112,10 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	    bUseMC=kTRUE;
 	    taskOptions+=" mc";
 	  }
-	  if (argument.BeginsWith("PbPb")) {
+	  if (argument.BeginsWith("PbPb") || argument.BeginsWith("Pb-Pb")) {
 	    system=1;
-	    taskOptions+=" system=PbPb";
+	    taskOptions+=" system=Pb-Pb";
+	    cout << "Use PbPb" << endl;
 	  }
 	  if(argument.BeginsWith("tpcclusters=")){
 	    argument.ReplaceAll("tpcclusters=", "");
@@ -145,7 +146,15 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	  }
 	  if(argument.BeginsWith("useinvmasscut"))
 	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("twoselectedinvmasscut"))
+	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("invmasscut="))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("impactparamcut"))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("etacut"))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("storelastcutstep"))
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("itsclusters=")){
 	    argument.ReplaceAll("itsclusters=", "");
@@ -198,9 +207,24 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 
   ///______________________________________________________________________
   /// Cuts For D0
-
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
-  RDHFD0toKpi->SetStandardCutsPP2010();
+  if (system==0) {
+    RDHFD0toKpi->SetStandardCutsPP2010();
+  } else {
+    // TODO: think about p-Pb
+    RDHFD0toKpi->SetStandardCutsPbPb2011();
+
+    // For centrality 0-10%, add centrality flattening
+    //NB! NEED FOR THE MOMENT THE FILE!
+    TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
+    TCanvas *c=fFlat->Get("cintegral");
+    TH1F *hfl=(TH1F*)c->FindObject("hint");
+    RDHFD0toKpi->SetHistoForCentralityFlattening(hfl,0.,10.,0.,0);
+    //  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
+
+    RDHFD0toKpi->SetMinCentrality(0.);// 40.*1.01
+    RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
+  }
 
   ///______________________________________________________________________
   /// Cuts for HFE
@@ -251,7 +275,14 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   params[0]=-1.;
   fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
   fPID->InitializePID();
- 
+
+   // PID for Only TPC
+  AliHFEpid *fPIDOnlyTPC = new AliHFEpid("hfePidTPC");
+  if(!fPIDOnlyTPC->GetNumberOfPIDdetectors()) { 
+    fPIDOnlyTPC->AddDetector("TPC",0);
+  }
+  fPIDOnlyTPC->ConfigureTPCdefaultCut(NULL, params, 3.);
+  fPIDOnlyTPC->InitializePID();
 
   //=========================================================
   //Create TList of cut (and pid) objects for D0 or electron
@@ -265,6 +296,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
     Cutlist->Add(hfecuts);
     Cutlist->Add(fPID);
     Cutlist->Add(fPIDOnlyTOF);
+    Cutlist->Add(fPIDOnlyTPC);
   }
 
   //=======================Setting up the task=========================================  
@@ -291,12 +323,12 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 
   TString cutname="";
   if(Particle==AliAnalysisTaskDxHFEParticleSelection::kD0){
-    listName="D0list"+extraName;
-    cutname="cutsD0Selection"+extraName;
+    listName="D0list"+extraname;
+    cutname="cutsD0Selection"+extraname;
   }
   else if(Particle==AliAnalysisTaskDxHFEParticleSelection::kElectron){
-    listName="ElList"+extraName;
-    cutname="cutsElectronSelection"+extraName;
+    listName="ElList"+extraname;
+    cutname="cutsElectronSelection"+extraname;
   }
 
   ::Info("AddTaskDxHFEParticleSelection", Form("\ninitializing analysis '%s'%s, output file '%s'", analysisName.Data(), bUseMC?" (using MC)":"", ofilename.Data()));
