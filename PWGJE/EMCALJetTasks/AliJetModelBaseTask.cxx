@@ -74,6 +74,10 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fOutput(0)
 {
   // Default constructor.
+
+  fVertex[0] = 0;
+  fVertex[1] = 0;
+  fVertex[2] = 0;
 }
 
 //________________________________________________________________________
@@ -125,6 +129,10 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   if (fQAhistos) {
     DefineOutput(1, TList::Class()); 
   }
+
+  fVertex[0] = 0;
+  fVertex[1] = 0;
+  fVertex[2] = 0;
 }
 
 //________________________________________________________________________
