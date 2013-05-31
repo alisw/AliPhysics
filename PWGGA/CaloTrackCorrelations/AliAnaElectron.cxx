@@ -53,7 +53,8 @@ AliAnaElectron::AliAnaElectron() :
     AliAnaCaloTrackCorrBaseClass(),       fCalorimeter(""), 
     fMinDist(0.),                         fMinDist2(0.),                         fMinDist3(0.), 
     fTimeCutMin(-1),                      fTimeCutMax(999999),         
-    fNCellsCut(0),                        fFillSSHistograms(kFALSE),             fFillOnlySimpleSSHisto(1),        
+    fNCellsCut(0),                        fNLMCutMin(-1),                        fNLMCutMax(10),
+    fFillSSHistograms(kFALSE),             fFillOnlySimpleSSHisto(1),
     fFillWeightHistograms(kFALSE),        fNOriginHistograms(8), 
     fdEdxMin(0.),                         fdEdxMax (200.), 
     fEOverPMin(0),                        fEOverPMax (2),
@@ -61,6 +62,10 @@ AliAnaElectron::AliAnaElectron() :
     // Histograms
     fhdEdxvsE(0),                         fhdEdxvsP(0),                 
     fhEOverPvsE(0),                       fhEOverPvsP(0),
+    fhdEdxvsECutM02(0),                   fhdEdxvsPCutM02(0),
+    fhEOverPvsECutM02(0),                 fhEOverPvsPCutM02(0),
+    fhdEdxvsECutEOverP(0),                fhdEdxvsPCutEOverP(0),
+    fhEOverPvsECutM02CutdEdx(0),          fhEOverPvsPCutM02CutdEdx(0),
     // Weight studies
     fhECellClusterRatio(0),               fhECellClusterLogRatio(0),                 
     fhEMaxCellClusterRatio(0),            fhEMaxCellClusterLogRatio(0),    
@@ -77,8 +82,9 @@ AliAnaElectron::AliAnaElectron() :
   //default ctor
   for(Int_t index = 0; index < 2; index++)
   {
-    fhNCellsE [index] = 0;    
-    fhTimeE   [index] = 0;  
+    fhNCellsE [index] = 0;
+    fhNLME    [index] = 0;
+    fhTimeE   [index] = 0;
     fhMaxCellDiffClusterE[index] = 0;
     fhE       [index] = 0;    
     fhPt      [index] = 0;                        
@@ -116,7 +122,11 @@ AliAnaElectron::AliAnaElectron() :
       fhMCPhi    [index][i] = 0;
       fhMCEta    [index][i] = 0;
       fhMCDeltaE [index][i] = 0;                
-      fhMC2E     [index][i] = 0;              
+      fhMC2E     [index][i] = 0;
+      fhMCdEdxvsE       [i] = 0;
+      fhMCdEdxvsP       [i] = 0;
+      fhMCEOverPvsE     [i] = 0;
+      fhMCEOverPvsP     [i] = 0;
     }
     
     for(Int_t i = 0; i < 6; i++)
@@ -148,7 +158,7 @@ AliAnaElectron::AliAnaElectron() :
 }
 
 //____________________________________________________________________________
-Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, TLorentzVector mom) 
+Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int_t nMaxima)
 {
   //Select clusters if they pass different cuts
   if(GetDebug() > 2) 
@@ -186,6 +196,11 @@ Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
       return kFALSE ;
   }
   else if(GetDebug() > 2)  printf(" Track-matching cut passed \n");
+  
+  //...........................................
+  // skip clusters with too many maxima
+  if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) return kFALSE ;
+  if(GetDebug() > 2) printf(" \t Cluster %d pass NLM %d of out of range \n",calo->GetID(), nMaxima);
   
   //.......................................
   //Check Distance to Bad channel, set bit.
@@ -451,7 +466,7 @@ TObjString *  AliAnaElectron::GetAnalysisCuts()
   parList += GetCaloPID()->GetPIDParametersList() ;
   
   //Get parameters set in FiducialCut class (not available yet)
-  //parlist += GetFidCut()->GetFidCutParametersList() 
+  //parlist += GetFidCut()->GetFidCutParametersList()
   
   return new TObjString(parList) ;
 }
@@ -473,7 +488,18 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   Int_t nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       Float_t pOverEmax = GetHistogramRanges()->GetHistoPOverEMax();       Float_t pOverEmin = GetHistogramRanges()->GetHistoPOverEMin();
   Int_t tbins       = GetHistogramRanges()->GetHistoTimeBins() ;        Float_t tmax      = GetHistogramRanges()->GetHistoTimeMax();         Float_t tmin      = GetHistogramRanges()->GetHistoTimeMin();
 
-  fhdEdxvsE  = new TH2F ("hdEdxvsE","matched track <dE/dx> vs cluster E ", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
+  
+  // MC labels, titles, for originator particles
+  TString ptypess[] = { "#gamma","hadron?","#pi^{0}","#eta","#gamma->e^{#pm}","e^{#pm}"} ;
+  TString pnamess[] = { "Photon","Hadron" ,"Pi0"    ,"Eta" ,"Conversion"     ,"Electron"} ;
+  TString ptype[] = { "#gamma", "#gamma_{#pi decay}","#gamma_{other decay}", "#pi^{0}","#eta",
+    "e^{#pm}","#gamma->e^{#pm}","hadron?","Anti-N","Anti-P"                    } ;
+  
+  TString pname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay","Pi0","Eta","Electron",
+    "Conversion", "Hadron", "AntiNeutron","AntiProton"                        } ;
+
+  
+  fhdEdxvsE  = new TH2F ("hdEdxvsE","matched track <dE/dx> vs cluster E ", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsE->SetXTitle("E (GeV)");
   fhdEdxvsE->SetYTitle("<dE/dx>");
   outputContainer->Add(fhdEdxvsE);  
@@ -493,6 +519,83 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   fhEOverPvsP->SetYTitle("E/p");
   outputContainer->Add(fhEOverPvsP);  
   
+  
+  fhdEdxvsECutM02  = new TH2F ("hdEdxvsECutM02","matched track <dE/dx> vs cluster E, mild #lambda_{0}^{2} cut", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
+  fhdEdxvsECutM02->SetXTitle("E (GeV)");
+  fhdEdxvsECutM02->SetYTitle("<dE/dx>");
+  outputContainer->Add(fhdEdxvsECutM02);
+  
+  fhdEdxvsPCutM02  = new TH2F ("hdEdxvsPCutM02","matched track <dE/dx> vs track P, mild #lambda_{0}^{2} cut", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
+  fhdEdxvsPCutM02->SetXTitle("P (GeV/c)");
+  fhdEdxvsPCutM02->SetYTitle("<dE/dx>");
+  outputContainer->Add(fhdEdxvsPCutM02);
+  
+  fhEOverPvsECutM02  = new TH2F ("hEOverPvsECutM02","matched track E/p vs cluster E, mild #lambda_{0}^{2} cut", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
+  fhEOverPvsECutM02->SetXTitle("E (GeV)");
+  fhEOverPvsECutM02->SetYTitle("E/p");
+  outputContainer->Add(fhEOverPvsECutM02);
+  
+  fhEOverPvsPCutM02  = new TH2F ("hEOverPvsPCutM02","matched track E/p vs track P, mild #lambda_{0}^{2} cut", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
+  fhEOverPvsPCutM02->SetXTitle("P (GeV/c)");
+  fhEOverPvsPCutM02->SetYTitle("E/p");
+  outputContainer->Add(fhEOverPvsPCutM02);
+
+  
+  fhdEdxvsECutEOverP  = new TH2F ("hdEdxvsECutEOverP","matched track <dE/dx> vs cluster E, cut on E/p", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
+  fhdEdxvsECutEOverP->SetXTitle("E (GeV)");
+  fhdEdxvsECutEOverP->SetYTitle("<dE/dx>");
+  outputContainer->Add(fhdEdxvsECutEOverP);
+  
+  fhdEdxvsPCutEOverP  = new TH2F ("hdEdxvsPCutEOverP","matched track <dE/dx> vs track P, cut on E/p", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
+  fhdEdxvsPCutEOverP->SetXTitle("P (GeV/c)");
+  fhdEdxvsPCutEOverP->SetYTitle("<dE/dx>");
+  outputContainer->Add(fhdEdxvsPCutEOverP);
+  
+  fhEOverPvsECutM02CutdEdx  = new TH2F ("hEOverPvsECutM02CutdEdx","matched track E/p vs cluster E, dEdx cut, mild #lambda_{0}^{2} cut", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
+  fhEOverPvsECutM02CutdEdx->SetXTitle("E (GeV)");
+  fhEOverPvsECutM02CutdEdx->SetYTitle("E/p");
+  outputContainer->Add(fhEOverPvsECutM02CutdEdx);
+  
+  fhEOverPvsPCutM02CutdEdx  = new TH2F ("hEOverPvsPCutM02CutdEdx","matched track E/p vs track P, dEdx cut, mild #lambda_{0}^{2} cut ", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
+  fhEOverPvsPCutM02CutdEdx->SetXTitle("P (GeV/c)");
+  fhEOverPvsPCutM02CutdEdx->SetYTitle("E/p");
+  outputContainer->Add(fhEOverPvsPCutM02CutdEdx);
+
+  if(IsDataMC())
+  {
+    for(Int_t i = 0; i < fNOriginHistograms; i++)
+    {
+      fhMCdEdxvsE[i]  = new TH2F(Form("hdEdxvsE_MC%s",pname[i].Data()),
+                                     Form("matched track <dE/dx> vs cluster E from %s : E ",ptype[i].Data()),
+                                     nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
+      fhMCdEdxvsE[i]->SetXTitle("E (GeV)");
+      fhMCdEdxvsE[i]->SetYTitle("<dE/dx>");
+      outputContainer->Add(fhMCdEdxvsE[i]) ;
+      
+      fhMCdEdxvsP[i]  = new TH2F(Form("hdEdxvsP_MC%s",pname[i].Data()),
+                                 Form("matched track <dE/dx> vs track P from %s : E ",ptype[i].Data()),
+                                 nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
+      fhMCdEdxvsP[i]->SetXTitle("E (GeV)");
+      fhMCdEdxvsP[i]->SetYTitle("<dE/dx>");
+      outputContainer->Add(fhMCdEdxvsP[i]) ;
+
+      
+      fhMCEOverPvsE[i]  = new TH2F(Form("hEOverPvsE_MC%s",pname[i].Data()),
+                                 Form("matched track E/p vs cluster E from %s : E ",ptype[i].Data()),
+                                 nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
+      fhMCEOverPvsE[i]->SetXTitle("E (GeV)");
+      fhMCEOverPvsE[i]->SetYTitle("<dE/dx>");
+      outputContainer->Add(fhMCEOverPvsE[i]) ;
+      
+      fhMCEOverPvsP[i]  = new TH2F(Form("hEOverPvsP_MC%s",pname[i].Data()),
+                                 Form("matched track E/pvs track P from %s : E ",ptype[i].Data()),
+                                 nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
+      fhMCEOverPvsP[i]->SetXTitle("E (GeV)");
+      fhMCEOverPvsP[i]->SetYTitle("<dE/dx>");
+      outputContainer->Add(fhMCEOverPvsP[i]) ;
+      
+    }
+  }
   
   TString pidParticle[] = {"Electron","ChargedHadron"} ;
   
@@ -705,11 +808,6 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     {
       if(fFillSSHistograms)
       {
-        
-        TString ptypess[] = { "#gamma","hadron?","#pi^{0}","#eta","#gamma->e^{#pm}","e^{#pm}"} ; 
-        
-        TString pnamess[] = { "Photon","Hadron","Pi0","Eta","Conversion","Electron"} ;
-        
         for(Int_t i = 0; i < 6; i++)
         { 
           fhMCELambda0[pidIndex][i]  = new TH2F(Form("h%sELambda0_MC%s",pidParticle[pidIndex].Data(),pnamess[i].Data()),
@@ -769,6 +867,13 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     fhNCellsE[pidIndex]->SetXTitle("E (GeV)");
     fhNCellsE[pidIndex]->SetYTitle("# of cells in cluster");
     outputContainer->Add(fhNCellsE[pidIndex]);  
+    
+    fhNLME[pidIndex]  = new TH2F (Form("h%sNLME",pidParticle[pidIndex].Data()),
+                                     Form("NLM in %s cluster vs E ",pidParticle[pidIndex].Data()),
+                                     nptbins,ptmin,ptmax, 10,0,10);
+    fhNLME[pidIndex]->SetXTitle("E (GeV)");
+    fhNLME[pidIndex]->SetYTitle("# of cells in cluster");
+    outputContainer->Add(fhNLME[pidIndex]);
     
     fhTimeE[pidIndex] = new TH2F(Form("h%sTimeE",pidParticle[pidIndex].Data()),
                                  Form("Time in %s cluster vs E ",pidParticle[pidIndex].Data())
@@ -830,13 +935,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     
     
     if(IsDataMC())
-    {
-      TString ptype[] = { "#gamma", "#gamma_{#pi decay}","#gamma_{other decay}", "#pi^{0}","#eta",
-        "e^{#pm}","#gamma->e^{#pm}","hadron?","Anti-N","Anti-P"                    } ; 
-      
-      TString pname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay","Pi0","Eta","Electron",
-        "Conversion", "Hadron", "AntiNeutron","AntiProton"                        } ;
-      
+    {      
       for(Int_t i = 0; i < fNOriginHistograms; i++)
       { 
         fhMCE[pidIndex][i]  = new TH1F(Form("h%sE_MC%s",pidParticle[pidIndex].Data(),pname[i].Data()),
@@ -1061,7 +1160,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //--------------------------------------
     // Cluster selection
     //--------------------------------------
-    if(!ClusterSelected(calo,mom)) continue;
+    AliVCaloCells* cells    = 0;
+    if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
+    else                        cells = GetPHOSCells();
+    
+    Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
+    if(!ClusterSelected(calo,mom,nMaxima)) continue;
     
     //----------------------------
     //Create AOD for analysis
@@ -1084,45 +1188,56 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     else                         aodpart.SetDistToBad(0) ;
     //printf("DistBad %f Bit %d\n",distBad, aodpart.DistToBad());
     
-    //--------------------------------------------------------------------------------------
-    //Play with the MC stack if available
-    //--------------------------------------------------------------------------------------
-    
-    //Check origin of the candidates
-    if(IsDataMC())
-    {
-      aodpart.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader()));
-      
-      if(GetDebug() > 0)
-        printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodpart.GetTag());
-    }//Work with stack also   
-    
-    
     //-------------------------------------
     //PID selection via dEdx
     //-------------------------------------
     
     AliVTrack *track = GetCaloUtils()->GetMatchedTrack(calo, GetReader()->GetInputEvent());
 
-    if(!track) {
+    if(!track)
+    {
       printf("AliAnaElectron::MakeAnalysisFillAOD() - Null track");
       continue;
     }
     
+    //printf("track dedx %f, p %f, cluster E %f\n",track->GetTPCsignal(),track->P(),calo->E());
     Float_t dEdx = track->GetTPCsignal();
+    Float_t eOverp = calo->E()/track->P();
+    
     fhdEdxvsE->Fill(calo->E(), dEdx);
     fhdEdxvsP->Fill(track->P(),dEdx);
     
+    if( eOverp < fEOverPMax && eOverp > fEOverPMin)
+    {
+      fhdEdxvsECutEOverP  ->Fill(calo->E(), dEdx);
+      fhdEdxvsPCutEOverP  ->Fill(track->P(),dEdx);
+    }
+    
+    //Apply a mild cut on the cluster SS and check the value of dEdX and EOverP
+    Float_t m02 = calo->GetM02();
+    if(m02 > 0.1 && m02 < 0.4)
+    {
+      fhdEdxvsECutM02  ->Fill(calo->E(), dEdx);
+      fhdEdxvsPCutM02  ->Fill(track->P(),dEdx);
+      fhEOverPvsECutM02->Fill(calo->E(),  eOverp);
+      fhEOverPvsPCutM02->Fill(track->P(), eOverp);
+    }
+    
     Int_t pid  = AliCaloPID::kChargedHadron;
     
-    if( dEdx < fdEdxMax && dEdx > fdEdxMin) {
-      
-      Float_t eOverp = calo->E()/track->P();
+    if( dEdx < fdEdxMax && dEdx > fdEdxMin)
+    {
       fhEOverPvsE->Fill(calo->E(),  eOverp);
       fhEOverPvsP->Fill(track->P(), eOverp);
       
-      if( eOverp < fEOverPMax && eOverp > fEOverPMin) {
-        
+      if(m02 > 0.1 && m02 < 0.4)
+      {
+        fhEOverPvsECutM02CutdEdx->Fill(calo->E(),  eOverp);
+        fhEOverPvsPCutM02CutdEdx->Fill(track->P(), eOverp);
+      }
+      
+      if( eOverp < fEOverPMax && eOverp > fEOverPMin)
+      {
         pid  = AliCaloPID::kElectron;
       } //E/p
       
@@ -1132,13 +1247,101 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     
     Int_t pidIndex = 0;// Electron
     if(pid == AliCaloPID::kChargedHadron) pidIndex = 1;
+  
+    //--------------------------------------------------------------------------------------
+    //Play with the MC stack if available
+    //--------------------------------------------------------------------------------------
+    
+    //Check origin of the candidates
+    if(IsDataMC())
+    {
+      Int_t tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader());
+      aodpart.SetTag(tag);
+      
+      if(GetDebug() > 0)
+        printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodpart.GetTag());
+         
+      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCE[pidIndex][kmcPhoton])
+      {
+        fhMCdEdxvsE  [kmcPhoton]->Fill(calo ->E(), dEdx);
+        fhMCdEdxvsP  [kmcPhoton]->Fill(track->P(), dEdx);
+        fhMCEOverPvsE[kmcPhoton]->Fill(calo ->E(), eOverp);
+        fhMCEOverPvsP[kmcPhoton]->Fill(track->P(), eOverp);
+        
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) && fhMCE[pidIndex][kmcConversion])
+        {
+          fhMCdEdxvsE  [kmcConversion]->Fill(calo ->E(), dEdx);
+          fhMCdEdxvsP  [kmcConversion]->Fill(track->P(), dEdx);
+          fhMCEOverPvsE[kmcConversion]->Fill(calo ->E(), eOverp);
+          fhMCEOverPvsP[kmcConversion]->Fill(track->P(), eOverp);
+        }
+        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) &&
+                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE[pidIndex][kmcPi0Decay])
+        {
+          fhMCdEdxvsE  [kmcPi0Decay]->Fill(calo ->E(), dEdx);
+          fhMCdEdxvsP  [kmcPi0Decay]->Fill(track->P(), dEdx);
+          fhMCEOverPvsE[kmcPi0Decay]->Fill(calo ->E(), eOverp);
+          fhMCEOverPvsP[kmcPi0Decay]->Fill(track->P(), eOverp);
+        }
+        else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) ||
+                  GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhMCE[pidIndex][kmcOtherDecay])
+        {
+          fhMCdEdxvsE  [kmcOtherDecay]->Fill(calo ->E(), dEdx);
+          fhMCdEdxvsP  [kmcOtherDecay]->Fill(track->P(), dEdx);
+          fhMCEOverPvsE[kmcOtherDecay]->Fill(calo ->E(), eOverp);
+          fhMCEOverPvsP[kmcOtherDecay]->Fill(track->P(), eOverp);
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE  [pidIndex][kmcPi0])
+        {
+          fhMCdEdxvsE  [kmcPi0]->Fill(calo ->E(), dEdx);
+          fhMCdEdxvsP  [kmcPi0]->Fill(track->P(), dEdx);
+          fhMCEOverPvsE[kmcPi0]->Fill(calo ->E(), eOverp);
+          fhMCEOverPvsP[kmcPi0]->Fill(track->P(), eOverp);
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) && fhMCE[pidIndex][kmcEta])
+        {
+          fhMCdEdxvsE  [kmcEta]->Fill(calo ->E(), dEdx);
+          fhMCdEdxvsP  [kmcEta]->Fill(track->P(), dEdx);
+          fhMCEOverPvsE[kmcEta]->Fill(calo ->E(), eOverp);
+          fhMCEOverPvsP[kmcEta]->Fill(track->P(), eOverp);
+        }
+      }
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron) && fhMCE[pidIndex][kmcAntiNeutron])
+      {
+        fhMCdEdxvsE  [kmcAntiNeutron]->Fill(calo ->E(), dEdx);
+        fhMCdEdxvsP  [kmcAntiNeutron]->Fill(track->P(), dEdx);
+        fhMCEOverPvsE[kmcAntiNeutron]->Fill(calo ->E(), eOverp);
+        fhMCEOverPvsP[kmcAntiNeutron]->Fill(track->P(), eOverp);
+      }
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) && fhMCE[pidIndex][kmcAntiProton])
+      {
+        fhMCdEdxvsE  [kmcAntiProton]->Fill(calo ->E(), dEdx);
+        fhMCdEdxvsP  [kmcAntiProton]->Fill(track->P(), dEdx);
+        fhMCEOverPvsE[kmcAntiProton]->Fill(calo ->E(), eOverp);
+        fhMCEOverPvsP[kmcAntiProton]->Fill(track->P(), eOverp);
+      }
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron) && fhMCE[pidIndex][kmcElectron])
+      {
+        fhMCdEdxvsE  [kmcElectron]->Fill(calo ->E(), dEdx);
+        fhMCdEdxvsP  [kmcElectron]->Fill(track->P(), dEdx);
+        fhMCEOverPvsE[kmcElectron]->Fill(calo ->E(), eOverp);
+        fhMCEOverPvsP[kmcElectron]->Fill(track->P(), eOverp);
+      }
+      else if( fhMCE[pidIndex][kmcOther])
+      {
+        fhMCdEdxvsE  [kmcOther]->Fill(calo ->E(), dEdx);
+        fhMCdEdxvsP  [kmcOther]->Fill(track->P(), dEdx);
+        fhMCEOverPvsE[kmcOther]->Fill(calo ->E(), eOverp);
+        fhMCEOverPvsP[kmcOther]->Fill(track->P(), eOverp);
+      }
+    }// set MC tag and fill Histograms with MC
     
     //---------------------------------
     //Fill some shower shape histograms
     //---------------------------------
 
     FillShowerShapeHistograms(calo,aodpart.GetTag(),pid);
-    
+  
     if(pid == AliCaloPID::kElectron)
       WeightHistograms(calo);
     
@@ -1166,14 +1369,11 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //FIXME, this to MakeAnalysisFillHistograms ...
     Int_t absID             = 0; 
     Float_t maxCellFraction = 0;
-    AliVCaloCells* cells    = 0;
-    
-    if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
-    else                        cells = GetPHOSCells();
     
     absID = GetCaloUtils()->GetMaxEnergyCell(cells, calo,maxCellFraction);
     fhMaxCellDiffClusterE[pidIndex]->Fill(aodpart.E(),maxCellFraction);
     fhNCellsE[pidIndex]            ->Fill(aodpart.E(),calo->GetNCells());
+    fhNLME[pidIndex]               ->Fill(aodpart.E(),nMaxima);
     fhTimeE[pidIndex]              ->Fill(aodpart.E(),calo->GetTOF()*1.e9);
 
     //Add AOD with electron/hadron object to aod branch
