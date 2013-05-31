@@ -50,7 +50,7 @@ AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
-  DefineInput(0, TChain::Class());
+  //DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0, TList::Class());
 
@@ -74,7 +74,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro="C
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
-  DefineInput(0, TChain::Class());
+  //DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0, TList::Class());
 

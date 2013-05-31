@@ -56,8 +56,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fEstEventMult(kCentrality),
   fAODpidUtil(0),
   fAODheader(0),
-  fInputFile(" "),
-  fFileName(" "),
+  fInputFile(""),
   fTree(0x0),
   fAodFile(0x0),
   fMagFieldSign(1),
@@ -87,8 +86,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fEstEventMult(kCentrality),
   fAODpidUtil(0),
   fAODheader(0),
-  fInputFile(" "),
-  fFileName(" "),
+  fInputFile(""),
   fTree(0x0),
   fAodFile(0x0),
   fMagFieldSign(1),
@@ -99,7 +97,6 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fReadMC = aReader.fReadMC;
   fReadV0 = aReader.fReadV0;
   fInputFile = aReader.fInputFile;
-  fFileName  = aReader.fFileName;
   fNumberofEvent = aReader.fNumberofEvent;
   fCurEvent = aReader.fCurEvent;
   fEvent = new AliAODEvent();
@@ -138,7 +135,6 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
    return *this;
 
   fInputFile = aReader.fInputFile;
-  fFileName  = aReader.fFileName;
   fNumberofEvent = aReader.fNumberofEvent;
   fCurEvent = aReader.fCurEvent;
   if (fTree) delete fTree;
@@ -893,7 +889,9 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   tFemtoTrack->SetNominalTPCEntrancePoint(tpcEntrance);
   tFemtoTrack->SetNominalTPCPoints(tpcPositions);
   tFemtoTrack->SetNominalTPCExitPoint(tpcExit);
-
+    for(int i=0;i<9;i++)
+      delete [] tpcPositions[i];
+    delete [] tpcPositions;
   //   }
   
   //   //  cout << "Track has " << TMath::Hypot(tAodTrack->Xv(), tAodTrack->Yv()) << "  " << tAodTrack->Zv() << "  " << tAodTrack->GetTPCNcls() << endl;

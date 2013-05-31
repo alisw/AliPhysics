@@ -592,6 +592,7 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
   while (TObject *obj = nextp1.Next()) {
     tOutputList->Add(obj);
   }
+  delete p1Cut;
 
   if (fSecondParticleCut != fFirstParticleCut) {
     TList *p2Cut = fSecondParticleCut->GetOutputList();
@@ -600,6 +601,7 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
     while (TObject *obj = nextp2()) {
       tOutputList->Add(obj);
     }
+    delete p2Cut;
   }
 
   TList *pairCut = fPairCut->GetOutputList();
@@ -608,6 +610,7 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
   while (TObject *obj = nextpair()) {
     tOutputList->Add(obj);
   }
+  delete pairCut;
 
   TList *eventCut = fEventCut->GetOutputList();
 
@@ -615,6 +618,7 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
   while (TObject *obj = nextevent()) {
     tOutputList->Add(obj);
   }
+  delete eventCut;
 
   AliFemtoCorrFctnIterator iter;
   for (iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
@@ -624,6 +628,7 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
     while (TObject *obj = nextListCf()) {
       tOutputList->Add(obj);
     }
+    delete tListCf;
   }
 
   return tOutputList;
