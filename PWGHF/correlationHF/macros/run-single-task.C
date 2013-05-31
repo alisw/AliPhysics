@@ -140,6 +140,8 @@ const char* libraryDependencies=
 
 TString BuildJDLName(const char* analysisName);
 AliAnalysisManager* LoadAnalysisManager(const char* filename);
+AliInputEventHandler* LoadCustomInputHandler(const char* name);
+TChain* CreateChain(const char* filename);
 TString GetIncludeHeaders(const char* filename, TString& headers, TString& libs, bool loadClass=true);
 TObject* BuildCodeTree(const char* filename, TObject* pTree);
 int  ProcessCodeTree(TObject* tree, TString& sources, TString& headers, TString& libs);
@@ -207,6 +209,7 @@ void run_single_task(const char* mode,
   int nMaxInputFiles=100;
   TString strArguments(arguments);
   TString mergeDirs;
+  TString strCustomInputHandler;
   TObjArray* tokens=strArguments.Tokenize(" ");
   if (tokens) {
     for (int iToken=0; iToken<tokens->GetEntriesFast(); iToken++) {
@@ -282,6 +285,11 @@ void run_single_task(const char* mode,
 	arg.ReplaceAll(key, "");
 	nMaxInputFiles=arg.Atoi();
 	continue;
+      }
+      key="--InputHandler=";
+      if (arg.BeginsWith(key)) {
+	arg.ReplaceAll(key, "");
+	strCustomInputHandler=arg;
       }
       if (!arg.BeginsWith("-") && mergeMode>0) {
 	// treat as subdirectories in the remote grid dir
@@ -391,6 +399,11 @@ void run_single_task(const char* mode,
       }
     }
   }
+  if (!strCustomInputHandler.IsNull()) {
+    if (strCustomInputHandler.EndsWith(".h")) strCustomInputHandler.ReplaceAll(".h", ".cxx");
+    else if (!strCustomInputHandler.EndsWith(".cxx")) strCustomInputHandler+=".cxx";
+    pCodeTree=BuildCodeTree(strCustomInputHandler, pCodeTree);
+  }
   ProcessCodeTree(pCodeTree, dependencySource, dependencyHeader, libraries);
   if (bCompileOnly) return;
 
@@ -413,7 +426,7 @@ void run_single_task(const char* mode,
     strGridConfigFile.Prepend("/");
     strGridConfigFile.Prepend(gSystem->Getenv("HOME"));
     if (gSystem->AccessPathName(strGridConfigFile)!=0) {
-      if (!bRunLocal) {
+      if (!bRunLocal && mergeMode==0) {
 	ErrorConfigurationFile(gridConfigFile);
 	return;
       }
@@ -421,6 +434,7 @@ void run_single_task(const char* mode,
     }
   }
 
+  // load the grid configuration file if not merging and not running locally
   if (strGridConfigFile.IsNull()==0 && !bRunLocal) {
     cout << "loading grid configuration from file '" << strGridConfigFile << "':" << endl;
     gROOT->LoadMacro(strGridConfigFile);
@@ -463,10 +477,14 @@ void run_single_task(const char* mode,
   }
   AliInputEventHandler *pInputHandler = NULL;
   TString strDataPattern(dataPattern);
-  if (strDataPattern.Contains("AOD")) pInputHandler=new AliAODInputHandler;
+  if (!strCustomInputHandler.IsNull()) {
+    pInputHandler=LoadCustomInputHandler(strCustomInputHandler);
+  }
+  else if (strDataPattern.Contains("AOD")) pInputHandler=new AliAODInputHandler;
   else if (strDataPattern.Contains("ESD")) pInputHandler=new AliESDInputHandler;
+  else if (mergeMode>0) pInputHandler=new AliInputEventHandler; // a default handler, not used in the end
   else {
-    cerr << "can not determine input type from data pattern '" << dataPattern << "'" << endl;
+    cerr << "can not determine input type from data pattern '" << strDataPattern << "'" << endl;
     return;
   }
   if (!pInputHandler) {
@@ -497,6 +515,14 @@ void run_single_task(const char* mode,
       // file on Grid -> connect to AliEn
       TGrid::Connect("alien://");
     }
+    if (strInput.EndsWith(".root") && gSystem->AccessPathName(strInput)==0) {
+      // open a local file
+      chain=CreateChain(strInput.Data());
+    }
+    if (chain) {
+      // nothing to do here, just forward to the original
+      // functionality if the chain was not created already
+    } else 
     if(strInput.EndsWith("AliESDs.root")){
       // suppose it's a single ESD file
       chain = new TChain("esdTree"); 
@@ -589,9 +615,11 @@ void run_single_task(const char* mode,
     if(mode=="test") alienHandler->SetNtestFiles(nTestFiles);
   
     // check the versions available on alien with the command 'packages'
+    if (mergeMode==0) {
     alienHandler->SetAPIVersion(alienAPIVersion);
     alienHandler->SetROOTVersion(alienROOTVersion);
     alienHandler->SetAliROOTVersion(alienAliROOTVersion);
+    }
 
     // using only default output
     // the alien plugin automatically recognizes all output files associated to output
@@ -1004,6 +1032,57 @@ AliAnalysisManager* LoadAnalysisManager(const char* filename)
     if (pObj && pObj->IsA()!=AliAnalysisManager::Class())
       return dynamic_cast<AliAnalysisManager*>(pObj);
   }
+}
+
+AliInputEventHandler* LoadCustomInputHandler(const char* name)
+{
+  // load a custom input handler
+  TString className(name);
+  className.ReplaceAll(".cxx", "");
+  TClass* pCl=TClass::GetClass(className);
+  if (!pCl) {
+    cerr << "can not load class " << className << endl;
+    return;
+  }
+  void* p=pCl->New();
+  if (!p) {
+    cerr << "failed to instantiate class " << className << endl;
+    return;
+  }
+  return dynamic_cast<AliInputEventHandler*>(p);
+}
+
+TChain* CreateChain(const char* filename)
+{
+  // create input TChain object with tree name derived from input file
+  TChain* chain=NULL;
+  TFile* file=TFile::Open(filename);
+  if (!file || file->IsZombie()) {
+    return NULL;
+  }
+
+  TList* keys=file->GetListOfKeys();
+  if (!keys || keys->GetEntries()==0) {
+    cerr << "can not find any keys in file " << filename << endl;
+    return NULL;
+  }
+
+  TObject* pObj=NULL;
+  TObject* pKey=NULL;
+  TIter nextkey(keys);
+  while (pKey=nextkey()) {
+    file->GetObject(pKey->GetName(), pObj);
+    if (!pObj || pObj->IsA()!=TTree::Class()) continue;
+    TChain* chain = new TChain(pObj->GetName()); 
+    chain->Add(filename);
+    break;
+  }
+  file->Close();
+  delete file;
+  if (chain) {
+    cout << "created chain " << chain->GetName() << endl;
+  }
+  return chain;
 }
 
 void ErrorConfigurationFile(const char* fileName) {
