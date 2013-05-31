@@ -90,7 +90,6 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   AliAODMCParticle* GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel); 
 
   string         fInputFile;        // name of input file with AOD filenames
-  string         fFileName;         // name of current AOD file
   TChain*        fTree;             // AOD tree
   TFile*         fAodFile;          // AOD file 
   int            fMagFieldSign;     // Magnetic field sign
