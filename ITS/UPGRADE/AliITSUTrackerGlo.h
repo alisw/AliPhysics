@@ -75,7 +75,7 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 GoToEntranceToLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
   Bool_t                 PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   Bool_t                 PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
-  Double_t               RefitTrack(AliExternalTrackParam* trc, Double_t r, Int_t stopCond=0);
+  Double_t               RefitTrack(AliExternalTrackParam* trc, Double_t r, Int_t& nclFit, Int_t stopCond=0);
   Int_t                  GetTrackingPhase()                 const {return fTrackPhaseID;}
 
   //

@@ -329,9 +329,10 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
     fCurrHyp->StartTimeIntegral();
     fCurrHyp->AddTimeStep(dst);
     fCurrHyp->ResetCovariance(10000);
-    double chi2 = RefitTrack(fCurrHyp,fITS->GetRMax());
+    int nclFit = 0;
+    double chi2 = RefitTrack(fCurrHyp,fITS->GetRMax(),nclFit);
     if (chi2>0) { // propagate to exit from the ITS/TPC screen
-      int ndf = fCurrHyp->GetWinner()->GetNLayersHit()*2-5;
+      int ndf = nclFit*2-5;
       if (ndf>0) chi2 /= ndf;
       fCurrHyp->SetChi2(chi2);
       UpdateESDTrack(fCurrHyp,AliESDtrack::kITSout);
@@ -376,8 +377,11 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
     fCurrHyp->AliExternalTrackParam::operator=(*fCurrESDtrack);  // fetch current ESDtrack kinematics
     fCurrMass = fCurrHyp->GetMass();
     //
-    double chi2 = RefitTrack(fCurrHyp,fITS->GetRMin());
+    int nclFit = 0;
+    double chi2 = RefitTrack(fCurrHyp,fITS->GetRMin(),nclFit);
     if (chi2>0) { // propagate up to inside radius of the beam pipe      
+      int ndf = nclFit*2-5;
+      if (ndf>0) chi2 /= ndf;
       fCurrHyp->SetChi2(chi2);
       UpdateESDTrack(fCurrHyp,AliESDtrack::kITSrefit);
     }
@@ -1359,7 +1363,7 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
 }
 
 //______________________________________________________________________________
-Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDest, Int_t stopCond)
+Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDest, Int_t &nclFit, Int_t stopCond)
 {
   // refit track till radius rDest. The cluster,mass info is taken from fCurrHyp (and its winner seed)
   // if stopCond<0 : propagate till last cluster then stop
@@ -1384,7 +1388,8 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDes
   fCurrMass = fCurrHyp->GetMass();
   AliExternalTrackParam tmpTr(*trc);
   double chi2 = 0;
-  int iclLr[2],nclLr,clCount=0;
+  int iclLr[2],nclLr;
+  nclFit = 0;
   //
   int lrStop1 = lrStop+1;
   for (int ilr=lrStart;ilr!=lrStop1;ilr+=dir) {
@@ -1466,7 +1471,7 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDes
       if (AliDebugLevelClass()>1) {
 	printf("AfterRefit: "); tmpTr.Print();
       }
-      if (++clCount==nCl && stopCond<0) {
+      if (++nclFit==nCl && stopCond<0) {
 	*trc = tmpTr;
 	return chi2; // it was requested to not propagate after last update
       }
@@ -1647,11 +1652,12 @@ Bool_t AliITSUTrackerGlo::CheckBackwardMatching(AliITSUSeed* seed)
   static AliExternalTrackParam trback;
   trback = *seed;
   trback.ResetCovariance(10000);
-  int ndf = seed->GetNLayersHit()*2-5;
-  double chi2sa = RefitTrack(&trback,rDest,1);
+  int nclFit = 0;
+  double chi2sa = RefitTrack(&trback,rDest,nclFit,1);
   if (chi2sa<0) return kFALSE;
+  int ndf = nclFit*2-5;
   if (ndf>0) chi2sa /= ndf;
-  if (chi2sa>fCurrTrackCond->GetMaxITSSAChi2()) return kFALSE;
+  if (chi2sa>fCurrTrackCond->GetMaxITSSAChi2(nclFit)) return kFALSE;
   //
   // relate to TPC track at outer layer
   AliExternalTrackParam* tpcSeed = fCurrHyp->GetTPCSeed();
