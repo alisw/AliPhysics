@@ -64,6 +64,7 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH1F* fHistoSelTracks;   //! histo with number of TPC+ITS refit ESD tracks
   TH1F* fHistoTracklets;   //! histo with number of SPD tracklets
   TH1F* fHistoPtPhysPrim;  //! histo of pt distribution of phys primaries
+  TH1F* fHistoEtaPhysPrim; //! histo of eta distribution of physical primaries
   
   TH1F* fHistoSPD3DVtxX;     //! histo with distr. of x coord. of SPD3D vertex
   TH1F* fHistoSPD3DVtxY;     //! histo with distr. of y coord. of SPD3D vertex
@@ -94,11 +95,12 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH1F* fHistMotherID;        //! histo of mother ID
   TH1F* fHistDSpecies;          //! histo of D hadron species
   TH1F* fHistBSpecies;          //! histo of B hadron species
+  TH2F* fHistNcollHFtype;      //! histo of B hadron species
   Bool_t fSearchUpToQuark; // c/b separation using quarks
   Int_t fSystem;         // 0=pp, 1=PbPb, 2=pPb
   Bool_t fReadMC;
 
-  ClassDef(AliAnalysisTaskCheckHFMCProd,5);
+  ClassDef(AliAnalysisTaskCheckHFMCProd,4);
 };
 
 
