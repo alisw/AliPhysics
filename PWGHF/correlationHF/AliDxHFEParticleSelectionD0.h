@@ -41,6 +41,7 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   enum {
     kDstar=0,
     kCandSelTrack,
+    kIsInFinducialAcceptance,
     kNegPtbin,
     kNoDaugthers,
     kSelected0,

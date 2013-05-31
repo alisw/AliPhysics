@@ -72,6 +72,9 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   Bool_t bEventMixing=kFALSE;
   Bool_t bRunD0MassReference=kFALSE;
   TString poolConfigFile="";
+  // TODO: revise the logic for task options in order to forward every option
+  // by default and filter out the options meant for the macro, that allows
+  // to introduce new task options without the need to specifically forward them
   TString taskOptions;
   Int_t NrTPCclusters=120; // quick fix for problem sending hfe track cut object to addtask
   Int_t NrITSclusters=4;
@@ -154,9 +157,16 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	  }
 	  if(argument.BeginsWith("useinvmasscut"))
 	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("twoselectedinvmasscut"))
+	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("invmasscut="))
 	    taskOptions+=" "+argument;
-
+	  if(argument.BeginsWith("impactparamcut"))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("etacut"))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("storelastcutstep"))
+	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("extraname=")){
 	    argument.ReplaceAll("extraname=", "");
 	    extraname=argument;
@@ -315,6 +325,14 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   params[0]=-1.;
   fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
   fPID->InitializePID();
+
+  // PID for Only TPC
+  AliHFEpid *fPIDOnlyTPC = new AliHFEpid("hfePidTPC");
+  if(!fPIDOnlyTPC->GetNumberOfPIDdetectors()) { 
+    fPIDOnlyTPC->AddDetector("TPC",0);
+  }
+  fPIDOnlyTPC->ConfigureTPCdefaultCut(NULL, params, 3.);
+  fPIDOnlyTPC->InitializePID();
 
   //Create TList of HFE pid and track cuts
   TList *listHFE = new TList;
