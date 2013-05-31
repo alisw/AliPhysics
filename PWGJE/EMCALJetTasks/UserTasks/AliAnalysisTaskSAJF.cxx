@@ -370,9 +370,9 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
   }
 
   static Int_t sortedJets[9999] = {-1};
-  GetSortedArray(sortedJets, fJets, fRhoVal);
+  Bool_t r = GetSortedArray(sortedJets, fJets, fRhoVal);
   
-  if (sortedJets[0] < 0) { // no accepted jets, skipping
+  if (!r || sortedJets[0] < 0) { // no accepted jets, skipping
     fHistEvents[fCentBin]->Fill("No jets", 1);
     return kTRUE;
   }
