@@ -31,9 +31,9 @@ class AliAnalysisTaskZDCTreeMaker : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
 
   virtual void  SetDebugLevel(Int_t level) {fDebug = level;}
-  void SetInput(const char* input) {fAnalysisInput = input;}
+  void SetInput(int input) {fAnalysisInput = input;}
   void SetMCInput() {fIsMCInput = kTRUE;}
-   void SetUseSpecialOutput(Bool_t v=kTRUE) {fUseSpecialOutput = v;}
+  void SetUseSpecialOutput(Bool_t v=kTRUE) {fUseSpecialOutput = v;}
 
  private:
 
