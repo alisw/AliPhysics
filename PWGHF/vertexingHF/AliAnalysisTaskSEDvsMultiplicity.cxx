@@ -278,8 +278,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   Float_t firstMultBin = -0.5;
   Float_t lastMultBin = 199.5;
   if(fMultiplicityEstimator==kVZERO) {
-    nMultBins = 700;
-    lastMultBin = 699.5;
+    nMultBins = 400;
+    lastMultBin = 799.5;
   }
 
   fHistNtrUnCorrEvSel = new TH1F("hNtrUnCorrEvSel","Uncorrected tracklets multiplicity for selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
