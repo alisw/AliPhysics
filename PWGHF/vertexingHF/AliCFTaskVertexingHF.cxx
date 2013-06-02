@@ -1394,7 +1394,7 @@ Double_t AliCFTaskVertexingHF::GetNchWeight(Int_t nch){
   if(nch<=0) return 0.;
   Double_t pMeas=fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nch));
   Double_t pMC=fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nch));
-  return pMeas/pMC;
+  return pMC>0 ? pMeas/pMC : 0.;
 }
 //__________________________________________________________________________________________________
 void AliCFTaskVertexingHF::CreateMeasuredNchHisto(){
