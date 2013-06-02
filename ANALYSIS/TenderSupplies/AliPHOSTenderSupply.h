@@ -17,12 +17,9 @@
 class TVector3;
 class AliPHOSGeometry;
 class AliPHOSCalibData ;
-class AliPHOSEsdCluster ;
-class AliPHOSAodCluster ;
-class AliAODCaloCells;
-class AliESDCaloCells; 
 class TH2I ;
 class AliVCluster ;
+class AliVCaloCells ;
 class AliAnalysisTaskSE ;
 
 class AliPHOSTenderSupply: public AliTenderSupply {
@@ -58,8 +55,7 @@ protected:
   Bool_t IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
   void   CorrectPHOSMisalignment(TVector3 & globalPos, Int_t module);
   void   EvalLambdas(AliVCluster * clu, Double_t &m02, Double_t &m20) ;
-  Double_t EvalTOFaod(AliPHOSAodCluster * clu, AliAODCaloCells * cells); 
-  Double_t EvalTOFesd(AliPHOSEsdCluster * clu, AliESDCaloCells * cells); 
+  Double_t EvalTOF(AliVCluster * clu,AliVCaloCells * cells); 
   Double_t CalibrateTOF(Double_t tof, Int_t absId, Bool_t isHG); 
  
 private:
