@@ -188,6 +188,7 @@ class AliGenMUONlib :
 
 // Upsilon    
     static Double_t PtUpsilonPPdummy(Double_t px, Double_t en);
+    static Double_t PtUpsilonPP8000(const Double_t *px, const Double_t *dummy );
     static Double_t PtUpsilonPP7000(const Double_t *px, const Double_t *dummy );
     static Double_t PtUpsilonPP2760(const Double_t *px, const Double_t *dummy );
     static Double_t PtUpsilonPP4400(const Double_t *px, const Double_t *dummy );
@@ -244,6 +245,7 @@ class AliGenMUONlib :
     static Double_t YUpsilonPPdummy(Double_t px, Double_t en);
     static Double_t YUpsilonPPpoly(Double_t px, Double_t en);
     static Double_t YUpsilonPP7000(const Double_t *px, const Double_t *dummy );
+    static Double_t YUpsilonPP8000(const Double_t *px, const Double_t *dummy );
     static Double_t YUpsilonPP2760(const Double_t *px, const Double_t *dummy );
     static Double_t YUpsilonPPpoly7000(const Double_t *px, const Double_t *dummy );
     static Double_t YUpsilonPPpoly2760(const Double_t *px, const Double_t *dummy );
