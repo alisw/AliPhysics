@@ -93,8 +93,9 @@ AliAnalysisTaskFlowEvent *AddTaskFlowOnMC(TString fileNameBase="AnalysisResults"
   cutsRefMult->SetParamMix(rpmix);
   cutsRefMult->SetPtRange(ptMin,ptMax);
   cutsRefMult->SetEtaRange(-etaMax,etaMax);
+  cutsRefMult->SetRequireCharge(kTRUE);
   cutsRefMult->SetQA(kFALSE);
-  //cutsEvent->SetRefMultCuts(cutsRefMult);
+  cutsEvent->SetRefMultCuts(cutsRefMult);
 
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("MCRP");
@@ -347,7 +348,8 @@ AliAnalysisTaskFlowEvent *AddTaskFlowOnMC(TString fileNameBase="AnalysisResults"
   }
   if (QC){
     AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants %s",outputSlotName.Data()),useWeights);
-    taskQC->SetMultiplicityIs(AliFlowCommonConstants::kRP); 
+    //taskQC->SetMultiplicityIs(AliFlowCommonConstants::kRP); 
+    taskQC->SetMultiplicityIs(AliFlowCommonConstants::kExternal); 
     taskQC->SetUsePhiWeights(WEIGHTS[0]); 
     taskQC->SetUsePtWeights(WEIGHTS[1]);
     taskQC->SetUseEtaWeights(WEIGHTS[2]); 
