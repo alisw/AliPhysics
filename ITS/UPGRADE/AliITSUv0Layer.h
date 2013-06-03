@@ -36,7 +36,7 @@ class AliITSUv0Layer : public AliITSv11Geometry {
     AliITSUv0Layer& operator=(const AliITSUv0Layer &source);
     virtual ~AliITSUv0Layer();
     //
-    Bool_t    IsTurbo() {return fIsTurbo;};
+    Bool_t    IsTurbo() const {return fIsTurbo;};
 
     Double_t  GetLadderThick() const {return fLadderThick;};
     Double_t  GetLadderTilt()  const {return fLadderTilt;};
@@ -75,7 +75,7 @@ class AliITSUv0Layer : public AliITSv11Geometry {
 
 
     TGeoVolume* CreateStaveStruct(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
-    TGeoVolume* CreateStaveModelDummy(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
+    TGeoVolume* CreateStaveModelDummy(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager) const;
     TGeoVolume* CreateStaveModel0(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveModel1(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveModel21(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);

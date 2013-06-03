@@ -1,5 +1,5 @@
-#ifndef ALIITSVUV0_H
-#define ALIITSVUV0_H
+#ifndef ALIITSUV0_H
+#define ALIITSUV0_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
