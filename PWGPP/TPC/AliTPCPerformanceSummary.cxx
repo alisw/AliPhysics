@@ -2051,6 +2051,12 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
     negA = neg3->ProjectionZ("negA",71,-1,16,25);
 }
 
+if(!pos) return 512; 
+if(!neg) return 512; 
+if(!posA) return 512; 
+if(!negA) return 512; 
+if(!posC) return 512; 
+if(!negC) return 512; 
 
 pos->Sumw2();
 neg->Sumw2();
