@@ -7651,8 +7651,8 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     //pA, trigger from all pT
     maxLeadingPt = 1;
     maxAssocPt = 10;
-    Float_t leadingPtArr[] = { 0.5, 5.0 };
-    Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 0.5, 5.0 };
+    Float_t leadingPtArr[] =   { 0.5, 4.0 };
+    Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 0.5, 4.0 };
 //     symmetrizePt = kTRUE;
   }
   else if (0)
@@ -8096,7 +8096,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
   delete hMixed;
 }
 
-void ExtractMiniJetHistograms(const char* fileNamePbPb, const char* outputFile = "dphi_corr.root")
+void ExtractMiniJetHistograms(const char* fileNamePbPb, Bool_t useMixed = kTRUE, const char* outputFile = "dphi_corr.root")
 {
   loadlibs();
   
@@ -8117,9 +8117,6 @@ void ExtractMiniJetHistograms(const char* fileNamePbPb, const char* outputFile =
   AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileNamePbPb);
   hMixed = (AliUEHistograms*) GetUEHistogram(fileNamePbPb, 0, kTRUE);
   
-  h->GetUEHist(2)->SymmetrizepTBins();
-  hMixed->GetUEHist(2)->SymmetrizepTBins();
-
   Int_t step = 8;
 
   for (Int_t i=0; i<maxLeadingPt; i++)
@@ -8144,7 +8141,10 @@ void ExtractMiniJetHistograms(const char* fileNamePbPb, const char* outputFile =
 	for (Int_t centr=0; centr<20; centr++)
 	{
 	  TH1* hist1 = 0;
-	  GetSumOfRatios(h, hMixed, &hist1,  step, 5*centr, 5*centr+5, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kFALSE); 
+	  if (useMixed)
+	    GetSumOfRatios(h, hMixed, &hist1, step, 5*centr, 5*centr+5, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kFALSE); 
+	  else
+	    GetDistAndFlow(h, 0, &hist1, 0, step, 5*centr, 5*centr+5, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, 1, 1, 0, kTRUE); 
 	  
 	  if (!hist1)
 	    continue;
@@ -14452,9 +14452,9 @@ void PlotPtCentrality()
 
 void ExtractForAllSpecies()
 {
-  TString baseName = "LHC13bc_20130510_";
-  const char* suffix[] = { "Hadrons_symmetrized", "Pions", "Kaons", "Protons" };
-  TString baseNameOutput = "dphi_corr_130515_";
+  TString baseName = "LHC13b2_fix_1_Train";
+  const char* suffix[] = { "55_Hadrons_symmetrized", "63_Pions", "63_Kaons", "63_Protons" };
+  TString baseNameOutput = "dphi_corr_mc_130531_allpt_";
   
   for (Int_t i=0; i<4; i++)
     PlotDeltaPhiEtaGap(baseName + suffix[i] + ".root", 0, 0, 0, baseNameOutput + suffix[i] + ".root");
