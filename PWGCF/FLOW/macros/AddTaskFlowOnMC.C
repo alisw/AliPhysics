@@ -350,6 +350,8 @@ AliAnalysisTaskFlowEvent *AddTaskFlowOnMC(TString fileNameBase="AnalysisResults"
     AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants %s",outputSlotName.Data()),useWeights);
     //taskQC->SetMultiplicityIs(AliFlowCommonConstants::kRP); 
     taskQC->SetMultiplicityIs(AliFlowCommonConstants::kExternal); 
+    taskQC->SetFillProfilesVsMUsingWeights(kFALSE);
+    taskQC->SetUseQvectorTerms(kTRUE);
     taskQC->SetUsePhiWeights(WEIGHTS[0]); 
     taskQC->SetUsePtWeights(WEIGHTS[1]);
     taskQC->SetUseEtaWeights(WEIGHTS[2]); 
