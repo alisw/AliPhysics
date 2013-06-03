@@ -725,6 +725,8 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   Float_t gRefMultiplicity = -1.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
+  AliMCEvent *mcevent = dynamic_cast<AliMCEvent*>(event);
+
   fHistEventStats->Fill(1,gCentrality); //all events
 
   // check first event in chunk (is not needed for new reconstructions)
@@ -821,8 +823,8 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
       }//ESD
       else if(gAnalysisLevel == "MC"){
 	Double_t gImpactParameter = 0.;
-	if(dynamic_cast<AliMCEvent*>(event)){
-	  AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
+	if(mcevent) {
+	  AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(mcevent)->GenEventHeader());
 	  if(headerH){
 	    gImpactParameter = headerH->ImpactParameter();
 	    gCentrality      = gImpactParameter;
@@ -845,8 +847,8 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	return 0x0;
       }
       
-      if(dynamic_cast<AliMCEvent*>(event)){
-	AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
+      if(mcevent){
+	AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(mcevent->GenEventHeader());
 	if(header){  
 	  TArrayF gVertexArray;
 	  header->PrimaryVertex(gVertexArray);
