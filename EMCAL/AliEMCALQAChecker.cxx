@@ -199,254 +199,271 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
   TList *lstF = 0;
   Int_t calibSpecieId = (Int_t)TMath::Log2( AliRecoParam::kCalib );
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+
     test[specie] = 0.0 ; 
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie)) continue ; 
     if (list[specie]->GetEntries() == 0) test[specie] = 0. ; // nothing to check
     else {
-			//get calib histos
-			TH2F * hdata  = (TH2F*)list[specie]->At(k2DRatioAmp) ; 
-			TH1F * ratio = (TH1F*)list[specie]->At(kRatioDist) ;
-			
-			//get L1 histos
-			TH2F *hL1GammaPatch = (TH2F*)list[specie]->At(kGL1);
-			TH2F *hL1JetPatch = (TH2F*)list[specie]->At(kJL1);
-			TH1I *hFrameR = (TH1I*)list[specie]->At(kSTUTRU);
-
-			// ========================================================================================
-			//calib histo checker first:
-
-			// first clean lines, text (functions)
-			lstF = hdata->GetListOfFunctions();
-			CleanListOfFunctions(lstF);
-			lstF = ratio->GetListOfFunctions();
-			CleanListOfFunctions(lstF);
-
-			if(hdata->GetEntries()!=0 && ratio->GetEntries()!=0) {
-
-			  lstF = hdata->GetListOfFunctions();
-
-				//adding the lines to distinguish different SMs
-				lstF->Add(fLineCol->Clone()); 
-				for(Int_t iLine = 0; iLine < 5; iLine++) {
-					lstF->Add(fLineRow[iLine]->Clone());
-				} 
-				//Now adding the text to for each SM
-				for(Int_t iSM = 0 ; iSM < fgknSM ; iSM++){  //number of SMs loop start
-					lstF->Add(fTextSM[iSM]->Clone()); 
-				}			
-				
-
-				//now check the ratio histogram
-				lstF = ratio->GetListOfFunctions();
-
-				Double_t binContent = 0. ;  
-				Int_t nGoodTower = 0 ;
-				Double_t rv = 0. ;
-				for(Int_t ix = 1; ix <= hdata->GetNbinsX(); ix++) {
-					for(Int_t iy = 1; iy <= hdata->GetNbinsY(); iy++) {
-						binContent = hdata->GetBinContent(ix, iy) ; 
-						if (binContent < 1.2 && binContent > 0.8) nGoodTower++ ;
-					}
-				}
-				rv = nGoodTower/nTot ; 
-				//printf("%2.2f %% towers out of range [0.8, 1.2]\n", (1-rv)*100);
-				if(fText){
-					lstF->Add(fText->Clone()) ;
-					fText->Clear() ; 
-        
-					fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100));     
-					if (rv < ratioThresh) {
-						test[specie] = ratioThresh;
-						// 2 lines text info for quality         
-						fText->SetFillColor(2) ;
-						fText->AddText(Form("EMCAL = NOK, CALL EXPERTS!!!")); 
-					}
-					else {
-						test[specie] = 1 - ratioThresh;
-						fText->SetFillColor(3) ;
-						fText->AddText(Form("EMCAL = OK, ENJOY...")); 
-					}
-				}//fText
-			} // calib histo checking done
-
-			// ========================================================================================
-			// now L1 checks:
-
-			// first clean lines, text (functions)
-			lstF = hL1GammaPatch->GetListOfFunctions();
-			CleanListOfFunctions(lstF);
-			lstF = hL1JetPatch->GetListOfFunctions();
-			CleanListOfFunctions(lstF);
-			lstF = hFrameR->GetListOfFunctions();
-			CleanListOfFunctions(lstF);
-
-			if (specie != calibSpecieId) {
-			  //if(hL1GammaPatch->GetEntries() !=0 ) {
-			  if(hL1GammaPatch->GetEntries() > 10) { // need some statistics for hot spot calculation
- 			        lstF = hL1GammaPatch->GetListOfFunctions();
-
-				// Checker for L1GammaPatch 
-				//Double_t dL1GmeanTrig    = 1./2961.; 
-				//Double_t dL1GmeanTrigTRU = 1./32.; 
-				//Int_t sigmaG    = 100; // deviation from mean value (increased to 100)
-				//Int_t sigmaGTRU = 5; // deviation from mean value for TRUs
-				Double_t dL1GEntries = hL1GammaPatch->GetEntries();
-				Int_t badL1G[48][64]   = {{0}} ;
-				Int_t badL1GTRU[2][16] = {{0}} ;
-				Int_t nBadL1G    = 0;
-				Int_t nBadL1GTRU = 0;
-				Double_t binContentTRU[2][16] = {{0.}};
-				for(Int_t ix = 1; ix <=  hL1GammaPatch->GetNbinsX(); ix++) {
-				  for(Int_t iy = 1; iy <=  hL1GammaPatch->GetNbinsY(); iy++) {
-				    Double_t binContent = hL1GammaPatch->GetBinContent(ix, iy) ; 
-				    if (binContent != 0) {
-				      
-				      // fill counter for TRUs
-				      binContentTRU[(Int_t)((ix-1)/24)][(Int_t)((iy-1)/4)] += binContent;
-				      
-				      // OLD METHOD (if a patch triggers > sigmaG * mean value (1/#patch positions total) says "hot spot !")
-				      // if ((double)binContent/(double)dL1GEntries > sigmaG*dL1GmeanTrig) {
-				      // 	badL1G[ix-1][iy-1] += 1;
-				      // 	nBadL1G += 1;
-				      // }
-
-				      // NEW METHOD (if Rate > Threshold * ( (Number of towers or TRUs * Average rate) - Rate ) --> "hot spot !")
-				      // Thresold = how much does the noisy tower/TRU contribute to the rate
-				      //            1.0 --> Rate of noisy tower/TRU = Rate of all other towers/TRUs  
-				      if (binContent/dL1GEntries > ThreshG / ( 1 + ThreshG )) {
-					badL1G[ix-1][iy-1] += 1;
-					nBadL1G += 1;
-				      }
-				    }
-				  }
-				}
-
-				// check TRUs
-				for(Int_t ix = 1; ix <=  2; ix++) {
-				  for(Int_t iy = 1; iy <=  16; iy++) {
-				    if(binContentTRU[ix-1][iy-1]/dL1GEntries >  ThreshG / ( 1 + ThreshG )) {
-				      badL1GTRU[ix-1][iy-1] += 1;
-				      nBadL1GTRU += 1;
-				    }
-				  }
-				}
-				
-				if(fTextL1[0]){
-					lstF->Add(fTextL1[0]->Clone()) ;
-					fTextL1[0]->Clear() ; 
-
-					if (nBadL1G == 0 && nBadL1GTRU == 0 ) {
-						fTextL1[0]->SetFillColor(3) ;
-						fTextL1[0]->AddText(Form("L1 GAMMA TRIGGER = OK, ENJOY...")); 
-					}
-					else if (nBadL1G == 0){
-						fTextL1[0]->SetFillColor(2) ;
-						fTextL1[0]->AddText(Form("HOT SPOT IN L1 GAMMA TRIGGER (TRU) = CALL EXPERT!!"));
-						
-					}
-					else{
-					  fTextL1[0]->SetFillColor(2) ;
-					  fTextL1[0]->AddText(Form("HOT SPOT IN L1 GAMMA TRIGGER = CALL EXPERT!!"));
-					  /*
-					    for(Int_t ix = 1; ix <=  hL1GammaPatch->GetNbinsX(); ix++) {
-					    for(Int_t iy = 1; iy <=  hL1GammaPatch->GetNbinsY(); iy++) {
-								if(badL1G[ix-1][iy-1] != 0) printf("L1 Gamma patch with position x = %d, y = %d is out of range\n",ix,iy);
-								}
-								}
-					  */
-					}
-				}//fTextL1[0]
-			}// L1 gamma patch checking done
-
-			  //if(hL1JetPatch->GetEntries() !=0) {
-			if(hL1JetPatch->GetEntries() > 10) { // need some statistics for hot spot calculation
-
-			  lstF = hL1JetPatch->GetListOfFunctions();
-
-				// Checker for L1JetPatch
-				//Double_t dL1JmeanTrig = 1/126.;
-				//Int_t sigmaJ = 5; // deviation from  mean value
-				Double_t dL1JEntries = hL1JetPatch->GetEntries();
-				Int_t badL1J[12][16] = {{0}} ;
-				Int_t nBadL1J = 0;
-				for(Int_t ix = 1; ix <=  hL1JetPatch->GetNbinsX(); ix++) {
-				  for(Int_t iy = 1; iy <=  hL1JetPatch->GetNbinsY(); iy++) {
-				    Double_t binContent = hL1JetPatch->GetBinContent(ix, iy) ; 
-				    if (binContent != 0) {
-				      
-				      // OLD METHOD  (if a patch triggers > sigmaJ * mean value (1/#patch positions total) says "hot spot !")
-				      // if ((double)binContent/(double)dL1JEntries > sigmaJ*dL1JmeanTrig) {
-				      // 	badL1J[ix-1][iy-1] += 1 ;
-				      // 	nBadL1J += 1;
-				      // }
-
-				      // NEW METHOD (if Rate > Threshold * ( (Number of towers or TRUs * Average rate) - Rate ) --> "hot spot !")
-				      // Threshold: same definitionas for Gamma
-				       if ((double)binContent/(double)dL1JEntries > ThreshJ / ( 1 + ThreshJ )) {
-				       	badL1J[ix-1][iy-1] += 1 ;
-				       	nBadL1J += 1;
-				       }
-				    }
-				  }
-				}
-				
-				if(fTextL1[1]){
-					lstF->Add(fTextL1[1]->Clone()) ;
-					fTextL1[1]->Clear() ; 
-
-					if (nBadL1J == 0) {
-						fTextL1[1]->SetFillColor(3) ;
-						fTextL1[1]->AddText(Form("L1 JET TRIGGER = OK, ENJOY...")); 
-					}
-					else {
-						fTextL1[1]->SetFillColor(2) ;
-						fTextL1[1]->AddText(Form("HOT SPOT IN L1 JET TRIGGER = CALL EXPERT!!")); 
-/*
-						for(Int_t ix = 1; ix <=  hL1JetPatch->GetNbinsX(); ix++) {
-							for(Int_t iy = 1; iy <=  hL1JetPatch->GetNbinsY(); iy++) {
-								if(badL1J[ix-1][iy-1] != 0) printf("L1 Jet patch with position x = %d, y = %d is out of range\n",(4*ix-4),(4*iy-4));
-							}
-						}
-*/
-
-					}
-				}//fTextL1[1]
-			} // L1 Jet patch checking done
-      } // if (specie != calibSpecieId) ..
-
-			if(hFrameR->GetEntries() !=0) {
-			  lstF = hFrameR->GetListOfFunctions();
-			
-				Int_t badLink[32] = {0};
-				Int_t nBadLink = 0;
-				for(Int_t ix = 1; ix <= hFrameR->GetNbinsX(); ix++) {
-					Double_t binContent = hFrameR->GetBinContent(ix) ; 
-					if (binContent == 0) {
-						badLink[ix-1] += 1;
-						nBadLink += 1;
-					}
-				}
-				if(fTextL1[2]){
-					lstF->Add(fTextL1[2]->Clone()) ;
-					fTextL1[2]->Clear() ; 
+      //get calib histos
+      TH2F * hdata  = (TH2F*)list[specie]->At(k2DRatioAmp) ; 
+      TH1F * ratio = (TH1F*)list[specie]->At(kRatioDist) ;
+      
+      //get L1 histos
+      TH2F *hL1GammaPatch = (TH2F*)list[specie]->At(kGL1);
+      TH2F *hL1JetPatch = (TH2F*)list[specie]->At(kJL1);
+      TH1I *hFrameR = (TH1I*)list[specie]->At(kSTUTRU);
+      
+      
+      // =======================================================================================
+      //calib histo checker first:
+      if( hdata && ratio ){
 	
-				if (nBadLink < badLinkThresh) {
-						fTextL1[2]->SetFillColor(3) ;
-						fTextL1[2]->AddText(Form("LINK TRU-STU = OK, ENJOY...")); 
-					}
-					else {
-						fTextL1[2]->SetFillColor(2) ;
-						fTextL1[2]->AddText(Form("PROBLEM WITH TRU-STU LINK = CALL EXPERT!!"));
-/*
-						for(Int_t ix = 0; ix <= hFrameR->GetNbinsX(); ix++) {
-							if(badLink[ix] != 0) printf("STU link with TRU %d is out\n",ix);
-						}
-*/
-					}   
-				}//fTextL1[2]
-			} // Checker for link TRU-STU done
-    }
-
+	// first clean lines, text (functions)
+	lstF = hdata->GetListOfFunctions();
+	CleanListOfFunctions(lstF);
+	lstF = ratio->GetListOfFunctions();
+	CleanListOfFunctions(lstF);
+	
+	if(hdata->GetEntries()!=0 && ratio->GetEntries()!=0) {
+	  
+	  lstF = hdata->GetListOfFunctions();
+	  
+	  //adding the lines to distinguish different SMs
+	  lstF->Add(fLineCol->Clone()); 
+	  for(Int_t iLine = 0; iLine < 5; iLine++) {
+	    lstF->Add(fLineRow[iLine]->Clone());
+	  } 
+	  //Now adding the text to for each SM
+	  for(Int_t iSM = 0 ; iSM < fgknSM ; iSM++){  //number of SMs loop start
+	    lstF->Add(fTextSM[iSM]->Clone()); 
+	  }			
+	  
+	  
+	  //now check the ratio histogram
+	  lstF = ratio->GetListOfFunctions();
+	  
+	  Double_t binContent = 0. ;  
+	  Int_t nGoodTower = 0 ;
+	  Double_t rv = 0. ;
+	  for(Int_t ix = 1; ix <= hdata->GetNbinsX(); ix++) {
+	    for(Int_t iy = 1; iy <= hdata->GetNbinsY(); iy++) {
+	      binContent = hdata->GetBinContent(ix, iy) ; 
+				if (binContent < 1.2 && binContent > 0.8) nGoodTower++ ;
+	    }
+	  }
+	  rv = nGoodTower/nTot ; 
+	  //printf("%2.2f %% towers out of range [0.8, 1.2]\n", (1-rv)*100);
+	  if(fText){
+	    lstF->Add(fText->Clone()) ;
+	    fText->Clear() ; 
+	    
+	    fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100));     
+	    if (rv < ratioThresh) {
+	      test[specie] = ratioThresh;
+	      // 2 lines text info for quality         
+	      fText->SetFillColor(2) ;
+	      fText->AddText(Form("EMCAL = NOK, CALL EXPERTS!!!")); 
+	    }
+	    else {
+	      test[specie] = 1 - ratioThresh;
+	      fText->SetFillColor(3) ;
+	      fText->AddText(Form("EMCAL = OK, ENJOY...")); 
+	    }
+	  }//fText
+	}//calib histo checking done
+      }//histograms NOT NULL
+      
+      // ========================================================================================
+      // now L1 checks:
+      
+      if( hL1GammaPatch ){
+	
+	// first clean lines, text (functions)
+	lstF = hL1GammaPatch->GetListOfFunctions();
+	CleanListOfFunctions(lstF);
+	
+	if (specie != calibSpecieId) {
+	  //if(hL1GammaPatch->GetEntries() !=0 ) {
+	  if(hL1GammaPatch->GetEntries() > 10) { // need some statistics for hot spot calculation
+	    lstF = hL1GammaPatch->GetListOfFunctions();
+	    
+	    // Checker for L1GammaPatch 
+	    //Double_t dL1GmeanTrig    = 1./2961.; 
+	    //Double_t dL1GmeanTrigTRU = 1./32.; 
+	    //Int_t sigmaG    = 100; // deviation from mean value (increased to 100)
+	    //Int_t sigmaGTRU = 5; // deviation from mean value for TRUs
+	    Double_t dL1GEntries = hL1GammaPatch->GetEntries();
+	    Int_t badL1G[48][64]   = {{0}} ;
+	    Int_t badL1GTRU[2][16] = {{0}} ;
+	    Int_t nBadL1G    = 0;
+	    Int_t nBadL1GTRU = 0;
+	    Double_t binContentTRU[2][16] = {{0.}};
+	    for(Int_t ix = 1; ix <=  hL1GammaPatch->GetNbinsX(); ix++) {
+	      for(Int_t iy = 1; iy <=  hL1GammaPatch->GetNbinsY(); iy++) {
+		Double_t binContent = hL1GammaPatch->GetBinContent(ix, iy) ; 
+		if (binContent != 0) {
+		  
+		  // fill counter for TRUs
+		  binContentTRU[(Int_t)((ix-1)/24)][(Int_t)((iy-1)/4)] += binContent;
+		  
+		  // OLD METHOD (if a patch triggers > sigmaG * mean value (1/#patch positions total) says "hot spot !")
+		  // if ((double)binContent/(double)dL1GEntries > sigmaG*dL1GmeanTrig) {
+		  // 	badL1G[ix-1][iy-1] += 1;
+		  // 	nBadL1G += 1;
+		  // }
+		  
+		  // NEW METHOD (if Rate > Threshold * ( (Number of towers or TRUs * Average rate) - Rate ) --> "hot spot !")
+		  // Thresold = how much does the noisy tower/TRU contribute to the rate
+		  //            1.0 --> Rate of noisy tower/TRU = Rate of all other towers/TRUs  
+		  if (binContent/dL1GEntries > ThreshG / ( 1 + ThreshG )) {
+		    badL1G[ix-1][iy-1] += 1;
+		    nBadL1G += 1;
+		  }
+		}
+	      }
+	    }
+	    
+	    // check TRUs
+	    for(Int_t ix = 1; ix <=  2; ix++) {
+	      for(Int_t iy = 1; iy <=  16; iy++) {
+		if(binContentTRU[ix-1][iy-1]/dL1GEntries >  ThreshG / ( 1 + ThreshG )) {
+		  badL1GTRU[ix-1][iy-1] += 1;
+		  nBadL1GTRU += 1;
+		}
+	      }
+	    }
+	    
+	    if(fTextL1[0]){
+	      lstF->Add(fTextL1[0]->Clone()) ;
+	      fTextL1[0]->Clear() ; 
+	      
+	      if (nBadL1G == 0 && nBadL1GTRU == 0 ) {
+		fTextL1[0]->SetFillColor(3) ;
+		fTextL1[0]->AddText(Form("L1 GAMMA TRIGGER = OK, ENJOY...")); 
+	      }
+	      else if (nBadL1G == 0){
+		fTextL1[0]->SetFillColor(2) ;
+		fTextL1[0]->AddText(Form("HOT SPOT IN L1 GAMMA TRIGGER (TRU) = CALL EXPERT!!"));
+		
+	      }
+	      else{
+		fTextL1[0]->SetFillColor(2) ;
+		fTextL1[0]->AddText(Form("HOT SPOT IN L1 GAMMA TRIGGER = CALL EXPERT!!"));
+		/*
+		  for(Int_t ix = 1; ix <=  hL1GammaPatch->GetNbinsX(); ix++) {
+		  for(Int_t iy = 1; iy <=  hL1GammaPatch->GetNbinsY(); iy++) {
+		  if(badL1G[ix-1][iy-1] != 0) printf("L1 Gamma patch with position x = %d, y = %d is out of range\n",ix,iy);
+		  }
+		  }
+		*/
+	      }
+	    }//fTextL1[0]
+	  }// L1 gamma patch checking done
+	}// if (specie != calibSpecieId) ..
+      }//hL1GammaPatch NOT NULL
+      
+      if( hL1JetPatch ){
+	
+	lstF = hL1JetPatch->GetListOfFunctions();
+	CleanListOfFunctions(lstF);
+	
+	if (specie != calibSpecieId) {
+	  
+	  //if(hL1JetPatch->GetEntries() !=0) {
+	  if(hL1JetPatch->GetEntries() > 10) { // need some statistics for hot spot calculation
+	    
+	    lstF = hL1JetPatch->GetListOfFunctions();
+	    
+	    // Checker for L1JetPatch
+	    //Double_t dL1JmeanTrig = 1/126.;
+	    //Int_t sigmaJ = 5; // deviation from  mean value
+	    Double_t dL1JEntries = hL1JetPatch->GetEntries();
+	    Int_t badL1J[12][16] = {{0}} ;
+	    Int_t nBadL1J = 0;
+	    for(Int_t ix = 1; ix <=  hL1JetPatch->GetNbinsX(); ix++) {
+	      for(Int_t iy = 1; iy <=  hL1JetPatch->GetNbinsY(); iy++) {
+		Double_t binContent = hL1JetPatch->GetBinContent(ix, iy) ; 
+		if (binContent != 0) {
+		  
+		  // OLD METHOD  (if a patch triggers > sigmaJ * mean value (1/#patch positions total) says "hot spot !")
+		  // if ((double)binContent/(double)dL1JEntries > sigmaJ*dL1JmeanTrig) {
+		  // 	badL1J[ix-1][iy-1] += 1 ;
+		  // 	nBadL1J += 1;
+		  // }
+		  
+		  // NEW METHOD (if Rate > Threshold * ( (Number of towers or TRUs * Average rate) - Rate ) --> "hot spot !")
+		  // Threshold: same definitionas for Gamma
+		  if ((double)binContent/(double)dL1JEntries > ThreshJ / ( 1 + ThreshJ )) {
+		    badL1J[ix-1][iy-1] += 1 ;
+		    nBadL1J += 1;
+		  }
+		}
+	      }
+	    }
+	    
+	    if(fTextL1[1]){
+	      lstF->Add(fTextL1[1]->Clone()) ;
+	      fTextL1[1]->Clear() ; 
+	      
+	      if (nBadL1J == 0) {
+		fTextL1[1]->SetFillColor(3) ;
+		fTextL1[1]->AddText(Form("L1 JET TRIGGER = OK, ENJOY...")); 
+	      }
+	      else {
+		fTextL1[1]->SetFillColor(2) ;
+		fTextL1[1]->AddText(Form("HOT SPOT IN L1 JET TRIGGER = CALL EXPERT!!")); 
+		/*
+		  for(Int_t ix = 1; ix <=  hL1JetPatch->GetNbinsX(); ix++) {
+		  for(Int_t iy = 1; iy <=  hL1JetPatch->GetNbinsY(); iy++) {
+		  if(badL1J[ix-1][iy-1] != 0) printf("L1 Jet patch with position x = %d, y = %d is out of range\n",(4*ix-4),(4*iy-4));
+		  }
+		  }
+		*/
+		
+	      }
+	    }//fTextL1[1]
+	  } // L1 Jet patch checking done
+	} // if (specie != calibSpecieId) ..
+      }// hL1JetPatch NOT NULL
+      
+      if(hFrameR){
+	
+	lstF = hFrameR->GetListOfFunctions();
+	CleanListOfFunctions(lstF);
+	
+	if(hFrameR->GetEntries() !=0) {
+	  lstF = hFrameR->GetListOfFunctions();
+	  
+	  Int_t badLink[32] = {0};
+	  Int_t nBadLink = 0;
+	  for(Int_t ix = 1; ix <= hFrameR->GetNbinsX(); ix++) {
+	    Double_t binContent = hFrameR->GetBinContent(ix) ; 
+	    if (binContent == 0) {
+	      badLink[ix-1] += 1;
+	      nBadLink += 1;
+	    }
+	  }
+	  if(fTextL1[2]){
+	    lstF->Add(fTextL1[2]->Clone()) ;
+	    fTextL1[2]->Clear() ; 
+	    
+	    if (nBadLink < badLinkThresh) {
+	      fTextL1[2]->SetFillColor(3) ;
+	      fTextL1[2]->AddText(Form("LINK TRU-STU = OK, ENJOY...")); 
+	    }
+	    else {
+	      fTextL1[2]->SetFillColor(2) ;
+	      fTextL1[2]->AddText(Form("PROBLEM WITH TRU-STU LINK = CALL EXPERT!!"));
+	      /*
+		for(Int_t ix = 0; ix <= hFrameR->GetNbinsX(); ix++) {
+		if(badLink[ix] != 0) printf("STU link with TRU %d is out\n",ix);
+		}
+	      */
+	    }   
+	  }//fTextL1[2]
+	} // Checker for link TRU-STU done
+      }//hFrameR NOT NULL
+    } // species processed		
   } // specie
 }
 //______________________________________________________________________________
