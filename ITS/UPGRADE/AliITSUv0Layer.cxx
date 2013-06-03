@@ -1390,9 +1390,9 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
   TGeoMedium *medKapton    = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
   TGeoMedium *medGlue      = mgr->GetMedium("ITS_GLUE$");
   TGeoMedium *medFlexCable = mgr->GetMedium("ITS_FLEXCABLE$");
-  TGeoMedium *medK13D2U2k  = mgr->GetMedium("ITS_K13D2U2k$");
-  TGeoMedium *medFGS003    = mgr->GetMedium("ITS_FGS003$"); 
-  TGeoMedium *medCarbonFleece = mgr->GetMedium("ITS_CarbonFleece$"); 
+  //TGeoMedium *medK13D2U2k  = mgr->GetMedium("ITS_K13D2U2k$");
+  //TGeoMedium *medFGS003    = mgr->GetMedium("ITS_FGS003$"); 
+  //TGeoMedium *medCarbonFleece = mgr->GetMedium("ITS_CarbonFleece$"); 
 
   // Local parameters
     Double_t kConeOutRadius = 0.15/2;
@@ -1540,7 +1540,7 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
       
       TGeoBBox *tM0f=new TGeoBBox(0.02/2, hh/2, smcLength/2);
       TGeoVolume *volTM0f=new TGeoVolume("microChanTop3", tM0f, medKapton);
-      Double_t smcChannels=12;
+      //Double_t smcChannels=12;
       Double_t smcCloseWallvapor=smcWidth/2-smcSide1Thick-vaporThick-smcSide2Thick-smcSide3Thick-12*smcSpace-11*smcSide5Thick;
       Double_t smcCloseWallliquid=smcWidth/2-smcSide1Thick-liquidThick-smcSide2Thick-smcSide4Thick-12*smcSpace-11*smcSide5Thick;
       volTM0f->SetLineColor(12);
@@ -1773,7 +1773,7 @@ TGeoVolume* AliITSUv0Layer::CreateModule(const Double_t xlad,
 
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
+  //TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medSi  = mgr->GetMedium("ITS_SI$");
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSModulePattern(), fLayerNumber);
