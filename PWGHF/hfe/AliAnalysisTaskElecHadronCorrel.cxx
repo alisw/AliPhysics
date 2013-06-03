@@ -716,7 +716,7 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
         if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kEMCEGA))) return;
   }
   // centrality selection 
-  //  SetCentralityParameters(0., 7., "V0M");
+  //  SetCentralityParameters(0., 7., fkCentralityMethod);
   Bool_t pass = kFALSE; 
   CheckCentrality(fVevent,pass);
   if(!pass)return;
@@ -743,7 +743,7 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
   fCFM->SetRecEventInfo(fVevent);
 
   AliCentrality *fCentrality2 = (AliCentrality*)fAOD->GetCentrality();
-  Double_t centvalue1 = fCentrality2->GetCentralityPercentile("V0M");
+  Double_t centvalue1 = fCentrality2->GetCentralityPercentile(fkCentralityMethod);
 
   //Event mixing
   AliEventPool* pool;
@@ -2167,7 +2167,7 @@ void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliVTrack *track, TH2F *DphiPt,
   zVtx = pVtx->GetZ();
 
   AliCentrality *fCentrality1 = (AliCentrality*)fVevent->GetCentrality();
-  Double_t centvalue = fCentrality1->GetCentralityPercentile("V0M");
+  Double_t centvalue = fCentrality1->GetCentralityPercentile(fkCentralityMethod);
 
   AliEventPool* pool;
   pool = fPoolMgr->GetEventPool(centvalue, zVtx); // Get the buffer associated with the current centrality and z-vtx
