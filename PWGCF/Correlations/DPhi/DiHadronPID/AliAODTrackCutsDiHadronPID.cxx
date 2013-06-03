@@ -648,10 +648,10 @@ TH2F* AliAODTrackCutsDiHadronPID::GetHistDataTPCTOFMismatch(Int_t charge, Int_t 
 	htmp_proj->SetTitle(Form("%5.3f < p_{T} < %5.3f",GetPtMinPID(ptbin),GetPtMaxPID(ptbin)));
 	htmp_proj->Sumw2();
 
-	return htmp_proj;
-
 	// Putting back the range on the p_T axis.
 	ptaxis->SetRange(1, NbinsPt);
+
+	return htmp_proj;
 
 }
 
