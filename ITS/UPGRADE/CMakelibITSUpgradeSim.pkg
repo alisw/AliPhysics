@@ -30,6 +30,8 @@ set ( SRCS
 #v0/AliITSupgradeDigitizer.cxx 
 #
 AliITSU.cxx 
+AliITSUv0.cxx 
+AliITSUv0Layer.cxx 
 AliITSUv11.cxx 
 AliITSUv11Layer.cxx 
 AliITSUModule.cxx

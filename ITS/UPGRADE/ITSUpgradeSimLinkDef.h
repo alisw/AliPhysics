@@ -18,6 +18,8 @@
 //v0 part <<<
 // 
 #pragma link C++ class  AliITSU+;
+#pragma link C++ class  AliITSUv0+;
+#pragma link C++ class  AliITSUv0Layer+;
 #pragma link C++ class  AliITSUv11+;
 #pragma link C++ class  AliITSUv11Layer+;
 #pragma link C++ class  AliITSUModule+;
