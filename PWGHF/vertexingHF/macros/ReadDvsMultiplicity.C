@@ -62,6 +62,7 @@ Int_t types=kGaus;
 Int_t optPartAntiPart=kBoth;
 Int_t factor4refl=0;
 Float_t massRangeForCounting=0.05; // GeV --> it is 3 sigmapt[binpt]
+Float_t nSigmaRangeForCounting=3.0; //  3 sigmapt[binpt]
 TH2F* hPtMass=0x0;
 TString suffix="StdPid";
 
@@ -295,7 +296,7 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       Float_t cntSig1=0.;
       Float_t cntSig2=0.;
       Float_t cntErr=0.;
-      massRangeForCounting = 3*sigmapt[iBin];
+      massRangeForCounting = nSigmaRangeForCounting*sigmapt[iBin];
       //      cout << " pt bin "<< iBin << " mass range = "<< massRangeForCounting<<endl;
       Float_t minBinSum=hmassaxis->FindBin(massD-massRangeForCounting);
       Float_t maxBinSum=hmassaxis->FindBin(massD+massRangeForCounting);
@@ -504,6 +505,7 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
   TString outfilename = Form("RawYield_Mult_%s_%s",partname.Data(),CutsType);
   //  outfilename += "_MultInt";
   if(fixPeakSigma) outfilename += "_SigmaFixed";
+  outfilename += Form("_BCin%1.1fSigma",nSigmaRangeForCounting);
   if(typeb==0) outfilename += "_Expo.root";
   else if(typeb==1) outfilename += "_Linear.root";
   else if(typeb==2) outfilename += "_Pol2.root";
