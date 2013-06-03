@@ -50,6 +50,8 @@
 #include "AliDielectronVarManager.h"
 #include "AliDielectronHelper.h"
 
+//ClassImp(AliDielectronHelper)
+
 //_____________________________________________________________________________
 TVectorD* AliDielectronHelper::MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax)
 {

@@ -23,8 +23,6 @@ class AliMCEvent;
 namespace AliDielectronHelper
 {
 
-
-
 TVectorD* MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax);
 TVectorD* MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax);
 TVectorD* MakeArbitraryBinning(const char* bins);
