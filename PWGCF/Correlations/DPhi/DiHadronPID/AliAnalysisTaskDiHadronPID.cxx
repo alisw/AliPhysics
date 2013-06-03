@@ -201,22 +201,21 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 	fPIDResponse = inputHandler->GetPIDResponse();	
 
 	// For now we don't bin in multiplicity for pp.
-	Int_t nCentralityBins = -1;
-	Double_t* centralityBins = 0x0;
+	TArrayD* centralityBins = 0x0;
 	if (fEventCuts->GetIsPbPb()) {
-		nCentralityBins = 15;
 		Double_t tmp[] = {0., 1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1 };
-		centralityBins = tmp;
+		centralityBins = new TArrayD(15, tmp);
 	} else {
-		nCentralityBins = 1;
 		Double_t tmp[] = {0.,1.};
-		centralityBins = tmp;
+		centralityBins = new TArrayD(2, tmp);
 	}
 
 	Int_t nZvtxBins  = 7;
 	Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
 
-	fPoolMgr = new AliEventPoolManager(fPoolSize, fPoolTrackDepth, nCentralityBins, (Double_t*) centralityBins, nZvtxBins, (Double_t*) vertexBins);
+	fPoolMgr = new AliEventPoolManager(fPoolSize, fPoolTrackDepth, centralityBins->GetSize(), centralityBins->GetArray(), nZvtxBins, (Double_t*) vertexBins);
+    
+	delete centralityBins;
     // --- END ---
 
 	// Create the output list.
@@ -292,6 +291,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 			for (Int_t iBinPt = 1; iBinPt < (fTOFPtAxis->GetNbins() + 1); iBinPt++) {
 
 				Int_t iPtClass = fTrackCutsAssociated->GetPtClass(iBinPt);
+				if (iPtClass == -1) {AliFatal("Not valid pT class.");}
 
 				Int_t NBinsTOF = fTrackCutsAssociated->GetNTOFbins(iPtClass,iSpecies);
 				Double_t TOFmin = fTrackCutsAssociated->GetTOFmin(iPtClass,iSpecies);
