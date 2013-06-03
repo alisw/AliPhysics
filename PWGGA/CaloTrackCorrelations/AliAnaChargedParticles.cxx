@@ -63,6 +63,8 @@ ClassImp(AliAnaChargedParticles)
     fhPtElectron(0),   fhPhiElectron(0),     fhEtaElectron(0),
     fhPtKaon(0),       fhPhiKaon(0),         fhEtaKaon(0),
     fhPtUnknown(0),    fhPhiUnknown(0),      fhEtaUnknown(0),
+    fhMCPt(0),         fhMCPhi(0),           fhMCEta(0),
+    fhMCRecPt(0),
     //TOF
     fhTOFSignal(0),    fhTOFSignalPtCut(0),  fhTOFSignalBCOK(0),
     fhPtTOFSignal(0),  fhPtTOFSignalDCACut(0),
@@ -588,7 +590,22 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     fhEtaUnknown  = new TH2F ("hEtaMCUnknown","#eta distribution from unknown",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
     fhEtaUnknown->SetXTitle("#eta ");
     outputContainer->Add(fhEtaUnknown);
-    
+
+    fhMCPt  = new TH1F ("hMCPt","p_T distribution from MC", nptbins,ptmin,ptmax); 
+    fhMCPt->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCPt);
+
+    fhMCPhi  = new TH2F ("hMCPhi","#phi distribution from MC",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+    fhMCPhi->SetXTitle("#phi (rad)");
+    outputContainer->Add(fhMCPhi);
+   
+    fhMCEta  = new TH2F ("hMCEta","#eta distribution from MC",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+    fhMCEta->SetXTitle("#eta (rad)");
+    outputContainer->Add(fhMCEta);
+
+    fhMCRecPt  = new TH1F ("hMCRecPt","p_T distribution from Rec MC", nptbins,ptmin,ptmax); 
+    fhMCRecPt->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCRecPt);
   }
   
   return outputContainer;
@@ -1108,24 +1125,29 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     
     if(IsDataMC())
     {
-      //Play with the MC stack if available		
+      //Play with the MC stack if available
       Int_t mompdg = -1;
       Int_t label  = track->GetLabel();
+
       if(label >= 0)
-      {
-        if( GetReader()->ReadStack() && label < GetMCStack()->GetNtrack())
-        {
-          TParticle * mom = GetMCStack()->Particle(label);
-          mompdg =TMath::Abs(mom->GetPdgCode());
-        }
-        else if(GetReader()->ReadAODMCParticles())
-        {
-          AliAODMCParticle * aodmom = 0;
-          //Get the list of MC particles
-          aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
-          mompdg =TMath::Abs(aodmom->GetPdgCode());
-        }
-      }
+	{
+	  if( GetReader()->ReadStack() && label < GetMCStack()->GetNtrack())
+	    {
+	      TParticle * mom = GetMCStack()->Particle(label);
+	      mompdg =TMath::Abs(mom->GetPdgCode());
+	    }
+	  else if(GetReader()->ReadAODMCParticles())
+	    {
+	      AliAODMCParticle * aodmom = 0;
+	      //Get the list of MC particles
+	      aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
+	      mompdg =TMath::Abs(aodmom->GetPdgCode());
+	    }
+	}
+
+      if(mompdg==211 || mompdg==2212 || mompdg==321 || mompdg==11){
+	if(TMath::Abs(eta) < 0.8 && phi < 3.145) fhMCRecPt->Fill(pt);
+      } 
       
       if(mompdg==211)
       {
@@ -1156,10 +1178,46 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
         fhPtUnknown ->Fill(pt);
         fhPhiUnknown->Fill(pt, phi);
         fhEtaUnknown->Fill(pt, eta);
-      }
-      
+      }     
     }//Work with stack also
     
   }// aod branch loop
   
-}
+  if(IsDataMC())
+    {
+      Int_t primpdg = -1;
+      if(GetReader()->ReadStack()) {	
+	AliStack * stack = GetMCStack();
+	if(stack) {
+	  for(Int_t i=0 ; i<stack->GetNtrack(); i++){
+	    TParticle *prim = stack->Particle(i);
+	    primpdg = TMath::Abs(prim->GetPdgCode());
+	    if(primpdg == 211 || primpdg == 2212 || primpdg == 321 || primpdg == 11){
+	      if(prim->IsPrimary() && TMath::Abs(prim->Eta()) < 0.8 && prim->Phi() < 3.145){
+		fhMCPt->Fill(prim->Pt());
+		fhMCPhi->Fill(prim->Pt(),prim->Phi());
+		fhMCEta->Fill(prim->Pt(),prim->Eta());
+	      }
+	    }
+	  }
+	}
+      }
+      else if(GetReader()->ReadAODMCParticles()){
+	TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
+	if(mcparticles){
+	  Int_t nprim = mcparticles->GetEntriesFast();
+	  for(Int_t i=0; i < nprim; i++){
+	    AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i); 
+	    primpdg = TMath::Abs(prim->GetPdgCode());
+	    if(primpdg == 211 || primpdg == 2212 || primpdg == 321 || primpdg == 11){
+	      if(prim->IsPhysicalPrimary() && TMath::Abs(prim->Eta()) < 0.8 && prim->Phi() < 3.145){
+		fhMCPt->Fill(prim->Pt());
+		fhMCPhi->Fill(prim->Pt(),prim->Phi());
+		fhMCEta->Fill(prim->Pt(),prim->Eta());
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }

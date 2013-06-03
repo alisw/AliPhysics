@@ -98,7 +98,12 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhPtUnknown;   //! pT distribution
   TH2F * fhPhiUnknown;  //! phi distribution vs pT
   TH2F * fhEtaUnknown;  //! eta distribution vs pT
-  
+
+  TH1F * fhMCPt; //! Number of generated charged hadrons vs pT coming from MC particle
+  TH2F * fhMCPhi; //! Number of generated charged hadrons vs phi coming from MC particle
+  TH2F * fhMCEta; //! Number of generated charged hadrons vs eta coming from MC particle
+  TH1F * fhMCRecPt; //! Number of reconstructed charged hadrons vs pT coming from MC particle
+
   // TOF
   TH1F * fhTOFSignal;                    //! TOF signal
   TH1F * fhTOFSignalPtCut;               //! TOF signal pt and acceptance cut

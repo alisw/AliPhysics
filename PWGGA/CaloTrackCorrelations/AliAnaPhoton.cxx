@@ -1035,7 +1035,6 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
       fhPhiLam0HighE   ->Fill(phi, lambda0);
     }
   }
-  
   if(IsDataMC())
   {
     AliVCaloCells* cells = 0;
@@ -1044,8 +1043,11 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
     
     //Fill histograms to check shape of embedded clusters
     Float_t fraction = 0;
+   // printf("check embedding %i\n",GetReader()->IsEmbeddedClusterSelectionOn());
+  
     if(GetReader()->IsEmbeddedClusterSelectionOn())
     {//Only working for EMCAL
+    	printf("embedded\n");
       Float_t clusterE = 0; // recalculate in case corrections applied.
       Float_t cellE    = 0;
       for(Int_t icell  = 0; icell < cluster->GetNCells(); icell++)
@@ -2463,7 +2465,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         
       } //No embedding     
       
-      //Fill histograms to check shape of embedded clusters
       if(GetReader()->IsEmbeddedClusterSelectionOn())
       {
         
@@ -2803,6 +2804,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
   if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   
   Float_t cen = GetEventCentrality();
+ // printf("++++++++++ GetEventCentrality() %f\n",cen);
+ 
   Float_t ep  = GetEventPlaneAngle();
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)

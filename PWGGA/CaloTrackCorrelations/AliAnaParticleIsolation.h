@@ -42,14 +42,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         CalculateCaloSignalInCone    (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCluster) ;
   void         CalculateCaloCellSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCell) ;
   void         CalculateTrackSignalInCone   (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumTrack  ) ;
-  
-  Float_t      CalculateExcessAreaFraction(const Float_t excess, const Float_t conesize);
-  
-  void 	   GetCoeffNormBadCell(const AliAODPWG4ParticleCorrelation * pCandidate, 
-                                        const AliCaloTrackReader * reader,  Float_t &  coneBadCellsCoeff, Float_t &  etaBandBadCellsCoeff, Float_t & phiBandBadCellsCoeff, const Float_t conesize) ;
+
 
   void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate,
-                                                   const Float_t coneptsumCluster,const Float_t coneptsumCell, const Float_t coneptsumTrack ) ;
+                                                   const Float_t coneptsumCluster,const Float_t coneptsumCell, const Float_t coneptsumTrack,
+                                                   Float_t &etaBandptsumTrackNorm, Float_t &etaBandptsumClusterNorm ) ;
   
   TObjString * GetAnalysisCuts() ;
   
@@ -71,8 +68,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         FillPileUpHistograms(Int_t clusterID) ;
   
   void         FillTrackMatchingShowerShapeControlHistograms(AliAODPWG4ParticleCorrelation  * pCandidate,
-                                                             const AliCaloTrackReader * reader,
-                                                             const AliCaloPID * pid) ;
+                                                             AliCaloPID * pid) ;
   
   void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph ) ; 
   
@@ -277,7 +273,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtSubNormvsConeSumPtTotPhiCell; //! Cells, phi band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
   TH2F *   fhConeSumPtSubvsConeSumPtTotEtaCell;  //! Cells, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
   TH2F *   fhConeSumPtSubNormvsConeSumPtTotEtaCell; //! Cells, eta band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
-
+  TH2F *   fhConeSumPtVSUETracksEtaBand;//!
+  TH2F *   fhConeSumPtVSUETracksPhiBand;//!
+  TH2F *   fhConeSumPtVSUEClusterEtaBand;//!
+  TH2F *   fhConeSumPtVSUEClusterPhiBand;//!
   
   //MC
   TH1F *   fhPtIsoPrompt;                         //! Number of isolated prompt gamma 
