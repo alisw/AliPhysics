@@ -297,7 +297,7 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
     {
       double dxs = xyzTrk[0] - xyzVtx[0];
       double dys = xyzTrk[1] - xyzVtx[1];
-      double dzs = xyzTrk[2] - xyzVtx[2];
+      //      double dzs = xyzTrk[2] - xyzVtx[2];
       // RS: for large segment steps d use approximation of cicrular arc s by
       // s = 2R*asin(d/2R) = d/p asin(p) \approx d/p (p + 1/6 p^3) = d (1+1/6 p^2)
       // where R is the track radius, p = d/2R = 2C*d (C is the abs curvature)
@@ -308,7 +308,9 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
 	double fcarc = 1.+crv*crv*dst/6.;
 	dst *= fcarc*fcarc;
       }
-      dst += dzs*dzs;
+      // RS: temporary hack since we don't have SPD vertex:      
+      //      dst += dzs*dzs;
+      dst *= 1+fCurrESDtrack->GetTgl()*fCurrESDtrack->GetTgl();
       dst = Sqrt(dst); 
     }
     //    
@@ -373,9 +375,9 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
     if (   trStat & AliESDtrack::kITSrefit ) continue; // already done
     if (  (trStat & AliESDtrack::kTPCout) && !(trStat & AliESDtrack::kTPCrefit) ) continue;
     //
-    fCurrHyp = GetTrackHyp(itr);
-    fCurrHyp->AliExternalTrackParam::operator=(*fCurrESDtrack);  // fetch current ESDtrack kinematics
+    fCurrHyp  = GetTrackHyp(itr);
     fCurrMass = fCurrHyp->GetMass();
+    *fCurrHyp = *fCurrESDtrack;  // fetch current ESDtrack kinematics
     //
     int nclFit = 0;
     double chi2 = RefitTrack(fCurrHyp,fITS->GetRMin(),nclFit);
@@ -1363,7 +1365,7 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
 }
 
 //______________________________________________________________________________
-Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDest, Int_t &nclFit, Int_t stopCond)
+Double_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Int_t &nclFit, Int_t stopCond)
 {
   // refit track till radius rDest. The cluster,mass info is taken from fCurrHyp (and its winner seed)
   // if stopCond<0 : propagate till last cluster then stop
@@ -1386,7 +1388,7 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDes
   Int_t clInfo[2*AliITSUAux::kMaxLayers];
   Int_t nCl = fCurrHyp->FetchClusterInfo(clInfo);
   fCurrMass = fCurrHyp->GetMass();
-  AliExternalTrackParam tmpTr(*trc);
+  AliITSUTrackHyp tmpTr(*(AliKalmanTrack*)trc);
   double chi2 = 0;
   int iclLr[2],nclLr;
   nclFit = 0;
@@ -1472,7 +1474,7 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDes
 	printf("AfterRefit: "); tmpTr.Print();
       }
       if (++nclFit==nCl && stopCond<0) {
-	*trc = tmpTr;
+	*trc = (AliKalmanTrack&)tmpTr;
 	return chi2; // it was requested to not propagate after last update
       }
     }
@@ -1495,7 +1497,7 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliExternalTrackParam* trc, Double_t rDes
   if (!tmpTr.GetXatLabR(rDest,rDest,GetBz(),0) || !PropagateSeed(&tmpTr,rDest,fCurrMass, 100, kFALSE)) {
     return (stopCond>0) ? -chi2 : chi2; // rDest was obligatory
   }
-  *trc=tmpTr;
+  *trc = (AliKalmanTrack&)tmpTr;
   if (AliDebugLevelClass()>2) {
     printf("After refit (now at lr %d): ",lrStop); trc->Print();
   }
@@ -1649,8 +1651,8 @@ Bool_t AliITSUTrackerGlo::CheckBackwardMatching(AliITSUSeed* seed)
   // check seed backward propagation chi2 and matching to TPC 
   double bz0 = GetBz();
   double rDest = fITS->GetRITSTPCRef(); // reference radius for comparison
-  static AliExternalTrackParam trback;
-  trback = *seed;
+  AliITSUTrackHyp trback;
+  trback.AliExternalTrackParam::operator=(*seed);
   trback.ResetCovariance(10000);
   int nclFit = 0;
   double chi2sa = RefitTrack(&trback,rDest,nclFit,1);
