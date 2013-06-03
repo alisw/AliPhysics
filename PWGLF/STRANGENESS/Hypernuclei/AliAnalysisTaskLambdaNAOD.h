@@ -159,6 +159,9 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   Int_t fkEMCEJE[maxNofTracks];                                //! Tree variable
   Int_t fkEMCEGA[maxNofTracks];                                //! Tree variable 
 
+  Int_t fCentrality[maxNofTracks];                             //! Tree variable
+  Int_t fMultiplicity[maxNofTracks];                           //! Tree variable
+
   Double_t fPtotN[maxNofTracks];                               //! Tree variable
   Double_t fPtotP[maxNofTracks];                               //! Tree variable
   Double_t fMotherPt[maxNofTracks];                            //! Tree variable

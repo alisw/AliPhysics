@@ -313,7 +313,10 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fTreeV0->Branch("fkSemiCentral",fkSemiCentral,"fkSemiCentral[fItrk]/I");
   fTreeV0->Branch("fkEMCEJE",fkEMCEJE,"fkEMCEJE[fItrk]/I");
   fTreeV0->Branch("fkEMCEGA",fkEMCEGA,"fkEMCEGA[fItrk]/I");
- 
+
+  fTreeV0->Branch("fCentrality",fCentrality,"fCentrality[fItrk]/I");
+  fTreeV0->Branch("fMultiplicity",fMultiplicity,"fMultipicity[fItrk]/I");
+
   fTreeV0->Branch("fPtotN",fPtotN,"fPtotN[fItrk]/D");
   fTreeV0->Branch("fPtotP",fPtotP,"fPtotP[fItrk]/D");
   fTreeV0->Branch("fMotherPt",fMotherPt,"fMotherPt[fItrk]/D");
@@ -420,6 +423,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
   // Main loop
   // Called for each event
 
+  //cout << "katze1" << endl;
+
   //Data
   //get Event-Handler for the trigger information
   fEventHandler= dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -452,7 +457,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
   //look for the generated particles
   MCGenerated(stack);
   
-  
+  //cout << "katze2" << endl;
   if (SetupEvent() < 0) {
     PostData(1, fOutputContainer);
     return;
@@ -486,7 +491,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
     
     //Basic event cuts: 
     //1.) vertex existence
-    const AliESDVertex *vertexESD = fESDevent->GetPrimaryVertexTracks();
+    /*const AliESDVertex *vertexESD = fESDevent->GetPrimaryVertexTracks();
     if (vertexESD->GetNContributors()<1) 
       {
 	// SPD vertex
@@ -500,8 +505,25 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
     vertexESD->GetXYZ(vertex);
 
     //2. vertex position within 10 cm
-    if (TMath::Abs(vertexESD->GetZv()) > 10) return;
+    if (TMath::Abs(vertexESD->GetZv()) > 10) return;*/
+
+    const AliESDVertex *vertexTracks = fESDevent->GetPrimaryVertexTracks();
+    if (vertexTracks->GetNContributors()<1) vertexTracks = 0x0;
     
+    const AliESDVertex *vertexSPD    = fESDevent->GetPrimaryVertexSPD();
+    if (vertexSPD->GetNContributors()<1) vertexSPD = 0x0;
+
+    //cout << "before" << endl;    
+    if(!fMCtrue){
+      if(!vertexTracks || !vertexSPD) return;
+       //cout << "after" <<endl;
+
+      //if (vertexTracks && vertexSPD){
+      //cout << "Vertex: " << TMath::Abs(vertexTracks->GetZv()) << endl;
+      if (TMath::Abs(vertexTracks->GetZv()) > 10 || TMath::Abs(vertexSPD->GetZv()) > 10) return;
+      //}
+    }
+
     //centrality selection in PbPb
     if (fESDevent->GetEventSpecie() == 4) //species == 4 == PbPb
       { // PbPb
@@ -1226,6 +1248,9 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	  fkSemiCentral[fItrk]     = fTriggerFired[2];
 	  fkEMCEJE[fItrk]          = fTriggerFired[3];
 	  fkEMCEGA[fItrk]          = fTriggerFired[4];
+
+	  fCentrality[fItrk]       = centrality;
+	  fMultiplicity[fItrk]     = nTrackMultiplicity;
 	  
 	  fPtotN[fItrk]            = ptotN;
 	  fPtotP[fItrk]            = ptotP;
@@ -1376,6 +1401,14 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	  parDeuteron[4] = 9.15038; 
 	}
  
+      if(fMCtrue && runNumber > 166500){ //LHC11h MC (local production)
+        parDeuteron[0] = 1.064; // ALEPH parameters for deuterons (pass2)                                                                                                        
+	parDeuteron[1] = 26.3;
+	parDeuteron[2] = 4.00313e-15;
+	parDeuteron[3] = 2.703 ;
+	parDeuteron[4] = 9.967;
+      }
+
 
       //define expected signals for the various species
       Double_t expSignalDeuteronN = 0;
@@ -1422,8 +1455,8 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	    }
 	  if(runNumber > 166500) //2011
 	    { 
-	      expSignalDeuteronN = 0.8*AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
-	      expSignalDeuteronP = 0.8*AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]); 
+	      expSignalDeuteronN = 0.9*AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
+	      expSignalDeuteronP = 0.9*AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]); 
 	    }
 	 
 	  if(trackP->GetTPCsignal() < 1200 && 
@@ -1474,6 +1507,13 @@ Bool_t AliAnalysisTaskLambdaNAOD::PionPID(AliVTrack *trackP, AliVTrack *trackN, 
         parPion[4]   = 9.15038; 
     }
 
+    if(fMCtrue && runNumber > 166500){ //LHC11h MC (local production)                                                                                                              
+      parPion[0] = 1.064; // ALEPH parameters for deuterons (pass2)                                                                                                            
+      parPion[1] = 26.3;
+      parPion[2] = 4.00313e-15;
+      parPion[3] = 2.703 ;
+      parPion[4] = 9.967;
+    }
 
     Double_t expSignalPionP = 0;
     Double_t expSignalPionN = 0;
@@ -1485,8 +1525,8 @@ Bool_t AliAnalysisTaskLambdaNAOD::PionPID(AliVTrack *trackP, AliVTrack *trackN, 
 	expSignalPionN = 0.7*AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassPion]),parPion[0],parPion[1],parPion[2],parPion[3],parPion[4]);
       }
       if(runNumber > 166500){ //2011
-	expSignalPionP = AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassPion]),parPion[0],parPion[1],parPion[2],parPion[3],parPion[4]);
-	expSignalPionN = AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassPion]),parPion[0],parPion[1],parPion[2],parPion[3],parPion[4]);
+	expSignalPionP = 0.9*AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassPion]),parPion[0],parPion[1],parPion[2],parPion[3],parPion[4]);
+	expSignalPionN = 0.9*AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassPion]),parPion[0],parPion[1],parPion[2],parPion[3],parPion[4]);
       }
       
     }
