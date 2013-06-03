@@ -14,11 +14,11 @@
 **************************************************************************/
 
 ///////////////////////////////////////////////////////////////////////////
-//   Cut class providing cuts to all infomation                          //
-//     available for the AliVParticle interface                          //
+//   Cut class providing cuts to V0 candidates                           //
+//   Selection or deselection of V0 candiates can be done.               //
 //                                                                       //
 // Authors:                                                              //
-//   Julian Book <Julian.Book@cern.ch>                                  //
+//   Julian Book <Julian.Book@cern.ch>                                   //
 /*
 
 

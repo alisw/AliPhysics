@@ -213,6 +213,8 @@ public:
 	kRotPairz,               //ee plane vector
 	kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
     kCosTilPhiCS,            // Shifted phi depending on kThetaCS
+    kCosPhiH2,               // cosine of pair phi for 2nd harmonic
+    kSinPhiH2,               // sinus  of pair phi for 2nd harmonic
     kDeltaPhiV0ArpH2,        // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A
     kDeltaPhiV0CrpH2,        // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-C
     kDeltaPhiV0ACrpH2,       // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A + V0-C
@@ -227,6 +229,7 @@ public:
     kv0CrpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-C
     kv0ACrpH2FlowV2,         // v2 coefficient with respect to the 2nd order reaction plane from V0-A + V0-C
     kTPCrpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from TPC
+    kTPCrpH2FlowV2Sin,       // sinus of v2 coefficient with respect to the 2nd order reaction plane from TPC
 
     kLegDist,                // distance of the legs
     kLegDistXY,              // distance of the legs in XY
@@ -314,6 +317,8 @@ public:
     kTPCyH2,                  // TPC y-component of the Q vector for 2nd harmonic (corrected)
     kTPCmagH2,                // TPC reaction plane the Q vectors magnitude for 2nd harmonic (corrected)
     kTPCrpH2,                 // TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
+    kCosTPCrpH2,              // cosine of TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
+    kSinTPCrpH2,              // sinus of TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
     kTPCsub1xH2,              // TPC x-component of the Q vector for 2nd harmonic (corrected, sub event 1) 
     kTPCsub1yH2,              // TPC y-component of the Q vector for 2nd harmonic (corrected, sub event 1)
     kTPCsub1rpH2,             // TPC reaction plane of the Q vector for 2nd harmonic (corrected, sub event 1)
@@ -1346,7 +1351,10 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	 */
   }
   //common, regardless of calculation method 
-   // Flow quantities
+
+  // Flow quantities
+  values[AliDielectronVarManager::kCosPhiH2] = TMath::Cos(2*values[AliDielectronVarManager::kPhi]);
+  values[AliDielectronVarManager::kSinPhiH2] = TMath::Sin(2*values[AliDielectronVarManager::kPhi]);
   Double_t delta=0.0;
   // v2 with respect to VZERO-A event plane
   delta = values[AliDielectronVarManager::kPhi] - fgData[AliDielectronVarManager::kV0ArpH2];
@@ -1377,6 +1385,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kv0ArpH2FlowV2]    = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ArpH2]) );
   values[AliDielectronVarManager::kv0CrpH2FlowV2]    = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0CrpH2]) );
   values[AliDielectronVarManager::kTPCrpH2FlowV2]    = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kTPCrpH2]) );
+  values[AliDielectronVarManager::kTPCrpH2FlowV2Sin] = TMath::Sin( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kTPCrpH2]) );
+
 
   // keep the interval [-pi,+pi]
   if ( values[AliDielectronVarManager::kDeltaPhiv0ArpH2] > TMath::Pi() ) 
@@ -1920,6 +1930,10 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
       values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();
       values[AliDielectronVarManager::kTPCmagH2] = qcorr->Mod();
       values[AliDielectronVarManager::kTPCrpH2]  = ((TMath::Abs(qcorr->X())>1.0e-10) ? TMath::ATan2(qcorr->Y(),qcorr->X())/2.0 : 0.0);
+      // detector effects
+      values[AliDielectronVarManager::kCosTPCrpH2]     = TMath::Cos( 2.* values[AliDielectronVarManager::kTPCrpH2] );
+      values[AliDielectronVarManager::kSinTPCrpH2]     = TMath::Sin( 2.* values[AliDielectronVarManager::kTPCrpH2] );
+
       // correlations for event plane resoultion
       values[AliDielectronVarManager::kv0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] - 
 									 values[AliDielectronVarManager::kTPCrpH2]) ); 
