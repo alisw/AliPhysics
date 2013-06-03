@@ -66,10 +66,115 @@ fFracIsThresh(1)
   
 }
 
+//__________________________________________________________________________________________________________________________________________
+void AliIsolationCut::CalculateUEBandClusterNormalization(      AliCaloTrackReader * /*reader*/,const Float_t   etaC, const Float_t /*phiC*/,
+                                                          const Float_t   phiUEptsumCluster,    const Float_t   etaUEptsumCluster,
+                                                                Float_t & phiUEptsumClusterNorm,      Float_t & etaUEptsumClusterNorm,
+                                                                Float_t & excessFracEta,              Float_t & excessFracPhi              ) const
+{
+  // Normalize cluster background band
+  
+  Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  
+  //Careful here if EMCal limits changed .. 2010 (4 SM) to 2011-12 (10 SM), for the moment consider 100 deg in phi
+  Float_t emcEtaSize = 0.7*2; // TO FIX
+  Float_t emcPhiSize = TMath::DegToRad()*100.; // TO FIX
+  
+  /* //Catherine code
+   if(((((2*fConeSize*emcPhiSize)-coneA))*phiBandBadCellsCoeff)!=0)phiUEptsumClusterNorm = phiUEptsumCluster*(coneA*coneBadCellsCoeff / (((2*fConeSize*emcPhiSize)-coneA))*phiBandBadCellsCoeff); // pi * R^2 / (2 R * 2 100 deg) -  trigger cone
+   if(((((2*(fConeSize-excess)*emcPhiSize)-(coneA-excessFracEta))*etaBandBadCellsCoeff))!=0)phiUEptsumClusterNorm = phiUEptsumCluster*(coneA *coneBadCellsCoeff/ (((2*(fConeSize-excess)*emcPhiSize)-(coneA/excessFracEta))*etaBandBadCellsCoeff));
+   if(((2*(fConeSize-excess)*emcEtaSize)-(coneA-excessFracPhi))*phiBandBadCellsCoeff!=0) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA*coneBadCellsCoeff / (((2*(fConeSize-excess)*emcEtaSize)-(coneA/excessFracPhi))*phiBandBadCellsCoeff));
+   */
+  
+  if((2*fConeSize*emcPhiSize-coneA)!=0) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / (((2*fConeSize*emcPhiSize)-coneA))); // pi * R^2 / (2 R * 2 100 deg) -  trigger cone
+  if((2*fConeSize*emcEtaSize-coneA)!=0) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / (((2*fConeSize*emcEtaSize)-coneA))); // pi * R^2 / (2 R * 2*0.7)  -  trigger cone
+  
+  //out of eta acceptance
+  excessFracEta = 1;
+  excessFracPhi = 1;
 
-//__________________________________________________________________________________
-Float_t AliIsolationCut::GetCellDensity(const AliAODPWG4ParticleCorrelation * pCandidate, 
-                                        const AliCaloTrackReader * reader) const 
+  if(TMath::Abs(etaC)+fConeSize > emcEtaSize/2.)
+  {
+    Float_t excess = TMath::Abs(etaC) + fConeSize - emcEtaSize/2.;
+    excessFracEta  = CalculateExcessAreaFraction(excess);
+    
+    if ( excessFracEta != 0) coneA /=  excessFracEta;
+    
+    //UE band is also out of acceptance, need to estimate corrected area
+    if(((2*fConeSize-excess)*emcPhiSize-coneA) != 0 ) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / ((((2*fConeSize-excess)*emcPhiSize)-coneA)));
+    if(( 2*fConeSize        *emcEtaSize-coneA) != 0 ) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / ((( 2*fConeSize        *emcEtaSize)-coneA)));
+  }
+  
+}
+
+//________________________________________________________________________________________________________________________________________
+void AliIsolationCut::CalculateUEBandTrackNormalization  (      AliCaloTrackReader * reader,    const Float_t   etaC, const Float_t /*phiC*/,
+                                                          const Float_t   phiUEptsumTrack,      const Float_t   etaUEptsumTrack,
+                                                                Float_t & phiUEptsumTrackNorm,        Float_t & etaUEptsumTrackNorm,
+                                                                Float_t & excessFracEta,              Float_t & excessFracPhi              ) const
+{
+  // Normalize track background band
+  
+  Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  
+  // Get the cut used for the TPC tracks in the reader, +-0.8, +-0.9 ...
+  // Only valid in simple fidutial cut case and if the cut is applied, careful!
+  Float_t tpcEtaSize = reader->GetFiducialCut()->GetCTSFidCutMaxEtaArray()->At(0) -
+  reader->GetFiducialCut()->GetCTSFidCutMinEtaArray()->At(0) ;
+  Float_t tpcPhiSize = TMath::TwoPi();
+  
+  /*//Catherine code
+   //phiUEptsumTrackNorm = phiUEptsumTrack*(coneA*coneBadCellsCoeff / (((2*fConeSize*tpcPhiSize)-coneA))*phiBandBadCellsCoeff); // pi * R^2 / (2 R * 2 pi) -  trigger cone
+   //etaUEptsumTrackNorm = etaUEptsumTrack*(coneA*coneBadCellsCoeff / (((2*fConeSize*tpcEtaSize)-coneA))*etaBandBadCellsCoeff); // pi * R^2 / (2 R * 1.6)  -  trigger cone
+   if((2*fConeSize*tpcPhiSize-coneA)!=0)phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / (((2*fConeSize*tpcPhiSize)-coneA))); // pi * R^2 / (2 R * 2 pi) -  trigger cone
+   if((2*fConeSize*tpcEtaSize-coneA)!=0)etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / (((2*fConeSize*tpcEtaSize)-coneA))); // pi * R^2 / (2 R * 1.6)  -  trigger cone
+   if((2*(fConeSize-excess)*tpcPhiSize)-(coneA-excessFracEta)!=0)phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / (((2*(fConeSize-excess)*tpcPhiSize)-(coneA/excessFracEta))));
+   */ //end Catherine code
+  
+  //correct out of eta acceptance
+  excessFracEta = 1;
+  excessFracPhi = 1;
+
+  if((2*fConeSize*tpcPhiSize-coneA)!=0) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / (((2*fConeSize*tpcPhiSize)-coneA))); // pi * R^2 / (2 R * 2 pi) -  trigger cone
+  if((2*fConeSize*tpcEtaSize-coneA)!=0) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / (((2*fConeSize*tpcEtaSize)-coneA))); // pi * R^2 / (2 R * 1.6)  -  trigger cone
+  
+  if(TMath::Abs(etaC)+fConeSize > tpcEtaSize/2.)
+  {
+    Float_t excess = TMath::Abs(etaC) + fConeSize - tpcEtaSize/2.;
+    excessFracEta  = CalculateExcessAreaFraction(excess);
+    if (excessFracEta != 0) coneA /=  excessFracEta;
+    
+    //UE band is also out of acceptance, need to estimate corrected area
+    if(((2*fConeSize-excess)*tpcPhiSize - coneA) !=0 ) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / ((((2*fConeSize-excess)*tpcPhiSize)-coneA)));
+    if(( 2*fConeSize        *tpcEtaSize - coneA) !=0 ) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / ((( 2*fConeSize        *tpcEtaSize)-coneA)));
+  }
+  
+}
+
+//______________________________________________________________________________
+Float_t AliIsolationCut::CalculateExcessAreaFraction(const Float_t excess) const 
+{
+  // Area of a circunference segment segment 1/2 R^2 (angle-sin(angle)), angle = 2*ACos((R-excess)/R)
+  
+  
+  Float_t angle   = 2*TMath::ACos( (fConeSize-excess) / fConeSize );
+  
+  Float_t coneA   = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  
+  Float_t excessA = fConeSize*fConeSize / 2 * (angle-TMath::Sin(angle));
+  
+  if(coneA > excessA) return coneA / (coneA-excessA);
+  else
+  {
+    printf("AliIsolationCut::CalculateExcessAreaFraction() - Please Check : Excess Track %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f\n",
+           excess,coneA, excessA, angle*TMath::RadToDeg(), coneA / (coneA-excessA));
+    return  1;
+  }
+}
+
+//_______________________________________________________________________________________
+Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandidate,
+                                        AliCaloTrackReader * reader) const
 {
   // Get good cell density (number of active cells over all cells in cone)
   
@@ -152,6 +257,103 @@ Float_t AliIsolationCut::GetCellDensity(const AliAODPWG4ParticleCorrelation * pC
   
 }
 
+//__________________________________________________________________________________
+void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandidate,
+                                          AliCaloTrackReader * reader,
+                                          Float_t &  coneBadCellsCoeff,
+                                          Float_t &  etaBandBadCellsCoeff,
+                                          Float_t & phiBandBadCellsCoeff)
+{
+  // Get good cell density (number of active cells over all cells in cone)
+  
+  Double_t coneCells    = 0.; //number of cells in cone with radius fConeSize
+  Double_t phiBandCells = 0.; //number of cells in band phi
+  Double_t etaBandCells = 0.; //number of cells in band eta
+  
+  Float_t phiC  = pCandidate->Phi() ;
+  if(phiC<0) phiC+=TMath::TwoPi();
+  Float_t etaC  = pCandidate->Eta() ;
+  
+  if(pCandidate->GetDetector()=="EMCAL")
+  {
+    AliEMCALGeometry* eGeom = AliEMCALGeometry::GetInstance();
+    AliCalorimeterUtils *cu = reader->GetCaloUtils();
+    
+    Int_t absId = -999;
+    if (eGeom->GetAbsCellIdFromEtaPhi(etaC,phiC,absId))
+    {
+      //Get absolute (col,row) of candidate
+      Int_t iEta=-1, iPhi=-1, iRCU = -1;
+      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetector(),
+                                                     iEta, iPhi, iRCU);
+      
+      Int_t colC = iEta;
+      if (nSupMod % 2) colC =  AliEMCALGeoParams::fgkEMCALCols + iEta ;
+      Int_t rowC = iPhi + AliEMCALGeoParams::fgkEMCALRows*int(nSupMod/2);
+      
+      Int_t sqrSize = int(fConeSize/0.0143) ; // Size of cell in radians
+      for(Int_t icol = 0; icol < 2*AliEMCALGeoParams::fgkEMCALCols-1;icol++)
+      {
+        for(Int_t irow = 0; irow < 5*AliEMCALGeoParams::fgkEMCALRows -1; irow++)
+        {
+          //loop on cells in a square of side fConeSize to check cells in cone
+          if     ( Radius(colC, rowC, icol, irow) < sqrSize ) { coneCells    += 1.; }
+          else if( icol>colC-sqrSize  &&  icol<colC+sqrSize ) { phiBandCells += 1 ; }
+          else if( irow>rowC-sqrSize  &&  irow<rowC+sqrSize ) { etaBandCells += 1 ; }
+          
+          Int_t cellSM  = -999;
+          Int_t cellEta = -999;
+          Int_t cellPhi = -999;
+          if(icol > AliEMCALGeoParams::fgkEMCALCols-1)
+          {
+            cellSM = 0+int(irow/AliEMCALGeoParams::fgkEMCALRows)*2;
+            cellEta = icol-AliEMCALGeoParams::fgkEMCALCols;
+            cellPhi = irow-AliEMCALGeoParams::fgkEMCALRows*int(cellSM/2);
+          }
+          if(icol < AliEMCALGeoParams::fgkEMCALCols)
+          {
+            cellSM = 1+int(irow/AliEMCALGeoParams::fgkEMCALRows)*2;
+            cellEta = icol;
+            cellPhi = irow-AliEMCALGeoParams::fgkEMCALRows*int(cellSM/2);
+          }
+          
+          if( (icol < 0 || icol > AliEMCALGeoParams::fgkEMCALCols*2-1 ||
+               irow < 0 || irow > AliEMCALGeoParams::fgkEMCALRows*5 - 1) //5*nRows+1/3*nRows //Count as bad "cells" out of EMCAL acceptance
+             || (cu->GetEMCALChannelStatus(cellSM,cellEta,cellPhi)==1))  //Count as bad "cells" marked as bad in the DataBase
+          {
+            if     ( Radius(colC, rowC, icol, irow) < sqrSize ) coneBadCellsCoeff    += 1.;
+            else if( icol>colC-sqrSize  &&  icol<colC+sqrSize ) phiBandBadCellsCoeff += 1 ;
+	          else if( irow>rowC-sqrSize  &&  irow<rowC+sqrSize ) etaBandBadCellsCoeff += 1 ;
+          }
+        }
+      }//end of cells loop
+    }
+    
+    else if(fDebug > 0) printf("cluster with bad (eta,phi) in EMCal for energy density coeff calculation\n");
+    
+    if (coneCells > 0.)
+    {
+      //   printf("Energy density coneBadCellsCoeff= %.2f coneCells%.2f\n", coneBadCellsCoeff,coneCells);
+      coneBadCellsCoeff = (coneCells-coneBadCellsCoeff)/coneCells;
+      //  printf("coneBadCellsCoeff= %.2f\n", coneBadCellsCoeff);
+    }
+    if (phiBandCells > 0.)
+    {
+      // printf("Energy density phiBandBadCellsCoeff = %.2f phiBandCells%.2f\n", phiBandBadCellsCoeff,phiBandCells);
+      phiBandBadCellsCoeff = (phiBandCells-phiBandBadCellsCoeff)/phiBandCells;
+      // printf("phiBandBadCellsCoeff = %.2f\n", phiBandBadCellsCoeff);
+    }
+    if (etaBandCells > 0.)
+    {
+      //printf("Energy density etaBandBadCellsCoeff = %.2f etaBandCells%.2f\n", etaBandBadCellsCoeff,etaBandCells);
+      etaBandBadCellsCoeff = (etaBandCells-etaBandBadCellsCoeff)/etaBandCells;
+      // printf("etaBandBadCellsCoeff = %.2f\n",etaBandBadCellsCoeff);
+    }
+    
+  }
+  
+}
+
 //____________________________________________
 TString AliIsolationCut::GetICParametersList()
 {
@@ -195,10 +397,10 @@ void AliIsolationCut::InitParameters()
 }
 
 //________________________________________________________________________________
-void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS, 
-                                        const TObjArray * plNe, 
-                                        const AliCaloTrackReader * reader, 
-                                        const AliCaloPID * pid, 
+void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS, 
+                                        TObjArray * plNe, 
+                                        AliCaloTrackReader * reader, 
+                                        AliCaloPID * pid,
                                         const Bool_t bFillAOD, 
                                         AliAODPWG4ParticleCorrelation  *pCandidate, 
                                         const TString & aodArrayRefName,
@@ -206,22 +408,30 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
                                         Int_t   & nfrac, 
                                         Float_t & coneptsum,  
                                         Bool_t  & isolated) const
-{  
+{
   //Search in cone around a candidate particle if it is isolated 
   Float_t ptC   = pCandidate->Pt() ;
   Float_t phiC  = pCandidate->Phi() ;
   if(phiC<0) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
+  
   Float_t pt    = -100. ;
   Float_t eta   = -100. ;
   Float_t phi   = -100. ;
   Float_t rad   = -100. ;
   
+  Float_t coneptsumCluster = 0;
+  Float_t coneptsumTrack   = 0;
+  
+  Float_t  etaBandPtSumTrack   = 0;
+  Float_t  phiBandPtSumTrack   = 0;
+  Float_t  etaBandPtSumCluster = 0;
+  Float_t  phiBandPtSumCluster = 0;
+  
   n         = 0 ;
   nfrac     = 0 ;
-  coneptsum = 0.; 
   isolated  = kFALSE;
-
+  
   if(fDebug>0) 
   {
     printf("AliIsolationCut::MakeIsolationCut() - Cadidate pT %2.2f, eta %2.2f, phi %2.2f, cone %1.2f, thres %2.2f, Fill AOD? %d",
@@ -274,18 +484,30 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
       
       if( phi < 0 ) phi+=TMath::TwoPi();
       
+      rad = Radius(etaC, phiC, eta, phi);
+      
+      // ** For the background out of cone **
+      
+      if(rad > fConeSize)
+      {
+        if(eta > (etaC-fConeSize) && eta < (etaC+fConeSize)) phiBandPtSumTrack += pt;
+        if(phi > (phiC-fConeSize) && phi < (phiC+fConeSize)) etaBandPtSumTrack += pt;
+      }
+      
+      // ** For the isolated particle **
+      
       // Only loop the particle at the same side of candidate
-      if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
-
+      if(TMath::Abs(phi-phiC) > TMath::PiOver2()) continue ;
+      
       // If at the same side has particle larger than candidate, 
       // then candidate can not be the leading, skip such events
       if(pt > ptC)
       {
         n         = -1;
         nfrac     = -1;
-        coneptsum = -1;
+        coneptsumTrack = -1;
         isolated  = kFALSE;
-      
+        
         pCandidate->SetLeadingParticle(kFALSE);
         
         if(bFillAOD && reftracks) 
@@ -298,16 +520,14 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
       }
       
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
-
-      rad = Radius(etaC, phiC, eta, phi);
       
-      if(fDebug>0) 
+      if( fDebug > 0 ) 
         printf("\t track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad);
-               
+      
       if(rad < fConeSize)
       {
-        if(fDebug>0)  printf(" -  inside candidate cone");
-
+        if(fDebug > 0)  printf(" -  inside candidate cone");
+        
         if(bFillAOD)
         {
           ntrackrefs++;
@@ -323,23 +543,22 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
           reftracks->Add(track);
         }
         
-        
-        coneptsum+=pt;
-	if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
+        coneptsumTrack+=pt;
+        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
         if(pt > fPtFraction*ptC ) nfrac++;  
         
       } // Inside cone
-
+      
       if(fDebug>0)  printf("\n");
-
+      
     }// charged particle loop
     
     
   }//Tracks
   
-
+  
   //Check neutral particles in cone.  
-  if(plNe && 
+  if(plNe &&
      (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged))
   {
     TLorentzVector mom ;
@@ -387,6 +606,17 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
       
       if( phi < 0 ) phi+=TMath::TwoPi();
       
+      rad = Radius(etaC, phiC, eta, phi);
+      
+      // ** For the background out of cone **
+      
+      if(rad > fConeSize)
+      {
+        if(eta > (etaC-fConeSize) && eta < (etaC+fConeSize)) phiBandPtSumCluster += pt;
+        if(phi > (phiC-fConeSize) && phi < (phiC+fConeSize)) etaBandPtSumCluster += pt;
+      }
+      
+      // ** For the isolated particle **
       
       // Only loop the particle at the same side of candidate
       if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
@@ -397,7 +627,7 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
       {
         n         = -1;
         nfrac     = -1;
-        coneptsum = -1;
+        coneptsumCluster = -1;
         isolated  = kFALSE;
         
         pCandidate->SetLeadingParticle(kFALSE);
@@ -420,16 +650,14 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
       }
       
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
-
-      rad = Radius(etaC, phiC, eta, phi);
       
-      if(fDebug>0) 
+      if(fDebug > 0 ) 
         printf("\t cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad);
       
       if(rad < fConeSize)
       {
-        if(fDebug>0)  printf(" - inside candidate cone");
-
+        if(fDebug > 0 )  printf(" - inside candidate cone");
+        
         if(bFillAOD) 
         {
           nclusterrefs++;
@@ -445,29 +673,31 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
           refclusters->Add(calo);
         }
         
-        coneptsum+=pt;
-	if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
+        coneptsumCluster+=pt;
+        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
         //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
-        if(fFracIsThresh){
-	  if( fPtFraction*ptC<fPtThreshold)
-	    {
-	      if(pt>fPtThreshold)    nfrac++ ;
-	    }
-	  else 
-	    {
-	     if(pt>fPtFraction*ptC) nfrac++; 
-	    }
-	}
-	else {
-	  if(pt>fPtFraction*ptC) nfrac++;   
-	}
+        if(fFracIsThresh)
+        {
+          if( fPtFraction*ptC<fPtThreshold)
+          {
+            if(pt>fPtThreshold)    nfrac++ ;
+          }
+          else 
+          {
+            if(pt>fPtFraction*ptC) nfrac++; 
+          }
+        }
+        else
+        {
+          if(pt>fPtFraction*ptC) nfrac++;   
+        }
         
       }//in cone
       
       if(fDebug>0)  printf("\n");
-
+      
     }// neutral particle loop
-  
+    
   }//neutrals
   
   
@@ -477,6 +707,8 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
     if(refclusters)	pCandidate->AddObjArray(refclusters);
     if(reftracks)	  pCandidate->AddObjArray(reftracks);
   }
+  
+  coneptsum = coneptsumCluster+coneptsumTrack;
   
   //Check isolation, depending on selected isolation criteria
   if( fICMethod == kPtThresIC)
@@ -495,23 +727,65 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
   else if( fICMethod == kSumPtFracIC)
   {
     //when the fPtFraction*ptC < fSumPtThreshold then consider the later case
-    if(fFracIsThresh ){
-      if(fPtFraction*ptC < fSumPtThreshold  && coneptsum < fSumPtThreshold) isolated  =  kTRUE ;
+ // printf("photon analysis IsDataMC() ?%i\n",IsDataMC());
+    if(fFracIsThresh )
+    {
+      if( fPtFraction*ptC < fSumPtThreshold  && coneptsum < fSumPtThreshold) isolated  =  kTRUE ;
       if( fPtFraction*ptC > fSumPtThreshold  && coneptsum < fPtFraction*ptC) isolated  =  kTRUE ;
     }
     else 
-      {
- 	if(coneptsum < fPtFraction*ptC) isolated  =  kTRUE ;
-      }
+    {
+      if(coneptsum < fPtFraction*ptC) isolated  =  kTRUE ;
+    }
   }
- else if( fICMethod == kSumDensityIC)
+  else if( fICMethod == kSumDensityIC)
   {    
     // Get good cell density (number of active cells over all cells in cone)
     // and correct energy in cone
+    
     Float_t cellDensity = GetCellDensity(pCandidate,reader);
+    
     if(coneptsum < fSumPtThreshold*cellDensity)
       isolated = kTRUE;
   }
+  else if( fICMethod == kSumBkgSubIC)
+  {
+    Double_t coneptsumBkg = 0.;
+    Float_t  etaBandPtSumTrackNorm   = 0;
+    Float_t  phiBandPtSumTrackNorm   = 0;
+    Float_t  etaBandPtSumClusterNorm = 0;
+    Float_t  phiBandPtSumClusterNorm = 0;
+    
+    Float_t  excessFracEtaTrack   = 1;
+    Float_t  excessFracPhiTrack   = 1;
+    Float_t  excessFracEtaCluster = 1;
+    Float_t  excessFracPhiCluster = 1;
+    
+    // Normalize background to cone area
+    if     (fPartInCone != kOnlyCharged       )
+      CalculateUEBandClusterNormalization(reader, etaC, phiC,
+                                          phiBandPtSumCluster    , etaBandPtSumCluster,
+                                          phiBandPtSumClusterNorm, etaBandPtSumClusterNorm,
+                                          excessFracEtaCluster   , excessFracPhiCluster    );
+    if     (fPartInCone != kOnlyNeutral       )
+      CalculateUEBandTrackNormalization(reader, etaC, phiC,
+                                          phiBandPtSumTrack    , etaBandPtSumTrack  ,
+                                          phiBandPtSumTrackNorm, etaBandPtSumTrackNorm,
+                                          excessFracEtaTrack   , excessFracPhiTrack    );
+    
+    if     (fPartInCone == kOnlyCharged       ) coneptsumBkg = etaBandPtSumTrackNorm;
+    else if(fPartInCone == kOnlyNeutral       ) coneptsumBkg = etaBandPtSumClusterNorm;
+    else if(fPartInCone == kNeutralAndCharged ) coneptsumBkg = etaBandPtSumClusterNorm + etaBandPtSumTrackNorm;
+    
+    //coneptsumCluster*=(coneBadCellsCoeff*excessFracEtaCluster*excessFracPhiCluster) ; // apply this correction earlier???
+    // line commented out in last modif!!!
+    
+    coneptsum = coneptsumCluster+coneptsumTrack;
+    
+    coneptsum -= coneptsumBkg;
+    if(coneptsum < fSumPtThreshold)
+      isolated  =  kTRUE ;
+  } 
   
 }
 
