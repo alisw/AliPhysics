@@ -127,6 +127,7 @@ ClassImp(AliAnalysisTaskFlowTPCEMCalQCSP)
 ,fCentralityMin(0)
 ,fCentralityMax(0)
 ,fInvmassCut(0)
+,fpTCut(0)
 ,fTrigger(0)
 ,fPhi(0)
 ,fEta(0)
@@ -210,6 +211,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 ,fCentralityMin(0)
 ,fCentralityMax(0)
 ,fInvmassCut(0)
+,fpTCut(0)
 ,fTrigger(0)
 ,fPhi(0)
 ,fEta(0)
@@ -476,7 +478,7 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
    if(TMath::Abs(cluster->GetTrackDx()) > 0.05 || TMath::Abs(cluster->GetTrackDz()) > 0.05) continue;
 
    pt = track->Pt();         //pt track after cuts
-   if(pt<1) continue;
+   if(pt<fpTCut) continue;
    fClsE = cluster->E();
    p = track->P();
   // dEdx = track->GetTPCsignal();

@@ -123,6 +123,7 @@ ClassImp(AliAnalysisTaskFlowTPCTOFQCSP)
 ,fCentralityMin(0)
 ,fCentralityMax(0)
 ,fInvmassCut(0)
+,fpTCut(0)
 ,fTrigger(0)
 ,fPhi(0)
 ,fEta(0)
@@ -202,6 +203,7 @@ AliAnalysisTaskFlowTPCTOFQCSP::AliAnalysisTaskFlowTPCTOFQCSP()
 ,fCentralityMin(0)
 ,fCentralityMax(0)
 ,fInvmassCut(0)
+,fpTCut(0)
 ,fTrigger(0)
 ,fPhi(0)
 ,fEta(0)
@@ -455,7 +457,7 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
      Double_t eta = track->Eta();
      Double_t phi = track->Phi();
      Double_t pt = track->Pt();         //pt track after cuts
-     if(pt<1.) continue;
+     if(pt<fpTCut) continue;
 //==========================================================================================================
 //=========================================PID==============================================================
      if(track->GetTPCsignalN() < fTPCS) continue;
@@ -614,9 +616,7 @@ void AliAnalysisTaskFlowTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const Al
     openingAngle = ge1.GetAngle(ge2);
     if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
     if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
-      
     if(openingAngle > fOpeningAngleCut) continue;
-
       }
       
       

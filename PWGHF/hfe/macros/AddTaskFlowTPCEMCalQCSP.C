@@ -17,6 +17,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                               Float_t centrMin ,
                                               Float_t centrMax ,
                                               Double_t InvmassCut,
+                                              Double_t pTCut,
                                               Int_t Trigger,
                                               Double_t minTPC,
                                               Double_t maxTPC,
@@ -78,7 +79,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
   taskHFE->SetFlowSideBands(SideBandsFlow);
   taskHFE->Setphiminuspsi(Phi_minus_psi);
   taskHFE->SetPurity(purity);
-    
+  taskHFE->SetpTCuttrack(pTCut);
     
 //set RP cuts for flow package analysis
   cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));

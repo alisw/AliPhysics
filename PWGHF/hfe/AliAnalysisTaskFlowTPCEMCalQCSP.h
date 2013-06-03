@@ -1,5 +1,5 @@
-#ifndef AlIANALYSISTASKFLOWTPCEMCALQCSP_H
-#define AlIANALYSISTASKFLOWTPCEMCALQCSP_H
+#ifndef ALIANALYSISTASKFLOWTPCEMCALQCSP_H
+#define ALIANALYSISTASKFLOWTPCEMCALQCSP_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -51,6 +51,7 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     void                                 CheckCentrality(AliAODEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
     void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Bool_t &fFlagPhotonicElec);
     void                                 SetInvariantMassCut(Double_t invmass) {fInvmassCut = invmass;};
+    void                                 SetpTCuttrack(Double_t ptcut) {fpTCut = ptcut;};
     void                                 SetTrigger(Int_t trig) {fTrigger = trig;};
     void                                 SetFlowSideBands(Bool_t sidebandsflow){fSideBandsFlow = sidebandsflow;}
     void                                 Setphiminuspsi(Bool_t phipsi){fPhiminusPsi = phipsi;}
@@ -91,6 +92,7 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     Double_t             fCentralityMin; // lower bound of cenrality bin
     Double_t             fCentralityMax; // upper bound of centrality bin
     Double_t	         fInvmassCut;		//invariant mass cut value
+    Double_t             fpTCut;    //pt cut value
     Int_t	             fTrigger;		//invariant mass cut value
     TH1F                 *fPhi; //! QA plot of azimuthal distribution of tracks used for event plane estimation
     TH1F                 *fEta; //! QA plot of eta distribution of tracks used for event plane estimation

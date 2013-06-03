@@ -17,7 +17,8 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
                                               Float_t centrMin ,
                                               Float_t centrMax ,
                                               Double_t InvmassCut,
-                                              Bool_t op_ang = kTRUE,
+                                              Double_t pTCut,
+                                              Bool_t op_ang = kFALSE,
                                               Double_t op_angle_cut,
                                               Int_t Trigger,
                                               Double_t minTPCnsigma,
@@ -79,7 +80,8 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
   taskHFE->SetPhiCut(PhiCut);
   taskHFE->SetOpeningAngleflag(op_ang);
   taskHFE->SetOpeningAngleCut(op_angle_cut);
-    
+  taskHFE->SetpTCuttrack(pTCut);
+
     
 //set RP cuts for flow package analysis
   cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
