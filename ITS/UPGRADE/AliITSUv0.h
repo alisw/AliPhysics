@@ -17,16 +17,6 @@
 
 #include "AliITSU.h"
 
-typedef enum {
-  kModelDummy=0,
-  kModel0=1,
-  kModel1=2, 
-  kModel21=3,
-  kModel22=4,
-  kModel3=5,
-} AliITSUModel_t;
-
-
 class  AliITSUv0Layer;
 //class  AliITSv11GeomBeamPipe;
 class  TGeoVolume;
@@ -35,6 +25,18 @@ class  TGeoVolumeAssembly;
 class AliITSUv0 : public AliITSU {
 
  public:
+
+
+  typedef enum {
+    kModelDummy=0,
+    kModel0=1,
+    kModel1=2, 
+    kModel21=3,
+    kModel22=4,
+    kModel3=5
+  } AliITSUModel_t;
+  
+
   AliITSUv0();
   AliITSUv0(const char *title, const Int_t nlay);
   virtual       ~AliITSUv0() ;

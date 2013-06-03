@@ -67,7 +67,7 @@ AliITSUv0Layer::AliITSUv0Layer():
   fDetTypeID(0),
   fIsTurbo(0),
   fBuildLevel(0),
-  fStaveModel(kModel0)
+  fStaveModel(AliITSUv0::kModelDummy)
 {
   //
   // Standard constructor
@@ -90,7 +90,7 @@ AliITSUv0Layer::AliITSUv0Layer(Int_t debug):
   fDetTypeID(0),
   fIsTurbo(0),
   fBuildLevel(0),
-  fStaveModel(kModel0)
+  fStaveModel(AliITSUv0::kModelDummy)
 {
   //
   // Constructor setting debugging level
@@ -113,7 +113,7 @@ AliITSUv0Layer::AliITSUv0Layer(Int_t lay, Int_t debug):
   fDetTypeID(0),
   fIsTurbo(0),
   fBuildLevel(0),
-  fStaveModel(kModel0)
+  fStaveModel(AliITSUv0::kModelDummy)
 {
   //
   // Constructor setting layer number and debugging level
@@ -136,7 +136,7 @@ AliITSUv0Layer::AliITSUv0Layer(Int_t lay, Bool_t turbo, Int_t debug):
   fDetTypeID(0),
   fIsTurbo(turbo),
   fBuildLevel(0),
-  fStaveModel(kModel0)
+  fStaveModel(AliITSUv0::kModelDummy)
 {
   //
   // Constructor setting layer number and debugging level
@@ -455,22 +455,22 @@ TGeoVolume* AliITSUv0Layer::CreateStaveStruct(const Double_t xlad,
   TGeoVolume *mechLaddVol = 0;
 
   switch (fStaveModel) {
-    case kModelDummy:
+    case AliITSUv0::kModelDummy:
       mechLaddVol = CreateStaveModelDummy(xlad,zlad,mgr);
       break;
-    case kModel0:
+    case AliITSUv0::kModel0:
       mechLaddVol = CreateStaveModel0(xlad,zlad,mgr);
       break;
-    case kModel1:
+    case AliITSUv0::kModel1:
       mechLaddVol = CreateStaveModel1(xlad,zlad,mgr);
       break;
-    case kModel21:
+    case AliITSUv0::kModel21:
       mechLaddVol = CreateStaveModel21(xlad,zlad,mgr);
       break;
-    case kModel22:
+    case AliITSUv0::kModel22:
       mechLaddVol = CreateStaveModel22(xlad,zlad,mgr);
       break;
-    case kModel3:
+    case AliITSUv0::kModel3:
       mechLaddVol = CreateStaveModel3(xlad,zlad,mgr);
       break;
     default:

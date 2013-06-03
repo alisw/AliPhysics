@@ -48,7 +48,7 @@ class AliITSUv0Layer : public AliITSv11Geometry {
     Double_t  GetPhi0()        const {return fPhi0;};
     Double_t  GetZLength()     const {return fZLength;};
     Int_t     GetDetType()     const {return fDetTypeID;}
-    AliITSUModel_t GetStaveModel() const {return fStaveModel;}
+    AliITSUv0::AliITSUModel_t GetStaveModel() const {return fStaveModel;}
     //
     void      SetLadderThick(Double_t t)    {fLadderThick = t;};
     void      SetLadderTilt(Double_t t);
@@ -61,7 +61,7 @@ class AliITSUv0Layer : public AliITSv11Geometry {
     void      SetZLength(Double_t z)        {fZLength   = z;};
     void      SetDetType(Int_t tp)          {fDetTypeID = tp;}
     void      SetBuildLevel(Int_t buildLevel){fBuildLevel=buildLevel;}
-    void      SetStaveModel(AliITSUModel_t model) {fStaveModel=model;}
+    void      SetStaveModel(AliITSUv0::AliITSUModel_t model) {fStaveModel=model;}
     virtual void CreateLayer(TGeoVolume *moth);
 
   private:
@@ -97,7 +97,7 @@ class AliITSUv0Layer : public AliITSv11Geometry {
     Bool_t    fIsTurbo;     // True if this layer is a "turbo" layer
     Int_t     fBuildLevel;  // Used for material studies
 
-    AliITSUModel_t fStaveModel; // The stave model
+    AliITSUv0::AliITSUModel_t fStaveModel; // The stave model
 
     // Parameters for the Upgrade geometry
 
