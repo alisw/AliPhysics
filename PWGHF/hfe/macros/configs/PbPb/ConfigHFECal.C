@@ -1,4 +1,4 @@
-AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWidthCut){
+AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWidthCut,Double_t angleCut){
   //
   // HFE standard task configuration
   //
@@ -26,6 +26,7 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWid
   Double_t masscut = 0.05;
   if(!MassConst)masscut = 0.1;
   task->SetInvariantMassCut(masscut);
+  task->SetOpeningAngleCut(angleCut);
 
   // Define PID
   AliHFEpid *pid = task->GetPID();
