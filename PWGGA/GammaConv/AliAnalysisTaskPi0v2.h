@@ -5,12 +5,6 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
-#include "TList.h"
-#include "TChain.h"
-#include "TDirectory.h"
-#include "TTree.h"
-#include "TH1.h"
-#include "TH1F.h"
 #include "THnSparse.h"
 #include "AliLog.h"
 #include "AliConversionSelection.h"
@@ -49,6 +43,8 @@ public:
     };
 
     static const Int_t knBinsPhi=6;
+    static const Int_t knCentMax=10;
+    static const Int_t knFlatPeriod=2;
 
     AliAnalysisTaskPi0v2(const char *name="pi0v2",Int_t harmonic=2);
     AliAnalysisTaskPi0v2(const AliAnalysisTaskPi0v2&); // not implemented
@@ -74,6 +70,11 @@ public:
     void SetFillQA(Bool_t fill){fFillQA=fill;}
 
     void SetEPSelectionMask(Int_t mask[knEPMethod]){for(Int_t ii=0;ii<knEPMethod;ii++)fEPSelectionMask[ii]=mask[ii];};
+
+    void SetFlatteningCoeff(EEventPlane ep,Int_t period,Int_t nCent,Double_t *cc2,Double_t *cs2,Double_t *cc4,Double_t *cs4);
+
+    Int_t GetPeriodIndex(TString period);
+    Int_t GetHarmonic(){return fHarmonic;};
 
 private:
     Bool_t InitEvent();
@@ -115,7 +116,7 @@ private:
     TObjArray* GetEventPlaneTracks(Int_t &maxID);
     TVector2 GetContributionEP(AliVTrack *track);
     Int_t GetAODEPTrackFilterBit();
-   
+
     // Constants
 
     enum Ebinsgamma{
@@ -159,7 +160,7 @@ private:
     AliConversionSelection **fConversionSelection; //[fNCuts] Selection of Particles for given Cut
     TClonesArray *fConversionGammas; //Reconstructed Photons;
     Int_t fNCentralityBins; // Number of Centrality Bins
-    Double_t *fCentralityBins; //[fNCentralityBins] CentralityBins for Analysis
+    Double_t fCentralityBins[knCentMax]; // CentralityBins for Analysis
     Float_t fCentrality; //Event Centrality
     Int_t fCentralityBin; // Event Centrality Bin
     Int_t fNBinsPhi; // Number of Phi wrt RP bins
@@ -196,6 +197,12 @@ private:
     TH1F *fHruns;                         // information about runwise statistics of phi-weights
     Bool_t fDoEPFlattening; // Do flattening
     Int_t fEPSelectionMask[knEPMethod]; // Which EP methods shall be applied
+    Double_t fFlatc2[knFlatPeriod][knEP][knCentMax];
+    Double_t fFlats2[knFlatPeriod][knEP][knCentMax];
+    Double_t fFlatc4[knFlatPeriod][knEP][knCentMax];
+    Double_t fFlats4[knFlatPeriod][knEP][knCentMax];
+    Int_t fPeriodIndex;
+
     // Histograms
 
     TH1F *hNEvents;
