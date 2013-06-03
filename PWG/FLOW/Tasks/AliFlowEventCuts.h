@@ -32,9 +32,9 @@ class AliFlowEventCuts : public TNamed {
   AliFlowEventCuts& operator=(const AliFlowEventCuts& someCuts);
   virtual  ~AliFlowEventCuts();
   
-  virtual Bool_t IsSelected(TObject* obj);
+  virtual Bool_t IsSelected(TObject* obj, TObject *objmc);
 
-  Bool_t PassesCuts(AliVEvent* event);
+  Bool_t PassesCuts(AliVEvent* event, AliMCEvent *mcevent);
   
   static AliFlowEventCuts* StandardCuts();
   
@@ -44,6 +44,9 @@ class AliFlowEventCuts : public TNamed {
   void SetRefMultMax(Int_t value) {fRefMultMax=value;fCutRefMult=kTRUE;}
   void SetRefMultMin(Int_t value) {fRefMultMin=value;fCutRefMult=kTRUE;}
   void SetRefMultRange(Int_t min, Int_t max) {fRefMultMin=min;fRefMultMax=max;fCutRefMult=kTRUE;}
+  void SetImpactParameterMax(Double_t value) {fImpactParameterMax=value;fCutImpactParameter=kTRUE;}
+  void SetImpactParameterMin(Double_t value) {fImpactParameterMin=value;fCutImpactParameter=kTRUE;}
+  void SetImpactParameterRange(Double_t min, Double_t max) {fImpactParameterMin=min;fImpactParameterMax=max;fCutImpactParameter=kTRUE;}
   void SetPrimaryVertexXrange(Double_t min, Double_t max)
        {fCutPrimaryVertexX=kTRUE; fPrimaryVertexXmin=min; fPrimaryVertexXmax=max;}
   void SetPrimaryVertexYrange(Double_t min, Double_t max)
@@ -128,6 +131,9 @@ class AliFlowEventCuts : public TNamed {
   Float_t fCentralityPercentileMin; // min centr. perc
   Bool_t fCutZDCtiming;   //cut on ZDC timing
   AliTriggerAnalysis fTrigAna; //trigger analysis object
+  Bool_t fCutImpactParameter; //cut on impact parameter (MC header)
+  Double_t fImpactParameterMin; // min impact parameter
+  Double_t fImpactParameterMax; // max impact parameter
 
   ClassDef(AliFlowEventCuts,4)
 };

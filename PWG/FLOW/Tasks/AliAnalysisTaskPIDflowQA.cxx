@@ -553,7 +553,7 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
     return;
   }
 
-  if (!(fEventCuts->IsSelected(fESD)))
+  if (!(fEventCuts->IsSelected(fESD,0x0)))
   {
     return;
   }
