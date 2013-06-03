@@ -146,38 +146,8 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi() : AliAnalysisTaskSE
   fPIDtpcESD(0) 
 
 {
-  // Constructor
+  // Default Constructor
 
-  // Define input and output slots here
-  // Input from a TChain
-  DefineInput(0, TChain::Class());
-  // Output to TList container
-  DefineOutput(1, TList::Class()); //full
-
-  //MC info contol
-  if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())SetHasMC();
-
-  //V0 cuts
-
-  fESDtrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0","AliESDtrackCutsV0");
-  fESDtrackCutsV0->SetAcceptKinkDaughters(kFALSE);
-  fESDtrackCutsV0->SetMinNClustersTPC(80);
-  fESDtrackCutsV0->SetMaxChi2PerClusterTPC(5);
-  fESDtrackCutsV0->SetRequireTPCRefit(kTRUE);
-  fESDtrackCutsV0->SetEtaRange(-0.9,0.9);
-
-  fESDCutsV0 = new AliESDv0Cuts("AliESDCutsV0","AliESDCutsV0");
-  fESDCutsV0->SetMaxDcaV0Daughters(2.0);
-  fESDCutsV0->SetMinDcaNegToVertex(1.0);
-  fESDCutsV0->SetMinDcaPosToVertex(1.0);
-
-  //ESD Track cuts
-  fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");    
-  fEsdTrackCuts->SetMinNClustersTPC(80);
-  fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fEsdTrackCuts->SetMaxChi2PerClusterTPC(5);
-  fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
-  fEsdTrackCuts->SetEtaRange(-0.9,0.9);
 }
 
 //________________________________________________________________________
