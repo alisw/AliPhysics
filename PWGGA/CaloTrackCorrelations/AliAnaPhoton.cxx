@@ -1047,7 +1047,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
   
     if(GetReader()->IsEmbeddedClusterSelectionOn())
     {//Only working for EMCAL
-    	printf("embedded\n");
+   // 	printf("embedded\n");
       Float_t clusterE = 0; // recalculate in case corrections applied.
       Float_t cellE    = 0;
       for(Int_t icell  = 0; icell < cluster->GetNCells(); icell++)
