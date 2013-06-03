@@ -40,6 +40,8 @@
 #include "AliFlowEventCuts.h"
 #include "AliFlowTrackCuts.h"
 #include "AliTriggerAnalysis.h"
+#include "AliCollisionGeometry.h"
+#include "AliGenEventHeader.h"
 
 ClassImp(AliFlowEventCuts)
 
@@ -84,7 +86,10 @@ AliFlowEventCuts::AliFlowEventCuts():
   fCentralityPercentileMax(100.),
   fCentralityPercentileMin(0.),
   fCutZDCtiming(kFALSE),
-  fTrigAna()
+  fTrigAna(),
+  fCutImpactParameter(kFALSE),
+  fImpactParameterMin(0.0),
+  fImpactParameterMax(100.0)
 {
   //constructor 
 }
@@ -130,7 +135,10 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fCentralityPercentileMax(100.),
   fCentralityPercentileMin(0.),
   fCutZDCtiming(kFALSE),
-  fTrigAna()
+  fTrigAna(),
+  fCutImpactParameter(kFALSE),
+  fImpactParameterMin(0.0),
+  fImpactParameterMax(100.0)
 {
   //constructor 
 }
@@ -176,7 +184,10 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fCentralityPercentileMax(that.fCentralityPercentileMax),
   fCentralityPercentileMin(that.fCentralityPercentileMin),
   fCutZDCtiming(that.fCutZDCtiming),
-  fTrigAna()
+  fTrigAna(),
+  fCutImpactParameter(that.fCutImpactParameter),
+  fImpactParameterMin(that.fImpactParameterMin),
+  fImpactParameterMax(that.fImpactParameterMax)
 {
   if (that.fQA) DefineHistograms();
   //copy constructor 
@@ -262,15 +273,16 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
 }
 
 //----------------------------------------------------------------------- 
-Bool_t AliFlowEventCuts::IsSelected(TObject* obj)
+Bool_t AliFlowEventCuts::IsSelected(TObject* obj, TObject* objmc)
 {
   //check cuts
   AliVEvent* vevent = dynamic_cast<AliVEvent*>(obj);
-  if (vevent) return PassesCuts(vevent);
+  AliMCEvent* mcevent = dynamic_cast<AliMCEvent*>(objmc);
+  if (vevent) return PassesCuts(vevent,mcevent);;
   return kFALSE;  //when passed wrong type of object
 }
 //----------------------------------------------------------------------- 
-Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
+Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
 {
   ///check if event passes cuts
   const AliVVertex* pvtx=event->GetPrimaryVertex();
@@ -365,10 +377,10 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   }
   if(fCutNumberOfTracks) {if ( event->GetNumberOfTracks() < fNumberOfTracksMin ||
                                event->GetNumberOfTracks() >= fNumberOfTracksMax ) pass=kFALSE;}
-  if(fCutRefMult&&esdevent)
+  if((fCutRefMult&&mcevent)||(fCutRefMult&&esdevent))
   {
     //reference multiplicity still to be defined
-    Double_t refMult = RefMult(event,0x0);
+    Double_t refMult = RefMult(event,mcevent);
     if (refMult < fRefMultMin || refMult >= fRefMultMax )
     {
       pass=kFALSE;
@@ -425,6 +437,19 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
     if (nselected) meanpt=meanpt/nselected;
     if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) pass=kFALSE;
   }
+
+  //impact parameter cut
+  if(fCutImpactParameter) {
+    Double_t gImpactParameter = 0.;
+    if(mcevent) {
+      AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(mcevent)->GenEventHeader());
+      if(headerH)
+	gImpactParameter = headerH->ImpactParameter();
+    }
+    if ((gImpactParameter < fImpactParameterMin) || (gImpactParameter >= fImpactParameterMax ))
+      pass=kFALSE;
+  }
+
   if (fQA&&pass) 
   {
     QAafter(1)->Fill(multGlobal,multTPC);

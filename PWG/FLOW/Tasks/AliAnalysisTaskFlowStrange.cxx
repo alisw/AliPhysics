@@ -450,7 +450,7 @@ void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *)
     Bool_t tESelection = TMath::Abs(tVtxZ-tSPDVtxZ) < 0.5;
     Bool_t tDSelection = kTRUE;
     if(fUseEventSelection) {
-      tDSelection = fCutsEvent->IsSelected(tAOD);
+      tDSelection = fCutsEvent->IsSelected(tAOD,0x0);
     } else {
       if(TMath::Abs(tVtxZ)>10.0) tDSelection = kFALSE; // Cut on VtxZ mandatory!
     }
