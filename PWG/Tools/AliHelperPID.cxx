@@ -178,10 +178,30 @@ void AliHelperPID::CalculateNSigmas(AliVTrack * trk, Bool_t FIllQAHistos){
     nsigmaTOFkProton = fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kProton);
     nsigmaTOFkKaon   = fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kKaon); 
     nsigmaTOFkPion   = fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kPion); 
+    Double_t d2Proton=nsigmaTPCkProton * nsigmaTPCkProton + nsigmaTOFkProton * nsigmaTOFkProton;
+    Double_t d2Kaon=nsigmaTPCkKaon * nsigmaTPCkKaon + nsigmaTOFkKaon * nsigmaTOFkKaon;
+    Double_t d2Pion=nsigmaTPCkPion * nsigmaTPCkPion + nsigmaTOFkPion * nsigmaTOFkPion;
+    //commented, this is done in analogy with AliESDTrackCuts, nsigma combind according to the probability
     // --- combined
-    nsigmaTPCTOFkProton = TMath::Sqrt((nsigmaTPCkProton*nsigmaTPCkProton+nsigmaTOFkProton*nsigmaTOFkProton)/2.);
-    nsigmaTPCTOFkKaon   = TMath::Sqrt((nsigmaTPCkKaon*nsigmaTPCkKaon+nsigmaTOFkKaon*nsigmaTOFkKaon)/2.);
-    nsigmaTPCTOFkPion   = TMath::Sqrt((nsigmaTPCkPion*nsigmaTPCkPion+nsigmaTOFkPion*nsigmaTOFkPion)/2.);
+    // -----------------------------------
+    // How to get to a n-sigma cut?
+    //
+    // The accumulated statistics from 0 to d is
+    //
+    // ->  Erf(d/Sqrt(2)) for a 1-dim gauss (d = n_sigma)
+    // ->  1 - Exp(-d**2) for a 2-dim gauss (d*d = dx*dx + dy*dy != n_sigma)
+    // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-d**2)/2)
+    //
+    // work around precision problem
+    // if d is too big, TMath::Exp(...) gets 0, and TMath::ErfInverse(1) that should be infinite, gets 0 :(
+    //if(TMath::Exp(- d2Proton / 2) > 1e-15)nsigmaTPCTOFkProton  =  TMath::Sqrt(2)*TMath::ErfInverse(1 - TMath::Exp(- d2Proton / 2));
+    //if(TMath::Exp(- d2Kaon / 2) > 1e-15)nsigmaTPCTOFkKaon    = TMath::Sqrt(2)*TMath::ErfInverse(1 - TMath::Exp(- d2Kaon / 2));
+    //if(TMath::Exp(- d2Pion / 2) > 1e-15)nsigmaTPCTOFkPion     = TMath::Sqrt(2)*TMath::ErfInverse(1 - TMath::Exp(- d2Pion / 2));
+    
+    //used for the 2PC PID paper (circular cut)
+    nsigmaTPCTOFkProton  =  TMath::Sqrt(d2Proton);
+    nsigmaTPCTOFkKaon    =  TMath::Sqrt(d2Kaon);
+    nsigmaTPCTOFkPion    =  TMath::Sqrt(d2Pion);
   }else{
     // --- combined
     // if TOF is missing and below fPtTOFPID only the TPC information is used
