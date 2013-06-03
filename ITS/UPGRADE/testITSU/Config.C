@@ -30,7 +30,7 @@
 #include "STRUCT/AliPIPEv3.h"
 #include "STRUCT/AliPIPEupgrade.h"
 #include "ITS/AliITSv11.h"
-#include "ITS/UPGRADE/AliITSUv11.h"
+#include "ITS/UPGRADE/AliITSUv0.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv6T0.h"
 #include "HMPID/AliHMPIDv3.h"
@@ -59,6 +59,15 @@ enum PprTrigConf_t
 const char * pprTrigConfName[] = {
   "p-p","Pb-Pb"
 };
+
+enum AliITSUModel_t {
+  kModelDummy,
+  kModel0,
+  kModel1,
+  kModel21,
+  kModel22  
+};
+
 
 void CreateITSU();
 
@@ -164,7 +173,7 @@ void Config()
   if (generatorFlag==0) {
     // Fast generator with parametrized pi,kaon,proton distributions
     
-    int  nParticles = 1000;//14022;
+    int  nParticles = 100;//14022;
     AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
     gener->SetMomentumRange(0.1, 10.);
     gener->SetPhiRange(0., 360.);
@@ -178,7 +187,7 @@ void Config()
     
   }
   else if (generatorFlag==1) {
-    int  nParticlesHP = 10000;
+    int  nParticlesHP = 12000;
     int  nPiPFlat=200;
     int  nPiMFlat=200;
 
@@ -461,12 +470,12 @@ void CreateITSU()
   const double kPitchZ = 20e-4;
   const int    kNRow   = 650; 
   const int    kNCol   = 750;
-  const int    kNChips = 4;
-  const double kLrTick03 = 237e-4;   // -> effective thickness for ~0.3%X layers
-  const double kLrTick08 = 610e-4;   // -> effective thickness for ~0.8%X layers
+  const int    kNChips = 2;
+  const double kLrTick03 = 195e-4;   // -> effective thickness for ~0.3%X layers
+  const double kLrTick08 = 600e-4;   // -> effective thickness for ~0.8%X layers
   //
   const double kReadOutEdge = 0.2;   // width of the readout edge (passive bottom)
-  const double kGuardRing   = 100e-4; // width of passive area on left/right/top of the sensor
+  const double kGuardRing   = 50e-4; // width of passive area on left/right/top of the sensor
   // create segmentations:
   AliITSUSegmentationPix* seg0 = new AliITSUSegmentationPix(0,        // segID (0:9)
 							    kNChips,  // chips per module
@@ -511,7 +520,8 @@ void CreateITSU()
   int nStaveLr,nModPerStaveLr,idLr;
   //      virtual void   DefineLayerTurbo(const Int_t nlay, const Double_t r,  const Double_t zlen, const Int_t nladd,   const Int_t nmod, const Double_t width,
   //				  const Double_t tilt,   const Double_t lthick = 0.,    const Double_t dthick = 0.,   const UInt_t detType=0);
-  AliITSUv11 *ITS  = new AliITSUv11("ITS Upgrade",7);
+  AliITSUv0 *ITS  = new AliITSUv0("ITS Upgrade",7);
+  ITS->SetStaveModel(kModel22);
   //
   // INNER LAYERS
   idLr = 0;
@@ -522,7 +532,7 @@ void CreateITSU()
   ovlA = -1;
   xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
   nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetDetTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
 	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
@@ -535,7 +545,7 @@ void CreateITSU()
   ovlA = -1;
   xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
   nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetDetTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
 	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
@@ -548,7 +558,7 @@ void CreateITSU()
   ovlA = -1;
   xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
   nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetDetTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
 	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
@@ -563,7 +573,7 @@ void CreateITSU()
   ovlA = -1;
   xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
   nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
 	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
@@ -576,7 +586,7 @@ void CreateITSU()
   ovlA = -1;
   xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
   nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
 	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
@@ -591,7 +601,7 @@ void CreateITSU()
   ovlA = -1;
   xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
   nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
 	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
@@ -604,7 +614,7 @@ void CreateITSU()
   ovlA = -1;
   xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
   nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<0.015 && nStaveLr++ );		
+  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f\% (%d micron)\n",
 	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
