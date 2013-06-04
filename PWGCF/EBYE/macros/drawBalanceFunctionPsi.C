@@ -214,7 +214,9 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
 	  Bool_t kUseVzBinning=kFALSE,
-	  Bool_t k2pMethod = kFALSE,Bool_t k2pMethod2D = kFALSE, TString eventClass="EventPlane",Bool_t bRootMoments=kTRUE) {
+	  Bool_t k2pMethod = kFALSE,Bool_t k2pMethod2D = kFALSE, 
+	  TString eventClass="EventPlane",Bool_t bRootMoments=kTRUE,
+	  Bool_t kUseZYAM = kFALSE) {
   gROOT->LoadMacro("~/SetPlotStyle.C");
   SetPlotStyle();
   gStyle->SetPalette(1,0);
@@ -576,7 +578,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     Double_t skewnessAnalytical, skewnessAnalyticalError;
     Double_t kurtosisAnalytical, kurtosisAnalyticalError;
 
-    b->GetMomentsAnalytical(gDeltaEtaDeltaPhi,gHistBalanceFunctionSubtracted,meanAnalytical,meanAnalyticalError,sigmaAnalytical,sigmaAnalyticalError,skewnessAnalytical,skewnessAnalyticalError,kurtosisAnalytical,kurtosisAnalyticalError);
+    b->GetMomentsAnalytical(gDeltaEtaDeltaPhi,gHistBalanceFunctionSubtracted,kUseZYAM,meanAnalytical,meanAnalyticalError,sigmaAnalytical,sigmaAnalyticalError,skewnessAnalytical,skewnessAnalyticalError,kurtosisAnalytical,kurtosisAnalyticalError);
 
     meanLatex = "#mu = "; 
     meanLatex += Form("%.3f",meanAnalytical);

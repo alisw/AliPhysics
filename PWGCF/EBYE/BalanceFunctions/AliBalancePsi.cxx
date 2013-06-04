@@ -2213,7 +2213,7 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
 
 //____________________________________________________________________//
 
-Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
+Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist, Bool_t kUseZYAM,
 					   Double_t &mean, Double_t &meanError,
 					   Double_t &sigma, Double_t &sigmaError,
 					   Double_t &skewness, Double_t &skewnessError,
@@ -2246,7 +2246,8 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
     // ----------------------------------------------------------------------
     // ZYAM (for partially negative distributions)
     // --> we subtract always the minimum value
-    Double_t zeroYield = gHist->GetMinimum();
+    Double_t zeroYield = 0.;
+    if(kUseZYAM) zeroYield = gHist->GetMinimum();
     
     // ----------------------------------------------------------------------
     // first calculate the mean
