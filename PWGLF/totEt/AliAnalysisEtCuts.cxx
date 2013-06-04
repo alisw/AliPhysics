@@ -38,7 +38,7 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fGeometryPhosPhiAccMaxCut(320.0)
   ,fGeometryPhosDetectorRadius(460.0)
 				    //
-  ,fGeometryEmcalEtaAccCut(0.7)
+  ,fGeometryEmcalEtaAccCut(0.6)
   ,fGeometryEmcalPhiAccMinCut(80.0) // rad 1.4
   ,fGeometryEmcalPhiAccMaxCut(120.0) // rad 2.1
   ,fGeometryEmcalDetectorRadius(440.0)
