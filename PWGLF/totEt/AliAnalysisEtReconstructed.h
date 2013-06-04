@@ -85,6 +85,7 @@ protected:
     TH2D *fHistNominalEffHighEt;//Total ET from clusters with high bound on reconstruction efficiency and nominal nonlinearity correction vs centrality
     TH2D *fHistNominalEffLowEt;//Total ET from clusters with low bound on reconstruction efficiency and nominal nonlinearity correction vs centrality
 
+    TH2F *fHistTotRawEt; // gamma energy added
     Double_t ApplyModifiedCorrections(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t mult);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
 
 private:
