@@ -357,9 +357,9 @@ void AliDielectronSignalExt::ProcessEM(TObjArray* const arrhist)
   }
   fHistSignal=(TH1*)fHistDataPM->Clone("Signal");
   fHistSignal->Sumw2();
-  printf(" err: %f %f \n",fHistSignal->GetBinError(75),TMath::Sqrt(fHistSignal->GetBinContent(75)));
+  //  printf(" err: %f %f \n",fHistSignal->GetBinError(75),TMath::Sqrt(fHistSignal->GetBinContent(75)));
   fHistSignal->Add(fHistBackground,-1.);
-  printf(" err: %f %f \n",fHistSignal->GetBinError(75),TMath::Sqrt(fHistSignal->GetBinContent(75)));
+  //  printf(" err: %f %f \n",fHistSignal->GetBinError(75),TMath::Sqrt(fHistSignal->GetBinContent(75)));
 //     // signal
 //   fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
 //                                              fHistSignal->FindBin(fIntMax), fErrors(0));

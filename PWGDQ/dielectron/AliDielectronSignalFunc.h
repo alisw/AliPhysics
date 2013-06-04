@@ -87,7 +87,7 @@ protected:
 
   //  static TH1F* fgHistSimPM;         // simulated peak shape
   
-  ClassDef(AliDielectronSignalFunc,2)         // class for signal extraction using a combined bgrd+signal fit
+  ClassDef(AliDielectronSignalFunc,3)         // class for signal extraction using a combined bgrd+signal fit
 };
 
 #endif
