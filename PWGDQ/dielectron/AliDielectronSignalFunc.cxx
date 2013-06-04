@@ -291,22 +291,12 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
   
   // the starting parameters of the fit function and their limits can be tuned
   // by the user in its macro
-  printf(" BEFORE FITTING: \n");
-  fFuncSigBack->Print();
-  fFuncSignal->Print();
-  fFuncBackground->Print();
-
   fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
   TFitResultPtr pmFitPtr = fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
   //TFitResult *pmFitResult = pmFitPtr.Get(); // used only with TF1Helper
   //fFuncBackground->SetParameters(fFuncSigBack->GetParameters());
   fFuncSignal->SetParameters(fFuncSigBack->GetParameters());
   fFuncBackground->SetParameters(fFuncSigBack->GetParameters()+fFuncSignal->GetNpar());
-
-  printf(" AFTER FITTING: \n");
-  fFuncSigBack->Print();
-  fFuncSignal->Print();
-  fFuncBackground->Print();
 
   // fill the background spectrum
   fHistBackground->Eval(fFuncBackground);
@@ -342,8 +332,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
     fHistSignal->SetBinContent(iBin, signal);
     fHistSignal->SetBinError(iBin, error);
   }
-  printf(" err: %f \n",fHistDataPM->GetBinError(75));
-  printf(" err: %f %f \n",fHistSignal->GetBinError(75),fHistBackground->GetBinError(75));
+  
   if(fUseIntegral) {
     // signal
     fValues(0) = fFuncSignal->Integral(fIntMin, fIntMax)/fHistDataPM->GetBinWidth(1);

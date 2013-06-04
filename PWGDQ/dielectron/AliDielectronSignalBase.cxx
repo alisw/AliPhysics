@@ -177,7 +177,7 @@ Double_t AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgro
   //
   // scale histBackground to match the integral of histRaw in the interval intMin, intMax
   //
-  printf("scale %f %f \n",intMin,intMax);
+
   //protect using over and underflow bins in normalisation calculation
   if (intMin<histRaw->GetXaxis()->GetXmin()) intMin=histRaw->GetXaxis()->GetXmin();
   if (intMin<histBackground->GetXaxis()->GetXmin()) intMin=histBackground->GetXaxis()->GetXmin();
@@ -203,7 +203,7 @@ Double_t AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgro
   //
   // scale histBackground to match the integral of histRaw in the interval intMin, intMax and intMin2, intMax2
   //
-  //  printf("scale %f %f %f %f\n",intMin,intMax, intMin2, intMax2);
+
   if(intMin2==intMax2) return (ScaleHistograms(histRaw, histBackground, intMin, intMax));
 
   //protect using over and underflow bins in normalisation calculation
