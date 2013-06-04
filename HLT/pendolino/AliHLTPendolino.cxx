@@ -771,20 +771,12 @@ Int_t AliHLTPendolino::initPredictProc(TString detector, Int_t run,
 }
 
 
-#ifdef SHUTTLE_PRE_REV29388_INTERFACE
-const UInt_t AliHLTPendolino::GetStartTimeDCSQuery()
-#else
 UInt_t AliHLTPendolino::GetStartTimeDCSQuery()
-#endif
 {
 	return fStartTime;
 }
 
-#ifdef SHUTTLE_PRE_REV29388_INTERFACE
-const UInt_t AliHLTPendolino::GetEndTimeDCSQuery()
-#else
 UInt_t AliHLTPendolino::GetEndTimeDCSQuery()
-#endif
 {
 	return fEndTime;
 }
