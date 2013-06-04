@@ -210,6 +210,7 @@ void AliAnalysisTaskZDCTreeMaker::UserCreateOutputObjects()
     //
     fCentralityTree->Branch("trigClass",&fTrigClass,"trigClass/C");
     fCentralityTree->Branch("eventSelected",&fIsEventSelected,"eventSelected/O");
+    fCentralityTree->Branch("pileupSPD",&fIsPileupFromSPD,"pileupSPD/O");
     fCentralityTree->Branch("xVertex", &fxVertex,"xVertex/D");
     fCentralityTree->Branch("yVertex", &fyVertex,"yVertex/D");
     fCentralityTree->Branch("zVertex", &fzVertex,"zVertex/D");
