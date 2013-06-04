@@ -73,6 +73,7 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fHistNominalNonLinLowEt(0)
 	,fHistNominalEffHighEt(0)
 	,fHistNominalEffLowEt(0)
+	,fHistTotRawEt(0)
 {
 
 }
@@ -105,6 +106,7 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fHistNominalNonLinLowEt;
     delete fHistNominalEffHighEt;
     delete fHistNominalEffLowEt;
+    delete fHistTotRawEt;
 }
 
 Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
@@ -145,6 +147,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     Float_t nonlinLowRawEt = 0;
     Float_t effHighRawEt = 0;
     Float_t effLowRawEt = 0;
+    Float_t uncorrEt = 0;
 
     Float_t nChargedHadronsMeasured = 0.0;
     Float_t nChargedHadronsTotal = 0.0;
@@ -204,6 +207,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		  nChargedHadronsTotal += 1/eff;
 		  Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,fClusterMult);
 		  nChargedHadronsEtMeasured+= TMath::Sin(cp.Theta())*effCorrEt;
+		  //One efficiency is the gamma efficiency and the other is the track matching efficiency.
 		  nChargedHadronsEtTotal+= 1/eff *effCorrEt;
 		  fHistMatchedTracksEvspTvsCent->Fill(track->P(),TMath::Sin(cp.Theta())*cluster->E(),cent);
 		  fHistMatchedTracksEvspTvsCentEffCorr->Fill(track->P(),CorrectForReconstructionEfficiency(*cluster,fClusterMult),cent);
@@ -291,8 +295,10 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    fClusterPosition->Fill(p2.Phi(), p2.PseudoRapidity());
 	    fClusterEnergy->Fill(cluster->E());
 	    fClusterEt->Fill(TMath::Sin(p2.Theta())*cluster->E());
+	    uncorrEt += TMath::Sin(p2.Theta())*cluster->E();
 
 	    Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,fClusterMult);
+	    //cout<<"cluster energy "<<cluster->E()<<" eff corr Et "<<effCorrEt<<endl;
 	    fTotNeutralEt += effCorrEt;
 	    nominalRawEt += effCorrEt;
 	    nonlinHighRawEt += effCorrEt*GetCorrectionModification(*cluster,1,0,fClusterMult);
@@ -315,8 +321,11 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     Double_t removedEnergy = GetChargedContribution(fNeutralMultiplicity) + GetNeutralContribution(fNeutralMultiplicity) + GetGammaContribution(fNeutralMultiplicity) + GetSecondaryContribution(fNeutralMultiplicity);
     fHistRemovedEnergy->Fill(removedEnergy);
     
-    fTotNeutralEt = fGeomCorrection * fEMinCorrection * (fTotNeutralEt - removedEnergy);
     fTotNeutralEtAcc = fTotNeutralEt;
+    fHistTotRawEt->Fill(fTotNeutralEt,cent);
+    //cout<<"uncorr "<<uncorrEt<<" raw "<<nominalRawEt<<" tot raw "<<fTotNeutralEt;
+    fTotNeutralEt = fGeomCorrection * fEMinCorrection * (fTotNeutralEt - removedEnergy);
+    //cout<<" tot corr "<<fTotNeutralEt<<endl;
     fTotEt = fTotChargedEt + fTotNeutralEt;
 // Fill the histograms...0
     FillHistograms();
@@ -426,6 +435,7 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fHistNominalNonLinLowEt);
     list->Add(fHistNominalEffHighEt);
     list->Add(fHistNominalEffLowEt);
+    list->Add(fHistTotRawEt);
 }
 
 void AliAnalysisEtReconstructed::CreateHistograms()
@@ -475,9 +485,9 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     //fHistMuonEnergyDeposit->SetYTitle("Energy of track");
 
     histname = "fClusterPosition" + fHistogramNameSuffix;
-    fClusterPosition = new TH2D(histname.Data(), "Position of accepted neutral clusters",1000, -2.0, -.5, 1000, -.13 , 0.13);
-    fClusterPosition->SetXTitle("Energy deposited in calorimeter");
-    fClusterPosition->SetYTitle("Energy of track");
+    fClusterPosition = new TH2D(histname.Data(), "Position of accepted neutral clusters",300, 0,2*TMath::Pi(), 100, -0.7 , 0.7);
+    fClusterPosition->SetXTitle("#phi");
+    fClusterPosition->SetYTitle("#eta");
 
     histname = "fClusterEnergy" + fHistogramNameSuffix;
     fClusterEnergy = new TH1F(histname.Data(), histname.Data(), 100, 0, 5);
@@ -505,8 +515,10 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fHistNotFoundHadronsvsCent = new TH2F("fHistNotFoundHadronsvsCent","fHistNotFoundHadronsvsCent",100,0,200,20,0,20);
     fHistFoundHadronsEtvsCent = new TH2F("fHistFoundHadronsEtvsCent","fHistFoundHadronsEtvsCent",100,0,200,20,0,20);
     fHistNotFoundHadronsEtvsCent = new TH2F("fHistNotFoundHadronsEtvsCent","fHistNotFoundHadronsEtvsCent",100,0,300,20,0,20);
+
+    fHistTotRawEt = new TH2F("fHistTotRawEt","fHistTotRawEt",200,0,400,20,0,20);
     
-    maxEt = 100;
+    maxEt = 500;
     histname = "fHistNominalRawEt" + fHistogramNameSuffix;
     fHistNominalRawEt = new TH2D(histname.Data(), histname.Data(),nbinsEt,minEt,maxEt,20,-0.5,19.5);
     histname = "fHistNominalNonLinHighEt" + fHistogramNameSuffix;
