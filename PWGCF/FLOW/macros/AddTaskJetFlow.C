@@ -9,6 +9,7 @@ class AliFlowTrackCuts;
 
 void AddTaskJetFlow( TString name       = "name",
                      TString jets       = "jets",
+                     TString tracks     = "tracks",
                      Float_t ptbump     = 0,
                      TArrayI* cent      = 0x0,
                      Float_t MinPOIPt   = 0.15,
@@ -17,6 +18,8 @@ void AddTaskJetFlow( TString name       = "name",
                      Bool_t VParticle   = kFALSE,
                      Int_t year         = -1,
                      Bool_t testFlow    = kFALSE,
+                     Bool_t SP          = kFALSE,
+                     Bool_t QC          = kFALSE,
                      Bool_t debug       = kFALSE  )
 {
     // first check the environment (common to all tasks)
@@ -45,15 +48,17 @@ void AddTaskJetFlow( TString name       = "name",
     AliFlowTrackCuts* CutsRP_TPC = new AliFlowTrackCuts("CutsRP_TPC");
     CutsRP_TPC = CutsRP_TPC->GetStandardTPCStandaloneTrackCuts();
     CutsRP_TPC->SetAODfilterBit(1);
-    AliFlowTrackCuts* CutsNull = new AliFlowTrackCuts("CutsNull");
-    CutsNull->SetParamType(AliFlowTrackCuts::kGlobal);
-    CutsNull->SetEtaRange(+1, -1);
-    CutsNull->SetPtRange(+1, -1);
+
     // add the tasks in a loop, one task for each centrality bin
     for(Int_t i(0); i < cent->GetSize()-1; i++) {
         TString tempName(Form("%s_%i_%i", name.Data(), cent->At(i), cent->At(i+1)));
         // create the task
-        AliAnalysisTaskJetFlow* task = new AliAnalysisTaskJetFlow(tempName.Data());   
+        AliAnalysisTaskJetFlow* task = new AliAnalysisTaskJetFlow(
+            tempName.Data(),
+            CutsRP_TPC,
+            CutsRP_VZERO,
+            jets,
+            tracks);
         task->SetCCMaxPt(MaxPOIPt);
         task->SetCCBinsInPt(CCBinsInPt);
         task->SetDoVParticleAnalysis(VParticle);
@@ -66,10 +71,7 @@ void AddTaskJetFlow( TString name       = "name",
              return 0x0;
         }
         else printf(" > added task with name %s and jet collection %s < \n", tempName.Data(), jets.Data());
-        task->SetJetCollectionName(jets.Data());
         // pass specific objects and settigns to the task
-        task->SetCutsRP(CutsRP_TPC, CutsRP_VZERO);
-        task->SetCutsNull(CutsNull);
         task->SetMinMaxCentrality(cent->At(i), cent->At(1+i));
         task->SetPtBump(ptbump);
         mgr->AddTask(task);
@@ -80,9 +82,9 @@ void AddTaskJetFlow( TString name       = "name",
         mgr->ConnectOutput(task, 2, flowEvent_VZERO);
         AliAnalysisDataContainer *flowEvent_TPC = mgr->CreateContainer(Form("flowEvent_TPC_%s", tempName.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
         mgr->ConnectOutput(task, 3, flowEvent_TPC);
-        TaskJetFlow::AddSPmethod(Form("SPVZERO_A_%s", tempName.Data()), "Qa", 2, flowEvent_VZERO);
-        TaskJetFlow::AddSPmethod(Form("SPVZERO_B_%s", tempName.Data()), "Qb", 2, flowEvent_VZERO);
-        TaskJetFlow::AddQCmethod(Form("QC_%s", tempName.Data()), 2, flowEvent_TPC);
+        if(SP) TaskJetFlow::AddSPmethod(Form("SPVZERO_A_%s", tempName.Data()), "Qa", 2, flowEvent_VZERO);
+        if(SP) TaskJetFlow::AddSPmethod(Form("SPVZERO_B_%s", tempName.Data()), "Qb", 2, flowEvent_VZERO);
+        if(QC) TaskJetFlow::AddQCmethod(Form("QC_%s", tempName.Data()), 2, flowEvent_TPC);
     }
 }
 //_____________________________________________________________________________
