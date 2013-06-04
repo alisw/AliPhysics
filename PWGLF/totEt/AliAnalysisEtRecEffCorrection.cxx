@@ -64,7 +64,7 @@ Double_t AliAnalysisEtRecEffCorrection::CorrectedEnergy(Double_t energy, int mul
 {
   if(fRecoEff){
     Double_t eff = ReconstructionEfficiency(energy, mult);
-    if(eff>1e-5) return 1.0/eff;
+    if(eff>1e-5) return 1.0/eff*energy;
   }
   return 1.0;
   
