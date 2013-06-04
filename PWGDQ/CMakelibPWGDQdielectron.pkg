@@ -49,8 +49,8 @@ set ( SRCS
       dielectron/AliDielectronTrackCuts.cxx
       dielectron/AliDielectronPairLegCuts.cxx
       dielectron/AliDielectronSignalBase.cxx
-      dielectron/AliDielectronSignalFunc.cxx
       dielectron/AliDielectronSignalExt.cxx
+      dielectron/AliDielectronSignalFunc.cxx
       dielectron/AliDielectronSpectrum.cxx
       dielectron/AliDielectronDebugTree.cxx
       dielectron/AliDielectronTrackRotator.cxx
