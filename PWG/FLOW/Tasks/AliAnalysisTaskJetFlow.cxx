@@ -60,11 +60,16 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetFlow)
 
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow() : AliAnalysisTaskSE(), 
-    fDebug(-1), fExplicitOutlierCut(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fDoTestFlowAnalysis(kFALSE), fInitialized(kFALSE), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPOIPtMin(0.15), fPOIPtMax(150), fPtBins(0), fCutsRP_TPC(0), fCutsRP_VZERO(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fHistAnalysisSummary(0), fCentralitySelection(0), fv2VZEROA(0), fv2VZEROC(0), fTempA(0), fTempC(0)
+    fDebug(-1), fExplicitOutlierCut(-1), fJetsName(0), fTracksName(0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fMinimizeDiffBins(kTRUE), fDoTestFlowAnalysis(kTRUE), fDoMultWeight(kTRUE), fInitialized(kFALSE), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPOIPtMin(0.15), fPOIPtMax(150), fPtBins(0), fCutsRP_TPC(0), fCutsRP_VZERO(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fTempA(0), fTempC(0)
 { /* default constructor for ROOT IO */ }
 //_____________________________________________________________________________
-AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(const char* name) : AliAnalysisTaskSE(name),
-    fDebug(-1), fExplicitOutlierCut(-1), fJetsName(0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fDoTestFlowAnalysis(kFALSE), fInitialized(kFALSE), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPOIPtMin(0.15), fPOIPtMax(150), fPtBins(0), fCutsRP_TPC(0), fCutsRP_VZERO(0), fCutsPOI(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fHistAnalysisSummary(0), fCentralitySelection(0), fv2VZEROA(0), fv2VZEROC(0), fTempA(0), fTempC(0)
+AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(
+        const char* name,
+        AliFlowTrackCuts* rpCutsTPC,
+        AliFlowTrackCuts* rpCutsVZERO,
+        TString jetName,
+        TString picoName  ) : AliAnalysisTaskSE(name),
+    fDebug(-1), fExplicitOutlierCut(-1), fJetsName(jetName), fTracksName(picoName), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fMinimizeDiffBins(kTRUE), fDoTestFlowAnalysis(kTRUE), fDoMultWeight(kTRUE), fInitialized(kFALSE), fPtBump(0), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPOIPtMin(0.15), fPOIPtMax(150), fPtBins(0), fCutsRP_TPC(rpCutsTPC), fCutsRP_VZERO(rpCutsVZERO), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fTempA(0), fTempC(0)
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -83,7 +88,6 @@ AliAnalysisTaskJetFlow::~AliAnalysisTaskJetFlow()
     if(fCutsRP_VZERO)           delete fCutsRP_VZERO;
     if(fCutsRP_TPC)             delete fCutsRP_TPC;
     if(fCutsNull)               delete fCutsNull;
-    if(fCutsPOI)                delete fCutsPOI;
     if(fPtBins)                 delete fPtBins;
     if(fTempA)                  delete fTempA;
     if(fTempC)                  delete fTempC;
@@ -95,6 +99,10 @@ void AliAnalysisTaskJetFlow::LocalInit()
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     fCutsEvent = new AliFlowEventCuts();
     fCutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSTPC); 
+    fCutsNull = new AliFlowTrackCuts("CutsNull");
+    fCutsNull->SetParamType(AliFlowTrackCuts::kGlobal);
+    fCutsNull->SetEtaRange(+1, -1);
+    fCutsNull->SetPtRange(+1, -1);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
@@ -122,16 +130,18 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
             Double_t pt[] = {0., 10., 20., 30., 40., 50., 80., 110., 140., 170., 200.};
             fPtBins = new TArrayD(sizeof(pt)/sizeof(pt[0]), pt);     // assuming jets
         }
-        Double_t bounds[fPtBins->GetSize()];
-        for(Int_t i(0); i < fPtBins->GetSize(); i++) bounds[i] = fPtBins->At(i);
-        fv2VZEROA = new TProfile("v2_EP_VZEROA", "v2_EP_VZEROA", fPtBins->GetSize()-1, bounds);
-        fv2VZEROC = new TProfile("v2_EP_VZEROC", "v2_EP_VZEROC", fPtBins->GetSize()-1, bounds);
+        fv2VZEROA = new TProfile("v2_EP_VZEROA", "v2_EP_VZEROA", fPtBins->GetSize()-1, fPtBins->GetArray());
+        fv2VZEROC = new TProfile("v2_EP_VZEROC", "v2_EP_VZEROC", fPtBins->GetSize()-1, fPtBins->GetArray());
         fv2VZEROA->GetXaxis()->SetTitle("Pt [GeV/c]");
         fv2VZEROA->GetYaxis()->SetTitle("v_{2}^{obs}");
         fv2VZEROC->GetXaxis()->SetTitle("Pt [GeV/c]");
         fv2VZEROC->GetYaxis()->SetTitle("v_{2}^{obs}");
         fOutputList->Add(fv2VZEROA);
         fOutputList->Add(fv2VZEROC);
+        fVZEROAEP = new TH1F("V0A_EP", "V0A_EP", 100, -TMath::Pi()/2., TMath::Pi()/2.);
+        fVZEROCEP = new TH1F("V0C_EP", "V0C_EP", 100, -TMath::Pi()/2., TMath::Pi()/2.);
+        fOutputList->Add(fVZEROAEP);
+        fOutputList->Add(fVZEROCEP);
         // bookkeeping histo's, will not be stored
         fTempA = (TProfile*)fv2VZEROA->Clone("temp_a");
         fTempC = (TProfile*)fv2VZEROC->Clone("temp_c");
@@ -149,6 +159,13 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
     AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
     cc->SetPtMax(fCCMaxPt+fPtBump);
     cc->SetNbinsPt(fCCBinsInPt);
+    if(fMinimizeDiffBins) { // minimize differential bins to reduce the risk of numerical instability
+        cc->SetNbinsMult(1);    // only reduces output size
+        cc->SetNbinsPhi(1);     // only reduces output size
+        cc->SetNbinsEta(1);     // reduces instability
+        cc->SetNbinsQ(1);       // only reduces output size
+        cc->SetNbinsMass(1);    // reduces instability but should be one in any case ...
+    }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetFlow::UserExec(Option_t *)
@@ -163,11 +180,12 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
     }
     if(!PassesCuts(InputEvent())) return;               // check the event cuts
     // get the jet array, which is added as an extension to the AliVEvent by the jetfinder
-    TClonesArray* jets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName.Data()));
+    TClonesArray* pois(0x0);
+    (fVParticleAnalysis) ? pois = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName.Data())) : pois = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName.Data()));
     Int_t nAcceptedJets(0);
-    if(jets) {
-        Int_t iJets = jets->GetEntriesFast();
-        if(iJets <= 0) {
+    if(pois) {
+        Int_t iPois = pois->GetEntriesFast();
+        if(iPois <= 0) {
             if(fDebug>0) printf(" > Retrieved empty AliVEvent extension, aborting ! < \n ");
             return;
         }
@@ -184,17 +202,17 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
         fFlowEvent_TPC->SetReferenceMultiplicity(fCutsEvent->RefMult(InputEvent(), MCEvent()));
         // loop over jets and inject them as POI's
         if(fVParticleAnalysis) {
-            for(Int_t i(0); i < iJets; i++) {
-                AliVParticle* jet = static_cast<AliVParticle*>(jets->At(i));
-                if(jet) {
-                    if(jet->Pt() + fPtBump <= fPOIPtMin || jet->Pt() > fPOIPtMax) {
+            for(Int_t i(0); i < iPois; i++) {
+                AliVParticle* poi = static_cast<AliVParticle*>(pois->At(i));
+                if(poi) {
+                    if(poi->Pt() + fPtBump <= fPOIPtMin || poi->Pt() > fPOIPtMax) {
                         fHistAnalysisSummary->SetBinContent(4, 1);
                         continue;
                     }
                     nAcceptedJets++;
                     // AliFlowTracks are created on the stack 
-                    AliFlowTrack flowTrack = AliFlowTrack(jet);
-                    flowTrack.SetPt(jet->Pt() + fPtBump);
+                    AliFlowTrack flowTrack = AliFlowTrack(poi);
+                    flowTrack.SetPt(poi->Pt() + fPtBump);
                     flowTrack.SetForPOISelection(kTRUE);
                     flowTrack.SetForRPSelection(kFALSE);
                     fFlowEvent_TPC->InsertTrack(&flowTrack);
@@ -202,16 +220,16 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
                 }
             }
         } else {
-            for(Int_t i(0); i < iJets; i++) {
-                AliEmcalJet* jet = static_cast<AliEmcalJet*>(jets->At(i));
-                if(jet) {
-                    if(jet->PtSub() + fPtBump <= fPOIPtMin || jet->PtSub() > fPOIPtMax) {
+            for(Int_t i(0); i < iPois; i++) {
+                AliEmcalJet* poi = static_cast<AliEmcalJet*>(pois->At(i));
+                if(poi) {
+                    if(poi->PtSub() + fPtBump <= fPOIPtMin || poi->PtSub() > fPOIPtMax) {
                         fHistAnalysisSummary->SetBinContent(4, 1);
                         continue;
                     }
                     nAcceptedJets++;
-                    AliFlowTrack flowTrack = AliFlowTrack(jet);
-                    flowTrack.SetPt(jet->PtSub() + fPtBump);
+                    AliFlowTrack flowTrack = AliFlowTrack(poi);
+                    flowTrack.SetPt(poi->PtSub() + fPtBump);
                     flowTrack.SetForPOISelection(kTRUE);
                     flowTrack.SetForRPSelection(kFALSE);
                     fFlowEvent_TPC->InsertTrack(&flowTrack);
@@ -288,31 +306,44 @@ void AliAnalysisTaskJetFlow::DoTestFlowAnalysis()
     Double_t _a(0), _b(0), _c(0), _d(0);        // dummmy's
     Double_t Q2a(InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 2, _a, _b));
     Double_t Q2c(InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 2, _c, _d));
-    fTempA->Reset();    // clear the containers for a new iteration
-    fTempC->Reset();
-    TClonesArray* jets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName.Data()));
-    if(jets) {
-        Int_t iJets = jets->GetEntriesFast();
+    fTempA->Reset();            fTempC->Reset();        // clear the containers for a new iteration
+    fVZEROAEP->Fill(Q2a);       fVZEROCEP->Fill(Q2c);
+    TClonesArray* pois(0x0);
+    (fVParticleAnalysis) ? pois = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName.Data())) : pois = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName.Data()));
+    if(pois) {
+        Int_t iPois = pois->GetEntriesFast();
         if(fVParticleAnalysis) {
-            for(Int_t i(0); i < iJets; i++) {
-                AliVParticle* jet = static_cast<AliVParticle*>(jets->At(i));
-                if(jet && jet->Pt() + fPtBump >= fPOIPtMin && jet->Pt() < fPOIPtMax) {
-                    fTempA->Fill(jet->Pt(), TMath::Cos(PhaseShift(2.*(jet->Phi()-Q2a), 2)));
-                    fTempC->Fill(jet->Pt(), TMath::Cos(PhaseShift(2.*(jet->Phi()-Q2c), 2)));
+            for(Int_t i(0); i < iPois; i++) {
+                AliVParticle* poi = static_cast<AliVParticle*>(pois->At(i));
+                if(poi && poi->Pt() + fPtBump >= fPOIPtMin && poi->Pt() < fPOIPtMax) {
+                    if(!fDoMultWeight) {
+                        fTempA->Fill(poi->Pt(), TMath::Cos(2.*PhaseShift((poi->Phi()-Q2a), 2)));
+                        fTempC->Fill(poi->Pt(), TMath::Cos(2.*PhaseShift((poi->Phi()-Q2c), 2)));
+                    } else {
+                        fv2VZEROA->Fill(poi->Pt(), TMath::Cos(2.*PhaseShift((poi->Phi()-Q2a), 2)));
+                        fv2VZEROC->Fill(poi->Pt(), TMath::Cos(2.*PhaseShift((poi->Phi()-Q2c), 2)));
+                    }
                 }
             }
         } else {
-            for(Int_t i(0); i < iJets; i++) {
-                AliEmcalJet* jet = static_cast<AliEmcalJet*>(jets->At(i));
-                if(jet && jet->PtSub() + fPtBump >= fPOIPtMin && jet->PtSub() < fPOIPtMax) {
-                    fTempA->Fill(jet->PtSub(), TMath::Cos(PhaseShift(2.*(jet->Phi()-Q2a), 2)));
-                    fTempC->Fill(jet->PtSub(), TMath::Cos(PhaseShift(2.*(jet->Phi()-Q2c), 2)));
+            for(Int_t i(0); i < iPois; i++) {
+                AliEmcalJet* poi = static_cast<AliEmcalJet*>(pois->At(i));
+                if(poi && poi->PtSub() + fPtBump >= fPOIPtMin && poi->PtSub() < fPOIPtMax) {
+                    if(!fDoMultWeight) {
+                        fTempA->Fill(poi->PtSub(), TMath::Cos(2.*PhaseShift((poi->Phi()-Q2a), 2)));
+                        fTempC->Fill(poi->PtSub(), TMath::Cos(2.*PhaseShift((poi->Phi()-Q2c), 2)));
+                    } else {
+                        fv2VZEROA->Fill(poi->PtSub(), TMath::Cos(2.*PhaseShift((poi->Phi()-Q2a), 2)));
+                        fv2VZEROC->Fill(poi->PtSub(), TMath::Cos(2.*PhaseShift((poi->Phi()-Q2c), 2)));
+                    }
                 }
             }
         }
-        for(Int_t i(0); i < fv2VZEROA->GetXaxis()->GetNbins(); i++) {
-            fv2VZEROA->Fill(fPtBins->At(i)+(fPtBins->At(i)+fPtBins->At(1+i))/2., fTempA->GetBinContent(i+1));
-            fv2VZEROC->Fill(fPtBins->At(i)+(fPtBins->At(i)+fPtBins->At(1+i))/2., fTempC->GetBinContent(i+1));
+        if(!fDoMultWeight) {
+            for(Int_t i(0); i < fv2VZEROA->GetXaxis()->GetNbins(); i++) {
+                fv2VZEROA->Fill(fPtBins->At(i)+(fPtBins->At(i)+fPtBins->At(1+i))/2., fTempA->GetBinContent(i+1));
+                fv2VZEROC->Fill(fPtBins->At(i)+(fPtBins->At(i)+fPtBins->At(1+i))/2., fTempC->GetBinContent(i+1));
+            }
         }
     }
 }

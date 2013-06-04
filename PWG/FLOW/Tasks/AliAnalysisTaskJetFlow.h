@@ -25,7 +25,12 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         enum dataType           {kESD, kAOD, kESDMC, kAODMC };  // data type
         // constructors, destructor
                                 AliAnalysisTaskJetFlow();
-                                AliAnalysisTaskJetFlow(const char *name);
+                                AliAnalysisTaskJetFlow(
+                                        const char *name,
+                                        AliFlowTrackCuts* rpCutsTPC,
+                                        AliFlowTrackCuts* rpCutsVZERO,
+                                        TString jetName,
+                                        TString picoName);
         virtual                 ~AliAnalysisTaskJetFlow();
         // virtual methods
         virtual void            LocalInit();
@@ -34,11 +39,6 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         virtual void            Terminate(Option_t* option);
         // setters
         void                    SetExplicitOutlierCut(Int_t c)          {fExplicitOutlierCut = c;}
-        void                    SetCutsRP(AliFlowTrackCuts* tpc, AliFlowTrackCuts* vzero)  {fCutsRP_TPC = tpc; fCutsRP_VZERO = vzero; }
-
-        void                    SetCutsPOI(AliFlowTrackCuts* c)         {fCutsPOI       = c;}
-        void                    SetCutsNull(AliFlowTrackCuts* c)        {fCutsNull      = c;}
-        void                    SetJetCollectionName(TString jets)      {fJetsName      = jets;}
         void                    SetDebugMode(Int_t d)                   {fDebug         = d;}
         void                    SetPtBump(Float_t b)                    {fPtBump        = b;}
         void                    SetCCMaxPt(Float_t m)                   {fCCMaxPt       = m;}
@@ -46,9 +46,11 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         void                    SetMinMaxCentrality(Float_t min, Float_t max)   {fCentralityMin = min; fCentralityMax = max; }
         void                    SetMinMaxPOIPt(Float_t min, Float_t max)        {fPOIPtMin = min; fPOIPtMax = max; }        
         void                    SetDoVParticleAnalysis(Bool_t d)        {fVParticleAnalysis = d; }
+        void                    SetMinimizeDiffBins(Bool_t b)           {fMinimizeDiffBins = b; }
         void                    SetDoTestFlowAnalysis(Bool_t t, TArrayD* pt = 0x0)
                 {fDoTestFlowAnalysis = t; 
                  fPtBins = pt;  }
+        void                    SetDoMultWeight(Bool_t m)               {fDoMultWeight = m; }
         // analysis details
         Bool_t                  PassesCuts(AliVEvent* event);
         Bool_t                  PassesCuts(Int_t year); 
@@ -59,7 +61,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
             return x; }
         /* inline */    Double_t PhaseShift(Double_t x, Double_t n) const {
             x = PhaseShift(x);
-            if(TMath::Nint(n)==2) while (x>TMath::Pi()) x = TMath::TwoPi() - x;
+            if(TMath::Nint(n)==2) while (x>TMath::Pi()) x-=TMath::Pi();
             if(TMath::Nint(n)==3) {
                 if(x>2.*TMath::TwoPi()/n) x = TMath::TwoPi() - x;
                 if(x>TMath::TwoPi()/n) x = TMath::TwoPi()-(x+TMath::TwoPi()/n);
@@ -71,10 +73,13 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
         Int_t                   fExplicitOutlierCut;    // cut on multiplicity ourliers explicitely (slow)
         TString                 fJetsName;              // name of jet list
+        TString                 fTracksName;            // name of track list
         TList*                  fOutputList;            //! output list
         dataType                fDataType;              //! data type
         Bool_t                  fVParticleAnalysis;     // do the analysis on vparticles instead of jets
+        Bool_t                  fMinimizeDiffBins;      // minimize variables (for low statistics)
         Bool_t                  fDoTestFlowAnalysis;    // do a quick and dirty crude flow estimate
+        Bool_t                  fDoMultWeight;          // weight events with multiplicity
         Bool_t                  fInitialized;           //! check if the analysis is initialized
         // members
         Float_t                 fPtBump;                // track pt += ptbump
@@ -88,7 +93,6 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         // cut objects
         AliFlowTrackCuts*       fCutsRP_TPC;            // rp cuts for tpc
         AliFlowTrackCuts*       fCutsRP_VZERO;          // rp cuts for fzero
-        AliFlowTrackCuts*       fCutsPOI;               // poi cuts
         AliFlowTrackCuts*       fCutsNull;              // empty cuts
         AliFlowEventCuts*       fCutsEvent;             // event cuts
         // containers, setup
@@ -97,6 +101,8 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         // histograms
         TH1F*                   fHistAnalysisSummary;   //! analysis summary
         TH1F*                   fCentralitySelection;   //! centrality selection
+        TH1F*                   fVZEROAEP;              //! VZEROA EP
+        TH1F*                   fVZEROCEP;              //! VZEROC EP
         TProfile*               fv2VZEROA;              //! v2 from VZEROA
         TProfile*               fv2VZEROC;              //! v2 from VZEROC
         TProfile*               fTempA;                 //! internal bookkeeping
