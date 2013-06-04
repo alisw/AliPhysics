@@ -4,19 +4,17 @@ dnl $Id$
 dnl template for the configuration script for the Alice HLT 
 dnl framework and components
 dnl 
+dnl Note: the autoconf build system is deprecated and not maintained
+dnl since AliRoot was converted to cmake
+dnl 2013-03-06: most of checks for AliRoot features have been removed
+dnl in order to run the existing doxygen setup until this has been
+dnl converted to cmake as well
+dnl
 dnl ------------------------------------------------------------------
 
 dnl Take either the AliRoot tag as version id or the current revision
 AC_INIT([Alice High Level Trigger] , 
-	m4_esyscmd([url=`svn info 2> /dev/null | grep "URL:" | cut -d: -f3 | sed -e 's|[/]*HLT[/]*$||' | sed -e 's|^[/]*||g' | cut -d '/' -f 4`; \
-	            revision=`svn info 2> /dev/null | grep "Revision:" | cut -d ' ' -f 2 | cut -d '/' -f 4`; \
-	            if test "x$url" != "x"; then echo -n $url; \
-		    elif test "x$revision" != "x"; then echo -n $revision ; \
-		    elif test -e .revision && test x`cat .revision` != x; then \
-		       cat .revision; \
-		    else \
-		       echo -n invalid-version; \
-		    fi]),
+	[doc],
 	[Matthias.Richter@ift.uib.no], 
 	[alice-hlt])
 
