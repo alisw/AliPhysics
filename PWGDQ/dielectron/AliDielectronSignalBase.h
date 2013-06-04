@@ -24,10 +24,11 @@
 #include <TNamed.h>
 #include <TVectorT.h>
 #include <TMath.h>
+#include <TH1F.h>
+#include <TF1.h>
 
 class TObjArray;
 class TPaveText;
-class TH1F;
 
 class AliDielectronSignalBase : public TNamed {
 public:
@@ -38,20 +39,35 @@ public:
     kLikeSignArithm,
     kLikeSignRcorr,
     kLikeSignArithmRcorr,
+    kLikeSignFit,
     kEventMixing,
+    kEventMixingFit,
     kRotation
+  };
+
+  enum ESignalExtractionMethod {
+    kBinCounting = 0,
+    kMCScaledMax,
+    kMCScaledInt,
+    kMCFitted,
+    kCrystalBall,
+    kGaus
   };
 
   AliDielectronSignalBase();
   AliDielectronSignalBase(const char*name, const char* title);
   
   virtual ~AliDielectronSignalBase();
-  
+
+  void SetMCSignalShape(TH1F* hist) { fgHistSimPM=hist; }
+  void SetParticleOfInterest(Int_t pdgcode) { fPOIpdg=pdgcode; }
   void SetIntegralRange(Double_t min, Double_t max) {fIntMin=min;fIntMax=max;}
   void SetFitRange(Double_t min, Double_t max) {fFitMin=min; fFitMax=max;}
   void SetRebin(Int_t factor) {fRebin = factor;}
   void SetMethod(EBackgroundMethod method) {fMethod = method;}
   Int_t GetMethod() const { return (Int_t)fMethod; }
+  void SetExtractionMethod(ESignalExtractionMethod method) {fPeakMethod = method;}
+  Int_t GetExtractionMethod() const { return (Int_t)fPeakMethod; }
 
   const TVectorD& GetValues() const {return fValues;}
   const TVectorD& GetErrors() const {return fErrors;}
@@ -70,19 +86,22 @@ public:
   Double_t GetMassError()            const { return fErrors(4);}
   Double_t GetMassWidth()            const { return fValues(5);}
   Double_t GetMassWidthError()       const { return fErrors(5);}
- 
+  static const char* GetValueName(Int_t i) { return (i>=0&&i<6)?fgkValueNames[i]:""; }
+
   TH1* GetSignalHistogram()      const {return fHistSignal;}
   TH1* GetBackgroundHistogram()  const {return fHistBackground;}
   TH1* GetUnlikeSignHistogram()  const {return fHistDataPM;}
   TH1* GetRfactorHistogram()     const {return fHistRfactor;}
+  TObject* GetPeakShape()        const {return fgPeakShape;}
   
   void SetScaleRawToBackground(Double_t intMin, Double_t intMax) { fScaleMin=intMin; fScaleMax=intMax; }
   void SetScaleRawToBackground(Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2) { fScaleMin=intMin; fScaleMax=intMax; fScaleMin2=intMin2; fScaleMax2=intMax2; }
-  Double_t GetScaleMin() const { return fScaleMin; }
-  Double_t GetScaleMax() const { return fScaleMax; }
-  Double_t GetScaleMin2() const { return fScaleMin2; }
-  Double_t GetScaleMax2() const { return fScaleMax2; }
-  Double_t GetScaleFactor() const { return fScaleFactor; }
+  Double_t GetScaleMin()        const { return fScaleMin;    }
+  Double_t GetScaleMax()        const { return fScaleMax;    }
+  Double_t GetScaleMin2()       const { return fScaleMin2;   }
+  Double_t GetScaleMax2()       const { return fScaleMax2;   }
+  Double_t GetScaleFactor()     const { return fScaleFactor; }
+  Int_t GetParticleOfInterest() const { return fPOIpdg;      }
 
   void SetMixingCorrection(Bool_t mixcorr=kTRUE) { fMixingCorr=mixcorr; }
   
@@ -100,7 +119,8 @@ public:
      for single and mixed events defined in AliDielectron.cxx
   */
   virtual void Process(TObjArray * const /*arrhist*/) = 0;
-    
+  TObject* DescribePeakShape(ESignalExtractionMethod method, Bool_t replaceValErr=kFALSE,  TH1F *mcShape=0x0);
+
 protected: 
 
   TH1 *fHistSignal;                  // histogram of pure signal
@@ -110,7 +130,7 @@ protected:
   TH1 *fHistDataMM;                  // histogram of selected -- pair candidates
   TH1 *fHistDataME;                  // histogram of selected +- pair candidates from mixed event
   TH1 *fHistRfactor;                 // histogram of R factors
-  
+
   TVectorD fValues;                  // values
   TVectorD fErrors;                  // value errors
 
@@ -127,16 +147,24 @@ protected:
   Double_t fScaleMax2;                // max for scaling of raw and background histogram
   Double_t fScaleFactor;             // scale factor of raw to background histogram scaling
   Bool_t fMixingCorr;                // switch for bin by bin correction with R factor
-  
+
+  ESignalExtractionMethod fPeakMethod;  // method for peak description and signal extraction
+  static TObject *fgPeakShape;       // histogram or function used to describe the extracted signal
+
   Bool_t fProcessed;                 // flag
-  
+  Int_t  fPOIpdg;                    // pdg code particle of interest
+  static TH1F* fgHistSimPM;          // simulated peak shape
+
   void SetSignificanceAndSOB();      // calculate the significance and S/B
+  void SetFWHM();                    // calculate the fwhm
+  static const char* fgkValueNames[6];  //value names
+
   TPaveText* DrawStats(Double_t x1=0., Double_t y1=0., Double_t x2=0., Double_t y2=0.);
 
   AliDielectronSignalBase(const AliDielectronSignalBase &c);
   AliDielectronSignalBase &operator=(const AliDielectronSignalBase &c);
 
-  ClassDef(AliDielectronSignalBase,4) // Dielectron SignalBase
+  ClassDef(AliDielectronSignalBase,4)         // base and abstract class for signal extraction
 };
 
 inline void AliDielectronSignalBase::SetSignificanceAndSOB()
@@ -152,7 +180,54 @@ inline void AliDielectronSignalBase::SetSignificanceAndSOB()
   // Significance
   fValues(2) = ((fValues(0)+fValues(1))>0 ? fValues(0)/TMath::Sqrt(fValues(0)+fValues(1)) : 0);
   Float_t s = (fValues(0)>0?fValues(0):0); Float_t b = fValues(1);
-  fErrors(2) = ((s+b)>0 ? TMath::Sqrt((s*(s+2*b)*(s+2*b)+b*s*s)/(4*TMath::Power(s+b,3))) : 0);
+  Float_t se = fErrors(0); Float_t be = fErrors(1);
+  // fErrors(2) = ((s+b)>0 ? TMath::Sqrt((s*(s+2*b)*(s+2*b)+b*s*s)/(4*TMath::Power(s+b,3))) : 0); // old implementation
+  fErrors(2) = ((s+b)>0 ? fValues(2)*TMath::Sqrt(be*be + TMath::Power(se*(s+2*b)/s, 2)) / 2 / (s+b) : 0);
+}
+
+inline void AliDielectronSignalBase::SetFWHM()
+{
+  // calculate the fwhm
+  if(!fgPeakShape) return;
+
+  // case for TF1
+  if(fgPeakShape->IsA() == TF1::Class()) {
+    TF1* fit  = (TF1*) fgPeakShape->Clone("fit");
+    TF1* pfit = (TF1*) fit->Clone("pfit");
+    TF1* mfit = (TF1*) fit->Clone("mfit");
+    for (Int_t i=0; i<fit->GetNpar(); i++) {
+      pfit->SetParameter(i,fit->GetParameter(i) + fit->GetParError(i));
+      mfit->SetParameter(i,fit->GetParameter(i) - fit->GetParError(i));
+    }
+    Double_t maxX   = fit->GetMaximumX();
+    Double_t maxY   = fit->GetHistogram()->GetMaximum();
+    Double_t xAxMin = fit->GetXmin();
+    Double_t xAxMax = fit->GetXmax();
+    // fwhms 
+    Double_t fwhmMin  = fit->GetX(.5*maxY, xAxMin, maxX);
+    Double_t fwhmMax  = fit->GetX(.5*maxY, maxX, xAxMax);
+    Double_t pfwhmMin = pfit->GetX(.5*maxY, xAxMin, maxX);
+    Double_t pfwhmMax = pfit->GetX(.5*maxY, maxX, xAxMax);
+    Double_t mfwhmMin = mfit->GetX(.5*maxY, xAxMin, maxX);
+    Double_t mfwhmMax = mfit->GetX(.5*maxY, maxX, xAxMax);
+    Double_t pError = TMath::Abs( (fwhmMax-fwhmMin) - (pfwhmMax-pfwhmMin) );
+    Double_t mError = TMath::Abs( (fwhmMax-fwhmMin) - (mfwhmMax-mfwhmMin) );
+    fValues(5) = (fwhmMax-fwhmMin);
+    fErrors(5) = (pError>=mError ? pError : mError);
+    delete fit;
+    delete pfit;
+    delete mfit;
+  }
+  else if(fgPeakShape->IsA() == TH1F::Class()) {
+    // th1 calculation
+    TH1F *hist = (TH1F*) fgPeakShape->Clone("hist");
+    Int_t bin1 = hist->FindFirstBinAbove(hist->GetMaximum()/2);
+    Int_t bin2 = hist->FindLastBinAbove(hist->GetMaximum()/2);
+    fValues(5) = hist->GetBinCenter(bin2) - hist->GetBinCenter(bin1);
+    fErrors(5) = 0.0; // not defined
+    delete hist;
+  }
+
 }
 
 #endif

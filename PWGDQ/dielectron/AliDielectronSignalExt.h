@@ -19,27 +19,6 @@
 //#                                                           #
 //#############################################################
 
-/*
-  Class used for extracting the signal from an invariant mass spectrum.
-  It implements the AliDielectronSignalBase class and uses the like-sign
-  substraction method for estimating the signal and background.
-  There is no fitting in this class, only bin counting.
-
-  Example usage:
-   AliDielectronSignalExt *signalProcess = new AliDielectronSignalExt();
-   TObjArray *histoArray = new TObjArray();
-   histoArray->Add(signalPP);                  // the order of putting the histograms in the array is important!!
-   histoArray->Add(signalPM);
-   histoArray->Add(signalMM);
-   signalProcess->SetMethod(AliDielectronSignalBase::kLikeSign);  // or kEventMixing
-   signalProcess->SetIntegralRange(3.0,3.15);   // J/Psi peak
-   signalProcess->SetRebin(2);                  // rebin the histograms
-   signalProcess->Process(histoArray);
-   signalProcess->Draw("stat");
-   signalProcess->Print();
-
-*/
-
 #include <TVectorT.h>
 #include <TString.h>
 #include <TH1.h>
@@ -67,7 +46,7 @@ private:
   AliDielectronSignalExt(const AliDielectronSignalExt &c);
   AliDielectronSignalExt &operator=(const AliDielectronSignalExt &c);
 
-  ClassDef(AliDielectronSignalExt,2)    // Dielectron SignalFunc
+  ClassDef(AliDielectronSignalExt,2)    // class for signal extraction using LS, ME or ROT
 };
 
 #endif
