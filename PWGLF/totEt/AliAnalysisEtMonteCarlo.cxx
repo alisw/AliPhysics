@@ -1079,8 +1079,16 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    if (!stack->IsPhysicalPrimary(myPart)){
 	      primIdx = GetPrimMother(iPart, stack);
 	    } // end of primary particle check
-
-	    if(primIdx==iPart && primIdx>0){//This cluster is from our primary particle and our primary particle is a kaon
+	    TParticle *hitPart = stack->Particle(myPart);
+	    Bool_t hitsAsChargedKaon = kFALSE;
+	    if(hitPart->GetPdgCode()== fgKPlusCode || hitPart->GetPdgCode()== fgKPlusCode){
+	      if(myPart==primIdx){
+		//The particle hits as a charged kaon and that kaon is a primary kaon - do not count because this is counted in the hadronic correction!
+		hitsAsChargedKaon = kTRUE;
+		//cout<<"Found primary charged kaon cluster!"<<endl;
+	      }
+	    }
+	    if(primIdx==iPart && primIdx>0 && !hitsAsChargedKaon){//This cluster is from our primary particle and our primary particle is a kaon
 	      //cout<<"I have a particle match! prim code"<<code<<" id "<<primIdx <<endl;
 	      Float_t pos[3];
 	      caloCluster->GetPosition(pos);
