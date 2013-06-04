@@ -1247,13 +1247,13 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  dcaXY = t->DCA(); //new change Prabhat                                        
 	  dcaZ  = t->ZAtDCA(); //new change Prabhat  
 	  
-	   // skip track if DCA too large
+	  /*  // skip track if DCA too large
 	     if (dcaZ  <  _dcaZMin || 
 	     dcaZ     >   _dcaZMax || 
 	     dcaXY    <  _dcaXYMin || 
 	     dcaXY    >   _dcaXYMax)
 	     continue; //track does not have a valid DCA
-	  
+	  */
 	_etadis->Fill(eta); //prabhat QA                                  
 	_phidis->Fill(phi);
 	_dcaz->Fill(dcaZ); //Prabhat QA             
@@ -1341,13 +1341,13 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  //if (dcaZ > _dcaZMax) continue;
 	  //cout <<"Prabhat=============="<<"  "<<_dcaZMax<<"    "<<dcaZ<<endl;
 
-	  
+	  /*
 	  if (dcaZ     <  _dcaZMin || 
 	      dcaZ     >   _dcaZMax || 
 	      dcaXY    <  _dcaXYMin || 
 	      dcaXY    >   _dcaXYMax)
 	    continue; //track does not have a valid DCA
-	  
+	  */
 
 	  iPhi   = int( phi/_width_phi_2);
 	  
