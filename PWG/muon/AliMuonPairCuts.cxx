@@ -109,6 +109,16 @@ Bool_t AliMuonPairCuts::IsSelected( TList* list )
   return ( ( selectionMask & filterMask ) == filterMask );
 }
 
+//________________________________________________________________________
+Bool_t AliMuonPairCuts::IsSelected( TObject* track1, TObject* track2 )
+{
+  /// Pair is selected
+  UInt_t filterMask = GetFilterMask();
+  UInt_t selectionMask = GetSelectionMask(track1, track2);
+  
+  return ( ( selectionMask & filterMask ) == filterMask );
+}
+
 
 //________________________________________________________________________
 UInt_t AliMuonPairCuts::GetSelectionMask( const TObject* obj )

@@ -39,6 +39,7 @@ class AliMuonPairCuts : public AliAnalysisCuts
   virtual UInt_t GetSelectionMask ( const TObject* obj );
   virtual Bool_t IsSelected ( TObject* /*obj*/ );
   virtual Bool_t IsSelected ( TList* list );
+  virtual Bool_t IsSelected ( TObject* track1, TObject* track2 );
 
   UInt_t GetSelectionMask(const TObject* track1, const TObject* track2);
   
