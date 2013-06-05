@@ -93,8 +93,8 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   /////////////////////
     
   // Methods for MC
-  Int_t GetParticleType(AliVParticle* track);
-  Int_t RecoTrackMother(AliVParticle* mcParticle);
+  Int_t GetParticleType ( AliVParticle* track , Bool_t forceReachFirstAncestor = kFALSE);
+  Int_t RecoTrackMother (AliVParticle* mcParticle, Bool_t forceReachFirstAncestor = kFALSE );
   
   // Methods for mergeable object collections
   Bool_t AddObjectToCollection(TObject* object, Int_t index = -1);
