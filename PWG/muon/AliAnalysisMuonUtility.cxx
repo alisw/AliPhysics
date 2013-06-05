@@ -483,6 +483,28 @@ Int_t AliAnalysisMuonUtility::GetPassNumber ( const char* str )
   return -1;
 }
 
+//________________________________________________________________________
+TString AliAnalysisMuonUtility::GetTrackHistory ( const AliVParticle* track, const AliMCEvent* mcEvent )
+{
+  //
+  /// Get string containing particle history
+  /// Useful when debugging MC
+  //
+  TString trackHistory = "";
+  if ( ! mcEvent ) return trackHistory;
+  Int_t imother = track->GetLabel();
+  while ( imother >= 0 ) {
+    AliVParticle* part = mcEvent->GetTrack(imother);
+    if ( ! part ) break; // In principle not needed...but for some old MC it breaks sometimes
+    TParticlePDG* partPdg = TDatabasePDG::Instance()->GetParticle(part->PdgCode());
+    TString pname = ( partPdg ) ? partPdg->GetName() : Form("%i",part->PdgCode());
+    if ( ! trackHistory.IsNull() ) trackHistory.Append(" <- ");
+    trackHistory.Append(Form("%i (%s)", imother, pname.Data()));
+    imother = AliAnalysisMuonUtility::GetMotherIndex(part);
+  }
+  return trackHistory;
+}
+
 
 //_______________________________________________________________________
 Bool_t AliAnalysisMuonUtility::SetSparseRange(AliCFGridSparse* gridSparse,
