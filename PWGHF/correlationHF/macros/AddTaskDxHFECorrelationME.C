@@ -95,7 +95,8 @@ int AddTaskDxHFECorrelationME(TString configuration="")
       }
     }
     else if(argument.BeginsWith("PbPb") ||
-	    argument.BeginsWith("system=1")){
+	    argument.BeginsWith("system=1") ||
+	    argument.BeginsWith("Pb-Pb")){
       system=1;
       taskOptions+=" PbPb";
     }

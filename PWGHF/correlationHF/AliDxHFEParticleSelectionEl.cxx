@@ -810,7 +810,7 @@ void AliDxHFEParticleSelectionEl::InvMassFilter(TList *elList, Bool_t *selIndx)
 		((TH1D*)fHistoList->FindObject("fInvMass2SelLS"))->Fill(mass);
 		if(mass>fInvMassLow)
 		  {
-		    ((TH1D*)fHistoList->FindObject("fInvMassLScut"))->Fill(mass);
+		    ((TH1D*)fHistoList->FindObject("fInvMass2SelLScut"))->Fill(mass);
 		    selIndx[i]=kTRUE;
 		    selIndx[j]=kTRUE;
 		  }
@@ -821,7 +821,7 @@ void AliDxHFEParticleSelectionEl::InvMassFilter(TList *elList, Bool_t *selIndx)
 		((TH1D*)fHistoList->FindObject("fInvMass2SelULS"))->Fill(mass);
 		if(mass>fInvMassLow)
 		  {
-		    ((TH1D*)fHistoList->FindObject("fInvMassULScut"))->Fill(mass);
+		    ((TH1D*)fHistoList->FindObject("fInvMass2SelULScut"))->Fill(mass);
 		    selIndx[i]=kTRUE;
 		    selIndx[j]=kTRUE;
 		  }
