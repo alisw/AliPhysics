@@ -134,7 +134,9 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    bEventMixing=kTRUE;
 	    taskOptions+=" event-mixing";
 	  }
-	  if (argument.BeginsWith("PbPb")) {
+	  if (argument.BeginsWith("PbPb") ||
+	      argument.BeginsWith("system=1") ||
+	      argument.BeginsWith("Pb-Pb")) {
 	    system=1;
 	    taskOptions+=" system=Pb-Pb";
 	  }
