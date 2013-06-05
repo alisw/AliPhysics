@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $Id: AliAnalysisTaskLongRangeCorrelations.h 233 2012-12-02 14:46:41Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.h 283 2013-03-26 19:07:58Z cmayer $
 #ifndef _AliAnalysisTaskLongRangeCorrelations_H_
 #define _AliAnalysisTaskLongRangeCorrelations_H_
 

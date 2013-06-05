@@ -13,10 +13,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 241 2012-12-19 19:45:59Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 283 2013-03-26 19:07:58Z cmayer $
 
 #include <numeric>
 #include <functional>
+#include <set>
 
 #include <TChain.h>
 #include <THashList.h>
@@ -93,8 +94,19 @@ void AliAnalysisTaskLongRangeCorrelations::UserCreateOutputObjects() {
   fOutputList->Add(hStats);
 
   // QA histograms
-  fOutputList->Add(new TH1D("histQAVertexZ", ";vertex-z (cm)",
-			    800, -40, 40));
+  fOutputList->Add(new TH2D("histQACentrality", ";centrality V0M(%);selected;",
+			    fnBinsCent,fxMinCent,fxMaxCent, 2, -0.5, 1.5));
+  fOutputList->Add(new TH2D("histQAVertexZ", ";vertex-z (cm);selected;",
+			    800, -40., 40., 2, -0.5, 1.5));
+  {
+    // per event: vertexZ * centrality * tracks * trackSel
+    const Int_t    bins[2] = { 10000,  10000  };
+    const Double_t xMin[2] = {     0.,     0. };
+    const Double_t xMax[2] = { 10000., 10000. };
+    fOutputList->Add(new THnSparseD("histQAMultiplicity",
+				    ";tracks;accepted tracks;",
+				    2, bins, xMin, xMax));
+  }
   fOutputList->Add(new TH3D("histQACentPt", ";charge;centrality V0M(%);p_{T} (GeV/c)",
 			    2, -0.5, 1.5, fnBinsCent, fxMinCent, fxMaxCent, fnBinsPt, fxMinPt, fxMaxPt));
   fOutputList->Add(new TH3D("histQAPhiEta", ";charge;#phi (rad);#eta",
@@ -116,8 +128,7 @@ void AliAnalysisTaskLongRangeCorrelations::UserCreateOutputObjects() {
   // add MC Histograms
   const Int_t N(fOutputList->GetEntries());
   for (Int_t i(0); i<N; ++i)
-    fOutputList->Add(fOutputList->At(i)->Clone(TString("MC_")
-					       + fOutputList->At(i)->GetName()));
+    fOutputList->Add(fOutputList->At(i)->Clone(TString("MC_") + fOutputList->At(i)->GetName()));
 
   if (fRunMixing)
     SetupForMixing();
@@ -152,10 +163,10 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
     Fill("MC_histEventStats", 0.); // all events
     Fill("MC_histEventStats", 1.); // events passing physics selection
     Fill("MC_histEventStats", 2.); // events passing centrality selection
-    Fill("MC_histQAVertexZ", pAODMCHeader->GetVtxZ());
-
     // vertex cut in MC
-    if (TMath::Abs(pAODMCHeader->GetVtxZ()) > fMaxAbsVertexZ) return;    
+    const Bool_t vertexSelected(TMath::Abs(pAODMCHeader->GetVtxZ()) < fMaxAbsVertexZ);
+    Fill("MC_histQAVertexZ", pAODMCHeader->GetVtxZ(), vertexSelected);
+    if (!vertexSelected) return;    
     Fill("MC_histEventStats", 3.); // events passing vertex selection
   }
 
@@ -167,7 +178,9 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
 
   const Double_t centrality(pAODHeader->GetCentralityP()->GetCentralityPercentile("V0M"));
   AliDebug(3, Form("centrality=%f", centrality));
-  if (centrality < fCentMin || centrality >= fCentMax) return;
+  const Bool_t centralitySelected(centrality > fCentMin && centrality < fCentMax);
+  Fill("histQACentrality", centrality, centralitySelected);
+  if (!centralitySelected) return;
   Fill("histEventStats", 2.); // events passing centrality selection
 
   // vertex selection
@@ -179,14 +192,18 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
   if (nTracksPrimary < 1) return;
 
   const Double_t zVertex(pVertex->GetZ());
-  Fill("histQAVertexZ", zVertex);
-  if (TMath::Abs(zVertex) > fMaxAbsVertexZ) return;
-
+  const Bool_t vertexSelected(TMath::Abs(zVertex) < fMaxAbsVertexZ);
+  Fill("histQAVertexZ", zVertex, vertexSelected);
+  if (!vertexSelected) return;
   Fill("histEventStats", 3.); // events passing vertex selection
 
   // event is accepted
   TObjArray* tracksMain(GetAcceptedTracks(pAOD, centrality));
-
+  {
+    const Double_t x[2] = { pAOD->GetNumberOfTracks(), tracksMain->GetEntriesFast() };
+    Fill("histQAMultiplicity", x);
+  }
+  
   if (fRunMixing) {  
     AliEventPool* pEventPool(fPoolMgr->GetEventPool(centrality, pAOD->GetPrimaryVertex()->GetZ()));
     if (NULL == pEventPool)
@@ -213,6 +230,11 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
   
   if (isMC) {
     TObjArray* tracksMC(GetAcceptedTracks(arrayMC, centrality));
+    const Double_t x[2] = {
+      arrayMC->GetEntriesFast(),
+      tracksMC->GetEntriesFast()
+    };
+    Fill("MC_histQAMultiplicity", x);
     Fill("MC_histEventStats", 4.); // analyzed MC events
     CalculateMoments("MC_", tracksMC, tracksMC, zVertex, 1.);
     delete tracksMC;
@@ -298,6 +320,9 @@ TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(AliAODEvent* 
 
 TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(TClonesArray* tracksMC,
 								   Double_t centrality) {
+  // for keeping track of MC labels
+  std::set<Int_t> labelSet;
+
   TObjArray* tracks= new TObjArray;
   tracks->SetOwner(kTRUE);
 
@@ -308,6 +333,12 @@ TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(TClonesArray*
     if (NULL == pMCTrack) continue;    
 
     // no track filter selection for MC tracks    
+
+    if (labelSet.find(pMCTrack->Label()) != labelSet.end()) {
+      Printf("Duplicate Label= %3d", pMCTrack->Label());
+      continue;
+    }
+    labelSet.insert(pMCTrack->Label());    
 
     // select only primary tracks
     if (kFALSE == pMCTrack->IsPhysicalPrimary()) continue;
