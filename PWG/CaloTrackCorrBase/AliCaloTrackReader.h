@@ -256,6 +256,12 @@ public:
   void             SwitchOffExoticEventsRemoval()          { fRemoveExoticEvents    = kFALSE ; }
   void             SetExoticEventTrigger(Float_t tr)       { fExoticTrigger         = tr     ; }
   
+  void             SwitchOffExoticEventsFromTriggerPatch() { fTriggerPatchExoticRejection = kFALSE ; }
+  void             SwitchOnExoticEventsFromTriggerPatch()  { fTriggerPatchExoticRejection = kTRUE  ; }
+
+  void             SetTriggerPatchTimeWindow(Int_t min, Int_t max) { fTriggerPatchTimeWindow[0] = min ;
+                                                                     fTriggerPatchTimeWindow[1] = max ; }
+  
   UInt_t           GetMixEventTriggerMask()             const { return fMixEventTriggerMask  ; }
   void             SetMixEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAnyINT) 
                                                            { fMixEventTriggerMask = evtTrig  ; }
@@ -602,10 +608,14 @@ public:
   Float_t          fZvtxCut ;	                   // Cut on vertex position
   Bool_t           fAcceptFastCluster;           // Accept events from fast cluster, exclude these events for LHC11a
   Bool_t           fRemoveLEDEvents;             // Remove events where LED was wrongly firing - EMCAL LHC11a
+  
   Bool_t           fRemoveExoticEvents;          // Remove events triggered by exotic cluster
+  Bool_t           fTriggerPatchExoticRejection; // Search for the trigger patch and check if associated cluster was the trigger
+  Int_t            fTriggerPatchTimeWindow[2];   // Trigger patch selection window
   Float_t          fExoticTrigger;               // Threshold to look for triggered events by exotic clusters
   Bool_t           fIsExoticEvent;               // Exotic event flag
   Bool_t           fForceExoticRejection;        // Reject events triggered by exotic only on EMC triggered events, except in MC to study false rejections
+  
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
   Bool_t           fDoVertexBCEventSelection;    // Select events with vertex on BC=0 or -100
@@ -649,7 +659,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,52)
+  ClassDef(AliCaloTrackReader,53)
   
 } ;
 

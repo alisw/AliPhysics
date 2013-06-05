@@ -93,7 +93,7 @@ fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),                    
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
-fRemoveExoticEvents(kFALSE), fExoticTrigger(3.),
+fRemoveExoticEvents(kFALSE), fTriggerPatchExoticRejection(1), fExoticTrigger(3.),
 fIsExoticEvent(kFALSE),      fForceExoticRejection(kFALSE),
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
 fDoVertexBCEventSelection(kFALSE),
@@ -104,7 +104,7 @@ fTimeStampEventFracMin(0),   fTimeStampEventFracMax(0),
 fTimeStampRunMin(0),         fTimeStampRunMax(0),
 fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
 fVertexBC(-200),             fRecalculateVertexBC(0),
-fCentralityClass(""),            fCentralityOpt(0),
+fCentralityClass(""),        fCentralityOpt(0),
 fEventPlaneMethod(""),       fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 {
   //Ctor
@@ -539,6 +539,9 @@ void AliCaloTrackReader::InitParameters()
     fTrackBCEvent   [i] = 0;
     fTrackBCEventCut[i] = 0;
   }
+  
+  fTriggerPatchTimeWindow[0] = 8;
+  fTriggerPatchTimeWindow[1] = 9;
   
 }
 
@@ -1775,7 +1778,6 @@ Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
 void  AliCaloTrackReader::RejectExoticEvents()
 {
   // Reject events triggered by exotic cells
-  // simple method
   
   if(!GetFiredTriggerClasses().Contains("EMC") && !fForceExoticRejection)
   {
@@ -1783,30 +1785,162 @@ void  AliCaloTrackReader::RejectExoticEvents()
     return;
   }
   
-  Int_t nOfHighECl = 0 ;
-  Int_t nExo       = 0 ;
   Int_t nclusters  = fInputEvent->GetNumberOfCaloClusters();
-  for (Int_t iclus =  0; iclus <  nclusters; iclus++)
-  {
-    AliVCluster * clus = 0;
-    if ( (clus = fInputEvent->GetCaloCluster(iclus)) )
+  
+  // simple method, just count how many exotics and how many high energy clusters
+  // over the trigger threshold there are
+
+  if(!fTriggerPatchExoticRejection)
+  {    
+    Int_t nOfHighECl = 0 ;
+    Int_t nExo       = 0 ;
+    for (Int_t iclus = 0 ; iclus <  nclusters; iclus++)
     {
-      if (IsEMCALCluster(clus) && clus->E() > fExoticTrigger)
+      AliVCluster * clus = 0;
+      if ( (clus = fInputEvent->GetCaloCluster(iclus)) )
+      {
+        if (IsEMCALCluster(clus) && clus->E() > fExoticTrigger)
+        {
+          Bool_t exotic = GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCluster(clus, fInputEvent->GetEMCALCells());
+          Bool_t bad    = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),clus->GetCellsAbsId(),clus->GetNCells());
+          
+          if     ( exotic) nExo++;
+          else if(!bad   ) nOfHighECl++;
+          
+//          Float_t frac = -1;
+//          Int_t absId = GetCaloUtils()->GetMaxEnergyCell(fInputEvent->GetEMCALCells(), clus,frac);
+//          
+//          printf("Cluster E %f, AbsIdMax %d, sm %d, col %d, row %d, shared %d\n",clus->E(),absId,iSupMod,ieta,iphi,shared);
+//          printf("\t list of cells of exotic: ");
+//
+//          for(Int_t iCell = 0; iCell<clus->GetNCells(); iCell++)
+//          {
+//            printf(" id %d - E %2.2f; ",clus->GetCellsAbsId()[iCell], fInputEvent->GetEMCALCells()->GetCellAmplitude(clus->GetCellsAbsId()[iCell]));
+//          }
+//          printf("\n");
+          
+        }//EMCAL cluster
+      }// cluster exists
+    }// cluster loop
+    
+//    printf("- trigger %2.1f, n Exotic %d, n high energy %d\n", fExoticTrigger,nExo,nOfHighECl);
+    
+    if ( ( nExo > 0 ) && ( nOfHighECl == 0 ) )
+    {
+      fIsExoticEvent = kTRUE ;
+//      printf("*** Exotic Event\n");
+    }
+    else
+      fIsExoticEvent = kFALSE;
+    
+  }
+  //Check if there is any trigger patch that has an associated exotic cluster 
+  else
+  {
+    //printf("Trigger Exotic?\n");
+    // some variables
+    Int_t  trigtimes[30], globCol, globRow,ntimes, i;
+    Int_t  absIDTrig[100];
+    Bool_t trigInCut    = kFALSE;
+    Int_t  nTrig = 0;
+    // get object pointer
+    AliVCaloTrigger *caloTrigger = GetInputEvent()->GetCaloTrigger( "EMCAL" );
+    
+    // class is not empty
+    if( caloTrigger->GetEntries() > 0 )
+    {
+      // must reset before usage, or the class will fail 
+      caloTrigger->Reset();
+      
+      // go throuth the trigger channels
+      while( caloTrigger->Next() )
+      {
+        // get position in global 2x2 tower coordinates
+        caloTrigger->GetPosition( globCol, globRow );
+        
+        // get dimension of time arrays
+        caloTrigger->GetNL0Times( ntimes );
+        
+        // no L0s in this channel
+        // presence of the channel in the iterator still does not guarantee that L0 was produced!!
+        if( ntimes < 1 )
+          continue;
+        
+        // get timing array
+        caloTrigger->GetL0Times( trigtimes );
+        
+        // go through the array
+        for( i = 0; i < ntimes; i++ )
+        {
+          // check if in cut - 8,9 shall be accepted in 2011
+          if( trigtimes[i] >= fTriggerPatchTimeWindow[0] && trigtimes[i] <= fTriggerPatchTimeWindow[1] )
+          {
+            //printf("Accepted trigger time %d \n",trigtimes[i]);
+            trigInCut = kTRUE;
+            if(nTrig > 99) continue;
+            GetCaloUtils()->GetEMCALGeometry()->GetAbsFastORIndexFromPositionInEMCAL(globCol,globRow, absIDTrig[nTrig]) ;
+            //printf("pass the time cut globCol %d, globRow %d absId %d\n",globCol,globRow, absIDTrig[nTrig]);
+            nTrig++;
+          }
+        } // trigger time array
+        
+      } // trigger iterator
+    } // go thorough triggers
+    
+    //printf("NTriggers %d, Trigger In Cut %d\n",nTrig, trigInCut);
+    if(nTrig > 99) printf("AliCaloTrackReader::RejectExoticEvents() - careful, too many triggering patches\n");
+    
+//    for(Int_t iabsId =0; iabsId < nTrig; iabsId++)
+//    {
+//      Int_t absIDCell[4];
+//      GetCaloUtils()->GetEMCALGeometry()->GetCellIndexFromFastORIndex(absIDTrig[iabsId], absIDCell);
+//      printf("Patch %d absIdTrigger %d: AbsIdCells: %d - %d - %d - %d \n",iabsId,absIDTrig[iabsId],absIDCell[0],absIDCell[1],absIDCell[2],absIDCell[3]);
+//    }
+    
+    // Loop on the clusters, check if there is any that falls into one of the patches
+    for (Int_t iclus =  0; iclus <  nclusters; iclus++)
+    {
+      AliVCluster * clus = 0;
+      fIsExoticEvent = kFALSE;
+      if ( (clus = fInputEvent->GetCaloCluster(iclus)) && IsEMCALCluster(clus))
       {
         Bool_t exotic = GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCluster(clus, fInputEvent->GetEMCALCells());
-        Bool_t bad    = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),clus->GetCellsAbsId(),clus->GetNCells());
-        
-        if     (exotic) nExo++;
-        else if(!bad)   nOfHighECl++;
-        
-      }//EMCAL cluster
-    }// cluster exists
-  }// cluster loop
-  
-  //printf("- trigger %2.1f, n Exotic %d, n high energy %d\n", fExoticTrigger,nExo,nOfHighECl);
-  
-  if ( ( nExo > 0 ) && ( nOfHighECl == 0 ) ) fIsExoticEvent = kTRUE ;
-  else                                       fIsExoticEvent = kFALSE;
+        if(exotic)
+        {
+//          Float_t frac = -1;
+//          Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(fInputEvent->GetEMCALCells(), clus,frac);
+//          printf("cluster %d, E %f, AbsId max %d\n",iclus,clus->E(),absIdMax);
+
+          for(Int_t iabsId =0; iabsId < nTrig; iabsId++)
+          {
+            Int_t absIDCell[4];
+            GetCaloUtils()->GetEMCALGeometry()->GetCellIndexFromFastORIndex(absIDTrig[iabsId], absIDCell);
+            for(Int_t ipatch = 0; ipatch < 4; ipatch++)
+            {
+              //Loop on the cluster cells and check if any is in patch, ideally
+              // max id should suffice, but not always
+              for(Int_t iCell = 0; iCell<clus->GetNCells(); iCell++)
+              {
+                //printf(" id %d - E %2.2f; ",clus->GetCellsAbsId()[iCell], fInputEvent->GetEMCALCells()->GetCellAmplitude(clus->GetCellsAbsId()[iCell]));
+                if(clus->GetCellsAbsId()[iCell] == absIDCell[ipatch])
+                {
+//                  printf("*** Exotic trigger : absId %d, E %2.1f \n",clus->GetCellsAbsId()[iCell],clus->E());
+                  fIsExoticEvent = kTRUE;
+                  return;
+                }
+              }
+//              if(absIdMax == absIDCell[ipatch])
+//              {
+//                printf("*** Exotic trigger : absId %d, E %2.1f \n",absIdMax,clus->E());
+//                fIsExoticEvent = kTRUE;
+//                return;
+//              }
+            }// cell patch loop
+          }// trigger patch loop
+        }// exotic cluster
+      }// EMCal cluster
+    }// Cluster loop
+  }// exotic and trigger patch event flag
   
 }
 
