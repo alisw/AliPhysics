@@ -64,7 +64,6 @@ public:
     void SetInvMassRange(Double_t range[2]){fInvMassRange[0]=range[0];fInvMassRange[1]=range[1];};
     void SetEtaGap(Double_t gapsize){fEtaGap=gapsize;};
 
-    void SetMesonCuts(const TString cut);
     void SetCuts(AliConversionSelection **conversionselection,Int_t numberOfCuts);
 
     void SetFillQA(Bool_t fill){fFillQA=fill;}
@@ -267,7 +266,7 @@ private:
     //THnSparse *hEPVertex;
     THnSparse *hEPQA;
 
-    ClassDef(AliAnalysisTaskPi0v2, 4); // example of analysis
+    ClassDef(AliAnalysisTaskPi0v2, 5); // example of analysis
 };
 
 #endif
