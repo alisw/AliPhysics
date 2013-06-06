@@ -28,7 +28,7 @@ class AliESDpid : public AliPIDResponse  {
 public:
   AliESDpid(Bool_t forMC=kFALSE): AliPIDResponse(forMC), fRangeTOFMismatch(5.), fEventHandler(NULL) {;}
 AliESDpid(const AliESDpid&a): AliPIDResponse(a), fRangeTOFMismatch(a.fRangeTOFMismatch), fEventHandler(NULL){;};
-    AliESDpid& operator=(const AliESDpid& a){AliPIDResponse::operator=(a); fRangeTOFMismatch=a.fRangeTOFMismatch; fEventHandler=NULL; return *this;};
+AliESDpid& operator=(const AliESDpid& a){if (this==&a) return *this; AliPIDResponse::operator=(a); fRangeTOFMismatch=a.fRangeTOFMismatch; fEventHandler=NULL; return *this;};
   virtual ~AliESDpid() {}
   
   Int_t MakePID(AliESDEvent *event, Bool_t TPCOnly = kFALSE, Float_t timeZeroTOF=9999) const;
