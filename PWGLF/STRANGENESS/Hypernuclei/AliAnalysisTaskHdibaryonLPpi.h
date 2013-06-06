@@ -135,6 +135,9 @@ private:
   TH1F        *fHistMCdecayAngleReso; // mc decay angle
   TH1F        *fHistMCpointingAngleReso; // mc PA
   TH2F        *fHistMCapReso; // MC ap for reso
+  TH1F        *fHistCentrality; // Centrality histogram
+  TH1F        *fHistCentralityAC; // Centrality histogram after selection cuts
+  TH1F        *fHistMultiplicity; // Multiplicity histogram
   THnSparse   *fHistNdim; // THnSparse
  
   TH1F        *fHistHilf1; // Support
@@ -152,6 +155,8 @@ private:
   TH1F        *fHistCount; //Counting of events and different decay parameters
   
   AliESDpid     *fPIDtpcESD; //PID
+  TH1F              *fHistTriggerStat;                         //! Trigger statistics
+  TH1F              *fHistTriggerStatAfterEventSelection;      //! Trigger statistics
 
   enum{
         kHasMC=BIT(18)
