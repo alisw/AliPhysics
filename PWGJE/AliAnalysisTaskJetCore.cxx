@@ -722,7 +722,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    return;}   
 
       if(dice>fFrac) fh1TrigRef->Fill(number);
-      if(dice<=fFrac)fh1TrigSig->Fill(number)
+      if(dice<=fFrac)fh1TrigSig->Fill(number);
 
      for (Int_t iJetType = 0; iJetType < 2; iJetType++) {
       fListJets[iJetType]->Clear();
