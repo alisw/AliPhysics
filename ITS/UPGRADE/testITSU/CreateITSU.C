@@ -3,6 +3,8 @@
 #endif
 
 //---------------------------------------
+Int_t getNStaves(AliITSUSegmentationPix* seg, double tilt, double r0, double minOvl);
+
 void CreateITSU()
 {
   //
@@ -61,7 +63,7 @@ void CreateITSU()
   //
   const double kMinOvl = 0.005; // require active zones overlap
   const double kPhi0 = 0.;  // az.angle of 1st stave
-  const double kTilt = 10.; // tilt in degrees
+  const double kTilt = -10.; // tilt in degrees
   double dzLr,rLr,ovlA,xActProj;
   AliITSUSegmentationPix* seg=0;
   int nStaveLr,nModPerStaveLr,idLr;
@@ -72,43 +74,31 @@ void CreateITSU()
   //
   // INNER LAYERS
   idLr = 0;
-  rLr = 2.2;
+  rLr = 2.2; // 2.165?
   dzLr = 2*11.2;   // min Z to cover
   seg = seg0;
   nModPerStaveLr = 1+dzLr/seg->Dz();
-  ovlA = -1;
-  xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
-  nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
+  nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetDetTypeID());
-  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f (%d micron)\n",
-	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1.e4));
+  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   idLr = 1;
-  rLr = 2.8;
+  rLr = 2.8; // 2.77 ?
   dzLr = 2*12.1;
   seg = seg0;
   nModPerStaveLr = 1+dzLr/seg->Dz();
-  ovlA = -1;
-  xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
-  nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
+  nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetDetTypeID());
-  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f (%d micron)\n",
-	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   idLr = 2;
-  rLr = 3.6;
+  rLr = 3.6; // 3.58 ?
   dzLr = 2*13.4;
   seg = seg0;
   nModPerStaveLr = 1+dzLr/seg->Dz();
-  ovlA = -1;
-  xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
-  nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
+  nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetDetTypeID());
-  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f (%d micron)\n",
-	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   // 
   // MIDDLE LAYERS (double side readout sensors)
@@ -117,26 +107,18 @@ void CreateITSU()
   dzLr = 2*39.0;
   seg = seg1;
   nModPerStaveLr = 1+dzLr/seg->Dz();
-  ovlA = -1;
-  xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
-  nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
+  nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
-  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f (%d micron)\n",
-	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   idLr = 4;
   rLr = 22.0;
   dzLr = 2*41.8;
   seg = seg1;
   nModPerStaveLr = 1+dzLr/seg->Dz();
-  ovlA = -1;
-  xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
-  nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
+  nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
-  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f (%d micron)\n",
-	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   // 
   // OUTER LAYERS (double side readout sensors)
@@ -145,26 +127,43 @@ void CreateITSU()
   dzLr = 2*71.2;
   seg = seg1;
   nModPerStaveLr = 1+dzLr/seg->Dz();
-  ovlA = -1;
-  xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
-  nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
+  nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
-  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f (%d micron)\n",
-	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   idLr = 6;
   rLr = 43.0;
   dzLr = 2*74.3;
   seg = seg1;
   nModPerStaveLr = 1+dzLr/seg->Dz();
-  ovlA = -1;
-  xActProj = seg->DxActive()*TMath::Cos(kTilt*TMath::DegToRad()); // effective r-phi coverage by single stave
-  nStaveLr = 1 + rLr*TMath::Pi()*2/xActProj;
-  do { ovlA = 1.-rLr*TMath::Pi()*2/nStaveLr/xActProj; } while ( kMinOvl>=0 && ovlA<kMinOvl && nStaveLr++ );		
+  nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
   ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
-  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d -> Active Overlap:%.1f (%d micron)\n",
-	 idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr,ovlA*100,int(ovlA*xActProj*1e4));
+  printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
+  //  
+}
+
+Int_t getNStaves(AliITSUSegmentationPix* seg, double tilt, double r0, double minOvl)
+{
+  double dphi = (90.-tilt)*TMath::DegToRad();
+  double cs = TMath::Cos(dphi);
+  double sn = TMath::Sin(dphi);  
+  double dx = seg->Dx();
+  double tL = -dx/2 + seg->GetGuardBot();
+  double tU =  dx/2 - seg->GetGuardTop();
   //
-  
+  double xL = r0 + cs*tL;
+  double yL =      sn*tL;
+  double xU = r0 + cs*tU;
+  double yU =      sn*tU;
+  double phiL = TMath::ATan2(yL,xL);
+  double phiU = TMath::ATan2(yU,xU);
+  double dphi = TMath::Abs(phiL-phiU);
+  if (dphi>TMath::Pi()) dphi = TMath::Abs(dphi-TMath::Pi()*2);
+  double span = dphi*r0;
+  //
+  double ov = -1;
+  int nStaveLr = 1 + r0*TMath::Pi()*2/span;
+  do { ov = 1.-r0*TMath::Pi()*2/nStaveLr/span; } while ( minOvl>=0 && ov<minOvl && nStaveLr++ );
+  printf("Recomend %2d staves for R=%5.2f, ActiveOvl=%5.2f\% (%6.f micron)\n",nStaveLr,r0,ov*100,ov*span*1e4);
+  return nStaveLr;
 }
