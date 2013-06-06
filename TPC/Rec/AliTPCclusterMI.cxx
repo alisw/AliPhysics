@@ -28,6 +28,7 @@
 
 #include "AliTPCclusterMI.h"
 #include "AliTPCclusterInfo.h"
+#include "AliTrackPointArray.h"
 #include "AliGeomManager.h"
 #include "AliLog.h"
 
@@ -160,4 +161,32 @@ void AliTPCclusterMI::SetInfo(AliTPCclusterInfo * info) {
   //
   if (fInfo) delete fInfo;
   fInfo = info;
+}
+
+
+AliTPCclusterMI* AliTPCclusterMI::MakeCluster(AliTrackPoint* point) {
+  //
+  // make AliTPCclusterMI out of AliTrackPoint
+  // (not yet implemented)
+  
+  return NULL;
+}
+
+
+AliTrackPoint* AliTPCclusterMI::MakePoint(AliTPCclusterMI* cluster) {
+  //
+  // make AliTrackPoint out of AliTPCclusterMI
+  //
+
+  AliTrackPoint* point = NULL;
+  
+  if(cluster){
+    point = new AliTrackPoint();
+    
+    Float_t xyz[3];
+    cl->GetGlobalXYZ(xyz);
+    point->SetXYZ(xyz);
+  }
+
+  return point;
 }

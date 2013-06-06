@@ -13,6 +13,9 @@
 #include "AliCluster.h"
 #include "TMath.h"
 #include "AliTPCclusterInfo.h"
+
+class AliTrackPoint;
+
 //_____________________________________________________________________________
 class AliTPCclusterMI : public AliCluster {
 public:
@@ -43,6 +46,9 @@ public:
   Float_t GetPad() const { return fPad;}
   AliTPCclusterInfo * GetInfo() const { return fInfo;}
   void SetInfo(AliTPCclusterInfo * info);
+  //
+  AliTPCclusterMI*  MakeCluster(AliTrackPoint* point);
+  AliTrackPoint*    MakePoint(AliTPCclusterMI* cluster);
 
 private:
   AliTPCclusterInfo * fInfo;  // pointer to the cluster debug info
