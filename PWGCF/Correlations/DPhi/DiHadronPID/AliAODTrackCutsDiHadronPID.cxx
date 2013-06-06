@@ -422,8 +422,8 @@ TList* AliAODTrackCutsDiHadronPID::GetListOfDataQAHistos() const {
 	// Returns the list of data histograms.
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
 
-	if (fPrimRecMCTrackQAHistos) {
-		return fPrimRecMCTrackQAHistos;
+	if (fDataTrackQAHistos) {
+		return fDataTrackQAHistos;
 	} else {
 		return 0x0;
 	}
