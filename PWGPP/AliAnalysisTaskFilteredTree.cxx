@@ -22,6 +22,7 @@
 #include "TTreeStream.h"
 #include "TTree.h"
 #include "TH1F.h"
+#include "TH3.h"
 #include "TCanvas.h"
 #include "TList.h"
 #include "TObjArray.h"
@@ -75,6 +76,7 @@ AliAnalysisTaskFilteredTree::AliAnalysisTaskFilteredTree(const char *name)
   , fUseMCInfo(kFALSE)
   , fUseESDfriends(kFALSE)
   , fReducePileUp(kTRUE)
+  , fFillTree(kTRUE)
   , fFilteredTreeEventCuts(0)
   , fFilteredTreeAcceptanceCuts(0)
   , fFilteredTreeRecAcceptanceCuts(0)
@@ -93,6 +95,15 @@ AliAnalysisTaskFilteredTree::AliAnalysisTaskFilteredTree(const char *name)
   , fLaserTree(0)
   , fMCEffTree(0)
   , fCosmicPairsTree(0)
+  , fPtResPhiPtTPC(0)
+  , fPtResPhiPtTPCc(0)
+  , fPtResPhiPtTPCITS(0)
+  , fPtResEtaPtTPC(0)
+  , fPtResEtaPtTPCc(0)
+  , fPtResEtaPtTPCITS(0)
+  , fPtResCentPtTPC(0)
+  , fPtResCentPtTPCc(0)
+  , fPtResCentPtTPCITS(0)
 {
   // Constructor
 
@@ -103,6 +114,7 @@ AliAnalysisTaskFilteredTree::AliAnalysisTaskFilteredTree(const char *name)
   DefineOutput(4, TTree::Class());
   DefineOutput(5, TTree::Class());
   DefineOutput(6, TTree::Class());
+  DefineOutput(7, TList::Class());
 }
 
 //_____________________________________________________________________________
@@ -158,12 +170,97 @@ void AliAnalysisTaskFilteredTree::UserCreateOutputObjects()
   fMCEffTree = ((*fTreeSRedirector)<<"MCEffTree").GetTree();
   fCosmicPairsTree = ((*fTreeSRedirector)<<"CosmicPairs").GetTree();
 
+
+
+
+  // histogram booking
+
+  Double_t minPt = 0.1; 
+  Double_t maxPt = 100.; 
+  Int_t nbinsPt = 30; 
+
+  Double_t logminPt = TMath::Log10(minPt);
+  Double_t logmaxPt = TMath::Log10(maxPt);
+  Double_t binwidth = (logmaxPt-logminPt)/nbinsPt;
+  Double_t *binsPt =  new Double_t[nbinsPt+1];
+  binsPt[0] = minPt;
+  for (Int_t i=1;i<=nbinsPt;i++) {
+    binsPt[i] = minPt + TMath::Power(10,logminPt+i*binwidth);
+  }
+
+  // 1pT resol cov matrix bins
+  Double_t min1PtRes = 0.; 
+  Double_t max1PtRes = 0.3; 
+  Int_t nbins1PtRes = 300; 
+  Double_t bins1PtRes[301];
+  for (Int_t i=0;i<=nbins1PtRes;i++) {
+    bins1PtRes[i] = min1PtRes + i*(max1PtRes-min1PtRes)/nbins1PtRes;
+  }
+
+  // phi bins
+  Double_t minPhi = 0.; 
+  Double_t maxPhi = 6.5; 
+  Int_t nbinsPhi = 100; 
+  Double_t binsPhi[101];
+    for (Int_t i=0;i<=nbinsPhi;i++) {
+    binsPhi[i] = minPhi + i*(maxPhi-minPhi)/nbinsPhi;
+  }
+
+  // eta bins
+  Double_t minEta = -1.;
+  Double_t maxEta = 1.;
+  Int_t nbinsEta = 20;
+  Double_t binsEta[21];
+  for (Int_t i=0;i<=nbinsEta;i++) {
+    binsEta[i] = minEta + i*(maxEta-minEta)/nbinsEta;
+  }
+
+  // mult bins
+  Double_t minCent = 0.;
+  Double_t maxCent = 100;
+  Int_t nbinsCent = 20;
+  Double_t binsCent[101];
+  for (Int_t i=0;i<=nbinsCent;i++) {
+    binsCent[i] = minCent + i*(maxCent-minCent)/nbinsCent;
+  }
+  
+  fPtResPhiPtTPC = new TH3D("fPtResPhiPtTPC","pt rel. resolution from cov. matrix TPC tracks",nbinsPt,binsPt,nbinsPhi,binsPhi,nbins1PtRes,bins1PtRes);
+  fPtResPhiPtTPCc = new TH3D("fPtResPhiPtTPCc","pt rel. resolution from cov. matrix TPC constrained tracks",nbinsPt,binsPt,nbinsPhi,binsPhi,nbins1PtRes,bins1PtRes);
+  fPtResPhiPtTPCITS = new TH3D("fPtResPhiPtTPCITS","pt rel. resolution from cov. matrix TPC+ITS tracks",nbinsPt,binsPt,nbinsPhi,binsPhi,nbins1PtRes,bins1PtRes);
+  
+fPtResEtaPtTPC = new TH3D("fPtResEtaPtTPC","pt rel. resolution from cov. matrix TPC tracks",nbinsPt,binsPt,nbinsEta,binsEta,nbins1PtRes,bins1PtRes);
+  fPtResEtaPtTPCc = new TH3D("fPtResEtaPtTPCc","pt rel. resolution from cov. matrix TPC constrained tracks",nbinsPt,binsPt,nbinsEta,binsEta,nbins1PtRes,bins1PtRes);
+  fPtResEtaPtTPCITS = new TH3D("fPtResEtaPtTPCITS","pt rel. resolution from cov. matrix TPC+ITS tracks",nbinsPt,binsPt,nbinsEta,binsEta,nbins1PtRes,bins1PtRes);
+ 
+fPtResCentPtTPC = new TH3D("fPtResCentPtTPC","pt rel. resolution from cov. matrix TPC tracks",nbinsPt,binsPt,nbinsCent,binsCent,nbins1PtRes,bins1PtRes);
+  fPtResCentPtTPCc = new TH3D("fPtResCentPtTPCc","pt rel. resolution from cov. matrix TPC constrained tracks",nbinsPt,binsPt,nbinsCent,binsCent,nbins1PtRes,bins1PtRes);
+  fPtResCentPtTPCITS = new TH3D("fPtResCentPtTPCITS","pt rel. resolution from cov. matrix TPC+ITS tracks",nbinsPt,binsPt,nbinsCent,binsCent,nbins1PtRes,bins1PtRes);
+
+  
+  fOutput = new TList; 
+  fOutput->SetOwner();
+  if(!fOutput) return;
+
+  fOutput->Add(fPtResPhiPtTPC);
+  fOutput->Add(fPtResPhiPtTPCc);
+  fOutput->Add(fPtResPhiPtTPCITS);
+  fOutput->Add(fPtResEtaPtTPC);
+  fOutput->Add(fPtResEtaPtTPCc);
+  fOutput->Add(fPtResEtaPtTPCITS);
+  fOutput->Add(fPtResCentPtTPC);
+  fOutput->Add(fPtResCentPtTPCc);
+  fOutput->Add(fPtResCentPtTPCITS);
+
+  // post data to outputs
+
   PostData(1,fV0Tree);
   PostData(2,fHighPtTree);
   PostData(3,fdEdxTree);
   PostData(4,fLaserTree);
   PostData(5,fMCEffTree);
   PostData(6,fCosmicPairsTree);
+
+  PostData(7,fOutput);
 }
 
 //_____________________________________________________________________________
@@ -352,6 +449,7 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event)
       //
       //fCosmicPairsTree->Fill();
 
+      if(!fFillTree) return;
       if(!fTreeSRedirector) return;
 	  (*fTreeSRedirector)<<"CosmicPairs"<<
 	    "fileName.="<<&fileName<<         // file name
@@ -570,6 +668,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       //Double_t vtxX=vtxESD->GetX();
       //Double_t vtxY=vtxESD->GetY();
       //Double_t vtxZ=vtxESD->GetZ();
+      if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"highPt"<<
         "fileName.="<<&fileName<<            
@@ -645,6 +744,7 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
 
       //fLaserTree->Fill();
 
+      if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"Laser"<<
         "fileName.="<<&fileName<<
@@ -1238,7 +1338,10 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       AliExternalTrackParam* ptrackInnerC3 = (AliExternalTrackParam*)trackInnerC3->Clone();
       Int_t ntracks = esdEvent->GetNumberOfTracks();
       
-      if(fTreeSRedirector && dumpToTree) 
+      // fill histograms
+      FillHistograms(ptrack, ptpcInnerC, mult, (Double_t)chi2(0,0));
+
+      if(fTreeSRedirector && dumpToTree && fFillTree) 
       {
 
         (*fTreeSRedirector)<<"highPt"<<
@@ -1572,7 +1675,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 
 
       //
-      if(fTreeSRedirector) {
+      if(fTreeSRedirector && fFillTree) {
         (*fTreeSRedirector)<<"MCEffTree"<<
           "fileName.="<<&fileName<<
           "triggerClass.="<<&triggerClass<<
@@ -1733,6 +1836,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
     if (type==0) continue;   
     TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
 
+    if(!fFillTree) return;
     if(!fTreeSRedirector) return;
     (*fTreeSRedirector)<<"V0s"<<
       "isDownscaled="<<isDownscaled<<
@@ -1855,6 +1959,7 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
       if(!IsHighDeDxParticle(track)) continue;
       TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
 
+      if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"dEdx"<<
       "fileName.="<<&fileName<<
@@ -2355,4 +2460,73 @@ Int_t AliAnalysisTaskFilteredTree::GetMCTrueTrackMult(AliMCEvent *const mcEvent,
 return mult;  
 }
 
+//_____________________________________________________________________________
+void AliAnalysisTaskFilteredTree::FillHistograms(AliESDtrack* const ptrack, AliExternalTrackParam* const ptpcInnerC, const Double_t centralityF, const Double_t chi2TPCInnerC) 
+{
+//
+// Fill pT relative resolution histograms for 
+// TPC only, TPC only constrained to vertex and TPC+ITS tracking
+//
+   if(!ptrack) return;    
+   if(!ptpcInnerC) return;    
 
+   const AliExternalTrackParam * innerParam = (AliExternalTrackParam *) ptrack->GetInnerParam();
+   if(!innerParam) return;
+
+   Float_t dxy, dz;
+   ptrack->GetImpactParameters(dxy,dz);
+
+// TPC+ITS primary tracks 
+if( abs(ptrack->Eta())<0.8 && 
+    ptrack->GetTPCClusterInfo(3,1)>130 && 
+    ptrack->IsOn(0x40) && 
+    ptrack->GetTPCclusters(0)>0.0 &&  
+    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.2 && 
+    abs(innerParam->GetX())>0.0 && 
+    abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
+    abs(innerParam->GetTgl())<0.85 && 
+    ptrack->IsOn(0x0004) && 
+    ptrack->GetNcls(0)>0 &&
+    ptrack->GetITSchi2()>0 && 
+    sqrt(ptrack->GetITSchi2()/ptrack->GetNcls(0))<6 &&
+    sqrt(chi2TPCInnerC)<6 &&
+    abs(dz)<2.0 && 
+    abs(dxy)<(0.018+0.035*abs(ptrack->GetSigned1Pt())) )
+    {
+      fPtResPhiPtTPCITS->Fill(ptrack->Pt(),ptrack->Phi(),1./abs(ptrack->GetSigned1Pt())*TMath::Sqrt(ptrack->GetSigma1Pt2()));
+      fPtResEtaPtTPCITS->Fill(ptrack->Pt(),ptrack->Eta(),1./abs(ptrack->GetSigned1Pt())*TMath::Sqrt(ptrack->GetSigma1Pt2()));
+      fPtResCentPtTPCITS->Fill(ptrack->Pt(),centralityF,1./abs(ptrack->GetSigned1Pt())*TMath::Sqrt(ptrack->GetSigma1Pt2()));
+    }
+
+// TPC primary tracks 
+// and TPC constrained primary tracks 
+
+    AliExternalTrackParam *ptpcInner  = (AliExternalTrackParam *) ptrack->GetTPCInnerParam(); 
+    if(!ptpcInner) return;
+
+
+   Float_t dxyTPC, dzTPC;
+   ptrack->GetImpactParametersTPC(dxyTPC,dzTPC);
+
+if( abs(ptrack->Eta())<0.8 && 
+    ptrack->GetTPCClusterInfo(3,1)>130 && 
+    ptrack->IsOn(0x40)&& 
+    ptrack->GetTPCclusters(0)>0.0 &&  
+    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.2 && 
+    abs(innerParam->GetX())>0.0 && 
+    abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
+    abs(innerParam->GetTgl())<0.85 && 
+    abs(dzTPC)<3.2 && 
+    abs(dxyTPC)<2.4 )
+    {
+      // TPC only
+      fPtResPhiPtTPC->Fill(ptpcInner->Pt(),ptpcInner->Phi(),1./abs(ptpcInner->GetSigned1Pt())*TMath::Sqrt(ptpcInner->GetSigma1Pt2()));
+      fPtResEtaPtTPC->Fill(ptpcInner->Pt(),ptpcInner->Eta(),1./abs(ptpcInner->GetSigned1Pt())*TMath::Sqrt(ptpcInner->GetSigma1Pt2()));
+      fPtResCentPtTPC->Fill(ptpcInner->Pt(),centralityF,1./abs(ptpcInner->GetSigned1Pt())*TMath::Sqrt(ptpcInner->GetSigma1Pt2()));
+
+      // TPC constrained to vertex 
+      fPtResPhiPtTPCc->Fill(ptpcInnerC->Pt(),ptpcInnerC->Phi(),1./abs(ptpcInnerC->GetSigned1Pt())*TMath::Sqrt(ptpcInnerC->GetSigma1Pt2()));
+      fPtResEtaPtTPCc->Fill(ptpcInnerC->Pt(),ptpcInnerC->Eta(),1./abs(ptpcInnerC->GetSigned1Pt())*TMath::Sqrt(ptpcInnerC->GetSigma1Pt2()));
+      fPtResCentPtTPCc->Fill(ptpcInnerC->Pt(),centralityF,1./abs(ptpcInnerC->GetSigned1Pt())*TMath::Sqrt(ptpcInnerC->GetSigma1Pt2()));
+    }
+}

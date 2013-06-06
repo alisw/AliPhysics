@@ -80,6 +80,7 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   task->SetProcessAll(kTRUE);
   task->SetProcessCosmics(kTRUE);
   //task->SetProcessAll(kFALSE);
+  //task->SetFillTrees(kFALSE); // only histograms are filled
 
   // trigger
   //task->SelectCollisionCandidates(AliVEvent::kMB); 
@@ -119,6 +120,14 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   mgr->ConnectOutput(task, 5, coutput5);
   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("filtered6", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
   mgr->ConnectOutput(task, 6, coutput6);
+
+
+ // store histograms in the separate file
+  TString outputFileHisto = "PtResHistograms.root";
+
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("histo7", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileHisto.Data());
+  mgr->ConnectOutput(task, 7, coutput7);
+
 
   return task;
 }
