@@ -85,6 +85,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     // track cuts
     void   SetTrackEtaCut( Double_t val )    { fTrackEtaCut = val; }
+    void   SetTrackEtaCutMin( Double_t val )    { fTrackEtaCutMin = val; }
     void   SetOnlyOneEtaSide(Int_t flag)     { fOnlyOneEtaSide = flag; }
     void   SetPtMin(Double_t val)            { fPtMin = val; }
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
@@ -174,7 +175,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     TString             fCentralityMethod;     // Method to determine centrality
     
     // Track cuts
-    Double_t      	fTrackEtaCut;          // Eta cut on particles
+    Double_t      	fTrackEtaCut;          // Maximum Eta cut on particles
+    Double_t      	fTrackEtaCutMin;          // Minimum Eta cut on particles
     Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
     Double_t            fPtMin;                // Min pT to start correlations
     TFormula*           fDCAXYCut;             // additional pt dependent cut on DCA XY (only for AOD)
@@ -206,7 +208,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 33); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 34); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
