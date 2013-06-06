@@ -290,14 +290,13 @@ Int_t AliHFEpidTRD::IsSelected2D(const AliHFEpidObject *track, AliHFEpidQAmanage
   }
   AliDebug(1,"Track selected\n");
 
-  Int_t centralitybin = track->IsPbPb() ? track->GetCentrality() + 1 : 0;
+  Int_t centralitybin = track->IsPbPb() ? track->GetCentrality() : -2;
   Float_t fCentralityLimitsdefault[12]= {0.,5.,10., 20., 30., 40., 50., 60.,70.,80., 90., 100.};
   Float_t centrality=-1;
   if(centralitybin>=0) centrality=fCentralityLimitsdefault[centralitybin]+1;
 
-
   if(fkPIDResponse->IdentifiedAsElectronTRD(track->GetRecTrack(),fElectronEfficiency,centrality,AliTRDPIDResponse::kLQ2D)){
-      AliDebug(2, Form("Electron effi: %f\n", fElectronEfficiency));
+      AliDebug(2, Form("Electron effi: %f %i %i %f\n", fElectronEfficiency,track->GetCentrality(),centralitybin,centrality));
       return 11;
   } else return 211;
 

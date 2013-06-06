@@ -227,7 +227,7 @@ AliAnalysisTaskHFE* ConfigHFEmbpPb(Bool_t useMC, Bool_t isAOD, UChar_t TPCcl=70,
     v0trackCuts->SetCheckITSLayerStatus(kFALSE);
     v0trackCuts->UnsetVertexRequirement();
     //hfecuts->SetSigmaToVertex(10);
-    v0trackCuts->SetTOFPIDStep(kTRUE);
+    if(usetof) v0trackCuts->SetTOFPIDStep(kTRUE);
     v0trackCuts->SetQAOn();
 
     task->SwitchOnPlugin(AliAnalysisTaskHFE::kTaggedTrackAnalysis);
