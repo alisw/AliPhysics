@@ -116,7 +116,7 @@ private:
     AliAODEvent *fAODOut;    //! AOD event 
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
     Int_t   GetListOfTracks(TList *list);
-   Int_t   SelectTrigger(TList *list,Double_t minT,Double_t maxT);
+   Int_t   SelectTrigger(TList *list,Double_t minT,Double_t maxT,Int_t &number);
    Int_t   GetHardestTrackBackToJet(AliAODJet *jet);
    Int_t   GetListOfTracksCloseToJet(TList *list,AliAODJet *jet);
    // jets to compare
@@ -215,6 +215,8 @@ private:
      TH2F*      fh2AngStructpt3C60;         //C60 pt3
      TH2F*      fh2AngStructpt4C60;         //C60 pt4
   
+     TH1D*      fh1TrigRef;                 //ref multiple triggers
+     TH1D*      fh1TrigSig;                 //sig multiple triggers    
      TH2F*      fh2Ntriggers;              //triggers
      TH2F*      fh2Ntriggers2C10;             //centrality bias of triggers 
      TH2F*      fh2Ntriggers2C20;             //centrality bias of triggers 
