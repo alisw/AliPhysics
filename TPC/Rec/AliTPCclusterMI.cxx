@@ -173,24 +173,21 @@ AliTPCclusterMI* AliTPCclusterMI::MakeCluster(AliTrackPoint* point) {
 }
 
 
-AliTrackPoint* AliTPCclusterMI::MakePoint(AliTPCclusterMI* cluster) {
+AliTrackPoint* AliTPCclusterMI::MakePoint(AliTPCclusterMI *cl ) {
   //
   // make AliTrackPoint out of AliTPCclusterMI
   //
 
-  AliTrackPoint* point = NULL;
-  
-  if(cluster){
-    point = new AliTrackPoint();
-    
+  AliTrackPoint* point = NULL;  
+  point = new AliTrackPoint();
+  if (cl){
     Float_t xyz[3];
     Float_t cov[6];
-    cl->GetGlobalXYZ(xyz);
-    cl->GetGlobalCov(cov);
+    GetGlobalXYZ(xyz);
+    GetGlobalCov(cov);
     // voluem ID to add later ....
     point->SetXYZ(xyz);
     point->SetCov(cov);
   }
-
   return point;
 }
