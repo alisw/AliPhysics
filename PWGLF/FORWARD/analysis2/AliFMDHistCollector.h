@@ -105,7 +105,7 @@ public:
      kFMD1I=0x01,
      kFMD1 =kFMD1I,
      kFMD2I=0x02,
-     kFMD2O=0x24,
+     kFMD2O=0x04,
      kFMD2 =kFMD2I|kFMD2O,
      kFMD3I=0x08,
      kFMD3O=0x10,
