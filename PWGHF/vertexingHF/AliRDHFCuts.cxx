@@ -44,6 +44,7 @@
 #include "AliInputEventHandler.h"
 #include "AliPIDResponse.h"
 #include "TRandom.h"
+#include <TF1.h>
 
 using std::cout;
 using std::endl;
@@ -100,9 +101,13 @@ fMaxDiffTRKV0Centr(-1.),
 fRemoveTrackletOutliers(kFALSE),
 fCutOnzVertexSPD(0),
 fKinkReject(kFALSE),
-  fUseTrackSelectionWithFilterBits(kTRUE),
-  fUseCentrFlatteningInMC(kFALSE),
-  fHistCentrDistr(0x0)
+fUseTrackSelectionWithFilterBits(kTRUE),
+fUseCentrFlatteningInMC(kFALSE),
+fHistCentrDistr(0x0),
+fCutRatioClsOverCrossRowsTPC(0),
+fCutRatioSignalNOverCrossRowsTPC(0),
+fCutMinCrossedRowsTPCPtDep(""),
+f1CutMinNCrossedRowsTPCPtDep(0x0)
 {
   //
   // Default Constructor
@@ -162,7 +167,12 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fKinkReject(source.fKinkReject),
   fUseTrackSelectionWithFilterBits(source.fUseTrackSelectionWithFilterBits),
   fUseCentrFlatteningInMC(source.fUseCentrFlatteningInMC),
-  fHistCentrDistr(0x0)
+  fHistCentrDistr(0x0),
+  fCutRatioClsOverCrossRowsTPC(source.fCutRatioClsOverCrossRowsTPC),
+  fCutRatioSignalNOverCrossRowsTPC(source.fCutRatioSignalNOverCrossRowsTPC),
+  f1CutMinNCrossedRowsTPCPtDep(0x0)
+
+  
 {
   //
   // Copy constructor
@@ -177,6 +187,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   if(source.fVarsForOpt) SetVarsForOpt(source.fnVarsForOpt,source.fVarsForOpt);
   if(source.fPidHF) SetPidHF(source.fPidHF);
   if(source.fHistCentrDistr) fHistCentrDistr=(TH1F*)(source.fHistCentrDistr->Clone());
+  if(source.fCutMinCrossedRowsTPCPtDep) fCutMinCrossedRowsTPCPtDep=source.fCutMinCrossedRowsTPCPtDep;
+  if(source.f1CutMinNCrossedRowsTPCPtDep) f1CutMinNCrossedRowsTPCPtDep=new TFormula(*(source.f1CutMinNCrossedRowsTPCPtDep));
   PrintAll();
 
 }
@@ -244,6 +256,12 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   if(source.fVarNames) SetVarNames(source.fnVars,source.fVarNames,source.fIsUpperCut);
   if(source.fCutsRD) SetCuts(source.fGlobalIndex,source.fCutsRD);
   if(source.fVarsForOpt) SetVarsForOpt(source.fnVarsForOpt,source.fVarsForOpt);
+  
+  if(fCutMinCrossedRowsTPCPtDep) fCutMinCrossedRowsTPCPtDep=source.fCutMinCrossedRowsTPCPtDep;
+  if(f1CutMinNCrossedRowsTPCPtDep) delete f1CutMinNCrossedRowsTPCPtDep;
+  if(source.f1CutMinNCrossedRowsTPCPtDep) f1CutMinNCrossedRowsTPCPtDep=new TFormula(*(source.f1CutMinNCrossedRowsTPCPtDep));
+  fCutRatioClsOverCrossRowsTPC=source.fCutRatioClsOverCrossRowsTPC;
+  fCutRatioSignalNOverCrossRowsTPC=source.fCutRatioSignalNOverCrossRowsTPC;
   PrintAll();
 
   return *this;
@@ -266,6 +284,12 @@ AliRDHFCuts::~AliRDHFCuts() {
     fPidHF=0;
   }
   if(fHistCentrDistr)delete fHistCentrDistr;
+
+  if(f1CutMinNCrossedRowsTPCPtDep) {
+    delete f1CutMinNCrossedRowsTPCPtDep;
+    f1CutMinNCrossedRowsTPCPtDep = 0;
+  }
+
 }
 //---------------------------------------------------------------------------
 Int_t AliRDHFCuts::IsEventSelectedInCentrality(AliVEvent *event) {
@@ -595,7 +619,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   return accept;
 }
 //---------------------------------------------------------------------------
-Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const {
+Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const{
   //
   // Daughter tracks selection
   // 
@@ -625,7 +649,44 @@ Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const {
   return retval;
 }
 //---------------------------------------------------------------------------
-Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts) const {
+Bool_t AliRDHFCuts::CheckPtDepCrossedRows(TString rows,Bool_t print) const {
+  //
+  // Check the correctness of the string syntax
+  //
+  Bool_t retval=kTRUE;
+
+  if(!rows.Contains("pt")) {
+    if(print) AliError("string must contain \"pt\"");
+    retval= kFALSE;
+  }
+  return retval;
+}
+//---------------------------------------------------------------------------
+void AliRDHFCuts::SetMinCrossedRowsTPCPtDep(const char *rows){
+  //
+  //Create the TFormula from TString for TPC crossed rows pT dependent cut 
+  //
+
+
+  // setting data member that describes the TPC crossed rows pT dependent cut 
+  fCutMinCrossedRowsTPCPtDep = rows;
+
+  // creating TFormula from TString
+   if(f1CutMinNCrossedRowsTPCPtDep){
+     delete f1CutMinNCrossedRowsTPCPtDep;
+     // resetting TFormula
+     f1CutMinNCrossedRowsTPCPtDep = 0;
+   }
+   if(!CheckPtDepCrossedRows(rows,kTRUE))return;   
+   
+   TString tmp(rows);
+   tmp.ReplaceAll("pt","x");
+   f1CutMinNCrossedRowsTPCPtDep = new TFormula("f1CutMinNCrossedRowsTPCPtDep",tmp.Data());
+
+   
+}
+//---------------------------------------------------------------------------
+Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts) const{
   //
   // Convert to ESDtrack, relate to vertex and check cuts
   //
@@ -633,7 +694,6 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
 
   if(cuts->GetFlagCutTOFdistance()) cuts->SetFlagCutTOFdistance(kFALSE);
 
-  Bool_t retval=kTRUE;
 
   // convert to ESD track here
   AliESDtrack esdTrack(track);
@@ -642,15 +702,45 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
   esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
   esdTrack.SetTPCPointsF(track->GetTPCNclsF());
   // needed to calculate the impact parameters
-  esdTrack.RelateToVertex(primary,0.,3.); 
+  esdTrack.RelateToVertex(primary,0.,3.);
 
-  if(!cuts->IsSelected(&esdTrack)) retval = kFALSE;
+  //applying ESDtrackCut
+  if(!cuts->IsSelected(&esdTrack)) return kFALSE; 
 
-
+  //appliyng kink rejection
   if(fKinkReject){
    AliAODVertex *maybeKink=track->GetProdVertex();
-   if(maybeKink->GetType()==AliAODVertex::kKink) retval=kFALSE;
+   if(maybeKink->GetType()==AliAODVertex::kKink) return kFALSE;
   }
+
+  //appliyng TPC crossed rows pT dependent cut
+  if(f1CutMinNCrossedRowsTPCPtDep){
+    Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
+    if(nCrossedRowsTPC<f1CutMinNCrossedRowsTPCPtDep->Eval(esdTrack.Pt())) return kFALSE;
+  }
+  
+  //appliyng NTPCcls/NTPCcrossedRows cut
+  if(fCutRatioClsOverCrossRowsTPC){
+    Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
+    Float_t nClustersTPC = esdTrack.GetTPCNcls();
+    if(nCrossedRowsTPC!=0){ 
+      Float_t ratio = nClustersTPC/nCrossedRowsTPC;
+      if(ratio<fCutRatioClsOverCrossRowsTPC) return kFALSE;
+    }
+    else return kFALSE;
+  }
+
+  //appliyng TPCsignalN/NTPCcrossedRows cut
+  if(fCutRatioSignalNOverCrossRowsTPC){
+    Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
+    Float_t nTPCsignal = esdTrack.GetTPCsignalN();
+    if(nCrossedRowsTPC!=0){
+      Float_t ratio = nTPCsignal/nCrossedRowsTPC;
+      if(ratio<fCutRatioSignalNOverCrossRowsTPC) return kFALSE;
+    }
+    else return kFALSE;
+  }
+
  
   if(fOptPileup==kRejectTracksFromPileupVertex){
     // to be implemented
@@ -742,10 +832,10 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
     if(mod2>=0 && mod2<4 && lad2<40){
       lay2ok=deadSPDLay2PbPb2011[lad2][mod2];
     }
-    if(!lay1ok && !lay2ok) retval=kFALSE;
+    if(!lay1ok && !lay2ok) return kFALSE;
   }
 
-  return retval; 
+  return kTRUE; 
 }
 //---------------------------------------------------------------------------
 void AliRDHFCuts::SetPtBins(Int_t nPtBinLimits,Float_t *ptBinLimits) {
@@ -902,9 +992,13 @@ void AliRDHFCuts::PrintAll() const {
     if(fUseCentrality==2) estimator = "Tracks";
     if(fUseCentrality==3) estimator = "Tracklets";
     if(fUseCentrality==4) estimator = "SPD clusters outer"; 
-    printf("Centrality class considered: %.1f-%.1f, estimated with %s",fMinCentrality,fMaxCentrality,estimator.Data());
+    printf("Centrality class considered: %.1f-%.1f, estimated with %s\n",fMinCentrality,fMaxCentrality,estimator.Data());
   }
   if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
+
+  if(fCutRatioClsOverCrossRowsTPC) printf("N TPC Clusters > %f N TPC Crossed Rows\n", fCutRatioClsOverCrossRowsTPC);
+  if(fCutRatioSignalNOverCrossRowsTPC) printf("N TPC Points for dE/dx > %f N TPC Crossed Rows\n", fCutRatioSignalNOverCrossRowsTPC);
+  if(f1CutMinNCrossedRowsTPCPtDep) printf("N TPC Crossed Rows pT-dependent cut: %s\n", fCutMinCrossedRowsTPCPtDep.Data());
 
   if(fVarNames){
     cout<<"Array of variables"<<endl;
