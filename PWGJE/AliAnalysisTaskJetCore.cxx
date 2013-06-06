@@ -149,6 +149,8 @@ fh2AngStructpt1C60(0x0),
 fh2AngStructpt2C60(0x0),
 fh2AngStructpt3C60(0x0),
 fh2AngStructpt4C60(0x0),
+fh1TrigRef(0x0),
+fh1TrigSig(0x0),
 fh2Ntriggers(0x0),
 fh2Ntriggers2C10(0x0),
 fh2Ntriggers2C20(0x0), 
@@ -276,6 +278,8 @@ fh2AngStructpt1C60(0x0),
 fh2AngStructpt2C60(0x0),
 fh2AngStructpt3C60(0x0),
 fh2AngStructpt4C60(0x0),    
+fh1TrigRef(0x0),
+fh1TrigSig(0x0),
 fh2Ntriggers(0x0),
 fh2Ntriggers2C10(0x0),
 fh2Ntriggers2C20(0x0),
@@ -427,7 +431,8 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
     fh2AngStructpt4C60 = new TH2F("Ang struct pt4 C60","",15,0.,1.5,150,0.,10.); }
 
    
-
+    fh1TrigRef=new TH1D("Trig Ref","",10,0.,10);
+    fh1TrigSig=new TH1D("Trig Sig","",10,0.,10);  
     fh2Ntriggers=new TH2F("# of triggers","",100,0.,100.,50,0.,50.);
     fh2Ntriggers2C10=new TH2F("# of triggers2C10","",50,0.,50.,50,0.,50.);
     fh2Ntriggers2C20=new TH2F("# of triggers2C20","",50,0.,50.,50,0.,50.);
@@ -488,7 +493,8 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
 
 
 
- 
+        fOutputList->Add(fh1TrigRef);
+        fOutputList->Add(fh1TrigSig); 
 	fOutputList->Add(fh2Ntriggers);
         fOutputList->Add(fh2Ntriggers2C10);
         fOutputList->Add(fh2Ntriggers2C20); 
@@ -700,6 +706,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    TList ParticleList;
    Double_t minT=0;
    Double_t maxT=0;
+   Int_t number=0;
    Double_t dice=fRandom->Uniform(0,1);
    if(dice>fFrac){ minT=fTTLowRef;
                    maxT=fTTUpRef;}
@@ -709,12 +716,13 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
 
    if(fHardest==1 || fHardest==2) nT = GetListOfTracks(&ParticleList);
-   if(fHardest==0) nT=SelectTrigger(&ParticleList,minT,maxT);
+   if(fHardest==0) nT=SelectTrigger(&ParticleList,minT,maxT,number);
    if(nT<0){  
    PostData(1, fOutputList);
    return;}   
 
-
+      if(dice>fFrac) fh1TrigRef->Fill(number);
+      if(dice<=fFrac)fh1TrigSig->Fill(number)
 
      for (Int_t iJetType = 0; iJetType < 2; iJetType++) {
       fListJets[iJetType]->Clear();
@@ -764,7 +772,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
      if(fHardest==0||fHardest==1){if(tt!=nT) continue;}
      AliVParticle *partback = (AliVParticle*)ParticleList.At(tt);     
      if(!partback) continue;
-     if(partback->Pt()<10) continue;
+     if(partback->Pt()<8) continue;
 
    Double_t accep=2.*TMath::Pi()*1.8;
    Int_t injet4=0;
@@ -1190,7 +1198,7 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
 
 
 
-Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t maxT){
+Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t maxT,Int_t &number){
      Int_t iCount = 0;
      AliAODEvent *aod = 0;
      if(!fESD)aod = fAODIn;
@@ -1218,6 +1226,7 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
         im=im+1;}
 
      }
+      number=im;
       Int_t rd=0;
       if(im==0) rd=0;
       if(im>0) rd=fRandom->Integer(im);
