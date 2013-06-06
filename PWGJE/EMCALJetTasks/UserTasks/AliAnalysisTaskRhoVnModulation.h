@@ -26,7 +26,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kUser, kFourierSeries, kIntegratedFlow }; // fit type
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
-        enum detectorType       { kTPC, kTPCSUB, kVZEROA, kVZEROC};    // detector that was used
+        enum detectorType       { kTPC, kVZEROA, kVZEROC};    // detector that was used
         // constructors, destructor
                                 AliAnalysisTaskRhoVnModulation();
                                 AliAnalysisTaskRhoVnModulation(const char *name, runModeType type);
@@ -44,7 +44,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
             return x; }
         /* inline */    Double_t PhaseShift(Double_t x, Double_t n) const {
             x = PhaseShift(x);
-            if(TMath::Nint(n)==2) while (x>TMath::Pi()) x = TMath::TwoPi() - x;
+            if(TMath::Nint(n)==2) while (x>TMath::Pi()) x-=TMath::Pi();
             if(TMath::Nint(n)==3) {
                 if(x>2.*TMath::TwoPi()/n) x = TMath::TwoPi() - x;
                 if(x>TMath::TwoPi()/n) x = TMath::TwoPi()-(x+TMath::TwoPi()/n);
@@ -102,7 +102,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* tpc) const;
         void                    CalculateRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, AliEmcalJet* jet = 0x0, Bool_t randomize = 0) const;
         // analysis details
-        Bool_t                  CorrectRho(Double_t* params, Double_t psi2, Double_t psi3, Double_t psi2b, Double_t psi3b);
+        Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
         // event and track selection
         /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
             if(!track) return kFALSE;
@@ -126,6 +126,11 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    FillQAHistograms(AliVTrack* vtrack) const;
         void                    FillQAHistograms(AliVEvent* vevent);
         virtual void            Terminate(Option_t* option);
+        // interface methods for the output file
+        void                    SetOutputList(TList* l) {fOutputList = l;}
+        TH1F*                   GetResolutionFromOuptutFile(detectorType detector, Int_t h = 2, TArrayD* c = 0x0);
+        TH1F*                   CorrectForResolutionDiff(TH1F* v, detectorType detector, TArrayD* cen, Int_t c, Int_t h = 2);
+        TH1F*                   CorrectForResolutionInt(TH1F* v, detectorType detector, TArrayD* cen, Int_t h = 2);
     private:
         // analysis flags and settings
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
@@ -200,8 +205,6 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH1F*                   fHistPsiVZEROA;          //! psi 2 from vzero a
         TH1F*                   fHistPsiVZEROC;          //! psi 2 from vzero c
         TH1F*                   fHistPsiTPC;             //! psi 2 from tpc
-        TH1F*                   fHistPsiTPCSUBA;         //! psi 2 from tpc subevent a
-        TH1F*                   fHistPsiTPCSUBB;         //! psi 2 from tpc subevent b        
         // background
         TH1F*                   fHistRhoPackage[10];     //! rho as estimated by emcal jet package
         TH1F*                   fHistRho[10];            //! background
@@ -247,7 +250,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 8);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 9);
 };
 
 #endif
