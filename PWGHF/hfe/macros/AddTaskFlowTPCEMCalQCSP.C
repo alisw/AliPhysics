@@ -30,6 +30,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                               Double_t Dispersion,
                                               Int_t minTPCCluster,
                                               AliHFEextraCuts::ITSPixel_t pixel,
+                                              Bool_t PhotonicElectronDCA = kTRUE,
                                               Bool_t purity = kTRUE,
                                               Bool_t SideBandsFlow = kFALSE,
                                               Bool_t Phi_minus_psi = kFALSE,
@@ -40,7 +41,9 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                               Int_t harmonic = 2,
                                               Bool_t shrinkSP = kTRUE,
                                               Bool_t debug = kFALSE,
-                                              Int_t RPFilterBit = 1
+                                              Int_t RPFilterBit = 1,
+                                              Bool_t op_ang = kFALSE,
+                                              Double_t op_angle_cut=3.
                                               )
 
 {
@@ -80,6 +83,10 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
   taskHFE->Setphiminuspsi(Phi_minus_psi);
   taskHFE->SetPurity(purity);
   taskHFE->SetpTCuttrack(pTCut);
+  taskHFE->SelectPhotonicElectronMethod(PhotonicElectronDCA);
+  taskHFE->SetOpeningAngleflag(op_ang);
+  taskHFE->SetOpeningAngleCut(op_angle_cut);
+    
     
 //set RP cuts for flow package analysis
   cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));

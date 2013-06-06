@@ -34,7 +34,9 @@ class AliFlowCandidateTrack;
 class AliFlowEventSimple;
 class AliCentrality;
 class AliPIDResponse;
+class AliSelectNonHFE;
 #include "AliAnalysisTaskSE.h"
+
 
 class AliAnalysisTaskFlowTPCTOFQCSP : public AliAnalysisTaskSE {
 
@@ -47,6 +49,7 @@ class AliAnalysisTaskFlowTPCTOFQCSP : public AliAnalysisTaskSE {
     void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
     void                                 CheckCentrality(AliAODEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
     void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Bool_t &fFlagPhotonicElec);
+    void                                 SelectPhotonicElectronMethod(Bool_t dca){fDCA = dca;}
     void                                 SetInvariantMassCut(Double_t invmass) {fInvmassCut = invmass;};
     void                                 SetpTCuttrack(Double_t ptcut) {fpTCut = ptcut;};
     void                                 SetTrigger(Int_t trig) {fTrigger = trig;};
@@ -137,6 +140,9 @@ class AliAnalysisTaskFlowTPCTOFQCSP : public AliAnalysisTaskSE {
     Bool_t                fOP_angle; //to shitch on and off the op_angle cut
     TH1F			     *fOpeningAngleLS;	//opening angle for LS pairs
     TH1F			     *fOpeningAngleULS;	//opening angle for ULS pairs
+    AliSelectNonHFE      *fNonHFE;//new elienos stuff
+    Bool_t                fDCA;//selection PHelectron
+
     
     AliAnalysisTaskFlowTPCTOFQCSP(const AliAnalysisTaskFlowTPCTOFQCSP&); // not implemented
     AliAnalysisTaskFlowTPCTOFQCSP& operator=(const AliAnalysisTaskFlowTPCTOFQCSP&); // not implemented

@@ -99,6 +99,7 @@
 #include "AliPIDResponse.h"
 #include "AliFlowTrack.h"
 #include "AliAnalysisTaskVnV0.h"
+#include "AliSelectNonHFE.h"
 
 
 class AliFlowTrackCuts;
@@ -172,6 +173,12 @@ ClassImp(AliAnalysisTaskFlowTPCEMCalQCSP)
 ,fFlowEventCont(0) //! flow events (one for each inv mass band)
 ,fpurity(kFALSE)
 ,fSparseElectronpurity(0)
+,fOpeningAngleLS(0)
+,fOpeningAngleULS(0)
+,fNonHFE(new AliSelectNonHFE)
+,fDCA(0)
+,fOpeningAngleCut(0)
+,fOP_angle(0)
 {
   //Named constructor
 
@@ -256,6 +263,12 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 ,fFlowEventCont(0) //! flow events (one for each inv mass band)
 ,fpurity(kFALSE)
 ,fSparseElectronpurity(0)
+,fOpeningAngleLS(0)
+,fOpeningAngleULS(0)
+,fNonHFE(new AliSelectNonHFE)
+,fDCA(0)
+,fOpeningAngleCut(0)
+,fOP_angle(0)
 {
   //Default constructor
   fPID = new AliHFEpid("hfePid");
@@ -284,7 +297,8 @@ AliAnalysisTaskFlowTPCEMCalQCSP::~AliAnalysisTaskFlowTPCEMCalQCSP()
   delete fGeom;
   delete fPID;
   delete fCFM;
-  delete fPIDqa; 
+  delete fPIDqa;
+  if (fDCA)  delete fNonHFE;
   if (fOutputList) delete fOutputList;
   if (fFlowEvent) delete fFlowEvent;
   if (fFlowEventCont) delete fFlowEventCont;
@@ -594,12 +608,56 @@ if(fEovP < fminEovP || fEovP >fmaxEovP) continue;
       } //end of for loop on RPs
    fFlowEvent->InsertTrack(((AliFlowTrack*) sTrack));
     
-//----------------------Selection and Flow of Photonic Electrons-----------------------------
-   Bool_t fFlagPhotonicElec = kFALSE;
-   SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
-   if(fFlagPhotonicElec){fPhotoElecPt->Fill(pt);}
-   // Semi inclusive electron 
-   if(!fFlagPhotonicElec){fSemiInclElecPt->Fill(pt);}
+     
+      
+     if(fDCA){
+         //----------------------Selection of Photonic Electrons DCA-----------------------------
+     fNonHFE = new AliSelectNonHFE();
+     fNonHFE->SetAODanalysis(kTRUE);
+     fNonHFE->SetInvariantMassCut(fInvmassCut);
+       if(fOP_angle) fNonHFE->SetOpeningAngleCut(fOpeningAngleCut);
+     //fNonHFE->SetChi2OverNDFCut(fChi2Cut);
+     //if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut);
+     fNonHFE->SetAlgorithm("DCA"); //KF
+     fNonHFE->SetPIDresponse(pidResponse);
+     fNonHFE->SetTrackCuts(-3,3);
+     
+     fNonHFE->SetHistAngleBack(fOpeningAngleLS);
+     fNonHFE->SetHistAngle(fOpeningAngleULS);
+     //fNonHFE->SetHistDCABack(fDCABack);
+     //fNonHFE->SetHistDCA(fDCA);
+     fNonHFE->SetHistMassBack(fInvmassLS1);
+     fNonHFE->SetHistMass(fInvmassULS1);
+     
+     fNonHFE->FindNonHFE(iTracks,track,fAOD);
+     
+     // Int_t *fUlsPartner = fNonHFE->GetPartnersULS();
+     // Int_t *fLsPartner = fNonHFE->GetPartnersLS();
+     // Bool_t fUlsIsPartner = kFALSE;
+     // Bool_t fLsIsPartner = kFALSE;
+     if(fNonHFE->IsULS()){
+         for(Int_t kULS =0; kULS < fNonHFE->GetNULS(); kULS++){
+             fULSElecPt->Fill(track->Pt());
+         }
+     }
+     
+     if(fNonHFE->IsLS()){
+         for(Int_t kLS =0; kLS < fNonHFE->GetNLS(); kLS++){
+             fLSElecPt->Fill(track->Pt());
+         }
+     }
+     }
+     
+     if(!fDCA){
+         //----------------------Selection of Photonic Electrons KFParticle-----------------------------
+         Bool_t fFlagPhotonicElec = kFALSE;
+         SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
+         if(fFlagPhotonicElec){fPhotoElecPt->Fill(pt);}
+         // Semi inclusive electron
+         if(!fFlagPhotonicElec){fSemiInclElecPt->Fill(pt);}
+     }
+     
+
      
  }//end loop on track
 
@@ -614,7 +672,7 @@ if(fEovP < fminEovP || fEovP >fmaxEovP) continue;
 //_________________________________________
 void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Bool_t &fFlagPhotonicElec)
 {
-  //Identify non-heavy flavour electrons using Invariant mass method
+  //Identify non-heavy flavour electrons using Invariant mass method KF
 
   Bool_t flagPhotonicElec = kFALSE;
 
@@ -633,7 +691,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
     Double_t ptAsso=-999., nsigma=-999.0;
     Double_t mass=-999., width = -999;
     Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
-
+      Double_t openingAngle = -999.;
   
     ptAsso = trackAsso->Pt();
     Short_t chargeAsso = trackAsso->Charge();
@@ -652,15 +710,22 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
     if(charge == chargeAsso) fFlagLS = kTRUE;
     if(charge != chargeAsso) fFlagULS = kTRUE;
 
+    AliKFParticle::SetField(fAOD->GetMagneticField());
     AliKFParticle ge1 = AliKFParticle(*track, fPDGe1);
     AliKFParticle ge2 = AliKFParticle(*trackAsso, fPDGe2);
     AliKFParticle recg(ge1, ge2);
-
+      
     if(recg.GetNDF()<1) continue;
     Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
     if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
     recg.GetMass(mass,width);
 
+      openingAngle = ge1.GetAngle(ge2);
+      if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
+      if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
+      if(fOP_angle)if(openingAngle > fOpeningAngleCut) continue;
+      
+      
     if(fFlagLS) fInvmassLS1->Fill(mass);
     if(fFlagULS) fInvmassULS1->Fill(mass);
            
@@ -675,7 +740,6 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
   }//track loop
   fFlagPhotonicElec = flagPhotonicElec;
 }
-//___________________________________________
 void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
 {
   //Create histograms
@@ -688,15 +752,15 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
   cc->SetMultMin(0);
   cc->SetMultMax(10000);
 
-  cc->SetNbinsPt(100);
+  cc->SetNbinsPt(20);
   cc->SetPtMin(0);
-  cc->SetPtMax(50);
+  cc->SetPtMax(10);
 
   cc->SetNbinsPhi(180);
   cc->SetPhiMin(0.0);
   cc->SetPhiMax(TMath::TwoPi());
 
-  cc->SetNbinsEta(200);
+  cc->SetNbinsEta(30);
   cc->SetEtaMin(-7.0);
   cc->SetEtaMax(+7.0);
 
@@ -806,6 +870,13 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
   fMultvsCentr = new TH2F("fMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 100, 0., 100, 100, 0, 3000);
   fOutputList->Add(fMultvsCentr);
     
+    fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
+    fOutputList->Add(fOpeningAngleLS);
+    
+    fOpeningAngleULS = new TH1F("fOpeningAngleULS","Opening angle for ULS pairs",100,0,1);
+    fOutputList->Add(fOpeningAngleULS);
+    
+
 //----------------------------------------------------------------------------
     EPVzA = new TH1D("EPVzA", "EPVzA", 80, -2, 2);
     fOutputList->Add(EPVzA);
