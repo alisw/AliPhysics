@@ -184,8 +184,12 @@ AliTrackPoint* AliTPCclusterMI::MakePoint(AliTPCclusterMI* cluster) {
     point = new AliTrackPoint();
     
     Float_t xyz[3];
+    Float_t cov[6];
     cl->GetGlobalXYZ(xyz);
+    cl->GetGlobalCov(cov);
+    // voluem ID to add later ....
     point->SetXYZ(xyz);
+    point->SetCov(cov);
   }
 
   return point;
