@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Double_t angleCut, TString ID="phoSys0")
+AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Bool_t MassCal, Double_t asspTCut, Double_t angleCut, TString ID="phoSys0")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -25,7 +25,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Dou
   
   //analysis task 
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFECal.C");
-  AliAnalysisTaskHFECal *hfetask = ConfigHFECal(MCthere,MassConst,MassWidthCut,angleCut);
+  AliAnalysisTaskHFECal *hfetask = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,asspTCut,angleCut);
   mgr->AddTask(hfetask);
   // semi-central
   hfetask->SelectCollisionCandidates(AliVEvent::kSemiCentral);
@@ -39,7 +39,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Dou
   
 
   //MB trigger
-  AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECal(MCthere,MassConst,MassWidthCut,angleCut);
+  AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECal(MCthere,MassConst,MassWidthCut,asspTCut,MassCal,angleCut);
   mgr->AddTask(hfetaskMB);
   hfetaskMB->SelectCollisionCandidates(AliVEvent::kMB);
   TString containerName4 = mgr->GetCommonFileName();

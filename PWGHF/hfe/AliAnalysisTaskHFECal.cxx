@@ -29,6 +29,8 @@
 #include "TFile.h"
 #include "TGraphErrors.h"
 
+#include "TDatabasePDG.h"
+
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
@@ -105,9 +107,11 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fPID(0)
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
+  ,fMimpTassCut(0.5)
   ,fInvmassCut(0)	 // no mass
   ,fSetMassConstraint(kTRUE)
   ,fSetMassWidthCut(kFALSE)
+  ,fSetKFpart(kTRUE)
   ,fNoEvents(0)
   ,fEMCAccE(0)
   ,hEMCAccE(0)
@@ -241,9 +245,11 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fPID(0)       
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
+  ,fMimpTassCut(0.5)
   ,fInvmassCut(0)	 // no mass
   ,fSetMassConstraint(kTRUE)
   ,fSetMassWidthCut(kFALSE)
+  ,fSetKFpart(kTRUE)
   ,fNoEvents(0)
   ,fEMCAccE(0)
   ,hEMCAccE(0)
@@ -767,7 +773,14 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
 		if(fTPCnSigma>-1.5 && fTPCnSigma<3.0)
 		{
-		  SelectPhotonicElectron(iTracks,cent,track,fFlagPhotonicElec,fFlagConvinatElec,fTPCnSigma,m20,eop,mcele,mcWeight,iHijing,mcOrgPi0,mcOrgEta);
+		  if(fSetKFpart)
+                     {
+                      SelectPhotonicElectron(iTracks,cent,track,fFlagPhotonicElec,fFlagConvinatElec,fTPCnSigma,m20,eop,mcele,mcWeight,iHijing,mcOrgPi0,mcOrgEta);
+		     }
+                  else
+                    {
+                     SelectPhotonicElectron2(iTracks,cent,track,fFlagPhotonicElec,fFlagConvinatElec,fTPCnSigma,m20,eop,mcele,mcWeight,iHijing,mcOrgPi0,mcOrgEta);
+                    }
 		}
 		if(fFlagPhotonicElec)oppstatus = 1.0;
 		if(fFlagConvinatElec)oppstatus = 2.0;
@@ -1441,7 +1454,8 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   fTrackCuts->SetMinNClustersTPC(90);
   
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
-  
+  Double_t bfield = fESD->GetMagneticField();
+
   double ptEle = track->Pt();  //add
   if(ibgevent==0 && w > 0.0)
      {
@@ -1493,7 +1507,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     Int_t charge = track->Charge();
     
 
-    if(ptAsso <0.5) continue;
+    if(ptAsso <fMimpTassCut) continue;
     if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
     if(dEdxAsso <65 || dEdxAsso>100) continue; //11a pass1
     
@@ -1510,6 +1524,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     //printf("fFlagULS = %d\n",fFlagULS);
     printf("\n");
 
+    AliKFParticle::SetField(bfield);
     AliKFParticle ge1(*track, fPDGe1);
     AliKFParticle ge2(*trackAsso, fPDGe2);
     AliKFParticle recg(ge1, ge2);
@@ -1617,6 +1632,208 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   fFlagConvinatElec = flagConvinatElec;
   
 }
+
+//_________________________________________
+void AliAnalysisTaskHFECal::SelectPhotonicElectron2(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent, Bool_t tagpi0, Bool_t tageta)
+{
+  //Identify non-heavy flavour electrons using Invariant mass method
+  
+  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  fTrackCuts->SetRequireTPCRefit(kTRUE);
+  fTrackCuts->SetRequireITSRefit(kTRUE);
+  fTrackCuts->SetEtaRange(-0.9,0.9);
+  //fTrackCuts->SetRequireSigmaToVertex(kTRUE);
+  fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
+  fTrackCuts->SetMinNClustersTPC(90);
+  
+  //const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
+  Double_t eMass = TDatabasePDG::Instance()->GetParticle(11)->Mass(); //Electron mass in GeV
+  Double_t bfield = fESD->GetMagneticField();
+  
+  double ptEle = track->Pt();  //add
+  if(ibgevent==0 && w > 0.0)
+     {
+      fpTCheck->Fill(ptEle,w);
+     }
+
+  Bool_t flagPhotonicElec = kFALSE;
+  Bool_t flagConvinatElec = kFALSE;
+  
+  int p1 = 0;
+  if(mce==3)
+     {
+       Int_t label = TMath::Abs(track->GetLabel());
+       TParticle* particle = stack->Particle(label);
+       p1 = particle->GetFirstMother();
+     }
+
+  //for(Int_t jTracks = itrack+1; jTracks<fESD->GetNumberOfTracks(); jTracks++){
+  for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
+    AliESDtrack* trackAsso = fESD->GetTrack(jTracks);
+    if (!trackAsso) {
+      printf("ERROR: Could not receive track %d\n", jTracks);
+      continue;
+    }
+    if(itrack==jTracks)continue;    
+    int jbgevent = 0;    
+
+    int p2 = 0;
+    if(mce==3)
+    {
+      Int_t label2 = TMath::Abs(trackAsso->GetLabel());
+      TParticle* particle2 = stack->Particle(label2);
+      Bool_t MChijing_ass = fMC->IsFromBGEvent(label2);
+      if(MChijing_ass)jbgevent =1;
+      if(particle2->GetFirstMother()>-1)
+         p2 = particle2->GetFirstMother();
+    }
+
+    Double_t dEdxAsso = -999., ptPrim=-999., ptAsso=-999., openingAngle = -999.;
+    //Double_t mass=999., width = -999;
+    Double_t mass=999.;
+    Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
+    
+    //ptPrim = track->Pt();
+    ptPrim = ptEle;
+
+    dEdxAsso = trackAsso->GetTPCsignal();
+    ptAsso = trackAsso->Pt();
+    Int_t chargeAsso = trackAsso->Charge();
+    Int_t charge = track->Charge();
+    
+
+    if(ptAsso <0.5) continue;
+    if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
+    if(dEdxAsso <65 || dEdxAsso>100) continue; //11a pass1
+    
+    Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
+    if(charge>0) fPDGe1 = -11;
+    if(chargeAsso>0) fPDGe2 = -11;
+ 
+    //printf("chargeAsso = %d\n",chargeAsso);
+    //printf("charge = %d\n",charge);
+    if(charge == chargeAsso) fFlagLS = kTRUE;
+    if(charge != chargeAsso) fFlagULS = kTRUE;
+   
+    // mass cal 0
+    double xt1 = 0.0, xt2 = 0.0;
+    Double_t p1at[3] = {0,0,0};
+    Double_t p2at[3] = {0,0,0};
+    //double dca12 = trackAsso->GetDCA(track,bfield,xt2,xt1);		//DCA track1-track2 
+    double kHasdcaT1 = track->GetPxPyPzAt(xt1,bfield,p1at);		//Track1
+    double kHasdcaT2 = trackAsso->GetPxPyPzAt(xt2,bfield,p2at);		//Track2
+   if(!kHasdcaT1 || !kHasdcaT2) AliWarning("It could be a problem in the extrapolation");
+   //cout << "dca = " << dca12 << endl; 
+   // 3D
+   TLorentzVector electron1;
+   TLorentzVector electron2;
+   TLorentzVector mother;
+
+   electron1.SetXYZM(p1at[0], p1at[1], p1at[2], eMass);
+   electron2.SetXYZM(p2at[0], p2at[1], p2at[2], eMass);
+   openingAngle = TVector2::Phi_0_2pi(electron1.Angle(electron2.Vect()));
+
+   mother      = electron1 + electron2;
+   double invmassAtDCA  = mother.M();
+  
+   // 2D
+   TLorentzVector electron1_2D;
+   TLorentzVector electron2_2D;
+   TLorentzVector mother_2D;
+
+   double pT1at = sqrt(pow(p1at[0],2)+pow(p1at[1],2));
+   double pT2at = sqrt(pow(p2at[0],2)+pow(p2at[1],2));
+
+   electron1_2D.SetXYZM(pT1at, 0.0, p1at[2], eMass);
+   electron2_2D.SetXYZM(pT2at, 0.0, p2at[2], eMass);
+
+   mother_2D      = electron1_2D + electron2_2D;
+   double invmassAtDCA_2D  = mother_2D.M();
+   mass = invmassAtDCA_2D; 
+
+        // angle   
+    if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
+    if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
+    
+    double ishower = 0;
+    if(shower>0.0 && shower<0.3)ishower = 1;
+
+    double phoinfo[9];
+    phoinfo[0] = cent;
+    phoinfo[1] = ptPrim;
+    phoinfo[2] = mass;
+    phoinfo[3] = nSig;
+    //phoinfo[3] = dEdxAsso;
+    phoinfo[4] = openingAngle;
+    phoinfo[5] = ishower;
+    phoinfo[6] = ep;
+    phoinfo[7] = mce;
+    phoinfo[8] = ptAsso;
+
+    if(fFlagLS) fInvmassLS->Fill(phoinfo);
+    if(fFlagULS) fInvmassULS->Fill(phoinfo);
+    if(fFlagLS && ibgevent==0 && jbgevent==0) fInvmassLSmc->Fill(phoinfo,w);
+    if(fFlagULS && ibgevent==0 && jbgevent==0)
+       {
+         fInvmassULSmc->Fill(phoinfo,w);
+       }
+    //printf("fInvmassCut %f\n",fInvmassCut);
+    //printf("openingAngle %f\n",fOpeningAngleCut);
+
+    // angle cut
+    if(openingAngle > fOpeningAngleCut) continue;
+    // chi2 cut
+    //if(TMath::Sqrt(TMath::Abs(chi2recg))>chi2cut) continue;
+    //if(chi2recg>chi2cut) continue;
+ 
+    if(fFlagLS ) fInvmassLSreco->Fill(ptPrim,mass);
+    if(fFlagULS) fInvmassULSreco->Fill(ptPrim,mass);
+  
+    // for real data  
+    //printf("mce =%f\n",mce);
+    if(mce<-0.5) // mce==-1. is real
+       {
+         //printf("Real data\n");
+	 if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
+	       flagPhotonicElec = kTRUE;
+	      }
+	 if(mass<fInvmassCut && fFlagLS && !flagConvinatElec){
+	       flagConvinatElec = kTRUE;
+	      }
+        }
+    // for MC data  
+    else
+       {
+         //printf("MC data\n");
+
+         if(w>0.0)
+           {
+           //cout << "tagpi0 = " << tagpi0 << " ; tageta = " << tageta << endl;
+           if(fFlagLS && ibgevent==0 && jbgevent==0 && tagpi0) fInvmassLSmc0->Fill(ptPrim,mass);
+           if(fFlagULS && ibgevent==0 && jbgevent==0 && tagpi0) fInvmassULSmc0->Fill(ptPrim,mass);
+           if(fFlagLS && ibgevent==0 && jbgevent==0 && tageta) fInvmassLSmc1->Fill(ptPrim,mass);
+           if(fFlagULS && ibgevent==0 && jbgevent==0 && tageta) fInvmassULSmc1->Fill(ptPrim,mass);
+           if(fFlagLS && ibgevent==0 && jbgevent==0 && (p1==p2) && tagpi0) fInvmassLSmc2->Fill(ptPrim,mass);
+           if(fFlagULS && ibgevent==0 && jbgevent==0 && (p1==p2) && tagpi0) fInvmassULSmc2->Fill(ptPrim,mass);
+           if(fFlagLS && ibgevent==0 && jbgevent==0 && (p1==p2) && tageta) fInvmassLSmc3->Fill(ptPrim,mass);
+           if(fFlagULS && ibgevent==0 && jbgevent==0 && (p1==p2) && tageta) fInvmassULSmc3->Fill(ptPrim,mass);
+          }
+
+	 if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (ibgevent==jbgevent)){
+	 //if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (p1==p2)){ <--- only MC train (55,56) v5-03-68-AN & 69 for check
+	       flagPhotonicElec = kTRUE;
+	      }
+	 if(mass<fInvmassCut && fFlagLS && !flagConvinatElec && (ibgevent==jbgevent)){
+	       flagConvinatElec = kTRUE;
+	      }
+        }
+
+  }
+  fFlagPhotonicElec = flagPhotonicElec;
+  fFlagConvinatElec = flagConvinatElec;
+  
+}
+
 //-------------------------------------------
 
 void AliAnalysisTaskHFECal::FindMother(TParticle* part, int &label, int &pid)
