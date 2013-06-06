@@ -252,7 +252,7 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, TString append
     v0trackCuts->UnsetVertexRequirement();
     //hfecuts->SetSigmaToVertex(10);
     if(usetof) v0trackCuts->SetTOFPIDStep(kTRUE);
-    if(TRDtl>0)v0trackCuts->SetMinNTrackletsTRD(TRDtl); // condition for TRD tracklets
+    if(TRDtl>0)v0trackCuts->SetMinNTrackletsTRD(TRDtl,kTRUE); // condition for TRD tracklets 
     v0trackCuts->SetQAOn();
     task->SwitchOnPlugin(AliAnalysisTaskHFE::kTaggedTrackAnalysis);
     task->SetTaggedTrackCuts(v0trackCuts);
