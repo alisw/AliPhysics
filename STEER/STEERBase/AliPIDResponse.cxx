@@ -643,8 +643,11 @@ void AliPIDResponse::SetRecoInfo()
   fBeamType="";
     
   fBeamType="PP";
+
+  Bool_t hasProdInfo=(fCurrentFile.BeginsWith("LHC"));
   
-  TPRegexp reg(".*(LHC1[1-2][a-z]+[0-9]+[a-z_]*)/.*");
+  TPRegexp reg(".*(LHC1[1-3][a-z]+[0-9]+[a-z_]*)/.*");
+  if (hasProdInfo) reg=TPRegexp("LHC1[1-2][a-z]+[0-9]+[a-z_]*");
   TPRegexp reg12a17("LHC1[2-3][a-z]");
 
   //find the period by run number (UGLY, but not stored in ESD and AOD... )
@@ -691,22 +694,22 @@ void AliPIDResponse::SetRecoInfo()
   if (fRun >= 194480) { 
     fLHCperiod="LHC13B"; 
     fBeamType="PPB";
+    fMCperiodTPC="LHC12G";
   
     if (fCurrentAliRootRev >= 61605)
       fMCperiodTPC="LHC13B2_FIX";
-    else
-      fMCperiodTPC="LHC12G";
+    if (fCurrentAliRootRev >= 62714)
+      fMCperiodTPC="LHC13B2_FIXn1";
   }
 
   //exception new pp MC productions from 2011
   if (fBeamType=="PP" && reg.MatchB(fCurrentFile)) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
   // exception for 11f1
-  if (fCurrentFile.Contains("LHC11f1/")) fMCperiodTPC="LHC11F1";
+  if (fCurrentFile.Contains("LHC11f1")) fMCperiodTPC="LHC11F1";
   // exception for 12f1a, 12f1b and 12i3
-  if (fCurrentFile.Contains("LHC12f1a/") || fCurrentFile.Contains("LHC12f1b/")
-      || fCurrentFile.Contains("LHC12i3/")) fMCperiodTPC="LHC12F1";
+  if (fCurrentFile.Contains("LHC12f1") || fCurrentFile.Contains("LHC12i3")) fMCperiodTPC="LHC12F1";
   // exception for 12c4
-  if (fCurrentFile.Contains("LHC12c4/")) fMCperiodTPC="LHC12C4";
+  if (fCurrentFile.Contains("LHC12c4")) fMCperiodTPC="LHC12C4";
 }
 
 //______________________________________________________________________________
