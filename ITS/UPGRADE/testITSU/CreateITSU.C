@@ -20,7 +20,7 @@ void CreateITSU()
   const int    kNRow   = 650; 
   const int    kNCol   = 750;
   const int    kNChips = 2;
-  const double kLrTick03 = 195e-4;   // -> effective thickness for ~0.3%X layers
+  const double kLrTick03 = 120e-4;   // -> effective thickness for ~0.3%X layers
   const double kLrTick08 = 600e-4;   // -> effective thickness for ~0.8%X layers
   //
   const double kReadOutEdge = 0.2;   // width of the readout edge (passive bottom)
