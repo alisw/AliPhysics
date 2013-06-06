@@ -37,6 +37,8 @@ class AliFlowEvent;
 class AliFlowCandidateTrack;
 class AliFlowEventSimple;
 class AliCentrality;
+class AliSelectNonHFE;
+
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
@@ -54,6 +56,7 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     void                                 SetpTCuttrack(Double_t ptcut) {fpTCut = ptcut;};
     void                                 SetTrigger(Int_t trig) {fTrigger = trig;};
     void                                 SetFlowSideBands(Bool_t sidebandsflow){fSideBandsFlow = sidebandsflow;}
+    void                                 SelectPhotonicElectronMethod(Bool_t dca){fDCA = dca;}
     void                                 Setphiminuspsi(Bool_t phipsi){fPhiminusPsi = phipsi;}
     void                                 SetPurity(Bool_t Purityel){fpurity = Purityel;}
     template <typename T> void           PlotVZeroMultiplcities(const T* event) const;
@@ -65,6 +68,9 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
     void                                 SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
     void                                 SetIDCuts(Double_t minTPC, Double_t maxTPC, Double_t minEovP, Double_t maxEovP, Double_t minM20, Double_t maxM20, Double_t minM02, Double_t maxM02, Double_t Dispersion);
+    void                                 SetOpeningAngleflag(Bool_t opang){fOP_angle = opang;};
+    void                                 SetOpeningAngleCut(Double_t opanglecut) {fOpeningAngleCut = opanglecut;};
+
 
 
 
@@ -137,6 +143,14 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     AliFlowEvent         *fFlowEventCont; //! flow events for elect Contamination
     Bool_t                fpurity; //for purity evaluation
     THnSparseD           *fSparseElectronpurity;//! Trk matching sparse for v1 clusterizer
+    TH1F			     *fOpeningAngleLS;	//opening angle for LS pairs
+    TH1F			     *fOpeningAngleULS;	//opening angle for ULS pairs
+    AliSelectNonHFE      *fNonHFE;//new elienos stuff
+    Bool_t                fDCA;//selection PHelectron
+    Double_t 		      fOpeningAngleCut;	//openingAngle cut value
+    Bool_t                fOP_angle; //to shitch on and off the op_angle cut
+
+    
     
     AliAnalysisTaskFlowTPCEMCalQCSP(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
     AliAnalysisTaskFlowTPCEMCalQCSP& operator=(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
