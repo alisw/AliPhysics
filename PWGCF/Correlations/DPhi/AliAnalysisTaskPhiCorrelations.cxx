@@ -120,6 +120,7 @@ fZVertex(7.),
 fCentralityMethod("V0M"),
 // track cuts
 fTrackEtaCut(0.8),
+fTrackEtaCutMin(-1.),
 fOnlyOneEtaSide(0),
 fPtMin(0.5),
 fDCAXYCut(0),
@@ -218,7 +219,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
    
   // Initialize class with main algorithms, event and track selection. 
   fAnalyseUE = new AliAnalyseLeadingTrackUE();
-  fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fPtMin);
+  fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fTrackEtaCutMin, fPtMin);
   fAnalyseUE->SetDCAXYCut(fDCAXYCut);
   fAnalyseUE->SetTrackStatus(fTrackStatus);
   fAnalyseUE->SetCheckMotherPDG(fCheckMotherPDG);
@@ -385,6 +386,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fZVertex", &fZVertex,"ZVertex/D");
   //settingsTree->Branch("fCentralityMethod", fCentralityMethod.Data(),"CentralityMethod/C");
   settingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
+  settingsTree->Branch("fTrackEtaCutMin", &fTrackEtaCutMin, "TrackEtaCutMin/D");
   settingsTree->Branch("fOnlyOneEtaSide", &fOnlyOneEtaSide,"OnlyOneEtaSide/I");
   settingsTree->Branch("fPtMin", &fPtMin, "PtMin/D");
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
