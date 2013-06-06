@@ -116,7 +116,8 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   
   TTree             *fTreeV0;                          //!
  
-  TH1F              *fHistNumberOfEvents;                      //! histo to count the number of events
+  TH1F              *fHistCentralityClass10;                   //! histo to look at the centrality distribution
+  TH1F              *fHistCentralityPercentile;                //! histo to look at the centrality distribution
   TH1F              *fHistTriggerStat;                         //! Trigger statistics
   TH1F              *fHistTriggerStatAfterEventSelection;      //! Trigger statistics
   TH1F              *fHistLambdaNeutronPtGen;                  //! for MC
@@ -161,7 +162,7 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
 
   Int_t fCentrality[maxNofTracks];                             //! Tree variable
   Int_t fMultiplicity[maxNofTracks];                           //! Tree variable
-
+  Int_t fRefMultiplicity[maxNofTracks];                        //! Tree variable                                                                                                     
   Double_t fPtotN[maxNofTracks];                               //! Tree variable
   Double_t fPtotP[maxNofTracks];                               //! Tree variable
   Double_t fMotherPt[maxNofTracks];                            //! Tree variable

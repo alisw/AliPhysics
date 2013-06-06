@@ -95,7 +95,8 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD()
   fESDpid(0),
   fPIDResponse(0),
   fTreeV0(0),
-  fHistNumberOfEvents(0),  
+  fHistCentralityClass10(0),
+  fHistCentralityPercentile(0),  
   fHistTriggerStat(0),
   fHistTriggerStatAfterEventSelection(0),
   fHistLambdaNeutronPtGen(0),
@@ -139,7 +140,8 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD(const char *name)
     fESDpid(0),
     fPIDResponse(0),
     fTreeV0(0),
-    fHistNumberOfEvents(0),
+    fHistCentralityClass10(0),
+    fHistCentralityPercentile(0),
     fHistTriggerStat(0),
     fHistTriggerStatAfterEventSelection(0),
     fHistLambdaNeutronPtGen(0),
@@ -297,9 +299,9 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fHistAntiLambdaNeutronDecayLengthAso->GetYaxis()->SetTitle("Counts");
   fHistAntiLambdaNeutronDecayLengthAso->GetXaxis()->SetTitle("#it{decay length}  (cm)");
 
-  fHistLambdaNeutronPtAso = new TH1F("fHistLambdaNeutronPtAso", "Associated   #Lambdan", 201, 0., 10.1);
-  fHistLambdaNeutronPtAso->GetYaxis()->SetTitle("Counts");
-  fHistLambdaNeutronPtAso->GetXaxis()->SetTitle("#it{p}_{T}  (GeV/#it{c})");
+  //fHistLambdaNeutronPtAso = new TH1F("fHistLambdaNeutronPtAso", "Associated   #Lambdan", 201, 0., 10.1);
+  //fHistLambdaNeutronPtAso->GetYaxis()->SetTitle("Counts");
+  //fHistLambdaNeutronPtAso->GetXaxis()->SetTitle("#it{p}_{T}  (GeV/#it{c})");
 
   //Tree
   //------------ Tree and branch definitions ----------------//
@@ -316,6 +318,7 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
 
   fTreeV0->Branch("fCentrality",fCentrality,"fCentrality[fItrk]/I");
   fTreeV0->Branch("fMultiplicity",fMultiplicity,"fMultipicity[fItrk]/I");
+  fTreeV0->Branch("fRefMultiplicity",fRefMultiplicity,"fRefMultipicity[fItrk]/I");
 
   fTreeV0->Branch("fPtotN",fPtotN,"fPtotN[fItrk]/D");
   fTreeV0->Branch("fPtotP",fPtotP,"fPtotP[fItrk]/D");
@@ -362,10 +365,14 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   //fof->SetMarkerStyle(kFullCircle);
   
   //histogram to count number of events
-  fHistNumberOfEvents = new TH1F("fHistNumberOfEvents", "Number of events", 11, -0.5, 10.5);
-  fHistNumberOfEvents ->GetXaxis()->SetTitle("Centrality");
-  fHistNumberOfEvents ->GetYaxis()->SetTitle("Entries");
+  fHistCentralityClass10  = new TH1F("fHistCentralityClass10", "centrality with class10", 11, -0.5, 10.5);
+  fHistCentralityClass10->GetXaxis()->SetTitle("Centrality");
+  fHistCentralityClass10->GetYaxis()->SetTitle("Entries");
   
+  fHistCentralityPercentile  = new TH1F("fHistCentralityPercentile", "centrality with percentile", 101, -0.1, 100.1);
+  fHistCentralityPercentile->GetXaxis()->SetTitle("Centrality");
+  fHistCentralityPercentile->GetYaxis()->SetTitle("Entries");
+
   //trigger statitics histogram
   fHistTriggerStat = new TH1F("fHistTriggerStat","Trigger statistics", fNTriggers,-0.5,fNTriggers-0.5);
   const Char_t* aTriggerNames[] = { "kMB", "kCentral", "kSemiCentral", "kEMCEJE", "kEMCEGA" };
@@ -398,7 +405,8 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fOutputContainer->Add(fHistArmenterosPodolanskiAntiDeuteronPion);
   fOutputContainer->Add(fof);
   fOutputContainer->Add(fHistDeDxQA);
-  fOutputContainer->Add(fHistNumberOfEvents);
+  fOutputContainer->Add(fHistCentralityClass10);
+  fOutputContainer->Add(fHistCentralityPercentile);
   fOutputContainer->Add(fHistTriggerStat);
   fOutputContainer->Add(fHistTriggerStatAfterEventSelection);
   fOutputContainer->Add(fHistLambdaNeutronPtGen);
@@ -475,8 +483,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
     }
   }
  
-
-  Int_t centrality = -1;
+  Int_t centralityClass10 = -1;
+  Int_t centralityPercentile = -1;
   Double_t vertex[3]          = {-100.0, -100.0, -100.0};
 
   //Initialisation of the event and basic event cuts:
@@ -528,16 +536,18 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
     if (fESDevent->GetEventSpecie() == 4) //species == 4 == PbPb
       { // PbPb
 	AliCentrality *esdCentrality = fESDevent->GetCentrality();
-	centrality = esdCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
+	centralityClass10 = esdCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
+        centralityPercentile = esdCentrality->GetCentralityPercentile("V0M"); // centrality percentile determined with V0                
 	//cout << "************************************EventSpecie " << fESDevent->GetEventSpecie() << " centrality "<< centrality << endl;
 	if(!fMCtrue){
-	  if (centrality < 0. || centrality > 8. ) return; //select only events with centralities between 0 and 80 %
+	  if (centralityClass10 < 0. || centralityClass10 > 8. ) return; //select only events with centralities between 0 and 80 %
 	}
       }
 
     //cout << "EventSpecie " << fESDevent->GetEventSpecie() << " centrality "<< centrality << endl;
-    // count number of events
-    fHistNumberOfEvents->Fill(centrality);
+    //count centrality classes
+    fHistCentralityClass10->Fill(centralityClass10);
+    fHistCentralityPercentile->Fill(centralityPercentile);
     
     if(fTriggerFired[0] == kTRUE)fHistTriggerStatAfterEventSelection->Fill(0);
     if(fTriggerFired[1] == kTRUE)fHistTriggerStatAfterEventSelection->Fill(1);
@@ -573,11 +583,11 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    
     //centrality selection
    AliCentrality *aodCentrality = fAODevent->GetCentrality();
-   centrality = aodCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
-   if (centrality < 0 || centrality > 8) return; //select only events with centralities between 0 and 80 %
+   centralityClass10 = aodCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
+   if (centralityClass10 < 0 || centralityClass10 > 8) return; //select only events with centralities between 0 and 80 %
     
    // count number of events
-   fHistNumberOfEvents->Fill(centrality);
+   fHistCentralityClass10->Fill(centralityClass10);
 
  } else {
    
@@ -597,6 +607,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
  
  Int_t    nTrackMultiplicity             = -1;
  nTrackMultiplicity = (InputEvent())->GetNumberOfTracks();
+ Int_t refMultTpc = -1;
+ if (fAnalysisType == "ESD")refMultTpc = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent, kTRUE);
   
 
  for (Int_t ivertex=0; ivertex<(InputEvent()->GetNumberOfV0s()); ivertex++) { //beginn v0 loop
@@ -666,7 +678,11 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    fkSemiCentral[fItrk]     = -1;
    fkEMCEJE[fItrk]          = -1;
    fkEMCEGA[fItrk]          = -1;
-   
+
+   fCentrality[fItrk]       = -1;
+   fMultiplicity[fItrk]     = -1;
+   fRefMultiplicity[fItrk]     = -1;
+
    fPtotN[fItrk]            = -1000;
    fPtotP[fItrk]            = -1000;
    fMotherPt[fItrk]         = -1000;
@@ -1249,8 +1265,9 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	  fkEMCEJE[fItrk]          = fTriggerFired[3];
 	  fkEMCEGA[fItrk]          = fTriggerFired[4];
 
-	  fCentrality[fItrk]       = centrality;
+	  fCentrality[fItrk]       = centralityClass10;
 	  fMultiplicity[fItrk]     = nTrackMultiplicity;
+          fRefMultiplicity[fItrk]  = refMultTpc;
 	  
 	  fPtotN[fItrk]            = ptotN;
 	  fPtotP[fItrk]            = ptotP;
