@@ -205,6 +205,10 @@ public:
   Float_t  GetRes0(ETPCgainScenario s)  const { return fRes0[s];  }
   Float_t  GetResN2(ETPCgainScenario s) const { return fResN2[s]; }
 
+  Bool_t   RegisterSpline(const char * name, Int_t index);
+  Double_t EvaldEdxSpline(Double_t bg,Int_t entry);
+  static   Double_t SEvaldEdx(Double_t bg,Int_t entry){ return (fgInstance!=0)? fgInstance->EvaldEdxSpline(bg,entry):0;};
+
 protected:
   Double_t GetExpectedSignal(const AliVTrack* track,
                              AliPID::EParticleType species,
@@ -230,7 +234,9 @@ protected:
   
   Double_t GetSigmaPar1(const AliVTrack *track, AliPID::EParticleType species,
                         Double_t dEdx, const TSpline3* responseFunction) const;
-  
+  //
+  // function for numberical debugging 0 registed splines can be used in the TFormula and tree visualizations
+  //
 private:
   Float_t fMIP;          // dEdx for MIP
   Float_t fRes0[fgkNumberOfGainScenarios];  // relative dEdx resolution  rel sigma = fRes0*sqrt(1+fResN2/npoint)
@@ -268,8 +274,13 @@ private:
   TF1* fCorrFuncMultiplicityTanTheta; //! Function to correct the additional tanTheta dependence of the multiplicity dependence of the TPC dEdx
   TF1* fCorrFuncSigmaMultiplicity; //! Function to correct for the multiplicity dependence of the TPC dEdx resolution
 
+  //
+  //
+  static AliTPCPIDResponse*   fgInstance;     //! Instance of this class (singleton implementation)
+  TObjArray                   fSplineArray;   //array of registered splines
   ClassDef(AliTPCPIDResponse,6)   // TPC PID class
 };
+
 
 #endif
 
