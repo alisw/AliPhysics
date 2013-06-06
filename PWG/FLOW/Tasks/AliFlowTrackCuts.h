@@ -58,6 +58,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kSPDtracklet,
                             kPMD,
                             kV0,
+                            kVZERO=kV0,
                             kMUON  // XZhang 20120604
                           };
   enum trackParameterMix  { kPure, 
