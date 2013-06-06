@@ -55,7 +55,7 @@ ClassImp(AliMiniParticle)
 // Global variables:
 static Int_t    nbins = 100;                 // Number of bins for l, pt, mass for V0
 static Int_t    nbinsPhi = 120;              // Number of bins for Phi
-static Int_t    nbinsdPhi = 28;              // Number of bins for dPhi
+static Int_t    nbinsdPhi = 20;              // Number of bins for dPhi
 static Int_t    nbinsdEta = 30;              // Number of bins for dEta
 static Int_t    nbinPtLP = 200;
 static Int_t    nbinsVtx = 20;
@@ -3220,12 +3220,13 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
 	fK0sMCPt->Fill(lPtCurrentPart);
 	fK0sMCPtRap->Fill(lPtCurrentPart,lRapCurrentPart,centrality);
-	if(lt>5) fK0sMCPtRap2->Fill(lPtCurrentPart,lRapCurrentPart,centrality);
+	if(lt>5){
+	  fK0sMCPtRap2->Fill(lPtCurrentPart,lRapCurrentPart,centrality);
+	  fK0sMCPtPhiEta[curCentBin]->Fill(lPhiCurrentPart,lEtaCurrentPart,lPtCurrentPart);
 
-	fK0sMCPtPhiEta[curCentBin]->Fill(lPhiCurrentPart,lEtaCurrentPart,lPtCurrentPart);
-
-	if( (lPtCurrentPart>kPtBinV0[0]) && (lPtCurrentPart<kPtBinV0[kN1]) && isNaturalPart )
-	  fAssocPartMC->Add( new AliMiniParticle(centrality, zv, iTrkMC, lPtCurrentPart, lPhiCurrentPart, lEtaCurrentPart, 0, 0, 3) );	
+	  if( (lPtCurrentPart>kPtBinV0[0]) && (lPtCurrentPart<kPtBinV0[kN1]) && isNaturalPart )
+	    fAssocPartMC->Add( new AliMiniParticle(centrality, zv, iTrkMC, lPtCurrentPart, lPhiCurrentPart, lEtaCurrentPart, 0, 0, 3) );	
+	}
 
       } // End K0s selection
       
@@ -3234,12 +3235,13 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
 	fLambdaMCPt->Fill(lPtCurrentPart);
 	fLambdaMCPtRap->Fill(lPtCurrentPart,lRapCurrentPart,centrality);
-	if(lt>5) fLambdaMCPtRap2->Fill(lPtCurrentPart,lRapCurrentPart,centrality);
+	if(lt>5){
+	  fLambdaMCPtRap2->Fill(lPtCurrentPart,lRapCurrentPart,centrality);
+	  fLambdaMCPtPhiEta[curCentBin]->Fill(lPhiCurrentPart,lEtaCurrentPart,lPtCurrentPart);
 
-	fLambdaMCPtPhiEta[curCentBin]->Fill(lPhiCurrentPart,lEtaCurrentPart,lPtCurrentPart);
-
-	if( (lPtCurrentPart>kPtBinV0[0]) && (lPtCurrentPart<kPtBinV0[kN1]) && isNaturalPart )
-	  fAssocPartMC->Add( new AliMiniParticle(centrality, zv, iTrkMC, lPtCurrentPart, lPhiCurrentPart, lEtaCurrentPart, 0, 0, 4) );
+	  if( (lPtCurrentPart>kPtBinV0[0]) && (lPtCurrentPart<kPtBinV0[kN1]) && isNaturalPart )
+	    fAssocPartMC->Add( new AliMiniParticle(centrality, zv, iTrkMC, lPtCurrentPart, lPhiCurrentPart, lEtaCurrentPart, 0, 0, 4) );
+	}
 
       } // End Lambda
       // AntiLambda
@@ -3247,12 +3249,14 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
 	fAntiLambdaMCPt->Fill(lPtCurrentPart);
 	fAntiLambdaMCPtRap->Fill(lPtCurrentPart,lRapCurrentPart,centrality);
-	if(lt>5) fAntiLambdaMCPtRap2->Fill(lPtCurrentPart,lRapCurrentPart,centrality);
+	if(lt>5){
+	  fAntiLambdaMCPtRap2->Fill(lPtCurrentPart,lRapCurrentPart,centrality);
 
-	fAntiLambdaMCPtPhiEta[curCentBin]->Fill(lPhiCurrentPart,lEtaCurrentPart,lPtCurrentPart);
-
-	if( (lPtCurrentPart>kPtBinV0[0]) && (lPtCurrentPart<kPtBinV0[kN1]) && isNaturalPart )
-	  fAssocPartMC->Add( new AliMiniParticle(centrality, zv, iTrkMC, lPtCurrentPart, lPhiCurrentPart, lEtaCurrentPart, 0, 0, 5) );
+	  fAntiLambdaMCPtPhiEta[curCentBin]->Fill(lPhiCurrentPart,lEtaCurrentPart,lPtCurrentPart);
+	  
+	  if( (lPtCurrentPart>kPtBinV0[0]) && (lPtCurrentPart<kPtBinV0[kN1]) && isNaturalPart )
+	    fAssocPartMC->Add( new AliMiniParticle(centrality, zv, iTrkMC, lPtCurrentPart, lPhiCurrentPart, lEtaCurrentPart, 0, 0, 5) );
+	}
 
       } // End AntiLambda
      
