@@ -32,6 +32,8 @@ public:
   
   Float_t GetT0VertexRaw()      const {return fT0VertexRaw;}
   Double32_t GetT0zVertex()      const {return fT0zVertex;}
+
+  Float_t GetAmp(Int_t pmt)  const {return fT0Amp[pmt];}
   
   //Setters
   void SetT0TOF(Int_t icase, Double32_t time) { fT0TOF[icase] = time;}
@@ -43,6 +45,7 @@ public:
   
   void SetT0VertexRaw(Float_t vtx) { fT0VertexRaw = vtx;}
   void SetT0zVertex(Double32_t z) {fT0zVertex = z;}
+  void SetAmp(Int_t pmt, Float_t amp) {fT0Amp[pmt]=amp;}
        
   
 protected:
@@ -53,8 +56,9 @@ protected:
   Double32_t   fT0TOFbest[3];// interaction time in ps ( A&C, A, C) with best time
   Float_t      fT0VertexRaw; // raw T0 vertex without any cuts 
   Double32_t   fT0zVertex;    // reconstructed T0 vertex
+  Float_t fT0Amp[26];          //amplitude on PMTs and MPD
 
-  ClassDef(AliAODTZERO,3)
+  ClassDef(AliAODTZERO,4)
 };
 
 #endif
