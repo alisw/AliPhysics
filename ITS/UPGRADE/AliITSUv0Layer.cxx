@@ -335,11 +335,8 @@ void AliITSUv0Layer::CreateLayerTurbo(TGeoVolume *moth){
 
 
   // Now build up the layer
-
-
-  // Now build up the layer
   alpha = 360./fNLadders;
-  Double_t r = fLayRadius + ((TGeoBBox*)laddVol->GetShape())->GetDY();
+  Double_t r = fLayRadius /* +module thick ?! */;
   for (Int_t j=0; j<fNLadders; j++) {
     Double_t phi = j*alpha + fPhi0;
     xpos = r*CosD(phi);// r*SinD(-phi);
@@ -358,7 +355,7 @@ void AliITSUv0Layer::CreateLayerTurbo(TGeoVolume *moth){
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv0Layer::CreateLadder(const TGeoManager *mgr){
+TGeoVolume* AliITSUv0Layer::CreateLadder(const TGeoManager * /*mgr*/){
 //
 // Creates the actual Ladder
 //
@@ -399,10 +396,11 @@ TGeoVolume* AliITSUv0Layer::CreateLadder(const TGeoManager *mgr){
   
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
+//  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSLadderPattern(), fLayerNumber);
-  TGeoVolume *laddVol = new TGeoVolume(volname, ladder, medAir);
+//  TGeoVolume *laddVol = new TGeoVolume(volname, ladder, medAir);
+  TGeoVolume *laddVol = new TGeoVolumeAssembly(volname);
 
   //  laddVol->SetVisibility(kFALSE);
   laddVol->SetVisibility(kTRUE);
@@ -414,7 +412,7 @@ TGeoVolume* AliITSUv0Layer::CreateLadder(const TGeoManager *mgr){
   zmod = ((TGeoBBox*)modVol->GetShape())->GetDZ();
   for (Int_t j=0; j<fNModules; j++) {
     xpos = 0.;
-    ypos = 0.01;  // Remove small overlap - M.S: 21may13
+    ypos = 0.021;  // Remove small overlap - M.S: 21may13
     zpos = -ladder->GetDZ() + j*2*zmod + zmod;
     laddVol->AddNode(modVol, j, new TGeoTranslation(xpos, ypos, zpos));
   }
@@ -1280,8 +1278,8 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel22(const Double_t xlad,
       TGeoVolume *plate31 = new TGeoVolume("CarbonFleeceLeftRight",box31,medCarbonFleece);
       plate31->SetFillColor(28);
       plate31->SetLineColor(28);
-      mechLaddVol->AddNode(plate31,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+klay1+(0.75-0.25-kConeOutRadius-klay1)/2+0.0025,y-kConeOutRadius+klay1+(klay2/2),z,new TGeoRotation("plate31",0,0,0)));
-      mechLaddVol->AddNode(plate31,2,new TGeoCombiTrans(x-0.25-kConeOutRadius-klay1-(0.75-0.25-kConeOutRadius-klay1)/2-0.0025,y-kConeOutRadius+klay1+(klay2/2),z,new TGeoRotation("plate31",0,0,0)));
+      mechLaddVol->AddNode(plate31,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+klay1+(0.75-0.25-kConeOutRadius-klay1)/2,y-kConeOutRadius+klay1+(klay2/2),z,new TGeoRotation("plate31",0,0,0)));
+      mechLaddVol->AddNode(plate31,2,new TGeoCombiTrans(x-0.25-kConeOutRadius-klay1-(0.75-0.25-kConeOutRadius-klay1)/2,y-kConeOutRadius+klay1+(klay2/2),z,new TGeoRotation("plate31",0,0,0)));
 
       TGeoBBox *box32 = new TGeoBBox((klay2/2),(kConeOutRadius-klay1)/2,zlad);
       TGeoVolume *plate32 = new TGeoVolume("CarbonFleeceVertical",box32,medCarbonFleece);
@@ -1354,7 +1352,7 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel22(const Double_t xlad,
       volCable->SetLineColor(28);
       volCable->SetFillColor(28); 
       //      mechLaddVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+klay3+klay2+klay4+fSensorThick+(klay5)/2)+0.0002, z, new TGeoRotation("",0, 0, 0)));
-      mechLaddVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+klay3+klay2+klay4+fSensorThick+(klay5)/2)+0.0002, z, new TGeoRotation("",0, 0, 0)));
+      mechLaddVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+klay3+klay2+klay4+fSensorThick+(klay5)/2)+0.01185, z, new TGeoRotation("",0, 0, 0)));
       }
     // Done, return the stave structe
     return mechLaddVol;
@@ -1882,4 +1880,3 @@ void AliITSUv0Layer::SetLadderWidth(const Double_t w){
     AliError("Not a Turbo layer");
 
 }
-
