@@ -1160,7 +1160,7 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 	if(!result) return 0;
 
        // loop on result to check whether entries should be re-queried with specific storages
-	if(fSpecificStorages.GetEntries()>0 && ! (fSpecificStorages.GetEntries() == 1 && aPar)) {
+	if(fSpecificStorages.GetEntries()>0 && ! (fSpecificStorages.GetEntries() == 1 && aPar) || aStorage->GetNSelections()>0 ) {
 		AliInfo("Now look into all other specific storages...");
 
 		TIter iter(result);
@@ -1169,17 +1169,21 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 		while((chkEntry = dynamic_cast<AliCDBEntry*> (iter.Next()))){
 			AliCDBId& chkId = chkEntry->GetId();
 			AliDebug(2, Form("Checking id %s ", chkId.GetPath().Data()));
-			AliCDBParam *chkPar=SelectSpecificStorage(chkId.GetPath());
-			if (!chkPar || aPar == chkPar) continue;
-			AliCDBStorage *chkStorage = GetStorage(chkPar);
-			AliDebug(2, Form("Found specific storage! %s", chkPar->GetURI().Data()));
-
-			AliCDBEntry *newEntry=0;
 			chkId.SetRunRange(query.GetFirstRun(), query.GetLastRun());
 			chkId.SetVersion(query.GetVersion());
 			chkId.SetSubVersion(query.GetSubVersion());
 
-			if(chkStorage) newEntry = chkStorage->Get(chkId);
+			AliCDBParam *chkPar=SelectSpecificStorage(chkId.GetPath());
+			AliCDBStorage *chkStorage = 0;
+			AliCDBEntry *newEntry=0;
+			if (!chkPar || aPar == chkPar){
+			    aStorage->GetSelection(&chkId);
+			    newEntry = GetDefaultStorage()->Get(chkId);
+			}else{
+			    chkStorage = GetStorage(chkPar);
+			    AliDebug(2, Form("Found specific storage! %s", chkPar->GetURI().Data()));
+			    newEntry = chkStorage->Get(chkId);
+			}
 			if(!newEntry) continue;
 
 			// object is found in specific storage: replace entry in the result list!

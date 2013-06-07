@@ -101,11 +101,12 @@ public:
 	void PrintQueryCDB();
 	TObjArray* GetQueryCDBList() {return &fValidFileIds;}
 	virtual void SetRetry(Int_t nretry, Int_t initsec) = 0;
+	void    GetSelection(AliCDBId* id);
+	Int_t   GetNSelections(){return fSelections.GetEntries();}
 
 protected:
 
 	virtual ~AliCDBStorage();
-	void    GetSelection(/*const*/ AliCDBId* id);
 	virtual AliCDBEntry* GetEntry(const AliCDBId& query) = 0;
 	virtual AliCDBId* GetEntryId(const AliCDBId& query) = 0;
 	virtual TList* GetEntries(const AliCDBId& query) = 0;
@@ -130,7 +131,7 @@ protected:
 
 private:
 	AliCDBStorage(const AliCDBStorage & source);
-	AliCDBStorage & operator=(const AliCDBStorage & source);
+	AliCDBStorage* operator=(const AliCDBStorage & source);
 
 	ClassDef(AliCDBStorage, 0);
 };
