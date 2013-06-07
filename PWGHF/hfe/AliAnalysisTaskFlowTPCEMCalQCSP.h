@@ -55,6 +55,8 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     void                                 SetInvariantMassCut(Double_t invmass) {fInvmassCut = invmass;};
     void                                 SetpTCuttrack(Double_t ptcut) {fpTCut = ptcut;};
     void                                 SetTrigger(Int_t trig) {fTrigger = trig;};
+    void                                 SetAssoTPCCluster(Int_t tpc_clust) {fAssoTPCCluster = tpc_clust;};
+    void                                 SetAssoITSRefit(Bool_t itsref) {fAssoITSRefit = itsref;};
     void                                 SetFlowSideBands(Bool_t sidebandsflow){fSideBandsFlow = sidebandsflow;}
     void                                 SelectPhotonicElectronMethod(Bool_t dca){fDCA = dca;}
     void                                 Setphiminuspsi(Bool_t phipsi){fPhiminusPsi = phipsi;}
@@ -149,8 +151,9 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     Bool_t                fDCA;//selection PHelectron
     Double_t 		      fOpeningAngleCut;	//openingAngle cut value
     Bool_t                fOP_angle; //to shitch on and off the op_angle cut
+    Int_t                 fAssoTPCCluster;//asso tpc cluster
+    Bool_t                fAssoITSRefit;//asso its refit
 
-    
     
     AliAnalysisTaskFlowTPCEMCalQCSP(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
     AliAnalysisTaskFlowTPCEMCalQCSP& operator=(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
