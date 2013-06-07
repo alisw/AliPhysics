@@ -28,7 +28,7 @@ class TObjArray;
 class TTree;
 class TTreeSRedirector;
 class TParticle;
-class TH3;
+class TH3D;
 
 #include "AliTriggerAnalysis.h"
 #include "AliAnalysisTaskSE.h"
