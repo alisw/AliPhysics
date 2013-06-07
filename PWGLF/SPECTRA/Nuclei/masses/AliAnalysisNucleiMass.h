@@ -19,6 +19,8 @@ class TH2D;
 class TGraph;
 class AliESDtrackCuts;
 class TProfile;
+class TFile;
+class TObject;
 
 class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
  public:
@@ -39,13 +41,21 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   void SetkTPCcut(Bool_t isTPCcut) {kTPCcut=isTPCcut;}
   void SetNsigmaTPCCut(Float_t NsigmaTpcCut) {NsigmaTPCCut=NsigmaTpcCut;}
   void SetisSignalCheck(Bool_t IsSignalCheck) {isSignalCheck=IsSignalCheck;}
-  
+  void SetMomBin(Int_t iMomBin) {MomType=iMomBin;}
 
  private:
   AliAnalysisNucleiMass(const AliAnalysisNucleiMass &old); 
   AliAnalysisNucleiMass& operator=(const AliAnalysisNucleiMass &source);
+    
+  TFile *fmism;                      //! For load the mism time distr
+  TH1F *hmism;                       //! The mism time distr
+    
+  TFile *fchDist;                     //! Load the tof chan dist from IP
+  TH1D *hChDist;                     //! The tof chan dist from IP
+  
+  static const Int_t nbin = 152;     // number of pt bins
 
-  static const Int_t nbin = 46;     // number of pt bins
+  Int_t MomType;                    //type of momentum bins in analysis (7 are all ON): (Flag: 001(1)->pT 010(2)->p 100(3)->pTPC)
 
   Bool_t fMC;                       // if MC
 
@@ -109,19 +119,36 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
 
   TH2F *fM2vsP[2][18];                 //! M2 vs. P with 2 sigma TPC cut for each particle species
 
-  TH1D *hDCAxy[2][18][nbin];           //! DCA distribution in 2 sigma TPC cut for each particle species
+  TH1D *hDCAxy[2][18][nbin];           //! DCA distribution in 2 sigma TPC cut for each particle species, in pT bins
 
-  TH1D *hM2CutDCAxy[2][18][nbin];      //! M^{2} IN DCA cut (in 2 sigma TPC cut)
+  TH1D *hM2CutDCAxy[2][18][nbin];      //! M^{2} IN DCA cut (in 2 sigma TPC cut), in pT bins
 
-  TH1D *hDCAz[2][18][nbin];            //! DCAz distribution in 2 sigma TPC cut for each particle species
+  TH1D *hDCAz[2][18][nbin];            //! DCAz distribution in 2 sigma TPC cut for each particle species, in pT bins
 
-  TH1D *hM2CutGroundDCAxy[2][18][nbin];//! M^{2} OUT DCA cut (in 2 sigma TPC cut)
+  TH1D *hM2CutGroundDCAxy[2][18][nbin];//! M^{2} OUT DCA cut (in 2 sigma TPC cut), in pT bins
 
   TH2F *fM2vsP_NoTpcCut_DCAxyCut[2][3];//! M^{2} vs. P with a DCAxy cut  
 
   TH2F *fM2vsP_DCAxyCut[2][18];        //! M^{2} vs. P with a DCAxy cut (2sigma TPC cut)
   
+  TH1D *hDCAxy_pbin[2][18][nbin];           //! DCA distribution in 2 sigma TPC cut for each particle species, in p bins
+
+  TH1D *hM2CutDCAxy_pbin[2][18][nbin];      //! M^{2} IN DCA cut (in 2 sigma TPC cut), in p bins
+
+  TH1D *hDCAz_pbin[2][18][nbin];            //! DCAz distribution in 2 sigma TPC cut for each particle species, in p bins
+
+  TH1D *hM2CutGroundDCAxy_pbin[2][18][nbin];//! M^{2} OUT DCA cut (in 2 sigma TPC cut), in p bins
    
+  TH1D *hDCAxy_pTpcbin[2][18][nbin];           //! DCA distribution in 2 sigma TPC cut for each particle species, in pTPC bins
+
+  TH1D *hM2CutDCAxy_pTpcbin[2][18][nbin];      //! M^{2} IN DCA cut (in 2 sigma TPC cut), in pTPC bins
+
+  TH1D *hDCAz_pTpcbin[2][18][nbin];            //! DCAz distribution in 2 sigma TPC cut for each particle species, in pTPC bins
+
+  TH1D *hM2CutGroundDCAxy_pTpcbin[2][18][nbin];//! M^{2} OUT DCA cut (in 2 sigma TPC cut), in pTPC bins
+
+  TH1D *hM2BkgMism[2][3][nbin];                //! M2 from mismatch background in each momentum bin
+
   ClassDef(AliAnalysisNucleiMass, 1);
 };
 
