@@ -176,6 +176,10 @@ void RunAnalysisAODVertexingHF()
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   AliAnalysisTaskSE *setupTask = AddTaskPIDResponse(kFALSE,kTRUE);
 
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa..C");
+  AliAnalysisTaskPIDqa *pidQA = AddTaskPIDqa();
+
+
   TString taskName;
   
   ////// ADD THE FULL D2H TRAIN
