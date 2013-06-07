@@ -141,7 +141,11 @@ TH1 * GenerateMapRaw(const char *fileName, const char *outputName, Int_t maxEven
 	hisQ1D[ith]->Write(Form("His1D_%d",ith));
 	hisQ2D[ith]->Write(Form("His2D_%d",ith));
 	hisQ3D[ith]->Write(Form("His3D_%d",ith));
-	if (ith<3) continue;
+	(*pcstream)<<"histo"<<
+	  Form("hist1D_%d.=",ith*2+2)<<hisQ1D[ith]<<
+	  Form("hist2D_%d.=",ith*2+2)<<hisQ2D[ith]<<
+	  Form("hist3D_%d.=",ith*2+2)<<hisQ2D[ith]<<
+	  "\n";
 	hisQ1D[ith]->Reset();
 	hisQ2D[ith]->Reset();
 	hisQ3D[ith]->Reset();
@@ -233,6 +237,13 @@ TH1 * GenerateMapRawIons(const char *fileName, const char *outputName, Int_t max
   TH3F * hisQ3DROC[3]={0};             // 3D maps space charge from ROC
   TH2F * hisQ2DROC[3]={0};
   TH1F * hisQ1DROC[3]={0};
+  Int_t nbinsRow=param->GetNRowLow()+param->GetNRowUp();
+  Double_t *xbins = new Double_t[nbinsRow+1];
+  xbins[0]=param->GetPadRowRadiiLow(0)-1;   //underflow bin
+  for (Int_t ibin=0; ibin<param->GetNRowLow();ibin++) xbins[1+ibin]=param->GetPadRowRadiiLow(ibin);
+  for (Int_t ibin=0; ibin<param->GetNRowUp();ibin++)  xbins[1+ibin+param->GetNRowLow()]=param->GetPadRowRadiiUp(ibin);
+  
+
   //
   for (Int_t ith=0; ith<3; ith++){
     char chname[100];
@@ -249,6 +260,12 @@ TH1 * GenerateMapRawIons(const char *fileName, const char *outputName, Int_t max
     hisQ2DROC[ith] = new TH2F(chname,chname,180, 0,2*TMath::TwoPi(), param->GetNRow(0)+param->GetNRow(36) ,0, param->GetNRow(0)+param->GetNRow(36) );
     snprintf(chname,100,"hisQ1DROC_Th%d",2*ith+2);
     hisQ1DROC[ith] = new TH1F(chname,chname, param->GetNRow(0)+param->GetNRow(36) ,0, param->GetNRow(0)+param->GetNRow(36) );
+    hisQ1D[ith]->GetXaxis()->Set(nbinsRow,xbins);
+    hisQ2D[ith]->GetYaxis()->Set(nbinsRow,xbins);
+    hisQ3D[ith]->GetYaxis()->Set(nbinsRow,xbins);
+    hisQ1DROC[ith]->GetXaxis()->Set(nbinsRow,xbins);
+    hisQ2DROC[ith]->GetYaxis()->Set(nbinsRow,xbins);
+    hisQ3DROC[ith]->GetYaxis()->Set(nbinsRow,xbins);
     //
     hisQ3D[ith]->SetDirectory(0);
     hisQ1D[ith]->SetDirectory(0);
@@ -282,7 +299,16 @@ TH1 * GenerateMapRawIons(const char *fileName, const char *outputName, Int_t max
 	hisQ1DROC[ith]->Write(Form("His1DROC_%d",ith));
 	hisQ2DROC[ith]->Write(Form("His2DROC_%d",ith));
 	hisQ3DROC[ith]->Write(Form("His3DROC_%d",ith));
-	if (ith<3) continue;
+	(*pcstream)<<"histo"<<
+	  Form("hist1D_%d.=",ith*2+2)<<hisQ1D[ith]<<
+	  Form("hist2D_%d.=",ith*2+2)<<hisQ2D[ith]<<
+	  Form("hist3D_%d.=",ith*2+2)<<hisQ2D[ith]<<
+	  Form("hist1DROC_%d.=",ith*2+2)<<hisQ1DROC[ith]<<
+	  Form("hist2DROC_%d.=",ith*2+2)<<hisQ2DROC[ith]<<
+	  Form("hist3DROC_%d.=",ith*2+2)<<hisQ2DROC[ith];	  
+      }
+      (*pcstream)<<"histo"<<"\n";
+      for (Int_t ith=0; ith<3; ith++){	
 	hisQ1D[ith]->Reset();
 	hisQ2D[ith]->Reset();
 	hisQ3D[ith]->Reset();
@@ -335,15 +361,15 @@ TH1 * GenerateMapRawIons(const char *fileName, const char *outputName, Int_t max
 		zIonDrift+=shiftZ;
                 if (TMath::Abs(zIonDrift)<param->GetZLength()){
 		  if ((sector%36)>=18) zIonDrift*=-1;   // c side has opposite sign
-		  if (sector%36<18) hisQ1D[ith]->Fill(rowAbs, sig[i]/volume3D);
-		  hisQ2D[ith]->Fill(phi,rowAbs, sig[i]/volume3D);
-		  hisQ3D[ith]->Fill(phi,rowAbs,zIonDrift,sig[i]/volume3D);
+		  if (sector%36<18) hisQ1D[ith]->Fill(localX, sig[i]/volume3D);
+		  hisQ2D[ith]->Fill(phi,localX, sig[i]/volume3D);
+		  hisQ3D[ith]->Fill(phi,localX,zIonDrift,sig[i]/volume3D);
 		}
 		//
 		Double_t zIonROC = ((sector%36)<18)? shiftZ: -shiftZ;  // z position of the "ion disc" -  A side C side opposite sign
-		if (sector%36<18) hisQ1DROC[ith]->Fill(rowAbs, sig[i]/volume3D);
-		hisQ2DROC[ith]->Fill(phi,rowAbs, sig[i]/volume3D);
-		hisQ3DROC[ith]->Fill(phi,rowAbs,zIonROC,sig[i]/volume3D);
+		if (sector%36<18) hisQ1DROC[ith]->Fill(localX, sig[i]/volume3D);
+		hisQ2DROC[ith]->Fill(phi,localX, sig[i]/volume3D);
+		hisQ3DROC[ith]->Fill(phi,localX,zIonROC,sig[i]/volume3D);
 	      }
 	    }
 	  }
