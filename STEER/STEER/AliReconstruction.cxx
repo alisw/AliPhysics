@@ -2477,7 +2477,11 @@ void AliReconstruction::SlaveTerminate()
    sVersion += ":";
    sVersion += ALIROOT_SVN_REVISION;
    sVersion += "; root ";
+#ifdef ROOT_SVN_BRANCH
    sVersion += ROOT_SVN_BRANCH;
+#else
+   sVersion += ROOT_GIT_BRANCH;
+#endif
    sVersion += ":";
    sVersion += ROOT_SVN_REVISION;
    sVersion += "; metadata ";
