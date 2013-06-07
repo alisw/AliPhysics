@@ -49,7 +49,7 @@ const Float_t multmax_80_100 = 100;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isFinePtBin=kFALSE, Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isFinePtBin=kFALSE, Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE)
 {
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -135,7 +135,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const Int_t nbinfake = 3;  //bins in fake
 	const Int_t nbinpointingXY = 50;  //bins in cosPointingAngleXY
 	const Int_t nbinnormDecayLXY = 20;  //bins in NormDecayLengthXY
-	const Int_t nbinmult = 48;  //bins in multiplicity (total number)
+	const Int_t nbinmult = 49;  //bins in multiplicity (total number)
 	const Int_t nbinmult_0_20 = 20; //bins in multiplicity between 0 and 20
 	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
 	const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 102
