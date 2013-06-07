@@ -179,6 +179,8 @@ ClassImp(AliAnalysisTaskFlowTPCEMCalQCSP)
 ,fDCA(0)
 ,fOpeningAngleCut(0)
 ,fOP_angle(0)
+,fAssoTPCCluster(0)
+,fAssoITSRefit(0)
 {
   //Named constructor
 
@@ -269,6 +271,8 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 ,fDCA(0)
 ,fOpeningAngleCut(0)
 ,fOP_angle(0)
+,fAssoTPCCluster(0)
+,fAssoITSRefit(0)
 {
   //Default constructor
   fPID = new AliHFEpid("hfePid");
@@ -684,9 +688,14 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
     }
     //  if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;  // TESTBIT FOR AOD double Counting
       if(!trackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-      if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-
+  //    if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit) || (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+  
+    if(fAssoITSRefit){
+    if(!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)) continue;
+      }
       
+    if(!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
+     
     if(jTracks == itrack) continue;
     Double_t ptAsso=-999., nsigma=-999.0;
     Double_t mass=-999., width = -999;
@@ -698,7 +707,8 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
     Short_t charge = track->Charge();
     nsigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
     
-    if(trackAsso->GetTPCNcls() < 80) continue;
+      //80
+    if(trackAsso->GetTPCNcls() < fAssoTPCCluster) continue;
     if(nsigma < -3 || nsigma > 3) continue;
     if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
     if(ptAsso <0.3) continue;
@@ -740,6 +750,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
   }//track loop
   fFlagPhotonicElec = flagPhotonicElec;
 }
+//__________________________________________________________________________________
 void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
 {
   //Create histograms
