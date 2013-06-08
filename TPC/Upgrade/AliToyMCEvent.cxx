@@ -1,22 +1,22 @@
-#include "ToyMCEvent.h"
+#include "AliToyMCEvent.h"
 
-ClassImp(ToyMCEvent);
-Int_t ToyMCEvent::evCounter = 0;
+ClassImp(AliToyMCEvent);
+Int_t AliToyMCEvent::evCounter = 0;
 
-ToyMCEvent::ToyMCEvent()
+AliToyMCEvent::AliToyMCEvent()
   :TObject()
   ,fT0(-1.)
   ,fX(-1000.)
   ,fY(-1000.)
   ,fZ(-1000.)
-  ,fTracks("ToyMCTrack")
+  ,fTracks("AliToyMCTrack")
 {
   fEventNumber = evCounter;
   evCounter++;
 }
 
 //____________________________________________________
-ToyMCEvent::ToyMCEvent(const ToyMCEvent &event)
+AliToyMCEvent::AliToyMCEvent(const AliToyMCEvent &event)
   : TObject(event)
   ,fEventNumber(event.fEventNumber)
   ,fT0(event.fT0)
@@ -29,17 +29,17 @@ ToyMCEvent::ToyMCEvent(const ToyMCEvent &event)
 }
 
 //_____________________________________________________
-ToyMCEvent& ToyMCEvent::operator = (const ToyMCEvent &event)
+AliToyMCEvent& AliToyMCEvent::operator = (const AliToyMCEvent &event)
 {
   //assignment operator
   if (&event == this) return *this;
-  new (this) ToyMCEvent(event);
+  new (this) AliToyMCEvent(event);
 
   return *this;
 }
 //_____________________________________________________
-ToyMCTrack* ToyMCEvent::AddTrack(const ToyMCTrack &track)
+AliToyMCTrack* AliToyMCEvent::AddTrack(const AliToyMCTrack &track)
 {
-  return new(fTracks[fTracks.GetEntriesFast()]) ToyMCTrack(track);
+  return new(fTracks[fTracks.GetEntriesFast()]) AliToyMCTrack(track);
 }
 

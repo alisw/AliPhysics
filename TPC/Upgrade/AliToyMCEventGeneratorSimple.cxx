@@ -1,15 +1,15 @@
 #include <iostream>
-#include "ToyMCEventGeneratorSimple.h"
+#include "AliToyMCEventGeneratorSimple.h"
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 #include <TF1.h>
-#include "ToyMCEvent.h"
+#include "AliToyMCEvent.h"
 
-ClassImp(ToyMCEventGeneratorSimple);
+ClassImp(AliToyMCEventGeneratorSimple);
 
 
-ToyMCEventGeneratorSimple::ToyMCEventGeneratorSimple()
-  :ToyMCEventGenerator()
+AliToyMCEventGeneratorSimple::AliToyMCEventGeneratorSimple()
+  :AliToyMCEventGenerator()
   ,fVertexMean(0.)
   ,fVertexSigma(7.)
 {
@@ -17,34 +17,34 @@ ToyMCEventGeneratorSimple::ToyMCEventGeneratorSimple()
   
 }
 //________________________________________________________________
-ToyMCEventGeneratorSimple::ToyMCEventGeneratorSimple(const ToyMCEventGeneratorSimple &gen)
-  :ToyMCEventGenerator(gen)
+AliToyMCEventGeneratorSimple::AliToyMCEventGeneratorSimple(const AliToyMCEventGeneratorSimple &gen)
+  :AliToyMCEventGenerator(gen)
   ,fVertexMean(gen.fVertexMean)
   ,fVertexSigma(gen.fVertexSigma)
 {
 }
 //________________________________________________________________
-ToyMCEventGeneratorSimple::~ToyMCEventGeneratorSimple()
+AliToyMCEventGeneratorSimple::~AliToyMCEventGeneratorSimple()
 {
 }
  //________________________________________________________________
-ToyMCEventGeneratorSimple& ToyMCEventGeneratorSimple::operator = (const ToyMCEventGeneratorSimple &gen)
+AliToyMCEventGeneratorSimple& AliToyMCEventGeneratorSimple::operator = (const AliToyMCEventGeneratorSimple &gen)
 {
   //assignment operator
   if (&gen == this) return *this;
-  new (this) ToyMCEventGeneratorSimple(gen);
+  new (this) AliToyMCEventGeneratorSimple(gen);
 
   return *this;
 }
 //________________________________________________________________
-void ToyMCEventGeneratorSimple::SetParameters(Double_t vertexMean, Double_t vertexSigma) {
+void AliToyMCEventGeneratorSimple::SetParameters(Double_t vertexMean, Double_t vertexSigma) {
   fVertexMean = vertexMean;
   fVertexSigma = vertexSigma;
 }
 //________________________________________________________________
-ToyMCEvent* ToyMCEventGeneratorSimple::Generate(Double_t time) {
+AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time) {
 
-  ToyMCEvent *retEvent = new ToyMCEvent();
+  AliToyMCEvent *retEvent = new AliToyMCEvent();
   retEvent->SetT0(time);
   retEvent->SetX(0);
   retEvent->SetX(0);
@@ -75,7 +75,7 @@ ToyMCEvent* ToyMCEventGeneratorSimple::Generate(Double_t time) {
     pxyz[2]=pt*TMath::Tan(theta);
     Double_t vertex[3]={0,0,retEvent->GetZ()};
     Double_t cv[21]={0};
-    ToyMCTrack *tempTrack = new ToyMCTrack(vertex,pxyz,cv,sign);
+    AliToyMCTrack *tempTrack = new AliToyMCTrack(vertex,pxyz,cv,sign);
     
     Bool_t trackDist = DistortTrack(*tempTrack, time);
     if(trackDist) retEvent->AddTrack(*tempTrack);

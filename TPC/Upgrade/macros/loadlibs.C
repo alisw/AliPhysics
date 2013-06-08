@@ -7,7 +7,7 @@ void loadlibs(const char *dir=".")
   gSystem->AddIncludePath("-I$ROOTSYS/include");
    Bool_t hasAR=!TString(gSystem->Getenv("ALICE_ROOT")).IsNull();
   // if (hasAR) gSystem->AddIncludePath("-I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER  -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/RAW");
-  if (hasAR) gSystem->AddIncludePath("-I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER  -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER/STEERBase/ -I$ALICE_ROOT/STEER/ESD/");
+  if (hasAR) gSystem->AddIncludePath("-I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER  -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TPC/Base -I$ALICE_ROOT/TPC/Rec -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER/STEERBase/ -I$ALICE_ROOT/STEER/ESD/");
 
   gSystem->Load("libCore");
   gSystem->Load("libPhysics");
@@ -32,6 +32,7 @@ void loadlibs(const char *dir=".")
 
   gSystem->Load("libTPCbase");
   gSystem->Load("libTPCrec");
+  gSystem->Load("libTPCupgrade");
   
   // gSystem->Load("libANALYSISalice");
  gSystem->Load("libTPCcalib");
@@ -60,10 +61,10 @@ void loadlibs(const char *dir=".")
   // gROOT->LoadMacro(Form("%s/CRSIMRunGenerator.cxx+g",dir));
   // CRSIMDrawer *drawer = new CRSIMDrawer("test.root");
   //CRSIMDisplay *disp = new CRSIMDisplay();
-  gROOT->LoadMacro(Form("%s/ToyMCTrack.cxx+g",dir));
-  gROOT->LoadMacro(Form("%s/ToyMCEvent.cxx+g",dir));
-  gROOT->LoadMacro(Form("%s/ToyMCEventGenerator.cxx+g",dir));
-  gROOT->LoadMacro(Form("%s/ToyMCEventGeneratorSimple.cxx+g",dir));
+  //gROOT->LoadMacro(Form("%s/AliToyMCTrack.cxx+g",dir));
+  //gROOT->LoadMacro(Form("%s/AliToyMCEvent.cxx+g",dir));
+ // gROOT->LoadMacro(Form("%s/AliToyMCEventGenerator.cxx+g",dir));
+ // gROOT->LoadMacro(Form("%s/AliToyMCEventGeneratorSimple.cxx+g",dir));
   //  gROOT->LoadMacro(Form("%s/ToyMCDrawer.cxx+g",dir));
   // disp->SetDrawer(drawer);
   

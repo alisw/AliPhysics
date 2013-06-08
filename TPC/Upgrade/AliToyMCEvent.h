@@ -1,22 +1,22 @@
-#ifndef ToyMCEvent_H
-#define ToyMCEvent_H
+#ifndef AliToyMCEvent_H
+#define AliToyMCEvent_H
 
 
 #include <TClonesArray.h>
-#include "ToyMCTrack.h"
+#include "AliToyMCTrack.h"
 
-class ToyMCEvent : public TObject {
+class AliToyMCEvent : public TObject {
  public:
-  ToyMCEvent();
-  ToyMCEvent(const ToyMCEvent &event);
-  virtual ~ToyMCEvent() {}
-  ToyMCEvent& operator = (const ToyMCEvent &event);
+  AliToyMCEvent();
+  AliToyMCEvent(const AliToyMCEvent &event);
+  virtual ~AliToyMCEvent() {}
+  AliToyMCEvent& operator = (const AliToyMCEvent &event);
   
 
-  ToyMCTrack* AddTrack(const ToyMCTrack &track);
+  AliToyMCTrack* AddTrack(const AliToyMCTrack &track);
 
   Int_t GetNumberOfTracks() const { return fTracks.GetEntriesFast(); }
-  const ToyMCTrack* GetTrack(Int_t track) const { return static_cast<const ToyMCTrack*>(fTracks.At(track)); }
+  const AliToyMCTrack* GetTrack(Int_t track) const { return static_cast<const AliToyMCTrack*>(fTracks.At(track)); }
     
   void SetT0 (Float_t time)              { fT0   = time;          }
   void SetX(Float_t var)                 { fX = var;              }
@@ -41,7 +41,7 @@ class ToyMCEvent : public TObject {
 
   TClonesArray fTracks;
 
-  ClassDef(ToyMCEvent, 1);
+  ClassDef(AliToyMCEvent, 1);
 
 };
 

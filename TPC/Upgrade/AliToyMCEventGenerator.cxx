@@ -1,5 +1,5 @@
 #include <iostream>
-#include "ToyMCEventGenerator.h"
+#include "AliToyMCEventGenerator.h"
 #include <AliTPCROC.h>
 #include <AliTrackPointArray.h>
 #include <TDatabasePDG.h>
@@ -12,10 +12,10 @@
 #include <AliTPCcalibDB.h>
 #include <TGeoGlobalMagField.h>
 #include <AliTPCclusterMI.h>
-ClassImp(ToyMCEventGenerator);
+ClassImp(AliToyMCEventGenerator);
 
 
-ToyMCEventGenerator::ToyMCEventGenerator()
+AliToyMCEventGenerator::AliToyMCEventGenerator()
   :TObject()
   ,fTPCParam(0x0)
 {
@@ -36,20 +36,20 @@ ToyMCEventGenerator::ToyMCEventGenerator()
   fTPCParam->ReadGeoMatrices();
 }
 //________________________________________________________________
-ToyMCEventGenerator::ToyMCEventGenerator(const ToyMCEventGenerator &gen)
+AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen)
   :TObject(gen)
   ,fSpaceCharge(gen.fSpaceCharge)
 {
   //
 }
 //________________________________________________________________
-ToyMCEventGenerator::~ToyMCEventGenerator() 
+AliToyMCEventGenerator::~AliToyMCEventGenerator() 
 {
   delete fSpaceCharge;
   delete fTPCParam;
 }
 //________________________________________________________________
-Bool_t ToyMCEventGenerator::DistortTrack(ToyMCTrack &trackIn, Double_t t0) {
+Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0) {
 
   if(!fTPCParam) {
     fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
@@ -69,7 +69,7 @@ Bool_t ToyMCEventGenerator::DistortTrack(ToyMCTrack &trackIn, Double_t t0) {
   const Double_t iFCRadius=  83.5; //radius constants found in AliTPCCorrection.cxx 
   const Double_t oFCRadius= 254.5;
   
-  ToyMCTrack track(trackIn);
+  AliToyMCTrack track(trackIn);
   const Int_t nMaxPoints = kNRows+50;
   AliTrackPointArray pointArray0(nMaxPoints);
   AliTrackPointArray pointArray1(nMaxPoints);
