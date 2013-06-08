@@ -115,7 +115,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           SwitchOnOnlySimpleSSHistoFill()             { fFillOnlySimpleSSHisto = kTRUE  ; }
   void           SwitchOffOnlySimpleHistoFill()              { fFillOnlySimpleSSHisto = kFALSE ; }
 
-  
+  void           SwitchOnFillEMCALBCHistograms()             { fFillEMCALBCHistograms = kTRUE  ; }
+  void           SwitchOffFillEMCALBCHistograms()            { fFillEMCALBCHistograms = kFALSE ; }
   
   //For histograms
   enum mcTypes   { kmcPhoton = 0, kmcConversion = 1, kmcPi0    = 2,  
@@ -142,6 +143,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Bool_t         fFillTMHisto;             // Fill track matching plots
   Bool_t         fFillSelectClHisto;       // Fill selected cluster histograms
   Bool_t         fFillOnlySimpleSSHisto;   // Fill selected cluster histograms, selected SS histograms
+  Bool_t         fFillEMCALBCHistograms;   // Fill eta-phi BC dependent histograms
 
   
   //Only for combination of calorimeter and conversion photons, kIMCaloTracks
@@ -156,6 +158,13 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhPtEta  ;                //! Pt vs eta of identified  pi0/eta
   TH2F         * fhPtPhi  ;                //! Pt vs phi of identified  pi0/eta
   TH2F         * fhEtaPhi  ;               //! eta vs phi of identified  pi0/eta
+  TH2F         * fhEtaPhiEMCALBC0  ;       //! Pseudorapidity vs Phi of clusters 
+  TH2F         * fhEtaPhiEMCALBC1  ;       //! Pseudorapidity vs Phi of clusters 
+  TH2F         * fhEtaPhiEMCALBCN  ;       //! Pseudorapidity vs Phi of clusters 
+
+  TH2F         * fhEtaPhiTriggerEMCALBC[12]  ;    //! Pseudorapidity vs Phi of pi0 for E > 0.5
+  TH2F         * fhTimeTriggerEMCALBC  [12]  ;    //! Time distribution of pi0, when trigger is in a given BC
+  TH2F         * fhTimeTriggerEMCALBCPileUpSPD[12] ; //! Time distribution of pi0, when trigger is in a given BC, tagged as pile-up SPD
 
   TH2F         * fhPtCentrality ;          //! centrality  vs pi0/eta pT
   TH2F         * fhPtEventPlane ;          //! event plane vs pi0/eta pT

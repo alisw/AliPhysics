@@ -62,13 +62,16 @@ AliAnaPhoton::AliAnaPhoton() :
     fNLMCutMin(-1),               fNLMCutMax(10), 
     fFillSSHistograms(kFALSE),    fFillOnlySimpleSSHisto(1),   
     fNOriginHistograms(8),        fNPrimaryHistograms(4),
-    fFillPileUpHistograms(0),
+    fFillPileUpHistograms(0),     fFillEMCALBCHistograms(0),
     // Histograms
     fhNCellsE(0),                 fhCellsE(0),   // Control histograms            
     fhMaxCellDiffClusterE(0),     fhTimeE(0),    // Control histograms
+    fhEtaPhi(0),                  fhEtaPhiEMCALBC0(0),
+    fhEtaPhiEMCALBC1(0),          fhEtaPhiEMCALBCN(0),
     fhEPhoton(0),                 fhPtPhoton(0),  
     fhPhiPhoton(0),               fhEtaPhoton(0), 
     fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
+    fhEtaPhiPhotonEMCALBC0(0),    fhEtaPhiPhotonEMCALBC1(0),   fhEtaPhiPhotonEMCALBCN(0),
     fhPtCentralityPhoton(0),      fhPtEventPlanePhoton(0),
 
     // Shower shape histograms
@@ -209,6 +212,14 @@ AliAnaPhoton::AliAnaPhoton() :
      fhClusterMultNoPileUp [i] = 0;
    }
    
+   for(Int_t i = 0; i < 12; i++)
+   {
+     fhEtaPhiTriggerEMCALBC[i] = 0 ;
+     fhTimeTriggerEMCALBC  [i] = 0 ;
+     fhEtaPhiPhotonTriggerEMCALBC[i] = 0 ;
+     fhTimePhotonTriggerEMCALBC  [i] = 0 ;
+   }
+   
   //Initialize parameters
   InitParameters();
 
@@ -219,16 +230,45 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
 {
   //Select clusters if they pass different cuts
   
-  Float_t ptcluster = mom.Pt();
-  Float_t ecluster  = mom.E();
-  Float_t l0cluster = calo->GetM02();
+  Float_t ptcluster  = mom.Pt();
+  Float_t ecluster   = mom.E();
+  Float_t l0cluster  = calo->GetM02();
+  Float_t etacluster = mom.Eta();
+  Float_t phicluster = mom.Phi();
+  if(phicluster<0) phicluster+=TMath::TwoPi();
+  Float_t tofcluster   = calo->GetTOF()*1.e9;
+  Float_t tofclusterUS = TMath::Abs(tofcluster);
+  
   
   if(GetDebug() > 2)
     printf("AliAnaPhoton::ClusterSelected() Current Event %d; Before selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f\n",
            GetReader()->GetEventNumber(),
-           ecluster,ptcluster, mom.Phi()*TMath::RadToDeg(),mom.Eta());
+           ecluster,ptcluster, phicluster*TMath::RadToDeg(),etacluster);
   
   fhClusterCuts[1]->Fill(ecluster);
+  
+  if(ecluster > 0.5) fhEtaPhi->Fill(etacluster, phicluster);
+  
+  if(fFillEMCALBCHistograms && fCalorimeter=="EMCAL")
+  {
+    if(ecluster > 2)
+    {
+      if      (tofclusterUS < 25) fhEtaPhiEMCALBC0->Fill(etacluster, phicluster);
+      else if (tofclusterUS < 75) fhEtaPhiEMCALBC1->Fill(etacluster, phicluster);
+      else                        fhEtaPhiEMCALBCN->Fill(etacluster, phicluster);
+    }
+    
+    Int_t bc = GetReader()->IsPileUpClusterTriggeredEvent();
+    if(bc > -6 && bc < 8)
+    {
+      if(ecluster > 2) fhEtaPhiTriggerEMCALBC[bc+5]->Fill(etacluster, phicluster);
+      fhTimeTriggerEMCALBC[bc+5]->Fill(ecluster, tofcluster);
+      if(GetReader()->IsPileUpFromSPD()) fhTimeTriggerEMCALBCPileUpSPD[bc+5]->Fill(ecluster, tofcluster);
+
+    }
+    else printf("AliAnaPhoton::ClusterSelected() - Trigger BC not expected = %d\n",bc);
+    
+  }
   
   //.......................................
   //If too small or big energy, skip it
@@ -1386,7 +1426,7 @@ TObjString *  AliAnaPhoton::GetAnalysisCuts()
 
 //________________________________________________________________________
 TList *  AliAnaPhoton::GetCreateOutputObjects()
-{  
+{
   // Create histograms to be saved in output file and 
   // store them in outputContainer
   TList * outputContainer = new TList() ; 
@@ -1467,6 +1507,61 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhPtEventPlanePhoton->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhPtEventPlanePhoton) ;
 
+  fhEtaPhi  = new TH2F
+  ("hEtaPhi","cluster,E > 0.5 GeV, #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax);
+  fhEtaPhi->SetYTitle("#phi (rad)");
+  fhEtaPhi->SetXTitle("#eta");
+  outputContainer->Add(fhEtaPhi) ;
+
+  if(fCalorimeter=="EMCAL" && fFillEMCALBCHistograms)
+  {
+    fhEtaPhiEMCALBC0  = new TH2F
+    ("hEtaPhiEMCALBC0","cluster,E > 2 GeV, #eta vs #phi, for clusters with |time| < 25 ns, EMCAL-BC=0",netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhEtaPhiEMCALBC0->SetYTitle("#phi (rad)");
+    fhEtaPhiEMCALBC0->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiEMCALBC0) ;
+    
+    fhEtaPhiEMCALBC1  = new TH2F
+    ("hEtaPhiEMCALBC1","cluster,E > 2 GeV, #eta vs #phi, for clusters with 25 < |time| < 75 ns, EMCAL-BC=1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhEtaPhiEMCALBC1->SetYTitle("#phi (rad)");
+    fhEtaPhiEMCALBC1->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiEMCALBC1) ;
+    
+    fhEtaPhiEMCALBCN  = new TH2F
+    ("hEtaPhiEMCALBCN","cluster,E > 2 GeV, #eta vs #phi, for clusters with |time| > 75 ns, EMCAL-BC>1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhEtaPhiEMCALBCN->SetYTitle("#phi (rad)");
+    fhEtaPhiEMCALBCN->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiEMCALBCN) ;
+    
+    for(Int_t i = 0; i < 12; i++)
+    {
+      fhEtaPhiTriggerEMCALBC[i] = new TH2F
+      (Form("hEtaPhiTriggerEMCALBC%d",i-5),
+       Form("cluster,E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=%d",i-5),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBC[i]->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBC[i]->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBC[i]) ;
+      
+      fhTimeTriggerEMCALBC[i] = new TH2F
+      (Form("hTimeTriggerEMCALBC%d",i-5),
+       Form("time of cluster vs E of clusters, Trigger EMCAL-BC=%d",i-5),
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBC[i]->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBC[i]->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBC[i]);
+      
+      fhTimeTriggerEMCALBCPileUpSPD[i] = new TH2F
+      (Form("hTimeTriggerEMCALBC%dPileUpSPD",i-5),
+       Form("time of cluster vs E of clusters, Trigger EMCAL-BC=%d",i-5),
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCPileUpSPD[i]->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCPileUpSPD[i]->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCPileUpSPD[i]);
+
+    }
+  }
+  
   fhPhiPhoton  = new TH2F
     ("hPhiPhoton","#phi_{#gamma} vs p_{T}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
   fhPhiPhoton->SetYTitle("#phi (rad)");
@@ -1493,6 +1588,54 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhEtaPhi05Photon) ;
   }
 
+  if(fCalorimeter=="EMCAL" && fFillEMCALBCHistograms)
+  {
+    fhEtaPhiPhotonEMCALBC0  = new TH2F
+    ("hEtaPhiEMCALBC0","identified photon, E > 2 GeV, #eta vs #phi, for clusters with |time| < 25 ns, EMCAL-BC=0",netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhEtaPhiPhotonEMCALBC0->SetYTitle("#phi (rad)");
+    fhEtaPhiPhotonEMCALBC0->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiPhotonEMCALBC0) ;
+    
+    fhEtaPhiPhotonEMCALBC1  = new TH2F
+    ("hEtaPhiEMCALBC1","identified photon, E > 2 GeV, #eta vs #phi, for clusters with 25 < |time| < 75 ns, EMCAL-BC=1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhEtaPhiPhotonEMCALBC1->SetYTitle("#phi (rad)");
+    fhEtaPhiPhotonEMCALBC1->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiPhotonEMCALBC1) ;
+    
+    fhEtaPhiPhotonEMCALBCN  = new TH2F
+    ("hEtaPhiEMCALBCN","identified photon, E > 2 GeV, #eta vs #phi, for clusters with |time| > 75 ns, EMCAL-BC>1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhEtaPhiPhotonEMCALBCN->SetYTitle("#phi (rad)");
+    fhEtaPhiPhotonEMCALBCN->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiPhotonEMCALBCN) ;
+    
+    for(Int_t i = 0; i < 12; i++)
+    {
+      fhEtaPhiPhotonTriggerEMCALBC[i] = new TH2F
+      (Form("hEtaPhiPhotonTriggerEMCALBC%d",i-5),
+       Form("cluster,E > 2 GeV, #eta vs #phi, PhotonTrigger EMCAL-BC=%d",i-5),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiPhotonTriggerEMCALBC[i]->SetYTitle("#phi (rad)");
+      fhEtaPhiPhotonTriggerEMCALBC[i]->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiPhotonTriggerEMCALBC[i]) ;
+      
+      fhTimePhotonTriggerEMCALBC[i] = new TH2F
+      (Form("hTimePhotonTriggerEMCALBC%d",i-5),
+       Form("time of cluster vs E of clusters, PhotonTrigger EMCAL-BC=%d",i-5),
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimePhotonTriggerEMCALBC[i]->SetXTitle("E (GeV)");
+      fhTimePhotonTriggerEMCALBC[i]->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimePhotonTriggerEMCALBC[i]);
+      
+      fhTimePhotonTriggerEMCALBCPileUpSPD[i] = new TH2F
+      (Form("hTimePhotonTriggerEMCALBC%dPileUpSPD",i-5),
+       Form("time of cluster vs E of clusters, PhotonTrigger EMCAL-BC=%d",i-5),
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimePhotonTriggerEMCALBCPileUpSPD[i]->SetXTitle("E (GeV)");
+      fhTimePhotonTriggerEMCALBCPileUpSPD[i]->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimePhotonTriggerEMCALBCPileUpSPD[i]);
+      
+    }
+  }
   
   fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
                        nptbins,ptmin,ptmax,10,0,10); 
@@ -2677,7 +2820,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       Double_t vertex[]={0,0,0};
       calo->GetMomentum(mom,vertex) ;
     }
-        
+    
     //--------------------------------------
     // Cluster selection
     //--------------------------------------
@@ -2777,7 +2920,30 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Add number of local maxima to AOD, method name in AOD to be FIXED
     aodph.SetFiducialArea(nMaxima);
     
-
+    if(fFillEMCALBCHistograms && fCalorimeter=="EMCAL")
+    {
+      Double_t calotof   = calo->GetTOF()*1e9;
+      Float_t  calotofUS = TMath::Abs(calotof);
+      Float_t phicluster = aodph.Phi();
+      if(phicluster < 0) phicluster+=TMath::TwoPi();
+      
+      if(calo->E() > 2)
+      {
+        if      (calotofUS < 25) fhEtaPhiPhotonEMCALBC0->Fill(aodph.Eta(), phicluster);
+        else if (calotofUS < 75) fhEtaPhiPhotonEMCALBC1->Fill(aodph.Eta(), phicluster);
+        else                     fhEtaPhiPhotonEMCALBCN->Fill(aodph.Eta(), phicluster);
+      }
+      
+      Int_t bc = GetReader()->IsPileUpClusterTriggeredEvent();
+      if(bc > -6 && bc < 8)
+      {
+        if(calo->E() > 2) fhEtaPhiPhotonTriggerEMCALBC[bc+5]->Fill(aodph.Eta(), phicluster);
+        fhTimePhotonTriggerEMCALBC[bc+5]->Fill(calo->E(), calotof);
+        if(GetReader()->IsPileUpFromSPD()) fhTimePhotonTriggerEMCALBCPileUpSPD[bc+5]->Fill(calo->E(), calotof);
+      }
+      else printf("AliAnaPhoton::MakeAnalysisFillAOD() - Trigger BC not expected = %d\n",bc);
+    }
+    
     //Add AOD with photon object to aod branch
     AddAODParticle(aodph);
     
