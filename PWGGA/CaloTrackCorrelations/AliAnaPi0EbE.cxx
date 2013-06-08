@@ -55,12 +55,13 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fRejectTrackMatch(kTRUE),
     fFillPileUpHistograms(0),
     fFillWeightHistograms(kFALSE), fFillTMHisto(0),              
-    fFillSelectClHisto(0),         fFillOnlySimpleSSHisto(1),
+    fFillSelectClHisto(0),         fFillOnlySimpleSSHisto(1),    fFillEMCALBCHistograms(0),
     fInputAODGammaConvName(""),
     // Histograms
     fhPt(0),                       fhE(0),                    
     fhEEta(0),                     fhEPhi(0),                    
     fhPtEta(0),                    fhPtPhi(0),                   fhEtaPhi(0),
+    fhEtaPhiEMCALBC0(0),           fhEtaPhiEMCALBC1(0),          fhEtaPhiEMCALBCN(0),
     fhPtCentrality(),              fhPtEventPlane(0),
     fhPtReject(0),                 fhEReject(0),
     fhEEtaReject(0),               fhEPhiReject(0),              fhEtaPhiReject(0),
@@ -183,6 +184,12 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhLambda0ForW0[i] = 0;
     //fhLambda1ForW0[i] = 0;
     if(i<8)fhMassPairLocMax[i] = 0;
+  }
+  
+  for(Int_t i = 0; i < 12; i++)
+  {
+    fhEtaPhiTriggerEMCALBC[i] = 0 ;
+    fhTimeTriggerEMCALBC  [i] = 0 ;
   }
   
   //Initialize parameters
@@ -697,6 +704,54 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhEtaPhi->SetYTitle("#phi (rad)");
   fhEtaPhi->SetXTitle("#eta");
   outputContainer->Add(fhEtaPhi) ; 
+  
+  if(fCalorimeter=="EMCAL" && fFillEMCALBCHistograms)
+  {
+    fhEtaPhiEMCALBC0  = new TH2F
+    ("hEtaPhiEMCALBC0","cluster,E > 2 GeV, #eta vs #phi, for clusters with |time| < 25 ns, EMCAL-BC=0",netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhEtaPhiEMCALBC0->SetYTitle("#phi (rad)");
+    fhEtaPhiEMCALBC0->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiEMCALBC0) ;
+    
+    fhEtaPhiEMCALBC1  = new TH2F
+    ("hEtaPhiEMCALBC1","cluster,E > 2 GeV, #eta vs #phi, for clusters with 25 < |time| < 75 ns, EMCAL-BC=1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhEtaPhiEMCALBC1->SetYTitle("#phi (rad)");
+    fhEtaPhiEMCALBC1->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiEMCALBC1) ;
+    
+    fhEtaPhiEMCALBCN  = new TH2F
+    ("hEtaPhiEMCALBCN","cluster,E > 2 GeV, #eta vs #phi, for clusters with |time| > 75 ns, EMCAL-BC>1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhEtaPhiEMCALBCN->SetYTitle("#phi (rad)");
+    fhEtaPhiEMCALBCN->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiEMCALBCN) ;
+    
+    for(Int_t i = 0; i < 12; i++)
+    {
+      fhEtaPhiTriggerEMCALBC[i] = new TH2F
+      (Form("hEtaPhiTriggerEMCALBC%d",i-5),
+       Form("cluster,E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=%d",i-5),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBC[i]->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBC[i]->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBC[i]) ;
+      
+      fhTimeTriggerEMCALBC[i] = new TH2F
+      (Form("hTimeTriggerEMCALBC%d",i-5),
+       Form("time of cluster vs E of clusters, Trigger EMCAL-BC=%d",i-5),
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBC[i]->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBC[i]->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBC[i]);
+      
+      fhTimeTriggerEMCALBCPileUpSPD[i] = new TH2F
+      (Form("hTimeTriggerEMCALBC%dPileUpSPD",i-5),
+       Form("time of cluster vs E of clusters, Trigger EMCAL-BC=%d",i-5),
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCPileUpSPD[i]->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCPileUpSPD[i]->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCPileUpSPD[i]);
+    }
+  }
   
   fhPtCentrality  = new TH2F("hPtCentrality","centrality vs p_{T}",nptbins,ptmin,ptmax, 100,0,100);
   fhPtCentrality->SetYTitle("centrality");
@@ -2433,7 +2488,6 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       fhMCSelectedMassSplitPt[mcIndex]->Fill(ptSplit,mass);
 
     }
-
     
     //-----------------------
     //Create AOD for analysis
@@ -2465,7 +2519,32 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     // Fill histograms to undertand pile-up before other cuts applied
     // Remember to relax time cuts in the reader
-    FillPileUpHistograms(calo->E(),calo->GetTOF()*1e9);
+    Double_t tofcluster   = calo->GetTOF()*1e9;
+    Double_t tofclusterUS = TMath::Abs(tofcluster);
+
+    FillPileUpHistograms(calo->E(),tofcluster);
+ 
+    if(fFillEMCALBCHistograms && fCalorimeter=="EMCAL")
+    {
+      Float_t phicluster = aodpi0.Phi();
+      if(phicluster < 0) phicluster+=TMath::TwoPi();
+      
+      if(calo->E() > 2)
+      {
+        if      (tofclusterUS < 25) fhEtaPhiEMCALBC0->Fill(aodpi0.Eta(), phicluster);
+        else if (tofclusterUS < 75) fhEtaPhiEMCALBC1->Fill(aodpi0.Eta(), phicluster);
+        else                        fhEtaPhiEMCALBCN->Fill(aodpi0.Eta(), phicluster);
+      }
+      
+      Int_t bc = GetReader()->IsPileUpClusterTriggeredEvent();
+      if(bc > -7 && bc < 8)
+      {
+        if(calo->E() > 2) fhEtaPhiTriggerEMCALBC[bc+5]->Fill(aodpi0.Eta(), phicluster);
+        fhTimeTriggerEMCALBC[bc+5]->Fill(calo->E(), tofcluster);
+        if(GetReader()->IsPileUpFromSPD()) fhTimeTriggerEMCALBCPileUpSPD[bc+5]->Fill(calo->E(), tofcluster);
+      }
+      else printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Trigger BC not expected = %d\n",bc);
+    }
     
     //Add AOD with pi0 object to aod branch
     AddAODParticle(aodpi0);

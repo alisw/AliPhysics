@@ -49,7 +49,8 @@ fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(kFALSE),           fMakeAOD(kFALSE), 
 fAnaDebug(0),                 fCuts(new TList), 
 fScaleFactor(-1),
-fhNEvents(0),                 fhNExoticEvents(), fhNPileUpEvents(0),
+fhNEvents(0),                 fhNExoticEvents(0),
+fhNPileUpEvents(0),           fhNPileUpEventsTriggerBC0(0),
 fhZVertex(0),                 
 fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
@@ -58,7 +59,8 @@ fhNMergedFiles(0),            fhScaleFactor(0),
 fhEMCalBCEvent(0),            fhEMCalBCEventCut(0),
 fhTrackBCEvent(0),            fhTrackBCEventCut(0),
 fhPrimaryVertexBC(0),         fhTimeStampFraction(0),
-fhNPileUpVertSPD(0),          fhNPileUpVertTracks(0)
+fhNPileUpVertSPD(0),          fhNPileUpVertTracks(0),
+fhPileUpClusterTrigger(0)
 {
   //Default Ctor
   if(fAnaDebug > 1 ) printf("*** Analysis Maker Constructor *** \n");
@@ -79,7 +81,8 @@ fScaleFactor(maker.fScaleFactor),
 fhNEvents(maker.fhNEvents),
 fhNExoticEvents(maker.fhNExoticEvents),
 fhNPileUpEvents(maker.fhNPileUpEvents),
-fhZVertex(maker.fhZVertex),    
+fhNPileUpEventsTriggerBC0(maker.fhNPileUpEventsTriggerBC0),
+fhZVertex(maker.fhZVertex),
 fhPileUpClusterMult(maker.fhPileUpClusterMult),
 fhPileUpClusterMultAndSPDPileUp(maker.fhPileUpClusterMultAndSPDPileUp),
 fhTrackMult(maker.fhTrackMult),
@@ -94,7 +97,8 @@ fhTrackBCEventCut(maker.fhTrackBCEventCut),
 fhPrimaryVertexBC(maker.fhPrimaryVertexBC),
 fhTimeStampFraction(maker.fhTimeStampFraction),
 fhNPileUpVertSPD(maker.fhNPileUpVertSPD),
-fhNPileUpVertTracks(maker.fhNPileUpVertTracks)
+fhNPileUpVertTracks(maker.fhNPileUpVertTracks),
+fhPileUpClusterTrigger(maker.fhPileUpClusterTrigger)
 {
   // cpy ctor
 }
@@ -173,7 +177,7 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
   
   fhNEvents        ->Fill(0); // Number of events analyzed
-    
+  
   if( fReader->IsPileUpFromSPD())
     fhNPileUpEvents->Fill(0.5);
   //if( event->IsPileupFromSPDInMultBins())
@@ -190,6 +194,27 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     fhNPileUpEvents->Fill(6.5);
   if( fReader->IsPileUpFromNotSPDAndNotEMCal() )
     fhNPileUpEvents->Fill(7.5);
+  
+  if(fReader->IsPileUpClusterTriggeredEvent() == 0 ||
+     fReader->IsPileUpClusterTriggeredEvent() == 6   )
+  {
+    if( fReader->IsPileUpFromSPD())
+      fhNPileUpEventsTriggerBC0->Fill(0.5);
+    //if( event->IsPileupFromSPDInMultBins())
+    //  fhNPileUpEventsTriggerBC0->Fill(1.5);
+    if( fReader->IsPileUpFromEMCal())
+      fhNPileUpEventsTriggerBC0->Fill(2.5);
+    if( fReader->IsPileUpFromSPDOrEMCal() )
+      fhNPileUpEventsTriggerBC0->Fill(3.5);
+    if( fReader->IsPileUpFromSPDAndEMCal() )
+      fhNPileUpEventsTriggerBC0->Fill(4.5);
+    if( fReader->IsPileUpFromSPDAndNotEMCal() )
+      fhNPileUpEventsTriggerBC0->Fill(5.5);
+    if( fReader->IsPileUpFromEMCalAndNotSPD() )
+      fhNPileUpEventsTriggerBC0->Fill(6.5);
+    if( fReader->IsPileUpFromNotSPDAndNotEMCal() )
+      fhNPileUpEventsTriggerBC0->Fill(7.5);
+  }
   
   if(fReader->IsPileUpFromSPD())
     fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
@@ -245,8 +270,6 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
 
     fhTimeStampFraction->Fill(timeStampFrac);
   }
-  
-  
 }
 
 //_______________________________________________________
@@ -287,6 +310,15 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNExoticEvents->SetYTitle("# exotic events");
   fOutputContainer->Add(fhNExoticEvents);
   
+  fhPileUpClusterTrigger      = new TH1F("hNPileUpClusterTriggerEvents",   "Number of analyzed events triggered by a cluster in a BC"     , 13 , -5 , 8  ) ;
+  fhPileUpClusterTrigger->SetYTitle("# events");
+  //fhPileUpClusterTrigger->SetXTitle("# BC");
+  for(Int_t i = 1; i < 12; i++)
+    fhPileUpClusterTrigger->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-6));
+  fhPileUpClusterTrigger->GetXaxis()->SetBinLabel(12 ,"No Match,High E, BC0");
+  fhPileUpClusterTrigger->GetXaxis()->SetBinLabel(13 ,"No Match");
+  fOutputContainer->Add(fhPileUpClusterTrigger);
+  
   fhNPileUpEvents      = new TH1F("hNPileUpEvents",   "Number of events considered as pile-up", 8 , 0 , 8 ) ;
   fhNPileUpEvents->SetYTitle("# events");
   fhNPileUpEvents->GetXaxis()->SetBinLabel(1 ,"SPD");
@@ -298,6 +330,19 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNPileUpEvents->GetXaxis()->SetBinLabel(7 ,"EMCal && !SPD");
   fhNPileUpEvents->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
   fOutputContainer->Add(fhNPileUpEvents);
+
+  fhNPileUpEventsTriggerBC0      = new TH1F("hNPileUpEventsTriggerBC0","Number of events considered as pile-up, trigger cluster in BC=0", 8 , 0 , 8 ) ;
+  fhNPileUpEventsTriggerBC0->SetYTitle("# events");
+  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(1 ,"SPD");
+  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(2 ,"Multi SPD");
+  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(3 ,"EMCal");
+  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(4 ,"EMCal || SPD");
+  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(5 ,"EMCal && SPD");
+  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(6 ,"!EMCal && SPD");
+  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(7 ,"EMCal && !SPD");
+  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
+  fOutputContainer->Add(fhNPileUpEventsTriggerBC0);
+
   
   fhTrackBCEvent      = new TH1F("hTrackBCEvent",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
   fhTrackBCEvent->SetYTitle("# events");
@@ -543,15 +588,19 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
+  
+  if(fReader->IsExoticEvent()) fhNExoticEvents->Fill(0) ;
+  
+  fhPileUpClusterTrigger->Fill(fReader->IsPileUpClusterTriggeredEvent());
+  //printf("Maker: Cluster trigger BC = %d\n",fReader->IsPileUpClusterTriggeredEvent());
+
   if(!ok)
-  {
-    if(fReader->IsExoticEvent()) fhNExoticEvents->Fill(0) ;
-    
+  {    
 	  if(fAnaDebug >= 1 )printf("*** Skip event *** %d \n",iEntry);
     fReader->ResetLists();
 	  return ;
   }
-	
+  
   //Magic line to write events to file
   if(fReader->WriteDeltaAODToFile())AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
   

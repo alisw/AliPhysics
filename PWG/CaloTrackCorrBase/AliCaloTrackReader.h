@@ -247,14 +247,21 @@ public:
   UInt_t           GetEventTriggerMask()             const { return fEventTriggerMask        ; }
   void             SetEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAny) 
                                                            { fEventTriggerMask = evtTrig     ; }
-
-  void             RejectExoticEvents();
+  TArrayI          GetL0TriggerPatches();
+  void             RejectExoticEvents(TArrayI patches);
   Bool_t           IsExoticEvent()                         { return fIsExoticEvent           ; }
+  void             SwitchOffExoticEventsRemoval()          { fRemoveExoticEvents    = kFALSE ; }
   void             SwitchOnExoticEventsRemoval(Bool_t all = kFALSE)
                                                            { fRemoveExoticEvents    = kTRUE  ;
                                                              fForceExoticRejection  = all    ; }
-  void             SwitchOffExoticEventsRemoval()          { fRemoveExoticEvents    = kFALSE ; }
-  void             SetExoticEventTrigger(Float_t tr)       { fExoticTrigger         = tr     ; }
+  
+  Int_t            IsPileUpClusterTriggeredEvent()         { return fIsTriggerEventOutBC     ; }
+  void             SwitchOffTriggerOutBCEventsRemoval()    { fRemoveTriggerOutBCEvents = kFALSE ; }
+  void             SwitchOnTriggerOutBCEventsRemoval()     { fRemoveTriggerOutBCEvents = kTRUE  ; }
+  
+  void             RejectTriggeredEventsByPileUp(TArrayI patches);
+  
+  void             SetEventTriggerThreshold(Float_t tr)    { fTriggerEventThreshold       = tr     ; }
   
   void             SwitchOffExoticEventsFromTriggerPatch() { fTriggerPatchExoticRejection = kFALSE ; }
   void             SwitchOnExoticEventsFromTriggerPatch()  { fTriggerPatchExoticRejection = kTRUE  ; }
@@ -265,7 +272,6 @@ public:
   UInt_t           GetMixEventTriggerMask()             const { return fMixEventTriggerMask  ; }
   void             SetMixEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAnyINT) 
                                                            { fMixEventTriggerMask = evtTrig  ; }
-  
   
   Bool_t           IsEventTriggerAtSEOn()            const { return fEventTriggerAtSE        ; }
   void             SwitchOnEventTriggerAtSE()              { fEventTriggerAtSE      = kTRUE  ; }
@@ -335,10 +341,10 @@ public:
   void             SetEMCalEventBCcut(Int_t bc)            { if(bc >=0 && bc < 19) fEMCalBCEventCut[bc] = 1 ; }
   void             SetTrackEventBCcut(Int_t bc)            { if(bc >=0 && bc < 19) fTrackBCEventCut[bc] = 1 ; }
 
-  Int_t           GetVertexBC(const AliVVertex * vtx);
-  Int_t           GetVertexBC()                  const     { return fVertexBC              ; }
-  void            SwitchOnRecalculateVertexBC()            { fRecalculateVertexBC = kTRUE  ; }
-  void            SwitchOffRecalculateVertexBC()           { fRecalculateVertexBC = kFALSE ; }
+  Int_t            GetVertexBC(const AliVVertex * vtx);
+  Int_t            GetVertexBC()                  const    { return fVertexBC              ; }
+  void             SwitchOnRecalculateVertexBC()           { fRecalculateVertexBC = kTRUE  ; }
+  void             SwitchOffRecalculateVertexBC()          { fRecalculateVertexBC = kFALSE ; }
   
   // Track selection
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
@@ -610,10 +616,12 @@ public:
   Bool_t           fRemoveLEDEvents;             // Remove events where LED was wrongly firing - EMCAL LHC11a
   
   Bool_t           fRemoveExoticEvents;          // Remove events triggered by exotic cluster
+  Bool_t           fRemoveTriggerOutBCEvents;    // Remove events triggered by pile-up cluster
   Bool_t           fTriggerPatchExoticRejection; // Search for the trigger patch and check if associated cluster was the trigger
   Int_t            fTriggerPatchTimeWindow[2];   // Trigger patch selection window
-  Float_t          fExoticTrigger;               // Threshold to look for triggered events by exotic clusters
+  Float_t          fTriggerEventThreshold;       // Threshold to look for triggered events 
   Bool_t           fIsExoticEvent;               // Exotic event flag
+  Int_t            fIsTriggerEventOutBC;         // Event triggered by pile-up in BC
   Bool_t           fForceExoticRejection;        // Reject events triggered by exotic only on EMC triggered events, except in MC to study false rejections
   
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...

@@ -97,6 +97,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhNEvents;           //! Number of events counter histogram
   TH1F *   fhNExoticEvents;     //! Number of events triggered by exotic, counter histogram
   TH1F *   fhNPileUpEvents;     //! N events pasing pile up cut
+  TH1F *   fhNPileUpEventsTriggerBC0; //! N events pasing pile up cut
   TH1F *   fhZVertex;           //! Vertex of accepted event
   TH1F *   fhPileUpClusterMult; //! N clusters with high time
   TH1F *   fhPileUpClusterMultAndSPDPileUp; //! N clusters with high time in events tagged as pile-up by SPD
@@ -113,10 +114,11 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhTimeStampFraction; //! event fraction depending on Time Stamp, only if activated on reader
   TH1F *   fhNPileUpVertSPD;    //! number of pile-up vertices from SPD
   TH1F *   fhNPileUpVertTracks; //! number of pile-up vertices from tracks
+  TH1F *   fhPileUpClusterTrigger; //! number of events triggered, depending on BC of the cluster
   
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,16)
+  ClassDef(AliAnaCaloTrackCorrMaker,17)
 } ;
  
 

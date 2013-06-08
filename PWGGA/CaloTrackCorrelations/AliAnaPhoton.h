@@ -57,22 +57,26 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag) ;
   
-  void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms = kTRUE  ; }
-  void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms = kFALSE ; }  
+  void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms      = kTRUE  ; }
+  void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms      = kFALSE ; }  
   
   void         SwitchOnOnlySimpleSSHistoFill()        { fFillOnlySimpleSSHisto = kTRUE  ; }
   void         SwitchOffOnlySimpleHistoFill()         { fFillOnlySimpleSSHisto = kFALSE ; }
   
   void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut);
   
-  void         SwitchOnTMHistoFill()                  { fFillTMHisto      = kTRUE  ; }
-  void         SwitchOffTMHistoFill()                 { fFillTMHisto      = kFALSE ; }
+  void         SwitchOnTMHistoFill()                  { fFillTMHisto           = kTRUE  ; }
+  void         SwitchOffTMHistoFill()                 { fFillTMHisto           = kFALSE ; }
 
   void         FillPileUpHistograms(Float_t energy, Float_t pt, Float_t time) ;
   void         FillPileUpHistogramsPerEvent(TObjArray * clusters) ;
 
-  void         SwitchOnFillPileUpHistograms()         { fFillPileUpHistograms = kTRUE  ; }
-  void         SwitchOffFillPileUpHistograms()        { fFillPileUpHistograms = kFALSE ; }    
+  void         SwitchOnFillPileUpHistograms()         { fFillPileUpHistograms  = kTRUE  ; }
+  void         SwitchOffFillPileUpHistograms()        { fFillPileUpHistograms  = kFALSE ; }    
+  
+  void         SwitchOnFillEMCALBCHistograms()        { fFillEMCALBCHistograms = kTRUE  ; }
+  void         SwitchOffFillEMCALBCHistograms()       { fFillEMCALBCHistograms = kFALSE ; }
+
   
   // Analysis parameters setters getters
   
@@ -92,10 +96,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SetNCellCut(Int_t n)                   { fNCellsCut = n             ; }
   Double_t     GetNCellCut()                    const { return fNCellsCut          ; }
   
-  void           SetNLMCut(Int_t min, Int_t max)             { fNLMCutMin = min; 
+  void         SetNLMCut(Int_t min, Int_t max)        { fNLMCutMin = min; 
     fNLMCutMax = max                ; }
-  Int_t          GetNLMCutMin()                        const { return fNLMCutMin               ; }
-  Int_t          GetNLMCutMax()                        const { return fNLMCutMax               ; }	
+  Int_t        GetNLMCutMin()                   const { return fNLMCutMin          ; }
+  Int_t        GetNLMCutMax()                   const { return fNLMCutMax          ; }	
   
   
   Bool_t       IsTrackMatchRejectionOn()        const { return fRejectTrackMatch   ; }
@@ -138,20 +142,36 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNOriginHistograms;           // Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;          // Fill only NPrimaryHistograms of the 7 defined types
   Bool_t   fFillPileUpHistograms;        // Fill pile-up related histograms
+  Bool_t   fFillEMCALBCHistograms;       // Fill eta-phi BC dependent histograms
   
   //Histograms 
   TH1F * fhClusterCuts[10];              //! control histogram on the different photon selection cuts
   TH2F * fhNCellsE;                      //! number of cells in cluster vs E 
   TH2F * fhCellsE;                       //! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;          //! Fraction of energy carried by cell with maximum energy
-  TH2F * fhTimeE;                        //! time of cluster vs E 
+  TH2F * fhTimeE;                        //! time of cluster vs E
+  
+  TH2F * fhEtaPhi  ;                     //! Pseudorapidity vs Phi of clusters for E > 0.5
+  TH2F * fhEtaPhiEMCALBC0  ;             //! Pseudorapidity vs Phi of clusters for E > 0.5
+  TH2F * fhEtaPhiEMCALBC1  ;             //! Pseudorapidity vs Phi of clusters for E > 0.5
+  TH2F * fhEtaPhiEMCALBCN  ;             //! Pseudorapidity vs Phi of clusters for E > 0.5
+
+  TH2F * fhEtaPhiTriggerEMCALBC[12] ;     //! Pseudorapidity vs Phi of clusters for E > 0.5
+  TH2F * fhTimeTriggerEMCALBC  [12] ;     //! Time distribution of clusters, when trigger is in a given BC
+  TH2F * fhTimeTriggerEMCALBCPileUpSPD[12]; //! Time distribution of clusters, when trigger is in a given BC, tagged as pile-up SPD
 
   TH1F * fhEPhoton    ;                  //! Number of identified photon vs energy
   TH1F * fhPtPhoton   ;                  //! Number of identified photon vs transerse momentum 
   TH2F * fhPhiPhoton  ;                  //! Azimuthal angle of identified  photon vs transerse momentum 
   TH2F * fhEtaPhoton  ;                  //! Pseudorapidity of identified  photon vs transerse momentum 
-  TH2F * fhEtaPhiPhoton  ;               //! Pseudorapidity vs Phi of identified  photon for transerse momentum > 0.5
-  TH2F * fhEtaPhi05Photon  ;             //! Pseudorapidity vs Phi of identified  photon for transerse momentum < 0.5
+  TH2F * fhEtaPhiPhoton  ;               //! Pseudorapidity vs Phi of identified  photon for E > 0.5
+  TH2F * fhEtaPhi05Photon  ;             //! Pseudorapidity vs Phi of identified  photon for E < 0.5
+  TH2F * fhEtaPhiPhotonEMCALBC0  ;       //! Pseudorapidity vs Phi of identified  photon for E > 0.5
+  TH2F * fhEtaPhiPhotonEMCALBC1  ;       //! Pseudorapidity vs Phi of identified  photon for E > 0.5
+  TH2F * fhEtaPhiPhotonEMCALBCN  ;       //! Pseudorapidity vs Phi of identified  photon for E > 0.5
+  TH2F * fhEtaPhiPhotonTriggerEMCALBC[12]; //! Pseudorapidity vs Phi of photons for E > 0.5
+  TH2F * fhTimePhotonTriggerEMCALBC  [12]; //! Time distribution of photons, when trigger is in a given BC
+  TH2F * fhTimePhotonTriggerEMCALBCPileUpSPD[12] ; //! Time distribution of photons, when trigger is in a given BC, tagged as pile-up SPD
   TH2F * fhPtCentralityPhoton    ;       //! centrality  vs photon pT
   TH2F * fhPtEventPlanePhoton    ;       //! event plane vs photon pT
   
@@ -318,7 +338,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,29)
+  ClassDef(AliAnaPhoton,30)
 
 } ;
  
