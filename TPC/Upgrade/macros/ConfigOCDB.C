@@ -1,4 +1,4 @@
-void SetupOCDB(Int_t run=0) {
+void ConfigOCDB(Int_t run=0) {
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(run);
   // magnetic field
