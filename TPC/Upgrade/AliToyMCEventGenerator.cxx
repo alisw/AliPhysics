@@ -1,32 +1,46 @@
 #include <iostream>
-#include "AliToyMCEventGenerator.h"
-#include <AliTPCROC.h>
-#include <AliTrackPointArray.h>
+
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 #include <TH2F.h>
+#include <TGeoGlobalMagField.h>
+
+#include <AliTPCROC.h>
+#include <AliTrackPointArray.h>
 #include <AliTrackerBase.h>
 #include <AliCDBManager.h>
 #include <AliTPCParam.h>
 #include <AliGeomManager.h>
 #include <AliTPCcalibDB.h>
-#include <TGeoGlobalMagField.h>
 #include <AliTPCclusterMI.h>
+#include <AliTPCSpaceCharge3D.h>
+
+#include "AliToyMCEvent.h"
+#include "AliToyMCTrack.h"
+
+#include "AliToyMCEventGenerator.h"
+
 ClassImp(AliToyMCEventGenerator);
 
 
 AliToyMCEventGenerator::AliToyMCEventGenerator()
   :TObject()
   ,fTPCParam(0x0)
+  ,fEvent(0x0)
+  ,fSpaceCharge(0x0)
+  ,fOutputFileName("toyMC.root")
+  ,fOutFile(0x0)
+  ,fOutTree(0x0)
 {
   //TODO: Add method to set custom space charge file
   fSpaceCharge = new AliTPCSpaceCharge3D();
-  fSpaceCharge->SetSCDataFileName("SC_NeCO2_eps5_50kHz.root");
+  fSpaceCharge->SetSCDataFileName("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz.root");
   fSpaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
   //fSpaceCharge->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
   fSpaceCharge->InitSpaceCharge3DDistortion();
   fSpaceCharge->CreateHistoSCinZR(0.,50,50)->Draw("surf1");
-  fSpaceCharge->CreateHistoDRPhiinZR(0,100,100)->Draw("colz"); 
+  fSpaceCharge->CreateHistoDRPhiinZR(0,100,100)->Draw("colz");
+  //!!! This should be handled by the CongiOCDB macro
   const char* ocdb="local://$ALICE_ROOT/OCDB/";
   AliCDBManager::Instance()->SetDefaultStorage(ocdb);
   AliCDBManager::Instance()->SetRun(0);   
@@ -38,7 +52,12 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
 //________________________________________________________________
 AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen)
   :TObject(gen)
+  ,fTPCParam(gen.fTPCParam)
+  ,fEvent(0x0)
   ,fSpaceCharge(gen.fSpaceCharge)
+  ,fOutputFileName(gen.fOutputFileName)
+  ,fOutFile(0x0)
+  ,fOutTree(0x0)
 {
   //
 }
@@ -46,10 +65,18 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
 AliToyMCEventGenerator::~AliToyMCEventGenerator() 
 {
   delete fSpaceCharge;
+  //!!! Is fTPCParam not owned by the CDB manager?
   delete fTPCParam;
 }
 //________________________________________________________________
-Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0) {
+Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
+{
+  //
+  //
+  //
+
+  //!!! Should this complete function not be moved to AliToyMCTrack, and directly called from the constructor
+  //    or setter of the track parameters?
 
   if(!fTPCParam) {
     fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
@@ -75,6 +102,7 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
   AliTrackPointArray pointArray1(nMaxPoints);
   Double_t xyz[3];
 
+  //!!! when does the propagation not work, how often does it happen?
   if (!AliTrackerBase::PropagateTrackTo(&track,iFCRadius,kMass,5,kTRUE,kMaxSnp)) return 0;
 
   Int_t npoints=0;
@@ -140,10 +168,10 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
     tempCl->SetY(yArr[iPoint]);
     tempCl->SetZ(zArr[iPoint]);
     
-    Float_t xyz[3] = {xArrDist[iPoint],yArrDist[iPoint],zArrDist[iPoint]};
+    Float_t xyz2[3] = {xArrDist[iPoint],yArrDist[iPoint],zArrDist[iPoint]};
     Int_t index[3] = {0};
 
-    Float_t padRow = fTPCParam->GetPadRow(xyz,index);
+    Float_t padRow = fTPCParam->GetPadRow(xyz2,index);
     Int_t sector = index[1];
 
     if(padRow < 0 || (sector < 36 && padRow>62) || (sector > 35 &&padRow > 95) ) continue; //outside sensitive area
@@ -189,3 +217,46 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
   
   
 }
+//________________________________________________________________
+Bool_t AliToyMCEventGenerator::ConnectOutputFile()
+{
+  //
+  // Create the output file name and tree and connect the event
+  //
+
+  fOutFile = new TFile(fOutputFileName.Data(),"recreate");
+
+  if (!fOutFile || !fOutFile->IsOpen()){
+    delete fOutFile;
+    fOutFile=0x0;
+    return kFALSE;
+  }
+  
+  fOutTree = new TTree("toyMCtree","Tree with toyMC simulation");
+  fOutTree->Branch("event","AliToyMCEvent",&fEvent);
+
+  return kTRUE;
+}
+
+//________________________________________________________________
+Bool_t AliToyMCEventGenerator::CloseOutputFile()
+{
+  //
+  // close the output file
+  //
+  if (!fOutFile) return kFALSE;
+  fOutFile->Write();
+  fOutFile->Close();
+  delete fOutFile;
+  fOutFile=0x0;
+
+  return kTRUE;
+}
+
+//________________________________________________________________
+void AliToyMCEventGenerator::FillTree()
+{
+  // fill the tree
+  if (fOutTree) fOutTree->Fill();
+}
+

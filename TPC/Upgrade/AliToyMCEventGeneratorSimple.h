@@ -2,9 +2,10 @@
 #define AliToyMCEventGeneratorSimple_H
 
 
-#include "AliToyMCEvent.h"
-#include "AliToyMCTrack.h"
 #include "AliToyMCEventGenerator.h"
+
+class AliToyMCEvent;
+
 class AliToyMCEventGeneratorSimple : public AliToyMCEventGenerator {
  public:
   AliToyMCEventGeneratorSimple();
@@ -14,6 +15,8 @@ class AliToyMCEventGeneratorSimple : public AliToyMCEventGenerator {
 
   AliToyMCEvent* Generate(Double_t time);
   void SetParameters(Double_t vertexMean, Double_t vertexSigma);
+
+  void RunSimulation(const Int_t nevents=10);
  private:
   
   Double_t fVertexMean;

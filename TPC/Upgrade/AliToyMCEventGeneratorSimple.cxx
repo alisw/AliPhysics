@@ -1,9 +1,12 @@
 #include <iostream>
-#include "AliToyMCEventGeneratorSimple.h"
+
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 #include <TF1.h>
+
 #include "AliToyMCEvent.h"
+
+#include "AliToyMCEventGeneratorSimple.h"
 
 ClassImp(AliToyMCEventGeneratorSimple);
 
@@ -85,4 +88,26 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time) {
   return retEvent;
 }
 
+//________________________________________________________________
+void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/)
+{
+  //
+  // run simple simulation with equal event spacing
+  //
+
+  if (!ConnectOutputFile()) return;
+
+  Double_t eventTime=0.;
+  const Double_t eventSpacing=1./50e3; //50kHz equally spaced
+  
+  for (Int_t ievent=0; ievent<nevents; ++ievent){
+    fEvent = Generate(eventTime);
+    FillTree();
+    delete fEvent;
+    fEvent=0x0;
+    eventTime+=eventSpacing;
+  }
+
+  CloseOutputFile();
+}
 
