@@ -2,11 +2,11 @@ Continuous readout toy simulation
 
 loadlibs.C    //modified version of the one used for GEMtest code. I haven't looked into this so it probably contains a lot of stuff that is not needed
 
-ToyMCTrack, ToyMCEvent //classes for storing event and track parameters
+AliToyMCTrack, AliToyMCEvent //classes for storing event and track parameters
 
-ToyMCEventGenerator   //base class for event generators, contains DistortTrack method to distort track using method borrowed from AliTPCCorrection
+AliToyMCEventGenerator   //base class for event generators, contains DistortTrack method to distort track using method borrowed from AliTPCCorrection
 
-ToyMCEventGeneratorSimple  //simple first MC event generator, borrowing from Marians macro. Inherits from ToyMCEventGenerator to get DistortTrack method. Generate(Double_t time) generates and returns an event at time time
+AliToyMCEventGeneratorSimple  //simple first MC event generator, borrowing from Marians macro. Inherits from AliToyMCEventGenerator to get DistortTrack method. Generate(Double_t time) generates and returns an event at time time
 
 makeTree.C  //short macro to generate events from a poisson distr and storing in a ROOT tree.
 
