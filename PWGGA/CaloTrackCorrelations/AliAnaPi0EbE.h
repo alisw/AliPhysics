@@ -162,9 +162,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEtaPhiEMCALBC1  ;       //! Pseudorapidity vs Phi of clusters 
   TH2F         * fhEtaPhiEMCALBCN  ;       //! Pseudorapidity vs Phi of clusters 
 
-  TH2F         * fhEtaPhiTriggerEMCALBC[12]  ;    //! Pseudorapidity vs Phi of pi0 for E > 0.5
-  TH2F         * fhTimeTriggerEMCALBC  [12]  ;    //! Time distribution of pi0, when trigger is in a given BC
-  TH2F         * fhTimeTriggerEMCALBCPileUpSPD[12] ; //! Time distribution of pi0, when trigger is in a given BC, tagged as pile-up SPD
+  TH2F         * fhEtaPhiTriggerEMCALBC[13]  ;    //! Pseudorapidity vs Phi of pi0 for E > 0.5
+  TH2F         * fhTimeTriggerEMCALBC  [13]  ;    //! Time distribution of pi0, when trigger is in a given BC
+  TH2F         * fhTimeTriggerEMCALBCPileUpSPD[13] ; //! Time distribution of pi0, when trigger is in a given BC, tagged as pile-up SPD
 
   TH2F         * fhPtCentrality ;          //! centrality  vs pi0/eta pT
   TH2F         * fhPtEventPlane ;          //! event plane vs pi0/eta pT

@@ -186,7 +186,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     if(i<8)fhMassPairLocMax[i] = 0;
   }
   
-  for(Int_t i = 0; i < 12; i++)
+  for(Int_t i = 0; i < 13; i++)
   {
     fhEtaPhiTriggerEMCALBC[i] = 0 ;
     fhTimeTriggerEMCALBC  [i] = 0 ;
@@ -725,7 +725,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhEtaPhiEMCALBCN->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiEMCALBCN) ;
     
-    for(Int_t i = 0; i < 12; i++)
+    for(Int_t i = 0; i < 13; i++)
     {
       fhEtaPhiTriggerEMCALBC[i] = new TH2F
       (Form("hEtaPhiTriggerEMCALBC%d",i-5),
