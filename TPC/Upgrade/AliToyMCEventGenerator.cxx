@@ -42,13 +42,16 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
 //   fSpaceCharge->CreateHistoSCinZR(0.,50,50)->Draw("surf1");
 //   fSpaceCharge->CreateHistoDRPhiinZR(0,100,100)->Draw("colz");
   //!!! This should be handled by the CongiOCDB macro
-  const char* ocdb="local://$ALICE_ROOT/OCDB/";
-  AliCDBManager::Instance()->SetDefaultStorage(ocdb);
-  AliCDBManager::Instance()->SetRun(0);   
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
-  AliGeomManager::LoadGeometry("");
+  // const char* ocdb="local://$ALICE_ROOT/OCDB/";
+  // AliCDBManager::Instance()->SetDefaultStorage(ocdb);
+  // AliCDBManager::Instance()->SetRun(0);   
+  // TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
+  // AliGeomManager::LoadGeometry("");
   fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
+  //std::cout<<"----------->"<<fTPCParam<<std::endl;
   fTPCParam->ReadGeoMatrices();
+  //std::cout<<"----------->"<<fTPCParam<<std::endl;
+
 }
 //________________________________________________________________
 AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen)
