@@ -19,9 +19,12 @@ void ConfigOCDB(Int_t run=0) {
     TGeoGlobalMagField::Instance()->SetField(magF);
   }
   //TPC calib
-  AliTPCcalibDB::Instance()->SetRun(run);
+  AliTPCcalibDB *db=AliTPCcalibDB::Instance();
+  db->SetRun(run);
   //geometry
   AliGeomManager::LoadGeometry();
+  // init geometry in parameters
+  if (db->GetParameters()) db->GetParameters()->ReadGeoMatrices();
 }
 
 

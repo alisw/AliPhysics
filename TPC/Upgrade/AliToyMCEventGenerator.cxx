@@ -5,6 +5,7 @@
 #include <TH2F.h>
 #include <TGeoGlobalMagField.h>
 
+#include <AliLog.h>
 #include <AliTPCROC.h>
 #include <AliTrackPointArray.h>
 #include <AliTrackerBase.h>
@@ -38,8 +39,8 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
   fSpaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
   //fSpaceCharge->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
   fSpaceCharge->InitSpaceCharge3DDistortion();
-  fSpaceCharge->CreateHistoSCinZR(0.,50,50)->Draw("surf1");
-  fSpaceCharge->CreateHistoDRPhiinZR(0,100,100)->Draw("colz");
+//   fSpaceCharge->CreateHistoSCinZR(0.,50,50)->Draw("surf1");
+//   fSpaceCharge->CreateHistoDRPhiinZR(0,100,100)->Draw("colz");
   //!!! This should be handled by the CongiOCDB macro
   const char* ocdb="local://$ALICE_ROOT/OCDB/";
   AliCDBManager::Instance()->SetDefaultStorage(ocdb);
@@ -87,9 +88,11 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
   // const Double_t kRTPC0  =AliTPCROC::Instance()->GetPadRowRadii(0,0);
   // const Double_t kRTPC1  =AliTPCROC::Instance()->GetPadRowRadii(36,AliTPCROC::Instance()->GetNRows(36)-1);
   const Double_t kMaxSnp = 0.85;  
-  const Double_t kSigmaY=0.1;
+  const Double_t kSigmaY=0.1; 
   const Double_t kSigmaZ=0.1;
-  const Double_t kDriftVel = fTPCParam->GetDriftV()/1000000;
+  //!!! why divide by 1000000? This will be in cm/us then. But I guess everything should be in sec;
+  //   const Double_t kDriftVel = fTPCParam->GetDriftV()/1000000;
+  const Double_t kDriftVel = fTPCParam->GetDriftV();
   const Double_t kMaxZ0=fTPCParam->GetZLength();
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
     
@@ -103,23 +106,48 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
   Double_t xyz[3];
 
   //!!! when does the propagation not work, how often does it happen?
-  if (!AliTrackerBase::PropagateTrackTo(&track,iFCRadius,kMass,5,kTRUE,kMaxSnp)) return 0;
+  if (!AliTrackerBase::PropagateTrackTo(&track,iFCRadius,kMass,5,kTRUE,kMaxSnp)) {
+    AliError(Form("Propagation to IFC: %.2f failed\n",iFCRadius));
+    return kFALSE;
+  }
 
   Int_t npoints=0;
   Float_t covPoint[6]={0,0,0, kSigmaY*kSigmaY,0,kSigmaZ*kSigmaZ};  //covariance at the local frame
 
 
   //Simulate track from inner field cage radius to outer and save points along trajectory
-  Int_t nMinPoints = 40;  
-  for (Double_t radius=iFCRadius; radius<oFCRadius; radius++){
+  Int_t nMinPoints = 40;
+  //!!! changed to loop over pad rows
+  //      an increment of 1cm only might loose pad rows in IROC: 4x7.5 mm2
+  //      or we change this to a smaller increment
+  //    Do we need this initial creation of space points at all? can't we
+  //      simply loop over all rows, crate the clusters in the center of the row,
+  //      distort them and fill the distorted clusters
+  
+  //for (Double_t radius=iFCRadius; radius<oFCRadius; radius++){
+  for (Int_t irow=0; irow<159; ++irow ){
+    const Int_t isec    = irow<63?0:36;
+    const Int_t isecrow = irow<63?irow:irow-63;
+    Double_t radius = fTPCParam->GetPadRowRadii(isec,isecrow);
 
-    if (!AliTrackerBase::PropagateTrackTo(&track,radius,kMass,5,kTRUE,kMaxSnp)) return 0;
+    //!!! changed from return 0 to continue -> Please check
+    if (!AliTrackerBase::PropagateTrackTo(&track,radius,kMass,5,kTRUE,kMaxSnp)) {
+      AliError(Form("Propagation to %d: %.2f failed\n",irow,radius));
+      continue;
+    }
     track.GetXYZ(xyz);
+
+    //!!! Why is this smeared
     xyz[0]+=gRandom->Gaus(0,0.000005);
     xyz[1]+=gRandom->Gaus(0,0.000005);
     xyz[2]+=gRandom->Gaus(0,0.000005);
 
     if (TMath::Abs(track.GetZ())>kMaxZ0) continue;
+    //!!! for future we might want to incude space points outside the active area
+    //      since due to the distotions they might get inside
+    //      in this case it will of course make sense to make a dense
+    //      space point creation first and afterwards calculate the cluster
+    //      but then we need to treat cluster and distorted cluster symmetrically (see below)
     if (TMath::Abs(track.GetX())<iFCRadius) continue;
     if (TMath::Abs(track.GetX())>oFCRadius) continue;
 
@@ -149,24 +177,45 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
   if (npoints<nMinPoints) return 0;
 
   //save space points and make clusters of distorted points
+
+  //!!! Here both, clusters and distorted clusters should be in the center of the pad row
+  //      So in case the distorted clusters are calculated as the COG of all space points
+  //      in a row, the same should be done for the undistorted clusters! There should
+  //      only be one cluster per track per row
   Int_t lastRow = 0;
   Int_t pntsInCurrentRow = 0;
   Double_t xt=0, yt=0, zt=0;
   for(Int_t iPoint = 0; iPoint<npoints; iPoint++){
-    
+
+    //undistorted cluster, currently we assume one space point per pad row, see comments above
     AliTPCclusterMI *tempCl = trackIn.AddSpacePoint(AliTPCclusterMI());
 
     const Float_t *xArr = pointArray0.GetX();
     const Float_t *yArr = pointArray0.GetY();
     const Float_t *zArr = pointArray0.GetZ();
 
-    const Float_t *xArrDist = pointArray1.GetX();
-    const Float_t *yArrDist = pointArray1.GetY();
-    const Float_t *zArrDist = pointArray1.GetZ();
-
     tempCl->SetX(xArr[iPoint]);
     tempCl->SetY(yArr[iPoint]);
     tempCl->SetZ(zArr[iPoint]);
+    
+    Float_t xyzUC[3] = {xArr[iPoint],yArr[iPoint],zArr[iPoint]};
+    Int_t indexUC[3] = {0};
+    
+    Float_t padRowUC = fTPCParam->GetPadRow(xyzUC,indexUC);
+    Int_t   sectorUC = indexUC[1];
+
+    // use pad row = 255 if outside active area
+    if(padRowUC < 0 || (sectorUC < 36 && padRowUC >62) || (sectorUC > 35 &&padRowUC > 95) ) padRowUC=255; //outside sensitive area
+
+    tempCl->SetPad(xyzUC[1]);
+    tempCl->SetRow(padRowUC);
+    tempCl->SetDetector(sectorUC);
+    tempCl->SetTimeBin(t0 + (kMaxZ0-TMath::Abs(tempCl->GetZ()))/kDriftVel); // set time as t0  + drift time from dist z
+
+    // Distorted cluster
+    const Float_t *xArrDist = pointArray1.GetX();
+    const Float_t *yArrDist = pointArray1.GetY();
+    const Float_t *zArrDist = pointArray1.GetZ();
     
     Float_t xyz2[3] = {xArrDist[iPoint],yArrDist[iPoint],zArrDist[iPoint]};
     Int_t index[3] = {0};
@@ -176,7 +225,8 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
 
     if(padRow < 0 || (sector < 36 && padRow>62) || (sector > 35 &&padRow > 95) ) continue; //outside sensitive area
 
-    
+    //!!! could it be that the last row is missed?
+    //    assume row=95 and there is only 1 space point then this part will not be reached I think
     if(lastRow!=padRow) {
       
 
@@ -192,10 +242,12 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
 	Float_t clxyz[3] = {xt,yt,zt};
 	Int_t clindex[3] = {0};
 	Int_t clRow = fTPCParam->GetPadRow(clxyz,clindex);
-	Int_t nPads = fTPCParam->GetNPads(clindex[1], clRow);
-	Int_t pad = TMath::Nint(clxyz[1] + nPads/2); //taken from AliTPC.cxx
-	tempDistCl->SetPad(pad);
-	tempDistCl->SetRow(clRow);
+// 	Int_t nPads = fTPCParam->GetNPads(clindex[1], clRow);
+// 	Int_t pad = TMath::Nint(clxyz[1] + nPads/2); //taken from AliTPC.cxx
+        //!!! pad should be fractional
+// 	tempDistCl->SetPad(pad);
+        tempDistCl->SetPad(clxyz[1]);
+        tempDistCl->SetRow(clRow);
 	tempDistCl->SetDetector(clindex[1]);
 	tempDistCl->SetTimeBin(t0 + (kMaxZ0-TMath::Abs(zt))/kDriftVel); // set time as t0  + drift time from dist z coordinate to pad plane
       }
