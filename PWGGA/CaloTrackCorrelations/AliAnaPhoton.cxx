@@ -212,7 +212,7 @@ AliAnaPhoton::AliAnaPhoton() :
      fhClusterMultNoPileUp [i] = 0;
    }
    
-   for(Int_t i = 0; i < 12; i++)
+   for(Int_t i = 0; i < 13; i++)
    {
      fhEtaPhiTriggerEMCALBC[i] = 0 ;
      fhTimeTriggerEMCALBC  [i] = 0 ;
@@ -1533,7 +1533,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhEtaPhiEMCALBCN->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiEMCALBCN) ;
     
-    for(Int_t i = 0; i < 12; i++)
+    for(Int_t i = 0; i < 13; i++)
     {
       fhEtaPhiTriggerEMCALBC[i] = new TH2F
       (Form("hEtaPhiTriggerEMCALBC%d",i-5),
@@ -1591,24 +1591,24 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if(fCalorimeter=="EMCAL" && fFillEMCALBCHistograms)
   {
     fhEtaPhiPhotonEMCALBC0  = new TH2F
-    ("hEtaPhiEMCALBC0","identified photon, E > 2 GeV, #eta vs #phi, for clusters with |time| < 25 ns, EMCAL-BC=0",netabins,etamin,etamax,nphibins,phimin,phimax);
+    ("hEtaPhiPhotonEMCALBC0","identified photon, E > 2 GeV, #eta vs #phi, for clusters with |time| < 25 ns, EMCAL-BC=0",netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiPhotonEMCALBC0->SetYTitle("#phi (rad)");
     fhEtaPhiPhotonEMCALBC0->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiPhotonEMCALBC0) ;
     
     fhEtaPhiPhotonEMCALBC1  = new TH2F
-    ("hEtaPhiEMCALBC1","identified photon, E > 2 GeV, #eta vs #phi, for clusters with 25 < |time| < 75 ns, EMCAL-BC=1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    ("hEtaPhiPhotonEMCALBC1","identified photon, E > 2 GeV, #eta vs #phi, for clusters with 25 < |time| < 75 ns, EMCAL-BC=1",netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiPhotonEMCALBC1->SetYTitle("#phi (rad)");
     fhEtaPhiPhotonEMCALBC1->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiPhotonEMCALBC1) ;
     
     fhEtaPhiPhotonEMCALBCN  = new TH2F
-    ("hEtaPhiEMCALBCN","identified photon, E > 2 GeV, #eta vs #phi, for clusters with |time| > 75 ns, EMCAL-BC>1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    ("hEtaPhiPhotonEMCALBCN","identified photon, E > 2 GeV, #eta vs #phi, for clusters with |time| > 75 ns, EMCAL-BC>1",netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiPhotonEMCALBCN->SetYTitle("#phi (rad)");
     fhEtaPhiPhotonEMCALBCN->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiPhotonEMCALBCN) ;
     
-    for(Int_t i = 0; i < 12; i++)
+    for(Int_t i = 0; i < 13; i++)
     {
       fhEtaPhiPhotonTriggerEMCALBC[i] = new TH2F
       (Form("hEtaPhiPhotonTriggerEMCALBC%d",i-5),

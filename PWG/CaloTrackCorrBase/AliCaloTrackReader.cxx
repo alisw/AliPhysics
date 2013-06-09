@@ -2009,9 +2009,20 @@ void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
     fIsTriggerEventOutBC = 0;
     return;
   }
+    
+  TClonesArray * clusterList = 0;
+  if      (fInputEvent->FindListObject(fEMCALClustersListName))
+  {
+    clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject(fEMCALClustersListName));
+  }
+  else if(fOutputEvent)
+  {
+    clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
+  }
   
-  Int_t nclusters  = fInputEvent->GetNumberOfCaloClusters();
-  
+  Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
+  if(clusterList) nclusters = clusterList->GetEntriesFast();
+
   // simple method, just count how many exotics and how many high energy clusters
   // over the trigger threshold there are
   
@@ -2025,7 +2036,11 @@ void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
     for (Int_t iclus = 0 ; iclus <  nclusters; iclus++)
     {
       AliVCluster * clus = 0;
-      if ( (clus = fInputEvent->GetCaloCluster(iclus)) )
+      
+      if(clusterList) clus = (AliVCluster*) clusterList->At(iclus);
+      else            clus = fInputEvent->GetCaloCluster(iclus);
+      
+      if ( clus )
       {
         if (IsEMCALCluster(clus) && clus->E() > fTriggerEventThreshold)
         {
@@ -2036,10 +2051,12 @@ void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
           
           if(bad || exotic || clus->E() < 1) continue;
           
-          Double_t tof   = clus->GetTOF();
-          Float_t frac   = -1;
+          Float_t frac = -1;
           Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(fInputEvent->GetEMCALCells(), clus,frac);
-          GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
+          
+          Double_t tof   = clus->GetTOF();
+          if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn())
+            GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
           tof *=1.e9;
           
           if ( TMath::Abs(tof) > 25 )
@@ -2051,12 +2068,12 @@ void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
               eBCN       = clus->E();
             }
             
-            printf("Simple: Large time:  E %f, tof %f, absId %d\n",clus->E(),tofcluster, absIdMax);
+            //printf("Simple: Large time:  E %f, tof %f, absId %d\n",clus->E(),tofcluster, absIdMax);
             
           }
           else
           {
-            printf("Simple: OK cluster E %f, tof %f\n",clus->E(),tofcluster);
+            //printf("Simple: OK cluster E %f, tof %f\n",clus->E(),tofcluster);
             nOfHighECl++;
           }
           
@@ -2064,7 +2081,7 @@ void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
       }// cluster exists
     }// cluster loop
     
-    printf("- n OutBC %d, n high energy %d\n", nOutBC,nOfHighECl);
+    //printf("- n OutBC %d, n high energy %d\n", nOutBC,nOfHighECl);
     
     Double_t tofclusterUS = TMath::Abs(tofcluster);
     if ( ( nOutBC > 0 ) && ( nOfHighECl == 0 ) )
@@ -2088,7 +2105,7 @@ void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
       fIsTriggerEventOutBC = 0;
     }
 
-    printf("*** Simple: Trigger tag BC %d, tof %2.2f, E %2.2f\n",fIsTriggerEventOutBC, tofcluster, eBCN);
+    //printf("*** Simple: Trigger tag BC %d, tof %2.2f, E %2.2f\n",fIsTriggerEventOutBC, tofcluster, eBCN);
 
   }
   //Check if there is any trigger patch that has an associated exotic cluster
@@ -2109,9 +2126,11 @@ void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
     for (Int_t iclus =  0; iclus <  nclusters; iclus++)
     {
       AliVCluster * clus = 0;
-      if ( (clus = fInputEvent->GetCaloCluster(iclus)) && IsEMCALCluster(clus))
+      if(clusterList) clus = (AliVCluster*) clusterList->At(iclus);
+      else            clus = fInputEvent->GetCaloCluster(iclus);
+      
+      if ( clus )
       {
-        
         Bool_t bad    = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),
                                                                                        clus->GetCellsAbsId(),clus->GetNCells());
         
@@ -2119,13 +2138,15 @@ void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
         
         if(bad || exotic || clus->E() < 1) continue;
 
-        
-        Double_t tof   = clus->GetTOF();
         Float_t frac   = -1;
         Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(fInputEvent->GetEMCALCells(), clus,frac);
-        GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
-        tof *=1.e9;
         
+        Double_t tof   = clus->GetTOF();
+        
+        if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn())
+          GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
+        tof *=1.e9;
+
         // in case no final match with the trigger, check if there was a high energy cluster
         // with the timing of BC=0
         if(clus->E() > fTriggerEventThreshold)

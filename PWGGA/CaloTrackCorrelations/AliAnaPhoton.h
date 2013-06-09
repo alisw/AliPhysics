@@ -156,9 +156,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiEMCALBC1  ;             //! Pseudorapidity vs Phi of clusters for E > 0.5
   TH2F * fhEtaPhiEMCALBCN  ;             //! Pseudorapidity vs Phi of clusters for E > 0.5
 
-  TH2F * fhEtaPhiTriggerEMCALBC[12] ;     //! Pseudorapidity vs Phi of clusters for E > 0.5
-  TH2F * fhTimeTriggerEMCALBC  [12] ;     //! Time distribution of clusters, when trigger is in a given BC
-  TH2F * fhTimeTriggerEMCALBCPileUpSPD[12]; //! Time distribution of clusters, when trigger is in a given BC, tagged as pile-up SPD
+  TH2F * fhEtaPhiTriggerEMCALBC[13] ;     //! Pseudorapidity vs Phi of clusters for E > 0.5
+  TH2F * fhTimeTriggerEMCALBC  [13] ;     //! Time distribution of clusters, when trigger is in a given BC
+  TH2F * fhTimeTriggerEMCALBCPileUpSPD[13]; //! Time distribution of clusters, when trigger is in a given BC, tagged as pile-up SPD
 
   TH1F * fhEPhoton    ;                  //! Number of identified photon vs energy
   TH1F * fhPtPhoton   ;                  //! Number of identified photon vs transerse momentum 
@@ -169,9 +169,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiPhotonEMCALBC0  ;       //! Pseudorapidity vs Phi of identified  photon for E > 0.5
   TH2F * fhEtaPhiPhotonEMCALBC1  ;       //! Pseudorapidity vs Phi of identified  photon for E > 0.5
   TH2F * fhEtaPhiPhotonEMCALBCN  ;       //! Pseudorapidity vs Phi of identified  photon for E > 0.5
-  TH2F * fhEtaPhiPhotonTriggerEMCALBC[12]; //! Pseudorapidity vs Phi of photons for E > 0.5
-  TH2F * fhTimePhotonTriggerEMCALBC  [12]; //! Time distribution of photons, when trigger is in a given BC
-  TH2F * fhTimePhotonTriggerEMCALBCPileUpSPD[12] ; //! Time distribution of photons, when trigger is in a given BC, tagged as pile-up SPD
+  TH2F * fhEtaPhiPhotonTriggerEMCALBC[13]; //! Pseudorapidity vs Phi of photons for E > 0.5
+  TH2F * fhTimePhotonTriggerEMCALBC  [13]; //! Time distribution of photons, when trigger is in a given BC
+  TH2F * fhTimePhotonTriggerEMCALBCPileUpSPD[13] ; //! Time distribution of photons, when trigger is in a given BC, tagged as pile-up SPD
   TH2F * fhPtCentralityPhoton    ;       //! centrality  vs photon pT
   TH2F * fhPtEventPlanePhoton    ;       //! event plane vs photon pT
   
