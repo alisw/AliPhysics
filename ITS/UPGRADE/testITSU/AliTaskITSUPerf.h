@@ -16,6 +16,7 @@ class TH3F;
 class AliESDEvent;
 class TList;
 class TNtuple;
+class TTree;
 
 class AliMCParticle;
 class AliITSMultRecBg;
@@ -48,6 +49,8 @@ class AliTaskITSUPerf : public AliAnalysisTaskSE {
     kHMatchStatusRcbl
     ,kHMatchStatusNRcblPrim
     ,kHMatchStatusNRcblSec
+    ,kHMCLrPresPrim
+    ,kHMCLrPresSec
     ,kHNStdHistosCent
   };
     
@@ -135,6 +138,8 @@ class AliTaskITSUPerf : public AliAnalysisTaskSE {
   Int_t  fUseCentralityVar;                // what is used to determine the centrality
   //
   AliESDtrackCuts* fTPCCut;                // cut on reference TPC tracks
+  //
+  TTree*           fTree;                  // optional tree
   //
   static const char* fgkLabelTypes[kNLabelTypes]; // label truthness names
  private:    
