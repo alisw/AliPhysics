@@ -869,7 +869,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 
     if (lOnFlyStatus){
       onl=1; 
-      return;
+      //      return;
     }
     if (!lOnFlyStatus){
       offl=1;
