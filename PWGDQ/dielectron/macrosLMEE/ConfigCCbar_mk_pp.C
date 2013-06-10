@@ -279,7 +279,8 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD)
   
   //pair variables
   cf->AddVariable(AliDielectronVarManager::kPt,"1.0,2.0,3.0,4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0,15.0,16.0,17.0,18.0,19.0,20.0");
-  cf->AddVariable(AliDielectronVarManager::kM,750,0.,15.);//also try variable bi sizes later...
+//  cf->AddVariable(AliDielectronVarManager::kM,750,0.,15.);//also try variable bi sizes later...
+  cf->AddVariable(AliDielectronVarManager::kM,"0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.5,4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0,15.0");
   
   cf->AddVariable(AliDielectronVarManager::kPairType,12,0,12);
   cf->AddVariable(AliDielectronVarManager::kEta,20,-1.,1.);
