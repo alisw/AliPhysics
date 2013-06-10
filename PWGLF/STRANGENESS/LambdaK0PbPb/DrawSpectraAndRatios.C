@@ -194,6 +194,7 @@ DrawHisto(const TH1 *h, const Option_t *option, Double_t *sysEff,
   Int_t nb=hh->GetNbinsX();
 
   for (Int_t i=1; i<=nb; i++) {
+      Double_t pt=h->GetBinCenter(i);
       Double_t c=hh->GetBinContent(i);
       Double_t e=hh->GetBinError(i);
       Int_t j=i-1;
@@ -202,8 +203,12 @@ DrawHisto(const TH1 *h, const Option_t *option, Double_t *sysEff,
       if (sysEff==sysEffLam) {// for Lambda
 	 e += sysFD*sysFD;
          if (i<13) e += sysPID*sysPID;
+         Double_t matBgt=( pt < 0.5*(3.5-0.6) ) ? 3.4e-2 : 2.0e-2;
+         e += matBgt*matBgt;
       } else {// for K0s
          e += sysArm*sysArm;
+         Double_t matBgt=( pt < 0.5*(3.0-0.2) ) ? 1.5e-2 : 1.1e-2;
+         e += matBgt*matBgt;
       }
 
       e=c*TMath::Sqrt(e); 
