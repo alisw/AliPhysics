@@ -544,6 +544,8 @@ void AliCaloTrackReader::InitParameters()
   fTriggerPatchTimeWindow[0] = 8;
   fTriggerPatchTimeWindow[1] = 9;
   
+  fIsTriggerEventOutBC = -10000 ;
+
 }
 
 //___________________________________________________________
@@ -677,7 +679,10 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
 {
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
-  fEventNumber = iEntry;
+  fEventNumber         = iEntry;
+  fIsTriggerEventOutBC = -10000 ;
+  fIsExoticEvent       = kFALSE ;
+
   //fCurrentFileName = TString(currentFileName);
   if(!fInputEvent)
   {
@@ -696,39 +701,6 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     return kFALSE;
   }
   
-  
-  //Get Patches that triggered
-  TArrayI patches = GetL0TriggerPatches();
-  
-  //--------------------------------------------------------------------------------------------
-  // Do not count events that where likely triggered by an exotic cluster
-  //--------------------------------------------------------------------------------------------
-  
-  fIsExoticEvent = kFALSE ;
-  if(fRemoveExoticEvents)
-  {
-    RejectExoticEvents(patches);
-    if(fIsExoticEvent)
-    {
-      //printf("AliCaloTrackReader::FillInputEvent() - REJECT exotic triggered event \n");
-      return kFALSE;
-    }
-  }
-  
-  fIsTriggerEventOutBC = -1 ;
-  RejectTriggeredEventsByPileUp(patches);
-  //printf("AliCaloTrackReader::FillInputEvent(), Trigger BC = %d\n",fIsTriggerEventOutBC);
-
-  if(fRemoveTriggerOutBCEvents)
-  {
-    if(fIsTriggerEventOutBC != 0 && fIsTriggerEventOutBC != 6)
-    {
-      //printf("\t REJECT, bad trigger cluster BC\n");
-      return kFALSE;
-    }
-  }
-  
-  patches.Reset();
   
   //-------------------------------------------------------------------------------------
   // Reject event if large clusters with large energy
@@ -889,6 +861,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
       }// no cluster
     }// CaloFileter patch
   }// Event selection/AliceSoft/AliRoot/trunk/PWG/CaloTrackCorrBase/AliCaloTrackReader.h
+  
   //------------------------------------------------------
   
   //Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
@@ -919,6 +892,39 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     
     //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
   }
+  
+  
+  //Get Patches that triggered
+  TArrayI patches = GetL0TriggerPatches();
+  
+  //----------------------------------------------------------------------
+  // Do not count events that where likely triggered by an exotic cluster
+  // or out BC cluster
+  //----------------------------------------------------------------------
+  
+  if(fRemoveExoticEvents)
+  {
+    RejectExoticEvents(patches);
+    if(fIsExoticEvent)
+    {
+      //printf("AliCaloTrackReader::FillInputEvent() - REJECT exotic triggered event \n");
+      return kFALSE;
+    }
+  }
+  
+  RejectTriggeredEventsByPileUp(patches);
+  //printf("AliCaloTrackReader::FillInputEvent(), Trigger BC = %d\n",fIsTriggerEventOutBC);
+  
+  if(fRemoveTriggerOutBCEvents)
+  {
+    if(fIsTriggerEventOutBC != 0 && fIsTriggerEventOutBC != 6)
+    {
+      //printf("\t REJECT, bad trigger cluster BC\n");
+      return kFALSE;
+    }
+  }
+  
+  patches.Reset();
   
   // Get the main vertex BC, in case not available
   // it is calculated in FillCTS checking the BC of tracks
