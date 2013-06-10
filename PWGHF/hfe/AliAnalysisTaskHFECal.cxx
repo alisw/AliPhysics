@@ -1732,9 +1732,9 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron2(Int_t itrack, Double_t cent,
    electron1.SetXYZM(p1at[0], p1at[1], p1at[2], eMass);
    electron2.SetXYZM(p2at[0], p2at[1], p2at[2], eMass);
    openingAngle = TVector2::Phi_0_2pi(electron1.Angle(electron2.Vect()));
-
+   
    mother      = electron1 + electron2;
-   double invmassAtDCA  = mother.M();
+   //double invmassAtDCA  = mother.M();
   
    // 2D
    TLorentzVector electron1_2D;
