@@ -83,6 +83,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     void SetEovPCuts(Double_t EovPMin, Double_t EovPMax){fEovPMin=EovPMin;fEovPMax=EovPMax;};
     void SetTPCNClsHad(Int_t TPCNClsHad) {fTPCNClsHad = TPCNClsHad;};
     void SetAssoElecITSrefit(Bool_t AssoEleITSref){fAssoEleITSref = AssoEleITSref;};
+    void SetAssoElecTPCNCls(Int_t AssoElecTPCNCls){fAssoElecTPCNCls = AssoElecTPCNCls;};
     void MixedEvent(AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1, TH2F *DphiPt2, TH2F *DphiPt3, TH2F *DphiPt4);
     TObjArray* CloneAndReduceTrackList();
 
@@ -133,6 +134,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     Bool_t     fTriggerMB;//
     Int_t      fTPCNClsHad;//
     Bool_t     fAssoEleITSref;//
+    Int_t      fAssoElecTPCNCls;//
 
 
     AliSelectNonHFE *fNonHFE; //!
