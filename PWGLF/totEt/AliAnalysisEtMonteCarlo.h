@@ -313,8 +313,8 @@ protected:
     Bool_t fCalcTrackMatchVsMult;
     TH1F *fHistGammasFound;
     TH1F *fHistGammasGenerated;
-    TH2F *fHistGammasFoundMult;
-    TH2F *fHistGammasGeneratedMult;
+    TH2F *fHistGammasFoundCent;
+    TH2F *fHistGammasGeneratedCent;
     TH1F *fHistChargedTracksCut;
     TH1F *fHistChargedTracksAccepted;
     TH1F *fHistGammasCut;
@@ -322,6 +322,7 @@ protected:
     TH2F *fHistChargedTracksCutMult;
     TH2F *fHistChargedTracksAcceptedMult;
     TH2F *fHistChargedTracksAcceptedLowPtCent;
+    TH2F *fHistChargedTracksAcceptedLowPtCent500MeV;
     TH2F *fHistChargedTracksAcceptedLowPtCentNoAntiProtons;
     TH2F *fHistChargedTracksAcceptedLowPtCentAntiProtons;
     TH2F *fHistGammasCutMult;
@@ -344,6 +345,7 @@ protected:
     TH1F *fHistHadronDepositsAll;
     TH1F *fHistHadronDepositsReco;
     TH2F *fHistHadronDepositsAllCent;
+    TH2F *fHistHadronDepositsAllCent500MeV;
     TH2F *fHistHadronDepositsRecoCent;
     TH2F *fHistHadronsAllCent;
     TH3F *fHistMultChVsSignalVsMult;
