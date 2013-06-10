@@ -246,8 +246,8 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fCalcTrackMatchVsMult(kFALSE)
 						  ,fHistGammasFound(0)
 						  ,fHistGammasGenerated(0)
-						  ,fHistGammasFoundMult(0)
-						  ,fHistGammasGeneratedMult(0)
+						  ,fHistGammasFoundCent(0)
+						  ,fHistGammasGeneratedCent(0)
 						  ,fHistChargedTracksCut(0)
 						  ,fHistChargedTracksAccepted(0)
 						  ,fHistGammasCut(0)
@@ -255,6 +255,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistChargedTracksCutMult(0)
 						  ,fHistChargedTracksAcceptedMult(0)
 						  ,fHistChargedTracksAcceptedLowPtCent(0)
+						  ,fHistChargedTracksAcceptedLowPtCent500MeV(0)
 						  ,fHistChargedTracksAcceptedLowPtCentNoAntiProtons(0)
 						  ,fHistChargedTracksAcceptedLowPtCentAntiProtons(0)
 						  ,fHistGammasCutMult(0)
@@ -278,6 +279,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistHadronDepositsAll(0)
 						  ,fHistHadronDepositsReco(0)
 						  ,fHistHadronDepositsAllCent(0)
+						  ,fHistHadronDepositsAllCent500MeV(0)
 						  ,fHistHadronDepositsRecoCent(0)
 						  ,fHistHadronsAllCent(0)
 						  ,fHistMultChVsSignalVsMult(0)
@@ -383,8 +385,8 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistPiZeroMultAcc; // enter comment here
     delete fHistGammasFound; // enter comment here
     delete fHistGammasGenerated; // enter comment here
-    delete fHistGammasFoundMult; // enter comment here
-    delete fHistGammasGeneratedMult; // enter comment here
+    delete fHistGammasFoundCent; // enter comment here
+    delete fHistGammasGeneratedCent; // enter comment here
     delete fHistChargedTracksCut;
     delete fHistChargedTracksAccepted;
     delete fHistGammasCut;
@@ -392,6 +394,7 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistChargedTracksCutMult;
     delete fHistChargedTracksAcceptedMult;
     delete fHistChargedTracksAcceptedLowPtCent;
+    delete fHistChargedTracksAcceptedLowPtCent500MeV;
     delete fHistChargedTracksAcceptedLowPtCentNoAntiProtons;
     delete fHistChargedTracksAcceptedLowPtCentAntiProtons;
     delete fHistGammasCutMult;
@@ -414,6 +417,7 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistHadronDepositsAll;
     delete fHistHadronDepositsReco;
     delete fHistHadronDepositsAllCent;
+    delete fHistHadronDepositsAllCent500MeV;
     delete fHistHadronDepositsRecoCent;
     delete fHistHadronsAllCent;
     delete fHistMultChVsSignalVsMult;
@@ -687,6 +691,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         Int_t cf = 0;
         AliESDCaloCluster* caloCluster = ( AliESDCaloCluster* )caloClusters->At( iCluster );
         //Float_t caloE = caloCluster->E()
+        if (!fSelector->CutGeometricalAcceptance(*caloCluster)) continue;
         fNClusters++;
         const UInt_t iPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
         TParticle *part  =  stack->Particle(iPart);
@@ -751,6 +756,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	for(UInt_t i = 0; i < caloCluster->GetNLabels(); i++)
 	{
 	  Int_t pIdx = caloCluster->GetLabelAt(i);
+
 	  //TParticle *p = stack->Particle(pIdx);
 	  
 	  if(!stack->IsPhysicalPrimary(pIdx))
@@ -770,7 +776,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	}
 	fCutFlow->Fill(cf++);
         if(!fSelector->PassDistanceToBadChannelCut(*caloCluster)) continue;
-        Double_t clEt = CorrectForReconstructionEfficiency(*caloCluster,fClusterMult);
+        Double_t clEt = CorrectForReconstructionEfficiency(*caloCluster,fCentClass);
 //	if(code == fgK0SCode) std::cout << "K0 energy: " << caloCluster->E() << std::endl;
         if(!fSelector->PassMinEnergyCut(*caloCluster)) continue;
 
@@ -889,6 +895,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    if(nottrackmatched){//not removed but should be
 	      fHistHadronDepositsAll->Fill(part->Pt());
 	      fHistHadronDepositsAllCent->Fill(part->Pt(), fCentClass);
+	      if(fReconstructedEt>0.5) fHistHadronDepositsAllCent500MeV->Fill(part->Pt(), fCentClass);
 	      fChargedNotRemoved++;
 	      fEnergyChargedNotRemoved += clEt;
 	      fHistRemovedOrNot->Fill(2.0, fCentClass);
@@ -897,6 +904,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      if(fCalcTrackMatchVsMult){
 		if(matchedTrackpt<0.5){//if we could never have matched this because of its pt, how much energy did it deposit?
 		  fHistChargedTracksAcceptedLowPtCent->Fill(fDepositedEt, fCentClass);
+		  if(fDepositedEt>=0.5) fHistChargedTracksAcceptedLowPtCent500MeV->Fill(fDepositedEt, fCentClass);
 		  if(pdg->PdgCode()!=fgAntiProtonCode){
 		    fHistChargedTracksAcceptedLowPtCentNoAntiProtons->Fill(fDepositedEt, fCentClass);
 		  }
@@ -914,6 +922,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      fHistHadronDepositsRecoCent->Fill(part->Pt(), fCentClass);
 	      fHistHadronDepositsAll->Fill(part->Pt());
 	      fHistHadronDepositsAllCent->Fill(part->Pt(), fCentClass);
+	      if(fReconstructedEt>0.5) fHistHadronDepositsAllCent500MeV->Fill(part->Pt(), fCentClass);
 	      if(caloCluster->GetLabel()!=trackindex){
 		fHistBadTrackMatches->Fill(part->Pt(),fReconstructedE);
 		fHistBadTrackMatchesdPhidEta->Fill(caloCluster->GetTrackDx(),caloCluster->GetTrackDz());
@@ -1018,11 +1027,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         if(pdg->PdgCode()==fgGammaCode && fSelector->CutGeometricalAcceptance(*part))// TMath::Abs(part->Eta()) < 0.12)
 	{
 	  fHistGammasGenerated->Fill(part->Energy());
-	  fHistGammasGeneratedMult->Fill(part->Energy(),fClusterMult);
+	  fHistGammasGeneratedCent->Fill(part->Energy(),fCentClass);
 	  if(std::binary_search(foundGammas.begin(),foundGammas.end(),iPart))
 	  {
 	    fHistGammasFound->Fill(part->Energy());
-	    fHistGammasFoundMult->Fill(part->Energy(),fClusterMult);
+	    fHistGammasFoundCent->Fill(part->Energy(),fCentClass);
 	  }
 	}
         if(pdg->PdgCode()==fgPiPlusCode || pdg->PdgCode()==fgPiMinusCode || pdg->PdgCode()==fgProtonCode || pdg->PdgCode()==fgAntiProtonCode){//section here for all hadrons generated
@@ -1073,7 +1082,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  Float_t totalClusterEts[11] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0,  0.0};
 	  for (int iCluster = 0; iCluster < nCluster; iCluster++ ){//if this cluster is from any of the decay daughters of any kaon...  but there is no easy way to look at this so we loop over clusters...
 	    AliESDCaloCluster* caloCluster = ( AliESDCaloCluster* )caloClusters->At( iCluster );
-	    const UInt_t myPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
+	    if (!fSelector->CutGeometricalAcceptance(*caloCluster)) continue;
+	    const Int_t myPart = TMath::Abs(caloCluster->GetLabel());
 	    //identify the primary particle which created this cluster
 	    int primIdx = myPart;
 	    if (!stack->IsPhysicalPrimary(myPart)){
@@ -1094,7 +1104,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      caloCluster->GetPosition(pos);
 	      TVector3 cp(pos);
 	      Double_t clEt = caloCluster->E()*TMath::Sin(cp.Theta());
-	      Double_t clEtCorr = CorrectForReconstructionEfficiency(*caloCluster,fClusterMult);
+	      Double_t clEtCorr = CorrectForReconstructionEfficiency(*caloCluster,fCentClass);
 	      for(int l=0;l<nEtCuts;l++){//loop over cut values
 		if(clEt>=etCuts[l]){
 		  //cout<<", "<<clEt<<">="<<etCuts[l];
@@ -1449,8 +1459,8 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
 
     fHistGammasFound = new TH1F("fHistGammasFound", "fHistGammasFound",200, 0, 10);
     fHistGammasGenerated = new TH1F("fHistGammasGenerated", "fHistGammasGenerated",200, 0, 10);
-    fHistGammasFoundMult = new TH2F("fHistGammasFoundMult", "fHistGammasFoundMult",200, 0, 10,10,0,100);
-    fHistGammasGeneratedMult = new TH2F("fHistGammasGeneratedMult", "fHistGammasGeneratedMult",200, 0, 10,10,0,100);
+    fHistGammasFoundCent = new TH2F("fHistGammasFoundCent", "fHistGammasFoundCent",200, 0, 10,20,-0.5,19.5);
+    fHistGammasGeneratedCent = new TH2F("fHistGammasGeneratedCent", "fHistGammasGeneratedCent",200, 0, 10,20,-0.5,19.5);
     fHistChargedTracksCut = new TH1F("fHistChargedTracksCut", "fHistChargedTracksCut",100, 0, 5);
     fHistChargedTracksAccepted = new TH1F("fHistChargedTracksAccepted", "fHistChargedTracksAccepted",100, 0, 5);
     fHistGammasCut = new TH1F("fHistGammasTracksCut", "fHistGammasTracksCut",100, 0, 5);
@@ -1459,9 +1469,10 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     if(fCalcTrackMatchVsMult){
       fHistChargedTracksCutMult = new TH2F("fHistChargedTracksCutMult", "fHistChargedTracksCutMult",100, 0, 5,10,0,100);
       fHistChargedTracksAcceptedMult = new TH2F("fHistChargedTracksAcceptedMult", "fHistChargedTracksAcceptedMult",100, 0, 5,10,0,100);
-      fHistChargedTracksAcceptedLowPtCent = new TH2F("fHistChargedTracksAcceptedLowPtCent", "fHistChargedTracksAcceptedLowPtCent",100, 0, 5,20,0,20);
-      fHistChargedTracksAcceptedLowPtCentNoAntiProtons = new TH2F("fHistChargedTracksAcceptedLowPtCentNoAntiProtons", "fHistChargedTracksAcceptedLowPtCentNoAntiProtons",100, 0, 5,20,0,20);
-      fHistChargedTracksAcceptedLowPtCentAntiProtons = new TH2F("fHistChargedTracksAcceptedLowPtCentAntiProtons", "fHistChargedTracksAcceptedLowPtCentAntiProtons",100, 0, 5,20,0,20);
+      fHistChargedTracksAcceptedLowPtCent = new TH2F("fHistChargedTracksAcceptedLowPtCent", "fHistChargedTracksAcceptedLowPtCent",100, 0, 5,20,-0.5,19.5);
+      fHistChargedTracksAcceptedLowPtCent500MeV = new TH2F("fHistChargedTracksAcceptedLowPtCent500MeV", "fHistChargedTracksAcceptedLowPtCent500MeV",100, 0, 5,20,-0.5,19.5);
+      fHistChargedTracksAcceptedLowPtCentNoAntiProtons = new TH2F("fHistChargedTracksAcceptedLowPtCentNoAntiProtons", "fHistChargedTracksAcceptedLowPtCentNoAntiProtons",100, 0, 5,20,-0.5,19.5);
+      fHistChargedTracksAcceptedLowPtCentAntiProtons = new TH2F("fHistChargedTracksAcceptedLowPtCentAntiProtons", "fHistChargedTracksAcceptedLowPtCentAntiProtons",100, 0, 5,20,-0.5,19.5);
       fHistGammasCutMult = new TH2F("fHistGammasTracksCutMult", "fHistGammasTracksCutMult",100, 0, 5,10,0,100);
       fHistGammasAcceptedMult = new TH2F("fHistGammasTracksAcceptedMult", "fHistGammasTracksAcceptedMult",100, 0, 5,10,0,100);
     }
@@ -1473,10 +1484,10 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
       fHistMatchedTracksEvspTBkgdPeripheral = new TH2F("fHistMatchedTracksEvspTBkgdPeripheral", "fHistMatchedTracksEvspTBkgd",100, 0, 3,100,0,3);
       fHistMatchedTracksEvspTSignalPeripheral = new TH2F("fHistMatchedTracksEvspTSignalPeripheral", "fHistMatchedTracksEvspTSignal",100, 0, 3,100,0,3);
 
-      fHistMatchedTracksEvspTBkgdvsCent = new TH3F("fHistMatchedTracksEvspTBkgdvsCent", "fHistMatchedTracksEvspTBkgdvsCent",100, 0, 3,100,0,3,20,0,20);
-      fHistMatchedTracksEvspTSignalvsCent = new TH3F("fHistMatchedTracksEvspTSignalvsCent", "fHistMatchedTracksEvspTSignalvsCent",100, 0, 3,100,0,3,20,0,20);
-      fHistMatchedTracksEvspTBkgdvsCentEffCorr = new TH3F("fHistMatchedTracksEvspTBkgdvsCentEffCorr", "fHistMatchedTracksEvspTBkgdvsCent",100, 0, 3,100,0,3,20,0,20);
-      fHistMatchedTracksEvspTSignalvsCentEffCorr = new TH3F("fHistMatchedTracksEvspTSignalvsCentEffCorr", "fHistMatchedTracksEvspTSignalvsCent",100, 0, 3,100,0,3,20,0,20);
+      fHistMatchedTracksEvspTBkgdvsCent = new TH3F("fHistMatchedTracksEvspTBkgdvsCent", "fHistMatchedTracksEvspTBkgdvsCent",100, 0, 3,100,0,3,20,-0.5,19.5);
+      fHistMatchedTracksEvspTSignalvsCent = new TH3F("fHistMatchedTracksEvspTSignalvsCent", "fHistMatchedTracksEvspTSignalvsCent",100, 0, 3,100,0,3,20,-0.5,19.5);
+      fHistMatchedTracksEvspTBkgdvsCentEffCorr = new TH3F("fHistMatchedTracksEvspTBkgdvsCentEffCorr", "fHistMatchedTracksEvspTBkgdvsCent",100, 0, 3,100,0,3,20,-0.5,19.5);
+      fHistMatchedTracksEvspTSignalvsCentEffCorr = new TH3F("fHistMatchedTracksEvspTSignalvsCentEffCorr", "fHistMatchedTracksEvspTSignalvsCent",100, 0, 3,100,0,3,20,-0.5,19.5);
     
 
       fHistChargedTracksCutPeripheral = new TH1F("fHistChargedTracksCutPeripheral", "fHistChargedTracksCut",100, 0, 5);
@@ -1498,6 +1509,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
       Float_t nCentCuts[21] = { 0, 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
 
       fHistHadronDepositsAllCent = new TH2F("fHistHadronDepositsAllCent","All Hadrons which deposited energy in calorimeter",fgNumOfPtBins,fgPtAxis,nCent,nCentCuts);
+      fHistHadronDepositsAllCent500MeV = new TH2F("fHistHadronDepositsAllCent500MeV","All Hadrons which deposited energy in calorimeter pT>500MeV",fgNumOfPtBins,fgPtAxis,nCent,nCentCuts);
       fHistHadronDepositsRecoCent = new TH2F("fHistHadronDepositsRecoCent","Reconstructed Hadrons which deposited energy in calorimeter",fgNumOfPtBins,fgPtAxis,nCent,nCentCuts);
 
       fHistHadronsAllCent = new TH2F("fHistHadronsAllCent","All Hadrons vs cluster mult",fgNumOfPtBins,fgPtAxis,nCent,nCentCuts);
@@ -1615,8 +1627,8 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     
     list->Add(fHistGammasFound);
     list->Add(fHistGammasGenerated);
-    list->Add(fHistGammasFoundMult);
-    list->Add(fHistGammasGeneratedMult);
+    list->Add(fHistGammasFoundCent);
+    list->Add(fHistGammasGeneratedCent);
     list->Add(fHistChargedTracksCut);
     list->Add(fHistChargedTracksAccepted);
     list->Add(fHistGammasCut);
@@ -1625,6 +1637,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
       list->Add(fHistChargedTracksCutMult);
       list->Add(fHistChargedTracksAcceptedMult);
       list->Add(fHistChargedTracksAcceptedLowPtCent);
+      list->Add(fHistChargedTracksAcceptedLowPtCent500MeV);
       list->Add(fHistChargedTracksAcceptedLowPtCentNoAntiProtons);
       list->Add(fHistChargedTracksAcceptedLowPtCentAntiProtons);
       list->Add(fHistGammasCutMult);
@@ -1650,6 +1663,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistHadronDepositsAll);
     list->Add(fHistHadronDepositsReco);
     list->Add(fHistHadronDepositsAllCent);
+    list->Add(fHistHadronDepositsAllCent500MeV);
     list->Add(fHistHadronDepositsRecoCent);
     list->Add(fHistHadronsAllCent);
     list->Add(fHistMultChVsSignalVsMult);
