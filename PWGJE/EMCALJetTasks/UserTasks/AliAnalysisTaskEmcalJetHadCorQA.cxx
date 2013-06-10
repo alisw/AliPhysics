@@ -39,7 +39,8 @@ AliAnalysisTaskEmcalJetHadCorQA::AliAnalysisTaskEmcalJetHadCorQA() :
   fMCParticlesName(),
   fMCParticles(),
   fHistRhovsCent(0),
-  fHistNjetvsCent(0)
+  fHistNjetvsCent(0),
+  fHistNTMatchvsPtvsNtack0(0)
 {
   for (int i = 0;i<3;i++){
   fHistNEFvsPt[i] = 0;
@@ -70,7 +71,8 @@ AliAnalysisTaskEmcalJetHadCorQA::AliAnalysisTaskEmcalJetHadCorQA(const char *nam
   fMCParticlesName(),
   fMCParticles(),
   fHistRhovsCent(0),
-  fHistNjetvsCent(0)
+  fHistNjetvsCent(0),
+  fHistNTMatchvsPtvsNtack0(0)
  { 
   for (int i = 0;i<3;i++){
   fHistNEFvsPt[i] = 0;
@@ -299,7 +301,7 @@ Bool_t AliAnalysisTaskEmcalJetHadCorQA::Run()
        //we have the id of the matched cluster of a track constituent
        //       cout<<"track label for matched,accepted jet track is "<<track->GetLabel()<<endl;
        bool ischecked = false;
-       for (Int_t icid = 0;icid<cluster_id.size();icid++)
+       for (UInt_t icid = 0;icid<cluster_id.size();icid++)
 	 if (cluster_id[icid] == iClus)
 	   ischecked = true; // we've already looked at this uncorrected cluster
        if (ischecked)

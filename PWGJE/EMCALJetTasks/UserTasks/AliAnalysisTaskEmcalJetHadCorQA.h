@@ -26,27 +26,27 @@ class AliAnalysisTaskEmcalJetHadCorQA : public AliAnalysisTaskEmcalJet {
   Float_t                RelativePhi(Double_t mphi,Double_t vphi) const;
 
  private:
-  TString             fCalo2Name;
-  TClonesArray       *fCaloClusters2;
-  TString             fMCParticlesName;
-  TClonesArray       *fMCParticles;
-  TH2F                  *fHistRhovsCent;           //!rho vs cent
-  TH2F                  *fHistNjetvsCent;          //!number of jets versus Centrality
-  TH2F               *fHistNEFvsPt[3];          //!
-  TH2F               *fHistNTMatchvsPt[3];      //!  
-  TH2F               *fHistNCMatchvsPt[3];      //!
-  TH2F               *fHistHadCorvsPt[3];       //!
-  TH2F               *fHistNconvsPt[3];         //!
-  TH2F               *fHistNtvsPt[3];         //!
-  TH2F               *fHistNcvsPt[3];         //!
-  TH2F               *fHistNEFvsPtBias[3];      //!
-  TH2F               *fHistNTMatchvsPtBias[3];  //!  
-  TH2F               *fHistNCMatchvsPtBias[3];      //!
-  TH2F               *fHistHadCorvsPtBias[3];      //!
-  TH2F               *fHistNconvsPtBias[3];         //!
-  TH2F               *fHistNtvsPtBias[3];         //!
-  TH2F               *fHistNcvsPtBias[3];         //!
-  TH3F               *fHistNTMatchvsPtvsNtack0;      //!
+  TString               fCalo2Name;                 // calo cluster name
+  TClonesArray         *fCaloClusters2;             //!
+  TString               fMCParticlesName;           // mc particles name
+  TClonesArray         *fMCParticles;               //!
+  TH2F                 *fHistRhovsCent;             //!rho vs cent
+  TH2F                 *fHistNjetvsCent;            //!number of jets versus Centrality
+  TH2F                 *fHistNEFvsPt[3];            //!
+  TH2F                 *fHistNTMatchvsPt[3];        //!  
+  TH2F                 *fHistNCMatchvsPt[3];        //!
+  TH2F                 *fHistHadCorvsPt[3];         //!
+  TH2F                 *fHistNconvsPt[3];           //!
+  TH2F                 *fHistNtvsPt[3];             //!
+  TH2F                 *fHistNcvsPt[3];             //!
+  TH2F                 *fHistNEFvsPtBias[3];        //!
+  TH2F                 *fHistNTMatchvsPtBias[3];    //!  
+  TH2F                 *fHistNCMatchvsPtBias[3];    //!
+  TH2F                 *fHistHadCorvsPtBias[3];     //!
+  TH2F                 *fHistNconvsPtBias[3];       //!
+  TH2F                 *fHistNtvsPtBias[3];         //!
+  TH2F                 *fHistNcvsPtBias[3];         //!
+  TH3F                 *fHistNTMatchvsPtvsNtack0;   //!
 
 
   AliAnalysisTaskEmcalJetHadCorQA(const AliAnalysisTaskEmcalJetHadCorQA&); // not implemented
