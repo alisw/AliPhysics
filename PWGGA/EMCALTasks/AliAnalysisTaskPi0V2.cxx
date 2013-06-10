@@ -47,13 +47,13 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) :
   fTracks(0), fV1Clus(0), fV2Clus(0),
   fRunNumber(-999),fInterRunNumber(-999),
   fVtxCut(15.),
-  fNcellCut(2.), fECut(1.), fEtaCut(0.65), fM02Cut(0.5),fDrCut(0.025), fPi0AsyCut(0), isV1Clus(1), isPhosCali(0),
+  fNcellCut(2.), fECut(1.), fEtaCut(0.65), fM02Cut(0.5),fDrCut(0.025), fPi0AsyCut(0), isV1Clus(1), isPhosCali(0), isCentFlat(0),
   fCentrality(99.),
   fEPTPC(-999.),
   fEPTPCreso(0.), 
   fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
   fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.), fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
-  hEvtCount(0), 
+  hEvtCount(0), hCent(0), 
   h2DcosV0A(0), h2DsinV0A(0), h2DcosV0C(0), h2DsinV0C(0), h2DcosTPC(0), h2DsinTPC(0), 
   hEPTPC(0), hresoTPC(0),
   hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
@@ -86,13 +86,13 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() :
   fTracks(0), fV1Clus(0), fV2Clus(0),
   fRunNumber(-999),fInterRunNumber(-999),
   fVtxCut(15.),
-  fNcellCut(2.), fECut(1.), fEtaCut(0.65), fM02Cut(0.5), fDrCut(0.025), fPi0AsyCut(0), isV1Clus(1),isPhosCali(0),
+  fNcellCut(2.), fECut(1.), fEtaCut(0.65), fM02Cut(0.5), fDrCut(0.025), fPi0AsyCut(0), isV1Clus(1),isPhosCali(0),isCentFlat(0),
   fCentrality(99.),
   fEPTPC(-999.),
   fEPTPCreso(0.),
   fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
   fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.), fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
-  hEvtCount(0), 
+  hEvtCount(0), hCent(0),
   h2DcosV0A(0), h2DsinV0A(0), h2DcosV0C(0), h2DsinV0C(0), h2DcosTPC(0), h2DsinTPC(0),
   hEPTPC(0), hresoTPC(0),
   hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
@@ -444,36 +444,30 @@ void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0A,
   Double_t Et   = p1.Et();
   Double_t Phi  = p1.Phi();
   Double_t M02  = c->GetM02();
-  Double_t DxClus = c->GetTrackDx();
-  Double_t DzClus = c->GetTrackDz();
-  Double_t dr = TMath::Sqrt(DxClus*DxClus + DzClus*DzClus);
 
   Double_t difClusV0A = TVector2::Phi_0_2pi(Phi-EPV0A);  if(difClusV0A >TMath::Pi()) difClusV0A -= TMath::Pi();
   Double_t difClusV0C = TVector2::Phi_0_2pi(Phi-EPV0C);  if(difClusV0C >TMath::Pi()) difClusV0C -= TMath::Pi();
   Double_t difClusTPC = TVector2::Phi_0_2pi(Phi-EPTPC);  if(difClusTPC >TMath::Pi()) difClusTPC -= TMath::Pi();
 
-  Double_t DataV0A[5];
+  Double_t DataV0A[4];
   DataV0A[0] = Et;
   DataV0A[1] = M02;
   DataV0A[2] = fCentrality;
   DataV0A[3] = difClusV0A;
-  DataV0A[4] = dr;
   fClusterPbV0A->Fill(DataV0A);
 
-  Double_t DataV0C[5];
+  Double_t DataV0C[4];
   DataV0C[0] = Et;
   DataV0C[1] = M02;
   DataV0C[2] = fCentrality;
   DataV0C[3] = difClusV0C;
-  DataV0C[4] = dr;
   fClusterPbV0C->Fill(DataV0C);
 
-  Double_t DataTPC[5];
+  Double_t DataTPC[4];
   DataTPC[0] = Et;
   DataTPC[1] = M02;
   DataTPC[2] = fCentrality;
   DataTPC[3] = difClusTPC;
-  DataTPC[4] = dr;
   fClusterPbTPC->Fill(DataTPC);
 }
 
@@ -521,7 +515,10 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
   hEvtCount->GetXaxis()->SetBinLabel(7,"ClusterTask");
   hEvtCount->GetXaxis()->SetBinLabel(8,"Pass");
   fOutput->Add(hEvtCount);
-    
+
+  hCent	   = new TH1F("hCent", "centrality dist. before App. flat cut", 100, 0., 100.);
+  fOutput->Add(hCent);  
+
   hEPTPC   = new TH2F("hEPTPC",   "EPTPC     vs cent", 100, 0., 100., 100, 0., TMath::Pi());
   hresoTPC = new TH2F("hresoTPC", "TPc reso  vs cent", 100, 0., 100., 100, 0., 1.);
   hEPV0    = new TH2F("hEPV0",    "EPV0      vs cent", 100, 0., 100., 100, 0., TMath::Pi());
@@ -619,17 +616,16 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
   fOutput->Add(hclusv2_EPV0C);
 
   if (isV1Clus) {
-                       //  Et   M02  spdcent DeltaPhi    Dr  
-    Int_t    bins[5] = {  500, 350,  100,     100,      100}; // binning
-    Double_t min[5]  = {  0.0, 0.0,    0,     0.0,      0 }; // min x
-    Double_t max[5]  = { 50.0, 3.5,  100,  TMath::Pi(), 0.1}; // max x
+                       //  Et   M02  spdcent DeltaPhi  
+    Int_t    bins[4] = {  500, 350,  60,  100     }; // binning
+    Double_t min[4]  = {  0.0, 0.0,  0,   0.0     }; // min x
+    Double_t max[4]  = { 50.0, 3.5,  60,  TMath::Pi()}; // max x
 
     fClusterPbV0A = new THnSparseF("fClusterPbV0A","",5,bins,min,max);
     fClusterPbV0A->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); 
     fClusterPbV0A->GetAxis(1)->SetTitle("M02"); 
     fClusterPbV0A->GetAxis(2)->SetTitle("V0M Centrality");
     fClusterPbV0A->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); 
-    fClusterPbV0A->GetAxis(4)->SetTitle("Dr"); 
     fOutput->Add(fClusterPbV0A);
 
     fClusterPbV0C = new THnSparseF("fClusterPbV0C","",5,bins,min,max);
@@ -637,7 +633,6 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fClusterPbV0C->GetAxis(1)->SetTitle("M02"); 
     fClusterPbV0C->GetAxis(2)->SetTitle("V0M Centrality");
     fClusterPbV0C->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); 
-    fClusterPbV0C->GetAxis(4)->SetTitle("Dr");
     fOutput->Add(fClusterPbV0C);
 
     fClusterPbTPC = new THnSparseF("fClusterPbTPC","",5,bins,min,max);
@@ -645,7 +640,6 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fClusterPbTPC->GetAxis(1)->SetTitle("M02"); 
     fClusterPbTPC->GetAxis(2)->SetTitle("V0M Centrality");
     fClusterPbTPC->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); 
-    fClusterPbTPC->GetAxis(4)->SetTitle("Dr");
     fOutput->Add(fClusterPbTPC);
   }
   
@@ -804,6 +798,47 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
   hEvtCount->Fill(4);
 
   fCentrality = event->GetCentrality()->GetCentralityPercentile("CL1"); //spd vertex
+  hCent->Fill(fCentrality);
+  if(isCentFlat){
+    Bool_t bIsNot = kFALSE;
+    if (fCentrality<=10){   //0-10%
+      TRandom3 *rndm = new TRandom3(0);
+      Double_t Nrndm = rndm->Uniform(0.,1.);
+      if(fCentrality<=1){
+	if(Nrndm > 0.759307) bIsNot = kTRUE;
+      } else if(1<fCentrality && fCentrality<=2) {
+	if(Nrndm > 0.748823) bIsNot = kTRUE;
+      } else if (2<fCentrality && fCentrality<=3){
+	if(Nrndm > 0.755646) bIsNot = kTRUE;
+      } else if (3<fCentrality && fCentrality<=4){
+	if(Nrndm > 0.76136) bIsNot = kTRUE;
+      } else if (4<fCentrality && fCentrality<=5){
+	if(Nrndm > 0.755756) bIsNot = kTRUE;
+      } else if (5<fCentrality && fCentrality<=6){
+	if(Nrndm > 0.78468) bIsNot = kTRUE;
+      } else if (6<fCentrality && fCentrality<=7){
+	if(Nrndm > 0.770726) bIsNot = kTRUE;
+      } else if (7<fCentrality && fCentrality<=8){
+	if(Nrndm > 0.779329) bIsNot = kTRUE;
+      } else if (8<fCentrality && fCentrality<=9){
+	if(Nrndm > 0.821996) bIsNot = kTRUE;
+      } else if (9<fCentrality && fCentrality<=10){
+	if(Nrndm > 1) bIsNot = kTRUE;
+      }
+      delete rndm; rndm = 0;
+      if(bIsNot)
+	return;
+    }else if (10<fCentrality && fCentrality<=50){  //10-50%
+      TString centfired;
+      if (fESD) {
+	centfired = fESD->GetFiredTriggerClasses();
+      } else {
+	centfired = fAOD->GetFiredTriggerClasses();
+      }
+      if(!centfired.Contains("CVLN_B2-B-NOPF-ALLNOTRD") || !centfired.Contains("CVLN_R1-B-NOPF-ALLNOTRD") || !centfired.Contains("CSEMI_R1-B-NOPF-ALLNOTRD"))
+	return;
+    }
+  }
 
   hEvtCount->Fill(5);
 
