@@ -21,7 +21,37 @@
 //   Julian Book <Julian.Book@cern.ch>                                   //
 /*
 
+Class to provide some V0 selection using exactley the same cuts in ESDs as in AODs.
+It implements the PID cut class AliDielectronPID and the standard AliDielectronVarCuts for
+the configuration of leg respective pair cuts. These pair cuts are applied on the KFparticle
+build by the legs.
 
+example configuration:
+
+  AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("IsGamma","IsGamma");
+
+  // which V0 finder you want to use
+  gammaV0Cuts->SetV0finder(kOnTheFly);  // kAll(default), kOffline or kOnTheFly
+
+  // add some pdg codes (they are used then by the KF package and important for gamma conversions)
+  gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
+
+  // add default PID cuts (defined in AliDielectronPID)
+  gammaV0Cuts->SetDefaultPID(16);
+
+  // add the pair cuts for V0 candidates
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
+
+  // selection or rejection of V0 tracks
+  gammaV0Cuts->SetExcludeTracks(kTRUE);
+
+  // add the V0cuts directly to the track filter or to some cut group of it
 
 */
 //                                                                       //
@@ -33,6 +63,7 @@
 #include "AliDielectronTrackCuts.h"
 #include "AliDielectronPID.h"
 #include "AliESDv0.h"
+#include "AliAODv0.h"
 
 ClassImp(AliDielectronV0Cuts)
 
@@ -41,6 +72,7 @@ AliDielectronV0Cuts::AliDielectronV0Cuts() :
   AliDielectronVarCuts(),
   fV0TrackArr(0),
   fExcludeTracks(kTRUE),
+  fV0finder(kAll),
   fMotherPdg(0),
   fNegPdg(0),
   fPosPdg(0),
@@ -59,6 +91,7 @@ AliDielectronV0Cuts::AliDielectronV0Cuts(const char* name, const char* title) :
   AliDielectronVarCuts(name,title),
   fV0TrackArr(0),
   fExcludeTracks(kTRUE),
+  fV0finder(kAll),
   fMotherPdg(0),
   fNegPdg(0),
   fPosPdg(0),
@@ -133,6 +166,10 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
     for (Int_t iv=0; iv<esdev->GetNumberOfV0s(); ++iv){
       AliESDv0 *v = esdev->GetV0(iv);
       if(!v) continue;
+      
+      // check the v0 finder
+      if( v->GetOnFlyStatus() && fV0finder==AliDielectronV0Cuts::kOffline  ) continue;
+      if(!v->GetOnFlyStatus() && fV0finder==AliDielectronV0Cuts::kOnTheFly ) continue;
 
       // should we make use of AliESDv0Cuts::GetPdgCode() to preselect candiadtes, e.g.:
       // if(fMotherPdg!=v->GetPdgCode()) continue;
@@ -143,6 +180,9 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 	printf("Error: Couldn't get V0 daughter: %p - %p\n",trNeg,trPos);
 	continue;
       }
+
+      // protection against LS v0s
+      if(trNeg->Charge() == trPos->Charge()) continue;
 
       // PID default cuts
       if(fPID>=0) {
@@ -157,7 +197,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
       if( !dauQAcuts1.IsSelected(trPos) ) continue;
 
       if(fMotherPdg==22) candidate.SetGammaTracks(trNeg, 11, trPos, 11);
-      else candidate.SetTracks(trNeg, fNegPdg, trPos, fPosPdg);
+      else candidate.SetTracks(trNeg, (trNeg->Charge()<0?fNegPdg:fPosPdg), trPos, (trPos->Charge()<0?fNegPdg:fPosPdg));
       // eventually take the external trackparam and build the KFparticles by hand (see AliESDv0::GetKFInfo)
       // the folowing is not needed, because the daughters where used in the v0 vertex fit (I guess)
       //      AliKFVertex v0vtx = *v;
@@ -176,10 +216,13 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
     const AliAODEvent *aodEv = static_cast<const AliAODEvent*>(ev);
 
     // loop over vertices
-    for (Int_t ivertex=0; ivertex<aodEv->GetNumberOfVertices(); ++ivertex){
-      AliAODVertex *v=aodEv->GetVertex(ivertex);
-      if(v->GetType()!=AliAODVertex::kV0) continue;
-      if(v->GetNDaughters()!=2) continue;
+    for (Int_t ivertex=0; ivertex<aodEv->GetNumberOfV0s(); ++ivertex){
+      AliAODv0 *v=aodEv->GetV0(ivertex);
+      if(!v) continue;
+
+      // check the v0 finder
+      if( v->GetOnFlyStatus() && fV0finder==AliDielectronV0Cuts::kOffline  ) continue;
+      if(!v->GetOnFlyStatus() && fV0finder==AliDielectronV0Cuts::kOnTheFly ) continue;
 
       AliAODTrack *trNeg=dynamic_cast<AliAODTrack*>(v->GetDaughter(0));
       AliAODTrack *trPos=dynamic_cast<AliAODTrack*>(v->GetDaughter(1));
@@ -188,6 +231,9 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 	continue;
       }
       nV0stored++;
+
+      // protection against LS v0s
+      if(trNeg->Charge() == trPos->Charge()) continue;
 
       // PID default cuts
       if(fPID>=0) {
@@ -201,7 +247,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
       if( !dauQAcuts1.IsSelected(trNeg) ) continue;
       if( !dauQAcuts1.IsSelected(trPos) ) continue;
 
-      AliKFVertex v0vtx = *v;
+      AliKFVertex v0vtx = *(v->GetSecondaryVtx());
       if(fMotherPdg==22) candidate.SetGammaTracks(trNeg, 11, trPos, 11);
       else candidate.SetTracks(trNeg, (trNeg->Charge()<0?fNegPdg:fPosPdg), trPos, (trPos->Charge()<0?fNegPdg:fPosPdg));
       candidate.SetProductionVertex(v0vtx);
