@@ -170,9 +170,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fHistCentrDistr(0x0),
   fCutRatioClsOverCrossRowsTPC(source.fCutRatioClsOverCrossRowsTPC),
   fCutRatioSignalNOverCrossRowsTPC(source.fCutRatioSignalNOverCrossRowsTPC),
+  fCutMinCrossedRowsTPCPtDep(""),
   f1CutMinNCrossedRowsTPCPtDep(0x0)
-
-  
 {
   //
   // Copy constructor
