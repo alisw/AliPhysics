@@ -154,7 +154,7 @@ int main(int argc, char **argv)
       retval = 
 	daqDA_FES_storeFile("conditions.csv", 
 			    AliFMDParameters::Instance()->GetConditionsShuttleID());
-      if (retval != 0) cerr << "Base DA failed" << endl;
+      if (retval != 0) std::cerr << "Base DA failed" << std::endl;
       
       break;
     

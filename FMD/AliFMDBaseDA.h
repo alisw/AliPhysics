@@ -87,6 +87,12 @@ public:
    */
   void SetRequiredEvents(Int_t nEvents) {fRequiredEvents = nEvents;}
   /** 
+   * Set whether we should try to get all detectors 
+   *
+   * @param all If true, try to get all detectors 
+   */
+  void SetTryAll(Bool_t all=true) { fAll = all; }
+  /** 
    * Get the number of required events
    * 
    * 
@@ -112,7 +118,8 @@ public:
    */
   struct Runner {
     Runner();
-    Runner(const Runner&) : fReader(0), fDiagFile(""), fDiag(false) {}
+    Runner(const Runner&) 
+      : fReader(0), fDiagFile(""), fDiag(false), fAll(false) {}
     ~Runner() {} 
     Runner& operator=(const Runner&) { return *this; }
     void   AddHandlers();
@@ -123,6 +130,7 @@ public:
     AliRawReader* fReader;
     TString       fDiagFile;
     Bool_t        fDiag;
+    Bool_t        fAll;
   };
 protected:
   /** 
@@ -323,6 +331,7 @@ protected:
   Int_t         fCurrentEvent;         // the current event       
   UInt_t        fRunno;                // Current run number 
   TObjArray     fSummaries;            // Summary histograms 
+  Bool_t        fAll;                  // Try to get data from all dets
   
   ClassDef(AliFMDBaseDA,0) // Base Detector algorithm for all run types
 
