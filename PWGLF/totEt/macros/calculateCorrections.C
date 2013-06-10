@@ -203,14 +203,28 @@ int calculateCorrections(TString filename="rootFiles/LHC11a10a_bis/Et.ESD.simPbP
   Double_t meanGamma = 0.51/(p0 + p1*0.51);
   Double_t meanSecondary = meanGamma; 
   
-  TH2F  *fHistHadronDepositsAllMult = l->FindObject("fHistHadronDepositsAllMult");
-  TH2F  *fHistHadronDepositsRecoMult = l->FindObject("fHistHadronDepositsRecoMult");
-  TH2F *eff2D = (TH2F*) bayneseffdiv2D(fHistHadronDepositsRecoMult,fHistHadronDepositsAllMult,"eff2D");
+  TH2F  *fHistHadronDepositsAllMult = l->FindObject("fHistHadronDepositsAllCent");
+  TH2F  *fHistHadronDepositsRecoMult = l->FindObject("fHistHadronDepositsRecoCent");
+  TH2F *eff2D;
+  if(fHistHadronDepositsRecoMult && fHistHadronDepositsAllMult ){
+    eff2D = (TH2F*) bayneseffdiv2D(fHistHadronDepositsRecoMult,fHistHadronDepositsAllMult,"eff2D");
+  }
+  else{
+    cerr<<"Warning!  Did not calculate reconstruction efficiency!!"<<endl;
+    eff2D =  new TH2F("eff2D", "eff2D",200, 0, 10,20,-0.5,19.5);
+  }
   //cor->SetReconstructionEfficiency(eff2D);
   
-  TH2F  *fHistGammasGeneratedMult = l->FindObject("fHistGammasGeneratedMult");
-  TH2F  *fHistGammasFoundMult = l->FindObject("fHistGammasFoundMult");
-  TH2F *gammaEff2D = (TH2F*) bayneseffdiv2D(fHistGammasFoundMult,fHistGammasGeneratedMult,"gammaEff2D");
+  TH2F  *fHistGammasGeneratedMult = l->FindObject("fHistGammasGeneratedCent");
+  TH2F  *fHistGammasFoundMult = l->FindObject("fHistGammasFoundCent");
+  TH2F *gammaEff2D;
+  if(fHistGammasGeneratedMult && fHistGammasFoundMult){
+    gammaEff2D = (TH2F*) bayneseffdiv2D(fHistGammasFoundMult,fHistGammasGeneratedMult,"gammaEff2D");
+  }
+  else{
+    cerr<<"Warning!  Did not calculate reconstruction efficiency!!"<<endl;
+    gammaEff2D =  new TH2F("gammaEff2D", "gammaEff2D",200, 0, 10,20,-0.5,19.5);
+  }
 
   AliAnalysisEtTrackMatchCorrections *cor = new AliAnalysisEtTrackMatchCorrections(("TmCorrections"+detector).Data(), fitcharged, fitneutral, fitgamma, fitsecondary, *eff2D,
 										   meanCharged, meanNeutral, meanGamma, meanSecondary );
