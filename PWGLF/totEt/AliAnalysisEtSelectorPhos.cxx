@@ -322,3 +322,13 @@ Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliVTrack& trac
            track.Phi() < fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
 }
 
+
+Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliESDCaloCluster& cluster) const
+{
+  Float_t pos[3];
+  cluster.GetPosition(pos);
+  TVector3 cp(pos);
+  return TMath::Abs(cp.Eta()) < fCuts->GetGeometryEmcalEtaAccCut()
+    && cp.Phi() < fCuts->GetGeometryEmcalPhiAccMaxCut()*TMath::Pi()/180.
+    && cp.Phi() > fCuts->GetGeometryEmcalPhiAccMinCut()*TMath::Pi()/180.;
+}
