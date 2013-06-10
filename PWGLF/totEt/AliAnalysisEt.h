@@ -136,7 +136,7 @@ protected:
     //AliAnalysisEtCuts *fCuts; // keeper of basic cuts
     
     // Return corrected cluster E_T
-    Double_t CorrectForReconstructionEfficiency(const AliESDCaloCluster &cluster,Int_t mult = 0);
+    Double_t CorrectForReconstructionEfficiency(const AliESDCaloCluster &cluster,Int_t cent = 0);
     
     // Track matching (hadrdonic contamination) corrections
     AliAnalysisEtTrackMatchCorrections *fTmCorrections;

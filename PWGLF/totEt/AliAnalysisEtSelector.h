@@ -73,6 +73,9 @@ public:
     // Cut on geometrical acceptance 
     virtual Bool_t CutGeometricalAcceptance(const AliVTrack &/*part*/) const { return true; }
     
+    // Cut on geometrical acceptance 
+    virtual Bool_t CutGeometricalAcceptance(const AliESDCaloCluster &/*part*/) const { return true; }
+    
     // From secondary vertex?
     virtual Bool_t FromSecondaryInteraction(const TParticle& part, AliStack& stack) const;
     

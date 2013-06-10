@@ -27,7 +27,7 @@ public:
       virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
 
 
-      virtual Double_t GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t mult);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+      virtual Double_t GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t cent);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
  private:
 
       ClassDef(AliAnalysisEtReconstructedEmcal, 1);
