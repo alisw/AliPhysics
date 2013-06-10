@@ -1160,7 +1160,7 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 	if(!result) return 0;
 
        // loop on result to check whether entries should be re-queried with specific storages
-	if(fSpecificStorages.GetEntries()>0 && ! (fSpecificStorages.GetEntries() == 1 && aPar) || aStorage->GetNSelections()>0 ) {
+	if( (fSpecificStorages.GetEntries()>0 && !(fSpecificStorages.GetEntries() == 1 && aPar)) || aStorage->GetNSelections()>0 ) {
 		AliInfo("Now look into all other specific storages...");
 
 		TIter iter(result);
