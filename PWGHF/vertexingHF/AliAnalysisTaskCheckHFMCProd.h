@@ -59,12 +59,13 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TList* fOutput;          //! list of output histos
   TH1F* fHistoNEvents;     //! histo with N of events  
 
-  TH1F* fHistoPhysPrim;    //! histo of n. of physical primaries in |eta|<0.5
-  TH1F* fHistoTracks;      //! histo with number of ESD tracks
-  TH1F* fHistoSelTracks;   //! histo with number of TPC+ITS refit ESD tracks
-  TH1F* fHistoTracklets;   //! histo with number of SPD tracklets
-  TH1F* fHistoPtPhysPrim;  //! histo of pt distribution of phys primaries
-  TH1F* fHistoEtaPhysPrim; //! histo of eta distribution of physical primaries
+  TH1F* fHistoPhysPrim;     //! histo of n. of physical primaries in |eta|<0.5
+  TH1F* fHistoTracks;       //! histo with number of ESD tracks
+  TH1F* fHistoSelTracks;    //! histo with number of TPC+ITS refit ESD tracks
+  TH1F* fHistoTracklets;    //! histo with number of SPD tracklets
+  TH1F* fHistoTrackletsEta1;//! histo with number of SPD tracklets in |eta|<1
+  TH1F* fHistoPtPhysPrim;   //! histo of pt distribution of phys primaries
+  TH1F* fHistoEtaPhysPrim;  //! histo of eta distribution of physical primaries
   
   TH1F* fHistoSPD3DVtxX;     //! histo with distr. of x coord. of SPD3D vertex
   TH1F* fHistoSPD3DVtxY;     //! histo with distr. of y coord. of SPD3D vertex
@@ -100,7 +101,7 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   Int_t fSystem;         // 0=pp, 1=PbPb, 2=pPb
   Bool_t fReadMC;
 
-  ClassDef(AliAnalysisTaskCheckHFMCProd,4);
+  ClassDef(AliAnalysisTaskCheckHFMCProd,5);
 };
 
 
